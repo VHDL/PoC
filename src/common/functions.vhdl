@@ -1,0 +1,217 @@
+--
+-- Copyright (c) 2007-2012
+-- Technische Universitaet Dresden, Dresden, Germany
+-- Faculty of Computer Science
+-- Institute for Computer Engineering
+-- Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- For internal educational use only.
+-- The distribution of source code or generated files
+-- is prohibited.
+--
+
+--
+-- Package: functions
+-- Authors: Thomas B. Preusser <thomas.preusser@tu-dresden.de>
+--          Martin Zabel <martin.zabel@tu-dresden.de>
+-- 
+-- Common funtions.
+--
+-- Revision:    $Revision: 1.14 $
+-- Last change: $Date: 2012-08-16 13:00:51 $
+--
+
+library IEEE;
+use     IEEE.std_logic_1164.all;
+use     IEEE.NUMERIC_STD.ALL;
+
+package functions is
+
+  --+ Status +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  -- Distinguishes Simulation from Synthesis
+  function IS_SIMULATION return boolean; -- Consider it PRIVATE
+  constant SIMULATION : boolean := IS_SIMULATION;
+  
+  --+ Logarithm ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  -- Calculates: ceil(ld(arg))
+  function log2ceil(arg : positive) return natural;
+  -- Calculates: max(1, ceil(ld(arg)))
+  function log2ceilnz(arg : positive) return positive;
+  
+  --+ Min / Max ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  -- Calculates: max(arg1, arg2) for integers
+  function imax(arg1 : integer; arg2 : integer) return integer;
+  -- Calculates: max(arg1, arg2) for reals
+  function rmax(arg1 : real; arg2 : real) return real;
+
+  -- Calculates: min(arg1, arg2) for integers
+  function imin(arg1 : integer; arg2 : integer) return integer;
+  -- Calculates: min(arg1, arg2) for reals
+  function rmin(arg1 : real; arg2 : real) return real;
+
+  --+ Vectors ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  -- Reverses the elements of the passed Vector.
+  -- Be the return Vector cev; then:
+  --   - vec(i)            = cev(i)     but
+  --   - vec'reverse_range = cev'range
+  --
+  -- @synthesis supported
+  --
+  function reverse(vec : std_logic_vector) return std_logic_vector;
+	function reverse(vec : unsigned)         return unsigned;
+
+  -- Least-Significant Set Bit (lssb):
+  -- Computes a vector of the same length as the argument with
+  -- at most one bit set at the rightmost '1' found in arg.
+  --
+  -- @synthesis supported
+  --
+  function lssb(arg : std_logic_vector) return std_logic_vector;
+
+  -- Returns the position of the least-significant set bit assigning
+  -- the rightmost position an index of zero (0).
+  -- The returned vector is of length 1+log2ceil(arg'length) coding
+  -- the result position in a two's complement binary. If its additional
+  -- leftmost bit is set, all elements of the argument vector were
+  -- zero (0).
+  --
+  -- @synthesis supported
+  --
+  function lssb_idx(arg : std_logic_vector) return std_logic_vector;
+  
+  -- Calculates the length of a std_logic_vector discounting leading Zeros
+  -- The minimum length returned is 1 even if the whole vector is zeros.
+  function length(arg : std_logic_vector) return positive;
+
+  --+ Gray-Code / Binary-Code ++++++++++++++++++++++++++++++++++++++++++++++++
+  -- Converts Gray-Code into Binary-Code.
+  --
+  -- @synthesis supported
+  --
+  function gray2bin (gray_val : std_logic_vector) return std_logic_vector;
+
+end package functions;
+
+library IEEE;
+use IEEE.numeric_std.all;
+
+package body functions is
+
+  --+ Status +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  function IS_SIMULATION return boolean is
+    variable  ret : boolean;
+  begin
+    ret := false;
+    --synthesis translate_off
+    if Is_X('X') then ret := true; end if;
+    --synthesis translate_on
+    return  ret;
+  end;
+
+  --+ Logarithm ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  function log2ceil(arg : positive) return natural is
+    variable tmp : positive;
+    variable log : natural;
+  begin
+    if arg = 1 then  return  0; end if;
+    
+    tmp := 1;
+    log := 0;
+
+    while arg > tmp loop
+      tmp := tmp * 2;
+      log := log + 1;
+    end loop;
+    return log;
+    
+  end;
+
+  function log2ceilnz(arg : positive) return positive is
+  begin
+    return imax(1, log2ceil(arg));
+  end;
+
+  --+ Min / Max ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  function imax(arg1 : integer; arg2 : integer) return integer is
+  begin
+    if arg1>arg2 then return arg1; end if;
+    return arg2;
+  end;
+
+  function rmax(arg1 : real; arg2 : real) return real is
+  begin
+    if arg1>arg2 then return arg1; end if;
+    return arg2;
+  end;
+
+  function imin(arg1 : integer; arg2 : integer) return integer is
+  begin
+    if arg1<arg2 then return arg1; end if;
+    return arg2;
+  end;
+
+  function rmin(arg1 : real; arg2 : real) return real is
+  begin
+    if arg1<arg2 then return arg1; end if;
+    return arg2;
+  end;
+
+  --+ Vectors ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  function reverse(vec : std_logic_vector) return std_logic_vector is
+    variable res : std_logic_vector(vec'reverse_range);
+  begin
+    for i in res'range loop
+      res(i) := vec(i);
+    end loop;
+    return  res;
+  end reverse;
+	
+	function reverse(vec : unsigned) return unsigned is
+  begin
+    return unsigned(reverse(std_logic_vector(vec)));
+  end reverse;
+
+  function lssb(arg : std_logic_vector) return std_logic_vector is
+  begin
+    return  arg and std_logic_vector(unsigned(not arg)+1);
+  end;
+
+  function lssb_idx(arg : std_logic_vector) return std_logic_vector is
+    variable hot : std_logic_vector(arg'length             downto 0);
+    variable res : std_logic_vector(log2ceil(arg'length)-1 downto 0);
+  begin
+    hot := lssb('1' & arg);
+    res := (others => '0');
+    for i in 0 to arg'length-1 loop
+      if hot(i) = '1' then
+        res := res or std_logic_vector(to_unsigned(i, res'length));
+      end if;
+    end loop;
+    return  hot(arg'length) & res;
+  end;
+
+  function length(arg : std_logic_vector) return positive is
+    variable res : natural;
+  begin
+    res := arg'length;
+    for i in arg'range loop
+      if arg(i) = '1' then
+        return  res;
+      end if;
+      res := res - 1;
+    end loop;
+    return  1;
+  end;
+  
+  --+ Gray-Code / Binary-Code ++++++++++++++++++++++++++++++++++++++++++++++++
+  function gray2bin(gray_val : std_logic_vector) return std_logic_vector is
+  variable res : std_logic_vector(gray_val'range);
+  begin  -- gray2bin
+    res(res'left) := gray_val(gray_val'left);
+    for i in res'left-1 downto res'right loop
+      res(i) := res(i+1) xor gray_val(i);
+    end loop;
+    return res;
+  end gray2bin;
+  
+end functions;
