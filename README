@@ -1,0 +1,28 @@
+Admin
+-----
+ssh git-admin
+git clone ssh://git-admin/gitolite-admin
+
+PoC
+---
+ssh git@agios
+git clone ssh://git@agios.inf.tu-dresden.de/poc
+git status
+
+# Initial push - with unknown push origin
+git push origin master
+
+# Inspect remote Information
+git remote -v
+> origin  ssh://git@agios.inf.tu-dresden.de/poc (fetch)
+> origin  ssh://git@agios.inf.tu-dresden.de/poc (push)
+
+# Show branches [known on remote server]
+git branch [-r]
+
+# Create branches and switch to branch
+git branch private
+git checkout private
+git branch "tom/master"
+git branch "zabel/master"
+git branch "paebbels/master"
