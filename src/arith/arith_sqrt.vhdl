@@ -1,30 +1,31 @@
---
--- Copyright (c) 2009
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width:2  -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
---
-
---
--- Iterative Square Root Extractor.
--- Its computation requires (N+1)/2 steps for an argument bit width of N.
---
--- Author: Thomas B. Preußer <thomas.preusser@tu-dresden.de>
---
--- Revision:    $Revision: 1.5 $
--- Last change: $Date: 2010-02-02 12:43:05 $
---
+-- ============================================================================================================================================================
+-- Description:     Iterative Square Root Extractor.
+--                  Its computation requires (N+1)/2 steps for an argument bit width of N.
+-- 
+-- Authors:         Thomas B. Preußer
+-- ============================================================================================================================================================
+-- Copyright 2007-2013 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--    http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================================================================================================
 
 library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
-
-library poc;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
 
 entity arith_sqrt is
   generic (

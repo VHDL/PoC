@@ -1,44 +1,47 @@
---
--- Copyright (c) 2008-2013
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width:2  -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
---
+-- ============================================================================================================================================================
+-- Description:     Commonly used modules for ALUs or like.
+-- 
+-- Authors:         Thomas B. Preusser
+--                  Martin Zabel
+-- ============================================================================================================================================================
+-- Copyright 2007-2013 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--    http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================================================================================================
 
---
--- Package: alu
--- Author(s): Martin Zabel    <martin.zabel@tu-dresden.de>
---            Thomas Preusser <thomas.preusser@tu-dresden.de>
--- 
--- Commonly used modules for ALUs or like.
---
--- Revision:    $Revision: 1.9 $
--- Last change: $Date: 2013-05-27 14:02:36 $
---
 library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+use			ieee.std_logic_1164.all;
+use			ieee.numeric_std.all;
 
 package arith_pkg is
 
-  component arith_gray_counter is
+  component arith_counter_gray is
     generic (
-      BITS : positive;     -- Bit Width of Counter
-      INIT : natural := 0  -- Binary Position of Counter Value after Reset
-    );
-    port (
-      clk : in  std_logic;
-      rst : in  std_logic;                          -- Reset to INIT Value
-      inc : in  std_logic;                          -- Increment
-      dec : in  std_logic := '0';                   -- Decrement
-      val : out std_logic_vector(BITS-1 downto 0);  -- Value Output
-      cry : out std_logic                           -- Carry Output
-    );
+			BITS : positive;     -- Bit width of the counter
+			INIT : natural := 0  -- Initial/reset counter value
+		);
+		port (
+			clk : in  std_logic;
+			rst : in  std_logic;                          -- Reset to INIT value
+			inc : in  std_logic;                          -- Increment
+			dec : in  std_logic := '0';                   -- Decrement
+			val : out std_logic_vector(BITS-1 downto 0);  -- Value output
+			cry : out std_logic                           -- Carry output
+		);
   end component;
 
   component arith_prng
