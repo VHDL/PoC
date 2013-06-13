@@ -1,30 +1,27 @@
---
--- Copyright (c) 2009
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width:2  -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
---
-
---
--- Entity: arith_div
--- Author(s): Thomas B. Preußer
+-- ============================================================================================================================================================
+-- Description:     Implementation of a Non-Performing restoring divider with a configurable radix.
+--                  For detailed documentation see below.
 -- 
--- Implementation of a Non-Performing Restoring Divider with a configurable
--- radix.
---
--- Multi-Cycle division controlled by 'start' / 'rdy'. A new division can be
--- started, if 'rdy' = '1'. The result ist available if 'rdy' is '1' again.
---
--- For detailed documentation see below.
---
--- Revision:    $Revision: 1.1 $
--- Last change: $Date: 2010-02-02 12:42:30 $
---
+-- Authors:         Thomas B. Preusser
+-- ============================================================================================================================================================
+-- Copyright 2007-2013 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--    http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================================================================================================
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -57,6 +54,9 @@ end arith_div;
 
 -------------------------------------------------------------------------------
 -- Implementation of a Non-Performing Restoring Divider
+--
+-- Multi-Cycle division controlled by 'start' / 'rdy'. A new division can be
+-- started, if 'rdy' = '1'. The result is available if 'rdy' is '1' again.
 --
 -- Note that the registered version is no slower than the unregistered one
 -- as the conversion to a negative result is performed on-the-fly. It is,

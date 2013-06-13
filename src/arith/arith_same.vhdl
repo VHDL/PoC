@@ -1,16 +1,42 @@
---
--- Copyright (c) 2010
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width:2  -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
---
+-- ============================================================================================================================================================
+-- Description:     This module detects whether all bit positions of a std_logic_vector have the same value.
+--                  For detailed documentation see below.
+-- 
+-- Authors:         Thomas B. Preusser
+-- ============================================================================================================================================================
+-- Copyright 2007-2013 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--    http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================================================================================================
 
--- 
+library IEEE;
+use			IEEE.std_logic_1164.all;
+
+entity arith_same is
+  generic (
+    N : positive                             -- Input width
+  );
+  port (
+    g : in  std_logic := '1';                -- Guard Input (!g => !y)
+    x : in  std_logic_vector(N-1 downto 0);  -- Input Vector
+    y : out std_logic                        -- All-same Output
+  );
+end arith_same;
+
 -- This module detects whether all bit positions of a std_logic_vector
 -- have the same value.
 --
@@ -25,35 +51,15 @@
 -- When chaining, make sure to overlap both vector slices
 -- by one bit position as to avoid an undetected sign change
 -- between the slices.
---
--- Author: Thomas B. Preußer <thomas.preusser@tu-dresden.de>
---
--- Revision:    $Revision: 1.1 $
--- Last change: $Date: 2010-07-20 13:10:08 $
---
 
 library IEEE;
-use IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
 
 library poc;
+use			poc.types.all;
+use			poc.config.all;
+use			poc.functions.all;
 
-entity arith_same is
-  generic (
-    N : positive                             -- Input width
-  );
-  port (
-    g : in  std_logic := '1';                -- Guard Input (!g => !y)
-    x : in  std_logic_vector(N-1 downto 0);  -- Input Vector
-    y : out std_logic                        -- All-same Output
-  );
-end arith_same;
-
-library IEEE;
-use IEEE.numeric_std.all;
-
-library poc;
-use poc.config.all;
-use poc.functions.all;
 
 architecture rtl of arith_same is
 

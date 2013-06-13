@@ -1,57 +1,51 @@
---
--- Copyright (c) 2012
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width:2  -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
+-- ============================================================================================================================================================
+-- Description:     Gray-Code counter.
 --
-
---
--- Entity: arith_gray_counter
--- Author(s): Martin Zabel    <martin.zabel@tu-dresden.de>
---            Steffen Koehler <steffen.koehler@tu-dresden.de>
---            Thomas Preusser <thomas.preusser@tu-dresden.de>
+-- Authors:         Thomas B. Preusser
+--                  Martin Zabel
+--                  Steffen Koehler
+-- ============================================================================================================================================================
+-- Copyright 2007-2013 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
--- Gray-Code Counter
---
--- rst = synchronous reset to INIT value
--- inc = increment counter
--- dec = decrement counter (input defaults to '0')
--- val = counter value
---
--- The initial / reset value can be set with INIT.
---
--- Revision:    $Revision: 1.29 $
--- Last change: $Date: 2012-09-26 12:51:59 $
---
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--    http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
 
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity arith_gray_counter is
+entity arith_counter_gray is
   generic (
-    BITS : positive;     -- Bit Width of Counter
-    INIT : natural := 0  -- Binary Position of Counter Value after Reset
+    BITS : positive;     -- Bit width of the counter
+    INIT : natural := 0  -- Initial/reset counter value
   );
   port (
     clk : in  std_logic;
-    rst : in  std_logic;                          -- Reset to INIT Value
+    rst : in  std_logic;                          -- Reset to INIT value
     inc : in  std_logic;                          -- Increment
     dec : in  std_logic := '0';                   -- Decrement
-    val : out std_logic_vector(BITS-1 downto 0);  -- Value Output
-    cry : out std_logic                           -- Carry Output
+    val : out std_logic_vector(BITS-1 downto 0);  -- Value output
+    cry : out std_logic                           -- Carry output
   );
-end arith_gray_counter;
+end arith_counter_gray;
 
 
 library IEEE;
 use IEEE.numeric_std.all;
 
-architecture rtl of arith_gray_counter is
+architecture rtl of arith_counter_gray is
 
   -- purpose: gray constant encoder
   function gray_encode (val : natural; len : positive) return unsigned is

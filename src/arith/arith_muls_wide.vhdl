@@ -1,19 +1,46 @@
---
--- Copyright (c) 2009
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width:2  -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
---
+-- ============================================================================================================================================================
+-- Description:     Signed wide multiplication spanning multiple DSP or MULT blocks.
+--                  Small partial products are calculated through LUTs.
+--                  For detailed documentation see below.
+-- 
+-- Authors:         Martin Zabel
+-- ============================================================================================================================================================
+-- Copyright 2007-2013 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--    http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================================================================================================
 
---
--- Entity: arith_muls_wide
--- Author(s): Martin Zabel
--- 
+library ieee;
+use			ieee.std_logic_1164.all;
+use			ieee.numeric_std.all;
+
+entity arith_muls_wide is
+  generic (
+    NA : integer range 2  to 18;-- 18;
+    NB : integer range 19 to 36;-- 26;
+    SPLIT : positive);          -- 17 or NB-18
+  
+  port (
+    a : in  signed(NA-1 downto 0);
+    b : in  signed(NB-1 downto 0);
+    p : out signed(NA+NB-1 downto 0));
+
+end arith_muls_wide;
+
 -- Signed wide multiplication spanning multiple DSP or MULT blocks.
 -- Small partial products are calculated through LUTs.
 --
@@ -39,27 +66,6 @@
 --   SPLIT = NB-18 = 8 gives less logic but more delay. 
 --
 -- TODO: expand range of input widths
---
--- Revision:    $Revision: 1.4 $
--- Last change: $Date: 2009-11-25 10:25:19 $
---
-
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-entity arith_muls_wide is
-  generic (
-    NA : integer range 2  to 18;-- 18;
-    NB : integer range 19 to 36;-- 26;
-    SPLIT : positive);          -- 17 or NB-18
-  
-  port (
-    a : in  signed(NA-1 downto 0);
-    b : in  signed(NB-1 downto 0);
-    p : out signed(NA+NB-1 downto 0));
-
-end arith_muls_wide;
 
 architecture rtl of arith_muls_wide is
   -- Factors must be of same type for multiplication.

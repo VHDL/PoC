@@ -1,57 +1,31 @@
---
--- Copyright (c) 2008
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width:2  -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
---
-
---
--- Entity: arith_prng
--- Author(s): Martin Zabel
+-- ============================================================================================================================================================
+-- Description:     Pseudo-Random Number Generator (PRNG).
+--                  For detailed documentation see below.
 -- 
--- Pseudo-Random Number Generator
---
--- Signal description:
---  'rst'   reset value to initial seed.
---  'got'   the current value has been got, and a new value should be
---          calculated.
---  'val'   the pseudo-random number.
---
--- The number sequence includes the value all-zeros, but not all-ones.
---
--- Synchronized Reset is used.
---
--- Revision:    $Revision: 1.8 $
--- Last change: $Date: 2013-05-27 14:02:36 $
---
--------------------------------------------------------------------------------
--- Naming Conventions:
--- (Based on: Keating and Bricaud: "Reuse Methodology Manual")
---
--- active low signals: "*_n"
--- clock signals: "clk", "clk_div#", "clk_#x"
--- reset signals: "rst", "rst_n"
--- generics: all UPPERCASE
--- user defined types: "*_TYPE"
--- state machine next state: "*_ns"
--- state machine current state: "*_cs"
--- output of a register: "*_r"
--- asynchronous signal: "*_a"
--- pipelined or register delay signals: "*_p#"
--- data before being registered into register with the same name: "*_nxt"
--- clock enable signals: "*_ce"
--- internal version of output port: "*_i"
--- tristate internal signal "*_z"
--------------------------------------------------------------------------------
+-- Authors:         Martin Zabel
+-- ============================================================================================================================================================
+-- Copyright 2007-2013 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--    http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================================================================================================
 
 library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+use			ieee.std_logic_1164.all;
+use			ieee.numeric_std.all;
 
 entity arith_prng is
   generic (
@@ -65,6 +39,15 @@ entity arith_prng is
     val   : out std_logic_vector(BITS-1 downto 0));
 
 end arith_prng;
+
+-- Signal description:
+--  'rst'   reset value to initial seed.
+--  'got'   the current value has been got, and a new value should be calculated.
+--  'val'   the pseudo-random number.
+--
+-- The number sequence includes the value all-zeros, but not all-ones.
+--
+-- Synchronized Reset is used.
 
 architecture rtl of arith_prng is
 
