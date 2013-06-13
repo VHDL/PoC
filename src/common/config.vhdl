@@ -1,0 +1,40 @@
+-- EMACS settings: -*-  tab-width:2  -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================================================================================================
+-- Description:     Global configuration settings.
+--                  This is a template file. Copy this file into your project's source directory and change setup appropriately.
+--
+-- Authors:         Thomas B. Preusser
+--                  Martin Zabel
+--                  Patrick Lehmann
+-- ============================================================================================================================================================
+-- Copyright 2007-2013 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--    http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================================================================================================
+library PoC;
+use			PoC.types.ALL;
+
+package config is
+  -- Change these lines to setup configuration.
+  constant VENDOR : vendor_t		:= VENDOR_XYZ;
+  constant DEVICE : device_t		:= DEVICE_XYZ;
+  constant DEVGRP : devgrp_t    := DEVGRP_XYZ;
+ 
+end config;
+
+package body config is
+
+end config;

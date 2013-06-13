@@ -1,29 +1,35 @@
---
--- Copyright (c) 2007-2012
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width:2  -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
+-- ============================================================================================================================================================
+-- Description:     Common functions
 --
-
---
--- Package: functions
--- Authors: Thomas B. Preusser <thomas.preusser@tu-dresden.de>
---          Martin Zabel <martin.zabel@tu-dresden.de>
+-- Authors:         Thomas B. Preusser
+--                  Martin Zabel
+--                  Patrick Lehmann
+-- ============================================================================================================================================================
+-- Copyright 2007-2013 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
--- Common funtions.
---
--- Revision:    $Revision: 1.14 $
--- Last change: $Date: 2012-08-16 13:00:51 $
---
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--    http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================================================================================================
 
 library IEEE;
 use     IEEE.std_logic_1164.all;
-use     IEEE.NUMERIC_STD.ALL;
+use     IEEE.numeric_std.ALL;
+
+library PoC;
+use			PoC.types.ALL;
 
 package functions is
 
