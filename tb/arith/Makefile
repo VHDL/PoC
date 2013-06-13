@@ -1,0 +1,17 @@
+DUT_PATH := ../../src/arith
+SRCS := config_v5.vhdl ../xilinx/MUXCY.vhd \
+	$(DUT_PATH)/arith_prefix_and.vhdl arith_prefix_and_tb.vhdl \
+	$(DUT_PATH)/arith_prefix_or.vhdl arith_prefix_or_tb.vhdl
+
+.PHONY: all clean
+
+all: arith_prefix_and_tb arith_prefix_or_tb
+
+%_tb: poc-obj93.cf
+	ghdl -e --work=poc $@
+
+poc-obj93.cf: $(SRCS)
+	ghdl -a --work=poc $(SRCS) || rm $@
+
+clean:
+	rm -f *_tb *.o *.cf *~
