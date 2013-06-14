@@ -20,6 +20,10 @@
 --
 -- The specified depth (MIN_DEPTH) is rounded up to the next suitable value.
 --
+-- DATA_REG (=true) is a hint, that distributed memory or registers should be
+-- used as data storage. The actual memory type depends on the device
+-- architecture. See implementation for details.
+--
 -- *STATE_*_BITS defines the granularity of the fill state indicator
 -- '*state_*'. 'fstate_rd' is associated with the read clock domain and outputs
 -- the guaranteed number of words available in the FIFO. 'estate_wr' is
@@ -44,8 +48,8 @@
 --                       fstate_rd == 3 => 3/4 full
 --
 --
--- Revision:    $Revision: 1.13 $
--- Last change: $Date: 2013-05-28 12:28:19 $
+-- Revision:    $Revision: 1.14 $
+-- Last change: $Date: 2013-06-13 17:56:15 $
 --
 
 library IEEE;
@@ -385,8 +389,11 @@ begin
     signal regfile : regfile_t;
     attribute ram_style            : string;  -- XST specific
     attribute ram_style of regfile : signal is "distributed";
-    attribute ramstyle             : string;  -- Quartus specific
-    attribute ramstyle of regfile  : signal is "logic";
+
+    -- Altera Quartus II: Allow automatic RAM type selection.
+    -- For small RAMs, registers are used on Cyclone devices and the M512 type
+    -- is used on Stratix devices. Pass-through logic is automatically added 
+    -- if required. (Warning can be ignored.)
   
   begin
 
