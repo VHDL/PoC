@@ -41,8 +41,8 @@
 --
 -- Synchronous reset is used. Both resets must overlap.
 --
--- Revision:    $Revision: 1.2 $
--- Last change: $Date: 2013-03-26 15:59:46 $
+-- Revision:    $Revision: 1.3 $
+-- Last change: $Date: 2013-06-13 17:56:15 $
 --
 library ieee;
 use ieee.std_logic_1164.all;
@@ -87,7 +87,12 @@ architecture rtl of fifo_dc_got_sm is
 
   attribute ram_style        : string;  -- XST specific
   attribute ram_style of ram : signal is "distributed";
-  attribute ramstyle         : string;  -- Quartus specific
+
+  -- Altera Quartus II: Usage of RAM is not possible, because the RAM-Blocks
+  -- have a relative large write cycle time. Also, some memory types write the
+  -- data not until the falling write clock edge. This conflicts with the
+  -- intended low latency design.
+  attribute ramstyle         : string;
   attribute ramstyle of ram  : signal is "logic";
   
   -- Registers, clk_wr domain

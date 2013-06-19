@@ -24,7 +24,7 @@
 -- Reading at write address returns unknown data. Putting the different RAM
 -- behaviours (Altera, Xilinx, some ASICs) together, then the Altera M512/M4K
 -- TriMatrix memory defines the minimum time after which the written data can
--- be read out again. As stated in the Stratix Handbook, Volum2, page 2-13, the
+-- be read out again. As stated in the Stratix Handbook, Volume 2, page 2-13,
 -- data is actually written with the falling (instead of the rising) edge of
 -- the clock. So that data can be read out after half of the write-clock period
 -- plus the write-cycle time.
@@ -36,8 +36,8 @@
 --
 -- If latency is an issue, then memory blocks should be directly instantiated.
 --
--- Revision:    $Revision: 1.8 $
--- Last change: $Date: 2012-09-26 12:51:59 $
+-- Revision:    $Revision: 1.11 $
+-- Last change: $Date: 2013-06-14 16:16:26 $
 --
 library ieee;
 use ieee.std_logic_1164.all;
@@ -72,13 +72,21 @@ architecture rtl of ocram_sdp is
   
 begin  -- rtl
 
-  gInfer: if VENDOR = VENDOR_XILINX generate
+  gInfer: if VENDOR = VENDOR_XILINX or VENDOR = VENDOR_ALTERA generate
     -- RAM can be infered correctly
-    -- Implementation notes:
+    -- Xilinx notes:
     --   WRITE_MODE is set to WRITE_FIRST, but this also means that read data
     --   is unknown on the opposite port. (As expected.)
+    -- Altera notes:
+    --   Setting attribute "ramstyle" to "no_rw_check" supresses generation of
+    --   bypass logic, when 'clk1'='clk2' and 'ra' is feed from a register.
+    --   This is the expected behaviour.
+    --   With two different clocks, synthesis complains about an undefined
+    --   read-write behaviour, that can be ignored.
     type ram_t is array(0 to DEPTH-1) of std_logic_vector(D_BITS-1 downto 0);
     signal ram : ram_t;
+    attribute ramstyle : string;
+    attribute ramstyle of ram : signal is "no_rw_check";
   begin
     process (wclk)
     begin
@@ -94,54 +102,19 @@ begin  -- rtl
       if rising_edge(rclk) then
         -- read data doesn't care, when reading at write address
         if rce = '1' then
+        --synthesis translate_off
           if Is_X(std_logic_vector(ra)) then
             q <= (others => 'X');
           else
+        --synthesis translate_on
             q <= ram(to_integer(ra));
+        --synthesis translate_off
           end if;
+        --synthesis translate_on
         end if;
       end if;
     end process;
   end generate gInfer;
-
-  gAltera: if VENDOR = VENDOR_ALTERA generate
-    -- Direct instantiation of altsyncram (including component
-    -- declaration above) is not sufficient for ModelSim.
-    -- That requires also usage of altera_mf library.
-    component ocram_sdp_altera
-      generic (
-        A_BITS : positive;
-        D_BITS : positive
-      );
-      port (
-        rclk : in  std_logic;
-        wclk : in  std_logic;
-        rce  : in  std_logic;
-        wce  : in  std_logic;
-        we   : in  std_logic;
-        ra   : in  unsigned(A_BITS-1 downto 0);
-        wa   : in  unsigned(A_BITS-1 downto 0);
-        d    : in  std_logic_vector(D_BITS-1 downto 0);
-        q    : out std_logic_vector(D_BITS-1 downto 0)
-      );
-    end component;
-  begin
-    i: ocram_sdp_altera
-      generic map (
-        A_BITS => A_BITS,
-        D_BITS => D_BITS)
-      port map (
-        rclk => rclk,
-        wclk => wclk,
-        rce  => rce,
-        wce  => wce,
-        we   => we,
-        ra   => ra,
-        wa   => wa,
-        d    => d,
-        q    => q);
-    
-  end generate gAltera;
   
   assert VENDOR = VENDOR_XILINX or VENDOR = VENDOR_ALTERA
     report "Device not yet supported."
