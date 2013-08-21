@@ -1,5 +1,5 @@
 --
--- Copyright (c) 2008-2013
+-- Copyright (c) 2008-2012
 -- Technische Universitaet Dresden, Dresden, Germany
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
@@ -17,8 +17,8 @@
 -- 
 -- Component declarations for various FIFO types.
 --
--- Revision:    $Revision: 1.25 $
--- Last change: $Date: 2013-05-27 16:11:17 $
+-- Revision:    $Revision: 1.28 $
+-- Last change: $Date: 2013-08-06 12:35:14 $
 --
 library IEEE;
 use IEEE.std_logic_1164.all;
@@ -27,7 +27,7 @@ use IEEE.numeric_std.all;
 library poc;
 use poc.functions.all;
 
-package fifo_pkg is
+package fifo is
 
   -- Minimal FIFO with single clock to decouple enable domains.
   component fifo_glue
@@ -208,26 +208,37 @@ package fifo_pkg is
       );
   end component;
 
-  component fifo_cc_got_tempgot
+  component fifo_cc_got_tempgot is
     generic (
-      D_BITS      : positive;
-      MIN_DEPTH   : positive;
-      FSTATE_BITS : positive;
-      CHECK       : boolean);
+      D_BITS         : positive;          -- Data Width
+      MIN_DEPTH      : positive;          -- Minimum FIFO Depth
+      DATA_REG       : boolean := false;  -- Store Data Content in Registers
+      STATE_REG      : boolean := false;  -- Registered Full/Empty Indicators
+      OUTPUT_REG     : boolean := false;  -- Registered FIFO Output
+      ESTATE_WR_BITS : natural := 0;      -- Empty State Bits
+      FSTATE_RD_BITS : natural := 0       -- Full State Bits
+    );
     port (
-      clk    : in  std_logic;
-      rst    : in  std_logic;
-      put    : in  std_logic;
-      din    : in  std_logic_vector(D_BITS-1 downto 0);
-      full   : out std_logic;
-      fstate : out unsigned(FSTATE_BITS-1 downto 0);
-      got    : in  std_logic;
-      valid  : out std_logic;
-      dout   : out std_logic_vector(D_BITS-1 downto 0);
-      store  : in  std_logic;
-      load   : in  std_logic);
-  end component;
-end fifo_pkg;
+      -- Global Reset and Clock
+      rst, clk : in  std_logic;
 
-package body fifo_pkg is
-end fifo_pkg;
+      -- Writing Interface
+      put       : in  std_logic;                            -- Write Request
+      din       : in  std_logic_vector(D_BITS-1 downto 0);  -- Input Data
+      full      : out std_logic;
+      estate_wr : out std_logic_vector(imax(0, ESTATE_WR_BITS-1) downto 0);
+
+      -- Reading Interface
+      got       : in  std_logic;                            -- Read Completed
+      dout      : out std_logic_vector(D_BITS-1 downto 0);  -- Output Data
+      valid     : out std_logic;
+      fstate_rd : out std_logic_vector(imax(0, FSTATE_RD_BITS-1) downto 0);
+
+      commit    : in  std_logic;
+      rollback  : in  std_logic
+    );
+  end component;
+end fifo;
+
+package body fifo is
+end fifo;
