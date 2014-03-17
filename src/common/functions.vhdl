@@ -2,14 +2,15 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- ============================================================================================================================================================
+-- ===========================================================================
 -- Description:     Common functions
 --
 -- Authors:         Thomas B. Preusser
 --                  Martin Zabel
 --                  Patrick Lehmann
--- ============================================================================================================================================================
--- Copyright 2007-2013 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- ===========================================================================
+-- Copyright 2007-2013 Technische Universität Dresden - Germany
+--                     Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -22,14 +23,13 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================================================================================================
+-- ===========================================================================
 
 library IEEE;
 use     IEEE.std_logic_1164.all;
-use     IEEE.numeric_std.ALL;
+use     IEEE.numeric_std.all;
 
 library PoC;
-use			PoC.types.ALL;
 
 package functions is
 
@@ -85,9 +85,23 @@ package functions is
   --
   function lssb_idx(arg : std_logic_vector) return std_logic_vector;
   
-  -- Calculates the length of a std_logic_vector discounting leading Zeros
+  -- Calculates the length of a vector discounting leading Zeros
   -- The minimum length returned is 1 even if the whole vector is zeros.
+  function length(arg : bit_vector)       return positive;
   function length(arg : std_logic_vector) return positive;
+
+  -- Resizes the vector to the specified length. Input vectors larger than
+  -- the specified size are truncated from the left side. Smaller input
+  -- vectors are extended on the left by the provided fill value
+  -- (default: '0'). Use the resize functions of the numeric_std package
+  -- for value-preserving resizes of the signed and unsigned data types.
+  --
+  -- @synthesis supported
+  --
+  function resize(vec : bit_vector; length : natural; fill : bit := '0')
+    return bit_vector;
+  function resize(vec : std_logic_vector; length : natural; fill : std_logic := '0')
+    return std_logic_vector;
 
   --+ Gray-Code / Binary-Code ++++++++++++++++++++++++++++++++++++++++++++++++
   -- Converts Gray-Code into Binary-Code.
@@ -196,6 +210,10 @@ package body functions is
     return  hot(arg'length) & res;
   end;
 
+  function length(arg : bit_vector) return positive is
+  begin
+    return  length(to_stdLogicVector(arg));
+  end;
   function length(arg : std_logic_vector) return positive is
     variable res : natural;
   begin
@@ -209,6 +227,23 @@ package body functions is
     return  1;
   end;
   
+  function resize(vec : bit_vector; length : natural; fill : bit := '0')
+    return bit_vector is
+  begin
+    return  to_bitVector(resize(to_stdLogicVector(vec), length, to_stdULogic(fill)));
+  end;
+
+  function resize(vec : std_logic_vector; length : natural; fill : std_logic := '0')
+    return std_logic_vector is
+
+    alias arg : std_logic_vector(vec'length-1 downto 0) is vec;
+  begin
+    if arg'length >= length then
+      return  arg(length-1 downto 0);
+    end if;
+    return (length-1 downto arg'length => fill) & arg;
+  end;
+
   --+ Gray-Code / Binary-Code ++++++++++++++++++++++++++++++++++++++++++++++++
   function gray2bin(gray_val : std_logic_vector) return std_logic_vector is
   variable res : std_logic_vector(gray_val'range);

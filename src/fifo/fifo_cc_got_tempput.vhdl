@@ -24,11 +24,12 @@
 -- As uncommitted writes populate FIFO space that is not yet available for
 -- reading, an instance of this FIFO can, indeed, report 'full' and 'not vld'
 -- at the same time. While a 'commit' would eventually make data available for
--- reading ('vld'), a 'rollback' wold free the space for subsequent writing
+-- reading ('vld'), a 'rollback' would free the space for subsequent writing
 -- ('not ful').
 --
 -- 'commit' and 'rollback' are inclusive and apply to all writes ('put') since
--- the previous 'commit' or 'rollback' up to a potential parallel write.
+-- the previous 'commit' or 'rollback' up to and including a potentially
+-- simultaneous write.
 --
 -- The FIFO state upon a simultaneous assertion of 'commit' and 'rollback' is
 -- *undefined*! 
@@ -57,8 +58,8 @@
 --                       fstate_rd == 3 => 3/4 full
 --
 --
--- Revision:    $Revision: 1.7 $
--- Last change: $Date: 2012-12-21 13:09:15 $
+-- Revision:    $Revision: 1.10 $
+-- Last change: $Date: 2013-08-07 20:53:14 $
 --
 
 library IEEE;
@@ -111,7 +112,7 @@ architecture rtl of fifo_cc_got_tempput is
   constant A_BITS : natural := log2ceil(MIN_DEPTH);
 
   -- Force Carry-Chain Use for Pointer Increments on Xilinx Architectures
-  constant FORCE_XILCY : boolean := (VENDOR = VENDOR_XILINX) and STATE_REG and (A_BITS > 4);
+  constant FORCE_XILCY : boolean := (not SIMULATION) and (VENDOR = VENDOR_XILINX) and STATE_REG and (A_BITS > 4);
 
   -----------------------------------------------------------------------------
   -- Memory Pointers
@@ -209,6 +210,7 @@ begin
     if rising_edge(clk) then
       if rst = '1' then
         IP0 <= (others => '0');
+        IPm <= (others => '0');
         OP0 <= (others => '0');
       else
         -- Update Input Pointer upon Write
@@ -406,8 +408,11 @@ begin
     signal regfile : regfile_t;
     attribute ram_style            : string;  -- XST specific
     attribute ram_style of regfile : signal is "distributed";
-    attribute ramstyle             : string;  -- Quartus specific
-    attribute ramstyle of regfile  : signal is "logic";
+
+    -- Altera Quartus II: Allow automatic RAM type selection.
+    -- For small RAMs, registers are used on Cyclone devices and the M512 type
+    -- is used on Stratix devices. Pass-through logic is automatically added 
+    -- if required. (Warning can be ignored.)
   
   begin
 
@@ -415,11 +420,17 @@ begin
     process(clk)
     begin
       if rising_edge(clk) then
+        --synthesis translate_off
         if SIMULATION AND (rst = '1') then
           regfile <= (others => (others => '-'));
-        elsif we = '1' then
-          regfile(to_integer(wa)) <= din;
+        else
+        --synthesis translate_on
+          if we = '1' then
+            regfile(to_integer(wa)) <= din;
+          end if;
+        --synthesis translate_off
         end if;
+        --synthesis translate_on
       end if;
     end process;
 

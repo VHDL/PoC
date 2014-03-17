@@ -27,12 +27,15 @@
 --	Patrick Lehmann
 --	- calculation fixed; tested with Serial-ATA and CRC32 polynomial
 --
--- Revision:    $Revision: 1.4 $
--- Last change: $Date: 2012-11-29 14:50:50 $
+-- Revision:    $Revision: 1.6 $
+-- Last change: $Date: 2014-03-11 10:13:17 $
 --
 
 library IEEE;
 use IEEE.std_logic_1164.all;
+
+library PoC;
+use PoC.functions.all;
 
 entity comm_crc is
   -----------------------------------------------------------------------------
@@ -41,17 +44,20 @@ entity comm_crc is
 
   generic (
     GEN  : bit_vector;     -- Generator Polynom
-    BITS : positive        -- Number of Bits to be processed in parallel
+    BITS : positive;       -- Number of Bits to be processed in parallel
+
+    STARTUP_RMD : std_logic_vector := "0";
+    OUTPUT_REGS : boolean          := true
   );
   port (
     clk  : in  std_logic;               -- Clock
     
     set  : in  std_logic;               -- Parallel Preload of Remainder
-    init : in  std_logic_vector(GEN'length-2 downto 0);
+    init : in  std_logic_vector(length(GEN)-2 downto 0);
     step : in  std_logic;               -- Process Input Data (MSB first)
     din  : in  std_logic_vector(BITS-1 downto 0);
 
-    rmd  : out std_logic_vector(GEN'length-2 downto 0);  -- Remainder
+    rmd  : out std_logic_vector(length(GEN)-2 downto 0);  -- Remainder
     zero : out std_logic                                 -- Remainder is Zero
   );
 end comm_crc;
@@ -75,33 +81,44 @@ architecture rtl of comm_crc is
       severity failure;
     return  GN;
   end normalize;
-  
+
   -- Normalized Generator
-  constant GN : bit_vector := normalize(GEN);
+  constant GN : std_logic_vector := to_stdlogicvector(normalize(GEN));
 
   -- LFSR Value
-  signal lfsr : std_logic_vector(GN'range);
+  signal lfsr : std_logic_vector(GN'range) := resize(STARTUP_RMD, GN'length);
+  signal lfsn : std_logic_vector(GN'range);  -- Next Value
+  signal lfso : std_logic_vector(GN'range);  -- Output
 
 begin
-  process(clk)
+
+  -- Compute next combinational Value
+  process(lfsr, din)
     variable v : std_logic_vector(lfsr'range);
+  begin
+    v := lfsr;
+    for i in BITS-1 downto 0 loop
+      v := (v(v'left-1 downto 0) & '0') xor
+           (GN and (GN'range => (din(i) xor v(v'left))));
+    end loop;
+    lfsn <= v;
+  end process;
+
+  -- Remainder Register
+  process(clk)
   begin
     if rising_edge(clk) then
       if set = '1' then
         lfsr <= init(lfsr'range);
       elsif step = '1' then
-        v := lfsr;
-        for i in BITS-1 downto 0 loop
-          v := (v(v'left-1 downto 0) & '0') xor
-               (to_stdlogicvector(GN) and (GN'range => (din(i) xor v(v'left))));
-        end loop;
-        lfsr <= v;
+        lfsr <= lfsn;
       end if;
     end if;
   end process;
 
   -- Provide Outputs
-  rmd  <= lfsr;
-  zero <= '1' when lfsr = (lfsr'range => '0') else '0';
+  lfso <= lfsr when OUTPUT_REGS else lfsn;
+  rmd  <= lfso;
+  zero <= '1' when lfso = (lfso'range => '0') else '0';
 
 end rtl;
