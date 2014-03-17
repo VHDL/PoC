@@ -1,0 +1,12 @@
+# Family: spartan3
+# Device: xc3s1000-4ft256
+# PROM: xcf04s
+vhdl poc "../../../src/common/functions.vhdl"
+
+vhdl poc "../../../src/io/uart/uart.vhdl"
+vhdl poc "../../../src/io/uart/uart_rx.vhdl"
+vhdl poc "../../../src/io/uart/uart_tx.vhdl"
+vhdl poc "../../../src/io/uart/uart_bclk.vhdl"
+
+vhdl poc "../../../src/comm/remote/remote_terminal_control.vhdl"
+vhdl work "remote_terminal_control_top.vhdl"

@@ -1,0 +1,39 @@
+##
+## Copyright (c) 2014
+## Technische Universitaet Dresden, Dresden, Germany
+## Faculty of Computer Science
+## Institute for Computer Engineering
+## Chair for VLSI-Design, Diagnostics and Architecture
+## 
+## Authors: Thomas B. Preusser, Martin Zabel
+## 
+## For internal educational use only.
+## The distribution of source code or generated files
+## is prohibited.
+##
+
+NET "clk" TNM_NET = "clk";
+TIMESPEC "TS_clk" = PERIOD "clk" 20 ns HIGH 50 %;
+
+NET "clk"  LOC = "T9" | IOSTANDARD = LVCMOS33 ;
+
+NET "rxd"  LOC = "T13" | IOSTANDARD = LVCMOS33 ;
+NET "txd"  LOC = "R13" | IOSTANDARD = LVCMOS33 ;
+
+NET "sw<0>" LOC = "F12" | IOSTANDARD = LVCMOS33 ;
+NET "sw<1>" LOC = "G12" | IOSTANDARD = LVCMOS33 ;
+NET "sw<2>" LOC = "H14" | IOSTANDARD = LVCMOS33 ;
+NET "sw<3>" LOC = "H13" | IOSTANDARD = LVCMOS33 ;
+NET "sw<4>" LOC = "J14" | IOSTANDARD = LVCMOS33 ;
+NET "sw<5>" LOC = "J13" | IOSTANDARD = LVCMOS33 ;
+NET "sw<6>" LOC = "K14" | IOSTANDARD = LVCMOS33 ;
+NET "sw<7>" LOC = "K13" | IOSTANDARD = LVCMOS33 ;
+
+NET "led<0>"  LOC = "K12" | IOSTANDARD = LVCMOS33 ;
+NET "led<1>"  LOC = "P14" | IOSTANDARD = LVCMOS33 ;
+NET "led<2>"  LOC = "L12" | IOSTANDARD = LVCMOS33 ;
+NET "led<3>"  LOC = "N14" | IOSTANDARD = LVCMOS33 ;
+NET "led<4>"  LOC = "P13" | IOSTANDARD = LVCMOS33 ;
+NET "led<5>"  LOC = "N12" | IOSTANDARD = LVCMOS33 ;
+NET "led<6>"  LOC = "P12" | IOSTANDARD = LVCMOS33 ;
+NET "led<7>"  LOC = "P11" | IOSTANDARD = LVCMOS33 ;
