@@ -1,9 +1,34 @@
+-- EMACS settings: -*-  tab-width:2  -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-------------------------------------------------------------------------------
+-- Description:  Hardware Testbench for remote_terminal_control.
+--               See DUT description for details.
+
+-- Authors:      Thomas B. Preußer <thomas.preusser@utexas.edu>
+-------------------------------------------------------------------------------
+-- Copyright 2007-2014 Technische Universität Dresden - Germany
+--                     Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--    http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-------------------------------------------------------------------------------
 library IEEE;
 use IEEE.std_logic_1164.all;
 
 entity remote_terminal_control_top is
   generic (
-    CLK_FREQ : positive := 50000000;
+    CLK_FREQ : positive := 50000000;    -- 50 MHz
     BAUD     : positive := 115200
   );
   port (
