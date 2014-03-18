@@ -427,7 +427,9 @@ begin
           end if;
         end if;
       end process;
-      OutCntDone <= '1' when (Cnt or not to_unsigned(OutCnt'length/4-1, Cnt'length)) = (Cnt'range => '1') else '0';
+      OutCntDone <= 'X' when Is_X(std_logic_vector(Cnt)) else
+                    '1' when (Cnt or not to_unsigned(OutCnt'length/4-1, Cnt'length)) = (Cnt'range => '1') else
+                    '0';
     end generate;
 
     genDec: if COUNT_DECIMAL generate
