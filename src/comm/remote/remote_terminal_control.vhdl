@@ -1,3 +1,82 @@
+-- EMACS settings: -*-  tab-width:2  -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-------------------------------------------------------------------------------
+-- Description:  Simple terminal interface to monitor and manipulate
+--               basic IO components such as buttons, slide switches, LED
+--               and hexadecimal displays.
+--
+-- A typical transport would be a UART connection using a terminal application.
+-- A command line starts with a single letter identifying the addressed
+-- resource type:
+--
+--    R .. Reset  - strobed input to the design
+--    P .. Pulse  - strobed input to the design
+--    S .. Switch - stateful input to the design
+--    L .. Light  - (bit) output from the design
+--    D .. Digit  - (hex) output from the design
+--
+-- This letter may be followed by a hexadecimal input vector, which triggers
+--
+--    R - a strobe on the corresponding inputs,
+--    P - a strobe on the corresponding inputs, and
+--    S - a state toggle of the corresponding inputs.
+--
+-- The input vector is ignored for outputs from the design.
+-- The command line may contain an arbitrary amount of spaces.
+--
+-- The terminal interface will echo with:
+--
+--   <resource character>[<bit count>'<hex output vector>]
+--
+-- The <bit count> and <hex output vector> will only be present if, at least,
+-- a single instance of the addressed resource type is available.
+-- In particular, the resource characters of lines starting with other than
+-- the listed resource types will simply be echoed.
+-- The <bit count> describes how many bits of the addressed resource are
+-- available, which may be used to explore the resources using a command line
+-- with no or a zero input argument. The <bit count> is typically provided in
+-- decimal (default) but may be changed to hexadecimal through the generic
+-- parameter COUNT_DECIMAL.
+-- The <hex output vector> acknowledges the input (R and P) and informs about
+-- the current state (S, L and D).
+--
+-- Example:
+--  > L
+--    L10'21D
+--  > D
+--    D8'5E
+--  > A
+--    A
+--  > S
+--    S6'00
+--  > S3A
+--    S6'3A
+--  > S 1
+--    S6'3B
+--  > P8
+--    P4'8
+--  > P
+--    P4'0
+
+-- Authors:      Thomas B. Preußer <thomas.preusser@utexas.edu>
+-------------------------------------------------------------------------------
+-- Copyright 2007-2014 Technische Universität Dresden - Germany
+--                     Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--    http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-------------------------------------------------------------------------------
 library IEEE;
 use IEEE.std_logic_1164.all;
 
