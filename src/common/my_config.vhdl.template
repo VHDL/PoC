@@ -31,7 +31,6 @@
 -- limitations under the License.
 -- ============================================================================================================================================================
 library PoC;
-use			PoC.types.ALL;
 
 package my_config is
   -- Change these lines to setup configuration.
