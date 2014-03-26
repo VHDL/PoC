@@ -48,8 +48,8 @@
 --                       fstate_rd == 3 => 3/4 full
 --
 --
--- Revision:    $Revision: 1.14 $
--- Last change: $Date: 2013-06-13 17:56:15 $
+-- Revision:    $Revision: 1.15 $
+-- Last change: $Date: 2013-08-05 16:51:28 $
 --
 
 library IEEE;
@@ -99,7 +99,7 @@ architecture rtl of fifo_cc_got is
   constant A_BITS : natural := log2ceil(MIN_DEPTH);
 
   -- Force Carry-Chain Use for Pointer Increments on Xilinx Architectures
-  constant FORCE_XILCY : boolean := (VENDOR = VENDOR_XILINX) and STATE_REG and (A_BITS > 4);
+  constant FORCE_XILCY : boolean := (not SIMULATION) and (VENDOR = VENDOR_XILINX) and STATE_REG and (A_BITS > 4);
 
   -----------------------------------------------------------------------------
   -- Memory Pointers
