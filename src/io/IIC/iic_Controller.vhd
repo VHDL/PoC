@@ -24,21 +24,23 @@ ENTITY IICController IS
 		Reset													: IN	STD_LOGIC;
 		
 		-- IICController interface
-		Command												: IN	T_IO_IIC_COMMAND;
-		Status												: OUT	T_IO_IIC_STATUS;
-		Error													: OUT	T_IO_IIC_ERROR;
+--		Command												: IN	T_IO_IIC_COMMAND;
+--		Status												: OUT	T_IO_IIC_STATUS;
+--		Error													: OUT	T_IO_IIC_ERROR;
 		
-		PhysicalAddress								: IN	STD_LOGIC_VECTOR(6 DOWNTO 0);
-		RegisterAddress								: IN	T_SLV_8;
-
-		In_MoreBytes									: IN	STD_LOGIC;
-		In_Data												: IN	T_SLV_8;
-		In_NextByte										: OUT	STD_LOGIC;
+		-- IICController master interface
+		Master_Request								: IN	STD_LOGIC;
+		Master_Grant									: OUT	STD_LOGIC;
+		Master_Abort									: IN	STD_LOGIC;
+		Master_WP_Valid								: IN	STD_LOGIC;
+		Master_WP_Data								: IN	STD_LOGIC;
+		Master_WP_Last								: IN	STD_LOGIC;
+		Master_WP_Ack									: OUT	STD_LOGIC;
+		Master_RP_Valid								: OUT	STD_LOGIC;
+		Master_RP_Data								: OUT	STD_LOGIC;
+		Master_RP_Last								: OUT	STD_LOGIC;
+		Master_RP_Ack									: IN	STD_LOGIC;
 		
-		Out_LastByte									: IN	STD_LOGIC;
-		Out_Data											: OUT	T_SLV_8;
-		Out_Valid											: OUT	STD_LOGIC;
-				
 		-- tristate interface
 		SerialClock_i									: IN	STD_LOGIC;
 		SerialClock_o									: OUT	STD_LOGIC;
