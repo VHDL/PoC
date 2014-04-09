@@ -26,7 +26,6 @@
 -- limitations under the License.
 -- ============================================================================================================================================================
 library PoC;
-use			PoC.types.ALL;
 use     PoC.my_config.all;
 
 package config is
@@ -51,13 +50,26 @@ package config is
     DEVICE_STRATIX1, DEVICE_STRATIX2, DEVICE_STRATIX4, DEVICE_STRATIX5    -- Altera.Stratix
   );
 
+  -- Transceiver (sub-)type
+  -- ===========================================================================
+  type transceiver_t is (
+    TRANSCEIVER_GTP_DUAL,																									-- Xilinx GTP transceivers
+		TRANSCEIVER_GTX, TRANSCEIVER_GTXE1, TRANSCEIVER_GTXE2,								-- Xilinx GTX transceivers
+		TRANSCEIVER_GTH,																											-- Xilinx GTH transceivers
+		TRANSCEIVER_GTZ,																											-- Xilinx GTZ transceivers
+		
+		-- TODO: add Altera transceivers
+		
+		TRANSCEIVER_NONE
+  );
+
   -- Properties of FPGA architecture
   -- ===========================================================================
-  type archprops_t is
-    record
-      LUT_K : positive;  -- LUT Fanin
-      -- INFO: include transceiver type and the like here
-    end record;
+  type archprops_t is record
+		LUT_FANIN						: positive;  -- LUT Fanin
+
+		TRANSCEIVER_TYPE		: transceiver_t;
+	end record;
 
 	-- Functions extracting device and architecture properties from "MY_DEVICE"
   -- which is declared in package "my_config".
@@ -112,26 +124,122 @@ package body config is
                          -- return statement is explicitly missing otherwise XST won't stop
         end case;
     end case;
-    
   end DEVICE;
+
+	function getDeviceSubType return string is
+	begin
+		case DEVICE is
+			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return "NONE";		-- Altera Cyclon I, II, III devices have no subtype
+			
+			when DEVICE_SPARTAN3 => report "TODO: parse Spartan3 / Spartan3E / Spartan3AN device subtype." severity failure;
+			
+			when DEVICE_VIRTEX5 =>
+				if (MY_DEVICE(5 to 6) = "LX") then
+					return ite((str_pos(MY_DEVICE(7 TO MY_DEVICE'high), 'T') = -1), "LX", "LXT");
+				elsif ((MY_DEVICE(5 to 6) = "SX") and (str_pos(MY_DEVICE(7 TO MY_DEVICE'high), 'T') > 0)) then
+					return "SXT";
+				elsif ((MY_DEVICE(5 to 6) = "FX") and (str_pos(MY_DEVICE(7 TO MY_DEVICE'high), 'T') > 0)) then
+					return "FXT";
+				else
+					report "Unknown Virtex5 subtype: MY_DEVICE = " & MY_DEVICE & "." severity failure;
+				end if;
+			
+			when DEVICE_VIRTEX6 =>
+				if (MY_DEVICE(5 to 6) = "LX") then
+					return ite((str_pos(MY_DEVICE(7 TO MY_DEVICE'high), 'T') = -1), "LX", "LXT");
+				elsif ((MY_DEVICE(5 to 6) = "SX") and (str_pos(MY_DEVICE(7 TO MY_DEVICE'high), 'T') > 0)) then
+					return "SXT";
+				elsif ((MY_DEVICE(5 to 6) = "CX") and (str_pos(MY_DEVICE(7 TO MY_DEVICE'high), 'T') > 0)) then
+					return "CXT";
+				elsif ((MY_DEVICE(5 to 6) = "HX") and (str_pos(MY_DEVICE(7 TO MY_DEVICE'high), 'T') > 0)) then
+					return "HXT";
+				else
+					report "Unknown Virtex6 subtype: MY_DEVICE = " & MY_DEVICE & "." severity failure;
+				end if;
+			
+			when DEVICE_VIRTEX7 =>
+				if ((MY_DEVICE(5 to 5) = "X") and (str_pos(MY_DEVICE(6 TO MY_DEVICE'high), 'T') > 0)) then
+					return "XT";
+--				elsif ((MY_DEVICE(5 to 6) = "SX") and (str_pos(MY_DEVICE(7 TO MY_DEVICE'high), 'T') > 0)) then
+--					return "SXT";
+				else
+					report "Unknown Virtex6 subtype: MY_DEVICE = " & MY_DEVICE & "." severity failure;
+				end if;
+			
+			when others => report "Transceiver type is unknown for the given device." severity failure;
+									-- return statement is explicitly missing otherwise XST won't stop
+    end case;
+	
+	end function;
+
+	function getLUTFanIn return positive is
+	begin
+		case DEVICE is
+			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>			return 4;
+			when DEVICE_STRATIX1 | DEVICE_STRATIX2 =>												return 4;
+			when DEVICE_STRATIX4 | DEVICE_STRATIX5 =>												return 6;			
+			
+			when DEVICE_SPARTAN3 =>																					return 4;
+			when DEVICE_SPARTAN6 =>																					return 6;
+      when DEVICE_ARTIX7 =>																						return 6;
+			when DEVICE_KINTEX7 =>																					return 6;
+      when DEVICE_VIRTEX5 | DEVICE_VIRTEX6 | DEVICE_VIRTEX7 => 				return 6;
+			when DEVICE_ZYNQ7 =>																						return 6;
+
+      when others => report "LUT fan-in is unknown for the given device." severity failure;
+									-- return statement is explicitly missing otherwise XST won't stop
+    end case;
+	end function;
+
+	function getTransceiverType return transceiver_t is
+	begin
+		case DEVICE is
+			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return TRANSCEIVER_NONE;		-- Altera Cyclon I, II, III devices have no transceivers
+			
+			when DEVICE_SPARTAN3 =>																						return TRANSCEIVER_NONE;		-- Xilinx Spartan3 devices have no transceivers
+			
+			when DEVICE_VIRTEX5 =>
+				case getDeviceSubType is
+--					when "LX" =>									return TRANSCEIVER_;
+--					when "SXT" =>									return TRANSCEIVER_;
+					when "LXT" =>									return TRANSCEIVER_GTP_DUAL;
+--					when "FXT" =>									return TRANSCEIVER_;
+					
+					when others => report "Unknown Virtex5 subtype: " & getDeviceSubType severity failure;
+				end case;
+			
+			when DEVICE_VIRTEX6 =>
+				case getDeviceSubType is
+--					when "LX" =>									return TRANSCEIVER_;
+--					when "SXT" =>									return TRANSCEIVER_;
+--					when "CXT" =>									return TRANSCEIVER_;
+					when "LXT" =>									return TRANSCEIVER_GTXE1;
+--					when "HXT" =>									return TRANSCEIVER_;
+					
+					when others => report "Unknown Virtex6 subtype: " & getDeviceSubType severity failure;
+				end case;
+
+			when DEVICE_VIRTEX7 =>
+				case getDeviceSubType is
+					when "XT" =>									return TRANSCEIVER_GTXE2;
+--					when "T" =>										return TRANSCEIVER_;
+					
+					when others => report "Unknown Virtex7 subtype: " & getDeviceSubType severity failure;
+				end case;
+			
+			when others => report "Unknown device." severity failure;
+									-- return statement is explicitly missing otherwise XST won't stop
+    end case;
+	end function;
 
   -- purpose: extract architecture properties from DEVICE
   function ARCH_PROPS return archprops_t is
-    variable res : archprops_t;
-    constant dev : device_t := DEVICE;
+    variable result : archprops_t;
   begin
-    res.LUT_K := 4;
-    case dev is
-		  when DEVICE_SPARTAN6 =>                                res.LUT_K := 6;
-      when DEVICE_ARTIX7 =>                                  res.LUT_K := 6;
-			when DEVICE_KINTEX7 =>                                 res.LUT_K := 6;
-      when DEVICE_VIRTEX5|DEVICE_VIRTEX6|DEVICE_VIRTEX7 =>   res.LUT_K := 6;
-			when DEVICE_ZYNQ7 =>                                   res.LUT_K := 6;
-			when DEVICE_STRATIX4|DEVICE_STRATIX5 =>                res.LUT_K := 6;
-      when others =>
-        null;
-    end case;
-    return  res;
-  end ARCH_PROPS;
+    result.LUT_FANIN					:= getLUTFanIn;
+		result.TRANSCEIVER_TYPE		:= getTransceiverType;
+
+    return  result;
+  end function;
 
 end config;
