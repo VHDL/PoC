@@ -76,6 +76,7 @@ ARCHITECTURE rtl OF IICSwitch_PCA9548A IS
 		ST_IDLE,
 		ST_REQUEST,
 		ST_WRITE_SWITCH_PHYADDRESS, ST_WRITE_SWITCH_REGISTER, ST_WRITE_WAIT,
+		ST_TRANSACTION,
 		ST_ERROR
 	);
 	
@@ -145,7 +146,7 @@ BEGIN
 						IICC_Request			<= '1';
 						
 						IF (IICC_Grant = '1') THEN
-							IF (ADD_BYPASS_PORT AND (Arb_Grant'high = '1')) THEN
+							IF (ADD_BYPASS_PORT AND (Arb_Grant(Arb_Grant'high) = '1')) THEN
 								NextState			<= ST_TRANSACTION;
 							ELSE
 								NextState			<= ST_WRITE_SWITCH_PHYADDRESS;
@@ -158,7 +159,7 @@ BEGIN
 				IICC_Request					<= '1';
 				
 				IF (IICC_Grant = '1') THEN
-					IF (ADD_BYPASS_PORT AND (Arb_Grant'high = '1')) THEN
+					IF (ADD_BYPASS_PORT AND (Arb_Grant(Arb_Grant'high) = '1')) THEN
 						NextState					<= ST_TRANSACTION;
 					ELSE
 						NextState					<= ST_WRITE_SWITCH_PHYADDRESS;
@@ -188,8 +189,8 @@ BEGIN
 			WHEN ST_WRITE_WAIT =>	
 	
 			WHEN ST_ERROR =>
-				Status_i										<= IO_IIC_STATUS_ERROR;
-				Error												<= IO_IIC_ERROR_FSM;
+--				Status_i										<= IO_IIC_STATUS_ERROR;
+--				Error												<= IO_IIC_ERROR_FSM;
 				NextState										<= ST_IDLE;
 			
 		END CASE;

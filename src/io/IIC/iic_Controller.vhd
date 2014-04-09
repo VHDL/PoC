@@ -5,12 +5,13 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.functions.ALL;
+USE			PoC.IOTypes.ALL;
 
 LIBRARY L_Global;
 USE			L_Global.GlobalTypes.ALL;
 
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
+--LIBRARY L_IO;
+--USE			L_IO.IOTypes.ALL;
 
 
 ENTITY IICController IS
@@ -820,7 +821,7 @@ BEGIN
 	Status		<= Status_i;
 	Out_Data	<= DataRegister_d;
 
-	IICBC : ENTITY L_IO.IICBusController
+	IICBC : ENTITY PoC.IICBusController
 		GENERIC MAP (
 			CLOCK_FREQ_MHZ								=> CLOCK_IN_FREQ_MHZ,
 			IIC_FREQ_KHZ									=> IIC_FREQ_KHZ

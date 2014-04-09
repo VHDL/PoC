@@ -5,12 +5,13 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 --USE			PoC.config.ALL;
 USE			PoC.functions.ALL;
+USE			PoC.IOTypes.ALL;
 
 LIBRARY L_Global;
 USE			L_Global.GlobalTypes.ALL;
 
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
+--LIBRARY L_IO;
+--USE			L_IO.IOTypes.ALL;
 
 ENTITY IICBusController IS
 	GENERIC (
@@ -493,7 +494,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	BusTC : ENTITY L_IO.TimingCounter
+	BusTC : ENTITY PoC.TimingCounter
 		GENERIC MAP (
 			TIMING_TABLE				=> TIMING_TABLE												-- timing table
 		)
