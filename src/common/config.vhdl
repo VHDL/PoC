@@ -11,7 +11,7 @@
 --                  Martin Zabel
 --                  Patrick Lehmann
 -- ============================================================================================================================================================
--- Copyright 2007-2013 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@
 -- ============================================================================================================================================================
 library PoC;
 use     PoC.my_config.all;
+use     PoC.functions.all;
 
 package config is
   -- FPGA / Chip vendor
@@ -66,16 +67,16 @@ package config is
   -- Properties of FPGA architecture
   -- ===========================================================================
   type archprops_t is record
-		LUT_FANIN						: positive;  -- LUT Fanin
-
-		TRANSCEIVER_TYPE		: transceiver_t;
+		LUT_K						: positive;  -- LUT Fanin
 	end record;
 
 	-- Functions extracting device and architecture properties from "MY_DEVICE"
   -- which is declared in package "my_config".
   -- ===========================================================================
-  function VENDOR     return vendor_t;
-  function DEVICE     return device_t;
+  function VENDOR(DeviceConfig : string := "None")     return vendor_t;
+  function DEVICE(DeviceConfig : string := "None")     return device_t;
+	
+	
   function ARCH_PROPS return archprops_t;
  
 end config;
@@ -83,22 +84,24 @@ end config;
 package body config is
 
   -- purpose: extract vendor from MY_DEVICE
-  function VENDOR return vendor_t is
+  function VENDOR(DeviceConfig : string := "None") return vendor_t is
+		constant MY_DEV : string := ite((DeviceConfig = "None", MY_DEVICE, DeviceConfig);
   begin  -- VENDOR
-    case MY_DEVICE(1 to 2) is
+    case MY_DEV(1 to 2) is
       when "XC"   => return VENDOR_XILINX;
       when "EP"   => return VENDOR_ALTERA;
-      when others => report "Unknown vendor in MY_DEVICE = " & MY_DEVICE & "." severity failure;
+      when others => report "Unknown vendor in MY_DEVICE = " & MY_DEV & "." severity failure;
                          -- return statement is explicitly missing otherwise XST won't stop
     end case;
   end VENDOR;
 
   -- purpose: extract device from MY_DEVICE
-  function DEVICE return device_t is
+  function DEVICE(DeviceConfig : string := "None") return device_t is
+		constant MY_DEV : string := ite((DeviceConfig = "None", MY_DEVICE, DeviceConfig);
   begin  -- DEVICE
-    case VENDOR is
+    case VENDOR(MY_DEV) is
       when VENDOR_ALTERA =>
-        case MY_DEVICE(3 to 4) is
+        case MY_DEV(3 to 4) is
           when "1C"   => return DEVICE_CYCLONE1;
           when "2C"   => return DEVICE_CYCLONE2;
           when "3C"   => return DEVICE_CYCLONE3;
@@ -106,7 +109,7 @@ package body config is
           when "2S"   => return DEVICE_STRATIX2;
           when "4S"   => return DEVICE_STRATIX4;
           when "5S"   => return DEVICE_STRATIX5;
-          when others => report "Unknown Altera device in MY_DEVICE = " & MY_DEVICE & "." severity failure;
+          when others => report "Unknown Altera device in MY_DEVICE = " & MY_DEV & "." severity failure;
                          -- return statement is explicitly missing otherwise XST won't stop
         end case;
 
@@ -120,50 +123,55 @@ package body config is
           when "6V"   => return DEVICE_VIRTEX6;
           when "7V"   => return DEVICE_VIRTEX7;
           when "7Z"   => return DEVICE_ZYNQ7;
-          when others => report "Unknown Xilinx device in MY_DEVICE = " & MY_DEVICE & "." severity failure;
+          when others => report "Unknown Xilinx device in MY_DEVICE = " & MY_DEV & "." severity failure;
                          -- return statement is explicitly missing otherwise XST won't stop
         end case;
     end case;
   end DEVICE;
 
-	function getDeviceSubType return string is
+	function DEVICE_SUBTYPE(DeviceConfig : string := "None") return string is
+		constant MY_DEV : string := ite((DeviceConfig = "None", MY_DEVICE, DeviceConfig);
 	begin
-		case DEVICE is
+		case DEVICE(MY_DEV) is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return "NONE";		-- Altera Cyclon I, II, III devices have no subtype
 			
 			when DEVICE_SPARTAN3 => report "TODO: parse Spartan3 / Spartan3E / Spartan3AN device subtype." severity failure;
 			
 			when DEVICE_VIRTEX5 =>
-				if (MY_DEVICE(5 to 6) = "LX") then
-					return ite((str_pos(MY_DEVICE(7 TO MY_DEVICE'high), 'T') = -1), "LX", "LXT");
-				elsif ((MY_DEVICE(5 to 6) = "SX") and (str_pos(MY_DEVICE(7 TO MY_DEVICE'high), 'T') > 0)) then
-					return "SXT";
-				elsif ((MY_DEVICE(5 to 6) = "FX") and (str_pos(MY_DEVICE(7 TO MY_DEVICE'high), 'T') > 0)) then
+				if ((MY_DEV(5 to 6) = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') < 0)) then
+					return "LX";
+				elsif ((MY_DEV(5 to 6) = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return "LXT";
+				elsif ((MY_DEV(5 to 6) = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return "SXT";MY_DEV
+				elsif ((MY_DEV(5 to 6) = "FX") and (str_pos(MY_DEV(7 TO MY_DEVICE'high), 'T') > 0)) then
 					return "FXT";
 				else
-					report "Unknown Virtex5 subtype: MY_DEVICE = " & MY_DEVICE & "." severity failure;
+					report "Unknown Virtex5 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 			
 			when DEVICE_VIRTEX6 =>
-				if (MY_DEVICE(5 to 6) = "LX") then
-					return ite((str_pos(MY_DEVICE(7 TO MY_DEVICE'high), 'T') = -1), "LX", "LXT");
-				elsif ((MY_DEVICE(5 to 6) = "SX") and (str_pos(MY_DEVICE(7 TO MY_DEVICE'high), 'T') > 0)) then
+				if ((MY_DEV(5 to 6) = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') < 0)) then
+					return "LX";
+				elsif ((MY_DEV(5 to 6) = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return "LXT";
+				elsif ((MY_DEV(5 to 6) = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
 					return "SXT";
-				elsif ((MY_DEVICE(5 to 6) = "CX") and (str_pos(MY_DEVICE(7 TO MY_DEVICE'high), 'T') > 0)) then
+				elsif ((MY_DEV(5 to 6) = "CX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
 					return "CXT";
-				elsif ((MY_DEVICE(5 to 6) = "HX") and (str_pos(MY_DEVICE(7 TO MY_DEVICE'high), 'T') > 0)) then
+				elsif ((MY_DEV(5 to 6) = "HX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
 					return "HXT";
 				else
-					report "Unknown Virtex6 subtype: MY_DEVICE = " & MY_DEVICE & "." severity failure;
+					report "Unknown Virtex6 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 			
 			when DEVICE_VIRTEX7 =>
-				if ((MY_DEVICE(5 to 5) = "X") and (str_pos(MY_DEVICE(6 TO MY_DEVICE'high), 'T') > 0)) then
+				if ((MY_DEV(5 to 5) = "X") and (str_pos(MY_DEV(6 TO MY_DEV'high), 'T') > 0)) then
 					return "XT";
---				elsif ((MY_DEVICE(5 to 6) = "SX") and (str_pos(MY_DEVICE(7 TO MY_DEVICE'high), 'T') > 0)) then
+--				elsif ((MY_DEV(5 to 6) = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
 --					return "SXT";
 				else
-					report "Unknown Virtex6 subtype: MY_DEVICE = " & MY_DEVICE & "." severity failure;
+					report "Unknown Virtex6 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 			
 			when others => report "Transceiver type is unknown for the given device." severity failure;
@@ -172,9 +180,10 @@ package body config is
 	
 	end function;
 
-	function getLUTFanIn return positive is
+	function LUT_FANIN(DeviceConfig : string := "None") return positive is
+		constant MY_DEV : string := ite((DeviceConfig = "None", MY_DEVICE, DeviceConfig);
 	begin
-		case DEVICE is
+		case DEVICE(MY_DEV) is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>			return 4;
 			when DEVICE_STRATIX1 | DEVICE_STRATIX2 =>												return 4;
 			when DEVICE_STRATIX4 | DEVICE_STRATIX5 =>												return 6;			
@@ -191,40 +200,41 @@ package body config is
     end case;
 	end function;
 
-	function getTransceiverType return transceiver_t is
+	function TRANSCEIVER_TYPE(DeviceConfig : string := "None") return transceiver_t is
+		constant MY_DEV : string := ite((DeviceConfig = "None", MY_DEVICE, DeviceConfig);
 	begin
-		case DEVICE is
+		case DEVICE(MY_DEV) is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return TRANSCEIVER_NONE;		-- Altera Cyclon I, II, III devices have no transceivers
 			
 			when DEVICE_SPARTAN3 =>																						return TRANSCEIVER_NONE;		-- Xilinx Spartan3 devices have no transceivers
 			
 			when DEVICE_VIRTEX5 =>
-				case getDeviceSubType is
+				case DEVICE_SUBTYPE(MY_DEV) is
 --					when "LX" =>									return TRANSCEIVER_;
 --					when "SXT" =>									return TRANSCEIVER_;
 					when "LXT" =>									return TRANSCEIVER_GTP_DUAL;
 --					when "FXT" =>									return TRANSCEIVER_;
 					
-					when others => report "Unknown Virtex5 subtype: " & getDeviceSubType severity failure;
+					when others => report "Unknown Virtex5 subtype: " & DEVICE_SUBTYPE(MY_DEV) severity failure;
 				end case;
 			
 			when DEVICE_VIRTEX6 =>
-				case getDeviceSubType is
+				case DEVICE_SUBTYPE(MY_DEV) is
 --					when "LX" =>									return TRANSCEIVER_;
 --					when "SXT" =>									return TRANSCEIVER_;
 --					when "CXT" =>									return TRANSCEIVER_;
 					when "LXT" =>									return TRANSCEIVER_GTXE1;
 --					when "HXT" =>									return TRANSCEIVER_;
 					
-					when others => report "Unknown Virtex6 subtype: " & getDeviceSubType severity failure;
+					when others => report "Unknown Virtex6 subtype: " & DEVICE_SUBTYPE(MY_DEV) severity failure;
 				end case;
 
 			when DEVICE_VIRTEX7 =>
-				case getDeviceSubType is
+				case DEVICE_SUBTYPE(MY_DEV) is
 					when "XT" =>									return TRANSCEIVER_GTXE2;
 --					when "T" =>										return TRANSCEIVER_;
 					
-					when others => report "Unknown Virtex7 subtype: " & getDeviceSubType severity failure;
+					when others => report "Unknown Virtex7 subtype: " & DEVICE_SUBTYPE(MY_DEV) severity failure;
 				end case;
 			
 			when others => report "Unknown device." severity failure;
@@ -236,8 +246,7 @@ package body config is
   function ARCH_PROPS return archprops_t is
     variable result : archprops_t;
   begin
-    result.LUT_FANIN					:= getLUTFanIn;
-		result.TRANSCEIVER_TYPE		:= getTransceiverType;
+    result.LUT_K					:= LUT_FANIN;
 
     return  result;
   end function;
