@@ -85,7 +85,7 @@ package body config is
 
   -- purpose: extract vendor from MY_DEVICE
   function VENDOR(DeviceConfig : string := "None") return vendor_t is
-		constant MY_DEV : string := ite((DeviceConfig = "None", MY_DEVICE, DeviceConfig);
+		constant MY_DEV : string := ite((DeviceConfig = "None"), MY_DEVICE, DeviceConfig);
   begin  -- VENDOR
     case MY_DEV(1 to 2) is
       when "XC"   => return VENDOR_XILINX;
@@ -97,7 +97,7 @@ package body config is
 
   -- purpose: extract device from MY_DEVICE
   function DEVICE(DeviceConfig : string := "None") return device_t is
-		constant MY_DEV : string := ite((DeviceConfig = "None", MY_DEVICE, DeviceConfig);
+		constant MY_DEV : string := ite((DeviceConfig = "None"), MY_DEVICE, DeviceConfig);
   begin  -- DEVICE
     case VENDOR(MY_DEV) is
       when VENDOR_ALTERA =>
@@ -130,7 +130,7 @@ package body config is
   end DEVICE;
 
 	function DEVICE_SUBTYPE(DeviceConfig : string := "None") return string is
-		constant MY_DEV : string := ite((DeviceConfig = "None", MY_DEVICE, DeviceConfig);
+		constant MY_DEV : string := ite((DeviceConfig = "None"), MY_DEVICE, DeviceConfig);
 	begin
 		case DEVICE(MY_DEV) is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return "NONE";		-- Altera Cyclon I, II, III devices have no subtype
@@ -181,7 +181,7 @@ package body config is
 	end function;
 
 	function LUT_FANIN(DeviceConfig : string := "None") return positive is
-		constant MY_DEV : string := ite((DeviceConfig = "None", MY_DEVICE, DeviceConfig);
+		constant MY_DEV : string := ite((DeviceConfig = "None"), MY_DEVICE, DeviceConfig);
 	begin
 		case DEVICE(MY_DEV) is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>			return 4;
@@ -201,7 +201,7 @@ package body config is
 	end function;
 
 	function TRANSCEIVER_TYPE(DeviceConfig : string := "None") return transceiver_t is
-		constant MY_DEV : string := ite((DeviceConfig = "None", MY_DEVICE, DeviceConfig);
+		constant MY_DEV : string := ite((DeviceConfig = "None"), MY_DEVICE, DeviceConfig);
 	begin
 		case DEVICE(MY_DEV) is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return TRANSCEIVER_NONE;		-- Altera Cyclon I, II, III devices have no transceivers

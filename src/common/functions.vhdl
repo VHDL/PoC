@@ -9,7 +9,7 @@
 --                  Martin Zabel
 --                  Patrick Lehmann
 -- ===========================================================================
--- Copyright 2007-2013 Technische Universität Dresden - Germany
+-- Copyright 2007-2014 Technische Universität Dresden - Germany
 --                     Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,28 +32,128 @@ use     IEEE.numeric_std.all;
 library PoC;
 
 package functions is
+	-- ==========================================================================================================================================================
+	-- Type declarations
+	-- ==========================================================================================================================================================
+	-- BOOLEAN_VECTOR
+	TYPE		T_BOOLVEC						IS ARRAY(NATURAL RANGE <>) OF BOOLEAN;
+	-- INTEGER_VECTORs
+	TYPE		T_INTVEC						IS ARRAY(NATURAL RANGE <>) OF INTEGER;
+	TYPE		T_NATVEC						IS ARRAY(NATURAL RANGE <>) OF NATURAL;
+	TYPE		T_POSVEC						IS ARRAY(NATURAL RANGE <>) OF POSITIVE;
+	
+	-- INTEGERs
+	SUBTYPE T_UINT_8						IS INTEGER RANGE 0 TO 255;
+	SUBTYPE T_UINT_16						IS INTEGER RANGE 0 TO 65535;
+	
+	-- STD_LOGIC_VECTORs
+	SUBTYPE T_SLV_2							IS STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SUBTYPE T_SLV_3							IS STD_LOGIC_VECTOR(2 DOWNTO 0);
+	SUBTYPE T_SLV_4							IS STD_LOGIC_VECTOR(3 DOWNTO 0);
+	SUBTYPE T_SLV_8							IS STD_LOGIC_VECTOR(7 DOWNTO 0);
+	SUBTYPE T_SLV_12						IS STD_LOGIC_VECTOR(11 DOWNTO 0);
+	SUBTYPE T_SLV_16						IS STD_LOGIC_VECTOR(15 DOWNTO 0);
+	SUBTYPE T_SLV_24						IS STD_LOGIC_VECTOR(23 DOWNTO 0);
+	SUBTYPE T_SLV_32						IS STD_LOGIC_VECTOR(31 DOWNTO 0);
+	SUBTYPE T_SLV_48						IS STD_LOGIC_VECTOR(47 DOWNTO 0);
+	SUBTYPE T_SLV_64						IS STD_LOGIC_VECTOR(63 DOWNTO 0);
+	SUBTYPE T_SLV_96						IS STD_LOGIC_VECTOR(95 DOWNTO 0);
+	SUBTYPE T_SLV_128						IS STD_LOGIC_VECTOR(127 DOWNTO 0);
+	
+	-- STD_LOGIC_VECTOR_VECTORs
+--	TYPE		T_SLVV							IS ARRAY(NATURAL RANGE <>) OF STD_LOGIC_VECTOR;					-- VHDL 2008 syntax - not yet supported by Xilinx
+	TYPE		T_SLVV_2						IS ARRAY(NATURAL RANGE <>) OF T_SLV_2;
+	TYPE		T_SLVV_3						IS ARRAY(NATURAL RANGE <>) OF T_SLV_3;
+	TYPE		T_SLVV_4						IS ARRAY(NATURAL RANGE <>) OF T_SLV_4;
+	TYPE		T_SLVV_8						IS ARRAY(NATURAL RANGE <>) OF T_SLV_8;
+	TYPE		T_SLVV_12						IS ARRAY(NATURAL RANGE <>) OF T_SLV_12;
+	TYPE		T_SLVV_16						IS ARRAY(NATURAL RANGE <>) OF T_SLV_16;
+	TYPE		T_SLVV_24						IS ARRAY(NATURAL RANGE <>) OF T_SLV_24;
+	TYPE		T_SLVV_32						IS ARRAY(NATURAL RANGE <>) OF T_SLV_32;
+	TYPE		T_SLVV_48						IS ARRAY(NATURAL RANGE <>) OF T_SLV_48;
+	TYPE		T_SLVV_64						IS ARRAY(NATURAL RANGE <>) OF T_SLV_64;
+	TYPE		T_SLVV_128					IS ARRAY(NATURAL RANGE <>) OF T_SLV_128;
 
-  --+ Status +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  -- Distinguishes Simulation from Synthesis
-  function IS_SIMULATION return boolean; -- Consider it PRIVATE
-  constant SIMULATION : boolean := IS_SIMULATION;
-  
-  --+ Logarithm ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  -- Calculates: ceil(ld(arg))
-  function log2ceil(arg : positive) return natural;
-  -- Calculates: max(1, ceil(ld(arg)))
-  function log2ceilnz(arg : positive) return positive;
-  
-  --+ Min / Max ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  -- Calculates: max(arg1, arg2) for integers
-  function imax(arg1 : integer; arg2 : integer) return integer;
-  -- Calculates: max(arg1, arg2) for reals
-  function rmax(arg1 : real; arg2 : real) return real;
+	-- STD_LOGIC_MATRIXs
+	TYPE		T_SLM								IS ARRAY(NATURAL RANGE <>, NATURAL RANGE <>) OF STD_LOGIC;
+	-- ATTENTION:
+	-- 1.	you MUST initialize your matrix signal with 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
+	--		Example: SIGNAL myMatrix	: T_SLM(3 DOWNTO 0, 7 DOWNTO 0)			:= (OTHERS => (OTHERS => 'Z'));
+	-- 2.	Xilinx iSIM work-around: DON'T use myMatrix'range(n) for n >= 2
+	--		because: myMatrix'range(2) returns always myMatrix'range(1);	tested with ISE/iSIM 14.2
+	-- USAGE NOTES:
+	--	dimmension 1 => rows			- e.g. Words
+	--	dimmension 2 => columns		- e.g. Bits/Bytes in a word
 
-  -- Calculates: min(arg1, arg2) for integers
-  function imin(arg1 : integer; arg2 : integer) return integer;
-  -- Calculates: min(arg1, arg2) for reals
-  function rmin(arg1 : real; arg2 : real) return real;
+	-- Intellectual Property (IP) type
+	TYPE T_IPSTYLE			IS (IPSTYLE_HARD, IPSTYLE_SOFT);
+	
+	-- Bit and byte order types
+	TYPE T_BIT_ORDER		IS (LSB_FIRST, MSB_FIRST);
+	TYPE T_BYTE_ORDER		IS (LITTLE_ENDIAN, BIG_ENDIAN);
+
+
+	-- Function declarations
+	-- ==========================================================================================================================================================
+	
+	-- Environment
+  function IS_SIMULATION return boolean;													-- Forward declaration; consider this function PRIVATE
+  constant SIMULATION		: boolean		:= IS_SIMULATION;						  -- Distinguishes Simulation from Synthesis
+  
+	-- Divisions: div_*
+	FUNCTION div_ceil(a : NATURAL; b : POSITIVE) RETURN NATURAL;		-- Calculates: ceil(a / b)
+	
+	-- Power functions: *_pow2
+	FUNCTION is_pow2(int : NATURAL)			RETURN BOOLEAN;
+	FUNCTION ceil_pow2(int : NATURAL)		RETURN POSITIVE;
+	FUNCTION floor_pow2(int : NATURAL)	RETURN NATURAL;
+	
+  -- Logarithms: log*ceil*
+  function log2ceil(arg			: positive) return natural;						-- Calculates: ceil(ld(arg))
+  function log2ceilnz(arg		: positive) return positive;					-- Calculates: max(1, ceil(ld(arg)))
+  FUNCTION log10ceil(arg		: POSITIVE)	RETURN NATURAL;						-- calculates: ceil(lg(arg))
+  FUNCTION log10ceilnz(arg	: POSITIVE)	RETURN POSITIVE;				  -- calculates: max(1, ceil(lg(arg)))
+	
+ 	-- *min / *max / *sum
+  function imin(arg1 : integer; arg2 : integer) return integer;		-- Calculates: min(arg1, arg2) for integers
+	FUNCTION imin(vec : T_INTVEC) RETURN INTEGER;										-- Calculates: min(vector) for a integer vector
+	FUNCTION imin(vec : T_NATVEC) RETURN NATURAL;										-- Calculates: min(vector) for a natural vector
+	FUNCTION imin(vec : T_POSVEC) RETURN POSITIVE;									-- Calculates: min(vector) for a positive vector
+	function imax(arg1 : integer; arg2 : integer) return integer;		-- Calculates: max(arg1, arg2) for integers
+	FUNCTION imax(vec : T_INTVEC) RETURN INTEGER;										-- Calculates: max(vector) for a integer vector
+	FUNCTION imax(vec : T_NATVEC) RETURN NATURAL;										-- Calculates: max(vector) for a natural vector
+	FUNCTION imax(vec : T_POSVEC) RETURN POSITIVE;									-- Calculates: max(vector) for a positive vector
+	FUNCTION isum(vec : T_NATVEC) RETURN NATURAL;										-- Calculates: sum(vector) for a natural vector
+	FUNCTION isum(vec : T_POSVEC) RETURN POSITIVE;									-- Calculates: sum(vector) for a positive vector
+
+  function rmin(arg1 : real; arg2 : real) return real;						-- Calculates: min(arg1, arg2) for reals
+  function rmax(arg1 : real; arg2 : real) return real;						-- Calculates: max(arg1, arg2) for reals
+
+	-- slicing boundary calulations
+	FUNCTION low(LengthVector		: T_POSVEC; pos : NATURAL) RETURN NATURAL;
+	FUNCTION high(LengthVector	: T_POSVEC; pos : NATURAL) RETURN NATURAL;
+
+	-- Vector aggregate functions: slv_*
+	FUNCTION slv_or(Vector		: STD_LOGIC_VECTOR)	RETURN STD_LOGIC;
+	FUNCTION slv_nor(Vector		: STD_LOGIC_VECTOR)	RETURN STD_LOGIC;
+	FUNCTION slv_and(Vector		: STD_LOGIC_VECTOR)	RETURN STD_LOGIC;
+	FUNCTION slv_nand(Vector	: STD_LOGIC_VECTOR)	RETURN STD_LOGIC;
+
+
+
+
+
+
+
+
+	-- binary encoding conversion functions
+	FUNCTION onehot2bin(onehot : STD_LOGIC_VECTOR) RETURN UNSIGNED;
+
+
+
+
+
+
 
   --+ Vectors ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   -- Reverses the elements of the passed Vector.
