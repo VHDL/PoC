@@ -9,7 +9,7 @@
 --									Martin Zabel
 --									Steffen Koehler
 -- ============================================================================================================================================================
--- Copyright 2007-2013 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@
 
 library	ieee;
 use			ieee.std_logic_1164.all;
-
+use			ieee.numeric_std.all;
 
 entity arith_counter_gray is
 	generic (
@@ -43,9 +43,6 @@ entity arith_counter_gray is
 	);
 end arith_counter_gray;
 
-
-library IEEE;
-use IEEE.numeric_std.all;
 
 architecture rtl of arith_counter_gray is
 
