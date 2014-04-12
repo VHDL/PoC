@@ -1,55 +1,58 @@
---
--- Copyright (c) 2007
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
---
-
---
--- Entity: fifo_dc_got_sm
--- Author(s): Martin Zabel
+-- ============================================================================================================================================================
+-- Description:			small FIFO, dependent clock (dc), pipelined interface, first-word-fall-through mode
+--									
+--									Dependent clocks meens, that one clock must be a multiple of the other one.
+--									And your synthesis tool must check for setup- and hold-time violations.
+--									
+--									This implementation uses a small register-file for storing data. Your
+--									synthesis tool might infer memory. This memory must
+--									- either support asynchronous reads (as an register-file)
+--									- or a synchronous read with mixed-port read-during-write (write-first).
+--									
+--									First-word-fall-through (FWFT) mode is implemented, so data can be read out
+--									as soon as 'valid' goes high. After the data has been captured, then the
+--									signal 'got' must be asserted.
+--									
+--									The advantage of the register file is, that data is available at the read
+--									port after the rising edge of the write clock it has been written to.
+--									
+--									Because implementing register-files onto a FPGA might require a lot of LUT
+--									logic, use this implementation only for small FIFOs.
+--									
+--									Another disadvantage is, that the signals 'full' and
+--									'valid' are combinatorial and include an adress comparator in their path.
+--									
+--									The specified depth (MIN_DEPTH) is rounded up to the next suitable value.
+--									
+--									Synchronous reset is used. Both resets must overlap.
 -- 
--- Small FIFO with dependent clocks and first-word-fall-through mode
---
--- Dependent clocks meens, that one clock must be a multiple of the other one.
--- And your synthesis tool must check for setup- and hold-time violations.
---
--- This implementation uses a small register-file for storing data. Your
--- synthesis tool might infer memory. This memory must
--- - either support asynchronous reads (as an register-file)
--- - or a synchronous read with mixed-port read-during-write (write-first).
---
--- First-word-fall-through (FWFT) mode is implemented, so data can be read out
--- as soon as 'valid' goes high. After the data has been captured, then the
--- signal 'got' must be asserted.
---
--- The advantage of the register file is, that data is available at the read
--- port after the rising edge of the write clock it has been written to.
---
--- Because implementing register-files onto a FPGA might require a lot of LUT
--- logic, use this implementation only for small FIFOs.
---
--- Another disadvantage is, that the signals 'full' and
--- 'valid' are combinatorial and include an adress comparator in their path.
---
--- The specified depth (MIN_DEPTH) is rounded up to the next suitable value.
---
--- Synchronous reset is used. Both resets must overlap.
---
--- Revision:    $Revision: 1.3 $
--- Last change: $Date: 2013-06-13 17:56:15 $
---
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+-- Authors:					Martin Zabel
+-- ============================================================================================================================================================
+-- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================================================================================================
 
-library poc;
-use poc.functions.all;
+library	ieee;
+use			ieee.std_logic_1164.all;
+use			ieee.numeric_std.all;
+
+library	poc;
+use			poc.functions.all;
 
 entity fifo_dc_got_sm is
 
