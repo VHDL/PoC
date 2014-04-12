@@ -34,7 +34,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.functions.ALL;
 
---LIBRARY L_Global;
+LIBRARY L_Global;
 --USE			L_Global.GlobalTypes.ALL;
 
 LIBRARY L_IO;

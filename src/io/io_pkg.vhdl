@@ -34,7 +34,7 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 
-PACKAGE IOTypes IS
+PACKAGE io IS
 	-- not yet supported by Xilinx Synthese Tools (XST) - Version 13.2 (O.61xd 2011)
 --	TYPE FREQ IS RANGE 0 TO 2147483647
 --		UNITS
@@ -158,10 +158,10 @@ PACKAGE IOTypes IS
 	FUNCTION Baud2MHz(BaudRate : POSITIVE) RETURN REAL;
 	FUNCTION Baud2MHz(BaudRate : REAL) RETURN REAL;
 	
-END IOTypes;
+END io;
 
 
-PACKAGE BODY IOTypes IS
+PACKAGE BODY io IS
 	-- TimingToCycles
 	-- ================================================================
 	-- nanoseconds
