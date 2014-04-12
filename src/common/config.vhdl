@@ -143,8 +143,8 @@ package body config is
 				elsif ((MY_DEV(5 to 6) = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
 					return "LXT";
 				elsif ((MY_DEV(5 to 6) = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
-					return "SXT";MY_DEV
-				elsif ((MY_DEV(5 to 6) = "FX") and (str_pos(MY_DEV(7 TO MY_DEVICE'high), 'T') > 0)) then
+					return "SXT";
+				elsif ((MY_DEV(5 to 6) = "FX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
 					return "FXT";
 				else
 					report "Unknown Virtex5 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
