@@ -1,31 +1,37 @@
---
--- Copyright (c) 2008-2012
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
---
-
---
--- Package: fifo
--- Author(s): Martin Zabel       <martin.zabel@tu-dresden.de>
---            Thomas B. Preusser <thomas.preusser@tu-dresden.de>
+-- ============================================================================================================================================================
+-- Description:			VHDL package for component declarations, types and functions assoziated to the PoC.fifo namespace
+--									For detailed documentation see below.
 -- 
--- Component declarations for various FIFO types.
---
--- Revision:    $Revision: 1.28 $
--- Last change: $Date: 2013-08-06 12:35:14 $
---
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+-- Authors:					Thomas B. Preusser
+--									Steffen Koehler
+--									Martin Zabel
+--									Patrick Lehmann
+-- ============================================================================================================================================================
+-- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================================================================================================
 
-library poc;
-use poc.functions.all;
+library	IEEE;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
+
+library	poc;
+use			poc.functions.all;
 
 package fifo is
 
@@ -41,12 +47,12 @@ package fifo is
 
       -- Input
       put : in  std_logic;                            -- Put Value
-      di  : in  std_logic_vector(D_BITS-1 downto 0);  -- Data Input
+      di  : in  std_logic_vector(D_BITS - 1 downto 0);  -- Data Input
       ful : out std_logic;                            -- Full
 
       -- Output
       vld : out std_logic;                            -- Data Available
-      do  : out std_logic_vector(D_BITS-1 downto 0);  -- Data Output
+      do  : out std_logic_vector(D_BITS - 1 downto 0);  -- Data Output
       got : in  std_logic                             -- Data Consumed
     );
   end component;
@@ -93,12 +99,12 @@ package fifo is
 
       -- Writing Interface
       put : in  std_logic;                            -- Write Request
-      din : in  std_logic_vector(D_BITS-1 downto 0);  -- Input Data
+      din : in  std_logic_vector(D_BITS - 1 downto 0);  -- Input Data
       ful : out std_logic;                            -- Capacity Exhausted
 
       -- Reading Interface
       got  : in  std_logic;                            -- Read Done Strobe
-      dout : out std_logic_vector(D_BITS-1 downto 0);  -- Output Data
+      dout : out std_logic_vector(D_BITS - 1 downto 0);  -- Output Data
       vld  : out std_logic                             -- Data Valid
     );
   end component;
@@ -120,15 +126,15 @@ package fifo is
 
       -- Writing Interface
       put       : in  std_logic;                            -- Write Request
-      din       : in  std_logic_vector(D_BITS-1 downto 0);  -- Input Data
+      din       : in  std_logic_vector(D_BITS - 1 downto 0);  -- Input Data
       full      : out std_logic;
-      estate_wr : out std_logic_vector(imax(0, ESTATE_WR_BITS-1) downto 0);
+      estate_wr : out std_logic_vector(imax(0, ESTATE_WR_BITS - 1) downto 0);
 
       -- Reading Interface
       got       : in  std_logic;                            -- Read Completed
-      dout      : out std_logic_vector(D_BITS-1 downto 0);  -- Output Data
+      dout      : out std_logic_vector(D_BITS - 1 downto 0);  -- Output Data
       valid     : out std_logic;
-      fstate_rd : out std_logic_vector(imax(0, FSTATE_RD_BITS-1) downto 0)
+      fstate_rd : out std_logic_vector(imax(0, FSTATE_RD_BITS - 1) downto 0)
     );
   end component;
 
@@ -140,13 +146,13 @@ package fifo is
       clk_wr : in  std_logic;
       rst_wr : in  std_logic;
       put    : in  std_logic;
-      din    : in  std_logic_vector(D_BITS-1 downto 0);
+      din    : in  std_logic_vector(D_BITS - 1 downto 0);
       full   : out std_logic;
       clk_rd : in  std_logic;
       rst_rd : in  std_logic;
       got    : in  std_logic;
       valid  : out std_logic;
-      dout   : out std_logic_vector(D_BITS-1 downto 0));
+      dout   : out std_logic_vector(D_BITS - 1 downto 0));
   end component;
   
   component fifo_ic_got
@@ -163,17 +169,17 @@ package fifo is
       clk_wr    : in  std_logic;
       rst_wr    : in  std_logic;
       put       : in  std_logic;
-      din       : in  std_logic_vector(D_BITS-1 downto 0);
+      din       : in  std_logic_vector(D_BITS - 1 downto 0);
       full      : out std_logic;
-      estate_wr : out std_logic_vector(imax(ESTATE_WR_BITS-1, 0) downto 0);
+      estate_wr : out std_logic_vector(imax(ESTATE_WR_BITS - 1, 0) downto 0);
 
       -- Read Interface
       clk_rd    : in  std_logic;
       rst_rd    : in  std_logic;
       got       : in  std_logic;
       valid     : out std_logic;
-      dout      : out std_logic_vector(D_BITS-1 downto 0);
-      fstate_rd : out std_logic_vector(imax(FSTATE_RD_BITS-1, 0) downto 0)
+      dout      : out std_logic_vector(D_BITS - 1 downto 0);
+      fstate_rd : out std_logic_vector(imax(FSTATE_RD_BITS - 1, 0) downto 0)
     );
   end component;
 
@@ -193,18 +199,18 @@ package fifo is
 
       -- Writing Interface
       put       : in  std_logic;                            -- Write Request
-      din       : in  std_logic_vector(D_BITS-1 downto 0);  -- Input Data
+      din       : in  std_logic_vector(D_BITS - 1 downto 0);  -- Input Data
       full      : out std_logic;
-      estate_wr : out std_logic_vector(imax(0, ESTATE_WR_BITS-1) downto 0);
+      estate_wr : out std_logic_vector(imax(0, ESTATE_WR_BITS - 1) downto 0);
 
       commit    : in  std_logic;
       rollback  : in  std_logic;
 
       -- Reading Interface
       got       : in  std_logic;                            -- Read Completed
-      dout      : out std_logic_vector(D_BITS-1 downto 0);  -- Output Data
+      dout      : out std_logic_vector(D_BITS - 1 downto 0);  -- Output Data
       valid     : out std_logic;
-      fstate_rd : out std_logic_vector(imax(0, FSTATE_RD_BITS-1) downto 0)
+      fstate_rd : out std_logic_vector(imax(0, FSTATE_RD_BITS - 1) downto 0)
       );
   end component;
 
@@ -224,15 +230,15 @@ package fifo is
 
       -- Writing Interface
       put       : in  std_logic;                            -- Write Request
-      din       : in  std_logic_vector(D_BITS-1 downto 0);  -- Input Data
+      din       : in  std_logic_vector(D_BITS - 1 downto 0);  -- Input Data
       full      : out std_logic;
-      estate_wr : out std_logic_vector(imax(0, ESTATE_WR_BITS-1) downto 0);
+      estate_wr : out std_logic_vector(imax(0, ESTATE_WR_BITS - 1) downto 0);
 
       -- Reading Interface
       got       : in  std_logic;                            -- Read Completed
-      dout      : out std_logic_vector(D_BITS-1 downto 0);  -- Output Data
+      dout      : out std_logic_vector(D_BITS - 1 downto 0);  -- Output Data
       valid     : out std_logic;
-      fstate_rd : out std_logic_vector(imax(0, FSTATE_RD_BITS-1) downto 0);
+      fstate_rd : out std_logic_vector(imax(0, FSTATE_RD_BITS - 1) downto 0);
 
       commit    : in  std_logic;
       rollback  : in  std_logic
