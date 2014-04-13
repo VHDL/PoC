@@ -72,6 +72,7 @@ PACKAGE io IS
 	-- ==========================================================================================================================================================
 	TYPE T_IO_IIC_COMMAND IS (
 		IO_IIC_CMD_NONE,
+		IO_IIC_CMD_REQUEST_BUS,
 		IO_IIC_CMD_CHECK_ADDRESS,
 		IO_IIC_CMD_READ_CURRENT,
 		IO_IIC_CMD_READ_BYTE,
@@ -99,6 +100,10 @@ PACKAGE io IS
 		IO_IIC_ERROR_BUS_ERROR,
 		IO_IIC_ERROR_FSM
 	);
+	
+	TYPE T_IO_IIC_COMMAND_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_IO_IIC_COMMAND;
+	TYPE T_IO_IIC_STATUS_VECTOR		IS ARRAY(NATURAL RANGE <>) OF T_IO_IIC_STATUS;
+	TYPE T_IO_IIC_ERROR_VECTOR		IS ARRAY(NATURAL RANGE <>) OF T_IO_IIC_ERROR;
 	
 	-- IICController_SFF8431
 	-- ==========================================================================================================================================================

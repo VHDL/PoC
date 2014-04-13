@@ -33,12 +33,13 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.functions.ALL;
+USE			PoC.io.ALL;
 
 LIBRARY L_Global;
 --USE			L_Global.GlobalTypes.ALL;
 
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
+--LIBRARY L_IO;
+--USE			L_IO.IOTypes.ALL;
 
 
 ENTITY IICSwitch_PCA9548A IS
@@ -52,9 +53,13 @@ ENTITY IICSwitch_PCA9548A IS
 		Reset							: IN	STD_LOGIC;
 		
 		-- IICSwitch interface ports
-		Request						: IN	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
-		Grant							: OUT	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
-		Abort							: IN	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
+		Command						: IN	T_IO_IIC_COMMAND_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
+		Status						: OUT	T_IO_IIC_STATUS_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
+		Error							: OUT	T_IO_IIC_ERROR_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
+		
+--		Request						: IN	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
+--		Grant							: OUT	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
+--		Abort							: IN	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
 		WP_Valid					: IN	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
 		WP_Data						: IN	T_SLVV_8(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
 		WP_Last						: IN	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
@@ -65,9 +70,12 @@ ENTITY IICSwitch_PCA9548A IS
 		RP_Ack						: IN	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
 		
 		-- IICController master interface
-		IICC_Request			: OUT	STD_LOGIC;
-		IICC_Grant				: IN	STD_LOGIC;
-		IICC_Abort				: OUT	STD_LOGIC;
+		IICC_Command			: OUT	T_IO_IIC_COMMAND;
+		IICC_Status				: IN	T_IO_IIC_STATUS;
+		IICC_Error				: IN	T_IO_IIC_ERROR;
+--		IICC_Request			: OUT	STD_LOGIC;
+--		IICC_Grant				: IN	STD_LOGIC;
+--		IICC_Abort				: OUT	STD_LOGIC;
 		IICC_WP_Valid			: OUT	STD_LOGIC;
 		IICC_WP_Data			: OUT	T_SLV_8;
 		IICC_WP_Last			: OUT	STD_LOGIC;

@@ -49,27 +49,30 @@ ENTITY IICController IS
 	GENERIC (
 		CHIPSCOPE_KEEP								: BOOLEAN												:= TRUE;
 		CLOCK_IN_FREQ_MHZ							: REAL													:= 100.0;					-- 100 MHz
-		IIC_FREQ_KHZ									: REAL													:= 100.0
+		IIC_FREQ_KHZ									: REAL													:= 100.0;
+		ADDRESS_BITS									: POSITIVE											:= 7;
+		DATA_BITS											: POSITIVE											:= 8
 	);
 	PORT (
 		Clock													: IN	STD_LOGIC;
 		Reset													: IN	STD_LOGIC;
 		
 		-- IICController interface
---		Command												: IN	T_IO_IIC_COMMAND;
---		Status												: OUT	T_IO_IIC_STATUS;
---		Error													: OUT	T_IO_IIC_ERROR;
+		Command												: IN	T_IO_IIC_COMMAND;
+		Status												: OUT	T_IO_IIC_STATUS;
+		Error													: OUT	T_IO_IIC_ERROR;
 		
+		Address												: IN	STD_LOGIC_VECTOR(ADDRESS_BITS - 1 DOWNTO 0);
 		-- IICController master interface
-		Master_Request								: IN	STD_LOGIC;
-		Master_Grant									: OUT	STD_LOGIC;
-		Master_Abort									: IN	STD_LOGIC;
+--		Master_Request								: IN	STD_LOGIC;
+--		Master_Grant									: OUT	STD_LOGIC;
+--		Master_Abort									: IN	STD_LOGIC;
 		Master_WP_Valid								: IN	STD_LOGIC;
-		Master_WP_Data								: IN	STD_LOGIC;
+		Master_WP_Data								: IN	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
 		Master_WP_Last								: IN	STD_LOGIC;
 		Master_WP_Ack									: OUT	STD_LOGIC;
 		Master_RP_Valid								: OUT	STD_LOGIC;
-		Master_RP_Data								: OUT	STD_LOGIC;
+		Master_RP_Data								: OUT	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
 		Master_RP_Last								: OUT	STD_LOGIC;
 		Master_RP_Ack									: IN	STD_LOGIC;
 		
