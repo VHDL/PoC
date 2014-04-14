@@ -5,8 +5,8 @@
 -------------------------------------------------------------------------------
 -- Description:  Testbench for scaler.
 --               See DUT description for details.
-
--- Authors:      Thomas B. Preußer <thomas.preusser@utexas.edu>
+--
+-- Authors:      Thomas B. Preusser <thomas.preusser@utexas.edu>
 -------------------------------------------------------------------------------
 -- Copyright 2007-2014 Technische Universität Dresden - Germany
 --                     Chair for VLSI-Design, Diagnostics and Architecture
