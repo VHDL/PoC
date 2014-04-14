@@ -41,16 +41,13 @@ USE			PoC.config.ALL;
 USE			PoC.functions.ALL;
 USE			PoC.io.ALL;
 
---LIBRARY L_Global;
---USE			L_Global.GlobalTypes.ALL;
-
---LIBRARY L_IO;
---USE			L_IO.IOTypes.ALL;
+LIBRARY L_Global;
+USE			L_Global.GlobalComp.ALL;
 
 
 ENTITY IICController IS
 	GENERIC (
-		CHIPSCOPE_KEEP								: BOOLEAN												:= TRUE;
+		DEBUG													: BOOLEAN												:= TRUE;
 		CLOCK_IN_FREQ_MHZ							: REAL													:= 100.0;					-- 100 MHz
 		IIC_FREQ_KHZ									: REAL													:= 100.0;
 		ADDRESS_BITS									: POSITIVE											:= 7;
@@ -67,7 +64,7 @@ ENTITY IICController IS
 		Master_Status									: OUT	T_IO_IIC_STATUS;
 		Master_Error									: OUT	T_IO_IIC_ERROR;
 		
-		Address												: IN	STD_LOGIC_VECTOR(ADDRESS_BITS - 1 DOWNTO 0);
+		Master_Address								: IN	STD_LOGIC_VECTOR(ADDRESS_BITS - 1 DOWNTO 0);
 
 		Master_WP_Valid								: IN	STD_LOGIC;
 		Master_WP_Data								: IN	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
@@ -88,13 +85,11 @@ ENTITY IICController IS
 	);
 END ENTITY;
 
--- TODOs
---	
 
 ARCHITECTURE rtl OF IICController IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
-	ATTRIBUTE ENUM_ENCODING						: STRING;
+	ATTRIBUTE KEEP									: BOOLEAN;
+	ATTRIBUTE FSM_ENCODING					: STRING;
+	ATTRIBUTE ENUM_ENCODING					: STRING;
 	
 	-- if-then-else (ite)
 	FUNCTION ite(cond : BOOLEAN; value1 : T_IO_IIC_STATUS; value2 : T_IO_IIC_STATUS) RETURN T_IO_IIC_STATUS IS
@@ -110,7 +105,7 @@ ARCHITECTURE rtl OF IICController IS
 		ST_IDLE,
 		ST_SEND_START,							ST_SEND_START_WAIT,
 		-- address operation for random access => dummy write to internal SFP address register
-			ST_SEND_PHYSICAL_ADDRESS0,	ST_SEND_PHYSICAL_ADDRESS0_WAIT,
+			ST_SEND_DEVICE_ADDRESS0,	ST_SEND_DEVICE_ADDRESS0_WAIT,
 			ST_SEND_READWRITE0,					ST_SEND_READWRITE0_WAIT,
 			ST_RECEIVE_ACK0,						ST_RECEIVE_ACK0_WAIT,
 			ST_SEND_REGISTER_ADDRESS,		ST_SEND_REGISTER_ADDRESS_WAIT,
@@ -121,7 +116,7 @@ ARCHITECTURE rtl OF IICController IS
 			ST_REGISTER_NEXT_BYTE,
 		-- read operation => restart bus, resend physical address, read data bytes
 		ST_SEND_RESTART,						ST_SEND_RESTART_WAIT,
-			ST_SEND_PHYSICAL_ADDRESS1,	ST_SEND_PHYSICAL_ADDRESS1_WAIT,
+			ST_SEND_DEVICE_ADDRESS1,	ST_SEND_DEVICE_ADDRESS1_WAIT,
 			ST_SEND_READWRITE1,					ST_SEND_READWRITE1_WAIT,
 			ST_RECEIVE_ACK3,						ST_RECEIVE_ACK3_WAIT,
 			ST_RECEIVE_DATA,						ST_RECEIVE_DATA_WAIT,
@@ -137,7 +132,7 @@ ARCHITECTURE rtl OF IICController IS
 	
 	SIGNAL State												: T_STATE													:= ST_IDLE;
 	SIGNAL NextState										: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State			: SIGNAL IS ite(CHIPSCOPE_KEEP, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING OF State			: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 	
 	SIGNAL Status_i											: T_IO_IIC_STATUS;
 	
@@ -156,9 +151,9 @@ ARCHITECTURE rtl OF IICController IS
 	SIGNAL RegOperation_en							: STD_LOGIC;
 	SIGNAL RegOperation_d								: STD_LOGIC												:= '0';
 	
-	SIGNAL PhysicalAddress_en						: STD_LOGIC;
-	SIGNAL PhysicalAddress_sh						: STD_LOGIC;
-	SIGNAL PhysicalAddress_d						: STD_LOGIC_VECTOR(6 DOWNTO 0)		:= (OTHERS => '0');
+	SIGNAL Device_Address_en						: STD_LOGIC;
+	SIGNAL Device_Address_sh						: STD_LOGIC;
+	SIGNAL Device_Address_d						: STD_LOGIC_VECTOR(6 DOWNTO 0)		:= (OTHERS => '0');
 	
 	SIGNAL RegisterAddress_en						: STD_LOGIC;
 	SIGNAL RegisterAddress_sh						: STD_LOGIC;
@@ -184,7 +179,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-	PROCESS(State, Command, Command_d, IICBC_Status, BitCounter_us, PhysicalAddress_d, RegisterAddress_d, DataRegister_d, In_MoreBytes, Out_LastByte)
+	PROCESS(State, Master_Command, Command_d, IICBC_Status, BitCounter_us, Device_Address_d, RegisterAddress_d, DataRegister_d, In_MoreBytes, Out_LastByte)
 		TYPE T_CMDCAT IS (NONE, READ, WRITE);
 		VARIABLE CommandCategory	: T_CMDCAT;
 	
@@ -192,17 +187,19 @@ BEGIN
 		NextState									<= State;
 
 		Status_i									<= IO_IIC_STATUS_IDLE;
-		Error											<= IO_IIC_ERROR_NONE;
+		Master_Error							<= IO_IIC_ERROR_NONE;
 		
-		In_NextByte								<= '0';
-		Out_Valid									<= '0';
+		Master_WP_Ack							<= '0';
+		Master_RP_Valid						<= '0';
+		Master_RP_Data						<= (OTHERS => '0');
+		Master_RP_Last						<= '0';
 
 		Command_en								<= '0';
-		PhysicalAddress_en				<= '0';
+		Device_Address_en				<= '0';
 		RegisterAddress_en				<= '0';
 		DataRegister_en						<= '0';
 
-		PhysicalAddress_sh				<= '0';
+		Device_Address_sh				<= '0';
 		RegisterAddress_sh				<= '0';
 		DataRegister_sh						<= '0';
 		
@@ -222,44 +219,44 @@ BEGIN
 			WHEN IO_IIC_CMD_READ_BYTES =>			CommandCategory := READ;
 			WHEN IO_IIC_CMD_WRITE_BYTE =>			CommandCategory := WRITE;
 			WHEN IO_IIC_CMD_WRITE_BYTES =>		CommandCategory := WRITE;
-			WHEN OTHERS =>														CommandCategory := NONE;
+			WHEN OTHERS =>										CommandCategory := NONE;
 		END CASE;
 
 		CASE State IS
 			WHEN ST_IDLE =>
-				CASE Command IS
+				CASE Master_Command IS
 					WHEN IO_IIC_CMD_NONE =>
 						NULL;
 					
 					WHEN IO_IIC_CMD_CHECK_ADDRESS =>
 						Command_en							<= '1';
-						PhysicalAddress_en			<= '1';
+						Device_Address_en				<= '1';
 						
 						NextState								<= ST_SEND_START;
 					
 					WHEN IO_IIC_CMD_READ_CURRENT =>
 						Command_en							<= '1';
-						PhysicalAddress_en			<= '1';
+						Device_Address_en				<= '1';
 						
 						NextState								<= ST_SEND_START;
 				
 					WHEN IO_IIC_CMD_READ_BYTE =>
 						Command_en							<= '1';
-						PhysicalAddress_en			<= '1';
+						Device_Address_en				<= '1';
 						RegisterAddress_en			<= '1';
 						
 						NextState								<= ST_SEND_START;
 						
 					WHEN IO_IIC_CMD_READ_BYTES =>
 						Command_en							<= '1';
-						PhysicalAddress_en			<= '1';
+						Device_Address_en				<= '1';
 						RegisterAddress_en			<= '1';
 						
 						NextState								<= ST_SEND_START;
 											
 					WHEN IO_IIC_CMD_WRITE_BYTE =>
 						Command_en							<= '1';
-						PhysicalAddress_en			<= '1';
+						Device_Address_en				<= '1';
 						RegisterAddress_en			<= '1';
 						DataRegister_en					<= '1';
 						
@@ -267,7 +264,7 @@ BEGIN
 					
 					WHEN IO_IIC_CMD_WRITE_BYTES =>
 						Command_en							<= '1';
-						PhysicalAddress_en			<= '1';
+						Device_Address_en				<= '1';
 						RegisterAddress_en			<= '1';
 						DataRegister_en					<= '1';
 		
@@ -297,49 +294,47 @@ BEGIN
 				
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
-					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_SEND_PHYSICAL_ADDRESS0;
+					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_SEND_DEVICE_ADDRESS0;
 					WHEN IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
 					WHEN OTHERS =>														NextState			<= ST_ERROR;
 				END CASE;
 			
-			WHEN ST_SEND_PHYSICAL_ADDRESS0 =>
+			WHEN ST_SEND_DEVICE_ADDRESS0 =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_STATUS_READING,
 																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_STATUS_ERROR,
 																																												IO_IIC_STATUS_WRITING));
 				BusMaster										<= '1';
 				BusMode											<= '1';
 				
-				PhysicalAddress_sh					<= '1';
-				IF (PhysicalAddress_d(PhysicalAddress_d'high) = '0') THEN
+				Device_Address_sh						<= '1';
+				IF (Device_Address_d(Device_Address_d'high) = '0') THEN
 					IICBC_Command							<= IO_IICBUS_CMD_SEND_LOW;
 				ELSE
 					IICBC_Command							<= IO_IICBUS_CMD_SEND_HIGH;
 				END IF;
 				
-				NextState										<= ST_SEND_PHYSICAL_ADDRESS0_WAIT;
+				NextState										<= ST_SEND_DEVICE_ADDRESS0_WAIT;
 				
-			WHEN ST_SEND_PHYSICAL_ADDRESS0_WAIT =>
+			WHEN ST_SEND_DEVICE_ADDRESS0_WAIT =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_STATUS_READING,
 																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_STATUS_ERROR,
 																																												IO_IIC_STATUS_WRITING));
 				BusMaster										<= '1';
 				BusMode											<= '1';
 				
-				IF (IICBC_Status = IO_IICBUS_STATUS_SENDING) THEN
-					NULL;
-				ELSIF (IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE) THEN
-					BitCounter_en							<= '1';
+				CASE IICBC_Status IS
+					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
+					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>
+						BitCounter_en						<= '1';
 			
-					IF (BitCounter_us = (PhysicalAddress_d'length - 1)) THEN
-						NextState								<= ST_SEND_READWRITE0;
-					ELSE
-						NextState								<= ST_SEND_PHYSICAL_ADDRESS0;
-					END IF;
-				ELSIF (IICBC_Status = IO_IICBUS_STATUS_ERROR) THEN
-					NextState									<= ST_BUS_ERROR;
-				ELSE
-					NextState									<= ST_ERROR;
-				END IF;
+						IF (BitCounter_us = (Device_Address_d'length - 1)) THEN
+							NextState							<= ST_SEND_READWRITE0;
+						ELSE
+							NextState							<= ST_SEND_DEVICE_ADDRESS0;
+						END IF;
+					WHEN IO_IICBUS_STATUS_ERROR =>		NextState			<= ST_BUS_ERROR;
+					WHEN OTHERS =>										NextState			<= ST_ERROR;
+				END CASE;
 			
 			WHEN ST_SEND_READWRITE0 =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_STATUS_READING,
@@ -355,7 +350,7 @@ BEGIN
 					WHEN IO_IIC_CMD_READ_BYTES =>			IICBC_Command		<= IO_IICBUS_CMD_SEND_LOW;
 					WHEN IO_IIC_CMD_WRITE_BYTE =>			IICBC_Command		<= IO_IICBUS_CMD_SEND_LOW;
 					WHEN IO_IIC_CMD_WRITE_BYTES =>		IICBC_Command		<= IO_IICBUS_CMD_SEND_LOW;
-					WHEN OTHERS  =>														IICBC_Command		<= IO_IICBUS_CMD_NONE;
+					WHEN OTHERS  =>										IICBC_Command		<= IO_IICBUS_CMD_NONE;
 				END CASE;
 				
 				NextState										<= ST_SEND_READWRITE0_WAIT;
@@ -579,26 +574,26 @@ BEGIN
 			
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
-					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_SEND_PHYSICAL_ADDRESS1;
+					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_SEND_DEVICE_ADDRESS1;
 					WHEN IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
 					WHEN OTHERS =>														NextState			<= ST_ERROR;
 				END CASE;
 
-			WHEN ST_SEND_PHYSICAL_ADDRESS1 =>
+			WHEN ST_SEND_DEVICE_ADDRESS1 =>
 				Status_i										<= IO_IIC_STATUS_READING;
 				BusMaster										<= '1';
 				BusMode											<= '1';
 				
-				PhysicalAddress_sh					<= '1';
-				IF (PhysicalAddress_d(PhysicalAddress_d'high) = '0') THEN
+				Device_Address_sh					<= '1';
+				IF (Device_Address_d(Device_Address_d'high) = '0') THEN
 					IICBC_Command							<= IO_IICBUS_CMD_SEND_LOW;
 				ELSE
 					IICBC_Command							<= IO_IICBUS_CMD_SEND_HIGH;
 				END IF;
 				
-				NextState										<= ST_SEND_PHYSICAL_ADDRESS1_WAIT;
+				NextState										<= ST_SEND_DEVICE_ADDRESS1_WAIT;
 				
-			WHEN ST_SEND_PHYSICAL_ADDRESS1_WAIT =>
+			WHEN ST_SEND_DEVICE_ADDRESS1_WAIT =>
 				Status_i										<= IO_IIC_STATUS_READING;
 				BusMaster										<= '1';
 				BusMode											<= '1';
@@ -608,10 +603,10 @@ BEGIN
 				ELSIF (IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE) THEN
 					BitCounter_en							<= '1';
 			
-					IF (BitCounter_us = (PhysicalAddress_d'length - 1)) THEN
+					IF (BitCounter_us = (Device_Address_d'length - 1)) THEN
 						NextState								<= ST_SEND_READWRITE1;
 					ELSE
-						NextState								<= ST_SEND_PHYSICAL_ADDRESS1;
+						NextState								<= ST_SEND_DEVICE_ADDRESS1;
 					END IF;
 				ELSIF (IICBC_Status = IO_IICBUS_STATUS_ERROR) THEN
 					NextState									<= ST_BUS_ERROR;
@@ -778,22 +773,22 @@ BEGIN
 			
 			WHEN ST_BUS_ERROR =>
 				Status_i										<= IO_IIC_STATUS_ERROR;
-				Error												<= IO_IIC_ERROR_BUS_ERROR;
+				Master_Error								<= IO_IIC_ERROR_BUS_ERROR;
 				NextState										<= ST_IDLE;
 			
 			WHEN ST_ACK_ERROR =>
 				Status_i										<= IO_IIC_STATUS_ERROR;
-				Error												<= IO_IIC_ERROR_ACK_ERROR;
+				Master_Error								<= IO_IIC_ERROR_ACK_ERROR;
 				NextState										<= ST_IDLE;
 
 			WHEN ST_ADDRESS_ERROR =>
 				Status_i										<= IO_IIC_STATUS_ERROR;
-				Error												<= IO_IIC_ERROR_ADDRESS_ERROR;
+				Master_Error								<= IO_IIC_ERROR_ADDRESS_ERROR;
 				NextState										<= ST_IDLE;
 			
 			WHEN ST_ERROR =>
 				Status_i										<= IO_IIC_STATUS_ERROR;
-				Error												<= IO_IIC_ERROR_FSM;
+				Master_Error								<= IO_IIC_ERROR_FSM;
 				NextState										<= ST_IDLE;
 			
 		END CASE;
@@ -825,28 +820,28 @@ BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
 				Command_d							<= IO_IIC_CMD_NONE;
-				PhysicalAddress_d			<= (OTHERS => '0');
+				Device_Address_d			<= (OTHERS => '0');
 				RegisterAddress_d			<= (OTHERS => '0');
 				DataRegister_d				<= (OTHERS => '0');
 			ELSE
 				IF (Command_en	= '1') THEN
-					Command_d					<= Command;
+					Command_d						<= Master_Command;
 				END IF;
 			
-				IF (PhysicalAddress_en	= '1') THEN
-					PhysicalAddress_d	<= PhysicalAddress;
-				ELSIF (PhysicalAddress_sh = '1') THEN
-					PhysicalAddress_d	<= PhysicalAddress_d(PhysicalAddress_d'high - 1 DOWNTO 0) & PhysicalAddress_d(PhysicalAddress_d'high);
+				IF (Device_Address_en	= '1') THEN
+					Device_Address_d		<= Master_Address;
+				ELSIF (Device_Address_sh = '1') THEN
+					Device_Address_d		<= Device_Address_d(Device_Address_d'high - 1 DOWNTO 0) & Device_Address_d(Device_Address_d'high);
 				END IF;
 				
 				IF (RegisterAddress_en	= '1') THEN
-					RegisterAddress_d	<= RegisterAddress;
+					RegisterAddress_d		<= RegisterAddress;
 				ELSIF (RegisterAddress_sh = '1') THEN
-					RegisterAddress_d	<= RegisterAddress_d(RegisterAddress_d'high - 1 DOWNTO 0) & ite(SIMULATION, 'U', '0');
+					RegisterAddress_d		<= RegisterAddress_d(RegisterAddress_d'high - 1 DOWNTO 0) & ite(SIMULATION, 'U', '0');
 				END IF;
 				
 				IF (DataRegister_en	= '1') THEN
-					DataRegister_d			<= In_Data;
+					DataRegister_d			<= Master_WP_Data;
 				ELSIF (DataRegister_sh = '1') THEN
 					DataRegister_d			<= DataRegister_d(DataRegister_d'high - 1 DOWNTO 0) & DataRegister_si;
 				END IF;
@@ -854,8 +849,8 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-	Status		<= Status_i;
-	Out_Data	<= DataRegister_d;
+	Master_Status		<= Status_i;
+	Out_Data				<= DataRegister_d;
 
 	IICBC : ENTITY PoC.IICBusController
 		GENERIC MAP (
@@ -883,25 +878,29 @@ BEGIN
 	SerialClock_t		<= SerialClock_t_i;
 	SerialData_t		<= SerialData_t_i;
 
-	genCSP : IF (CHIPSCOPE_KEEP = TRUE) GENERATE
+	genDBG : IF (DEBUG = TRUE) GENERATE
+		-- Configuration
+		CONSTANT DBG_TRIGGER_DELAY		: POSITIVE		:= 4;
+		CONSTANT DBG_TRIGGER_WINDOWS	: POSITIVE		:= 6;
+
+		
 		CONSTANT STATES		: POSITIVE		:= T_STATE'pos(ST_ERROR) + 1;
 		CONSTANT BITS			: POSITIVE		:= log2ceilnz(STATES);
 	
 		FUNCTION to_slv(State : T_STATE) RETURN STD_LOGIC_VECTOR IS
 		BEGIN
-			RETURN std_logic_vector(to_unsigned(T_STATE'pos(State), BITS));
+			RETURN to_slv(T_STATE'pos(State), BITS);
 		END FUNCTION;
 	
 		-- debugging signals
 		TYPE T_DBG_CHIPSCOPE IS RECORD
 			Command						: T_IO_IIC_COMMAND;
 			Status						: T_IO_IIC_STATUS;
-			PhysicalAddress		: STD_LOGIC_VECTOR(6 DOWNTO 0);
+			Device_Address		: STD_LOGIC_VECTOR(6 DOWNTO 0);
 			RegisterAddress		: T_SLV_8;
 			DataIn						: T_SLV_8;
 			DataOut						: T_SLV_8;
---			State							: T_STATE;
---			State							: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
+			State							: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
 			IICBC_Command			: T_IO_IICBUS_COMMAND;
 			IICBC_Status			: T_IO_IICBUS_STATUS;
 			Clock_i						: STD_LOGIC;
@@ -910,159 +909,104 @@ BEGIN
 			Data_t						: STD_LOGIC;
 		END RECORD;
 		
-		SIGNAL CSP_DebugVector_i		: T_DBG_CHIPSCOPE;
-		SIGNAL CSP_DebugVector_d1		: T_DBG_CHIPSCOPE;
-		SIGNAL CSP_DebugVector_d2		: T_DBG_CHIPSCOPE;
-		SIGNAL CSP_DebugVector_d3		: T_DBG_CHIPSCOPE;
-		SIGNAL CSP_DebugVector_d4		: T_DBG_CHIPSCOPE;
-		SIGNAL CSP_DebugVector			: T_DBG_CHIPSCOPE;
+		TYPE T_DBG_CHIPSCOPE_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_DBG_CHIPSCOPE;
 		
-		SIGNAL CSP_State_i					: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
-		SIGNAL CSP_State_d1					: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
-		SIGNAL CSP_State_d2					: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
-		SIGNAL CSP_State_d3					: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
-		SIGNAL CSP_State_d4					: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
+		SIGNAL DBG_DebugVector_d		: T_DBG_CHIPSCOPE_VECTOR(DBG_TRIGGER_DELAY DOWNTO 0);
 		
-		SIGNAL CSP_Command					: T_IO_IIC_COMMAND;
-		SIGNAL CSP_Status						: T_IO_IIC_STATUS;
-		SIGNAL CSP_PhysicalAddress	: STD_LOGIC_VECTOR(6 DOWNTO 0);
-		SIGNAL CSP_RegisterAddress	: T_SLV_8;
-		SIGNAL CSP_DataIn						: T_SLV_8;
-		SIGNAL CSP_DataOut					: T_SLV_8;
---		SIGNAL CSP_State						: T_STATE;
-		SIGNAL CSP_State						: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
-		SIGNAL CSP_IICBC_Command		: T_IO_IICBUS_COMMAND;
-		SIGNAL CSP_IICBC_Status			: T_IO_IICBUS_STATUS;
-		SIGNAL CSP_Clock_i					: STD_LOGIC;
-		SIGNAL CSP_Clock_t					: STD_LOGIC;
-		SIGNAL CSP_Data_i						: STD_LOGIC;
-		SIGNAL CSP_Data_t						: STD_LOGIC;
+		-- edge detection FFs
+		SIGNAL SerialClock_t_d			: STD_LOGIC																					:= '0';
+		SIGNAL SerialData_t_d				: STD_LOGIC																					:= '0';
 		
-		SIGNAL SerialClock_t_d			: STD_LOGIC;
-		SIGNAL SerialData_t_d				: STD_LOGIC;
+		-- trigger delay FFs / trigger valid-window FF
+		SIGNAL Trigger_d						: STD_LOGIC_VECTOR(DBG_TRIGGER_WINDOWS DOWNTO 0)		:= (OTHERS => '0');
+		SIGNAL Valid_r							: STD_LOGIC																					:= '0';
 		
-		SIGNAL Trigger_i						: STD_LOGIC;
-		SIGNAL Trigger_d1						: STD_LOGIC;
-		SIGNAL Trigger_d2						: STD_LOGIC;
-		SIGNAL Trigger_d3						: STD_LOGIC;
-		SIGNAL Trigger_d4						: STD_LOGIC;
-		SIGNAL Trigger_d5						: STD_LOGIC;
-		SIGNAL Trigger_d6						: STD_LOGIC;
-		SIGNAL Valid_r							: STD_LOGIC;
-		
-		SIGNAL CSP_Trigger					: STD_LOGIC;
-		SIGNAL CSP_Valid						: STD_LOGIC;
-		
-		CONSTANT CSP_temp						: STD_LOGIC_VECTOR		:= to_slv(ST_SEND_REGISTER_ADDRESS_WAIT);
-		
-		ATTRIBUTE KEEP OF CSP_Command					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_Status					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_PhysicalAddress	: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_RegisterAddress	: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_DataIn					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_DataOut					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_State						: SIGNAL IS TRUE;
---		ATTRIBUTE FSM_ENCODING OF CSP_State		: SIGNAL IS "compact"; --"gray";
-		ATTRIBUTE KEEP OF CSP_IICBC_Command		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_IICBC_Status		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_Clock_i					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_Clock_t					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_Data_i					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_Data_t					: SIGNAL IS TRUE;
-		
---		ATTRIBUTE KEEP OF CSP_temp						: SIGNAL IS TRUE;
-		
-		ATTRIBUTE KEEP OF CSP_Trigger					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_Valid						: SIGNAL IS TRUE;
-		
-		ATTRIBUTE FSM_ENCODING OF CSP_State_i		: SIGNAL IS "gray";
-		ATTRIBUTE FSM_ENCODING OF CSP_State_d1	: SIGNAL IS "gray";
-		ATTRIBUTE FSM_ENCODING OF CSP_State_d2	: SIGNAL IS "gray";
-		ATTRIBUTE FSM_ENCODING OF CSP_State_d3	: SIGNAL IS "gray";
-		ATTRIBUTE FSM_ENCODING OF CSP_State_d4	: SIGNAL IS "gray";
-		ATTRIBUTE FSM_ENCODING OF CSP_State			: SIGNAL IS "gray";
-	BEGIN
-		ASSERT FALSE REPORT "STATES = " & INTEGER'image(STATES) SEVERITY NOTE;
-		ASSERT FALSE REPORT "BITS = " & INTEGER'image(BITS) SEVERITY NOTE;
---		ASSERT FALSE REPORT "CSP_DebugVector_i.State'length = " & INTEGER'image(CSP_DebugVector_i.State'length) SEVERITY NOTE;
---		ASSERT FALSE REPORT "CSP_DebugVector_d1.State'length = " & INTEGER'image(CSP_DebugVector_d1.State'length) SEVERITY NOTE;
---		ASSERT FALSE REPORT "CSP_DebugVector_d2.State'length = " & INTEGER'image(CSP_DebugVector_d2.State'length) SEVERITY NOTE;
---		ASSERT FALSE REPORT "CSP_DebugVector_d3.State'length = " & INTEGER'image(CSP_DebugVector_d3.State'length) SEVERITY NOTE;
---		ASSERT FALSE REPORT "CSP_DebugVector_d4.State'length = " & INTEGER'image(CSP_DebugVector_d4.State'length) SEVERITY NOTE;
-		ASSERT FALSE REPORT "CSP_State_i'length = " & INTEGER'image(CSP_State_i'length) SEVERITY NOTE;
-		ASSERT FALSE REPORT "CSP_State_d1'length = " & INTEGER'image(CSP_State_d1'length) SEVERITY NOTE;
-		ASSERT FALSE REPORT "CSP_State_d2'length = " & INTEGER'image(CSP_State_d2'length) SEVERITY NOTE;
-		ASSERT FALSE REPORT "CSP_State_d3'length = " & INTEGER'image(CSP_State_d3'length) SEVERITY NOTE;
-		ASSERT FALSE REPORT "CSP_State_d4'length = " & INTEGER'image(CSP_State_d4'length) SEVERITY NOTE;
-		ASSERT FALSE REPORT "CSP_State'length = " & INTEGER'image(CSP_State'length) SEVERITY NOTE;
-		
-		ASSERT FALSE REPORT "CSP_temp'length = " & INTEGER'image(CSP_temp'length) SEVERITY NOTE;
-	
-		CSP_DebugVector_i.Command						<= Command;
-		CSP_DebugVector_i.Status						<= Status_i;
-		CSP_DebugVector_i.PhysicalAddress		<= PhysicalAddress;
-		CSP_DebugVector_i.RegisterAddress		<= RegisterAddress;
-		CSP_DebugVector_i.DataIn						<= In_Data;
-		CSP_DebugVector_i.DataOut						<= DataRegister_d;
---		CSP_DebugVector_i.State							<= to_slv(State);
-		CSP_DebugVector_i.IICBC_Command			<= IICBC_Command;
-		CSP_DebugVector_i.IICBC_Status			<= IICBC_Status;
-		CSP_DebugVector_i.Clock_i						<= SerialClock_i;
-		CSP_DebugVector_i.Clock_t						<= SerialClock_t_i;
-		CSP_DebugVector_i.Data_i						<= SerialData_i;
-		CSP_DebugVector_i.Data_t						<= SerialData_t_i;
-	
-		CSP_State_i													<= to_slv(State);
-		CSP_State_d1												<= CSP_State_i	WHEN rising_edge(Clock);
-		CSP_State_d2												<= CSP_State_d1	WHEN rising_edge(Clock);
-		CSP_State_d3												<= CSP_State_d2	WHEN rising_edge(Clock);
-		CSP_State_d4												<= CSP_State_d3	WHEN rising_edge(Clock);
-	
-		CSP_DebugVector_d1	<= CSP_DebugVector_i	WHEN rising_edge(Clock);
-		CSP_DebugVector_d2	<= CSP_DebugVector_d1	WHEN rising_edge(Clock);
-		CSP_DebugVector_d3	<= CSP_DebugVector_d2	WHEN rising_edge(Clock);
-		CSP_DebugVector_d4	<= CSP_DebugVector_d3	WHEN rising_edge(Clock);
-		CSP_DebugVector			<= CSP_DebugVector_d4;
+		-- ChipScope trigger signals
+		SIGNAL DBG_Trigger					: STD_LOGIC;
+		SIGNAL DBG_Valid						: STD_LOGIC;
 
-		CSP_Command						<= CSP_DebugVector.Command;
-		CSP_Status						<= CSP_DebugVector.Status;
-		CSP_PhysicalAddress		<= CSP_DebugVector.PhysicalAddress;
-		CSP_RegisterAddress		<= CSP_DebugVector.RegisterAddress;
-		CSP_DataIn						<= CSP_DebugVector.DataIn;
-		CSP_DataOut						<= CSP_DebugVector.DataOut;
---		CSP_State							<= CSP_DebugVector.State;
-		CSP_State							<= CSP_State_d4;
-		CSP_IICBC_Command			<= CSP_DebugVector.IICBC_Command;
-		CSP_IICBC_Status			<= CSP_DebugVector.IICBC_Status;
-		CSP_Clock_i						<= CSP_DebugVector.Clock_i;
-		CSP_Clock_t						<= CSP_DebugVector.Clock_t;
-		CSP_Data_i						<= CSP_DebugVector.Data_i;
-		CSP_Data_t						<= CSP_DebugVector.Data_t;
+		-- ChipScope data signals
+		SIGNAL DBG_Command					: T_IO_IIC_COMMAND;
+		SIGNAL DBG_Status						: T_IO_IIC_STATUS;
+		SIGNAL DBG_Device_Address		: STD_LOGIC_VECTOR(ADDRESS_BITS DOWNTO 0);
+		SIGNAL DBG_RegisterAddress	: T_SLV_8;
+		SIGNAL DBG_DataIn						: T_SLV_8;
+		SIGNAL DBG_DataOut					: T_SLV_8;
+		SIGNAL DBG_State						: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
+		SIGNAL DBG_IICBC_Command		: T_IO_IICBUS_COMMAND;
+		SIGNAL DBG_IICBC_Status			: T_IO_IICBUS_STATUS;
+		SIGNAL DBG_Clock_i					: STD_LOGIC;
+		SIGNAL DBG_Clock_t					: STD_LOGIC;
+		SIGNAL DBG_Data_i						: STD_LOGIC;
+		SIGNAL DBG_Data_t						: STD_LOGIC;
 		
-		SerialClock_t_d			<= SerialClock_t_i		WHEN rising_edge(Clock);
-		SerialData_t_d			<= SerialData_t_i			WHEN rising_edge(Clock);
+--		CONSTANT DBG_temp						: STD_LOGIC_VECTOR		:= to_slv(ST_SEND_REGISTER_ADDRESS_WAIT);
 		
-		Trigger_i						<= (SerialClock_t_i XOR SerialClock_t_d) OR (SerialData_t_i XOR SerialData_t_d);
-		Trigger_d1					<= Trigger_i					WHEN rising_edge(Clock);
-		Trigger_d2					<= Trigger_d1					WHEN rising_edge(Clock);
-		Trigger_d3					<= Trigger_d2					WHEN rising_edge(Clock);
-		Trigger_d4					<= Trigger_d3					WHEN rising_edge(Clock);
-		Trigger_d5					<= Trigger_d4					WHEN rising_edge(Clock);
-		Trigger_d6					<= Trigger_d5					WHEN rising_edge(Clock);
+		ATTRIBUTE KEEP OF DBG_Command					: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_Status					: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_Device_Address	: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_RegisterAddress	: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_DataIn					: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_DataOut					: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_State						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_IICBC_Command		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_IICBC_Status		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_Clock_i					: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_Clock_t					: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_Data_i					: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_Data_t					: SIGNAL IS TRUE;
 		
-		CSP_Trigger					<= Trigger_d4;
-		CSP_Valid						<= Trigger_i OR Valid_r;
+		ATTRIBUTE KEEP OF DBG_Trigger					: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_Valid						: SIGNAL IS TRUE;
 		
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF (Trigger_d6 = '1') THEN
-					Valid_r				<= '0';
-				ELSIF (Trigger_i = '1') THEN
-					Valid_r				<= '1';
-				END IF;
-			END IF;
-		END PROCESS;
+	BEGIN
+		DBG_DebugVector_d(0).Command					<= Master_Command;
+		DBG_DebugVector_d(0).Status						<= Status_i;
+		DBG_DebugVector_d(0).Device_Address		<= Master_Address;
+		DBG_DebugVector_d(0).RegisterAddress	<= RegisterAddress;
+		DBG_DebugVector_d(0).DataIn						<= Master_WP_Data;
+		DBG_DebugVector_d(0).DataOut					<= DataRegister_d;
+		DBG_DebugVector_d(0).State						<= to_slv(State);
+		DBG_DebugVector_d(0).IICBC_Command		<= IICBC_Command;
+		DBG_DebugVector_d(0).IICBC_Status			<= IICBC_Status;
+		DBG_DebugVector_d(0).Clock_i					<= SerialClock_i;
+		DBG_DebugVector_d(0).Clock_t					<= SerialClock_t_i;
+		DBG_DebugVector_d(0).Data_i						<= SerialData_i;
+		DBG_DebugVector_d(0).Data_t						<= SerialData_t_i;
+	
+		genDataDelay : FOR I IN 0 TO DBG_DebugVector_d'high - 1 GENERATE
+			DBG_DebugVector_d(I + 1)	<= DBG_DebugVector_d(I) WHEN rising_edge(Clock);
+		END GENERATE;
 		
+		DBG_Command						<= DBG_DebugVector_d(DBG_DebugVector_d'high).Command;
+		DBG_Status						<= DBG_DebugVector_d(DBG_DebugVector_d'high).Status;
+		DBG_Device_Address		<= DBG_DebugVector_d(DBG_DebugVector_d'high).Device_Address;
+		DBG_RegisterAddress		<= DBG_DebugVector_d(DBG_DebugVector_d'high).RegisterAddress;
+		DBG_DataIn						<= DBG_DebugVector_d(DBG_DebugVector_d'high).DataIn;
+		DBG_DataOut						<= DBG_DebugVector_d(DBG_DebugVector_d'high).DataOut;
+		DBG_State							<= DBG_DebugVector_d(DBG_DebugVector_d'high).State;
+		DBG_IICBC_Command			<= DBG_DebugVector_d(DBG_DebugVector_d'high).IICBC_Command;
+		DBG_IICBC_Status			<= DBG_DebugVector_d(DBG_DebugVector_d'high).IICBC_Status;
+		DBG_Clock_i						<= DBG_DebugVector_d(DBG_DebugVector_d'high).Clock_i;
+		DBG_Clock_t						<= DBG_DebugVector_d(DBG_DebugVector_d'high).Clock_t;
+		DBG_Data_i						<= DBG_DebugVector_d(DBG_DebugVector_d'high).Data_i;
+		DBG_Data_t						<= DBG_DebugVector_d(DBG_DebugVector_d'high).Data_t;
+		
+		SerialClock_t_d				<= SerialClock_t_i		WHEN rising_edge(Clock);
+		SerialData_t_d				<= SerialData_t_i			WHEN rising_edge(Clock);
+		
+		-- trigger on all edges and on all signal lines
+		Trigger_d(0)				<= (SerialClock_t_i XOR SerialClock_t_d) OR
+													 (SerialData_t_i	XOR SerialData_t_d);
+		
+		genTriggerDelay : FOR I IN 0 TO Trigger_d'high - 1 GENERATE
+			Trigger_d(I + 1)	<= Trigger_d(I) WHEN rising_edge(Clock);
+		END GENERATE;
+		
+		DBG_Trigger					<= Trigger_d(DBG_TRIGGER_DELAY);
+		DBG_Valid						<= Trigger_d(0) OR Valid_r;
+		
+		--										RS-FF:	Q					RST						SET								CLOCK
+		Valid_r							<= ffrs(Valid_r, DBG_Trigger, Trigger_d(0)) WHEN rising_edge(Clock);
 	END GENERATE;
 END;

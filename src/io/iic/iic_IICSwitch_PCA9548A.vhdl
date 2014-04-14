@@ -63,7 +63,7 @@ ENTITY IICSwitch_PCA9548A IS
 		Command						: IN	T_IO_IIC_COMMAND_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
 		Status						: OUT	T_IO_IIC_STATUS_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
 		Error							: OUT	T_IO_IIC_ERROR_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
-		Address						: IN	T_SLM(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0, ADDRESS_BITS - 1 DOWNTO 0);
+		Address						: IN	T_SLM(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0, ADDRESS_BITS DOWNTO 1);
 
 		WP_Valid					: IN	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
 		WP_Data						: IN	T_SLM(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0, DATA_BITS - 1 DOWNTO 0);
@@ -80,7 +80,7 @@ ENTITY IICSwitch_PCA9548A IS
 		IICC_Command			: OUT	T_IO_IIC_COMMAND;
 		IICC_Status				: IN	T_IO_IIC_STATUS;
 		IICC_Error				: IN	T_IO_IIC_ERROR;
-		IICC_Address			: OUT	STD_LOGIC_VECTOR(ADDRESS_BITS - 1 DOWNTO 0);
+		IICC_Address			: OUT	STD_LOGIC_VECTOR(ADDRESS_BITS DOWNTO 1);
 		IICC_WP_Valid			: OUT	STD_LOGIC;
 		IICC_WP_Data			: OUT	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
 		IICC_WP_Last			: OUT	STD_LOGIC;
@@ -106,7 +106,7 @@ ARCHITECTURE rtl OF IICSwitch_PCA9548A IS
 	TYPE T_STATE IS (
 		ST_IDLE,
 		ST_REQUEST,
-		ST_WRITE_SWITCH_PHYADDRESS, ST_WRITE_SWITCH_REGISTER, ST_WRITE_WAIT,
+		ST_WRITE_SWITCH_DEVICE_ADDRESS, ST_WRITE_SWITCH_REGISTER, ST_WRITE_WAIT,
 		ST_TRANSACTION,
 		ST_ERROR
 	);
@@ -184,7 +184,7 @@ BEGIN
 							IF (ADD_BYPASS_PORT AND (Arb_Grant(Arb_Grant'high) = '1')) THEN
 								NextState			<= ST_TRANSACTION;
 							ELSE
-								NextState			<= ST_WRITE_SWITCH_PHYADDRESS;
+								NextState			<= ST_WRITE_SWITCH_DEVICE_ADDRESS;
 							END IF;
 						END IF;
 					END IF;
@@ -197,14 +197,14 @@ BEGIN
 					IF (ADD_BYPASS_PORT AND (Arb_Grant(Arb_Grant'high) = '1')) THEN
 						NextState					<= ST_TRANSACTION;
 					ELSE
-						NextState					<= ST_WRITE_SWITCH_PHYADDRESS;
+						NextState					<= ST_WRITE_SWITCH_DEVICE_ADDRESS;
 					END IF;
 				END IF;
 	
-			WHEN ST_WRITE_SWITCH_PHYADDRESS =>
+			WHEN ST_WRITE_SWITCH_DEVICE_ADDRESS =>
 				IICC_Request					<= '1';
 			
-				IICC_Command					<= IO_IIC_CMD_READ_BYTE;
+				IICC_Command					<= IO_IIC_CMD_WRITE_BYTE;
 				IICC_Address					<= SWITCH_ADDRESS(IICC_Address'range);
 			
 				IICC_WP_Valid					<= '1';
@@ -230,12 +230,43 @@ BEGIN
 							WHEN OTHERS =>											NextState <= ST_ERROR;
 						END CASE;
 					WHEN OTHERS =>													NextState <= ST_ERROR;
-			
+				END CASE;
+	
+			WHEN ST_TRANSACTION =>
+				Grant									<= Arb_Grant;
+				
+				IICC_Request					<= '1';
+				IICC_Command					<= Command(to_index(Arb_Grant_bin, Arb_Grant'length - 1));
+				IICC_Address					<= get_row(Address, to_index(Arb_Grant_bin, Arb_Grant'length - 1));
+				IICC_WP_Valid					<= WP_Valid(to_index(Arb_Grant_bin, Arb_Grant'length - 1));
+				IICC_WP_Data					<= get_row(WP_Data, to_index(Arb_Grant_bin, Arb_Grant'length - 1));
+				IICC_WP_Last					<= WP_Last(to_index(Arb_Grant_bin, Arb_Grant'length - 1));
+				IICC_RP_Ack						<= RP_Ack(to_index(Arb_Grant_bin, Arb_Grant'length - 1));
+				
+				FOR I IN 0 TO PORTS - 1 LOOP
+					IF (I = to_index(Arb_Grant_bin, Arb_Grant'length - 1)) THEN
+						Status(I)					<= IICC_Status;
+						Error(I)					<= IICC_Error;
+					ELSE
+						Status(I)					<= IO_IIC_STATUS_IDLE;
+						Error(I)					<= IO_IIC_ERROR_NONE;
+					END IF;
+				END LOOP;
+	
+				WP_Ack								<= Arb_Grant AND (Arb_Grant'range => IICC_WP_Ack);
+				RP_Valid							<= Arb_Grant AND (Arb_Grant'range => IICC_RP_Valid);
+--				RP_Data								<= Arb_Grant AND (Arb_Grant'range => IICC_RP_Data);
+				RP_Last								<= Arb_Grant AND (Arb_Grant'range => IICC_RP_Last);
+	
+				IF (Request(to_index(Arb_Grant_bin, Arb_Grant'length - 1)) = '0') THEN
+					NextState						<= ST_IDLE;
+				END IF;
 	
 			WHEN ST_ERROR =>
---				Status_i										<= IO_IIC_STATUS_ERROR;
---				Error												<= IO_IIC_ERROR_FSM;
-				NextState										<= ST_IDLE;
+				Status								<= (OTHERS => IO_IIC_STATUS_ERROR);
+				Error									<= (OTHERS => IO_IIC_ERROR_FSM);
+				
+				NextState							<= ST_IDLE;
 			
 		END CASE;
 	END PROCESS;
