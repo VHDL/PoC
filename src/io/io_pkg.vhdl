@@ -1,4 +1,4 @@
--- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
@@ -14,7 +14,7 @@
 --
 -- Authors:					Patrick Lehmann
 -- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -72,7 +72,6 @@ PACKAGE io IS
 	-- ==========================================================================================================================================================
 	TYPE T_IO_IIC_COMMAND IS (
 		IO_IIC_CMD_NONE,
-		IO_IIC_CMD_REQUEST_BUS,
 		IO_IIC_CMD_CHECK_ADDRESS,
 		IO_IIC_CMD_READ_CURRENT,
 		IO_IIC_CMD_READ_BYTE,

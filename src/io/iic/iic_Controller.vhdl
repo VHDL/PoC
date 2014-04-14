@@ -1,4 +1,4 @@
--- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
@@ -13,7 +13,7 @@
 --
 -- Authors:					Patrick Lehmann
 -- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -57,16 +57,15 @@ ENTITY IICController IS
 		Clock													: IN	STD_LOGIC;
 		Reset													: IN	STD_LOGIC;
 		
-		-- IICController interface
-		Command												: IN	T_IO_IIC_COMMAND;
-		Status												: OUT	T_IO_IIC_STATUS;
-		Error													: OUT	T_IO_IIC_ERROR;
+		-- IICController master interface
+		Master_Request								: IN	STD_LOGIC;
+		Master_Grant									: OUT	STD_LOGIC;
+		Master_Command								: IN	T_IO_IIC_COMMAND;
+		Master_Status									: OUT	T_IO_IIC_STATUS;
+		Master_Error									: OUT	T_IO_IIC_ERROR;
 		
 		Address												: IN	STD_LOGIC_VECTOR(ADDRESS_BITS - 1 DOWNTO 0);
-		-- IICController master interface
---		Master_Request								: IN	STD_LOGIC;
---		Master_Grant									: OUT	STD_LOGIC;
---		Master_Abort									: IN	STD_LOGIC;
+
 		Master_WP_Valid								: IN	STD_LOGIC;
 		Master_WP_Data								: IN	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
 		Master_WP_Last								: IN	STD_LOGIC;

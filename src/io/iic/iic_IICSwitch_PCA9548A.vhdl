@@ -1,4 +1,4 @@
--- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
@@ -10,7 +10,7 @@
 --
 -- Authors:					Patrick Lehmann
 -- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -46,42 +46,44 @@ ENTITY IICSwitch_PCA9548A IS
 	GENERIC (
 		CHIPSCOPE_KEEP		: BOOLEAN						:= TRUE;
 		SWITCH_ADDRESS		: T_SLV_8						:= x"00";
-		ADD_BYPASS_PORT		: BOOLEAN						:= FALSE
+		ADD_BYPASS_PORT		: BOOLEAN						:= FALSE;
+		ADDRESS_BITS			: POSITIVE					:= 7;
+		DATA_BITS					: POSITIVE					:= 8
 	);
 	PORT (
 		Clock							: IN	STD_LOGIC;
 		Reset							: IN	STD_LOGIC;
 		
 		-- IICSwitch interface ports
+		Request						: IN	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
+		Grant							: OUT	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
 		Command						: IN	T_IO_IIC_COMMAND_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
 		Status						: OUT	T_IO_IIC_STATUS_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
 		Error							: OUT	T_IO_IIC_ERROR_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
-		
---		Request						: IN	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
---		Grant							: OUT	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
---		Abort							: IN	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
+		Address						: IN	T_SLM(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0, ADDRESS_BITS - 1 DOWNTO 0);
+
 		WP_Valid					: IN	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
-		WP_Data						: IN	T_SLVV_8(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
+		WP_Data						: IN	T_SLM(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0, DATA_BITS - 1 DOWNTO 0);
 		WP_Last						: IN	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
 		WP_Ack						: OUT	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
 		RP_Valid					: OUT	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
-		RP_Data						: OUT	T_SLVV_8(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
+		RP_Data						: OUT	T_SLM(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0, DATA_BITS - 1 DOWNTO 0);
 		RP_Last						: OUT	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
 		RP_Ack						: IN	STD_LOGIC_VECTOR(ite(ADD_BYPASS_PORT, 9, 8) - 1 DOWNTO 0);
 		
 		-- IICController master interface
+		IICC_Request			: OUT	STD_LOGIC;
+		IICC_Grant				: IN	STD_LOGIC;
 		IICC_Command			: OUT	T_IO_IIC_COMMAND;
 		IICC_Status				: IN	T_IO_IIC_STATUS;
 		IICC_Error				: IN	T_IO_IIC_ERROR;
---		IICC_Request			: OUT	STD_LOGIC;
---		IICC_Grant				: IN	STD_LOGIC;
---		IICC_Abort				: OUT	STD_LOGIC;
+		IICC_Address			: OUT	STD_LOGIC_VECTOR(ADDRESS_BITS - 1 DOWNTO 0);
 		IICC_WP_Valid			: OUT	STD_LOGIC;
-		IICC_WP_Data			: OUT	T_SLV_8;
+		IICC_WP_Data			: OUT	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
 		IICC_WP_Last			: OUT	STD_LOGIC;
 		IICC_WP_Ack				: IN	STD_LOGIC;
 		IICC_RP_Valid			: IN	STD_LOGIC;
-		IICC_RP_Data			: IN	T_SLV_8;
+		IICC_RP_Data			: IN	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
 		IICC_RP_Last			: IN	STD_LOGIC;
 		IICC_RP_Ack				: OUT	STD_LOGIC;
 		
@@ -96,17 +98,7 @@ ARCHITECTURE rtl OF IICSwitch_PCA9548A IS
 	ATTRIBUTE ENUM_ENCODING						: STRING;
 	
 	CONSTANT PORTS										: POSITIVE						:= ite(ADD_BYPASS_PORT, 9, 8);
-	CONSTANT ALLOW_MEALY_FSM_EDGE			: BOOLEAN							:= TRUE;
-	
-	FUNCTION iic_Write(Address : T_SLV_8) RETURN T_SLV_8 IS
-	BEGIN
-		RETURN Address(7 DOWNTO 1) & '1';
-	END FUNCTION;
-
-	FUNCTION iic_Read(Address : T_SLV_8) RETURN T_SLV_8 IS
-	BEGIN
-		RETURN Address(7 DOWNTO 1) & '0';
-	END FUNCTION;
+	CONSTANT ALLOW_MEALY_TRANSITION		: BOOLEAN							:= TRUE;
 	
 	TYPE T_STATE IS (
 		ST_IDLE,
@@ -169,6 +161,10 @@ BEGIN
 		NextState									<= State;
 
 		IICC_Request							<= '0';
+		IICC_Address							<= SWITCH_ADDRESS(IICC_Address'range);
+		IICC_WP_Valid							<= '0';
+		IICC_WP_Data							<= (OTHERS => '0');
+		IICC_WP_Last							<= '0';
 		
 		FSM_Arbitrate							<= '0';
 		
@@ -178,7 +174,7 @@ BEGIN
 					FSM_Arbitrate				<= '1';
 					NextState						<= ST_REQUEST;
 					
-					IF ALLOW_MEALY_FSM_EDGE THEN
+					IF ALLOW_MEALY_TRANSITION THEN
 						IICC_Request			<= '1';
 						
 						IF (IICC_Grant = '1') THEN
@@ -205,24 +201,33 @@ BEGIN
 			WHEN ST_WRITE_SWITCH_PHYADDRESS =>
 				IICC_Request					<= '1';
 			
-				IICC_WP_Valid					<= '1';
-				IICC_WP_Data					<= iic_Write(SWITCH_ADDRESS);
-				
-				IF (IICC_WP_Ack = '1') THEN
-					NextState						<= ST_WRITE_SWITCH_REGISTER;
-				END IF;
-				
-			WHEN ST_WRITE_SWITCH_REGISTER =>
-				IICC_Request					<= '1';
+				IICC_Command					<= IO_IIC_CMD_READ_BYTE;
+				IICC_Address					<= SWITCH_ADDRESS(IICC_Address'range);
 			
 				IICC_WP_Valid					<= '1';
 				IICC_WP_Data					<= Arb_Grant(IICC_WP_Data'range);
+				IICC_WP_Last					<= '1';
 				
 				IF (IICC_WP_Ack = '1') THEN
 					NextState						<= ST_WRITE_WAIT;
 				END IF;
-	
-			WHEN ST_WRITE_WAIT =>	
+				
+			WHEN ST_WRITE_WAIT =>
+				IICC_Request					<= '1';
+				
+				CASE IICC_Status IS
+					WHEN IO_IIC_STATUS_WRITING =>						NULL;
+					WHEN IO_IIC_STATUS_WRITE_COMPLETE =>		NextState <= ST_TRANSACTION;
+					WHEN IO_IIC_STATUS_ERROR =>
+						CASE IICC_Error  IS
+							WHEN IO_IIC_ERROR_ADDRESS_ERROR =>	NextState <= ST_ERROR;
+							WHEN IO_IIC_ERROR_ACK_ERROR =>			NextState <= ST_ERROR;
+							WHEN IO_IIC_ERROR_BUS_ERROR =>			NextState <= ST_ERROR;
+							WHEN IO_IIC_ERROR_FSM =>						NextState <= ST_ERROR;
+							WHEN OTHERS =>											NextState <= ST_ERROR;
+						END CASE;
+					WHEN OTHERS =>													NextState <= ST_ERROR;
+			
 	
 			WHEN ST_ERROR =>
 --				Status_i										<= IO_IIC_STATUS_ERROR;
