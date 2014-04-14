@@ -1,52 +1,56 @@
--- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================================================================================================
--- Description:			FIFO, independent clocks (ic) and first-word-fall-through mode
---									
---									Independent clocks meens that read and write clock are unrelated.
---									
---									This implementation uses dedicated block RAM for storing data.
---									
---									First-word-fall-through (FWFT) mode is implemented, so data can be read out
---									as soon as 'valid' goes high. After the data has been captured, then the
---									signal 'got' must be asserted.
---									
---									Synchronous reset is used. Both resets may overlap.
---									
---									DATA_REG (=true) is a hint, that distributed memory or registers should be
---									used as data storage. The actual memory type depends on the device
---									architecture. See implementation for details.
---									
---									*STATE_*_BITS defines the granularity of the fill state indicator
---									'*state_*'. 'fstate_rd' is associated with the read clock domain and outputs
---									the guaranteed number of words available in the FIFO. 'estate_wr' is
---									associated with the write clock domain and outputs the number of words that
---									is guaranteed to be accepted by the FIFO without a capacity overflow. Note
---									that both these indicators cannot replace the 'full' or 'valid' outputs as
---									they may be implemented as giving pessimistic bounds that are minimally off
---									the true fill state.
---									
---									If a fill state is not of interest, set *STATE_*_BITS = 0.
---									
---									'fstate_rd' and 'estate_wr' are combinatorial outputs and include an address
---									comparator (subtractor) in their path.
---									
---									Examples:
---									- FSTATE_RD_BITS = 1: fstate_rd == 0 => 0/2 full
---									                      fstate_rd == 1 => 1/2 full (half full)
---									
---									- FSTATE_RD_BITS = 2: fstate_rd == 0 => 0/4 full
---									                      fstate_rd == 1 => 1/4 full
---									                      fstate_rd == 2 => 2/4 full
---									                      fstate_rd == 3 => 3/4 full
+-- Module:					FIFO, independent clocks (ic) and first-word-fall-through mode
 -- 
 -- Authors:					Thomas B. Preusser
 --									Steffen Koehler
 --									Martin Zabel
+--
+-- Description:
+-- ------------------------------------
+--		Independent clocks meens that read and write clock are unrelated.
+--		
+--		This implementation uses dedicated block RAM for storing data.
+--		
+--		First-word-fall-through (FWFT) mode is implemented, so data can be read out
+--		as soon as 'valid' goes high. After the data has been captured, then the
+--		signal 'got' must be asserted.
+--		
+--		Synchronous reset is used. Both resets may overlap.
+--		
+--		DATA_REG (=true) is a hint, that distributed memory or registers should be
+--		used as data storage. The actual memory type depends on the device
+--		architecture. See implementation for details.
+--		
+--		*STATE_*_BITS defines the granularity of the fill state indicator
+--		'*state_*'. 'fstate_rd' is associated with the read clock domain and outputs
+--		the guaranteed number of words available in the FIFO. 'estate_wr' is
+--		associated with the write clock domain and outputs the number of words that
+--		is guaranteed to be accepted by the FIFO without a capacity overflow. Note
+--		that both these indicators cannot replace the 'full' or 'valid' outputs as
+--		they may be implemented as giving pessimistic bounds that are minimally off
+--		the true fill state.
+--		
+--		If a fill state is not of interest, set *STATE_*_BITS = 0.
+--		
+--		'fstate_rd' and 'estate_wr' are combinatorial outputs and include an address
+--		comparator (subtractor) in their path.
+--		
+--		Examples:
+--		- FSTATE_RD_BITS = 1: fstate_rd == 0 => 0/2 full
+--		                      fstate_rd == 1 => 1/2 full (half full)
+--		
+--		- FSTATE_RD_BITS = 2: fstate_rd == 0 => 0/4 full
+--		                      fstate_rd == 1 => 1/4 full
+--		                      fstate_rd == 2 => 2/4 full
+--		                      fstate_rd == 3 => 3/4 full
+--
+-- License:
 -- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -61,73 +65,14 @@
 -- limitations under the License.
 -- ============================================================================================================================================================
 
+library	IEEE;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
 
---
--- Copyright (c) 2008-2012
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
--- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
---
+library	poc;
+use			poc.functions.all;
+use			poc.ocram.ocram_sdp;
 
---
--- Entity: fifo_ic_got
--- Author(s): Martin Zabel    <martin.zabel@tu-dresden.de>
---            Steffen Koehler <steffen.koehler@tu-dresden.de>
---            Thomas Preusser <thomas.preusser@tu-dresden.de>
--- 
--- FIFO with independent clocks and first-word-fall-through mode
---
--- Independent clocks meens that read and write clock are unrelated.
---
--- This implementation uses dedicated block RAM for storing data.
---
--- First-word-fall-through (FWFT) mode is implemented, so data can be read out
--- as soon as 'valid' goes high. After the data has been captured, then the
--- signal 'got' must be asserted.
---
--- Synchronous reset is used. Both resets may overlap.
---
--- DATA_REG (=true) is a hint, that distributed memory or registers should be
--- used as data storage. The actual memory type depends on the device
--- architecture. See implementation for details.
---
--- *STATE_*_BITS defines the granularity of the fill state indicator
--- '*state_*'. 'fstate_rd' is associated with the read clock domain and outputs
--- the guaranteed number of words available in the FIFO. 'estate_wr' is
--- associated with the write clock domain and outputs the number of words that
--- is guaranteed to be accepted by the FIFO without a capacity overflow. Note
--- that both these indicators cannot replace the 'full' or 'valid' outputs as
--- they may be implemented as giving pessimistic bounds that are minimally off
--- the true fill state.
---
--- If a fill state is not of interest, set *STATE_*_BITS = 0.
---
--- 'fstate_rd' and 'estate_wr' are combinatorial outputs and include an address
--- comparator (subtractor) in their path.
---
--- Examples:
--- - FSTATE_RD_BITS = 1: fstate_rd == 0 => 0/2 full
---                       fstate_rd == 1 => 1/2 full (half full)
---
--- - FSTATE_RD_BITS = 2: fstate_rd == 0 => 0/4 full
---                       fstate_rd == 1 => 1/4 full
---                       fstate_rd == 2 => 2/4 full
---                       fstate_rd == 3 => 3/4 full
---
--- Revision:    $Revision: 1.21 $
--- Last change: $Date: 2013-06-13 17:56:15 $
---
-
-library IEEE;
-use IEEE.std_logic_1164.all;
-
-library poc;
-use poc.functions.all;
 
 entity fifo_ic_got is
   generic (
@@ -157,11 +102,6 @@ entity fifo_ic_got is
   );
 end fifo_ic_got;
 
-library IEEE;
-use IEEE.numeric_std.all;
-
-library poc;
-use poc.ocram.ocram_sdp;
 
 architecture rtl of fifo_ic_got is
 

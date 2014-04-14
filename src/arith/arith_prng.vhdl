@@ -1,14 +1,20 @@
--- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================================================================================================
--- Description:			Pseudo-Random Number Generator (PRNG).
---									For detailed documentation see below.
+-- Module:					Pseudo-Random Number Generator (PRNG).
 -- 
 -- Authors:					Martin Zabel
+-- 
+-- Description:
+-- ------------------------------------
+--		The number sequence includes the value all-zeros, but not all-ones.
+--		Synchronized Reset is used.
+--
+-- License:
 -- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -35,20 +41,12 @@ entity arith_prng is
 	);
 	port (
 		clk	 : in	std_logic;
-		rst	 : in	std_logic;
-		got	 : in	std_logic;
-		val	 : out std_logic_vector(BITS-1 downto 0));
-
+		rst	 : in	std_logic;														-- reset value to initial seed
+		got	 : in	std_logic;														-- the current value has been got, and a new value should be calculated
+		val	 : out std_logic_vector(BITS-1 downto 0)		-- the pseudo-random number
+	);
 end arith_prng;
 
--- Signal description:
---	'rst'	 reset value to initial seed.
---	'got'	 the current value has been got, and a new value should be calculated.
---	'val'	 the pseudo-random number.
---
--- The number sequence includes the value all-zeros, but not all-ones.
---
--- Synchronized Reset is used.
 
 architecture rtl of arith_prng is
 

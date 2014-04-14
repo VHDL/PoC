@@ -1,15 +1,21 @@
-ï»¿-- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================================================================================================
--- Description:		 	Gray-Code counter.
+-- Module:				 	Gray-Code counter.
 --
 -- Authors:				 	Thomas B. Preusser
 --									Martin Zabel
 --									Steffen Koehler
+-- 
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
 -- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -28,18 +34,19 @@ library	ieee;
 use			ieee.std_logic_1164.all;
 use			ieee.numeric_std.all;
 
+
 entity arith_counter_gray is
 	generic (
-		BITS : positive;		 -- Bit width of the counter
-		INIT : natural := 0	-- Initial/reset counter value
+		BITS : positive;															-- Bit width of the counter
+		INIT : natural 				:= 0										-- Initial/reset counter value
 	);
 	port (
 		clk : in	std_logic;
 		rst : in	std_logic;													-- Reset to INIT value
 		inc : in	std_logic;													-- Increment
-		dec : in	std_logic := '0';									 -- Decrement
+		dec : in	std_logic		:= '0';									-- Decrement
 		val : out std_logic_vector(BITS-1 downto 0);	-- Value output
-		cry : out std_logic													 -- Carry output
+		cry : out std_logic														-- Carry output
 	);
 end arith_counter_gray;
 
