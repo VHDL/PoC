@@ -1,17 +1,22 @@
--- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================================================================================================
--- Description:			Global configuration settings.
---									This file evaluates the settings declared in the project specific package my_config.
---									See also template file my_config.vhdl.template.
+-- Package:					Global configuration settings.
 --
 -- Authors:					Thomas B. Preusser
 --									Martin Zabel
 --									Patrick Lehmann
+--
+-- Description:
+-- ------------------------------------
+--		This file evaluates the settings declared in the project specific package my_config.
+--		See also template file my_config.vhdl.template.
+--
+-- License:
 -- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.

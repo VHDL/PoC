@@ -1,44 +1,48 @@
--- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================================================================================================
--- Description:			FIFO, common clock (cc), pipelined interface
---									
---									The specified depth (MIN_DEPTH) is rounded up to the next suitable value.
---									
---									DATA_REG (=true) is a hint, that distributed memory or registers should be
---									used as data storage. The actual memory type depends on the device
---									architecture. See implementation for details.
---									
---									*STATE_*_BITS defines the granularity of the fill state indicator
---									'*state_*'. 'fstate_rd' is associated with the read clock domain and outputs
---									the guaranteed number of words available in the FIFO. 'estate_wr' is
---									associated with the write clock domain and outputs the number of words that
---									is guaranteed to be accepted by the FIFO without a capacity overflow. Note
---									that both these indicators cannot replace the 'full' or 'valid' outputs as
---									they may be implemented as giving pessimistic bounds that are minimally off
---									the true fill state.
---									
---									If a fill state is not of interest, set *STATE_*_BITS = 0.
---									
---									'fstate_rd' and 'estate_wr' are combinatorial outputs and include an address
---									comparator (subtractor) in their path.
---									
---									Examples:
---									- FSTATE_RD_BITS = 1: fstate_rd == 0 => 0/2 full
---									                      fstate_rd == 1 => 1/2 full (half full)
---									
---									- FSTATE_RD_BITS = 2: fstate_rd == 0 => 0/4 full
---									                      fstate_rd == 1 => 1/4 full
---									                      fstate_rd == 2 => 2/4 full
---									                      fstate_rd == 3 => 3/4 full
+-- Module:					FIFO, common clock (cc), pipelined interface
 --
 -- Authors:					Thomas B. Preusser
 --									Steffen Koehler
 --									Martin Zabel
+
+-- Description:
+-- ------------------------------------
+--		The specified depth (MIN_DEPTH) is rounded up to the next suitable value.
+--		
+--		DATA_REG (=true) is a hint, that distributed memory or registers should be
+--		used as data storage. The actual memory type depends on the device
+--		architecture. See implementation for details.
+--		
+--		*STATE_*_BITS defines the granularity of the fill state indicator
+--		'*state_*'. 'fstate_rd' is associated with the read clock domain and outputs
+--		the guaranteed number of words available in the FIFO. 'estate_wr' is
+--		associated with the write clock domain and outputs the number of words that
+--		is guaranteed to be accepted by the FIFO without a capacity overflow. Note
+--		that both these indicators cannot replace the 'full' or 'valid' outputs as
+--		they may be implemented as giving pessimistic bounds that are minimally off
+--		the true fill state.
+--		
+--		If a fill state is not of interest, set *STATE_*_BITS = 0.
+--		
+--		'fstate_rd' and 'estate_wr' are combinatorial outputs and include an address
+--		comparator (subtractor) in their path.
+--		
+--		Examples:
+--		- FSTATE_RD_BITS = 1: fstate_rd == 0 => 0/2 full
+--		                      fstate_rd == 1 => 1/2 full (half full)
+--		
+--		- FSTATE_RD_BITS = 2: fstate_rd == 0 => 0/4 full
+--		                      fstate_rd == 1 => 1/4 full
+--		                      fstate_rd == 2 => 2/4 full
+--		                      fstate_rd == 3 => 3/4 full
+--
+-- License:
 -- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.

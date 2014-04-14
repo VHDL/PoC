@@ -1,15 +1,21 @@
--- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================================================================================================
--- Description:			Common functions
+-- Package:					Common functions and types
 --
 -- Authors:					Thomas B. Preusser
 --									Martin Zabel
 --									Patrick Lehmann
+--
+-- Description:
+-- ------------------------------------
+--		For detailed documentation see below.
+--
+-- License:
 -- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -61,7 +67,7 @@ package functions is
 	SUBTYPE T_SLV_128						IS STD_LOGIC_VECTOR(127 DOWNTO 0);
 	
 	-- STD_LOGIC_VECTOR_VECTORs
---	TYPE		T_SLVV							IS ARRAY(NATURAL RANGE <>) OF STD_LOGIC_VECTOR;					-- VHDL 2008 syntax - not yet supported by Xilinx
+	--	TYPE		T_SLVV							IS ARRAY(NATURAL RANGE <>) OF STD_LOGIC_VECTOR;					-- VHDL 2008 syntax - not yet supported by Xilinx
 	TYPE		T_SLVV_2						IS ARRAY(NATURAL RANGE <>) OF T_SLV_2;
 	TYPE		T_SLVV_3						IS ARRAY(NATURAL RANGE <>) OF T_SLV_3;
 	TYPE		T_SLVV_4						IS ARRAY(NATURAL RANGE <>) OF T_SLV_4;
@@ -93,9 +99,10 @@ package functions is
 	TYPE T_BYTE_ORDER		IS (LITTLE_ENDIAN, BIG_ENDIAN);
 
 
+	-- ==========================================================================================================================================================
 	-- Function declarations
 	-- ==========================================================================================================================================================
-	
+
 	-- Environment
 	function IS_SIMULATION return boolean;													-- Forward declaration; consider this function PRIVATE
 	constant SIMULATION		: boolean		:= IS_SIMULATION;							-- Distinguishes Simulation from Synthesis
@@ -280,12 +287,11 @@ package functions is
 
 end package functions;
 
---library IEEE;
---use IEEE.numeric_std.all;
 
 package body functions is
 
 	-- Environment
+	-- ==========================================================================================================================================================
 	function IS_SIMULATION return boolean is
 		variable ret : boolean := false;
 	begin
@@ -328,6 +334,7 @@ package body functions is
 	END FUNCTION;
 
 	-- Logarithms: log*ceil*
+	-- ==========================================================================================================================================================
 	function log2ceil(arg : positive) return natural is
 		variable tmp : positive		:= 1;
 		variable log : natural		:= 0;
@@ -363,6 +370,7 @@ package body functions is
 	end function;
 	
 	-- *min / *max / *sum
+	-- ==========================================================================================================================================================
 	function imin(arg1 : integer; arg2 : integer) return integer is
 	begin
 		if arg1 < arg2 then return arg1; end if;
@@ -472,6 +480,7 @@ package body functions is
 	end function;
 
 	-- slicing boundary calulations
+	-- ==========================================================================================================================================================
 	FUNCTION low(lenvec : T_POSVEC; index : NATURAL) RETURN NATURAL IS
 		VARIABLE pos		: NATURAL		:= 0;
 	BEGIN
@@ -491,6 +500,7 @@ package body functions is
 	END FUNCTION;
 
 	-- Vector aggregate functions: slv_*
+	-- ==========================================================================================================================================================
 	FUNCTION slv_or(Vector : STD_LOGIC_VECTOR) RETURN STD_LOGIC IS
 		VARIABLE Result : STD_LOGIC := '0';
 	BEGIN
@@ -520,6 +530,7 @@ package body functions is
 	END FUNCTION;
 
 	-- Assign procedures: assign_*
+	-- ==========================================================================================================================================================
 	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL) IS
 		VARIABLE temp : STD_LOGIC_VECTOR(slm'high(2) DOWNTO slm'low(2));					-- Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); tested with ISE/iSIM 14.2
 	BEGIN
@@ -557,6 +568,7 @@ package body functions is
 	END PROCEDURE;
 
 	-- Matrix to matrix conversion: slm_slice*
+	-- ==========================================================================================================================================================
 	FUNCTION slm_slice(slm : T_SLM; RowIndex : NATURAL; ColIndex : NATURAL; Height : NATURAL; Width : NATURAL) RETURN T_SLM IS
 		VARIABLE Result		: T_SLM(Height - 1 DOWNTO 0, Width - 1 DOWNTO 0)		:= (OTHERS => (OTHERS => '0'));
 	BEGIN
@@ -580,7 +592,7 @@ package body functions is
 	END FUNCTION;
 
 	-- Matrix to vector conversion: get_*
-	
+	-- ==========================================================================================================================================================
 	-- get a matrix column
 	FUNCTION get_col(slm : T_SLM; ColumnIndex : NATURAL) RETURN STD_LOGIC_VECTOR IS
 		VARIABLE slv		: STD_LOGIC_VECTOR(slm'range(1));
@@ -618,6 +630,7 @@ package body functions is
 	END FUNCTION;
 	
 	-- Convert to bit: to_sl
+	-- ==========================================================================================================================================================
 	FUNCTION to_sl(Value : BOOLEAN) RETURN STD_LOGIC IS
 	BEGIN
 		RETURN ite(Value, '1', '0');
@@ -640,7 +653,7 @@ package body functions is
 	END FUNCTION;
 
 	-- Convert to vector: to_slv
-	
+	-- ==========================================================================================================================================================
 	-- short for std_logic_vector(to_unsigned(Value, Size))
 	FUNCTION to_slv(Value : NATURAL; Size : POSITIVE) RETURN STD_LOGIC_VECTOR IS
 	BEGIN
@@ -658,7 +671,7 @@ package body functions is
 	END FUNCTION;
 	
 	-- Convert flat vector to avector-vector: to_slvv_*
-	
+	-- ==========================================================================================================================================================
 	-- create vector-vector from vector (4 bit)
 	FUNCTION to_slvv_4(slv : STD_LOGIC_VECTOR) RETURN T_SLVV_4 IS
 		VARIABLE Result		: T_SLVV_4((slv'length / 4) - 1 DOWNTO 0);
@@ -744,7 +757,7 @@ package body functions is
 	END FUNCTION;
 
 	-- Convert matrix to avector-vector: to_slvv_*
-	
+	-- ==========================================================================================================================================================
 	-- create vector-vector from matrix (4 bit)
 	FUNCTION to_slvv_4(slm : T_SLM) RETURN T_SLVV_4 IS
 		VARIABLE Result		: T_SLVV_4(slm'range);
@@ -830,7 +843,7 @@ package body functions is
 	END FUNCTION;
 	
 	-- Convert vector-vector to matrix: to_slm
-
+	-- ==========================================================================================================================================================
 	-- create matrix from vector-vector
 	FUNCTION to_slm(slvv : T_SLVV_4) RETURN T_SLM IS
 		VARIABLE slm		: T_SLM(slvv'range, 3 DOWNTO 0);
@@ -927,6 +940,7 @@ package body functions is
 	END FUNCTION;
 	
 	-- to_char
+	-- ==========================================================================================================================================================
 	FUNCTION to_char(value : STD_LOGIC) RETURN CHARACTER IS
 	BEGIN
 		CASE value IS
@@ -967,6 +981,7 @@ package body functions is
 	END FUNCTION;
 
 	-- to_string
+	-- ==========================================================================================================================================================
 	FUNCTION to_string(value : BOOLEAN) RETURN STRING IS
 	BEGIN
 		RETURN ite(value, "TRUE", "FALSE");
@@ -1041,6 +1056,7 @@ package body functions is
 	END FUNCTION;
 
 	-- to_*
+	-- ==========================================================================================================================================================
 	FUNCTION to_digit(chr : CHARACTER; base : CHARACTER := 'd') RETURN INTEGER IS
 	BEGIN
 		CASE base IS
@@ -1131,6 +1147,7 @@ package body functions is
 	END FUNCTION;
 	
 	-- is_*
+	-- ==========================================================================================================================================================
 	FUNCTION is_sl(c : CHARACTER) RETURN BOOLEAN IS
 	BEGIN
 		CASE C IS
@@ -1148,6 +1165,7 @@ package body functions is
 	END FUNCTION;
 
 	-- Change vector direction
+	-- ==========================================================================================================================================================
 	FUNCTION dir(slvv : T_SLVV_8) RETURN T_SLVV_8 IS
 		VARIABLE Result : T_SLVV_8(slvv'reverse_range);
 	BEGIN
@@ -1245,6 +1263,7 @@ package body functions is
 	END FUNCTION;
 	
 	-- Swap sub vectors in vector
+	-- ==========================================================================================================================================================
 	FUNCTION swap(slv : STD_LOGIC_VECTOR; Size : POSITIVE) RETURN STD_LOGIC_VECTOR IS
 		CONSTANT SegmentCount	: NATURAL													:= slv'length / Size;
 		VARIABLE FromH				: NATURAL;
@@ -1264,7 +1283,7 @@ package body functions is
 	END FUNCTION;
 
 	-- binary encoding conversion functions
-	
+	-- ==========================================================================================================================================================
 	-- One-Hot-Code to Binary-Code
 	FUNCTION onehot2bin(onehot : STD_LOGIC_VECTOR; ReportError : BOOLEAN := FALSE) RETURN STD_LOGIC_VECTOR IS
 	BEGIN
@@ -1340,7 +1359,7 @@ package body functions is
 	end gray2bin;
 
 	-- bit searching / bit indices
-
+	-- ==========================================================================================================================================================
 	-- Least-Significant Set Bit (lssb): computes a vector of the same length with at most one bit set at the rightmost '1' found in arg.
 	function lssb(arg : std_logic_vector) return std_logic_vector is
 	begin
@@ -1386,6 +1405,7 @@ package body functions is
 
 
 	-- if-then-else (ite)
+	-- ==========================================================================================================================================================
 	FUNCTION ite(cond : BOOLEAN; value1 : INTEGER; value2 : INTEGER) RETURN INTEGER IS
 	BEGIN
 		IF (cond = TRUE) THEN
@@ -1450,6 +1470,7 @@ package body functions is
 	END FUNCTION;
 	
 	-- Resize functions
+	-- ==========================================================================================================================================================
 	-- Resizes the vector to the specified length. Input vectors larger than the specified size are truncated from the left side. Smaller input
 	-- vectors are extended on the left by the provided fill value (default: '0'). Use the resize functions of the numeric_std package for
 	-- value-preserving resizes of the signed and unsigned data types.
@@ -1487,6 +1508,7 @@ package body functions is
 	END FUNCTION;
 
 	-- Move vector boundaries
+	-- ==========================================================================================================================================================
 	FUNCTION move(slv : STD_LOGIC_VECTOR; pos : INTEGER) RETURN STD_LOGIC_VECTOR IS
 		VARIABLE Result : STD_LOGIC_VECTOR(slv'left + pos DOWNTO slv'right + pos) := slv;
 	BEGIN
@@ -1494,6 +1516,7 @@ package body functions is
 	END FUNCTION;
 
 	-- Character functions
+	-- ==========================================================================================================================================================
 	FUNCTION to_lower(char : CHARACTER) RETURN CHARACTER IS
 	BEGIN
 		IF ((CHARACTER'pos('A') <= CHARACTER'pos(char)) AND (CHARACTER'pos(char) <= CHARACTER'pos('Z'))) THEN
@@ -1513,6 +1536,7 @@ package body functions is
 	END FUNCTION;
 	
 	-- String functions
+	-- ==========================================================================================================================================================
 	FUNCTION str_length(str : STRING) RETURN NATURAL IS
 		VARIABLE l	: NATURAL		:= 0;
 	BEGIN
@@ -1563,6 +1587,9 @@ package body functions is
 		END LOOP;
 		RETURN temp;
 	END FUNCTION;
+
+	-- FIXME: old functions => must be sorted into a category
+	-- ==========================================================================================================================================================
 
 	-- Calculates the length of a vector discounting leading Zeros
 	-- The minimum length returned is 1 even if the whole vector is zeros.

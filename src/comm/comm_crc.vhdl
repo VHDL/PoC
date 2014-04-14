@@ -1,19 +1,25 @@
--- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================================================================================================
--- Description:			Computes the Cyclic Redundancy Check (CRC) for a data packet as remainder of the
---									polynomial division of the message by the given generator polynomial.
---
---									The computation is unrolled so as to process an arbitrary number of
---									message bits per step. The generated CRC is independent from the
---									chosen processing width.
+-- Module:					Computes the Cyclic Redundancy Check (CRC)
 -- 
 -- Authors:					Thomas B. Preusser
 --									Patrick Lehmann
+--
+-- Description:
+-- ------------------------------------
+--		Computes the Cyclic Redundancy Check (CRC) for a data packet as remainder of the
+--		polynomial division of the message by the given generator polynomial (GEN).
+--
+--		The computation is unrolled so as to process an arbitrary number of
+--		message bits per step. The generated CRC is independent from the
+--		chosen processing width.
+--
+-- License:
 -- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -36,10 +42,6 @@ use			PoC.functions.all;
 
 
 entity comm_crc is
-	-----------------------------------------------------------------------------
-	-- Calculates the Remainder of the Division by the Generator Polynomial GEN.
-	--
-
 	generic (
 		GEN		: bit_vector;		 															-- Generator Polynom
 		BITS	: positive;			 															-- Number of Bits to be processed in parallel

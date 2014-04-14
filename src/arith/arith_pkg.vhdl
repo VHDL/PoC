@@ -1,15 +1,20 @@
--- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================================================================================================
--- Description:			VHDL package for component declarations, types and functions assoziated to the PoC.arith namespace
---									For detailed documentation see below.
--- 
+-- Package:					VHDL package for component declarations, types and functions assoziated to the PoC.arith namespace
+--
 -- Authors:					Thomas B. Preusser
 --									Martin Zabel
+--
+-- Description:
+-- ------------------------------------
+--		For detailed documentation see below.
+-- 
+-- License:
 -- ============================================================================================================================================================
--- Copyright 2007-2013 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
