@@ -33,6 +33,10 @@ library PoC;
 
 package functions is
 
+  type T_INTVEC is array(natural range<>) of integer;
+  type T_NATVEC is array(natural range<>) of natural;
+  type T_POSVEC is array(natural range<>) of positive;
+  
   --+ Status +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   -- Distinguishes Simulation from Synthesis
   function IS_SIMULATION return boolean; -- Consider it PRIVATE
@@ -47,11 +51,17 @@ package functions is
   --+ Min / Max ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   -- Calculates: max(arg1, arg2) for integers
   function imax(arg1 : integer; arg2 : integer) return integer;
+  function imax(arg : T_INTVEC) return integer;
+  function imax(arg : T_NATVEC) return natural;
+  function imax(arg : T_POSVEC) return positive;
   -- Calculates: max(arg1, arg2) for reals
   function rmax(arg1 : real; arg2 : real) return real;
 
   -- Calculates: min(arg1, arg2) for integers
   function imin(arg1 : integer; arg2 : integer) return integer;
+  function imin(arg : T_INTVEC) return integer;
+  function imin(arg : T_NATVEC) return natural;
+  function imin(arg : T_POSVEC) return positive;
   -- Calculates: min(arg1, arg2) for reals
   function rmin(arg1 : real; arg2 : real) return real;
 
@@ -157,6 +167,39 @@ package body functions is
     if arg1>arg2 then return arg1; end if;
     return arg2;
   end;
+  function imax(arg : T_INTVEC) return integer is
+    variable res : integer;
+  begin
+    res := integer'low;
+    for i in arg'range loop
+      if arg(i) > res then
+        res := arg(i);
+      end if;
+    end loop;
+    return  res;
+  end;
+  function imax(arg : T_NATVEC) return natural is
+    variable res : natural;
+  begin
+    res := natural'low;
+    for i in arg'range loop
+      if arg(i) > res then
+        res := arg(i);
+      end if;
+    end loop;
+    return  res;
+  end;
+  function imax(arg : T_POSVEC) return positive is
+    variable res : positive;
+  begin
+    res := positive'low;
+    for i in arg'range loop
+      if arg(i) > res then
+        res := arg(i);
+      end if;
+    end loop;
+    return  res;
+  end;
 
   function rmax(arg1 : real; arg2 : real) return real is
   begin
@@ -168,6 +211,39 @@ package body functions is
   begin
     if arg1<arg2 then return arg1; end if;
     return arg2;
+  end;
+  function imin(arg : T_INTVEC) return integer is
+    variable res : integer;
+  begin
+    res := integer'high;
+    for i in arg'range loop
+      if arg(i) < res then
+        res := arg(i);
+      end if;
+    end loop;
+    return  res;
+  end;
+  function imin(arg : T_NATVEC) return natural is
+    variable res : natural;
+  begin
+    res := natural'high;
+    for i in arg'range loop
+      if arg(i) < res then
+        res := arg(i);
+      end if;
+    end loop;
+    return  res;
+  end;
+  function imin(arg : T_POSVEC) return positive is
+    variable res : positive;
+  begin
+    res := positive'high;
+    for i in arg'range loop
+      if arg(i) < res then
+        res := arg(i);
+      end if;
+    end loop;
+    return  res;
   end;
 
   function rmin(arg1 : real; arg2 : real) return real is
