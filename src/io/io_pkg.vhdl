@@ -3,16 +3,15 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================================================================================================
--- Module:					VHDL package for component declarations, types and functions assoziated to the PoC.io namespace
---									For detailed documentation see below.
--- 
--- Description:
---		The IICController transmitts words over the I²C bus (SerialClock - SCL,
---		SerialData - SDA) and also receives them. This controller utilizes the
---		IICBusController to send/receive bits over the I²C bus. This controller
---		is compatible to the System Management Bus (SMBus).
+-- Package:					VHDL package for component declarations, types and functions assoziated to the PoC.io namespace
 --
 -- Authors:					Patrick Lehmann
+-- 
+-- Description:
+-- ------------------------------------
+--		For detailed documentation see below.
+--
+-- License:
 -- ============================================================================================================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 

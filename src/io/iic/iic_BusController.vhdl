@@ -1,19 +1,22 @@
--- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================================================================================================
 -- Module:					I²C BusController (IICBusController)
 -- 
+-- Authors:					Patrick Lehmann
+--
 -- Description:
+-- ------------------------------------
 --		The IICBusController transmitts bits over the I²C bus (SerialClock - SCL,
 --		SerialData - SDA) and also receives them.	To send/receive words over the
 --		I²C bus, use the IICController, which utilizes this controller. This
 --		controller is compatible to the System Management Bus (SMBus).
 --
--- Authors:					Patrick Lehmann
+-- License:
 -- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -28,7 +31,6 @@
 -- limitations under the License.
 -- ============================================================================================================================================================
 
-
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
@@ -37,12 +39,6 @@ LIBRARY PoC;
 USE			PoC.functions.ALL;
 USE			PoC.io.ALL;
 
---LIBRARY L_Global;
---USE			L_Global.GlobalTypes.ALL;
-
--- not yet transfered to PoC
---LIBRARY L_IO;
---USE			L_IO.IOTypes.ALL;
 
 ENTITY IICBusController IS
 	GENERIC (
