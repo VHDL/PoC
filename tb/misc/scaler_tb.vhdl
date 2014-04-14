@@ -55,7 +55,7 @@ architecture tb of scaler_tb is
   -- component generics
   constant MULS : T_POSVEC := (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
   constant DIVS : T_POSVEC := (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
-  constant ARGS : T_NATVEC := (0, 1, 2, 3, 4, 31, 32, 33, 63, 64, 65, 95, 96, 97);
+  constant ARGS : T_NATVEC := (0, 1, 2, 3, 4, 31, 32, 33, 63, 64, 65, 95, 96, 97, 127, 128, 129, 196, 254, 255);
 
   -- component ports
   signal clk   : std_logic;

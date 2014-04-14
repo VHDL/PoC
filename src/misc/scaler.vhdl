@@ -79,14 +79,18 @@ architecture rtl of scaler is
 
   -- Derived Constants
   constant N : positive := arg'length;
-  constant EXTRA_BITS    : positive := imax(log2ceil(imax(MULS)), log2ceil(imax(DIVS)/2+1));
-  constant MAX_DIV_STEPS : positive := N + EXTRA_BITS - log2ceil(imin(DIVS));
-  constant MAX_ANY_STEPS : positive := imax(N, MAX_DIV_STEPS);
+  constant X : positive := log2ceil(imax(imax(MULS), imax(DIVS)/2+1));
+  constant R : positive := log2ceil(imax(DIVS)+1);
+
+  constant MAX_MUL_STEPS : positive := N;
+  constant MAX_DIV_STEPS : positive := N + X - log2ceil(imin(DIVS)+1) + 1;
+  constant MAX_ANY_STEPS : positive := imax(MAX_MUL_STEPS, MAX_DIV_STEPS);
+
 
   -- Values computed for the selected multiplier/divisor pair.
-  signal multiplier : unsigned(EXTRA_BITS   downto 0);  -- The actual multiplier value.
-  signal muloffset  : unsigned(EXTRA_BITS-1 downto 0);  -- Offset for correct rounding.
-  signal divisor    : unsigned(EXTRA_BITS   downto 0);  -- The actual divisor value.
+  signal muloffset  : unsigned(X-1 downto 0);  -- Offset for correct rounding.
+  signal multiplier : unsigned(X   downto 0);  -- The actual multiplier value.
+  signal divisor    : unsigned(R-1  downto 0);  -- The actual divisor value.
   signal divcini    : unsigned(log2ceil(MAX_ANY_STEPS)-1 downto 0);  -- Count for division steps.
   
 begin
@@ -109,28 +113,37 @@ begin
       end if;
     end process;
     multiplier <= (others => 'X') when Is_X(std_logic_vector(MS)) else
-                  to_unsigned(MULS(to_integer(MS)), EXTRA_BITS+1);
+                  to_unsigned(MULS(to_integer(MS)), multiplier'length);
   end generate genMultiMul;
   genSingleMul: if MULS'length = 1 generate
-    multiplier <= to_unsigned(MULS(0), EXTRA_BITS+1);
+    multiplier <= to_unsigned(MULS(0), multiplier'length);
   end generate genSingleMul;
 
   -- Selection of Divisor
   blkDiv: block
-    -- Normalizes Dividers to left-aligned '1'
-    function normalizeDivs return T_POSVEC is
-      variable org : T_POSVEC(0 to DIVS'length-1);
-      variable ele : positive;
-      variable res : T_POSVEC(0 to DIVS'length-1);
+
+    function computeSteps return T_POSVEC is
+      variable res : T_POSVEC(DIVS'range);
     begin
-      org := DIVS;
-      for i in org'range loop
-        ele    := org(i);
-        res(i) := 2**(EXTRA_BITS-log2ceil(ele)) * ele;
+      for i in DIVS'range loop
+        res(i) := N+X - log2ceil(DIVS(i)+1) + 1;
       end loop;
       return res;
-    end normalizeDivs;
-    constant DIVS_N : T_POSVEC(0 to DIVS'length-1) := normalizeDivs;
+    end computeSteps;
+    constant DIV_STEPS : T_POSVEC(DIVS'range) := computeSteps;
+
+    function computeAlign return T_POSVEC is
+      variable base : positive;
+      variable res  : T_POSVEC(DIVS'range);
+    begin
+      base := imin(DIV_STEPS);
+      for i in DIVS'range loop
+        res(i) := DIVS(i) * 2**(DIV_STEPS(i) - base);
+      end loop;
+      return res;
+    end computeAlign;
+    constant DIV_ALIGN : T_POSVEC(DIVS'range) := computeAlign;
+
   begin
     genMultiDiv: if DIVS'length > 1 generate
       signal DS : unsigned(dsel'range) := (others => '-');
@@ -146,16 +159,16 @@ begin
         end if;
       end process;
       muloffset <= (others => 'X') when Is_X(dsel) else
-                   to_unsigned(DIVS(to_integer(unsigned(dsel)))/2, EXTRA_BITS);
+                   to_unsigned(DIVS(to_integer(unsigned(dsel)))/2, muloffset'length);
       divisor   <= (others => 'X') when Is_X(std_logic_vector(DS)) else
-                   to_unsigned(DIVS_N(to_integer(DS)), EXTRA_BITS+1);
+                   to_unsigned(DIV_ALIGN(to_integer(DS)), divisor'length);
       divcini   <= (others => 'X') when Is_X(std_logic_vector(DS)) else
-                   to_unsigned(N+EXTRA_BITS-log2ceil(DIVS(to_integer(unsigned(DS))))-1, divcini'length);
+                   to_unsigned(DIV_STEPS(to_integer(DS))-1, divcini'length);
     end generate genMultiDiv;
     genSingleDiv: if DIVS'length = 1 generate
-      muloffset <= to_unsigned(DIVS(0)/2, EXTRA_BITS);
-      divisor   <= to_unsigned(DIVS_N(0), EXTRA_BITS+1);
-      divcini   <= to_unsigned(N+EXTRA_BITS-log2ceil(DIVS(0))-1, divcini'length);
+      muloffset <= to_unsigned(DIVS(0)/2, muloffset'length);
+      divisor   <= to_unsigned(DIV_ALIGN(0), divisor'length);
+      divcini   <= to_unsigned(DIV_STEPS(0)-1, divcini'length);
     end generate genSingleDiv;
   end block blkDiv;
 
@@ -163,11 +176,11 @@ begin
   -- Implementation of Scaling Operation
   blkMain : block
     signal C : unsigned(1+log2ceil(MAX_ANY_STEPS) downto 0) := ('0', others => '-');
-    signal Q : unsigned(EXTRA_BITS+N-1 downto 0)            := (others      => '-');
+    signal Q : unsigned(X+N                       downto 0) := (others      => '-');
   begin
     process(clk)
       variable cnxt : unsigned(C'range);
-      variable d    : unsigned(EXTRA_BITS downto 0);
+      variable d    : unsigned(R downto 0);
     begin
       if rising_edge(clk) then
         if rst = '1' then
@@ -176,30 +189,27 @@ begin
         else
           if start = '1' then
             C <= "11" & to_unsigned(N-1, C'length-2);
-            Q <= muloffset & unsigned(arg);
+            Q <= '0' & muloffset & unsigned(arg);
           elsif C(C'left) = '1' then
 
             cnxt := C - 1;
             if C(C'left-1) = '1' then
               -- MUL Phase
-              Q <= '0' & Q(Q'left downto 1);
+              Q <= "00" & Q(X+N-1 downto 1);
               if Q(0) = '1' then
-                Q(Q'left downto N-1) <= ('0' & Q(Q'left downto N)) + multiplier;
+                Q(X+N-1 downto N-1) <= ('0' & Q(X+N-1 downto N)) + multiplier;
               end if;
 
               -- Transition to DIV
-              if log2ceil(imax(DIVS)) /= log2ceil(imin(DIVS)) or
-                 to_unsigned(N+EXTRA_BITS-log2ceil(DIVS(0))-1, divcini'length) /= (divcini'range => '1') then
-                if cnxt(cnxt'left-1) = '0' then
-                  cnxt(cnxt'left-2 downto 0) := divcini;
-                end if;
+              if cnxt(cnxt'left-1) = '0' then
+                cnxt(cnxt'left-2 downto 0) := divcini;
               end if;
             else
               -- DIV Phase
-              d := Q(Q'left downto N-1) - divisor;
+              d := Q(Q'left downto Q'left-R) - divisor;
               Q <= Q(Q'left-1 downto 0) & not d(d'left);
               if d(d'left) = '0' then
-                Q(Q'left downto N) <= d(d'left-1 downto 0);
+                Q(Q'left downto Q'left-R+1) <= d(d'left-1 downto 0);
               end if;
             end if;
             C <= cnxt;
