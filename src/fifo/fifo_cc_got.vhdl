@@ -1,58 +1,71 @@
---
--- Copyright (c) 2008-2012
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
+-- ============================================================================================================================================================
+-- Module:					FIFO, common clock (cc), pipelined interface
 --
+-- Authors:					Thomas B. Preusser
+--									Steffen Koehler
+--									Martin Zabel
 
+-- Description:
+-- ------------------------------------
+--		The specified depth (MIN_DEPTH) is rounded up to the next suitable value.
+--		
+--		DATA_REG (=true) is a hint, that distributed memory or registers should be
+--		used as data storage. The actual memory type depends on the device
+--		architecture. See implementation for details.
+--		
+--		*STATE_*_BITS defines the granularity of the fill state indicator
+--		'*state_*'. 'fstate_rd' is associated with the read clock domain and outputs
+--		the guaranteed number of words available in the FIFO. 'estate_wr' is
+--		associated with the write clock domain and outputs the number of words that
+--		is guaranteed to be accepted by the FIFO without a capacity overflow. Note
+--		that both these indicators cannot replace the 'full' or 'valid' outputs as
+--		they may be implemented as giving pessimistic bounds that are minimally off
+--		the true fill state.
+--		
+--		If a fill state is not of interest, set *STATE_*_BITS = 0.
+--		
+--		'fstate_rd' and 'estate_wr' are combinatorial outputs and include an address
+--		comparator (subtractor) in their path.
+--		
+--		Examples:
+--		- FSTATE_RD_BITS = 1: fstate_rd == 0 => 0/2 full
+--		                      fstate_rd == 1 => 1/2 full (half full)
+--		
+--		- FSTATE_RD_BITS = 2: fstate_rd == 0 => 0/4 full
+--		                      fstate_rd == 1 => 1/4 full
+--		                      fstate_rd == 2 => 2/4 full
+--		                      fstate_rd == 3 => 3/4 full
 --
--- Entity: fifo_cc_got
--- Author(s): Thomas B. Preusser <thomas.preusser@tu-dresden.de>
---            Steffen Koehler   <steffen.koehler@tu-dresden.de>
---            Martin Zabel      <martin.zabel@tu-dresden.de>
+-- License:
+-- ============================================================================================================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
--- FIFO, common clock, pipelined interface
---
--- The specified depth (MIN_DEPTH) is rounded up to the next suitable value.
---
--- *STATE_*_BITS defines the granularity of the fill state indicator
--- '*state_*'. 'fstate_rd' is associated with the read clock domain and outputs
--- the guaranteed number of words available in the FIFO. 'estate_wr' is
--- associated with the write clock domain and outputs the number of words that
--- is guaranteed to be accepted by the FIFO without a capacity overflow. Note
--- that both these indicators cannot replace the 'full' or 'valid' outputs as
--- they may be implemented as giving pessimistic bounds that are minimally off
--- the true fill state.
---
--- If a fill state is not of interest, set *STATE_*_BITS = 0.
---
--- 'fstate_rd' and 'estate_wr' are combinatorial outputs and include an address
--- comparator (subtractor) in their path.
---
--- Examples:
--- - FSTATE_RD_BITS = 1: fstate_rd == 0 => 0/2 full
---                       fstate_rd == 1 => 1/2 full (half full)
---
--- - FSTATE_RD_BITS = 2: fstate_rd == 0 => 0/4 full
---                       fstate_rd == 1 => 1/4 full
---                       fstate_rd == 2 => 2/4 full
---                       fstate_rd == 3 => 3/4 full
---
---
--- Revision:    $Revision: 1.13 $
--- Last change: $Date: 2013-05-28 12:28:19 $
---
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================================================================================================
 
-library IEEE;
-use IEEE.std_logic_1164.all;
+library	IEEE;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
 
-library poc;
-use poc.functions.all;
+library	poc;
+use			poc.config.all;
+use			poc.functions.all;
+use			poc.ocram.ocram_sdp;
+
 
 entity fifo_cc_got is
   generic (
@@ -82,12 +95,6 @@ entity fifo_cc_got is
   );
 end fifo_cc_got;
 
-library IEEE;
-use IEEE.numeric_std.all;
-
-library poc;
-use poc.config.all;
-use poc.ocram.ocram_sdp;
 
 architecture rtl of fifo_cc_got is
   
@@ -95,7 +102,7 @@ architecture rtl of fifo_cc_got is
   constant A_BITS : natural := log2ceil(MIN_DEPTH);
 
   -- Force Carry-Chain Use for Pointer Increments on Xilinx Architectures
-  constant FORCE_XILCY : boolean := (VENDOR = VENDOR_XILINX) and STATE_REG and (A_BITS > 4);
+  constant FORCE_XILCY : boolean := (not SIMULATION) and (VENDOR = VENDOR_XILINX) and STATE_REG and (A_BITS > 4);
 
   -----------------------------------------------------------------------------
   -- Memory Pointers
@@ -385,8 +392,11 @@ begin
     signal regfile : regfile_t;
     attribute ram_style            : string;  -- XST specific
     attribute ram_style of regfile : signal is "distributed";
-    attribute ramstyle             : string;  -- Quartus specific
-    attribute ramstyle of regfile  : signal is "logic";
+
+    -- Altera Quartus II: Allow automatic RAM type selection.
+    -- For small RAMs, registers are used on Cyclone devices and the M512 type
+    -- is used on Stratix devices. Pass-through logic is automatically added 
+    -- if required. (Warning can be ignored.)
   
   begin
 

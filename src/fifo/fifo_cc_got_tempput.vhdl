@@ -1,71 +1,81 @@
---
--- Copyright (c) 2008-2012
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
+-- ============================================================================================================================================================
+-- Module:					FIFO, common clock (cc), pipelined interface,
+--									writes only become effective after explicit commit
 --
-
+-- Authors:					Thomas B. Preusser
+--									Steffen Koehler
+--									Martin Zabel
 --
--- Entity: fifo_cc_got_tempput
--- Author(s): Thomas B. Preusser <thomas.preusser@tu-dresden.de>
---            Steffen Koehler    <steffen.koehler@tu-dresden.de>
---            Martin Zabel       <martin.zabel@tu-dresden.de>
+-- Description:
+-- ------------------------------------
+--		The specified depth (MIN_DEPTH) is rounded up to the next suitable value.
+--		
+--		As uncommitted writes populate FIFO space that is not yet available for
+--		reading, an instance of this FIFO can, indeed, report 'full' and 'not vld'
+--		at the same time. While a 'commit' would eventually make data available for
+--		reading ('vld'), a 'rollback' would free the space for subsequent writing
+--		('not ful').
+--		
+--		'commit' and 'rollback' are inclusive and apply to all writes ('put') since
+--		the previous 'commit' or 'rollback' up to and including a potentially
+--		simultaneous write.
+--		
+--		The FIFO state upon a simultaneous assertion of 'commit' and 'rollback' is
+--		*undefined*! 
+--		
+--		*STATE_*_BITS defines the granularity of the fill state indicator
+--		'*state_*'. 'fstate_rd' is associated with the read clock domain and outputs
+--		the guaranteed number of words available in the FIFO. 'estate_wr' is
+--		associated with the write clock domain and outputs the number of words that
+--		is guaranteed to be accepted by the FIFO without a capacity overflow. Note
+--		that both these indicators cannot replace the 'full' or 'valid' outputs as
+--		they may be implemented as giving pessimistic bounds that are minimally off
+--		the true fill state.
+--		
+--		If a fill state is not of interest, set *STATE_*_BITS = 0.
+--		
+--		'fstate_rd' and 'estate_wr' are combinatorial outputs and include an address
+--		comparator (subtractor) in their path.
+--		
+--		Examples:
+--		- FSTATE_RD_BITS = 1: fstate_rd == 0 => 0/2 full
+--		                      fstate_rd == 1 => 1/2 full (half full)
+--		
+--		- FSTATE_RD_BITS = 2: fstate_rd == 0 => 0/4 full
+--		                      fstate_rd == 1 => 1/4 full
+--		                      fstate_rd == 2 => 2/4 full
+--		                      fstate_rd == 3 => 3/4 full
 -- 
--- FIFO, common clock, pipelined interface,
---       writes only become effective after explicit commit
---
--- The specified depth (MIN_DEPTH) is rounded up to the next suitable value.
---
--- As uncommitted writes populate FIFO space that is not yet available for
--- reading, an instance of this FIFO can, indeed, report 'full' and 'not vld'
--- at the same time. While a 'commit' would eventually make data available for
--- reading ('vld'), a 'rollback' wold free the space for subsequent writing
--- ('not ful').
---
--- 'commit' and 'rollback' are inclusive and apply to all writes ('put') since
--- the previous 'commit' or 'rollback' up to a potential parallel write.
---
--- The FIFO state upon a simultaneous assertion of 'commit' and 'rollback' is
--- *undefined*! 
---
--- *STATE_*_BITS defines the granularity of the fill state indicator
--- '*state_*'. 'fstate_rd' is associated with the read clock domain and outputs
--- the guaranteed number of words available in the FIFO. 'estate_wr' is
--- associated with the write clock domain and outputs the number of words that
--- is guaranteed to be accepted by the FIFO without a capacity overflow. Note
--- that both these indicators cannot replace the 'full' or 'valid' outputs as
--- they may be implemented as giving pessimistic bounds that are minimally off
--- the true fill state.
---
--- If a fill state is not of interest, set *STATE_*_BITS = 0.
---
--- 'fstate_rd' and 'estate_wr' are combinatorial outputs and include an address
--- comparator (subtractor) in their path.
---
--- Examples:
--- - FSTATE_RD_BITS = 1: fstate_rd == 0 => 0/2 full
---                       fstate_rd == 1 => 1/2 full (half full)
---
--- - FSTATE_RD_BITS = 2: fstate_rd == 0 => 0/4 full
---                       fstate_rd == 1 => 1/4 full
---                       fstate_rd == 2 => 2/4 full
---                       fstate_rd == 3 => 3/4 full
---
---
--- Revision:    $Revision: 1.7 $
--- Last change: $Date: 2012-12-21 13:09:15 $
---
+-- License:
+-- ============================================================================================================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================================================================================================
 
-library IEEE;
-use IEEE.std_logic_1164.all;
+library	IEEE;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
 
-library poc;
-use poc.functions.all;
+library	poc;
+use			poc.config.all;
+use			poc.functions.all;
+use			poc.ocram.ocram_sdp;
+
 
 entity fifo_cc_got_tempput is
   generic (
@@ -98,12 +108,6 @@ entity fifo_cc_got_tempput is
   );
 end fifo_cc_got_tempput;
 
-library IEEE;
-use IEEE.numeric_std.all;
-
-library poc;
-use poc.config.all;
-use poc.ocram.ocram_sdp;
 
 architecture rtl of fifo_cc_got_tempput is
   
@@ -111,7 +115,7 @@ architecture rtl of fifo_cc_got_tempput is
   constant A_BITS : natural := log2ceil(MIN_DEPTH);
 
   -- Force Carry-Chain Use for Pointer Increments on Xilinx Architectures
-  constant FORCE_XILCY : boolean := (VENDOR = VENDOR_XILINX) and STATE_REG and (A_BITS > 4);
+  constant FORCE_XILCY : boolean := (not SIMULATION) and (VENDOR = VENDOR_XILINX) and STATE_REG and (A_BITS > 4);
 
   -----------------------------------------------------------------------------
   -- Memory Pointers
@@ -209,6 +213,7 @@ begin
     if rising_edge(clk) then
       if rst = '1' then
         IP0 <= (others => '0');
+        IPm <= (others => '0');
         OP0 <= (others => '0');
       else
         -- Update Input Pointer upon Write
@@ -406,8 +411,11 @@ begin
     signal regfile : regfile_t;
     attribute ram_style            : string;  -- XST specific
     attribute ram_style of regfile : signal is "distributed";
-    attribute ramstyle             : string;  -- Quartus specific
-    attribute ramstyle of regfile  : signal is "logic";
+
+    -- Altera Quartus II: Allow automatic RAM type selection.
+    -- For small RAMs, registers are used on Cyclone devices and the M512 type
+    -- is used on Stratix devices. Pass-through logic is automatically added 
+    -- if required. (Warning can be ignored.)
   
   begin
 
@@ -415,11 +423,17 @@ begin
     process(clk)
     begin
       if rising_edge(clk) then
+        --synthesis translate_off
         if SIMULATION AND (rst = '1') then
           regfile <= (others => (others => '-'));
-        elsif we = '1' then
-          regfile(to_integer(wa)) <= din;
+        else
+        --synthesis translate_on
+          if we = '1' then
+            regfile(to_integer(wa)) <= din;
+          end if;
+        --synthesis translate_off
         end if;
+        --synthesis translate_on
       end if;
     end process;
 

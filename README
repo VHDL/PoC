@@ -26,3 +26,6 @@ git checkout private
 git branch "tom/master"
 git branch "zabel/master"
 git branch "paebbels/master"
+
+# Push new branches to server
+git push origin private:private

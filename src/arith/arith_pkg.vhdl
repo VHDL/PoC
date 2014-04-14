@@ -1,94 +1,104 @@
---
--- Copyright (c) 2008-2013
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
+-- ============================================================================================================================================================
+-- Package:					VHDL package for component declarations, types and functions assoziated to the PoC.arith namespace
 --
+-- Authors:					Thomas B. Preusser
+--									Martin Zabel
+--
+-- Description:
+-- ------------------------------------
+--		For detailed documentation see below.
+-- 
+-- License:
+-- ============================================================================================================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================================================================================================
 
---
--- Package: alu
--- Author(s): Martin Zabel    <martin.zabel@tu-dresden.de>
---            Thomas Preusser <thomas.preusser@tu-dresden.de>
--- 
--- Commonly used modules for ALUs or like.
---
--- Revision:    $Revision: 1.9 $
--- Last change: $Date: 2013-05-27 14:02:36 $
---
 library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+use			ieee.std_logic_1164.all;
+use			ieee.numeric_std.all;
+
 
 package arith_pkg is
 
-  component arith_gray_counter is
-    generic (
-      BITS : positive;     -- Bit Width of Counter
-      INIT : natural := 0  -- Binary Position of Counter Value after Reset
-    );
-    port (
-      clk : in  std_logic;
-      rst : in  std_logic;                          -- Reset to INIT Value
-      inc : in  std_logic;                          -- Increment
-      dec : in  std_logic := '0';                   -- Decrement
-      val : out std_logic_vector(BITS-1 downto 0);  -- Value Output
-      cry : out std_logic                           -- Carry Output
-    );
-  end component;
+	component arith_counter_gray is
+		generic (
+			BITS : positive;			-- Bit width of the counter
+			INIT : natural := 0		-- Initial/reset counter value
+		);
+		port (
+			clk : in	std_logic;
+			rst : in	std_logic;													-- Reset to INIT value
+			inc : in	std_logic;													-- Increment
+			dec : in	std_logic := '0';										-- Decrement
+			val : out std_logic_vector(BITS-1 downto 0);	-- Value output
+			cry : out std_logic														-- Carry output
+		);
+	end component;
 
-  component arith_prng
-    generic (
-      BITS : positive;
-      SEED : natural := 0
-    );
-    port (
-      clk : in  std_logic;
-      rst : in  std_logic;
-      got : in  std_logic;
-      val : out std_logic_vector(BITS-1 downto 0));
-  end component;
+	component arith_prng
+		generic (
+			BITS : positive;
+			SEED : natural := 0
+		);
+		port (
+			clk : in	std_logic;
+			rst : in	std_logic;
+			got : in	std_logic;
+			val : out std_logic_vector(BITS-1 downto 0));
+	end component;
 
-  component arith_muls_wide
-    generic (
-      NA    : integer range 2 to 18;
-      NB    : integer range 19 to 36;
-      SPLIT : positive);
-    port (
-      a : in  signed(NA-1 downto 0);
-      b : in  signed(NB-1 downto 0);
-      p : out signed(NA+NB-1 downto 0));
-  end component;
+	component arith_muls_wide
+		generic (
+			NA		: integer range 2 to 18;
+			NB		: integer range 19 to 36;
+			SPLIT : positive);
+		port (
+			a : in	signed(NA-1 downto 0);
+			b : in	signed(NB-1 downto 0);
+			p : out signed(NA+NB-1 downto 0));
+	end component;
 
-  component arith_sqrt
-    generic (
-      N : positive);
-    port (
-      rst   : in  std_logic;
-      clk   : in  std_logic;
-      arg   : in  std_logic_vector(N-1 downto 0);
-      start : in  std_logic;
-      sqrt  : out std_logic_vector((N-1)/2 downto 0);
-      rdy   : out std_logic);
-  end component;
-  
-  component arith_div
-    generic (
-      N          : positive;
-      RAPOW      : positive;
-      REGISTERED : boolean);
-    port (
-      clk        : in  std_logic;
-      rst        : in  std_logic;
-      start      : in  std_logic;
-      rdy        : out std_logic;
-      arg1, arg2 : in  std_logic_vector(N-1 downto 0);
-      res        : out std_logic_vector(N-1 downto 0));
-  end component;
+	component arith_sqrt
+		generic (
+			N : positive);
+		port (
+			rst	 : in	std_logic;
+			clk	 : in	std_logic;
+			arg	 : in	std_logic_vector(N-1 downto 0);
+			start : in	std_logic;
+			sqrt	: out std_logic_vector((N-1)/2 downto 0);
+			rdy	 : out std_logic);
+	end component;
+	
+	component arith_div
+		generic (
+			N					: positive;
+			RAPOW			: positive;
+			REGISTERED : boolean);
+		port (
+			clk				: in	std_logic;
+			rst				: in	std_logic;
+			start			: in	std_logic;
+			rdy				: out std_logic;
+			arg1, arg2 : in	std_logic_vector(N-1 downto 0);
+			res				: out std_logic_vector(N-1 downto 0));
+	end component;
 end arith_pkg;
 
 package body arith_pkg is

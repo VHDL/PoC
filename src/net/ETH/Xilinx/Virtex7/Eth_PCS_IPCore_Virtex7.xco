@@ -1,0 +1,56 @@
+##############################################################
+#
+# Xilinx Core Generator version 14.3
+# Date: Tue Jan 22 07:14:21 2013
+#
+##############################################################
+#
+#  This file contains the customisation parameters for a
+#  Xilinx CORE Generator IP GUI. It is strongly recommended
+#  that you do not manually alter this file as it may cause
+#  unexpected and unsupported behavior.
+#
+##############################################################
+#
+#  Generated from component: xilinx.com:ip:gig_eth_pcs_pma:11.4
+#
+##############################################################
+#
+# BEGIN Project Options
+SET addpads = false
+SET asysymbol = true
+SET busformat = BusFormatAngleBracketNotRipped
+SET createndf = false
+SET designentry = VHDL
+SET device = xc7vx485t
+SET devicefamily = virtex7
+SET flowvendor = Other
+SET formalverification = false
+SET foundationsym = false
+SET implementationfiletype = Ngc
+SET package = ffg1761
+SET removerpms = false
+SET simulationfiles = Structural
+SET speedgrade = -2
+SET verilogsim = false
+SET vhdlsim = true
+# END Project Options
+# BEGIN Select
+SELECT Ethernet_1000BASE-X_PCS/PMA_or_SGMII xilinx.com:ip:gig_eth_pcs_pma:11.4
+# END Select
+# BEGIN Parameters
+CSET auto_negotiation=true
+CSET component_name=Ethernet_Virtex7_SGMII
+CSET management_interface=true
+CSET physical_interface=Transceiver
+CSET sgmii_mode=100_1000
+CSET sgmii_phy_mode=false
+CSET standard=SGMII
+CSET timing_sim=false
+CSET transceiver_tile=A
+# END Parameters
+# BEGIN Extra information
+MISC pkg_timestamp=2012-06-05T17:19:16Z
+# END Extra information
+GENERATE
+# CRC: 649b824c
