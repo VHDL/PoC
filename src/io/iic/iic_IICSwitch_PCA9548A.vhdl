@@ -36,7 +36,8 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
 USE			PoC.io.ALL;
 
 LIBRARY L_Global;
@@ -201,7 +202,7 @@ BEGIN
 			WHEN ST_WRITE_SWITCH_DEVICE_ADDRESS =>
 				IICC_Request					<= '1';
 			
-				IICC_Command					<= IO_IIC_CMD_WRITE_BYTE;
+				IICC_Command					<= IO_IIC_CMD_SEND_BYTES;
 				IICC_Address					<= SWITCH_ADDRESS(IICC_Address'range);
 			
 				IICC_WP_Valid					<= '1';
@@ -216,8 +217,8 @@ BEGIN
 				IICC_Request					<= '1';
 				
 				CASE IICC_Status IS
-					WHEN IO_IIC_STATUS_WRITING =>						NULL;
-					WHEN IO_IIC_STATUS_WRITE_COMPLETE =>		NextState <= ST_TRANSACTION;
+					WHEN IO_IIC_STATUS_SENDING =>						NULL;
+					WHEN IO_IIC_STATUS_SEND_COMPLETE =>			NextState <= ST_TRANSACTION;
 					WHEN IO_IIC_STATUS_ERROR =>
 						CASE IICC_Error  IS
 							WHEN IO_IIC_ERROR_ADDRESS_ERROR =>	NextState <= ST_ERROR;
@@ -233,12 +234,12 @@ BEGIN
 				Grant									<= Arb_Grant;
 				
 				IICC_Request					<= '1';
-				IICC_Command					<= Command(to_index(Arb_Grant_bin, Arb_Grant'length - 1));
+				IICC_Command					<= Command(					to_index(Arb_Grant_bin, Arb_Grant'length - 1));
 				IICC_Address					<= get_row(Address, to_index(Arb_Grant_bin, Arb_Grant'length - 1));
-				IICC_WP_Valid					<= WP_Valid(to_index(Arb_Grant_bin, Arb_Grant'length - 1));
+				IICC_WP_Valid					<= WP_Valid(				to_index(Arb_Grant_bin, Arb_Grant'length - 1));
 				IICC_WP_Data					<= get_row(WP_Data, to_index(Arb_Grant_bin, Arb_Grant'length - 1));
-				IICC_WP_Last					<= WP_Last(to_index(Arb_Grant_bin, Arb_Grant'length - 1));
-				IICC_RP_Ack						<= RP_Ack(to_index(Arb_Grant_bin, Arb_Grant'length - 1));
+				IICC_WP_Last					<= WP_Last(					to_index(Arb_Grant_bin, Arb_Grant'length - 1));
+				IICC_RP_Ack						<= RP_Ack(					to_index(Arb_Grant_bin, Arb_Grant'length - 1));
 				
 				FOR I IN 0 TO PORTS - 1 LOOP
 					IF (I = to_index(Arb_Grant_bin, Arb_Grant'length - 1)) THEN
