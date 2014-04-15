@@ -148,8 +148,8 @@ package utils is
 	function resize(vec : std_logic_vector; length : natural; fill : std_logic := '0') return std_logic_vector;
 	-- NOTE: Use the resize functions of the numeric_std package for value-preserving resizes of the signed and unsigned data types.
 
-	-- Move vector boundaries
-	FUNCTION move(slv : STD_LOGIC_VECTOR; pos : INTEGER) RETURN STD_LOGIC_VECTOR;
+	-- Adjust the index range of a vector by the specified offset.
+	function move(vec : std_logic_vector; ofs : integer) return std_logic_vector;
 
 end package utils;
 
@@ -582,7 +582,7 @@ package body utils is
 	-- ==========================================================================
 	FUNCTION ite(cond : BOOLEAN; value1 : INTEGER; value2 : INTEGER) RETURN INTEGER IS
 	BEGIN
-		IF (cond = TRUE) THEN
+		IF cond THEN
 			RETURN value1;
 		ELSE
 			RETURN value2;
@@ -591,7 +591,7 @@ package body utils is
 
 	FUNCTION ite(cond : BOOLEAN; value1 : REAL; value2 : REAL) RETURN REAL IS
 	BEGIN
-		IF (cond = TRUE) THEN
+		IF cond THEN
 			RETURN value1;
 		ELSE
 			RETURN value2;
@@ -600,7 +600,7 @@ package body utils is
 
 	FUNCTION ite(cond : BOOLEAN; value1 : STD_LOGIC; value2 : STD_LOGIC) RETURN STD_LOGIC IS
 	BEGIN
-		IF (cond = TRUE) THEN
+		IF cond THEN
 			RETURN value1;
 		ELSE
 			RETURN value2;
@@ -609,7 +609,7 @@ package body utils is
 
 	FUNCTION ite(cond : BOOLEAN; value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) RETURN STD_LOGIC_VECTOR IS
 	BEGIN
-		IF (cond = TRUE) THEN
+		IF cond THEN
 			RETURN value1;
 		ELSE
 			RETURN value2;
@@ -618,7 +618,7 @@ package body utils is
 
 	FUNCTION ite(cond : BOOLEAN; value1 : UNSIGNED; value2 : UNSIGNED) RETURN UNSIGNED IS
 	BEGIN
-		IF (cond = TRUE) THEN
+		IF cond THEN
 			RETURN value1;
 		ELSE
 			RETURN value2;
@@ -627,7 +627,7 @@ package body utils is
 
 	FUNCTION ite(cond : BOOLEAN; value1 : CHARACTER; value2 : CHARACTER) RETURN CHARACTER IS
 	BEGIN
-		IF (cond = TRUE) THEN
+		IF cond THEN
 			RETURN value1;
 		ELSE
 			RETURN value2;
@@ -636,7 +636,7 @@ package body utils is
 	
 	FUNCTION ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) RETURN STRING IS
 	BEGIN
-		IF (cond = TRUE) THEN
+		IF cond THEN
 			RETURN value1;
 		ELSE
 			RETURN value2;
@@ -664,10 +664,17 @@ package body utils is
 
 	-- Move vector boundaries
 	-- ==========================================================================
-	FUNCTION move(slv : STD_LOGIC_VECTOR; pos : INTEGER) RETURN STD_LOGIC_VECTOR IS
-		VARIABLE Result : STD_LOGIC_VECTOR(slv'left + pos DOWNTO slv'right + pos) := slv;
-	BEGIN
-		RETURN Result;
-	END FUNCTION;
+  function move(vec : std_logic_vector; ofs : integer) return std_logic_vector is
+    variable res_up : std_logic_vector(vec'low +ofs to     vec'high+ofs);
+    variable res_dn : std_logic_vector(vec'high+ofs downto vec'low +ofs);
+  begin
+    if vec'ascending then
+      res_up := vec;
+      return  res_up;
+    else
+      res_dn := vec;
+      return  res_dn;
+    end if;
+  end move;
 	
 end utils;

@@ -82,12 +82,12 @@ package vectors is
 	--	dimmension 2 => columns		- e.g. Bits/Bytes in a word
 
 
-	-- ==========================================================================
-	-- Function declarations
-	-- ==========================================================================
-	-- slicing boundary calulations
-	FUNCTION low(LengthVector		: T_POSVEC; pos : NATURAL) RETURN NATURAL;
-	FUNCTION high(LengthVector	: T_POSVEC; pos : NATURAL) RETURN NATURAL;
+  -- ==========================================================================
+  -- Function declarations
+  -- ==========================================================================
+  -- slicing boundary calulations
+  FUNCTION low (lenvec : T_POSVEC; index : NATURAL) RETURN NATURAL;
+  FUNCTION high(lenvec : T_POSVEC; index : NATURAL) RETURN NATURAL;
 
 	-- Assign procedures: assign_*
 	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL);																	-- assign vector to complete row
@@ -152,7 +152,6 @@ package vectors is
 	
 	-- TODO:
 	FUNCTION resize(slm : T_SLM; size : POSITIVE) RETURN T_SLM;
-	FUNCTION resize(str : STRING; size : POSITIVE; FillChar : CHARACTER := NUL) RETURN STRING;
 
 end package vectors;
 
@@ -243,11 +242,11 @@ package body vectors is
 	-- Matrix to vector conversion: get_*
 	-- ==========================================================================
 	-- get a matrix column
-	FUNCTION get_col(slm : T_SLM; ColumnIndex : NATURAL) RETURN STD_LOGIC_VECTOR IS
+	FUNCTION get_col(slm : T_SLM; ColIndex : NATURAL) RETURN STD_LOGIC_VECTOR IS
 		VARIABLE slv		: STD_LOGIC_VECTOR(slm'range(1));
 	BEGIN
 		FOR I IN slm'range(1) LOOP
-			slv(I)	:= slm(I, ColumnIndex);
+			slv(I)	:= slm(I, ColIndex);
 		END LOOP;
 		RETURN slv;
 	END FUNCTION;

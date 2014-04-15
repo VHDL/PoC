@@ -51,7 +51,6 @@ package strings is
 	FUNCTION to_string(value : BOOLEAN) RETURN STRING;	
 	FUNCTION to_string(value : INTEGER; base : POSITIVE := 10) RETURN STRING;
 	FUNCTION to_string(slv : STD_LOGIC_VECTOR; format : CHARACTER; length : NATURAL := 0; fill : CHARACTER := '0') RETURN STRING;
-	FUNCTION to_string(slvv : T_SLVV_8; sep : CHARACTER := ':') RETURN STRING;
 
 	-- to_*
 	FUNCTION to_digit(chr : CHARACTER; base : CHARACTER := 'd') RETURN INTEGER;
@@ -176,18 +175,6 @@ package body strings is
 			REPORT "unknown format" SEVERITY FAILURE;
 		END IF;
 		
-		RETURN Result;
-	END FUNCTION;
-
-	FUNCTION to_string(slvv : T_SLVV_8; sep : CHARACTER := ':') RETURN STRING IS
-		CONSTANT hex_len			: POSITIVE								:= ite((sep = NUL), (slvv'length * 2), (slvv'length * 3) - 1);
-		VARIABLE Result				: STRING(1 TO hex_len)		:= (OTHERS => sep);
-		VARIABLE pos					: POSITIVE								:= 1;
-	BEGIN
-		FOR I IN slvv'range LOOP
-			Result(pos TO pos + 1)	:= to_string(slvv(I), 'h');
-			pos											:= pos + ite((sep = NUL), 2, 3);
-		END LOOP;
 		RETURN Result;
 	END FUNCTION;
 
