@@ -2,7 +2,7 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- ============================================================================================================================================================
+-- ============================================================================
 -- Module:					FIFO, common clock (cc), pipelined interface
 --
 -- Authors:					Thomas B. Preusser
@@ -41,8 +41,9 @@
 --		                      fstate_rd == 3 => 3/4 full
 --
 -- License:
--- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+--										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -55,7 +56,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================================================================================================
+-- ============================================================================
 
 library	IEEE;
 use			IEEE.std_logic_1164.all;
