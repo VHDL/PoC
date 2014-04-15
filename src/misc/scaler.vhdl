@@ -82,17 +82,53 @@ architecture rtl of scaler is
   constant X : positive := log2ceil(imax(imax(MULS), imax(DIVS)/2+1));
   constant R : positive := log2ceil(imax(DIVS)+1);
 
+  -- Division Properties
+  type tDivProps is
+    record  -- Properties of the operation for a divisor
+      steps : T_POSVEC(DIVS'range);  -- Steps to perform
+      align : T_POSVEC(DIVS'range);  -- Left-aligned divisor
+    end record;
+
+  function computeProps return tDivProps is
+    variable  res       : tDivProps;
+    variable  min_steps : positive;
+  begin
+    for i in DIVS'range loop
+      res.steps(i) := N+X - log2ceil(DIVS(i)+1) + 1;
+    end loop;
+    min_steps := imin(res.steps);
+    for i in DIVS'range loop
+      res.align(i) := DIVS(i) * 2**(res.steps(i) - min_steps);
+    end loop;
+    return  res;
+  end computeProps;
+
+  constant DIV_PROPS : tDivProps := computeProps;
+
   constant MAX_MUL_STEPS : positive := N;
-  constant MAX_DIV_STEPS : positive := N + X - log2ceil(imin(DIVS)+1) + 1;
+  constant MAX_DIV_STEPS : positive := imax(DIV_PROPS.steps);
   constant MAX_ANY_STEPS : positive := imax(MAX_MUL_STEPS, MAX_DIV_STEPS);
 
+  subtype tResMask  is std_logic_vector(MAX_DIV_STEPS-1 downto 0);
+  type    tResMasks is array(natural range<>) of tResMask;
+  function computeMasks return tResMasks is
+    variable res : tResMasks(DIVS'range);
+  begin
+    for i in DIVS'range loop
+      res(i)                                := (others => '0');
+      res(i)(DIV_PROPS.steps(i)-1 downto 0) := (others => '1');
+    end loop;
+    return res;
+  end computeMasks;
+  constant RES_MASKS : tResMasks(DIVS'range) := computeMasks;
 
   -- Values computed for the selected multiplier/divisor pair.
   signal muloffset  : unsigned(X-1 downto 0);  -- Offset for correct rounding.
   signal multiplier : unsigned(X   downto 0);  -- The actual multiplier value.
-  signal divisor    : unsigned(R-1  downto 0);  -- The actual divisor value.
+  signal divisor    : unsigned(R-1 downto 0);  -- The actual divisor value.
   signal divcini    : unsigned(log2ceil(MAX_ANY_STEPS)-1 downto 0);  -- Count for division steps.
-  
+  signal divmask    : tResMask;                -- Result Mask
+
 begin
 
   -----------------------------------------------------------------------------
@@ -120,57 +156,34 @@ begin
   end generate genSingleMul;
 
   -- Selection of Divisor
-  blkDiv: block
-
-    function computeSteps return T_POSVEC is
-      variable res : T_POSVEC(DIVS'range);
-    begin
-      for i in DIVS'range loop
-        res(i) := N+X - log2ceil(DIVS(i)+1) + 1;
-      end loop;
-      return res;
-    end computeSteps;
-    constant DIV_STEPS : T_POSVEC(DIVS'range) := computeSteps;
-
-    function computeAlign return T_POSVEC is
-      variable base : positive;
-      variable res  : T_POSVEC(DIVS'range);
-    begin
-      base := imin(DIV_STEPS);
-      for i in DIVS'range loop
-        res(i) := DIVS(i) * 2**(DIV_STEPS(i) - base);
-      end loop;
-      return res;
-    end computeAlign;
-    constant DIV_ALIGN : T_POSVEC(DIVS'range) := computeAlign;
-
+  genMultiDiv: if DIVS'length > 1 generate
+    signal DS : unsigned(dsel'range) := (others => '-');
   begin
-    genMultiDiv: if DIVS'length > 1 generate
-      signal DS : unsigned(dsel'range) := (others => '-');
+    process(clk)
     begin
-      process(clk)
-      begin
-        if rising_edge(clk) then
-          if rst = '1' then
-            DS <= (others => '-');
-          elsif start = '1' then
-            DS <= unsigned(dsel);
-          end if;
+      if rising_edge(clk) then
+        if rst = '1' then
+          DS <= (others => '-');
+        elsif start = '1' then
+          DS <= unsigned(dsel);
         end if;
-      end process;
-      muloffset <= (others => 'X') when Is_X(dsel) else
-                   to_unsigned(DIVS(to_integer(unsigned(dsel)))/2, muloffset'length);
-      divisor   <= (others => 'X') when Is_X(std_logic_vector(DS)) else
-                   to_unsigned(DIV_ALIGN(to_integer(DS)), divisor'length);
-      divcini   <= (others => 'X') when Is_X(std_logic_vector(DS)) else
-                   to_unsigned(DIV_STEPS(to_integer(DS))-1, divcini'length);
-    end generate genMultiDiv;
-    genSingleDiv: if DIVS'length = 1 generate
-      muloffset <= to_unsigned(DIVS(0)/2, muloffset'length);
-      divisor   <= to_unsigned(DIV_ALIGN(0), divisor'length);
-      divcini   <= to_unsigned(DIV_STEPS(0)-1, divcini'length);
-    end generate genSingleDiv;
-  end block blkDiv;
+      end if;
+    end process;
+    muloffset <= (others => 'X') when Is_X(dsel) else
+                 to_unsigned(DIVS(to_integer(unsigned(dsel)))/2, muloffset'length);
+    divisor   <= (others => 'X') when Is_X(std_logic_vector(DS)) else
+                 to_unsigned(DIV_PROPS.align(to_integer(DS)), divisor'length);
+    divcini   <= (others => 'X') when Is_X(std_logic_vector(DS)) else
+                 to_unsigned(DIV_PROPS.steps(to_integer(DS))-1, divcini'length);
+    divmask   <= (others => 'X') when Is_X(std_logic_vector(DS)) else
+                 RES_MASKS(to_integer(DS));
+  end generate genMultiDiv;
+  genSingleDiv: if DIVS'length = 1 generate
+    muloffset <= to_unsigned(DIVS(0)/2, muloffset'length);
+    divisor   <= to_unsigned(DIV_PROPS.align(0), divisor'length);
+    divcini   <= to_unsigned(DIV_PROPS.steps(0)-1, divcini'length);
+    divmask   <= RES_MASKS(0);
+  end generate genSingleDiv;
 
   -----------------------------------------------------------------------------
   -- Implementation of Scaling Operation
@@ -188,7 +201,7 @@ begin
           Q <= (others      => '-');
         else
           if start = '1' then
-            C <= "11" & to_unsigned(N-1, C'length-2);
+            C <= "11" & to_unsigned(MAX_MUL_STEPS-1, C'length-2);
             Q <= '0' & muloffset & unsigned(arg);
           elsif C(C'left) = '1' then
 
@@ -219,7 +232,15 @@ begin
       end if;
     end process;
     done <= not C(C'left);
-    res  <= std_logic_vector(Q(res'length-1 downto 0));
+    process(Q)
+      variable r : std_logic_vector(res'length-1 downto 0);
+    begin
+      r   := (others => '0');
+      r(imin(r'left, tResMask'left) downto 0) :=
+        std_logic_vector(Q(imin(r'left, tResMask'left) downto 0)) and
+        divmask(imin(r'left, tResMask'left) downto 0);
+      res <= r;
+    end process;
   end block blkMain;
 
 end rtl;
