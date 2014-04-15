@@ -30,7 +30,7 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 
 library poc;
-use poc.functions.all;
+use poc.utils.all;
 
 entity scaler is
   generic (

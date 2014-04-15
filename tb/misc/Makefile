@@ -1,5 +1,5 @@
 DUT_PATH := ../../src/misc
-SRCS := ../../src/common/functions.vhdl \
+SRCS := ../../src/common/utils.vhdl \
 	$(DUT_PATH)/scaler.vhdl scaler_tb.vhdl
 
 .PHONY: clean

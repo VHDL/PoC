@@ -27,7 +27,7 @@ entity scaler_tb is
 end scaler_tb;
 
 library poc;
-use poc.functions.all;
+use poc.utils.all;
 
 library IEEE;
 use IEEE.std_logic_1164.all;
