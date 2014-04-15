@@ -152,7 +152,8 @@ package utils is
   -- @synthesis supported
   --
 	function reverse(vec : std_logic_vector) return std_logic_vector;
-	function reverse(vec : unsigned)				 return unsigned;
+	function reverse(vec : bit_vector) return bit_vector;
+	function reverse(vec : unsigned) return unsigned;
 	
   -- Resizes the vector to the specified length. Input vectors larger than
   -- the specified size are truncated from the left side. Smaller input
@@ -178,6 +179,7 @@ package utils is
   -- @synthesis supported
   --
   function lssb(arg : std_logic_vector) return std_logic_vector;
+  function lssb(arg : bit_vector) return bit_vector;
 
   -- Returns the position of the least-significant set bit assigning
   -- the rightmost position an index of zero (0).
@@ -185,11 +187,14 @@ package utils is
   -- @synthesis supported
   --
   function lssb_idx(arg : std_logic_vector) return integer;
+  function lssb_idx(arg : bit_vector) return integer;
 
 	-- Most-Significant Set Bit (mssb): computes a vector of the same length
 	-- with at most one bit set at the leftmost '1' found in arg.
 	function mssb(arg : std_logic_vector) return std_logic_vector;
+  function mssb(arg : bit_vector) return bit_vector;
 	function mssb_idx(arg : std_logic_vector) return integer;
+  function mssb_idx(arg : bit_vector) return integer;
 
 	-- Swap sub vectors in vector (endian reversal)
 	FUNCTION swap(slv : STD_LOGIC_VECTOR; Size : POSITIVE) RETURN STD_LOGIC_VECTOR;
@@ -541,7 +546,12 @@ package body utils is
 		end loop;
 		return	res;
 	end function;
-	
+	function reverse(vec : bit_vector) return bit_vector is
+		variable res : bit_vector(vec'range);
+	begin
+    res := to_bitvector(reverse(to_stdlogicvector(vec)));
+    return  res;
+	end reverse;
 	function reverse(vec : unsigned) return unsigned is
 	begin
 		return unsigned(reverse(std_logic_vector(vec)));
@@ -605,27 +615,51 @@ package body utils is
 	-- ==========================================================================
 	-- Least-Significant Set Bit (lssb): computes a vector of the same length with at most one bit set at the rightmost '1' found in arg.
 	function lssb(arg : std_logic_vector) return std_logic_vector is
+    variable  res : std_logic_vector(arg'range);
 	begin
-		return	arg and std_logic_vector(unsigned(not arg)+1);
+		res := arg and std_logic_vector(unsigned(not arg)+1);
+    return  res;
 	end function;
+  function lssb(arg : bit_vector) return bit_vector is
+    variable  res : bit_vector(arg'range);
+  begin
+    res := to_bitvector(lssb(to_stdlogicvector(arg)));
+    return  res;
+  end lssb;
 
 	-- Most-Significant Set Bit (mssb): computes a vector of the same length with at most one bit set at the leftmost '1' found in arg.
 	function mssb(arg : std_logic_vector) return std_logic_vector is
 	begin
 		return	reverse(lssb(reverse(arg)));
 	end function;
+  function mssb(arg : bit_vector) return bit_vector is
+  begin
+    return  reverse(lssb(reverse(arg)));
+  end mssb;
 
 	-- Index of lssb
 	function lssb_idx(arg : std_logic_vector) return integer is
 	begin
 		return  to_integer(onehot2bin(lssb(arg)));
 	end function;
+	function lssb_idx(arg : bit_vector) return integer is
+    variable  slv : std_logic_vector(arg'range);
+	begin
+    slv := to_stdlogicvector(arg);
+		return  lssb_idx(slv);
+	end lssb_idx;
 
 	-- Index of mssb
 	function mssb_idx(arg : std_logic_vector) return integer is
 	begin
 		return  to_integer(onehot2bin(mssb(arg)));
 	end function;
+	function mssb_idx(arg : bit_vector) return integer is
+    variable  slv : std_logic_vector(arg'range);
+	begin
+    slv := to_stdlogicvector(arg);
+		return  mssb_idx(slv);
+	end mssb_idx;
 
 	-- if-then-else (ite)
 	-- ==========================================================================
