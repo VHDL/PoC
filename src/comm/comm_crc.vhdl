@@ -38,7 +38,7 @@ library	IEEE;
 use			IEEE.std_logic_1164.all;
 
 library	PoC;
-use			PoC.functions.all;
+use			PoC.utils.all;
 
 
 entity comm_crc is

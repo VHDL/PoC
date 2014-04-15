@@ -2,7 +2,7 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- ============================================================================================================================================================
+-- ============================================================================
 -- Package:					Global configuration settings.
 --
 -- Authors:					Thomas B. Preusser
@@ -15,8 +15,9 @@
 --		See also template file my_config.vhdl.template.
 --
 -- License:
--- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+--										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -29,11 +30,12 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================================================================================================
+-- ============================================================================
 
 library PoC;
 use		 PoC.my_config.all;
-use		 PoC.functions.all;
+use		 PoC.utils.all;
+use		 PoC.strings.all;
 
 
 package config is
@@ -48,23 +50,23 @@ package config is
 	-- Device family
 	-- ===========================================================================
 	type device_t is (
-		DEVICE_SPARTAN3, DEVICE_SPARTAN6,																		 -- Xilinx.Spartan
-		DEVICE_ZYNQ7,																												 -- Xilinx.Zynq
-		DEVICE_ARTIX7,																												-- Xilinx.Artix
-		DEVICE_KINTEX7,																											 -- Xilinx.Kintex
+		DEVICE_SPARTAN3, DEVICE_SPARTAN6,																		-- Xilinx.Spartan
+		DEVICE_ZYNQ7,																												-- Xilinx.Zynq
+		DEVICE_ARTIX7,																											-- Xilinx.Artix
+		DEVICE_KINTEX7,																											-- Xilinx.Kintex
 		DEVICE_VIRTEX5,	DEVICE_VIRTEX6, DEVICE_VIRTEX7,											-- Xilinx.Virtex
 		
-		DEVICE_CYCLONE1, DEVICE_CYCLONE2, DEVICE_CYCLONE3,										-- Altera.Cyclone
-		DEVICE_STRATIX1, DEVICE_STRATIX2, DEVICE_STRATIX4, DEVICE_STRATIX5		-- Altera.Stratix
+		DEVICE_CYCLONE1, DEVICE_CYCLONE2, DEVICE_CYCLONE3,									-- Altera.Cyclone
+		DEVICE_STRATIX1, DEVICE_STRATIX2, DEVICE_STRATIX4, DEVICE_STRATIX5	-- Altera.Stratix
 	);
 
 	-- Transceiver (sub-)type
 	-- ===========================================================================
 	type transceiver_t is (
-		TRANSCEIVER_GTP_DUAL,																									-- Xilinx GTP transceivers
-		TRANSCEIVER_GTX, TRANSCEIVER_GTXE1, TRANSCEIVER_GTXE2,								-- Xilinx GTX transceivers
-		TRANSCEIVER_GTH,																											-- Xilinx GTH transceivers
-		TRANSCEIVER_GTZ,																											-- Xilinx GTZ transceivers
+		TRANSCEIVER_GTP_DUAL,																								-- Xilinx GTP transceivers
+		TRANSCEIVER_GTX, TRANSCEIVER_GTXE1, TRANSCEIVER_GTXE2,							-- Xilinx GTX transceivers
+		TRANSCEIVER_GTH,																										-- Xilinx GTH transceivers
+		TRANSCEIVER_GTZ,																										-- Xilinx GTZ transceivers
 		
 		-- TODO: add Altera transceivers
 		
