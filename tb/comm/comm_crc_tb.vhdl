@@ -43,11 +43,11 @@ architecture tb of comm_crc_tb is
 			clk	: in	std_logic;																-- Clock
 			
 			set	: in	std_logic;																-- Parallel Preload of Remainder
-			init : in	std_logic_vector(GEN'length-abs(GEN'left-mssb_idx(to_stdlogicvector(GEN)))-1 downto 0);	-- 
+			init : in	std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0);	-- 
 			step : in	std_logic;																-- Process Input Data (MSB first)
 			din	: in	std_logic_vector(BITS-1 downto 0);				-- 
 
-			rmd	: out std_logic_vector(GEN'length-abs(GEN'left-mssb_idx(to_stdlogicvector(GEN)))-1 downto 0);	-- Remainder
+			rmd	: out std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0);	-- Remainder
 			zero : out std_logic																-- Remainder is Zero
 		);
   end component;
