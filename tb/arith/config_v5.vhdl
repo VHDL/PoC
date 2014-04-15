@@ -1,36 +1,44 @@
---
--- Copyright (c) 2008
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width:2  -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
+-- ============================================================================================================================================================
+-- Description:     Project specific configuration.
+--                  This is a template file. 
+--                  The global package common/config evaluates the settings declared in this file.
 --
-
+-- Usage:
+--                  1) Copy this file into your project's source directory and rename it to my_config.vhdl.
+--                  2) Add file to library "poc" in your synthesis tool.
+--                  3) Change setup appropriately.
 --
--- Package: config
--- Author(s): Martin Zabel
---
--- Global project configuration.
---
-package config is
+-- Authors:         Thomas B. Preusser
+--                  Martin Zabel
+--                  Patrick Lehmann
+-- ============================================================================================================================================================
+-- Copyright 2007-2013 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--    http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================================================================================================
+library PoC;
 
-  -- FPGA / Chip vendor
-  type vendor_t is (VENDOR_ALTERA, VENDOR_XILINX);
-
-
-  -- Device.
-  type device_t is (
-    DEVICE_SPARTAN3, DEVICE_SPARTAN3E,
-    DEVICE_VIRTEX5,
-    DEVICE_CYCLONE1, DEVICE_CYCLONE2,
-    DEVICE_STRATIX1, DEVICE_STRATIX2);
-
+package my_config is
   -- Change these lines to setup configuration.
-  constant VENDOR : vendor_t := VENDOR_XILINX;
-  constant DEVICE : device_t := DEVICE_VIRTEX5;
-  
-end config;
+  constant MY_DEVICE : string := "XC5VLX50T"; -- e.g. XC5VLX50T, EP2SGX90
+ 
+end my_config;
+
+package body my_config is
+
+end my_config;
+
