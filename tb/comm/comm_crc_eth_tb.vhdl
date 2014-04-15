@@ -1,3 +1,6 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 --
 -- Copyright (c) 2012
 -- Technische Universitaet Dresden, Dresden, Germany
@@ -25,24 +28,29 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 library poc;
-use poc.functions.all;
+use poc.utils.all;
 
 architecture tb of comm_crc_eth_tb is
 
   component comm_crc
-    generic (
-      GEN  : bit_vector;
-      BITS : positive
-    ); 
-    port (
-      clk  : in  std_logic;
-      set  : in  std_logic;
-      init : in  std_logic_vector(GEN'length-2 downto 0);
-      step : in  std_logic;
-      din  : in  std_logic_vector(BITS-1 downto 0);
-      rmd  : out std_logic_vector(GEN'length-2 downto 0);
-      zero : out std_logic
-    ); 
+		generic (
+			GEN		: bit_vector;		 															-- Generator Polynom
+			BITS	: positive;			 															-- Number of Bits to be processed in parallel
+
+			STARTUP_RMD : std_logic_vector	:= "0";
+			OUTPUT_REGS : boolean						:= true
+		);
+		port (
+			clk	: in	std_logic;																-- Clock
+			
+			set	: in	std_logic;																-- Parallel Preload of Remainder
+			init : in	std_logic_vector(GEN'length-abs(GEN'left-mssb_idx(to_stdlogicvector(GEN)))-1 downto 0);	-- 
+			step : in	std_logic;																-- Process Input Data (MSB first)
+			din	: in	std_logic_vector(BITS-1 downto 0);				-- 
+
+			rmd	: out std_logic_vector(GEN'length-abs(GEN'left-mssb_idx(to_stdlogicvector(GEN)))-1 downto 0);	-- Remainder
+			zero : out std_logic																-- Remainder is Zero
+		);
   end component;
 
   -- component generics

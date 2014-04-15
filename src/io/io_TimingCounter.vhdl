@@ -18,10 +18,10 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+--LIBRARY L_Global;
+--USE			L_Global.GlobalTypes.ALL;
 
 ENTITY TimingCounter IS
   GENERIC (
