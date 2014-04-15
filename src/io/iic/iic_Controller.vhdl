@@ -2,7 +2,7 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- ============================================================================================================================================================
+-- ============================================================================
 -- Module:					I²C Controller
 -- 
 -- Authors:					Patrick Lehmann
@@ -15,8 +15,9 @@
 --		is compatible to the System Management Bus (SMBus).
 --
 -- License:
--- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+--										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -29,7 +30,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================================================================================================
+-- ============================================================================
 
 
 LIBRARY IEEE;
@@ -38,7 +39,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
 USE			PoC.io.ALL;
 
 LIBRARY L_Global;
@@ -104,24 +105,26 @@ ARCHITECTURE rtl OF IICController IS
 	TYPE T_STATE IS (
 		ST_IDLE,
 		ST_SEND_START,							ST_SEND_START_WAIT,
-		-- address operation for random access => dummy write to internal SFP address register
-			ST_SEND_DEVICE_ADDRESS0,	ST_SEND_DEVICE_ADDRESS0_WAIT,
+		-- device address transmission 0
+			ST_SEND_DEVICE_ADDRESS0,		ST_SEND_DEVICE_ADDRESS0_WAIT,
 			ST_SEND_READWRITE0,					ST_SEND_READWRITE0_WAIT,
 			ST_RECEIVE_ACK0,						ST_RECEIVE_ACK0_WAIT,
-			ST_SEND_REGISTER_ADDRESS,		ST_SEND_REGISTER_ADDRESS_WAIT,
+		-- send byte(s) operation => continue with data bytes
+			ST_SEND_DATA1,							ST_SEND_DATA1_WAIT,
 			ST_RECEIVE_ACK1,						ST_RECEIVE_ACK1_WAIT,
-		-- write operation => continue with data bytes
-			ST_SEND_DATA,								ST_SEND_DATA_WAIT,
-			ST_RECEIVE_ACK2,						ST_RECEIVE_ACK2_WAIT,
-			ST_REGISTER_NEXT_BYTE,
-		-- read operation => restart bus, resend physical address, read data bytes
-		ST_SEND_RESTART,						ST_SEND_RESTART_WAIT,
-			ST_SEND_DEVICE_ADDRESS1,	ST_SEND_DEVICE_ADDRESS1_WAIT,
-			ST_SEND_READWRITE1,					ST_SEND_READWRITE1_WAIT,
+--			ST_REGISTER_NEXT_BYTE,
+		-- receive byte(s) operation => continue with data bytes
+			ST_RECEIVE_DATA2,						ST_RECEIVE_DATA2_WAIT,
+			ST_SEND_ACK2,								ST_SEND_ACK2_WAIT,
+--			ST_REGISTER_NEXT_BYTE,
+		-- call operation => send byte(s), restart bus, resend device address, read byte(s)
+		ST_SEND_RESTART3,						ST_SEND_RESTART3_WAIT,
+			ST_SEND_DEVICE_ADDRESS3,		ST_SEND_DEVICE_ADDRESS3_WAIT,
+			ST_SEND_READWRITE3,					ST_SEND_READWRITE3_WAIT,
 			ST_RECEIVE_ACK3,						ST_RECEIVE_ACK3_WAIT,
-			ST_RECEIVE_DATA,						ST_RECEIVE_DATA_WAIT,
-			ST_SEND_ACK,								ST_SEND_ACK_WAIT,
-			ST_SEND_NACK,								ST_SEND_NACK_WAIT,
+			ST_RECEIVE_DATA3,						ST_RECEIVE_DATA3_WAIT,
+			ST_SEND_ACK3,								ST_SEND_ACK3_WAIT,
+			ST_SEND_NACK3,							ST_SEND_NACK3_WAIT,
 		ST_SEND_STOP,								ST_SEND_STOP_WAIT,
 		ST_COMPLETE,
 		ST_ERROR,
@@ -153,11 +156,7 @@ ARCHITECTURE rtl OF IICController IS
 	
 	SIGNAL Device_Address_en						: STD_LOGIC;
 	SIGNAL Device_Address_sh						: STD_LOGIC;
-	SIGNAL Device_Address_d						: STD_LOGIC_VECTOR(6 DOWNTO 0)		:= (OTHERS => '0');
-	
-	SIGNAL RegisterAddress_en						: STD_LOGIC;
-	SIGNAL RegisterAddress_sh						: STD_LOGIC;
-	SIGNAL RegisterAddress_d						: T_SLV_8													:= (OTHERS => '0');
+	SIGNAL Device_Address_d							: STD_LOGIC_VECTOR(6 DOWNTO 0)		:= (OTHERS => '0');
 	
 	SIGNAL DataRegister_en							: STD_LOGIC;
 	SIGNAL DataRegister_sh							: STD_LOGIC;
@@ -996,17 +995,17 @@ BEGIN
 		SerialData_t_d				<= SerialData_t_i			WHEN rising_edge(Clock);
 		
 		-- trigger on all edges and on all signal lines
-		Trigger_d(0)				<= (SerialClock_t_i XOR SerialClock_t_d) OR
-													 (SerialData_t_i	XOR SerialData_t_d);
+		Trigger_d(0)					<= (SerialClock_t_i XOR SerialClock_t_d) OR
+														 (SerialData_t_i	XOR SerialData_t_d);
 		
 		genTriggerDelay : FOR I IN 0 TO Trigger_d'high - 1 GENERATE
-			Trigger_d(I + 1)	<= Trigger_d(I) WHEN rising_edge(Clock);
+			Trigger_d(I + 1)		<= Trigger_d(I) WHEN rising_edge(Clock);
 		END GENERATE;
 		
-		DBG_Trigger					<= Trigger_d(DBG_TRIGGER_DELAY);
-		DBG_Valid						<= Trigger_d(0) OR Valid_r;
+		DBG_Trigger						<= Trigger_d(DBG_TRIGGER_DELAY);
+		DBG_Valid							<= Trigger_d(0) OR Valid_r;
 		
-		--										RS-FF:	Q					RST						SET								CLOCK
-		Valid_r							<= ffrs(Valid_r, DBG_Trigger, Trigger_d(0)) WHEN rising_edge(Clock);
+		--											RS-FF:	Q					RST						SET								CLOCK
+		Valid_r								<= ffrs(Valid_r, DBG_Trigger, Trigger_d(0)) WHEN rising_edge(Clock);
 	END GENERATE;
 END;
