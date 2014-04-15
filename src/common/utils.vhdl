@@ -537,7 +537,7 @@ package body utils is
 		variable res : std_logic_vector(vec'range);
 	begin
 		for i in vec'low to vec'high loop
-			res(vec'high - i) := vec(i);
+			res(vec'low + (vec'high-i)) := vec(i);
 		end loop;
 		return	res;
 	end function;
