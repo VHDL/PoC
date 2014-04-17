@@ -155,9 +155,9 @@ package utils is
 	function reverse(vec : bit_vector) return bit_vector;
 	function reverse(vec : unsigned) return unsigned;
 	
-  -- Resizes the vector to the specified length. Input vectors larger than
-  -- the specified size are truncated from the left side. Smaller input
-  -- vectors are extended on the left by the provided fill value
+  -- Resizes the vector to the specified length. The adjustment is make on
+  -- on the 'high end of the vector. The 'low index remains as in the argument.
+  -- If the result vector is larger, the extension uses the provided fill value
   -- (default: '0').
 	-- Use the resize functions of the numeric_std package for value-preserving
 	-- resizes of the signed and unsigned data types.
@@ -726,24 +726,39 @@ package body utils is
 		END IF;
 	END FUNCTION;
 	
-	-- Resize functions
-	-- ==========================================================================
-	-- Resizes the vector to the specified length. Input vectors larger than the specified size are truncated from the left side. Smaller input
-	-- vectors are extended on the left by the provided fill value (default: '0'). Use the resize functions of the numeric_std package for
-	-- value-preserving resizes of the signed and unsigned data types.
 	function resize(vec : bit_vector; length : natural; fill : bit := '0') return bit_vector is
+    constant  high2b : natural := vec'low+length-1;
+		constant  highcp : natural := imin(vec'high, high2b);
+    variable  res_up : bit_vector(vec'low to high2b);
+    variable  res_dn : bit_vector(high2b downto vec'low);
 	begin
-		return	to_bitvector(resize(to_stdlogicvector(vec), length, to_stdulogic(fill)));
-	end function;
+    if vec'ascending then
+      res_up := (others => fill);
+      res_up(vec'low to highcp) := vec(vec'low to highcp);
+      return  res_up;
+    else
+      res_dn := (others => fill);
+      res_dn(highcp downto vec'low) := vec(highcp downto vec'low);
+      return  res_dn;
+		end if;
+	end resize;
 
 	function resize(vec : std_logic_vector; length : natural; fill : std_logic := '0') return std_logic_vector is
+    constant  high2b : natural := vec'low+length-1;
+		constant  highcp : natural := imin(vec'high, high2b);
+    variable  res_up : std_logic_vector(vec'low to high2b);
+    variable  res_dn : std_logic_vector(high2b downto vec'low);
 	begin
-		if vec'length >= length then
-			return	vec(length - 1 downto 0);
-		else
-			return (length - 1 downto vec'length => fill) & vec;
+    if vec'ascending then
+      res_up := (others => fill);
+      res_up(vec'low to highcp) := vec(vec'low to highcp);
+      return  res_up;
+    else
+      res_dn := (others => fill);
+      res_dn(highcp downto vec'low) := vec(highcp downto vec'low);
+      return  res_dn;
 		end if;
-	end function;
+	end resize;
 
 	-- Move vector boundaries
 	-- ==========================================================================
