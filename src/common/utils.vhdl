@@ -169,8 +169,11 @@ package utils is
   function resize(vec : std_logic_vector; length : natural; fill : std_logic := '0')
     return std_logic_vector;
 
-	-- Adjust the index range of a vector by the specified offset.
+	-- Shift the index range of a vector by the specified offset.
 	function move(vec : std_logic_vector; ofs : integer) return std_logic_vector;
+
+	-- Shift the index range of a vector making vec'low = 0.
+	function movez(vec : std_logic_vector) return std_logic_vector;
 
   -- Least-Significant Set Bit (lssb):
   -- Computes a vector of the same length as the argument with
@@ -536,8 +539,6 @@ package body utils is
 
 	
 	-- Reverse vector elements
-
-	-- FIXME: be the return Vector cev; then: vec(i) = cev(i) but vec'reverse_range = cev'range
 	function reverse(vec : std_logic_vector) return std_logic_vector is
 		variable res : std_logic_vector(vec'range);
 	begin
@@ -774,5 +775,10 @@ package body utils is
       return  res_dn;
     end if;
   end move;
-	
+
+	function movez(vec : std_logic_vector) return std_logic_vector is
+  begin
+    return  move(vec, -vec'low);
+  end movez;
+
 end utils;
