@@ -90,16 +90,15 @@ package vectors is
   FUNCTION high(lenvec : T_POSVEC; index : NATURAL) RETURN NATURAL;
 
 	-- Assign procedures: assign_*
-	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL);																	-- assign vector to complete row
-	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL; Position : NATURAL);							-- assign short vector to row starting at position
-	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL; High : NATURAL; Low : NATURAL);	-- assign short vector to row in range high:low
-	PROCEDURE assign_col(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT ColIndex : NATURAL);																	-- assign vector to complete column
+	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL);																	-- assign vector to complete row
+	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL; Position : NATURAL);							-- assign short vector to row starting at position
+	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL; High : NATURAL; Low : NATURAL);		-- assign short vector to row in range high:low
+	PROCEDURE assign_col(SIGNAL slm : OUT T_SLM; slv : STD_LOGIC_VECTOR; CONSTANT ColIndex : NATURAL);																	-- assign vector to complete column
 	-- ATTENTION:	see T_SLM definition for further details and work-arounds
 
 	-- Matrix to matrix conversion: slm_slice*
-	FUNCTION slm_slice(slm : T_SLM; RowIndex : NATURAL; ColIndex : NATURAL; Height : NATURAL; Width : NATURAL) RETURN T_SLM;									-- get submatrix in boundingbox RowIndex,ColIndex,Height,Width
---	FUNCTION slm_slice_cols(slm : T_SLM; High : NATURAL; Low : NATURAL) RETURN T_SLM;																													-- get submatrix / all columns in ColIndex range high:low
-	-- FIXME: changed arguments low,high to high,low => removed declaration to find all uages of this function
+	FUNCTION slm_slice(slm : T_SLM; RowIndex : NATURAL; ColIndex : NATURAL; Height : NATURAL; Width : NATURAL) RETURN T_SLM;						-- get submatrix in boundingbox RowIndex,ColIndex,Height,Width
+	FUNCTION slm_slice_cols(slm : T_SLM; High : NATURAL; Low : NATURAL) RETURN T_SLM;																										-- get submatrix / all columns in ColIndex range high:low
 
 	-- Matrix to vector conversion: get_*
 	FUNCTION get_col(slm : T_SLM; ColIndex : NATURAL) RETURN STD_LOGIC_VECTOR;																	-- get a matrix column
