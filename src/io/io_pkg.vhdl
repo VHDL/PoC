@@ -45,6 +45,14 @@ PACKAGE io IS
 --			GHz = 1000 MHz;
 --		END UNITS;
 	
+	TYPE T_TRISTATE IS RECORD
+		I			: STD_LOGIC;					-- input / from device to FPGA
+		O			: STD_LOGIC;					-- output / from FPGA to device
+		T			: STD_LOGIC;					-- output disable / tristate enable
+	END RECORD;
+
+	TYPE T_TRISTATE_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_TRISTATE;
+	
 	-- IICBusController
 	-- ==========================================================================================================================================================
 	TYPE T_IO_IICBUS_COMMAND IS (
@@ -66,7 +74,8 @@ PACKAGE io IS
 		IO_IICBUS_STATUS_RECEIVED_STOP_CONDITION,
 		IO_IICBUS_STATUS_RECEIVED_LOW,
 		IO_IICBUS_STATUS_RECEIVED_HIGH,
-		IO_IICBUS_STATUS_ERROR
+		IO_IICBUS_STATUS_ERROR,
+		IO_IICBUS_STATUS_ARBITRATION_LOSS
 	);
 	
 	-- IICController

@@ -68,10 +68,11 @@ ENTITY IICBusController IS
 END ENTITY;
 
 -- TODOs:
---	value read back and compare with written data => raise error?
+--	value read back and compare with written data => raise error, arbitration, multi-master?
 --	multi-master support
 --	receive START, RESTART, STOP
 --	"clock stretching"
+--	bus-state tracking / request/grant generation
 
 ARCHITECTURE rtl OF IICBusController IS
 	ATTRIBUTE KEEP														: BOOLEAN;

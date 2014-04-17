@@ -45,11 +45,12 @@ LIBRARY L_Global;
 
 ENTITY IICSwitch_PCA9548A IS
 	GENERIC (
-		CHIPSCOPE_KEEP		: BOOLEAN						:= TRUE;
-		SWITCH_ADDRESS		: T_SLV_8						:= x"00";
-		ADD_BYPASS_PORT		: BOOLEAN						:= FALSE;
-		ADDRESS_BITS			: POSITIVE					:= 7;
-		DATA_BITS					: POSITIVE					:= 8
+		DEBUG											: BOOLEAN						:= TRUE;
+		SWITCH_ADDRESS						: T_SLV_8						:= x"00";
+		ADD_BYPASS_PORT						: BOOLEAN						:= FALSE;
+		ADDRESS_BITS							: POSITIVE					:= 7;
+		DATA_BITS									: POSITIVE					:= 8;
+		ALLOW_MEALY_TRANSITION		: BOOLEAN						:= TRUE
 	);
 	PORT (
 		Clock							: IN	STD_LOGIC;
@@ -99,7 +100,6 @@ ARCHITECTURE rtl OF IICSwitch_PCA9548A IS
 	ATTRIBUTE ENUM_ENCODING						: STRING;
 	
 	CONSTANT PORTS										: POSITIVE						:= ite(ADD_BYPASS_PORT, 9, 8);
-	CONSTANT ALLOW_MEALY_TRANSITION		: BOOLEAN							:= TRUE;
 	
 	TYPE T_STATE IS (
 		ST_IDLE,
@@ -111,7 +111,7 @@ ARCHITECTURE rtl OF IICSwitch_PCA9548A IS
 	
 	SIGNAL State												: T_STATE						:= ST_IDLE;
 	SIGNAL NextState										: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State			: SIGNAL IS ite(CHIPSCOPE_KEEP, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING OF State			: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 	
 	SIGNAL Request_or							: STD_LOGIC;
 	SIGNAL FSM_Arbitrate					: STD_LOGIC;
