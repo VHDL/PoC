@@ -212,7 +212,6 @@ BEGIN
 		
 		Master_WP_Ack							<= '0';
 		Master_RP_Valid						<= '0';
-		Master_RP_Data						<= (OTHERS => '0');
 		Master_RP_Last						<= '0';
 
 		Command_en								<= '0';
@@ -1063,11 +1062,14 @@ BEGIN
 			Clock													=> Clock,
 			Reset													=> Reset,
 			
-			BusMaster											=> IICBC_BusMaster,
-			BusMode												=> IICBC_BusMode,											-- 0 = passive; 1 = active
+			Request												=> IICBC_Request,
+			Grant													=> IICBC_Grant,
 			
 			Command												=> IICBC_Command,
 			Status												=> IICBC_Status,
+
+			BusMaster											=> IICBC_BusMaster,
+			BusMode												=> IICBC_BusMode,											-- 0 = passive; 1 = active
 			
 			SerialClock_i									=> SerialClock_i,
 			SerialClock_o									=> SerialClock_o,

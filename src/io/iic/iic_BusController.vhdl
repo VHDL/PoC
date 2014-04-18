@@ -52,11 +52,16 @@ ENTITY IICBusController IS
 		Clock													: IN	STD_LOGIC;
 		Reset													: IN	STD_LOGIC;
 		
+		Request												: IN	STD_LOGIC;
+		Grant													: OUT	STD_LOGIC;
+
+		Command												: IN	T_IO_IICBUS_COMMAND;
+		Status												: OUT	T_IO_IICBUS_STATUS;
+		
 		BusMaster											: IN	STD_LOGIC;				-- 0 = Slave/inactive; 1 = Master/active Clock
 		BusMode												: IN	STD_LOGIC;				-- 0 = passive/receive; 1 = active/send data
 		
-		Command												: IN	T_IO_IICBUS_COMMAND;
-		Status												: OUT	T_IO_IICBUS_STATUS;
+
 		
 		SerialClock_i									: IN	STD_LOGIC;
 		SerialClock_o									: OUT	STD_LOGIC;
