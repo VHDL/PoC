@@ -155,9 +155,9 @@ package utils is
 	function reverse(vec : bit_vector) return bit_vector;
 	function reverse(vec : unsigned) return unsigned;
 	
-  -- Resizes the vector to the specified length. Input vectors larger than
-  -- the specified size are truncated from the left side. Smaller input
-  -- vectors are extended on the left by the provided fill value
+  -- Resizes the vector to the specified length. The adjustment is make on
+  -- on the 'high end of the vector. The 'low index remains as in the argument.
+  -- If the result vector is larger, the extension uses the provided fill value
   -- (default: '0').
 	-- Use the resize functions of the numeric_std package for value-preserving
 	-- resizes of the signed and unsigned data types.
@@ -169,9 +169,15 @@ package utils is
   function resize(vec : std_logic_vector; length : natural; fill : std_logic := '0')
     return std_logic_vector;
 
-	-- Adjust the index range of a vector by the specified offset.
+	-- Shift the index range of a vector by the specified offset.
 	function move(vec : std_logic_vector; ofs : integer) return std_logic_vector;
 
+	-- Shift the index range of a vector making vec'low = 0.
+	function movez(vec : std_logic_vector) return std_logic_vector;
+
+  function ascend(vec : std_logic_vector) return std_logic_vector;
+  function descend(vec : std_logic_vector) return std_logic_vector;
+	
   -- Least-Significant Set Bit (lssb):
   -- Computes a vector of the same length as the argument with
   -- at most one bit set at the rightmost '1' found in arg.
@@ -536,8 +542,6 @@ package body utils is
 
 	
 	-- Reverse vector elements
-
-	-- FIXME: be the return Vector cev; then: vec(i) = cev(i) but vec'reverse_range = cev'range
 	function reverse(vec : std_logic_vector) return std_logic_vector is
 		variable res : std_logic_vector(vec'range);
 	begin
@@ -726,24 +730,39 @@ package body utils is
 		END IF;
 	END FUNCTION;
 	
-	-- Resize functions
-	-- ==========================================================================
-	-- Resizes the vector to the specified length. Input vectors larger than the specified size are truncated from the left side. Smaller input
-	-- vectors are extended on the left by the provided fill value (default: '0'). Use the resize functions of the numeric_std package for
-	-- value-preserving resizes of the signed and unsigned data types.
 	function resize(vec : bit_vector; length : natural; fill : bit := '0') return bit_vector is
+    constant  high2b : natural := vec'low+length-1;
+		constant  highcp : natural := imin(vec'high, high2b);
+    variable  res_up : bit_vector(vec'low to high2b);
+    variable  res_dn : bit_vector(high2b downto vec'low);
 	begin
-		return	to_bitvector(resize(to_stdlogicvector(vec), length, to_stdulogic(fill)));
-	end function;
+    if vec'ascending then
+      res_up := (others => fill);
+      res_up(vec'low to highcp) := vec(vec'low to highcp);
+      return  res_up;
+    else
+      res_dn := (others => fill);
+      res_dn(highcp downto vec'low) := vec(highcp downto vec'low);
+      return  res_dn;
+		end if;
+	end resize;
 
 	function resize(vec : std_logic_vector; length : natural; fill : std_logic := '0') return std_logic_vector is
+    constant  high2b : natural := vec'low+length-1;
+		constant  highcp : natural := imin(vec'high, high2b);
+    variable  res_up : std_logic_vector(vec'low to high2b);
+    variable  res_dn : std_logic_vector(high2b downto vec'low);
 	begin
-		if vec'length >= length then
-			return	vec(length - 1 downto 0);
-		else
-			return (length - 1 downto vec'length => fill) & vec;
+    if vec'ascending then
+      res_up := (others => fill);
+      res_up(vec'low to highcp) := vec(vec'low to highcp);
+      return  res_up;
+    else
+      res_dn := (others => fill);
+      res_dn(highcp downto vec'low) := vec(highcp downto vec'low);
+      return  res_dn;
 		end if;
-	end function;
+	end resize;
 
 	-- Move vector boundaries
 	-- ==========================================================================
@@ -759,5 +778,23 @@ package body utils is
       return  res_dn;
     end if;
   end move;
-	
+
+	function movez(vec : std_logic_vector) return std_logic_vector is
+  begin
+    return  move(vec, -vec'low);
+  end movez;
+
+  function ascend(vec : std_logic_vector)	return std_logic_vector is
+		variable  res : std_logic_vector(vec'low to vec'high);
+	begin
+		res := vec;
+		return  res;
+	end ascend;
+
+  function descend(vec : std_logic_vector)	return std_logic_vector is
+		variable  res : std_logic_vector(vec'high downto vec'low);
+	begin
+		res := vec;
+		return  res;
+	end descend;
 end utils;
