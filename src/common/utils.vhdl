@@ -175,6 +175,9 @@ package utils is
 	-- Shift the index range of a vector making vec'low = 0.
 	function movez(vec : std_logic_vector) return std_logic_vector;
 
+  function ascend(vec : std_logic_vector) return std_logic_vector;
+  function descend(vec : std_logic_vector) return std_logic_vector;
+	
   -- Least-Significant Set Bit (lssb):
   -- Computes a vector of the same length as the argument with
   -- at most one bit set at the rightmost '1' found in arg.
@@ -781,4 +784,17 @@ package body utils is
     return  move(vec, -vec'low);
   end movez;
 
+  function ascend(vec : std_logic_vector)	return std_logic_vector is
+		variable  res : std_logic_vector(vec'low to vec'high);
+	begin
+		res := vec;
+		return  res;
+	end ascend;
+
+  function descend(vec : std_logic_vector)	return std_logic_vector is
+		variable  res : std_logic_vector(vec'high downto vec'low);
+	begin
+		res := vec;
+		return  res;
+	end descend;
 end utils;

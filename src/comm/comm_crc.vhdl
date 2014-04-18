@@ -87,7 +87,7 @@ architecture rtl of comm_crc is
 	constant GN : std_logic_vector := to_stdlogicvector(normalize(GEN));
 
 	-- LFSR Value
-	signal lfsr : std_logic_vector(GN'range) := resize(STARTUP_RMD, GN'length);
+	signal lfsr : std_logic_vector(GN'range) := resize(descend(STARTUP_RMD), GN'length);
 	signal lfsn : std_logic_vector(GN'range);	-- Next Value
 	signal lfso : std_logic_vector(GN'range);	-- Output
 
