@@ -4,7 +4,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
 
 LIBRARY L_Global;
 USE			L_Global.GlobalTypes.ALL;
@@ -15,7 +15,7 @@ USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY UDP_Wrapper IS
 	GENERIC (
-		CHIPSCOPE_KEEP										: BOOLEAN																							:= FALSE;
+		DEBUG															: BOOLEAN																							:= FALSE;
 		IP_VERSION												: POSITIVE																						:= 6;
 		PORTPAIRS													: T_NET_UDP_PORTPAIR_VECTOR														:= (0 => (x"0000", x"0000"))
 	);
@@ -333,7 +333,7 @@ BEGIN
 
 	TX_UDP : ENTITY L_Ethernet.UDP_TX
 		GENERIC MAP (
-			CHIPSCOPE_KEEP							=> CHIPSCOPE_KEEP,
+			DEBUG												=> DEBUG,
 			IP_VERSION									=> IP_VERSION
 		)
 		PORT MAP (
@@ -373,7 +373,7 @@ BEGIN
 -- ============================================================================================================================================================
 	RX_UDP : ENTITY L_Ethernet.UDP_RX
 		GENERIC MAP (
-			CHIPSCOPE_KEEP									=> CHIPSCOPE_KEEP,
+			DEBUG														=> DEBUG,
 			IP_VERSION											=> IP_VERSION
 		)
 		PORT MAP (

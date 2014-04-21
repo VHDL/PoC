@@ -3,11 +3,8 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
 
 LIBRARY L_Ethernet;
 USE			L_Ethernet.EthTypes.ALL;
@@ -15,7 +12,7 @@ USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY MAC_Wrapper IS
 	GENERIC (
-		CHIPSCOPE_KEEP							: BOOLEAN															:= FALSE;
+		DEBUG												: BOOLEAN															:= FALSE;
 		MAC_CONFIG									: T_NET_MAC_CONFIGURATION_VECTOR
 	);
 	PORT (
@@ -175,7 +172,7 @@ BEGIN
 
 	RX_DestMAC : ENTITY L_Ethernet.MAC_RX_DestMAC_Switch
 		GENERIC MAP (
-			CHIPSCOPE_KEEP								=> CHIPSCOPE_KEEP,
+			DEBUG								=> DEBUG,
 			MAC_ADDRESSES									=> INTERFACE_ADDRESSES,
 			MAC_ADDRESSE_MASKS						=> INTERFACE_MASKS
 		)
@@ -231,7 +228,7 @@ BEGIN
 	
 		RX_SrcMAC : ENTITY L_Ethernet.MAC_RX_SrcMAC_Filter
 			GENERIC MAP (
-				CHIPSCOPE_KEEP								=> CHIPSCOPE_KEEP,
+				DEBUG								=> DEBUG,
 				MAC_ADDRESSES									=> FILTER_ADDRESSES,
 				MAC_ADDRESSE_MASKS						=> FILTER_MASKS
 			)
@@ -262,7 +259,7 @@ BEGIN
 
 		RX_EthType : ENTITY L_Ethernet.MAC_RX_Type_Switch
 			GENERIC MAP (
-				CHIPSCOPE_KEEP								=> CHIPSCOPE_KEEP,
+				DEBUG								=> DEBUG,
 				ETHERNET_TYPES								=> SWITCH_TYPES
 			)
 			PORT MAP (

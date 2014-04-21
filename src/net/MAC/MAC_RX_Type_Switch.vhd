@@ -4,10 +4,8 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
 
 LIBRARY L_Ethernet;
 USE			L_Ethernet.EthTypes.ALL;
@@ -15,7 +13,7 @@ USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY MAC_RX_Type_Switch IS
 	GENERIC (
-		CHIPSCOPE_KEEP								: BOOLEAN													:= FALSE;
+		DEBUG													: BOOLEAN													:= FALSE;
 		ETHERNET_TYPES								: T_NET_MAC_ETHERNETTYPE_VECTOR		:= (0 => C_NET_MAC_ETHERNETTYPE_EMPTY)
 	);
 	PORT (
@@ -66,7 +64,7 @@ ARCHITECTURE rtl OF MAC_RX_Type_Switch IS
 	
 	SIGNAL State													: T_STATE																	:= ST_IDLE;
 	SIGNAL NextState											: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State				: SIGNAL IS ite(CHIPSCOPE_KEEP, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING OF State				: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
 	SIGNAL In_Ready_i											: STD_LOGIC;
 	SIGNAL Is_DataFlow										: STD_LOGIC;

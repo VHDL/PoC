@@ -4,7 +4,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
 
 LIBRARY L_Global;
 USE			L_Global.GlobalTypes.ALL;
@@ -17,7 +17,7 @@ USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY Eth_PHYController IS
 	GENERIC (
-		CHIPSCOPE_KEEP						: BOOLEAN																	:= FALSE;																			-- 
+		DEBUG						: BOOLEAN																	:= FALSE;																			-- 
 		CLOCK_FREQ_MHZ						: REAL																		:= 125.0;																			-- 125 MHz
 		PCSCORE										: T_NET_ETH_PCSCORE												:= NET_ETH_PCSCORE_GENERIC_GMII;							-- 
 		PHY_DEVICE								: T_NET_ETH_PHY_DEVICE										:= NET_ETH_PHY_DEVICE_MARVEL_88E1111;					-- 
@@ -66,7 +66,7 @@ BEGIN
 	BEGIN
 		PHYC : ENTITY L_Ethernet.Eth_PHYController_Marvell_88E1111
 			GENERIC MAP (
-				CHIPSCOPE_KEEP					=> CHIPSCOPE_KEEP,
+				DEBUG										=> DEBUG,
 				CLOCK_FREQ_MHZ					=> CLOCK_FREQ_MHZ,
 				PHY_DEVICE_ADDRESS			=> PHY_DEVICE_ADDRESS
 			)
@@ -97,7 +97,7 @@ BEGIN
 		-- Management Data Input/Output Controller
 		MDIOC : ENTITY L_Ethernet.Eth_MDIOController
 			GENERIC MAP (
-				CHIPSCOPE_KEEP						=> CHIPSCOPE_KEEP,
+				DEBUG						=> DEBUG,
 				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ
 			)
 			PORT MAP (
@@ -142,7 +142,7 @@ BEGIN
 	BEGIN
 		Adapter : ENTITY L_Ethernet.MDIO_SFF8431_Adapter
 			GENERIC MAP (
-				CHIPSCOPE_KEEP						=> CHIPSCOPE_KEEP
+				DEBUG						=> DEBUG
 			)
 			PORT MAP (
 				Clock											=> Clock,
@@ -177,7 +177,7 @@ BEGIN
 		
 		IICC : ENTITY L_IO.IICController_SFF8431
 			GENERIC MAP (
-				CHIPSCOPE_KEEP						=> CHIPSCOPE_KEEP,				-- 
+				DEBUG						=> DEBUG,				-- 
 				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,			-- 
 				IIC_FREQ_KHZ							=> 100.0									-- 100 kHz
 			)
