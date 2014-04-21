@@ -51,11 +51,10 @@ ENTITY IICController IS
 	GENERIC (
 		DEBUG													: BOOLEAN												:= TRUE;
 		CLOCK_FREQ_MHZ								: REAL													:= 100.0;					-- 100 MHz
-		IIC_FREQ_KHZ									: REAL													:= 100.0;
+		IIC_BUSMODE										: T_IO_IIC_BUSMODE							:= IO_IIC_BUSMODE_STANDARDMODE;
 		IIC_ADDRESS										: STD_LOGIC_VECTOR							:= (7 DOWNTO 1 => '0') & '-';
 		ADDRESS_BITS									: POSITIVE											:= 7;
 		DATA_BITS											: POSITIVE											:= 8;
-		SMBUS_COMPLIANCE							: BOOLEAN												:= TRUE;
 		ALLOW_MEALY_TRANSITION				: BOOLEAN												:= TRUE
 	);
 	PORT (
@@ -95,6 +94,8 @@ ARCHITECTURE rtl OF IICController IS
 	ATTRIBUTE KEEP									: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING					: STRING;
 	ATTRIBUTE ENUM_ENCODING					: STRING;
+	
+	CONSTANT SMBUS_COMPLIANCE				: BOOLEAN				:= (IIC_BUSMODE = IO_IIC_BUSMODE_SMBUS);
 	
 	-- if-then-else (ite)
 	FUNCTION ite(cond : BOOLEAN; value1 : T_IO_IIC_STATUS; value2 : T_IO_IIC_STATUS) RETURN T_IO_IIC_STATUS IS
@@ -252,7 +253,8 @@ BEGIN
 						IICBC_Request								<= '1';
 						
 						IF (IICBC_Grant = '1') THEN
-							NextState								<= ST_SAVE_ADDRESS;
+							Master_Grant							<= '1';
+							NextState									<= ST_SAVE_ADDRESS;
 						END IF;
 					END IF;
 				END IF;
@@ -261,11 +263,14 @@ BEGIN
 				IICBC_Request										<= '1';
 			
 				IF (IICBC_Grant = '1') THEN
+					Master_Grant									<= '1';
 					NextState											<= ST_SAVE_ADDRESS;
 				END IF;
 			
 			WHEN ST_SAVE_ADDRESS =>
+				Master_Grant										<= IICBC_Grant;
 				Status_i												<= IO_IIC_STATUS_IDLE;
+				IICBC_Request										<= '1';
 							
 				CASE Master_Command IS
 					WHEN IO_IIC_CMD_NONE =>
@@ -313,6 +318,7 @@ BEGIN
 				END CASE;
 			
 			WHEN ST_SEND_START =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
 					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
@@ -321,13 +327,13 @@ BEGIN
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_SEND_START_CONDITION;
 					
 				NextState												<= ST_SEND_START_WAIT;
 				
 			WHEN ST_SEND_START_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
 					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
@@ -336,8 +342,7 @@ BEGIN
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
@@ -347,6 +352,7 @@ BEGIN
 				END CASE;
 			
 			WHEN ST_SEND_DEVICE_ADDRESS0 =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
 					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
@@ -355,14 +361,14 @@ BEGIN
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				IICBC_Command										<= to_IICBus_Command(Device_Address_d(Device_Address_d'high));
 				Device_Address_sh								<= '1';
 				
 				NextState												<= ST_SEND_DEVICE_ADDRESS0_WAIT;
 				
 			WHEN ST_SEND_DEVICE_ADDRESS0_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
 					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
@@ -371,8 +377,7 @@ BEGIN
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
@@ -389,6 +394,7 @@ BEGIN
 				END CASE;
 			
 			WHEN ST_SEND_READWRITE0 =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
 					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
@@ -397,8 +403,7 @@ BEGIN
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				
 				CASE Command_d IS														-- write = 0; read = 1
 					WHEN IO_IIC_CMD_QUICKCOMMAND_READ =>	IICBC_Command		<= IO_IICBUS_CMD_SEND_HIGH;
@@ -412,6 +417,7 @@ BEGIN
 				NextState												<= ST_SEND_READWRITE0_WAIT;
 				
 			WHEN ST_SEND_READWRITE0_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
 					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
@@ -420,8 +426,7 @@ BEGIN
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
@@ -431,6 +436,7 @@ BEGIN
 				END CASE;
 			
 			WHEN ST_RECEIVE_ACK0 =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
 					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
@@ -440,13 +446,13 @@ BEGIN
 				END CASE;
 				
 				BitCounter_rst									<= '1';
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '0';
+				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_RECEIVE;
 				
 				NextState												<= ST_RECEIVE_ACK0_WAIT;
 				
 			WHEN ST_RECEIVE_ACK0_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
 					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
@@ -455,8 +461,7 @@ BEGIN
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '0';
+				IICBC_Request										<= '1';
 			
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_RECEIVING =>									NULL;
@@ -489,28 +494,28 @@ BEGIN
 			-- write operation => continue writing
 			-- ======================================================================
 			WHEN ST_SEND_DATA1 =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				IICBC_Command										<= to_IICBus_Command(DataRegister_d(DataRegister_d'high));
 				DataRegister_sh									<= '1';
 				
 				NextState												<= ST_SEND_DATA1_WAIT;
 				
 			WHEN ST_SEND_DATA1_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
@@ -527,6 +532,7 @@ BEGIN
 				END CASE;
 				
 			WHEN ST_RECEIVE_ACK1 =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
@@ -534,21 +540,20 @@ BEGIN
 				END CASE;
 				
 				BitCounter_rst									<= '1';
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '0';
+				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_RECEIVE;
 				
 				NextState												<= ST_RECEIVE_ACK1_WAIT;
 				
 			WHEN ST_RECEIVE_ACK1_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '0';
+				IICBC_Request										<= '1';
 			
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_RECEIVING =>									NULL;
@@ -579,25 +584,25 @@ BEGIN
 			-- read operation => continue with reading without restart
 			-- ======================================================================
 			WHEN ST_RECEIVE_DATA2 =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '0';
+				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_RECEIVE;
 				
 				NextState												<= ST_RECEIVE_DATA2_WAIT;
 				
 			WHEN ST_RECEIVE_DATA2_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '0';
+				IICBC_Request										<= '1';
 			
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_RECEIVING =>									NULL;
@@ -622,26 +627,26 @@ BEGIN
 				END CASE;
 			
 			WHEN ST_SEND_ACK2 =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
 				BitCounter_rst									<= '1';
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_SEND_LOW;			-- ACK
 				
 				NextState												<= ST_SEND_ACK2_WAIT;
 				
 			WHEN ST_SEND_ACK2_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
@@ -651,26 +656,26 @@ BEGIN
 				END CASE;
 			
 			WHEN ST_SEND_NACK2 =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
 				BitCounter_rst									<= '1';
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_SEND_HIGH;			-- NACK
 				
 				NextState												<= ST_SEND_NACK2_WAIT;
 				
 			WHEN ST_SEND_NACK2_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
@@ -683,25 +688,25 @@ BEGIN
 			-- read operation after restart => continue with reading
 			-- ======================================================================
 			WHEN ST_SEND_RESTART3 =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_SEND_RESTART_CONDITION;
 					
 				NextState												<= ST_SEND_RESTART3_WAIT;
 				
 			WHEN ST_SEND_RESTART3_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
@@ -711,26 +716,26 @@ BEGIN
 				END CASE;
 			
 			WHEN ST_SEND_DEVICE_ADDRESS3 =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				IICBC_Command										<= to_IICBus_Command(Device_Address_d(Device_Address_d'high));
 				Device_Address_sh								<= '1';
 				
 				NextState												<= ST_SEND_DEVICE_ADDRESS3_WAIT;
 				
 			WHEN ST_SEND_DEVICE_ADDRESS3_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
@@ -747,25 +752,25 @@ BEGIN
 				END CASE;
 			
 			WHEN ST_SEND_READWRITE3 =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_SEND_HIGH;			-- 1 = read
 				
 				NextState												<= ST_SEND_READWRITE3_WAIT;
 				
 			WHEN ST_SEND_READWRITE3_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
@@ -775,26 +780,26 @@ BEGIN
 				END CASE;
 			
 			WHEN ST_RECEIVE_ACK3 =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
 				BitCounter_rst									<= '1';
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '0';
+				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_RECEIVE;
 				
 				NextState												<= ST_RECEIVE_ACK3_WAIT;
 				
 			WHEN ST_RECEIVE_ACK3_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '0';
+				IICBC_Request										<= '1';
 			
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_RECEIVING =>									NULL;
@@ -817,25 +822,25 @@ BEGIN
 				END CASE;
 			
 			WHEN ST_RECEIVE_DATA3 =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '0';
+				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_RECEIVE;
 				
 				NextState												<= ST_RECEIVE_DATA3_WAIT;
 				
 			WHEN ST_RECEIVE_DATA3_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '0';
+				IICBC_Request										<= '1';
 			
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_RECEIVING =>									NULL;
@@ -860,26 +865,26 @@ BEGIN
 				END CASE;
 			
 			WHEN ST_SEND_ACK3 =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
 				BitCounter_rst									<= '1';
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_SEND_LOW;			-- ACK
 				
 				NextState												<= ST_SEND_ACK3_WAIT;
 				
 			WHEN ST_SEND_ACK3_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
@@ -889,26 +894,26 @@ BEGIN
 				END CASE;
 			
 			WHEN ST_SEND_NACK3 =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
 				BitCounter_rst									<= '1';
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_SEND_HIGH;			-- NACK
 				
 				NextState												<= ST_SEND_NACK3_WAIT;
 				
 			WHEN ST_SEND_NACK3_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
@@ -918,6 +923,7 @@ BEGIN
 				END CASE;
 
 			WHEN ST_SEND_STOP =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
 					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
@@ -926,13 +932,13 @@ BEGIN
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_SEND_STOP_CONDITION;
 					
 				NextState												<= ST_SEND_STOP_WAIT;
 				
 			WHEN ST_SEND_STOP_WAIT =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
 					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
@@ -941,8 +947,7 @@ BEGIN
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 				
-				IICBC_BusMaster									<= '1';
-				IICBC_BusMode										<= '1';
+				IICBC_Request										<= '1';
 				
 				CASE IICBC_Status IS
 					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
@@ -954,6 +959,7 @@ BEGIN
 -- ======================================================================
 
 			WHEN ST_COMPLETE =>
+				Master_Grant										<= IICBC_Grant;
 				CASE CommandCategory IS
 					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTE_OK;		-- TODO: IO_IIC_STATUS_EXECUTE_ERROR
 					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SEND_COMPLETE;
@@ -962,36 +968,38 @@ BEGIN
 					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
 				END CASE;
 
-				NextState										<= ST_IDLE;
+				IICBC_Request										<= '1';
+
+				NextState												<= ST_IDLE;
 			
 			WHEN ST_BUS_ERROR =>
-				Status_i										<= IO_IIC_STATUS_ERROR;
-				Error_i											<= IO_IIC_ERROR_BUS_ERROR;
+				Status_i												<= IO_IIC_STATUS_ERROR;
+				Error_i													<= IO_IIC_ERROR_BUS_ERROR;
 				
 				-- FIXME: free bus ???
 				
-				NextState										<= ST_IDLE;
+				NextState												<= ST_IDLE;
 			
 			WHEN ST_ACK_ERROR =>
-				Status_i										<= IO_IIC_STATUS_ERROR;
-				Error_i											<= IO_IIC_ERROR_ACK_ERROR;
+				Status_i												<= IO_IIC_STATUS_ERROR;
+				Error_i													<= IO_IIC_ERROR_ACK_ERROR;
 				
 				-- FIXME: free bus !
 				
-				NextState										<= ST_IDLE;
+				NextState												<= ST_IDLE;
 
 			WHEN ST_ADDRESS_ERROR =>
-				Status_i										<= IO_IIC_STATUS_ERROR;
-				Error_i											<= IO_IIC_ERROR_ADDRESS_ERROR;
+				Status_i												<= IO_IIC_STATUS_ERROR;
+				Error_i													<= IO_IIC_ERROR_ADDRESS_ERROR;
 				
 				-- FIXME: free bus !
 				
-				NextState										<= ST_IDLE;
+				NextState												<= ST_IDLE;
 			
 			WHEN ST_ERROR =>
-				Status_i										<= IO_IIC_STATUS_ERROR;
-				Error_i											<= IO_IIC_ERROR_FSM;
-				NextState										<= ST_IDLE;
+				Status_i												<= IO_IIC_STATUS_ERROR;
+				Error_i													<= IO_IIC_ERROR_FSM;
+				NextState												<= ST_IDLE;
 			
 		END CASE;
 	END PROCESS;
@@ -1056,7 +1064,8 @@ BEGIN
 	IICBC : ENTITY PoC.IICBusController
 		GENERIC MAP (
 			CLOCK_FREQ_MHZ								=> CLOCK_FREQ_MHZ,
-			IIC_FREQ_KHZ									=> IIC_FREQ_KHZ
+			IIC_BUSMODE										=> IIC_BUSMODE,
+			ALLOW_MEALY_TRANSITION				=> ALLOW_MEALY_TRANSITION
 		)
 		PORT MAP (
 			Clock													=> Clock,
@@ -1068,8 +1077,8 @@ BEGIN
 			Command												=> IICBC_Command,
 			Status												=> IICBC_Status,
 
-			BusMaster											=> IICBC_BusMaster,
-			BusMode												=> IICBC_BusMode,											-- 0 = passive; 1 = active
+--			BusMaster											=> IICBC_BusMaster,
+--			BusMode												=> IICBC_BusMode,											-- 0 = passive; 1 = active
 			
 			SerialClock_i									=> SerialClock_i,
 			SerialClock_o									=> SerialClock_o,
@@ -1087,9 +1096,9 @@ BEGIN
 		CONSTANT DBG_TRIGGER_DELAY		: POSITIVE		:= 4;
 		CONSTANT DBG_TRIGGER_WINDOWS	: POSITIVE		:= 6;
 
-		
-		CONSTANT STATES		: POSITIVE		:= T_STATE'pos(ST_ERROR) + 1;
-		CONSTANT BITS			: POSITIVE		:= log2ceilnz(STATES);
+--		CONSTANT STATES		: POSITIVE		:= T_STATE'pos(ST_ERROR) + 1;
+--		CONSTANT BITS			: POSITIVE		:= log2ceilnz(STATES);
+		CONSTANT BITS			: POSITIVE		:= log2ceil(T_STATE'pos(T_STATE'high));
 	
 		FUNCTION to_slv(State : T_STATE) RETURN STD_LOGIC_VECTOR IS
 		BEGIN

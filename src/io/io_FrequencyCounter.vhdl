@@ -3,18 +3,13 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.functions.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.io.ALL;
 
 
 ENTITY FrequencyCounter IS
 	GENERIC (
-		CLOCK_IN_FREQ_MHZ					: REAL									:= 100.0;
+		CLOCK_FREQ_MHZ						: REAL									:= 100.0;
 		TIMEBASE_s								: REAL									:= 1.0;
 		RESOLUTION								: POSITIVE							:= 8
 	);
@@ -26,8 +21,9 @@ ENTITY FrequencyCounter IS
 	);
 END;
 
+
 ARCHITECTURE rtl OF FrequencyCounter IS
-	CONSTANT TIMEBASECOUNTER_MAX				: POSITIVE																		:= TimingToCycles_s(TIMEBASE_s, Freq_MHz2Real_ns(CLOCK_IN_FREQ_MHZ));
+	CONSTANT TIMEBASECOUNTER_MAX				: POSITIVE																		:= TimingToCycles_s(TIMEBASE_s, Freq_MHz2Real_ns(CLOCK_FREQ_MHZ));
 	CONSTANT TIMEBASECOUNTER_BW					: POSITIVE																		:= log2ceilnz(TIMEBASECOUNTER_MAX);
 	CONSTANT REQUENCYCOUNTER_MAX				: POSITIVE																		:= 2**RESOLUTION;
 	CONSTANT FREQUENCYCOUNTER_BW				: POSITIVE																		:= RESOLUTION;

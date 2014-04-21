@@ -45,16 +45,25 @@ PACKAGE io IS
 --			GHz = 1000 MHz;
 --		END UNITS;
 	
-	TYPE T_TRISTATE IS RECORD
+	TYPE T_IO_TRISTATE IS RECORD
 		I			: STD_LOGIC;					-- input / from device to FPGA
 		O			: STD_LOGIC;					-- output / from FPGA to device
 		T			: STD_LOGIC;					-- output disable / tristate enable
 	END RECORD;
 
-	TYPE T_TRISTATE_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_TRISTATE;
+	TYPE T_IO_TRISTATE_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_IO_TRISTATE;
 	
 	-- IICBusController
 	-- ==========================================================================================================================================================
+	TYPE T_IO_IIC_BUSMODE IS (
+		IO_IIC_BUSMODE_SMBUS,							--   100 kHz; additional timing restrictions
+		IO_IIC_BUSMODE_STANDARDMODE,			--   100 kHz
+		IO_IIC_BUSMODE_FASTMODE,					--   400 kHz
+		IO_IIC_BUSMODE_FASTMODEPLUS,			-- 1.000 kHz
+		IO_IIC_BUSMODE_HIGHSPEEDMODE,			-- 3.400 kHz
+		IO_IIC_BUSMODE_ULTRAFASTMODE			-- 5.000 kHz; unidirectional
+	);
+
 	TYPE T_IO_IICBUS_COMMAND IS (
 		IO_IICBUS_CMD_NONE,
 		IO_IICBUS_CMD_SEND_START_CONDITION,
@@ -66,6 +75,7 @@ PACKAGE io IS
 	);
 	
 	TYPE T_IO_IICBUS_STATUS IS (
+		IO_IICBUS_STATUS_RESETING,
 		IO_IICBUS_STATUS_IDLE,
 		IO_IICBUS_STATUS_SENDING,
 		IO_IICBUS_STATUS_SEND_COMPLETE,
