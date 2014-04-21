@@ -77,7 +77,7 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 
 --LIBRARY PoC;
 --USE			PoC.config.ALL;
---USE			PoC.functions.ALL;
+--USE			PoC.utils.ALL;
 
 --LIBRARY L_Global;
 --USE			L_Global.GlobalTypes.ALL;

@@ -4,7 +4,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
 
 LIBRARY L_Global;
 USE			L_Global.GlobalTypes.ALL;
@@ -40,7 +40,7 @@ LIBRARY work;
 
 ENTITY Eth_Wrapper IS
 	GENERIC (
-		CHIPSCOPE_KEEP						: BOOLEAN															:= FALSE;
+		DEBUG						: BOOLEAN															:= FALSE;
 		CLOCKIN_FREQ_MHZ					: REAL																:= 125.0;																		-- 125 MHz
 		ETHERNET_IPSTYLE					: T_IPSTYLE														:= IPSTYLE_SOFT;														-- 
 		RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE					:= NET_ETH_RS_DATA_INTERFACE_GMII;					-- 
@@ -107,7 +107,7 @@ BEGIN
 	BEGIN
 		Eth : Eth_Wrapper_Virtex5
 			GENERIC MAP (
-				CHIPSCOPE_KEEP						=> CHIPSCOPE_KEEP,
+				DEBUG						=> DEBUG,
 				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
@@ -148,7 +148,7 @@ BEGIN
 	BEGIN
 		Eth : Eth_Wrapper_Virtex6
 			GENERIC MAP (
-				CHIPSCOPE_KEEP						=> CHIPSCOPE_KEEP,
+				DEBUG						=> DEBUG,
 				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
@@ -190,7 +190,7 @@ BEGIN
 	BEGIN
 		Eth : Eth_Wrapper_Virtex7
 			GENERIC MAP (
-				CHIPSCOPE_KEEP						=> CHIPSCOPE_KEEP,
+				DEBUG						=> DEBUG,
 				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
@@ -270,7 +270,7 @@ BEGIN
 		
 		PHYC : ENTITY L_Ethernet.Eth_PHYController
 			GENERIC MAP (
-				CHIPSCOPE_KEEP									=> CHIPSCOPE_KEEP,
+				DEBUG									=> DEBUG,
 				CLOCK_FREQ_MHZ									=> CLOCKIN_FREQ_MHZ,
 				PHY_DEVICE											=> PHY_DEVICE,
 				PHY_DEVICE_ADDRESS							=> PHY_DEVICE_ADDRESS,

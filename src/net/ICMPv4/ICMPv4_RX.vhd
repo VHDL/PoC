@@ -4,7 +4,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
 
 LIBRARY L_Global;
 USE			L_Global.GlobalTypes.ALL;
@@ -15,7 +15,7 @@ USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY ICMPv4_RX IS
 	GENERIC (
-		CHIPSCOPE_KEEP								: BOOLEAN											:= FALSE
+		DEBUG													: BOOLEAN											:= FALSE
 	);
 	PORT (
 		Clock													: IN	STD_LOGIC;																	-- 
@@ -116,7 +116,7 @@ ARCHITECTURE rtl OF ICMPv4_RX IS
 
 	SIGNAL State													: T_STATE											:= ST_IDLE;
 	SIGNAL NextState											: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State				: SIGNAL IS ite(CHIPSCOPE_KEEP, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING OF State				: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
 	SIGNAL Register_rst										: STD_LOGIC;
 	

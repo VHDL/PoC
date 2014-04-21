@@ -4,7 +4,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
 
 LIBRARY L_Global;
 USE			L_Global.GlobalTypes.ALL;
@@ -18,7 +18,7 @@ USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY Eth_MDIOController IS
 	GENERIC (
-		CHIPSCOPE_KEEP						: BOOLEAN												:= TRUE;
+		DEBUG						: BOOLEAN												:= TRUE;
 		CLOCK_FREQ_MHZ						: REAL													:= 125.0;										-- 125 MHz
 --		PREAMBLE_SUPRESSION				: BOOLEAN												:= FALSE;										-- TODO: supported by Marvel 88E1111, minimum preamble length = 1 bit
 		BAUDRATE_BAUD							: REAL													:= 1.0 * 1000.0 * 1000.0		-- 1.0 MBit/s
@@ -77,7 +77,7 @@ ARCHITECTURE rtl OF Eth_MDIOController IS
 
 	SIGNAL State												: T_STATE																:= ST_IDLE;
 	SIGNAL NextState										: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State			: SIGNAL IS ite(CHIPSCOPE_KEEP, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING OF State			: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
 	SIGNAL RegPhysicalAddress_en				: STD_LOGIC;
 	SIGNAL RegPhysicalAddress_sh				: STD_LOGIC;
@@ -107,7 +107,7 @@ ARCHITECTURE rtl OF Eth_MDIOController IS
 	SIGNAL MD_Clock_re									: STD_LOGIC;
 	SIGNAL MD_Clock_fe									: STD_LOGIC;
 	
-	ATTRIBUTE KEEP OF MD_DataIn					: SIGNAL IS CHIPSCOPE_KEEP;
+	ATTRIBUTE KEEP OF MD_DataIn					: SIGNAL IS DEBUG;
 	
 BEGIN
 
@@ -784,7 +784,7 @@ BEGIN
 		MD_Clock_o		<= MD_Clock_r;
 		MD_Clock_t		<= '0';
 		
-		genCSP : IF (CHIPSCOPE_KEEP = TRUE) GENERATE
+		genCSP : IF (DEBUG = TRUE) GENERATE
 			CONSTANT OFFSET											: POSITIVE						:= 1;
 			SIGNAL CSP_RisingEdge								: STD_LOGIC;
 			SIGNAL CSP_FallingEdge							: STD_LOGIC;
