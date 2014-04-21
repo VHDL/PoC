@@ -48,7 +48,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 USE			STD.TEXTIO.ALL;
 
 LIBRARY PoC;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
 
 PACKAGE sim_value_change_dump IS
 	SUBTYPE T_VCDLINE		IS		STRING(1 TO 80);

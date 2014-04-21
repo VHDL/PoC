@@ -4,7 +4,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
 
 LIBRARY L_Global;
 USE			L_Global.GlobalTypes.ALL;
@@ -18,7 +18,7 @@ USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY Eth_PHYController_Marvell_88E1111 IS
 	GENERIC (
-		CHIPSCOPE_KEEP						: BOOLEAN													:= FALSE;
+		DEBUG						: BOOLEAN													:= FALSE;
 		CLOCK_FREQ_MHZ						: REAL														:= 125.0;										-- 125 MHz
 		PHY_DEVICE_ADDRESS				: T_NET_ETH_PHY_DEVICE_ADDRESS		:= "XXXXX"
 	);
@@ -64,7 +64,7 @@ ARCHITECTURE rtl OF Eth_PHYController_Marvell_88E1111 IS
 	SIGNAL State																			: T_STATE													:= ST_RESET;
 	SIGNAl NextState																	: T_STATE;
 	
-	ATTRIBUTE FSM_ENCODING OF State										: SIGNAL IS ite(CHIPSCOPE_KEEP, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING OF State										: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 	
 	CONSTANT C_MDIO_REGADR_COMMAND										: STD_LOGIC_VECTOR(4 DOWNTO 0)		:= to_slv( 0, 5);
 	CONSTANT C_MDIO_REGADR_STATUS											: STD_LOGIC_VECTOR(4 DOWNTO 0)		:= to_slv( 1, 5);

@@ -7,16 +7,7 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
-
--- ATTENTION:
--- ====================================
--- uncommented until PoC and L_Global.GlobalTypes get merged
--- functions were inlined
--- ====================================
---LIBRARY L_Global;
---USE			L_Global.GlobalTypes.ALL;
+USE			PoC.utils.ALL;
 
 -- list_expire_fixed
 --		expire	= list of expireable items
@@ -44,24 +35,8 @@ ENTITY list_expire IS
 END;
 
 
--- ATTENTION:
--- ============================================================================================================================================================
--- This module uses functions from L_Global.GlobalTypes written by Patrick Lehmann
--- to be compliant with PoC, this functions were inlined until GlobalTypes and PoC.functions get merged
--- 	o to_sl(...)
-
 ARCHITECTURE rtl OF list_expire IS
 	ATTRIBUTE KEEP										: BOOLEAN;
-
-	-- to_sl (inlined from package L_Global.GlobalTypes from "/lib/Global/Global.Types.vhd")
-	-- ==========================================================================
-	FUNCTION to_sl(Value : BOOLEAN) RETURN STD_LOGIC IS
-	BEGIN
-		IF (Value = TRUE) THEN
-			RETURN '1';
-		END IF;
-		RETURN '0';
-	END;
 
 	CONSTANT CLOCK_BITS								: POSITIVE																								:= log2ceilnz(CLOCK_CYCLE_TICKS);
 	

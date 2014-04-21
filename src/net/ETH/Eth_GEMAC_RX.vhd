@@ -4,7 +4,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
 
 LIBRARY L_Global;
 USE			L_Global.GlobalTypes.ALL;
@@ -15,7 +15,7 @@ USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY Eth_GEMAC_RX IS
 	GENERIC (
-		CHIPSCOPE_KEEP						: BOOLEAN						:= FALSE
+		DEBUG						: BOOLEAN						:= FALSE
 	);
 	PORT (
 		RS_RX_Clock								: IN	STD_LOGIC;
@@ -49,7 +49,7 @@ ARCHITECTURE rtl OF Eth_GEMAC_RX IS
 	
 	SIGNAL State											: T_STATE									:= ST_IDLE;
 	SIGNAL NextState									: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS ite(CHIPSCOPE_KEEP, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
 	CONSTANT PREAMBLE_COUNTER_BW			: POSITIVE																			:= log2ceilnz(C_NET_ETH_PREMABLE_LENGTH);
 	SIGNAL PreambleCounter_rst				: STD_LOGIC;

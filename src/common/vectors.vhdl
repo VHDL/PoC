@@ -178,7 +178,7 @@ package body vectors is
 
 	-- Assign procedures: assign_*
 	-- ==========================================================================
-	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL) IS
+	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL) IS
 		VARIABLE temp : STD_LOGIC_VECTOR(slm'high(2) DOWNTO slm'low(2));					-- Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); tested with ISE/iSIM 14.2
 	BEGIN
 		temp := slv;
@@ -187,7 +187,7 @@ package body vectors is
 		END LOOP;
 	END PROCEDURE;
 	
-	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL; Position : NATURAL) IS
+	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL; Position : NATURAL) IS
 		VARIABLE temp : STD_LOGIC_VECTOR(Position + slv'length - 1 DOWNTO Position);
 	BEGIN
 		temp := slv;
@@ -196,7 +196,7 @@ package body vectors is
 		END LOOP;
 	END PROCEDURE;
 	
-	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL; High : NATURAL; Low : NATURAL) IS
+	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL; High : NATURAL; Low : NATURAL) IS
 		VARIABLE temp : STD_LOGIC_VECTOR(High DOWNTO Low);
 	BEGIN
 		temp := slv;
@@ -205,7 +205,7 @@ package body vectors is
 		END LOOP;
 	END PROCEDURE;
 	
-	PROCEDURE assign_col(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT ColIndex : NATURAL) IS
+	PROCEDURE assign_col(SIGNAL slm : OUT T_SLM; slv : STD_LOGIC_VECTOR; CONSTANT ColIndex : NATURAL) IS
 		VARIABLE temp : STD_LOGIC_VECTOR(slm'range(1));
 	BEGIN
 		temp := slv;
