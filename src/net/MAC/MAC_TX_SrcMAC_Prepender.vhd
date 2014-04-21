@@ -4,17 +4,15 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
 
 LIBRARY L_Ethernet;
 USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY MAC_TX_SrcMAC_Prepender IS
 	GENERIC (
-		CHIPSCOPE_KEEP								: BOOLEAN													:= FALSE;
+		DEBUG													: BOOLEAN													:= FALSE;
 		MAC_ADDRESSES									: T_NET_MAC_ADDRESS_VECTOR				:= (0 => C_NET_MAC_ADDRESS_EMPTY)
 	);
 	PORT (
@@ -65,7 +63,7 @@ ARCHITECTURE rtl OF MAC_TX_SrcMAC_Prepender IS
 
 	SIGNAL State										: T_STATE																									:= ST_IDLE;
 	SIGNAL NextState								: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State	: SIGNAL IS ite(CHIPSCOPE_KEEP, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING OF State	: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 	
 	SIGNAL LLMux_In_Valid						: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL LLMux_In_Data						: T_SLM(PORTS - 1 DOWNTO 0, T_SLV_8'range)								:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)

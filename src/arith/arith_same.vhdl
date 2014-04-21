@@ -29,7 +29,7 @@ use			IEEE.numeric_std.all;
 
 library poc;
 use			poc.config.all;
-use			poc.functions.all;
+USE			PoC.utils.ALL;
 
 
 entity arith_same is

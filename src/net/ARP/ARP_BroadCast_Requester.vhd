@@ -4,7 +4,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
 
 LIBRARY L_Global;
 USE			L_Global.GlobalTypes.ALL;

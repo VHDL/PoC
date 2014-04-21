@@ -4,7 +4,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
 
 LIBRARY L_Global;
 USE			L_Global.GlobalTypes.ALL;
@@ -15,7 +15,7 @@ USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY IPv4_Wrapper IS
 	GENERIC (
-		CHIPSCOPE_KEEP									: BOOLEAN																:= FALSE;
+		DEBUG									: BOOLEAN																:= FALSE;
 		PACKET_TYPES										: T_NET_IPV4_PROTOCOL_VECTOR						:= (0 => x"00")
 	);
 	PORT (
@@ -300,7 +300,7 @@ BEGIN
 
 	IPv4_TX : ENTITY L_Ethernet.IPv4_TX
 		GENERIC MAP (
-			CHIPSCOPE_KEEP								=> CHIPSCOPE_KEEP
+			DEBUG								=> DEBUG
 		)
 		PORT MAP (
 			Clock													=> Clock,
@@ -344,7 +344,7 @@ BEGIN
 -- ============================================================================================================================================================
 	IPv4_RX : ENTITY L_Ethernet.IPv4_RX
 		GENERIC MAP (
-			CHIPSCOPE_KEEP									=> CHIPSCOPE_KEEP
+			DEBUG									=> DEBUG
 		)
 		PORT MAP (
 			Clock														=> Clock,

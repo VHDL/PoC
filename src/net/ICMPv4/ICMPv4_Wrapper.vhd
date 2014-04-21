@@ -4,7 +4,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
 
 LIBRARY L_Global;
 USE			L_Global.GlobalTypes.ALL;
@@ -15,7 +15,7 @@ USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY ICMPv4_Wrapper IS
 	GENERIC (
-		CHIPSCOPE_KEEP											: BOOLEAN								:= FALSE;
+		DEBUG											: BOOLEAN								:= FALSE;
 		SOURCE_IPV4ADDRESS									: T_NET_IPV4_ADDRESS		:= C_NET_IPV4_ADDRESS_EMPTY
 	);
 	PORT (
@@ -82,7 +82,7 @@ ARCHITECTURE rtl OF ICMPv4_Wrapper IS
 
 	SIGNAL FSM_State										: T_STATE											:= ST_IDLE;
 	SIGNAL FSM_NextState								: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF FSM_State	: SIGNAL IS ite(CHIPSCOPE_KEEP, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING OF FSM_State	: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 	
 	SIGNAL FSM_TX_Command								: T_NET_ICMPV4_TX_COMMAND;
 	SIGNAL TX_Status										: T_NET_ICMPV4_TX_STATUS;
@@ -283,7 +283,7 @@ BEGIN
 -- ============================================================================================================================================================
 	TX : ENTITY L_Ethernet.ICMPv4_TX
 		GENERIC MAP (
-			CHIPSCOPE_KEEP								=> CHIPSCOPE_KEEP,
+			DEBUG								=> DEBUG,
 			SOURCE_IPV4ADDRESS						=> SOURCE_IPV4ADDRESS
 		)
 		PORT MAP (
@@ -323,7 +323,7 @@ BEGIN
 -- ============================================================================================================================================================
 	RX : ENTITY L_Ethernet.ICMPv4_RX
 		GENERIC MAP (
-			CHIPSCOPE_KEEP								=> CHIPSCOPE_KEEP
+			DEBUG								=> DEBUG
 		)
 		PORT MAP (
 			Clock													=> Clock,	

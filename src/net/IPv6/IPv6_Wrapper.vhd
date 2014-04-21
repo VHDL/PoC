@@ -4,7 +4,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
 
 LIBRARY L_Global;
 USE			L_Global.GlobalTypes.ALL;
@@ -15,7 +15,7 @@ USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY IPv6_Wrapper IS
 	GENERIC (
-		CHIPSCOPE_KEEP									: BOOLEAN																:= FALSE;
+		DEBUG									: BOOLEAN																:= FALSE;
 		PACKET_TYPES										: T_NET_IPV6_NEXT_HEADER_VECTOR					:= (0 => x"00")
 	);
 	PORT (
@@ -306,7 +306,7 @@ BEGIN
 
 	TX_IPv6 : ENTITY L_Ethernet.IPv6_TX
 		GENERIC MAP (
-			CHIPSCOPE_KEEP								=> CHIPSCOPE_KEEP
+			DEBUG								=> DEBUG
 		)
 		PORT MAP (
 			Clock													=> Clock,
@@ -352,7 +352,7 @@ BEGIN
 -- ============================================================================================================================================================
 	RX_IPv6 : ENTITY L_Ethernet.IPv6_RX
 		GENERIC MAP (
-			CHIPSCOPE_KEEP									=> CHIPSCOPE_KEEP
+			DEBUG									=> DEBUG
 		)
 		PORT MAP (
 			Clock														=> Clock,

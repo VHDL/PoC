@@ -11,15 +11,7 @@ USE			UNISIM.VCOMPONENTS.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
-
--- ATTENTION:
--- ====================================
--- uncommented until PoC and L_Global.GlobalTypes get merged
--- functions were inlined
--- ====================================
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+USE			PoC.utils.ALL;
 
 -- list_lru_systolic
 --		lru = least recently used
@@ -48,43 +40,9 @@ ENTITY list_lru_systolic IS
 	);
 END;
 
--- ATTENTION:
--- ============================================================================================================================================================
--- This module uses functions from L_Global.GlobalTypes written by Patrick Lehmann
--- to be compliant with PoC, this functions were inlined until GlobalTypes and PoC.functions get merged
--- 	o to_sl(...)
---	o	ite(...)
 
 ARCHITECTURE rtl OF list_lru_systolic IS
 	ATTRIBUTE KEEP										: BOOLEAN;
-
-	-- to_sl (inlined from package L_Global.GlobalTypes from "/lib/Global/Global.Types.vhd")
-	-- ==========================================================================
-	FUNCTION to_sl(Value : BOOLEAN) RETURN STD_LOGIC IS
-	BEGIN
-		IF (Value = TRUE) THEN
-			RETURN '1';
-		END IF;
-		RETURN '0';
-	END;
-	
-	-- if-then-else (ite) (inlined from package L_Global.GlobalTypes from "/lib/Global/Global.Types.vhd")
-	-- ==========================================================================
-	FUNCTION ite(cond : BOOLEAN; value1 : STD_LOGIC; value2 : STD_LOGIC) RETURN STD_LOGIC IS
-	BEGIN
-		IF (cond = TRUE) THEN
-			RETURN value1;
-		END IF;
-		RETURN value2;
-	END;
-	
-	FUNCTION ite(cond : BOOLEAN; value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) RETURN STD_LOGIC_VECTOR IS
-	BEGIN
-		IF (cond = TRUE) THEN
-			RETURN value1;
-		END IF;
-		RETURN value2;
-	END;
 
 	SUBTYPE T_KEY					IS STD_LOGIC_VECTOR(KEY_BITS - 1 DOWNTO 0);
 	TYPE T_KEY_VECTOR			IS ARRAY (NATURAL RANGE <>) OF T_KEY;

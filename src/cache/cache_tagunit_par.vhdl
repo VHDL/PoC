@@ -3,11 +3,8 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
 
 -- cache_tagunit_par
 --		par = parallel
@@ -241,7 +238,7 @@ BEGIN
 		CONSTANT FA_MEMORY_INDEX_BITS		: POSITIVE					:= log2ceilnz(FA_CACHE_LINES);
 		
 		SIGNAL FA_Tag										: STD_LOGIC_VECTOR(FA_TAG_BITS - 1 DOWNTO 0);
-		SIGNAL TagHits								: STD_LOGIC_VECTOR(FA_CACHE_LINES - 1 DOWNTO 0);
+		SIGNAL TagHits									: STD_LOGIC_VECTOR(FA_CACHE_LINES - 1 DOWNTO 0);
 
 		SIGNAL FA_MemoryIndex_i					: STD_LOGIC_VECTOR(FA_MEMORY_INDEX_BITS - 1 DOWNTO 0);
 		SIGNAL FA_MemoryIndex_us				: UNSIGNED(FA_MEMORY_INDEX_BITS - 1 DOWNTO 0);
