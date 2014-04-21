@@ -28,7 +28,7 @@ use			ieee.std_logic_1164.all;
 use			ieee.numeric_std.all;
 
 library	poc;
-use			poc.functions.all;
+USE			PoC.utils.ALL;
 
 
 entity arith_div is

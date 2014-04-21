@@ -32,10 +32,10 @@
 -- limitations under the License.
 -- ============================================================================
 
-library PoC;
-use		 PoC.my_config.all;
-use		 PoC.utils.all;
-use		 PoC.strings.all;
+library	PoC;
+use			PoC.my_config.all;
+use			PoC.utils.all;
+use			PoC.strings.all;
 
 
 package config is
@@ -82,9 +82,9 @@ package config is
 	-- Functions extracting device and architecture properties from "MY_DEVICE"
 	-- which is declared in package "my_config".
 	-- ===========================================================================
-	function VENDOR(DeviceConfig : string := "None")		 return vendor_t;
-	function DEVICE(DeviceConfig : string := "None")		 return device_t;
-	
+	function VENDOR(DeviceConfig : string := "None")				return vendor_t;
+	function DEVICE(DeviceConfig : string := "None")				return device_t;
+	function DEVICE_SERIES(DeviceConfig : string := "None")	return natural;
 	
 	function ARCH_PROPS return archprops_t;
  
@@ -137,6 +137,15 @@ package body config is
 				end case;
 		end case;
 	end DEVICE;
+
+	function DEVICE_SERIES(DeviceConfig : string := "None") return natural is
+		constant MY_DEV : string := ite((DeviceConfig = "None"), MY_DEVICE, DeviceConfig);
+	begin
+		case DEVICE(MY_DEV) is
+			when DEVICE_ARTIX7 | DEVICE_KINTEX7 | DEVICE_VIRTEX7 | DEVICE_ZYNQ7 =>	return 7;		-- all Xilinx ****7 devices share some common features: e.g. XADC
+			when others =>																													return 0;
+		end case;
+	end function;
 
 	function DEVICE_SUBTYPE(DeviceConfig : string := "None") return string is
 		constant MY_DEV : string := ite((DeviceConfig = "None"), MY_DEVICE, DeviceConfig);
