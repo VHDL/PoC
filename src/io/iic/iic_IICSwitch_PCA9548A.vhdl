@@ -104,7 +104,7 @@ ARCHITECTURE rtl OF IICSwitch_PCA9548A IS
 	TYPE T_STATE IS (
 		ST_IDLE,
 		ST_REQUEST,
-		ST_WRITE_SWITCH_DEVICE_ADDRESS, ST_WRITE_SWITCH_REGISTER, ST_WRITE_WAIT,
+		ST_WRITE_SWITCH_DEVICE_ADDRESS, ST_WRITE_WAIT,
 		ST_TRANSACTION,
 		ST_ERROR
 	);
@@ -116,7 +116,7 @@ ARCHITECTURE rtl OF IICSwitch_PCA9548A IS
 	SIGNAL Request_or							: STD_LOGIC;
 	SIGNAL FSM_Arbitrate					: STD_LOGIC;
 	
-	SIGNAL Arb_Arbitrated					: STD_LOGIC;
+--	SIGNAL Arb_Arbitrated					: STD_LOGIC;
 	SIGNAL Arb_Grant							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Arb_Grant_bin					: STD_LOGIC_VECTOR(log2ceilnz(PORTS) - 1 DOWNTO 0);
 	
@@ -156,10 +156,19 @@ BEGIN
 	END PROCESS;
 
 	PROCESS(State,
-		Request_or, Arb_Grant,
-		IICC_Grant, IICC_WP_Ack)
+		Request_or, Arb_Grant, Arb_Grant_bin,
+		Command, Address, WP_Valid, WP_Data, WP_Last, RP_Ack,
+		IICC_Grant, IICC_Status, IICC_WP_Ack, IICC_RP_Valid, IICC_RP_Data, IICC_RP_Last)
 	BEGIN
 		NextState									<= State;
+
+		Grant											<= (OTHERS => '0');
+		Status										<= (OTHERS => IO_IIC_STATUS_IDLE);
+		Error											<= (OTHERS => IO_IIC_ERROR_NONE);
+		WP_Ack										<= (OTHERS => '0');
+		RP_Valid									<= (OTHERS => '0');
+		RP_Data										<= (OTHERS => (OTHERS => '0'));
+		RP_Last										<= (OTHERS => '0');
 
 		IICC_Request							<= '0';
 		IICC_Address							<= SWITCH_ADDRESS(IICC_Address'range);
