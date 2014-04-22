@@ -632,11 +632,11 @@ BEGIN
 				SerialClock_t_r_set		<= '1';													-- disable clock-tristate => clock = 1
 			
 				IF (SerialDataIn = '0') THEN
-					Status_nxt					<= IO_IICBUS_STATUS_RECEIVED_LOW;
+--					Status_nxt					<= IO_IICBUS_STATUS_RECEIVED_LOW;
 				ELSIF (SerialDataIn = ite(SIMULATION, 'H', '1')) THEN
-					Status_nxt					<= IO_IICBUS_STATUS_RECEIVED_HIGH;
+--					Status_nxt					<= IO_IICBUS_STATUS_RECEIVED_HIGH;
 				ELSE
-					Status_nxt					<= IO_IICBUS_STATUS_ERROR;
+--					Status_nxt					<= IO_IICBUS_STATUS_ERROR;
 				END IF;
 				
 				BusTC_Load						<= '1';													-- load timing counter

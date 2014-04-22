@@ -46,11 +46,11 @@ LIBRARY L_Global;
 ENTITY IICSwitch_PCA9548A IS
 	GENERIC (
 		DEBUG											: BOOLEAN						:= FALSE;
+		ALLOW_MEALY_TRANSITION		: BOOLEAN						:= TRUE;
 		SWITCH_ADDRESS						: T_SLV_8						:= x"00";
 		ADD_BYPASS_PORT						: BOOLEAN						:= FALSE;
 		ADDRESS_BITS							: POSITIVE					:= 7;
-		DATA_BITS									: POSITIVE					:= 8;
-		ALLOW_MEALY_TRANSITION		: BOOLEAN						:= TRUE
+		DATA_BITS									: POSITIVE					:= 8
 	);
 	PORT (
 		Clock							: IN	STD_LOGIC;
@@ -171,6 +171,7 @@ BEGIN
 		RP_Last										<= (OTHERS => '0');
 
 		IICC_Request							<= '0';
+		IICC_Command							<= IO_IIC_CMD_NONE;
 		IICC_Address							<= SWITCH_ADDRESS(IICC_Address'range);
 		IICC_WP_Valid							<= '0';
 		IICC_WP_Data							<= (OTHERS => '0');
