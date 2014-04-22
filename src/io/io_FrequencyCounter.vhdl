@@ -7,10 +7,10 @@ USE			PoC.utils.ALL;
 USE			PoC.io.ALL;
 
 
-ENTITY FrequencyCounter IS
+ENTITY io_FrequencyCounter IS
 	GENERIC (
 		CLOCK_FREQ_MHZ						: REAL									:= 100.0;
-		TIMEBASE_s								: REAL									:= 1.0;
+		TIMEBASE_S								: REAL									:= 1.0;
 		RESOLUTION								: POSITIVE							:= 8
 	);
 	PORT (
@@ -22,15 +22,15 @@ ENTITY FrequencyCounter IS
 END;
 
 
-ARCHITECTURE rtl OF FrequencyCounter IS
+ARCHITECTURE rtl OF io_FrequencyCounter IS
 	CONSTANT TIMEBASECOUNTER_MAX				: POSITIVE																		:= TimingToCycles_s(TIMEBASE_s, Freq_MHz2Real_ns(CLOCK_FREQ_MHZ));
-	CONSTANT TIMEBASECOUNTER_BW					: POSITIVE																		:= log2ceilnz(TIMEBASECOUNTER_MAX);
+	CONSTANT TIMEBASECOUNTER_BITS				: POSITIVE																		:= log2ceilnz(TIMEBASECOUNTER_MAX);
 	CONSTANT REQUENCYCOUNTER_MAX				: POSITIVE																		:= 2**RESOLUTION;
-	CONSTANT FREQUENCYCOUNTER_BW				: POSITIVE																		:= RESOLUTION;
+	CONSTANT FREQUENCYCOUNTER_BITS			: POSITIVE																		:= RESOLUTION;
 	
-	SIGNAL TimeBaseCounter_us						: UNSIGNED(TIMEBASECOUNTER_BW - 1 DOWNTO 0)		:= (OTHERS => '0');
+	SIGNAL TimeBaseCounter_us						: UNSIGNED(TIMEBASECOUNTER_BITS - 1 DOWNTO 0)	:= (OTHERS => '0');
 	SIGNAL TimeBaseCounter_ov						: STD_LOGIC;
-	SIGNAL FrequencyCounter_us					: UNSIGNED(FREQUENCYCOUNTER_BW DOWNTO 0)			:= (OTHERS => '0');
+	SIGNAL FrequencyCounter_us					: UNSIGNED(FREQUENCYCOUNTER_BITS DOWNTO 0)		:= (OTHERS => '0');
 	SIGNAL FrequencyCounter_ov					: STD_LOGIC;
 	
 	SIGNAL FreqIn_d											: STD_LOGIC																		:= '0';

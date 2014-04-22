@@ -45,7 +45,7 @@ LIBRARY L_Global;
 
 ENTITY IICSwitch_PCA9548A IS
 	GENERIC (
-		DEBUG											: BOOLEAN						:= TRUE;
+		DEBUG											: BOOLEAN						:= FALSE;
 		SWITCH_ADDRESS						: T_SLV_8						:= x"00";
 		ADD_BYPASS_PORT						: BOOLEAN						:= FALSE;
 		ADDRESS_BITS							: POSITIVE					:= 7;

@@ -49,7 +49,7 @@ USE			L_Global.GlobalComp.ALL;
 
 ENTITY IICController IS
 	GENERIC (
-		DEBUG													: BOOLEAN												:= TRUE;
+		DEBUG													: BOOLEAN												:= FALSE;
 		CLOCK_FREQ_MHZ								: REAL													:= 100.0;					-- 100 MHz
 		IIC_BUSMODE										: T_IO_IIC_BUSMODE							:= IO_IIC_BUSMODE_STANDARDMODE;
 		IIC_ADDRESS										: STD_LOGIC_VECTOR							:= (7 DOWNTO 1 => '0') & '-';
@@ -1140,7 +1140,7 @@ BEGIN
 		-- ChipScope data signals
 		SIGNAL DBG_Command					: T_IO_IIC_COMMAND;
 		SIGNAL DBG_Status						: T_IO_IIC_STATUS;
-		SIGNAL DBG_Device_Address		: STD_LOGIC_VECTOR(ADDRESS_BITS DOWNTO 0);
+		SIGNAL DBG_Device_Address		: STD_LOGIC_VECTOR(ADDRESS_BITS - 1 DOWNTO 0);
 		SIGNAL DBG_DataIn						: T_SLV_8;
 		SIGNAL DBG_DataOut					: T_SLV_8;
 		SIGNAL DBG_State						: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);

@@ -12,7 +12,7 @@ LIBRARY L_Global;
 USE			L_Global.GlobalComp.ALL;
 
 
-ENTITY FanControl IS
+ENTITY io_FanControl IS
 	GENERIC (
 		CLOCK_FREQ_MHZ					: REAL									:= 100.0
 	);
@@ -46,11 +46,11 @@ END;
 -- ============================================================================================================================================================
 
 
-ARCHITECTURE rtl OF FanControl IS
+ARCHITECTURE rtl OF io_FanControl IS
 	ATTRIBUTE ASYNC_REG												: STRING;
 	ATTRIBUTE SHREG_EXTRACT										: STRING;
 
-	CONSTANT TIME_STARTUP_MS	: REAL																							:= 5000.0;		-- 500 ms StartUp time
+	CONSTANT TIME_STARTUP_MS	: REAL																							:= 5000.0;	-- 500 ms StartUp time
 	CONSTANT PWM_RESOLUTION		: POSITIVE																					:= 4;				-- 4 Bit resolution => 0 to 15 steps
 	CONSTANT PWM_FREQ_KHZ			: REAL																							:= 0.020;		-- 20 Hz
 
@@ -182,7 +182,7 @@ BEGIN
 		END PROCESS;
 	END GENERATE;
 	
-	-- startup timer
+	-- timer for warm-up control
 	-- ==========================================================================================================================================================
 	TC : ENTITY PoC.io_TimingCounter
 		GENERIC MAP (
@@ -202,7 +202,7 @@ BEGIN
 	-- ==========================================================================================================================================================
 	PWM : ENTITY PoC.io_PulseWidthModulation
 		GENERIC MAP (
-			CLOCK_IN_FREQ_MHZ		=> CLOCK_FREQ_MHZ,			--
+			CLOCK_FREQ_MHZ			=> CLOCK_FREQ_MHZ,			--
 			PWM_FREQ_kHz				=> PWM_FREQ_kHz,				-- 
 			PWM_RESOLUTION			=> PWM_RESOLUTION				-- 
 		)
@@ -222,7 +222,7 @@ BEGIN
 	
 	Tacho : ENTITY PoC.io_FrequencyCounter
 		GENERIC MAP (
-			CLOCK_IN_FREQ_MHZ		=> CLOCK_FREQ_MHZ,			--
+			CLOCK_FREQ_MHZ			=> CLOCK_FREQ_MHZ,			--
 			TIMEBASE_s					=> (60.0 / 64.0),				-- ca. 1 second
 			RESOLUTION					=> 8										-- max. ca. 256 RPS -> max. ca. 16k RPM
 		)

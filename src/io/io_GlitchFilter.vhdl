@@ -7,7 +7,7 @@ USE			PoC.utils.ALL;
 USE			PoC.io.ALL;
 
 
-ENTITY GlitchFilter IS
+ENTITY io_GlitchFilter IS
   GENERIC (
 		CLOCK_FREQ_MHZ										: REAL				:= 100.0;
 		HIGH_SPIKE_SUPPRESSION_TIME_NS		: REAL				:= 50.0;
@@ -21,7 +21,7 @@ ENTITY GlitchFilter IS
 END;
 
 
-ARCHITECTURE rtl OF GlitchFilter IS
+ARCHITECTURE rtl OF io_GlitchFilter IS
 	-- Timing table ID
 	CONSTANT TTID_HIGH_SPIKE				: NATURAL		:= 0;
 	CONSTANT TTID_LOW_SPIKE					: NATURAL		:= 1;
@@ -90,7 +90,7 @@ BEGIN
 		END CASE;
 	END PROCESS;
 
-	TC : ENTITY PoC.TimingCounter
+	TC : ENTITY PoC.io_TimingCounter
 		GENERIC MAP (
 			TIMING_TABLE				=> TIMING_TABLE										-- timing table
 		)
