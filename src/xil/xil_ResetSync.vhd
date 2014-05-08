@@ -19,17 +19,17 @@ END;
 
 
 ARCHITECTURE rtl OF xil_ResetSync IS
-	SIGNAL ResetSync_r		: STD_LOGIC;
+	SIGNAL ResetSync_async											: STD_LOGIC;
 
-	-- Mark register "ResetSync_r" and "ResetOut" as asynchronous
-	ATTRIBUTE ASYNC_REG											: STRING;
-	ATTRIBUTE ASYNC_REG OF ResetSync_r			: SIGNAL IS "TRUE";
-	ATTRIBUTE ASYNC_REG OF ResetOut					: SIGNAL IS "TRUE";
+	-- Mark register "ResetSync_async" and "ResetOut" as asynchronous
+	ATTRIBUTE ASYNC_REG													: STRING;
+	ATTRIBUTE ASYNC_REG OF ResetSync_async			: SIGNAL IS "TRUE";
+	ATTRIBUTE ASYNC_REG OF ResetOut							: SIGNAL IS "TRUE";
 
 	-- Prevent XST from translating two FFs into SRL plus FF
-	ATTRIBUTE SHREG_EXTRACT									: STRING;
-	ATTRIBUTE SHREG_EXTRACT OF ResetSync_r	: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF ResetOut			: SIGNAL IS "NO";
+	ATTRIBUTE SHREG_EXTRACT											: STRING;
+	ATTRIBUTE SHREG_EXTRACT OF ResetSync_async	: SIGNAL IS "NO";
+	ATTRIBUTE SHREG_EXTRACT OF ResetOut					: SIGNAL IS "NO";
 
 BEGIN
 
@@ -41,7 +41,7 @@ BEGIN
 			C				=> Clock,
 			PRE			=> ResetIn,
 			D				=> '0',
-			Q				=> ResetSync_r
+			Q				=> ResetSync_async
 	);
 
 	FF2 : FDP
@@ -51,7 +51,7 @@ BEGIN
 		PORT MAP (
 			C				=> Clock,
 			PRE			=> ResetIn,
-			D				=> ResetSync_r,
+			D				=> ResetSync_async,
 			Q				=> ResetOut
 	);
 

@@ -23,16 +23,16 @@ END;
 
 
 ARCHITECTURE rtl OF xil_SyncBlock IS
-	SIGNAL DataSync_r		: STD_LOGIC;
+	SIGNAL DataSync_async				: STD_LOGIC;
 
-	-- Mark register "DataSync_r" as asynchronous
-	ATTRIBUTE ASYNC_REG											: STRING;
-	ATTRIBUTE ASYNC_REG OF DataSync_r				: SIGNAL IS "TRUE";
+	-- Mark register "DataSync_async" as asynchronous
+	ATTRIBUTE ASYNC_REG												: STRING;
+	ATTRIBUTE ASYNC_REG			OF DataSync_async	: SIGNAL IS "TRUE";
 
 	-- Prevent XST from translating two FFs into SRL plus FF
-	ATTRIBUTE SHREG_EXTRACT									: STRING;
-	ATTRIBUTE SHREG_EXTRACT OF DataSync_r		: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF DataOut			: SIGNAL IS "NO";
+	ATTRIBUTE SHREG_EXTRACT										: STRING;
+	ATTRIBUTE SHREG_EXTRACT OF DataSync_async	: SIGNAL IS "NO";
+	ATTRIBUTE SHREG_EXTRACT OF DataOut				: SIGNAL IS "NO";
 
 BEGIN
 
@@ -43,7 +43,7 @@ BEGIN
 		PORT MAP (
 			C				=> Clock,
 			D				=> DataIn,
-			Q				=> DataSync_r
+			Q				=> DataSync_async
 	);
 
 	FF2 : FD
@@ -52,7 +52,7 @@ BEGIN
 		)
 		PORT MAP (
 			C				=> Clock,
-			D				=> DataSync_r,
+			D				=> DataSync_async,
 			Q				=> DataOut
 	);
 

@@ -27,7 +27,7 @@ ARCHITECTURE xilinx OF xil_SystemMonitor_Series7 IS
 	SIGNAL FLOAT_MUXADDR				: STD_LOGIC_VECTOR(4 DOWNTO 0);
 	SIGNAL aux_channel_p				: STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL aux_channel_n				: STD_LOGIC_VECTOR(15 DOWNTO 0);
-	SIGNAL alm_int							: STD_LOGIC_VECTOR(7 DOWNTO 0);
+	SIGNAL XADC_Alarm						: STD_LOGIC_VECTOR(7 DOWNTO 0);
 begin
 
 	genAUXChannel : FOR I IN 0 TO 15 GENERATE
@@ -81,7 +81,7 @@ begin
 			VP									=> VP,
 			-- Alarms
 			OT									=> Alarm_OverTemp,
-			ALM									=> alm_int,
+			ALM									=> XADC_Alarm,
 			-- Status
 			MUXADDR							=> FLOAT_MUXADDR,
 			CHANNEL							=> OPEN,
@@ -94,6 +94,6 @@ begin
 			JTAGMODIFIED				=> OPEN
 	 );
 	 
-	Alarm						<= alm_int(7);
-	Alarm_UserTemp	<= alm_int(0);
+	Alarm						<= XADC_Alarm(7);
+	Alarm_UserTemp	<= XADC_Alarm(0);
 END;

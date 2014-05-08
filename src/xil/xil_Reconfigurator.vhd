@@ -14,9 +14,9 @@ USE			PoC.xilinx.ALL;
 
 ENTITY xil_Reconfigurator IS
 	GENERIC (
-		DEBUG										: BOOLEAN											:= FALSE;																			-- 
-		CLOCK_FREQ_MHZ					: REAL												:= 0.0;																				-- 
-		CONFIG_ROM							: IN	T_XILDRP_CONFIG_ROM			:= (0 DOWNTO 0 => XILDRP_CONFIG_SET_EMPTY)		-- 
+		DEBUG										: BOOLEAN											:= FALSE;																				-- 
+		CLOCK_FREQ_MHZ					: REAL												:= 0.0;																					-- 
+		CONFIG_ROM							: IN	T_XIL_DRP_CONFIG_ROM		:= (0 DOWNTO 0 => C_XIL_DRP_CONFIG_SET_EMPTY)		-- 
 	);
 	PORT (
 		Clock										: IN	STD_LOGIC;
@@ -27,10 +27,10 @@ ENTITY xil_Reconfigurator IS
 		ConfigSelect						: IN	STD_LOGIC_VECTOR;																	-- 
 		
 		DRP_en									: OUT	STD_LOGIC;																				-- 
-		DRP_Address							: OUT	T_XILDRP_ADDRESS;																	-- 
+		DRP_Address							: OUT	T_XIL_DRP_ADDRESS;																-- 
 		DRP_we									: OUT	STD_LOGIC;																				-- 
-		DRP_DataIn							: IN	T_XILDRP_DATA;																		-- 
-		DRP_DataOut							: OUT	T_XILDRP_DATA;																		-- 
+		DRP_DataIn							: IN	T_XIL_DRP_DATA;																		-- 
+		DRP_DataOut							: OUT	T_XIL_DRP_DATA;																		-- 
 		DRP_Ready								: IN	STD_LOGIC																					-- 
 	);
 END;
@@ -54,12 +54,12 @@ ARCHITECTURE rtl OF xil_Reconfigurator IS
 	ATTRIBUTE FSM_ENCODING	OF State	: SIGNAL IS ite(DEBUG, "gray", "speed1");
 	
 	SIGNAL DataBuffer_en							: STD_LOGIC;
-	SIGNAL DataBuffer_d								: T_XILDRP_DATA													:= (OTHERS => '0');
+	SIGNAL DataBuffer_d								: T_XIL_DRP_DATA													:= (OTHERS => '0');
 
-	SIGNAL ROM_Entry									: T_XILDRP_CONFIG;
+	SIGNAL ROM_Entry									: T_XIL_DRP_CONFIG;
 	SIGNAL ROM_LastConfigWord					: STD_LOGIC;
 
-	CONSTANT CONFIGINDEX_BW						: POSITIVE															:= log2ceilnz(XILDRP_MAX_CONFIG_COUNT);
+	CONSTANT CONFIGINDEX_BW						: POSITIVE															:= log2ceilnz(C_XIL_DRP_MAX_CONFIG_COUNT);
 	SIGNAL ConfigIndex_rst						: STD_LOGIC;
 	SIGNAL ConfigIndex_en							: STD_LOGIC;
 	SIGNAL ConfigIndex_us							: UNSIGNED(CONFIGINDEX_BW - 1 DOWNTO 0);
@@ -116,7 +116,7 @@ BEGIN
 	END PROCESS;
 	
 	-- assign DRP signals
-	DRP_Address						<= ROM_Entry.Address(6 DOWNTO 0);
+	DRP_Address						<= ROM_Entry.Address;
 	DRP_DataOut						<= DataBuffer_d;
 
 	-- DRP read-modify-write statemachine
