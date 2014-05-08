@@ -34,6 +34,7 @@
 
 library	PoC;
 use			PoC.my_config.all;
+use			PoC.board.all;
 use			PoC.utils.all;
 use			PoC.strings.all;
 
@@ -82,19 +83,32 @@ package config is
 	-- Functions extracting device and architecture properties from "MY_DEVICE"
 	-- which is declared in package "my_config".
 	-- ===========================================================================
-	function VENDOR(DeviceConfig : string := "None")				return vendor_t;
-	function DEVICE(DeviceConfig : string := "None")				return device_t;
-	function DEVICE_SERIES(DeviceConfig : string := "None")	return natural;
+	function VENDOR(DeviceString : string := "None")				return vendor_t;
+	function DEVICE(DeviceString : string := "None")				return device_t;
+	function DEVICE_SERIES(DeviceString : string := "None")	return natural;
 	
 	function ARCH_PROPS return archprops_t;
  
 end config;
 
 package body config is
+	function getLocalDeviceString(DeviceString : string) return string is
+	begin
+		if (DeviceString /= "None") then
+			return DeviceString;
+		else
+			if (MY_DEVICE /= "None") then
+				return MY_DEVICE;
+			else
+				return MY_DEVICE_STRING;
+			end if;
+		end if;
+	end function;
+
 
 	-- purpose: extract vendor from MY_DEVICE
-	function VENDOR(DeviceConfig : string := "None") return vendor_t is
-		constant MY_DEV : string := ite((DeviceConfig = "None"), MY_DEVICE, DeviceConfig);
+	function VENDOR(DeviceString : string := "None") return vendor_t is
+		constant MY_DEV : string := getLocalDeviceString(DeviceString);
 	begin	-- VENDOR
 		case MY_DEV(1 to 2) is
 			when "XC"	 => return VENDOR_XILINX;
@@ -105,8 +119,8 @@ package body config is
 	end VENDOR;
 
 	-- purpose: extract device from MY_DEVICE
-	function DEVICE(DeviceConfig : string := "None") return device_t is
-		constant MY_DEV : string := ite((DeviceConfig = "None"), MY_DEVICE, DeviceConfig);
+	function DEVICE(DeviceString : string := "None") return device_t is
+		constant MY_DEV : string := getLocalDeviceString(DeviceString);
 	begin	-- DEVICE
 		case VENDOR(MY_DEV) is
 			when VENDOR_ALTERA =>
@@ -123,7 +137,7 @@ package body config is
 				end case;
 
 			when VENDOR_XILINX =>
-				case MY_DEVICE(3 to 4) is
+				case MY_DEV(3 to 4) is
 					when "7A"	 => return DEVICE_ARTIX7;
 					when "7K"	 => return DEVICE_KINTEX7;
 					when "3S"	 => return DEVICE_SPARTAN3;
@@ -138,8 +152,8 @@ package body config is
 		end case;
 	end DEVICE;
 
-	function DEVICE_SERIES(DeviceConfig : string := "None") return natural is
-		constant MY_DEV : string := ite((DeviceConfig = "None"), MY_DEVICE, DeviceConfig);
+	function DEVICE_SERIES(DeviceString : string := "None") return natural is
+		constant MY_DEV : string := getLocalDeviceString(DeviceString);
 	begin
 		case DEVICE(MY_DEV) is
 			when DEVICE_ARTIX7 | DEVICE_KINTEX7 | DEVICE_VIRTEX7 | DEVICE_ZYNQ7 =>	return 7;		-- all Xilinx ****7 devices share some common features: e.g. XADC
@@ -147,8 +161,8 @@ package body config is
 		end case;
 	end function;
 
-	function DEVICE_SUBTYPE(DeviceConfig : string := "None") return string is
-		constant MY_DEV : string := ite((DeviceConfig = "None"), MY_DEVICE, DeviceConfig);
+	function DEVICE_SUBTYPE(DeviceString : string := "None") return string is
+		constant MY_DEV : string := getLocalDeviceString(DeviceString);
 	begin
 		case DEVICE(MY_DEV) is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return "NONE";		-- Altera Cyclon I, II, III devices have no subtype
@@ -198,8 +212,8 @@ package body config is
 	
 	end function;
 
-	function LUT_FANIN(DeviceConfig : string := "None") return positive is
-		constant MY_DEV : string := ite((DeviceConfig = "None"), MY_DEVICE, DeviceConfig);
+	function LUT_FANIN(DeviceString : string := "None") return positive is
+		constant MY_DEV : string := getLocalDeviceString(DeviceString);
 	begin
 		case DEVICE(MY_DEV) is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>			return 4;
@@ -218,8 +232,8 @@ package body config is
 		end case;
 	end function;
 
-	function TRANSCEIVER_TYPE(DeviceConfig : string := "None") return transceiver_t is
-		constant MY_DEV : string := ite((DeviceConfig = "None"), MY_DEVICE, DeviceConfig);
+	function TRANSCEIVER_TYPE(DeviceString : string := "None") return transceiver_t is
+		constant MY_DEV : string := getLocalDeviceString(DeviceString);
 	begin
 		case DEVICE(MY_DEV) is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return TRANSCEIVER_NONE;		-- Altera Cyclon I, II, III devices have no transceivers
