@@ -314,7 +314,7 @@ BEGIN
 	SerialData_o			<= '0';
 	SerialData_t			<= SerialData_t_r			WHEN rising_edge(Clock);
 
-	SerialClockGF : ENTITY PoC.GlitchFilter
+	SerialClockGF : ENTITY PoC.io_GlitchFilter
 		GENERIC MAP (
 			CLOCK_FREQ_MHZ										=> CLOCK_FREQ_MHZ,
 			HIGH_SPIKE_SUPPRESSION_TIME_NS		=> TIME_SPIKE_SUPPRESSION_NS,
@@ -326,7 +326,7 @@ BEGIN
 			O				=> SerialClockIn
 		);
 		
-	SerialDataGF : ENTITY PoC.GlitchFilter
+	SerialDataGF : ENTITY PoC.io_GlitchFilter
 		GENERIC MAP (
 			CLOCK_FREQ_MHZ										=> CLOCK_FREQ_MHZ,
 			HIGH_SPIKE_SUPPRESSION_TIME_NS		=> TIME_SPIKE_SUPPRESSION_NS,
@@ -632,11 +632,11 @@ BEGIN
 				SerialClock_t_r_set		<= '1';													-- disable clock-tristate => clock = 1
 			
 				IF (SerialDataIn = '0') THEN
-					Status_nxt					<= IO_IICBUS_STATUS_RECEIVED_LOW;
+--					Status_nxt					<= IO_IICBUS_STATUS_RECEIVED_LOW;
 				ELSIF (SerialDataIn = ite(SIMULATION, 'H', '1')) THEN
-					Status_nxt					<= IO_IICBUS_STATUS_RECEIVED_HIGH;
+--					Status_nxt					<= IO_IICBUS_STATUS_RECEIVED_HIGH;
 				ELSE
-					Status_nxt					<= IO_IICBUS_STATUS_ERROR;
+--					Status_nxt					<= IO_IICBUS_STATUS_ERROR;
 				END IF;
 				
 				BusTC_Load						<= '1';													-- load timing counter
@@ -695,7 +695,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	BusTC : ENTITY PoC.TimingCounter
+	BusTC : ENTITY PoC.io_TimingCounter
 		GENERIC MAP (
 			TIMING_TABLE				=> TIMING_TABLE												-- timing table
 		)

@@ -31,7 +31,7 @@ USE			PoC.utils.ALL;
 USE			PoC.io.ALL;
 
 
-ENTITY PulseWidthModulation IS
+ENTITY io_PulseWidthModulation IS
 	GENERIC (
 		CLOCK_FREQ_MHZ						: REAL									:= 100.0;
 		PWM_FREQ_kHz							: REAL									:= 0.020;
@@ -45,15 +45,15 @@ ENTITY PulseWidthModulation IS
 	);
 END;
 
-ARCHITECTURE rtl OF PulseWidthModulation IS
-	CONSTANT PWM_STEPS									: REAL																				:= 2.0**PWM_RESOLUTION;
-	CONSTANT PWM_STEP_FREQ_KHZ					: REAL																				:= PWM_FREQ_kHz * (PWM_STEPS - 1.0);
-	CONSTANT PWM_FREQUENCYCOUNTER_MAX		: POSITIVE																		:= TimingToCycles_ns(Freq_kHz2Real_ns(PWM_STEP_FREQ_KHZ), Freq_MHz2Real_ns(CLOCK_FREQ_MHZ));
-	CONSTANT PWM_FREQUENCYCOUNTER_BW		: POSITIVE																		:= log2ceilnz(PWM_FREQUENCYCOUNTER_MAX);
+ARCHITECTURE rtl OF io_PulseWidthModulation IS
+	CONSTANT PWM_STEPS									: REAL																					:= 2.0**PWM_RESOLUTION;
+	CONSTANT PWM_STEP_FREQ_KHZ					: REAL																					:= PWM_FREQ_kHz * (PWM_STEPS - 1.0);
+	CONSTANT PWM_FREQUENCYCOUNTER_MAX		: POSITIVE																			:= TimingToCycles_ns(Freq_kHz2Real_ns(PWM_STEP_FREQ_KHZ), Freq_MHz2Real_ns(CLOCK_FREQ_MHZ));
+	CONSTANT PWM_FREQUENCYCOUNTER_BITS	: POSITIVE																			:= log2ceilnz(PWM_FREQUENCYCOUNTER_MAX);
 	
-	SIGNAL PWM_FrequencyCounter_us			: UNSIGNED(PWM_FREQUENCYCOUNTER_BW DOWNTO 0)	:= (OTHERS => '0');
+	SIGNAL PWM_FrequencyCounter_us			: UNSIGNED(PWM_FREQUENCYCOUNTER_BITS DOWNTO 0)	:= (OTHERS => '0');
 	SIGNAL PWM_FrequencyCounter_ov			: STD_LOGIC;
-	SIGNAL PWM_PulseCounter_us					: UNSIGNED(PWM_RESOLUTION - 1 DOWNTO 0)				:= (OTHERS => '0');
+	SIGNAL PWM_PulseCounter_us					: UNSIGNED(PWM_RESOLUTION - 1 DOWNTO 0)					:= (OTHERS => '0');
 	SIGNAL PWM_PulseCounter_ov					: STD_LOGIC;
 	
 BEGIN
