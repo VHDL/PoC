@@ -54,6 +54,30 @@ PACKAGE xilinx IS
 		LastIndex	=> 0
 	);
 
+	
+	COMPONENT xil_SystemMonitor_Virtex6 IS
+		PORT (
+			Reset								: IN	STD_LOGIC;				-- Reset signal for the System Monitor control logic
+			
+			Alarm_UserTemp			: OUT	STD_LOGIC;				-- Temperature-sensor alarm output
+			Alarm_OverTemp			: OUT	STD_LOGIC;				-- Over-Temperature alarm output
+			Alarm								: OUT	STD_LOGIC;				-- OR'ed output of all the Alarms
+			VP									: IN	STD_LOGIC;				-- Dedicated Analog Input Pair
+			VN									: IN	STD_LOGIC
+		);
+	END COMPONENT;
+
+	COMPONENT xil_SystemMonitor_Series7 IS
+		PORT (
+			Reset								: IN	STD_LOGIC;				-- Reset signal for the System Monitor control logic
+			
+			Alarm_UserTemp			: OUT	STD_LOGIC;				-- Temperature-sensor alarm output
+			Alarm_OverTemp			: OUT	STD_LOGIC;				-- Over-Temperature alarm output
+			Alarm								: OUT	STD_LOGIC;				-- OR'ed output of all the Alarms
+			VP									: IN	STD_LOGIC;				-- Dedicated Analog Input Pair
+			VN									: IN	STD_LOGIC
+		);
+	END COMPONENT;
 END xilinx;
 
 

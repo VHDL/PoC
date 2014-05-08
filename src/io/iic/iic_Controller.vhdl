@@ -41,10 +41,8 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.components.ALL;
 USE			PoC.io.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalComp.ALL;
 
 
 ENTITY IICController IS
