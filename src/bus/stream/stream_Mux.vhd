@@ -4,10 +4,8 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
 
 
 ENTITY Stream_Mux IS
@@ -130,7 +128,7 @@ BEGIN
 	SelectRight					<= (unsigned(NOT RequestVector) + 1)	AND unsigned(RequestVector);
 	ChannelPointer_nxt	<= std_logic_vector(ite((RequestLeft = (RequestLeft'range => '0')), SelectRight, SelectLeft));
 	
-	ChannelPointer_bin	<= onehot2bin_us(ChannelPointer);
+	ChannelPointer_bin	<= onehot2bin(ChannelPointer);
 	idx									<= to_integer(ChannelPointer_bin);
 --	ASSERT idx < PORTS REPORT INTEGER'image(idx) SEVERITY ERROR;
 	
