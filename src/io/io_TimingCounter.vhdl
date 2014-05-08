@@ -21,7 +21,7 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 
 
-ENTITY TimingCounter IS
+ENTITY io_TimingCounter IS
   GENERIC (
 	  TIMING_TABLE				: T_NATVEC																		-- timing table
 	);
@@ -35,7 +35,7 @@ ENTITY TimingCounter IS
 END;
 
 
-ARCHITECTURE rtl OF TimingCounter IS
+ARCHITECTURE rtl OF io_TimingCounter IS
 	FUNCTION transform(vec : T_NATVEC) RETURN T_INTVEC IS
     VARIABLE Result : T_INTVEC(vec'range);
   BEGIN
