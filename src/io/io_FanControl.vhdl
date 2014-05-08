@@ -6,10 +6,9 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.components.ALL;
 USE			PoC.io.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalComp.ALL;
+USE			PoC.xilinx.ALL;
 
 
 ENTITY io_FanControl IS
@@ -97,7 +96,7 @@ BEGIN
 		ATTRIBUTE SHREG_EXTRACT OF UserTemperature_async	: SIGNAL IS "NO";
 		ATTRIBUTE SHREG_EXTRACT OF UserTemperature_sync		: SIGNAL IS "NO";
 	BEGIN
-		SystemMonitor : SystemMonitor_Virtex6
+		SystemMonitor : ENTITY PoC.xil_SystemMonitor_Virtex6
 			PORT MAP (
 				Reset								=> Reset,									-- Reset signal for the System Monitor control logic
 				
@@ -131,7 +130,7 @@ BEGIN
 	
 	-- System Monitor and temerature to PWM ratio calculation for Virtex7
 	-- ==========================================================================================================================================================
-	gen7Series : IF (DEVICE_SERIES = 7) GENERATE
+	genSeries7 : IF (DEVICE_SERIES = 7) GENERATE
 		SIGNAL OverTemperature				: STD_LOGIC;
 		SIGNAL OverTemperature_async	: STD_LOGIC						:= '0';
 		SIGNAL OverTemperature_sync		: STD_LOGIC						:= '0';
@@ -150,7 +149,7 @@ BEGIN
 		ATTRIBUTE SHREG_EXTRACT OF UserTemperature_async	: SIGNAL IS "NO";
 		ATTRIBUTE SHREG_EXTRACT OF UserTemperature_sync		: SIGNAL IS "NO";
 	BEGIN
-		SystemMonitor : SystemMonitor_7Series
+		SystemMonitor : ENTITY PoC.xil_SystemMonitor_Series7
 			PORT MAP (
 				Reset								=> Reset,									-- Reset signal for the System Monitor control logic
 				
