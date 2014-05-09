@@ -48,7 +48,7 @@ ENTITY stack_UDPv4 IS
 		
 		Ethernet_Status										: OUT		T_NET_ETH_STATUS;
 		
-		PHY_Interface											:	INOUT	T_NET_ETH_PHY_INTERFACES;
+		PHY_Interface											:	INOUT	T_NET_ETH_PHY_INTERFACES
 		
 		-- UDP ports
 	);
