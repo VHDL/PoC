@@ -5,17 +5,11 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 --USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.io.ALL;
+USE			PoC.net.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
-
-ENTITY MDIO_SFF8431_Adapter IS
+ENTITY mdio_MDIO_IIC_Adapter IS
 	GENERIC (
 		DEBUG													: BOOLEAN												:= TRUE
 	);
@@ -54,7 +48,7 @@ END ENTITY;
 -- TODOs
 --	add Status = NET_ETH_MDIOC_STATUS_ADDRESS_ERROR if IICC.Status = ACK_ERROR
 
-ARCHITECTURE rtl OF MDIO_SFF8431_Adapter IS
+ARCHITECTURE rtl OF mdio_MDIO_IIC_Adapter IS
 	ATTRIBUTE KEEP										: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING						: STRING;
 	

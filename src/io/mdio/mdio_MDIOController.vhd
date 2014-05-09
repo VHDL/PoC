@@ -5,15 +5,9 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.io.ALL;
+USE			PoC.net.ALL;
 
 
 ENTITY Eth_MDIOController IS
