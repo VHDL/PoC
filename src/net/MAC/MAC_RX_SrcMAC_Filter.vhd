@@ -6,9 +6,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.net.ALL;
 
 ENTITY MAC_RX_SrcMAC_Filter IS
 	GENERIC (
@@ -41,6 +39,7 @@ ENTITY MAC_RX_SrcMAC_Filter IS
 		Out_Meta_SrcMACAddress_Data		: OUT	T_SLV_8
 	);
 END;
+
 
 ARCHITECTURE rtl OF MAC_RX_SrcMAC_Filter IS
 	ATTRIBUTE KEEP										: BOOLEAN;

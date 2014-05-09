@@ -4,15 +4,11 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+--LIBRARY L_IO;
+--USE			L_IO.IOTypes.ALL;
 
 
 ENTITY ARP_Tester IS
@@ -38,6 +34,7 @@ ENTITY ARP_Tester IS
 		IPCache_MACAddress_Data			: IN	T_SLV_8
 	);
 END;
+
 
 ARCHITECTURE rtl OF ARP_Tester IS
 	ATTRIBUTE KEEP													: BOOLEAN;
@@ -187,7 +184,7 @@ BEGIN
 	
 	IPv4Address_d			<= LOOKUP_ADDRESSES(to_integer(Lookup_Counter_us));
 	
-	IPv4AddressSeq : ENTITY L_Global.Sequenzer
+	IPv4AddressSeq : ENTITY PoC.misc_Sequencer
 		GENERIC MAP (
 			INPUT_BITS						=> 32,
 			OUTPUT_BITS						=> 8,

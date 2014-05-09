@@ -6,9 +6,8 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY MAC_TX_SrcMAC_Prepender IS
 	GENERIC (
@@ -105,7 +104,7 @@ BEGIN
 	In_Meta_rst									<= get_col(LLMux_In_Meta_rev, META_RST_BIT);
 	In_Meta_DestMACAddress_nxt	<= get_col(LLMux_In_Meta_rev, META_DEST_NXT_BIT);
 	
-	LLMux : ENTITY L_Global.LocalLink_Mux
+	LLMux : ENTITY PoC.stream_Mux
 		GENERIC MAP (
 			PORTS									=> PORTS,
 			DATA_BITS							=> LLMux_Out_Data'length,

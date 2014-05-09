@@ -5,15 +5,13 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+--LIBRARY L_IO;
+--USE			L_IO.IOTypes.ALL;
 
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
 
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
 
 
 ENTITY ARP_Wrapper IS
@@ -73,6 +71,7 @@ ENTITY ARP_Wrapper IS
 		Eth_BC_RX_Meta_DestMACAddress_Data	: IN	T_SLV_8
 	);
 END;
+
 
 ARCHITECTURE rtl OF ARP_Wrapper IS
 	SIGNAL ARPCache_Command												: T_NET_ARP_ARPCACHE_COMMAND;
@@ -245,7 +244,7 @@ BEGIN
 -- ============================================================================================================================================================
 -- Responder Path
 -- ============================================================================================================================================================
-	MACSeq1 : ENTITY L_Global.Sequenzer
+	MACSeq1 : ENTITY PoC.misc_Sequencer
 		GENERIC MAP (
 			INPUT_BITS						=> 48,
 			OUTPUT_BITS						=> 8,
@@ -362,7 +361,7 @@ BEGIN
 		END CASE;
 	END PROCESS;
 
-	BCRcv : ENTITY L_Ethernet.ARP_BroadCast_Receiver
+	BCRcv : ENTITY PoC.ARP_BroadCast_Receiver
 		GENERIC MAP (
 			ALLOWED_PROTOCOL_IPV4					=> TRUE,
 			ALLOWED_PROTOCOL_IPV6					=> FALSE
@@ -395,7 +394,7 @@ BEGIN
 			TargetIPAddress_Data					=> BCRcv_TargetIPv4Address_Data
 		);
 
-	IPPool : ENTITY L_Ethernet.ARP_IPPool
+	IPPool : ENTITY PoC.ARP_IPPool
 		GENERIC MAP (
 			IPPOOL_SIZE										=> 8,
 			INITIAL_IPV4ADDRESSES					=> INITIAL_IPV4ADDRESSES
@@ -416,7 +415,7 @@ BEGIN
 			PoolResult										=> IPPool_PoolResult
 		);
 
-	UCRsp : ENTITY L_Ethernet.ARP_UniCast_Responder
+	UCRsp : ENTITY PoC.ARP_UniCast_Responder
 --		GENERIC MAP (
 --			
 --		)
@@ -449,7 +448,7 @@ BEGIN
 -- ============================================================================================================================================================
 -- ARPCache Path
 -- ============================================================================================================================================================
-	MACSeq2 : ENTITY L_Global.Sequenzer
+	MACSeq2 : ENTITY PoC.misc_Sequencer
 		GENERIC MAP (
 			INPUT_BITS						=> 48,
 			OUTPUT_BITS						=> 8,
@@ -466,7 +465,7 @@ BEGIN
 			Output								=> MACSeq2_SenderMACAddress_Data
 		);
 		
-	IPSeq2 : ENTITY L_Global.Sequenzer
+	IPSeq2 : ENTITY PoC.misc_Sequencer
 		GENERIC MAP (
 			INPUT_BITS						=> 32,
 			OUTPUT_BITS						=> 8,
@@ -654,7 +653,7 @@ BEGIN
 	
 	ARPReq_Timeout			<= ARPReq_TimeoutCounter_s(ARPReq_TimeoutCounter_s'high);
 
-	UCRcv : ENTITY L_Ethernet.ARP_UniCast_Receiver
+	UCRcv : ENTITY PoC.ARP_UniCast_Receiver
 		GENERIC MAP (
 			ALLOWED_PROTOCOL_IPV4					=> TRUE,
 			ALLOWED_PROTOCOL_IPV6					=> FALSE
@@ -689,7 +688,7 @@ BEGIN
 			TargetMACAddress_Data					=> UCRcv_TargetMACAddress_Data
 		);
 
-	ARPCache : ENTITY L_Ethernet.ARP_Cache
+	ARPCache : ENTITY PoC.ARP_Cache
 		GENERIC MAP (
 			CLOCK_FREQ_MHZ							=> CLOCK_FREQ_MHZ,
 			REPLACEMENT_POLICY					=> "LRU",
@@ -719,7 +718,7 @@ BEGIN
 			MACAddress_Data							=> ARPCache_MACAddress_Data
 		);
 
-	BCReq : ENTITY L_Ethernet.ARP_BroadCast_Requester
+	BCReq : ENTITY PoC.ARP_BroadCast_Requester
 --		GENERIC MAP (
 --			
 --		)
@@ -797,7 +796,7 @@ BEGIN
 		UCRsp_TX_Meta_DestMACAddress_nxt				<= LLMux_In_Meta_rev(LLMUX_PORT_UCRSP, META_DEST_NXT_BIT);
 		assign_row(LLMux_In_Meta, UCRsp_TX_Meta_DestMACAddress_Data, LLMUX_PORT_UCRSP);
 
-		LLMux : ENTITY L_Global.LocalLink_Mux
+		LLMux : ENTITY PoC.stream_Mux
 			GENERIC MAP (
 				PORTS									=> LLMUX_PORTS,
 				DATA_BITS							=> Eth_UC_TX_Data'length,

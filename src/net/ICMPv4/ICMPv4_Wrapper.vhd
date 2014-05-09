@@ -5,17 +5,13 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
 
 ENTITY ICMPv4_Wrapper IS
 	GENERIC (
-		DEBUG											: BOOLEAN								:= FALSE;
+		DEBUG																: BOOLEAN								:= FALSE;
 		SOURCE_IPV4ADDRESS									: T_NET_IPV4_ADDRESS		:= C_NET_IPV4_ADDRESS_EMPTY
 	);
 	PORT (
@@ -63,6 +59,7 @@ ENTITY ICMPv4_Wrapper IS
 --		IP_RX_Meta_Protocol									: IN	T_SLV_8
 	);
 END;
+
 
 ARCHITECTURE rtl OF ICMPv4_Wrapper IS
 	ATTRIBUTE KEEP										: BOOLEAN;
@@ -281,7 +278,7 @@ BEGIN
 -- ============================================================================================================================================================
 -- TX Path
 -- ============================================================================================================================================================
-	TX : ENTITY L_Ethernet.ICMPv4_TX
+	TX : ENTITY PoC.ICMPv4_TX
 		GENERIC MAP (
 			DEBUG								=> DEBUG,
 			SOURCE_IPV4ADDRESS						=> SOURCE_IPV4ADDRESS
@@ -321,7 +318,7 @@ BEGIN
 -- ============================================================================================================================================================
 -- RX Path
 -- ============================================================================================================================================================
-	RX : ENTITY L_Ethernet.ICMPv4_RX
+	RX : ENTITY PoC.ICMPv4_RX
 		GENERIC MAP (
 			DEBUG								=> DEBUG
 		)

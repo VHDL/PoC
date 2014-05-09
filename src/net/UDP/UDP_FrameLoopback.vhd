@@ -5,12 +5,8 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
 
 ENTITY UDP_FrameLoopback IS
@@ -50,6 +46,7 @@ ENTITY UDP_FrameLoopback IS
 	);
 END;
 
+
 ARCHITECTURE rtl OF UDP_FrameLoopback IS
 	ATTRIBUTE KEEP										: BOOLEAN;
 	
@@ -75,7 +72,7 @@ BEGIN
 	In_Meta_DestIPAddress_nxt		<= LLBuf_MetaIn_nxt(META_STREAMID_DESTADDR);
 	In_Meta_SrcIPAddress_nxt		<= LLBuf_MetaIn_nxt(META_STREAMID_SRCADDR);
 
-	LLBuf : ENTITY L_Global.LocalLink_Buffer
+	LLBuf : ENTITY PoC.stream_Buffer
 		GENERIC MAP (
 			FRAMES												=> MAX_FRAMES,
 			DATA_BITS											=> 8,

@@ -5,17 +5,15 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 --USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+--LIBRARY L_IO;
+--USE			L_IO.IOTypes.ALL;
+--
+--LIBRARY L_LCD;		-- TODO: remove after debugging (L_LCD.StrobeLimiter)
 
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
 
-LIBRARY L_LCD;		-- TODO: remove after debugging (L_LCD.StrobeLimiter)
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
 
 
 ENTITY Eth_GEMAC_GMII IS
@@ -78,6 +76,7 @@ ENTITY Eth_GEMAC_GMII IS
 --		MDIO											: INOUT T_ETHERNET_PHY_INTERFACE_MDIO
 	);
 END;
+
 
 ARCHITECTURE rtl OF Eth_GEMAC_GMII IS
 	ATTRIBUTE KEEP							: BOOLEAN;

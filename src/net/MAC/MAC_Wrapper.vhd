@@ -5,9 +5,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.net.ALL;
 
 
 ENTITY MAC_Wrapper IS
@@ -53,6 +51,7 @@ ENTITY MAC_Wrapper IS
 		RX_Meta_EthType							: OUT	T_NET_MAC_ETHERNETTYPE_VECTOR(getPortCount(MAC_CONFIG) - 1 DOWNTO 0)
 	);
 END;
+
 
 ARCHITECTURE rtl OF MAC_Wrapper IS
 	FUNCTION getInterfaceAddresses(MAC_CONFIG : T_NET_MAC_CONFIGURATION_VECTOR) RETURN T_NET_MAC_ADDRESS_VECTOR IS

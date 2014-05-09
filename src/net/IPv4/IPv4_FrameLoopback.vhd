@@ -5,12 +5,8 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
 
 ENTITY IPv4_FrameLoopback IS
@@ -47,6 +43,7 @@ ENTITY IPv4_FrameLoopback IS
 	);
 END;
 
+
 ARCHITECTURE rtl OF IPv4_FrameLoopback IS
 	ATTRIBUTE KEEP										: BOOLEAN;
 	
@@ -69,7 +66,7 @@ BEGIN
 	In_Meta_SrcIPv4Address_nxt		<= LLBuf_MetaIn_nxt(META_STREAMID_SRC);
 	In_Meta_DestIPv4Address_nxt		<= LLBuf_MetaIn_nxt(META_STREAMID_DEST);
 
-	LLBuf : ENTITY L_Global.LocalLink_Buffer
+	LLBuf : ENTITY PoC.stream_Buffer
 		GENERIC MAP (
 			FRAMES												=> MAX_FRAMES,
 			DATA_BITS											=> 8,

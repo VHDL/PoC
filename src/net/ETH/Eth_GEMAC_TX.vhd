@@ -5,12 +5,8 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
 
 ENTITY Eth_GEMAC_TX IS
@@ -37,6 +33,7 @@ ENTITY Eth_GEMAC_TX IS
 		RS_TX_Error								: OUT	STD_LOGIC
 	);
 END;
+
 
 ARCHITECTURE rtl OF Eth_GEMAC_TX IS
 	ATTRIBUTE KEEP										: BOOLEAN;
