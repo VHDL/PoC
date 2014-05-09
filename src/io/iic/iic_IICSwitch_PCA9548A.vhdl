@@ -40,7 +40,7 @@ USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.io.ALL;
 
-LIBRARY L_Global;
+--LIBRARY L_Global;
 
 
 ENTITY IICSwitch_PCA9548A IS
@@ -124,7 +124,7 @@ BEGIN
 
 	Request_or		<= slv_or(Request);
 	
-	Arb : ENTITY L_Global.Arbiter
+	Arb : ENTITY PoC.bus_Arbiter
 		GENERIC MAP (
 			STRATEGY									=> "RR",			-- RR, LOT
 			PORTS											=> PORTS,
