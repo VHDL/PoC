@@ -5,11 +5,11 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.strings.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
 
-PACKAGE EthTypes IS
+PACKAGE net IS
 
 	-- ==========================================================================================================================================================
 	-- Ethernet: physical layer (PHY)
@@ -645,7 +645,7 @@ PACKAGE EthTypes IS
 	
 END;
 
-PACKAGE BODY EthTypes IS
+PACKAGE BODY net IS
 
 	FUNCTION getPortCount(MACConfiguration : T_NET_MAC_CONFIGURATION_VECTOR) RETURN POSITIVE IS
 		VARIABLE count : NATURAL := 0;
@@ -1004,7 +1004,7 @@ PACKAGE BODY EthTypes IS
 		Len											:= INTEGER'value(str(Pos + 1 TO str'high));
 		
 		IF (NOT ((0 < Len) AND (Len < 128))) THEN																								REPORT "IPv6 prefix length is out of range: IPv6=" & str & " Length=" & INTEGER'image(Len) SEVERITY ERROR;	END IF;
-		IF ((to_slv(IPv6Address) AND to_lowmask(128 - Len, 128)) /= (127 DOWNTO 0 => '0')) THEN REPORT "IPv6 prefix is longer then it's mask: IPv6=" & str SEVERITY ERROR;																	END IF;
+		IF ((to_slv(IPv6Address) AND genmask_low(128 - Len, 128)) /= (127 DOWNTO 0 => '0')) THEN REPORT "IPv6 prefix is longer then it's mask: IPv6=" & str SEVERITY ERROR;																	END IF;
 	
 		Prefix.Prefix						:= IPv6Address;
 		Prefix.PrefixLength			:= to_slv(Len, Prefix.PrefixLength'length);

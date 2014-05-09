@@ -3,13 +3,10 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.io.ALL;
 
-LIBRARY	L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY	L_IO;
-USE			L_IO.IOTypes.ALL;
 
 ENTITY Debounce IS
   GENERIC (
@@ -23,6 +20,7 @@ ENTITY Debounce IS
 		O												: OUT STD_LOGIC_VECTOR(BW - 1 DOWNTO 0)
 	);
 END;
+
 
 ARCHITECTURE rtl OF Debounce IS
   -- Debounce Clock Cycles

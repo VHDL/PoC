@@ -205,6 +205,10 @@ package utils is
 	-- Swap sub vectors in vector (endian reversal)
 	FUNCTION swap(slv : STD_LOGIC_VECTOR; Size : POSITIVE) RETURN STD_LOGIC_VECTOR;
 
+	-- generate bit masks
+	FUNCTION genmask_high(Bits : NATURAL; MaskLength : POSITIVE) RETURN STD_LOGIC_VECTOR;
+	FUNCTION genmask_low(Bits : NATURAL; MaskLength : POSITIVE) RETURN STD_LOGIC_VECTOR;
+
 	--+ Encodings ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   -- One-Hot-Code to Binary-Code.
@@ -580,6 +584,26 @@ package body utils is
 			Result(ToH DOWNTO ToL)	:= slv(FromH DOWNTO FromL);
 		END LOOP;
 		RETURN Result;
+	END FUNCTION;
+
+	-- generate bit masks
+	-- ==========================================================================
+		FUNCTION genmask_high(Bits : NATURAL; MaskLength : POSITIVE) RETURN STD_LOGIC_VECTOR IS
+	BEGIN
+		IF (Bits = 0) THEN
+			RETURN (MaskLength - 1 DOWNTO 0 => '0');
+		ELSE	
+			RETURN (MaskLength - 1 DOWNTO MaskLength - Bits + 1 => '1') & (MaskLength - Bits DOWNTO 0 => '0');
+		END IF;
+	END FUNCTION;
+
+	FUNCTION genmask_low(Bits : NATURAL; MaskLength : POSITIVE) RETURN STD_LOGIC_VECTOR IS
+	BEGIN
+		IF (Bits = 0) THEN
+			RETURN (MaskLength - 1 DOWNTO 0 => '0');
+		ELSE	
+			RETURN (MaskLength - 1 DOWNTO Bits => '0') & (Bits - 1 DOWNTO 0 => '1');
+		END IF;
 	END FUNCTION;
 
 	-- binary encoding conversion functions

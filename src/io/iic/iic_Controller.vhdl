@@ -45,7 +45,7 @@ USE			PoC.components.ALL;
 USE			PoC.io.ALL;
 
 
-ENTITY IICController IS
+ENTITY iic_Controller IS
 	GENERIC (
 		DEBUG													: BOOLEAN												:= FALSE;
 		CLOCK_FREQ_MHZ								: REAL													:= 100.0;					-- 100 MHz
@@ -88,7 +88,7 @@ ENTITY IICController IS
 END ENTITY;
 
 
-ARCHITECTURE rtl OF IICController IS
+ARCHITECTURE rtl OF iic_Controller IS
 	ATTRIBUTE KEEP									: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING					: STRING;
 	ATTRIBUTE ENUM_ENCODING					: STRING;

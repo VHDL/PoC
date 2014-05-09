@@ -60,7 +60,7 @@ package body board is
 		else
 			case MY_BRD'length is
 				when 3 =>
-					case MY_BRD(1 to 5) is
+					case MY_BRD(1 to 3) is
 						when "DE0" =>				return "EP3C------";
 						when "DE4" =>				return "EP4S------";
 						when "DE5" =>				return "EP5S------";
@@ -75,7 +75,7 @@ package body board is
 						when others =>			report "Unknown board name in MY_BOARD = " & MY_BRD & "." severity failure;
 					end case;
 				when 8 =>
-					case MY_BRD(1 to 5) is
+					case MY_BRD(1 to 8) is
 						when "S2GXAVDK" =>	return "EP2S------";
 						when others =>			report "Unknown board name in MY_BOARD = " & MY_BRD & "." severity failure;
 					end case;

@@ -5,15 +5,10 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.io.ALL;
+USE			PoC.net.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY Eth_PHYController IS
 	GENERIC (
@@ -64,7 +59,7 @@ BEGIN
 	genMarvel88E1111 : IF (PHY_DEVICE = NET_ETH_PHY_DEVICE_MARVEL_88E1111) GENERATE
 	
 	BEGIN
-		PHYC : ENTITY L_Ethernet.Eth_PHYController_Marvell_88E1111
+		PHYC : ENTITY PoC.Eth_PHYController_Marvell_88E1111
 			GENERIC MAP (
 				DEBUG										=> DEBUG,
 				CLOCK_FREQ_MHZ					=> CLOCK_FREQ_MHZ,
@@ -95,7 +90,7 @@ BEGIN
 	
 	genMDIOC0 : IF (PHY_MANAGEMENT_INTERFACE = NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO) GENERATE
 		-- Management Data Input/Output Controller
-		MDIOC : ENTITY L_Ethernet.Eth_MDIOController
+		MDIOC : ENTITY PoC.Eth_MDIOController
 			GENERIC MAP (
 				DEBUG						=> DEBUG,
 				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ
@@ -140,7 +135,7 @@ BEGIN
 		SIGNAL IICC_Valid									: STD_LOGIC;
 		
 	BEGIN
-		Adapter : ENTITY L_Ethernet.MDIO_SFF8431_Adapter
+		Adapter : ENTITY PoC.mdio_MDIO_IIC_Adapter
 			GENERIC MAP (
 				DEBUG						=> DEBUG
 			)
@@ -175,7 +170,7 @@ BEGIN
 				SFF8431_NextByte					=> IICC_NextByte
 			);
 		
-		IICC : ENTITY L_IO.IICController_SFF8431
+		IICC : ENTITY PoC.iic_Controller
 			GENERIC MAP (
 				DEBUG						=> DEBUG,				-- 
 				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,			-- 
