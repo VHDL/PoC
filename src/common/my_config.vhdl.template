@@ -39,7 +39,8 @@ library PoC;
 
 package my_config is
   -- Change these lines to setup configuration.
-  constant MY_DEVICE : string := "CHANGE THIS"; -- e.g. XC5VLX50T, EP2SGX90
+  constant MY_BOARD		: string := "CHANGE THIS"; -- e.g. ML505, KC705
+  constant MY_DEVICE	: string := "CHANGE THIS"; -- e.g. XC5VLX50T, EP2SGX90
  
 end my_config;
 
