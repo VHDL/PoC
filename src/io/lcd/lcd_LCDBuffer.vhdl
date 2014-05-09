@@ -1,17 +1,13 @@
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 
-LIBRARY	L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY	L_IO;
-USE			L_IO.IOTypes.ALL;
-
-LIBRARY	L_LCD;
-USE			L_LCD.LCDTypes.ALL;
+LIBRARY	PoC;
+USE			PoC.utils.ALL;
+USE			PoC.io.ALL;
+USE			PoC.lcd.ALL;
 
 
-ENTITY LCDBuffer IS
+ENTITY lcd_LCDBuffer IS
 	GENERIC (
 		CLOCK_FREQ_MHZ					: REAL				:= 100.0;			-- 100 MHz
 		MIN_REFRESH_PERIOD_MS		: REAL				:= 100.0
@@ -29,12 +25,12 @@ ENTITY LCDBuffer IS
 	);
 END;
 
-ARCHITECTURE rtl OF LCDBuffer IS
+ARCHITECTURE rtl OF lcd_LCDBuffer IS
 	SIGNAL LCDBuffer_Load		: STD_LOGIC;
 	SIGNAL LCDBuffer_d			: T_LCD			:= (OTHERS => (OTHERS => to_rawchar(' ')));
 	
 BEGIN
-	SL : ENTITY L_LCD.StrobeLimiter
+	SL : ENTITY PoC.misc_StrobeLimiter
 		GENERIC MAP (
 			MIN_STROBE_PERIOD_CYCLES	=> TimingToCycles_ms(MIN_REFRESH_PERIOD_MS,	Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)),
 			INITIAL_LOCKED						=> FALSE,
