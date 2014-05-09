@@ -5,12 +5,8 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
 
 ENTITY UDP_Wrapper IS
@@ -92,6 +88,7 @@ ENTITY UDP_Wrapper IS
 		RX_Meta_DestPort									: OUT	T_SLVV_16(PORTPAIRS'length - 1 DOWNTO 0)
 	);
 END;
+
 
 ARCHITECTURE rtl OF UDP_Wrapper IS
 	CONSTANT UDP_SWITCH_PORTS										: POSITIVE				:= PORTPAIRS'length;
@@ -249,7 +246,7 @@ BEGIN
 	TX_Meta_SrcIPAddress_nxt		<= get_col(LLMux_In_Meta_rev,	LLMUX_META_SRCIP_NXT_BIT);
 	TX_Meta_DestIPAddress_nxt		<= get_col(LLMux_In_Meta_rev,	LLMUX_META_DESTIP_NXT_BIT);
 
-	TX_LLMux : ENTITY L_Global.LocalLink_Mux
+	TX_LLMux : ENTITY PoC.stream_Mux
 		GENERIC MAP (
 			PORTS									=> UDP_SWITCH_PORTS,
 			DATA_BITS							=> LLMux_Out_Data'length,
@@ -286,7 +283,7 @@ BEGIN
 	assign_row(TX_FCS_MetaIn_Data, LLMux_Out_Meta(31 DOWNTO 16),	TX_FCS_META_STREAMID_SRCPORT,	 0, '0');
 	assign_row(TX_FCS_MetaIn_Data, LLMux_Out_Meta(47 DOWNTO 32),	TX_FCS_META_STREAMID_DESTPORT, 0, '0');
 
-	TX_FCS : ENTITY L_Ethernet.FrameChecksum
+	TX_FCS : ENTITY PoC.net_FrameChecksum
 		GENERIC MAP (
 			MAX_FRAMES										=> 4,
 			MAX_FRAME_LENGTH							=> 2048,
@@ -331,7 +328,7 @@ BEGIN
 --	TX_FCS_Meta_Length								<= get_row(TX_FCS_MetaOut_Data, TX_FCS_META_STREAMID_LEN,			 16);
 --	TX_FCS_Meta_Checksum							<= get_row(TX_FCS_MetaOut_Data, TX_FCS_META_STREAMID_CHKSUM,	 16);
 
-	TX_UDP : ENTITY L_Ethernet.UDP_TX
+	TX_UDP : ENTITY PoC.UDP_TX
 		GENERIC MAP (
 			DEBUG												=> DEBUG,
 			IP_VERSION									=> IP_VERSION
@@ -371,7 +368,7 @@ BEGIN
 -- ============================================================================================================================================================
 -- RX Path
 -- ============================================================================================================================================================
-	RX_UDP : ENTITY L_Ethernet.UDP_RX
+	RX_UDP : ENTITY PoC.UDP_RX
 		GENERIC MAP (
 			DEBUG														=> DEBUG,
 			IP_VERSION											=> IP_VERSION
@@ -441,7 +438,7 @@ BEGIN
 	LLDeMux_Out_MetaIn(high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_SRCPORT) 	DOWNTO	low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_SRCPORT))	<= UDP_RX_Meta_SrcPort;
 	LLDeMux_Out_MetaIn(high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_DESTPORT)	DOWNTO	low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_DESTPORT))	<= UDP_RX_Meta_DestPort;
 	
-	RX_LLDeMux : ENTITY L_Global.LocalLink_DeMux
+	RX_LLDeMux : ENTITY PoC.stream_DeMux
 		GENERIC MAP (
 			PORTS										=> UDP_SWITCH_PORTS,
 			DATA_BITS								=> LLDEMUX_DATA_BITS,

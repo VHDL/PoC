@@ -6,9 +6,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.net.ALL;
 
 
 ENTITY MAC_FrameLoopback IS
@@ -39,6 +37,7 @@ ENTITY MAC_FrameLoopback IS
 	);
 END;
 
+
 ARCHITECTURE rtl OF MAC_FrameLoopback IS
 	ATTRIBUTE KEEP										: BOOLEAN;
 	
@@ -55,7 +54,7 @@ BEGIN
 
 	In_Meta_SrcMACAddress_nxt		<= LLBuf_MetaIn_nxt(META_STREAMID_SRC);
 
-	LLBuf : ENTITY L_Global.LocalLink_Buffer
+	LLBuf : ENTITY PoC.stream_Buffer
 		GENERIC MAP (
 			FRAMES												=> MAX_FRAMES,
 			DATA_BITS											=> 8,

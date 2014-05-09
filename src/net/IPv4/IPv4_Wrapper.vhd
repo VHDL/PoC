@@ -5,17 +5,13 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
 
 ENTITY IPv4_Wrapper IS
 	GENERIC (
-		DEBUG									: BOOLEAN																:= FALSE;
+		DEBUG														: BOOLEAN																:= FALSE;
 		PACKET_TYPES										: T_NET_IPV4_PROTOCOL_VECTOR						:= (0 => x"00")
 	);
 	PORT (
@@ -84,6 +80,7 @@ ENTITY IPv4_Wrapper IS
 		RX_Meta_Protocol								: OUT	T_SLVV_8(PACKET_TYPES'length - 1 DOWNTO 0)
 	);
 END;
+
 
 ARCHITECTURE rtl OF IPv4_Wrapper IS
 	CONSTANT IPV4_SWITCH_PORTS								: POSITIVE				:= PACKET_TYPES'length;
@@ -208,7 +205,7 @@ BEGIN
 		TX_Meta_SrcIPv4Address_nxt(I)		<= Meta_nxt(TXLLBuf_META_STREAMID_SRC);
 		TX_Meta_DestIPv4Address_nxt(I)	<= Meta_nxt(TXLLBuf_META_STREAMID_DEST);
 	
-		TX_LLBuf : ENTITY L_Global.LocalLink_Buffer
+		TX_LLBuf : ENTITY PoC.stream_Buffer
 			GENERIC MAP (
 				FRAMES												=> 2,
 				DATA_BITS											=> 8,
@@ -261,7 +258,7 @@ BEGIN
 	END GENERATE;
 
 
-	TX_LLMux : ENTITY L_Global.LocalLink_Mux
+	TX_LLMux : ENTITY PoC.stream_Mux
 		GENERIC MAP (
 			PORTS									=> IPV4_SWITCH_PORTS,
 			DATA_BITS							=> TX_LLMux_Data'length,
@@ -298,7 +295,7 @@ BEGIN
 	TX_LLMux_Meta_rev(LLMUX_META_SRC_NXT_BIT)		<= IPv4_TX_Meta_SrcIPv4Address_nxt;
 	TX_LLMux_Meta_rev(LLMUX_META_DEST_NXT_BIT)	<= IPv4_TX_Meta_DestIPv4Address_nxt;
 
-	IPv4_TX : ENTITY L_Ethernet.IPv4_TX
+	IPv4_TX : ENTITY PoC.IPv4_TX
 		GENERIC MAP (
 			DEBUG								=> DEBUG
 		)
@@ -342,7 +339,7 @@ BEGIN
 -- ============================================================================================================================================================
 -- RX Path
 -- ============================================================================================================================================================
-	IPv4_RX : ENTITY L_Ethernet.IPv4_RX
+	IPv4_RX : ENTITY PoC.IPv4_RX
 		GENERIC MAP (
 			DEBUG									=> DEBUG
 		)
@@ -401,7 +398,7 @@ BEGIN
 	RX_LLDeMux_MetaIn(high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_LENGTH)		DOWNTO	low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_LENGTH))		<= IPv4_RX_Meta_Length;
 	RX_LLDeMux_MetaIn(high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_PROTO)		DOWNTO	low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_PROTO))		<= IPv4_RX_Meta_Protocol;
 	
-	RX_LLDeMux : ENTITY L_Global.LocalLink_DeMux
+	RX_LLDeMux : ENTITY PoC.stream_DeMux
 		GENERIC MAP (
 			PORTS										=> IPV4_SWITCH_PORTS,
 			DATA_BITS								=> LLDEMUX_DATA_BITS,

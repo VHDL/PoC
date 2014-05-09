@@ -6,9 +6,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.net.ALL;
 
 
 ENTITY MAC_RX_Type_Switch IS
@@ -44,6 +42,7 @@ ENTITY MAC_RX_Type_Switch IS
 		Out_Meta_EthType							: OUT	T_NET_MAC_ETHERNETTYPE_VECTOR(ETHERNET_TYPES'length - 1 DOWNTO 0)
 	);
 END;
+
 
 ARCHITECTURE rtl OF MAC_RX_Type_Switch IS
 	ATTRIBUTE KEEP									: BOOLEAN;

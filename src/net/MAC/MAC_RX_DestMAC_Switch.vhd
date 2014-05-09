@@ -6,9 +6,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.net.ALL;
 
 
 ENTITY MAC_RX_DestMAC_Switch IS
@@ -37,6 +35,7 @@ ENTITY MAC_RX_DestMAC_Switch IS
 		Out_Meta_DestMACAddress_Data	: OUT	T_SLVV_8(MAC_ADDRESSES'length - 1 DOWNTO 0)
 	);
 END;
+
 
 ARCHITECTURE rtl OF MAC_RX_DestMAC_Switch IS
 	ATTRIBUTE KEEP										: BOOLEAN;

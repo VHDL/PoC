@@ -5,13 +5,9 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
-USE			L_Ethernet.EthComp.ALL;
 
 LIBRARY work;
 
@@ -83,6 +79,7 @@ ENTITY Eth_Wrapper IS
 		PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
 	);
 END;
+
 
 ARCHITECTURE rtl OF Eth_Wrapper IS
 

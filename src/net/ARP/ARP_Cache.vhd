@@ -4,15 +4,11 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+--LIBRARY L_IO;
+--USE			L_IO.IOTypes.ALL;
 
 
 ENTITY ARP_Cache IS
@@ -48,8 +44,9 @@ ENTITY ARP_Cache IS
 	);
 END;
 
+
 ARCHITECTURE rtl OF ARP_Cache IS
-ATTRIBUTE KEEP										: BOOLEAN;
+	ATTRIBUTE KEEP										: BOOLEAN;
 
 	CONSTANT CACHE_LINES							: POSITIVE	:= 8;
 	CONSTANT TAG_BITS									: POSITIVE	:= 32;		-- IPv4 address

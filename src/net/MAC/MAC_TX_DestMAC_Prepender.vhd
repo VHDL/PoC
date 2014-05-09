@@ -6,9 +6,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.net.ALL;
 
 
 ENTITY MAC_TX_DestMAC_Prepender IS
@@ -35,6 +33,7 @@ ENTITY MAC_TX_DestMAC_Prepender IS
 		Out_Ready											: IN	STD_LOGIC
 	);
 END;
+
 
 ARCHITECTURE rtl OF MAC_TX_DestMAC_Prepender IS
 	ATTRIBUTE KEEP										: BOOLEAN;

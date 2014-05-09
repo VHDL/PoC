@@ -5,9 +5,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.net.ALL;
 
 ENTITY MAC_TX_Type_Prepender IS
 	GENERIC (
@@ -37,6 +35,7 @@ ENTITY MAC_TX_Type_Prepender IS
 		Out_Meta_DestMACAddress_Data	: OUT	T_SLV_8
 	);
 END;
+
 
 ARCHITECTURE rtl OF MAC_TX_Type_Prepender IS
 	ATTRIBUTE KEEP										: BOOLEAN;
@@ -100,7 +99,7 @@ BEGIN
 	In_Meta_rst									<= get_col(LLMux_In_Meta_rev, META_RST_BIT);
 	In_Meta_DestMACAddress_nxt	<= get_col(LLMux_In_Meta_rev, META_DEST_NXT_BIT);
 	
-	LLMux : ENTITY L_Global.LocalLink_Mux
+	LLMux : ENTITY PoC.stream_Mux
 		GENERIC MAP (
 			PORTS									=> PORTS,
 			DATA_BITS							=> LLMux_Out_Data'length,
