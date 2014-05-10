@@ -28,9 +28,9 @@ ENTITY Eth_PHYController_Marvell_88E1111 IS
 		PHY_Reset									: OUT		STD_LOGIC;
 		PHY_Interrupt							: IN		STD_LOGIC;
 
-		MDIO_Command							: OUT	T_NET_ETH_MDIOCONTROLLER_COMMAND;
-		MDIO_Status								: IN	T_NET_ETH_MDIOCONTROLLER_STATUS;
-		MDIO_Error								: IN	T_NET_ETH_MDIOCONTROLLER_ERROR;
+		MDIO_Command							: OUT	T_IO_MDIO_MDIOCONTROLLER_COMMAND;
+		MDIO_Status								: IN	T_IO_MDIO_MDIOCONTROLLER_STATUS;
+		MDIO_Error								: IN	T_IO_MDIO_MDIOCONTROLLER_ERROR;
 
 		MDIO_Physical_Address			: OUT	STD_LOGIC_VECTOR(6 DOWNTO 0);
 		MDIO_Register_Address			: OUT	STD_LOGIC_VECTOR(4 DOWNTO 0);
@@ -144,7 +144,7 @@ BEGIN
 		
 		PHY_Reset								<= '0';
 		
-		MDIO_Command						<= NET_ETH_MDIOC_CMD_NONE;
+		MDIO_Command						<= IO_MDIO_MDIOC_CMD_NONE;
 		MDIO_Physical_Address		<= "00" & PHY_DEVICE_ADDRESS;
 		MDIO_Register_Address		<= C_MDIO_REGADR_COMMAND;
 		MDIO_Register_DataOut		<= x"0000";
@@ -179,7 +179,7 @@ BEGIN
 			
 			WHEN ST_SEARCH_DEVICE =>
 				Status							<= NET_ETH_PHYC_STATUS_RESETING;
-				MDIO_Command				<= NET_ETH_MDIOC_CMD_CHECK_ADDRESS;
+				MDIO_Command				<= IO_MDIO_MDIOC_CMD_CHECK_ADDRESS;
 				
 				NextState						<= ST_SEARCH_DEVICE_WAIT;
 			
@@ -187,16 +187,16 @@ BEGIN
 				Status							<= NET_ETH_PHYC_STATUS_RESETING;
 			
 				CASE MDIO_Status IS
-					WHEN NET_ETH_MDIOC_STATUS_CHECKING =>
+					WHEN IO_MDIO_MDIOC_STATUS_CHECKING =>
 						NULL;
 					
-					WHEN NET_ETH_MDIOC_STATUS_CHECK_OK =>
+					WHEN IO_MDIO_MDIOC_STATUS_CHECK_OK =>
 						NextState				<= ST_READ_DEVICE_ID_1;
 					
-					WHEN NET_ETH_MDIOC_STATUS_CHECK_FAILED =>
+					WHEN IO_MDIO_MDIOC_STATUS_CHECK_FAILED =>
 						NextState				<= ST_SEARCH_DEVICE;
 					
-					WHEN NET_ETH_MDIOC_STATUS_ERROR =>
+					WHEN IO_MDIO_MDIOC_STATUS_ERROR =>
 						NextState				<= ST_ERROR;
 						
 					WHEN OTHERS =>
@@ -206,7 +206,7 @@ BEGIN
 			WHEN ST_READ_DEVICE_ID_1 =>
 				Status									<= NET_ETH_PHYC_STATUS_RESETING;
 			
-				MDIO_Command						<= NET_ETH_MDIOC_CMD_READ;
+				MDIO_Command						<= IO_MDIO_MDIOC_CMD_READ;
 				MDIO_Register_Address		<= C_MDIO_REGADR_PHY_IDENTIFIER_1;
 				
 				NextState								<= ST_READ_DEVICE_ID_WAIT_1;
@@ -215,17 +215,17 @@ BEGIN
 				Status									<= NET_ETH_PHYC_STATUS_RESETING;
 			
 				CASE MDIO_Status IS
-					WHEN NET_ETH_MDIOC_STATUS_READING =>
+					WHEN IO_MDIO_MDIOC_STATUS_READING =>
 						NULL;
 					
-					WHEN NET_ETH_MDIOC_STATUS_READ_COMPLETE =>
+					WHEN IO_MDIO_MDIOC_STATUS_READ_COMPLETE =>
 						IF (MDIO_Register_DataIn = x"0141") THEN									-- OUI
 							NextState					<= ST_READ_DEVICE_ID_2;
 						ELSE
 							NextState					<= ST_ERROR;
 						END IF;
 					
-					WHEN NET_ETH_MDIOC_STATUS_ERROR =>
+					WHEN IO_MDIO_MDIOC_STATUS_ERROR =>
 						NextState					<= ST_ERROR;
 					
 					WHEN OTHERS =>
@@ -236,7 +236,7 @@ BEGIN
 			WHEN ST_READ_DEVICE_ID_2 =>
 				Status									<= NET_ETH_PHYC_STATUS_RESETING;
 			
-				MDIO_Command						<= NET_ETH_MDIOC_CMD_READ;
+				MDIO_Command						<= IO_MDIO_MDIOC_CMD_READ;
 				MDIO_Register_Address		<= C_MDIO_REGADR_PHY_IDENTIFIER_2;
 				
 				NextState								<= ST_READ_DEVICE_ID_WAIT_2;
@@ -245,10 +245,10 @@ BEGIN
 				Status									<= NET_ETH_PHYC_STATUS_RESETING;
 			
 				CASE MDIO_Status IS
-					WHEN NET_ETH_MDIOC_STATUS_READING =>
+					WHEN IO_MDIO_MDIOC_STATUS_READING =>
 						NULL;
 					
-					WHEN NET_ETH_MDIOC_STATUS_READ_COMPLETE =>
+					WHEN IO_MDIO_MDIOC_STATUS_READ_COMPLETE =>
 						IF ((MDIO_Register_DataIn(15 DOWNTO 10) = "000011") AND		-- OUI LSB
 								(MDIO_Register_DataIn( 9 DOWNTO	 4) = "001100"))			-- Model Number - 88E1111
 						THEN
@@ -258,7 +258,7 @@ BEGIN
 							NextState					<= ST_ERROR;
 						END IF;
 					
-					WHEN NET_ETH_MDIOC_STATUS_ERROR =>
+					WHEN IO_MDIO_MDIOC_STATUS_ERROR =>
 						NextState					<= ST_ERROR;
 					
 					WHEN OTHERS =>
@@ -269,7 +269,7 @@ BEGIN
 			WHEN ST_WRITE_INTERRUPT =>
 				Status									<= NET_ETH_PHYC_STATUS_RESETING;
 			
-				MDIO_Command						<= NET_ETH_MDIOC_CMD_WRITE;
+				MDIO_Command						<= IO_MDIO_MDIOC_CMD_WRITE;
 				MDIO_Register_Address		<= C_MDIO_REGADR_INTERRUPT_ENABLE;
 				MDIO_Register_DataOut		<= x"CC14";
 				
@@ -279,14 +279,14 @@ BEGIN
 				Status									<= NET_ETH_PHYC_STATUS_RESETING;
 			
 				CASE MDIO_Status IS
-					WHEN NET_ETH_MDIOC_STATUS_WRITING =>
+					WHEN IO_MDIO_MDIOC_STATUS_WRITING =>
 						NULL;
 					
-					WHEN NET_ETH_MDIOC_STATUS_WRITE_COMPLETE =>
+					WHEN IO_MDIO_MDIOC_STATUS_WRITE_COMPLETE =>
 --						NextState					<= ST_READ_STATUS;
 						NextState					<= ST_READ_PHY_SPECIFIC_STATUS;
 					
-					WHEN NET_ETH_MDIOC_STATUS_ERROR =>
+					WHEN IO_MDIO_MDIOC_STATUS_ERROR =>
 						NextState					<= ST_ERROR;
 					
 					WHEN OTHERS =>
@@ -301,7 +301,7 @@ BEGIN
 					Status								<= NET_ETH_PHYC_STATUS_CONNECTED;
 				END IF;
 			
-				MDIO_Command						<= NET_ETH_MDIOC_CMD_READ;
+				MDIO_Command						<= IO_MDIO_MDIOC_CMD_READ;
 				MDIO_Register_Address		<= C_MDIO_REGADR_STATUS;
 				
 				NextState								<= ST_READ_STATUS_WAIT;
@@ -314,10 +314,10 @@ BEGIN
 				END IF;
 			
 				CASE MDIO_Status IS
-					WHEN NET_ETH_MDIOC_STATUS_READING =>
+					WHEN IO_MDIO_MDIOC_STATUS_READING =>
 						NULL;
 					
-					WHEN NET_ETH_MDIOC_STATUS_READ_COMPLETE =>
+					WHEN IO_MDIO_MDIOC_STATUS_READ_COMPLETE =>
 						IF ((MDIO_Register_DataIn(15)	= '0') AND
 								(MDIO_Register_DataIn(10)	= '0') AND
 								(MDIO_Register_DataIn(9)	= '0') AND
@@ -336,7 +336,7 @@ BEGIN
 						
 						NextState					<= ST_READ_STATUS;
 					
-					WHEN NET_ETH_MDIOC_STATUS_ERROR =>
+					WHEN IO_MDIO_MDIOC_STATUS_ERROR =>
 						NextState					<= ST_ERROR;
 					
 					WHEN OTHERS =>
@@ -351,7 +351,7 @@ BEGIN
 					Status								<= NET_ETH_PHYC_STATUS_CONNECTED;
 				END IF;
 			
-				MDIO_Command						<= NET_ETH_MDIOC_CMD_READ;
+				MDIO_Command						<= IO_MDIO_MDIOC_CMD_READ;
 				MDIO_Register_Address		<= C_MDIO_REGADR_PHY_SPECIFIC_STATUS;
 				
 				NextState								<= ST_READ_PHY_SPECIFIC_STATUS_WAIT;
@@ -364,10 +364,10 @@ BEGIN
 				END IF;
 			
 				CASE MDIO_Status IS
-					WHEN NET_ETH_MDIOC_STATUS_READING =>
+					WHEN IO_MDIO_MDIOC_STATUS_READING =>
 						NULL;
 					
-					WHEN NET_ETH_MDIOC_STATUS_READ_COMPLETE =>
+					WHEN IO_MDIO_MDIOC_STATUS_READ_COMPLETE =>
 						IF ((MDIO_Register_DataIn(15)	= '1') AND
 								(MDIO_Register_DataIn(14)	= '0') AND
 								(MDIO_Register_DataIn(13)	= '1') AND
@@ -382,7 +382,7 @@ BEGIN
 						
 						NextState					<= ST_READ_PHY_SPECIFIC_STATUS;
 					
-					WHEN NET_ETH_MDIOC_STATUS_ERROR =>
+					WHEN IO_MDIO_MDIOC_STATUS_ERROR =>
 						NextState					<= ST_ERROR;
 					
 					WHEN OTHERS =>

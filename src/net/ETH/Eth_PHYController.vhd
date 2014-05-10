@@ -40,9 +40,9 @@ ARCHITECTURE rtl OF Eth_PHYController IS
 	ATTRIBUTE KEEP											: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING							: STRING;
 
-	SIGNAL PHYC_MDIO_Command						: T_NET_ETH_MDIOCONTROLLER_COMMAND;
-	SIGNAL MDIO_Status									: T_NET_ETH_MDIOCONTROLLER_STATUS;
-	SIGNAL MDIO_Error										: T_NET_ETH_MDIOCONTROLLER_ERROR;
+	SIGNAL PHYC_MDIO_Command						: T_IO_MDIO_MDIOCONTROLLER_COMMAND;
+	SIGNAL MDIO_Status									: T_IO_MDIO_MDIOCONTROLLER_STATUS;
+	SIGNAL MDIO_Error										: T_IO_MDIO_MDIOCONTROLLER_ERROR;
 	
 --	SIGNAL Strobe												: STD_LOGIC;
 	SIGNAL PHYC_MDIO_Physical_Address		: STD_LOGIC_VECTOR(6 DOWNTO 0);
@@ -104,35 +104,37 @@ BEGIN
 				Status										=> MDIO_Status,
 				Error											=> MDIO_Error,
 				
-				Physical_Address					=> PHYC_MDIO_Physical_Address(4 DOWNTO 0),
-				Register_Address					=> PHYC_MDIO_Register_Address,
+				DeviceAddress							=> PHYC_MDIO_Physical_Address(4 DOWNTO 0),
+				RegisterAddress						=> PHYC_MDIO_Register_Address,
 				DataIn										=> PHYC_MDIO_Register_DataOut,
 				DataOut										=> MDIOC_Register_DataIn,
 				
 				-- tristate interface
-				MD_Clock_i								=> PHY_MDIO.Clock_i,		-- IEEE 802.3: MDC		-> Managament Clock I
-				MD_Clock_o								=> PHY_MDIO.Clock_o,		-- IEEE 802.3: MDC		-> Managament Clock O
-				MD_Clock_t								=> PHY_MDIO.Clock_t,		-- IEEE 802.3: MDC		-> Managament Clock tri-state
-				MD_Data_i									=> PHY_MDIO.Data_i,			-- IEEE 802.3: MDIO		-> Managament Data I
-				MD_Data_o									=> PHY_MDIO.Data_o,			-- IEEE 802.3: MDIO		-> Managament Data O
-				MD_Data_t									=> PHY_MDIO.Data_t			-- IEEE 802.3: MDIO		-> Managament Data tri-state
+				MD_Clock_i								=> PHY_MDIO.Clock_ts.I,		-- IEEE 802.3: MDC		-> Managament Clock I
+				MD_Clock_o								=> PHY_MDIO.Clock_ts.O,		-- IEEE 802.3: MDC		-> Managament Clock O
+				MD_Clock_t								=> PHY_MDIO.Clock_ts.T,		-- IEEE 802.3: MDC		-> Managament Clock tri-state
+				MD_Data_i									=> PHY_MDIO.Data_ts.I,		-- IEEE 802.3: MDIO		-> Managament Data I
+				MD_Data_o									=> PHY_MDIO.Data_ts.O,		-- IEEE 802.3: MDIO		-> Managament Data O
+				MD_Data_t									=> PHY_MDIO.Data_ts.T			-- IEEE 802.3: MDIO		-> Managament Data tri-state
 			);
 	END GENERATE;
 
 	genMDIOC1 : IF (PHY_MANAGEMENT_INTERFACE = NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO_OVER_IIC) GENERATE
-		SIGNAL Ad_Command									: T_IO_IIC_SFF8431_COMMAND;
-		SIGNAL Ad_Status									: T_NET_ETH_MDIOCONTROLLER_STATUS;
-		SIGNAL Ad_PhysicalAddress					: STD_LOGIC_VECTOR(6 DOWNTO 0);
-		SIGNAL Ad_RegisterAddress					: T_SLV_8;
-		SIGNAL Ad_MoreBytes								: STD_LOGIC;
-		SIGNAL Ad_Data										: T_SLV_8;
-		SIGNAL Ad_LastByte								: STD_LOGIC;
+		SIGNAL Adapter_IICC_Request			: STD_LOGIC;
+		SIGNAL Adapter_IICC_Command			: T_IO_IIC_COMMAND;
+		SIGNAL Adapter_IICC_Address			: STD_LOGIC_VECTOR(6 DOWNTO 0);
+		SIGNAL Adapter_IICC_WP_Valid		: STD_LOGIC;
+		SIGNAL Adapter_IICC_WP_Data			: T_SLV_8;
+		SIGNAL Adapter_IICC_WP_Last			: STD_LOGIC;
+		SIGNAL Adapter_IICC_RP_Ack			: STD_LOGIC;
 		
-		SIGNAL IICC_Status								: T_IO_IIC_SFF8431_STATUS;
-		SIGNAL IICC_Error									: T_IO_IIC_SFF8431_ERROR;
-		SIGNAL IICC_NextByte							: STD_LOGIC;
-		SIGNAL IICC_Data									: T_SLV_8;
-		SIGNAL IICC_Valid									: STD_LOGIC;
+		SIGNAL IICC_Grant								: STD_LOGIC;
+		SIGNAL IICC_Status							: T_IO_IIC_STATUS;
+		SIGNAL IICC_Error								: T_IO_IIC_ERROR;
+		SIGNAL IICC_WP_Ack							: STD_LOGIC;
+		SIGNAL IICC_RP_Valid						: STD_LOGIC;
+		SIGNAL IICC_RP_Data							: T_SLV_8;
+		SIGNAL IICC_RP_Last							: STD_LOGIC;
 		
 	BEGIN
 		Adapter : ENTITY PoC.mdio_MDIO_IIC_Adapter
@@ -148,61 +150,69 @@ BEGIN
 				Status										=> MDIO_Status,
 				Error											=> MDIO_Error,
 				
-				Physical_Address					=> PHYC_MDIO_Physical_Address,
-				Register_Address					=> PHYC_MDIO_Register_Address,
-				Register_DataIn						=> PHYC_MDIO_Register_DataOut,
-				Register_DataOut					=> MDIOC_Register_DataIn,
+				DeviceAddress							=> PHYC_MDIO_Physical_Address,
+				RegisterAddress						=> PHYC_MDIO_Register_Address,
+				DataIn										=> PHYC_MDIO_Register_DataOut,
+				DataOut										=> MDIOC_Register_DataIn,
 				
-				-- IICController_SFF8431 interface
-				SFF8431_Command						=> Ad_Command,
-				SFF8431_Status						=> IICC_Status,
-				SFF8431_Error							=> IICC_Error,
-				
-				SFF8431_PhysicalAddress		=> Ad_PhysicalAddress,
-				SFF8431_RegisterAddress		=> Ad_RegisterAddress,
-				
-				SFF8431_LastByte					=> Ad_LastByte,
-				SFF8431_DataIn						=> IICC_Data,
-				SFF8431_Valid							=> IICC_Valid,
-				
-				SFF8431_MoreBytes					=> Ad_MoreBytes,
-				SFF8431_DataOut						=> Ad_Data,
-				SFF8431_NextByte					=> IICC_NextByte
+				-- IICController interface
+				IICC_Request							=> Adapter_IICC_Request,
+				IICC_Grant								=> IICC_Grant,
+					
+				IICC_Command							=> Adapter_IICC_Command,
+				IICC_Status								=> IICC_Status,
+				IICC_Error								=> IICC_Error,
+		
+				IICC_Address							=> Adapter_IICC_Address,
+				IICC_WP_Valid							=> Adapter_IICC_WP_Valid,
+				IICC_WP_Data							=> Adapter_IICC_WP_Data,
+				IICC_WP_Last							=> Adapter_IICC_WP_Last,
+				IICC_WP_Ack								=> IICC_WP_Ack,
+				IICC_RP_Valid							=> IICC_RP_Valid,
+				IICC_RP_Data							=> IICC_RP_Data,
+				IICC_RP_Last							=> IICC_RP_Last,
+				IICC_RP_Ack								=> Adapter_IICC_RP_Ack
 			);
 		
-		IICC : ENTITY PoC.iic_Controller
+		IICC : ENTITY PoC.iic_IICController
 			GENERIC MAP (
-				DEBUG						=> DEBUG,				-- 
-				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,			-- 
-				IIC_FREQ_KHZ							=> 100.0									-- 100 kHz
+				DEBUG											=> DEBUG,
+				ALLOW_MEALY_TRANSITION		=> FALSE,
+				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
+				IIC_BUSMODE								=> IO_IIC_BUSMODE_STANDARDMODE,
+				IIC_ADDRESS								=> x"01",
+				ADDRESS_BITS							=> 7,
+				DATA_BITS									=> 8
 			)
 			PORT MAP (
 				Clock											=> Clock,
 				Reset											=> Reset,
+
+				-- IICController master interface
+				Master_Request						=> Adapter_IICC_Request,
+				Master_Grant							=> IICC_Grant,
+				Master_Command						=> Adapter_IICC_Command,
+				Master_Status							=> IICC_Status,
+				Master_Error							=> IICC_Error,
 				
-				-- IICController interface
-				Command										=> Ad_Command,
-				Status										=> IICC_Status,
-				Error											=> IICC_Error,
+				Master_Address						=> Adapter_IICC_Address,
 				
-				PhysicalAddress						=> Ad_PhysicalAddress,
-				RegisterAddress						=> Ad_RegisterAddress,
-				
-				In_MoreBytes							=> Ad_MoreBytes,
-				In_Data										=> Ad_Data,
-				In_NextByte								=> IICC_NextByte,
-				
-				Out_LastByte							=> Ad_LastByte,
-				Out_Data									=> IICC_Data,
-				Out_Valid									=> IICC_Valid,
+				Master_WP_Valid						=> Adapter_IICC_WP_Valid,
+				Master_WP_Data						=> Adapter_IICC_WP_Data,
+				Master_WP_Last						=> Adapter_IICC_WP_Last,
+				Master_WP_Ack							=> IICC_WP_Ack,
+				Master_RP_Valid						=> IICC_RP_Valid,
+				Master_RP_Data						=> IICC_RP_Data,
+				Master_RP_Last						=> IICC_RP_Last,
+				Master_RP_Ack							=> Adapter_IICC_RP_Ack,
 				
 				-- tristate interface
-				SerialClock_i							=> PHY_MDIO.Clock_i,
-				SerialClock_o							=> PHY_MDIO.Clock_o,
-				SerialClock_t							=> PHY_MDIO.Clock_t,
-				SerialData_i							=> PHY_MDIO.Data_i,
-				SerialData_o							=> PHY_MDIO.Data_o,
-				SerialData_t							=> PHY_MDIO.Data_t
+				SerialClock_i							=> PHY_MDIO.Clock_ts.I,
+				SerialClock_o							=> PHY_MDIO.Clock_ts.O,
+				SerialClock_t							=> PHY_MDIO.Clock_ts.T,
+				SerialData_i							=> PHY_MDIO.Data_ts.I,
+				SerialData_o							=> PHY_MDIO.Data_ts.O,
+				SerialData_t							=> PHY_MDIO.Data_ts.T
 			);
 	END GENERATE;
 --	END BLOCK;

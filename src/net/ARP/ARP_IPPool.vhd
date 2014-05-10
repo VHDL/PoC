@@ -6,6 +6,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.cache.ALL;
 USE			PoC.net.ALL;
 
 

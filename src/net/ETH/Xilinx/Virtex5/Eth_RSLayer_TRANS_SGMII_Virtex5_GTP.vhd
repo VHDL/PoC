@@ -15,7 +15,7 @@ USE			L_Global.GlobalTypes.ALL;
 LIBRARY L_Ethernet;
 USE			L_Ethernet.EthTypes.ALL;
 
-ENTITY Eth_RSLayer_GMII_Virtex5 IS
+ENTITY Eth_RSLayer_TRANS_GMII_Virtex5 IS
 	PORT (
 		Reset_async								: IN	STD_LOGIC;																	-- @async: 
 		
@@ -39,7 +39,7 @@ END;
 -- ============================================================================================================================================================
 -- use IDELAY instances on GMII_RX_Clock to move the clock into alignment with the data (GMII_RX_Data[7:0])
 
-ARCHITECTURE rtl OF Eth_RSLayer_GMII_Virtex5 IS
+ARCHITECTURE rtl OF Eth_RSLayer_TRANS_GMII_Virtex5 IS
 	SIGNAL IODelay_RX_Clock	: STD_LOGIC;
 	
 	SIGNAL IDelay_Data			: T_SLV_8;

@@ -8,6 +8,7 @@ USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.net.ALL;
 
+
 ENTITY MAC_RX_SrcMAC_Filter IS
 	GENERIC (
 		DEBUG													: BOOLEAN													:= FALSE;
@@ -341,6 +342,6 @@ BEGIN
 	
 	-- Meta: SrcMACAddress
 	Out_Meta_SrcMACAddress_nxt_i	<= Out_Meta_SrcMACAddress_nxt;
-	Out_Meta_SrcMACAddress_Data		<= SourceMACAddress_d(to_integer(Reader_Counter_us, SourceMACAddress_d'high));
+	Out_Meta_SrcMACAddress_Data		<= SourceMACAddress_d(to_index(Reader_Counter_us, SourceMACAddress_d'high));
 
 END ARCHITECTURE;

@@ -511,26 +511,26 @@ BEGIN
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF (SenderHardwareAddress_en = '1') THEN
-				SenderHardwareAddress_d(to_integer(SenderHardwareAddress_us, SenderHardwareAddress_d'high))		<= RX_Data;
+				SenderHardwareAddress_d(to_index(SenderHardwareAddress_us, SenderHardwareAddress_d'high))		<= RX_Data;
 			END IF;
 			
 			IF (SenderProtocolAddress_en = '1') THEN
-				SenderProtocolAddress_d(to_integer(SenderProtocolAddress_us, SenderProtocolAddress_d'high))		<= RX_Data;
+				SenderProtocolAddress_d(to_index(SenderProtocolAddress_us, SenderProtocolAddress_d'high))		<= RX_Data;
 			END IF;
 			
 			IF (TargetHardwareAddress_en = '1') THEN
-				TargetHardwareAddress_d(to_integer(TargetHardwareAddress_us, TargetHardwareAddress_d'high))		<= RX_Data;
+				TargetHardwareAddress_d(to_index(TargetHardwareAddress_us, TargetHardwareAddress_d'high))		<= RX_Data;
 			END IF;
 			
 			IF (TargetProtocolAddress_en = '1') THEN
-				TargetProtocolAddress_d(to_integer(TargetProtocolAddress_us, TargetProtocolAddress_d'high))		<= RX_Data;
+				TargetProtocolAddress_d(to_index(TargetProtocolAddress_us, TargetProtocolAddress_d'high))		<= RX_Data;
 			END IF;
 		END IF;
 	END PROCESS;
 
-	SenderMACAddress_Data				<= SenderHardwareAddress_d(to_integer(Reader_SenderMAC_Counter_us, SenderHardwareAddress_d'high));
-	SenderIPAddress_Data				<= SenderProtocolAddress_d(to_integer(Reader_SenderIP_Counter_us, SenderProtocolAddress_d'high));
-	TargetMACAddress_Data				<= TargetHardwareAddress_d(to_integer(Reader_TargetMAC_Counter_us, TargetHardwareAddress_d'high));
-	TargetIPAddress_Data				<= TargetProtocolAddress_d(to_integer(Reader_TargetIP_Counter_us, TargetProtocolAddress_d'high));
+	SenderMACAddress_Data				<= SenderHardwareAddress_d(to_index(Reader_SenderMAC_Counter_us, SenderHardwareAddress_d'high));
+	SenderIPAddress_Data				<= SenderProtocolAddress_d(to_index(Reader_SenderIP_Counter_us, SenderProtocolAddress_d'high));
+	TargetMACAddress_Data				<= TargetHardwareAddress_d(to_index(Reader_TargetMAC_Counter_us, TargetHardwareAddress_d'high));
+	TargetIPAddress_Data				<= TargetProtocolAddress_d(to_index(Reader_TargetIP_Counter_us, TargetProtocolAddress_d'high));
 
 END;

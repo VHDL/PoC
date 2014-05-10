@@ -328,6 +328,6 @@ BEGIN
 	Out_Ready_i										<= slv_or(Out_Ready										AND CompareRegister_d);
 	Out_Meta_DestMACAddress_rst_i	<= slv_or(Out_Meta_DestMACAddress_rst AND CompareRegister_d);
 	Out_Meta_DestMACAddress_nxt_i	<= slv_or(Out_Meta_DestMACAddress_nxt AND CompareRegister_d);
-	Out_Meta_DestMACAddress_Data	<= (Out_Data'range	=> DestinationMAC_d(to_integer(Reader_Counter_us, DestinationMAC_d'high)));
+	Out_Meta_DestMACAddress_Data	<= (Out_Data'range	=> DestinationMAC_d(to_index(Reader_Counter_us, DestinationMAC_d'high)));
 	
 END ARCHITECTURE;

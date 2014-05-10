@@ -8,17 +8,14 @@ USE			UNISIM.VCOMPONENTS.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY Eth_Wrapper_Virtex7 IS
 	GENERIC (
 		CLOCK_IN_FREQ_MHZ							: REAL															:= 125.0;												-- 125 MHz
-		ETHERNET_MAC_IP_TYPE					: T_IP_TYPE													:= SOFT_IP;											-- 
+		ETHERNET_MAC_IP_TYPE					: T_IPSTYLE													:= IPSTYLE_SOFT;								-- 
 		ETHERNET_RS_INTERFACE_TYPE		: T_ETHERNET_RS_INTERFACE_TYPES			:= ETHERNET_RS_INTERFACE_GMII;	-- 
 		ETHERNET_PHY_INTERFACE_TYPE		: T_ETHERNET_PHY_INTERFACE_TYPES		:= ETHERNET_PHY_INTERFACE_GMII	-- 
 	);
