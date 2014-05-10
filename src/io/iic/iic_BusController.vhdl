@@ -43,7 +43,7 @@ USE			PoC.utils.ALL;
 USE			PoC.io.ALL;
 
 
-ENTITY IICBusController IS
+ENTITY iic_IICBusController IS
 	GENERIC (
 		CLOCK_FREQ_MHZ								: REAL													:= 100.0;														-- 100 MHz
 		IIC_BUSMODE										: T_IO_IIC_BUSMODE							:= IO_IIC_BUSMODE_STANDARDMODE;			-- 100 kHz
@@ -74,7 +74,7 @@ END ENTITY;
 --	"clock stretching", clock synchronization
 --	bus-state tracking / request/grant generation
 
-ARCHITECTURE rtl OF IICBusController IS
+ARCHITECTURE rtl OF iic_IICBusController IS
 	ATTRIBUTE KEEP														: BOOLEAN;
 	ATTRIBUTE ASYNC_REG												: STRING;
 	ATTRIBUTE SHREG_EXTRACT										: STRING;

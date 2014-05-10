@@ -9,6 +9,7 @@ USE			PoC.vectors.ALL;
 USE			PoC.io.ALL;
 USE			PoC.net.ALL;
 
+
 ENTITY mdio_MDIO_IIC_Adapter IS
 	GENERIC (
 		DEBUG													: BOOLEAN												:= TRUE
@@ -18,35 +19,37 @@ ENTITY mdio_MDIO_IIC_Adapter IS
 		Reset													: IN	STD_LOGIC;
 		
 		-- MDIO interface
-		Command												: IN	T_NET_ETH_MDIOCONTROLLER_COMMAND;
-		Status												: OUT	T_NET_ETH_MDIOCONTROLLER_STATUS;
-		Error													: OUT	T_NET_ETH_MDIOCONTROLLER_ERROR;
+		Command												: IN	T_IO_MDIO_MDIOCONTROLLER_COMMAND;
+		Status												: OUT	T_IO_MDIO_MDIOCONTROLLER_STATUS;
+		Error													: OUT	T_IO_MDIO_MDIOCONTROLLER_ERROR;
 		
-		Physical_Address							: IN	STD_LOGIC_VECTOR(6 DOWNTO 0);
-		Register_Address							: IN	STD_LOGIC_VECTOR(4 DOWNTO 0);
-		Register_DataIn								: IN	T_SLV_16;
-		Register_DataOut							: OUT	T_SLV_16;
+		DeviceAddress									: IN	STD_LOGIC_VECTOR(6 DOWNTO 0);
+		RegisterAddress								: IN	STD_LOGIC_VECTOR(4 DOWNTO 0);
+		DataIn												: IN	T_SLV_16;
+		DataOut												: OUT	T_SLV_16;
 		
-		-- IICController_SFF8431 interface
-		SFF8431_Command								: OUT	T_IO_IIC_SFF8431_COMMAND;
-		SFF8431_Status								: IN	T_IO_IIC_SFF8431_STATUS;
-		SFF8431_Error									: IN	T_IO_IIC_SFF8431_ERROR;
-		
-		SFF8431_PhysicalAddress				: OUT	STD_LOGIC_VECTOR(6 DOWNTO 0);
-		SFF8431_RegisterAddress				: OUT	T_SLV_8;
-		
-		SFF8431_LastByte							: OUT	STD_LOGIC;
-		SFF8431_DataIn								: IN	T_SLV_8;
-		SFF8431_Valid									: IN	STD_LOGIC;
+		-- IICController master interface
+		IICC_Request									: OUT	STD_LOGIC;
+		IICC_Grant										: IN	STD_LOGIC;
+		IICC_Command									: OUT	T_IO_IIC_COMMAND;
+		IICC_Status										: IN	T_IO_IIC_STATUS;
+		IICC_Error										: IN	T_IO_IIC_ERROR;
 			
-		SFF8431_MoreBytes							: OUT	STD_LOGIC;
-		SFF8431_DataOut								: OUT	T_SLV_8;
-		SFF8431_NextByte							: IN	STD_LOGIC
+		IICC_Address									: OUT	T_SLV_8;
+	
+		IICC_WP_Valid									: OUT	STD_LOGIC;
+		IICC_WP_Data									: OUT	T_SLV_8;
+		IICC_WP_Last									: OUT	STD_LOGIC;
+		IICC_WP_Ack										: IN	STD_LOGIC;
+		IICC_RP_Valid									: IN	STD_LOGIC;
+		IICC_RP_Data									: IN	T_SLV_8;
+		IICC_RP_Last									: IN	STD_LOGIC;
+		IICC_RP_Ack										: OUT	STD_LOGIC
 	);
 END ENTITY;
 
 -- TODOs
---	add Status = NET_ETH_MDIOC_STATUS_ADDRESS_ERROR if IICC.Status = ACK_ERROR
+--	add Status := IO_MDIO_MDIOC_STATUS_ADDRESS_ERROR if IICC.Status = ACK_ERROR
 
 ARCHITECTURE rtl OF mdio_MDIO_IIC_Adapter IS
 	ATTRIBUTE KEEP										: BOOLEAN;
@@ -54,26 +57,36 @@ ARCHITECTURE rtl OF mdio_MDIO_IIC_Adapter IS
 	
 	TYPE T_STATE IS (
 		ST_IDLE,
-		ST_READ_SEND_COMMAND,
+		ST_READ_REQUEST_BUS,
+			ST_READ_SEND_COMMAND,
 			ST_READ_BYTE_0,
 			ST_READ_BYTE_1,
+			ST_READ_WAIT_FOR_COMPLETION,
 			ST_READ_BYTES_COMPLETE,
-		ST_WRITE_SEND_COMMAND,
+		ST_Write_REQUEST_BUS,
+			ST_WRITE_SEND_COMMAND,
 			ST_WRITE_BYTE_0,
 			ST_WRITE_BYTE_1,
+			ST_WRITE_WAIT_FOR_COMPLETION,
 			ST_WRITE_BYTES_COMPLETE,
 		ST_ADDRESS_ERROR, ST_ERROR
 	);
 	
-	SIGNAL State											: T_STATE										:= ST_IDLE;
-	SIGNAL NextState									: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS "gray";
+	SIGNAL State												: T_STATE										:= ST_IDLE;
+	SIGNAL NextState										: T_STATE;
+	ATTRIBUTE FSM_ENCODING OF State			: SIGNAL IS "gray";
+	
+	SIGNAL DeviceAddressRegister_Load		: STD_LOGIC;
+	SIGNAL DeviceAddressRegister_d			: STD_LOGIC_VECTOR(DeviceAddress'range)		:= (OTHERS => '0');
+
+	SIGNAL RegisterAddressRegister_Load	: STD_LOGIC;
+	SIGNAL RegisterAddressRegister_d		: STD_LOGIC_VECTOR(RegisterAddress'range)	:= (OTHERS => '0');
 	
 	SUBTYPE T_BYTE_INDEX IS NATURAL  RANGE 0 TO 1;
-	SIGNAL DataRegister_Load					: STD_LOGIC;
-	SIGNAL DataRegister_we						: STD_LOGIC;
-	SIGNAL DataRegister_d							: T_SLVV_8(1 DOWNTO 0)			:= (OTHERS => (OTHERS => '0'));
-	SIGNAL DataRegister_idx						: T_BYTE_INDEX;	
+	SIGNAL DataRegister_Load						: STD_LOGIC;
+	SIGNAL DataRegister_we							: STD_LOGIC;
+	SIGNAL DataRegister_d								: T_SLVV_8(1 DOWNTO 0)										:= (OTHERS => (OTHERS => '0'));
+	SIGNAL DataRegister_idx							: T_BYTE_INDEX;	
 
 BEGIN
 
@@ -88,150 +101,230 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-	PROCESS(State, Command, SFF8431_Status, SFF8431_NextByte, SFF8431_Valid)
+	PROCESS(State, Command, IICC_Grant, IICC_Status, IICC_Error, IICC_WP_Ack, IICC_RP_Valid, IICC_RP_Data, IICC_RP_Last)
 	BEGIN
-		NextState									<= State;
+		NextState											<= State;
 
-		Status										<= NET_ETH_MDIOC_STATUS_IDLE;
-		Error											<= NET_ETH_MDIOC_ERROR_NONE;
+		Status												<= IO_MDIO_MDIOC_STATUS_IDLE;
+		Error													<= IO_MDIO_MDIOC_ERROR_NONE;
 
-		SFF8431_Command						<= IO_IIC_SFF8431_CMD_NONE;
-		SFF8431_LastByte					<= '0';
-		SFF8431_MoreBytes					<= '0';
+		IICC_Command									<= IO_IIC_CMD_NONE;
+		
+		IICC_WP_Valid									<= '0';
+		IICC_WP_Data									<= (OTHERS => '0');
+		IICC_WP_Last									<= '0';
+		
+		IICC_RP_Ack										<= '0';
 
-		DataRegister_Load					<= '0';
-		DataRegister_we						<= '0';
-		DataRegister_idx					<= 0;
+		DeviceAddressRegister_Load		<= '0';
+		RegisterAddressRegister_Load	<= '0';
+		DataRegister_Load							<= '0';
+		DataRegister_we								<= '0';
+		DataRegister_idx							<= 0;
 
 		CASE State IS
 			WHEN ST_IDLE =>
+				Status														<= IO_MDIO_MDIOC_STATUS_IDLE;
+			
 				CASE Command IS
-					WHEN NET_ETH_MDIOC_CMD_NONE =>
+					WHEN IO_MDIO_MDIOC_CMD_NONE =>
 						NULL;
 				
-					WHEN NET_ETH_MDIOC_CMD_READ =>
-						NextState						<= ST_READ_SEND_COMMAND;
-					
-					WHEN NET_ETH_MDIOC_CMD_WRITE =>
-						DataRegister_Load		<= '1';
+					WHEN IO_MDIO_MDIOC_CMD_READ =>
+						DeviceAddressRegister_Load		<= '1';
+						RegisterAddressRegister_Load	<= '1';
 						
-						NextState						<= ST_WRITE_SEND_COMMAND;
+						NextState											<= ST_READ_REQUEST_BUS;
+					
+					WHEN IO_MDIO_MDIOC_CMD_WRITE =>
+						DeviceAddressRegister_Load		<= '1';
+						RegisterAddressRegister_Load	<= '1';
+						DataRegister_Load							<= '1';
+						
+						NextState											<= ST_WRITE_REQUEST_BUS;
 					
 					WHEN OTHERS =>
-						NextState						<= ST_ERROR;
+						NextState											<= ST_ERROR;
 						
 				END CASE;
 			
-			WHEN ST_READ_SEND_COMMAND =>
-				Status									<= NET_ETH_MDIOC_STATUS_READING;
-				SFF8431_Command 				<= IO_IIC_SFF8431_CMD_READ_BYTES;
-				DataRegister_idx				<= 0;
+			WHEN ST_READ_REQUEST_BUS =>
+				Status										<= IO_MDIO_MDIOC_STATUS_READING;
+				IICC_Request							<= '1';
+				
+				IF (IICC_Grant = '1') THEN
+					NextState								<= ST_READ_SEND_COMMAND;
+				END IF;
 			
-				NextState								<= ST_READ_BYTE_0;
+			WHEN ST_READ_SEND_COMMAND =>
+				Status										<= IO_MDIO_MDIOC_STATUS_READING;
+				IICC_Request							<= '1';
+				IICC_Command 							<= IO_IIC_CMD_PROCESS_CALL;
+				IICC_Address							<= resize(DeviceAddressRegister_d, IICC_Address'length);
+				IICC_WP_Valid							<= '1';
+				IICC_WP_Data							<= resize(RegisterAddressRegister_d, IICC_WP_Data'length);
+				IICC_WP_Last							<= '1';
+				
+				NextState									<= ST_READ_BYTE_0;
 			
 			WHEN ST_READ_BYTE_0 =>
-				Status									<= NET_ETH_MDIOC_STATUS_READING;
-				SFF8431_LastByte				<= '0';
-			
-				CASE SFF8431_Status IS
-					WHEN IO_IIC_SFF8431_STATUS_READING =>
-						IF (SFF8431_Valid = '1') THEN
-							DataRegister_we		<= '1';
-							NextState					<= ST_READ_BYTE_1;
+				Status										<= IO_MDIO_MDIOC_STATUS_READING;
+				IICC_Request							<= '1';
+				
+				DataRegister_idx					<= 0;
+				
+				CASE IICC_Status IS
+					WHEN IO_IIC_STATUS_CALLING =>
+						IF (IICC_RP_Valid = '1') THEN
+							DataRegister_we			<= '1';
+							NextState						<= ST_READ_BYTE_1;
 						END IF;
-					WHEN IO_IIC_SFF8431_STATUS_READ_COMPLETE =>			NextState		<= ST_ERROR;
-					WHEN IO_IIC_SFF8431_STATUS_ERROR =>
-						CASE SFF8431_Error IS
-							WHEN IO_IIC_SFF8431_ERROR_BUS_ERROR =>			NextState		<= ST_ERROR;
-							WHEN IO_IIC_SFF8431_ERROR_ADDRESS_ERROR =>	NextState		<= ST_ADDRESS_ERROR;
-							WHEN IO_IIC_SFF8431_ERROR_ACK_ERROR =>			NextState		<= ST_ERROR;
-							WHEN OTHERS =>															NextState		<= ST_ERROR;
+					WHEN IO_IIC_STATUS_CALL_COMPLETE =>			NextState		<= ST_ERROR;
+					WHEN IO_IIC_STATUS_ERROR =>
+						CASE IICC_Error IS
+							WHEN IO_IIC_ERROR_BUS_ERROR =>			NextState		<= ST_ERROR;
+							WHEN IO_IIC_ERROR_ADDRESS_ERROR =>	NextState		<= ST_ADDRESS_ERROR;
+							WHEN IO_IIC_ERROR_ACK_ERROR =>			NextState		<= ST_ERROR;
+							WHEN OTHERS =>											NextState		<= ST_ERROR;
 						END CASE;
-					WHEN OTHERS =>																	NextState		<= ST_ERROR;
+					WHEN OTHERS =>													NextState		<= ST_ERROR;
 				END CASE;
 			
 			WHEN ST_READ_BYTE_1 =>
-				Status									<= NET_ETH_MDIOC_STATUS_READING;
-				DataRegister_idx				<= 1;
-				SFF8431_LastByte				<= '1';
+				Status										<= IO_MDIO_MDIOC_STATUS_READING;
+				IICC_Request							<= '1';
+				DataRegister_idx					<= 1;
 
-				CASE SFF8431_Status IS
-					WHEN IO_IIC_SFF8431_STATUS_READING =>						NULL;
-					WHEN IO_IIC_SFF8431_STATUS_READ_COMPLETE =>
-						DataRegister_we			<= '1';
-						NextState						<= ST_READ_BYTES_COMPLETE;
-					WHEN IO_IIC_SFF8431_STATUS_ERROR =>
-						CASE SFF8431_Error IS
-							WHEN IO_IIC_SFF8431_ERROR_BUS_ERROR =>			NextState		<= ST_ERROR;
-							WHEN IO_IIC_SFF8431_ERROR_ADDRESS_ERROR =>	NextState		<= ST_ADDRESS_ERROR;
-							WHEN IO_IIC_SFF8431_ERROR_ACK_ERROR =>			NextState		<= ST_ERROR;
-							WHEN OTHERS =>															NextState		<= ST_ERROR;
+				CASE IICC_Status IS
+					WHEN IO_IIC_STATUS_CALLING =>
+						IF (IICC_RP_Valid = '1') THEN
+							DataRegister_we			<= '1';
+							NextState						<= ST_READ_WAIT_FOR_COMPLETION;
+						END IF;
+					WHEN IO_IIC_STATUS_CALL_COMPLETE =>			NextState		<= ST_ERROR;
+					WHEN IO_IIC_STATUS_ERROR =>
+						CASE IICC_Error IS
+							WHEN IO_IIC_ERROR_BUS_ERROR =>			NextState		<= ST_ERROR;
+							WHEN IO_IIC_ERROR_ADDRESS_ERROR =>	NextState		<= ST_ADDRESS_ERROR;
+							WHEN IO_IIC_ERROR_ACK_ERROR =>			NextState		<= ST_ERROR;
+							WHEN OTHERS =>											NextState		<= ST_ERROR;
 						END CASE;
-					WHEN OTHERS =>																	NextState		<= ST_ERROR;
+					WHEN OTHERS =>													NextState		<= ST_ERROR;
 				END CASE;
 
 			WHEN ST_READ_BYTES_COMPLETE =>
-				Status									<= NET_ETH_MDIOC_STATUS_READ_COMPLETE;
-				NextState								<= ST_IDLE;
-			
-			WHEN ST_WRITE_SEND_COMMAND =>
-				Status									<= NET_ETH_MDIOC_STATUS_WRITING;
-				SFF8431_Command 				<= IO_IIC_SFF8431_CMD_WRITE_BYTES;
-				DataRegister_idx				<= 0;
-			
-				NextState								<= ST_WRITE_BYTE_0;
-			
-			WHEN ST_WRITE_BYTE_0 =>
-				Status									<= NET_ETH_MDIOC_STATUS_WRITING;
-				DataRegister_idx				<= 0;
-				SFF8431_MoreBytes				<= '1';
-				
-				CASE SFF8431_Status IS
-					WHEN IO_IIC_SFF8431_STATUS_WRITING =>
-						IF (SFF8431_NextByte = '1') THEN
-							NextState					<= ST_WRITE_BYTE_1;
-						END IF;
-					WHEN IO_IIC_SFF8431_STATUS_WRITE_COMPLETE =>		NextState		<= ST_ERROR;
-					WHEN IO_IIC_SFF8431_STATUS_ERROR =>
-						CASE SFF8431_Error IS
-							WHEN IO_IIC_SFF8431_ERROR_BUS_ERROR =>			NextState		<= ST_ERROR;
-							WHEN IO_IIC_SFF8431_ERROR_ADDRESS_ERROR =>	NextState		<= ST_ADDRESS_ERROR;
-							WHEN IO_IIC_SFF8431_ERROR_ACK_ERROR =>			NextState		<= ST_ERROR;
-							WHEN OTHERS =>															NextState		<= ST_ERROR;
+				Status										<= IO_MDIO_MDIOC_STATUS_READING;
+				IICC_Request							<= '1';
+
+				CASE IICC_Status IS
+					WHEN IO_IIC_STATUS_CALLING =>						NULL;
+					WHEN IO_IIC_STATUS_CALL_COMPLETE =>			NextState		<= ST_READ_BYTES_COMPLETE;
+					WHEN IO_IIC_STATUS_ERROR =>
+						CASE IICC_Error IS
+							WHEN IO_IIC_ERROR_BUS_ERROR =>			NextState		<= ST_ERROR;
+							WHEN IO_IIC_ERROR_ADDRESS_ERROR =>	NextState		<= ST_ADDRESS_ERROR;
+							WHEN IO_IIC_ERROR_ACK_ERROR =>			NextState		<= ST_ERROR;
+							WHEN OTHERS =>											NextState		<= ST_ERROR;
 						END CASE;
-					WHEN OTHERS =>																	NextState		<= ST_ERROR;
+					WHEN OTHERS =>													NextState		<= ST_ERROR;
+				END CASE;
+
+			WHEN ST_READ_BYTES_COMPLETE =>
+				Status										<= IO_MDIO_MDIOC_STATUS_READ_COMPLETE;
+				NextState									<= ST_IDLE;
+			
+			-- ======================================================================================================================================================
+			WHEN ST_Write_REQUEST_BUS =>
+				IICC_Request							<= '1';
+				
+				IF (IICC_Grant = '1') THEN
+					NextState								<= ST_WRITE_SEND_COMMAND;
+				END IF;
+
+			WHEN ST_WRITE_SEND_COMMAND =>
+				Status										<= IO_MDIO_MDIOC_STATUS_WRITING;
+				IICC_Request							<= '1';
+				IICC_Command 							<= IO_IIC_CMD_SEND_BYTES;
+				IICC_Address							<= resize(DeviceAddressRegister_d, IICC_Address'length);
+				IICC_WP_Valid							<= '1';
+				IICC_WP_Data							<= resize(RegisterAddressRegister_d, IICC_WP_Data'length);
+				
+				NextState									<= ST_WRITE_BYTE_0;
+				
+			WHEN ST_WRITE_BYTE_0 =>
+				Status										<= IO_MDIO_MDIOC_STATUS_WRITING;
+				IICC_Request							<= '1';
+				IICC_WP_Valid							<= '1';
+				IICC_WP_Data							<= DataRegister_d(0);
+				
+				CASE IICC_Status IS
+					WHEN IO_IIC_STATUS_SENDING =>
+						IF (IICC_WP_Ack = '1') THEN
+							NextState						<= ST_WRITE_BYTE_1;
+						END IF;
+					WHEN IO_IIC_STATUS_SEND_COMPLETE =>			NextState		<= ST_ERROR;
+					WHEN IO_IIC_STATUS_ERROR =>
+						CASE IICC_Error IS
+							WHEN IO_IIC_ERROR_BUS_ERROR =>			NextState		<= ST_ERROR;
+							WHEN IO_IIC_ERROR_ADDRESS_ERROR =>	NextState		<= ST_ADDRESS_ERROR;
+							WHEN IO_IIC_ERROR_ACK_ERROR =>			NextState		<= ST_ERROR;
+							WHEN OTHERS =>											NextState		<= ST_ERROR;
+						END CASE;
+					WHEN OTHERS =>													NextState		<= ST_ERROR;
 				END CASE;
 				
 			WHEN ST_WRITE_BYTE_1 =>
-				Status									<= NET_ETH_MDIOC_STATUS_WRITING;
-				DataRegister_idx				<= 1;
-				SFF8431_MoreBytes				<= '0';
-
-				CASE SFF8431_Status IS
-					WHEN IO_IIC_SFF8431_STATUS_WRITING =>						NULL;
-					WHEN IO_IIC_SFF8431_STATUS_WRITE_COMPLETE =>		NextState		<= ST_WRITE_BYTES_COMPLETE;
-					WHEN IO_IIC_SFF8431_STATUS_ERROR =>
-						CASE SFF8431_Error IS
-							WHEN IO_IIC_SFF8431_ERROR_BUS_ERROR =>			NextState		<= ST_ERROR;
-							WHEN IO_IIC_SFF8431_ERROR_ADDRESS_ERROR =>	NextState		<= ST_ADDRESS_ERROR;
-							WHEN IO_IIC_SFF8431_ERROR_ACK_ERROR =>			NextState		<= ST_ERROR;
-							WHEN OTHERS =>															NextState		<= ST_ERROR;
+				Status										<= IO_MDIO_MDIOC_STATUS_WRITING;
+				IICC_Request							<= '1';
+				IICC_WP_Valid							<= '1';
+				IICC_WP_Data							<= DataRegister_d(1);
+				IICC_WP_Last							<= '1';
+				
+				CASE IICC_Status IS
+					WHEN IO_IIC_STATUS_SENDING =>
+						IF (IICC_WP_Ack = '1') THEN
+							NextState						<= ST_WRITE_WAIT_FOR_COMPLETION;
+						END IF;
+					WHEN IO_IIC_STATUS_SEND_COMPLETE =>			NextState		<= ST_ERROR;
+					WHEN IO_IIC_STATUS_ERROR =>
+						CASE IICC_Error IS
+							WHEN IO_IIC_ERROR_BUS_ERROR =>			NextState		<= ST_ERROR;
+							WHEN IO_IIC_ERROR_ADDRESS_ERROR =>	NextState		<= ST_ADDRESS_ERROR;
+							WHEN IO_IIC_ERROR_ACK_ERROR =>			NextState		<= ST_ERROR;
+							WHEN OTHERS =>											NextState		<= ST_ERROR;
 						END CASE;
-					WHEN OTHERS =>																	NextState		<= ST_ERROR;
+					WHEN OTHERS =>													NextState		<= ST_ERROR;
+				END CASE;
+
+			WHEN ST_WRITE_WAIT_FOR_COMPLETION =>
+				Status										<= IO_MDIO_MDIOC_STATUS_WRITING;
+				IICC_Request							<= '1';
+				
+				CASE IICC_Status IS
+					WHEN IO_IIC_STATUS_SENDING =>						NULL;
+					WHEN IO_IIC_STATUS_SEND_COMPLETE =>			NextState		<= ST_WRITE_BYTES_COMPLETE;
+					WHEN IO_IIC_STATUS_ERROR =>
+						CASE IICC_Error IS
+							WHEN IO_IIC_ERROR_BUS_ERROR =>			NextState		<= ST_ERROR;
+							WHEN IO_IIC_ERROR_ADDRESS_ERROR =>	NextState		<= ST_ADDRESS_ERROR;
+							WHEN IO_IIC_ERROR_ACK_ERROR =>			NextState		<= ST_ERROR;
+							WHEN OTHERS =>											NextState		<= ST_ERROR;
+						END CASE;
+					WHEN OTHERS =>													NextState		<= ST_ERROR;
 				END CASE;
 
 			WHEN ST_WRITE_BYTES_COMPLETE =>
-				Status									<= NET_ETH_MDIOC_STATUS_WRITE_COMPLETE;
+				Status									<= IO_MDIO_MDIOC_STATUS_WRITE_COMPLETE;
 				NextState								<= ST_IDLE;
 			
 			WHEN ST_ADDRESS_ERROR =>
-				Status									<= NET_ETH_MDIOC_STATUS_ERROR;
-				Error										<= NET_ETH_MDIOC_ERROR_ADDRESS_NOT_FOUND;
+				Status									<= IO_MDIO_MDIOC_STATUS_ERROR;
+				Error										<= IO_MDIO_MDIOC_ERROR_ADDRESS_NOT_FOUND;
 				NextState								<= ST_IDLE;
 			
 			WHEN ST_ERROR =>
-				Status									<= NET_ETH_MDIOC_STATUS_ERROR;
-				Error										<= NET_ETH_MDIOC_ERROR_FSM;
+				Status									<= IO_MDIO_MDIOC_STATUS_ERROR;
+				Error										<= IO_MDIO_MDIOC_ERROR_FSM;
 				NextState								<= ST_IDLE;
 			
 		END CASE;
@@ -241,22 +334,27 @@ BEGIN
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
+				DeviceAddressRegister_d							<= (OTHERS => '0');
+				RegisterAddressRegister_d						<= (OTHERS => '0');
 				DataRegister_d											<= (OTHERS => (OTHERS => '0'));
 			ELSE
+				IF (DeviceAddressRegister_Load	= '1') THEN
+					DeviceAddressRegister_d						<= DeviceAddress;
+				END IF;
+				
+				IF (RegisterAddressRegister_Load	= '1') THEN
+					RegisterAddressRegister_d					<= RegisterAddress;
+				END IF;
+			
 				IF (DataRegister_Load	= '1') THEN
-					DataRegister_d(0)									<= Register_DataIn(7 DOWNTO 0);
-					DataRegister_d(1)									<= Register_DataIn(15 DOWNTO 8);
+					DataRegister_d										<= to_slvv_8(DataIn);
+--					DataRegister_d(1)									<= DataIn(15 DOWNTO 8);
 				ELSIF (DataRegister_we	= '1') THEN
-					DataRegister_d(DataRegister_idx)	<= SFF8431_DataIn;
+					DataRegister_d(DataRegister_idx)	<= IICC_RP_Data;
 				END IF;
 			END IF;
 		END IF;
 	END PROCESS;
 
-	Register_DataOut(7 DOWNTO 0)	<= DataRegister_d(0);
-	Register_DataOut(15 DOWNTO 8)	<= DataRegister_d(1);
-
-	SFF8431_PhysicalAddress				<= 					Physical_Address;
-	SFF8431_RegisterAddress				<= "000"	& Register_Address;
-	SFF8431_DataOut								<= DataRegister_d(DataRegister_idx);
+	DataOut			<= to_slv(DataRegister_d);
 END;

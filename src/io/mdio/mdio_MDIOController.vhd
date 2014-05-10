@@ -22,12 +22,12 @@ ENTITY Eth_MDIOController IS
 		Reset											: IN	STD_LOGIC;
 		
 		-- MDIOController interface
-		Command										: IN	T_NET_ETH_MDIOCONTROLLER_COMMAND;
-		Status										: OUT	T_NET_ETH_MDIOCONTROLLER_STATUS;
-		Error											: OUT	T_NET_ETH_MDIOCONTROLLER_ERROR;
+		Command										: IN	T_IO_MDIO_MDIOCONTROLLER_COMMAND;
+		Status										: OUT	T_IO_MDIO_MDIOCONTROLLER_STATUS;
+		Error											: OUT	T_IO_MDIO_MDIOCONTROLLER_ERROR;
 
-		Physical_Address					: IN	STD_LOGIC_VECTOR(4 DOWNTO 0);
-		Register_Address					: IN	STD_LOGIC_VECTOR(4 DOWNTO 0);
+		DeviceAddress							: IN	STD_LOGIC_VECTOR(4 DOWNTO 0);
+		RegisterAddress						: IN	STD_LOGIC_VECTOR(4 DOWNTO 0);
 		DataIn										: IN	T_SLV_16;
 		DataOut										: OUT	T_SLV_16;
 		
@@ -57,8 +57,8 @@ ARCHITECTURE rtl OF Eth_MDIOController IS
 			ST_CHECK_ADR_SEND_START_1,				ST_READ_SEND_START_1,						ST_WRITE_SEND_START_1,
 		ST_CHECK_ADR_SEND_OPERATION_0,			ST_READ_SEND_OPERATION_0,				ST_WRITE_SEND_OPERATION_0,
 			ST_CHECK_ADR_SEND_OPERATION_1,		ST_READ_SEND_OPERATION_1,				ST_WRITE_SEND_OPERATION_1,
-		ST_CHECK_ADR_SEND_PHYSICAL_ADDRESS,	ST_READ_SEND_PHYSICAL_ADDRESS,	ST_WRITE_SEND_PHYSICAL_ADDRESS,
-		ST_CHECK_ADR_SEND_REGISTER_ADDRESS,	ST_READ_SEND_REGISTER_ADDRESS,	ST_WRITE_SEND_REGISTER_ADDRESS,
+		ST_CHECK_ADR_SEND_DeviceAddress,	ST_READ_SEND_DeviceAddress,	ST_WRITE_SEND_DeviceAddress,
+		ST_CHECK_ADR_SEND_RegisterAddress,	ST_READ_SEND_RegisterAddress,	ST_WRITE_SEND_RegisterAddress,
 		ST_CHECK_ADR_TURNAROUND_CYCLE_0,		ST_READ_TURNAROUND_CYCLE_0,			ST_WRITE_TURNAROUND_CYCLE_0,
 			ST_CHECK_ADR_TURNAROUND_CYCLE_1,	ST_READ_TURNAROUND_CYCLE_1,			ST_WRITE_TURNAROUND_CYCLE_1,
 				ST_CHECK_OK,
@@ -125,8 +125,8 @@ BEGIN
 	BEGIN
 		NextState								<= State;
 		
-		Status									<= NET_ETH_MDIOC_STATUS_IDLE;
-		Error										<= NET_ETH_MDIOC_ERROR_NONE;
+		Status									<= IO_MDIO_MDIOC_STATUS_IDLE;
+		Error										<= IO_MDIO_MDIOC_ERROR_NONE;
 
 		RegPhysicalAddress_en		<= '0';
 		RegRegisterAddress_en		<= '0';
@@ -149,22 +149,22 @@ BEGIN
 				BitCounter_rst							<= '1';
 				
 				CASE Command IS
-					WHEN NET_ETH_MDIOC_CMD_NONE =>
+					WHEN IO_MDIO_MDIOC_CMD_NONE =>
 						NULL;
 					
-					WHEN NET_ETH_MDIOC_CMD_CHECK_ADDRESS =>
+					WHEN IO_MDIO_MDIOC_CMD_CHECK_ADDRESS =>
 						RegPhysicalAddress_en		<= '1';
 						RegRegisterAddress_en		<= '1';
 						
 						NextState								<= ST_CHECK_ADR_WAIT_FOR_CLOCK;
 					
-					WHEN NET_ETH_MDIOC_CMD_READ =>
+					WHEN IO_MDIO_MDIOC_CMD_READ =>
 						RegPhysicalAddress_en		<= '1';
 						RegRegisterAddress_en		<= '1';
 						
 						NextState								<= ST_READ_WAIT_FOR_CLOCK;
 					
-					WHEN NET_ETH_MDIOC_CMD_WRITE =>
+					WHEN IO_MDIO_MDIOC_CMD_WRITE =>
 						RegPhysicalAddress_en		<= '1';
 						RegRegisterAddress_en		<= '1';
 						RegRegisterData_en			<= '1';
@@ -179,14 +179,14 @@ BEGIN
 			-- Command_ CHECK_ADDRESS
 			-- ======================================================================================================================================================
 			WHEN ST_CHECK_ADR_WAIT_FOR_CLOCK =>
-				Status											<= NET_ETH_MDIOC_STATUS_CHECKING;
+				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 			
 				IF (MD_Clock_re = '1') THEN
 					NextState									<= ST_CHECK_ADR_SEND_PREAMBLE;
 				END IF;
 			
 			WHEN ST_CHECK_ADR_SEND_PREAMBLE =>
-				Status											<= NET_ETH_MDIOC_STATUS_CHECKING;
+				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 			
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -202,7 +202,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_CHECK_ADR_SEND_START_0 =>
-				Status											<= NET_ETH_MDIOC_STATUS_CHECKING;
+				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -214,7 +214,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_CHECK_ADR_SEND_START_1 =>
-				Status											<= NET_ETH_MDIOC_STATUS_CHECKING;
+				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -226,7 +226,7 @@ BEGIN
 				END IF;
 				
 			WHEN ST_CHECK_ADR_SEND_OPERATION_0 =>
-				Status											<= NET_ETH_MDIOC_STATUS_CHECKING;
+				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -238,7 +238,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_CHECK_ADR_SEND_OPERATION_1 =>
-				Status											<= NET_ETH_MDIOC_STATUS_CHECKING;
+				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -246,11 +246,11 @@ BEGIN
 				END IF;
 			
 				IF (MD_Clock_re = '1') THEN
-					NextState									<= ST_CHECK_ADR_SEND_PHYSICAL_ADDRESS;
+					NextState									<= ST_CHECK_ADR_SEND_DeviceAddress;
 				END IF;
 			
-			WHEN ST_CHECK_ADR_SEND_PHYSICAL_ADDRESS =>
-				Status											<= NET_ETH_MDIOC_STATUS_CHECKING;
+			WHEN ST_CHECK_ADR_SEND_DeviceAddress =>
+				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -263,12 +263,12 @@ BEGIN
 			
 					IF (BitCounter_us = 4) THEN
 						BitCounter_rst					<= '1';
-						NextState								<= ST_CHECK_ADR_SEND_REGISTER_ADDRESS;
+						NextState								<= ST_CHECK_ADR_SEND_RegisterAddress;
 					END IF;
 				END IF;
 			
-			WHEN ST_CHECK_ADR_SEND_REGISTER_ADDRESS =>
-				Status											<= NET_ETH_MDIOC_STATUS_CHECKING;
+			WHEN ST_CHECK_ADR_SEND_RegisterAddress =>
+				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 			
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -286,7 +286,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_CHECK_ADR_TURNAROUND_CYCLE_0 =>
-				Status											<= NET_ETH_MDIOC_STATUS_CHECKING;
+				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 			
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -299,7 +299,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_CHECK_ADR_TURNAROUND_CYCLE_1 =>
-				Status											<= NET_ETH_MDIOC_STATUS_CHECKING;
+				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 			
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -316,7 +316,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_CHECK_OK =>
-				Status										<= NET_ETH_MDIOC_STATUS_CHECK_OK;
+				Status										<= IO_MDIO_MDIOC_STATUS_CHECK_OK;
 
 				MD_Data_en								<= '1';
 				MD_Data_o_nxt							<= '0';
@@ -325,7 +325,7 @@ BEGIN
 				NextState									<= ST_IDLE;
 				
 			WHEN ST_CHECK_FAILED =>
-				Status										<= NET_ETH_MDIOC_STATUS_CHECK_FAILED;
+				Status										<= IO_MDIO_MDIOC_STATUS_CHECK_FAILED;
 
 				MD_Data_en								<= '1';
 				MD_Data_o_nxt							<= '0';
@@ -336,14 +336,14 @@ BEGIN
 			-- Command: READ
 			-- ======================================================================================================================================================
 			WHEN ST_READ_WAIT_FOR_CLOCK =>
-				Status											<= NET_ETH_MDIOC_STATUS_READING;
+				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 
 				IF (MD_Clock_re = '1') THEN
 					NextState									<= ST_READ_SEND_PREAMBLE;
 				END IF;
 			
 			WHEN ST_READ_SEND_PREAMBLE =>
-				Status											<= NET_ETH_MDIOC_STATUS_READING;
+				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 			
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -359,7 +359,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_READ_SEND_START_0 =>
-				Status											<= NET_ETH_MDIOC_STATUS_READING;
+				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -371,7 +371,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_READ_SEND_START_1 =>
-				Status											<= NET_ETH_MDIOC_STATUS_READING;
+				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -383,7 +383,7 @@ BEGIN
 				END IF;
 				
 			WHEN ST_READ_SEND_OPERATION_0 =>
-				Status											<= NET_ETH_MDIOC_STATUS_READING;
+				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -395,7 +395,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_READ_SEND_OPERATION_1 =>
-				Status											<= NET_ETH_MDIOC_STATUS_READING;
+				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -403,11 +403,11 @@ BEGIN
 				END IF;
 			
 				IF (MD_Clock_re = '1') THEN
-					NextState									<= ST_READ_SEND_PHYSICAL_ADDRESS;
+					NextState									<= ST_READ_SEND_DeviceAddress;
 				END IF;
 			
-			WHEN ST_READ_SEND_PHYSICAL_ADDRESS =>
-				Status											<= NET_ETH_MDIOC_STATUS_READING;
+			WHEN ST_READ_SEND_DeviceAddress =>
+				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -420,12 +420,12 @@ BEGIN
 			
 					IF (BitCounter_us = 4) THEN
 						BitCounter_rst					<= '1';
-						NextState								<= ST_READ_SEND_REGISTER_ADDRESS;
+						NextState								<= ST_READ_SEND_RegisterAddress;
 					END IF;
 				END IF;
 			
-			WHEN ST_READ_SEND_REGISTER_ADDRESS =>
-				Status											<= NET_ETH_MDIOC_STATUS_READING;
+			WHEN ST_READ_SEND_RegisterAddress =>
+				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 			
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -443,7 +443,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_READ_TURNAROUND_CYCLE_0 =>
-				Status											<= NET_ETH_MDIOC_STATUS_READING;
+				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 			
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -456,7 +456,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_READ_TURNAROUND_CYCLE_1 =>
-				Status											<= NET_ETH_MDIOC_STATUS_READING;
+				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 			
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -473,7 +473,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_READ_RECEIVE_REGISTER_DATA =>
-				Status											<= NET_ETH_MDIOC_STATUS_READING;
+				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 				
 				IF (MD_Clock_re = '1') THEN
 					RegRegisterData_shi				<= '1';
@@ -486,7 +486,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_READ_COMPLETE =>
-				Status										<= NET_ETH_MDIOC_STATUS_READ_COMPLETE;
+				Status										<= IO_MDIO_MDIOC_STATUS_READ_COMPLETE;
 				
 				MD_Data_en								<= '1';
 				MD_Data_o_nxt							<= '0';
@@ -498,14 +498,14 @@ BEGIN
 			-- Command: WRITE
 			-- ======================================================================================================================================================
 			WHEN ST_WRITE_WAIT_FOR_CLOCK =>
-				Status											<= NET_ETH_MDIOC_STATUS_WRITING;
+				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 			
 				IF (MD_Clock_re = '1') THEN
 					NextState									<= ST_WRITE_SEND_PREAMBLE;
 				END IF;
 			
 			WHEN ST_WRITE_SEND_PREAMBLE =>
-				Status											<= NET_ETH_MDIOC_STATUS_WRITING;
+				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 			
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -521,7 +521,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_WRITE_SEND_START_0 =>
-				Status											<= NET_ETH_MDIOC_STATUS_WRITING;
+				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -533,7 +533,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_WRITE_SEND_START_1 =>
-				Status											<= NET_ETH_MDIOC_STATUS_WRITING;
+				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -545,7 +545,7 @@ BEGIN
 				END IF;
 				
 			WHEN ST_WRITE_SEND_OPERATION_0 =>
-				Status											<= NET_ETH_MDIOC_STATUS_WRITING;
+				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -557,7 +557,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_WRITE_SEND_OPERATION_1 =>
-				Status											<= NET_ETH_MDIOC_STATUS_WRITING;
+				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -565,11 +565,11 @@ BEGIN
 				END IF;
 			
 				IF (MD_Clock_re = '1') THEN
-					NextState									<= ST_WRITE_SEND_PHYSICAL_ADDRESS;
+					NextState									<= ST_WRITE_SEND_DeviceAddress;
 				END IF;
 			
-			WHEN ST_WRITE_SEND_PHYSICAL_ADDRESS =>
-				Status											<= NET_ETH_MDIOC_STATUS_WRITING;
+			WHEN ST_WRITE_SEND_DeviceAddress =>
+				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -582,12 +582,12 @@ BEGIN
 			
 					IF (BitCounter_us = 4) THEN
 						BitCounter_rst					<= '1';
-						NextState								<= ST_WRITE_SEND_REGISTER_ADDRESS;
+						NextState								<= ST_WRITE_SEND_RegisterAddress;
 					END IF;
 				END IF;
 			
-			WHEN ST_WRITE_SEND_REGISTER_ADDRESS =>
-				Status											<= NET_ETH_MDIOC_STATUS_WRITING;
+			WHEN ST_WRITE_SEND_RegisterAddress =>
+				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 			
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -605,7 +605,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_WRITE_TURNAROUND_CYCLE_0 =>
-				Status											<= NET_ETH_MDIOC_STATUS_WRITING;
+				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 			
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -617,7 +617,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_WRITE_TURNAROUND_CYCLE_1 =>
-				Status											<= NET_ETH_MDIOC_STATUS_WRITING;
+				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 			
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -629,7 +629,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_WRITE_SEND_REGISTER_DATA =>
-				Status											<= NET_ETH_MDIOC_STATUS_WRITING;
+				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -646,7 +646,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_WRITE_COMPLETE =>
-				Status											<= NET_ETH_MDIOC_STATUS_WRITE_COMPLETE;
+				Status											<= IO_MDIO_MDIOC_STATUS_WRITE_COMPLETE;
 				
 				IF (MD_Clock_fe = '1') THEN
 					MD_Data_en								<= '1';
@@ -659,8 +659,8 @@ BEGIN
 				END IF;
 				
 			WHEN ST_ADDRESS_ERROR =>
-				Status										<= NET_ETH_MDIOC_STATUS_ERROR;
-				Error											<= NET_ETH_MDIOC_ERROR_ADDRESS_NOT_FOUND;
+				Status										<= IO_MDIO_MDIOC_STATUS_ERROR;
+				Error											<= IO_MDIO_MDIOC_ERROR_ADDRESS_NOT_FOUND;
 
 				MD_Data_en								<= '1';
 				MD_Data_o_nxt							<= '0';
@@ -669,8 +669,8 @@ BEGIN
 				NextState									<= ST_IDLE;
 				
 			WHEN ST_ERROR =>
-				Status										<= NET_ETH_MDIOC_STATUS_ERROR;
-				Error											<= NET_ETH_MDIOC_ERROR_FSM;
+				Status										<= IO_MDIO_MDIOC_STATUS_ERROR;
+				Error											<= IO_MDIO_MDIOC_ERROR_FSM;
 				
 				MD_Data_en								<= '1';
 				MD_Data_o_nxt							<= '0';
@@ -704,13 +704,13 @@ BEGIN
 				RegRegisterData_Valid_r	<= '0';
 			ELSE
 				IF (RegPhysicalAddress_en	= '1') THEN
-					RegPhysicalAddress_d	<= Physical_Address;
+					RegPhysicalAddress_d	<= DeviceAddress;
 				ELSIF (RegPhysicalAddress_sh = '1') THEN
 					RegPhysicalAddress_d	<= RegPhysicalAddress_d(RegPhysicalAddress_d'high - 1 DOWNTO 0) & RegPhysicalAddress_d(RegPhysicalAddress_d'high);
 				END IF;
 				
 				IF (RegRegisterAddress_en	= '1') THEN
-					RegRegisterAddress_d	<= Register_Address;
+					RegRegisterAddress_d	<= RegisterAddress;
 				ELSIF (RegRegisterAddress_sh = '1') THEN
 					RegRegisterAddress_d	<= RegRegisterAddress_d(RegRegisterAddress_d'high - 1 DOWNTO 0) & RegRegisterAddress_d(RegRegisterAddress_d'high);
 				END IF;
