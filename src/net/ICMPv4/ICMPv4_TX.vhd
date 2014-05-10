@@ -280,7 +280,7 @@ BEGIN
 	Checksum			<= x"0000";
 	
 	
-	SourceIPv4Seq : ENTITY L_Global.Sequenzer
+	SourceIPv4Seq : ENTITY PoC.misc_Sequencer
 		GENERIC MAP (
 			INPUT_BITS						=> 32,
 			OUTPUT_BITS						=> 8,

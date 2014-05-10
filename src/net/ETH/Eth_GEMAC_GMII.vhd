@@ -233,7 +233,7 @@ BEGIN
 		TX_FIFO_EOF			<= TX_FIFO_DataOut(EOF_BIT);
 	END BLOCK;
 	
-	TX_MAC : ENTITY L_Ethernet.Eth_GEMAC_TX
+	TX_MAC : ENTITY PoC.Eth_GEMAC_TX
 		PORT MAP (
 			RS_TX_Clock								=> RS_TX_Clock,
 			RS_TX_Reset								=> RS_TX_Reset,
@@ -257,7 +257,7 @@ BEGIN
 	-- ==========================================================================================================================================================
 	-- RX path
 	-- ==========================================================================================================================================================
-	RX_MAC : ENTITY L_Ethernet.Eth_GEMAC_RX
+	RX_MAC : ENTITY PoC.Eth_GEMAC_RX
 		PORT MAP (
 			RS_RX_Clock								=> RS_RX_Clock,
 			RS_RX_Reset								=> RS_RX_Reset,

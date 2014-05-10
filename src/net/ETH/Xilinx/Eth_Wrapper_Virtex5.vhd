@@ -8,12 +8,9 @@ USE			UNISIM.VCOMPONENTS.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY Eth_Wrapper_Virtex5 IS
 	GENERIC (
@@ -220,7 +217,7 @@ BEGIN
 			Eth_RX_Enable					<= '1';
 
 			-- Transmitter FIFO and LocalLink adapter
-			TX_FIFO	: ENTITY L_Ethernet.Eth_TEMAC_Virtex5_TX_FIFO
+			TX_FIFO	: ENTITY PoC.Eth_TEMAC_Virtex5_TX_FIFO
 				GENERIC MAP (
 					FULL_DUPLEX_ONLY	=> FALSE--TRUE
 				)
@@ -249,7 +246,7 @@ BEGIN
 				);
 			
 			-- Receiver FIFO and LocalLink adapter
-			RX_FIFO	: ENTITY L_Ethernet.Eth_TEMAC_Virtex5_RX_FIFO
+			RX_FIFO	: ENTITY PoC.Eth_TEMAC_Virtex5_RX_FIFO
 				PORT MAP (
 					rd_clk						=> RX_Clock,								-- Local link read clock
 					rd_sreset					=> RX_Reset,								-- synchronous reset (rd_clock)
@@ -290,7 +287,7 @@ BEGIN
 		BEGIN
 			
 			-- Instantiate the EMAC Wrapper (v5temac_gmii.vhd)
-			TEMAC_V5	: ENTITY L_Ethernet.TEMAC_GMII_Virtex5
+			TEMAC_V5	: ENTITY PoC.TEMAC_GMII_Virtex5
 				PORT MAP (
 					-- Asynchronous Reset
 					RESET														=> Reset_async,
@@ -387,7 +384,7 @@ BEGIN
 			-- FPGA-PHY inferface: GMII
 			-- ========================================================================================================================================================
 			genPHY_GMII	: IF (PHY_DATA_INTERFACE = NET_ETH_PHY_DATA_INTERFACE_GMII) GENERATE
-				GMII	: ENTITY L_Ethernet.Eth_RSLayer_GMII_GMII_Virtex5
+				GMII	: ENTITY PoC.Eth_RSLayer_GMII_GMII_Virtex5
 					PORT MAP (
 						RS_TX_Clock								=> RS_TX_Clock,
 						RS_RX_Clock								=> RS_RX_Clock,
@@ -423,7 +420,7 @@ BEGIN
 			BEGIN
 				ASSERT FALSE REPORT "Physical interface SGMII is not implemented!" SEVERITY FAILURE;
 			
-				SGMII	: ENTITY L_Ethernet.Eth_RSLayer_GMII_SGMII_Virtex5
+				SGMII	: ENTITY PoC.Eth_RSLayer_GMII_SGMII_Virtex5
 		--			GENERIC MAP (
 		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
 		--			)
@@ -485,7 +482,7 @@ BEGIN
 		BEGIN
 			Trans_PHY_MDIOAddress		<= "00111";
 		
-			TEMAC_V5	: ENTITY L_Ethernet.TEMAC_TRANS_SGMII_Virtex5
+			TEMAC_V5	: ENTITY PoC.TEMAC_TRANS_SGMII_Virtex5
 				PORT MAP (
 					--					-- Asynchronous Reset
 					RESET														=> Reset,
@@ -567,13 +564,13 @@ BEGIN
 					SYNCACQSTATUS_0									=> Trans_2,
 
 					-- MDIO interface - EMAC0
-					MDC_0														=> PHY_Interface.MDIO.Clock_o,
-					MDIO_0_I												=> PHY_Interface.MDIO.Data_i,
-					MDIO_0_O												=> PHY_Interface.MDIO.Data_o,
-					MDIO_0_T												=> PHY_Interface.MDIO.Data_t
+					MDC_0														=> PHY_Interface.MDIO.Clock_ts.O,
+					MDIO_0_I												=> PHY_Interface.MDIO.Data_ts.I,
+					MDIO_0_O												=> PHY_Interface.MDIO.Data_ts.O,
+					MDIO_0_T												=> PHY_Interface.MDIO.Data_ts.T
 				);
 			
-			PHY_Interface.MDIO.Clock_t	<= '0';
+			PHY_Interface.MDIO.Clock_ts.T	<= '0';
 			
 			-- ========================================================================================================================================================
 			-- FPGA-PHY inferface: MII
@@ -620,103 +617,103 @@ BEGIN
 						O		=> PHY_Interface.SGMII.SGMII_RXRefClock_Out
 					);
 			
-				TRANS	: ENTITY L_Ethernet.Transceiver_TRANS_SGMII_Virtex5
-					GENERIC MAP (
-						-- Simulation attributes
-						TILE_SIM_GTPRESET_SPEEDUP				=> 0,					-- Set to 1 to speed up sim reset
-						TILE_SIM_PLL_PERDIV2						=> x"190",		-- Set to the VCO Unit Interval time 
-
-						-- Channel bonding attributes
-						TILE_CHAN_BOND_MODE_0						=> "OFF",			-- "MASTER", "SLAVE", or "OFF"
-						TILE_CHAN_BOND_LEVEL_0					=> 0,					-- 0 to 7. See UG for details
-						
-						TILE_CHAN_BOND_MODE_1						=> "OFF",			-- "MASTER", "SLAVE", or "OFF"
-						TILE_CHAN_BOND_LEVEL_1					=> 0					-- 0 to 7. See UG for details
-					)
-					PORT MAP (
-						------------------------ Loopback and Powerdown Ports ----------------------
-						LOOPBACK0_IN										=> Trans_LoopBack,					-- 2:0
-						LOOPBACK1_IN										=> "000",
-						RXPOWERDOWN0_IN									=> Trans_PowerDown,					-- 1:0
-						TXPOWERDOWN0_IN									=> Trans_PowerDown,
-						RXPOWERDOWN1_IN									=> "11",
-						TXPOWERDOWN1_IN									=> "11",
-						----------------------- Receive Ports - 8b10b Decoder ----------------------
-						RXCHARISCOMMA0_OUT							=> Trans_RX_CharIsComma,
-						RXCHARISCOMMA1_OUT							=> OPEN,
-						RXCHARISK0_OUT									=> Trans_RX_CharIsK,
-						RXCHARISK1_OUT									=> OPEN,
-						RXDISPERR0_OUT									=> Trans_RX_DisparityError,
-						RXDISPERR1_OUT									=> OPEN,
-						RXNOTINTABLE0_OUT								=> Trans_RX_CharIsNotInTable,
-						RXNOTINTABLE1_OUT								=> OPEN,
-						RXRUNDISP0_OUT									=> Trans_RX_RunningDisparity,
-						RXRUNDISP1_OUT									=> OPEN,
-						------------------- Receive Ports - Clock Correction Ports -----------------
-						RXCLKCORCNT0_OUT								=> Trans_RX_ClockCorrectionCount,
-						RXCLKCORCNT1_OUT								=> OPEN,
-						--------------- Receive Ports - Comma Detection and Alignment --------------
-						RXENMCOMMAALIGN0_IN							=> '1',
-						RXENMCOMMAALIGN1_IN							=> '0',
-						RXENPCOMMAALIGN0_IN							=> '1',
-						RXENPCOMMAALIGN1_IN							=> '0',
-						------------------- Receive Ports - RX Data Path interface -----------------
-						RXDATA0_OUT											=> Trans_RX_Data,
-						RXDATA1_OUT											=> OPEN,
-						RXRECCLK0_OUT										=> Trans_RX_RecoveredClock,
-						RXRECCLK1_OUT										=> OPEN,
-						RXRESET0_IN											=> Trans_RX_Reset,
-						RXRESET1_IN											=> '0',
-						RXUSRCLK0_IN										=> Trans_RX_Clock,
-						RXUSRCLK1_IN										=> '0',
-						RXUSRCLK20_IN										=> Trans_RX_Clock,
-						RXUSRCLK21_IN										=> '0',
-						------- Receive Ports - RX Driver,OOB signalling,Coupling and Eq.,CDR ------
-						RXELECIDLE0_OUT									=> Trans_RX_ElectricalIDLE,
-						RXELECIDLE1_OUT									=> OPEN,
-						RXN0_IN													=> PHY_Interface.SGMII.RX_n,
-						RXN1_IN													=> '0',
-						RXP0_IN													=> PHY_Interface.SGMII.RX_p,
-						RXP1_IN													=> '0',
-						-------- Receive Ports - RX Elastic Buffer and Phase Alignment Ports -------
-						RXBUFRESET0_IN									=> Trans_RX_BufferReset,
-						RXBUFRESET1_IN									=> '0',
-						RXBUFSTATUS0_OUT								=> Trans_RX_BufferStatus,
-						RXBUFSTATUS1_OUT								=> OPEN,
-						--------------------- Shared Ports - Tile and PLL Ports --------------------
-						CLKIN_IN												=> PHY_Interface.SGMII.SGMII_RefClock_In,
-						GTPRESET_IN											=> '0',
-						PLLLKDET_OUT										=> Trans_PLL_Locked,
-						REFCLKOUT_OUT										=> Trans_RefClockOut,
-						RESETDONE0_OUT									=> Trans_ResetDone,
-						RESETDONE1_OUT									=> OPEN,
-						---------------- Transmit Ports - 8b10b Encoder Control Ports --------------
-						TXCHARDISPMODE0_IN							=> Trans_TX_CharDisparityMode,
-						TXCHARDISPMODE1_IN							=> '0',
-						TXCHARDISPVAL0_IN								=> Trans_TX_CharDisparityValue,
-						TXCHARDISPVAL1_IN								=> '0',
-						TXCHARISK0_IN										=> Trans_TX_CharIsK,
-						TXCHARISK1_IN										=> '0',
-						------------- Transmit Ports - TX Buffering and Phase Alignment ------------
-						TXBUFSTATUS0_OUT								=> Trans_TX_BufferStatus,
-						TXBUFSTATUS1_OUT								=> OPEn,
-						------------------ Transmit Ports - TX Data Path interface -----------------
-						TXDATA0_IN											=> Trans_TX_Data,
-						TXDATA1_IN											=> x"00",
-						TXOUTCLK0_OUT										=> Trans_TX_ClockOut,
-						TXOUTCLK1_OUT										=> OPEN,
-						TXRESET0_IN											=> Trans_TX_Reset,
-						TXRESET1_IN											=> '0',
-						TXUSRCLK0_IN										=> Trans_TX_Clock,
-						TXUSRCLK1_IN										=> '0',
-						TXUSRCLK20_IN										=> Trans_TX_Clock,
-						TXUSRCLK21_IN										=> '0',
-						--------------- Transmit Ports - TX Driver and OOB signalling --------------
-						TXN0_OUT												=> PHY_Interface.SGMII.TX_n,
-						TXN1_OUT												=> OPEN,
-						TXP0_OUT												=> PHY_Interface.SGMII.TX_p,
-						TXP1_OUT												=> OPEN
-					);
+--				TRANS	: ENTITY PoC.Eth_RSLayer_TRANS_GMII_Virtex5
+--					GENERIC MAP (
+--						-- Simulation attributes
+--						TILE_SIM_GTPRESET_SPEEDUP				=> 0,					-- Set to 1 to speed up sim reset
+--						TILE_SIM_PLL_PERDIV2						=> x"190",		-- Set to the VCO Unit Interval time 
+--
+--						-- Channel bonding attributes
+--						TILE_CHAN_BOND_MODE_0						=> "OFF",			-- "MASTER", "SLAVE", or "OFF"
+--						TILE_CHAN_BOND_LEVEL_0					=> 0,					-- 0 to 7. See UG for details
+--						
+--						TILE_CHAN_BOND_MODE_1						=> "OFF",			-- "MASTER", "SLAVE", or "OFF"
+--						TILE_CHAN_BOND_LEVEL_1					=> 0					-- 0 to 7. See UG for details
+--					)
+--					PORT MAP (
+--						------------------------ Loopback and Powerdown Ports ----------------------
+--						LOOPBACK0_IN										=> Trans_LoopBack,					-- 2:0
+--						LOOPBACK1_IN										=> "000",
+--						RXPOWERDOWN0_IN									=> Trans_PowerDown,					-- 1:0
+--						TXPOWERDOWN0_IN									=> Trans_PowerDown,
+--						RXPOWERDOWN1_IN									=> "11",
+--						TXPOWERDOWN1_IN									=> "11",
+--						----------------------- Receive Ports - 8b10b Decoder ----------------------
+--						RXCHARISCOMMA0_OUT							=> Trans_RX_CharIsComma,
+--						RXCHARISCOMMA1_OUT							=> OPEN,
+--						RXCHARISK0_OUT									=> Trans_RX_CharIsK,
+--						RXCHARISK1_OUT									=> OPEN,
+--						RXDISPERR0_OUT									=> Trans_RX_DisparityError,
+--						RXDISPERR1_OUT									=> OPEN,
+--						RXNOTINTABLE0_OUT								=> Trans_RX_CharIsNotInTable,
+--						RXNOTINTABLE1_OUT								=> OPEN,
+--						RXRUNDISP0_OUT									=> Trans_RX_RunningDisparity,
+--						RXRUNDISP1_OUT									=> OPEN,
+--						------------------- Receive Ports - Clock Correction Ports -----------------
+--						RXCLKCORCNT0_OUT								=> Trans_RX_ClockCorrectionCount,
+--						RXCLKCORCNT1_OUT								=> OPEN,
+--						--------------- Receive Ports - Comma Detection and Alignment --------------
+--						RXENMCOMMAALIGN0_IN							=> '1',
+--						RXENMCOMMAALIGN1_IN							=> '0',
+--						RXENPCOMMAALIGN0_IN							=> '1',
+--						RXENPCOMMAALIGN1_IN							=> '0',
+--						------------------- Receive Ports - RX Data Path interface -----------------
+--						RXDATA0_OUT											=> Trans_RX_Data,
+--						RXDATA1_OUT											=> OPEN,
+--						RXRECCLK0_OUT										=> Trans_RX_RecoveredClock,
+--						RXRECCLK1_OUT										=> OPEN,
+--						RXRESET0_IN											=> Trans_RX_Reset,
+--						RXRESET1_IN											=> '0',
+--						RXUSRCLK0_IN										=> Trans_RX_Clock,
+--						RXUSRCLK1_IN										=> '0',
+--						RXUSRCLK20_IN										=> Trans_RX_Clock,
+--						RXUSRCLK21_IN										=> '0',
+--						------- Receive Ports - RX Driver,OOB signalling,Coupling and Eq.,CDR ------
+--						RXELECIDLE0_OUT									=> Trans_RX_ElectricalIDLE,
+--						RXELECIDLE1_OUT									=> OPEN,
+--						RXN0_IN													=> PHY_Interface.SGMII.RX_n,
+--						RXN1_IN													=> '0',
+--						RXP0_IN													=> PHY_Interface.SGMII.RX_p,
+--						RXP1_IN													=> '0',
+--						-------- Receive Ports - RX Elastic Buffer and Phase Alignment Ports -------
+--						RXBUFRESET0_IN									=> Trans_RX_BufferReset,
+--						RXBUFRESET1_IN									=> '0',
+--						RXBUFSTATUS0_OUT								=> Trans_RX_BufferStatus,
+--						RXBUFSTATUS1_OUT								=> OPEN,
+--						--------------------- Shared Ports - Tile and PLL Ports --------------------
+--						CLKIN_IN												=> PHY_Interface.SGMII.SGMII_RefClock_In,
+--						GTPRESET_IN											=> '0',
+--						PLLLKDET_OUT										=> Trans_PLL_Locked,
+--						REFCLKOUT_OUT										=> Trans_RefClockOut,
+--						RESETDONE0_OUT									=> Trans_ResetDone,
+--						RESETDONE1_OUT									=> OPEN,
+--						---------------- Transmit Ports - 8b10b Encoder Control Ports --------------
+--						TXCHARDISPMODE0_IN							=> Trans_TX_CharDisparityMode,
+--						TXCHARDISPMODE1_IN							=> '0',
+--						TXCHARDISPVAL0_IN								=> Trans_TX_CharDisparityValue,
+--						TXCHARDISPVAL1_IN								=> '0',
+--						TXCHARISK0_IN										=> Trans_TX_CharIsK,
+--						TXCHARISK1_IN										=> '0',
+--						------------- Transmit Ports - TX Buffering and Phase Alignment ------------
+--						TXBUFSTATUS0_OUT								=> Trans_TX_BufferStatus,
+--						TXBUFSTATUS1_OUT								=> OPEn,
+--						------------------ Transmit Ports - TX Data Path interface -----------------
+--						TXDATA0_IN											=> Trans_TX_Data,
+--						TXDATA1_IN											=> x"00",
+--						TXOUTCLK0_OUT										=> Trans_TX_ClockOut,
+--						TXOUTCLK1_OUT										=> OPEN,
+--						TXRESET0_IN											=> Trans_TX_Reset,
+--						TXRESET1_IN											=> '0',
+--						TXUSRCLK0_IN										=> Trans_TX_Clock,
+--						TXUSRCLK1_IN										=> '0',
+--						TXUSRCLK20_IN										=> Trans_TX_Clock,
+--						TXUSRCLK21_IN										=> '0',
+--						--------------- Transmit Ports - TX Driver and OOB signalling --------------
+--						TXN0_OUT												=> PHY_Interface.SGMII.TX_n,
+--						TXN1_OUT												=> OPEN,
+--						TXP0_OUT												=> PHY_Interface.SGMII.TX_p,
+--						TXP1_OUT												=> OPEN
+--					);
 			END GENERATE;		-- PHY_DATA_INTERFACE: SGMII
 		END GENERATE;		-- RS_DATA_INTERFACE: TRANSCEIVER
 	END GENERATE;		-- MAC_IP: IPSTYLE_HARD
@@ -740,7 +737,7 @@ BEGIN
 			SIGNAL RS_RX_Data						: T_SLV_8;
 			SIGNAL RS_RX_Error					: STD_LOGIC;
 		BEGIN
-			GEMAC	: ENTITY L_Ethernet.Eth_GEMAC_GMII
+			GEMAC	: ENTITY PoC.Eth_GEMAC_GMII
 				GENERIC MAP (
 					DEBUG									=> TRUE,
 					CLOCK_FREQ_MHZ									=> CLOCKIN_FREQ_MHZ,		-- 
@@ -807,7 +804,7 @@ BEGIN
 			genPHY_GMII	: IF (PHY_DATA_INTERFACE = NET_ETH_PHY_DATA_INTERFACE_GMII) GENERATE
 			
 			BEGIN
-				GMII	: ENTITY L_Ethernet.Eth_RSLayer_GMII_GMII_Virtex5
+				GMII	: ENTITY PoC.Eth_RSLayer_GMII_GMII_Virtex5
 					PORT MAP (
 						RS_TX_Clock								=> RS_TX_Clock,
 						RS_RX_Clock								=> RS_RX_Clock,						
@@ -836,7 +833,7 @@ BEGIN
 			BEGIN
 				ASSERT FALSE REPORT "Physical interface SGMII is not implemented!" SEVERITY FAILURE;
 			
-				SGMII	: ENTITY L_Ethernet.Eth_RSLayer_GMII_SGMII_Virtex5
+				SGMII	: ENTITY PoC.Eth_RSLayer_GMII_SGMII_Virtex5
 		--			GENERIC MAP (
 		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
 		--			)
