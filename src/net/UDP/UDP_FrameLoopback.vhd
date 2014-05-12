@@ -50,35 +50,48 @@ END;
 ARCHITECTURE rtl OF UDP_FrameLoopback IS
 	ATTRIBUTE KEEP										: BOOLEAN;
 	
-	CONSTANT IPADDRESS_LENGTH					: POSITIVE																					:= ite((IP_VERSION = 4), 4, 16);
+	CONSTANT IPADDRESS_LENGTH					: POSITIVE				:= ite((IP_VERSION = 4), 4, 16);
 	
-	CONSTANT META_STREAMID_DESTADDR		: NATURAL																						:= 0;
-	CONSTANT META_STREAMID_SRCADDR		: NATURAL																						:= 1;
-	CONSTANT META_STREAMID_DESTPORT		: NATURAL																						:= 2;
-	CONSTANT META_STREAMID_SRCPORT		: NATURAL																						:= 3;
-	CONSTANT META_STREAMS							: POSITIVE																					:= 4;		-- Destination, Source, DestPort, SrcPort
-
-	SIGNAL LLBuf_MetaIn_nxt						: STD_LOGIC_VECTOR(META_STREAMS - 1 DOWNTO 0);
-	SIGNAL LLBuf_MetaIn_Data					: T_SLM(META_STREAMS - 1 DOWNTO 0, 15 DOWNTO 0)			:= (OTHERS => (OTHERS => 'Z'));
-	SIGNAL LLBuf_MetaOut_nxt					: STD_LOGIC_VECTOR(META_STREAMS - 1 DOWNTO 0);
-	SIGNAL LLBuf_MetaOut_Data					: T_SLM(META_STREAMS - 1 DOWNTO 0, 15 DOWNTO 0);
+	CONSTANT META_STREAMID_SRCADDR		: NATURAL					:= 0;
+	CONSTANT META_STREAMID_DESTADDR		: NATURAL					:= 1;
+	CONSTANT META_STREAMID_SRCPORT		: NATURAL					:= 2;
+	CONSTANT META_STREAMID_DESTPORT		: NATURAL					:= 3;
+	
+	CONSTANT META_BITS								: T_POSVEC				:= (
+		META_STREAMID_SRCADDR			=> 8,
+		META_STREAMID_DESTADDR		=> 8,
+		META_STREAMID_SRCPORT			=> 16,
+		META_STREAMID_DESTPORT		=> 16
+	);
+	
+	CONSTANT META_FIFO_DEPTHS					: T_POSVEC				:= (
+		META_STREAMID_SRCADDR			=> IPADDRESS_LENGTH,
+		META_STREAMID_DESTADDR		=> IPADDRESS_LENGTH,
+		META_STREAMID_SRCPORT			=> 1,
+		META_STREAMID_DESTPORT		=> 1
+	);
+	
+	SIGNAL StmBuf_MetaIn_nxt					: STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
+	SIGNAL StmBuf_MetaIn_Data					: STD_LOGIC_VECTOR(isum(META_BITS) - 1 DOWNTO 0);
+	SIGNAL StmBuf_MetaOut_nxt					: STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
+	SIGNAL StmBuf_MetaOut_Data				: STD_LOGIC_VECTOR(isum(META_BITS) - 1 DOWNTO 0);
 	
 BEGIN
-	assign_row(LLBuf_MetaIn_Data, In_Meta_DestIPAddress_Data,	META_STREAMID_DESTADDR, 0, '0');
-	assign_row(LLBuf_MetaIn_Data, In_Meta_SrcIPAddress_Data,	META_STREAMID_SRCADDR,	0, '0');
-	assign_row(LLBuf_MetaIn_Data, In_Meta_DestPort,						META_STREAMID_DESTPORT);
-	assign_row(LLBuf_MetaIn_Data, In_Meta_SrcPort,						META_STREAMID_SRCPORT);
+	StmBuf_MetaIn_Data(high(META_BITS, META_STREAMID_SRCADDR)		DOWNTO low(META_BITS, META_STREAMID_SRCADDR))		<= In_Meta_SrcIPAddress_Data;
+	StmBuf_MetaIn_Data(high(META_BITS, META_STREAMID_DESTADDR)	DOWNTO low(META_BITS, META_STREAMID_DESTADDR))	<= In_Meta_DestIPAddress_Data;
+	StmBuf_MetaIn_Data(high(META_BITS, META_STREAMID_SRCPORT)		DOWNTO low(META_BITS, META_STREAMID_SRCPORT))		<= In_Meta_SrcPort;
+	StmBuf_MetaIn_Data(high(META_BITS, META_STREAMID_DESTPORT)	DOWNTO low(META_BITS, META_STREAMID_DESTPORT))	<= In_Meta_DestPort;
+	
+	In_Meta_DestIPAddress_nxt		<= StmBuf_MetaIn_nxt(META_STREAMID_DESTADDR);
+	In_Meta_SrcIPAddress_nxt		<= StmBuf_MetaIn_nxt(META_STREAMID_SRCADDR);
 
-	In_Meta_DestIPAddress_nxt		<= LLBuf_MetaIn_nxt(META_STREAMID_DESTADDR);
-	In_Meta_SrcIPAddress_nxt		<= LLBuf_MetaIn_nxt(META_STREAMID_SRCADDR);
-
-	LLBuf : ENTITY PoC.stream_Buffer
+	StmBuf : ENTITY PoC.stream_Buffer
 		GENERIC MAP (
 			FRAMES												=> MAX_FRAMES,
 			DATA_BITS											=> 8,
 			DATA_FIFO_DEPTH								=> 1024,
-			META_BITS											=> (META_STREAMID_DESTADDR => 8,								META_STREAMID_SRCADDR => 8,									META_STREAMID_DESTPORT => 16,	META_STREAMID_SRCPORT => 16),
-			META_FIFO_DEPTH								=> (META_STREAMID_DESTADDR => IPADDRESS_LENGTH,	META_STREAMID_SRCADDR => IPADDRESS_LENGTH,	META_STREAMID_DESTPORT => 1,	META_STREAMID_SRCPORT => 1)
+			META_BITS											=> META_BITS,
+			META_FIFO_DEPTH								=> META_FIFO_DEPTHS
 		)
 		PORT MAP (
 			Clock													=> Clock,
@@ -90,8 +103,8 @@ BEGIN
 			In_EOF												=> In_EOF,
 			In_Ready											=> In_Ready,
 			In_Meta_rst										=> In_Meta_rst,
-			In_Meta_nxt										=> LLBuf_MetaIn_nxt,
-			In_Meta_Data									=> LLBuf_MetaIn_Data,
+			In_Meta_nxt										=> StmBuf_MetaIn_nxt,
+			In_Meta_Data									=> StmBuf_MetaIn_Data,
 			
 			Out_Valid											=> Out_Valid,
 			Out_Data											=> Out_Data,
@@ -99,20 +112,20 @@ BEGIN
 			Out_EOF												=> Out_EOF,
 			Out_Ready											=> Out_Ready,
 			Out_Meta_rst									=> Out_Meta_rst,
-			Out_Meta_nxt									=> LLBuf_MetaOut_nxt,
-			Out_Meta_Data									=> LLBuf_MetaOut_Data
+			Out_Meta_nxt									=> StmBuf_MetaOut_nxt,
+			Out_Meta_Data									=> StmBuf_MetaOut_Data
 		);
 	
-	-- unpack LLBuf metadata to signals
-	Out_Meta_DestIPAddress_Data														<= get_row(LLBuf_MetaOut_Data, META_STREAMID_SRCADDR,		8);			-- Crossover: Destination <= Source
-	Out_Meta_SrcIPAddress_Data														<= get_row(LLBuf_MetaOut_Data, META_STREAMID_DESTADDR,	8);			-- Crossover: Source <= Destination
-	Out_Meta_DestPort																			<= get_row(LLBuf_MetaOut_Data, META_STREAMID_SRCPORT);					-- Crossover: Destination <= Source
-	Out_Meta_SrcPort																			<= get_row(LLBuf_MetaOut_Data, META_STREAMID_DESTPORT);				-- Crossover: Source <= Destination
+	-- unpack buffer metadata to signals
+	Out_Meta_DestIPAddress_Data									<= StmBuf_MetaOut_Data(high(META_BITS, META_STREAMID_SRCADDR)		DOWNTO low(META_BITS, META_STREAMID_SRCADDR));			-- Crossover: Destination <= Source
+	Out_Meta_SrcIPAddress_Data									<= StmBuf_MetaOut_Data(high(META_BITS, META_STREAMID_DESTADDR)	DOWNTO low(META_BITS, META_STREAMID_DESTADDR));			-- Crossover: Source <= Destination
+	Out_Meta_DestPort														<= StmBuf_MetaOut_Data(high(META_BITS, META_STREAMID_SRCPORT)		DOWNTO low(META_BITS, META_STREAMID_SRCPORT));			-- Crossover: Destination <= Source
+	Out_Meta_SrcPort														<= StmBuf_MetaOut_Data(high(META_BITS, META_STREAMID_DESTPORT)	DOWNTO low(META_BITS, META_STREAMID_DESTPORT));			-- Crossover: Source <= Destination
 	
-	-- pack metadata nxt signals to LLBuf meta vector
-	LLBuf_MetaOut_nxt(META_STREAMID_DESTADDR)							<= Out_Meta_DestIPAddress_nxt;
-	LLBuf_MetaOut_nxt(META_STREAMID_SRCADDR)							<= Out_Meta_SrcIPAddress_nxt;
-	LLBuf_MetaOut_nxt(META_STREAMID_DESTPORT)							<= '0';
-	LLBuf_MetaOut_nxt(META_STREAMID_SRCPORT)							<= '0';
+	-- pack metadata nxt signals to StmBuf meta vector
+	StmBuf_MetaOut_nxt(META_STREAMID_DESTADDR)	<= Out_Meta_DestIPAddress_nxt;
+	StmBuf_MetaOut_nxt(META_STREAMID_SRCADDR)		<= Out_Meta_SrcIPAddress_nxt;
+	StmBuf_MetaOut_nxt(META_STREAMID_DESTPORT)	<= '0';
+	StmBuf_MetaOut_nxt(META_STREAMID_SRCPORT)		<= '0';
 	
 END ARCHITECTURE;

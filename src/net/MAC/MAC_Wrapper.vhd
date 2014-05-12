@@ -169,7 +169,7 @@ ARCHITECTURE rtl OF MAC_Wrapper IS
 	
 BEGIN
 
-	RX_DestMAC : ENTITY L_Ethernet.MAC_RX_DestMAC_Switch
+	RX_DestMAC : ENTITY PoC.MAC_RX_DestMAC_Switch
 		GENERIC MAP (
 			DEBUG								=> DEBUG,
 			MAC_ADDRESSES									=> INTERFACE_ADDRESSES,
@@ -225,7 +225,7 @@ BEGIN
 --		ASSERT FALSE REPORT "Filter:      Count=" & INTEGER'image(FILTER_COUNT) SEVERITY NOTE;
 --		ASSERT FALSE REPORT "PortIndex:   From="	& INTEGER'image(PORT_INDEX_FROM) & " to=" & INTEGER'image(PORT_INDEX_TO) SEVERITY NOTE;
 	
-		RX_SrcMAC : ENTITY L_Ethernet.MAC_RX_SrcMAC_Filter
+		RX_SrcMAC : ENTITY PoC.MAC_RX_SrcMAC_Filter
 			GENERIC MAP (
 				DEBUG								=> DEBUG,
 				MAC_ADDRESSES									=> FILTER_ADDRESSES,
@@ -256,7 +256,7 @@ BEGIN
 				Out_Meta_SrcMACAddress_Data		=> SrcEth_RX_Meta_SrcMACAddress_Data
 			);
 
-		RX_EthType : ENTITY L_Ethernet.MAC_RX_Type_Switch
+		RX_EthType : ENTITY PoC.MAC_RX_Type_Switch
 			GENERIC MAP (
 				DEBUG								=> DEBUG,
 				ETHERNET_TYPES								=> SWITCH_TYPES
@@ -290,7 +290,7 @@ BEGIN
 			);
 
 		-- Ethernet Type prepender
-		TX_EthType : ENTITY L_Ethernet.MAC_TX_Type_Prepender
+		TX_EthType : ENTITY PoC.MAC_TX_Type_Prepender
 			GENERIC MAP (
 				ETHERNET_TYPES								=> SWITCH_TYPES
 			)
@@ -319,7 +319,7 @@ BEGIN
 	END GENERATE;
 
 	-- Ethernet SourceMAC prepender
-	TX_SrcMAC : ENTITY L_Ethernet.MAC_TX_SrcMAC_Prepender
+	TX_SrcMAC : ENTITY PoC.MAC_TX_SrcMAC_Prepender
 		GENERIC MAP (
 			MAC_ADDRESSES									=> INTERFACE_ADDRESSES
 		)
@@ -347,7 +347,7 @@ BEGIN
 		);
 
 	-- Ethernet SourceMAC prepender
-	TX_DestMAC : ENTITY L_Ethernet.MAC_TX_DestMAC_Prepender
+	TX_DestMAC : ENTITY PoC.MAC_TX_DestMAC_Prepender
 		PORT MAP (
 			Clock													=> Clock,
 			Reset													=> Reset,
