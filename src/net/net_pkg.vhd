@@ -5,11 +5,12 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.strings.ALL;
+USE			PoC.io.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
 
-PACKAGE EthTypes IS
+PACKAGE net IS
 
 	-- ==========================================================================================================================================================
 	-- Ethernet: physical layer (PHY)
@@ -93,12 +94,8 @@ PACKAGE EthTypes IS
 
 	-- FPGA <=> PHY management interface: MDIO (Management Data Input/Output)
 	TYPE T_NET_ETH_PHY_INTERFACE_MDIO IS RECORD
-		Clock_i								: STD_LOGIC;			-- clock (MDC) - input
-		Clock_o								: STD_LOGIC;			-- clock (MDC) - output
-		Clock_t								: STD_LOGIC;			-- clock (MDC) - tri-state enable
-		Data_i								: STD_LOGIC;			-- data (MDIO) - input
-		Data_o								: STD_LOGIC;			-- data (MDIO) - output
-		Data_t								: STD_LOGIC;			-- data (MDIO) - tri-state enable
+		Clock_ts							: T_IO_TRISTATE;	-- clock (MDC)
+		Data_ts								: T_IO_TRISTATE;	-- data (MDIO)
 	END RECORD;
 
 	TYPE T_NET_ETH_PHY_INTERFACE_COMMON IS RECORD
@@ -171,34 +168,6 @@ PACKAGE EthTypes IS
 	-- ==========================================================================================================================================================
 	-- Ethernet: ????????????????????
 	-- ==========================================================================================================================================================
-	
-	-- MDIOController
-	-- ==========================================================================================================================================================
-	TYPE T_NET_ETH_MDIOCONTROLLER_COMMAND IS (
-		NET_ETH_MDIOC_CMD_NONE,
-		NET_ETH_MDIOC_CMD_CHECK_ADDRESS,
-		NET_ETH_MDIOC_CMD_READ,
-		NET_ETH_MDIOC_CMD_WRITE,
-		NET_ETH_MDIOC_CMD_ABORT
-	);
-	
-	TYPE T_NET_ETH_MDIOCONTROLLER_STATUS IS (
-		NET_ETH_MDIOC_STATUS_IDLE,
-		NET_ETH_MDIOC_STATUS_CHECKING,
-		NET_ETH_MDIOC_STATUS_CHECK_OK,
-		NET_ETH_MDIOC_STATUS_CHECK_FAILED,
-		NET_ETH_MDIOC_STATUS_READING,
-		NET_ETH_MDIOC_STATUS_READ_COMPLETE,
-		NET_ETH_MDIOC_STATUS_WRITING,
-		NET_ETH_MDIOC_STATUS_WRITE_COMPLETE,
-		NET_ETH_MDIOC_STATUS_ERROR
-	);
-	
-	TYPE T_NET_ETH_MDIOCONTROLLER_ERROR IS (
-		NET_ETH_MDIOC_ERROR_NONE,
-		NET_ETH_MDIOC_ERROR_ADDRESS_NOT_FOUND,
-		NET_ETH_MDIOC_ERROR_FSM
-	);
 	
 	-- limitations
 	CONSTANT C_NET_ETH_PREMABLE_LENGTH					: POSITIVE						:= 7;
@@ -645,7 +614,7 @@ PACKAGE EthTypes IS
 	
 END;
 
-PACKAGE BODY EthTypes IS
+PACKAGE BODY net IS
 
 	FUNCTION getPortCount(MACConfiguration : T_NET_MAC_CONFIGURATION_VECTOR) RETURN POSITIVE IS
 		VARIABLE count : NATURAL := 0;
@@ -1004,7 +973,7 @@ PACKAGE BODY EthTypes IS
 		Len											:= INTEGER'value(str(Pos + 1 TO str'high));
 		
 		IF (NOT ((0 < Len) AND (Len < 128))) THEN																								REPORT "IPv6 prefix length is out of range: IPv6=" & str & " Length=" & INTEGER'image(Len) SEVERITY ERROR;	END IF;
-		IF ((to_slv(IPv6Address) AND to_lowmask(128 - Len, 128)) /= (127 DOWNTO 0 => '0')) THEN REPORT "IPv6 prefix is longer then it's mask: IPv6=" & str SEVERITY ERROR;																	END IF;
+		IF ((to_slv(IPv6Address) AND genmask_low(128 - Len, 128)) /= (127 DOWNTO 0 => '0')) THEN REPORT "IPv6 prefix is longer then it's mask: IPv6=" & str SEVERITY ERROR;																	END IF;
 	
 		Prefix.Prefix						:= IPv6Address;
 		Prefix.PrefixLength			:= to_slv(Len, Prefix.PrefixLength'length);

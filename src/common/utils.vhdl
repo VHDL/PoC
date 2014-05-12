@@ -30,8 +30,8 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- ============================================================================
-
 library	IEEE;
+
 use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
 
@@ -131,6 +131,7 @@ package utils is
 	FUNCTION to_slv(Value : NATURAL; Size : POSITIVE)		RETURN STD_LOGIC_VECTOR;					-- short for std_logic_vector(to_unsigned(Value, Size))
 	
 	-- TODO: comment
+	FUNCTION to_index(slv : UNSIGNED; max : NATURAL := 0) RETURN INTEGER;
 	FUNCTION to_index(slv : STD_LOGIC_VECTOR; max : NATURAL := 0) RETURN INTEGER;
 	
 	-- is_*
@@ -204,6 +205,10 @@ package utils is
 
 	-- Swap sub vectors in vector (endian reversal)
 	FUNCTION swap(slv : STD_LOGIC_VECTOR; Size : POSITIVE) RETURN STD_LOGIC_VECTOR;
+
+	-- generate bit masks
+	FUNCTION genmask_high(Bits : NATURAL; MaskLength : POSITIVE) RETURN STD_LOGIC_VECTOR;
+	FUNCTION genmask_low(Bits : NATURAL; MaskLength : POSITIVE) RETURN STD_LOGIC_VECTOR;
 
 	--+ Encodings ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -520,14 +525,19 @@ package body utils is
 		RETURN std_logic_vector(to_unsigned(Value, Size));
 	END FUNCTION;
 
-	FUNCTION to_index(slv : STD_LOGIC_VECTOR; max : NATURAL := 0) RETURN INTEGER IS
+	FUNCTION to_index(slv : UNSIGNED; max : NATURAL := 0) RETURN INTEGER IS
 		variable  res : integer;
 	BEGIN
-		res := to_integer(unsigned(slv));
+		res := to_integer(slv);
 		if SIMULATION and max > 0 then
 			res := imin(res, max);
 		end if;
 		return  res;
+	END FUNCTION;
+
+	FUNCTION to_index(slv : STD_LOGIC_VECTOR; max : NATURAL := 0) RETURN INTEGER IS
+	BEGIN
+		RETURN to_index(unsigned(slv), max);
 	END FUNCTION;
 	
   -- is_*
@@ -580,6 +590,26 @@ package body utils is
 			Result(ToH DOWNTO ToL)	:= slv(FromH DOWNTO FromL);
 		END LOOP;
 		RETURN Result;
+	END FUNCTION;
+
+	-- generate bit masks
+	-- ==========================================================================
+		FUNCTION genmask_high(Bits : NATURAL; MaskLength : POSITIVE) RETURN STD_LOGIC_VECTOR IS
+	BEGIN
+		IF (Bits = 0) THEN
+			RETURN (MaskLength - 1 DOWNTO 0 => '0');
+		ELSE	
+			RETURN (MaskLength - 1 DOWNTO MaskLength - Bits + 1 => '1') & (MaskLength - Bits DOWNTO 0 => '0');
+		END IF;
+	END FUNCTION;
+
+	FUNCTION genmask_low(Bits : NATURAL; MaskLength : POSITIVE) RETURN STD_LOGIC_VECTOR IS
+	BEGIN
+		IF (Bits = 0) THEN
+			RETURN (MaskLength - 1 DOWNTO 0 => '0');
+		ELSE	
+			RETURN (MaskLength - 1 DOWNTO Bits => '0') & (Bits - 1 DOWNTO 0 => '1');
+		END IF;
 	END FUNCTION;
 
 	-- binary encoding conversion functions

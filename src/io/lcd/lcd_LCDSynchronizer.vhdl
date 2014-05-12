@@ -3,15 +3,12 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.lcd.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
 
-LIBRARY L_LCD;
-USE			L_LCD.LCDTypes.ALL;
-
-ENTITY LCDSynchronizer IS
+ENTITY lcd_LCDSynchronizer IS
 	GENERIC (
 		CLOCK_FREQ_MHZ			: REAL		:= 100.0			-- 100 MHz
 	);
@@ -36,7 +33,8 @@ ENTITY LCDSynchronizer IS
 	);
 END;
 
-ARCHITECTURE rtl OF LCDSynchronizer IS
+
+ARCHITECTURE rtl OF lcd_LCDSynchronizer IS
 	ATTRIBUTE KEEP		: STRING;
 
 	TYPE T_STATE IS (

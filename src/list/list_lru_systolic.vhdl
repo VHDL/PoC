@@ -12,6 +12,7 @@ USE			UNISIM.VCOMPONENTS.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
 
 -- list_lru_systolic
 --		lru = least recently used
