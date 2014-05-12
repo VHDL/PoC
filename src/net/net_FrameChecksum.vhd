@@ -9,12 +9,12 @@ USE			PoC.vectors.ALL;
 --USE			PoC.net.ALL;
 
 
-ENTITY FrameChecksum IS
+ENTITY net_FrameChecksum IS
 	GENERIC (
 		MAX_FRAMES										: POSITIVE				:= 8;
 		MAX_FRAME_LENGTH							: POSITIVE				:= 2048;
-		META_BITS											: T_POSVEC																								:= (0 => 8);
-		META_FIFO_DEPTH								: T_POSVEC																								:= (0 => 16)
+		META_BITS											: T_POSVEC				:= (0 => 8);
+		META_FIFO_DEPTH								: T_POSVEC				:= (0 => 16)
 	);
 	PORT (
 		Clock													: IN	STD_LOGIC;
@@ -27,7 +27,7 @@ ENTITY FrameChecksum IS
 		In_Ready											: OUT	STD_LOGIC;
 		In_Meta_rst										: OUT	STD_LOGIC;
 		In_Meta_nxt										: OUT	STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
-		In_Meta_Data									: IN	T_SLM(META_BITS'length - 1 DOWNTO 0, imax(META_BITS) - 1 DOWNTO 0);
+		In_Meta_Data									: IN	STD_LOGIC_VECTOR(isum(META_BITS) - 1 DOWNTO 0);
 		-- OUT port
 		Out_Valid											: OUT	STD_LOGIC;
 		Out_Data											: OUT	T_SLV_8;
@@ -36,7 +36,7 @@ ENTITY FrameChecksum IS
 		Out_Ready											: IN	STD_LOGIC;
 		Out_Meta_rst									: IN	STD_LOGIC;
 		Out_Meta_nxt									: IN	STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
-		Out_Meta_Data									: OUT	T_SLM(META_BITS'length - 1 DOWNTO 0, imax(META_BITS) - 1 DOWNTO 0);
+		Out_Meta_Data									: OUT	STD_LOGIC_VECTOR(isum(META_BITS) - 1 DOWNTO 0);
 		Out_Meta_Length								: OUT	T_SLV_16;
 		Out_Meta_Checksum							: OUT	T_SLV_16
 	);
@@ -44,7 +44,7 @@ END;
 
 -- FIXME: review writer-FSM: check full signals => block incoming words/frames if datafifo or metafifo is full
 
-ARCHITECTURE rtl OF FrameChecksum IS
+ARCHITECTURE rtl OF net_FrameChecksum IS
 	ATTRIBUTE KEEP										: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING						: STRING;
 
@@ -97,7 +97,7 @@ ARCHITECTURE rtl OF FrameChecksum IS
 	SIGNAL MetaFIFO_Misc_Valid								: STD_LOGIC;
 
 	SIGNAL Meta_rst														: STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
-	SIGNAL Out_Meta_Data_i										: T_SLM(META_BITS'length - 1 DOWNTO 0, imax(META_BITS) - 1 DOWNTO 0)	:= (OTHERS => (OTHERS => 'Z'));
+--	SIGNAL Out_Meta_Data_i										: T_SLM(META_BITS'length - 1 DOWNTO 0, imax(META_BITS) - 1 DOWNTO 0)	:= (OTHERS => (OTHERS => 'Z'));
 	
 BEGIN
 
@@ -349,20 +349,20 @@ BEGIN
 	MetaFIFO_Misc_got				<= FrameCommit;
 	
 	genMeta : FOR I IN 0 TO META_BITS'length - 1 GENERATE
-		SIGNAL MetaFIFO_put				: STD_LOGIC;
-		SIGNAL MetaFIFO_DataIn		: STD_LOGIC_VECTOR(META_BITS(I) - 1 DOWNTO 0);
-		SIGNAL MetaFIFO_Full			: STD_LOGIC;
-		SIGNAL MetaFIFO_got				: STD_LOGIC;
-		SIGNAL MetaFIFO_DataOut		: STD_LOGIC_VECTOR(META_BITS(I) - 1 DOWNTO 0);
-		SIGNAL MetaFIFO_Valid			: STD_LOGIC;
-		SIGNAL MetaFIFO_Commit		: STD_LOGIC;
-		SIGNAL MetaFIFO_Rollback	: STD_LOGIC;
+		SIGNAL MetaFIFO_put						: STD_LOGIC;
+		SIGNAL MetaFIFO_DataIn				: STD_LOGIC_VECTOR(META_BITS(I) - 1 DOWNTO 0);
+		SIGNAL MetaFIFO_Full					: STD_LOGIC;
+		SIGNAL MetaFIFO_got						: STD_LOGIC;
+		SIGNAL MetaFIFO_DataOut				: STD_LOGIC_VECTOR(META_BITS(I) - 1 DOWNTO 0);
+		SIGNAL MetaFIFO_Valid					: STD_LOGIC;
+		SIGNAL MetaFIFO_Commit				: STD_LOGIC;
+		SIGNAL MetaFIFO_Rollback			: STD_LOGIC;
 		
-		SIGNAL Writer_CounterControl			: STD_LOGIC																																:= '0';
+		SIGNAL Writer_CounterControl	: STD_LOGIC																																:= '0';
 		
-		SIGNAL Writer_Counter_rst					: STD_LOGIC;
-		SIGNAL Writer_Counter_en					: STD_LOGIC;
-		SIGNAL Writer_Counter_us					: UNSIGNED(log2ceilnz(META_FIFO_DEPTH(I) * MAX_FRAMES) - 1 DOWNTO 0)			:= (OTHERS => '0');
+		SIGNAL Writer_Counter_rst			: STD_LOGIC;
+		SIGNAL Writer_Counter_en			: STD_LOGIC;
+		SIGNAL Writer_Counter_us			: UNSIGNED(log2ceilnz(META_FIFO_DEPTH(I) * MAX_FRAMES) - 1 DOWNTO 0)			:= (OTHERS => '0');
 	BEGIN
 		Writer_Counter_rst		<= '0';		-- FIXME: is this correct?
 	
@@ -400,17 +400,17 @@ BEGIN
 		In_Meta_nxt(I)			<= Writer_Counter_en;
 		
 		MetaFIFO_put				<= Writer_Counter_en;
-		MetaFIFO_DataIn			<= get_row(In_Meta_Data, I, META_BITS(I));
+		MetaFIFO_DataIn			<= In_Meta_Data(high(META_BITS, I) DOWNTO low(META_BITS, I));
 	
 		MetaFIFO : ENTITY PoC.fifo_cc_got_tempgot
 			GENERIC MAP (
-				D_BITS							=> MetaFIFO_DataIn'length,		-- Data Width
-				MIN_DEPTH						=> (16 * MAX_FRAMES),					-- Minimum FIFO Depth
-				DATA_REG						=> TRUE,											-- Store Data Content in Registers
-				STATE_REG						=> TRUE,											-- Registered Full/Empty Indicators
-				OUTPUT_REG					=> FALSE,											-- Registered FIFO Output
-				ESTATE_WR_BITS			=> 0,													-- Empty State Bits
-				FSTATE_RD_BITS			=> 0													-- Full State Bits
+				D_BITS							=> MetaFIFO_DataIn'length,							-- Data Width
+				MIN_DEPTH						=> (META_FIFO_DEPTH(I) * MAX_FRAMES),		-- Minimum FIFO Depth
+				DATA_REG						=> TRUE,																-- Store Data Content in Registers
+				STATE_REG						=> TRUE,																-- Registered Full/Empty Indicators
+				OUTPUT_REG					=> FALSE,																-- Registered FIFO Output
+				ESTATE_WR_BITS			=> 0,																		-- Empty State Bits
+				FSTATE_RD_BITS			=> 0																		-- Full State Bits
 			)
 			PORT MAP (
 				clk									=> Clock,
@@ -434,10 +434,11 @@ BEGIN
 		MetaFIFO_Commit			<= FrameCommit;
 		MetaFIFO_Rollback		<= Out_Meta_rst;
 	
-		assign_row(Out_Meta_Data_i, MetaFIFO_DataOut, I, 0, '0');
+		Out_Meta_Data(high(META_BITS, I) DOWNTO low(META_BITS, I))	<= MetaFIFO_DataOut;
+--		assign_row(Out_Meta_Data_i, MetaFIFO_DataOut, I, 0, '0');
 	END GENERATE;
 
 	In_Meta_rst						<= slv_and(Meta_rst);
-	Out_Meta_Data					<= Out_Meta_Data_i;
+--	Out_Meta_Data					<= Out_Meta_Data_i;
 
 END ARCHITECTURE;
