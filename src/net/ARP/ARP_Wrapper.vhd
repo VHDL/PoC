@@ -6,12 +6,9 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.io.ALL;
 USE			PoC.net.ALL;
-
---LIBRARY L_IO;
---USE			L_IO.IOTypes.ALL;
-
-
+USE			PoC.cache.ALL;
 
 
 ENTITY ARP_Wrapper IS

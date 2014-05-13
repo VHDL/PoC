@@ -97,7 +97,6 @@ ARCHITECTURE rtl OF net_FrameChecksum IS
 	SIGNAL MetaFIFO_Misc_Valid								: STD_LOGIC;
 
 	SIGNAL Meta_rst														: STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
---	SIGNAL Out_Meta_Data_i										: T_SLM(META_BITS'length - 1 DOWNTO 0, imax(META_BITS) - 1 DOWNTO 0)	:= (OTHERS => (OTHERS => 'Z'));
 	
 BEGIN
 
@@ -435,10 +434,8 @@ BEGIN
 		MetaFIFO_Rollback		<= Out_Meta_rst;
 	
 		Out_Meta_Data(high(META_BITS, I) DOWNTO low(META_BITS, I))	<= MetaFIFO_DataOut;
---		assign_row(Out_Meta_Data_i, MetaFIFO_DataOut, I, 0, '0');
 	END GENERATE;
 
 	In_Meta_rst						<= slv_and(Meta_rst);
---	Out_Meta_Data					<= Out_Meta_Data_i;
 
 END ARCHITECTURE;

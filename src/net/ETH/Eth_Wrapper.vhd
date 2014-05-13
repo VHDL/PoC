@@ -7,7 +7,7 @@ USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.net.ALL;
-
+USE			PoC.net_comp.ALL;
 
 LIBRARY work;
 
@@ -265,7 +265,7 @@ BEGIN
 	--		MAC_ERROR_NO_CABLE
 		END PROCESS;
 		
-		PHYC : ENTITY L_Ethernet.Eth_PHYController
+		PHYC : ENTITY PoC.Eth_PHYController
 			GENERIC MAP (
 				DEBUG									=> DEBUG,
 				CLOCK_FREQ_MHZ									=> CLOCKIN_FREQ_MHZ,
