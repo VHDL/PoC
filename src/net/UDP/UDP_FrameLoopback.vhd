@@ -82,8 +82,8 @@ BEGIN
 	StmBuf_MetaIn_Data(high(META_BITS, META_STREAMID_SRCPORT)		DOWNTO low(META_BITS, META_STREAMID_SRCPORT))		<= In_Meta_SrcPort;
 	StmBuf_MetaIn_Data(high(META_BITS, META_STREAMID_DESTPORT)	DOWNTO low(META_BITS, META_STREAMID_DESTPORT))	<= In_Meta_DestPort;
 	
-	In_Meta_DestIPAddress_nxt		<= StmBuf_MetaIn_nxt(META_STREAMID_DESTADDR);
 	In_Meta_SrcIPAddress_nxt		<= StmBuf_MetaIn_nxt(META_STREAMID_SRCADDR);
+	In_Meta_DestIPAddress_nxt		<= StmBuf_MetaIn_nxt(META_STREAMID_DESTADDR);
 
 	StmBuf : ENTITY PoC.stream_Buffer
 		GENERIC MAP (
@@ -117,15 +117,15 @@ BEGIN
 		);
 	
 	-- unpack buffer metadata to signals
-	Out_Meta_DestIPAddress_Data									<= StmBuf_MetaOut_Data(high(META_BITS, META_STREAMID_SRCADDR)		DOWNTO low(META_BITS, META_STREAMID_SRCADDR));			-- Crossover: Destination <= Source
 	Out_Meta_SrcIPAddress_Data									<= StmBuf_MetaOut_Data(high(META_BITS, META_STREAMID_DESTADDR)	DOWNTO low(META_BITS, META_STREAMID_DESTADDR));			-- Crossover: Source <= Destination
-	Out_Meta_DestPort														<= StmBuf_MetaOut_Data(high(META_BITS, META_STREAMID_SRCPORT)		DOWNTO low(META_BITS, META_STREAMID_SRCPORT));			-- Crossover: Destination <= Source
+	Out_Meta_DestIPAddress_Data									<= StmBuf_MetaOut_Data(high(META_BITS, META_STREAMID_SRCADDR)		DOWNTO low(META_BITS, META_STREAMID_SRCADDR));			-- Crossover: Destination <= Source
 	Out_Meta_SrcPort														<= StmBuf_MetaOut_Data(high(META_BITS, META_STREAMID_DESTPORT)	DOWNTO low(META_BITS, META_STREAMID_DESTPORT));			-- Crossover: Source <= Destination
+	Out_Meta_DestPort														<= StmBuf_MetaOut_Data(high(META_BITS, META_STREAMID_SRCPORT)		DOWNTO low(META_BITS, META_STREAMID_SRCPORT));			-- Crossover: Destination <= Source
 	
 	-- pack metadata nxt signals to StmBuf meta vector
-	StmBuf_MetaOut_nxt(META_STREAMID_DESTADDR)	<= Out_Meta_DestIPAddress_nxt;
-	StmBuf_MetaOut_nxt(META_STREAMID_SRCADDR)		<= Out_Meta_SrcIPAddress_nxt;
-	StmBuf_MetaOut_nxt(META_STREAMID_DESTPORT)	<= '0';
+	StmBuf_MetaOut_nxt(META_STREAMID_SRCADDR)		<= Out_Meta_DestIPAddress_nxt;
+	StmBuf_MetaOut_nxt(META_STREAMID_DESTADDR)	<= Out_Meta_SrcIPAddress_nxt;
 	StmBuf_MetaOut_nxt(META_STREAMID_SRCPORT)		<= '0';
+	StmBuf_MetaOut_nxt(META_STREAMID_DESTPORT)	<= '0';
 	
 END ARCHITECTURE;

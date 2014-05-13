@@ -12,11 +12,6 @@ USE			PoC.vectors.ALL;
 --USE			PoC.io.ALL;
 USE			PoC.net.ALL;
 
---LIBRARY L_Global;
-
---LIBRARY L_RemoteControl;
---USE			L_RemoteControl.RCTypes.ALL;
-
 --LIBRARY	work;
 --USE			work.FrameGenerator_Frames.GenUDPFrameGenerator_Frames;
 
@@ -34,7 +29,7 @@ ENTITY stack_UDPv4 IS
 		
 		MAC_ADDRESS												: T_NET_MAC_ADDRESS;
 		IP_ADDRESS												: T_NET_IPV4_ADDRESS;
-		UDP_PORTS													: T_NET_UDP_PORT_VECTOR;
+		UDP_PORTS													: T_NET_UDP_PORTPAIR_VECTOR;
 		
 		MAC_ENABLE_LOOPBACK								: BOOLEAN															:= FALSE;
 		IP_ENABLE_LOOPBACK								: BOOLEAN															:= FALSE;
@@ -86,7 +81,7 @@ ARCHITECTURE rtl OF stack_UDPv4 IS
 	-- define ethernet port numbers for unicast addresses
 	-- --------------------------------------------------------------------------
 	-- eth0
-	CONSTANT MAC_LOOP_MAC_PORT_NUMBER		: NATURAL					:= 0;
+	CONSTANT MAC_LB_MAC_PORT_NUMBER		: NATURAL					:= 0;
 	CONSTANT ARP_MAC_UC_PORT_NUMBER	: NATURAL							:= 1;
 	CONSTANT IPV4_MAC_PORT_NUMBER			: NATURAL						:= 2;
 
@@ -120,7 +115,7 @@ ARCHITECTURE rtl OF stack_UDPv4 IS
 	);
 
 	CONSTANT IPV4_PORTS												: POSITIVE			:= IPV4_PACKET_TYPES'length;
-	CONSTANT LOOP3_IPV4_PORT_NUMBER						: NATURAL				:= 0;
+	CONSTANT IPV4_LB_IPV4_PORT_NUMBER						: NATURAL				:= 0;
 	CONSTANT ICMPV4_IPV4_PORT_NUMBER					: NATURAL				:= 1;
 	CONSTANT UDPV4_IPV4_PORT_NUMBER						: NATURAL				:= 2;
 
@@ -133,7 +128,7 @@ ARCHITECTURE rtl OF stack_UDPv4 IS
 	);
 
 	CONSTANT UDPV4_PORTS										: POSITIVE		:= UDPV4_PORTPAIRS'length;
-	CONSTANT LOOP6_UDPV4_PORT_NUMBER				: NATURAL			:= 0;
+	CONSTANT UDP_LB_UDPV4_PORT_NUMBER				: NATURAL			:= 0;
 	CONSTANT UDPGENV4_UDPV4_PORT_NUMBER			: NATURAL			:= 1;
 
 
@@ -170,18 +165,18 @@ ARCHITECTURE rtl OF stack_UDPv4 IS
 	SIGNAL MAC_RX_Meta_EthType							: T_NET_MAC_ETHERNETTYPE_VECTOR(ETHERNET_PORTS - 1 DOWNTO 0);		--ATTRIBUTE KEEP OF MAC_RX_Meta_EthType							: SIGNAL IS TRUE;
 	
 	-- LoopBack layer signals
-	SIGNAL MAC_Loop_TX_Valid											: STD_LOGIC;
-	SIGNAL MAC_Loop_TX_Data											: T_SLV_8;
-	SIGNAL MAC_Loop_TX_SOF												: STD_LOGIC;
-	SIGNAL MAC_Loop_TX_EOF												: STD_LOGIC;
-	SIGNAL MAC_Loop_TX_Meta_DestMACAddress_Data	: T_SLV_8;
-	SIGNAL MAC_Loop_TX_Meta_SrcMACAddress_Data		: T_SLV_8;
-	SIGNAL MAC_Loop_TX_Meta_EthType							: T_NET_MAC_ETHERNETTYPE;
+	SIGNAL MAC_LB_TX_Valid											: STD_LOGIC;
+	SIGNAL MAC_LB_TX_Data											: T_SLV_8;
+	SIGNAL MAC_LB_TX_SOF												: STD_LOGIC;
+	SIGNAL MAC_LB_TX_EOF												: STD_LOGIC;
+	SIGNAL MAC_LB_TX_Meta_DestMACAddress_Data	: T_SLV_8;
+	SIGNAL MAC_LB_TX_Meta_SrcMACAddress_Data		: T_SLV_8;
+	SIGNAL MAC_LB_TX_Meta_EthType							: T_NET_MAC_ETHERNETTYPE;
 	
-	SIGNAL MAC_Loop_RX_Ready											: STD_LOGIC;
-	SIGNAL MAC_Loop_RX_Meta_rst									: STD_LOGIC;
-	SIGNAL MAC_Loop_RX_Meta_DestMACAddress_nxt		: STD_LOGIC;
-	SIGNAL MAC_Loop_RX_Meta_SrcMACAddress_nxt		: STD_LOGIC;
+	SIGNAL MAC_LB_RX_Ready											: STD_LOGIC;
+	SIGNAL MAC_LB_RX_Meta_rst									: STD_LOGIC;
+	SIGNAL MAC_LB_RX_Meta_DestMACAddress_nxt		: STD_LOGIC;
+	SIGNAL MAC_LB_RX_Meta_SrcMACAddress_nxt		: STD_LOGIC;
 	
 	-- Address Resolution Protocol layer signals
 	SIGNAL ARP_UC_TX_Valid												: STD_LOGIC;
@@ -308,7 +303,7 @@ BEGIN
 		Eth : ENTITY PoC.Eth_Wrapper
 			GENERIC MAP (
 				DEBUG						=> FALSE,	--DEBUG,
-				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ,
+				CLOCKIN_FREQ_MHZ					=> CLOCK_FREQ_MHZ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> ETHERNET_RS_DATA_INTERFACE,
 				PHY_DEVICE								=> ETHERNET_PHY_DEVICE,
@@ -408,16 +403,16 @@ BEGIN
 		
 		-- Ethernet Port 0 -> LoopBack
 		-- ========================================================================
-		blkMAC_TX_Valid(MAC_LOOP_MAC_PORT_NUMBER)											<= MAC_Loop_TX_Valid;
-		blkMAC_TX_Data(MAC_LOOP_MAC_PORT_NUMBER)											<= MAC_Loop_TX_Data;
-		blkMAC_TX_SOF(MAC_LOOP_MAC_PORT_NUMBER)												<= MAC_Loop_TX_SOF;
-		blkMAC_TX_EOF(MAC_LOOP_MAC_PORT_NUMBER)												<= MAC_Loop_TX_EOF;
-		blkMAC_TX_Meta_DestMACAddress_Data(MAC_LOOP_MAC_PORT_NUMBER)	<= MAC_Loop_TX_Meta_DestMACAddress_Data;
+		blkMAC_TX_Valid(MAC_LB_MAC_PORT_NUMBER)											<= MAC_LB_TX_Valid;
+		blkMAC_TX_Data(MAC_LB_MAC_PORT_NUMBER)											<= MAC_LB_TX_Data;
+		blkMAC_TX_SOF(MAC_LB_MAC_PORT_NUMBER)												<= MAC_LB_TX_SOF;
+		blkMAC_TX_EOF(MAC_LB_MAC_PORT_NUMBER)												<= MAC_LB_TX_EOF;
+		blkMAC_TX_Meta_DestMACAddress_Data(MAC_LB_MAC_PORT_NUMBER)	<= MAC_LB_TX_Meta_DestMACAddress_Data;
 		
-		blkMAC_RX_Ready(MAC_LOOP_MAC_PORT_NUMBER)											<= MAC_Loop_RX_Ready;
-		blkMAC_RX_Meta_rst(MAC_LOOP_MAC_PORT_NUMBER)									<= MAC_Loop_RX_Meta_rst;
-		blkMAC_RX_Meta_SrcMACAddress_nxt(MAC_LOOP_MAC_PORT_NUMBER)		<= MAC_Loop_RX_Meta_SrcMACAddress_nxt;
-		blkMAC_RX_Meta_DestMACAddress_nxt(MAC_LOOP_MAC_PORT_NUMBER)		<= '0';	--MAC_Loop_RX_Meta_DestMACAddress_nxt;
+		blkMAC_RX_Ready(MAC_LB_MAC_PORT_NUMBER)											<= MAC_LB_RX_Ready;
+		blkMAC_RX_Meta_rst(MAC_LB_MAC_PORT_NUMBER)									<= MAC_LB_RX_Meta_rst;
+		blkMAC_RX_Meta_SrcMACAddress_nxt(MAC_LB_MAC_PORT_NUMBER)		<= MAC_LB_RX_Meta_SrcMACAddress_nxt;
+		blkMAC_RX_Meta_DestMACAddress_nxt(MAC_LB_MAC_PORT_NUMBER)		<= '0';	--MAC_LB_RX_Meta_DestMACAddress_nxt;
 		
 		-- Ethernet Port 1 -> ARP UC
 		-- ========================================================================
@@ -462,7 +457,7 @@ BEGIN
 	
 	blkLoopback : BLOCK
 	BEGIN
-		MAC_Loop : ENTITY PoC.MAC_FrameLoopback
+		MAC_LB : ENTITY PoC.MAC_FrameLoopback
 			GENERIC MAP (
 				MAX_FRAMES										=> 4
 			)
@@ -470,29 +465,29 @@ BEGIN
 				Clock													=> Ethernet_Clock,
 				Reset													=> Ethernet_Reset,
 				
-				In_Valid											=> MAC_RX_Valid(MAC_LOOP_MAC_PORT_NUMBER),
-				In_Data												=> MAC_RX_Data(MAC_LOOP_MAC_PORT_NUMBER),
-				In_SOF												=> MAC_RX_SOF(MAC_LOOP_MAC_PORT_NUMBER),
-				In_EOF												=> MAC_RX_EOF(MAC_LOOP_MAC_PORT_NUMBER),
-				In_Ready											=> MAC_Loop_RX_Ready,
-				In_Meta_rst										=> MAC_Loop_RX_Meta_rst,
---				In_Meta_DestMACAddress_nxt		=> MAC_Loop_RX_Meta_DestMACAddress_nxt,
---				In_Meta_DestMACAddress_Data		=> MAC_RX_Meta_DestMACAddress_Data(MAC_LOOP_MAC_PORT_NUMBER),
-				In_Meta_SrcMACAddress_nxt			=> MAC_Loop_RX_Meta_SrcMACAddress_nxt,
-				In_Meta_SrcMACAddress_Data		=> MAC_RX_Meta_SrcMACAddress_Data(MAC_LOOP_MAC_PORT_NUMBER),
---				In_Meta_EthType								=> MAC_RX_Meta_EthType(MAC_LOOP_MAC_PORT_NUMBER),
+				In_Valid											=> MAC_RX_Valid(MAC_LB_MAC_PORT_NUMBER),
+				In_Data												=> MAC_RX_Data(MAC_LB_MAC_PORT_NUMBER),
+				In_SOF												=> MAC_RX_SOF(MAC_LB_MAC_PORT_NUMBER),
+				In_EOF												=> MAC_RX_EOF(MAC_LB_MAC_PORT_NUMBER),
+				In_Ready											=> MAC_LB_RX_Ready,
+				In_Meta_rst										=> MAC_LB_RX_Meta_rst,
+				In_Meta_DestMACAddress_nxt		=> MAC_LB_RX_Meta_DestMACAddress_nxt,
+				In_Meta_DestMACAddress_Data		=> MAC_RX_Meta_DestMACAddress_Data(MAC_LB_MAC_PORT_NUMBER),
+				In_Meta_SrcMACAddress_nxt			=> MAC_LB_RX_Meta_SrcMACAddress_nxt,
+				In_Meta_SrcMACAddress_Data		=> MAC_RX_Meta_SrcMACAddress_Data(MAC_LB_MAC_PORT_NUMBER),
+--				In_Meta_EthType								=> MAC_RX_Meta_EthType(MAC_LB_MAC_PORT_NUMBER),
 
-				Out_Valid											=> MAC_Loop_TX_Valid,
-				Out_Data											=> MAC_Loop_TX_Data,
-				Out_SOF												=> MAC_Loop_TX_SOF,
-				Out_EOF												=> MAC_Loop_TX_EOF,
-				Out_Ready											=> MAC_TX_Ready(MAC_LOOP_MAC_PORT_NUMBER),
-				Out_Meta_rst									=> MAC_TX_Meta_rst(MAC_LOOP_MAC_PORT_NUMBER),
-				Out_Meta_DestMACAddress_nxt		=> MAC_TX_Meta_DestMACAddress_nxt(MAC_LOOP_MAC_PORT_NUMBER),
-				Out_Meta_DestMACAddress_Data	=> MAC_Loop_TX_Meta_DestMACAddress_Data--,
---				Out_Meta_SrcMACAddress_nxt		=> '0',		--MAC_TX_Meta_SrcMACAddress_nxt(MAC_LOOP_MAC_PORT_NUMBER),
---				Out_Meta_SrcMACAddress_Data		=> OPEN,	--MAC_Loop_TX_Meta_SrcMACAddress_Data,
---				Out_Meta_EthType							=> OPEN		--MAC_Loop_TX_Meta_EthType
+				Out_Valid											=> MAC_LB_TX_Valid,
+				Out_Data											=> MAC_LB_TX_Data,
+				Out_SOF												=> MAC_LB_TX_SOF,
+				Out_EOF												=> MAC_LB_TX_EOF,
+				Out_Ready											=> MAC_TX_Ready(MAC_LB_MAC_PORT_NUMBER),
+				Out_Meta_rst									=> MAC_TX_Meta_rst(MAC_LB_MAC_PORT_NUMBER),
+				Out_Meta_DestMACAddress_nxt		=> MAC_TX_Meta_DestMACAddress_nxt(MAC_LB_MAC_PORT_NUMBER),
+				Out_Meta_DestMACAddress_Data	=> MAC_LB_TX_Meta_DestMACAddress_Data,
+				Out_Meta_SrcMACAddress_nxt		=> '0',		--MAC_TX_Meta_SrcMACAddress_nxt(MAC_LB_MAC_PORT_NUMBER),
+				Out_Meta_SrcMACAddress_Data		=> OPEN		--MAC_LB_TX_Meta_SrcMACAddress_Data,
+--				Out_Meta_EthType							=> OPEN		--MAC_LB_TX_Meta_EthType
 			);
 	END BLOCK;
 
@@ -574,7 +569,7 @@ BEGIN
 		Mirror_MetaOut_rst(ARP_MIRROR_PORT_NUMBER)	<= ARP_BC_RX_Meta_rst;
 		Mirror_MetaOut_rst(ARP2_MIRROR_PORT_NUMBER)	<= ARP2_BC_RX_Meta_rst;
 		
-		Mirror_MetaOut_nxt(ARP_MIRROR_PORT_NUMBER, MIRROR_META_STREAMID_SRCMAC)	<= ARP_BC_RX_Meta_SrcMACAddress_nxt;
+		Mirror_MetaOut_nxt(ARP_MIRROR_PORT_NUMBER, MIRROR_META_STREAMID_SRCMAC)		<= ARP_BC_RX_Meta_SrcMACAddress_nxt;
 		Mirror_MetaOut_nxt(ARP_MIRROR_PORT_NUMBER, MIRROR_META_STREAMID_DESTMAC)	<= ARP_BC_RX_Meta_DestMACAddress_nxt;
 		Mirror_MetaOut_nxt(ARP2_MIRROR_PORT_NUMBER, MIRROR_META_STREAMID_SRCMAC)	<= ARP2_BC_RX_Meta_SrcMACAddress_nxt;
 		Mirror_MetaOut_nxt(ARP2_MIRROR_PORT_NUMBER, MIRROR_META_STREAMID_DESTMAC)	<= ARP2_BC_RX_Meta_DestMACAddress_nxt;
@@ -694,22 +689,22 @@ BEGIN
 		SIGNAL ICMPv4_IPv4Address_nxt								: STD_LOGIC;
 		SIGNAL EchoReqIPv4Seq_IPv4Address_Data			: T_SLV_8;
 		
-		SIGNAL Loop3_TX_Valid												: STD_LOGIC;
-		SIGNAL Loop3_TX_Data												: T_SLV_8;
-		SIGNAL Loop3_TX_SOF													: STD_LOGIC;
-		SIGNAL Loop3_TX_EOF													: STD_LOGIC;
-		SIGNAL Loop3_TX_Meta_SrcIPv4Address_Data		: T_SLV_8;
-		SIGNAL Loop3_TX_Meta_DestIPv4Address_Data		: T_SLV_8;
-		SIGNAL Loop3_TX_Meta_Length									: T_SLV_16;
+		SIGNAL IPV4_LB_TX_Valid											: STD_LOGIC;
+		SIGNAL IPV4_LB_TX_Data											: T_SLV_8;
+		SIGNAL IPV4_LB_TX_SOF												: STD_LOGIC;
+		SIGNAL IPV4_LB_TX_EOF												: STD_LOGIC;
+		SIGNAL IPV4_LB_TX_Meta_SrcIPv4Address_Data	: T_SLV_8;
+		SIGNAL IPV4_LB_TX_Meta_DestIPv4Address_Data	: T_SLV_8;
+		SIGNAL IPV4_LB_TX_Meta_Length								: T_SLV_16;
 		
-		SIGNAL Loop3_TX_Meta_rst										: STD_LOGIC;
-		SIGNAL Loop3_TX_Meta_SrcIPv4Address_nxt			: STD_LOGIC;
-		SIGNAL Loop3_TX_Meta_DestIPv4Address_nxt		: STD_LOGIC;
+		SIGNAL IPV4_LB_TX_Meta_rst									: STD_LOGIC;
+		SIGNAL IPV4_LB_TX_Meta_SrcIPv4Address_nxt		: STD_LOGIC;
+		SIGNAL IPV4_LB_TX_Meta_DestIPv4Address_nxt	: STD_LOGIC;
 		
-		SIGNAL Loop3_RX_Ready												: STD_LOGIC;
-		SIGNAL Loop3_RX_Meta_rst										: STD_LOGIC;
-		SIGNAL Loop3_RX_Meta_SrcIPv4Address_nxt			: STD_LOGIC;
-		SIGNAL Loop3_RX_Meta_DestIPv4Address_nxt		: STD_LOGIC;
+		SIGNAL IPV4_LB_RX_Ready											: STD_LOGIC;
+		SIGNAL IPV4_LB_RX_Meta_rst									: STD_LOGIC;
+		SIGNAL IPV4_LB_RX_Meta_SrcIPv4Address_nxt		: STD_LOGIC;
+		SIGNAL IPV4_LB_RX_Meta_DestIPv4Address_nxt	: STD_LOGIC;
 		
 	BEGIN
 		IPv4 : ENTITY PoC.IPv4_Wrapper
@@ -783,52 +778,52 @@ BEGIN
 			);
 		
 		-- IPv4 Port 0 - ICMPv4
-		blk_TX_Valid(ICMPV4_IPV4_PORT_NUMBER)											<= ICMPv4_TX_Valid;
-		blk_TX_Data(ICMPV4_IPV4_PORT_NUMBER)											<= ICMPv4_TX_Data;
-		blk_TX_SOF(ICMPV4_IPV4_PORT_NUMBER)												<= ICMPv4_TX_SOF;
-		blk_TX_EOF(ICMPV4_IPV4_PORT_NUMBER)												<= ICMPv4_TX_EOF;
-		blk_TX_Meta_SrcIPv4Address_Data(ICMPV4_IPV4_PORT_NUMBER)	<= ICMPv4_TX_Meta_SrcIPv4Address_Data;
-		blk_TX_Meta_DestIPv4Address_Data(ICMPV4_IPV4_PORT_NUMBER)	<= ICMPv4_TX_Meta_DestIPv4Address_Data;
-		blk_TX_Meta_Length(ICMPV4_IPV4_PORT_NUMBER)								<= ICMPv4_TX_Meta_Length;
+		blk_TX_Valid(ICMPV4_IPV4_PORT_NUMBER)												<= ICMPv4_TX_Valid;
+		blk_TX_Data(ICMPV4_IPV4_PORT_NUMBER)												<= ICMPv4_TX_Data;
+		blk_TX_SOF(ICMPV4_IPV4_PORT_NUMBER)													<= ICMPv4_TX_SOF;
+		blk_TX_EOF(ICMPV4_IPV4_PORT_NUMBER)													<= ICMPv4_TX_EOF;
+		blk_TX_Meta_SrcIPv4Address_Data(ICMPV4_IPV4_PORT_NUMBER)		<= ICMPv4_TX_Meta_SrcIPv4Address_Data;
+		blk_TX_Meta_DestIPv4Address_Data(ICMPV4_IPV4_PORT_NUMBER)		<= ICMPv4_TX_Meta_DestIPv4Address_Data;
+		blk_TX_Meta_Length(ICMPV4_IPV4_PORT_NUMBER)									<= ICMPv4_TX_Meta_Length;
 		
-		blk_RX_Ready(ICMPV4_IPV4_PORT_NUMBER)											<= ICMPv4_RX_Ready;
-		blk_RX_Meta_rst(ICMPV4_IPV4_PORT_NUMBER)									<= ICMPv4_RX_Meta_rst;
-		blk_RX_Meta_SrcMACAddress_nxt(ICMPV4_IPV4_PORT_NUMBER)		<= ICMPv4_RX_Meta_SrcMACAddress_nxt;
-		blk_RX_Meta_DestMACAddress_nxt(ICMPV4_IPV4_PORT_NUMBER)		<= ICMPv4_RX_Meta_DestMACAddress_nxt;
-		blk_RX_Meta_SrcIPv4Address_nxt(ICMPV4_IPV4_PORT_NUMBER)		<= ICMPv4_RX_Meta_SrcIPv4Address_nxt;
-		blk_RX_Meta_DestIPv4Address_nxt(ICMPV4_IPV4_PORT_NUMBER)	<= ICMPv4_RX_Meta_DestIPv4Address_nxt;
+		blk_RX_Ready(ICMPV4_IPV4_PORT_NUMBER)												<= ICMPv4_RX_Ready;
+		blk_RX_Meta_rst(ICMPV4_IPV4_PORT_NUMBER)										<= ICMPv4_RX_Meta_rst;
+		blk_RX_Meta_SrcMACAddress_nxt(ICMPV4_IPV4_PORT_NUMBER)			<= ICMPv4_RX_Meta_SrcMACAddress_nxt;
+		blk_RX_Meta_DestMACAddress_nxt(ICMPV4_IPV4_PORT_NUMBER)			<= ICMPv4_RX_Meta_DestMACAddress_nxt;
+		blk_RX_Meta_SrcIPv4Address_nxt(ICMPV4_IPV4_PORT_NUMBER)			<= ICMPv4_RX_Meta_SrcIPv4Address_nxt;
+		blk_RX_Meta_DestIPv4Address_nxt(ICMPV4_IPV4_PORT_NUMBER)		<= ICMPv4_RX_Meta_DestIPv4Address_nxt;
 		
 		-- IPv4 Port 1 - UDPv4
-		blk_TX_Valid(UDPV4_IPV4_PORT_NUMBER)											<= UDPv4_TX_Valid;
-		blk_TX_Data(UDPV4_IPV4_PORT_NUMBER)												<= UDPv4_TX_Data;
-		blk_TX_SOF(UDPV4_IPV4_PORT_NUMBER)												<= UDPv4_TX_SOF;
-		blk_TX_EOF(UDPV4_IPV4_PORT_NUMBER)												<= UDPv4_TX_EOF;
-		blk_TX_Meta_SrcIPv4Address_Data(UDPV4_IPV4_PORT_NUMBER)		<= UDPv4_TX_Meta_SrcIPv4Address_Data;
-		blk_TX_Meta_DestIPv4Address_Data(UDPV4_IPV4_PORT_NUMBER)	<= UDPv4_TX_Meta_DestIPv4Address_Data;
-		blk_TX_Meta_Length(UDPV4_IPV4_PORT_NUMBER)								<= UDPv4_TX_Meta_Length;
+		blk_TX_Valid(UDPV4_IPV4_PORT_NUMBER)												<= UDPv4_TX_Valid;
+		blk_TX_Data(UDPV4_IPV4_PORT_NUMBER)													<= UDPv4_TX_Data;
+		blk_TX_SOF(UDPV4_IPV4_PORT_NUMBER)													<= UDPv4_TX_SOF;
+		blk_TX_EOF(UDPV4_IPV4_PORT_NUMBER)													<= UDPv4_TX_EOF;
+		blk_TX_Meta_SrcIPv4Address_Data(UDPV4_IPV4_PORT_NUMBER)			<= UDPv4_TX_Meta_SrcIPv4Address_Data;
+		blk_TX_Meta_DestIPv4Address_Data(UDPV4_IPV4_PORT_NUMBER)		<= UDPv4_TX_Meta_DestIPv4Address_Data;
+		blk_TX_Meta_Length(UDPV4_IPV4_PORT_NUMBER)									<= UDPv4_TX_Meta_Length;
 		
-		blk_RX_Ready(UDPV4_IPV4_PORT_NUMBER)											<= UDPv4_RX_Ready;
-		blk_RX_Meta_rst(UDPV4_IPV4_PORT_NUMBER)										<= UDPv4_RX_Meta_rst;
-		blk_RX_Meta_SrcMACAddress_nxt(UDPV4_IPV4_PORT_NUMBER)			<= UDPv4_RX_Meta_SrcMACAddress_nxt;
-		blk_RX_Meta_DestMACAddress_nxt(UDPV4_IPV4_PORT_NUMBER)		<= UDPv4_RX_Meta_DestMACAddress_nxt;
-		blk_RX_Meta_SrcIPv4Address_nxt(UDPV4_IPV4_PORT_NUMBER)		<= UDPv4_RX_Meta_SrcIPv4Address_nxt;
-		blk_RX_Meta_DestIPv4Address_nxt(UDPV4_IPV4_PORT_NUMBER)		<= UDPv4_RX_Meta_DestIPv4Address_nxt;
+		blk_RX_Ready(UDPV4_IPV4_PORT_NUMBER)												<= UDPv4_RX_Ready;
+		blk_RX_Meta_rst(UDPV4_IPV4_PORT_NUMBER)											<= UDPv4_RX_Meta_rst;
+		blk_RX_Meta_SrcMACAddress_nxt(UDPV4_IPV4_PORT_NUMBER)				<= UDPv4_RX_Meta_SrcMACAddress_nxt;
+		blk_RX_Meta_DestMACAddress_nxt(UDPV4_IPV4_PORT_NUMBER)			<= UDPv4_RX_Meta_DestMACAddress_nxt;
+		blk_RX_Meta_SrcIPv4Address_nxt(UDPV4_IPV4_PORT_NUMBER)			<= UDPv4_RX_Meta_SrcIPv4Address_nxt;
+		blk_RX_Meta_DestIPv4Address_nxt(UDPV4_IPV4_PORT_NUMBER)			<= UDPv4_RX_Meta_DestIPv4Address_nxt;
 
 		-- IPv4 Port 2 - Loopback
-		blk_TX_Valid(LOOP3_IPV4_PORT_NUMBER)											<= Loop3_TX_Valid;
-		blk_TX_Data(LOOP3_IPV4_PORT_NUMBER)												<= Loop3_TX_Data;
-		blk_TX_SOF(LOOP3_IPV4_PORT_NUMBER)												<= Loop3_TX_SOF;
-		blk_TX_EOF(LOOP3_IPV4_PORT_NUMBER)												<= Loop3_TX_EOF;
-		blk_TX_Meta_SrcIPv4Address_Data(LOOP3_IPV4_PORT_NUMBER)		<= Loop3_TX_Meta_SrcIPv4Address_Data;
-		blk_TX_Meta_DestIPv4Address_Data(LOOP3_IPV4_PORT_NUMBER)	<= Loop3_TX_Meta_DestIPv4Address_Data;
-		blk_TX_Meta_Length(LOOP3_IPV4_PORT_NUMBER)								<= Loop3_TX_Meta_Length;
+		blk_TX_Valid(IPV4_LB_IPV4_PORT_NUMBER)											<= IPV4_LB_TX_Valid;
+		blk_TX_Data(IPV4_LB_IPV4_PORT_NUMBER)												<= IPV4_LB_TX_Data;
+		blk_TX_SOF(IPV4_LB_IPV4_PORT_NUMBER)												<= IPV4_LB_TX_SOF;
+		blk_TX_EOF(IPV4_LB_IPV4_PORT_NUMBER)												<= IPV4_LB_TX_EOF;
+		blk_TX_Meta_SrcIPv4Address_Data(IPV4_LB_IPV4_PORT_NUMBER)		<= IPV4_LB_TX_Meta_SrcIPv4Address_Data;
+		blk_TX_Meta_DestIPv4Address_Data(IPV4_LB_IPV4_PORT_NUMBER)	<= IPV4_LB_TX_Meta_DestIPv4Address_Data;
+		blk_TX_Meta_Length(IPV4_LB_IPV4_PORT_NUMBER)								<= IPV4_LB_TX_Meta_Length;
 		
-		blk_RX_Ready(LOOP3_IPV4_PORT_NUMBER)											<= Loop3_RX_Ready;
-		blk_RX_Meta_rst(LOOP3_IPV4_PORT_NUMBER)										<= Loop3_RX_Meta_rst;
-		blk_RX_Meta_SrcMACAddress_nxt(LOOP3_IPV4_PORT_NUMBER)			<= '0';
-		blk_RX_Meta_DestMACAddress_nxt(LOOP3_IPV4_PORT_NUMBER)		<= '0';
-		blk_RX_Meta_SrcIPv4Address_nxt(LOOP3_IPV4_PORT_NUMBER)		<= Loop3_RX_Meta_SrcIPv4Address_nxt;
-		blk_RX_Meta_DestIPv4Address_nxt(LOOP3_IPV4_PORT_NUMBER)		<= Loop3_RX_Meta_DestIPv4Address_nxt;
+		blk_RX_Ready(IPV4_LB_IPV4_PORT_NUMBER)											<= IPV4_LB_RX_Ready;
+		blk_RX_Meta_rst(IPV4_LB_IPV4_PORT_NUMBER)										<= IPV4_LB_RX_Meta_rst;
+		blk_RX_Meta_SrcMACAddress_nxt(IPV4_LB_IPV4_PORT_NUMBER)			<= '0';
+		blk_RX_Meta_DestMACAddress_nxt(IPV4_LB_IPV4_PORT_NUMBER)		<= '0';
+		blk_RX_Meta_SrcIPv4Address_nxt(IPV4_LB_IPV4_PORT_NUMBER)		<= IPV4_LB_RX_Meta_SrcIPv4Address_nxt;
+		blk_RX_Meta_DestIPv4Address_nxt(IPV4_LB_IPV4_PORT_NUMBER)		<= IPV4_LB_RX_Meta_DestIPv4Address_nxt;
 	
 		ICMPv4 : ENTITY PoC.ICMPv4_Wrapper
 			GENERIC MAP (
@@ -925,7 +920,7 @@ BEGIN
 			ICMPv4_Command		<= NET_ICMPV4_CMD_ECHO_REQUEST WHEN (Tick = '1') ELSE NET_ICMPV4_CMD_NONE;
 		END BLOCK;
 		
-		Loop3 : ENTITY PoC.IPv4_FrameLoopback
+		IPV4_LB : ENTITY PoC.IPv4_FrameLoopback
 			GENERIC MAP (
 				MAX_FRAMES										=> 4
 			)
@@ -933,29 +928,29 @@ BEGIN
 				Clock													=> Ethernet_Clock,
 				Reset													=> Ethernet_Reset,
 				
-				In_Valid											=> IPv4_RX_Valid(LOOP3_IPV4_PORT_NUMBER),
-				In_Data												=> IPv4_RX_Data(LOOP3_IPV4_PORT_NUMBER),
-				In_SOF												=> IPv4_RX_SOF(LOOP3_IPV4_PORT_NUMBER),
-				In_EOF												=> IPv4_RX_EOF(LOOP3_IPV4_PORT_NUMBER),
-				In_Ready											=> Loop3_RX_Ready,
-				In_Meta_rst										=> Loop3_RX_Meta_rst,
-				In_Meta_SrcIPv4Address_nxt		=> Loop3_RX_Meta_SrcIPv4Address_nxt,
-				In_Meta_SrcIPv4Address_Data		=> IPv4_RX_Meta_SrcIPv4Address_Data(LOOP3_IPV4_PORT_NUMBER),
-				In_Meta_DestIPv4Address_nxt		=> Loop3_RX_Meta_DestIPv4Address_nxt,
-				In_Meta_DestIPv4Address_Data	=> IPv4_RX_Meta_DestIPv4Address_Data(LOOP3_IPV4_PORT_NUMBER),
-				In_Meta_Length								=> IPv4_RX_Meta_Length(LOOP3_IPV4_PORT_NUMBER),
+				In_Valid											=> IPv4_RX_Valid(IPV4_LB_IPV4_PORT_NUMBER),
+				In_Data												=> IPv4_RX_Data(IPV4_LB_IPV4_PORT_NUMBER),
+				In_SOF												=> IPv4_RX_SOF(IPV4_LB_IPV4_PORT_NUMBER),
+				In_EOF												=> IPv4_RX_EOF(IPV4_LB_IPV4_PORT_NUMBER),
+				In_Ready											=> IPV4_LB_RX_Ready,
+				In_Meta_rst										=> IPV4_LB_RX_Meta_rst,
+				In_Meta_SrcIPv4Address_nxt		=> IPV4_LB_RX_Meta_SrcIPv4Address_nxt,
+				In_Meta_SrcIPv4Address_Data		=> IPv4_RX_Meta_SrcIPv4Address_Data(IPV4_LB_IPV4_PORT_NUMBER),
+				In_Meta_DestIPv4Address_nxt		=> IPV4_LB_RX_Meta_DestIPv4Address_nxt,
+				In_Meta_DestIPv4Address_Data	=> IPv4_RX_Meta_DestIPv4Address_Data(IPV4_LB_IPV4_PORT_NUMBER),
+				In_Meta_Length								=> IPv4_RX_Meta_Length(IPV4_LB_IPV4_PORT_NUMBER),
 
-				Out_Valid											=> Loop3_TX_Valid,
-				Out_Data											=> Loop3_TX_Data,
-				Out_SOF												=> Loop3_TX_SOF,
-				Out_EOF												=> Loop3_TX_EOF,
-				Out_Ready											=> IPv4_TX_Ready(LOOP3_IPV4_PORT_NUMBER),
-				Out_Meta_rst									=> IPv4_TX_Meta_rst(LOOP3_IPV4_PORT_NUMBER),
-				Out_Meta_SrcIPv4Address_nxt		=> IPv4_TX_Meta_SrcIPv4Address_nxt(LOOP3_IPV4_PORT_NUMBER),
-				Out_Meta_SrcIPv4Address_Data	=> Loop3_TX_Meta_SrcIPv4Address_Data,
-				Out_Meta_DestIPv4Address_nxt	=> IPv4_TX_Meta_DestIPv4Address_nxt(LOOP3_IPV4_PORT_NUMBER),
-				Out_Meta_DestIPv4Address_Data	=> Loop3_TX_Meta_DestIPv4Address_Data,
-				Out_Meta_Length								=> Loop3_TX_Meta_Length
+				Out_Valid											=> IPV4_LB_TX_Valid,
+				Out_Data											=> IPV4_LB_TX_Data,
+				Out_SOF												=> IPV4_LB_TX_SOF,
+				Out_EOF												=> IPV4_LB_TX_EOF,
+				Out_Ready											=> IPv4_TX_Ready(IPV4_LB_IPV4_PORT_NUMBER),
+				Out_Meta_rst									=> IPv4_TX_Meta_rst(IPV4_LB_IPV4_PORT_NUMBER),
+				Out_Meta_SrcIPv4Address_nxt		=> IPv4_TX_Meta_SrcIPv4Address_nxt(IPV4_LB_IPV4_PORT_NUMBER),
+				Out_Meta_SrcIPv4Address_Data	=> IPV4_LB_TX_Meta_SrcIPv4Address_Data,
+				Out_Meta_DestIPv4Address_nxt	=> IPv4_TX_Meta_DestIPv4Address_nxt(IPV4_LB_IPV4_PORT_NUMBER),
+				Out_Meta_DestIPv4Address_Data	=> IPV4_LB_TX_Meta_DestIPv4Address_Data,
+				Out_Meta_Length								=> IPV4_LB_TX_Meta_Length
 			);
 	END BLOCK;
 	
@@ -978,26 +973,26 @@ BEGIN
 		SIGNAL blk_RX_Meta_SrcIPv4Address_nxt				: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 DOWNTO 0);
 		SIGNAL blk_RX_Meta_DestIPv4Address_nxt			: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 DOWNTO 0);
 		
-		SIGNAL Loop6_TX_Valid												: STD_LOGIC;
-		SIGNAL Loop6_TX_Data												: T_SLV_8;
-		SIGNAL Loop6_TX_SOF													: STD_LOGIC;
-		SIGNAL Loop6_TX_EOF													: STD_LOGIC;
-		SIGNAL Loop6_TX_Meta_SrcIPv4Address_Data		: T_SLV_8;
-		SIGNAL Loop6_TX_Meta_DestIPv4Address_Data		: T_SLV_8;
-		SIGNAL Loop6_TX_Meta_Length									: T_SLV_16;
-		SIGNAL Loop6_TX_Meta_SrcPort								: T_SLV_16;
-		SIGNAL Loop6_TX_Meta_DestPort								: T_SLV_16;
+		SIGNAL UDP_LB_TX_Valid												: STD_LOGIC;
+		SIGNAL UDP_LB_TX_Data												: T_SLV_8;
+		SIGNAL UDP_LB_TX_SOF													: STD_LOGIC;
+		SIGNAL UDP_LB_TX_EOF													: STD_LOGIC;
+		SIGNAL UDP_LB_TX_Meta_SrcIPv4Address_Data		: T_SLV_8;
+		SIGNAL UDP_LB_TX_Meta_DestIPv4Address_Data		: T_SLV_8;
+		SIGNAL UDP_LB_TX_Meta_Length									: T_SLV_16;
+		SIGNAL UDP_LB_TX_Meta_SrcPort								: T_SLV_16;
+		SIGNAL UDP_LB_TX_Meta_DestPort								: T_SLV_16;
 		
-		SIGNAL Loop6_TX_Meta_rst										: STD_LOGIC;
-		SIGNAL Loop6_TX_Meta_SrcIPv4Address_nxt			: STD_LOGIC;
-		SIGNAL Loop6_TX_Meta_DestIPv4Address_nxt		: STD_LOGIC;
+		SIGNAL UDP_LB_TX_Meta_rst										: STD_LOGIC;
+		SIGNAL UDP_LB_TX_Meta_SrcIPv4Address_nxt			: STD_LOGIC;
+		SIGNAL UDP_LB_TX_Meta_DestIPv4Address_nxt		: STD_LOGIC;
 		
-		SIGNAL Loop6_RX_Ready												: STD_LOGIC;
-		SIGNAL Loop6_RX_Meta_rst										: STD_LOGIC;
-		SIGNAL Loop6_RX_Meta_SrcMACAddress_nxt			: STD_LOGIC;
-		SIGNAL Loop6_RX_Meta_DestMACAddress_nxt			: STD_LOGIC;
-		SIGNAL Loop6_RX_Meta_SrcIPv4Address_nxt			: STD_LOGIC;
-		SIGNAL Loop6_RX_Meta_DestIPv4Address_nxt		: STD_LOGIC;
+		SIGNAL UDP_LB_RX_Ready												: STD_LOGIC;
+		SIGNAL UDP_LB_RX_Meta_rst										: STD_LOGIC;
+		SIGNAL UDP_LB_RX_Meta_SrcMACAddress_nxt			: STD_LOGIC;
+		SIGNAL UDP_LB_RX_Meta_DestMACAddress_nxt			: STD_LOGIC;
+		SIGNAL UDP_LB_RX_Meta_SrcIPv4Address_nxt			: STD_LOGIC;
+		SIGNAL UDP_LB_RX_Meta_DestIPv4Address_nxt		: STD_LOGIC;
 		
 	BEGIN
 		UDP : ENTITY PoC.UDP_Wrapper
@@ -1075,24 +1070,24 @@ BEGIN
 			);
 		
 		-- UDPv4 Port 0 - LoopBack
-		blk_TX_Valid(LOOP6_UDPV4_PORT_NUMBER)													<= Loop6_TX_Valid;
-		blk_TX_Data(LOOP6_UDPV4_PORT_NUMBER)													<= Loop6_TX_Data;
-		blk_TX_SOF(LOOP6_UDPV4_PORT_NUMBER)														<= Loop6_TX_SOF;
-		blk_TX_EOF(LOOP6_UDPV4_PORT_NUMBER)														<= Loop6_TX_EOF;
-		blk_TX_Meta_SrcIPv4Address_Data(LOOP6_UDPV4_PORT_NUMBER)			<= Loop6_TX_Meta_SrcIPv4Address_Data;
-		blk_TX_Meta_DestIPv4Address_Data(LOOP6_UDPV4_PORT_NUMBER)			<= Loop6_TX_Meta_DestIPv4Address_Data;
---		blk_TX_Meta_TrafficClass(LOOP6_UDPV4_PORT_NUMBER)							<= (OTHERS => '0');
---		blk_TX_Meta_FlowLabel(LOOP6_UDPV4_PORT_NUMBER)								<= (OTHERS => '0');
-		blk_TX_Meta_Length(LOOP6_UDPV4_PORT_NUMBER)										<= Loop6_TX_Meta_Length;
-		blk_TX_Meta_SrcPort(LOOP6_UDPV4_PORT_NUMBER)									<= Loop6_TX_Meta_SrcPort;
-		blk_TX_Meta_DestPort(LOOP6_UDPV4_PORT_NUMBER)									<= Loop6_TX_Meta_DestPort;
+		blk_TX_Valid(UDP_LB_UDPV4_PORT_NUMBER)												<= UDP_LB_TX_Valid;
+		blk_TX_Data(UDP_LB_UDPV4_PORT_NUMBER)													<= UDP_LB_TX_Data;
+		blk_TX_SOF(UDP_LB_UDPV4_PORT_NUMBER)													<= UDP_LB_TX_SOF;
+		blk_TX_EOF(UDP_LB_UDPV4_PORT_NUMBER)													<= UDP_LB_TX_EOF;
+		blk_TX_Meta_SrcIPv4Address_Data(UDP_LB_UDPV4_PORT_NUMBER)			<= UDP_LB_TX_Meta_SrcIPv4Address_Data;
+		blk_TX_Meta_DestIPv4Address_Data(UDP_LB_UDPV4_PORT_NUMBER)		<= UDP_LB_TX_Meta_DestIPv4Address_Data;
+--		blk_TX_Meta_TrafficClass(UDP_LB_UDPV4_PORT_NUMBER)						<= (OTHERS => '0');
+--		blk_TX_Meta_FlowLabel(UDP_LB_UDPV4_PORT_NUMBER)								<= (OTHERS => '0');
+		blk_TX_Meta_Length(UDP_LB_UDPV4_PORT_NUMBER)									<= UDP_LB_TX_Meta_Length;
+		blk_TX_Meta_SrcPort(UDP_LB_UDPV4_PORT_NUMBER)									<= UDP_LB_TX_Meta_SrcPort;
+		blk_TX_Meta_DestPort(UDP_LB_UDPV4_PORT_NUMBER)								<= UDP_LB_TX_Meta_DestPort;
 				
-		blk_RX_Ready(LOOP6_UDPV4_PORT_NUMBER)													<= Loop6_RX_Ready;
-		blk_RX_Meta_rst(LOOP6_UDPV4_PORT_NUMBER)											<= Loop6_RX_Meta_rst;
-		blk_RX_Meta_SrcMACAddress_nxt(LOOP6_UDPV4_PORT_NUMBER)				<= '0';
-		blk_RX_Meta_DestMACAddress_nxt(LOOP6_UDPV4_PORT_NUMBER)				<= '0';
-		blk_RX_Meta_SrcIPv4Address_nxt(LOOP6_UDPV4_PORT_NUMBER)				<= Loop6_RX_Meta_SrcIPv4Address_nxt;
-		blk_RX_Meta_DestIPv4Address_nxt(LOOP6_UDPV4_PORT_NUMBER)			<= Loop6_RX_Meta_DestIPv4Address_nxt;
+		blk_RX_Ready(UDP_LB_UDPV4_PORT_NUMBER)												<= UDP_LB_RX_Ready;
+		blk_RX_Meta_rst(UDP_LB_UDPV4_PORT_NUMBER)											<= UDP_LB_RX_Meta_rst;
+		blk_RX_Meta_SrcMACAddress_nxt(UDP_LB_UDPV4_PORT_NUMBER)				<= '0';
+		blk_RX_Meta_DestMACAddress_nxt(UDP_LB_UDPV4_PORT_NUMBER)			<= '0';
+		blk_RX_Meta_SrcIPv4Address_nxt(UDP_LB_UDPV4_PORT_NUMBER)			<= UDP_LB_RX_Meta_SrcIPv4Address_nxt;
+		blk_RX_Meta_DestIPv4Address_nxt(UDP_LB_UDPV4_PORT_NUMBER)			<= UDP_LB_RX_Meta_DestIPv4Address_nxt;
 		
 		-- UDPv4 Port 1 - UDPGen
 		blk_TX_Valid(UDPGENV4_UDPV4_PORT_NUMBER)											<= UDPGENv4_TX_Valid;
@@ -1114,7 +1109,7 @@ BEGIN
 		blk_RX_Meta_SrcIPv4Address_nxt(UDPGENV4_UDPV4_PORT_NUMBER)		<= UDPGENv4_RX_Meta_SrcIPv4Address_nxt;
 		blk_RX_Meta_DestIPv4Address_nxt(UDPGENV4_UDPV4_PORT_NUMBER)		<= UDPGENv4_RX_Meta_DestIPv4Address_nxt;
 		
-		Loop6 : ENTITY PoC.UDP_FrameLoopback
+		UDP_LB : ENTITY PoC.UDP_FrameLoopback
 			GENERIC MAP (
 				IP_VERSION										=> 4,
 				MAX_FRAMES										=> 4
@@ -1123,33 +1118,33 @@ BEGIN
 				Clock													=> Ethernet_Clock,
 				Reset													=> Ethernet_Reset,
 				
-				In_Valid											=> UDPv4_RX_Valid(LOOP6_UDPV4_PORT_NUMBER),
-				In_Data												=> UDPv4_RX_Data(LOOP6_UDPV4_PORT_NUMBER),
-				In_SOF												=> UDPv4_RX_SOF(LOOP6_UDPV4_PORT_NUMBER),
-				In_EOF												=> UDPv4_RX_EOF(LOOP6_UDPV4_PORT_NUMBER),
-				In_Ready											=> Loop6_RX_Ready,
-				In_Meta_rst										=> Loop6_RX_Meta_rst,
-				In_Meta_SrcIPAddress_nxt			=> Loop6_RX_Meta_SrcIPv4Address_nxt,
-				In_Meta_SrcIPAddress_Data			=> UDPv4_RX_Meta_SrcIPv4Address_Data(LOOP6_UDPV4_PORT_NUMBER),
-				In_Meta_DestIPAddress_nxt			=> Loop6_RX_Meta_DestIPv4Address_nxt,
-				In_Meta_DestIPAddress_Data		=> UDPv4_RX_Meta_DestIPv4Address_Data(LOOP6_UDPV4_PORT_NUMBER),
---				In_Meta_Length								=> UDPv4_RX_Meta_Length(LOOP6_UDPV4_PORT_NUMBER),
-				In_Meta_SrcPort								=> UDPv4_RX_Meta_SrcPort(LOOP6_UDPV4_PORT_NUMBER),
-				In_Meta_DestPort							=> UDPv4_RX_Meta_DestPort(LOOP6_UDPV4_PORT_NUMBER),
+				In_Valid											=> UDPv4_RX_Valid(UDP_LB_UDPV4_PORT_NUMBER),
+				In_Data												=> UDPv4_RX_Data(UDP_LB_UDPV4_PORT_NUMBER),
+				In_SOF												=> UDPv4_RX_SOF(UDP_LB_UDPV4_PORT_NUMBER),
+				In_EOF												=> UDPv4_RX_EOF(UDP_LB_UDPV4_PORT_NUMBER),
+				In_Ready											=> UDP_LB_RX_Ready,
+				In_Meta_rst										=> UDP_LB_RX_Meta_rst,
+				In_Meta_SrcIPAddress_nxt			=> UDP_LB_RX_Meta_SrcIPv4Address_nxt,
+				In_Meta_SrcIPAddress_Data			=> UDPv4_RX_Meta_SrcIPv4Address_Data(UDP_LB_UDPV4_PORT_NUMBER),
+				In_Meta_DestIPAddress_nxt			=> UDP_LB_RX_Meta_DestIPv4Address_nxt,
+				In_Meta_DestIPAddress_Data		=> UDPv4_RX_Meta_DestIPv4Address_Data(UDP_LB_UDPV4_PORT_NUMBER),
+--				In_Meta_Length								=> UDPv4_RX_Meta_Length(UDP_LB_UDPV4_PORT_NUMBER),
+				In_Meta_SrcPort								=> UDPv4_RX_Meta_SrcPort(UDP_LB_UDPV4_PORT_NUMBER),
+				In_Meta_DestPort							=> UDPv4_RX_Meta_DestPort(UDP_LB_UDPV4_PORT_NUMBER),
 
-				Out_Valid											=> Loop6_TX_Valid,
-				Out_Data											=> Loop6_TX_Data,
-				Out_SOF												=> Loop6_TX_SOF,
-				Out_EOF												=> Loop6_TX_EOF,
-				Out_Ready											=> UDPv4_TX_Ready(LOOP6_UDPV4_PORT_NUMBER),
-				Out_Meta_rst									=> UDPv4_TX_Meta_rst(LOOP6_UDPV4_PORT_NUMBER),
-				Out_Meta_SrcIPAddress_nxt			=> UDPv4_TX_Meta_SrcIPv4Address_nxt(LOOP6_UDPV4_PORT_NUMBER),
-				Out_Meta_SrcIPAddress_Data		=> Loop6_TX_Meta_SrcIPv4Address_Data,
-				Out_Meta_DestIPAddress_nxt		=> UDPv4_TX_Meta_DestIPv4Address_nxt(LOOP6_UDPV4_PORT_NUMBER),
-				Out_Meta_DestIPAddress_Data		=> Loop6_TX_Meta_DestIPv4Address_Data,
---				Out_Meta_Length								=> Loop6_TX_Meta_Length,
-				Out_Meta_SrcPort							=> Loop6_TX_Meta_SrcPort,
-				Out_Meta_DestPort							=> Loop6_TX_Meta_DestPort
+				Out_Valid											=> UDP_LB_TX_Valid,
+				Out_Data											=> UDP_LB_TX_Data,
+				Out_SOF												=> UDP_LB_TX_SOF,
+				Out_EOF												=> UDP_LB_TX_EOF,
+				Out_Ready											=> UDPv4_TX_Ready(UDP_LB_UDPV4_PORT_NUMBER),
+				Out_Meta_rst									=> UDPv4_TX_Meta_rst(UDP_LB_UDPV4_PORT_NUMBER),
+				Out_Meta_SrcIPAddress_nxt			=> UDPv4_TX_Meta_SrcIPv4Address_nxt(UDP_LB_UDPV4_PORT_NUMBER),
+				Out_Meta_SrcIPAddress_Data		=> UDP_LB_TX_Meta_SrcIPv4Address_Data,
+				Out_Meta_DestIPAddress_nxt		=> UDPv4_TX_Meta_DestIPv4Address_nxt(UDP_LB_UDPV4_PORT_NUMBER),
+				Out_Meta_DestIPAddress_Data		=> UDP_LB_TX_Meta_DestIPv4Address_Data,
+--				Out_Meta_Length								=> UDP_LB_TX_Meta_Length,
+				Out_Meta_SrcPort							=> UDP_LB_TX_Meta_SrcPort,
+				Out_Meta_DestPort							=> UDP_LB_TX_Meta_DestPort
 			);
 	END BLOCK;
 

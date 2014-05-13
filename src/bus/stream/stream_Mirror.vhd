@@ -4,10 +4,8 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
 
 
 ENTITY Stream_Mirror IS
@@ -40,6 +38,7 @@ ENTITY Stream_Mirror IS
 		Out_Meta_Data							: OUT	T_SLM(PORTS - 1 DOWNTO 0, isum(META_BITS) - 1 DOWNTO 0)
 	);
 END;
+
 
 ARCHITECTURE rtl OF Stream_Mirror IS
 	ATTRIBUTE KEEP										: BOOLEAN;
