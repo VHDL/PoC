@@ -145,7 +145,7 @@ BEGIN
 		PHY_Reset								<= '0';
 		
 		MDIO_Command						<= IO_MDIO_MDIOC_CMD_NONE;
-		MDIO_Physical_Address		<= "00" & PHY_DEVICE_ADDRESS;
+		MDIO_Physical_Address		<= resize(PHY_DEVICE_ADDRESS, MDIO_Physical_Address'length);
 		MDIO_Register_Address		<= C_MDIO_REGADR_COMMAND;
 		MDIO_Register_DataOut		<= x"0000";
 	
