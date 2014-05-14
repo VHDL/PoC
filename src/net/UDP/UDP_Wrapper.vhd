@@ -488,13 +488,13 @@ BEGIN
 
 	-- new slm_slice funtion to avoid generate statement for wiring => cut multiple columns over all rows and convert to slvv_*
 	RX_Data													<= to_slvv_8(StmDeMux_Out_Data);
-	RX_Meta_SrcMACAddress_Data			<= to_slvv_8(	slm_slice_cols(StmDeMux_Out_MetaOut, low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_SRCMAC),		high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_SRCMAC)));
-	RX_Meta_DestMACAddress_Data			<= to_slvv_8(	slm_slice_cols(StmDeMux_Out_MetaOut, low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_DESTMAC),		high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_DESTMAC)));
-	RX_Meta_EthType									<= to_slvv_16(slm_slice_cols(StmDeMux_Out_MetaOut, low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_ETHTYPE),		high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_ETHTYPE)));
-	RX_Meta_SrcIPAddress_Data				<= to_slvv_8(	slm_slice_cols(StmDeMux_Out_MetaOut, low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_SRCIP),			high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_SRCIP)));
-	RX_Meta_DestIPAddress_Data			<= to_slvv_8(	slm_slice_cols(StmDeMux_Out_MetaOut, low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_DESTIP),		high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_DESTIP)));
-	RX_Meta_Length									<= to_slvv_16(slm_slice_cols(StmDeMux_Out_MetaOut, low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_LENGTH),		high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_LENGTH)));
-	RX_Meta_Protocol								<= to_slvv_8(	slm_slice_cols(StmDeMux_Out_MetaOut, low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_PROTO),			high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_PROTO)));
-	RX_Meta_SrcPort									<= to_slvv_16(slm_slice_cols(StmDeMux_Out_MetaOut, low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_SRCPORT),		high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_SRCPORT)));
-	RX_Meta_DestPort								<= to_slvv_16(slm_slice_cols(StmDeMux_Out_MetaOut, low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_DESTPORT),	high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_DESTPORT)));
+	RX_Meta_SrcMACAddress_Data			<= to_slvv_8(	slm_slice_cols(StmDeMux_Out_MetaOut, high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_SRCMAC),		low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_SRCMAC)));
+	RX_Meta_DestMACAddress_Data			<= to_slvv_8(	slm_slice_cols(StmDeMux_Out_MetaOut, high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_DESTMAC),	low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_DESTMAC)));
+	RX_Meta_EthType									<= to_slvv_16(slm_slice_cols(StmDeMux_Out_MetaOut, high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_ETHTYPE),	low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_ETHTYPE)));
+	RX_Meta_SrcIPAddress_Data				<= to_slvv_8(	slm_slice_cols(StmDeMux_Out_MetaOut, high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_SRCIP),		low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_SRCIP)));
+	RX_Meta_DestIPAddress_Data			<= to_slvv_8(	slm_slice_cols(StmDeMux_Out_MetaOut, high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_DESTIP),		low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_DESTIP)));
+	RX_Meta_Length									<= to_slvv_16(slm_slice_cols(StmDeMux_Out_MetaOut, high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_LENGTH),		low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_LENGTH)));
+	RX_Meta_Protocol								<= to_slvv_8(	slm_slice_cols(StmDeMux_Out_MetaOut, high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_PROTO),		low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_PROTO)));
+	RX_Meta_SrcPort									<= to_slvv_16(slm_slice_cols(StmDeMux_Out_MetaOut, high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_SRCPORT),	low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_SRCPORT)));
+	RX_Meta_DestPort								<= to_slvv_16(slm_slice_cols(StmDeMux_Out_MetaOut, high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_DESTPORT),	low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_DESTPORT)));
 END ARCHITECTURE;
