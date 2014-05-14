@@ -258,9 +258,9 @@ BEGIN
 		assign_row(StmMux_In_Meta, Meta,	I);
 	END GENERATE;
 	
-	TX_Meta_rst									<= get_col(StmMux_In_Meta_rev,	StmMUX_META_RST_BIT);
-	TX_Meta_SrcIPAddress_nxt		<= get_col(StmMux_In_Meta_rev,	StmMUX_META_SRCIP_NXT_BIT);
-	TX_Meta_DestIPAddress_nxt		<= get_col(StmMux_In_Meta_rev,	StmMUX_META_DESTIP_NXT_BIT);
+	TX_Meta_rst									<= get_col(StmMux_In_Meta_rev,	STMMUX_META_RST_BIT);
+	TX_Meta_SrcIPAddress_nxt		<= get_col(StmMux_In_Meta_rev,	STMMUX_META_SRCIP_NXT_BIT);
+	TX_Meta_DestIPAddress_nxt		<= get_col(StmMux_In_Meta_rev,	STMMUX_META_DESTIP_NXT_BIT);
 
 	TX_StmMux : ENTITY PoC.stream_Mux
 		GENERIC MAP (

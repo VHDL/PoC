@@ -7,26 +7,27 @@ USE			PoC.config.ALL;
 USE			PoC.board.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.strings.ALL;
 USE			PoC.net.ALL;
 
 
 ENTITY stack_UDPv4 IS
 	GENERIC (
-		DEBUG															: BOOLEAN															:= FALSE;																			-- 
-		CLOCK_FREQ_MHZ										: REAL																:= 125.0;																			-- 125 MHz
-		ETHERNET_IPSTYLE									: T_IPSTYLE														:= MY_BOARD_STRUCT.Ethernet.IPStyle;	--IPSTYLE_SOFT;															-- 
-		ETHERNET_RS_DATA_INTERFACE				: T_NET_ETH_RS_DATA_INTERFACE					:= NET_ETH_RS_DATA_INTERFACE_GMII;						-- 
-		ETHERNET_PHY_DEVICE								: T_NET_ETH_PHY_DEVICE								:= NET_ETH_PHY_DEVICE_MARVEL_88E1111;					-- 
-		ETHERNET_PHY_DEVICE_ADDRESS				: T_NET_ETH_PHY_DEVICE_ADDRESS				:= x"00";																			-- 
-		ETHERNET_PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE				:= NET_ETH_PHY_DATA_INTERFACE_GMII;						-- 
-		ETHERNET_PHY_MANAGEMENT_INTERFACE	: T_NET_ETH_PHY_MANAGEMENT_INTERFACE	:= NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO;			-- 
+		DEBUG															: BOOLEAN															:= FALSE;																					-- 
+		CLOCK_FREQ_MHZ										: REAL																:= 125.0;																					-- 125 MHz
+		ETHERNET_IPSTYLE									: T_IPSTYLE														:= to_IPStyle(MY_BOARD_STRUCT.Ethernet.IPStyle);	--IPSTYLE_SOFT;															-- 
+		ETHERNET_RS_DATA_INTERFACE				: T_NET_ETH_RS_DATA_INTERFACE					:= NET_ETH_RS_DATA_INTERFACE_GMII;								-- 
+		ETHERNET_PHY_DEVICE								: T_NET_ETH_PHY_DEVICE								:= NET_ETH_PHY_DEVICE_MARVEL_88E1111;							-- 
+		ETHERNET_PHY_DEVICE_ADDRESS				: T_NET_ETH_PHY_DEVICE_ADDRESS				:= x"00";																					-- 
+		ETHERNET_PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE				:= NET_ETH_PHY_DATA_INTERFACE_GMII;								-- 
+		ETHERNET_PHY_MANAGEMENT_INTERFACE	: T_NET_ETH_PHY_MANAGEMENT_INTERFACE	:= NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO;					-- 
 		
 		MAC_ADDRESS												: T_NET_MAC_ADDRESS;
 		IP_ADDRESS												: T_NET_IPV4_ADDRESS;
 		UDP_PORTS													: T_NET_UDP_PORTPAIR_VECTOR;
 		
 		MAC_ENABLE_LOOPBACK								: BOOLEAN															:= FALSE;
-		IPV4_ENABLE_LOOPBACK								: BOOLEAN															:= FALSE;
+		IPV4_ENABLE_LOOPBACK							: BOOLEAN															:= FALSE;
 		UDP_ENABLE_LOOPBACK								: BOOLEAN															:= FALSE;
 		ICMP_ENABLE_ECHO									: BOOLEAN															:= FALSE;
 		PING															: BOOLEAN															:= FALSE
@@ -292,10 +293,10 @@ ARCHITECTURE rtl OF stack_UDPv4 IS
 	SIGNAL IPv4_RX_Meta_SrcMACAddress_nxt					: STD_LOGIC;
 	SIGNAL IPv4_RX_Meta_DestMACAddress_nxt				: STD_LOGIC;
 	
-	SIGNAL IPv4_ARP_Query											: STD_LOGIC;
-	SIGNAL IPv4_ARP_IPv4Address_Data					: T_SLV_8;
-	SIGNAL IPv4_ARP_MACAddress_rst						: STD_LOGIC;
-	SIGNAL IPv4_ARP_MACAddress_nxt						: STD_LOGIC;
+	SIGNAL IPv4_ARP_Query													: STD_LOGIC;
+	SIGNAL IPv4_ARP_IPv4Address_Data							: T_SLV_8;
+	SIGNAL IPv4_ARP_MACAddress_rst								: STD_LOGIC;
+	SIGNAL IPv4_ARP_MACAddress_nxt								: STD_LOGIC;
 	
 	SIGNAL IPv4_TX_Ready													: STD_LOGIC_VECTOR(IPV4_PORTS - 1 DOWNTO 0);
 	SIGNAL IPv4_TX_Meta_rst												: STD_LOGIC_VECTOR(IPV4_PORTS - 1 DOWNTO 0);
@@ -349,6 +350,8 @@ ARCHITECTURE rtl OF stack_UDPv4 IS
 	SIGNAL UDPv4_RX_Meta_DestPort									: T_SLVV_16(UDPV4_PORTS - 1 DOWNTO 0);
 	
 BEGIN
+
+	ASSERT FALSE REPORT "IP style: " & T_IPSTYLE'image(IPSTYLE_HARD) SEVERITY NOTE;
 
 	blkEth : BLOCK
 		SIGNAL TX_Clock							: STD_LOGIC;

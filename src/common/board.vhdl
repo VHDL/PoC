@@ -33,25 +33,27 @@
 library	PoC;
 use			PoC.my_config.all;
 use			PoC.utils.all;
+use			PoC.vectors.all;
 use			PoC.strings.all;
-use			PoC.net.all;
 
 
 package board is
 	-- Functions extracting board and PCB properties from "MY_BOARD"
 	-- which is declared in package "my_config".
 	-- ===========================================================================
-	function MY_DEVICE_STRING(BoardConfig : string := "None")				return string;
+	FUNCTION MY_DEVICE_STRING(BoardConfig : STRING := "None")	RETURN STRING;
 
 	-- 
 	-- ===========================================================================
+	SUBTYPE T_CONFIG_STRING		IS STRING(1 TO 64);
+	
 	TYPE T_BRD_ETHERNET_DESC IS RECORD
-		IPStyle										: T_IPSTYLE;
-		RS_DataInterface					: T_NET_ETH_RS_DATA_INTERFACE;
-		PHY_Device								: T_NET_ETH_PHY_DEVICE;
-		PHY_DeviceAddress					: T_NET_ETH_PHY_DEVICE_ADDRESS;
-		PHY_DataInterface					: T_NET_ETH_PHY_DATA_INTERFACE;
-		PHY_ManagementInterface		: T_NET_ETH_PHY_MANAGEMENT_INTERFACE;
+		IPStyle										: T_CONFIG_STRING;
+		RS_DataInterface					: T_CONFIG_STRING;
+		PHY_Device								: T_CONFIG_STRING;
+		PHY_DeviceAddress					: T_SLV_8;
+		PHY_DataInterface					: T_CONFIG_STRING;
+		PHY_ManagementInterface		: T_CONFIG_STRING;
 	END RECORD;
 
 	TYPE T_BOARD_DESCRIPTION IS RECORD
@@ -59,18 +61,21 @@ package board is
 	
 	END RECORD;
 
+	FUNCTION MY_BOARD_STRUCT(BoardConfig : STRING := "None")	RETURN T_BOARD_DESCRIPTION;
 
-	function MY_BOARD_STRUCT(BoardConfig : string := "None") return T_BOARD_DESCRIPTION;
-
+	FUNCTION conf(str : STRING) RETURN T_CONFIG_STRING IS
+	BEGIN
+		RETURN resize(str, T_CONFIG_STRING'length);
+	END FUNCTION;
 
 	CONSTANT C_BOARD_ML505			: T_BOARD_DESCRIPTION		:= (
 		Ethernet => (
-			IPStyle										=> IPSTYLE_SOFT,
-			RS_DataInterface					=> NET_ETH_RS_DATA_INTERFACE_GMII,
-			PHY_Device								=> NET_ETH_PHY_DEVICE_MARVEL_88E1111,
+			IPStyle										=> conf("IPSTYLE_SOFT"),
+			RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+			PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
 			PHY_DeviceAddress					=> x"07",
-			PHY_DataInterface					=> NET_ETH_PHY_DATA_INTERFACE_GMII,
-			PHY_ManagementInterface		=> NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO
+			PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+			PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
 		)
 	);
 	
