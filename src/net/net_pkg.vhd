@@ -220,10 +220,12 @@ PACKAGE net IS
 	
 	TYPE T_NET_MAC_INTERFACE_VECTOR IS ARRAY(NATURAL RANGE <>) OF T_NET_MAC_INTERFACE;
 	
+	CONSTANT C_NET_MAC_SOURCEFILTER_NONE	: T_NET_MAC_INTERFACE	:= (Address => to_net_mac_address("00:00:00:00:00:01"), Mask => C_NET_MAC_MASK_EMPTY);
+	
 	TYPE T_NET_MAC_CONFIGURATION IS RECORD
 		Interface						: T_NET_MAC_INTERFACE;
 		SourceFilter				: T_NET_MAC_INTERFACE_VECTOR(0 TO 7);
-		TypeSwitch					: T_NET_MAC_ETHERNETTYPE_VECTOR(0 to 7);
+		TypeSwitch					: T_NET_MAC_ETHERNETTYPE_VECTOR(0 TO 7);
 	END RECORD;
 	
 	-- arrays
@@ -611,6 +613,18 @@ PACKAGE net IS
 	
 	-- ICMPv6 Codes for Type Echo Reply
 	CONSTANT C_NET_ICMPV6_CODE_ECHO_REPLY							: T_NET_ICMPV6_CODE	:= x"00";		-- Echo Reply
+	
+	
+	-- ==========================================================================================================================================================
+	-- Transport Layer: known User Datagramm Protocol (UDP) Types, Ports and Codes
+	-- ==========================================================================================================================================================
+	SUBTYPE T_NET_TCP_PORT	IS T_NET_UDP_PORT;		-- TODO: if TCP is added, move this to the TCP section in this file!
+	
+	CONSTANT C_NET_TCP_PORTNUMBER_ECHO								: T_NET_TCP_PORT		:= x"0007";		-- Echo Protocol (7) - RFC 862
+	CONSTANT C_NET_TCP_PORTNUMBER_FTP_DATA						: T_NET_TCP_PORT		:= x"0014";		-- FTP Protocol (20) - RFC 765
+	CONSTANT C_NET_TCP_PORTNUMBER_FTP_CONTROL					: T_NET_TCP_PORT		:= x"0015";		-- FTP Protocol (21) - RFC 765
+	
+	CONSTANT C_NET_TCP_PORTNUMBER_LOOPBACK						: T_NET_TCP_PORT		:= x"FFFF";
 	
 END;
 
