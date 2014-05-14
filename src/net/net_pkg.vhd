@@ -168,6 +168,10 @@ PACKAGE net IS
 	-- ==========================================================================================================================================================
 	-- Ethernet: ????????????????????
 	-- ==========================================================================================================================================================
+	FUNCTION to_net_eth_RSDataInterface(str : STRING) RETURN T_NET_ETH_RS_DATA_INTERFACE;
+	FUNCTION to_net_eth_PHYDataInterface(str : STRING) RETURN T_NET_ETH_PHY_DATA_INTERFACE;
+	FUNCTION to_net_eth_PHYManagementInterface(str : STRING) RETURN T_NET_ETH_PHY_MANAGEMENT_INTERFACE;
+	FUNCTION to_net_eth_PHYDevice(str : STRING) RETURN T_NET_ETH_PHY_DEVICE;
 	
 	-- limitations
 	CONSTANT C_NET_ETH_PREMABLE_LENGTH					: POSITIVE						:= 7;
@@ -629,6 +633,47 @@ PACKAGE net IS
 END;
 
 PACKAGE BODY net IS
+
+	FUNCTION to_net_eth_RSDataInterface(str : STRING) RETURN T_NET_ETH_RS_DATA_INTERFACE IS
+	BEGIN
+		FOR I IN T_NET_ETH_RS_DATA_INTERFACE'pos(T_NET_ETH_RS_DATA_INTERFACE'low) TO T_NET_ETH_RS_DATA_INTERFACE'pos(T_NET_ETH_RS_DATA_INTERFACE'high) LOOP
+			IF str_match(str_to_upper(str), str_to_upper(T_NET_ETH_RS_DATA_INTERFACE'image(T_NET_ETH_RS_DATA_INTERFACE'val(I)))) THEN
+				RETURN T_NET_ETH_RS_DATA_INTERFACE'val(I);
+			END IF;
+		END LOOP;
+		REPORT "Unknown RS_DATA_INTERFACE: " & str SEVERITY FAILURE;
+	END FUNCTION;
+	
+	FUNCTION to_net_eth_PHYDataInterface(str : STRING) RETURN T_NET_ETH_PHY_DATA_INTERFACE IS
+	BEGIN
+		FOR I IN T_NET_ETH_PHY_DATA_INTERFACE'pos(T_NET_ETH_PHY_DATA_INTERFACE'low) TO T_NET_ETH_PHY_DATA_INTERFACE'pos(T_NET_ETH_PHY_DATA_INTERFACE'high) LOOP
+			IF str_match(str_to_upper(str), str_to_upper(T_NET_ETH_PHY_DATA_INTERFACE'image(T_NET_ETH_PHY_DATA_INTERFACE'val(I)))) THEN
+				RETURN T_NET_ETH_PHY_DATA_INTERFACE'val(I);
+			END IF;
+		END LOOP;
+		REPORT "Unknown PHY_DATA_INTERFACE: " & str SEVERITY FAILURE;
+	END FUNCTION;
+
+	FUNCTION to_net_eth_PHYManagementInterface(str : STRING) RETURN T_NET_ETH_PHY_MANAGEMENT_INTERFACE IS
+	BEGIN
+		FOR I IN T_NET_ETH_PHY_MANAGEMENT_INTERFACE'pos(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'low) TO T_NET_ETH_PHY_MANAGEMENT_INTERFACE'pos(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'high) LOOP
+			IF str_match(str_to_upper(str), str_to_upper(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'val(I)))) THEN
+				RETURN T_NET_ETH_PHY_MANAGEMENT_INTERFACE'val(I);
+			END IF;
+		END LOOP;
+		REPORT "Unknown PHY_MANAGEMENT_INTERFACE: " & str SEVERITY FAILURE;
+	END FUNCTION;
+
+	FUNCTION to_net_eth_PHYDevice(str : STRING) RETURN T_NET_ETH_PHY_DEVICE IS
+	BEGIN
+		FOR I IN T_NET_ETH_PHY_DEVICE'pos(T_NET_ETH_PHY_DEVICE'low) TO T_NET_ETH_PHY_DEVICE'pos(T_NET_ETH_PHY_DEVICE'high) LOOP
+			IF str_match(str_to_upper(str), str_to_upper(T_NET_ETH_PHY_DEVICE'image(T_NET_ETH_PHY_DEVICE'val(I)))) THEN
+				RETURN T_NET_ETH_PHY_DEVICE'val(I);
+			END IF;
+		END LOOP;
+		REPORT "Unknown PHY_DEVICE: " & str SEVERITY FAILURE;
+	END FUNCTION;
+
 
 	FUNCTION getPortCount(MACConfiguration : T_NET_MAC_CONFIGURATION_VECTOR) RETURN POSITIVE IS
 		VARIABLE count : NATURAL := 0;
