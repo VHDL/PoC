@@ -240,13 +240,13 @@ BEGIN
 	END BLOCK;
 
 	blkRowAC : BLOCK
-		SIGNAL Counter_us				: UNSIGNED(COLAC_BITS - 1 DOWNTO 0)		:= to_unsigned(0, COLAC_BITS);
+		SIGNAL Counter_us				: UNSIGNED(ROWAC_BITS - 1 DOWNTO 0)		:= to_unsigned(0, ROWAC_BITS);
 	BEGIN
 		PROCESS(Clock)
 		BEGIN
 			IF rising_edge(Clock) THEN
 				IF (RowAC_Load = '1') THEN
-					Counter_us				<= to_unsigned(0, COLAC_BITS);
+					Counter_us				<= to_unsigned(0, ROWAC_BITS);
 				ELSE
 					IF (RowAC_inc = '1') THEN
 						Counter_us			<= Counter_us + 1;

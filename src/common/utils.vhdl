@@ -616,7 +616,7 @@ package body utils is
 	-- ==========================================================================
 	-- One-Hot-Code to Binary-Code
   function onehot2bin(onehot : std_logic_vector) return unsigned is
-		variable res : unsigned(log2ceil(onehot'high+1)-1 downto 0);
+		variable res : unsigned(log2ceilnz(onehot'high+1)-1 downto 0);
 		variable chk : natural;
 	begin
 		res := (others => '0');
