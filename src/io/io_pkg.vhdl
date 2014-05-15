@@ -179,7 +179,24 @@ PACKAGE io IS
 	FUNCTION Baud2kHz(BaudRate : REAL) RETURN REAL;
 	FUNCTION Baud2MHz(BaudRate : POSITIVE) RETURN REAL;
 	FUNCTION Baud2MHz(BaudRate : REAL) RETURN REAL;
-	
+
+  -- Component Declarations
+  -- =========================================================================
+  component io_FanControl
+    generic (
+      CLOCK_FREQ_MHZ : real
+    );
+    port (
+      Clock : in std_logic;
+      Reset : in std_logic;
+
+      Fan_PWM   : out std_logic;
+      Fan_Tacho : in  std_logic;
+
+      TachoFrequency : out std_logic_vector(15 downto 0)
+    );
+	end component;
+
 END io;
 
 
