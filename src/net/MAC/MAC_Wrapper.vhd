@@ -1,3 +1,34 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Module:				 	TODO
+--
+-- Authors:				 	Patrick Lehmann
+-- 
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
@@ -5,9 +36,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.net.ALL;
 
 
 ENTITY MAC_Wrapper IS
@@ -53,6 +82,7 @@ ENTITY MAC_Wrapper IS
 		RX_Meta_EthType							: OUT	T_NET_MAC_ETHERNETTYPE_VECTOR(getPortCount(MAC_CONFIG) - 1 DOWNTO 0)
 	);
 END;
+
 
 ARCHITECTURE rtl OF MAC_Wrapper IS
 	FUNCTION getInterfaceAddresses(MAC_CONFIG : T_NET_MAC_CONFIGURATION_VECTOR) RETURN T_NET_MAC_ADDRESS_VECTOR IS
@@ -170,7 +200,7 @@ ARCHITECTURE rtl OF MAC_Wrapper IS
 	
 BEGIN
 
-	RX_DestMAC : ENTITY L_Ethernet.MAC_RX_DestMAC_Switch
+	RX_DestMAC : ENTITY PoC.MAC_RX_DestMAC_Switch
 		GENERIC MAP (
 			DEBUG								=> DEBUG,
 			MAC_ADDRESSES									=> INTERFACE_ADDRESSES,
@@ -226,7 +256,7 @@ BEGIN
 --		ASSERT FALSE REPORT "Filter:      Count=" & INTEGER'image(FILTER_COUNT) SEVERITY NOTE;
 --		ASSERT FALSE REPORT "PortIndex:   From="	& INTEGER'image(PORT_INDEX_FROM) & " to=" & INTEGER'image(PORT_INDEX_TO) SEVERITY NOTE;
 	
-		RX_SrcMAC : ENTITY L_Ethernet.MAC_RX_SrcMAC_Filter
+		RX_SrcMAC : ENTITY PoC.MAC_RX_SrcMAC_Filter
 			GENERIC MAP (
 				DEBUG								=> DEBUG,
 				MAC_ADDRESSES									=> FILTER_ADDRESSES,
@@ -257,7 +287,7 @@ BEGIN
 				Out_Meta_SrcMACAddress_Data		=> SrcEth_RX_Meta_SrcMACAddress_Data
 			);
 
-		RX_EthType : ENTITY L_Ethernet.MAC_RX_Type_Switch
+		RX_EthType : ENTITY PoC.MAC_RX_Type_Switch
 			GENERIC MAP (
 				DEBUG								=> DEBUG,
 				ETHERNET_TYPES								=> SWITCH_TYPES
@@ -291,7 +321,7 @@ BEGIN
 			);
 
 		-- Ethernet Type prepender
-		TX_EthType : ENTITY L_Ethernet.MAC_TX_Type_Prepender
+		TX_EthType : ENTITY PoC.MAC_TX_Type_Prepender
 			GENERIC MAP (
 				ETHERNET_TYPES								=> SWITCH_TYPES
 			)
@@ -320,7 +350,7 @@ BEGIN
 	END GENERATE;
 
 	-- Ethernet SourceMAC prepender
-	TX_SrcMAC : ENTITY L_Ethernet.MAC_TX_SrcMAC_Prepender
+	TX_SrcMAC : ENTITY PoC.MAC_TX_SrcMAC_Prepender
 		GENERIC MAP (
 			MAC_ADDRESSES									=> INTERFACE_ADDRESSES
 		)
@@ -348,7 +378,7 @@ BEGIN
 		);
 
 	-- Ethernet SourceMAC prepender
-	TX_DestMAC : ENTITY L_Ethernet.MAC_TX_DestMAC_Prepender
+	TX_DestMAC : ENTITY PoC.MAC_TX_DestMAC_Prepender
 		PORT MAP (
 			Clock													=> Clock,
 			Reset													=> Reset,

@@ -32,7 +32,6 @@
 -- limitations under the License.
 -- ============================================================================
 
-
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
@@ -45,7 +44,7 @@ USE			PoC.components.ALL;
 USE			PoC.io.ALL;
 
 
-ENTITY IICController IS
+ENTITY iic_IICController IS
 	GENERIC (
 		DEBUG													: BOOLEAN												:= FALSE;
 		CLOCK_FREQ_MHZ								: REAL													:= 100.0;					-- 100 MHz
@@ -88,7 +87,7 @@ ENTITY IICController IS
 END ENTITY;
 
 
-ARCHITECTURE rtl OF IICController IS
+ARCHITECTURE rtl OF iic_IICController IS
 	ATTRIBUTE KEEP									: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING					: STRING;
 	ATTRIBUTE ENUM_ENCODING					: STRING;
@@ -1059,7 +1058,7 @@ BEGIN
 	
 	Master_RP_Data	<= DataRegister_d;
 
-	IICBC : ENTITY PoC.IICBusController
+	IICBC : ENTITY PoC.iic_IICBusController
 		GENERIC MAP (
 			CLOCK_FREQ_MHZ								=> CLOCK_FREQ_MHZ,
 			IIC_BUSMODE										=> IIC_BUSMODE,

@@ -37,6 +37,8 @@ use			IEEE.numeric_std.all;
 
 library	PoC;
 use			PoC.utils.all;
+use			PoC.strings.all;
+
 
 package vectors is
 	-- ==========================================================================
@@ -152,6 +154,8 @@ package vectors is
 	-- TODO:
 	FUNCTION resize(slm : T_SLM; size : POSITIVE) RETURN T_SLM;
 
+	-- to_string
+	FUNCTION to_string(slvv : T_SLVV_8; sep : CHARACTER := ':') RETURN STRING;
 end package vectors;
 
 
@@ -642,6 +646,18 @@ package body vectors is
 			FOR J IN slm'high(2) DOWNTO slm'low(2) LOOP
 				Result(I, J)	:= slm(I, J);
 			END LOOP;
+		END LOOP;
+		RETURN Result;
+	END FUNCTION;
+	
+	FUNCTION to_string(slvv : T_SLVV_8; sep : CHARACTER := ':') RETURN STRING IS
+		CONSTANT hex_len			: POSITIVE								:= ite((sep = NUL), (slvv'length * 2), (slvv'length * 3) - 1);
+		VARIABLE Result				: STRING(1 TO hex_len)		:= (OTHERS => sep);
+		VARIABLE pos					: POSITIVE								:= 1;
+	BEGIN
+		FOR I IN slvv'range LOOP
+			Result(pos TO pos + 1)	:= to_string(slvv(I), 'h');
+			pos											:= pos + ite((sep = NUL), 2, 3);
 		END LOOP;
 		RETURN Result;
 	END FUNCTION;

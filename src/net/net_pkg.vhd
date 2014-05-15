@@ -1,15 +1,47 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Module:				 	TODO
+--
+-- Authors:				 	Patrick Lehmann
+-- 
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.config.ALL;
+--USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.strings.ALL;
+USE			PoC.io.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
 
-PACKAGE EthTypes IS
+PACKAGE net IS
 
 	-- ==========================================================================================================================================================
 	-- Ethernet: physical layer (PHY)
@@ -37,7 +69,7 @@ PACKAGE EthTypes IS
 		NET_ETH_PHY_DEVICE_MARVEL_88E1111
 	);
 
-	SUBTYPE T_NET_ETH_PHY_DEVICE_ADDRESS		IS STD_LOGIC_VECTOR(4 DOWNTO 0);
+	SUBTYPE T_NET_ETH_PHY_DEVICE_ADDRESS IS T_SLV_8;
 
 	TYPE T_NET_ETH_PHYCONTROLLER_COMMAND IS (
 		NET_ETH_PHYC_CMD_NONE,
@@ -93,12 +125,8 @@ PACKAGE EthTypes IS
 
 	-- FPGA <=> PHY management interface: MDIO (Management Data Input/Output)
 	TYPE T_NET_ETH_PHY_INTERFACE_MDIO IS RECORD
-		Clock_i								: STD_LOGIC;			-- clock (MDC) - input
-		Clock_o								: STD_LOGIC;			-- clock (MDC) - output
-		Clock_t								: STD_LOGIC;			-- clock (MDC) - tri-state enable
-		Data_i								: STD_LOGIC;			-- data (MDIO) - input
-		Data_o								: STD_LOGIC;			-- data (MDIO) - output
-		Data_t								: STD_LOGIC;			-- data (MDIO) - tri-state enable
+		Clock_ts							: T_IO_TRISTATE;	-- clock (MDC)
+		Data_ts								: T_IO_TRISTATE;	-- data (MDIO)
 	END RECORD;
 
 	TYPE T_NET_ETH_PHY_INTERFACE_COMMON IS RECORD
@@ -171,34 +199,10 @@ PACKAGE EthTypes IS
 	-- ==========================================================================================================================================================
 	-- Ethernet: ????????????????????
 	-- ==========================================================================================================================================================
-	
-	-- MDIOController
-	-- ==========================================================================================================================================================
-	TYPE T_NET_ETH_MDIOCONTROLLER_COMMAND IS (
-		NET_ETH_MDIOC_CMD_NONE,
-		NET_ETH_MDIOC_CMD_CHECK_ADDRESS,
-		NET_ETH_MDIOC_CMD_READ,
-		NET_ETH_MDIOC_CMD_WRITE,
-		NET_ETH_MDIOC_CMD_ABORT
-	);
-	
-	TYPE T_NET_ETH_MDIOCONTROLLER_STATUS IS (
-		NET_ETH_MDIOC_STATUS_IDLE,
-		NET_ETH_MDIOC_STATUS_CHECKING,
-		NET_ETH_MDIOC_STATUS_CHECK_OK,
-		NET_ETH_MDIOC_STATUS_CHECK_FAILED,
-		NET_ETH_MDIOC_STATUS_READING,
-		NET_ETH_MDIOC_STATUS_READ_COMPLETE,
-		NET_ETH_MDIOC_STATUS_WRITING,
-		NET_ETH_MDIOC_STATUS_WRITE_COMPLETE,
-		NET_ETH_MDIOC_STATUS_ERROR
-	);
-	
-	TYPE T_NET_ETH_MDIOCONTROLLER_ERROR IS (
-		NET_ETH_MDIOC_ERROR_NONE,
-		NET_ETH_MDIOC_ERROR_ADDRESS_NOT_FOUND,
-		NET_ETH_MDIOC_ERROR_FSM
-	);
+	FUNCTION to_net_eth_RSDataInterface(str : STRING) RETURN T_NET_ETH_RS_DATA_INTERFACE;
+	FUNCTION to_net_eth_PHYDataInterface(str : STRING) RETURN T_NET_ETH_PHY_DATA_INTERFACE;
+	FUNCTION to_net_eth_PHYManagementInterface(str : STRING) RETURN T_NET_ETH_PHY_MANAGEMENT_INTERFACE;
+	FUNCTION to_net_eth_PHYDevice(str : STRING) RETURN T_NET_ETH_PHY_DEVICE;
 	
 	-- limitations
 	CONSTANT C_NET_ETH_PREMABLE_LENGTH					: POSITIVE						:= 7;
@@ -251,10 +255,12 @@ PACKAGE EthTypes IS
 	
 	TYPE T_NET_MAC_INTERFACE_VECTOR IS ARRAY(NATURAL RANGE <>) OF T_NET_MAC_INTERFACE;
 	
+	CONSTANT C_NET_MAC_SOURCEFILTER_NONE	: T_NET_MAC_INTERFACE	:= (Address => to_net_mac_address("00:00:00:00:00:01"), Mask => C_NET_MAC_MASK_EMPTY);
+	
 	TYPE T_NET_MAC_CONFIGURATION IS RECORD
 		Interface						: T_NET_MAC_INTERFACE;
 		SourceFilter				: T_NET_MAC_INTERFACE_VECTOR(0 TO 7);
-		TypeSwitch					: T_NET_MAC_ETHERNETTYPE_VECTOR(0 to 7);
+		TypeSwitch					: T_NET_MAC_ETHERNETTYPE_VECTOR(0 TO 7);
 	END RECORD;
 	
 	-- arrays
@@ -643,9 +649,62 @@ PACKAGE EthTypes IS
 	-- ICMPv6 Codes for Type Echo Reply
 	CONSTANT C_NET_ICMPV6_CODE_ECHO_REPLY							: T_NET_ICMPV6_CODE	:= x"00";		-- Echo Reply
 	
+	
+	-- ==========================================================================================================================================================
+	-- Transport Layer: known User Datagramm Protocol (UDP) Types, Ports and Codes
+	-- ==========================================================================================================================================================
+	SUBTYPE T_NET_TCP_PORT	IS T_NET_UDP_PORT;		-- TODO: if TCP is added, move this to the TCP section in this file!
+	
+	CONSTANT C_NET_TCP_PORTNUMBER_ECHO								: T_NET_TCP_PORT		:= x"0007";		-- Echo Protocol (7) - RFC 862
+	CONSTANT C_NET_TCP_PORTNUMBER_FTP_DATA						: T_NET_TCP_PORT		:= x"0014";		-- FTP Protocol (20) - RFC 765
+	CONSTANT C_NET_TCP_PORTNUMBER_FTP_CONTROL					: T_NET_TCP_PORT		:= x"0015";		-- FTP Protocol (21) - RFC 765
+	
+	CONSTANT C_NET_TCP_PORTNUMBER_LOOPBACK						: T_NET_TCP_PORT		:= x"FFFF";
+	
 END;
 
-PACKAGE BODY EthTypes IS
+PACKAGE BODY net IS
+
+	FUNCTION to_net_eth_RSDataInterface(str : STRING) RETURN T_NET_ETH_RS_DATA_INTERFACE IS
+	BEGIN
+		FOR I IN T_NET_ETH_RS_DATA_INTERFACE'pos(T_NET_ETH_RS_DATA_INTERFACE'low) TO T_NET_ETH_RS_DATA_INTERFACE'pos(T_NET_ETH_RS_DATA_INTERFACE'high) LOOP
+			IF str_match(str_to_upper(str), str_to_upper(T_NET_ETH_RS_DATA_INTERFACE'image(T_NET_ETH_RS_DATA_INTERFACE'val(I)))) THEN
+				RETURN T_NET_ETH_RS_DATA_INTERFACE'val(I);
+			END IF;
+		END LOOP;
+		REPORT "Unknown RS_DATA_INTERFACE: " & str SEVERITY FAILURE;
+	END FUNCTION;
+	
+	FUNCTION to_net_eth_PHYDataInterface(str : STRING) RETURN T_NET_ETH_PHY_DATA_INTERFACE IS
+	BEGIN
+		FOR I IN T_NET_ETH_PHY_DATA_INTERFACE'pos(T_NET_ETH_PHY_DATA_INTERFACE'low) TO T_NET_ETH_PHY_DATA_INTERFACE'pos(T_NET_ETH_PHY_DATA_INTERFACE'high) LOOP
+			IF str_match(str_to_upper(str), str_to_upper(T_NET_ETH_PHY_DATA_INTERFACE'image(T_NET_ETH_PHY_DATA_INTERFACE'val(I)))) THEN
+				RETURN T_NET_ETH_PHY_DATA_INTERFACE'val(I);
+			END IF;
+		END LOOP;
+		REPORT "Unknown PHY_DATA_INTERFACE: " & str SEVERITY FAILURE;
+	END FUNCTION;
+
+	FUNCTION to_net_eth_PHYManagementInterface(str : STRING) RETURN T_NET_ETH_PHY_MANAGEMENT_INTERFACE IS
+	BEGIN
+		FOR I IN T_NET_ETH_PHY_MANAGEMENT_INTERFACE'pos(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'low) TO T_NET_ETH_PHY_MANAGEMENT_INTERFACE'pos(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'high) LOOP
+			IF str_match(str_to_upper(str), str_to_upper(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'val(I)))) THEN
+				RETURN T_NET_ETH_PHY_MANAGEMENT_INTERFACE'val(I);
+			END IF;
+		END LOOP;
+		REPORT "Unknown PHY_MANAGEMENT_INTERFACE: " & str SEVERITY FAILURE;
+	END FUNCTION;
+
+	FUNCTION to_net_eth_PHYDevice(str : STRING) RETURN T_NET_ETH_PHY_DEVICE IS
+	BEGIN
+		FOR I IN T_NET_ETH_PHY_DEVICE'pos(T_NET_ETH_PHY_DEVICE'low) TO T_NET_ETH_PHY_DEVICE'pos(T_NET_ETH_PHY_DEVICE'high) LOOP
+			IF str_match(str_to_upper(str), str_to_upper(T_NET_ETH_PHY_DEVICE'image(T_NET_ETH_PHY_DEVICE'val(I)))) THEN
+				RETURN T_NET_ETH_PHY_DEVICE'val(I);
+			END IF;
+		END LOOP;
+		REPORT "Unknown PHY_DEVICE: " & str SEVERITY FAILURE;
+	END FUNCTION;
+
 
 	FUNCTION getPortCount(MACConfiguration : T_NET_MAC_CONFIGURATION_VECTOR) RETURN POSITIVE IS
 		VARIABLE count : NATURAL := 0;
@@ -1004,7 +1063,7 @@ PACKAGE BODY EthTypes IS
 		Len											:= INTEGER'value(str(Pos + 1 TO str'high));
 		
 		IF (NOT ((0 < Len) AND (Len < 128))) THEN																								REPORT "IPv6 prefix length is out of range: IPv6=" & str & " Length=" & INTEGER'image(Len) SEVERITY ERROR;	END IF;
-		IF ((to_slv(IPv6Address) AND to_lowmask(128 - Len, 128)) /= (127 DOWNTO 0 => '0')) THEN REPORT "IPv6 prefix is longer then it's mask: IPv6=" & str SEVERITY ERROR;																	END IF;
+		IF ((to_slv(IPv6Address) AND genmask_low(128 - Len, 128)) /= (127 DOWNTO 0 => '0')) THEN REPORT "IPv6 prefix is longer then it's mask: IPv6=" & str SEVERITY ERROR;																	END IF;
 	
 		Prefix.Prefix						:= IPv6Address;
 		Prefix.PrefixLength			:= to_slv(Len, Prefix.PrefixLength'length);

@@ -1,3 +1,34 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Module:				 	TODO
+--
+-- Authors:				 	Patrick Lehmann
+-- 
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
@@ -5,12 +36,8 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
 ENTITY ARP_UniCast_Receiver IS
 	GENERIC (
@@ -515,26 +542,26 @@ BEGIN
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF (SenderHardwareAddress_en = '1') THEN
-				SenderHardwareAddress_d(to_integer(SenderHardwareAddress_us, SenderHardwareAddress_d'high))		<= RX_Data;
+				SenderHardwareAddress_d(to_index(SenderHardwareAddress_us, SenderHardwareAddress_d'high))		<= RX_Data;
 			END IF;
 			
 			IF (SenderProtocolAddress_en = '1') THEN
-				SenderProtocolAddress_d(to_integer(SenderProtocolAddress_us, SenderProtocolAddress_d'high))		<= RX_Data;
+				SenderProtocolAddress_d(to_index(SenderProtocolAddress_us, SenderProtocolAddress_d'high))		<= RX_Data;
 			END IF;
 			
 			IF (TargetHardwareAddress_en = '1') THEN
-				TargetHardwareAddress_d(to_integer(TargetHardwareAddress_us, TargetHardwareAddress_d'high))		<= RX_Data;
+				TargetHardwareAddress_d(to_index(TargetHardwareAddress_us, TargetHardwareAddress_d'high))		<= RX_Data;
 			END IF;
 			
 			IF (TargetProtocolAddress_en = '1') THEN
-				TargetProtocolAddress_d(to_integer(TargetProtocolAddress_us, TargetProtocolAddress_d'high))		<= RX_Data;
+				TargetProtocolAddress_d(to_index(TargetProtocolAddress_us, TargetProtocolAddress_d'high))		<= RX_Data;
 			END IF;
 		END IF;
 	END PROCESS;
 
-	SenderMACAddress_Data				<= SenderHardwareAddress_d(to_integer(Reader_SenderMAC_Counter_us, SenderHardwareAddress_d'high));
-	SenderIPAddress_Data				<= SenderProtocolAddress_d(to_integer(Reader_SenderIP_Counter_us, SenderProtocolAddress_d'high));
-	TargetMACAddress_Data				<= TargetHardwareAddress_d(to_integer(Reader_TargetMAC_Counter_us, TargetHardwareAddress_d'high));
-	TargetIPAddress_Data				<= TargetProtocolAddress_d(to_integer(Reader_TargetIP_Counter_us, TargetProtocolAddress_d'high));
+	SenderMACAddress_Data				<= SenderHardwareAddress_d(to_index(Reader_SenderMAC_Counter_us, SenderHardwareAddress_d'high));
+	SenderIPAddress_Data				<= SenderProtocolAddress_d(to_index(Reader_SenderIP_Counter_us, SenderProtocolAddress_d'high));
+	TargetMACAddress_Data				<= TargetHardwareAddress_d(to_index(Reader_TargetMAC_Counter_us, TargetHardwareAddress_d'high));
+	TargetIPAddress_Data				<= TargetProtocolAddress_d(to_index(Reader_TargetIP_Counter_us, TargetProtocolAddress_d'high));
 
 END;

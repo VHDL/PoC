@@ -1,3 +1,34 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Module:				 	TODO
+--
+-- Authors:				 	Patrick Lehmann
+-- 
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
@@ -5,17 +36,13 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
 
 ENTITY IPv4_Wrapper IS
 	GENERIC (
-		DEBUG									: BOOLEAN																:= FALSE;
+		DEBUG														: BOOLEAN																:= FALSE;
 		PACKET_TYPES										: T_NET_IPV4_PROTOCOL_VECTOR						:= (0 => x"00")
 	);
 	PORT (
@@ -85,34 +112,46 @@ ENTITY IPv4_Wrapper IS
 	);
 END;
 
+
 ARCHITECTURE rtl OF IPv4_Wrapper IS
 	CONSTANT IPV4_SWITCH_PORTS								: POSITIVE				:= PACKET_TYPES'length;
 	
-	CONSTANT LLMUX_META_RST_BIT								: NATURAL					:= 0;
-	CONSTANT LLMUX_META_SRC_NXT_BIT						: NATURAL					:= 1;
-	CONSTANT LLMUX_META_DEST_NXT_BIT					: NATURAL					:= 2;
+	CONSTANT TXSTMMUX_META_STREAMID_SRCADR		: NATURAL					:= 0;
+	CONSTANT TXSTMMUX_META_STREAMID_DESTADR		: NATURAL					:= 1;
+	CONSTANT TXSTMMUX_META_STREAMID_LENGTH		: NATURAL					:= 2;
+	CONSTANT TXSTMMUX_META_STREAMID_PROTOCOL			: NATURAL					:= 3;
 	
-	CONSTANT LLMUX_META_BITS									: NATURAL					:= 40;
-	CONSTANT LLMUX_META_REV_BITS							: NATURAL					:= 3;
+	CONSTANT TXSTMMUX_META_BITS								: T_POSVEC				:= (
+		TXSTMMUX_META_STREAMID_SRCADR			=> 8,
+		TXSTMMUX_META_STREAMID_DESTADR		=> 8,
+		TXSTMMUX_META_STREAMID_LENGTH			=> 16,
+		TXSTMMUX_META_STREAMID_PROTOCOL		=> 8
+	);
+		
+	CONSTANT TXSTMMUX_META_RST_BIT						: NATURAL					:= 0;
+	CONSTANT TXSTMMUX_META_SRC_NXT_BIT				: NATURAL					:= 1;
+	CONSTANT TXSTMMUX_META_DEST_NXT_BIT				: NATURAL					:= 2;
 	
-	SIGNAL LLMux_In_Valid											: STD_LOGIC_VECTOR(IPV4_SWITCH_PORTS - 1 DOWNTO 0);
-	SIGNAL LLMux_In_Data											: T_SLM(IPV4_SWITCH_PORTS - 1 DOWNTO 0, T_SLV_8'range)											:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
-	SIGNAL LLMux_In_Meta											: T_SLM(IPV4_SWITCH_PORTS - 1 DOWNTO 0, LLMUX_META_BITS - 1 DOWNTO 0)				:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
-	SIGNAL LLMux_In_Meta_rev									: T_SLM(IPV4_SWITCH_PORTS - 1 DOWNTO 0, LLMUX_META_REV_BITS - 1 DOWNTO 0)		:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
-	SIGNAL LLMux_In_SOF												: STD_LOGIC_VECTOR(IPV4_SWITCH_PORTS - 1 DOWNTO 0);
-	SIGNAL LLMux_In_EOF												: STD_LOGIC_VECTOR(IPV4_SWITCH_PORTS - 1 DOWNTO 0);
-	SIGNAL LLMux_In_Ready											: STD_LOGIC_VECTOR(IPV4_SWITCH_PORTS - 1 DOWNTO 0);
+	CONSTANT TXSTMMUX_META_REV_BITS						: NATURAL					:= 3;
 	
-	SIGNAL TX_LLMux_Valid											: STD_LOGIC;
-	SIGNAL TX_LLMux_Data											: T_SLV_8;
-	SIGNAL TX_LLMux_Meta											: STD_LOGIC_VECTOR(LLMUX_META_BITS - 1 DOWNTO 0);
-	SIGNAL TX_LLMux_Meta_rev									: STD_LOGIC_VECTOR(LLMUX_META_REV_BITS - 1 DOWNTO 0);
-	SIGNAL TX_LLMux_SOF												: STD_LOGIC;
-	SIGNAL TX_LLMux_EOF												: STD_LOGIC;
-	SIGNAL TX_LLMux_SrcIPv4Address_Data				: STD_LOGIC_VECTOR(7 DOWNTO 0);
-	SIGNAL TX_LLMux_DestIPv4Address_Data			: STD_LOGIC_VECTOR(15 DOWNTO 8);
-	SIGNAL TX_LLMux_Length										: STD_LOGIC_VECTOR(31 DOWNTO 16);
-	SIGNAL TX_LLMux_Protocol									: STD_LOGIC_VECTOR(39 DOWNTO 32);
+	SIGNAL StmMux_In_Valid										: STD_LOGIC_VECTOR(IPV4_SWITCH_PORTS - 1 DOWNTO 0);
+	SIGNAL StmMux_In_Data											: T_SLM(IPV4_SWITCH_PORTS - 1 DOWNTO 0, T_SLV_8'range)													:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
+	SIGNAL StmMux_In_Meta											: T_SLM(IPV4_SWITCH_PORTS - 1 DOWNTO 0, isum(TXSTMMUX_META_BITS) - 1 DOWNTO 0)	:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
+	SIGNAL StmMux_In_Meta_rev									: T_SLM(IPV4_SWITCH_PORTS - 1 DOWNTO 0, TXSTMMUX_META_REV_BITS - 1 DOWNTO 0)		:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
+	SIGNAL StmMux_In_SOF											: STD_LOGIC_VECTOR(IPV4_SWITCH_PORTS - 1 DOWNTO 0);
+	SIGNAL StmMux_In_EOF											: STD_LOGIC_VECTOR(IPV4_SWITCH_PORTS - 1 DOWNTO 0);
+	SIGNAL StmMux_In_Ready										: STD_LOGIC_VECTOR(IPV4_SWITCH_PORTS - 1 DOWNTO 0);
+	
+	SIGNAL TX_StmMux_Valid										: STD_LOGIC;
+	SIGNAL TX_StmMux_Data											: T_SLV_8;
+	SIGNAL TX_StmMux_Meta											: STD_LOGIC_VECTOR(isum(TXSTMMUX_META_BITS) - 1 DOWNTO 0);
+	SIGNAL TX_StmMux_Meta_rev									: STD_LOGIC_VECTOR(TXSTMMUX_META_REV_BITS - 1 DOWNTO 0);
+	SIGNAL TX_StmMux_SOF											: STD_LOGIC;
+	SIGNAL TX_StmMux_EOF											: STD_LOGIC;
+	SIGNAL TX_StmMux_SrcIPv4Address_Data			: T_SLV_8;
+	SIGNAL TX_StmMux_DestIPv4Address_Data			: T_SLV_8;
+	SIGNAL TX_StmMux_Length										: T_SLV_16;
+	SIGNAL TX_StmMux_Protocol									: T_SLV_8;
 	
 	SIGNAL IPv4_TX_Ready											: STD_LOGIC;
 	SIGNAL IPv4_TX_Meta_rst										: STD_LOGIC;
@@ -177,44 +216,55 @@ BEGIN
 -- ============================================================================================================================================================
 -- TX Path
 -- ============================================================================================================================================================
-	genTXLLBuf : FOR I IN 0 TO IPV4_SWITCH_PORTS - 1 GENERATE
-		CONSTANT TXLLBuf_META_STREAMID_SRC			: NATURAL																									:= 0;
-		CONSTANT TXLLBuf_META_STREAMID_DEST			: NATURAL																									:= 1;
-		CONSTANT TXLLBuf_META_STREAMID_LEN			: NATURAL																									:= 2;
-		CONSTANT TXLLBuf_META_STREAMS						: POSITIVE																								:= 3;		-- Source, Destination, Length
-	
-		SIGNAL Meta_rst													: STD_LOGIC;
-		SIGNAL Meta_nxt													: STD_LOGIC_VECTOR(TXLLBuf_META_STREAMS - 1 DOWNTO 0);
-	
-		SIGNAL LLBuf_DataOut										: T_SLV_8;
-		SIGNAL LLBuf_MetaIn											: T_SLM(TXLLBuf_META_STREAMS - 1 DOWNTO 0, 15 DOWNTO 0)		:= (OTHERS => (OTHERS => 'Z'));
-		SIGNAL LLBuf_MetaOut										: T_SLM(TXLLBuf_META_STREAMS - 1 DOWNTO 0, 15 DOWNTO 0);
-		SIGNAL LLBuf_Meta_rst										: STD_LOGIC;
-		SIGNAL LLBuf_Meta_nxt										: STD_LOGIC_VECTOR(TXLLBuf_META_STREAMS - 1 DOWNTO 0);
+	genTXStmBuf : FOR I IN 0 TO IPV4_SWITCH_PORTS - 1 GENERATE
+		CONSTANT TXSTMBUF_META_STREAMID_SRCADR		: NATURAL					:= 0;
+		CONSTANT TXSTMBUF_META_STREAMID_DESTADR		: NATURAL					:= 1;
+		CONSTANT TXSTMBUF_META_STREAMID_LENGTH		: NATURAL					:= 2;
 		
-		SIGNAL LLBuf_Meta_SrcIPv4Address_Data		: STD_LOGIC_VECTOR(TX_LLMux_SrcIPv4Address_Data'range);
-		SIGNAL LLBuf_Meta_DestIPv4Address_Data	: STD_LOGIC_VECTOR(TX_LLMux_DestIPv4Address_Data'range);
-		SIGNAL LLBuf_Meta_Length								: STD_LOGIC_VECTOR(TX_LLMux_Length'range);
-		SIGNAL LLBuf_Meta_Protocol							: STD_LOGIC_VECTOR(TX_LLMux_Protocol'range);
+		CONSTANT TXSTMBUF_META_BITS								: T_POSVEC				:= (
+			TXSTMBUF_META_STREAMID_SRCADR				=> 8,
+			TXSTMBUF_META_STREAMID_DESTADR			=> 8,
+			TXSTMBUF_META_STREAMID_LENGTH				=> 16
+		);
 		
-		SIGNAL LLMux_MetaIn											: STD_LOGIC_VECTOR(LLBuf_Meta_Protocol'high DOWNTO LLBuf_Meta_SrcIPv4Address_Data'low);
+		CONSTANT TXSTMBUF_META_FIFO_DEPTHS				: T_POSVEC				:= (
+			TXSTMBUF_META_STREAMID_SRCADR				=> 4,
+			TXSTMBUF_META_STREAMID_DESTADR			=> 4,
+			TXSTMBUF_META_STREAMID_LENGTH				=> 1
+		);
+	
+		SIGNAL StmBuf_DataOut											: T_SLV_8;
+--		SIGNAL Meta_rst														: STD_LOGIC;
+		SIGNAL StmBuf_MetaIn_nxt									: STD_LOGIC_VECTOR(TXSTMBUF_META_BITS'length - 1 DOWNTO 0);
+		SIGNAL StmBuf_MetaIn_Data									: STD_LOGIC_VECTOR(isum(TXSTMBUF_META_BITS) - 1 DOWNTO 0);
+		
+		SIGNAL StmBuf_Meta_rst										: STD_LOGIC;
+		SIGNAL StmBuf_MetaOut_nxt									: STD_LOGIC_VECTOR(TXSTMBUF_META_BITS'length - 1 DOWNTO 0);
+		SIGNAL StmBuf_MetaOut_Data								: STD_LOGIC_VECTOR(isum(TXSTMBUF_META_BITS) - 1 DOWNTO 0);
+		
+		SIGNAL StmBuf_Meta_SrcIPv4Address_Data		: STD_LOGIC_VECTOR(TX_StmMux_SrcIPv4Address_Data'range);
+		SIGNAL StmBuf_Meta_DestIPv4Address_Data		: STD_LOGIC_VECTOR(TX_StmMux_DestIPv4Address_Data'range);
+		SIGNAL StmBuf_Meta_Length									: STD_LOGIC_VECTOR(TX_StmMux_Length'range);
+		SIGNAL StmBuf_Meta_Protocol								: STD_LOGIC_VECTOR(TX_StmMux_Protocol'range);
+		
+		SIGNAL StmMux_MetaIn_Data									: STD_LOGIC_VECTOR(isum(TXSTMMUX_META_BITS) - 1 DOWNTO 0);
 		
 	BEGIN
-		assign_row(LLBuf_MetaIn, TX_Meta_SrcIPv4Address_Data(I),	TXLLBuf_META_STREAMID_SRC,	0, '0');
-		assign_row(LLBuf_MetaIn, TX_Meta_DestIPv4Address_Data(I),	TXLLBuf_META_STREAMID_DEST, 0, '0');
-		assign_row(LLBuf_MetaIn, TX_Meta_Length(I),								TXLLBuf_META_STREAMID_LEN);
+		StmBuf_MetaIn_Data(high(TXSTMBUF_META_BITS, TXSTMBUF_META_STREAMID_SRCADR)		DOWNTO low(TXSTMBUF_META_BITS, TXSTMBUF_META_STREAMID_SRCADR))		<= TX_Meta_SrcIPv4Address_Data(I);
+		StmBuf_MetaIn_Data(high(TXSTMBUF_META_BITS, TXSTMBUF_META_STREAMID_DESTADR)	DOWNTO low(TXSTMBUF_META_BITS, TXSTMBUF_META_STREAMID_DESTADR))	<= TX_Meta_DestIPv4Address_Data(I);
+		StmBuf_MetaIn_Data(high(TXSTMBUF_META_BITS, TXSTMBUF_META_STREAMID_LENGTH)		DOWNTO low(TXSTMBUF_META_BITS, TXSTMBUF_META_STREAMID_LENGTH))		<= TX_Meta_Length(I);
 	
-		TX_Meta_rst(I)									<= Meta_rst;
-		TX_Meta_SrcIPv4Address_nxt(I)		<= Meta_nxt(TXLLBuf_META_STREAMID_SRC);
-		TX_Meta_DestIPv4Address_nxt(I)	<= Meta_nxt(TXLLBuf_META_STREAMID_DEST);
+--		TX_Meta_rst(I)									<= Meta_rst;
+		TX_Meta_SrcIPv4Address_nxt(I)		<= StmBuf_MetaIn_nxt(TXSTMBUF_META_STREAMID_SRCADR);
+		TX_Meta_DestIPv4Address_nxt(I)	<= StmBuf_MetaIn_nxt(TXSTMBUF_META_STREAMID_DESTADR);
 	
-		TX_LLBuf : ENTITY L_Global.LocalLink_Buffer
+		TX_StmBuf : ENTITY PoC.stream_Buffer
 			GENERIC MAP (
 				FRAMES												=> 2,
 				DATA_BITS											=> 8,
 				DATA_FIFO_DEPTH								=> 16,
-				META_BITS											=> (TXLLBuf_META_STREAMID_SRC => 8,	TXLLBuf_META_STREAMID_DEST => 8,	TXLLBuf_META_STREAMID_LEN => 16),
-				META_FIFO_DEPTH								=> (TXLLBuf_META_STREAMID_SRC => 4,	TXLLBuf_META_STREAMID_DEST => 4,	TXLLBuf_META_STREAMID_LEN => 1)
+				META_BITS											=> TXSTMBUF_META_BITS,
+				META_FIFO_DEPTH								=> TXSTMBUF_META_FIFO_DEPTHS
 			)
 			PORT MAP (
 				Clock													=> Clock,
@@ -225,80 +275,80 @@ BEGIN
 				In_SOF												=> TX_SOF(I),
 				In_EOF												=> TX_EOF(I),
 				In_Ready											=> TX_Ready(I),
-				In_Meta_rst										=> Meta_rst,
-				In_Meta_nxt										=> Meta_nxt,
-				In_Meta_Data									=> LLBuf_MetaIn,
+				In_Meta_rst										=> TX_Meta_rst(I),
+				In_Meta_nxt										=> StmBuf_MetaIn_nxt,
+				In_Meta_Data									=> StmBuf_MetaIn_Data,
 				
-				Out_Valid											=> LLMux_In_Valid(I),
-				Out_Data											=> LLBuf_DataOut,
-				Out_SOF												=> LLMux_In_SOF(I),
-				Out_EOF												=> LLMux_In_EOF(I),
-				Out_Ready											=> LLMux_In_Ready(I),
-				Out_Meta_rst									=> LLBuf_Meta_rst,
-				Out_Meta_nxt									=> LLBuf_Meta_nxt,
-				Out_Meta_Data									=> LLBuf_MetaOut
+				Out_Valid											=> StmMux_In_Valid(I),
+				Out_Data											=> StmBuf_DataOut,
+				Out_SOF												=> StmMux_In_SOF(I),
+				Out_EOF												=> StmMux_In_EOF(I),
+				Out_Ready											=> StmMux_In_Ready(I),
+				Out_Meta_rst									=> StmBuf_Meta_rst,
+				Out_Meta_nxt									=> StmBuf_MetaOut_nxt,
+				Out_Meta_Data									=> StmBuf_MetaOut_Data
 			);
 		
-		-- unpack pipe metadata to signals
-		LLBuf_Meta_SrcIPv4Address_Data												<= get_row(LLBuf_MetaOut, TXLLBuf_META_STREAMID_SRC,	8);
-		LLBuf_Meta_DestIPv4Address_Data												<= get_row(LLBuf_MetaOut, TXLLBuf_META_STREAMID_DEST,	8);
-		LLBuf_Meta_Length																			<= get_row(LLBuf_MetaOut, TXLLBuf_META_STREAMID_LEN);
+		-- unpack buffer metadata to signals
+		StmBuf_Meta_SrcIPv4Address_Data											<= StmBuf_MetaOut_Data(high(TXSTMBUF_META_BITS, TXSTMBUF_META_STREAMID_SRCADR)		DOWNTO low(TXSTMBUF_META_BITS, TXSTMBUF_META_STREAMID_SRCADR));
+		StmBuf_Meta_DestIPv4Address_Data										<= StmBuf_MetaOut_Data(high(TXSTMBUF_META_BITS, TXSTMBUF_META_STREAMID_DESTADR)	DOWNTO low(TXSTMBUF_META_BITS, TXSTMBUF_META_STREAMID_DESTADR));
+		StmBuf_Meta_Length																	<= StmBuf_MetaOut_Data(high(TXSTMBUF_META_BITS, TXSTMBUF_META_STREAMID_LENGTH)		DOWNTO low(TXSTMBUF_META_BITS, TXSTMBUF_META_STREAMID_LENGTH));
 		
-		LLBuf_Meta_rst																				<= LLMux_In_Meta_rev(I, LLMUX_META_RST_BIT);
-		LLBuf_Meta_nxt(TXLLBuf_META_STREAMID_SRC)							<= LLMux_In_Meta_rev(I, LLMUX_META_SRC_NXT_BIT);
-		LLBuf_Meta_nxt(TXLLBuf_META_STREAMID_DEST)						<= LLMux_In_Meta_rev(I, LLMUX_META_DEST_NXT_BIT);
-		LLBuf_Meta_nxt(TXLLBuf_META_STREAMID_LEN)							<= '0';
+		StmBuf_Meta_rst																			<= StmMux_In_Meta_rev(I, TXSTMMUX_META_RST_BIT);
+		StmBuf_MetaOut_nxt(TXSTMBUF_META_STREAMID_SRCADR)		<= StmMux_In_Meta_rev(I, TXSTMMUX_META_SRC_NXT_BIT);
+		StmBuf_MetaOut_nxt(TXSTMBUF_META_STREAMID_DESTADR)	<= StmMux_In_Meta_rev(I, TXSTMMUX_META_DEST_NXT_BIT);
+		StmBuf_MetaOut_nxt(TXSTMBUF_META_STREAMID_LENGTH)		<= '0';
 		
-		-- pack metadata into 1 dim vector
-		LLMux_MetaIn(LLBuf_Meta_SrcIPv4Address_Data'range)		<= LLBuf_Meta_SrcIPv4Address_Data;
-		LLMux_MetaIn(LLBuf_Meta_DestIPv4Address_Data'range)		<= LLBuf_Meta_DestIPv4Address_Data;
-		LLMux_MetaIn(LLBuf_Meta_Length'range)									<= LLBuf_Meta_Length;
-		LLMux_MetaIn(LLBuf_Meta_Protocol'range)								<= PACKET_TYPES(I);
+		-- repack metadata into 1 dim vector for mux
+		StmMux_MetaIn_Data(high(TXSTMMUX_META_BITS, TXSTMMUX_META_STREAMID_SRCADR)	DOWNTO low(TXSTMMUX_META_BITS, TXSTMMUX_META_STREAMID_SRCADR))		<= StmBuf_Meta_SrcIPv4Address_Data;
+		StmMux_MetaIn_Data(high(TXSTMMUX_META_BITS, TXSTMMUX_META_STREAMID_DESTADR)	DOWNTO low(TXSTMMUX_META_BITS, TXSTMMUX_META_STREAMID_DESTADR))		<= StmBuf_Meta_DestIPv4Address_Data;
+		StmMux_MetaIn_Data(high(TXSTMMUX_META_BITS, TXSTMMUX_META_STREAMID_LENGTH)	DOWNTO low(TXSTMMUX_META_BITS, TXSTMMUX_META_STREAMID_LENGTH))		<= StmBuf_Meta_Length;
+		StmMux_MetaIn_Data(high(TXSTMMUX_META_BITS, TXSTMMUX_META_STREAMID_PROTOCOL)		DOWNTO low(TXSTMMUX_META_BITS, TXSTMMUX_META_STREAMID_PROTOCOL))			<= PACKET_TYPES(I);
 		
 		-- assign vectors to matrix
-		assign_row(LLMux_In_Data, LLBuf_DataOut, I);
-		assign_row(LLMux_In_Meta, LLMux_MetaIn, I);
+		assign_row(StmMux_In_Data, StmBuf_DataOut, I);
+		assign_row(StmMux_In_Meta, StmMux_MetaIn_Data,	 I);
 	END GENERATE;
 
 
-	TX_LLMux : ENTITY L_Global.LocalLink_Mux
+	TX_StmMux : ENTITY PoC.stream_Mux
 		GENERIC MAP (
 			PORTS									=> IPV4_SWITCH_PORTS,
-			DATA_BITS							=> TX_LLMux_Data'length,
-			META_BITS							=> TX_LLMux_Meta'length,
-			META_REV_BITS					=> TX_LLMux_Meta_rev'length
+			DATA_BITS							=> TX_StmMux_Data'length,
+			META_BITS							=> isum(TXSTMMUX_META_BITS),
+			META_REV_BITS					=> TXSTMMUX_META_REV_BITS
 		)
 		PORT MAP (
 			Clock									=> Clock,
 			Reset									=> Reset,
 			
-			In_Valid							=> LLMux_In_Valid,
-			In_Data								=> LLMux_In_Data,
-			In_Meta								=> LLMux_In_Meta,
-			In_Meta_rev						=> LLMux_In_Meta_rev,
-			In_SOF								=> LLMux_In_SOF,
-			In_EOF								=> LLMux_In_EOF,
-			In_Ready							=> LLMux_In_Ready,
+			In_Valid							=> StmMux_In_Valid,
+			In_Data								=> StmMux_In_Data,
+			In_Meta								=> StmMux_In_Meta,
+			In_Meta_rev						=> StmMux_In_Meta_rev,
+			In_SOF								=> StmMux_In_SOF,
+			In_EOF								=> StmMux_In_EOF,
+			In_Ready							=> StmMux_In_Ready,
 			
-			Out_Valid							=> TX_LLMux_Valid,
-			Out_Data							=> TX_LLMux_Data,
-			Out_Meta							=> TX_LLMux_Meta,
-			Out_Meta_rev					=> TX_LLMux_Meta_rev,
-			Out_SOF								=> TX_LLMux_SOF,
-			Out_EOF								=> TX_LLMux_EOF,
+			Out_Valid							=> TX_StmMux_Valid,
+			Out_Data							=> TX_StmMux_Data,
+			Out_Meta							=> TX_StmMux_Meta,
+			Out_Meta_rev					=> TX_StmMux_Meta_rev,
+			Out_SOF								=> TX_StmMux_SOF,
+			Out_EOF								=> TX_StmMux_EOF,
 			Out_Ready							=> IPv4_TX_Ready
 		);
 
-	TX_LLMux_SrcIPv4Address_Data								<= TX_LLMux_Meta(TX_LLMux_SrcIPv4Address_Data'range);
-	TX_LLMux_DestIPv4Address_Data								<= TX_LLMux_Meta(TX_LLMux_DestIPv4Address_Data'range);
-	TX_LLMux_Length															<= TX_LLMux_Meta(TX_LLMux_Length'range);
-	TX_LLMux_Protocol														<= TX_LLMux_Meta(TX_LLMux_Protocol'range);
+	TX_StmMux_SrcIPv4Address_Data										<= TX_StmMux_Meta(TX_StmMux_SrcIPv4Address_Data'range);
+	TX_StmMux_DestIPv4Address_Data									<= TX_StmMux_Meta(TX_StmMux_DestIPv4Address_Data'range);
+	TX_StmMux_Length																<= TX_StmMux_Meta(TX_StmMux_Length'range);
+	TX_StmMux_Protocol															<= TX_StmMux_Meta(TX_StmMux_Protocol'range);
 	
-	TX_LLMux_Meta_rev(LLMUX_META_RST_BIT)				<= IPv4_TX_Meta_rst;
-	TX_LLMux_Meta_rev(LLMUX_META_SRC_NXT_BIT)		<= IPv4_TX_Meta_SrcIPv4Address_nxt;
-	TX_LLMux_Meta_rev(LLMUX_META_DEST_NXT_BIT)	<= IPv4_TX_Meta_DestIPv4Address_nxt;
+	TX_StmMux_Meta_rev(TXSTMMUX_META_RST_BIT)				<= IPv4_TX_Meta_rst;
+	TX_StmMux_Meta_rev(TXSTMMUX_META_SRC_NXT_BIT)		<= IPv4_TX_Meta_SrcIPv4Address_nxt;
+	TX_StmMux_Meta_rev(TXSTMMUX_META_DEST_NXT_BIT)	<= IPv4_TX_Meta_DestIPv4Address_nxt;
 
-	IPv4_TX : ENTITY L_Ethernet.IPv4_TX
+	IPv4_TX : ENTITY PoC.IPv4_TX
 		GENERIC MAP (
 			DEBUG								=> DEBUG
 		)
@@ -306,18 +356,18 @@ BEGIN
 			Clock													=> Clock,
 			Reset													=> Reset,
 			
-			In_Valid											=> TX_LLMux_Valid,
-			In_Data												=> TX_LLMux_Data,
-			In_SOF												=> TX_LLMux_SOF,
-			In_EOF												=> TX_LLMux_EOF,
+			In_Valid											=> TX_StmMux_Valid,
+			In_Data												=> TX_StmMux_Data,
+			In_SOF												=> TX_StmMux_SOF,
+			In_EOF												=> TX_StmMux_EOF,
 			In_Ready											=> IPv4_TX_Ready,
 			In_Meta_rst										=> IPv4_TX_Meta_rst,
 			In_Meta_SrcIPv4Address_nxt		=> IPv4_TX_Meta_SrcIPv4Address_nxt,
-			In_Meta_SrcIPv4Address_Data		=> TX_LLMux_SrcIPv4Address_Data,
+			In_Meta_SrcIPv4Address_Data		=> TX_StmMux_SrcIPv4Address_Data,
 			In_Meta_DestIPv4Address_nxt		=> IPv4_TX_Meta_DestIPv4Address_nxt,
-			In_Meta_DestIPv4Address_Data	=> TX_LLMux_DestIPv4Address_Data,
-			In_Meta_Length								=> TX_LLMux_Length,
-			In_Meta_Protocol							=> TX_LLMux_Protocol,
+			In_Meta_DestIPv4Address_Data	=> TX_StmMux_DestIPv4Address_Data,
+			In_Meta_Length								=> TX_StmMux_Length,
+			In_Meta_Protocol							=> TX_StmMux_Protocol,
 			
 			ARP_IPCache_Query							=> ARP_IPCache_Query,
 			ARP_IPCache_IPv4Address_rst		=> ARP_IPCache_IPv4Address_rst,
@@ -342,7 +392,7 @@ BEGIN
 -- ============================================================================================================================================================
 -- RX Path
 -- ============================================================================================================================================================
-	IPv4_RX : ENTITY L_Ethernet.IPv4_RX
+	IPv4_RX : ENTITY PoC.IPv4_RX
 		GENERIC MAP (
 			DEBUG									=> DEBUG
 		)
@@ -401,7 +451,7 @@ BEGIN
 	RX_LLDeMux_MetaIn(high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_LENGTH)		DOWNTO	low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_LENGTH))		<= IPv4_RX_Meta_Length;
 	RX_LLDeMux_MetaIn(high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_PROTO)		DOWNTO	low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_PROTO))		<= IPv4_RX_Meta_Protocol;
 	
-	RX_LLDeMux : ENTITY L_Global.LocalLink_DeMux
+	RX_LLDeMux : ENTITY PoC.stream_DeMux
 		GENERIC MAP (
 			PORTS										=> IPV4_SWITCH_PORTS,
 			DATA_BITS								=> LLDEMUX_DATA_BITS,
@@ -439,11 +489,11 @@ BEGIN
 
 	-- new slm_slice funtion to avoid generate statement for wiring => cut multiple columns over all rows and convert to slvv_*
 	RX_Data													<= to_slvv_8(RX_LLDeMux_Data);
-	RX_Meta_SrcMACAddress_Data			<= to_slvv_8(	slm_slice_cols(RX_LLDeMux_MetaOut, low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_SRCMAC),	high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_SRCMAC)));
-	RX_Meta_DestMACAddress_Data			<= to_slvv_8(	slm_slice_cols(RX_LLDeMux_MetaOut, low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_DESTMAC),	high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_DESTMAC)));
-	RX_Meta_EthType									<= to_slvv_16(slm_slice_cols(RX_LLDeMux_MetaOut, low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_ETHTYPE),	high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_ETHTYPE)));
-	RX_Meta_SrcIPv4Address_Data			<= to_slvv_8(	slm_slice_cols(RX_LLDeMux_MetaOut, low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_SRCIP),		high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_SRCIP)));
-	RX_Meta_DestIPv4Address_Data		<= to_slvv_8(	slm_slice_cols(RX_LLDeMux_MetaOut, low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_DESTIP),	high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_DESTIP)));
-	RX_Meta_Length									<= to_slvv_16(slm_slice_cols(RX_LLDeMux_MetaOut, low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_LENGTH),	high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_LENGTH)));
-	RX_Meta_Protocol								<= to_slvv_8(	slm_slice_cols(RX_LLDeMux_MetaOut, low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_PROTO),		high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_PROTO)));
+	RX_Meta_SrcMACAddress_Data			<= to_slvv_8(	slm_slice_cols(RX_LLDeMux_MetaOut, high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_SRCMAC),	 low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_SRCMAC)));
+	RX_Meta_DestMACAddress_Data			<= to_slvv_8(	slm_slice_cols(RX_LLDeMux_MetaOut, high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_DESTMAC), low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_DESTMAC)));
+	RX_Meta_EthType									<= to_slvv_16(slm_slice_cols(RX_LLDeMux_MetaOut, high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_ETHTYPE), low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_ETHTYPE)));
+	RX_Meta_SrcIPv4Address_Data			<= to_slvv_8(	slm_slice_cols(RX_LLDeMux_MetaOut, high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_SRCIP),	 low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_SRCIP)));
+	RX_Meta_DestIPv4Address_Data		<= to_slvv_8(	slm_slice_cols(RX_LLDeMux_MetaOut, high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_DESTIP),	 low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_DESTIP)));
+	RX_Meta_Length									<= to_slvv_16(slm_slice_cols(RX_LLDeMux_MetaOut, high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_LENGTH),	 low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_LENGTH)));
+	RX_Meta_Protocol								<= to_slvv_8(	slm_slice_cols(RX_LLDeMux_MetaOut, high(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_PROTO),	 low(LLDEMUX_META_BITS, LLDEMUX_META_STREAMID_PROTO)));
 END ARCHITECTURE;

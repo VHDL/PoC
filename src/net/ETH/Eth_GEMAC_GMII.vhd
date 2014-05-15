@@ -1,3 +1,34 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Module:				 	TODO
+--
+-- Authors:				 	Patrick Lehmann
+-- 
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
@@ -5,17 +36,15 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 --USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+--LIBRARY L_IO;
+--USE			L_IO.IOTypes.ALL;
+--
+--LIBRARY L_LCD;		-- TODO: remove after debugging (L_LCD.StrobeLimiter)
 
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
 
-LIBRARY L_LCD;		-- TODO: remove after debugging (L_LCD.StrobeLimiter)
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
 
 
 ENTITY Eth_GEMAC_GMII IS
@@ -78,6 +107,7 @@ ENTITY Eth_GEMAC_GMII IS
 --		MDIO											: INOUT T_ETHERNET_PHY_INTERFACE_MDIO
 	);
 END;
+
 
 ARCHITECTURE rtl OF Eth_GEMAC_GMII IS
 	ATTRIBUTE KEEP							: BOOLEAN;
@@ -234,7 +264,7 @@ BEGIN
 		TX_FIFO_EOF			<= TX_FIFO_DataOut(EOF_BIT);
 	END BLOCK;
 	
-	TX_MAC : ENTITY L_Ethernet.Eth_GEMAC_TX
+	TX_MAC : ENTITY PoC.Eth_GEMAC_TX
 		PORT MAP (
 			RS_TX_Clock								=> RS_TX_Clock,
 			RS_TX_Reset								=> RS_TX_Reset,
@@ -258,7 +288,7 @@ BEGIN
 	-- ==========================================================================================================================================================
 	-- RX path
 	-- ==========================================================================================================================================================
-	RX_MAC : ENTITY L_Ethernet.Eth_GEMAC_RX
+	RX_MAC : ENTITY PoC.Eth_GEMAC_RX
 		PORT MAP (
 			RS_RX_Clock								=> RS_RX_Clock,
 			RS_RX_Reset								=> RS_RX_Reset,

@@ -1,3 +1,34 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Module:				 	TODO
+--
+-- Authors:				 	Patrick Lehmann
+-- 
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
@@ -5,22 +36,17 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.io.ALL;
+USE			PoC.net.ALL;
+USE			PoC.cache.ALL;
 
 
 ENTITY ARP_Wrapper IS
 	GENERIC (
 		CLOCK_FREQ_MHZ											: REAL																	:= 125.0;					-- 125 MHz
 		INTERFACE_MACADDRESS								: T_NET_MAC_ADDRESS											:= C_NET_MAC_ADDRESS_EMPTY;
-		INITIAL_IPV4ADDRESSES								: T_NET_IPV4_ADDRESS_VECTOR							:= (OTHERS => C_NET_IPV4_ADDRESS_EMPTY);
+		INITIAL_IPV4ADDRESSES								: T_NET_IPV4_ADDRESS_VECTOR							:= (0 => C_NET_IPV4_ADDRESS_EMPTY);
 		INITIAL_ARPCACHE_CONTENT						: T_NET_ARP_ARPCACHE_VECTOR							:= (0 => (Tag => C_NET_IPV4_ADDRESS_EMPTY, MAC => C_NET_MAC_ADDRESS_EMPTY));
 		APR_REQUEST_TIMEOUT_MS							: REAL																	:= 100.0
 	);
@@ -73,6 +99,7 @@ ENTITY ARP_Wrapper IS
 		Eth_BC_RX_Meta_DestMACAddress_Data	: IN	T_SLV_8
 	);
 END;
+
 
 ARCHITECTURE rtl OF ARP_Wrapper IS
 	SIGNAL ARPCache_Command												: T_NET_ARP_ARPCACHE_COMMAND;
@@ -245,7 +272,7 @@ BEGIN
 -- ============================================================================================================================================================
 -- Responder Path
 -- ============================================================================================================================================================
-	MACSeq1 : ENTITY L_Global.Sequenzer
+	MACSeq1 : ENTITY PoC.misc_Sequencer
 		GENERIC MAP (
 			INPUT_BITS						=> 48,
 			OUTPUT_BITS						=> 8,
@@ -362,7 +389,7 @@ BEGIN
 		END CASE;
 	END PROCESS;
 
-	BCRcv : ENTITY L_Ethernet.ARP_BroadCast_Receiver
+	BCRcv : ENTITY PoC.ARP_BroadCast_Receiver
 		GENERIC MAP (
 			ALLOWED_PROTOCOL_IPV4					=> TRUE,
 			ALLOWED_PROTOCOL_IPV6					=> FALSE
@@ -395,7 +422,7 @@ BEGIN
 			TargetIPAddress_Data					=> BCRcv_TargetIPv4Address_Data
 		);
 
-	IPPool : ENTITY L_Ethernet.ARP_IPPool
+	IPPool : ENTITY PoC.ARP_IPPool
 		GENERIC MAP (
 			IPPOOL_SIZE										=> 8,
 			INITIAL_IPV4ADDRESSES					=> INITIAL_IPV4ADDRESSES
@@ -416,7 +443,7 @@ BEGIN
 			PoolResult										=> IPPool_PoolResult
 		);
 
-	UCRsp : ENTITY L_Ethernet.ARP_UniCast_Responder
+	UCRsp : ENTITY PoC.ARP_UniCast_Responder
 --		GENERIC MAP (
 --			
 --		)
@@ -449,7 +476,7 @@ BEGIN
 -- ============================================================================================================================================================
 -- ARPCache Path
 -- ============================================================================================================================================================
-	MACSeq2 : ENTITY L_Global.Sequenzer
+	MACSeq2 : ENTITY PoC.misc_Sequencer
 		GENERIC MAP (
 			INPUT_BITS						=> 48,
 			OUTPUT_BITS						=> 8,
@@ -466,7 +493,7 @@ BEGIN
 			Output								=> MACSeq2_SenderMACAddress_Data
 		);
 		
-	IPSeq2 : ENTITY L_Global.Sequenzer
+	IPSeq2 : ENTITY PoC.misc_Sequencer
 		GENERIC MAP (
 			INPUT_BITS						=> 32,
 			OUTPUT_BITS						=> 8,
@@ -654,7 +681,7 @@ BEGIN
 	
 	ARPReq_Timeout			<= ARPReq_TimeoutCounter_s(ARPReq_TimeoutCounter_s'high);
 
-	UCRcv : ENTITY L_Ethernet.ARP_UniCast_Receiver
+	UCRcv : ENTITY PoC.ARP_UniCast_Receiver
 		GENERIC MAP (
 			ALLOWED_PROTOCOL_IPV4					=> TRUE,
 			ALLOWED_PROTOCOL_IPV6					=> FALSE
@@ -689,7 +716,7 @@ BEGIN
 			TargetMACAddress_Data					=> UCRcv_TargetMACAddress_Data
 		);
 
-	ARPCache : ENTITY L_Ethernet.ARP_Cache
+	ARPCache : ENTITY PoC.ARP_Cache
 		GENERIC MAP (
 			CLOCK_FREQ_MHZ							=> CLOCK_FREQ_MHZ,
 			REPLACEMENT_POLICY					=> "LRU",
@@ -719,7 +746,7 @@ BEGIN
 			MACAddress_Data							=> ARPCache_MACAddress_Data
 		);
 
-	BCReq : ENTITY L_Ethernet.ARP_BroadCast_Requester
+	BCReq : ENTITY PoC.ARP_BroadCast_Requester
 --		GENERIC MAP (
 --			
 --		)
@@ -797,7 +824,7 @@ BEGIN
 		UCRsp_TX_Meta_DestMACAddress_nxt				<= LLMux_In_Meta_rev(LLMUX_PORT_UCRSP, META_DEST_NXT_BIT);
 		assign_row(LLMux_In_Meta, UCRsp_TX_Meta_DestMACAddress_Data, LLMUX_PORT_UCRSP);
 
-		LLMux : ENTITY L_Global.LocalLink_Mux
+		LLMux : ENTITY PoC.stream_Mux
 			GENERIC MAP (
 				PORTS									=> LLMUX_PORTS,
 				DATA_BITS							=> Eth_UC_TX_Data'length,

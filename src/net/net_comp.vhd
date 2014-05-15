@@ -1,3 +1,34 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Module:				 	TODO
+--
+-- Authors:				 	Patrick Lehmann
+-- 
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
@@ -5,18 +36,12 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.io.ALL;
+USE			PoC.net.ALL;
 
 
-PACKAGE EthComp IS
+PACKAGE net_comp IS
 	-- ==========================================================================================================================================================
 	-- Ethernet: reconcilation sublayer (RS)
 	-- ==========================================================================================================================================================
@@ -221,7 +246,7 @@ PACKAGE EthComp IS
 	-- ==========================================================================================================================================================
 	COMPONENT Eth_Wrapper_Virtex5 IS
 		GENERIC (
-			DEBUG						: BOOLEAN														:= FALSE;															-- 
+			DEBUG											: BOOLEAN														:= FALSE;															-- 
 			CLOCKIN_FREQ_MHZ					: REAL															:= 125.0;															-- 125 MHz
 			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
 			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
@@ -261,7 +286,7 @@ PACKAGE EthComp IS
 	
 	COMPONENT Eth_Wrapper_Virtex6 IS
 		GENERIC (
-			DEBUG						: BOOLEAN														:= FALSE;															-- 
+			DEBUG											: BOOLEAN														:= FALSE;															-- 
 			CLOCKIN_FREQ_MHZ					: REAL															:= 125.0;															-- 125 MHz
 			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
 			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
@@ -301,7 +326,7 @@ PACKAGE EthComp IS
 	
 	COMPONENT Eth_Wrapper_Virtex7 IS
 		GENERIC (
-			DEBUG						: BOOLEAN														:= FALSE;															-- 
+			DEBUG											: BOOLEAN														:= FALSE;															-- 
 			CLOCKIN_FREQ_MHZ					: REAL															:= 125.0;															-- 125 MHz
 			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
 			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
@@ -339,71 +364,6 @@ PACKAGE EthComp IS
 		);
 	END COMPONENT;
 	
-	
-	-- Management Data I/O
-	-- ==========================================================================================================================================================
-	COMPONENT Eth_MDIOController IS
-		GENERIC (
-			DEBUG						: BOOLEAN												:= TRUE;
-			CLOCK_IN_FREQ_MHZ					: REAL													:= 125.0					-- 125 MHz
-		);
-		PORT (
-			Clock											: IN	STD_LOGIC;
-			Reset											: IN	STD_LOGIC;
-			
-			-- MDIO interface
-			Command										: IN	T_NET_ETH_MDIOCONTROLLER_COMMAND;
-			Status										: OUT	T_NET_ETH_MDIOCONTROLLER_STATUS;
-
-			Physical_Address					: IN	STD_LOGIC_VECTOR(4 DOWNTO 0);
-			Register_Address					: IN	STD_LOGIC_VECTOR(4 DOWNTO 0);
-			Register_DataIn						: IN	T_SLV_16;
-			Register_DataOut					: OUT	T_SLV_16;
-			
-			-- tri-state interface
-			MD_Clock_i								: IN	STD_LOGIC;			-- IEEE 802.3: MDC		-> Managament Data Clock I
-			MD_Clock_o								: OUT	STD_LOGIC;			-- IEEE 802.3: MDC		-> Managament Data Clock O
-			MD_Clock_t								: OUT	STD_LOGIC;			-- IEEE 802.3: MDC		-> Managament Data Clock tri-state
-			MD_Data_i									: IN	STD_LOGIC;			-- IEEE 802.3: MDIO		-> Managament Data I
-			MD_Data_o									: OUT	STD_LOGIC;			-- IEEE 802.3: MDIO		-> Managament Data O
-			MD_Data_t									: OUT	STD_LOGIC				-- IEEE 802.3: MDIO		-> Managament Data tri-state
-		);
-	END COMPONENT;
-	
-	COMPONENT MDIO_SFF8431_Adapter IS
-		GENERIC (
-			DEBUG													: BOOLEAN												:= TRUE
-		);
-		PORT (
-			Clock													: IN	STD_LOGIC;
-			Reset													: IN	STD_LOGIC;
-			
-			-- MDIO interface
-			Command												: IN	T_NET_ETH_MDIOCONTROLLER_COMMAND;
-			Status												: OUT	T_NET_ETH_MDIOCONTROLLER_STATUS;
-			
-			Physical_Address							: IN	STD_LOGIC_VECTOR(6 DOWNTO 0);
-			Register_Address							: IN	STD_LOGIC_VECTOR(4 DOWNTO 0);
-			Register_DataIn								: IN	T_SLV_16;
-			Register_DataOut							: OUT	T_SLV_16;
-			
-			-- IICController_SFF8431 interface
-			SFF8431_Command								: OUT	T_IO_IIC_SFF8431_COMMAND;
-			SFF8431_Status								: IN	T_IO_IIC_SFF8431_STATUS;
-			
-			SFF8431_PhysicalAddress				: OUT	STD_LOGIC_VECTOR(6 DOWNTO 0);
-			SFF8431_RegisterAddress				: OUT	T_SLV_8;
-			
-			SFF8431_LastByte							: OUT	STD_LOGIC;
-			SFF8431_DataIn								: IN	T_SLV_8;
-			SFF8431_Valid									: IN	STD_LOGIC;
-				
-			SFF8431_MoreBytes							: OUT	STD_LOGIC;
-			SFF8431_DataOut								: OUT	T_SLV_8;
-			SFF8431_NextByte							: IN	STD_LOGIC
-		);
-	END COMPONENT;
-
 	-- ==========================================================================================================================================================
 	-- Ethernet: MAC Data-Link-Layer
 	-- ==========================================================================================================================================================
@@ -481,6 +441,6 @@ PACKAGE EthComp IS
 	
 END;
 
-PACKAGE BODY EthComp IS
+PACKAGE BODY net_comp IS
 	
 END PACKAGE BODY;
