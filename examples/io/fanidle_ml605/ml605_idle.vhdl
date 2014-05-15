@@ -65,7 +65,7 @@ begin
   -- Synchronization of Reset
   process(cpu_reset, clk)
   begin
-    if cpu_reset = '0' then
+    if cpu_reset = '1' then
       rst_r <= (others => '1');
     elsif rising_edge(clk) then
       rst_r <= rst_r(rst_r'left-1 downto 0) & '0';
