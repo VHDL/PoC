@@ -70,7 +70,7 @@ package board is
 
 	CONSTANT C_BOARD_ML505			: T_BOARD_DESCRIPTION		:= (
 		Ethernet => (
-			IPStyle										=> conf("IPSTYLE_SOFT"),
+			IPStyle										=> conf("IPSTYLE_HARD"),	--SOFT"),
 			RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
 			PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
 			PHY_DeviceAddress					=> x"07",

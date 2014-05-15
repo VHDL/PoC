@@ -28,8 +28,8 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- ============================================================================
-library	IEEE;
 
+library	IEEE;
 use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
 

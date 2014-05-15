@@ -3,7 +3,7 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Package:					Common functions and types
+-- Package:					String related functions and types
 --
 -- Authors:					Thomas B. Preusser
 --									Martin Zabel
