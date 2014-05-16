@@ -31,20 +31,10 @@
 
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
-
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.components.ALL;
-USE			PoC.io.ALL;
-USE			PoC.xilinx.ALL;
-
 
 ENTITY io_FanControl IS
 	GENERIC (
-		CLOCK_FREQ_MHZ					: REAL									:= 100.0
+		CLOCK_FREQ_MHZ					: REAL
 	);
 	PORT (
 		Clock										: IN	STD_LOGIC;
@@ -53,7 +43,7 @@ ENTITY io_FanControl IS
 		Fan_PWM									: OUT	STD_LOGIC;
 		Fan_Tacho								: IN	STD_LOGIC;
 		
-		TachoFrequency					: OUT	T_SLV_16
+		TachoFrequency					: out std_logic_vector(15 downto 0)
 	);
 END;
 
@@ -75,6 +65,16 @@ END;
 --
 -- ============================================================================================================================================================
 
+LIBRARY IEEE;
+USE			IEEE.NUMERIC_STD.ALL;
+
+LIBRARY PoC;
+USE			PoC.config.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.components.ALL;
+USE			PoC.io.ALL;
+USE			PoC.xilinx.ALL;
 
 ARCHITECTURE rtl OF io_FanControl IS
 	ATTRIBUTE ASYNC_REG												: STRING;
@@ -127,7 +127,7 @@ BEGIN
 		ATTRIBUTE SHREG_EXTRACT OF UserTemperature_async	: SIGNAL IS "NO";
 		ATTRIBUTE SHREG_EXTRACT OF UserTemperature_sync		: SIGNAL IS "NO";
 	BEGIN
-		SystemMonitor : ENTITY PoC.xil_SystemMonitor_Virtex6
+		SystemMonitor : xil_SystemMonitor_Virtex6
 			PORT MAP (
 				Reset								=> Reset,									-- Reset signal for the System Monitor control logic
 				
@@ -180,7 +180,7 @@ BEGIN
 		ATTRIBUTE SHREG_EXTRACT OF UserTemperature_async	: SIGNAL IS "NO";
 		ATTRIBUTE SHREG_EXTRACT OF UserTemperature_sync		: SIGNAL IS "NO";
 	BEGIN
-		SystemMonitor : ENTITY PoC.xil_SystemMonitor_Series7
+		SystemMonitor : xil_SystemMonitor_Series7
 			PORT MAP (
 				Reset								=> Reset,									-- Reset signal for the System Monitor control logic
 				
