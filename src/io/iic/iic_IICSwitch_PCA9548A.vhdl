@@ -29,7 +29,6 @@
 -- limitations under the License.
 -- ============================================================================================================================================================
 
-
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
@@ -40,10 +39,8 @@ USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.io.ALL;
 
---LIBRARY L_Global;
 
-
-ENTITY IICSwitch_PCA9548A IS
+ENTITY iic_IICSwitch_PCA9548A IS
 	GENERIC (
 		DEBUG											: BOOLEAN						:= FALSE;
 		ALLOW_MEALY_TRANSITION		: BOOLEAN						:= TRUE;
@@ -94,7 +91,7 @@ ENTITY IICSwitch_PCA9548A IS
 END ENTITY;
 
 
-ARCHITECTURE rtl OF IICSwitch_PCA9548A IS
+ARCHITECTURE rtl OF iic_IICSwitch_PCA9548A IS
 	ATTRIBUTE KEEP										: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING						: STRING;
 	ATTRIBUTE ENUM_ENCODING						: STRING;
