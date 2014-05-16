@@ -29,7 +29,6 @@
 -- limitations under the License.
 -- ============================================================================================================================================================
 
-
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
@@ -39,8 +38,6 @@ USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.io.ALL;
-
---LIBRARY L_Global;
 
 
 ENTITY iic_IICSwitch_PCA9548A IS

@@ -1,3 +1,34 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Module:				 	TODO
+--
+-- Authors:				 	Patrick Lehmann
+-- 
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
@@ -52,19 +83,19 @@ ARCHITECTURE rtl OF lcd_LCDSynchronizer IS
 	SIGNAL State			: T_STATE			:= ST_RESET;
 	SIGNAL NextState	: T_STATE;
 
-	CONSTANT COLAC_BW				: POSITIVE																			:= T_LCD_COLUMN_INDEX_BW;
-	CONSTANT ROWAC_BW				: POSITIVE																			:= T_LCD_ROW_INDEX_BW;
+	CONSTANT COLAC_BITS			: POSITIVE																			:= T_LCD_COLUMN_INDEX_BW;
+	CONSTANT ROWAC_BITS			: POSITIVE																			:= T_LCD_ROW_INDEX_BW;
 
 	SIGNAL ColAC_inc				: STD_LOGIC;
 	SIGNAL ColAC_Load				: STD_LOGIC;
-	SIGNAL ColAC_Address		: STD_LOGIC_VECTOR(COLAC_BW - 1 DOWNTO 0);
-	SIGNAL ColAC_Address_us	: UNSIGNED(COLAC_BW - 1 DOWNTO 0);
+	SIGNAL ColAC_Address		: STD_LOGIC_VECTOR(COLAC_BITS - 1 DOWNTO 0);
+	SIGNAL ColAC_Address_us	: UNSIGNED(COLAC_BITS - 1 DOWNTO 0);
 	SIGNAL ColAC_Finished		: STD_LOGIC;
 
 	SIGNAL RowAC_inc				: STD_LOGIC;
 	SIGNAL RowAC_Load				: STD_LOGIC;
-	SIGNAL RowAC_Address		: STD_LOGIC_VECTOR(ROWAC_BW - 1 DOWNTO 0);
-	SIGNAL RowAC_Address_us	: UNSIGNED(ROWAC_BW - 1 DOWNTO 0);
+	SIGNAL RowAC_Address		: STD_LOGIC_VECTOR(ROWAC_BITS - 1 DOWNTO 0);
+	SIGNAL RowAC_Address_us	: UNSIGNED(ROWAC_BITS - 1 DOWNTO 0);
 	SIGNAL RowAC_Finished		: STD_LOGIC;
 
 	SIGNAL LCDI_Strobe			: STD_LOGIC;
@@ -218,37 +249,47 @@ BEGIN
 		END CASE;
 	END PROCESS;
 
-	ColAC : ENTITY L_Global.AddressCounter
-		GENERIC MAP (
-			COUNTER_BW					=> COLAC_BW
-		)
-		PORT MAP (
-			Clock								=> Clock,																							-- clock
-			inc									=> ColAC_inc,																					-- enable counter
-			Load								=> ColAC_Load,																				-- load start and forward input
-			Address_Start				=> to_slv(0, COLAC_BW),																-- start address
-			Address_Step				=> to_slv(1, COLAC_BW),																-- step between two addresses
-			Address_End					=> to_slv(MAX_LCD_COLUMN_COUNT, COLAC_BW),						-- end address
+	blkColAC : BLOCK
+		SIGNAL Counter_us				: UNSIGNED(COLAC_BITS - 1 DOWNTO 0)		:= to_unsigned(0, COLAC_BITS);
+	BEGIN
+		PROCESS(Clock)
+		BEGIN
+			IF rising_edge(Clock) THEN
+				IF (ColAC_Load = '1') THEN
+					Counter_us				<= to_unsigned(0, COLAC_BITS);
+				ELSE
+					IF (ColAC_inc = '1') THEN
+						Counter_us			<= Counter_us + 1;
+					END IF;
+				END IF;
+			END IF;
+		END PROCESS;
 
-			Address							=> ColAC_Address,																			-- currend address
-			Counter_Finished		=> ColAC_Finished																			-- active if end address is reached
-		);
+		-- address output
+		ColAC_Address		<= std_logic_vector(Counter_us);
+		ColAC_Finished	<= to_sl(Counter_us = to_unsigned(MAX_LCD_COLUMN_COUNT, COLAC_BITS));
+	END BLOCK;
 
-	RowAC : ENTITY L_Global.AddressCounter
-		GENERIC MAP (
-			COUNTER_BW					=> ROWAC_BW
-		)
-		PORT MAP (
-			Clock								=> Clock,																							-- clock
-			inc									=> RowAC_inc,																					-- enable counter
-			Load								=> RowAC_Load,																				-- load start and forward input
-			Address_Start				=> to_slv(0, ROWAC_BW),																-- start address
-			Address_Step				=> to_slv(1, ROWAC_BW),																-- step between two addresses
-			Address_End					=> to_slv(MAX_LCD_ROW_COUNT - 1, ROWAC_BW),						-- end address
+	blkRowAC : BLOCK
+		SIGNAL Counter_us				: UNSIGNED(ROWAC_BITS - 1 DOWNTO 0)		:= to_unsigned(0, ROWAC_BITS);
+	BEGIN
+		PROCESS(Clock)
+		BEGIN
+			IF rising_edge(Clock) THEN
+				IF (RowAC_Load = '1') THEN
+					Counter_us				<= to_unsigned(0, ROWAC_BITS);
+				ELSE
+					IF (RowAC_inc = '1') THEN
+						Counter_us			<= Counter_us + 1;
+					END IF;
+				END IF;
+			END IF;
+		END PROCESS;
 
-			Address							=> RowAC_Address,																			-- currend address
-			Counter_Finished		=> RowAC_Finished																			-- active if end address is reached
-		);
+		-- address output
+		RowAC_Address		<= std_logic_vector(Counter_us);
+		RowAC_Finished	<= to_sl(Counter_us = to_unsigned(MAX_LCD_COLUMN_COUNT, COLAC_BITS));
+	END BLOCK;
 
 	ColAC_Address_us	<= unsigned(ColAC_Address);
 	RowAC_Address_us	<= unsigned(RowAC_Address);
@@ -256,7 +297,7 @@ BEGIN
 	Column	<= to_integer(ColAC_Address_us);
 	Row			<= to_integer(RowAC_Address_us);
 
-	LCDInterface : ENTITY L_LCD.lcd4
+	LCDInterface : ENTITY PoC.lcd4
 		PORT MAP (
 			-- Global Reset and Clock
 			clk					=> Clock,
