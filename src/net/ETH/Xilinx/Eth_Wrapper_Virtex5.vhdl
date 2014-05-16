@@ -45,7 +45,7 @@ USE			PoC.net.ALL;
 
 ENTITY Eth_Wrapper_Virtex5 IS
 	GENERIC (
-		DEBUG						: BOOLEAN														:= FALSE;															-- 
+		DEBUG											: BOOLEAN														:= FALSE;															-- 
 		CLOCKIN_FREQ_MHZ					: REAL															:= 125.0;															-- 125 MHz
 		ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
 		RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;				-- 
