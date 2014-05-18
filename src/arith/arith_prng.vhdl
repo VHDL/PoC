@@ -14,7 +14,8 @@
 --
 -- License:
 -- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -53,6 +54,8 @@ architecture rtl of arith_prng is
 	-- The current value
 	signal val_r		: std_logic_vector(BITS downto 1);
 	signal bit1_nxt : std_logic;
+	
+	
 	
 begin	-- rtl
  

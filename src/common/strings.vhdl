@@ -163,7 +163,7 @@ package body strings is
 	END FUNCTION;
 
 	FUNCTION to_string(slv : STD_LOGIC_VECTOR; format : CHARACTER; length : NATURAL := 0; fill : CHARACTER := '0') RETURN STRING IS
-		CONSTANT int					: INTEGER				:= ite((slv'length <= 32), to_integer(unsigned(slv)), 0);
+		CONSTANT int					: INTEGER				:= ite((slv'length <= 31), to_integer(unsigned(resize(slv, 31))), 0);
 		CONSTANT str					: STRING				:= INTEGER'image(int);
 		CONSTANT bin_len			: POSITIVE			:= slv'length;
 		CONSTANT dec_len			: POSITIVE			:= str'length;--log10ceilnz(int);
