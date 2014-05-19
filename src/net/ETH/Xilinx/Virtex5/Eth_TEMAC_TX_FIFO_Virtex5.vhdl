@@ -108,7 +108,7 @@ use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
 
-entity Eth_TEMAC_Virtex5_TX_FIFO is
+entity eth_TEMAC_TX_FIFO_Virtex5 is
    generic (
       -- If FULL_DUPLEX_ONLY is true then all the half duplex logic in the FIFO is removed.
       -- The default for the fifo is to include the half duplex functionality 
@@ -138,7 +138,7 @@ entity Eth_TEMAC_Virtex5_TX_FIFO is
 
 end;
 
-architecture RTL of Eth_TEMAC_Virtex5_TX_FIFO is
+architecture rtl of eth_TEMAC_TX_FIFO_Virtex5 is
 
 
   signal GND                  : std_logic;
@@ -1359,4 +1359,4 @@ begin
       DOPB  => rd_eof_bram_u);
 
   
-end RTL;
+end;

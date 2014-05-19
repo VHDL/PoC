@@ -106,7 +106,7 @@ use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
 
-entity Eth_TEMAC_Virtex5_RX_FIFO is
+entity eth_TEMAC_RX_FIFO_Virtex5 is
   port (
         -- Local-link Interface
         rd_clk         : in  std_logic;
@@ -131,7 +131,7 @@ entity Eth_TEMAC_Virtex5_RX_FIFO is
 end;
 
 
-architecture RTL of Eth_TEMAC_Virtex5_RX_FIFO is
+architecture rtl of eth_TEMAC_RX_FIFO_Virtex5 is
 
   signal GND                 : std_logic;
   signal VCC                 : std_logic;
@@ -950,4 +950,4 @@ begin
 
 
   
-end RTL;
+end;

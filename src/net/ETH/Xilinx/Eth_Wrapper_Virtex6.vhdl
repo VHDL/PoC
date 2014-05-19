@@ -248,7 +248,7 @@ BEGIN
 			Eth_RX_Enable					<= '1';
 
 			-- Transmitter FIFO and LocalLink adapter
-			TX_FIFO	: ENTITY PoC.Eth_TEMAC_Virtex6_TX_FIFO
+			TX_FIFO	: ENTITY PoC.eth_TEMAC_TX_FIFO_Virtex6
 				GENERIC MAP (
 					FULL_DUPLEX_ONLY	=> FALSE--TRUE
 				)
@@ -277,7 +277,7 @@ BEGIN
 				);
 			
 			-- Receiver FIFO and LocalLink adapter
-			RX_FIFO	: ENTITY PoC.Eth_TEMAC_Virtex6_RX_FIFO
+			RX_FIFO	: ENTITY PoC.eth_TEMAC_RX_FIFO_Virtex6
 				PORT MAP (
 					rd_clk						=> RX_Clock,								-- Local link read clock
 					rd_sreset					=> RX_Reset,								-- synchronous reset (rd_clock)
