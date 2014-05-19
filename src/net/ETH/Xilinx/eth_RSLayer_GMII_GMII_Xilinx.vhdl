@@ -43,7 +43,7 @@ USE			PoC.vectors.ALL;
 USE			PoC.net.ALL;
 
 
-ENTITY Eth_RSLayer_GMII_GMII_Virtex5 IS
+ENTITY eth_RSLayer_GMII_GMII_Xilinx IS
 	PORT (
 		Reset_async								: IN	STD_LOGIC;																	-- @async: 
 		
@@ -67,7 +67,7 @@ END;
 -- ============================================================================================================================================================
 -- use IDELAY instances on GMII_RX_Clock to move the clock into alignment with the data (GMII_RX_Data[7:0])
 
-ARCHITECTURE rtl OF Eth_RSLayer_GMII_GMII_Virtex5 IS
+ARCHITECTURE rtl OF eth_RSLayer_GMII_GMII_Xilinx IS
 	ATTRIBUTE KEEP												: BOOLEAN;
 	
 	SIGNAL IODelay_RX_Clock								: STD_LOGIC;
