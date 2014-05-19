@@ -43,13 +43,13 @@ USE			PoC.vectors.ALL;
 USE			PoC.net.ALL;
 
 
-ENTITY Eth_Wrapper_Virtex5 IS
+ENTITY eth_Wrapper_Virtex5 IS
 	GENERIC (
-		DEBUG						: BOOLEAN														:= FALSE;															-- 
-		CLOCKIN_FREQ_MHZ					: REAL															:= 125.0;															-- 125 MHz
+		DEBUG											: BOOLEAN														:= FALSE;															-- 
+		CLOCK_FREQ_MHZ						: REAL															:= 125.0;															-- 125 MHz
 		ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
-		RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;				-- 
-		PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII				-- 
+		RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
+		PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		-- 
 	);
 	PORT (
 		-- clock interface
@@ -115,7 +115,7 @@ END ENTITY;
 -- |		"				|			GMII			|			SGMII			|			not implemented, yet							|
 -- +------------+---------------+---------------+---------------------------------------+
 
-ARCHITECTURE rtl OF Eth_Wrapper_Virtex5 IS
+ARCHITECTURE rtl OF eth_Wrapper_Virtex5 IS
 	ATTRIBUTE KEEP									: BOOLEAN;
 
 	SIGNAL Reset_async							: STD_LOGIC;		-- FIXME: 
@@ -415,7 +415,7 @@ BEGIN
 			-- FPGA-PHY inferface: GMII
 			-- ========================================================================================================================================================
 			genPHY_GMII	: IF (PHY_DATA_INTERFACE = NET_ETH_PHY_DATA_INTERFACE_GMII) GENERATE
-				GMII	: ENTITY PoC.Eth_RSLayer_GMII_GMII_Virtex5
+				GMII	: ENTITY PoC.eth_RSLayer_GMII_GMII_Xilinx
 					PORT MAP (
 						RS_TX_Clock								=> RS_TX_Clock,
 						RS_RX_Clock								=> RS_RX_Clock,
@@ -451,7 +451,7 @@ BEGIN
 			BEGIN
 				ASSERT FALSE REPORT "Physical interface SGMII is not implemented!" SEVERITY FAILURE;
 			
-				SGMII	: ENTITY PoC.Eth_RSLayer_GMII_SGMII_Virtex5
+				SGMII	: ENTITY PoC.eth_RSLayer_GMII_GMII_Xilinx
 		--			GENERIC MAP (
 		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
 		--			)
@@ -835,7 +835,7 @@ BEGIN
 			genPHY_GMII	: IF (PHY_DATA_INTERFACE = NET_ETH_PHY_DATA_INTERFACE_GMII) GENERATE
 			
 			BEGIN
-				GMII	: ENTITY PoC.Eth_RSLayer_GMII_GMII_Virtex5
+				GMII	: ENTITY PoC.eth_RSLayer_GMII_GMII_Xilinx
 					PORT MAP (
 						RS_TX_Clock								=> RS_TX_Clock,
 						RS_RX_Clock								=> RS_RX_Clock,						
