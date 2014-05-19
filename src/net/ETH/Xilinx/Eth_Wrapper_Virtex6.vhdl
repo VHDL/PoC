@@ -43,13 +43,13 @@ USE			PoC.vectors.ALL;
 USE			PoC.net.ALL;
 
 
-ENTITY Eth_Wrapper_Virtex6 IS
+ENTITY eth_Wrapper_Virtex6 IS
 	GENERIC (
 		DEBUG											: BOOLEAN														:= FALSE;															-- 
-		CLOCKIN_FREQ_MHZ					: REAL															:= 125.0;															-- 125 MHz
+		CLOCK_FREQ_MHZ						: REAL															:= 125.0;															-- 125 MHz
 		ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
-		RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;				-- 
-		PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII				-- 
+		RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
+		PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		-- 
 	);
 	PORT (
 		-- clock interface
@@ -115,7 +115,7 @@ END ENTITY;
 -- |		"				|			GMII			|			SGMII			|			not implemented, yet							|
 -- +------------+---------------+---------------+---------------------------------------+
 
-ARCHITECTURE rtl OF Eth_Wrapper_Virtex6 IS
+ARCHITECTURE rtl OF eth_Wrapper_Virtex6 IS
 	ATTRIBUTE KEEP									: BOOLEAN;
 
 	SIGNAL Reset_async							: STD_LOGIC;		-- FIXME: 
@@ -543,7 +543,7 @@ BEGIN
 					CLIENTEMAC0TXDVLDMSW						=> '0',
 					EMAC0CLIENTTXACK								=> Eth_TX_Ack,
 					CLIENTEMAC0TXFIRSTBYTE					=> '0',														-- SOURCE: v6temac_gmii_locallink.vhd
-					CLIENTEMAC0TXUNDERRUN						=> '0',														-- SOURCE: v5temac_client_eth_fifo_8.vhd
+					CLIENTEMAC0TXUNDERRUN						=> '0',														-- SOURCE: v6temac_client_eth_fifo_8.vhd
 					EMAC0CLIENTTXCOLLISION					=> Eth_TX_Collision,
 					EMAC0CLIENTTXRETRANSMIT					=> Eth_TX_Retransmit,
 					CLIENTEMAC0TXIFGDELAY						=> (OTHERS	=> '0'),								-- SOURCE: ml605_gmii_udp_top.vhdl
