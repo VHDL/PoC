@@ -86,6 +86,7 @@ package board is
 		return resize(str, T_CONFIG_STRING'length);
 	end function;
 	
+	-- TODO: move to PoC.strings; find a better function name??
 	function str_trim(str : string) return string is
 	begin
 		return resize(str, str_length(str));
@@ -175,7 +176,7 @@ package board is
 		),
 		
 		BOARD_S2GXAVDK => (
-			FPGADevice									=> conf("EP2SGX----------"),												-- EP2SGX	??????????
+			FPGADevice									=> conf("EP2SGX90FF1508C3"),												-- EP2SGX90FF1508C3
 			Ethernet => (
 				IPStyle										=> conf("IPSTYLE_SOFT"),
 				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
