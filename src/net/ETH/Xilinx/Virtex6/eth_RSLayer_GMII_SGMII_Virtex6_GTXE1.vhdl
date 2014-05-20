@@ -8,12 +8,9 @@ USE			UNISIM.VCOMPONENTS.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_Ethernet;
---USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY eth_RSLayer_GMII_SGMII_Virtex6_GTXE1 IS
 	GENERIC (
