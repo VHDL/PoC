@@ -513,7 +513,7 @@ BEGIN
 		BEGIN
 			Trans_PHY_MDIOAddress		<= "00111";
 		
-			TEMAC_V5	: ENTITY PoC.eth_TEMAC_SGMII_Virtex5
+			TEMAC_V5	: ENTITY PoC.eth_TEMAC_TRANS_Virtex5
 				PORT MAP (
 					--					-- Asynchronous Reset
 					RESET														=> Reset,
