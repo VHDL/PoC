@@ -38,16 +38,23 @@ use			PoC.strings.all;
 
 
 package board is
-	-- Functions extracting board and PCB properties from "MY_BOARD"
-	-- which is declared in package "my_config".
-	-- ===========================================================================
-	FUNCTION MY_DEVICE_STRING(BoardConfig : STRING := "None")	RETURN STRING;
-
-	-- 
+	-- TODO: 
 	-- ===========================================================================
 	SUBTYPE T_CONFIG_STRING		IS STRING(1 TO 64);
 	
-	TYPE T_BRD_ETHERNET_DESC IS RECORD
+	TYPE T_BOARD IS (
+		BOARD_CUSTOM,
+		BOARD_ML505,
+		BOARD_ML605,
+		BOARD_KC705,
+		BOARD_VC707,
+		BOARD_DE0,
+		BOARD_DE4,
+		BOARD_DE5,
+		BOARD_S2GXAVDK
+	);
+	
+	TYPE T_BOARD_ETHERNET_DESC IS RECORD
 		IPStyle										: T_CONFIG_STRING;
 		RS_DataInterface					: T_CONFIG_STRING;
 		PHY_Device								: T_CONFIG_STRING;
@@ -57,101 +64,179 @@ package board is
 	END RECORD;
 
 	TYPE T_BOARD_DESCRIPTION IS RECORD
-		Ethernet		: T_BRD_ETHERNET_DESC;
+		FPGADevice	: T_CONFIG_STRING;
+		Ethernet		: T_BOARD_ETHERNET_DESC;
 	
 	END RECORD;
 
-	FUNCTION MY_BOARD_STRUCT(BoardConfig : STRING := "None")	RETURN T_BOARD_DESCRIPTION;
+	TYPE T_BOARD_DESCRIPTION_VECTOR	IS ARRAY (T_BOARD) OF T_BOARD_DESCRIPTION;
 
-	FUNCTION conf(str : STRING) RETURN T_CONFIG_STRING IS
-	BEGIN
-		RETURN resize(str, T_CONFIG_STRING'length);
-	END FUNCTION;
 
-	CONSTANT C_BOARD_ML505			: T_BOARD_DESCRIPTION		:= (
-		Ethernet => (
-			IPStyle										=> conf("IPSTYLE_HARD"),	--SOFT"),
-			RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
-			PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
-			PHY_DeviceAddress					=> x"07",
-			PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
-			PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
+	-- Functions extracting board and PCB properties from "MY_BOARD"
+	-- which is declared in package "my_config".
+	-- ===========================================================================
+	function MY_DEVICE_STRING(BoardConfig : string := "None") return string;
+	function MY_BOARD_STRUCT(BoardConfig : string := "None")	return T_BOARD_DESCRIPTION;
+	
+
+	-- private functions
+	-- ===========================================================================
+	function conf(str : string) return T_CONFIG_STRING is
+	begin
+		return resize(str, T_CONFIG_STRING'length);
+	end function;
+	
+	function str_trim(str : string) return string is
+	begin
+		return resize(str, str_length(str));
+	end function;
+
+
+	-- board descriptions
+	-- ===========================================================================
+	CONSTANT C_BOARD_DESCRIPTION_LIST		: T_BOARD_DESCRIPTION_VECTOR		:= (
+		BOARD_ML505 => (
+			FPGADevice									=> conf("XC5VLX50T"),																-- XC5VLX50T-1FFG1136
+			Ethernet => (
+				IPStyle										=> conf("IPSTYLE_HARD"),	--SOFT"),
+				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+				PHY_DeviceAddress					=> x"07",
+				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
+			)
+		),
+		BOARD_ML605 => (
+			FPGADevice									=> conf("XC6VLX240T"),															-- XC6VLX240T-1FFG1156
+			Ethernet => (
+				IPStyle										=> conf("IPSTYLE_SOFT"),	--HARD"),
+				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+				PHY_DeviceAddress					=> x"07",
+				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
+			)
+		),
+		BOARD_KC705 => (
+			FPGADevice									=> conf("XC7K325T"),																-- XC7K325T-2FFG900C
+			Ethernet => (
+				IPStyle										=> conf("IPSTYLE_SOFT"),
+				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+				PHY_DeviceAddress					=> x"07",
+				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
+			)
+		),
+		BOARD_VC707 => (
+			FPGADevice									=> conf("XC7VX485T"),																-- XC7VX485T-2FFG1761C
+			Ethernet => (
+				IPStyle										=> conf("IPSTYLE_SOFT"),
+				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+				PHY_DeviceAddress					=> x"07",
+				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_SGMII"),
+				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
+			)
+		),
+		-- Altera boards
+		BOARD_DE0 => (
+			FPGADevice									=> conf("EP3C16F484"),															-- EP3C16F484
+			Ethernet => (
+				IPStyle										=> conf("IPSTYLE_SOFT"),
+				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+				PHY_DeviceAddress					=> x"07",
+				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
+			)
+		),
+		BOARD_DE4 => (
+			FPGADevice									=> conf("EP4SGX230KF40C2"),													-- EP4SGX230KF40C2
+			Ethernet => (
+				IPStyle										=> conf("IPSTYLE_SOFT"),
+				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+				PHY_DeviceAddress					=> x"07",
+				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
+			)
+		),
+		BOARD_DE5 => (
+			FPGADevice									=> conf("EP5SGXEA7N2F45C2"),												-- EP5SGXEA7N2F45C2
+			Ethernet => (
+				IPStyle										=> conf("IPSTYLE_SOFT"),
+				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+				PHY_DeviceAddress					=> x"07",
+				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
+			)
+		),
+		
+		BOARD_S2GXAVDK => (
+			FPGADevice									=> conf("EP2SGX----------"),												-- EP2SGX	??????????
+			Ethernet => (
+				IPStyle										=> conf("IPSTYLE_SOFT"),
+				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+				PHY_DeviceAddress					=> x"07",
+				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
+			)
+		),
+		
+		-- custom board / dummy entry
+		BOARD_CUSTOM => (
+			FPGADevice									=> conf("Device is unknown for a custom board"),
+			Ethernet => (
+				IPStyle										=> conf("IPSTYLE_SOFT"),
+				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+				PHY_DeviceAddress					=> x"07",
+				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
+			)
 		)
 	);
-	
-	CONSTANT C_BOARD_ML605			: T_BOARD_DESCRIPTION		:= C_BOARD_ML505;
-	CONSTANT C_BOARD_KC705			: T_BOARD_DESCRIPTION		:= C_BOARD_ML505;
-	CONSTANT C_BOARD_VC707			: T_BOARD_DESCRIPTION		:= C_BOARD_ML505;
 end;
 
 
 package body board is
 
-	-- purpose: extract vendor from MY_DEVICE
+	-- TODO: comment
 	function MY_DEVICE_STRING(BoardConfig : string := "None") return string is
 		constant MY_BRD : string := ite((BoardConfig = "None"), MY_BOARD, BoardConfig);
 	begin
 		if str_equal(MY_BRD, "Custom") then
 			return "Device is unknown for a custom board";
 		else
-			case MY_BRD'length is
-				when 3 =>
-					case MY_BRD(1 to 3) is
-						when "DE0" =>				return "EP3C------";
-						when "DE4" =>				return "EP4S------";
-						when "DE5" =>				return "EP5S------";
-						when others =>			report "Unknown board name in MY_BOARD = " & MY_BRD & "." severity failure;
-					end case;
-				when 5 =>
-					case MY_BRD(1 to 5) is
-						when "ML505" =>			return "XC5VLX50T";
-						when "ML605" =>			return "XC6VLX240T";
-						when "KC705" =>			return "XC7K325T";
-			--			when "VC707" =>			return "XC7VX485T";
-						when others =>			report "Unknown board name in MY_BOARD = " & MY_BRD & "." severity failure;
-					end case;
-				when 8 =>
-					case MY_BRD(1 to 8) is
-						when "S2GXAVDK" =>	return "EP2S------";
-						when others =>			report "Unknown board name in MY_BOARD = " & MY_BRD & "." severity failure;
-					end case;
-				when others => 		 			report "Unknown board name in MY_BOARD = " & MY_BRD & "." severity failure;
-														 -- return statement is explicitly missing otherwise XST won't stop
-			end case;
+			for i in T_BOARD'pos(T_BOARD'low) to T_BOARD'pos(T_BOARD'high) loop
+				if str_match("BOARD_" & str_to_upper(MY_BRD), str_to_upper(T_BOARD'image(T_BOARD'val(i)))) then
+					return str_trim(C_BOARD_DESCRIPTION_LIST(T_BOARD'val(i)).FPGADevice);
+				end if;
+			end loop;
+			
+			report "Unknown board name in MY_BOARD = " & MY_BRD & "." severity failure;
+			-- return statement is explicitly missing otherwise XST won't stop
 		end if;
-	end MY_DEVICE_STRING;
+	end function MY_DEVICE_STRING;
 
-	-- purpose: extract vendor from MY_DEVICE
+	-- TODO: comment
 	function MY_BOARD_STRUCT(BoardConfig : string := "None") return T_BOARD_DESCRIPTION is
 		constant MY_BRD : string := ite((BoardConfig = "None"), MY_BOARD, BoardConfig);
 	begin
 		if str_equal(MY_BRD, "Custom") then
 			report "A custom board has no predefined MY_BOARD_STRUCT" severity failure;
 		else
-			case MY_BRD'length is
---				when 3 =>
---					case MY_BRD(1 to 3) is
---						when "DE0" =>				return "EP3C------";
---						when "DE4" =>				return "EP4S------";
---						when "DE5" =>				return "EP5S------";
---						when others =>			report "Unknown board name in MY_BOARD = " & MY_BRD & "." severity failure;
---					end case;
-				when 5 =>
-					case MY_BRD(1 to 5) is
-						when "ML505" =>			return C_BOARD_ML505;
-						when "ML605" =>			return C_BOARD_ML605;
-						when "KC705" =>			return C_BOARD_KC705;
-						when "VC707" =>			return C_BOARD_VC707;
-						when others =>			report "Unknown board name in MY_BOARD = " & MY_BRD & "." severity failure;
-					end case;
---				when 8 =>
---					case MY_BRD(1 to 8) is
---						when "S2GXAVDK" =>	return "EP2S------";
---						when others =>			report "Unknown board name in MY_BOARD = " & MY_BRD & "." severity failure;
---					end case;
-				when others => 		 			report "Unknown board name in MY_BOARD = " & MY_BRD & "." severity failure;
-														 -- return statement is explicitly missing otherwise XST won't stop
-			end case;
+			for i in T_BOARD'pos(T_BOARD'low) to T_BOARD'pos(T_BOARD'high) loop
+				if str_match("BOARD_" & str_to_upper(MY_BRD), str_to_upper(T_BOARD'image(T_BOARD'val(i)))) then
+					return C_BOARD_DESCRIPTION_LIST(T_BOARD'val(i));
+				end if;
+			end loop;
+
+			report "Unknown board name in MY_BOARD = " & MY_BRD & "." severity failure;
+			-- return statement is explicitly missing otherwise XST won't stop
 		end if;
-	end MY_BOARD_STRUCT;
+	end function MY_BOARD_STRUCT;
 end board;
