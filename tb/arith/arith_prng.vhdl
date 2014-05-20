@@ -37,21 +37,26 @@ ARCHITECTURE test OF test_arith_prng IS
 		x"9A", x"34", x"69", x"D3", x"A7", x"4F", x"9E", x"3C", x"78", x"F0", x"E0", x"C1", x"82", x"04", x"09", x"12"
 	);
 
-	SIGNAL Clock											: STD_LOGIC													:= '1';
-	SIGNAL Reset											: STD_LOGIC													:= '0';
-	SIGNAL Test_got										: STD_LOGIC													:= '0';
-	SIGNAL PRNG_Value1								: T_SLV_8;
-	SIGNAL PRNG_Value								: T_SLV_8;
+	SHARED VARIABLE SimStop		: BOOLEAN				:= FALSE;
+	SHARED VARIABLE SimError	: BOOLEAN				:= FALSE;
+
+	SIGNAL Clock							: STD_LOGIC			:= '1';
+	SIGNAL Reset							: STD_LOGIC			:= '0';
+	SIGNAL Test_got						: STD_LOGIC			:= '0';
+	SIGNAL PRNG_Value					: T_SLV_8;
 	
 BEGIN
 
 	ClockProcess100MHz : PROCESS(Clock)
   BEGIN
-		Clock <= NOT Clock AFTER CLOCK_100MHZ_PERIOD / 2;
+		IF (SimStop = FALSE) THEN
+			Clock <= NOT Clock AFTER CLOCK_100MHZ_PERIOD / 2;
+		ELSE
+			Clock	<= '0';
+		END IF;
   END PROCESS;
 
 	PROCESS
-		VARIABLE SimError		: BOOLEAN			:= FALSE;
 	BEGIN
 		WAIT UNTIL rising_edge(Clock);
 		
@@ -72,8 +77,13 @@ BEGIN
 			END IF;
 		END LOOP;
 		
-		REPORT "SimError=" & to_string(SimError);
+		IF SimError THEN
+			REPORT "SIMULATION RESULT = FAILED" SEVERITY NOTE;
+		ELSE
+			REPORT "SIMULATION RESULT = PASSED" SEVERITY NOTE;
+		END IF;
 		
+		SimStop		:= TRUE;
 		WAIT;
 	END PROCESS;
 

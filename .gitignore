@@ -1,2 +1,4 @@
 *~
 *.o
+temp/
+isim/config.cmd
