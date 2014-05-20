@@ -39,11 +39,14 @@ USE			UNISIM.VCOMPONENTS.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.net.ALL;
 
+LIBRARY L_Global;
+USE			L_Global.GlobalTypes.ALL;
 
-ENTITY Eth_RSLayer_GMII_GMII_Virtex5 IS
+LIBRARY L_Ethernet;
+USE			L_Ethernet.EthTypes.ALL;
+
+ENTITY eth_RSLayer_TRANS_SGMII_Virtex6_GTXE1 IS
 	PORT (
 		Reset_async								: IN	STD_LOGIC;																	-- @async: 
 		
@@ -67,16 +70,53 @@ END;
 -- ============================================================================================================================================================
 -- use IDELAY instances on GMII_RX_Clock to move the clock into alignment with the data (GMII_RX_Data[7:0])
 
-ARCHITECTURE rtl OF Eth_RSLayer_GMII_GMII_Virtex5 IS
-	ATTRIBUTE KEEP												: BOOLEAN;
+ARCHITECTURE rtl OF eth_RSLayer_TRANS_SGMII_Virtex6_GTXE1 IS
+	SIGNAL IODelay_RX_Clock	: STD_LOGIC;
 	
-	SIGNAL IODelay_RX_Clock								: STD_LOGIC;
-	ATTRIBUTE KEEP OF IODelay_RX_Clock		: SIGNAL IS TRUE;
-	
-	SIGNAL IDelay_Data										: T_SLV_8;
-	SIGNAL IDelay_Valid										: STD_LOGIC;
-	SIGNAL IDelay_Error										: STD_LOGIC;
+	SIGNAL IDelay_Data			: T_SLV_8;
+	SIGNAL IDelay_Valid			: STD_LOGIC;
+	SIGNAL IDelay_Error			: STD_LOGIC;
 BEGIN
+	-- global IDELAYCTRL instances
+	-- ========================================================================================================================================================
+
+	-- delay reset signal
+	blkIDELAYCTRL : BLOCK
+		SIGNAL IODelay_Reset_shift		: T_SLV_16;
+	BEGIN
+		PROCESS(IODelay_Clock, IODelay_Reset)
+		BEGIN
+			IF (IODelay_Reset = '1') THEN
+				IODelay_Reset_shift			<= (OTHERS => '1');
+			ELSE
+				IF rising_edge(IODelay_Clock) THEN
+					IODelay_Reset_shift		<= IODelay_Reset_shift(IODelay_Reset_shift'left - 1 DOWNTO 0) & '0';
+				END IF;
+			END IF;
+		END PROCESS;
+		
+		IODelay_Reset_i		<= IODelay_Reset_shift(IODelay_Reset_shift'left);
+	END BLOCK;
+
+	-- instantiate IDELAYCTRL for the IDELAY in Fixed Tap Delay Mode
+	-- two controller are required:
+	--	o one for GMII_RX_Clock
+	--	o one for GMII_RX_Data
+	IDELAYCTRL_RX_Clock : IDELAYCTRL
+		PORT MAP (
+			REFCLK	=> IODelay_Clock,
+			RST			=> IODelay_Reset_i,
+			RDY			=> OPEN
+		);		
+	
+	IDELAYCTRL_RX_Data : IDELAYCTRL
+		PORT MAP (
+			REFCLK	=> IODelay_Clock,
+			RST			=> IODelay_Reset_i,
+			RDY			=> OPEN
+		); 
+	
+	
 	-- Transmitter Clock
 	-- ==========================================================================================================================================================
 	-- Instantiate a DDR output register.  This is a good way to drive

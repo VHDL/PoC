@@ -1,3 +1,34 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Module:				 	TODO
+--
+-- Authors:				 	Patrick Lehmann
+-- 
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
@@ -8,14 +39,11 @@ USE			UNISIM.VCOMPONENTS.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
 
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
-
-ENTITY Ethernet_RSLayer_GMII_GMII_Virtex7 IS
+ENTITY eth_RSLayer_GMII_GMII_Xilinx IS
 	PORT (
 		Reset_async								: IN	STD_LOGIC;																	-- @async: 
 		
@@ -30,8 +58,8 @@ ENTITY Ethernet_RSLayer_GMII_GMII_Virtex7 IS
 		RS_RX_Data								: OUT	T_SLV_8;
 		RS_RX_Error								: OUT	STD_LOGIC;
 
-		-- PHY-GMII interface
-		PHY_Interface							: INOUT	T_ETHERNET_PHY_INTERFACE_GMII
+		-- PHY-GMII interface		
+		PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_GMII
 	);
 END;
 
@@ -39,7 +67,7 @@ END;
 -- ============================================================================================================================================================
 -- use IDELAY instances on GMII_RX_Clock to move the clock into alignment with the data (GMII_RX_Data[7:0])
 
-ARCHITECTURE rtl OF Ethernet_RSLayer_GMII_GMII_Virtex7 IS
+ARCHITECTURE rtl OF eth_RSLayer_GMII_GMII_Xilinx IS
 	ATTRIBUTE KEEP												: BOOLEAN;
 	
 	SIGNAL IODelay_RX_Clock								: STD_LOGIC;
