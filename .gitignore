@@ -2,3 +2,5 @@
 *.o
 temp/
 isim/config.cmd
+py/poc_config.ini
+py/__pycache__/
