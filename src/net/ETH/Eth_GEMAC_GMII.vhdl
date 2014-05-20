@@ -39,15 +39,8 @@ USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.net.ALL;
 
---LIBRARY L_IO;
---USE			L_IO.IOTypes.ALL;
---
---LIBRARY L_LCD;		-- TODO: remove after debugging (L_LCD.StrobeLimiter)
 
-
-
-
-ENTITY Eth_GEMAC_GMII IS
+ENTITY eth_GEMAC_GMII IS
 	GENERIC (
 		DEBUG									: BOOLEAN									:= TRUE;
 		CLOCK_FREQ_MHZ									: REAL										:= 125.0;					-- 125 MHz
@@ -109,7 +102,7 @@ ENTITY Eth_GEMAC_GMII IS
 END;
 
 
-ARCHITECTURE rtl OF Eth_GEMAC_GMII IS
+ARCHITECTURE rtl OF eth_GEMAC_GMII IS
 	ATTRIBUTE KEEP							: BOOLEAN;
 
 	CONSTANT SOF_BIT						: NATURAL			:= 8;

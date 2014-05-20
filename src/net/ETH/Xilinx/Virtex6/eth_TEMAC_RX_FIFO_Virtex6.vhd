@@ -1,86 +1,86 @@
---
--- Entity: v5temac_client_rx_client_fifo_8
--- Author(s): File created by Coregen from Xilinx (see below).
---
--- Added rd_valid_pipe to process sensitivity list
---
--- Revision:    $Revision: 1.2 $
--- Last change: $Date: 2009-07-17 16:54:47 $
---
-
 -------------------------------------------------------------------------------
--- Title      : 8-bit Client to Local-link Receiver FIFO
--- Project    : Virtex-5 Ethernet MAC Wrappers
--------------------------------------------------------------------------------
+-- Title      : 8-bit Client-to-LocalLink Receiver FIFO
+-- Project    : Virtex-6 Embedded Tri-Mode Ethernet MAC Wrapper
 -- File       : rx_client_fifo_8.vhd
--- Author     : Xilinx
+-- Version    : 1.6
 -------------------------------------------------------------------------------
--- Copyright (c) 2004-2008 by Xilinx, Inc. All rights reserved.
--- This text/file contains proprietary, confidential
--- information of Xilinx, Inc., is distributed under license
--- from Xilinx, Inc., and may be used, copied and/or
--- disclosed only pursuant to the terms of a valid license
--- agreement with Xilinx, Inc. Xilinx hereby grants you
--- a license to use this text/file solely for design, simulation,
--- implementation and creation of design files limited
--- to Xilinx devices or technologies. Use with non-Xilinx
--- devices or technologies is expressly prohibited and
--- immediately terminates your license unless covered by
--- a separate agreement.
 --
--- Xilinx is providing this design, code, or information
--- "as is" solely for use in developing programs and
--- solutions for Xilinx devices. By providing this design,
--- code, or information as one possible implementation of
--- this feature, application or standard, Xilinx is making no
--- representation that this implementation is free from any
--- claims of infringement. You are responsible for
--- obtaining any rights you may require for your implementation.
--- Xilinx expressly disclaims any warranty whatsoever with
--- respect to the adequacy of the implementation, including
--- but not limited to any warranties or representations that this
--- implementation is free from claims of infringement, implied
--- warranties of merchantability or fitness for a particular
--- purpose.
+-- (c) Copyright 2009-2012 Xilinx, Inc. All rights reserved.
 --
--- Xilinx products are not intended for use in life support
--- appliances, devices, or systems. Use in such applications are
--- expressly prohibited.
+-- This file contains confidential and proprietary information
+-- of Xilinx, Inc. and is protected under U.S. and
+-- international copyright and other intellectual property
+-- laws.
 --
--- This copyright and support notice must be retained as part
--- of this text at all times. (c) Copyright 2004-2008 Xilinx, Inc.
--- All rights reserved.
+-- DISCLAIMER
+-- This disclaimer is not a license and does not grant any
+-- rights to the materials distributed herewith. Except as
+-- otherwise provided in a valid license issued to you by
+-- Xilinx, and to the maximum extent permitted by applicable
+-- law: (1) THESE MATERIALS ARE MADE AVAILABLE "AS IS" AND
+-- WITH ALL FAULTS, AND XILINX HEREBY DISCLAIMS ALL WARRANTIES
+-- AND CONDITIONS, EXPRESS, IMPLIED, OR STATUTORY, INCLUDING
+-- BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, NON-
+-- INFRINGEMENT, OR FITNESS FOR ANY PARTICULAR PURPOSE; and
+-- (2) Xilinx shall not be liable (whether in contract or tort,
+-- including negligence, or under any other theory of
+-- liability) for any loss or damage of any kind or nature
+-- related to, arising under or in connection with these
+-- materials, including for any direct, or any indirect,
+-- special, incidental, or consequential loss or damage
+-- (including loss of data, profits, goodwill, or any type of
+-- loss or damage suffered as a result of any action brought
+-- by a third party) even if such damage or loss was
+-- reasonably foreseeable or Xilinx had been advised of the
+-- possibility of the same.
+--
+-- CRITICAL APPLICATIONS
+-- Xilinx products are not designed or intended to be fail-
+-- safe, or for use in any application requiring fail-safe
+-- performance, such as life-support or safety devices or
+-- systems, Class III medical devices, nuclear facilities,
+-- applications related to the deployment of airbags, or any
+-- other applications that could lead to death, personal
+-- injury, or severe property or environmental damage
+-- (individually and collectively, "Critical
+-- Applications"). Customer assumes the sole risk and
+-- liability of any use of Xilinx products in Critical
+-- Applications, subject only to applicable laws and
+-- regulations governing limitations on product liability.
+--
+-- THIS COPYRIGHT NOTICE AND DISCLAIMER MUST BE RETAINED AS
+-- PART OF THIS FILE AT ALL TIMES.
+--
 -------------------------------------------------------------------------------
--- Description: This is the receiver side local link fifo for the design example
---              of the Virtex-5 Ethernet MAC Wrapper core.
+-- Description: This is the receive-side LocalLink FIFO for the example design
+--              of the Virtex-6 Embedded Tri-Mode Ethernet MAC Wrapper core.
 --
---              The FIFO is created from 2 Block RAMs of size 2048
---              words of 8-bits per word, giving a total frame memory capacity
---              of 4096 bytes.
+--              The FIFO is created from a Block RAM of size 4096
+--              words by 8 bits per word.
 --
 --              Frame data received from the MAC receiver is written into the
---              FIFO on the wr_clk.  An End Of Frame marker is written to the
+--              FIFO on the wr_clk. An End Of Frame marker is written to the
 --              BRAM parity bit on the last byte of data stored for a frame.
 --              This acts as frame deliniation.
 --
 --              The rx_good_frame and rx_bad_frame signals are used to
---              qualify the frame.  A frame for which rx_bad_frame was
+--              qualify the frame. A frame for which rx_bad_frame was
 --              asserted will cause the FIFO write address pointer to be
---              reset to the base address of that frame.  In this way
+--              reset to the base address of that frame. In this way
 --              the bad frame will be overwritten with the next received
 --              frame and is therefore dropped from the FIFO.
 --
---              Frames will also be dropped from the FIFO if an overflow occurs. 
---              If there is not enough memory capacity in the FIFO to store the 
+--              Frames will also be dropped from the FIFO if an overflow occurs.
+--              If there is not enough memory capacity in the FIFO to store the
 --              whole of an incoming frame, the write address pointer will be
 --              reset and the overflow signal asserted.
 --
 --              When there is at least one complete frame in the FIFO,
---              the 8 bit Local-link read interface will be enabled allowing
+--              the 8-bit LocalLink read interface will be enabled allowing
 --              data to be read from the fifo.
 --
 --              The FIFO has been designed to operate with different clocks
---              on the write and read sides.  The read clock (locallink clock)
+--              on the write and read sides.  The read clock (LocalLink clock)
 --              should always operate at an equal or faster frequency
 --              than the write clock (client clock).
 --
@@ -91,9 +91,10 @@
 --
 --              Requirements :
 --              * Minimum frame size of 8 bytes
---              * Spacing between good/bad frame flags is at least 64 clock cycles
+--              * Spacing between good/bad frame flags is at least 32 clock cycles
 --              * Wr clock is 125MHz downto 1.25MHz
 --              * Rd clock is downto 20MHz
+--
 ---------------------------------------------------------------------------------
 
 library unisim;
@@ -105,54 +106,50 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
-
-entity eth_TEMAC_RX_FIFO_Virtex5 is
+entity eth_TEMAC_RX_FIFO_Virtex6 is
   port (
-        -- Local-link Interface
-        rd_clk         : in  std_logic;
-        rd_sreset      : in  std_logic;
-        rd_data_out    : out std_logic_vector(7 downto 0);
-        rd_sof_n       : out std_logic;
-        rd_eof_n       : out std_logic;
-        rd_src_rdy_n   : out std_logic;
-        rd_dst_rdy_n   : in std_logic;
+     -- LocalLink Interface
+     rd_clk         : in  std_logic;
+     rd_sreset      : in  std_logic;
+     rd_data_out    : out std_logic_vector(7 downto 0);
+     rd_sof_n       : out std_logic;
+     rd_eof_n       : out std_logic;
+     rd_src_rdy_n   : out std_logic;
+     rd_dst_rdy_n   : in std_logic;
 
-        -- Client Interface
-        wr_sreset      : in  std_logic;
-        wr_clk         : in  std_logic;
-        wr_enable      : in  std_logic;
-        rx_data        : in  std_logic_vector(7 downto 0);
-        rx_data_valid  : in std_logic;
-        rx_good_frame  : in std_logic;
-        rx_bad_frame   : in std_logic;
-        rx_fifo_status : out std_logic_vector(3 downto 0);
-        overflow       : out std_logic
-        );
+     -- Client Interface
+     wr_sreset      : in  std_logic;
+     wr_clk         : in  std_logic;
+     wr_enable      : in  std_logic;
+     rx_data        : in  std_logic_vector(7 downto 0);
+     rx_data_valid  : in std_logic;
+     rx_good_frame  : in std_logic;
+     rx_bad_frame   : in std_logic;
+     rx_fifo_status : out std_logic_vector(3 downto 0);
+     overflow       : out std_logic
+  );
 end;
 
-
-architecture rtl of eth_TEMAC_RX_FIFO_Virtex5 is
+architecture rtl of eth_TEMAC_RX_FIFO_Virtex6 is
 
   signal GND                 : std_logic;
   signal VCC                 : std_logic;
-  signal GND_BUS             : std_logic_vector(7 downto 0);
+  signal GND_BUS             : std_logic_vector(31 downto 0);
 
-  -- Encode rd state machine  
+  -- Encode rd state machine
   type rd_state_typ is (WAIT_s, QUEUE1_s, QUEUE2_s, QUEUE3_s, QUEUE_SOF_s, SOF_s, DATA_s, EOF_s);
   signal rd_state            : rd_state_typ;
   signal rd_nxt_state        : rd_state_typ;
- 
+
   -- Encode wr state machine
   type wr_state_typ is (IDLE_s, FRAME_s, END_s, GF_s, BF_s, OVFLOW_s);
   signal wr_state            : wr_state_typ;
   signal wr_nxt_state        : wr_state_typ;
-  
+
   type data_pipe is array (0 to 1) of std_logic_vector(7 downto 0);
   type cntl_pipe is array(0 to 1) of std_logic;
-  
+
   signal wr_en               : std_logic;
-  signal wr_en_u             : std_logic;
-  signal wr_en_l             : std_logic;
   signal wr_addr             : unsigned(11 downto 0);
   signal wr_addr_inc         : std_logic;
   signal wr_start_addr_load  : std_logic;
@@ -169,25 +166,20 @@ architecture rtl of eth_TEMAC_RX_FIFO_Virtex5 is
   signal rd_addr             : unsigned(11 downto 0);
   signal rd_addr_inc         : std_logic;
   signal rd_addr_reload      : std_logic;
-  signal rd_data_bram_u      : std_logic_vector(7 downto 0);
-  signal rd_data_bram_l      : std_logic_vector(7 downto 0);
-  signal rd_data_pipe_u      : std_logic_vector(7 downto 0);
-  signal rd_data_pipe_l      : std_logic_vector(7 downto 0);
+  signal rd_data_bram        : std_logic_vector(7 downto 0);
   signal rd_data_pipe        : std_logic_vector(7 downto 0);
-  signal rd_eof_bram_u       : std_logic_vector(0 downto 0);
-  signal rd_eof_bram_l       : std_logic_vector(0 downto 0);
   signal rd_en               : std_logic;
-  signal rd_bram_u           : std_logic;
-  signal rd_bram_u_reg       : std_logic;
   signal rd_pull_frame       : std_logic;
   signal rd_eof              : std_logic;
-  
+  signal dob_bram            : std_logic_vector(31 downto 0);
+  signal dopb_bram           : std_logic_vector(3 downto 0);
+
   signal wr_store_frame_tog   : std_logic;
   signal rd_store_frame_tog   : std_logic;
   signal rd_store_frame_sync  : std_logic;
   signal rd_store_frame_delay : std_logic;
   signal rd_store_frame       : std_logic;
-  signal rd_frames            : std_logic_vector(8 downto 0);        
+  signal rd_frames            : std_logic_vector(8 downto 0);
   signal wr_fifo_full         : std_logic;
 
   signal rd_addr_gray         : unsigned(11 downto 0);
@@ -198,7 +190,9 @@ architecture rtl of eth_TEMAC_RX_FIFO_Virtex5 is
 
   signal wr_fifo_status       : unsigned(3 downto 0);
 
-  signal rd_eof_n_int         : std_logic;
+  signal rd_sof_n_int         : std_logic := '1';
+  signal rd_eof_n_int         : std_logic := '1';
+  signal rd_src_rdy_n_int     : std_logic := '1';
 
   signal rd_valid_pipe        : std_logic_vector(2 downto 0);
 
@@ -211,22 +205,14 @@ architecture rtl of eth_TEMAC_RX_FIFO_Virtex5 is
   attribute ASYNC_REG of rd_store_frame_tog   : signal is "TRUE";
   attribute ASYNC_REG of wr_rd_addr_gray_sync : signal is "TRUE";
 
-  -- WRITE_MODE attributes added to Block RAM to mitigate port contention
-  attribute WRITE_MODE_A                    : string;
-  attribute WRITE_MODE_B                    : string;
-  attribute WRITE_MODE_A of ramgen_u        : label is "READ_FIRST";
-  attribute WRITE_MODE_B of ramgen_u        : label is "READ_FIRST";
-  attribute WRITE_MODE_A of ramgen_l        : label is "READ_FIRST";
-  attribute WRITE_MODE_B of ramgen_l        : label is "READ_FIRST";
-
   -----------------------------------------------------------------------------
   -- Functions for gray code conversion
-  -----------------------------------------------------------------------------   
+  -----------------------------------------------------------------------------
    function gray_to_bin (
       gray : std_logic_vector)
       return std_logic_vector is
       variable binary : std_logic_vector(gray'range);
-     
+
    begin
       for i in gray'high downto gray'low loop
          if i = gray'high then
@@ -242,7 +228,7 @@ architecture rtl of eth_TEMAC_RX_FIFO_Virtex5 is
       bin : std_logic_vector)
       return std_logic_vector is
       variable gray : std_logic_vector(bin'range);
-      
+
    begin
       for i in bin'range loop
          if i = bin'left then
@@ -258,18 +244,17 @@ architecture rtl of eth_TEMAC_RX_FIFO_Virtex5 is
 -----------------------------------------------------------------------------
 -- Begin FIFO architecture
 -----------------------------------------------------------------------------
-  
+
 begin
 
   GND     <= '0';
   VCC     <= '1';
   GND_BUS <= (others => '0');
 
-
   -----------------------------------------------------------------------------
   -- Read State machines and control
-  -----------------------------------------------------------------------------  
-  -- local link state machine
+  -----------------------------------------------------------------------------
+  -- LocalLink state machine
   -- states are WAIT, QUEUE1, QUEUE2, QUEUE3, SOF, DATA, EOF
   -- clock state to next state
   clock_rds_p : process(rd_clk)
@@ -284,9 +269,9 @@ begin
   end process clock_rds_p;
 
   rd_eof_n <= rd_eof_n_int;
-      
+
   -- decode next state, combinatorial
-  next_rds_p : process(rd_state, frame_in_fifo, rd_eof, rd_eof_n_int, rd_dst_rdy_n, rd_valid_pipe)
+  next_rds_p : process(rd_state, frame_in_fifo, rd_eof, rd_eof_n_int, rd_dst_rdy_n, rd_valid_pipe(1))
   begin
      case rd_state is
         when WAIT_s =>
@@ -352,41 +337,44 @@ begin
   begin
      if (rd_clk'event and rd_clk = '1') then
          if (rd_dst_rdy_n = '0') then
-            rd_valid_pipe <= rd_valid_pipe(1) & 
-                             rd_valid_pipe(0) & 
+            rd_valid_pipe <= rd_valid_pipe(1) &
+                             rd_valid_pipe(0) &
                              frame_in_fifo;
          end if;
      end if;
   end process rd_valid_pipe_p;
-  
+
   -- decode the output signals depending on current state.
   -- decode sof signal.
   rd_ll_sof_p : process(rd_clk)
   begin
      if (rd_clk'event and rd_clk = '1') then
         if rd_sreset = '1' then
-           rd_sof_n <= '1';   
+           rd_sof_n_int <= '1';
         else
            case rd_state is
               when QUEUE_SOF_s =>
                  -- no need to wait for dst rdy to be low, as there is valid data
-                 rd_sof_n <= '0';
+                 rd_sof_n_int <= '0';
               when SOF_s =>
                  -- needed to wait till rd_dst_rdy is low to ensure eof signal has
                  -- been accepted onto the interface before asserting sof.
                  if rd_dst_rdy_n = '0' then
-                    rd_sof_n <= '0';
+                    rd_sof_n_int <= '0';
                  end if;
               when others =>
                  -- needed to wait till rd_dst_rdy is low to ensure sof signal has
                  -- been accepted onto the interface.
                  if rd_dst_rdy_n = '0' then
-                    rd_sof_n <= '1';
+                    rd_sof_n_int <= '1';
                  end if;
            end case;
         end if;
      end if;
   end process rd_ll_sof_p;
+
+  -- assign to rd_sof_n output
+  rd_sof_n <= rd_sof_n_int;
 
   -- decode eof signal
   -- check init value of this reg is 1.
@@ -408,17 +396,19 @@ begin
         end if;
      end if;
   end process rd_ll_decode_p;
-  
-  -- decode data output
+
+  -- register data outputs
+  -- no reset to allow for SRL target
   rd_ll_data_p : process(rd_clk)
   begin
      if (rd_clk'event and rd_clk = '1') then
         if rd_en = '1' then
-           rd_data_out <= rd_data_pipe;
+           rd_data_out  <= rd_data_pipe;
+           rd_data_pipe <= rd_data_bram;
         end if;
      end if;
   end process rd_ll_data_p;
-  
+
   -- decode the output scr_rdy signal
   -- want to remove the dependancy of src_rdy from dst rdy
   -- check init value of this reg is '1'
@@ -426,32 +416,34 @@ begin
   begin
      if (rd_clk'event and rd_clk = '1') then
         if rd_sreset = '1' then
-           rd_src_rdy_n <= '1';
+           rd_src_rdy_n_int <= '1';
         else
            case rd_state is
               when QUEUE_SOF_s =>
-                 rd_src_rdy_n <= '0';
+                 rd_src_rdy_n_int <= '0';
               when SOF_s =>
-                 rd_src_rdy_n <= '0';
+                 rd_src_rdy_n_int <= '0';
               when DATA_s =>
-                 rd_src_rdy_n <= '0';
+                 rd_src_rdy_n_int <= '0';
               when EOF_s =>
-                 rd_src_rdy_n <= '0';
+                 rd_src_rdy_n_int <= '0';
               when others =>
                  if rd_dst_rdy_n = '0' then
-                    rd_src_rdy_n <= '1';
+                    rd_src_rdy_n_int <= '1';
                  end if;
             end case;
          end if;
      end if;
   end process rd_ll_src_p;
 
-
+  -- assign to rd_src_rd_n output
+  rd_src_rdy_n <= rd_src_rdy_n_int;
+  
   -- decode internal control signals
-  -- rd_en is used to enable the BRAM read and load the output pipe  
+  -- rd_en is used to enable the BRAM read and load the output pipe
   rd_en_p : process(rd_state, rd_dst_rdy_n)
   begin
-     case rd_state is 
+     case rd_state is
         when WAIT_s =>
            rd_en <= '0';
         when QUEUE1_s =>
@@ -470,19 +462,18 @@ begin
   -- rd_addr_inc is used to enable the BRAM read address to increment
   rd_addr_inc <= rd_en;
 
-
   -- When the current frame is output, if there is no frame in the fifo, then
   -- the fifo must wait until a new frame is written in.  This requires the read
   -- address to be moved back to where the new frame will be written.  The pipe
   -- is then reloaded using the QUEUE states
   rd_addr_reload <= '1' when rd_state = EOF_s and rd_nxt_state = WAIT_s else '0';
-  
+
   -- frame in fifo signal is required on the rd side, need to convert wr
   -- address to rd clock domain.
   -- Data is available if there is at least one frame stored in the FIFO.
   p_rd_avail : process (rd_clk)
-  begin 
-    if rd_clk'event and rd_clk = '1' then 
+  begin
+    if rd_clk'event and rd_clk = '1' then
       if rd_sreset = '1' then
         frame_in_fifo <= '0';
       else
@@ -493,13 +484,13 @@ begin
         end if;
       end if;
     end if;
-  end process p_rd_avail; 
+  end process p_rd_avail;
 
   -- when a frame has been stored need to convert to rd clock domain for frame
   -- count store.
   p_sync_rd_store : process (rd_clk)
-  begin 
-    if rd_clk'event and rd_clk = '1' then 
+  begin
+    if rd_clk'event and rd_clk = '1' then
       if rd_sreset = '1' then
         rd_store_frame_tog  <= '0';
         rd_store_frame_sync <= '0';
@@ -522,14 +513,14 @@ begin
   rd_pull_frame <= '1' when rd_state = SOF_s and rd_nxt_state /= SOF_s else
                    '1' when rd_state = QUEUE_SOF_s and rd_nxt_state /= QUEUE_SOF_s else
                    '0';
-  
+
   -- Up/Down counter to monitor the number of frames stored within the
-  -- the FIFO. Note:  
+  -- the FIFO. Note:
   --    * decrements at the beginning of a frame read cycle
   --    * increments at the end of a frame write cycle
   p_rd_frames : process (rd_clk)
-  begin 
-    if rd_clk'event and rd_clk = '1' then 
+  begin
+    if rd_clk'event and rd_clk = '1' then
       if rd_sreset = '1' then
         rd_frames <= (others => '0');
       else
@@ -546,9 +537,8 @@ begin
     end if;
   end process p_rd_frames;
 
-
   -----------------------------------------------------------------------------
-  -- Write State machines and control
+  -- Write state machines and control
   -----------------------------------------------------------------------------
   -- write state machine
   -- states are IDLE, FRAME, EOF, GF, BF, OVFLOW
@@ -563,7 +553,7 @@ begin
         end if;
      end if;
   end process clock_wrs_p;
-        
+
   -- decode next state, combinatorial
   next_wrs_p : process(wr_state, wr_dv_pipe(1), wr_gf_pipe(1), wr_bf_pipe(1), wr_eof_bram(0), wr_fifo_full)
   begin
@@ -622,15 +612,9 @@ begin
         end case;
   end process next_wrs_p;
 
-  
   -- decode control signals
   -- wr_en is used to enable the BRAM write and loading of the input pipeline
   wr_en <= '1' when wr_state = FRAME_s else '0';
-
-  -- the upper and lower signals are used to distinguish between the upper and
-  -- lower BRAM
-  wr_en_l <= wr_en and not(wr_addr(11));
-  wr_en_u <= wr_en and wr_addr(11);
 
   -- increment the write address when we are receiving a frame
   wr_addr_inc <= '1' when wr_state = FRAME_s else '0';
@@ -639,7 +623,7 @@ begin
   -- write address back to the start of the frame.  This allows the data to be
   -- overwritten.
   wr_addr_reload <= '1' when wr_state = BF_s or wr_state = OVFLOW_s else '0';
-  
+
   -- the start address is saved when in the WAIT state
   wr_start_addr_load <= '1' when wr_state = IDLE_s else '0';
 
@@ -657,7 +641,6 @@ begin
         end if;
      end if;
   end process;
-
 
   -----------------------------------------------------------------------------
   -- Address counters
@@ -691,7 +674,7 @@ begin
         end if;
      end if;
   end process wr_staddr_p;
-  
+
   -- read address is incremented when read enable signal has been asserted
   rd_addr_p : process(rd_clk)
   begin
@@ -708,23 +691,8 @@ begin
      end if;
   end process rd_addr_p;
 
-  -- which BRAM is read from is dependant on the upper bit of the address
-  -- space.  this needs to be registered to give the correct timing.
-  rd_bram_p : process(rd_clk)
-  begin
-     if (rd_clk'event and rd_clk = '1') then
-        if rd_sreset = '1' then
-           rd_bram_u <= '0';
-           rd_bram_u_reg <= '0';
-        elsif rd_addr_inc = '1' then
-           rd_bram_u <= rd_addr(11);
-           rd_bram_u_reg <= rd_bram_u;
-        end if;
-     end if;
-  end process rd_bram_p;
-
   -----------------------------------------------------------------------------
-  -- Data Pipelines
+  -- Data pipelines
   -----------------------------------------------------------------------------
   -- register data inputs to bram
   -- no reset to allow srl16 target
@@ -755,7 +723,7 @@ begin
   reg_gf_p : process(wr_clk)
   begin
      if (wr_clk'event and wr_clk = '1') then
-        if wr_enable = '1' then      
+        if wr_enable = '1' then
            wr_gf_pipe(0) <= rx_good_frame;
            wr_gf_pipe(1) <= wr_gf_pipe(0);
            wr_bf_pipe(0) <= rx_bad_frame;
@@ -764,41 +732,10 @@ begin
      end if;
   end process reg_gf_p;
 
-  -- register data outputs from bram
-  -- no reset to allow srl16 target
-  reg_dout_p : process(rd_clk)
-  begin
-     if (rd_clk'event and rd_clk = '1') then
-        if rd_en = '1' then
-           rd_data_pipe_u <= rd_data_bram_u;
-           rd_data_pipe_l <= rd_data_bram_l;
-           if rd_bram_u_reg = '1' then
-              rd_data_pipe <= rd_data_pipe_u;
-           else
-              rd_data_pipe <= rd_data_pipe_l;
-           end if;
-        end if;
-     end if;
-  end process reg_dout_p;
-
-  -- register data outputs from bram
-  reg_eofout_p : process(rd_clk)
-  begin
-     if (rd_clk'event and rd_clk = '1') then
-        if rd_en = '1' then
-           if rd_bram_u = '1' then
-              rd_eof <= rd_eof_bram_u(0);
-           else
-              rd_eof <= rd_eof_bram_l(0);
-           end if;
-        end if;
-     end if;
-  end process reg_eofout_p;
-
   -----------------------------------------------------------------------------
   -- Overflow functionality
   -----------------------------------------------------------------------------
-  -- Take the Read Address Pointer and convert it into a gray code 
+  -- Take the Read Address Pointer and convert it into a gray code
   p_reg_rd_addr_gray : process (rd_clk)
   begin
      if rd_clk'event and rd_clk = '1' then
@@ -808,13 +745,13 @@ begin
            rd_addr_gray <= unsigned(bin_to_gray(std_logic_vector(rd_addr)));
         end if;
      end if;
-  end process p_reg_rd_addr_gray;  
+  end process p_reg_rd_addr_gray;
 
   -- Resync the Read Address Pointer gray code onto the write clock
   -- NOTE: rd_addr_gray signal crosses clock domains
   p_sync_rd_addr : process (wr_clk)
-  begin 
-     if wr_clk'event and wr_clk = '1' then 
+  begin
+     if wr_clk'event and wr_clk = '1' then
         if wr_sreset = '1' then
           wr_rd_addr_gray_sync <= (others => '0');
           wr_rd_addr_gray <= (others => '0');
@@ -844,7 +781,7 @@ begin
   -- The FIFO is considered to be full if the write address
   -- pointer is within 4 to 15 of the read address pointer.
   p_wr_full : process (wr_clk)
-  begin 
+  begin
      if wr_clk'event and wr_clk = '1' then
        if wr_sreset = '1' then
          wr_fifo_full <= '0';
@@ -859,23 +796,21 @@ begin
   end process p_wr_full;
 
   overflow <= '1' when wr_state = OVFLOW_s else '0';
-  
+
   ----------------------------------------------------------------------
   -- FIFO Status Signals
   ----------------------------------------------------------------------
-
   -- The FIFO status signal is four bits which represents the occupancy
   -- of the FIFO in 16'ths.  To generate this signal we therefore only
   -- need to compare the 4 most significant bits of the write address
-  -- pointer with the 4 most significant bits of the read address 
+  -- pointer with the 4 most significant bits of the read address
   -- pointer.
 
   -- already have fifo status on write side through wr_addr_diff.
   -- calculate fifo status here and output on the wr clock domain.
 
-
   p_wr_fifo_status : process (wr_clk)
-  begin 
+  begin
      if wr_clk'event and wr_clk = '1' then
         if wr_sreset = '1' then
            wr_fifo_status <= "0000";
@@ -891,63 +826,67 @@ begin
         end if;
      end if;
   end process p_wr_fifo_status;
- 
+
   rx_fifo_status <= std_logic_vector(wr_fifo_status);
- 
 
   -----------------------------------------------------------------------------
   -- Memory
   -----------------------------------------------------------------------------
-  -- Block Ram for lower address space (rx_addr(11) = '0')
-  ramgen_l : RAMB16_S9_S9
+  ramgen : RAMB36E1
     generic map (
-      WRITE_MODE_A => "READ_FIRST",
-      WRITE_MODE_B => "READ_FIRST")
+      DOB_REG                  => 1,
+      READ_WIDTH_A             => 9,
+      READ_WIDTH_B             => 9,
+      RSTREG_PRIORITY_B        => "RSTREG",
+      SIM_COLLISION_CHECK      => "ALL",
+      SRVAL_B                  => X"000000000000000000",
+      WRITE_MODE_A             => "WRITE_FIRST",
+      WRITE_MODE_B             => "WRITE_FIRST",
+      WRITE_WIDTH_A            => 9,
+      WRITE_WIDTH_B            => 9)
     port map (
-      WEA   => wr_en_l,
-      ENA   => VCC,
-      SSRA  => wr_sreset,
-      CLKA  => wr_clk,
-      ADDRA => std_logic_vector(wr_addr(10 downto 0)),
-      DIA   => wr_data_bram,
-      DIPA  => wr_eof_bram,
-      WEB   => GND,
-      ENB   => rd_en,
-      SSRB  => rd_sreset,
-      CLKB  => rd_clk,
-      ADDRB => std_logic_vector(rd_addr(10 downto 0)),
-      DIB   => GND_BUS(7 downto 0),
-      DIPB  => GND_BUS(0 downto 0),
-      DOA   => open,
-      DOPA  => open,
-      DOB   => rd_data_bram_l,
-      DOPB  => rd_eof_bram_l);
+      ENARDEN                  => VCC,
+      CLKARDCLK                => wr_clk,
+      RSTRAMARSTRAM            => wr_sreset,
+      RSTREGARSTREG            => GND,
+      CASCADEINA               => GND,
+      REGCEAREGCE              => GND,
+      ENBWREN                  => rd_en,
+      CLKBWRCLK                => rd_clk,
+      RSTRAMB                  => rd_sreset,
+      RSTREGB                  => rd_sreset,
+      CASCADEINB               => GND,
+      REGCEB                   => rd_en,
+      INJECTDBITERR            => GND,
+      INJECTSBITERR            => GND,
+      ADDRARDADDR(15)          => GND,
+      ADDRARDADDR(14 downto 3) => std_logic_vector(wr_addr),
+      ADDRARDADDR(2 downto 0)  => GND_BUS(2 downto 0),
+      ADDRBWRADDR(15)          => GND,
+      ADDRBWRADDR(14 downto 3) => std_logic_vector(rd_addr),
+      ADDRBWRADDR(2 downto 0)  => GND_BUS(2 downto 0),
+      DIADI(31 downto 8)       => GND_BUS(23 downto 0),
+      DIADI(7 downto 0)        => wr_data_bram,
+      DIBDI                    => GND_BUS,
+      DIPADIP(3 downto 1)      => GND_BUS(2 downto 0),
+      DIPADIP(0)               => wr_eof_bram(0),
+      DIPBDIP                  => GND_BUS(3 downto 0),
+      WEA(3 downto 1)          => GND_BUS(2 downto 0),
+      WEA(0)                   => wr_en,
+      WEBWE                    => GND_BUS(7 downto 0),
+      CASCADEOUTA              => open,
+      CASCADEOUTB              => open,
+      DOADO                    => open,
+      DOBDO                    => dob_bram,
+      DOPADOP                  => open,
+      DOPBDOP                  => dopb_bram,
+      ECCPARITY                => open,
+      RDADDRECC                => open,
+      SBITERR                  => open,
+      DBITERR                  => open
+  );
 
-  -- Block Ram for lower address space (rx_addr(11) = '0')
-  ramgen_u : RAMB16_S9_S9
-    generic map (
-      WRITE_MODE_A => "READ_FIRST",
-      WRITE_MODE_B => "READ_FIRST")
-    port map (
-      WEA   => wr_en_u,
-      ENA   => VCC,
-      SSRA  => wr_sreset,
-      CLKA  => wr_clk,
-      ADDRA => std_logic_vector(wr_addr(10 downto 0)),
-      DIA   => wr_data_bram,
-      DIPA  => wr_eof_bram,
-      WEB   => GND,
-      ENB   => rd_en,
-      SSRB  => rd_sreset,
-      CLKB  => rd_clk,
-      ADDRB => std_logic_vector(rd_addr(10 downto 0)),
-      DIB   => GND_BUS(7 downto 0),
-      DIPB  => GND_BUS(0 downto 0),
-      DOA   => open,
-      DOPA  => open,
-      DOB   => rd_data_bram_u,
-      DOPB  => rd_eof_bram_u);
+  rd_data_bram <= dob_bram(7 downto 0);
+  rd_eof       <= dopb_bram(0);
 
-
-  
 end;
