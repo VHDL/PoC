@@ -97,7 +97,7 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
-entity tx_client_fifo_8 is
+entity eth_TEMAC_TX_FIFO_Virtex6 is
    generic (
       -- If FULL_DUPLEX_ONLY is true then all the half duplex logic in the FIFO is removed.
       -- The default for the fifo is to include the half duplex functionality
@@ -124,9 +124,9 @@ entity tx_client_fifo_8 is
       wr_dst_rdy_n    : out std_logic;
       wr_fifo_status  : out std_logic_vector(3 downto 0)
    );
-end tx_client_fifo_8;
+end;
 
-architecture RTL of tx_client_fifo_8 is
+architecture rtl of eth_TEMAC_TX_FIFO_Virtex6 is
 
   signal GND                  : std_logic;
   signal VCC                  : std_logic;
@@ -1292,4 +1292,4 @@ begin
   rd_data_bram <= dob_bram(7 downto 0);
   rd_eof_bram  <= dopb_bram(0);
 
-end RTL;
+end;

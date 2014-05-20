@@ -15,7 +15,7 @@ USE			L_Global.GlobalTypes.ALL;
 LIBRARY L_Ethernet;
 --USE			L_Ethernet.EthTypes.ALL;
 
-ENTITY Ethernet_RSLayer_SGMII_Virtex6 IS
+ENTITY eth_RSLayer_GMII_SGMII_Virtex6_GTXE1 IS
 	GENERIC (
 		CLOCK_IN_FREQ_MHZ					: REAL													:= 125.0					-- 125 MHz
 	);
@@ -36,7 +36,7 @@ ENTITY Ethernet_RSLayer_SGMII_Virtex6 IS
 	);
 END;
 
-ARCHITECTURE rtl OF Ethernet_RSLayer_SGMII_Virtex6 IS
+ARCHITECTURE rtl OF eth_RSLayer_GMII_SGMII_Virtex6_GTXE1 IS
 
 
 BEGIN

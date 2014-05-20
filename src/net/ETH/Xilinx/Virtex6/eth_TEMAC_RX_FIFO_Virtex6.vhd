@@ -106,7 +106,7 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
-entity rx_client_fifo_8 is
+entity eth_TEMAC_RX_FIFO_Virtex6 is
   port (
      -- LocalLink Interface
      rd_clk         : in  std_logic;
@@ -128,9 +128,9 @@ entity rx_client_fifo_8 is
      rx_fifo_status : out std_logic_vector(3 downto 0);
      overflow       : out std_logic
   );
-end rx_client_fifo_8;
+end;
 
-architecture RTL of rx_client_fifo_8 is
+architecture rtl of eth_TEMAC_RX_FIFO_Virtex6 is
 
   signal GND                 : std_logic;
   signal VCC                 : std_logic;
@@ -889,4 +889,4 @@ begin
   rd_data_bram <= dob_bram(7 downto 0);
   rd_eof       <= dopb_bram(0);
 
-end RTL;
+end;

@@ -82,7 +82,7 @@ use ieee.std_logic_1164.all;
 -- The entity declaration for the Virtex-5 Embedded Ethernet MAC wrapper.
 --------------------------------------------------------------------------------
 
-entity TEMAC_TRANS_SGMII_Virtex5 is
+entity eth_TEMAC_TRANS_Virtex5 is
     port(
         -- Client Receiver Interface - EMAC0
         EMAC0CLIENTRXCLIENTCLKOUT       : out std_logic;
@@ -162,7 +162,7 @@ end;
 
 
 
-architecture core of TEMAC_TRANS_SGMII_Virtex5 is
+architecture core of eth_TEMAC_TRANS_Virtex5 is
     --------
     -- EMAC0
     --------

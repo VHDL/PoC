@@ -248,7 +248,7 @@ BEGIN
 			Eth_RX_Enable					<= '1';
 
 			-- Transmitter FIFO and LocalLink adapter
-			TX_FIFO	: ENTITY PoC.Eth_TEMAC_Virtex6_TX_FIFO
+			TX_FIFO	: ENTITY PoC.eth_TEMAC_TX_FIFO_Virtex6
 				GENERIC MAP (
 					FULL_DUPLEX_ONLY	=> FALSE--TRUE
 				)
@@ -277,7 +277,7 @@ BEGIN
 				);
 			
 			-- Receiver FIFO and LocalLink adapter
-			RX_FIFO	: ENTITY PoC.Eth_TEMAC_Virtex6_RX_FIFO
+			RX_FIFO	: ENTITY PoC.eth_TEMAC_RX_FIFO_Virtex6
 				PORT MAP (
 					rd_clk						=> RX_Clock,								-- Local link read clock
 					rd_sreset					=> RX_Reset,								-- synchronous reset (rd_clock)
@@ -318,7 +318,7 @@ BEGIN
 		BEGIN
 			
 			-- Instantiate the EMAC Wrapper (v6temac_gmii.vhd)
-			TEMAC_V6	: ENTITY PoC.TEMAC_GMII_Virtex6
+			TEMAC_V6	: ENTITY PoC.eth_TEMAC_GMII_Virtex6
 				PORT MAP (
 					-- Asynchronous Reset
 					RESET														=> Reset_async,
@@ -415,7 +415,7 @@ BEGIN
 			-- FPGA-PHY inferface: GMII
 			-- ========================================================================================================================================================
 			genPHY_GMII	: IF (PHY_DATA_INTERFACE = NET_ETH_PHY_DATA_INTERFACE_GMII) GENERATE
-				GMII	: ENTITY PoC.Eth_RSLayer_GMII_GMII_Virtex6
+				GMII	: ENTITY PoC.eth_RSLayer_GMII_GMII_Xilinx
 					PORT MAP (
 						RS_TX_Clock								=> RS_TX_Clock,
 						RS_RX_Clock								=> RS_RX_Clock,
@@ -451,7 +451,7 @@ BEGIN
 			BEGIN
 				ASSERT FALSE REPORT "Physical interface SGMII is not implemented!" SEVERITY FAILURE;
 			
-				SGMII	: ENTITY PoC.Eth_RSLayer_GMII_SGMII_Virtex6
+				SGMII	: ENTITY PoC.eth_RSLayer_GMII_SGMII_Virtex6_GTXE1
 		--			GENERIC MAP (
 		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
 		--			)
@@ -513,7 +513,7 @@ BEGIN
 		BEGIN
 			Trans_PHY_MDIOAddress		<= "00111";
 		
-			TEMAC_V6	: ENTITY PoC.TEMAC_TRANS_SGMII_Virtex6
+			TEMAC_V6	: ENTITY PoC.eth_TEMAC_TRANS_Virtex6
 				PORT MAP (
 					--					-- Asynchronous Reset
 					RESET														=> Reset,
@@ -648,7 +648,7 @@ BEGIN
 						O		=> PHY_Interface.SGMII.SGMII_RXRefClock_Out
 					);
 			
---				TRANS	: ENTITY PoC.Eth_RSLayer_TRANS_GMII_Virtex6
+--				TRANS	: ENTITY PoC.eth_RSLayer_TRANS_SGMII_Virtex6_GTXE1
 --					GENERIC MAP (
 --						-- Simulation attributes
 --						TILE_SIM_GTPRESET_SPEEDUP				=> 0,					-- Set to 1 to speed up sim reset
@@ -768,7 +768,7 @@ BEGIN
 			SIGNAL RS_RX_Data						: T_SLV_8;
 			SIGNAL RS_RX_Error					: STD_LOGIC;
 		BEGIN
-			GEMAC	: ENTITY PoC.Eth_GEMAC_GMII
+			GEMAC	: ENTITY PoC.eth_GEMAC_GMII
 				GENERIC MAP (
 					DEBUG									=> TRUE,
 					CLOCK_FREQ_MHZ									=> CLOCKIN_FREQ_MHZ,		-- 
@@ -835,7 +835,7 @@ BEGIN
 			genPHY_GMII	: IF (PHY_DATA_INTERFACE = NET_ETH_PHY_DATA_INTERFACE_GMII) GENERATE
 			
 			BEGIN
-				GMII	: ENTITY PoC.Eth_RSLayer_GMII_GMII_Virtex6
+				GMII	: ENTITY PoC.eth_RSLayer_GMII_GMII_Xilinx
 					PORT MAP (
 						RS_TX_Clock								=> RS_TX_Clock,
 						RS_RX_Clock								=> RS_RX_Clock,						
@@ -864,7 +864,7 @@ BEGIN
 			BEGIN
 				ASSERT FALSE REPORT "Physical interface SGMII is not implemented!" SEVERITY FAILURE;
 			
-				SGMII	: ENTITY PoC.Eth_RSLayer_GMII_SGMII_Virtex6
+				SGMII	: ENTITY PoC.eth_RSLayer_TRANS_SGMII_Virtex6_GTXE1
 		--			GENERIC MAP (
 		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
 		--			)

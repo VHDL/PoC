@@ -248,7 +248,7 @@ BEGIN
 			Eth_RX_Enable					<= '1';
 
 			-- Transmitter FIFO and LocalLink adapter
-			TX_FIFO	: ENTITY PoC.Eth_TEMAC_Virtex5_TX_FIFO
+			TX_FIFO	: ENTITY PoC.eth_TEMAC_TX_FIFO_Virtex5
 				GENERIC MAP (
 					FULL_DUPLEX_ONLY	=> FALSE--TRUE
 				)
@@ -277,7 +277,7 @@ BEGIN
 				);
 			
 			-- Receiver FIFO and LocalLink adapter
-			RX_FIFO	: ENTITY PoC.Eth_TEMAC_Virtex5_RX_FIFO
+			RX_FIFO	: ENTITY PoC.eth_TEMAC_RX_FIFO_Virtex5
 				PORT MAP (
 					rd_clk						=> RX_Clock,								-- Local link read clock
 					rd_sreset					=> RX_Reset,								-- synchronous reset (rd_clock)
@@ -318,7 +318,7 @@ BEGIN
 		BEGIN
 			
 			-- Instantiate the EMAC Wrapper (v5temac_gmii.vhd)
-			TEMAC_V5	: ENTITY PoC.TEMAC_GMII_Virtex5
+			TEMAC_V5	: ENTITY PoC.eth_TEMAC_GMII_Virtex5
 				PORT MAP (
 					-- Asynchronous Reset
 					RESET														=> Reset_async,
@@ -451,25 +451,25 @@ BEGIN
 			BEGIN
 				ASSERT FALSE REPORT "Physical interface SGMII is not implemented!" SEVERITY FAILURE;
 			
-				SGMII	: ENTITY PoC.eth_RSLayer_GMII_GMII_Xilinx
-		--			GENERIC MAP (
-		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
-		--			)
-					PORT MAP (
-						Clock										=> RS_TX_Clock,
-						Reset										=> Reset_async,
-						
-						-- GEMAC-GMII interface
-						RS_TX_Clock							=> RS_TX_Clock,
-						RS_TX_Valid							=> RS_TX_Valid,
-						RS_TX_Data							=> RS_TX_Data,
-						RS_TX_Error							=> RS_TX_Error,
-						
-						RS_RX_Clock							=> RS_RX_Clock,
-						RS_RX_Valid							=> RS_RX_Valid,
-						RS_RX_Data							=> RS_RX_Data,
-						RS_RX_Error							=> RS_RX_Error
-					);
+--				SGMII	: ENTITY PoC.eth_RSLayer_GMII_SGMII_Virtex5
+--		--			GENERIC MAP (
+--		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
+--		--			)
+--					PORT MAP (
+--						Clock										=> RS_TX_Clock,
+--						Reset										=> Reset_async,
+--						
+--						-- GEMAC-GMII interface
+--						RS_TX_Clock							=> RS_TX_Clock,
+--						RS_TX_Valid							=> RS_TX_Valid,
+--						RS_TX_Data							=> RS_TX_Data,
+--						RS_TX_Error							=> RS_TX_Error,
+--						
+--						RS_RX_Clock							=> RS_RX_Clock,
+--						RS_RX_Valid							=> RS_RX_Valid,
+--						RS_RX_Data							=> RS_RX_Data,
+--						RS_RX_Error							=> RS_RX_Error
+--					);
 			END GENERATE;		-- PHY_DATA_INTERFACE: SGMII
 		END GENERATE;		-- RS_DATA_INTERFACE: GMII
 		
@@ -513,7 +513,7 @@ BEGIN
 		BEGIN
 			Trans_PHY_MDIOAddress		<= "00111";
 		
-			TEMAC_V5	: ENTITY PoC.TEMAC_TRANS_SGMII_Virtex5
+			TEMAC_V5	: ENTITY PoC.eth_TEMAC_TRANS_Virtex5
 				PORT MAP (
 					--					-- Asynchronous Reset
 					RESET														=> Reset,
