@@ -1,0 +1,185 @@
+#!/usr/bin/python
+# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+# vim: tabstop=2:shiftwidth=2:noexpandtab
+# kate: tab-width 2; replace-tabs off; indent-width 2;
+# 
+# ============================================================================================================================================================
+# Python Main Module:  Entry point to the testbench tools in PoC repository.
+# 
+# Authors:         		 Patrick Lehmann
+# 
+# Description:
+# ------------------------------------
+#    This is a python main module (executable) which:
+#    - runs automated testbenches,
+#    - ...
+#
+# License:
+# ============================================================================================================================================================
+# Copyright 2007-2014 Technische Universitaet Dresden - Germany
+#                     Chair for VLSI-Design, Diagnostics and Architecture
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#    http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ============================================================================================================================================================
+
+import argparse
+import configparser
+import os
+import pathlib
+import platform
+import re
+import string
+import sys
+import textwrap
+
+class PoCTestbench:
+	__debug = False
+	__verbose = False
+
+	__pocDirectoryPath = None
+	__workingDirectoryPath = None
+	
+	__pythonFilesDirectory = "../py"		# relative to working directory
+	__sourceFilesDirectory = "src"			# relative to PoC root directory
+	
+	__pocConfigFileName = "poc_config.ini"
+	__tbConfigFileName = "configuration.ini"
+	
+	__pocConfig = None
+	__tbConfig = None
+	
+	__namespaceStructure = None
+	
+	def __init__(self, debug, verbose):
+		self.__debug = debug
+		self.__verbose = verbose
+		
+		self.__workingDirectoryPath = pathlib.Path.cwd()
+		
+		# read PoC configuration
+		# =========================================================================================================================================================
+		pocConfigFilePath = self.__workingDirectoryPath / self.__pythonFilesDirectory / self.__pocConfigFileName
+		if not pocConfigFilePath.exists():
+			print("ERROR: PoC configuration file does not exist. (%s)" % str(pocConfigFilePath))
+		self.printDebug("DEBUG: reading PoC configuration file: %s" % str(pocConfigFilePath))
+			
+		self.__pocConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+		self.__pocConfig.read(str(pocConfigFilePath))
+		
+		# parsing values into class fields
+		self.__pocDirectoryPath = pathlib.Path(self.__pocConfig['PoC']['InstallationDirectory'])
+
+		
+		# read Simulation configuration
+		# =========================================================================================================================================================
+		tbConfigFilePath = self.__workingDirectoryPath / self.__tbConfigFileName
+		if not tbConfigFilePath.exists():
+			print("ERROR: Simulation configuration file does not exist. (%s)" % str(tbConfigFilePath))
+		self.printDebug("DEBUG: reading Simulation configuration file: %s" % str(tbConfigFilePath))
+			
+		self.__tbConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+		self.__tbConfig.read(str(tbConfigFilePath))
+		
+		# parsing values into class fields
+		#self.__tbDirectoryPath = pathlib.Path(self.__pocConfig['PoC']['InstallationDirectory'])
+		
+	def printDebug(self, message):
+		if (self.__debug):
+			print(message)
+	
+	def printVerbose(self, message):
+		if (self.__verbose):
+			print(message)
+#	def readNamespaceStructure(self):
+#		self.__namespaceStructure = configparser.ConfigParser()
+#		
+#		pocSourceDirectory = self.__pocDirectoryPath / self.__sourceFilesDirectory
+#		for dirItem in pocSourceDirectory.iterdir():
+#			if dirItem.is_dir():
+#				print("Namespace: %s" % str(dirItem))
+#				self.readSubnamespaceStructure(dirItem)
+#				
+#			elif dirItem.is_file():
+#				print("Module: %s" % str(dirItem))
+#		
+#		#self.__namespaceStructure[]
+#	
+#	def readSubnamespaceStructure(self, path):
+#		for dirItem in pocSourceDirectory.iterdir():
+#			if dirItem.is_dir():
+#				print("Namespace: %s" % str(dirItem))
+#				self.readSubnamespaceStructure(dirItem)
+#				
+#			elif dirItem.is_file():
+#				print("Module: %s" % str(dirItem))
+	
+	def test(self, module):
+		temp = module.split('_', 1)
+		namespacePrefix = temp[0]
+		moduleName = temp[1]
+		fullNamespace = self.getNamespaceForPrefix(namespacePrefix)
+		
+		print("Preparing test environment for '%s.%s'" % (fullNamespace, moduleName))
+		self.printDebug("Full Namespace: %s" % fullNamespace)
+		
+		print("testbench project: %s" % self.__tbConfig[fullNamespace][(module + '.iSimProjectFile')])
+		
+	def getNamespaceForPrefix(self, namespacePrefix):
+		return self.__tbConfig['NamespacePrefixes'][namespacePrefix]
+	
+# main program
+def main():
+	print("PoC Library - Testbench Service Tool")
+	print("========================================================================")
+	print()
+	
+	try:
+		# create a commandline argument parser
+		argParser = argparse.ArgumentParser(
+			formatter_class = argparse.RawDescriptionHelpFormatter,
+			description = textwrap.dedent('''\
+				This is the PoC Library Testbench Service Tool.
+				'''))
+
+		# add arguments
+		argParser.add_argument('-d', action='store_const', const=True, default=False, help='enable debug mode')
+		argParser.add_argument('-v', action='store_const', const=True, default=False, help='generate detailed report')
+		argParser.add_argument('--configure', action='store_const', const=True, default=False, help='configures PoC Simulation Service Tools')
+		argParser.add_argument('--test', action='store_const', const=True, default=False, help='execute singe testbench')
+		argParser.add_argument("module", help="Specify the module which should be tested.")
+		
+		# parse command line options
+		args = argParser.parse_args()
+
+	except Exception as ex:
+		print("Exception: %s" % ex.__str__())
+
+	test = PoCTestbench(args.d, args.v)
+	
+	if args.configure:
+		test.readNamespaceStructure()
+	elif args.test:
+		test.test(args.module)
+	else:
+		argParser.print_help()
+
+		
+	
+# entry point
+if __name__ == "__main__":
+	main()
+else:
+	print("PoC Library - Testbench Service Tool")
+	print("========================================================================")
+	print()
+	print("This is no library file!")

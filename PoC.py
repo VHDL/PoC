@@ -34,7 +34,9 @@
 
 import argparse
 import configparser
+import os
 import pathlib
+import platform
 import re
 import string
 import sys
@@ -56,23 +58,47 @@ class PoCConfiguration:
 		
 		configFilePath = self.__workingDirectoryPath / self.__pythonFilesDirectory / self.__configFileName
 		if configFilePath.exists():
-			self.__config = configparser.RawConfigParser()
+			if (self.__debug):
+				print("DEBUG: reading configuration file: %s" % configFilePath)
+			
+			self.__config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
 			self.__config.read(str(configFilePath))
 		else:
-			if (self.__debug):
-				print("DEBUG: configuration file does not exists; creating a new one: %s" % configFilePath)
-			self.__config = configparser.RawConfigParser()
-			#self.__config.add_section('Xilinx_ISE')
-			#self.__config.add_section('Xilinx_Vivado')
-			#self.__config.add_section('Altera_QuartusII')
-			self.__config.add_section('GHDL')
-			self.__config.set('GHDL', 'HOME', 'unknown')
-			self.__config.add_section('GTKWave')
-			self.__config.set('GTKWave', 'HOME', 'unknown')
+			if (self.__verbose):
+				print("configuration file does not exists; creating a new one")
+			
+			self.__config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+			self.__config['PoC'] = {
+				'InstallationDirectory' : str(self.__workingDirectoryPath),
+				'Version' : '0.0.0'
+			}
+			self.__config['Xilinx_ISE'] = {
+				'InstallationDirectory' : '',
+				'Version' : ''
+			}
+			self.__config['Xilinx_Vivado'] = {
+				'InstallationDirectory' : '',
+				'Version' : ''
+			}
+			self.__config['Altera_QuartusII'] = {
+				'InstallationDirectory' : '',
+				'Version' : ''
+			}
+			self.__config['GHDL'] = {
+				'InstallationDirectory' : '',
+				'Version' : ''
+			}
+			self.__config['GTKWave'] = {
+				'InstallationDirectory' : '',
+				'Version' : ''
+			}
 
 			# Writing configuration to disc
-			with configFilePath.open('wb') as configFileHandle:
+			with configFilePath.open('w') as configFileHandle:
 				self.__config.write(configFileHandle)
+			
+			if (self.__debug):
+				print("DEBUG: new configuration file created: %s" % configFilePath)
 			
 	def autoConfiguration(self):
 		if (self.__verbose):
@@ -80,8 +106,22 @@ class PoCConfiguration:
 
 		if (self.__debug):
 			print("DEBUG: working directory: %s" % self.__workingDirectoryPath)
+			print("DEBUG: platform: %s" % platform.system())
 			print()
-
+		
+		if (platform.system() == 'Windows'):
+			if (os.getenv('XILINX') != None):
+				print("env: XILINX = %s" % os.getenv('XILINX'))
+				
+				
+				
+				
+		elif (platform.system() == 'Linux'):
+			if (os.getenv('XILINX') != None):
+				print("env: XILINX = %s" % os.getenv('XILINX'))
+		
+		else:
+			print("Unknown platform")
 		#print(self.__config.get("Xilinx_ISE", "InstallDirectory"))
 	
 				
