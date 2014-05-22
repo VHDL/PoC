@@ -55,13 +55,13 @@ class PoCTestbench:
 	__tempFilesDirectory = "temp"				# relative to PoC root directory
 	__isimFilesDirectory = "isim"				# relative to temp directory
 	
-	__pocConfigFileName = "poc_config.ini"
+	__pocConfigFileName = "configuration.ini"
+	__pocStructureFileName = "structure.ini"
 	__tbConfigFileName = "configuration.ini"
 	
 	__pocConfig = None
+	__pocStructure = None
 	__tbConfig = None
-	
-	__namespaceStructure = None
 	
 	def __init__(self, debug, verbose):
 		self.__debug = debug
@@ -74,6 +74,10 @@ class PoCTestbench:
 		pocConfigFilePath = self.__workingDirectoryPath / self.__pythonFilesDirectory / self.__pocConfigFileName
 		if not pocConfigFilePath.exists():
 			print("ERROR: PoC configuration file does not exist. (%s)" % str(pocConfigFilePath))
+			print()
+			print("Please run PoC.py --configure in PoC root directory.")
+			return
+			
 		self.printDebug("reading PoC configuration file: %s" % str(pocConfigFilePath))
 			
 		self.__pocConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
@@ -83,6 +87,20 @@ class PoCTestbench:
 		self.__pocDirectoryPath = pathlib.Path(self.__pocConfig['PoC']['InstallationDirectory'])
 
 		
+		# read PoC structure
+		# =========================================================================================================================================================
+		pocStructureFilePath = self.__workingDirectoryPath / self.__pythonFilesDirectory / self.__pocStructureFileName
+		if not pocStructureFilePath.exists():
+			print("ERROR: PoC structure file does not exist. (%s)" % str(pocStructureFilePath))
+			print()
+			return
+			
+		self.printDebug("reading PoC structure file: %s" % str(pocStructureFilePath))
+			
+		self.__pocStructure = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+		self.__pocStructure.read(str(pocConfigFilePath))
+		
+		
 		# read Simulation configuration
 		# =========================================================================================================================================================
 		tbConfigFilePath = self.__workingDirectoryPath / self.__tbConfigFileName
@@ -91,7 +109,7 @@ class PoCTestbench:
 		self.printDebug("reading Simulation configuration file: %s" % str(tbConfigFilePath))
 			
 		self.__tbConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
-		self.__tbConfig.read([str(pocConfigFilePath), str(tbConfigFilePath)])
+		self.__tbConfig.read([str(pocConfigFilePath), str(pocStructureFilePath), str(tbConfigFilePath)])
 		
 	def printDebug(self, message):
 		if (self.__debug):
@@ -100,29 +118,8 @@ class PoCTestbench:
 	def printVerbose(self, message):
 		if (self.__verbose):
 			print(message)
-#	def readNamespaceStructure(self):
-#		self.__namespaceStructure = configparser.ConfigParser()
-#		
-#		pocSourceDirectory = self.__pocDirectoryPath / self.__sourceFilesDirectory
-#		for dirItem in pocSourceDirectory.iterdir():
-#			if dirItem.is_dir():
-#				print("Namespace: %s" % str(dirItem))
-#				self.readSubnamespaceStructure(dirItem)
-#				
-#			elif dirItem.is_file():
-#				print("Module: %s" % str(dirItem))
-#		
-#		#self.__namespaceStructure[]
-#	
-#	def readSubnamespaceStructure(self, path):
-#		for dirItem in pocSourceDirectory.iterdir():
-#			if dirItem.is_dir():
-#				print("Namespace: %s" % str(dirItem))
-#				self.readSubnamespaceStructure(dirItem)
-#				
-#			elif dirItem.is_file():
-#				print("Module: %s" % str(dirItem))
-	
+
+			
 	def isimSimulation(self, module):
 		temp = module.split('_', 1)
 		namespacePrefix = temp[0]
