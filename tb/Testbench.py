@@ -220,7 +220,6 @@ def main():
 		# add arguments
 		argParser.add_argument('-d', action='store_const', const=True, default=False, help='enable debug mode')
 		argParser.add_argument('-v', action='store_const', const=True, default=False, help='generate detailed report')
-		argParser.add_argument('--configure', action='store_const', const=True, default=False, help='configures PoC Simulation Service Tools')
 		argParser.add_argument('--isim', action='store_const', const=True, default=False, help='use Xilinx ISE Simulator (iSim)')
 		argParser.add_argument('--vsim', action='store_const', const=True, default=False, help='use Mentor Graphics ModelSim (vSim)')
 		argParser.add_argument('--ghdl', action='store_const', const=True, default=False, help='use GHDL Simulator (ghdl)')

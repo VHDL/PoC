@@ -73,27 +73,49 @@ class PoCConfiguration:
 			self.__pocConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
 			self.__pocConfig['PoC'] = {
 				'InstallationDirectory' : str(self.__workingDirectoryPath),
+				'SourceFilesDirectory' : '${InstallationDirectory}/src',
+				'TestbenchFilesDirectory' : '${InstallationDirectory}/tb',
+				'TempFilesDirectory' : '${InstallationDirectory}/temp',
+				'iSimFilesDirectory' : '${InstallationDirectory}/isim',
 				'Version' : '0.0.0'
 			}
-			self.__pocConfig['Xilinx_ISE'] = {
-				'InstallationDirectory' : '',
-				'Version' : ''
+			self.__pocConfig['Xilinx'] = {
+				'InstallationDirectory' : ''
 			}
-			self.__pocConfig['Xilinx_Vivado'] = {
-				'InstallationDirectory' : '',
-				'Version' : ''
+			self.__pocConfig['Xilinx-ISE'] = {
+				'Version' : '14.7',
+				'InstallationDirectory' : '${Xilinx:InstallationDirectory}/${Version}/ISE_DS',
+				'BinaryDirectory' : '${InstallationDirectory}/ISE/bin/nt64'
 			}
-			self.__pocConfig['Altera_QuartusII'] = {
-				'InstallationDirectory' : '',
-				'Version' : ''
+			self.__pocConfig['Xilinx-Vivado'] = {
+				'Version' : '',
+				'InstallationDirectory' : '${Xilinx:InstallationDirectory}/Vivado/${Version}',
+				'BinaryDirectory' : '${InstallationDirectory}/bin'
+			}
+			self.__pocConfig['Altera-QuartusII'] = {
+#				'Version' : '',
+#				'InstallationDirectory' : '${Xilinx:InstallationDirectory}\Vivado\${Version}',
+#				'BinaryDirectory' : '${InstallationDirectory}\bin'
+			}
+			self.__pocConfig['Altera-ModelSim'] = {
+#				'Version' : '',
+#				'InstallationDirectory' : '${Xilinx:InstallationDirectory}\Vivado\${Version}',
+#				'BinaryDirectory' : '${InstallationDirectory}\bin'
+			}
+			self.__pocConfig['Mentor-ModelSim'] = {
+#				'Version' : '',
+#				'InstallationDirectory' : '${Xilinx:InstallationDirectory}\Vivado\${Version}',
+#				'BinaryDirectory' : '${InstallationDirectory}\bin'
 			}
 			self.__pocConfig['GHDL'] = {
-				'InstallationDirectory' : '',
-				'Version' : ''
+#				'Version' : '',
+#				'InstallationDirectory' : '${Xilinx:InstallationDirectory}\Vivado\${Version}',
+#				'BinaryDirectory' : '${InstallationDirectory}\bin'
 			}
 			self.__pocConfig['GTKWave'] = {
-				'InstallationDirectory' : '',
-				'Version' : ''
+#				'Version' : '',
+#				'InstallationDirectory' : '${Xilinx:InstallationDirectory}\Vivado\${Version}',
+#				'BinaryDirectory' : '${InstallationDirectory}\bin'
 			}
 
 			# Writing configuration to disc
@@ -140,9 +162,35 @@ class PoCConfiguration:
 		self.printDebug("DEBUG: platform: %s" % platform.system())
 		print()
 		
-		XilinxDirectory = input('Xilinx Installation Directory: ')
-		print()
-		print("Input = %s" % XilinxDirectory)
+		if (platform.system() == 'Windows'):
+			xilinxDirectory = input('Xilinx Installation Directory (C:\Xilinx): ')
+			iseVersion = input('Xilinx ISE Version Number (14.7): ')
+			print()
+			print("Input = %s" % xilinxDirectory)			
+			
+			xilinxDirectoryPath = pathlib.Path(xilinxDirectory)
+			iseDirectoryPath = xilinxDirectoryPath / iseVersion / "ISE_DSE/ISE"
+			
+			if xilinxDirectoryPath.exists():
+				self.__pocConfig['Xilinx']['InstallationDirectory'] = str(xilinxDirectoryPath)
+			
+			if iseDirectoryPath.exists():
+				self.__pocConfig['Xilinx']['Version'] = iseVersion
+			
+			# Writing configuration to disc
+			configFilePath = self.__workingDirectoryPath / self.__pythonFilesDirectory / self.__pocConfigFileName
+			with configFilePath.open('w') as configFileHandle:
+				self.__pocConfig.write(configFileHandle)
+			
+				
+		elif (platform.system() == 'Linux'):
+			if (os.getenv('XILINX') != None):
+				print("env: XILINX = %s" % os.getenv('XILINX'))
+		
+		else:
+			print("Unknown platform")
+		
+
 	
 # main program
 def main():
