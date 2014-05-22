@@ -1,3 +1,36 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- =============================================================================
+-- Testbench:				Pseudo-Random Number Generator (PRNG).
+-- 
+-- Authors:					Patrick Lehmann
+-- 
+-- Description:
+-- ------------------------------------
+--		Automated testbench for PoC.arith_prng
+--		The Pseudo-Random Number Generator is instanziated for 8 bits. The
+--		output sequence is compared to 256 precalculated values.
+--
+-- License:
+-- =============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
@@ -6,7 +39,6 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
---USE			PoC.simulation.ALL;
 
 LIBRARY L_Testbench;
 
@@ -37,21 +69,26 @@ ARCHITECTURE test OF test_arith_prng IS
 		x"9A", x"34", x"69", x"D3", x"A7", x"4F", x"9E", x"3C", x"78", x"F0", x"E0", x"C1", x"82", x"04", x"09", x"12"
 	);
 
-	SIGNAL Clock											: STD_LOGIC													:= '1';
-	SIGNAL Reset											: STD_LOGIC													:= '0';
-	SIGNAL Test_got										: STD_LOGIC													:= '0';
-	SIGNAL PRNG_Value1								: T_SLV_8;
-	SIGNAL PRNG_Value								: T_SLV_8;
+	SHARED VARIABLE SimStop		: BOOLEAN				:= FALSE;
+	SHARED VARIABLE SimError	: BOOLEAN				:= FALSE;
+
+	SIGNAL Clock							: STD_LOGIC			:= '1';
+	SIGNAL Reset							: STD_LOGIC			:= '0';
+	SIGNAL Test_got						: STD_LOGIC			:= '0';
+	SIGNAL PRNG_Value					: T_SLV_8;
 	
 BEGIN
 
 	ClockProcess100MHz : PROCESS(Clock)
   BEGIN
-		Clock <= NOT Clock AFTER CLOCK_100MHZ_PERIOD / 2;
+		IF (SimStop = FALSE) THEN
+			Clock <= NOT Clock AFTER CLOCK_100MHZ_PERIOD / 2;
+		ELSE
+			Clock	<= '0';
+		END IF;
   END PROCESS;
 
 	PROCESS
-		VARIABLE SimError		: BOOLEAN			:= FALSE;
 	BEGIN
 		WAIT UNTIL rising_edge(Clock);
 		
@@ -72,8 +109,13 @@ BEGIN
 			END IF;
 		END LOOP;
 		
-		REPORT "SimError=" & to_string(SimError);
+		IF SimError THEN
+			REPORT "SIMULATION RESULT = FAILED" SEVERITY NOTE;
+		ELSE
+			REPORT "SIMULATION RESULT = PASSED" SEVERITY NOTE;
+		END IF;
 		
+		SimStop		:= TRUE;
 		WAIT;
 	END PROCESS;
 
