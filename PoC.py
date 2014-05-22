@@ -65,14 +65,16 @@ class PoCConfiguration:
 				print("DEBUG: reading configuration file: %s" % configFilePath)
 			
 			self.__pocConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+			self.__pocConfig.optionxform = str
 			self.__pocConfig.read(str(configFilePath))
 		else:
 			if (self.__verbose):
 				print("configuration file does not exists; creating a new one")
 			
 			self.__pocConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+			self.__pocConfig.optionxform = str
 			self.__pocConfig['PoC'] = {
-				'InstallationDirectory' : str(self.__workingDirectoryPath),
+				'InstallationDirectory' : self.__workingDirectoryPath.as_posix(),
 				'SourceFilesDirectory' : '${InstallationDirectory}/src',
 				'TestbenchFilesDirectory' : '${InstallationDirectory}/tb',
 				'TempFilesDirectory' : '${InstallationDirectory}/temp',
@@ -158,43 +160,82 @@ class PoCConfiguration:
 	def manualConfiguration(self):
 		self.printVerbose("starting manual configuration...")
 
-		self.printDebug("DEBUG: working directory: %s" % self.__workingDirectoryPath)
-		self.printDebug("DEBUG: platform: %s" % platform.system())
+		self.printDebug("working directory: %s" % self.__workingDirectoryPath)
+		self.printDebug("platform: %s" % platform.system())
 		print()
 		
 		if (platform.system() == 'Windows'):
-			xilinxDirectory = input('Xilinx Installation Directory (C:\Xilinx): ')
-			iseVersion = input('Xilinx ISE Version Number (14.7): ')
+			xilinxDirectory = input('Xilinx Installation Directory [C:\Xilinx]: ')
+			iseVersion = input('Xilinx ISE Version Number [14.7]: ')
 			print()
-			print("Input = %s" % xilinxDirectory)			
+			
+			xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "C:\Xilinx"
+			iseVersion = iseVersion if iseVersion != "" else "14.7"
 			
 			xilinxDirectoryPath = pathlib.Path(xilinxDirectory)
-			iseDirectoryPath = xilinxDirectoryPath / iseVersion / "ISE_DSE/ISE"
+			iseDirectoryPath = xilinxDirectoryPath / iseVersion / "ISE_DS/ISE"
 			
-			if xilinxDirectoryPath.exists():
-				self.__pocConfig['Xilinx']['InstallationDirectory'] = str(xilinxDirectoryPath)
+			if not xilinxDirectoryPath.exists():
+				print("ERROR: Xilinx Installation Directory '%s' does not exist." % xilinxDirectory)
+				return
 			
-			if iseDirectoryPath.exists():
-				self.__pocConfig['Xilinx']['Version'] = iseVersion
+			if not iseDirectoryPath.exists():
+				print("ERROR: Xilinx ISE version '%s' is not installed." % iseVersion)
+				return
+			
+			self.__pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
+			self.__pocConfig['Xilinx-ISE']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/${Version}/ISE_DS'
+			self.__pocConfig['Xilinx-ISE']['BinaryDirectory'] = '${InstallationDirectory}/ISE/bin/nt64'
+			self.__pocConfig['Xilinx-ISE']['Version'] = iseVersion
+			
 			
 			# Writing configuration to disc
 			configFilePath = self.__workingDirectoryPath / self.__pythonFilesDirectory / self.__pocConfigFileName
+			print("Writing configuration file to '%s'" % str(configFilePath))
 			with configFilePath.open('w') as configFileHandle:
 				self.__pocConfig.write(configFileHandle)
 			
 				
 		elif (platform.system() == 'Linux'):
-			if (os.getenv('XILINX') != None):
-				print("env: XILINX = %s" % os.getenv('XILINX'))
+			xilinxDirectory = input('Xilinx Installation Directory [/opt/xilinx]: ')
+			iseVersion = input('Xilinx ISE Version Number [14.7]: ')
+			print()
+
+			xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/xilinx"
+			iseVersion = iseVersion if iseVersion != "" else "14.7"
+			
+			xilinxDirectoryPath = pathlib.Path(xilinxDirectory)
+			iseDirectoryPath = xilinxDirectoryPath / iseVersion / "ISE_DSE/ISE"
+			
+			if not xilinxDirectoryPath.exists():
+				print("ERROR: Xilinx Installation Directory '%s' does not exist." % xilinxDirectory)
+				return
+				
+			if iseDirectoryPath.exists():
+				print("ERROR: Xilinx ISE version '%s' is not installed." % iseVersion)
+				return
+			
+#			self.__pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
+#			self.__pocConfig['Xilinx-ISE']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/${Version}/ISE_DS'
+#			self.__pocConfig['Xilinx-ISE']['BinaryDirectory'] = '${InstallationDirectory}/ISE/bin/nt64'
+			self.__pocConfig['Xilinx-ISE']['Version'] = iseVersion
+		
+			
+			# Writing configuration to disc
+			configFilePath = self.__workingDirectoryPath / self.__pythonFilesDirectory / self.__pocConfigFileName
+			print("Writing configuration file to '%s'" % str(configFilePath))
+			with configFilePath.open('w') as configFileHandle:
+				self.__pocConfig.write(configFileHandle)
 		
 		else:
-			print("Unknown platform")
-		
+			print("ERROR: Unknown platform")
+			return
 
 	
 # main program
 def main():
-	print("PoC Library - Repository Service Tool")
+	print("========================================================================")
+	print("                  PoC Library - Repository Service Tool                 ")
 	print("========================================================================")
 	print()
 	
@@ -231,7 +272,8 @@ def main():
 if __name__ == "__main__":
 	main()
 else:
-	print("PoC Library - Repository Service Tool")
+	print("========================================================================")
+	print("                  PoC Library - Repository Service Tool                 ")
 	print("========================================================================")
 	print()
 	print("This is no library file!")

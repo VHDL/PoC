@@ -81,6 +81,7 @@ class PoCTestbench:
 		self.printDebug("reading PoC configuration file: %s" % str(pocConfigFilePath))
 			
 		self.__pocConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+		self.__pocConfig.optionxform = str
 		self.__pocConfig.read(str(pocConfigFilePath))
 		
 		# parsing values into class fields
@@ -98,6 +99,7 @@ class PoCTestbench:
 		self.printDebug("reading PoC structure file: %s" % str(pocStructureFilePath))
 			
 		self.__pocStructure = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+		self.__pocStructure.optionxform = str
 		self.__pocStructure.read(str(pocConfigFilePath))
 		
 		
@@ -109,6 +111,7 @@ class PoCTestbench:
 		self.printDebug("reading Simulation configuration file: %s" % str(tbConfigFilePath))
 			
 		self.__tbConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+		self.__tbConfig.optionxform = str
 		self.__tbConfig.read([str(pocConfigFilePath), str(pocStructureFilePath), str(tbConfigFilePath)])
 		
 	def printDebug(self, message):
@@ -120,7 +123,7 @@ class PoCTestbench:
 			print(message)
 
 			
-	def isimSimulation(self, module):
+	def isimSimulation(self, module, showLogs):
 		temp = module.split('_', 1)
 		namespacePrefix = temp[0]
 		moduleName = temp[1]
@@ -133,72 +136,90 @@ class PoCTestbench:
 			self.printDebug("temporary directors: %s" % str(tempIsimPath))
 			tempIsimPath.mkdir(parents=True)
 
-		print()
-		print("Commands to be run:")
+		iseInstallationDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['InstallationDirectory'])
+		iseBinaryDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['BinaryDirectory'])
+		vhpcompExecutablePath = iseBinaryDirectoryPath / "vhpcomp"
+		fuseExecutablePath = iseBinaryDirectoryPath / "fuse"
+		
+#		settingsFilePath = iseInstallationDirectoryPath / "settings64.bat"
+		testbenchName = self.__tbConfig[fullNamespace][(module + '.TestbenchModule')]
+		prjFilePath =  pathlib.Path(self.__tbConfig[fullNamespace][(module + '.iSimProjectFile')])
+		exeFilePath =  tempIsimPath / (self.__tbConfig[fullNamespace][(module + '.TestbenchModule')] + ".exe")
+		tclFilePath =  pathlib.Path(self.__tbConfig[fullNamespace][(module + '.iSimTclScript')])
+			
+#		print()
 			
 		if (self.__verbose):
-			print("1. Change working directory to temporary directory")
-			print("2. Compile source files")
-			print("3. Link compiled files to an executable simulation file")
+			print("Commands to be run:")
+#			print("1. Load Xilinx / ISE / iSim environment variables")
+			print("2. Change working directory to temporary directory")
+			print("3. Compile and Link source files to an executable simulation file")
 			print("4. Simulate in tcl batch mode")
 			print()
-			
-		print("cd %s" % str(tempIsimPath))
-		print("%s\\vhpcomp -prj %s" % (self.__pocConfig['Xilinx-ISE']['BinaryDirectory'], self.__tbConfig[fullNamespace][(module + '.iSimProjectFile')]))
-		print("%s\\fuse work.%s -prj %s -o %s" % (
-			self.__pocConfig['Xilinx-ISE']['BinaryDirectory'],
-			self.__tbConfig[fullNamespace][(module + '.TestbenchModule')],
-			self.__tbConfig[fullNamespace][(module + '.iSimProjectFile')],
-			self.__tbConfig[fullNamespace][(module + '.TestbenchModule')] + ".exe"
-			))
-		print("%s\\%s -tclbatch %s" % (
-			str(tempIsimPath),
-			self.__tbConfig[fullNamespace][(module + '.TestbenchModule')] + ".exe",
-			self.__tbConfig[fullNamespace][(module + '.iSimTclScript')]))
-		print()
+		
+#			print("%s" % (str(settingsFilePath)))		
+			print("cd %s" % str(tempIsimPath))
+			print("%s work.%s -prj %s -o %s" % (
+				str(fuseExecutablePath),
+				testbenchName,
+				str(prjFilePath),
+				str(exeFilePath)
+				))
+			print("%s -tclbatch %s" % (str(exeFilePath), str(tclFilePath)))
+			print()
+
+#		settingsLog = subprocess.check_output([str(settingsFilePath)], stderr=subprocess.STDOUT, universal_newlines=True)
+#		print(settingsLog)
 
 		os.chdir(str(tempIsimPath))
 		
-#		compilerLog = subprocess.check_output([
-#			str(pathlib.Path(self.__pocConfig['Xilinx-ISE']['BinaryDirectory']) / "vhpcomp"),
-#			"-prj",
-#			str(pathlib.Path(self.__tbConfig[fullNamespace][(module + '.iSimProjectFile')]))
-#			],
-#			stderr=subprocess.STDOUT, universal_newlines=True)
-#		
-#		print("Compiler Log (vhpcomp)")
-#		print("--------------------------------------------------------------------------------")
-#		print(compilerLog)
-#		print("--------------------------------------------------------------------------------")
-		
+		print("running fuse...")
 		linkerLog = subprocess.check_output([
-			str(pathlib.Path(self.__pocConfig['Xilinx-ISE']['BinaryDirectory']) / "fuse"),
-			("work.%s" % self.__tbConfig[fullNamespace][(module + '.TestbenchModule')]),
-			"-prj",
-			str(pathlib.Path(self.__tbConfig[fullNamespace][(module + '.iSimProjectFile')])),
-			"-o",
-			str(pathlib.Path(self.__tbConfig[fullNamespace][(module + '.TestbenchModule')] + ".exe"))
-			],
+			str(fuseExecutablePath),
+			("work.%s" % testbenchName),
+			"-prj", str(prjFilePath), "-o", str(exeFilePath)],
 			stderr=subprocess.STDOUT, universal_newlines=True)
 		
-		print("Linker Log (fuse)")
-		print("--------------------------------------------------------------------------------")
-		print(linkerLog)
-#		print("--------------------------------------------------------------------------------")
-		
-		simulatorLog = subprocess.check_output([
-			str(pathlib.Path(self.__tbConfig[fullNamespace][(module + '.TestbenchModule')] + ".exe")),
-			"-tclbatch",
-			str(pathlib.Path(self.__tbConfig[fullNamespace][(module + '.iSimTclScript')]))
-			],
+		if showLogs:
+			print("fuse log (fuse)")
+			print("--------------------------------------------------------------------------------")
+			print(linkerLog)
+			print()
+			
+		print("running simulation...")
+		simulatorLog = subprocess.check_output([str(exeFilePath),	"-tclbatch", str(tclFilePath)],
 			stderr=subprocess.STDOUT, universal_newlines=True)
 		
+		if showLogs:
+			print("simulator log")
+			print("--------------------------------------------------------------------------------")
+			print(simulatorLog)
+			print("--------------------------------------------------------------------------------")		
+	
 		print()
-		print("Simulator Log")
-		print("--------------------------------------------------------------------------------")
-		print(simulatorLog)
-		print("--------------------------------------------------------------------------------")		
-		
+		matchPos = simulatorLog.index("SIMULATION RESULT = ")
+		if (matchPos > 0):
+			if (simulatorLog[matchPos + 20 : matchPos + 26] == "PASSED"):
+				print("Testbench '%s': PASSED" % testbenchName)
+			elif (simulatorLog[matchPos + 20: matchPos + 26] == "FAILED"):
+				print("Testbench '%s': FAILED" % testbenchName)
+			else:
+				print("Testbench '%s': ERROR" % testbenchName)
+				print()
+				print("ERROR: This testbench is not working correctly.")
+				return
+		else:
+			print("Testbench '%s': ERROR" % "")
+			print()
+			print("ERROR: This testbench is not working correctly.")
+			return
+	
+	def vsimSimulation(self, module, showLogs):
+		print("ERROR: not implemented.")
+	
+	def ghdlSimulation(self, module, showLogs):
+		print("ERROR: not implemented.")
+	
 	def getNamespaceForPrefix(self, namespacePrefix):
 		return self.__tbConfig['NamespacePrefixes'][namespacePrefix]
 	
@@ -220,6 +241,7 @@ def main():
 		# add arguments
 		argParser.add_argument('-d', action='store_const', const=True, default=False, help='enable debug mode')
 		argParser.add_argument('-v', action='store_const', const=True, default=False, help='generate detailed report')
+		argParser.add_argument('-l', action='store_const', const=True, default=False, help='show logs')
 		argParser.add_argument('--isim', action='store_const', const=True, default=False, help='use Xilinx ISE Simulator (iSim)')
 		argParser.add_argument('--vsim', action='store_const', const=True, default=False, help='use Mentor Graphics ModelSim (vSim)')
 		argParser.add_argument('--ghdl', action='store_const', const=True, default=False, help='use GHDL Simulator (ghdl)')
@@ -233,14 +255,12 @@ def main():
 
 	test = PoCTestbench(args.d, args.v)
 	
-	if args.configure:
-		test.readNamespaceStructure()
-	elif args.isim:
-		test.isimSimulation(args.module)
+	if args.isim:
+		test.isimSimulation(args.module, args.l)
 	elif args.vsim:
-		test.vsimSimulation(args.module)
+		test.vsimSimulation(args.module, args.l)
 	elif args.ghdl:
-		test.ghdlSimulation(args.module)
+		test.ghdlSimulation(args.module, args.l)
 	else:
 		argParser.print_help()
 	
