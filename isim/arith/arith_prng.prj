@@ -1,0 +1,13 @@
+
+vhdl PoC "../../src/common/utils.vhdl"
+vhdl PoC "../../src/common/vectors.vhdl"
+vhdl PoC "../../src/common/strings.vhdl"
+
+
+vhdl PoC "../../src/arith/arith_prng.vhdl"
+
+
+vhdl PoC "../../tb/common/my_config_ML505.vhdl"
+
+
+vhdl work "../../tb/arith/arith_prng.vhdl"
