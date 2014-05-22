@@ -2,13 +2,14 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- ============================================================================================================================================================
+-- =============================================================================
 -- Description:			Prefix AND computation: y(i) <= '1' when x(i downto 0) = (i downto 0 => '1') else '0'
 --									This implementation uses carry chains for wider implementations.
 -- 
 -- Authors:					Thomas B. Preusser
--- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- =============================================================================
+-- Copyright 2007-2014 Technische Universität Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -21,7 +22,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================================================================================================
+-- =============================================================================
 
 library	ieee;
 use			ieee.std_logic_1164.all;
