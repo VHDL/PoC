@@ -142,10 +142,11 @@ class PoCTestbench:
 		fuseExecutablePath = iseBinaryDirectoryPath / "fuse"
 		
 #		settingsFilePath = iseInstallationDirectoryPath / "settings64.bat"
-		testbenchName = self.__tbConfig[fullNamespace][(module + '.TestbenchModule')]
-		prjFilePath =  pathlib.Path(self.__tbConfig[fullNamespace][(module + '.iSimProjectFile')])
-		exeFilePath =  tempIsimPath / (self.__tbConfig[fullNamespace][(module + '.TestbenchModule')] + ".exe")
-		tclFilePath =  pathlib.Path(self.__tbConfig[fullNamespace][(module + '.iSimTclScript')])
+		section = "%s.%s" % (fullNamespace, moduleName)
+		testbenchName = self.__tbConfig[section]['TestbenchModule']
+		prjFilePath =  pathlib.Path(self.__tbConfig[section]['iSimProjectFile'])
+		exeFilePath =  tempIsimPath / (self.__tbConfig[section]['TestbenchModule'] + ".exe")
+		tclFilePath =  pathlib.Path(self.__tbConfig[section]['iSimTclScript'])
 			
 #		print()
 			
