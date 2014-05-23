@@ -26,13 +26,13 @@
 -- limitations under the License.
 -- ===========================================================================
 
-library IEEE;
-use IEEE.std_logic_1164.all;
+library	IEEE;
+use			IEEE.std_logic_1164.all;
 
 library poc;
 use poc.utils.all;
 
-entity scaler is
+entity arith_scaler is
   generic (
     -- The set of multipliers to choose from in scaling operations.
     MULS : T_POSVEC := (0 => 1);
@@ -69,13 +69,13 @@ entity scaler is
     done  : out std_logic;
     res   : out std_logic_vector
   );
-end scaler;
+end arith_scaler;
 
 
-library IEEE;
-use IEEE.numeric_std.all;
+library	IEEE;
+use			IEEE.numeric_std.all;
 
-architecture rtl of scaler is
+architecture rtl of arith_scaler is
 
   -- Derived Constants
   constant N : positive := arg'length;
