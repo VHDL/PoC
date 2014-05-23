@@ -30,6 +30,10 @@
 -- limitations under the License.
 -- ============================================================================
 
+library	IEEE;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
+
 library	PoC;
 use			PoC.my_config.all;
 use			PoC.utils.all;
@@ -77,21 +81,9 @@ package board is
 	-- ===========================================================================
 	function MY_DEVICE_STRING(BoardConfig : string := "None") return string;
 	function MY_BOARD_STRUCT(BoardConfig : string := "None")	return T_BOARD_DESCRIPTION;
-	
 
-	-- private functions
-	-- ===========================================================================
-	function conf(str : string) return T_CONFIG_STRING is
-	begin
-		return resize(str, T_CONFIG_STRING'length);
-	end function;
-	
-	-- TODO: move to PoC.strings; find a better function name??
-	function str_trim(str : string) return string is
-	begin
-		return resize(str, str_length(str));
-	end function;
-
+	function conf(str : string) return T_CONFIG_STRING;
+	function str_trim(str : string) return string;	
 
 	-- board descriptions
 	-- ===========================================================================
@@ -204,6 +196,19 @@ end;
 
 
 package body board is
+
+	-- private functions
+	-- ===========================================================================
+	function conf(str : string) return T_CONFIG_STRING is
+	begin
+		return resize(str, T_CONFIG_STRING'length);
+	end function;
+	
+	-- TODO: move to PoC.strings; find a better function name??
+	function str_trim(str : string) return string is
+	begin
+		return resize(str, str_length(str));
+	end function;
 
 	-- TODO: comment
 	function MY_DEVICE_STRING(BoardConfig : string := "None") return string is
