@@ -61,6 +61,22 @@ package config is
 		DEVICE_STRATIX1, DEVICE_STRATIX2, DEVICE_STRATIX4, DEVICE_STRATIX5	-- Altera.Stratix
 	);
 
+	type t_device_subtype is (
+		device_subtype_none,
+		-- Xilinx
+		device_subtype_t,
+		device_subtype_xt,
+		device_subtype_lx, 
+		device_subtype_lxt, 
+		device_subtype_x,
+		device_subtype_sxt,
+		device_subtype_fxt,
+		device_subtype_cxt,
+		device_subtype_hxt,
+		-- Altera
+		device_subtype_gx
+	);
+	
 	-- Transceiver (sub-)type
 	-- ===========================================================================
 	type transceiver_t is (
@@ -85,6 +101,7 @@ package config is
 	-- ===========================================================================
 	function VENDOR(DeviceString : string := "None")				return vendor_t;
 	function DEVICE(DeviceString : string := "None")				return device_t;
+	function DEVICE_SUBTYPE(DeviceString : string := "None") return t_device_subtype;
 	function DEVICE_SERIES(DeviceString : string := "None")	return natural;
 	
 	function ARCH_PROPS return archprops_t;
@@ -109,8 +126,9 @@ package body config is
 	-- purpose: extract vendor from MY_DEVICE
 	function VENDOR(DeviceString : string := "None") return vendor_t is
 		constant MY_DEV : string := getLocalDeviceString(DeviceString);
+		constant VEN : string(1 to 2) := MY_DEV(1 to 2);
 	begin	-- VENDOR
-		case MY_DEV(1 to 2) is
+		case VEN is
 			when "XC"	 => return VENDOR_XILINX;
 			when "EP"	 => return VENDOR_ALTERA;
 			when others => report "Unknown vendor in MY_DEVICE = " & MY_DEV & "." severity failure;
@@ -121,10 +139,11 @@ package body config is
 	-- purpose: extract device from MY_DEVICE
 	function DEVICE(DeviceString : string := "None") return device_t is
 		constant MY_DEV : string := getLocalDeviceString(DeviceString);
+		constant DEV : string(1 to 2) := MY_DEV(3 to 4);
 	begin	-- DEVICE
 		case VENDOR(MY_DEV) is
 			when VENDOR_ALTERA =>
-				case MY_DEV(3 to 4) is
+				case DEV is
 					when "1C"	 => return DEVICE_CYCLONE1;
 					when "2C"	 => return DEVICE_CYCLONE2;
 					when "3C"	 => return DEVICE_CYCLONE3;
@@ -137,7 +156,7 @@ package body config is
 				end case;
 
 			when VENDOR_XILINX =>
-				case MY_DEV(3 to 4) is
+				case DEV is
 					when "7A"	 => return DEVICE_ARTIX7;
 					when "7K"	 => return DEVICE_KINTEX7;
 					when "3S"	 => return DEVICE_SPARTAN3;
@@ -161,45 +180,46 @@ package body config is
 		end case;
 	end function;
 
-	function DEVICE_SUBTYPE(DeviceString : string := "None") return string is
+	function DEVICE_SUBTYPE(DeviceString : string := "None") return t_device_subtype is
 		constant MY_DEV : string := getLocalDeviceString(DeviceString);
+		constant DEV_SUB : string(1 to 2) := MY_DEV(5 to 6);
 	begin
 		case DEVICE(MY_DEV) is
-			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return "NONE";		-- Altera Cyclon I, II, III devices have no subtype
+			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return device_subtype_none;		-- Altera Cyclon I, II, III devices have no subtype
 			
 			when DEVICE_SPARTAN3 => report "TODO: parse Spartan3 / Spartan3E / Spartan3AN device subtype." severity failure;
 			
 			when DEVICE_VIRTEX5 =>
-				if ((MY_DEV(5 to 6) = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') < 0)) then
-					return "LX";
-				elsif ((MY_DEV(5 to 6) = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
-					return "LXT";
-				elsif ((MY_DEV(5 to 6) = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
-					return "SXT";
-				elsif ((MY_DEV(5 to 6) = "FX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
-					return "FXT";
+				if ((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') < 0)) then
+					return device_subtype_lx;
+				elsif ((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return device_subtype_lxt;
+				elsif ((DEV_SUB = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return device_subtype_sxt;
+				elsif ((DEV_SUB = "FX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return device_subtype_fxt;
 				else
 					report "Unknown Virtex5 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 			
 			when DEVICE_VIRTEX6 =>
-				if ((MY_DEV(5 to 6) = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') < 0)) then
-					return "LX";
-				elsif ((MY_DEV(5 to 6) = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
-					return "LXT";
-				elsif ((MY_DEV(5 to 6) = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
-					return "SXT";
-				elsif ((MY_DEV(5 to 6) = "CX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
-					return "CXT";
-				elsif ((MY_DEV(5 to 6) = "HX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
-					return "HXT";
+				if ((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') < 0)) then
+					return device_subtype_lx;
+				elsif ((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return device_subtype_lxt;
+				elsif ((DEV_SUB = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return device_subtype_sxt;
+				elsif ((DEV_SUB = "CX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return device_subtype_cxt;
+				elsif ((DEV_SUB = "HX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return device_subtype_hxt;
 				else
 					report "Unknown Virtex6 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 			
 			when DEVICE_VIRTEX7 =>
-				if ((MY_DEV(5 to 5) = "X") and (str_pos(MY_DEV(6 TO MY_DEV'high), 'T') > 0)) then
-					return "XT";
+				if ((DEV_SUB(1 to 1) = "X") and (str_pos(MY_DEV(6 TO MY_DEV'high), 'T') > 0)) then
+					return device_subtype_xt;
 --				elsif ((MY_DEV(5 to 6) = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
 --					return "SXT";
 				else
@@ -244,10 +264,10 @@ package body config is
 				case DEVICE_SUBTYPE(MY_DEV) is
 --					when "LX" =>									return TRANSCEIVER_;
 --					when "SXT" =>									return TRANSCEIVER_;
-					when "LXT" =>									return TRANSCEIVER_GTP_DUAL;
+					when device_subtype_lxt =>		return TRANSCEIVER_GTP_DUAL;
 --					when "FXT" =>									return TRANSCEIVER_;
 					
-					when others => report "Unknown Virtex5 subtype: " & DEVICE_SUBTYPE(MY_DEV) severity failure;
+					when others => report "Unknown Virtex5 subtype: " & t_device_subtype'image(DEVICE_SUBTYPE(MY_DEV)) severity failure;
 				end case;
 			
 			when DEVICE_VIRTEX6 =>
@@ -255,18 +275,18 @@ package body config is
 --					when "LX" =>									return TRANSCEIVER_;
 --					when "SXT" =>									return TRANSCEIVER_;
 --					when "CXT" =>									return TRANSCEIVER_;
-					when "LXT" =>									return TRANSCEIVER_GTXE1;
+					when device_subtype_lxt =>		return TRANSCEIVER_GTXE1;
 --					when "HXT" =>									return TRANSCEIVER_;
 					
-					when others => report "Unknown Virtex6 subtype: " & DEVICE_SUBTYPE(MY_DEV) severity failure;
+					when others => report "Unknown Virtex6 subtype: " & t_device_subtype'image(DEVICE_SUBTYPE(MY_DEV)) severity failure;
 				end case;
 
 			when DEVICE_VIRTEX7 =>
 				case DEVICE_SUBTYPE(MY_DEV) is
-					when "XT" =>									return TRANSCEIVER_GTXE2;
+					when device_subtype_xt =>			return TRANSCEIVER_GTXE2;
 --					when "T" =>										return TRANSCEIVER_;
 					
-					when others => report "Unknown Virtex7 subtype: " & DEVICE_SUBTYPE(MY_DEV) severity failure;
+					when others => report "Unknown Virtex7 subtype: " & t_device_subtype'image(DEVICE_SUBTYPE(MY_DEV)) severity failure;
 				end case;
 			
 			when others => report "Unknown device." severity failure;

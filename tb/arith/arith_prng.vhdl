@@ -40,7 +40,7 @@ USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
 
-LIBRARY L_Testbench;
+--LIBRARY L_Testbench;
 
 ENTITY test_arith_prng IS
 

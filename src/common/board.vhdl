@@ -30,6 +30,10 @@
 -- limitations under the License.
 -- ============================================================================
 
+library	IEEE;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
+
 library	PoC;
 use			PoC.my_config.all;
 use			PoC.utils.all;
@@ -77,7 +81,9 @@ package board is
 	-- ===========================================================================
 	function MY_DEVICE_STRING(BoardConfig : string := "None") return string;
 	function MY_BOARD_STRUCT(BoardConfig : string := "None")	return T_BOARD_DESCRIPTION;
-	
+
+	function conf(str : string) return T_CONFIG_STRING;
+	function str_trim(str : string) return string;	
 
 	-- board descriptions
 	-- ===========================================================================
