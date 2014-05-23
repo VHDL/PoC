@@ -54,6 +54,7 @@ class PoCTestbench:
 	__sourceFilesDirectory = "src"			# relative to PoC root directory
 	__tempFilesDirectory = "temp"				# relative to PoC root directory
 	__isimFilesDirectory = "isim"				# relative to temp directory
+	__ghdlFilesDirectory = "ghdl"				# relative to temp directory
 	
 	__pocConfigFileName = "configuration.ini"
 	__pocStructureFileName = "structure.ini"
@@ -219,6 +220,95 @@ class PoCTestbench:
 		print("ERROR: not implemented.")
 	
 	def ghdlSimulation(self, module, showLogs):
+		temp = module.split('_', 1)
+		namespacePrefix = temp[0]
+		moduleName = temp[1]
+		fullNamespace = self.getNamespaceForPrefix(namespacePrefix)
+		
+		print("Preparing simulation environment for '%s.%s'" % (fullNamespace, moduleName))
+		tempGhdlPath = self.__pocDirectoryPath / self.__tempFilesDirectory / self.__ghdlFilesDirectory
+		if not (tempGhdlPath).exists():
+			self.printVerbose("Creating temporary directory for simulator files.")
+			self.printDebug("temporary directors: %s" % str(tempGhdlPath))
+			tempGhdlPath.mkdir(parents=True)
+
+		ghdlInstallationDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['InstallationDirectory'])
+		ghdlBinaryDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['BinaryDirectory'])
+		ghdlExecutablePath = ghdlBinaryDirectoryPath / "ghdl"
+		
+#		settingsFilePath = iseInstallationDirectoryPath / "settings64.bat"
+		section = "%s.%s" % (fullNamespace, moduleName)
+		testbenchName = self.__tbConfig[section]['TestbenchModule']
+		prjFilePath =  pathlib.Path(self.__tbConfig[section]['iSimProjectFile'])
+			
+#		print()
+			
+		if (self.__verbose):
+			print("Commands to be run:")
+			print("1. Parse iSim prj files to extract dependencies.")
+			print("2. Change working directory to temporary directory")
+			print("3. Add vhdl files to ghdl cache.")
+			print("4. Add testbench file to ghdl cache.")
+			print("5. Compile and run simulation")
+			print()
+		
+			print("cd %s" % str(tempGhdlPath))
+			print("%s -a --work=PoC%s" % (str(ghdlExecutablePath), "datei1 datei2"))
+			print("%s -r --work=work work.%s" % (str(tempGhdlPath), testbenchName))
+			print()
+
+#		settingsLog = subprocess.check_output([str(settingsFilePath)], stderr=subprocess.STDOUT, universal_newlines=True)
+#		print(settingsLog)
+
+		os.chdir(str(tempGhdlPath))
+
+		print("ghdl -a for every file...")		
+		with prjFilePath.open('r') as prjFileHandle:
+			for line in logFile:
+				command = "%s -a --work=%s" % (str(tempGhdlPath), line[5:])		# remove "vhdl " from line
+				print(command)
+		
+#		linkerLog = subprocess.check_output([
+#			str(fuseExecutablePath),
+#			("work.%s" % testbenchName),
+#			"-prj", str(prjFilePath), "-o", str(exeFilePath)],
+#			stderr=subprocess.STDOUT, universal_newlines=True)
+#		
+#		if showLogs:
+#			print("fuse log (fuse)")
+#			print("--------------------------------------------------------------------------------")
+#			print(linkerLog)
+#			print()
+#			
+#		print("running simulation...")
+#		simulatorLog = subprocess.check_output([str(exeFilePath),	"-tclbatch", str(tclFilePath)],
+#			stderr=subprocess.STDOUT, universal_newlines=True)
+#		
+#		if showLogs:
+#			print("simulator log")
+#			print("--------------------------------------------------------------------------------")
+#			print(simulatorLog)
+#			print("--------------------------------------------------------------------------------")		
+#	
+#		print()
+#		matchPos = simulatorLog.index("SIMULATION RESULT = ")
+#		if (matchPos > 0):
+#			if (simulatorLog[matchPos + 20 : matchPos + 26] == "PASSED"):
+#				print("Testbench '%s': PASSED" % testbenchName)
+#			elif (simulatorLog[matchPos + 20: matchPos + 26] == "FAILED"):
+#				print("Testbench '%s': FAILED" % testbenchName)
+#			else:
+#				print("Testbench '%s': ERROR" % testbenchName)
+#				print()
+#				print("ERROR: This testbench is not working correctly.")
+#				return
+#		else:
+#			print("Testbench '%s': ERROR" % "")
+#			print()
+#			print("ERROR: This testbench is not working correctly.")
+#			return
+
+
 		print("ERROR: not implemented.")
 	
 	def getNamespaceForPrefix(self, namespacePrefix):

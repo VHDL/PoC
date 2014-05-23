@@ -61,31 +61,32 @@ package config is
 		DEVICE_STRATIX1, DEVICE_STRATIX2, DEVICE_STRATIX4, DEVICE_STRATIX5	-- Altera.Stratix
 	);
 
-	type t_device_subtype is (
-		device_subtype_none,
+	type T_DEVICE_SUBTYPE is (
+		DEVICE_SUBTYPE_NONE,
 		-- Xilinx
-		device_subtype_t,
-		device_subtype_xt,
-		device_subtype_lx, 
-		device_subtype_lxt, 
-		device_subtype_x,
-		device_subtype_sxt,
-		device_subtype_fxt,
-		device_subtype_cxt,
-		device_subtype_hxt,
+		DEVICE_SUBTYPE_T,
+		DEVICE_SUBTYPE_XT,
+		DEVICE_SUBTYPE_LX, 
+		DEVICE_SUBTYPE_LXT, 
+		DEVICE_SUBTYPE_X,
+		DEVICE_SUBTYPE_SXT,
+		DEVICE_SUBTYPE_FXT,
+		DEVICE_SUBTYPE_CXT,
+		DEVICE_SUBTYPE_HXT,
 		-- Altera
-		device_subtype_gx
+		DEVICE_SUBTYPE_GX
 	);
 	
 	-- Transceiver (sub-)type
 	-- ===========================================================================
-	type transceiver_t is (
+	type T_TRANSCEIVER is (
 		TRANSCEIVER_GTP_DUAL,																								-- Xilinx GTP transceivers
 		TRANSCEIVER_GTX, TRANSCEIVER_GTXE1, TRANSCEIVER_GTXE2,							-- Xilinx GTX transceivers
 		TRANSCEIVER_GTH,																										-- Xilinx GTH transceivers
 		TRANSCEIVER_GTZ,																										-- Xilinx GTZ transceivers
 		
 		-- TODO: add Altera transceivers
+		TRANSCEIVER_GXB,																										-- Altera GXB transceiver
 		
 		TRANSCEIVER_NONE
 	);
@@ -101,7 +102,7 @@ package config is
 	-- ===========================================================================
 	function VENDOR(DeviceString : string := "None")				return vendor_t;
 	function DEVICE(DeviceString : string := "None")				return device_t;
-	function DEVICE_SUBTYPE(DeviceString : string := "None") return t_device_subtype;
+	function DEVICE_SUBTYPE(DeviceString : string := "None") return T_DEVICE_SUBTYPE;
 	function DEVICE_SERIES(DeviceString : string := "None")	return natural;
 	
 	function ARCH_PROPS return archprops_t;
@@ -125,8 +126,8 @@ package body config is
 
 	-- purpose: extract vendor from MY_DEVICE
 	function VENDOR(DeviceString : string := "None") return vendor_t is
-		constant MY_DEV : string := getLocalDeviceString(DeviceString);
-		constant VEN : string(1 to 2) := MY_DEV(1 to 2);
+		constant MY_DEV	: string					:= getLocalDeviceString(DeviceString);
+		constant VEN		: string(1 to 2)	:= MY_DEV(1 to 2);																-- work around for GHDL
 	begin	-- VENDOR
 		case VEN is
 			when "XC"	 => return VENDOR_XILINX;
@@ -138,8 +139,8 @@ package body config is
 
 	-- purpose: extract device from MY_DEVICE
 	function DEVICE(DeviceString : string := "None") return device_t is
-		constant MY_DEV : string := getLocalDeviceString(DeviceString);
-		constant DEV : string(1 to 2) := MY_DEV(3 to 4);
+		constant MY_DEV	: string					:= getLocalDeviceString(DeviceString);
+		constant DEV		: string(1 to 2)	:= MY_DEV(3 to 4);																-- work around for GHDL
 	begin	-- DEVICE
 		case VENDOR(MY_DEV) is
 			when VENDOR_ALTERA =>
@@ -181,8 +182,8 @@ package body config is
 	end function;
 
 	function DEVICE_SUBTYPE(DeviceString : string := "None") return t_device_subtype is
-		constant MY_DEV : string := getLocalDeviceString(DeviceString);
-		constant DEV_SUB : string(1 to 2) := MY_DEV(5 to 6);
+		constant MY_DEV		: string					:= getLocalDeviceString(DeviceString);
+		constant DEV_SUB	: string(1 to 2)	:= MY_DEV(5 to 6);																-- work around for GHDL
 	begin
 		case DEVICE(MY_DEV) is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return device_subtype_none;		-- Altera Cyclon I, II, III devices have no subtype
@@ -252,7 +253,7 @@ package body config is
 		end case;
 	end function;
 
-	function TRANSCEIVER_TYPE(DeviceString : string := "None") return transceiver_t is
+	function TRANSCEIVER_TYPE(DeviceString : string := "None") return T_TRANSCEIVER is
 		constant MY_DEV : string := getLocalDeviceString(DeviceString);
 	begin
 		case DEVICE(MY_DEV) is
@@ -264,7 +265,7 @@ package body config is
 				case DEVICE_SUBTYPE(MY_DEV) is
 --					when "LX" =>									return TRANSCEIVER_;
 --					when "SXT" =>									return TRANSCEIVER_;
-					when device_subtype_lxt =>		return TRANSCEIVER_GTP_DUAL;
+					when DEVICE_SUBTYPE_LXT =>		return TRANSCEIVER_GTP_DUAL;
 --					when "FXT" =>									return TRANSCEIVER_;
 					
 					when others => report "Unknown Virtex5 subtype: " & t_device_subtype'image(DEVICE_SUBTYPE(MY_DEV)) severity failure;
@@ -275,7 +276,7 @@ package body config is
 --					when "LX" =>									return TRANSCEIVER_;
 --					when "SXT" =>									return TRANSCEIVER_;
 --					when "CXT" =>									return TRANSCEIVER_;
-					when device_subtype_lxt =>		return TRANSCEIVER_GTXE1;
+					when DEVICE_SUBTYPE_LXT =>		return TRANSCEIVER_GTXE1;
 --					when "HXT" =>									return TRANSCEIVER_;
 					
 					when others => report "Unknown Virtex6 subtype: " & t_device_subtype'image(DEVICE_SUBTYPE(MY_DEV)) severity failure;

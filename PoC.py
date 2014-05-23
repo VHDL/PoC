@@ -74,23 +74,24 @@ class PoCConfiguration:
 			self.__pocConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
 			self.__pocConfig.optionxform = str
 			self.__pocConfig['PoC'] = {
+				'Version' : '0.0.0',
 				'InstallationDirectory' : self.__workingDirectoryPath.as_posix(),
 				'SourceFilesDirectory' : '${InstallationDirectory}/src',
 				'TestbenchFilesDirectory' : '${InstallationDirectory}/tb',
 				'TempFilesDirectory' : '${InstallationDirectory}/temp',
-				'iSimFilesDirectory' : '${InstallationDirectory}/isim',
-				'Version' : '0.0.0'
+				'iSimFilesDirectory' : '${InstallationDirectory}/isim'
+				
 			}
 			self.__pocConfig['Xilinx'] = {
-				'InstallationDirectory' : ''
+				'InstallationDirectory' : '????'
 			}
 			self.__pocConfig['Xilinx-ISE'] = {
-				'Version' : '14.7',
+				'Version' : '????',
 				'InstallationDirectory' : '${Xilinx:InstallationDirectory}/${Version}/ISE_DS',
-				'BinaryDirectory' : '${InstallationDirectory}/ISE/bin/nt64'
+				'BinaryDirectory' : '${InstallationDirectory}/ISE/bin/????64'
 			}
 			self.__pocConfig['Xilinx-Vivado'] = {
-				'Version' : '',
+				'Version' : '????',
 				'InstallationDirectory' : '${Xilinx:InstallationDirectory}/Vivado/${Version}',
 				'BinaryDirectory' : '${InstallationDirectory}/bin'
 			}
@@ -110,9 +111,9 @@ class PoCConfiguration:
 #				'BinaryDirectory' : '${InstallationDirectory}\bin'
 			}
 			self.__pocConfig['GHDL'] = {
-#				'Version' : '',
-#				'InstallationDirectory' : '${Xilinx:InstallationDirectory}\Vivado\${Version}',
-#				'BinaryDirectory' : '${InstallationDirectory}\bin'
+				'Version' : '0.31',
+				'InstallationDirectory' : '????/GHDL/${Version}',
+				'BinaryDirectory' : '${InstallationDirectory}/bin'
 			}
 			self.__pocConfig['GTKWave'] = {
 #				'Version' : '',
@@ -184,9 +185,9 @@ class PoCConfiguration:
 				return
 			
 			self.__pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
+			self.__pocConfig['Xilinx-ISE']['Version'] = iseVersion
 			self.__pocConfig['Xilinx-ISE']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/${Version}/ISE_DS'
 			self.__pocConfig['Xilinx-ISE']['BinaryDirectory'] = '${InstallationDirectory}/ISE/bin/nt64'
-			self.__pocConfig['Xilinx-ISE']['Version'] = iseVersion
 			
 			
 			# Writing configuration to disc
@@ -205,7 +206,7 @@ class PoCConfiguration:
 			iseVersion = iseVersion if iseVersion != "" else "14.7"
 			
 			xilinxDirectoryPath = pathlib.Path(xilinxDirectory)
-			iseDirectoryPath = xilinxDirectoryPath / iseVersion / "ISE_DSE/ISE"
+			iseDirectoryPath = xilinxDirectoryPath / iseVersion / "ISE_DS/ISE"
 			
 			if not xilinxDirectoryPath.exists():
 				print("ERROR: Xilinx Installation Directory '%s' does not exist." % xilinxDirectory)
@@ -215,10 +216,10 @@ class PoCConfiguration:
 				print("ERROR: Xilinx ISE version '%s' is not installed." % iseVersion)
 				return
 			
-#			self.__pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
-#			self.__pocConfig['Xilinx-ISE']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/${Version}/ISE_DS'
-#			self.__pocConfig['Xilinx-ISE']['BinaryDirectory'] = '${InstallationDirectory}/ISE/bin/nt64'
+			self.__pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
 			self.__pocConfig['Xilinx-ISE']['Version'] = iseVersion
+			self.__pocConfig['Xilinx-ISE']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/${Version}/ISE_DS'
+			self.__pocConfig['Xilinx-ISE']['BinaryDirectory'] = '${InstallationDirectory}/ISE/bin/lin64'
 		
 			
 			# Writing configuration to disc
