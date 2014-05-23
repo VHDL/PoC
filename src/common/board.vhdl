@@ -79,20 +79,6 @@ package board is
 	function MY_BOARD_STRUCT(BoardConfig : string := "None")	return T_BOARD_DESCRIPTION;
 	
 
-	-- private functions
-	-- ===========================================================================
-	function conf(str : string) return T_CONFIG_STRING is
-	begin
-		return resize(str, T_CONFIG_STRING'length);
-	end function;
-	
-	-- TODO: move to PoC.strings; find a better function name??
-	function str_trim(str : string) return string is
-	begin
-		return resize(str, str_length(str));
-	end function;
-
-
 	-- board descriptions
 	-- ===========================================================================
 	CONSTANT C_BOARD_DESCRIPTION_LIST		: T_BOARD_DESCRIPTION_VECTOR		:= (
@@ -204,6 +190,19 @@ end;
 
 
 package body board is
+
+	-- private functions
+	-- ===========================================================================
+	function conf(str : string) return T_CONFIG_STRING is
+	begin
+		return resize(str, T_CONFIG_STRING'length);
+	end function;
+	
+	-- TODO: move to PoC.strings; find a better function name??
+	function str_trim(str : string) return string is
+	begin
+		return resize(str, str_length(str));
+	end function;
 
 	-- TODO: comment
 	function MY_DEVICE_STRING(BoardConfig : string := "None") return string is
