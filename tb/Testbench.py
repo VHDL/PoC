@@ -253,7 +253,7 @@ class PoCTestbench:
 			print()
 		
 			print('cd "%s"' % str(tempGhdlPath))
-			print('"%s" -a --work=PoC%s' % (str(ghdlExecutablePath), "datei1 datei2"))
+			print('"%s" -a --work=PoC%s' % (str(ghdlExecutablePath), "path/to/sourcefile.vhdl"))
 			print('"%s" -r --work=work work.%s' % (str(ghdlExecutablePath), testbenchName))
 			print()
 
@@ -263,23 +263,33 @@ class PoCTestbench:
 		os.chdir(str(tempGhdlPath))
 		print(os.getcwd())
 
+		#print("//////////////////")
+		#command = '"%s" --help' % str(ghdlExecutablePath)
+		#print(command)
+		#ghdlLog = subprocess.check_output([command], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+		#ghdlLog = subprocess.call([('"%s" --help' % str(ghdlExecutablePath))], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+		
+		#print("//////////////////")
+		
+		regexp = re.compile(r"""vhdl\s+(?P<Library>[_a-zA-Z0-9]+)\s+\"(?P<VHDLFile>.*)\"""")
+		
 		print("ghdl -a for every file...")		
 		with prjFilePath.open('r') as prjFileHandle:
 			for line in prjFileHandle:
-				command = '"%s" -a --work=%s' % (str(ghdlExecutablePath), line[5:-1])		# remove "vhdl " from line
-				print(command)
+				print("line: " + line)
+				regExpMatch = regexp.match(line)
+				if (regExpMatch is not None):
+					command = '"%s" -a --work=%s %s' % (str(ghdlExecutablePath), regExpMatch.group("Library"), str(pathlib.Path(regExpMatch.group("VHDLFile"))))
+					print(command)
 		
-				ghdlLog = subprocess.check_output([command],
-#			str(fuseExecutablePath),
-#			("work.%s" % testbenchName),
-#			"-prj", str(prjFilePath), "-o", str(exeFilePath)],
-					stderr=subprocess.STDOUT, universal_newlines=True)
+					#ghdlLog = subprocess.check_output([command], stderr=subprocess.STDOUT, shell=True)#, universal_newlines=True)
+					ghdlLog = subprocess.call([command], stderr=subprocess.STDOUT, shell=True)#, universal_newlines=True)
 #		
-				if showLogs:
-					print("ghdl log")
-					print("--------------------------------------------------------------------------------")
-					print(ghdlLog)
-					print()
+					if showLogs:
+						print("ghdl log")
+						print("--------------------------------------------------------------------------------")
+						print(ghdlLog)
+						print()
 #			
 #		print("running simulation...")
 #		simulatorLog = subprocess.check_output([str(exeFilePath),	"-tclbatch", str(tclFilePath)],
