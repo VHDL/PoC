@@ -160,14 +160,14 @@ class PoCTestbench:
 			print()
 		
 #			print("%s" % (str(settingsFilePath)))		
-			print("cd %s" % str(tempIsimPath))
-			print("%s work.%s -prj %s -o %s" % (
+			print('cd "%s"' % str(tempIsimPath))
+			print('"%s" work.%s -prj "%s" -o "%s"' % (
 				str(fuseExecutablePath),
 				testbenchName,
 				str(prjFilePath),
 				str(exeFilePath)
 				))
-			print("%s -tclbatch %s" % (str(exeFilePath), str(tclFilePath)))
+			print('"%s" -tclbatch "%s"' % (str(exeFilePath), str(tclFilePath)))
 			print()
 
 #		settingsLog = subprocess.check_output([str(settingsFilePath)], stderr=subprocess.STDOUT, universal_newlines=True)
@@ -177,9 +177,9 @@ class PoCTestbench:
 		
 		print("running fuse...")
 		linkerLog = subprocess.check_output([
-			str(fuseExecutablePath),
+			('"%s"' % str(fuseExecutablePath)),
 			("work.%s" % testbenchName),
-			"-prj", str(prjFilePath), "-o", str(exeFilePath)],
+			"-prj", ('"%s"' % str(prjFilePath)), "-o", ('"%s"' % str(exeFilePath))],
 			stderr=subprocess.STDOUT, universal_newlines=True)
 		
 		if showLogs:
@@ -189,7 +189,7 @@ class PoCTestbench:
 			print()
 			
 		print("running simulation...")
-		simulatorLog = subprocess.check_output([str(exeFilePath),	"-tclbatch", str(tclFilePath)],
+		simulatorLog = subprocess.check_output([('"%s"' % str(exeFilePath)),	"-tclbatch", ('"%s"' % str(tclFilePath))],
 			stderr=subprocess.STDOUT, universal_newlines=True)
 		
 		if showLogs:
@@ -232,8 +232,8 @@ class PoCTestbench:
 			self.printDebug("temporary directors: %s" % str(tempGhdlPath))
 			tempGhdlPath.mkdir(parents=True)
 
-		ghdlInstallationDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['InstallationDirectory'])
-		ghdlBinaryDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['BinaryDirectory'])
+		ghdlInstallationDirectoryPath = pathlib.Path(self.__pocConfig['GHDL']['InstallationDirectory'])
+		ghdlBinaryDirectoryPath = pathlib.Path(self.__pocConfig['GHDL']['BinaryDirectory'])
 		ghdlExecutablePath = ghdlBinaryDirectoryPath / "ghdl"
 		
 #		settingsFilePath = iseInstallationDirectoryPath / "settings64.bat"
@@ -252,33 +252,34 @@ class PoCTestbench:
 			print("5. Compile and run simulation")
 			print()
 		
-			print("cd %s" % str(tempGhdlPath))
-			print("%s -a --work=PoC%s" % (str(ghdlExecutablePath), "datei1 datei2"))
-			print("%s -r --work=work work.%s" % (str(tempGhdlPath), testbenchName))
+			print('cd "%s"' % str(tempGhdlPath))
+			print('"%s" -a --work=PoC%s' % (str(ghdlExecutablePath), "datei1 datei2"))
+			print('"%s" -r --work=work work.%s' % (str(ghdlExecutablePath), testbenchName))
 			print()
 
 #		settingsLog = subprocess.check_output([str(settingsFilePath)], stderr=subprocess.STDOUT, universal_newlines=True)
 #		print(settingsLog)
 
 		os.chdir(str(tempGhdlPath))
+		print(os.getcwd())
 
 		print("ghdl -a for every file...")		
 		with prjFilePath.open('r') as prjFileHandle:
-			for line in logFile:
-				command = "%s -a --work=%s" % (str(tempGhdlPath), line[5:])		# remove "vhdl " from line
+			for line in prjFileHandle:
+				command = '"%s" -a --work=%s' % (str(ghdlExecutablePath), line[5:-1])		# remove "vhdl " from line
 				print(command)
 		
-#		linkerLog = subprocess.check_output([
+				ghdlLog = subprocess.check_output([command],
 #			str(fuseExecutablePath),
 #			("work.%s" % testbenchName),
 #			"-prj", str(prjFilePath), "-o", str(exeFilePath)],
-#			stderr=subprocess.STDOUT, universal_newlines=True)
+					stderr=subprocess.STDOUT, universal_newlines=True)
 #		
-#		if showLogs:
-#			print("fuse log (fuse)")
-#			print("--------------------------------------------------------------------------------")
-#			print(linkerLog)
-#			print()
+				if showLogs:
+					print("ghdl log")
+					print("--------------------------------------------------------------------------------")
+					print(ghdlLog)
+					print()
 #			
 #		print("running simulation...")
 #		simulatorLog = subprocess.check_output([str(exeFilePath),	"-tclbatch", str(tclFilePath)],
