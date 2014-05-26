@@ -46,6 +46,7 @@ class PoCConfiguration:
 	__workingDirectoryPath = None
 	__debug = False
 	__verbose = False
+	__platform = ""
 	
 	__pythonFilesDirectory = "py"
 	__pocConfigFileName = "configuration.ini"
@@ -58,6 +59,7 @@ class PoCConfiguration:
 		self.__workingDirectoryPath = pathlib.Path.cwd()
 		self.__debug = debug
 		self.__verbose = verbose
+		self.__platform = platform.system()
 		
 		configFilePath = self.__workingDirectoryPath / self.__pythonFilesDirectory / self.__pocConfigFileName
 		if configFilePath.exists():
@@ -143,14 +145,14 @@ class PoCConfiguration:
 		self.printDebug("DEBUG: platform: %s" % platform.system())
 		print()
 		
-		if (platform.system() == 'Windows'):
+		if (self.__platform == 'Windows'):
 			if (os.getenv('XILINX') != None):
 				print("env: XILINX = %s" % os.getenv('XILINX'))
 				
 				
 				
 				
-		elif (platform.system() == 'Linux'):
+		elif (self.__platform == 'Linux'):
 			if (os.getenv('XILINX') != None):
 				print("env: XILINX = %s" % os.getenv('XILINX'))
 		
@@ -165,7 +167,7 @@ class PoCConfiguration:
 		self.printDebug("platform: %s" % platform.system())
 		print()
 		
-		if (platform.system() == 'Windows'):
+		if (self.__platform == 'Windows'):
 			xilinxDirectory = input('Xilinx Installation Directory [C:\Xilinx]: ')
 			iseVersion = input('Xilinx ISE Version Number [14.7]: ')
 			print()
@@ -197,7 +199,7 @@ class PoCConfiguration:
 				self.__pocConfig.write(configFileHandle)
 			
 				
-		elif (platform.system() == 'Linux'):
+		elif (self.__platform == 'Linux'):
 			xilinxDirectory = input('Xilinx Installation Directory [/opt/xilinx]: ')
 			iseVersion = input('Xilinx ISE Version Number [14.7]: ')
 			print()
