@@ -82,6 +82,7 @@ package board is
 	function MY_DEVICE_STRING(BoardConfig : string := "None") return string;
 	function MY_BOARD_STRUCT(BoardConfig : string := "None")	return T_BOARD_DESCRIPTION;
 
+	-- private functions
 	function conf(str : string) return T_CONFIG_STRING;
 	function str_trim(str : string) return string;	
 
