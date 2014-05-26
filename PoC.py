@@ -82,7 +82,6 @@ class PoCConfiguration:
 				'TestbenchFilesDirectory' : '${InstallationDirectory}/tb',
 				'TempFilesDirectory' : '${InstallationDirectory}/temp',
 				'iSimFilesDirectory' : '${InstallationDirectory}/isim'
-				
 			}
 			self.__pocConfig['Xilinx'] = {
 				'InstallationDirectory' : '????'
@@ -141,8 +140,8 @@ class PoCConfiguration:
 	def autoConfiguration(self):
 		self.printVerbose("starting auto configuration...")
 
-		self.printDebug("DEBUG: working directory: %s" % self.__workingDirectoryPath)
-		self.printDebug("DEBUG: platform: %s" % platform.system())
+		self.printDebug("working directory: %s" % self.__workingDirectoryPath)
+		self.printDebug("platform: %s" % platform.system())
 		print()
 		
 		if (self.__platform == 'Windows'):
@@ -162,35 +161,111 @@ class PoCConfiguration:
 	
 	def manualConfiguration(self):
 		self.printVerbose("starting manual configuration...")
-
-		self.printDebug("working directory: %s" % self.__workingDirectoryPath)
-		self.printDebug("platform: %s" % platform.system())
+		print('Explanation of abbreviations:')
+		print('  y - yes')
+		print('  n - no')
+		print('  p - pass (jump to next question)')
+		print('Upper case means default value')
 		print()
 		
 		if (self.__platform == 'Windows'):
-			xilinxDirectory = input('Xilinx Installation Directory [C:\Xilinx]: ')
-			iseVersion = input('Xilinx ISE Version Number [14.7]: ')
-			print()
+			# Ask for installed Xilinx ISE
+			isXilinxISE = input('Is Xilinx ISE installed on your system? [Y/n/p]: ')
+			isXilinxISE = isXilinxISE if isXilinxISE != "" else "Y"
+			if (isXilinxISE != 'p'):
+				if (isXilinxISE == 'Y'):
+					xilinxDirectory = input('Xilinx Installation Directory [C:\Xilinx]: ')
+					iseVersion = input('Xilinx ISE Version Number [14.7]: ')
+					print()
+				
+					xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "C:\Xilinx"
+					iseVersion = iseVersion if iseVersion != "" else "14.7"
+				
+					xilinxDirectoryPath = pathlib.Path(xilinxDirectory)
+					iseDirectoryPath = xilinxDirectoryPath / iseVersion / "ISE_DS/ISE"
+				
+					if not xilinxDirectoryPath.exists():
+						print("ERROR: Xilinx Installation Directory '%s' does not exist." % xilinxDirectory)
+						return
+				
+					if not iseDirectoryPath.exists():
+						print("ERROR: Xilinx ISE version '%s' is not installed." % iseVersion)
+						return
+				
+					self.__pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
+					self.__pocConfig['Xilinx-ISE']['Version'] = iseVersion
+					self.__pocConfig['Xilinx-ISE']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/${Version}/ISE_DS'
+					self.__pocConfig['Xilinx-ISE']['BinaryDirectory'] = '${InstallationDirectory}/ISE/bin/nt64'
+				elif (isXilinxISE == 'n'):
+					self.__pocConfig['Xilinx-ISE'] = {}
+				else:
+					print("ERROR: unknown option")
+					return
 			
-			xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "C:\Xilinx"
-			iseVersion = iseVersion if iseVersion != "" else "14.7"
+			# Ask for installed Xilinx Vivado
+			isXilinxVivado = input('Is Xilinx Vivado installed on your system? [Y/n/p]: ')
+			isXilinxVivado = isXilinxVivado if isXilinxVivado != "" else "Y"
+			if (isXilinxVivado != 'p'):
+				if (isXilinxVivado == 'Y'):
+					xilinxDirectory = input('Xilinx Installation Directory [C:\Xilinx]: ')
+					vivadoVersion = input('Xilinx Vivado Version Number [2014.1]: ')
+					print()
+				
+					xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "C:\Xilinx"
+					vivadoVersion = vivadoVersion if vivadoVersion != "" else "2014.1"
+				
+					xilinxDirectoryPath = pathlib.Path(xilinxDirectory)
+					vivadoDirectoryPath = xilinxDirectoryPath / "Vivado" / vivadoVersion
+				
+					if not xilinxDirectoryPath.exists():
+						print("ERROR: Xilinx Installation Directory '%s' does not exist." % xilinxDirectory)
+						return
+				
+					if not vivadoDirectoryPath.exists():
+						print("ERROR: Xilinx Vivado version '%s' is not installed." % vivadoVersion)
+						return
+				
+					self.__pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
+					self.__pocConfig['Xilinx-Vivado']['Version'] = vivadoVersion
+					self.__pocConfig['Xilinx-Vivado']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/Vivado/${Version}'
+					self.__pocConfig['Xilinx-Vivado']['BinaryDirectory'] = '${InstallationDirectory}/bin'
+				elif (isXilinxVivado == 'n'):
+					self.__pocConfig['Xilinx-Vivado'] = {}
+				else:
+					print("ERROR: unknown option")
+					return
 			
-			xilinxDirectoryPath = pathlib.Path(xilinxDirectory)
-			iseDirectoryPath = xilinxDirectoryPath / iseVersion / "ISE_DS/ISE"
-			
-			if not xilinxDirectoryPath.exists():
-				print("ERROR: Xilinx Installation Directory '%s' does not exist." % xilinxDirectory)
-				return
-			
-			if not iseDirectoryPath.exists():
-				print("ERROR: Xilinx ISE version '%s' is not installed." % iseVersion)
-				return
-			
-			self.__pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
-			self.__pocConfig['Xilinx-ISE']['Version'] = iseVersion
-			self.__pocConfig['Xilinx-ISE']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/${Version}/ISE_DS'
-			self.__pocConfig['Xilinx-ISE']['BinaryDirectory'] = '${InstallationDirectory}/ISE/bin/nt64'
-			
+			# Ask for installed GHDL
+			isGHDL = input('Is GHDL installed on your system? [Y/n/p]: ')
+			isGHDL = isGHDL if isGHDL != "" else "Y"
+			if (isGHDL != 'p'):
+				if (isGHDL == 'Y'):
+					ghdlDirectory = input('GHDL Installation Directory [C:\Program Files (x86)\GHDL]: ')
+					ghdlVersion = input('GHDL Version Number [0.31]: ')
+					print()
+				
+					ghdlDirectory = ghdlDirectory if ghdlDirectory != "" else "C:\Program Files (x86)\GHDL"
+					ghdlVersion = ghdlVersion if ghdlVersion != "" else "0.31"
+				
+					ghdlDirectoryPath = pathlib.Path(ghdlDirectory)
+					ghdlExecutablePath = ghdlDirectoryPath / "bin" / "ghdl.exe"
+				
+					if not ghdlDirectoryPath.exists():
+						print("ERROR: GHDL Installation Directory '%s' does not exist." % ghdlDirectory)
+						return
+				
+					if not ghdlExecutablePath.exists():
+						print("ERROR: GHDL is not installed.")
+						return
+				
+					self.__pocConfig['GHDL']['Version'] = ghdlVersion
+					self.__pocConfig['GHDL']['InstallationDirectory'] = ghdlDirectoryPath.as_posix()
+					self.__pocConfig['GHDL']['BinaryDirectory'] = '${InstallationDirectory}/bin'
+				elif (isGHDL == 'n'):
+					self.__pocConfig['GHDL'] = {}
+				else:
+					print("ERROR: unknown option")
+					return
 			
 			# Writing configuration to disc
 			configFilePath = self.__workingDirectoryPath / self.__pythonFilesDirectory / self.__pocConfigFileName
@@ -198,31 +273,104 @@ class PoCConfiguration:
 			with configFilePath.open('w') as configFileHandle:
 				self.__pocConfig.write(configFileHandle)
 			
-				
 		elif (self.__platform == 'Linux'):
-			xilinxDirectory = input('Xilinx Installation Directory [/opt/xilinx]: ')
-			iseVersion = input('Xilinx ISE Version Number [14.7]: ')
-			print()
-
-			xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/xilinx"
-			iseVersion = iseVersion if iseVersion != "" else "14.7"
-			
-			xilinxDirectoryPath = pathlib.Path(xilinxDirectory)
-			iseDirectoryPath = xilinxDirectoryPath / iseVersion / "ISE_DS/ISE"
-			
-			if not xilinxDirectoryPath.exists():
-				print("ERROR: Xilinx Installation Directory '%s' does not exist." % xilinxDirectory)
-				return
+			# Ask for installed Xilinx ISE
+			isXilinxISE = input('Is Xilinx ISE installed on your system? [Y/n/p]: ')
+			isXilinxISE = isXilinxISE if isXilinxISE != "" else "Y"
+			if (isXilinxISE != 'p'):
+				if (isXilinxISE == 'Y'):
+					xilinxDirectory = input('Xilinx Installation Directory [/opt/xilinx]: ')
+					iseVersion = input('Xilinx ISE Version Number [14.7]: ')
+					print()
 				
-			if iseDirectoryPath.exists():
-				print("ERROR: Xilinx ISE version '%s' is not installed." % iseVersion)
-				return
+					xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/xilinx"
+					iseVersion = iseVersion if iseVersion != "" else "14.7"
+				
+					xilinxDirectoryPath = pathlib.Path(xilinxDirectory)
+					iseDirectoryPath = xilinxDirectoryPath / iseVersion / "ISE_DS/ISE"
+				
+					if not xilinxDirectoryPath.exists():
+						print("ERROR: Xilinx Installation Directory '%s' does not exist." % xilinxDirectory)
+						return
+				
+					if not iseDirectoryPath.exists():
+						print("ERROR: Xilinx ISE version '%s' is not installed." % iseVersion)
+						return
+				
+					self.__pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
+					self.__pocConfig['Xilinx-ISE']['Version'] = iseVersion
+					self.__pocConfig['Xilinx-ISE']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/${Version}/ISE_DS'
+					self.__pocConfig['Xilinx-ISE']['BinaryDirectory'] = '${InstallationDirectory}/ISE/bin/lin64'
+				elif (isXilinxISE == 'n'):
+					self.__pocConfig['Xilinx-ISE'] = {}
+				else:
+					print("ERROR: unknown option")
+					return
 			
-			self.__pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
-			self.__pocConfig['Xilinx-ISE']['Version'] = iseVersion
-			self.__pocConfig['Xilinx-ISE']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/${Version}/ISE_DS'
-			self.__pocConfig['Xilinx-ISE']['BinaryDirectory'] = '${InstallationDirectory}/ISE/bin/lin64'
-		
+			# Ask for installed Xilinx Vivado
+			isXilinxVivado = input('Is Xilinx Vivado installed on your system? [Y/n/p]: ')
+			isXilinxVivado = isXilinxVivado if isXilinxVivado != "" else "Y"
+			if (isXilinxVivado != 'p'):
+				if (isXilinxVivado == 'Y'):
+					xilinxDirectory = input('Xilinx Installation Directory [/opt/xilinx]: ')
+					vivadoVersion = input('Xilinx Vivado Version Number [2014.1]: ')
+					print()
+				
+					xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/xilinx"
+					vivadoVersion = vivadoVersion if vivadoVersion != "" else "2014.1"
+				
+					xilinxDirectoryPath = pathlib.Path(xilinxDirectory)
+					vivadoDirectoryPath = xilinxDirectoryPath / "vivado" / vivadoVersion
+				
+					if not xilinxDirectoryPath.exists():
+						print("ERROR: Xilinx Installation Directory '%s' does not exist." % xilinxDirectory)
+						return
+				
+					if not vivadoDirectoryPath.exists():
+						print("ERROR: Xilinx Vivado version '%s' is not installed." % vivadoVersion)
+						return
+				
+					self.__pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
+					self.__pocConfig['Xilinx-Vivado']['Version'] = vivadoVersion
+					self.__pocConfig['Xilinx-Vivado']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/vivado/${Version}'
+					self.__pocConfig['Xilinx-Vivado']['BinaryDirectory'] = '${InstallationDirectory}/bin'
+				elif (isXilinxVivado == 'n'):
+					self.__pocConfig['Xilinx-Vivado'] = {}
+				else:
+					print("ERROR: unknown option")
+					return
+			
+			# Ask for installed GHDL
+			isGHDL = input('Is GHDL installed on your system? [Y/n/p]: ')
+			isGHDL = isGHDL if isGHDL != "" else "Y"
+			if (isGHDL != 'p'):
+				if (isGHDL == 'Y'):
+					ghdlDirectory = input('GHDL Installation Directory [/usr/bin]: ')
+					ghdlVersion = input('GHDL Version Number [0.31]: ')
+					print()
+				
+					ghdlDirectory = ghdlDirectory if ghdlDirectory != "" else "/usr/bin"
+					ghdlVersion = ghdlVersion if ghdlVersion != "" else "0.31"
+				
+					ghdlDirectoryPath = pathlib.Path(ghdlDirectory)
+					ghdlExecutablePath = ghdlDirectoryPath / "ghdl"
+				
+					if not ghdlDirectoryPath.exists():
+						print("ERROR: GHDL Installation Directory '%s' does not exist." % ghdlDirectory)
+						return
+				
+					if not ghdlExecutablePath.exists():
+						print("ERROR: GHDL is not installed.")
+						return
+				
+					self.__pocConfig['GHDL']['Version'] = ghdlVersion
+					self.__pocConfig['GHDL']['InstallationDirectory'] = ghdlDirectoryPath.as_posix()
+					self.__pocConfig['GHDL']['BinaryDirectory'] = '${InstallationDirectory}'
+				elif (isGHDL == 'n'):
+					self.__pocConfig['GHDL'] = {}
+				else:
+					print("ERROR: unknown option")
+					return
 			
 			# Writing configuration to disc
 			configFilePath = self.__workingDirectoryPath / self.__pythonFilesDirectory / self.__pocConfigFileName

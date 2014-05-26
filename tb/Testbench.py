@@ -46,6 +46,7 @@ import textwrap
 class PoCTestbench:
 	__debug = False
 	__verbose = False
+	__platform = ""
 
 	__pocDirectoryPath = None
 	__workingDirectoryPath = None
@@ -67,6 +68,7 @@ class PoCTestbench:
 	def __init__(self, debug, verbose):
 		self.__debug = debug
 		self.__verbose = verbose
+		self.__platform = platform.system()
 		
 		self.__workingDirectoryPath = pathlib.Path.cwd()
 		
@@ -123,8 +125,12 @@ class PoCTestbench:
 		if (self.__verbose):
 			print(message)
 
-			
 	def isimSimulation(self, module, showLogs):
+		if (len(self.__pocConfig.options("Xilinx-ISE")) == 0):
+			print("Xilinx ISE is not configured on this system.")
+			print("Run 'PoC.py --configure' to configure your Xilinx ISE environment.")
+			return
+	
 		temp = module.split('_', 1)
 		namespacePrefix = temp[0]
 		moduleName = temp[1]
@@ -139,8 +145,8 @@ class PoCTestbench:
 
 		iseInstallationDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['InstallationDirectory'])
 		iseBinaryDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['BinaryDirectory'])
-		vhpcompExecutablePath = iseBinaryDirectoryPath / "vhpcomp"
-		fuseExecutablePath = iseBinaryDirectoryPath / "fuse"
+		vhpcompExecutablePath = iseBinaryDirectoryPath / ("vhpcomp.exe" if (self.__platform == "Windows") else "vhpcomp")
+		fuseExecutablePath = iseBinaryDirectoryPath / ("fuse.exe" if (self.__platform == "Windows") else "fuse")
 		
 #		settingsFilePath = iseInstallationDirectoryPath / "settings64.bat"
 		section = "%s.%s" % (fullNamespace, moduleName)
@@ -161,13 +167,8 @@ class PoCTestbench:
 		
 #			print("%s" % (str(settingsFilePath)))		
 			print('cd "%s"' % str(tempIsimPath))
-			print('"%s" work.%s -prj "%s" -o "%s"' % (
-				str(fuseExecutablePath),
-				testbenchName,
-				str(prjFilePath),
-				str(exeFilePath)
-				))
-			print('"%s" -tclbatch "%s"' % (str(exeFilePath), str(tclFilePath)))
+			print('%s work.%s -prj "%s" -o "%s"' % (str(fuseExecutablePath), testbenchName, str(prjFilePath), str(exeFilePath)))
+			print('%s -tclbatch "%s"' % (str(exeFilePath), str(tclFilePath)))
 			print()
 
 #		settingsLog = subprocess.check_output([str(settingsFilePath)], stderr=subprocess.STDOUT, universal_newlines=True)
@@ -175,22 +176,30 @@ class PoCTestbench:
 
 		os.chdir(str(tempIsimPath))
 		
+		# running fuse
 		print("running fuse...")
 		linkerLog = subprocess.check_output([
-			('"%s"' % str(fuseExecutablePath)),
-			("work.%s" % testbenchName),
-			"-prj", ('"%s"' % str(prjFilePath)), "-o", ('"%s"' % str(exeFilePath))],
-			stderr=subprocess.STDOUT, universal_newlines=True)
+			str(fuseExecutablePath),
+			('work.%s' % testbenchName),
+			'-prj',
+			str(prjFilePath),
+			'-o',
+			str(exeFilePath)
+			], stderr=subprocess.STDOUT, universal_newlines=True)
 		
 		if showLogs:
 			print("fuse log (fuse)")
 			print("--------------------------------------------------------------------------------")
 			print(linkerLog)
 			print()
-			
+		
+		# running simulation
 		print("running simulation...")
-		simulatorLog = subprocess.check_output([('"%s"' % str(exeFilePath)),	"-tclbatch", ('"%s"' % str(tclFilePath))],
-			stderr=subprocess.STDOUT, universal_newlines=True)
+		simulatorLog = subprocess.check_output([
+			str(exeFilePath),
+			'-tclbatch',
+			str(tclFilePath)
+			], stderr=subprocess.STDOUT, universal_newlines=True)
 		
 		if showLogs:
 			print("simulator log")
@@ -199,6 +208,7 @@ class PoCTestbench:
 			print("--------------------------------------------------------------------------------")		
 	
 		print()
+		# check output
 		matchPos = simulatorLog.index("SIMULATION RESULT = ")
 		if (matchPos > 0):
 			if (simulatorLog[matchPos + 20 : matchPos + 26] == "PASSED"):
@@ -217,9 +227,19 @@ class PoCTestbench:
 			return
 	
 	def vsimSimulation(self, module, showLogs):
+		if ((len(self.__pocConfig.options("Altera-ModelSim")) == 0) or (len(self.__pocConfig.options("Mentor-ModelSim")) == 0)):
+			print("ModelSim is not configured on this system.")
+			print("Run 'PoC.py --configure' to configure your ModelSim environment.")
+			return
+		
 		print("ERROR: not implemented.")
 	
 	def ghdlSimulation(self, module, showLogs):
+		if (len(self.__pocConfig.options("GHDL")) == 0):
+			print("GHDL is not configured on this system.")
+			print("Run 'PoC.py --configure' to configure your GHDL environment.")
+			return
+	
 		temp = module.split('_', 1)
 		namespacePrefix = temp[0]
 		moduleName = temp[1]
@@ -234,14 +254,12 @@ class PoCTestbench:
 
 		ghdlInstallationDirectoryPath = pathlib.Path(self.__pocConfig['GHDL']['InstallationDirectory'])
 		ghdlBinaryDirectoryPath = pathlib.Path(self.__pocConfig['GHDL']['BinaryDirectory'])
-		ghdlExecutablePath = ghdlBinaryDirectoryPath / "ghdl"
+		ghdlExecutablePath = ghdlBinaryDirectoryPath / ("ghdl.exe" if (self.__platform == "Windows") else "ghdl")
 		
 #		settingsFilePath = iseInstallationDirectoryPath / "settings64.bat"
 		section = "%s.%s" % (fullNamespace, moduleName)
 		testbenchName = self.__tbConfig[section]['TestbenchModule']
 		prjFilePath =  pathlib.Path(self.__tbConfig[section]['iSimProjectFile'])
-			
-#		print()
 			
 		if (self.__verbose):
 			print("Commands to be run:")
@@ -253,8 +271,8 @@ class PoCTestbench:
 			print()
 		
 			print('cd "%s"' % str(tempGhdlPath))
-			print('"%s" -a --work=PoC%s' % (str(ghdlExecutablePath), "path/to/sourcefile.vhdl"))
-			print('"%s" -r --work=work work.%s' % (str(ghdlExecutablePath), testbenchName))
+			print('%s -a --work=PoC "%s"' % (str(ghdlExecutablePath), 'path/to/sourcefile.vhdl'))
+			print('%s -r --work=work work.%s' % (str(ghdlExecutablePath), testbenchName))
 			print()
 
 #		settingsLog = subprocess.check_output([str(settingsFilePath)], stderr=subprocess.STDOUT, universal_newlines=True)
@@ -262,66 +280,67 @@ class PoCTestbench:
 
 		os.chdir(str(tempGhdlPath))
 		print(os.getcwd())
-
-		#print("//////////////////")
-		#command = '"%s" --help' % str(ghdlExecutablePath)
-		#print(command)
-		#ghdlLog = subprocess.check_output([command], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
-		#ghdlLog = subprocess.call([('"%s" --help' % str(ghdlExecutablePath))], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
-		
-		#print("//////////////////")
 		
 		regexp = re.compile(r"""vhdl\s+(?P<Library>[_a-zA-Z0-9]+)\s+\"(?P<VHDLFile>.*)\"""")
 		
+		# add files to GHDL cache
 		print("ghdl -a for every file...")		
 		with prjFilePath.open('r') as prjFileHandle:
 			for line in prjFileHandle:
-				print("line: " + line)
 				regExpMatch = regexp.match(line)
+				
 				if (regExpMatch is not None):
-					command = '"%s" -a --work=%s %s' % (str(ghdlExecutablePath), regExpMatch.group("Library"), str(pathlib.Path(regExpMatch.group("VHDLFile"))))
-					print(command)
-		
-					#ghdlLog = subprocess.check_output([command], stderr=subprocess.STDOUT, shell=True)#, universal_newlines=True)
-					ghdlLog = subprocess.call([command], stderr=subprocess.STDOUT, shell=True)#, universal_newlines=True)
+					ghdlLog = subprocess.check_output([
+						str(ghdlExecutablePath),
+						'-a',
+						('--work=%s' % regExpMatch.group('Library')),
+						str(pathlib.Path(regExpMatch.group('VHDLFile')))
+						], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
 #		
 					if showLogs:
-						print("ghdl log")
-						print("--------------------------------------------------------------------------------")
-						print(ghdlLog)
-						print()
-#			
-#		print("running simulation...")
-#		simulatorLog = subprocess.check_output([str(exeFilePath),	"-tclbatch", str(tclFilePath)],
-#			stderr=subprocess.STDOUT, universal_newlines=True)
+						command = "%s -a --work=%s \"%s\"" % (str(ghdlExecutablePath), regExpMatch.group('Library'), str(pathlib.Path(regExpMatch.group('VHDLFile'))))
+						print("ghdl call: %s" % command)
+						
+						if (ghdlLog != ""):
+							print("ghdl messages for : %s" % str(pathlib.Path(regExpMatch.group('VHDLFile'))))
+							print("--------------------------------------------------------------------------------")
+							print(ghdlLog)
+		
+		# run GHDL simulation
+		simulatorLog = subprocess.check_output([
+			str(ghdlExecutablePath),
+			'-r',
+			'--work=work',
+			testbenchName
+			], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
 #		
-#		if showLogs:
-#			print("simulator log")
-#			print("--------------------------------------------------------------------------------")
-#			print(simulatorLog)
-#			print("--------------------------------------------------------------------------------")		
-#	
-#		print()
-#		matchPos = simulatorLog.index("SIMULATION RESULT = ")
-#		if (matchPos > 0):
-#			if (simulatorLog[matchPos + 20 : matchPos + 26] == "PASSED"):
-#				print("Testbench '%s': PASSED" % testbenchName)
-#			elif (simulatorLog[matchPos + 20: matchPos + 26] == "FAILED"):
-#				print("Testbench '%s': FAILED" % testbenchName)
-#			else:
-#				print("Testbench '%s': ERROR" % testbenchName)
-#				print()
-#				print("ERROR: This testbench is not working correctly.")
-#				return
-#		else:
-#			print("Testbench '%s': ERROR" % "")
-#			print()
-#			print("ERROR: This testbench is not working correctly.")
-#			return
+		if showLogs:
+			command = "%s -r --work=work %s" % (str(ghdlExecutablePath), testbenchName)
+			print("ghdl call: %s" % command)
+			
+			if (simulatorLog != ""):
+				print("ghdl simulation messages:")
+				print("--------------------------------------------------------------------------------")
+				print(simulatorLog)
 
+		print()
+		matchPos = simulatorLog.index("SIMULATION RESULT = ")
+		if (matchPos > 0):
+			if (simulatorLog[matchPos + 20 : matchPos + 26] == "PASSED"):
+				print("Testbench '%s': PASSED" % testbenchName)
+			elif (simulatorLog[matchPos + 20: matchPos + 26] == "FAILED"):
+				print("Testbench '%s': FAILED" % testbenchName)
+			else:
+				print("Testbench '%s': ERROR" % testbenchName)
+				print()
+				print("ERROR: This testbench is not working correctly.")
+				return
+		else:
+			print("Testbench '%s': ERROR" % "")
+			print()
+			print("ERROR: This testbench is not working correctly.")
+			return
 
-		print("ERROR: not implemented.")
-	
 	def getNamespaceForPrefix(self, namespacePrefix):
 		return self.__tbConfig['NamespacePrefixes'][namespacePrefix]
 	
