@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3.4
 # EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
@@ -290,15 +290,16 @@ class PoCTestbench:
 				regExpMatch = regexp.match(line)
 				
 				if (regExpMatch is not None):
+					command = '%s -a --work=%s "%s"' % (str(ghdlExecutablePath), regExpMatch.group('Library'), str(pathlib.Path(regExpMatch.group('VHDLFile'))))
+					self.printDebug('command: %s' % command)
 					ghdlLog = subprocess.check_output([
 						str(ghdlExecutablePath),
 						'-a',
 						('--work=%s' % regExpMatch.group('Library')),
 						str(pathlib.Path(regExpMatch.group('VHDLFile')))
-						], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+						], stderr=subprocess.STDOUT, shell=(True if (self.__platform == "Windows") else False), universal_newlines=True)
 #		
 					if showLogs:
-						command = "%s -a --work=%s \"%s\"" % (str(ghdlExecutablePath), regExpMatch.group('Library'), str(pathlib.Path(regExpMatch.group('VHDLFile'))))
 						print("ghdl call: %s" % command)
 						
 						if (ghdlLog != ""):
@@ -306,22 +307,57 @@ class PoCTestbench:
 							print("--------------------------------------------------------------------------------")
 							print(ghdlLog)
 		
-		# run GHDL simulation
-		simulatorLog = subprocess.check_output([
-			str(ghdlExecutablePath),
-			'-r',
-			'--work=work',
-			testbenchName
-			], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+		simulatorLog = ""
+		
+		# run GHDL simulation on Windows
+		if (self.__platform == "Windows"):
+			simulatorLog = subprocess.check_output([
+				str(ghdlExecutablePath),
+				'-r',
+				'--work=work',
+				testbenchName
+				], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
 #		
-		if showLogs:
-			command = "%s -r --work=work %s" % (str(ghdlExecutablePath), testbenchName)
-			print("ghdl call: %s" % command)
-			
-			if (simulatorLog != ""):
-				print("ghdl simulation messages:")
-				print("--------------------------------------------------------------------------------")
-				print(simulatorLog)
+			if showLogs:
+				command = "%s -r --work=work %s" % (str(ghdlExecutablePath), testbenchName)
+				print("ghdl call: %s" % command)
+				
+				if (simulatorLog != ""):
+					print("ghdl simulation messages:")
+					print("--------------------------------------------------------------------------------")
+					print(simulatorLog)
+		elif (self.__platform == "Linux"):
+			elaborateLog = subprocess.check_output([
+				str(ghdlExecutablePath),
+				'-e',
+				'--work=work',
+				testbenchName
+				], stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+#		
+			if showLogs:
+				command = "%s -e --work=work %s" % (str(ghdlExecutablePath), testbenchName)
+				print("ghdl call: %s" % command)
+				
+				if (elaborateLog != ""):
+					print("ghdl elaborate messages:")
+					print("--------------------------------------------------------------------------------")
+					print(elaborateLog)
+
+			simulatorLog = subprocess.check_output([
+				('./%s' % testbenchName)
+				], stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+#		
+			if showLogs:
+				command = './%s' % testbenchName
+				print("ghdl call: %s" % command)
+				
+				if (simulatorLog != ""):
+					print("ghdl simulation messages:")
+					print("--------------------------------------------------------------------------------")
+					print(simulatorLog)
+		else:
+			print("ERROR: Platform not supported!")
+			return
 
 		print()
 		matchPos = simulatorLog.index("SIMULATION RESULT = ")
