@@ -1,137 +1,307 @@
--- EMACS settings: -*-  tab-width:2  -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- ============================================================================================================================================================
--- Description:     Global configuration settings.
---                  This file evaluates the settings declared in the project specific package my_config.
---                  See also template file my_config.vhdl.template.
+-- ============================================================================
+-- Package:					Global configuration settings.
 --
--- Authors:         Thomas B. Preusser
---                  Martin Zabel
---                  Patrick Lehmann
--- ============================================================================================================================================================
--- Copyright 2007-2013 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Authors:					Thomas B. Preusser
+--									Martin Zabel
+--									Patrick Lehmann
+--
+-- Description:
+-- ------------------------------------
+--		This file evaluates the settings declared in the project specific package my_config.
+--		See also template file my_config.vhdl.template.
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+--										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 -- 
---    http://www.apache.org/licenses/LICENSE-2.0
+--		http://www.apache.org/licenses/LICENSE-2.0
 -- 
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================================================================================================
-library PoC;
-use			PoC.types.ALL;
-use     PoC.my_config.all;
+-- ============================================================================
+
+library	PoC;
+use			PoC.my_config.all;
+use			PoC.board.all;
+use			PoC.utils.all;
+use			PoC.strings.all;
+
 
 package config is
-  -- FPGA / Chip vendor
+	-- FPGA / Chip vendor
 	-- ===========================================================================
-  type vendor_t is (
-	  VENDOR_ALTERA,
+	type vendor_t is (
+		VENDOR_ALTERA,
 		VENDOR_XILINX
 --		VENDOR_LATTICE
 	);
 
-  -- Device family
-  -- ===========================================================================
-  type device_t is (
-    DEVICE_SPARTAN3, DEVICE_SPARTAN6,                                     -- Xilinx.Spartan
-    DEVICE_ZYNQ7,                                                         -- Xilinx.Zynq
-		DEVICE_ARTIX7,                                                        -- Xilinx.Artix
-    DEVICE_KINTEX7,                                                       -- Xilinx.Kintex
-    DEVICE_VIRTEX5,  DEVICE_VIRTEX6, DEVICE_VIRTEX7,                      -- Xilinx.Virtex
-    
-    DEVICE_CYCLONE1, DEVICE_CYCLONE2, DEVICE_CYCLONE3,                    -- Altera.Cyclone
-    DEVICE_STRATIX1, DEVICE_STRATIX2, DEVICE_STRATIX4, DEVICE_STRATIX5    -- Altera.Stratix
-  );
+	-- Device family
+	-- ===========================================================================
+	type device_t is (
+		DEVICE_SPARTAN3, DEVICE_SPARTAN6,																		-- Xilinx.Spartan
+		DEVICE_ZYNQ7,																												-- Xilinx.Zynq
+		DEVICE_ARTIX7,																											-- Xilinx.Artix
+		DEVICE_KINTEX7,																											-- Xilinx.Kintex
+		DEVICE_VIRTEX5,	DEVICE_VIRTEX6, DEVICE_VIRTEX7,											-- Xilinx.Virtex
+		
+		DEVICE_CYCLONE1, DEVICE_CYCLONE2, DEVICE_CYCLONE3,									-- Altera.Cyclone
+		DEVICE_STRATIX1, DEVICE_STRATIX2, DEVICE_STRATIX4, DEVICE_STRATIX5	-- Altera.Stratix
+	);
 
-  -- Properties of FPGA architecture
-  -- ===========================================================================
-  type archprops_t is
-    record
-      LUT_K : positive;  -- LUT Fanin
-      -- INFO: include transceiver type and the like here
-    end record;
+	type T_DEVICE_SUBTYPE is (
+		DEVICE_SUBTYPE_NONE,
+		-- Xilinx
+		DEVICE_SUBTYPE_T,
+		DEVICE_SUBTYPE_XT,
+		DEVICE_SUBTYPE_LX, 
+		DEVICE_SUBTYPE_LXT, 
+		DEVICE_SUBTYPE_X,
+		DEVICE_SUBTYPE_SXT,
+		DEVICE_SUBTYPE_FXT,
+		DEVICE_SUBTYPE_CXT,
+		DEVICE_SUBTYPE_HXT,
+		-- Altera
+		DEVICE_SUBTYPE_GX
+	);
+	
+	-- Transceiver (sub-)type
+	-- ===========================================================================
+	type T_TRANSCEIVER is (
+		TRANSCEIVER_GTP_DUAL,																								-- Xilinx GTP transceivers
+		TRANSCEIVER_GTX, TRANSCEIVER_GTXE1, TRANSCEIVER_GTXE2,							-- Xilinx GTX transceivers
+		TRANSCEIVER_GTH,																										-- Xilinx GTH transceivers
+		TRANSCEIVER_GTZ,																										-- Xilinx GTZ transceivers
+		
+		-- TODO: add Altera transceivers
+		TRANSCEIVER_GXB,																										-- Altera GXB transceiver
+		
+		TRANSCEIVER_NONE
+	);
+
+	-- Properties of FPGA architecture
+	-- ===========================================================================
+	type archprops_t is record
+		LUT_K						: positive;	-- LUT Fanin
+	end record;
 
 	-- Functions extracting device and architecture properties from "MY_DEVICE"
-  -- which is declared in package "my_config".
-  -- ===========================================================================
-  function VENDOR     return vendor_t;
-  function DEVICE     return device_t;
-  function ARCH_PROPS return archprops_t;
+	-- which is declared in package "my_config".
+	-- ===========================================================================
+	function VENDOR(DeviceString : string := "None")				return vendor_t;
+	function DEVICE(DeviceString : string := "None")				return device_t;
+	function DEVICE_SUBTYPE(DeviceString : string := "None") return T_DEVICE_SUBTYPE;
+	function DEVICE_SERIES(DeviceString : string := "None")	return natural;
+	
+	function ARCH_PROPS return archprops_t;
  
 end config;
 
 package body config is
+	function getLocalDeviceString(DeviceString : string) return string is
+	begin
+		if (DeviceString /= "None") then
+			return DeviceString;
+		else
+			if (MY_DEVICE /= "None") then
+				return MY_DEVICE;
+			else
+				return MY_DEVICE_STRING;
+			end if;
+		end if;
+	end function;
 
-  -- purpose: extract vendor from MY_DEVICE
-  function VENDOR return vendor_t is
-  begin  -- VENDOR
-    case MY_DEVICE(1 to 2) is
-      when "XC"   => return VENDOR_XILINX;
-      when "EP"   => return VENDOR_ALTERA;
-      when others => report "Unknown vendor in MY_DEVICE = " & MY_DEVICE & "." severity failure;
-                         -- return statement is explicitly missing otherwise XST won't stop
-    end case;
-  end VENDOR;
 
-  -- purpose: extract device from MY_DEVICE
-  function DEVICE return device_t is
-  begin  -- DEVICE
-    case VENDOR is
-      when VENDOR_ALTERA =>
-        case MY_DEVICE(3 to 4) is
-          when "1C"   => return DEVICE_CYCLONE1;
-          when "2C"   => return DEVICE_CYCLONE2;
-          when "3C"   => return DEVICE_CYCLONE3;
-          when "1S"   => return DEVICE_STRATIX1;
-          when "2S"   => return DEVICE_STRATIX2;
-          when "4S"   => return DEVICE_STRATIX4;
-          when "5S"   => return DEVICE_STRATIX5;
-          when others => report "Unknown Altera device in MY_DEVICE = " & MY_DEVICE & "." severity failure;
-                         -- return statement is explicitly missing otherwise XST won't stop
-        end case;
+	-- purpose: extract vendor from MY_DEVICE
+	function VENDOR(DeviceString : string := "None") return vendor_t is
+		constant MY_DEV	: string					:= getLocalDeviceString(DeviceString);
+		constant VEN		: string(1 to 2)	:= MY_DEV(1 to 2);																-- work around for GHDL
+	begin	-- VENDOR
+		case VEN is
+			when "XC"	 => return VENDOR_XILINX;
+			when "EP"	 => return VENDOR_ALTERA;
+			when others => report "Unknown vendor in MY_DEVICE = " & MY_DEV & "." severity failure;
+												 -- return statement is explicitly missing otherwise XST won't stop
+		end case;
+	end VENDOR;
 
-      when VENDOR_XILINX =>
-        case MY_DEVICE(3 to 4) is
-          when "7A"   => return DEVICE_ARTIX7;
-          when "7K"   => return DEVICE_KINTEX7;
-          when "3S"   => return DEVICE_SPARTAN3;
-          when "6S"   => return DEVICE_SPARTAN6;
-          when "5V"   => return DEVICE_VIRTEX5;
-          when "6V"   => return DEVICE_VIRTEX6;
-          when "7V"   => return DEVICE_VIRTEX7;
-          when "7Z"   => return DEVICE_ZYNQ7;
-          when others => report "Unknown Xilinx device in MY_DEVICE = " & MY_DEVICE & "." severity failure;
-                         -- return statement is explicitly missing otherwise XST won't stop
-        end case;
-    end case;
-    
-  end DEVICE;
+	-- purpose: extract device from MY_DEVICE
+	function DEVICE(DeviceString : string := "None") return device_t is
+		constant MY_DEV	: string					:= getLocalDeviceString(DeviceString);
+		constant DEV		: string(1 to 2)	:= MY_DEV(3 to 4);																-- work around for GHDL
+	begin	-- DEVICE
+		case VENDOR(MY_DEV) is
+			when VENDOR_ALTERA =>
+				case DEV is
+					when "1C"	 => return DEVICE_CYCLONE1;
+					when "2C"	 => return DEVICE_CYCLONE2;
+					when "3C"	 => return DEVICE_CYCLONE3;
+					when "1S"	 => return DEVICE_STRATIX1;
+					when "2S"	 => return DEVICE_STRATIX2;
+					when "4S"	 => return DEVICE_STRATIX4;
+					when "5S"	 => return DEVICE_STRATIX5;
+					when others => report "Unknown Altera device in MY_DEVICE = " & MY_DEV & "." severity failure;
+												 -- return statement is explicitly missing otherwise XST won't stop
+				end case;
 
-  -- purpose: extract architecture properties from DEVICE
-  function ARCH_PROPS return archprops_t is
-    variable res : archprops_t;
-    constant dev : device_t := DEVICE;
-  begin
-    res.LUT_K := 4;
-    case dev is
-		  when DEVICE_SPARTAN6 =>                                res.LUT_K := 6;
-      when DEVICE_ARTIX7 =>                                  res.LUT_K := 6;
-			when DEVICE_KINTEX7 =>                                 res.LUT_K := 6;
-      when DEVICE_VIRTEX5|DEVICE_VIRTEX6|DEVICE_VIRTEX7 =>   res.LUT_K := 6;
-			when DEVICE_ZYNQ7 =>                                   res.LUT_K := 6;
-			when DEVICE_STRATIX4|DEVICE_STRATIX5 =>                res.LUT_K := 6;
-      when others =>
-        null;
-    end case;
-    return  res;
-  end ARCH_PROPS;
+			when VENDOR_XILINX =>
+				case DEV is
+					when "7A"	 => return DEVICE_ARTIX7;
+					when "7K"	 => return DEVICE_KINTEX7;
+					when "3S"	 => return DEVICE_SPARTAN3;
+					when "6S"	 => return DEVICE_SPARTAN6;
+					when "5V"	 => return DEVICE_VIRTEX5;
+					when "6V"	 => return DEVICE_VIRTEX6;
+					when "7V"	 => return DEVICE_VIRTEX7;
+					when "7Z"	 => return DEVICE_ZYNQ7;
+					when others => report "Unknown Xilinx device in MY_DEVICE = " & MY_DEV & "." severity failure;
+												 -- return statement is explicitly missing otherwise XST won't stop
+				end case;
+		end case;
+	end DEVICE;
+
+	function DEVICE_SERIES(DeviceString : string := "None") return natural is
+		constant MY_DEV : string := getLocalDeviceString(DeviceString);
+	begin
+		case DEVICE(MY_DEV) is
+			when DEVICE_ARTIX7 | DEVICE_KINTEX7 | DEVICE_VIRTEX7 | DEVICE_ZYNQ7 =>	return 7;		-- all Xilinx ****7 devices share some common features: e.g. XADC
+			when others =>																													return 0;
+		end case;
+	end function;
+
+	function DEVICE_SUBTYPE(DeviceString : string := "None") return t_device_subtype is
+		constant MY_DEV		: string					:= getLocalDeviceString(DeviceString);
+		constant DEV_SUB	: string(1 to 2)	:= MY_DEV(5 to 6);																-- work around for GHDL
+	begin
+		case DEVICE(MY_DEV) is
+			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return device_subtype_none;		-- Altera Cyclon I, II, III devices have no subtype
+			
+			when DEVICE_SPARTAN3 => report "TODO: parse Spartan3 / Spartan3E / Spartan3AN device subtype." severity failure;
+			
+			when DEVICE_VIRTEX5 =>
+				if ((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') < 0)) then
+					return device_subtype_lx;
+				elsif ((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return device_subtype_lxt;
+				elsif ((DEV_SUB = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return device_subtype_sxt;
+				elsif ((DEV_SUB = "FX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return device_subtype_fxt;
+				else
+					report "Unknown Virtex5 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
+				end if;
+			
+			when DEVICE_VIRTEX6 =>
+				if ((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') < 0)) then
+					return device_subtype_lx;
+				elsif ((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return device_subtype_lxt;
+				elsif ((DEV_SUB = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return device_subtype_sxt;
+				elsif ((DEV_SUB = "CX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return device_subtype_cxt;
+				elsif ((DEV_SUB = "HX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+					return device_subtype_hxt;
+				else
+					report "Unknown Virtex6 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
+				end if;
+			
+			when DEVICE_VIRTEX7 =>
+				if ((DEV_SUB(1 to 1) = "X") and (str_pos(MY_DEV(6 TO MY_DEV'high), 'T') > 0)) then
+					return device_subtype_xt;
+--				elsif ((MY_DEV(5 to 6) = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+--					return "SXT";
+				else
+					report "Unknown Virtex6 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
+				end if;
+			
+			when others => report "Transceiver type is unknown for the given device." severity failure;
+									-- return statement is explicitly missing otherwise XST won't stop
+		end case;
+	
+	end function;
+
+	function LUT_FANIN(DeviceString : string := "None") return positive is
+		constant MY_DEV : string := getLocalDeviceString(DeviceString);
+	begin
+		case DEVICE(MY_DEV) is
+			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>			return 4;
+			when DEVICE_STRATIX1 | DEVICE_STRATIX2 =>												return 4;
+			when DEVICE_STRATIX4 | DEVICE_STRATIX5 =>												return 6;			
+			
+			when DEVICE_SPARTAN3 =>																					return 4;
+			when DEVICE_SPARTAN6 =>																					return 6;
+			when DEVICE_ARTIX7 =>																						return 6;
+			when DEVICE_KINTEX7 =>																					return 6;
+			when DEVICE_VIRTEX5 | DEVICE_VIRTEX6 | DEVICE_VIRTEX7 => 				return 6;
+			when DEVICE_ZYNQ7 =>																						return 6;
+
+			when others => report "LUT fan-in is unknown for the given device." severity failure;
+									-- return statement is explicitly missing otherwise XST won't stop
+		end case;
+	end function;
+
+	function TRANSCEIVER_TYPE(DeviceString : string := "None") return T_TRANSCEIVER is
+		constant MY_DEV : string := getLocalDeviceString(DeviceString);
+	begin
+		case DEVICE(MY_DEV) is
+			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return TRANSCEIVER_NONE;		-- Altera Cyclon I, II, III devices have no transceivers
+			
+			when DEVICE_SPARTAN3 =>																						return TRANSCEIVER_NONE;		-- Xilinx Spartan3 devices have no transceivers
+			
+			when DEVICE_VIRTEX5 =>
+				case DEVICE_SUBTYPE(MY_DEV) is
+--					when "LX" =>									return TRANSCEIVER_;
+--					when "SXT" =>									return TRANSCEIVER_;
+					when DEVICE_SUBTYPE_LXT =>		return TRANSCEIVER_GTP_DUAL;
+--					when "FXT" =>									return TRANSCEIVER_;
+					
+					when others => report "Unknown Virtex5 subtype: " & t_device_subtype'image(DEVICE_SUBTYPE(MY_DEV)) severity failure;
+				end case;
+			
+			when DEVICE_VIRTEX6 =>
+				case DEVICE_SUBTYPE(MY_DEV) is
+--					when "LX" =>									return TRANSCEIVER_;
+--					when "SXT" =>									return TRANSCEIVER_;
+--					when "CXT" =>									return TRANSCEIVER_;
+					when DEVICE_SUBTYPE_LXT =>		return TRANSCEIVER_GTXE1;
+--					when "HXT" =>									return TRANSCEIVER_;
+					
+					when others => report "Unknown Virtex6 subtype: " & t_device_subtype'image(DEVICE_SUBTYPE(MY_DEV)) severity failure;
+				end case;
+
+			when DEVICE_VIRTEX7 =>
+				case DEVICE_SUBTYPE(MY_DEV) is
+					when device_subtype_xt =>			return TRANSCEIVER_GTXE2;
+--					when "T" =>										return TRANSCEIVER_;
+					
+					when others => report "Unknown Virtex7 subtype: " & t_device_subtype'image(DEVICE_SUBTYPE(MY_DEV)) severity failure;
+				end case;
+			
+			when others => report "Unknown device." severity failure;
+									-- return statement is explicitly missing otherwise XST won't stop
+		end case;
+	end function;
+
+	-- purpose: extract architecture properties from DEVICE
+	function ARCH_PROPS return archprops_t is
+		variable result : archprops_t;
+	begin
+		result.LUT_K					:= LUT_FANIN;
+
+		return	result;
+	end function;
 
 end config;

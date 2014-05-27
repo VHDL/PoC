@@ -1,2 +1,6 @@
+temp/
+py/configuration.ini
+py/__pycache__/
+*.pyc
 *~
 *.o
