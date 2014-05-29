@@ -34,14 +34,15 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.strings.ALL;
 
 LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
 USE			L_Global.GlobalSimulation.ALL;
 
 
-ENTITY Stream_Source IS
+ENTITY stream_Source IS
 	GENERIC (
 		TESTCASES												: T_SIM_STREAM_FRAMEGROUP_VECTOR_8
 	);
@@ -60,7 +61,7 @@ ENTITY Stream_Source IS
 END ENTITY;
 
 
-ARCHITECTURE rtl OF Stream_Source IS
+ARCHITECTURE rtl OF stream_Source IS
 	CONSTANT MAX_CYCLES											: NATURAL																			:= 10 * 1000;
 	CONSTANT MAX_ERRORS											: NATURAL																			:=				50;
 
