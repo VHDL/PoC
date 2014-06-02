@@ -40,6 +40,7 @@ ARCHITECTURE rtl OF DeviceDetector IS
 	SIGNAL NextState			: T_State;
 	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS ite(CHIPSCOPE_KEEP, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
+	SIGNAL ElectricalIDLE_async		: STD_LOGIC := '0';
 	SIGNAL ElectricalIDLE_i			: STD_LOGIC_VECTOR(1 DOWNTO 0) := "00";
 
 	SIGNAL TC_load				: STD_LOGIC;
@@ -49,7 +50,8 @@ ARCHITECTURE rtl OF DeviceDetector IS
 
 BEGIN
 
-	ElectricalIDLE_i <= ElectricalIDLE_i(0) & ElectricalIDLE WHEN rising_edge(Clock);
+	ElectricalIDLE_async <= ElectricalIDLE WHEN rising_edge(Clock);
+	ElectricalIDLE_i <= ElectricalIDLE_i(0) & ElectricalIDLE_async WHEN rising_edge(Clock);
 
 	PROCESS(Clock)
 	BEGIN
