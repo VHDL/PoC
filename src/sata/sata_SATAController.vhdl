@@ -1,23 +1,48 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- =============================================================================
+-- Package:					TODO
+--
+-- Authors:					Patrick Lehmann
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+-- 
+-- License:
+-- =============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_SATAController;
-USE			L_SATAController.SATATypes.ALL;
-USE			L_SATAController.SATADebug.ALL;
-USE			L_SATAController.SATATransceiverTypes.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+--USE			PoC.strings.ALL;
+--USE			PoC.sata.ALL;
 
 
-ENTITY SATAController IS
+ENTITY sata_SATAController IS
 	GENERIC (
-		CHIPSCOPE_KEEP							: BOOLEAN														:= FALSE;
+		DEBUG												: BOOLEAN														:= FALSE;
 		CLOCK_IN_FREQ_MHZ						: REAL															:= 150.0;
 		PORTS												: POSITIVE													:= 2;	-- Port 0									Port 1
 		CONTROLLER_TYPES						: T_SATA_DEVICE_TYPE_VECTOR					:= (0 => SATA_DEVICE_TYPE_HOST,	1 => SATA_DEVICE_TYPE_HOST);
@@ -82,7 +107,7 @@ ENTITY SATAController IS
 	);
 END;
 
-ARCHITECTURE rtl OF SATAController IS
+ARCHITECTURE rtl OF sata_SATAController IS
 	ATTRIBUTE KEEP															: BOOLEAN;
 
 	SIGNAL SATA_Clock_i									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -162,8 +187,8 @@ ARCHITECTURE rtl OF SATAController IS
 	SIGNAL Trans_DebugPortOut						: T_DBG_TRANSOUT_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Link_DebugPortOut						: T_DBG_LINKOUT_VECTOR(PORTS - 1 DOWNTO 0);
 	
-	ATTRIBUTE KEEP OF Link_Status				: SIGNAL IS CHIPSCOPE_KEEP;
-	ATTRIBUTE KEEP OF SATA_Clock_i			: SIGNAL IS CHIPSCOPE_KEEP;
+	ATTRIBUTE KEEP OF Link_Status				: SIGNAL IS DEBUG					;
+	ATTRIBUTE KEEP OF SATA_Clock_i			: SIGNAL IS DEBUG					;
 
 BEGIN
 
@@ -280,9 +305,9 @@ BEGIN
 -- ==================================================================
 -- link layer
 -- ==================================================================
-		Link : ENTITY L_SATAController.LinkLayer
+		Link : ENTITY PoC.sata_LinkLayer
 			GENERIC MAP (
-				CHIPSCOPE_KEEP								=> CHIPSCOPE_KEEP,
+				DEBUG													=> DEBUG					,
 				CONTROLLER_TYPE								=> CONTROLLER_TYPES(I),
 				AHEAD_CYCLES_FOR_INSERT_EOF		=> AHEAD_CYCLES_FOR_INSERT_EOF(I),
 				MAX_FRAME_SIZE_B							=> MAX_FRAME_SIZE_B(I)
@@ -337,9 +362,9 @@ BEGIN
 -- ==================================================================
 -- physical layer
 -- ==================================================================
-		Phy : ENTITY L_SATAController.PhysicalLayer
+		Phy : ENTITY PoC.sata_PhysicalLayer
 			GENERIC MAP (
-				CHIPSCOPE_KEEP								=> CHIPSCOPE_KEEP,
+				DEBUG													=> DEBUG					,
 				CLOCK_IN_FREQ_MHZ							=> CLOCK_IN_FREQ_MHZ,
 				CONTROLLER_TYPE								=> CONTROLLER_TYPES(I),
 				ALLOW_SPEED_NEGOTIATION				=> ALLOW_SPEED_NEGOTIATION(I),
@@ -401,9 +426,9 @@ BEGIN
 -- ==================================================================
 -- transceiver layer
 -- ==================================================================
-	Trans : ENTITY L_SATAController.SATATransceiver
+	Trans : ENTITY PoC.sata_SATATransceiver
 		GENERIC MAP (
-			CHIPSCOPE_KEEP						=> CHIPSCOPE_KEEP,
+			DEBUG											=> DEBUG					,
 			CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
 			PORTS											=> PORTS,
 			INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS

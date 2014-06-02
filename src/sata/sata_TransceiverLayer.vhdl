@@ -1,23 +1,48 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- =============================================================================
+-- Package:					TODO
+--
+-- Authors:					Patrick Lehmann
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+-- 
+-- License:
+-- =============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+--USE			PoC.strings.ALL;
+--USE			PoC.sata.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
 
-LIBRARY L_SATAController;
-USE			L_SATAController.SATATypes.ALL;
-USE			L_SATAController.SATAPackage.ALL;
-USE			L_SATAController.SATADebug.ALL;
-USE			L_SATAController.SATATransceiverTypes.ALL;
-
-ENTITY SATATransceiver IS
+ENTITY sata_SATATransceiver IS
 	GENERIC (
-		CHIPSCOPE_KEEP						: BOOLEAN											:= FALSE;
+		DEBUG											: BOOLEAN											:= FALSE;
 		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																									-- 150 MHz
 		PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 => SATA_GENERATION_2,	1 => SATA_GENERATION_2)				-- intial SATA Generation
@@ -63,7 +88,7 @@ ENTITY SATATransceiver IS
 END;
 
 
-ARCHITECTURE rtl OF SATATransceiver IS
+ARCHITECTURE rtl OF sata_SATATransceiver IS
 	ATTRIBUTE KEEP 								: BOOLEAN;
 
 	FUNCTION ite(cond : BOOLEAN; value1 : devgrp_t; value2 : devgrp_t) RETURN devgrp_t IS
@@ -132,7 +157,7 @@ BEGIN
 		genV5LXT : IF (DEVICE_GROUP = DEVGRP_V5LXT) GENERATE
 			V5GTP : SATATransceiver_Virtex5_GTP
 				GENERIC MAP (
-					CHIPSCOPE_KEEP						=> CHIPSCOPE_KEEP,
+					DEBUG											=> DEBUG					,
 					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
@@ -179,7 +204,7 @@ BEGIN
 		genV6LXT : IF (DEVICE_GROUP = DEVGRP_V6LXT) GENERATE
 			V6GTXE1 : SATATransceiver_Virtex6_GTXE1
 				GENERIC MAP (
-					CHIPSCOPE_KEEP						=> CHIPSCOPE_KEEP,
+					DEBUG											=> DEBUG					,
 					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation

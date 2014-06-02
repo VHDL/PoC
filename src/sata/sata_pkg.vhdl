@@ -1,3 +1,34 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- =============================================================================
+-- Package:					TODO
+--
+-- Authors:					Patrick Lehmann
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+-- 
+-- License:
+-- =============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
@@ -19,7 +50,7 @@ PACKAGE sata IS
 		GENERIC (
 			SIM_WAIT_FOR_INITIAL_REGDH_FIS		: BOOLEAN                     := TRUE;      -- required by ATA/SATA standard
 			SIM_EXECUTE_IDENTIFY_DEVICE				: BOOLEAN											:= TRUE;			-- required by CommandLayer: load device parameters
-			CHIPSCOPE_KEEP										: BOOLEAN											:= FALSE;			-- generate ChipScope CSP_* signals
+			DEBUG															: BOOLEAN											:= FALSE;			-- generate ChipScope CSP_* signals
 			LOGICAL_BLOCK_SIZE_ldB						: POSITIVE										:= 13					-- accessable logical block size: 8 kB (independant from device)
 		);
 		PORT (
@@ -91,7 +122,7 @@ PACKAGE sata IS
 	
 	COMPONENT sata_SATAController IS
 		GENERIC (
-			CHIPSCOPE_KEEP							: BOOLEAN														:= TRUE;
+			DEBUG												: BOOLEAN														:= TRUE;
 			CLOCK_IN_FREQ_MHZ						: REAL															:= 150.0;
 			PORTS												: POSITIVE													:= 1;												-- Port 0									Port 1
 			CONTROLLER_TYPES						: T_SATA_DEVICE_TYPE_VECTOR					:= T_SATA_DEVICE_TYPE_VECTOR'(0 => SATA_DEVICE_TYPE_HOST,	1 => SATA_DEVICE_TYPE_DEVICE);
@@ -154,7 +185,7 @@ PACKAGE sata IS
 
 	COMPONENT sata_Transceiver_Virtex5_GTP IS
 		GENERIC (
-			CHIPSCOPE_KEEP						: BOOLEAN											:= TRUE;																																-- generate ChipScope debugging "pins"
+			DEBUG											: BOOLEAN											:= TRUE;																																-- generate ChipScope debugging "pins"
 			CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																																-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																																		-- Number of Ports per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= T_SATA_GENERATION_VECTOR'(SATA_GENERATION_2, SATA_GENERATION_2)			-- intial SATA Generation
@@ -201,7 +232,7 @@ PACKAGE sata IS
 
 	COMPONENT sata_Transceiver_Virtex6_GTXE1 IS
 		GENERIC (
-			CHIPSCOPE_KEEP						: BOOLEAN											:= TRUE;
+			DEBUG											: BOOLEAN											:= TRUE;
 			CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																									-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= T_SATA_GENERATION_VECTOR'(SATA_GENERATION_2, SATA_GENERATION_2)			-- intial SATA Generation
@@ -248,7 +279,7 @@ PACKAGE sata IS
 	
 	COMPONENT sata_Transceiver_Series7_GTXE2 IS
 		GENERIC (
-			CHIPSCOPE_KEEP						: BOOLEAN											:= TRUE;
+			DEBUG											: BOOLEAN											:= TRUE;
 			CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																									-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= T_SATA_GENERATION_VECTOR'(SATA_GENERATION_2, SATA_GENERATION_2)			-- intial SATA Generation
@@ -590,7 +621,7 @@ PACKAGE sata IS
 	CONSTANT T_SATA_PRIMITIVE_COUNT		: INTEGER										:= T_SATA_PRIMITIVE'pos(SATA_PRIMITIVE_ILLEGAL) + 1;
 
 	CONSTANT SATA_MAX_FRAMESIZE_B			: POSITIVE									:= 8192;
-	CONSTANT SATA_WORD_BW							: POSITIVE									:= 32;
+	CONSTANT SATA_WORD_BITS							: POSITIVE									:= 32;
 
 	TYPE T_SATA_LINK_COMMAND_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_LINK_COMMAND;
 	TYPE T_SATA_LINK_STATUS_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_LINK_STATUS;

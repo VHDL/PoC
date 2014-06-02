@@ -1,26 +1,49 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- =============================================================================
+-- Package:					TODO
+--
+-- Authors:					Patrick Lehmann
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+-- 
+-- License:
+-- =============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.functions.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_SATAController;
-USE			L_SATAController.SATATypes.ALL;
---USE			L_SATAController.SATADebug.ALL;
-
-LIBRARY L_ATAController;
-USE			L_ATAController.ATATypes.ALL;
-USE			L_ATAController.ATADebug.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+--USE			PoC.strings.ALL;
+--USE			PoC.sata.ALL;
 
 
-ENTITY CommandLayer IS
+ENTITY sata_CommandLayer IS
 	GENERIC (
 		SIM_EXECUTE_IDENTIFY_DEVICE		: BOOLEAN									:= TRUE;			-- required by CommandLayer: load device parameters
-		CHIPSCOPE_KEEP								: BOOLEAN									:= FALSE;			-- generate ChipScope CSP_* signals
+		DEBUG													: BOOLEAN									:= FALSE;			-- generate ChipScope CSP_* signals
 		TX_FIFO_DEPTH									: NATURAL									:= 0;
 		RX_FIFO_DEPTH									: POSITIVE;
 		LOGICAL_BLOCK_SIZE_ldB				: POSITIVE
@@ -90,7 +113,7 @@ ENTITY CommandLayer IS
 	);
 END;
 
-ARCHITECTURE rtl OF CommandLayer IS
+ARCHITECTURE rtl OF sata_CommandLayer IS
 	ATTRIBUTE KEEP													: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING									: STRING;
 
@@ -196,10 +219,10 @@ BEGIN
 	-- ================================================================
 	-- CommandLayer FSM
 	-- ================================================================
-	CFSM : ENTITY L_ATAController.CommandFSM
+	CFSM : ENTITY PoC.sata_CommandFSM
 		GENERIC MAP (
 			SIM_EXECUTE_IDENTIFY_DEVICE		=> SIM_EXECUTE_IDENTIFY_DEVICE,
-			CHIPSCOPE_KEEP								=> CHIPSCOPE_KEEP
+			DEBUG													=> DEBUG					
 		)
 		PORT MAP (
 			Clock													=> Clock,
@@ -346,15 +369,15 @@ BEGIN
 			CONSTANT MIN_TRANSFER_SIZE_B			: POSITIVE															:= 2**MIN_TRANSFER_SIZE_ldB;
 			CONSTANT MAX_TRANSFER_SIZE_ldB		: POSITIVE															:= MIN_TRANSFER_SIZE_ldB + (SHIFT_WIDTH - 1);
 			CONSTANT IEOT_COUNTER_START				: POSITIVE															:= (MIN_TRANSFER_SIZE_B / 4) - AHEAD_CYCLES_FOR_INSERT_EOT - 3;		-- FIXME: replace with dynamic calculation
-			CONSTANT IEOT_COUNTER_BW					: POSITIVE															:= MAX_TRANSFER_SIZE_ldB - 2;
+			CONSTANT IEOT_COUNTER_BITS					: POSITIVE															:= MAX_TRANSFER_SIZE_ldB - 2;
 			
-			SIGNAL Counter_us									: SIGNED(IEOT_COUNTER_BW DOWNTO 0)			:= to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BW + 1);
+			SIGNAL Counter_us									: SIGNED(IEOT_COUNTER_BITS DOWNTO 0)			:= to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);
 		BEGIN
 			PROCESS(Clock)
 			BEGIN
 				IF rising_edge(Clock) THEN
 					IF ((Reset = '1') OR (Command = ATA_CMD_CMD_RESET) OR (IEOTC_Load = '1')) THEN
-						Counter_us				<=  to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BW + 1);		-- FIXME: replace with dynamic calculation
+						Counter_us				<=  to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);		-- FIXME: replace with dynamic calculation
 					ELSE
 						IF (IEOTC_inc = '1') THEN
 							Counter_us			<= Counter_us - 1;
@@ -389,7 +412,7 @@ BEGIN
 		
 		TC_TX_LastWord	<= TC_TX_EOT OR TC_TX_LastWord_r;		-- LastWord in transfer
 		
-		genCSP : IF (CHIPSCOPE_KEEP = TRUE) GENERATE
+		genCSP : IF (DEBUG = TRUE) GENERATE
 			SIGNAL CSP_TX_DataFlow							: STD_LOGIC;
 			SIGNAL CSP_TX_LastWord							: STD_LOGIC;
 			SIGNAL CSP_InsertEOT								: STD_LOGIC;
@@ -481,9 +504,9 @@ BEGIN
 	IDF_EOT			<= Trans_RX_EOT;
 	IDF_CRC_OK	<= Trans_RX_Commit;
 	
-	IDF : ENTITY L_ATAController.IdentifyDeviceFilter
+	IDF : ENTITY PoC.sata_IdentifyDeviceFilter
 		GENERIC MAP (
-			CHIPSCOPE_KEEP							=> CHIPSCOPE_KEEP
+			DEBUG												=> DEBUG					
 		)
 		PORT MAP (
 			Clock										=> Clock,
@@ -514,7 +537,7 @@ BEGIN
 
 	-- ChipScope
 	-- ==========================================================================================================================================================
-	genCSP : IF (CHIPSCOPE_KEEP = TRUE) GENERATE
+	genCSP : IF (DEBUG = TRUE) GENERATE
 		SIGNAL CSP_TXFIFO_SOR								: STD_LOGIC;
 		SIGNAL CSP_TXFIFO_EOR								: STD_LOGIC;
 	

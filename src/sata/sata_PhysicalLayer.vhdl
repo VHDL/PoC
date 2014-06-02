@@ -1,22 +1,48 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- =============================================================================
+-- Package:					TODO
+--
+-- Authors:					Patrick Lehmann
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+-- 
+-- License:
+-- =============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_SATAController;
-USE			L_SATAController.SATATypes.ALL;
-USE			L_SATAController.SATADebug.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+--USE			PoC.strings.ALL;
+--USE			PoC.sata.ALL;
 
 
-ENTITY PhysicalLayer IS
+ENTITY sata_PhysicalLayer IS
 	GENERIC (
-		CHIPSCOPE_KEEP									: BOOLEAN													:= FALSE;
+		DEBUG														: BOOLEAN													:= FALSE;
 		CLOCK_IN_FREQ_MHZ								: REAL														:= 150.0;
 		CONTROLLER_TYPE									: T_SATA_DEVICE_TYPE							:= SATA_DEVICE_TYPE_HOST;
 		ALLOW_SPEED_NEGOTIATION					: BOOLEAN													:= TRUE;
@@ -73,7 +99,7 @@ ENTITY PhysicalLayer IS
 	);
 END;
 
-ARCHITECTURE rtl OF PhysicalLayer IS
+ARCHITECTURE rtl OF sata_PhysicalLayer IS
 	ATTRIBUTE KEEP						: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING		: STRING;
 	
@@ -81,7 +107,7 @@ ARCHITECTURE rtl OF PhysicalLayer IS
 	
 	SIGNAL State											: T_PHY_STATE						:= ST_RESET;
 	SIGNAL NextState									: T_PHY_STATE;
-	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS ite(CHIPSCOPE_KEEP, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS ite(DEBUG					, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
 	SIGNAL SATA_Generation_i					: T_SATA_GENERATION;
 	
@@ -225,9 +251,9 @@ BEGIN
 -- OOB (out of band) signaling
 -- ==================================================================
 	genHost : IF (CONTROLLER_TYPE = SATA_DEVICE_TYPE_HOST) GENERATE
-		OOBC : ENTITY L_SATAController.OOBControl_Host
+		OOBC : ENTITY PoC.sata_OOBControl_Host
 			GENERIC MAP (
-				CHIPSCOPE_KEEP						=> CHIPSCOPE_KEEP,
+				DEBUG											=> DEBUG					,
 				CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
 				CLOCK_GEN1_FREQ_MHZ				=> 37.5,
 				CLOCK_GEN2_FREQ_MHZ				=> 75.0,
@@ -258,9 +284,9 @@ BEGIN
 			);
 	END GENERATE;
 	genDev : IF (CONTROLLER_TYPE = SATA_DEVICE_TYPE_DEVICE) GENERATE
-		OOBC : ENTITY L_SATAController.OOBControl_Device
+		OOBC : ENTITY PoC.sata_OOBControl_Device
 			GENERIC MAP (
-				CHIPSCOPE_KEEP						=> CHIPSCOPE_KEEP,
+				DEBUG											=> DEBUG					,
 				CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
 				CLOCK_GEN1_FREQ_MHZ				=> 37.5,
 				CLOCK_GEN2_FREQ_MHZ				=> 75.0,
@@ -297,9 +323,9 @@ BEGIN
 	genSC : IF (ALLOW_SPEED_NEGOTIATION = TRUE) GENERATE
 	
 	BEGIN
-		SC : ENTITY L_SATAController.SpeedControl
+		SC : ENTITY PoC.sata_SpeedControl
 			GENERIC MAP (
-				CHIPSCOPE_KEEP						=> CHIPSCOPE_KEEP,
+				DEBUG											=> DEBUG					,
 				INITIAL_SATA_GENERATION		=> INITIAL_SATA_GENERATION,
 				GENERATION_CHANGE_COUNT		=> GENERATION_CHANGE_COUNT,
 				ATTEMPTS_PER_GENERATION		=> ATTEMPTS_PER_GENERATION
@@ -420,7 +446,7 @@ BEGIN
 	-- ================================================================
 	-- ChipScope
 	-- ================================================================
-	genCSP : IF (CHIPSCOPE_KEEP = TRUE) GENERATE
+	genCSP : IF (DEBUG = TRUE) GENERATE
 		SIGNAL CSP_OOB_Retry														: STD_LOGIC;
 		SIGNAL CSP_OOB_LinkOK												: STD_LOGIC;
 		SIGNAL CSP_OOB_LinkDead													: STD_LOGIC;

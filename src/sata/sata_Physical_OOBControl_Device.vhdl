@@ -1,23 +1,49 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- =============================================================================
+-- Package:					TODO
+--
+-- Authors:					Patrick Lehmann
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+-- 
+-- License:
+-- =============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.config.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
-
-LIBRARY L_SATAController;
-USE			L_SATAController.SATATypes.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+--USE			PoC.strings.ALL;
+USE			PoC.io.ALL;
+USE			PoC.sata.ALL;
 
 
-ENTITY OOBControl_Device IS
+ENTITY sata_OOBControl_Device IS
 	GENERIC (
-		CHIPSCOPE_KEEP						: BOOLEAN														:= FALSE;
+		DEBUG											: BOOLEAN														:= FALSE;
 		CLOCK_IN_FREQ_MHZ					: REAL															:= 150.0;												-- 
 		CLOCK_GEN1_FREQ_MHZ				: REAL															:= 37.5;												-- SATAClock frequency in MHz for SATA generation 1
 		CLOCK_GEN2_FREQ_MHZ				: REAL															:= 75.0;												-- SATAClock frequency in MHz for SATA generation 2
@@ -49,7 +75,7 @@ ENTITY OOBControl_Device IS
 	);
 END;
 
-ARCHITECTURE rtl OF OOBControl_Device IS
+ARCHITECTURE rtl OF sata_OOBControl_Device IS
 	ATTRIBUTE KEEP										: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING						: STRING;
 
@@ -78,7 +104,7 @@ ARCHITECTURE rtl OF OOBControl_Device IS
 	-- OOB-Statemachine
 	SIGNAL OOBControl_State					: T_OOBCONTROL_STATE											:= ST_DEV_RESET;
 	SIGNAL OOBControl_NextState			: T_OOBCONTROL_STATE;
-	ATTRIBUTE FSM_ENCODING OF OOBControl_State		: SIGNAL IS ite(CHIPSCOPE_KEEP, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING OF OOBControl_State		: SIGNAL IS ite(DEBUG					, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
 	-- Timing-Counter
 	-- ================================================================
@@ -323,7 +349,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	TC1 : ENTITY L_IO.TimingCounter
+	TC1 : ENTITY sata_L_IO.TimingCounter
 		GENERIC MAP (							-- timing table
 			TIMING_TABLE				=> T_NATVEC'(				--		 880 us
 															0 => TimingToCycles_ns(OOB_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN1_FREQ_MHZ)),					-- slot 0
@@ -337,7 +363,7 @@ BEGIN
 			Timeout							=> TC1_Timeout
 		);
 	
-	TC2 : ENTITY L_IO.TimingCounter
+	TC2 : ENTITY sata_L_IO.TimingCounter
 		GENERIC MAP (							-- timing table
 			TIMING_TABLE				=> T_NATVEC'(				--			ns
 															0 => TimingToCycles_ns(COMRESET_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN1_FREQ_MHZ)),			-- slot 0

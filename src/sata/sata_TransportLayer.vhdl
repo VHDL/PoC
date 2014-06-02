@@ -1,25 +1,48 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- =============================================================================
+-- Package:					TODO
+--
+-- Authors:					Patrick Lehmann
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+-- 
+-- License:
+-- =============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.functions.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_SATAController;
-USE			L_SATAController.SATATypes.ALL;
---USE			L_SATAController.SATADebug.ALL;
-
-LIBRARY L_ATAController;
-USE			L_ATAController.ATATypes.ALL;
-USE			L_ATAController.ATADebug.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+--USE			PoC.strings.ALL;
+--USE			PoC.sata.ALL;
 
 
-ENTITY TransportLayer IS
+ENTITY sata_TransportLayer IS
   GENERIC (
-		CHIPSCOPE_KEEP									: BOOLEAN											:= FALSE;					-- generate ChipScope CSP_* signals
+		DEBUG														: BOOLEAN											:= FALSE;					-- generate ChipScope CSP_* signals
 		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: BOOLEAN											:= TRUE						-- required by ATA/SATA standard
   );
 	PORT (
@@ -86,7 +109,7 @@ ENTITY TransportLayer IS
 	);
 END;
 
-ARCHITECTURE rtl OF TransportLayer IS
+ARCHITECTURE rtl OF sata_TransportLayer IS
 	ATTRIBUTE KEEP														: BOOLEAN;
 
 	SIGNAL ATAHostRegisters_i									: T_ATA_HOST_REGISTERS;
@@ -145,9 +168,9 @@ BEGIN
 	-- ================================================================
 	-- TransportLayer FSM
 	-- ================================================================
-	TFSM : ENTITY L_ATAController.TransportFSM
+	TFSM : ENTITY PoC.sata_TransportFSM
     GENERIC MAP (
-			CHIPSCOPE_KEEP										=> CHIPSCOPE_KEEP,
+			DEBUG															=> DEBUG					,
       SIM_WAIT_FOR_INITIAL_REGDH_FIS    => SIM_WAIT_FOR_INITIAL_REGDH_FIS
     )
 		PORT MAP (
@@ -367,9 +390,9 @@ BEGIN
 	END BLOCK;
 
 
-	FISE : ENTITY L_ATAController.FISEncoder
+	FISE : ENTITY PoC.sata_FISEncoder
 		GENERIC MAP (
-			CHIPSCOPE_KEEP							=> CHIPSCOPE_KEEP
+			DEBUG												=> DEBUG					
 		)
 		PORT MAP (
 			Clock												=> Clock,
@@ -407,9 +430,9 @@ BEGIN
 	-- ================================================================
 	-- RX path
 	-- ================================================================
-	FISD : ENTITY L_ATAController.FISDecoder
+	FISD : ENTITY PoC.sata_FISDecoder
 		GENERIC MAP (
-			CHIPSCOPE_KEEP							=> CHIPSCOPE_KEEP
+			DEBUG												=> DEBUG					
 		)
 		PORT MAP (
 			Clock												=> Clock,
@@ -466,7 +489,7 @@ BEGIN
 	
 	-- ChipScope
 	-- ==========================================================================================================================================================
-	genCSP : IF (CHIPSCOPE_KEEP = TRUE) GENERATE
+	genCSP : IF (DEBUG = TRUE) GENERATE
 		SIGNAL CSP_UpdateATAHostRegisters							: STD_LOGIC;
 		SIGNAL CSP_ATAHostRegisters										: T_ATA_HOST_REGISTERS;
 		SIGNAL CSP_ATADeviceRegisters									: T_ATA_DEVICE_REGISTERS;

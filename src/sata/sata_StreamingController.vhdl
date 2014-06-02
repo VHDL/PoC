@@ -1,26 +1,50 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- =============================================================================
+-- Package:					TODO
+--
+-- Authors:					Patrick Lehmann
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+-- 
+-- License:
+-- =============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_SATAController;
-USE			L_SATAController.SATATypes.ALL;
-USE			L_SATAController.SATADebug.ALL;
-
-LIBRARY L_ATAController;
-USE			L_ATAController.ATATypes.ALL;
-USE			L_ATAController.ATADebug.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+--USE			PoC.strings.ALL;
+--USE			PoC.sata.ALL;
 
 
-ENTITY ATAStreamingController IS
+ENTITY sata_ATAStreamingController IS
 	GENERIC (
     SIM_WAIT_FOR_INITIAL_REGDH_FIS		: BOOLEAN                     := TRUE;      -- required by ATA/SATA standard
 		SIM_EXECUTE_IDENTIFY_DEVICE				: BOOLEAN											:= TRUE;			-- required by CommandLayer: load device parameters
-		CHIPSCOPE_KEEP										: BOOLEAN											:= FALSE;			-- generate ChipScope CSP_* signals
+		DEBUG															: BOOLEAN											:= FALSE;			-- generate ChipScope CSP_* signals
 		LOGICAL_BLOCK_SIZE_ldB						: POSITIVE										:= 13					-- accessable logical block size: 8 kB (independant from device)
 	);
 	PORT (
@@ -90,7 +114,7 @@ ENTITY ATAStreamingController IS
 	);
 END;
 
-ARCHITECTURE rtl OF ATAStreamingController IS
+ARCHITECTURE rtl OF sata_ATAStreamingController IS
 	ATTRIBUTE KEEP													: BOOLEAN;
 
 	-- ==========================================================================
@@ -193,10 +217,10 @@ BEGIN
 	
 	-- CommandLayer
 	-- ==========================================================================================================================================================
-	Cmd : ENTITY L_ATAController.CommandLayer
+	Cmd : ENTITY PoC.sata_CommandLayer
 		GENERIC MAP (
 			SIM_EXECUTE_IDENTIFY_DEVICE	=> SIM_EXECUTE_IDENTIFY_DEVICE,				-- required by CommandLayer: load device parameters
-			CHIPSCOPE_KEEP							=> CHIPSCOPE_KEEP,										-- generate ChipScope CSP_* signals
+			DEBUG												=> DEBUG					,										-- generate ChipScope CSP_* signals
 			TX_FIFO_DEPTH								=> TX_FIFO_DEPTH,
 			RX_FIFO_DEPTH								=> RX_FIFO_DEPTH,
 			LOGICAL_BLOCK_SIZE_ldB			=> LOGICAL_BLOCK_SIZE_ldB
@@ -332,9 +356,9 @@ BEGIN
 
 -- TransportLayer
 	-- ==========================================================================================================================================================
-	Trans : ENTITY L_ATAController.TransportLayer
+	Trans : ENTITY PoC.sata_TransportLayer
     GENERIC MAP (
-			CHIPSCOPE_KEEP									=> CHIPSCOPE_KEEP,
+			DEBUG														=> DEBUG					,
       SIM_WAIT_FOR_INITIAL_REGDH_FIS  => SIM_WAIT_FOR_INITIAL_REGDH_FIS
     )
 		PORT MAP (
@@ -407,7 +431,7 @@ BEGIN
 	
 	-- ChipScope
 	-- ==========================================================================================================================================================
-	genCSP : IF (CHIPSCOPE_KEEP = TRUE) GENERATE
+	genCSP : IF (DEBUG = TRUE) GENERATE
 		SIGNAL CSP_CMD_TX_SOR										: STD_LOGIC;
 		SIGNAL CSP_CMD_TX_EOR										: STD_LOGIC;
 		SIGNAL CSP_CMD_RX_SOR										: STD_LOGIC;

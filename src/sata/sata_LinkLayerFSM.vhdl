@@ -1,20 +1,48 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- =============================================================================
+-- Package:					TODO
+--
+-- Authors:					Patrick Lehmann
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+-- 
+-- License:
+-- =============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+--USE			PoC.strings.ALL;
+USE			PoC.sata.ALL;
 
-LIBRARY	L_Global;
-USE			L_Global.GlobalTypes.ALL;
 
-LIBRARY L_SATAController;
-USE			L_SATAController.SATATypes.ALL;
-
-ENTITY LinkLayerFSM IS
+ENTITY sata_LinkLayerFSM IS
 	GENERIC (
-		CHIPSCOPE_KEEP					: BOOLEAN																:= FALSE;
+		DEBUG										: BOOLEAN																:= FALSE;
 		CONTROLLER_TYPE					: T_SATA_DEVICE_TYPE										:= SATA_DEVICE_TYPE_HOST;
 		INSERT_ALIGN_INTERVAL		: POSITIVE															:= 256
 	);
@@ -98,7 +126,7 @@ ENTITY LinkLayerFSM IS
 	);
 END;
 
-ARCHITECTURE rtl OF LinkLayerFSM IS
+ARCHITECTURE rtl OF sata_LinkLayerFSM IS
 	ATTRIBUTE KEEP									: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING					: STRING;
 	ATTRIBUTE SYN_ENCODING					: STRING;				-- Altera: FSM_ENCODING
@@ -154,11 +182,11 @@ ARCHITECTURE rtl OF LinkLayerFSM IS
 	SIGNAL RXFSM_State					: T_RXFSM_STATE																		:= ST_RXFSM_RESET;
 	SIGNAL RXFSM_NextState			: T_RXFSM_STATE;
 	
-	ATTRIBUTE FSM_ENCODING	OF TXFSM_State		: SIGNAL IS ite(CHIPSCOPE_KEEP, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
-	ATTRIBUTE FSM_ENCODING	OF RXFSM_State		: SIGNAL IS ite(CHIPSCOPE_KEEP, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING	OF TXFSM_State		: SIGNAL IS ite(DEBUG					, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING	OF RXFSM_State		: SIGNAL IS ite(DEBUG					, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
 
-	CONSTANT INSERT_ALIGN_COUNTER_BW	: POSITIVE																:= log2ceilnz(INSERT_ALIGN_INTERVAL);
+	CONSTANT INSERT_ALIGN_COUNTER_BITS	: POSITIVE																:= log2ceilnz(INSERT_ALIGN_INTERVAL);
 
 	SIGNAL IAC_inc									: STD_LOGIC;
 	SIGNAL IAC_Load									: STD_LOGIC;
@@ -1701,13 +1729,13 @@ BEGIN
 	IAC_Load						<= IAC_Finished_d;
 	
 	IAC : BLOCK
-		SIGNAL Counter_us				: UNSIGNED(INSERT_ALIGN_COUNTER_BW - 1 DOWNTO 0)					:= (OTHERS => '0');
+		SIGNAL Counter_us				: UNSIGNED(INSERT_ALIGN_COUNTER_BITS - 1 DOWNTO 0)					:= (OTHERS => '0');
 	BEGIN
 		PROCESS(Clock)
 		BEGIN
 			IF rising_edge(Clock) THEN
 				IF (IAC_Load = '1') THEN
-					Counter_us				<= to_unsigned(0, INSERT_ALIGN_COUNTER_BW);
+					Counter_us				<= to_unsigned(0, INSERT_ALIGN_COUNTER_BITS);
 				ELSE
 					IF (IAC_inc = '1') THEN
 						Counter_us			<= Counter_us + 1;
@@ -1716,7 +1744,7 @@ BEGIN
 			END IF;
 		END PROCESS;
 
-		IAC_Finished	<= to_sl(Counter_us = to_unsigned(INSERT_ALIGN_INTERVAL - 3,	INSERT_ALIGN_COUNTER_BW));
+		IAC_Finished	<= to_sl(Counter_us = to_unsigned(INSERT_ALIGN_INTERVAL - 3,	INSERT_ALIGN_COUNTER_BITS));
 	END BLOCK;
 	
 	IAC_Finished_d	<= IAC_Finished WHEN rising_edge(Clock);

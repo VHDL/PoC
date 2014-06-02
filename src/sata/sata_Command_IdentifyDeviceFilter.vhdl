@@ -1,25 +1,48 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- =============================================================================
+-- Package:					TODO
+--
+-- Authors:					Patrick Lehmann
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+-- 
+-- License:
+-- =============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_SATAController;
-USE			L_SATAController.SATATypes.ALL;
-USE			L_SATAController.SATADebug.ALL;
-
-LIBRARY L_ATAController;
-USE			L_ATAController.ATATypes.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+--USE			PoC.strings.ALL;
+--USE			PoC.sata.ALL;
 
 
-ENTITY IdentifyDeviceFilter IS
+ENTITY sata_IdentifyDeviceFilter IS
 	GENERIC (
-		CHIPSCOPE_KEEP							: BOOLEAN						:= FALSE
+		DEBUG												: BOOLEAN						:= FALSE
 	);
 	PORT (
 		Clock												: IN	STD_LOGIC;
@@ -40,7 +63,7 @@ ENTITY IdentifyDeviceFilter IS
 	);
 END;
 
-ARCHITECTURE rtl OF IdentifyDeviceFilter IS
+ARCHITECTURE rtl OF sata_IdentifyDeviceFilter IS
 	ATTRIBUTE KEEP									: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING					: STRING;
 
@@ -74,16 +97,16 @@ ARCHITECTURE rtl OF IdentifyDeviceFilter IS
 		END IF;
 	END;
 	
-	CONSTANT WordAC_BW										: POSITIVE						:= log2ceilnz(128);
+	CONSTANT WordAC_BITS										: POSITIVE						:= log2ceilnz(128);
 	
 	SIGNAL State													: T_STATE													:= ST_IDLE;
 	SIGNAL NextState											: T_STATE;
-	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS ite(CHIPSCOPE_KEEP, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS ite(DEBUG					, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 	
 	SIGNAL WordAC_inc											: STD_LOGIC;
 	SIGNAL WordAC_Load										: STD_LOGIC;
-	SIGNAL WordAC_Address									: STD_LOGIC_VECTOR(WordAC_BW - 1 DOWNTO 0);
-	SIGNAL WordAC_Address_us							: UNSIGNED(WordAC_BW - 1 DOWNTO 0);
+	SIGNAL WordAC_Address									: STD_LOGIC_VECTOR(WordAC_BITS - 1 DOWNTO 0);
+	SIGNAL WordAC_Address_us							: UNSIGNED(WordAC_BITS - 1 DOWNTO 0);
 	SIGNAL WordAC_Finished								: STD_LOGIC;
 	
 	SIGNAL ATAWord_117_IsValid_r											: STD_LOGIC								:= '0';
@@ -197,18 +220,18 @@ BEGIN
 		END CASE;
 	END PROCESS;
 	
-	WordAC : ENTITY L_Global.AddressCounter
+	WordAC : ENTITY PoC.sata_AddressCounter
 		GENERIC MAP (
-			COUNTER_BW					=> WordAC_BW
+			COUNTER_BITS					=> WordAC_BITS
 		)
 		PORT MAP (
 			Clock								=> Clock,																								-- clock
 			inc									=> WordAC_inc,																					-- enable counter
       dec                 => '0',
 			Load								=> WordAC_Load,																					-- load start and forward input
-			Address_Start				=> to_slv(0, WordAC_BW),																-- start address
-			Address_Step				=> to_slv(1, WordAC_BW),																-- step between two addresses
-			Address_End					=> (WordAC_BW - 1 DOWNTO 0 => '1'),											-- end address
+			Address_Start				=> to_slv(0, WordAC_BITS),															-- start address
+			Address_Step				=> to_slv(1, WordAC_BITS),															-- step between two addresses
+			Address_End					=> (WordAC_BITS - 1 DOWNTO 0 => '1'),										-- end address
 
 			Address							=> WordAC_Address,																			-- currend address
 			Counter_Finished		=> WordAC_Finished																			-- active if end address is reached
