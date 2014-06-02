@@ -161,13 +161,13 @@ class PoCTestbench:
 		
 #			print("%s" % (str(settingsFilePath)))		
 			print('cd "%s"' % str(tempIsimPath))
-			print('"%s" work.%s -prj "%s" -o "%s"' % (
+			print('%s work.%s -prj "%s" -o "%s"' % (
 				str(fuseExecutablePath),
 				testbenchName,
 				str(prjFilePath),
 				str(exeFilePath)
 				))
-			print('"%s" -tclbatch "%s"' % (str(exeFilePath), str(tclFilePath)))
+			print('%s -tclbatch "%s"' % (str(exeFilePath), str(tclFilePath)))
 			print()
 
 #		settingsLog = subprocess.check_output([str(settingsFilePath)], stderr=subprocess.STDOUT, universal_newlines=True)
@@ -177,9 +177,9 @@ class PoCTestbench:
 		
 		print("running fuse...")
 		linkerLog = subprocess.check_output([
-			('"%s"' % str(fuseExecutablePath)),
+			('%s' % str(fuseExecutablePath)),
 			("work.%s" % testbenchName),
-			"-prj", ('"%s"' % str(prjFilePath)), "-o", ('"%s"' % str(exeFilePath))],
+			"-prj", ('%s' % str(prjFilePath)), "-o", ('%s' % str(exeFilePath))],
 			stderr=subprocess.STDOUT, universal_newlines=True)
 		
 		if showLogs:
@@ -189,7 +189,7 @@ class PoCTestbench:
 			print()
 			
 		print("running simulation...")
-		simulatorLog = subprocess.check_output([('"%s"' % str(exeFilePath)),	"-tclbatch", ('"%s"' % str(tclFilePath))],
+		simulatorLog = subprocess.check_output([('%s' % str(exeFilePath)),	"-tclbatch", ('%s' % str(tclFilePath))],
 			stderr=subprocess.STDOUT, universal_newlines=True)
 		
 		if showLogs:
