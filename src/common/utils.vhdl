@@ -32,6 +32,7 @@
 -- ============================================================================
 
 library	IEEE;
+
 use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
 
@@ -131,6 +132,7 @@ package utils is
 	FUNCTION to_slv(Value : NATURAL; Size : POSITIVE)		RETURN STD_LOGIC_VECTOR;					-- short for std_logic_vector(to_unsigned(Value, Size))
 	
 	-- TODO: comment
+	FUNCTION to_index(slv : UNSIGNED; max : NATURAL := 0) RETURN INTEGER;
 	FUNCTION to_index(slv : STD_LOGIC_VECTOR; max : NATURAL := 0) RETURN INTEGER;
 	
 	-- is_*
@@ -152,11 +154,12 @@ package utils is
   -- @synthesis supported
   --
 	function reverse(vec : std_logic_vector) return std_logic_vector;
-	function reverse(vec : unsigned)				 return unsigned;
+	function reverse(vec : bit_vector) return bit_vector;
+	function reverse(vec : unsigned) return unsigned;
 	
-  -- Resizes the vector to the specified length. Input vectors larger than
-  -- the specified size are truncated from the left side. Smaller input
-  -- vectors are extended on the left by the provided fill value
+  -- Resizes the vector to the specified length. The adjustment is make on
+  -- on the 'high end of the vector. The 'low index remains as in the argument.
+  -- If the result vector is larger, the extension uses the provided fill value
   -- (default: '0').
 	-- Use the resize functions of the numeric_std package for value-preserving
 	-- resizes of the signed and unsigned data types.
@@ -168,9 +171,15 @@ package utils is
   function resize(vec : std_logic_vector; length : natural; fill : std_logic := '0')
     return std_logic_vector;
 
-	-- Adjust the index range of a vector by the specified offset.
+	-- Shift the index range of a vector by the specified offset.
 	function move(vec : std_logic_vector; ofs : integer) return std_logic_vector;
 
+	-- Shift the index range of a vector making vec'low = 0.
+	function movez(vec : std_logic_vector) return std_logic_vector;
+
+  function ascend(vec : std_logic_vector) return std_logic_vector;
+  function descend(vec : std_logic_vector) return std_logic_vector;
+	
   -- Least-Significant Set Bit (lssb):
   -- Computes a vector of the same length as the argument with
   -- at most one bit set at the rightmost '1' found in arg.
@@ -178,6 +187,7 @@ package utils is
   -- @synthesis supported
   --
   function lssb(arg : std_logic_vector) return std_logic_vector;
+  function lssb(arg : bit_vector) return bit_vector;
 
   -- Returns the position of the least-significant set bit assigning
   -- the rightmost position an index of zero (0).
@@ -185,14 +195,21 @@ package utils is
   -- @synthesis supported
   --
   function lssb_idx(arg : std_logic_vector) return integer;
+  function lssb_idx(arg : bit_vector) return integer;
 
 	-- Most-Significant Set Bit (mssb): computes a vector of the same length
 	-- with at most one bit set at the leftmost '1' found in arg.
 	function mssb(arg : std_logic_vector) return std_logic_vector;
+  function mssb(arg : bit_vector) return bit_vector;
 	function mssb_idx(arg : std_logic_vector) return integer;
+  function mssb_idx(arg : bit_vector) return integer;
 
 	-- Swap sub vectors in vector (endian reversal)
 	FUNCTION swap(slv : STD_LOGIC_VECTOR; Size : POSITIVE) RETURN STD_LOGIC_VECTOR;
+
+	-- generate bit masks
+	FUNCTION genmask_high(Bits : NATURAL; MaskLength : POSITIVE) RETURN STD_LOGIC_VECTOR;
+	FUNCTION genmask_low(Bits : NATURAL; MaskLength : POSITIVE) RETURN STD_LOGIC_VECTOR;
 
 	--+ Encodings ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -509,14 +526,19 @@ package body utils is
 		RETURN std_logic_vector(to_unsigned(Value, Size));
 	END FUNCTION;
 
-	FUNCTION to_index(slv : STD_LOGIC_VECTOR; max : NATURAL := 0) RETURN INTEGER IS
+	FUNCTION to_index(slv : UNSIGNED; max : NATURAL := 0) RETURN INTEGER IS
 		variable  res : integer;
 	BEGIN
-		res := to_integer(unsigned(slv));
+		res := to_integer(slv);
 		if SIMULATION and max > 0 then
 			res := imin(res, max);
 		end if;
 		return  res;
+	END FUNCTION;
+
+	FUNCTION to_index(slv : STD_LOGIC_VECTOR; max : NATURAL := 0) RETURN INTEGER IS
+	BEGIN
+		RETURN to_index(unsigned(slv), max);
 	END FUNCTION;
 	
   -- is_*
@@ -531,17 +553,20 @@ package body utils is
 
 	
 	-- Reverse vector elements
-
-	-- FIXME: be the return Vector cev; then: vec(i) = cev(i) but vec'reverse_range = cev'range
 	function reverse(vec : std_logic_vector) return std_logic_vector is
 		variable res : std_logic_vector(vec'range);
 	begin
 		for i in vec'low to vec'high loop
-			res(vec'high - i) := vec(i);
+			res(vec'low + (vec'high-i)) := vec(i);
 		end loop;
 		return	res;
 	end function;
-	
+	function reverse(vec : bit_vector) return bit_vector is
+		variable res : bit_vector(vec'range);
+	begin
+    res := to_bitvector(reverse(to_stdlogicvector(vec)));
+    return  res;
+	end reverse;
 	function reverse(vec : unsigned) return unsigned is
 	begin
 		return unsigned(reverse(std_logic_vector(vec)));
@@ -568,11 +593,31 @@ package body utils is
 		RETURN Result;
 	END FUNCTION;
 
+	-- generate bit masks
+	-- ==========================================================================
+		FUNCTION genmask_high(Bits : NATURAL; MaskLength : POSITIVE) RETURN STD_LOGIC_VECTOR IS
+	BEGIN
+		IF (Bits = 0) THEN
+			RETURN (MaskLength - 1 DOWNTO 0 => '0');
+		ELSE	
+			RETURN (MaskLength - 1 DOWNTO MaskLength - Bits + 1 => '1') & (MaskLength - Bits DOWNTO 0 => '0');
+		END IF;
+	END FUNCTION;
+
+	FUNCTION genmask_low(Bits : NATURAL; MaskLength : POSITIVE) RETURN STD_LOGIC_VECTOR IS
+	BEGIN
+		IF (Bits = 0) THEN
+			RETURN (MaskLength - 1 DOWNTO 0 => '0');
+		ELSE	
+			RETURN (MaskLength - 1 DOWNTO Bits => '0') & (Bits - 1 DOWNTO 0 => '1');
+		END IF;
+	END FUNCTION;
+
 	-- binary encoding conversion functions
 	-- ==========================================================================
 	-- One-Hot-Code to Binary-Code
   function onehot2bin(onehot : std_logic_vector) return unsigned is
-		variable res : unsigned(log2ceil(onehot'high+1)-1 downto 0);
+		variable res : unsigned(log2ceilnz(onehot'high+1)-1 downto 0);
 		variable chk : natural;
 	begin
 		res := (others => '0');
@@ -605,27 +650,51 @@ package body utils is
 	-- ==========================================================================
 	-- Least-Significant Set Bit (lssb): computes a vector of the same length with at most one bit set at the rightmost '1' found in arg.
 	function lssb(arg : std_logic_vector) return std_logic_vector is
+    variable  res : std_logic_vector(arg'range);
 	begin
-		return	arg and std_logic_vector(unsigned(not arg)+1);
+		res := arg and std_logic_vector(unsigned(not arg)+1);
+    return  res;
 	end function;
+  function lssb(arg : bit_vector) return bit_vector is
+    variable  res : bit_vector(arg'range);
+  begin
+    res := to_bitvector(lssb(to_stdlogicvector(arg)));
+    return  res;
+  end lssb;
 
 	-- Most-Significant Set Bit (mssb): computes a vector of the same length with at most one bit set at the leftmost '1' found in arg.
 	function mssb(arg : std_logic_vector) return std_logic_vector is
 	begin
 		return	reverse(lssb(reverse(arg)));
 	end function;
+  function mssb(arg : bit_vector) return bit_vector is
+  begin
+    return  reverse(lssb(reverse(arg)));
+  end mssb;
 
 	-- Index of lssb
 	function lssb_idx(arg : std_logic_vector) return integer is
 	begin
 		return  to_integer(onehot2bin(lssb(arg)));
 	end function;
+	function lssb_idx(arg : bit_vector) return integer is
+    variable  slv : std_logic_vector(arg'range);
+	begin
+    slv := to_stdlogicvector(arg);
+		return  lssb_idx(slv);
+	end lssb_idx;
 
 	-- Index of mssb
 	function mssb_idx(arg : std_logic_vector) return integer is
 	begin
 		return  to_integer(onehot2bin(mssb(arg)));
 	end function;
+	function mssb_idx(arg : bit_vector) return integer is
+    variable  slv : std_logic_vector(arg'range);
+	begin
+    slv := to_stdlogicvector(arg);
+		return  mssb_idx(slv);
+	end mssb_idx;
 
 	-- if-then-else (ite)
 	-- ==========================================================================
@@ -692,24 +761,39 @@ package body utils is
 		END IF;
 	END FUNCTION;
 	
-	-- Resize functions
-	-- ==========================================================================
-	-- Resizes the vector to the specified length. Input vectors larger than the specified size are truncated from the left side. Smaller input
-	-- vectors are extended on the left by the provided fill value (default: '0'). Use the resize functions of the numeric_std package for
-	-- value-preserving resizes of the signed and unsigned data types.
 	function resize(vec : bit_vector; length : natural; fill : bit := '0') return bit_vector is
+    constant  high2b : natural := vec'low+length-1;
+		constant  highcp : natural := imin(vec'high, high2b);
+    variable  res_up : bit_vector(vec'low to high2b);
+    variable  res_dn : bit_vector(high2b downto vec'low);
 	begin
-		return	to_bitvector(resize(to_stdlogicvector(vec), length, to_stdulogic(fill)));
-	end function;
+    if vec'ascending then
+      res_up := (others => fill);
+      res_up(vec'low to highcp) := vec(vec'low to highcp);
+      return  res_up;
+    else
+      res_dn := (others => fill);
+      res_dn(highcp downto vec'low) := vec(highcp downto vec'low);
+      return  res_dn;
+		end if;
+	end resize;
 
 	function resize(vec : std_logic_vector; length : natural; fill : std_logic := '0') return std_logic_vector is
+    constant  high2b : natural := vec'low+length-1;
+		constant  highcp : natural := imin(vec'high, high2b);
+    variable  res_up : std_logic_vector(vec'low to high2b);
+    variable  res_dn : std_logic_vector(high2b downto vec'low);
 	begin
-		if vec'length >= length then
-			return	vec(length - 1 downto 0);
-		else
-			return (length - 1 downto vec'length => fill) & vec;
+    if vec'ascending then
+      res_up := (others => fill);
+      res_up(vec'low to highcp) := vec(vec'low to highcp);
+      return  res_up;
+    else
+      res_dn := (others => fill);
+      res_dn(highcp downto vec'low) := vec(highcp downto vec'low);
+      return  res_dn;
 		end if;
-	end function;
+	end resize;
 
 	-- Move vector boundaries
 	-- ==========================================================================
@@ -725,5 +809,23 @@ package body utils is
       return  res_dn;
     end if;
   end move;
-	
+
+	function movez(vec : std_logic_vector) return std_logic_vector is
+  begin
+    return  move(vec, -vec'low);
+  end movez;
+
+  function ascend(vec : std_logic_vector)	return std_logic_vector is
+		variable  res : std_logic_vector(vec'low to vec'high);
+	begin
+		res := vec;
+		return  res;
+	end ascend;
+
+  function descend(vec : std_logic_vector)	return std_logic_vector is
+		variable  res : std_logic_vector(vec'high downto vec'low);
+	begin
+		res := vec;
+		return  res;
+	end descend;
 end utils;

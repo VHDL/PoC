@@ -2,8 +2,9 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- ============================================================================================================================================================
--- Package:					VHDL package for component declarations, types and functions assoziated to the PoC.io namespace
+-- ============================================================================
+-- Package:					VHDL package for component declarations, types and
+--									functions assoziated to the PoC.io namespace
 --
 -- Authors:					Patrick Lehmann
 -- 
@@ -12,8 +13,9 @@
 --		For detailed documentation see below.
 --
 -- License:
--- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+--										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -26,7 +28,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================================================================================================
+-- ============================================================================
 
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
@@ -43,8 +45,25 @@ PACKAGE io IS
 --			GHz = 1000 MHz;
 --		END UNITS;
 	
+	TYPE T_IO_TRISTATE IS RECORD
+		I			: STD_LOGIC;					-- input / from device to FPGA
+		O			: STD_LOGIC;					-- output / from FPGA to device
+		T			: STD_LOGIC;					-- output disable / tristate enable
+	END RECORD;
+
+	TYPE T_IO_TRISTATE_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_IO_TRISTATE;
+	
 	-- IICBusController
 	-- ==========================================================================================================================================================
+	TYPE T_IO_IIC_BUSMODE IS (
+		IO_IIC_BUSMODE_SMBUS,							--   100 kHz; additional timing restrictions
+		IO_IIC_BUSMODE_STANDARDMODE,			--   100 kHz
+		IO_IIC_BUSMODE_FASTMODE,					--   400 kHz
+		IO_IIC_BUSMODE_FASTMODEPLUS,			-- 1.000 kHz
+		IO_IIC_BUSMODE_HIGHSPEEDMODE,			-- 3.400 kHz
+		IO_IIC_BUSMODE_ULTRAFASTMODE			-- 5.000 kHz; unidirectional
+	);
+
 	TYPE T_IO_IICBUS_COMMAND IS (
 		IO_IICBUS_CMD_NONE,
 		IO_IICBUS_CMD_SEND_START_CONDITION,
@@ -56,6 +75,7 @@ PACKAGE io IS
 	);
 	
 	TYPE T_IO_IICBUS_STATUS IS (
+		IO_IICBUS_STATUS_RESETING,
 		IO_IICBUS_STATUS_IDLE,
 		IO_IICBUS_STATUS_SENDING,
 		IO_IICBUS_STATUS_SEND_COMPLETE,
@@ -64,30 +84,32 @@ PACKAGE io IS
 		IO_IICBUS_STATUS_RECEIVED_STOP_CONDITION,
 		IO_IICBUS_STATUS_RECEIVED_LOW,
 		IO_IICBUS_STATUS_RECEIVED_HIGH,
-		IO_IICBUS_STATUS_ERROR
+		IO_IICBUS_STATUS_ERROR,
+		IO_IICBUS_STATUS_BUS_ERROR
 	);
 	
 	-- IICController
 	-- ==========================================================================================================================================================
 	TYPE T_IO_IIC_COMMAND IS (
 		IO_IIC_CMD_NONE,
-		IO_IIC_CMD_CHECK_ADDRESS,
-		IO_IIC_CMD_READ_CURRENT,
-		IO_IIC_CMD_READ_BYTE,
-		IO_IIC_CMD_READ_BYTES,
-		IO_IIC_CMD_WRITE_BYTE,
-		IO_IIC_CMD_WRITE_BYTES
+		IO_IIC_CMD_QUICKCOMMAND_READ,	-- use this to check for an device address
+		IO_IIC_CMD_QUICKCOMMAND_WRITE,
+		IO_IIC_CMD_SEND_BYTES,
+		IO_IIC_CMD_RECEIVE_BYTES,
+		IO_IIC_CMD_PROCESS_CALL
 	);
 	
 	TYPE T_IO_IIC_STATUS IS (
 		IO_IIC_STATUS_IDLE,
-		IO_IIC_STATUS_CHECKING,
-		IO_IIC_STATUS_CHECK_OK,
-		IO_IIC_STATUS_CHECK_FAILED,
-		IO_IIC_STATUS_READING,
-		IO_IIC_STATUS_READ_COMPLETE,
-		IO_IIC_STATUS_WRITING,
-		IO_IIC_STATUS_WRITE_COMPLETE,
+		IO_IIC_STATUS_EXECUTING,
+		IO_IIC_STATUS_EXECUTE_OK,
+		IO_IIC_STATUS_EXECUTE_FAILED,
+		IO_IIC_STATUS_SENDING,
+		IO_IIC_STATUS_SEND_COMPLETE,
+		IO_IIC_STATUS_RECEIVING,
+		IO_IIC_STATUS_RECEIVE_COMPLETE,
+		IO_IIC_STATUS_CALLING,
+		IO_IIC_STATUS_CALL_COMPLETE,
 		IO_IIC_STATUS_ERROR
 	);
 
@@ -103,38 +125,35 @@ PACKAGE io IS
 	TYPE T_IO_IIC_STATUS_VECTOR		IS ARRAY(NATURAL RANGE <>) OF T_IO_IIC_STATUS;
 	TYPE T_IO_IIC_ERROR_VECTOR		IS ARRAY(NATURAL RANGE <>) OF T_IO_IIC_ERROR;
 	
-	-- IICController_SFF8431
+	
+	
+	-- MDIOController
 	-- ==========================================================================================================================================================
-	TYPE T_IO_IIC_SFF8431_COMMAND IS (
-		IO_IIC_SFF8431_CMD_NONE,
-		IO_IIC_SFF8431_CMD_CHECK_ADDRESS,
-		IO_IIC_SFF8431_CMD_READ_CURRENT,
-		IO_IIC_SFF8431_CMD_READ_BYTE,
-		IO_IIC_SFF8431_CMD_READ_BYTES,
-		IO_IIC_SFF8431_CMD_WRITE_BYTE,
-		IO_IIC_SFF8431_CMD_WRITE_BYTES
+	TYPE T_IO_MDIO_MDIOCONTROLLER_COMMAND IS (
+		IO_MDIO_MDIOC_CMD_NONE,
+		IO_MDIO_MDIOC_CMD_CHECK_ADDRESS,
+		IO_MDIO_MDIOC_CMD_READ,
+		IO_MDIO_MDIOC_CMD_WRITE,
+		IO_MDIO_MDIOC_CMD_ABORT
 	);
 	
-	TYPE T_IO_IIC_SFF8431_STATUS IS (
-		IO_IIC_SFF8431_STATUS_IDLE,
-		IO_IIC_SFF8431_STATUS_CHECKING,
-		IO_IIC_SFF8431_STATUS_CHECK_OK,
-		IO_IIC_SFF8431_STATUS_CHECK_FAILED,
-		IO_IIC_SFF8431_STATUS_READING,
-		IO_IIC_SFF8431_STATUS_READ_COMPLETE,
-		IO_IIC_SFF8431_STATUS_WRITING,
-		IO_IIC_SFF8431_STATUS_WRITE_COMPLETE,
-		IO_IIC_SFF8431_STATUS_ERROR
+	TYPE T_IO_MDIO_MDIOCONTROLLER_STATUS IS (
+		IO_MDIO_MDIOC_STATUS_IDLE,
+		IO_MDIO_MDIOC_STATUS_CHECKING,
+		IO_MDIO_MDIOC_STATUS_CHECK_OK,
+		IO_MDIO_MDIOC_STATUS_CHECK_FAILED,
+		IO_MDIO_MDIOC_STATUS_READING,
+		IO_MDIO_MDIOC_STATUS_READ_COMPLETE,
+		IO_MDIO_MDIOC_STATUS_WRITING,
+		IO_MDIO_MDIOC_STATUS_WRITE_COMPLETE,
+		IO_MDIO_MDIOC_STATUS_ERROR
 	);
 	
-	TYPE T_IO_IIC_SFF8431_ERROR IS (
-		IO_IIC_SFF8431_ERROR_NONE,
-		IO_IIC_SFF8431_ERROR_ADDRESS_ERROR,
-		IO_IIC_SFF8431_ERROR_ACK_ERROR,
-		IO_IIC_SFF8431_ERROR_BUS_ERROR,
-		IO_IIC_SFF8431_ERROR_FSM
+	TYPE T_IO_MDIO_MDIOCONTROLLER_ERROR IS (
+		IO_MDIO_MDIOC_ERROR_NONE,
+		IO_MDIO_MDIOC_ERROR_ADDRESS_NOT_FOUND,
+		IO_MDIO_MDIOC_ERROR_FSM
 	);
-	
 	
 	-- TimingToCycles_***
 	FUNCTION TimingToCycles_ns(Timing_NS : POSITIVE;	CLOCKSPEED_NS : REAL) RETURN NATURAL;
@@ -160,7 +179,24 @@ PACKAGE io IS
 	FUNCTION Baud2kHz(BaudRate : REAL) RETURN REAL;
 	FUNCTION Baud2MHz(BaudRate : POSITIVE) RETURN REAL;
 	FUNCTION Baud2MHz(BaudRate : REAL) RETURN REAL;
-	
+
+  -- Component Declarations
+  -- =========================================================================
+  component io_FanControl
+    generic (
+      CLOCK_FREQ_MHZ : real
+    );
+    port (
+      Clock : in std_logic;
+      Reset : in std_logic;
+
+      Fan_PWM   : out std_logic;
+      Fan_Tacho : in  std_logic;
+
+      TachoFrequency : out std_logic_vector(15 downto 0)
+    );
+	end component;
+
 END io;
 
 

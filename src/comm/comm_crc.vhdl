@@ -38,7 +38,7 @@ library	IEEE;
 use			IEEE.std_logic_1164.all;
 
 library	PoC;
-use			PoC.functions.all;
+use			PoC.utils.all;
 
 
 entity comm_crc is
@@ -53,11 +53,11 @@ entity comm_crc is
 		clk	: in	std_logic;																-- Clock
 		
 		set	: in	std_logic;																-- Parallel Preload of Remainder
-		init : in	std_logic_vector(length(GEN)-2 downto 0);	-- 
+		init : in	std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0);	-- 
 		step : in	std_logic;																-- Process Input Data (MSB first)
 		din	: in	std_logic_vector(BITS-1 downto 0);				-- 
 
-		rmd	: out std_logic_vector(length(GEN)-2 downto 0);	-- Remainder
+		rmd	: out std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0);	-- Remainder
 		zero : out std_logic																-- Remainder is Zero
 	);
 end comm_crc;
@@ -87,7 +87,7 @@ architecture rtl of comm_crc is
 	constant GN : std_logic_vector := to_stdlogicvector(normalize(GEN));
 
 	-- LFSR Value
-	signal lfsr : std_logic_vector(GN'range) := resize(STARTUP_RMD, GN'length);
+	signal lfsr : std_logic_vector(GN'range) := resize(descend(STARTUP_RMD), GN'length);
 	signal lfsn : std_logic_vector(GN'range);	-- Next Value
 	signal lfso : std_logic_vector(GN'range);	-- Output
 

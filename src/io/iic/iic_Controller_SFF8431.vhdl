@@ -4,7 +4,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 --USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
 
 LIBRARY L_Global;
 USE			L_Global.GlobalTypes.ALL;
@@ -14,7 +14,7 @@ USE			L_IO.IOTypes.ALL;
 
 ENTITY IICController_SFF8431 IS
 	GENERIC (
-		CHIPSCOPE_KEEP								: BOOLEAN												:= TRUE;
+		DEBUG													: BOOLEAN												:= TRUE;
 		CLOCK_FREQ_MHZ								: REAL													:= 100.0;					-- 100 MHz
 		IIC_FREQ_KHZ									: REAL													:= 100.0
 	);
@@ -837,7 +837,7 @@ BEGIN
 	SerialClock_t		<= SerialClock_t_i;
 	SerialData_t		<= SerialData_t_i;
 
-	genCSP : IF (CHIPSCOPE_KEEP = TRUE) GENERATE
+	genCSP : IF (DEBUG = TRUE) GENERATE
 --		CONSTANT STATES		: POSITIVE		:= T_STATE'pos(ST_ERROR) + 1;
 --		CONSTANT BITS			: POSITIVE		:= log2ceilnz(STATES);
 --	

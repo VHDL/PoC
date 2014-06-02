@@ -1,6 +1,33 @@
--- EMACS settings:	-*-  tab-width:2  -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Module:				 	TODO
+--
+-- Authors:				 	Patrick Lehmann
+-- 
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
 
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
@@ -11,15 +38,8 @@ USE			UNISIM.VCOMPONENTS.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
-
--- ATTENTION:
--- ====================================
--- uncommented until PoC and L_Global.GlobalTypes get merged
--- functions were inlined
--- ====================================
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
 
 -- list_lru_systolic
 --		lru = least recently used
@@ -48,43 +68,9 @@ ENTITY list_lru_systolic IS
 	);
 END;
 
--- ATTENTION:
--- ============================================================================================================================================================
--- This module uses functions from L_Global.GlobalTypes written by Patrick Lehmann
--- to be compliant with PoC, this functions were inlined until GlobalTypes and PoC.functions get merged
--- 	o to_sl(...)
---	o	ite(...)
 
 ARCHITECTURE rtl OF list_lru_systolic IS
 	ATTRIBUTE KEEP										: BOOLEAN;
-
-	-- to_sl (inlined from package L_Global.GlobalTypes from "/lib/Global/Global.Types.vhd")
-	-- ==========================================================================
-	FUNCTION to_sl(Value : BOOLEAN) RETURN STD_LOGIC IS
-	BEGIN
-		IF (Value = TRUE) THEN
-			RETURN '1';
-		END IF;
-		RETURN '0';
-	END;
-	
-	-- if-then-else (ite) (inlined from package L_Global.GlobalTypes from "/lib/Global/Global.Types.vhd")
-	-- ==========================================================================
-	FUNCTION ite(cond : BOOLEAN; value1 : STD_LOGIC; value2 : STD_LOGIC) RETURN STD_LOGIC IS
-	BEGIN
-		IF (cond = TRUE) THEN
-			RETURN value1;
-		END IF;
-		RETURN value2;
-	END;
-	
-	FUNCTION ite(cond : BOOLEAN; value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) RETURN STD_LOGIC_VECTOR IS
-	BEGIN
-		IF (cond = TRUE) THEN
-			RETURN value1;
-		END IF;
-		RETURN value2;
-	END;
 
 	SUBTYPE T_KEY					IS STD_LOGIC_VECTOR(KEY_BITS - 1 DOWNTO 0);
 	TYPE T_KEY_VECTOR			IS ARRAY (NATURAL RANGE <>) OF T_KEY;

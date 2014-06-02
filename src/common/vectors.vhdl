@@ -37,6 +37,8 @@ use			IEEE.numeric_std.all;
 
 library	PoC;
 use			PoC.utils.all;
+use			PoC.strings.all;
+
 
 package vectors is
 	-- ==========================================================================
@@ -55,6 +57,8 @@ package vectors is
 	SUBTYPE T_SLV_64						IS STD_LOGIC_VECTOR(63 DOWNTO 0);
 	SUBTYPE T_SLV_96						IS STD_LOGIC_VECTOR(95 DOWNTO 0);
 	SUBTYPE T_SLV_128						IS STD_LOGIC_VECTOR(127 DOWNTO 0);
+	SUBTYPE T_SLV_256						IS STD_LOGIC_VECTOR(255 DOWNTO 0);
+	SUBTYPE T_SLV_512						IS STD_LOGIC_VECTOR(511 DOWNTO 0);
 	
 	-- STD_LOGIC_VECTOR_VECTORs
 	--	TYPE		T_SLVV							IS ARRAY(NATURAL RANGE <>) OF STD_LOGIC_VECTOR;					-- VHDL 2008 syntax - not yet supported by Xilinx
@@ -69,6 +73,8 @@ package vectors is
 	TYPE		T_SLVV_48						IS ARRAY(NATURAL RANGE <>) OF T_SLV_48;
 	TYPE		T_SLVV_64						IS ARRAY(NATURAL RANGE <>) OF T_SLV_64;
 	TYPE		T_SLVV_128					IS ARRAY(NATURAL RANGE <>) OF T_SLV_128;
+	TYPE		T_SLVV_256					IS ARRAY(NATURAL RANGE <>) OF T_SLV_256;
+	TYPE		T_SLVV_512					IS ARRAY(NATURAL RANGE <>) OF T_SLV_512;
 
 	-- STD_LOGIC_MATRIXs
 	TYPE		T_SLM								IS ARRAY(NATURAL RANGE <>, NATURAL RANGE <>) OF STD_LOGIC;
@@ -90,16 +96,15 @@ package vectors is
   FUNCTION high(lenvec : T_POSVEC; index : NATURAL) RETURN NATURAL;
 
 	-- Assign procedures: assign_*
-	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL);																	-- assign vector to complete row
-	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL; Position : NATURAL);							-- assign short vector to row starting at position
-	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL; High : NATURAL; Low : NATURAL);	-- assign short vector to row in range high:low
-	PROCEDURE assign_col(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT ColIndex : NATURAL);																	-- assign vector to complete column
+	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL);																	-- assign vector to complete row
+	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL; Position : NATURAL);							-- assign short vector to row starting at position
+	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL; High : NATURAL; Low : NATURAL);		-- assign short vector to row in range high:low
+	PROCEDURE assign_col(SIGNAL slm : OUT T_SLM; slv : STD_LOGIC_VECTOR; CONSTANT ColIndex : NATURAL);																	-- assign vector to complete column
 	-- ATTENTION:	see T_SLM definition for further details and work-arounds
 
 	-- Matrix to matrix conversion: slm_slice*
-	FUNCTION slm_slice(slm : T_SLM; RowIndex : NATURAL; ColIndex : NATURAL; Height : NATURAL; Width : NATURAL) RETURN T_SLM;									-- get submatrix in boundingbox RowIndex,ColIndex,Height,Width
---	FUNCTION slm_slice_cols(slm : T_SLM; High : NATURAL; Low : NATURAL) RETURN T_SLM;																													-- get submatrix / all columns in ColIndex range high:low
-	-- FIXME: changed arguments low,high to high,low => removed declaration to find all uages of this function
+	FUNCTION slm_slice(slm : T_SLM; RowIndex : NATURAL; ColIndex : NATURAL; Height : NATURAL; Width : NATURAL) RETURN T_SLM;						-- get submatrix in boundingbox RowIndex,ColIndex,Height,Width
+	FUNCTION slm_slice_cols(slm : T_SLM; High : NATURAL; Low : NATURAL) RETURN T_SLM;																										-- get submatrix / all columns in ColIndex range high:low
 
 	-- Matrix to vector conversion: get_*
 	FUNCTION get_col(slm : T_SLM; ColIndex : NATURAL) RETURN STD_LOGIC_VECTOR;																	-- get a matrix column
@@ -118,6 +123,8 @@ package vectors is
 	FUNCTION to_slvv_32(slv : STD_LOGIC_VECTOR)		RETURN T_SLVV_32;												-- 
 	FUNCTION to_slvv_64(slv : STD_LOGIC_VECTOR)		RETURN T_SLVV_64;												-- 
 	FUNCTION to_slvv_128(slv : STD_LOGIC_VECTOR)	RETURN T_SLVV_128;											-- 
+	FUNCTION to_slvv_256(slv : STD_LOGIC_VECTOR)	RETURN T_SLVV_256;											-- 
+	FUNCTION to_slvv_512(slv : STD_LOGIC_VECTOR)	RETURN T_SLVV_512;											-- 
 
 	-- Convert matrix to avector-vector: to_slvv_*
 	FUNCTION to_slvv_4(slm : T_SLM)		RETURN T_SLVV_4;																		-- 
@@ -127,6 +134,8 @@ package vectors is
 	FUNCTION to_slvv_32(slm : T_SLM)	RETURN T_SLVV_32;																		-- 
 	FUNCTION to_slvv_64(slm : T_SLM)	RETURN T_SLVV_64;																		-- 
 	FUNCTION to_slvv_128(slm : T_SLM)	RETURN T_SLVV_128;																	-- 
+	FUNCTION to_slvv_256(slm : T_SLM)	RETURN T_SLVV_256;																	-- 
+	FUNCTION to_slvv_512(slm : T_SLM)	RETURN T_SLVV_512;																	-- 
 	
 	-- Convert vector-vector to matrix: to_slm
 	FUNCTION to_slm(slvv : T_SLVV_4) RETURN T_SLM;																				-- create matrix from vector-vector
@@ -137,6 +146,8 @@ package vectors is
 	FUNCTION to_slm(slvv : T_SLVV_48) RETURN T_SLM;																				-- create matrix from vector-vector
 	FUNCTION to_slm(slvv : T_SLVV_64) RETURN T_SLM;																				-- create matrix from vector-vector
 	FUNCTION to_slm(slvv : T_SLVV_128) RETURN T_SLM;																			-- create matrix from vector-vector
+	FUNCTION to_slm(slvv : T_SLVV_256) RETURN T_SLM;																			-- create matrix from vector-vector
+	FUNCTION to_slm(slvv : T_SLVV_512) RETURN T_SLM;																			-- create matrix from vector-vector
 
 	-- Change vector direction
 	FUNCTION dir(slvv : T_SLVV_8)			RETURN T_SLVV_8;
@@ -149,10 +160,14 @@ package vectors is
 	FUNCTION rev(slvv : T_SLVV_32)		RETURN T_SLVV_32;
 	FUNCTION rev(slvv : T_SLVV_64)		RETURN T_SLVV_64;
 	FUNCTION rev(slvv : T_SLVV_128)		RETURN T_SLVV_128;
+	FUNCTION rev(slvv : T_SLVV_256)		RETURN T_SLVV_256;
+	FUNCTION rev(slvv : T_SLVV_512)		RETURN T_SLVV_512;
 	
 	-- TODO:
 	FUNCTION resize(slm : T_SLM; size : POSITIVE) RETURN T_SLM;
 
+	-- to_string
+	FUNCTION to_string(slvv : T_SLVV_8; sep : CHARACTER := ':') RETURN STRING;
 end package vectors;
 
 
@@ -179,7 +194,7 @@ package body vectors is
 
 	-- Assign procedures: assign_*
 	-- ==========================================================================
-	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL) IS
+	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL) IS
 		VARIABLE temp : STD_LOGIC_VECTOR(slm'high(2) DOWNTO slm'low(2));					-- Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); tested with ISE/iSIM 14.2
 	BEGIN
 		temp := slv;
@@ -188,7 +203,7 @@ package body vectors is
 		END LOOP;
 	END PROCEDURE;
 	
-	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL; Position : NATURAL) IS
+	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL; Position : NATURAL) IS
 		VARIABLE temp : STD_LOGIC_VECTOR(Position + slv'length - 1 DOWNTO Position);
 	BEGIN
 		temp := slv;
@@ -197,7 +212,7 @@ package body vectors is
 		END LOOP;
 	END PROCEDURE;
 	
-	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL; High : NATURAL; Low : NATURAL) IS
+	PROCEDURE assign_row(SIGNAL slm : OUT T_SLM; slv : STD_LOGIC_VECTOR; CONSTANT RowIndex : NATURAL; High : NATURAL; Low : NATURAL) IS
 		VARIABLE temp : STD_LOGIC_VECTOR(High DOWNTO Low);
 	BEGIN
 		temp := slv;
@@ -206,7 +221,7 @@ package body vectors is
 		END LOOP;
 	END PROCEDURE;
 	
-	PROCEDURE assign_col(SIGNAL slm : OUT T_SLM; SIGNAL slv : STD_LOGIC_VECTOR; CONSTANT ColIndex : NATURAL) IS
+	PROCEDURE assign_col(SIGNAL slm : OUT T_SLM; slv : STD_LOGIC_VECTOR; CONSTANT ColIndex : NATURAL) IS
 		VARIABLE temp : STD_LOGIC_VECTOR(slm'range(1));
 	BEGIN
 		temp := slv;
@@ -289,7 +304,7 @@ package body vectors is
 		RETURN slv;
 	END FUNCTION;
 	
-	-- Convert flat vector to avector-vector: to_slvv_*
+	-- Convert flat vector to a vector-vector: to_slvv_*
 	-- ==========================================================================
 	-- create vector-vector from vector (4 bit)
 	FUNCTION to_slvv_4(slv : STD_LOGIC_VECTOR) RETURN T_SLVV_4 IS
@@ -374,6 +389,30 @@ package body vectors is
 		END LOOP;
 		RETURN Result;
 	END FUNCTION;
+	
+	-- create vector-vector from vector (256 bit)
+	FUNCTION to_slvv_256(slv : STD_LOGIC_VECTOR) RETURN T_SLVV_256 IS
+		VARIABLE Result		: T_SLVV_256((slv'length / 256) - 1 DOWNTO 0);
+	BEGIN
+		IF ((slv'length MOD 256) /= 0) THEN	REPORT "to_slvv_256: width mismatch - slv'length is no multiple of 256 (slv'length=" & INTEGER'image(slv'length) & ")" SEVERITY FAILURE;	END IF;
+		
+		FOR I IN 0 TO (slv'length / 256) - 1 LOOP
+			Result(I)	:= slv((I * 256) + 255 DOWNTO (I * 256));
+		END LOOP;
+		RETURN Result;
+	END FUNCTION;
+	
+	-- create vector-vector from vector (512 bit)
+	FUNCTION to_slvv_512(slv : STD_LOGIC_VECTOR) RETURN T_SLVV_512 IS
+		VARIABLE Result		: T_SLVV_512((slv'length / 512) - 1 DOWNTO 0);
+	BEGIN
+		IF ((slv'length MOD 512) /= 0) THEN	REPORT "to_slvv_512: width mismatch - slv'length is no multiple of 512 (slv'length=" & INTEGER'image(slv'length) & ")" SEVERITY FAILURE;	END IF;
+		
+		FOR I IN 0 TO (slv'length / 512) - 1 LOOP
+			Result(I)	:= slv((I * 512) + 511 DOWNTO (I * 512));
+		END LOOP;
+		RETURN Result;
+	END FUNCTION;
 
 	-- Convert matrix to avector-vector: to_slvv_*
 	-- ==========================================================================
@@ -454,6 +493,30 @@ package body vectors is
 		VARIABLE Result		: T_SLVV_128(slm'range);
 	BEGIN
 		IF (slm'length(2) /= 128) THEN	REPORT "to_slvv_128: type mismatch - slm'length(2)=" & INTEGER'image(slm'length(2)) SEVERITY FAILURE;	END IF;
+		
+		FOR I IN slm'range LOOP
+			Result(I)	:= get_row(slm, I);
+		END LOOP;
+		RETURN Result;
+	END FUNCTION;
+	
+	-- create vector-vector from matrix (256 bit)
+	FUNCTION to_slvv_256(slm : T_SLM) RETURN T_SLVV_256 IS
+		VARIABLE Result		: T_SLVV_256(slm'range);
+	BEGIN
+		IF (slm'length(2) /= 256) THEN	REPORT "to_slvv_256: type mismatch - slm'length(2)=" & INTEGER'image(slm'length(2)) SEVERITY FAILURE;	END IF;
+		
+		FOR I IN slm'range LOOP
+			Result(I)	:= get_row(slm, I);
+		END LOOP;
+		RETURN Result;
+	END FUNCTION;
+	
+	-- create vector-vector from matrix (512 bit)
+	FUNCTION to_slvv_512(slm : T_SLM) RETURN T_SLVV_512 IS
+		VARIABLE Result		: T_SLVV_512(slm'range);
+	BEGIN
+		IF (slm'length(2) /= 512) THEN	REPORT "to_slvv_512: type mismatch - slm'length(2)=" & INTEGER'image(slm'length(2)) SEVERITY FAILURE;	END IF;
 		
 		FOR I IN slm'range LOOP
 			Result(I)	:= get_row(slm, I);
@@ -557,6 +620,28 @@ package body vectors is
 		END LOOP;
 		RETURN slm;
 	END FUNCTION;
+	
+	FUNCTION to_slm(slvv : T_SLVV_256) RETURN T_SLM IS
+		VARIABLE slm		: T_SLM(slvv'range, 255 DOWNTO 0);
+	BEGIN
+		FOR I IN slvv'range LOOP
+			FOR J IN T_SLV_256'range LOOP
+				slm(I, J)		:= slvv(I)(J);
+			END LOOP;
+		END LOOP;
+		RETURN slm;
+	END FUNCTION;
+	
+	FUNCTION to_slm(slvv : T_SLVV_512) RETURN T_SLM IS
+		VARIABLE slm		: T_SLM(slvv'range, 511 DOWNTO 0);
+	BEGIN
+		FOR I IN slvv'range LOOP
+			FOR J IN T_SLV_512'range LOOP
+				slm(I, J)		:= slvv(I)(J);
+			END LOOP;
+		END LOOP;
+		RETURN slm;
+	END FUNCTION;
 
 	-- Change vector direction
 	-- ==========================================================================
@@ -630,6 +715,24 @@ package body vectors is
 		END LOOP;
 		RETURN Result;
 	END FUNCTION;
+	
+	FUNCTION rev(slvv : T_SLVV_256) RETURN T_SLVV_256 IS
+		VARIABLE Result : T_SLVV_256(slvv'range);
+	BEGIN
+		FOR I IN slvv'low TO slvv'high LOOP
+			Result(slvv'high - I) := slvv(I);
+		END LOOP;
+		RETURN Result;
+	END FUNCTION;
+	
+	FUNCTION rev(slvv : T_SLVV_512) RETURN T_SLVV_512 IS
+		VARIABLE Result : T_SLVV_512(slvv'range);
+	BEGIN
+		FOR I IN slvv'low TO slvv'high LOOP
+			Result(slvv'high - I) := slvv(I);
+		END LOOP;
+		RETURN Result;
+	END FUNCTION;
 
 	-- Resize functions
 	-- ==========================================================================
@@ -643,6 +746,18 @@ package body vectors is
 			FOR J IN slm'high(2) DOWNTO slm'low(2) LOOP
 				Result(I, J)	:= slm(I, J);
 			END LOOP;
+		END LOOP;
+		RETURN Result;
+	END FUNCTION;
+	
+	FUNCTION to_string(slvv : T_SLVV_8; sep : CHARACTER := ':') RETURN STRING IS
+		CONSTANT hex_len			: POSITIVE								:= ite((sep = NUL), (slvv'length * 2), (slvv'length * 3) - 1);
+		VARIABLE Result				: STRING(1 TO hex_len)		:= (OTHERS => sep);
+		VARIABLE pos					: POSITIVE								:= 1;
+	BEGIN
+		FOR I IN slvv'range LOOP
+			Result(pos TO pos + 1)	:= to_string(slvv(I), 'h');
+			pos											:= pos + ite((sep = NUL), 2, 3);
 		END LOOP;
 		RETURN Result;
 	END FUNCTION;

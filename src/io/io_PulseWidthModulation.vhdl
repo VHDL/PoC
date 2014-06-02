@@ -1,25 +1,32 @@
--- EMACS settings:	-*-  tab-width:2  -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- License: Apache 2.0
--- ============================================================================
+-- Module:				 	TODO
 --
+-- Authors:				 	Patrick Lehmann
 -- 
--- 
--- Authors:
--- ====================================
---	Patrick Lehmann (Patrick.Lehmann@tu-dresden.de)
+-- Description:
+-- ------------------------------------
+--		TODO
 --
--- Modul description:
--- ====================================
---	Pulse Width Modulation with fixed output frequency and variable duty cycle
---
+-- License:
 -- ============================================================================
--- VHDL-Library:	L_IO
--- Dependancies:	L_Global
---
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
 -- ============================================================================
 
 LIBRARY IEEE;
@@ -27,18 +34,13 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.functions.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.io.ALL;
 
 
-ENTITY PulseWidthModulation IS
+ENTITY io_PulseWidthModulation IS
 	GENERIC (
-		CLOCK_IN_FREQ_MHZ					: REAL									:= 100.0;
+		CLOCK_FREQ_MHZ						: REAL									:= 100.0;
 		PWM_FREQ_kHz							: REAL									:= 0.020;
 		PWM_RESOLUTION						: POSITIVE							:= 8
 	);
@@ -50,15 +52,15 @@ ENTITY PulseWidthModulation IS
 	);
 END;
 
-ARCHITECTURE rtl OF PulseWidthModulation IS
-	CONSTANT PWM_STEPS									: REAL																				:= 2.0**PWM_RESOLUTION;
-	CONSTANT PWM_STEP_FREQ_KHZ					: REAL																				:= PWM_FREQ_kHz * (PWM_STEPS - 1.0);
-	CONSTANT PWM_FREQUENCYCOUNTER_MAX		: POSITIVE																		:= TimingToCycles_ns(Freq_kHz2Real_ns(PWM_STEP_FREQ_KHZ), Freq_MHz2Real_ns(CLOCK_IN_FREQ_MHZ));
-	CONSTANT PWM_FREQUENCYCOUNTER_BW		: POSITIVE																		:= log2ceilnz(PWM_FREQUENCYCOUNTER_MAX);
+ARCHITECTURE rtl OF io_PulseWidthModulation IS
+	CONSTANT PWM_STEPS									: REAL																					:= 2.0**PWM_RESOLUTION;
+	CONSTANT PWM_STEP_FREQ_KHZ					: REAL																					:= PWM_FREQ_kHz * (PWM_STEPS - 1.0);
+	CONSTANT PWM_FREQUENCYCOUNTER_MAX		: POSITIVE																			:= TimingToCycles_ns(Freq_kHz2Real_ns(PWM_STEP_FREQ_KHZ), Freq_MHz2Real_ns(CLOCK_FREQ_MHZ));
+	CONSTANT PWM_FREQUENCYCOUNTER_BITS	: POSITIVE																			:= log2ceilnz(PWM_FREQUENCYCOUNTER_MAX);
 	
-	SIGNAL PWM_FrequencyCounter_us			: UNSIGNED(PWM_FREQUENCYCOUNTER_BW DOWNTO 0)	:= (OTHERS => '0');
+	SIGNAL PWM_FrequencyCounter_us			: UNSIGNED(PWM_FREQUENCYCOUNTER_BITS DOWNTO 0)	:= (OTHERS => '0');
 	SIGNAL PWM_FrequencyCounter_ov			: STD_LOGIC;
-	SIGNAL PWM_PulseCounter_us					: UNSIGNED(PWM_RESOLUTION - 1 DOWNTO 0)				:= (OTHERS => '0');
+	SIGNAL PWM_PulseCounter_us					: UNSIGNED(PWM_RESOLUTION - 1 DOWNTO 0)					:= (OTHERS => '0');
 	SIGNAL PWM_PulseCounter_ov					: STD_LOGIC;
 	
 BEGIN

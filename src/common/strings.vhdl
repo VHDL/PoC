@@ -3,7 +3,7 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Package:					Common functions and types
+-- Package:					String related functions and types
 --
 -- Authors:					Thomas B. Preusser
 --									Martin Zabel
@@ -43,6 +43,10 @@ package strings is
 	-- Type declarations
 	-- ==========================================================================
 	
+	-- testing area:
+	-- ==========================================================================
+	FUNCTION to_IPStyle(str : STRING)			RETURN T_IPSTYLE;
+	
 	-- to_char
 	FUNCTION to_char(value : STD_LOGIC)		RETURN CHARACTER;
 	FUNCTION to_char(value : INTEGER)			RETURN CHARACTER;
@@ -65,6 +69,7 @@ package strings is
 	-- String functions
 	FUNCTION str_length(str : STRING) RETURN NATURAL;
 	FUNCTION str_equal(str1 : STRING; str2 : STRING) RETURN BOOLEAN;
+	FUNCTION str_match(str1 : STRING; str2 : STRING) RETURN BOOLEAN;
 	FUNCTION str_pos(str : STRING; char : CHARACTER) RETURN INTEGER;
 	FUNCTION str_to_lower(str : STRING) RETURN STRING;
 	FUNCTION str_to_upper(str : STRING) RETURN STRING;
@@ -73,6 +78,18 @@ end package strings;
 
 
 package body strings is
+
+	-- 
+	FUNCTION to_IPStyle(str : STRING) RETURN T_IPSTYLE IS
+	BEGIN
+		FOR I IN T_IPSTYLE'pos(T_IPSTYLE'low) TO T_IPSTYLE'pos(T_IPSTYLE'high) LOOP
+			IF str_match(str_to_upper(str), str_to_upper(T_IPSTYLE'image(T_IPSTYLE'val(I)))) THEN
+				RETURN T_IPSTYLE'val(I);
+			END IF;
+		END LOOP;
+		
+		REPORT "Unknown IPStyle: " & str SEVERITY FAILURE;
+	END FUNCTION;
 
 	-- to_char
 	-- ==========================================================================================================================================================
@@ -146,7 +163,7 @@ package body strings is
 	END FUNCTION;
 
 	FUNCTION to_string(slv : STD_LOGIC_VECTOR; format : CHARACTER; length : NATURAL := 0; fill : CHARACTER := '0') RETURN STRING IS
-		CONSTANT int					: INTEGER				:= ite((slv'length <= 32), to_integer(unsigned(slv)), 0);
+		CONSTANT int					: INTEGER				:= ite((slv'length <= 31), to_integer(unsigned(resize(slv, 31))), 0);
 		CONSTANT str					: STRING				:= INTEGER'image(int);
 		CONSTANT bin_len			: POSITIVE			:= slv'length;
 		CONSTANT dec_len			: POSITIVE			:= str'length;--log10ceilnz(int);
@@ -309,6 +326,15 @@ package body strings is
 			RETURN FALSE;
 		ELSE
 			RETURN (str1 = str2);
+		END IF;
+	END FUNCTION;
+
+	FUNCTION str_match(str1 : STRING; str2 : STRING) RETURN BOOLEAN IS
+	BEGIN
+		IF str_length(str1) /= str_length(str2) THEN
+			RETURN FALSE;
+		ELSE
+			RETURN (resize(str1, str_length(str1)) = resize(str2, str_length(str1)));
 		END IF;
 	END FUNCTION;
 
