@@ -174,9 +174,10 @@ package body config is
 	end DEVICE;
 
 	function DEVICE_SERIES(DeviceString : string := "None") return natural is
-		constant MY_DEV : string := getLocalDeviceString(DeviceString);
+		constant MY_DEV : string		:= getLocalDeviceString(DeviceString);
+		constant DEV		: device_t	:= DEVICE(MY_DEV);
 	begin
-		case DEVICE(MY_DEV) is
+		case DEV is
 			when DEVICE_ARTIX7 | DEVICE_KINTEX7 | DEVICE_VIRTEX7 | DEVICE_ZYNQ7 =>	return 7;		-- all Xilinx ****7 devices share some common features: e.g. XADC
 			when others =>																													return 0;
 		end case;
@@ -184,9 +185,10 @@ package body config is
 
 	function DEVICE_SUBTYPE(DeviceString : string := "None") return t_device_subtype is
 		constant MY_DEV		: string					:= getLocalDeviceString(DeviceString);
+		constant DEV			: device_t				:= DEVICE(MY_DEV);
 		constant DEV_SUB	: string(1 to 2)	:= MY_DEV(5 to 6);																-- work around for GHDL
 	begin
-		case DEVICE(MY_DEV) is
+		case DEV is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return device_subtype_none;		-- Altera Cyclon I, II, III devices have no subtype
 
 			when DEVICE_SPARTAN3 => report "TODO: parse Spartan3 / Spartan3E / Spartan3AN device subtype." severity failure;
@@ -235,9 +237,10 @@ package body config is
 	end function;
 
 	function LUT_FANIN(DeviceString : string := "None") return positive is
-		constant MY_DEV : string := getLocalDeviceString(DeviceString);
+		constant MY_DEV : string		:= getLocalDeviceString(DeviceString);
+		constant DEV		: device_t	:= DEVICE(MY_DEV);
 	begin
-		case DEVICE(MY_DEV) is
+		case DEV is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>			return 4;
 			when DEVICE_STRATIX1 | DEVICE_STRATIX2 =>												return 4;
 			when DEVICE_STRATIX4 | DEVICE_STRATIX5 =>												return 6;
@@ -255,9 +258,10 @@ package body config is
 	end function;
 
 	function TRANSCEIVER_TYPE(DeviceString : string := "None") return T_TRANSCEIVER is
-		constant MY_DEV : string := getLocalDeviceString(DeviceString);
+		constant MY_DEV : string		:= getLocalDeviceString(DeviceString);
+		constant DEV		: device_t	:= DEVICE(MY_DEV);
 	begin
-		case DEVICE(MY_DEV) is
+		case DEV is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return TRANSCEIVER_NONE;		-- Altera Cyclon I, II, III devices have no transceivers
 
 			when DEVICE_SPARTAN3 =>																						return TRANSCEIVER_NONE;		-- Xilinx Spartan3 devices have no transceivers
