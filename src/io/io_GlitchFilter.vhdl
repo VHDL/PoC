@@ -3,7 +3,7 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
+-- Module:				 	Glitch Filter
 --
 -- Authors:				 	Patrick Lehmann
 -- 

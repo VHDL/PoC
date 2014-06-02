@@ -204,7 +204,7 @@ package body board is
 	begin
 		return resize(str, T_CONFIG_STRING'length);
 	end function;
-	
+
 	-- TODO: move to PoC.strings; find a better function name??
 	function str_trim(str : string) return string is
 	begin
@@ -213,37 +213,24 @@ package body board is
 
 	-- TODO: comment
 	function MY_DEVICE_STRING(BoardConfig : string := "None") return string is
-		constant MY_BRD : string := ite((BoardConfig = "None"), MY_BOARD, BoardConfig);
-	begin
-		if str_equal(MY_BRD, "Custom") then
-			return "Device is unknown for a custom board";
-		else
-			for i in T_BOARD'pos(T_BOARD'low) to T_BOARD'pos(T_BOARD'high) loop
-				if str_match("BOARD_" & str_to_upper(MY_BRD), str_to_upper(T_BOARD'image(T_BOARD'val(i)))) then
-					return str_trim(C_BOARD_DESCRIPTION_LIST(T_BOARD'val(i)).FPGADevice);
-				end if;
-			end loop;
-			
-			report "Unknown board name in MY_BOARD = " & MY_BRD & "." severity failure;
-			-- return statement is explicitly missing otherwise XST won't stop
-		end if;
+		constant  res : t_config_string := MY_BOARD_STRUCT(BoardConfig).FPGADevice;
+		constant  rrr : string(1 to str_length(res)) := res(1 to str_length(res));
+  begin
+		return  rrr;
 	end function MY_DEVICE_STRING;
 
 	-- TODO: comment
 	function MY_BOARD_STRUCT(BoardConfig : string := "None") return T_BOARD_DESCRIPTION is
-		constant MY_BRD : string := ite((BoardConfig = "None"), MY_BOARD, BoardConfig);
-	begin
-		if str_equal(MY_BRD, "Custom") then
-			report "A custom board has no predefined MY_BOARD_STRUCT" severity failure;
-		else
-			for i in T_BOARD'pos(T_BOARD'low) to T_BOARD'pos(T_BOARD'high) loop
-				if str_match("BOARD_" & str_to_upper(MY_BRD), str_to_upper(T_BOARD'image(T_BOARD'val(i)))) then
-					return C_BOARD_DESCRIPTION_LIST(T_BOARD'val(i));
-				end if;
-			end loop;
+		constant MY_BRD : t_config_string := ite((BoardConfig = "None"), conf(MY_BOARD), conf(BoardConfig));
+  begin
+		for i in T_BOARD loop
+			if str_match("BOARD_"&str_to_upper(MY_BRD), str_to_upper(t_board'image(i))) then
+				return  C_BOARD_DESCRIPTION_LIST(i);
+			end if;
+		end loop;
 
-			report "Unknown board name in MY_BOARD = " & MY_BRD & "." severity failure;
-			-- return statement is explicitly missing otherwise XST won't stop
-		end if;
+		report "Unknown board name in MY_BOARD = " & MY_BRD & "." severity failure;
+		-- return statement is explicitly missing otherwise XST won't stop
 	end function MY_BOARD_STRUCT;
+
 end board;
