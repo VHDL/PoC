@@ -1,12 +1,9 @@
+vhdl PoC "../../tb/common/my_config_ML505.vhdl"
 vhdl PoC "../../src/common/utils.vhdl"
-vhdl PoC "../../src/common/vectors.vhdl"
 vhdl PoC "../../src/common/strings.vhdl"
+vhdl PoC "../../src/common/vectors.vhdl"
 vhdl PoC "../../src/common/board.vhdl"
 vhdl PoC "../../src/common/config.vhdl"
-
-vhdl PoC "../../src/arith/arith_prefix_or.vhdl"
-
-vhdl PoC "../../tb/common/my_config_ML505.vhdl"
 vhdl PoC "../../tb/xilinx/MUXCY.vhd"
-
+vhdl PoC "../../src/arith/arith_prefix_or.vhdl"
 vhdl work "../../tb/arith/arith_prefix_or_tb.vhdl"
