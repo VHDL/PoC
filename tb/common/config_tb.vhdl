@@ -47,6 +47,7 @@ begin
 		report "is simulation?: " & boolean'image(SIMULATION)								severity note;
 		report "Vendor:         " & vendor_t'image(VENDOR)									severity note;
 		report "Device:         " & device_t'image(DEVICE)									severity note;
+		report "Device Number:  " & integer'image(DEVICE_NUMBER)						severity note;
 		report "Device Subtype: " & T_DEVICE_SUBTYPE'image(DEVICE_SUBTYPE)	severity note;
 		report "Device Series:  " & integer'image(DEVICE_SERIES)						severity note;
 		report "--------------------------------------------------"					severity note;
