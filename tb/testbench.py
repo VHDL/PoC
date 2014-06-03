@@ -181,7 +181,7 @@ class PoCTestbench:
 		
 #			print("%s" % (str(settingsFilePath)))		
 			print('cd "%s"' % str(tempIsimPath))
-			print('%s work.%s -prj "%s" -o "%s"' % (str(fuseExecutablePath), testbenchName, str(prjFilePath), str(exeFilePath)))
+			print('%s work.%s --incremental -prj "%s" -o "%s"' % (str(fuseExecutablePath), testbenchName, str(prjFilePath), str(exeFilePath)))
 			print('%s -tclbatch "%s"' % (str(exeFilePath), str(tclFilePath)))
 			print()
 
@@ -195,6 +195,7 @@ class PoCTestbench:
 		linkerLog = subprocess.check_output([
 			str(fuseExecutablePath),
 			('work.%s' % testbenchName),
+			'--incremental',
 			'-prj',
 			str(prjFilePath),
 			'-o',
