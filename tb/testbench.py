@@ -1,4 +1,4 @@
-#!/usr/bin/python3.4
+#!/bin/bash
 # EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
@@ -31,6 +31,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+
+""":"
+# this is a python bootloader written in bash to load the minimal required python version
+# Source:	https://github.com/apache/cassandra/blob/trunk/bin/cqlsh
+# License:	Apache License-2.0
+#
+# use default python version (/usr/bin/python) if >= 3.4.0
+python -c 'import sys; sys.exit(not (0x03040000 < sys.hexversion < 0x04000000))' 2>/dev/null && exec python "$0" "$@"
+# try to load highest installed python version first
+for pyversion in 3.9 3.8 3.7 3.6 3.5 3.4; do
+	which python$pyversion > /dev/null 2>&1 && exec python$pyversion "$0" "$@"
+done
+# if no suitable version is installed, write error message to STDERR and exit
+echo "No appropriate python version found." >&2
+exit 1
+":"""
 
 import argparse
 import configparser
@@ -402,6 +418,11 @@ def main():
 	print("========================================================================")
 	print()
 	
+	if (cmpVersion(sys.version_info, [3,4,0]) < 0):
+		print("ERROR: Used Python is to old: %s" % sys.version)
+		print("Minimal required Python version is 3.4.0")
+		return
+	
 	try:
 		# create a commandline argument parser
 		argParser = argparse.ArgumentParser(
@@ -435,7 +456,26 @@ def main():
 		test.ghdlSimulation(args.module, args.l)
 	else:
 		argParser.print_help()
-	
+
+def cmpVersion(version1, version2):
+	if (version1.major > version2[0]):
+		return 1
+	elif (version1.major == version2[0]):
+		if (version1.minor > version2[1]):
+			return 1
+		elif (version1.minor == version2[1]):
+			if (version1.micro > version2[2]):
+				return 1
+			elif (version1.major == version2[2]):
+				return 0
+			else:
+				return -1
+		else:
+			return -1
+	else:
+		return -1
+
+
 # entry point
 if __name__ == "__main__":
 	main()
