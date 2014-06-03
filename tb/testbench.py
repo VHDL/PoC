@@ -294,7 +294,7 @@ class PoCTestbench:
 					self.printDebug('command: %s' % command)
 					ghdlLog = subprocess.check_output([
 						str(ghdlExecutablePath),
-						'-a',
+						'-a', '--syn-binding',
 						('--work=%s' % regExpMatch.group('Library')),
 						str(pathlib.Path(regExpMatch.group('VHDLFile')))
 						], stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
@@ -313,13 +313,13 @@ class PoCTestbench:
 		if (self.__platform == "Windows"):
 			simulatorLog = subprocess.check_output([
 				str(ghdlExecutablePath),
-				'-r',
+				'-r', '--syn-binding',
 				'--work=work',
 				testbenchName
 				], stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 #		
 			if showLogs:
-				command = "%s -r --work=work %s" % (str(ghdlExecutablePath), testbenchName)
+				command = "%s -r --syn-binding --work=work %s" % (str(ghdlExecutablePath), testbenchName)
 				print("ghdl call: %s" % command)
 				
 				if (simulatorLog != ""):

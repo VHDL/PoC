@@ -39,6 +39,7 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
+USE			PoC.simulation.ALL;
 
 
 ENTITY arith_prng_tb IS
@@ -87,6 +88,8 @@ BEGIN
   END PROCESS;
 
 	PROCESS
+--		VARIABLE l				: LINE;
+		
 	BEGIN
 		WAIT UNTIL rising_edge(Clock);
 		
@@ -107,11 +110,14 @@ BEGIN
 			END IF;
 		END LOOP;
 		
-		IF SimError THEN
-			REPORT "SIMULATION RESULT = FAILED" SEVERITY NOTE;
-		ELSE
-			REPORT "SIMULATION RESULT = PASSED" SEVERITY NOTE;
-		END IF;
+		-- Report overall simulation result
+		printSimulationResult(NOT SimError);
+--		IF SimError THEN
+--			write(l, string'("SIMULATION RESULT = FAILED"));
+--		ELSE
+--			write(l, string'("SIMULATION RESULT = PASSED"));
+--		END IF;
+--		writeline(output, l);
 		
 		SimStop	<= TRUE;
 		WAIT;

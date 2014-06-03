@@ -34,13 +34,13 @@
 entity arith_prefix_and_tb is
 end arith_prefix_and_tb;
 
-use std.textio.all;
-
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+library	IEEE;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
 
 library PoC;
+use			PoC.simulation.ALL;
+
 
 architecture tb of arith_prefix_and_tb is
 
@@ -76,7 +76,6 @@ begin  -- tb
   -- Stimuli
   process
 		variable pass : boolean;
-		variable l    : line;
   begin
 		pass := true;
 
@@ -93,13 +92,7 @@ begin  -- tb
     end loop;
 
 		-- Report overall result
-		write(l, string'("SIMULATION RESULT = "));
-		if pass then
-			write(l, string'("PASSED"));
-		else
-			write(l, string'("FAILED"));
-		end if;
-		writeline(output, l);
+		printSimulationResult(pass);
 
     wait;  -- forever
   end process;
