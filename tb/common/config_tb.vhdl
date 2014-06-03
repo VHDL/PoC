@@ -37,6 +37,8 @@ end config_tb;
 library	PoC;
 use			PoC.config.all;
 use			PoC.utils.all;
+use			PoC.simulation.all;
+
 
 architecture tb of config_tb is
 begin
@@ -54,8 +56,8 @@ begin
 
 		-- simulation completed
 		report "                                                  "					severity note;
-		report "SIMULATION RESULT = PASSED" severity note;
+		printSimulationResult(TRUE);
 		
 		wait;
 	end process;
-end tb;
+end;
