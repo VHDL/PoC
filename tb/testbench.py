@@ -297,7 +297,7 @@ class PoCTestbench:
 						'-a',
 						('--work=%s' % regExpMatch.group('Library')),
 						str(pathlib.Path(regExpMatch.group('VHDLFile')))
-						], stderr=subprocess.STDOUT, shell=(True if (self.__platform == "Windows") else False), universal_newlines=True)
+						], stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 #		
 					if showLogs:
 						print("ghdl call: %s" % command)
@@ -316,7 +316,7 @@ class PoCTestbench:
 				'-r',
 				'--work=work',
 				testbenchName
-				], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+				], stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 #		
 			if showLogs:
 				command = "%s -r --work=work %s" % (str(ghdlExecutablePath), testbenchName)

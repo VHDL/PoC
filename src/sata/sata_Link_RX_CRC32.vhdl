@@ -3,10 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Testbench:				Tests global constants, functions and settings
+-- Package:					TODO
 --
--- Authors:					Thomas B. Preusser
---									Patrick Lehmann
+-- Authors:					Patrick Lehmann
 --
 -- Description:
 -- ------------------------------------
@@ -30,32 +29,48 @@
 -- limitations under the License.
 -- =============================================================================
 
-entity config_tb is
-end config_tb;
+LIBRARY IEEE;
+USE			IEEE.STD_LOGIC_1164.ALL;
+
+LIBRARY PoC;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+--USE			PoC.strings.ALL;
+--USE			PoC.sata.ALL;
 
 
-library	PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
+ENTITY sata_RX_CRC32 IS
+	PORT (
+		Clock				: IN	STD_LOGIC;
+		Reset				: IN	STD_LOGIC;
 
-architecture tb of config_tb is
-begin
-	process
-	begin
-		report "is simulation?: " & boolean'image(SIMULATION)								severity note;
-		report "Vendor:         " & vendor_t'image(VENDOR)									severity note;
-		report "Device:         " & device_t'image(DEVICE)									severity note;
-		report "Device Subtype: " & T_DEVICE_SUBTYPE'image(DEVICE_SUBTYPE)	severity note;
-		report "Device Series:  " & integer'image(DEVICE_SERIES)						severity note;
-		report "--------------------------------------------------"					severity note;
-		report "LUT fan-in:     " & integer'image(LUT_FANIN)								severity note;
-		report "Transceiver:    " & T_TRANSCEIVER'image(TRANSCEIVER_TYPE)		severity note;
+		Valid				: IN	STD_LOGIC;		
+		DataIn			: IN	T_SLV_32;
+		DataOut			: OUT	T_SLV_32
+	);
+END;
 
+ARCHITECTURE rtl OF sata_RX_CRC32 IS
+	CONSTANT CRC32_POLYNOMIAL		: BIT_VECTOR(35 DOWNTO 0) := x"104C11DB7";
+	CONSTANT CRC32_INIT					: T_SLV_32								:= x"52325032";
+	
+BEGIN
 
-		-- simulation completed
-		report "                                                  "					severity note;
-		report "SIMULATION RESULT = PASSED" severity note;
-		
-		wait;
-	end process;
-end tb;
+	CRC : ENTITY PoC.comm_crc
+		GENERIC MAP (
+			GEN							=> CRC32_POLYNOMIAL(32 DOWNTO 0),		-- Generator Polynom
+			BITS						=> 32																-- Number of Bits to be processed in parallel
+		)
+		PORT MAP (
+			clk							=> Clock,														-- Clock
+			
+			set							=> Reset,														-- Parallel Preload of Remainder
+			init						=> CRC32_INIT,											
+			step						=> Valid,														-- Process Input Data (MSB first)
+			din							=> DataIn,
+
+			rmd							=> DataOut,													-- Remainder
+			zero						=> OPEN															-- Remainder is Zero
+		);
+	
+END;

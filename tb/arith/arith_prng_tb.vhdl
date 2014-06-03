@@ -67,13 +67,13 @@ ARCHITECTURE test OF arith_prng_tb IS
 		x"9A", x"34", x"69", x"D3", x"A7", x"4F", x"9E", x"3C", x"78", x"F0", x"E0", x"C1", x"82", x"04", x"09", x"12"
 	);
 
-	SHARED VARIABLE SimStop		: BOOLEAN				:= FALSE;
-	SHARED VARIABLE SimError	: BOOLEAN				:= FALSE;
+	SIGNAL SimStop			: BOOLEAN				:= FALSE;
+	SIGNAL SimError			: BOOLEAN				:= FALSE;
 
-	SIGNAL Clock							: STD_LOGIC			:= '1';
-	SIGNAL Reset							: STD_LOGIC			:= '0';
-	SIGNAL Test_got						: STD_LOGIC			:= '0';
-	SIGNAL PRNG_Value					: T_SLV_8;
+	SIGNAL Clock				: STD_LOGIC			:= '1';
+	SIGNAL Reset				: STD_LOGIC			:= '0';
+	SIGNAL Test_got			: STD_LOGIC			:= '0';
+	SIGNAL PRNG_Value		: T_SLV_8;
 	
 BEGIN
 
