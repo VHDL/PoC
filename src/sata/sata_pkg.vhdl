@@ -37,6 +37,7 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
+USE			PoC.sata_TransceiverTypes.ALL;
 
 
 PACKAGE sata IS
@@ -946,7 +947,7 @@ PACKAGE sata IS
 			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			TX_CharIsK								: IN	T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
 
-			DebugPortOut	: OUT T_DBG_TRANSOUT_VECTOR(PORTS-1 DOWNTO 0);
+--			DebugPortOut	: OUT T_DBG_TRANSOUT_VECTOR(PORTS-1 DOWNTO 0);
 			
 			-- vendor specific signals (Altera GXB ports)
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -992,7 +993,7 @@ PACKAGE sata IS
 			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			TX_CharIsK								: IN	T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
 
-			DebugPortOut	: OUT T_DBG_TRANSOUT_VECTOR(PORTS-1 DOWNTO 0);
+--			DebugPortOut	: OUT T_DBG_TRANSOUT_VECTOR(PORTS-1 DOWNTO 0);
 			
 			-- vendor specific signals (Altera GXB ports)
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -1170,7 +1171,7 @@ PACKAGE BODY sata IS
 	END;
 	
 	FUNCTION to_slv(reg : T_ATA_DEVICE_REGISTER_STATUS) RETURN STD_LOGIC_VECTOR IS
-		VARIABLE Result				: T_SLV_8		:= Z8;
+		VARIABLE Result				: T_SLV_8		:= (OTHERS => '0');
 	BEGIN
 		Result(0)							:= reg.Error;
 		Result(3)							:= reg.DataRequest;
@@ -1196,7 +1197,7 @@ PACKAGE BODY sata IS
 	END;
 	
 	FUNCTION to_slv(reg	: T_ATA_DEVICE_REGISTER_ERROR) RETURN STD_LOGIC_VECTOR IS
-		VARIABLE Result							: T_SLV_8			:= Z8;
+		VARIABLE Result							: T_SLV_8			:= (OTHERS => '0');
 	BEGIN
 		Result(1)										:= reg.NoMediaPresent;
 		Result(2)										:= reg.CommandAborted;
@@ -1220,7 +1221,7 @@ PACKAGE BODY sata IS
 	END;
 	
 	FUNCTION to_slv(reg	: T_ATA_DEVICE_FLAGS) RETURN STD_LOGIC_VECTOR IS
-		VARIABLE Result							: T_SLV_8			:= Z8;
+		VARIABLE Result							: T_SLV_8			:= (OTHERS => '0');
 	BEGIN
 		Result(5)										:= reg.Direction;
 		Result(6)										:= reg.Interrupt;

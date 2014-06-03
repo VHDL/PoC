@@ -29,7 +29,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library	IEEE;
 use			IEEE.std_logic_1164.all;
@@ -41,26 +41,36 @@ use			PoC.utils.all;
 
 package strings is
 	-- Type declarations
-	-- ==========================================================================
+	-- ===========================================================================
+	SUBTYPE T_RAWCHAR				IS STD_LOGIC_VECTOR(7 DOWNTO 0);
+	TYPE		T_RAWSTRING			IS ARRAY (NATURAL RANGE <>) OF T_RAWCHAR;
 	
 	-- testing area:
-	-- ==========================================================================
+	-- ===========================================================================
 	FUNCTION to_IPStyle(str : STRING)			RETURN T_IPSTYLE;
 	
 	-- to_char
 	FUNCTION to_char(value : STD_LOGIC)		RETURN CHARACTER;
 	FUNCTION to_char(value : INTEGER)			RETURN CHARACTER;
+	FUNCTION to_char(rawchar : T_RAWCHAR) RETURN CHARACTER;	
 
 	-- to_string
 	FUNCTION to_string(value : BOOLEAN) RETURN STRING;	
 	FUNCTION to_string(value : INTEGER; base : POSITIVE := 10) RETURN STRING;
 	FUNCTION to_string(slv : STD_LOGIC_VECTOR; format : CHARACTER; length : NATURAL := 0; fill : CHARACTER := '0') RETURN STRING;
+	FUNCTION to_string(rawstring : T_RAWSTRING) RETURN STRING;
 
 	-- to_*
 	FUNCTION to_digit(chr : CHARACTER; base : CHARACTER := 'd') RETURN INTEGER;
 	FUNCTION to_nat(str : STRING; base : CHARACTER := 'd') RETURN INTEGER;
 	
+	-- to_raw*
+	FUNCTION to_rawchar(char : CHARACTER) RETURN T_RAWCHAR;
+	FUNCTION to_rawstring(stri : STRING)	RETURN T_RAWSTRING;
+	
+	-- resize
 	FUNCTION resize(str : STRING; size : POSITIVE; FillChar : CHARACTER := NUL) RETURN STRING;
+	FUNCTION resize(rawstr : T_RAWSTRING; size : POSITIVE; FillChar : T_RAWCHAR := x"00") RETURN T_RAWSTRING;
 
 	-- Character functions
 	FUNCTION to_lower(char : CHARACTER) RETURN CHARACTER;
@@ -92,7 +102,7 @@ package body strings is
 	END FUNCTION;
 
 	-- to_char
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	FUNCTION to_char(value : STD_LOGIC) RETURN CHARACTER IS
 	BEGIN
 		CASE value IS
@@ -132,8 +142,13 @@ package body strings is
 		END CASE;
 	END FUNCTION;
 
+	FUNCTION to_char(rawchar : T_RAWCHAR) RETURN CHARACTER IS
+	BEGIN
+		RETURN CHARACTER'val(to_integer(unsigned(rawchar)));
+	END;
+
 	-- to_string
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	FUNCTION to_string(value : BOOLEAN) RETURN STRING IS
 	BEGIN
 		RETURN ite(value, "TRUE", "FALSE");
@@ -195,8 +210,18 @@ package body strings is
 		RETURN Result;
 	END FUNCTION;
 
+	FUNCTION to_string(rawstring : T_RAWSTRING) RETURN STRING IS
+		VARIABLE str		: STRING(1 TO rawstring'length);
+	BEGIN
+		FOR I IN rawstring'low TO rawstring'high LOOP
+			str(I - rawstring'low + 1)	:= to_char(rawstring(I));
+		END LOOP;
+	
+		RETURN str;
+	END;
+
 	-- to_*
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	FUNCTION to_digit(chr : CHARACTER; base : CHARACTER := 'd') RETURN INTEGER IS
 	BEGIN
 		CASE base IS
@@ -276,6 +301,25 @@ package body strings is
 		END IF;
 	END FUNCTION;
 
+	-- to_raw*
+	-- ===========================================================================
+	FUNCTION to_rawchar(char : CHARACTER) RETURN T_RAWCHAR IS
+	BEGIN
+		RETURN std_logic_vector(to_unsigned(CHARACTER'pos(char), T_RAWCHAR'length));
+	END;
+
+	FUNCTION to_rawstring(stri : STRING) RETURN T_RAWSTRING IS
+		VARIABLE rawstr			: T_RAWSTRING(0 TO stri'length - 1);
+	BEGIN
+		FOR I IN stri'low TO stri'high LOOP
+			rawstr(I - stri'low)	:= to_rawchar(stri(I));
+		END LOOP;
+	
+		RETURN rawstr;
+	END;
+
+	-- resize
+	-- ===========================================================================
 	FUNCTION resize(str : STRING; size : POSITIVE; FillChar : CHARACTER := NUL) RETURN STRING IS
 		CONSTANT MaxLength	: POSITIVE							:= imin(size, str'length);
 		VARIABLE Result			: STRING(1 TO size)			:= (OTHERS => FillChar);
@@ -284,9 +328,16 @@ package body strings is
 		RETURN Result;
 	END FUNCTION;
 
+	FUNCTION resize(rawstr : T_RAWSTRING; size : POSITIVE; FillChar : T_RAWCHAR := x"00") RETURN T_RAWSTRING IS
+		CONSTANT MaxLength	: POSITIVE																					:= imin(size, rawstr'length);
+		VARIABLE Result			: T_RAWSTRING(rawstr'low TO rawstr'low + size - 1)	:= (OTHERS => FillChar);
+	BEGIN
+		Result(rawstr'low TO rawstr'low + MaxLength - 1) := rawstr(rawstr'low TO rawstr'low + MaxLength - 1);
+		RETURN Result;
+	END;
 
 	-- Character functions
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	FUNCTION to_lower(char : CHARACTER) RETURN CHARACTER IS
 	BEGIN
 		IF ((CHARACTER'pos('A') <= CHARACTER'pos(char)) AND (CHARACTER'pos(char) <= CHARACTER'pos('Z'))) THEN
@@ -306,7 +357,7 @@ package body strings is
 	END FUNCTION;
 	
 	-- String functions
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	FUNCTION str_length(str : STRING) RETURN NATURAL IS
 		VARIABLE l	: NATURAL		:= 0;
 	BEGIN

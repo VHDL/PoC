@@ -44,14 +44,15 @@ PACKAGE io IS
 --			MHz = 1000 kHz;
 --			GHz = 1000 MHz;
 --		END UNITS;
-	
-	TYPE T_IO_TRISTATE IS RECORD
-		I			: STD_LOGIC;					-- input / from device to FPGA
-		O			: STD_LOGIC;					-- output / from FPGA to device
-		T			: STD_LOGIC;					-- output disable / tristate enable
-	END RECORD;
 
-	TYPE T_IO_TRISTATE_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_IO_TRISTATE;
+	-- not yet supported by Xilinx ISE Simulator - the subsignal I (with reverse direction) is always 'U'
+--	TYPE T_IO_TRISTATE IS RECORD
+--		I			: STD_LOGIC;					-- input / from device to FPGA
+--		O			: STD_LOGIC;					-- output / from FPGA to device
+--		T			: STD_LOGIC;					-- output disable / tristate enable
+--	END RECORD;
+
+--	TYPE T_IO_TRISTATE_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_IO_TRISTATE;
 	
 	-- IICBusController
 	-- ==========================================================================================================================================================

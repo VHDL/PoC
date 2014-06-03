@@ -6,6 +6,8 @@
 -- Package:					TODO
 --
 -- Authors:					Patrick Lehmann
+--									Thomas Frank
+--									Steffen Koehler
 --
 -- Description:
 -- ------------------------------------
@@ -37,7 +39,8 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
---USE			PoC.sata.ALL;
+USE			PoC.sata.ALL;
+USE			PoC.sata_TransceiverTypes.ALL;
 
 
 ENTITY sata_SATATransceiver IS
