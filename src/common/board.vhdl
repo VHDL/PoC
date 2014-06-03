@@ -212,19 +212,11 @@ package body board is
 	end function;
 
 	-- TODO: comment
-	function MY_DEVICE_STRING(BoardConfig : string := "None") return string is
-		constant  res : t_config_string := MY_BOARD_STRUCT(BoardConfig).FPGADevice;
-		constant  rrr : string(1 to str_length(res)) := res(1 to str_length(res));
-  begin
-		return  rrr;
-	end function MY_DEVICE_STRING;
-
-	-- TODO: comment
 	function MY_BOARD_STRUCT(BoardConfig : string := "None") return T_BOARD_DESCRIPTION is
-		constant MY_BRD : t_config_string := ite((BoardConfig = "None"), conf(MY_BOARD), conf(BoardConfig));
+		constant MY_BRD : T_CONFIG_STRING := ite((BoardConfig = "None"), conf(MY_BOARD), conf(BoardConfig));
   begin
 		for i in T_BOARD loop
-			if str_match("BOARD_"&str_to_upper(MY_BRD), str_to_upper(t_board'image(i))) then
+			if str_match("BOARD_" & str_to_upper(MY_BRD), str_to_upper(t_board'image(i))) then
 				return  C_BOARD_DESCRIPTION_LIST(i);
 			end if;
 		end loop;
@@ -233,4 +225,11 @@ package body board is
 		-- return statement is explicitly missing otherwise XST won't stop
 	end function MY_BOARD_STRUCT;
 
+	-- TODO: comment
+	function MY_DEVICE_STRING(BoardConfig : string := "None") return string is
+		constant DEV_STRING	: T_CONFIG_STRING											:= MY_BOARD_STRUCT(BoardConfig).FPGADevice;
+		constant Result			: string(1 to str_length(DEV_STRING))	:= DEV_STRING(1 to str_length(DEV_STRING));
+  begin
+		return Result;
+	end function MY_DEVICE_STRING;
 end board;

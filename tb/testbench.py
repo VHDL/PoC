@@ -210,7 +210,7 @@ class PoCTestbench:
 		print()
 		# check output
 		matchPos = simulatorLog.index("SIMULATION RESULT = ")
-		if (matchPos > 0):
+		if (matchPos >= 0):
 			if (simulatorLog[matchPos + 20 : matchPos + 26] == "PASSED"):
 				print("Testbench '%s': PASSED" % testbenchName)
 			elif (simulatorLog[matchPos + 20: matchPos + 26] == "FAILED"):
@@ -294,10 +294,10 @@ class PoCTestbench:
 					self.printDebug('command: %s' % command)
 					ghdlLog = subprocess.check_output([
 						str(ghdlExecutablePath),
-						'-a',
+						'-a', '--syn-binding',
 						('--work=%s' % regExpMatch.group('Library')),
 						str(pathlib.Path(regExpMatch.group('VHDLFile')))
-						], stderr=subprocess.STDOUT, shell=(True if (self.__platform == "Windows") else False), universal_newlines=True)
+						], stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 #		
 					if showLogs:
 						print("ghdl call: %s" % command)
@@ -313,13 +313,13 @@ class PoCTestbench:
 		if (self.__platform == "Windows"):
 			simulatorLog = subprocess.check_output([
 				str(ghdlExecutablePath),
-				'-r',
+				'-r', '--syn-binding',
 				'--work=work',
 				testbenchName
-				], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+				], stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 #		
 			if showLogs:
-				command = "%s -r --work=work %s" % (str(ghdlExecutablePath), testbenchName)
+				command = "%s -r --syn-binding --work=work %s" % (str(ghdlExecutablePath), testbenchName)
 				print("ghdl call: %s" % command)
 				
 				if (simulatorLog != ""):
@@ -329,13 +329,13 @@ class PoCTestbench:
 		elif (self.__platform == "Linux"):
 			elaborateLog = subprocess.check_output([
 				str(ghdlExecutablePath),
-				'-e',
+				'-e', '--syn-binding',
 				'--work=work',
 				testbenchName
 				], stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 #		
 			if showLogs:
-				command = "%s -e --work=work %s" % (str(ghdlExecutablePath), testbenchName)
+				command = "%s -e --syn-binding --work=work %s" % (str(ghdlExecutablePath), testbenchName)
 				print("ghdl call: %s" % command)
 				
 				if (elaborateLog != ""):
@@ -361,7 +361,7 @@ class PoCTestbench:
 
 		print()
 		matchPos = simulatorLog.index("SIMULATION RESULT = ")
-		if (matchPos > 0):
+		if (matchPos >= 0):
 			if (simulatorLog[matchPos + 20 : matchPos + 26] == "PASSED"):
 				print("Testbench '%s': PASSED" % testbenchName)
 			elif (simulatorLog[matchPos + 20: matchPos + 26] == "FAILED"):
