@@ -126,8 +126,8 @@ package body config is
 
 	-- purpose: extract vendor from MY_DEVICE
 	function VENDOR(DeviceString : string := "None") return vendor_t is
-		constant MY_DEV	: string					:= getLocalDeviceString(DeviceString);
-		constant VEN		: string(1 to 2)	:= MY_DEV(1 to 2);																-- work around for GHDL
+		constant MY_DEV	: string(1 to 4) := resize(getLocalDeviceString(DeviceString), 4);
+		constant VEN		: string(1 to 2) := MY_DEV(1 to 2);
 	begin	-- VENDOR
 		case VEN is
 			when "XC"	 => return VENDOR_XILINX;
@@ -139,9 +139,9 @@ package body config is
 
 	-- purpose: extract device from MY_DEVICE
 	function DEVICE(DeviceString : string := "None") return device_t is
-		constant MY_DEV	: string					:= getLocalDeviceString(DeviceString);
-		constant DEV		: string(1 to 2)	:= MY_DEV(3 to 4);
-		constant VEN		: vendor_t				:= VENDOR(MY_DEV);
+		constant MY_DEV	: string(1 to 4) 	:= resize(getLocalDeviceString(DeviceString), 4);
+		constant VEN		: vendor_t				:= VENDOR(MY_DEV(1 to 2));
+		constant DEV		: string(1 to  2)	:= MY_DEV(3 to 4);
 	begin	-- DEVICE
 		case VEN is
 			when VENDOR_ALTERA =>

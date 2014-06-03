@@ -214,9 +214,8 @@ package body board is
 	-- TODO: comment
 	function MY_DEVICE_STRING(BoardConfig : string := "None") return string is
 		constant  res : t_config_string := MY_BOARD_STRUCT(BoardConfig).FPGADevice;
-		constant  rrr : string(1 to str_length(res)) := res(1 to str_length(res));
   begin
-		return  rrr;
+		return  res(1 to str_length(res));
 	end function MY_DEVICE_STRING;
 
 	-- TODO: comment
