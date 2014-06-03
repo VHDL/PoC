@@ -34,6 +34,7 @@
 entity arith_prefix_or_tb is
 end arith_prefix_or_tb;
 
+use std.textio.all;
 
 library IEEE;
 use IEEE.std_logic_1164.all;
@@ -74,18 +75,33 @@ begin  -- tb
 
   -- Stimuli
   process
+		variable pass : boolean;
+		variable l    : line;
   begin
+		pass := true;
+
+		-- Exhaustive Testing
     for i in 0 to 2**N-1 loop
       x <= std_logic_vector(to_unsigned(i, N));
       wait for 10 ns;
       for j in 0 to N-1 loop
-        assert (y(j) = '1') = (x(j downto 0) /= (j downto 0 => '0'))
-          report "Wrong result for "&integer'image(i)&" / "&integer'image(j)
-          severity error;
-      end loop;
+        if (y(j) = '1') /= (x(j downto 0) /= (j downto 0 => '0')) then
+          report "Wrong result for "&integer'image(i)&" / "&integer'image(j) severity error;
+					pass := false;
+				end if;
+			end loop;
     end loop;
-    report "Test completed." severity note;
-    wait;
+
+		-- Report overall result
+		write(l, string'("SIMULATION RESULT = "));
+		if pass then
+			write(l, string'("PASSED"));
+		else
+			write(l, string'("FAILED"));
+		end if;
+		writeline(output, l);
+
+    wait;  -- forever
   end process;
 
 end tb;
