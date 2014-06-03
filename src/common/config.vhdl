@@ -129,8 +129,8 @@ package body config is
 
 	-- purpose: extract vendor from MY_DEVICE
 	function VENDOR(DeviceString : string := "None") return vendor_t is
-		constant MY_DEV	: string					:= getLocalDeviceString(DeviceString);
-		constant VEN		: string(1 to 2)	:= MY_DEV(1 to 2);																-- work around for GHDL
+		constant MY_DEV	: string(1 to 15) := resize(getLocalDeviceString(DeviceString), 15);
+		constant VEN		: string(1 to 2)  := MY_DEV(1 to 2);
 	begin	-- VENDOR
 		case VEN is
 			when "XC"	 => return VENDOR_XILINX;
@@ -142,9 +142,9 @@ package body config is
 
 	-- purpose: extract device from MY_DEVICE
 	function DEVICE(DeviceString : string := "None") return device_t is
-		constant MY_DEV	: string					:= getLocalDeviceString(DeviceString);
-		constant DEV		: string(1 to 2)	:= MY_DEV(3 to 4);
-		constant VEN		: vendor_t				:= VENDOR(MY_DEV);
+		constant MY_DEV	: string(1 to 15)	:= resize(getLocalDeviceString(DeviceString), 15);
+		constant VEN		: vendor_t				:= VENDOR(MY_DEV(1 to 2));
+		constant DEV		: string(1 to  2)	:= MY_DEV(3 to 4);
 	begin	-- DEVICE
 		case VEN is
 			when VENDOR_ALTERA =>
@@ -187,7 +187,7 @@ package body config is
 	end function;
 
 	function DEVICE_SUBTYPE(DeviceString : string := "None") return t_device_subtype is
-		constant MY_DEV		: string					:= getLocalDeviceString(DeviceString);
+		constant MY_DEV		: string(1 to 15)	:= resize(getLocalDeviceString(DeviceString), 15);
 		constant DEV			: device_t				:= DEVICE(MY_DEV);
 		constant DEV_SUB	: string(1 to 2)	:= MY_DEV(5 to 6);																-- work around for GHDL
 	begin
@@ -261,8 +261,8 @@ package body config is
 	end function;
 
 	function TRANSCEIVER_TYPE(DeviceString : string := "None") return T_TRANSCEIVER is
-		constant MY_DEV : string		:= getLocalDeviceString(DeviceString);
-		constant DEV		: device_t	:= DEVICE(MY_DEV);
+		constant MY_DEV : string(1 to 15) := resize(getLocalDeviceString(DeviceString), 15);
+		constant DEV		: device_t			 := DEVICE(MY_DEV);
 	begin
 		case DEV is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return TRANSCEIVER_NONE;		-- Altera Cyclon I, II, III devices have no transceivers
