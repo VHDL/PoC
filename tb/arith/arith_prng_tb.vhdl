@@ -102,7 +102,7 @@ BEGIN
 			
 --			REPORT "I=" & INTEGER'image(I) & " Value=" & to_string(PRNG_Value, 'h') & " Expected=" & to_string(COMPARE_LIST_8_BITS(I), 'h');
 			IF (PRNG_Value /= COMPARE_LIST_8_BITS(I)) THEN
-				SimError	<= TRUE;
+				SimError <= TRUE;
 				EXIT;
 			END IF;
 		END LOOP;
@@ -113,7 +113,7 @@ BEGIN
 			REPORT "SIMULATION RESULT = PASSED" SEVERITY NOTE;
 		END IF;
 		
-		SimStop		<= TRUE;
+		SimStop	<= TRUE;
 		WAIT;
 	END PROCESS;
 
