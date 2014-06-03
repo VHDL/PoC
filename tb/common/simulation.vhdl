@@ -43,39 +43,41 @@ USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
 
 
-PACKAGE simulation IS
-	CONSTANT U8								: T_SLV_8							:= (OTHERS => 'U');
-	CONSTANT U16							: T_SLV_16						:= (OTHERS => 'U');
-	CONSTANT U24							: T_SLV_24						:= (OTHERS => 'U');
-	CONSTANT U32							: T_SLV_32						:= (OTHERS => 'U');
+package simulation is
+	constant U8								: T_SLV_8							:= (others => 'U');
+	constant U16							: T_SLV_16						:= (others => 'U');
+	constant U24							: T_SLV_24						:= (others => 'U');
+	constant U32							: T_SLV_32						:= (others => 'U');
 
-	CONSTANT D8								: T_SLV_8							:= (OTHERS => '-');
-	CONSTANT D16							: T_SLV_16						:= (OTHERS => '-');
-	CONSTANT D24							: T_SLV_24						:= (OTHERS => '-');
-	CONSTANT D32							: T_SLV_32						:= (OTHERS => '-');
+	constant D8								: T_SLV_8							:= (others => '-');
+	constant D16							: T_SLV_16						:= (others => '-');
+	constant D24							: T_SLV_24						:= (others => '-');
+	constant D32							: T_SLV_32						:= (others => '-');
 
-	PROCEDURE printSimulationResult(SimPassed : BOOLEAN);
+	procedure printSimulationResult(SimPassed : boolean);
+	
+	-- TODO: integrate VCD simulation functions and procedures from sim_value_change_dump.vhdl here
 	
 	-- checksum functions
-	-- ================================================================
---	FUNCTION crc(
-END;
+	-- ===========================================================================
+	-- TODO: move checksum functions here
+end;
 
 
-PACKAGE BODY simulation IS
+package body simulation is
 
-	PROCEDURE printSimulationResult(SimPassed : BOOLEAN) IS
-		VARIABLE l				: LINE;
-	BEGIN
-		IF SimPassed THEN
+	procedure printSimulationResult(SimPassed : boolean) is
+		variable l				: line;
+	begin
+		if SimPassed then
 			write(l, string'("SIMULATION RESULT = PASSED"));
-		ELSE
+		else
 			write(l, string'("SIMULATION RESULT = FAILED"));
-		END IF;
+		end if;
 		writeline(output, l);
-	END PROCEDURE;
+	end procedure;
 
 	-- checksum functions
-	-- ================================================================
+	-- ===========================================================================
 
-END PACKAGE BODY;
+end package body;

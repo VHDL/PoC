@@ -233,6 +233,15 @@ package body config is
 					report "Unknown Virtex6 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 
+			when DEVICE_KINTEX7 =>
+				if (str_pos(MY_DEV(6 TO MY_DEV'high), 'T') > 0) then
+					return device_subtype_t;
+--				elsif ((MY_DEV(5 to 6) = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then
+--					return "SXT";
+				else
+					report "Unknown Virtex6 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
+				end if;
+				
 			when others => report "Transceiver type is unknown for the given device." severity failure;
 									-- return statement is explicitly missing otherwise XST won't stop
 		end case;
@@ -261,8 +270,9 @@ package body config is
 	end function;
 
 	function TRANSCEIVER_TYPE(DeviceString : string := "None") return T_TRANSCEIVER is
-		constant MY_DEV : string(1 to 15) := resize(getLocalDeviceString(DeviceString), 15);
-		constant DEV		: device_t			 := DEVICE(MY_DEV);
+		constant MY_DEV		: string(1 to 15)		:= resize(getLocalDeviceString(DeviceString), 15);
+		constant DEV			: device_t					:= DEVICE(MY_DEV);
+		constant DEV_SUB	: t_device_subtype	:= DEVICE_SUBTYPE(MY_DEV);
 	begin
 		case DEV is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return TRANSCEIVER_NONE;		-- Altera Cyclon I, II, III devices have no transceivers
@@ -270,34 +280,42 @@ package body config is
 			when DEVICE_SPARTAN3 =>																						return TRANSCEIVER_NONE;		-- Xilinx Spartan3 devices have no transceivers
 
 			when DEVICE_VIRTEX5 =>
-				case DEVICE_SUBTYPE(MY_DEV) is
+				case DEV_SUB is
 --					when "LX" =>									return TRANSCEIVER_;
 --					when "SXT" =>									return TRANSCEIVER_;
 					when DEVICE_SUBTYPE_LXT =>		return TRANSCEIVER_GTP_DUAL;
 --					when "FXT" =>									return TRANSCEIVER_;
 
-					when others => report "Unknown Virtex5 subtype: " & t_device_subtype'image(DEVICE_SUBTYPE(MY_DEV)) severity failure;
+					when others => report "Unknown Virtex5 subtype: " & t_device_subtype'image(DEV_SUB) severity failure;
 				end case;
 
 			when DEVICE_VIRTEX6 =>
-				case DEVICE_SUBTYPE(MY_DEV) is
+				case DEV_SUB is
 --					when "LX" =>									return TRANSCEIVER_;
 --					when "SXT" =>									return TRANSCEIVER_;
 --					when "CXT" =>									return TRANSCEIVER_;
 					when DEVICE_SUBTYPE_LXT =>		return TRANSCEIVER_GTXE1;
 --					when "HXT" =>									return TRANSCEIVER_;
 
-					when others => report "Unknown Virtex6 subtype: " & t_device_subtype'image(DEVICE_SUBTYPE(MY_DEV)) severity failure;
+					when others => report "Unknown Virtex6 subtype: " & t_device_subtype'image(DEV_SUB) severity failure;
 				end case;
 
 			when DEVICE_VIRTEX7 =>
-				case DEVICE_SUBTYPE(MY_DEV) is
-					when device_subtype_xt =>			return TRANSCEIVER_GTXE2;
+				case DEV_SUB is
+					when DEVICE_SUBTYPE_XT =>			return TRANSCEIVER_GTXE2;
 --					when "T" =>										return TRANSCEIVER_;
 
-					when others => report "Unknown Virtex7 subtype: " & t_device_subtype'image(DEVICE_SUBTYPE(MY_DEV)) severity failure;
+					when others => report "Unknown Virtex7 subtype: " & t_device_subtype'image(DEV_SUB) severity failure;
 				end case;
 
+			when DEVICE_KINTEX7 =>
+				case DEV_SUB is
+					when DEVICE_SUBTYPE_T =>			return TRANSCEIVER_GTXE2;
+--					when "T" =>										return TRANSCEIVER_;
+
+					when others => report "Unknown Virtex7 subtype: " & t_device_subtype'image(DEV_SUB) severity failure;
+				end case;
+				
 			when others => report "Unknown device." severity failure;
 									-- return statement is explicitly missing otherwise XST won't stop
 		end case;

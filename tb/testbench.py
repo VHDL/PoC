@@ -128,7 +128,24 @@ class PoCTestbench:
 	def isimSimulation(self, module, showLogs):
 		if (len(self.__pocConfig.options("Xilinx-ISE")) == 0):
 			print("Xilinx ISE is not configured on this system.")
-			print("Run 'PoC.py --configure' to configure your Xilinx ISE environment.")
+			print("Run 'poc.py --configure' to configure your Xilinx ISE environment.")
+			return
+
+		iseInstallationDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['InstallationDirectory'])
+		iseBinaryDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['BinaryDirectory'])
+			
+		if (os.environ.get('XILINX') == None):
+			settingsFilePath = iseInstallationDirectoryPath
+			if (self.__platform == "Windows"):
+				settingsFilePath /= "settings64.bat"
+			elif (self.__platform == "Linux"):
+				settingsFilePath /= "settings64.sh"
+			else:
+				print("ERROR: Platform not supported!")
+				return
+
+			print("ERROR: Xilinx ISE environment is not loaded in this shell.")				
+			print("Run '%s' to load your Xilinx ISE environment." % str(settingsFilePath))
 			return
 	
 		temp = module.split('_', 1)
@@ -143,12 +160,9 @@ class PoCTestbench:
 			self.printDebug("temporary directors: %s" % str(tempIsimPath))
 			tempIsimPath.mkdir(parents=True)
 
-		iseInstallationDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['InstallationDirectory'])
-		iseBinaryDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['BinaryDirectory'])
 		vhpcompExecutablePath = iseBinaryDirectoryPath / ("vhpcomp.exe" if (self.__platform == "Windows") else "vhpcomp")
 		fuseExecutablePath = iseBinaryDirectoryPath / ("fuse.exe" if (self.__platform == "Windows") else "fuse")
 		
-#		settingsFilePath = iseInstallationDirectoryPath / "settings64.bat"
 		section = "%s.%s" % (fullNamespace, moduleName)
 		testbenchName = self.__tbConfig[section]['TestbenchModule']
 		prjFilePath =  pathlib.Path(self.__tbConfig[section]['iSimProjectFile'])
@@ -209,7 +223,7 @@ class PoCTestbench:
 	
 		print()
 		# check output
-		matchPos = simulatorLog.index("SIMULATION RESULT = ")
+		matchPos = simulatorLog.find("SIMULATION RESULT = ")
 		if (matchPos >= 0):
 			if (simulatorLog[matchPos + 20 : matchPos + 26] == "PASSED"):
 				print("Testbench '%s': PASSED" % testbenchName)
@@ -271,7 +285,7 @@ class PoCTestbench:
 			print()
 		
 			print('cd "%s"' % str(tempGhdlPath))
-			print('%s -a --work=PoC "%s"' % (str(ghdlExecutablePath), 'path/to/sourcefile.vhdl'))
+			print('%s -a --syn-binding --work=PoC "%s"' % (str(ghdlExecutablePath), 'path/to/sourcefile.vhdl'))
 			print('%s -r --work=work work.%s' % (str(ghdlExecutablePath), testbenchName))
 			print()
 
@@ -290,7 +304,7 @@ class PoCTestbench:
 				regExpMatch = regexp.match(line)
 				
 				if (regExpMatch is not None):
-					command = '%s -a --work=%s "%s"' % (str(ghdlExecutablePath), regExpMatch.group('Library'), str(pathlib.Path(regExpMatch.group('VHDLFile'))))
+					command = '%s -a --syn-binding --work=%s "%s"' % (str(ghdlExecutablePath), regExpMatch.group('Library'), str(pathlib.Path(regExpMatch.group('VHDLFile'))))
 					self.printDebug('command: %s' % command)
 					ghdlLog = subprocess.check_output([
 						str(ghdlExecutablePath),
@@ -360,7 +374,7 @@ class PoCTestbench:
 			return
 
 		print()
-		matchPos = simulatorLog.index("SIMULATION RESULT = ")
+		matchPos = simulatorLog.find("SIMULATION RESULT = ")
 		if (matchPos >= 0):
 			if (simulatorLog[matchPos + 20 : matchPos + 26] == "PASSED"):
 				print("Testbench '%s': PASSED" % testbenchName)
