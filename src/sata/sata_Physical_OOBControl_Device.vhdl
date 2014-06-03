@@ -349,7 +349,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	TC1 : ENTITY sata_L_IO.TimingCounter
+	TC1 : ENTITY PoC.io_TimingCounter
 		GENERIC MAP (							-- timing table
 			TIMING_TABLE				=> T_NATVEC'(				--		 880 us
 															0 => TimingToCycles_ns(OOB_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN1_FREQ_MHZ)),					-- slot 0
@@ -363,7 +363,7 @@ BEGIN
 			Timeout							=> TC1_Timeout
 		);
 	
-	TC2 : ENTITY sata_L_IO.TimingCounter
+	TC2 : ENTITY PoC.io_TimingCounter
 		GENERIC MAP (							-- timing table
 			TIMING_TABLE				=> T_NATVEC'(				--			ns
 															0 => TimingToCycles_ns(COMRESET_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN1_FREQ_MHZ)),			-- slot 0

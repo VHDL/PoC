@@ -248,6 +248,54 @@ BEGIN
 					VSS_Private_Out						=> VSS_Private_Out
 				);
 		END GENERATE;	-- Xilinx.Virtex6.LXT
+		genS7GTX : IF (DEVICE_SERIES = 7) GENERATE
+			-- TODO: check für GTP, GTX, GTH
+			S7GTX : sata_Transceiver_Series7_GTXE2
+				GENERIC MAP (
+					DEBUG											=> DEBUG					,
+					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
+					PORTS											=> PORTS,													-- Number of Ports per Transceiver
+					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
+				)
+				PORT MAP (
+					SATA_Clock								=> SATA_Clock,
+
+					ResetDone									=> ResetDone,
+					ClockNetwork_Reset				=> ClockNetwork_Reset,
+					ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,
+
+					RP_Reconfig								=> RP_Reconfig,
+					RP_ReconfigComplete				=> RP_ReconfigComplete,
+					RP_ConfigReloaded					=> RP_ConfigReloaded,
+					RP_Lock										=> RP_Lock,
+					RP_Locked									=> RP_Locked,
+
+					SATA_Generation						=> SATA_Generation,
+					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
+					
+					Command										=> Command,
+					Status										=> Status,
+					RX_Error									=> RX_Error,
+					TX_Error									=> TX_Error,
+
+--					DebugPortOut							=> DebugPortOut,
+
+					RX_OOBStatus							=> RX_OOBStatus,
+					RX_Data										=> RX_Data,
+					RX_CharIsK								=> RX_CharIsK,
+					RX_IsAligned							=> RX_IsAligned,
+					
+					TX_OOBCommand							=> TX_OOBCommand,
+					TX_OOBComplete						=> TX_OOBComplete,
+					TX_Data										=> TX_Data,
+					TX_CharIsK								=> TX_CharIsK,
+					
+					-- vendor specific signals
+					VSS_Common_In							=> VSS_Common_In,
+					VSS_Private_In						=> VSS_Private_In,
+					VSS_Private_Out						=> VSS_Private_Out
+					);
+		END GENERATE;	-- Xilinx.Series7.GTXE2
 	END GENERATE;		-- Xilinx.*
 	genAltera : IF (VENDOR = VENDOR_ALTERA) GENERATE
 		genS2GX : IF (DEVICE_GROUP = DEVGRP_S2GX) GENERATE

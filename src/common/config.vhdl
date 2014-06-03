@@ -100,10 +100,13 @@ package config is
 	-- Functions extracting device and architecture properties from "MY_DEVICE"
 	-- which is declared in package "my_config".
 	-- ===========================================================================
-	function VENDOR(DeviceString : string := "None")				return vendor_t;
-	function DEVICE(DeviceString : string := "None")				return device_t;
-	function DEVICE_SUBTYPE(DeviceString : string := "None") return T_DEVICE_SUBTYPE;
-	function DEVICE_SERIES(DeviceString : string := "None")	return natural;
+	function VENDOR(DeviceString : string := "None")						return vendor_t;
+	function DEVICE(DeviceString : string := "None")						return device_t;
+	function DEVICE_SUBTYPE(DeviceString : string := "None")		return T_DEVICE_SUBTYPE;
+	function DEVICE_SERIES(DeviceString : string := "None")			return natural;
+
+	function TRANSCEIVER_TYPE(DeviceString : string := "None")	return T_TRANSCEIVER;
+	function LUT_FANIN(DeviceString : string := "None")					return positive;
 
 	function ARCH_PROPS return archprops_t;
 

@@ -37,10 +37,10 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
---USE			PoC.sata.ALL;
+USE			PoC.sata.ALL;
 
 
-ENTITY sata_ATAStreamingController IS
+ENTITY sata_StreamingController IS
 	GENERIC (
     SIM_WAIT_FOR_INITIAL_REGDH_FIS		: BOOLEAN                     := TRUE;      -- required by ATA/SATA standard
 		SIM_EXECUTE_IDENTIFY_DEVICE				: BOOLEAN											:= TRUE;			-- required by CommandLayer: load device parameters
@@ -114,7 +114,7 @@ ENTITY sata_ATAStreamingController IS
 	);
 END;
 
-ARCHITECTURE rtl OF sata_ATAStreamingController IS
+ARCHITECTURE rtl OF sata_StreamingController IS
 	ATTRIBUTE KEEP													: BOOLEAN;
 
 	-- ==========================================================================
