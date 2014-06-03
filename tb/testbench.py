@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/sh
 # EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
@@ -34,7 +34,7 @@
 
 """:"
 # this is a python bootloader written in bash to load the minimal required python version
-# Source:	https://github.com/apache/cassandra/blob/trunk/bin/cqlsh
+# Source:		https://github.com/apache/cassandra/blob/trunk/bin/cqlsh
 # License:	Apache License-2.0
 #
 # use default python version (/usr/bin/python) if >= 3.4.0
@@ -466,7 +466,7 @@ def cmpVersion(version1, version2):
 		elif (version1.minor == version2[1]):
 			if (version1.micro > version2[2]):
 				return 1
-			elif (version1.major == version2[2]):
+			elif (version1.micro == version2[2]):
 				return 0
 			else:
 				return -1
