@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 # EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
@@ -39,11 +39,15 @@
 #
 # use default python version (/usr/bin/python) if >= 3.4.0
 for isim in "$@"; do
-	if [ "$isim" = "--isim" ]; then :
-		if [ -z "$XILINX" ]; then :
+	if [ "$isim" = "--isim" ]; then
+		if [ -z "$XILINX" ]; then
 			settingsFile=$(../py/bootloader.py --ise)
-			echo "run '$settingsFile'"
-			$settingsFile
+		  if [ -z "$settingsFile" ]; then
+			  echo 1>&2 "No ISE installation found."
+			  exit 1
+		  fi
+			echo Loading "'$settingsFile'"
+			. "$settingsFile"
 		fi
 	fi
 done
@@ -467,23 +471,9 @@ def main():
 		argParser.print_help()
 
 def cmpVersion(version1, version2):
-	if (version1.major > version2[0]):
-		return 1
-	elif (version1.major == version2[0]):
-		if (version1.minor > version2[1]):
-			return 1
-		elif (version1.minor == version2[1]):
-			if (version1.micro > version2[2]):
-				return 1
-			elif (version1.micro == version2[2]):
-				return 0
-			else:
-				return -1
-		else:
-			return -1
-	else:
-		return -1
-
+  v1 = (version1.major << 16)|(version1.minor << 8)|version1.micro
+  v2 = (version2[0]    << 16)|(version2[1]    << 8)|version2[2];
+  return 1 if (v1 > v2) else 0 if (v1 == v2) else -1
 
 # entry point
 if __name__ == "__main__":
