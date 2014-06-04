@@ -39,6 +39,7 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
+USE			PoC.simulation.ALL;
 
 
 ENTITY arith_prng_tb IS
@@ -67,13 +68,13 @@ ARCHITECTURE test OF arith_prng_tb IS
 		x"9A", x"34", x"69", x"D3", x"A7", x"4F", x"9E", x"3C", x"78", x"F0", x"E0", x"C1", x"82", x"04", x"09", x"12"
 	);
 
-	SHARED VARIABLE SimStop		: BOOLEAN				:= FALSE;
-	SHARED VARIABLE SimError	: BOOLEAN				:= FALSE;
+	SIGNAL SimStop			: BOOLEAN				:= FALSE;
+	SIGNAL SimError			: BOOLEAN				:= FALSE;
 
-	SIGNAL Clock							: STD_LOGIC			:= '1';
-	SIGNAL Reset							: STD_LOGIC			:= '0';
-	SIGNAL Test_got						: STD_LOGIC			:= '0';
-	SIGNAL PRNG_Value					: T_SLV_8;
+	SIGNAL Clock				: STD_LOGIC			:= '1';
+	SIGNAL Reset				: STD_LOGIC			:= '0';
+	SIGNAL Test_got			: STD_LOGIC			:= '0';
+	SIGNAL PRNG_Value		: T_SLV_8;
 	
 BEGIN
 
@@ -87,6 +88,8 @@ BEGIN
   END PROCESS;
 
 	PROCESS
+--		VARIABLE l				: LINE;
+		
 	BEGIN
 		WAIT UNTIL rising_edge(Clock);
 		
@@ -102,18 +105,21 @@ BEGIN
 			
 --			REPORT "I=" & INTEGER'image(I) & " Value=" & to_string(PRNG_Value, 'h') & " Expected=" & to_string(COMPARE_LIST_8_BITS(I), 'h');
 			IF (PRNG_Value /= COMPARE_LIST_8_BITS(I)) THEN
-				SimError	:= TRUE;
+				SimError <= TRUE;
 				EXIT;
 			END IF;
 		END LOOP;
 		
-		IF SimError THEN
-			REPORT "SIMULATION RESULT = FAILED" SEVERITY NOTE;
-		ELSE
-			REPORT "SIMULATION RESULT = PASSED" SEVERITY NOTE;
-		END IF;
+		-- Report overall simulation result
+		printSimulationResult(NOT SimError);
+--		IF SimError THEN
+--			write(l, string'("SIMULATION RESULT = FAILED"));
+--		ELSE
+--			write(l, string'("SIMULATION RESULT = PASSED"));
+--		END IF;
+--		writeline(output, l);
 		
-		SimStop		:= TRUE;
+		SimStop	<= TRUE;
 		WAIT;
 	END PROCESS;
 

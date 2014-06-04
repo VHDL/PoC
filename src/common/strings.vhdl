@@ -29,7 +29,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library	IEEE;
 use			IEEE.std_logic_1164.all;
@@ -41,30 +41,47 @@ use			PoC.utils.all;
 
 package strings is
 	-- Type declarations
-	-- ==========================================================================
+	-- ===========================================================================
+	SUBTYPE T_RAWCHAR				IS STD_LOGIC_VECTOR(7 DOWNTO 0);
+	TYPE		T_RAWSTRING			IS ARRAY (NATURAL RANGE <>) OF T_RAWCHAR;
 	
 	-- testing area:
-	-- ==========================================================================
+	-- ===========================================================================
 	FUNCTION to_IPStyle(str : STRING)			RETURN T_IPSTYLE;
-	
+
 	-- to_char
 	FUNCTION to_char(value : STD_LOGIC)		RETURN CHARACTER;
-	FUNCTION to_char(value : INTEGER)			RETURN CHARACTER;
+	FUNCTION to_char(value : NATURAL)			RETURN CHARACTER;
+	FUNCTION to_char(rawchar : T_RAWCHAR) RETURN CHARACTER;	
 
+	-- chr_is* function
+	function chr_isDigit(chr : character)				return boolean;
+	function chr_isHexDigit(chr : character)		return boolean;
+	function chr_isLowerAlpha(chr : character)	return boolean;
+	function chr_isUpperAlpha(chr : character)	return boolean;
+	function chr_isAlpha(chr : character)				return boolean;
+	
 	-- to_string
 	FUNCTION to_string(value : BOOLEAN) RETURN STRING;	
 	FUNCTION to_string(value : INTEGER; base : POSITIVE := 10) RETURN STRING;
 	FUNCTION to_string(slv : STD_LOGIC_VECTOR; format : CHARACTER; length : NATURAL := 0; fill : CHARACTER := '0') RETURN STRING;
+	FUNCTION to_string(rawstring : T_RAWSTRING) RETURN STRING;
 
 	-- to_*
 	FUNCTION to_digit(chr : CHARACTER; base : CHARACTER := 'd') RETURN INTEGER;
 	FUNCTION to_nat(str : STRING; base : CHARACTER := 'd') RETURN INTEGER;
 	
+	-- to_raw*
+	function to_RawChar(char : character) return T_RAWCHAR;
+	function to_RawString(str : string)		return T_RAWSTRING;
+	
+	-- resize
 	FUNCTION resize(str : STRING; size : POSITIVE; FillChar : CHARACTER := NUL) RETURN STRING;
+	FUNCTION resize(rawstr : T_RAWSTRING; size : POSITIVE; FillChar : T_RAWCHAR := x"00") RETURN T_RAWSTRING;
 
 	-- Character functions
-	FUNCTION to_lower(char : CHARACTER) RETURN CHARACTER;
-	FUNCTION to_upper(char : CHARACTER) RETURN CHARACTER;
+	function to_LowerChar(chr : character) return character;
+	function to_UpperChar(chr : character) return character;
 	
 	-- String functions
 	FUNCTION str_length(str : STRING) RETURN NATURAL;
@@ -92,7 +109,7 @@ package body strings is
 	END FUNCTION;
 
 	-- to_char
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	FUNCTION to_char(value : STD_LOGIC) RETURN CHARACTER IS
 	BEGIN
 		CASE value IS
@@ -109,35 +126,76 @@ package body strings is
 		END CASE;
 	END FUNCTION;
 
-	FUNCTION to_char(value : INTEGER) RETURN CHARACTER IS
-	BEGIN
-		CASE value IS
-			WHEN	0 =>			RETURN '0';
-			WHEN	1 =>			RETURN '1';
-			WHEN	2 =>			RETURN '2';
-			WHEN	3 =>			RETURN '3';
-			WHEN	4 =>			RETURN '4';
-			WHEN	5 =>			RETURN '5';
-			WHEN	6 =>			RETURN '6';
-			WHEN	7 =>			RETURN '7';
-			WHEN	8 =>			RETURN '8';
-			WHEN	9 =>			RETURN '9';
-			WHEN 10 =>			RETURN 'A';
-			WHEN 11 =>			RETURN 'B';
-			WHEN 12 =>			RETURN 'C';
-			WHEN 13 =>			RETURN 'D';
-			WHEN 14 =>			RETURN 'E';
-			WHEN 15 =>			RETURN 'F';
-			WHEN OTHERS =>	RETURN 'X';
-		END CASE;
-	END FUNCTION;
+	-- TODO: rename to to_HexDigit(..) ?
+	function to_char(value : natural) return character is
+	begin
+		if (value < 10) then
+			return character'val(character'pos('0') + value);
+		elsif (value < 16) then
+			return character'val(character'pos('A') + value - 10);
+		else
+			return 'X';
+		end if;
+--		CASE value IS
+--			WHEN	0 =>			RETURN '0';
+--			WHEN	1 =>			RETURN '1';
+--			WHEN	2 =>			RETURN '2';
+--			WHEN	3 =>			RETURN '3';
+--			WHEN	4 =>			RETURN '4';
+--			WHEN	5 =>			RETURN '5';
+--			WHEN	6 =>			RETURN '6';
+--			WHEN	7 =>			RETURN '7';
+--			WHEN	8 =>			RETURN '8';
+--			WHEN	9 =>			RETURN '9';
+--			WHEN 10 =>			RETURN 'A';
+--			WHEN 11 =>			RETURN 'B';
+--			WHEN 12 =>			RETURN 'C';
+--			WHEN 13 =>			RETURN 'D';
+--			WHEN 14 =>			RETURN 'E';
+--			WHEN 15 =>			RETURN 'F';
+--			WHEN OTHERS =>	RETURN 'X';
+--		END CASE;
+	end function;
 
-	-- to_string
-	-- ==========================================================================================================================================================
-	FUNCTION to_string(value : BOOLEAN) RETURN STRING IS
+	FUNCTION to_char(rawchar : T_RAWCHAR) RETURN CHARACTER IS
 	BEGIN
-		RETURN ite(value, "TRUE", "FALSE");
-	END FUNCTION;
+		RETURN CHARACTER'val(to_integer(unsigned(rawchar)));
+	END;
+
+		-- chr_is* function
+	function chr_isDigit(chr : character) return boolean is
+	begin
+		return (character'pos('0') <= character'pos(chr)) and (character'pos(chr) <= character'pos('9'));
+	end function;
+	
+	function chr_isHexDigit(chr : character) return boolean is
+	begin
+		return chr_isDigit(chr) or
+					 ((character'pos('a') <= character'pos(chr)) and (character'pos(chr) <= character'pos('f'))) or
+					 ((character'pos('A') <= character'pos(chr)) and (character'pos(chr) <= character'pos('F')));
+	end function;
+
+	function chr_isLowerAlpha(chr : character) return boolean is
+	begin
+		return (character'pos('a') <= character'pos(chr)) and (character'pos(chr) <= character'pos('z'));
+	end function;
+	
+	function chr_isUpperAlpha(chr : character) return boolean is
+	begin
+		return (character'pos('A') <= character'pos(chr)) and (character'pos(chr) <= character'pos('Z'));
+	end function;
+
+	function chr_isAlpha(chr : character) return boolean is
+	begin
+		return chr_isLowerAlpha(chr) or chr_isUpperAlpha(chr);
+	end function;
+	
+	-- to_string
+	-- ===========================================================================
+	function to_string(value : boolean) return string is
+	begin
+		return str_to_upper(boolean'image(value));	-- ite(value, "TRUE", "FALSE");
+	end function;
 
 	FUNCTION to_string(value : INTEGER; base : POSITIVE := 10) RETURN STRING IS
 		CONSTANT absValue		: NATURAL								:= abs(value);
@@ -162,6 +220,7 @@ package body strings is
 		END IF;
 	END FUNCTION;
 
+	-- TODO: rename to slv_format(..) ?
 	FUNCTION to_string(slv : STD_LOGIC_VECTOR; format : CHARACTER; length : NATURAL := 0; fill : CHARACTER := '0') RETURN STRING IS
 		CONSTANT int					: INTEGER				:= ite((slv'length <= 31), to_integer(unsigned(resize(slv, 31))), 0);
 		CONSTANT str					: STRING				:= INTEGER'image(int);
@@ -195,59 +254,80 @@ package body strings is
 		RETURN Result;
 	END FUNCTION;
 
-	-- to_*
-	-- ==========================================================================================================================================================
-	FUNCTION to_digit(chr : CHARACTER; base : CHARACTER := 'd') RETURN INTEGER IS
+	FUNCTION to_string(rawstring : T_RAWSTRING) RETURN STRING IS
+		VARIABLE str		: STRING(1 TO rawstring'length);
 	BEGIN
-		CASE base IS
-			WHEN 'd' =>
-				CASE chr IS
-					WHEN '0' =>			RETURN 0;
-					WHEN '1' =>			RETURN 1;
-					WHEN '2' =>			RETURN 2;
-					WHEN '3' =>			RETURN 3;
-					WHEN '4' =>			RETURN 4;
-					WHEN '5' =>			RETURN 5;
-					WHEN '6' =>			RETURN 6;
-					WHEN '7' =>			RETURN 7;
-					WHEN '8' =>			RETURN 8;
-					WHEN '9' =>			RETURN 9;
-					WHEN OTHERS =>	RETURN -1;
-				END CASE;
+		FOR I IN rawstring'low TO rawstring'high LOOP
+			str(I - rawstring'low + 1)	:= to_char(rawstring(I));
+		END LOOP;
+	
+		RETURN str;
+	END;
+
+	-- to_*
+	-- ===========================================================================
+	function to_digit(chr : character; base : character := 'd') return integer is
+	begin
+		case base is
+			when 'd' =>
+				if chr_isDigit(chr) then
+					return character'pos(chr) - character'pos('0');
+				else
+					return -1;
+				end if;
+--				CASE chr IS
+--					WHEN '0' =>			RETURN 0;
+--					WHEN '1' =>			RETURN 1;
+--					WHEN '2' =>			RETURN 2;
+--					WHEN '3' =>			RETURN 3;
+--					WHEN '4' =>			RETURN 4;
+--					WHEN '5' =>			RETURN 5;
+--					WHEN '6' =>			RETURN 6;
+--					WHEN '7' =>			RETURN 7;
+--					WHEN '8' =>			RETURN 8;
+--					WHEN '9' =>			RETURN 9;
+--					WHEN OTHERS =>	RETURN -1;
+--				END CASE;
 			
 			WHEN 'h' =>
-				CASE chr IS
-					WHEN '0' =>			RETURN 0;
-					WHEN '1' =>			RETURN 1;
-					WHEN '2' =>			RETURN 2;
-					WHEN '3' =>			RETURN 3;
-					WHEN '4' =>			RETURN 4;
-					WHEN '5' =>			RETURN 5;
-					WHEN '6' =>			RETURN 6;
-					WHEN '7' =>			RETURN 7;
-					WHEN '8' =>			RETURN 8;
-					WHEN '9' =>			RETURN 9;
-					WHEN 'a' =>			RETURN 10;
-					WHEN 'b' =>			RETURN 11;
-					WHEN 'c' =>			RETURN 12;
-					WHEN 'd' =>			RETURN 13;
-					WHEN 'e' =>			RETURN 14;
-					WHEN 'f' =>			RETURN 15;
-					WHEN 'A' =>			RETURN 10;
-					WHEN 'B' =>			RETURN 11;
-					WHEN 'C' =>			RETURN 12;
-					WHEN 'D' =>			RETURN 13;
-					WHEN 'E' =>			RETURN 14;
-					WHEN 'F' =>			RETURN 15;
-					WHEN OTHERS =>	RETURN -1;
-				END CASE;
-			
-			WHEN OTHERS =>
-				REPORT "unknown base" SEVERITY ERROR;
-				RETURN -1;
-				
-		END CASE;
-	END FUNCTION;
+				if chr_isDigit(chr) then
+					return character'pos(chr) - character'pos('0');
+				elsif chr_isLowerAlpha(chr) then
+					return character'pos(chr) - character'pos('a') + 10;
+				elsif chr_isUpperAlpha(chr) then
+					return character'pos(chr) - character'pos('A') + 10;
+				else
+					return -1;
+				end if;
+--				CASE chr IS
+--					WHEN '0' =>			RETURN 0;
+--					WHEN '1' =>			RETURN 1;
+--					WHEN '2' =>			RETURN 2;
+--					WHEN '3' =>			RETURN 3;
+--					WHEN '4' =>			RETURN 4;
+--					WHEN '5' =>			RETURN 5;
+--					WHEN '6' =>			RETURN 6;
+--					WHEN '7' =>			RETURN 7;
+--					WHEN '8' =>			RETURN 8;
+--					WHEN '9' =>			RETURN 9;
+--					WHEN 'a' =>			RETURN 10;
+--					WHEN 'b' =>			RETURN 11;
+--					WHEN 'c' =>			RETURN 12;
+--					WHEN 'd' =>			RETURN 13;
+--					WHEN 'e' =>			RETURN 14;
+--					WHEN 'f' =>			RETURN 15;
+--					WHEN 'A' =>			RETURN 10;
+--					WHEN 'B' =>			RETURN 11;
+--					WHEN 'C' =>			RETURN 12;
+--					WHEN 'D' =>			RETURN 13;
+--					WHEN 'E' =>			RETURN 14;
+--					WHEN 'F' =>			RETURN 15;
+--					WHEN OTHERS =>	RETURN -1;
+--				END CASE;
+			when others => report "Unknown base character: " & base & "." severity failure;
+										 -- return statement is explicitly missing otherwise XST won't stop
+		end case;
+	end function;
 
 	FUNCTION to_nat(str : STRING; base : CHARACTER := 'd') RETURN INTEGER IS
 		VARIABLE Result			: NATURAL		:= 0;
@@ -276,6 +356,24 @@ package body strings is
 		END IF;
 	END FUNCTION;
 
+	-- to_raw*
+	-- ===========================================================================
+	function to_RawChar(char : character) return t_rawchar is
+	begin
+		return std_logic_vector(to_unsigned(character'pos(char), t_rawchar'length));
+	end;
+
+	function to_RawString(str : STRING) return T_RAWSTRING is
+		variable rawstr			: T_RAWSTRING(0 to str'length - 1);
+	begin
+		for i in str'low to str'high loop
+			rawstr(i - str'low)	:= to_RawChar(str(i));
+		end loop;
+		return rawstr;
+	end;
+
+	-- resize
+	-- ===========================================================================
 	FUNCTION resize(str : STRING; size : POSITIVE; FillChar : CHARACTER := NUL) RETURN STRING IS
 		CONSTANT MaxLength	: POSITIVE							:= imin(size, str'length);
 		VARIABLE Result			: STRING(1 TO size)			:= (OTHERS => FillChar);
@@ -284,29 +382,36 @@ package body strings is
 		RETURN Result;
 	END FUNCTION;
 
+	FUNCTION resize(rawstr : T_RAWSTRING; size : POSITIVE; FillChar : T_RAWCHAR := x"00") RETURN T_RAWSTRING IS
+		CONSTANT MaxLength	: POSITIVE																					:= imin(size, rawstr'length);
+		VARIABLE Result			: T_RAWSTRING(rawstr'low TO rawstr'low + size - 1)	:= (OTHERS => FillChar);
+	BEGIN
+		Result(rawstr'low TO rawstr'low + MaxLength - 1) := rawstr(rawstr'low TO rawstr'low + MaxLength - 1);
+		RETURN Result;
+	END;
 
 	-- Character functions
-	-- ==========================================================================================================================================================
-	FUNCTION to_lower(char : CHARACTER) RETURN CHARACTER IS
-	BEGIN
-		IF ((CHARACTER'pos('A') <= CHARACTER'pos(char)) AND (CHARACTER'pos(char) <= CHARACTER'pos('Z'))) THEN
-			RETURN CHARACTER'val(CHARACTER'pos(char) + (CHARACTER'pos('a') - CHARACTER'pos('A')));
-		ELSE
-			RETURN char;
-		END IF;
-	END FUNCTION;
+	-- ===========================================================================
+	function to_LowerChar(chr : character) return character is
+	begin
+		if chr_isUpperAlpha(chr) then
+			return character'val(character'pos(chr) - character'pos('A') + character'pos('a'));
+		else
+			return chr;
+		end if;
+	end function;
 	
-	FUNCTION to_upper(char : CHARACTER) RETURN CHARACTER IS
-	BEGIN
-		IF ((CHARACTER'pos('a') <= CHARACTER'pos(char)) AND (CHARACTER'pos(char) <= CHARACTER'pos('z'))) THEN
-			RETURN CHARACTER'val(CHARACTER'pos(char) - (CHARACTER'pos('a') - CHARACTER'pos('A')));
-		ELSE
-			RETURN char;
-		END IF;	
-	END FUNCTION;
+	function to_UpperChar(chr : character) return character is
+	begin
+		if chr_isLowerAlpha(chr) then
+			return character'val(character'pos(chr) - character'pos('a') + character'pos('A'));
+		else
+			return chr;
+		end if;	
+	end function;
 	
 	-- String functions
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	FUNCTION str_length(str : STRING) RETURN NATURAL IS
 		VARIABLE l	: NATURAL		:= 0;
 	BEGIN
@@ -353,7 +458,7 @@ package body strings is
 		VARIABLE temp		: STRING(str'range);
 	BEGIN
 		FOR I IN str'range LOOP
-			temp(I)	:= to_lower(str(I));
+			temp(I)	:= to_LowerChar(str(I));
 		END LOOP;
 		RETURN temp;
 	END FUNCTION;
@@ -362,9 +467,9 @@ package body strings is
 		VARIABLE temp		: STRING(str'range);
 	BEGIN
 		FOR I IN str'range LOOP
-			temp(I)	:= to_upper(str(I));
+			temp(I)	:= to_UpperChar(str(I));
 		END LOOP;
 		RETURN temp;
 	END FUNCTION;
-	
+
 end strings;

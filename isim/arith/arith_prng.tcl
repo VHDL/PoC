@@ -1,3 +1,3 @@
-run 3us
+run all
 show time
 quit

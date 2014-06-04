@@ -1,4 +1,4 @@
--- EMACS settings: -*-  tab-width:2  -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
@@ -29,8 +29,9 @@
 library	IEEE;
 use			IEEE.std_logic_1164.all;
 
-library poc;
-use poc.utils.all;
+library	poc;
+use			poc.utils.all;
+
 
 entity arith_scaler is
   generic (
