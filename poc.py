@@ -336,7 +336,7 @@ class PoCConfiguration:
 					vivadoVersion = vivadoVersion if vivadoVersion != "" else "2014.1"
 				
 					xilinxDirectoryPath = pathlib.Path(xilinxDirectory)
-					vivadoDirectoryPath = xilinxDirectoryPath / "vivado" / vivadoVersion
+					vivadoDirectoryPath = xilinxDirectoryPath / "Vivado" / vivadoVersion
 				
 					if not xilinxDirectoryPath.exists():
 						print("ERROR: Xilinx Installation Directory '%s' does not exist." % xilinxDirectory)
@@ -348,7 +348,7 @@ class PoCConfiguration:
 				
 					self.__pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
 					self.__pocConfig['Xilinx-Vivado']['Version'] = vivadoVersion
-					self.__pocConfig['Xilinx-Vivado']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/vivado/${Version}'
+					self.__pocConfig['Xilinx-Vivado']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/Vivado/${Version}'
 					self.__pocConfig['Xilinx-Vivado']['BinaryDirectory'] = '${InstallationDirectory}/bin'
 				elif (isXilinxVivado == 'n'):
 					self.__pocConfig['Xilinx-Vivado'] = {}

@@ -47,7 +47,10 @@ for isim in "$@"; do
 			  exit 1
 		  fi
 			echo Loading "'$settingsFile'"
-			. "$settingsFile"
+			rescue_args=$@
+			set --
+			. $settingsFile
+			set -- $rescue_args
 		fi
 	fi
 done
