@@ -108,7 +108,7 @@ class PoCBootloader:
 		iseInstallationDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['InstallationDirectory'])
 		iseBinaryDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['BinaryDirectory'])
 		
-		print(str(iseInstallationDirectoryPath / ".settings64.sh"))
+		print(str(iseInstallationDirectoryPath / "settings64.sh"))
 		return
 		
 	def getVivadoSettingsFile(self):
