@@ -38,6 +38,15 @@
 # License:	Apache License-2.0
 #
 # use default python version (/usr/bin/python) if >= 3.4.0
+for isim in "$@"; do
+	if [ "$isim" = "--isim" ]; then :
+		if [ -z "$XILINX" ]; then :
+			settingsFile=$(../py/bootloader.py --ise)
+			echo "run '$settingsFile'"
+			$settingsFile
+		fi
+	fi
+done
 python -c 'import sys; sys.exit(not (0x03040000 < sys.hexversion < 0x04000000))' 2>/dev/null && exec python "$0" "$@"
 # try to load highest installed python version first
 for pyversion in 3.9 3.8 3.7 3.6 3.5 3.4; do
