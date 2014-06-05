@@ -34,10 +34,11 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
---USE			PoC.sata.ALL;
+USE			PoC.sata.ALL;
 
 ENTITY sata_SpeedControl IS
 	GENERIC (
@@ -53,7 +54,7 @@ ENTITY sata_SpeedControl IS
 		SATAGeneration_Reset		: IN	STD_LOGIC;													--	=> reset SATA_Generation, reset all attempt counters => if necessary reconfigure GTP
 		AttemptCounter_Reset		: IN	STD_LOGIC;													-- 
 
-		DebugPortOut			: OUT	T_DBG_PHYOUT;
+--		DebugPortOut			: OUT	T_DBG_PHYOUT;
 
 		OOB_Timeout			: IN	STD_LOGIC;
 		OOB_Retry			: OUT	STD_LOGIC;
@@ -455,7 +456,7 @@ BEGIN
 	-- ================================================================
 	-- debug port
 	-- ================================================================
-	DebugPortOut.GenerationChanges	<= resize(GenerationChange_Counter_us, DebugPortOut.GenerationChanges'length);
-	DebugPortOut.TrysPerGeneration	<= resize(TryPerGeneration_Counter_us, DebugPortOut.TrysPerGeneration'length);
-	DebugPortOut.SATAGeneration	<= SATAGeneration_Current;
+--	DebugPortOut.GenerationChanges	<= resize(GenerationChange_Counter_us, DebugPortOut.GenerationChanges'length);
+--	DebugPortOut.TrysPerGeneration	<= resize(TryPerGeneration_Counter_us, DebugPortOut.TrysPerGeneration'length);
+--	DebugPortOut.SATAGeneration	<= SATAGeneration_Current;
 END;
