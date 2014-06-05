@@ -382,13 +382,13 @@ BEGIN
 	-- ChipScope
 	-- ================================================================
 	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL CSP_State_D10_2													: STD_LOGIC;
-		SIGNAL CSP_State_D10_2_d												: STD_LOGIC;											-- D-FF is required to KEEP the signal
+		SIGNAL DBG_State_D10_2													: STD_LOGIC;
+		SIGNAL DBG_State_D10_2_d												: STD_LOGIC;											-- D-FF is required to KEEP the signal
 		
-		ATTRIBUTE KEEP OF CSP_State_D10_2								: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_State_D10_2_d							: SIGNAL IS TRUE;									-- D-FF is required to KEEP the signal
+		ATTRIBUTE KEEP OF DBG_State_D10_2								: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_State_D10_2_d							: SIGNAL IS TRUE;									-- D-FF is required to KEEP the signal
 	BEGIN
-		CSP_State_D10_2								<= to_sl(OOBControl_State = ST_HOST_SEND_D10_2);
-		CSP_State_D10_2_d							<= CSP_State_D10_2 WHEN rising_edge(Clock);					-- D-FF is required to KEEP the signal
+		DBG_State_D10_2								<= to_sl(OOBControl_State = ST_HOST_SEND_D10_2);
+		DBG_State_D10_2_d							<= DBG_State_D10_2 WHEN rising_edge(Clock);					-- D-FF is required to KEEP the signal
 	END GENERATE;
 END;

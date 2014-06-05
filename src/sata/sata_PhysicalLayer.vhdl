@@ -447,42 +447,42 @@ BEGIN
 	-- ChipScope
 	-- ================================================================
 	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL CSP_OOB_Retry														: STD_LOGIC;
-		SIGNAL CSP_OOB_LinkOK												: STD_LOGIC;
-		SIGNAL CSP_OOB_LinkDead													: STD_LOGIC;
-		SIGNAL CSP_OOB_Timeout													: STD_LOGIC;
-		SIGNAL CSP_SATA_Generation											: T_SATA_GENERATION;
-		SIGNAL CSP_NegotiationError											: STD_LOGIC;
+		SIGNAL DBG_OOB_Retry														: STD_LOGIC;
+		SIGNAL DBG_OOB_LinkOK												: STD_LOGIC;
+		SIGNAL DBG_OOB_LinkDead													: STD_LOGIC;
+		SIGNAL DBG_OOB_Timeout													: STD_LOGIC;
+		SIGNAL DBG_SATA_Generation											: T_SATA_GENERATION;
+		SIGNAL DBG_NegotiationError											: STD_LOGIC;
 		
-		SIGNAL CSP_TX_Primitive_NONE										: STD_LOGIC;
-		SIGNAL CSP_TX_Primitive_DIAL_TONE								: STD_LOGIC;
+		SIGNAL DBG_TX_Primitive_NONE										: STD_LOGIC;
+		SIGNAL DBG_TX_Primitive_DIAL_TONE								: STD_LOGIC;
 		
-		ATTRIBUTE KEEP OF CSP_OOB_Retry									: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_OOB_LinkOK								: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_OOB_LinkDead							: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_OOB_Timeout								: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_SATA_Generation						: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_NegotiationError					: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_OOB_Retry									: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_OOB_LinkOK								: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_OOB_LinkDead							: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_OOB_Timeout								: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_SATA_Generation						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_NegotiationError					: SIGNAL IS TRUE;
 		
-		ATTRIBUTE KEEP OF CSP_TX_Primitive_NONE					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_TX_Primitive_DIAL_TONE		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TX_Primitive_NONE					: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TX_Primitive_DIAL_TONE		: SIGNAL IS TRUE;
 		
 	BEGIN
-		CSP_OOB_Retry									<= OOB_Retry;
-		CSP_OOB_LinkOK								<= OOB_LinkOK;
-		CSP_OOB_LinkDead							<= OOB_LinkDead;
-		CSP_OOB_Timeout								<= OOB_Timeout;
-		CSP_SATA_Generation						<= SATA_Generation_i;
-		CSP_NegotiationError					<= NegotiationError;
+		DBG_OOB_Retry									<= OOB_Retry;
+		DBG_OOB_LinkOK								<= OOB_LinkOK;
+		DBG_OOB_LinkDead							<= OOB_LinkDead;
+		DBG_OOB_Timeout								<= OOB_Timeout;
+		DBG_SATA_Generation						<= SATA_Generation_i;
+		DBG_NegotiationError					<= NegotiationError;
 
-		CSP_TX_Primitive_NONE					<= to_sl(TX_Primitive = SATA_PRIMITIVE_NONE);
-		CSP_TX_Primitive_DIAL_TONE		<= to_sl(TX_Primitive = SATA_PRIMITIVE_DIAL_TONE);
+		DBG_TX_Primitive_NONE					<= to_sl(TX_Primitive = SATA_PRIMITIVE_NONE);
+		DBG_TX_Primitive_DIAL_TONE		<= to_sl(TX_Primitive = SATA_PRIMITIVE_DIAL_TONE);
 	END GENERATE;
 	
 	-- ================================================================
 	-- debug port
 	-- ================================================================
-	DebugPortOut.GenerationChanges		<= DebugPortOut_i.GenerationChanges;
-	DebugPortOut.TrysPerGeneration		<= DebugPortOut_i.TrysPerGeneration;
-	DebugPortOut.SATAGeneration				<= DebugPortOut_i.SATAGeneration;
+--	DebugPortOut.GenerationChanges		<= DebugPortOut_i.GenerationChanges;
+--	DebugPortOut.TrysPerGeneration		<= DebugPortOut_i.TrysPerGeneration;
+--	DebugPortOut.SATAGeneration				<= DebugPortOut_i.SATAGeneration;
 END;

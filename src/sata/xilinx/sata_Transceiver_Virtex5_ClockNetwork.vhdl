@@ -175,14 +175,14 @@ BEGIN
 	GTP_Clock_4X			<= GTP_Clock_4X_i;
 
 	genCSP : IF (CHIPSCOPE_KEEP = TRUE) GENERATE
-		SIGNAL CSP_Clock_300MHz								: STD_LOGIC;
+		SIGNAL DBG_Clock_300MHz								: STD_LOGIC;
 		
-		ATTRIBUTE KEEP OF CSP_Clock_300MHz		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_Clock_300MHz		: SIGNAL IS TRUE;
 	BEGIN
 		BUFG_Clock_300MHz : BUFG
 			PORT MAP (
 				I		=> DCM_Clock_300MHz,
-				O		=> CSP_Clock_300MHz
+				O		=> DBG_Clock_300MHz
 			);
 	END GENERATE;
 

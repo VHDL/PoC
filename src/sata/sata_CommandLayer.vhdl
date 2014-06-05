@@ -43,7 +43,7 @@ USE			PoC.sata.ALL;
 ENTITY sata_CommandLayer IS
 	GENERIC (
 		SIM_EXECUTE_IDENTIFY_DEVICE		: BOOLEAN									:= TRUE;			-- required by CommandLayer: load device parameters
-		DEBUG													: BOOLEAN									:= FALSE;			-- generate ChipScope CSP_* signals
+		DEBUG													: BOOLEAN									:= FALSE;			-- generate ChipScope DBG_* signals
 		TX_FIFO_DEPTH									: NATURAL									:= 0;
 		RX_FIFO_DEPTH									: POSITIVE;
 		LOGICAL_BLOCK_SIZE_ldB				: POSITIVE
@@ -413,18 +413,18 @@ BEGIN
 		TC_TX_LastWord	<= TC_TX_EOT OR TC_TX_LastWord_r;		-- LastWord in transfer
 		
 		genCSP : IF (DEBUG = TRUE) GENERATE
-			SIGNAL CSP_TX_DataFlow							: STD_LOGIC;
-			SIGNAL CSP_TX_LastWord							: STD_LOGIC;
-			SIGNAL CSP_InsertEOT								: STD_LOGIC;
+			SIGNAL DBG_TX_DataFlow							: STD_LOGIC;
+			SIGNAL DBG_TX_LastWord							: STD_LOGIC;
+			SIGNAL DBG_InsertEOT								: STD_LOGIC;
 		
-			ATTRIBUTE KEEP OF CSP_TX_DataFlow		: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_TX_LastWord		: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_InsertEOT			: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_TX_DataFlow		: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_TX_LastWord		: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_InsertEOT			: SIGNAL IS TRUE;
 			
 		BEGIN
-			CSP_TX_DataFlow		<= TC_TX_DataFlow;
-			CSP_TX_LastWord		<= TC_TX_LastWord;
-			CSP_InsertEOT			<= TC_TX_InsertEOT;
+			DBG_TX_DataFlow		<= TC_TX_DataFlow;
+			DBG_TX_LastWord		<= TC_TX_LastWord;
+			DBG_InsertEOT			<= TC_TX_InsertEOT;
 		END GENERATE;
 	END BLOCK;	-- TransferCutter
 
@@ -538,22 +538,22 @@ BEGIN
 	-- ChipScope
 	-- ==========================================================================================================================================================
 	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL CSP_TXFIFO_SOR								: STD_LOGIC;
-		SIGNAL CSP_TXFIFO_EOR								: STD_LOGIC;
+		SIGNAL DBG_TXFIFO_SOR								: STD_LOGIC;
+		SIGNAL DBG_TXFIFO_EOR								: STD_LOGIC;
 	
-		SIGNAL CSP_RXFIFO_SOR								: STD_LOGIC;
-		SIGNAL CSP_RXFIFO_EOR								: STD_LOGIC;
+		SIGNAL DBG_RXFIFO_SOR								: STD_LOGIC;
+		SIGNAL DBG_RXFIFO_EOR								: STD_LOGIC;
 	
-		ATTRIBUTE KEEP OF CSP_TXFIFO_SOR		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_TXFIFO_EOR		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TXFIFO_SOR		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TXFIFO_EOR		: SIGNAL IS TRUE;
 		
-		ATTRIBUTE KEEP OF CSP_RXFIFO_SOR		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_RXFIFO_EOR		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_RXFIFO_SOR		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_RXFIFO_EOR		: SIGNAL IS TRUE;
 	BEGIN
-		CSP_TXFIFO_SOR		<= TX_FIFO_Valid	AND TX_FIFO_SOR;
-		CSP_TXFIFO_EOR		<= TX_FIFO_Valid	AND TX_FIFO_EOR;
+		DBG_TXFIFO_SOR		<= TX_FIFO_Valid	AND TX_FIFO_SOR;
+		DBG_TXFIFO_EOR		<= TX_FIFO_Valid	AND TX_FIFO_EOR;
 		
-		CSP_RXFIFO_SOR		<= Trans_RX_Valid	AND CFSM_RX_SOR;
-		CSP_RXFIFO_EOR		<= Trans_RX_Valid	AND CFSM_RX_EOR;
+		DBG_RXFIFO_SOR		<= Trans_RX_Valid	AND CFSM_RX_SOR;
+		DBG_RXFIFO_EOR		<= Trans_RX_Valid	AND CFSM_RX_EOR;
 	END GENERATE;
 END;

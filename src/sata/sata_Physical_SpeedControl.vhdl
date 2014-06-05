@@ -443,14 +443,14 @@ BEGIN
 	-- ChipScope
 	-- ================================================================
 	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL CSP_ChangeGeneration	: STD_LOGIC;
-		SIGNAL CSP_GenerationChanged	: STD_LOGIC;
+		SIGNAL DBG_ChangeGeneration	: STD_LOGIC;
+		SIGNAL DBG_GenerationChanged	: STD_LOGIC;
 	
-		ATTRIBUTE KEEP OF CSP_ChangeGeneration		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_GenerationChanged		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_ChangeGeneration		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_GenerationChanged		: SIGNAL IS TRUE;
 	BEGIN
-		CSP_ChangeGeneration	<= ChangeGeneration;
-		CSP_GenerationChanged	<= GenerationChanged;
+		DBG_ChangeGeneration	<= ChangeGeneration;
+		DBG_GenerationChanged	<= GenerationChanged;
 	END GENERATE;
 
 	-- ================================================================

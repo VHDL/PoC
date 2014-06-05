@@ -1669,60 +1669,60 @@ BEGIN
 -- ChipScope debugging signals
 -- ==================================================================
 	genCSP : IF (CHIPSCOPE_KEEP = TRUE) GENERATE
-		SIGNAL CSP_ClockTX_1X												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_ClockTX_4X												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_ClockTX_1X												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_ClockTX_4X												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
-		SIGNAL CSP_GTP_RX_ByteIsAligned							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_GTP_RX_CharIsComma								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_GTP_RX_CharIsK										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_GTP_RX_Data											: T_SLVV_8(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_GTP_TX_CharIsK										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_GTP_TX_Data											: T_SLVV_8(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_GTP_RX_ByteIsAligned							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_GTP_RX_CharIsComma								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_GTP_RX_CharIsK										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_GTP_RX_Data											: T_SLVV_8(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_GTP_TX_CharIsK										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_GTP_TX_Data											: T_SLVV_8(PORTS - 1 DOWNTO 0);
 		
-		SIGNAL CSP_RX_CharIsK												: T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_RX_Data													: T_SLVV_32(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_TX_CharIsK												: T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_TX_Data													: T_SLVV_32(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_RX_CharIsK												: T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_RX_Data													: T_SLVV_32(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_TX_CharIsK												: T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_TX_Data													: T_SLVV_32(PORTS - 1 DOWNTO 0);
 		
-		SIGNAL CSP_OOBStatus_COMRESET								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_OOBStatus_COMWAKE								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_OOBStatus_COMRESET								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_OOBStatus_COMWAKE								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	
-		ATTRIBUTE KEEP OF CSP_ClockTX_1X						: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_ClockTX_4X						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_ClockTX_1X						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_ClockTX_4X						: SIGNAL IS TRUE;
 
-		ATTRIBUTE KEEP OF CSP_GTP_RX_ByteIsAligned	: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_GTP_RX_CharIsComma		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_GTP_RX_CharIsK				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_GTP_RX_Data						: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_GTP_TX_CharIsK				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_GTP_TX_Data						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_GTP_RX_ByteIsAligned	: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_GTP_RX_CharIsComma		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_GTP_RX_CharIsK				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_GTP_RX_Data						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_GTP_TX_CharIsK				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_GTP_TX_Data						: SIGNAL IS TRUE;
 		
-		ATTRIBUTE KEEP OF CSP_RX_CharIsK						: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_RX_Data								: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_TX_CharIsK						: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_TX_Data								: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_RX_CharIsK						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_RX_Data								: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TX_CharIsK						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TX_Data								: SIGNAL IS TRUE;
 	
-		ATTRIBUTE KEEP OF CSP_OOBStatus_COMRESET		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_OOBStatus_COMWAKE			: SIGNAL IS TRUE;	
+		ATTRIBUTE KEEP OF DBG_OOBStatus_COMRESET		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_OOBStatus_COMWAKE			: SIGNAL IS TRUE;	
 	BEGIN
 			loop0: FOR I IN 0 TO PORTS - 1 GENERATE
-				CSP_ClockTX_1X(I)						<= GTP_Clock_1X(I);
-				CSP_ClockTX_4X(I)						<= GTP_Clock_4X(I);
+				DBG_ClockTX_1X(I)						<= GTP_Clock_1X(I);
+				DBG_ClockTX_4X(I)						<= GTP_Clock_4X(I);
 			
-				CSP_GTP_RX_ByteIsAligned(I)	<= GTP_RX_ByteIsAligned(I);
---				CSP_GTP_RX_CharIsComma(I)		<= GTP_RX_CharIsComma(I);
---				CSP_GTP_RX_CharIsK(I)				<= GTP_RX_CharIsK(I);
-				CSP_GTP_RX_Data(I)					<= GTP_RX_Data(I)(CSP_GTP_RX_Data(I)'range);
---				CSP_GTP_TX_CharIsK(I)				<= GTP_TX_CharIsK(I);
-				CSP_GTP_TX_Data(I)					<= GTP_TX_Data(I)(CSP_GTP_TX_Data(I)'range);
+				DBG_GTP_RX_ByteIsAligned(I)	<= GTP_RX_ByteIsAligned(I);
+--				DBG_GTP_RX_CharIsComma(I)		<= GTP_RX_CharIsComma(I);
+--				DBG_GTP_RX_CharIsK(I)				<= GTP_RX_CharIsK(I);
+				DBG_GTP_RX_Data(I)					<= GTP_RX_Data(I)(DBG_GTP_RX_Data(I)'range);
+--				DBG_GTP_TX_CharIsK(I)				<= GTP_TX_CharIsK(I);
+				DBG_GTP_TX_Data(I)					<= GTP_TX_Data(I)(DBG_GTP_TX_Data(I)'range);
 		
---				CSP_RX_CharIsK(I)						<= RX_CharIsK(I);
---				CSP_RX_Data(I)							<= RX_Data(I);
-				CSP_TX_CharIsK(I)						<= TX_CharIsK(I);
-				CSP_TX_Data(I)							<= TX_Data(I);
+--				DBG_RX_CharIsK(I)						<= RX_CharIsK(I);
+--				DBG_RX_Data(I)							<= RX_Data(I);
+				DBG_TX_CharIsK(I)						<= TX_CharIsK(I);
+				DBG_TX_Data(I)							<= TX_Data(I);
 			
-				CSP_OOBStatus_COMRESET(I)		<= to_sl(RX_OOBStatus_i(I) = SATA_OOB_COMRESET);
-				CSP_OOBStatus_COMWAKE(I)		<= to_sl(RX_OOBStatus_i(I) = SATA_OOB_COMWAKE);
+				DBG_OOBStatus_COMRESET(I)		<= to_sl(RX_OOBStatus_i(I) = SATA_OOB_COMRESET);
+				DBG_OOBStatus_COMWAKE(I)		<= to_sl(RX_OOBStatus_i(I) = SATA_OOB_COMWAKE);
 			END GENERATE;
 	END GENERATE;
 	

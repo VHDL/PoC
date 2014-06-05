@@ -42,7 +42,7 @@ USE			PoC.vectors.ALL;
 
 ENTITY sata_TransportLayer IS
   GENERIC (
-		DEBUG														: BOOLEAN											:= FALSE;					-- generate ChipScope CSP_* signals
+		DEBUG														: BOOLEAN											:= FALSE;					-- generate ChipScope DBG_* signals
 		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: BOOLEAN											:= TRUE						-- required by ATA/SATA standard
   );
 	PORT (
@@ -490,20 +490,20 @@ BEGIN
 	-- ChipScope
 	-- ==========================================================================================================================================================
 	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL CSP_UpdateATAHostRegisters							: STD_LOGIC;
-		SIGNAL CSP_ATAHostRegisters										: T_ATA_HOST_REGISTERS;
-		SIGNAL CSP_ATADeviceRegisters									: T_ATA_DEVICE_REGISTERS;
-		SIGNAL CSP_FISD_Error													: STD_LOGIC;
+		SIGNAL DBG_UpdateATAHostRegisters							: STD_LOGIC;
+		SIGNAL DBG_ATAHostRegisters										: T_ATA_HOST_REGISTERS;
+		SIGNAL DBG_ATADeviceRegisters									: T_ATA_DEVICE_REGISTERS;
+		SIGNAL DBG_FISD_Error													: STD_LOGIC;
 		
-		ATTRIBUTE KEEP OF CSP_UpdateATAHostRegisters	: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_ATAHostRegisters				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_ATADeviceRegisters			: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_FISD_Error							: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_UpdateATAHostRegisters	: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_ATAHostRegisters				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_ATADeviceRegisters			: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_FISD_Error							: SIGNAL IS TRUE;
 	BEGIN
-		CSP_UpdateATAHostRegisters	<= UpdateATAHostRegisters;
-		CSP_ATAHostRegisters				<= ATAHostRegisters_d;
-		CSP_ATADeviceRegisters			<= ATADeviceRegisters_d;
+		DBG_UpdateATAHostRegisters	<= UpdateATAHostRegisters;
+		DBG_ATAHostRegisters				<= ATAHostRegisters_d;
+		DBG_ATADeviceRegisters			<= ATADeviceRegisters_d;
 
-		CSP_FISD_Error							<= to_sl(FISD_Status = FISD_STATUS_CRC_ERROR);
+		DBG_FISD_Error							<= to_sl(FISD_Status = FISD_STATUS_CRC_ERROR);
 	END GENERATE;
 END;
