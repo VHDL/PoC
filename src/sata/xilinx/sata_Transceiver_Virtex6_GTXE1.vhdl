@@ -19,9 +19,9 @@ USE			L_SATAController.SATATransceiverTypes.ALL;
 ENTITY SATATransceiver_Virtex6_GTXE1 IS
 	GENERIC (
 		CHIPSCOPE_KEEP						: BOOLEAN											:= TRUE;
-		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																									-- 150 MHz
-		PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= T_SATA_GENERATION_VECTOR'(SATA_GENERATION_2, SATA_GENERATION_2)			-- intial SATA Generation
+		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																	-- 150 MHz
+		PORTS											: POSITIVE										:= 2;																			-- Number of Ports per Transceiver
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3 => T_SATA_GENERATION'high)			-- intial SATA Generation
 	);
 	PORT (
 		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -260,8 +260,8 @@ BEGIN
 		WA_Data : ENTITY L_Global.WordAligner
 			GENERIC MAP (
 				REGISTERED					=> FALSE,
-				INPUT_BW						=> 32,
-				WORD_BW							=> 16
+				INPUT_BITS						=> 32,
+				WORD_BITS							=> 16
 			)
 			PORT MAP (
 				Clock								=> GTX_Clock_4X,
@@ -274,8 +274,8 @@ BEGIN
 		WA_CharIsK : ENTITY L_Global.WordAligner
 			GENERIC MAP (
 				REGISTERED					=> FALSE,
-				INPUT_BW						=> 4,
-				WORD_BW							=> 2
+				INPUT_BITS						=> 4,
+				WORD_BITS							=> 2
 			)
 			PORT MAP (
 				Clock								=> GTX_Clock_4X,

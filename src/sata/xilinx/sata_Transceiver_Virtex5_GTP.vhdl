@@ -23,10 +23,10 @@ USE			L_SATAController.SATATransceiverTypes.ALL;
 
 ENTITY SATATransceiver_Virtex5_GTP IS
 	GENERIC (
-		CHIPSCOPE_KEEP						: BOOLEAN											:= FALSE;																									-- generate ChipScope debugging "pins"
-		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																									-- 150 MHz
-		PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 => SATA_GENERATION_2,		1 => SATA_GENERATION_2)			-- intial SATA Generation
+		DEBUG											: BOOLEAN											:= FALSE;																	-- generate ChipScope debugging "pins"
+		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																	-- 150 MHz
+		PORTS											: POSITIVE										:= 2;																			-- Number of Ports per Transceiver
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1 => T_SATA_GENERATION'high)			-- intial SATA Generation
 	);
 	PORT (
 		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -208,17 +208,17 @@ ARCHITECTURE rtl OF SATATransceiver_Virtex5_GTP IS
 	SIGNAL RX_OOBStatus_i											: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL RX_OOBStatus_d											: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0)													:= (OTHERS => SATA_OOB_NONE);
 
-	ATTRIBUTE KEEP OF TX_OOBComplete									: SIGNAL IS CHIPSCOPE_KEEP;
-	ATTRIBUTE KEEP OF BWC_RX_Align										: SIGNAL IS CHIPSCOPE_KEEP;
-	ATTRIBUTE KEEP OF GTP_RX_ClockCorrectionStatus		: SIGNAL IS CHIPSCOPE_KEEP;
-	ATTRIBUTE KEEP OF GTP_RX_BufferStatus							: SIGNAL IS CHIPSCOPE_KEEP;
+	ATTRIBUTE KEEP OF TX_OOBComplete									: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF BWC_RX_Align										: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF GTP_RX_ClockCorrectionStatus		: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF GTP_RX_BufferStatus							: SIGNAL IS DEBUG;
 	
 	-- keep internal clock nets, so timing constrains from UCF can find them
-	ATTRIBUTE KEEP OF GTP_RefClockOut 								: SIGNAL IS CHIPSCOPE_KEEP;
-	ATTRIBUTE KEEP OF GTP_Clock_1X										: SIGNAL IS CHIPSCOPE_KEEP;
-	ATTRIBUTE KEEP OF GTP_Clock_4X										: SIGNAL IS CHIPSCOPE_KEEP;
-	ATTRIBUTE KEEP OF GTP_TX_RefClockOut							: SIGNAL IS CHIPSCOPE_KEEP;
-	ATTRIBUTE KEEP OF GTP_RX_RefClockOut							: SIGNAL IS CHIPSCOPE_KEEP;
+	ATTRIBUTE KEEP OF GTP_RefClockOut 								: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF GTP_Clock_1X										: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF GTP_Clock_4X										: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF GTP_TX_RefClockOut							: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF GTP_RX_RefClockOut							: SIGNAL IS DEBUG;
 	
 BEGIN
 	genReport : FOR I IN 0 TO PORTS - 1 GENERATE
@@ -357,7 +357,7 @@ BEGIN
 	
 	ClkNet : ENTITY L_SATAController.SATATransceiver_Virtex5_ClockNetwork
 		GENERIC MAP (
-			CHIPSCOPE_KEEP							=> CHIPSCOPE_KEEP,
+			DEBUG							=> DEBUG,
 			CLOCK_IN_FREQ_MHZ						=> CLOCK_IN_FREQ_MHZ,
 			PORTS												=> PORTS,
 			INITIAL_SATA_GENERATIONS		=> INITIAL_SATA_GENERATIONS
@@ -394,7 +394,7 @@ BEGIN
 -- ==================================================================
 --	FSM : ENTITY L_SATAController.SATATransceiverFSM
 --		GENERIC MAP (
---			CHIPSCOPE_KEEP						=> CHIPSCOPE_KEEP,
+--			DEBUG						=> DEBUG,
 --			PORTS											=> PORTS
 --		)
 --		PORT MAP (
@@ -697,7 +697,7 @@ BEGIN
 		-- device detection
 		DD : ENTITY L_SATAController.DeviceDetector
 			GENERIC MAP (
-				CHIPSCOPE_KEEP					=> CHIPSCOPE_KEEP,
+				DEBUG					=> DEBUG,
 				CLOCK_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,						-- 150 MHz
 				NO_DEVICE_TIMEOUT_MS		=> NO_DEVICE_TIMEOUT_MS,				-- 1,0 ms
 				NEW_DEVICE_TIMEOUT_MS		=> NEW_DEVICE_TIMEOUT_MS				-- 1,0 us								-- TODO: unused?
@@ -761,7 +761,7 @@ BEGIN
 -- ==================================================================
 	GTPConfig : ENTITY L_SATAController.GTP_DUALConfigurator
 		GENERIC MAP (
-			CHIPSCOPE_KEEP								=> CHIPSCOPE_KEEP,
+			DEBUG								=> DEBUG,
 			DRPCLOCK_FREQ_MHZ							=> CLOCK_IN_FREQ_MHZ,
 			PORTS													=> PORTS,
 			INITIAL_SATA_GENERATIONS			=> INITIAL_SATA_GENERATIONS
@@ -1668,7 +1668,7 @@ BEGIN
 -- ==================================================================
 -- ChipScope debugging signals
 -- ==================================================================
-	genCSP : IF (CHIPSCOPE_KEEP = TRUE) GENERATE
+	genCSP : IF (DEBUG = TRUE) GENERATE
 		SIGNAL DBG_ClockTX_1X												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		SIGNAL DBG_ClockTX_4X												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
