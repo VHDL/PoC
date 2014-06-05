@@ -82,11 +82,20 @@ package board is
 	function MY_DEVICE_STRING(BoardConfig : string := "None") return string;
 	function MY_BOARD_STRUCT(BoardConfig : string := "None")	return T_BOARD_DESCRIPTION;
 
-	-- private functions
-	function conf(str : string) return T_CONFIG_STRING;
-	function str_trim(str : string) return string;	
+end;
 
-	-- board descriptions
+
+package body board is
+
+	-- private functions required by board description
+	-- ModelSim requires that this functions is defined before it is used below.
+	-- ===========================================================================
+	function conf(str : string) return T_CONFIG_STRING is
+	begin
+		return resize(str, T_CONFIG_STRING'length);
+	end function;
+
+	-- board description
 	-- ===========================================================================
 	CONSTANT C_BOARD_DESCRIPTION_LIST		: T_BOARD_DESCRIPTION_VECTOR		:= (
 		BOARD_ML505 => (
@@ -193,24 +202,17 @@ package board is
 			)
 		)
 	);
-end;
-
-
-package body board is
 
 	-- private functions
 	-- ===========================================================================
-	function conf(str : string) return T_CONFIG_STRING is
-	begin
-		return resize(str, T_CONFIG_STRING'length);
-	end function;
-
 	-- TODO: move to PoC.strings; find a better function name??
 	function str_trim(str : string) return string is
 	begin
 		return resize(str, str_length(str));
 	end function;
 
+	-- public functions
+	-- ===========================================================================
 	-- TODO: comment
 	function MY_BOARD_STRUCT(BoardConfig : string := "None") return T_BOARD_DESCRIPTION is
 		constant MY_BRD : T_CONFIG_STRING := ite((BoardConfig = "None"), conf(MY_BOARD), conf(BoardConfig));
