@@ -55,7 +55,7 @@ package simulation is
 	constant D24							: T_SLV_24						:= (others => '-');
 	constant D32							: T_SLV_32						:= (others => '-');
 
-	procedure assertPass(cond : in boolean; pass : inout boolean; msg : in string);
+	procedure assertPass(cond : in boolean; signal pass : inout boolean; msg : in string);
 	procedure printSimulationResult(SimPassed : in boolean);
 	
 	-- TODO: integrate VCD simulation functions and procedures from sim_value_change_dump.vhdl here
@@ -68,11 +68,11 @@ end;
 
 package body simulation is
 
-  procedure assertPass(cond : in boolean; pass : inout boolean; msg : in string) is
+  procedure assertPass(cond : in boolean; signal pass : inout boolean; msg : in string) is
 	begin
 		if not cond then
 			report msg severity error;
-			pass := false;
+			pass <= false;
 		end if;
 	end assertPass;
 

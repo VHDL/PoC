@@ -61,6 +61,8 @@ architecture tb of arith_prefix_or_tb is
   signal x : std_logic_vector(N-1 downto 0);
   signal y : std_logic_vector(N-1 downto 0);
 
+	signal pass : boolean := true;
+
 begin  -- tb
 
   -- component instantiation
@@ -75,10 +77,7 @@ begin  -- tb
 
   -- Stimuli
   process
-		variable pass : boolean;
   begin
-		pass := true;
-
 		-- Exhaustive Testing
     for i in 0 to 2**N-1 loop
       x <= std_logic_vector(to_unsigned(i, N));

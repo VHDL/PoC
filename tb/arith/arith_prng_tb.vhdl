@@ -69,6 +69,7 @@ ARCHITECTURE test OF arith_prng_tb IS
 	);
 
 	SIGNAL SimStop			: std_logic := '0';
+	signal pass					: boolean		:= true;
 
 	SIGNAL Clock				: STD_LOGIC			:= '1';
 	SIGNAL Reset				: STD_LOGIC			:= '0';
@@ -80,7 +81,6 @@ BEGIN
 	Clock <= Clock xnor SimStop after CLOCK_100MHZ_PERIOD / 2;
 
 	PROCESS
-		variable pass : boolean;
 	BEGIN
 		WAIT UNTIL rising_edge(Clock);
 		
@@ -90,7 +90,6 @@ BEGIN
 		Reset						<= '0';
 		WAIT UNTIL rising_edge(Clock);
 
-		pass := true;
 		FOR I IN 0 TO 255 LOOP
 			Test_got				<= '1';
 			WAIT UNTIL rising_edge(Clock);
