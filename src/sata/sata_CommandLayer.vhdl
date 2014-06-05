@@ -58,7 +58,7 @@ ENTITY sata_CommandLayer IS
 		Status												: OUT	T_ATA_CMD_STATUS;
 		Error													: OUT	T_ATA_CMD_ERROR;
 
-		DebugPort											: OUT T_DBG_COMMAND_OUT;
+--		DebugPort											: OUT T_DBG_COMMAND_OUT;
 
 		-- for measurement purposes only
 		Config_BurstSize							: IN	T_SLV_16;
@@ -528,12 +528,12 @@ BEGIN
 
 	-- debug ports
 	-- ==========================================================================================================================================================
-	DebugPort.Command						<= Command;
-	DebugPort.Status						<= Status_i;
-	DebugPort.Error							<= Error_i;
+--	DebugPort.Command						<= Command;
+--	DebugPort.Status						<= Status_i;
+--	DebugPort.Error							<= Error_i;
 	
-	DebugPort.DriveInformation.Valid	<= '0';
---	DebugPort.DriveInformation	<= IDF_DriveInformation;
+--	DebugPort.DriveInformation.Valid	<= '0';
+----	DebugPort.DriveInformation	<= IDF_DriveInformation;
 
 	-- ChipScope
 	-- ==========================================================================================================================================================

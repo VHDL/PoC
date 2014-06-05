@@ -57,7 +57,7 @@ ENTITY sata_LinkLayer IS
 		Error										: OUT	T_SATA_LINK_ERROR;
 
 		-- Debug ports
-		DebugPort_Out					 	: OUT T_DBG_LINKOUT;
+--		DebugPort_Out					 	: OUT T_DBG_LINKOUT;
 		
 		-- TX port
 		TX_SOF									: IN	STD_LOGIC;
@@ -657,7 +657,7 @@ BEGIN
 	-- ================================================================
 	-- debug ports
 	-- ================================================================
-	DebugPort_Out.RX_Primitive	<= RX_Primitive;
+--	DebugPort_Out.RX_Primitive	<= RX_Primitive;
 	
 
 	genCSP : IF (DEBUG = TRUE) GENERATE

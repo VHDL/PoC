@@ -76,12 +76,19 @@ ARCHITECTURE rtl OF sata_IdentifyDeviceFilter IS
 		ST_ERROR
 	);
 	
+	FUNCTION to_01(slv : STD_LOGIC_VECTOR) RETURN STD_LOGIC_VECTOR IS
+	BEGIN
+	  return  to_stdlogicvector(to_bitvector(slv));
+	END;
+	
 	FUNCTION calcSATAGenerationMin(SpeedBits : STD_LOGIC_VECTOR(6 DOWNTO 0)) RETURN T_SATA_GENERATION IS
 	BEGIN
 		IF (SpeedBits(0) = '1') THEN
 			RETURN SATA_GENERATION_1;
 		ELSIF (SpeedBits(1) = '1') THEN
 			RETURN SATA_GENERATION_2;
+		ELSIF (SpeedBits(2) = '1') THEN
+			RETURN SATA_GENERATION_3;
 		ELSE
 			RETURN SATA_GENERATION_1;
 		END IF;
@@ -89,7 +96,9 @@ ARCHITECTURE rtl OF sata_IdentifyDeviceFilter IS
 	
 	FUNCTION calcSATAGenerationMax(SpeedBits : STD_LOGIC_VECTOR(6 DOWNTO 0)) RETURN T_SATA_GENERATION IS
 	BEGIN
-		IF (SpeedBits(1) = '1') THEN
+		IF (SpeedBits(2) = '1') THEN
+			RETURN SATA_GENERATION_3;
+		ELSIF (SpeedBits(1) = '1') THEN
 			RETURN SATA_GENERATION_2;
 		ELSIF (SpeedBits(0) = '1') THEN
 			RETURN SATA_GENERATION_1;
@@ -98,17 +107,16 @@ ARCHITECTURE rtl OF sata_IdentifyDeviceFilter IS
 		END IF;
 	END;
 	
-	CONSTANT WordAC_BITS										: POSITIVE						:= log2ceilnz(128);
+	CONSTANT WORDAC_BITS															: POSITIVE								:= log2ceilnz(128);			-- 512 Byte legacy block size => 128 * 32-bit words
 	
-	SIGNAL State													: T_STATE													:= ST_IDLE;
-	SIGNAL NextState											: T_STATE;
-	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS ite(DEBUG					, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	SIGNAL State																			: T_STATE									:= ST_IDLE;
+	SIGNAL NextState																	: T_STATE;
+	ATTRIBUTE FSM_ENCODING	OF State									: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 	
-	SIGNAL WordAC_inc											: STD_LOGIC;
-	SIGNAL WordAC_Load										: STD_LOGIC;
-	SIGNAL WordAC_Address									: STD_LOGIC_VECTOR(WordAC_BITS - 1 DOWNTO 0);
-	SIGNAL WordAC_Address_us							: UNSIGNED(WordAC_BITS - 1 DOWNTO 0);
-	SIGNAL WordAC_Finished								: STD_LOGIC;
+	SIGNAL WordAC_inc																	: STD_LOGIC;
+	SIGNAL WordAC_Load																: STD_LOGIC;
+	SIGNAL WordAC_Address_us													: UNSIGNED(WORDAC_BITS - 1 DOWNTO 0);
+	SIGNAL WordAC_Finished														: STD_LOGIC;
 	
 	SIGNAL ATAWord_117_IsValid_r											: STD_LOGIC								:= '0';
 	
@@ -221,24 +229,26 @@ BEGIN
 		END CASE;
 	END PROCESS;
 	
-	WordAC : ENTITY PoC.sata_AddressCounter
-		GENERIC MAP (
-			COUNTER_BITS					=> WordAC_BITS
-		)
-		PORT MAP (
-			Clock								=> Clock,																								-- clock
-			inc									=> WordAC_inc,																					-- enable counter
-      dec                 => '0',
-			Load								=> WordAC_Load,																					-- load start and forward input
-			Address_Start				=> to_slv(0, WordAC_BITS),															-- start address
-			Address_Step				=> to_slv(1, WordAC_BITS),															-- step between two addresses
-			Address_End					=> (WordAC_BITS - 1 DOWNTO 0 => '1'),										-- end address
-
-			Address							=> WordAC_Address,																			-- currend address
-			Counter_Finished		=> WordAC_Finished																			-- active if end address is reached
-		);
 	
-	WordAC_Address_us		<= unsigned(WordAC_Address);
+	blkWordAC : BLOCK
+		SIGNAL Counter_us				: UNSIGNED(WORDAC_BITS - 1 DOWNTO 0)					:= (OTHERS => '0');
+	BEGIN
+		PROCESS(Clock)
+		BEGIN
+			IF rising_edge(Clock) THEN
+				IF (WordAC_Load = '1') THEN
+					Counter_us				<= (OTHERS => '0');
+				ELSIF (WordAC_inc = '1') THEN
+					Counter_us			<= Counter_us + 1;
+				END IF;
+			END IF;
+		END PROCESS;
+
+		-- address output
+		WordAC_Address_us	<= Counter_us;
+		WordAC_Finished		<= to_sl(Counter_us = (Counter_us'range => '1'));
+	END BLOCK;
+
 	
 	-- checksum calculation
 	cs : BLOCK

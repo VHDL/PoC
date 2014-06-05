@@ -34,10 +34,11 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
---USE			PoC.sata.ALL;
+USE			PoC.sata.ALL;
 
 
 ENTITY sata_PhysicalLayer IS
@@ -46,7 +47,7 @@ ENTITY sata_PhysicalLayer IS
 		CLOCK_IN_FREQ_MHZ								: REAL														:= 150.0;
 		CONTROLLER_TYPE									: T_SATA_DEVICE_TYPE							:= SATA_DEVICE_TYPE_HOST;
 		ALLOW_SPEED_NEGOTIATION					: BOOLEAN													:= TRUE;
-		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= SATA_GENERATION_2;
+		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= T_SATA_GENERATION'high;
 		ALLOW_AUTO_RECONNECT						: BOOLEAN													:= TRUE;
 		ALLOW_STANDARD_VIOLATION				: BOOLEAN													:= FALSE;
 		OOB_TIMEOUT_US									: INTEGER													:= 0;
@@ -66,7 +67,7 @@ ENTITY sata_PhysicalLayer IS
 		Status													: OUT	T_SATA_PHY_STATUS;
 		Error														: OUT	T_SATA_PHY_ERROR;
 
-		DebugPortOut										: OUT	T_DBG_PHYOUT;
+--		DebugPortOut										: OUT	T_DBG_PHYOUT;
 
 		Link_RX_Data										: OUT	T_SLV_32;
 		Link_RX_CharIsK									: OUT	T_SATA_CIK;
@@ -107,7 +108,7 @@ ARCHITECTURE rtl OF sata_PhysicalLayer IS
 	
 	SIGNAL State											: T_PHY_STATE						:= ST_RESET;
 	SIGNAL NextState									: T_PHY_STATE;
-	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS ite(DEBUG					, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
 	SIGNAL SATA_Generation_i					: T_SATA_GENERATION;
 	
@@ -132,7 +133,7 @@ ARCHITECTURE rtl OF sata_PhysicalLayer IS
 	SIGNAL RX_Primitive								: T_SATA_PRIMITIVE;
 	SIGNAL TX_Primitive								: T_SATA_PRIMITIVE;
 	
-	SIGNAL DebugPortOut_i							: T_DBG_PHYOUT;
+--	SIGNAL DebugPortOut_i							: T_DBG_PHYOUT;
 	SIGNAL Error_i										: T_SATA_PHY_ERROR;
 	
 BEGIN
@@ -337,7 +338,7 @@ BEGIN
 				SATAGeneration_Reset			=> SC_SATAGeneration_Reset,					--	=> reset SATA_Generation, reset all attempt counters => if necessary reconfigure GTP
 				AttemptCounter_Reset			=> SC_AttemptCounter_Reset,
 
-				DebugPortOut							=> DebugPortOut_i,
+--				DebugPortOut							=> DebugPortOut_i,
 
 				-- OOBControl interface
 				OOB_Timeout								=> OOB_Timeout,

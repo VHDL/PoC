@@ -37,7 +37,7 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
---USE			PoC.sata.ALL;
+USE			PoC.sata.ALL;
 
 
 ENTITY sata_TransportLayer IS
@@ -54,7 +54,7 @@ ENTITY sata_TransportLayer IS
 		Status													: OUT	T_SATA_TRANS_STATUS;
 		Error														: OUT	T_SATA_TRANS_ERROR;	
 	
-		DebugPort												: OUT T_DBG_TRANSPORT_OUT;
+--		DebugPort												: OUT T_DBG_TRANSPORT_OUT;
 	
 		-- ATA registers
 		UpdateATAHostRegisters					: IN	STD_LOGIC;
@@ -385,8 +385,8 @@ BEGIN
 		RX_Commit							<= RXReg_Commit;
 		RX_Rollback						<= RXReg_Rollback;
 		
-		DebugPort.SOT					<= RXReg_SOT;
-		DebugPort.EOT					<= RXReg_EOT;
+--		DebugPort.SOT					<= RXReg_SOT;
+--		DebugPort.EOT					<= RXReg_EOT;
 	END BLOCK;
 
 
@@ -470,22 +470,22 @@ BEGIN
 	
 	-- debug ports
 	-- ==========================================================================================================================================================
-	DebugPort.Command											<= Command;
-	DebugPort.Status											<= Status_i;
-	DebugPort.Error												<= Error_i;
-		
-	DebugPort.UpdateATAHostRegisters			<= UpdateATAHostRegisters;
-	DebugPort.ATAHostRegisters						<= ATAHostRegisters_i;
-	DebugPort.UpdateATADeviceRegisters		<= UpdateATADeviceRegisters;
-	DebugPort.ATADeviceRegisters					<= ATADeviceRegisters_i;
-		
-	DebugPort.FISE_FISType								<= TFSM_FISType;
-	DebugPort.FISE_Status									<= FISE_Status;
-	DebugPort.FISD_FISType								<= FISD_FISType;
-	DebugPort.FISD_Status									<= FISD_Status;
-		
-	DebugPort.SOF													<= Link_RX_SOF;
-	DebugPort.EOF													<= Link_RX_EOF;
+--	DebugPort.Command											<= Command;
+--	DebugPort.Status											<= Status_i;
+--	DebugPort.Error												<= Error_i;
+--		
+--	DebugPort.UpdateATAHostRegisters			<= UpdateATAHostRegisters;
+--	DebugPort.ATAHostRegisters						<= ATAHostRegisters_i;
+--	DebugPort.UpdateATADeviceRegisters		<= UpdateATADeviceRegisters;
+--	DebugPort.ATADeviceRegisters					<= ATADeviceRegisters_i;
+--		
+--	DebugPort.FISE_FISType								<= TFSM_FISType;
+--	DebugPort.FISE_Status									<= FISE_Status;
+--	DebugPort.FISD_FISType								<= FISD_FISType;
+--	DebugPort.FISD_Status									<= FISD_Status;
+--		
+--	DebugPort.SOF													<= Link_RX_SOF;
+--	DebugPort.EOF													<= Link_RX_EOF;
 	
 	-- ChipScope
 	-- ==========================================================================================================================================================
