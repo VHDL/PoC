@@ -34,12 +34,13 @@
 entity arith_prefix_or_tb is
 end arith_prefix_or_tb;
 
-
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+library	IEEE;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
 
 library PoC;
+use			PoC.simulation.ALL;
+
 
 architecture tb of arith_prefix_or_tb is
 
@@ -60,6 +61,8 @@ architecture tb of arith_prefix_or_tb is
   signal x : std_logic_vector(N-1 downto 0);
   signal y : std_logic_vector(N-1 downto 0);
 
+	signal pass : boolean := true;
+
 begin  -- tb
 
   -- component instantiation
@@ -75,17 +78,21 @@ begin  -- tb
   -- Stimuli
   process
   begin
+		-- Exhaustive Testing
     for i in 0 to 2**N-1 loop
       x <= std_logic_vector(to_unsigned(i, N));
       wait for 10 ns;
       for j in 0 to N-1 loop
-        assert (y(j) = '1') = (x(j downto 0) /= (j downto 0 => '0'))
-          report "Wrong result for "&integer'image(i)&" / "&integer'image(j)
-          severity error;
-      end loop;
+				assertPass((y(j) = '1') = (x(j downto 0) /= (j downto 0 => '0')),
+									 pass,
+								   "Wrong result for "&integer'image(i)&" / "&integer'image(j));
+			end loop;
     end loop;
-    report "Test completed." severity note;
-    wait;
+
+		-- Report overall result
+		printSimulationResult(pass);
+
+    wait;  -- forever
   end process;
 
 end tb;

@@ -39,6 +39,7 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
+USE			PoC.simulation.ALL;
 
 
 ENTITY arith_prng_tb IS
@@ -67,24 +68,17 @@ ARCHITECTURE test OF arith_prng_tb IS
 		x"9A", x"34", x"69", x"D3", x"A7", x"4F", x"9E", x"3C", x"78", x"F0", x"E0", x"C1", x"82", x"04", x"09", x"12"
 	);
 
-	SHARED VARIABLE SimStop		: BOOLEAN				:= FALSE;
-	SHARED VARIABLE SimError	: BOOLEAN				:= FALSE;
+	SIGNAL SimStop			: std_logic := '0';
+	signal pass					: boolean		:= true;
 
-	SIGNAL Clock							: STD_LOGIC			:= '1';
-	SIGNAL Reset							: STD_LOGIC			:= '0';
-	SIGNAL Test_got						: STD_LOGIC			:= '0';
-	SIGNAL PRNG_Value					: T_SLV_8;
+	SIGNAL Clock				: STD_LOGIC			:= '1';
+	SIGNAL Reset				: STD_LOGIC			:= '0';
+	SIGNAL Test_got			: STD_LOGIC			:= '0';
+	SIGNAL PRNG_Value		: T_SLV_8;
 	
 BEGIN
 
-	ClockProcess100MHz : PROCESS(Clock)
-  BEGIN
-		IF (SimStop = FALSE) THEN
-			Clock <= NOT Clock AFTER CLOCK_100MHZ_PERIOD / 2;
-		ELSE
-			Clock	<= '0';
-		END IF;
-  END PROCESS;
+	Clock <= Clock xnor SimStop after CLOCK_100MHZ_PERIOD / 2;
 
 	PROCESS
 	BEGIN
@@ -95,25 +89,19 @@ BEGIN
 	
 		Reset						<= '0';
 		WAIT UNTIL rising_edge(Clock);
-	
+
 		FOR I IN 0 TO 255 LOOP
 			Test_got				<= '1';
 			WAIT UNTIL rising_edge(Clock);
-			
---			REPORT "I=" & INTEGER'image(I) & " Value=" & to_string(PRNG_Value, 'h') & " Expected=" & to_string(COMPARE_LIST_8_BITS(I), 'h');
-			IF (PRNG_Value /= COMPARE_LIST_8_BITS(I)) THEN
-				SimError	:= TRUE;
-				EXIT;
-			END IF;
+			assertPass(PRNG_Value = COMPARE_LIST_8_BITS(I),
+							   pass,
+								 "I="&integer'image(I)&" Value=" & to_string(PRNG_Value, 'h') &
+								 " Expected=" & to_string(COMPARE_LIST_8_BITS(I), 'h'));
 		END LOOP;
 		
-		IF SimError THEN
-			REPORT "SIMULATION RESULT = FAILED" SEVERITY NOTE;
-		ELSE
-			REPORT "SIMULATION RESULT = PASSED" SEVERITY NOTE;
-		END IF;
-		
-		SimStop		:= TRUE;
+		-- Report overall simulation result
+		printSimulationResult(pass);
+		SimStop	<= '1';
 		WAIT;
 	END PROCESS;
 

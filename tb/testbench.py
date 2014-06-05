@@ -1,4 +1,4 @@
-#!/usr/bin/python3.4
+#! /bin/bash
 # EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
@@ -32,12 +32,45 @@
 # limitations under the License.
 # ==============================================================================
 
+""":"
+# this is a python bootloader written in bash to load the minimal required python version
+# Source:		https://github.com/apache/cassandra/blob/trunk/bin/cqlsh
+# License:	Apache License-2.0
+#
+# use default python version (/usr/bin/python) if >= 3.4.0
+for isim in "$@"; do
+	if [ "$isim" = "--isim" ]; then
+		if [ -z "$XILINX" ]; then
+			settingsFile=$(../py/bootloader.py --ise)
+		  if [ -z "$settingsFile" ]; then
+			  echo 1>&2 "No ISE installation found."
+			  exit 1
+		  fi
+			echo Loading "'$settingsFile'"
+			rescue_args=$@
+			set --
+			. "$settingsFile"
+			set -- $rescue_args
+		fi
+	fi
+done
+python -c 'import sys; sys.exit(not (0x03040000 < sys.hexversion < 0x04000000))' 2>/dev/null && exec python "$0" "$@"
+# try to load highest installed python version first
+for pyversion in 3.9 3.8 3.7 3.6 3.5 3.4; do
+	which python$pyversion > /dev/null 2>&1 && exec python$pyversion "$0" "$@"
+done
+# if no suitable version is installed, write error message to STDERR and exit
+echo "No appropriate python version found." >&2
+exit 1
+":"""
+
 import argparse
 import configparser
 import os
 import pathlib
 import platform
 import re
+import shutil
 import string
 import subprocess
 import sys
@@ -128,7 +161,24 @@ class PoCTestbench:
 	def isimSimulation(self, module, showLogs):
 		if (len(self.__pocConfig.options("Xilinx-ISE")) == 0):
 			print("Xilinx ISE is not configured on this system.")
-			print("Run 'PoC.py --configure' to configure your Xilinx ISE environment.")
+			print("Run 'poc.py --configure' to configure your Xilinx ISE environment.")
+			return
+
+		iseInstallationDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['InstallationDirectory'])
+		iseBinaryDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['BinaryDirectory'])
+			
+		if (os.environ.get('XILINX') == None):
+			settingsFilePath = iseInstallationDirectoryPath
+			if (self.__platform == "Windows"):
+				settingsFilePath /= "settings64.bat"
+			elif (self.__platform == "Linux"):
+				settingsFilePath /= "settings64.sh"
+			else:
+				print("ERROR: Platform not supported!")
+				return
+
+			print("ERROR: Xilinx ISE environment is not loaded in this shell.")				
+			print("Run '%s' to load your Xilinx ISE environment." % str(settingsFilePath))
 			return
 	
 		temp = module.split('_', 1)
@@ -143,12 +193,9 @@ class PoCTestbench:
 			self.printDebug("temporary directors: %s" % str(tempIsimPath))
 			tempIsimPath.mkdir(parents=True)
 
-		iseInstallationDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['InstallationDirectory'])
-		iseBinaryDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['BinaryDirectory'])
 		vhpcompExecutablePath = iseBinaryDirectoryPath / ("vhpcomp.exe" if (self.__platform == "Windows") else "vhpcomp")
 		fuseExecutablePath = iseBinaryDirectoryPath / ("fuse.exe" if (self.__platform == "Windows") else "fuse")
 		
-#		settingsFilePath = iseInstallationDirectoryPath / "settings64.bat"
 		section = "%s.%s" % (fullNamespace, moduleName)
 		testbenchName = self.__tbConfig[section]['TestbenchModule']
 		prjFilePath =  pathlib.Path(self.__tbConfig[section]['iSimProjectFile'])
@@ -167,7 +214,7 @@ class PoCTestbench:
 		
 #			print("%s" % (str(settingsFilePath)))		
 			print('cd "%s"' % str(tempIsimPath))
-			print('%s work.%s -prj "%s" -o "%s"' % (str(fuseExecutablePath), testbenchName, str(prjFilePath), str(exeFilePath)))
+			print('%s work.%s --incremental -prj "%s" -o "%s"' % (str(fuseExecutablePath), testbenchName, str(prjFilePath), str(exeFilePath)))
 			print('%s -tclbatch "%s"' % (str(exeFilePath), str(tclFilePath)))
 			print()
 
@@ -176,13 +223,17 @@ class PoCTestbench:
 
 		os.chdir(str(tempIsimPath))
 		
+		# copy project file into temporary directory
+		shutil.copy(str(prjFilePath),str(tempIsimPath));
+
 		# running fuse
 		print("running fuse...")
 		linkerLog = subprocess.check_output([
 			str(fuseExecutablePath),
 			('work.%s' % testbenchName),
+			'--incremental',
 			'-prj',
-			str(prjFilePath),
+			str(tempIsimPath / prjFilePath.name),
 			'-o',
 			str(exeFilePath)
 			], stderr=subprocess.STDOUT, universal_newlines=True)
@@ -209,8 +260,8 @@ class PoCTestbench:
 	
 		print()
 		# check output
-		matchPos = simulatorLog.index("SIMULATION RESULT = ")
-		if (matchPos > 0):
+		matchPos = simulatorLog.find("SIMULATION RESULT = ")
+		if (matchPos >= 0):
 			if (simulatorLog[matchPos + 20 : matchPos + 26] == "PASSED"):
 				print("Testbench '%s': PASSED" % testbenchName)
 			elif (simulatorLog[matchPos + 20: matchPos + 26] == "FAILED"):
@@ -271,7 +322,7 @@ class PoCTestbench:
 			print()
 		
 			print('cd "%s"' % str(tempGhdlPath))
-			print('%s -a --work=PoC "%s"' % (str(ghdlExecutablePath), 'path/to/sourcefile.vhdl'))
+			print('%s -a --syn-binding --work=PoC "%s"' % (str(ghdlExecutablePath), 'path/to/sourcefile.vhdl'))
 			print('%s -r --work=work work.%s' % (str(ghdlExecutablePath), testbenchName))
 			print()
 
@@ -290,14 +341,14 @@ class PoCTestbench:
 				regExpMatch = regexp.match(line)
 				
 				if (regExpMatch is not None):
-					command = '%s -a --work=%s "%s"' % (str(ghdlExecutablePath), regExpMatch.group('Library'), str(pathlib.Path(regExpMatch.group('VHDLFile'))))
+					command = '%s -a --syn-binding --work=%s "%s"' % (str(ghdlExecutablePath), regExpMatch.group('Library'), str(pathlib.Path(regExpMatch.group('VHDLFile'))))
 					self.printDebug('command: %s' % command)
 					ghdlLog = subprocess.check_output([
 						str(ghdlExecutablePath),
-						'-a',
+						'-a', '--syn-binding',
 						('--work=%s' % regExpMatch.group('Library')),
 						str(pathlib.Path(regExpMatch.group('VHDLFile')))
-						], stderr=subprocess.STDOUT, shell=(True if (self.__platform == "Windows") else False), universal_newlines=True)
+						], stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 #		
 					if showLogs:
 						print("ghdl call: %s" % command)
@@ -313,13 +364,13 @@ class PoCTestbench:
 		if (self.__platform == "Windows"):
 			simulatorLog = subprocess.check_output([
 				str(ghdlExecutablePath),
-				'-r',
+				'-r', '--syn-binding',
 				'--work=work',
 				testbenchName
-				], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+				], stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 #		
 			if showLogs:
-				command = "%s -r --work=work %s" % (str(ghdlExecutablePath), testbenchName)
+				command = "%s -r --syn-binding --work=work %s" % (str(ghdlExecutablePath), testbenchName)
 				print("ghdl call: %s" % command)
 				
 				if (simulatorLog != ""):
@@ -329,13 +380,13 @@ class PoCTestbench:
 		elif (self.__platform == "Linux"):
 			elaborateLog = subprocess.check_output([
 				str(ghdlExecutablePath),
-				'-e',
+				'-e', '--syn-binding',
 				'--work=work',
 				testbenchName
 				], stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 #		
 			if showLogs:
-				command = "%s -e --work=work %s" % (str(ghdlExecutablePath), testbenchName)
+				command = "%s -e --syn-binding --work=work %s" % (str(ghdlExecutablePath), testbenchName)
 				print("ghdl call: %s" % command)
 				
 				if (elaborateLog != ""):
@@ -360,8 +411,8 @@ class PoCTestbench:
 			return
 
 		print()
-		matchPos = simulatorLog.index("SIMULATION RESULT = ")
-		if (matchPos > 0):
+		matchPos = simulatorLog.find("SIMULATION RESULT = ")
+		if (matchPos >= 0):
 			if (simulatorLog[matchPos + 20 : matchPos + 26] == "PASSED"):
 				print("Testbench '%s': PASSED" % testbenchName)
 			elif (simulatorLog[matchPos + 20: matchPos + 26] == "FAILED"):
@@ -386,6 +437,11 @@ def main():
 	print("                  PoC Library - Testbench Service Tool                  ")
 	print("========================================================================")
 	print()
+	
+	if (cmpVersion(sys.version_info, [3,4,0]) < 0):
+		print("ERROR: Used Python is to old: %s" % sys.version)
+		print("Minimal required Python version is 3.4.0")
+		return
 	
 	try:
 		# create a commandline argument parser
@@ -420,7 +476,12 @@ def main():
 		test.ghdlSimulation(args.module, args.l)
 	else:
 		argParser.print_help()
-	
+
+def cmpVersion(version1, version2):
+  v1 = (version1.major << 16)|(version1.minor << 8)|version1.micro
+  v2 = (version2[0]    << 16)|(version2[1]    << 8)|version2[2];
+  return 1 if (v1 > v2) else 0 if (v1 == v2) else -1
+
 # entry point
 if __name__ == "__main__":
 	main()

@@ -7,15 +7,14 @@ USE			UNISIM.VCOMPONENTS.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+--USE			PoC.strings.ALL;
+USE			PoC.sata.ALL;
+--USE			PoC.sata_TransceiverTypes.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
 
-LIBRARY L_SATAController;
-USE			L_SATAController.SATATypes.ALL;
-
-
-ENTITY SATATransceiver_Virtex7_GTXE2 IS
+ENTITY SATATransceiver_Series7_GTXE2 IS
 	GENERIC (
 		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																									-- 150 MHz
 		PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
@@ -63,7 +62,7 @@ ENTITY SATATransceiver_Virtex7_GTXE2 IS
 END;
 
 
-ARCHITECTURE rtl OF SATATransceiver_Virtex7_GTXE2 IS
+ARCHITECTURE rtl OF SATATransceiver_Series7_GTXE2 IS
 	ATTRIBUTE KEEP 														: BOOLEAN;
 
 -- ==================================================================
