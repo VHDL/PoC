@@ -70,6 +70,7 @@ import os
 import pathlib
 import platform
 import re
+import shutil
 import string
 import subprocess
 import sys
@@ -222,6 +223,9 @@ class PoCTestbench:
 
 		os.chdir(str(tempIsimPath))
 		
+		# copy project file into temporary directory
+		shutil.copy(str(prjFilePath),str(tempIsimPath));
+
 		# running fuse
 		print("running fuse...")
 		linkerLog = subprocess.check_output([
@@ -229,7 +233,7 @@ class PoCTestbench:
 			('work.%s' % testbenchName),
 			'--incremental',
 			'-prj',
-			str(prjFilePath),
+			str(tempIsimPath / prjFilePath.name),
 			'-o',
 			str(exeFilePath)
 			], stderr=subprocess.STDOUT, universal_newlines=True)

@@ -1,0 +1,11 @@
+vhdl poc	"../../tb/common/my_config_KC705.vhdl"
+vhdl poc	"../../src/common/utils.vhdl"
+vhdl poc	"../../src/common/strings.vhdl"
+vhdl poc	"../../src/common/vectors.vhdl"
+vhdl poc	"../../src/common/board.vhdl"
+vhdl poc	"../../src/common/config.vhdl"
+vhdl poc	"../../src/mem/ocram/ocram_pkg.vhdl"
+vhdl poc	"../../src/mem/ocram/ocram_sdp.vhdl"
+vhdl poc	"../../tb/common/simulation.vhdl"
+vhdl work	"../../tb/mem/ocram/ocram_sdp_tb.vhdl"
+

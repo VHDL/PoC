@@ -3,7 +3,8 @@ SRCS := my_config_ML505.vhdl \
 	$(DUT_PATH)/utils.vhdl $(DUT_PATH)/strings.vhdl \
 	$(DUT_PATH)/vectors.vhdl $(DUT_PATH)/board.vhdl \
 	$(DUT_PATH)/config.vhdl \
-	config_tb.vhdl 
+	simulation.vhdl \
+	config_tb.vhdl
 
 .PHONY: all clean
 
