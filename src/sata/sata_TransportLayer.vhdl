@@ -37,12 +37,12 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
---USE			PoC.sata.ALL;
+USE			PoC.sata.ALL;
 
 
 ENTITY sata_TransportLayer IS
   GENERIC (
-		DEBUG														: BOOLEAN											:= FALSE;					-- generate ChipScope CSP_* signals
+		DEBUG														: BOOLEAN											:= FALSE;					-- generate ChipScope DBG_* signals
 		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: BOOLEAN											:= TRUE						-- required by ATA/SATA standard
   );
 	PORT (
@@ -54,7 +54,7 @@ ENTITY sata_TransportLayer IS
 		Status													: OUT	T_SATA_TRANS_STATUS;
 		Error														: OUT	T_SATA_TRANS_ERROR;	
 	
-		DebugPort												: OUT T_DBG_TRANSPORT_OUT;
+--		DebugPort												: OUT T_DBG_TRANSPORT_OUT;
 	
 		-- ATA registers
 		UpdateATAHostRegisters					: IN	STD_LOGIC;
@@ -385,8 +385,8 @@ BEGIN
 		RX_Commit							<= RXReg_Commit;
 		RX_Rollback						<= RXReg_Rollback;
 		
-		DebugPort.SOT					<= RXReg_SOT;
-		DebugPort.EOT					<= RXReg_EOT;
+--		DebugPort.SOT					<= RXReg_SOT;
+--		DebugPort.EOT					<= RXReg_EOT;
 	END BLOCK;
 
 
@@ -470,40 +470,40 @@ BEGIN
 	
 	-- debug ports
 	-- ==========================================================================================================================================================
-	DebugPort.Command											<= Command;
-	DebugPort.Status											<= Status_i;
-	DebugPort.Error												<= Error_i;
-		
-	DebugPort.UpdateATAHostRegisters			<= UpdateATAHostRegisters;
-	DebugPort.ATAHostRegisters						<= ATAHostRegisters_i;
-	DebugPort.UpdateATADeviceRegisters		<= UpdateATADeviceRegisters;
-	DebugPort.ATADeviceRegisters					<= ATADeviceRegisters_i;
-		
-	DebugPort.FISE_FISType								<= TFSM_FISType;
-	DebugPort.FISE_Status									<= FISE_Status;
-	DebugPort.FISD_FISType								<= FISD_FISType;
-	DebugPort.FISD_Status									<= FISD_Status;
-		
-	DebugPort.SOF													<= Link_RX_SOF;
-	DebugPort.EOF													<= Link_RX_EOF;
+--	DebugPort.Command											<= Command;
+--	DebugPort.Status											<= Status_i;
+--	DebugPort.Error												<= Error_i;
+--		
+--	DebugPort.UpdateATAHostRegisters			<= UpdateATAHostRegisters;
+--	DebugPort.ATAHostRegisters						<= ATAHostRegisters_i;
+--	DebugPort.UpdateATADeviceRegisters		<= UpdateATADeviceRegisters;
+--	DebugPort.ATADeviceRegisters					<= ATADeviceRegisters_i;
+--		
+--	DebugPort.FISE_FISType								<= TFSM_FISType;
+--	DebugPort.FISE_Status									<= FISE_Status;
+--	DebugPort.FISD_FISType								<= FISD_FISType;
+--	DebugPort.FISD_Status									<= FISD_Status;
+--		
+--	DebugPort.SOF													<= Link_RX_SOF;
+--	DebugPort.EOF													<= Link_RX_EOF;
 	
 	-- ChipScope
 	-- ==========================================================================================================================================================
 	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL CSP_UpdateATAHostRegisters							: STD_LOGIC;
-		SIGNAL CSP_ATAHostRegisters										: T_ATA_HOST_REGISTERS;
-		SIGNAL CSP_ATADeviceRegisters									: T_ATA_DEVICE_REGISTERS;
-		SIGNAL CSP_FISD_Error													: STD_LOGIC;
+		SIGNAL DBG_UpdateATAHostRegisters							: STD_LOGIC;
+		SIGNAL DBG_ATAHostRegisters										: T_ATA_HOST_REGISTERS;
+		SIGNAL DBG_ATADeviceRegisters									: T_ATA_DEVICE_REGISTERS;
+		SIGNAL DBG_FISD_Error													: STD_LOGIC;
 		
-		ATTRIBUTE KEEP OF CSP_UpdateATAHostRegisters	: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_ATAHostRegisters				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_ATADeviceRegisters			: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_FISD_Error							: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_UpdateATAHostRegisters	: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_ATAHostRegisters				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_ATADeviceRegisters			: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_FISD_Error							: SIGNAL IS TRUE;
 	BEGIN
-		CSP_UpdateATAHostRegisters	<= UpdateATAHostRegisters;
-		CSP_ATAHostRegisters				<= ATAHostRegisters_d;
-		CSP_ATADeviceRegisters			<= ATADeviceRegisters_d;
+		DBG_UpdateATAHostRegisters	<= UpdateATAHostRegisters;
+		DBG_ATAHostRegisters				<= ATAHostRegisters_d;
+		DBG_ATADeviceRegisters			<= ATADeviceRegisters_d;
 
-		CSP_FISD_Error							<= to_sl(FISD_Status = FISD_STATUS_CRC_ERROR);
+		DBG_FISD_Error							<= to_sl(FISD_Status = FISD_STATUS_CRC_ERROR);
 	END GENERATE;
 END;
