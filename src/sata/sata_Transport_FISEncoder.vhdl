@@ -34,10 +34,11 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
--USE			PoC.sata.ALL;
+USE			PoC.sata.ALL;
 
 
 ENTITY sata_FISEncoder IS
