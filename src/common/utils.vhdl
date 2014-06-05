@@ -42,8 +42,7 @@ library	PoC;
 package utils is
   --+ Environment +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   -- Distinguishes Simulation from Synthesis
-	function IS_SIMULATION return boolean;	-- Forward declaration; consider it PRIVATE
-	constant SIMULATION : boolean := IS_SIMULATION;
+	function SIMULATION return boolean;
 	
 	-- Type declarations
 	-- ==========================================================================
@@ -229,9 +228,10 @@ package body utils is
 
 	-- Environment
 	-- ==========================================================================
-	function IS_SIMULATION return boolean is
-		variable ret : boolean := false;
+	function SIMULATION return boolean is
+		variable ret : boolean;
 	begin
+		ret := false;
 		--synthesis translate_off
 		if Is_X('X') then ret := true; end if;
 		--synthesis translate_on
