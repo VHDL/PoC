@@ -6,6 +6,7 @@
 -- Testbench:				Simulation constants, functions and utilities.
 -- 
 -- Authors:					Patrick Lehmann
+--									Thomas B. Preusser
 -- 
 -- Description:
 -- ------------------------------------
@@ -40,7 +41,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
-USE			PoC.strings.ALL;
+--USE			PoC.strings.ALL;
 
 
 package simulation is
@@ -54,7 +55,8 @@ package simulation is
 	constant D24							: T_SLV_24						:= (others => '-');
 	constant D32							: T_SLV_32						:= (others => '-');
 
-	procedure printSimulationResult(SimPassed : boolean);
+	procedure assertPass(cond : in boolean; pass : inout boolean; msg : in string);
+	procedure printSimulationResult(SimPassed : in boolean);
 	
 	-- TODO: integrate VCD simulation functions and procedures from sim_value_change_dump.vhdl here
 	
@@ -66,13 +68,22 @@ end;
 
 package body simulation is
 
-	procedure printSimulationResult(SimPassed : boolean) is
-		variable l				: line;
+  procedure assertPass(cond : in boolean; pass : inout boolean; msg : in string) is
 	begin
+		if not cond then
+			report msg severity error;
+			pass := false;
+		end if;
+	end assertPass;
+
+	procedure printSimulationResult(SimPassed : in boolean) is
+		variable l : line;
+	begin
+		write(l, string'("SIMULATION RESULT = "));
 		if SimPassed then
-			write(l, string'("SIMULATION RESULT = PASSED"));
+			write(l, string'("PASSED"));
 		else
-			write(l, string'("SIMULATION RESULT = FAILED"));
+			write(l, string'("FAILED"));
 		end if;
 		writeline(output, l);
 	end procedure;

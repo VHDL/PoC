@@ -4,6 +4,7 @@ SRCS := ../common/my_config_ML505.vhdl \
 	$(DUT_PATH)/../common/vectors.vhdl $(DUT_PATH)/../common/board.vhdl \
 	$(DUT_PATH)/../common/config.vhdl \
 	../xilinx/MUXCY.vhd \
+	../common/simulation.vhdl \
 	$(DUT_PATH)/arith_prefix_and.vhdl arith_prefix_and_tb.vhdl \
 	$(DUT_PATH)/arith_prefix_or.vhdl arith_prefix_or_tb.vhdl
 

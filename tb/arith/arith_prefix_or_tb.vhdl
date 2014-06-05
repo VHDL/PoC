@@ -84,10 +84,9 @@ begin  -- tb
       x <= std_logic_vector(to_unsigned(i, N));
       wait for 10 ns;
       for j in 0 to N-1 loop
-        if (y(j) = '1') /= (x(j downto 0) /= (j downto 0 => '0')) then
-          report "Wrong result for "&integer'image(i)&" / "&integer'image(j) severity error;
-					pass := false;
-				end if;
+				assertPass((y(j) = '1') = (x(j downto 0) /= (j downto 0 => '0')),
+									 pass,
+								   "Wrong result for "&integer'image(i)&" / "&integer'image(j));
 			end loop;
     end loop;
 
