@@ -16,9 +16,9 @@ USE			PoC.sata.ALL;
 
 ENTITY SATATransceiver_Series7_GTXE2 IS
 	GENERIC (
-		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																									-- 150 MHz
-		PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= T_SATA_GENERATION_VECTOR'(SATA_GEN_2, SATA_GEN_2)			-- intial SATA Generation
+		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																	-- 150 MHz
+		PORTS											: POSITIVE										:= 2;																			-- Number of Ports per Transceiver
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3 => T_SATA_GENERATION'high)			-- intial SATA Generation
 	);
 	PORT (
 		ClockIn_150MHz						: IN	STD_LOGIC;
@@ -321,8 +321,8 @@ BEGIN
 		WA_Data : ENTITY L_Global.WordAligner
 			GENERIC MAP (
 				REGISTERED					=> FALSE,
-				INPUT_BW						=> 32,
-				WORD_BW							=> 16
+				INPUT_BITS						=> 32,
+				WORD_BITS							=> 16
 			)
 			PORT MAP (
 				Clock								=> GTX_ClockRX_4X,
@@ -335,8 +335,8 @@ BEGIN
 		WA_CharIsK : ENTITY L_Global.WordAligner
 			GENERIC MAP (
 				REGISTERED					=> FALSE,
-				INPUT_BW						=> 4,
-				WORD_BW							=> 2
+				INPUT_BITS						=> 4,
+				WORD_BITS							=> 2
 			)
 			PORT MAP (
 				Clock								=> GTX_ClockRX_4X,
