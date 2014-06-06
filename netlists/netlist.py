@@ -76,7 +76,7 @@ import subprocess
 import sys
 import textwrap
 
-class PoCTestbench:
+class PoCNetList:
 	__debug = False
 	__verbose = False
 	__platform = ""
@@ -434,7 +434,7 @@ class PoCTestbench:
 # main program
 def main():
 	print("========================================================================")
-	print("                  PoC Library - Testbench Service Tool                  ")
+	print("                  PoC Library - NetList Service Tool                    ")
 	print("========================================================================")
 	print()
 	
@@ -448,7 +448,7 @@ def main():
 		argParser = argparse.ArgumentParser(
 			formatter_class = argparse.RawDescriptionHelpFormatter,
 			description = textwrap.dedent('''\
-				This is the PoC Library Testbench Service Tool.
+				This is the PoC Library NetList Service Tool.
 				'''))
 
 		# add arguments
@@ -456,7 +456,6 @@ def main():
 		argParser.add_argument('-v', action='store_const', const=True, default=False, help='generate detailed report')
 		argParser.add_argument('-l', action='store_const', const=True, default=False, help='show logs')
 		argParser.add_argument('--isim', action='store_const', const=True, default=False, help='use Xilinx ISE Simulator (iSim)')
-		argParser.add_argument('--xsim', action='store_const', const=True, default=False, help='use Xilinx Vivado Simulator (xSim)')
 		argParser.add_argument('--vsim', action='store_const', const=True, default=False, help='use Mentor Graphics ModelSim (vSim)')
 		argParser.add_argument('--ghdl', action='store_const', const=True, default=False, help='use GHDL Simulator (ghdl)')
 		argParser.add_argument("module", help="Specify the module which should be tested.")
@@ -488,7 +487,7 @@ if __name__ == "__main__":
 	main()
 else:
 	print("========================================================================")
-	print("                  PoC Library - Testbench Service Tool                  ")
+	print("                  PoC Library - NetList Service Tool                    ")
 	print("========================================================================")
 	print()
 	print("This is no library file!")

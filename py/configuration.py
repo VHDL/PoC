@@ -11,7 +11,7 @@
 # Description:
 # ------------------------------------
 #    This is a python main module (executable) which:
-#    - runs automated testbenches,
+#    - returns settings, paths and variables from PoC configuration and PoC structure
 #    - ...
 #
 # License:
