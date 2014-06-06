@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <spirit:design xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xilinx="http://www.xilinx.com" >
    <spirit:vendor>xilinx.com</spirit:vendor>
-   <spirit:library>CoreGen</spirit:library>
-   <spirit:name>lcd_ChipScopeVIO</spirit:name>
+   <spirit:library>project</spirit:library>
+   <spirit:name>coregen</spirit:name>
    <spirit:version>1.0</spirit:version>
    <spirit:componentInstances>
       <spirit:componentInstance>
          <spirit:instanceName>lcd_ChipScopeVIO</spirit:instanceName>
-         <spirit:displayName>VIO (ChipScope Pro - Virtual Input/Output)</spirit:displayName>
          <spirit:componentRef spirit:vendor="xilinx.com" spirit:library="ip" spirit:name="chipscope_vio" spirit:version="1.05.a" />
          <spirit:configurableElementValues>
             <spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.COMPONENT_NAME">lcd_ChipScopeVIO</spirit:configurableElementValue>
@@ -39,9 +38,9 @@
             <spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_SRL16_TYPE">2</spirit:configurableElementValue>
          </spirit:configurableElementValues>
          <spirit:vendorExtensions>
-            <xilinx:instanceProperties>
+            <xilinx:instanceProperties xmlns:xilinx="http://www.xilinx.com">
                <xilinx:projectOptions>
-                  <xilinx:projectName>lcd_ChipScopeVIO</xilinx:projectName>
+                  <xilinx:projectName>coregen</xilinx:projectName>
                   <xilinx:outputDirectory>./</xilinx:outputDirectory>
                   <xilinx:workingDirectory>./temp/</xilinx:workingDirectory>
                   <xilinx:subWorkingDirectory>./temp/_cg/</xilinx:subWorkingDirectory>
@@ -50,12 +49,12 @@
                   <xilinx:device>xc5vlx50t</xilinx:device>
                   <xilinx:deviceFamily>virtex5</xilinx:deviceFamily>
                   <xilinx:package>ff1136</xilinx:package>
-                  <xilinx:speedGrade>-2</xilinx:speedGrade>
+                  <xilinx:speedGrade>-1</xilinx:speedGrade>
                </xilinx:part>
                <xilinx:flowOptions>
                   <xilinx:busFormat>BusFormatAngleBracketNotRipped</xilinx:busFormat>
                   <xilinx:designEntry>VHDL</xilinx:designEntry>
-                  <xilinx:asySymbol>true</xilinx:asySymbol>
+                  <xilinx:asySymbol>false</xilinx:asySymbol>
                   <xilinx:flowVendor>Other</xilinx:flowVendor>
                   <xilinx:addPads>false</xilinx:addPads>
                   <xilinx:removeRPMs>false</xilinx:removeRPMs>
@@ -69,7 +68,7 @@
                   <xilinx:foundationSym>false</xilinx:foundationSym>
                </xilinx:simulationOptions>
                <xilinx:packageInfo>
-                  <xilinx:sourceCoreCreationDate>2013-06-08+17:29</xilinx:sourceCoreCreationDate>
+                  <xilinx:sourceCoreCreationDate>2013-10-13+14:13</xilinx:sourceCoreCreationDate>
                </xilinx:packageInfo>
             </xilinx:instanceProperties>
             <xilinx:generationHistory>
@@ -84,8 +83,8 @@
                   <xilinx:file>
                      <xilinx:name>./lcd_ChipScopeVIO.xco</xilinx:name>
                      <xilinx:userFileType>xco</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Jun 05 22:26:36 GMT 2014</xilinx:timeStamp>
-                     <xilinx:checkSum>0x0684E9C2</xilinx:checkSum>
+                     <xilinx:timeStamp>Fri Jun 06 06:31:57 GMT 2014</xilinx:timeStamp>
+                     <xilinx:checkSum>0x7805E216</xilinx:checkSum>
                      <xilinx:generationId>generationID_1879581046</xilinx:generationId>
                   </xilinx:file>
                </xilinx:fileSet>
@@ -94,37 +93,37 @@
                   <xilinx:file>
                      <xilinx:name>./lcd_ChipScopeVIO.cdc</xilinx:name>
                      <xilinx:userFileType>unknown</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Jun 05 22:27:28 GMT 2014</xilinx:timeStamp>
-                     <xilinx:checkSum>0xE2E6D873</xilinx:checkSum>
+                     <xilinx:timeStamp>Fri Jun 06 06:32:48 GMT 2014</xilinx:timeStamp>
+                     <xilinx:checkSum>0x3C45B81B</xilinx:checkSum>
                      <xilinx:generationId>generationID_1879581046</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./lcd_ChipScopeVIO.constraints/lcd_ChipScopeVIO.ucf</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>ucf</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Jun 05 22:27:28 GMT 2014</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Jun 06 06:32:48 GMT 2014</xilinx:timeStamp>
                      <xilinx:checkSum>0x46D4F328</xilinx:checkSum>
                      <xilinx:generationId>generationID_1879581046</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./lcd_ChipScopeVIO.constraints/lcd_ChipScopeVIO.xdc</xilinx:name>
                      <xilinx:userFileType>xdc</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Jun 05 22:27:28 GMT 2014</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Jun 06 06:32:48 GMT 2014</xilinx:timeStamp>
                      <xilinx:checkSum>0xC2D11607</xilinx:checkSum>
                      <xilinx:generationId>generationID_1879581046</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./lcd_ChipScopeVIO.ngc</xilinx:name>
                      <xilinx:userFileType>ngc</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Jun 05 22:27:28 GMT 2014</xilinx:timeStamp>
-                     <xilinx:checkSum>0xAAFDEF41</xilinx:checkSum>
+                     <xilinx:timeStamp>Fri Jun 06 06:32:48 GMT 2014</xilinx:timeStamp>
+                     <xilinx:checkSum>0xC7D51476</xilinx:checkSum>
                      <xilinx:generationId>generationID_1879581046</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./lcd_ChipScopeVIO.ucf</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>ucf</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Jun 05 22:27:28 GMT 2014</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Jun 06 06:32:48 GMT 2014</xilinx:timeStamp>
                      <xilinx:checkSum>0x46D4F328</xilinx:checkSum>
                      <xilinx:generationId>generationID_1879581046</xilinx:generationId>
                   </xilinx:file>
@@ -132,29 +131,29 @@
                      <xilinx:name>./lcd_ChipScopeVIO.vhd</xilinx:name>
                      <xilinx:userFileType>vhdl</xilinx:userFileType>
                      <xilinx:userFileType>vhdlSynthesis</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Jun 05 22:27:28 GMT 2014</xilinx:timeStamp>
-                     <xilinx:checkSum>0xA270BAEF</xilinx:checkSum>
+                     <xilinx:timeStamp>Fri Jun 06 06:32:48 GMT 2014</xilinx:timeStamp>
+                     <xilinx:checkSum>0x75484291</xilinx:checkSum>
                      <xilinx:generationId>generationID_1879581046</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./lcd_ChipScopeVIO.vho</xilinx:name>
                      <xilinx:userFileType>vho</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Jun 05 22:27:28 GMT 2014</xilinx:timeStamp>
-                     <xilinx:checkSum>0x05A78A3C</xilinx:checkSum>
+                     <xilinx:timeStamp>Fri Jun 06 06:32:48 GMT 2014</xilinx:timeStamp>
+                     <xilinx:checkSum>0x11EE2121</xilinx:checkSum>
                      <xilinx:generationId>generationID_1879581046</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./lcd_ChipScopeVIO.xdc</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>xdc</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Jun 05 22:27:28 GMT 2014</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Jun 06 06:32:48 GMT 2014</xilinx:timeStamp>
                      <xilinx:checkSum>0xC2D11607</xilinx:checkSum>
                      <xilinx:generationId>generationID_1879581046</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./lcd_ChipScopeVIO_xmdf.tcl</xilinx:name>
                      <xilinx:userFileType>tcl</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Jun 05 22:26:36 GMT 2014</xilinx:timeStamp>
+                     <xilinx:timeStamp>Fri Jun 06 06:31:58 GMT 2014</xilinx:timeStamp>
                      <xilinx:checkSum>0x6D22A790</xilinx:checkSum>
                      <xilinx:generationId>generationID_1879581046</xilinx:generationId>
                   </xilinx:file>
@@ -164,13 +163,6 @@
                </xilinx:fileSet>
                <xilinx:fileSet>
                   <xilinx:name>asy_generator</xilinx:name>
-                  <xilinx:file>
-                     <xilinx:name>./lcd_ChipScopeVIO.asy</xilinx:name>
-                     <xilinx:userFileType>asy</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Jun 05 22:27:28 GMT 2014</xilinx:timeStamp>
-                     <xilinx:checkSum>0xDBF7A067</xilinx:checkSum>
-                     <xilinx:generationId>generationID_1879581046</xilinx:generationId>
-                  </xilinx:file>
                </xilinx:fileSet>
                <xilinx:fileSet>
                   <xilinx:name>xmdf_generator</xilinx:name>
@@ -181,16 +173,16 @@
                      <xilinx:name>./lcd_ChipScopeVIO.gise</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>gise</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Jun 05 22:27:32 GMT 2014</xilinx:timeStamp>
-                     <xilinx:checkSum>0xB104617F</xilinx:checkSum>
+                     <xilinx:timeStamp>Fri Jun 06 06:32:52 GMT 2014</xilinx:timeStamp>
+                     <xilinx:checkSum>0x8614E376</xilinx:checkSum>
                      <xilinx:generationId>generationID_1879581046</xilinx:generationId>
                   </xilinx:file>
                   <xilinx:file>
                      <xilinx:name>./lcd_ChipScopeVIO.xise</xilinx:name>
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>xise</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Jun 05 22:27:32 GMT 2014</xilinx:timeStamp>
-                     <xilinx:checkSum>0x7CA8845F</xilinx:checkSum>
+                     <xilinx:timeStamp>Fri Jun 06 06:32:52 GMT 2014</xilinx:timeStamp>
+                     <xilinx:checkSum>0xADE96838</xilinx:checkSum>
                      <xilinx:generationId>generationID_1879581046</xilinx:generationId>
                   </xilinx:file>
                </xilinx:fileSet>
@@ -201,8 +193,8 @@
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>txtReadme</xilinx:userFileType>
                      <xilinx:userFileType>txt</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Jun 05 22:27:32 GMT 2014</xilinx:timeStamp>
-                     <xilinx:checkSum>0x3563CB78</xilinx:checkSum>
+                     <xilinx:timeStamp>Fri Jun 06 06:32:52 GMT 2014</xilinx:timeStamp>
+                     <xilinx:checkSum>0x1E7D22A8</xilinx:checkSum>
                      <xilinx:generationId>generationID_1879581046</xilinx:generationId>
                   </xilinx:file>
                </xilinx:fileSet>
@@ -213,8 +205,8 @@
                      <xilinx:userFileType>ignore</xilinx:userFileType>
                      <xilinx:userFileType>txtFlist</xilinx:userFileType>
                      <xilinx:userFileType>txt</xilinx:userFileType>
-                     <xilinx:timeStamp>Thu Jun 05 22:27:32 GMT 2014</xilinx:timeStamp>
-                     <xilinx:checkSum>0x3622EA87</xilinx:checkSum>
+                     <xilinx:timeStamp>Fri Jun 06 06:32:52 GMT 2014</xilinx:timeStamp>
+                     <xilinx:checkSum>0x7873A2A5</xilinx:checkSum>
                      <xilinx:generationId>generationID_1879581046</xilinx:generationId>
                   </xilinx:file>
                </xilinx:fileSet>
@@ -225,7 +217,7 @@
    <spirit:vendorExtensions>
       <xilinx:instanceProperties>
          <xilinx:projectOptions>
-            <xilinx:projectName>lcd_ChipScopeVIO</xilinx:projectName>
+            <xilinx:projectName>coregen</xilinx:projectName>
             <xilinx:outputDirectory>./</xilinx:outputDirectory>
             <xilinx:workingDirectory>./temp/</xilinx:workingDirectory>
             <xilinx:subWorkingDirectory>./temp/_cg/</xilinx:subWorkingDirectory>
@@ -234,12 +226,12 @@
             <xilinx:device>xc5vlx50t</xilinx:device>
             <xilinx:deviceFamily>virtex5</xilinx:deviceFamily>
             <xilinx:package>ff1136</xilinx:package>
-            <xilinx:speedGrade>-2</xilinx:speedGrade>
+            <xilinx:speedGrade>-1</xilinx:speedGrade>
          </xilinx:part>
          <xilinx:flowOptions>
             <xilinx:busFormat>BusFormatAngleBracketNotRipped</xilinx:busFormat>
             <xilinx:designEntry>VHDL</xilinx:designEntry>
-            <xilinx:asySymbol>true</xilinx:asySymbol>
+            <xilinx:asySymbol>false</xilinx:asySymbol>
             <xilinx:flowVendor>Other</xilinx:flowVendor>
             <xilinx:addPads>false</xilinx:addPads>
             <xilinx:removeRPMs>false</xilinx:removeRPMs>

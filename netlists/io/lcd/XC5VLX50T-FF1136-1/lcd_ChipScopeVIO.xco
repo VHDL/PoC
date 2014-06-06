@@ -1,7 +1,7 @@
 ##############################################################
 #
-# Xilinx Core Generator version 14.6
-# Date: Thu Jun 05 22:26:36 2014
+# Xilinx Core Generator version 14.7
+# Date: Fri Jun 06 06:31:57 2014
 #
 ##############################################################
 #
@@ -18,7 +18,7 @@
 #
 # BEGIN Project Options
 SET addpads = false
-SET asysymbol = true
+SET asysymbol = false
 SET busformat = BusFormatAngleBracketNotRipped
 SET createndf = false
 SET designentry = VHDL
@@ -31,7 +31,7 @@ SET implementationfiletype = Ngc
 SET package = ff1136
 SET removerpms = false
 SET simulationfiles = Behavioral
-SET speedgrade = -2
+SET speedgrade = -1
 SET verilogsim = false
 SET vhdlsim = true
 # END Project Options
@@ -53,7 +53,7 @@ CSET synchronous_input_port_width=256
 CSET synchronous_output_port_width=8
 # END Parameters
 # BEGIN Extra information
-MISC pkg_timestamp=2013-06-08T17:29:43Z
+MISC pkg_timestamp=2013-10-13T14:13:48Z
 # END Extra information
 GENERATE
-# CRC: aaf6b920
+# CRC: 35077686
