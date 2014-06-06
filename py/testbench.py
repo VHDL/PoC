@@ -1,4 +1,3 @@
-#! /bin/bash
 # EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
@@ -32,38 +31,6 @@
 # limitations under the License.
 # ==============================================================================
 
-""":"
-# this is a python bootloader written in bash to load the minimal required python version
-# Source:		https://github.com/apache/cassandra/blob/trunk/bin/cqlsh
-# License:	Apache License-2.0
-#
-# use default python version (/usr/bin/python) if >= 3.4.0
-for isim in "$@"; do
-	if [ "$isim" = "--isim" ]; then
-		if [ -z "$XILINX" ]; then
-			settingsFile=$(../py/bootloader.py --ise)
-		  if [ -z "$settingsFile" ]; then
-			  echo 1>&2 "No ISE installation found."
-			  exit 1
-		  fi
-			echo Loading "'$settingsFile'"
-			rescue_args=$@
-			set --
-			. "$settingsFile"
-			set -- $rescue_args
-		fi
-	fi
-done
-python -c 'import sys; sys.exit(not (0x03040000 < sys.hexversion < 0x04000000))' 2>/dev/null && exec python "$0" "$@"
-# try to load highest installed python version first
-for pyversion in 3.9 3.8 3.7 3.6 3.5 3.4; do
-	which python$pyversion > /dev/null 2>&1 && exec python$pyversion "$0" "$@"
-done
-# if no suitable version is installed, write error message to STDERR and exit
-echo "No appropriate python version found." >&2
-exit 1
-":"""
-
 import argparse
 import configparser
 import os
@@ -76,7 +43,7 @@ import subprocess
 import sys
 import textwrap
 
-class PoCNetList:
+class PoCTestbench:
 	__debug = False
 	__verbose = False
 	__platform = ""
@@ -84,7 +51,7 @@ class PoCNetList:
 	__pocDirectoryPath = None
 	__workingDirectoryPath = None
 	
-	__pythonFilesDirectory = "../py"		# relative to working directory
+	__pythonFilesDirectory = "py"			# relative to working directory
 	__sourceFilesDirectory = "src"			# relative to PoC root directory
 	__tempFilesDirectory = "temp"				# relative to PoC root directory
 	__isimFilesDirectory = "isim"				# relative to temp directory
@@ -434,7 +401,7 @@ class PoCNetList:
 # main program
 def main():
 	print("========================================================================")
-	print("                  PoC Library - NetList Service Tool                    ")
+	print("                  PoC Library - Testbench Service Tool                  ")
 	print("========================================================================")
 	print()
 	
@@ -448,14 +415,16 @@ def main():
 		argParser = argparse.ArgumentParser(
 			formatter_class = argparse.RawDescriptionHelpFormatter,
 			description = textwrap.dedent('''\
-				This is the PoC Library NetList Service Tool.
+				This is the PoC Library Testbench Service Tool.
 				'''))
 
 		# add arguments
+		argParser.add_argument('-D', action='store_const', const=True, default=False, help='enable script wrapper debug mode')
 		argParser.add_argument('-d', action='store_const', const=True, default=False, help='enable debug mode')
 		argParser.add_argument('-v', action='store_const', const=True, default=False, help='generate detailed report')
 		argParser.add_argument('-l', action='store_const', const=True, default=False, help='show logs')
 		argParser.add_argument('--isim', action='store_const', const=True, default=False, help='use Xilinx ISE Simulator (iSim)')
+		argParser.add_argument('--xsim', action='store_const', const=True, default=False, help='use Xilinx Vivado Simulator (xSim)')
 		argParser.add_argument('--vsim', action='store_const', const=True, default=False, help='use Mentor Graphics ModelSim (vSim)')
 		argParser.add_argument('--ghdl', action='store_const', const=True, default=False, help='use GHDL Simulator (ghdl)')
 		argParser.add_argument("module", help="Specify the module which should be tested.")
@@ -487,7 +456,7 @@ if __name__ == "__main__":
 	main()
 else:
 	print("========================================================================")
-	print("                  PoC Library - NetList Service Tool                    ")
+	print("                  PoC Library - Testbench Service Tool                  ")
 	print("========================================================================")
 	print()
 	print("This is no library file!")

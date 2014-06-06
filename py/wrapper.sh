@@ -40,6 +40,8 @@ cd $POC_ROOTDIR_RELPATH
 POC_ROOTDIR_ABSPATH=$(pwd)
 
 if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then
+	echo "This is the PoC Library script wrapper operating in debug mode."
+	echo
 	echo "Directories:"
 	echo "  Script root:   $POC_PYWRAPPER_SCRIPTDIR"
 	echo "  PoC abs. root: $POC_ROOTDIR_ABSPATH"
@@ -49,6 +51,7 @@ if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then
 	echo "Load Environment:"
 	echo "  Xilinx ISE:    $POC_PYWRAPPER_LOADENV_ISE"
 	echo "  Xilinx VIVADO: $POC_PYWRAPPER_LOADENV_VIVADO"
+	echo
 fi
 
 # find suitable python version or abort execution
@@ -117,4 +120,9 @@ fi
 #fi
 
 # execute script with appropriate python interpreter and all given parameters
-exec $PYTHON_INTERPRETER $POC_PYWRAPPER_SCRIPT $POC_PYWRAPPER_PARAMS
+if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then
+	echo "launching: '$PYTHON_INTERPRETER py/$POC_PYWRAPPER_SCRIPT $POC_PYWRAPPER_PARAMS'"
+	echo "------------------------------------------------------------"
+	echo
+fi
+exec $PYTHON_INTERPRETER py/$POC_PYWRAPPER_SCRIPT $POC_PYWRAPPER_PARAMS

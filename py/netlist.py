@@ -405,8 +405,6 @@ def main():
 	print("========================================================================")
 	print()
 	
-	return
-	
 	if (cmpVersion(sys.version_info, [3,4,0]) < 0):
 		print("ERROR: Used Python is to old: %s" % sys.version)
 		print("Minimal required Python version is 3.4.0")
@@ -421,12 +419,11 @@ def main():
 				'''))
 
 		# add arguments
+		argParser.add_argument('-D', action='store_const', const=True, default=False, help='enable script wrapper debug mode')
 		argParser.add_argument('-d', action='store_const', const=True, default=False, help='enable debug mode')
 		argParser.add_argument('-v', action='store_const', const=True, default=False, help='generate detailed report')
 		argParser.add_argument('-l', action='store_const', const=True, default=False, help='show logs')
-		argParser.add_argument('--isim', action='store_const', const=True, default=False, help='use Xilinx ISE Simulator (iSim)')
-		argParser.add_argument('--vsim', action='store_const', const=True, default=False, help='use Mentor Graphics ModelSim (vSim)')
-		argParser.add_argument('--ghdl', action='store_const', const=True, default=False, help='use GHDL Simulator (ghdl)')
+		argParser.add_argument('--coregen', action='store_const', const=True, default=False, help='use Xilinx IP-Core Generator (CoreGen)')
 		argParser.add_argument("module", help="Specify the module which should be tested.")
 		
 		# parse command line options
@@ -435,16 +432,12 @@ def main():
 	except Exception as ex:
 		print("Exception: %s" % ex.__str__())
 
-#	test = PoCNetList(args.d, args.v)
-#	
-#	if args.isim:
-#		test.isimSimulation(args.module, args.l)
-#	elif args.vsim:
-#		test.vsimSimulation(args.module, args.l)
-#	elif args.ghdl:
-#		test.ghdlSimulation(args.module, args.l)
-#	else:
-#		argParser.print_help()
+	netlist = PoCNetList(args.d, args.v)
+	
+	if args.coregen:
+		netList.runCoreGenerator(args.module, args.l)
+	else:
+		argParser.print_help()
 
 def cmpVersion(version1, version2):
   v1 = (version1.major << 16)|(version1.minor << 8)|version1.micro
