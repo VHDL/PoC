@@ -55,8 +55,21 @@ package simulation is
 	constant D24							: T_SLV_24						:= (others => '-');
 	constant D32							: T_SLV_32						:= (others => '-');
 
+  --+ Test Bench Status Management ++++++++++++++++++++++++++++++++++++++++++
+
+  --* The testbench is marked as failed. If a message is provided, it is
+  --* reported as an error.
   procedure tbFail(msg : in string := "");
+
+  --* If the passed condition has evaluated false, the testbench is marked
+  --* as failed. In this case, the optional message will be reported as an
+  --* an error if one was provided.
 	procedure tbAssert(cond : in boolean; msg : in string := "");
+
+  --* Prints out the overall testbench result as defined by the automated
+  --* testbench process. Unless tbFail() or tbAssert() with a false condition
+  --* have been called before, a successful completion will be reported, a
+  --* failure otherwise.
 	procedure tbPrintResult;
 	
 	-- TODO: integrate VCD simulation functions and procedures from sim_value_change_dump.vhdl here
@@ -69,6 +82,10 @@ end;
 
 package body simulation is
 
+  --+ Test Bench Status Management ++++++++++++++++++++++++++++++++++++++++++
+
+  --* Internal state variable to log a failure condition for final reporting.
+  --* Once de-asserted, this variable will never return to a value of true.
   shared variable pass : boolean := true;
 
   procedure tbFail(msg : in string := "") is
