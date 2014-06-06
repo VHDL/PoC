@@ -59,7 +59,7 @@ ENTITY sata_StreamingController IS
 		Error											: OUT	T_ATASC_ERROR;
 
 		-- debug ports
-		DebugPort									: OUT	T_DBG_ATASC_OUT;
+--		DebugPort									: OUT	T_DBG_ATASC_OUT;
 
 		-- for measurement purposes only
 		Config_BurstSize					: IN	T_SLV_16;
@@ -238,7 +238,7 @@ BEGIN
 			Status											=> Cmd_Status,
 			Error												=> Cmd_Error,
 		
-			DebugPort										=> DebugPort.Commandlayer,
+--			DebugPort										=> DebugPort.Commandlayer,
 		
 			Address_AppLB								=> Address_AppLB,
 			BlockCount_AppLB						=> BlockCount_AppLB,
@@ -371,7 +371,7 @@ BEGIN
 			Status											=> Trans_Status,
 			Error												=> Trans_Error,
 		
-			DebugPort										=> DebugPort.TransportLayer,
+--			DebugPort										=> DebugPort.TransportLayer,
 		
 			-- ATA registers
 			UpdateATAHostRegisters			=> Cmd_UpdateATAHostRegisters,

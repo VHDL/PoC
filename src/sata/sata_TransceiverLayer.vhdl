@@ -44,7 +44,7 @@ USE			PoC.sata.ALL;
 USE			PoC.sata_TransceiverTypes.ALL;
 
 
-ENTITY sata_sata_Transceiver IS
+ENTITY sata_TransceiverLayer IS
 	GENERIC (
 		DEBUG											: BOOLEAN											:= FALSE;
 		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																									-- 150 MHz
@@ -92,7 +92,7 @@ ENTITY sata_sata_Transceiver IS
 END;
 
 
-ARCHITECTURE rtl OF sata_sata_Transceiver IS
+ARCHITECTURE rtl OF sata_TransceiverLayer IS
 	ATTRIBUTE KEEP 								: BOOLEAN;
 
 --	FUNCTION ite(cond : BOOLEAN; value1 : devgrp_t; value2 : devgrp_t) RETURN devgrp_t IS
@@ -132,8 +132,8 @@ BEGIN
 		REPORT "Vendor not yet supported."
 		SEVERITY FAILURE;
 		
-	ASSERT ((C_DEVICE_INFO.DEVFAMILY = DEVFAM_VIRTEX) OR 
-					(C_DEVICE_INFO.DEVFAMILY = DEVFAM_STRATIX))
+	ASSERT ((C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_VIRTEX) OR 
+					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_STRATIX))
 		REPORT "Device family not yet supported."
 		SEVERITY FAILURE;
 		
@@ -310,7 +310,7 @@ BEGIN
 	END GENERATE;		-- Xilinx.*
 	genAltera : IF (C_DEVICE_INFO.VENDOR = VENDOR_ALTERA) GENERATE
 		genS2GX_GXB : IF ((C_DEVICE_INFO.DEVICE = DEVICE_STRATIX2) AND (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB)) GENERATE
-			Trans : sata_Transceiver_S2GX_GXB
+			Trans : sata_Transceiver_Stratix2GX_GXB
 				GENERIC MAP (
 					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
@@ -356,7 +356,7 @@ BEGIN
 				);
 		END GENERATE;	-- Altera.Stratix2.GXB
 		genS4GX_GXB : IF ((C_DEVICE_INFO.DEVICE = DEVICE_STRATIX4) AND (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB)) GENERATE
-			Trans : sata_Transceiver_S4GX_GXB
+			Trans : sata_Transceiver_Stratix4GX_GXB
 				GENERIC MAP (
 					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
