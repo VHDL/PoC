@@ -39,17 +39,31 @@
 cd $POC_ROOTDIR_RELPATH
 POC_ROOTDIR_ABSPATH=$(pwd)
 
+if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then
+	echo "Directories:"
+	echo "  Called script: $POC_PYWRAPPER_SCRIPTDIR"
+	echo "  PoC abs. root: $POC_ROOTDIR_ABSPATH"
+	echo "Script:"
+	echo "  Filename:      $POC_PYWRAPPER_SCRIPT"
+	echo "  Parameters:    $POC_PYWRAPPER_PARAMS"
+	echo "Load Environment:"
+	echo "  Xilinx ISE:    $POC_PYWRAPPER_LOADENV_ISE"
+	echo "  Xilinx VIVADO: $POC_PYWRAPPER_LOADENV_VIVADO"
+fi
+
 # find suitable python version or abort execution
 python -c 'import sys; sys.exit(not (0x03040000 < sys.hexversion < 0x04000000))' 2>/dev/null
 if [ $? -eq 0 ]; then
 	PYTHON_INTERPRETER=$(which python)
+	if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then echo "PythonInterpreter: use standard interpreter: $PYTHON_INTERPRETER"; fi
 fi
 # standard python interpreter is not suitable, try to find a suitable version manually
 if [ ! $? -eq 0 ]; then
 	for pyVersion in 3.9 3.8 3.7 3.6 3.5 3.4; do
-		PYTHON_INTERPRETER=$("which python$pyVersion")
+		PYTHON_INTERPRETER=$(which python$pyVersion)
 		# if ExitCode = 0 => version found
 		if [ $? -eq 0 ]; then
+			if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then echo "PythonInterpreter: use this interpreter: $PYTHON_INTERPRETER"; fi
 			break
 		fi
 	done
@@ -64,18 +78,20 @@ fi
 if [ $POC_PYWRAPPER_LOADENV_ISE -eq 0 ]; then
 	# if $XILINX environment variable is not set
 	if [ -z "$XILINX" ]; then
-			iseSettingsFile=$($PYTHON_INTERPRETER $POC_ROOTDIR_ABSPATH/py/configuration.py --ise-settingsfile)
-			if [ $iseSettingsFile ]; then
-				echo 1>&2 "No Xilinx ISE installation found."
-				echo 1>&2 "Run 'poc.py --configure' to configure your Xilinx ISE installation."
-				exit 1
-			fi
-			echo "Loading Xilinx ISE environment '$iseSettingsFile'"
-			rescue_args=$@
-			set --
-			source "$iseSettingsFile"
-			set -- $rescue_args
+		command="$PYTHON_INTERPRETER $POC_ROOTDIR_ABSPATH/py/configuration.py --ise-settingsfile"
+		if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then echo "get ISE settings file: '$command'"; fi
+		iseSettingsFile=$($command)
+		if [ $iseSettingsFile ]; then
+			echo 1>&2 "No Xilinx ISE installation found."
+			echo 1>&2 "Run 'poc.py --configure' to configure your Xilinx ISE installation."
+			exit 1
 		fi
+		echo "Loading Xilinx ISE environment '$iseSettingsFile'"
+		rescue_args=$@
+		set --
+		source "$iseSettingsFile"
+		set -- $rescue_args
+	fi
 fi
 
 # TODO: prepared for Vivado support
