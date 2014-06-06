@@ -49,7 +49,7 @@ class PoCBootloader:
 	__pocDirectoryPath = None
 	__workingDirectoryPath = None
 	
-	__pythonFilesDirectory = "../py"		# relative to working directory
+	__pythonFilesDirectory = "py"			# relative to working directory
 	__pocConfigFileName = "configuration.ini"
 	
 	__pocConfig = None
@@ -124,14 +124,11 @@ def main():
 	except Exception as ex:
 		print("Exception: %s" % ex.__str__())
 
-	print(dir(args))
-	return
-		
 	boot = PoCBootloader(args.d)
 	
-	if args.ise:
+	if args.ise_settingsfile:
 		boot.getISESettingsFile()
-	elif args.vivado:
+	elif args.vivado_settingsfile:
 		boot.getVivadoSettingsFile()
 	else:
 		argParser.print_help()
