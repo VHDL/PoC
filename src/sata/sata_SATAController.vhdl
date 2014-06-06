@@ -38,7 +38,8 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
---USE			PoC.sata.ALL;
+USE			PoC.sata.ALL;
+USE			PoC.sata_TransceiverTypes.ALL;
 
 
 ENTITY sata_SATAController IS
@@ -427,7 +428,7 @@ BEGIN
 -- ==================================================================
 -- transceiver layer
 -- ==================================================================
-	Trans : ENTITY PoC.sata_SATATransceiver
+	Trans : ENTITY PoC.sata_TransceiverLayer
 		GENERIC MAP (
 			DEBUG											=> DEBUG					,
 			CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
@@ -477,12 +478,12 @@ BEGIN
 	-- ================================================================
 	-- debug port
 	-- ================================================================
-	genDebug : FOR I IN 0 TO PORTS - 1 GENERATE
+--	genDebug : FOR I IN 0 TO PORTS - 1 GENERATE
 -- 		input
 -- 
 -- 		output
-		DebugPortOut(I).LinkLayer						<= Link_DebugPortOut(I);
-		DebugPortOut(I).PhysicalLayer				<= Phy_DebugPortOut(I);
-		DebugPortOut(I).TransceiverLayer		<= Trans_DebugPortOut(I);
-	END GENERATE;
+--		DebugPortOut(I).LinkLayer						<= Link_DebugPortOut(I);
+--		DebugPortOut(I).PhysicalLayer				<= Phy_DebugPortOut(I);
+--		DebugPortOut(I).TransceiverLayer		<= Trans_DebugPortOut(I);
+--	END GENERATE;
 END;
