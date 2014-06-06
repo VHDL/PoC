@@ -7,21 +7,15 @@ USE			UNISIM.VCOMPONENTS.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY	L_Xilinx;
-USE			L_Xilinx.XilTypes.ALL;
-
-LIBRARY L_SATAController;
-USE			L_SATAController.SATATypes.ALL;
-USE			L_SATAController.SATADebug.ALL;
-USE			L_SATAController.SATATransceiverTypes.ALL;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+--USE			PoC.strings.ALL;
+USE			PoC.sata.ALL;
+USE			PoC.sata_TransceiverTypes.ALL;
+USE			PoC.xilinx.ALL;
 
 
-ENTITY SATATransceiver_Virtex5_GTP IS
+ENTITY sata_Transceiver_Virtex5_GTP IS
 	GENERIC (
 		DEBUG											: BOOLEAN											:= FALSE;																	-- generate ChipScope debugging "pins"
 		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																	-- 150 MHz
@@ -69,7 +63,7 @@ ENTITY SATATransceiver_Virtex5_GTP IS
 END;
 
 
-ARCHITECTURE rtl OF SATATransceiver_Virtex5_GTP IS
+ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP IS
 	ATTRIBUTE KEEP 														: BOOLEAN;
 
 -- ==================================================================
@@ -78,6 +72,7 @@ ARCHITECTURE rtl OF SATATransceiver_Virtex5_GTP IS
 	CONSTANT NO_DEVICE_TIMEOUT_MS							: REAL						:= ite(SIMULATION, 0.020, 50.0);				-- simulation: 20 us, synthesis: 50 ms
 	CONSTANT NEW_DEVICE_TIMEOUT_MS						: REAL						:= 0.001;				-- FIXME: not used -> remove ???
 
+	CONSTANT C_DEVICE_INFO										: T_DEVICE_INFO		:= DEVICE_INFO;
 
 -- ==================================================================
 -- calculate generic values for GTP transceiver
@@ -234,10 +229,10 @@ BEGIN
 -- ==================================================================
 -- Assert statements
 -- ==================================================================
-	ASSERT (VENDOR = VENDOR_XILINX)		REPORT "Vendor not yet supported."				SEVERITY FAILURE;
-	ASSERT (DEVFAM = DEVFAM_VIRTEX)		REPORT "Device family not yet supported."	SEVERITY FAILURE;
-	ASSERT (DEVICE = DEVICE_VIRTEX5)	REPORT "Device not yet supported."				SEVERITY FAILURE;
-	ASSERT (PORTS <= 2)								REPORT "To many ports per transceiver."		SEVERITY FAILURE;
+	ASSERT (C_DEVICE_INFO.VENDOR = VENDOR_XILINX)						REPORT "Vendor not yet supported."				SEVERITY FAILURE;
+	ASSERT (C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_VIRTEX)	REPORT "Device family not yet supported."	SEVERITY FAILURE;
+	ASSERT (C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX5)					REPORT "Device not yet supported."				SEVERITY FAILURE;
+	ASSERT (PORTS <= 2)																			REPORT "To many ports per transceiver."		SEVERITY FAILURE;
 		
 	genassert : FOR I IN 0 TO PORTS - 1 GENERATE
 		ASSERT (CLOCK_DIVIDERS(I) > 0)											REPORT "illegal clock devider - unsupported initial SATA generation?" SEVERITY FAILURE;
@@ -355,7 +350,7 @@ BEGIN
 	SATA_Clock_i										<= GTP_Clock_4X;							-- SATAClock is a 4 Byte (Word) clock
 	SATA_Clock											<= SATA_Clock_i;
 	
-	ClkNet : ENTITY L_SATAController.SATATransceiver_Virtex5_ClockNetwork
+	ClkNet : ENTITY PoC.sata_Transceiver_Virtex5_GTP_ClockNetwork
 		GENERIC MAP (
 			DEBUG							=> DEBUG,
 			CLOCK_IN_FREQ_MHZ						=> CLOCK_IN_FREQ_MHZ,
@@ -430,11 +425,11 @@ BEGIN
 	genDataPath : FOR I IN 0 TO PORTS - 1 GENERATE
 	BEGIN
 		-- TX path
-		BWC_TX_Data : ENTITY PoC.comm_bitwidth_converter
+		BWC_TX_Data : ENTITY PoC.misc_BitwidthConverter
 			GENERIC MAP (
 				REGISTERED					=> TRUE,
-				BW1									=> 32,
-				BW2									=> 8
+				BITS1								=> 32,
+				BITS2								=> 8
 			)
 			PORT MAP (
 				Clock1							=> GTP_Clock_4X(I),
@@ -444,11 +439,11 @@ BEGIN
 				O										=> GTP_TX_Data(I)(7 DOWNTO 0)
 			);
 		
-		BWC_TX_CharIsK : ENTITY PoC.comm_bitwidth_converter
+		BWC_TX_CharIsK : ENTITY PoC.misc_BitwidthConverter
 			GENERIC MAP (
 				REGISTERED					=> TRUE,
-				BW1									=> 4,
-				BW2									=> 1
+				BITS1								=> 4,
+				BITS2								=> 1
 			)
 			PORT MAP (
 				Clock1							=> GTP_Clock_4X(I),
@@ -467,11 +462,11 @@ BEGIN
 		-- use K-characters for word alignment
 		BWC_RX_Align(I) 		<= GTP_RX_CharIsK_d(I)(0);
 	
-		BWC_RX_Data : ENTITY PoC.comm_bitwidth_converter
+		BWC_RX_Data : ENTITY PoC.misc_BitwidthConverter
 			GENERIC MAP (
 				REGISTERED					=> TRUE,
-				BW1									=> 8,
-				BW2									=> 32
+				BITS1								=> 8,
+				BITS2								=> 32
 			)
 			PORT MAP (
 				Clock1							=> GTP_Clock_1X(I),
@@ -481,11 +476,11 @@ BEGIN
 				O										=> RX_Data(I)
 			);
 			
-		BWC_RX_CharIsK : ENTITY PoC.comm_bitwidth_converter
+		BWC_RX_CharIsK : ENTITY PoC.misc_BitwidthConverter
 			GENERIC MAP (
 				REGISTERED					=> TRUE,
-				BW1									=> 1,
-				BW2									=> 4
+				BITS1								=> 1,
+				BITS2								=> 4
 			)
 			PORT MAP (
 				Clock1							=> GTP_Clock_1X(I),
@@ -566,9 +561,9 @@ BEGIN
 		-- OOB sequence is complete
 		GTP_TX_ComComplete(I) <= to_sl(GTP_RX_Status(I)(0) = '1');
 		
-		SyncComComplete : ENTITY L_Global.Synchronizer
+		SyncComComplete : ENTITY PoC.misc_Synchronizer
 			GENERIC MAP (
-				BW											=> 1,														-- number of bit to be synchronized
+				BITS										=> 1,														-- number of bit to be synchronized
 				GATED_INPUT_BY_BUSY			=> TRUE													-- use gated input (by busy SIGNAL)
 			)
 			PORT MAP (
@@ -615,9 +610,9 @@ BEGIN
 		Sync4_DataIn(0)							<= GTP_TX_InvalidK(I)(0);
 		Sync4_DataIn(1)							<= GTP_TX_BufferStatus(I)(1);
 		
-		Sync4 : ENTITY L_Global.Synchronizer
+		Sync4 : ENTITY PoC.misc_Synchronizer
 			GENERIC MAP (
-				BW											=> Sync4_DataIn'length,					-- number of bit to be synchronized
+				BITS										=> Sync4_DataIn'length,					-- number of bit to be synchronized
 				GATED_INPUT_BY_BUSY			=> TRUE													-- use gated input (by busy SIGNAL)
 			)
 			PORT MAP (
@@ -635,9 +630,9 @@ BEGIN
 		Sync5_DataIn(1)							<= GTP_RX_Illegal8B10BCode(I)(0);
 		Sync5_DataIn(2)							<= GTP_RX_BufferStatus(I)(2);
 		
-		Sync5 : ENTITY L_Global.Synchronizer
+		Sync5 : ENTITY PoC.misc_Synchronizer
 			GENERIC MAP (
-				BW											=> Sync5_DataIn'length,					-- number of bit to be synchronized
+				BITS										=> Sync5_DataIn'length,					-- number of bit to be synchronized
 				GATED_INPUT_BY_BUSY			=> TRUE													-- use gated input (by busy SIGNAL)
 			)
 			PORT MAP (
@@ -695,7 +690,7 @@ BEGIN
 	BEGIN
 
 		-- device detection
-		DD : ENTITY L_SATAController.DeviceDetector
+		DD : ENTITY PoC.sata_DeviceDetector
 			GENERIC MAP (
 				DEBUG					=> DEBUG,
 				CLOCK_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,						-- 150 MHz
@@ -721,9 +716,9 @@ BEGIN
 			DD_NoDevice_i						<= NoDevice_sy2;
 		END BLOCK;
 
-		Sync6 : ENTITY L_Global.Synchronizer
+		Sync6 : ENTITY PoC.misc_Synchronizer
 			GENERIC MAP (
-				BW											=> 1,														-- number of bit to be synchronized
+				BITS										=> 1,														-- number of bit to be synchronized
 				GATED_INPUT_BY_BUSY			=> TRUE													-- use gated input (by busy SIGNAL)
 			)
 			PORT MAP (
@@ -759,7 +754,7 @@ BEGIN
 -- ==================================================================
 -- DRP - dynamic reconfiguration port
 -- ==================================================================
-	GTPConfig : ENTITY L_SATAController.GTP_DUALConfigurator
+	GTPConfig : ENTITY PoC.sata_Transceiver_Virtex5_GTP_Configurator
 		GENERIC MAP (
 			DEBUG								=> DEBUG,
 			DRPCLOCK_FREQ_MHZ							=> CLOCK_IN_FREQ_MHZ,

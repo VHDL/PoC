@@ -11,10 +11,10 @@ USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
---USE			PoC.sata_TransceiverTypes.ALL;
+USE			PoC.sata_TransceiverTypes.ALL;
 
 
-ENTITY SATATransceiver_Series7_GTXE2 IS
+ENTITY sata_Transceiver_Series7_GTXE2 IS
 	GENERIC (
 		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																	-- 150 MHz
 		PORTS											: POSITIVE										:= 2;																			-- Number of Ports per Transceiver
@@ -53,16 +53,15 @@ ENTITY SATATransceiver_Series7_GTXE2 IS
 		TX_Data										: IN	T_SLVV_32(PORTS	- 1 DOWNTO 0);
 		TX_CharIsK								: IN	T_CIK_VECTOR(PORTS	- 1 DOWNTO 0);
 		
-		-- LVDS Ports
-		RX_n											: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-		RX_p											: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-		TX_n											: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-		TX_p											: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0)
+		-- vendor specific signals (Xilinx)
+		VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
+		VSS_Private_In						: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS - 1 DOWNTO 0);
+		VSS_Private_Out						: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0)
 	);
 END;
 
 
-ARCHITECTURE rtl OF SATATransceiver_Series7_GTXE2 IS
+ARCHITECTURE rtl OF sata_Transceiver_Series7_GTXE2 IS
 	ATTRIBUTE KEEP 														: BOOLEAN;
 
 -- ==================================================================
@@ -318,7 +317,7 @@ BEGIN
 		WA_Align(0)							<= slv_or(GTX_RX_CharIsK(1 DOWNTO 0));
 		WA_Align(1)							<= slv_or(GTX_RX_CharIsK(3 DOWNTO 2));
 		
-		WA_Data : ENTITY L_Global.WordAligner
+		WA_Data : ENTITY PoC.WordAligner
 			GENERIC MAP (
 				REGISTERED					=> FALSE,
 				INPUT_BITS						=> 32,
@@ -332,7 +331,7 @@ BEGIN
 				Valid								=> OPEN
 			);
 
-		WA_CharIsK : ENTITY L_Global.WordAligner
+		WA_CharIsK : ENTITY PoC.WordAligner
 			GENERIC MAP (
 				REGISTERED					=> FALSE,
 				INPUT_BITS						=> 4,
@@ -524,7 +523,7 @@ BEGIN
 		-- Transceiver status
 		-- ==================================================================
 		-- device detection
-		DD : ENTITY L_SATAController.DeviceDetector
+		DD : ENTITY PoC.sata_DeviceDetector
 			GENERIC MAP (
 				CLOCK_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,						-- 150 MHz
 				NO_DEVICE_TIMEOUT_MS		=> NO_DEVICE_TIMEOUT_MS,				-- 1,0 ms
@@ -547,7 +546,7 @@ BEGIN
 			DD_NoDevice							<= NoDevice_sy2;
 		END BLOCK;
 
-		Sync1 : ENTITY L_Global.Synchronizer
+		Sync1 : ENTITY PoC.misc_Synchronizer
 			GENERIC MAP (
 				BW											=> 1,														-- number of bit to be synchronized
 				GATED_INPUT_BY_BUSY			=> TRUE													-- use gated input (by busy signal)

@@ -35,9 +35,11 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
+USE			PoC.io.ALL;
 --USE			PoC.sata.ALL;
 
 ENTITY sata_DeviceDetector IS
@@ -114,7 +116,7 @@ BEGIN
 		END CASE;
 	END PROCESS;
 	
-	TC : ENTITY sata_L_IO.TimingCounter
+	TC : ENTITY PoC.io_TimingCounter
 	GENERIC MAP ( -- timing table
 		TIMING_TABLE => T_NATVEC'(0 => TimingToCycles_ms(NO_DEVICE_TIMEOUT_MS, Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)))
 	)
@@ -129,7 +131,7 @@ BEGIN
 	TC_Load <= ElectricalIDLE_i(0) and not ElectricalIDLE_i(1);
 	TC_en <= ElectricalIDLE_i(0);
 
-	TD : ENTITY sata_L_IO.TimingCounter
+	TD : ENTITY PoC.io_TimingCounter
 	GENERIC MAP ( -- timing table
 		TIMING_TABLE => T_NATVEC'(0 => TimingToCycles_ms(1000, Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)))
 	)
