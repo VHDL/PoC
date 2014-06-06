@@ -35,10 +35,10 @@ USE			L_SATAController.SATATypes.ALL;
 
 ENTITY GTP_DUALConfigurator IS
 	GENERIC (
-		CHIPSCOPE_KEEP						: BOOLEAN											:= FALSE;																														-- 
-		DRPCLOCK_FREQ_MHZ					: REAL												:= 0.0;																															-- 
-		PORTS											: POSITIVE										:= 1;																																-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= T_SATA_GENERATION_VECTOR'(SATA_GENERATION_2, SATA_GENERATION_2)	-- intial SATA Generation
+		DEBUG											: BOOLEAN											:= FALSE;																-- 
+		DRPCLOCK_FREQ_MHZ					: REAL												:= 0.0;																	-- 
+		PORTS											: POSITIVE										:= 1;																		-- Number of Ports per Transceiver
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1 => T_SATA_GENERATION'high)		-- intial SATA Generation
 	);
 	PORT (
 		DRP_Clock								: IN	STD_LOGIC;
@@ -170,7 +170,7 @@ ARCHITECTURE rtl OF GTP_DualConfigurator IS
 	-- GTP_DualConfiguration - Statemachine
 	SIGNAL State											: T_STATE											:= ST_IDLE;
 	SIGNAL NextState									: T_STATE;
-	ATTRIBUTE FSM_ENCODING	OF State	: SIGNAL IS ite(CHIPSCOPE_KEEP, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING	OF State	: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 	
 	SIGNAL Reconfig_i									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL ReconfigComplete_i					: STD_LOGIC;
@@ -396,7 +396,7 @@ BEGIN
 
 	XilDRP : ENTITY L_Xilinx.Reconfigurator
 		GENERIC MAP (
-			CHIPSCOPE_KEEP					=> CHIPSCOPE_KEEP,
+			DEBUG					=> DEBUG,
 			CLOCK_FREQ_MHZ					=> DRPCLOCK_FREQ_MHZ,
 			CONFIG_ROM							=> XILDRP_CONFIG_ROM
 		)
