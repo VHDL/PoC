@@ -35,6 +35,9 @@
 # limitations under the License.
 # ==============================================================================
 
+# script settings
+POC_SCRIPTSDIR=py
+
 # goto PoC root directory and save this path
 cd $POC_ROOTDIR_RELPATH
 POC_ROOTDIR_ABSPATH=$(pwd)
@@ -119,10 +122,13 @@ fi
 #		fi
 #fi
 
+cd $POC_ROOTDIR_ABSPATH/$POC_SCRIPTSDIR
+
 # execute script with appropriate python interpreter and all given parameters
 if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then
-	echo "launching: '$PYTHON_INTERPRETER py/$POC_PYWRAPPER_SCRIPT $POC_PYWRAPPER_PARAMS'"
+	echo "cd $POC_ROOTDIR_ABSPATH/$POC_SCRIPTSDIR"
+	echo "launching: '$PYTHON_INTERPRETER $POC_PYWRAPPER_SCRIPT $POC_PYWRAPPER_PARAMS'"
 	echo "------------------------------------------------------------"
 	echo
 fi
-exec $PYTHON_INTERPRETER py/$POC_PYWRAPPER_SCRIPT $POC_PYWRAPPER_PARAMS
+exec $PYTHON_INTERPRETER $POC_PYWRAPPER_SCRIPT $POC_PYWRAPPER_PARAMS
