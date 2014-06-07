@@ -4,7 +4,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-#	Bash Script:			Wrapper Script to execute <PoC-Root>/py/netlist.py
+#	Bash Script:			Wrapper Script to execute <PoC-Root>/py/poc.py
 # 
 #	Authors:				 	Patrick Lehmann
 # 
@@ -36,7 +36,7 @@
 # configure wrapper here
 POC_ROOTDIR_RELPATH=..
 #POC_PYWRAPPER_SCRIPT=$0
-POC_PYWRAPPER_SCRIPT=netlist.py
+POC_PYWRAPPER_SCRIPT=poc.py
 POC_PYWRAPPER_MIN_VERSION=3.4.0
 
 # save parameters and current working directory
@@ -44,16 +44,9 @@ POC_PYWRAPPER_PARAMS=$@
 POC_PYWRAPPER_SCRIPTDIR=$(pwd)
 
 POC_PYWRAPPER_DEBUG=0
-POC_PYWRAPPER_LOADENV_ISE=0
-POC_PYWRAPPER_LOADENV_VIVADO=0
 
-# search parameter list for platform specific options
-#		--isim	-> load Xilinx ISE environment
-#		--xsim	-> load Xilinx Vivado environment
 for param in "$@"; do
 	if [ "$param" = "-D" ]; then POC_PYWRAPPER_DEBUG=1; fi
-	if [ "$param" = "--coregen" ]; then POC_PYWRAPPER_LOADENV_ISE=1; fi
-#	if [ "$param" = "--xsim" ]; then POC_PYWRAPPER_LOADENV_VIVADO=1; fi
 done
 
 source $POC_ROOTDIR_RELPATH/py/wrapper.sh

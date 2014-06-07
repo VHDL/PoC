@@ -93,50 +93,16 @@ class PoCConfiguration:
 			self.__pocConfig.optionxform = str
 			self.__pocConfig['PoC'] = {
 				'Version' : '0.0.0',
-				'InstallationDirectory' : self.__workingDirectoryPath.as_posix(),
-				'SourceFilesDirectory' : '${InstallationDirectory}/src',
-				'TestbenchFilesDirectory' : '${InstallationDirectory}/tb',
-				'TempFilesDirectory' : '${InstallationDirectory}/temp',
-				'iSimFilesDirectory' : '${InstallationDirectory}/isim'
+				'InstallationDirectory' : self.__workingDirectoryPath.as_posix()
 			}
-			self.__pocConfig['Xilinx'] = {
-				'InstallationDirectory' : '????'
-			}
-			self.__pocConfig['Xilinx-ISE'] = {
-				'Version' : '????',
-				'InstallationDirectory' : '${Xilinx:InstallationDirectory}/${Version}/ISE_DS',
-				'BinaryDirectory' : '${InstallationDirectory}/ISE/bin/????64'
-			}
-			self.__pocConfig['Xilinx-Vivado'] = {
-				'Version' : '????',
-				'InstallationDirectory' : '${Xilinx:InstallationDirectory}/Vivado/${Version}',
-				'BinaryDirectory' : '${InstallationDirectory}/bin'
-			}
-			self.__pocConfig['Altera-QuartusII'] = {
-#				'Version' : '',
-#				'InstallationDirectory' : '${Xilinx:InstallationDirectory}\Vivado\${Version}',
-#				'BinaryDirectory' : '${InstallationDirectory}\bin'
-			}
-			self.__pocConfig['Altera-ModelSim'] = {
-#				'Version' : '',
-#				'InstallationDirectory' : '${Xilinx:InstallationDirectory}\Vivado\${Version}',
-#				'BinaryDirectory' : '${InstallationDirectory}\bin'
-			}
-			self.__pocConfig['Mentor-ModelSim'] = {
-#				'Version' : '',
-#				'InstallationDirectory' : '${Xilinx:InstallationDirectory}\Vivado\${Version}',
-#				'BinaryDirectory' : '${InstallationDirectory}\bin'
-			}
-			self.__pocConfig['GHDL'] = {
-				'Version' : '0.31',
-				'InstallationDirectory' : '????/GHDL/${Version}',
-				'BinaryDirectory' : '${InstallationDirectory}/bin'
-			}
-			self.__pocConfig['GTKWave'] = {
-#				'Version' : '',
-#				'InstallationDirectory' : '${Xilinx:InstallationDirectory}\Vivado\${Version}',
-#				'BinaryDirectory' : '${InstallationDirectory}\bin'
-			}
+			self.__pocConfig['Xilinx'] = {}
+			self.__pocConfig['Xilinx-ISE'] = {}
+			self.__pocConfig['Xilinx-Vivado'] = {}
+			self.__pocConfig['Altera-QuartusII'] = {}
+			self.__pocConfig['Altera-ModelSim'] = {}
+			self.__pocConfig['Questa-ModelSim'] = {}
+			self.__pocConfig['GHDL'] = {}
+			self.__pocConfig['GTKWave'] = {}
 
 			# Writing configuration to disc
 			with configFilePath.open('w') as configFileHandle:
@@ -415,7 +381,7 @@ def main():
 				'''))
 
 		# add arguments
-#		argParser.add_argument("file", help="Specify the assembler log file.")
+		argParser.add_argument('-D', action='store_const', const=True, default=False, help='enable script wrapper debug mode')
 		argParser.add_argument('-d', action='store_const', const=True, default=False, help='enable debug mode')
 		argParser.add_argument('-v', action='store_const', const=True, default=False, help='generate detailed report')
 		argParser.add_argument('--configure', action='store_const', const=True, default=False, help='configures PoC Library')
