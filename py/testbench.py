@@ -405,8 +405,8 @@ def main():
 	print("========================================================================")
 	print()
 	
-	if (cmpVersion(sys.version_info, [3,4,0]) < 0):
-		print("ERROR: Used Python is to old: %s" % sys.version)
+	if (sys.version_info<(3,4,0)):
+		print("ERROR: Used Python interpreter is to old: %s" % sys.version)
 		print("Minimal required Python version is 3.4.0")
 		return
 	
@@ -445,11 +445,6 @@ def main():
 		test.ghdlSimulation(args.module, args.l)
 	else:
 		argParser.print_help()
-
-def cmpVersion(version1, version2):
-  v1 = (version1.major << 16)|(version1.minor << 8)|version1.micro
-  v2 = (version2[0]    << 16)|(version2[1]    << 8)|version2[2];
-  return 1 if (v1 > v2) else 0 if (v1 == v2) else -1
 
 # entry point
 if __name__ == "__main__":

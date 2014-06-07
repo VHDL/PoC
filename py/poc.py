@@ -36,9 +36,6 @@ import configparser
 import os
 import pathlib
 import platform
-#import re
-#import string
-#import sys
 import textwrap
 
 class PoCConfiguration:
@@ -354,6 +351,11 @@ def main():
 	print("                  PoC Library - Repository Service Tool                 ")
 	print("========================================================================")
 	print()
+	
+	if (sys.version_info<(3,4,0)):
+		print("ERROR: Used Python interpreter is to old: %s" % sys.version)
+		print("Minimal required Python version is 3.4.0")
+		return
 	
 	try:
 		# create a commandline argument parser
