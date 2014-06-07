@@ -31,12 +31,12 @@
 # ============================================================================================================================================================
 
 
-# entry point
-if __name__ == "__main__":
-	print("PoC Library - Repository Service Tool")
-	print("========================================================================")
-	print()
-	print("This is no executable file!")
-else:
-	pass
-	
+## entry point
+#if __name__ == "__main__":
+#	print("PoC Library - Repository Service Tool")
+#	print("========================================================================")
+#	print()
+#	print("This is no executable file!")
+#else:
+#	pass
+#	

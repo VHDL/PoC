@@ -88,11 +88,7 @@ class PoCBase(object):
 		pocConfigFilePath = self.Directories["Root"] / self.__pocConfigFileName
 		self.printDebug("Reading PoC configuration from '%s'" % str(pocConfigFilePath))
 		if not pocConfigFilePath.exists():
-			
-			self.printError("PoC configuration file does not exist. (%s)" % str(pocConfigFilePath))
-			print()
-			print("Please run poc.[sh/cmd] --configure in PoC root directory.")
-			return
+			raise PoCNotConfiguredException("PoC configuration file does not exist. (%s)" % str(pocConfigFilePath))
 		
 		self.pocConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
 		self.pocConfig.optionxform = str
@@ -107,11 +103,7 @@ class PoCBase(object):
 		pocStructureFilePath = self.Directories["Root"] / self.__pocStructureFileName
 		self.printDebug("Reading PoC configuration from '%s'" % str(pocStructureFilePath))
 		if not pocStructureFilePath.exists():
-			
-			self.printError("PoC structure file does not exist. (%s)" % str(pocStructureFilePath))
-			print()
-			print("Please run poc.[sh/cmd] --configure in PoC root directory.")
-			return
+			raise PoCNotConfiguredException("PoC structure file does not exist. (%s)" % str(pocStructureFilePath))
 		
 		self.pocStructure = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
 		self.pocStructure.optionxform = str
@@ -123,9 +115,6 @@ class PoCBase(object):
 	def printDebug(self, message):
 		if (self.__debug):
 			print("DEBUG: " + message)
-			
-	def printError(self, message):
-		print("ERROR: " + message)
 	
 	def printVerbose(self, message):
 		if (self.__verbose):
@@ -134,3 +123,22 @@ class PoCBase(object):
 #	def getNamespaceForPrefix(self, namespacePrefix):
 #		return self.__tbConfig['NamespacePrefixes'][namespacePrefix]
 		
+class PoCException(Exception):
+	def __init__(self):
+		super(self.__class__, self).__init__()
+
+class NotImplementedException(Exception):
+	def __init__(self, message):
+		super(self.__class__, self).__init__()
+		self.message = message
+
+	def __str__(self):
+		return self.message
+		
+class PoCNotConfiguredException(PoCException):
+	def __init__(self, message):
+		super(self.__class__, self).__init__()
+		self.message = message
+
+		def __str__(self):
+		return self.message

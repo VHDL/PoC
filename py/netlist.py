@@ -31,7 +31,7 @@
 # limitations under the License.
 # ==============================================================================
 
-from PoCBase import PoCBase			# import class from eponymous module
+import PoCBase
 #import os
 #import pathlib
 #import platform
@@ -39,12 +39,10 @@ from PoCBase import PoCBase			# import class from eponymous module
 #import string
 import sys
 
+#import shutil
+#import subprocess
 
-class PoCNetList(PoCBase):
-	import configparser
-	import shutil
-	import subprocess
-	
+class PoCNetList(PoCBase.PoCBase):
 	__netListConfigFileName = "configuration.ini"
 	__netListConfig = None
 	
@@ -60,9 +58,7 @@ class PoCNetList(PoCBase):
 		netListConfigFilePath = self.Directories["Root"] / ".." / self.pocStructure['DirectoryNames']['NetListFiles'] / self.__netListConfigFileName
 		self.printDebug("Reading netList configuration from '%s'" % str(netListConfigFilePath))
 		if not netListConfigFilePath.exists():
-			self.printError("PoC netlist configuration file does not exist. (%s)" % str(netListConfigFilePath))
-			print()
-			return
+			raise PoCNotConfiguredException("PoC netlist configuration file does not exist. (%s)" % str(netListConfigFilePath))
 			
 		self.__netListConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
 		self.__netListConfig.optionxform = str
@@ -107,14 +103,21 @@ def main():
 	except Exception as ex:
 		print("Exception: %s" % ex.__str__())
 
-	netlist = PoCNetList(args.d, args.v)
+		
+	try:
+		netlist = PoCNetList(args.d, args.v)
 	
-	if args.coregen:
-		pass
-#		netList.runCoreGenerator(args.module, args.l)
-	else:
-		argParser.print_help()
-
+		if args.coregen:
+			pass
+	#		netList.runCoreGenerator(args.module, args.l)
+		else:
+			argParser.print_help()
+	except PoCBase.PoCNotConfiguredException as ex:
+		print("ERROR: %s" % ex.message)
+		print()
+		print("Please run 'poc.[sh/cmd] --configure' in PoC root directory.")
+		return
+			
 # entry point
 if __name__ == "__main__":
 	main()
@@ -126,5 +129,4 @@ else:
 	print("========================================================================")
 	print()
 	print("This is no library file!")
-
 	exit(1)
