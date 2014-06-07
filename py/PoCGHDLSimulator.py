@@ -45,9 +45,9 @@ else:
 	print("This is no executable file!")
 	exit(1)
 
+import PoCSimulator
 
-
-class PoCQuestaSimulator(PoCSimulator.PoCSimulator):
+class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 
 
 	def __init__(self, debug, verbose):

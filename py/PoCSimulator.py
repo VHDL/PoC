@@ -78,7 +78,7 @@ class PoCSimulator(object):
 #	def getNamespaceForPrefix(self, namespacePrefix):
 #		return self.__tbConfig['NamespacePrefixes'][namespacePrefix]
 	
-	def checkSimulatorOutput(self, simulatorOutput)
+	def checkSimulatorOutput(self, simulatorOutput):
 		matchPos = simulatorOutput.find("SIMULATION RESULT = ")
 		if (matchPos >= 0):
 			if (simulatorOutput[matchPos + 20 : matchPos + 26] == "PASSED"):

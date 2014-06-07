@@ -56,7 +56,6 @@ class PoCTestbench(PoCBase.PoCBase):
 	__tbConfig = None
 	
 	def __init__(self, debug, verbose):
-	def __init__(self, debug, verbose):
 		super(self.__class__, self).__init__(debug, verbose)
 
 		self.readTestbenchConfiguration()
@@ -65,7 +64,7 @@ class PoCTestbench(PoCBase.PoCBase):
 	def readTestbenchConfiguration(self):
 		# read Simulation configuration
 		# ==========================================================================
-		tbConfigFilePath = Directories["Root"] / ".." / self.pocStructure['DirectoryNames']['TestbenchFiles'] / self.__tbConfigFileName
+		tbConfigFilePath = self.Directories["Root"] / ".." / self.pocStructure['DirectoryNames']['TestbenchFiles'] / self.__tbConfigFileName
 		self.printDebug("Reading testbench configuration from '%s'" % str(tbConfigFilePath))
 		if not tbConfigFilePath.exists():
 			raise PoCNotConfiguredException("PoC testbench configuration file does not exist. (%s)" % str(tbConfigFilePath))

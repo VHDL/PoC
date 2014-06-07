@@ -45,15 +45,16 @@ else:
 	print("This is no executable file!")
 	exit(1)
 
+import PoCSimulator
 
-class PoCQuestaSimulator(PoCSimulator.PoCSimulator):
+class PoCISESimulator(PoCSimulator.PoCSimulator):
 
 
 	def __init__(self, debug, verbose):
 		super(self.__class__, self).__init__(debug, verbose)
 
 	
-	def isimSimulation(self, module, showLogs):
+	def run(self, module, showLogs):
 		if (len(self.__pocConfig.options("Xilinx-ISE")) == 0):
 			print("Xilinx ISE is not configured on this system.")
 			print("Run 'poc.py --configure' to configure your Xilinx ISE environment.")
@@ -157,7 +158,7 @@ class PoCQuestaSimulator(PoCSimulator.PoCSimulator):
 		try:
 			result = self.checkSimulatorOutput(simulatorLog)
 			
-			if (result = True):
+			if (result == True):
 				print("Testbench '%s': PASSED" % testbenchName)
 			else:
 				print("Testbench '%s': FAILED" % testbenchName)
