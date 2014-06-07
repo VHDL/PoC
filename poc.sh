@@ -34,7 +34,7 @@
 # ==============================================================================
 
 # configure wrapper here
-POC_ROOTDIR_RELPATH=..
+POC_ROOTDIR_RELPATH=.
 #POC_PYWRAPPER_SCRIPT=$0
 POC_PYWRAPPER_SCRIPT=poc.py
 POC_PYWRAPPER_MIN_VERSION=3.4.0
@@ -44,6 +44,8 @@ POC_PYWRAPPER_PARAMS=$@
 POC_PYWRAPPER_SCRIPTDIR=$(pwd)
 
 POC_PYWRAPPER_DEBUG=0
+POC_PYWRAPPER_LOADENV_ISE=0
+POC_PYWRAPPER_LOADENV_VIVADO=0
 
 for param in "$@"; do
 	if [ "$param" = "-D" ]; then POC_PYWRAPPER_DEBUG=1; fi
