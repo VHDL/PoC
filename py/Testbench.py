@@ -31,18 +31,14 @@
 # limitations under the License.
 # ==============================================================================
 
+from pathlib import Path
+
 import PoC
 import PoCSimulator
 import PoCISESimulator
-
-from pathlib import Path
-
-import os
-
-import shutil
-import string
-
-import sys
+import PoCVivadoSimulator
+import PoCQuestaSimulator
+import PoCGHDLSimulator
 
 
 class PoCTestbench(PoC.PoCBase):
@@ -93,10 +89,38 @@ class PoCTestbench(PoC.PoCBase):
 		entityToSimulate = PoC.PoCEntity(self, module)
 
 		simulator = PoCISESimulator.PoCISESimulator(self, showLogs)
-	
 		simulator.run(entityToSimulate)
 
+	def xsimSimulation(self, module, showLogs):
+		# check if ISE is configure
+		if (len(self.pocConfig.options("Xilinx-Vivado")) == 0):
+			raise PoCNotConfiguredException("Xilinx Vivado is not configured on this system.")
 
+		entityToSimulate = PoC.PoCEntity(self, module)
+
+		simulator = PoCVivadoSimulator.PoCVivadoSimulator(self, showLogs)
+		simulator.run(entityToSimulate)
+
+	def vsimSimulation(self, module, showLogs):
+		# check if ISE is configure
+		if (len(self.pocConfig.options("Questa")) == 0):
+			raise PoCNotConfiguredException("Mentor Graphics Questa is not configured on this system.")
+
+		entityToSimulate = PoC.PoCEntity(self, module)
+
+		simulator = PoCQuestaSimulator.PoCQuestaSimulator(self, showLogs)
+		simulator.run(entityToSimulate)
+		
+	def ghdlSimulation(self, module, showLogs):
+		# check if ISE is configure
+		if (len(self.pocConfig.options("GHDL")) == 0):
+			raise PoCNotConfiguredException("GHDL is not configured on this system.")
+
+		entityToSimulate = PoC.PoCEntity(self, module)
+
+		simulator = PoCGHDLSimulator.PoCGHDLSimulator(self, showLogs)
+		simulator.run(entityToSimulate)
+		
 	def getNamespaceForPrefix(self, namespacePrefix):
 		return self.tbConfig['NamespacePrefixes'][namespacePrefix]
 	
@@ -143,6 +167,8 @@ def main():
 		
 		if args.isim:
 			test.isimSimulation(args.module, args.l)
+		elif args.xsim:
+			test.xsimSimulation(args.module, args.l)
 		elif args.vsim:
 			test.vsimSimulation(args.module, args.l)
 		elif args.ghdl:

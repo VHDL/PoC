@@ -75,7 +75,6 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 		exeFilePath =  tempIsimPath / (self.__tbConfig[section]['TestbenchModule'] + ".exe")
 		tclFilePath =  pathlib.Path(self.__tbConfig[section]['iSimTclScript'])
 			
-#		print()
 			
 		if (self.__verbose):
 			print("Commands to be run:")
@@ -93,10 +92,11 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 
 #		settingsLog = subprocess.check_output([str(settingsFilePath)], stderr=subprocess.STDOUT, universal_newlines=True)
 #		print(settingsLog)
-
+		import os
 		os.chdir(str(tempIsimPath))
 		
 		# copy project file into temporary directory
+		import shutil
 		shutil.copy(str(prjFilePath),str(tempIsimPath));
 
 		# running fuse

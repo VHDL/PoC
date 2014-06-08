@@ -45,16 +45,8 @@ else:
 	print("This is no executable file!")
 	exit(1)
 
+import PoC
 
-#from pathlib import Path
-#import os
-
-#import re
-#import shutil
-#import string
-#import subprocess
-#import sys
-#import textwrap
 
 class PoCSimulator(object):
 #	from platform import system
@@ -98,9 +90,21 @@ class PoCSimulatorTestbench(object):
 	def __init__(self, pocEntity, testbenchName):
 		self.pocEntity = pocEntity
 		self.testbenchName = testbenchName
-	
-import PoC
 
+class PoCSimulatorTestbenchGroup(object):
+	pocEntity = None
+	members = {}
+	
+	def __init__(self, pocEntity):
+		self.pocEntity = pocEntity
+	
+	def add(self, pocEntity, testbench):
+		self.members[str(pocEntity)] = testbench
+		
+	def __getitem__(self, key):
+		return self.members[key]
+	
+		
 class PoCSimulatorException(PoC.PoCException):
 	def __init__(self, message=""):
 		super(self.__class__, self).__init__(message)

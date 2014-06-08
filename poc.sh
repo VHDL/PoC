@@ -4,7 +4,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-#	Bash Script:			Wrapper Script to execute <PoC-Root>/py/poc.py
+#	Bash Script:			Wrapper Script to execute <PoC-Root>/py/Configuration.py
 # 
 #	Authors:				 	Patrick Lehmann
 # 

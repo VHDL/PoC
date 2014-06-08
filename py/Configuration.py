@@ -336,7 +336,7 @@ class PoCConfiguration(PoC.PoCBase):
 		
 		iseInstallationDirectoryPath = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
 		
-		if		(self.platform == "Windows"):		return(str(iseInstallationDirectoryPath / "settings64.cmd"))
+		if		(self.platform == "Windows"):		return(str(iseInstallationDirectoryPath / "settings64.bat"))
 		elif	(self.platform == "Linux"):			return(str(iseInstallationDirectoryPath / "settings64.sh"))
 		
 	def getVivadoSettingsFile(self):
