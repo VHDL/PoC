@@ -37,12 +37,14 @@ rem ============================================================================
 rem script settings
 set POC_SCRIPTSDIR=py
 
+set POC_EXITCODE=0
+
 rem goto PoC root directory and save this path
 cd %POC_ROOTDIR_RELPATH%
 for /f %%i in ('cd') do set POC_ROOTDIR_ABSPATH=%%i
 
-if %POC_PYWRAPPER_DEBUG% == 1  (
-	echo This is the PoC Library script wrapper operating in debug mode.
+if %POC_PYWRAPPER_DEBUG% == 1 (
+ 	echo This is the PoC Library script wrapper operating in debug mode.
 	echo ---------------------------------------------------------------
 	echo Directories:
 	echo   Script root:   %POC_PYWRAPPER_SCRIPTDIR%
@@ -58,50 +60,78 @@ if %POC_PYWRAPPER_DEBUG% == 1  (
 
 rem find suitable python version or abort execution
 set PYTHON_VERSIONTEST="import sys; sys.exit(not (0x03040000 < sys.hexversion < 0x04000000))"
-python -c %PYTHON_VERSIONTEST% > nul
-if %ERRORLEVEL% == 0 (
-	set PYTHON_INTERPRETER=python
- 	if %POC_PYWRAPPER_DEBUG% == 1 echo PythonInterpreter: use standard interpreter: '%PYTHON_INTERPRETER%'
-) else (
-	echo No suitable Python interpreter found.
-	echo The script requires Python %POC_PYWRAPPER_MIN_VERSION%.
-	
-	cd %POC_PYWRAPPER_SCRIPTDIR%
-	exit /B 1
-)
+if %POC_PYWRAPPER_DEBUG% == 1 echo interpreter version check: '%PYTHON_VERSIONTEST%'
 
-cd %POC_ROOTDIR_ABSPATH%\%POC_SCRIPTSDIR%
+rem python -c %PYTHON_VERSIONTEST% > nul
+rem if %ERRORLEVEL% == 0 (
+rem 	set PYTHON_INTER=python
+rem 	echo inter: %PYTHON_INTER%
+rem  	if %POC_PYWRAPPER_DEBUG% == 1 echo PythonInterpreter: use standard interpreter: '%PYTHON_INTER%'
+rem ) else (
+rem 	echo No suitable Python interpreter found.
+rem 	echo The script requires Python %POC_PYWRAPPER_MIN_VERSION%.
+rem 	set POC_EXITCODE=1
+rem )
 
-if %POC_PYWRAPPER_LOADENV_ISE% == 1 (
-	rem if $XILINX environment variable is not set
- 	if not defined XILINX (
- 		set command=%PYTHON_INTERPRETER% %POC_ROOTDIR_ABSPATH%\py\Configuration.py --ise-settingsfile
- 		if %POC_PYWRAPPER_DEBUG% == 1 echo getting ISE settings file: command='%command%'
- 		for /f %%i in ('%command%') do set iseSettingsFile=%%i
- 		if %POC_PYWRAPPER_DEBUG% == 1 echo ISE settings file: '%iseSettingsFile%'
- 		if %iseSettingsFile% == "" (
- 			echo No Xilinx ISE installation found.
- 			echo Run 'poc.py --configure' to configure your Xilinx ISE installation.
+set PYTHON_INTER='python'
+
+if %POC_EXITCODE% == 0 (
+	rem goto script directory
+	if %POC_PYWRAPPER_DEBUG% == 1 echo cd %POC_ROOTDIR_ABSPATH%\%POC_SCRIPTSDIR%
+	cd %POC_ROOTDIR_ABSPATH%\%POC_SCRIPTSDIR%
+
+	if %POC_PYWRAPPER_LOADENV_ISE% == 1 (
+		rem if $XILINX environment variable is not set
+		if not defined XILINX (
+
+			set POC_COMMAND=%PYTHON_INTER% %POC_ROOTDIR_ABSPATH%\py\Configuration.py --ise-settingsfile
+			if %POC_PYWRAPPER_DEBUG% == 1
+				echo getting ISE settings file: command='%POC_COMMAND%'
+			
+			rem execute python script to receive ISE settings filename
+			for /f %%i in ('%POC_COMMAND%') do set POC_ISE_SETTINGSFILE=%%i
+			if %POC_PYWRAPPER_DEBUG% == 1 (
+				echo ISE settings file: '%POC_ISE_SETTINGSFILE%'
+			)
+rem 			if %POC_ISE_SETTINGSFILE% == "" (
+				echo No Xilinx ISE installation found.
+				echo Run 'poc.py --configure' to configure your Xilinx ISE installation.
  			
-			cd %POC_PYWRAPPER_SCRIPTDIR%
-			exit /B 1
- 		)
- 		echo Loading Xilinx ISE environment '%iseSettingsFile%'
- 		call %iseSettingsFile%
- 	)
+				set POC_EXITCODE=1
+rem 		) else (
+				echo Loading Xilinx ISE environment '%POC_ISE_SETTINGSFILE%'
+				call %POC_ISE_SETTINGSFILE%
+rem			)
+		)
+	)
+	
+	if %POC_PYWRAPPER_LOADENV_VIVADO% == 1 (
+		echo ERROR: Vivado support not implemented.
+		set POC_EXITCODE=1
+		rem TODO: add Vivado support here
+	)
 )
 
-rem TODO: add Vivado support here
+if %POC_EXITCODE% == 0 (
+	rem execute script with appropriate python interpreter and all given parameters
+	if %POC_PYWRAPPER_DEBUG% == 1 (
+		echo launching: '%PYTHON_INTER% %POC_PYWRAPPER_SCRIPT% %POC_PYWRAPPER_PARAMS%'
+		echo ------------------------------------------------------------
+	)
 
+	rem launch python script
+	%PYTHON_INTER% %POC_PYWRAPPER_SCRIPT% %POC_PYWRAPPER_PARAMS%
 
-rem execute script with appropriate python interpreter and all given parameters
-if %POC_PYWRAPPER_DEBUG% == 1 (
-	echo cd %POC_ROOTDIR_ABSPATH%\%POC_SCRIPTSDIR%
-	echo launching: '%PYTHON_INTERPRETER% %POC_PYWRAPPER_SCRIPT% %POC_PYWRAPPER_PARAMS%'
-	echo ------------------------------------------------------------
+	rem go back to script dir
+	cd %POC_PYWRAPPER_SCRIPTDIR%
 )
 
-%PYTHON_INTERPRETER% %POC_PYWRAPPER_SCRIPT% %POC_PYWRAPPER_PARAMS%
+rem unset all variables
+rem set PYTHON_VERSIONTEST=
+rem set PYTHON_INTER=
 
-rem go back to script dir
-cd %POC_PYWRAPPER_SCRIPTDIR%
+set POC_SCRIPTSDIR=
+set POC_ROOTDIR_ABSPATH=
+set POC_ROOTDIR_RELPATH=
+rem set POC_COMMAND=
+set POC_ISE_SETTINGSFILE=

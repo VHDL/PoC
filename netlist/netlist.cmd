@@ -36,7 +36,6 @@ rem ============================================================================
 rem configure wrapper here
 set POC_ROOTDIR_RELPATH=..
 set POC_PYWRAPPER_SCRIPT=%~n0.py
-rem set POC_PYWRAPPER_SCRIPT=Netlist.py
 set POC_PYWRAPPER_MIN_VERSION=3.4.0
 
 rem save parameters and current working directory
@@ -44,6 +43,7 @@ set POC_PYWRAPPER_PARAMS=%*
 set POC_PYWRAPPER_SCRIPTDIR=%~dp0
 set POC_PYWRAPPER_SCRIPTDIR=%POC_PYWRAPPER_SCRIPTDIR:~0,-1%
 
+rem search parameters for specific options like '-D' to enable batch script debug mode
 echo %POC_PYWRAPPER_PARAMS% | find "-D" > nul
 if %ERRORLEVEL% == 0 (set POC_PYWRAPPER_DEBUG=1) else (set POC_PYWRAPPER_DEBUG=0)
 
@@ -54,4 +54,21 @@ set POC_PYWRAPPER_LOADENV_VIVADO=0
 
 call %POC_ROOTDIR_RELPATH%\py\wrapper.cmd
 
+rem unset all variables
+set POC_ROOTDIR_RELPATH=
+set POC_PYWRAPPER_SCRIPT=
+set POC_PYWRAPPER_MIN_VERSION=
+set POC_PYWRAPPER_PARAMS=
+set POC_PYWRAPPER_SCRIPTDIR=
+set POC_PYWRAPPER_SCRIPTDIR=
+set POC_PYWRAPPER_DEBUG=
+set POC_PYWRAPPER_LOADENV_ISE=
+set POC_PYWRAPPER_LOADENV_VIVADO=
+
+if %POC_EXITCODE% == 1 (
+	set POC_EXITCODE=
+	exit /B 1
+) else (
+	set POC_EXITCODE=
+)
 @echo on
