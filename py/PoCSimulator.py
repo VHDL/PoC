@@ -49,15 +49,23 @@ import PoC
 
 
 class PoCSimulator(object):
-#	from platform import system
-	
-	host = None
-	showLogs = False
+	__host = None
+	__debug = False
+	__verbose = False
+	__showLogs = False
 
 	def __init__(self, host, showLogs):
+		self.__debug = host.getDebug()
+		self.__verbose = host.getVerbose()
 		self.host = host
 		self.showLogs = showLogs
 
+	def getDebug(self):
+		return self.__debug
+		
+	def getVerbose(self):
+		return self.__verbose
+		
 	def printDebug(self, message):
 		if (self.host.__debug):
 			print("DEBUG: " + message)
@@ -107,11 +115,11 @@ class PoCSimulatorTestbenchGroup(object):
 		
 class PoCSimulatorException(PoC.PoCException):
 	def __init__(self, message=""):
-		super(self.__class__, self).__init__(message)
+		super().__init__(message)
 		self.message = message
 	
 class PoCTestbenchException(PoCSimulatorException):
 	def __init__(self, pocEntity, testbench, message):
-		super(self.__class__, self).__init__(message)
+		super().__init__(message)
 		self.pocEntity = pocEntity
 		self.testbench = testbench

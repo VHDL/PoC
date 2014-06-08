@@ -119,8 +119,26 @@ class PoCBase(object):
 		self.pocStructure.read(str(pocStructureFilePath))
 		
 		# parsing values into class fields
-		# ...
-
+		self.Directories["PoCSource"] =			self.Directories["PoCRoot"] / self.pocStructure['DirectoryNames']['HDLSourceFiles']
+		self.Directories["PoCTestbench"] =	self.Directories["PoCRoot"] / self.pocStructure['DirectoryNames']['TestbenchFiles']
+		self.Directories["PoCNetList"] =		self.Directories["PoCRoot"] / self.pocStructure['DirectoryNames']['NetListFiles']
+		self.Directories["PoCTemp"] =				self.Directories["PoCRoot"] / self.pocStructure['DirectoryNames']['TemporaryFiles']
+		
+		self.Directories["iSimFiles"] =			self.Directories["PoCRoot"] / self.pocStructure['DirectoryNames']['ISESimulatorFiles']
+		#XilinxSynthesisFiles = xst
+		#QuartusSynthesisFiles = quartus		
+		
+		self.Directories["iSimTemp"] =			self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['ISESimulatorFiles']
+		self.Directories["xSimTemp"] =			self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['VivadoSimulatorFiles']
+		self.Directories["vSimTemp"] =			self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['ModelSimSimulatorFiles']
+		self.Directories["ghdlTemp"] =			self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['GHDLSimulatorFiles']
+	
+	def getDebug(self):
+		return self.__debug
+		
+	def getVerbose(self):
+		return self.__verbose
+	
 	def printDebug(self, message):
 		if (self.__debug):
 			print("DEBUG: " + message)
@@ -132,23 +150,68 @@ class PoCBase(object):
 	def getNamespaceForPrefix(self, namespacePrefix):
 		return self.tbConfig['NamespacePrefixes'][namespacePrefix]
 
+from enum import Enum, EnumMeta, unique
+#class PoCEntityTypesEnumMeta(EnumMeta):
+#	def __call__(cls, value, *args, **kw):
+#		if isinstance(value, str):
+#			# map strings to enum values, defaults to Unknown
+#			mapping = {
+#				'src': 1,
+#				'tb' : 2,
+#				'nl': 3
+#			}
+#			value = mapping.get(value, 0)
+#			return super().__call__(value, *args, **kw)
+
+@unique
+class PoCEntityTypes(Enum):#, metaclass=PoCEntityTypesEnumMeta):
+	Unknown = 0
+	Source = 1
+	Testbench = 2
+	NetList = 3
+
+	def __str__(self):
+		if		(self == PoCEntityTypes.Unknown):		return "??"
+		elif	(self == PoCEntityTypes.Source):			return "src"
+		elif	(self == PoCEntityTypes.Testbench):	return "tb"
+		elif	(self == PoCEntityTypes.NetList):		return "nl"
+
+def _PoCEntityTypes_parser(cls, value):
+	if not isinstance(value, str):
+		raise TypeError(value)
+	else:
+		# map strings to enum values, default to Unknown
+		return {
+			'src':	PoCEntityTypes.Source,
+			'tb':		PoCEntityTypes.Testbench,
+			'nl':		PoCEntityTypes.NetList
+		}.get(value, PoCEntityTypes.Unknown)
+
+# override __new__ method in PoCEntityTypes with _PoCEntityTypes_parser
+setattr(PoCEntityTypes, '__new__', _PoCEntityTypes_parser)
+		
 class PoCEntity(object):
+	host = None
+  
+	type = None
+	name = ""
+	parts = []
 	
 	def __init__(self, host, name):
 		self.host = host
-		self.name = name
-
-		temp = name.split('.')
-		# check if a FQMNis given
-		if (temp[0] == "PoC"):
-			pass
-		#check if a relative FQMN is given
-		elif (temp[0] == "*"):
-			pass
+	
+		#check if a type is given
+		splitList1 = name.split(':')
+		if (len(splitList1) == 1):
+			self.type = PoCEntityTypes.Source
+			namespacePart = name
+		elif (len(splitList1) == 2):
+			self.type = PoCEntityTypes(splitList1[0])
+			namespacePart = splitList1[1]
+		else:
+			raise ArgumentException("Argument has to many ':' signs.")
 		
-		#namespacePrefix = temp[0]
-		#moduleName = temp[1]
-		#fullNamespace = self.getNamespaceForPrefix(namespacePrefix)
+		self.parts = namespacePart.split('.')
 		
 	def Root(host):
 		return PoCEntity(host, "PoC")
@@ -169,16 +232,22 @@ class PoCEntity(object):
 		pass
 	
 	def __str__(self):
-		return "...."
+		return "PoC." + '.'.join(self.parts)
+		#return str(self.type) + ":PoC." + '.'.join(self.parts)
 		
 class NotImplementedException(Exception):
 	def __init__(self, message):
-		super(self.__class__, self).__init__()
+		super().__init__()
+		self.message = message
+	
+class ArgumentException(Exception):
+	def __init__(self, message):
+		super().__init__()
 		self.message = message
 		
 class PoCException(Exception):
 	def __init__(self, message=""):
-		super(self.__class__, self).__init__()
+		super().__init__()
 		self.message = message
 
 	def __str__(self):
@@ -186,15 +255,15 @@ class PoCException(Exception):
 		
 class PoCEnvironmentException(PoCException):
 	def __init__(self, message=""):
-		super(self.__class__, self).__init__(message)
+		super().__init__(message)
 		self.message = message
 
 class PoCPlatformNotSupportedException(PoCException):
 	def __init__(self, message=""):
-		super(self.__class__, self).__init__(message)
+		super().__init__(message)
 		self.message = message
 
 class PoCNotConfiguredException(PoCException):
 	def __init__(self, message=""):
-		super(self.__class__, self).__init__(message)
+		super().__init__(message)
 		self.message = message

@@ -1,28 +1,28 @@
-# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Python Main Module:  Entry point to the testbench tools in PoC repository.
+# Python Executable:	Entry point to the testbench tools in PoC repository.
 # 
-# Authors:         		 Patrick Lehmann
+# Authors:				 		Patrick Lehmann
 # 
 # Description:
 # ------------------------------------
-#    This is a python main module (executable) which:
-#    - runs automated testbenches,
-#    - ...
+#	This is a python main module (executable) which:
+#		- runs automated testbenches,
+#		- ...
 #
 # License:
 # ==============================================================================
 # Copyright 2007-2014 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#											Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#    http://www.apache.org/licenses/LICENSE-2.0
+#		http://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -76,15 +76,12 @@ class PoCTestbench(PoC.PoCBase):
 		
 		# prepare some paths
 		self.Directories["ISEInstallation"] = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
-		self.Directories["ISEBinary"] = Path(self.pocConfig['Xilinx-ISE']['BinaryDirectory'])
+		self.Directories["ISEBinary"] =				Path(self.pocConfig['Xilinx-ISE']['BinaryDirectory'])
 		
 		# check if the appropriate environment is loaded
 		from os import environ
 		if (environ.get('XILINX') == None):
 			raise PoC.PoCEnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
-#			settingsFilePath = self.Directories["ISEInstallation"]
-#			if (self.platform == "Windows"):		settingsFilePath /= "settings64.bat"
-#			elif (self.platform == "Linux"):		settingsFilePath /= "settings64.sh"
 
 		entityToSimulate = PoC.PoCEntity(self, module)
 
@@ -208,10 +205,10 @@ def main():
 		print()
 		return
 
-	except Exception as ex:
-		print("FATAL: %s" % ex.__str__())
-		print()
-		return
+#	except Exception as ex:
+#		print("FATAL: %s" % ex.__str__())
+#		print()
+#		return
 	
 # entry point
 if __name__ == "__main__":
@@ -227,7 +224,7 @@ else:
 	from sys import exit
 	
 	print("========================================================================")
-	print("                  PoC Library - Testbench Service Tool                  ")
+	print("									PoC Library - Testbench Service Tool									")
 	print("========================================================================")
 	print()
 	print("This is no library file!")
