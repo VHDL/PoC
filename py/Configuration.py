@@ -257,7 +257,7 @@ class PoCConfiguration(PoC.PoCBase):
 				iseVersion = input('Xilinx ISE Version Number [14.7]: ')
 				print()
 			
-				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/xilinx"
+				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/Xilinx"
 				iseVersion = iseVersion if iseVersion != "" else "14.7"
 			
 				xilinxDirectoryPath = Path(xilinxDirectory)
@@ -285,7 +285,7 @@ class PoCConfiguration(PoC.PoCBase):
 				vivadoVersion = input('Xilinx Vivado Version Number [2014.1]: ')
 				print()
 			
-				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/xilinx"
+				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/Xilinx"
 				vivadoVersion = vivadoVersion if vivadoVersion != "" else "2014.1"
 			
 				xilinxDirectoryPath = Path(xilinxDirectory)

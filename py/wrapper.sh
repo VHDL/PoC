@@ -83,10 +83,12 @@ if [ ! $PYTHON_INTERPRETER ]; then
 	exit 1
 fi
 
+cd $POC_ROOTDIR_ABSPATH/$POC_SCRIPTSDIR
+
 if [ $POC_PYWRAPPER_LOADENV_ISE -eq 1 ]; then
 	# if $XILINX environment variable is not set
 	if [ -z "$XILINX" ]; then
-		command="$PYTHON_INTERPRETER $POC_ROOTDIR_ABSPATH/py/configuration.py --ise-settingsfile"
+		command="$PYTHON_INTERPRETER $POC_ROOTDIR_ABSPATH/py/Configuration.py --ise-settingsfile"
 		if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then echo "getting ISE settings file: command='$command'"; fi
 		iseSettingsFile=$($command)
 		if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then echo "ISE settings file: '$iseSettingsFile'"; fi
@@ -121,8 +123,6 @@ fi
 #			set -- $rescue_args
 #		fi
 #fi
-
-cd $POC_ROOTDIR_ABSPATH/$POC_SCRIPTSDIR
 
 # execute script with appropriate python interpreter and all given parameters
 if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then

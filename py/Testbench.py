@@ -183,7 +183,7 @@ def main():
 		return
 
 	except Exception as ex:
-		print("FATAL: %s" % ex.message)
+		print("FATAL: %s" % ex.__str__())
 		print()
 		return
 	
