@@ -50,37 +50,14 @@ import PoCSimulator
 class PoCISESimulator(PoCSimulator.PoCSimulator):
 
 
-	def __init__(self, debug, verbose):
-		super(self.__class__, self).__init__(debug, verbose)
+	def __init__(self, host, showLogs):
+		super(self.__class__, self).__init__(host, showLogs)
 
+	def run(self, pocEntity):
+		import subprocess
 	
-	def run(self, module, showLogs):
-		if (len(self.__pocConfig.options("Xilinx-ISE")) == 0):
-			print("Xilinx ISE is not configured on this system.")
-			print("Run 'poc.py --configure' to configure your Xilinx ISE environment.")
-			return
-
-		iseInstallationDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['InstallationDirectory'])
-		iseBinaryDirectoryPath = pathlib.Path(self.__pocConfig['Xilinx-ISE']['BinaryDirectory'])
-			
-		if (os.environ.get('XILINX') == None):
-			settingsFilePath = iseInstallationDirectoryPath
-			if (self.__platform == "Windows"):
-				settingsFilePath /= "settings64.bat"
-			elif (self.__platform == "Linux"):
-				settingsFilePath /= "settings64.sh"
-			else:
-				print("ERROR: Platform not supported!")
-				return
-
-			print("ERROR: Xilinx ISE environment is not loaded in this shell.")				
-			print("Run '%s' to load your Xilinx ISE environment." % str(settingsFilePath))
-			return
-	
-		temp = module.split('_', 1)
-		namespacePrefix = temp[0]
-		moduleName = temp[1]
-		fullNamespace = self.getNamespaceForPrefix(namespacePrefix)
+		print(str(pocEntity))
+		return
 		
 		print("Preparing simulation environment for '%s.%s'" % (fullNamespace, moduleName))
 		tempIsimPath = self.__pocDirectoryPath / self.__tempFilesDirectory / self.__isimFilesDirectory
@@ -134,7 +111,7 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 			str(exeFilePath)
 			], stderr=subprocess.STDOUT, universal_newlines=True)
 		
-		if showLogs:
+		if self.showLogs:
 			print("fuse log (fuse)")
 			print("--------------------------------------------------------------------------------")
 			print(linkerLog)
@@ -148,7 +125,7 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 			str(tclFilePath)
 			], stderr=subprocess.STDOUT, universal_newlines=True)
 		
-		if showLogs:
+		if self.showLogs:
 			print("simulator log")
 			print("--------------------------------------------------------------------------------")
 			print(simulatorLog)

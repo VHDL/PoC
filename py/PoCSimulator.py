@@ -59,20 +59,19 @@ else:
 class PoCSimulator(object):
 #	from platform import system
 	
-	__debug = False
-	__verbose = False
-#	__platform = system()
+	host = None
+	showLogs = False
 
-	def __init__(self, debug, verbose):
-		self.__debug = debug
-		self.__verbose = verbose
+	def __init__(self, host, showLogs):
+		self.host = host
+		self.showLogs = showLogs
 
 	def printDebug(self, message):
-		if (self.__debug):
+		if (self.host.__debug):
 			print("DEBUG: " + message)
 			
 	def printVerbose(self, message):
-		if (self.__verbose):
+		if (self.host.__verbose):
 			print(message)
 
 #	def getNamespaceForPrefix(self, namespacePrefix):
@@ -100,15 +99,12 @@ class PoCSimulatorTestbench(object):
 		self.pocEntity = pocEntity
 		self.testbenchName = testbenchName
 	
-import PoCBase
+import PoC
 
-class PoCSimulatorException(PoCBase.PoCException):
-	def __init__(self, message):
-		super(self.__class__, self).__init__()
+class PoCSimulatorException(PoC.PoCException):
+	def __init__(self, message=""):
+		super(self.__class__, self).__init__(message)
 		self.message = message
-
-	def __str__(self):
-		return self.message
 	
 class PoCTestbenchException(PoCSimulatorException):
 	def __init__(self, pocEntity, testbench, message):

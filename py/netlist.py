@@ -31,18 +31,15 @@
 # limitations under the License.
 # ==============================================================================
 
-import PoCBase
+import PoC
 #import os
-#import pathlib
-#import platform
 #import re
 #import string
-import sys
 
 #import shutil
 #import subprocess
 
-class PoCNetList(PoCBase.PoCBase):
+class PoCNetList(PoC.PoCBase):
 	__netListConfigFileName = "configuration.ini"
 	__netListConfig = None
 	
@@ -72,11 +69,6 @@ def main():
 	print("                  PoC Library - NetList Service Tool                    ")
 	print("========================================================================")
 	print()
-	
-	if (sys.version_info<(3,4,0)):
-		print("ERROR: Used Python interpreter is to old: %s" % sys.version)
-		print("Minimal required Python version is 3.4.0")
-		return
 	
 	try:
 		import argparse
@@ -112,7 +104,7 @@ def main():
 	#		netList.runCoreGenerator(args.module, args.l)
 		else:
 			argParser.print_help()
-	except PoCBase.PoCNotConfiguredException as ex:
+	except PoC.PoCNotConfiguredException as ex:
 		print("ERROR: %s" % ex.message)
 		print()
 		print("Please run 'poc.[sh/cmd] --configure' in PoC root directory.")
@@ -120,6 +112,13 @@ def main():
 			
 # entry point
 if __name__ == "__main__":
+	from sys import version_info
+	
+	if (version_info<(3,4,0)):
+		print("ERROR: Used Python interpreter is to old: %s" % version_info)
+		print("Minimal required Python version is 3.4.0")
+		exit(1)
+		
 	main()
 else:
 	from sys import exit

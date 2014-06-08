@@ -36,7 +36,7 @@
 # configure wrapper here
 POC_ROOTDIR_RELPATH=.
 #POC_PYWRAPPER_SCRIPT=$0
-POC_PYWRAPPER_SCRIPT=poc.py
+POC_PYWRAPPER_SCRIPT=Configuration.py
 POC_PYWRAPPER_MIN_VERSION=3.4.0
 
 # save parameters and current working directory

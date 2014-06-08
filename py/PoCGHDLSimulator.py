@@ -47,6 +47,10 @@ else:
 
 import PoCSimulator
 
+
+#import re
+
+
 class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 
 
