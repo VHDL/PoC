@@ -79,7 +79,6 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		
 		testbenchName = self.host.tbConfig[str(pocEntity)]['TestbenchModule']
 		fileFilePath =	self.host.Directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['FilesFile']
-		#exeFilePath =		tempGHDLPath / (testbenchName + ".exe")
 		
 		if (self.getVerbose()):
 			print("  Commands to be run:")
@@ -164,7 +163,10 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 					print(simulatorLog)
 
 		# run GHDL simulation on Linux
-		elif (self.__platform == "Linux"):
+		elif (self.host.platform == "Linux"):
+			# preparing some variables for Linux
+			exeFilePath =		tempGHDLPath / testbenchName
+		
 			# run elaboration
 			self.printNonQuite("  running elaboration...")
 		
@@ -189,8 +191,8 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 			# run simulation
 			self.printNonQuite("  running simulation...")
 		
-			parameterList = [str(ghdlExecutablePath)]
-			command = "%s"
+			parameterList = [str(exeFilePath)]
+			command = str(exeFilePath)
 		
 			self.printDebug("call ghdl: %s" % str(parameterList))
 			self.printVerbose('command: %s' % command)
