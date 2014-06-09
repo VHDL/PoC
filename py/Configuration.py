@@ -51,10 +51,10 @@ class PoCConfiguration(PoC.PoCBase):
 			
 			self.pocConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
 			self.pocConfig.optionxform = str
-			self.pocConfig['PoC'] = {
-				'Version' : '0.0.0',
-				'InstallationDirectory' : self.Directories["Root"].as_posix()
-			}
+			self.pocConfig['PoC'] = {}
+			self.pocConfig['PoC']['Version'] = '0.0.0'
+			self.pocConfig['PoC']['InstallationDirectory'] = self.Directories["Root"].as_posix()
+
 			self.pocConfig['Xilinx'] = {}
 			self.pocConfig['Xilinx-ISE'] = {}
 			self.pocConfig['Xilinx-Vivado'] = {}
