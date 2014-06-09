@@ -45,6 +45,7 @@ else:
 	print("This is no executable file!")
 	exit(1)
 
+import PoC
 import PoCSimulator
 
 class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
@@ -102,16 +103,12 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		filesLineRegExpStr +=	r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
 		filesLineRegExp = re.compile(filesLineRegExpStr)
 
-		AnalyzeLogRegExpStr =	r"warning: component instance \"(?P<ComponentName>.*?)\" is not bound"
-		AnalyzeLogRegExp = re.compile(AnalyzeLogRegExpStr)
-		
 		self.printDebug("Reading filelist '%s'" % str(fileFilePath))
 		self.printNonQuite("  running analysis for every vhdl ...")
 		
 		# add empty line if logs are enabled
 		if self.showLogs:		print()
 		
-		analyzeErrors = []
 		with fileFilePath.open('r') as fileFileHandle:
 			for line in fileFileHandle:
 				filesLineRegExpMatch = filesLineRegExp.match(line)
@@ -149,18 +146,6 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 							print("--------------------------------------------------------------------------------")
 							print(ghdlLog)
 
-					# search log for fatal warnings
-					for logLine in ghdlLog:
-						AnalyzeLogRegExpMatch = AnalyzeLogRegExp.match(logLine)
-						if (AnalyzeLogRegExpMatch is not None):
-							analyzeErrors.__add__(("Unbound Component", "File", 80, AnalyzeLogRegExpMatch.group('ComponentName')))
-		
-		if (len(analyzeErrors) != 0)
-			print("  ERROR list:")
-			for err in analyzeErrors:
-				print("  %s '%s' in file '%s' at line %i" % (err[0], err[3], err[1], err[2]))
-			
-			raise PoCSimulatorException("Errors while GHDL analysis phase.")
 		
 		# running simulation
 		# ==========================================================================
@@ -213,7 +198,26 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 					print("ghdl elaborate messages:")
 					print("--------------------------------------------------------------------------------")
 					print(elaborateLog)
+
+			# search log for fatal warnings
+			analyzeErrors = []
+			elaborateLogRegExpStr =	r"(?P<VHDLFile>.*?):(?P<LineNumber>\d+):\d+:warning: component instance \"(?P<ComponentName>[a-z]+)\" is not bound"
+			elaborateLogRegExp = re.compile(elaborateLogRegExpStr)
+
+			for logLine in elaborateLog.splitlines():
+				print("line: " + logLine)
+				elaborateLogRegExpMatch = elaborateLogRegExp.match(logLine)
+				if (elaborateLogRegExpMatch is not None):
+					analyzeErrors.append(["Unbound Component", elaborateLogRegExpMatch.group('VHDLFile'), elaborateLogRegExpMatch.group('LineNumber'), elaborateLogRegExpMatch.group('ComponentName')])
 		
+			if (len(analyzeErrors) != 0):
+				print("  ERROR list:")
+				for err in analyzeErrors:
+					print("    %s '%s' in file '%s' at line %s" % (err[0], err[3], err[1], err[2]))
+			
+				raise PoCSimulator.PoCSimulatorException("Errors while GHDL analysis phase.")
+
+	
 			# run simulation
 			self.printNonQuite("  running simulation...")
 		
@@ -239,6 +243,6 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 			else:
 				print("Testbench '%s': FAILED" % testbenchName)
 				
-		except PoCSimulatorException as ex:
+		except PoCSimulator.PoCSimulatorException as ex:
 			raise PoCTestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
 	
