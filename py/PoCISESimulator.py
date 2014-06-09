@@ -88,15 +88,15 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 
 		# report the next steps in execution
 		if (self.getVerbose()):
-			print("Commands to be run:")
-			print("1. Change working directory to temporary directory.")
-			print("2. Parse filelist and write iSim project file.")
-			print("3. Compile and Link source files to an executable simulation file.")
-			print("4. Simulate in tcl batch mode.")
-			print("----------------------------------------")
+			print("  Commands to be run:")
+			print("  1. Change working directory to temporary directory.")
+			print("  2. Parse filelist and write iSim project file.")
+			print("  3. Compile and Link source files to an executable simulation file.")
+			print("  4. Simulate in tcl batch mode.")
+			print("  ----------------------------------------")
 		
 		# change working directory to temporary iSim path
-		self.printVerbose('cd "%s"' % str(tempISimPath))
+		self.printVerbose('  cd "%s"' % str(tempISimPath))
 		os.chdir(str(tempISimPath))
 
 		# parse project filelist

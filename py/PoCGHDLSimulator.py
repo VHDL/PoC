@@ -47,156 +47,170 @@ else:
 
 import PoCSimulator
 
-
-#import re
-
-
 class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 
+	executables = {}
 
-	def __init__(self, debug, verbose):
-		super(self.__class__, self).__init__(debug, verbose)
+	def __init__(self, host, showLogs, showReport):
+		super(self.__class__, self).__init__(host, showLogs, showReport)
 
-
-	def ghdlSimulation(self, module, showLogs):
-		if (len(self.__pocConfig.options("GHDL")) == 0):
-			print("GHDL is not configured on this system.")
-			print("Run 'PoC.py --configure' to configure your GHDL environment.")
-			return
+		self.__executables = {
+			'ghdl' :		("ghdl.exe"			if (host.platform == "Windows") else "ghdl")
+		}
+		
+	def run(self, pocEntity):
+		from pathlib import Path
+		import os
+		import re
+		import subprocess
 	
-		temp = module.split('_', 1)
-		namespacePrefix = temp[0]
-		moduleName = temp[1]
-		fullNamespace = self.getNamespaceForPrefix(namespacePrefix)
-		
-		print("Preparing simulation environment for '%s.%s'" % (fullNamespace, moduleName))
-		tempGhdlPath = self.__pocDirectoryPath / self.__tempFilesDirectory / self.__ghdlFilesDirectory
-		if not (tempGhdlPath).exists():
+		self.printNonQuite(str(pocEntity))
+		self.printNonQuite("  preparing simulation environment...")
+
+		# create temporary directory for ghdl if not existent
+		tempGHDLPath = self.host.Directories["ghdlTemp"]
+		if not (tempGHDLPath).exists():
 			self.printVerbose("Creating temporary directory for simulator files.")
-			self.printDebug("temporary directors: %s" % str(tempGhdlPath))
-			tempGhdlPath.mkdir(parents=True)
+			self.printDebug("Temporary directors: %s" % str(tempGHDLPath))
+			tempGHDLPath.mkdir(parents=True)
 
-		ghdlInstallationDirectoryPath = pathlib.Path(self.__pocConfig['GHDL']['InstallationDirectory'])
-		ghdlBinaryDirectoryPath = pathlib.Path(self.__pocConfig['GHDL']['BinaryDirectory'])
-		ghdlExecutablePath = ghdlBinaryDirectoryPath / ("ghdl.exe" if (self.__platform == "Windows") else "ghdl")
+		# setup all needed paths to execute fuse
+		ghdlExecutablePath =		self.host.Directories["GHDLBinary"] / self.__executables['ghdl']
 		
-#		settingsFilePath = iseInstallationDirectoryPath / "settings64.bat"
-		section = "%s.%s" % (fullNamespace, moduleName)
-		testbenchName = self.__tbConfig[section]['TestbenchModule']
-		prjFilePath =  pathlib.Path(self.__tbConfig[section]['iSimProjectFile'])
+		testbenchName = self.host.tbConfig[str(pocEntity)]['TestbenchModule']
+		fileFilePath =	self.host.Directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['FilesFile']
+		#exeFilePath =		tempGHDLPath / (testbenchName + ".exe")
+		
+		if (self.getVerbose()):
+			print("  Commands to be run:")
+			print("  1. Change working directory to temporary directory")
+			print("  2. Parse filelist file.")
+			print("    a) For every file: Add the VHDL file to GHDL's compile cache.")
+			if (self.host.platform == "Windows"):
+				print("  3. Compile and run simulation")
+			elif (self.host.platform == "Linux"):
+				print("  3. Compile simulation")
+				print("  4. Run simulation")
+			print("  ----------------------------------------")
+		
+		# change working directory to temporary iSim path
+		self.printVerbose('  cd "%s"' % str(tempGHDLPath))
+		os.chdir(str(tempGHDLPath))
+
+		# parse project filelist
+		regExpStr =	 r"\s*(?P<VHDLLine>vhdl"								# Keyword vhdl
+		regExpStr += r"\s+(?P<VHDLLibrary>[_a-zA-Z0-9]+)"		#	VHDL library name
+		regExpStr += r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
+		regExpStr += r")"																		# close keyword group
+		regExp = re.compile(regExpStr)
+
+		self.printDebug("Reading filelist '%s'" % str(fileFilePath))
+		self.printNonQuite("  running analysis for every vhdl ...")
+		
+		# add empty line if logs are enabled
+		if self.showLogs:		print()
 			
-		if (self.__verbose):
-			print("Commands to be run:")
-			print("1. Parse iSim prj files to extract dependencies.")
-			print("2. Change working directory to temporary directory")
-			print("3. Add vhdl files to ghdl cache.")
-			print("4. Add testbench file to ghdl cache.")
-			print("5. Compile and run simulation")
-			print()
-		
-			print('cd "%s"' % str(tempGhdlPath))
-			print('%s -a --syn-binding --work=PoC "%s"' % (str(ghdlExecutablePath), 'path/to/sourcefile.vhdl'))
-			print('%s -r --work=work work.%s' % (str(ghdlExecutablePath), testbenchName))
-			print()
-
-#		settingsLog = subprocess.check_output([str(settingsFilePath)], stderr=subprocess.STDOUT, universal_newlines=True)
-#		print(settingsLog)
-
-		os.chdir(str(tempGhdlPath))
-		print(os.getcwd())
-		
-		regexp = re.compile(r"""vhdl\s+(?P<Library>[_a-zA-Z0-9]+)\s+\"(?P<VHDLFile>.*)\"""")
-		
-		# add files to GHDL cache
-		print("ghdl -a for every file...")		
-		with prjFilePath.open('r') as prjFileHandle:
+		with fileFilePath.open('r') as prjFileHandle:
 			for line in prjFileHandle:
-				regExpMatch = regexp.match(line)
-				
+				regExpMatch = regExp.match(line)
+		
 				if (regExpMatch is not None):
-					command = '%s -a --syn-binding --work=%s "%s"' % (str(ghdlExecutablePath), regExpMatch.group('Library'), str(pathlib.Path(regExpMatch.group('VHDLFile'))))
-					self.printDebug('command: %s' % command)
-					ghdlLog = subprocess.check_output([
+					vhdlLibraryName = regExpMatch.group('VHDLLibrary')
+					vhdlFilePath = self.host.Directories["PoCRoot"] / regExpMatch.group('VHDLFile')
+
+					# assemble fuse command as list of parameters
+					parameterList = [
 						str(ghdlExecutablePath),
 						'-a', '--syn-binding',
-						('--work=%s' % regExpMatch.group('Library')),
-						str(pathlib.Path(regExpMatch.group('VHDLFile')))
-						], stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
-#		
-					if showLogs:
-						print("ghdl call: %s" % command)
-						
+						('--work=%s' % vhdlLibraryName),
+						str(vhdlFilePath)
+					]
+					
+					command = '%s -a --syn-binding --work=%s "%s"' % (str(ghdlExecutablePath), vhdlLibraryName, str(vhdlFilePath))
+					self.printDebug("call ghdl: %s" % str(parameterList))
+					self.printVerbose('command: %s' % command)
+					ghdlLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+
+					if self.showLogs:
 						if (ghdlLog != ""):
-							print("ghdl messages for : %s" % str(pathlib.Path(regExpMatch.group('VHDLFile'))))
+							print("ghdl messages for : %s" % str(vhdlFilePath))
 							print("--------------------------------------------------------------------------------")
 							print(ghdlLog)
-		
+
+		# running simulation
+		# ==========================================================================
 		simulatorLog = ""
 		
 		# run GHDL simulation on Windows
-		if (self.__platform == "Windows"):
-			simulatorLog = subprocess.check_output([
+		if (self.host.platform == "Windows"):
+			self.printNonQuite("  running simulation...")
+		
+			parameterList = [
 				str(ghdlExecutablePath),
 				'-r', '--syn-binding',
 				'--work=work',
 				testbenchName
-				], stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+			]
+			command = "%s -r --syn-binding --work=work %s" % (str(ghdlExecutablePath), testbenchName)
+		
+			self.printDebug("call ghdl: %s" % str(parameterList))
+			self.printVerbose('command: %s' % command)
+			simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 #		
-			if showLogs:
-				command = "%s -r --syn-binding --work=work %s" % (str(ghdlExecutablePath), testbenchName)
-				print("ghdl call: %s" % command)
-				
+			if self.showLogs:
 				if (simulatorLog != ""):
-					print("ghdl simulation messages:")
+					print("ghdl messages for : %s" % str(vhdlFilePath))
 					print("--------------------------------------------------------------------------------")
 					print(simulatorLog)
+
+		# run GHDL simulation on Linux
 		elif (self.__platform == "Linux"):
-			elaborateLog = subprocess.check_output([
+			# run elaboration
+			self.printNonQuite("  running elaboration...")
+		
+			parameterList = [
 				str(ghdlExecutablePath),
 				'-e', '--syn-binding',
 				'--work=work',
 				testbenchName
-				], stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+			]
+			command = "%s -e --syn-binding --work=work %s" % (str(ghdlExecutablePath), testbenchName)
+		
+			self.printDebug("call ghdl: %s" % str(parameterList))
+			self.printVerbose('command: %s' % command)
+			elaborateLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 #		
-			if showLogs:
-				command = "%s -e --syn-binding --work=work %s" % (str(ghdlExecutablePath), testbenchName)
-				print("ghdl call: %s" % command)
-				
+			if self.showLogs:
 				if (elaborateLog != ""):
 					print("ghdl elaborate messages:")
 					print("--------------------------------------------------------------------------------")
 					print(elaborateLog)
-
-			simulatorLog = subprocess.check_output([
-				('./%s' % testbenchName)
-				], stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+		
+			# run simulation
+			self.printNonQuite("  running simulation...")
+		
+			parameterList = [str(ghdlExecutablePath)]
+			command = "%s"
+		
+			self.printDebug("call ghdl: %s" % str(parameterList))
+			self.printVerbose('command: %s' % command)
+			simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 #		
-			if showLogs:
-				command = './%s' % testbenchName
-				print("ghdl call: %s" % command)
-				
+			if self.showLogs:
 				if (simulatorLog != ""):
-					print("ghdl simulation messages:")
+					print("ghdl messages for : %s" % str(vhdlFilePath))
 					print("--------------------------------------------------------------------------------")
 					print(simulatorLog)
-		else:
-			print("ERROR: Platform not supported!")
-			return
 
 		print()
-		matchPos = simulatorLog.find("SIMULATION RESULT = ")
-		if (matchPos >= 0):
-			if (simulatorLog[matchPos + 20 : matchPos + 26] == "PASSED"):
+		try:
+			result = self.checkSimulatorOutput(simulatorLog)
+			
+			if (result == True):
 				print("Testbench '%s': PASSED" % testbenchName)
-			elif (simulatorLog[matchPos + 20: matchPos + 26] == "FAILED"):
-				print("Testbench '%s': FAILED" % testbenchName)
 			else:
-				print("Testbench '%s': ERROR" % testbenchName)
-				print()
-				print("ERROR: This testbench is not working correctly.")
-				return
-		else:
-			print("Testbench '%s': ERROR" % "")
-			print()
-			print("ERROR: This testbench is not working correctly.")
-			return
+				print("Testbench '%s': FAILED" % testbenchName)
+				
+		except PoCSimulatorException as ex:
+			raise PoCTestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
+	

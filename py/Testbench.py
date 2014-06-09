@@ -119,7 +119,7 @@ class PoCTestbench(PoC.PoCBase):
 		
 		entityToSimulate = PoC.PoCEntity(self, module)
 
-		simulator = PoCISESimulator.PoCGHDLSimulator(self, showLogs, showReport)
+		simulator = PoCGHDLSimulator.PoCGHDLSimulator(self, showLogs, showReport)
 		simulator.run(entityToSimulate)
 
 	def xsimSimulation(self, module, showLogs, showReport):
