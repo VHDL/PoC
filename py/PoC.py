@@ -134,6 +134,8 @@ class PoCBase(object):
 		self.Directories["xSimTemp"] =			self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['VivadoSimulatorFiles']
 		self.Directories["vSimTemp"] =			self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['ModelSimSimulatorFiles']
 		self.Directories["ghdlTemp"] =			self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['GHDLSimulatorFiles']
+		
+		self.Directories["coreGenTemp"] =		self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['ISECoreGeneratorFiles']
 	
 	def getDebug(self):
 		return self.__debug
