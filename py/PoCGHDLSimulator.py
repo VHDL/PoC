@@ -97,25 +97,29 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		os.chdir(str(tempGHDLPath))
 
 		# parse project filelist
-		regExpStr =	 r"\s*(?P<Keyword>(vhdl|xilinx))"				# Keywords: vhdl, xilinx
-		regExpStr += r"\s+(?P<VHDLLibrary>[_a-zA-Z0-9]+)"		#	VHDL library name
-		regExpStr += r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
-		regExp = re.compile(regExpStr)
+		filesLineRegExpStr =	r"\s*(?P<Keyword>(vhdl|xilinx))"				# Keywords: vhdl, xilinx
+		filesLineRegExpStr +=	r"\s+(?P<VHDLLibrary>[_a-zA-Z0-9]+)"		#	VHDL library name
+		filesLineRegExpStr +=	r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
+		filesLineRegExp = re.compile(filesLineRegExpStr)
 
+		AnalyzeLogRegExpStr =	r"warning: component instance \"(?P<ComponentName>.*?)\" is not bound"
+		AnalyzeLogRegExp = re.compile(AnalyzeLogRegExpStr)
+		
 		self.printDebug("Reading filelist '%s'" % str(fileFilePath))
 		self.printNonQuite("  running analysis for every vhdl ...")
 		
 		# add empty line if logs are enabled
 		if self.showLogs:		print()
-			
-		with fileFilePath.open('r') as prjFileHandle:
-			for line in prjFileHandle:
-				regExpMatch = regExp.match(line)
 		
-				if (regExpMatch is not None):
-					if (regExpMatch.group('Keyword') == "vhdl"):
-						vhdlFilePath = self.host.Directories["PoCRoot"] / regExpMatch.group('VHDLFile')
-					elif (regExpMatch.group('Keyword') == "xilinx"):
+		analyzeErrors = []
+		with fileFilePath.open('r') as fileFileHandle:
+			for line in fileFileHandle:
+				filesLineRegExpMatch = filesLineRegExp.match(line)
+		
+				if (filesLineRegExpMatch is not None):
+					if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
+						vhdlFilePath = self.host.Directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
+					elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
 						if not self.host.Directories.__contains__("ISEInstallation"):
 							# check if ISE is configure
 							if (len(self.host.pocConfig.options("Xilinx-ISE")) == 0):
@@ -123,8 +127,8 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 
 							self.host.Directories["ISEInstallation"] = Path(self.host.pocConfig['Xilinx-ISE']['InstallationDirectory'])
 						
-						vhdlFilePath = self.host.Directories["ISEInstallation"] / "ISE/vhdl/src" / regExpMatch.group('VHDLFile')
-					vhdlLibraryName = regExpMatch.group('VHDLLibrary')
+						vhdlFilePath = self.host.Directories["ISEInstallation"] / "ISE/vhdl/src" / filesLineRegExpMatch.group('VHDLFile')
+					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
 
 					# assemble fuse command as list of parameters
 					parameterList = [
@@ -145,6 +149,19 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 							print("--------------------------------------------------------------------------------")
 							print(ghdlLog)
 
+					# search log for fatal warnings
+					for logLine in ghdlLog:
+						AnalyzeLogRegExpMatch = AnalyzeLogRegExp.match(logLine)
+						if (AnalyzeLogRegExpMatch is not None):
+							analyzeErrors.__add__(("Unbound Component", "File", 80, AnalyzeLogRegExpMatch.group('ComponentName')))
+		
+		if (len(analyzeErrors) != 0)
+			print("  ERROR list:")
+			for err in analyzeErrors:
+				print("  %s '%s' in file '%s' at line %i" % (err[0], err[3], err[1], err[2]))
+			
+			raise PoCSimulatorException("Errors while GHDL analysis phase.")
+		
 		# running simulation
 		# ==========================================================================
 		simulatorLog = ""
