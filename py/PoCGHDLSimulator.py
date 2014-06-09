@@ -208,12 +208,17 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 				print("line: " + logLine)
 				elaborateLogRegExpMatch = elaborateLogRegExp.match(logLine)
 				if (elaborateLogRegExpMatch is not None):
-					analyzeErrors.append(["Unbound Component", elaborateLogRegExpMatch.group('VHDLFile'), elaborateLogRegExpMatch.group('LineNumber'), elaborateLogRegExpMatch.group('ComponentName')])
+					analyzeErrors.append({
+						'Type' : "Unbound Component",
+						'File' : elaborateLogRegExpMatch.group('VHDLFile'),
+						'Line' : elaborateLogRegExpMatch.group('LineNumber'),
+						'Component' : elaborateLogRegExpMatch.group('ComponentName')
+					})
 		
 			if (len(analyzeErrors) != 0):
 				print("  ERROR list:")
 				for err in analyzeErrors:
-					print("    %s '%s' in file '%s' at line %s" % (err[0], err[3], err[1], err[2]))
+					print("    %s: '%s' in file '%s' at line %s" % (err['Type'], err['Component'], err['File'], err['Line']))
 			
 				raise PoCSimulator.PoCSimulatorException("Errors while GHDL analysis phase.")
 
