@@ -62,12 +62,12 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 	def run(self, pocEntity):
 		from pathlib import Path
 		import os
+		import re
 		import subprocess
 	
 		print("Preparing simulation environment for '%s'" % str(pocEntity))
 		
 		# create temporary directory for isim if not existent
-		print(dir(self))
 		tempISimPath = self.host.Directories["iSimTemp"]
 		if not (tempISimPath).exists():
 			self.printVerbose("Creating temporary directory for simulator files.")
@@ -79,16 +79,18 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 		fuseExecutablePath =		self.host.Directories["ISEBinary"] / self.__executables['fuse']
 		
 		testbenchName = self.host.tbConfig[str(pocEntity)]['TestbenchModule']
-		exeFilePath =  tempISimPath / (testbenchName + ".exe")
-		prjFilePath =  Path(self.host.tbConfig[str(pocEntity)]['iSimProjectFile'])
-		tclFilePath =  Path(self.host.tbConfig[str(pocEntity)]['iSimTclScript'])
-			
+		fileFilePath =	self.host.Directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['FilesFile']
+		tclFilePath =		self.host.Directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['iSimTclScript']
+		prjFilePath =		tempISimPath / (testbenchName + ".prj")
+		exeFilePath =		tempISimPath / (testbenchName + ".exe")
+
 		# report the next steps in execution
 		if (self.getVerbose()):
 			print("Commands to be run:")
-			print("1. Change working directory to temporary directory")
-			print("2. Compile and Link source files to an executable simulation file")
-			print("3. Simulate in tcl batch mode")
+			print("1. Change working directory to temporary directory.")
+			print("2. Parse file list and write iSim project file.")
+			print("3. Compile and Link source files to an executable simulation file.")
+			print("4. Simulate in tcl batch mode.")
 			print("----------------------------------------")
 		
 			print('cd "%s"' % str(tempISimPath))
@@ -98,18 +100,40 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 
 		# change working directory to temporary iSim path
 		os.chdir(str(tempISimPath))
+
+		# parse project file list
+		regExpStr =	 r"\s*(?P<VHDLLine>vhdl"								# Keyword vhdl
+		regExpStr += r"\s+(?P<VHDLLibrary>[_a-zA-Z0-9]+)"		#	VHDL library name
+		regExpStr += r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
+		regExpStr += r")"																		# close keyword group
+		regExp = re.compile(regExpStr)
+
+		self.printDebug("Reading file list '%s'" % str(fileFilePath))
+		iSimProjectFileContent = ""
+		with fileFilePath.open('r') as prjFileHandle:
+			for line in prjFileHandle:
+				regExpMatch = regExp.match(line)
+				
+				if (regExpMatch is not None):
+					vhdlLibraryName = regExpMatch.group('VHDLLibrary')
+					vhdlFilePath = self.host.Directories["PoCRoot"] / regExpMatch.group('VHDLFile')
+					iSimProjectFileContent += "vhdl %s \"%s\"\n" % (vhdlLibraryName, str(vhdlFilePath))
 		
-		# copy project file into temporary iSim directory
-		import shutil
-		shutil.copy(str(prjFilePath), str(tempISimPath));
+		# write iSim project file
+		self.printDebug("Writing iSim project file to '%s'" % str(prjFilePath))
+		with prjFilePath.open('w') as configFileHandle:
+			configFileHandle.write(iSimProjectFileContent)
+
 
 		# running fuse
+		# ==========================================================================
 		print("running fuse...")
+		# assemble fuse command as list of parameters
 		parameterList = [
 			str(fuseExecutablePath),
 			('work.%s' % testbenchName),
 			'--incremental',
-			'-prj',	str(tempISimPath / prjFilePath.name),
+			'-prj',	str(prjFilePath),
 			'-o',		str(exeFilePath)
 		]
 		self.printDebug("call fuse: %s" % str(parameterList))
@@ -124,7 +148,7 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 		# running simulation
 		print("running simulation...")
 		parameterList = [str(exeFilePath), '-tclbatch', str(tclFilePath)]
-		self.printDebug("call fuse: %s" % str(parameterList))
+		self.printDebug("call simulation: %s" % str(parameterList))
 		simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
 		
 		if self.showLogs:

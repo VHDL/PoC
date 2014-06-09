@@ -67,11 +67,11 @@ class PoCSimulator(object):
 		return self.__verbose
 		
 	def printDebug(self, message):
-		if (self.host.__debug):
+		if (self.__debug):
 			print("DEBUG: " + message)
 			
 	def printVerbose(self, message):
-		if (self.host.__verbose):
+		if (self.__verbose):
 			print(message)
 
 #	def getNamespaceForPrefix(self, namespacePrefix):

@@ -172,13 +172,13 @@ class PoCEntityTypes(Enum):#, metaclass=PoCEntityTypesEnumMeta):
 
 	def __str__(self):
 		if		(self == PoCEntityTypes.Unknown):		return "??"
-		elif	(self == PoCEntityTypes.Source):			return "src"
+		elif	(self == PoCEntityTypes.Source):		return "src"
 		elif	(self == PoCEntityTypes.Testbench):	return "tb"
 		elif	(self == PoCEntityTypes.NetList):		return "nl"
 
 def _PoCEntityTypes_parser(cls, value):
 	if not isinstance(value, str):
-		raise TypeError(value)
+		return Enum.__new__(cls, value)
 	else:
 		# map strings to enum values, default to Unknown
 		return {
