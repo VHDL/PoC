@@ -97,10 +97,9 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		os.chdir(str(tempGHDLPath))
 
 		# parse project filelist
-		regExpStr =	 r"\s*(?P<VHDLLine>vhdl"								# Keyword vhdl
+		regExpStr =	 r"\s*(?P<Keyword>(vhdl|xilinx))"				# Keywords: vhdl, xilinx
 		regExpStr += r"\s+(?P<VHDLLibrary>[_a-zA-Z0-9]+)"		#	VHDL library name
 		regExpStr += r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
-		regExpStr += r")"																		# close keyword group
 		regExp = re.compile(regExpStr)
 
 		self.printDebug("Reading filelist '%s'" % str(fileFilePath))
@@ -114,8 +113,18 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 				regExpMatch = regExp.match(line)
 		
 				if (regExpMatch is not None):
+					if (regExpMatch.group('Keyword') == "vhdl"):
+						vhdlFilePath = self.host.Directories["PoCRoot"] / regExpMatch.group('VHDLFile')
+					elif (regExpMatch.group('Keyword') == "xilinx"):
+						if not self.host.Directories.__contains__("ISEInstallation"):
+							# check if ISE is configure
+							if (len(self.host.pocConfig.options("Xilinx-ISE")) == 0):
+								raise PoCNotConfiguredException("This testbench requires some Xilinx Primitves. Please configure Xilinx ISE / Vivado")
+
+							self.host.Directories["ISEInstallation"] = Path(self.host.pocConfig['Xilinx-ISE']['InstallationDirectory'])
+						
+						vhdlFilePath = self.host.Directories["ISEInstallation"] / "ISE/vhdl/src" / regExpMatch.group('VHDLFile')
 					vhdlLibraryName = regExpMatch.group('VHDLLibrary')
-					vhdlFilePath = self.host.Directories["PoCRoot"] / regExpMatch.group('VHDLFile')
 
 					# assemble fuse command as list of parameters
 					parameterList = [

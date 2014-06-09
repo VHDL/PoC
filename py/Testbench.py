@@ -114,7 +114,7 @@ class PoCTestbench(PoC.PoCBase):
 			raise PoCNotConfiguredException("GHDL is not configured on this system.")
 		
 		# prepare some paths
-		self.Directories["GHDLInstallation"] = Path(self.pocConfig['GHDL']['InstallationDirectory'])
+		self.Directories["GHDLInstallation"] =	Path(self.pocConfig['GHDL']['InstallationDirectory'])
 		self.Directories["GHDLBinary"] =				Path(self.pocConfig['GHDL']['BinaryDirectory'])
 		
 		entityToSimulate = PoC.PoCEntity(self, module)

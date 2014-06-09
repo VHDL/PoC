@@ -8,7 +8,7 @@
 vhdl poc	"tb/common/my_config_ML505.vhdl"
 
 # Xilinx Primitives
-vhdl PoC	"tb/xilinx/MUXCY.vhd"
+xilinx unisim	"unisims/primitive/MUXCY.vhd"
 
 # PoC core packages
 vhdl poc	"src/common/utils.vhdl"							# PoC utility collection
@@ -19,7 +19,7 @@ vhdl poc	"src/common/config.vhdl"						# PoC device configuration mechanism
 vhdl poc	"tb/common/simulation.vhdl"					# PoC simulation helper
 
 # PoC.arith
-vhdl PoC	"src/arith/arith_prefix_or.vhdl"		# Unit Under Test
+vhdl poc	"src/arith/arith_prefix_or.vhdl"		# Unit Under Test
 
 # Testbench file(s)
 vhdl work	"tb/arith/arith_prefix_or_tb.vhdl"	# Testbench

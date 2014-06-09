@@ -100,10 +100,9 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 		os.chdir(str(tempISimPath))
 
 		# parse project filelist
-		regExpStr =	 r"\s*(?P<VHDLLine>vhdl"								# Keyword vhdl
+		regExpStr =	 r"\s*(?P<Keyword>(vhdl|xilinx))"				# Keywords: vhdl, xilinx
 		regExpStr += r"\s+(?P<VHDLLibrary>[_a-zA-Z0-9]+)"		#	VHDL library name
 		regExpStr += r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
-		regExpStr += r")"																		# close keyword group
 		regExp = re.compile(regExpStr)
 
 		self.printDebug("Reading filelist '%s'" % str(fileFilePath))
@@ -113,8 +112,11 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 				regExpMatch = regExp.match(line)
 				
 				if (regExpMatch is not None):
+					if (regExpMatch.group('Keyword') == "vhdl"):
+						vhdlFilePath = self.host.Directories["PoCRoot"] / regExpMatch.group('VHDLFile')
+					elif (regExpMatch.group('Keyword') == "xilinx"):
+						vhdlFilePath = self.host.Directories["ISEInstallation"] / "ISE/vhdl/src" / regExpMatch.group('VHDLFile')
 					vhdlLibraryName = regExpMatch.group('VHDLLibrary')
-					vhdlFilePath = self.host.Directories["PoCRoot"] / regExpMatch.group('VHDLFile')
 					iSimProjectFileContent += "vhdl %s \"%s\"\n" % (vhdlLibraryName, str(vhdlFilePath))
 		
 		# write iSim project file
