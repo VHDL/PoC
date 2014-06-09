@@ -53,12 +53,11 @@ class PoCTestbench(PoC.PoCBase):
 		
 		self.readTestbenchConfiguration()
 		
-	# read Testbench configuration	
+	# read Testbench configuration
+	# ==========================================================================
 	def readTestbenchConfiguration(self):
 		import configparser
 	
-		# read Simulation configuration
-		# ==========================================================================
 		tbConfigFilePath = self.Directories["Root"] / ".." / self.pocStructure['DirectoryNames']['TestbenchFiles'] / self.__tbConfigFileName
 		self.printDebug("Reading testbench configuration from '%s'" % str(tbConfigFilePath))
 		if not tbConfigFilePath.exists():
@@ -142,9 +141,7 @@ class PoCTestbench(PoC.PoCBase):
 		simulator = PoCGHDLSimulator.PoCGHDLSimulator(self, showLogs, showReport)
 		simulator.run(entityToSimulate)
 		
-	def getNamespaceForPrefix(self, namespacePrefix):
-		return self.tbConfig['NamespacePrefixes'][namespacePrefix]
-	
+
 # main program
 def main():
 	print("========================================================================")
@@ -189,13 +186,13 @@ def main():
 		test = PoCTestbench(args.d, args.v, args.q)
 		
 		if args.isim:
-			test.isimSimulation(args.module, args.l, args.q)
+			test.isimSimulation(args.module, args.l, args.r)
 		elif args.xsim:
-			test.xsimSimulation(args.module, args.l, args.q)
+			test.xsimSimulation(args.module, args.l, args.r)
 		elif args.vsim:
-			test.vsimSimulation(args.module, args.l, args.q)
+			test.vsimSimulation(args.module, args.l, args.r)
 		elif args.ghdl:
-			test.ghdlSimulation(args.module, args.l, args.q)
+			test.ghdlSimulation(args.module, args.l, args.r)
 		else:
 			argParser.print_help()
 	

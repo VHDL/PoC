@@ -361,7 +361,7 @@ def main():
 		argParser.add_argument('-D', action='store_const', const=True, default=False, help='enable script wrapper debug mode')
 		argParser.add_argument('-d', action='store_const', const=True, default=False, help='enable debug mode')
 		argParser.add_argument('-v', action='store_const', const=True, default=False, help='generate detailed report')
-		argParser.add_argument('-q', action='store_const', const=True, default=False, help='quite execution')
+		argParser.add_argument('-q', action='store_const', const=True, default=False, help='run in quite mode')
 		argParser.add_argument('--configure',						action='store_const', const=True, default=False, help='configures PoC Library')
 		argParser.add_argument('--ise-settingsfile',		action='store_const', const=True, default=False, help='Return Xilinx ISE settings file')
 		argParser.add_argument('--vivado-settingsfile', action='store_const', const=True, default=False, help='Return Xilinx Vivado settings file')
