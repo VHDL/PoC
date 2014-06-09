@@ -45,8 +45,8 @@ class PoCTestbench(PoC.PoCBase):
 	__tbConfigFileName = "configuration.ini"
 	tbConfig = None
 	
-	def __init__(self, debug, verbose):
-		super(self.__class__, self).__init__(debug, verbose)
+	def __init__(self, debug, verbose, quite):
+		super(self.__class__, self).__init__(debug, verbose, quite)
 
 		if not ((self.platform == "Windows") or (self.platform == "Linux")):
 			raise PoC.PoCPlatformNotSupportedException(self.platform)
@@ -69,7 +69,7 @@ class PoCTestbench(PoC.PoCBase):
 		self.tbConfig.read([str(self.Files["PoCConfig"]), str(self.Files["PoCStructure"]), str(tbConfigFilePath)])
 		self.Files["PoCTBConfig"]	= tbConfigFilePath
 	
-	def isimSimulation(self, module, showLogs):
+	def isimSimulation(self, module, showLogs, showReport):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):
 			raise PoCNotConfiguredException("Xilinx ISE is not configured on this system.")
@@ -85,37 +85,61 @@ class PoCTestbench(PoC.PoCBase):
 
 		entityToSimulate = PoC.PoCEntity(self, module)
 
-		simulator = PoCISESimulator.PoCISESimulator(self, showLogs)
+		simulator = PoCISESimulator.PoCISESimulator(self, showLogs, showReport)
 		simulator.run(entityToSimulate)
 
-	def xsimSimulation(self, module, showLogs):
+	def xsimSimulation(self, module, showLogs, showReport):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx-Vivado")) == 0):
 			raise PoCNotConfiguredException("Xilinx Vivado is not configured on this system.")
 
 		entityToSimulate = PoC.PoCEntity(self, module)
 
-		simulator = PoCVivadoSimulator.PoCVivadoSimulator(self, showLogs)
+		simulator = PoCVivadoSimulator.PoCVivadoSimulator(self, showLogs, showReport)
 		simulator.run(entityToSimulate)
 
-	def vsimSimulation(self, module, showLogs):
+	def vsimSimulation(self, module, showLogs, showReport):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Questa")) == 0):
 			raise PoCNotConfiguredException("Mentor Graphics Questa is not configured on this system.")
 
 		entityToSimulate = PoC.PoCEntity(self, module)
 
-		simulator = PoCQuestaSimulator.PoCQuestaSimulator(self, showLogs)
+		simulator = PoCQuestaSimulator.PoCQuestaSimulator(self, showLogs, showReport)
 		simulator.run(entityToSimulate)
 		
-	def ghdlSimulation(self, module, showLogs):
+	def ghdlSimulation(self, module, showLogs, showReport):
+		# check if GHDL is configure
+		if (len(self.pocConfig.options("GHDL")) == 0):
+			raise PoCNotConfiguredException("GHDL is not configured on this system.")
+		
+		# prepare some paths
+		self.Directories["GHDLInstallation"] = Path(self.pocConfig['GHDL']['InstallationDirectory'])
+		self.Directories["GHDLBinary"] =				Path(self.pocConfig['GHDL']['BinaryDirectory'])
+		
+		entityToSimulate = PoC.PoCEntity(self, module)
+
+		simulator = PoCISESimulator.PoCGHDLSimulator(self, showLogs, showReport)
+		simulator.run(entityToSimulate)
+
+	def xsimSimulation(self, module, showLogs, showReport):
+		# check if ISE is configure
+		if (len(self.pocConfig.options("Xilinx-Vivado")) == 0):
+			raise PoCNotConfiguredException("Xilinx Vivado is not configured on this system.")
+
+		entityToSimulate = PoC.PoCEntity(self, module)
+
+		simulator = PoCVivadoSimulator.PoCVivadoSimulator(self, showLogs, showReport)
+		simulator.run(entityToSimulate)
+	
+	
 		# check if ISE is configure
 		if (len(self.pocConfig.options("GHDL")) == 0):
 			raise PoCNotConfiguredException("GHDL is not configured on this system.")
 
 		entityToSimulate = PoC.PoCEntity(self, module)
 
-		simulator = PoCGHDLSimulator.PoCGHDLSimulator(self, showLogs)
+		simulator = PoCGHDLSimulator.PoCGHDLSimulator(self, showLogs, showReport)
 		simulator.run(entityToSimulate)
 		
 	def getNamespaceForPrefix(self, namespacePrefix):
@@ -143,7 +167,9 @@ def main():
 		argParser.add_argument('-D', action='store_const', const=True, default=False, help='enable script wrapper debug mode')
 		argParser.add_argument('-d', action='store_const', const=True, default=False, help='enable debug mode')
 		argParser.add_argument('-v', action='store_const', const=True, default=False, help='generate detailed report')
+		argParser.add_argument('-q', action='store_const', const=True, default=False, help='run in quite mode')
 		argParser.add_argument('-l', action='store_const', const=True, default=False, help='show logs')
+		argParser.add_argument('-r', action='store_const', const=True, default=False, help='show report')
 		argParser.add_argument('--isim', action='store_const', const=True, default=False, help='use Xilinx ISE Simulator (iSim)')
 		argParser.add_argument('--xsim', action='store_const', const=True, default=False, help='use Xilinx Vivado Simulator (xSim)')
 		argParser.add_argument('--vsim', action='store_const', const=True, default=False, help='use Mentor Graphics ModelSim (vSim)')
@@ -160,16 +186,16 @@ def main():
 
 	# create class instance and start processing
 	try:
-		test = PoCTestbench(args.d, args.v)
+		test = PoCTestbench(args.d, args.v, args.q)
 		
 		if args.isim:
-			test.isimSimulation(args.module, args.l)
+			test.isimSimulation(args.module, args.l, args.q)
 		elif args.xsim:
-			test.xsimSimulation(args.module, args.l)
+			test.xsimSimulation(args.module, args.l, args.q)
 		elif args.vsim:
-			test.vsimSimulation(args.module, args.l)
+			test.vsimSimulation(args.module, args.l, args.q)
 		elif args.ghdl:
-			test.ghdlSimulation(args.module, args.l)
+			test.ghdlSimulation(args.module, args.l, args.q)
 		else:
 			argParser.print_help()
 	

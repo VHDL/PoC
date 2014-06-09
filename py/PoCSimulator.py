@@ -52,13 +52,17 @@ class PoCSimulator(object):
 	__host = None
 	__debug = False
 	__verbose = False
-	__showLogs = False
+	__quite = False
+	showLogs = False
+	showReport = False
 
-	def __init__(self, host, showLogs):
+	def __init__(self, host, showLogs, showReport):
 		self.__debug = host.getDebug()
 		self.__verbose = host.getVerbose()
+		self.__quite = host.getQuite()
 		self.host = host
 		self.showLogs = showLogs
+		self.showReport = showReport
 
 	def getDebug(self):
 		return self.__debug
@@ -66,12 +70,19 @@ class PoCSimulator(object):
 	def getVerbose(self):
 		return self.__verbose
 		
+	def getQuite(self):
+		return self.__quite
+		
 	def printDebug(self, message):
 		if (self.__debug):
 			print("DEBUG: " + message)
 			
 	def printVerbose(self, message):
 		if (self.__verbose):
+			print(message)
+	
+	def printNonQuite(self, message):
+		if (not self.__quite):
 			print(message)
 
 #	def getNamespaceForPrefix(self, namespacePrefix):

@@ -51,8 +51,8 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 
 	executables = {}
 
-	def __init__(self, host, showLogs):
-		super(self.__class__, self).__init__(host, showLogs)
+	def __init__(self, host, showLogs, showReport):
+		super(self.__class__, self).__init__(host, showLogs, showReport)
 
 		self.__executables = {
 			'vhcomp' :	("vhpcomp.exe"	if (host.platform == "Windows") else "vhpcomp"),
@@ -65,7 +65,9 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 		import re
 		import subprocess
 	
-		print("Preparing simulation environment for '%s'" % str(pocEntity))
+		self.printNonQuite(str(pocEntity))
+		self.printNonQuite("  preparing simulation environment...")
+		
 		
 		# create temporary directory for isim if not existent
 		tempISimPath = self.host.Directories["iSimTemp"]
@@ -88,27 +90,23 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 		if (self.getVerbose()):
 			print("Commands to be run:")
 			print("1. Change working directory to temporary directory.")
-			print("2. Parse file list and write iSim project file.")
+			print("2. Parse filelist and write iSim project file.")
 			print("3. Compile and Link source files to an executable simulation file.")
 			print("4. Simulate in tcl batch mode.")
 			print("----------------------------------------")
 		
-			print('cd "%s"' % str(tempISimPath))
-			print('%s work.%s --incremental -prj "%s" -o "%s"' % (str(fuseExecutablePath), testbenchName, str(prjFilePath), str(exeFilePath)))
-			print('%s -tclbatch "%s"' % (str(exeFilePath), str(tclFilePath)))
-			print()
-
 		# change working directory to temporary iSim path
+		self.printVerbose('cd "%s"' % str(tempISimPath))
 		os.chdir(str(tempISimPath))
 
-		# parse project file list
+		# parse project filelist
 		regExpStr =	 r"\s*(?P<VHDLLine>vhdl"								# Keyword vhdl
 		regExpStr += r"\s+(?P<VHDLLibrary>[_a-zA-Z0-9]+)"		#	VHDL library name
 		regExpStr += r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
 		regExpStr += r")"																		# close keyword group
 		regExp = re.compile(regExpStr)
 
-		self.printDebug("Reading file list '%s'" % str(fileFilePath))
+		self.printDebug("Reading filelist '%s'" % str(fileFilePath))
 		iSimProjectFileContent = ""
 		with fileFilePath.open('r') as prjFileHandle:
 			for line in prjFileHandle:
@@ -127,7 +125,7 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 
 		# running fuse
 		# ==========================================================================
-		print("running fuse...")
+		self.printNonQuite("  running fuse...")
 		# assemble fuse command as list of parameters
 		parameterList = [
 			str(fuseExecutablePath),
@@ -137,6 +135,7 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 			'-o',		str(exeFilePath)
 		]
 		self.printDebug("call fuse: %s" % str(parameterList))
+		self.printVerbose('%s work.%s --incremental -prj "%s" -o "%s"' % (str(fuseExecutablePath), testbenchName, str(prjFilePath), str(exeFilePath)))
 		linkerLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
 		
 		if self.showLogs:
@@ -146,9 +145,10 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 			print()
 		
 		# running simulation
-		print("running simulation...")
+		self.printNonQuite("  running simulation...")
 		parameterList = [str(exeFilePath), '-tclbatch', str(tclFilePath)]
 		self.printDebug("call simulation: %s" % str(parameterList))
+		self.printVerbose('%s -tclbatch "%s"' % (str(exeFilePath), str(tclFilePath)))
 		simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
 		
 		if self.showLogs:
