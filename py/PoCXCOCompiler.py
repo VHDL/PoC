@@ -58,11 +58,12 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 			'CoreGen' :	("coregen.exe"	if (host.platform == "Windows") else "coregen")
 		}
 		
-	def run(self, pocEntity):
-		from pathlib import Path
-		import os
-		import re
+	def run(self, pocEntity, device):
+		#from pathlib import Path
+		#import os
+		#import re
 		import subprocess
+		import textwrap
 	
 		self.printNonQuite(str(pocEntity))
 		self.printNonQuite("  preparing compiler environment...")
@@ -75,16 +76,75 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 			self.printDebug("Temporary directors: %s" % str(tempCoreGenPath))
 			tempCoreGenPath.mkdir(parents=True)
 
+		self.host.netListConfig['SPECIAL'] = {}
+		self.host.netListConfig['SPECIAL']['Device'] = "XC5VLX50T-1FFG1136"
+			
 		# setup all needed paths to execute coreGen
 		coreGenExecutablePath =		self.host.Directories["ISEBinary"] / self.__executables['CoreGen']
 		
-		ipCoreName = self.host.netListConfig[str(pocEntity)]['IPCoreName']
-		fileFilePath =	self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['FilesFile']
-		tclFilePath =		self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['CoreGenTclScript']
-		prjFilePath =		tempCoreGenPath / (testbenchName + ".prj")
-		exeFilePath =		tempCoreGenPath / (testbenchName + ".exe")
+		ipCoreName =					self.host.netListConfig[str(pocEntity)]['IPCoreName']
+		xcoFilePath =					self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['CoreGeneratorFile']
+		ngcOutputFilePath =		self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['NetListOutputFile']
+		vhdlOutputFilePath =	self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['VHDLEntityOutputFile']
+		cgpFilePath =					tempCoreGenPath / "coregen.cgp"
+		cgcFilePath =					tempCoreGenPath / "coregen.cgc"
+		ngcFilePath =					tempCoreGenPath / xcoFilePath.with_suffix('.ngc')
+		vhdlFilePath =				tempCoreGenPath / xcoFilePath.with_suffix('.vhdl')
 
-		print()
+		# resolve board to device
+		deviceString = self.host.netListConfig['BOARDS'][device]
+		deviceSection = "Device." + deviceString
+		
+		# TODO: change working dir to tempCoreGenPath / <devicestring>
+		
+		# TODO: verbose print run instructions
+		
+		
+		
+		# write CoreGenerator project file
+		cgProjectFileContent = textwrap.dedent('''\
+			SET addpads = false
+			SET asysymbol = false
+			SET busformat = BusFormatAngleBracketNotRipped
+			SET createndf = false
+			SET designentry = VHDL
+			SET device = %s
+			SET devicefamily = %s
+			SET flowvendor = Other
+			SET formalverification = false
+			SET foundationsym = false
+			SET implementationfiletype = Ngc
+			SET package = %s
+			SET removerpms = false
+			SET simulationfiles = Behavioral
+			SET speedgrade = %s
+			SET verilogsim = false
+			SET vhdlsim = true
+			SET workingdirectory = %s
+			''' % (
+				self.host.netListConfig[deviceSection]['Device'],
+				self.host.netListConfig[deviceSection]['DeviceFamily'],
+				self.host.netListConfig[deviceSection]['Package'],
+				self.host.netListConfig[deviceSection]['SpeedGrade'],
+				(".\\temp\\" if self.host.platform == "Windows" else "./temp/")
+			))
+
+		self.printDebug("Writing CoreGen project file to '%s'" % str(cgpFilePath))
+		with cgpFilePath.open('w') as cgpFileHandle:
+			cgpFileHandle.write(cgProjectFileContent)
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		print("ngc: " + str(ngcOutputFilePath))
+		print("dev: " + device)
 		print("return ...")
 		return
 		

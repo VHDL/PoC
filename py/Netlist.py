@@ -63,10 +63,10 @@ class PoCNetList(PoC.PoCBase):
 			
 		self.netListConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
 		self.netListConfig.optionxform = str
-		self.netListConfig.read([str(netListConfigFilePath)])
+		self.netListConfig.read([str(self.Files["PoCConfig"]), str(self.Files["PoCStructure"]), str(netListConfigFilePath)])
 		self.Files["PoCNLConfig"]	= netListConfigFilePath
 
-	def coreGenCompilation(self, module, showLogs, showReport):
+	def coreGenCompilation(self, module, device, showLogs, showReport):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):
 			raise PoCNotConfiguredException("Xilinx ISE is not configured on this system.")
@@ -83,7 +83,7 @@ class PoCNetList(PoC.PoCBase):
 		entityToCompile = PoC.PoCEntity(self, module)
 
 		compiler = PoCXCOCompiler.PoCXCOCompiler(self, showLogs, showReport)
-		compiler.run(entityToCompile)
+		compiler.run(entityToCompile, device)
 
 
 # main program
@@ -113,6 +113,8 @@ def main():
 		argParser.add_argument('-r', action='store_const', const=True, default=False, help='show report')
 		argParser.add_argument('--coregen', action='store_const', const=True, default=False, help='use Xilinx IP-Core Generator (CoreGen)')
 		argParser.add_argument("module", help="Specify the module which should be tested.")
+		argParser.add_argument('--device', action='store_const', const=True, default=False, help='target device')
+		argParser.add_argument("devicename", help="Specify the target device.")
 		
 		# parse command line options
 		args = argParser.parse_args()
@@ -127,7 +129,7 @@ def main():
 		netList = PoCNetList(args.d, args.v, args.q)
 	
 		if args.coregen:
-			netList.coreGenCompilation(args.module, args.l, args.r)
+			netList.coreGenCompilation(args.module, args.devicename, args.l, args.r)
 		else:
 			argParser.print_help()
 		
