@@ -19,9 +19,9 @@ USE			L_SATAController.SATATransceiverTypes.ALL;
 ENTITY SATATransceiver_Virtex6_GTXE1 IS
 	GENERIC (
 		CHIPSCOPE_KEEP						: BOOLEAN											:= TRUE;
-		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																									-- 150 MHz
-		PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= T_SATA_GENERATION_VECTOR'(SATA_GENERATION_2, SATA_GENERATION_2)			-- intial SATA Generation
+		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																	-- 150 MHz
+		PORTS											: POSITIVE										:= 2;																			-- Number of Ports per Transceiver
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3 => T_SATA_GENERATION'high)			-- intial SATA Generation
 	);
 	PORT (
 		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -260,8 +260,8 @@ BEGIN
 		WA_Data : ENTITY L_Global.WordAligner
 			GENERIC MAP (
 				REGISTERED					=> FALSE,
-				INPUT_BW						=> 32,
-				WORD_BW							=> 16
+				INPUT_BITS						=> 32,
+				WORD_BITS							=> 16
 			)
 			PORT MAP (
 				Clock								=> GTX_Clock_4X,
@@ -274,8 +274,8 @@ BEGIN
 		WA_CharIsK : ENTITY L_Global.WordAligner
 			GENERIC MAP (
 				REGISTERED					=> FALSE,
-				INPUT_BW						=> 4,
-				WORD_BW							=> 2
+				INPUT_BITS						=> 4,
+				WORD_BITS							=> 2
 			)
 			PORT MAP (
 				Clock								=> GTX_Clock_4X,
@@ -1215,74 +1215,74 @@ BEGIN
 -- ChipScope debugging signals
 -- ==================================================================
 		genCSP : IF (CHIPSCOPE_KEEP = TRUE) GENERATE
-			SIGNAL CSP_ClockTX_1X												: STD_LOGIC;
-			SIGNAL CSP_ClockTX_4X												: STD_LOGIC;
+			SIGNAL DBG_ClockTX_1X												: STD_LOGIC;
+			SIGNAL DBG_ClockTX_4X												: STD_LOGIC;
 			
-			SIGNAL CSP_GTP_RX_ByteIsAligned							: STD_LOGIC;
-			SIGNAL CSP_GTP_RX_CharIsComma								: STD_LOGIC;
-			SIGNAL CSP_GTP_RX_CharIsK										: STD_LOGIC;
-			SIGNAL CSP_GTP_RX_Data											: T_SLV_8;
-			SIGNAL CSP_GTP_TX_CharIsK										: STD_LOGIC;
-			SIGNAL CSP_GTP_TX_Data											: T_SLV_8;
+			SIGNAL DBG_GTP_RX_ByteIsAligned							: STD_LOGIC;
+			SIGNAL DBG_GTP_RX_CharIsComma								: STD_LOGIC;
+			SIGNAL DBG_GTP_RX_CharIsK										: STD_LOGIC;
+			SIGNAL DBG_GTP_RX_Data											: T_SLV_8;
+			SIGNAL DBG_GTP_TX_CharIsK										: STD_LOGIC;
+			SIGNAL DBG_GTP_TX_Data											: T_SLV_8;
 			
-			SIGNAL CSP_RX_CharIsK												: T_SATA_CIK;
-			SIGNAL CSP_RX_Data													: T_SLV_32;
-			SIGNAL CSP_TX_CharIsK												: T_SATA_CIK;
-			SIGNAL CSP_TX_Data													: T_SLV_32;
+			SIGNAL DBG_RX_CharIsK												: T_SATA_CIK;
+			SIGNAL DBG_RX_Data													: T_SLV_32;
+			SIGNAL DBG_TX_CharIsK												: T_SATA_CIK;
+			SIGNAL DBG_TX_Data													: T_SLV_32;
 			
-			SIGNAL CSP_OOBCommand_COMRESET							: STD_LOGIC;
-			SIGNAL CSP_OOBCommand_COMWAKE								: STD_LOGIC;
-			SIGNAL CSP_GTX_COMRESET											: STD_LOGIC;
-			SIGNAL CSP_GTX_COMWAKE											: STD_LOGIC;
+			SIGNAL DBG_OOBCommand_COMRESET							: STD_LOGIC;
+			SIGNAL DBG_OOBCommand_COMWAKE								: STD_LOGIC;
+			SIGNAL DBG_GTX_COMRESET											: STD_LOGIC;
+			SIGNAL DBG_GTX_COMWAKE											: STD_LOGIC;
 			
-			SIGNAL CSP_OOBStatus_COMRESET								: STD_LOGIC;
-			SIGNAL CSP_OOBStatus_COMWAKE								: STD_LOGIC;
+			SIGNAL DBG_OOBStatus_COMRESET								: STD_LOGIC;
+			SIGNAL DBG_OOBStatus_COMWAKE								: STD_LOGIC;
 		
-			ATTRIBUTE KEEP OF CSP_ClockTX_1X						: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_ClockTX_4X						: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_ClockTX_1X						: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_ClockTX_4X						: SIGNAL IS TRUE;
 
-			ATTRIBUTE KEEP OF CSP_GTP_RX_ByteIsAligned	: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_GTP_RX_CharIsComma		: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_GTP_RX_CharIsK				: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_GTP_RX_Data						: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_GTP_TX_CharIsK				: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_GTP_TX_Data						: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_GTP_RX_ByteIsAligned	: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_GTP_RX_CharIsComma		: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_GTP_RX_CharIsK				: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_GTP_RX_Data						: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_GTP_TX_CharIsK				: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_GTP_TX_Data						: SIGNAL IS TRUE;
 			
-			ATTRIBUTE KEEP OF CSP_RX_CharIsK						: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_RX_Data								: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_TX_CharIsK						: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_TX_Data								: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_RX_CharIsK						: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_RX_Data								: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_TX_CharIsK						: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_TX_Data								: SIGNAL IS TRUE;
 		
-			ATTRIBUTE KEEP OF CSP_OOBCommand_COMRESET		: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_OOBCommand_COMWAKE		: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_GTX_COMRESET					: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_GTX_COMWAKE						: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_OOBCommand_COMRESET		: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_OOBCommand_COMWAKE		: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_GTX_COMRESET					: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_GTX_COMWAKE						: SIGNAL IS TRUE;
 		
-			ATTRIBUTE KEEP OF CSP_OOBStatus_COMRESET		: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_OOBStatus_COMWAKE			: SIGNAL IS TRUE;	
+			ATTRIBUTE KEEP OF DBG_OOBStatus_COMRESET		: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_OOBStatus_COMWAKE			: SIGNAL IS TRUE;	
 		BEGIN
---			CSP_ClockTX_1X							<= GTP_ClockTX_1X;
---			CSP_ClockTX_4X							<= GTP_ClockTX_4X;
+--			DBG_ClockTX_1X							<= GTP_ClockTX_1X;
+--			DBG_ClockTX_4X							<= GTP_ClockTX_4X;
 				
---			CSP_GTP_RX_ByteIsAligned		<= GTP_RX_ByteIsAligned;
---			CSP_GTP_RX_CharIsComma			<= GTP_RX_CharIsComma;
---			CSP_GTP_RX_CharIsK					<= GTP_RX_CharIsK;
---			CSP_GTP_RX_Data							<= GTP_RX_Data;
---			CSP_GTP_TX_CharIsK					<= GTP_TX_CharIsK;
---			CSP_GTP_TX_Data							<= GTP_TX_Data;
+--			DBG_GTP_RX_ByteIsAligned		<= GTP_RX_ByteIsAligned;
+--			DBG_GTP_RX_CharIsComma			<= GTP_RX_CharIsComma;
+--			DBG_GTP_RX_CharIsK					<= GTP_RX_CharIsK;
+--			DBG_GTP_RX_Data							<= GTP_RX_Data;
+--			DBG_GTP_TX_CharIsK					<= GTP_TX_CharIsK;
+--			DBG_GTP_TX_Data							<= GTP_TX_Data;
 			
---			CSP_RX_CharIsK							<= RX_CharIsK;
---			CSP_RX_Data									<= RX_Data;
---			CSP_TX_CharIsK							<= TX_CharIsK;
---			CSP_TX_Data									<= TX_Data;
+--			DBG_RX_CharIsK							<= RX_CharIsK;
+--			DBG_RX_Data									<= RX_Data;
+--			DBG_TX_CharIsK							<= TX_CharIsK;
+--			DBG_TX_Data									<= TX_Data;
 				
-			CSP_OOBCommand_COMRESET			<= to_sl(TX_OOBCommand_d = SATA_OOB_COMRESET);
-			CSP_OOBCommand_COMWAKE			<= to_sl(TX_OOBCommand_d = SATA_OOB_COMWAKE);
-			CSP_GTX_COMRESET						<= GTX_TX_ComInit;
-			CSP_GTX_COMWAKE							<= GTX_TX_ComWake;
+			DBG_OOBCommand_COMRESET			<= to_sl(TX_OOBCommand_d = SATA_OOB_COMRESET);
+			DBG_OOBCommand_COMWAKE			<= to_sl(TX_OOBCommand_d = SATA_OOB_COMWAKE);
+			DBG_GTX_COMRESET						<= GTX_TX_ComInit;
+			DBG_GTX_COMWAKE							<= GTX_TX_ComWake;
 			
-			CSP_OOBStatus_COMRESET			<= to_sl(RX_OOBStatus_i = SATA_OOB_COMRESET);
-			CSP_OOBStatus_COMWAKE				<= to_sl(RX_OOBStatus_i = SATA_OOB_COMWAKE);
+			DBG_OOBStatus_COMRESET			<= to_sl(RX_OOBStatus_i = SATA_OOB_COMRESET);
+			DBG_OOBStatus_COMWAKE				<= to_sl(RX_OOBStatus_i = SATA_OOB_COMWAKE);
 		END GENERATE;
 	END GENERATE;
 END;

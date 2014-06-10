@@ -23,10 +23,10 @@ USE			L_SATAController.SATATransceiverTypes.ALL;
 
 ENTITY SATATransceiver_Virtex5_GTP IS
 	GENERIC (
-		CHIPSCOPE_KEEP						: BOOLEAN											:= FALSE;																									-- generate ChipScope debugging "pins"
-		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																									-- 150 MHz
-		PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 => SATA_GENERATION_2,		1 => SATA_GENERATION_2)			-- intial SATA Generation
+		DEBUG											: BOOLEAN											:= FALSE;																	-- generate ChipScope debugging "pins"
+		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																	-- 150 MHz
+		PORTS											: POSITIVE										:= 2;																			-- Number of Ports per Transceiver
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1 => T_SATA_GENERATION'high)			-- intial SATA Generation
 	);
 	PORT (
 		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -208,17 +208,17 @@ ARCHITECTURE rtl OF SATATransceiver_Virtex5_GTP IS
 	SIGNAL RX_OOBStatus_i											: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL RX_OOBStatus_d											: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0)													:= (OTHERS => SATA_OOB_NONE);
 
-	ATTRIBUTE KEEP OF TX_OOBComplete									: SIGNAL IS CHIPSCOPE_KEEP;
-	ATTRIBUTE KEEP OF BWC_RX_Align										: SIGNAL IS CHIPSCOPE_KEEP;
-	ATTRIBUTE KEEP OF GTP_RX_ClockCorrectionStatus		: SIGNAL IS CHIPSCOPE_KEEP;
-	ATTRIBUTE KEEP OF GTP_RX_BufferStatus							: SIGNAL IS CHIPSCOPE_KEEP;
+	ATTRIBUTE KEEP OF TX_OOBComplete									: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF BWC_RX_Align										: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF GTP_RX_ClockCorrectionStatus		: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF GTP_RX_BufferStatus							: SIGNAL IS DEBUG;
 	
 	-- keep internal clock nets, so timing constrains from UCF can find them
-	ATTRIBUTE KEEP OF GTP_RefClockOut 								: SIGNAL IS CHIPSCOPE_KEEP;
-	ATTRIBUTE KEEP OF GTP_Clock_1X										: SIGNAL IS CHIPSCOPE_KEEP;
-	ATTRIBUTE KEEP OF GTP_Clock_4X										: SIGNAL IS CHIPSCOPE_KEEP;
-	ATTRIBUTE KEEP OF GTP_TX_RefClockOut							: SIGNAL IS CHIPSCOPE_KEEP;
-	ATTRIBUTE KEEP OF GTP_RX_RefClockOut							: SIGNAL IS CHIPSCOPE_KEEP;
+	ATTRIBUTE KEEP OF GTP_RefClockOut 								: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF GTP_Clock_1X										: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF GTP_Clock_4X										: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF GTP_TX_RefClockOut							: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF GTP_RX_RefClockOut							: SIGNAL IS DEBUG;
 	
 BEGIN
 	genReport : FOR I IN 0 TO PORTS - 1 GENERATE
@@ -357,7 +357,7 @@ BEGIN
 	
 	ClkNet : ENTITY L_SATAController.SATATransceiver_Virtex5_ClockNetwork
 		GENERIC MAP (
-			CHIPSCOPE_KEEP							=> CHIPSCOPE_KEEP,
+			DEBUG							=> DEBUG,
 			CLOCK_IN_FREQ_MHZ						=> CLOCK_IN_FREQ_MHZ,
 			PORTS												=> PORTS,
 			INITIAL_SATA_GENERATIONS		=> INITIAL_SATA_GENERATIONS
@@ -394,7 +394,7 @@ BEGIN
 -- ==================================================================
 --	FSM : ENTITY L_SATAController.SATATransceiverFSM
 --		GENERIC MAP (
---			CHIPSCOPE_KEEP						=> CHIPSCOPE_KEEP,
+--			DEBUG						=> DEBUG,
 --			PORTS											=> PORTS
 --		)
 --		PORT MAP (
@@ -697,7 +697,7 @@ BEGIN
 		-- device detection
 		DD : ENTITY L_SATAController.DeviceDetector
 			GENERIC MAP (
-				CHIPSCOPE_KEEP					=> CHIPSCOPE_KEEP,
+				DEBUG					=> DEBUG,
 				CLOCK_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,						-- 150 MHz
 				NO_DEVICE_TIMEOUT_MS		=> NO_DEVICE_TIMEOUT_MS,				-- 1,0 ms
 				NEW_DEVICE_TIMEOUT_MS		=> NEW_DEVICE_TIMEOUT_MS				-- 1,0 us								-- TODO: unused?
@@ -761,7 +761,7 @@ BEGIN
 -- ==================================================================
 	GTPConfig : ENTITY L_SATAController.GTP_DUALConfigurator
 		GENERIC MAP (
-			CHIPSCOPE_KEEP								=> CHIPSCOPE_KEEP,
+			DEBUG								=> DEBUG,
 			DRPCLOCK_FREQ_MHZ							=> CLOCK_IN_FREQ_MHZ,
 			PORTS													=> PORTS,
 			INITIAL_SATA_GENERATIONS			=> INITIAL_SATA_GENERATIONS
@@ -1668,61 +1668,61 @@ BEGIN
 -- ==================================================================
 -- ChipScope debugging signals
 -- ==================================================================
-	genCSP : IF (CHIPSCOPE_KEEP = TRUE) GENERATE
-		SIGNAL CSP_ClockTX_1X												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_ClockTX_4X												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	genCSP : IF (DEBUG = TRUE) GENERATE
+		SIGNAL DBG_ClockTX_1X												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_ClockTX_4X												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
-		SIGNAL CSP_GTP_RX_ByteIsAligned							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_GTP_RX_CharIsComma								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_GTP_RX_CharIsK										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_GTP_RX_Data											: T_SLVV_8(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_GTP_TX_CharIsK										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_GTP_TX_Data											: T_SLVV_8(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_GTP_RX_ByteIsAligned							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_GTP_RX_CharIsComma								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_GTP_RX_CharIsK										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_GTP_RX_Data											: T_SLVV_8(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_GTP_TX_CharIsK										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_GTP_TX_Data											: T_SLVV_8(PORTS - 1 DOWNTO 0);
 		
-		SIGNAL CSP_RX_CharIsK												: T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_RX_Data													: T_SLVV_32(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_TX_CharIsK												: T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_TX_Data													: T_SLVV_32(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_RX_CharIsK												: T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_RX_Data													: T_SLVV_32(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_TX_CharIsK												: T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_TX_Data													: T_SLVV_32(PORTS - 1 DOWNTO 0);
 		
-		SIGNAL CSP_OOBStatus_COMRESET								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL CSP_OOBStatus_COMWAKE								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_OOBStatus_COMRESET								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_OOBStatus_COMWAKE								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	
-		ATTRIBUTE KEEP OF CSP_ClockTX_1X						: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_ClockTX_4X						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_ClockTX_1X						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_ClockTX_4X						: SIGNAL IS TRUE;
 
-		ATTRIBUTE KEEP OF CSP_GTP_RX_ByteIsAligned	: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_GTP_RX_CharIsComma		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_GTP_RX_CharIsK				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_GTP_RX_Data						: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_GTP_TX_CharIsK				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_GTP_TX_Data						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_GTP_RX_ByteIsAligned	: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_GTP_RX_CharIsComma		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_GTP_RX_CharIsK				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_GTP_RX_Data						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_GTP_TX_CharIsK				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_GTP_TX_Data						: SIGNAL IS TRUE;
 		
-		ATTRIBUTE KEEP OF CSP_RX_CharIsK						: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_RX_Data								: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_TX_CharIsK						: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_TX_Data								: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_RX_CharIsK						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_RX_Data								: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TX_CharIsK						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TX_Data								: SIGNAL IS TRUE;
 	
-		ATTRIBUTE KEEP OF CSP_OOBStatus_COMRESET		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_OOBStatus_COMWAKE			: SIGNAL IS TRUE;	
+		ATTRIBUTE KEEP OF DBG_OOBStatus_COMRESET		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_OOBStatus_COMWAKE			: SIGNAL IS TRUE;	
 	BEGIN
 			loop0: FOR I IN 0 TO PORTS - 1 GENERATE
-				CSP_ClockTX_1X(I)						<= GTP_Clock_1X(I);
-				CSP_ClockTX_4X(I)						<= GTP_Clock_4X(I);
+				DBG_ClockTX_1X(I)						<= GTP_Clock_1X(I);
+				DBG_ClockTX_4X(I)						<= GTP_Clock_4X(I);
 			
-				CSP_GTP_RX_ByteIsAligned(I)	<= GTP_RX_ByteIsAligned(I);
---				CSP_GTP_RX_CharIsComma(I)		<= GTP_RX_CharIsComma(I);
---				CSP_GTP_RX_CharIsK(I)				<= GTP_RX_CharIsK(I);
-				CSP_GTP_RX_Data(I)					<= GTP_RX_Data(I)(CSP_GTP_RX_Data(I)'range);
---				CSP_GTP_TX_CharIsK(I)				<= GTP_TX_CharIsK(I);
-				CSP_GTP_TX_Data(I)					<= GTP_TX_Data(I)(CSP_GTP_TX_Data(I)'range);
+				DBG_GTP_RX_ByteIsAligned(I)	<= GTP_RX_ByteIsAligned(I);
+--				DBG_GTP_RX_CharIsComma(I)		<= GTP_RX_CharIsComma(I);
+--				DBG_GTP_RX_CharIsK(I)				<= GTP_RX_CharIsK(I);
+				DBG_GTP_RX_Data(I)					<= GTP_RX_Data(I)(DBG_GTP_RX_Data(I)'range);
+--				DBG_GTP_TX_CharIsK(I)				<= GTP_TX_CharIsK(I);
+				DBG_GTP_TX_Data(I)					<= GTP_TX_Data(I)(DBG_GTP_TX_Data(I)'range);
 		
---				CSP_RX_CharIsK(I)						<= RX_CharIsK(I);
---				CSP_RX_Data(I)							<= RX_Data(I);
-				CSP_TX_CharIsK(I)						<= TX_CharIsK(I);
-				CSP_TX_Data(I)							<= TX_Data(I);
+--				DBG_RX_CharIsK(I)						<= RX_CharIsK(I);
+--				DBG_RX_Data(I)							<= RX_Data(I);
+				DBG_TX_CharIsK(I)						<= TX_CharIsK(I);
+				DBG_TX_Data(I)							<= TX_Data(I);
 			
-				CSP_OOBStatus_COMRESET(I)		<= to_sl(RX_OOBStatus_i(I) = SATA_OOB_COMRESET);
-				CSP_OOBStatus_COMWAKE(I)		<= to_sl(RX_OOBStatus_i(I) = SATA_OOB_COMWAKE);
+				DBG_OOBStatus_COMRESET(I)		<= to_sl(RX_OOBStatus_i(I) = SATA_OOB_COMRESET);
+				DBG_OOBStatus_COMWAKE(I)		<= to_sl(RX_OOBStatus_i(I) = SATA_OOB_COMWAKE);
 			END GENERATE;
 	END GENERATE;
 	

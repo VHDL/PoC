@@ -636,7 +636,7 @@ PACKAGE sata IS
 		GENERIC (
 			SIM_WAIT_FOR_INITIAL_REGDH_FIS		: BOOLEAN                     := TRUE;      -- required by ATA/SATA standard
 			SIM_EXECUTE_IDENTIFY_DEVICE				: BOOLEAN											:= TRUE;			-- required by CommandLayer: load device parameters
-			DEBUG															: BOOLEAN											:= FALSE;			-- generate ChipScope CSP_* signals
+			DEBUG															: BOOLEAN											:= FALSE;			-- generate ChipScope DBG_* signals
 			LOGICAL_BLOCK_SIZE_ldB						: POSITIVE										:= 13					-- accessable logical block size: 8 kB (independant from device)
 		);
 		PORT (

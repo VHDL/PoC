@@ -18,9 +18,9 @@ USE			L_SATAController.SATATypes.ALL;
 
 ENTITY SATATransceiver_Virtex5_GTPSIM IS
 	GENERIC (
-		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																									-- 150 MHz
-		PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= T_SATA_GENERATION_VECTOR'(SATA_GEN_2, SATA_GEN_2)			-- intial SATA Generation
+		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																	-- 150 MHz
+		PORTS											: POSITIVE										:= 2;																			-- Number of Ports per Transceiver
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1 => T_SATA_GENERATION'high)			-- intial SATA Generation
 	);
 	PORT (
 		ClockIn_150MHz						: IN	STD_LOGIC;
@@ -201,14 +201,14 @@ ARCHITECTURE rtl OF SATATransceiver_Virtex5_GTPSIM IS
 	ATTRIBUTE KEEP OF GTP_ClockTX_4X					: SIGNAL IS "TRUE";
 	ATTRIBUTE KEEP OF SATA_Clock_i						: SIGNAL IS "TRUE";
 	
-	SIGNAL CSP_Trigger_COMRESET								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL CSP_Trigger_COMWAKE								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL DBG_Trigger_COMRESET								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL DBG_Trigger_COMWAKE								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	
 	ATTRIBUTE KEEP OF Status									: SIGNAL IS "TRUE";
 	ATTRIBUTE KEEP OF NDD_NoDevice						: SIGNAL IS "TRUE";
 
-	ATTRIBUTE KEEP OF CSP_Trigger_COMRESET		: SIGNAL IS "TRUE";
-	ATTRIBUTE KEEP OF CSP_Trigger_COMWAKE			: SIGNAL IS "TRUE";
+	ATTRIBUTE KEEP OF DBG_Trigger_COMRESET		: SIGNAL IS "TRUE";
+	ATTRIBUTE KEEP OF DBG_Trigger_COMWAKE			: SIGNAL IS "TRUE";
 
 BEGIN
 -- ==================================================================
@@ -1461,8 +1461,8 @@ BEGIN
 -- ==================================================================
 
 	genCSP : FOR I IN 0 TO PORTS - 1 GENERATE
-		CSP_Trigger_COMRESET(I)		<= '1' WHEN (RX_OOBStatus_i(I) = OOB_COMRESET)	ELSE '0';
-		CSP_Trigger_COMWAKE(I)		<= '1' WHEN (RX_OOBStatus_i(I) = OOB_COMWAKE)		ELSE '0';
+		DBG_Trigger_COMRESET(I)		<= '1' WHEN (RX_OOBStatus_i(I) = OOB_COMRESET)	ELSE '0';
+		DBG_Trigger_COMWAKE(I)		<= '1' WHEN (RX_OOBStatus_i(I) = OOB_COMWAKE)		ELSE '0';
 	END GENERATE;
 	
 END;

@@ -38,7 +38,8 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
---USE			PoC.sata.ALL;
+USE			PoC.sata.ALL;
+USE			PoC.sata_TransceiverTypes.ALL;
 
 
 ENTITY sata_SATAController IS
@@ -74,7 +75,7 @@ ENTITY sata_SATAController IS
 		Error												: OUT	T_SATA_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 
 		-- Debug ports
-		DebugPortOut								: OUT T_DBG_SATAOUT_VECTOR(PORTS - 1 DOWNTO 0);
+--		DebugPortOut								: OUT T_DBG_SATAOUT_VECTOR(PORTS - 1 DOWNTO 0);
     
 		-- TX port
 		TX_SOF											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -184,9 +185,9 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	SIGNAL Trans_RX_Data								: T_SLVV_32(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_RX_CharIsK							: T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
 
-	SIGNAL Phy_DebugPortOut							: T_DBG_PHYOUT_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Trans_DebugPortOut						: T_DBG_TRANSOUT_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Link_DebugPortOut						: T_DBG_LINKOUT_VECTOR(PORTS - 1 DOWNTO 0);
+--	SIGNAL Phy_DebugPortOut							: T_DBG_PHYOUT_VECTOR(PORTS - 1 DOWNTO 0);
+--	SIGNAL Trans_DebugPortOut						: T_DBG_TRANSOUT_VECTOR(PORTS - 1 DOWNTO 0);
+--	SIGNAL Link_DebugPortOut						: T_DBG_LINKOUT_VECTOR(PORTS - 1 DOWNTO 0);
 	
 	ATTRIBUTE KEEP OF Link_Status				: SIGNAL IS DEBUG					;
 	ATTRIBUTE KEEP OF SATA_Clock_i			: SIGNAL IS DEBUG					;
@@ -322,7 +323,7 @@ BEGIN
 				Error										=> Link_Error(I),
 				
 				-- Debug ports
-				DebugPort_Out					 	=> Link_DebugPortOut(I),
+--				DebugPort_Out					 	=> Link_DebugPortOut(I),
 				
 				-- TX port
 				TX_SOF									=> SATAC_TX_SOF(I),
@@ -388,7 +389,7 @@ BEGIN
 				Status												=> Phy_Status(I),
 				Error													=> Phy_Error(I),
 
-				DebugPortOut									=> Phy_DebugPortOut(I),
+--				DebugPortOut									=> Phy_DebugPortOut(I),
 				
 				Link_RX_Data									=> Phy_RX_Data(I),
 				Link_RX_CharIsK								=> Phy_RX_CharIsK(I),
@@ -427,7 +428,7 @@ BEGIN
 -- ==================================================================
 -- transceiver layer
 -- ==================================================================
-	Trans : ENTITY PoC.sata_SATATransceiver
+	Trans : ENTITY PoC.sata_TransceiverLayer
 		GENERIC MAP (
 			DEBUG											=> DEBUG					,
 			CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
@@ -456,7 +457,7 @@ BEGIN
 			TX_Error									=> Trans_TX_Error,
 			RX_Error									=> Trans_RX_Error,
 
-			DebugPortOut							=> Trans_DebugPortOut,
+--			DebugPortOut							=> Trans_DebugPortOut,
 
 			TX_OOBCommand							=> Phy_TX_OOBCommand,
 			TX_OOBComplete						=> Phy_TX_OOBComplete,
@@ -477,12 +478,12 @@ BEGIN
 	-- ================================================================
 	-- debug port
 	-- ================================================================
-	genDebug : FOR I IN 0 TO PORTS - 1 GENERATE
+--	genDebug : FOR I IN 0 TO PORTS - 1 GENERATE
 -- 		input
 -- 
 -- 		output
-		DebugPortOut(I).LinkLayer						<= Link_DebugPortOut(I);
-		DebugPortOut(I).PhysicalLayer				<= Phy_DebugPortOut(I);
-		DebugPortOut(I).TransceiverLayer		<= Trans_DebugPortOut(I);
-	END GENERATE;
+--		DebugPortOut(I).LinkLayer						<= Link_DebugPortOut(I);
+--		DebugPortOut(I).PhysicalLayer				<= Phy_DebugPortOut(I);
+--		DebugPortOut(I).TransceiverLayer		<= Trans_DebugPortOut(I);
+--	END GENERATE;
 END;

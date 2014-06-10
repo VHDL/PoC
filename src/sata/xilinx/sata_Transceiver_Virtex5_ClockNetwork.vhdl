@@ -16,10 +16,10 @@ USE			L_SATAController.SATATypes.ALL;
 
 ENTITY SATATransceiver_Virtex5_ClockNetwork IS
 	GENERIC (
-		CHIPSCOPE_KEEP						: BOOLEAN												:= TRUE;
-		CLOCK_IN_FREQ_MHZ					: REAL													:= 150.0;																									-- 150 MHz
-		PORTS											: POSITIVE											:= 1;																											-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR			:= T_SATA_GENERATION_VECTOR'(SATA_GENERATION_2, SATA_GENERATION_2)			-- intial SATA Generation
+		DEBUG											: BOOLEAN												:= TRUE;
+		CLOCK_IN_FREQ_MHZ					: REAL													:= 150.0;																	-- 150 MHz
+		PORTS											: POSITIVE											:= 1;																			-- Number of Ports per Transceiver
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR			:= (0 to 1 => T_SATA_GENERATION'high)			-- intial SATA Generation
 	);
 	PORT (
 		ClockIn_150MHz						: IN	STD_LOGIC;
@@ -112,7 +112,7 @@ BEGIN
 		SIGNAL SATA_Generation_d2				: T_SATA_GENERATION		:= INITIAL_SATA_GENERATIONS(INITIAL_SATA_GENERATIONS'low + I);
 		SIGNAL MuxControl								: STD_LOGIC;
 		
-		ATTRIBUTE KEEP OF MuxControl		: SIGNAL IS CHIPSCOPE_KEEP;
+		ATTRIBUTE KEEP OF MuxControl		: SIGNAL IS DEBUG;
 	BEGIN
 		SATA_Generation_d1		<= SATA_Generation(I) WHEN rising_edge(ClockIn_150MHz);
 		SATA_Generation_d2		<= SATA_Generation_d1 WHEN rising_edge(ClockIn_150MHz);
@@ -174,15 +174,15 @@ BEGIN
 	GTP_Clock_1X			<= GTP_Clock_1X_i;
 	GTP_Clock_4X			<= GTP_Clock_4X_i;
 
-	genCSP : IF (CHIPSCOPE_KEEP = TRUE) GENERATE
-		SIGNAL CSP_Clock_300MHz								: STD_LOGIC;
+	genCSP : IF (DEBUG = TRUE) GENERATE
+		SIGNAL DBG_Clock_300MHz								: STD_LOGIC;
 		
-		ATTRIBUTE KEEP OF CSP_Clock_300MHz		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_Clock_300MHz		: SIGNAL IS TRUE;
 	BEGIN
 		BUFG_Clock_300MHz : BUFG
 			PORT MAP (
 				I		=> DCM_Clock_300MHz,
-				O		=> CSP_Clock_300MHz
+				O		=> DBG_Clock_300MHz
 			);
 	END GENERATE;
 

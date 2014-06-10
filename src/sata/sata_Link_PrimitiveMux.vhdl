@@ -85,10 +85,10 @@ BEGIN
 	-- ChipScope
 	-- ================================================================
 	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL CSP_Primitive_NONE			: STD_LOGIC;
+		SIGNAL DBG_Primitive_NONE			: STD_LOGIC;
 		
-		ATTRIBUTE KEEP OF CSP_Primitive_NONE				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_Primitive_NONE				: SIGNAL IS TRUE;
 	BEGIN
-		CSP_Primitive_NONE		<= to_sl(Primitive = SATA_PRIMITIVE_NONE);
+		DBG_Primitive_NONE		<= to_sl(Primitive = SATA_PRIMITIVE_NONE);
 	END GENERATE;
 END;

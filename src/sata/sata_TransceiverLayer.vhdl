@@ -36,6 +36,7 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
@@ -43,7 +44,7 @@ USE			PoC.sata.ALL;
 USE			PoC.sata_TransceiverTypes.ALL;
 
 
-ENTITY sata_SATATransceiver IS
+ENTITY sata_TransceiverLayer IS
 	GENERIC (
 		DEBUG											: BOOLEAN											:= FALSE;
 		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																									-- 150 MHz
@@ -71,7 +72,7 @@ ENTITY sata_SATATransceiver IS
 		RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 
-		DebugPortOut							: OUT T_DBG_TRANSOUT_VECTOR(PORTS	- 1 DOWNTO 0);
+--		DebugPortOut							: OUT T_DBG_TRANSOUT_VECTOR(PORTS	- 1 DOWNTO 0);
 
 		RX_OOBStatus							: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
@@ -91,19 +92,20 @@ ENTITY sata_SATATransceiver IS
 END;
 
 
-ARCHITECTURE rtl OF sata_SATATransceiver IS
+ARCHITECTURE rtl OF sata_TransceiverLayer IS
 	ATTRIBUTE KEEP 								: BOOLEAN;
 
-	FUNCTION ite(cond : BOOLEAN; value1 : devgrp_t; value2 : devgrp_t) RETURN devgrp_t IS
-	BEGIN
-		IF (cond = TRUE) THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END;
+--	FUNCTION ite(cond : BOOLEAN; value1 : devgrp_t; value2 : devgrp_t) RETURN devgrp_t IS
+--	BEGIN
+--		IF (cond = TRUE) THEN
+--			RETURN value1;
+--		ELSE
+--			RETURN value2;
+--		END IF;
+--	END;
 
-	CONSTANT DEVICE_GROUP			: devgrp_t		:= DEVGRP;		-- ite(((DEVICE = DEVICE_VIRTEX5) AND SIMULATION), DEVGRP_V6LXT, DEVGRP);				-- default is Xilinx.Virtex6.LXT => can be simulated
+--	CONSTANT DEVICE_GROUP			: devgrp_t		:= DEVGRP;		-- ite(((DEVICE = DEVICE_VIRTEX5) AND SIMULATION), DEVGRP_V6LXT, DEVGRP);				-- default is Xilinx.Virtex6.LXT => can be simulated
+	CONSTANT C_DEVICE_INFO		: T_DEVICE_INFO		:= DEVICE_INFO;
 	
 --	ATTRIBUTE KEEP OF SATA_Clock	: SIGNAL IS "TRUE";
 BEGIN
@@ -120,47 +122,54 @@ BEGIN
 -- ==================================================================
 -- Assert statements
 -- ==================================================================
-	ASSERT (NOT ((DEVICE = DEVICE_VIRTEX5) AND
-							 SIMULATION))
-		 REPORT "Xilinx Virtex5 simulation model is incomplete => device group V5LXT replaced throught V6LXT."
-		 SEVERITY WARNING;
+--	ASSERT (NOT ((DEVICE = DEVICE_VIRTEX5) AND
+--							 SIMULATION))
+--		 REPORT "Xilinx Virtex5 simulation model is incomplete => device group V5LXT replaced throught V6LXT."
+--		 SEVERITY WARNING;
 
-	ASSERT ((VENDOR = VENDOR_XILINX) OR 
-					(VENDOR = VENDOR_ALTERA))
+	ASSERT ((C_DEVICE_INFO.VENDOR = VENDOR_XILINX) OR 
+					(C_DEVICE_INFO.VENDOR = VENDOR_ALTERA))
 		REPORT "Vendor not yet supported."
 		SEVERITY FAILURE;
 		
-	ASSERT ((DEVFAM = DEVFAM_VIRTEX) OR 
-					(DEVFAM = DEVFAM_STRATIX))
+	ASSERT ((C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_VIRTEX) OR 
+					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_STRATIX))
 		REPORT "Device family not yet supported."
 		SEVERITY FAILURE;
 		
-	ASSERT ((DEVICE = DEVICE_VIRTEX5) OR
-					(DEVICE = DEVICE_VIRTEX6) OR
-					(DEVICE = DEVICE_STRATIX2) OR
-					(DEVICE = DEVICE_STRATIX4))
+	ASSERT ((C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX5) OR
+					(C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX6) OR
+					(C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX7) OR
+					(C_DEVICE_INFO.DEVICE = DEVICE_KINTEX7) OR
+					(C_DEVICE_INFO.DEVICE = DEVICE_STRATIX2) OR
+					(C_DEVICE_INFO.DEVICE = DEVICE_STRATIX4))
 		REPORT "Device not yet supported."
 		SEVERITY FAILURE;
 		
-	ASSERT ((DEVICE_GROUP = DEVGRP_V5LXT) OR
-					(DEVICE_GROUP = DEVGRP_V6LXT) OR 
-					(DEVICE_GROUP = DEVGRP_S2GX) OR
-					(DEVICE_GROUP = DEVGRP_S4GX))
-		REPORT "Device group not yet supported."
+	ASSERT ((C_DEVICE_INFO.DEVSUBTYPE = DEVICE_SUBTYPE_LXT) OR
+					(C_DEVICE_INFO.DEVSUBTYPE = DEVICE_SUBTYPE_GX))
+		REPORT "Device subtype not yet supported."
 		SEVERITY FAILURE;
 		
-	ASSERT (((DEVICE_GROUP = DEVGRP_V5LXT) AND (PORTS <= 2)) OR
-					((DEVICE_GROUP = DEVGRP_V6LXT) AND (PORTS <= 4)) OR
-					((DEVICE_GROUP = DEVGRP_S2GX)  AND (PORTS <= 2)) OR
-					((DEVICE_GROUP = DEVGRP_S4GX)  AND (PORTS <= 2)))
+	ASSERT ((C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTP_DUAL) OR
+					(C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE1) OR
+					(C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2) OR
+					(C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB))
+		REPORT "Transceiver not yet supported."
+		SEVERITY FAILURE;
+		
+	ASSERT (((C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTP_DUAL)	AND (PORTS <= 2)) OR
+					((C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE1)		AND (PORTS <= 4)) OR
+					((C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2)		AND (PORTS <= 4)) OR
+					((C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB)			AND (PORTS <= 2)))
 		REPORT "To many ports per transceiver."
 		SEVERITY FAILURE;
 	
-	genXilinx : IF (VENDOR = VENDOR_XILINX) GENERATE
-		genV5LXT : IF (DEVICE_GROUP = DEVGRP_V5LXT) GENERATE
-			V5GTP : SATATransceiver_Virtex5_GTP
+	genXilinx : IF (C_DEVICE_INFO.VENDOR = VENDOR_XILINX) GENERATE
+		genGPT_DUAL : IF (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTP_DUAL) GENERATE
+			Trans : sata_Transceiver_Virtex5_GTP
 				GENERIC MAP (
-					DEBUG											=> DEBUG					,
+					DEBUG											=> DEBUG,
 					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
@@ -203,11 +212,11 @@ BEGIN
 					VSS_Private_In						=> VSS_Private_In,
 					VSS_Private_Out						=> VSS_Private_Out
 					);
-		END GENERATE;	-- Xilinx.Virtex5.LXT
-		genV6LXT : IF (DEVICE_GROUP = DEVGRP_V6LXT) GENERATE
-			V6GTXE1 : SATATransceiver_Virtex6_GTXE1
+		END GENERATE;	-- Xilinx.Virtex5.GTP_DUAL
+		genGTXE1 : IF (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE1) GENERATE
+			Trans : sata_Transceiver_Virtex6_GTXE1
 				GENERIC MAP (
-					DEBUG											=> DEBUG					,
+					DEBUG											=> DEBUG,
 					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
@@ -250,12 +259,11 @@ BEGIN
 					VSS_Private_In						=> VSS_Private_In,
 					VSS_Private_Out						=> VSS_Private_Out
 				);
-		END GENERATE;	-- Xilinx.Virtex6.LXT
-		genS7GTX : IF (DEVICE_SERIES = 7) GENERATE
-			-- TODO: check für GTP, GTX, GTH
-			S7GTX : sata_Transceiver_Series7_GTXE2
+		END GENERATE;	-- Xilinx.Virtex6.GTXE1
+		genGTXE2 : IF (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2) GENERATE
+			Trans : sata_Transceiver_Series7_GTXE2
 				GENERIC MAP (
-					DEBUG											=> DEBUG					,
+					DEBUG											=> DEBUG,
 					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
@@ -300,9 +308,9 @@ BEGIN
 					);
 		END GENERATE;	-- Xilinx.Series7.GTXE2
 	END GENERATE;		-- Xilinx.*
-	genAltera : IF (VENDOR = VENDOR_ALTERA) GENERATE
-		genS2GX : IF (DEVICE_GROUP = DEVGRP_S2GX) GENERATE
-			S2GX_GXB : SATATransceiver_S2GX_GXB
+	genAltera : IF (C_DEVICE_INFO.VENDOR = VENDOR_ALTERA) GENERATE
+		genS2GX_GXB : IF ((C_DEVICE_INFO.DEVICE = DEVICE_STRATIX2) AND (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB)) GENERATE
+			Trans : sata_Transceiver_Stratix2GX_GXB
 				GENERIC MAP (
 					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
@@ -329,7 +337,7 @@ BEGIN
 					RX_Error									=> RX_Error,
 					TX_Error									=> TX_Error,
 
-					DebugPortOut							=> DebugPortOut,
+--					DebugPortOut							=> DebugPortOut,
 
 					RX_OOBStatus							=> RX_OOBStatus,
 					RX_Data										=> RX_Data,
@@ -346,9 +354,9 @@ BEGIN
 					VSS_Private_In						=> VSS_Private_In,
 					VSS_Private_Out						=> VSS_Private_Out
 				);
-		END GENERATE;	-- Altera.Stratix2.GX
-		genS4GX : IF (DEVICE_GROUP = DEVGRP_S4GX) GENERATE
-			S4GX_GXB : SATATransceiver_S4GX_GXB
+		END GENERATE;	-- Altera.Stratix2.GXB
+		genS4GX_GXB : IF ((C_DEVICE_INFO.DEVICE = DEVICE_STRATIX4) AND (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB)) GENERATE
+			Trans : sata_Transceiver_Stratix4GX_GXB
 				GENERIC MAP (
 					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
@@ -375,7 +383,7 @@ BEGIN
 					RX_Error									=> RX_Error,
 					TX_Error									=> TX_Error,
 
-					DebugPortOut							=> DebugPortOut,
+--					DebugPortOut							=> DebugPortOut,
 
 					RX_OOBStatus							=> RX_OOBStatus,
 					RX_Data										=> RX_Data,
@@ -392,6 +400,6 @@ BEGIN
 					VSS_Private_In						=> VSS_Private_In,
 					VSS_Private_Out						=> VSS_Private_Out
 				);
-		END GENERATE;	-- Altera.Stratix4.GX
+		END GENERATE;	-- Altera.Stratix4.GXB
 	END GENERATE;		-- Altera.*
 END;

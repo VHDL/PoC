@@ -34,10 +34,11 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
---USE			PoC.sata.ALL;
+USE			PoC.sata.ALL;
 
 
 ENTITY sata_PhysicalLayer IS
@@ -46,7 +47,7 @@ ENTITY sata_PhysicalLayer IS
 		CLOCK_IN_FREQ_MHZ								: REAL														:= 150.0;
 		CONTROLLER_TYPE									: T_SATA_DEVICE_TYPE							:= SATA_DEVICE_TYPE_HOST;
 		ALLOW_SPEED_NEGOTIATION					: BOOLEAN													:= TRUE;
-		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= SATA_GENERATION_2;
+		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= T_SATA_GENERATION'high;
 		ALLOW_AUTO_RECONNECT						: BOOLEAN													:= TRUE;
 		ALLOW_STANDARD_VIOLATION				: BOOLEAN													:= FALSE;
 		OOB_TIMEOUT_US									: INTEGER													:= 0;
@@ -66,7 +67,7 @@ ENTITY sata_PhysicalLayer IS
 		Status													: OUT	T_SATA_PHY_STATUS;
 		Error														: OUT	T_SATA_PHY_ERROR;
 
-		DebugPortOut										: OUT	T_DBG_PHYOUT;
+--		DebugPortOut										: OUT	T_DBG_PHYOUT;
 
 		Link_RX_Data										: OUT	T_SLV_32;
 		Link_RX_CharIsK									: OUT	T_SATA_CIK;
@@ -107,7 +108,7 @@ ARCHITECTURE rtl OF sata_PhysicalLayer IS
 	
 	SIGNAL State											: T_PHY_STATE						:= ST_RESET;
 	SIGNAL NextState									: T_PHY_STATE;
-	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS ite(DEBUG					, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
 	SIGNAL SATA_Generation_i					: T_SATA_GENERATION;
 	
@@ -132,7 +133,7 @@ ARCHITECTURE rtl OF sata_PhysicalLayer IS
 	SIGNAL RX_Primitive								: T_SATA_PRIMITIVE;
 	SIGNAL TX_Primitive								: T_SATA_PRIMITIVE;
 	
-	SIGNAL DebugPortOut_i							: T_DBG_PHYOUT;
+--	SIGNAL DebugPortOut_i							: T_DBG_PHYOUT;
 	SIGNAL Error_i										: T_SATA_PHY_ERROR;
 	
 BEGIN
@@ -337,7 +338,7 @@ BEGIN
 				SATAGeneration_Reset			=> SC_SATAGeneration_Reset,					--	=> reset SATA_Generation, reset all attempt counters => if necessary reconfigure GTP
 				AttemptCounter_Reset			=> SC_AttemptCounter_Reset,
 
-				DebugPortOut							=> DebugPortOut_i,
+--				DebugPortOut							=> DebugPortOut_i,
 
 				-- OOBControl interface
 				OOB_Timeout								=> OOB_Timeout,
@@ -447,42 +448,42 @@ BEGIN
 	-- ChipScope
 	-- ================================================================
 	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL CSP_OOB_Retry														: STD_LOGIC;
-		SIGNAL CSP_OOB_LinkOK												: STD_LOGIC;
-		SIGNAL CSP_OOB_LinkDead													: STD_LOGIC;
-		SIGNAL CSP_OOB_Timeout													: STD_LOGIC;
-		SIGNAL CSP_SATA_Generation											: T_SATA_GENERATION;
-		SIGNAL CSP_NegotiationError											: STD_LOGIC;
+		SIGNAL DBG_OOB_Retry														: STD_LOGIC;
+		SIGNAL DBG_OOB_LinkOK												: STD_LOGIC;
+		SIGNAL DBG_OOB_LinkDead													: STD_LOGIC;
+		SIGNAL DBG_OOB_Timeout													: STD_LOGIC;
+		SIGNAL DBG_SATA_Generation											: T_SATA_GENERATION;
+		SIGNAL DBG_NegotiationError											: STD_LOGIC;
 		
-		SIGNAL CSP_TX_Primitive_NONE										: STD_LOGIC;
-		SIGNAL CSP_TX_Primitive_DIAL_TONE								: STD_LOGIC;
+		SIGNAL DBG_TX_Primitive_NONE										: STD_LOGIC;
+		SIGNAL DBG_TX_Primitive_DIAL_TONE								: STD_LOGIC;
 		
-		ATTRIBUTE KEEP OF CSP_OOB_Retry									: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_OOB_LinkOK								: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_OOB_LinkDead							: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_OOB_Timeout								: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_SATA_Generation						: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_NegotiationError					: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_OOB_Retry									: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_OOB_LinkOK								: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_OOB_LinkDead							: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_OOB_Timeout								: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_SATA_Generation						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_NegotiationError					: SIGNAL IS TRUE;
 		
-		ATTRIBUTE KEEP OF CSP_TX_Primitive_NONE					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_TX_Primitive_DIAL_TONE		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TX_Primitive_NONE					: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TX_Primitive_DIAL_TONE		: SIGNAL IS TRUE;
 		
 	BEGIN
-		CSP_OOB_Retry									<= OOB_Retry;
-		CSP_OOB_LinkOK								<= OOB_LinkOK;
-		CSP_OOB_LinkDead							<= OOB_LinkDead;
-		CSP_OOB_Timeout								<= OOB_Timeout;
-		CSP_SATA_Generation						<= SATA_Generation_i;
-		CSP_NegotiationError					<= NegotiationError;
+		DBG_OOB_Retry									<= OOB_Retry;
+		DBG_OOB_LinkOK								<= OOB_LinkOK;
+		DBG_OOB_LinkDead							<= OOB_LinkDead;
+		DBG_OOB_Timeout								<= OOB_Timeout;
+		DBG_SATA_Generation						<= SATA_Generation_i;
+		DBG_NegotiationError					<= NegotiationError;
 
-		CSP_TX_Primitive_NONE					<= to_sl(TX_Primitive = SATA_PRIMITIVE_NONE);
-		CSP_TX_Primitive_DIAL_TONE		<= to_sl(TX_Primitive = SATA_PRIMITIVE_DIAL_TONE);
+		DBG_TX_Primitive_NONE					<= to_sl(TX_Primitive = SATA_PRIMITIVE_NONE);
+		DBG_TX_Primitive_DIAL_TONE		<= to_sl(TX_Primitive = SATA_PRIMITIVE_DIAL_TONE);
 	END GENERATE;
 	
 	-- ================================================================
 	-- debug port
 	-- ================================================================
-	DebugPortOut.GenerationChanges		<= DebugPortOut_i.GenerationChanges;
-	DebugPortOut.TrysPerGeneration		<= DebugPortOut_i.TrysPerGeneration;
-	DebugPortOut.SATAGeneration				<= DebugPortOut_i.SATAGeneration;
+--	DebugPortOut.GenerationChanges		<= DebugPortOut_i.GenerationChanges;
+--	DebugPortOut.TrysPerGeneration		<= DebugPortOut_i.TrysPerGeneration;
+--	DebugPortOut.SATAGeneration				<= DebugPortOut_i.SATAGeneration;
 END;
