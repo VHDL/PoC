@@ -31,38 +31,61 @@
 # limitations under the License.
 # ==============================================================================
 
-import PoC
-#import os
-#import re
-#import string
+from pathlib import Path
 
-#import shutil
-#import subprocess
+import PoC
+import PoCCompiler
+import PoCXCOCompiler
+#import PoCXSTCompiler
+
 
 class PoCNetList(PoC.PoCBase):
 	__netListConfigFileName = "configuration.ini"
-	__netListConfig = None
+	netListConfig = None
 	
-	def __init__(self, debug, verbose):
-		super(self.__class__, self).__init__(debug, verbose)
+	def __init__(self, debug, verbose, quite):
+		super(self.__class__, self).__init__(debug, verbose, quite)
 
+		if not ((self.platform == "Windows") or (self.platform == "Linux")):
+			raise PoC.PoCPlatformNotSupportedException(self.platform)
+		
 		self.readNetListConfiguration()
 		
-	# read NetList configuration	
+	# read NetList configuration
+	# ==========================================================================
 	def readNetListConfiguration(self):
 		import configparser
 		
 		netListConfigFilePath = self.Directories["Root"] / ".." / self.pocStructure['DirectoryNames']['NetListFiles'] / self.__netListConfigFileName
-		self.printDebug("Reading netList configuration from '%s'" % str(netListConfigFilePath))
+		self.printDebug("Reading NetList configuration from '%s'" % str(netListConfigFilePath))
 		if not netListConfigFilePath.exists():
 			raise PoCNotConfiguredException("PoC netlist configuration file does not exist. (%s)" % str(netListConfigFilePath))
 			
-		self.__netListConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
-		self.__netListConfig.optionxform = str
-		self.__netListConfig.read([str(netListConfigFilePath)])
-		
+		self.netListConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+		self.netListConfig.optionxform = str
+		self.netListConfig.read([str(netListConfigFilePath)])
+		self.Files["PoCNLConfig"]	= netListConfigFilePath
 
+	def coreGenCompilation(self, module, showLogs, showReport):
+		# check if ISE is configure
+		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):
+			raise PoCNotConfiguredException("Xilinx ISE is not configured on this system.")
+		
+		# prepare some paths
+		self.Directories["ISEInstallation"] = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
+		self.Directories["ISEBinary"] =				Path(self.pocConfig['Xilinx-ISE']['BinaryDirectory'])
 	
+		# check if the appropriate environment is loaded
+		from os import environ
+		if (environ.get('XILINX') == None):
+			raise PoC.PoCEnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
+
+		entityToCompile = PoC.PoCEntity(self, module)
+
+		compiler = PoCXCOCompiler.PoCXCOCompiler(self, showLogs, showReport)
+		compiler.run(entityToCompile)
+
+
 # main program
 def main():
 	print("========================================================================")
@@ -85,7 +108,9 @@ def main():
 		argParser.add_argument('-D', action='store_const', const=True, default=False, help='enable script wrapper debug mode')
 		argParser.add_argument('-d', action='store_const', const=True, default=False, help='enable debug mode')
 		argParser.add_argument('-v', action='store_const', const=True, default=False, help='generate detailed report')
+		argParser.add_argument('-q', action='store_const', const=True, default=False, help='run in quite mode')
 		argParser.add_argument('-l', action='store_const', const=True, default=False, help='show logs')
+		argParser.add_argument('-r', action='store_const', const=True, default=False, help='show report')
 		argParser.add_argument('--coregen', action='store_const', const=True, default=False, help='use Xilinx IP-Core Generator (CoreGen)')
 		argParser.add_argument("module", help="Specify the module which should be tested.")
 		
@@ -93,22 +118,55 @@ def main():
 		args = argParser.parse_args()
 
 	except Exception as ex:
-		print("Exception: %s" % ex.__str__())
+		print("FATAL: %s" % ex.__str__())
+		print()
+		return
 
 		
 	try:
-		netlist = PoCNetList(args.d, args.v)
+		netList = PoCNetList(args.d, args.v, args.q)
 	
 		if args.coregen:
-			pass
-	#		netList.runCoreGenerator(args.module, args.l)
+			netList.coreGenCompilation(args.module, args.l, args.r)
 		else:
 			argParser.print_help()
+		
+	except PoCCompiler.PoCCompilerException as ex:
+		print("ERROR: %s" % ex.message)
+		print()
+		return
+		
+	except PoC.PoCEnvironmentException as ex:
+		print("ERROR: %s" % ex.message)
+		print()
+		print("Please run this script with it's provided wrapper or manually load the required environment before executing this script.")
+		return
+	
 	except PoC.PoCNotConfiguredException as ex:
 		print("ERROR: %s" % ex.message)
 		print()
 		print("Please run 'poc.[sh/cmd] --configure' in PoC root directory.")
 		return
+	
+	except PoC.PoCPlatformNotSupportedException as ex:
+		print("ERROR: Unknown platform '%s'" % ex.message)
+		print()
+		return
+	
+	except PoC.PoCException as ex:
+		print("ERROR: %s" % ex.message)
+		print()
+		return
+	
+	except PoC.NotImplementedException as ex:
+		print("ERROR: %s" % ex.message)
+		print()
+		return
+
+#	except Exception as ex:
+#		print("FATAL: %s" % ex.__str__())
+#		print()
+#		return
 			
 # entry point
 if __name__ == "__main__":
