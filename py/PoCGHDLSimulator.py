@@ -130,12 +130,12 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 					# assemble fuse command as list of parameters
 					parameterList = [
 						str(ghdlExecutablePath),
-						'-a', '--syn-binding',
+						'-a', '-P.',
 						('--work=%s' % vhdlLibraryName),
 						str(vhdlFilePath)
 					]
 					
-					command = '%s -a --syn-binding --work=%s "%s"' % (str(ghdlExecutablePath), vhdlLibraryName, str(vhdlFilePath))
+					command = '%s -a -P. --work=%s "%s"' % (str(ghdlExecutablePath), vhdlLibraryName, str(vhdlFilePath))
 					self.printDebug("call ghdl: %s" % str(parameterList))
 					self.printVerbose('command: %s' % command)
 					ghdlLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
@@ -157,11 +157,11 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		
 			parameterList = [
 				str(ghdlExecutablePath),
-				'-r', '--syn-binding',
+				'-r', '--syn-binding', '-P.',
 				'--work=work',
 				testbenchName
 			]
-			command = "%s -r --syn-binding --work=work %s" % (str(ghdlExecutablePath), testbenchName)
+			command = "%s -r --syn-binding -P. --work=work %s" % (str(ghdlExecutablePath), testbenchName)
 		
 			self.printDebug("call ghdl: %s" % str(parameterList))
 			self.printVerbose('command: %s' % command)
@@ -183,11 +183,11 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		
 			parameterList = [
 				str(ghdlExecutablePath),
-				'-e', '--syn-binding',
+				'-e', '--syn-binding', '-P.',
 				'--work=work',
 				testbenchName
 			]
-			command = "%s -e --syn-binding --work=work %s" % (str(ghdlExecutablePath), testbenchName)
+			command = "%s -e --syn-binding -P. --work=work %s" % (str(ghdlExecutablePath), testbenchName)
 		
 			self.printDebug("call ghdl: %s" % str(parameterList))
 			self.printVerbose('command: %s' % command)
