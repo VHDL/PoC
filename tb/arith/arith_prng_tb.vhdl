@@ -69,7 +69,6 @@ ARCHITECTURE test OF arith_prng_tb IS
 	);
 
 	SIGNAL SimStop			: std_logic := '0';
-	signal pass					: boolean		:= true;
 
 	SIGNAL Clock				: STD_LOGIC			:= '1';
 	SIGNAL Reset				: STD_LOGIC			:= '0';
@@ -93,14 +92,13 @@ BEGIN
 		FOR I IN 0 TO 255 LOOP
 			Test_got				<= '1';
 			WAIT UNTIL rising_edge(Clock);
-			assertPass(PRNG_Value = COMPARE_LIST_8_BITS(I),
-							   pass,
-								 "I="&integer'image(I)&" Value=" & to_string(PRNG_Value, 'h') &
-								 " Expected=" & to_string(COMPARE_LIST_8_BITS(I), 'h'));
+			tbAssert(PRNG_Value = COMPARE_LIST_8_BITS(I),
+							 "I="&integer'image(I)&" Value=" & to_string(PRNG_Value, 'h') &
+								" Expected=" & to_string(COMPARE_LIST_8_BITS(I), 'h'));
 		END LOOP;
 		
 		-- Report overall simulation result
-		printSimulationResult(pass);
+		tbPrintResult;
 		SimStop	<= '1';
 		WAIT;
 	END PROCESS;

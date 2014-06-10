@@ -61,8 +61,6 @@ architecture tb of arith_prefix_and_tb is
   signal x : std_logic_vector(N-1 downto 0);
   signal y : std_logic_vector(N-1 downto 0);
 
-	signal pass : boolean := true;
-
 begin  -- tb
 
   -- component instantiation
@@ -83,14 +81,13 @@ begin  -- tb
       x <= std_logic_vector(to_unsigned(i, N));
       wait for 10 ns;
       for j in 0 to N-1 loop
-				assertPass((y(j) = '1') = (x(j downto 0) = (j downto 0 => '1')),
-									 pass,
-								   "Wrong result for "&integer'image(i)&" / "&integer'image(j));
+				tbAssert((y(j) = '1') = (x(j downto 0) = (j downto 0 => '1')),
+								 "Wrong result for "&integer'image(i)&" / "&integer'image(j));
 			end loop;
     end loop;
 
 		-- Report overall result
-		printSimulationResult(pass);
+		tbPrintResult;
 
     wait;  -- forever
   end process;
