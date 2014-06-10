@@ -67,7 +67,10 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 	
 		self.printNonQuite(str(pocEntity))
 		self.printNonQuite("  preparing compiler environment...")
-		
+
+		# TODO: improve / resolve board to device
+		deviceString = self.host.netListConfig['BOARDS'][device]
+		deviceSection = "Device." + deviceString
 		
 		# create temporary directory for CoreGen if not existent
 		tempCoreGenPath = self.host.Directories["coreGenTemp"]
@@ -76,27 +79,32 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 			self.printDebug("Temporary directors: %s" % str(tempCoreGenPath))
 			tempCoreGenPath.mkdir(parents=True)
 
+		# create output directory for CoreGen if not existent
+		coreGenOutputPath = self.host.Directories["PoCNetList"] / deviceString
+		if not (coreGenOutputPath).exists():
+			self.printVerbose("Creating temporary directory for core generator files.")
+			self.printDebug("Temporary directors: %s" % str(coreGenOutputPath))
+			coreGenOutputPath.mkdir(parents=True)
+			
+		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.host.netListConfig['SPECIAL'] = {}
-		self.host.netListConfig['SPECIAL']['Device'] = "XC5VLX50T-1FFG1136"
+		self.host.netListConfig['SPECIAL']['Device'] = deviceString
 			
 		# setup all needed paths to execute coreGen
 		coreGenExecutablePath =		self.host.Directories["ISEBinary"] / self.__executables['CoreGen']
 		
+		# read netlist settings from configuration file
 		ipCoreName =					self.host.netListConfig[str(pocEntity)]['IPCoreName']
 		xcoFilePath =					self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['CoreGeneratorFile']
 		ngcOutputFilePath =		self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['NetListOutputFile']
 		vhdlOutputFilePath =	self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['VHDLEntityOutputFile']
+		cgcTemplateFilePath =	self.host.Directories["PoCNetList"] / "template.cgc"
 		cgpFilePath =					tempCoreGenPath / "coregen.cgp"
 		cgcFilePath =					tempCoreGenPath / "coregen.cgc"
 		ngcFilePath =					tempCoreGenPath / xcoFilePath.with_suffix('.ngc')
 		vhdlFilePath =				tempCoreGenPath / xcoFilePath.with_suffix('.vhdl')
 
-		# resolve board to device
-		deviceString = self.host.netListConfig['BOARDS'][device]
-		deviceSection = "Device." + deviceString
-		
-		# TODO: change working dir to tempCoreGenPath / <devicestring>
-		
+
 		# TODO: verbose print run instructions
 		
 		
@@ -134,8 +142,10 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 			cgpFileHandle.write(cgProjectFileContent)
 
 		
-		
-		
+		import xml.etree.ElementTree as ET
+		cgcTemplateXmlTree = ET.parse(str(cgcTemplateFilePath))
+		cgcTemplateXmlRoot = cgcTemplateXmlTree.getroot()
+		print(cgcTemplateXmlTree)
 		
 		
 		
