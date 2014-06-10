@@ -57,7 +57,7 @@ begin
 
 		-- simulation completed
 		report "                                                  "					severity note;
-		printSimulationResult(TRUE);
+		tbPrintResult;
 		
 		wait;
 	end process;
