@@ -65,8 +65,8 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 		import re
 		import subprocess
 	
-		self.printNonQuite(str(pocEntity))
-		self.printNonQuite("  preparing simulation environment...")
+		self.printNonQuiet(str(pocEntity))
+		self.printNonQuiet("  preparing simulation environment...")
 		
 		
 		# create temporary directory for isim if not existent
@@ -127,7 +127,7 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 
 		# running fuse
 		# ==========================================================================
-		self.printNonQuite("  running fuse...")
+		self.printNonQuiet("  running fuse...")
 		# assemble fuse command as list of parameters
 		parameterList = [
 			str(fuseExecutablePath),
@@ -147,7 +147,7 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 			print()
 		
 		# running simulation
-		self.printNonQuite("  running simulation...")
+		self.printNonQuiet("  running simulation...")
 		parameterList = [str(exeFilePath), '-tclbatch', str(tclFilePath)]
 		self.printDebug("call simulation: %s" % str(parameterList))
 		self.printVerbose('%s -tclbatch "%s"' % (str(exeFilePath), str(tclFilePath)))

@@ -38,12 +38,12 @@ import PoC
 
 class PoCConfiguration(PoC.PoCBase):
 	
-	def __init__(self, debug, verbose, quite):
+	def __init__(self, debug, verbose, quiet):
 		if not ((self.platform == "Windows") or (self.platform == "Linux")):
 			raise PoC.PoCPlatformNotSupportedException(self.platform)
 		
 		try:
-			super(self.__class__, self).__init__(debug, verbose, quite)
+			super(self.__class__, self).__init__(debug, verbose, quiet)
 		except PoC.PoCNotConfiguredException as ex:
 			import configparser
 			
@@ -361,7 +361,7 @@ def main():
 		argParser.add_argument('-D', action='store_const', const=True, default=False, help='enable script wrapper debug mode')
 		argParser.add_argument('-d', action='store_const', const=True, default=False, help='enable debug mode')
 		argParser.add_argument('-v', action='store_const', const=True, default=False, help='generate detailed report')
-		argParser.add_argument('-q', action='store_const', const=True, default=False, help='run in quite mode')
+		argParser.add_argument('-q', action='store_const', const=True, default=False, help='run in quiet mode')
 		argParser.add_argument('--configure',						action='store_const', const=True, default=False, help='configures PoC Library')
 		argParser.add_argument('--ise-settingsfile',		action='store_const', const=True, default=False, help='Return Xilinx ISE settings file')
 		argParser.add_argument('--vivado-settingsfile', action='store_const', const=True, default=False, help='Return Xilinx Vivado settings file')

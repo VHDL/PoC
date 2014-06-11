@@ -62,7 +62,7 @@ class PoCBase(object):
 	
 	__debug = False
 	__verbose = False
-	__quite = False
+	__quiet = False
 	platform = system()
 
 	Directories = {
@@ -81,10 +81,10 @@ class PoCBase(object):
 	pocConfig = None
 	pocStructure = None
 	
-	def __init__(self, debug, verbose, quite):
+	def __init__(self, debug, verbose, quiet):
 		self.__debug = debug
 		self.__verbose = verbose
-		self.__quite = quite
+		self.__quiet = quiet
 
 		self.__readPoCConfiguration()
 		self.__readPoCStructure()
@@ -143,8 +143,8 @@ class PoCBase(object):
 	def getVerbose(self):
 		return self.__verbose
 	
-	def getQuite(self):
-		return self.__quite
+	def getquiet(self):
+		return self.__quiet
 	
 	def printDebug(self, message):
 		if (self.__debug):
@@ -154,8 +154,8 @@ class PoCBase(object):
 		if (self.__verbose):
 			print(message)
 	
-	def printNonQuite(self, message):
-		if (not self.__quite):
+	def printNonQuiet(self, message):
+		if (not self.__quiet):
 			print(message)
 
 	def getNamespaceForPrefix(self, namespacePrefix):

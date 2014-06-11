@@ -66,8 +66,8 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 		import subprocess
 		import textwrap
 	
-		self.printNonQuite(str(pocEntity))
-		self.printNonQuite("  preparing compiler environment...")
+		self.printNonQuiet(str(pocEntity))
+		self.printNonQuiet("  preparing compiler environment...")
 
 		# TODO: improve / resolve board to device
 		deviceString = self.host.netListConfig['BOARDS'][device]
@@ -296,7 +296,7 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 		
 		# running CoreGen
 		# ==========================================================================
-		self.printNonQuite("  running CoreGen...")
+		self.printNonQuiet("  running CoreGen...")
 		# assemble CoreGen command as list of parameters
 		parameterList = [
 			str(coreGenExecutablePath),
@@ -306,7 +306,8 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 		]
 		self.printDebug("call coreGen: %s" % str(parameterList))
 		self.printVerbose('%s -r -b "%s" -p .' % (str(coreGenExecutablePath), str(xcoFilePath)))
-		coreGenLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
+		if (self.dryRun == False):
+			coreGenLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
 		
 		if self.showLogs:
 			print("Core Generator log (CoreGen)")
@@ -377,7 +378,7 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 
 		# running coreGen
 		# ==========================================================================
-		self.printNonQuite("  running coreGen...")
+		self.printNonQuiet("  running coreGen...")
 		# assemble coreGen command as list of parameters
 		parameterList = [
 			str(coreGenExecutablePath),
@@ -397,7 +398,7 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 			print()
 		
 		# running simulation
-		self.printNonQuite("  running simulation...")
+		self.printNonQuiet("  running simulation...")
 		parameterList = [str(exeFilePath), '-tclbatch', str(tclFilePath)]
 		self.printDebug("call simulation: %s" % str(parameterList))
 		self.printVerbose('%s -tclbatch "%s"' % (str(exeFilePath), str(tclFilePath)))
