@@ -60,8 +60,9 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 		
 	def run(self, pocEntity, device):
 		#from pathlib import Path
-		#import os
+		import os
 		#import re
+		import shutil
 		import subprocess
 		import textwrap
 	
@@ -95,14 +96,15 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 		
 		# read netlist settings from configuration file
 		ipCoreName =					self.host.netListConfig[str(pocEntity)]['IPCoreName']
-		xcoFilePath =					self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['CoreGeneratorFile']
+		xcoInputFilePath =		self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['CoreGeneratorFile']
 		ngcOutputFilePath =		self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['NetListOutputFile']
 		vhdlOutputFilePath =	self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['VHDLEntityOutputFile']
 		cgcTemplateFilePath =	self.host.Directories["PoCNetList"] / "template.cgc"
 		cgpFilePath =					tempCoreGenPath / "coregen.cgp"
 		cgcFilePath =					tempCoreGenPath / "coregen.cgc"
-		ngcFilePath =					tempCoreGenPath / xcoFilePath.with_suffix('.ngc')
-		vhdlFilePath =				tempCoreGenPath / xcoFilePath.with_suffix('.vhdl')
+		xcoFilePath =					tempCoreGenPath / xcoInputFilePath.name
+		ngcFilePath =					tempCoreGenPath / (xcoInputFilePath.stem + ".ngc")
+		vhdlFilePath =				tempCoreGenPath / (xcoInputFilePath.stem + ".vhd")
 
 
 		# TODO: verbose print run instructions
@@ -141,17 +143,191 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 		with cgpFilePath.open('w') as cgpFileHandle:
 			cgpFileHandle.write(cgProjectFileContent)
 
+		# write CoreGenerator content? file
+		cgContentFileContent = textwrap.dedent('''\
+			<?xml version="1.0" encoding="UTF-8"?>
+			<spirit:design xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xilinx="http://www.xilinx.com" >
+				 <spirit:vendor>xilinx.com</spirit:vendor>
+				 <spirit:library>project</spirit:library>
+				 <spirit:name>coregen</spirit:name>
+				 <spirit:version>1.0</spirit:version>
+				 <spirit:componentInstances>
+						<spirit:componentInstance>
+							 <spirit:instanceName>{name}</spirit:instanceName>
+							 <spirit:displayName>VIO (ChipScope Pro - Virtual Input/Output)</spirit:displayName>
+							 <spirit:componentRef spirit:vendor="xilinx.com" spirit:library="ip" spirit:name="chipscope_vio" spirit:version="1.05.a" />
+							 <spirit:configurableElementValues>
+									<spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.COMPONENT_NAME">{name}</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.SYNCHRONOUS_INPUT_PORT_WIDTH">256</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.EXAMPLE_DESIGN">false</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.CONSTRAINT_TYPE">external</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.ENABLE_SYNCHRONOUS_INPUT_PORT">true</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.ENABLE_SYNCHRONOUS_OUTPUT_PORT">true</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.ASYNCHRONOUS_OUTPUT_PORT_WIDTH">8</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.ENABLE_ASYNCHRONOUS_OUTPUT_PORT">false</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.ENABLE_ASYNCHRONOUS_INPUT_PORT">false</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.INVERT_CLOCK_INPUT">false</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.SYNCHRONOUS_OUTPUT_PORT_WIDTH">8</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="PARAM_VALUE.ASYNCHRONOUS_INPUT_PORT_WIDTH">8</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ASYNC_IN_WIDTH">8</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_USE_SYNC_IN">1</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_ASYNC_OUT_WIDTH">8</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_CONSTRAINT_TYPE">external</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_SYNC_OUT_WIDTH">8</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_EXAMPLE_DESIGN">false</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_USE_INV_CLK">0</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_SYNC_IN_WIDTH">256</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_USE_ASYNC_IN">0</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_USE_SYNC_OUT">1</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.COMPONENT_NAME">{name}</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_XCO_LIST">Component_Name={name};Enable_Synchronous_Input_Port=true;Enable_Synchronous_Output_Port=true;Enable_Asynchronous_Input_Port=false;Enable_Asynchronous_Output_Port=false;Synchronous_Input_Port_Width=256;Synchronous_Output_Port_Width=8;Asynchronous_Input_Port_Width=8;Asynchronous_Output_Port_Width=8;Invert_Clock_Input=false</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_USE_SYNC_CLK">1</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_USE_ASYNC_OUT">0</spirit:configurableElementValue>
+									<spirit:configurableElementValue spirit:referenceId="MODELPARAM_VALUE.C_SRL16_TYPE">2</spirit:configurableElementValue>
+							 </spirit:configurableElementValues>
+							 <spirit:vendorExtensions>
+									<xilinx:instanceProperties>
+										 <xilinx:projectOptions>
+												<xilinx:projectName>coregen</xilinx:projectName>
+												<xilinx:outputDirectory>./</xilinx:outputDirectory>
+												<xilinx:workingDirectory>./temp/</xilinx:workingDirectory>
+												<xilinx:subWorkingDirectory>./temp/_cg/</xilinx:subWorkingDirectory>
+										 </xilinx:projectOptions>
+										 <xilinx:part>
+												<xilinx:device>{device}</xilinx:device>
+												<xilinx:deviceFamily>{devicefamily}</xilinx:deviceFamily>
+												<xilinx:package>{package}</xilinx:package>
+												<xilinx:speedGrade>{speedgrade}</xilinx:speedGrade>
+										 </xilinx:part>
+										 <xilinx:flowOptions>
+												<xilinx:busFormat>BusFormatAngleBracketNotRipped</xilinx:busFormat>
+												<xilinx:designEntry>VHDL</xilinx:designEntry>
+												<xilinx:asySymbol>false</xilinx:asySymbol>
+												<xilinx:flowVendor>Other</xilinx:flowVendor>
+												<xilinx:addPads>false</xilinx:addPads>
+												<xilinx:removeRPMs>false</xilinx:removeRPMs>
+												<xilinx:createNDF>false</xilinx:createNDF>
+												<xilinx:implementationFileType>Ngc</xilinx:implementationFileType>
+												<xilinx:formalVerification>false</xilinx:formalVerification>
+										 </xilinx:flowOptions>
+										 <xilinx:simulationOptions>
+												<xilinx:simulationModel>Behavioral</xilinx:simulationModel>
+												<xilinx:simulationLanguage>VHDL</xilinx:simulationLanguage>
+												<xilinx:foundationSym>false</xilinx:foundationSym>
+										 </xilinx:simulationOptions>
+										 <xilinx:packageInfo>
+												<xilinx:sourceCoreCreationDate>2013-10-13+14:13</xilinx:sourceCoreCreationDate>
+										 </xilinx:packageInfo>
+									</xilinx:instanceProperties>
+									<xilinx:generationHistory>
+										 <xilinx:fileSet>
+												<xilinx:name>apply_current_project_options_generator</xilinx:name>
+										 </xilinx:fileSet>
+										 <xilinx:fileSet>
+												<xilinx:name>model_parameter_resolution_generator</xilinx:name>
+										 </xilinx:fileSet>
+										 <xilinx:fileSet>
+												<xilinx:name>ip_xco_generator</xilinx:name>
+												<xilinx:file>
+													 <xilinx:name>./{name}.xco</xilinx:name>
+													 <xilinx:userFileType>xco</xilinx:userFileType>
+													 <xilinx:timeStamp>Wed Jun 11 10:06:45 GMT 2014</xilinx:timeStamp>
+													 <xilinx:checkSum>0x709EE3F7</xilinx:checkSum>
+													 <xilinx:generationId>generationID_1879581046</xilinx:generationId>
+												</xilinx:file>
+										 </xilinx:fileSet>
+									</xilinx:generationHistory>
+							 </spirit:vendorExtensions>
+						</spirit:componentInstance>
+				 </spirit:componentInstances>
+				 <spirit:vendorExtensions>
+						<xilinx:instanceProperties>
+							 <xilinx:projectOptions>
+									<xilinx:projectName>coregen</xilinx:projectName>
+									<xilinx:outputDirectory>./</xilinx:outputDirectory>
+									<xilinx:workingDirectory>./temp/</xilinx:workingDirectory>
+									<xilinx:subWorkingDirectory>./temp/_cg/</xilinx:subWorkingDirectory>
+							 </xilinx:projectOptions>
+							 <xilinx:part>
+									<xilinx:device>{device}</xilinx:device>
+									<xilinx:deviceFamily>{devicefamily}</xilinx:deviceFamily>
+									<xilinx:package>{package}</xilinx:package>
+									<xilinx:speedGrade>{speedgrade}</xilinx:speedGrade>
+							 </xilinx:part>
+							 <xilinx:flowOptions>
+									<xilinx:busFormat>BusFormatAngleBracketNotRipped</xilinx:busFormat>
+									<xilinx:designEntry>VHDL</xilinx:designEntry>
+									<xilinx:asySymbol>false</xilinx:asySymbol>
+									<xilinx:flowVendor>Other</xilinx:flowVendor>
+									<xilinx:addPads>false</xilinx:addPads>
+									<xilinx:removeRPMs>false</xilinx:removeRPMs>
+									<xilinx:createNDF>false</xilinx:createNDF>
+									<xilinx:implementationFileType>Ngc</xilinx:implementationFileType>
+									<xilinx:formalVerification>false</xilinx:formalVerification>
+							 </xilinx:flowOptions>
+							 <xilinx:simulationOptions>
+									<xilinx:simulationModel>Behavioral</xilinx:simulationModel>
+									<xilinx:simulationLanguage>VHDL</xilinx:simulationLanguage>
+									<xilinx:foundationSym>false</xilinx:foundationSym>
+							 </xilinx:simulationOptions>
+						</xilinx:instanceProperties>
+				 </spirit:vendorExtensions>
+			</spirit:design>
+			''').format(**{
+				'name' : "lcd_ChipScopeVIO",
+				'device' : self.host.netListConfig[deviceSection]['Device'],
+				'devicefamily' : self.host.netListConfig[deviceSection]['DeviceFamily'],
+				'package' : self.host.netListConfig[deviceSection]['Package'],
+				'speedgrade' : self.host.netListConfig[deviceSection]['SpeedGrade']
+			})
+
+		self.printDebug("Writing CoreGen content file to '%s'" % str(cgcFilePath))
+		with cgcFilePath.open('w') as cgcFileHandle:
+			cgcFileHandle.write(cgContentFileContent)
 		
-		import xml.etree.ElementTree as ET
-		cgcTemplateXmlTree = ET.parse(str(cgcTemplateFilePath))
-		cgcTemplateXmlRoot = cgcTemplateXmlTree.getroot()
-		print(cgcTemplateXmlTree)
+		# copy xco file into temporary directory
+		self.printDebug("Copy CoreGen xco file to '%s'" % str(xcoFilePath))
+		self.printVerbose('  cp "%s" "%s"' % (str(xcoInputFilePath), str(tempCoreGenPath)))
+		shutil.copy(str(xcoInputFilePath), str(xcoFilePath), follow_symlinks=True)
 		
+		# change working directory to temporary CoreGen path
+		self.printVerbose('  cd "%s"' % str(tempCoreGenPath))
+		os.chdir(str(tempCoreGenPath))
 		
+		# running CoreGen
+		# ==========================================================================
+		self.printNonQuite("  running CoreGen...")
+		# assemble CoreGen command as list of parameters
+		parameterList = [
+			str(coreGenExecutablePath),
+			'-r',
+			'-b', str(xcoFilePath),
+			'-p', '.'
+		]
+		self.printDebug("call coreGen: %s" % str(parameterList))
+		self.printVerbose('%s -r -b "%s" -p .' % (str(coreGenExecutablePath), str(xcoFilePath)))
+		coreGenLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
 		
+		if self.showLogs:
+			print("Core Generator log (CoreGen)")
+			print("--------------------------------------------------------------------------------")
+			print(coreGenLog)
+			print()
 		
+		# copy resulting files into PoC's netlist directory
+		if not ngcFilePath.exists():
+			raise PoCCompilerException("No *.ngc file found after synthesis.")
 		
+		self.printDebug("Copy ngc file to '%s'" % str(ngcOutputFilePath))
+		self.printVerbose('  cp "%s" "%s"' % (str(ngcFilePath), str(ngcOutputFilePath)))
+		shutil.copy(str(ngcFilePath), str(ngcOutputFilePath))
 		
+		if not vhdlFilePath.exists():
+			raise PoCCompilerException("No *.vhd file found after synthesis.")
+		
+		self.printDebug("Copy vhd file to '%s'" % str(vhdlOutputFilePath))
+		self.printVerbose('  cp "%s" "%s"' % (str(vhdlFilePath), str(vhdlOutputFilePath)))
+		shutil.copy(str(vhdlFilePath), str(vhdlOutputFilePath))
 		
 		print("ngc: " + str(ngcOutputFilePath))
 		print("dev: " + device)
