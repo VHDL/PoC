@@ -43,8 +43,8 @@ class PoCNetList(PoC.PoCBase):
 	__netListConfigFileName = "configuration.ini"
 	netListConfig = None
 	
-	def __init__(self, debug, verbose, quite):
-		super(self.__class__, self).__init__(debug, verbose, quite)
+	def __init__(self, debug, verbose, quiet):
+		super(self.__class__, self).__init__(debug, verbose, quiet)
 
 		if not ((self.platform == "Windows") or (self.platform == "Linux")):
 			raise PoC.PoCPlatformNotSupportedException(self.platform)
