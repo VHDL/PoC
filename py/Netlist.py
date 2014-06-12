@@ -108,7 +108,7 @@ def main():
 		argParser.add_argument('-D', action='store_const', const=True, default=False, help='enable script wrapper debug mode')
 		argParser.add_argument('-d', action='store_const', const=True, default=False, help='enable debug mode')
 		argParser.add_argument('-v', action='store_const', const=True, default=False, help='generate detailed report')
-		argParser.add_argument('-q', action='store_const', const=True, default=False, help='run in quite mode')
+		argParser.add_argument('-q', action='store_const', const=True, default=False, help='run in quiet mode')
 		argParser.add_argument('-l', action='store_const', const=True, default=False, help='show logs')
 		argParser.add_argument('-r', action='store_const', const=True, default=False, help='show report')
 		argParser.add_argument('--coregen', action='store_const', const=True, default=False, help='use Xilinx IP-Core Generator (CoreGen)')

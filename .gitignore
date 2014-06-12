@@ -1,5 +1,5 @@
 temp/
-netlists/
+netlist/
 py/configuration.ini
 py/__pycache__/
 *.pyc
