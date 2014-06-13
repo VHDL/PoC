@@ -158,21 +158,25 @@ def main():
 			formatter_class = argparse.RawDescriptionHelpFormatter,
 			description = textwrap.dedent('''\
 				This is the PoC Library Testbench Service Tool.
-				'''))
+				'''),
+			add_help=False)
 
 		# add arguments
-		argParser.add_argument('-D', action='store_const', const=True, default=False, help='enable script wrapper debug mode')
-		argParser.add_argument('-d', action='store_const', const=True, default=False, help='enable debug mode')
-		argParser.add_argument('-v', action='store_const', const=True, default=False, help='generate detailed report')
-		argParser.add_argument('-q', action='store_const', const=True, default=False, help='run in quiet mode')
-		argParser.add_argument('-l', action='store_const', const=True, default=False, help='show logs')
-		argParser.add_argument('-r', action='store_const', const=True, default=False, help='show report')
-		argParser.add_argument('--isim', action='store_const', const=True, default=False, help='use Xilinx ISE Simulator (iSim)')
-		argParser.add_argument('--xsim', action='store_const', const=True, default=False, help='use Xilinx Vivado Simulator (xSim)')
-		argParser.add_argument('--vsim', action='store_const', const=True, default=False, help='use Mentor Graphics ModelSim (vSim)')
-		argParser.add_argument('--ghdl', action='store_const', const=True, default=False, help='use GHDL Simulator (ghdl)')
-		argParser.add_argument("module", help="Specify the module which should be tested.")
-		
+		group1 = argParser.add_argument_group('Verbosity')
+		group1.add_argument('-D', 																							help='enable script wrapper debug mode',	action='store_const', const=True, default=False)
+		group1.add_argument('-d',														dest="debug",				help='enable debug mode',									action='store_const', const=True, default=False)
+		group1.add_argument('-v',														dest="verbose",			help='print out detailed messages',				action='store_const', const=True, default=False)
+		group1.add_argument('-q',														dest="quiet",				help='run in quiet mode',									action='store_const', const=True, default=False)
+		group1.add_argument('-r',														dest="showReport",	help='show report',												action='store_const', const=True, default=False)
+		group1.add_argument('-l',														dest="showLog",			help='show logs',													action='store_const', const=True, default=False)
+		group2 = argParser.add_argument_group('Commands')
+		group21 = group2.add_mutually_exclusive_group(required=True)
+		group21.add_argument('-h', '--help',								dest="help",				help='show this help message and exit',		action='store_const', const=True, default=False)
+		group21.add_argument('--isim',	metavar="<Entity>",	dest="isim",				help='use Xilinx ISE Simulator (isim)')
+		group21.add_argument('--xsim',	metavar="<Entity>",	dest="xsim",				help='use Xilinx Vivado Simulator (xsim)')
+		group21.add_argument('--vsim',	metavar="<Entity>",	dest="vsim",				help='use Mentor Graphics Simulator (vsim)')
+		group21.add_argument('--ghdl',	metavar="<Entity>",	dest="ghdl",				help='use GHDL Simulator (ghdl)')
+
 		# parse command line options
 		args = argParser.parse_args()
 
@@ -183,16 +187,19 @@ def main():
 
 	# create class instance and start processing
 	try:
-		test = PoCTestbench(args.d, args.v, args.q)
+		test = PoCTestbench(args.debug, args.verbose, args.quiet)
 		
-		if args.isim:
-			test.isimSimulation(args.module, args.l, args.r)
-		elif args.xsim:
-			test.xsimSimulation(args.module, args.l, args.r)
-		elif args.vsim:
-			test.vsimSimulation(args.module, args.l, args.r)
-		elif args.ghdl:
-			test.ghdlSimulation(args.module, args.l, args.r)
+		if (args.help == True):
+			argParser.print_help()
+			return
+		elif (args.isim is not None):
+			test.isimSimulation(args.isim, args.showLog, args.showReport)
+		elif (args.xsim is not None):
+			test.xsimSimulation(args.xsim, args.showLog, args.showReport)
+		elif (args.vsim is not None):
+			test.vsimSimulation(args.vsim, args.showLog, args.showReport)
+		elif (args.ghdl is not None):
+			test.ghdlSimulation(args.ghdl, args.showLog, args.showReport)
 		else:
 			argParser.print_help()
 	

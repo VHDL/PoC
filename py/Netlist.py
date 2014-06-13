@@ -130,8 +130,8 @@ def main():
 		group31 = group3.add_mutually_exclusive_group(required=True)
 		group31.add_argument('--device',				metavar="<Device>",	dest="device",			help='target device (e.g. XC5VLX50T-1FF1136)')
 		group31.add_argument('--board',					metavar="<Board>",	dest="board",				help='target board to infere the device (e.g. ML505)')
+
 		# parse command line options
-		
 		args = argParser.parse_args()
 		
 	except Exception as ex:
