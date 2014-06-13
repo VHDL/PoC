@@ -75,7 +75,7 @@ class PoCConfiguration(PoC.PoCBase):
 			self.__readPoCStructure()
 	
 	def autoConfiguration(self):
-		raise NotImplementedException("No automatic configuration available!")
+		raise PoC.NotImplementedException("No automatic configuration available!")
 	
 	def manualConfiguration(self):
 		self.printConfigurationHelp()

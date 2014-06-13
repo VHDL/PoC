@@ -150,7 +150,7 @@ def main():
 		elif (args.coreGen is not None):
 			netList.coreGenCompilation(args.coreGen, args.showLog, args.showReport, device=args.device, board=args.board)
 		elif (args.xst is not None):
-			raise NotImplementedException("XST workflow is not yet implemented!")
+			raise PoC.NotImplementedException("XST workflow is not yet implemented!")
 			#netList.coreGenCompilation(args.coreGen, args.showLog, args.showReport, device=args.device, board=args.board)
 		else:
 			argParser.print_help()
