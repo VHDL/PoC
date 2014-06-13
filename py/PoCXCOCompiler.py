@@ -45,6 +45,9 @@ else:
 	print("This is no executable file!")
 	exit(1)
 
+from pathlib import Path
+import re
+	
 import PoCCompiler
 
 class PoCXCOCompiler(PoCCompiler.PoCCompiler):
@@ -59,9 +62,7 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 		}
 		
 	def run(self, pocEntity, deviceString):
-		#from pathlib import Path
 		import os
-		#import re
 		import shutil
 		import subprocess
 		import textwrap
@@ -89,21 +90,32 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.host.netListConfig['SPECIAL'] = {}
 		self.host.netListConfig['SPECIAL']['Device'] = deviceString
+		self.host.netListConfig['SPECIAL']['OutputDir'] = tempCoreGenPath.as_posix()
+		
+		# read copy tasks
+		copyFileList = self.host.netListConfig[str(pocEntity)]['Copy']
+		self.printDebug("CopyTasks: \n  " + ("\n  ".join(copyFileList.split("\n"))))
+		copyTasks = []
+		for item in copyFileList.split("\n"):
+			list1 = re.split("\s+->\s+", item)
+			if (len(list1) != 2):				raise PoCCompiler.PoCCompilerException("Expected 2 arguments for every copy task!")
 			
+			copyTasks.append((Path(list1[0]), Path(list1[1])))
+		
 		# setup all needed paths to execute coreGen
 		coreGenExecutablePath =		self.host.Directories["ISEBinary"] / self.__executables['CoreGen']
 		
 		# read netlist settings from configuration file
 		ipCoreName =					self.host.netListConfig[str(pocEntity)]['IPCoreName']
 		xcoInputFilePath =		self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['CoreGeneratorFile']
-		ngcOutputFilePath =		self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['NetListOutputFile']
-		vhdlOutputFilePath =	self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['VHDLEntityOutputFile']
+		#ngcOutputFilePath =		self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['NetListOutputFile']
+		#vhdlOutputFilePath =	self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['VHDLEntityOutputFile']
 		cgcTemplateFilePath =	self.host.Directories["PoCNetList"] / "template.cgc"
 		cgpFilePath =					tempCoreGenPath / "coregen.cgp"
 		cgcFilePath =					tempCoreGenPath / "coregen.cgc"
 		xcoFilePath =					tempCoreGenPath / xcoInputFilePath.name
-		ngcFilePath =					tempCoreGenPath / (xcoInputFilePath.stem + ".ngc")
-		vhdlFilePath =				tempCoreGenPath / (xcoInputFilePath.stem + ".vhd")
+		#ngcFilePath =					tempCoreGenPath / (xcoInputFilePath.stem + ".ngc")
+		#vhdlFilePath =				tempCoreGenPath / (xcoInputFilePath.stem + ".vhd")
 
 
 		# report the next steps in execution
@@ -198,18 +210,12 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 				print()
 		
 		# copy resulting files into PoC's netlist directory
-		if not ngcFilePath.exists():
-			raise PoCCompilerException("No *.ngc file found after synthesis.")
+		self.printNonQuiet('  copy result files into output directory...')
+		for task in copyTasks:
+			(fromPath, toPath) = task
+			if not fromPath.exists():		raise PoCCompiler.PoCCompilerException("File '%s' does not exist!" % str(fromPath))
+			#if not toPath.exists():			raise PoCCompiler.PoCCompilerException("File '%s' does not exist!" % str(toPath))
 		
-		self.printVerbose('  copy result files into output directory...')
-		self.printDebug("Copy ngc file to '%s'" % str(ngcOutputFilePath))
-		self.printVerbose('    cp "%s" "%s"' % (str(ngcFilePath), str(ngcOutputFilePath)))
-		shutil.copy(str(ngcFilePath), str(ngcOutputFilePath))
-		
-		if not vhdlFilePath.exists():
-			raise PoCCompilerException("No *.vhd file found after synthesis.")
-		
-		self.printDebug("Copy vhd file to '%s'" % str(vhdlOutputFilePath))
-		self.printVerbose('    cp "%s" "%s"' % (str(vhdlFilePath), str(vhdlOutputFilePath)))
-		shutil.copy(str(vhdlFilePath), str(vhdlOutputFilePath))
+			self.printVerbose("  copying '%s'" % str(fromPath))
+			shutil.copy(str(fromPath), str(toPath))
 		
