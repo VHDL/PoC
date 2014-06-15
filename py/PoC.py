@@ -46,16 +46,11 @@ else:
 	exit(1)
 
 
+from enum import Enum, EnumMeta, unique
 import configparser
 from pathlib import Path
-#import os
+import re
 
-#import re
-#import shutil
-#import string
-#import subprocess
-#import sys
-#import textwrap
 
 class PoCBase(object):
 	from platform import system
@@ -127,15 +122,17 @@ class PoCBase(object):
 		self.Directories["PoCTemp"] =				self.Directories["PoCRoot"] / self.pocStructure['DirectoryNames']['TemporaryFiles']
 		
 		self.Directories["iSimFiles"] =			self.Directories["PoCRoot"] / self.pocStructure['DirectoryNames']['ISESimulatorFiles']
-		#XilinxSynthesisFiles = xst
-		#QuartusSynthesisFiles = quartus		
+		self.Directories["XSTFiles"] =			self.Directories["PoCRoot"] / self.pocStructure['DirectoryNames']['ISESynthesisFiles']
+		#self.Directories["QuartusFiles"] =	self.Directories["PoCRoot"] / self.pocStructure['DirectoryNames']['QuartusSynthesisFiles']
 		
 		self.Directories["iSimTemp"] =			self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['ISESimulatorFiles']
 		self.Directories["xSimTemp"] =			self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['VivadoSimulatorFiles']
 		self.Directories["vSimTemp"] =			self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['ModelSimSimulatorFiles']
-		self.Directories["ghdlTemp"] =			self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['GHDLSimulatorFiles']
+		self.Directories["GHDLTemp"] =			self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['GHDLSimulatorFiles']
 		
-		self.Directories["coreGenTemp"] =		self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['ISECoreGeneratorFiles']
+		self.Directories["CoreGenTemp"] =		self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['ISECoreGeneratorFiles']
+		self.Directories["XSTTemp"] =				self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['ISESynthesisFiles']
+		#self.Directories["QuartusTemp"] =	self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['QuartusSynthesisFiles']
 	
 	def getDebug(self):
 		return self.__debug
@@ -143,7 +140,7 @@ class PoCBase(object):
 	def getVerbose(self):
 		return self.__verbose
 	
-	def getquiet(self):
+	def getQuiet(self):
 		return self.__quiet
 	
 	def printDebug(self, message):
@@ -158,34 +155,19 @@ class PoCBase(object):
 		if (not self.__quiet):
 			print(message)
 
-	def getNamespaceForPrefix(self, namespacePrefix):
-		return self.tbConfig['NamespacePrefixes'][namespacePrefix]
-
-from enum import Enum, EnumMeta, unique
-#class PoCEntityTypesEnumMeta(EnumMeta):
-#	def __call__(cls, value, *args, **kw):
-#		if isinstance(value, str):
-#			# map strings to enum values, defaults to Unknown
-#			mapping = {
-#				'src': 1,
-#				'tb' : 2,
-#				'nl': 3
-#			}
-#			value = mapping.get(value, 0)
-#			return super().__call__(value, *args, **kw)
 
 @unique
-class PoCEntityTypes(Enum):#, metaclass=PoCEntityTypesEnumMeta):
+class PoCEntityTypes(Enum):
 	Unknown = 0
 	Source = 1
 	Testbench = 2
 	NetList = 3
 
 	def __str__(self):
-		if		(self == PoCEntityTypes.Unknown):		return "??"
-		elif	(self == PoCEntityTypes.Source):		return "src"
-		elif	(self == PoCEntityTypes.Testbench):	return "tb"
-		elif	(self == PoCEntityTypes.NetList):		return "nl"
+		if	 (self == PoCEntityTypes.Unknown):		return "??"
+		elif (self == PoCEntityTypes.Source):			return "src"
+		elif (self == PoCEntityTypes.Testbench):	return "tb"
+		elif (self == PoCEntityTypes.NetList):		return "nl"
 
 def _PoCEntityTypes_parser(cls, value):
 	if not isinstance(value, str):
@@ -200,7 +182,189 @@ def _PoCEntityTypes_parser(cls, value):
 
 # override __new__ method in PoCEntityTypes with _PoCEntityTypes_parser
 setattr(PoCEntityTypes, '__new__', _PoCEntityTypes_parser)
+
+class PoCDevice(object):
+	@unique
+	class Vendors(Enum):
+		Unknown = 0
+		Xilinx = 1
+		Altera = 2
+
+		def __str__(obj):
+			return obj.name.lower()
 		
+	@unique
+	class Families(Enum):
+		Unknown = 0
+		# Xilinx families
+		Spartan = 1
+		Artix = 2
+		Kintex = 3
+		Virtex = 4
+		Zynq = 5
+		# Altera families
+		Cyclon = 11
+		Stratix = 12
+
+		def __str__(obj):
+			return obj.name.lower()
+		
+		def __repr__(obj):
+			if	 (obj == PoCDevice.Families.Spartan):	return "s"
+			elif (obj == PoCDevice.Families.Artix):		return "a"
+			elif (obj == PoCDevice.Families.Kintex):	return "k"
+			elif (obj == PoCDevice.Families.Virtex):	return "v"
+			elif (obj == PoCDevice.Families.Zynq):		return "z"
+		
+	@unique
+	class SubTypes(Enum):
+		Unknown = 0
+		# Xilinx device subtypes
+		X = 1
+		T = 2
+		XT = 3
+		HT = 4
+		LX = 5
+		SXT = 6
+		LXT = 7
+		TXT = 8
+		FXT = 9
+		CXT = 10
+		HXT = 11
+		# Altera device subtypes
+		E = 101
+		GS = 102
+		GX = 103
+		GT = 104
+
+		def __str__(obj):
+			return obj.name.lower()
+
+		def groups(obj):
+			if	 (obj == PoCDevice.SubTypes.X):		return ("x",	"")
+			elif (obj == PoCDevice.SubTypes.T):		return ("",		"t")
+			elif (obj == PoCDevice.SubTypes.XT):	return ("x",	"t")
+			elif (obj == PoCDevice.SubTypes.HT):	return ("h",	"t")
+			elif (obj == PoCDevice.SubTypes.LX):	return ("lx",	"")
+			elif (obj == PoCDevice.SubTypes.SXT):	return ("sx",	"t")
+			elif (obj == PoCDevice.SubTypes.LXT):	return ("lx",	"t")
+			elif (obj == PoCDevice.SubTypes.TXT):	return ("tx",	"t")
+			elif (obj == PoCDevice.SubTypes.FXT):	return ("fx",	"t")
+			elif (obj == PoCDevice.SubTypes.CXT):	return ("cx",	"t")
+			elif (obj == PoCDevice.SubTypes.HXT):	return ("hx",	"t")
+			else: return ("??", "?")
+		
+	@unique
+	class Packages(Enum):
+		Unknown = 0
+		
+		FF = 1
+		FFG = 2
+		
+		def __str__(obj):
+			if	 (obj == PoCDevice.Packages.FF):		return "ff"
+			elif (obj == PoCDevice.Packages.FFG):		return "ffg"
+			else: return "??"
+
+	# PoCDevice members
+	vendor = Vendors.Unknown
+	generation = 0
+	family = Families.Unknown
+	subtype = SubTypes.Unknown
+	number = 0
+	speedGrade = 0
+	package = Packages.Unknown
+	pinCount = 0
+
+	def __init__(obj, deviceString):
+		# vendor = Xilinx
+		if (deviceString[0:2].lower() == "xc"):
+			obj.vendor = PoCDevice.Vendors.Xilinx
+			obj.generation = int(deviceString[2:3])
+
+			temp = deviceString[3:4].lower()
+			if	 (temp == "a"):	obj.family = PoCDevice.Families.Artix
+			elif (temp == "k"):	obj.family = PoCDevice.Families.Kintex
+			elif (temp == "v"):	obj.family = PoCDevice.Families.Virtex
+			elif (temp == "z"):	obj.family = PoCDevice.Families.Zynq
+			else: raise PoCException("Unknown device family.")
+
+			deviceRegExpStr =  r"(?P<st1>[cfhlstx]{0,2})"			# device subtype - part 1
+			deviceRegExpStr += r"(?P<no>\d{1,4})"							# device number
+			deviceRegExpStr += r"(?P<st2>[t]{0,1})"						# device subtype - part 2
+			deviceRegExpStr += r"(?P<sg>[-1-3]{2})"						# speed grade
+			deviceRegExpStr += r"(?P<pack>[fg]{1,3})"					# package
+			deviceRegExpStr += r"(?P<pins>\d{1,4})"						# pin count
+			
+			deviceRegExp = re.compile(deviceRegExpStr)
+			deviceRegExpMatch = deviceRegExp.match(deviceString[4:].lower())
+
+			if (deviceRegExpMatch is not None):
+				subtype = deviceRegExpMatch.group('st1') + deviceRegExpMatch.group('st2')
+				package = deviceRegExpMatch.group('pack')
+				
+				obj.subtype = PoCDevice.SubTypes[subtype.upper()]
+				obj.number = int(deviceRegExpMatch.group('no'))
+				obj.speedGrade = int(deviceRegExpMatch.group('sg'))
+				obj.package = PoCDevice.Packages[package.upper()]
+				obj.pinCount = int(deviceRegExpMatch.group('pins'))
+		
+		# vendor = Altera
+		if (deviceString[0:2].lower() == "ep"):
+			obj.vendor = PoCDevice.Vendors.Altera
+			obj.generation = int(deviceString[2:3])
+
+			temp = deviceString[3:4].lower()
+			if	 (temp == "C"):	obj.family = PoCDevice.Families.Cyclon
+			elif (temp == "S"):	obj.family = PoCDevice.Families.Stratix
+
+#			deviceRegExpStr =  r"(?P<st1>[cfhlstx]{0,2})"			# device subtype - part 1
+#			deviceRegExpStr += r"(?P<no>\d{1,4})"							# device number
+#			deviceRegExpStr += r"(?P<st2>[t]{0,1})"						# device subtype - part 2
+#			deviceRegExpStr += r"(?P<sg>[-1-3]{2})"						# speed grade
+#			deviceRegExpStr += r"(?P<pack>[fg]{1,3})"					# package
+#			deviceRegExpStr += r"(?P<pins>\d{1,4})"						# pin count
+#			
+#			deviceRegExp = re.compile(deviceRegExpStr)
+#			deviceRegExpMatch = deviceRegExp.match(deviceString[4:].lower())
+#
+#			if (deviceRegExpMatch is not None):
+#				print("dev subtype: %s%s" % (deviceRegExpMatch.group('st1'), deviceRegExpMatch.group('st2')))
+	
+	def shortName(obj):
+		if (obj.vendor == PoCDevice.Vendors.Xilinx):
+			subtype = obj.subtype.groups()
+			return "xc%i%s%s%i%s" % (
+				obj.generation,
+				repr(obj.family),
+				subtype[0],
+				obj.number,
+				subtype[1]
+			)
+		elif (obj.vendor == PoCDevice.Vendors.Altera):
+			raise NotImplementedException("shortName() not implemented for vendor Altera")
+			return "ep...."
+	
+	def fullName(obj):
+		if (obj.vendor == PoCDevice.Vendors.Xilinx):
+			subtype = obj.subtype.groups()
+			return "xc%i%s%s%i%s%i%s%i" % (
+				obj.generation,
+				repr(obj.family),
+				subtype[0],
+				obj.number,
+				subtype[1],
+				obj.speedGrade,
+				str(obj.package),
+				obj.pinCount
+			)
+		elif (obj.vendor == PoCDevice.Vendors.Altera):
+			raise NotImplementedException("fullName() not implemented for vendor Altera")
+			return "ep...."
+	
+	def __str__(obj):
+		return obj.fullName()
+	
 class PoCEntity(object):
 	host = None
   
@@ -222,8 +386,17 @@ class PoCEntity(object):
 		else:
 			raise ArgumentException("Argument has to many ':' signs.")
 		
-		self.parts = namespacePart.split('.')
+		splitList2 = namespacePart.split('.')
+		print("len2: %i" % len(splitList2))
+		if (splitList2[0] == "PoC"):
+			self.parts = splitList2[1:]
+		else:
+			self.parts = splitList2
 		
+#		if (not self.host.pocStructure.has_option('NamespaceDirectoryNames', str(self))):
+#			raise PoCException("Namespace or entity '%s' does not exist." % str(self))
+		
+				
 	def Root(host):
 		return PoCEntity(host, "PoC")
 	

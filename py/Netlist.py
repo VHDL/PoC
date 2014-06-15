@@ -36,7 +36,7 @@ from pathlib import Path
 import PoC
 import PoCCompiler
 import PoCXCOCompiler
-#import PoCXSTCompiler
+import PoCXSTCompiler
 
 
 class PoCNetList(PoC.PoCBase):
@@ -67,7 +67,7 @@ class PoCNetList(PoC.PoCBase):
 		self.netListConfig.read([str(self.Files["PoCConfig"]), str(self.Files["PoCStructure"]), str(netListConfigFilePath)])
 		self.Files["PoCNLConfig"]	= netListConfigFilePath
 
-	def coreGenCompilation(self, entity, showLogs, showReport, device=None, board=None):
+	def coreGenCompilation(self, entity, showLogs, showReport, deviceString=None, boardString=None):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):
 			raise PoCNotConfiguredException("Xilinx ISE is not configured on this system.")
@@ -81,17 +81,43 @@ class PoCNetList(PoC.PoCBase):
 		if (environ.get('XILINX') == None):
 			raise PoC.PoCEnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
 
-		deviceString = ""
-		if (board is not None):
-			deviceString = self.netListConfig['BOARDS'][board]
-		elif (device is not None):
-			deviceString = device
-		
+		if (boardString is not None):
+			device = PoC.PoCDevice(self.netListConfig['BOARDS'][boardString])
+		elif (deviceString is not None):
+			device = PoC.PoCDevice(deviceString)
+		else: raise PoC.PoCException("No board or device given.")
+
 		entityToCompile = PoC.PoCEntity(self, entity)
 
 		compiler = PoCXCOCompiler.PoCXCOCompiler(self, showLogs, showReport)
 		compiler.dryRun = self.dryRun
-		compiler.run(entityToCompile, deviceString)
+		compiler.run(entityToCompile, device)
+		
+	def xstCompilation(self, entity, showLogs, showReport, deviceString=None, boardString=None):
+		# check if ISE is configure
+		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):
+			raise PoCNotConfiguredException("Xilinx ISE is not configured on this system.")
+		
+		# prepare some paths
+		self.Directories["ISEInstallation"] = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
+		self.Directories["ISEBinary"] =				Path(self.pocConfig['Xilinx-ISE']['BinaryDirectory'])
+	
+		# check if the appropriate environment is loaded
+		from os import environ
+		if (environ.get('XILINX') == None):
+			raise PoC.PoCEnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
+
+		if (boardString is not None):
+			device = PoC.PoCDevice(self.netListConfig['BOARDS'][boardString])
+		elif (deviceString is not None):
+			device = PoC.PoCDevice(deviceString)
+		else: raise PoC.PoCException("No board or device given.")
+		
+		entityToCompile = PoC.PoCEntity(self, entity)
+
+		compiler = PoCXSTCompiler.PoCXSTCompiler(self, showLogs, showReport)
+		compiler.dryRun = self.dryRun
+		compiler.run(entityToCompile, device)
 
 
 # main program
@@ -148,10 +174,9 @@ def main():
 			argParser.print_help()
 			return
 		elif (args.coreGen is not None):
-			netList.coreGenCompilation(args.coreGen, args.showLog, args.showReport, device=args.device, board=args.board)
+			netList.coreGenCompilation(args.coreGen, args.showLog, args.showReport, deviceString=args.device, boardString=args.board)
 		elif (args.xst is not None):
-			raise PoC.NotImplementedException("XST workflow is not yet implemented!")
-			#netList.coreGenCompilation(args.coreGen, args.showLog, args.showReport, device=args.device, board=args.board)
+			netList.xstCompilation(args.xst, args.showLog, args.showReport, deviceString=args.device, boardString=args.board)
 		else:
 			argParser.print_help()
 		

@@ -68,6 +68,24 @@ class PoCTestbench(PoC.PoCBase):
 		self.tbConfig.read([str(self.Files["PoCConfig"]), str(self.Files["PoCStructure"]), str(tbConfigFilePath)])
 		self.Files["PoCTBConfig"]	= tbConfigFilePath
 	
+	def listSimulations(self, module):
+		entityToList = PoC.PoCEntity(self, module)
+		
+		print(str(entityToList))
+		
+		print(self.tbConfig.sections())
+		print()
+		print(self.tbConfig.options("PoC"))
+		print()
+		
+		
+		for sec in self.tbConfig.sections():
+			if (sec[:4] == "PoC."):
+				print(sec)
+		
+		return("return ...")
+		return
+	
 	def isimSimulation(self, module, showLogs, showReport):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):
@@ -172,6 +190,7 @@ def main():
 		group2 = argParser.add_argument_group('Commands')
 		group21 = group2.add_mutually_exclusive_group(required=True)
 		group21.add_argument('-h', '--help',								dest="help",				help='show this help message and exit',		action='store_const', const=True, default=False)
+		group21.add_argument('--list',	metavar="<Entity>",	dest="list",				help='list available testbenches')
 		group21.add_argument('--isim',	metavar="<Entity>",	dest="isim",				help='use Xilinx ISE Simulator (isim)')
 		group21.add_argument('--xsim',	metavar="<Entity>",	dest="xsim",				help='use Xilinx Vivado Simulator (xsim)')
 		group21.add_argument('--vsim',	metavar="<Entity>",	dest="vsim",				help='use Mentor Graphics Simulator (vsim)')
@@ -192,6 +211,8 @@ def main():
 		if (args.help == True):
 			argParser.print_help()
 			return
+		elif (args.list is not None):
+			test.listSimulations(args.list)
 		elif (args.isim is not None):
 			test.isimSimulation(args.isim, args.showLog, args.showReport)
 		elif (args.xsim is not None):

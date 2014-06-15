@@ -61,7 +61,7 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 			'CoreGen' :	("coregen.exe"	if (host.platform == "Windows") else "coregen")
 		}
 		
-	def run(self, pocEntity, deviceString):
+	def run(self, pocEntity, device):
 		import os
 		import shutil
 		import subprocess
@@ -71,6 +71,7 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 		self.printNonQuiet("  preparing compiler environment...")
 
 		# TODO: improve / resolve board to device
+		deviceString = str(device).upper()
 		deviceSection = "Device." + deviceString
 		
 		# create temporary directory for CoreGen if not existent
@@ -108,26 +109,22 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 		# read netlist settings from configuration file
 		ipCoreName =					self.host.netListConfig[str(pocEntity)]['IPCoreName']
 		xcoInputFilePath =		self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['CoreGeneratorFile']
-		#ngcOutputFilePath =		self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['NetListOutputFile']
-		#vhdlOutputFilePath =	self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['VHDLEntityOutputFile']
 		cgcTemplateFilePath =	self.host.Directories["PoCNetList"] / "template.cgc"
 		cgpFilePath =					tempCoreGenPath / "coregen.cgp"
 		cgcFilePath =					tempCoreGenPath / "coregen.cgc"
 		xcoFilePath =					tempCoreGenPath / xcoInputFilePath.name
-		#ngcFilePath =					tempCoreGenPath / (xcoInputFilePath.stem + ".ngc")
-		#vhdlFilePath =				tempCoreGenPath / (xcoInputFilePath.stem + ".vhd")
 
 
 		# report the next steps in execution
-		if (self.getVerbose()):
-			print("  Commands to be run:")
-			print("  1. Write CoreGen project file into temporary directory.")
-			print("  2. Write CoreGen content file into temporary directory.")
-			print("  3. Copy IPCore's *.xco file into temporary directory.")
-			print("  4. Change working directory to temporary directory.")
-			print("  5. Run Xilinx Core Generator (coregen).")
-			print("  6. Copy resulting files into output directory.")
-			print("  ----------------------------------------")
+#		if (self.getVerbose()):
+#			print("  Commands to be run:")
+#			print("  1. Write CoreGen project file into temporary directory.")
+#			print("  2. Write CoreGen content file into temporary directory.")
+#			print("  3. Copy IPCore's *.xco file into temporary directory.")
+#			print("  4. Change working directory to temporary directory.")
+#			print("  5. Run Xilinx Core Generator (coregen).")
+#			print("  6. Copy resulting files into output directory.")
+#			print("  ----------------------------------------")
 		
 		
 		# write CoreGenerator project file
@@ -146,15 +143,15 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 			SET package = %s
 			SET removerpms = false
 			SET simulationfiles = Behavioral
-			SET speedgrade = %s
+			SET speedgrade = %i
 			SET verilogsim = false
 			SET vhdlsim = true
 			SET workingdirectory = %s
 			''' % (
-				self.host.netListConfig[deviceSection]['Device'],
-				self.host.netListConfig[deviceSection]['DeviceFamily'],
-				self.host.netListConfig[deviceSection]['Package'],
-				self.host.netListConfig[deviceSection]['SpeedGrade'],
+				device.shortName(),
+				(str(device.family) + str(device.generation)),
+				(str(device.package) + str(device.pinCount)),
+				device.speedGrade,
 				(".\\temp\\" if self.host.platform == "Windows" else "./temp/")
 			))
 
@@ -169,10 +166,10 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 			
 		cgContentFileContent = cgContentFileContent.format(**{
 			'name' : "lcd_ChipScopeVIO",
-			'device' : self.host.netListConfig[deviceSection]['Device'],
-			'devicefamily' : self.host.netListConfig[deviceSection]['DeviceFamily'],
-			'package' : self.host.netListConfig[deviceSection]['Package'],
-			'speedgrade' : self.host.netListConfig[deviceSection]['SpeedGrade']
+			'device' : device.shortName(),
+			'devicefamily' : (str(device.family) + str(device.generation)),
+			'package' : (str(device.package) + str(device.pinCount)),
+			'speedgrade' : device.speedGrade,
 		})
 
 		self.printDebug("Writing CoreGen content file to '%s'" % str(cgcFilePath))
