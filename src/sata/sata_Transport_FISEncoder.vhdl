@@ -51,7 +51,7 @@ ENTITY sata_FISEncoder IS
 		
 		FISType											: IN	T_SATA_FISTYPE;
 		Status											: OUT	T_SATA_FISENCODER_STATUS;
-		ATARegisters								: IN	T_SATA_HOST_REGISTERS;
+		ATARegisters								: IN	T_SATA_ATA_HOST_REGISTERS;
 		
 		-- writer interface
 		TX_Ready										: OUT	STD_LOGIC;
@@ -234,7 +234,7 @@ BEGIN
 				Alias_LBA16								<= ATARegisters.LBlockAddress(23 DOWNTO 16);
 				Alias_Head								<= x"0";																								-- Head number
 				Alias_Device							<=  "0";																								-- Device number
-				Alias_FlagLBA48						<= is_LBA48_Command(to_ata_cmd(ATARegisters.Command));	-- LBA-48 adressing mode
+				Alias_FlagLBA48						<= is_LBA48_Command(to_sata_ata_command(ATARegisters.Command));	-- LBA-48 adressing mode
 
 				IF (Link_TX_Ready = '1') THEN					
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_2;
