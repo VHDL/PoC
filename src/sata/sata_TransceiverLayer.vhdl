@@ -95,17 +95,7 @@ END;
 ARCHITECTURE rtl OF sata_TransceiverLayer IS
 	ATTRIBUTE KEEP 								: BOOLEAN;
 
---	FUNCTION ite(cond : BOOLEAN; value1 : devgrp_t; value2 : devgrp_t) RETURN devgrp_t IS
---	BEGIN
---		IF (cond = TRUE) THEN
---			RETURN value1;
---		ELSE
---			RETURN value2;
---		END IF;
---	END;
-
---	CONSTANT DEVICE_GROUP			: devgrp_t		:= DEVGRP;		-- ite(((DEVICE = DEVICE_VIRTEX5) AND SIMULATION), DEVGRP_V6LXT, DEVGRP);				-- default is Xilinx.Virtex6.LXT => can be simulated
-	CONSTANT C_DEVICE_INFO		: T_DEVICE_INFO		:= DEVICE_INFO;
+	CONSTANT C_DEVICE_INFO				: T_DEVICE_INFO		:= DEVICE_INFO;
 	
 --	ATTRIBUTE KEEP OF SATA_Clock	: SIGNAL IS "TRUE";
 BEGIN
