@@ -60,7 +60,7 @@ ENTITY sata_IdentifyDeviceFilter IS
 		
 		CRC_OK											: IN	STD_LOGIC;
 		
-		DriveInformation						: OUT	T_DRIVE_INFORMATION
+		DriveInformation						: OUT	T_SATA_DRIVE_INFORMATION
 	);
 END;
 
@@ -139,9 +139,9 @@ ARCHITECTURE rtl OF sata_IdentifyDeviceFilter IS
 	SIGNAL MultipleLogicalBlocksPerPhysicalBlock			: STD_LOGIC								:= '0';
 	SIGNAL LogicalBlocksPerPhysicalBlock_us						: UNSIGNED(3 DOWNTO 0)		:= (OTHERS => '0');
 	
-	SIGNAL ATACapabilities_i													: T_ATA_CAPABILITY;
-	SIGNAL SATACapabilities_i													: T_SATA_CAPABILITY;
-	SIGNAL DriveInformation_i													: T_DRIVE_INFORMATION;
+	SIGNAL ATACapabilities_i													: T_SATA_ATA_CAPABILITY;
+	SIGNAL SATACapabilities_i													: T_SATA_SATA_CAPABILITY;
+	SIGNAL DriveInformation_i													: T_SATA_DRIVE_INFORMATION;
 	
 	SIGNAL Commit																			: STD_LOGIC;
 	SIGNAL ChecksumOK																	: STD_LOGIC;

@@ -624,12 +624,12 @@ PACKAGE sata IS
 	
 	function to_sata_generation(slv : STD_LOGIC_VECTOR)	return T_SATA_GENERATION;
 	FUNCTION to_sata_fistype(slv : T_SLV_8; valid : STD_LOGIC := '1') RETURN T_SATA_FISTYPE;
-	FUNCTION to_SATA_ATA_COMMAND(slv : T_SLV_8) RETURN T_SATA_ATA_COMMAND;
-	FUNCTION to_SATA_CMDCAT(cmd : T_SATA_ATA_COMMAND) RETURN T_SATA_COMMAND_CATEGORY;
-	FUNCTION is_LBA48_Command(cmd : T_SATA_ATA_COMMAND) RETURN STD_LOGIC;
-	FUNCTION to_SATA_device_flags(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_FLAGS;
-	FUNCTION to_SATA_device_register_status(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_REGISTER_STATUS;
-	FUNCTION to_SATA_device_register_error(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_REGISTER_ERROR;
+	FUNCTION to_sata_ata_command(slv : T_SLV_8) RETURN T_SATA_ATA_COMMAND;
+	FUNCTION to_sata_cmdcat(cmd : T_SATA_ATA_COMMAND) RETURN T_SATA_COMMAND_CATEGORY;
+	FUNCTION is_lba48_command(cmd : T_SATA_ATA_COMMAND) RETURN STD_LOGIC;
+	FUNCTION to_sata_ata_device_flags(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_FLAGS;
+	FUNCTION to_sata_ata_device_register_status(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_REGISTER_STATUS;
+	FUNCTION to_sata_ata_device_register_error(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_REGISTER_ERROR;
 
 	-- ===========================================================================
 	-- Component Declarations
@@ -1087,7 +1087,7 @@ PACKAGE BODY sata IS
 		RETURN SATA_FISTYPE_UNKNOWN;
 	END;
 	
-	FUNCTION to_SATA_ATA_COMMAND(slv : T_SLV_8) RETURN T_SATA_ATA_COMMAND IS
+	FUNCTION to_sata_ata_command(slv : T_SLV_8) RETURN T_SATA_ATA_COMMAND IS
 	BEGIN
 		FOR I IN T_SATA_ATA_COMMAND LOOP
 			IF (slv = to_slv(I)) THEN
@@ -1097,7 +1097,7 @@ PACKAGE BODY sata IS
 		RETURN SATA_ATA_CMD_NONE;
 	END;
 	
-	FUNCTION to_SATA_CMDCAT(cmd : T_SATA_ATA_COMMAND) RETURN T_SATA_COMMAND_CATEGORY IS
+	FUNCTION to_sata_cmdcat(cmd : T_SATA_ATA_COMMAND) RETURN T_SATA_COMMAND_CATEGORY IS
 	BEGIN
 		CASE cmd IS
 			-- non-data commands
@@ -1121,7 +1121,7 @@ PACKAGE BODY sata IS
 		END CASE;
 	END;
 	
-	FUNCTION is_LBA48_Command(cmd : T_SATA_ATA_COMMAND) RETURN STD_LOGIC IS
+	FUNCTION is_lba48_command(cmd : T_SATA_ATA_COMMAND) RETURN STD_LOGIC IS
 	BEGIN
 		CASE cmd IS
 			-- non-data commands
@@ -1145,7 +1145,7 @@ PACKAGE BODY sata IS
 		END CASE;
 	END;
 	
-	FUNCTION to_SATA_device_register_status(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_REGISTER_STATUS IS
+	FUNCTION to_sata_ata_device_register_status(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_REGISTER_STATUS IS
 		VARIABLE Result				: T_SATA_ATA_DEVICE_REGISTER_STATUS;
 	BEGIN
 		Result.Error					:= slv(0);
@@ -1169,7 +1169,7 @@ PACKAGE BODY sata IS
 		Return Result;
 	END;
 	
-	FUNCTION to_SATA_device_register_error(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_REGISTER_ERROR IS
+	FUNCTION to_sata_ata_device_register_error(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_REGISTER_ERROR IS
 		VARIABLE Result							: T_SATA_ATA_DEVICE_REGISTER_ERROR;
 	BEGIN
 		Result.NoMediaPresent				:= slv(1);
@@ -1197,7 +1197,7 @@ PACKAGE BODY sata IS
 		Return Result;
 	END;
 	
-	FUNCTION to_SATA_device_flags(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_FLAGS IS
+	FUNCTION to_sata_ata_device_flags(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_FLAGS IS
 		VARIABLE Result							: T_SATA_ATA_DEVICE_FLAGS;
 	BEGIN
 		Result.Direction						:= slv(5);

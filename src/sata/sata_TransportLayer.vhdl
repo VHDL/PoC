@@ -58,8 +58,8 @@ ENTITY sata_TransportLayer IS
 	
 		-- ATA registers
 		UpdateATAHostRegisters					: IN	STD_LOGIC;
-		ATAHostRegisters								: IN	T_ATA_HOST_REGISTERS;
-		ATADeviceRegisters							: OUT	T_ATA_DEVICE_REGISTERS;
+		ATAHostRegisters								: IN	T_SATA_ATA_HOST_REGISTERS;
+		ATADeviceRegisters							: OUT	T_SATA_ATA_DEVICE_REGISTERS;
 	
 		-- TX path
 		TX_Ready											: OUT	STD_LOGIC;
@@ -112,13 +112,13 @@ END;
 ARCHITECTURE rtl OF sata_TransportLayer IS
 	ATTRIBUTE KEEP														: BOOLEAN;
 
-	SIGNAL ATAHostRegisters_i									: T_ATA_HOST_REGISTERS;
-	SIGNAL ATAHostRegisters_d									: T_ATA_HOST_REGISTERS;
+	SIGNAL ATAHostRegisters_i									: T_SATA_ATA_HOST_REGISTERS;
+	SIGNAL ATAHostRegisters_d									: T_SATA_ATA_HOST_REGISTERS;
 
 	SIGNAL UpdateATADeviceRegisters						: STD_LOGIC;
 	SIGNAL CopyATADeviceRegisterStatus				: STD_LOGIC;
-	SIGNAL ATADeviceRegisters_i								: T_ATA_DEVICE_REGISTERS;
-	SIGNAL ATADeviceRegisters_d								: T_ATA_DEVICE_REGISTERS;
+	SIGNAL ATADeviceRegisters_i								: T_SATA_ATA_DEVICE_REGISTERS;
+	SIGNAL ATADeviceRegisters_d								: T_SATA_ATA_DEVICE_REGISTERS;
 
 	-- TransportFSM
 	SIGNAL Status_i														: T_SATA_TRANS_STATUS;
@@ -145,13 +145,13 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 
 	-- FISEncoder
 	SIGNAL FISE_Reset													: STD_LOGIC;
-	SIGNAL FISE_Status												: T_FISENCODER_STATUS;
+	SIGNAL FISE_Status												: T_SATA_FISENCODER_STATUS;
 	SIGNAL FISE_TX_Ready											: STD_LOGIC;
 	SIGNAL FISE_TX_InsertEOP									: STD_LOGIC;
 	
 	-- FISDecoder
 	SIGNAL FISD_Reset													: STD_LOGIC;
-	SIGNAL FISD_Status												: T_FISDECODER_STATUS;
+	SIGNAL FISD_Status												: T_SATA_FISDECODER_STATUS;
 	SIGNAL FISD_FISType												: T_SATA_FISTYPE;
 	SIGNAL FISD_RX_Data												: T_SLV_32;
 	SIGNAL FISD_RX_SOP												: STD_LOGIC;
@@ -159,7 +159,7 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 	SIGNAL FISD_RX_Valid											: STD_LOGIC;
 	SIGNAL FISD_RX_Commit											: STD_LOGIC;
 	SIGNAL FISD_RX_Rollback										: STD_LOGIC;
-	SIGNAL FISD_ATADeviceRegisters						: T_ATA_DEVICE_REGISTERS;
+	SIGNAL FISD_ATADeviceRegisters						: T_SATA_ATA_DEVICE_REGISTERS;
 
 BEGIN
 	FISE_Reset		<= Reset OR to_sl(Command = SATA_TRANS_CMD_RESET);
@@ -491,8 +491,8 @@ BEGIN
 	-- ==========================================================================================================================================================
 	genCSP : IF (DEBUG = TRUE) GENERATE
 		SIGNAL DBG_UpdateATAHostRegisters							: STD_LOGIC;
-		SIGNAL DBG_ATAHostRegisters										: T_ATA_HOST_REGISTERS;
-		SIGNAL DBG_ATADeviceRegisters									: T_ATA_DEVICE_REGISTERS;
+		SIGNAL DBG_ATAHostRegisters										: T_SATA_ATA_HOST_REGISTERS;
+		SIGNAL DBG_ATADeviceRegisters									: T_SATA_ATA_DEVICE_REGISTERS;
 		SIGNAL DBG_FISD_Error													: STD_LOGIC;
 		
 		ATTRIBUTE KEEP OF DBG_UpdateATAHostRegisters	: SIGNAL IS TRUE;
@@ -504,6 +504,6 @@ BEGIN
 		DBG_ATAHostRegisters				<= ATAHostRegisters_d;
 		DBG_ATADeviceRegisters			<= ATADeviceRegisters_d;
 
-		DBG_FISD_Error							<= to_sl(FISD_Status = FISD_STATUS_CRC_ERROR);
+		DBG_FISD_Error							<= to_sl(FISD_Status = SATA_FISD_STATUS_CRC_ERROR);
 	END GENERATE;
 END;
