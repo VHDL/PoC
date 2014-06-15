@@ -104,7 +104,7 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		filesLineRegExp = re.compile(filesLineRegExpStr)
 
 		self.printDebug("Reading filelist '%s'" % str(fileFilePath))
-		self.printNonQuiet("  running analysis for every vhdl ...")
+		self.printNonQuiet("  running analysis for every vhdl file...")
 		
 		# add empty line if logs are enabled
 		if self.showLogs:		print()

@@ -80,20 +80,20 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 		#vhpcompExecutablePath =	self.host.Directories["ISEBinary"] / self.__executables['vhpcomp']
 		fuseExecutablePath =		self.host.Directories["ISEBinary"] / self.__executables['fuse']
 		
-		testbenchName = self.host.tbConfig[str(pocEntity)]['TestbenchModule']
-		fileFilePath =	self.host.Directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['FilesFile']
-		tclFilePath =		self.host.Directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['iSimTclScript']
-		prjFilePath =		tempISimPath / (testbenchName + ".prj")
-		exeFilePath =		tempISimPath / (testbenchName + ".exe")
+		testbenchName =		 self.host.tbConfig[str(pocEntity)]['TestbenchModule']
+		fileListFilePath =	self.host.Directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['FileListFile']
+		tclFilePath =				self.host.Directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['iSimTclScript']
+		prjFilePath =				tempISimPath / (testbenchName + ".prj")
+		exeFilePath =				tempISimPath / (testbenchName + ".exe")
 
 		# report the next steps in execution
-		if (self.getVerbose()):
-			print("  Commands to be run:")
-			print("  1. Change working directory to temporary directory.")
-			print("  2. Parse filelist and write iSim project file.")
-			print("  3. Compile and Link source files to an executable simulation file.")
-			print("  4. Simulate in tcl batch mode.")
-			print("  ----------------------------------------")
+#		if (self.getVerbose()):
+#			print("  Commands to be run:")
+#			print("  1. Change working directory to temporary directory.")
+#			print("  2. Parse filelist and write iSim project file.")
+#			print("  3. Compile and Link source files to an executable simulation file.")
+#			print("  4. Simulate in tcl batch mode.")
+#			print("  ----------------------------------------")
 		
 		# change working directory to temporary iSim path
 		self.printVerbose('  cd "%s"' % str(tempISimPath))
@@ -105,9 +105,9 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 		regExpStr += r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
 		regExp = re.compile(regExpStr)
 
-		self.printDebug("Reading filelist '%s'" % str(fileFilePath))
+		self.printDebug("Reading filelist '%s'" % str(fileListFilePath))
 		iSimProjectFileContent = ""
-		with fileFilePath.open('r') as prjFileHandle:
+		with fileListFilePath.open('r') as prjFileHandle:
 			for line in prjFileHandle:
 				regExpMatch = regExp.match(line)
 				
@@ -121,8 +121,8 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 		
 		# write iSim project file
 		self.printDebug("Writing iSim project file to '%s'" % str(prjFilePath))
-		with prjFilePath.open('w') as configFileHandle:
-			configFileHandle.write(iSimProjectFileContent)
+		with prjFilePath.open('w') as prjFileHandle:
+			prjFileHandle.write(iSimProjectFileContent)
 
 
 		# running fuse

@@ -45,6 +45,9 @@ else:
 	print("This is no executable file!")
 	exit(1)
 
+from pathlib import Path
+import re
+	
 import PoCCompiler
 
 class PoCXCOCompiler(PoCCompiler.PoCCompiler):
@@ -58,10 +61,8 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 			'CoreGen' :	("coregen.exe"	if (host.platform == "Windows") else "coregen")
 		}
 		
-	def run(self, pocEntity, deviceString):
-		#from pathlib import Path
+	def run(self, pocEntity, device):
 		import os
-		#import re
 		import shutil
 		import subprocess
 		import textwrap
@@ -70,6 +71,7 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 		self.printNonQuiet("  preparing compiler environment...")
 
 		# TODO: improve / resolve board to device
+		deviceString = str(device).upper()
 		deviceSection = "Device." + deviceString
 		
 		# create temporary directory for CoreGen if not existent
@@ -89,33 +91,40 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.host.netListConfig['SPECIAL'] = {}
 		self.host.netListConfig['SPECIAL']['Device'] = deviceString
+		self.host.netListConfig['SPECIAL']['OutputDir'] = tempCoreGenPath.as_posix()
+		
+		# read copy tasks
+		copyFileList = self.host.netListConfig[str(pocEntity)]['Copy']
+		self.printDebug("CopyTasks: \n  " + ("\n  ".join(copyFileList.split("\n"))))
+		copyTasks = []
+		for item in copyFileList.split("\n"):
+			list1 = re.split("\s+->\s+", item)
+			if (len(list1) != 2):				raise PoCCompiler.PoCCompilerException("Expected 2 arguments for every copy task!")
 			
+			copyTasks.append((Path(list1[0]), Path(list1[1])))
+		
 		# setup all needed paths to execute coreGen
 		coreGenExecutablePath =		self.host.Directories["ISEBinary"] / self.__executables['CoreGen']
 		
 		# read netlist settings from configuration file
 		ipCoreName =					self.host.netListConfig[str(pocEntity)]['IPCoreName']
 		xcoInputFilePath =		self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['CoreGeneratorFile']
-		ngcOutputFilePath =		self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['NetListOutputFile']
-		vhdlOutputFilePath =	self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['VHDLEntityOutputFile']
 		cgcTemplateFilePath =	self.host.Directories["PoCNetList"] / "template.cgc"
 		cgpFilePath =					tempCoreGenPath / "coregen.cgp"
 		cgcFilePath =					tempCoreGenPath / "coregen.cgc"
 		xcoFilePath =					tempCoreGenPath / xcoInputFilePath.name
-		ngcFilePath =					tempCoreGenPath / (xcoInputFilePath.stem + ".ngc")
-		vhdlFilePath =				tempCoreGenPath / (xcoInputFilePath.stem + ".vhd")
 
 
 		# report the next steps in execution
-		if (self.getVerbose()):
-			print("  Commands to be run:")
-			print("  1. Write CoreGen project file into temporary directory.")
-			print("  2. Write CoreGen content file into temporary directory.")
-			print("  3. Copy IPCore's *.xco file into temporary directory.")
-			print("  4. Change working directory to temporary directory.")
-			print("  5. Run Xilinx Core Generator (coregen).")
-			print("  6. Copy resulting files into output directory.")
-			print("  ----------------------------------------")
+#		if (self.getVerbose()):
+#			print("  Commands to be run:")
+#			print("  1. Write CoreGen project file into temporary directory.")
+#			print("  2. Write CoreGen content file into temporary directory.")
+#			print("  3. Copy IPCore's *.xco file into temporary directory.")
+#			print("  4. Change working directory to temporary directory.")
+#			print("  5. Run Xilinx Core Generator (coregen).")
+#			print("  6. Copy resulting files into output directory.")
+#			print("  ----------------------------------------")
 		
 		
 		# write CoreGenerator project file
@@ -134,15 +143,15 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 			SET package = %s
 			SET removerpms = false
 			SET simulationfiles = Behavioral
-			SET speedgrade = %s
+			SET speedgrade = %i
 			SET verilogsim = false
 			SET vhdlsim = true
 			SET workingdirectory = %s
 			''' % (
-				self.host.netListConfig[deviceSection]['Device'],
-				self.host.netListConfig[deviceSection]['DeviceFamily'],
-				self.host.netListConfig[deviceSection]['Package'],
-				self.host.netListConfig[deviceSection]['SpeedGrade'],
+				device.shortName(),
+				(str(device.family) + str(device.generation)),
+				(str(device.package) + str(device.pinCount)),
+				device.speedGrade,
 				(".\\temp\\" if self.host.platform == "Windows" else "./temp/")
 			))
 
@@ -157,10 +166,10 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 			
 		cgContentFileContent = cgContentFileContent.format(**{
 			'name' : "lcd_ChipScopeVIO",
-			'device' : self.host.netListConfig[deviceSection]['Device'],
-			'devicefamily' : self.host.netListConfig[deviceSection]['DeviceFamily'],
-			'package' : self.host.netListConfig[deviceSection]['Package'],
-			'speedgrade' : self.host.netListConfig[deviceSection]['SpeedGrade']
+			'device' : device.shortName(),
+			'devicefamily' : (str(device.family) + str(device.generation)),
+			'package' : (str(device.package) + str(device.pinCount)),
+			'speedgrade' : device.speedGrade,
 		})
 
 		self.printDebug("Writing CoreGen content file to '%s'" % str(cgcFilePath))
@@ -198,18 +207,12 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 				print()
 		
 		# copy resulting files into PoC's netlist directory
-		if not ngcFilePath.exists():
-			raise PoCCompilerException("No *.ngc file found after synthesis.")
+		self.printNonQuiet('  copy result files into output directory...')
+		for task in copyTasks:
+			(fromPath, toPath) = task
+			if not fromPath.exists():		raise PoCCompiler.PoCCompilerException("File '%s' does not exist!" % str(fromPath))
+			#if not toPath.exists():			raise PoCCompiler.PoCCompilerException("File '%s' does not exist!" % str(toPath))
 		
-		self.printVerbose('  copy result files into output directory...')
-		self.printDebug("Copy ngc file to '%s'" % str(ngcOutputFilePath))
-		self.printVerbose('    cp "%s" "%s"' % (str(ngcFilePath), str(ngcOutputFilePath)))
-		shutil.copy(str(ngcFilePath), str(ngcOutputFilePath))
-		
-		if not vhdlFilePath.exists():
-			raise PoCCompilerException("No *.vhd file found after synthesis.")
-		
-		self.printDebug("Copy vhd file to '%s'" % str(vhdlOutputFilePath))
-		self.printVerbose('    cp "%s" "%s"' % (str(vhdlFilePath), str(vhdlOutputFilePath)))
-		shutil.copy(str(vhdlFilePath), str(vhdlOutputFilePath))
+			self.printVerbose("  copying '%s'" % str(fromPath))
+			shutil.copy(str(fromPath), str(toPath))
 		
