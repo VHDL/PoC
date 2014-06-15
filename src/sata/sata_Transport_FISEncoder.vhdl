@@ -50,8 +50,8 @@ ENTITY sata_FISEncoder IS
 		Reset												: IN	STD_LOGIC;
 		
 		FISType											: IN	T_SATA_FISTYPE;
-		Status											: OUT	T_FISENCODER_STATUS;
-		ATARegisters								: IN	T_ATA_HOST_REGISTERS;
+		Status											: OUT	T_SATA_FISENCODER_STATUS;
+		ATARegisters								: IN	T_SATA_ATA_HOST_REGISTERS;
 		
 		-- writer interface
 		TX_Ready										: OUT	STD_LOGIC;
@@ -118,7 +118,7 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 	
 	SIGNAL State													: T_STATE													:= ST_IDLE;
 	SIGNAL NextState											: T_STATE;
-	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS ite(DEBUG					, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 	
 BEGIN
 
@@ -137,7 +137,7 @@ BEGIN
 	BEGIN
 		NextState										<= State;
 		
-		Status											<= FISE_STATUS_SENDING;
+		Status											<= SATA_FISE_STATUS_SENDING;
 		
 		TX_Ready										<= '0';
     TX_InsertEOP                <= '0';
@@ -175,12 +175,12 @@ BEGIN
 
 		CASE State IS
 			WHEN ST_IDLE =>
-				Status										<= FISE_STATUS_IDLE;
+				Status										<= SATA_FISE_STATUS_IDLE;
 			
 				CASE FISType IS
 					WHEN SATA_FISTYPE_REG_HOST_DEV =>
 						-- send "Register-FIS - Host to Device"
-						Status								<= FISE_STATUS_SENDING;
+						Status								<= SATA_FISE_STATUS_SENDING;
 						
 						Link_TX_Valid					<= '1';
 						Link_TX_SOF						<= '1';
@@ -197,7 +197,7 @@ BEGIN
 						END IF;
 					
 					WHEN SATA_FISTYPE_DATA =>
-						Status								<= FISE_STATUS_SENDING;
+						Status								<= SATA_FISE_STATUS_SENDING;
 					
 						-- send "Data-FIS - Host to Device"
 						Link_TX_Valid					<= '1';
@@ -234,7 +234,7 @@ BEGIN
 				Alias_LBA16								<= ATARegisters.LBlockAddress(23 DOWNTO 16);
 				Alias_Head								<= x"0";																								-- Head number
 				Alias_Device							<=  "0";																								-- Device number
-				Alias_FlagLBA48						<= is_LBA48_Command(to_ata_cmd(ATARegisters.Command));	-- LBA-48 adressing mode
+				Alias_FlagLBA48						<= is_LBA48_Command(to_sata_ata_command(ATARegisters.Command));	-- LBA-48 adressing mode
 
 				IF (Link_TX_Ready = '1') THEN					
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_2;
@@ -288,7 +288,7 @@ BEGIN
 							END IF;
 						END IF;
 					ELSE
-						Status								<= FISE_STATUS_ERROR;
+						Status								<= SATA_FISE_STATUS_ERROR;
 						NextState							<= ST_IDLE;
 					END IF;
 				END IF;
@@ -313,12 +313,12 @@ BEGIN
 				IF (Link_TX_FS_Valid = '1') THEN
 					IF (Link_TX_FS_SendOK = '1') THEN
 						Link_TX_FS_Ready			<= '1';
-						Status								<= FISE_STATUS_SEND_OK;
+						Status								<= SATA_FISE_STATUS_SEND_OK;
 						
 						NextState							<= ST_IDLE;
 					ELSE
 						Link_TX_FS_Ready			<= '1';
-						Status								<= FISE_STATUS_ERROR;
+						Status								<= SATA_FISE_STATUS_ERROR;
 						
 						NextState							<= ST_IDLE;
 					END IF;

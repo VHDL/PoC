@@ -65,6 +65,7 @@ END;
 
 ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP IS
 	ATTRIBUTE KEEP 														: BOOLEAN;
+	ATTRIBUTE TNM 														: STRING;
 
 -- ==================================================================
 -- SATATransceiver configuration
@@ -211,7 +212,9 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP IS
 	-- keep internal clock nets, so timing constrains from UCF can find them
 	ATTRIBUTE KEEP OF GTP_RefClockOut 								: SIGNAL IS DEBUG;
 	ATTRIBUTE KEEP OF GTP_Clock_1X										: SIGNAL IS DEBUG;
-	ATTRIBUTE KEEP OF GTP_Clock_4X										: SIGNAL IS DEBUG;
+--	ATTRIBUTE KEEP OF GTP_Clock_4X										: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF SATA_Clock_i										: SIGNAL IS TRUE;
+	ATTRIBUTE TNM OF SATA_Clock_i											: SIGNAL IS "TGRP_SATA_Clock0";
 	ATTRIBUTE KEEP OF GTP_TX_RefClockOut							: SIGNAL IS DEBUG;
 	ATTRIBUTE KEEP OF GTP_RX_RefClockOut							: SIGNAL IS DEBUG;
 	

@@ -62,32 +62,39 @@ ARCHITECTURE rtl OF sata_PrimitiveDetector IS
 BEGIN
 	PROCESS(RX_DataIn, RX_CharIsK)
 	BEGIN
+		Primitive_i		<= SATA_PRIMITIVE_NONE;
+	
 		IF (RX_CharIsK = "0000") THEN																																	-- no primitive					=> data word
 			Primitive_i <= SATA_PRIMITIVE_NONE;
 																																																	--																							K symbol
 		ELSIF (RX_CharIsK = "0001") THEN																															-- primitive name				Byte 3	Byte 2	Byte 1	Byte 0
 --			Primitive_i	<= to_primitive(RX_DataIn);
-			CASE RX_DataIn IS																																						-- =======================================================
-				WHEN to_slv(SATA_PRIMITIVE_ALIGN) =>			Primitive_i			<= SATA_PRIMITIVE_ALIGN;				-- ALIGN								D27.3,	D10.2,	D10.2,	K28.5
-				WHEN to_slv(SATA_PRIMITIVE_SYNC) =>				Primitive_i			<= SATA_PRIMITIVE_SYNC;					-- SYNC									D21.5,	D21.5,	D21.4,	K28.3
-				WHEN to_slv(SATA_PRIMITIVE_SOF) =>				Primitive_i			<= SATA_PRIMITIVE_SOF;					-- SOF									D23.1,	D23.1,	D21.5,	K28.3
-				WHEN to_slv(SATA_PRIMITIVE_EOF) =>				Primitive_i			<= SATA_PRIMITIVE_EOF;					-- EOF									D21.6,	D21.6,	D21.5,	K28.3
-				WHEN to_slv(SATA_PRIMITIVE_HOLD) =>				Primitive_i			<= SATA_PRIMITIVE_HOLD;					-- HOLD									D21.6,	D21.6,	D10.5,	K28.3
-				WHEN to_slv(SATA_PRIMITIVE_HOLD_ACK) =>		Primitive_i			<= SATA_PRIMITIVE_HOLD_ACK;			-- HOLDA								D21.4,	D21.4,	D10.5,	K28.3
-				WHEN to_slv(SATA_PRIMITIVE_CONT) =>				Primitive_i			<= SATA_PRIMITIVE_CONT;					-- CONT									D25.4,	D25.4,	D10.5,	K28.3
-				WHEN to_slv(SATA_PRIMITIVE_R_OK) =>				Primitive_i			<= SATA_PRIMITIVE_R_OK;					-- R_OK									D21.1,	D21.1,	D21.5,	K28.3
-				WHEN to_slv(SATA_PRIMITIVE_R_ERROR) =>		Primitive_i			<= SATA_PRIMITIVE_R_ERROR;			-- R_ERR								D22.2,	D22.2,	D21.5,	K28.3
-				WHEN to_slv(SATA_PRIMITIVE_R_IP) =>				Primitive_i			<= SATA_PRIMITIVE_R_IP;					-- R_IP									D21.2,	D21.2,	D21.5,	K28.3
-				WHEN to_slv(SATA_PRIMITIVE_RX_RDY) =>			Primitive_i			<= SATA_PRIMITIVE_RX_RDY;				-- R_RDY								D10.2,	D10.2,	D21.4,	K28.3
-				WHEN to_slv(SATA_PRIMITIVE_TX_RDY) =>			Primitive_i			<= SATA_PRIMITIVE_TX_RDY;				-- X_RDY								D23.2,	D23.2,	D21.5,	K28.3
-				WHEN to_slv(SATA_PRIMITIVE_DMA_TERM) =>		Primitive_i			<= SATA_PRIMITIVE_DMA_TERM;			-- DMAT									D22.1,	D22.1,	D21.5,	K28.3
-				WHEN to_slv(SATA_PRIMITIVE_WAIT_TERM) =>	Primitive_i			<= SATA_PRIMITIVE_WAIT_TERM;		-- WTRM									D24.2,	D24.2,	D21.5,	K28.3
-				WHEN to_slv(SATA_PRIMITIVE_PM_ACK) =>			Primitive_i			<= SATA_PRIMITIVE_PM_ACK;				-- PMACK								D21.4,	D21.4,	D21.4,	K28.3
-				WHEN to_slv(SATA_PRIMITIVE_PM_NACK) =>		Primitive_i			<= SATA_PRIMITIVE_PM_NACK;			-- PMNAK								D21.7,	D21.7,	D21.4,	K28.3
-				WHEN to_slv(SATA_PRIMITIVE_PM_REQ_P) =>		Primitive_i			<= SATA_PRIMITIVE_PM_REQ_P;			-- PMREQ_P							D23.0,	D23.0,	D21.5,	K28.3
-				WHEN to_slv(SATA_PRIMITIVE_PM_REQ_S) =>		Primitive_i			<= SATA_PRIMITIVE_PM_REQ_S;			-- PMREQ_S							D21.3,	D21.3,	D21.4,	K28.3
-				WHEN OTHERS =>														Primitive_i			<= SATA_PRIMITIVE_ILLEGAL;			-- 
-			END CASE;
+--			CASE RX_DataIn IS																																						-- =======================================================
+--				WHEN to_slv(SATA_PRIMITIVE_ALIGN) =>			Primitive_i			<= SATA_PRIMITIVE_ALIGN;				-- ALIGN								D27.3,	D10.2,	D10.2,	K28.5
+--				WHEN to_slv(SATA_PRIMITIVE_SYNC) =>				Primitive_i			<= SATA_PRIMITIVE_SYNC;					-- SYNC									D21.5,	D21.5,	D21.4,	K28.3
+--				WHEN to_slv(SATA_PRIMITIVE_SOF) =>				Primitive_i			<= SATA_PRIMITIVE_SOF;					-- SOF									D23.1,	D23.1,	D21.5,	K28.3
+--				WHEN to_slv(SATA_PRIMITIVE_EOF) =>				Primitive_i			<= SATA_PRIMITIVE_EOF;					-- EOF									D21.6,	D21.6,	D21.5,	K28.3
+--				WHEN to_slv(SATA_PRIMITIVE_HOLD) =>				Primitive_i			<= SATA_PRIMITIVE_HOLD;					-- HOLD									D21.6,	D21.6,	D10.5,	K28.3
+--				WHEN to_slv(SATA_PRIMITIVE_HOLD_ACK) =>		Primitive_i			<= SATA_PRIMITIVE_HOLD_ACK;			-- HOLDA								D21.4,	D21.4,	D10.5,	K28.3
+--				WHEN to_slv(SATA_PRIMITIVE_CONT) =>				Primitive_i			<= SATA_PRIMITIVE_CONT;					-- CONT									D25.4,	D25.4,	D10.5,	K28.3
+--				WHEN to_slv(SATA_PRIMITIVE_R_OK) =>				Primitive_i			<= SATA_PRIMITIVE_R_OK;					-- R_OK									D21.1,	D21.1,	D21.5,	K28.3
+--				WHEN to_slv(SATA_PRIMITIVE_R_ERROR) =>		Primitive_i			<= SATA_PRIMITIVE_R_ERROR;			-- R_ERR								D22.2,	D22.2,	D21.5,	K28.3
+--				WHEN to_slv(SATA_PRIMITIVE_R_IP) =>				Primitive_i			<= SATA_PRIMITIVE_R_IP;					-- R_IP									D21.2,	D21.2,	D21.5,	K28.3
+--				WHEN to_slv(SATA_PRIMITIVE_RX_RDY) =>			Primitive_i			<= SATA_PRIMITIVE_RX_RDY;				-- R_RDY								D10.2,	D10.2,	D21.4,	K28.3
+--				WHEN to_slv(SATA_PRIMITIVE_TX_RDY) =>			Primitive_i			<= SATA_PRIMITIVE_TX_RDY;				-- X_RDY								D23.2,	D23.2,	D21.5,	K28.3
+--				WHEN to_slv(SATA_PRIMITIVE_DMA_TERM) =>		Primitive_i			<= SATA_PRIMITIVE_DMA_TERM;			-- DMAT									D22.1,	D22.1,	D21.5,	K28.3
+--				WHEN to_slv(SATA_PRIMITIVE_WAIT_TERM) =>	Primitive_i			<= SATA_PRIMITIVE_WAIT_TERM;		-- WTRM									D24.2,	D24.2,	D21.5,	K28.3
+--				WHEN to_slv(SATA_PRIMITIVE_PM_ACK) =>			Primitive_i			<= SATA_PRIMITIVE_PM_ACK;				-- PMACK								D21.4,	D21.4,	D21.4,	K28.3
+--				WHEN to_slv(SATA_PRIMITIVE_PM_NACK) =>		Primitive_i			<= SATA_PRIMITIVE_PM_NACK;			-- PMNAK								D21.7,	D21.7,	D21.4,	K28.3
+--				WHEN to_slv(SATA_PRIMITIVE_PM_REQ_P) =>		Primitive_i			<= SATA_PRIMITIVE_PM_REQ_P;			-- PMREQ_P							D23.0,	D23.0,	D21.5,	K28.3
+--				WHEN to_slv(SATA_PRIMITIVE_PM_REQ_S) =>		Primitive_i			<= SATA_PRIMITIVE_PM_REQ_S;			-- PMREQ_S							D21.3,	D21.3,	D21.4,	K28.3
+--				WHEN OTHERS =>														Primitive_i			<= SATA_PRIMITIVE_ILLEGAL;			-- 
+--			END CASE;
+			FOR I IN T_SATA_PRIMITIVE LOOP
+				IF (RX_DataIn = to_slv(I)) THEN
+					Primitive_i <= I;
+				END IF;
+			END LOOP;
 		ELSE
 			Primitive_i					<= SATA_PRIMITIVE_ILLEGAL;
 		END IF;
