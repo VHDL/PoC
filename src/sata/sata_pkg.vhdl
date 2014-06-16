@@ -458,12 +458,12 @@ PACKAGE sata IS
 	-- SATA StreamingController types
 	-- ===========================================================================
 	TYPE T_SATA_STREAMC_COMMAND IS (
-		ATASC_CMD_NONE,
-		ATASC_CMD_RESET,
-		ATASC_CMD_READ,
-		ATASC_CMD_WRITE,
-		ATASC_CMD_FLUSH_CACHE,
-		ATASC_CMD_ABORT
+		SATA_STREAMC_CMD_NONE,
+		SATA_STREAMC_CMD_RESET,
+		SATA_STREAMC_CMD_READ,
+		SATA_STREAMC_CMD_WRITE,
+		SATA_STREAMC_CMD_FLUSH_CACHE,
+		SATA_STREAMC_CMD_ABORT
 	);
 
 	TYPE T_SATA_STREAMC_STATUS IS RECORD
@@ -610,7 +610,7 @@ PACKAGE sata IS
 --
 --	TYPE T_DBG_SATA_STREAMCM_IN IS RECORD
 --		SATAC_DebugPortOut	: T_DBG_SATAOUT;
---		ATASC_DebugPortOut	: T_DBG_SATA_STREAMC_OUT;
+--		SATA_STREAMC_DebugPortOut	: T_DBG_SATA_STREAMC_OUT;
 --	END RECORD;
 	
 	-- to_slv
@@ -1011,7 +1011,7 @@ PACKAGE BODY sata IS
 	-- ===========================================================================
 	function to_slv(SATAGen : T_SATA_GENERATION) return STD_LOGIC_VECTOR is
 	begin
-		return to_slv(SATAGen, 2);
+		return std_logic_vector(to_unsigned(SATAGen, 2));
 	end function;
 
 	FUNCTION to_slv(Primitive : T_SATA_PRIMITIVE) RETURN T_SLV_32 IS	--																							K symbol
