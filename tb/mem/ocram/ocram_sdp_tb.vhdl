@@ -32,6 +32,7 @@ end ocram_sdp_tb;
 
 library poc;
 use poc.ocram.all;
+use poc.simulation.all;
 
 architecture tb of ocram_sdp_tb is
 
@@ -69,7 +70,8 @@ architecture tb of ocram_sdp_tb is
 
   -- clock
   signal clk : std_logic := '1';
-
+  signal clk_ena : std_logic := '1';
+  
 begin  -- tb
 
   -- component instantiation
@@ -86,11 +88,14 @@ begin  -- tb
       q    => q);
 
   -- clock generation
-  clk <= not clk after 5 ns;
+  clk <= not clk after 5 ns when clk_ena = '1' else '0';
 
   -- waveform generation
   WaveGen_Proc: process
+    variable pass : boolean;
   begin
+    pass := true;
+    
     -- insert signal assignments here
     ra  <= (others => '0');
     wa  <= (others => '0');
@@ -111,7 +116,10 @@ begin  -- tb
     wce <= '1';
     rce <= '1';                         -- normal read after write
     wait until falling_edge(clk);
-    assert q = x"11111111" report "wrong read data1" severity error;
+    if q /= x"11111111" then
+      pass := false;
+      report "wrong read data1" severity error;
+    end if;
     
     d   <= x"22222222";
     we  <= '1';
@@ -123,20 +131,29 @@ begin  -- tb
     wce <= '1';
     rce <= '1';                         -- read again
     wait until falling_edge(clk);
-    assert q = x"22222222" report "wrong read data2" severity error;
+    if q /= x"22222222" then
+      pass := false;
+      report "wrong read data2" severity error;
+    end if;
     
     d   <= x"33333333";
     we  <= '1';                         -- write new value
     wce <= '1';
     rce <= '0';                         -- no read
     wait until falling_edge(clk);
-    assert q = x"22222222" report "wrong read data3" severity error;
+    if q /= x"22222222" then
+      pass := false;
+      report "wrong read data3" severity error;
+    end if;
 
     we  <= '0';                         -- no write
     wce <= '1';
     rce <= '0';                         -- no read
     wait until falling_edge(clk);
-    assert q = x"22222222" report "wrong read data4" severity error;
+    if q /= x"22222222" then
+      pass := false;
+      report "wrong read data4" severity error;
+    end if;
 
     d   <= x"44444444";
     we  <= '1';
@@ -149,11 +166,17 @@ begin  -- tb
     wce <= '0';                         -- write clock disabled
     rce <= '1';                         -- should be normal read
     wait until falling_edge(clk);
-    assert q = x"44444444" report "wrong read data5" severity error;
+    if q /= x"44444444" then
+      pass := false;
+      report "wrong read data5" severity error;
+    end if;
 
     we  <= '0';
     wce <= '0';
     rce <= '0';
+
+    clk_ena <= '0';
+    printSimulationResult(pass);
     wait;                               -- forever
   end process WaveGen_Proc;
 

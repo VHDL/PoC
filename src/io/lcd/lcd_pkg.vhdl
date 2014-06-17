@@ -40,24 +40,8 @@ USE			PoC.strings.ALL;
 
 
 PACKAGE lcd IS
-	SUBTYPE T_RAWCHAR				IS T_SLV_8;
-	TYPE		T_RAWSTRING			IS ARRAY (NATURAL RANGE <>) OF T_RAWCHAR;
-
 	SUBTYPE T_BCD						IS UNSIGNED(3 DOWNTO 0);
 	TYPE		T_BCD_VECTOR		IS ARRAY (NATURAL RANGE <>)	OF T_BCD;
-	
-	-- to_*
-	FUNCTION to_char(bcd : T_BCD)					RETURN CHARACTER;
-	FUNCTION to_char(rawchar : T_RAWCHAR) RETURN CHARACTER;
-
-	FUNCTION to_string(rawstring : T_RAWSTRING) RETURN STRING;
-	
-	-- to_raw*
-	FUNCTION to_rawchar(char : CHARACTER) RETURN T_RAWCHAR;
-	FUNCTION to_rawstring(stri : STRING)	RETURN T_RAWSTRING;
-	
-	-- resize
-	FUNCTION resize(rawstr : T_RAWSTRING; size : POSITIVE; FillChar : T_RAWCHAR := x"00") RETURN T_RAWSTRING;
 	
 	-- define array indices
 	CONSTANT MAX_LCD_COLUMN_COUNT			: POSITIVE			:= 16;
@@ -130,44 +114,6 @@ PACKAGE BODY lcd IS
 		RETURN ite((temp <= 9), CHARACTER'val(temp), '?');
 	END;
 
-	FUNCTION to_char(rawchar : T_RAWCHAR) RETURN CHARACTER IS
-	BEGIN
-		RETURN CHARACTER'val(to_integer(unsigned(rawchar)));
-	END;
-	
-	FUNCTION to_string(rawstring : T_RAWSTRING) RETURN STRING IS
-		VARIABLE str		: STRING(1 TO rawstring'length);
-	BEGIN
-		FOR I IN rawstring'low TO rawstring'high LOOP
-			str(I - rawstring'low + 1)	:= to_char(rawstring(I));
-		END LOOP;
-	
-		RETURN str;
-	END;
-
-	FUNCTION to_rawchar(char : CHARACTER) RETURN T_RAWCHAR IS
-	BEGIN
-		RETURN std_logic_vector(to_unsigned(CHARACTER'pos(char), T_RAWCHAR'length));
-	END;
-
-	FUNCTION to_rawstring(stri : STRING) RETURN T_RAWSTRING IS
-		VARIABLE rawstr			: T_RAWSTRING(0 TO stri'length - 1);
-	BEGIN
-		FOR I IN stri'low TO stri'high LOOP
-			rawstr(I - stri'low)	:= to_rawchar(stri(I));
-		END LOOP;
-	
-		RETURN rawstr;
-	END;
-
-	FUNCTION resize(rawstr : T_RAWSTRING; size : POSITIVE; FillChar : T_RAWCHAR := x"00") RETURN T_RAWSTRING IS
-		CONSTANT MaxLength	: POSITIVE																					:= imin(size, rawstr'length);
-		VARIABLE Result			: T_RAWSTRING(rawstr'low TO rawstr'low + size - 1)	:= (OTHERS => FillChar);
-	BEGIN
-		Result(rawstr'low TO rawstr'low + MaxLength - 1) := rawstr(rawstr'low TO rawstr'low + MaxLength - 1);
-		RETURN Result;
-	END;
-	
 	FUNCTION calc_length(slv_length : POSITIVE) RETURN POSITIVE IS
 	BEGIN
 		RETURN ((slv_length - 1) / 4) + 1;
