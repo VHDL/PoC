@@ -50,9 +50,9 @@ POC_PYWRAPPER_LOADENV_VIVADO=0
 # search parameter list for platform specific options
 #		--coregen	-> load Xilinx ISE environment
 for param in "$@"; do
-	if [ "$param" = "-D" ]; then POC_PYWRAPPER_DEBUG=1; fi
-	if [ "$param" = "--coregen" ]; then POC_PYWRAPPER_LOADENV_ISE=1; fi
-#	if [ "$param" = "--xsim" ]; then POC_PYWRAPPER_LOADENV_VIVADO=1; fi
+	if [ "$param" = "-D" ];					then POC_PYWRAPPER_DEBUG=1; fi
+	if [ "$param" = "--coregen" ];	then POC_PYWRAPPER_LOADENV_ISE=1; fi
+	if [ "$param" = "--xst" ];			then POC_PYWRAPPER_LOADENV_ISE=1; fi
 done
 
 source $POC_ROOTDIR_RELPATH/py/wrapper.sh

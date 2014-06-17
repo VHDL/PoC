@@ -45,6 +45,9 @@ else:
 	print("This is no executable file!")
 	exit(1)
 
+from pathlib import Path
+import re
+	
 import PoCCompiler
 
 class PoCXCOCompiler(PoCCompiler.PoCCompiler):
@@ -58,120 +61,158 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 			'CoreGen' :	("coregen.exe"	if (host.platform == "Windows") else "coregen")
 		}
 		
-	def run(self, pocEntity):
-		from pathlib import Path
+	def run(self, pocEntity, device):
 		import os
-		import re
+		import shutil
 		import subprocess
+		import textwrap
 	
-		self.printNonQuite(str(pocEntity))
-		self.printNonQuite("  preparing compiler environment...")
-		
+		self.printNonQuiet(str(pocEntity))
+		self.printNonQuiet("  preparing compiler environment...")
+
+		# TODO: improve / resolve board to device
+		deviceString = str(device).upper()
+		deviceSection = "Device." + deviceString
 		
 		# create temporary directory for CoreGen if not existent
-		tempCoreGenPath = self.host.Directories["coreGenTemp"]
+		tempCoreGenPath = self.host.Directories["CoreGenTemp"]
 		if not (tempCoreGenPath).exists():
 			self.printVerbose("Creating temporary directory for core generator files.")
 			self.printDebug("Temporary directors: %s" % str(tempCoreGenPath))
 			tempCoreGenPath.mkdir(parents=True)
 
+		# create output directory for CoreGen if not existent
+		coreGenOutputPath = self.host.Directories["PoCNetList"] / deviceString
+		if not (coreGenOutputPath).exists():
+			self.printVerbose("Creating temporary directory for core generator files.")
+			self.printDebug("Temporary directors: %s" % str(coreGenOutputPath))
+			coreGenOutputPath.mkdir(parents=True)
+			
+		# add the key Device to section SPECIAL at runtime to change interpolation results
+		self.host.netListConfig['SPECIAL'] = {}
+		self.host.netListConfig['SPECIAL']['Device'] = deviceString
+		self.host.netListConfig['SPECIAL']['OutputDir'] = tempCoreGenPath.as_posix()
+		
+		# read copy tasks
+		copyFileList = self.host.netListConfig[str(pocEntity)]['Copy']
+		self.printDebug("CopyTasks: \n  " + ("\n  ".join(copyFileList.split("\n"))))
+		copyTasks = []
+		for item in copyFileList.split("\n"):
+			list1 = re.split("\s+->\s+", item)
+			if (len(list1) != 2):				raise PoCCompiler.PoCCompilerException("Expected 2 arguments for every copy task!")
+			
+			copyTasks.append((Path(list1[0]), Path(list1[1])))
+		
 		# setup all needed paths to execute coreGen
 		coreGenExecutablePath =		self.host.Directories["ISEBinary"] / self.__executables['CoreGen']
 		
-		ipCoreName = self.host.netListConfig[str(pocEntity)]['IPCoreName']
-		fileFilePath =	self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['FilesFile']
-		tclFilePath =		self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['CoreGenTclScript']
-		prjFilePath =		tempCoreGenPath / (testbenchName + ".prj")
-		exeFilePath =		tempCoreGenPath / (testbenchName + ".exe")
+		# read netlist settings from configuration file
+		ipCoreName =					self.host.netListConfig[str(pocEntity)]['IPCoreName']
+		xcoInputFilePath =		self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['CoreGeneratorFile']
+		cgcTemplateFilePath =	self.host.Directories["PoCNetList"] / "template.cgc"
+		cgpFilePath =					tempCoreGenPath / "coregen.cgp"
+		cgcFilePath =					tempCoreGenPath / "coregen.cgc"
+		xcoFilePath =					tempCoreGenPath / xcoInputFilePath.name
 
-		print()
-		print("return ...")
-		return
-		
-#  c:\Xilinx\14.7\ISE_DS\ISE\bin\nt64\coregen.exe -r -b lcd_ChipScopeVIO.xco -p .
-		
+
 		# report the next steps in execution
-		if (self.getVerbose()):
-			print("  Commands to be run:")
-			print("  1. Change working directory to temporary directory.")
-			print("  2. Parse filelist and write CoreGen project file.")
-			print("  3. Compile and Link source files to an executable simulation file.")
-			print("  4. Simulate in tcl batch mode.")
-			print("  ----------------------------------------")
+#		if (self.getVerbose()):
+#			print("  Commands to be run:")
+#			print("  1. Write CoreGen project file into temporary directory.")
+#			print("  2. Write CoreGen content file into temporary directory.")
+#			print("  3. Copy IPCore's *.xco file into temporary directory.")
+#			print("  4. Change working directory to temporary directory.")
+#			print("  5. Run Xilinx Core Generator (coregen).")
+#			print("  6. Copy resulting files into output directory.")
+#			print("  ----------------------------------------")
+		
+		
+		# write CoreGenerator project file
+		cgProjectFileContent = textwrap.dedent('''\
+			SET addpads = false
+			SET asysymbol = false
+			SET busformat = BusFormatAngleBracketNotRipped
+			SET createndf = false
+			SET designentry = VHDL
+			SET device = %s
+			SET devicefamily = %s
+			SET flowvendor = Other
+			SET formalverification = false
+			SET foundationsym = false
+			SET implementationfiletype = Ngc
+			SET package = %s
+			SET removerpms = false
+			SET simulationfiles = Behavioral
+			SET speedgrade = %i
+			SET verilogsim = false
+			SET vhdlsim = true
+			SET workingdirectory = %s
+			''' % (
+				device.shortName(),
+				(str(device.family) + str(device.generation)),
+				(str(device.package) + str(device.pinCount)),
+				device.speedGrade,
+				(".\\temp\\" if self.host.platform == "Windows" else "./temp/")
+			))
+
+		self.printDebug("Writing CoreGen project file to '%s'" % str(cgpFilePath))
+		with cgpFilePath.open('w') as cgpFileHandle:
+			cgpFileHandle.write(cgProjectFileContent)
+
+		# write CoreGenerator content? file
+		self.printDebug("Reading CoreGen content file to '%s'" % str(cgcTemplateFilePath))
+		with cgcTemplateFilePath.open('r') as cgcFileHandle:
+			cgContentFileContent = cgcFileHandle.read()
+			
+		cgContentFileContent = cgContentFileContent.format(**{
+			'name' : "lcd_ChipScopeVIO",
+			'device' : device.shortName(),
+			'devicefamily' : (str(device.family) + str(device.generation)),
+			'package' : (str(device.package) + str(device.pinCount)),
+			'speedgrade' : device.speedGrade,
+		})
+
+		self.printDebug("Writing CoreGen content file to '%s'" % str(cgcFilePath))
+		with cgcFilePath.open('w') as cgcFileHandle:
+			cgcFileHandle.write(cgContentFileContent)
+		
+		# copy xco file into temporary directory
+		self.printDebug("Copy CoreGen xco file to '%s'" % str(xcoFilePath))
+		self.printVerbose('    cp "%s" "%s"' % (str(xcoInputFilePath), str(tempCoreGenPath)))
+		shutil.copy(str(xcoInputFilePath), str(xcoFilePath), follow_symlinks=True)
 		
 		# change working directory to temporary CoreGen path
-		self.printVerbose('  cd "%s"' % str(tempCoreGenPath))
+		self.printVerbose('    cd "%s"' % str(tempCoreGenPath))
 		os.chdir(str(tempCoreGenPath))
-
-		# parse project filelist
-		regExpStr =	 r"\s*(?P<Keyword>(vhdl|xilinx))"				# Keywords: vhdl, xilinx
-		regExpStr += r"\s+(?P<VHDLLibrary>[_a-zA-Z0-9]+)"		#	VHDL library name
-		regExpStr += r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
-		regExp = re.compile(regExpStr)
-
-		self.printDebug("Reading filelist '%s'" % str(fileFilePath))
-		CoreGenProjectFileContent = ""
-		with fileFilePath.open('r') as prjFileHandle:
-			for line in prjFileHandle:
-				regExpMatch = regExp.match(line)
-				
-				if (regExpMatch is not None):
-					if (regExpMatch.group('Keyword') == "vhdl"):
-						vhdlFilePath = self.host.Directories["PoCRoot"] / regExpMatch.group('VHDLFile')
-					elif (regExpMatch.group('Keyword') == "xilinx"):
-						vhdlFilePath = self.host.Directories["ISEInstallation"] / "ISE/vhdl/src" / regExpMatch.group('VHDLFile')
-					vhdlLibraryName = regExpMatch.group('VHDLLibrary')
-					CoreGenProjectFileContent += "vhdl %s \"%s\"\n" % (vhdlLibraryName, str(vhdlFilePath))
 		
-		# write CoreGen project file
-		self.printDebug("Writing CoreGen project file to '%s'" % str(prjFilePath))
-		with prjFilePath.open('w') as configFileHandle:
-			configFileHandle.write(CoreGenProjectFileContent)
-
-
-		# running coreGen
+		# running CoreGen
 		# ==========================================================================
-		self.printNonQuite("  running coreGen...")
-		# assemble coreGen command as list of parameters
+		self.printNonQuiet("  running CoreGen...")
+		# assemble CoreGen command as list of parameters
 		parameterList = [
 			str(coreGenExecutablePath),
-			('work.%s' % testbenchName),
-			'--incremental',
-			'-prj',	str(prjFilePath),
-			'-o',		str(exeFilePath)
+			'-r',
+			'-b', str(xcoFilePath),
+			'-p', '.'
 		]
 		self.printDebug("call coreGen: %s" % str(parameterList))
-		self.printVerbose('%s work.%s --incremental -prj "%s" -o "%s"' % (str(coreGenExecutablePath), testbenchName, str(prjFilePath), str(exeFilePath)))
-		linkerLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
+		self.printVerbose('    %s -r -b "%s" -p .' % (str(coreGenExecutablePath), str(xcoFilePath)))
+		if (self.dryRun == False):
+			coreGenLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
 		
-		if self.showLogs:
-			print("coreGen log (coreGen)")
-			print("--------------------------------------------------------------------------------")
-			print(linkerLog)
-			print()
+			if self.showLogs:
+				print("Core Generator log (CoreGen)")
+				print("--------------------------------------------------------------------------------")
+				print(coreGenLog)
+				print()
 		
-		# running simulation
-		self.printNonQuite("  running simulation...")
-		parameterList = [str(exeFilePath), '-tclbatch', str(tclFilePath)]
-		self.printDebug("call simulation: %s" % str(parameterList))
-		self.printVerbose('%s -tclbatch "%s"' % (str(exeFilePath), str(tclFilePath)))
-		simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
+		# copy resulting files into PoC's netlist directory
+		self.printNonQuiet('  copy result files into output directory...')
+		for task in copyTasks:
+			(fromPath, toPath) = task
+			if not fromPath.exists():		raise PoCCompiler.PoCCompilerException("File '%s' does not exist!" % str(fromPath))
+			#if not toPath.exists():			raise PoCCompiler.PoCCompilerException("File '%s' does not exist!" % str(toPath))
 		
-		if self.showLogs:
-			print("simulator log")
-			print("--------------------------------------------------------------------------------")
-			print(simulatorLog)
-			print("--------------------------------------------------------------------------------")		
-	
-		print()
-		try:
-			result = self.checkSimulatorOutput(simulatorLog)
-			
-			if (result == True):
-				print("Testbench '%s': PASSED" % testbenchName)
-			else:
-				print("Testbench '%s': FAILED" % testbenchName)
-				
-		except PoCSimulatorException as ex:
-			raise PoCTestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
-	
+			self.printVerbose("  copying '%s'" % str(fromPath))
+			shutil.copy(str(fromPath), str(toPath))
+		

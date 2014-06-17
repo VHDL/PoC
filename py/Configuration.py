@@ -38,12 +38,12 @@ import PoC
 
 class PoCConfiguration(PoC.PoCBase):
 	
-	def __init__(self, debug, verbose, quite):
+	def __init__(self, debug, verbose, quiet):
 		if not ((self.platform == "Windows") or (self.platform == "Linux")):
 			raise PoC.PoCPlatformNotSupportedException(self.platform)
 		
 		try:
-			super(self.__class__, self).__init__(debug, verbose, quite)
+			super(self.__class__, self).__init__(debug, verbose, quiet)
 		except PoC.PoCNotConfiguredException as ex:
 			import configparser
 			
@@ -75,7 +75,7 @@ class PoCConfiguration(PoC.PoCBase):
 			self.__readPoCStructure()
 	
 	def autoConfiguration(self):
-		raise NotImplementedException("No automatic configuration available!")
+		raise PoC.NotImplementedException("No automatic configuration available!")
 	
 	def manualConfiguration(self):
 		self.printConfigurationHelp()
@@ -340,32 +340,36 @@ class PoCConfiguration(PoC.PoCBase):
 		elif	(self.platform == "Linux"):			return(str(iseInstallationDirectoryPath / "settings64.sh"))
 		
 	def getVivadoSettingsFile(self):
-		raise NotImplementedException("method 'getVivadoSettingsFile' not implemented!")
+		raise PoC.NotImplementedException("method 'getVivadoSettingsFile' not implemented!")
 	
 # main program
 def main():
 	from sys import exit
+	import argparse
+	import textwrap
 	
 	try:
-		import argparse
-		import textwrap
-
 		# create a commandline argument parser
 		argParser = argparse.ArgumentParser(
 			formatter_class = argparse.RawDescriptionHelpFormatter,
 			description = textwrap.dedent('''\
 				This is the PoC Library Repository Service Tool.
-				'''))
+				'''),
+			add_help=False)
 
 		# add arguments
-		argParser.add_argument('-D', action='store_const', const=True, default=False, help='enable script wrapper debug mode')
-		argParser.add_argument('-d', action='store_const', const=True, default=False, help='enable debug mode')
-		argParser.add_argument('-v', action='store_const', const=True, default=False, help='generate detailed report')
-		argParser.add_argument('-q', action='store_const', const=True, default=False, help='run in quite mode')
-		argParser.add_argument('--configure',						action='store_const', const=True, default=False, help='configures PoC Library')
-		argParser.add_argument('--ise-settingsfile',		action='store_const', const=True, default=False, help='Return Xilinx ISE settings file')
-		argParser.add_argument('--vivado-settingsfile', action='store_const', const=True, default=False, help='Return Xilinx Vivado settings file')
-		
+		group1 = argParser.add_argument_group('Verbosity')
+		group1.add_argument('-D', 																								help='enable script wrapper debug mode',		action='store_const', const=True, default=False)
+		group1.add_argument('-d',											dest="debug",								help='enable debug mode',										action='store_const', const=True, default=False)
+		group1.add_argument('-v',											dest="verbose",							help='print out detailed messages',					action='store_const', const=True, default=False)
+		group1.add_argument('-q',											dest="quiet",								help='run in quiet mode',										action='store_const', const=True, default=False)
+		group2 = argParser.add_argument_group('Commands')
+		group21 = group2.add_mutually_exclusive_group(required=True)
+		group21.add_argument('-h', '--help',					dest="help",								help='show this help message and exit',			action='store_const', const=True, default=False)
+		group21.add_argument('--configure',						dest="configurePoC",				help='configure PoC Library',								action='store_const', const=True, default=False)
+		group21.add_argument('--ise-settingsfile',		dest="iseSettingsFile",			help='return Xilinx ISE settings file',			action='store_const', const=True, default=False)
+		group21.add_argument('--vivado-settingsfile',	dest="vivadoSettingsFile",	help='return Xilinx Vivado settings file',	action='store_const', const=True, default=False)
+
 		# parse command line options
 		args = argParser.parse_args()
 
@@ -376,9 +380,12 @@ def main():
 
 	# create class instance and start processing
 	try:
-		config = PoCConfiguration(args.d, args.v, args.q)
+		config = PoCConfiguration(args.debug, args.verbose, args.quiet)
 		
-		if args.configure:
+		if (args.help == True):
+			argParser.print_help()
+			return
+		elif args.configurePoC:
 			print("========================================================================")
 			print("                  PoC Library - Repository Service Tool                 ")
 			print("========================================================================")
@@ -387,10 +394,10 @@ def main():
 			#config.autoConfiguration()
 			config.manualConfiguration()
 			exit(0)
-		elif args.ise_settingsfile:
+		elif args.iseSettingsFile:
 			print(config.getISESettingsFile())
 			exit(0)
-		elif args.vivado_settingsfile:
+		elif args.vivadoSettingsFile:
 			print(config.getVivadoSettingsFile())
 			exit(0)
 		else:

@@ -4,16 +4,12 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.functions.ALL;
+USE			PoC.utils.ALL;
+--USE			PoC.vectors.ALL;
+--USE			PoC.strings.ALL;
+USE			PoC.sata.ALL;
+USE			PoC.xilinx.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_Xilinx;
-USE			L_Xilinx.XilTypes.ALL;
-
-LIBRARY L_SATAController;
-USE			L_SATAController.SATATypes.ALL;
 
 -- ==================================================================
 -- Notice
@@ -33,7 +29,7 @@ USE			L_SATAController.SATATypes.ALL;
 --	0x46			[3..2]	|	PLL_RXDIVSEL_OUT_0 [1:0]			01				00		divide by 2			divide by 1
 
 
-ENTITY GTP_DUALConfigurator IS
+ENTITY sata_Transceiver_Virtex5_GTP_Configurator IS
 	GENERIC (
 		DEBUG											: BOOLEAN											:= FALSE;																-- 
 		DRPCLOCK_FREQ_MHZ					: REAL												:= 0.0;																	-- 
@@ -67,7 +63,7 @@ ENTITY GTP_DUALConfigurator IS
 	);
 END;
 
-ARCHITECTURE rtl OF GTP_DualConfigurator IS
+ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP_Configurator IS
 	ATTRIBUTE KEEP								: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING				: STRING;
 
@@ -128,14 +124,14 @@ ARCHITECTURE rtl OF GTP_DualConfigurator IS
 							(0 => (Address => x"0045", Mask => x"8000", Data => ins(mv(vec(GTP_CONFIGS(0).PLL_TXDIVSEL_OUT_0(0)), 15), 16)),				-- 0x45,	[15]				x___ ____ ____ ____
 							 1 => (Address => x"0046", Mask => x"0001", Data => ins(mv(vec(GTP_CONFIGS(0).PLL_TXDIVSEL_OUT_0(1)),	 0), 16)),				-- 0x46,	[0]					____ ____ ____ ___x
 							 2 => (Address => x"0046", Mask => x"000C", Data => ins(mv(slv(GTP_CONFIGS(0).PLL_RXDIVSEL_OUT_0),		 2), 16)),				-- 0x46,	[3..2]			____ ____ ____ xx__
-							 OTHERS => XIL_DRP_CONFIG_EMPTY),
+							 OTHERS => C_XIL_DRP_CONFIG_EMPTY),
 					LastIndex => 2),
 		-- Port 0, SATA Generation 2
 		1 => (Configs =>																				--		insert, move, convert			GENERIC							position, length
 							(0 => (Address => x"0045", Mask => x"8000", Data => ins(mv(vec(GTP_CONFIGS(1).PLL_TXDIVSEL_OUT_0(0)), 15), 16)),				-- 0x45,	[15]				x___ ____ ____ ____
 							 1 => (Address => x"0046", Mask => x"0001", Data => ins(mv(vec(GTP_CONFIGS(1).PLL_TXDIVSEL_OUT_0(1)),	 0), 16)),				-- 0x46,	[0]					____ ____ ____ ___x
 							 2 => (Address => x"0046", Mask => x"000C", Data => ins(mv(slv(GTP_CONFIGS(1).PLL_RXDIVSEL_OUT_0),		 2), 16)),				-- 0x46,	[3..2]			____ ____ ____ xx__
-							 OTHERS => XIL_DRP_CONFIG_EMPTY),
+							 OTHERS => C_XIL_DRP_CONFIG_EMPTY),
 					LastIndex => 2),
 		-- Port 1, SATA Generation 1
 		2 => (Configs =>																				--		insert, move, convert			GENERIC							position, length
@@ -143,7 +139,7 @@ ARCHITECTURE rtl OF GTP_DualConfigurator IS
 							 1 => (Address => x"0005", Mask => x"0010", Data => ins(mv(vec(GTP_CONFIGS(0).PLL_TXDIVSEL_OUT_1(0)),	 4), 16)),				-- 0x05,	[4]					____ ____ ___x ____
 							 2 => (Address => x"0009", Mask => x"8000", Data => ins(mv(vec(GTP_CONFIGS(0).PLL_RXDIVSEL_OUT_1(1)), 15), 16)),				-- 0x09,	[15]				x___ ____ ____ ____
 							 3 => (Address => x"000A", Mask => x"0001", Data => ins(mv(vec(GTP_CONFIGS(0).PLL_RXDIVSEL_OUT_1(0)),	 0), 16)),				-- 0x0A,	[0]					____ ____ ____ ___x
-							 OTHERS => XIL_DRP_CONFIG_EMPTY),
+							 OTHERS => C_XIL_DRP_CONFIG_EMPTY),
 					LastIndex => 3),
 		-- Port 1, SATA Generation 2
 		3 => (Configs =>																				--		insert, move, convert			GENERIC							position, length
@@ -151,7 +147,7 @@ ARCHITECTURE rtl OF GTP_DualConfigurator IS
 							 1 => (Address => x"0005", Mask => x"0010", Data => ins(mv(vec(GTP_CONFIGS(1).PLL_TXDIVSEL_OUT_1(0)),	 4), 16)),				-- 0x05,	[4]					____ ____ ___x ____
 							 2 => (Address => x"0009", Mask => x"8000", Data => ins(mv(vec(GTP_CONFIGS(1).PLL_RXDIVSEL_OUT_1(1)), 15), 16)),				-- 0x09,	[15]				x___ ____ ____ ____
 							 3 => (Address => x"000A", Mask => x"0001", Data => ins(mv(vec(GTP_CONFIGS(1).PLL_RXDIVSEL_OUT_1(0)),	 0), 16)),				-- 0x0A,	[0]					____ ____ ____ ___x
-							 OTHERS => XIL_DRP_CONFIG_EMPTY),
+							 OTHERS => C_XIL_DRP_CONFIG_EMPTY),
 					LastIndex => 3)
 		);
 	
@@ -222,9 +218,9 @@ BEGIN
 		SATAGeneration_d			<= SATAGeneration_meta	WHEN rising_edge(DRP_Clock);
 		SATA_Generation_i(I)	<= SATAGeneration_d;
 		
-		SyncSATA_DRP : ENTITY L_Global.Synchronizer
+		SyncSATA_DRP : ENTITY PoC.misc_Synchronizer
 			GENERIC MAP (
-				BW										=> 1,
+				BITS									=> 1,
 				GATED_INPUT_BY_BUSY		=> TRUE
 			)
 			PORT MAP (
@@ -256,9 +252,9 @@ BEGIN
 		SyncDRP_SATA_in(0)	<= ReconfigComplete_i;
 		SyncDRP_SATA_in(1)	<= ConfigReloaded_i;
 		
-		SyncDRP_SATA : ENTITY L_Global.Synchronizer
+		SyncDRP_SATA : ENTITY PoC.misc_Synchronizer
 			GENERIC MAP (
-				BW										=> 2,
+				BITS									=> 2,
 				GATED_INPUT_BY_BUSY		=> TRUE
 			)
 			PORT MAP (
@@ -394,7 +390,7 @@ BEGIN
 		END CASE;
 	END PROCESS;
 
-	XilDRP : ENTITY L_Xilinx.Reconfigurator
+	XilDRP : ENTITY PoC.xil_Reconfigurator
 		GENERIC MAP (
 			DEBUG					=> DEBUG,
 			CLOCK_FREQ_MHZ					=> DRPCLOCK_FREQ_MHZ,

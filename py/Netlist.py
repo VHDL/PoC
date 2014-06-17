@@ -36,15 +36,16 @@ from pathlib import Path
 import PoC
 import PoCCompiler
 import PoCXCOCompiler
-#import PoCXSTCompiler
+import PoCXSTCompiler
 
 
 class PoCNetList(PoC.PoCBase):
 	__netListConfigFileName = "configuration.ini"
+	dryRun = False
 	netListConfig = None
 	
-	def __init__(self, debug, verbose, quite):
-		super(self.__class__, self).__init__(debug, verbose, quite)
+	def __init__(self, debug, verbose, quiet):
+		super(self.__class__, self).__init__(debug, verbose, quiet)
 
 		if not ((self.platform == "Windows") or (self.platform == "Linux")):
 			raise PoC.PoCPlatformNotSupportedException(self.platform)
@@ -63,10 +64,10 @@ class PoCNetList(PoC.PoCBase):
 			
 		self.netListConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
 		self.netListConfig.optionxform = str
-		self.netListConfig.read([str(netListConfigFilePath)])
+		self.netListConfig.read([str(self.Files["PoCConfig"]), str(self.Files["PoCStructure"]), str(netListConfigFilePath)])
 		self.Files["PoCNLConfig"]	= netListConfigFilePath
 
-	def coreGenCompilation(self, module, showLogs, showReport):
+	def coreGenCompilation(self, entity, showLogs, showReport, deviceString=None, boardString=None):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):
 			raise PoCNotConfiguredException("Xilinx ISE is not configured on this system.")
@@ -80,10 +81,43 @@ class PoCNetList(PoC.PoCBase):
 		if (environ.get('XILINX') == None):
 			raise PoC.PoCEnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
 
-		entityToCompile = PoC.PoCEntity(self, module)
+		if (boardString is not None):
+			device = PoC.PoCDevice(self.netListConfig['BOARDS'][boardString])
+		elif (deviceString is not None):
+			device = PoC.PoCDevice(deviceString)
+		else: raise PoC.PoCException("No board or device given.")
+
+		entityToCompile = PoC.PoCEntity(self, entity)
 
 		compiler = PoCXCOCompiler.PoCXCOCompiler(self, showLogs, showReport)
-		compiler.run(entityToCompile)
+		compiler.dryRun = self.dryRun
+		compiler.run(entityToCompile, device)
+		
+	def xstCompilation(self, entity, showLogs, showReport, deviceString=None, boardString=None):
+		# check if ISE is configure
+		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):
+			raise PoCNotConfiguredException("Xilinx ISE is not configured on this system.")
+		
+		# prepare some paths
+		self.Directories["ISEInstallation"] = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
+		self.Directories["ISEBinary"] =				Path(self.pocConfig['Xilinx-ISE']['BinaryDirectory'])
+	
+		# check if the appropriate environment is loaded
+		from os import environ
+		if (environ.get('XILINX') == None):
+			raise PoC.PoCEnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
+
+		if (boardString is not None):
+			device = PoC.PoCDevice(self.netListConfig['BOARDS'][boardString])
+		elif (deviceString is not None):
+			device = PoC.PoCDevice(deviceString)
+		else: raise PoC.PoCException("No board or device given.")
+		
+		entityToCompile = PoC.PoCEntity(self, entity)
+
+		compiler = PoCXSTCompiler.PoCXSTCompiler(self, showLogs, showReport)
+		compiler.dryRun = self.dryRun
+		compiler.run(entityToCompile, device)
 
 
 # main program
@@ -102,21 +136,31 @@ def main():
 			formatter_class = argparse.RawDescriptionHelpFormatter,
 			description = textwrap.dedent('''\
 				This is the PoC Library NetList Service Tool.
-				'''))
+				'''),
+			add_help=False)
 
 		# add arguments
-		argParser.add_argument('-D', action='store_const', const=True, default=False, help='enable script wrapper debug mode')
-		argParser.add_argument('-d', action='store_const', const=True, default=False, help='enable debug mode')
-		argParser.add_argument('-v', action='store_const', const=True, default=False, help='generate detailed report')
-		argParser.add_argument('-q', action='store_const', const=True, default=False, help='run in quite mode')
-		argParser.add_argument('-l', action='store_const', const=True, default=False, help='show logs')
-		argParser.add_argument('-r', action='store_const', const=True, default=False, help='show report')
-		argParser.add_argument('--coregen', action='store_const', const=True, default=False, help='use Xilinx IP-Core Generator (CoreGen)')
-		argParser.add_argument("module", help="Specify the module which should be tested.")
-		
+		group1 = argParser.add_argument_group('Verbosity')
+		group1.add_argument('-D', 																											help='enable script wrapper debug mode',	action='store_const', const=True, default=False)
+		group1.add_argument('-d',																		dest="debug",				help='enable debug mode',									action='store_const', const=True, default=False)
+		group1.add_argument('-v',																		dest="verbose",			help='print out detailed messages',				action='store_const', const=True, default=False)
+		group1.add_argument('-q',																		dest="quiet",				help='run in quiet mode',									action='store_const', const=True, default=False)
+		group1.add_argument('-r',																		dest="showReport",	help='show report',												action='store_const', const=True, default=False)
+		group1.add_argument('-l',																		dest="showLog",			help='show logs',													action='store_const', const=True, default=False)
+		group2 = argParser.add_argument_group('Commands')
+		group21 = group2.add_mutually_exclusive_group(required=True)
+		group21.add_argument('-h', '--help',												dest="help",				help='show this help message and exit',		action='store_const', const=True, default=False)
+		group211 = group21.add_mutually_exclusive_group()
+		group211.add_argument(		 '--coregen',	metavar="<Entity>",	dest="coreGen",			help='use Xilinx IP-Core Generator (CoreGen)')
+		group211.add_argument(		 '--xst',			metavar="<Entity>",	dest="xst",					help='use Xilinx Synthesis Tool (XST)')
+		group3 = group211.add_argument_group('Specify target platform')
+		group31 = group3.add_mutually_exclusive_group()
+		group31.add_argument('--device',				metavar="<Device>",	dest="device",			help='target device (e.g. XC5VLX50T-1FF1136)')
+		group31.add_argument('--board',					metavar="<Board>",	dest="board",				help='target board to infere the device (e.g. ML505)')
+
 		# parse command line options
 		args = argParser.parse_args()
-
+		
 	except Exception as ex:
 		print("FATAL: %s" % ex.__str__())
 		print()
@@ -124,10 +168,16 @@ def main():
 
 		
 	try:
-		netList = PoCNetList(args.d, args.v, args.q)
+		netList = PoCNetList(args.debug, args.verbose, args.quiet)
+		#netList.dryRun = True
 	
-		if args.coregen:
-			netList.coreGenCompilation(args.module, args.l, args.r)
+		if (args.help == True):
+			argParser.print_help()
+			return
+		elif (args.coreGen is not None):
+			netList.coreGenCompilation(args.coreGen, args.showLog, args.showReport, deviceString=args.device, boardString=args.board)
+		elif (args.xst is not None):
+			netList.xstCompilation(args.xst, args.showLog, args.showReport, deviceString=args.device, boardString=args.board)
 		else:
 			argParser.print_help()
 		

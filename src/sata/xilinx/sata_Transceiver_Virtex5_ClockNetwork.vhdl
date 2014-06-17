@@ -5,16 +5,13 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY UNISIM;
 USE			UNISIM.VCOMPONENTS.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+LIBRARY PoC;
+USE			PoC.utils.ALL;
+USE			PoC.io.ALL;
+USE			PoC.sata.ALL;
 
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
 
-LIBRARY L_SATAController;
-USE			L_SATAController.SATATypes.ALL;
-
-ENTITY SATATransceiver_Virtex5_ClockNetwork IS
+ENTITY sata_Transceiver_Virtex5_GTP_ClockNetwork IS
 	GENERIC (
 		DEBUG											: BOOLEAN												:= TRUE;
 		CLOCK_IN_FREQ_MHZ					: REAL													:= 150.0;																	-- 150 MHz
@@ -34,7 +31,7 @@ ENTITY SATATransceiver_Virtex5_ClockNetwork IS
 	);
 END;
 
-ARCHITECTURE rtl OF SATATransceiver_Virtex5_ClockNetwork IS
+ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP_ClockNetwork IS
 	ATTRIBUTE KEEP											: BOOLEAN;
 
 	SIGNAL ClkNet_Reset									: STD_LOGIC;

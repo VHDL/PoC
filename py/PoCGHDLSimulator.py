@@ -65,8 +65,8 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		import re
 		import subprocess
 	
-		self.printNonQuite(str(pocEntity))
-		self.printNonQuite("  preparing simulation environment...")
+		self.printNonQuiet(str(pocEntity))
+		self.printNonQuiet("  preparing simulation environment...")
 
 		# create temporary directory for ghdl if not existent
 		tempGHDLPath = self.host.Directories["ghdlTemp"]
@@ -104,7 +104,7 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		filesLineRegExp = re.compile(filesLineRegExpStr)
 
 		self.printDebug("Reading filelist '%s'" % str(fileFilePath))
-		self.printNonQuite("  running analysis for every vhdl ...")
+		self.printNonQuiet("  running analysis for every vhdl file...")
 		
 		# add empty line if logs are enabled
 		if self.showLogs:		print()
@@ -153,7 +153,7 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		
 		# run GHDL simulation on Windows
 		if (self.host.platform == "Windows"):
-			self.printNonQuite("  running simulation...")
+			self.printNonQuiet("  running simulation...")
 		
 			parameterList = [
 				str(ghdlExecutablePath),
@@ -179,7 +179,7 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 			exeFilePath =		tempGHDLPath / testbenchName
 		
 			# run elaboration
-			self.printNonQuite("  running elaboration...")
+			self.printNonQuiet("  running elaboration...")
 		
 			parameterList = [
 				str(ghdlExecutablePath),
@@ -224,7 +224,7 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 
 	
 			# run simulation
-			self.printNonQuite("  running simulation...")
+			self.printNonQuiet("  running simulation...")
 		
 			parameterList = [str(exeFilePath)]
 			command = str(exeFilePath)
