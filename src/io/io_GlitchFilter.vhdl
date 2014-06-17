@@ -3,7 +3,7 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
+-- Module:				 	Glitch Filter
 --
 -- Authors:				 	Patrick Lehmann
 -- 
@@ -45,8 +45,8 @@ ENTITY io_GlitchFilter IS
 		LOW_SPIKE_SUPPRESSION_TIME_NS			: REAL				:= 50.0
 	);
   PORT (
-		Clock		: IN STD_LOGIC;
-		I				: IN STD_LOGIC;
+		Clock		: IN	STD_LOGIC;
+		I				: IN	STD_LOGIC;
 		O				: OUT STD_LOGIC
 	);
 END;
@@ -90,7 +90,7 @@ BEGIN
 		
 		CASE State IS
 			WHEN '0' =>
-				TC_Slot			<= 0;
+				TC_Slot			<= TTID_HIGH_SPIKE;
 			
 				IF (I = '1') THEN
 					TC_en			<= '1';
@@ -98,12 +98,12 @@ BEGIN
 					TC_Load		<= '1';
 				END IF;
 				
-				IF (TC_Timeout = '1') THEN
+				IF ((I AND TC_Timeout) = '1') THEN
 					NextState	<= '1';
 				END IF;
 
 			WHEN '1' =>
-				TC_Slot			<= 1;
+				TC_Slot			<= TTID_LOW_SPIKE;
 			
 				IF (I = '0') THEN
 					TC_en			<= '1';
@@ -111,7 +111,7 @@ BEGIN
 					TC_Load		<= '1';
 				END IF;
 				
-				IF (TC_Timeout = '1') THEN
+				IF ((NOT I AND TC_Timeout) = '1') THEN
 					NextState	<= '0';
 				END IF;
 			

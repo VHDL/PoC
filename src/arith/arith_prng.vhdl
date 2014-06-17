@@ -42,7 +42,7 @@ use			PoC.utils.all;
 entity arith_prng is
 	generic (
 		BITS : positive;
-		SEED : std_logic_vector := (1023 downto 0 => '0')
+		SEED : std_logic_vector := "0"
 	);
 	port (
 		clk	 : in	std_logic;
@@ -54,10 +54,11 @@ end arith_prng;
 
 
 architecture rtl of arith_prng is
-	type T_TAPPOSITION_VECTOR		is array (natural range <>) of T_NATVEC(0 TO 4);
+	subtype T_TAPPOSITION				is T_NATVEC(0 TO 4);
+	type T_TAPPOSITION_VECTOR		is array (natural range <>) of T_TAPPOSITION;
 	
 	-- Tap positions are taken from Xilinx Application Note 052 (XAPP052)
-	constant C_TAPPOSITION_LIST : T_TAPPOSITION_VECTOR := (
+	constant C_TAPPOSITION_LIST : T_TAPPOSITION_VECTOR(3 to 168) := (
 		3		=> (0 => 2,												others => 0),
 		4		=> (0 => 3,												others => 0),
 		5		=> (0 => 3,												others => 0),
@@ -226,7 +227,7 @@ architecture rtl of arith_prng is
 		168	=> (0 => 166,	1 => 153,	2 => 151, others => 0)
 	);
 	
-	constant C_TAP_POSITIONS	: T_NATVEC		:= C_TAPPOSITION_LIST(BITS);
+	constant C_TAPPOSITIONS	: T_TAPPOSITION		:= C_TAPPOSITION_LIST(BITS);
 	
 	-- The current value
 	signal bit1_nxt	: std_logic;
@@ -244,8 +245,8 @@ begin	-- rtl
 	begin
 		temp			:= val_r(val_r'left);
 		for i in 0 to 4 loop
-			if (C_TAP_POSITIONS(i) > 0) then
-				temp	:= temp xnor val_r(C_TAP_POSITIONS(i));
+			if (C_TAPPOSITIONS(i) > 0) then
+				temp	:= temp xnor val_r(C_TAPPOSITIONS(i));
 			end if;
 		end loop;
 		bit1_nxt	<= temp;
