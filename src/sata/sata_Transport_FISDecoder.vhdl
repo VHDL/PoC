@@ -53,7 +53,7 @@ ENTITY sata_FISDecoder IS
 		FISType												: OUT T_SATA_FISTYPE;
 		
 		UpdateATARegisters						: OUT	STD_LOGIC;
-		ATADeviceRegisters						: OUT	T_SATA_DEVICE_REGISTERS;
+		ATADeviceRegisters						: OUT	T_SATA_ATA_DEVICE_REGISTERS;
 
 		-- TransportLayer RX_ interface
 		RX_Commit											: OUT	STD_LOGIC;
@@ -817,10 +817,10 @@ BEGIN
 	
 	FISType															<= FISType_i;
 	
-	ATADeviceRegisters.Flags						<= to_ata_device_flags(FlagRegister);
-	ATADeviceRegisters.Status						<= to_ata_device_register_status(StatusRegister);
-	ATADeviceRegisters.EndStatus				<= to_ata_device_register_status(EndStatusRegister);
-	ATADeviceRegisters.Error						<= to_ata_device_register_error(ErrorRegister);
+	ATADeviceRegisters.Flags						<= to_sata_ata_device_flags(FlagRegister);
+	ATADeviceRegisters.Status						<= to_sata_ata_device_register_status(StatusRegister);
+	ATADeviceRegisters.EndStatus				<= to_sata_ata_device_register_status(EndStatusRegister);
+	ATADeviceRegisters.Error						<= to_sata_ata_device_register_error(ErrorRegister);
 	ATADeviceRegisters.LBlockAddress		<= AddressRegister;
 	ATADeviceRegisters.SectorCount			<= SectorCountRegister;
 	ATADeviceRegisters.TransferCount		<= TransferCountRegister WHEN (TransferCountRegister_en = '0') ELSE Alias_TransferCount;

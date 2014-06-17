@@ -54,12 +54,12 @@ ENTITY sata_StreamingController IS
 		
 		-- ATAStreamingController interface
 		-- ========================================================================
-		Command										: IN	T_ATASC_COMMAND;
-		Status										: OUT	T_ATASC_STATUS;
-		Error											: OUT	T_ATASC_ERROR;
+		Command										: IN	T_SATA_STREAMC_COMMAND;
+		Status										: OUT	T_SATA_STREAMC_STATUS;
+		Error											: OUT	T_SATA_STREAMC_ERROR;
 
 		-- debug ports
---		DebugPort									: OUT	T_DBG_ATASC_OUT;
+--		DebugPort									: OUT	T_DBG_SATA_STREAMC_OUT;
 
 		-- for measurement purposes only
 		Config_BurstSize					: IN	T_SLV_16;
@@ -138,25 +138,25 @@ ARCHITECTURE rtl OF sata_StreamingController IS
 	
 	-- CommandLayer
 	-- ==========================================================================
-	SIGNAL Cmd_Command											: T_ATA_CMD_COMMAND;
-	SIGNAL Cmd_Status												: T_ATA_CMD_STATUS;
-	SIGNAL Cmd_Error												: T_ATA_CMD_ERROR;
+	SIGNAL Cmd_Command											: T_SATA_CMD_COMMAND;
+	SIGNAL Cmd_Status												: T_SATA_CMD_STATUS;
+	SIGNAL Cmd_Error												: T_SATA_CMD_ERROR;
 	
-	SIGNAL Cmd_ATA_Command									: T_ATA_COMMAND;
+	SIGNAL Cmd_ATA_Command									: T_SATA_ATA_COMMAND;
 	SIGNAL Cmd_ATA_Address_LB								: T_SLV_48;
 	SIGNAL Cmd_ATA_BlockCount_LB						: T_SLV_16;
 
-	SIGNAL Cmd_DriveInformation							: T_DRIVE_INFORMATION;
+	SIGNAL Cmd_DriveInformation							: T_SATA_DRIVE_INFORMATION;
 
 	SIGNAL Cmd_UpdateATAHostRegisters				: STD_LOGIC;
-	SIGNAL Cmd_ATAHostRegisters							: T_ATA_HOST_REGISTERS;
+	SIGNAL Cmd_ATAHostRegisters							: T_SATA_ATA_HOST_REGISTERS;
 
 	-- TransportLayer
 	SIGNAL Trans_Command										: T_SATA_TRANS_COMMAND;
 	SIGNAL Trans_Status											: T_SATA_TRANS_STATUS;
 	SIGNAL Trans_Error											:	T_SATA_TRANS_ERROR;
 
-	SIGNAL Trans_ATADeviceRegisters					: T_ATA_DEVICE_REGISTERS;
+	SIGNAL Trans_ATADeviceRegisters					: T_SATA_ATA_DEVICE_REGISTERS;
 
 	SIGNAL Cmd_TX_Valid				: STD_LOGIC;
 	SIGNAL Cmd_TX_Data				: T_SLV_32;
@@ -164,33 +164,33 @@ ARCHITECTURE rtl OF sata_StreamingController IS
 	SIGNAL Cmd_TX_EOT					: STD_LOGIC;
 	SIGNAL Cmd_RX_Ready				: STD_LOGIC;
 	
-	SIGNAL TX_Glue_Ready				: STD_LOGIC;
-	SIGNAL TX_Glue_Valid				: STD_LOGIC;
+	SIGNAL TX_Glue_Ready			: STD_LOGIC;
+	SIGNAL TX_Glue_Valid			: STD_LOGIC;
 	SIGNAL TX_Glue_Data				: T_SLV_32;
-	SIGNAL TX_Glue_SOT					: STD_LOGIC;
-	SIGNAL TX_Glue_EOT					: STD_LOGIC;
+	SIGNAL TX_Glue_SOT				: STD_LOGIC;
+	SIGNAL TX_Glue_EOT				: STD_LOGIC;
 	
-	SIGNAL RX_Glue_Valid				: STD_LOGIC;
+	SIGNAL RX_Glue_Valid			: STD_LOGIC;
 	SIGNAL RX_Glue_Data				: T_SLV_32;
-	SIGNAL RX_Glue_SOT					: STD_LOGIC;
-	SIGNAL RX_Glue_EOT					: STD_LOGIC;
+	SIGNAL RX_Glue_SOT				: STD_LOGIC;
+	SIGNAL RX_Glue_EOT				: STD_LOGIC;
 	SIGNAL RX_Glue_Commit			: STD_LOGIC;
 	SIGNAL RX_Glue_Rollback		: STD_LOGIC;
 	SIGNAL RX_Glue_Ready				: STD_LOGIC;
 
 	SIGNAL Trans_RX_Valid			: STD_LOGIC;
-	SIGNAL Trans_RX_Data				: T_SLV_32;
+	SIGNAL Trans_RX_Data			: T_SLV_32;
 	SIGNAL Trans_RX_SOT				: STD_LOGIC;
 	SIGNAL Trans_RX_EOT				: STD_LOGIC;
 	SIGNAL Trans_RX_Commit		: STD_LOGIC;
-	SIGNAL Trans_RX_Rollback		: STD_LOGIC;
+	SIGNAL Trans_RX_Rollback	: STD_LOGIC;
 	SIGNAL Trans_TX_Ready			: STD_LOGIC;			
 	
 	-- SATAController (LinkLayer)
-	SIGNAL SATA_TX_Data_i										: T_SLV_32;
-	SIGNAL SATA_TX_SOF_i										: STD_LOGIC;
-	SIGNAL SATA_TX_EOF_i										: STD_LOGIC;
-	SIGNAL SATA_TX_Valid_i									: STD_LOGIC;
+	SIGNAL SATA_TX_Data_i			: T_SLV_32;
+	SIGNAL SATA_TX_SOF_i			: STD_LOGIC;
+	SIGNAL SATA_TX_EOF_i			: STD_LOGIC;
+	SIGNAL SATA_TX_Valid_i		: STD_LOGIC;
 
 BEGIN
 
@@ -199,12 +199,12 @@ BEGIN
 	PROCESS(Command)
 	BEGIN
 		CASE Command IS
-			WHEN ATASC_CMD_NONE =>							Cmd_Command	<= ATA_CMD_CMD_NONE;
-			WHEN ATASC_CMD_RESET =>							Cmd_Command	<= ATA_CMD_CMD_RESET;
-			WHEN ATASC_CMD_READ =>							Cmd_Command	<= ATA_CMD_CMD_READ;
-			WHEN ATASC_CMD_WRITE =>							Cmd_Command	<= ATA_CMD_CMD_WRITE;
-			WHEN ATASC_CMD_FLUSH_CACHE =>				Cmd_Command	<= ATA_CMD_CMD_FLUSH_CACHE;
-			WHEN OTHERS =>											Cmd_Command	<= ATA_CMD_CMD_NONE;
+			WHEN SATA_STREAMC_CMD_NONE =>					Cmd_Command	<= SATA_CMD_CMD_NONE;
+			WHEN SATA_STREAMC_CMD_RESET =>				Cmd_Command	<= SATA_CMD_CMD_RESET;
+			WHEN SATA_STREAMC_CMD_READ =>					Cmd_Command	<= SATA_CMD_CMD_READ;
+			WHEN SATA_STREAMC_CMD_WRITE =>				Cmd_Command	<= SATA_CMD_CMD_WRITE;
+			WHEN SATA_STREAMC_CMD_FLUSH_CACHE =>	Cmd_Command	<= SATA_CMD_CMD_FLUSH_CACHE;
+			WHEN OTHERS =>												Cmd_Command	<= SATA_CMD_CMD_NONE;
 		END CASE;
 	END PROCESS;
 
