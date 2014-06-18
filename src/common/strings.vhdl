@@ -67,6 +67,9 @@ package strings is
 	FUNCTION to_string(slv : STD_LOGIC_VECTOR; format : CHARACTER; length : NATURAL := 0; fill : CHARACTER := '0') RETURN STRING;
 	FUNCTION to_string(rawstring : T_RAWSTRING) RETURN STRING;
 
+	-- to_slv
+	function to_slv(rawstring : T_RAWSTRING) return STD_LOGIC_VECTOR;
+
 	-- to_*
 	FUNCTION to_digit(chr : CHARACTER; base : CHARACTER := 'd') RETURN INTEGER;
 	FUNCTION to_nat(str : STRING; base : CHARACTER := 'd') RETURN INTEGER;
@@ -264,6 +267,17 @@ package body strings is
 		RETURN str;
 	END;
 
+	-- to_slv
+	-- ===========================================================================
+	function to_slv(rawstring : T_RAWSTRING) return STD_LOGIC_VECTOR is
+		variable result : STD_LOGIC_VECTOR((rawstring'length * 8) - 1 downto 0);
+	begin
+		for i in rawstring'range loop
+			result(((i - rawstring'low) * 8) + 7 downto (i - rawstring'low) * 8)	:= rawstring(i);
+		end loop;
+		return result;
+	end function;
+	
 	-- to_*
 	-- ===========================================================================
 	function to_digit(chr : character; base : character := 'd') return integer is
