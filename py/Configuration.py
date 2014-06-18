@@ -253,7 +253,7 @@ class PoCConfiguration(PoC.PoCBase):
 		isXilinxISE = isXilinxISE if isXilinxISE != "" else "Y"
 		if (isXilinxISE != 'p'):
 			if (isXilinxISE == 'Y'):
-				xilinxDirectory = input('Xilinx Installation Directory [/opt/xilinx]: ')
+				xilinxDirectory = input('Xilinx Installation Directory [/opt/Xilinx]: ')
 				iseVersion = input('Xilinx ISE Version Number [14.7]: ')
 				print()
 			
@@ -281,7 +281,7 @@ class PoCConfiguration(PoC.PoCBase):
 		isXilinxVivado = isXilinxVivado if isXilinxVivado != "" else "Y"
 		if (isXilinxVivado != 'p'):
 			if (isXilinxVivado == 'Y'):
-				xilinxDirectory = input('Xilinx Installation Directory [/opt/xilinx]: ')
+				xilinxDirectory = input('Xilinx Installation Directory [/opt/Xilinx]: ')
 				vivadoVersion = input('Xilinx Vivado Version Number [2014.1]: ')
 				print()
 			

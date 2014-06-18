@@ -75,7 +75,7 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 		deviceSection = "Device." + deviceString
 		
 		# create temporary directory for CoreGen if not existent
-		tempCoreGenPath = self.host.Directories["coreGenTemp"]
+		tempCoreGenPath = self.host.Directories["CoreGenTemp"]
 		if not (tempCoreGenPath).exists():
 			self.printVerbose("Creating temporary directory for core generator files.")
 			self.printDebug("Temporary directors: %s" % str(tempCoreGenPath))
