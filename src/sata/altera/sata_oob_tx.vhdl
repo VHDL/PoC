@@ -2,8 +2,12 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library L_SATAController;
-use 	L_SATAController.SATATypes.ALL;
+library PoC;
+USE		PoC.config.ALL;
+USE		PoC.sata.ALL;
+USE		PoC.utils.ALL;
+USE		PoC.vectors.ALL;
+USE		PoC.strings.ALL;
 
 entity sata_oob_tx is port (
 		clk			: in std_logic;

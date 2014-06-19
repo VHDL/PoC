@@ -9,16 +9,13 @@ USE		IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE		PoC.config.ALL;
+USE		PoC.sata.ALL;
+USE		PoC.utils.ALL;
+USE		PoC.vectors.ALL;
+USE		PoC.strings.ALL;
+USE		PoC.sata_TransceiverTypes.ALL;
 
-LIBRARY L_Global;
-USE		L_Global.GlobalTypes.ALL;
-
-LIBRARY L_SATAController;
-USE		L_SATAController.SATADebug.ALL;
-USE		L_SATAController.SATATransceiverTypes.ALL;
-USE		L_SATAController.SATATypes.ALL;
-
-entity SATATransceiver_S2GX_GXB is
+entity sata_Transceiver_S2GX_GXB is
 	generic (
 		CLOCK_IN_FREQ_MHZ	: REAL	:= 150.0;	-- 150 MHz
 		PORTS			: POSITIVE:= 2;	-- Number of Ports per Transceiver
@@ -55,7 +52,7 @@ entity SATATransceiver_S2GX_GXB is
 		TX_Data		: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 		TX_CharIsK	: IN	T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
 
-		DebugPortOut 	: OUT T_DBG_TRANSOUT_VECTOR(PORTS-1 DOWNTO 0);
+--		DebugPortOut 	: OUT T_DBG_TRANSOUT_VECTOR(PORTS-1 DOWNTO 0);
 
 		-- Altera specific GXB ports
 		-- needs to be split in IN and OUT
@@ -65,10 +62,12 @@ entity SATATransceiver_S2GX_GXB is
 	);
 end;
 
-ARCHITECTURE rtl OF SATATransceiver_S2GX_GXB IS
+ARCHITECTURE rtl OF sata_Transceiver_S2GX_GXB IS
 
 	CONSTANT NO_DEVICE_TIMEOUT_MS						: REAL					:= 50.0;		-- simulation: 20 us, synthesis: 50 ms
 	CONSTANT NEW_DEVICE_TIMEOUT_MS						: REAL					:= 0.001;		-- FIXME: not used -> remove ???
+
+	CONSTANT C_DEVICE_INFO										: T_DEVICE_INFO		:= DEVICE_INFO;
 
 	signal reconf_clk	: std_logic;
 	signal refclk		: std_logic;
@@ -77,14 +76,10 @@ BEGIN
 -- ==================================================================
 -- Assert statements
 -- ==================================================================
-	ASSERT (VENDOR = VENDOR_ALTERA)		REPORT "Vendor not yet supported."		SEVERITY FAILURE;
-	ASSERT (DEVFAM = DEVFAM_STRATIX)	REPORT "Device family not yet supported."	SEVERITY FAILURE;
-	ASSERT (DEVICE = DEVICE_STRATIX2)	REPORT "Device not yet supported."		SEVERITY FAILURE;
+	ASSERT (C_DEVICE_INFO.VENDOR = VENDOR_ALTERA)						REPORT "Vendor not yet supported."				SEVERITY FAILURE;
+	ASSERT (C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_STRATIX)	REPORT "Device family not yet supported."	SEVERITY FAILURE;
+	ASSERT (C_DEVICE_INFO.DEVICE = DEVICE_STRATIX2)					REPORT "Device not yet supported."				SEVERITY FAILURE;
 	ASSERT (PORTS <= 2)			REPORT "To many ports per transceiver."		SEVERITY FAILURE;
-
-	genassert : FOR I IN 0 TO PORTS - 1 GENERATE
-		ASSERT IsSupportedGeneration(SATA_Generation(I))	REPORT "unsupported SATA generation" SEVERITY FAILURE;
-	END GENERATE;
 
 -- 	Common modules shared by all ports
 	clk_div : clock_div 
@@ -134,7 +129,7 @@ BEGIN
 		signal sata_tx_ctrl	: std_logic_vector(3 downto 0);
 		signal sata_tx_data	: std_logic_vector(31 downto 0);
 
-		signal sata_gen		: std_logic_vector(1 downto 0) := EncodeGeneration(INITIAL_SATA_GENERATIONS(i));
+		signal sata_gen		: std_logic_vector(1 downto 0) := to_slv(INITIAL_SATA_GENERATIONS(i));
 		signal config_state	: std_logic_vector(15 downto 0) := (others => '0');
 
 		signal nodevice		: std_logic;
@@ -180,17 +175,17 @@ BEGIN
 		rx_errin(3) <= not pll_locked or not gxb_locked or pll_busy or gxb_busy or rx_errdetect(3);
 
 		-- 7seg
-		DebugPortOut(i).seg7 <= sata_rx_data(15 downto 0);
+--		DebugPortOut(i).seg7 <= sata_rx_data(15 downto 0);
 
 		-- leds
-		DebugPortOut(i).leds(0) <= rx_signaldetect;
-		DebugPortOut(i).leds(1) <= sata_syncstatus;
-		DebugPortOut(i).leds(2) <= sata_rx_ctrl(0);
-		DebugPortOut(i).leds(3) <= sata_rx_ctrl(1);
-		DebugPortOut(i).leds(4) <= sata_rx_ctrl(2);
-		DebugPortOut(i).leds(5) <= sata_rx_ctrl(3);
-		DebugPortOut(i).leds(6) <= sata_gen(0);
-		DebugPortOut(i).leds(7) <= sata_gen(1);
+--		DebugPortOut(i).leds(0) <= rx_signaldetect;
+--		DebugPortOut(i).leds(1) <= sata_syncstatus;
+--		DebugPortOut(i).leds(2) <= sata_rx_ctrl(0);
+--		DebugPortOut(i).leds(3) <= sata_rx_ctrl(1);
+--		DebugPortOut(i).leds(4) <= sata_rx_ctrl(2);
+--		DebugPortOut(i).leds(5) <= sata_rx_ctrl(3);
+--		DebugPortOut(i).leds(6) <= sata_gen(0);
+--		DebugPortOut(i).leds(7) <= sata_gen(1);
 
 		rx_electricalidle <= not rx_signaldetect;
 
@@ -198,7 +193,7 @@ BEGIN
 		process(ll_clk) begin
 			if rising_edge(ll_clk) then
 				if RP_Reconfig(i) = '1' then
-					sata_gen <= EncodeGeneration(SATA_Generation(i));
+					sata_gen <= to_slv(SATA_Generation(i));
 				end if;
 				if gxb_busy = '0' and pll_busy = '0' then
 					config_state <= config_state(14 downto 0) & RP_Reconfig(i);
@@ -206,10 +201,10 @@ BEGIN
 			end if;
 		end process;
 		
-		config_sync : entity L_Global.EventSyncVector
+		config_sync : entity PoC.EventSyncVector
 		generic map (
 			BITS => 2,
-			INIT => EncodeGeneration(SATA_GENERATION_3)
+			INIT => to_slv(SATA_GENERATION_3)
 		)
 		port map (
 			Clock1 => ll_clk,
@@ -218,7 +213,7 @@ BEGIN
 			strobe => reconf
 		);
 
-		device_sync : entity L_Global.EventSync
+		device_sync : entity PoC.EventSync
 		port map (
 			Clock1 => refclk,
 			Clock2 => ll_clk,
@@ -226,7 +221,7 @@ BEGIN
 			strobe => ll_newdevice
 		);
 		
-		sata_oob_unit : entity L_SATAController.sata_oob 
+		sata_oob_unit : entity PoC.sata_oob 
 		port map (
 			clk => refclk,
 			rx_oob_status => rx_oob_status,
@@ -293,7 +288,7 @@ BEGIN
 			busy => pll_busy
 		);
 
-		dev_detect : entity L_SATAController.DeviceDetector
+		dev_detect : entity PoC.sata_DeviceDetector
 		generic map (
 			CLOCK_FREQ_MHZ => CLOCK_IN_FREQ_MHZ,		-- 150 MHz
 			NO_DEVICE_TIMEOUT_MS => NO_DEVICE_TIMEOUT_MS,	-- 1,0 ms

@@ -37,7 +37,7 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
---USE			PoC.sata.ALL;
+USE			PoC.sata.ALL;
 
 
 ENTITY sata_AddressCalculation IS
@@ -51,7 +51,7 @@ ENTITY sata_AddressCalculation IS
 		Address_AppLB											: IN	T_SLV_48;
 		BlockCount_AppLB									: IN	T_SLV_48;
 
-		IDF_DriveInformation							: IN T_DRIVE_INFORMATION;
+		IDF_DriveInformation							: IN T_SATA_DRIVE_INFORMATION;
 
 		Address_DevLB											: OUT	T_SLV_48;
 		BlockCount_DevLB									: OUT	T_SLV_48
