@@ -38,10 +38,11 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
 use			PoC.sata.all;
-use			PoC.sata_TransceiverTypes.all;
 
 
 package satadbg is
+	constant C_SATADBG_TYPES	: BOOLEAN			:= TRUE;
+
 	-- ===========================================================================
 	-- SATA Transceiver Types
 	-- ===========================================================================
@@ -52,7 +53,6 @@ package satadbg is
 		TX_Data								: T_SLV_32;
 		TX_CiK								: T_SATA_CIK;
 	END RECORD;
-	
 	
 	-- ===========================================================================
 	-- SATA Physical Layer Types
@@ -72,21 +72,88 @@ package satadbg is
 	-- SATA Link Layer Types
 	-- ===========================================================================
 	TYPE T_SATADBG_LINKOUT IS RECORD
-		RX_ElectricalIDLE			: STD_LOGIC;
-		RX_Data								: T_SLV_32;
-		RX_CiK								: T_SATA_CIK;
-		TX_Data								: T_SLV_32;
-		TX_CiK								: T_SATA_CIK;
-	END RECORD;
+		-- from physical layer
+		Phy_Ready										: STD_LOGIC;
+		-- RX: from physical layer
+		RX_Phy_Data									: T_SLV_32;
+		RX_Phy_CiK									: T_SATA_CIK;										-- 4 bit
+		-- RX: after primitive detector
+		RX_Primitive								: T_SATA_PRIMITIVE;							-- 5 bit
+		-- RX: after unscrambling
+		RX_DataUnscrambler_rst			: STD_LOGIC;
+		RX_DataUnscrambler_en				: STD_LOGIC;
+		RX_DataUnscrambler_DataOut	:	T_SLV_32;
+		-- RX: CRC control
+		RX_CRC_rst									: STD_LOGIC;
+		RX_CRC_en										: STD_LOGIC;
+		-- RX: DataRegisters
+		RX_DataReg_en1							: STD_LOGIC;
+		RX_DataReg_en2							: STD_LOGIC;
+		-- RX: before RX_FIFO
+		RX_FIFO_SpaceAvailable			: STD_LOGIC;
+		RX_FIFO_rst									: STD_LOGIC;
+		RX_FIFO_put									: STD_LOGIC;
+		RX_FSFIFO_rst								: STD_LOGIC;
+		RX_FSFIFO_put								: STD_LOGIC;
+		-- RX: after RX_FIFO
+		RX_Data											: T_SLV_32;
+		RX_Valid										: STD_LOGIC;
+		RX_Ready										: STD_LOGIC;
+		RX_SOF											: STD_LOGIC;
+		RX_EOF											: STD_LOGIC;
+		RX_FS_Valid									: STD_LOGIC;
+		RX_FS_Ready									: STD_LOGIC;
+		RX_FS_CRC_OK								: STD_LOGIC;
+		RX_FS_Abort									: STD_LOGIC;
+		--																													=> 125 bit
+		-- TX: from Link Layer
+		TX_Data											: T_SLV_32;
+		TX_Valid										: STD_LOGIC;
+		TX_Ready										: STD_LOGIC;
+		TX_SOF											: STD_LOGIC;
+		TX_EOF											: STD_LOGIC;
+		TX_FS_Valid									: STD_LOGIC;
+		TX_FS_Ready									: STD_LOGIC;
+		TX_FS_Send_OK								: STD_LOGIC;
+		TX_FS_Abort									: STD_LOGIC;
+		-- TX: TXFIFO
+		TX_FIFO_got									: STD_LOGIC;
+		TX_FSFIFO_got								: STD_LOGIC;
+		-- TX: CRC control
+		TX_CRC_rst									: STD_LOGIC;
+		TX_CRC_en										: STD_LOGIC;
+		TX_CRC_mux									: STD_LOGIC;
+		-- TX: after scrambling
+		TX_DataScrambler_rst				: STD_LOGIC;
+		TX_DataScrambler_en					: STD_LOGIC;
+		TX_DataScrambler_DataOut		:	T_SLV_32;
+		-- TX: PrimitiveMux
+		TX_Primitive								: T_SATA_PRIMITIVE;							-- 5 bit ?
+		-- TX: to Physical Layer
+		TX_Data											: T_SLV_32;											
+		TX_CiK											: T_SATA_CIK;										-- 4 bit
+	END RECORD;		--																							=> 120 bit
 	
 	
 	-- ===========================================================================
 	-- SATA Controller Types
 	-- ===========================================================================
 	TYPE T_SATADBG_SATACOUT IS RECORD
+		-- Transceiver Layer
 		Transceiver						: T_SATADBG_TRANSCEIVEROUT;
+		Transceiver_Command		: T_SATA_TRANSCEIVER_COMMAND;
+		Transceiver_Status		: T_SATA_TRANSCEIVER_STATUS;
+		Transceiver_Error			: T_SATA_TRANSCEIVER_ERROR;
+		-- Physical Layer
 		Physical							: T_SATADBG_PHYSICALOUT;
-		Link									: T_SATADBG_LINKOUT;
+		Physical_Command			: T_SATA_PHYSICAL_COMMAND;
+		Physical_Status				: T_SATA_PHYSICAL_STATUS;							-- 3 bit
+		Physical_Error				: T_SATA_PHYSICAL_ERROR;
+		-- Link Layer
+		Link									: T_SATADBG_LINKOUT;									-- RX: 125 + TX: 120 bit
+		Link_Command					: T_SATA_LINK_COMMAND;								-- 1 bit
+		Link_Status						: T_SATA_LINK_STATUS;									-- 3 bit
+		Link_Error						: T_SATA_LINK_ERROR;									-- 2 bit
 	END RECORD;
 		
 	
@@ -112,13 +179,10 @@ package satadbg is
 
 	
 	
-	
-	
-	-- ===========================================================================
-	-- ATA Drive Information
-	-- ===========================================================================
-	
-	
+	type T_SATADBG_TRANSCEIVEROUT_VECTOR	is array (NATURAL range <>)	of T_SATADBG_TRANSCEIVEROUT;
+	type T_SATADBG_PHYSICALOUT_VECTOR			is array (NATURAL range <>)	of T_SATADBG_PHYSICALOUT;
+	type T_SATADBG_LINKOUT_VECTOR					is array (NATURAL range <>)	of T_SATADBG_LINKOUT;
+	type T_SATADBG_SATACOUT_VECTOR				is array (NATURAL range <>)	of T_SATADBG_SATACOUT;
 	
 --	TYPE T_DBG_PHYOUT IS RECORD
 --		GenerationChanges		: UNSIGNED(3 DOWNTO 0);
