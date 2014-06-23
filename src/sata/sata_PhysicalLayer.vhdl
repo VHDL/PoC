@@ -37,13 +37,14 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
+USE			PoC.satadbg.ALL;
 
 
 ENTITY sata_PhysicalLayer IS
 	GENERIC (
 		DEBUG														: BOOLEAN													:= FALSE;
+		ENABLE_DEBUGPORT								: BOOLEAN													:= FALSE;
 		CLOCK_IN_FREQ_MHZ								: REAL														:= 150.0;
 		CONTROLLER_TYPE									: T_SATA_DEVICE_TYPE							:= SATA_DEVICE_TYPE_HOST;
 		ALLOW_SPEED_NEGOTIATION					: BOOLEAN													:= TRUE;
@@ -67,7 +68,7 @@ ENTITY sata_PhysicalLayer IS
 		Status													: OUT	T_SATA_PHY_STATUS;
 		Error														: OUT	T_SATA_PHY_ERROR;
 
---		DebugPortOut										: OUT	T_DBG_PHYOUT;
+		DebugPortOut										: OUT	T_SATADBG_PHYSICALOUT;
 
 		Link_RX_Data										: OUT	T_SLV_32;
 		Link_RX_CharIsK									: OUT	T_SATA_CIK;
@@ -137,6 +138,8 @@ ARCHITECTURE rtl OF sata_PhysicalLayer IS
 	SIGNAL Error_i										: T_SATA_PHY_ERROR;
 	
 BEGIN
+
+	assert (C_SATADBG_TYPES = ENABLE_DEBUGPORT) report "DebugPorts are enabled, but debug types are not loaded. Load 'sata_dbg_on.vhdl' into your project!" severity failure;
 
 	ASSERT FALSE REPORT "  ControllerType:         " & ite((CONTROLLER_TYPE						= SATA_DEVICE_TYPE_HOST), "HOST", "DEVICE") SEVERITY NOTE;
 	ASSERT FALSE REPORT "  AllowSpeedNegotiation:  " & ite((ALLOW_SPEED_NEGOTIATION		= TRUE),									"YES",	"NO")			SEVERITY NOTE;

@@ -36,13 +36,15 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
+USE			PoC.components.ALL;
 USE			PoC.sata.ALL;
+USE			PoC.satadbg.ALL;
 
 
 ENTITY sata_LinkLayer IS
 	GENERIC (
 		DEBUG												: BOOLEAN																:= FALSE;
+		ENABLE_DEBUGPORT						: BOOLEAN																:= FALSE;
 		CONTROLLER_TYPE							: T_SATA_DEVICE_TYPE										:= SATA_DEVICE_TYPE_HOST;
 		MAX_FRAME_SIZE_B						: POSITIVE															:= 2048;
 		AHEAD_CYCLES_FOR_INSERT_EOF	: NATURAL																:= 1;
@@ -57,7 +59,7 @@ ENTITY sata_LinkLayer IS
 		Error										: OUT	T_SATA_LINK_ERROR;
 
 		-- Debug ports
---		DebugPort_Out					 	: OUT T_DBG_LINKOUT;
+		DebugPort_Out					 	: OUT T_SATADBG_LINKOUT;
 		
 		-- TX port
 		TX_SOF									: IN	STD_LOGIC;
@@ -238,6 +240,8 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	signal RX_Hold : STD_LOGIC;
 
 BEGIN
+	assert (C_SATADBG_TYPES = ENABLE_DEBUGPORT) report "DebugPorts are enabled, but debug types are not loaded. Load 'sata_dbg_on.vhdl' into your project!" severity failure;
+
 	-- ================================================================
 	-- link layer control FSM
 	-- ================================================================
@@ -663,24 +667,30 @@ BEGIN
 	genCSP : IF (DEBUG = TRUE) GENERATE
 		SIGNAL DBG_TX_SOF				: STD_LOGIC;
 		SIGNAL DBG_TX_EOF				: STD_LOGIC;
+		signal TX_IsFrame_r			: STD_LOGIC		:= '0';
+		signal DBG_TX_IsFrame		: STD_LOGIC;
 		
 		SIGNAL DBG_TXFS_SendOK	: STD_LOGIC;
 		SIGNAL DBG_TXFS_SendOKn	: STD_LOGIC;
 		
 		SIGNAL DBG_RX_SOF				: STD_LOGIC;
 		SIGNAL DBG_RX_EOF				: STD_LOGIC;
+		signal RX_IsFrame_r			: STD_LOGIC		:= '0';
+		signal DBG_RX_IsFrame		: STD_LOGIC;
 		
 		SIGNAL DBG_RXFS_CRCOK		: STD_LOGIC;
 		SIGNAL DBG_RXFS_CRCOKn	: STD_LOGIC;
 		
 		ATTRIBUTE KEEP OF DBG_TX_SOF				: SIGNAL IS TRUE;
 		ATTRIBUTE KEEP OF DBG_TX_EOF				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TX_IsFrame		: SIGNAL IS TRUE;
 		
 		ATTRIBUTE KEEP OF DBG_TXFS_SendOK		: SIGNAL IS TRUE;
 		ATTRIBUTE KEEP OF DBG_TXFS_SendOKn	: SIGNAL IS TRUE;
 		
 		ATTRIBUTE KEEP OF DBG_RX_SOF				: SIGNAL IS TRUE;
 		ATTRIBUTE KEEP OF DBG_RX_EOF				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_RX_IsFrame		: SIGNAL IS TRUE;
 		
 		ATTRIBUTE KEEP OF DBG_RXFS_CRCOK		: SIGNAL IS TRUE;
 		ATTRIBUTE KEEP OF DBG_RXFS_CRCOKn		: SIGNAL IS TRUE;
@@ -698,5 +708,79 @@ BEGIN
 		
 		DBG_RXFS_CRCOK		<= RX_FSFIFO_Valid AND			RX_FSFIFO_DataOut(0);
 		DBG_RXFS_CRCOKn		<= RX_FSFIFO_Valid AND NOT	RX_FSFIFO_DataOut(0);
+		
+		--									RS-FF		Q							rst																		set
+		TX_IsFrame_r			<= ffrs(TX_IsFrame_r, TX_Valid and TX_SOF,										TX_Valid and TX_EOF)										when rising_edge(Clock);
+		RX_IsFrame_r			<= ffrs(RX_IsFrame_r, RX_FIFO_Valid and RX_FIFO_DataOut(33),	RX_FIFO_Valid and RX_FIFO_DataOut(32))	when rising_edge(Clock);
+		DBG_TX_IsFrame		<= (TX_Valid and TX_SOF)										or TX_IsFrame_r;
+		DBG_RX_IsFrame		<= (RX_FIFO_Valid and RX_FIFO_DataOut(33))	or RX_IsFrame_r;
 	END GENERATE;
+	
+	genDebug0 : if (ENABLE_DEBUGPORT = FALSE) generate
+	begin
+	
+	end generate genDebug0;
+	genDebug1 : if (ENABLE_DEBUGPORT = TRUE) generate
+	begin
+	-- from physical layer
+		Phy_Ready										: STD_LOGIC;
+		-- RX: from physical layer
+		RX_Phy_Data									: T_SLV_32;
+		RX_Phy_CiK									: T_SATA_CIK;										-- 4 bit
+		-- RX: after primitive detector
+		RX_Primitive								: T_SATA_PRIMITIVE;							-- 5 bit
+		-- RX: after unscrambling
+		RX_DataUnscrambler_rst			: STD_LOGIC;
+		RX_DataUnscrambler_en				: STD_LOGIC;
+		RX_DataUnscrambler_DataOut	:	T_SLV_32;
+		-- RX: CRC control
+		RX_CRC_rst									: STD_LOGIC;
+		RX_CRC_en										: STD_LOGIC;
+		-- RX: DataRegisters
+		RX_DataReg_en1							: STD_LOGIC;
+		RX_DataReg_en2							: STD_LOGIC;
+		-- RX: before RX_FIFO
+		RX_FIFO_SpaceAvailable			: STD_LOGIC;
+		RX_FIFO_rst									: STD_LOGIC;
+		RX_FIFO_put									: STD_LOGIC;
+		RX_FSFIFO_rst								: STD_LOGIC;
+		RX_FSFIFO_put								: STD_LOGIC;
+		-- RX: after RX_FIFO
+		RX_Data											: T_SLV_32;
+		RX_Valid										: STD_LOGIC;
+		RX_Ready										: STD_LOGIC;
+		RX_SOF											: STD_LOGIC;
+		RX_EOF											: STD_LOGIC;
+		RX_FS_Valid									: STD_LOGIC;
+		RX_FS_Ready									: STD_LOGIC;
+		RX_FS_CRC_OK								: STD_LOGIC;
+		RX_FS_Abort									: STD_LOGIC;
+		--																													=> 125 bit
+		-- TX: from Link Layer
+		TX_Data											: T_SLV_32;
+		TX_Valid										: STD_LOGIC;
+		TX_Ready										: STD_LOGIC;
+		TX_SOF											: STD_LOGIC;
+		TX_EOF											: STD_LOGIC;
+		TX_FS_Valid									: STD_LOGIC;
+		TX_FS_Ready									: STD_LOGIC;
+		TX_FS_Send_OK								: STD_LOGIC;
+		TX_FS_Abort									: STD_LOGIC;
+		-- TX: TXFIFO
+		TX_FIFO_got									: STD_LOGIC;
+		TX_FSFIFO_got								: STD_LOGIC;
+		-- TX: CRC control
+		TX_CRC_rst									: STD_LOGIC;
+		TX_CRC_en										: STD_LOGIC;
+		TX_CRC_mux									: STD_LOGIC;
+		-- TX: after scrambling
+		TX_DataScrambler_rst				: STD_LOGIC;
+		TX_DataScrambler_en					: STD_LOGIC;
+		TX_DataScrambler_DataOut		:	T_SLV_32;
+		-- TX: PrimitiveMux
+		TX_Primitive								: T_SATA_PRIMITIVE;							-- 5 bit ?
+		-- TX: to Physical Layer
+		TX_Data											: T_SLV_32;											
+		TX_CiK											: T_SATA_CIK;										-- 4 bit
+	end generate genDebug1;
 END;
