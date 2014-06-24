@@ -59,7 +59,7 @@ class PoCSimulator(object):
 	def __init__(self, host, showLogs, showReport):
 		self.__debug = host.getDebug()
 		self.__verbose = host.getVerbose()
-		self.__quiet = host.getquiet()
+		self.__quiet = host.getQuiet()
 		self.host = host
 		self.showLogs = showLogs
 		self.showReport = showReport
@@ -70,7 +70,7 @@ class PoCSimulator(object):
 	def getVerbose(self):
 		return self.__verbose
 		
-	def getquiet(self):
+	def getQuiet(self):
 		return self.__quiet
 		
 	def printDebug(self, message):
