@@ -69,7 +69,7 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		self.printNonQuiet("  preparing simulation environment...")
 
 		# create temporary directory for ghdl if not existent
-		tempGHDLPath = self.host.Directories["ghdlTemp"]
+		tempGHDLPath = self.host.Directories["GHDLTemp"]
 		if not (tempGHDLPath).exists():
 			self.printVerbose("Creating temporary directory for simulator files.")
 			self.printDebug("Temporary directors: %s" % str(tempGHDLPath))
@@ -79,7 +79,7 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		ghdlExecutablePath =		self.host.Directories["GHDLBinary"] / self.__executables['ghdl']
 		
 		testbenchName = self.host.tbConfig[str(pocEntity)]['TestbenchModule']
-		fileFilePath =	self.host.Directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['FilesFile']
+		fileListFilePath =	self.host.Directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['FileListFile']
 		
 		if (self.getVerbose()):
 			print("  Commands to be run:")
@@ -103,13 +103,13 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		filesLineRegExpStr +=	r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
 		filesLineRegExp = re.compile(filesLineRegExpStr)
 
-		self.printDebug("Reading filelist '%s'" % str(fileFilePath))
+		self.printDebug("Reading filelist '%s'" % str(fileListFilePath))
 		self.printNonQuiet("  running analysis for every vhdl file...")
 		
 		# add empty line if logs are enabled
 		if self.showLogs:		print()
 		
-		with fileFilePath.open('r') as fileFileHandle:
+		with fileListFilePath.open('r') as fileFileHandle:
 			for line in fileFileHandle:
 				filesLineRegExpMatch = filesLineRegExp.match(line)
 		
