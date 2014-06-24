@@ -15,7 +15,7 @@ USE		PoC.vectors.ALL;
 USE		PoC.strings.ALL;
 USE		PoC.sata_TransceiverTypes.ALL;
 
-entity sata_Transceiver_S4GX_GXB is
+entity sata_Transceiver_Stratix4GX_GXB is
 	generic (
 		CLOCK_IN_FREQ_MHZ	: REAL := 150.0;	-- 150 MHz
 		PORTS			: POSITIVE := 2;	-- Number of Ports per Transceiver
@@ -62,7 +62,7 @@ entity sata_Transceiver_S4GX_GXB is
 	);
 end;
 
-ARCHITECTURE rtl OF sata_Transceiver_S4GX_GXB IS
+ARCHITECTURE rtl OF sata_Transceiver_Stratix4GX_GXB IS
 
 	CONSTANT NO_DEVICE_TIMEOUT_MS						: REAL					:= 50.0;		-- simulation: 20 us, synthesis: 50 ms
 	CONSTANT NEW_DEVICE_TIMEOUT_MS						: REAL					:= 0.001;		-- FIXME: not used -> remove ???
