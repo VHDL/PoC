@@ -29,25 +29,22 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.strings.ALL;
-USE			PoC.sata_TransceiverTypes.ALL;
+library PoC;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.strings.all;
+use			PoC.sata_transceivertypes.all;
 
 
-PACKAGE sata IS
-	-- declare attributes
---	ATTRIBUTE ENUM_ENCODING	: STRING;
-
+package sata is
 	-- ===========================================================================
-	-- transceiver types
+	-- SATA Transceiver Types
 	-- ===========================================================================
-	-- oob signals
+	-- OOB signals (Out-Of-Band)
 	TYPE T_SATA_OOB IS (
 		SATA_OOB_NONE,
 		SATA_OOB_READY,
@@ -113,7 +110,7 @@ PACKAGE sata IS
 	TYPE T_SATA_TRANSCEIVER_RX_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_RX_ERROR;
 
 	-- ===========================================================================
-	-- physical layer types
+	-- SATA Physical Layer Types
 	-- ===========================================================================
 	SUBTYPE T_SATA_GENERATION				IS INTEGER RANGE 0 TO 5;
 	
@@ -161,7 +158,7 @@ PACKAGE sata IS
 	TYPE T_SATA_PHY_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_PHY_ERROR;
 
 	-- ===========================================================================
-	-- link layer types
+	-- SATA Link Layer Types
 	-- ===========================================================================
 	TYPE T_SATA_LINK_COMMAND IS (
 		SATA_LINK_CMD_NONE,
@@ -210,15 +207,24 @@ PACKAGE sata IS
 	CONSTANT T_SATA_PRIMITIVE_COUNT		: INTEGER										:= T_SATA_PRIMITIVE'pos(SATA_PRIMITIVE_ILLEGAL) + 1;
 
 	CONSTANT SATA_MAX_FRAMESIZE_B			: POSITIVE									:= 8192;
-	CONSTANT SATA_WORD_BITS							: POSITIVE									:= 32;
+	CONSTANT SATA_WORD_BITS						: POSITIVE									:= 32;
 
 	TYPE T_SATA_LINK_COMMAND_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_LINK_COMMAND;
 	TYPE T_SATA_LINK_STATUS_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_LINK_STATUS;
 	TYPE T_SATA_LINK_ERROR_VECTOR			IS ARRAY (NATURAL RANGE <>) OF T_SATA_LINK_ERROR;
 
-
+	FUNCTION to_slv(Primitive : T_SATA_PRIMITIVE) RETURN T_SLV_32;
 	-- ===========================================================================
 	-- Common SATA Types
+	-- ===========================================================================
+	TYPE T_SATA_DEVICE_TYPE IS (
+		SATA_DEVICE_TYPE_HOST,
+		SATA_DEVICE_TYPE_DEVICE
+	);
+
+	TYPE T_SATA_DEVICE_TYPE_VECTOR		IS ARRAY (NATURAL RANGE <>) OF  T_SATA_DEVICE_TYPE;	
+	-- ===========================================================================
+	-- SATA Controller Types
 	-- ===========================================================================
 	TYPE T_SATA_COMMAND IS (
 		SATA_CMD_NONE,
@@ -241,21 +247,13 @@ PACKAGE sata IS
 		TransceiverLayer_RX		: T_SATA_TRANSCEIVER_RX_ERROR;
 	END RECORD;
 
-	TYPE T_SATA_DEVICE_TYPE IS (
-		SATA_DEVICE_TYPE_HOST,
-		SATA_DEVICE_TYPE_DEVICE
-	);
 	
 	TYPE T_SATA_COMMAND_VECTOR				IS ARRAY (NATURAL RANGE <>) OF  T_SATA_COMMAND;
 	TYPE T_SATA_STATUS_VECTOR					IS ARRAY (NATURAL RANGE <>) OF  T_SATA_STATUS;
 	TYPE T_SATA_ERROR_VECTOR					IS ARRAY (NATURAL RANGE <>) OF  T_SATA_ERROR;
-	TYPE T_SATA_DEVICE_TYPE_VECTOR		IS ARRAY (NATURAL RANGE <>) OF  T_SATA_DEVICE_TYPE;
 
-	FUNCTION to_slv(Primitive : T_SATA_PRIMITIVE) RETURN T_SLV_32;
-	
-	
 	-- ===========================================================================
-	-- ATA command layer types
+	-- ATA Command Layer Types
 	-- ===========================================================================
 	TYPE T_SATA_CMD_COMMAND IS (
 		SATA_CMD_CMD_NONE,
@@ -296,24 +294,8 @@ PACKAGE sata IS
 		SATA_ATA_CMD_UNKNOWN
 	);
 	
-	TYPE T_SATA_COMMAND_CATEGORY IS (
-		SATA_CMDCAT_NON_DATA,
-		SATA_CMDCAT_PIO_IN,
-		SATA_CMDCAT_PIO_OUT,
-		SATA_CMDCAT_DMA_IN,
-		SATA_CMDCAT_DMA_OUT,
-		SATA_CMDCAT_DMA_IN_QUEUED,
-		SATA_CMDCAT_DMA_OUT_QUEUED,
-		SATA_CMDCAT_PACKET,
-		SATA_CMDCAT_SERVICE,
-		SATA_CMDCAT_DEVICE_RESET,
-		SATA_CMDCAT_DEVICE_DIAGNOSTICS,
-		SATA_CMDCAT_UNKNOWN
-	);
-	
-
 	-- ===========================================================================
-	-- SATA transport layer types
+	-- SATA Transport Layer Types
 	-- ===========================================================================
 	TYPE T_SATA_TRANS_COMMAND IS (
 		SATA_TRANS_CMD_NONE,
@@ -340,6 +322,21 @@ PACKAGE sata IS
 		SATA_TRANS_ERROR_DEVICE_ERROR,
 		SATA_TRANS_ERROR_INCOMPLETE,
 		SATA_TRANS_ERROR_FSM												-- ILLEGAL_TRANSITION
+	);
+
+	TYPE T_SATA_COMMAND_CATEGORY IS (
+		SATA_CMDCAT_NON_DATA,
+		SATA_CMDCAT_PIO_IN,
+		SATA_CMDCAT_PIO_OUT,
+		SATA_CMDCAT_DMA_IN,
+		SATA_CMDCAT_DMA_OUT,
+		SATA_CMDCAT_DMA_IN_QUEUED,
+		SATA_CMDCAT_DMA_OUT_QUEUED,
+		SATA_CMDCAT_PACKET,
+		SATA_CMDCAT_SERVICE,
+		SATA_CMDCAT_DEVICE_RESET,
+		SATA_CMDCAT_DEVICE_DIAGNOSTICS,
+		SATA_CMDCAT_UNKNOWN
 	);
 	
 	TYPE T_SATA_FISTYPE IS (
@@ -505,113 +502,6 @@ PACKAGE sata IS
 		Valid											: STD_LOGIC;
 	END RECORD;
 	
-	
-	
---	TYPE T_DBG_PHYOUT IS RECORD
---		GenerationChanges		: UNSIGNED(3 DOWNTO 0);
---		TrysPerGeneration		: UNSIGNED(3 DOWNTO 0);
---		SATAGeneration			: T_SATA_GENERATION;
---		SATAStatus					: T_SATA_STATUS;
---		SATAError						: T_SATA_ERROR;
---	END RECORD;
---
---	TYPE T_DBG_LINKOUT IS RECORD
---		RX_Primitive				: T_SATA_PRIMITIVE;
---	END RECORD;
-
--- 	TYPE T_DBG_TRANSIN IS RECORD
--- -- 		ClkMux							: STD_LOGIC;
--- 		
--- 	END RECORD;
-
---	TYPE T_DBG_TRANSOUT IS RECORD
--- 		PLL_Reset						: STD_LOGIC;
--- 		TXPLL_Locked				: STD_LOGIC;
--- 		RXPLL_Locked				: STD_LOGIC;
--- 
--- 		MMCM_Reset					: STD_LOGIC;
--- 		MMCM_Locked					: STD_LOGIC;
--- 
--- 		RefClock						: STD_LOGIC;
--- 		TXOutClock					: STD_LOGIC;
--- 		RXRecClock					: STD_LOGIC;
--- 		SATAClock						: STD_LOGIC;
---		leds 		: std_logic_vector(7 downto 0);
---		seg7		: std_logic_vector(15 downto 0);
---	END RECORD;
-
--- 	TYPE T_DBG_SATAIN IS RECORD
--- 		LinkLayer						: T_DBG_LINKIN;
--- 		PhysicalLayer				: T_DBG_PHYIN;
--- 		Transceiverlayer		: T_DBG_TRANSIN;
--- 	END RECORD;
-
---	TYPE T_DBG_SATAOUT IS RECORD
---		LinkLayer						: T_DBG_LINKOUT;
---		PhysicalLayer				: T_DBG_PHYOUT;
---		TransceiverLayer		: T_DBG_TRANSOUT;
---	END RECORD;
-
---	TYPE T_DBG_PHYIN_VECTOR			IS ARRAY(NATURAL RANGE <>) OF T_DBG_PHYIN;
---	TYPE T_DBG_PHYOUT_VECTOR		IS ARRAY(NATURAL RANGE <>) OF T_DBG_PHYOUT;
-
---	TYPE T_DBG_TRANSIN_VECTOR		IS ARRAY(NATURAL RANGE <>) OF T_DBG_TRANSIN;
---	TYPE T_DBG_TRANSOUT_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_DBG_TRANSOUT;
-
---	TYPE T_DBG_LINKOUT_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_DBG_LINKOUT;
-	
---	TYPE T_DBG_SATAIN_VECTOR		IS ARRAY(NATURAL RANGE <>) OF T_DBG_SATAIN;
---	TYPE T_DBG_SATAOUT_VECTOR		IS ARRAY(NATURAL RANGE <>) OF T_DBG_SATAOUT;
-	
---	TYPE T_DBG_COMMAND_OUT IS RECORD
---		Command											: T_SATA_CMD_COMMAND;
---		Status											: T_SATA_CMD_STATUS;
---		Error												: T_SATA_CMD_ERROR;
---		
---		SOR													: STD_LOGIC;
---		EOR													: STD_LOGIC;
---		
---		DriveInformation						: T_DRIVE_INFORMATION;
---	END RECORD;
---	
---	TYPE T_DBG_TRANSPORT_OUT IS RECORD
---		Command											: T_SATA_TRANS_COMMAND;
---		Status											: T_SATA_TRANS_STATUS;
---		Error												: T_SATA_TRANS_ERROR;
---		
---		UpdateATAHostRegisters			: STD_LOGIC;
---		ATAHostRegisters						: T_SATA_HOST_REGISTERS;
---		UpdateATADeviceRegisters		: STD_LOGIC;
---		ATADeviceRegisters					: T_SATA_DEVICE_REGISTERS;
---		
---		FISE_FISType								: T_SATA_FISTYPE;
---		FISE_Status									: T_FISENCODER_STATUS;
---		FISD_FISType								: T_SATA_FISTYPE;
---		FISD_Status									: T_FISDECODER_STATUS;
---		
---		SOF													: STD_LOGIC;
---		EOF													: STD_LOGIC;
---		SOT													: STD_LOGIC;
---		EOT													: STD_LOGIC;
---	END RECORD;
---
---	TYPE T_DBG_SATA_STREAMC_OUT IS RECORD
---		CommandLayer								: T_DBG_COMMAND_OUT;
---		TransportLayer							: T_DBG_TRANSPORT_OUT;
---	END RECORD;
---	
---	TYPE T_DBG_SATA_STREAMCM_OUT IS RECORD
---		RunAC_Address : STD_LOGIC_VECTOR(4 DOWNTO 0);
---		Run_Complete  : STD_LOGIC;
---		Error         : STD_LOGIC;
---		Idle          : STD_LOGIC;
---		DataOut       : T_SLV_32;
---	END RECORD;
---
---	TYPE T_DBG_SATA_STREAMCM_IN IS RECORD
---		SATAC_DebugPortOut	: T_DBG_SATAOUT;
---		SATA_STREAMC_DebugPortOut	: T_DBG_SATA_STREAMC_OUT;
---	END RECORD;
 	
 	-- to_slv
 	-- ===========================================================================
