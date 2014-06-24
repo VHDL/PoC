@@ -59,7 +59,7 @@ ENTITY sata_LinkLayer IS
 		Error										: OUT	T_SATA_LINK_ERROR;
 
 		-- Debug ports
-		DebugPort_Out					 	: OUT T_SATADBG_LINKOUT;
+		DebugPortOut					 	: OUT T_SATADBG_LINKOUT;
 		
 		-- TX port
 		TX_SOF									: IN	STD_LOGIC;
@@ -105,16 +105,29 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 -- ==================================================================
 -- TX path																							current value																	test value			default value
 	CONSTANT INSERT_ALIGN_INTERVAL			: POSITIVE				:= 256;																	--				16							 256
+
+	CONSTANT TX_SOF_BIT									: NATURAL					:= 32;
+	CONSTANT TX_EOF_BIT									: NATURAL					:= 33;
+	CONSTANT TX_FIFO_BITS								: POSITIVE				:= 34;
 	CONSTANT TX_FIFO_DEPTH							: POSITIVE				:= ite(SIMULATION, 16, 32);							--				16								32
-	CONSTANT TX_RPFIFO_DEPTH						: POSITIVE				:= 16;																	--				16								16
+
+	CONSTANT TX_SENDOK_BIT							: NATURAL					:= 0;
+	CONSTANT TX_ABORT_BIT								: NATURAL					:= 1;
+	CONSTANT TX_FSFIFO_BITS							: POSITIVE				:= 2;
 	CONSTANT TX_FSFIFO_DEPTH						: POSITIVE				:= 4;																		-- 				 4								 4								max frames in TX_FIFO
 	CONSTANT TX_FSFIFO_EMPTYSTATE_BITS	: POSITIVE				:= log2ceilnz(TX_FSFIFO_DEPTH);
 	
 -- RX path
+	CONSTANT RX_SOF_BIT									: NATURAL					:= 32;
+	CONSTANT RX_EOF_BIT									: NATURAL					:= 33;
+	CONSTANT RX_FIFO_BITS								: POSITIVE				:= 34;
 	CONSTANT RX_FIFO_DEPTH							: POSITIVE				:= ite(SIMULATION, 64, 4096);						--				64							4096								max frame payload length between SOF end EOF is 2064 Bytes
 	CONSTANT RX_FIFO_MIN_FREE_SPACE			: POSITIVE				:= ite(SIMULATION, 32, 	64);						-- 				32								64								min. free space in RX FIFO, min. 32 32-Bit words
 	CONSTANT RX_FIFO_EMPTYSTATE_BITS		: POSITIVE				:= log2ceilnz(RX_FIFO_DEPTH / RX_FIFO_MIN_FREE_SPACE);
 
+	CONSTANT RX_CRCOK_BIT								: NATURAL					:= 0;
+	CONSTANT RX_ABORT_BIT								: NATURAL					:= 1;
+	CONSTANT RX_FSFIFO_BITS							: NATURAL					:= 2;
 	CONSTANT RX_FSFIFO_DEPTH						: POSITIVE				:= 8;																		--				 8								 8								max frames in RX_FIFO
 	CONSTANT RX_FSFIFO_EMPTYSTATE_BITS	: POSITIVE				:= log2ceilnz(RX_FSFIFO_DEPTH);
 
@@ -156,8 +169,8 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	SIGNAL TX_FIFO_Full								: STD_LOGIC;
 	SIGNAL TX_FIFO_got								: STD_LOGIC;
 	SIGNAL TX_FIFO_Valid							: STD_LOGIC;
-	SIGNAL TX_FIFO_DataIn							: STD_LOGIC_VECTOR(33 DOWNTO 0);
-	SIGNAL TX_FIFO_DataOut						: STD_LOGIC_VECTOR(33 DOWNTO 0);
+	SIGNAL TX_FIFO_DataIn							: STD_LOGIC_VECTOR(TX_FIFO_BITS - 1 DOWNTO 0);
+	SIGNAL TX_FIFO_DataOut						: STD_LOGIC_VECTOR(TX_FIFO_BITS - 1 DOWNTO 0);
 	
 	SIGNAL TX_FSFIFO_rst							: STD_LOGIC;
 	SIGNAL TX_FSFIFO_put							: STD_LOGIC;
@@ -165,8 +178,8 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	SIGNAL TX_FSFIFO_Full							: STD_LOGIC;
 	SIGNAL TX_FSFIFO_got							: STD_LOGIC;
 	SIGNAL TX_FSFIFO_Valid						: STD_LOGIC;
-	SIGNAL TX_FSFIFO_DataIn						: STD_LOGIC_VECTOR(1 DOWNTO 0);
-	SIGNAL TX_FSFIFO_DataOut					: STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL TX_FSFIFO_DataIn						: STD_LOGIC_VECTOR(TX_FSFIFO_BITS - 1 DOWNTO 0);
+	SIGNAL TX_FSFIFO_DataOut					: STD_LOGIC_VECTOR(TX_FSFIFO_BITS - 1 DOWNTO 0);
 	
 	SIGNAL RX_FIFO_rst								: STD_LOGIC;
 	SIGNAL RX_FIFO_put								: STD_LOGIC;
@@ -175,8 +188,8 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	SIGNAL RX_FIFO_Full								: STD_LOGIC;
 	SIGNAL RX_FIFO_got								: STD_LOGIC;
 	SIGNAL RX_FIFO_Valid							: STD_LOGIC;
-	SIGNAL RX_FIFO_DataIn							: STD_LOGIC_VECTOR(33 DOWNTO 0);
-	SIGNAL RX_FIFO_DataOut						: STD_LOGIC_VECTOR(33 DOWNTO 0);
+	SIGNAL RX_FIFO_DataIn							: STD_LOGIC_VECTOR(RX_FIFO_BITS - 1 DOWNTO 0);
+	SIGNAL RX_FIFO_DataOut						: STD_LOGIC_VECTOR(RX_FIFO_BITS - 1 DOWNTO 0);
 
 	SIGNAL RX_FSFIFO_rst							: STD_LOGIC;
 	SIGNAL RX_FSFIFO_put							: STD_LOGIC;
@@ -184,8 +197,8 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	SIGNAL RX_FSFIFO_Full							: STD_LOGIC;
 	SIGNAL RX_FSFIFO_got							: STD_LOGIC;
 	SIGNAL RX_FSFIFO_Valid						: STD_LOGIC;
-	SIGNAL RX_FSFIFO_DataIn						: STD_LOGIC_VECTOR(1 DOWNTO 0);
-	SIGNAL RX_FSFIFO_DataOut					: STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL RX_FSFIFO_DataIn						: STD_LOGIC_VECTOR(RX_FSFIFO_BITS - 1 DOWNTO 0);
+	SIGNAL RX_FSFIFO_DataOut					: STD_LOGIC_VECTOR(RX_FSFIFO_BITS - 1 DOWNTO 0);
 
 	-- RX FIFO input/hold registers
 	SIGNAL RX_DataReg_en1							: STD_LOGIC;
@@ -342,21 +355,22 @@ BEGIN
 	TX_FIFO_put									<= TX_Valid;
 	TX_Ready										<= NOT TX_FIFO_Full;
 	
-	Trans_TX_SOF								<= TX_FIFO_DataOut(32);
-	Trans_TX_EOF								<= TX_FIFO_DataOut(33);
+	Trans_TX_SOF								<= TX_FIFO_DataOut(TX_SOF_BIT);
+	Trans_TX_EOF								<= TX_FIFO_DataOut(TX_EOF_BIT);
 
 	-- TX frame status FIFO
 	TX_FSFIFO_got								<= TX_FS_Ready;
 	TX_FS_Valid									<= TX_FSFIFO_Valid;
 	
-	TX_FSFIFO_DataIn						<= (0 => Trans_TXFS_SendOK, 1 => Trans_TXFS_Abort);
-	TX_FS_SendOK								<= TX_FSFIFO_DataOut(0);
-	TX_FS_Abort									<= TX_FSFIFO_DataOut(1);
+	TX_FSFIFO_DataIn						<= (TX_SENDOK_BIT =>	Trans_TXFS_SendOK,
+																	TX_ABORT_BIT =>		Trans_TXFS_Abort);
+	TX_FS_SendOK								<= TX_FSFIFO_DataOut(TX_SENDOK_BIT);
+	TX_FS_Abort									<= TX_FSFIFO_DataOut(TX_ABORT_BIT);
 	
 	-- RX path
 	RX_Data											<= RX_FIFO_DataOut(RX_Data'range);
-	RX_SOF											<= RX_FIFO_DataOut(32);
-	RX_EOF											<= RX_FIFO_DataOut(33);
+	RX_SOF											<= RX_FIFO_DataOut(RX_SOF_BIT);
+	RX_EOF											<= RX_FIFO_DataOut(RX_EOF_BIT);
 	RX_Valid										<= RX_FIFO_Valid;
 	RX_FIFO_got									<= RX_Ready;
 	
@@ -366,9 +380,10 @@ BEGIN
 	RX_FSFIFO_got								<= RX_FS_Ready;
 	RX_FS_Valid									<= RX_FSFIFO_Valid;
 	
-	RX_FSFIFO_DataIn						<= (0 => Trans_RXFS_CRC_OK, 1 => Trans_RXFS_Abort);
-	RX_FS_CRC_OK								<= RX_FSFIFO_DataOut(0);
-	RX_FS_Abort									<= RX_FSFIFO_DataOut(1);
+	RX_FSFIFO_DataIn						<= (RX_CRCOK_BIT => Trans_RXFS_CRC_OK,
+																	RX_ABORT_BIT => Trans_RXFS_Abort);
+	RX_FS_CRC_OK								<= RX_FSFIFO_DataOut(RX_CRCOK_BIT);
+	RX_FS_Abort									<= RX_FSFIFO_DataOut(RX_ABORT_BIT);
 
 	-- ==========================================================================	
 	-- TX path input pre-processing
@@ -387,9 +402,9 @@ BEGIN
 		
 		IEOFC : BLOCK	-- InsertEOFCounter
 			CONSTANT IEOF_COUNTER_START				: POSITIVE															:= (MAX_FRAME_SIZE_B / 4) - AHEAD_CYCLES_FOR_INSERT_EOF - 3;
-			CONSTANT IEOF_COUNTER_BITS					: POSITIVE															:= log2ceilnz(IEOF_COUNTER_START);
+			CONSTANT IEOF_COUNTER_BITS				: POSITIVE															:= log2ceilnz(IEOF_COUNTER_START);
 			
-			SIGNAL Counter_us									: SIGNED(IEOF_COUNTER_BITS DOWNTO 0)			:= to_signed(IEOF_COUNTER_START, IEOF_COUNTER_BITS + 1);
+			SIGNAL Counter_us									: SIGNED(IEOF_COUNTER_BITS DOWNTO 0)		:= to_signed(IEOF_COUNTER_START, IEOF_COUNTER_BITS + 1);
 		BEGIN
 			PROCESS(Clock)
 			BEGIN
@@ -416,13 +431,13 @@ BEGIN
 	-- TX path
 	TX_FIFO : ENTITY PoC.fifo_cc_got
 		GENERIC MAP (
-			D_BITS					=> TX_FIFO_DataIn'length,				-- data width
-			MIN_DEPTH				=> TX_FIFO_DEPTH,								-- minimum FIFO depth
-			ESTATE_WR_BITS	=> 0,														-- empty state bits
-			FSTATE_RD_BITS	=> 0,														-- full state bits
-			DATA_REG				=> FALSE,												-- store data content in registers
-			STATE_REG			=> TRUE,												-- registered Full/Empty indicators
-			OUTPUT_REG			=> TRUE												  -- registered FIFO output
+			D_BITS					=> TX_FIFO_BITS,				-- data width
+			MIN_DEPTH				=> TX_FIFO_DEPTH,				-- minimum FIFO depth
+			ESTATE_WR_BITS	=> 0,										-- empty state bits
+			FSTATE_RD_BITS	=> 0,										-- full state bits
+			DATA_REG				=> FALSE,								-- store data content in registers
+			STATE_REG				=> TRUE,								-- registered Full/Empty indicators
+			OUTPUT_REG			=> TRUE									 -- registered FIFO output
 		)
 		PORT MAP (
 			clk							=> Clock,
@@ -442,12 +457,12 @@ BEGIN
 	-- TX frame status path
 	TX_FSFIFO : ENTITY PoC.fifo_cc_got
 		GENERIC MAP (
-			D_BITS					=> TX_FSFIFO_DataIn'length,			-- data width
+			D_BITS					=> TX_FSFIFO_BITS,							-- data width
 			MIN_DEPTH				=> TX_FSFIFO_DEPTH,							-- minimum FIFO depth
-			ESTATE_WR_BITS	=> TX_FSFIFO_EMPTYSTATE_BITS,			-- empty state bits
+			ESTATE_WR_BITS	=> TX_FSFIFO_EMPTYSTATE_BITS,		-- empty state bits
 			FSTATE_RD_BITS	=> 0,														-- full state bits
 			DATA_REG				=> TRUE,												-- store data content in registers
-			STATE_REG			=> TRUE,												-- registered Full/Empty indicators
+			STATE_REG				=> TRUE,												-- registered Full/Empty indicators
 			OUTPUT_REG			=> FALSE	  										-- registered FIFO output
 		)
 		PORT MAP (
@@ -470,12 +485,12 @@ BEGIN
 	-- RX path
 	RX_FIFO : ENTITY PoC.fifo_cc_got
 		GENERIC MAP (
-			D_BITS					=> RX_FIFO_DataIn'length,				-- data width
+			D_BITS					=> RX_FIFO_BITS,								-- data width
 			MIN_DEPTH				=> RX_FIFO_DEPTH,								-- minimum FIFO depth
-			ESTATE_WR_BITS	=> RX_FIFO_EMPTYSTATE_BITS,				-- empty state bits
+			ESTATE_WR_BITS	=> RX_FIFO_EMPTYSTATE_BITS,			-- empty state bits
 			FSTATE_RD_BITS	=> 0,														-- full state bits
 			DATA_REG				=> FALSE,												-- store data content in registers
-			STATE_REG			=> TRUE,												-- registered Full/Empty indicators
+			STATE_REG				=> TRUE,												-- registered Full/Empty indicators
 			OUTPUT_REG			=> TRUE													-- registered FIFO output
 		)
 		PORT MAP (
@@ -504,13 +519,13 @@ BEGIN
 	-- RX frame status path
 	RX_FSFIFO : ENTITY PoC.fifo_cc_got
 		GENERIC MAP (
-			D_BITS					=> RX_FSFIFO_DataIn'length,				-- data width
+			D_BITS					=> RX_FSFIFO_BITS,								-- data width
 			MIN_DEPTH				=> RX_FSFIFO_DEPTH,								-- minimum FIFO depth
-			ESTATE_WR_BITS	=> RX_FSFIFO_EMPTYSTATE_BITS,				-- empty state bits
-			FSTATE_RD_BITS	=> 0,														-- full state bits
-			DATA_REG				=> TRUE,												-- store data content in registers
-			STATE_REG			=> TRUE,												-- registered Full/Empty indicators
-			OUTPUT_REG			=> FALSE												-- registered FIFO output
+			ESTATE_WR_BITS	=> RX_FSFIFO_EMPTYSTATE_BITS,			-- empty state bits
+			FSTATE_RD_BITS	=> 0,															-- full state bits
+			DATA_REG				=> TRUE,													-- store data content in registers
+			STATE_REG				=> TRUE,													-- registered Full/Empty indicators
+			OUTPUT_REG			=> FALSE													-- registered FIFO output
 		)
 		PORT MAP (
 			clk							=> Clock,
@@ -722,65 +737,65 @@ BEGIN
 	end generate genDebug0;
 	genDebug1 : if (ENABLE_DEBUGPORT = TRUE) generate
 	begin
-	-- from physical layer
-		Phy_Ready										: STD_LOGIC;
+		-- from physical layer
+		DebugPortOut.Phy_Ready									<= Phy_Ready;
 		-- RX: from physical layer
-		RX_Phy_Data									: T_SLV_32;
-		RX_Phy_CiK									: T_SATA_CIK;										-- 4 bit
+		DebugPortOut.RX_Phy_Data								<= Phy_RX_Data;
+		DebugPortOut.RX_Phy_CiK									<= Phy_RX_CharIsK;
 		-- RX: after primitive detector
-		RX_Primitive								: T_SATA_PRIMITIVE;							-- 5 bit
+		DebugPortOut.RX_Primitive								<= RX_Primitive_d;
 		-- RX: after unscrambling
-		RX_DataUnscrambler_rst			: STD_LOGIC;
-		RX_DataUnscrambler_en				: STD_LOGIC;
-		RX_DataUnscrambler_DataOut	:	T_SLV_32;
+		DebugPortOut.RX_DataUnscrambler_rst			<= RX_DataUnscrambler_rst;
+		DebugPortOut.RX_DataUnscrambler_en			<= RX_DataUnscrambler_en;
+		DebugPortOut.RX_DataUnscrambler_DataOut	<= RX_DataUnscrambler_DataOut;
 		-- RX: CRC control
-		RX_CRC_rst									: STD_LOGIC;
-		RX_CRC_en										: STD_LOGIC;
+		DebugPortOut.RX_CRC_rst									<= RX_CRC_rst;
+		DebugPortOut.RX_CRC_en									<= RX_CRC_en;
 		-- RX: DataRegisters
-		RX_DataReg_en1							: STD_LOGIC;
-		RX_DataReg_en2							: STD_LOGIC;
+		DebugPortOut.RX_DataReg_en1							<= RX_DataReg_en1;
+		DebugPortOut.RX_DataReg_en2							<= RX_DataReg_en2;
 		-- RX: before RX_FIFO
-		RX_FIFO_SpaceAvailable			: STD_LOGIC;
-		RX_FIFO_rst									: STD_LOGIC;
-		RX_FIFO_put									: STD_LOGIC;
-		RX_FSFIFO_rst								: STD_LOGIC;
-		RX_FSFIFO_put								: STD_LOGIC;
+		DebugPortOut.RX_FIFO_SpaceAvailable			<= RX_FIFO_SpaceAvailable;
+		DebugPortOut.RX_FIFO_rst								<= RX_FIFO_rst;
+		DebugPortOut.RX_FIFO_put								<= RX_FIFO_put;
+		DebugPortOut.RX_FSFIFO_rst							<= RX_FSFIFO_rst;
+		DebugPortOut.RX_FSFIFO_put							<= RX_FSFIFO_put;
 		-- RX: after RX_FIFO
-		RX_Data											: T_SLV_32;
-		RX_Valid										: STD_LOGIC;
-		RX_Ready										: STD_LOGIC;
-		RX_SOF											: STD_LOGIC;
-		RX_EOF											: STD_LOGIC;
-		RX_FS_Valid									: STD_LOGIC;
-		RX_FS_Ready									: STD_LOGIC;
-		RX_FS_CRC_OK								: STD_LOGIC;
-		RX_FS_Abort									: STD_LOGIC;
-		--																													=> 125 bit
+		DebugPortOut.RX_Data										<= RX_FIFO_DataOut(RX_Data'range);
+		DebugPortOut.RX_Valid										<= RX_FIFO_Valid;
+		DebugPortOut.RX_Ready										<= RX_FIFO_got;
+		DebugPortOut.RX_SOF											<= RX_FIFO_DataOut(RX_SOF_BIT);
+		DebugPortOut.RX_EOF											<= RX_FIFO_DataOut(RX_EOF_BIT);
+		DebugPortOut.RX_FS_Valid								<= RX_FSFIFO_Valid;
+		DebugPortOut.RX_FS_Ready								<= RX_FSFIFO_got;
+		DebugPortOut.RX_FS_CRC_OK								<= RX_FSFIFO_DataOut(RX_CRCOK_BIT);
+		DebugPortOut.RX_FS_Abort								<= RX_FSFIFO_DataOut(RX_ABORT_BIT);
+		--																			
 		-- TX: from Link Layer
-		TX_Data											: T_SLV_32;
-		TX_Valid										: STD_LOGIC;
-		TX_Ready										: STD_LOGIC;
-		TX_SOF											: STD_LOGIC;
-		TX_EOF											: STD_LOGIC;
-		TX_FS_Valid									: STD_LOGIC;
-		TX_FS_Ready									: STD_LOGIC;
-		TX_FS_Send_OK								: STD_LOGIC;
-		TX_FS_Abort									: STD_LOGIC;
+		DebugPortOut.TX_Data										<= 
+		DebugPortOut.TX_Valid										<= 
+		DebugPortOut.TX_Ready										<= 
+		DebugPortOut.TX_SOF											<= 
+		DebugPortOut.TX_EOF											<= 
+		DebugPortOut.TX_FS_Valid								<= 
+		DebugPortOut.TX_FS_Ready								<= 
+		DebugPortOut.TX_FS_Send_OK							<= 
+		DebugPortOut.TX_FS_Abort								<= 
 		-- TX: TXFIFO
-		TX_FIFO_got									: STD_LOGIC;
-		TX_FSFIFO_got								: STD_LOGIC;
+		DebugPortOut.TX_FIFO_got								<= 
+		DebugPortOut.TX_FSFIFO_got							<= 
 		-- TX: CRC control
-		TX_CRC_rst									: STD_LOGIC;
-		TX_CRC_en										: STD_LOGIC;
-		TX_CRC_mux									: STD_LOGIC;
+		DebugPortOut.TX_CRC_rst									<= 
+		DebugPortOut.TX_CRC_en									<= 
+		DebugPortOut.TX_CRC_mux									<= 
 		-- TX: after scrambling
-		TX_DataScrambler_rst				: STD_LOGIC;
-		TX_DataScrambler_en					: STD_LOGIC;
-		TX_DataScrambler_DataOut		:	T_SLV_32;
+		DebugPortOut.TX_DataScrambler_rst				<= 
+		DebugPortOut.TX_DataScrambler_en				<= 
+		DebugPortOut.TX_DataScrambler_DataOut		<= 
 		-- TX: PrimitiveMux
-		TX_Primitive								: T_SATA_PRIMITIVE;							-- 5 bit ?
+		DebugPortOut.TX_Primitive								<= 
 		-- TX: to Physical Layer
-		TX_Data											: T_SLV_32;											
-		TX_CiK											: T_SATA_CIK;										-- 4 bit
+		DebugPortOut.TX_Phy_Data								<= 
+		DebugPortOut.TX_Phy_CiK									<= 
 	end generate genDebug1;
 END;

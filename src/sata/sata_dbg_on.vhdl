@@ -130,8 +130,8 @@ package satadbg is
 		-- TX: PrimitiveMux
 		TX_Primitive								: T_SATA_PRIMITIVE;							-- 5 bit ?
 		-- TX: to Physical Layer
-		TX_Data											: T_SLV_32;											
-		TX_CiK											: T_SATA_CIK;										-- 4 bit
+		TX_Phy_Data									: T_SLV_32;											
+		TX_Phy_CiK									: T_SATA_CIK;										-- 4 bit
 	END RECORD;		--																							=> 120 bit
 	
 	
@@ -146,9 +146,9 @@ package satadbg is
 		Transceiver_Error			: T_SATA_TRANSCEIVER_ERROR;
 		-- Physical Layer
 		Physical							: T_SATADBG_PHYSICALOUT;
-		Physical_Command			: T_SATA_PHYSICAL_COMMAND;
-		Physical_Status				: T_SATA_PHYSICAL_STATUS;							-- 3 bit
-		Physical_Error				: T_SATA_PHYSICAL_ERROR;
+		Physical_Command			: T_SATA_PHY_COMMAND;
+		Physical_Status				: T_SATA_PHY_STATUS;									-- 3 bit
+		Physical_Error				: T_SATA_PHY_ERROR;
 		-- Link Layer
 		Link									: T_SATADBG_LINKOUT;									-- RX: 125 + TX: 120 bit
 		Link_Command					: T_SATA_LINK_COMMAND;								-- 1 bit
