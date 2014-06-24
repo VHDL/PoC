@@ -39,7 +39,7 @@ SET vhdlsim = true
 SELECT ICON_(ChipScope_Pro_-_Integrated_Controller) family Xilinx,_Inc. 1.06.a
 # END Select
 # BEGIN Parameters
-CSET component_name=ChipScopeICON
+CSET component_name=xil_ChipScopeICON_7
 CSET constraint_type=external
 CSET enable_jtag_bufg=true
 CSET example_design=true
