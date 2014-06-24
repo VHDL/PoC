@@ -440,6 +440,9 @@ package body config is
 					when others =>								report "Unknown Virtex-7 subtype: " & t_device_subtype'image(DEV_SUB) severity failure;
 				end case;
 				
+			when DEVICE_STRATIX2 => return TRANSCEIVER_GXB;
+			when DEVICE_STRATIX4 => return TRANSCEIVER_GXB;
+				
 			when others => report "Unknown device." severity failure;
 									-- return statement is explicitly missing otherwise XST won't stop
 		end case;
