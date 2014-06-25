@@ -102,7 +102,7 @@ if ($PoC_ExitCode -eq 0) {
 	}
 	
 	# load Xilinx Vivado environment if not loaded before
-	if ($PoC_PyWrapper_LOADENV_VIVADO -eq $true) {
+	if ($PoC_PyWrapper_LoadEnv_Vivado -eq $true) {
 		Write-Host "ERROR: Vivado support not implemented." -ForegroundColor Red
 		$PoC_ExitCode = 1
 		# TODO: add Vivado support here
