@@ -85,6 +85,200 @@ PACKAGE xilinx IS
 		LastIndex	=> 0
 	);
 
+	component xil_ChipScopeICON_1 is
+		port (
+			control0						: inout	T_CHIPSCOPE_CONTROL
+		);
+	end component;
+
+	component xil_ChipScopeICON_2 is
+		port (
+			control0						: inout	T_CHIPSCOPE_CONTROL;
+			control1						: inout	T_CHIPSCOPE_CONTROL
+		);
+	end component;
+
+	component xil_ChipScopeICON_3 is
+		port (
+			control0						: inout	T_CHIPSCOPE_CONTROL;
+			control1						: inout	T_CHIPSCOPE_CONTROL;
+			control2						: inout	T_CHIPSCOPE_CONTROL
+		);
+	end component;
+
+	component xil_ChipScopeICON_4 is
+		port (
+			control0						: inout	T_CHIPSCOPE_CONTROL;
+			control1						: inout	T_CHIPSCOPE_CONTROL;
+			control2						: inout	T_CHIPSCOPE_CONTROL;
+			control3						: inout	T_CHIPSCOPE_CONTROL
+		);
+	end component;
+
+	component xil_ChipScopeICON_5 is
+		port (
+			control0						: inout	T_CHIPSCOPE_CONTROL;
+			control1						: inout	T_CHIPSCOPE_CONTROL;
+			control2						: inout	T_CHIPSCOPE_CONTROL;
+			control3						: inout	T_CHIPSCOPE_CONTROL;
+			control4						: inout	T_CHIPSCOPE_CONTROL
+		);
+	end component;
+
+	component xil_ChipScopeICON_6 is
+		port (
+			control0						: inout	T_CHIPSCOPE_CONTROL;
+			control1						: inout	T_CHIPSCOPE_CONTROL;
+			control2						: inout	T_CHIPSCOPE_CONTROL;
+			control3						: inout	T_CHIPSCOPE_CONTROL;
+			control4						: inout	T_CHIPSCOPE_CONTROL;
+			control5						: inout	T_CHIPSCOPE_CONTROL
+		);
+	end component;
+
+	component xil_ChipScopeICON_7 is
+		port (
+			control0						: inout	T_CHIPSCOPE_CONTROL;
+			control1						: inout	T_CHIPSCOPE_CONTROL;
+			control2						: inout	T_CHIPSCOPE_CONTROL;
+			control3						: inout	T_CHIPSCOPE_CONTROL;
+			control4						: inout	T_CHIPSCOPE_CONTROL;
+			control5						: inout	T_CHIPSCOPE_CONTROL;
+			control6						: inout	T_CHIPSCOPE_CONTROL
+		);
+	end component;
+
+	component xil_ChipScopeICON_8 is
+		port (
+			control0						: inout	T_CHIPSCOPE_CONTROL;
+			control1						: inout	T_CHIPSCOPE_CONTROL;
+			control2						: inout	T_CHIPSCOPE_CONTROL;
+			control3						: inout	T_CHIPSCOPE_CONTROL;
+			control4						: inout	T_CHIPSCOPE_CONTROL;
+			control5						: inout	T_CHIPSCOPE_CONTROL;
+			control6						: inout	T_CHIPSCOPE_CONTROL;
+			control7						: inout	T_CHIPSCOPE_CONTROL
+		);
+	end component;
+
+	component xil_ChipScopeICON_9 is
+		port (
+			control0						: inout	T_CHIPSCOPE_CONTROL;
+			control1						: inout	T_CHIPSCOPE_CONTROL;
+			control2						: inout	T_CHIPSCOPE_CONTROL;
+			control3						: inout	T_CHIPSCOPE_CONTROL;
+			control4						: inout	T_CHIPSCOPE_CONTROL;
+			control5						: inout	T_CHIPSCOPE_CONTROL;
+			control6						: inout	T_CHIPSCOPE_CONTROL;
+			control7						: inout	T_CHIPSCOPE_CONTROL;
+			control8						: inout	T_CHIPSCOPE_CONTROL
+		);
+	end component;
+
+	component xil_ChipScopeICON_10 is
+		port (
+			control0						: inout	T_CHIPSCOPE_CONTROL;
+			control1						: inout	T_CHIPSCOPE_CONTROL;
+			control2						: inout	T_CHIPSCOPE_CONTROL;
+			control3						: inout	T_CHIPSCOPE_CONTROL;
+			control4						: inout	T_CHIPSCOPE_CONTROL;
+			control5						: inout	T_CHIPSCOPE_CONTROL;
+			control6						: inout	T_CHIPSCOPE_CONTROL;
+			control7						: inout	T_CHIPSCOPE_CONTROL;
+			control8						: inout	T_CHIPSCOPE_CONTROL;
+			control9						: inout	T_CHIPSCOPE_CONTROL
+		);
+	end component;
+
+	component xil_ChipScopeICON_11 is
+		port (
+			control0						: inout	T_CHIPSCOPE_CONTROL;
+			control1						: inout	T_CHIPSCOPE_CONTROL;
+			control2						: inout	T_CHIPSCOPE_CONTROL;
+			control3						: inout	T_CHIPSCOPE_CONTROL;
+			control4						: inout	T_CHIPSCOPE_CONTROL;
+			control5						: inout	T_CHIPSCOPE_CONTROL;
+			control6						: inout	T_CHIPSCOPE_CONTROL;
+			control7						: inout	T_CHIPSCOPE_CONTROL;
+			control8						: inout	T_CHIPSCOPE_CONTROL;
+			control9						: inout	T_CHIPSCOPE_CONTROL;
+			control10						: inout	T_CHIPSCOPE_CONTROL
+		);
+	end component;
+
+	component xil_ChipScopeICON_12 is
+		port (
+			control0						: inout	T_CHIPSCOPE_CONTROL;
+			control1						: inout	T_CHIPSCOPE_CONTROL;
+			control2						: inout	T_CHIPSCOPE_CONTROL;
+			control3						: inout	T_CHIPSCOPE_CONTROL;
+			control4						: inout	T_CHIPSCOPE_CONTROL;
+			control5						: inout	T_CHIPSCOPE_CONTROL;
+			control6						: inout	T_CHIPSCOPE_CONTROL;
+			control7						: inout	T_CHIPSCOPE_CONTROL;
+			control8						: inout	T_CHIPSCOPE_CONTROL;
+			control9						: inout	T_CHIPSCOPE_CONTROL;
+			control10						: inout	T_CHIPSCOPE_CONTROL;
+			control11						: inout	T_CHIPSCOPE_CONTROL
+		);
+	end component;
+
+	component xil_ChipScopeICON_13 is
+		port (
+			control0						: inout	T_CHIPSCOPE_CONTROL;
+			control1						: inout	T_CHIPSCOPE_CONTROL;
+			control2						: inout	T_CHIPSCOPE_CONTROL;
+			control3						: inout	T_CHIPSCOPE_CONTROL;
+			control4						: inout	T_CHIPSCOPE_CONTROL;
+			control5						: inout	T_CHIPSCOPE_CONTROL;
+			control6						: inout	T_CHIPSCOPE_CONTROL;
+			control7						: inout	T_CHIPSCOPE_CONTROL;
+			control8						: inout	T_CHIPSCOPE_CONTROL;
+			control9						: inout	T_CHIPSCOPE_CONTROL;
+			control10						: inout	T_CHIPSCOPE_CONTROL;
+			control11						: inout	T_CHIPSCOPE_CONTROL;
+			control12						: inout	T_CHIPSCOPE_CONTROL
+		);
+	end component;
+
+	component xil_ChipScopeICON_14 is
+		port (
+			control0						: inout	T_CHIPSCOPE_CONTROL;
+			control1						: inout	T_CHIPSCOPE_CONTROL;
+			control2						: inout	T_CHIPSCOPE_CONTROL;
+			control3						: inout	T_CHIPSCOPE_CONTROL;
+			control4						: inout	T_CHIPSCOPE_CONTROL;
+			control5						: inout	T_CHIPSCOPE_CONTROL;
+			control6						: inout	T_CHIPSCOPE_CONTROL;
+			control7						: inout	T_CHIPSCOPE_CONTROL;
+			control8						: inout	T_CHIPSCOPE_CONTROL;
+			control9						: inout	T_CHIPSCOPE_CONTROL;
+			control10						: inout	T_CHIPSCOPE_CONTROL;
+			control11						: inout	T_CHIPSCOPE_CONTROL;
+			control12						: inout	T_CHIPSCOPE_CONTROL;
+			control13						: inout	T_CHIPSCOPE_CONTROL
+		);
+	end component;
+	
+	component xil_ChipScopeICON_15 is
+		port (
+			control0						: inout	T_CHIPSCOPE_CONTROL;
+			control1						: inout	T_CHIPSCOPE_CONTROL;
+			control2						: inout	T_CHIPSCOPE_CONTROL;
+			control3						: inout	T_CHIPSCOPE_CONTROL;
+			control4						: inout	T_CHIPSCOPE_CONTROL;
+			control5						: inout	T_CHIPSCOPE_CONTROL;
+			control6						: inout	T_CHIPSCOPE_CONTROL;
+			control7						: inout	T_CHIPSCOPE_CONTROL;
+			control8						: inout	T_CHIPSCOPE_CONTROL;
+			control9						: inout	T_CHIPSCOPE_CONTROL;
+			control10						: inout	T_CHIPSCOPE_CONTROL;
+			control11						: inout	T_CHIPSCOPE_CONTROL;
+			control12						: inout	T_CHIPSCOPE_CONTROL;
+			control13						: inout	T_CHIPSCOPE_CONTROL;
+			control14						: inout	T_CHIPSCOPE_CONTROL
+		);
+	end component;
 	
 	COMPONENT xil_SystemMonitor_Virtex6 IS
 		PORT (
