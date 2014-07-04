@@ -53,40 +53,46 @@ import re
 
 
 class PoCBase(object):
-	from platform import system
-	
 	__debug = False
 	__verbose = False
 	__quiet = False
-	platform = system()
+	platform = ""
 
-	Directories = {
-		"Root"					: Path.cwd(),
-		"PoCRoot"				: None
-		}
+	Directories =	{}
+	Files =				{}
 	
-	Files = {
-		"PoCConfig"			: None,
-		"PoCStructure"	: None
-	}
-	
-	__pocConfigFileName = "configuration.ini"
-	__pocStructureFileName = "structure.ini"
+	__pocConfigFileName =			"configuration.ini"
+	__pocStructureFileName =	"structure.ini"
 	
 	pocConfig = None
 	pocStructure = None
 	
 	def __init__(self, debug, verbose, quiet):
+		import platform
+	
+		# save flags
 		self.__debug = debug
 		self.__verbose = verbose
 		self.__quiet = quiet
-
-		self.__readPoCConfiguration()
-		self.__readPoCStructure()
+		
+		# load platform information (Windows, Linux, ...)
+		self.platform = platform.system()
+		
+		# check for environment variables
+		if (environ.get('PoCRootDirectory') == None):
+			raise PoC.PoCEnvironmentException("Shell environment does not provide 'PoCRootDirectory' variable.")
+		
+		self.Directories['Root'] =		Path.cwd()
+		self.Directories['PoCRoot'] =	Path(environ.get('PoCRootDirectory'))
+		self.Files['PoCConfig'] =			None
+		self.Files['PoCStructure'] =	None
+		
+		self.readPoCConfiguration()
+		self.readPoCStructure()
 		
 	# read PoC configuration
 	# ============================================================================
-	def __readPoCConfiguration(self):
+	def readPoCConfiguration(self):
 		pocConfigFilePath = self.Directories["Root"] / self.__pocConfigFileName
 		self.Files["PoCConfig"]	= pocConfigFilePath
 		
@@ -103,7 +109,7 @@ class PoCBase(object):
 
 	# read PoC configuration
 	# ============================================================================
-	def __readPoCStructure(self):
+	def readPoCStructure(self):
 		pocStructureFilePath = self.Directories["Root"] / self.__pocStructureFileName
 		self.Files["PoCStructure"]	= pocStructureFilePath
 		

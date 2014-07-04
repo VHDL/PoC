@@ -71,8 +71,8 @@ class PoCConfiguration(PoC.PoCBase):
 			self.printDebug("New configuration file created: %s" % self.Files["PoCConfig"])
 			
 			# re-read configuration
-			self.__readPoCConfiguration()
-			self.__readPoCStructure()
+			self.readPoCConfiguration()
+			self.readPoCStructure()
 	
 	def autoConfiguration(self):
 		raise PoC.NotImplementedException("No automatic configuration available!")

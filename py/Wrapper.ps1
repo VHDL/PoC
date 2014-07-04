@@ -40,6 +40,9 @@ $PoC_ScriptDir = "py"
 Set-Location $PoC_RootDir_RelPath
 $PoC_RootDir_AbsPath = Get-Location
 
+# publish PoC root directory as environment variable
+$env:PoCRootDirectory = $PoC_RootDir_AbsPath
+
 if ($PoC_PyWrapper_Debug -eq $true ) {
 	Write-Host "This is the PoC Library script wrapper operating in debug mode." -ForegroundColor Yellow
 	Write-Host ""
@@ -122,3 +125,6 @@ if ($PoC_ExitCode -eq 0) {
 	# go back to script dir
 	Set-Location $PoC_PyWrapper_ScriptDir
 }
+
+# clean up
+$env:PoCRootDirectory = $null
