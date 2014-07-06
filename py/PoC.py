@@ -48,117 +48,134 @@ else:
 
 from enum import Enum, EnumMeta, unique
 import configparser
+from libDecorators import property
 from pathlib import Path
 import re
 
 
 class PoCBase(object):
-	__debug = False
-	__verbose = False
-	__quiet = False
-	platform = ""
+	# configure hard coded variables here
+	__scriptDirectoryName = 			"py"
+	__pocPrivateConfigFileName =	"config.private.ini"
+	__pocPublicConfigFileName =		"config.public.ini"
+	
+	# private fields
+	__debug =			False
+	__verbose =		False
+	__quiet =			False
+	__platform =	""
 
-	Directories =	{}
-	Files =				{}
+	__directories =	{}
+	__files =				{}
+	__pocConfig =		None
 	
-	__pocConfigFileName =			"configuration.ini"
-	__pocStructureFileName =	"structure.ini"
-	
-	pocConfig = None
-	pocStructure = None
-	
+	# constructor
+	# ============================================================================
 	def __init__(self, debug, verbose, quiet):
-		import platform
-	
 		# save flags
-		self.__debug = debug
-		self.__verbose = verbose
-		self.__quiet = quiet
+		self.__debug =		debug
+		self.__verbose =	verbose
+		self.__quiet =		quiet
 		
 		# load platform information (Windows, Linux, ...)
-		self.platform = platform.system()
+		from platform import system
+		self.__platform = system()
 		
 		# check for environment variables
+		from os import environ
 		if (environ.get('PoCRootDirectory') == None):
 			raise PoC.PoCEnvironmentException("Shell environment does not provide 'PoCRootDirectory' variable.")
 		
-		self.Directories['Root'] =		Path.cwd()
-		self.Directories['PoCRoot'] =	Path(environ.get('PoCRootDirectory'))
-		self.Files['PoCConfig'] =			None
-		self.Files['PoCStructure'] =	None
+		self.directories['Root'] =				Path.cwd()
+		self.directories['PoCRoot'] =			Path(environ.get('PoCRootDirectory'))
+		self.files['PoCPrivateConfig'] =	self.directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPrivateConfigFileName
+		self.files['PoCPublicConfig'] =		self.directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPublicConfigFileName
 		
 		self.readPoCConfiguration()
-		self.readPoCStructure()
+
+	# class properties
+	# ============================================================================
+	@property
+	def debug():
+		def fget(self):
+			return self.__debug
+	
+	@property
+	def verbose():
+		def fget(self):
+			return self.__verbose
+	
+	@property
+	def quiet():
+		def fget(self):
+			return self.__quiet
+	
+	@property
+	def platform():
+		def fget(self):
+			return self.__platform
+	
+	@property
+	def directories():
+		def fget(self):
+			return self.__directories
+			
+	@property
+	def files():
+		def fget(self):
+			return self.__files
 		
 	# read PoC configuration
 	# ============================================================================
 	def readPoCConfiguration(self):
-		pocConfigFilePath = self.Directories["Root"] / self.__pocConfigFileName
-		self.Files["PoCConfig"]	= pocConfigFilePath
+		pocPrivateConfigFilePath =	self.files['PoCPrivateConfig']
+		pocPublicConfigFilePath =		self.files['PoCPublicConfig']
 		
-		self.printDebug("Reading PoC configuration from '%s'" % str(pocConfigFilePath))
-		if not pocConfigFilePath.exists():
-			raise PoCNotConfiguredException("PoC configuration file does not exist. (%s)" % str(pocConfigFilePath))
+		self.printDebug("Reading PoC configuration from '%s' and '%s'" % (str(pocPrivateConfigFilePath), str(pocPublicConfigFilePath)))
+		if not pocPrivateConfigFilePath.exists():			raise PoCNotConfiguredException("Private PoC configuration file does not exist. (%s)" % str(pocPrivateConfigFilePath))
+		if not pocPublicConfigFilePath.exists():			raise PoCNotConfiguredException("Public PoC configuration file does not exist. (%s)" % str(pocPublicConfigFilePath))
 		
 		self.pocConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
 		self.pocConfig.optionxform = str
-		self.pocConfig.read(str(pocConfigFilePath))
+		self.pocConfig.read([str(pocPrivateConfigFilePath), str(pocPublicConfigFilePath)])
 		
 		# parsing values into class fields
-		self.Directories["PoCRoot"] = Path(self.pocConfig['PoC']['InstallationDirectory'])
+		if (self.directories["PoCRoot"] != Path(self.pocConfig['PoC']['InstallationDirectory'])):
+			raise PoCNotConfiguredException("There is a mismatch between PoCRoot and PoC installation directory.")
 
-	# read PoC configuration
-	# ============================================================================
-	def readPoCStructure(self):
-		pocStructureFilePath = self.Directories["Root"] / self.__pocStructureFileName
-		self.Files["PoCStructure"]	= pocStructureFilePath
-		
-		self.printDebug("Reading PoC configuration from '%s'" % str(pocStructureFilePath))
-		if not pocStructureFilePath.exists():
-			raise PoCNotConfiguredException("PoC structure file does not exist. (%s)" % str(pocStructureFilePath))
-		
-		self.pocStructure = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
-		self.pocStructure.optionxform = str
-		self.pocStructure.read(str(pocStructureFilePath))
-		
+		# read PoC configuration
+		# ============================================================================
 		# parsing values into class fields
-		self.Directories["PoCSource"] =			self.Directories["PoCRoot"] / self.pocStructure['DirectoryNames']['HDLSourceFiles']
-		self.Directories["PoCTestbench"] =	self.Directories["PoCRoot"] / self.pocStructure['DirectoryNames']['TestbenchFiles']
-		self.Directories["PoCNetList"] =		self.Directories["PoCRoot"] / self.pocStructure['DirectoryNames']['NetListFiles']
-		self.Directories["PoCTemp"] =				self.Directories["PoCRoot"] / self.pocStructure['DirectoryNames']['TemporaryFiles']
-		
-		self.Directories["iSimFiles"] =			self.Directories["PoCRoot"] / self.pocStructure['DirectoryNames']['ISESimulatorFiles']
-		self.Directories["XSTFiles"] =			self.Directories["PoCRoot"] / self.pocStructure['DirectoryNames']['ISESynthesisFiles']
-		#self.Directories["QuartusFiles"] =	self.Directories["PoCRoot"] / self.pocStructure['DirectoryNames']['QuartusSynthesisFiles']
-		
-		self.Directories["iSimTemp"] =			self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['ISESimulatorFiles']
-		self.Directories["xSimTemp"] =			self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['VivadoSimulatorFiles']
-		self.Directories["vSimTemp"] =			self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['ModelSimSimulatorFiles']
-		self.Directories["GHDLTemp"] =			self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['GHDLSimulatorFiles']
-		
-		self.Directories["CoreGenTemp"] =		self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['ISECoreGeneratorFiles']
-		self.Directories["XSTTemp"] =				self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['ISESynthesisFiles']
-		#self.Directories["QuartusTemp"] =	self.Directories["PoCTemp"] / self.pocStructure['DirectoryNames']['QuartusSynthesisFiles']
+		self.directories["PoCSource"] =			self.directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['HDLSourceFiles']
+		self.directories["PoCTestbench"] =	self.directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['TestbenchFiles']
+		self.directories["PoCNetList"] =		self.directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['NetListFiles']
+		self.directories["PoCTemp"] =				self.directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['TemporaryFiles']
+
+		self.directories["iSimFiles"] =			self.directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['ISESimulatorFiles']
+		self.directories["XSTFiles"] =			self.directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['ISESynthesisFiles']
+		#self.directories["QuartusFiles"] =	self.directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['QuartusSynthesisFiles']
+
+		self.directories["iSimTemp"] =			self.directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['ISESimulatorFiles']
+		self.directories["xSimTemp"] =			self.directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['VivadoSimulatorFiles']
+		self.directories["vSimTemp"] =			self.directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['ModelSimSimulatorFiles']
+		self.directories["GHDLTemp"] =			self.directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['GHDLSimulatorFiles']
+
+		self.directories["CoreGenTemp"] =		self.directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['ISECoreGeneratorFiles']
+		self.directories["XSTTemp"] =				self.directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['ISESynthesisFiles']
+		#self.directories["QuartusTemp"] =	self.directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['QuartusSynthesisFiles']
 	
-	def getDebug(self):
-		return self.__debug
-		
-	def getVerbose(self):
-		return self.__verbose
-	
-	def getQuiet(self):
-		return self.__quiet
-	
+	# print messages
+	# ============================================================================
 	def printDebug(self, message):
-		if (self.__debug):
+		if (self.debug):
 			print("DEBUG: " + message)
 	
 	def printVerbose(self, message):
-		if (self.__verbose):
+		if (self.verbose):
 			print(message)
 	
 	def printNonQuiet(self, message):
-		if (not self.__quiet):
+		if (not self.quiet):
 			print(message)
 
 

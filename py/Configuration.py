@@ -38,41 +38,44 @@ import PoC
 
 class PoCConfiguration(PoC.PoCBase):
 	
+	__privateSections = ["PoC", "Xilinx", "Xilinx-ISE", "Xilinx-Vivado", "Altera-QuartusII", "Altera-ModelSim", "Questa-ModelSim", "GHDL", "GTKWave"]
+	
 	def __init__(self, debug, verbose, quiet):
-		if not ((self.platform == "Windows") or (self.platform == "Linux")):
-			raise PoC.PoCPlatformNotSupportedException(self.platform)
-		
 		try:
 			super(self.__class__, self).__init__(debug, verbose, quiet)
+
+			if not ((self.Platform == "Windows") or (self.Platform == "Linux")):
+				raise PoC.PoCPlatformNotSupportedException(self.Platform)
+				
 		except PoC.PoCNotConfiguredException as ex:
-			import configparser
+			from configparser import ConfigParser, ExtendedInterpolation
+			from collections import OrderedDict
 			
 			self.printVerbose("Configuration file does not exists; creating a new one")
 			
-			self.pocConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+			self.pocConfig = ConfigParser(interpolation=ExtendedInterpolation())
 			self.pocConfig.optionxform = str
-			self.pocConfig['PoC'] = {}
+			self.pocConfig['PoC'] = OrderedDict()
 			self.pocConfig['PoC']['Version'] = '0.0.0'
-			self.pocConfig['PoC']['InstallationDirectory'] = self.Directories["Root"].as_posix()
+			self.pocConfig['PoC']['InstallationDirectory'] = self.Directories["PoCRoot"].as_posix()
 
-			self.pocConfig['Xilinx'] = {}
-			self.pocConfig['Xilinx-ISE'] = {}
-			self.pocConfig['Xilinx-Vivado'] = {}
-			self.pocConfig['Altera-QuartusII'] = {}
-			self.pocConfig['Altera-ModelSim'] = {}
-			self.pocConfig['Questa-ModelSim'] = {}
-			self.pocConfig['GHDL'] = {}
-			self.pocConfig['GTKWave'] = {}
+			self.pocConfig['Xilinx'] = OrderedDict()
+			self.pocConfig['Xilinx-ISE'] = OrderedDict()
+			self.pocConfig['Xilinx-Vivado'] = OrderedDict()
+			self.pocConfig['Altera-QuartusII'] = OrderedDict()
+			self.pocConfig['Altera-ModelSim'] = OrderedDict()
+			self.pocConfig['Questa-ModelSim'] = OrderedDict()
+			self.pocConfig['GHDL'] = OrderedDict()
+			self.pocConfig['GTKWave'] = OrderedDict()
 
 			# Writing configuration to disc
-			with self.Files["PoCConfig"].open('w') as configFileHandle:
+			with self.Files["PoCPrivateConfig"].open('w') as configFileHandle:
 				self.pocConfig.write(configFileHandle)
 			
-			self.printDebug("New configuration file created: %s" % self.Files["PoCConfig"])
+			self.printDebug("New configuration file created: %s" % self.Files["PoCPrivateConfig"])
 			
 			# re-read configuration
 			self.readPoCConfiguration()
-			self.readPoCStructure()
 	
 	def autoConfiguration(self):
 		raise PoC.NotImplementedException("No automatic configuration available!")
@@ -81,7 +84,7 @@ class PoCConfiguration(PoC.PoCBase):
 		self.printConfigurationHelp()
 		
 		# configure Windows
-		if (self.platform == 'Windows'):
+		if (self.Platform == 'Windows'):
 			# configure ISE on Windows
 			next = False
 			while (next == False):
@@ -116,7 +119,7 @@ class PoCConfiguration(PoC.PoCBase):
 					raise Exception
 		
 		# configure Linux
-		elif (self.platform == 'Linux'):
+		elif (self.Platform == 'Linux'):
 			# configure ISE on Linux
 			next = False
 			while (next == False):
@@ -150,10 +153,21 @@ class PoCConfiguration(PoC.PoCBase):
 				except Exception as ex:
 					raise Exception
 	
+		# remove non private sections from pocConfig
+		sections = self.pocConfig.sections()
+		for privateSection in self.__privateSections:
+			sections.remove(privateSection)
+			
+		for section in sections:
+			self.pocConfig.remove_section(section)
+	
 		# Writing configuration to disc
-		print("Writing configuration file to '%s'" % str(self.Files["PoCConfig"]))
-		with self.Files["PoCConfig"].open('w') as configFileHandle:
+		print("Writing configuration file to '%s'" % str(self.Files["PoCPrivateConfig"]))
+		with self.Files["PoCPrivateConfig"].open('w') as configFileHandle:
 			self.pocConfig.write(configFileHandle)
+	
+		# re-read configuration
+		self.readPoCConfiguration()
 	
 	def printConfigurationHelp(self):
 		self.printVerbose("starting manual configuration...")
@@ -336,11 +350,17 @@ class PoCConfiguration(PoC.PoCBase):
 		
 		iseInstallationDirectoryPath = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
 		
-		if		(self.platform == "Windows"):		return(str(iseInstallationDirectoryPath / "settings64.bat"))
-		elif	(self.platform == "Linux"):			return(str(iseInstallationDirectoryPath / "settings64.sh"))
+		if		(self.Platform == "Windows"):		return (str(iseInstallationDirectoryPath / "settings64.bat"))
+		elif	(self.Platform == "Linux"):			return (str(iseInstallationDirectoryPath / "settings64.sh"))
 		
 	def getVivadoSettingsFile(self):
-		raise PoC.NotImplementedException("method 'getVivadoSettingsFile' not implemented!")
+		if (len(self.pocConfig.options("Xilinx-Vivado")) == 0):
+			raise PoCNotConfiguredException("ERROR: Xilinx Vivado is not configured on this system.")
+		
+		vivadoInstallationDirectoryPath = Path(self.pocConfig['Xilinx-Vivado']['InstallationDirectory'])
+		
+		if		(self.Platform == "Windows"):		return (str(vivadoInstallationDirectoryPath / "settings64.bat"))
+		elif	(self.Platform == "Linux"):			return (str(vivadoInstallationDirectoryPath / "settings64.sh"))
 	
 # main program
 def main():
