@@ -46,6 +46,7 @@ ENTITY sata_StreamingController IS
     SIM_WAIT_FOR_INITIAL_REGDH_FIS		: BOOLEAN                     := TRUE;      -- required by ATA/SATA standard
 		SIM_EXECUTE_IDENTIFY_DEVICE				: BOOLEAN											:= TRUE;			-- required by CommandLayer: load device parameters
 		DEBUG															: BOOLEAN											:= FALSE;			-- generate ChipScope DBG_* signals
+		ENABLE_DEBUGPORT									: BOOLEAN											:= FALSE;			-- 
 		LOGICAL_BLOCK_SIZE_ldB						: POSITIVE										:= 13					-- accessable logical block size: 8 kB (independant from device)
 	);
 	PORT (
@@ -110,7 +111,7 @@ ENTITY sata_StreamingController IS
 		
 		SATA_RX_FS_Ready					: OUT	STD_LOGIC;
 		SATA_RX_FS_Valid					: IN	STD_LOGIC;
-		SATA_RX_FS_CRC_OK					: IN	STD_LOGIC;
+		SATA_RX_FS_CRCOK					: IN	STD_LOGIC;
 		SATA_RX_FS_Abort					: IN	STD_LOGIC
 	);
 END;
@@ -420,7 +421,7 @@ BEGIN
 			Link_RX_Valid								=> SATA_RX_Valid,
 				
 			Link_RX_FS_Ready						=> SATA_RX_FS_Ready,
-			Link_RX_FS_CRC_OK						=> SATA_RX_FS_CRC_OK,
+			Link_RX_FS_CRCOK						=> SATA_RX_FS_CRCOK,
 			Link_RX_FS_Abort						=> SATA_RX_FS_Abort,
 			Link_RX_FS_Valid						=> SATA_RX_FS_Valid
 		);
