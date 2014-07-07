@@ -345,7 +345,13 @@ class PoCConfiguration(PoC.PoCBase):
 				self.pocConfig['GHDL'] = {}
 			else:
 				raise PoC.PoCException("unknown option")
-		
+				
+	def newSolution(self, solutionName):
+		print("new solution: name=%s" % solutionName)
+	
+	def addSolution(self, solutionName):
+		print("add solution: name=%s" % solutionName)
+	
 	def getISESettingsFile(self):
 		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):
 			raise PoCNotConfiguredException("ERROR: Xilinx ISE is not configured on this system.")
@@ -424,6 +430,24 @@ def main():
 			#config.autoConfiguration()
 			config.manualConfiguration()
 			exit(0)
+		elif args.newSolution:
+			print("=" * 80)
+			print("{: ^80s}".format("PoC Library - Repository Service Tool"))
+			print("=" * 80)
+			print()
+			
+			config.newSolution(args.newSolution)
+			exit(0)
+			
+		elif args.addSolution:
+			print("=" * 80)
+			print("{: ^80s}".format("PoC Library - Repository Service Tool"))
+			print("=" * 80)
+			print()
+			
+			config.addSolution(args.addSolution)
+			exit(0)
+			
 		elif args.iseSettingsFile:
 			print(config.getISESettingsFile())
 			exit(0)
