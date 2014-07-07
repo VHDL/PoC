@@ -57,7 +57,7 @@ class PoCConfiguration(PoC.PoCBase):
 			self.pocConfig.optionxform = str
 			self.pocConfig['PoC'] = OrderedDict()
 			self.pocConfig['PoC']['Version'] = '0.0.0'
-			self.pocConfig['PoC']['InstallationDirectory'] = self.Directories["PoCRoot"].as_posix()
+			self.pocConfig['PoC']['InstallationDirectory'] = self.directories["PoCRoot"].as_posix()
 
 			self.pocConfig['Xilinx'] =						OrderedDict()
 			self.pocConfig['Xilinx-ISE'] =				OrderedDict()
@@ -352,8 +352,8 @@ class PoCConfiguration(PoC.PoCBase):
 		
 		iseInstallationDirectoryPath = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
 		
-		if		(self.Platform == "Windows"):		return (str(iseInstallationDirectoryPath / "settings64.bat"))
-		elif	(self.Platform == "Linux"):			return (str(iseInstallationDirectoryPath / "settings64.sh"))
+		if		(self.platform == "Windows"):		return (str(iseInstallationDirectoryPath / "settings64.bat"))
+		elif	(self.platform == "Linux"):			return (str(iseInstallationDirectoryPath / "settings64.sh"))
 		
 	def getVivadoSettingsFile(self):
 		if (len(self.pocConfig.options("Xilinx-Vivado")) == 0):
@@ -361,8 +361,8 @@ class PoCConfiguration(PoC.PoCBase):
 		
 		vivadoInstallationDirectoryPath = Path(self.pocConfig['Xilinx-Vivado']['InstallationDirectory'])
 		
-		if		(self.Platform == "Windows"):		return (str(vivadoInstallationDirectoryPath / "settings64.bat"))
-		elif	(self.Platform == "Linux"):			return (str(vivadoInstallationDirectoryPath / "settings64.sh"))
+		if		(self.platform == "Windows"):		return (str(vivadoInstallationDirectoryPath / "settings64.bat"))
+		elif	(self.platform == "Linux"):			return (str(vivadoInstallationDirectoryPath / "settings64.sh"))
 	
 # main program
 def main():
