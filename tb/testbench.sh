@@ -61,4 +61,4 @@ done
 
 source $POC_ROOTDIR_RELPATH/py/wrapper.sh
 
-exit POC_EXITCODE
+exit $POC_EXITCODE

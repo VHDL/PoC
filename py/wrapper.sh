@@ -89,12 +89,12 @@ if [ ! $PYTHON_INTERPRETER ]; then
 	POC_EXITCODE=1
 fi
 
-if [ POC_EXITCODE -eq 0 ]; then
+if [ $POC_EXITCODE -eq 0 ]; then
 	cd $POC_ROOTDIR_ABSPATH/$POC_SCRIPTSDIR
 fi
 
 # load Xilinx ISE environment
-if [ POC_EXITCODE -eq 0 ]; then
+if [ $POC_EXITCODE -eq 0 ]; then
 	if [ $POC_PYWRAPPER_LOADENV_ISE -eq 1 ]; then
 		# if $XILINX environment variable is not set
 		if [ -z "$XILINX" ]; then
@@ -123,7 +123,7 @@ if [ POC_EXITCODE -eq 0 ]; then
 fi
 
 # load Xilinx Vivado environment
-if [ POC_EXITCODE -eq 0 ]; then
+if [ $POC_EXITCODE -eq 0 ]; then
 	if [ $POC_PYWRAPPER_LOADENV_VIVADO -eq 1 ]; then
 		# if $XILINX environment variable is not set
 		if [ -z "$XILINX" ]; then
@@ -152,7 +152,7 @@ if [ POC_EXITCODE -eq 0 ]; then
 fi
 
 # execute script with appropriate python interpreter and all given parameters
-if [ POC_EXITCODE -eq 0 ]; then
+if [ $POC_EXITCODE -eq 0 ]; then
 	if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then
 		echo -e "${YELLOW}cd $POC_ROOTDIR_ABSPATH/$POC_SCRIPTSDIR${NOCOLOR}"
 		echo -e "${YELLOW}launching: '$PYTHON_INTERPRETER $POC_PYWRAPPER_SCRIPT $POC_PYWRAPPER_PARAMS'${NOCOLOR}"
@@ -167,4 +167,4 @@ fi
 unset PoCRootDirectory
 
 # restore original working directory
-cd POC_PYWRAPPER_SCRIPTDIR
+cd $POC_PYWRAPPER_SCRIPTDIR
