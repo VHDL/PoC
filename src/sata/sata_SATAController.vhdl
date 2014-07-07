@@ -100,7 +100,7 @@ ENTITY sata_SATAController IS
 		
 		RX_FS_Ready									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_FS_Valid									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RX_FS_CRC_OK								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_FS_CRCOK								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_FS_Abort									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
 		-- vendor specific signals
@@ -142,7 +142,7 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	SIGNAL Link_RX_Valid								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Link_RX_Data									: T_SLVV_32(PORTS - 1 DOWNTO 0);
 	SIGNAL Link_RX_FS_Valid							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Link_RX_FS_CRC_OK						: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Link_RX_FS_CRCOK						: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Link_RX_FS_Abort							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 	-- link layer <=> physical layer signals
@@ -292,7 +292,7 @@ BEGIN
 		
 		SATAC_RX_FS_Ready(I)					<= RX_FS_Ready(I);
 		RX_FS_Valid(I)								<= Link_RX_FS_Valid(I);
-		RX_FS_CRC_OK(I)								<= Link_RX_FS_CRC_OK(I);
+		RX_FS_CRCOK(I)								<= Link_RX_FS_CRCOK(I);
 		RX_FS_Abort(I)								<= Link_RX_FS_Abort(I);
 		
 -- ==================================================================
@@ -327,7 +327,7 @@ BEGIN
 				Error										=> Link_Error(I),
 				
 				-- Debug ports
-				DebugPort_Out					 	=> Link_DebugPortOut(I),
+				DebugPortOut					 	=> Link_DebugPortOut(I),
 				
 				-- TX port
 				TX_SOF									=> SATAC_TX_SOF(I),
@@ -351,7 +351,7 @@ BEGIN
 				
 				RX_FS_Ready							=> SATAC_RX_FS_Ready(I),
 				RX_FS_Valid							=> Link_RX_FS_Valid(I),
-				RX_FS_CRC_OK						=> Link_RX_FS_CRC_OK(I),
+				RX_FS_CRCOK							=> Link_RX_FS_CRCOK(I),
 				RX_FS_Abort							=> Link_RX_FS_Abort(I),
 				
 				-- physical layer interface
@@ -485,18 +485,15 @@ BEGIN
 	-- debug port
 	-- ================================================================
 	genDebugLoop : for I in 0 to PORTS - 1 generate
-		genDebug0 : if (ENABLE_DEBUGPORT = FALSE) generate
-		begin
-			DebugPortOut(I).Dummy		<= Trans_DebugPortOut(I).Dummy or Phy_DebugPortOut(I).Dummy or Link_DebugPortOut(I).Dummy;		-- 
-		end generate genDebug0;
+		DebugPortOut(I).Dummy		<= Trans_DebugPortOut(I).Dummy or Phy_DebugPortOut(I).Dummy or Link_DebugPortOut(I).Dummy;		-- 
+
 		genDebug1 : if (ENABLE_DEBUGPORT = TRUE) generate
-	
-		begin
 			-- Transceiver Layer
 			DebugPortOut(I).Transceiver						<= Trans_DebugPortOut(I);		-- 
 			DebugPortOut(I).Transceiver_Command		<= Trans_Command(I);				-- 
 			DebugPortOut(I).Transceiver_Status		<= Trans_Status(I);					-- 
-			DebugPortOut(I).Transceiver_Error			<= Trans_Error(I);					-- 
+			DebugPortOut(I).Transceiver_TX_Error	<= Trans_TX_Error(I);				-- 
+			DebugPortOut(I).Transceiver_RX_Error	<= Trans_RX_Error(I);				-- 
 			-- Physical Layer
 			DebugPortOut(I).Physical							<= Phy_DebugPortOut(I);			-- 
 			DebugPortOut(I).Physical_Command			<= Phy_Command(I);					-- 
