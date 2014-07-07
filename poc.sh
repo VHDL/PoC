@@ -55,11 +55,6 @@ PyWrapper_WorkingDir=$(pwd)
 PoC_RootDir_RelPath="$SCRIPT_DIR/."
 PoC_RootDir_AbsPath=`cd $PoC_RootDir_RelPath && pwd`
 
-echo "scr: $PyWrapper_ScriptDir"
-echo "wrk: $PyWrapper_WorkingDir"
-echo "rel: $PoC_RootDir_RelPath"
-echo "abs: $PoC_RootDir_AbsPath"
-
 # set default values
 PyWrapper_Debug=0
 PyWrapper_LoadEnv_ISE=0
@@ -73,4 +68,5 @@ done
 # invoke main wrapper
 source "$PoC_RootDir_AbsPath/$PyWrapper_BashScriptDir/wrapper.sh"
 
+# return exit status
 exit $PoC_ExitCode
