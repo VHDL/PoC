@@ -75,14 +75,14 @@ class PoCXSTCompiler(PoCCompiler.PoCCompiler):
 		deviceSection = "Device." + deviceString
 		
 		# create temporary directory for XST if not existent
-		tempXSTPath = self.host.Directories["XSTTemp"]
+		tempXSTPath = self.host.directories["XSTTemp"]
 		if not (tempXSTPath).exists():
 			self.printVerbose("Creating temporary directory for core generator files.")
 			self.printDebug("Temporary directors: %s" % str(tempXSTPath))
 			tempXSTPath.mkdir(parents=True)
 
 		# create output directory for XST if not existent
-		coreGenOutputPath = self.host.Directories["PoCNetList"] / deviceString
+		coreGenOutputPath = self.host.directories["PoCNetList"] / deviceString
 		if not (coreGenOutputPath).exists():
 			self.printVerbose("Creating temporary directory for core generator files.")
 			self.printDebug("Temporary directors: %s" % str(coreGenOutputPath))
@@ -104,17 +104,17 @@ class PoCXSTCompiler(PoCCompiler.PoCCompiler):
 #			copyTasks.append((Path(list1[0]), Path(list1[1])))
 		
 		# setup all needed paths to execute XST
-		xstExecutablePath =		self.host.Directories["ISEBinary"] / self.__executables['XST']
+		xstExecutablePath =		self.host.directories["ISEBinary"] / self.__executables['XST']
 		
 		# read netlist settings from configuration file
 		if (self.host.netListConfig[str(pocEntity)]['Type'] != "XilinxSynthesis"):
 			raise PoC.PoCCompilerException("This entity is not configured for XST compilation.")
 		
 		topModuleName =				self.host.netListConfig[str(pocEntity)]['TopModule']
-		fileListFilePath =		self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['FileListFile']
-		xcfFilePath =					self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['XSTConstraintsFile']
-		filterFilePath =			self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['XSTFilterFile']
-		xstTemplateFilePath =	self.host.Directories["XSTFiles"] / "template.xst"
+		fileListFilePath =		self.host.directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['FileListFile']
+		xcfFilePath =					self.host.directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['XSTConstraintsFile']
+		filterFilePath =			self.host.directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['XSTFilterFile']
+		xstTemplateFilePath =	self.host.directories["XSTFiles"] / "template.xst"
 		xstFilePath =					tempXSTPath / (topModuleName + ".xst")
 		prjFilePath =					tempXSTPath / (topModuleName + ".prj")
 		reportFilePath =			tempXSTPath / (topModuleName + ".log")
@@ -141,7 +141,7 @@ class PoCXSTCompiler(PoCCompiler.PoCCompiler):
 			'GenerateRTLView' :									self.host.netListConfig[str(pocEntity)]['XSTOption.GenerateRTLView'],
 			'Globaloptimization' :							self.host.netListConfig[str(pocEntity)]['XSTOption.Globaloptimization'],
 			'ReadCores' :												self.host.netListConfig[str(pocEntity)]['XSTOption.ReadCores'],
-			'SearchDirectories' :								'"%s"' % str(coreGenOutputPath),
+			'Searchdirectories' :								'"%s"' % str(coreGenOutputPath),
 			'WriteTimingConstraints' :					self.host.netListConfig[str(pocEntity)]['XSTOption.WriteTimingConstraints'],
 			'CrossClockAnalysis' :							self.host.netListConfig[str(pocEntity)]['XSTOption.CrossClockAnalysis'],
 			'HierarchySeparator' :							self.host.netListConfig[str(pocEntity)]['XSTOption.HierarchySeparator'],
@@ -210,9 +210,9 @@ class PoCXSTCompiler(PoCCompiler.PoCCompiler):
 				
 				if (regExpMatch is not None):
 					if (regExpMatch.group('Keyword') == "vhdl"):
-						vhdlFilePath = self.host.Directories["PoCRoot"] / regExpMatch.group('VHDLFile')
+						vhdlFilePath = self.host.directories["PoCRoot"] / regExpMatch.group('VHDLFile')
 					elif (regExpMatch.group('Keyword') == "xilinx"):
-						vhdlFilePath = self.host.Directories["ISEInstallation"] / "ISE/vhdl/src" / regExpMatch.group('VHDLFile')
+						vhdlFilePath = self.host.directories["ISEInstallation"] / "ISE/vhdl/src" / regExpMatch.group('VHDLFile')
 					vhdlLibraryName = regExpMatch.group('VHDLLibrary')
 					xstProjectFileContent += "vhdl %s \"%s\"\n" % (vhdlLibraryName, str(vhdlFilePath))
 		

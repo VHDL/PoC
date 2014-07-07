@@ -128,6 +128,8 @@ class PoCBase(object):
 	# read PoC configuration
 	# ============================================================================
 	def readPoCConfiguration(self):
+		from configparser import ConfigParser, ExtendedInterpolation
+	
 		pocPrivateConfigFilePath =	self.files['PoCPrivateConfig']
 		pocPublicConfigFilePath =		self.files['PoCPublicConfig']
 		
@@ -135,7 +137,7 @@ class PoCBase(object):
 		if not pocPrivateConfigFilePath.exists():			raise PoCNotConfiguredException("Private PoC configuration file does not exist. (%s)" % str(pocPrivateConfigFilePath))
 		if not pocPublicConfigFilePath.exists():			raise PoCNotConfiguredException("Public PoC configuration file does not exist. (%s)" % str(pocPublicConfigFilePath))
 		
-		self.pocConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+		self.pocConfig = ConfigParser(interpolation=ExtendedInterpolation())
 		self.pocConfig.optionxform = str
 		self.pocConfig.read([str(pocPrivateConfigFilePath), str(pocPublicConfigFilePath)])
 		

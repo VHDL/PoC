@@ -41,6 +41,7 @@ POC_SCRIPTSDIR=py
 # goto PoC root directory and save this path
 cd $POC_ROOTDIR_RELPATH
 POC_ROOTDIR_ABSPATH=$(pwd)
+export PoCRootDirectory=$POC_ROOTDIR_ABSPATH
 
 if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then
 	echo "This is the PoC Library script wrapper operating in debug mode."
@@ -85,6 +86,7 @@ fi
 
 cd $POC_ROOTDIR_ABSPATH/$POC_SCRIPTSDIR
 
+# load Xilinx ISE environment
 if [ $POC_PYWRAPPER_LOADENV_ISE -eq 1 ]; then
 	# if $XILINX environment variable is not set
 	if [ -z "$XILINX" ]; then
@@ -105,24 +107,26 @@ if [ $POC_PYWRAPPER_LOADENV_ISE -eq 1 ]; then
 	fi
 fi
 
-# TODO: prepared for Vivado support
-#
-#if [ $POC_PYWRAPPER_LOADENV_VIVADO -eq 1 ]; then
-#	# if $XILINX environment variable is not set
-#	if [ -z "$XILINX" ]; then
-#			vivadoSettingsFile=$($PYTHON_INTERPRETER $POC_ROOTDIR_ABSPATH/py/configuration.py --vivado-settingsfile)
-#			if [ $vivadoSettingsFile ]; then
-#				echo 1>&2 "No Xilinx Vivado installation found."
-#				echo 1>&2 "Run 'poc.py --configure' to configure your Xilinx Vivado installation."
-#				exit 1
-#			fi
-#			echo "Loading Xilinx Vivado environment '$vivadoSettingsFile'"
-#			rescue_args=$@
-#			set --
-#			source "$vivadoSettingsFile"
-#			set -- $rescue_args
-#		fi
-#fi
+# load Xilinx Vivado environment
+if [ $POC_PYWRAPPER_LOADENV_VIVADO -eq 1 ]; then
+	# if $XILINX environment variable is not set
+	if [ -z "$XILINX" ]; then
+		command="$PYTHON_INTERPRETER $POC_ROOTDIR_ABSPATH/py/Configuration.py --vivado-settingsfile"
+		if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then echo "getting Vivado settings file: command='$command'"; fi
+		vivadoSettingsFile=$($command)
+		if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then echo "Vivado settings file: '$vivadoSettingsFile'"; fi
+		if [ ! $vivadoSettingsFile ]; then
+			echo 1>&2 "No Xilinx Vivado installation found."
+			echo 1>&2 "Run 'poc.py --configure' to configure your Xilinx Vivado installation."
+			exit 1
+		fi
+		echo "Loading Xilinx vivadoivado environment '$vivadoSettingsFile'"
+		rescue_args=$@
+		set --
+		source "$vivadoSettingsFile"
+		set -- $rescue_args
+	fi
+fi
 
 # execute script with appropriate python interpreter and all given parameters
 if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then

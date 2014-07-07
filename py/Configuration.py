@@ -44,8 +44,8 @@ class PoCConfiguration(PoC.PoCBase):
 		try:
 			super(self.__class__, self).__init__(debug, verbose, quiet)
 
-			if not ((self.Platform == "Windows") or (self.Platform == "Linux")):
-				raise PoC.PoCPlatformNotSupportedException(self.Platform)
+			if not ((self.platform == "Windows") or (self.platform == "Linux")):
+				raise PoC.PoCPlatformNotSupportedException(self.platform)
 				
 		except PoC.PoCNotConfiguredException as ex:
 			from configparser import ConfigParser, ExtendedInterpolation
@@ -59,20 +59,20 @@ class PoCConfiguration(PoC.PoCBase):
 			self.pocConfig['PoC']['Version'] = '0.0.0'
 			self.pocConfig['PoC']['InstallationDirectory'] = self.Directories["PoCRoot"].as_posix()
 
-			self.pocConfig['Xilinx'] = OrderedDict()
-			self.pocConfig['Xilinx-ISE'] = OrderedDict()
-			self.pocConfig['Xilinx-Vivado'] = OrderedDict()
-			self.pocConfig['Altera-QuartusII'] = OrderedDict()
-			self.pocConfig['Altera-ModelSim'] = OrderedDict()
-			self.pocConfig['Questa-ModelSim'] = OrderedDict()
-			self.pocConfig['GHDL'] = OrderedDict()
-			self.pocConfig['GTKWave'] = OrderedDict()
+			self.pocConfig['Xilinx'] =						OrderedDict()
+			self.pocConfig['Xilinx-ISE'] =				OrderedDict()
+			self.pocConfig['Xilinx-Vivado'] =			OrderedDict()
+			self.pocConfig['Altera-QuartusII'] =	OrderedDict()
+			self.pocConfig['Altera-ModelSim'] =		OrderedDict()
+			self.pocConfig['Questa-ModelSim'] =		OrderedDict()
+			self.pocConfig['GHDL'] =							OrderedDict()
+			self.pocConfig['GTKWave'] =						OrderedDict()
 
 			# Writing configuration to disc
-			with self.Files["PoCPrivateConfig"].open('w') as configFileHandle:
+			with self.files["PoCPrivateConfig"].open('w') as configFileHandle:
 				self.pocConfig.write(configFileHandle)
 			
-			self.printDebug("New configuration file created: %s" % self.Files["PoCPrivateConfig"])
+			self.printDebug("New configuration file created: %s" % self.files["PoCPrivateConfig"])
 			
 			# re-read configuration
 			self.readPoCConfiguration()
@@ -84,7 +84,7 @@ class PoCConfiguration(PoC.PoCBase):
 		self.printConfigurationHelp()
 		
 		# configure Windows
-		if (self.Platform == 'Windows'):
+		if (self.platform == 'Windows'):
 			# configure ISE on Windows
 			next = False
 			while (next == False):
@@ -119,7 +119,7 @@ class PoCConfiguration(PoC.PoCBase):
 					raise Exception
 		
 		# configure Linux
-		elif (self.Platform == 'Linux'):
+		elif (self.platform == 'Linux'):
 			# configure ISE on Linux
 			next = False
 			while (next == False):
@@ -152,6 +152,8 @@ class PoCConfiguration(PoC.PoCBase):
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
 					raise Exception
+		else:
+			raise PoC.PoCPlatformNotSupportedException(self.platform)
 	
 		# remove non private sections from pocConfig
 		sections = self.pocConfig.sections()
@@ -162,8 +164,8 @@ class PoCConfiguration(PoC.PoCBase):
 			self.pocConfig.remove_section(section)
 	
 		# Writing configuration to disc
-		print("Writing configuration file to '%s'" % str(self.Files["PoCPrivateConfig"]))
-		with self.Files["PoCPrivateConfig"].open('w') as configFileHandle:
+		print("Writing configuration file to '%s'" % str(self.files["PoCPrivateConfig"]))
+		with self.files["PoCPrivateConfig"].open('w') as configFileHandle:
 			self.pocConfig.write(configFileHandle)
 	
 		# re-read configuration
@@ -184,8 +186,8 @@ class PoCConfiguration(PoC.PoCBase):
 		isXilinxISE = isXilinxISE if isXilinxISE != "" else "Y"
 		if (isXilinxISE != 'p'):
 			if (isXilinxISE == 'Y'):
-				xilinxDirectory = input('Xilinx Installation Directory [C:\Xilinx]: ')
-				iseVersion = input('Xilinx ISE Version Number [14.7]: ')
+				xilinxDirectory =	input('Xilinx Installation Directory [C:\Xilinx]: ')
+				iseVersion =			input('Xilinx ISE Version Number [14.7]: ')
 				print()
 				
 				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "C:\Xilinx"
@@ -212,8 +214,8 @@ class PoCConfiguration(PoC.PoCBase):
 		isXilinxVivado = isXilinxVivado if isXilinxVivado != "" else "Y"
 		if (isXilinxVivado != 'p'):
 			if (isXilinxVivado == 'Y'):
-				xilinxDirectory = input('Xilinx Installation Directory [C:\Xilinx]: ')
-				vivadoVersion = input('Xilinx Vivado Version Number [2014.1]: ')
+				xilinxDirectory =	input('Xilinx Installation Directory [C:\Xilinx]: ')
+				vivadoVersion =		input('Xilinx Vivado Version Number [2014.1]: ')
 				print()
 			
 				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "C:\Xilinx"
@@ -240,8 +242,8 @@ class PoCConfiguration(PoC.PoCBase):
 		isGHDL = isGHDL if isGHDL != "" else "Y"
 		if (isGHDL != 'p'):
 			if (isGHDL == 'Y'):
-				ghdlDirectory = input('GHDL Installation Directory [C:\Program Files (x86)\GHDL]: ')
-				ghdlVersion = input('GHDL Version Number [0.31]: ')
+				ghdlDirectory =	input('GHDL Installation Directory [C:\Program Files (x86)\GHDL]: ')
+				ghdlVersion =		input('GHDL Version Number [0.31]: ')
 				print()
 			
 				ghdlDirectory = ghdlDirectory if ghdlDirectory != "" else "C:\Program Files (x86)\GHDL"
@@ -267,8 +269,8 @@ class PoCConfiguration(PoC.PoCBase):
 		isXilinxISE = isXilinxISE if isXilinxISE != "" else "Y"
 		if (isXilinxISE != 'p'):
 			if (isXilinxISE == 'Y'):
-				xilinxDirectory = input('Xilinx Installation Directory [/opt/Xilinx]: ')
-				iseVersion = input('Xilinx ISE Version Number [14.7]: ')
+				xilinxDirectory =	input('Xilinx Installation Directory [/opt/Xilinx]: ')
+				iseVersion =			input('Xilinx ISE Version Number [14.7]: ')
 				print()
 			
 				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/Xilinx"
@@ -295,8 +297,8 @@ class PoCConfiguration(PoC.PoCBase):
 		isXilinxVivado = isXilinxVivado if isXilinxVivado != "" else "Y"
 		if (isXilinxVivado != 'p'):
 			if (isXilinxVivado == 'Y'):
-				xilinxDirectory = input('Xilinx Installation Directory [/opt/Xilinx]: ')
-				vivadoVersion = input('Xilinx Vivado Version Number [2014.1]: ')
+				xilinxDirectory =	input('Xilinx Installation Directory [/opt/Xilinx]: ')
+				vivadoVersion =		input('Xilinx Vivado Version Number [2014.1]: ')
 				print()
 			
 				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/Xilinx"
@@ -323,8 +325,8 @@ class PoCConfiguration(PoC.PoCBase):
 		isGHDL = isGHDL if isGHDL != "" else "Y"
 		if (isGHDL != 'p'):
 			if (isGHDL == 'Y'):
-				ghdlDirectory = input('GHDL Installation Directory [/usr/bin]: ')
-				ghdlVersion = input('GHDL Version Number [0.31]: ')
+				ghdlDirectory =	input('GHDL Installation Directory [/usr/bin]: ')
+				ghdlVersion =		input('GHDL Version Number [0.31]: ')
 				print()
 			
 				ghdlDirectory = ghdlDirectory if ghdlDirectory != "" else "/usr/bin"
@@ -446,7 +448,11 @@ def main():
 		return
 
 	except Exception as ex:
+		from traceback import print_tb
 		print("FATAL: %s" % ex.__str__())
+		print("-" * 20)
+		print_tb(ex.__traceback__)
+		print("-" * 20)
 		print()
 		return
 	

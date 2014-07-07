@@ -49,15 +49,19 @@ import PoCSimulator
 
 class PoCISESimulator(PoCSimulator.PoCSimulator):
 
-	executables = {}
+	__executables = {}
 
 	def __init__(self, host, showLogs, showReport):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
-		self.__executables = {
-			'vhcomp' :	("vhpcomp.exe"	if (host.platform == "Windows") else "vhpcomp"),
-			'fuse' :		("fuse.exe"			if (host.platform == "Windows") else "fuse")
-		}
+		if (host.platform == "Windows"):
+			self.__executables['vhcomp'] =	"vhpcomp.exe"
+			self.__executables['fuse'] =		"fuse.exe"
+		elif (host.platform == "Linux"):
+			self.__executables['vhcomp'] =	"vhpcomp"
+			self.__executables['fuse'] =		"fuse"
+		else:
+			raise PoC.PoCPlatformNotSupportedException(self.platform)
 		
 	def run(self, pocEntity):
 		from pathlib import Path
@@ -70,19 +74,19 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 		
 		
 		# create temporary directory for isim if not existent
-		tempISimPath = self.host.Directories["iSimTemp"]
+		tempISimPath = self.host.directories["iSimTemp"]
 		if not (tempISimPath).exists():
 			self.printVerbose("Creating temporary directory for simulator files.")
 			self.printDebug("Temporary directors: %s" % str(tempISimPath))
 			tempISimPath.mkdir(parents=True)
 
 		# setup all needed paths to execute fuse
-		#vhpcompExecutablePath =	self.host.Directories["ISEBinary"] / self.__executables['vhpcomp']
-		fuseExecutablePath =		self.host.Directories["ISEBinary"] / self.__executables['fuse']
+		#vhpcompExecutablePath =	self.host.directories["ISEBinary"] / self.__executables['vhpcomp']
+		fuseExecutablePath =		self.host.directories["ISEBinary"] / self.__executables['fuse']
 		
 		testbenchName =		 self.host.tbConfig[str(pocEntity)]['TestbenchModule']
-		fileListFilePath =	self.host.Directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['FileListFile']
-		tclFilePath =				self.host.Directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['iSimTclScript']
+		fileListFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['FileListFile']
+		tclFilePath =				self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['iSimTclScript']
 		prjFilePath =				tempISimPath / (testbenchName + ".prj")
 		exeFilePath =				tempISimPath / (testbenchName + ".exe")
 
@@ -113,9 +117,9 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 				
 				if (regExpMatch is not None):
 					if (regExpMatch.group('Keyword') == "vhdl"):
-						vhdlFilePath = self.host.Directories["PoCRoot"] / regExpMatch.group('VHDLFile')
+						vhdlFilePath = self.host.directories["PoCRoot"] / regExpMatch.group('VHDLFile')
 					elif (regExpMatch.group('Keyword') == "xilinx"):
-						vhdlFilePath = self.host.Directories["ISEInstallation"] / "ISE/vhdl/src" / regExpMatch.group('VHDLFile')
+						vhdlFilePath = self.host.directories["ISEInstallation"] / "ISE/vhdl/src" / regExpMatch.group('VHDLFile')
 					vhdlLibraryName = regExpMatch.group('VHDLLibrary')
 					iSimProjectFileContent += "vhdl %s \"%s\"\n" % (vhdlLibraryName, str(vhdlFilePath))
 		
