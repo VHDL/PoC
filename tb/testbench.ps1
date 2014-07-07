@@ -33,27 +33,33 @@
 # ==============================================================================
 
 # configure wrapper here
-$PoC_RootDir_RelPath =			$PSScriptRoot + "\.."
-$PoC_PyWrapper_Script =			"Testbench.py"
-$PoC_PyWrapper_MinVersion =	"3.4.0"
+$PyWrapper_PoShScriptDir =	"py"
+$PyWrapper_Script =					"Testbench.py"
+$PyWrapper_MinVersion =			"3.4.0"
 
 # save parameters and current working directory
-$PoC_PyWrapper_Paramters = $args
-$PoC_PyWrapper_ScriptDir = Get-Location
+$PyWrapper_Paramters =	$args
+$PyWrapper_ScriptDir =	$PSScriptRoot
+$PyWrapper_WorkingDir =	Get-Location
+$PoC_RootDir_AbsPath =	Convert-Path (Resolve-Path ($PSScriptRoot + "\.."))
 
 # set default values
-$PoC_PyWrapper_Debug =						$false
-$PoC_PyWrapper_LoadEnv_ISE =			$false
-$PoC_PyWrapper_LoadEnv_Vivado =		$false
+$PyWrapper_Debug =						$false
+$PyWrapper_LoadEnv_ISE =			$false
+$PyWrapper_LoadEnv_Vivado =		$false
 
 # search parameters for specific options like '-D' to enable batch script debug mode
 foreach ($i in $args) {
-	$PoC_PyWrapper_Debug =					$PoC_PyWrapper_Debug -or					($i -clike "-*D*")
-	$PoC_PyWrapper_LoadEnv_ISE =		$PoC_PyWrapper_LoadEnv_ISE -or		($i -ceq "--isim")
-	$PoC_PyWrapper_LoadEnv_Vivado = $PoC_PyWrapper_LoadEnv_Vivado -or ($i -ceq "--xsim")
+	$PyWrapper_Debug =					$PyWrapper_Debug -or					($i -clike "-*D*")
+	$PyWrapper_LoadEnv_ISE =		$PyWrapper_LoadEnv_ISE -or		($i -ceq "--isim")
+	$PyWrapper_LoadEnv_Vivado = $PyWrapper_LoadEnv_Vivado -or ($i -ceq "--xsim")
 }
 
 # invoke main wrapper
-. ($PoC_RootDir_RelPath + "\py\Wrapper.ps1")
+. ("$PoC_RootDir_AbsPath\$PyWrapper_PoShScriptDir\Wrapper.ps1")
 
+# restore working directory if changed
+Set-Location $PyWrapper_WorkingDir
+
+# return exit status
 exit $PoC_ExitCode
