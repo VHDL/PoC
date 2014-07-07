@@ -33,7 +33,7 @@
 # ==============================================================================
 
 # configure wrapper here
-$PoC_RootDir_RelPath =			"."
+$PoC_RootDir_RelPath =			$PSScriptRoot
 $PoC_PyWrapper_Script =			"Configuration.py"
 $PoC_PyWrapper_MinVersion =	"3.4.0"
 
@@ -41,13 +41,17 @@ $PoC_PyWrapper_MinVersion =	"3.4.0"
 $PoC_PyWrapper_Paramters = $args
 $PoC_PyWrapper_ScriptDir = Get-Location
 
-# search parameters for specific options like '-D' to enable batch script debug mode
+# set default values
 $PoC_PyWrapper_Debug =						$false
 $PoC_PyWrapper_LoadEnv_ISE =			$false
 $PoC_PyWrapper_LoadEnv_Vivado = 	$false
 
+# search parameters for specific options like '-D' to enable batch script debug mode
 foreach ($i in $args) {
 	$PoC_PyWrapper_Debug =					$PoC_PyWrapper_Debug -or ($i -clike "-*D*")
 }
 
+# invoke main wrapper
 . ($PoC_RootDir_RelPath + "\py\Wrapper.ps1")
+
+exit $PoC_ExitCode

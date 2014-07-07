@@ -34,15 +34,25 @@
 # ==============================================================================
 
 # configure wrapper here
-POC_ROOTDIR_RELPATH=..
-#POC_PYWRAPPER_SCRIPT=$0
 POC_PYWRAPPER_SCRIPT=Netlist.py
 POC_PYWRAPPER_MIN_VERSION=3.4.0
 
-# save parameters and current working directory
+# resolve script directory
+# solution is taken from http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do													# resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"			# if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+# save parameters and script directory
+POC_ROOTDIR_RELPATH="$SCRIPT_DIR/.."
 POC_PYWRAPPER_PARAMS=$@
 POC_PYWRAPPER_SCRIPTDIR=$(pwd)
 
+# set default values
 POC_PYWRAPPER_DEBUG=0
 POC_PYWRAPPER_LOADENV_ISE=0
 POC_PYWRAPPER_LOADENV_VIVADO=0
@@ -55,6 +65,7 @@ for param in "$@"; do
 	if [ "$param" = "--xst" ];			then POC_PYWRAPPER_LOADENV_ISE=1; fi
 done
 
+# invoke main wrapper
 source $POC_ROOTDIR_RELPATH/py/wrapper.sh
 
 exit $POC_EXITCODE
