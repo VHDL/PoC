@@ -84,7 +84,7 @@ class PoCBase(object):
 		# check for environment variables
 		from os import environ
 		if (environ.get('PoCRootDirectory') == None):
-			raise PoC.PoCEnvironmentException("Shell environment does not provide 'PoCRootDirectory' variable.")
+			raise PoCEnvironmentException("Shell environment does not provide 'PoCRootDirectory' variable.")
 		
 		self.directories['Root'] =				Path.cwd()
 		self.directories['PoCRoot'] =			Path(environ.get('PoCRootDirectory'))

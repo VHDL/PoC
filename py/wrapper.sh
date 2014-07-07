@@ -36,6 +36,7 @@
 # ==============================================================================
 
 # script settings
+POC_EXITCODE=0
 POC_SCRIPTSDIR=py
 
 RED='\e[0;31m'			# Yellow
@@ -85,60 +86,85 @@ fi
 if [ ! $PYTHON_INTERPRETER ]; then
 	echo 1>&2 -e "${RED}No suitable Python interpreter found.${NOCOLOR}"
 	echo 1>&2 -e "${RED}The script requires Python >= $POC_PYWRAPPER_MIN_VERSION${NOCOLOR}"
-	exit 1
+	POC_EXITCODE=1
 fi
 
-cd $POC_ROOTDIR_ABSPATH/$POC_SCRIPTSDIR
+if [ POC_EXITCODE -eq 0 ]; then
+	cd $POC_ROOTDIR_ABSPATH/$POC_SCRIPTSDIR
+fi
 
 # load Xilinx ISE environment
-if [ $POC_PYWRAPPER_LOADENV_ISE -eq 1 ]; then
-	# if $XILINX environment variable is not set
-	if [ -z "$XILINX" ]; then
-		command="$PYTHON_INTERPRETER $POC_ROOTDIR_ABSPATH/py/Configuration.py --ise-settingsfile"
-		if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then echo -e "${YELLOW}getting ISE settings file: command='$command'${NOCOLOR}"; fi
-		iseSettingsFile=$($command)
-		if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then echo -e "${YELLOW}ISE settings file: '$iseSettingsFile'${NOCOLOR}"; fi
-		if [ ! $iseSettingsFile ]; then
-			echo 1>&2 -e "${RED}No Xilinx ISE installation found.${NOCOLOR}"
-			echo 1>&2 -e "${RED}Run 'poc.py --configure' to configure your Xilinx ISE installation.${NOCOLOR}"
-			exit 1
+if [ POC_EXITCODE -eq 0 ]; then
+	if [ $POC_PYWRAPPER_LOADENV_ISE -eq 1 ]; then
+		# if $XILINX environment variable is not set
+		if [ -z "$XILINX" ]; then
+			command="$PYTHON_INTERPRETER $POC_ROOTDIR_ABSPATH/py/Configuration.py --ise-settingsfile"
+			if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then echo -e "${YELLOW}getting ISE settings file: command='$command'${NOCOLOR}"; fi
+			iseSettingsFile=$($command)
+			if [ $? -eq 0 ]; then
+				if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then echo -e "${YELLOW}ISE settings file: '$iseSettingsFile'${NOCOLOR}"; fi
+				if [ ! $iseSettingsFile ]; then
+					echo 1>&2 -e "${RED}No Xilinx ISE installation found.${NOCOLOR}"
+					echo 1>&2 -e "${RED}Run 'poc.py --configure' to configure your Xilinx ISE installation.${NOCOLOR}"
+					POC_EXITCODE=1
+				fi
+				echo -e "${YELLOW}Loading Xilinx ISE environment '$iseSettingsFile'${NOCOLOR}"
+				rescue_args=$@
+				set --
+				source "$iseSettingsFile"
+				set -- $rescue_args
+			fi
+		else
+			echo 1>&2 -e "${RED}ERROR: ExitCode for '$command' was not zero. Aborting script execution.${NOCOLOR}"
+			echo 1>&2 -e "${RED}$iseSettingsFile${NOCOLOR}"
+			POC_EXITCODE=1
 		fi
-		echo -e "${YELLOW}Loading Xilinx ISE environment '$iseSettingsFile'${NOCOLOR}"
-		rescue_args=$@
-		set --
-		source "$iseSettingsFile"
-		set -- $rescue_args
 	fi
 fi
 
 # load Xilinx Vivado environment
-if [ $POC_PYWRAPPER_LOADENV_VIVADO -eq 1 ]; then
-	# if $XILINX environment variable is not set
-	if [ -z "$XILINX" ]; then
-		command="$PYTHON_INTERPRETER $POC_ROOTDIR_ABSPATH/py/Configuration.py --vivado-settingsfile"
-		if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then echo -e "${YELLOW}getting Vivado settings file: command='$command'${NOCOLOR}"; fi
-		vivadoSettingsFile=$($command)
-		if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then echo -e "${YELLOW}Vivado settings file: '$vivadoSettingsFile'${NOCOLOR}"; fi
-		if [ ! $vivadoSettingsFile ]; then
-			echo 1>&2 -e "${RED}No Xilinx Vivado installation found.${NOCOLOR}"
-			echo 1>&2 -e "${RED}Run 'poc.py --configure' to configure your Xilinx Vivado installation.${NOCOLOR}"
-			exit 1
+if [ POC_EXITCODE -eq 0 ]; then
+	if [ $POC_PYWRAPPER_LOADENV_VIVADO -eq 1 ]; then
+		# if $XILINX environment variable is not set
+		if [ -z "$XILINX" ]; then
+			command="$PYTHON_INTERPRETER $POC_ROOTDIR_ABSPATH/py/Configuration.py --vivado-settingsfile"
+			if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then echo -e "${YELLOW}getting Vivado settings file: command='$command'${NOCOLOR}"; fi
+			vivadoSettingsFile=$($command)
+			if [ $? -eq 0 ]; then
+				if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then echo -e "${YELLOW}Vivado settings file: '$vivadoSettingsFile'${NOCOLOR}"; fi
+				if [ ! $vivadoSettingsFile ]; then
+					echo 1>&2 -e "${RED}No Xilinx Vivado installation found.${NOCOLOR}"
+					echo 1>&2 -e "${RED}Run 'poc.py --configure' to configure your Xilinx Vivado installation.${NOCOLOR}"
+					POC_EXITCODE=1
+				fi
+				echo -e "${YELLOW}Loading Xilinx Vivado environment '$vivadoSettingsFile'${NOCOLOR}"
+				rescue_args=$@
+				set --
+				source "$vivadoSettingsFile"
+				set -- $rescue_args
+			fi
+		else
+			echo 1>&2 -e "${RED}ERROR: ExitCode for '$command' was not zero. Aborting script execution.${NOCOLOR}"
+			echo 1>&2 -e "${RED}$vivadoSettingsFile${NOCOLOR}"
+			POC_EXITCODE=1
 		fi
-		echo -e "${YELLOW}Loading Xilinx vivadoivado environment '$vivadoSettingsFile'${NOCOLOR}"
-		rescue_args=$@
-		set --
-		source "$vivadoSettingsFile"
-		set -- $rescue_args
 	fi
 fi
 
 # execute script with appropriate python interpreter and all given parameters
-if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then
-	echo -e "${YELLOW}cd $POC_ROOTDIR_ABSPATH/$POC_SCRIPTSDIR${NOCOLOR}"
-	echo -e "${YELLOW}launching: '$PYTHON_INTERPRETER $POC_PYWRAPPER_SCRIPT $POC_PYWRAPPER_PARAMS'${NOCOLOR}"
-	echo -e "${YELLOW}------------------------------------------------------------${NOCOLOR}"
-	echo
+if [ POC_EXITCODE -eq 0 ]; then
+	if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then
+		echo -e "${YELLOW}cd $POC_ROOTDIR_ABSPATH/$POC_SCRIPTSDIR${NOCOLOR}"
+		echo -e "${YELLOW}launching: '$PYTHON_INTERPRETER $POC_PYWRAPPER_SCRIPT $POC_PYWRAPPER_PARAMS'${NOCOLOR}"
+		echo -e "${YELLOW}------------------------------------------------------------${NOCOLOR}"
+		echo
+	fi
+	
+	exec $PYTHON_INTERPRETER $POC_PYWRAPPER_SCRIPT $POC_PYWRAPPER_PARAMS
 fi
-exec $PYTHON_INTERPRETER $POC_PYWRAPPER_SCRIPT $POC_PYWRAPPER_PARAMS
 
+# clean up environment variables
 unset PoCRootDirectory
+
+# restore original working directory
+cd POC_PYWRAPPER_SCRIPTDIR

@@ -166,6 +166,9 @@ def main():
 		
 	except Exception as ex:
 		print("FATAL: %s" % ex.__str__())
+		print("-" * 80)
+		print_tb(ex.__traceback__)
+		print("-" * 80)
 		print()
 		return
 
@@ -216,10 +219,13 @@ def main():
 		print()
 		return
 
-#	except Exception as ex:
-#		print("FATAL: %s" % ex.__str__())
-#		print()
-#		return
+	except Exception as ex:
+		print("FATAL: %s" % ex.__str__())
+		print("-" * 80)
+		print_tb(ex.__traceback__)
+		print("-" * 80)
+		print()
+		return
 			
 # entry point
 if __name__ == "__main__":

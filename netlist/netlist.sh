@@ -56,3 +56,5 @@ for param in "$@"; do
 done
 
 source $POC_ROOTDIR_RELPATH/py/wrapper.sh
+
+exit POC_EXITCODE

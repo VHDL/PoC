@@ -354,6 +354,7 @@ class PoCConfiguration(PoC.PoCBase):
 		
 		if		(self.platform == "Windows"):		return (str(iseInstallationDirectoryPath / "settings64.bat"))
 		elif	(self.platform == "Linux"):			return (str(iseInstallationDirectoryPath / "settings64.sh"))
+		else:	raise PoCPlatformNotSupportedException(self.platform)
 		
 	def getVivadoSettingsFile(self):
 		if (len(self.pocConfig.options("Xilinx-Vivado")) == 0):
@@ -363,6 +364,7 @@ class PoCConfiguration(PoC.PoCBase):
 		
 		if		(self.platform == "Windows"):		return (str(vivadoInstallationDirectoryPath / "settings64.bat"))
 		elif	(self.platform == "Linux"):			return (str(vivadoInstallationDirectoryPath / "settings64.sh"))
+		else:	raise PoCPlatformNotSupportedException(self.platform)
 	
 # main program
 def main():
@@ -381,22 +383,27 @@ def main():
 
 		# add arguments
 		group1 = argParser.add_argument_group('Verbosity')
-		group1.add_argument('-D', 																								help='enable script wrapper debug mode',		action='store_const', const=True, default=False)
-		group1.add_argument('-d',											dest="debug",								help='enable debug mode',										action='store_const', const=True, default=False)
-		group1.add_argument('-v',											dest="verbose",							help='print out detailed messages',					action='store_const', const=True, default=False)
-		group1.add_argument('-q',											dest="quiet",								help='run in quiet mode',										action='store_const', const=True, default=False)
+		group1.add_argument('-D', 																														help='enable script wrapper debug mode',		action='store_const', const=True, default=False)
+		group1.add_argument('-d',																	dest="debug",								help='enable debug mode',										action='store_const', const=True, default=False)
+		group1.add_argument('-v',																	dest="verbose",							help='print out detailed messages',					action='store_const', const=True, default=False)
+		group1.add_argument('-q',																	dest="quiet",								help='run in quiet mode',										action='store_const', const=True, default=False)
 		group2 = argParser.add_argument_group('Commands')
 		group21 = group2.add_mutually_exclusive_group(required=True)
-		group21.add_argument('-h', '--help',					dest="help",								help='show this help message and exit',			action='store_const', const=True, default=False)
-		group21.add_argument('--configure',						dest="configurePoC",				help='configure PoC Library',								action='store_const', const=True, default=False)
-		group21.add_argument('--ise-settingsfile',		dest="iseSettingsFile",			help='return Xilinx ISE settings file',			action='store_const', const=True, default=False)
-		group21.add_argument('--vivado-settingsfile',	dest="vivadoSettingsFile",	help='return Xilinx Vivado settings file',	action='store_const', const=True, default=False)
+		group21.add_argument('-h', '--help',											dest="help",								help='show this help message and exit',			action='store_const', const=True, default=False)
+		group21.add_argument('--configure',												dest="configurePoC",				help='configure PoC Library',								action='store_const', const=True, default=False)
+		group21.add_argument('--new-solution',	metavar="<Name>",	dest="newSolution",					help='create a new solution')
+		group21.add_argument('--add-solution',	metavar="<Name>",	dest="addSolution",					help='add an existing solution')
+		group21.add_argument('--ise-settingsfile',								dest="iseSettingsFile",			help='return Xilinx ISE settings file',			action='store_const', const=True, default=False)
+		group21.add_argument('--vivado-settingsfile',							dest="vivadoSettingsFile",	help='return Xilinx Vivado settings file',	action='store_const', const=True, default=False)
 
 		# parse command line options
 		args = argParser.parse_args()
 
 	except Exception as ex:
 		print("FATAL: %s" % ex.__str__())
+		print("-" * 80)
+		print_tb(ex.__traceback__)
+		print("-" * 80)
 		print()
 		exit(1)
 
@@ -430,31 +437,31 @@ def main():
 		print("ERROR: %s" % ex.message)
 		print()
 		print("Please run 'poc.[sh/cmd] --configure' in PoC root directory.")
-		return
+		exit(1)
 	
 	except PoC.PoCPlatformNotSupportedException as ex:
 		print("ERROR: Unknown platform '%s'" % ex.message)
 		print()
-		return
+		exit(1)
 		
 	except PoC.PoCException as ex:
 		print("ERROR: %s" % ex.message)
 		print()
-		return
+		exit(1)
 
 	except PoC.NotImplementedException as ex:
 		print("ERROR: %s" % ex.message)
 		print()
-		return
+		exit(1)
 
 	except Exception as ex:
 		from traceback import print_tb
 		print("FATAL: %s" % ex.__str__())
-		print("-" * 70)
+		print("-" * 80)
 		print_tb(ex.__traceback__)
-		print("-" * 70)
+		print("-" * 80)
 		print()
-		return
+		exit(1)
 	
 	exit(1)
 
