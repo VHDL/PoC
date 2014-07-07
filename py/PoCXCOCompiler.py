@@ -38,9 +38,9 @@ if __name__ != "__main__":
 else:
 	from sys import exit
 
-	print("========================================================================")
-	print("                  PoC Library - Python Class PoCXCOCompiler             ")
-	print("========================================================================")
+	print("=" * 80)
+	print("{: ^80s}".format("PoC Library - Python Class PoCXCOCompiler"))
+	print("=" * 80)
 	print()
 	print("This is no executable file!")
 	exit(1)
@@ -49,17 +49,21 @@ from pathlib import Path
 import re
 	
 import PoCCompiler
+from libDecorators import property
 
 class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 
-	executables = {}
+	__executables = {}
 
 	def __init__(self, host, showLogs, showReport):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
-		self.__executables = {
-			'CoreGen' :	("coregen.exe"	if (host.platform == "Windows") else "coregen")
-		}
+		if (host.platform == "Windows"):
+			self.__executables['CoreGen'] =	"coregen.exe"
+		elif (host.platform == "Linux"):
+			self.__executables['CoreGen'] =	"coregen"
+		else:
+			raise PoC.PoCPlatformNotSupportedException(self.platform)
 		
 	def run(self, pocEntity, device):
 		import os
@@ -75,14 +79,14 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 		deviceSection = "Device." + deviceString
 		
 		# create temporary directory for CoreGen if not existent
-		tempCoreGenPath = self.host.Directories["CoreGenTemp"]
+		tempCoreGenPath = self.host.directories["CoreGenTemp"]
 		if not (tempCoreGenPath).exists():
 			self.printVerbose("Creating temporary directory for core generator files.")
 			self.printDebug("Temporary directors: %s" % str(tempCoreGenPath))
 			tempCoreGenPath.mkdir(parents=True)
 
 		# create output directory for CoreGen if not existent
-		coreGenOutputPath = self.host.Directories["PoCNetList"] / deviceString
+		coreGenOutputPath = self.host.directories["PoCNetList"] / deviceString
 		if not (coreGenOutputPath).exists():
 			self.printVerbose("Creating temporary directory for core generator files.")
 			self.printDebug("Temporary directors: %s" % str(coreGenOutputPath))
@@ -104,12 +108,12 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 			copyTasks.append((Path(list1[0]), Path(list1[1])))
 		
 		# setup all needed paths to execute coreGen
-		coreGenExecutablePath =		self.host.Directories["ISEBinary"] / self.__executables['CoreGen']
+		coreGenExecutablePath =		self.host.directories["ISEBinary"] / self.__executables['CoreGen']
 		
 		# read netlist settings from configuration file
 		ipCoreName =					self.host.netListConfig[str(pocEntity)]['IPCoreName']
-		xcoInputFilePath =		self.host.Directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['CoreGeneratorFile']
-		cgcTemplateFilePath =	self.host.Directories["PoCNetList"] / "template.cgc"
+		xcoInputFilePath =		self.host.directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['CoreGeneratorFile']
+		cgcTemplateFilePath =	self.host.directories["PoCNetList"] / "template.cgc"
 		cgpFilePath =					tempCoreGenPath / "coregen.cgp"
 		cgcFilePath =					tempCoreGenPath / "coregen.cgc"
 		xcoFilePath =					tempCoreGenPath / xcoInputFilePath.name
