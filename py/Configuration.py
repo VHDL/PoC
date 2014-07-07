@@ -38,41 +38,44 @@ import PoC
 
 class PoCConfiguration(PoC.PoCBase):
 	
+	__privateSections = ["PoC", "Xilinx", "Xilinx-ISE", "Xilinx-Vivado", "Altera-QuartusII", "Altera-ModelSim", "Questa-ModelSim", "GHDL", "GTKWave"]
+	
 	def __init__(self, debug, verbose, quiet):
-		if not ((self.platform == "Windows") or (self.platform == "Linux")):
-			raise PoC.PoCPlatformNotSupportedException(self.platform)
-		
 		try:
 			super(self.__class__, self).__init__(debug, verbose, quiet)
+
+			if not ((self.platform == "Windows") or (self.platform == "Linux")):
+				raise PoC.PoCPlatformNotSupportedException(self.platform)
+				
 		except PoC.PoCNotConfiguredException as ex:
-			import configparser
+			from configparser import ConfigParser, ExtendedInterpolation
+			from collections import OrderedDict
 			
 			self.printVerbose("Configuration file does not exists; creating a new one")
 			
-			self.pocConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+			self.pocConfig = ConfigParser(interpolation=ExtendedInterpolation())
 			self.pocConfig.optionxform = str
-			self.pocConfig['PoC'] = {}
+			self.pocConfig['PoC'] = OrderedDict()
 			self.pocConfig['PoC']['Version'] = '0.0.0'
-			self.pocConfig['PoC']['InstallationDirectory'] = self.Directories["Root"].as_posix()
+			self.pocConfig['PoC']['InstallationDirectory'] = self.directories["PoCRoot"].as_posix()
 
-			self.pocConfig['Xilinx'] = {}
-			self.pocConfig['Xilinx-ISE'] = {}
-			self.pocConfig['Xilinx-Vivado'] = {}
-			self.pocConfig['Altera-QuartusII'] = {}
-			self.pocConfig['Altera-ModelSim'] = {}
-			self.pocConfig['Questa-ModelSim'] = {}
-			self.pocConfig['GHDL'] = {}
-			self.pocConfig['GTKWave'] = {}
+			self.pocConfig['Xilinx'] =						OrderedDict()
+			self.pocConfig['Xilinx-ISE'] =				OrderedDict()
+			self.pocConfig['Xilinx-Vivado'] =			OrderedDict()
+			self.pocConfig['Altera-QuartusII'] =	OrderedDict()
+			self.pocConfig['Altera-ModelSim'] =		OrderedDict()
+			self.pocConfig['Questa-ModelSim'] =		OrderedDict()
+			self.pocConfig['GHDL'] =							OrderedDict()
+			self.pocConfig['GTKWave'] =						OrderedDict()
 
 			# Writing configuration to disc
-			with self.Files["PoCConfig"].open('w') as configFileHandle:
+			with self.files["PoCPrivateConfig"].open('w') as configFileHandle:
 				self.pocConfig.write(configFileHandle)
 			
-			self.printDebug("New configuration file created: %s" % self.Files["PoCConfig"])
+			self.printDebug("New configuration file created: %s" % self.files["PoCPrivateConfig"])
 			
 			# re-read configuration
-			self.__readPoCConfiguration()
-			self.__readPoCStructure()
+			self.readPoCConfiguration()
 	
 	def autoConfiguration(self):
 		raise PoC.NotImplementedException("No automatic configuration available!")
@@ -149,11 +152,24 @@ class PoCConfiguration(PoC.PoCBase):
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
 					raise Exception
+		else:
+			raise PoC.PoCPlatformNotSupportedException(self.platform)
+	
+		# remove non private sections from pocConfig
+		sections = self.pocConfig.sections()
+		for privateSection in self.__privateSections:
+			sections.remove(privateSection)
+			
+		for section in sections:
+			self.pocConfig.remove_section(section)
 	
 		# Writing configuration to disc
-		print("Writing configuration file to '%s'" % str(self.Files["PoCConfig"]))
-		with self.Files["PoCConfig"].open('w') as configFileHandle:
+		print("Writing configuration file to '%s'" % str(self.files["PoCPrivateConfig"]))
+		with self.files["PoCPrivateConfig"].open('w') as configFileHandle:
 			self.pocConfig.write(configFileHandle)
+	
+		# re-read configuration
+		self.readPoCConfiguration()
 	
 	def printConfigurationHelp(self):
 		self.printVerbose("starting manual configuration...")
@@ -170,8 +186,8 @@ class PoCConfiguration(PoC.PoCBase):
 		isXilinxISE = isXilinxISE if isXilinxISE != "" else "Y"
 		if (isXilinxISE != 'p'):
 			if (isXilinxISE == 'Y'):
-				xilinxDirectory = input('Xilinx Installation Directory [C:\Xilinx]: ')
-				iseVersion = input('Xilinx ISE Version Number [14.7]: ')
+				xilinxDirectory =	input('Xilinx Installation Directory [C:\Xilinx]: ')
+				iseVersion =			input('Xilinx ISE Version Number [14.7]: ')
 				print()
 				
 				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "C:\Xilinx"
@@ -198,8 +214,8 @@ class PoCConfiguration(PoC.PoCBase):
 		isXilinxVivado = isXilinxVivado if isXilinxVivado != "" else "Y"
 		if (isXilinxVivado != 'p'):
 			if (isXilinxVivado == 'Y'):
-				xilinxDirectory = input('Xilinx Installation Directory [C:\Xilinx]: ')
-				vivadoVersion = input('Xilinx Vivado Version Number [2014.1]: ')
+				xilinxDirectory =	input('Xilinx Installation Directory [C:\Xilinx]: ')
+				vivadoVersion =		input('Xilinx Vivado Version Number [2014.1]: ')
 				print()
 			
 				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "C:\Xilinx"
@@ -226,8 +242,8 @@ class PoCConfiguration(PoC.PoCBase):
 		isGHDL = isGHDL if isGHDL != "" else "Y"
 		if (isGHDL != 'p'):
 			if (isGHDL == 'Y'):
-				ghdlDirectory = input('GHDL Installation Directory [C:\Program Files (x86)\GHDL]: ')
-				ghdlVersion = input('GHDL Version Number [0.31]: ')
+				ghdlDirectory =	input('GHDL Installation Directory [C:\Program Files (x86)\GHDL]: ')
+				ghdlVersion =		input('GHDL Version Number [0.31]: ')
 				print()
 			
 				ghdlDirectory = ghdlDirectory if ghdlDirectory != "" else "C:\Program Files (x86)\GHDL"
@@ -253,8 +269,8 @@ class PoCConfiguration(PoC.PoCBase):
 		isXilinxISE = isXilinxISE if isXilinxISE != "" else "Y"
 		if (isXilinxISE != 'p'):
 			if (isXilinxISE == 'Y'):
-				xilinxDirectory = input('Xilinx Installation Directory [/opt/Xilinx]: ')
-				iseVersion = input('Xilinx ISE Version Number [14.7]: ')
+				xilinxDirectory =	input('Xilinx Installation Directory [/opt/Xilinx]: ')
+				iseVersion =			input('Xilinx ISE Version Number [14.7]: ')
 				print()
 			
 				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/Xilinx"
@@ -281,8 +297,8 @@ class PoCConfiguration(PoC.PoCBase):
 		isXilinxVivado = isXilinxVivado if isXilinxVivado != "" else "Y"
 		if (isXilinxVivado != 'p'):
 			if (isXilinxVivado == 'Y'):
-				xilinxDirectory = input('Xilinx Installation Directory [/opt/Xilinx]: ')
-				vivadoVersion = input('Xilinx Vivado Version Number [2014.1]: ')
+				xilinxDirectory =	input('Xilinx Installation Directory [/opt/Xilinx]: ')
+				vivadoVersion =		input('Xilinx Vivado Version Number [2014.1]: ')
 				print()
 			
 				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/Xilinx"
@@ -309,8 +325,8 @@ class PoCConfiguration(PoC.PoCBase):
 		isGHDL = isGHDL if isGHDL != "" else "Y"
 		if (isGHDL != 'p'):
 			if (isGHDL == 'Y'):
-				ghdlDirectory = input('GHDL Installation Directory [/usr/bin]: ')
-				ghdlVersion = input('GHDL Version Number [0.31]: ')
+				ghdlDirectory =	input('GHDL Installation Directory [/usr/bin]: ')
+				ghdlVersion =		input('GHDL Version Number [0.31]: ')
 				print()
 			
 				ghdlDirectory = ghdlDirectory if ghdlDirectory != "" else "/usr/bin"
@@ -336,11 +352,19 @@ class PoCConfiguration(PoC.PoCBase):
 		
 		iseInstallationDirectoryPath = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
 		
-		if		(self.platform == "Windows"):		return(str(iseInstallationDirectoryPath / "settings64.bat"))
-		elif	(self.platform == "Linux"):			return(str(iseInstallationDirectoryPath / "settings64.sh"))
+		if		(self.platform == "Windows"):		return (str(iseInstallationDirectoryPath / "settings64.bat"))
+		elif	(self.platform == "Linux"):			return (str(iseInstallationDirectoryPath / "settings64.sh"))
+		else:	raise PoCPlatformNotSupportedException(self.platform)
 		
 	def getVivadoSettingsFile(self):
-		raise PoC.NotImplementedException("method 'getVivadoSettingsFile' not implemented!")
+		if (len(self.pocConfig.options("Xilinx-Vivado")) == 0):
+			raise PoCNotConfiguredException("ERROR: Xilinx Vivado is not configured on this system.")
+		
+		vivadoInstallationDirectoryPath = Path(self.pocConfig['Xilinx-Vivado']['InstallationDirectory'])
+		
+		if		(self.platform == "Windows"):		return (str(vivadoInstallationDirectoryPath / "settings64.bat"))
+		elif	(self.platform == "Linux"):			return (str(vivadoInstallationDirectoryPath / "settings64.sh"))
+		else:	raise PoCPlatformNotSupportedException(self.platform)
 	
 # main program
 def main():
@@ -359,22 +383,28 @@ def main():
 
 		# add arguments
 		group1 = argParser.add_argument_group('Verbosity')
-		group1.add_argument('-D', 																								help='enable script wrapper debug mode',		action='store_const', const=True, default=False)
-		group1.add_argument('-d',											dest="debug",								help='enable debug mode',										action='store_const', const=True, default=False)
-		group1.add_argument('-v',											dest="verbose",							help='print out detailed messages',					action='store_const', const=True, default=False)
-		group1.add_argument('-q',											dest="quiet",								help='run in quiet mode',										action='store_const', const=True, default=False)
+		group1.add_argument('-D', 																														help='enable script wrapper debug mode',		action='store_const', const=True, default=False)
+		group1.add_argument('-d',																	dest="debug",								help='enable debug mode',										action='store_const', const=True, default=False)
+		group1.add_argument('-v',																	dest="verbose",							help='print out detailed messages',					action='store_const', const=True, default=False)
+		group1.add_argument('-q',																	dest="quiet",								help='run in quiet mode',										action='store_const', const=True, default=False)
 		group2 = argParser.add_argument_group('Commands')
 		group21 = group2.add_mutually_exclusive_group(required=True)
-		group21.add_argument('-h', '--help',					dest="help",								help='show this help message and exit',			action='store_const', const=True, default=False)
-		group21.add_argument('--configure',						dest="configurePoC",				help='configure PoC Library',								action='store_const', const=True, default=False)
-		group21.add_argument('--ise-settingsfile',		dest="iseSettingsFile",			help='return Xilinx ISE settings file',			action='store_const', const=True, default=False)
-		group21.add_argument('--vivado-settingsfile',	dest="vivadoSettingsFile",	help='return Xilinx Vivado settings file',	action='store_const', const=True, default=False)
+		group21.add_argument('-h', '--help',											dest="help",								help='show this help message and exit',			action='store_const', const=True, default=False)
+		group21.add_argument('--configure',												dest="configurePoC",				help='configure PoC Library',								action='store_const', const=True, default=False)
+		group21.add_argument('--new-solution',	metavar="<Name>",	dest="newSolution",					help='create a new solution')
+		group21.add_argument('--add-solution',	metavar="<Name>",	dest="addSolution",					help='add an existing solution')
+		group21.add_argument('--ise-settingsfile',								dest="iseSettingsFile",			help='return Xilinx ISE settings file',			action='store_const', const=True, default=False)
+		group21.add_argument('--vivado-settingsfile',							dest="vivadoSettingsFile",	help='return Xilinx Vivado settings file',	action='store_const', const=True, default=False)
 
 		# parse command line options
 		args = argParser.parse_args()
 
 	except Exception as ex:
+		from traceback import print_tb
 		print("FATAL: %s" % ex.__str__())
+		print("-" * 80)
+		print_tb(ex.__traceback__)
+		print("-" * 80)
 		print()
 		exit(1)
 
@@ -386,9 +416,9 @@ def main():
 			argParser.print_help()
 			return
 		elif args.configurePoC:
-			print("========================================================================")
-			print("                  PoC Library - Repository Service Tool                 ")
-			print("========================================================================")
+			print("=" * 80)
+			print("{: ^80s}".format("PoC Library - Repository Service Tool"))
+			print("=" * 80)
 			print()
 		
 			#config.autoConfiguration()
@@ -408,27 +438,31 @@ def main():
 		print("ERROR: %s" % ex.message)
 		print()
 		print("Please run 'poc.[sh/cmd] --configure' in PoC root directory.")
-		return
+		exit(1)
 	
 	except PoC.PoCPlatformNotSupportedException as ex:
 		print("ERROR: Unknown platform '%s'" % ex.message)
 		print()
-		return
+		exit(1)
 		
 	except PoC.PoCException as ex:
 		print("ERROR: %s" % ex.message)
 		print()
-		return
+		exit(1)
 
 	except PoC.NotImplementedException as ex:
 		print("ERROR: %s" % ex.message)
 		print()
-		return
+		exit(1)
 
 	except Exception as ex:
+		from traceback import print_tb
 		print("FATAL: %s" % ex.__str__())
+		print("-" * 80)
+		print_tb(ex.__traceback__)
+		print("-" * 80)
 		print()
-		return
+		exit(1)
 	
 	exit(1)
 
@@ -445,9 +479,9 @@ if __name__ == "__main__":
 else:
 	from sys import exit
 	
-	print("========================================================================")
-	print("                  PoC Library - Repository Service Tool                 ")
-	print("========================================================================")
+	print("=" * 80)
+	print("{: ^80s}".format("PoC Library - Repository Service Tool"))
+	print("=" * 80)
 	print()
 	print("This is no library file!")
 	exit(1)

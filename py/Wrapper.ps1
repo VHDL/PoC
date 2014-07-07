@@ -40,6 +40,9 @@ $PoC_ScriptDir = "py"
 Set-Location $PoC_RootDir_RelPath
 $PoC_RootDir_AbsPath = Get-Location
 
+# publish PoC root directory as environment variable
+$env:PoCRootDirectory = $PoC_RootDir_AbsPath
+
 if ($PoC_PyWrapper_Debug -eq $true ) {
 	Write-Host "This is the PoC Library script wrapper operating in debug mode." -ForegroundColor Yellow
 	Write-Host ""
@@ -73,12 +76,14 @@ if ($PoC_ExitCode -eq 0) {
 	# goto script directory
 	if ($PoC_PyWrapper_Debug -eq $true) { Write-Host "cd $PoC_RootDir_AbsPath\$PoC_ScriptDir" -ForegroundColor Yellow }
 	Set-Location $PoC_RootDir_AbsPath\$PoC_ScriptDir
-	
+}
+
+if ($PoC_ExitCode -eq 0) {
 	# load Xilinx ISE environment if not loaded before
 	if ($PoC_PyWrapper_LoadEnv_ISE -eq $true) {
 		if (-not (Test-Path env:XILINX)) {
 			$PoC_Command = "$Python_Interpreter $Python_Parameters $PoC_RootDir_AbsPath\$PoC_ScriptDir\Configuration.py --ise-settingsfile"
-			if ($PoC_PyWrapper_Debug -eq $true) { Write-Host "getting ISE settings file: command='$PoC_Command'" -ForegroundColor Yellow }
+			if ($PoC_PyWrapper_Debug -eq $true) { Write-Host "Getting ISE settings file: command='$PoC_Command'" -ForegroundColor Yellow }
 
 			# execute python script to receive ISE settings filename
 			$PoC_ISE_SettingsFile = Invoke-Expression $PoC_Command
@@ -97,15 +102,44 @@ if ($PoC_ExitCode -eq 0) {
 						. $PoC_ISE_SettingsFile
 					}
 				}
+			} else {
+				Write-Host "ERROR: ExitCode for '$PoC_Command' was not zero. Aborting script execution" -ForegroundColor Red
+				Write-Host $PoC_ISE_SettingsFile -ForegroundColor Red
+				$PoC_ExitCode = 1
 			}
 		}
 	}
-	
+}
+
+if ($PoC_ExitCode -eq 0) {
 	# load Xilinx Vivado environment if not loaded before
 	if ($PoC_PyWrapper_LoadEnv_Vivado -eq $true) {
-		Write-Host "ERROR: Vivado support not implemented." -ForegroundColor Red
-		$PoC_ExitCode = 1
-		# TODO: add Vivado support here
+		if (-not (Test-Path env:XILINX)) {
+			$PoC_Command = "$Python_Interpreter $Python_Parameters $PoC_RootDir_AbsPath\$PoC_ScriptDir\Configuration.py --vivado-settingsfile"
+			if ($PoC_PyWrapper_Debug -eq $true) { Write-Host "Getting Vivado settings file: command='$PoC_Command'" -ForegroundColor Yellow }
+
+			# execute python script to receive ISE settings filename
+			$PoC_Vivado_SettingsFile = Invoke-Expression $PoC_Command
+			if ($LastExitCode -eq 0) {
+				if ($PoC_PyWrapper_Debug -eq $true) { Write-Host "Vivado settings file: '$PoC_ISE_SettingsFile'" }
+				if ($PoC_Vivado_SettingsFile -eq "") {
+					Write-Host "ERROR: No Xilinx Vivado installation found." -ForegroundColor Red
+					Write-Host "Run 'poc.ps1 --configure' to configure your Xilinx Vivado installation." -ForegroundColor Yellow
+					$PoC_ExitCode = 1
+				} else {
+					Write-Host "Loading Xilinx Vivado environment '$PoC_Vivado_SettingsFile'" -ForegroundColor Yellow
+					if (($PoC_Vivado_SettingsFile -like "*.bat") -or ($PoC_Vivado_SettingsFile -like "*.cmd")) {
+						Import-Module PSCX
+						Invoke-BatchFile -path $PoC_Vivado_SettingsFile
+					} else {
+						. $PoC_Vivado_SettingsFile
+					}
+				}
+			} else {
+				Write-Host "ERROR: ExitCode for '$PoC_Command' was not zero. Aborting script execution" -ForegroundColor Red
+				$PoC_ExitCode = 1
+			}
+		}
 	}
 }
 
@@ -118,7 +152,10 @@ if ($PoC_ExitCode -eq 0) {
 
 	# launch python script
 	Invoke-Expression "$Python_Interpreter $Python_Parameters $PoC_PyWrapper_Script $PoC_PyWrapper_Paramters"
-
-	# go back to script dir
-	Set-Location $PoC_PyWrapper_ScriptDir
 }
+
+# go back to script dir
+Set-Location $PoC_PyWrapper_ScriptDir
+
+# clean up
+$env:PoCRootDirectory = $null
