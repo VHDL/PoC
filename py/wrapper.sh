@@ -44,6 +44,9 @@ RED='\e[0;31m'			# Yellow
 YELLOW='\e[1;33m'		# Yellow
 NOCOLOR='\e[0m'			# No Color
 
+
+PoC_WorkingDir=$(pwd)
+
 # publish PoC directories as environment variables
 export PoCScriptDirectory=$PyWrapper_ScriptDir
 export PoCRootDirectory=$PoC_RootDir_AbsPath
@@ -151,8 +154,8 @@ fi
 
 # execute script with appropriate python interpreter and all given parameters
 if [ $PoC_ExitCode -eq 0 ]; then
-	Python_Script =						"$PoC_RootDir_AbsPath\$PoC_PythonScriptDir\$PyWrapper_Script"
-	Python_ScriptParameters =	$PyWrapper_Paramters
+	Python_Script="$PoC_RootDir_AbsPath/$PoC_PythonScriptDir/$PyWrapper_Script"
+	Python_ScriptParameters=$PyWrapper_Paramters
 	
 	if [ $PyWrapper_Debug -eq 1 ]; then
 		echo -e "${YELLOW}launching: '$Python_Interpreter $Python_Script $Python_ScriptParameters'${NOCOLOR}"

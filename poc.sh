@@ -53,7 +53,7 @@ PyWrapper_Paramters=$@
 PyWrapper_ScriptDir=$SCRIPT_DIR
 PyWrapper_WorkingDir=$(pwd)
 PoC_RootDir_RelPath="$SCRIPT_DIR/."
-PoC_RootDir_AbsPath=` cd "${POC_RootDir_RelPath}" && pwd`
+PoC_RootDir_AbsPath=`cd $PoC_RootDir_RelPath && pwd`
 
 echo "scr: $PyWrapper_ScriptDir"
 echo "wrk: $PyWrapper_WorkingDir"
