@@ -408,9 +408,9 @@ def main():
 			argParser.print_help()
 			return
 		elif args.configurePoC:
-			print("========================================================================")
-			print("                  PoC Library - Repository Service Tool                 ")
-			print("========================================================================")
+			print("=" * 80)
+			print("{: ^80s}".format("PoC Library - Repository Service Tool"))
+			print("=" * 80)
 			print()
 		
 			#config.autoConfiguration()
@@ -450,9 +450,9 @@ def main():
 	except Exception as ex:
 		from traceback import print_tb
 		print("FATAL: %s" % ex.__str__())
-		print("-" * 20)
+		print("-" * 70)
 		print_tb(ex.__traceback__)
-		print("-" * 20)
+		print("-" * 70)
 		print()
 		return
 	
@@ -471,9 +471,9 @@ if __name__ == "__main__":
 else:
 	from sys import exit
 	
-	print("========================================================================")
-	print("                  PoC Library - Repository Service Tool                 ")
-	print("========================================================================")
+	print("=" * 80)
+	print("{: ^80s}".format("PoC Library - Repository Service Tool"))
+	print("=" * 80)
 	print()
 	print("This is no library file!")
 	exit(1)

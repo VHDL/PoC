@@ -38,13 +38,16 @@
 # script settings
 POC_SCRIPTSDIR=py
 
+YELLOW='\e[1;33m'		# Yellow
+NOCOLOR='\e[0m'			# No Color
+
 # goto PoC root directory and save this path
 cd $POC_ROOTDIR_RELPATH
 POC_ROOTDIR_ABSPATH=$(pwd)
 export PoCRootDirectory=$POC_ROOTDIR_ABSPATH
 
 if [ $POC_PYWRAPPER_DEBUG -eq 1 ]; then
-	echo "This is the PoC Library script wrapper operating in debug mode."
+	echo -e "${YELLOW}This is the PoC Library script wrapper operating in debug mode.${NOCOLOR}"
 	echo
 	echo "Directories:"
 	echo "  Script root:   $POC_PYWRAPPER_SCRIPTDIR"

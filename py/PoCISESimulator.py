@@ -38,9 +38,9 @@ if __name__ != "__main__":
 else:
 	from sys import exit
 
-	print("========================================================================")
-	print("                  PoC Library - Python Class PoCISESimulator            ")
-	print("========================================================================")
+	print("=" * 80)
+	print("{: ^80s}".format("PoC Library - Python Class PoCISESimulator"))
+	print("=" * 80)
 	print()
 	print("This is no executable file!")
 	exit(1)
