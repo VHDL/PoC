@@ -201,6 +201,7 @@ def main():
 		args = argParser.parse_args()
 
 	except Exception as ex:
+		from traceback import print_tb
 		print("FATAL: %s" % ex.__str__())
 		print("-" * 80)
 		print_tb(ex.__traceback__)
@@ -261,6 +262,7 @@ def main():
 		return
 
 	except Exception as ex:
+		from traceback import print_tb
 		print("FATAL: %s" % ex.__str__())
 		print("-" * 80)
 		print_tb(ex.__traceback__)
