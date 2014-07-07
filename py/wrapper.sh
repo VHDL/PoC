@@ -160,7 +160,6 @@ if [ $PoC_ExitCode -eq 0 ]; then
 	if [ $PyWrapper_Debug -eq 1 ]; then
 		echo -e "${YELLOW}launching: '$Python_Interpreter $Python_Script $Python_ScriptParameters'${NOCOLOR}"
 		echo -e "${YELLOW}------------------------------------------------------------${NOCOLOR}"
-		echo
 	fi
 	
 	# launching python script
