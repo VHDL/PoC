@@ -34,8 +34,9 @@
 # ==============================================================================
 
 # configure wrapper here
-POC_PYWRAPPER_SCRIPT=Configuration.py
-POC_PYWRAPPER_MIN_VERSION=3.4.0
+PyWrapper_BashScriptDir="py"
+PyWrapper_Script=Configuration.py
+PyWrapper_MinVersion=3.4.0
 
 # resolve script directory
 # solution is taken from http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
@@ -48,21 +49,28 @@ done
 SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 # save parameters and script directory
-POC_ROOTDIR_RELPATH="$SCRIPT_DIR"
-POC_PYWRAPPER_PARAMS=$@
-POC_PYWRAPPER_SCRIPTDIR=$(pwd)
+PyWrapper_Paramters=$@
+PyWrapper_ScriptDir=$SCRIPT_DIR
+PyWrapper_WorkingDir=$(pwd)
+PoC_RootDir_RelPath="$SCRIPT_DIR/."
+PoC_RootDir_AbsPath=` cd "${POC_RootDir_RelPath}" && pwd`
+
+echo "scr: $PyWrapper_ScriptDir"
+echo "wrk: $PyWrapper_WorkingDir"
+echo "rel: $PoC_RootDir_RelPath"
+echo "abs: $PoC_RootDir_AbsPath"
 
 # set default values
-POC_PYWRAPPER_DEBUG=0
-POC_PYWRAPPER_LOADENV_ISE=0
-POC_PYWRAPPER_LOADENV_VIVADO=0
+PyWrapper_Debug=0
+PyWrapper_LoadEnv_ISE=0
+PyWrapper_LoadEnv_Vivado=0
 
 # search for special parameters
 for param in "$@"; do
-	if [ "$param" = "-D" ]; then POC_PYWRAPPER_DEBUG=1; fi
+	if [ "$param" = "-D" ]; then PyWrapper_Debug=1; fi
 done
 
 # invoke main wrapper
-source $POC_ROOTDIR_RELPATH/py/wrapper.sh
+source "$PoC_RootDir_AbsPath/$PyWrapper_BashScriptDir/wrapper.sh"
 
-exit $POC_EXITCODE
+exit $PoC_ExitCode

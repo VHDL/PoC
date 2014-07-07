@@ -36,9 +36,6 @@
 $PoC_ExitCode = 0
 $PoC_PythonScriptDir = "py"
 
-# goto PoC root directory and save this path
-#Set-Location $PoC_RootDir_RelPath
-#$PoC_RootDir_AbsPath = Get-Location
 
 $PoC_WorkingDir = Get-Location
 
@@ -75,13 +72,6 @@ if ($LastExitCode -eq 0) {
     Write-Host "The script requires Python $PyWrapper_MinVersion." -ForegroundColor Yellow
     $PoC_ExitCode = 1
 }
-
-# load environments if needed and no error occurred
-#if ($PoC_ExitCode -eq 0) {
-#	# goto script directory
-#	if ($PyWrapper_Debug -eq $true) { Write-Host "cd $PoC_RootDir_AbsPath\$PoC_ScriptDir" -ForegroundColor Yellow }
-#	Set-Location $PoC_RootDir_AbsPath\$PoC_ScriptDir
-#}
 
 if ($PoC_ExitCode -eq 0) {
 	# load Xilinx ISE environment if not loaded before
@@ -148,6 +138,7 @@ if ($PoC_ExitCode -eq 0) {
 	}
 }
 
+# execute script with appropriate python interpreter and all given parameters
 if ($PoC_ExitCode -eq 0) {
 	$Python_Script =						"$PoC_RootDir_AbsPath\$PoC_PythonScriptDir\$PyWrapper_Script"
 	$Python_ScriptParameters =	$PyWrapper_Paramters
@@ -158,14 +149,11 @@ if ($PoC_ExitCode -eq 0) {
 		Write-Host "------------------------------------------------------------" -ForegroundColor Yellow
 	}
 
-	# launch python script
+	# launching python script
 	Invoke-Expression "$Python_Interpreter $Python_Parameters $Python_Script $Python_ScriptParameters"
 }
 
-# go back to script dir
-#Set-Location $PyWrapper_ScriptDir
-
-# clean up
+# clean up environment variables
 $env:PoCScriptDirectory =		$null
 $env:PoCRootDirectory =			$null
 $env:PoCWorkingDirectory =	$null

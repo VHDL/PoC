@@ -34,8 +34,8 @@
 # ==============================================================================
 
 # configure wrapper here
-POC_PYWRAPPER_SCRIPT=Netlist.py
-POC_PYWRAPPER_MIN_VERSION=3.4.0
+PyWrapper_SCRIPT=Netlist.py
+PyWrapper_MIN_VERSION=3.4.0
 
 # resolve script directory
 # solution is taken from http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
@@ -49,20 +49,20 @@ SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 # save parameters and script directory
 POC_ROOTDIR_RELPATH="$SCRIPT_DIR/.."
-POC_PYWRAPPER_PARAMS=$@
-POC_PYWRAPPER_SCRIPTDIR=$(pwd)
+PyWrapper_PARAMS=$@
+PyWrapper_SCRIPTDIR=$(pwd)
 
 # set default values
-POC_PYWRAPPER_DEBUG=0
-POC_PYWRAPPER_LOADENV_ISE=0
-POC_PYWRAPPER_LOADENV_VIVADO=0
+PyWrapper_DEBUG=0
+PyWrapper_LOADENV_ISE=0
+PyWrapper_LOADENV_VIVADO=0
 
 # search parameter list for platform specific options
 #		--coregen	-> load Xilinx ISE environment
 for param in "$@"; do
-	if [ "$param" = "-D" ];					then POC_PYWRAPPER_DEBUG=1; fi
-	if [ "$param" = "--coregen" ];	then POC_PYWRAPPER_LOADENV_ISE=1; fi
-	if [ "$param" = "--xst" ];			then POC_PYWRAPPER_LOADENV_ISE=1; fi
+	if [ "$param" = "-D" ];					then PyWrapper_DEBUG=1; fi
+	if [ "$param" = "--coregen" ];	then PyWrapper_LOADENV_ISE=1; fi
+	if [ "$param" = "--xst" ];			then PyWrapper_LOADENV_ISE=1; fi
 done
 
 # invoke main wrapper

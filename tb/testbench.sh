@@ -34,8 +34,8 @@
 # ==============================================================================
 
 # configure wrapper here
-POC_PYWRAPPER_SCRIPT=Testbench.py
-POC_PYWRAPPER_MIN_VERSION=3.4.0
+PyWrapper_SCRIPT=Testbench.py
+PyWrapper_MIN_VERSION=3.4.0
 
 # resolve script directory
 # solution is taken from http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
@@ -49,24 +49,24 @@ SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 # save parameters and script directory
 POC_ROOTDIR_RELPATH="$SCRIPT_DIR/.."
-POC_PYWRAPPER_PARAMS=$@
-POC_PYWRAPPER_SCRIPTDIR=$(pwd)
+PyWrapper_PARAMS=$@
+PyWrapper_SCRIPTDIR=$(pwd)
 
 # set default values
-POC_PYWRAPPER_DEBUG=0
-POC_PYWRAPPER_LOADENV_ISE=0
-POC_PYWRAPPER_LOADENV_VIVADO=0
-POC_PYWRAPPER_LOADENV_MODELSIM=0
+PyWrapper_DEBUG=0
+PyWrapper_LOADENV_ISE=0
+PyWrapper_LOADENV_VIVADO=0
+PyWrapper_LOADENV_MODELSIM=0
 
 # search parameter list for platform specific options
 #		--isim	-> load Xilinx ISE environment
 #		--xsim	-> load Xilinx Vivado environment
 #		--vsim	-> load Mentor Graphics ModelSim environment
 for param in "$@"; do
-	if [ "$param" = "-D" ]; then POC_PYWRAPPER_DEBUG=1; fi
-	if [ "$param" = "--isim" ]; then POC_PYWRAPPER_LOADENV_ISE=1; fi
-	if [ "$param" = "--xsim" ]; then POC_PYWRAPPER_LOADENV_VIVADO=1; fi
-#	if [ "$param" = "--vsim" ]; then POC_PYWRAPPER_LOADENV_MODELSIM=1; fi
+	if [ "$param" = "-D" ]; then PyWrapper_DEBUG=1; fi
+	if [ "$param" = "--isim" ]; then PyWrapper_LOADENV_ISE=1; fi
+	if [ "$param" = "--xsim" ]; then PyWrapper_LOADENV_VIVADO=1; fi
+#	if [ "$param" = "--vsim" ]; then PyWrapper_LOADENV_MODELSIM=1; fi
 done
 
 # invoke main wrapper
