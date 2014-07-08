@@ -38,7 +38,7 @@ import PoC
 
 class PoCConfiguration(PoC.PoCBase):
 	
-	__privateSections = ["PoC", "Xilinx", "Xilinx-ISE", "Xilinx-Vivado", "Altera-QuartusII", "Altera-ModelSim", "Questa-ModelSim", "GHDL", "GTKWave"]
+	__privateSections = ["PoC", "Xilinx", "Xilinx-ISE", "Xilinx-Vivado", "Altera-QuartusII", "Altera-ModelSim", "Questa-ModelSim", "GHDL", "GTKWave", "Solutions"]
 	
 	def __init__(self, debug, verbose, quiet):
 		try:
@@ -57,7 +57,7 @@ class PoCConfiguration(PoC.PoCBase):
 			self.pocConfig.optionxform = str
 			self.pocConfig['PoC'] = OrderedDict()
 			self.pocConfig['PoC']['Version'] = '0.0.0'
-			self.pocConfig['PoC']['InstallationDirectory'] = self.directories["PoCRoot"].as_posix()
+			self.pocConfig['PoC']['InstallationDirectory'] = self.directories['PoCRoot'].as_posix()
 
 			self.pocConfig['Xilinx'] =						OrderedDict()
 			self.pocConfig['Xilinx-ISE'] =				OrderedDict()
@@ -69,10 +69,10 @@ class PoCConfiguration(PoC.PoCBase):
 			self.pocConfig['GTKWave'] =						OrderedDict()
 
 			# Writing configuration to disc
-			with self.files["PoCPrivateConfig"].open('w') as configFileHandle:
+			with self.files['PoCPrivateConfig'].open('w') as configFileHandle:
 				self.pocConfig.write(configFileHandle)
 			
-			self.printDebug("New configuration file created: %s" % self.files["PoCPrivateConfig"])
+			self.printDebug("New configuration file created: %s" % self.files['PoCPrivateConfig'])
 			
 			# re-read configuration
 			self.readPoCConfiguration()
@@ -164,8 +164,8 @@ class PoCConfiguration(PoC.PoCBase):
 			self.pocConfig.remove_section(section)
 	
 		# Writing configuration to disc
-		print("Writing configuration file to '%s'" % str(self.files["PoCPrivateConfig"]))
-		with self.files["PoCPrivateConfig"].open('w') as configFileHandle:
+		print("Writing configuration file to '%s'" % str(self.files['PoCPrivateConfig']))
+		with self.files['PoCPrivateConfig'].open('w') as configFileHandle:
 			self.pocConfig.write(configFileHandle)
 	
 		# re-read configuration
@@ -348,9 +348,57 @@ class PoCConfiguration(PoC.PoCBase):
 				
 	def newSolution(self, solutionName):
 		print("new solution: name=%s" % solutionName)
+		print("solution here: %s" % self.directories['Working'])
+		print("script root: %s" % self.directories['ScriptRoot'])
+	
+		raise NotImplementedException("Currently new solution should be created by hand.")
 	
 	def addSolution(self, solutionName):
-		print("add solution: name=%s" % solutionName)
+		print("Adding existing solution '%s' to PoC Library." % solutionName)
+		print()
+		print("You can specify paths and file names relative to the current working directory")
+		print("or as an absolute path.")
+		print()
+		print("Current working directory: %s" % self.directories['Working'])
+		print()
+		
+		if (not self.pocConfig.has_section('Solutions')):
+			self.pocConfig['Solutions'] = OrderedDict()
+		
+		if self.pocConfig.has_option('Solutions', solutionName):
+			raise PoC.PoCException("Solution is already registered in PoC Library.")
+		
+		# 
+		solutionFileDirectoryName = input("Where is the solution file 'solution.ini' stored? [./py]: ")
+		solutionFileDirectoryName = solutionFileDirectoryName if solutionFileDirectoryName != "" else "py"
+	
+		solutionFilePath = Path(solutionFileDirectoryName)
+	
+		if (solutionFilePath.is_absolute()):
+			solutionFilePath = solutionFilePath / "solution.ini"
+		else:
+			solutionFilePath = ((self.directories['Working'] / solutionFilePath).resolve()) / "solution.ini"
+			
+		if (not solutionFilePath.exists()):
+			raise PoC.PoCException("Solution file '%s' does not exist." % str(solutionFilePath))
+		
+		self.pocConfig['Solutions'][solutionName] = solutionFilePath.as_posix()
+	
+		# remove non private sections from pocConfig
+		sections = self.pocConfig.sections()
+		for privateSection in self.__privateSections:
+			sections.remove(privateSection)
+			
+		for section in sections:
+			self.pocConfig.remove_section(section)
+	
+		# Writing configuration to disc
+		print("Writing configuration file to '%s'" % str(self.files['PoCPrivateConfig']))
+		with self.files['PoCPrivateConfig'].open('w') as configFileHandle:
+			self.pocConfig.write(configFileHandle)
+	
+		# re-read configuration
+		self.readPoCConfiguration()
 	
 	def getISESettingsFile(self):
 		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):
@@ -377,6 +425,9 @@ def main():
 	from sys import exit
 	import argparse
 	import textwrap
+	import colorama
+	
+	colorama.init()
 	
 	try:
 		# create a commandline argument parser
@@ -406,12 +457,14 @@ def main():
 		args = argParser.parse_args()
 
 	except Exception as ex:
-		from traceback import print_tb
-		print("FATAL: %s" % ex.__str__())
+		from traceback	import print_tb
+		from colorama		import Fore, Back, Style
+		
+		print(Fore.RED + "FATAL: %s" % ex.__str__())
 		print("-" * 80)
 		print_tb(ex.__traceback__)
 		print("-" * 80)
-		print()
+		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 		exit(1)
 
 	# create class instance and start processing
@@ -459,53 +512,61 @@ def main():
 			exit(0)
 	
 	except PoC.PoCNotConfiguredException as ex:
-		print("ERROR: %s" % ex.message)
+		from colorama import Fore, Back, Style
+		print(Fore.RED + "ERROR: %s" % ex.message)
 		print()
 		print("Please run 'poc.[sh/cmd] --configure' in PoC root directory.")
+		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 		exit(1)
 	
 	except PoC.PoCPlatformNotSupportedException as ex:
-		print("ERROR: Unknown platform '%s'" % ex.message)
-		print()
+		from colorama import Fore, Back, Style
+		print(Fore.RED + "ERROR: Unknown platform '%s'" % ex.message)
+		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 		exit(1)
 		
 	except PoC.PoCException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
+		from colorama import Fore, Back, Style
+		print(Fore.RED + "ERROR: %s" % ex.message)
+		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 		exit(1)
 
 	except PoC.NotImplementedException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
+		from colorama import Fore, Back, Style
+		print(Fore.RED + "ERROR: %s" % ex.message)
+		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 		exit(1)
 
 	except Exception as ex:
-		from traceback import print_tb
-		print("FATAL: %s" % ex.__str__())
+		from traceback	import print_tb
+		from colorama		import Fore, Back, Style
+		print(Fore.RED + "FATAL: %s" % ex.__str__())
 		print("-" * 80)
 		print_tb(ex.__traceback__)
 		print("-" * 80)
-		print()
+		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 		exit(1)
-	
-	exit(1)
+
 
 # entry point
 if __name__ == "__main__":
 	from sys import version_info
 	
 	if (version_info<(3,4,0)):
-		print("ERROR: Used Python interpreter is to old: %s" % version_info)
+		from colorama		import Fore, Back, Style
+		print(Fore.RED + "ERROR: Used Python interpreter is to old: %s" % version_info)
 		print("Minimal required Python version is 3.4.0")
+		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 		exit(1)
 		
 	main()
 else:
-	from sys import exit
-	
-	print("=" * 80)
+	from sys			import exit
+	from colorama	import Fore, Back, Style
+	print(Fore.RED + "=" * 80)
 	print("{: ^80s}".format("PoC Library - Repository Service Tool"))
 	print("=" * 80)
 	print()
 	print("This is no library file!")
+	print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 	exit(1)
