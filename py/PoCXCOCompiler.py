@@ -215,7 +215,10 @@ class PoCXCOCompiler(PoCCompiler.PoCCompiler):
 		for task in copyTasks:
 			(fromPath, toPath) = task
 			if not fromPath.exists():		raise PoCCompiler.PoCCompilerException("File '%s' does not exist!" % str(fromPath))
-			#if not toPath.exists():			raise PoCCompiler.PoCCompilerException("File '%s' does not exist!" % str(toPath))
+			
+			toDirectoryPath = toPath.parent
+			if not toDirectoryPath.exists():
+				toDirectoryPath.mkdir(parents=True)
 		
 			self.printVerbose("  copying '%s'" % str(fromPath))
 			shutil.copy(str(fromPath), str(toPath))
