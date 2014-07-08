@@ -86,8 +86,12 @@ class PoCBase(object):
 		if (environ.get('PoCRootDirectory') == None):
 			raise PoCEnvironmentException("Shell environment does not provide 'PoCRootDirectory' variable.")
 		
-		self.directories['Root'] =				Path.cwd()
+		if (environ.get('PoCScriptDirectory') == None):
+			raise PoCEnvironmentException("Shell environment does not provide 'PoCScriptDirectory' variable.")
+		
+		self.directories['Working'] =			Path.cwd()
 		self.directories['PoCRoot'] =			Path(environ.get('PoCRootDirectory'))
+		self.directories['ScriptRoot'] =	Path(environ.get('PoCRootDirectory'))
 		self.files['PoCPrivateConfig'] =	self.directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPrivateConfigFileName
 		self.files['PoCPublicConfig'] =		self.directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPublicConfigFileName
 		
@@ -412,7 +416,7 @@ class PoCEntity(object):
 			raise ArgumentException("Argument has to many ':' signs.")
 		
 		splitList2 = namespacePart.split('.')
-		print("len2: %i" % len(splitList2))
+#		print("len2: %i" % len(splitList2))
 		if (splitList2[0] == "PoC"):
 			self.parts = splitList2[1:]
 		else:
