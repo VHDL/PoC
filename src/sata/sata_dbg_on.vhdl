@@ -47,6 +47,9 @@ package satadbg is
 	-- SATA Transceiver Types
 	-- ===========================================================================
 	TYPE T_SATADBG_TRANSCEIVEROUT IS RECORD
+		-- dummy signal for synthesis
+		Dummy									: STD_LOGIC;
+		-- 
 		RX_ElectricalIDLE			: STD_LOGIC;
 		RX_Data								: T_SLV_32;
 		RX_CiK								: T_SATA_CIK;
@@ -58,6 +61,9 @@ package satadbg is
 	-- SATA Physical Layer Types
 	-- ===========================================================================
 	TYPE T_SATADBG_PHYSICALOUT IS RECORD
+		-- dummy signal for synthesis
+		Dummy									: STD_LOGIC;
+		-- 
 		GenerationChanges			: UNSIGNED(3 DOWNTO 0);
 		TrysPerGeneration			: UNSIGNED(3 DOWNTO 0);
 		SATAGeneration				: T_SATA_GENERATION;
@@ -72,6 +78,8 @@ package satadbg is
 	-- SATA Link Layer Types
 	-- ===========================================================================
 	TYPE T_SATADBG_LINKOUT IS RECORD
+		-- dummy signal for synthesis
+		Dummy												: STD_LOGIC;
 		-- from physical layer
 		Phy_Ready										: STD_LOGIC;
 		-- RX: from physical layer
@@ -103,7 +111,7 @@ package satadbg is
 		RX_EOF											: STD_LOGIC;
 		RX_FS_Valid									: STD_LOGIC;
 		RX_FS_Ready									: STD_LOGIC;
-		RX_FS_CRC_OK								: STD_LOGIC;
+		RX_FS_CRCOK									: STD_LOGIC;
 		RX_FS_Abort									: STD_LOGIC;
 		--																													=> 125 bit
 		-- TX: from Link Layer
@@ -139,11 +147,14 @@ package satadbg is
 	-- SATA Controller Types
 	-- ===========================================================================
 	TYPE T_SATADBG_SATACOUT IS RECORD
+		-- dummy signal for synthesis
+		Dummy									: STD_LOGIC;
 		-- Transceiver Layer
 		Transceiver						: T_SATADBG_TRANSCEIVEROUT;
 		Transceiver_Command		: T_SATA_TRANSCEIVER_COMMAND;
 		Transceiver_Status		: T_SATA_TRANSCEIVER_STATUS;
-		Transceiver_Error			: T_SATA_TRANSCEIVER_ERROR;
+		Transceiver_TX_Error	: T_SATA_TRANSCEIVER_TX_ERROR;
+		Transceiver_RX_Error	: T_SATA_TRANSCEIVER_RX_ERROR;
 		-- Physical Layer
 		Physical							: T_SATADBG_PHYSICALOUT;
 		Physical_Command			: T_SATA_PHY_COMMAND;
@@ -155,7 +166,7 @@ package satadbg is
 		Link_Status						: T_SATA_LINK_STATUS;									-- 3 bit
 		Link_Error						: T_SATA_LINK_ERROR;									-- 2 bit
 	END RECORD;
-		
+	
 	
 	-- ===========================================================================
 	-- ATA Command Layer types

@@ -56,17 +56,18 @@ class PoCTestbench(PoC.PoCBase):
 	# read Testbench configuration
 	# ==========================================================================
 	def readTestbenchConfiguration(self):
-		import configparser
+		from configparser import ConfigParser, ExtendedInterpolation
 	
-		tbConfigFilePath = self.Directories["Root"] / ".." / self.pocStructure['DirectoryNames']['TestbenchFiles'] / self.__tbConfigFileName
+		self.files["PoCTBConfig"] = self.directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['TestbenchFiles'] / self.__tbConfigFileName
+		tbConfigFilePath = self.files["PoCTBConfig"]
+		
 		self.printDebug("Reading testbench configuration from '%s'" % str(tbConfigFilePath))
 		if not tbConfigFilePath.exists():
 			raise PoC.PoCNotConfiguredException("PoC testbench configuration file does not exist. (%s)" % str(tbConfigFilePath))
 			
-		self.tbConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+		self.tbConfig = ConfigParser(interpolation=ExtendedInterpolation())
 		self.tbConfig.optionxform = str
-		self.tbConfig.read([str(self.Files["PoCConfig"]), str(self.Files["PoCStructure"]), str(tbConfigFilePath)])
-		self.Files["PoCTBConfig"]	= tbConfigFilePath
+		self.tbConfig.read([str(self.files["PoCPrivateConfig"]), str(self.files["PoCPublicConfig"]), str(tbConfigFilePath)])
 	
 	def listSimulations(self, module):
 		entityToList = PoC.PoCEntity(self, module)
@@ -92,8 +93,8 @@ class PoCTestbench(PoC.PoCBase):
 			raise PoCNotConfiguredException("Xilinx ISE is not configured on this system.")
 		
 		# prepare some paths
-		self.Directories["ISEInstallation"] = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
-		self.Directories["ISEBinary"] =				Path(self.pocConfig['Xilinx-ISE']['BinaryDirectory'])
+		self.directories["ISEInstallation"] = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
+		self.directories["ISEBinary"] =				Path(self.pocConfig['Xilinx-ISE']['BinaryDirectory'])
 		
 		# check if the appropriate environment is loaded
 		from os import environ
@@ -131,8 +132,8 @@ class PoCTestbench(PoC.PoCBase):
 			raise PoCNotConfiguredException("GHDL is not configured on this system.")
 		
 		# prepare some paths
-		self.Directories["GHDLInstallation"] =	Path(self.pocConfig['GHDL']['InstallationDirectory'])
-		self.Directories["GHDLBinary"] =				Path(self.pocConfig['GHDL']['BinaryDirectory'])
+		self.directories["GHDLInstallation"] =	Path(self.pocConfig['GHDL']['InstallationDirectory'])
+		self.directories["GHDLBinary"] =				Path(self.pocConfig['GHDL']['BinaryDirectory'])
 		
 		entityToSimulate = PoC.PoCEntity(self, module)
 
@@ -200,7 +201,11 @@ def main():
 		args = argParser.parse_args()
 
 	except Exception as ex:
+		from traceback import print_tb
 		print("FATAL: %s" % ex.__str__())
+		print("-" * 80)
+		print_tb(ex.__traceback__)
+		print("-" * 80)
 		print()
 		return
 
@@ -256,10 +261,14 @@ def main():
 		print()
 		return
 
-#	except Exception as ex:
-#		print("FATAL: %s" % ex.__str__())
-#		print()
-#		return
+	except Exception as ex:
+		from traceback import print_tb
+		print("FATAL: %s" % ex.__str__())
+		print("-" * 80)
+		print_tb(ex.__traceback__)
+		print("-" * 80)
+		print()
+		return
 	
 # entry point
 if __name__ == "__main__":
@@ -274,9 +283,9 @@ if __name__ == "__main__":
 else:
 	from sys import exit
 	
-	print("========================================================================")
-	print("									PoC Library - Testbench Service Tool									")
-	print("========================================================================")
+	print("=" * 80)
+	print("{: ^80s}".format("PoC Library - Testbench Service Tool"))
+	print("=" * 80)
 	print()
 	print("This is no library file!")
 	exit(1)

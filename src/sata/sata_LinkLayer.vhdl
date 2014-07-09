@@ -83,7 +83,7 @@ ENTITY sata_LinkLayer IS
 		
 		RX_FS_Ready							: IN	STD_LOGIC;
 		RX_FS_Valid							:	OUT	STD_LOGIC;
-		RX_FS_CRC_OK						: OUT	STD_LOGIC;
+		RX_FS_CRCOK						: OUT	STD_LOGIC;
 		RX_FS_Abort							: OUT	STD_LOGIC;
 
 		-- physical layer interface
@@ -146,7 +146,7 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	SIGNAL Trans_RX_EOF									: STD_LOGIC;
 	SIGNAL Trans_RX_Abort								: STD_LOGIC;
 
-	SIGNAL Trans_RXFS_CRC_OK						: STD_LOGIC;
+	SIGNAL Trans_RXFS_CRCOK							: STD_LOGIC;
 	SIGNAL Trans_RXFS_Abort							: STD_LOGIC;
 	
 	-- physical layer interface
@@ -287,7 +287,7 @@ BEGIN
 			Trans_RX_EOF						=> Trans_RX_EOF,
 			--TODO: Trans_RX_Abort					=> Trans_RX_Abort,
 
-			Trans_RXFS_CRC_OK				=> Trans_RXFS_CRC_OK,
+			Trans_RXFS_CRCOK				=> Trans_RXFS_CRCOK,
 			Trans_RXFS_Abort				=> Trans_RXFS_Abort,
 
 			-- physical layer interface
@@ -380,9 +380,9 @@ BEGIN
 	RX_FSFIFO_got								<= RX_FS_Ready;
 	RX_FS_Valid									<= RX_FSFIFO_Valid;
 	
-	RX_FSFIFO_DataIn						<= (RX_CRCOK_BIT => Trans_RXFS_CRC_OK,
+	RX_FSFIFO_DataIn						<= (RX_CRCOK_BIT => Trans_RXFS_CRCOK,
 																	RX_ABORT_BIT => Trans_RXFS_Abort);
-	RX_FS_CRC_OK								<= RX_FSFIFO_DataOut(RX_CRCOK_BIT);
+	RX_FS_CRCOK									<= RX_FSFIFO_DataOut(RX_CRCOK_BIT);
 	RX_FS_Abort									<= RX_FSFIFO_DataOut(RX_ABORT_BIT);
 
 	-- ==========================================================================	
@@ -745,12 +745,12 @@ BEGIN
 		-- RX: after primitive detector
 		DebugPortOut.RX_Primitive								<= RX_Primitive_d;
 		-- RX: after unscrambling
-		DebugPortOut.RX_DataUnscrambler_rst			<= RX_DataUnscrambler_rst;
-		DebugPortOut.RX_DataUnscrambler_en			<= RX_DataUnscrambler_en;
-		DebugPortOut.RX_DataUnscrambler_DataOut	<= RX_DataUnscrambler_DataOut;
+		DebugPortOut.RX_DataUnscrambler_rst			<= DataUnscrambler_rst;
+		DebugPortOut.RX_DataUnscrambler_en			<= DataUnscrambler_en;
+		DebugPortOut.RX_DataUnscrambler_DataOut	<= DataUnscrambler_DataOut;
 		-- RX: CRC control
 		DebugPortOut.RX_CRC_rst									<= RX_CRC_rst;
-		DebugPortOut.RX_CRC_en									<= RX_CRC_en;
+		DebugPortOut.RX_CRC_en									<= RX_CRC_Valid;
 		-- RX: DataRegisters
 		DebugPortOut.RX_DataReg_en1							<= RX_DataReg_en1;
 		DebugPortOut.RX_DataReg_en2							<= RX_DataReg_en2;
@@ -763,39 +763,39 @@ BEGIN
 		-- RX: after RX_FIFO
 		DebugPortOut.RX_Data										<= RX_FIFO_DataOut(RX_Data'range);
 		DebugPortOut.RX_Valid										<= RX_FIFO_Valid;
-		DebugPortOut.RX_Ready										<= RX_FIFO_got;
+		DebugPortOut.RX_Ready										<= RX_Ready;
 		DebugPortOut.RX_SOF											<= RX_FIFO_DataOut(RX_SOF_BIT);
 		DebugPortOut.RX_EOF											<= RX_FIFO_DataOut(RX_EOF_BIT);
 		DebugPortOut.RX_FS_Valid								<= RX_FSFIFO_Valid;
-		DebugPortOut.RX_FS_Ready								<= RX_FSFIFO_got;
-		DebugPortOut.RX_FS_CRC_OK								<= RX_FSFIFO_DataOut(RX_CRCOK_BIT);
+		DebugPortOut.RX_FS_Ready								<= RX_FS_Ready;
+		DebugPortOut.RX_FS_CRCOK								<= RX_FSFIFO_DataOut(RX_CRCOK_BIT);
 		DebugPortOut.RX_FS_Abort								<= RX_FSFIFO_DataOut(RX_ABORT_BIT);
 		--																			
 		-- TX: from Link Layer
-		DebugPortOut.TX_Data										<= 
-		DebugPortOut.TX_Valid										<= 
-		DebugPortOut.TX_Ready										<= 
-		DebugPortOut.TX_SOF											<= 
-		DebugPortOut.TX_EOF											<= 
-		DebugPortOut.TX_FS_Valid								<= 
-		DebugPortOut.TX_FS_Ready								<= 
-		DebugPortOut.TX_FS_Send_OK							<= 
-		DebugPortOut.TX_FS_Abort								<= 
+		DebugPortOut.TX_Data										<= TX_Data;
+		DebugPortOut.TX_Valid										<= TX_Valid;
+		DebugPortOut.TX_Ready										<= not TX_FIFO_Full;
+		DebugPortOut.TX_SOF											<= TX_SOF;
+		DebugPortOut.TX_EOF											<= TX_EOF;
+		DebugPortOut.TX_FS_Valid								<= TX_FSFIFO_Valid;
+		DebugPortOut.TX_FS_Ready								<= not TX_FSFIFO_Full;
+		DebugPortOut.TX_FS_Send_OK							<= TX_FSFIFO_DataIn(TX_SENDOK_BIT);
+		DebugPortOut.TX_FS_Abort								<= TX_FSFIFO_DataIn(TX_ABORT_BIT);
 		-- TX: TXFIFO
-		DebugPortOut.TX_FIFO_got								<= 
-		DebugPortOut.TX_FSFIFO_got							<= 
+		DebugPortOut.TX_FIFO_got								<= TX_FIFO_got;
+		DebugPortOut.TX_FSFIFO_got							<= TX_FSFIFO_got;
 		-- TX: CRC control
-		DebugPortOut.TX_CRC_rst									<= 
-		DebugPortOut.TX_CRC_en									<= 
-		DebugPortOut.TX_CRC_mux									<= 
+		DebugPortOut.TX_CRC_rst									<= TX_CRC_rst;
+		DebugPortOut.TX_CRC_en									<= TX_CRC_Valid;
+		DebugPortOut.TX_CRC_mux									<= CRCMux_ctrl;
 		-- TX: after scrambling
-		DebugPortOut.TX_DataScrambler_rst				<= 
-		DebugPortOut.TX_DataScrambler_en				<= 
-		DebugPortOut.TX_DataScrambler_DataOut		<= 
+		DebugPortOut.TX_DataScrambler_rst				<= DataScrambler_rst;
+		DebugPortOut.TX_DataScrambler_en				<= DataScrambler_en;
+		DebugPortOut.TX_DataScrambler_DataOut		<= DataScrambler_DataOut;
 		-- TX: PrimitiveMux
-		DebugPortOut.TX_Primitive								<= 
+		DebugPortOut.TX_Primitive								<= TX_Primitive;
 		-- TX: to Physical Layer
-		DebugPortOut.TX_Phy_Data								<= 
-		DebugPortOut.TX_Phy_CiK									<= 
+		DebugPortOut.TX_Phy_Data								<= PM_DataOut;
+		DebugPortOut.TX_Phy_CiK									<= PM_CharIsK;
 	end generate genDebug1;
 END;
