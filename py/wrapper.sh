@@ -114,11 +114,11 @@ if [ $PoC_ExitCode -eq 0 ]; then
 				set --
 				source "$PoC_ISE_SettingsFile"
 				set -- $PyWrapper_RescueArgs
+			else
+				echo 1>&2 -e "${RED}ERROR: ExitCode for '$command' was not zero. Aborting script execution.${NOCOLOR}"
+				echo 1>&2 -e "${RED}$PoC_Vivado_SettingsFile${NOCOLOR}"
+				PoC_ExitCode=1
 			fi
-		else
-			echo 1>&2 -e "${RED}ERROR: ExitCode for '$command' was not zero. Aborting script execution.${NOCOLOR}"
-			echo 1>&2 -e "${RED}$PoC_ISE_SettingsFile${NOCOLOR}"
-			PoC_ExitCode=1
 		fi
 	fi
 fi
@@ -143,11 +143,11 @@ if [ $PoC_ExitCode -eq 0 ]; then
 				set --
 				source "$PoC_Vivado_SettingsFile"
 				set -- $PyWrapper_RescueArgs
+			else
+				echo 1>&2 -e "${RED}ERROR: ExitCode for '$command' was not zero. Aborting script execution.${NOCOLOR}"
+				echo 1>&2 -e "${RED}$PoC_Vivado_SettingsFile${NOCOLOR}"
+				PoC_ExitCode=1
 			fi
-		else
-			echo 1>&2 -e "${RED}ERROR: ExitCode for '$command' was not zero. Aborting script execution.${NOCOLOR}"
-			echo 1>&2 -e "${RED}$PoC_Vivado_SettingsFile${NOCOLOR}"
-			PoC_ExitCode=1
 		fi
 	fi
 fi
