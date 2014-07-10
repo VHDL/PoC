@@ -38,9 +38,9 @@ if __name__ != "__main__":
 else:
 	from sys import exit
 
-	print("========================================================================")
-	print("                  PoC Library - Python Class PoCGHDLSimulator           ")
-	print("========================================================================")
+	print("=" * 80)
+	print("{: ^80s}".format("PoC Library - Python Class PoCGHDLSimulator"))
+	print("=" * 80)
 	print()
 	print("This is no executable file!")
 	exit(1)
@@ -50,14 +50,17 @@ import PoCSimulator
 
 class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 
-	executables = {}
+	__executables = {}
 
 	def __init__(self, host, showLogs, showReport):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
-		self.__executables = {
-			'ghdl' :		("ghdl.exe"			if (host.platform == "Windows") else "ghdl")
-		}
+		if (host.platform == "Windows"):
+			self.__executables['ghdl'] = "ghdl.exe"
+		elif (host.platform == "Linux"):
+			self.__executables['ghdl'] = "ghdl"
+		else:
+			raise PoC.PoCPlatformNotSupportedException(self.platform)
 		
 	def run(self, pocEntity):
 		from pathlib import Path
@@ -69,19 +72,19 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		self.printNonQuiet("  preparing simulation environment...")
 
 		# create temporary directory for ghdl if not existent
-		tempGHDLPath = self.host.Directories["ghdlTemp"]
+		tempGHDLPath = self.host.directories["GHDLTemp"]
 		if not (tempGHDLPath).exists():
 			self.printVerbose("Creating temporary directory for simulator files.")
 			self.printDebug("Temporary directors: %s" % str(tempGHDLPath))
 			tempGHDLPath.mkdir(parents=True)
 
 		# setup all needed paths to execute fuse
-		ghdlExecutablePath =		self.host.Directories["GHDLBinary"] / self.__executables['ghdl']
+		ghdlExecutablePath =		self.host.directories["GHDLBinary"] / self.__executables['ghdl']
 		
 		testbenchName = self.host.tbConfig[str(pocEntity)]['TestbenchModule']
-		fileFilePath =	self.host.Directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['FilesFile']
+		fileListFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['FileListFile']
 		
-		if (self.getVerbose()):
+		if (self.verbose):
 			print("  Commands to be run:")
 			print("  1. Change working directory to temporary directory")
 			print("  2. Parse filelist file.")
@@ -103,28 +106,28 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		filesLineRegExpStr +=	r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
 		filesLineRegExp = re.compile(filesLineRegExpStr)
 
-		self.printDebug("Reading filelist '%s'" % str(fileFilePath))
+		self.printDebug("Reading filelist '%s'" % str(fileListFilePath))
 		self.printNonQuiet("  running analysis for every vhdl file...")
 		
 		# add empty line if logs are enabled
 		if self.showLogs:		print()
 		
-		with fileFilePath.open('r') as fileFileHandle:
+		with fileListFilePath.open('r') as fileFileHandle:
 			for line in fileFileHandle:
 				filesLineRegExpMatch = filesLineRegExp.match(line)
 		
 				if (filesLineRegExpMatch is not None):
 					if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
-						vhdlFilePath = self.host.Directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
+						vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
 					elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
-						if not self.host.Directories.__contains__("ISEInstallation"):
+						if not self.host.directories.__contains__("ISEInstallation"):
 							# check if ISE is configure
 							if (len(self.host.pocConfig.options("Xilinx-ISE")) == 0):
 								raise PoCNotConfiguredException("This testbench requires some Xilinx Primitves. Please configure Xilinx ISE / Vivado")
 
-							self.host.Directories["ISEInstallation"] = Path(self.host.pocConfig['Xilinx-ISE']['InstallationDirectory'])
+							self.host.directories["ISEInstallation"] = Path(self.host.pocConfig['Xilinx-ISE']['InstallationDirectory'])
 						
-						vhdlFilePath = self.host.Directories["ISEInstallation"] / "ISE/vhdl/src" / filesLineRegExpMatch.group('VHDLFile')
+						vhdlFilePath = self.host.directories["ISEInstallation"] / "ISE/vhdl/src" / filesLineRegExpMatch.group('VHDLFile')
 					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
 
 					# assemble fuse command as list of parameters

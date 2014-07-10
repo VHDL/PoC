@@ -41,6 +41,7 @@ import PoCXSTCompiler
 
 class PoCNetList(PoC.PoCBase):
 	__netListConfigFileName = "configuration.ini"
+	
 	dryRun = False
 	netListConfig = None
 	
@@ -55,17 +56,19 @@ class PoCNetList(PoC.PoCBase):
 	# read NetList configuration
 	# ==========================================================================
 	def readNetListConfiguration(self):
-		import configparser
+		from configparser import ConfigParser, ExtendedInterpolation
 		
-		netListConfigFilePath = self.Directories["Root"] / ".." / self.pocStructure['DirectoryNames']['NetListFiles'] / self.__netListConfigFileName
+		self.files["PoCNLConfig"] = self.directories["PoCNetList"] / self.__netListConfigFileName
+		netListConfigFilePath	= self.files["PoCNLConfig"]
+		
 		self.printDebug("Reading NetList configuration from '%s'" % str(netListConfigFilePath))
 		if not netListConfigFilePath.exists():
 			raise PoCNotConfiguredException("PoC netlist configuration file does not exist. (%s)" % str(netListConfigFilePath))
 			
-		self.netListConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+		self.netListConfig = ConfigParser(interpolation=ExtendedInterpolation())
 		self.netListConfig.optionxform = str
-		self.netListConfig.read([str(self.Files["PoCConfig"]), str(self.Files["PoCStructure"]), str(netListConfigFilePath)])
-		self.Files["PoCNLConfig"]	= netListConfigFilePath
+		self.netListConfig.read([str(self.files['PoCPrivateConfig']), str(self.files['PoCPublicConfig']), str(self.files["PoCNLConfig"])])
+
 
 	def coreGenCompilation(self, entity, showLogs, showReport, deviceString=None, boardString=None):
 		# check if ISE is configure
@@ -73,8 +76,8 @@ class PoCNetList(PoC.PoCBase):
 			raise PoCNotConfiguredException("Xilinx ISE is not configured on this system.")
 		
 		# prepare some paths
-		self.Directories["ISEInstallation"] = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
-		self.Directories["ISEBinary"] =				Path(self.pocConfig['Xilinx-ISE']['BinaryDirectory'])
+		self.directories["ISEInstallation"] = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
+		self.directories["ISEBinary"] =				Path(self.pocConfig['Xilinx-ISE']['BinaryDirectory'])
 	
 		# check if the appropriate environment is loaded
 		from os import environ
@@ -99,8 +102,8 @@ class PoCNetList(PoC.PoCBase):
 			raise PoCNotConfiguredException("Xilinx ISE is not configured on this system.")
 		
 		# prepare some paths
-		self.Directories["ISEInstallation"] = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
-		self.Directories["ISEBinary"] =				Path(self.pocConfig['Xilinx-ISE']['BinaryDirectory'])
+		self.directories["ISEInstallation"] = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
+		self.directories["ISEBinary"] =				Path(self.pocConfig['Xilinx-ISE']['BinaryDirectory'])
 	
 		# check if the appropriate environment is loaded
 		from os import environ
@@ -162,7 +165,11 @@ def main():
 		args = argParser.parse_args()
 		
 	except Exception as ex:
+		from traceback import print_tb
 		print("FATAL: %s" % ex.__str__())
+		print("-" * 80)
+		print_tb(ex.__traceback__)
+		print("-" * 80)
 		print()
 		return
 
@@ -213,10 +220,14 @@ def main():
 		print()
 		return
 
-#	except Exception as ex:
-#		print("FATAL: %s" % ex.__str__())
-#		print()
-#		return
+	except Exception as ex:
+		from traceback import print_tb
+		print("FATAL: %s" % ex.__str__())
+		print("-" * 80)
+		print_tb(ex.__traceback__)
+		print("-" * 80)
+		print()
+		return
 			
 # entry point
 if __name__ == "__main__":
@@ -231,9 +242,9 @@ if __name__ == "__main__":
 else:
 	from sys import exit
 	
-	print("========================================================================")
-	print("                  PoC Library - NetList Service Tool                    ")
-	print("========================================================================")
+	print("=" * 80)
+	print("{: ^80s}".format("PoC Library - NetList Service Tool"))
+	print("=" * 80)
 	print()
 	print("This is no library file!")
 	exit(1)

@@ -38,22 +38,59 @@ if __name__ != "__main__":
 else:
 	from sys import exit
 
-	print("=" * 80)
-	print("{: ^80s}".format("PoC Library - Python Class PoCVivadoSimulator"))
-	print("=" * 80)
+	print("========================================================================")
+	print("                  SATAController - Python Class Processor               ")
+	print("========================================================================")
 	print()
 	print("This is no executable file!")
 	exit(1)
 
-import PoCSimulator
+import Base
 
-class PoCVivadoSimulator(PoCSimulator.PoCSimulator):
 
-	def __init__(self, debug, verbose):
-		super(self.__class__, self).__init__(debug, verbose)
-		raise NotImplementedException("Xilinx Vivado Simulator is not supported, yet!")
+class Processor(object):
+	__host = None
+	__debug = False
+	__verbose = False
+	__quiet = False
+	showLogs = False
+	showReport = False
+	dryRun = False
+
+	def __init__(self, host, showLogs, showReport):
+		self.__debug = host.getDebug()
+		self.__verbose = host.getVerbose()
+		self.__quiet = host.getQuiet()
+		self.host = host
+		self.showLogs = showLogs
+		self.showReport = showReport
+
+	def getDebug(self):
+		return self.__debug
 		
-	def run(self, module, showLogs):
-		raise NotImplementedException("Xilinx Vivado Simulator is not supported, yet!")
+	def getVerbose(self):
+		return self.__verbose
 		
+	def getQuiet(self):
+		return self.__quiet
+		
+	def printDebug(self, message):
+		if (self.__debug):
+			print("DEBUG: " + message)
+			
+	def printVerbose(self, message):
+		if (self.__verbose):
+			print(message)
 	
+	def printNonQuiet(self, message):
+		if (not self.__quiet):
+			print(message)
+
+
+class ProcessorException(Base.BaseException):
+	def __init__(self, message=""):
+		super().__init__(message)
+		self.message = message
+
+#class EndOfReportException(ProcessorException):
+#	pass

@@ -34,21 +34,39 @@
 # ==============================================================================
 
 # configure wrapper here
-POC_ROOTDIR_RELPATH=.
-#POC_PYWRAPPER_SCRIPT=$0
-POC_PYWRAPPER_SCRIPT=Configuration.py
-POC_PYWRAPPER_MIN_VERSION=3.4.0
+PyWrapper_BashScriptDir="py"
+PyWrapper_Script=Configuration.py
+PyWrapper_MinVersion=3.4.0
 
-# save parameters and current working directory
-POC_PYWRAPPER_PARAMS=$@
-POC_PYWRAPPER_SCRIPTDIR=$(pwd)
+# resolve script directory
+# solution is taken from http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do													# resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"			# if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-POC_PYWRAPPER_DEBUG=0
-POC_PYWRAPPER_LOADENV_ISE=0
-POC_PYWRAPPER_LOADENV_VIVADO=0
+# save parameters and script directory
+PyWrapper_Paramters=$@
+PyWrapper_ScriptDir=$SCRIPT_DIR
+PyWrapper_WorkingDir=$(pwd)
+PoC_RootDir_RelPath="$SCRIPT_DIR/."
+PoC_RootDir_AbsPath=`cd $PoC_RootDir_RelPath && pwd`
 
+# set default values
+PyWrapper_Debug=0
+PyWrapper_LoadEnv_ISE=0
+PyWrapper_LoadEnv_Vivado=0
+
+# search for special parameters
 for param in "$@"; do
-	if [ "$param" = "-D" ]; then POC_PYWRAPPER_DEBUG=1; fi
+	if [ "$param" = "-D" ]; then PyWrapper_Debug=1; fi
 done
 
-source $POC_ROOTDIR_RELPATH/py/wrapper.sh
+# invoke main wrapper
+source "$PoC_RootDir_AbsPath/$PyWrapper_BashScriptDir/wrapper.sh"
+
+# return exit status
+exit $PoC_ExitCode

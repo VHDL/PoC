@@ -38,56 +38,79 @@ if __name__ != "__main__":
 else:
 	from sys import exit
 
-	print("========================================================================")
-	print("                  PoC Library - Python Class PoCSimulator               ")
-	print("========================================================================")
+	print("=" * 80)
+	print("{: ^80s}".format("PoC Library - Python Class PoCSimulator"))
+	print("=" * 80)
 	print()
 	print("This is no executable file!")
 	exit(1)
 
 import PoC
-
+from libDecorators import property
 
 class PoCSimulator(object):
-	__host = None
-	__debug = False
-	__verbose = False
-	__quiet = False
-	showLogs = False
-	showReport = False
+	__host =				None
+	
+	__debug =				False
+	__verbose =			False
+	__quiet =				False
+	__showLogs =		False
+	__showReport =	False
 
 	def __init__(self, host, showLogs, showReport):
-		self.__debug = host.getDebug()
-		self.__verbose = host.getVerbose()
-		self.__quiet = host.getquiet()
-		self.host = host
-		self.showLogs = showLogs
-		self.showReport = showReport
+		self.__host =				host
+		self.__debug =			host.debug
+		self.__verbose =		host.verbose
+		self.__quiet =			host.quiet
+		self.__showLogs =		showLogs
+		self.__showReport =	showReport
 
-	def getDebug(self):
-		return self.__debug
-		
-	def getVerbose(self):
-		return self.__verbose
-		
-	def getquiet(self):
-		return self.__quiet
-		
+	# class properties
+	# ============================================================================
+	@property
+	def debug():
+		def fget(self):
+			return self.__debug
+	
+	@property
+	def verbose():
+		def fget(self):
+			return self.__verbose
+	
+	@property
+	def quiet():
+		def fget(self):
+			return self.__quiet	
+
+	@property
+	def host():
+		def fget(self):
+			return self.__host
+	
+	@property
+	def showLogs():
+		def fget(self):
+			return self.__showLogs
+	
+	@property
+	def showReport():
+		def fget(self):
+			return self.__showReport
+
+	# print messages
+	# ============================================================================
 	def printDebug(self, message):
-		if (self.__debug):
+		if (self.debug):
 			print("DEBUG: " + message)
-			
+	
 	def printVerbose(self, message):
-		if (self.__verbose):
+		if (self.verbose):
 			print(message)
 	
 	def printNonQuiet(self, message):
-		if (not self.__quiet):
+		if (not self.quiet):
 			print(message)
 
-#	def getNamespaceForPrefix(self, namespacePrefix):
-#		return self.__tbConfig['NamespacePrefixes'][namespacePrefix]
-	
 	def checkSimulatorOutput(self, simulatorOutput):
 		matchPos = simulatorOutput.find("SIMULATION RESULT = ")
 		if (matchPos >= 0):

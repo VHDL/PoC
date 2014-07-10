@@ -3,15 +3,16 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Python Class:			TODO
+#	PowerShell Script:	Wrapper Script to execute <PoC-Root>/py/Configuration.py
 # 
-# Authors:				 	Patrick Lehmann
+#	Authors:						Patrick Lehmann
 # 
 # Description:
 # ------------------------------------
-#		TODO:
-#		- 
-#		- 
+#	This is a PowerShell wrapper script (executable) which:
+#		- saves the current working directory as an environment variable
+#		- delegates the call to <PoC-Root>/py/Wrapper.ps1
+#		-
 #
 # License:
 # ==============================================================================
@@ -31,29 +32,32 @@
 # limitations under the License.
 # ==============================================================================
 
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from sys import exit
+# configure wrapper here
+$PyWrapper_PoShScriptDir =	"py"
+$PyWrapper_Script =					"Configuration.py"
+$PyWrapper_MinVersion =			"3.4.0"
 
-	print("=" * 80)
-	print("{: ^80s}".format("PoC Library - Python Class PoCVivadoSimulator"))
-	print("=" * 80)
-	print()
-	print("This is no executable file!")
-	exit(1)
+# save parameters and current working directory
+$PyWrapper_Paramters =	$args
+$PyWrapper_ScriptDir =	$PSScriptRoot
+$PyWrapper_WorkingDir =	Get-Location
+$PoC_RootDir_AbsPath =	Convert-Path (Resolve-Path ($PSScriptRoot + "\."))
 
-import PoCSimulator
+# set default values
+$PyWrapper_Debug =					$false
+$PyWrapper_LoadEnv_ISE =		$false
+$PyWrapper_LoadEnv_Vivado = $false
 
-class PoCVivadoSimulator(PoCSimulator.PoCSimulator):
+# search parameters for specific options like '-D' to enable batch script debug mode
+foreach ($i in $args) {
+	$PyWrapper_Debug =				$PyWrapper_Debug -or ($i -clike "-*D*")
+}
 
-	def __init__(self, debug, verbose):
-		super(self.__class__, self).__init__(debug, verbose)
-		raise NotImplementedException("Xilinx Vivado Simulator is not supported, yet!")
-		
-	def run(self, module, showLogs):
-		raise NotImplementedException("Xilinx Vivado Simulator is not supported, yet!")
-		
-	
+# invoke main wrapper
+. ("$PoC_RootDir_AbsPath\$PyWrapper_PoShScriptDir\Wrapper.ps1")
+
+# restore working directory if changed
+Set-Location $PyWrapper_WorkingDir
+
+# return exit status
+exit $PoC_ExitCode
