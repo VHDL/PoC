@@ -72,12 +72,12 @@ fi
 Python_VersionTest='import sys; sys.exit(not (0x03040000 < sys.hexversion < 0x04000000))'
 python -c $Python_VersionTest 2>/dev/null
 if [ $? -eq 0 ]; then
-	Python_Interpreter=$(which python)
+	Python_Interpreter=$(which python 2>/dev/null)
 	if [ $PyWrapper_Debug -eq 1 ]; then echo -e "${YELLOW}PythonInterpreter: use standard interpreter: '$Python_Interpreter'${NOCOLOR}"; fi
 else
 	# standard python interpreter is not suitable, try to find a suitable version manually
 	for pyVersion in 3.9 3.8 3.7 3.6 3.5 3.4; do
-		Python_Interpreter=$(which python$pyVersion)
+		Python_Interpreter=$(which python$pyVersion 2>/dev/null)
 		# if ExitCode = 0 => version found
 		if [ $? -eq 0 ]; then
 			# redo version test
