@@ -67,6 +67,7 @@ class PoCConfiguration(PoC.PoCBase):
 			self.pocConfig['Questa-ModelSim'] =		OrderedDict()
 			self.pocConfig['GHDL'] =							OrderedDict()
 			self.pocConfig['GTKWave'] =						OrderedDict()
+			self.pocConfig['Solutions'] =					OrderedDict()
 
 			# Writing configuration to disc
 			with self.files['PoCPrivateConfig'].open('w') as configFileHandle:
