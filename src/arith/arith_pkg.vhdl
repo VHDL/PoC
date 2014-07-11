@@ -36,7 +36,7 @@ use			ieee.std_logic_1164.all;
 use			ieee.numeric_std.all;
 
 
-package arith_pkg is
+package arith is
 
 	component arith_counter_gray is
 		generic (
@@ -101,7 +101,7 @@ package arith_pkg is
 			arg1, arg2 : in	std_logic_vector(N-1 downto 0);
 			res				: out std_logic_vector(N-1 downto 0));
 	end component;
-end arith_pkg;
+end arith;
 
-package body arith_pkg is
-end arith_pkg;
+package body arith is
+end arith;

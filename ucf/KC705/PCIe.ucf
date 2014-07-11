@@ -1,0 +1,84 @@
+#% BEGIN-TEMPLATEFILE Board = "KC705" %#
+#% DEFINE-IF PCIExpress_Lanes = 1		PCIExpress_x1		%#
+#% DEFINE-IF PCIExpress_Lanes = 4		PCIExpress_x4		%#
+#% DEFINE-IF PCIExpress_Lanes = 8		PCIExpress_x8		%#
+
+
+#% BEGIN-TEMPLATE EthernetPHY %#
+## PCI Express connector
+## -----------------------------------------------------------------------------
+##	Bank:						16, 115, 116
+##		VCCO:					2.5V (VADJ_FPGA)
+##		Quad115:		 
+##			RefClock0		N.C.
+##			RefClock1		PCIe_RefClock from edge connector;100 MHz from mainboard (KC705_PCIe_RefClock)
+#$	##			VCCO:					2,5V (VCC2V5_FPGA)
+##		Quad116:		 
+##			RefClock0		Si5324 (Jitter attenuator)
+##			RefClock1		FMC_LPC RefClock 0
+#$	##			VCCO:					2,5V (VCC2V5_FPGA)
+##		Placement:
+##			Lane 0:			Quad116.Channel3 (GTXE2_CHANNEL_X0Y7)
+##			Lane 1:			Quad116.Channel2 (GTXE2_CHANNEL_X0Y6)
+##			Lane 2:			Quad116.Channel1 (GTXE2_CHANNEL_X0Y5)
+##			Lane 3:			Quad116.Channel0 (GTXE2_CHANNEL_X0Y4)
+##			Lane 4:			Quad115.Channel3 (GTXE2_CHANNEL_X0Y3)
+##			Lane 5:			Quad115.Channel2 (GTXE2_CHANNEL_X0Y2)
+##			Lane 6:			Quad115.Channel1 (GTXE2_CHANNEL_X0Y1)
+##			Lane 7:			Quad115.Channel0 (GTXE2_CHANNEL_X0Y0)
+##	Location:				P1
+##
+## reference clocks
+## --------------------------
+NET "KC705_PCIe_RefClock_n"			LOC = "U7";				## {IN}		P1.A14; PCIe edge connector RefClock (100 MHz from mainboard); external 0.01 µF decoupling capacitor
+NET "KC705_PCIe_RefClock_p"			LOC = "U8";				## {IN}		P1.A13; PCIe edge connector RefClock (100 MHz from mainboard); external 0.01 µF decoupling capacitor
+##
+## common signals and management
+## --------------------------
+#$	PCIE_PRSNT_B J32 2, 4, 6 A1 PRSNT#1 J42 Lane Size Select jumper NA
+NET "KC705_PCIe_Wake_n"					LOC = "F23";			## {IN}		P1.B11 WAKE# Integrated Endpoint block wake signal, not connected on KC705 board
+NET "KC705_PCIe_PERST"					LOC = "G25";			## {IN}		P1.A11 PERST Integrated Endpoint block reset signal NA
+
+##
+## PCI Express Lanes
+## --------------------------
+#%	BEGIN-IF PCIExpress_x1 | PCIExpress_x4 | PCIExpress_x8 %#
+NET "KC705_PCIe_TX_n<0>"				LOC = "L3";				## {OUT}	P1.A17
+NET "KC705_PCIe_TX_p<0>"				LOC = "L4";				## {OUT}	P1.A16
+NET "KC705_PCIe_RX_n<0>"				LOC = "M5";				## {IN}		P1.B15
+NET "KC705_PCIe_RX_p<0>"				LOC = "M6";				## {IN}		P1.B14
+#%	END-IF %#
+#%	BEGIN-IF PCIExpress_x1 | PCIExpress_x4 %#
+NET "KC705_PCIe_TX_n<1>"				LOC = "M1";				## {OUT}	P1.A22
+NET "KC705_PCIe_TX_p<1>"				LOC = "M2";				## {OUT}	P1.A21
+NET "KC705_PCIe_RX_n<1>"				LOC = "P5";				## {IN}		P1.B20
+NET "KC705_PCIe_RX_p<1>"				LOC = "P6";				## {IN}		P1.B19
+NET "KC705_PCIe_TX_n<2>"				LOC = "N3";				## {OUT}	P1.A26
+NET "KC705_PCIe_TX_p<2>"				LOC = "N4";				## {OUT}	P1.A25
+NET "KC705_PCIe_RX_n<2>"				LOC = "R3";				## {IN}		P1.B24
+NET "KC705_PCIe_RX_p<2>"				LOC = "R4";				## {IN}		P1.B23
+NET "KC705_PCIe_TX_n<3>"				LOC = "P1";				## {OUT}	P1.A30
+NET "KC705_PCIe_TX_p<3>"				LOC = "P2";				## {OUT}	P1.A29
+NET "KC705_PCIe_RX_n<3>"				LOC = "T5";				## {IN}		P1.B28
+NET "KC705_PCIe_RX_p<3>"				LOC = "T6";				## {IN}		P1.B27
+#%	END-IF %#
+#%	BEGIN-IF PCIExpress_x8 %#    
+NET "KC705_PCIe_TX_n<4>"				LOC = "T1";				## {OUT}	P1.A36
+NET "KC705_PCIe_TX_p<4>"				LOC = "T2";				## {OUT}	P1.A35
+NET "KC705_PCIe_RX_n<4>"				LOC = "V5";				## {IN}		P1.B34
+NET "KC705_PCIe_RX_p<4>"				LOC = "V6";				## {IN}		P1.B33
+NET "KC705_PCIe_TX_n<5>"				LOC = "U3";				## {OUT}	P1.A40
+NET "KC705_PCIe_TX_p<5>"				LOC = "U4";				## {OUT}	P1.A39
+NET "KC705_PCIe_RX_n<5>"				LOC = "W3";				## {IN}		P1.B38
+NET "KC705_PCIe_RX_p<5>"				LOC = "W4";				## {IN}		P1.B37
+NET "KC705_PCIe_TX_n<6>"				LOC = "V1";				## {OUT}	P1.A44
+NET "KC705_PCIe_TX_p<6>"				LOC = "V2";				## {OUT}	P1.A43
+NET "KC705_PCIe_RX_n<6>"				LOC = "Y5";				## {IN}		P1.B42
+NET "KC705_PCIe_RX_p<6>"				LOC = "Y6";				## {IN}		P1.B41
+NET "KC705_PCIe_TX_n<7>"				LOC = "Y1";				## {OUT}	P1.A48
+NET "KC705_PCIe_TX_p<7>"				LOC = "Y2";				## {OUT}	P1.A47
+NET "KC705_PCIe_RX_n<7>"				LOC = "AA3";			## {IN}		P1.B46
+NET "KC705_PCIe_RX_p<7>"				LOC = "AA4";			## {IN}		P1.B45
+#%	END-IF %#
+#% END-TEMPLATE EthernetPHY %#
+#% END-TEMPLATEFILE %#
