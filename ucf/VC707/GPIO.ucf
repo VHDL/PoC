@@ -1,0 +1,84 @@
+## =============================================================================================================================================================
+## General Purpose IO
+## =============================================================================================================================================================
+
+#% BEGIN-TEMPLATE GPIO_SpecialButtons %#
+## Special Buttons
+## =============================================================================
+##	Bank:						15
+##		VCCO:					1,8V (VCC1V8_FPGA)
+##	Location:				SW8
+## -----------------------------------------------------------------------------
+NET "VC707_GPIO_Button_CPU_Reset"				LOC = "AV40"	| IOSTANDARD = LVCMOS18;			## high-active; external 4k7 pulldown resistor
+#% END-TEMPLATE GPIO_SpecialButtons %#
+
+#% BEGIN-TEMPLATE GPIO_CursorButtons %#
+## Cursor Buttons
+## =============================================================================
+##	Bank:						15
+##		VCCO:					1,8V (VCC1V8_FPGA)
+##	Location:				SW3, SW4, SW5, SW6, SW7
+## -----------------------------------------------------------------------------
+NET "VC707_GPIO_Button_North"						LOC = "AR40"	| IOSTANDARD = LVCMOS18;			## SW 3; high-active; external 4k7 pulldown resistor
+NET "VC707_GPIO_Button_West"						LOC = "AW40"	| IOSTANDARD = LVCMOS18;			## SW 7; high-active; external 4k7 pulldown resistor
+NET "VC707_GPIO_Button_Center"					LOC = "AV39"	| IOSTANDARD = LVCMOS18;			## SW 6; high-active; external 4k7 pulldown resistor
+NET "VC707_GPIO_Button_East"						LOC = "AU38"	| IOSTANDARD = LVCMOS18;			## SW 4; high-active; external 4k7 pulldown resistor
+NET "VC707_GPIO_Button_South"						LOC = "AP40"	| IOSTANDARD = LVCMOS18;			## SW 5; high-active; external 4k7 pulldown resistor
+#% END-TEMPLATE GPIO_CursorButtons %#
+
+#% BEGIN-TEMPLATE GPIO_Switches %#
+## DIP-Switches
+## =============================================================================
+##	Bank:						13
+##		VCCO:					1,8V (VCC1V8_FPGA)
+##	Location:				SW2
+## -----------------------------------------------------------------------------
+NET "VC707_GPIO_Switches<0>"						LOC = "AV30"	| IOSTANDARD = LVCMOS18;			## SW2.1; high-active; external 4k7 pulldown resistor
+NET "VC707_GPIO_Switches<1>"						LOC = "AY33"	| IOSTANDARD = LVCMOS18;			## SW2.2; high-active; external 4k7 pulldown resistor
+NET "VC707_GPIO_Switches<2>"						LOC = "BA31"	| IOSTANDARD = LVCMOS18;			## SW2.3; high-active; external 4k7 pulldown resistor
+NET "VC707_GPIO_Switches<3>"						LOC = "BA32"	| IOSTANDARD = LVCMOS18;			## SW2.4; high-active; external 4k7 pulldown resistor
+NET "VC707_GPIO_Switches<4>"						LOC = "AW30"	| IOSTANDARD = LVCMOS18;			## SW2.5; high-active; external 4k7 pulldown resistor
+NET "VC707_GPIO_Switches<5>"						LOC = "AY30"	| IOSTANDARD = LVCMOS18;			## SW2.6; high-active; external 4k7 pulldown resistor
+NET "VC707_GPIO_Switches<6>"						LOC = "BA30"	| IOSTANDARD = LVCMOS18;			## SW2.7; high-active; external 4k7 pulldown resistor
+NET "VC707_GPIO_Switches<7>"						LOC = "BB31"	| IOSTANDARD = LVCMOS18;			## SW2.8; high-active; external 4k7 pulldown resistor
+#% END-TEMPLATE GPIO_Switches %#
+
+#% BEGIN-TEMPLATE GPIO_RotaryButton %#
+## Rotary-Button
+## =============================================================================
+##	Bank:						13
+##		VCCO:					1,8V (VCC1V8_FPGA)
+##	Location:				SW10
+## -----------------------------------------------------------------------------
+NET "VC707_GPIO_Rotary_Button"					LOC = "AW31"	| IOSTANDARD = LVCMOS18;			## SW10.5; high-active; external 4k7 pulldown resistor
+NET "VC707_GPIO_Rotary_IncA"						LOC = "AR33"	| IOSTANDARD = LVCMOS18;			## SW10.1; high-active; external 4k7 pulldown resistor
+NET "VC707_GPIO_Rotary_IncB"						LOC = "AT31"	| IOSTANDARD = LVCMOS18;			## SW10.6; high-active; external 4k7 pulldown resistor
+#% END-TEMPLATE GPIO_RotaryButton %#
+
+#% BEGIN-TEMPLATE GPIO_LED %#
+## LEDs
+## =============================================================================
+##	Bank:						15
+##		VCCO:					1,8V (VCC1V8_FPGA)
+##	Location:				DS2, DS3, DS4, DS5, DS6, DS7, DS8, DS9
+## -----------------------------------------------------------------------------
+NET "VC707_GPIO_LED<0>"									LOC = "AM39"	| IOSTANDARD = LVCMOS18;			## DS2
+NET "VC707_GPIO_LED<1>"									LOC = "AN39"	| IOSTANDARD = LVCMOS18;			## DS3
+NET "VC707_GPIO_LED<2>"									LOC = "AR37"	| IOSTANDARD = LVCMOS18;			## DS4
+NET "VC707_GPIO_LED<3>"									LOC = "AT37"	| IOSTANDARD = LVCMOS18;			## DS5
+NET "VC707_GPIO_LED<4>"									LOC = "AR35"	| IOSTANDARD = LVCMOS18;			## DS6
+NET "VC707_GPIO_LED<5>"									LOC = "AP41"	| IOSTANDARD = LVCMOS18;			## DS7
+NET "VC707_GPIO_LED<6>"									LOC = "AP42"	| IOSTANDARD = LVCMOS18;			## DS8
+NET "VC707_GPIO_LED<7>"									LOC = "AU39"	| IOSTANDARD = LVCMOS18;			## DS9
+#% END-TEMPLATE GPIO_LED %#
+
+#% BEGIN-TEMPLATE FanControl %#
+## Fan Control
+## =============================================================================
+##	Bank:						15
+##		VCCO:					1,8V (VCC1V8_FPGA)
+##	Location:				J48, Q1
+## -----------------------------------------------------------------------------
+NET "VC707_FanControl_PWM"							LOC = "BA37"	| IOSTANDARD = LVCMOS18;			## Q1.Gate; external 1k pullup resistor
+NET "VC707_FanControl_Tacho"						LOC = "BB37"	| IOSTANDARD = LVCMOS18;			## J48 - Pin 3; voltage limited by D2 (DDZ9678 - 1.8V zener-diode)
+#% END-TEMPLATE FanControl %#
