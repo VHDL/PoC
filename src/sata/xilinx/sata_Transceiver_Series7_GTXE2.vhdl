@@ -629,6 +629,7 @@ BEGIN
 
 				--------------------------PCS Attributes----------------------------
 --				PCS_RSVD_ATTR														=> PCS_RSVD_ATTR_IN,
+				PCS_RSVD_ATTR(8)												=> '1',												-- power up OOB circuit
 
 				------------RX Buffer Attributes------------
 --				RXBUF_ADDR_MODE													=> "FULL",
@@ -673,7 +674,7 @@ BEGIN
 --				RXPMARESET_TIME													=> "00011",
 
 				------------------RX OOB Signaling Attributes-------------------
---				RXOOB_CFG																=> "0000110",
+				RXOOB_CFG																=> "0000110",
 
 				------------------------RX Gearbox Attributes---------------------------
 --				RXGEARBOX_EN														=> "FALSE",
@@ -750,15 +751,15 @@ BEGIN
 --				TX_RXDETECT_REF													=> "100",
 
 				---------------------------CPLL Attributes----------------------------
---				CPLL_CFG																=> x"BC07DC",
---				CPLL_FBDIV															=> 4,
---				CPLL_FBDIV_45														=> 5,
---				CPLL_INIT_CFG														=> x"00001E",
---				CPLL_LOCK_CFG														=> x"01E8",
---				CPLL_REFCLK_DIV													=> 1,
---				RXOUT_DIV																=> 1,
---				TXOUT_DIV																=> 1,
---				SATA_CPLL_CFG														=> "VCO_3000MHZ",
+				CPLL_REFCLK_DIV													=> 1,
+				CPLL_FBDIV															=> 4,
+				CPLL_FBDIV_45														=> 5,
+				RXOUT_DIV																=> 1,
+				TXOUT_DIV																=> 1,
+				CPLL_CFG																=> x"BC07DC",
+				CPLL_INIT_CFG														=> x"00001E",
+				CPLL_LOCK_CFG														=> x"01E8",
+				SATA_CPLL_CFG														=> "VCO_3000MHZ",
 
 				-------------RX Initialization and Reset Attributes-------------
 --				RXDFELPMRESET_TIME											=> "0001111",
@@ -798,7 +799,118 @@ BEGIN
 --				TX_PREDRIVER_MODE												=> '0'
 			)
 			PORT MAP (
-				--------------------------------- CPLL Ports -------------------------------
+
+
+
+
+				-- Channel clock inputs
+				RXSYSCLKSEL											=> "00",										-- @async:		00 => use CPLL und gtxe2_channel refclock; 11 => use QPLL and gtxe2_common refclock
+				TXSYSCLKSEL											=> "00",										-- @async:		00 => use CPLL und gtxe2_channel refclock; 11 => use QPLL and gtxe2_common refclock
+
+				QPLLCLK													=> GTX_QPLLClock,						-- @clock:		high-performance clock from QPLL (GHz)
+				QPLLREFCLK											=> GTX_QPLLRefClock,				-- @clock:		reference clock for QPLL bypassed (MHz)
+
+				GTGREFCLK												=> '0',
+				GTNORTHREFCLK0									=> GTX_RefClockNorth(0),
+				GTNORTHREFCLK1									=> GTX_RefClockNorth(1),
+				GTREFCLK0												=> GTX_RefClock(0),
+				GTREFCLK1												=> GTX_RefClock(1),
+				GTSOUTHREFCLK0									=> GTX_RefClockSouth(0),
+				GTSOUTHREFCLK1									=> GTX_RefClockSouth(1),
+
+				GTREFCLKMONITOR									=> open,										-- @clock:		CPLL refclock-mux output
+
+				
+				-- Power-Down ports
+				TXPD														=> GTX_TX_PowerDown,
+				RXPD														=> GTX_RX_PowerDown,
+
+				-- Reset ports
+				GTRXRESET												=> GTX_RX_Reset,
+				RXOOBRESET											=> GTX_RX_OOBReset,										-- @async:	reserved, tie to ground
+				RXPCSRESET											=> GTX_RX_PCSReset,
+				RXPMARESET											=> GTX_RX_PMAReset,
+				
+				-- FPGA-Fabric interface clocks
+				TXUSRCLK												=> GTX_TXUserClock_1X,
+				TXUSRCLK2												=> GTX_TXUserClock_4X,
+
+				RXUSRCLK												=> GTX_RXUserClock_1X,
+				RXUSRCLK2												=> GTX_RXUserClock_4X,
+
+				-- linerate clock divider selection
+				TXRATE													=> GTX_TX_LineRateSelect,							-- @TX_Clock2
+				TXRATEDONE											=> GTX_TX_LineRateSelectDone,					-- @TX_Clock2
+								
+				RXRATE													=> GTX_RX_LineRateSelect,							-- @RX_Clock2
+				RXRATEDONE											=> GTX_RX_LineRateSelectDone,					-- @RX_Clock2
+				
+				-- Dynamic Reconfiguration Port (DRP)
+				DRPCLK													=> GTX_DRP_Clock,
+				DRPEN														=> GTX_DRP_en,
+				DRPWE														=> GTX_DRP_we,
+				DRPADDR													=> GTX_DRP_Address,
+				DRPDI														=> GTX_DRP_DataIn,
+				DRPDO														=> GTX_DRP_DataOut,
+				DRPRDY													=> GTX_DRP_Ready,
+				
+				-- datapath configuration
+				TX8B10BEN												=> '1',
+				RX8B10BEN												=> '1',
+
+				-- FPGA-Fabric - TX interface ports
+				TXDATA													=> GTX_TX_Data,
+				
+				TXCHARISK(7 downto 4)						=> (7 downto 4 => '0'),
+				TXCHARISK(3 downto 0)						=> GTX_TX_CharIsK,
+				
+				-- FPGA-Fabric - RX interface ports
+				RXDATA													=> GTX_RX_Data,
+
+				RXCHARISCOMMA(7 downto 4)				=> GTX_RX_CharIsComma_float,
+				RXCHARISCOMMA(3 downto 0)				=> GTX_RX_CharIsComma,
+				RXCHARISK(7 downto 4)						=> GTX_RX_CharIsK_float,
+				RXCHARISK(3 downto 0)						=> GTX_RX_CharIsK,
+				RXDISPERR(7 downto 4)						=> GTX_RX_DisparityError_float,
+				RXDISPERR(3 downto 0)						=> GTX_RX_DisparityError,
+				RXNOTINTABLE(7 downto 4)				=> GTX_RX_NotInTableError_float,
+				RXNOTINTABLE(3 downto 0)				=> GTX_RX_NotInTableError,
+				
+				-- RX Byte and Word Alignment
+				RXBYTEISALIGNED									=> GTX_RX_ByteIsAligned,
+				RXBYTEREALIGN										=> GTX_RX_ByteRealign,
+				RXCOMMADETEN										=> '1',
+				RXMCOMMAALIGNEN									=> '1',
+				RXPCOMMAALIGNEN									=> '1',
+				RXCOMMADET											=> GTX_RX_CommaDetected,
+				
+				-- ElectricalIDLE and OOB ports
+				TXELECIDLE											=> GTP_TX_ElectricalIDLE,									-- @TX_Clock2:	
+				RXELECIDLE											=> GTP_RX_ElectricalIDLE,									-- @async:	
+				RXELECIDLEMODE									=> "00",																	-- @async:			indicate ElectricalIDLE on RXELECIDLE
+				
+				TXCOMINIT												=> GTP_TX_ComInit,
+				TXCOMWAKE												=> GTP_TX_ComWake,
+				TXCOMSAS												=> GTP_TX_ComSAS,
+				TXCOMFINISH											=> GTP_TX_ComFinish,
+				TXPDELECIDLEMODE								=> '0',																		-- @RX_Clock2:	treat TXPD as synchronous to RX_Clock2
+				
+				RXCOMINITDET										=> GTX_RX_ComInitDetected,								-- @RX_Clock2:	
+				RXCOMWAKEDET										=> GTX_RX_ComWakeDetected,								-- @RX_Clock2:	
+				RXCOMSASDET											=> GTX_RX_ComSASDetected_float,						-- @RX_Clock2:	
+				
+				
+				-- Tranceiver physical ports
+				GTXTXN													=> GTX_TX_n,
+				GTXTXP													=> GTX_TX_p,
+				GTXRXN													=> GTX_RX_n,
+				GTXRXP													=> GTX_RX_p,
+				
+-- ==========================================================
+-- ==========================================================
+-- ==========================================================
+				
+			--------------------------------- CPLL Ports -------------------------------
 --				CPLLFBCLKLOST										=> CPLLFBCLKLOST_OUT,
 				CPLLLOCK												=> ChannelPLL_Locked,
 --				CPLLLOCKDETCLK									=> CPLLLOCKDETCLK_IN,
@@ -816,41 +928,16 @@ BEGIN
 --				TSTOUT													=> open,
 				---------------------------------- Channel ---------------------------------
 --				CLKRSVD													=> "0000",
-				-------------------------- Channel - Clocking Ports ------------------------
---				GTGREFCLK												=> GTGREFCLK_IN,
---				GTNORTHREFCLK0									=> GTNORTHREFCLK0_IN,
---				GTNORTHREFCLK1									=> GTNORTHREFCLK1_IN,
---				GTREFCLK0												=> GTREFCLK0_IN,
---				GTREFCLK1												=> GTREFCLK1_IN,
---				GTSOUTHREFCLK0									=> GTSOUTHREFCLK0_IN,
---				GTSOUTHREFCLK1									=> GTSOUTHREFCLK1_IN,
-				---------------------------- Channel - DRP Ports	--------------------------
-				DRPCLK													=> GTX_DRP_Clock,
-				DRPEN														=> GTX_DRP_en,
-				DRPWE														=> GTX_DRP_we,
-				DRPADDR													=> GTX_DRP_Address,
-				DRPDI														=> GTX_DRP_DataIn,
-				DRPDO														=> GTX_DRP_DataOut,
-				DRPRDY													=> GTX_DRP_Ready,
-				------------------------------- Clocking Ports -----------------------------
---				GTREFCLKMONITOR									=> open,
---				QPLLCLK													=> QPLLCLK_IN,
---				QPLLREFCLK											=> QPLLREFCLK_IN,
---				RXSYSCLKSEL											=> "00",
---				TXSYSCLKSEL											=> "00",
+
 				--------------------------- Digital Monitor Ports --------------------------
 --				DMONITOROUT											=> open,
-				----------------- FPGA TX Interface Datapath Configuration	----------------
-				TX8B10BEN												=> '1',
+
 				------------------------------- Loopback Ports -----------------------------
 --				LOOPBACK												=> (2 downto 0 => '0'),
 				----------------------------- PCI Express Ports ----------------------------
 --				PHYSTATUS												=> PHYSTATUS_OUT,
---				RXRATE													=> RXRATE_IN,
 --				RXVALID													=> RXVALID_OUT,
-				------------------------------ Power-Down Ports ----------------------------
-				RXPD														=> GTX_RX_PowerDown(I),
-				TXPD														=> GTX_TX_PowerDown(I),
+
 				-------------------------- RX 8B/10B Decoder Ports -------------------------
 --				SETERRSTATUS										=> '0',
 				--------------------- RX Initialization and Reset Ports --------------------
@@ -869,13 +956,7 @@ BEGIN
 --				RXCDRRESETRSV										=> '0',
 				------------------- Receive Ports - Clock Correction Ports -----------------
 --				RXCLKCORCNT											=> RXCLKCORCNT_OUT,
-				---------- Receive Ports - FPGA RX Interface Datapath Configuration --------
-				RX8B10BEN												=> '1',
-				------------------ Receive Ports - FPGA RX Interface Ports -----------------
---				RXUSRCLK												=> RXUSRCLK_IN,
---				RXUSRCLK2												=> RXUSRCLK2_IN,
-				------------------ Receive Ports - FPGA RX interface Ports -----------------
-				RXDATA													=> GTX_RX_Data(I),
+
 				------------------- Receive Ports - Pattern Checker Ports ------------------
 --				RXPRBSCNTRESET									=> '0',
 --				RXPRBSERR												=> open,
@@ -884,14 +965,6 @@ BEGIN
 --				RXDFEXYDEN											=> '1',
 --				RXDFEXYDHOLD										=> '0',
 --				RXDFEXYDOVRDEN									=> '0',
-				------------------ Receive Ports - RX 8B/10B Decoder Ports -----------------
---				RXDISPERR(7 downto 4)						=> rxdisperr_float_i,
---				RXDISPERR(3 downto 0)						=> RXDISPERR_OUT,
---				RXNOTINTABLE(7 downto 4)				=> rxnotintable_float_i,
---				RXNOTINTABLE(3 downto 0)				=> RXNOTINTABLE_OUT,
-				--------------------------- Receive Ports - RX AFE -------------------------
-				GTXRXN													=> VSS_Private_In(0).RX_n,
-				GTXRXP													=> VSS_Private_In(0).RX_p,
 				------------------- Receive Ports - RX Buffer Bypass Ports -----------------
 --				RXBUFRESET											=> RXBUFRESET_IN,
 --				RXBUFSTATUS											=> RXBUFSTATUS_OUT,
@@ -910,13 +983,6 @@ BEGIN
 --				RXPHOVRDEN											=> '0',
 --				RXPHSLIPMONITOR									=> open,
 --				RXSTATUS												=> RXSTATUS_OUT,
-				-------------- Receive Ports - RX Byte and Word Alignment Ports ------------
---				RXBYTEISALIGNED									=> RXBYTEISALIGNED_OUT,
---				RXBYTEREALIGN										=> RXBYTEREALIGN_OUT,
---				RXCOMMADET											=> RXCOMMADET_OUT,
---				RXCOMMADETEN										=> '1',
---				RXMCOMMAALIGNEN									=> RXMCOMMAALIGNEN_IN,
---				RXPCOMMAALIGNEN									=> RXPCOMMAALIGNEN_IN,
 				------------------ Receive Ports - RX Channel Bonding Ports ----------------
 --				RXCHANBONDSEQ										=> open,
 --				RXCHBONDEN											=> '0',
@@ -956,8 +1022,6 @@ BEGIN
 --				RXMONITORSEL										=> "00",
 --				RXOSHOLD												=> '0',
 --				RXOSOVRDEN											=> '0',
-				------------ Receive Ports - RX Fabric ClocK Output Control Ports ----------
---				RXRATEDONE											=> RXRATEDONE_OUT,
 				--------------- Receive Ports - RX Fabric Output Control Ports -------------
 --				RXOUTCLK												=> RXOUTCLK_OUT,
 --				RXOUTCLKFABRIC									=> open,
@@ -970,29 +1034,14 @@ BEGIN
 --				RXSTARTOFSEQ										=> open,
 				--------------------- Receive Ports - RX Gearbox Ports	--------------------
 --				RXGEARBOXSLIP										=> '0',
-				------------- Receive Ports - RX Initialization and Reset Ports ------------
---				GTRXRESET												=> GTRXRESET_IN,
---				RXOOBRESET											=> '0',
---				RXPCSRESET											=> '0',
---				RXPMARESET											=> RXPMARESET_IN,
 				------------------ Receive Ports - RX Margin Analysis ports ----------------
 --				RXLPMEN													=> '0',
-				------------------- Receive Ports - RX OOB Signaling ports -----------------
-				RXCOMINITDET										=> GTX_RX_ComInitDetected,
-				RXCOMWAKEDET										=> GTX_RX_ComWakeDetected,
-				RXCOMSASDET											=> open,
-				------------------ Receive Ports - RX OOB Signaling ports	-----------------
-				RXELECIDLE											=> GTP_RX_ElectricalIDLE,
---				RXELECIDLEMODE									=> "00",
+
 				----------------- Receive Ports - RX Polarity Control Ports ----------------
 --				RXPOLARITY											=> '0',
 				---------------------- Receive Ports - RX gearbox ports --------------------
 --				RXSLIDE													=> '0',
 				------------------- Receive Ports - RX8B/10B Decoder Ports -----------------
-				RXCHARISCOMMA(7 downto 4)				=> GTX_RX_CharIsComma_float,
-				RXCHARISCOMMA(3 downto 0)				=> GTX_RX_CharIsComma(I),
-				RXCHARISK(7 downto 4)						=> GTX_RX_CharIsK_float,
-				RXCHARISK(3 downto 0)						=> GTX_RX_CharIsK(I),
 				------------------ Receive Ports - Rx Channel Bonding Ports ----------------
 --				RXCHBONDI												=> "00000",
 				-------------- Receive Ports -RX Initialization and Reset Ports ------------
@@ -1022,13 +1071,8 @@ BEGIN
 				---------------- Transmit Ports - 8b10b Encoder Control Ports --------------
 --				TXCHARDISPMODE									=> (7 downto 0 => '0'),
 --				TXCHARDISPVAL										=> (7 downto 0 => '0'),
-				------------------ Transmit Ports - FPGA TX Interface Ports ----------------
---				TXUSRCLK												=> TXUSRCLK_IN,
---				TXUSRCLK2												=> TXUSRCLK2_IN,
 				--------------------- Transmit Ports - PCI Express Ports -------------------
---				TXELECIDLE											=> '0',
 --				TXMARGIN												=> (2 downto 0 => '0'),
---				TXRATE													=> TXRATE_IN,
 --				TXSWING													=> '0',
 				------------------ Transmit Ports - Pattern Generator Ports ----------------
 --				TXPRBSFORCEERR									=> '0',
@@ -1058,21 +1102,12 @@ BEGIN
 --				TXINHIBIT												=> '0',
 --				TXMAINCURSOR										=> "0000000",
 --				TXPISOPD												=> '0',
-				------------------ Transmit Ports - TX Data Path interface -----------------
-				TXDATA													=> GTX_TX_Data(I),
-				---------------- Transmit Ports - TX Driver and OOB signaling --------------
-				
-				GTXTXN													=> VSS_Private_Out(I).TX_n,
-				GTXTXP													=> VSS_Private_Out(I).TX_p,
 				----------- Transmit Ports - TX Fabric Clock Output Control Ports ----------
 --				TXOUTCLK												=> TXOUTCLK_OUT,
 --				TXOUTCLKFABRIC									=> TXOUTCLKFABRIC_OUT,
 --				TXOUTCLKPCS											=> TXOUTCLKPCS_OUT,
 --				TXOUTCLKSEL											=> "010",
---				TXRATEDONE											=> TXRATEDONE_OUT,
 				--------------------- Transmit Ports - TX Gearbox Ports --------------------
-				TXCHARISK(7 downto 4)						=> (7 downto 4 => '0'),
-				TXCHARISK(3 downto 0)						=> GTX_TX_CharIsK(I),
 --				TXGEARBOXREADY									=> open,
 --				TXHEADER												=> (2 downto 0 => '0'),
 --				TXSEQUENCE											=> (6 downto 0 => '0'),
@@ -1081,12 +1116,6 @@ BEGIN
 --				TXPCSRESET											=> '0',
 --				TXPMARESET											=> '0',
 --				TXRESETDONE											=> TXRESETDONE_OUT,
-				------------------ Transmit Ports - TX OOB signalling Ports ----------------
-				TXCOMINIT												=> GTP_TX_ComInit,
-				TXCOMWAKE												=> GTP_TX_ComWake,
-				TXCOMSAS												=> '0',
-				TXCOMFINISH											=> GTP_TX_ComFinish,
---				TXPDELECIDLEMODE								=> '0',
 				----------------- Transmit Ports - TX Polarity Control Ports ---------------
 				TXPOLARITY											=> '0',
 				--------------- Transmit Ports - TX Receiver Detection Ports	--------------
