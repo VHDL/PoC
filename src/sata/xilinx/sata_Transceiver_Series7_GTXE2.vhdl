@@ -799,17 +799,8 @@ BEGIN
 --				TX_PREDRIVER_MODE												=> '0'
 			)
 			PORT MAP (
-
-
-
-
-				-- Channel clock inputs
+				-- clock selects and clock inputs
 				CPLLREFCLKSEL										=> "001",										-- @async:		001 => use GTREFCLK0
-				RXSYSCLKSEL											=> "00",										-- @async:		00 => use CPLL und gtxe2_channel refclock; 11 => use QPLL and gtxe2_common refclock
-				TXSYSCLKSEL											=> "00",										-- @async:		00 => use CPLL und gtxe2_channel refclock; 11 => use QPLL and gtxe2_common refclock
-
-				QPLLCLK													=> GTX_QPLLClock,						-- @clock:		high-performance clock from QPLL (GHz)
-				QPLLREFCLK											=> GTX_QPLLRefClock,				-- @clock:		reference clock for QPLL bypassed (MHz)
 
 				GTGREFCLK												=> '0',											-- @clock:		
 				GTNORTHREFCLK0									=> GTX_RefClockNorth(0),		-- @clock:		
@@ -818,7 +809,8 @@ BEGIN
 				GTREFCLK1												=> GTX_RefClock(1),					-- @clock:		
 				GTSOUTHREFCLK0									=> GTX_RefClockSouth(0),		-- @clock:		
 				GTSOUTHREFCLK1									=> GTX_RefClockSouth(1),		-- @clock:		
-
+				QPLLCLK													=> GTX_QPLLClock,						-- @clock:		high-performance clock from QPLL (GHz)
+				QPLLREFCLK											=> GTX_QPLLRefClock,				-- @clock:		reference clock for QPLL bypassed (MHz)
 				GTREFCLKMONITOR									=> open,										-- @clock:		CPLL refclock-mux output
 
 				CPLLLOCKDETCLK									=> '0',											-- @clock:		CPLL LockDetector clock (@LockDetClock)- only required if RefClock_Lost and FBClock_Lost are used
@@ -826,6 +818,19 @@ BEGIN
 				CPLLLOCK												=> GTX_CPLL_Locked,					-- @async:		CPLL locked
 				CPLLFBCLKLOST										=> open,										-- @LockDetClock:	
 				CPLLREFCLKLOST									=> open,										-- @LockDetClock:	
+				
+				-- internal clock selects and clock outputs
+				TXSYSCLKSEL											=> "00",										-- @async:		00 => use CPLL und gtxe2_channel refclock; 11 => use QPLL and gtxe2_common refclock
+				TXOUTCLKSEL											=> "",										-- @async:		*** => select TXOUTCLK***
+				TXOUTCLKFABRIC									=> open,										-- @clock:		internal clock after TXSYSCLKSEL-mux
+				TXOUTCLKPCS											=> open,										-- @clock:		internal clock from PCS sublayer
+				TXOUTCLK												=> RXOUTCLK_OUT,						-- @clock:		TX output clock
+				
+				RXSYSCLKSEL											=> "00",										-- @async:		00 => use CPLL und gtxe2_channel refclock; 11 => use QPLL and gtxe2_common refclock
+				RXOUTCLKSEL											=> "010",										-- @async:		010 => select RXOUTCLKPMA
+				RXOUTCLKFABRIC									=> open,										-- @clock:		internal clock after RXSYSCLKSEL-mux
+				RXOUTCLKPCS											=> open,										-- @clock:		internal clock from PCS sublayer
+				RXOUTCLK												=> RXOUTCLK_OUT,						-- @clock:		RX output clock; phase aligned
 				
 				-- Power-Down ports
 				CPLLPD													=> GTX_CPLL_PowerDown,
@@ -965,10 +970,38 @@ BEGIN
 				RXCDRHOLD												=> '0',																		-- @async:			hold the CDR control loop frozen
 				RXCDRLOCK												=> open,																	-- @async:			reserved; CDR locked
 				
+				-- Channel bonding ports
+				RXCHBONDEN											=> '0',																		-- @RX_Clock2:	This port enables channel bonding
+				RXCHBONDLEVEL										=> "000",																	-- @RX_Clock:		Indicates the amount of internal pipelining used for the RX elastic buffer control signals
+				RXCHBONDMASTER									=> '0',																		-- @RX_Clock:		Indicates that the transceiver is the master for channel bonding
+				RXCHBONDSLAVE										=> '0',																		-- @RX_Clock:		Indicates that this transceiver is a slave for channel bonding
+				RXCHBONDO												=> open,																	-- @RX_Clock:		Channel bond control port - data out
+				RXCHBONDI												=> "00000",																-- @RX_Clock:		Channel bond control port - data in
+				RXCHANBONDSEQ										=> open,																	-- @RX_Clock2:	RXDATA contains the start of a channel bonding sequence
+				RXCHANISALIGNED									=> open,																	-- @RX_Clock2:	RX elastic buffer is channel aligned
+				RXCHANREALIGN										=> open,																	-- @RX_Clock2:	RX elastic buffer changed channel alignment
+				
+				-- RX buffer ports
+				RXDDIEN													=> '0',																		-- @async:			RX data delay insertion enable; set high if RX buffer is bypassed
+				RXPHDLYRESET										=> '0',																		-- @async:			RX phase alignment hard reset
+				RXPHALIGNEN											=> '0',																		-- @async:			RX phase alignment enable; 0 => auto alignment
+				RXPHALIGN												=> '0',																		-- @async:			Sets the RX phase alignment; 0 => auto alignment
+				RXPHALIGNDONE										=> open,																	-- @async:			RX phase alignment done
+				RXPHDLYPD												=> '0',																		-- @async:			RX phase and delay alignment circuit power down
+				RXPHMONITOR											=> open,																	-- @async:			RX phase alignment monitor
+				RXPHOVRDEN											=> '0',																		-- @async:			RX phase alignment counter override enable
+				RXPHSLIPMONITOR									=> open,																	-- @async:			RX phase alignment slip monitor
+				RXDLYBYPASS											=> '1',																		-- @async:			RX delay alignment bypass; 0 => use the RX delay alignment circuit; 1 => bypass the RX delay alignment circuit
+				RXDLYEN													=> '0',																		-- @async:			RX delay alignment enable
+				RXDLYOVRDEN											=> '0',																		-- @async:			RX delay alignment counter override enable
+				RXDLYSRESET											=> '0',																		-- @async:			RX delay alignment soft reset
+				RXDLYSRESETDONE									=> open,																	-- @async:			RX delay alignment soft reset done
+				
 				-- status ports
 				PHYSTATUS												=> GTX_PhyStatus,													-- @RX_Clock2:	
-				RXSTATUS												=> GTX_RX_Status,													-- @RX_Clock2:	
+				TXBUFSTATUS											=> GTX_TX_BufferStatus,										-- @TX_Clock2:	
 				RXBUFSTATUS											=> GTX_RX_BufferStatus,										-- @RX_Clock2:	
+				RXSTATUS												=> GTX_RX_Status,													-- @RX_Clock2:	
 				RXCLKCORCNT											=> GTX_RX_ClockCorrectionStatus,					-- @RX_Clock2:	"1--" indicates buffer under/overflow
 				
 				-- loopback port
@@ -1008,38 +1041,6 @@ BEGIN
 --				EYESCANDATAERROR								=> EYESCANDATAERROR_OUT,
 --				EYESCANMODE											=> '0',
 --				EYESCANTRIGGER									=> '0',
-
-				------------------- Receive Ports - RX Buffer Bypass Ports -----------------
---				RXDDIEN													=> '0',
---				RXDLYBYPASS											=> '1',
---				RXDLYEN													=> '0',
---				RXDLYOVRDEN											=> '0',
---				RXDLYSRESET											=> '0',
---				RXDLYSRESETDONE									=> open,
---				RXPHALIGN												=> '0',
---				RXPHALIGNDONE										=> open,
---				RXPHALIGNEN											=> '0',
---				RXPHDLYPD												=> '0',
---				RXPHDLYRESET										=> '0',
---				RXPHMONITOR											=> open,
---				RXPHOVRDEN											=> '0',
---				RXPHSLIPMONITOR									=> open,
---				RXSTATUS												=> RXSTATUS_OUT,
-				------------------ Receive Ports - RX Channel Bonding Ports ----------------
---				RXCHANBONDSEQ										=> open,
---				RXCHBONDEN											=> '0',
---				RXCHBONDLEVEL										=> (2 downto 0 => '0'),
---				RXCHBONDMASTER									=> '0',
---				RXCHBONDO												=> open,
---				RXCHBONDSLAVE										=> '0',
-				----------------- Receive Ports - RX Channel Bonding Ports	----------------
---				RXCHANISALIGNED									=> open,
---				RXCHANREALIGN										=> open,
-				--------------- Receive Ports - RX Fabric Output Control Ports -------------
---				RXOUTCLK												=> RXOUTCLK_OUT,
---				RXOUTCLKFABRIC									=> open,
---				RXOUTCLKPCS											=> open,
---				RXOUTCLKSEL											=> "010",
 				---------------------- Receive Ports - RX Gearbox Ports --------------------
 --				RXDATAVALID											=> open,
 --				RXHEADER												=> open,
@@ -1051,8 +1052,6 @@ BEGIN
 --				RXPOLARITY											=> '0',
 				---------------------- Receive Ports - RX gearbox ports --------------------
 --				RXSLIDE													=> '0',
-				------------------ Receive Ports - Rx Channel Bonding Ports ----------------
---				RXCHBONDI												=> "00000",
 			-------------------------------- Rx AFE Ports ------------------------------
 --				RXQPIEN													=> '0',
 --				RXQPISENN												=> open,
@@ -1081,6 +1080,7 @@ BEGIN
 --				TXSWING													=> '0',
 				------------------ Transmit Ports - Pattern Generator Ports ----------------
 --				TXPRBSFORCEERR									=> '0',
+--				TXPRBSSEL												=> (2 downto 0 => '0'),
 				------------------ Transmit Ports - TX Buffer Bypass Ports -----------------
 --				TXDLYBYPASS											=> '1',
 --				TXDLYEN													=> '0',
@@ -1097,8 +1097,6 @@ BEGIN
 --				TXPHINIT												=> '0',
 --				TXPHINITDONE										=> open,
 --				TXPHOVRDEN											=> '0',
-				---------------------- Transmit Ports - TX Buffer Ports --------------------
---				TXBUFSTATUS											=> TXBUFSTATUS_OUT,
 				--------------- Transmit Ports - TX Configurable Driver Ports --------------
 --				TXBUFDIFFCTRL										=> "100",
 --				TXDEEMPH												=> '0',
@@ -1118,8 +1116,6 @@ BEGIN
 				TXDETECTRX											=> '0',
 				------------------ Transmit Ports - TX8b/10b Encoder Ports -----------------
 --				TX8B10BBYPASS										=> (7 downto 0 => '0'),
-				------------------ Transmit Ports - pattern Generator Ports ----------------
---				TXPRBSSEL												=> (2 downto 0 => '0'),
 				----------------------- Tx Configurable Driver	Ports ----------------------
 --				TXQPISENN												=> open,
 --				TXQPISENP												=> open
