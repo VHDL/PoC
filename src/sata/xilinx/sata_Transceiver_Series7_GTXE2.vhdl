@@ -804,6 +804,7 @@ BEGIN
 
 
 				-- Channel clock inputs
+				CPLLREFCLKSEL										=> "001",										-- @async:		001 => use GTREFCLK0
 				RXSYSCLKSEL											=> "00",										-- @async:		00 => use CPLL und gtxe2_channel refclock; 11 => use QPLL and gtxe2_common refclock
 				TXSYSCLKSEL											=> "00",										-- @async:		00 => use CPLL und gtxe2_channel refclock; 11 => use QPLL and gtxe2_common refclock
 
@@ -820,30 +821,45 @@ BEGIN
 
 				GTREFCLKMONITOR									=> open,										-- @clock:		CPLL refclock-mux output
 
+				CPLLLOCKDETCLK									=> '0',											-- @clock:		CPLL LockDetector clock (@LockDetClock)- only required if RefClock_Lost and FBClock_Lost are used
+				CPLLLOCKEN											=> '1',											-- @async:		CPLL enable LockDetector
+				CPLLLOCK												=> GTX_CPLL_Locked,					-- @async:		CPLL locked
+				CPLLFBCLKLOST										=> open,										-- @LockDetClock:	
+				CPLLREFCLKLOST									=> open,										-- @LockDetClock:	
 				
 				-- Power-Down ports
+				CPLLPD													=> GTX_CPLL_PowerDown,
 				TXPD														=> GTX_TX_PowerDown,
 				RXPD														=> GTX_RX_PowerDown,
 
 				-- Reset ports
+				CPLLRESET												=> GTX_CPLL_Reset,
+				
 				GTTXRESET												=> GTX_TX_Reset,
 				TXPCSRESET											=> GTX_TX_PCSReset,
 				TXPMARESET											=> GTX_TX_PMAReset,
 
 				GTRXRESET												=> GTX_RX_Reset,
-				RXOOBRESET											=> GTX_RX_OOBReset,										-- @async:			reserved, tie to ground
 				RXPCSRESET											=> GTX_RX_PCSReset,
 				RXPMARESET											=> GTX_RX_PMAReset,
+				RXBUFRESET											=> GTX_RX_BufferReset,								-- @async:			
+				RXOOBRESET											=> '0',																-- @async:			reserved; tie to ground
+				EYESCANRESET										=> '0',																
+				RXCDRFREQRESET									=> '0',																-- @async:			CDR frquency detector reset
+				RXCDRRESET											=> '0',																-- @async:			CDR phase detector reset
+				RXPRBSCNTRESET									=> '0',																-- @RX_Clock2:	reset PRBS error counter
 				
 				TXRESETDONE											=> GTX_TX_ResetDone,									-- @TX_Clock2:	
 				RXRESETDONE											=> GTX_RX_ResetDone,									-- @RX_Clock2:	
 				
 				-- FPGA-Fabric interface clocks
-				TXUSRCLK												=> GTX_TXUserClock_1X,
-				TXUSRCLK2												=> GTX_TXUserClock_4X,
+				TXUSRCLK												=> GTX_TX_UserClock_1X,								-- @clock:			
+				TXUSRCLK2												=> GTX_TX_UserClock_4X,								-- @clock:			
+				TXUSERRDY												=> GTX_TX_UserClock_Locked,						-- @async:			@TX_Clock2 is stable/locked
 
-				RXUSRCLK												=> GTX_RXUserClock_1X,
-				RXUSRCLK2												=> GTX_RXUserClock_4X,
+				RXUSRCLK												=> GTX_RX_UserClock_1X,								-- @clock:			
+				RXUSRCLK2												=> GTX_RX_UserClock_4X,								-- @clock:			
+				RXUSERRDY												=> GTX_RX_UserClock_Locked,						-- @async:			@TX_Clock2 is stable/locked
 
 				-- linerate clock divider selection
 				TXRATE													=> GTX_TX_LineRateSelect,							-- @TX_Clock2
@@ -873,7 +889,8 @@ BEGIN
 				
 				-- FPGA-Fabric - RX interface ports
 				RXDATA													=> GTX_RX_Data,
-
+				RXVALID													=> GTX_RX_Valid,
+				
 				RXCHARISCOMMA(7 downto 4)				=> GTX_RX_CharIsComma_float,
 				RXCHARISCOMMA(3 downto 0)				=> GTX_RX_CharIsComma,
 				RXCHARISK(7 downto 4)						=> GTX_RX_CharIsK_float,
@@ -905,76 +922,94 @@ BEGIN
 				RXCOMINITDET										=> GTX_RX_ComInitDetected,								-- @RX_Clock2:	
 				RXCOMWAKEDET										=> GTX_RX_ComWakeDetected,								-- @RX_Clock2:	
 				RXCOMSASDET											=> GTX_RX_ComSASDetected_float,						-- @RX_Clock2:	
+
+				-- RX	LPM equalizer ports (LPM - low-power mode)
+				RXLPMEN													=> '0',																		-- @RX_Clock2:	0 => use DFE; 1 => use LPM
+				RXLPMLFHOLD											=> '0',																		-- @RX_Clock2:	
+				RXLPMLFKLOVRDEN									=> '0',																		-- @RX_Clock2:	
+				RXLPMHFHOLD											=> '0',																		-- @RX_Clock2:	
+				RXLPMHFOVRDEN										=> '0',																		-- @RX_Clock2:	
 				
+				-- RX	DFE equalizer ports (discrete-time filter equalizer)
+
+--				RXDFEAGCHOLD										=> RXDFEAGCHOLD_IN,
+--				RXDFEAGCOVRDEN									=> '0',
+--				RXDFECM1EN											=> '0',
+--				RXDFELFHOLD											=> RXDFELFHOLD_IN,
+--				RXDFELFOVRDEN										=> '1',
+--				RXDFELPMRESET										=> '0',
+--				RXDFETAP2HOLD										=> '0',
+--				RXDFETAP2OVRDEN									=> '0',
+--				RXDFETAP3HOLD										=> '0',
+--				RXDFETAP3OVRDEN									=> '0',
+--				RXDFETAP4HOLD										=> '0',
+--				RXDFETAP4OVRDEN									=> '0',
+--				RXDFETAP5HOLD										=> '0',
+--				RXDFETAP5OVRDEN									=> '0',
+--				RXDFEUTHOLD											=> '0',
+--				RXDFEUTOVRDEN										=> '0',
+--				RXDFEVPHOLD											=> '0',
+--				RXDFEVPOVRDEN										=> '0',
+--				RXDFEVSEN												=> '0',
+				RXDFEXYDEN											=> '1',																		-- @RX_Clock2:	reserved; tie to vcc
+				RXDFEXYDHOLD										=> '0',																		-- @RX_Clock2:	reserved; 
+				RXDFEXYDOVRDEN									=> '0',																		-- @RX_Clock2:	reserved; 
+
+--				RXMONITOROUT										=> open,
+--				RXMONITORSEL										=> "00",
+--				RXOSHOLD												=> '0',
+--				RXOSOVRDEN											=> '0',
+
+				
+				-- Clock Data Recovery (CDR)
+				RXCDRHOLD												=> '0',																		-- @async:			hold the CDR control loop frozen
+				RXCDRLOCK												=> open,																	-- @async:			reserved; CDR locked
+				
+				-- status ports
+				PHYSTATUS												=> GTX_PhyStatus,													-- @RX_Clock2:	
+				RXSTATUS												=> GTX_RX_Status,													-- @RX_Clock2:	
+				RXBUFSTATUS											=> GTX_RX_BufferStatus,										-- @RX_Clock2:	
+				RXCLKCORCNT											=> GTX_RX_ClockCorrectionStatus,					-- @RX_Clock2:	"1--" indicates buffer under/overflow
+				
+				-- loopback port
+				LOOPBACK												=> "000",																	-- @async:			000 => normal operation
+				
+				-- PRBS ports
+				RXPRBSSEL												=> "000",																	-- @RX_Clock2:	000 => normal operation; PRBS checker is off
+				RXPRBSERR												=> open,																	-- @RX_Clock2:	PRBS error have occurred; error counter 'RX_PRBS_ERR_CNT' can only be accessed by DRP at address 0x15C
+				
+				-- Digital Monitor Ports
+				DMONITOROUT											=> open,
+				
+				-- reserved ports
+				GTRSVD													=> "0000000000000000",										-- @async:			
+				PCSRSVDIN												=> "0000000000000000",										-- @async:			
+				PCSRSVDIN2											=> "00000",																-- @async:			
+				PMARSVDIN												=> "00000",																-- @async:			
+				PMARSVDIN2											=> "00000",																-- @async:			
+				TSTIN														=> "11111111111111111111",								-- @async:			
+				TSTOUT													=> open,																	-- @async:			
+				CLKRSVD(0)											=> '0',																		-- @clock:			alternative OOB clock; selectable by PCS_RSVD_ATTR(3) = '1'
+				CLKRSVD(3 downto 1)							=> "000",
+				SETERRSTATUS										=> '0',																		-- @async:			reserved; RX 8B/10B decoder port
+				RXCDROVRDEN											=> '0',																		-- @async:			reserved; CDR port
+				RXCDRRESETRSV										=> '0',																		-- @async:			reserved; CDR port
 				
 				-- Tranceiver physical ports
-				GTXTXN													=> GTX_TX_n,
-				GTXTXP													=> GTX_TX_p,
-				GTXRXN													=> GTX_RX_n,
-				GTXRXP													=> GTX_RX_p,
+				GTXTXN													=> GTX_TX_n,															-- @analog:			
+				GTXTXP													=> GTX_TX_p,															-- @analog:			
+				GTXRXN													=> GTX_RX_n,															-- @analog:			
+				GTXRXP													=> GTX_RX_p,															-- @analog:			
 				
 -- ==========================================================
 -- ==========================================================
 -- ==========================================================
-				
-			--------------------------------- CPLL Ports -------------------------------
---				CPLLFBCLKLOST										=> CPLLFBCLKLOST_OUT,
-				CPLLLOCK												=> ChannelPLL_Locked,
---				CPLLLOCKDETCLK									=> CPLLLOCKDETCLK_IN,
---				CPLLLOCKEN											=> '1',
---				CPLLPD													=> '0',
---				CPLLREFCLKLOST									=> CPLLREFCLKLOST_OUT,
---				CPLLREFCLKSEL										=> "001",
---				CPLLRESET												=> CPLLRESET_IN,
---				GTRSVD													=> "0000000000000000",
---				PCSRSVDIN												=> "0000000000000000",
---				PCSRSVDIN2											=> "00000",
---				PMARSVDIN												=> "00000",
---				PMARSVDIN2											=> "00000",
---				TSTIN														=> "11111111111111111111",
---				TSTOUT													=> open,
-				---------------------------------- Channel ---------------------------------
---				CLKRSVD													=> "0000",
-
-				--------------------------- Digital Monitor Ports --------------------------
---				DMONITOROUT											=> open,
-
-				------------------------------- Loopback Ports -----------------------------
---				LOOPBACK												=> (2 downto 0 => '0'),
-				----------------------------- PCI Express Ports ----------------------------
---				PHYSTATUS												=> PHYSTATUS_OUT,
---				RXVALID													=> RXVALID_OUT,
-
-				-------------------------- RX 8B/10B Decoder Ports -------------------------
---				SETERRSTATUS										=> '0',
-				--------------------- RX Initialization and Reset Ports --------------------
---				EYESCANRESET										=> '0',
---				RXUSERRDY												=> RXUSERRDY_IN,
 				-------------------------- RX Margin Analysis Ports ------------------------
 --				EYESCANDATAERROR								=> EYESCANDATAERROR_OUT,
 --				EYESCANMODE											=> '0',
 --				EYESCANTRIGGER									=> '0',
-				------------------------- Receive Ports - CDR Ports ------------------------
---				RXCDRFREQRESET									=> '0',
---				RXCDRHOLD												=> '0',
---				RXCDRLOCK												=> RXCDRLOCK_OUT,
---				RXCDROVRDEN											=> '0',
---				RXCDRRESET											=> '0',
---				RXCDRRESETRSV										=> '0',
-				------------------- Receive Ports - Clock Correction Ports -----------------
---				RXCLKCORCNT											=> RXCLKCORCNT_OUT,
 
-				------------------- Receive Ports - Pattern Checker Ports ------------------
---				RXPRBSCNTRESET									=> '0',
---				RXPRBSERR												=> open,
---				RXPRBSSEL												=> (2 downto 0 => '0'),
-				-------------------- Receive Ports - RX	Equalizer Ports -------------------
---				RXDFEXYDEN											=> '1',
---				RXDFEXYDHOLD										=> '0',
---				RXDFEXYDOVRDEN									=> '0',
 				------------------- Receive Ports - RX Buffer Bypass Ports -----------------
---				RXBUFRESET											=> RXBUFRESET_IN,
---				RXBUFSTATUS											=> RXBUFSTATUS_OUT,
 --				RXDDIEN													=> '0',
 --				RXDLYBYPASS											=> '1',
 --				RXDLYEN													=> '0',
@@ -1000,35 +1035,6 @@ BEGIN
 				----------------- Receive Ports - RX Channel Bonding Ports	----------------
 --				RXCHANISALIGNED									=> open,
 --				RXCHANREALIGN										=> open,
-				-------------------- Receive Ports - RX Equailizer Ports -------------------
---				RXLPMHFHOLD											=> '0',
---				RXLPMHFOVRDEN										=> '0',
---				RXLPMLFHOLD											=> '0',
-				--------------------- Receive Ports - RX Equalizer Ports -------------------
---				RXDFEAGCHOLD										=> RXDFEAGCHOLD_IN,
---				RXDFEAGCOVRDEN									=> '0',
---				RXDFECM1EN											=> '0',
---				RXDFELFHOLD											=> RXDFELFHOLD_IN,
---				RXDFELFOVRDEN										=> '1',
---				RXDFELPMRESET										=> '0',
---				RXDFETAP2HOLD										=> '0',
---				RXDFETAP2OVRDEN									=> '0',
---				RXDFETAP3HOLD										=> '0',
---				RXDFETAP3OVRDEN									=> '0',
---				RXDFETAP4HOLD										=> '0',
---				RXDFETAP4OVRDEN									=> '0',
---				RXDFETAP5HOLD										=> '0',
---				RXDFETAP5OVRDEN									=> '0',
---				RXDFEUTHOLD											=> '0',
---				RXDFEUTOVRDEN										=> '0',
---				RXDFEVPHOLD											=> '0',
---				RXDFEVPOVRDEN										=> '0',
---				RXDFEVSEN												=> '0',
---				RXLPMLFKLOVRDEN									=> '0',
---				RXMONITOROUT										=> open,
---				RXMONITORSEL										=> "00",
---				RXOSHOLD												=> '0',
---				RXOSOVRDEN											=> '0',
 				--------------- Receive Ports - RX Fabric Output Control Ports -------------
 --				RXOUTCLK												=> RXOUTCLK_OUT,
 --				RXOUTCLKFABRIC									=> open,
@@ -1041,14 +1047,10 @@ BEGIN
 --				RXSTARTOFSEQ										=> open,
 				--------------------- Receive Ports - RX Gearbox Ports	--------------------
 --				RXGEARBOXSLIP										=> '0',
-				------------------ Receive Ports - RX Margin Analysis ports ----------------
---				RXLPMEN													=> '0',
-
 				----------------- Receive Ports - RX Polarity Control Ports ----------------
 --				RXPOLARITY											=> '0',
 				---------------------- Receive Ports - RX gearbox ports --------------------
 --				RXSLIDE													=> '0',
-				------------------- Receive Ports - RX8B/10B Decoder Ports -----------------
 				------------------ Receive Ports - Rx Channel Bonding Ports ----------------
 --				RXCHBONDI												=> "00000",
 			-------------------------------- Rx AFE Ports ------------------------------
@@ -1068,7 +1070,6 @@ BEGIN
 				--------------------- TX Initialization and Reset Ports --------------------
 --				CFGRESET												=> '0',
 --				PCSRSVDOUT											=> open,
---				TXUSERRDY												=> TXUSERRDY_IN,
 				---------------------- Transceiver Reset Mode Operation --------------------
 --				GTRESETSEL											=> '0',
 --				RESETOVRD												=> '0',
