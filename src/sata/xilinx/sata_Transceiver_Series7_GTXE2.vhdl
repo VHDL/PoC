@@ -810,13 +810,13 @@ BEGIN
 				QPLLCLK													=> GTX_QPLLClock,						-- @clock:		high-performance clock from QPLL (GHz)
 				QPLLREFCLK											=> GTX_QPLLRefClock,				-- @clock:		reference clock for QPLL bypassed (MHz)
 
-				GTGREFCLK												=> '0',
-				GTNORTHREFCLK0									=> GTX_RefClockNorth(0),
-				GTNORTHREFCLK1									=> GTX_RefClockNorth(1),
-				GTREFCLK0												=> GTX_RefClock(0),
-				GTREFCLK1												=> GTX_RefClock(1),
-				GTSOUTHREFCLK0									=> GTX_RefClockSouth(0),
-				GTSOUTHREFCLK1									=> GTX_RefClockSouth(1),
+				GTGREFCLK												=> '0',											-- @clock:		
+				GTNORTHREFCLK0									=> GTX_RefClockNorth(0),		-- @clock:		
+				GTNORTHREFCLK1									=> GTX_RefClockNorth(1),		-- @clock:		
+				GTREFCLK0												=> GTX_RefClock(0),					-- @clock:		
+				GTREFCLK1												=> GTX_RefClock(1),					-- @clock:		
+				GTSOUTHREFCLK0									=> GTX_RefClockSouth(0),		-- @clock:		
+				GTSOUTHREFCLK1									=> GTX_RefClockSouth(1),		-- @clock:		
 
 				GTREFCLKMONITOR									=> open,										-- @clock:		CPLL refclock-mux output
 
@@ -826,10 +826,17 @@ BEGIN
 				RXPD														=> GTX_RX_PowerDown,
 
 				-- Reset ports
+				GTTXRESET												=> GTX_TX_Reset,
+				TXPCSRESET											=> GTX_TX_PCSReset,
+				TXPMARESET											=> GTX_TX_PMAReset,
+
 				GTRXRESET												=> GTX_RX_Reset,
-				RXOOBRESET											=> GTX_RX_OOBReset,										-- @async:	reserved, tie to ground
+				RXOOBRESET											=> GTX_RX_OOBReset,										-- @async:			reserved, tie to ground
 				RXPCSRESET											=> GTX_RX_PCSReset,
 				RXPMARESET											=> GTX_RX_PMAReset,
+				
+				TXRESETDONE											=> GTX_TX_ResetDone,									-- @TX_Clock2:	
+				RXRESETDONE											=> GTX_RX_ResetDone,									-- @RX_Clock2:	
 				
 				-- FPGA-Fabric interface clocks
 				TXUSRCLK												=> GTX_TXUserClock_1X,
@@ -1044,9 +1051,7 @@ BEGIN
 				------------------- Receive Ports - RX8B/10B Decoder Ports -----------------
 				------------------ Receive Ports - Rx Channel Bonding Ports ----------------
 --				RXCHBONDI												=> "00000",
-				-------------- Receive Ports -RX Initialization and Reset Ports ------------
-				RXRESETDONE											=> GTX_RX_ResetDone(I),
-				-------------------------------- Rx AFE Ports ------------------------------
+			-------------------------------- Rx AFE Ports ------------------------------
 --				RXQPIEN													=> '0',
 --				RXQPISENN												=> open,
 --				RXQPISENP												=> open,
@@ -1062,7 +1067,6 @@ BEGIN
 --				TXQPIWEAKPUP										=> '0',
 				--------------------- TX Initialization and Reset Ports --------------------
 --				CFGRESET												=> '0',
---				GTTXRESET												=> GTTXRESET_IN,
 --				PCSRSVDOUT											=> open,
 --				TXUSERRDY												=> TXUSERRDY_IN,
 				---------------------- Transceiver Reset Mode Operation --------------------
@@ -1102,20 +1106,11 @@ BEGIN
 --				TXINHIBIT												=> '0',
 --				TXMAINCURSOR										=> "0000000",
 --				TXPISOPD												=> '0',
-				----------- Transmit Ports - TX Fabric Clock Output Control Ports ----------
---				TXOUTCLK												=> TXOUTCLK_OUT,
---				TXOUTCLKFABRIC									=> TXOUTCLKFABRIC_OUT,
---				TXOUTCLKPCS											=> TXOUTCLKPCS_OUT,
---				TXOUTCLKSEL											=> "010",
 				--------------------- Transmit Ports - TX Gearbox Ports --------------------
 --				TXGEARBOXREADY									=> open,
 --				TXHEADER												=> (2 downto 0 => '0'),
 --				TXSEQUENCE											=> (6 downto 0 => '0'),
 --				TXSTARTSEQ											=> '0',
-				------------- Transmit Ports - TX Initialization and Reset Ports -----------
---				TXPCSRESET											=> '0',
---				TXPMARESET											=> '0',
---				TXRESETDONE											=> TXRESETDONE_OUT,
 				----------------- Transmit Ports - TX Polarity Control Ports ---------------
 				TXPOLARITY											=> '0',
 				--------------- Transmit Ports - TX Receiver Detection Ports	--------------
