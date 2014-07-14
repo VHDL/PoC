@@ -534,15 +534,15 @@ BEGIN
 				------------------RX Byte and Word Alignment Attributes---------------
 				ALIGN_COMMA_DOUBLE											=> "FALSE",
 				ALIGN_COMMA_ENABLE											=> "1111111111",
---diff 1				ALIGN_COMMA_WORD												=> 4,
+				ALIGN_COMMA_WORD												=> 4,																			-- Align comma-byte => [byte3][byte2][byte1][comma0]
 				ALIGN_MCOMMA_DET												=> "TRUE",
 				ALIGN_MCOMMA_VALUE											=> "1010000011",
 				ALIGN_PCOMMA_DET												=> "TRUE",
 				ALIGN_PCOMMA_VALUE											=> "0101111100",
---new				SHOW_REALIGN_COMMA											=> "TRUE",
---new				RXSLIDE_AUTO_WAIT												=> 7,
---diff PCS				RXSLIDE_MODE														=> "OFF",
---new				RX_SIG_VALID_DLY												=> 10,
+				SHOW_REALIGN_COMMA											=> "TRUE",																-- pass commas to RX Buffer - needed by SATA protocol
+				RXSLIDE_AUTO_WAIT												=> 7,
+				RXSLIDE_MODE														=> "OFF",
+				RX_SIG_VALID_DLY												=> 10,
 
 				-----------------RX 8B/10B Decoder Attributes---------------
 --new				RX_DISPERR_SEQ_MATCH										=> "TRUE",
@@ -552,10 +552,10 @@ BEGIN
 
 				-----------------------RX Clock Correction Attributes----------------------
 				CLK_CORRECT_USE													=> "TRUE",
---new				CBCC_DATA_SOURCE_SEL										=> "DECODED",
+				CBCC_DATA_SOURCE_SEL										=> "DECODED",															-- search clock correction sequence in decoded data stream (data + k-indicator, independent of disparity)
 				CLK_COR_KEEP_IDLE												=> "FALSE",
---diff 16				CLK_COR_MIN_LAT													=> 24,
---diff 22				CLK_COR_MAX_LAT													=> 31,
+				CLK_COR_MIN_LAT													=> 24,																		-- 3..60, divisible by 4
+				CLK_COR_MAX_LAT													=> 31,																		-- 3..60
 				CLK_COR_PRECEDENCE											=> "TRUE",
 				CLK_COR_REPEAT_WAIT											=> 0,
 				CLK_COR_SEQ_LEN													=> 4,
@@ -572,35 +572,35 @@ BEGIN
 				CLK_COR_SEQ_2_4													=> "0000000000",
 
 				-----------------------RX Channel Bonding Attributes----------------------
---new				CHAN_BOND_KEEP_ALIGN										=> "FALSE",
---diff 7				CHAN_BOND_MAX_SKEW											=> 1,
+				CHAN_BOND_KEEP_ALIGN										=> "FALSE",
+				CHAN_BOND_MAX_SKEW											=> 1,
 				CHAN_BOND_SEQ_LEN												=> 1,
---diff 0000				CHAN_BOND_SEQ_1_ENABLE									=> "1111",
+				CHAN_BOND_SEQ_1_ENABLE									=> "0000",
 				CHAN_BOND_SEQ_1_1												=> "0000000000",
 				CHAN_BOND_SEQ_1_2												=> "0000000000",
 				CHAN_BOND_SEQ_1_3												=> "0000000000",
 				CHAN_BOND_SEQ_1_4												=> "0000000000",
 				CHAN_BOND_SEQ_2_USE											=> "FALSE",
---diff 0000				CHAN_BOND_SEQ_2_ENABLE									=> "1111",
-			CHAN_BOND_SEQ_2_1												=> "0000000000",
-			CHAN_BOND_SEQ_2_2												=> "0000000000",
-			CHAN_BOND_SEQ_2_3												=> "0000000000",
-			CHAN_BOND_SEQ_2_4												=> "0000000000",
---new				FTS_DESKEW_SEQ_ENABLE										=> "1111",
---new				FTS_LANE_DESKEW_CFG											=> "1111",
---new				FTS_LANE_DESKEW_EN											=> "FALSE",
+				CHAN_BOND_SEQ_2_ENABLE									=> "0000",
+				CHAN_BOND_SEQ_2_1												=> "0000000000",
+				CHAN_BOND_SEQ_2_2												=> "0000000000",
+				CHAN_BOND_SEQ_2_3												=> "0000000000",
+				CHAN_BOND_SEQ_2_4												=> "0000000000",
+				FTS_DESKEW_SEQ_ENABLE										=> "1111",
+				FTS_LANE_DESKEW_CFG											=> "1111",
+				FTS_LANE_DESKEW_EN											=> "FALSE",
 
 				--------------------------RX Margin Analysis Attributes----------------------------
---new				ES_CONTROL															=> "000000",
---new				ES_ERRDET_EN														=> "FALSE",
---new				ES_EYE_SCAN_EN													=> "TRUE",
---new				ES_HORZ_OFFSET													=> x"000",
---new				ES_PMA_CFG															=> "0000000000",
---new				ES_PRESCALE															=> "00000",
---new				ES_QUALIFIER														=> x"00000000000000000000",
---new				ES_QUAL_MASK														=> x"00000000000000000000",
---new				ES_SDATA_MASK														=> x"00000000000000000000",
---new				ES_VERT_OFFSET													=> "000000000",
+				ES_EYE_SCAN_EN													=> "FALSE",
+				ES_ERRDET_EN														=> "FALSE",
+				ES_CONTROL															=> "000000",
+				ES_HORZ_OFFSET													=> x"000",
+				ES_PMA_CFG															=> "0000000000",
+				ES_PRESCALE															=> "00000",
+				ES_QUALIFIER														=> x"00000000000000000000",
+				ES_QUAL_MASK														=> x"00000000000000000000",
+				ES_SDATA_MASK														=> x"00000000000000000000",
+				ES_VERT_OFFSET													=> "000000000",
 
 				------------------------FPGA RX Interface Attributes-------------------------
 				RX_DATA_WIDTH														=> 40,
