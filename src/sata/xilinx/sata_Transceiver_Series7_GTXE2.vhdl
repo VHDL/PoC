@@ -238,38 +238,6 @@ BEGIN
 		-- TX path
 		GTX_TX_Data							<= TX_Data(I);
 		GTX_TX_CharIsK					<= TX_CharIsK(I);
-
-		-- RX path
-		WA_Align(0)							<= slv_or(GTX_RX_CharIsK(1 DOWNTO 0));
-		WA_Align(1)							<= slv_or(GTX_RX_CharIsK(3 DOWNTO 2));
-		
-		WA_Data : ENTITY PoC.WordAligner
-			GENERIC MAP (
-				REGISTERED					=> FALSE,
-				INPUT_BITS						=> 32,
-				WORD_BITS							=> 16
-			)
-			PORT MAP (
-				Clock								=> GTX_ClockRX_4X,
-				Align								=> WA_Align,
-				I										=> GTX_RX_Data,
-				O										=> RX_Data(I,
-				Valid								=> OPEN
-			);
-
-		WA_CharIsK : ENTITY PoC.WordAligner
-			GENERIC MAP (
-				REGISTERED					=> FALSE,
-				INPUT_BITS						=> 4,
-				WORD_BITS							=> 2
-			)
-			PORT MAP (
-				Clock								=> GTX_ClockRX_4X,
-				Align								=> WA_Align,
-				I										=> GTX_RX_CharIsK,
-				O										=> RX_CharIsK(I,
-				Valid								=> OPEN
-			);
 		
 		RX_IsAligned(I)					<= GTX_RX_ByteIsAligned;
 
@@ -314,7 +282,7 @@ BEGIN
 		GTX_RX_RefClockIn							<= (0	=> '0', 1	=> ClockIn_150MHz);
 		GTX_RefClockOut								<= GTX_TX_RefClockOut;
 
-		ClkNet : ENTITY L_SATAController.SATATransceiver_Virtex6_ClockNetwork
+		ClkNet : ENTITY PoC.SATATransceiver_Series7_ClockNetwork
 			GENERIC MAP (
 				CLOCK_IN_FREQ_MHZ						=> 150.0																								-- 150 MHz
 			)
