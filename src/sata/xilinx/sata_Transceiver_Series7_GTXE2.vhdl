@@ -531,6 +531,11 @@ BEGIN
 				SIM_VERSION															=> "4.0",
 				SIM_CPLLREFCLK_SEL											=> "001",																	-- 
 
+				
+				
+-- ==========================================================
+-- ==========================================================
+-- ==========================================================
 				------------------RX Byte and Word Alignment Attributes---------------
 				ALIGN_COMMA_DOUBLE											=> "FALSE",
 				ALIGN_COMMA_ENABLE											=> "1111111111",
@@ -821,7 +826,7 @@ BEGIN
 				
 				-- internal clock selects and clock outputs
 				TXSYSCLKSEL											=> "00",										-- @async:		00 => use CPLL und gtxe2_channel refclock; 11 => use QPLL and gtxe2_common refclock
-				TXOUTCLKSEL											=> "",										-- @async:		*** => select TXOUTCLK***
+				TXOUTCLKSEL											=> "010",										-- @async:		010 => select TXOUTCLKPMA
 				TXOUTCLKFABRIC									=> open,										-- @clock:		internal clock after TXSYSCLKSEL-mux
 				TXOUTCLKPCS											=> open,										-- @clock:		internal clock from PCS sublayer
 				TXOUTCLK												=> RXOUTCLK_OUT,						-- @clock:		TX output clock
@@ -837,13 +842,19 @@ BEGIN
 				TXPD														=> GTX_TX_PowerDown,
 				RXPD														=> GTX_RX_PowerDown,
 
-				-- Reset ports
+				-- GTX reset ports
+				-- =====================================================================
+				-- GTX reset mode
+				CFGRESET												=> '0',											-- @async:			reserved;
+				GTRESETSEL											=> '0',											-- @async:			0 => sequential mode (recommended)
+				RESETOVRD												=> '0',											-- @async:			reserved; tie to ground
+				-- CPLL resets
 				CPLLRESET												=> GTX_CPLL_Reset,
-				
+				-- TX resets
 				GTTXRESET												=> GTX_TX_Reset,
 				TXPCSRESET											=> GTX_TX_PCSReset,
 				TXPMARESET											=> GTX_TX_PMAReset,
-
+				-- RX resets
 				GTRXRESET												=> GTX_RX_Reset,
 				RXPCSRESET											=> GTX_RX_PCSReset,
 				RXPMARESET											=> GTX_RX_PMAReset,
@@ -853,57 +864,65 @@ BEGIN
 				RXCDRFREQRESET									=> '0',																-- @async:			CDR frquency detector reset
 				RXCDRRESET											=> '0',																-- @async:			CDR phase detector reset
 				RXPRBSCNTRESET									=> '0',																-- @RX_Clock2:	reset PRBS error counter
-				
+				-- reset done ports
 				TXRESETDONE											=> GTX_TX_ResetDone,									-- @TX_Clock2:	
 				RXRESETDONE											=> GTX_RX_ResetDone,									-- @RX_Clock2:	
 				
 				-- FPGA-Fabric interface clocks
+				-- =====================================================================
+				-- TX
+				TXUSERRDY												=> GTX_TX_UserClock_Locked,						-- @async:			@TX_Clock2 is stable/locked
 				TXUSRCLK												=> GTX_TX_UserClock_1X,								-- @clock:			
 				TXUSRCLK2												=> GTX_TX_UserClock_4X,								-- @clock:			
-				TXUSERRDY												=> GTX_TX_UserClock_Locked,						-- @async:			@TX_Clock2 is stable/locked
-
+				-- RX
+				RXUSERRDY												=> GTX_RX_UserClock_Locked,						-- @async:			@TX_Clock2 is stable/locked
 				RXUSRCLK												=> GTX_RX_UserClock_1X,								-- @clock:			
 				RXUSRCLK2												=> GTX_RX_UserClock_4X,								-- @clock:			
-				RXUSERRDY												=> GTX_RX_UserClock_Locked,						-- @async:			@TX_Clock2 is stable/locked
 
 				-- linerate clock divider selection
-				TXRATE													=> GTX_TX_LineRateSelect,							-- @TX_Clock2
-				TXRATEDONE											=> GTX_TX_LineRateSelectDone,					-- @TX_Clock2
-								
-				RXRATE													=> GTX_RX_LineRateSelect,							-- @RX_Clock2
-				RXRATEDONE											=> GTX_RX_LineRateSelectDone,					-- @RX_Clock2
+				-- =====================================================================
+				-- TX
+				TXRATE													=> GTX_TX_LineRateSelect,							-- @TX_Clock2:	
+				TXRATEDONE											=> GTX_TX_LineRateSelectDone,					-- @TX_Clock2:	
+				-- RX
+				RXRATE													=> GTX_RX_LineRateSelect,							-- @RX_Clock2:	
+				RXRATEDONE											=> GTX_RX_LineRateSelectDone,					-- @RX_Clock2:	
 				
 				-- Dynamic Reconfiguration Port (DRP)
-				DRPCLK													=> GTX_DRP_Clock,
-				DRPEN														=> GTX_DRP_en,
-				DRPWE														=> GTX_DRP_we,
-				DRPADDR													=> GTX_DRP_Address,
-				DRPDI														=> GTX_DRP_DataIn,
-				DRPDO														=> GTX_DRP_DataOut,
-				DRPRDY													=> GTX_DRP_Ready,
+				-- =====================================================================
+				DRPCLK													=> GTX_DRP_Clock,											-- @DRP_Clock:	
+				DRPEN														=> GTX_DRP_en,												-- @DRP_Clock:	
+				DRPWE														=> GTX_DRP_we,												-- @DRP_Clock:	
+				DRPADDR													=> GTX_DRP_Address,										-- @DRP_Clock:	
+				DRPDI														=> GTX_DRP_DataIn,										-- @DRP_Clock:	
+				DRPDO														=> GTX_DRP_DataOut,										-- @DRP_Clock:	
+				DRPRDY													=> GTX_DRP_Ready,											-- @DRP_Clock:	
 				
 				-- datapath configuration
-				TX8B10BEN												=> '1',
-				RX8B10BEN												=> '1',
+				TX8B10BEN												=> '1',																-- @TX_Clock2:	enable 8B/10B encoder
+				TX8B10BBYPASS										=> x"00",															-- @TX_Clock2:	per-byte 8B/10B encoder bypass enables; 0 => use encoder
+				RX8B10BEN												=> '1',																-- @RX_Clock2:	enable 8B710B decoder
 
 				-- FPGA-Fabric - TX interface ports
-				TXDATA													=> GTX_TX_Data,
+				TXDATA													=> GTX_TX_Data,												-- @TX_Clock2:	
 				
-				TXCHARISK(7 downto 4)						=> (7 downto 4 => '0'),
-				TXCHARISK(3 downto 0)						=> GTX_TX_CharIsK,
+				TXCHARISK(7 downto 4)						=> (7 downto 4 => '0'),								-- @TX_Clock2:	
+				TXCHARISK(3 downto 0)						=> GTX_TX_CharIsK,										-- @TX_Clock2:	
+				TXCHARDISPMODE									=> x"00",															-- @TX_Clock2:	per-byte set running disparity to TXCHARDISPVAL(i); TXCHARDISPMODE(0) is also called TXCOMPLIANCE in a PIPE interface
+				TXCHARDISPVAL										=> x"00",															-- @TX_Clock2:	per-byte set running disparity
 				
 				-- FPGA-Fabric - RX interface ports
-				RXDATA													=> GTX_RX_Data,
-				RXVALID													=> GTX_RX_Valid,
+				RXDATA													=> GTX_RX_Data,												-- @RX_Clock2:	
+				RXVALID													=> GTX_RX_Valid,											-- @RX_Clock2:	
 				
-				RXCHARISCOMMA(7 downto 4)				=> GTX_RX_CharIsComma_float,
-				RXCHARISCOMMA(3 downto 0)				=> GTX_RX_CharIsComma,
-				RXCHARISK(7 downto 4)						=> GTX_RX_CharIsK_float,
-				RXCHARISK(3 downto 0)						=> GTX_RX_CharIsK,
-				RXDISPERR(7 downto 4)						=> GTX_RX_DisparityError_float,
-				RXDISPERR(3 downto 0)						=> GTX_RX_DisparityError,
-				RXNOTINTABLE(7 downto 4)				=> GTX_RX_NotInTableError_float,
-				RXNOTINTABLE(3 downto 0)				=> GTX_RX_NotInTableError,
+				RXCHARISCOMMA(7 downto 4)				=> GTX_RX_CharIsComma_float,					-- @RX_Clock2:	
+				RXCHARISCOMMA(3 downto 0)				=> GTX_RX_CharIsComma,								-- @RX_Clock2:	
+				RXCHARISK(7 downto 4)						=> GTX_RX_CharIsK_float,							-- @RX_Clock2:	
+				RXCHARISK(3 downto 0)						=> GTX_RX_CharIsK,										-- @RX_Clock2:	
+				RXDISPERR(7 downto 4)						=> GTX_RX_DisparityError_float,				-- @RX_Clock2:	
+				RXDISPERR(3 downto 0)						=> GTX_RX_DisparityError,							-- @RX_Clock2:	
+				RXNOTINTABLE(7 downto 4)				=> GTX_RX_NotInTableError_float,			-- @RX_Clock2:	
+				RXNOTINTABLE(3 downto 0)				=> GTX_RX_NotInTableError,						-- @RX_Clock2:	
 				
 				-- RX Byte and Word Alignment
 				RXBYTEISALIGNED									=> GTX_RX_ByteIsAligned,
@@ -936,39 +955,52 @@ BEGIN
 				RXLPMHFOVRDEN										=> '0',																		-- @RX_Clock2:	
 				
 				-- RX	DFE equalizer ports (discrete-time filter equalizer)
-
---				RXDFEAGCHOLD										=> RXDFEAGCHOLD_IN,
---				RXDFEAGCOVRDEN									=> '0',
---				RXDFECM1EN											=> '0',
---				RXDFELFHOLD											=> RXDFELFHOLD_IN,
---				RXDFELFOVRDEN										=> '1',
---				RXDFELPMRESET										=> '0',
---				RXDFETAP2HOLD										=> '0',
---				RXDFETAP2OVRDEN									=> '0',
---				RXDFETAP3HOLD										=> '0',
---				RXDFETAP3OVRDEN									=> '0',
---				RXDFETAP4HOLD										=> '0',
---				RXDFETAP4OVRDEN									=> '0',
---				RXDFETAP5HOLD										=> '0',
---				RXDFETAP5OVRDEN									=> '0',
---				RXDFEUTHOLD											=> '0',
---				RXDFEUTOVRDEN										=> '0',
---				RXDFEVPHOLD											=> '0',
---				RXDFEVPOVRDEN										=> '0',
---				RXDFEVSEN												=> '0',
+				RXDFEAGCHOLD										=> RXDFEAGCHOLD_IN,
+				RXDFEAGCOVRDEN									=> '0',
+				RXDFECM1EN											=> '0',
+				RXDFELFHOLD											=> RXDFELFHOLD_IN,
+				RXDFELFOVRDEN										=> '1',
+				RXDFELPMRESET										=> '0',
+				RXDFETAP2HOLD										=> '0',
+				RXDFETAP2OVRDEN									=> '0',
+				RXDFETAP3HOLD										=> '0',
+				RXDFETAP3OVRDEN									=> '0',
+				RXDFETAP4HOLD										=> '0',
+				RXDFETAP4OVRDEN									=> '0',
+				RXDFETAP5HOLD										=> '0',
+				RXDFETAP5OVRDEN									=> '0',
+				RXDFEUTHOLD											=> '0',
+				RXDFEUTOVRDEN										=> '0',
+				RXDFEVPHOLD											=> '0',
+				RXDFEVPOVRDEN										=> '0',
+				RXDFEVSEN												=> '0',
 				RXDFEXYDEN											=> '1',																		-- @RX_Clock2:	reserved; tie to vcc
 				RXDFEXYDHOLD										=> '0',																		-- @RX_Clock2:	reserved; 
 				RXDFEXYDOVRDEN									=> '0',																		-- @RX_Clock2:	reserved; 
 
---				RXMONITOROUT										=> open,
---				RXMONITORSEL										=> "00",
---				RXOSHOLD												=> '0',
---				RXOSOVRDEN											=> '0',
+				RXMONITORSEL										=> "00",
+				RXMONITOROUT										=> open,
+				RXOSHOLD												=> '0',
+				RXOSOVRDEN											=> '0',
 
 				
 				-- Clock Data Recovery (CDR)
 				RXCDRHOLD												=> '0',																		-- @async:			hold the CDR control loop frozen
 				RXCDRLOCK												=> open,																	-- @async:			reserved; CDR locked
+				
+				-- TX gearbox ports
+				TXGEARBOXREADY									=> open,																	-- @TX_Clock2:	indicates that data can be applied to the 64B/66B or 64B/67B gearbox
+				TXHEADER												=> "000",																	-- @TX_Clock2:	gearbox header input for 64B/66B or 64B/67B
+				TXSEQUENCE											=> "0000000",															-- @TX_Clock2:	FPGA fabric sequence counter
+				TXSTARTSEQ											=> '0',																		-- @TX_Clock2:	indicates the first word after reset for the 64B/66B or 64B/67B gearbox
+				
+				-- RX gearbox ports
+				RXDATAVALID											=> open,																	-- @RX_Clock2:	if gearbox is used, it indicates RXDATA is valid
+				RXHEADERVALID										=> open,																	-- @RX_Clock2:	if gearbox is used, it indicates RXHEADER is valid
+				RXHEADER												=> open,																	-- @RX_Clock2:	gearbox header output for 64B/66B or 64B/67B
+				RXSTARTOFSEQ										=> open,																	-- @RX_Clock2:	indicates that the sequence counter is 0 for the present RXDATA outputs
+				RXGEARBOXSLIP										=> '0',																		-- @RX_Clock2:	causes the gearbox contents to slip to the next possible alignment
+				RXSLIDE													=> '0',																		-- @RX_Clock2:	this port exists only in GTH transceivers !?!
 				
 				-- Channel bonding ports
 				RXCHBONDEN											=> '0',																		-- @RX_Clock2:	This port enables channel bonding
@@ -980,8 +1012,26 @@ BEGIN
 				RXCHANBONDSEQ										=> open,																	-- @RX_Clock2:	RXDATA contains the start of a channel bonding sequence
 				RXCHANISALIGNED									=> open,																	-- @RX_Clock2:	RX elastic buffer is channel aligned
 				RXCHANREALIGN										=> open,																	-- @RX_Clock2:	RX elastic buffer changed channel alignment
+
+				-- TX buffer bypass ports
+				TXPHDLYTSTCLK										=> '0',																		-- @clock:			TX phase and delay alignment test clock; used with TXDLYHOLD and TXDLYUPDOWN
+				TXPHDLYPD												=> '0',																		-- @async:			
+				TXPHDLYRESET										=> '0',																		-- @async:			
+				TXPHALIGNEN											=> '0',																		-- @async:			
+				TXPHALIGN												=> '0',																		-- @async:			
+				TXPHALIGNDONE										=> open,																	-- @async:			
+				TXPHINIT												=> '0',																		-- @async:			
+				TXPHINITDONE										=> open,																	-- @async:			
+				TXPHOVRDEN											=> '0',																		-- @async:			
+				TXDLYEN													=> '0',																		-- @async:			enables TX delay alignment manual mode; 0 => auto mode
+				TXDLYBYPASS											=> '1',																		-- @async:			TX delay alignment bypass; 0 => use TX delay alignment circuit; 1 => bypass TX delay alignment circuit
+				TXDLYSRESET											=> '0',																		-- @async:			
+				TXDLYSRESETDONE									=> open,																	-- @async:			
+				TXDLYOVRDEN											=> '0',																		-- @async:			
+				TXDLYHOLD												=> '0',																		-- @TXPHDLYTSTCLK:			
+				TXDLYUPDOWN											=> '0',																		-- @TXPHDLYTSTCLK:			
 				
-				-- RX buffer ports
+				-- RX buffer bypass ports
 				RXDDIEN													=> '0',																		-- @async:			RX data delay insertion enable; set high if RX buffer is bypassed
 				RXPHDLYRESET										=> '0',																		-- @async:			RX phase alignment hard reset
 				RXPHALIGNEN											=> '0',																		-- @async:			RX phase alignment enable; 0 => auto alignment
@@ -1007,12 +1057,19 @@ BEGIN
 				-- loopback port
 				LOOPBACK												=> "000",																	-- @async:			000 => normal operation
 				
-				-- PRBS ports
+				-- Pseudo Random Bit Sequence (PRBS) test pattern generator/checker ports
+				TXPRBSSEL												=> "000",																	-- @TX_Clock2:	000 => normal operation; PRBS generator is off
+				TXPRBSFORCEERR									=> '0',																		-- @TX_Clock2:	1 => force errors in the PRBS transmitter
+
 				RXPRBSSEL												=> "000",																	-- @RX_Clock2:	000 => normal operation; PRBS checker is off
 				RXPRBSERR												=> open,																	-- @RX_Clock2:	PRBS error have occurred; error counter 'RX_PRBS_ERR_CNT' can only be accessed by DRP at address 0x15C
 				
 				-- Digital Monitor Ports
 				DMONITOROUT											=> open,
+				
+				EYESCANMODE											=> '0',																		-- @async:			
+				EYESCANTRIGGER									=> '0',																		-- @async:			
+				EYESCANDATAERROR								=> open,																	-- @async:			
 				
 				-- reserved ports
 				GTRSVD													=> "0000000000000000",										-- @async:			
@@ -1027,98 +1084,47 @@ BEGIN
 				SETERRSTATUS										=> '0',																		-- @async:			reserved; RX 8B/10B decoder port
 				RXCDROVRDEN											=> '0',																		-- @async:			reserved; CDR port
 				RXCDRRESETRSV										=> '0',																		-- @async:			reserved; CDR port
+				PCSRSVDOUT											=> open,																	-- @async:			reserved; PCS
+
+				-- polarity control
+				TXPOLARITY											=> '0',																		-- @TX_Clock2:	invert the polarity of outgoing data
+				RXPOLARITY											=> '0',																		-- @RX_Clock2:	invert the polarity of incoming data (done after SIPO on bytes)
+				
+				-- TX configurable driver ports
+				TXPISOPD												=> '0',																		-- @async:			reserved; ParallelIn/SerialOut (PISO) power-down
+				TXINHIBIT												=> '0',																		-- @TX_Clock2:	forces GTXTXP to 0 and GTXTXN to 1
+				TXDIFFPD												=> '0',																		-- @async:			reserved; TX driver power-down
+				TXDIFFCTRL											=> "0101",																-- @TX_Clock2:	TX driver swing control [mV_PPD]; 0101 => 500 mV peak-peak-differential voltage
+				TXBUFDIFFCTRL										=> "100",																	-- @TX_Clock2:	TX pre-driver swing control; default is 100; do not modify
+				TXDEEMPH												=> '0',																		-- @TX_Clock2:	TX de-emphasis control
+				TXMARGIN												=> "000",																	--@async:				TX margin control
+				TXSWING													=> '0',																		-- @async:			TX swing control; 0 => full swing; 1 => half-swing
+				TXPRECURSOR											=> "00000",																-- @async:			TX pre-cursor pre-emphasis control
+				TXPRECURSORINV									=> '0',																		-- @async:			TX pre-cursor 
+				TXMAINCURSOR										=> "0000000",															-- @async:			TX main-cursur
+				TXPOSTCURSOR										=> "00000",																-- @async:			TX post-cursor pre-emphasis control
+				TXPOSTCURSORINV									=> '0',
+				
+				-- TX driver ports for QuickPathInterconnect (QPI)
+				TXQPIBIASEN											=> '0',																		-- @async:			enables the GND bias on TX output as required by the QPI specification
+				TXQPISTRONGPDOWN								=> '0',																		-- @async:			pulls the TX output strongly to GND to enable handshaking as required by the QPI protocol
+				TXQPIWEAKPUP										=> '0',																		-- @async:			pulls the TX output weakly to MGTAVTT to enable handshaking as required by the QPI protocol
+				TXQPISENN												=> open,																	-- @async:			sense output for GTXTXN
+				TXQPISENP												=> open,																	-- @async:			sense output for GTXTXP
+				
+				-- RX Analog FrontEnd (AFE) ports
+				RXQPIEN													=> '0',																		-- @async:			disables RX termination for the QPI protocol
+				RXQPISENN												=> open,																	-- @async:			Sense output on GTXRXN
+				RXQPISENP												=> open,																	-- @async:			Sense output on GTXRXP
+				
+				-- TX receiver detection ports
+				TXDETECTRX											=> '0',																		-- @TX_Clock2:	begin a receiver detection operation; 0 => normal operation; 1 => receiver detection
 				
 				-- Tranceiver physical ports
 				GTXTXN													=> GTX_TX_n,															-- @analog:			
 				GTXTXP													=> GTX_TX_p,															-- @analog:			
 				GTXRXN													=> GTX_RX_n,															-- @analog:			
-				GTXRXP													=> GTX_RX_p,															-- @analog:			
-				
--- ==========================================================
--- ==========================================================
--- ==========================================================
-				-------------------------- RX Margin Analysis Ports ------------------------
---				EYESCANDATAERROR								=> EYESCANDATAERROR_OUT,
---				EYESCANMODE											=> '0',
---				EYESCANTRIGGER									=> '0',
-				---------------------- Receive Ports - RX Gearbox Ports --------------------
---				RXDATAVALID											=> open,
---				RXHEADER												=> open,
---				RXHEADERVALID										=> open,
---				RXSTARTOFSEQ										=> open,
-				--------------------- Receive Ports - RX Gearbox Ports	--------------------
---				RXGEARBOXSLIP										=> '0',
-				----------------- Receive Ports - RX Polarity Control Ports ----------------
---				RXPOLARITY											=> '0',
-				---------------------- Receive Ports - RX gearbox ports --------------------
---				RXSLIDE													=> '0',
-			-------------------------------- Rx AFE Ports ------------------------------
---				RXQPIEN													=> '0',
---				RXQPISENN												=> open,
---				RXQPISENP												=> open,
-				--------------------------- TX Buffer Bypass Ports -------------------------
---				TXPHDLYTSTCLK										=> '0',
-				------------------------ TX Configurable Driver Ports ----------------------
---				TXPOSTCURSOR										=> "00000",
---				TXPOSTCURSORINV									=> '0',
---				TXPRECURSOR											=> (4 downto 0 => '0'),
---				TXPRECURSORINV									=> '0',
---				TXQPIBIASEN											=> '0',
---				TXQPISTRONGPDOWN								=> '0',
---				TXQPIWEAKPUP										=> '0',
-				--------------------- TX Initialization and Reset Ports --------------------
---				CFGRESET												=> '0',
---				PCSRSVDOUT											=> open,
-				---------------------- Transceiver Reset Mode Operation --------------------
---				GTRESETSEL											=> '0',
---				RESETOVRD												=> '0',
-				---------------- Transmit Ports - 8b10b Encoder Control Ports --------------
---				TXCHARDISPMODE									=> (7 downto 0 => '0'),
---				TXCHARDISPVAL										=> (7 downto 0 => '0'),
-				--------------------- Transmit Ports - PCI Express Ports -------------------
---				TXMARGIN												=> (2 downto 0 => '0'),
---				TXSWING													=> '0',
-				------------------ Transmit Ports - Pattern Generator Ports ----------------
---				TXPRBSFORCEERR									=> '0',
---				TXPRBSSEL												=> (2 downto 0 => '0'),
-				------------------ Transmit Ports - TX Buffer Bypass Ports -----------------
---				TXDLYBYPASS											=> '1',
---				TXDLYEN													=> '0',
---				TXDLYHOLD												=> '0',
---				TXDLYOVRDEN											=> '0',
---				TXDLYSRESET											=> '0',
---				TXDLYSRESETDONE									=> open,
---				TXDLYUPDOWN											=> '0',
---				TXPHALIGN												=> '0',
---				TXPHALIGNDONE										=> open,
---				TXPHALIGNEN											=> '0',
---				TXPHDLYPD												=> '0',
---				TXPHDLYRESET										=> '0',
---				TXPHINIT												=> '0',
---				TXPHINITDONE										=> open,
---				TXPHOVRDEN											=> '0',
-				--------------- Transmit Ports - TX Configurable Driver Ports --------------
---				TXBUFDIFFCTRL										=> "100",
---				TXDEEMPH												=> '0',
---				TXDIFFCTRL											=> "1000",
---				TXDIFFPD												=> '0',
---				TXINHIBIT												=> '0',
---				TXMAINCURSOR										=> "0000000",
---				TXPISOPD												=> '0',
-				--------------------- Transmit Ports - TX Gearbox Ports --------------------
---				TXGEARBOXREADY									=> open,
---				TXHEADER												=> (2 downto 0 => '0'),
---				TXSEQUENCE											=> (6 downto 0 => '0'),
---				TXSTARTSEQ											=> '0',
-				----------------- Transmit Ports - TX Polarity Control Ports ---------------
-				TXPOLARITY											=> '0',
-				--------------- Transmit Ports - TX Receiver Detection Ports	--------------
-				TXDETECTRX											=> '0',
-				------------------ Transmit Ports - TX8b/10b Encoder Ports -----------------
---				TX8B10BBYPASS										=> (7 downto 0 => '0'),
-				----------------------- Tx Configurable Driver	Ports ----------------------
---				TXQPISENN												=> open,
---				TXQPISENP												=> open
+				GTXRXP													=> GTX_RX_p																-- @analog:			
 			);
 		
 	END GENERATE;
