@@ -37,9 +37,7 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalSimulation.ALL;
+USE			PoC.stream.ALL;
 
 
 ENTITY stream_Sink IS
