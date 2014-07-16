@@ -485,8 +485,6 @@ BEGIN
 	-- debug port
 	-- ================================================================
 	genDebugLoop : for I in 0 to PORTS - 1 generate
-		DebugPortOut(I).Dummy		<= Trans_DebugPortOut(I).Dummy or Phy_DebugPortOut(I).Dummy or Link_DebugPortOut(I).Dummy;		-- 
-
 		genDebug1 : if (ENABLE_DEBUGPORT = TRUE) generate
 			-- Transceiver Layer
 			DebugPortOut(I).Transceiver						<= Trans_DebugPortOut(I);		-- 
