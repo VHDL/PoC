@@ -74,7 +74,7 @@ USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.components.ALL;
 USE			PoC.io.ALL;
-USE			PoC.xilinx.ALL;
+USE			PoC.xil.ALL;
 
 ARCHITECTURE rtl OF io_FanControl IS
 	ATTRIBUTE ASYNC_REG												: STRING;
