@@ -8,7 +8,7 @@ USE			PoC.utils.ALL;
 --USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
-USE			PoC.xilinx.ALL;
+USE			PoC.xil.ALL;
 
 
 -- ==================================================================

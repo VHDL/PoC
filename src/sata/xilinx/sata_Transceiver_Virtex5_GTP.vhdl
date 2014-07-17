@@ -12,7 +12,7 @@ USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.sata_TransceiverTypes.ALL;
-USE			PoC.xilinx.ALL;
+USE			PoC.xil.ALL;
 
 
 ENTITY sata_Transceiver_Virtex5_GTP IS

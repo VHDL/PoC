@@ -1128,7 +1128,7 @@ BEGIN
 				TXDIFFCTRL											=> "0101",																-- @TX_Clock2:	TX driver swing control [mV_PPD]; 0101 => 500 mV peak-peak-differential voltage
 				TXBUFDIFFCTRL										=> "100",																	-- @TX_Clock2:	TX pre-driver swing control; default is 100; do not modify
 				TXDEEMPH												=> '0',																		-- @TX_Clock2:	TX de-emphasis control
-				TXMARGIN												=> "000",																	--@async:				TX margin control
+				TXMARGIN												=> "000",																	-- @async:			TX margin control
 				TXSWING													=> '0',																		-- @async:			TX swing control; 0 => full swing; 1 => half-swing
 				TXPRECURSOR											=> "00000",																-- @async:			TX pre-cursor pre-emphasis control
 				TXPRECURSORINV									=> '0',																		-- @async:			TX pre-cursor 

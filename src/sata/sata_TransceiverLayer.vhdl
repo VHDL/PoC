@@ -112,16 +112,13 @@ BEGIN
 -- ==================================================================
 -- Assert statements
 -- ==================================================================
-	assert (C_SATADBG_TYPES = ENABLE_DEBUGPORT)
-		report "DebugPorts are enabled, but debug types are not loaded. Load 'sata_dbg_on.vhdl' into your project!"
-		severity failure;
-
 	ASSERT ((C_DEVICE_INFO.VENDOR = VENDOR_XILINX) OR 
 					(C_DEVICE_INFO.VENDOR = VENDOR_ALTERA))
 		REPORT "Vendor not yet supported."
 		SEVERITY FAILURE;
 		
 	ASSERT ((C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_VIRTEX) OR 
+					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_KINTEX) OR
 					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_STRATIX))
 		REPORT "Device family not yet supported."
 		SEVERITY FAILURE;
@@ -136,6 +133,7 @@ BEGIN
 		SEVERITY FAILURE;
 		
 	ASSERT ((C_DEVICE_INFO.DEVSUBTYPE = DEVICE_SUBTYPE_LXT) OR
+					(C_DEVICE_INFO.DEVSUBTYPE = DEVICE_SUBTYPE_T) OR
 					(C_DEVICE_INFO.DEVSUBTYPE = DEVICE_SUBTYPE_GX))
 		REPORT "Device subtype not yet supported."
 		SEVERITY FAILURE;
@@ -250,51 +248,51 @@ BEGIN
 				);
 		END GENERATE;	-- Xilinx.Virtex6.GTXE1
 		genGTXE2 : IF (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2) GENERATE
-			Trans : sata_Transceiver_Series7_GTXE2
-				GENERIC MAP (
-					DEBUG											=> DEBUG,
-					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
-					PORTS											=> PORTS,													-- Number of Ports per Transceiver
-					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
-				)
-				PORT MAP (
-					SATA_Clock								=> SATA_Clock,
-
-					ResetDone									=> ResetDone,
-					ClockNetwork_Reset				=> ClockNetwork_Reset,
-					ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,
-
-					RP_Reconfig								=> RP_Reconfig,
-					RP_ReconfigComplete				=> RP_ReconfigComplete,
-					RP_ConfigReloaded					=> RP_ConfigReloaded,
-					RP_Lock										=> RP_Lock,
-					RP_Locked									=> RP_Locked,
-
-					SATA_Generation						=> SATA_Generation,
-					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
-					
-					Command										=> Command,
-					Status										=> Status,
-					RX_Error									=> RX_Error,
-					TX_Error									=> TX_Error,
-
---					DebugPortOut							=> DebugPortOut,
-
-					RX_OOBStatus							=> RX_OOBStatus,
-					RX_Data										=> RX_Data,
-					RX_CharIsK								=> RX_CharIsK,
-					RX_IsAligned							=> RX_IsAligned,
-					
-					TX_OOBCommand							=> TX_OOBCommand,
-					TX_OOBComplete						=> TX_OOBComplete,
-					TX_Data										=> TX_Data,
-					TX_CharIsK								=> TX_CharIsK,
-					
-					-- vendor specific signals
-					VSS_Common_In							=> VSS_Common_In,
-					VSS_Private_In						=> VSS_Private_In,
-					VSS_Private_Out						=> VSS_Private_Out
-					);
+--			Trans : sata_Transceiver_Series7_GTXE2
+--				GENERIC MAP (
+--					DEBUG											=> DEBUG,
+--					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
+--					PORTS											=> PORTS,													-- Number of Ports per Transceiver
+--					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
+--				)
+--				PORT MAP (
+--					SATA_Clock								=> SATA_Clock,
+--
+--					ResetDone									=> ResetDone,
+--					ClockNetwork_Reset				=> ClockNetwork_Reset,
+--					ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,
+--
+--					RP_Reconfig								=> RP_Reconfig,
+--					RP_ReconfigComplete				=> RP_ReconfigComplete,
+--					RP_ConfigReloaded					=> RP_ConfigReloaded,
+--					RP_Lock										=> RP_Lock,
+--					RP_Locked									=> RP_Locked,
+--
+--					SATA_Generation						=> SATA_Generation,
+--					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
+--					
+--					Command										=> Command,
+--					Status										=> Status,
+--					RX_Error									=> RX_Error,
+--					TX_Error									=> TX_Error,
+--
+----					DebugPortOut							=> DebugPortOut,
+--
+--					RX_OOBStatus							=> RX_OOBStatus,
+--					RX_Data										=> RX_Data,
+--					RX_CharIsK								=> RX_CharIsK,
+--					RX_IsAligned							=> RX_IsAligned,
+--					
+--					TX_OOBCommand							=> TX_OOBCommand,
+--					TX_OOBComplete						=> TX_OOBComplete,
+--					TX_Data										=> TX_Data,
+--					TX_CharIsK								=> TX_CharIsK,
+--					
+--					-- vendor specific signals
+--					VSS_Common_In							=> VSS_Common_In,
+--					VSS_Private_In						=> VSS_Private_In,
+--					VSS_Private_Out						=> VSS_Private_Out
+--					);
 		END GENERATE;	-- Xilinx.Series7.GTXE2
 	END GENERATE;		-- Xilinx.*
 	genAltera : IF (C_DEVICE_INFO.VENDOR = VENDOR_ALTERA) GENERATE

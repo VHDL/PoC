@@ -139,8 +139,6 @@ ARCHITECTURE rtl OF sata_PhysicalLayer IS
 	
 BEGIN
 
-	assert (C_SATADBG_TYPES = ENABLE_DEBUGPORT) report "DebugPorts are enabled, but debug types are not loaded. Load 'sata_dbg_on.vhdl' into your project!" severity failure;
-
 	ASSERT FALSE REPORT "  ControllerType:         " & ite((CONTROLLER_TYPE						= SATA_DEVICE_TYPE_HOST), "HOST", "DEVICE") SEVERITY NOTE;
 	ASSERT FALSE REPORT "  AllowSpeedNegotiation:  " & ite((ALLOW_SPEED_NEGOTIATION		= TRUE),									"YES",	"NO")			SEVERITY NOTE;
 	ASSERT FALSE REPORT "  AllowAutoReconnect:     " & ite((ALLOW_AUTO_RECONNECT			= TRUE),									"YES",	"NO")			SEVERITY NOTE;
@@ -408,11 +406,11 @@ BEGIN
 	BEGIN
 		CASE TX_Primitive IS
 			WHEN SATA_PRIMITIVE_ALIGN =>																	-- ALIGN				D27.3 D10.2 D10.2 K28.5
-				Trans_TX_Data			<= to_slv(SATA_PRIMITIVE_ALIGN);					-- x"7B4A4ABC";
+				Trans_TX_Data			<= to_sata_word(SATA_PRIMITIVE_ALIGN);					-- x"7B4A4ABC";
 				Trans_TX_CharIsK	<= "0001";
 				
 			WHEN SATA_PRIMITIVE_DIAL_TONE =>															-- Dial Tone		D10.2 D10.2 D10.2 D10.2
-				Trans_TX_Data			<= to_slv(SATA_PRIMITIVE_DIAL_TONE);			-- x"4A4A4A4A";
+				Trans_TX_Data			<= to_sata_word(SATA_PRIMITIVE_DIAL_TONE);			-- x"4A4A4A4A";
 				Trans_TX_CharIsK	<= "0000";
 
 			WHEN SATA_PRIMITIVE_NONE =>																		-- passthrought data and k-symbols from linklayer
@@ -420,7 +418,7 @@ BEGIN
 				Trans_TX_CharIsK	<= Link_TX_CharIsK;
 
 			WHEN OTHERS =>
-				Trans_TX_Data			<= to_slv(SATA_PRIMITIVE_DIAL_TONE);
+				Trans_TX_Data			<= to_sata_word(SATA_PRIMITIVE_DIAL_TONE);
 				Trans_TX_CharIsK	<= "0000";
 				
 				ASSERT FALSE REPORT "illegal PRIMTIVE" SEVERITY FAILURE;
@@ -436,8 +434,8 @@ BEGIN
 	
 		IF (Trans_RX_CharIsK = "0001") THEN
 			CASE Trans_RX_Data IS
-				WHEN to_slv(SATA_PRIMITIVE_ALIGN) =>				RX_Primitive <= SATA_PRIMITIVE_ALIGN;
-				WHEN to_slv(SATA_PRIMITIVE_SYNC) =>					RX_Primitive <= SATA_PRIMITIVE_SYNC;
+				WHEN to_sata_word(SATA_PRIMITIVE_ALIGN) =>	RX_Primitive <= SATA_PRIMITIVE_ALIGN;
+				WHEN to_sata_word(SATA_PRIMITIVE_SYNC) =>		RX_Primitive <= SATA_PRIMITIVE_SYNC;
 				WHEN OTHERS =>															RX_Primitive <= SATA_PRIMITIVE_ILLEGAL;
 			END CASE;
 		END IF;
