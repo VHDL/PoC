@@ -42,7 +42,7 @@ USE			PoC.vectors.ALL;
 -- LIBRARY	PoC;
 -- USE			PoC.Xilinx.ALL;
 
-PACKAGE xilinx IS
+PACKAGE xil IS
 	-- ChipScope
 	-- ==========================================================================
 	SUBTYPE	T_CHIPSCOPE_CONTROL IS STD_LOGIC_VECTOR(35 DOWNTO 0);
@@ -303,9 +303,9 @@ PACKAGE xilinx IS
 			VN									: IN	STD_LOGIC
 		);
 	END COMPONENT;
-END xilinx;
+END;
 
 
-PACKAGE BODY xilinx IS
+PACKAGE BODY xil IS
 
 END PACKAGE BODY;

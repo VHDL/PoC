@@ -34,7 +34,7 @@ library	IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 
 library PoC;
-use			PoC.xilinx.all;
+use			PoC.xil.all;
 
 
 entity xil_ChipScopeICON is

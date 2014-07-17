@@ -37,10 +37,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
-USE			PoC.xilinx.ALL;
-
---LIBRARY L_Global;
---USE			L_Global.GlobalTypes.ALL;
+USE			PoC.xil.ALL;
 
 
 ENTITY xil_Reconfigurator IS
