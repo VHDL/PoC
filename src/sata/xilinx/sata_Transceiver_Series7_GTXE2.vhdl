@@ -52,13 +52,12 @@ ENTITY sata_Transceiver_Series7_GTXE2 IS
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> T_SATA_GENERATION'high)			-- intial SATA Generation
 	);
 	PORT (
-		ClockIn_150MHz						: IN	STD_LOGIC;
-		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-
 		Reset											: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 		ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 		ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 		ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
+
+		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 
 		RP_Reconfig								: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 		RP_ReconfigComplete				: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -135,18 +134,9 @@ BEGIN
 		ASSERT 	IsSupportedGeneration(SATA_Generation(I))	REPORT "unsupported SATA generation" SEVERITY FAILURE;
 	END GENERATE;
 
-	-- common clocking resources
-	BUFR_SATA_RefClockIn : BUFR
-		PORT MAP (
-			I				=> ClockIn_150MHz,
-			CE			=> '1',
-			CLR			=> '0',
-			O				=> ClockIn_150MHz_BUFR
-		);
-	
 	-- stable clock for device detection logics
-	DD_Clock												<= ClockIn_150MHz_BUFR;
-	Control_Clock										<= ClockIn_150MHz_BUFR;
+	DD_Clock												<= VSS_Common_In.RefClockIn_150_MHz;
+	Control_Clock										<= VSS_Common_In.RefClockIn_150_MHz;
 	
 --	==================================================================
 -- data path buffers
@@ -309,6 +299,8 @@ BEGIN
 		--	==================================================================
 		-- ClockNetwork (75, 150 MHz)
 		--	==================================================================
+		GTX_RefClockGlobal						<= VSS_Common_In.RefClockIn_150_MHz;
+		
 		GTX_TX_RefClockIn							<= (0	=> '0', 1	=> ClockIn_150MHz);
 		GTX_RX_RefClockIn							<= (0	=> '0', 1	=> ClockIn_150MHz);
 		GTX_RefClockOut								<= GTX_TX_RefClockOut;
@@ -795,7 +787,7 @@ BEGIN
 				CPLL_CFG																=> x"BC07DC",
 				CPLL_INIT_CFG														=> x"00001E",
 				CPLL_LOCK_CFG														=> x"01E8",
-				SATA_CPLL_CFG														=> "VCO_3000MHZ",
+				SATA_CPLL_CFG														=> "VCO_3000MHZ"
 
 				-------------RX Initialization and Reset Attributes-------------
 --				RXDFELPMRESET_TIME											=> "0001111",
@@ -838,7 +830,7 @@ BEGIN
 				-- clock selects and clock inputs
 				CPLLREFCLKSEL										=> "001",										-- @async:		001 => use GTREFCLK0
 
-				GTGREFCLK												=> '0',											-- @clock:		
+				GTGREFCLK												=> GTX_RefClockGlobal,			-- @clock:		
 				GTNORTHREFCLK0									=> GTX_RefClockNorth(0),		-- @clock:		
 				GTNORTHREFCLK1									=> GTX_RefClockNorth(1),		-- @clock:		
 				GTREFCLK0												=> GTX_RefClock(0),					-- @clock:		
