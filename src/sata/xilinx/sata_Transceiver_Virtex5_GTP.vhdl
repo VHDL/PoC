@@ -92,15 +92,6 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP IS
 		RETURN ClkDiv;
 	END;
 
-	FUNCTION IsSupportedGeneration(SATAGen : T_SATA_GENERATION) RETURN BOOLEAN IS
-	BEGIN
-		CASE SATAGen IS
-			WHEN SATA_GENERATION_1 =>			RETURN TRUE;
-			WHEN SATA_GENERATION_2 =>			RETURN TRUE;
-			WHEN OTHERS =>								RETURN FALSE;
-		END CASE;
-	END;
-
 	CONSTANT CLOCK_DIVIDERS										: T_INTVEC(INITIAL_SATA_GENERATIONS'range)		:= SATAGeneration2ClockDivider(INITIAL_SATA_GENERATIONS);
 
 	SIGNAL ClockIn_150MHz											: STD_LOGIC;
@@ -220,13 +211,9 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP IS
 	
 BEGIN
 	genReport : FOR I IN 0 TO PORTS - 1 GENERATE
-		ASSERT FALSE REPORT "Port:    " & ite((I = 0), "0", ite((I = 1), "1", ite((I = 2), "2", ite((I = 3), "3", ite((I = 4), "4", "X"))))) SEVERITY NOTE;
-		ASSERT FALSE REPORT "  Init. SATA Generation:  " & ite((INITIAL_SATA_GENERATIONS(I)	= SATA_GENERATION_1),			"Gen1", "Gen2")		SEVERITY NOTE;
-		ASSERT FALSE REPORT "  ClockDivider:           " & ite((CLOCK_DIVIDERS(I) = 0), "X",
-																											 ite((CLOCK_DIVIDERS(I) = 1), "1",
-																											 ite((CLOCK_DIVIDERS(I) = 2), "2",
-																											 ite((CLOCK_DIVIDERS(I) = 3), "3",
-																											 ite((CLOCK_DIVIDERS(I) = 4), "4", "?"))))) SEVERITY NOTE;
+		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																								SEVERITY NOTE;
+		ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS(I))	SEVERITY NOTE;
+		ASSERT FALSE REPORT "  ClockDivider:           " & INTEGER'image(I)																SEVERITY NOTE;
 	END GENERATE;
 
 -- ==================================================================
@@ -237,9 +224,10 @@ BEGIN
 	ASSERT (C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX5)					REPORT "Device not yet supported."				SEVERITY FAILURE;
 	ASSERT (PORTS <= 2)																			REPORT "To many ports per transceiver."		SEVERITY FAILURE;
 		
-	genassert : FOR I IN 0 TO PORTS - 1 GENERATE
-		ASSERT (CLOCK_DIVIDERS(I) > 0)											REPORT "illegal clock devider - unsupported initial SATA generation?" SEVERITY FAILURE;
-		ASSERT 	IsSupportedGeneration(SATA_Generation(I))		REPORT "unsupported SATA generation"																	SEVERITY FAILURE;
+	genAssert : FOR I IN 0 TO PORTS - 1 GENERATE
+		ASSERT (CLOCK_DIVIDERS(I) > 0)												REPORT "illegal clock devider - unsupported initial SATA generation?" SEVERITY FAILURE;
+		ASSERT ((SATA_Generation(I) = SATA_GENERATION_1) OR
+						(SATA_Generation(I) = SATA_GENERATION_2))			REPORT "unsupported SATA generation"			SEVERITY FAILURE;
 	END GENERATE;
 
 -- ============================================================================
