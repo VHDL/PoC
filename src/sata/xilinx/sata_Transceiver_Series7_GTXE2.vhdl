@@ -141,7 +141,7 @@ BEGIN
 --	==================================================================
 -- data path buffers
 --	==================================================================
-	genGTXE1 : FOR I IN 0 TO (PORTS	- 1) GENERATE
+	genGTXE2 : FOR I IN 0 TO (PORTS	- 1) GENERATE
 	
 		SIGNAL GTX_RefClockGlobal					: STD_LOGIC;
 		SIGNAL GTX_RefClockNorth					: T_SLV_2;
