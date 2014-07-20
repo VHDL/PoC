@@ -55,6 +55,7 @@ ENTITY sata_TransceiverLayer IS
 	PORT (
 		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
+		Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -258,6 +259,7 @@ BEGIN
 				PORT MAP (
 					SATA_Clock								=> SATA_Clock,
 
+					Reset											=> Reset,
 					ResetDone									=> ResetDone,
 					ClockNetwork_Reset				=> ClockNetwork_Reset,
 					ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,

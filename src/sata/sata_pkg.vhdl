@@ -765,6 +765,7 @@ package sata is
 		PORT (
 			SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 
+			Reset											: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 			ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 			ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 			ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);

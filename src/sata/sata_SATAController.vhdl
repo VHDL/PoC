@@ -168,6 +168,7 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	SIGNAL Phy_TX_Data									: T_SLVV_32(PORTS - 1 DOWNTO 0);
 	SIGNAL Phy_TX_CharIsK								: T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
 
+	SIGNAL Trans_Reset									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_ResetDone							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_ClockNetwork_ResetDone	: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	
@@ -220,6 +221,7 @@ BEGIN
 		Link_Command										<= (OTHERS => SATA_LINK_CMD_NONE);
 		Phy_Command											<= (OTHERS => SATA_PHY_CMD_NONE);
 		Trans_Command										<= (OTHERS => SATA_TRANSCEIVER_CMD_NONE);
+		Trans_Reset											<= (OTHERS => '0');
 		
 		FOR I IN 0 TO PORTS - 1 LOOP
 			SATA_Reset_i(I)								<= NOT Trans_ClockNetwork_ResetDone(I);
@@ -439,6 +441,7 @@ BEGIN
 			INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS
 		)
 		PORT MAP (
+			Reset											=> Trans_Reset,
 			ResetDone									=> Trans_ResetDone,
 			ClockNetwork_Reset				=> ClockNetwork_Reset,
 			ClockNetwork_ResetDone		=> Trans_ClockNetwork_ResetDone,
