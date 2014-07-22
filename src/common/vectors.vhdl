@@ -112,6 +112,10 @@ package vectors is
 	FUNCTION get_row(slm : T_SLM; RowIndex : NATURAL; Length : POSITIVE)	RETURN STD_LOGIC_VECTOR;							-- get a matrix row of defined length [length - 1 downto 0]
 	FUNCTION get_row(slm : T_SLM; RowIndex : NATURAL; High : NATURAL; Low : NATURAL) RETURN STD_LOGIC_VECTOR;		-- get a sub vector of a matrix row at high:low
 
+	-- multiplexing
+	function mux(sel : STD_LOGIC; sl0		: STD_LOGIC;				sl1		: STD_LOGIC)				return STD_LOGIC;
+	function mux(sel : STD_LOGIC; slv0	: STD_LOGIC_VECTOR;	slv1	: STD_LOGIC_VECTOR)	return STD_LOGIC_VECTOR;
+
 	-- Convert to vector: to_slv
 	FUNCTION to_slv(slvv : T_SLVV_8)										RETURN STD_LOGIC_VECTOR;					-- convert vector-vector to flatten vector
 	
@@ -291,6 +295,25 @@ package body vectors is
 		END LOOP;
 		RETURN slv;
 	END FUNCTION;
+
+	-- multiplexing
+	function mux(sel : STD_LOGIC; sl0 : STD_LOGIC; sl1 : STD_LOGIC) return STD_LOGIC is
+	begin
+		if (sel = '0') then
+			return sl0;
+		else
+			return sl1;
+		end if;
+	end function;
+	
+	function mux(sel : STD_LOGIC; slv0 : STD_LOGIC_VECTOR; slv1 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
+	begin
+		if (sel = '0') then
+			return slv0;
+		else
+			return slv1;
+		end if;
+	end function;
 
 	-- Convert to vector: to_slv
 	-- ==========================================================================

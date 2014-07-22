@@ -42,7 +42,7 @@ entity xil_ChipScopeICON is
 		PORTS				: POSITIVE
 	);
   port (
-		ControlBus	: inout	T_CHIPSCOPE_CONTROL_VECTOR(PORTS - 1 downto 0)
+		ControlBus	: inout	T_XIL_CHIPSCOPE_CONTROL_VECTOR(PORTS - 1 downto 0)
 	);
 end;
 
