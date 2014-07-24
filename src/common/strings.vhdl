@@ -91,6 +91,7 @@ package strings is
 	FUNCTION str_equal(str1 : STRING; str2 : STRING) RETURN BOOLEAN;
 	FUNCTION str_match(str1 : STRING; str2 : STRING) RETURN BOOLEAN;
 	FUNCTION str_pos(str : STRING; char : CHARACTER) RETURN INTEGER;
+	function str_trim(str : STRING)			return STRING;
 	FUNCTION str_to_lower(str : STRING) RETURN STRING;
 	FUNCTION str_to_upper(str : STRING) RETURN STRING;
 
@@ -467,6 +468,11 @@ package body strings is
 		END LOOP;
 		RETURN -1;
 	END FUNCTION;
+	
+	function str_trim(str : STRING) return STRING is
+	begin
+		return resize(str, str_length(str));
+	end function;
 	
 	FUNCTION str_to_lower(str : STRING) RETURN STRING IS
 		VARIABLE temp		: STRING(str'range);
