@@ -334,13 +334,15 @@ BEGIN
 		GTX_DRP_Clock									<= '0';
 
 		-- TX
-		GTX_TX_UserClock_Locked				<= '0';
-		GTX_TX_UserClock_1X						<= '0';
-		GTX_TX_UserClock_4X						<= '0';
+		GTX_TX_UserClock_Locked				<= '1';
+		GTX_TX_UserClock_1X						<= GTX_RefClockOut;
+		GTX_TX_UserClock_4X						<= GTX_RefClockOut;
 		-- RX
-		GTX_RX_UserClock_Locked				<= '0';
-		GTX_RX_UserClock_1X						<= '0';
-		GTX_RX_UserClock_4X						<= '0';
+		GTX_RX_UserClock_Locked				<= '1';
+		GTX_RX_UserClock_1X						<= GTX_RefClockOut;
+		GTX_RX_UserClock_4X						<= GTX_RefClockOut;
+
+		SATA_Clock(I)									<= GTX_RefClockOut;
 
 		-- linerate clock divider selection
 		-- =====================================================================
