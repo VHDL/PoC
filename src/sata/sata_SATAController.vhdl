@@ -37,14 +37,15 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
+USE			PoC.satadbg.ALL;
 USE			PoC.sata_TransceiverTypes.ALL;
 
 
 ENTITY sata_SATAController IS
 	GENERIC (
 		DEBUG												: BOOLEAN														:= FALSE;
+		ENABLE_DEBUGPORT						: BOOLEAN														:= FALSE;
 		CLOCK_IN_FREQ_MHZ						: REAL															:= 150.0;
 		PORTS												: POSITIVE													:= 2;	-- Port 0									Port 1
 		CONTROLLER_TYPES						: T_SATA_DEVICE_TYPE_VECTOR					:= (0 => SATA_DEVICE_TYPE_HOST,	1 => SATA_DEVICE_TYPE_HOST);
@@ -75,7 +76,7 @@ ENTITY sata_SATAController IS
 		Error												: OUT	T_SATA_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 
 		-- Debug ports
---		DebugPortOut								: OUT T_DBG_SATAOUT_VECTOR(PORTS - 1 DOWNTO 0);
+		DebugPortOut								: OUT T_SATADBG_SATACOUT_VECTOR(PORTS - 1 DOWNTO 0);
     
 		-- TX port
 		TX_SOF											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -99,7 +100,7 @@ ENTITY sata_SATAController IS
 		
 		RX_FS_Ready									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_FS_Valid									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RX_FS_CRC_OK								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_FS_CRCOK								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_FS_Abort									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
 		-- vendor specific signals
@@ -141,7 +142,7 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	SIGNAL Link_RX_Valid								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Link_RX_Data									: T_SLVV_32(PORTS - 1 DOWNTO 0);
 	SIGNAL Link_RX_FS_Valid							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Link_RX_FS_CRC_OK						: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Link_RX_FS_CRCOK						: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Link_RX_FS_Abort							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 	-- link layer <=> physical layer signals
@@ -185,14 +186,16 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	SIGNAL Trans_RX_Data								: T_SLVV_32(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_RX_CharIsK							: T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
 
---	SIGNAL Phy_DebugPortOut							: T_DBG_PHYOUT_VECTOR(PORTS - 1 DOWNTO 0);
---	SIGNAL Trans_DebugPortOut						: T_DBG_TRANSOUT_VECTOR(PORTS - 1 DOWNTO 0);
---	SIGNAL Link_DebugPortOut						: T_DBG_LINKOUT_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Trans_DebugPortOut						: T_SATADBG_TRANSCEIVEROUT_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Phy_DebugPortOut							: T_SATADBG_PHYSICALOUT_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Link_DebugPortOut						: T_SATADBG_LINKOUT_VECTOR(PORTS - 1 DOWNTO 0);
 	
-	ATTRIBUTE KEEP OF Link_Status				: SIGNAL IS DEBUG					;
-	ATTRIBUTE KEEP OF SATA_Clock_i			: SIGNAL IS DEBUG					;
+	ATTRIBUTE KEEP OF Link_Status				: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF SATA_Clock_i			: SIGNAL IS DEBUG;
 
 BEGIN
+
+	assert (C_SATADBG_TYPES = ENABLE_DEBUGPORT) report "DebugPorts are enabled, but debug types are not loaded. Load 'sata_dbg_on.vhdl' into your project!" severity failure;
 
 	genReport : FOR I IN 0 TO PORTS - 1 GENERATE
 		ASSERT FALSE REPORT "Port:    " & ite((I = 0), "0", ite((I = 1), "1", ite((I = 2), "2", ite((I = 3), "3", ite((I = 4), "4", "X"))))) SEVERITY NOTE;
@@ -289,7 +292,7 @@ BEGIN
 		
 		SATAC_RX_FS_Ready(I)					<= RX_FS_Ready(I);
 		RX_FS_Valid(I)								<= Link_RX_FS_Valid(I);
-		RX_FS_CRC_OK(I)								<= Link_RX_FS_CRC_OK(I);
+		RX_FS_CRCOK(I)								<= Link_RX_FS_CRCOK(I);
 		RX_FS_Abort(I)								<= Link_RX_FS_Abort(I);
 		
 -- ==================================================================
@@ -309,7 +312,8 @@ BEGIN
 -- ==================================================================
 		Link : ENTITY PoC.sata_LinkLayer
 			GENERIC MAP (
-				DEBUG													=> DEBUG					,
+				DEBUG													=> DEBUG,
+				ENABLE_DEBUGPORT							=> ENABLE_DEBUGPORT,
 				CONTROLLER_TYPE								=> CONTROLLER_TYPES(I),
 				AHEAD_CYCLES_FOR_INSERT_EOF		=> AHEAD_CYCLES_FOR_INSERT_EOF(I),
 				MAX_FRAME_SIZE_B							=> MAX_FRAME_SIZE_B(I)
@@ -323,7 +327,7 @@ BEGIN
 				Error										=> Link_Error(I),
 				
 				-- Debug ports
---				DebugPort_Out					 	=> Link_DebugPortOut(I),
+				DebugPortOut					 	=> Link_DebugPortOut(I),
 				
 				-- TX port
 				TX_SOF									=> SATAC_TX_SOF(I),
@@ -347,7 +351,7 @@ BEGIN
 				
 				RX_FS_Ready							=> SATAC_RX_FS_Ready(I),
 				RX_FS_Valid							=> Link_RX_FS_Valid(I),
-				RX_FS_CRC_OK						=> Link_RX_FS_CRC_OK(I),
+				RX_FS_CRCOK							=> Link_RX_FS_CRCOK(I),
 				RX_FS_Abort							=> Link_RX_FS_Abort(I),
 				
 				-- physical layer interface
@@ -366,7 +370,8 @@ BEGIN
 -- ==================================================================
 		Phy : ENTITY PoC.sata_PhysicalLayer
 			GENERIC MAP (
-				DEBUG													=> DEBUG					,
+				DEBUG													=> DEBUG,
+				ENABLE_DEBUGPORT							=> ENABLE_DEBUGPORT,
 				CLOCK_IN_FREQ_MHZ							=> CLOCK_IN_FREQ_MHZ,
 				CONTROLLER_TYPE								=> CONTROLLER_TYPES(I),
 				ALLOW_SPEED_NEGOTIATION				=> ALLOW_SPEED_NEGOTIATION(I),
@@ -389,7 +394,7 @@ BEGIN
 				Status												=> Phy_Status(I),
 				Error													=> Phy_Error(I),
 
---				DebugPortOut									=> Phy_DebugPortOut(I),
+				DebugPortOut									=> Phy_DebugPortOut(I),
 				
 				Link_RX_Data									=> Phy_RX_Data(I),
 				Link_RX_CharIsK								=> Phy_RX_CharIsK(I),
@@ -430,7 +435,8 @@ BEGIN
 -- ==================================================================
 	Trans : ENTITY PoC.sata_TransceiverLayer
 		GENERIC MAP (
-			DEBUG											=> DEBUG					,
+			DEBUG											=> DEBUG,
+			ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
 			CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
 			PORTS											=> PORTS,
 			INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS
@@ -457,7 +463,7 @@ BEGIN
 			TX_Error									=> Trans_TX_Error,
 			RX_Error									=> Trans_RX_Error,
 
---			DebugPortOut							=> Trans_DebugPortOut,
+			DebugPortOut							=> Trans_DebugPortOut,
 
 			TX_OOBCommand							=> Phy_TX_OOBCommand,
 			TX_OOBComplete						=> Phy_TX_OOBComplete,
@@ -478,12 +484,27 @@ BEGIN
 	-- ================================================================
 	-- debug port
 	-- ================================================================
---	genDebug : FOR I IN 0 TO PORTS - 1 GENERATE
--- 		input
--- 
--- 		output
---		DebugPortOut(I).LinkLayer						<= Link_DebugPortOut(I);
---		DebugPortOut(I).PhysicalLayer				<= Phy_DebugPortOut(I);
---		DebugPortOut(I).TransceiverLayer		<= Trans_DebugPortOut(I);
---	END GENERATE;
+	genDebugLoop : for I in 0 to PORTS - 1 generate
+		DebugPortOut(I).Dummy		<= Trans_DebugPortOut(I).Dummy or Phy_DebugPortOut(I).Dummy or Link_DebugPortOut(I).Dummy;		-- 
+
+		genDebug1 : if (ENABLE_DEBUGPORT = TRUE) generate
+			-- Transceiver Layer
+			DebugPortOut(I).Transceiver						<= Trans_DebugPortOut(I);		-- 
+			DebugPortOut(I).Transceiver_Command		<= Trans_Command(I);				-- 
+			DebugPortOut(I).Transceiver_Status		<= Trans_Status(I);					-- 
+			DebugPortOut(I).Transceiver_TX_Error	<= Trans_TX_Error(I);				-- 
+			DebugPortOut(I).Transceiver_RX_Error	<= Trans_RX_Error(I);				-- 
+			-- Physical Layer
+			DebugPortOut(I).Physical							<= Phy_DebugPortOut(I);			-- 
+			DebugPortOut(I).Physical_Command			<= Phy_Command(I);					-- 
+			DebugPortOut(I).Physical_Status				<= Phy_Status(I);						-- 3 bit
+			DebugPortOut(I).Physical_Error				<= Phy_Error(I);						-- 
+			-- Link Layer
+			DebugPortOut(I).Link									<= Link_DebugPortOut(I);		-- RX: 125 + TX: 120 bit
+			DebugPortOut(I).Link_Command					<= Link_Command(I);					-- 1 bit
+			DebugPortOut(I).Link_Status						<= Link_Status(I);					-- 3 bit
+			DebugPortOut(I).Link_Error						<= Link_Error(I);						
+		end generate genDebug1;
+	end generate genDebugLoop;
+
 END;

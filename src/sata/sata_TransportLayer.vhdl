@@ -103,7 +103,7 @@ ENTITY sata_TransportLayer IS
 		Link_RX_Valid									: IN	STD_LOGIC;
 			
 		Link_RX_FS_Ready							: OUT	STD_LOGIC;
-		Link_RX_FS_CRC_OK							: IN	STD_LOGIC;
+		Link_RX_FS_CRCOK							: IN	STD_LOGIC;
 		Link_RX_FS_Abort							: IN	STD_LOGIC;
 		Link_RX_FS_Valid							: IN	STD_LOGIC
 	);
@@ -463,7 +463,7 @@ BEGIN
 			
 			-- LinkLayer FS-FIFO interface
 			Link_RX_FS_Ready						=> Link_RX_FS_Ready,
-			Link_RX_FS_CRC_OK						=> Link_RX_FS_CRC_OK,
+			Link_RX_FS_CRCOK						=> Link_RX_FS_CRCOK,
 			Link_RX_FS_Abort						=> Link_RX_FS_Abort,
 			Link_RX_FS_Valid						=> Link_RX_FS_Valid
 		);

@@ -1,0 +1,88 @@
+#% BEGIN-TEMPLATEFILE Board = "KC705" %#
+#% BEGIN-TEMPLATE Miscellaneous %#
+## =============================================================================================================================================================
+## Xilinx User Constraint File (UCF)
+## =============================================================================================================================================================
+##	Board:					Xilinx - Kintex 7 KC705
+##	FPGA:						Xilinx Kintex 7
+##		Device:				XC7K325T
+##		Package:			FFG900
+##		Speedgrade:		-2
+##	
+##	Notes:
+##		Power Rail 4 driving VADJ_FPGA is defaulted to 2.5V (choices: 1.8V, 2.5V, 3.3V)
+##
+##
+## =============================================================================================================================================================
+## Miscellaneous
+## =============================================================================================================================================================
+CONFIG PART = XC7K325T-FFG900-2;
+#% END-TEMPLATE Miscellaneous %#
+
+#% BEGIN-TEMPLATE ClockSources %#
+## =============================================================================================================================================================
+## Clock Sources
+## =============================================================================================================================================================
+#% END-TEMPLATE ClockSources %#
+#% BEGIN-TEMPLATE ClockSource_SystemClock %#
+## System Clock
+## -----------------------------------------------------------------------------
+##		Bank:						33
+##			VCCO:					1.5V (VCC1V5_FPGA)
+##		Location:				U6 (SIT9102)
+##			Vendor:				SiTime
+##			Device:				SIT9102AI-243N25E200.0000 - 1 to 220 MHz High Performance Oscillator
+##			Frequency:		200 MHz, 50ppm
+NET "KC705_SystemClock_200MHz_n"				LOC = "AD11" | IOSTANDARD = LVDS;				## {IN}		U6.5
+NET "KC705_SystemClock_200MHz_p"				LOC = "AD12" | IOSTANDARD = LVDS;				## {IN}		U6.4
+NET "KC705_SystemClock_200MHz_p"				TNM_NET = "NET_SystemClock_200MHz";
+#% END-TEMPLATE ClockSource_SystemClock %#
+
+#% BEGIN-TEMPLATE ClockSource_ProgUserClock %#
+## User Clock
+## -----------------------------------------------------------------------------
+##		Bank:						15
+##			VCCO:					2.5V (VCC2V5_FPGA)
+##		Location:				U45 (SI570)
+##			Vendor:				Silicon Labs
+##			Device:				SI570BAB0000544DG
+##			Frequency:		10 - 810 MHz, 50ppm
+##			Default Freq:	156.250 MHz
+##			I²C-Address:	0x5D #$ (0111 010xb)
+NET "KC705_ProgUserClock_n"				LOC = "K29" | IOSTANDARD = LVDS_25;				## {IN}		U45.5
+NET "KC705_ProgUserClock_p"				LOC = "K28" | IOSTANDARD = LVDS_25;				## {IN}		U45.4
+NET "KC705_ProgUserClock_p"				TNM_NET = "NET_ProgUserClock";
+#% END-TEMPLATE ClockSource_ProgUserClock %#
+
+#% BEGIN-TEMPLATE ClockSource_SMAClock %#
+## SMA Clock
+## -----------------------------------------------------------------------------
+##		Bank:						15
+##			VCCO:					2.5V (VCC2V5_FPGA)
+##		Location:				J11, J12
+NET "KC705_SMAClock_n"									LOC = "K25" | IOSTANDARD = LVDS_25;	## {INOUT}	J12
+NET "KC705_SMAClock_p"									LOC = "L25" | IOSTANDARD = LVDS_25;	## {INOUT}	J11
+#% END-TEMPLATE ClockSource_SMAClock %#
+
+#% BEGIN-TEMPLATE ClockSource_RecoveryClock %#
+## User Clock
+## -----------------------------------------------------------------------------
+#$	##		Bank:						13, 114
+#$	##			VCCO:					1.8V (VCC1V8_FPGA)
+##		Location:				U70 (SI5324)
+##			Vendor:				Silicon Labs
+##			Device:				SI5324-C-GM - Any-Frequency Precision Clock Multiplier/Jitter Attenuator
+#$	##			I²C-Address:	0xA0 (1010 000xb)
+#$	NET "KC705_Si5324_Alarm_n"							LOC = "AU34"	| IOSTANDARD = LVCMOS25; ## U24.3; level shifted by U33 (SN74AVC1T45)
+#$	NET "KC705_Si5324_Reset_n"							LOC = "AT36"	| IOSTANDARD = LVCMOS25; ## U24.1; level shifted by U39 (SN74AVC4T245)
+#$	
+## recovered clock output
+#$	NET "KC705_Si5324_ClockIn_n"						LOC = "AW33"	| IOSTANDARD = LVCMOS25;	## U24.17
+#$	NET "KC705_Si5324_ClockIn_p"						LOC = "AW32"	| IOSTANDARD = LVCMOS25;	## U24.16
+
+## feedback input clock to transceiver quad at bank 114
+NET "KC705_Si5324_ClockOut_n"						LOC = "L7"		| IOSTANDARD = LVCMOS25;	## U70.29
+NET "KC705_Si5324_ClockOut_p"						LOC = "L8"		| IOSTANDARD = LVCMOS25;	## U70.28
+#% END-TEMPLATE ClockSource_RecoveryClock %#
+
+#% END-TEMPLATEFILE %#

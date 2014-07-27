@@ -1,7 +1,7 @@
 temp/
 netlist/
-py/configuration.ini
 py/__pycache__/
+py/config.private.ini
 *.pyc
 *~
 *.o
