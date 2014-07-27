@@ -32,20 +32,18 @@
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 
-LIBRARY	L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY	L_IO;
-USE			L_IO.IOTypes.ALL;
-
-LIBRARY	L_LCD;
-USE			L_LCD.LCDTypes.ALL;
+LIBRARY	PoC;
+USE			PoC.utils.ALL;
+USE			PoC.vectors.ALL;
+USE			PoC.strings.ALL;
+USE			PoC.io.ALL;
+USE			PoC.lcd.ALL;
 
 
 ENTITY LCDBusController IS
 	GENERIC (
-		CLOCK_IN_FREQ_MHZ					: REAL													:= 125.0;					-- 125 MHz
-		CLOCK_OUT_FREQ_KHZ				: REAL													:= 500.0;					-- 500 kHz
+		CLOCK_FREQ_MHZ						: REAL													:= 125.0;					-- 125 MHz
+		LCD_BUS_FREQ_KHZ					: REAL													:= 2000.0;				-- 2 MHz
 		LCD_BUS_WIDTH							: POSITIVE											:= 4
 	);
 	PORT (
@@ -72,8 +70,15 @@ ARCHITECTURE rtl OF LCDBusController IS
 	ATTRIBUTE FSM_ENCODING										: STRING;
 	
 	CONSTANT CLOCK_DUTY_CYCLE									: REAL			:= 0.50;		-- 50% high time
-	CONSTANT TIME_CLOCK_HIGH_NS								: REAL			:= Freq_kHz2Real_ns(CLOCK_OUT_FREQ_KHZ * 			CLOCK_DUTY_CYCLE);
-	CONSTANT TIME_CLOCK_LOW_NS								: REAL			:= Freq_kHz2Real_ns(CLOCK_OUT_FREQ_KHZ * (1 - CLOCK_DUTY_CYCLE));
+	CONSTANT TIME_CLOCK_HIGH_NS								: REAL			:= Freq_kHz2Real_ns(LCD_BUS_FREQ_KHZ * 			CLOCK_DUTY_CYCLE);
+	CONSTANT TIME_CLOCK_LOW_NS								: REAL			:= Freq_kHz2Real_ns(LCD_BUS_FREQ_KHZ * (1 - CLOCK_DUTY_CYCLE));
+
+	CONSTANT TIME_SETUP_REGSEL_NS							: REAL			:= 40.0;
+	CONSTANT TIME_SETUP_DATA_NS								: REAL			:= 80.0;
+	CONSTANT TIME_HOLD_REGSEL_NS							: REAL			:= 10.0;
+	CONSTANT TIME_HOLD_DATA_NS								: REAL			:= 10.0;
+	CONSTANT TIME_VALID_DATA_NS								: REAL			:= 5.0;
+	CONSTANT TIME_DELAY_DATA_NS								: REAL			:= 120.0;
 
 	TYPE T_STATE IS (
 		ST_INIT,
