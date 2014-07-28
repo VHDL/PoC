@@ -55,6 +55,8 @@ package utils is
 	TYPE		T_REALVEC						IS ARRAY(NATURAL RANGE <>) OF REAL;
 	
 	--+ Integer subranges sometimes useful for speeding up simulation ++++++++++
+	SUBTYPE T_INT_8							IS INTEGER RANGE -128 TO 127;
+	SUBTYPE T_INT_16						IS INTEGER RANGE -32768 TO 32767;
 	SUBTYPE T_UINT_8						IS INTEGER RANGE 0 TO 255;
 	SUBTYPE T_UINT_16						IS INTEGER RANGE 0 TO 65535;
 
