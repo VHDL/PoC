@@ -213,12 +213,12 @@ BEGIN
 			);
 	
 	END GENERATE;
-	genVirtex7 : IF (DEVICE = DEVICE_VIRTEX7) GENERATE
+	genSeries7 : IF (DEVICE = DEVICE_VIRTEX7) GENERATE
 	
 	BEGIN
-		Eth : Eth_Wrapper_Virtex7
+		Eth : Eth_Wrapper_Series7
 			GENERIC MAP (
-				DEBUG						=> DEBUG,
+				DEBUG											=> DEBUG,
 				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
@@ -239,19 +239,19 @@ BEGIN
 				-- Command-Status-Error interface
 				
 				-- MAC LocalLink interface
-				TX_Valid											=> TX_Valid,
-				TX_Data												=> TX_Data,
-				TX_SOF												=> TX_SOF,
-				TX_EOF												=> TX_EOF,
-				TX_Ready											=> TX_Ready,
+				TX_Valid									=> TX_Valid,
+				TX_Data										=> TX_Data,
+				TX_SOF										=> TX_SOF,
+				TX_EOF										=> TX_EOF,
+				TX_Ready									=> TX_Ready,
 
-				RX_Valid											=> RX_Valid,
-				RX_Data												=> RX_Data,
-				RX_SOF												=> RX_SOF,
-				RX_EOF												=> RX_EOF,
-				RX_Ready											=> RX_Ready,
+				RX_Valid									=> RX_Valid,
+				RX_Data										=> RX_Data,
+				RX_SOF										=> RX_SOF,
+				RX_EOF										=> RX_EOF,
+				RX_Ready									=> RX_Ready,
 				
-				PHY_Interface									=> PHY_Interface
+				PHY_Interface							=> PHY_Interface
 			);
 	
 	END GENERATE;

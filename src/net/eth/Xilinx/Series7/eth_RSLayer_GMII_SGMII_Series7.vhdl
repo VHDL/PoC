@@ -16,7 +16,7 @@ LIBRARY L_Ethernet;
 USE			L_Ethernet.EthTypes.ALL;
 USE			L_Ethernet.EthComp.Ethernet_PCS_IPCore_Virtex7;
 
-ENTITY Ethernet_RSLayer_GMII_SGMII_Virtex7 IS
+ENTITY eth_RSLayer_GMII_SGMII_Series7 IS
 	GENERIC (
 		CLOCK_IN_FREQ_MHZ					: REAL													:= 125.0					-- 125 MHz
 	);
@@ -41,7 +41,7 @@ ENTITY Ethernet_RSLayer_GMII_SGMII_Virtex7 IS
 	);
 END;
 
-ARCHITECTURE rtl OF Ethernet_RSLayer_GMII_SGMII_Virtex7 IS
+ARCHITECTURE rtl OF eth_RSLayer_GMII_SGMII_Series7 IS
 	ATTRIBUTE KEEP							: BOOLEAN;
 
 	SIGNAL MMCM_Reset						: STD_LOGIC;
@@ -218,7 +218,7 @@ BEGIN
 		RS_RX_Valid      			 <= PCSCore_RX_Valid;
 		RS_RX_Error      			 <= PCSCore_RX_Error;
 
-		PCSCore : Ethernet_PCS_IPCore_Virtex7
+		PCSCore : ENTITY PoC.eth_GMII_SGMII_PCS_Series7
 			PORT MAP (
 				userclk              => Clock_125_MHz,
 				userclk2             => Clock_125_MHz,
@@ -276,7 +276,7 @@ BEGIN
 
 		SGMII_Status <= SGMII_Status_i;
 
-		Trans : ENTITY work.Ethernet_Virtex7_SGMII_transceiver
+		Trans : ENTITY PoC.eth_SGMII_Transceiver_GTXE2
 			PORT MAP (
 				independent_clock    => PHY_Interface.DGB_SystemClock_In,
 				gtrefclk             => PHY_Interface.SGMII_RefClock_In,

@@ -78,6 +78,7 @@ ENTITY eth_Wrapper_Virtex6 IS
 		RX_EOF										: OUT	STD_LOGIC;
 		RX_Ready									: In	STD_LOGIC;
 		
+		-- PHY-SGMII interface
 		PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
 	);
 END ENTITY;
