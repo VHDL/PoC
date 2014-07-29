@@ -39,14 +39,15 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
+USE			PoC.satadbg.ALL;
 USE			PoC.sata_TransceiverTypes.ALL;
 
 
 ENTITY sata_TransceiverLayer IS
 	GENERIC (
 		DEBUG											: BOOLEAN											:= FALSE;
+		ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;
 		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																									-- 150 MHz
 		PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 => SATA_GENERATION_2,	1 => SATA_GENERATION_2)				-- intial SATA Generation
@@ -72,7 +73,7 @@ ENTITY sata_TransceiverLayer IS
 		RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 
---		DebugPortOut							: OUT T_DBG_TRANSOUT_VECTOR(PORTS	- 1 DOWNTO 0);
+		DebugPortOut							: OUT T_SATADBG_TRANSCEIVEROUT_VECTOR(PORTS	- 1 DOWNTO 0);
 
 		RX_OOBStatus							: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
@@ -97,7 +98,6 @@ ARCHITECTURE rtl OF sata_TransceiverLayer IS
 
 	CONSTANT C_DEVICE_INFO				: T_DEVICE_INFO		:= DEVICE_INFO;
 	
---	ATTRIBUTE KEEP OF SATA_Clock	: SIGNAL IS "TRUE";
 BEGIN
 
 	genReport : FOR I IN 0 TO PORTS - 1 GENERATE
@@ -112,10 +112,9 @@ BEGIN
 -- ==================================================================
 -- Assert statements
 -- ==================================================================
---	ASSERT (NOT ((DEVICE = DEVICE_VIRTEX5) AND
---							 SIMULATION))
---		 REPORT "Xilinx Virtex5 simulation model is incomplete => device group V5LXT replaced throught V6LXT."
---		 SEVERITY WARNING;
+	assert (C_SATADBG_TYPES = ENABLE_DEBUGPORT)
+		report "DebugPorts are enabled, but debug types are not loaded. Load 'sata_dbg_on.vhdl' into your project!"
+		severity failure;
 
 	ASSERT ((C_DEVICE_INFO.VENDOR = VENDOR_XILINX) OR 
 					(C_DEVICE_INFO.VENDOR = VENDOR_ALTERA))
