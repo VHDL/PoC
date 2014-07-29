@@ -451,25 +451,25 @@ BEGIN
 			BEGIN
 				ASSERT FALSE REPORT "Physical interface SGMII is not implemented!" SEVERITY FAILURE;
 			
-				SGMII	: ENTITY PoC.eth_RSLayer_GMII_SGMII_Virtex6_GTXE1
-		--			GENERIC MAP (
-		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
-		--			)
-					PORT MAP (
-						Clock										=> RS_TX_Clock,
-						Reset										=> Reset_async,
-						
-						-- GEMAC-GMII interface
-						RS_TX_Clock							=> RS_TX_Clock,
-						RS_TX_Valid							=> RS_TX_Valid,
-						RS_TX_Data							=> RS_TX_Data,
-						RS_TX_Error							=> RS_TX_Error,
-						
-						RS_RX_Clock							=> RS_RX_Clock,
-						RS_RX_Valid							=> RS_RX_Valid,
-						RS_RX_Data							=> RS_RX_Data,
-						RS_RX_Error							=> RS_RX_Error
-					);
+--				SGMII	: ENTITY PoC.eth_RSLayer_GMII_SGMII_Virtex6_GTXE1
+--		--			GENERIC MAP (
+--		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
+--		--			)
+--					PORT MAP (
+--						Clock										=> RS_TX_Clock,
+--						Reset										=> Reset_async,
+--						
+--						-- GEMAC-GMII interface
+--						RS_TX_Clock							=> RS_TX_Clock,
+--						RS_TX_Valid							=> RS_TX_Valid,
+--						RS_TX_Data							=> RS_TX_Data,
+--						RS_TX_Error							=> RS_TX_Error,
+--						
+--						RS_RX_Clock							=> RS_RX_Clock,
+--						RS_RX_Valid							=> RS_RX_Valid,
+--						RS_RX_Data							=> RS_RX_Data,
+--						RS_RX_Error							=> RS_RX_Error
+--					);
 			END GENERATE;		-- PHY_DATA_INTERFACE: SGMII
 		END GENERATE;		-- RS_DATA_INTERFACE: GMII
 		
@@ -771,7 +771,7 @@ BEGIN
 			GEMAC	: ENTITY PoC.eth_GEMAC_GMII
 				GENERIC MAP (
 					DEBUG									=> TRUE,
-					CLOCK_FREQ_MHZ									=> CLOCKIN_FREQ_MHZ,		-- 
+					CLOCK_FREQ_MHZ									=> CLOCK_FREQ_MHZ,			-- 
 				
 					TX_FIFO_DEPTH										=> 2048,								-- 2 kiB TX Buffer
 					TX_INSERT_CROSSCLOCK_FIFO				=> true,								-- TODO: 
@@ -864,25 +864,25 @@ BEGIN
 			BEGIN
 				ASSERT FALSE REPORT "Physical interface SGMII is not implemented!" SEVERITY FAILURE;
 			
-				SGMII	: ENTITY PoC.eth_RSLayer_TRANS_SGMII_Virtex6_GTXE1
-		--			GENERIC MAP (
-		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
-		--			)
-					PORT MAP (
-						Clock										=> RS_TX_Clock,
-						Reset										=> Reset_async,
-						
-						-- GEMAC-GMII interface
-						RS_TX_Clock							=> RS_TX_Clock,
-						RS_TX_Valid							=> RS_TX_Valid,
-						RS_TX_Data							=> RS_TX_Data,
-						RS_TX_Error							=> RS_TX_Error,
-						
-						RS_RX_Clock							=> RS_RX_Clock,
-						RS_RX_Valid							=> RS_RX_Valid,
-						RS_RX_Data							=> RS_RX_Data,
-						RS_RX_Error							=> RS_RX_Error
-					);
+--				SGMII	: ENTITY PoC.eth_RSLayer_TRANS_SGMII_Virtex6_GTXE1
+--		--			GENERIC MAP (
+--		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
+--		--			)
+--					PORT MAP (
+--						Clock										=> RS_TX_Clock,
+--						Reset										=> Reset_async,
+--						
+--						-- GEMAC-GMII interface
+--						RS_TX_Clock							=> RS_TX_Clock,
+--						RS_TX_Valid							=> RS_TX_Valid,
+--						RS_TX_Data							=> RS_TX_Data,
+--						RS_TX_Error							=> RS_TX_Error,
+--						
+--						RS_RX_Clock							=> RS_RX_Clock,
+--						RS_RX_Valid							=> RS_RX_Valid,
+--						RS_RX_Data							=> RS_RX_Data,
+--						RS_RX_Error							=> RS_RX_Error
+--					);
 			END GENERATE;		-- PHY_DATA_INTERFACE: SGMII
 		END GENERATE;		-- RS_DATA_INTERFACE: GMII
 		

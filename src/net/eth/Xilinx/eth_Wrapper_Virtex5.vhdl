@@ -771,7 +771,7 @@ BEGIN
 			GEMAC	: ENTITY PoC.Eth_GEMAC_GMII
 				GENERIC MAP (
 					DEBUG														=> TRUE,
-					CLOCK_FREQ_MHZ									=> CLOCK_FREQ_MHZ,		-- 
+					CLOCK_FREQ_MHZ									=> CLOCK_FREQ_MHZ,			-- 
 				
 					TX_FIFO_DEPTH										=> 2048,								-- 2 kiB TX Buffer
 					TX_INSERT_CROSSCLOCK_FIFO				=> true,								-- TODO: 
