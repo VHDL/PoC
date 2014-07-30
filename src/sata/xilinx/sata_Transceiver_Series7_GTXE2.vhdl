@@ -294,12 +294,13 @@ BEGIN
 		SIGNAL GTX_RX_p														: STD_LOGIC;
 --		
 --		SIGNAL DD_NoDevice_i											: STD_LOGIC;
---		SIGNAL DD_NoDevice												: STD_LOGIC;
+		SIGNAL DD_NoDevice												: STD_LOGIC;
 --		SIGNAL DD_NewDevice_i											: STD_LOGIC;
---		SIGNAL DD_NewDevice												: STD_LOGIC;
---		
---		SIGNAL TX_Error_i													: T_SATA_TRANSCEIVER_TX_ERROR;
---		SIGNAL RX_Error_i													: T_SATA_TRANSCEIVER_RX_ERROR;
+		SIGNAL DD_NewDevice												: STD_LOGIC;
+		
+		SIGNAL Status_i														: T_SATA_TRANSCEIVER_STATUS;
+		SIGNAL TX_Error_i													: T_SATA_TRANSCEIVER_TX_ERROR;
+		SIGNAL RX_Error_i													: T_SATA_TRANSCEIVER_RX_ERROR;
 		
 		-- keep internal clock nets, so timing constrains from UCF can find them
 --		ATTRIBUTE KEEP OF GTX_Clock_2X						: SIGNAL IS TRUE;
@@ -375,11 +376,6 @@ BEGIN
 		GTX_DRP_DataIn								<= x"0000";
 --		GTX_DRP_DataOut								
 --		GTX_DRP_Ready									
-
-
-
-
-
 
 		-- TX path
 		GTX_TX_Data							<= TX_Data(I);
@@ -517,36 +513,34 @@ BEGIN
 		--	==================================================================
 		-- error handling
 		--	==================================================================
---		-- TX errors
---		PROCESS(GTX_TX_InvalidK, GTX_TX_BufferStatus(1))
---		BEGIN
---			TX_Error_i		<= TX_ERROR_NONE;
---		
+		-- TX errors
+		PROCESS(GTX_TX_BufferStatus(1))
+		BEGIN
+			TX_Error_i		<= SATA_TRANSCEIVER_TX_ERROR_NONE;
+		
 --			IF (slv_or(GTX_TX_InvalidK)	= '1') THEN
---				TX_Error_i	<= TX_ERROR_ENCODER;
---			ELSIF (GTX_TX_BufferStatus(1)	= '1') THEN
---				TX_Error_i	<= TX_ERROR_BUFFER;
---			END IF;
---		END PROCESS;
---		
---		-- RX errors
---		PROCESS(GTX_RX_ByteIsAligned, GTX_RX_DisparityError, GTX_RX_Illegal8B10BCode, GTX_RX_BufferStatus(2))
---		BEGIN
---			RX_Error_i		<= RX_ERROR_NONE;
---		
---			IF (GTX_RX_ByteIsAligned	= '0') THEN
---				RX_Error_i	<= RX_ERROR_ALIGNEMENT;
---			ELSIF (slv_or(GTX_RX_DisparityError)	= '1') THEN
---				RX_Error_i	<= RX_ERROR_DISPARITY;
---			ELSIF (slv_or(GTX_RX_Illegal8B10BCode)	= '1') THEN
---				RX_Error_i	<= RX_ERROR_DECODER;
---			ELSIF (GTX_RX_BufferStatus(2)	= '1') THEN
---				RX_Error_i	<= RX_ERROR_BUFFER;
---			END IF;
---		END PROCESS;
---
---		TX_Error(I)										<= TX_Error_i;
---		RX_Error(I)										<= RX_Error_i;
+--				TX_Error_i	<= SATA_TRANSCEIVER_TX_ERROR_ENCODER;
+--			ELS
+			IF (GTX_TX_BufferStatus(1)	= '1') THEN
+				TX_Error_i	<= SATA_TRANSCEIVER_TX_ERROR_BUFFER;
+			END IF;
+		END PROCESS;
+		
+		-- RX errors
+		PROCESS(GTX_RX_ByteIsAligned, GTX_RX_DisparityError, GTX_RX_NotInTableError, GTX_RX_BufferStatus(2))
+		BEGIN
+			RX_Error_i		<= SATA_TRANSCEIVER_RX_ERROR_NONE;
+		
+			IF (GTX_RX_ByteIsAligned	= '0') THEN
+				RX_Error_i	<= SATA_TRANSCEIVER_RX_ERROR_ALIGNEMENT;
+			ELSIF (slv_or(GTX_RX_DisparityError)	= '1') THEN
+				RX_Error_i	<= SATA_TRANSCEIVER_RX_ERROR_DISPARITY;
+			ELSIF (slv_or(GTX_RX_NotInTableError)	= '1') THEN
+				RX_Error_i	<= SATA_TRANSCEIVER_RX_ERROR_DECODER;
+			ELSIF (GTX_RX_BufferStatus(2)	= '1') THEN
+				RX_Error_i	<= SATA_TRANSCEIVER_RX_ERROR_BUFFER;
+			END IF;
+		END PROCESS;
 
 		--	==================================================================
 		-- Transceiver status
@@ -587,26 +581,34 @@ BEGIN
 --				O(0)										=> DD_NewDevice,								-- output bits
 --				B												=> OPEN													-- busy bits
 --			);
---		
---		PROCESS(GTX_ResetDone, DD_NoDevice, DD_NewDevice, TX_Error_i, RX_Error_i)
---		BEGIN
---			Status(I) 							<= TRANS_STATUS_NORMAL;
---			
+		
+		DD_NoDevice		<= '0';
+		DD_NewDevice	<= '0';
+		
+		PROCESS(DD_NoDevice, DD_NewDevice, TX_Error_i, RX_Error_i)	-- GTX_ResetDone, 
+		BEGIN
+			Status_i	 							<= SATA_TRANSCEIVER_STATUS_READY;
+			
 --			IF (GTX_ResetDone	= '0') THEN
---				Status(I)							<= TRANS_STATUS_RESET;
---			ELSIF (DD_NoDevice	= '1') THEN
---				Status(I)							<= TRANS_STATUS_NO_DEVICE;
---			ELSIF ((TX_Error_i /= TX_ERROR_NONE) OR (RX_Error_i /= RX_ERROR_NONE)) THEN
---				Status(I)							<= TRANS_STATUS_ERROR;
---			ELSIF (DD_NewDevice	= '1') THEN
---				Status(I)							<= TRANS_STATUS_NEW_DEVICE;
+--				Status_i							<= SATA_TRANSCEIVER_STATUS_RESET;
+--			ELS
+			IF (DD_NoDevice	= '1') THEN
+				Status_i							<= SATA_TRANSCEIVER_STATUS_NO_DEVICE;
+			ELSIF ((TX_Error_i /= SATA_TRANSCEIVER_TX_ERROR_NONE) OR (RX_Error_i /= SATA_TRANSCEIVER_RX_ERROR_NONE)) THEN
+				Status_i							<= SATA_TRANSCEIVER_STATUS_ERROR;
+			ELSIF (DD_NewDevice	= '1') THEN
+				Status_i							<= SATA_TRANSCEIVER_STATUS_NEW_DEVICE;
 				
 -- TODO:
 -- TRANS_STATUS_POWERED_DOWN,
 -- TRANS_STATUS_CONFIGURATION,
 
---			END IF;
---		END PROCESS;
+			END IF;
+		END PROCESS;
+	
+		Status(I)				<= Status_i;
+		TX_Error(I)			<= TX_Error_i;
+		RX_Error(I)			<= RX_Error_i;
 	
 --	==================================================================
 -- LineRate control
