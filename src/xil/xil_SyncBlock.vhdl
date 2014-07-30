@@ -64,14 +64,14 @@ BEGIN
 
 	gen : FOR I IN 0 TO BITS - 1 GENERATE
 		SIGNAL DataSync_async				: STD_LOGIC;
-		SIGNAL DataSync_out					: STD_LOGIC;
+		SIGNAL DataSync_sync				: STD_LOGIC;
 	
 		-- Mark register "DataSync_async" as asynchronous
 		ATTRIBUTE ASYNC_REG			OF DataSync_async	: SIGNAL IS "TRUE";
 
 		-- Prevent XST from translating two FFs into SRL plus FF
 		ATTRIBUTE SHREG_EXTRACT OF DataSync_async	: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF DataSync_out		: SIGNAL IS "NO";
+		ATTRIBUTE SHREG_EXTRACT OF DataSync_sync	: SIGNAL IS "NO";
 	BEGIN
 		FF1 : FD
 			GENERIC MAP (
@@ -90,9 +90,9 @@ BEGIN
 			PORT MAP (
 				C				=> Clock,
 				D				=> DataSync_async,
-				Q				=> DataSync_out
+				Q				=> DataSync_sync
 		);
 		
-		DataOut(I)	<= DataSync_out;
+		DataOut(I)	<= DataSync_sync;
 	END GENERATE;
 END ARCHITECTURE;

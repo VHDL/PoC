@@ -156,12 +156,10 @@ BEGIN
 		SIGNAL GTX_RefClockOut						: STD_LOGIC;
 		
 		SIGNAL GTX_TX_UserClock_Locked		: STD_LOGIC;
-		SIGNAL GTX_TX_UserClock_1X				: STD_LOGIC;
-		SIGNAL GTX_TX_UserClock_4X				: STD_LOGIC;
+		SIGNAL GTX_TX_UserClock						: STD_LOGIC;
 		-- RX
 		SIGNAL GTX_RX_UserClock_Locked		: STD_LOGIC;
-		SIGNAL GTX_RX_UserClock_1X				: STD_LOGIC;
-		SIGNAL GTX_RX_UserClock_4X				: STD_LOGIC;
+		SIGNAL GTX_rX_UserClock						: STD_LOGIC;
 
 		-- linerate clock divider selection
 		-- =====================================================================
@@ -207,6 +205,7 @@ BEGIN
 	
 		SIGNAL GTX_TX_ElectricalIDLE				: STD_LOGIC;
 		SIGNAL GTX_RX_ElectricalIDLE				: STD_LOGIC;
+		SIGNAL GTX_RX_ElectricalIDLE_a			: STD_LOGIC;
 	
 		SIGNAL GTX_TX_ComInit								: STD_LOGIC;
 		SIGNAL GTX_TX_ComWake								: STD_LOGIC;
@@ -222,8 +221,8 @@ BEGIN
 	
 	
 	
---		SIGNAL TX_OOBCommand_d										: T_SATA_OOB;			--						:= OOB_NONE;
---		SIGNAL RX_OOBStatus_i											: T_SATA_OOB;
+		SIGNAL TX_OOBCommand_d										: T_SATA_OOB;			--						:= OOB_NONE;
+		SIGNAL RX_OOBStatus_i											: T_SATA_OOB;
 --		SIGNAL RX_OOBStatus_d											: T_SATA_OOB;			--						:= OOB_NONE;
 --		
 --		SIGNAL ClkNet_Reset												: STD_LOGIC;
@@ -268,11 +267,6 @@ BEGIN
 
 --		SIGNAL GTX_TX_InvalidK										: T_SLV_4;
 
---		SIGNAL GTX_RX_ElectricalIDLE_i						: STD_LOGIC;
---		SIGNAL GTX_RX_ElectricalIDLE_d						: STD_LOGIC																:= '0';
---		SIGNAL GTX_RX_ElectricalIDLE_d2						: STD_LOGIC																:= '0';
---		SIGNAL GTX_RX_ElectricalIDLE							: STD_LOGIC;
-
 --		SIGNAL GTX_RX_LossOfSync									: T_SLV_2;															-- unused
 
 			
@@ -281,7 +275,7 @@ BEGIN
 
 		SIGNAL GTX_RX_Data												: T_SLV_32;
 		SIGNAL GTX_RX_Data_float									: T_SLV_32;																-- open
-		SIGNAL GTX_RX_CommaDetected								: STD_LOGIC;														-- unused
+		SIGNAL GTX_RX_CommaDetected								: STD_LOGIC;															-- unused
 		SIGNAL GTX_RX_CharIsComma									: T_SLV_4;																-- unused
 		SIGNAL GTX_RX_CharIsComma_float						: T_SLV_4;																-- open
 		SIGNAL GTX_RX_CharIsK											: T_SLV_4;
@@ -329,18 +323,21 @@ BEGIN
 		GTX_RefClockSouth							<= "00";
 		GTX_RefClock									<= "00";
 		
-		GTX_RefClockOut								<= GTX_TX_RefClockOut;
+		
+		BUFG_RefClockOut : BUFG
+			PORT MAP (
+				I						=> GTX_TX_RefClockOut,
+				O						=> GTX_RefClockOut
+			);
 
 		GTX_DRP_Clock									<= '0';
 
 		-- TX
 		GTX_TX_UserClock_Locked				<= '1';
-		GTX_TX_UserClock_1X						<= GTX_RefClockOut;
-		GTX_TX_UserClock_4X						<= GTX_RefClockOut;
+		GTX_TX_UserClock							<= GTX_RefClockOut;
 		-- RX
 		GTX_RX_UserClock_Locked				<= '1';
-		GTX_RX_UserClock_1X						<= GTX_RefClockOut;
-		GTX_RX_UserClock_4X						<= GTX_RefClockOut;
+		GTX_RX_UserClock							<= GTX_RefClockOut;
 
 		SATA_Clock(I)									<= GTX_RefClockOut;
 
@@ -397,26 +394,6 @@ BEGIN
 --		GTX_RX_BufferStatus
 --		GTX_RX_Status
 --		GTX_RX_ClockCorrectionStatus
-
-
-		GTX_TX_ElectricalIDLE		<= '0';
---		GTX_RX_ElectricalIDLE
-
-		GTX_TX_ComInit					<= '0';
-		GTX_TX_ComWake					<= '0';
-		GTX_TX_ComSAS						<= '0';
-		GTX_TX_ComFinish				<= '0';
-	
---		GTX_RX_ComInitDetected
---		GTX_RX_ComWakeDetected
-
-
-
-
-
-
-
-
 
 
 		
@@ -485,78 +462,57 @@ BEGIN
 		--	==================================================================
 		-- OOB signaling
 		--	==================================================================
---		TX_OOBCommand_d								<= TX_OOBCommand(I);	-- WHEN rising_edge(GTX_ClockTX_2X(I));
---
---		-- TX OOB signals (generate GTX specific OOB signals)
---		PROCESS(TX_OOBCommand_d)
---		BEGIN
---			GTX_TX_ComStart			<= '0';
---			GTX_TX_ComInit			<= '0';
---			GTX_TX_ComWake			<= '0';
---		
---			CASE TX_OOBCommand_d IS
---				WHEN SATA_OOB_NONE	=>
---					NULL;
---				
---				WHEN SATA_OOB_READY	=>
---					NULL;
---				
---				WHEN SATA_OOB_COMRESET	=>
---					GTX_TX_ComStart	<= '1';
---					GTX_TX_ComInit	<= '1';
---				
---				WHEN SATA_OOB_COMWAKE	=>
---					GTX_TX_ComStart	<= '1';
---					GTX_TX_ComWake	<= '1';
---			
---			END CASE;
---		END PROCESS;
---		
---		-- SR-FF for GTX_TX_ElectricalIDLE:
---		--		.set	= ComStart
---		--		.rst	= OOBComplete || Reset
---		PROCESS(GTX_ClockTX_4X)
---		BEGIN
---			IF rising_edge(GTX_ClockTX_4X) THEN
---				IF (Reset(I)	= '1') THEN
---					GTX_TX_ElectricalIDLE				<= '0';
---				ELSE
---					IF (GTX_TX_ComStart	= '1') THEN
---						GTX_TX_ElectricalIDLE			<= '1';
---					ELSIF (GTX_TX_OOBComplete	= '1') THEN
---						GTX_TX_ElectricalIDLE			<= '0';
---					END IF;
---				END IF;
---			END IF;
---		END PROCESS;
---		
---		-- TX OOB sequence is complete
---		TX_OOBComplete(I)							<= GTX_TX_OOBComplete;
---
---		-- RX OOB signals
---		GTX_RX_ElectricalIDLE_d 	<= GTX_RX_ElectricalIDLE_i WHEN rising_edge(GTX_ClockRX_4X);
---		GTX_RX_ElectricalIDLE_d2	<= GTX_RX_ElectricalIDLE_d WHEN rising_edge(GTX_ClockRX_4X);
---		GTX_RX_ElectricalIDLE			<= GTX_RX_ElectricalIDLE_d2;
+		TX_OOBCommand_d						<= TX_OOBCommand(I);	-- WHEN rising_edge(GTX_ClockTX_2X(I));
+
+		-- TX OOB signals (generate GTX specific OOB signals)
+		PROCESS(TX_OOBCommand_d)
+		BEGIN
+			GTX_TX_ElectricalIDLE		<= '0';
+			GTX_TX_ComInit					<= '0';
+			GTX_TX_ComWake					<= '0';
+			GTX_TX_ComSAS						<= '0';
 		
+			CASE TX_OOBCommand_d IS
+				WHEN SATA_OOB_NONE =>				NULL;
+				WHEN SATA_OOB_COMRESET =>		GTX_TX_ComInit	<= '1';
+				WHEN SATA_OOB_COMWAKE	=>		GTX_TX_ComWake	<= '1';
+--				WHEN SATA_OOB_COMSAS =>			GTX_TX_ComSAS		<= '1';
+				WHEN OTHERS =>							NULL;
+			END CASE;
+		END PROCESS;
+	
+		-- TX OOB sequence is complete
+		TX_OOBComplete(I)							<= GTX_TX_ComFinish;
+
+		-- RX OOB signals
+		sync_RXUserClock : ENTITY PoC.xil_SyncBlock
+			GENERIC MAP (
+				BITS					=> 1													-- number of BITS to synchronize
+			)
+			PORT MAP (
+				Clock					=> GTX_RX_UserClock,					-- Clock to be synchronized to
+				DataIn(0)			=> GTX_RX_ElectricalIDLE_a,		-- Data to be synchronized
+				DataOut(0)		=> GTX_RX_ElectricalIDLE			-- synchronised data
+			);
 		
---		-- RX OOB signals (generate generic RX OOB status signals)
---		PROCESS(GTX_RX_ComInit, GTX_RX_ComWake, GTX_RX_ElectricalIDLE)
---		BEGIN
---			RX_OOBStatus_i		 				<= SATA_OOB_NONE;
---		
---			IF (GTX_RX_ElectricalIDLE	= '1') THEN
---				RX_OOBStatus_i					<= SATA_OOB_READY;
---			
---				IF (GTX_RX_ComInit	= '1') THEN
---					RX_OOBStatus_i				<= SATA_OOB_COMRESET;
---				ELSIF (GTX_RX_ComWake	= '1') THEN
---					RX_OOBStatus_i				<= SATA_OOB_COMWAKE;
---				END IF;
---			END IF;
---		END PROCESS;
---
---		--RX_OOBStatus_d		<= RX_OOBStatus_i;		-- WHEN rising_edge(SATA_Clock_i(I));
---		RX_OOBStatus(I)		<= RX_OOBStatus_i;
+		-- RX OOB signals (generate generic RX OOB status signals)
+		PROCESS(GTX_RX_ComInitDetected, GTX_RX_ComWakeDetected, GTX_RX_ElectricalIDLE)
+		BEGIN
+			RX_OOBStatus_i		 				<= SATA_OOB_NONE;
+		
+			IF (GTX_RX_ElectricalIDLE	= '1') THEN
+				RX_OOBStatus_i					<= SATA_OOB_READY;
+			
+				IF (GTX_RX_ComInitDetected	= '1') THEN
+					RX_OOBStatus_i				<= SATA_OOB_COMRESET;
+				ELSIF (GTX_RX_ComWakeDetected	= '1') THEN
+					RX_OOBStatus_i				<= SATA_OOB_COMWAKE;
+				END IF;
+			END IF;
+		END PROCESS;
+
+		--RX_OOBStatus_d		<= RX_OOBStatus_i;		-- WHEN rising_edge(SATA_Clock_i(I));
+		RX_OOBStatus(I)		<= RX_OOBStatus_i;
 
 		--	==================================================================
 		-- error handling
@@ -1030,12 +986,12 @@ BEGIN
 				-- =====================================================================
 				-- TX
 				TXUSERRDY												=> GTX_TX_UserClock_Locked,				-- @async:			@TX_Clock2 is stable/locked
-				TXUSRCLK												=> GTX_TX_UserClock_1X,						-- @clock:			
-				TXUSRCLK2												=> GTX_TX_UserClock_4X,						-- @clock:			
+				TXUSRCLK												=> GTX_TX_UserClock,							-- @clock:			
+				TXUSRCLK2												=> GTX_TX_UserClock,							-- @clock:			
 				-- RX
 				RXUSERRDY												=> GTX_RX_UserClock_Locked,				-- @async:			@TX_Clock2 is stable/locked
-				RXUSRCLK												=> GTX_RX_UserClock_1X,						-- @clock:			
-				RXUSRCLK2												=> GTX_RX_UserClock_4X,						-- @clock:			
+				RXUSRCLK												=> GTX_RX_UserClock,							-- @clock:			
+				RXUSRCLK2												=> GTX_RX_UserClock,							-- @clock:			
 
 				-- linerate clock divider selection
 				-- =====================================================================
@@ -1094,7 +1050,7 @@ BEGIN
 				
 				-- ElectricalIDLE and OOB ports
 				TXELECIDLE											=> GTX_TX_ElectricalIDLE,					-- @TX_Clock2:	
-				RXELECIDLE											=> GTX_RX_ElectricalIDLE,					-- @async:	
+				RXELECIDLE											=> GTX_RX_ElectricalIDLE_a,				-- @async:	
 				RXELECIDLEMODE									=> "00",													-- @async:			indicate ElectricalIDLE on RXELECIDLE
 				
 				TXCOMINIT												=> GTX_TX_ComInit,
