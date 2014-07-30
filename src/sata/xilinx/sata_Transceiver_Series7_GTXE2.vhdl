@@ -265,8 +265,6 @@ BEGIN
 --		SIGNAL GTX_RX_LineRate_Locked							: STD_LOGIC																:= '0';
 --		SIGNAL GTX_LineRate_Locked								: STD_LOGIC;
 
---		SIGNAL GTX_TX_InvalidK										: T_SLV_4;
-
 --		SIGNAL GTX_RX_LossOfSync									: T_SLV_2;															-- unused
 
 			
@@ -292,10 +290,10 @@ BEGIN
 		SIGNAL GTX_TX_p														: STD_LOGIC;
 		SIGNAL GTX_RX_n														: STD_LOGIC;
 		SIGNAL GTX_RX_p														: STD_LOGIC;
---		
---		SIGNAL DD_NoDevice_i											: STD_LOGIC;
+		
+		SIGNAL DD_NoDevice_i											: STD_LOGIC;
 		SIGNAL DD_NoDevice												: STD_LOGIC;
---		SIGNAL DD_NewDevice_i											: STD_LOGIC;
+		SIGNAL DD_NewDevice_i											: STD_LOGIC;
 		SIGNAL DD_NewDevice												: STD_LOGIC;
 		
 		SIGNAL Status_i														: T_SATA_TRANSCEIVER_STATUS;
@@ -419,7 +417,7 @@ BEGIN
 ----		GTX_TXPLL_ResetDone_i					<= '1';
 --		GTX_PLL_ResetDone_i						<= GTX_TXPLL_ResetDone AND GTX_RXPLL_ResetDone;						-- @async
 --		ClockNetwork_ResetDone_i			<= GTX_PLL_ResetDone AND ClkNet_ResetDone;								-- @Control_Clock: is high, if all clocknetwork components are stable
---		ClockNetwork_ResetDone(I)			<= ClockNetwork_ResetDone_i;															-- @Control_Clock:
+		ClockNetwork_ResetDone(I)			<= '1';	--ClockNetwork_ResetDone_i;															-- @Control_Clock:
 --		
 --		-- logic resets
 ----		GTX_Reset											<= to_sl(Command(I)	= TRANS_CMD_RESET) OR Reset(I);
@@ -427,7 +425,7 @@ BEGIN
 --		GTX_RX_Reset									<= GTX_Reset;
 --		
 ----		GTX_ResetDone									<= GTX_TX_ResetDone AND GTX_RX_ResetDone;									-- @GTX_Clock_4X
---		ResetDone(I)									<= GTX_ResetDone;																					-- @GTX_Clock_4X
+		ResetDone(I)									<= '1';	--GTX_ResetDone;																					-- @GTX_Clock_4X
 
 --		--	==================================================================
 --		-- ClockNetwork (75, 150 MHz)
@@ -455,6 +453,31 @@ BEGIN
 --		
 --		SATA_Clock(I)									<= GTX_ClockRX_4X;
 
+		sync1_RXUserClock : ENTITY PoC.xil_SyncBlock
+			GENERIC MAP (
+				BITS					=> 2													-- number of BITS to synchronize
+			)
+			PORT MAP (
+				Clock					=> GTX_RX_UserClock,					-- Clock to be synchronized to
+				DataIn(0)			=> GTX_RX_ElectricalIDLE_a,		-- Data to be synchronized
+				DataIn(1)			=> DD_NoDevice_i,							-- Data to be synchronized
+				
+				DataOut(0)		=> GTX_RX_ElectricalIDLE,			-- synchronised data
+				DataOut(1)		=> DD_NoDevice								-- synchronised data
+			);
+		
+		sync2_RXUserClock : ENTITY PoC.misc_Synchronizer
+			GENERIC MAP (
+				BITS					=> 1													-- number of bit to be synchronized
+			)
+			PORT MAP (
+				Clock1				=> DD_Clock,									-- input clock domain
+				Clock2				=> GTX_RX_UserClock,					-- output clock domain
+				I(0)					=> DD_NewDevice_i,						-- input bits
+				O(0)					=> DD_NewDevice--,							-- output bits
+--				B							=> OPEN												-- busy bits
+			);
+
 		--	==================================================================
 		-- OOB signaling
 		--	==================================================================
@@ -480,17 +503,6 @@ BEGIN
 		-- TX OOB sequence is complete
 		TX_OOBComplete(I)							<= GTX_TX_ComFinish;
 
-		-- RX OOB signals
-		sync_RXUserClock : ENTITY PoC.xil_SyncBlock
-			GENERIC MAP (
-				BITS					=> 1													-- number of BITS to synchronize
-			)
-			PORT MAP (
-				Clock					=> GTX_RX_UserClock,					-- Clock to be synchronized to
-				DataIn(0)			=> GTX_RX_ElectricalIDLE_a,		-- Data to be synchronized
-				DataOut(0)		=> GTX_RX_ElectricalIDLE			-- synchronised data
-			);
-		
 		-- RX OOB signals (generate generic RX OOB status signals)
 		PROCESS(GTX_RX_ComInitDetected, GTX_RX_ComWakeDetected, GTX_RX_ElectricalIDLE)
 		BEGIN
@@ -545,46 +557,21 @@ BEGIN
 		--	==================================================================
 		-- Transceiver status
 		--	==================================================================
---		-- device detection
---		DD : ENTITY PoC.sata_DeviceDetector
---			GENERIC MAP (
---				CLOCK_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,						-- 150 MHz
---				NO_DEVICE_TIMEOUT_MS		=> NO_DEVICE_TIMEOUT_MS,				-- 1,0 ms
---				NEW_DEVICE_TIMEOUT_MS		=> NEW_DEVICE_TIMEOUT_MS				-- 1,0 us
---			)
---			PORT MAP (
---				Clock										=> DD_Clock,
---				ElectricalIDLE					=> GTX_RX_ElectricalIDLE_i,			-- async
---				
---				NoDevice								=> DD_NoDevice_i,								-- @DD_Clock
---				NewDevice								=> DD_NewDevice_i								-- @DD_Clock
---			);
---
---		blkSync1 : BLOCK
---			SIGNAL NoDevice_sy1				: STD_LOGIC									:= '0';
---			SIGNAL NoDevice_sy2				: STD_LOGIC									:= '0';
---		BEGIN
---			NoDevice_sy1						<= DD_NoDevice_i	WHEN rising_edge(GTX_Clock_4X);
---			NoDevice_sy2						<= NoDevice_sy1		WHEN rising_edge(GTX_Clock_4X);
---			DD_NoDevice							<= NoDevice_sy2;
---		END BLOCK;
+		-- device detection
+		DD : ENTITY PoC.sata_DeviceDetector
+			GENERIC MAP (
+				CLOCK_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,						-- 150 MHz
+				NO_DEVICE_TIMEOUT_MS		=> NO_DEVICE_TIMEOUT_MS,				-- 1,0 ms
+				NEW_DEVICE_TIMEOUT_MS		=> NEW_DEVICE_TIMEOUT_MS				-- 1,0 us
+			)
+			PORT MAP (
+				Clock										=> DD_Clock,
+				ElectricalIDLE					=> GTX_RX_ElectricalIDLE,				-- @GTX_RX_UserClock
+				
+				NoDevice								=> DD_NoDevice_i,								-- @DD_Clock
+				NewDevice								=> DD_NewDevice_i								-- @DD_Clock
+			);
 
---		Sync1 : ENTITY PoC.misc_Synchronizer
---			GENERIC MAP (
---				BW											=> 1,														-- number of bit to be synchronized
---				GATED_INPUT_BY_BUSY			=> TRUE													-- use gated input (by busy signal)
---			)
---			PORT MAP (
---				Clock1									=> DD_Clock,										-- input clock domain
---				Clock2									=> GTX_Clock_4X,								-- output clock domain
---				I(0)										=> DD_NewDevice_i,							-- input bits
---				O(0)										=> DD_NewDevice,								-- output bits
---				B												=> OPEN													-- busy bits
---			);
-		
-		DD_NoDevice		<= '0';
-		DD_NewDevice	<= '0';
-		
 		PROCESS(DD_NoDevice, DD_NewDevice, TX_Error_i, RX_Error_i)	-- GTX_ResetDone, 
 		BEGIN
 			Status_i	 							<= SATA_TRANSCEIVER_STATUS_READY;
