@@ -12,7 +12,7 @@ USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.sata_TransceiverTypes.ALL;
-USE			PoC.xilinx.ALL;
+USE			PoC.xil.ALL;
 
 
 ENTITY sata_Transceiver_Virtex5_GTP IS
@@ -90,15 +90,6 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP IS
 		END LOOP;
 		
 		RETURN ClkDiv;
-	END;
-
-	FUNCTION IsSupportedGeneration(SATAGen : T_SATA_GENERATION) RETURN BOOLEAN IS
-	BEGIN
-		CASE SATAGen IS
-			WHEN SATA_GENERATION_1 =>			RETURN TRUE;
-			WHEN SATA_GENERATION_2 =>			RETURN TRUE;
-			WHEN OTHERS =>								RETURN FALSE;
-		END CASE;
 	END;
 
 	CONSTANT CLOCK_DIVIDERS										: T_INTVEC(INITIAL_SATA_GENERATIONS'range)		:= SATAGeneration2ClockDivider(INITIAL_SATA_GENERATIONS);
@@ -220,13 +211,9 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP IS
 	
 BEGIN
 	genReport : FOR I IN 0 TO PORTS - 1 GENERATE
-		ASSERT FALSE REPORT "Port:    " & ite((I = 0), "0", ite((I = 1), "1", ite((I = 2), "2", ite((I = 3), "3", ite((I = 4), "4", "X"))))) SEVERITY NOTE;
-		ASSERT FALSE REPORT "  Init. SATA Generation:  " & ite((INITIAL_SATA_GENERATIONS(I)	= SATA_GENERATION_1),			"Gen1", "Gen2")		SEVERITY NOTE;
-		ASSERT FALSE REPORT "  ClockDivider:           " & ite((CLOCK_DIVIDERS(I) = 0), "X",
-																											 ite((CLOCK_DIVIDERS(I) = 1), "1",
-																											 ite((CLOCK_DIVIDERS(I) = 2), "2",
-																											 ite((CLOCK_DIVIDERS(I) = 3), "3",
-																											 ite((CLOCK_DIVIDERS(I) = 4), "4", "?"))))) SEVERITY NOTE;
+		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																								SEVERITY NOTE;
+		ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS(I))	SEVERITY NOTE;
+		ASSERT FALSE REPORT "  ClockDivider:           " & INTEGER'image(I)																SEVERITY NOTE;
 	END GENERATE;
 
 -- ==================================================================
@@ -237,9 +224,10 @@ BEGIN
 	ASSERT (C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX5)					REPORT "Device not yet supported."				SEVERITY FAILURE;
 	ASSERT (PORTS <= 2)																			REPORT "To many ports per transceiver."		SEVERITY FAILURE;
 		
-	genassert : FOR I IN 0 TO PORTS - 1 GENERATE
-		ASSERT (CLOCK_DIVIDERS(I) > 0)											REPORT "illegal clock devider - unsupported initial SATA generation?" SEVERITY FAILURE;
-		ASSERT 	IsSupportedGeneration(SATA_Generation(I))		REPORT "unsupported SATA generation"																	SEVERITY FAILURE;
+	genAssert : FOR I IN 0 TO PORTS - 1 GENERATE
+		ASSERT (CLOCK_DIVIDERS(I) > 0)												REPORT "illegal clock devider - unsupported initial SATA generation?" SEVERITY FAILURE;
+		ASSERT ((SATA_Generation(I) = SATA_GENERATION_1) OR
+						(SATA_Generation(I) = SATA_GENERATION_2))			REPORT "unsupported SATA generation"			SEVERITY FAILURE;
 	END GENERATE;
 
 -- ============================================================================
@@ -923,8 +911,8 @@ BEGIN
 				CLK_COR_DET_LEN_0							=>			 4,
 				CLK_COR_INSERT_IDLE_FLAG_0		=>			 FALSE,
 				CLK_COR_KEEP_IDLE_0						=>			 FALSE,
-				CLK_COR_MAX_LAT_0							=>			 22,
 				CLK_COR_MIN_LAT_0							=>			 16,
+				CLK_COR_MAX_LAT_0							=>			 22,
 				CLK_COR_PRECEDENCE_0					=>			 TRUE,
 				CLK_COR_REPEAT_WAIT_0					=>			 0,
 				CLK_COR_SEQ_1_1_0							=>			 "0110111100",
@@ -945,21 +933,21 @@ BEGIN
 				CLK_COR_DET_LEN_1							=>			 4,
 				CLK_COR_INSERT_IDLE_FLAG_1		=>			 FALSE,
 				CLK_COR_KEEP_IDLE_1						=>			 FALSE,
-				CLK_COR_MAX_LAT_1							=>			 22,
 				CLK_COR_MIN_LAT_1							=>			 16,
+				CLK_COR_MAX_LAT_1							=>			 22,
 				CLK_COR_PRECEDENCE_1					=>			 TRUE,
 				CLK_COR_REPEAT_WAIT_1					=>			 0,
+				CLK_COR_SEQ_1_ENABLE_1				=>			 "1111",
 				CLK_COR_SEQ_1_1_1							=>			 "0110111100",
 				CLK_COR_SEQ_1_2_1							=>			 "0001001010",
 				CLK_COR_SEQ_1_3_1							=>			 "0001001010",
 				CLK_COR_SEQ_1_4_1							=>			 "0001111011",
-				CLK_COR_SEQ_1_ENABLE_1				=>			 "1111",
+				CLK_COR_SEQ_2_USE_1						=>			 FALSE,
+				CLK_COR_SEQ_2_ENABLE_1				=>			 "0000",
 				CLK_COR_SEQ_2_1_1							=>			 "0000000000",
 				CLK_COR_SEQ_2_2_1							=>			 "0000000000",
 				CLK_COR_SEQ_2_3_1							=>			 "0000000000",
 				CLK_COR_SEQ_2_4_1							=>			 "0000000000",
-				CLK_COR_SEQ_2_ENABLE_1				=>			 "0000",
-				CLK_COR_SEQ_2_USE_1						=>			 FALSE,
 				RX_DECODE_SEQ_MATCH_1					=>			 TRUE,
 
 				------------------------ Channel Bonding Attributes -------------------	 
@@ -967,36 +955,36 @@ BEGIN
 				CHAN_BOND_2_MAX_SKEW_0				=>			 7,
 				CHAN_BOND_LEVEL_0							=>			 0,
 				CHAN_BOND_MODE_0							=>			 "OFF",
+				CHAN_BOND_SEQ_LEN_0						=>			 1,
+				CHAN_BOND_SEQ_1_ENABLE_0			=>			 "0000",
 				CHAN_BOND_SEQ_1_1_0						=>			 "0000000000",
 				CHAN_BOND_SEQ_1_2_0						=>			 "0000000000",
 				CHAN_BOND_SEQ_1_3_0						=>			 "0000000000",
 				CHAN_BOND_SEQ_1_4_0						=>			 "0000000000",
-				CHAN_BOND_SEQ_1_ENABLE_0			=>			 "0000",
+				CHAN_BOND_SEQ_2_USE_0					=>			 FALSE,	
+				CHAN_BOND_SEQ_2_ENABLE_0			=>			 "0000",
 				CHAN_BOND_SEQ_2_1_0						=>			 "0000000000",
 				CHAN_BOND_SEQ_2_2_0						=>			 "0000000000",
 				CHAN_BOND_SEQ_2_3_0						=>			 "0000000000",
 				CHAN_BOND_SEQ_2_4_0						=>			 "0000000000",
-				CHAN_BOND_SEQ_2_ENABLE_0			=>			 "0000",
-				CHAN_BOND_SEQ_2_USE_0					=>			 FALSE,	
-				CHAN_BOND_SEQ_LEN_0						=>			 1,
 				PCI_EXPRESS_MODE_0						=>			 FALSE,	 
 			 
 				CHAN_BOND_1_MAX_SKEW_1				=>			 7,
 				CHAN_BOND_2_MAX_SKEW_1				=>			 7,
 				CHAN_BOND_LEVEL_1							=>			 0,
 				CHAN_BOND_MODE_1							=>			 "OFF",
+				CHAN_BOND_SEQ_LEN_1						=>			 1,
+				CHAN_BOND_SEQ_1_ENABLE_1			=>			 "0000",
 				CHAN_BOND_SEQ_1_1_1						=>			 "0000000000",
 				CHAN_BOND_SEQ_1_2_1						=>			 "0000000000",
 				CHAN_BOND_SEQ_1_3_1						=>			 "0000000000",
 				CHAN_BOND_SEQ_1_4_1						=>			 "0000000000",
-				CHAN_BOND_SEQ_1_ENABLE_1			=>			 "0000",
+				CHAN_BOND_SEQ_2_USE_1					=>			 FALSE,	
+				CHAN_BOND_SEQ_2_ENABLE_1			=>			 "0000",
 				CHAN_BOND_SEQ_2_1_1						=>			 "0000000000",
 				CHAN_BOND_SEQ_2_2_1						=>			 "0000000000",
 				CHAN_BOND_SEQ_2_3_1						=>			 "0000000000",
 				CHAN_BOND_SEQ_2_4_1						=>			 "0000000000",
-				CHAN_BOND_SEQ_2_ENABLE_1			=>			 "0000",
-				CHAN_BOND_SEQ_2_USE_1					=>			 FALSE,	
-				CHAN_BOND_SEQ_LEN_1						=>			 1,
 				PCI_EXPRESS_MODE_1						=>			 FALSE,
 
 				------------------ RX Attributes for PCI Express/SATA ---------------

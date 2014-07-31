@@ -38,8 +38,8 @@ PACKAGE components IS
 	-- FlipFlop functions
 	FUNCTION ffdre(q : STD_LOGIC; d : STD_LOGIC; rst : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC;												-- D-FlipFlop with reset and enable
 	FUNCTION ffdre(q : STD_LOGIC_VECTOR; d : STD_LOGIC_VECTOR; rst : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC_VECTOR;	-- D-FlipFlop with reset and enable
-	FUNCTION ffdse(q : STD_LOGIC; d : STD_LOGIC; set : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC;			-- D-FlipFlop with set and enable
-	FUNCTION ffrs(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC;										-- RS-FlipFlop with dominant rst
+	FUNCTION ffdse(q : STD_LOGIC; d : STD_LOGIC; set : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC;												-- D-FlipFlop with set and enable
+	FUNCTION ffrs(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant rst
 
 END;
 

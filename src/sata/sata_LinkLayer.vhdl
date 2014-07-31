@@ -253,8 +253,6 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	signal RX_Hold : STD_LOGIC;
 
 BEGIN
-	assert (C_SATADBG_TYPES = ENABLE_DEBUGPORT) report "DebugPorts are enabled, but debug types are not loaded. Load 'sata_dbg_on.vhdl' into your project!" severity failure;
-
 	-- ================================================================
 	-- link layer control FSM
 	-- ================================================================

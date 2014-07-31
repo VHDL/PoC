@@ -168,6 +168,7 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	SIGNAL Phy_TX_Data									: T_SLVV_32(PORTS - 1 DOWNTO 0);
 	SIGNAL Phy_TX_CharIsK								: T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
 
+	SIGNAL Trans_Reset									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_ResetDone							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_ClockNetwork_ResetDone	: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	
@@ -194,11 +195,8 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	ATTRIBUTE KEEP OF SATA_Clock_i			: SIGNAL IS DEBUG;
 
 BEGIN
-
-	assert (C_SATADBG_TYPES = ENABLE_DEBUGPORT) report "DebugPorts are enabled, but debug types are not loaded. Load 'sata_dbg_on.vhdl' into your project!" severity failure;
-
 	genReport : FOR I IN 0 TO PORTS - 1 GENERATE
-		ASSERT FALSE REPORT "Port:    " & ite((I = 0), "0", ite((I = 1), "1", ite((I = 2), "2", ite((I = 3), "3", ite((I = 4), "4", "X"))))) SEVERITY NOTE;
+		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																																							SEVERITY NOTE;
 		ASSERT FALSE REPORT "  ControllerType:         " & ite((CONTROLLER_TYPES(I)					= SATA_DEVICE_TYPE_HOST), "HOST", "DEVICE") SEVERITY NOTE;
 		ASSERT FALSE REPORT "  AllowSpeedNegotiation:  " & ite((ALLOW_SPEED_NEGOTIATION(I)	= TRUE),									"YES",	"NO")			SEVERITY NOTE;
 		ASSERT FALSE REPORT "  AllowAutoReconnect:     " & ite((ALLOW_AUTO_RECONNECT(I)			= TRUE),									"YES",	"NO")			SEVERITY NOTE;
@@ -223,6 +221,7 @@ BEGIN
 		Link_Command										<= (OTHERS => SATA_LINK_CMD_NONE);
 		Phy_Command											<= (OTHERS => SATA_PHY_CMD_NONE);
 		Trans_Command										<= (OTHERS => SATA_TRANSCEIVER_CMD_NONE);
+		Trans_Reset											<= (OTHERS => '0');
 		
 		FOR I IN 0 TO PORTS - 1 LOOP
 			SATA_Reset_i(I)								<= NOT Trans_ClockNetwork_ResetDone(I);
@@ -442,6 +441,7 @@ BEGIN
 			INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS
 		)
 		PORT MAP (
+			Reset											=> Trans_Reset,
 			ResetDone									=> Trans_ResetDone,
 			ClockNetwork_Reset				=> ClockNetwork_Reset,
 			ClockNetwork_ResetDone		=> Trans_ClockNetwork_ResetDone,
@@ -485,8 +485,6 @@ BEGIN
 	-- debug port
 	-- ================================================================
 	genDebugLoop : for I in 0 to PORTS - 1 generate
-		DebugPortOut(I).Dummy		<= Trans_DebugPortOut(I).Dummy or Phy_DebugPortOut(I).Dummy or Link_DebugPortOut(I).Dummy;		-- 
-
 		genDebug1 : if (ENABLE_DEBUGPORT = TRUE) generate
 			-- Transceiver Layer
 			DebugPortOut(I).Transceiver						<= Trans_DebugPortOut(I);		-- 

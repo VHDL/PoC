@@ -147,8 +147,6 @@ package satadbg is
 	-- SATA Controller Types
 	-- ===========================================================================
 	TYPE T_SATADBG_SATACOUT IS RECORD
-		-- dummy signal for synthesis
-		Dummy									: STD_LOGIC;
 		-- Transceiver Layer
 		Transceiver						: T_SATADBG_TRANSCEIVEROUT;
 		Transceiver_Command		: T_SATA_TRANSCEIVER_COMMAND;

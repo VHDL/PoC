@@ -101,8 +101,7 @@ package sata is
 		SATA_TRANSCEIVER_RX_ERROR_BUFFER
 	);
 
-	TYPE T_SATA_CIK2_VECTOR										IS ARRAY (NATURAL RANGE <>) OF T_SATA_CIK2;			-- REFACTOR: to v5 gtp
-	TYPE T_SATA_CIK_VECTOR										IS ARRAY (NATURAL RANGE <>) OF T_SATA_CIK;
+	SUBTYPE T_SATA_CIK_VECTOR									IS T_SLVV_4;
 	TYPE T_SATA_OOB_VECTOR										IS ARRAY (NATURAL RANGE <>) OF T_SATA_OOB;
 	TYPE T_SATA_TRANSCEIVER_COMMAND_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_COMMAND;
 	TYPE T_SATA_TRANSCEIVER_STATUS_VECTOR			IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_STATUS;
@@ -213,7 +212,8 @@ package sata is
 	TYPE T_SATA_LINK_STATUS_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_LINK_STATUS;
 	TYPE T_SATA_LINK_ERROR_VECTOR			IS ARRAY (NATURAL RANGE <>) OF T_SATA_LINK_ERROR;
 
-	FUNCTION to_slv(Primitive : T_SATA_PRIMITIVE) RETURN T_SLV_32;
+	FUNCTION to_slv(Primitive : T_SATA_PRIMITIVE)				RETURN STD_LOGIC_VECTOR;
+	FUNCTION to_sata_word(Primitive : T_SATA_PRIMITIVE) RETURN T_SLV_32;
 	-- ===========================================================================
 	-- Common SATA Types
 	-- ===========================================================================
@@ -765,6 +765,7 @@ package sata is
 		PORT (
 			SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 
+			Reset											: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 			ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 			ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 			ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -904,7 +905,12 @@ PACKAGE BODY sata IS
 		return std_logic_vector(to_unsigned(SATAGen, 2));
 	end function;
 
-	FUNCTION to_slv(Primitive : T_SATA_PRIMITIVE) RETURN T_SLV_32 IS	--																							K symbol
+	FUNCTION to_slv(Primitive : T_SATA_PRIMITIVE) RETURN STD_LOGIC_VECTOR IS
+	BEGIN
+		RETURN to_slv(T_SATA_PRIMITIVE'pos(Primitive), log2ceilnz(T_SATA_PRIMITIVE'pos(T_SATA_PRIMITIVE'high)));
+	END FUNCTION;
+	
+	FUNCTION to_sata_word(Primitive : T_SATA_PRIMITIVE) RETURN T_SLV_32 IS	--																							K symbol
 	BEGIN																															-- primitive name				Byte 3	Byte 2	Byte 1	Byte 0
 		CASE Primitive IS																								-- =======================================================
 			WHEN SATA_PRIMITIVE_NONE =>				RETURN x"00000000";					-- no primitive					

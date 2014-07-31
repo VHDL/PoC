@@ -55,6 +55,7 @@ ENTITY sata_TransceiverLayer IS
 	PORT (
 		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
+		Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -112,36 +113,25 @@ BEGIN
 -- ==================================================================
 -- Assert statements
 -- ==================================================================
-	assert (C_SATADBG_TYPES = ENABLE_DEBUGPORT)
-		report "DebugPorts are enabled, but debug types are not loaded. Load 'sata_dbg_on.vhdl' into your project!"
-		severity failure;
-
 	ASSERT ((C_DEVICE_INFO.VENDOR = VENDOR_XILINX) OR 
 					(C_DEVICE_INFO.VENDOR = VENDOR_ALTERA))
 		REPORT "Vendor not yet supported."
 		SEVERITY FAILURE;
 		
 	ASSERT ((C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_VIRTEX) OR 
+					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_KINTEX) OR
 					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_STRATIX))
 		REPORT "Device family not yet supported."
 		SEVERITY FAILURE;
 		
 	ASSERT ((C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX5) OR
-					(C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX6) OR
-					(C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX7) OR
 					(C_DEVICE_INFO.DEVICE = DEVICE_KINTEX7) OR
 					(C_DEVICE_INFO.DEVICE = DEVICE_STRATIX2) OR
 					(C_DEVICE_INFO.DEVICE = DEVICE_STRATIX4))
 		REPORT "Device not yet supported."
 		SEVERITY FAILURE;
 		
-	ASSERT ((C_DEVICE_INFO.DEVSUBTYPE = DEVICE_SUBTYPE_LXT) OR
-					(C_DEVICE_INFO.DEVSUBTYPE = DEVICE_SUBTYPE_GX))
-		REPORT "Device subtype not yet supported."
-		SEVERITY FAILURE;
-		
 	ASSERT ((C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTP_DUAL) OR
-					(C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE1) OR
 					(C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2) OR
 					(C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB))
 		REPORT "Transceiver not yet supported."
@@ -260,6 +250,7 @@ BEGIN
 				PORT MAP (
 					SATA_Clock								=> SATA_Clock,
 
+					Reset											=> Reset,
 					ResetDone									=> ResetDone,
 					ClockNetwork_Reset				=> ClockNetwork_Reset,
 					ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,
