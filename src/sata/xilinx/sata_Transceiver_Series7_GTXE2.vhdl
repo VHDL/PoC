@@ -38,6 +38,7 @@ USE			UNISIM.VCOMPONENTS.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
+USE			PoC.components.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
@@ -155,11 +156,9 @@ BEGIN
 		SIGNAL GTX_RX_RefClockOut					: STD_LOGIC;
 		SIGNAL GTX_RefClockOut						: STD_LOGIC;
 		
-		SIGNAL GTX_TX_UserClock_Locked		: STD_LOGIC;
-		SIGNAL GTX_TX_UserClock						: STD_LOGIC;
-		-- RX
-		SIGNAL GTX_RX_UserClock_Locked		: STD_LOGIC;
-		SIGNAL GTX_rX_UserClock						: STD_LOGIC;
+		SIGNAL GTX_UserClock_Locked				: STD_LOGIC;
+		SIGNAL GTX_UserClock							: STD_LOGIC;
+
 
 		-- linerate clock divider selection
 		-- =====================================================================
@@ -257,13 +256,9 @@ BEGIN
 --		SIGNAL GTX_RXPLL_Reset										:	STD_LOGIC;
 --		SIGNAL GTX_RXPLL_ResetDone								:	STD_LOGIC;
 --		
---		SIGNAL GTX_TX_LineRate										: T_SLV_2																	:= "00";
---		SIGNAL GTX_TX_LineRate_Changed						: STD_LOGIC;
---		SIGNAL GTX_TX_LineRate_Locked							: STD_LOGIC																:= '0';
---		SIGNAL GTX_RX_LineRate										: T_SLV_2																	:= "00";
---		SIGNAL GTX_RX_LineRate_Changed						: STD_LOGIC;
---		SIGNAL GTX_RX_LineRate_Locked							: STD_LOGIC																:= '0';
---		SIGNAL GTX_LineRate_Locked								: STD_LOGIC;
+			SIGNAL TX_RateChangeDone									: STD_LOGIC																:= '0';
+			SIGNAL RX_RateChangeDone									: STD_LOGIC																:= '0';
+			SIGNAL RateChangeDone											: STD_LOGIC;
 
 --		SIGNAL GTX_RX_LossOfSync									: T_SLV_2;															-- unused
 
@@ -332,27 +327,65 @@ BEGIN
 		GTX_DRP_Clock									<= '0';
 
 		-- TX
-		GTX_TX_UserClock_Locked				<= '1';
-		GTX_TX_UserClock							<= GTX_RefClockOut;
+		GTX_UserClock_Locked				<= '1';
+		GTX_UserClock							<= GTX_RefClockOut;
 		-- RX
-		GTX_RX_UserClock_Locked				<= '1';
-		GTX_RX_UserClock							<= GTX_RefClockOut;
+		GTX_UserClock_Locked				<= '1';
+		GTX_UserClock							<= GTX_RefClockOut;
 
 		SATA_Clock(I)									<= GTX_RefClockOut;
 
-		-- linerate clock divider selection
-		-- =====================================================================
-		GTX_TX_LineRateSelect					<= "000";
-		GTX_RX_LineRateSelect					<= "000";
+		-- =========================================================================
+		-- LineRate control / linerate clock divider selection
+		-- =========================================================================
+		PROCESS(GTX_UserClock, GTX_UserClock)
+		BEGIN
+			IF rising_edge(GTX_UserClock) THEN
+				IF (RP_Reconfig(I)	= '1') THEN
+					CASE SATA_Generation(I) IS
+						WHEN SATA_GENERATION_1 =>	
+							GTX_TX_LineRateSelect <= "011";				-- TXPLL Divider (D)	= 4
+							GTX_RX_LineRateSelect <= "011";				-- RXPLL Divider (D)	= 4
+							
+						WHEN SATA_GENERATION_2 =>
+							GTX_TX_LineRateSelect <= "010";				-- TXPLL Divider (D)	= 2
+							GTX_RX_LineRateSelect <= "010";				-- RXPLL Divider (D)	= 2
+							
+						WHEN SATA_GENERATION_3 =>	
+							GTX_TX_LineRateSelect <= "001";				-- TXPLL Divider (D)	= 1
+							GTX_RX_LineRateSelect <= "001";				-- RXPLL Divider (D)	= 1
+							
+						WHEN OTHERS =>	
+							GTX_TX_LineRateSelect <= "000";				-- TXPLL Divider (D)	= RXOUT_DIV
+							GTX_RX_LineRateSelect <= "000";				-- RXPLL Divider (D)	= RXOUT_DIV
+							
+					END CASE;
+				END IF;
+			END IF;
+		END PROCESS;
+		
+		-- RS-FF										Q										rst							set																clk
+		TX_RateChangeDone <= ffrs(TX_RateChangeDone, RP_Reconfig(I), GTX_TX_LineRateSelectDone) WHEN rising_edge(GTX_UserClock);
+		RX_RateChangeDone <= ffrs(RX_RateChangeDone, RP_Reconfig(I), GTX_RX_LineRateSelectDone) WHEN rising_edge(GTX_UserClock);
+		
+		RateChangeDone		<= TX_RateChangeDone AND RX_RateChangeDone;
+		
+		-- reconfiguration port
+		RP_Locked(I)									<= '0';																							-- all ports are independant	=> never set a lock
+		RP_ReconfigComplete(I)				<= RP_Reconfig(I) WHEN rising_edge(GTX_UserClock);		-- acknoledge reconfiguration with 1 cycle latency
+		RP_ConfigReloaded(I)					<= RateChangeDone;																	-- acknoledge reload
 
---		GTX_TX_LineRateSelectDone
---		GTX_RX_LineRateSelectDone
-
-		-- PowerDown signals
+		-- =========================================================================
+		-- PowerDown control
+		-- =========================================================================
 		GTX_CPLL_PowerDown						<= '0';
 		GTX_TX_PowerDown							<= "00";
 		GTX_RX_PowerDown							<= "00";
 
+
+		-- =========================================================================
+		-- Reset control
+		-- =========================================================================
 		-- CPLL resets
 		GTX_CPLL_Reset								<= '0';
 		-- TX resets					
@@ -458,7 +491,7 @@ BEGIN
 				BITS					=> 2													-- number of BITS to synchronize
 			)
 			PORT MAP (
-				Clock					=> GTX_RX_UserClock,					-- Clock to be synchronized to
+				Clock					=> GTX_UserClock,					-- Clock to be synchronized to
 				DataIn(0)			=> GTX_RX_ElectricalIDLE_a,		-- Data to be synchronized
 				DataIn(1)			=> DD_NoDevice_i,							-- Data to be synchronized
 				
@@ -472,7 +505,7 @@ BEGIN
 			)
 			PORT MAP (
 				Clock1				=> DD_Clock,									-- input clock domain
-				Clock2				=> GTX_RX_UserClock,					-- output clock domain
+				Clock2				=> GTX_UserClock,					-- output clock domain
 				I(0)					=> DD_NewDevice_i,						-- input bits
 				O(0)					=> DD_NewDevice--,							-- output bits
 --				B							=> OPEN												-- busy bits
@@ -566,7 +599,7 @@ BEGIN
 			)
 			PORT MAP (
 				Clock										=> DD_Clock,
-				ElectricalIDLE					=> GTX_RX_ElectricalIDLE,				-- @GTX_RX_UserClock
+				ElectricalIDLE					=> GTX_RX_ElectricalIDLE,				-- @GTX_UserClock
 				
 				NoDevice								=> DD_NoDevice_i,								-- @DD_Clock
 				NewDevice								=> DD_NewDevice_i								-- @DD_Clock
@@ -596,56 +629,10 @@ BEGIN
 		Status(I)				<= Status_i;
 		TX_Error(I)			<= TX_Error_i;
 		RX_Error(I)			<= RX_Error_i;
-	
---	==================================================================
--- LineRate control
---	==================================================================
---		PROCESS(GTX_Clock_4X)
---		BEGIN
---			IF rising_edge(GTX_Clock_4X) THEN
---				IF (RP_Reconfig(I)	= '1') THEN
---					IF (SATA_Generation(I)	= SATA_GEN_1) THEN
---						GTX_TX_LineRate		<= "10";								-- TXPLL Divider (D)	= 2
---						GTX_RX_LineRate		<= "10";								-- rXPLL Divider (D)	= 2
---					ELSIF (SATA_Generation(I)	= SATA_GEN_2) THEN
---						GTX_TX_LineRate		<= "11";								-- TXPLL Divider (D)	= 1
---						GTX_RX_LineRate		<= "11";								-- rXPLL Divider (D)	= 1
---					ELSE
---						NULL;
---					END IF;
---				END IF;
---			END IF;
---		END PROCESS;
---
---		RP_Locked(I)									<= '0';																											-- all ports are independant	=> never set a lock
---		RP_ReconfigComplete(I)				<= RP_Reconfig(I) WHEN rising_edge(GTX_Clock_4X);						-- acknoledge reconfiguration with 1 cycle latency
 
-		-- SR-FF for GTX_*_LineRate_Locked:
-		--		.set	= GTX_*_LineRate_Changed
-		--		.rst	= RP_Reconfig(I)
---		PROCESS(GTX_Clock_4X)
---		BEGIN
---			IF rising_edge(GTX_Clock_4X) THEN
---				IF (RP_Reconfig(I)	= '1') THEN
---					GTX_TX_LineRate_Locked		<= '0';
---					GTX_RX_LineRate_Locked		<= '0';
---				ELSE
---					IF (GTX_TX_LineRate_Changed	= '1') THEN
---						GTX_TX_LineRate_Locked	<= '1';
---					END IF;
---					IF (GTX_RX_LineRate_Changed	= '1') THEN
---						GTX_RX_LineRate_Locked	<= '1';
---					END IF;
---				END IF;
---			END IF;
---		END PROCESS;
---		
---		GTX_LineRate_Locked						<= GTX_TX_LineRate_Locked AND GTX_RX_LineRate_Locked;
---		RP_ConfigReloaded(I)					<= GTX_LineRate_Locked AND ClockNetwork_ResetDone_i;
-
---	==================================================================
--- GTXE2_CHANNEL instance for Port I
---	==================================================================
+		-- ==================================================================
+		-- GTXE2_CHANNEL instance for Port I
+		-- ==================================================================
 		GTX : GTXE2_CHANNEL
 			GENERIC MAP (
 				-- Simulation-Only attributes
@@ -974,13 +961,13 @@ BEGIN
 				-- FPGA-Fabric interface clocks
 				-- =====================================================================
 				-- TX
-				TXUSERRDY												=> GTX_TX_UserClock_Locked,				-- @async:			@TX_Clock2 is stable/locked
-				TXUSRCLK												=> GTX_TX_UserClock,							-- @clock:			
-				TXUSRCLK2												=> GTX_TX_UserClock,							-- @clock:			
+				TXUSERRDY												=> GTX_UserClock_Locked,				-- @async:			@TX_Clock2 is stable/locked
+				TXUSRCLK												=> GTX_UserClock,							-- @clock:			
+				TXUSRCLK2												=> GTX_UserClock,							-- @clock:			
 				-- RX
-				RXUSERRDY												=> GTX_RX_UserClock_Locked,				-- @async:			@TX_Clock2 is stable/locked
-				RXUSRCLK												=> GTX_RX_UserClock,							-- @clock:			
-				RXUSRCLK2												=> GTX_RX_UserClock,							-- @clock:			
+				RXUSERRDY												=> GTX_UserClock_Locked,				-- @async:			@TX_Clock2 is stable/locked
+				RXUSRCLK												=> GTX_UserClock,							-- @clock:			
+				RXUSRCLK2												=> GTX_UserClock,							-- @clock:			
 
 				-- linerate clock divider selection
 				-- =====================================================================
