@@ -69,9 +69,16 @@ ARCHITECTURE rtl OF lcd_LCDController_KS0066U IS
 	ATTRIBUTE FSM_ENCODING										: STRING;
 	
 	TYPE T_STATE IS (
-		ST_INIT,
+		ST_RESET,
+		-- initialization
+			ST_INIT_SET_FUNCTION,		ST_INIT_SET_FUNCTION_WAIT,
+			ST_INIT_DISPLAY_ON,			ST_INIT_DISPLAY_ON_WAIT,
+			ST_INIT_DISPLAY_CLEAR,	ST_INIT_DISPLAY_CLEAR_WAIT,
+			ST_INIT_SET_ENTRY_MODE,	ST_INIT_SET_ENTRY_MODE_WAIT,
 		ST_IDLE,
-		ST_x,
+		ST_GO_HOME,			ST_GO_HOME_WAIT,
+		ST_WRITE_CHAR,	ST_WRITE_CHAR_WAIT,
+		
 		ST_ERROR
 	);
 	
@@ -95,16 +102,168 @@ BEGIN
 	BEGIN
 		NextState										<= State;
 	
-		Status											<= IO_LCD_STATUS_IDLE;
+		Status											<= LCD_CTRL_STATUS_IDLE;
 	
-		FSM_LCDBC_Command						<= IO_LCDBUS_CMD_NONE;
+		FSM_LCDBC_Command						<= LCD_BUSCTRL_CMD_NONE;
 		FSM_LCDBC_RegisterAddress		<= '0';
-		FSM_LCDBC_Data							<= x"00";
+		FSM_LCDBC_Data							<= KS0066U_CMD_NONE;
 	
 		CASE State IS
-			WHEN ST_INIT =>
-				NULL;
+			WHEN ST_RESET =>
+				IF (LCDBC_Status = IO_LCDBUS_STATUS_IDLE) THEN
+					NextState									<= ST_INIT_SET_FUNCTION;
+				END IF;
+			
+			-- set function
+			-- ===============================
+			WHEN ST_INIT_SET_FUNCTION =>
+				FSM_LCDBC_Command						<= LCD_BUSCTRL_CMD_WRITE;
+				FSM_LCDBC_RegisterAddress		<= KS0066U_REG_COMMAND;
+				FSM_LCDBC_Data							<= KS0066U_CMD_SET_FUNCTION;
 				
+				NextState										<= ST_INIT_SET_FUNCTION_WAIT;
+			
+			WHEN ST_INIT_SET_FUNCTION_WAIT =>
+				IF (LCDBC_Status = IO_LCDBUS_STATUS_WRITING) THEN
+					NULL;
+				ELSIF (LCDBC_Status = IO_LCDBUS_STATUS_WRITE_COMPLETE) THEN
+					NextState									<= ST_INIT_SET_FUNCTION_POLL_LCDBUS;
+				ELSE
+					NextState									<= ST_ERROR;
+				END IF;
+			
+			WHEN ST_INIT_SET_FUNCTION_POLL_LCDBUS =>
+				FSM_LCDBC_Command						<= LCD_BUSCTRL_CMD_READ;
+				FSM_LCDBC_RegisterAddress		<= KS0066U_REG_COMMAND;
+				
+				NextState										<= ST_INIT_SET_FUNCTION_POLL_LCDBUS_WAIT;
+			
+			WHEN ST_INIT_SET_FUNCTION_POLL_LCDBUS_WAIT =>
+				IF (LCDBC_Status = IO_LCDBUS_STATUS_READING) THEN
+					NULL;
+				ELSIF (LCDBC_Status = IO_LCDBUS_STATUS_READ_COMPLETE) THEN
+					IF (LCDBC_Data(7) = '0') THEN
+						NextState								<= ST_INIT_SET_FUNCTION_POLL_LCDBUS;
+					ELSE
+						NextState								<= ST_INIT_DISPLAY_ON;
+					END IF;
+				ELSE
+					NextState									<= ST_ERROR;
+				END IF;
+			
+			-- display on
+			-- ===============================
+			WHEN ST_INIT_DISPLAY_ON =>
+				FSM_LCDBC_Command						<= LCD_BUSCTRL_CMD_WRITE;
+				FSM_LCDBC_RegisterAddress		<= KS0066U_REG_COMMAND;
+				FSM_LCDBC_Data							<= KS0066U_CMD_DISPLAY_ON;
+				
+				NextState										<= ST_INIT_DISPLAY_ON_WAIT;
+			
+			WHEN ST_INIT_DISPLAY_ON_WAIT =>
+				IF (LCDBC_Status = IO_LCDBUS_STATUS_WRITING) THEN
+					NULL;
+				ELSIF (LCDBC_Status = IO_LCDBUS_STATUS_WRITE_COMPLETE) THEN
+					NextState									<= ST_INIT_DISPLAY_ON_POLL_LCDBUS;
+				ELSE
+					NextState									<= ST_ERROR;
+				END IF;
+			
+			WHEN ST_INIT_DISPLAY_ON_POLL_LCDBUS =>
+				FSM_LCDBC_Command						<= LCD_BUSCTRL_CMD_READ;
+				FSM_LCDBC_RegisterAddress		<= KS0066U_REG_COMMAND;
+				
+				NextState										<= ST_INIT_DISPLAY_ON_POLL_LCDBUS_WAIT;
+			
+			WHEN ST_INIT_DISPLAY_ON_POLL_LCDBUS_WAIT =>
+				IF (LCDBC_Status = IO_LCDBUS_STATUS_READING) THEN
+					NULL;
+				ELSIF (LCDBC_Status = IO_LCDBUS_STATUS_READ_COMPLETE) THEN
+					IF (LCDBC_Data(7) = '0') THEN
+						NextState								<= ST_INIT_DISPLAY_ON_POLL_LCDBUS;
+					ELSE
+						NextState								<= ST_INIT_CLEAR_DISPLAY;
+					END IF;
+				ELSE
+					NextState									<= ST_ERROR;
+				END IF;
+			
+			-- clear display
+			-- ===============================
+			WHEN ST_INIT_CLEAR_DISPLAY =>
+				FSM_LCDBC_Command						<= LCD_BUSCTRL_CMD_WRITE;
+				FSM_LCDBC_RegisterAddress		<= KS0066U_REG_COMMAND;
+				FSM_LCDBC_Data							<= KS0066U_CMD_CLEAR_DISPLAY;
+				
+				NextState										<= ST_INIT_CLEAR_DISPLAY_WAIT;
+			
+			WHEN ST_INIT_CLEAR_DISPLAY_WAIT =>
+				IF (LCDBC_Status = IO_LCDBUS_STATUS_WRITING) THEN
+					NULL;
+				ELSIF (LCDBC_Status = IO_LCDBUS_STATUS_WRITE_COMPLETE) THEN
+					NextState									<= ST_INIT_CLEAR_DISPLAY_POLL_LCDBUS;
+				ELSE
+					NextState									<= ST_ERROR;
+				END IF;
+			
+			WHEN ST_INIT_CLEAR_DISPLAY_POLL_LCDBUS =>
+				FSM_LCDBC_Command						<= LCD_BUSCTRL_CMD_READ;
+				FSM_LCDBC_RegisterAddress		<= KS0066U_REG_COMMAND;
+				
+				NextState										<= ST_INIT_CLEAR_DISPLAY_POLL_LCDBUS_WAIT;
+			
+			WHEN ST_INIT_CLEAR_DISPLAY_POLL_LCDBUS_WAIT =>
+				IF (LCDBC_Status = IO_LCDBUS_STATUS_READING) THEN
+					NULL;
+				ELSIF (LCDBC_Status = IO_LCDBUS_STATUS_READ_COMPLETE) THEN
+					IF (LCDBC_Data(7) = '0') THEN
+						NextState								<= ST_INIT_CLEAR_DISPLAY_POLL_LCDBUS;
+					ELSE
+						NextState								<= ST_INIT_SET_ENTRY_MODE;
+					END IF;
+				ELSE
+					NextState									<= ST_ERROR;
+				END IF;
+			
+			-- Set entry mode
+			-- ===============================
+			WHEN ST_INIT_SET_ENTRY_MODE =>
+				FSM_LCDBC_Command						<= LCD_BUSCTRL_CMD_WRITE;
+				FSM_LCDBC_RegisterAddress		<= KS0066U_REG_COMMAND;
+				FSM_LCDBC_Data							<= KS0066U_CMD_SET_ENTRY_MODE;
+				
+				NextState										<= ST_INIT_SET_ENTRY_MODE_WAIT;
+			
+			WHEN ST_INIT_SET_ENTRY_MODE_WAIT =>
+				IF (LCDBC_Status = IO_LCDBUS_STATUS_WRITING) THEN
+					NULL;
+				ELSIF (LCDBC_Status = IO_LCDBUS_STATUS_WRITE_COMPLETE) THEN
+					NextState									<= ST_INIT_SET_ENTRY_MODE_POLL_LCDBUS;
+				ELSE
+					NextState									<= ST_ERROR;
+				END IF;
+			
+			WHEN ST_INIT_SET_ENTRY_MODE_POLL_LCDBUS =>
+				FSM_LCDBC_Command						<= LCD_BUSCTRL_CMD_READ;
+				FSM_LCDBC_RegisterAddress		<= KS0066U_REG_COMMAND;
+				
+				NextState										<= ST_INIT_SET_ENTRY_MODE_POLL_LCDBUS_WAIT;
+			
+			WHEN ST_INIT_SET_ENTRY_MODE_POLL_LCDBUS_WAIT =>
+				IF (LCDBC_Status = IO_LCDBUS_STATUS_READING) THEN
+					NULL;
+				ELSIF (LCDBC_Status = IO_LCDBUS_STATUS_READ_COMPLETE) THEN
+					IF (LCDBC_Data(7) = '0') THEN
+						NextState								<= ST_INIT_SET_ENTRY_MODE_POLL_LCDBUS;
+					ELSE
+						NextState								<= ST_INIT_DISPLAY_ON;
+					END IF;
+				ELSE
+					NextState									<= ST_ERROR;
+				END IF;
+			
+			-- IDLE
+			-- ===============================
 			WHEN ST_IDLE =>
 				null;
 				

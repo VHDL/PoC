@@ -133,7 +133,7 @@ BEGIN
 		
 		LCDI_Strobe				<= '0';
 		LCDI_Address			<= '0';
-		LCDI_Data					<= LCDCMD_NONE;
+		LCDI_Data					<= KS0066U_CMD_NONE;
 		
 		CSP_Trigger_1			<= '0';
 		
@@ -148,7 +148,7 @@ BEGIN
 			WHEN ST_INIT_SET_FUNCTION =>
 				LCDI_Strobe			<= '1';
 				LCDI_Address		<= '0';
-				LCDI_Data				<= LCDCMD_SET_FUNCTION;
+				LCDI_Data				<= KS0066U_CMD_SET_FUNCTION;
 				
 				NextState				<= ST_INIT_SET_FUNCTION_WAIT;
 			
@@ -172,7 +172,7 @@ BEGIN
 			WHEN ST_INIT_DISPLAY_CLEAR =>
 				LCDI_Strobe			<= '1';
 				LCDI_Address		<= '0';
-				LCDI_Data				<= LCDCMD_DISPLAY_CLEAR;
+				LCDI_Data				<= KS0066U_CMD_DISPLAY_CLEAR;
 				
 				NextState				<= ST_INIT_DISPLAY_CLEAR_WAIT;
 			
@@ -184,7 +184,7 @@ BEGIN
 			WHEN ST_INIT_ENTRY_MODE =>
 				LCDI_Strobe			<= '1';
 				LCDI_Address		<= '0';
-				LCDI_Data				<= LCDCMD_ENTRY_MODE;
+				LCDI_Data				<= KS0066U_CMD_ENTRY_MODE;
 				
 				NextState				<= ST_INIT_ENTRY_MODE_WAIT;
 			
