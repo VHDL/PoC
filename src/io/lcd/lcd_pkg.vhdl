@@ -43,8 +43,6 @@ PACKAGE lcd IS
 	SUBTYPE T_BCD						IS UNSIGNED(3 DOWNTO 0);
 	TYPE		T_BCD_VECTOR		IS ARRAY (NATURAL RANGE <>)	OF T_BCD;
 	
-	TYPE		T_LCD_DISPLAY_CONTROLLER IS (LCD_DISPLAY_CTRL_KS0066U);
-	
 	-- define array indices
 	CONSTANT MAX_LCD_COLUMN_COUNT			: POSITIVE			:= 16;
 	CONSTANT MAX_LCD_ROW_COUNT				: POSITIVE			:= 2;
@@ -75,13 +73,65 @@ PACKAGE lcd IS
 	SUBTYPE T_LCD_ROW				IS T_RAWSTRING(0 TO MAX_LCD_COLUMN_COUNT - 1);						-- don't use "IS ARRAY (T_LCD_COLUMN_INDEX)" => expression is not sliceable
 	TYPE		T_LCD						IS ARRAY (T_LCD_ROW_INDEX)	OF T_LCD_ROW;
 
-	CONSTANT LCDCMD_NONE							: T_SLV_8		:= x"00";			-- no command
-	CONSTANT LCDCMD_DISPLAY_ON				: T_SLV_8		:= x"0C";			-- Display ON; cursor OFF; blink OFF
-	CONSTANT LCDCMD_DISPLAY_CLEAR			: T_SLV_8		:= x"01";			-- 
-	CONSTANT LCDCMD_RETURN_HOME				: T_SLV_8		:= x"02";			-- 
-	CONSTANT LCDCMD_GO_HOME						: T_SLV_8		:= x"10";			-- 
-	CONSTANT LCDCMD_SET_FUNCTION			: T_SLV_8		:= x"2C";			-- (4 Bit interface, 2-line, 5x8 dots)
-	CONSTANT LCDCMD_ENTRY_MODE				: T_SLV_8		:= x"06";			-- entry mode: move: RIGHT; shift OFF
+
+	TYPE T_LCD_CONTROLLER IS (
+		LCD_CTRL_KS0066U,					-- Samsung KS0066U - Dot Matrix LCD Driver
+		LCD_CTRL_ST7066U					-- Sitromix ST7066U - Dot Matrix LCD Controller/Driver (compatible to KS0066U)
+	);
+	
+	TYPE T_LCD_BUSCTRL_COMMAND IS (
+		LCD_BUSCTRL_CMD_NONE,
+		LCD_BUSCTRL_CMD_READ,
+		LCD_BUSCTRL_CMD_WRITE
+	);
+	
+	TYPE T_LCD_BUSCTRL_STATUS IS (
+		LCD_BUSCTRL_STATUS_IDLE,
+		LCD_BUSCTRL_STATUS_READING,
+		LCD_BUSCTRL_STATUS_READ_COMPLETE,
+		LCD_BUSCTRL_STATUS_WRITING,
+		LCD_BUSCTRL_STATUS_WRITE_COMPLETE,
+		LCD_BUSCTRL_STATUS_ERROR
+	);
+
+	TYPE T_LCD_CTRL_COMMAND IS (
+		LCD_CTRL_CMD_NONE,
+		LCD_CTRL_CMD_INITIALIZE,
+		LCD_CTRL_CMD_CLEAR_DISPLAY,
+		LCD_CTRL_CMD_GOTO_HOME,
+		LCD_CTRL_CMD_GOTO_POSITION,
+		LCD_CTRL_CMD_WRITE_CHAR
+	);
+
+	TYPE T_LCD_CTRL_STATUS IS (
+		LCD_CTRL_STATUS_IDLE,
+		LCD_CTRL_STATUS_INITIALIZING,
+		LCD_CTRL_STATUS_INITIALIZE_COMPLETE,
+		LCD_CTRL_STATUS_EXECUTING,
+		LCD_CTRL_STATUS_EXECUTE_COMPLETE,
+		LCD_CTRL_STATUS_WRITING,
+		LCD_CTRL_STATUS_WRITE_COMPLETE
+	);
+	
+	
+	-- command bytes for a KS0066U LCD controller
+	-- ===========================================================================
+	CONSTANT KS0066U_REG_COMMAND							: STD_LOGIC	:= '0';
+	CONSTANT KS0066U_REG_DATA									: STD_LOGIC	:= '1';
+	
+	
+	-- command bytes for a KS0066U LCD controller
+	-- ===========================================================================
+	CONSTANT KS0066U_CMD_NONE									: T_SLV_8		:= x"00";			-- no command
+	CONSTANT KS0066U_CMD_DISPLAY_ON						: T_SLV_8		:= x"0C";			-- Display ON; cursor OFF; blink OFF
+	CONSTANT KS0066U_CMD_DISPLAY_CLEAR				: T_SLV_8		:= x"01";			-- 
+	CONSTANT KS0066U_CMD_RETURN_HOME					: T_SLV_8		:= x"02";			-- 
+	CONSTANT KS0066U_CMD_GO_HOME							: T_SLV_8		:= x"10";			-- 
+	CONSTANT KS0066U_CMD_SET_FUNCTION					: T_SLV_8		:= x"2C";			-- (4 Bit interface, 2-line, 5x8 dots)
+	CONSTANT KS0066U_CMD_ENTRY_MODE						: T_SLV_8		:= x"06";			-- entry mode: move: RIGHT; shift OFF
+
+
+
 
 	PROCEDURE LCDBufferProjection(SIGNAL buffer1 : IN T_LCD_CHAR_VECTOR; SIGNAL buffer2 : OUT T_LCD_CHAR_VECTOR);
 
