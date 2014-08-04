@@ -71,6 +71,8 @@ ENTITY sata_SATAController IS
 		SATA_Clock									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		SATA_Reset									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @SATA_Clock: clock is stable
 		
+		PowerDown										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		
 		Command											: IN	T_SATA_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 		Status											: OUT T_SATA_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
 		Error												: OUT	T_SATA_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
@@ -447,6 +449,8 @@ BEGIN
 			ClockNetwork_ResetDone		=> Trans_ClockNetwork_ResetDone,
 			
 			SATA_Clock								=> SATA_Clock_i,
+			
+			PowerDown									=> PowerDown,
 			
 			RP_Reconfig								=> Phy_Reconfig,
 			RP_ReconfigComplete				=> OPEN,													-- Trans_ReconfigComplete,

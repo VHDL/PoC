@@ -47,14 +47,23 @@ package satadbg is
 	-- SATA Transceiver Types
 	-- ===========================================================================
 	TYPE T_SATADBG_TRANSCEIVEROUT IS RECORD
-		-- dummy signal for synthesis
-		Dummy									: STD_LOGIC;
-		-- 
-		RX_ElectricalIDLE			: STD_LOGIC;
-		RX_Data								: T_SLV_32;
-		RX_CiK								: T_SATA_CIK;
-		TX_Data								: T_SLV_32;
-		TX_CiK								: T_SATA_CIK;
+		TX_Data										: T_SLV_32;
+		TX_CharIsK								: T_SLV_4;
+		RX_Data										: T_SLV_32;
+		RX_CharIsK								: T_SLV_4;
+		RX_CharIsComma						: T_SLV_4;
+		RX_CommaDetected					: STD_LOGIC;
+		RX_ByteIsAligned					: STD_LOGIC;
+		RX_ElectricalIDLE					: STD_LOGIC;
+		RX_ComInitDetected				: STD_LOGIC;
+		RX_ComWakeDetected				: STD_LOGIC;
+		RX_Valid									: STD_LOGIC;
+		RX_Status									: STD_LOGIC_VECTOR(2 DOWNTo 0);
+		RX_ClockCorrectionStatus	: STD_LOGIC_VECTOR(1 DOWNTo 0);
+		TX_ComInit								: STD_LOGIC;
+		TX_ComWake								: STD_LOGIC;
+		TX_ComFinish							: STD_LOGIC;
+		TX_ElectricalIDLE					: STD_LOGIC;
 	END RECORD;
 	
 	-- ===========================================================================
@@ -68,9 +77,9 @@ package satadbg is
 		TrysPerGeneration			: UNSIGNED(3 DOWNTO 0);
 		SATAGeneration				: T_SATA_GENERATION;
 		RX_Data								: T_SLV_32;
-		RX_CiK								: T_SATA_CIK;
+		RX_CiK								: T_SLV_4;
 		TX_Data								: T_SLV_32;
-		TX_CiK								: T_SATA_CIK;
+		TX_CiK								: T_SLV_4;
 	END RECORD;
 	
 	
@@ -84,7 +93,7 @@ package satadbg is
 		Phy_Ready										: STD_LOGIC;
 		-- RX: from physical layer
 		RX_Phy_Data									: T_SLV_32;
-		RX_Phy_CiK									: T_SATA_CIK;										-- 4 bit
+		RX_Phy_CiK									: T_SLV_4;										-- 4 bit
 		-- RX: after primitive detector
 		RX_Primitive								: T_SATA_PRIMITIVE;							-- 5 bit
 		-- RX: after unscrambling
@@ -139,7 +148,7 @@ package satadbg is
 		TX_Primitive								: T_SATA_PRIMITIVE;							-- 5 bit ?
 		-- TX: to Physical Layer
 		TX_Phy_Data									: T_SLV_32;											
-		TX_Phy_CiK									: T_SATA_CIK;										-- 4 bit
+		TX_Phy_CiK									: T_SLV_4;										-- 4 bit
 	END RECORD;		--																							=> 120 bit
 	
 	

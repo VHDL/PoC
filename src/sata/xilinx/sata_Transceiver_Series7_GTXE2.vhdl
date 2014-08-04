@@ -43,14 +43,17 @@ USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
+USE			PoC.satadbg.ALL;
 USE			PoC.sata_TransceiverTypes.ALL;
 USE			PoC.xil.ALL;
 
 
 ENTITY sata_Transceiver_Series7_GTXE2 IS
 	GENERIC (
-		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																	-- 150 MHz
-		PORTS											: POSITIVE										:= 2;																			-- Number of Ports per Transceiver
+		DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
+		ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
+		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																		-- 150 MHz
+		PORTS											: POSITIVE										:= 2;																				-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> T_SATA_GENERATION'high)			-- intial SATA Generation
 	);
 	PORT (
@@ -70,10 +73,13 @@ ENTITY sata_Transceiver_Series7_GTXE2 IS
 		SATA_Generation						: IN	T_SATA_GENERATION_VECTOR(PORTS	- 1 DOWNTO 0);
 		OOB_HandshakingComplete		: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 		
+		PowerDown									: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 		Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS	- 1 DOWNTO 0);
 		Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS	- 1 DOWNTO 0);
 		TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS	- 1 DOWNTO 0);
 		RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS	- 1 DOWNTO 0);
+
+		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVEROUT_VECTOR(PORTS	- 1 DOWNTO 0);
 
 		TX_OOBCommand							: IN	T_SATA_OOB_VECTOR(PORTS	- 1 DOWNTO 0);
 		TX_OOBComplete						: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -372,15 +378,15 @@ BEGIN
 		
 		-- reconfiguration port
 		RP_Locked(I)									<= '0';																							-- all ports are independant	=> never set a lock
-		RP_ReconfigComplete(I)				<= RP_Reconfig(I) WHEN rising_edge(GTX_UserClock);		-- acknoledge reconfiguration with 1 cycle latency
+		RP_ReconfigComplete(I)				<= RP_Reconfig(I) WHEN rising_edge(GTX_UserClock);	-- acknoledge reconfiguration with 1 cycle latency
 		RP_ConfigReloaded(I)					<= RateChangeDone;																	-- acknoledge reload
 
 		-- =========================================================================
 		-- PowerDown control
 		-- =========================================================================
-		GTX_CPLL_PowerDown						<= '0';
-		GTX_TX_PowerDown							<= "00";
-		GTX_RX_PowerDown							<= "00";
+		GTX_CPLL_PowerDown						<= PowerDown(I);
+		GTX_TX_PowerDown							<= PowerDown(I) & PowerDown(I);
+		GTX_RX_PowerDown							<= PowerDown(I) & PowerDown(I);
 
 
 		-- =========================================================================
@@ -1222,5 +1228,27 @@ BEGIN
 		GTX_RX_p									<= VSS_Private_In(I).RX_p;
 		VSS_Private_Out(I).TX_n		<= GTX_TX_n;
 		VSS_Private_Out(I).TX_p		<= GTX_TX_p;
+		
+		genCSP : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
+		
+		BEGIN
+			DebugPortOut(I).TX_Data										<= GTX_TX_Data;
+			DebugPortOut(I).TX_CharIsK								<= GTX_TX_CharIsK;
+			DebugPortOut(I).RX_Data										<= GTX_RX_Data;
+			DebugPortOut(I).RX_CharIsK								<= GTX_RX_CharIsK;
+			DebugPortOut(I).RX_CharIsComma						<= GTX_RX_CharIsComma;
+			DebugPortOut(I).RX_CommaDetected					<= GTX_RX_CommaDetected;
+			DebugPortOut(I).RX_ByteIsAligned					<= GTX_RX_ByteIsAligned;
+			DebugPortOut(I).RX_ElectricalIDLE					<= GTX_RX_ElectricalIDLE;
+			DebugPortOut(I).RX_ComInitDetected				<= GTX_RX_ComInitDetected;
+			DebugPortOut(I).RX_ComWakeDetected				<= GTX_RX_ComWakeDetected;
+			DebugPortOut(I).RX_Valid									<= GTX_RX_Valid;
+			DebugPortOut(I).RX_Status									<= GTX_RX_Status;
+			DebugPortOut(I).RX_ClockCorrectionStatus	<= GTX_RX_ClockCorrectionStatus;
+			DebugPortOut(I).TX_ComInit								<= GTX_TX_ComInit;
+			DebugPortOut(I).TX_ComWake								<= GTX_TX_ComWake;
+			DebugPortOut(I).TX_ComFinish							<= GTX_TX_ComFinish;
+			DebugPortOut(I).TX_ElectricalIDLE					<= GTX_TX_ElectricalIDLE;
+		END GENERATE;
 	END GENERATE;
 END;
