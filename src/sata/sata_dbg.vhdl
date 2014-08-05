@@ -41,14 +41,37 @@ use			PoC.sata.all;
 
 
 package satadbg is
-	constant C_SATADBG_TYPES	: BOOLEAN			:= TRUE;
+	SIGNAL DIRTY_CLOCK_ROUTING	: STD_LOGIC;
 
 	-- ===========================================================================
 	-- SATA Transceiver Types
 	-- ===========================================================================
 	TYPE T_SATADBG_TRANSCEIVEROUT IS RECORD
+		ClockNetwork_Reset				: STD_LOGIC;
+		ClockNetwork_ResetDone		: STD_LOGIC;
+		PowerDown									: STD_LOGIC;
+		CPLL_Reset								: STD_LOGIC;
+		CPLL_Locked								: STD_LOGIC;
+		RP_SATAGeneration					: T_SATA_GENERATION;
+		RP_Reconfig								: STD_LOGIC;
+		RP_ReconfigComplete				: STD_LOGIC;
+		RP_ConfigRealoaded				: STD_LOGIC;
+		TX_RateSelection					: STD_LOGIC_VECTOR(2 DOWNTo 0);
+		RX_RateSelection					: STD_LOGIC_VECTOR(2 DOWNTo 0);
+		TX_RateSelectionDone			: STD_LOGIC;
+		RX_RateSelectionDone			: STD_LOGIC;
+		TX_Reset									: STD_LOGIC;
+		RX_Reset									: STD_LOGIC;
+		TX_ResetDone							: STD_LOGIC;
+		RX_ResetDone							: STD_LOGIC;
+		
 		TX_Data										: T_SLV_32;
 		TX_CharIsK								: T_SLV_4;
+		TX_ComInit								: STD_LOGIC;
+		TX_ComWake								: STD_LOGIC;
+		TX_ComFinish							: STD_LOGIC;
+		TX_ElectricalIDLE					: STD_LOGIC;
+
 		RX_Data										: T_SLV_32;
 		RX_CharIsK								: T_SLV_4;
 		RX_CharIsComma						: T_SLV_4;
@@ -60,10 +83,6 @@ package satadbg is
 		RX_Valid									: STD_LOGIC;
 		RX_Status									: STD_LOGIC_VECTOR(2 DOWNTo 0);
 		RX_ClockCorrectionStatus	: STD_LOGIC_VECTOR(1 DOWNTo 0);
-		TX_ComInit								: STD_LOGIC;
-		TX_ComWake								: STD_LOGIC;
-		TX_ComFinish							: STD_LOGIC;
-		TX_ElectricalIDLE					: STD_LOGIC;
 	END RECORD;
 	
 	-- ===========================================================================

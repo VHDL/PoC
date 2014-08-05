@@ -260,12 +260,12 @@ BEGIN
 					ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,
 
 					RP_Reconfig								=> RP_Reconfig,
+					RP_SATAGeneration					=> SATA_Generation,
 					RP_ReconfigComplete				=> RP_ReconfigComplete,
 					RP_ConfigReloaded					=> RP_ConfigReloaded,
 					RP_Lock										=> RP_Lock,
 					RP_Locked									=> RP_Locked,
 
-					SATA_Generation						=> SATA_Generation,
 					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
 
 					PowerDown									=> PowerDown,
