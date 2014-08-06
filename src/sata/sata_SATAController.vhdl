@@ -37,6 +37,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.satadbg.ALL;
 USE			PoC.sata_TransceiverTypes.ALL;
@@ -198,12 +199,12 @@ ARCHITECTURE rtl OF sata_SATAController IS
 
 BEGIN
 	genReport : FOR I IN 0 TO PORTS - 1 GENERATE
-		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																																							SEVERITY NOTE;
-		ASSERT FALSE REPORT "  ControllerType:         " & ite((CONTROLLER_TYPES(I)					= SATA_DEVICE_TYPE_HOST), "HOST", "DEVICE") SEVERITY NOTE;
-		ASSERT FALSE REPORT "  AllowSpeedNegotiation:  " & ite((ALLOW_SPEED_NEGOTIATION(I)	= TRUE),									"YES",	"NO")			SEVERITY NOTE;
-		ASSERT FALSE REPORT "  AllowAutoReconnect:     " & ite((ALLOW_AUTO_RECONNECT(I)			= TRUE),									"YES",	"NO")			SEVERITY NOTE;
-		ASSERT FALSE REPORT "  AllowStandardViolation: " & ite((ALLOW_STANDARD_VIOLATION(I)	= TRUE),									"YES",	"NO")			SEVERITY NOTE;
-		ASSERT FALSE REPORT "  Init. SATA Generation:  " & ite((INITIAL_SATA_GENERATIONS(I)	= SATA_GENERATION_1),			"Gen1", "Gen2")		SEVERITY NOTE;
+		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																										SEVERITY NOTE;
+		ASSERT FALSE REPORT "  ControllerType:         " & T_SATA_DEVICE_TYPE'image(CONTROLLER_TYPES(I))			SEVERITY NOTE;
+		ASSERT FALSE REPORT "  AllowSpeedNegotiation:  " & to_string(ALLOW_SPEED_NEGOTIATION(I))							SEVERITY NOTE;
+		ASSERT FALSE REPORT "  AllowAutoReconnect:     " & to_string(ALLOW_AUTO_RECONNECT(I))									SEVERITY NOTE;
+		ASSERT FALSE REPORT "  AllowStandardViolation: " & to_string(ALLOW_STANDARD_VIOLATION(I))							SEVERITY NOTE;
+		ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS(I) + 1)	SEVERITY NOTE;
 	END GENERATE;
 
 -- ==================================================================
@@ -229,9 +230,6 @@ BEGIN
 			SATA_Reset_i(I)								<= NOT Trans_ClockNetwork_ResetDone(I);
 
 			CASE Command(I) IS
-				WHEN SATA_CMD_POWERDOWN =>
-					Trans_Command(I)					<= SATA_TRANSCEIVER_CMD_POWERDOWN;
-					
 				WHEN SATA_CMD_RESET =>
 					SATA_Reset_i(I)						<= '1';
 					Link_Command(I)						<= SATA_LINK_CMD_RESET;					-- reset all logic

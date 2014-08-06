@@ -16,7 +16,7 @@ ENTITY sata_Transceiver_Virtex5_GTP_ClockNetwork IS
 		DEBUG											: BOOLEAN												:= TRUE;
 		CLOCK_IN_FREQ_MHZ					: REAL													:= 150.0;																	-- 150 MHz
 		PORTS											: POSITIVE											:= 1;																			-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR			:= (0 to 1 => T_SATA_GENERATION'high)			-- intial SATA Generation
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR			:= (0 to 1 => C_SATA_GENERATION_MAX)			-- intial SATA Generation
 	);
 	PORT (
 		ClockIn_150MHz						: IN	STD_LOGIC;

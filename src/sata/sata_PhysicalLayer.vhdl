@@ -37,6 +37,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.satadbg.ALL;
 
@@ -48,7 +49,7 @@ ENTITY sata_PhysicalLayer IS
 		CLOCK_IN_FREQ_MHZ								: REAL														:= 150.0;
 		CONTROLLER_TYPE									: T_SATA_DEVICE_TYPE							:= SATA_DEVICE_TYPE_HOST;
 		ALLOW_SPEED_NEGOTIATION					: BOOLEAN													:= TRUE;
-		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= T_SATA_GENERATION'high;
+		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= C_SATA_GENERATION_MAX;
 		ALLOW_AUTO_RECONNECT						: BOOLEAN													:= TRUE;
 		ALLOW_STANDARD_VIOLATION				: BOOLEAN													:= FALSE;
 		OOB_TIMEOUT_US									: INTEGER													:= 0;
@@ -139,11 +140,11 @@ ARCHITECTURE rtl OF sata_PhysicalLayer IS
 	
 BEGIN
 
-	ASSERT FALSE REPORT "  ControllerType:         " & ite((CONTROLLER_TYPE						= SATA_DEVICE_TYPE_HOST), "HOST", "DEVICE") SEVERITY NOTE;
-	ASSERT FALSE REPORT "  AllowSpeedNegotiation:  " & ite((ALLOW_SPEED_NEGOTIATION		= TRUE),									"YES",	"NO")			SEVERITY NOTE;
-	ASSERT FALSE REPORT "  AllowAutoReconnect:     " & ite((ALLOW_AUTO_RECONNECT			= TRUE),									"YES",	"NO")			SEVERITY NOTE;
-	ASSERT FALSE REPORT "  AllowStandardViolation: " & ite((ALLOW_STANDARD_VIOLATION	= TRUE),									"YES",	"NO")			SEVERITY NOTE;
-	ASSERT FALSE REPORT "  Init. SATA Generation:  " & ite((INITIAL_SATA_GENERATION		= SATA_GENERATION_1),			"Gen1", "Gen2")		SEVERITY NOTE;
+	ASSERT FALSE REPORT "  ControllerType:         " & T_SATA_DEVICE_TYPE'image(CONTROLLER_TYPE)	SEVERITY NOTE;
+	ASSERT FALSE REPORT "  AllowSpeedNegotiation:  " & to_string(ALLOW_SPEED_NEGOTIATION)					SEVERITY NOTE;
+	ASSERT FALSE REPORT "  AllowAutoReconnect:     " & to_string(ALLOW_AUTO_RECONNECT)						SEVERITY NOTE;
+	ASSERT FALSE REPORT "  AllowStandardViolation: " & to_string(ALLOW_STANDARD_VIOLATION)				SEVERITY NOTE;
+	ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATION + 1)	SEVERITY NOTE;
 
 	PROCESS(Reset, Command)
 	BEGIN
