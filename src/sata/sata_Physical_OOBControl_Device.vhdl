@@ -46,8 +46,6 @@ ENTITY sata_OOBControl_Device IS
 	GENERIC (
 		DEBUG											: BOOLEAN														:= FALSE;
 		CLOCK_IN_FREQ_MHZ					: REAL															:= 150.0;												-- 
-		CLOCK_GEN1_FREQ_MHZ				: REAL															:= 37.5;												-- SATAClock frequency in MHz for SATA generation 1
-		CLOCK_GEN2_FREQ_MHZ				: REAL															:= 75.0;												-- SATAClock frequency in MHz for SATA generation 2
 		ALLOW_STANDARD_VIOLATION	: BOOLEAN														:= FALSE;
 		OOB_TIMEOUT_US						: INTEGER														:= 0
 	);
@@ -80,6 +78,10 @@ ARCHITECTURE rtl OF sata_OOBControl_Device IS
 	ATTRIBUTE KEEP										: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING						: STRING;
 
+	CONSTANT CLOCK_GEN1_FREQ_MHZ			: REAL						:= 37.5;			-- SATAClock frequency in MHz for SATA generation 1
+	CONSTANT CLOCK_GEN2_FREQ_MHZ			: REAL						:= 75.0;			-- SATAClock frequency in MHz for SATA generation 2
+	CONSTANT CLOCK_GEN3_FREQ_MHZ			: REAL						:= 150.0;			-- SATAClock frequency in MHz for SATA generation 3
+
 	CONSTANT DEFAULT_OOB_TIMEOUT_US		: POSITIVE				:= 880;
 	
 	CONSTANT OOB_TIMEOUT_NS						: INTEGER					:= ite((OOB_TIMEOUT_US = 0), DEFAULT_OOB_TIMEOUT_US, OOB_TIMEOUT_US) * 1000;
@@ -103,9 +105,9 @@ ARCHITECTURE rtl OF sata_OOBControl_Device IS
 	);
 
 	-- OOB-Statemachine
-	SIGNAL OOBControl_State					: T_OOBCONTROL_STATE											:= ST_DEV_RESET;
-	SIGNAL OOBControl_NextState			: T_OOBCONTROL_STATE;
-	ATTRIBUTE FSM_ENCODING OF OOBControl_State		: SIGNAL IS ite(DEBUG					, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	SIGNAL OOBControl_State											: T_OOBCONTROL_STATE											:= ST_DEV_RESET;
+	SIGNAL OOBControl_NextState									: T_OOBCONTROL_STATE;
+	ATTRIBUTE FSM_ENCODING OF OOBControl_State	: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
 	-- Timing-Counter
 	-- ================================================================
@@ -121,18 +123,12 @@ ARCHITECTURE rtl OF sata_OOBControl_Device IS
 	SIGNAL TC2_Slot									: INTEGER;
 	SIGNAL TC2_Timeout							: STD_LOGIC;	
 	
-	FUNCTION IsSupportedGeneration(SATAGen : T_SATA_GENERATION) RETURN BOOLEAN IS
-	BEGIN
-		CASE SATAGen IS
-			WHEN SATA_GENERATION_1 =>			RETURN TRUE;
-			WHEN SATA_GENERATION_2 =>			RETURN TRUE;
-			WHEN OTHERS =>								RETURN FALSE;
-		END CASE;
-	END;
-	
 BEGIN
---	ASSERT IsSupportedGeneration(SATA_Generation)	REPORT "Member of T_SATA_GENERATION not supported" SEVERITY FAILURE;
-	ASSERT ((SATA_Generation = SATA_GENERATION_1) OR (SATA_Generation = SATA_GENERATION_2)) REPORT "Member of T_SATA_GENERATION not supported" SEVERITY FAILURE;
+	ASSERT ((SATA_Generation = SATA_GENERATION_1) OR
+					(SATA_Generation = SATA_GENERATION_2) OR
+					(SATA_Generation = SATA_GENERATION_3))
+		REPORT "Member of T_SATA_GENERATION not supported"
+		SEVERITY FAILURE;
 
 	-- OOBControl Statemachine
 	-- ======================================================================================================================================
@@ -179,7 +175,8 @@ BEGIN
 			TC1_en															<= '0';
 			TC1_Load														<= '1';
 			TC1_Slot														<= ite((SATA_Generation = SATA_GENERATION_1), 0,
-																						 ite((SATA_Generation = SATA_GENERATION_2), 1, 0));
+																						 ite((SATA_Generation = SATA_GENERATION_2), 1,
+																						 ite((SATA_Generation = SATA_GENERATION_3), 2, 0)));
 		
 			OOBControl_NextState								<= ST_DEV_TIMEOUT;
 			
@@ -193,11 +190,13 @@ BEGIN
 			TC1_en															<= '0';
 			TC1_Load														<= '1';
 			TC1_Slot														<= ite((SATA_Generation = SATA_GENERATION_1), 0,
-																						 ite((SATA_Generation = SATA_GENERATION_2), 1, 0));
+																						 ite((SATA_Generation = SATA_GENERATION_2), 1,
+																						 ite((SATA_Generation = SATA_GENERATION_3), 2, 0)));
 			
 			TC2_Load														<= '1';
 			TC2_Slot														<= ite((SATA_Generation = SATA_GENERATION_1), 0,
-																						 ite((SATA_Generation = SATA_GENERATION_2), 1, 0));
+																						 ite((SATA_Generation = SATA_GENERATION_2), 1,
+																						 ite((SATA_Generation = SATA_GENERATION_3), 2, 0)));
 			
 			OOBControl_NextState								<= ST_DEV_WAIT_AFTER_HOST_COMRESET;
 		ELSE
@@ -208,7 +207,8 @@ BEGIN
 					IF (Trans_ResetDone = '1') THEN
 						TC1_Load											<= '1';
 						TC1_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), 0,
-																						 ite((SATA_Generation = SATA_GENERATION_2), 1, 0));
+																						 ite((SATA_Generation = SATA_GENERATION_2), 1,
+																						 ite((SATA_Generation = SATA_GENERATION_3), 2, 0)));
 						
 						OOBControl_NextState					<= ST_DEV_WAIT_HOST_COMRESET;
 					END IF;
@@ -221,9 +221,11 @@ BEGIN
 						TC2_Load											<= '1';
 						
 						TC1_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), 0,
-																						 ite((SATA_Generation = SATA_GENERATION_2), 1, 0));
+																						 ite((SATA_Generation = SATA_GENERATION_2), 1,
+																						 ite((SATA_Generation = SATA_GENERATION_3), 2, 0)));
 						TC2_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), 0,
-																						 ite((SATA_Generation = SATA_GENERATION_2), 1, 0));
+																						 ite((SATA_Generation = SATA_GENERATION_2), 1,
+																						 ite((SATA_Generation = SATA_GENERATION_3), 2, 0)));
 						
 						OOBControl_NextState					<= ST_DEV_WAIT_AFTER_HOST_COMRESET;
 					END IF;
@@ -234,7 +236,8 @@ BEGIN
 					IF (OOB_RX_Status = SATA_OOB_COMRESET) THEN																										-- host additional comreset detected
 						TC2_Load											<= '1';
 						TC2_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), 0,
-																						 ite((SATA_Generation = SATA_GENERATION_2), 1, 0));
+																						 ite((SATA_Generation = SATA_GENERATION_2), 1,
+																						 ite((SATA_Generation = SATA_GENERATION_3), 2, 0)));
 					ELSIF (TC2_Timeout = '1') THEN
 						OOB_TX_Command								<= SATA_OOB_COMRESET;
 						
@@ -255,8 +258,9 @@ BEGIN
 					
 					IF (OOB_RX_Status = SATA_OOB_COMWAKE) THEN																											-- host comwake detected
 						TC2_Load											<= '1';
-						TC2_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), 2,
-																						 ite((SATA_Generation = SATA_GENERATION_2), 3, 0));
+						TC2_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), 3,
+																						 ite((SATA_Generation = SATA_GENERATION_2), 4,
+																						 ite((SATA_Generation = SATA_GENERATION_3), 5, 0)));
 					
 						OOBControl_NextState					<= ST_DEV_WAIT_AFTER_COMWAKE;
 					END IF;
@@ -266,8 +270,9 @@ BEGIN
 
 					IF (OOB_RX_Status = SATA_OOB_COMWAKE) THEN																											-- additional host cominit detected
 						TC2_Load											<= '1';
-						TC2_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), 2,
-																						 ite((SATA_Generation = SATA_GENERATION_2), 3, 0));
+						TC2_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), 3,
+																						 ite((SATA_Generation = SATA_GENERATION_2), 4,
+																						 ite((SATA_Generation = SATA_GENERATION_3), 5, 0)));
 					ELSIF (TC2_Timeout = '1') THEN
 						OOB_TX_Command								<= SATA_OOB_COMWAKE;
 						
@@ -322,7 +327,8 @@ BEGIN
 					IF (OOB_Retry = '1') THEN
 						TC1_Load											<= '1';
 						TC1_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), 0,
-																						 ite((SATA_Generation = SATA_GENERATION_2), 1, 0));
+																						 ite((SATA_Generation = SATA_GENERATION_2), 1,
+																						 ite((SATA_Generation = SATA_GENERATION_3), 2, 0)));
 						
 						OOBControl_NextState					<= ST_DEV_RESET;
 					END IF;
@@ -334,7 +340,8 @@ BEGIN
 					IF (OOB_Retry = '1') THEN
 						TC1_Load											<= '1';
 						TC1_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), 0,
-																						 ite((SATA_Generation = SATA_GENERATION_2), 1, 0));
+																						 ite((SATA_Generation = SATA_GENERATION_2), 1,
+																						 ite((SATA_Generation = SATA_GENERATION_3), 2, 0)));
 						
 						OOBControl_NextState					<= ST_DEV_RESET;
 					END IF;
@@ -354,7 +361,8 @@ BEGIN
 		GENERIC MAP (							-- timing table
 			TIMING_TABLE				=> T_NATVEC'(				--		 880 us
 															0 => TimingToCycles_ns(OOB_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN1_FREQ_MHZ)),					-- slot 0
-															1 => TimingToCycles_ns(OOB_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN2_FREQ_MHZ)))					-- slot 1
+															1 => TimingToCycles_ns(OOB_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN2_FREQ_MHZ)),					-- slot 1
+															2 => TimingToCycles_ns(OOB_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN3_FREQ_MHZ)))					-- slot 2
 		)
 		PORT MAP (
 			Clock								=> Clock,
@@ -369,8 +377,10 @@ BEGIN
 			TIMING_TABLE				=> T_NATVEC'(				--			ns
 															0 => TimingToCycles_ns(COMRESET_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN1_FREQ_MHZ)),			-- slot 0
 															1 => TimingToCycles_ns(COMRESET_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN2_FREQ_MHZ)),			-- slot 1
-															2 => TimingToCycles_ns(COMWAKE_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN1_FREQ_MHZ)),			-- slot 2
-															3 => TimingToCycles_ns(COMWAKE_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN2_FREQ_MHZ)))			-- slot 3
+															2 => TimingToCycles_ns(COMRESET_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN3_FREQ_MHZ)),			-- slot 2
+															3 => TimingToCycles_ns(COMWAKE_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN1_FREQ_MHZ)),			-- slot 3
+															4 => TimingToCycles_ns(COMWAKE_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN2_FREQ_MHZ)),			-- slot 4
+															5 => TimingToCycles_ns(COMWAKE_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN3_FREQ_MHZ)))			-- slot 5
 		)
 		PORT MAP (
 			Clock								=> Clock,

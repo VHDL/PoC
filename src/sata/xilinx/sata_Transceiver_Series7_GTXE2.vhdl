@@ -120,11 +120,7 @@ ARCHITECTURE rtl OF sata_Transceiver_Series7_GTXE2 IS
 			WHEN SATA_GENERATION_1 =>			RETURN "011";				-- **PLL Divider (D) = 4
 			WHEN SATA_GENERATION_2 =>			RETURN "010";				-- **PLL Divider (D) = 2
 			WHEN SATA_GENERATION_3 =>			RETURN "001";				-- **PLL Divider (D) = 1
-			
-			WHEN SATA_GENERATION_AUTO =>	RETURN "100";				-- **PLL Divider (D) = 1
-			WHEN SATA_GENERATION_ERROR =>	RETURN "101";				-- **PLL Divider (D) = 1
-			
-			WHEN OTHERS =>								RETURN "110";				-- **PLL Divider (D) = RXOUT_DIV
+			WHEN OTHERS =>								RETURN "000";				-- **PLL Divider (D) = RXOUT_DIV
 		END CASE;
 	END FUNCTION;
 	
@@ -161,6 +157,8 @@ BEGIN
 		SIGNAL ClkNet_Reset									: STD_LOGIC;
 		SIGNAL ClkNet_ResetDone							: STD_LOGIC;
 		
+		SIGNAL ResetDone_r									: STD_LOGIC							:= '0';
+		
 		-- Clock signals
 		SIGNAL GTX_RefClockGlobal						: STD_LOGIC;
 		SIGNAL GTX_RefClockNorth						: T_SLV_2;
@@ -185,7 +183,9 @@ BEGIN
 		
 		SIGNAL GTX_Reset										: STD_LOGIC;
 		SIGNAL GTX_ResetDone								: STD_LOGIC;
-		
+		SIGNAL GTX_ResetDone_d							: STD_LOGIC							:= '0';
+		SIGNAL GTX_ResetDone_re							: STD_LOGIC;
+	
 		-- CPLL resets
 		SIGNAL GTX_CPLL_Reset								: STD_LOGIC;
 		-- TX resets
@@ -328,13 +328,16 @@ BEGIN
 		-- Reset control
 		-- =========================================================================
 		ClkNet_Reset									<= ClockNetwork_Reset(I);
-		ClkNet_ResetDone							<= GTX_CPLL_Locked_async;															-- @
+		ClkNet_ResetDone							<= GTX_CPLL_Locked_async AND GTX_TX_ResetDone;				-- @
 		ClockNetwork_ResetDone(I)			<= ClkNet_ResetDone;																	-- @
 		
 		-- ResetDone calculations
 		GTX_Reset											<= to_sl(Command(I)	= SATA_TRANSCEIVER_CMD_RESET) OR Reset(I) OR TestReset;
 		GTX_ResetDone									<= GTX_TX_ResetDone AND GTX_RX_ResetDone;
-		ResetDone(I)									<= GTX_ResetDone;
+		GTX_ResetDone_d								<= GTX_ResetDone WHEN rising_edge(GTX_UserClock);
+		GTX_ResetDone_re							<= NOT GTX_ResetDone_d AND GTX_ResetDone;
+		ResetDone_r										<= ffrs(q => ResetDone_r, rst => (GTX_Reset OR NOT GTX_CPLL_Locked), set => GTX_ResetDone_re) WHEN rising_edge(GTX_UserClock);
+		ResetDone(I)									<= ResetDone_r;
 		
 		-- CPLL resets
 		GTX_CPLL_Reset								<= ClkNet_Reset;
@@ -364,7 +367,7 @@ BEGIN
 		--	<float>										<= GTX_DRP_DataOut;
 		--	<float>										<= GTX_DRP_Ready;
 
-		PROCESS(GTX_UserClock, GTX_UserClock)
+		PROCESS(GTX_UserClock)
 		BEGIN
 			IF rising_edge(GTX_UserClock) THEN
 				IF (RP_Reconfig(I)	= '1') OR (TestRateSelection = '1') THEN
@@ -385,7 +388,7 @@ BEGIN
 		-- reconfiguration port
 		RP_Locked(I)									<= '0';																							-- all ports are independant	=> never set a lock
 		RP_ReconfigComplete(I)				<= RP_Reconfig(I) WHEN rising_edge(GTX_UserClock);	-- acknoledge reconfiguration with 1 cycle latency
-		RP_ConfigReloaded(I)					<= RateChangeDone_re;																	-- acknoledge reload
+		RP_ConfigReloaded(I)					<= RateChangeDone_re;																-- acknoledge reload
 
 		-- ==================================================================
 		-- Data path / status / error detection
@@ -1150,6 +1153,8 @@ BEGIN
 		BEGIN
 			DebugPortOut(I).ClockNetwork_Reset				<= ClkNet_Reset;
 			DebugPortOut(I).ClockNetwork_ResetDone		<= ClkNet_ResetDone;
+			DebugPortOut(I).Reset											<= GTX_Reset;
+			DebugPortOut(I).ResetDone									<= ResetDone_r;
 			DebugPortOut(I).PowerDown									<= PowerDown(I);
 			DebugPortOut(I).CPLL_Reset								<= GTX_CPLL_Reset;
 			DebugPortOut(I).CPLL_Locked								<= GTX_CPLL_Locked_async;
@@ -1157,6 +1162,8 @@ BEGIN
 			DebugPortOut(I).RP_Reconfig								<= RP_Reconfig(I);
 --			DebugPortOut(I).RP_ReconfigComplete				<= 
 			DebugPortOut(I).RP_ConfigRealoaded				<= RateChangeDone_re;
+			DebugPortOut(I).DD_NoDevice								<= DD_NoDevice;
+			DebugPortOut(I).DD_NewDevice							<= DD_NewDevice;
 			DebugPortOut(I).TX_RateSelection					<= GTX_TX_LineRateSelect;
 			DebugPortOut(I).RX_RateSelection					<= GTX_RX_LineRateSelect;
 			DebugPortOut(I).TX_RateSelectionDone			<= GTX_TX_LineRateSelectDone;

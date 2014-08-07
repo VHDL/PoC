@@ -49,6 +49,8 @@ package satadbg is
 	TYPE T_SATADBG_TRANSCEIVEROUT IS RECORD
 		ClockNetwork_Reset				: STD_LOGIC;
 		ClockNetwork_ResetDone		: STD_LOGIC;
+		Reset											: STD_LOGIC;
+		ResetDone									: STD_LOGIC;
 		PowerDown									: STD_LOGIC;
 		CPLL_Reset								: STD_LOGIC;
 		CPLL_Locked								: STD_LOGIC;
@@ -56,6 +58,8 @@ package satadbg is
 		RP_Reconfig								: STD_LOGIC;
 		RP_ReconfigComplete				: STD_LOGIC;
 		RP_ConfigRealoaded				: STD_LOGIC;
+		DD_NoDevice								: STD_LOGIC;
+		DD_NewDevice							: STD_LOGIC;
 		TX_RateSelection					: STD_LOGIC_VECTOR(2 DOWNTo 0);
 		RX_RateSelection					: STD_LOGIC_VECTOR(2 DOWNTo 0);
 		TX_RateSelectionDone			: STD_LOGIC;
@@ -89,9 +93,6 @@ package satadbg is
 	-- SATA Physical Layer Types
 	-- ===========================================================================
 	TYPE T_SATADBG_PHYSICALOUT IS RECORD
-		-- dummy signal for synthesis
-		Dummy									: STD_LOGIC;
-		-- 
 		GenerationChanges			: UNSIGNED(3 DOWNTO 0);
 		TrysPerGeneration			: UNSIGNED(3 DOWNTO 0);
 		SATAGeneration				: T_SATA_GENERATION;
