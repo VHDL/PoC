@@ -79,6 +79,7 @@ ENTITY sata_Transceiver_Series7_GTXE2 IS
 		TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS	- 1 DOWNTO 0);
 		RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS	- 1 DOWNTO 0);
 
+		DebugPortIn								: IN	T_SATADBG_TRANSCEIVERIN_VECTOR(PORTS	- 1 DOWNTO 0);
 		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVEROUT_VECTOR(PORTS	- 1 DOWNTO 0);
 
 		TX_OOBCommand							: IN	T_SATA_OOB_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -100,19 +101,21 @@ END;
 
 
 ARCHITECTURE rtl OF sata_Transceiver_Series7_GTXE2 IS
-	ATTRIBUTE KEEP 														: BOOLEAN;
+	ATTRIBUTE KEEP 										: BOOLEAN;
+	ATTRIBUTE ASYNC_REG								: STRING;
+	ATTRIBUTE SHREG_EXTRACT						: STRING;
 
 --	==================================================================
 -- SATATransceiver configuration
 --	==================================================================
-	CONSTANT NO_DEVICE_TIMEOUT_MS							: REAL						:= 50.0;				-- 50 ms
-	CONSTANT NEW_DEVICE_TIMEOUT_MS						: REAL						:= 0.001;				-- FIXME: not used -> remove ???
+	CONSTANT NO_DEVICE_TIMEOUT_MS			: REAL						:= 50.0;				-- 50 ms
+	CONSTANT NEW_DEVICE_TIMEOUT_MS		: REAL						:= 0.001;				-- FIXME: not used -> remove ???
 
-	CONSTANT C_DEVICE_INFO										: T_DEVICE_INFO		:= DEVICE_INFO;
+	CONSTANT C_DEVICE_INFO						: T_DEVICE_INFO		:= DEVICE_INFO;
 	
-	SIGNAL ClockIn_150MHz_BUFR								: STD_LOGIC;
-	SIGNAL DD_Clock														: STD_LOGIC;
-	SIGNAL Control_Clock											: STD_LOGIC;
+	SIGNAL ClockIn_150MHz_BUFR				: STD_LOGIC;
+	SIGNAL DD_Clock										: STD_LOGIC;
+	SIGNAL Control_Clock							: STD_LOGIC;
 	
 	FUNCTION to_ClockDividerSelection(gen : T_SATA_GENERATION) RETURN STD_LOGIC_VECTOR IS
 	BEGIN
@@ -225,7 +228,7 @@ BEGIN
 		
 		SIGNAL GTX_TX_ElectricalIDLE				: STD_LOGIC;
 		SIGNAL GTX_RX_ElectricalIDLE				: STD_LOGIC;
-		SIGNAL GTX_RX_ElectricalIDLE_async	: STD_LOGIC;
+		SIGNAL GTX_RX_ElectricalIDLE_a	: STD_LOGIC;
 		
 		SIGNAL GTX_TX_ComInit								: STD_LOGIC;
 		SIGNAL GTX_TX_ComWake								: STD_LOGIC;
@@ -270,7 +273,6 @@ BEGIN
 		
 		SIGNAL DD_NoDevice_i								: STD_LOGIC;
 		SIGNAL DD_NoDevice									: STD_LOGIC;
-		SIGNAL DD_NewDevice_i								: STD_LOGIC;
 		SIGNAL DD_NewDevice									: STD_LOGIC;
 		
 		SIGNAL Status_i											: T_SATA_TRANSCEIVER_STATUS;
@@ -408,7 +410,6 @@ BEGIN
 --		GTX_RX_Status
 --		GTX_RX_ClockCorrectionStatus
 
-		
 		sync1_RXUserClock : ENTITY PoC.xil_SyncBlock
 			GENERIC MAP (
 				BITS					=> 3															-- number of BITS to synchronize
@@ -416,30 +417,18 @@ BEGIN
 			PORT MAP (
 				Clock					=> GTX_UserClock,									-- Clock to be synchronized to
 				DataIn(0)			=> GTX_CPLL_Locked_async,					-- Data to be synchronized
-				DataIn(1)			=> GTX_RX_ElectricalIDLE_async,		-- 
+				DataIn(1)			=> GTX_RX_ElectricalIDLE_a,		-- 
 				DataIn(2)			=> DD_NoDevice_i,									-- 
 				
 				DataOut(0)		=> GTX_CPLL_Locked,								-- synchronised data
 				DataOut(1)		=> GTX_RX_ElectricalIDLE,					-- 
 				DataOut(2)		=> DD_NoDevice										-- 
 			);
-		
-		sync2_RXUserClock : ENTITY PoC.misc_Synchronizer
-			GENERIC MAP (
-				BITS					=> 1													-- number of bit to be synchronized
-			)
-			PORT MAP (
-				Clock1				=> DD_Clock,									-- input clock domain
-				Clock2				=> GTX_UserClock,					-- output clock domain
-				I(0)					=> DD_NewDevice_i,						-- input bits
-				O(0)					=> DD_NewDevice--,							-- output bits
---				B							=> OPEN												-- busy bits
-			);
 
 		--	==================================================================
 		-- OOB signaling
 		--	==================================================================
-		TX_OOBCommand_d						<= TX_OOBCommand(I);	-- WHEN rising_edge(GTX_ClockTX_2X(I));
+		TX_OOBCommand_d						<= TX_OOBCommand(I) WHEN DebugPortIn(I).ForceOOBCommand = SATA_OOB_NONE ELSE DebugPortIn(I).ForceOOBCommand;	-- WHEN rising_edge(GTX_ClockTX_2X(I));
 
 		-- TX OOB signals (generate GTX specific OOB signals)
 		PROCESS(TX_OOBCommand_d)
@@ -516,19 +505,40 @@ BEGIN
 		-- Transceiver status
 		--	==================================================================
 		-- device detection
-		DD : ENTITY PoC.sata_DeviceDetector
-			GENERIC MAP (
-				CLOCK_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,						-- 150 MHz
-				NO_DEVICE_TIMEOUT_MS		=> NO_DEVICE_TIMEOUT_MS,				-- 1,0 ms
-				NEW_DEVICE_TIMEOUT_MS		=> NEW_DEVICE_TIMEOUT_MS				-- 1,0 us
-			)
-			PORT MAP (
-				Clock										=> DD_Clock,
-				ElectricalIDLE					=> GTX_RX_ElectricalIDLE,				-- @GTX_UserClock
-				
-				NoDevice								=> DD_NoDevice_i,								-- @DD_Clock
-				NewDevice								=> DD_NewDevice_i								-- @DD_Clock
-			);
+		blkDeviceDetector : BLOCK
+			SIGNAL ElectricalIDLE_async				: STD_LOGIC									:= '0';	
+			SIGNAL ElectricalIDLE_sync				: STD_LOGIC									:= '0';	
+			
+			-- Mark register "Serial***_async" as asynchronous
+			ATTRIBUTE ASYNC_REG OF ElectricalIDLE_async			: SIGNAL IS "TRUE";
+			
+			-- Prevent XST from translating two FFs into SRL plus FF
+			ATTRIBUTE SHREG_EXTRACT OF ElectricalIDLE_async	: SIGNAL IS "NO";
+			ATTRIBUTE SHREG_EXTRACT OF ElectricalIDLE_sync	: SIGNAL IS "NO";
+
+			SIGNAL NoDevice_d									: STD_LOGIC		:= '0';
+			SIGNAL NoDevice_fe								: STD_LOGIC;
+		BEGIN
+			-- synchronize ElectricalIDLE to working clock domain
+			ElectricalIDLE_async	<= GTX_RX_ElectricalIDLE_a		WHEN rising_edge(DD_Clock);
+			ElectricalIDLE_sync		<= ElectricalIDLE_async				WHEN rising_edge(DD_Clock);
+			
+			GF : ENTITY PoC.io_GlitchFilter
+				GENERIC MAP (
+					CLOCK_FREQ_MHZ										=> CLOCK_IN_FREQ_MHZ,
+					HIGH_SPIKE_SUPPRESSION_TIME_NS		=> NEW_DEVICE_TIMEOUT_MS * 1000.0 * 1000.0,
+					LOW_SPIKE_SUPPRESSION_TIME_NS			=> NO_DEVICE_TIMEOUT_MS * 1000.0 * 1000.0
+				)
+				PORT MAP (
+					Clock		=> DD_Clock,
+					I				=> ElectricalIDLE_sync,
+					O				=> DD_NoDevice_i
+				);
+			
+			NoDevice_d		<= DD_NoDevice WHEN rising_edge(GTX_UserClock);
+			NoDevice_fe		<= NoDevice_d AND NOT DD_NoDevice;
+			DD_NewDevice	<= NoDevice_fe;
+		END BLOCK;
 
 		PROCESS(DD_NoDevice, DD_NewDevice, TX_Error_i, RX_Error_i)	-- GTX_ResetDone, 
 		BEGIN
@@ -729,12 +739,12 @@ BEGIN
 				PMA_RSV																	=> x"00018480",						-- reserved; These bits relate to RXPI and are line rate dependent:
 																																					--	0x00018480 => Lower line rates: CPLL full range and 6 GHz = QPLL VCO rate < 6.6 GHz
 																																					--	0x001E7080 => Higher line rates: QPLL > 6.6 GHz
-				PMA_RSV2																=> x"2050",								-- PMA_RSV2(5) set to '1' to power-up eye-scan circuit
+				PMA_RSV2																=> x"2050",								-- PMA_RSV2(5) = 0; set to '1' if eye-scan circuit should be powered-up
 				PMA_RSV3																=> "00",
 				PMA_RSV4																=> x"00000000",
 				RX_BIAS_CFG															=> "000000000100",
 				DMONITOR_CFG														=> x"000A00",
-				RX_CM_SEL																=> "01",									-- RX termination voltage: 00 => AVTT; 01 => GND; 10 => Floating; 11 => programmable (PMA_RSV(4) & RX_CM_TRIM)
+				RX_CM_SEL																=> "11", --"01",									-- RX termination voltage: 00 => AVTT; 01 => GND; 10 => Floating; 11 => programmable (PMA_RSV(4) & RX_CM_TRIM)
 				RX_CM_TRIM															=> "010",
 				RX_DEBUG_CFG														=> "000000000000",
 				RX_OS_CFG																=> "0000010000000",
@@ -951,7 +961,7 @@ BEGIN
 				
 				-- ElectricalIDLE and OOB ports
 				TXELECIDLE											=> GTX_TX_ElectricalIDLE,					-- @TX_Clock2:	
-				RXELECIDLE											=> GTX_RX_ElectricalIDLE_async,				-- @async:	
+				RXELECIDLE											=> GTX_RX_ElectricalIDLE_a,				-- @async:	
 				RXELECIDLEMODE									=> "00",													-- @async:			indicate ElectricalIDLE on RXELECIDLE
 				
 				TXCOMINIT												=> GTX_TX_ComInit,

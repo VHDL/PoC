@@ -89,6 +89,10 @@ package satadbg is
 		RX_ClockCorrectionStatus	: STD_LOGIC_VECTOR(1 DOWNTo 0);
 	END RECORD;
 	
+	TYPE T_SATADBG_TRANSCEIVERIN IS RECORD
+		ForceOOBCommand						: T_SATA_OOB;
+	END RECORD;
+	
 	-- ===========================================================================
 	-- SATA Physical Layer Types
 	-- ===========================================================================
@@ -194,7 +198,9 @@ package satadbg is
 		Link_Error						: T_SATA_LINK_ERROR;									-- 2 bit
 	END RECORD;
 	
-	
+	TYPE T_SATADBG_SATACIN IS RECORD
+		Transceiver						: T_SATADBG_TRANSCEIVERIN;
+	END RECORD;
 	-- ===========================================================================
 	-- ATA Command Layer types
 	-- ===========================================================================
@@ -218,9 +224,11 @@ package satadbg is
 	
 	
 	type T_SATADBG_TRANSCEIVEROUT_VECTOR	is array (NATURAL range <>)	of T_SATADBG_TRANSCEIVEROUT;
+	type T_SATADBG_TRANSCEIVERIN_VECTOR		is array (NATURAL range <>)	of T_SATADBG_TRANSCEIVERIN;
 	type T_SATADBG_PHYSICALOUT_VECTOR			is array (NATURAL range <>)	of T_SATADBG_PHYSICALOUT;
 	type T_SATADBG_LINKOUT_VECTOR					is array (NATURAL range <>)	of T_SATADBG_LINKOUT;
 	type T_SATADBG_SATACOUT_VECTOR				is array (NATURAL range <>)	of T_SATADBG_SATACOUT;
+	type T_SATADBG_SATACIN_VECTOR					is array (NATURAL range <>)	of T_SATADBG_SATACIN;
 	
 --	TYPE T_DBG_PHYOUT IS RECORD
 --		GenerationChanges		: UNSIGNED(3 DOWNTO 0);
@@ -234,50 +242,6 @@ package satadbg is
 --		RX_Primitive				: T_SATA_PRIMITIVE;
 --	END RECORD;
 
--- 	TYPE T_DBG_TRANSIN IS RECORD
--- -- 		ClkMux							: STD_LOGIC;
--- 		
--- 	END RECORD;
-
---	TYPE T_DBG_TRANSOUT IS RECORD
--- 		PLL_Reset						: STD_LOGIC;
--- 		TXPLL_Locked				: STD_LOGIC;
--- 		RXPLL_Locked				: STD_LOGIC;
--- 
--- 		MMCM_Reset					: STD_LOGIC;
--- 		MMCM_Locked					: STD_LOGIC;
--- 
--- 		RefClock						: STD_LOGIC;
--- 		TXOutClock					: STD_LOGIC;
--- 		RXRecClock					: STD_LOGIC;
--- 		SATAClock						: STD_LOGIC;
---		leds 		: std_logic_vector(7 downto 0);
---		seg7		: std_logic_vector(15 downto 0);
---	END RECORD;
-
--- 	TYPE T_DBG_SATAIN IS RECORD
--- 		LinkLayer						: T_DBG_LINKIN;
--- 		PhysicalLayer				: T_DBG_PHYIN;
--- 		Transceiverlayer		: T_DBG_TRANSIN;
--- 	END RECORD;
-
---	TYPE T_DBG_SATAOUT IS RECORD
---		LinkLayer						: T_DBG_LINKOUT;
---		PhysicalLayer				: T_DBG_PHYOUT;
---		TransceiverLayer		: T_DBG_TRANSOUT;
---	END RECORD;
-
---	TYPE T_DBG_PHYIN_VECTOR			IS ARRAY(NATURAL RANGE <>) OF T_DBG_PHYIN;
---	TYPE T_DBG_PHYOUT_VECTOR		IS ARRAY(NATURAL RANGE <>) OF T_DBG_PHYOUT;
-
---	TYPE T_DBG_TRANSIN_VECTOR		IS ARRAY(NATURAL RANGE <>) OF T_DBG_TRANSIN;
---	TYPE T_DBG_TRANSOUT_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_DBG_TRANSOUT;
-
---	TYPE T_DBG_LINKOUT_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_DBG_LINKOUT;
-	
---	TYPE T_DBG_SATAIN_VECTOR		IS ARRAY(NATURAL RANGE <>) OF T_DBG_SATAIN;
---	TYPE T_DBG_SATAOUT_VECTOR		IS ARRAY(NATURAL RANGE <>) OF T_DBG_SATAOUT;
-	
 --	TYPE T_DBG_COMMAND_OUT IS RECORD
 --		Command											: T_SATA_CMD_COMMAND;
 --		Status											: T_SATA_CMD_STATUS;

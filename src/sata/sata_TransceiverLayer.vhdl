@@ -77,7 +77,8 @@ ENTITY sata_TransceiverLayer IS
 		RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 
-		DebugPortOut							: OUT T_SATADBG_TRANSCEIVEROUT_VECTOR(PORTS	- 1 DOWNTO 0);
+		DebugPortIn								: IN	T_SATADBG_TRANSCEIVERIN_VECTOR(PORTS	- 1 DOWNTO 0);
+		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVEROUT_VECTOR(PORTS	- 1 DOWNTO 0);
 
 		RX_OOBStatus							: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
@@ -275,6 +276,7 @@ BEGIN
 					RX_Error									=> RX_Error,
 					TX_Error									=> TX_Error,
 
+					DebugPortIn								=> DebugPortIn,
 					DebugPortOut							=> DebugPortOut,
 
 					RX_OOBStatus							=> RX_OOBStatus,

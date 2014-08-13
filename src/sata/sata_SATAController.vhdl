@@ -79,7 +79,8 @@ ENTITY sata_SATAController IS
 		Error												: OUT	T_SATA_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 
 		-- Debug ports
-		DebugPortOut								: OUT T_SATADBG_SATACOUT_VECTOR(PORTS - 1 DOWNTO 0);
+		DebugPortIn									: IN	T_SATADBG_SATACIN_VECTOR(PORTS - 1 DOWNTO 0);
+		DebugPortOut								: OUT	T_SATADBG_SATACOUT_VECTOR(PORTS - 1 DOWNTO 0);
     
 		-- TX port
 		TX_SOF											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -190,6 +191,7 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	SIGNAL Trans_RX_Data								: T_SLVV_32(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_RX_CharIsK							: T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
 
+	SIGNAL Trans_DebugPortIn						: T_SATADBG_TRANSCEIVERIN_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_DebugPortOut						: T_SATADBG_TRANSCEIVEROUT_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Phy_DebugPortOut							: T_SATADBG_PHYSICALOUT_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Link_DebugPortOut						: T_SATADBG_LINKOUT_VECTOR(PORTS - 1 DOWNTO 0);
@@ -465,6 +467,8 @@ BEGIN
 			TX_Error									=> Trans_TX_Error,
 			RX_Error									=> Trans_RX_Error,
 
+			-- debug ports
+			DebugPortIn								=> Trans_DebugPortIn,
 			DebugPortOut							=> Trans_DebugPortOut,
 
 			TX_OOBCommand							=> Phy_TX_OOBCommand,
@@ -489,6 +493,8 @@ BEGIN
 	genDebugLoop : for I in 0 to PORTS - 1 generate
 		genDebug1 : if (ENABLE_DEBUGPORT = TRUE) generate
 			-- Transceiver Layer
+			Trans_DebugPortIn(I)									<= DebugPortIn(I).Transceiver;
+			
 			DebugPortOut(I).Transceiver						<= Trans_DebugPortOut(I);		-- 
 			DebugPortOut(I).Transceiver_Command		<= Trans_Command(I);				-- 
 			DebugPortOut(I).Transceiver_Status		<= Trans_Status(I);					-- 

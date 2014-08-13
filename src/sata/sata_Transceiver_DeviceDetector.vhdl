@@ -97,5 +97,6 @@ BEGIN
 	NoDevice_d	<= NoDevice_i WHEN rising_edge(Clock);
 	NoDevice_re	<= NOT NoDevice_d AND NoDevice_i;
 	
+	NoDevice		<= NoDevice_i;
 	NewDevice		<= NoDevice_re;
 END;
