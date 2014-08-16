@@ -94,6 +94,7 @@ package strings is
 	function str_trim(str : STRING)			return STRING;
 	FUNCTION str_to_lower(str : STRING) RETURN STRING;
 	FUNCTION str_to_upper(str : STRING) RETURN STRING;
+	function str_substr(str : STRING; start : INTEGER := 0; length : INTEGER := 0) return STRING;
 
 end package strings;
 
@@ -492,4 +493,39 @@ package body strings is
 		RETURN temp;
 	END FUNCTION;
 
+	-- examples:
+	--							  123456789ABC
+	-- input string: "Hello World."
+	--	low=1; high=12; length=12
+	--
+	--	str_substr("Hello World.",	0,	0)	=> "Hello World."		- copy all
+	--	str_substr("Hello World.",	7,	0)	=> "World."					- copy from pos 7 to end of string
+	--	str_substr("Hello World.",	7,	5)	=> "World"					- copy from pos 7 for 5 characters
+	--	str_substr("Hello World.",	0, -7)	=> "Hello World."		- copy all until character 8 from right boundary
+	
+	function str_substr(str : STRING; start : INTEGER := 0; length : INTEGER := 0) return STRING is
+		variable StartOfString		: positive;
+		variable EndOfString			: positive;
+	begin
+		if (start < 0) then			-- start is negative -> start substring at right string boundary
+			StartOfString		:= str'high + start + 1;
+		elsif (start = 0) then	-- start is zero -> start substring at left string boundary
+			StartOfString		:= str'low;
+		else 										-- start is positive -> start substring at left string boundary + offset
+			StartOfString		:= start;
+		end if;
+
+		if (length < 0) then		-- length is negative -> end substring at length'th character before right string boundary
+			EndOfString			:= str'high + length;
+		elsif (length = 0) then	-- length is zero -> end substring at right string boundary
+			EndOfString			:= str'high;
+		else										-- length is positive -> end substring at StartOfString + length
+			EndOfString			:= StartOfString + length - 1;
+		end if;
+		
+		if (StartOfString < str'low) then			report "StartOfString is out of str's range. (str=" & str & ")" severity error;		end if;
+		if (EndOfString < str'high) then			report "EndOfString is out of str's range. (str=" & str & ")" severity error;			end if;
+		
+		return str(StartOfString to EndOfString);
+	end function;
 end strings;
