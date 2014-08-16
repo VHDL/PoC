@@ -41,6 +41,7 @@ PACKAGE components IS
 	FUNCTION ffdse(q : STD_LOGIC; d : STD_LOGIC; set : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC;												-- D-FlipFlop with set and enable
 	FUNCTION fftre(q : STD_LOGIC; rst : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC;																			-- T-FlipFlop with reset and enable
 	FUNCTION ffrs(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant rst
+	FUNCTION ffsr(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant set
 
 END;
 
@@ -72,6 +73,12 @@ PACKAGE BODY components IS
 	-- RS-FlipFlop with dominant rst
 	FUNCTION ffrs(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC IS
 	BEGIN
-		RETURN (q AND NOT rst) OR (set AND NOT rst);
+		RETURN (q OR set) AND NOT rst;
+	END FUNCTION;
+	
+	-- RS-FlipFlop with dominant set
+	FUNCTION ffsr(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC IS
+	BEGIN
+		RETURN (q AND NOT rst) OR set;
 	END FUNCTION;
 END PACKAGE BODY;
