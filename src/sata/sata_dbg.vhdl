@@ -91,6 +91,7 @@ package satadbg is
 	
 	TYPE T_SATADBG_TRANSCEIVERIN IS RECORD
 		ForceOOBCommand						: T_SATA_OOB;
+		ForceTXElectricalIdle			: STD_LOGIC;
 	END RECORD;
 	
 	-- ===========================================================================

@@ -72,10 +72,10 @@ ENTITY sata_PhysicalLayer IS
 		DebugPortOut										: OUT	T_SATADBG_PHYSICALOUT;
 
 		Link_RX_Data										: OUT	T_SLV_32;
-		Link_RX_CharIsK									: OUT	T_SATA_CIK;
+		Link_RX_CharIsK									: OUT	T_SLV_4;
 		
 		Link_TX_Data										: IN	T_SLV_32;
-		Link_TX_CharIsK									: IN	T_SATA_CIK;
+		Link_TX_CharIsK									: IN	T_SLV_4;
 
 		-- TransceiverLayer interface
 		Trans_Reconfig									: OUT	STD_LOGIC;
@@ -92,13 +92,13 @@ ENTITY sata_PhysicalLayer IS
 
 		Trans_RX_OOBStatus							: IN	T_SATA_OOB;
 		Trans_RX_Data										: IN	T_SLV_32;
-		Trans_RX_CharIsK								: IN	T_SATA_CIK;
+		Trans_RX_CharIsK								: IN	T_SLV_4;
 		Trans_RX_IsAligned							: IN	STD_LOGIC;
 
 		Trans_TX_OOBCommand							: OUT	T_SATA_OOB;
 		Trans_TX_OOBComplete						: IN	STD_LOGIC;
 		Trans_TX_Data										: OUT	T_SLV_32;
-		Trans_TX_CharIsK								: OUT T_SATA_CIK
+		Trans_TX_CharIsK								: OUT T_SLV_4
 	);
 END;
 

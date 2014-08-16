@@ -90,10 +90,10 @@ ENTITY sata_LinkLayer IS
 		Phy_Status							: IN	T_SATA_PHY_STATUS;
 		
 		Phy_RX_Data							: IN	T_SLV_32;
-		Phy_RX_CharIsK					: IN	T_SATA_CIK;
+		Phy_RX_CharIsK					: IN	T_SLV_4;
 		
 		Phy_TX_Data							: OUT	T_SLV_32;
-		Phy_TX_CharIsK					: OUT	T_SATA_CIK
+		Phy_TX_CharIsK					: OUT	T_SLV_4
 
 	);
 END;
@@ -241,11 +241,11 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	-- primitive section
 	SIGNAL PM_DataIn									: T_SLV_32;
 	SIGNAL PM_DataOut									: T_SLV_32;
-	SIGNAL PM_CharIsK									: T_SATA_CIK;
+	SIGNAL PM_CharIsK									: T_SLV_4;
 	SIGNAL TX_Primitive								: T_SATA_PRIMITIVE;
 
 	SIGNAL PD_DataIn									: T_SLV_32;
-	SIGNAL PD_CharIsK									: T_SATA_CIK;
+	SIGNAL PD_CharIsK									: T_SLV_4;
 	SIGNAL RX_Primitive								: T_SATA_PRIMITIVE;
 	SIGNAL RX_Primitive_d							: T_SATA_PRIMITIVE		:= SATA_PRIMITIVE_NONE;
 

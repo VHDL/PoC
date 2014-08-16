@@ -173,6 +173,7 @@ BEGIN
 					SATA_Generation						=> SATA_Generation,
 					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
 					
+					PowerDown									=> PowerDown,
 					Command										=> Command,
 					Status										=> Status,
 					RX_Error									=> RX_Error,
