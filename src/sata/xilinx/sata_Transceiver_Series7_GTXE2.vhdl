@@ -794,6 +794,7 @@ BEGIN
 				PCS_RSVD_ATTR(6)												=> '1',										-- reserved; set to '1'
 				PCS_RSVD_ATTR(7)												=> '0',										-- not documented; set to '0' ?
 				PCS_RSVD_ATTR(8)												=> '1',										-- power up OOB circuit
+				PCS_RSVD_ATTR(47 TO 9)									=> (OTHERS => '0'),				-- not documented; set to "0..0" ?
 
 				-- CDR attributes
 				--For GTX only: Display Port, HBR/RBR- set RXCDR_CFG=72'h0380008bff40200008
