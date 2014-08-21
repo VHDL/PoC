@@ -191,7 +191,7 @@ BEGIN
 						
 						NextState								<= ST_WRITE_SETUP_REGSEL;
 						
-					WHEN IO_LCDBUS_CMD_WRITE =>
+					WHEN IO_LCDBUS_CMD_READ =>
 						Reg_RegisterAddress_en	<= '1';
 						
 						BusTC_Load							<= '1';
@@ -411,7 +411,7 @@ BEGIN
 				END IF;
 				
 			WHEN ST_ERROR =>
-				Status			<= IO_LCDBUS_STATUS_ERROR;
+				Status							<= IO_LCDBUS_STATUS_ERROR;
 					
 		END CASE;
 	END PROCESS;
