@@ -85,11 +85,11 @@ ENTITY sata_Transceiver_Series7_GTXE2 IS
 		TX_OOBCommand							: IN	T_SATA_OOB_VECTOR(PORTS	- 1 DOWNTO 0);
 		TX_OOBComplete						: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 		TX_Data										: IN	T_SLVV_32(PORTS	- 1 DOWNTO 0);
-		TX_CharIsK								: IN	T_SATA_CIK_VECTOR(PORTS	- 1 DOWNTO 0);
+		TX_CharIsK								: IN	T_SLVV_4(PORTS	- 1 DOWNTO 0);
 
 		RX_OOBStatus							: OUT	T_SATA_OOB_VECTOR(PORTS	- 1 DOWNTO 0);
 		RX_Data										: OUT	T_SLVV_32(PORTS	- 1 DOWNTO 0);
-		RX_CharIsK								: OUT	T_SATA_CIK_VECTOR(PORTS	- 1 DOWNTO 0);
+		RX_CharIsK								: OUT	T_SLVV_4(PORTS	- 1 DOWNTO 0);
 		RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 		
 		-- vendor specific signals (Xilinx)
@@ -108,8 +108,10 @@ ARCHITECTURE rtl OF sata_Transceiver_Series7_GTXE2 IS
 --	==================================================================
 -- SATATransceiver configuration
 --	==================================================================
-	CONSTANT NO_DEVICE_TIMEOUT_MS			: REAL						:= 50.0;				-- 50 ms
-	CONSTANT NEW_DEVICE_TIMEOUT_MS		: REAL						:= 0.001;				-- FIXME: not used -> remove ???
+	CONSTANT INITIAL_SATA_GENERATIONS_I	: T_SATA_GENERATION_VECTOR(0 TO PORTS - 1)	:= INITIAL_SATA_GENERATIONS;
+	
+	CONSTANT NO_DEVICE_TIMEOUT_MS				: REAL																			:= 50.0;				-- 50 ms
+	CONSTANT NEW_DEVICE_TIMEOUT_MS			: REAL																			:= 0.001;				-- FIXME: not used -> remove ???
 
 --	CONSTANT C_DEVICE_INFO						: T_DEVICE_INFO		:= DEVICE_INFO;
 	
@@ -133,8 +135,8 @@ ARCHITECTURE rtl OF sata_Transceiver_Series7_GTXE2 IS
 BEGIN
 	genReport : FOR I IN 0 TO PORTS - 1 GENERATE
 		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																										SEVERITY NOTE;
-		ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS(I) + 1)	SEVERITY NOTE;
-		ASSERT FALSE REPORT "  ClockDivider:           " & to_string(to_ClockDividerSelection(INITIAL_SATA_GENERATIONS(I)), 'b')	SEVERITY NOTE;
+		ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS_I(I) + 1)	SEVERITY NOTE;
+		ASSERT FALSE REPORT "  ClockDivider:           " & to_string(to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(I)), 'b')	SEVERITY NOTE;
 	END GENERATE;
 
 -- ==================================================================
@@ -211,8 +213,8 @@ BEGIN
 		-- =====================================================================
 		SIGNAL RP_Reconfig_d								: STD_LOGIC						:= '0';
 		
-		SIGNAL GTX_TX_LineRateSelect				: STD_LOGIC_VECTOR(2 DOWNTO 0)		:= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS(I));
-		SIGNAL GTX_RX_LineRateSelect				: STD_LOGIC_VECTOR(2 DOWNTO 0)		:= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS(I));
+		SIGNAL GTX_TX_LineRateSelect				: STD_LOGIC_VECTOR(2 DOWNTO 0)		:= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(I));
+		SIGNAL GTX_RX_LineRateSelect				: STD_LOGIC_VECTOR(2 DOWNTO 0)		:= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(I));
 		
 		SIGNAL GTX_TX_LineRateSelectDone		: STD_LOGIC;
 		SIGNAL GTX_RX_LineRateSelectDone		: STD_LOGIC;
@@ -382,6 +384,8 @@ BEGIN
 --		PROCESS(GTX_UserClock)
 --		BEGIN
 --			IF rising_edge(GTX_UserClock) THEN
+--				IF (Reset(I) ...
+--					to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(I));
 --				IF (RP_Reconfig(I)	= '1') THEN	-- OR (TestRateSelection = '1') THEN
 --					GTX_TX_LineRateSelect		<= to_ClockDividerSelection(RP_SATAGeneration(I));
 --					GTX_RX_LineRateSelect		<= to_ClockDividerSelection(RP_SATAGeneration(I));
@@ -814,7 +818,7 @@ BEGIN
 				PCS_RSVD_ATTR(6)												=> '1',										-- reserved; set to '1'
 				PCS_RSVD_ATTR(7)												=> '0',										-- not documented; set to '0' ?
 				PCS_RSVD_ATTR(8)												=> '1',										-- power up OOB circuit
-				PCS_RSVD_ATTR(47 TO 9)									=> (OTHERS => '0'),				-- not documented; set to "0..0" ?
+				PCS_RSVD_ATTR(9 TO 47)									=> (OTHERS => '0'),				-- not documented; set to "0..0" ?
 
 				-- CDR attributes
 				--For GTX only: Display Port, HBR/RBR- set RXCDR_CFG=72'h0380008bff40200008
