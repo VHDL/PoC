@@ -134,9 +134,11 @@ ARCHITECTURE rtl OF sata_Transceiver_Series7_GTXE2 IS
 	
 BEGIN
 	genReport : FOR I IN 0 TO PORTS - 1 GENERATE
-		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																										SEVERITY NOTE;
+		CONSTANT clkdiv : STD_LOGIC_VECTOR(2 DOWNTO 0)		:= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(I));
+	BEGIN
+		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																											SEVERITY NOTE;
 		ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS_I(I) + 1)	SEVERITY NOTE;
-		ASSERT FALSE REPORT "  ClockDivider:           " & to_string(to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(I)), 'b')	SEVERITY NOTE;
+		ASSERT FALSE REPORT "  ClockDivider:           " & to_string(clkdiv, 'b')	SEVERITY NOTE;
 	END GENERATE;
 
 -- ==================================================================
