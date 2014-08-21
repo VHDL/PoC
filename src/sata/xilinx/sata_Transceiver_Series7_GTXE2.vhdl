@@ -37,7 +37,7 @@ LIBRARY UNISIM;
 USE			UNISIM.VCOMPONENTS.ALL;
 
 LIBRARY PoC;
-USE			PoC.config.ALL;
+--USE			PoC.config.ALL;
 USE			PoC.components.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
@@ -111,17 +111,20 @@ ARCHITECTURE rtl OF sata_Transceiver_Series7_GTXE2 IS
 	CONSTANT NO_DEVICE_TIMEOUT_MS			: REAL						:= 50.0;				-- 50 ms
 	CONSTANT NEW_DEVICE_TIMEOUT_MS		: REAL						:= 0.001;				-- FIXME: not used -> remove ???
 
-	CONSTANT C_DEVICE_INFO						: T_DEVICE_INFO		:= DEVICE_INFO;
+--	CONSTANT C_DEVICE_INFO						: T_DEVICE_INFO		:= DEVICE_INFO;
 	
 	SIGNAL ClockIn_150MHz_BUFR				: STD_LOGIC;
 	SIGNAL DD_Clock										: STD_LOGIC;
 	SIGNAL Control_Clock							: STD_LOGIC;
 	
+	SIGNAL OOBClockGen_Value					: STD_LOGIC_VECTOR(2 DOWNTO 0);
+	SIGNAL OOB_Clock									: STD_LOGIC;
+	
 	FUNCTION to_ClockDividerSelection(gen : T_SATA_GENERATION) RETURN STD_LOGIC_VECTOR IS
 	BEGIN
 		CASE gen IS
-			WHEN SATA_GENERATION_1 =>			RETURN "100";--"011";				-- **PLL Divider (D) = 4
-			WHEN SATA_GENERATION_2 =>			RETURN "010";				-- **PLL Divider (D) = 2
+			WHEN SATA_GENERATION_1 =>			RETURN "011";				-- **PLL Divider (D) = 4
+			WHEN SATA_GENERATION_2 =>			RETURN "100";	--"010";				-- **PLL Divider (D) = 2
 			WHEN SATA_GENERATION_3 =>			RETURN "001";				-- **PLL Divider (D) = 1
 			WHEN OTHERS =>								RETURN "000";				-- **PLL Divider (D) = RXOUT_DIV
 		END CASE;
@@ -137,9 +140,9 @@ BEGIN
 -- ==================================================================
 -- Assert statements
 -- ==================================================================
-	ASSERT (C_DEVICE_INFO.VENDOR = VENDOR_XILINX)								REPORT "This is a vendor dependent component. Vendor must be Xilinx!"						SEVERITY FAILURE;
-	ASSERT (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2)	REPORT "This is a GTXE2 wrapper component."																			SEVERITY FAILURE;
-	ASSERT (C_DEVICE_INFO.DEVICE = DEVICE_KINTEX7)							REPORT "Device " & DEVICE_T'image(C_DEVICE_INFO.DEVICE) & " not yet supported."	SEVERITY FAILURE;
+--	ASSERT (C_DEVICE_INFO.VENDOR = VENDOR_XILINX)								REPORT "This is a vendor dependent component. Vendor must be Xilinx!"						SEVERITY FAILURE;
+--	ASSERT (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2)	REPORT "This is a GTXE2 wrapper component."																			SEVERITY FAILURE;
+--	ASSERT (C_DEVICE_INFO.DEVICE = DEVICE_KINTEX7)							REPORT "Device " & DEVICE_T'image(C_DEVICE_INFO.DEVICE) & " not yet supported."	SEVERITY FAILURE;
 	ASSERT (PORTS <= 4)																					REPORT "To many ports per transceiver."																					SEVERITY FAILURE;
 		
 	genAssert : FOR I IN 0 TO PORTS - 1 GENERATE
@@ -363,8 +366,8 @@ BEGIN
 		DelayChain	<= DelayChain(DelayChain'high - 1 DOWNTO 0)			& GTX_ResetDone		WHEN rising_edge(GTX_UserClock);
 		DelayChain2	<= DelayChain2(DelayChain2'high - 1 DOWNTO 0)		& RateChangeDone	WHEN rising_edge(GTX_UserClock);
 		
-		TestRateSelection	<= NOT DelayChain(DelayChain'high - 1)		AND DelayChain(DelayChain'high);
-		TestReset					<= NOT DelayChain2(DelayChain2'high - 1)	AND DelayChain2(DelayChain2'high);
+		TestRateSelection	<= '0';	--NOT DelayChain(DelayChain'high - 1)		AND DelayChain(DelayChain'high);
+		TestReset					<= '0';	--NOT DelayChain2(DelayChain2'high - 1)	AND DelayChain2(DelayChain2'high);
 		
 		-- =========================================================================
 		-- LineRate control / linerate clock divider selection / reconfiguration port
@@ -376,15 +379,18 @@ BEGIN
 		--	<float>										<= GTX_DRP_DataOut;
 		--	<float>										<= GTX_DRP_Ready;
 
-		PROCESS(GTX_UserClock)
-		BEGIN
-			IF rising_edge(GTX_UserClock) THEN
-				IF (RP_Reconfig(I)	= '1') THEN	-- OR (TestRateSelection = '1') THEN
-					GTX_TX_LineRateSelect		<= to_ClockDividerSelection(RP_SATAGeneration(I));
-					GTX_RX_LineRateSelect		<= to_ClockDividerSelection(RP_SATAGeneration(I));
-				END IF;
-			END IF;
-		END PROCESS;
+--		PROCESS(GTX_UserClock)
+--		BEGIN
+--			IF rising_edge(GTX_UserClock) THEN
+--				IF (RP_Reconfig(I)	= '1') THEN	-- OR (TestRateSelection = '1') THEN
+--					GTX_TX_LineRateSelect		<= to_ClockDividerSelection(RP_SATAGeneration(I));
+--					GTX_RX_LineRateSelect		<= to_ClockDividerSelection(RP_SATAGeneration(I));
+--				END IF;
+--			END IF;
+--		END PROCESS;
+		
+		GTX_TX_LineRateSelect	<= "000";
+		GTX_RX_LineRateSelect	<= "000";
 		
 		-- RS-FF															Q											rst															set																	clk
 		TX_RateChangeDone <= ffrs(q => TX_RateChangeDone, rst => RP_Reconfig(I), set => GTX_TX_LineRateSelectDone) WHEN rising_edge(GTX_UserClock);
@@ -436,6 +442,20 @@ BEGIN
 		--	==================================================================
 		-- OOB signaling
 		--	==================================================================
+--		OOBClockGen : ENTITY PoC.arith_counter_ring
+--			GENERIC MAP (
+--				BITS							=> OOBClockGen_Value'length,
+--				INVERT_FEEDBACK		=> TRUE				-- TRUE -> johnson counter
+--			)
+--			PORT MAP (
+--				Clock							=> Control_Clock,
+--				Reset							=> '0',
+--				inc								=> '1',
+--				value							=> OOBClockGen_Value
+--			);
+		
+		OOB_Clock			<= '0';	--OOBClockGen_Value(OOBClockGen_Value'high);
+		
 --		TX_OOBCommand_d						<= TX_OOBCommand(I) WHEN DebugPortIn(I).ForceOOBCommand = SATA_OOB_NONE ELSE DebugPortIn(I).ForceOOBCommand;	-- WHEN rising_edge(GTX_ClockTX_2X(I));
 		TX_OOBCommand_d						<= DebugPortIn(I).ForceOOBCommand;	-- WHEN TestRateSelection = '0' ELSE SATA_OOB_COMRESET;
 
@@ -460,7 +480,7 @@ BEGIN
 --		END PROCESS;
 	
 		GTX_TX_ComInit_r	<= ffrs(q => GTX_TX_ComInit_r,	rst => GTX_TX_ComFinish, set => to_sl(TX_OOBCommand_d = SATA_OOB_COMRESET))	WHEN rising_edge(GTX_UserClock);
-		GTX_TX_ComWake_r	<= '0';	--ffrs(q => GTX_TX_ComWake_r,	rst => GTX_TX_ComFinish, set => to_sl(TX_OOBCommand_d = SATA_OOB_COMWAKE))	WHEN rising_edge(GTX_UserClock);
+		GTX_TX_ComWake_r	<= ffrs(q => GTX_TX_ComWake_r,	rst => GTX_TX_ComFinish, set => to_sl(TX_OOBCommand_d = SATA_OOB_COMWAKE))	WHEN rising_edge(GTX_UserClock);
 		GTX_TX_ComSAS_r		<= '0';	--ffrs(q => GTX_TX_ComSAS_r,		rst => GTX_TX_ComFinish, set => to_sl(TX_OOBCommand_d = SATA_OOB_COMSAS))		WHEN rising_edge(GTX_UserClock);
 	
 		PROCESS(GTX_UserClock)
@@ -474,8 +494,8 @@ BEGIN
 			end if;
 		END PROCESS;
 	
-		GTX_TX_ComInit		<= GTX_TX_ComInit_d(GTX_TX_ComInit_d'high);	-- GTX_TX_ComInit_r;
-		GTX_TX_ComWake		<= GTX_TX_ComWake_r;
+		GTX_TX_ComInit		<= to_sl(TX_OOBCommand_d = SATA_OOB_COMRESET);	--GTX_TX_ComInit_d(GTX_TX_ComInit_d'high);	-- GTX_TX_ComInit_r;
+		GTX_TX_ComWake		<= to_sl(TX_OOBCommand_d = SATA_OOB_COMWAKE);	--GTX_TX_ComWake_r;
 		GTX_TX_ComSAS			<= GTX_TX_ComSAS_r;
 	
 	
@@ -616,9 +636,9 @@ BEGIN
 				CPLL_CFG																=> x"BC07DC",									-- 
 				CPLL_INIT_CFG														=> x"00001E",									-- reserved; CPLLRESET_TIME: 0x01E; Represents the time duration to apply internal CPLL reset.
 				CPLL_LOCK_CFG														=> x"01E8",										-- 
-				SATA_CPLL_CFG														=> "VCO_3000MHZ",							-- 
-				RXOUT_DIV																=> 1,													-- 
-				TXOUT_DIV																=> 1,													-- 
+				SATA_CPLL_CFG														=> "VCO_750MHZ",							-- 
+				RXOUT_DIV																=> 4,													-- 
+				TXOUT_DIV																=> 4,													-- 
                                                                             
 				TX_XCLK_SEL															=> "TXOUT",                 
 				RX_XCLK_SEL															=> "RXREC",                 
@@ -754,8 +774,6 @@ BEGIN
 
 				-- RX OOB signaling attributes
 				RXOOB_CFG																=> "0000110",							-- OOB block configuration. The default value is "0000110" - maybe this is the former OOB_CLKDIV -> 150 MHz / 6 => 25 MHz OOB_Clock
-				SAS_MAX_COM															=> 64,
-				SAS_MIN_COM															=> 36,
 				SATA_BURST_SEQ_LEN											=> "0110",
 
 				SATA_BURST_VAL													=> "100",
@@ -766,6 +784,8 @@ BEGIN
 				SATA_MAX_INIT														=> 22,
 				SATA_MIN_WAKE														=> 4,
 				SATA_MAX_WAKE														=> 7,
+				SAS_MAX_COM															=> 64,
+				SAS_MIN_COM															=> 36,
 				
 				-- PMA attributes
 				PMA_RSV																	=> x"00018480",						-- reserved; These bits relate to RXPI and are line rate dependent:
@@ -820,8 +840,8 @@ BEGIN
 				-- TX configurable driver attributes
 				TX_DEEMPH0															=> "00000",
 				TX_DEEMPH1															=> "00000",
-				TX_EIDLE_ASSERT_DELAY										=> "110",
-				TX_EIDLE_DEASSERT_DELAY									=> "100",
+				TX_EIDLE_ASSERT_DELAY										=> "110",							-- Programmable delay between TXELECIDLE assertion to TXP/N exiting electrical idle.
+				TX_EIDLE_DEASSERT_DELAY									=> "100",							-- Programmable delay between TXELECIDLE de-assertion to TXP/N exiting electrical idle.
 				TX_LOOPBACK_DRIVE_HIZ										=> "FALSE",
 				TX_MAINCURSOR_SEL												=> '0',
 				TX_DRIVE_MODE														=> "DIRECT",
@@ -1139,7 +1159,7 @@ BEGIN
 				PMARSVDIN2											=> "00000",												-- @async:			
 				TSTIN														=> "11111111111111111111",				-- @async:			
 				TSTOUT													=> open,													-- @async:			
-				CLKRSVD(0)											=> '0',														-- @clock:			alternative OOB clock; selectable by PCS_RSVD_ATTR(3) = '1'
+				CLKRSVD(0)											=> OOB_Clock,											-- @clock:			alternative OOB clock; selectable by PCS_RSVD_ATTR(3) = '1'
 				CLKRSVD(3 downto 1)							=> "000",
 				SETERRSTATUS										=> '0',														-- @async:			reserved; RX 8B/10B decoder port
 				RXCDROVRDEN											=> '0',														-- @async:			reserved; CDR port
@@ -1202,6 +1222,7 @@ BEGIN
 			DebugPortOut(I).PowerDown									<= PowerDown(I);
 			DebugPortOut(I).CPLL_Reset								<= GTX_CPLL_Reset;
 			DebugPortOut(I).CPLL_Locked								<= GTX_CPLL_Locked_async;
+			DebugPortOut(I).OOB_Clock									<= OOB_Clock;
 			DebugPortOut(I).RP_SATAGeneration					<= RP_SATAGeneration(I);
 			DebugPortOut(I).RP_Reconfig								<= RP_Reconfig(I);
 			DebugPortOut(I).RP_ReconfigComplete				<= RP_Reconfig_d;
