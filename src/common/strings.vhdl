@@ -474,8 +474,20 @@ package body strings is
 	end function;
 
 	function to_natural_dec(str : STRING) return INTEGER is
+		variable Result			: NATURAL;
+		variable Digit			: INTEGER;
 	begin
-		return NATURAL'value(str);
+		for i in str'range loop
+			Digit	:= to_digit_oct(str(I));
+			if (Digit /= -1) then
+				Result	:= Result * 8 + Digit;
+			else
+				return -1;
+			end if;
+		end loop;
+				
+		return Result;
+--		return INTEGER'value(str);			-- 'value(...) is not supported by Vivado Synth 2014.1
 	end function;
 
 	function to_natural_hex(str : STRING) return INTEGER is
