@@ -409,7 +409,7 @@ BEGIN
 		ClockNetwork_ResetDone(I)			<= ClkNet_ResetDone;																	-- @
 		
 		-- ResetDone calculations
-		GTX_Reset											<= to_sl(Command(I)	= SATA_TRANSCEIVER_CMD_RESET) OR Reset(I) OR TestReset;
+		GTX_Reset											<= to_sl(Command(I)	= SATA_TRANSCEIVER_CMD_RESET) OR Reset(I);
 		GTX_ResetDone									<= GTX_TX_ResetDone AND GTX_RX_ResetDone;
 		GTX_ResetDone_d								<= GTX_ResetDone WHEN rising_edge(GTX_UserClock);
 		GTX_ResetDone_re							<= NOT GTX_ResetDone_d AND GTX_ResetDone;
