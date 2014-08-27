@@ -157,6 +157,20 @@ PACKAGE io IS
 		IO_MDIO_MDIOC_ERROR_FSM
 	);
 	
+	TYPE T_IO_LCDBUS_COMMAND IS (
+		IO_LCDBUS_CMD_NONE,
+		IO_LCDBUS_CMD_READ,
+		IO_LCDBUS_CMD_WRITE
+	);
+	
+	TYPE T_IO_LCDBUS_STATUS IS (
+		IO_LCDBUS_STATUS_IDLE,
+		IO_LCDBUS_STATUS_READING,
+		IO_LCDBUS_STATUS_WRITING,
+		IO_LCDBUS_STATUS_ERROR
+	);
+	
+	
 	-- TimingToCycles_***
 	FUNCTION TimingToCycles_ns(Timing_NS : POSITIVE;	CLOCKSPEED_NS : REAL) RETURN NATURAL;
 	FUNCTION TimingToCycles_ns(Timing_NS : REAL;			CLOCKSPEED_NS : REAL) RETURN NATURAL;
@@ -171,31 +185,33 @@ PACKAGE io IS
 	FUNCTION TimingToCycles_s(Timing_S	 : REAL;			CLOCKSPEED_NS : REAL) RETURN NATURAL;
 	
 	-- Freq_***Hz2Real_ns
-	FUNCTION Freq_kHz2Real_ns(Freq_kHz : POSITIVE) RETURN REAL;
-	FUNCTION Freq_kHz2Real_ns(Freq_kHz : REAL) RETURN REAL;
-	FUNCTION Freq_MHz2Real_ns(Freq_MHz : POSITIVE) RETURN REAL;
-	FUNCTION Freq_MHz2Real_ns(Freq_MHz : REAL) RETURN REAL;
+	FUNCTION Freq_kHz2Real_ns(Freq_kHz : POSITIVE)	RETURN REAL;
+	FUNCTION Freq_kHz2Real_ns(Freq_kHz : REAL)			RETURN REAL;
+	FUNCTION Freq_MHz2Real_ns(Freq_MHz : POSITIVE)	RETURN REAL;
+	FUNCTION Freq_MHz2Real_ns(Freq_MHz : REAL)			RETURN REAL;
 	
 	-- Baud2***Hz
-	FUNCTION Baud2kHz(BaudRate : POSITIVE) RETURN REAL;
-	FUNCTION Baud2kHz(BaudRate : REAL) RETURN REAL;
-	FUNCTION Baud2MHz(BaudRate : POSITIVE) RETURN REAL;
-	FUNCTION Baud2MHz(BaudRate : REAL) RETURN REAL;
+	FUNCTION Baud2kHz(BaudRate : POSITIVE)	RETURN REAL;
+	FUNCTION Baud2kHz(BaudRate : REAL)			RETURN REAL;
+	FUNCTION Baud2MHz(BaudRate : POSITIVE)	RETURN REAL;
+	FUNCTION Baud2MHz(BaudRate : REAL)			RETURN REAL;
+
+	function io_7SegmentDisplayEncoding(hex	: STD_LOGIC_VECTOR(3 downto 0); dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR;
 
   -- Component Declarations
   -- =========================================================================
   component io_FanControl
     generic (
-      CLOCK_FREQ_MHZ : real
+      CLOCK_FREQ_MHZ	: real
     );
     port (
-      Clock : in std_logic;
-      Reset : in std_logic;
+      Clock						: in	STD_LOGIC;
+      Reset						: in	STD_LOGIC;
 
-      Fan_PWM   : out std_logic;
-      Fan_Tacho : in  std_logic;
+      Fan_PWM					: out	STD_LOGIC;
+      Fan_Tacho				: in	STD_LOGIC;
 
-      TachoFrequency : out std_logic_vector(15 downto 0)
+      TachoFrequency	: out	STD_LOGIC_VECTOR(15 downto 0)
     );
 	end component;
 
@@ -356,5 +372,31 @@ PACKAGE BODY io IS
 --	BEGIN
 --		RETURN to_unsigned(CYCLES, log2ceilnz(CYCLES));
 --	END;
+
+	function io_7SegmentDisplayEncoding(hex	: STD_LOGIC_VECTOR(3 downto 0); dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR is
+		variable Result		: STD_LOGIC_VECTOR(7 downto 0);
+	begin
+		Result(7)		:= dot;
+		case hex is							-- segments:			GFEDCBA
+			when x"0" =>		Result(6 downto 0)	:= "1000000";
+			when x"1" =>		Result(6 downto 0)	:= "1111001";
+			when x"2" =>		Result(6 downto 0)	:= "0100100";
+			when x"3" =>		Result(6 downto 0)	:= "0110000";
+			when x"4" =>		Result(6 downto 0)	:= "0011001";
+			when x"5" =>		Result(6 downto 0)	:= "0010010";
+			when x"6" =>		Result(6 downto 0)	:= "0000010";
+			when x"7" =>		Result(6 downto 0)	:= "1111000";
+			when x"8" =>		Result(6 downto 0)	:= "0000000";
+			when x"9" =>		Result(6 downto 0)	:= "0010000";
+			when x"A" =>		Result(6 downto 0)	:= "0001000";
+			when x"B" =>		Result(6 downto 0)	:= "0000011";
+			when x"C" =>		Result(6 downto 0)	:= "1000110";
+			when x"D" =>		Result(6 downto 0)	:= "0100001";
+			when x"E" =>		Result(6 downto 0)	:= "0000110";
+			when x"F" =>		Result(6 downto 0)	:= "0001110";
+			when others =>	Result(6 downto 0)	:= "XXXXXXX";
+		end case;
+		return Result;
+	end function;
 
 END PACKAGE BODY;

@@ -38,9 +38,15 @@ PACKAGE components IS
 	-- FlipFlop functions
 	FUNCTION ffdre(q : STD_LOGIC; d : STD_LOGIC; rst : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC;												-- D-FlipFlop with reset and enable
 	FUNCTION ffdre(q : STD_LOGIC_VECTOR; d : STD_LOGIC_VECTOR; rst : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC_VECTOR;	-- D-FlipFlop with reset and enable
-	FUNCTION ffdse(q : STD_LOGIC; d : STD_LOGIC; set : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC;			-- D-FlipFlop with set and enable
-	FUNCTION ffrs(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC;										-- RS-FlipFlop with dominant rst
+	FUNCTION ffdse(q : STD_LOGIC; d : STD_LOGIC; set : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC;												-- D-FlipFlop with set and enable
+	FUNCTION fftre(q : STD_LOGIC; rst : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC;																			-- T-FlipFlop with reset and enable
+	FUNCTION ffrs(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant rst
+	FUNCTION ffsr(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant set
 
+	-- multiplexing
+	function mux(sel : STD_LOGIC; sl0		: STD_LOGIC;				sl1		: STD_LOGIC)				return STD_LOGIC;
+	function mux(sel : STD_LOGIC; slv0	: STD_LOGIC_VECTOR;	slv1	: STD_LOGIC_VECTOR)	return STD_LOGIC_VECTOR;
+	function mux(sel : STD_LOGIC; us0	: UNSIGNED;						us1	: UNSIGNED)						return UNSIGNED;
 END;
 
 
@@ -62,9 +68,37 @@ PACKAGE BODY components IS
 		RETURN ((d AND en) OR (q AND NOT en)) OR set;
 	END FUNCTION;
 	
+	-- T-FlipFlop with reset and enable
+	FUNCTION fftre(q : STD_LOGIC; rst : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC IS
+	BEGIN
+		RETURN ((NOT q AND en) OR (q AND NOT en)) AND NOT rst;
+	END FUNCTION;
+	
 	-- RS-FlipFlop with dominant rst
 	FUNCTION ffrs(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC IS
 	BEGIN
-		RETURN (q AND NOT rst) OR (set AND NOT rst);
+		RETURN (q OR set) AND NOT rst;
 	END FUNCTION;
+	
+	-- RS-FlipFlop with dominant set
+	FUNCTION ffsr(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC IS
+	BEGIN
+		RETURN (q AND NOT rst) OR set;
+	END FUNCTION;
+	
+		-- multiplexing
+	function mux(sel : STD_LOGIC; sl0 : STD_LOGIC; sl1 : STD_LOGIC) return STD_LOGIC is
+	begin
+		return (sl0 and not sel) or (sl1 and sel);
+	end function;
+	
+	function mux(sel : STD_LOGIC; slv0 : STD_LOGIC_VECTOR; slv1 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
+	begin
+		return (slv0 and not (slv0'range => sel)) or (slv1 and (slv0'range => sel));
+	end function;
+
+	function mux(sel : STD_LOGIC; us0 : UNSIGNED; us1 : UNSIGNED) return UNSIGNED is
+	begin
+		return (us0 and not (us0'range => sel)) or (us1 and (us0'range => sel));
+	end function;
 END PACKAGE BODY;

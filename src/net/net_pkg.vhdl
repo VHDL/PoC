@@ -837,6 +837,7 @@ PACKAGE BODY net IS
 
 	FUNCTION to_string(EthType : T_NET_MAC_ETHERNETTYPE) RETURN STRING IS
 	BEGIN
+		-- TODO: replace this case-statement by substring(image(EthType), 10,0)
 		CASE to_slv(EthType) IS
 			WHEN to_slv(C_NET_MAC_ETHERNETTYPE_EMPTY) =>				RETURN "Empty";
 			WHEN to_slv(C_NET_MAC_ETHERNETTYPE_ARP) =>					RETURN "ARP";

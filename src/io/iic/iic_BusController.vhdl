@@ -47,6 +47,7 @@ USE			PoC.io.ALL;
 ENTITY iic_IICBusController IS
 	GENERIC (
 		CLOCK_FREQ_MHZ								: REAL													:= 100.0;														-- 100 MHz
+		ADD_INPUT_SYNCHRONIZER				: BOOLEAN												:= FALSE;
 		IIC_BUSMODE										: T_IO_IIC_BUSMODE							:= IO_IIC_BUSMODE_STANDARDMODE;			-- 100 kHz
 		ALLOW_MEALY_TRANSITION				: BOOLEAN												:= TRUE
 	);
@@ -304,39 +305,54 @@ ARCHITECTURE rtl OF iic_IICBusController IS
 	SIGNAL Status_nxt										: T_IO_IICBUS_STATUS;
 	SIGNAL Status_d											: T_IO_IICBUS_STATUS				:= IO_IICBUS_STATUS_ERROR;
 	
-	SIGNAL SerialClock_async						: STD_LOGIC									:= '0';
-	SIGNAL SerialClock_sync							: STD_LOGIC									:= '0';
-	SIGNAL SerialClockIn								: STD_LOGIC									:= '0';
+	SIGNAL SerialClock_raw							: STD_LOGIC;
+	SIGNAL SerialClockIn								: STD_LOGIC;
 	SIGNAL SerialClock_o_r							: STD_LOGIC									:= '0';
 	SIGNAL SerialClock_t_r							: STD_LOGIC									:= '1';
-	
-	SIGNAL SerialData_async							: STD_LOGIC									:= '0';
-	SIGNAL SerialData_sync							: STD_LOGIC									:= '0';
-	SIGNAL SerialDataIn									: STD_LOGIC									:= '0';
+
+	SIGNAL SerialData_raw								: STD_LOGIC;
+	SIGNAL SerialDataIn									: STD_LOGIC;
 	SIGNAL SerialData_o_r								: STD_LOGIC									:= '0';
 	SIGNAL SerialData_t_r								: STD_LOGIC									:= '1';
 
-	-- Mark register "Serial***_async" as asynchronous
-	ATTRIBUTE ASYNC_REG OF SerialClock_async			: SIGNAL IS "TRUE";
-	ATTRIBUTE ASYNC_REG OF SerialData_async				: SIGNAL IS "TRUE";
-
-	-- Prevent XST from translating two FFs into SRL plus FF
-	ATTRIBUTE SHREG_EXTRACT OF SerialClock_async	: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF SerialClock_sync		: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF SerialData_async		: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF SerialData_sync		: SIGNAL IS "NO";
-	
 	ATTRIBUTE KEEP OF SerialClockIn								: SIGNAL IS TRUE;
 	ATTRIBUTE KEEP OF SerialDataIn								: SIGNAL IS TRUE;
 	
 BEGIN
-	SerialClock_async	<= SerialClock_i			WHEN rising_edge(Clock);
-	SerialClock_sync	<= SerialClock_async	WHEN rising_edge(Clock);
+
+	genSync0 : IF (ADD_INPUT_SYNCHRONIZER = FALSE) GENERATE
+		SerialClock_raw		<= SerialClock_i;
+		SerialData_raw		<= SerialData_i;
+	END GENERATE;
+	genSync1 : IF (ADD_INPUT_SYNCHRONIZER = TRUE) GENERATE
+		SIGNAL SerialClock_async					: STD_LOGIC									:= '0';	
+		SIGNAL SerialClock_sync						: STD_LOGIC									:= '0';	
+		SIGNAL SerialData_async						: STD_LOGIC									:= '0';
+		SIGNAL SerialData_sync						: STD_LOGIC									:= '0';
+		
+		-- Mark register "Serial***_async" as asynchronous
+		ATTRIBUTE ASYNC_REG OF SerialClock_async			: SIGNAL IS "TRUE";
+		ATTRIBUTE ASYNC_REG OF SerialData_async				: SIGNAL IS "TRUE";
+	
+		-- Prevent XST from translating two FFs into SRL plus FF
+		ATTRIBUTE SHREG_EXTRACT OF SerialClock_async	: SIGNAL IS "NO";
+		ATTRIBUTE SHREG_EXTRACT OF SerialClock_sync		: SIGNAL IS "NO";
+		ATTRIBUTE SHREG_EXTRACT OF SerialData_async		: SIGNAL IS "NO";
+		ATTRIBUTE SHREG_EXTRACT OF SerialData_sync		: SIGNAL IS "NO";
+		
+	BEGIN
+		SerialClock_async	<= SerialClock_i			WHEN rising_edge(Clock);
+		SerialClock_sync	<= SerialClock_async	WHEN rising_edge(Clock);
+		SerialClock_raw		<= SerialClock_sync;
+		
+		SerialData_async	<= SerialData_i				WHEN rising_edge(Clock);
+		SerialData_sync		<= SerialData_async		WHEN rising_edge(Clock);
+		SerialData_raw		<= SerialData_sync;
+	END GENERATE;
+
 	SerialClock_o			<= '0';
 	SerialClock_t			<= SerialClock_t_r		WHEN rising_edge(Clock);
 	
-	SerialData_async	<= SerialData_i				WHEN rising_edge(Clock);
-	SerialData_sync		<= SerialData_async		WHEN rising_edge(Clock);
 	SerialData_o			<= '0';
 	SerialData_t			<= SerialData_t_r			WHEN rising_edge(Clock);
 
@@ -348,7 +364,7 @@ BEGIN
 		)
 		PORT MAP (
 			Clock		=> Clock,
-			I				=> SerialClock_sync,
+			I				=> SerialClock_raw,
 			O				=> SerialClockIn
 		);
 		
@@ -360,7 +376,7 @@ BEGIN
 		)
 		PORT MAP (
 			Clock		=> Clock,
-			I				=> SerialData_sync,
+			I				=> SerialData_raw,
 			O				=> SerialDataIn
 		);
 

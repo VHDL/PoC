@@ -34,7 +34,7 @@ library	IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 
 library PoC;
-use			PoC.xilinx.all;
+use			PoC.xil.all;
 
 
 entity xil_ChipScopeICON is
@@ -42,7 +42,7 @@ entity xil_ChipScopeICON is
 		PORTS				: POSITIVE
 	);
   port (
-		ControlBus	: inout	T_CHIPSCOPE_CONTROL_VECTOR(PORTS - 1 downto 0)
+		ControlBus	: inout	T_XIL_CHIPSCOPE_CONTROL_VECTOR(PORTS - 1 downto 0)
 	);
 end;
 

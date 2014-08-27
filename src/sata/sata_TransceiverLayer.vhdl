@@ -40,14 +40,15 @@ USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.sata.ALL;
+USE			PoC.satacomp.ALL;
 USE			PoC.satadbg.ALL;
 USE			PoC.sata_TransceiverTypes.ALL;
 
 
 ENTITY sata_TransceiverLayer IS
 	GENERIC (
-		DEBUG											: BOOLEAN											:= FALSE;
-		ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;
+		DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
+		ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- export internal signals to upper layers for debug purposes
 		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																									-- 150 MHz
 		PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 => SATA_GENERATION_2,	1 => SATA_GENERATION_2)				-- intial SATA Generation
@@ -55,9 +56,12 @@ ENTITY sata_TransceiverLayer IS
 	PORT (
 		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
+		Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+
+		PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 		RP_Reconfig								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RP_ReconfigComplete				: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -73,17 +77,18 @@ ENTITY sata_TransceiverLayer IS
 		RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 
-		DebugPortOut							: OUT T_SATADBG_TRANSCEIVEROUT_VECTOR(PORTS	- 1 DOWNTO 0);
+		DebugPortIn								: IN	T_SATADBG_TRANSCEIVERIN_VECTOR(PORTS	- 1 DOWNTO 0);
+		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVEROUT_VECTOR(PORTS	- 1 DOWNTO 0);
 
 		RX_OOBStatus							: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		RX_CharIsK								: OUT	T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
 		RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
 		TX_OOBCommand							: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_OOBComplete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		TX_CharIsK								: IN	T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
+		TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
 		
 		-- vendor specific signals
 		VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -112,36 +117,25 @@ BEGIN
 -- ==================================================================
 -- Assert statements
 -- ==================================================================
-	assert (C_SATADBG_TYPES = ENABLE_DEBUGPORT)
-		report "DebugPorts are enabled, but debug types are not loaded. Load 'sata_dbg_on.vhdl' into your project!"
-		severity failure;
-
 	ASSERT ((C_DEVICE_INFO.VENDOR = VENDOR_XILINX) OR 
 					(C_DEVICE_INFO.VENDOR = VENDOR_ALTERA))
 		REPORT "Vendor not yet supported."
 		SEVERITY FAILURE;
 		
 	ASSERT ((C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_VIRTEX) OR 
+					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_KINTEX) OR
 					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_STRATIX))
 		REPORT "Device family not yet supported."
 		SEVERITY FAILURE;
 		
 	ASSERT ((C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX5) OR
-					(C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX6) OR
-					(C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX7) OR
 					(C_DEVICE_INFO.DEVICE = DEVICE_KINTEX7) OR
 					(C_DEVICE_INFO.DEVICE = DEVICE_STRATIX2) OR
 					(C_DEVICE_INFO.DEVICE = DEVICE_STRATIX4))
 		REPORT "Device not yet supported."
 		SEVERITY FAILURE;
 		
-	ASSERT ((C_DEVICE_INFO.DEVSUBTYPE = DEVICE_SUBTYPE_LXT) OR
-					(C_DEVICE_INFO.DEVSUBTYPE = DEVICE_SUBTYPE_GX))
-		REPORT "Device subtype not yet supported."
-		SEVERITY FAILURE;
-		
 	ASSERT ((C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTP_DUAL) OR
-					(C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE1) OR
 					(C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2) OR
 					(C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB))
 		REPORT "Transceiver not yet supported."
@@ -179,6 +173,7 @@ BEGIN
 					SATA_Generation						=> SATA_Generation,
 					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
 					
+					PowerDown									=> PowerDown,
 					Command										=> Command,
 					Status										=> Status,
 					RX_Error									=> RX_Error,
@@ -253,6 +248,7 @@ BEGIN
 			Trans : sata_Transceiver_Series7_GTXE2
 				GENERIC MAP (
 					DEBUG											=> DEBUG,
+					ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
 					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
@@ -260,25 +256,29 @@ BEGIN
 				PORT MAP (
 					SATA_Clock								=> SATA_Clock,
 
+					Reset											=> Reset,
 					ResetDone									=> ResetDone,
 					ClockNetwork_Reset				=> ClockNetwork_Reset,
 					ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,
 
 					RP_Reconfig								=> RP_Reconfig,
+					RP_SATAGeneration					=> SATA_Generation,
 					RP_ReconfigComplete				=> RP_ReconfigComplete,
 					RP_ConfigReloaded					=> RP_ConfigReloaded,
 					RP_Lock										=> RP_Lock,
 					RP_Locked									=> RP_Locked,
 
-					SATA_Generation						=> SATA_Generation,
 					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
+
+					PowerDown									=> PowerDown,
 					
 					Command										=> Command,
 					Status										=> Status,
 					RX_Error									=> RX_Error,
 					TX_Error									=> TX_Error,
 
---					DebugPortOut							=> DebugPortOut,
+					DebugPortIn								=> DebugPortIn,
+					DebugPortOut							=> DebugPortOut,
 
 					RX_OOBStatus							=> RX_OOBStatus,
 					RX_Data										=> RX_Data,
@@ -294,7 +294,7 @@ BEGIN
 					VSS_Common_In							=> VSS_Common_In,
 					VSS_Private_In						=> VSS_Private_In,
 					VSS_Private_Out						=> VSS_Private_Out
-					);
+				);
 		END GENERATE;	-- Xilinx.Series7.GTXE2
 	END GENERATE;		-- Xilinx.*
 	genAltera : IF (C_DEVICE_INFO.VENDOR = VENDOR_ALTERA) GENERATE

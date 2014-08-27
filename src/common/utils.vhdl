@@ -55,6 +55,8 @@ package utils is
 	TYPE		T_REALVEC						IS ARRAY(NATURAL RANGE <>) OF REAL;
 	
 	--+ Integer subranges sometimes useful for speeding up simulation ++++++++++
+	SUBTYPE T_INT_8							IS INTEGER RANGE -128 TO 127;
+	SUBTYPE T_INT_16						IS INTEGER RANGE -32768 TO 32767;
 	SUBTYPE T_UINT_8						IS INTEGER RANGE 0 TO 255;
 	SUBTYPE T_UINT_16						IS INTEGER RANGE 0 TO 65535;
 
@@ -561,12 +563,14 @@ package body utils is
 		end loop;
 		return	res;
 	end function;
+	
 	function reverse(vec : bit_vector) return bit_vector is
 		variable res : bit_vector(vec'range);
 	begin
     res := to_bitvector(reverse(to_stdlogicvector(vec)));
     return  res;
 	end reverse;
+	
 	function reverse(vec : unsigned) return unsigned is
 	begin
 		return unsigned(reverse(std_logic_vector(vec)));
@@ -655,6 +659,7 @@ package body utils is
 		res := arg and std_logic_vector(unsigned(not arg)+1);
     return  res;
 	end function;
+	
   function lssb(arg : bit_vector) return bit_vector is
     variable  res : bit_vector(arg'range);
   begin
@@ -667,6 +672,7 @@ package body utils is
 	begin
 		return	reverse(lssb(reverse(arg)));
 	end function;
+	
   function mssb(arg : bit_vector) return bit_vector is
   begin
     return  reverse(lssb(reverse(arg)));
@@ -677,6 +683,7 @@ package body utils is
 	begin
 		return  to_integer(onehot2bin(lssb(arg)));
 	end function;
+	
 	function lssb_idx(arg : bit_vector) return integer is
     variable  slv : std_logic_vector(arg'range);
 	begin
@@ -689,6 +696,7 @@ package body utils is
 	begin
 		return  to_integer(onehot2bin(mssb(arg)));
 	end function;
+	
 	function mssb_idx(arg : bit_vector) return integer is
     variable  slv : std_logic_vector(arg'range);
 	begin

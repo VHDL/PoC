@@ -44,7 +44,7 @@ ENTITY sata_PrimitiveDetector IS
 		Clock									: IN	STD_LOGIC;
 		
 		RX_DataIn							: IN	T_SLV_32;
-		RX_CharIsK						: IN	T_SATA_CIK;
+		RX_CharIsK						: IN	T_SLV_4;
 		
 		Primitive							: OUT	T_SATA_PRIMITIVE
 	);
@@ -91,7 +91,7 @@ BEGIN
 --				WHEN OTHERS =>														Primitive_i			<= SATA_PRIMITIVE_ILLEGAL;			-- 
 --			END CASE;
 			FOR I IN T_SATA_PRIMITIVE LOOP
-				IF (RX_DataIn = to_slv(I)) THEN
+				IF (RX_DataIn = to_sata_word(I)) THEN
 					Primitive_i <= I;
 				END IF;
 			END LOOP;

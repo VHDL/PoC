@@ -32,25 +32,31 @@
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 
+LIBRARY PoC;
+USE			PoC.utils.ALL;
+
 
 ENTITY arith_counter_ring IS
 	GENERIC (
-		BITS						: POSTIVE;
-		INVERT_FEEDBACK	: BOOLEAN				:= FALSE														-- FALSE -> ring counter;		TRUE -> johnson counter
+		BITS						: POSITIVE;
+		INVERT_FEEDBACK	: BOOLEAN		:= FALSE																	-- FALSE -> ring counter;		TRUE -> johnson counter
 	);
 	PORT (
-		Clock						: IN	STD_LOGIC;																		-- Clock
-		Reset						: IN	STD_LOGIC;																		-- Reset
-		seed						: OUT STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);					-- initial counter vector / load value
-		inc							: IN	STD_LOGIC														:= '0';		-- increment counter
-		dec							: IN	STD_LOGIC														:= '0';		-- decrement counter
-		value						: OUT STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)						-- counter value
+		Clock		: IN	STD_LOGIC;																							-- Clock
+		Reset		: IN	STD_LOGIC;																							-- Reset
+		seed		: IN	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)	:= (OTHERS => '0');	-- initial counter vector / load value
+		inc			: IN	STD_LOGIC														:= '0';							-- increment counter
+		dec			: IN	STD_LOGIC														:= '0';							-- decrement counter
+		value		: OUT STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)											-- counter value
 	);
 END;
 
 
 ARCHITECTURE rtl OF arith_counter_ring IS
+	CONSTANT INVERT		: STD_LOGIC			:= to_sl(INVERT_FEEDBACK);
+
 	SIGNAL counter		: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)	:= (OTHERS => '0');
+
 BEGIN
 	PROCESS(Clock)
 	BEGIN
@@ -59,9 +65,9 @@ BEGIN
 				counter			<= seed;
 			ELSE
 				IF (inc = '1') THEN
-					counter		<= counter(counter'high - 1 DOWNTO 0) & (counter(counter'high) XOR INVERT_FEEDBACK);
+					counter		<= counter(counter'high - 1 DOWNTO 0) & (counter(counter'high) XOR INVERT);
 				ELSIF (dec = '1') THEN
-					counter		<= (counter(0) XOR INVERT_FEEDBACK) & counter(counter'high DOWNTO 1);
+					counter		<= (counter(0) XOR INVERT) & counter(counter'high DOWNTO 1);
 				END IF;
 			END IF;
 		END IF;
