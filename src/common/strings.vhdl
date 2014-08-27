@@ -116,9 +116,9 @@ package strings is
 	function str_length(str : STRING)									return NATURAL;
 	function str_equal(str1 : STRING; str2 : STRING)	return BOOLEAN;
 	function str_match(str1 : STRING; str2 : STRING)	return BOOLEAN;
-	function str_pos(str : STRING; char : CHARACTER)	return INTEGER;
+	function str_pos(str : STRING; chr : CHARACTER)		return INTEGER;
 	function str_pos(str1 : STRING; str2 : STRING)		return INTEGER;
-	function str_find(str : STRING; char : CHARACTER) return BOOLEAN;
+	function str_find(str : STRING; chr : CHARACTER)	return BOOLEAN;
 	function str_find(str1 : STRING; str2 : STRING)		return BOOLEAN;
 	function str_trim(str : STRING)										return STRING;
 	function str_to_lower(str : STRING)								return STRING;
@@ -635,9 +635,9 @@ package body strings is
 		return -1;
 	end function;
 	
-	function str_find(str : STRING; char : CHARACTER) return boolean is
+	function str_find(str : STRING; chr : CHARACTER) return boolean is
 	begin
-		return (str_pos(str, char) > 0);
+		return (str_pos(str, chr) > 0);
 	end function;
 	
 	function str_find(str1 : STRING; str2 : STRING) return boolean is
