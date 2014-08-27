@@ -46,7 +46,7 @@ ENTITY sata_PhysicalLayer IS
 	GENERIC (
 		DEBUG														: BOOLEAN													:= FALSE;
 		ENABLE_DEBUGPORT								: BOOLEAN													:= FALSE;
-		CLOCK_IN_FREQ_MHZ								: REAL														:= 150.0;
+		CLOCK_FREQ_MHZ									: REAL														:= 150.0;
 		CONTROLLER_TYPE									: T_SATA_DEVICE_TYPE							:= SATA_DEVICE_TYPE_HOST;
 		ALLOW_SPEED_NEGOTIATION					: BOOLEAN													:= TRUE;
 		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= C_SATA_GENERATION_MAX;
@@ -101,6 +101,7 @@ ENTITY sata_PhysicalLayer IS
 		Trans_TX_CharIsK								: OUT T_SLV_4
 	);
 END;
+
 
 ARCHITECTURE rtl OF sata_PhysicalLayer IS
 	ATTRIBUTE KEEP						: BOOLEAN;
@@ -256,8 +257,8 @@ BEGIN
 	genHost : IF (CONTROLLER_TYPE = SATA_DEVICE_TYPE_HOST) GENERATE
 		OOBC : ENTITY PoC.sata_OOBControl_Host
 			GENERIC MAP (
-				DEBUG											=> DEBUG					,
-				CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
+				DEBUG											=> DEBUG,
+				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
 				ALLOW_STANDARD_VIOLATION	=> ALLOW_STANDARD_VIOLATION,
 				OOB_TIMEOUT_US						=> OOB_TIMEOUT_US
 			)
@@ -287,8 +288,8 @@ BEGIN
 	genDev : IF (CONTROLLER_TYPE = SATA_DEVICE_TYPE_DEVICE) GENERATE
 		OOBC : ENTITY PoC.sata_OOBControl_Device
 			GENERIC MAP (
-				DEBUG											=> DEBUG					,
-				CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
+				DEBUG											=> DEBUG,
+				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
 				ALLOW_STANDARD_VIOLATION	=> ALLOW_STANDARD_VIOLATION,
 				OOB_TIMEOUT_US						=> OOB_TIMEOUT_US
 			)
@@ -306,7 +307,7 @@ BEGIN
 				OOB_ReceivedReset					=> OOBC_ReceivedReset,
 				
 				OOB_Retry									=> OOB_Retry,
-				OOB_LinkReady							=> OOB_LinkOK,
+				OOB_LinkOK								=> OOB_LinkOK,
 				OOB_LinkDead							=> OOB_LinkDead,
 				OOB_Timeout								=> OOB_Timeout,
 
