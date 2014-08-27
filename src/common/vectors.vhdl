@@ -115,6 +115,7 @@ package vectors is
 	-- multiplexing
 	function mux(sel : STD_LOGIC; sl0		: STD_LOGIC;				sl1		: STD_LOGIC)				return STD_LOGIC;
 	function mux(sel : STD_LOGIC; slv0	: STD_LOGIC_VECTOR;	slv1	: STD_LOGIC_VECTOR)	return STD_LOGIC_VECTOR;
+	function mux(sel : STD_LOGIC; us0	: UNSIGNED;						us1	: UNSIGNED)						return UNSIGNED;
 
 	-- Convert to vector: to_slv
 	FUNCTION to_slv(slvv : T_SLVV_8)										RETURN STD_LOGIC_VECTOR;					-- convert vector-vector to flatten vector
@@ -299,20 +300,17 @@ package body vectors is
 	-- multiplexing
 	function mux(sel : STD_LOGIC; sl0 : STD_LOGIC; sl1 : STD_LOGIC) return STD_LOGIC is
 	begin
-		if (sel = '0') then
-			return sl0;
-		else
-			return sl1;
-		end if;
+		return (sl0 and not sel) or (sl1 and sel);
 	end function;
 	
 	function mux(sel : STD_LOGIC; slv0 : STD_LOGIC_VECTOR; slv1 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
 	begin
-		if (sel = '0') then
-			return slv0;
-		else
-			return slv1;
-		end if;
+		return (slv0 and not (slv0'range => sel)) or (slv1 and (slv0'range => sel));
+	end function;
+
+	function mux(sel : STD_LOGIC; us0 : UNSIGNED; us1 : UNSIGNED) return UNSIGNED is
+	begin
+		return (us0 and not (us0'range => sel)) or (us1 and (us0'range => sel));
 	end function;
 
 	-- Convert to vector: to_slv
