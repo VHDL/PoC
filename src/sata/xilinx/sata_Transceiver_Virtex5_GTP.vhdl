@@ -20,7 +20,7 @@ ENTITY sata_Transceiver_Virtex5_GTP IS
 		DEBUG											: BOOLEAN											:= FALSE;																	-- generate ChipScope debugging "pins"
 		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																	-- 150 MHz
 		PORTS											: POSITIVE										:= 2;																			-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1 => T_SATA_GENERATION'high)			-- intial SATA Generation
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1 => C_SATA_GENERATION_MAX)			-- intial SATA Generation
 	);
 	PORT (
 		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -38,6 +38,7 @@ ENTITY sata_Transceiver_Virtex5_GTP IS
 		SATA_Generation						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
 		OOB_HandshakingComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
+		PowerDown									: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
 		Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 		Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
@@ -164,17 +165,17 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP IS
 	SIGNAL GTP_RX_BufferStatus								: T_SLVV_3(PORTS - 1 DOWNTO 0);
 	
 	SIGNAL GTP_RX_Data												: T_SLVV_16(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_RX_Data_d											: T_SLVV_8(PORTS - 1 DOWNTO 0)																		:= (OTHERS => (OTHERS => '0'));
+	SIGNAL GTP_RX_Data_d											: T_SLVV_8(PORTS - 1 DOWNTO 0)																	:= (OTHERS => (OTHERS => '0'));
 	SIGNAL GTP_RX_CommaDetected								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);													-- unused
-	SIGNAL GTP_RX_CharIsComma									: T_SATA_CIK2_VECTOR(PORTS - 1 DOWNTO 0);												-- unused
-	SIGNAL GTP_RX_CharIsK											: T_SATA_CIK2_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_RX_CharIsK_d										: T_SATA_CIK2_VECTOR(PORTS - 1 DOWNTO 0)												:= (OTHERS => (OTHERS => '0'));
+	SIGNAL GTP_RX_CharIsComma									: T_SLVV_2(PORTS - 1 DOWNTO 0);																	-- unused
+	SIGNAL GTP_RX_CharIsK											: T_SLVV_2(PORTS - 1 DOWNTO 0);
+	SIGNAL GTP_RX_CharIsK_d										: T_SLVV_2(PORTS - 1 DOWNTO 0)																	:= (OTHERS => (OTHERS => '0'));
 	SIGNAL GTP_RX_ByteIsAligned								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL GTP_RX_ByteRealign									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);													-- unused
 	SIGNAL GTP_RX_Valid												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);													-- unused
 		
 	SIGNAL GTP_TX_Data												: T_SLVV_16(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_TX_CharIsK											: T_SATA_CIK2_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL GTP_TX_CharIsK											: T_SLVV_2(PORTS - 1 DOWNTO 0);
 
 	SIGNAL BWC_RX_Align												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
@@ -279,8 +280,8 @@ BEGIN
 		GTP_Reset_d										<= GTP_Reset_meta			WHEN rising_edge(SATA_Clock_i(I));
 		
 		GTP_PortReset(I)								<= to_sl(Command(I) = SATA_TRANSCEIVER_CMD_RESET);
-		GTP_TX_PowerDown(I)							<= ite((Command(I)	= SATA_TRANSCEIVER_CMD_POWERDOWN), "11", "00");			-- PowerDown => PowerDownState = P2
-		GTP_RX_PowerDown(I)							<= ite((Command(I)	= SATA_TRANSCEIVER_CMD_POWERDOWN), "11", "00");
+		GTP_TX_PowerDown(I)							<= PowerDown(I) & PowerDown(I);														-- PowerDown => PowerDownState = P2
+		GTP_RX_PowerDown(I)							<= PowerDown(I) & PowerDown(I);														-- PowerDown => PowerDownState = P2
 		
 		GTP_TX_Reset(I)									<= GTP_Reset_d	OR GTP_PortReset(I);
 		GTP_RX_Reset(I)									<= GTP_Reset_d	OR GTP_PortReset(I) OR	OOB_HandshakingComplete(I);
@@ -724,9 +725,7 @@ BEGIN
 		BEGIN
 			Status(I) 							<= SATA_TRANSCEIVER_STATUS_READY;
 			
-			IF (Command(I) = SATA_TRANSCEIVER_CMD_POWERDOWN) THEN
-				Status(I)							<= SATA_TRANSCEIVER_STATUS_POWERED_DOWN;
-			ELSIF (GTP_ResetDone_i(I) = '0') THEN
+			IF (GTP_ResetDone_i(I) = '0') THEN
 				Status(I)							<= SATA_TRANSCEIVER_STATUS_RESETING;
 			ELSIF (DD_NewDevice_i = '1') THEN
 				Status(I)							<= SATA_TRANSCEIVER_STATUS_NEW_DEVICE;

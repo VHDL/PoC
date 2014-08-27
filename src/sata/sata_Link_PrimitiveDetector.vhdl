@@ -44,7 +44,7 @@ ENTITY sata_PrimitiveDetector IS
 		Clock									: IN	STD_LOGIC;
 		
 		RX_DataIn							: IN	T_SLV_32;
-		RX_CharIsK						: IN	T_SATA_CIK;
+		RX_CharIsK						: IN	T_SLV_4;
 		
 		Primitive							: OUT	T_SATA_PRIMITIVE
 	);

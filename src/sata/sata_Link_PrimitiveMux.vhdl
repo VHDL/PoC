@@ -49,7 +49,7 @@ ENTITY sata_PrimitiveMux IS
 		
 		TX_DataIn							: IN	T_SLV_32;
 		TX_DataOut						: OUT	T_SLV_32;
-		TX_CharIsK						: OUT T_SATA_CIK
+		TX_CharIsK						: OUT T_SLV_4
 	);
 END;
 

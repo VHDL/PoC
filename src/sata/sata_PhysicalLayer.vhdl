@@ -37,6 +37,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.satadbg.ALL;
 
@@ -45,10 +46,10 @@ ENTITY sata_PhysicalLayer IS
 	GENERIC (
 		DEBUG														: BOOLEAN													:= FALSE;
 		ENABLE_DEBUGPORT								: BOOLEAN													:= FALSE;
-		CLOCK_IN_FREQ_MHZ								: REAL														:= 150.0;
+		CLOCK_FREQ_MHZ									: REAL														:= 150.0;
 		CONTROLLER_TYPE									: T_SATA_DEVICE_TYPE							:= SATA_DEVICE_TYPE_HOST;
 		ALLOW_SPEED_NEGOTIATION					: BOOLEAN													:= TRUE;
-		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= T_SATA_GENERATION'high;
+		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= C_SATA_GENERATION_MAX;
 		ALLOW_AUTO_RECONNECT						: BOOLEAN													:= TRUE;
 		ALLOW_STANDARD_VIOLATION				: BOOLEAN													:= FALSE;
 		OOB_TIMEOUT_US									: INTEGER													:= 0;
@@ -71,10 +72,10 @@ ENTITY sata_PhysicalLayer IS
 		DebugPortOut										: OUT	T_SATADBG_PHYSICALOUT;
 
 		Link_RX_Data										: OUT	T_SLV_32;
-		Link_RX_CharIsK									: OUT	T_SATA_CIK;
+		Link_RX_CharIsK									: OUT	T_SLV_4;
 		
 		Link_TX_Data										: IN	T_SLV_32;
-		Link_TX_CharIsK									: IN	T_SATA_CIK;
+		Link_TX_CharIsK									: IN	T_SLV_4;
 
 		-- TransceiverLayer interface
 		Trans_Reconfig									: OUT	STD_LOGIC;
@@ -91,15 +92,16 @@ ENTITY sata_PhysicalLayer IS
 
 		Trans_RX_OOBStatus							: IN	T_SATA_OOB;
 		Trans_RX_Data										: IN	T_SLV_32;
-		Trans_RX_CharIsK								: IN	T_SATA_CIK;
+		Trans_RX_CharIsK								: IN	T_SLV_4;
 		Trans_RX_IsAligned							: IN	STD_LOGIC;
 
 		Trans_TX_OOBCommand							: OUT	T_SATA_OOB;
 		Trans_TX_OOBComplete						: IN	STD_LOGIC;
 		Trans_TX_Data										: OUT	T_SLV_32;
-		Trans_TX_CharIsK								: OUT T_SATA_CIK
+		Trans_TX_CharIsK								: OUT T_SLV_4
 	);
 END;
+
 
 ARCHITECTURE rtl OF sata_PhysicalLayer IS
 	ATTRIBUTE KEEP						: BOOLEAN;
@@ -139,11 +141,11 @@ ARCHITECTURE rtl OF sata_PhysicalLayer IS
 	
 BEGIN
 
-	ASSERT FALSE REPORT "  ControllerType:         " & ite((CONTROLLER_TYPE						= SATA_DEVICE_TYPE_HOST), "HOST", "DEVICE") SEVERITY NOTE;
-	ASSERT FALSE REPORT "  AllowSpeedNegotiation:  " & ite((ALLOW_SPEED_NEGOTIATION		= TRUE),									"YES",	"NO")			SEVERITY NOTE;
-	ASSERT FALSE REPORT "  AllowAutoReconnect:     " & ite((ALLOW_AUTO_RECONNECT			= TRUE),									"YES",	"NO")			SEVERITY NOTE;
-	ASSERT FALSE REPORT "  AllowStandardViolation: " & ite((ALLOW_STANDARD_VIOLATION	= TRUE),									"YES",	"NO")			SEVERITY NOTE;
-	ASSERT FALSE REPORT "  Init. SATA Generation:  " & ite((INITIAL_SATA_GENERATION		= SATA_GENERATION_1),			"Gen1", "Gen2")		SEVERITY NOTE;
+	ASSERT FALSE REPORT "  ControllerType:         " & T_SATA_DEVICE_TYPE'image(CONTROLLER_TYPE)	SEVERITY NOTE;
+	ASSERT FALSE REPORT "  AllowSpeedNegotiation:  " & to_string(ALLOW_SPEED_NEGOTIATION)					SEVERITY NOTE;
+	ASSERT FALSE REPORT "  AllowAutoReconnect:     " & to_string(ALLOW_AUTO_RECONNECT)						SEVERITY NOTE;
+	ASSERT FALSE REPORT "  AllowStandardViolation: " & to_string(ALLOW_STANDARD_VIOLATION)				SEVERITY NOTE;
+	ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATION + 1)	SEVERITY NOTE;
 
 	PROCESS(Reset, Command)
 	BEGIN
@@ -255,10 +257,8 @@ BEGIN
 	genHost : IF (CONTROLLER_TYPE = SATA_DEVICE_TYPE_HOST) GENERATE
 		OOBC : ENTITY PoC.sata_OOBControl_Host
 			GENERIC MAP (
-				DEBUG											=> DEBUG					,
-				CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
-				CLOCK_GEN1_FREQ_MHZ				=> 37.5,
-				CLOCK_GEN2_FREQ_MHZ				=> 75.0,
+				DEBUG											=> DEBUG,
+				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
 				ALLOW_STANDARD_VIOLATION	=> ALLOW_STANDARD_VIOLATION,
 				OOB_TIMEOUT_US						=> OOB_TIMEOUT_US
 			)
@@ -288,10 +288,8 @@ BEGIN
 	genDev : IF (CONTROLLER_TYPE = SATA_DEVICE_TYPE_DEVICE) GENERATE
 		OOBC : ENTITY PoC.sata_OOBControl_Device
 			GENERIC MAP (
-				DEBUG											=> DEBUG					,
-				CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
-				CLOCK_GEN1_FREQ_MHZ				=> 37.5,
-				CLOCK_GEN2_FREQ_MHZ				=> 75.0,
+				DEBUG											=> DEBUG,
+				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
 				ALLOW_STANDARD_VIOLATION	=> ALLOW_STANDARD_VIOLATION,
 				OOB_TIMEOUT_US						=> OOB_TIMEOUT_US
 			)
@@ -309,7 +307,7 @@ BEGIN
 				OOB_ReceivedReset					=> OOBC_ReceivedReset,
 				
 				OOB_Retry									=> OOB_Retry,
-				OOB_LinkReady							=> OOB_LinkOK,
+				OOB_LinkOK								=> OOB_LinkOK,
 				OOB_LinkDead							=> OOB_LinkDead,
 				OOB_Timeout								=> OOB_Timeout,
 
@@ -320,14 +318,12 @@ BEGIN
 	END GENERATE;
 	
 
--- speed control
--- ==================================================================
+	-- SpeedControl
+	-- ===========================================================================
 	genSC : IF (ALLOW_SPEED_NEGOTIATION = TRUE) GENERATE
-	
-	BEGIN
 		SC : ENTITY PoC.sata_SpeedControl
 			GENERIC MAP (
-				DEBUG											=> DEBUG					,
+				DEBUG											=> DEBUG,
 				INITIAL_SATA_GENERATION		=> INITIAL_SATA_GENERATION,
 				GENERATION_CHANGE_COUNT		=> GENERATION_CHANGE_COUNT,
 				ATTEMPTS_PER_GENERATION		=> ATTEMPTS_PER_GENERATION
@@ -358,6 +354,9 @@ BEGIN
 				Trans_Locked							=> Trans_Locked
 			);
 	END GENERATE;
+	--
+	-- no SpeedControl
+	-- ===========================================================================
 	genNoSC : IF (ALLOW_SPEED_NEGOTIATION = FALSE) GENERATE
 		SIGNAL TryCounter_rst			: STD_LOGIC;
 		SIGNAL TryCounter_en			: STD_LOGIC;
@@ -450,7 +449,7 @@ BEGIN
 	-- ================================================================
 	genCSP : IF (DEBUG = TRUE) GENERATE
 		SIGNAL DBG_OOB_Retry														: STD_LOGIC;
-		SIGNAL DBG_OOB_LinkOK												: STD_LOGIC;
+		SIGNAL DBG_OOB_LinkOK														: STD_LOGIC;
 		SIGNAL DBG_OOB_LinkDead													: STD_LOGIC;
 		SIGNAL DBG_OOB_Timeout													: STD_LOGIC;
 		SIGNAL DBG_SATA_Generation											: T_SATA_GENERATION;
