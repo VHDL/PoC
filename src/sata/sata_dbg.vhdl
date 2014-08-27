@@ -41,8 +41,6 @@ use			PoC.sata.all;
 
 
 package satadbg is
-	SIGNAL DIRTY_CLOCK_ROUTING	: STD_LOGIC;
-
 	-- ===========================================================================
 	-- SATA Transceiver Types
 	-- ===========================================================================
@@ -54,6 +52,7 @@ package satadbg is
 		PowerDown									: STD_LOGIC;
 		CPLL_Reset								: STD_LOGIC;
 		CPLL_Locked								: STD_LOGIC;
+		OOB_Clock									: STD_LOGIC;
 		RP_SATAGeneration					: T_SATA_GENERATION;
 		RP_Reconfig								: STD_LOGIC;
 		RP_ReconfigComplete				: STD_LOGIC;
@@ -112,8 +111,6 @@ package satadbg is
 	-- SATA Link Layer Types
 	-- ===========================================================================
 	TYPE T_SATADBG_LINKOUT IS RECORD
-		-- dummy signal for synthesis
-		Dummy												: STD_LOGIC;
 		-- from physical layer
 		Phy_Ready										: STD_LOGIC;
 		-- RX: from physical layer

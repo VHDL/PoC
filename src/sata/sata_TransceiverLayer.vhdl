@@ -82,13 +82,13 @@ ENTITY sata_TransceiverLayer IS
 
 		RX_OOBStatus							: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		RX_CharIsK								: OUT	T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
 		RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
 		TX_OOBCommand							: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_OOBComplete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		TX_CharIsK								: IN	T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
+		TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
 		
 		-- vendor specific signals
 		VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
