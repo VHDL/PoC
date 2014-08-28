@@ -144,7 +144,9 @@ package satacomp is
 			SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			SATA_Reset								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @SATA_Clock: clock is stable
 			
---			DebugPortOut							: OUT T_DBG_SATAOUT_VECTOR(PORTS - 1 DOWNTO 0);
+			-- Debug ports
+			DebugPortIn								: IN	T_SATADBG_SATAC_IN_VECTOR(PORTS - 1 DOWNTO 0);
+			DebugPortOut							: OUT	T_SATADBG_SATAC_OUT_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			Command										: IN	T_SATA_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 			Status										: OUT T_SATA_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
@@ -213,7 +215,7 @@ package satacomp is
 			RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 			TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 
-			DebugPortOut							: OUT T_SATADBG_TRANSCEIVEROUT_VECTOR(PORTS	- 1 DOWNTO 0);
+			DebugPortOut							: OUT T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
 
 			RX_OOBStatus							: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
@@ -261,7 +263,7 @@ package satacomp is
 			RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS	- 1 DOWNTO 0);
 			TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS	- 1 DOWNTO 0);
 
-			DebugPortOut							: OUT T_SATADBG_TRANSCEIVEROUT_VECTOR(PORTS	- 1 DOWNTO 0);
+			DebugPortOut							: OUT T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
 
 			RX_OOBStatus							: OUT	T_SATA_OOB_VECTOR(PORTS	- 1 DOWNTO 0);
 			RX_Data										: OUT	T_SLVV_32(PORTS	- 1 DOWNTO 0);
@@ -312,8 +314,8 @@ package satacomp is
 			TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS	- 1 DOWNTO 0);
 
 			-- debug ports
-			DebugPortIn								: IN	T_SATADBG_TRANSCEIVERIN_VECTOR(PORTS	- 1 DOWNTO 0);
-			DebugPortOut							: OUT T_SATADBG_TRANSCEIVEROUT_VECTOR(PORTS	- 1 DOWNTO 0);
+			DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
+			DebugPortOut							: OUT T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
 
 			RX_OOBStatus							: OUT	T_SATA_OOB_VECTOR(PORTS	- 1 DOWNTO 0);
 			RX_Data										: OUT	T_SLVV_32(PORTS	- 1 DOWNTO 0);

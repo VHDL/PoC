@@ -9,7 +9,10 @@
 --
 -- Description:
 -- ------------------------------------
---		TODO
+--		This is a vendor, device and protocol specific instanziation of a 7-Series
+--		GTXE2 transceiver. This GTX is configured for Serial-ATA from Gen1 to Gen3
+--		with linerates from 1.5 GHz to 6.0 GHz. It has a SATAGeneration dependant
+--		user interface frequency of 37.5 MHz up to 150 MHz at Gen3.
 -- 
 -- License:
 -- =============================================================================
@@ -80,8 +83,8 @@ ENTITY sata_Transceiver_Series7_GTXE2 IS
 		TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS	- 1 DOWNTO 0);
 		RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS	- 1 DOWNTO 0);
 
-		DebugPortIn								: IN	T_SATADBG_TRANSCEIVERIN_VECTOR(PORTS	- 1 DOWNTO 0);
-		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVEROUT_VECTOR(PORTS	- 1 DOWNTO 0);
+		DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
+		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
 
 		TX_OOBCommand							: IN	T_SATA_OOB_VECTOR(PORTS	- 1 DOWNTO 0);
 		TX_OOBComplete						: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -103,8 +106,6 @@ END;
 
 ARCHITECTURE rtl OF sata_Transceiver_Series7_GTXE2 IS
 	ATTRIBUTE KEEP 										: BOOLEAN;
-	ATTRIBUTE ASYNC_REG								: STRING;
-	ATTRIBUTE SHREG_EXTRACT						: STRING;
 
 	-- ===========================================================================
 	-- SATATransceiver configuration
@@ -127,7 +128,7 @@ ARCHITECTURE rtl OF sata_Transceiver_Series7_GTXE2 IS
 	BEGIN
 		CASE gen IS
 			WHEN SATA_GENERATION_1 =>			RETURN "011";				-- **PLL Divider (D) = 4
-			WHEN SATA_GENERATION_2 =>			RETURN "100";	--"010";				-- **PLL Divider (D) = 2
+			WHEN SATA_GENERATION_2 =>			RETURN "010";				-- **PLL Divider (D) = 2
 			WHEN SATA_GENERATION_3 =>			RETURN "001";				-- **PLL Divider (D) = 1
 			WHEN OTHERS =>								RETURN "000";				-- **PLL Divider (D) = RXOUT_DIV
 		END CASE;
@@ -359,11 +360,6 @@ BEGIN
 --		ATTRIBUTE KEEP OF GTX_TX_Data							: SIGNAL IS TRUE;
 --		ATTRIBUTE KEEP OF GTX_TX_OOBComplete			: SIGNAL IS TRUE;
 		
---		SIGNAL TestReset							: STD_LOGIC;
---		SIGNAL TestRateSelection			: STD_LOGIC;
---		SIGNAL DelayChain							: T_SLV_16			:= (OTHERS => '0');
---		SIGNAL DelayChain2						: T_SLV_16			:= (OTHERS => '0');
-		
 	BEGIN
 		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																											SEVERITY NOTE;
 		ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS_I(I) + 1)	SEVERITY NOTE;
@@ -428,12 +424,6 @@ BEGIN
 		GTX_RX_PMAReset								<= '0';
 		GTX_RX_BufferReset						<= '0';
 
---		DelayChain	<= DelayChain(DelayChain'high - 1 DOWNTO 0)			& GTX_ResetDone		WHEN rising_edge(GTX_UserClock);
---		DelayChain2	<= DelayChain2(DelayChain2'high - 1 DOWNTO 0)		& RateChangeDone	WHEN rising_edge(GTX_UserClock);
-		
---		TestRateSelection	<= '0';	--NOT DelayChain(DelayChain'high - 1)		AND DelayChain(DelayChain'high);
---		TestReset					<= '0';	--NOT DelayChain2(DelayChain2'high - 1)	AND DelayChain2(DelayChain2'high);
-		
 		-- =========================================================================
 		-- LineRate control / linerate clock divider selection / reconfiguration port
 		-- =========================================================================
@@ -577,7 +567,7 @@ BEGIN
 			);
 	
 		-- TX OOB sequence is complete
-		TX_ComFinish			<= OOBTO_Timeout;	--GTX_TX_ComFinish or OOBTO_Timeout;
+		TX_ComFinish			<= OOBTO_Timeout;		-- GTX_TX_ComFinish is not always generated -> replaced by a timer workaround
 		TX_OOBComplete(I)	<= TX_ComFinish;
 	
 		-- hold registers; hold GTX_TX_Com* signal until sequence is complete
@@ -611,24 +601,18 @@ BEGIN
 		--	==================================================================
 		-- error handling
 		--	==================================================================
-		-- TX errors
-		PROCESS(GTX_TX_BufferStatus(1))
+		PROCESS(GTX_TX_BufferStatus(1),
+						GTX_RX_ByteIsAligned, GTX_RX_DisparityError, GTX_RX_NotInTableError, GTX_RX_BufferStatus(2))
 		BEGIN
 			TX_Error_i		<= SATA_TRANSCEIVER_TX_ERROR_NONE;
-		
---			IF (slv_or(GTX_TX_InvalidK)	= '1') THEN
---				TX_Error_i	<= SATA_TRANSCEIVER_TX_ERROR_ENCODER;
---			ELS
+			RX_Error_i		<= SATA_TRANSCEIVER_RX_ERROR_NONE;
+			
+			-- TX errors
 			IF (GTX_TX_BufferStatus(1)	= '1') THEN
 				TX_Error_i	<= SATA_TRANSCEIVER_TX_ERROR_BUFFER;
 			END IF;
-		END PROCESS;
 		
-		-- RX errors
-		PROCESS(GTX_RX_ByteIsAligned, GTX_RX_DisparityError, GTX_RX_NotInTableError, GTX_RX_BufferStatus(2))
-		BEGIN
-			RX_Error_i		<= SATA_TRANSCEIVER_RX_ERROR_NONE;
-		
+			-- RX errors
 			IF (GTX_RX_ByteIsAligned	= '0') THEN
 				RX_Error_i	<= SATA_TRANSCEIVER_RX_ERROR_ALIGNEMENT;
 			ELSIF (slv_or(GTX_RX_DisparityError)	= '1') THEN
@@ -645,22 +629,22 @@ BEGIN
 		--	==================================================================
 		-- device detection
 		blkDeviceDetector : BLOCK
-			SIGNAL ElectricalIDLE_async				: STD_LOGIC									:= '0';	
-			SIGNAL ElectricalIDLE_sync				: STD_LOGIC									:= '0';	
+			SIGNAL ElectricalIDLE_async				: STD_LOGIC;
+			SIGNAL ElectricalIDLE_sync				: STD_LOGIC;
 			
-			-- Mark register "Serial***_async" as asynchronous
-			ATTRIBUTE ASYNC_REG OF ElectricalIDLE_async			: SIGNAL IS "TRUE";
-			
-			-- Prevent XST from translating two FFs into SRL plus FF
-			ATTRIBUTE SHREG_EXTRACT OF ElectricalIDLE_async	: SIGNAL IS "NO";
-			ATTRIBUTE SHREG_EXTRACT OF ElectricalIDLE_sync	: SIGNAL IS "NO";
-
-			SIGNAL NoDevice_d									: STD_LOGIC		:= '0';
+			SIGNAL NoDevice_d									: STD_LOGIC			:= '0';
 			SIGNAL NoDevice_fe								: STD_LOGIC;
 		BEGIN
 			-- synchronize ElectricalIDLE to working clock domain
-			ElectricalIDLE_async	<= GTX_RX_ElectricalIDLE_a		WHEN rising_edge(DD_Clock);
-			ElectricalIDLE_sync		<= ElectricalIDLE_async				WHEN rising_edge(DD_Clock);
+			sync2_DDClock : ENTITY PoC.xil_SyncBlock
+				GENERIC MAP (
+					BITS					=> 1													-- number of BITS to synchronize
+				)
+				PORT MAP (
+					Clock					=> DD_Clock,									-- Clock to be synchronized to
+					DataIn(0)			=> GTX_RX_ElectricalIDLE_a,		-- Data to be synchronized
+					DataOut(0)		=> ElectricalIDLE_async				-- synchronised data
+				);
 			
 			GF : ENTITY PoC.io_GlitchFilter
 				GENERIC MAP (
@@ -694,7 +678,6 @@ BEGIN
 				Status_i							<= SATA_TRANSCEIVER_STATUS_NEW_DEVICE;
 				
 -- TODO:
--- TRANS_STATUS_POWERED_DOWN,
 -- TRANS_STATUS_CONFIGURATION,
 
 			END IF;
@@ -996,7 +979,7 @@ BEGIN
 				RXOUTCLKSEL											=> "010",													-- @async:		010 => select RXOUTCLKPMA
 				RXOUTCLKFABRIC									=> open,													-- @clock:		internal clock after RXSYSCLKSEL-mux
 				RXOUTCLKPCS											=> open,													-- @clock:		internal clock from PCS sublayer
-				RXOUTCLK												=> GTX_RX_RefClockOut_float,						-- @clock:		RX output clock; phase aligned
+				RXOUTCLK												=> GTX_RX_RefClockOut_float,			-- @clock:		RX output clock; phase aligned
 				
 				-- Power-Down ports
 				CPLLPD													=> GTX_CPLL_PowerDown,						-- @async:			powers ChannelPLL down

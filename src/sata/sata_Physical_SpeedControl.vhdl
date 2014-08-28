@@ -37,55 +37,49 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
+USE			PoC.components.ALL;
 USE			PoC.sata.ALL;
+USE			PoC.satadbg.ALL;
+
 
 ENTITY sata_SpeedControl IS
 	GENERIC (
-		DEBUG							: BOOLEAN := FALSE;
-		INITIAL_SATA_GENERATION	: T_SATA_GENERATION := SATA_GENERATION_2;
-		GENERATION_CHANGE_COUNT	: INTEGER := 32;
-		ATTEMPTS_PER_GENERATION	: INTEGER := 8
+		DEBUG											: BOOLEAN							:= FALSE;												-- generate additional debug signals and preserve them (attribute keep)
+		ENABLE_DEBUGPORT					: BOOLEAN							:= FALSE;												-- enables the assignment of signals to the debugport
+		INITIAL_SATA_GENERATION		: T_SATA_GENERATION		:= C_SATA_GENERATION_MAX;
+		GENERATION_CHANGE_COUNT		: INTEGER							:= 32;
+		ATTEMPTS_PER_GENERATION		: INTEGER							:= 8
 	);
 	PORT (
-		Clock				: IN	STD_LOGIC;
-		Reset				: IN	STD_LOGIC;
+		Clock										: IN	STD_LOGIC;
+		Reset										: IN	STD_LOGIC;
 
-		SATAGeneration_Reset		: IN	STD_LOGIC;													--	=> reset SATA_Generation, reset all attempt counters => if necessary reconfigure GTP
+		SATAGeneration_Reset		: IN	STD_LOGIC;													--	=> reset SATA_Generation, reset all attempt counters => if necessary reconfigure MGT
 		AttemptCounter_Reset		: IN	STD_LOGIC;													-- 
 
---		DebugPortOut			: OUT	T_DBG_PHYOUT;
+		DebugPortOut						: OUT	T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT;
 
-		OOB_Timeout			: IN	STD_LOGIC;
-		OOB_Retry			: OUT	STD_LOGIC;
+		OOB_Timeout							: IN	STD_LOGIC;
+		OOB_Retry								: OUT	STD_LOGIC;
 
-		SATA_GenerationMin		: IN	T_SATA_GENERATION;									-- 
-		SATA_GenerationMax		: IN	T_SATA_GENERATION;									-- 
-		SATA_Generation			: OUT	T_SATA_GENERATION;									-- 
-		NegotiationError		: OUT	STD_LOGIC;													-- speed negotiation unsuccessful
+		SATA_GenerationMin			: IN	T_SATA_GENERATION;									-- 
+		SATA_GenerationMax			: IN	T_SATA_GENERATION;									-- 
+		SATA_Generation					: OUT	T_SATA_GENERATION;									-- 
+		NegotiationError				: OUT	STD_LOGIC;													-- speed negotiation unsuccessful
 		
 		-- reconfiguration interface
-		Trans_Reconfig			: OUT	STD_LOGIC;
+		Trans_Reconfig					: OUT	STD_LOGIC;
 		Trans_ConfigReloaded		: IN	STD_LOGIC;
-		Trans_Lock			: OUT	STD_LOGIC;
-		Trans_Locked			: IN	STD_LOGIC
+		Trans_Lock							: OUT	STD_LOGIC;
+		Trans_Locked						: IN	STD_LOGIC
 	);
 END;
+
 
 ARCHITECTURE rtl OF sata_SpeedControl IS
 	ATTRIBUTE KEEP : BOOLEAN;
 	ATTRIBUTE FSM_ENCODING	: STRING;
 
-	FUNCTION IsSupportedGeneration(SATAGen : T_SATA_GENERATION) RETURN BOOLEAN IS
-	BEGIN
-		CASE SATAGen IS
-			WHEN SATA_GENERATION_AUTO => RETURN TRUE;
-			WHEN SATA_GENERATION_1 => RETURN TRUE;
-			WHEN SATA_GENERATION_2 => RETURN TRUE;
-			WHEN OTHERS => RETURN FALSE;
-		END CASE;
-	END;
-	
 	FUNCTION StartGen RETURN T_SGEN2_SGEN IS
 		VARIABLE SG : T_SGEN2_SGEN := (OTHERS => (OTHERS => SATA_GENERATION_ERROR));
 	BEGIN
@@ -240,24 +234,29 @@ ARCHITECTURE rtl OF sata_SpeedControl IS
 	CONSTANT GENERATION_CHANGE_COUNTER_BITS		: POSITIVE := log2ceilnz(GENERATION_CHANGE_COUNT);
 	CONSTANT TRY_PER_GENERATION_COUNTER_BITS	: POSITIVE := log2ceilnz(ATTEMPTS_PER_GENERATION);
 
-	TYPE T_SPEEDCONTROL_STATE IS (
+	TYPE T_STATE IS (
 		ST_RECONFIG, ST_RECONFIG_WAIT,
 		ST_RETRY, ST_WAIT, ST_TIMEOUT,
 		ST_NEGOTIATION_ERROR
 	);
 	
+	FUNCTION to_slv(State : T_STATE) RETURN STD_LOGIC_VECTOR IS
+	BEGIN
+		RETURN to_slv(T_STATE'pos(State), log2ceilnz(T_STATE'pos(T_STATE'high)));
+	END FUNCTION;
+	
 	-- Speed Negotiation - Statemachine
-	SIGNAL SpeedControl_State		: T_SPEEDCONTROL_STATE := ST_WAIT;
-	SIGNAL SpeedControl_NextState		: T_SPEEDCONTROL_STATE;
-	ATTRIBUTE FSM_ENCODING	OF SpeedControl_State	: SIGNAL IS ite(DEBUG					, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	SIGNAL State				: T_STATE := ST_WAIT;
+	SIGNAL NextState		: T_STATE;
+	ATTRIBUTE FSM_ENCODING	OF State	: SIGNAL IS getFSMEncoding_gray(DEBUG);
 
 	SIGNAL SATAGeneration_Current		: T_SATA_GENERATION := INITIAL_SATA_GENERATION;
-	SIGNAL SATAGeneration_Next		: T_SATA_GENERATION;
+	SIGNAL SATAGeneration_Next			: T_SATA_GENERATION;
 
-	SIGNAL ChangeGeneration			: STD_LOGIC;
-	SIGNAL GenerationChanged		: STD_LOGIC;
+	SIGNAL ChangeGeneration					: STD_LOGIC;
+	SIGNAL GenerationChanged				: STD_LOGIC;
 
-	SIGNAL ResetGeneration			: STD_LOGIC := '0';
+	SIGNAL ResetGeneration					: STD_LOGIC := '0';
 	
 	SIGNAL GenerationChange_Counter_en	: STD_LOGIC;
 	SIGNAL GenerationChange_Counter_us	: UNSIGNED(GENERATION_CHANGE_COUNTER_BITS DOWNTO 0) := (OTHERS => '0');
@@ -268,8 +267,6 @@ ARCHITECTURE rtl OF sata_SpeedControl IS
 	SIGNAL TryPerGeneration_Counter_ov	: STD_LOGIC;
 	
 BEGIN
-	ASSERT IsSupportedGeneration(SATA_GenerationMin) REPORT "Member of T_SATA_GENERATION not supported" SEVERITY ERROR;
-	ASSERT IsSupportedGeneration(SATA_GenerationMax) REPORT "Member of T_SATA_GENERATION not supported" SEVERITY ERROR;
 	ASSERT (CmpGeneration(SATA_GenerationMax)(SATA_GenerationMin) >= 0) REPORT "min is less then max" SEVERITY ERROR;
 
 -- ==================================================================
@@ -325,16 +322,16 @@ BEGIN
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
-				SpeedControl_State	<= ST_WAIT;
+				State	<= ST_WAIT;
 			ELSE
-				SpeedControl_State	<= SpeedControl_NextState;
+				State	<= NextState;
 			END IF;
 		END IF;
 	END PROCESS;
 
-	PROCESS(SpeedControl_State, Trans_ConfigReloaded, OOB_Timeout, Reset, ResetGeneration, GenerationChanged, TryPerGeneration_Counter_ov, GenerationChange_Counter_ov)
+	PROCESS(State, Trans_ConfigReloaded, OOB_Timeout, Reset, ResetGeneration, GenerationChanged, TryPerGeneration_Counter_ov, GenerationChange_Counter_ov)
 	BEGIN
-		SpeedControl_NextState			<= SpeedControl_State;
+		NextState			<= State;
 		
 		ChangeGeneration			<= '0';
 		Trans_Reconfig				<= '0';
@@ -345,104 +342,76 @@ BEGIN
 		TryPerGeneration_Counter_en		<= '0';
 		GenerationChange_Counter_en		<= '0';
 	
-		CASE SpeedControl_State IS
+		CASE State IS
 
 			WHEN ST_WAIT =>
 				IF (ResetGeneration = '1') THEN
 					ChangeGeneration <= not Reset;
 					IF (GenerationChanged = '1') THEN
-						SpeedControl_NextState <= ST_RECONFIG;
+						NextState <= ST_RECONFIG;
 					END IF;
 				ELSIF (OOB_Timeout = '1') THEN
-					SpeedControl_NextState <= ST_TIMEOUT;
+					NextState <= ST_TIMEOUT;
 				END IF;
 				
 			WHEN ST_TIMEOUT =>
 				IF (TryPerGeneration_Counter_ov = '1') THEN
 					IF (GenerationChange_Counter_ov = '1') THEN
-						SpeedControl_NextState		<= ST_NEGOTIATION_ERROR;
+						NextState		<= ST_NEGOTIATION_ERROR;
 					ELSE																													-- generation change counter allows => generation change
 						ChangeGeneration		<= '1';
 						GenerationChange_Counter_en	<= '1';
 						
 						IF (GenerationChanged = '1') THEN
-							SpeedControl_NextState		<= ST_RECONFIG;
+							NextState		<= ST_RECONFIG;
 						ELSE
-							SpeedControl_NextState		<= ST_RETRY;
+							NextState		<= ST_RETRY;
 						END IF;
 					END IF;
 				ELSE																														-- tries per generation counter allows an other try at current generation
-					SpeedControl_NextState		<= ST_RETRY;
+					NextState		<= ST_RETRY;
 				END IF;
 
 			WHEN ST_RECONFIG =>
 				Trans_Lock			<= '0';
 				Trans_Reconfig			<= '1';
 				
-				SpeedControl_NextState		<= ST_RECONFIG_WAIT;
+				NextState		<= ST_RECONFIG_WAIT;
 
 			WHEN ST_RECONFIG_WAIT =>
 				Trans_Lock			<= '0';
 				
 				IF (Trans_ConfigReloaded = '1') THEN
-					SpeedControl_NextState		<= ST_RETRY;
+					NextState		<= ST_RETRY;
 				END IF;
 
 			WHEN ST_RETRY =>
 				OOB_Retry			<= '1';
 				TryPerGeneration_Counter_en	<= '1';
 
-				SpeedControl_NextState		<= ST_WAIT;
+				NextState		<= ST_WAIT;
 			
 			WHEN ST_NEGOTIATION_ERROR =>
 				Trans_Lock			<= '0';
 				NegotiationError		<= '1';
 
-			END CASE;
+		END CASE;
 	END PROCESS;
 
 
 	-- ================================================================
 	-- try counters
 	-- ================================================================
-	-- count attempts per generation
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset = '1') OR (ChangeGeneration = '1')) THEN
-				TryPerGeneration_Counter_us <= (OTHERS => '0');
-			ELSE
-				IF (TryPerGeneration_Counter_en = '1') THEN
-					TryPerGeneration_Counter_us <= TryPerGeneration_Counter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
-
-	TryPerGeneration_Counter_ov <= to_sl(TryPerGeneration_Counter_us = to_unsigned(ATTEMPTS_PER_GENERATION, TryPerGeneration_Counter_us'length));
+	TryPerGeneration_Counter_us	<= counter_inc(TryPerGeneration_Counter_us, (Reset or ChangeGeneration),	TryPerGeneration_Counter_en) WHEN rising_edge(Clock);		-- count attempts per generation
+	GenerationChange_Counter_us	<= counter_inc(GenerationChange_Counter_us, AttemptCounter_Reset,						GenerationChange_Counter_en) WHEN rising_edge(Clock);		-- count generation changes
 	
+	TryPerGeneration_Counter_ov	<= counter_eq(TryPerGeneration_Counter_us, ATTEMPTS_PER_GENERATION);
+	GenerationChange_Counter_ov	<= counter_eq(GenerationChange_Counter_us, GENERATION_CHANGE_COUNT);
 	
-	-- count generation changes
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (AttemptCounter_Reset = '1') THEN
-				GenerationChange_Counter_us <= (OTHERS => '0');
-			ELSE
-				IF (GenerationChange_Counter_en = '1') THEN
-					GenerationChange_Counter_us <= GenerationChange_Counter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
-
-	GenerationChange_Counter_ov <= to_sl(GenerationChange_Counter_us = to_unsigned(GENERATION_CHANGE_COUNT, GenerationChange_Counter_us'length));
-
 		
-	-- ================================================================
-	-- ChipScope
-	-- ================================================================
-	genCSP : IF (DEBUG = TRUE) GENERATE
+	-- Debug signals
+	-- ===========================================================================
+	genDBG : IF (DEBUG = TRUE) GENERATE
 		SIGNAL DBG_ChangeGeneration	: STD_LOGIC;
 		SIGNAL DBG_GenerationChanged	: STD_LOGIC;
 	
@@ -453,10 +422,12 @@ BEGIN
 		DBG_GenerationChanged	<= GenerationChanged;
 	END GENERATE;
 
-	-- ================================================================
 	-- debug port
-	-- ================================================================
---	DebugPortOut.GenerationChanges	<= resize(GenerationChange_Counter_us, DebugPortOut.GenerationChanges'length);
---	DebugPortOut.TrysPerGeneration	<= resize(TryPerGeneration_Counter_us, DebugPortOut.TrysPerGeneration'length);
---	DebugPortOut.SATAGeneration	<= SATAGeneration_Current;
+	-- ===========================================================================
+	genDebug : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
+		DebugPortOut.FSM								<= to_slv(State);
+		DebugPortOut.GenerationChanges	<= resize(std_logic_vector(GenerationChange_Counter_us), DebugPortOut.GenerationChanges'length);
+		DebugPortOut.TrysPerGeneration	<= resize(std_logic_vector(TryPerGeneration_Counter_us), DebugPortOut.TrysPerGeneration'length);
+		DebugPortOut.SATAGeneration			<= SATAGeneration_Current;
+	END GENERATE;
 END;

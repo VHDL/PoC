@@ -39,11 +39,13 @@ USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.io.ALL;
 USE			PoC.sata.ALL;
+USE			PoC.satadbg.ALL;
 
 
 ENTITY sata_OOBControl_Device IS
 	GENERIC (
-		DEBUG											: BOOLEAN														:= FALSE;
+		DEBUG											: BOOLEAN														:= FALSE;												-- generate additional debug signals and preserve them (attribute keep)
+		ENABLE_DEBUGPORT					: BOOLEAN														:= FALSE;												-- enables the assignment of signals to the debugport
 		CLOCK_FREQ_MHZ						: REAL															:= 150.0;												-- 
 		ALLOW_STANDARD_VIOLATION	: BOOLEAN														:= FALSE;
 		OOB_TIMEOUT_US						: INTEGER														:= 0
@@ -53,6 +55,9 @@ ENTITY sata_OOBControl_Device IS
 		Reset											: IN	STD_LOGIC;
 		ComReset									: OUT	STD_LOGIC;
 
+		-- debug ports
+		DebugPortOut							: OUT	T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
+		
 		SATA_Generation						: IN	T_SATA_GENERATION;
 		Trans_ResetDone						: IN	STD_LOGIC;
 		
@@ -127,11 +132,16 @@ ARCHITECTURE rtl OF sata_OOBControl_Device IS
 		ST_DEV_LINK_BROKEN,
 		ST_DEV_LINK_DEAD
 	);
+	
+	FUNCTION to_slv(State : T_OOBCONTROL_STATE) RETURN STD_LOGIC_VECTOR IS
+	BEGIN
+		RETURN to_slv(T_OOBCONTROL_STATE'pos(State), log2ceilnz(T_OOBCONTROL_STATE'pos(T_OOBCONTROL_STATE'high)));
+	END FUNCTION;
 
 	-- OOB-Statemachine
 	SIGNAL OOBControl_State											: T_OOBCONTROL_STATE											:= ST_DEV_RESET;
 	SIGNAL OOBControl_NextState									: T_OOBCONTROL_STATE;
-	ATTRIBUTE FSM_ENCODING OF OOBControl_State	: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING OF OOBControl_State	: SIGNAL IS getFSMEncoding_gray(DEBUG);
 
 	-- Timing-Counter
 	-- ================================================================

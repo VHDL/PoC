@@ -59,7 +59,7 @@ ENTITY sata_LinkLayer IS
 		Error										: OUT	T_SATA_LINK_ERROR;
 
 		-- Debug ports
-		DebugPortOut					 	: OUT T_SATADBG_LINKOUT;
+		DebugPortOut					 	: OUT T_SATADBG_LINK_OUT;
 		
 		-- TX port
 		TX_SOF									: IN	STD_LOGIC;

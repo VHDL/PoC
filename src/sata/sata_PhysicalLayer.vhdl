@@ -69,7 +69,7 @@ ENTITY sata_PhysicalLayer IS
 		Status													: OUT	T_SATA_PHY_STATUS;
 		Error														: OUT	T_SATA_PHY_ERROR;
 
-		DebugPortOut										: OUT	T_SATADBG_PHYSICALOUT;
+		DebugPortOut										: OUT	T_SATADBG_PHYSICAL_OUT;
 
 		Link_RX_Data										: OUT	T_SLV_32;
 		Link_RX_CharIsK									: OUT	T_SLV_4;
@@ -136,15 +136,18 @@ ARCHITECTURE rtl OF sata_PhysicalLayer IS
 	SIGNAL RX_Primitive								: T_SATA_PRIMITIVE;
 	SIGNAL TX_Primitive								: T_SATA_PRIMITIVE;
 	
---	SIGNAL DebugPortOut_i							: T_DBG_PHYOUT;
+	SIGNAL OOBC_DebugPortOut					: T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
+	SIGNAL SC_DebugPortOut						: T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT;
+	
 	SIGNAL Error_i										: T_SATA_PHY_ERROR;
 	
 BEGIN
 
-	ASSERT FALSE REPORT "  ControllerType:         " & T_SATA_DEVICE_TYPE'image(CONTROLLER_TYPE)	SEVERITY NOTE;
-	ASSERT FALSE REPORT "  AllowSpeedNegotiation:  " & to_string(ALLOW_SPEED_NEGOTIATION)					SEVERITY NOTE;
-	ASSERT FALSE REPORT "  AllowAutoReconnect:     " & to_string(ALLOW_AUTO_RECONNECT)						SEVERITY NOTE;
-	ASSERT FALSE REPORT "  AllowStandardViolation: " & to_string(ALLOW_STANDARD_VIOLATION)				SEVERITY NOTE;
+	ASSERT FALSE REPORT "Physical Layer"																															SEVERITY NOTE;
+	ASSERT FALSE REPORT "  ControllerType:         " & T_SATA_DEVICE_TYPE'image(CONTROLLER_TYPE)			SEVERITY NOTE;
+	ASSERT FALSE REPORT "  AllowSpeedNegotiation:  " & to_string(ALLOW_SPEED_NEGOTIATION)							SEVERITY NOTE;
+	ASSERT FALSE REPORT "  AllowAutoReconnect:     " & to_string(ALLOW_AUTO_RECONNECT)								SEVERITY NOTE;
+	ASSERT FALSE REPORT "  AllowStandardViolation: " & to_string(ALLOW_STANDARD_VIOLATION)						SEVERITY NOTE;
 	ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATION + 1)	SEVERITY NOTE;
 
 	PROCESS(Reset, Command)
@@ -258,6 +261,7 @@ BEGIN
 		OOBC : ENTITY PoC.sata_OOBControl_Host
 			GENERIC MAP (
 				DEBUG											=> DEBUG,
+				ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
 				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
 				ALLOW_STANDARD_VIOLATION	=> ALLOW_STANDARD_VIOLATION,
 				OOB_TIMEOUT_US						=> OOB_TIMEOUT_US
@@ -265,6 +269,8 @@ BEGIN
 			PORT MAP (
 				Clock											=> Clock,
 				Reset											=> OOB_Reset,
+				
+				DebugPortOut							=> OOBC_DebugPortOut,
 
 				SATA_Generation						=> SATA_Generation_i,
 				Trans_ResetDone						=> Trans_ResetDone,
@@ -289,6 +295,7 @@ BEGIN
 		OOBC : ENTITY PoC.sata_OOBControl_Device
 			GENERIC MAP (
 				DEBUG											=> DEBUG,
+				ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
 				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
 				ALLOW_STANDARD_VIOLATION	=> ALLOW_STANDARD_VIOLATION,
 				OOB_TIMEOUT_US						=> OOB_TIMEOUT_US
@@ -296,6 +303,8 @@ BEGIN
 			PORT MAP (
 				Clock											=> Clock,
 				Reset											=> OOB_Reset,
+
+				DebugPortOut							=> OOBC_DebugPortOut,
 
 				SATA_Generation						=> SATA_Generation_i,
 				Trans_ResetDone						=> Trans_ResetDone,
@@ -324,6 +333,7 @@ BEGIN
 		SC : ENTITY PoC.sata_SpeedControl
 			GENERIC MAP (
 				DEBUG											=> DEBUG,
+				ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
 				INITIAL_SATA_GENERATION		=> INITIAL_SATA_GENERATION,
 				GENERATION_CHANGE_COUNT		=> GENERATION_CHANGE_COUNT,
 				ATTEMPTS_PER_GENERATION		=> ATTEMPTS_PER_GENERATION
@@ -332,10 +342,10 @@ BEGIN
 				Clock											=> Clock,
 				Reset											=> SC_Reset,
 
+				DebugPortOut							=> SC_DebugPortOut,
+
 				SATAGeneration_Reset			=> SC_SATAGeneration_Reset,					--	=> reset SATA_Generation, reset all attempt counters => if necessary reconfigure GTP
 				AttemptCounter_Reset			=> SC_AttemptCounter_Reset,
-
---				DebugPortOut							=> DebugPortOut_i,
 
 				-- OOBControl interface
 				OOB_Timeout								=> OOB_Timeout,
@@ -447,7 +457,7 @@ BEGIN
 	-- ================================================================
 	-- ChipScope
 	-- ================================================================
-	genCSP : IF (DEBUG = TRUE) GENERATE
+	genDBG : IF (DEBUG = TRUE) GENERATE
 		SIGNAL DBG_OOB_Retry														: STD_LOGIC;
 		SIGNAL DBG_OOB_LinkOK														: STD_LOGIC;
 		SIGNAL DBG_OOB_LinkDead													: STD_LOGIC;
@@ -480,10 +490,15 @@ BEGIN
 		DBG_TX_Primitive_DIAL_TONE		<= to_sl(TX_Primitive = SATA_PRIMITIVE_DIAL_TONE);
 	END GENERATE;
 	
-	-- ================================================================
 	-- debug port
-	-- ================================================================
---	DebugPortOut.GenerationChanges		<= DebugPortOut_i.GenerationChanges;
---	DebugPortOut.TrysPerGeneration		<= DebugPortOut_i.TrysPerGeneration;
---	DebugPortOut.SATAGeneration				<= DebugPortOut_i.SATAGeneration;
+	-- ===========================================================================
+	genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
+		DebugPortOut.OOB_Retry			<= OOB_Retry;
+		DebugPortOut.OOB_Timeout		<= OOB_Timeout;
+		DebugPortOut.Link_OK				<= OOB_LinkOK;
+		DebugPortOut.Link_Dead			<= OOB_LinkDead;
+	
+		DebugPortOut.OOBControl			<= OOBC_DebugPortOut;
+		DebugPortOut.SpeedControl		<= SC_DebugPortOut;
+	END GENERATE;
 END;
