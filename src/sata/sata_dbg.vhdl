@@ -97,31 +97,37 @@ package satadbg is
 	-- SATA Physical Layer Types
 	-- ===========================================================================
 	TYPE T_SATADBG_PHYSICAL_OOBCONTROL_OUT IS RECORD
-		TX_OOB_Command						: T_SATA_OOB;
-		TX_OOB_Complete						: STD_LOGIC;
-		RX_OOB_Status							: T_SATA_OOB;
-		OOB_HandshakingComplete		: STD_LOGIC;
-		
 		FSM												: STD_LOGIC_VECTOR(3 DOWNTO 0);
+		OOB_TX_Command						: T_SATA_OOB;
+		OOB_TX_Complete						: STD_LOGIC;
+		OOB_RX_Received						: T_SATA_OOB;
+		OOB_HandshakingComplete		: STD_LOGIC;
 	END RECORD;
 	
 	TYPE T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT IS RECORD
 		FSM												: STD_LOGIC_VECTOR(2 DOWNTO 0);
+		SATAGeneration						: T_SATA_GENERATION;
 		GenerationChanges					: STD_LOGIC_VECTOR(7 DOWNTO 0);
 		TrysPerGeneration					: STD_LOGIC_VECTOR(7 DOWNTO 0);
-		SATAGeneration						: T_SATA_GENERATION;
 	END RECORD;
 	
 	TYPE T_SATADBG_PHYSICAL_OUT IS RECORD
-		OOB_Retry									: STD_LOGIC;
-		OOB_Timeout								: STD_LOGIC;
-		Link_OK										: STD_LOGIC;
-		Link_Dead									: STD_LOGIC;
-	
+		-- phy layer fsm
+		FSM												: STD_LOGIC_VECTOR(2 DOWNTO 0);
+		Retry											: STD_LOGIC;
+		Timeout										: STD_LOGIC;
+		LinkOK										: STD_LOGIC;
+		LinkDead									: STD_LOGIC;
+		ReceivedReset							: STD_LOGIC;
+		
+		-- device detector
+		DD_NoDevice								: STD_LOGIC;
+		DD_NewDevice							: STD_LOGIC;
+		
 		RX_Data										: T_SLV_32;
-		RX_CiK										: T_SLV_4;
+		RX_CharIsK								: T_SLV_4;
 		TX_Data										: T_SLV_32;
-		TX_CiK										: T_SLV_4;
+		TX_CharIsK								: T_SLV_4;
 		
 		OOBControl								: T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
 		SpeedControl							: T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT;

@@ -42,7 +42,7 @@ USE			PoC.sata.ALL;
 USE			PoC.satadbg.ALL;
 
 
-ENTITY sata_OOBControl_Device IS
+ENTITY sata_Physical_OOBControl_Device IS
 	GENERIC (
 		DEBUG											: BOOLEAN														:= FALSE;												-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: BOOLEAN														:= FALSE;												-- enables the assignment of signals to the debugport
@@ -56,7 +56,7 @@ ENTITY sata_OOBControl_Device IS
 		ComReset									: OUT	STD_LOGIC;
 
 		-- debug ports
-		DebugPortOut							: OUT	T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
+		DebugPortOut							: OUT	T_SATADBG_PHYSICAL_OUT;
 		
 		SATA_Generation						: IN	T_SATA_GENERATION;
 		Trans_ResetDone						: IN	STD_LOGIC;
@@ -79,7 +79,7 @@ ENTITY sata_OOBControl_Device IS
 END;
 
 
-ARCHITECTURE rtl OF sata_OOBControl_Device IS
+ARCHITECTURE rtl OF sata_Physical_OOBControl_Device IS
 	ATTRIBUTE KEEP												: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING								: STRING;
 
@@ -118,7 +118,7 @@ ARCHITECTURE rtl OF sata_OOBControl_Device IS
 		TTID2_COMWAKE_TIMEOUT_GEN3	=> TimingToCycles_ns(COMWAKE_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN3_FREQ_MHZ))		-- slot 5
 	);
 
-	TYPE T_OOBCONTROL_STATE IS (
+	TYPE T_STATE IS (
 		ST_DEV_RESET,
 		ST_DEV_WAIT_HOST_COMRESET,
 		ST_DEV_WAIT_AFTER_HOST_COMRESET,
@@ -133,15 +133,17 @@ ARCHITECTURE rtl OF sata_OOBControl_Device IS
 		ST_DEV_LINK_DEAD
 	);
 	
-	FUNCTION to_slv(State : T_OOBCONTROL_STATE) RETURN STD_LOGIC_VECTOR IS
+	FUNCTION to_slv(State : T_STATE) RETURN STD_LOGIC_VECTOR IS
+		CONSTANT ResultSize		: POSITIVE																	:= log2ceilnz(T_STATE'pos(T_STATE'high));
+		CONSTANT Result				: STD_LOGIC_VECTOR(ResultSize - 1 DOWNTO 0)	:= to_slv(T_STATE'pos(State), ResultSize);
 	BEGIN
-		RETURN to_slv(T_OOBCONTROL_STATE'pos(State), log2ceilnz(T_OOBCONTROL_STATE'pos(T_OOBCONTROL_STATE'high)));
+		RETURN ite(DEBUG, bin2gray(Result), Result);
 	END FUNCTION;
 
 	-- OOB-Statemachine
-	SIGNAL OOBControl_State											: T_OOBCONTROL_STATE											:= ST_DEV_RESET;
-	SIGNAL OOBControl_NextState									: T_OOBCONTROL_STATE;
-	ATTRIBUTE FSM_ENCODING OF OOBControl_State	: SIGNAL IS getFSMEncoding_gray(DEBUG);
+	SIGNAL State										: T_STATE														:= ST_DEV_RESET;
+	SIGNAL NextState								: T_STATE;
+	ATTRIBUTE FSM_ENCODING OF State	: SIGNAL IS getFSMEncoding_gray(DEBUG);
 
 	-- Timing-Counter
 	-- ================================================================
@@ -170,17 +172,17 @@ BEGIN
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
-				OOBControl_State			<= ST_DEV_RESET;
+				State			<= ST_DEV_RESET;
 			ELSE
-				OOBControl_State			<= OOBControl_NextState;
+				State			<= NextState;
 			END IF;
 		END IF;
 	END PROCESS;
 
 
-	PROCESS(OOBControl_State, Trans_ResetDone, SATA_Generation, OOB_Retry, OOB_TX_Complete, OOB_RX_Status, RX_IsAligned, RX_Primitive, TC1_Timeout, TC2_Timeout)
+	PROCESS(State, Trans_ResetDone, SATA_Generation, OOB_Retry, OOB_TX_Complete, OOB_RX_Status, RX_IsAligned, RX_Primitive, TC1_Timeout, TC2_Timeout)
 	BEGIN
-		OOBControl_NextState		<= OOBControl_State;
+		NextState		<= State;
 
 		TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;		
 		OOB_ReceivedReset				<= '0';
@@ -212,12 +214,12 @@ BEGIN
 																						 ite((SATA_Generation = SATA_GENERATION_2), 1,
 																						 ite((SATA_Generation = SATA_GENERATION_3), 2, 0)));
 		
-			OOBControl_NextState								<= ST_DEV_TIMEOUT;
+			NextState								<= ST_DEV_TIMEOUT;
 			
 		-- treat COMRESET as communication reset
 		ELSIF ((OOB_RX_Status = SATA_OOB_COMRESET) AND
-					 ((OOBControl_State /= ST_DEV_WAIT_HOST_COMRESET) OR
-					  (OOBControl_State /= ST_DEV_WAIT_AFTER_HOST_COMRESET)))
+					 ((State /= ST_DEV_WAIT_HOST_COMRESET) OR
+					  (State /= ST_DEV_WAIT_AFTER_HOST_COMRESET)))
 		THEN
 			OOB_ReceivedReset										<= '1';
 
@@ -234,9 +236,9 @@ BEGIN
 																						 ite((SATA_Generation = SATA_GENERATION_3), TTID2_COMRESET_TIMEOUT_GEN3,
 																																												TTID2_COMRESET_TIMEOUT_GEN3)));
 			
-			OOBControl_NextState								<= ST_DEV_WAIT_AFTER_HOST_COMRESET;
+			NextState								<= ST_DEV_WAIT_AFTER_HOST_COMRESET;
 		ELSE
-			CASE OOBControl_State IS
+			CASE State IS
 				WHEN ST_DEV_RESET =>
 					TC1_en													<= '0';																									-- disable timeout counter
 				
@@ -247,7 +249,7 @@ BEGIN
 																						 ite((SATA_Generation = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
 																																												TTID1_OOB_TIMEOUT_GEN3)));
 						
-						OOBControl_NextState					<= ST_DEV_WAIT_HOST_COMRESET;
+						NextState					<= ST_DEV_WAIT_HOST_COMRESET;
 					END IF;
 
 				WHEN ST_DEV_WAIT_HOST_COMRESET =>
@@ -266,7 +268,7 @@ BEGIN
 																						 ite((SATA_Generation = SATA_GENERATION_3), TTID2_COMRESET_TIMEOUT_GEN3,
 																																												TTID2_COMRESET_TIMEOUT_GEN3)));
 						
-						OOBControl_NextState					<= ST_DEV_WAIT_AFTER_HOST_COMRESET;
+						NextState					<= ST_DEV_WAIT_AFTER_HOST_COMRESET;
 					END IF;
 		
 				WHEN ST_DEV_WAIT_AFTER_HOST_COMRESET =>
@@ -281,16 +283,16 @@ BEGIN
 					ELSIF (TC2_Timeout = '1') THEN
 						OOB_TX_Command								<= SATA_OOB_COMRESET;
 						
-						OOBControl_NextState					<= ST_DEV_SEND_COMINIT;
+						NextState					<= ST_DEV_SEND_COMINIT;
 					END IF;
 
 				WHEN ST_DEV_SEND_COMINIT =>
 					TX_Primitive										<= SATA_PRIMITIVE_ALIGN;
 					
 					IF (OOB_TX_Complete = '1') THEN
-						OOBControl_NextState					<= ST_DEV_WAIT_HOST_COMWAKE;
+						NextState					<= ST_DEV_WAIT_HOST_COMWAKE;
 					ELSIF ((ALLOW_STANDARD_VIOLATION = TRUE) AND (OOB_RX_Status = SATA_OOB_COMWAKE)) THEN					-- allow premature OOB response
-						OOBControl_NextState					<= ST_DEV_WAIT_AFTER_COMWAKE;
+						NextState					<= ST_DEV_WAIT_AFTER_COMWAKE;
 					END IF;
 
 				WHEN ST_DEV_WAIT_HOST_COMWAKE =>
@@ -303,7 +305,7 @@ BEGIN
 																						 ite((SATA_Generation = SATA_GENERATION_3), TTID2_COMWAKE_TIMEOUT_GEN3,
 																																												TTID2_COMWAKE_TIMEOUT_GEN3)));
 					
-						OOBControl_NextState					<= ST_DEV_WAIT_AFTER_COMWAKE;
+						NextState					<= ST_DEV_WAIT_AFTER_COMWAKE;
 					END IF;
 				
 				WHEN ST_DEV_WAIT_AFTER_COMWAKE =>
@@ -318,7 +320,7 @@ BEGIN
 					ELSIF (TC2_Timeout = '1') THEN
 						OOB_TX_Command								<= SATA_OOB_COMWAKE;
 						
-						OOBControl_NextState					<= ST_DEV_SEND_COMWAKE;
+						NextState					<= ST_DEV_SEND_COMWAKE;
 					END IF;
 
 				WHEN ST_DEV_SEND_COMWAKE =>
@@ -327,7 +329,7 @@ BEGIN
 					IF (OOB_TX_Complete = '1') THEN
 						OOB_HandshakingComplete				<= '1';
 					
-						OOBControl_NextState					<= ST_DEV_SEND_ALIGN;
+						NextState					<= ST_DEV_SEND_ALIGN;
 					END IF;
 
 				WHEN ST_DEV_SEND_ALIGN =>
@@ -337,7 +339,7 @@ BEGIN
 						TX_Primitive									<= SATA_PRIMITIVE_NONE;
 						OOB_LinkOK									<= '1';
 						
-						OOBControl_NextState					<= ST_DEV_LINK_OK;
+						NextState					<= ST_DEV_LINK_OK;
 					END IF;
 				
 				WHEN ST_DEV_LINK_OK =>
@@ -349,11 +351,11 @@ BEGIN
 					IF (OOB_RX_Status /= SATA_OOB_NONE) THEN
 						OOB_LinkDead									<= '1';
 						
-						OOBControl_NextState					<= ST_DEV_LINK_DEAD;
+						NextState					<= ST_DEV_LINK_DEAD;
 					ELSIF (RX_IsAligned = '0') THEN
 						OOB_LinkOK									<= '0';
 					
-						OOBControl_NextState					<= ST_DEV_LINK_BROKEN;
+						NextState					<= ST_DEV_LINK_BROKEN;
 					END IF;
 				
 				WHEN ST_DEV_LINK_BROKEN =>
@@ -363,7 +365,7 @@ BEGIN
 					IF (RX_IsAligned = '1') THEN
 						OOB_LinkOK										<= '1';
 						
-						OOBControl_NextState					<= ST_DEV_LINK_OK;
+						NextState					<= ST_DEV_LINK_OK;
 					END IF;
 				
 					IF (OOB_Retry = '1') THEN
@@ -373,7 +375,7 @@ BEGIN
 																						 ite((SATA_Generation = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
 																																												TTID1_OOB_TIMEOUT_GEN3)));
 						
-						OOBControl_NextState					<= ST_DEV_RESET;
+						NextState					<= ST_DEV_RESET;
 					END IF;
 				
 				WHEN ST_DEV_LINK_DEAD =>
@@ -387,14 +389,14 @@ BEGIN
 																						 ite((SATA_Generation = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
 																																												TTID1_OOB_TIMEOUT_GEN3)));
 						
-						OOBControl_NextState					<= ST_DEV_RESET;
+						NextState					<= ST_DEV_RESET;
 					END IF;
 				
 				WHEN ST_DEV_TIMEOUT =>
 					TC1_en													<= '0';
 				
 					IF (OOB_Retry = '1') THEN
-						OOBControl_NextState					<= ST_DEV_RESET;
+						NextState					<= ST_DEV_RESET;
 					END IF;
 				
 			END CASE;

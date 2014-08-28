@@ -209,7 +209,9 @@ package sata is
 	TYPE T_SATA_LINK_ERROR_VECTOR			IS ARRAY (NATURAL RANGE <>) OF T_SATA_LINK_ERROR;
 
 	FUNCTION to_slv(Primitive : T_SATA_PRIMITIVE)				RETURN STD_LOGIC_VECTOR;
-	FUNCTION to_sata_word(Primitive : T_SATA_PRIMITIVE) RETURN T_SLV_32;
+	FUNCTION to_sata_word(Primitive : T_SATA_PRIMITIVE)	RETURN T_SLV_32;
+	function to_sata_primitive(Data : T_SLV_32; CharIsK : T_SLV_4; DetectDialTone : BOOLEAN := FALSE)	return T_SATA_PRIMITIVE;
+	
 	-- ===========================================================================
 	-- Common SATA Types
 	-- ===========================================================================
@@ -557,6 +559,25 @@ PACKAGE BODY sata IS
 			WHEN SATA_PRIMITIVE_ILLEGAL =>		RETURN (OTHERS => 'X');			-- "ERROR"
 		END CASE;
 	END;
+	
+	function to_sata_primitive(Data : T_SLV_32; CharIsK : T_SLV_4; DetectDialTone : BOOLEAN := FALSE) return T_SATA_PRIMITIVE is
+	begin
+		if (CharIsK = "0000") then
+			if (DetectDialTone AND (Data = to_sata_word(SATA_PRIMITIVE_DIAL_TONE))) then
+				return SATA_PRIMITIVE_DIAL_TONE;
+			else
+				return SATA_PRIMITIVE_NONE;
+			end if;
+		elsif (CharIsK = "0001") then
+			for i in T_SATA_PRIMITIVE loop
+				if (Data = to_sata_word(i)) then
+					return i;
+				end if;
+			end loop;
+		end if;
+
+		return SATA_PRIMITIVE_ILLEGAL;
+	end function;
 	
 	function to_sata_generation(slv : STD_LOGIC_VECTOR) return T_SATA_GENERATION is
 	begin

@@ -172,17 +172,11 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	SIGNAL Phy_Lock											: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 	SIGNAL Phy_SATA_Generation					: T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Phy_OOB_HandshakingComplete	: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 	SIGNAL Phy_RX_Data									: T_SLVV_32(PORTS - 1 DOWNTO 0);
 	SIGNAL Phy_RX_CharIsK								: T_SLVV_4(PORTS - 1 DOWNTO 0);	
 
 	-- physical layer <=> transceiver layer signals
-	SIGNAL Phy_TX_OOBCommand						: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Phy_TX_OOBComplete						: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Phy_TX_Data									: T_SLVV_32(PORTS - 1 DOWNTO 0);
-	SIGNAL Phy_TX_CharIsK								: T_SLVV_4(PORTS - 1 DOWNTO 0);
-
 	SIGNAL Trans_Reset									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_ResetDone							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_ClockNetwork_ResetDone	: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -195,12 +189,17 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	SIGNAL Trans_Status									: T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_RX_Error								: T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_TX_Error								: T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-	
-	SIGNAL Trans_RX_OOBStatus						: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Trans_RX_IsAligned						: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
+	SIGNAL Phy_OOB_TX_Command						: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Trans_OOB_TX_Complete				: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);	
+	SIGNAL Trans_OOB_RX_Received				: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Phy_OOB_HandshakingComplete	: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);	
+
+	SIGNAL Phy_TX_Data									: T_SLVV_32(PORTS - 1 DOWNTO 0);
+	SIGNAL Phy_TX_CharIsK								: T_SLVV_4(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_RX_Data								: T_SLVV_32(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_RX_CharIsK							: T_SLVV_4(PORTS - 1 DOWNTO 0);
+	SIGNAL Trans_RX_IsAligned						: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 	SIGNAL Trans_DebugPortIn						: T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_DebugPortOut						: T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS - 1 DOWNTO 0);
@@ -413,6 +412,13 @@ BEGIN
 				
 				Link_TX_Data									=> Link_TX_Data(I),
 				Link_TX_CharIsK								=> Link_TX_CharIsK(I),
+
+				-- transceiver interface
+				Trans_ResetDone								=> Trans_ResetDone(I),
+				
+				Trans_Status									=> Trans_Status(I),
+				Trans_RX_Error								=> Trans_RX_Error(I),
+				Trans_TX_Error								=> Trans_TX_Error(I),
 				
 				-- reconfiguration interface
 				Trans_Reconfig								=> Phy_Reconfig(I),
@@ -421,22 +427,17 @@ BEGIN
 				Trans_Lock										=> Phy_Lock(I),
 				Trans_Locked									=> Trans_Locked(I),
 				
+				Trans_OOB_TX_Command					=> Phy_OOB_TX_Command(I),
+				Trans_OOB_TX_Complete					=> Trans_OOB_TX_Complete(I),
+				Trans_OOB_RX_Received					=> Trans_OOB_RX_Received(I),
 				Trans_OOB_HandshakingComplete	=> Phy_OOB_HandshakingComplete(I),
 				
-				Trans_ResetDone								=> Trans_ResetDone(I),
-				Trans_Status									=> Trans_Status(I),
-				Trans_RX_Error								=> Trans_RX_Error(I),
-				Trans_TX_Error								=> Trans_TX_Error(I),
-
-				Trans_RX_OOBStatus						=> Trans_RX_OOBStatus(I),
+				Trans_TX_Data									=> Phy_TX_Data(I),
+				Trans_TX_CharIsK							=> Phy_TX_CharIsK(I),
+				
 				Trans_RX_Data									=> Trans_RX_Data(I),
 				Trans_RX_CharIsK							=> Trans_RX_CharIsK(I),
-				Trans_RX_IsAligned						=> Trans_RX_IsAligned(I),
-			
-				Trans_TX_OOBCommand						=> Phy_TX_OOBCommand(I),
-				Trans_TX_OOBComplete					=> Phy_TX_OOBComplete(I),
-				Trans_TX_Data									=> Phy_TX_Data(I),
-				Trans_TX_CharIsK							=> Phy_TX_CharIsK(I)
+				Trans_RX_IsAligned						=> Trans_RX_IsAligned(I)
 			);
 	END GENERATE;
   
@@ -459,35 +460,33 @@ BEGIN
 			ClockNetwork_Reset				=> ClockNetwork_Reset,
 			ClockNetwork_ResetDone		=> Trans_ClockNetwork_ResetDone,
 			
+			-- CSE interface
+			PowerDown									=> PowerDown,
+			Command										=> Trans_Command,
+			Status										=> Trans_Status,
+			TX_Error									=> Trans_TX_Error,
+			RX_Error									=> Trans_RX_Error,
+			-- debug ports
+			DebugPortIn								=> Trans_DebugPortIn,
+			DebugPortOut							=> Trans_DebugPortOut,
+
 			SATA_Clock								=> SATA_Clock_i,
 			
-			PowerDown									=> PowerDown,
-			
 			RP_Reconfig								=> Phy_Reconfig,
+			RP_SATAGeneration					=> Phy_SATA_Generation,
 			RP_ReconfigComplete				=> OPEN,													-- Trans_ReconfigComplete,
 			RP_ConfigReloaded					=> Trans_ConfigReloaded,
 			RP_Lock										=> Phy_Lock,
 			RP_Locked									=> Trans_Locked,
 			
-			SATA_Generation						=> Phy_SATA_Generation,
-
+			OOB_TX_Command						=> Phy_OOB_TX_Command,
+			OOB_TX_Complete						=> Trans_OOB_TX_Complete,
+			OOB_RX_Received						=> Trans_OOB_RX_Received,
 			OOB_HandshakingComplete		=> Phy_OOB_HandshakingComplete,
 			
-			Command										=> Trans_Command,
-			Status										=> Trans_Status,
-			TX_Error									=> Trans_TX_Error,
-			RX_Error									=> Trans_RX_Error,
-
-			-- debug ports
-			DebugPortIn								=> Trans_DebugPortIn,
-			DebugPortOut							=> Trans_DebugPortOut,
-
-			TX_OOBCommand							=> Phy_TX_OOBCommand,
-			TX_OOBComplete						=> Phy_TX_OOBComplete,
 			TX_Data										=> Phy_TX_Data,
 			TX_CharIsK								=> Phy_TX_CharIsK,
 
-			RX_OOBStatus							=> Trans_RX_OOBStatus,
 			RX_Data										=> Trans_RX_Data,
 			RX_CharIsK								=> Trans_RX_CharIsK,
 			RX_IsAligned							=> Trans_RX_IsAligned,

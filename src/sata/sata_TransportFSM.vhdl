@@ -150,7 +150,7 @@ BEGIN
 		NextState																<= State;
 		
 		Status																	<= SATA_TRANS_STATUS_TRANSFERING;
-		Error_i																		<= SATA_TRANS_ERROR_NONE;
+		Error_i																	<= SATA_TRANS_ERROR_NONE;
     
 		CopyATADeviceRegisterStatus	            <= '0';
 		

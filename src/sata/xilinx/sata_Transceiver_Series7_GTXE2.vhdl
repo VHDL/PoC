@@ -61,44 +61,44 @@ ENTITY sata_Transceiver_Series7_GTXE2 IS
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)				-- intial SATA Generation
 	);
 	PORT (
-		Reset											: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-		ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-		ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-		ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
+		Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
-		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-
-		RP_Reconfig								: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-		RP_SATAGeneration					: IN	T_SATA_GENERATION_VECTOR(PORTS	- 1 DOWNTO 0);
-		RP_ReconfigComplete				: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-		RP_ConfigReloaded					: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-		RP_Lock										:	IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-		RP_Locked									: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-
-		OOB_HandshakingComplete		: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-		
-		PowerDown									: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-		Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS	- 1 DOWNTO 0);
-		Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS	- 1 DOWNTO 0);
-		TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS	- 1 DOWNTO 0);
-		RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS	- 1 DOWNTO 0);
-
+		PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
+		Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+		TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+		-- debug ports
 		DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
 		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
 
-		TX_OOBCommand							: IN	T_SATA_OOB_VECTOR(PORTS	- 1 DOWNTO 0);
-		TX_OOBComplete						: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-		TX_Data										: IN	T_SLVV_32(PORTS	- 1 DOWNTO 0);
-		TX_CharIsK								: IN	T_SLVV_4(PORTS	- 1 DOWNTO 0);
+		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
-		RX_OOBStatus							: OUT	T_SATA_OOB_VECTOR(PORTS	- 1 DOWNTO 0);
-		RX_Data										: OUT	T_SLVV_32(PORTS	- 1 DOWNTO 0);
-		RX_CharIsK								: OUT	T_SLVV_4(PORTS	- 1 DOWNTO 0);
-		RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
+		RP_Reconfig								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_SATAGeneration					: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_ReconfigComplete				: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_ConfigReloaded					: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_Lock										:	IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_Locked									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+
+		OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
+		OOB_HandshakingComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
-		-- vendor specific signals (Xilinx)
+		TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
+		TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
+
+		RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
+		RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
+		RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		
+		-- vendor specific signals
 		VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
-		VSS_Private_In						: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS - 1 DOWNTO 0);
+		VSS_Private_In						: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0);
 		VSS_Private_Out						: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0)
 	);
 END;
@@ -268,8 +268,8 @@ BEGIN
 		SIGNAL GTX_RX_ComWakeDetected				: STD_LOGIC;
 		SIGNAL GTX_RX_ComSASDetected				: STD_LOGIC;
 		
-		SIGNAL TX_OOBCommand_d							: T_SATA_OOB;
-		SIGNAL RX_OOBStatus_i								: T_SATA_OOB;
+		SIGNAL OOB_TX_Command_d							: T_SATA_OOB;
+		SIGNAL OOB_RX_Received_i						: T_SATA_OOB;
 		
 		-- timings
 		CONSTANT CLOCK_GEN1_FREQ_MHZ				: REAL						:= CLOCK_IN_FREQ_MHZ / 4.0;
@@ -499,10 +499,10 @@ BEGIN
 		--	==================================================================
 		-- OOB signaling
 		--	==================================================================
-		TX_OOBCommand_d						<= TX_OOBCommand(I) WHEN DebugPortIn(I).ForceOOBCommand = SATA_OOB_NONE ELSE DebugPortIn(I).ForceOOBCommand;	-- WHEN rising_edge(GTX_ClockTX_2X(I));
+		OOB_TX_Command_d						<= OOB_TX_Command(I) WHEN DebugPortIn(I).ForceOOBCommand = SATA_OOB_NONE ELSE DebugPortIn(I).ForceOOBCommand;	-- WHEN rising_edge(GTX_ClockTX_2X(I));
 
 		-- TX OOB signals (generate GTX specific OOB signals)
-		PROCESS(GTX_UserClock, TX_OOBCommand_d, PowerDown(I), RP_SATAGeneration(I), GTX_TX_ComInit_r, GTX_TX_ComWake_r, GTX_TX_ComSAS_r, TX_ComFinish)
+		PROCESS(GTX_UserClock, OOB_TX_Command_d, PowerDown(I), RP_SATAGeneration(I), GTX_TX_ComInit_r, GTX_TX_ComWake_r, GTX_TX_ComSAS_r, TX_ComFinish)
 		BEGIN
 			OOBTO_Load						<= '0';
 			OOBTO_Slot						<= 0;
@@ -514,7 +514,7 @@ BEGIN
 			GTX_TX_ComWake_set		<= '0';
 			GTX_TX_ComSAS_set			<= '0';
 		
-			CASE TX_OOBCommand_d IS
+			CASE OOB_TX_Command_d IS
 				WHEN SATA_OOB_NONE =>
 					NULL;
 				
@@ -567,8 +567,8 @@ BEGIN
 			);
 	
 		-- TX OOB sequence is complete
-		TX_ComFinish			<= OOBTO_Timeout;		-- GTX_TX_ComFinish is not always generated -> replaced by a timer workaround
-		TX_OOBComplete(I)	<= TX_ComFinish;
+		TX_ComFinish				<= OOBTO_Timeout;		-- GTX_TX_ComFinish is not always generated -> replaced by a timer workaround
+		OOB_TX_Complete(I)	<= TX_ComFinish;
 	
 		-- hold registers; hold GTX_TX_Com* signal until sequence is complete
 		GTX_TX_ComInit_r	<= ffsr(q => GTX_TX_ComInit_r,	rst => TX_ComFinish, set => GTX_TX_ComInit_set)	WHEN rising_edge(GTX_UserClock);
@@ -583,20 +583,20 @@ BEGIN
 		PROCESS(GTX_RX_ComInitDetected, GTX_RX_ComWakeDetected, GTX_RX_ElectricalIDLE)
 		BEGIN
 			IF (GTX_RX_ComInitDetected	= '1') THEN
-				RX_OOBStatus_i				<= SATA_OOB_COMRESET;
+				OOB_RX_Received_i			<= SATA_OOB_COMRESET;
 			ELSIF (GTX_RX_ComWakeDetected	= '1') THEN
-				RX_OOBStatus_i				<= SATA_OOB_COMWAKE;
+				OOB_RX_Received_i			<= SATA_OOB_COMWAKE;
 			ELSIF (GTX_RX_ComSASDetected	= '1') THEN
-				RX_OOBStatus_i				<= SATA_OOB_COMSAS;
+				OOB_RX_Received_i			<= SATA_OOB_COMSAS;
 			ELSIF (GTX_RX_ElectricalIDLE	= '1') THEN
-				RX_OOBStatus_i				<= SATA_OOB_READY;
+				OOB_RX_Received_i			<= SATA_OOB_READY;
 			ELSE
-				RX_OOBStatus_i		 		<= SATA_OOB_NONE;
+				OOB_RX_Received_i		 	<= SATA_OOB_NONE;
 			END IF;
 		END PROCESS;
 
 		--RX_OOBStatus_d		<= RX_OOBStatus_i;		-- WHEN rising_edge(SATA_Clock_i(I));
-		RX_OOBStatus(I)		<= RX_OOBStatus_i;
+		OOB_RX_Received(I)		<= OOB_RX_Received_i;
 
 		--	==================================================================
 		-- error handling
