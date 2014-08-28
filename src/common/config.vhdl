@@ -148,6 +148,8 @@ package config is
 
 	function ARCH_PROPS return archprops_t;
 
+	-- force FSM to predefined encoding in debug mode
+	function getFSMEncoding_gray(debug : BOOLEAN) return STRING;
 end config;
 
 package body config is
@@ -460,4 +462,18 @@ package body config is
 		return	result;
 	end function;
 
+	-- force FSM to predefined encoding in debug mode
+	function getFSMEncoding_gray(debug : BOOLEAN) return STRING is
+	begin
+		if (debug = true) then
+			return "gray";
+		else
+			case VENDOR is
+				when VENDOR_XILINX =>		return "auto";
+				when VENDOR_ALTERA =>		return "default";
+				when others =>					report "Unknown vendor ." severity failure;
+																-- return statement is explicitly missing otherwise XST won't stop
+			end case;
+		end if;
+	end function;
 end config;
