@@ -168,11 +168,6 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	SIGNAL Link_TX_Data									: T_SLVV_32(PORTS - 1 DOWNTO 0);
 	SIGNAL Link_TX_CharIsK							: T_SLVV_4(PORTS - 1 DOWNTO 0);
 
-	SIGNAL Phy_Reconfig									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Phy_Lock											: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			
-	SIGNAL Phy_SATA_Generation					: T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
-
 	SIGNAL Phy_RX_Data									: T_SLVV_32(PORTS - 1 DOWNTO 0);
 	SIGNAL Phy_RX_CharIsK								: T_SLVV_4(PORTS - 1 DOWNTO 0);	
 
@@ -181,9 +176,12 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	SIGNAL Trans_ResetDone							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_ClockNetwork_ResetDone	: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	
-	SIGNAL Trans_ReconfigComplete				: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Trans_ConfigReloaded					: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Trans_Locked									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Phy_RP_Reconfig							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Phy_RP_SATAGeneration				: T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Trans_RP_ReconfigComplete		: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Trans_RP_ConfigReloaded			: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Phy_RP_Lock									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Trans_RP_Locked							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	
 	SIGNAL Trans_Command								: T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_Status									: T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
@@ -399,7 +397,6 @@ BEGIN
 																																						--   => preserve SATA_Generation between connection-cycles
 				SATAGenerationMin							=> SATAGenerationMin(I),							-- 
 				SATAGenerationMax							=> SATAGenerationMax(I),							-- 
-				SATA_Generation								=> Phy_SATA_Generation(I),
 
 				Command												=> Phy_Command(I),
 				Status												=> Phy_Status(I),
@@ -421,11 +418,12 @@ BEGIN
 				Trans_TX_Error								=> Trans_TX_Error(I),
 				
 				-- reconfiguration interface
-				Trans_Reconfig								=> Phy_Reconfig(I),
---				Trans_ReconfigComplete				=> Trans_ReconfigComplete(I),
-				Trans_ConfigReloaded					=> Trans_ConfigReloaded(I),
-				Trans_Lock										=> Phy_Lock(I),
-				Trans_Locked									=> Trans_Locked(I),
+				Trans_RP_Reconfig							=> Phy_RP_Reconfig(I),
+				Trans_RP_SATAGeneration				=> Phy_RP_SATAGeneration(I),
+				Trans_RP_ReconfigComplete			=> Trans_RP_ReconfigComplete(I),
+				Trans_RP_ConfigReloaded				=> Trans_RP_ConfigReloaded(I),
+				Trans_RP_Lock									=> Phy_RP_Lock(I),
+				Trans_RP_Locked								=> Trans_RP_Locked(I),
 				
 				Trans_OOB_TX_Command					=> Phy_OOB_TX_Command(I),
 				Trans_OOB_TX_Complete					=> Trans_OOB_TX_Complete(I),
@@ -441,7 +439,7 @@ BEGIN
 			);
 	END GENERATE;
   
-  SATAGeneration <= Phy_SATA_Generation;
+  SATAGeneration <= Phy_RP_SATAGeneration;
 
 -- ==================================================================
 -- transceiver layer
@@ -472,12 +470,12 @@ BEGIN
 
 			SATA_Clock								=> SATA_Clock_i,
 			
-			RP_Reconfig								=> Phy_Reconfig,
-			RP_SATAGeneration					=> Phy_SATA_Generation,
+			RP_Reconfig								=> Phy_RP_Reconfig,
+			RP_SATAGeneration					=> Phy_RP_SATAGeneration,
 			RP_ReconfigComplete				=> OPEN,													-- Trans_ReconfigComplete,
-			RP_ConfigReloaded					=> Trans_ConfigReloaded,
-			RP_Lock										=> Phy_Lock,
-			RP_Locked									=> Trans_Locked,
+			RP_ConfigReloaded					=> Trans_RP_ConfigReloaded,
+			RP_Lock										=> Phy_RP_Lock,
+			RP_Locked									=> Trans_RP_Locked,
 			
 			OOB_TX_Command						=> Phy_OOB_TX_Command,
 			OOB_TX_Complete						=> Trans_OOB_TX_Complete,

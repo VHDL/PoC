@@ -98,6 +98,11 @@ package satadbg is
 	-- ===========================================================================
 	TYPE T_SATADBG_PHYSICAL_OOBCONTROL_OUT IS RECORD
 		FSM												: STD_LOGIC_VECTOR(3 DOWNTO 0);
+		Retry											: STD_LOGIC;
+		Timeout										: STD_LOGIC;
+		LinkOK										: STD_LOGIC;
+		LinkDead									: STD_LOGIC;
+		ReceivedReset							: STD_LOGIC;
 		OOB_TX_Command						: T_SATA_OOB;
 		OOB_TX_Complete						: STD_LOGIC;
 		OOB_RX_Received						: T_SATA_OOB;
@@ -106,7 +111,16 @@ package satadbg is
 	
 	TYPE T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT IS RECORD
 		FSM												: STD_LOGIC_VECTOR(2 DOWNTO 0);
+		Status										: T_SATA_PHY_SPEED_STATUS;
 		SATAGeneration						: T_SATA_GENERATION;
+		SATAGeneration_Reset			: STD_LOGIC;
+		SATAGeneration_Change			: STD_LOGIC;
+		SATAGeneration_Changed		: STD_LOGIC;
+		OOBC_Retry								: STD_LOGIC;
+		OOBC_Timeout							: STD_LOGIC;
+		Trans_Reconfig						: STD_LOGIC;
+		Trans_ReconfigComplete		: STD_LOGIC;
+		Trans_ConfigReloaded			: STD_LOGIC;
 		GenerationChanges					: STD_LOGIC_VECTOR(7 DOWNTO 0);
 		TrysPerGeneration					: STD_LOGIC_VECTOR(7 DOWNTO 0);
 	END RECORD;
@@ -114,15 +128,11 @@ package satadbg is
 	TYPE T_SATADBG_PHYSICAL_OUT IS RECORD
 		-- phy layer fsm
 		FSM												: STD_LOGIC_VECTOR(2 DOWNTO 0);
-		Retry											: STD_LOGIC;
-		Timeout										: STD_LOGIC;
-		LinkOK										: STD_LOGIC;
-		LinkDead									: STD_LOGIC;
-		ReceivedReset							: STD_LOGIC;
+		StatusY										: T_SATA_PHY_STATUS;
 		
 		-- device detector
-		DD_NoDevice								: STD_LOGIC;
-		DD_NewDevice							: STD_LOGIC;
+--		DD_NoDevice								: STD_LOGIC;
+--		DD_NewDevice							: STD_LOGIC;
 		
 		RX_Data										: T_SLV_32;
 		RX_CharIsK								: T_SLV_4;

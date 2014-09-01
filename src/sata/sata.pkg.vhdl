@@ -140,17 +140,28 @@ package sata is
 		SATA_PHY_ERROR_FSM
 	);
 
-	TYPE T_SGEN_SGEN								IS ARRAY (T_SATA_GENERATION) OF T_SATA_GENERATION;			-- REFACTOR:
-	TYPE T_SGEN2_SGEN								IS ARRAY (T_SATA_GENERATION) OF T_SGEN_SGEN;						-- REFACTOR:
-	TYPE T_SGEN3_SGEN								IS ARRAY (T_SATA_GENERATION) OF T_SGEN2_SGEN;						-- REFACTOR:
-	
-	TYPE T_SGEN_INT									IS ARRAY (T_SATA_GENERATION) OF INTEGER;								-- REFACTOR:
-	TYPE T_SGEN2_INT								IS ARRAY (T_SATA_GENERATION) OF T_SGEN_INT;							-- REFACTOR:
-	
+	TYPE T_SATA_PHY_SPEED_COMMAND IS (
+		SATA_PHY_SPEED_CMD_NONE,					-- no command
+		SATA_PHY_SPEED_CMD_RESET,					-- reset retry and generation counters => reprogramm to initial configuration
+		SATA_PHY_SPEED_CMD_NEWLINK_UP			-- reset retry counter use same generation
+	);
+
+	TYPE T_SATA_PHY_SPEED_STATUS IS (
+		SATA_PHY_SPEED_STATUS_RESET,
+		SATA_PHY_SPEED_STATUS_NEGOTIATING,
+		SATA_PHY_SPEED_STATUS_RECONFIGURATING,
+		SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR
+	);
+
 	TYPE T_SATA_GENERATION_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_GENERATION;
 	TYPE T_SATA_PHY_COMMAND_VECTOR	IS ARRAY (NATURAL RANGE <>) OF T_SATA_PHY_COMMAND;
 	TYPE T_SATA_PHY_STATUS_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_PHY_STATUS;
 	TYPE T_SATA_PHY_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_PHY_ERROR;
+
+	function to_slv(Status : T_SATA_PHY_STATUS)				return STD_LOGIC_VECTOR;
+	function to_slv(Status : T_SATA_PHY_SPEED_STATUS)	return STD_LOGIC_VECTOR;
+
+	function to_slv(Error : T_SATA_PHY_ERROR)					return STD_LOGIC_VECTOR;
 
 	-- ===========================================================================
 	-- SATA Link Layer Types
@@ -526,6 +537,21 @@ PACKAGE BODY sata IS
 	function to_slv(SATAGen : T_SATA_GENERATION) return STD_LOGIC_VECTOR is
 	begin
 		return std_logic_vector(to_unsigned(SATAGen, 2));
+	end function;
+
+	function to_slv(Status : T_SATA_PHY_STATUS) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_PHY_STATUS'pos(Status), log2ceilnz(T_SATA_PHY_STATUS'pos(T_SATA_PHY_STATUS'high)));
+	end function;
+	
+	function to_slv(Status : T_SATA_PHY_SPEED_STATUS) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_PHY_SPEED_STATUS'pos(Status), log2ceilnz(T_SATA_PHY_SPEED_STATUS'pos(T_SATA_PHY_SPEED_STATUS'high)));
+	end function;
+
+	function to_slv(Error : T_SATA_PHY_ERROR) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_PHY_ERROR'pos(Error), log2ceilnz(T_SATA_PHY_ERROR'pos(T_SATA_PHY_ERROR'high)));
 	end function;
 
 	FUNCTION to_slv(Primitive : T_SATA_PRIMITIVE) RETURN STD_LOGIC_VECTOR IS
