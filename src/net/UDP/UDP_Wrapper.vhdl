@@ -255,15 +255,15 @@ ARCHITECTURE rtl OF UDP_Wrapper IS
 	CONSTANT STMDEMUX_META_REV_BITS							: NATURAL					:= 5;							-- sum over all control bits (rst, nxt, nxt, nxt, nxt)
 	
 	SIGNAL StmDeMux_Out_Ready										: STD_LOGIC;
-	SIGNAL StmDeMux_Out_Meta_rst									: STD_LOGIC;
-	SIGNAL StmDeMux_Out_Meta_SrcMACAddress_nxt		: STD_LOGIC;
+	SIGNAL StmDeMux_Out_Meta_rst								: STD_LOGIC;
+	SIGNAL StmDeMux_Out_Meta_SrcMACAddress_nxt	: STD_LOGIC;
 	SIGNAL StmDeMux_Out_Meta_DestMACAddress_nxt	: STD_LOGIC;
 	SIGNAL StmDeMux_Out_Meta_SrcIPAddress_nxt		: STD_LOGIC;
-	SIGNAL StmDeMux_Out_Meta_DestIPAddress_nxt		: STD_LOGIC;
+	SIGNAL StmDeMux_Out_Meta_DestIPAddress_nxt	: STD_LOGIC;
 	
-	SIGNAL StmDeMux_Out_MetaIn										: STD_LOGIC_VECTOR(isum(STMDEMUX_META_BITS) - 1 DOWNTO 0);
-	SIGNAL StmDeMux_Out_MetaIn_rev								: STD_LOGIC_VECTOR(STMDEMUX_META_REV_BITS - 1 DOWNTO 0);
-	SIGNAL StmDeMux_Out_Data											: T_SLM(UDP_SWITCH_PORTS - 1 DOWNTO 0, StmDEMUX_DATA_BITS - 1 DOWNTO 0)				:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
+	SIGNAL StmDeMux_Out_MetaIn									: STD_LOGIC_VECTOR(isum(STMDEMUX_META_BITS) - 1 DOWNTO 0);
+	SIGNAL StmDeMux_Out_MetaIn_rev							: STD_LOGIC_VECTOR(STMDEMUX_META_REV_BITS - 1 DOWNTO 0);
+	SIGNAL StmDeMux_Out_Data										: T_SLM(UDP_SWITCH_PORTS - 1 DOWNTO 0, StmDEMUX_DATA_BITS - 1 DOWNTO 0)				:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
 	SIGNAL StmDeMux_Out_MetaOut									: T_SLM(UDP_SWITCH_PORTS - 1 DOWNTO 0, isum(STMDEMUX_META_BITS) - 1 DOWNTO 0)	:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
 	SIGNAL StmDeMux_Out_MetaOut_rev							: T_SLM(UDP_SWITCH_PORTS - 1 DOWNTO 0, STMDEMUX_META_REV_BITS - 1 DOWNTO 0)		:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
 	
