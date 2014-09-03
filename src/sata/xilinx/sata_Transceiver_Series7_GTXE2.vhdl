@@ -487,13 +487,13 @@ BEGIN
 			)
 			PORT MAP (
 				Clock					=> GTX_UserClock,									-- Clock to be synchronized to
-				DataIn(0)			=> GTX_CPLL_Locked_async,					-- Data to be synchronized
-				DataIn(1)			=> GTX_RX_ElectricalIDLE_a,		-- 
-				DataIn(2)			=> DD_NoDevice_i,									-- 
+				Input(0)			=> GTX_CPLL_Locked_async,					-- Data to be synchronized
+				Input(1)			=> GTX_RX_ElectricalIDLE_a,		-- 
+				Input(2)			=> DD_NoDevice_i,									-- 
 				
-				DataOut(0)		=> GTX_CPLL_Locked,								-- synchronised data
-				DataOut(1)		=> GTX_RX_ElectricalIDLE,					-- 
-				DataOut(2)		=> DD_NoDevice										-- 
+				Output(0)			=> GTX_CPLL_Locked,								-- synchronised data
+				Output(1)			=> GTX_RX_ElectricalIDLE,					-- 
+				Output(2)			=> DD_NoDevice										-- 
 			);
 
 		--	==================================================================
@@ -580,7 +580,7 @@ BEGIN
 		GTX_TX_ComSAS			<= GTX_TX_ComSAS_r;
 
 		-- RX OOB signals (generate generic RX OOB status signals)
-		PROCESS(GTX_RX_ComInitDetected, GTX_RX_ComWakeDetected, GTX_RX_ElectricalIDLE)
+		PROCESS(GTX_RX_ElectricalIDLE, GTX_RX_ComInitDetected, GTX_RX_ComWakeDetected, GTX_RX_ComSASDetected)
 		BEGIN
 			IF (GTX_RX_ComInitDetected	= '1') THEN
 				OOB_RX_Received_i			<= SATA_OOB_COMRESET;
@@ -629,7 +629,6 @@ BEGIN
 		--	==================================================================
 		-- device detection
 		blkDeviceDetector : BLOCK
-			SIGNAL ElectricalIDLE_async				: STD_LOGIC;
 			SIGNAL ElectricalIDLE_sync				: STD_LOGIC;
 			
 			SIGNAL NoDevice_d									: STD_LOGIC			:= '0';
@@ -642,8 +641,8 @@ BEGIN
 				)
 				PORT MAP (
 					Clock					=> DD_Clock,									-- Clock to be synchronized to
-					DataIn(0)			=> GTX_RX_ElectricalIDLE_a,		-- Data to be synchronized
-					DataOut(0)		=> ElectricalIDLE_async				-- synchronised data
+					Input(0)			=> GTX_RX_ElectricalIDLE_a,		-- Data to be synchronized
+					Output(0)			=> ElectricalIDLE_sync				-- synchronised data
 				);
 			
 			GF : ENTITY PoC.io_GlitchFilter

@@ -89,9 +89,9 @@ package satacomp is
 			
 			-- SATAController interface
 			-- ========================================================================
-			SATA_Command							: OUT	T_SATA_COMMAND;
-			SATA_Status								: IN	T_SATA_STATUS;
-			SATA_Error								: IN	T_SATA_ERROR;
+			SATA_Command							: OUT	T_SATA_SATACONTROLLER_COMMAND;
+			SATA_Status								: IN	T_SATA_SATACONTROLLER_STATUS;
+			SATA_Error								: IN	T_SATA_SATACONTROLLER_ERROR;
 		
 			-- TX port
 			SATA_TX_SOF								: OUT	STD_LOGIC;
@@ -148,9 +148,9 @@ package satacomp is
 			DebugPortIn								: IN	T_SATADBG_SATAC_IN_VECTOR(PORTS - 1 DOWNTO 0);
 			DebugPortOut							: OUT	T_SATADBG_SATAC_OUT_VECTOR(PORTS - 1 DOWNTO 0);
 			
-			Command										: IN	T_SATA_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
-			Status										: OUT T_SATA_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			Error											: OUT	T_SATA_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+			Command										: IN	T_SATA_SATACONTROLLER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
+			Status										: OUT T_SATA_SATACONTROLLER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
+			Error											: OUT	T_SATA_SATACONTROLLER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 			SATAGeneration            : OUT T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- TX port

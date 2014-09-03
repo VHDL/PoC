@@ -231,24 +231,25 @@ package sata is
 		SATA_DEVICE_TYPE_DEVICE
 	);
 
-	TYPE T_SATA_DEVICE_TYPE_VECTOR		IS ARRAY (NATURAL RANGE <>) OF  T_SATA_DEVICE_TYPE;	
+	TYPE T_SATA_DEVICE_TYPE_VECTOR		IS ARRAY (NATURAL RANGE <>) OF  T_SATA_DEVICE_TYPE;
+	
 	-- ===========================================================================
 	-- SATA Controller Types
 	-- ===========================================================================
-	TYPE T_SATA_COMMAND IS (
-		SATA_CMD_NONE,
-		SATA_CMD_RESET,
-		SATA_CMD_RESET_CONNECTION,				-- invoke COMRESET / COMINIT
-		SATA_CMD_RESET_LINKLAYER					-- reset LinkLayer => send SYNC-primitive
+	TYPE T_SATA_SATACONTROLLER_COMMAND IS (
+		SATA_SATACTRL_CMD_NONE,
+		SATA_SATACTRL_CMD_RESET,									-- 
+		SATA_SATACTRL_CMD_RESET_CONNECTION,				-- invoke COMRESET / COMINIT
+		SATA_SATACTRL_CMD_RESET_LINKLAYER					-- reset LinkLayer => send SYNC-primitive
 	);
 
-	TYPE T_SATA_STATUS IS RECORD
+	TYPE T_SATA_SATACONTROLLER_STATUS IS RECORD
 		LinkLayer							: T_SATA_LINK_STATUS;
 		PhysicalLayer					: T_SATA_PHY_STATUS;
 		TransceiverLayer			: T_SATA_TRANSCEIVER_STATUS;
 	END RECORD;
 	
-	TYPE T_SATA_ERROR IS RECORD
+	TYPE T_SATA_SATACONTROLLER_ERROR IS RECORD
 		LinkLayer							: T_SATA_LINK_ERROR;
 		PhysicalLayer					: T_SATA_PHY_ERROR;
 		TransceiverLayer_TX		: T_SATA_TRANSCEIVER_TX_ERROR;
@@ -256,9 +257,13 @@ package sata is
 	END RECORD;
 
 	
-	TYPE T_SATA_COMMAND_VECTOR				IS ARRAY (NATURAL RANGE <>) OF  T_SATA_COMMAND;
-	TYPE T_SATA_STATUS_VECTOR					IS ARRAY (NATURAL RANGE <>) OF  T_SATA_STATUS;
-	TYPE T_SATA_ERROR_VECTOR					IS ARRAY (NATURAL RANGE <>) OF  T_SATA_ERROR;
+	TYPE T_SATA_SATACONTROLLER_COMMAND_VECTOR		IS ARRAY (NATURAL RANGE <>) OF  T_SATA_SATACONTROLLER_COMMAND;
+	TYPE T_SATA_SATACONTROLLER_STATUS_VECTOR		IS ARRAY (NATURAL RANGE <>) OF  T_SATA_SATACONTROLLER_STATUS;
+	TYPE T_SATA_SATACONTROLLER_ERROR_VECTOR			IS ARRAY (NATURAL RANGE <>) OF  T_SATA_SATACONTROLLER_ERROR;
+
+	function to_sata_SATAController_Command(slv : STD_LOGIC_VECTOR) return T_SATA_SATACONTROLLER_COMMAND;
+
+	function to_slv(Command : T_SATA_SATACONTROLLER_COMMAND)	return STD_LOGIC_VECTOR;
 
 	-- ===========================================================================
 	-- ATA Command Layer Types
@@ -462,6 +467,7 @@ package sata is
 	-- ===========================================================================
 	-- SATA StreamingController types
 	-- ===========================================================================
+	-- TODO: rename STREAMC to STREAMCONTROLLER
 	TYPE T_SATA_STREAMC_COMMAND IS (
 		SATA_STREAMC_CMD_NONE,
 		SATA_STREAMC_CMD_RESET,
@@ -532,13 +538,29 @@ package sata is
 END;
 
 PACKAGE BODY sata IS
-	-- to_slv
 	-- ===========================================================================
-	function to_slv(SATAGen : T_SATA_GENERATION) return STD_LOGIC_VECTOR is
+	-- to_sata_*_command
+	-- ===========================================================================
+	function to_sata_SATAController_Command(slv : STD_LOGIC_VECTOR) return T_SATA_SATACONTROLLER_COMMAND is
 	begin
-		return std_logic_vector(to_unsigned(SATAGen, 2));
+		if (to_integer(unsigned(slv)) <= T_SATA_SATACONTROLLER_COMMAND'pos(T_SATA_SATACONTROLLER_COMMAND'high)) then
+			return T_SATA_SATACONTROLLER_COMMAND'val(to_integer(unsigned(slv)));
+		else
+			return SATA_SATACTRL_CMD_NONE;
+		end if;
 	end function;
 
+	-- to_slv
+	-- ===========================================================================
+	-- to_slv(Command : ***)
+	-- -----------------------------------
+	function to_slv(Command : T_SATA_SATACONTROLLER_COMMAND) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_SATACONTROLLER_COMMAND'pos(Command), log2ceilnz(T_SATA_SATACONTROLLER_COMMAND'pos(T_SATA_SATACONTROLLER_COMMAND'high)));
+	end function;
+	
+	-- to_slv(Status : ***)
+	-- -----------------------------------
 	function to_slv(Status : T_SATA_PHY_STATUS) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_PHY_STATUS'pos(Status), log2ceilnz(T_SATA_PHY_STATUS'pos(T_SATA_PHY_STATUS'high)));
@@ -549,9 +571,18 @@ PACKAGE BODY sata IS
 		return to_slv(T_SATA_PHY_SPEED_STATUS'pos(Status), log2ceilnz(T_SATA_PHY_SPEED_STATUS'pos(T_SATA_PHY_SPEED_STATUS'high)));
 	end function;
 
+	-- to_slv(Error : ***)
+	-- -----------------------------------
 	function to_slv(Error : T_SATA_PHY_ERROR) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_PHY_ERROR'pos(Error), log2ceilnz(T_SATA_PHY_ERROR'pos(T_SATA_PHY_ERROR'high)));
+	end function;
+
+	-- to_slv(***)
+	-- -----------------------------------
+	function to_slv(SATAGen : T_SATA_GENERATION) return STD_LOGIC_VECTOR is
+	begin
+		return std_logic_vector(to_unsigned(SATAGen, 2));
 	end function;
 
 	FUNCTION to_slv(Primitive : T_SATA_PRIMITIVE) RETURN STD_LOGIC_VECTOR IS
