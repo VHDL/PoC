@@ -9,7 +9,20 @@
 -- 
 -- Description:
 -- ------------------------------------
---		TODO
+--		This is a clock domain crossing with two D-FFs optimized for Xilinx FPGAs.
+--		It utilizes two 'FD' instances from UNISIM.VCOMPONENTS. If you need a
+--		platform independent version of this Synchronizer, please use
+--		'misc_Synchronizer_Flag', which internally instantiates this module if a
+--		Xilinx FPGA is detected.
+--		
+--		ATTENTION:
+--			Only use this synchronizer for long time stable signals (flags)
+--
+--		CONSTRAINTS:
+--			This relative placement of the internal sites is constrained by RLOCs
+--		
+--			Xilinx ISE:			Please use the provided UCF/XCF file or snippet.
+--			Xilinx Vivado:	Please use the provided XDC file with scoped constraints
 --
 -- License:
 -- ============================================================================
@@ -35,64 +48,66 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 LIBRARY UNISIM;
 USE			UNISIM.VCOMPONENTS.ALL;
 
--- ============================================================================
--- clock-domain crossing with two FFs
--- use only for:
---	o long time signals
---	o between clock domains with the same frequency
--- 
--- placement is constrained by RLOCs
--- ============================================================================
+LIBRARY PoC;
+USE			PoC.utils.ALL;
+
 
 ENTITY xil_SyncBlock IS
 	GENERIC (
-		BITS					: POSITIVE																		:= 1		-- number of BITS to synchronize
+		BITS					: POSITIVE						:= 1;									-- number of bit to be synchronized
+		INIT					: STD_LOGIC_VECTOR		:= x"00"							-- number of BITS to synchronize
 	);
 	PORT (
-		Clock					: IN	STD_LOGIC;																			-- Clock to be synchronized to
-		DataIn				: IN	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);						-- Data to be synchronized
-		DataOut				: OUT	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)							-- synchronised data
+		Clock					: IN	STD_LOGIC;														-- Clock to be synchronized to
+		Input					: IN	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);	-- Data to be synchronized
+		Output				: OUT	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)		-- synchronised data
 	);
 END;
 
 
 ARCHITECTURE rtl OF xil_SyncBlock IS
-	ATTRIBUTE ASYNC_REG												: STRING;
-	ATTRIBUTE SHREG_EXTRACT										: STRING;
+	ATTRIBUTE TIG							: STRING;
+	ATTRIBUTE ASYNC_REG				: STRING;
+	ATTRIBUTE SHREG_EXTRACT		: STRING;
 
+	CONSTANT INIT_I						: STD_LOGIC_VECTOR		:= descend(INIT);
 BEGIN
 
 	gen : FOR I IN 0 TO BITS - 1 GENERATE
-		SIGNAL DataSync_async				: STD_LOGIC;
-		SIGNAL DataSync_sync				: STD_LOGIC;
+		SIGNAL Data_async				: STD_LOGIC;
+		SIGNAL Data_meta				: STD_LOGIC;
+		SIGNAL Data_sync				: STD_LOGIC;
 	
-		-- Mark register "DataSync_async" as asynchronous
-		ATTRIBUTE ASYNC_REG			OF DataSync_async	: SIGNAL IS "TRUE";
+		-- Mark register Data_async's input as asynchronous and ignore timings (TIG)
+		ATTRIBUTE TIG						OF Data_meta	: SIGNAL IS "TRUE";
+		ATTRIBUTE ASYNC_REG			OF Data_meta	: SIGNAL IS "TRUE";
 
 		-- Prevent XST from translating two FFs into SRL plus FF
-		ATTRIBUTE SHREG_EXTRACT OF DataSync_async	: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF DataSync_sync	: SIGNAL IS "NO";
+		ATTRIBUTE SHREG_EXTRACT OF Data_meta	: SIGNAL IS "NO";
+		ATTRIBUTE SHREG_EXTRACT OF Data_sync	: SIGNAL IS "NO";
 	BEGIN
+		Data_async	<= Input(I);
+	
 		FF1 : FD
 			GENERIC MAP (
-				INIT		=> '0'
+				INIT		=> to_bit(INIT_I(I))
 			)
 			PORT MAP (
 				C				=> Clock,
-				D				=> DataIn(I),
-				Q				=> DataSync_async
-		);
+				D				=> Data_async,
+				Q				=> Data_meta
+			);
 
 		FF2 : FD
 			GENERIC MAP (
-				INIT		=> '0'
+				INIT		=> to_bit(INIT_I(I))
 			)
 			PORT MAP (
 				C				=> Clock,
-				D				=> DataSync_async,
-				Q				=> DataSync_sync
-		);
+				D				=> Data_async,
+				Q				=> Data_sync
+			);
 		
-		DataOut(I)	<= DataSync_sync;
+		Output(I)		<= Data_sync;
 	END GENERATE;
 END ARCHITECTURE;
