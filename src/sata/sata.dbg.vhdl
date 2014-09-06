@@ -106,7 +106,7 @@ package satadbg is
 		OOB_TX_Command						: T_SATA_OOB;
 		OOB_TX_Complete						: STD_LOGIC;
 		OOB_RX_Received						: T_SATA_OOB;
-		OOB_HandshakingComplete		: STD_LOGIC;
+		OOB_HandshakeComplete			: STD_LOGIC;
 	END RECORD;
 	
 	TYPE T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT IS RECORD

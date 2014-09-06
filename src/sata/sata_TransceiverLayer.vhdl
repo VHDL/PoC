@@ -80,7 +80,7 @@ ENTITY sata_TransceiverLayer IS
 		OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 		OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-		OOB_HandshakingComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_HandshakeComplete			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
 		TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 		TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
@@ -183,7 +183,7 @@ BEGIN
 					OOB_TX_Command						=> OOB_TX_Command,
 					OOB_TX_Complete						=> OOB_TX_Complete,
 					OOB_RX_Received						=> OOB_RX_Received,
-					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
+					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
 
 					TX_Data										=> TX_Data,
 					TX_CharIsK								=> TX_CharIsK,
@@ -233,7 +233,7 @@ BEGIN
 					OOB_TX_Command						=> OOB_TX_Command,
 					OOB_TX_Complete						=> OOB_TX_Complete,
 					OOB_RX_Received						=> OOB_RX_Received,
-					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
+					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
 
 					TX_Data										=> TX_Data,
 					TX_CharIsK								=> TX_CharIsK,
@@ -284,7 +284,7 @@ BEGIN
 					OOB_TX_Command						=> OOB_TX_Command,
 					OOB_TX_Complete						=> OOB_TX_Complete,
 					OOB_RX_Received						=> OOB_RX_Received,
-					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
+					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
 
 					TX_Data										=> TX_Data,
 					TX_CharIsK								=> TX_CharIsK,
@@ -335,7 +335,7 @@ BEGIN
 					OOB_TX_Command						=> OOB_TX_Command,
 					OOB_TX_Complete						=> OOB_TX_Complete,
 					OOB_RX_Received						=> OOB_RX_Received,
-					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
+					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
 
 					TX_Data										=> TX_Data,
 					TX_CharIsK								=> TX_CharIsK,
@@ -384,7 +384,7 @@ BEGIN
 					OOB_TX_Command						=> OOB_TX_Command,
 					OOB_TX_Complete						=> OOB_TX_Complete,
 					OOB_RX_Received						=> OOB_RX_Received,
-					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
+					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
 
 					TX_Data										=> TX_Data,
 					TX_CharIsK								=> TX_CharIsK,

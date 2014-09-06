@@ -58,6 +58,7 @@ ENTITY sata_PhysicalLayer IS
 	);
 	PORT (
 		Clock														: IN	STD_LOGIC;
+		ClockEnable											: IN	STD_LOGIC;
 		Reset														: IN	STD_LOGIC;										-- general logic reset without some counter resets while Clock is unstable
 																																				--   => preserve SATAGeneration between connection-cycles
 		SATAGenerationMin								: IN	T_SATA_GENERATION;						-- 
@@ -94,7 +95,7 @@ ENTITY sata_PhysicalLayer IS
 		Trans_OOB_TX_Command						: OUT	T_SATA_OOB;
 		Trans_OOB_TX_Complete						: IN	STD_LOGIC;
 		Trans_OOB_RX_Received						: IN	T_SATA_OOB;
-		Trans_OOB_HandshakingComplete		: OUT	STD_LOGIC;		
+		Trans_OOB_HandshakeComplete			: OUT	STD_LOGIC;		
 
 		Trans_TX_Data										: OUT	T_SLV_32;
 		Trans_TX_CharIsK								: OUT T_SLV_4;
@@ -194,10 +195,8 @@ BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
 				State			<= ST_RESET;
-			ELSE
-				IF (Trans_ResetDone = '1') THEN
-					State			<= NextState;
-				END IF;
+			ELSIF (ClockEnable = '1') THEN
+				State			<= NextState;
 			END IF;
 			
 			IF (Error_rst = '1') THEN
@@ -340,12 +339,11 @@ BEGIN
 			)
 			PORT MAP (
 				Clock											=> Clock,
+				ClockEnable								=> ClockEnable,
 				Reset											=> OOB_Reset,
 				
 				DebugPortOut							=> OOBC_DebugPortOut,
 
-				Trans_ResetDone						=> Trans_ResetDone,
-				
 				Retry											=> SC_Retry,
 				SATAGeneration						=> SC_SATAGeneration,
 				Timeout										=> OOBC_Timeout,
@@ -356,7 +354,7 @@ BEGIN
 				OOB_TX_Command						=> Trans_OOB_TX_Command,
 				OOB_TX_Complete						=> Trans_OOB_TX_Complete,
 				OOB_RX_Received						=> Trans_OOB_RX_Received,
-				OOB_HandshakingComplete		=> Trans_OOB_HandshakingComplete,
+				OOB_HandshakeComplete			=> Trans_OOB_HandshakeComplete,
 				
 				TX_Primitive							=> OOBC_TX_Primitive,
 				RX_Primitive							=> RX_Primitive,
@@ -374,6 +372,7 @@ BEGIN
 --			)
 --			PORT MAP (
 --				Clock											=> Clock,
+--				ClockEnable								=> ClockEnable,
 --				Reset											=> OOB_Reset,
 --
 --				DebugPortOut							=> OOBC_DebugPortOut,
@@ -389,7 +388,7 @@ BEGIN
 --				OOB_TX_Command						=> Trans_OOB_TX_Command,
 --				OOB_TX_Complete						=> Trans_OOB_TX_Complete,
 --				OOB_RX_Status_i							=> Trans_OOB_RX_Received,
---				OOB_HandshakingComplete		=> Trans_OOB_HandshakingComplete,
+--				OOB_HandshakeComplete		=> Trans_OOB_HandshakeComplete,
 --				OOB_ReceivedReset					=> OOBC_ReceivedReset,
 --				
 --				RX_IsAligned							=> Trans_RX_IsAligned,
@@ -412,6 +411,7 @@ BEGIN
 			)
 			PORT MAP (
 				Clock											=> Clock,
+				ClockEnable								=> ClockEnable,
 				Reset											=> FSM_SC_Reset,
 
 				Command										=> FSM_SC_Command,

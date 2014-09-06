@@ -52,6 +52,7 @@ ENTITY sata_Physical_SpeedControl IS
 	);
 	PORT (
 		Clock											: IN	STD_LOGIC;
+		ClockEnable								: IN	STD_LOGIC;
 		Reset											: IN	STD_LOGIC;
 
 		Command										: IN	T_SATA_PHY_SPEED_COMMAND;
@@ -232,7 +233,9 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			SATAGeneration_cur	<= SATAGeneration_nxt;
+			IF (ClockEnable = '1') THEN
+				SATAGeneration_cur	<= SATAGeneration_nxt;
+			END IF;
 		END IF;
 	END PROCESS;
 	
@@ -269,7 +272,7 @@ BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
 				State	<= ST_RESET;
-			ELSE
+			ELSIF (ClockEnable = '1') THEN
 				State	<= NextState;
 			END IF;
 		END IF;

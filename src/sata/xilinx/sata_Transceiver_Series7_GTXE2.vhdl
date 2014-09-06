@@ -87,7 +87,7 @@ ENTITY sata_Transceiver_Series7_GTXE2 IS
 		OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 		OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-		OOB_HandshakingComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_HandshakeComplete			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
 		TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 		TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
@@ -310,8 +310,8 @@ BEGIN
 		SIGNAL OOBTO_Timeout								: STD_LOGIC;
 		SIGNAL TX_ComFinish									: STD_LOGIC;
 		
-		SIGNAL TX_RateChangeDone						: STD_LOGIC;
-		SIGNAL RX_RateChangeDone						: STD_LOGIC;
+		SIGNAL TX_RateChangeDone						: STD_LOGIC					:= '0';
+		SIGNAL RX_RateChangeDone						: STD_LOGIC					:= '0';
 		SIGNAL RateChangeDone								: STD_LOGIC;
 		SIGNAL RateChangeDone_d							: STD_LOGIC					:= '0';
 		SIGNAL RateChangeDone_re						: STD_LOGIC;
@@ -870,7 +870,7 @@ BEGIN
 				RX_DEBUG_CFG														=> "000000000000",
 				RX_OS_CFG																=> "0000010000000",
 				TERM_RCAL_CFG														=> "10000",								-- Controls the internal termination calibration circuit. This feature is intended for internal testing purposes only.
-				TERM_RCAL_OVRD													=> '0',										-- Selects whether the external 100Ω precision resistor is connected to the MGTRREF pin or a value defined by TERM_RCAL_CFG [4:0]. This feature is intended for internal testing purposes only.
+				TERM_RCAL_OVRD													=> '0',										-- Selects whether the external 100?? precision resistor is connected to the MGTRREF pin or a value defined by TERM_RCAL_CFG [4:0]. This feature is intended for internal testing purposes only.
 				TST_RSV																	=> x"00000000",
 				UCODEER_CLR															=> '0',
 

@@ -220,7 +220,7 @@ package satacomp is
 			OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-			OOB_HandshakingComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			OOB_HandshakeComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
@@ -271,7 +271,7 @@ package satacomp is
 			OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-			OOB_HandshakingComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			OOB_HandshakeComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
@@ -322,7 +322,7 @@ package satacomp is
 			OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-			OOB_HandshakingComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			OOB_HandshakeComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
@@ -371,7 +371,7 @@ package satacomp is
 			OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-			OOB_HandshakingComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			OOB_HandshakeComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
@@ -420,7 +420,7 @@ package satacomp is
 			OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-			OOB_HandshakingComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			OOB_HandshakeComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
