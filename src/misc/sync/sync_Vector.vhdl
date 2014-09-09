@@ -43,7 +43,7 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 
 
-ENTITY misc_Synchronizer_Vector IS
+ENTITY sync_Vector IS
   GENERIC (
 	  BITS								: POSITIVE					:= 8;											-- number of bit to be synchronized
 		INIT								: STD_LOGIC_VECTOR	:= x"00";									-- 
@@ -60,7 +60,7 @@ ENTITY misc_Synchronizer_Vector IS
 END;
 
 
-ARCHITECTURE rtl OF misc_Synchronizer_Vector IS
+ARCHITECTURE rtl OF sync_Vector IS
 	ATTRIBUTE SHREG_EXTRACT				: STRING;
 	
 	CONSTANT INIT_I								: STD_LOGIC_VECTOR												:= descend(INIT)(BITS - 1 DOWNTO 0);

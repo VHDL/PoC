@@ -224,7 +224,7 @@ BEGIN
 					END IF;
 			
 				WHEN ST_HOST_SEND_COMRESET =>
-					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
+					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
 					OOB_TX_Command_i				<= SATA_OOB_COMRESET;
 					TC1_en									<= '1';
 						
@@ -236,7 +236,7 @@ BEGIN
 					NextState								<= ST_HOST_SEND_COMRESET_WAIT;
 			
 				WHEN ST_HOST_SEND_COMRESET_WAIT =>
-					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
+					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '1';
 				
 					IF (OOB_TX_Complete = '1') THEN
@@ -246,7 +246,7 @@ BEGIN
 					END IF;
 					
 				WHEN ST_HOST_WAIT_DEV_COMINIT =>
-					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
+					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '1';
 				
 					IF (OOB_RX_Received = SATA_OOB_COMRESET) THEN																										-- device cominit detected
@@ -274,13 +274,13 @@ BEGIN
 					END IF;
 
 				WHEN ST_HOST_SEND_COMWAKE =>
-					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
+					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
 					OOB_TX_Command_i				<= SATA_OOB_COMWAKE;
 					TC1_en									<= '1';
 					NextState								<= ST_HOST_SEND_COMWAKE_WAIT;
 			
 				WHEN ST_HOST_SEND_COMWAKE_WAIT =>
-					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
+					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '1';
 				
 					IF (OOB_TX_Complete = '1') THEN
@@ -290,7 +290,7 @@ BEGIN
 					END IF;
 				
 				WHEN ST_HOST_WAIT_DEV_COMWAKE =>
-					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
+					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '1';
 				
 					IF (OOB_RX_Received = SATA_OOB_COMWAKE) THEN																											-- device comwake detected

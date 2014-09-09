@@ -214,6 +214,7 @@ ARCHITECTURE rtl OF sata_Physical_SpeedControl IS
 
 	SIGNAL OOBC_Retry_i									: STD_LOGIC;
 	SIGNAL Trans_RP_Reconfig_i					: STD_LOGIC;
+	SIGNAL Trans_RP_Lock_i							: STD_LOGIC;
 	
 	SIGNAL GenerationChange_Counter_rst	: STD_LOGIC;
 	SIGNAL GenerationChange_Counter_en	: STD_LOGIC;
@@ -282,17 +283,18 @@ BEGIN
 					Command,
 					OOBC_Timeout,
 					Trans_RP_ConfigReloaded,
-					SATAGeneration_rst, SATAGeneration_Changed,
+					SATAGeneration_Changed,
 					TryPerGeneration_Counter_ov, GenerationChange_Counter_ov)
 	BEGIN
 		NextState														<= State;
 		
 		Status_i														<= SATA_PHY_SPEED_STATUS_RESET;
 		
+		SATAGeneration_rst									<= '0';
 		SATAGeneration_Change								<= '0';
 		OOBC_Retry_i												<= '0';
 		Trans_RP_Reconfig_i									<= '0';
-		Trans_RP_Lock												<= '1';
+		Trans_RP_Lock_i											<= '1';
 		
 		TryPerGeneration_Counter_rst				<= '0';
 		TryPerGeneration_Counter_en					<= '0';
@@ -303,10 +305,23 @@ BEGIN
 			WHEN ST_RESET =>
 				Status_i												<= SATA_PHY_SPEED_STATUS_RESET;
 				
-				IF (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
+				IF (Command = SATA_PHY_SPEED_CMD_RESET) THEN
+					SATAGeneration_rst						<= '1';
+					TryPerGeneration_Counter_rst	<= '1';
 					GenerationChange_Counter_rst	<= '1';
-					NextState											<= ST_NEGOTIATION;
+					NextState											<= ST_RETRY;
+					
+				ELSIF (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
+--					SATAGeneration_rst						<= '1';
+					TryPerGeneration_Counter_rst	<= '1';
+--					GenerationChange_Counter_rst	<= '1';
+					NextState											<= ST_RETRY;
 				END IF;
+			
+			WHEN ST_RETRY =>
+				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATING;
+				OOBC_Retry_i										<= '1';
+				NextState												<= ST_NEGOTIATION;
 			
 			WHEN ST_NEGOTIATION =>
 				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATING;
@@ -343,37 +358,42 @@ BEGIN
 
 			WHEN ST_RECONFIG =>
 				Status_i												<= SATA_PHY_SPEED_STATUS_RECONFIGURATING;
-				Trans_RP_Lock										<= '0';
+				Trans_RP_Lock_i									<= '0';
 				Trans_RP_Reconfig_i							<= '1';
 				NextState												<= ST_RECONFIG_WAIT;
 
 			WHEN ST_RECONFIG_WAIT =>
 				Status_i												<= SATA_PHY_SPEED_STATUS_RECONFIGURATING;
-				Trans_RP_Lock										<= '0';
+				Trans_RP_Lock_i									<= '0';
 				
 				IF (Trans_RP_ConfigReloaded = '1') THEN
 					NextState											<= ST_RETRY;
 				END IF;
 
-			WHEN ST_RETRY =>
-				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATING;
-				OOBC_Retry_i										<= '1';
-				NextState												<= ST_NEGOTIATION;
-			
 			WHEN ST_NEGOTIATION_ERROR =>
-				Trans_RP_Lock										<= '0';
+				Trans_RP_Lock_i									<= '0';
 				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR;
 				
 				IF (Command = SATA_PHY_SPEED_CMD_RESET) THEN
-					-- TODO
+					SATAGeneration_rst						<= '1';
+					TryPerGeneration_Counter_rst	<= '1';
+					GenerationChange_Counter_rst	<= '1';
+					NextState											<= ST_RETRY;
+					
 				ELSIF (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
-					-- TODO
+--					SATAGeneration_rst						<= '1';
+					TryPerGeneration_Counter_rst	<= '1';
+--					GenerationChange_Counter_rst	<= '1';
+					NextState											<= ST_RETRY;
 				END IF;
 
 		END CASE;
 	END PROCESS;
 
-	Status		<= Status_i;
+	Status						<= Status_i;
+	OOBC_Retry				<= OOBC_Retry_i;
+	Trans_RP_Reconfig	<= Trans_RP_Reconfig_i;
+	Trans_RP_Lock			<= Trans_RP_Lock_i;
 
 	-- ================================================================
 	-- try counters

@@ -9,7 +9,20 @@
 -- 
 -- Description:
 -- ------------------------------------
---		TODO
+--		This is a clock domain crossing for reset signals optimized for Xilinx
+--		FPGAs. It utilizes two 'FDP' instances from UNISIM.VCOMPONENTS. If you
+--		need a platform independent version of this Synchronizer, please use
+--		'PoC.misc.sync.sync_Reset', which internally instantiates this module if
+--		a Xilinx FPGA is detected.
+--		
+--		ATTENTION:
+--			Only use this synchronizer for reset signals.
+--
+--		CONSTRAINTS:
+--			This relative placement of the internal sites is constrained by RLOCs
+--		
+--			Xilinx ISE:			Please use the provided UCF/XCF file or snippet.
+--			Xilinx Vivado:	Please use the provided XDC file with scoped constraints
 --
 -- License:
 -- ============================================================================
@@ -35,32 +48,33 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 LIBRARY UNISIM;
 USE			UNISIM.VCOMPONENTS.ALL;
 
--- ============================================================================
--- asynchronous active-high reset, synchronous release
--- placement is constrained by RLOCs
--- ============================================================================
 
-ENTITY xil_ResetSync IS
+ENTITY xil_SyncReset IS
 	PORT (
-		Clock					: IN	STD_LOGIC;					-- clock to be sync'ed to
-		ResetIn				: IN	STD_LOGIC;					-- Active high asynchronous reset
-		ResetOut			: OUT	STD_LOGIC						-- "Synchronised" reset signal ()
+		Clock				: IN	STD_LOGIC;					-- clock to be sync'ed to
+		Input				: IN	STD_LOGIC;					-- Active high asynchronous reset
+		Output			: OUT	STD_LOGIC						-- "Synchronised" reset signal ()
 	);
 END;
 
 
-ARCHITECTURE rtl OF xil_ResetSync IS
-	SIGNAL ResetSync_async											: STD_LOGIC;
-
-	-- Mark register "ResetSync_async" and "ResetOut" as asynchronous
+ARCHITECTURE rtl OF xil_SyncReset IS
+	ATTRIBUTE TIG																: STRING;
 	ATTRIBUTE ASYNC_REG													: STRING;
-	ATTRIBUTE ASYNC_REG OF ResetSync_async			: SIGNAL IS "TRUE";
-	ATTRIBUTE ASYNC_REG OF ResetOut							: SIGNAL IS "TRUE";
+	ATTRIBUTE SHREG_EXTRACT											: STRING;
+
+	SIGNAL ResetSync_meta												: STD_LOGIC;
+
+	--Ignore timings (TIG) on first register input
+	ATTRIBUTE TIG				OF ResetSync_meta				: SIGNAL IS "TRUE";
+	
+	-- Mark register "ResetSync_meta" and "Output" as asynchronous
+	ATTRIBUTE ASYNC_REG OF ResetSync_meta				: SIGNAL IS "TRUE";
+	ATTRIBUTE ASYNC_REG OF Output								: SIGNAL IS "TRUE";
 
 	-- Prevent XST from translating two FFs into SRL plus FF
-	ATTRIBUTE SHREG_EXTRACT											: STRING;
-	ATTRIBUTE SHREG_EXTRACT OF ResetSync_async	: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF ResetOut					: SIGNAL IS "NO";
+	ATTRIBUTE SHREG_EXTRACT OF ResetSync_meta		: SIGNAL IS "NO";
+	ATTRIBUTE SHREG_EXTRACT OF Output						: SIGNAL IS "NO";
 
 BEGIN
 
@@ -70,9 +84,9 @@ BEGIN
 		)
 		PORT MAP (
 			C				=> Clock,
-			PRE			=> ResetIn,
+			PRE			=> Input,
 			D				=> '0',
-			Q				=> ResetSync_async
+			Q				=> ResetSync_meta
 	);
 
 	FF2 : FDP
@@ -81,9 +95,8 @@ BEGIN
 		)
 		PORT MAP (
 			C				=> Clock,
-			PRE			=> ResetIn,
-			D				=> ResetSync_async,
-			Q				=> ResetOut
+			PRE			=> Input,
+			D				=> ResetSync_meta,
+			Q				=> Output
 	);
-
-	END;
+END;

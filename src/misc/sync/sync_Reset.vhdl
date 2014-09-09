@@ -40,59 +40,55 @@ USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 
 
-ENTITY sync_Flag IS
-  GENERIC (
-	  BITS								: POSITIVE						:= 1;										-- number of bit to be synchronized
-		INIT								: STD_LOGIC_VECTOR		:= x"00"
-	);
+ENTITY sync_Reset IS
   PORT (
-		Clock								: IN	STD_LOGIC;															-- <Clock>	output clock domain
-		Input								: IN	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);		-- @async:	input bits
-		Output							: OUT STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)			-- @Clock:	output bits
+		Clock			: IN	STD_LOGIC;															-- <Clock>	output clock domain
+		Input			: IN	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);		-- @async:	reset input
+		Output		: OUT STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)			-- @Clock:	reset output
 	);
 END;
 
 
-ARCHITECTURE rtl OF sync_Flag IS
-	CONSTANT INIT_I		: STD_LOGIC_VECTOR		:= descend(INIT);
+ARCHITECTURE rtl OF sync_Reset IS
 
 BEGIN
 	genXilinx0 : IF (VENDOR /= VENDOR_XILINX) GENERATE
-		ATTRIBUTE TIG										: STRING;
-		ATTRIBUTE ASYNC_REG							: STRING;
-		ATTRIBUTE SHREG_EXTRACT					: STRING;
-	BEGIN
-		gen : FOR I IN 0 TO BITS - 1 GENERATE
-			SIGNAL Q0											: STD_LOGIC		:= INIT_I(I);
-			SIGNAL Q1											: STD_LOGIC		:= INIT_I(I);
-			
-			-- Mark register DataSync_async's input as asynchronous and ignore timings (TIG)
-			ATTRIBUTE TIG						OF Q0	: SIGNAL IS "TRUE";
-			ATTRIBUTE ASYNC_REG			OF Q0	: SIGNAL IS "TRUE";
+		ATTRIBUTE TIG									: STRING;
+		ATTRIBUTE ASYNC_REG						: STRING;
+		ATTRIBUTE SHREG_EXTRACT				: STRING;
+		
+		SIGNAL Q0											: STD_LOGIC		:= '0';
+		SIGNAL Q1											: STD_LOGIC		:= '0';
+		
+		-- Mark input of register one with ignore timings (TIG)
+		ATTRIBUTE TIG						OF Q0	: SIGNAL IS "TRUE";
+		
+		-- Mark registers as asynchronous
+		ATTRIBUTE ASYNC_REG			OF Q0	: SIGNAL IS "TRUE";
+		ATTRIBUTE ASYNC_REG			OF Q1	: SIGNAL IS "TRUE";
 
-			-- Prevent XST from translating two FFs into SRL plus FF
-			ATTRIBUTE SHREG_EXTRACT OF Q0	: SIGNAL IS "NO";
-			ATTRIBUTE SHREG_EXTRACT OF Q1	: SIGNAL IS "NO";
+		-- Prevent XST from translating two FFs into SRL plus FF
+		ATTRIBUTE SHREG_EXTRACT OF Q0	: SIGNAL IS "NO";
+		ATTRIBUTE SHREG_EXTRACT OF Q1	: SIGNAL IS "NO";
+		
+	BEGIN
+		PROCESS(Clock, Input)
 		BEGIN
-			PROCESS(Clock)
-			BEGIN
-				IF rising_edge(Clock) THEN
-					Q0		<= Input(I);
-					Q1		<= Q0;
-				END IF;
-			END PROCESS;		
-			
-			Output(I)	<= Q1;
-		END GENERATE;
+			IF (Input = '1') THEN
+				Q0		<= '1';
+				Q1		<= '1';
+			ELSIF rising_edge(Clock) THEN
+				Q0		<= '0';
+				Q1		<= Q0;
+			END IF;
+		END PROCESS;		
+				
+		Output		<= Q1;
 	END GENERATE;
 
 	genXilinx1 : IF (VENDOR = VENDOR_XILINX) GENERATE
 		-- locally component declaration removes the dependancy to 'PoC.xil.ALL'
-		COMPONENT xil_SyncBits IS
-			GENERIC (
-				BITS					: POSITIVE						:= 1;									-- number of bit to be synchronized
-				INIT					: STD_LOGIC_VECTOR		:= x"00"
-			);
+		COMPONENT xil_SyncReset IS
 			PORT (
 				Clock					: IN	STD_LOGIC;														-- Clock to be synchronized to
 				Input					: IN	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);	-- Data to be synchronized
@@ -101,11 +97,7 @@ BEGIN
 		END COMPONENT;
 	BEGIN
 		-- use dedicated and optimized 2 D-FF synchronizer for Xilinx FPGAs
-		sync : xil_SyncBits
-			GENERIC MAP (
-				BITS			=> BITS,
-				INIT			=> INIT_I
-			)
+		sync : xil_SyncReset
 			PORT MAP (
 				Clock			=> Clock,
 				Input			=> Input,

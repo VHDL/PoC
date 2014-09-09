@@ -11,8 +11,9 @@
 -- ------------------------------------
 --		This is a vendor, device and protocol specific instanziation of a 7-Series
 --		GTXE2 transceiver. This GTX is configured for Serial-ATA from Gen1 to Gen3
---		with linerates from 1.5 GHz to 6.0 GHz. It has a SATAGeneration dependant
---		user interface frequency of 37.5 MHz up to 150 MHz at Gen3.
+--		with linerates from 1.5 GHz to 6.0 GHz. It has a 'RP_SATAGeneration' dependant
+--		user interface frequency of 37.5 MHz up to 150 MHz at Gen3. The data interface
+--		has a constant width of 32 bit per data word and 4 CharIsK marker bits.
 -- 
 -- License:
 -- =============================================================================
@@ -113,7 +114,7 @@ ARCHITECTURE rtl OF sata_Transceiver_Series7_GTXE2 IS
 	CONSTANT INITIAL_SATA_GENERATIONS_I	: T_SATA_GENERATION_VECTOR(0 TO PORTS - 1)	:= INITIAL_SATA_GENERATIONS;
 	
 	CONSTANT NO_DEVICE_TIMEOUT_MS				: REAL																			:= 50.0;				-- 50 ms
-	CONSTANT NEW_DEVICE_TIMEOUT_MS			: REAL																			:= 0.001;				-- FIXME: not used -> remove ???
+	CONSTANT NEW_DEVICE_TIMEOUT_MS			: REAL																			:= 0.001;				--  1 us
 
 --	CONSTANT C_DEVICE_INFO						: T_DEVICE_INFO		:= DEVICE_INFO;
 	
@@ -180,6 +181,7 @@ BEGIN
 		SIGNAL ClkNet_Reset									: STD_LOGIC;
 		SIGNAL ClkNet_ResetDone							: STD_LOGIC;
 		
+		SIGNAL ResetDone_rst								: STD_LOGIC;
 		SIGNAL ResetDone_r									: STD_LOGIC							:= '0';
 		
 		-- Clock signals
@@ -275,6 +277,7 @@ BEGIN
 		CONSTANT CLOCK_GEN1_FREQ_MHZ				: REAL						:= CLOCK_IN_FREQ_MHZ / 4.0;
 		CONSTANT CLOCK_GEN2_FREQ_MHZ				: REAL						:= CLOCK_IN_FREQ_MHZ / 2.0;
 		CONSTANT CLOCK_GEN3_FREQ_MHZ				: REAL						:= CLOCK_IN_FREQ_MHZ / 1.0;
+		CONSTANT CLOCK_DD_FREQ_MHZ					: REAL						:= CLOCK_IN_FREQ_MHZ / 1.0;
 		
 		CONSTANT COMRESET_TIMEOUT_NS				: REAL						:= 2600.0;
 		CONSTANT COMWAKE_TIMEOUT_NS					: REAL						:= 1300.0;
@@ -308,6 +311,7 @@ BEGIN
 		SIGNAL OOBTO_Slot										: NATURAL;
 		SIGNAL OOBTO_en											: STD_LOGIC;
 		SIGNAL OOBTO_Timeout								: STD_LOGIC;
+		SIGNAL OOBTO_Timeout_d							: STD_LOGIC					:= '0';
 		SIGNAL TX_ComFinish									: STD_LOGIC;
 		
 		SIGNAL TX_RateChangeDone						: STD_LOGIC					:= '0';
@@ -339,7 +343,6 @@ BEGIN
 		SIGNAL GTX_RX_n											: STD_LOGIC;
 		SIGNAL GTX_RX_p											: STD_LOGIC;
 		
-		SIGNAL DD_NoDevice_i								: STD_LOGIC;
 		SIGNAL DD_NoDevice									: STD_LOGIC;
 		SIGNAL DD_NewDevice									: STD_LOGIC;
 		
@@ -409,7 +412,8 @@ BEGIN
 		GTX_ResetDone									<= GTX_TX_ResetDone AND GTX_RX_ResetDone;
 		GTX_ResetDone_d								<= GTX_ResetDone WHEN rising_edge(GTX_UserClock);
 		GTX_ResetDone_re							<= NOT GTX_ResetDone_d AND GTX_ResetDone;
-		ResetDone_r										<= ffrs(q => ResetDone_r, rst => (GTX_Reset OR NOT GTX_CPLL_Locked), set => GTX_ResetDone_re) WHEN rising_edge(GTX_UserClock);
+		ResetDone_rst									<= GTX_Reset OR NOT GTX_CPLL_Locked;
+		ResetDone_r										<= ffrs(q => ResetDone_r, rst => ResetDone_rst, set => GTX_ResetDone_re) WHEN rising_edge(GTX_UserClock);
 		ResetDone(I)									<= ResetDone_r;
 		
 		-- CPLL resets
@@ -481,19 +485,16 @@ BEGIN
 --		GTX_RX_Status
 --		GTX_RX_ClockCorrectionStatus
 
-		sync1_RXUserClock : ENTITY PoC.xil_SyncBlock
+		sync1_RXUserClock : ENTITY PoC.xil_SyncBits
 			GENERIC MAP (
-				BITS					=> 3															-- number of BITS to synchronize
+				BITS					=> 2													-- number of BITS to synchronize
 			)
 			PORT MAP (
-				Clock					=> GTX_UserClock,									-- Clock to be synchronized to
-				Input(0)			=> GTX_CPLL_Locked_async,					-- Data to be synchronized
+				Clock					=> GTX_UserClock,							-- Clock to be synchronized to
+				Input(0)			=> GTX_CPLL_Locked_async,			-- Data to be synchronized
 				Input(1)			=> GTX_RX_ElectricalIDLE_a,		-- 
-				Input(2)			=> DD_NoDevice_i,									-- 
-				
-				Output(0)			=> GTX_CPLL_Locked,								-- synchronised data
-				Output(1)			=> GTX_RX_ElectricalIDLE,					-- 
-				Output(2)			=> DD_NoDevice										-- 
+				Output(0)			=> GTX_CPLL_Locked,						-- synchronised data
+				Output(1)			=> GTX_RX_ElectricalIDLE			-- 
 			);
 
 		--	==================================================================
@@ -567,7 +568,8 @@ BEGIN
 			);
 	
 		-- TX OOB sequence is complete
-		TX_ComFinish				<= OOBTO_Timeout;		-- GTX_TX_ComFinish is not always generated -> replaced by a timer workaround
+		OOBTO_Timeout_d			<= OOBTO_Timeout WHEN rising_edge(GTX_UserClock);
+		TX_ComFinish				<= NOT OOBTO_Timeout_d AND OOBTO_Timeout;		-- GTX_TX_ComFinish is not always generated -> replaced by a timer workaround
 		OOB_TX_Complete(I)	<= TX_ComFinish;
 	
 		-- hold registers; hold GTX_TX_Com* signal until sequence is complete
@@ -631,14 +633,13 @@ BEGIN
 		blkDeviceDetector : BLOCK
 			SIGNAL ElectricalIDLE_sync				: STD_LOGIC;
 			
+			SIGNAL NoDevice										: STD_LOGIC;
+			SIGNAL NoDevice_r									: STD_LOGIC			:= '0';
 			SIGNAL NoDevice_d									: STD_LOGIC			:= '0';
 			SIGNAL NoDevice_fe								: STD_LOGIC;
 		BEGIN
 			-- synchronize ElectricalIDLE to working clock domain
-			sync2_DDClock : ENTITY PoC.xil_SyncBlock
-				GENERIC MAP (
-					BITS					=> 1													-- number of BITS to synchronize
-				)
+			sync2_DDClock : ENTITY PoC.xil_SyncBits
 				PORT MAP (
 					Clock					=> DD_Clock,									-- Clock to be synchronized to
 					Input(0)			=> GTX_RX_ElectricalIDLE_a,		-- Data to be synchronized
@@ -647,38 +648,41 @@ BEGIN
 			
 			GF : ENTITY PoC.io_GlitchFilter
 				GENERIC MAP (
-					CLOCK_FREQ_MHZ										=> CLOCK_IN_FREQ_MHZ,
-					HIGH_SPIKE_SUPPRESSION_TIME_NS		=> NEW_DEVICE_TIMEOUT_MS * 1000.0 * 1000.0,
-					LOW_SPIKE_SUPPRESSION_TIME_NS			=> NO_DEVICE_TIMEOUT_MS * 1000.0 * 1000.0
+					CLOCK_FREQ_MHZ										=> CLOCK_DD_FREQ_MHZ,
+					HIGH_SPIKE_SUPPRESSION_TIME_NS		=> ite(SIMULATION, (2000.0),	(NO_DEVICE_TIMEOUT_MS * 1000.0 * 1000.0)),
+					LOW_SPIKE_SUPPRESSION_TIME_NS			=> ite(SIMULATION, (100.0),		(NEW_DEVICE_TIMEOUT_MS * 1000.0 * 1000.0))
 				)
 				PORT MAP (
 					Clock		=> DD_Clock,
 					I				=> ElectricalIDLE_sync,
-					O				=> DD_NoDevice_i
+					O				=> NoDevice
 				);
 			
-			NoDevice_d		<= DD_NoDevice WHEN rising_edge(GTX_UserClock);
-			NoDevice_fe		<= NoDevice_d AND NOT DD_NoDevice;
+			sync3_RXUserClock : ENTITY PoC.xil_SyncBits
+				PORT MAP (
+					Clock					=> GTX_UserClock,			-- Clock to be synchronized to
+					Input(0)			=> NoDevice,					-- Data to be synchronized
+					Output(0)			=> DD_NoDevice				-- synchronised data
+				);
+			
+			NoDevice_r		<= DD_NoDevice OR (NoDevice_r AND NOT ResetDone_r) WHEN rising_edge(GTX_UserClock);		-- latch NoDevide state until ResetDone, after that work as D-FF
+			NoDevice_d		<= NoDevice_r WHEN rising_edge(GTX_UserClock);
+			NoDevice_fe		<= NoDevice_d AND NOT NoDevice_r;
 			DD_NewDevice	<= NoDevice_fe;
 		END BLOCK;
 
 		PROCESS(DD_NoDevice, DD_NewDevice, TX_Error_i, RX_Error_i)	-- GTX_ResetDone, 
 		BEGIN
-			Status_i	 							<= SATA_TRANSCEIVER_STATUS_READY;
+			Status_i	 		<= SATA_TRANSCEIVER_STATUS_READY;
 			
---			IF (GTX_ResetDone	= '0') THEN
---				Status_i							<= SATA_TRANSCEIVER_STATUS_RESET;
---			ELS
 			IF (DD_NoDevice	= '1') THEN
-				Status_i							<= SATA_TRANSCEIVER_STATUS_NO_DEVICE;
-			ELSIF ((TX_Error_i /= SATA_TRANSCEIVER_TX_ERROR_NONE) OR (RX_Error_i /= SATA_TRANSCEIVER_RX_ERROR_NONE)) THEN
-				Status_i							<= SATA_TRANSCEIVER_STATUS_ERROR;
+				Status_i		<= SATA_TRANSCEIVER_STATUS_NO_DEVICE;
 			ELSIF (DD_NewDevice	= '1') THEN
-				Status_i							<= SATA_TRANSCEIVER_STATUS_NEW_DEVICE;
-				
+				Status_i		<= SATA_TRANSCEIVER_STATUS_NEW_DEVICE;
+			ELSIF ((TX_Error_i /= SATA_TRANSCEIVER_TX_ERROR_NONE) OR (RX_Error_i /= SATA_TRANSCEIVER_RX_ERROR_NONE)) THEN
+				Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
 -- TODO:
 -- TRANS_STATUS_CONFIGURATION,
-
 			END IF;
 		END PROCESS;
 	

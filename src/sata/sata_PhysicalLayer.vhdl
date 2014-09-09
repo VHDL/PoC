@@ -133,7 +133,7 @@ ARCHITECTURE rtl OF sata_PhysicalLayer IS
 	SIGNAL SC_Retry										: STD_LOGIC;
 	SIGNAL SC_SATAGeneration					: T_SATA_GENERATION;
 		
-	SIGNAL OOB_Reset									: STD_LOGIC;
+	SIGNAL OOBC_Reset									: STD_LOGIC;
 	SIGNAL OOBC_LinkOK								: STD_LOGIC;
 	SIGNAL OOBC_LinkDead							: STD_LOGIC;
 	SIGNAL OOBC_Timeout								: STD_LOGIC;
@@ -166,27 +166,6 @@ BEGIN
 	ASSERT FALSE REPORT "  AllowStandardViolation: " & to_string(ALLOW_STANDARD_VIOLATION)						SEVERITY NOTE;
 	ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATION + 1)	SEVERITY NOTE;
 
---	PROCESS(Reset, Command)
---	BEGIN
---		Reset_i															<= Reset;
---		OOB_Reset														<= Reset;
---		FSM_SC_Reset														<= Reset;
---		SC_SATAGeneration_Reset							<= '0';
---		SC_AttemptCounter_Reset							<= '0';
-		
---		IF (Command = SATA_PHY_CMD_RESET) THEN																							-- full reset of all logic
---			Reset_i														<= '1';
---			OOB_Reset													<= '1';																					--	=> reset FSM
---			FSM_SC_Reset													<= '1';																					--	=> reset FSM
---			SC_SATAGeneration_Reset						<= '1';																					--	=> reset SATAGeneration, reset all attempt counters => if necessary reconfigure GTP
---			SC_AttemptCounter_Reset						<= '1';
---		ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN																			-- reset retry counter, use same generation
---			Reset_i														<= '1';
---			OOB_Reset													<= '1';
---			FSM_SC_Reset													<= '1';
---		END IF;
---	END PROCESS;
-
 	-- ================================================================
 	-- physical layer control
 	-- ================================================================
@@ -213,7 +192,7 @@ BEGIN
 	BEGIN
 		NextState								<= State;
 		
-		Status_i								<= SATA_PHY_STATUS_RESET;
+		Status_i								<= SATA_PHY_STATUS_ERROR;
 		Error_rst								<= '0';
 		Error_en								<= '0';
 		Error_nxt								<= SATA_PHY_ERROR_NONE;
@@ -222,6 +201,7 @@ BEGIN
 		
 		FSM_SC_Reset						<= '0';
 		FSM_SC_Command					<= SATA_PHY_SPEED_CMD_NONE;
+		OOBC_Reset							<= '0';
 		
 		CASE State IS
 			WHEN ST_RESET =>
@@ -232,13 +212,13 @@ BEGIN
 				Status_i						<= SATA_PHY_STATUS_LINK_UP;
 			
 				IF (Command = SATA_PHY_CMD_RESET) THEN
-					OOB_Reset					<= '1';
-					FSM_SC_Reset			<= '1';
+					OOBC_Reset				<= '1';
+--					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
-					OOB_Reset					<= '1';
-					FSM_SC_Reset			<= '1';
+					OOBC_Reset				<= '1';
+--					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Trans_RP_Reconfig_i = '1') THEN
@@ -255,13 +235,13 @@ BEGIN
 				Status_i						<= SATA_PHY_STATUS_LINK_OK;
 			
 				IF (Command = SATA_PHY_CMD_RESET) THEN
-					OOB_Reset					<= '1';
-					FSM_SC_Reset			<= '1';
+					OOBC_Reset				<= '1';
+--					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
-					OOB_Reset					<= '1';
-					FSM_SC_Reset			<= '1';
+					OOBC_Reset				<= '1';
+--					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (OOBC_LinkOK = '0') THEN
@@ -278,13 +258,13 @@ BEGIN
 				Status_i						<= SATA_PHY_STATUS_LINK_BROKEN;
 			
 				IF (Command = SATA_PHY_CMD_RESET) THEN
-					OOB_Reset					<= '1';
-					FSM_SC_Reset			<= '1';
+					OOBC_Reset				<= '1';
+--					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
-					OOB_Reset					<= '1';
-					FSM_SC_Reset			<= '1';
+					OOBC_Reset				<= '1';
+--					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (OOBC_LinkOK = '1') THEN
@@ -308,13 +288,13 @@ BEGIN
 				Status_i						<= SATA_PHY_STATUS_ERROR;
 				
 				IF (Command = SATA_PHY_CMD_RESET) THEN
-					OOB_Reset					<= '1';
-					FSM_SC_Reset			<= '1';
+					OOBC_Reset				<= '1';
+--					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
-					OOB_Reset					<= '1';
-					FSM_SC_Reset			<= '1';
+					OOBC_Reset				<= '1';
+--					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (OOBC_ReceivedReset = '1') THEN
@@ -325,6 +305,7 @@ BEGIN
 		END CASE;
 	END PROCESS;
 	
+	Status	<= Status_i;
 	
 	-- OOB (out of band) signaling
 	-- ===========================================================================
@@ -340,7 +321,7 @@ BEGIN
 			PORT MAP (
 				Clock											=> Clock,
 				ClockEnable								=> ClockEnable,
-				Reset											=> OOB_Reset,
+				Reset											=> OOBC_Reset,
 				
 				DebugPortOut							=> OOBC_DebugPortOut,
 
@@ -362,39 +343,37 @@ BEGIN
 			);
 	END GENERATE;
 	genDev : IF (CONTROLLER_TYPE = SATA_DEVICE_TYPE_DEVICE) GENERATE
---		OOBC : ENTITY PoC.sata_Physical_OOBControl_Device
---			GENERIC MAP (
---				DEBUG											=> DEBUG,
---				ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
---				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
---				ALLOW_STANDARD_VIOLATION	=> ALLOW_STANDARD_VIOLATION,
---				OOB_TIMEOUT_US						=> OOB_TIMEOUT_US
---			)
---			PORT MAP (
---				Clock											=> Clock,
---				ClockEnable								=> ClockEnable,
---				Reset											=> OOB_Reset,
---
---				DebugPortOut							=> OOBC_DebugPortOut,
---
---				Trans_ResetDone						=> Trans_ResetDone,
---				SATAGeneration						=> SATAGeneration_i,
---				
---				OOB_Retry									=> OOB_Retry,
---				OOB_LinkOK								=> OOB_LinkOK,
---				OOB_LinkDead							=> OOB_LinkDead,
---				OOB_Timeout								=> OOB_Timeout,
---				
---				OOB_TX_Command						=> Trans_OOB_TX_Command,
---				OOB_TX_Complete						=> Trans_OOB_TX_Complete,
---				OOB_RX_Status_i							=> Trans_OOB_RX_Received,
---				OOB_HandshakeComplete		=> Trans_OOB_HandshakeComplete,
---				OOB_ReceivedReset					=> OOBC_ReceivedReset,
---				
---				RX_IsAligned							=> Trans_RX_IsAligned,
---				RX_Primitive							=> RX_Primitive,
---				TX_Primitive							=> TX_Primitive
---			);
+		OOBC : ENTITY PoC.sata_Physical_OOBControl_Device
+			GENERIC MAP (
+				DEBUG											=> DEBUG,
+				ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
+				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
+				ALLOW_STANDARD_VIOLATION	=> ALLOW_STANDARD_VIOLATION,
+				OOB_TIMEOUT_US						=> OOB_TIMEOUT_US
+			)
+			PORT MAP (
+				Clock											=> Clock,
+				ClockEnable								=> ClockEnable,
+				Reset											=> OOBC_Reset,
+				
+				DebugPortOut							=> OOBC_DebugPortOut,
+
+				Retry											=> SC_Retry,
+				SATAGeneration						=> SC_SATAGeneration,
+				Timeout										=> OOBC_Timeout,
+				LinkOK										=> OOBC_LinkOK,
+				LinkDead									=> OOBC_LinkDead,
+				ReceivedReset							=> OOBC_ReceivedReset,
+				
+				OOB_TX_Command						=> Trans_OOB_TX_Command,
+				OOB_TX_Complete						=> Trans_OOB_TX_Complete,
+				OOB_RX_Received						=> Trans_OOB_RX_Received,
+				OOB_HandshakeComplete			=> Trans_OOB_HandshakeComplete,
+				
+				TX_Primitive							=> OOBC_TX_Primitive,
+				RX_Primitive							=> RX_Primitive,
+				RX_IsAligned							=> Trans_RX_IsAligned
+			);
 	END GENERATE;
 	
 

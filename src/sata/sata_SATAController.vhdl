@@ -497,7 +497,7 @@ BEGIN
 			
 			RP_Reconfig								=> Phy_RP_Reconfig,
 			RP_SATAGeneration					=> Phy_RP_SATAGeneration,
-			RP_ReconfigComplete				=> OPEN,													-- Trans_ReconfigComplete,
+			RP_ReconfigComplete				=> Trans_RP_ReconfigComplete,
 			RP_ConfigReloaded					=> Trans_RP_ConfigReloaded,
 			RP_Lock										=> Phy_RP_Lock,
 			RP_Locked									=> Trans_RP_Locked,
