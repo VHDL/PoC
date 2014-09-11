@@ -16,6 +16,11 @@
 --		flag is additionally calculated and can be used to block new inputs. All
 --		bits are independent from each other.
 -- 
+--		CONSTRAINTS:
+--			General:
+--				This module uses sub modules which need to be constrainted. Please
+--				attend to the notes of the instantiated sub modules.
+--			
 -- License:
 -- =============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
@@ -113,7 +118,7 @@ BEGIN
 		Busy(I)					<= Busy_i;
 	END GENERATE;
 	
-	syncClk2 : ENTITY PoC.misc_Synchronizer_Flag
+	syncClk2 : ENTITY PoC.sync_Flag
 		GENERIC MAP (
 			BITS				=> BITS						-- number of bit to be synchronized
 		)
@@ -123,7 +128,7 @@ BEGIN
 			Output			=> syncClk2_Out		-- @Clock:	output bits
 		);
 	
-	syncClk1 : ENTITY PoC.misc_Synchronizer_Flag
+	syncClk1 : ENTITY PoC.sync_Flag
 		GENERIC MAP (
 			BITS				=> BITS						-- number of bit to be synchronized
 		)

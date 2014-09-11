@@ -17,6 +17,11 @@
 --		to capture the input for the new output. A busy flag is additionally
 --		calculated for the input clock domain.
 -- 
+--		CONSTRAINTS:
+--			General:
+--				This module uses sub modules which need to be constrainted. Please
+--				attend to the notes of the instantiated sub modules.
+-- 
 -- License:
 -- =============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
@@ -126,7 +131,7 @@ BEGIN
 	Busy					<= Busy_i;
 	Changed				<= D3;
 		
-	syncClk2 : ENTITY PoC.misc_Synchronizer_Flag
+	syncClk2 : ENTITY PoC.misc_Flag
 		GENERIC MAP (
 			BITS				=> 1							-- number of bit to be synchronized
 		)
@@ -136,7 +141,7 @@ BEGIN
 			Output(0)		=> syncClk2_Out		-- @Clock:	output bits
 		);
 	
-	syncClk1 : ENTITY PoC.misc_Synchronizer_Flag
+	syncClk1 : ENTITY PoC.misc_Flag
 		GENERIC MAP (
 			BITS				=> 1							-- number of bit to be synchronized
 		)

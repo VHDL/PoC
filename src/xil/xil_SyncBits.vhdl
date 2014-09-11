@@ -21,8 +21,14 @@
 --		CONSTRAINTS:
 --			This relative placement of the internal sites is constrained by RLOCs
 --		
---			Xilinx ISE:			Please use the provided UCF/XCF file or snippet.
---			Xilinx Vivado:	Please use the provided XDC file with scoped constraints
+--			Xilinx ISE UCF or XCF file:
+--				NET "*_async"		TIG;
+--				INST "*_meta"		TNM = "METASTABILITY_FFS";
+--				TIMESPEC "TS_MetaStability" = FROM FFS TO "METASTABILITY_FFS" TIG;
+--			
+--			Xilinx Vivado xdc file:
+--				TODO
+--				TODO
 --
 -- License:
 -- ============================================================================
@@ -66,7 +72,6 @@ END;
 
 
 ARCHITECTURE rtl OF xil_SyncBits IS
-	ATTRIBUTE TIG							: STRING;
 	ATTRIBUTE ASYNC_REG				: STRING;
 	ATTRIBUTE SHREG_EXTRACT		: STRING;
 
@@ -78,8 +83,7 @@ BEGIN
 		SIGNAL Data_meta				: STD_LOGIC;
 		SIGNAL Data_sync				: STD_LOGIC;
 	
-		-- Mark register Data_async's input as asynchronous and ignore timings (TIG)
-		ATTRIBUTE TIG						OF Data_meta	: SIGNAL IS "TRUE";
+		-- Mark register Data_async's input as asynchronous
 		ATTRIBUTE ASYNC_REG			OF Data_meta	: SIGNAL IS "TRUE";
 
 		-- Prevent XST from translating two FFs into SRL plus FF

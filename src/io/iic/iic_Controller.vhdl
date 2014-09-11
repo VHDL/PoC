@@ -157,8 +157,6 @@ ARCHITECTURE rtl OF iic_IICController IS
 	
 	SIGNAL IICBC_Request								: STD_LOGIC;
 	SIGNAL IICBC_Grant									: STD_LOGIC;
-	SIGNAL IICBC_BusMaster							: STD_LOGIC;
-	SIGNAL IICBC_BusMode								: STD_LOGIC;
 	SIGNAL IICBC_Command								: T_IO_IICBUS_COMMAND;
 	SIGNAL IICBC_Status									: T_IO_IICBUS_STATUS;
 	
@@ -224,8 +222,6 @@ BEGIN
 		BitCounter_en							<= '0';
 
 		IICBC_Request							<= '0';
-		IICBC_BusMaster						<= '0';
-		IICBC_BusMode							<= '0';
 		IICBC_Command							<= IO_IICBUS_CMD_NONE;
 
 		-- precalculated command categories
@@ -1074,9 +1070,6 @@ BEGIN
 			Command												=> IICBC_Command,
 			Status												=> IICBC_Status,
 
---			BusMaster											=> IICBC_BusMaster,
---			BusMode												=> IICBC_BusMode,											-- 0 = passive; 1 = active
-			
 			SerialClock_i									=> SerialClock_i,
 			SerialClock_o									=> SerialClock_o,
 			SerialClock_t									=> SerialClock_t_i,

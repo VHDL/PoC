@@ -21,8 +21,14 @@
 --		CONSTRAINTS:
 --			This relative placement of the internal sites is constrained by RLOCs
 --		
---			Xilinx ISE:			Please use the provided UCF/XCF file or snippet.
---			Xilinx Vivado:	Please use the provided XDC file with scoped constraints
+--			Xilinx ISE UCF or XCF file:
+--				NET "*_async"		TIG;
+--				INST "*_meta"		TNM = "METASTABILITY_FFS";
+--				TIMESPEC "TS_MetaStability" = FROM FFS TO "METASTABILITY_FFS" TIG;
+--			
+--			Xilinx Vivado xdc file:
+--				TODO
+--				TODO
 --
 -- License:
 -- ============================================================================
@@ -59,24 +65,24 @@ END;
 
 
 ARCHITECTURE rtl OF xil_SyncReset IS
-	ATTRIBUTE TIG																: STRING;
-	ATTRIBUTE ASYNC_REG													: STRING;
-	ATTRIBUTE SHREG_EXTRACT											: STRING;
+	ATTRIBUTE ASYNC_REG											: STRING;
+	ATTRIBUTE SHREG_EXTRACT									: STRING;
 
-	SIGNAL ResetSync_meta												: STD_LOGIC;
+	SIGNAL Reset_async											: STD_LOGIC;
+	SIGNAL Reset_meta												: STD_LOGIC;
+	SIGNAL Reset_sync												: STD_LOGIC;
 
-	--Ignore timings (TIG) on first register input
-	ATTRIBUTE TIG				OF ResetSync_meta				: SIGNAL IS "TRUE";
-	
-	-- Mark register "ResetSync_meta" and "Output" as asynchronous
-	ATTRIBUTE ASYNC_REG OF ResetSync_meta				: SIGNAL IS "TRUE";
-	ATTRIBUTE ASYNC_REG OF Output								: SIGNAL IS "TRUE";
+	-- Mark register "Reset_meta" and "Output" as asynchronous
+	ATTRIBUTE ASYNC_REG OF Reset_meta				: SIGNAL IS "TRUE";
+	ATTRIBUTE ASYNC_REG OF Reset_sync				: SIGNAL IS "TRUE";
 
 	-- Prevent XST from translating two FFs into SRL plus FF
-	ATTRIBUTE SHREG_EXTRACT OF ResetSync_meta		: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF Output						: SIGNAL IS "NO";
+	ATTRIBUTE SHREG_EXTRACT OF Reset_meta		: SIGNAL IS "NO";
+	ATTRIBUTE SHREG_EXTRACT OF Reset_sync		: SIGNAL IS "NO";
 
 BEGIN
+
+	Reset_async		<= Input;
 
 	FF1 : FDP
 		GENERIC MAP (
@@ -84,9 +90,9 @@ BEGIN
 		)
 		PORT MAP (
 			C				=> Clock,
-			PRE			=> Input,
+			PRE			=> Reset_async,
 			D				=> '0',
-			Q				=> ResetSync_meta
+			Q				=> Reset_meta
 	);
 
 	FF2 : FDP
@@ -95,8 +101,10 @@ BEGIN
 		)
 		PORT MAP (
 			C				=> Clock,
-			PRE			=> Input,
-			D				=> ResetSync_meta,
-			Q				=> Output
+			PRE			=> Reset_async,
+			D				=> Reset_meta,
+			Q				=> Reset_sync
 	);
+
+	Output	<= Reset_sync;
 END;
