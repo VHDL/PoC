@@ -85,9 +85,7 @@ ENTITY sata_StreamingController IS
 		
 		-- SATAController interface
 		-- ========================================================================
---		SATA_Command							: OUT	T_SATA_COMMAND;
-		SATA_Status								: IN	T_SATA_STATUS;
---		SATA_Error								: IN	T_SATA_ERROR;
+		SATA_Status								: IN	T_SATA_SATACONTROLLER_STATUS;
 	
 		-- TX port
 		SATA_TX_SOF								: OUT	STD_LOGIC;

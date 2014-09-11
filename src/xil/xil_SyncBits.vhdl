@@ -9,14 +9,14 @@
 -- 
 -- Description:
 -- ------------------------------------
---		This is a clock domain crossing with two D-FFs optimized for Xilinx FPGAs.
+--		This is a multiple bit clock domain crossing optimized for Xilinx FPGAs.
 --		It utilizes two 'FD' instances from UNISIM.VCOMPONENTS. If you need a
 --		platform independent version of this Synchronizer, please use
---		'misc_Synchronizer_Flag', which internally instantiates this module if a
---		Xilinx FPGA is detected.
+--		'PoC.misc.sync.snyc_Flag', which internally instantiates this module if
+--		a Xilinx FPGA is detected.
 --		
 --		ATTENTION:
---			Only use this synchronizer for long time stable signals (flags)
+--			Only use this synchronizer for long time stable signals (flags).
 --
 --		CONSTRAINTS:
 --			This relative placement of the internal sites is constrained by RLOCs
@@ -52,7 +52,7 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 
 
-ENTITY xil_SyncBlock IS
+ENTITY xil_SyncBits IS
 	GENERIC (
 		BITS					: POSITIVE						:= 1;									-- number of bit to be synchronized
 		INIT					: STD_LOGIC_VECTOR		:= x"00"							-- number of BITS to synchronize
@@ -65,7 +65,7 @@ ENTITY xil_SyncBlock IS
 END;
 
 
-ARCHITECTURE rtl OF xil_SyncBlock IS
+ARCHITECTURE rtl OF xil_SyncBits IS
 	ATTRIBUTE TIG							: STRING;
 	ATTRIBUTE ASYNC_REG				: STRING;
 	ATTRIBUTE SHREG_EXTRACT		: STRING;

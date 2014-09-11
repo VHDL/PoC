@@ -44,7 +44,7 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 
 
-ENTITY misc_Synchronizer_Command IS
+ENTITY sync_Command IS
   GENERIC (
 	  BITS								: POSITIVE					:= 8;											-- number of bit to be synchronized
 		INIT								: STD_LOGIC_VECTOR	:= x"00"									-- 
@@ -60,7 +60,7 @@ ENTITY misc_Synchronizer_Command IS
 END;
 
 
-ARCHITECTURE rtl OF misc_Synchronizer_Command IS
+ARCHITECTURE rtl OF sync_Command IS
 	ATTRIBUTE SHREG_EXTRACT				: STRING;
 	
 	CONSTANT INIT_I								: STD_LOGIC_VECTOR												:= descend(INIT)(BITS - 1 DOWNTO 0);
@@ -132,7 +132,7 @@ BEGIN
 	Busy					<= Busy_i;
 	Changed				<= D4;
 		
-	syncClk2 : ENTITY PoC.misc_Synchronizer_Flag
+	syncClk2 : ENTITY PoC.sync_Flag
 		GENERIC MAP (
 			BITS				=> 1							-- number of bit to be synchronized
 		)
@@ -142,7 +142,7 @@ BEGIN
 			Output(0)		=> syncClk2_Out		-- @Clock:	output bits
 		);
 	
-	syncClk1 : ENTITY PoC.misc_Synchronizer_Flag
+	syncClk1 : ENTITY PoC.sync_Flag
 		GENERIC MAP (
 			BITS				=> 1							-- number of bit to be synchronized
 		)

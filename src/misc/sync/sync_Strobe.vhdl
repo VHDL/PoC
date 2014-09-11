@@ -41,7 +41,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 
 
-ENTITY misc_Synchronizer_Strobe IS
+ENTITY sync_Strobe IS
   GENERIC (
 	  BITS								: POSITIVE		:= 1;														-- number of bit to be synchronized
 		GATED_INPUT_BY_BUSY	: BOOLEAN			:= TRUE													-- use gated input (by busy signal)
@@ -56,7 +56,7 @@ ENTITY misc_Synchronizer_Strobe IS
 END;
 
 
-ARCHITECTURE rtl OF misc_Synchronizer_Strobe IS
+ARCHITECTURE rtl OF sync_Strobe IS
 	ATTRIBUTE SHREG_EXTRACT										: STRING;
 
 	SIGNAL syncClk1_In		: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
