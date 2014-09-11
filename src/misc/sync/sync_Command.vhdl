@@ -18,6 +18,11 @@
 --		calculated for the input clock domain. The output has strobe character
 --		and is reseted to it's INIT value after one clock cycle.
 -- 
+--		CONSTRAINTS:
+--			General:
+--				This module uses sub modules which need to be constrainted. Please
+--				attend to the notes of the instantiated sub modules.
+-- 
 -- License:
 -- =============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany

@@ -13,6 +13,21 @@
 --		'Clock1' to clock domain 'Clock'. The clock domain boundary crossing is
 --		done by two synchronizer D-FFs. All bits are independent from each other.
 -- 
+--		ATTENTION:
+--			Only use this synchronizer for reset signals.
+--
+--		CONSTRAINTS:
+--			General:
+--				Please add constraints for meta stability to all '_meta' signals and
+--				timing ignore constraints to all '_async' signals.
+--			
+--			Xilinx:
+--				In case of a xilinx device, this module will instantiate the optimized
+--				module xil_SyncReset. Please attend to the notes of xil_SyncReset.
+--		
+--			Altera sdc file:
+--				TODO
+--			
 -- License:
 -- =============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
@@ -53,37 +68,36 @@ ARCHITECTURE rtl OF sync_Reset IS
 
 BEGIN
 	genXilinx0 : IF (VENDOR /= VENDOR_XILINX) GENERATE
-		ATTRIBUTE TIG									: STRING;
 		ATTRIBUTE ASYNC_REG						: STRING;
 		ATTRIBUTE SHREG_EXTRACT				: STRING;
 		
-		SIGNAL Q0											: STD_LOGIC		:= '0';
-		SIGNAL Q1											: STD_LOGIC		:= '0';
-		
-		-- Mark input of register one with ignore timings (TIG)
-		ATTRIBUTE TIG						OF Q0	: SIGNAL IS "TRUE";
+		SIGNAL Data_async											: STD_LOGIC;
+		SIGNAL Data_meta											: STD_LOGIC		:= '0';
+		SIGNAL Data_sync											: STD_LOGIC		:= '0';
 		
 		-- Mark registers as asynchronous
-		ATTRIBUTE ASYNC_REG			OF Q0	: SIGNAL IS "TRUE";
-		ATTRIBUTE ASYNC_REG			OF Q1	: SIGNAL IS "TRUE";
+		ATTRIBUTE ASYNC_REG			OF Data_meta	: SIGNAL IS "TRUE";
+		ATTRIBUTE ASYNC_REG			OF Data_sync	: SIGNAL IS "TRUE";
 
 		-- Prevent XST from translating two FFs into SRL plus FF
-		ATTRIBUTE SHREG_EXTRACT OF Q0	: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF Q1	: SIGNAL IS "NO";
+		ATTRIBUTE SHREG_EXTRACT OF Data_meta	: SIGNAL IS "NO";
+		ATTRIBUTE SHREG_EXTRACT OF Data_sync	: SIGNAL IS "NO";
 		
 	BEGIN
+		Data_async	<= Input;
+	
 		PROCESS(Clock, Input)
 		BEGIN
-			IF (Input = '1') THEN
-				Q0		<= '1';
-				Q1		<= '1';
+			IF (Data_async = '1') THEN
+				Data_meta		<= '1';
+				Data_sync		<= '1';
 			ELSIF rising_edge(Clock) THEN
-				Q0		<= '0';
-				Q1		<= Q0;
+				Data_meta		<= '0';
+				Data_sync		<= Data_meta;
 			END IF;
 		END PROCESS;		
 				
-		Output		<= Q1;
+		Output		<= Data_sync;
 	END GENERATE;
 
 	genXilinx1 : IF (VENDOR = VENDOR_XILINX) GENERATE
