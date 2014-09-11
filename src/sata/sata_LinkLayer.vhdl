@@ -59,7 +59,7 @@ ENTITY sata_LinkLayer IS
 		Error										: OUT	T_SATA_LINK_ERROR;
 
 		-- Debug ports
-		DebugPortOut					 	: OUT T_SATADBG_LINKOUT;
+		DebugPortOut					 	: OUT T_SATADBG_LINK_OUT;
 		
 		-- TX port
 		TX_SOF									: IN	STD_LOGIC;
@@ -634,16 +634,17 @@ BEGIN
 	-- primitive section
 	-- ================================================================
 	-- TX path
-	PM : ENTITY PoC.sata_PrimitiveMux
-		PORT MAP (
-			Primitive							=> TX_Primitive,
-			
-			TX_DataIn							=> PM_DataIn,
-			TX_DataOut						=> PM_DataOut,
-			TX_CharIsK						=> PM_CharIsK
-		);
-
-
+	PROCESS(TX_Primitive, PM_DataIn)
+	BEGIN
+		IF (TX_Primitive = SATA_PRIMITIVE_NONE) THEN		-- no primitive
+			PM_DataOut		<= PM_DataIn;										--	passthrough data word
+			PM_CharIsK		<= "0000";
+		ELSE																						-- Send Primitive
+			PM_DataOut		<= to_sata_word(TX_Primitive);	-- access ROM
+			PM_CharIsK		<= "0001";											-- mark primitive with K-symbols
+		END IF;
+	END PROCESS;
+	
 	-- RX path
 	PD : ENTITY PoC.sata_PrimitiveDetector
 		PORT MAP (

@@ -33,6 +33,9 @@ LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
+library PoC;
+use			PoC.utils.all;
+
 
 PACKAGE components IS
 	-- FlipFlop functions
@@ -42,6 +45,16 @@ PACKAGE components IS
 	FUNCTION fftre(q : STD_LOGIC; rst : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC;																			-- T-FlipFlop with reset and enable
 	FUNCTION ffrs(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant rst
 	FUNCTION ffsr(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant set
+
+	-- counter
+	function counter_inc(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return UNSIGNED;
+	function counter_eq(cnt : UNSIGNED; value : NATURAL) return STD_LOGIC;
+
+	-- shift/rotate registers
+	function sr_left(q : STD_LOGIC_VECTOR; i : STD_LOGIC) return STD_LOGIC_VECTOR;
+	function sr_right(q : STD_LOGIC_VECTOR; i : STD_LOGIC) return STD_LOGIC_VECTOR;
+	function rr_left(q : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;
+	function rr_right(q : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;
 
 	-- multiplexing
 	function mux(sel : STD_LOGIC; sl0		: STD_LOGIC;				sl1		: STD_LOGIC)				return STD_LOGIC;
@@ -86,7 +99,46 @@ PACKAGE BODY components IS
 		RETURN (q AND NOT rst) OR set;
 	END FUNCTION;
 	
-		-- multiplexing
+	-- counter
+	function counter_inc(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return UNSIGNED is
+	begin
+		if (rst = '1') then
+			return to_unsigned(init, cnt'length);
+		elsif (en = '1') then
+			return cnt + 1;
+		else
+			return cnt;
+		end if;
+--		return mux(rst, mux(en, cnt, cnt + 1), to_unsigned(init, cnt'length));
+	end function;
+	
+	function counter_eq(cnt : UNSIGNED; value : NATURAL) return STD_LOGIC is
+	begin
+		return to_sl(cnt = to_unsigned(value, cnt'length));
+	end function;
+	
+	-- shift/rotate registers
+	function sr_left(q : STD_LOGIC_VECTOR; i : std_logic) return STD_LOGIC_VECTOR is
+	begin
+		return q(q'left - 1 downto q'right) & i;
+	end function;
+	
+	function sr_right(q : STD_LOGIC_VECTOR; i : std_logic) return STD_LOGIC_VECTOR is
+	begin
+		return i & q(q'left downto q'right - 1);
+	end function;
+	
+	function rr_left(q : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
+	begin
+		return q(q'left - 1 downto q'right) & q(q'left);
+	end function;
+	
+	function rr_right(q : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
+	begin
+		return q(q'right) & q(q'left downto q'right - 1);
+	end function;
+	
+	-- multiplexing
 	function mux(sel : STD_LOGIC; sl0 : STD_LOGIC; sl1 : STD_LOGIC) return STD_LOGIC is
 	begin
 		return (sl0 and not sel) or (sl1 and sel);

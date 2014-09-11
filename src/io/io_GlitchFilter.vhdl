@@ -72,7 +72,10 @@ ARCHITECTURE rtl OF io_GlitchFilter IS
 	SIGNAL TC_Timeout								: STD_LOGIC;
 
 BEGIN
-
+	ASSERT FALSE REPORT "GlitchFilter: " &
+											"HighSpikeSuppressionCycles=" & INTEGER'image(TIMING_TABLE(TTID_HIGH_SPIKE)) & "  " &
+											"LowSpikeSuppressionCycles=" & INTEGER'image(TIMING_TABLE(TTID_LOW_SPIKE)) & "  " SEVERITY NOTE;
+	
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN

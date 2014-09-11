@@ -39,42 +39,44 @@ USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.io.ALL;
 USE			PoC.sata.ALL;
+USE			PoC.satadbg.ALL;
 
 
-ENTITY sata_OOBControl_Device IS
+ENTITY sata_Physical_OOBControl_Device IS
 	GENERIC (
-		DEBUG											: BOOLEAN														:= FALSE;
+		DEBUG											: BOOLEAN														:= FALSE;												-- generate additional debug signals and preserve them (attribute keep)
+		ENABLE_DEBUGPORT					: BOOLEAN														:= FALSE;												-- enables the assignment of signals to the debugport
 		CLOCK_FREQ_MHZ						: REAL															:= 150.0;												-- 
 		ALLOW_STANDARD_VIOLATION	: BOOLEAN														:= FALSE;
 		OOB_TIMEOUT_US						: INTEGER														:= 0
 	);
 	PORT (
 		Clock											: IN	STD_LOGIC;
+		ClockEnable								: IN	STD_LOGIC;
 		Reset											: IN	STD_LOGIC;
-		ComReset									: OUT	STD_LOGIC;
+		-- debug ports
+		DebugPortOut							: OUT	T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
 
-		SATA_Generation						: IN	T_SATA_GENERATION;
-		Trans_ResetDone						: IN	STD_LOGIC;
+		Retry											: IN	STD_LOGIC;
+		Timeout										: OUT	STD_LOGIC;
+		SATAGeneration						: IN	T_SATA_GENERATION;
+		LinkOK										: OUT	STD_LOGIC;
+		LinkDead									: OUT	STD_LOGIC;
+		ReceivedReset							: OUT	STD_LOGIC;
 		
 		OOB_TX_Command						: OUT	T_SATA_OOB;
 		OOB_TX_Complete						: IN	STD_LOGIC;
-		OOB_RX_Status							: IN	T_SATA_OOB;
-		OOB_HandshakingComplete		:	OUT	STD_LOGIC;
+		OOB_RX_Received						: IN	T_SATA_OOB;
+		OOB_HandshakeComplete			:	OUT	STD_LOGIC;
 		
-		OOB_Retry									: IN	STD_LOGIC;
-		OOB_LinkOK								: OUT	STD_LOGIC;
-		OOB_LinkDead							: OUT	STD_LOGIC;
-		OOB_Timeout								: OUT	STD_LOGIC;
-		OOB_ReceivedReset					: OUT	STD_LOGIC;
-		
-		RX_IsAligned							: IN	STD_LOGIC;
+		TX_Primitive							: OUT	T_SATA_PRIMITIVE;
 		RX_Primitive							: IN	T_SATA_PRIMITIVE;
-		TX_Primitive							: OUT	T_SATA_PRIMITIVE
+		RX_IsAligned							: IN	STD_LOGIC
 	);
 END;
 
 
-ARCHITECTURE rtl OF sata_OOBControl_Device IS
+ARCHITECTURE rtl OF sata_Physical_OOBControl_Device IS
 	ATTRIBUTE KEEP												: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING								: STRING;
 
@@ -113,7 +115,7 @@ ARCHITECTURE rtl OF sata_OOBControl_Device IS
 		TTID2_COMWAKE_TIMEOUT_GEN3	=> TimingToCycles_ns(COMWAKE_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN3_FREQ_MHZ))		-- slot 5
 	);
 
-	TYPE T_OOBCONTROL_STATE IS (
+	TYPE T_STATE IS (
 		ST_DEV_RESET,
 		ST_DEV_WAIT_HOST_COMRESET,
 		ST_DEV_WAIT_AFTER_HOST_COMRESET,
@@ -121,6 +123,7 @@ ARCHITECTURE rtl OF sata_OOBControl_Device IS
 		ST_DEV_WAIT_HOST_COMWAKE,
 		ST_DEV_WAIT_AFTER_COMWAKE,
 		ST_DEV_SEND_COMWAKE,
+		ST_DEV_OOB_HANDSHAKE_COMPLETE,
 		ST_DEV_SEND_ALIGN,
 		ST_DEV_TIMEOUT,
 		ST_DEV_LINK_OK,
@@ -129,12 +132,19 @@ ARCHITECTURE rtl OF sata_OOBControl_Device IS
 	);
 
 	-- OOB-Statemachine
-	SIGNAL OOBControl_State											: T_OOBCONTROL_STATE											:= ST_DEV_RESET;
-	SIGNAL OOBControl_NextState									: T_OOBCONTROL_STATE;
-	ATTRIBUTE FSM_ENCODING OF OOBControl_State	: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	SIGNAL State										: T_STATE														:= ST_DEV_RESET;
+	SIGNAL NextState								: T_STATE;
+	ATTRIBUTE FSM_ENCODING OF State	: SIGNAL IS getFSMEncoding_gray(DEBUG);
+	SIGNAL LinkOK_i										: STD_LOGIC;
+	SIGNAL LinkDead_i									: STD_LOGIC;
+	SIGNAL Timeout_i									: STD_LOGIC;
+	SIGNAL ReceivedReset_i						: STD_LOGIC;
+
+	SIGNAL OOB_TX_Command_i						: T_SATA_OOB;
+	SIGNAL OOB_HandshakeComplete_i		: STD_LOGIC;
 
 	-- Timing-Counter
-	-- ================================================================
+	-- ===========================================================================
 	-- general timeouts
 	SIGNAL TC1_en										: STD_LOGIC;
 	SIGNAL TC1_Load									: STD_LOGIC;
@@ -148,9 +158,9 @@ ARCHITECTURE rtl OF sata_OOBControl_Device IS
 	SIGNAL TC2_Timeout							: STD_LOGIC;	
 	
 BEGIN
-	ASSERT ((SATA_Generation = SATA_GENERATION_1) OR
-					(SATA_Generation = SATA_GENERATION_2) OR
-					(SATA_Generation = SATA_GENERATION_3))
+	ASSERT ((SATAGeneration = SATA_GENERATION_1) OR
+					(SATAGeneration = SATA_GENERATION_2) OR
+					(SATAGeneration = SATA_GENERATION_3))
 		REPORT "Member of T_SATA_GENERATION not supported"
 		SEVERITY FAILURE;
 
@@ -160,237 +170,232 @@ BEGIN
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
-				OOBControl_State			<= ST_DEV_RESET;
-			ELSE
-				OOBControl_State			<= OOBControl_NextState;
+				State			<= ST_DEV_RESET;
+			ELSIF (ClockEnable = '1') THEN
+				State			<= NextState;
 			END IF;
 		END IF;
 	END PROCESS;
 
 
-	PROCESS(OOBControl_State, Trans_ResetDone, SATA_Generation, OOB_Retry, OOB_TX_Complete, OOB_RX_Status, RX_IsAligned, RX_Primitive, TC1_Timeout, TC2_Timeout)
+	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_IsAligned, RX_Primitive, TC1_Timeout, TC2_Timeout)
 	BEGIN
-		OOBControl_NextState		<= OOBControl_State;
-
-		TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;		
-		OOB_ReceivedReset				<= '0';
+		NextState									<= State;
 		
+		TX_Primitive							<= SATA_PRIMITIVE_DIAL_TONE;
+	
 		-- general timeout
-		TC1_en									<= '1';
-		TC1_Load								<= '0';
-		TC1_Slot								<= 0;
+		TC1_en										<= '0';
+		TC1_Load									<= '0';
+		TC1_Slot									<= 0;
 		
 		-- OOB state specific timeouts
-		TC2_en									<= '0';
-		TC2_Load								<= '0';
-		TC2_Slot								<= 0;
+		TC2_en										<= '0';
+		TC2_Load									<= '0';
+		TC2_Slot									<= 0;
 	
-		OOB_LinkOK							<= '0';
-		OOB_LinkDead						<= '0';
-		OOB_Timeout							<= '0';
+		LinkOK_i									<= '0';
+		LinkDead_i								<= '0';
+		Timeout_i									<= '0';
+		ReceivedReset_i						<= '0';
 		
-		OOB_TX_Command					<= SATA_OOB_NONE;
-		OOB_HandshakingComplete	<= '0';
+		OOB_TX_Command_i					<= SATA_OOB_NONE;
+		OOB_HandshakeComplete_i		<= '0';
 
 		-- handle timeout with highest priority
 		IF (TC1_Timeout = '1') THEN
-			OOB_Timeout													<= '1';
-		
-			TC1_en															<= '0';
-			TC1_Load														<= '1';
-			TC1_Slot														<= ite((SATA_Generation = SATA_GENERATION_1), 0,
-																						 ite((SATA_Generation = SATA_GENERATION_2), 1,
-																						 ite((SATA_Generation = SATA_GENERATION_3), 2, 0)));
-		
-			OOBControl_NextState								<= ST_DEV_TIMEOUT;
+			TC1_en											<= '0';
+			TC1_Load										<= '1';
+			TC1_Slot										<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
+																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
+																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
+																																							 TTID1_OOB_TIMEOUT_GEN3)));
+			NextState										<= ST_DEV_TIMEOUT;
 			
 		-- treat COMRESET as communication reset
-		ELSIF ((OOB_RX_Status = SATA_OOB_COMRESET) AND
-					 ((OOBControl_State /= ST_DEV_WAIT_HOST_COMRESET) OR
-					  (OOBControl_State /= ST_DEV_WAIT_AFTER_HOST_COMRESET)))
+		ELSIF ((OOB_RX_Received = SATA_OOB_COMRESET) AND
+					 ((State /= ST_DEV_WAIT_HOST_COMRESET) OR
+					  (State /= ST_DEV_WAIT_AFTER_HOST_COMRESET)))
 		THEN
-			OOB_ReceivedReset										<= '1';
+			ReceivedReset_i							<= '1';
 
-			TC1_en															<= '0';
-			TC1_Load														<= '1';
-			TC1_Slot														<= ite((SATA_Generation = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
-																						 ite((SATA_Generation = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
-																						 ite((SATA_Generation = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
-																																												TTID1_OOB_TIMEOUT_GEN3)));
-			
-			TC2_Load														<= '1';
-			TC2_Slot														<= ite((SATA_Generation = SATA_GENERATION_1), TTID2_COMRESET_TIMEOUT_GEN1,
-																						 ite((SATA_Generation = SATA_GENERATION_2), TTID2_COMRESET_TIMEOUT_GEN2,
-																						 ite((SATA_Generation = SATA_GENERATION_3), TTID2_COMRESET_TIMEOUT_GEN3,
-																																												TTID2_COMRESET_TIMEOUT_GEN3)));
-			
-			OOBControl_NextState								<= ST_DEV_WAIT_AFTER_HOST_COMRESET;
+			TC1_Load										<= '1';
+			TC2_Load										<= '1';
+			TC1_Slot										<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
+																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
+																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
+																																								TTID1_OOB_TIMEOUT_GEN3)));
+			TC2_Slot										<= ite((SATAGeneration = SATA_GENERATION_1), TTID2_COMRESET_TIMEOUT_GEN1,
+																		 ite((SATAGeneration = SATA_GENERATION_2), TTID2_COMRESET_TIMEOUT_GEN2,
+																		 ite((SATAGeneration = SATA_GENERATION_3), TTID2_COMRESET_TIMEOUT_GEN3,
+																																								TTID2_COMRESET_TIMEOUT_GEN3)));
+			NextState										<= ST_DEV_WAIT_AFTER_HOST_COMRESET;
 		ELSE
-			CASE OOBControl_State IS
+			CASE State IS
 				WHEN ST_DEV_RESET =>
-					TC1_en													<= '0';																									-- disable timeout counter
-				
-					IF (Trans_ResetDone = '1') THEN
-						TC1_Load											<= '1';
-						TC1_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
-																						 ite((SATA_Generation = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
-																						 ite((SATA_Generation = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
-																																												TTID1_OOB_TIMEOUT_GEN3)));
-						
-						OOBControl_NextState					<= ST_DEV_WAIT_HOST_COMRESET;
+					IF (Retry = '1') THEN
+						TC1_Load							<= '1';
+						TC1_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
+																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
+																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
+																																								TTID1_OOB_TIMEOUT_GEN3)));
+						NextState							<= ST_DEV_WAIT_HOST_COMRESET;
 					END IF;
 
 				WHEN ST_DEV_WAIT_HOST_COMRESET =>
-					TC1_en													<= '0';
-					
-					IF (OOB_RX_Status = SATA_OOB_COMRESET) THEN																										-- host comreset detected
-						TC1_Load											<= '1';
-						TC2_Load											<= '1';
-						
-						TC1_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
-																						 ite((SATA_Generation = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
-																						 ite((SATA_Generation = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
-																																												TTID1_OOB_TIMEOUT_GEN3)));
-						TC2_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), TTID2_COMRESET_TIMEOUT_GEN1,
-																						 ite((SATA_Generation = SATA_GENERATION_2), TTID2_COMRESET_TIMEOUT_GEN2,
-																						 ite((SATA_Generation = SATA_GENERATION_3), TTID2_COMRESET_TIMEOUT_GEN3,
-																																												TTID2_COMRESET_TIMEOUT_GEN3)));
-						
-						OOBControl_NextState					<= ST_DEV_WAIT_AFTER_HOST_COMRESET;
+					IF (OOB_RX_Received = SATA_OOB_COMRESET) THEN																										-- host comreset detected
+						TC1_Load							<= '1';
+						TC2_Load							<= '1';
+						TC1_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
+																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
+																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
+																																								TTID1_OOB_TIMEOUT_GEN3)));
+						TC2_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID2_COMRESET_TIMEOUT_GEN1,
+																		 ite((SATAGeneration = SATA_GENERATION_2), TTID2_COMRESET_TIMEOUT_GEN2,
+																		 ite((SATAGeneration = SATA_GENERATION_3), TTID2_COMRESET_TIMEOUT_GEN3,
+																																								TTID2_COMRESET_TIMEOUT_GEN3)));
+						NextState							<= ST_DEV_WAIT_AFTER_HOST_COMRESET;
 					END IF;
 		
 				WHEN ST_DEV_WAIT_AFTER_HOST_COMRESET =>
-					TC2_en													<= '1';
+					TC1_en									<= '1';
+					TC2_en									<= '1';
 
-					IF (OOB_RX_Status = SATA_OOB_COMRESET) THEN																										-- host additional comreset detected
-						TC2_Load											<= '1';
-						TC2_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), TTID2_COMRESET_TIMEOUT_GEN1,
-																						 ite((SATA_Generation = SATA_GENERATION_2), TTID2_COMRESET_TIMEOUT_GEN2,
-																						 ite((SATA_Generation = SATA_GENERATION_3), TTID2_COMRESET_TIMEOUT_GEN3,
-																																												TTID2_COMRESET_TIMEOUT_GEN3)));
+					IF (OOB_RX_Received = SATA_OOB_COMRESET) THEN																										-- host additional comreset detected
+						TC2_Load							<= '1';
+						TC2_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID2_COMRESET_TIMEOUT_GEN1,
+																		 ite((SATAGeneration = SATA_GENERATION_2), TTID2_COMRESET_TIMEOUT_GEN2,
+																		 ite((SATAGeneration = SATA_GENERATION_3), TTID2_COMRESET_TIMEOUT_GEN3,
+																																								TTID2_COMRESET_TIMEOUT_GEN3)));
 					ELSIF (TC2_Timeout = '1') THEN
-						OOB_TX_Command								<= SATA_OOB_COMRESET;
+						OOB_TX_Command_i			<= SATA_OOB_COMRESET;
 						
-						OOBControl_NextState					<= ST_DEV_SEND_COMINIT;
+						NextState							<= ST_DEV_SEND_COMINIT;
 					END IF;
 
 				WHEN ST_DEV_SEND_COMINIT =>
-					TX_Primitive										<= SATA_PRIMITIVE_ALIGN;
+					TC1_en									<= '1';
+					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
 					
 					IF (OOB_TX_Complete = '1') THEN
-						OOBControl_NextState					<= ST_DEV_WAIT_HOST_COMWAKE;
-					ELSIF ((ALLOW_STANDARD_VIOLATION = TRUE) AND (OOB_RX_Status = SATA_OOB_COMWAKE)) THEN					-- allow premature OOB response
-						OOBControl_NextState					<= ST_DEV_WAIT_AFTER_COMWAKE;
+						NextState					<= ST_DEV_WAIT_HOST_COMWAKE;
+					ELSIF ((ALLOW_STANDARD_VIOLATION = TRUE) AND (OOB_RX_Received = SATA_OOB_COMWAKE)) THEN					-- allow premature OOB response
+						NextState					<= ST_DEV_WAIT_AFTER_COMWAKE;
 					END IF;
 
 				WHEN ST_DEV_WAIT_HOST_COMWAKE =>
-					TX_Primitive										<= SATA_PRIMITIVE_ALIGN;
+					TX_Primitive				<= SATA_PRIMITIVE_ALIGN;
+					TC1_en							<= '1';
 					
-					IF (OOB_RX_Status = SATA_OOB_COMWAKE) THEN																											-- host comwake detected
-						TC2_Load											<= '1';
-						TC2_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), TTID2_COMWAKE_TIMEOUT_GEN1,
-																						 ite((SATA_Generation = SATA_GENERATION_2), TTID2_COMWAKE_TIMEOUT_GEN2,
-																						 ite((SATA_Generation = SATA_GENERATION_3), TTID2_COMWAKE_TIMEOUT_GEN3,
-																																												TTID2_COMWAKE_TIMEOUT_GEN3)));
-					
-						OOBControl_NextState					<= ST_DEV_WAIT_AFTER_COMWAKE;
+					IF (OOB_RX_Received = SATA_OOB_COMWAKE) THEN																											-- host comwake detected
+						TC2_Load					<= '1';
+						TC2_Slot					<= ite((SATAGeneration = SATA_GENERATION_1), TTID2_COMWAKE_TIMEOUT_GEN1,
+																 ite((SATAGeneration = SATA_GENERATION_2), TTID2_COMWAKE_TIMEOUT_GEN2,
+																 ite((SATAGeneration = SATA_GENERATION_3), TTID2_COMWAKE_TIMEOUT_GEN3,
+																																						TTID2_COMWAKE_TIMEOUT_GEN3)));
+						NextState					<= ST_DEV_WAIT_AFTER_COMWAKE;
 					END IF;
 				
 				WHEN ST_DEV_WAIT_AFTER_COMWAKE =>
-					TC2_en													<= '1';
+					TC1_en							<= '1';
+					TC2_en							<= '1';
 
-					IF (OOB_RX_Status = SATA_OOB_COMWAKE) THEN																											-- additional host cominit detected
-						TC2_Load											<= '1';
-						TC2_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), TTID2_COMWAKE_TIMEOUT_GEN1,
-																						 ite((SATA_Generation = SATA_GENERATION_2), TTID2_COMWAKE_TIMEOUT_GEN2,
-																						 ite((SATA_Generation = SATA_GENERATION_3), TTID2_COMWAKE_TIMEOUT_GEN3,
-																																												TTID2_COMWAKE_TIMEOUT_GEN3)));
+					IF (OOB_RX_Received = SATA_OOB_COMWAKE) THEN																											-- additional host cominit detected
+						TC2_Load					<= '1';
+						TC2_Slot					<= ite((SATAGeneration = SATA_GENERATION_1), TTID2_COMWAKE_TIMEOUT_GEN1,
+																 ite((SATAGeneration = SATA_GENERATION_2), TTID2_COMWAKE_TIMEOUT_GEN2,
+																 ite((SATAGeneration = SATA_GENERATION_3), TTID2_COMWAKE_TIMEOUT_GEN3,
+																																						TTID2_COMWAKE_TIMEOUT_GEN3)));
 					ELSIF (TC2_Timeout = '1') THEN
-						OOB_TX_Command								<= SATA_OOB_COMWAKE;
+						OOB_TX_Command_i			<= SATA_OOB_COMWAKE;
 						
-						OOBControl_NextState					<= ST_DEV_SEND_COMWAKE;
+						NextState							<= ST_DEV_SEND_COMWAKE;
 					END IF;
 
 				WHEN ST_DEV_SEND_COMWAKE =>
-					TX_Primitive										<= SATA_PRIMITIVE_ALIGN;
+					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
+					TC1_en									<= '1';
 				
 					IF (OOB_TX_Complete = '1') THEN
-						OOB_HandshakingComplete				<= '1';
-					
-						OOBControl_NextState					<= ST_DEV_SEND_ALIGN;
+						NextState							<= ST_DEV_OOB_HANDSHAKE_COMPLETE;
 					END IF;
 
+				WHEN ST_DEV_OOB_HANDSHAKE_COMPLETE =>
+					OOB_HandshakeComplete_i	<= '1';
+					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
+					NextState								<= ST_DEV_SEND_ALIGN;
+					
 				WHEN ST_DEV_SEND_ALIGN =>
-					TX_Primitive										<= SATA_PRIMITIVE_ALIGN;
+					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
 				
 					IF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) AND (RX_IsAligned = '1')) THEN												-- ALIGN detected
-						TX_Primitive									<= SATA_PRIMITIVE_NONE;
-						OOB_LinkOK									<= '1';
-						
-						OOBControl_NextState					<= ST_DEV_LINK_OK;
+						NextState							<= ST_DEV_LINK_OK;
 					END IF;
 				
 				WHEN ST_DEV_LINK_OK =>
-					TX_Primitive										<= SATA_PRIMITIVE_NONE;
-					TC1_en													<= '0';
+					LinkOK_i								<= '1';
+					TX_Primitive						<= SATA_PRIMITIVE_NONE;
 					
-					OOB_LinkOK											<= '1';
-					
-					IF (OOB_RX_Status /= SATA_OOB_NONE) THEN
-						OOB_LinkDead									<= '1';
-						
-						OOBControl_NextState					<= ST_DEV_LINK_DEAD;
+					IF (OOB_RX_Received /= SATA_OOB_NONE) THEN
+						NextState							<= ST_DEV_LINK_DEAD;
 					ELSIF (RX_IsAligned = '0') THEN
-						OOB_LinkOK									<= '0';
-					
-						OOBControl_NextState					<= ST_DEV_LINK_BROKEN;
+						NextState							<= ST_DEV_LINK_BROKEN;
 					END IF;
 				
 				WHEN ST_DEV_LINK_BROKEN =>
-					TX_Primitive										<= SATA_PRIMITIVE_ALIGN;
-					TC1_en													<= '0';
+					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
+					TC1_en									<= '0';
 					
 					IF (RX_IsAligned = '1') THEN
-						OOB_LinkOK										<= '1';
-						
-						OOBControl_NextState					<= ST_DEV_LINK_OK;
+						NextState							<= ST_DEV_LINK_OK;
 					END IF;
 				
-					IF (OOB_Retry = '1') THEN
-						TC1_Load											<= '1';
-						TC1_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
-																						 ite((SATA_Generation = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
-																						 ite((SATA_Generation = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
-																																												TTID1_OOB_TIMEOUT_GEN3)));
-						
-						OOBControl_NextState					<= ST_DEV_RESET;
+					IF (Retry = '1') THEN
+						TC1_Load							<= '1';
+						TC1_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
+																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
+																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
+																																							 TTID1_OOB_TIMEOUT_GEN3)));
+						NextState							<= ST_DEV_WAIT_HOST_COMRESET;
 					END IF;
 				
 				WHEN ST_DEV_LINK_DEAD =>
-					OOB_LinkDead										<= '1';
-					TC1_en													<= '0';
+					LinkDead_i							<= '1';
 					
-					IF (OOB_Retry = '1') THEN
-						TC1_Load											<= '1';
-						TC1_Slot											<= ite((SATA_Generation = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
-																						 ite((SATA_Generation = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
-																						 ite((SATA_Generation = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
-																																												TTID1_OOB_TIMEOUT_GEN3)));
-						
-						OOBControl_NextState					<= ST_DEV_RESET;
+					IF (Retry = '1') THEN
+						TC1_Load							<= '1';
+						TC1_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
+																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
+																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
+																																							 TTID1_OOB_TIMEOUT_GEN3)));
+						NextState							<= ST_DEV_WAIT_HOST_COMRESET;
 					END IF;
 				
 				WHEN ST_DEV_TIMEOUT =>
-					TC1_en													<= '0';
+					Timeout_i								<= '1';
 				
-					IF (OOB_Retry = '1') THEN
-						OOBControl_NextState					<= ST_DEV_RESET;
+					IF (Retry = '1') THEN
+						TC1_Load							<= '1';
+						TC1_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
+																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
+																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
+																																							 TTID1_OOB_TIMEOUT_GEN3)));
+						NextState							<= ST_DEV_WAIT_HOST_COMRESET;
 					END IF;
 				
 			END CASE;
 		END IF;
 	END PROCESS;
 	
+	LinkOK									<= LinkOK_i;
+	LinkDead								<= LinkDead_i;
+	Timeout									<= Timeout_i;
+	ReceivedReset						<= ReceivedReset_i;
+
+	OOB_TX_Command					<= OOB_TX_Command_i;
+	OOB_HandshakeComplete		<= OOB_HandshakeComplete_i;
+	
+	-- overall timeout counter
 	TC1 : ENTITY PoC.io_TimingCounter
 		GENERIC MAP (							-- timing table
 			TIMING_TABLE				=> TC1_TIMING_TABLE
@@ -403,6 +408,7 @@ BEGIN
 			Timeout							=> TC1_Timeout
 		);
 	
+	-- timeout counter for *_WAIT_AFTER_* states
 	TC2 : ENTITY PoC.io_TimingCounter
 		GENERIC MAP (							-- timing table
 			TIMING_TABLE				=> TC2_TIMING_TABLE
@@ -414,5 +420,29 @@ BEGIN
 			Slot								=> TC2_Slot,
 			Timeout							=> TC2_Timeout
 		);
+	
+	-- debug port
+	-- ===========================================================================
+	genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
+	
+		FUNCTION dbg_EncodeState(State : T_STATE) RETURN STD_LOGIC_VECTOR IS
+			CONSTANT ResultSize		: POSITIVE																	:= log2ceilnz(T_STATE'pos(T_STATE'high));
+			CONSTANT Result				: STD_LOGIC_VECTOR(ResultSize - 1 DOWNTO 0)	:= to_slv(T_STATE'pos(State), ResultSize);
+		BEGIN
+			RETURN ite(DEBUG, bin2gray(Result), Result);
+		END FUNCTION;
 		
+	BEGIN
+		DebugPortOut.FSM												<= dbg_EncodeState(State);
+		DebugPortOut.Retry											<= Retry;
+		DebugPortOut.Timeout										<= Timeout_i;
+		DebugPortOut.LinkOK											<= LinkOK_i;
+		DebugPortOut.LinkDead										<= LinkDead_i;
+		DebugPortOut.ReceivedReset							<= ReceivedReset_i;
+		
+		DebugPortOut.OOB_TX_Command							<= OOB_TX_Command_i;
+		DebugPortOut.OOB_TX_Complete						<= OOB_TX_Complete;
+		DebugPortOut.OOB_RX_Received						<= OOB_RX_Received;
+		DebugPortOut.OOB_HandshakeComplete			<= OOB_HandshakeComplete_i;		
+	END GENERATE;
 END;

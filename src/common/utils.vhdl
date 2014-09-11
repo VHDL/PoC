@@ -223,6 +223,9 @@ package utils is
   --
   function gray2bin (gray_val : std_logic_vector) return std_logic_vector;
 	
+	-- Binary-Code to Gray-Code
+	function bin2gray(value : std_logic_vector) return std_logic_vector;
+	
 end package utils;
 
 
@@ -649,6 +652,17 @@ package body utils is
 		end loop;
 		return res;
 	end gray2bin;
+	
+	-- Binary-Code to Gray-Code
+	function bin2gray(value : std_logic_vector) return std_logic_vector is
+		variable result		: std_logic_vector(value'range);
+	begin
+		result(result'left)	:= value(value'left);
+		for i in (result'left - 1) downto result'right loop
+			result(i) := value(i) xor value(i + 1);
+		end loop;
+		return result;
+	end function;
 
 	-- bit searching / bit indices
 	-- ==========================================================================

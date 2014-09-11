@@ -48,13 +48,13 @@ ENTITY sata_Transceiver_Virtex5_GTP IS
 
 		RX_OOBStatus							: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		RX_CharIsK								: OUT	T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
 		RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
 		TX_OOBCommand							: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_OOBComplete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		TX_CharIsK								: IN	T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
+		TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
 		
 		-- vendor specific signals (Xilinx)
 		VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -366,14 +366,12 @@ BEGIN
 -- async SIGNAL handling
 -- ==================================================================
 	genSync : FOR I IN 0 TO (PORTS - 1) GENERATE
-		blkSync : BLOCK
-			SIGNAL RX_ElectricalIDLE_meta		: STD_LOGIC							:= '0';
-			SIGNAL RX_ElectricalIDLE_d			: STD_LOGIC							:= '0';
-		BEGIN
-			RX_ElectricalIDLE_meta		<= GTP_RX_ElectricalIDLE(I)		WHEN rising_edge(GTP_Clock_4X(I));
-			RX_ElectricalIDLE_d				<= RX_ElectricalIDLE_meta			WHEN rising_edge(GTP_Clock_4X(I));
-			RX_ElectricalIDLE(I)			<= RX_ElectricalIDLE_d;
-		END BLOCK;
+		sync1 : ENTITY PoC.misc_Synchronizer_Flag
+			PORT MAP (
+				Clock				=> GTP_Clock_4X(I),
+				Input(0)		=> GTP_RX_ElectricalIDLE(I),
+				Output(0)		=> RX_ElectricalIDLE(I)
+			);
 	END GENERATE;
 
 -- ==================================================================
@@ -553,17 +551,12 @@ BEGIN
 		-- OOB sequence is complete
 		GTP_TX_ComComplete(I) <= to_sl(GTP_RX_Status(I)(0) = '1');
 		
-		SyncComComplete : ENTITY PoC.misc_Synchronizer
-			GENERIC MAP (
-				BITS										=> 1,														-- number of bit to be synchronized
-				GATED_INPUT_BY_BUSY			=> TRUE													-- use gated input (by busy SIGNAL)
-			)
+		sync2 : ENTITY PoC.misc_Synchronizer_Strobe
 			PORT MAP (
-				Clock1									=> GTP_Clock_1X(I),						-- input clock domain
-				Clock2									=> GTP_Clock_4X(I),						-- output clock domain
-				I(0)										=> GTP_TX_ComComplete(I),				-- input bits
-				O(0)										=> TX_OOBComplete_i(I),					-- output bits
-				B												=> OPEN													-- busy bits
+				Clock1		=> GTP_Clock_1X(I),						-- input clock domain
+				Clock2		=> GTP_Clock_4X(I),						-- output clock domain
+				Input(0)	=> GTP_TX_ComComplete(I),			-- input bits
+				Output(0)	=> TX_OOBComplete_i(I)				-- output bits
 			);
 		
 		TX_OOBComplete		<= TX_OOBComplete_i;
@@ -593,51 +586,24 @@ BEGIN
 -- error handling
 -- ==================================================================
 	genError : FOR I IN 0 TO PORTS - 1 GENERATE
-		SIGNAL Sync4_DataIn						: STD_LOGIC_VECTOR(1 DOWNTO 0);
-		SIGNAL Sync4_DataOut					: STD_LOGIC_VECTOR(1 DOWNTO 0);
-		SIGNAL Sync5_DataIn						: STD_LOGIC_VECTOR(2 DOWNTO 0);
-		SIGNAL Sync5_DataOut					: STD_LOGIC_VECTOR(2 DOWNTO 0);
-
-	BEGIN
-		Sync4_DataIn(0)							<= GTP_TX_InvalidK(I)(0);
-		Sync4_DataIn(1)							<= GTP_TX_BufferStatus(I)(1);
-		
-		Sync4 : ENTITY PoC.misc_Synchronizer
+		sync3 : ENTITY PoC.misc_Synchronizer_Strobe
 			GENERIC MAP (
-				BITS										=> Sync4_DataIn'length,					-- number of bit to be synchronized
-				GATED_INPUT_BY_BUSY			=> TRUE													-- use gated input (by busy SIGNAL)
+				BITS				=> 5															-- number of bit to be synchronized
 			)
 			PORT MAP (
-				Clock1									=> GTP_Clock_1X(I),						-- input clock domain
-				Clock2									=> GTP_Clock_4X(I),						-- output clock domain
-				I												=> Sync4_DataIn,								-- input bits
-				O												=> Sync4_DataOut,								-- output bits
-				B												=> OPEN													-- busy bits
+				Clock1			=> GTP_Clock_1X(I),								-- input clock domain
+				Clock2			=> GTP_Clock_4X(I),								-- output clock domain
+				Input(0)		=> GTP_TX_InvalidK(I)(0),					-- input bits
+				Input(1)		=> GTP_TX_BufferStatus(I)(1),			-- 
+				Input(2)		=> GTP_RX_DisparityError(I)(0),		-- 
+				Input(3)		=> GTP_RX_Illegal8B10BCode(I)(0),	-- 
+				Input(4)		=> GTP_RX_BufferStatus(I)(2),			-- 
+				Output(0)		=> TX_InvalidK(I),								-- output bits
+				Output(1)		=> TX_BufferStatus(I),						-- 
+				Output(2)		=> RX_DisparityError(I),					-- 
+				Output(3)		=> RX_Illegal8B10BCode(I),				-- 
+				Output(4)		=> RX_BufferStatus(I)							-- 
 			);
-	
-		TX_InvalidK(I)							<= Sync4_DataOut(0);
-		TX_BufferStatus(I)					<= Sync4_DataOut(1);
-	
-		Sync5_DataIn(0)							<= GTP_RX_DisparityError(I)(0);
-		Sync5_DataIn(1)							<= GTP_RX_Illegal8B10BCode(I)(0);
-		Sync5_DataIn(2)							<= GTP_RX_BufferStatus(I)(2);
-		
-		Sync5 : ENTITY PoC.misc_Synchronizer
-			GENERIC MAP (
-				BITS										=> Sync5_DataIn'length,					-- number of bit to be synchronized
-				GATED_INPUT_BY_BUSY			=> TRUE													-- use gated input (by busy SIGNAL)
-			)
-			PORT MAP (
-				Clock1									=> GTP_Clock_1X(I),						-- input clock domain
-				Clock2									=> GTP_Clock_4X(I),						-- output clock domain
-				I												=> Sync5_DataIn,								-- input bits
-				O												=> Sync5_DataOut,								-- output bits
-				B												=> OPEN													-- busy bits
-			);
-	
-		RX_DisparityError(I)				<= Sync5_DataOut(0);
-		RX_Illegal8B10BCode(I)			<= Sync5_DataOut(1);
-		RX_BufferStatus(I)					<= Sync5_DataOut(2);
 	
 		-- RX errors
 		PROCESS(GTP_RX_ByteIsAligned(I), RX_DisparityError, RX_Illegal8B10BCode, RX_BufferStatus)
@@ -684,41 +650,32 @@ BEGIN
 		-- device detection
 		DD : ENTITY PoC.sata_DeviceDetector
 			GENERIC MAP (
-				DEBUG					=> DEBUG,
-				CLOCK_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,						-- 150 MHz
-				NO_DEVICE_TIMEOUT_MS		=> NO_DEVICE_TIMEOUT_MS,				-- 1,0 ms
-				NEW_DEVICE_TIMEOUT_MS		=> NEW_DEVICE_TIMEOUT_MS				-- 1,0 us								-- TODO: unused?
+				DEBUG										=> DEBUG,
+				CLOCK_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,					-- 150 MHz
+				NO_DEVICE_TIMEOUT_MS		=> NO_DEVICE_TIMEOUT_MS,			-- 1,0 ms
+				NEW_DEVICE_TIMEOUT_MS		=> NEW_DEVICE_TIMEOUT_MS			-- 1,0 us								-- TODO: unused?
 			)
 			PORT MAP (
 				Clock										=> Control_Clock,
-				ElectricalIDLE					=> GTP_RX_ElectricalIDLE(I),		-- async
+				ElectricalIDLE					=> GTP_RX_ElectricalIDLE(I),	-- async
 				
-				NoDevice								=> DD_NoDevice(I),							-- @DRP_Clock
-				NewDevice								=> DD_NewDevice									-- @DRP_Clock
+				NoDevice								=> DD_NoDevice(I),						-- @DRP_Clock
+				NewDevice								=> DD_NewDevice								-- @DRP_Clock
 			);
 
-		blkSync6 : BLOCK
-			SIGNAL NoDevice_sy				: STD_LOGIC;
-			SIGNAL NoDevice_sy1				: STD_LOGIC									:= '0';
-			SIGNAL NoDevice_sy2				: STD_LOGIC									:= '0';
-		BEGIN
-			NoDevice_sy							<= DD_NoDevice(I);
-			NoDevice_sy1						<= NoDevice_sy			WHEN rising_edge(GTP_Clock_4X(I));
-			NoDevice_sy2						<= NoDevice_sy1			WHEN rising_edge(GTP_Clock_4X(I));
-			DD_NoDevice_i						<= NoDevice_sy2;
-		END BLOCK;
-
-		Sync6 : ENTITY PoC.misc_Synchronizer
-			GENERIC MAP (
-				BITS										=> 1,														-- number of bit to be synchronized
-				GATED_INPUT_BY_BUSY			=> TRUE													-- use gated input (by busy SIGNAL)
-			)
+		sync4 : ENTITY PoC.misc_Synchronizer_Flag
 			PORT MAP (
-				Clock1									=> Control_Clock,								-- input clock domain
-				Clock2									=> GTP_Clock_4X(I),							-- output clock domain
-				I(0)										=> DD_NewDevice,								-- input bits
-				O(0)										=> DD_NewDevice_i,							-- output bits
-				B												=> OPEN													-- busy bits
+				Clock				=> GTP_Clock_4X(I),
+				Input(0)		=> DD_NoDevice(I),
+				Output(0)		=> DD_NoDevice_i
+			);
+
+		sync5 : ENTITY PoC.misc_Synchronizer_Strobe
+			PORT MAP (
+				Clock1			=> Control_Clock,								-- input clock domain
+				Clock2			=> GTP_Clock_4X(I),							-- output clock domain
+				Input(0)		=> DD_NewDevice,								-- input bits
+				Output(0)		=> DD_NewDevice_i								-- output bits
 			);
 
 		PROCESS(GTP_ResetDone_i, DD_NoDevice_i, DD_NewDevice_i, TX_Error_i, RX_Error_i, Command)
@@ -1664,9 +1621,9 @@ BEGIN
 		SIGNAL DBG_GTP_TX_CharIsK										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		SIGNAL DBG_GTP_TX_Data											: T_SLVV_8(PORTS - 1 DOWNTO 0);
 		
-		SIGNAL DBG_RX_CharIsK												: T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_RX_CharIsK												: T_SLVV_2(PORTS - 1 DOWNTO 0);
 		SIGNAL DBG_RX_Data													: T_SLVV_32(PORTS - 1 DOWNTO 0);
-		SIGNAL DBG_TX_CharIsK												: T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_TX_CharIsK												: T_SLVV_2(PORTS - 1 DOWNTO 0);
 		SIGNAL DBG_TX_Data													: T_SLVV_32(PORTS - 1 DOWNTO 0);
 		
 		SIGNAL DBG_OOBStatus_COMRESET								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);

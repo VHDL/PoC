@@ -54,41 +54,40 @@ ENTITY sata_TransceiverLayer IS
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 => SATA_GENERATION_2,	1 => SATA_GENERATION_2)				-- intial SATA Generation
 	);
 	PORT (
-		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-
 		Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 		PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
+		Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+		TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+		-- debug ports
+		DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
+		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
+
+		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 		RP_Reconfig								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_SATAGeneration					: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
 		RP_ReconfigComplete				: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RP_ConfigReloaded					: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RP_Lock										:	IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RP_Locked									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
-		SATA_Generation						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
-		OOB_HandshakingComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
+		OOB_HandshakeComplete			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
-		Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
-		Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-		RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+		TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
+		TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
 
-		DebugPortIn								: IN	T_SATADBG_TRANSCEIVERIN_VECTOR(PORTS	- 1 DOWNTO 0);
-		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVEROUT_VECTOR(PORTS	- 1 DOWNTO 0);
-
-		RX_OOBStatus							: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 		RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
 		RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		
-		TX_OOBCommand							: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_OOBComplete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
 		
 		-- vendor specific signals
 		VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -158,38 +157,40 @@ BEGIN
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
 				PORT MAP (
-					SATA_Clock								=> SATA_Clock,
-
+					Reset											=> Reset,
 					ResetDone									=> ResetDone,
 					ClockNetwork_Reset				=> ClockNetwork_Reset,
 					ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,
 
-					RP_Reconfig								=> RP_Reconfig,
-					RP_ReconfigComplete				=> RP_ReconfigComplete,
-					RP_ConfigReloaded					=> RP_ConfigReloaded,
-					RP_Lock										=> RP_Lock,
-					RP_Locked									=> RP_Locked,
-
-					SATA_Generation						=> SATA_Generation,
-					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
-					
 					PowerDown									=> PowerDown,
 					Command										=> Command,
 					Status										=> Status,
 					RX_Error									=> RX_Error,
 					TX_Error									=> TX_Error,
+					-- debug ports
+					DebugPortIn								=> DebugPortIn,
+					DebugPortOut							=> DebugPortOut,
 
---					DebugPortOut							=> DebugPortOut,
+					SATA_Clock								=> SATA_Clock,
 
-					RX_OOBStatus							=> RX_OOBStatus,
+					RP_Reconfig								=> RP_Reconfig,
+					RP_SATAGeneration					=> RP_SATAGeneration,
+					RP_ReconfigComplete				=> RP_ReconfigComplete,
+					RP_ConfigReloaded					=> RP_ConfigReloaded,
+					RP_Lock										=> RP_Lock,
+					RP_Locked									=> RP_Locked,
+
+					OOB_TX_Command						=> OOB_TX_Command,
+					OOB_TX_Complete						=> OOB_TX_Complete,
+					OOB_RX_Received						=> OOB_RX_Received,
+					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
+
+					TX_Data										=> TX_Data,
+					TX_CharIsK								=> TX_CharIsK,
+					
 					RX_Data										=> RX_Data,
 					RX_CharIsK								=> RX_CharIsK,
 					RX_IsAligned							=> RX_IsAligned,
-					
-					TX_OOBCommand							=> TX_OOBCommand,
-					TX_OOBComplete						=> TX_OOBComplete,
-					TX_Data										=> TX_Data,
-					TX_CharIsK								=> TX_CharIsK,
 					
 					-- vendor specific signals
 					VSS_Common_In							=> VSS_Common_In,
@@ -206,37 +207,40 @@ BEGIN
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
 				PORT MAP (
-					SATA_Clock								=> SATA_Clock,
-
+					Reset											=> Reset,
 					ResetDone									=> ResetDone,
 					ClockNetwork_Reset				=> ClockNetwork_Reset,
 					ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,
 
+					PowerDown									=> PowerDown,
+					Command										=> Command,
+					Status										=> Status,
+					RX_Error									=> RX_Error,
+					TX_Error									=> TX_Error,
+					-- debug ports
+					DebugPortIn								=> DebugPortIn,
+					DebugPortOut							=> DebugPortOut,
+
+					SATA_Clock								=> SATA_Clock,
+
 					RP_Reconfig								=> RP_Reconfig,
+					RP_SATAGeneration					=> RP_SATAGeneration,
 					RP_ReconfigComplete				=> RP_ReconfigComplete,
 					RP_ConfigReloaded					=> RP_ConfigReloaded,
 					RP_Lock										=> RP_Lock,
 					RP_Locked									=> RP_Locked,
 
-					SATA_Generation						=> SATA_Generation,
-					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
+					OOB_TX_Command						=> OOB_TX_Command,
+					OOB_TX_Complete						=> OOB_TX_Complete,
+					OOB_RX_Received						=> OOB_RX_Received,
+					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
+
+					TX_Data										=> TX_Data,
+					TX_CharIsK								=> TX_CharIsK,
 					
-					Command										=> Command,
-					Status										=> Status,
-					RX_Error									=> RX_Error,
-					TX_Error									=> TX_Error,
-
---					DebugPortOut							=> DebugPortOut,
-
-					RX_OOBStatus							=> RX_OOBStatus,
 					RX_Data										=> RX_Data,
 					RX_CharIsK								=> RX_CharIsK,
 					RX_IsAligned							=> RX_IsAligned,
-					
-					TX_OOBCommand							=> TX_OOBCommand,
-					TX_OOBComplete						=> TX_OOBComplete,
-					TX_Data										=> TX_Data,
-					TX_CharIsK								=> TX_CharIsK,
 					
 					-- vendor specific signals
 					VSS_Common_In							=> VSS_Common_In,
@@ -254,41 +258,40 @@ BEGIN
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
 				PORT MAP (
-					SATA_Clock								=> SATA_Clock,
-
 					Reset											=> Reset,
 					ResetDone									=> ResetDone,
 					ClockNetwork_Reset				=> ClockNetwork_Reset,
 					ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,
 
+					PowerDown									=> PowerDown,
+					Command										=> Command,
+					Status										=> Status,
+					RX_Error									=> RX_Error,
+					TX_Error									=> TX_Error,
+					-- debug ports
+					DebugPortIn								=> DebugPortIn,
+					DebugPortOut							=> DebugPortOut,
+
+					SATA_Clock								=> SATA_Clock,
+
 					RP_Reconfig								=> RP_Reconfig,
-					RP_SATAGeneration					=> SATA_Generation,
+					RP_SATAGeneration					=> RP_SATAGeneration,
 					RP_ReconfigComplete				=> RP_ReconfigComplete,
 					RP_ConfigReloaded					=> RP_ConfigReloaded,
 					RP_Lock										=> RP_Lock,
 					RP_Locked									=> RP_Locked,
 
-					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
+					OOB_TX_Command						=> OOB_TX_Command,
+					OOB_TX_Complete						=> OOB_TX_Complete,
+					OOB_RX_Received						=> OOB_RX_Received,
+					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
 
-					PowerDown									=> PowerDown,
+					TX_Data										=> TX_Data,
+					TX_CharIsK								=> TX_CharIsK,
 					
-					Command										=> Command,
-					Status										=> Status,
-					RX_Error									=> RX_Error,
-					TX_Error									=> TX_Error,
-
-					DebugPortIn								=> DebugPortIn,
-					DebugPortOut							=> DebugPortOut,
-
-					RX_OOBStatus							=> RX_OOBStatus,
 					RX_Data										=> RX_Data,
 					RX_CharIsK								=> RX_CharIsK,
 					RX_IsAligned							=> RX_IsAligned,
-					
-					TX_OOBCommand							=> TX_OOBCommand,
-					TX_OOBComplete						=> TX_OOBComplete,
-					TX_Data										=> TX_Data,
-					TX_CharIsK								=> TX_CharIsK,
 					
 					-- vendor specific signals
 					VSS_Common_In							=> VSS_Common_In,
@@ -306,37 +309,40 @@ BEGIN
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
 				PORT MAP (
-					SATA_Clock								=> SATA_Clock,
-
+					Reset											=> Reset,
 					ResetDone									=> ResetDone,
 					ClockNetwork_Reset				=> ClockNetwork_Reset,
 					ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,
 
+					PowerDown									=> PowerDown,
+					Command										=> Command,
+					Status										=> Status,
+					RX_Error									=> RX_Error,
+					TX_Error									=> TX_Error,
+					-- debug ports
+--					DebugPortIn								=> DebugPortIn,
+--					DebugPortOut							=> DebugPortOut,
+
+					SATA_Clock								=> SATA_Clock,
+
 					RP_Reconfig								=> RP_Reconfig,
+					RP_SATAGeneration					=> RP_SATAGeneration,
 					RP_ReconfigComplete				=> RP_ReconfigComplete,
 					RP_ConfigReloaded					=> RP_ConfigReloaded,
 					RP_Lock										=> RP_Lock,
 					RP_Locked									=> RP_Locked,
 
-					SATA_Generation						=> SATA_Generation,
-					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
+					OOB_TX_Command						=> OOB_TX_Command,
+					OOB_TX_Complete						=> OOB_TX_Complete,
+					OOB_RX_Received						=> OOB_RX_Received,
+					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
+
+					TX_Data										=> TX_Data,
+					TX_CharIsK								=> TX_CharIsK,
 					
-					Command										=> Command,
-					Status										=> Status,
-					RX_Error									=> RX_Error,
-					TX_Error									=> TX_Error,
-
---					DebugPortOut							=> DebugPortOut,
-
-					RX_OOBStatus							=> RX_OOBStatus,
 					RX_Data										=> RX_Data,
 					RX_CharIsK								=> RX_CharIsK,
 					RX_IsAligned							=> RX_IsAligned,
-					
-					TX_OOBCommand							=> TX_OOBCommand,
-					TX_OOBComplete						=> TX_OOBComplete,
-					TX_Data										=> TX_Data,
-					TX_CharIsK								=> TX_CharIsK,
 					
 					-- vendor specific signals
 					VSS_Common_In							=> VSS_Common_In,
@@ -352,37 +358,40 @@ BEGIN
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
 				PORT MAP (
-					SATA_Clock								=> SATA_Clock,
-
+					Reset											=> Reset,
 					ResetDone									=> ResetDone,
 					ClockNetwork_Reset				=> ClockNetwork_Reset,
 					ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,
 
+					PowerDown									=> PowerDown,
+					Command										=> Command,
+					Status										=> Status,
+					RX_Error									=> RX_Error,
+					TX_Error									=> TX_Error,
+					-- debug ports
+--					DebugPortIn								=> DebugPortIn,
+--					DebugPortOut							=> DebugPortOut,
+
+					SATA_Clock								=> SATA_Clock,
+
 					RP_Reconfig								=> RP_Reconfig,
+					RP_SATAGeneration					=> RP_SATAGeneration,
 					RP_ReconfigComplete				=> RP_ReconfigComplete,
 					RP_ConfigReloaded					=> RP_ConfigReloaded,
 					RP_Lock										=> RP_Lock,
 					RP_Locked									=> RP_Locked,
 
-					SATA_Generation						=> SATA_Generation,
-					OOB_HandshakingComplete		=> OOB_HandshakingComplete,
+					OOB_TX_Command						=> OOB_TX_Command,
+					OOB_TX_Complete						=> OOB_TX_Complete,
+					OOB_RX_Received						=> OOB_RX_Received,
+					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
+
+					TX_Data										=> TX_Data,
+					TX_CharIsK								=> TX_CharIsK,
 					
-					Command										=> Command,
-					Status										=> Status,
-					RX_Error									=> RX_Error,
-					TX_Error									=> TX_Error,
-
---					DebugPortOut							=> DebugPortOut,
-
-					RX_OOBStatus							=> RX_OOBStatus,
 					RX_Data										=> RX_Data,
 					RX_CharIsK								=> RX_CharIsK,
 					RX_IsAligned							=> RX_IsAligned,
-					
-					TX_OOBCommand							=> TX_OOBCommand,
-					TX_OOBComplete						=> TX_OOBComplete,
-					TX_Data										=> TX_Data,
-					TX_CharIsK								=> TX_CharIsK,
 					
 					-- vendor specific signals
 					VSS_Common_In							=> VSS_Common_In,
