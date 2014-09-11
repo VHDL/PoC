@@ -396,7 +396,8 @@ BEGIN
 		NextState									<= State;
 
 		Grant											<= '0';
-		Status										<= IO_IICBUS_STATUS_RESETING;
+		Status										<= IO_IICBUS_STATUS_IDLE;
+		Status_nxt								<= IO_IICBUS_STATUS_IDLE;
 
 		SerialClock_t_r_set				<= '0';
 		SerialClock_t_r_rst				<= '0';
