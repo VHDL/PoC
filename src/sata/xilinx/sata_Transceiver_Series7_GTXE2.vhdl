@@ -634,7 +634,7 @@ BEGIN
 			SIGNAL ElectricalIDLE_sync				: STD_LOGIC;
 			
 			SIGNAL NoDevice										: STD_LOGIC;
-			SIGNAL NoDevice_r									: STD_LOGIC			:= '0';
+			SIGNAL NoDevice_r									: STD_LOGIC			:= '1';		-- '0';		set to 1 if nodevice is constant in line 666
 			SIGNAL NoDevice_d									: STD_LOGIC			:= '0';
 			SIGNAL NoDevice_fe								: STD_LOGIC;
 		BEGIN
@@ -655,8 +655,10 @@ BEGIN
 				PORT MAP (
 					Clock		=> DD_Clock,
 					I				=> ElectricalIDLE_sync,
-					O				=> NoDevice
+					O				=> OPEN	--NoDevice
 				);
+			
+			NoDevice	<= '0';
 			
 			sync3_RXUserClock : ENTITY PoC.xil_SyncBits
 				PORT MAP (
