@@ -1,8 +1,13 @@
 -- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
 -- =============================================================================
+--            ____        ____    _     _ _
+--           |  _ \ ___  / ___|  | |   (_) |__  _ __ __ _ _ __ _   _
+--           | |_) / _ \| |      | |   | | '_ \| '__/ _` | '__| | | |
+--           |  __/ (_) | |___   | |___| | |_) | | | (_| | |  | |_| |
+--           |_|   \___/ \____|  |_____|_|_.__/|_|  \__,_|_|   \__, |
+--                                                             |___/
 -- Package:					TODO
 --
 -- Authors:					Patrick Lehmann
@@ -631,6 +636,12 @@ BEGIN
 		--	==================================================================
 		-- device detection
 		blkDeviceDetector : BLOCK
+			CONSTANT NO_DEVICE_TIMEOUT							: TIME		:= ite(SIMULATION, 2.0 us, ms2Time(NO_DEVICE_TIMEOUT_MS));
+			CONSTANT NEW_DEVICE_TIMEOUT							: TIME		:= ite(SIMULATION, 0.1 us, ms2Time(NEW_DEVICE_TIMEOUT_MS));
+			
+			CONSTANT HIGH_SPIKE_SUPPRESSION_CYCLES	: NATURAL	:= TimingToCycles(NO_DEVICE_TIMEOUT,	MHz2Time(CLOCK_DD_FREQ_MHZ));
+			CONSTANT LOW_SPIKE_SUPPRESSION_CYCLES		: NATURAL	:= TimingToCycles(NEW_DEVICE_TIMEOUT,	MHz2Time(CLOCK_DD_FREQ_MHZ));
+		
 			SIGNAL ElectricalIDLE_sync				: STD_LOGIC;
 			
 			SIGNAL NoDevice										: STD_LOGIC;
@@ -648,14 +659,14 @@ BEGIN
 			
 			GF : ENTITY PoC.io_GlitchFilter
 				GENERIC MAP (
-					CLOCK_FREQ_MHZ										=> CLOCK_DD_FREQ_MHZ,
-					HIGH_SPIKE_SUPPRESSION_TIME_NS		=> ite(SIMULATION, (2000.0),	(NO_DEVICE_TIMEOUT_MS * 1000.0 * 1000.0)),
-					LOW_SPIKE_SUPPRESSION_TIME_NS			=> ite(SIMULATION, (100.0),		(NEW_DEVICE_TIMEOUT_MS * 1000.0 * 1000.0))
+--					CLOCK_FREQ_MHZ										=> CLOCK_DD_FREQ_MHZ,
+					HIGH_SPIKE_SUPPRESSION_CYCLES			=> HIGH_SPIKE_SUPPRESSION_CYCLES,
+					LOW_SPIKE_SUPPRESSION_CYCLES			=> LOW_SPIKE_SUPPRESSION_CYCLES
 				)
 				PORT MAP (
 					Clock		=> DD_Clock,
-					I				=> ElectricalIDLE_sync,
-					O				=> OPEN	--NoDevice
+					Input		=> ElectricalIDLE_sync,
+					Output	=> OPEN	--NoDevice
 				);
 			
 			NoDevice	<= '0';
