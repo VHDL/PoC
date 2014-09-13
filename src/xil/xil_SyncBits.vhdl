@@ -108,7 +108,7 @@ BEGIN
 			)
 			PORT MAP (
 				C				=> Clock,
-				D				=> Data_async,
+				D				=> Data_meta,
 				Q				=> Data_sync
 			);
 		
