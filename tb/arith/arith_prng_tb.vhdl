@@ -10,8 +10,8 @@
 -- Description:
 -- ------------------------------------
 --		Automated testbench for PoC.arith_prng
---		The Pseudo-Random Number Generator is instanziated for 8 bits. The
---		output sequence is compared to 256 precalculated values.
+--		The Pseudo-Random Number Generator is instantiated for 8 bits. The
+--		output sequence is compared to 256 pre calculated values.
 --
 -- License:
 -- =============================================================================
@@ -47,7 +47,7 @@ END;
 
 
 ARCHITECTURE test OF arith_prng_tb IS
-	CONSTANT CLOCK_100MHZ_PERIOD			: TIME															:= 10.0 ns;
+	CONSTANT CLOCK_PERIOD_100MHZ			: TIME															:= 10.0 ns;
 
 	CONSTANT COMPARE_LIST_8_BITS			: T_SLVV_8(0 TO 255)								:= (
 		x"12", x"24", x"48", x"90", x"21", x"42", x"85", x"0A", x"14", x"28", x"51", x"A2", x"45", x"8B", x"17", x"2E",
@@ -77,7 +77,7 @@ ARCHITECTURE test OF arith_prng_tb IS
 	
 BEGIN
 
-	Clock <= Clock xnor SimStop after CLOCK_100MHZ_PERIOD / 2;
+	Clock <= Clock xnor SimStop after CLOCK_PERIOD_100MHZ / 2.0;
 
 	PROCESS
 	BEGIN
@@ -92,9 +92,7 @@ BEGIN
 		FOR I IN 0 TO 255 LOOP
 			Test_got				<= '1';
 			WAIT UNTIL rising_edge(Clock);
-			tbAssert(PRNG_Value = COMPARE_LIST_8_BITS(I),
-							 "I="&integer'image(I)&" Value=" & to_string(PRNG_Value, 'h') &
-								" Expected=" & to_string(COMPARE_LIST_8_BITS(I), 'h'));
+			tbAssert((PRNG_Value = COMPARE_LIST_8_BITS(I)), "I=" & integer'image(I) &	" Value=" & raw_format_slv_hex(PRNG_Value) & " Expected=" & raw_format_slv_hex(COMPARE_LIST_8_BITS(I)));
 		END LOOP;
 		
 		-- Report overall simulation result
