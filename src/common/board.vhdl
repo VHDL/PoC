@@ -203,13 +203,6 @@ package body board is
 		)
 	);
 
-	-- private functions
-	-- ===========================================================================
-	-- TODO: move to PoC.strings; find a better function name??
-	function str_trim(str : string) return string is
-	begin
-		return resize(str, str_length(str));
-	end function;
 
 	-- public functions
 	-- ===========================================================================
