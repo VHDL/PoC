@@ -53,6 +53,7 @@ package utils is
 	TYPE		T_NATVEC						IS ARRAY(NATURAL RANGE <>) OF NATURAL;
 	TYPE		T_POSVEC						IS ARRAY(NATURAL RANGE <>) OF POSITIVE;
 	TYPE		T_REALVEC						IS ARRAY(NATURAL RANGE <>) OF REAL;
+	TYPE		T_TIMEVEC						IS ARRAY(NATURAL RANGE <>) OF TIME;
 	
 	--+ Integer subranges sometimes useful for speeding up simulation ++++++++++
 	SUBTYPE T_INT_8							IS INTEGER RANGE -128 TO 127;
@@ -95,33 +96,41 @@ package utils is
 	FUNCTION log10ceilnz(arg	: POSITIVE)	RETURN POSITIVE;
 	
 	--+ if-then-else (ite) +++++++++++++++++++++++++++++++++++++++++++++++++++++
-	FUNCTION ite(cond : BOOLEAN; value1 : INTEGER; value2 : INTEGER) RETURN INTEGER;
-	FUNCTION ite(cond : BOOLEAN; value1 : REAL;	value2 : REAL) RETURN REAL;
-	FUNCTION ite(cond : BOOLEAN; value1 : STD_LOGIC; value2 : STD_LOGIC) RETURN STD_LOGIC;
-	FUNCTION ite(cond : BOOLEAN; value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) RETURN STD_LOGIC_VECTOR;
-	FUNCTION ite(cond : BOOLEAN; value1 : UNSIGNED; value2 : UNSIGNED) RETURN UNSIGNED;
-	FUNCTION ite(cond : BOOLEAN; value1 : CHARACTER; value2 : CHARACTER) RETURN CHARACTER;
-	FUNCTION ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) RETURN STRING;
+	function ite(cond : BOOLEAN; value1 : INTEGER; value2 : INTEGER) return INTEGER;
+	function ite(cond : BOOLEAN; value1 : REAL;	value2 : REAL) return REAL;
+	function ite(cond : BOOLEAN; value1 : TIME;	value2 : TIME) return TIME;
+	function ite(cond : BOOLEAN; value1 : STD_LOGIC; value2 : STD_LOGIC) return STD_LOGIC;
+	function ite(cond : BOOLEAN; value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;
+	function ite(cond : BOOLEAN; value1 : UNSIGNED; value2 : UNSIGNED) return UNSIGNED;
+	function ite(cond : BOOLEAN; value1 : CHARACTER; value2 : CHARACTER) return CHARACTER;
+	function ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) return STRING;
 
   --+ Max / Min / Sum ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	function imin(arg1 : integer; arg2 : integer) return integer;		-- Calculates: min(arg1, arg2) for integers
-	FUNCTION imin(vec : T_INTVEC) RETURN INTEGER;										-- Calculates: min(vector) for a integer vector
-	FUNCTION imin(vec : T_NATVEC) RETURN NATURAL;										-- Calculates: min(vector) for a natural vector
-	FUNCTION imin(vec : T_POSVEC) RETURN POSITIVE;									-- Calculates: min(vector) for a positive vector
 	function rmin(arg1 : real; arg2 : real) return real;						-- Calculates: min(arg1, arg2) for reals
+	function tmin(arg1 : time; arg2 : time) return time;						-- Calculates: min(arg1, arg2) for times
+	
+	function imin(vec : T_INTVEC) return INTEGER;										-- Calculates: min(vec) for a integer vector
+	function imin(vec : T_NATVEC) return NATURAL;										-- Calculates: min(vec) for a natural vector
+	function imin(vec : T_POSVEC) return POSITIVE;									-- Calculates: min(vec) for a positive vector
 	function rmin(vec : T_REALVEC) return real;	       							-- Calculates: min(vec) of real vector
+	function tmin(vec : T_TIMEVEC) return time;	       							-- Calculates: min(vec) of time vector
 
 	function imax(arg1 : integer; arg2 : integer) return integer;		-- Calculates: max(arg1, arg2) for integers
-	FUNCTION imax(vec : T_INTVEC) RETURN INTEGER;										-- Calculates: max(vector) for a integer vector
-	FUNCTION imax(vec : T_NATVEC) RETURN NATURAL;										-- Calculates: max(vector) for a natural vector
-	FUNCTION imax(vec : T_POSVEC) RETURN POSITIVE;									-- Calculates: max(vector) for a positive vector
 	function rmax(arg1 : real; arg2 : real) return real;						-- Calculates: max(arg1, arg2) for reals
+	function tmax(arg1 : time; arg2 : time) return time;						-- Calculates: max(arg1, arg2) for times
+	
+	function imax(vec : T_INTVEC) return INTEGER;										-- Calculates: max(vec) for a integer vector
+	function imax(vec : T_NATVEC) return NATURAL;										-- Calculates: max(vec) for a natural vector
+	function imax(vec : T_POSVEC) return POSITIVE;									-- Calculates: max(vec) for a positive vector
 	function rmax(vec : T_REALVEC) return real;	       							-- Calculates: max(vec) of real vector
+	function tmax(vec : T_TIMEVEC) return time;	       							-- Calculates: max(vec) of time vector
 
-	FUNCTION isum(vec : T_NATVEC) RETURN NATURAL;										-- Calculates: sum(vector) for a natural vector
-	FUNCTION isum(vec : T_POSVEC) RETURN POSITIVE;									-- Calculates: sum(vector) for a positive vector
+	function isum(vec : T_NATVEC) return NATURAL;										-- Calculates: sum(vec) for a natural vector
+	function isum(vec : T_POSVEC) return POSITIVE;									-- Calculates: sum(vec) for a positive vector
 	function isum(vec : T_INTVEC) return integer; 									-- Calculates: sum(vec) of integer vector
 	function rsum(vec : T_REALVEC) return real;	       							-- Calculates: sum(vec) of real vector
+	function tsum(vec : T_TIMEVEC) return time;	       							-- Calculates: sum(vec) of time vector
 
 	--+ Conversions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -310,6 +319,80 @@ package body utils is
 	begin
 		return imax(1, log10ceil(arg));
 	end function;
+
+	-- if-then-else (ite)
+	-- ==========================================================================
+	function ite(cond : BOOLEAN; value1 : INTEGER; value2 : INTEGER) return INTEGER is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+
+	function ite(cond : BOOLEAN; value1 : REAL; value2 : REAL) return REAL is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+
+	function ite(cond : BOOLEAN; value1 : TIME; value2 : TIME) return TIME is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+
+	function ite(cond : BOOLEAN; value1 : STD_LOGIC; value2 : STD_LOGIC) return STD_LOGIC is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+
+	function ite(cond : BOOLEAN; value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+
+	function ite(cond : BOOLEAN; value1 : UNSIGNED; value2 : UNSIGNED) return UNSIGNED is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+
+	function ite(cond : BOOLEAN; value1 : CHARACTER; value2 : CHARACTER) return CHARACTER is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+	
+	function ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) return STRING is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
 	
 	-- *min / *max / *sum
 	-- ==========================================================================
@@ -318,6 +401,19 @@ package body utils is
 		if arg1 < arg2 then return arg1; end if;
 		return arg2;
 	end function;
+
+	function rmin(arg1 : real; arg2 : real) return real is
+	begin
+		if arg1 < arg2 then return arg1; end if;
+		return arg2;
+	end function;
+	
+	function tmin(arg1 : time; arg2 : time) return time is
+	begin
+		if arg1 < arg2 then return arg1; end if;
+		return arg2;
+	end function;
+
 
 	FUNCTION imin(vec : T_INTVEC) RETURN INTEGER IS
 		VARIABLE Result		: INTEGER		:= INTEGER'high;
@@ -352,12 +448,6 @@ package body utils is
 		RETURN Result;
 	END FUNCTION;
 
-	function rmin(arg1 : real; arg2 : real) return real is
-	begin
-		if arg1 < arg2 then return arg1; end if;
-		return arg2;
-	end function;
-
 	function rmin(vec : T_REALVEC) return real is
 		variable  res : real := real'high;
 	begin
@@ -369,11 +459,36 @@ package body utils is
 		return  res;
 	end rmin;
 
+	function tmin(vec : T_TIMEVEC) return time is
+		variable  res : time := time'high;
+	begin
+		for i in vec'range loop
+			if vec(i) < res then
+				res := vec(i);
+			end if;
+		end loop;
+		return  res;
+	end tmin;
+
+
 	function imax(arg1 : integer; arg2 : integer) return integer is
 	begin
 		if arg1 > arg2 then return arg1; end if;
 		return arg2;
 	end function;
+
+	function rmax(arg1 : real; arg2 : real) return real is
+	begin
+		if arg1 > arg2 then return arg1; end if;
+		return arg2;
+	end function;
+	
+	function tmax(arg1 : time; arg2 : time) return time is
+	begin
+		if arg1 > arg2 then return arg1; end if;
+		return arg2;
+	end function;
+
 
 	FUNCTION imax(vec : T_INTVEC) RETURN INTEGER IS
 		VARIABLE Result		: INTEGER		:= INTEGER'low;
@@ -408,12 +523,6 @@ package body utils is
 		RETURN Result;
 	END FUNCTION;
 
-	function rmax(arg1 : real; arg2 : real) return real is
-	begin
-		if arg1 > arg2 then return arg1; end if;
-		return arg2;
-	end function;
-
 	function rmax(vec : T_REALVEC) return real is
 		variable  res : real := real'low;
 	begin
@@ -424,6 +533,18 @@ package body utils is
 		end loop;
 		return  res;
 	end rmax;
+
+	function tmax(vec : T_TIMEVEC) return time is
+		variable  res : time := time'low;
+	begin
+		for i in vec'range loop
+			if vec(i) > res then
+				res := vec(i);
+			end if;
+		end loop;
+		return  res;
+	end tmax;
+
 
 	FUNCTION isum(vec : T_NATVEC) RETURN NATURAL IS
 		VARIABLE Result		: NATURAL		:= 0;
@@ -460,6 +581,15 @@ package body utils is
 		end loop;
 		return  res;
 	end rsum;
+
+	function tsum(vec : T_TIMEVEC) return time is
+		variable  res : time := 0.0 fs;
+	begin
+		for i in vec'range loop
+			res	:= res + vec(i);
+		end loop;
+		return  res;
+	end tsum;
 
 	-- Vector aggregate functions: slv_*
 	-- ==========================================================================
@@ -718,71 +848,6 @@ package body utils is
 		return  mssb_idx(slv);
 	end mssb_idx;
 
-	-- if-then-else (ite)
-	-- ==========================================================================
-	FUNCTION ite(cond : BOOLEAN; value1 : INTEGER; value2 : INTEGER) RETURN INTEGER IS
-	BEGIN
-		IF cond THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END FUNCTION;
-
-	FUNCTION ite(cond : BOOLEAN; value1 : REAL; value2 : REAL) RETURN REAL IS
-	BEGIN
-		IF cond THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END FUNCTION;
-
-	FUNCTION ite(cond : BOOLEAN; value1 : STD_LOGIC; value2 : STD_LOGIC) RETURN STD_LOGIC IS
-	BEGIN
-		IF cond THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END FUNCTION;
-
-	FUNCTION ite(cond : BOOLEAN; value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) RETURN STD_LOGIC_VECTOR IS
-	BEGIN
-		IF cond THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END FUNCTION;
-
-	FUNCTION ite(cond : BOOLEAN; value1 : UNSIGNED; value2 : UNSIGNED) RETURN UNSIGNED IS
-	BEGIN
-		IF cond THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END FUNCTION;
-
-	FUNCTION ite(cond : BOOLEAN; value1 : CHARACTER; value2 : CHARACTER) RETURN CHARACTER IS
-	BEGIN
-		IF cond THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END FUNCTION;
-	
-	FUNCTION ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) RETURN STRING IS
-	BEGIN
-		IF cond THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END FUNCTION;
-	
 	function resize(vec : bit_vector; length : natural; fill : bit := '0') return bit_vector is
     constant  high2b : natural := vec'low+length-1;
 		constant  highcp : natural := imin(vec'high, high2b);
