@@ -325,61 +325,58 @@ BEGIN
 		SerialData_raw		<= SerialData_i;
 	END GENERATE;
 	genSync1 : IF (ADD_INPUT_SYNCHRONIZER = TRUE) GENERATE
-		SIGNAL SerialClock_async					: STD_LOGIC									:= '0';	
-		SIGNAL SerialClock_sync						: STD_LOGIC									:= '0';	
-		SIGNAL SerialData_async						: STD_LOGIC									:= '0';
-		SIGNAL SerialData_sync						: STD_LOGIC									:= '0';
-		
-		-- Mark register "Serial***_async" as asynchronous
-		ATTRIBUTE ASYNC_REG OF SerialClock_async			: SIGNAL IS "TRUE";
-		ATTRIBUTE ASYNC_REG OF SerialData_async				: SIGNAL IS "TRUE";
-	
-		-- Prevent XST from translating two FFs into SRL plus FF
-		ATTRIBUTE SHREG_EXTRACT OF SerialClock_async	: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF SerialClock_sync		: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF SerialData_async		: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF SerialData_sync		: SIGNAL IS "NO";
-		
-	BEGIN
-		SerialClock_async	<= SerialClock_i			WHEN rising_edge(Clock);
-		SerialClock_sync	<= SerialClock_async	WHEN rising_edge(Clock);
-		SerialClock_raw		<= SerialClock_sync;
-		
-		SerialData_async	<= SerialData_i				WHEN rising_edge(Clock);
-		SerialData_sync		<= SerialData_async		WHEN rising_edge(Clock);
-		SerialData_raw		<= SerialData_sync;
+		sync : ENTITY PoC.sync_Flag
+			GENERIC MAP (
+				BITS			=> 2
+			)
+			PORT MAP (
+				Clock			=> Clock,							-- Clock to be synchronized to
+				Input(0)	=> SerialClock_i,			-- Data to be synchronized
+				Input(1)	=> SerialData_i,			-- Data to be synchronized
+				Output(0)	=> SerialClock_raw,		-- synchronised data
+				Output(1)	=> SerialData_raw			-- synchronised data
+			);
 	END GENERATE;
 
+	-- Output D-FFs
 	SerialClock_o			<= '0';
 	SerialClock_t			<= SerialClock_t_r		WHEN rising_edge(Clock);
 	
 	SerialData_o			<= '0';
 	SerialData_t			<= SerialData_t_r			WHEN rising_edge(Clock);
 
-	SerialClockGF : ENTITY PoC.io_GlitchFilter
-		GENERIC MAP (
-			CLOCK_FREQ_MHZ										=> CLOCK_FREQ_MHZ,
-			HIGH_SPIKE_SUPPRESSION_TIME_NS		=> TIME_SPIKE_SUPPRESSION_NS,
-			LOW_SPIKE_SUPPRESSION_TIME_NS			=> TIME_SPIKE_SUPPRESSION_NS
-		)
-		PORT MAP (
-			Clock		=> Clock,
-			I				=> SerialClock_raw,
-			O				=> SerialClockIn
-		);
-		
-	SerialDataGF : ENTITY PoC.io_GlitchFilter
-		GENERIC MAP (
-			CLOCK_FREQ_MHZ										=> CLOCK_FREQ_MHZ,
-			HIGH_SPIKE_SUPPRESSION_TIME_NS		=> TIME_SPIKE_SUPPRESSION_NS,
-			LOW_SPIKE_SUPPRESSION_TIME_NS			=> TIME_SPIKE_SUPPRESSION_NS
-		)
-		PORT MAP (
-			Clock		=> Clock,
-			I				=> SerialData_raw,
-			O				=> SerialDataIn
-		);
-
+	genSpikeSupp0 : IF (TIME_SPIKE_SUPPRESSION_NS <= Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)) GENERATE
+		SerialClockIn	<= SerialClock_raw;
+		SerialDataIn	<= SerialData_raw;
+	END GENERATE;
+	genSpikeSupp1 : IF (TIME_SPIKE_SUPPRESSION_NS > Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)) GENERATE
+		CONSTANT SPIKE_SUPPRESSION_CYCLES		: NATURAL := TimingToCycles(ns2Time(TIME_SPIKE_SUPPRESSION_NS), MHz2Time(CLOCK_FREQ_MHZ));
+	BEGIN
+		SerialClockGF : ENTITY PoC.io_GlitchFilter
+			GENERIC MAP (
+--				CLOCK_FREQ_MHZ									=> CLOCK_FREQ_MHZ,
+				HIGH_SPIKE_SUPPRESSION_CYCLES		=> SPIKE_SUPPRESSION_CYCLES,
+				LOW_SPIKE_SUPPRESSION_CYCLES		=> SPIKE_SUPPRESSION_CYCLES
+			)
+			PORT MAP (
+				Clock		=> Clock,
+				Input		=> SerialClock_raw,
+				Output	=> SerialClockIn
+			);
+			
+		SerialDataGF : ENTITY PoC.io_GlitchFilter
+			GENERIC MAP (
+--				CLOCK_FREQ_MHZ									=> CLOCK_FREQ_MHZ,
+				HIGH_SPIKE_SUPPRESSION_CYCLES		=> SPIKE_SUPPRESSION_CYCLES,
+				LOW_SPIKE_SUPPRESSION_CYCLES		=> SPIKE_SUPPRESSION_CYCLES
+			)
+			PORT MAP (
+				Clock		=> Clock,
+				Input		=> SerialData_raw,
+				Output	=> SerialDataIn
+			);
+	END GENERATE;
+	
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN

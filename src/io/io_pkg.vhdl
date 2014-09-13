@@ -34,16 +34,19 @@ LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
+library PoC;
+use			PoC.my_config.all;
+
 
 PACKAGE io IS
 	-- not yet supported by Xilinx Synthese Tools (XST) - Version 13.2 (O.61xd 2011)
---	TYPE FREQ IS RANGE 0 TO 2147483647
---		UNITS
---			Hz;
---			kHz = 1000 Hz;
---			MHz = 1000 kHz;
---			GHz = 1000 MHz;
---		END UNITS;
+	TYPE FREQ IS RANGE 0 TO INTEGER'high UNITS
+		Hz;
+		kHz = 1000 Hz;
+		MHz = 1000 kHz;
+		GHz = 1000 MHz;
+		THz = 1000 GHz;
+	END UNITS;
 	
 	-- not yet supported by Xilinx ISE Simulator - the subsignal I (with reverse direction) is always 'U'
 	-- so use this record only in pure synthesis environments
@@ -190,6 +193,31 @@ PACKAGE io IS
 	FUNCTION Freq_MHz2Real_ns(Freq_MHz : POSITIVE)	RETURN REAL;
 	FUNCTION Freq_MHz2Real_ns(Freq_MHz : REAL)			RETURN REAL;
 	
+	-- begin new
+	function to_time(frequency : FREQ)	return TIME;
+	function to_freq(Period : TIME)			return FREQ;
+	
+	FUNCTION kHz2Time(Freq_kHz : POSITIVE) RETURN TIME;
+	FUNCTION MHz2Time(Freq_MHz : POSITIVE) RETURN TIME;
+	FUNCTION GHz2Time(Freq_GHz : POSITIVE) RETURN TIME;
+
+	FUNCTION kHz2Time(Freq_kHz : REAL) RETURN TIME;
+	FUNCTION MHz2Time(Freq_MHz : REAL) RETURN TIME;
+	FUNCTION GHz2Time(Freq_GHz : REAL) RETURN TIME;
+	
+	function ns2Time(Time_ns : REAL) return TIME;
+	function us2Time(Time_us : REAL) return TIME;
+	function ms2Time(Time_ms : REAL) return TIME;
+
+	FUNCTION Time2Real_ps(t : TIME) RETURN REAL;
+	FUNCTION Time2Real_ns(t : TIME) RETURN REAL;
+	FUNCTION Time2Real_us(t : TIME) RETURN REAL;
+	FUNCTION Time2Real_ms(t : TIME) RETURN REAL;
+
+	function TimingToCycles(Timing : TIME; Clock_Period			: TIME) return NATURAL;
+	function TimingToCycles(Timing : TIME; Clock_Frequency	: FREQ) return NATURAL;
+	-- end new
+	
 	-- Baud2***Hz
 	FUNCTION Baud2kHz(BaudRate : POSITIVE)	RETURN REAL;
 	FUNCTION Baud2kHz(BaudRate : REAL)			RETURN REAL;
@@ -318,60 +346,118 @@ PACKAGE BODY io IS
 	--	declaration of constants with type TIME		=> ERROR
 	--	usage of type TIME in functions						=> ERROR
 
---	FUNCTION kHz2Time(Freq_kHz : POSITIVE) RETURN TIME IS
---	BEGIN
---		RETURN 1.0 ms / real(Freq_kHz);
---	END;
+	function to_time(Frequency : FREQ) return TIME is
+		variable Result : TIME;
+	begin
+		assert MY_VERBOSE report "to_time: Frequency = " & FREQ'image(Frequency) severity note;
+	
+		if		(Frequency < 1.0 kHz) then	Result := (1.0 / real(Frequency / 1.0	 Hz)) * 1.0 sec;
+		elsif (Frequency < 1.0 MHz) then	Result := (1.0 / real(Frequency / 1.0 kHz)) * 1.0 ms;
+		elsif (Frequency < 1.0 GHz) then	Result := (1.0 / real(Frequency / 1.0 MHz)) * 1.0 us;
+		elsif (Frequency < 1.0 THz) then	Result := (1.0 / real(Frequency / 1.0 GHz)) * 1.0 ns;
+		else															Result := (1.0 / real(Frequency / 1.0 THz)) * 1.0 ps;
+		end if;
+		
+		assert MY_VERBOSE report "  return " & TIME'image(Result) severity note;
+		return Result;
+	end function;
 
---	FUNCTION MHz2Time(Freq_MHz : POSITIVE) RETURN TIME IS
---	BEGIN
---		RETURN 1.0 us / real(Freq_MHz);
---	END;
+	function to_freq(Period : TIME) return FREQ is
+		variable Result : FREQ;
+	begin
+		assert MY_VERBOSE report "to_freq: Period = " & TIME'image(Period) severity note;
+	
+		if		(Period < 1.0 ps) then	Result := (1.0 / real(Period / 1.0 fs)) * 1.0 THz;
+		elsif (Period < 1.0 ns) then	Result := (1.0 / real(Period / 1.0 ps)) * 1.0 GHz;
+		elsif (Period < 1.0 us) then	Result := (1.0 / real(Period / 1.0 ns)) * 1.0 MHz;
+		elsif (Period < 1.0 ms)	then	Result := (1.0 / real(Period / 1.0 us)) * 1.0 kHz;
+		elsif (Period < 1.0 sec) then	Result := (1.0 / real(Period / 1.0 ms)) * 1.0  Hz;
+		else
+			report "to_freq: input period exceeds output frquency scale." severity failure;
+		end if;
+		
+		assert MY_VERBOSE report "  return " & FREQ'image(Result) severity note;
+		return Result;
+	end function;
+
+	FUNCTION kHz2Time(Freq_kHz : POSITIVE) RETURN TIME IS
+	BEGIN
+		RETURN 1.0 ms / real(Freq_kHz);
+	END;
+
+	FUNCTION MHz2Time(Freq_MHz : POSITIVE) RETURN TIME IS
+	BEGIN
+		RETURN 1.0 us / real(Freq_MHz);
+	END;
+	
+	FUNCTION GHz2Time(Freq_GHz : POSITIVE) RETURN TIME IS
+	BEGIN
+		RETURN 1.0 ns / real(Freq_GHz);
+	END;
 	
 	-- has no static result in Xilinx Synthese Tools (XST) - Version O.61xd 2011
---	FUNCTION kHz2Time(Freq_kHz : REAL) RETURN TIME IS
---	BEGIN
---		RETURN 1.0 ms / Freq_kHz;
---	END;
+	FUNCTION kHz2Time(Freq_kHz : REAL) RETURN TIME IS
+	BEGIN
+		RETURN 1.0 ms / Freq_kHz;
+	END;
 	
 	-- has no static result in Xilinx Synthese Tools (XST) - Version O.61xd 2011
---	FUNCTION MHz2Time(Freq_MHz : REAL) RETURN TIME IS
---		CONSTANT result : TIME := 1.0 us / Freq_MHz;
---	BEGIN
---		RETURN result;
---	END;
+	FUNCTION MHz2Time(Freq_MHz : REAL) RETURN TIME IS
+	BEGIN
+		RETURN 1.0 us / Freq_MHz;
+	END;
 
+	FUNCTION GHz2Time(Freq_GHz : REAL) RETURN TIME IS
+	BEGIN
+		RETURN 1.0 ns / Freq_GHz;
+	END;
 
---	FUNCTION Time2Real_ps(t : TIME) RETURN REAL IS
---	BEGIN
---		RETURN real(t / 1 ps);
---	END;
+	function ns2Time(Time_ns : REAL) return TIME is
+	begin
+		return Time_ns * 1.0 ns;
+	end function;
 
---	FUNCTION Time2Real_ns(t : TIME) RETURN REAL IS
---	BEGIN
---		RETURN real(t / 1 ns);
---	END;
-
---	FUNCTION Time2Real_us(t : TIME) RETURN REAL IS
---	BEGIN
---		RETURN real(t / 1 us);
---	END;
-
---	FUNCTION Time2Real_ms(t : TIME) RETURN REAL IS
---	BEGIN
---		RETURN real(t / 1 ms);
---	END;
-
---	FUNCTION TimingToCycles(Timing : TIME; CLOCKSPEED : TIME) RETURN NATURAL IS
---	BEGIN
---		RETURN natural(real(Timing / CLOCKSPEED));
---	END;
+	function us2Time(Time_us : REAL) return TIME is
+	begin
+		return Time_us * 1.0 us;
+	end function;
 	
---	FUNCTION TimingToCycles_us(Timing : TIME; CLOCKSPEED : TIME) RETURN UNSIGNED IS
---		CONSTANT CYCLES : NATURAL := TimingToCycles(Timing, CLOCKSPEED);
---	BEGIN
---		RETURN to_unsigned(CYCLES, log2ceilnz(CYCLES));
---	END;
+	function ms2Time(Time_ms : REAL) return TIME is
+	begin
+		return Time_ms * 1.0 ms;
+	end function;
+
+	FUNCTION Time2Real_ps(t : TIME) RETURN REAL IS
+	BEGIN
+		RETURN real(t / 1 ps);
+	END;
+
+	FUNCTION Time2Real_ns(t : TIME) RETURN REAL IS
+	BEGIN
+		RETURN real(t / 1 ns);
+	END;
+
+	FUNCTION Time2Real_us(t : TIME) RETURN REAL IS
+	BEGIN
+		RETURN real(t / 1 us);
+	END;
+
+	FUNCTION Time2Real_ms(t : TIME) RETURN REAL IS
+	BEGIN
+		RETURN real(t / 1 ms);
+	END;
+
+	function TimingToCycles(Timing : TIME; Clock_Period			: TIME) return NATURAL is
+	begin
+		return natural(real(Timing / Clock_Period));
+	end;
+	
+	function TimingToCycles(Timing : TIME; Clock_Frequency	: FREQ) return NATURAL is
+	begin
+		return natural(real(Timing / to_time(Clock_Frequency)));
+	end;
+	
+
 
 	function io_7SegmentDisplayEncoding(hex	: STD_LOGIC_VECTOR(3 downto 0); dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR is
 		variable Result		: STD_LOGIC_VECTOR(7 downto 0);
