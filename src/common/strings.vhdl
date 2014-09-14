@@ -480,7 +480,7 @@ package body strings is
 		for i in str'range loop
 			Digit	:= to_digit_oct(str(I));
 			if (Digit /= -1) then
-				Result	:= Result * 8 + Digit;
+				Result	:= Result * 10 + Digit;
 			else
 				return -1;
 			end if;
