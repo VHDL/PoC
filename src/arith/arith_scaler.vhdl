@@ -233,7 +233,7 @@ begin
 			end if;
 		end process;
 		done <= not C(C'left);
-		process(Q)
+		process(Q, divmask)
 			variable r : std_logic_vector(res'length-1 downto 0);
 		begin
 			r	 := (others => '0');
