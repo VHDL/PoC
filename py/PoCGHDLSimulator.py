@@ -133,12 +133,12 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 					# assemble fuse command as list of parameters
 					parameterList = [
 						str(ghdlExecutablePath),
-						'-a', '-P.',
+						'-a', '-P.', '--std=02',
 						('--work=%s' % vhdlLibraryName),
 						str(vhdlFilePath)
 					]
 					
-					command = '%s -a -P. --work=%s "%s"' % (str(ghdlExecutablePath), vhdlLibraryName, str(vhdlFilePath))
+					command = '%s -a --std=02 -P. --work=%s "%s"' % (str(ghdlExecutablePath), vhdlLibraryName, str(vhdlFilePath))
 					self.printDebug("call ghdl: %s" % str(parameterList))
 					self.printVerbose('command: %s' % command)
 					ghdlLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
