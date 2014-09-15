@@ -1,7 +1,13 @@
 -- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+-- =============================================================================
+--            ____        ____    _     _ _
+--           |  _ \ ___  / ___|  | |   (_) |__  _ __ __ _ _ __ _   _
+--           | |_) / _ \| |      | |   | | '_ \| '__/ _` | '__| | | |
+--           |  __/ (_) | |___   | |___| | |_) | | | (_| | |  | |_| |
+--           |_|   \___/ \____|  |_____|_|_.__/|_|  \__,_|_|   \__, |
+--                                                             |___/
 -- =============================================================================
 -- Package:					TODO
 --
@@ -16,7 +22,7 @@
 --		has a constant width of 32 bit per data word and 4 CharIsK marker bits.
 -- 
 -- License:
--- =============================================================================
+-- -----------------------------------------------------------------------------
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
@@ -62,10 +68,10 @@ ENTITY sata_Transceiver_Series7_GTXE2 IS
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)				-- intial SATA Generation
 	);
 	PORT (
-		Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 		PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
@@ -252,7 +258,8 @@ BEGIN
 		
 		SIGNAL GTX_TX_ElectricalIDLE				: STD_LOGIC;
 		SIGNAL GTX_RX_ElectricalIDLE				: STD_LOGIC;
-		SIGNAL GTX_RX_ElectricalIDLE_a			: STD_LOGIC;
+		SIGNAL GTX_RX_ElectricalIDLE_async	: STD_LOGIC;
+		SIGNAL RX_ElectricalIDLE						: STD_LOGIC;
 		
 		SIGNAL GTX_TX_ComInit								: STD_LOGIC;
 		SIGNAL GTX_TX_ComWake								: STD_LOGIC;
@@ -366,7 +373,7 @@ BEGIN
 	BEGIN
 		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																											SEVERITY NOTE;
 		ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS_I(I) + 1)	SEVERITY NOTE;
-		ASSERT FALSE REPORT "  ClockDivider:           " & to_string(CLOCK_DIVIDER_SELECTION, 'b')							SEVERITY NOTE;
+		--ASSERT FALSE REPORT "  ClockDivider:           " & to_string(CLOCK_DIVIDER_SELECTION, 'b')							SEVERITY NOTE;
 	
 		ASSERT ((RP_SATAGeneration(I) = SATA_GENERATION_1) OR
 						(RP_SATAGeneration(I) = SATA_GENERATION_2) OR
@@ -487,14 +494,24 @@ BEGIN
 
 		sync1_RXUserClock : ENTITY PoC.xil_SyncBits
 			GENERIC MAP (
-				BITS					=> 2													-- number of BITS to synchronize
+				BITS			=> 2															-- number of BITS to synchronize
 			)
 			PORT MAP (
-				Clock					=> GTX_UserClock,							-- Clock to be synchronized to
-				Input(0)			=> GTX_CPLL_Locked_async,			-- Data to be synchronized
-				Input(1)			=> GTX_RX_ElectricalIDLE_a,		-- 
-				Output(0)			=> GTX_CPLL_Locked,						-- synchronised data
-				Output(1)			=> GTX_RX_ElectricalIDLE			-- 
+				Clock			=> GTX_UserClock,									-- Clock to be synchronized to
+				Input(0)	=> GTX_CPLL_Locked_async,					-- Data to be synchronized
+				Input(1)	=> GTX_RX_ElectricalIDLE_async,		-- 
+				Output(0)	=> GTX_CPLL_Locked,								-- synchronised data
+				Output(1)	=> GTX_RX_ElectricalIDLE					-- 
+			);
+
+		filter1 : ENTITY PoC.filter_and
+			GENERIC MAP (
+				TAPS			=> 3
+			)
+			PORT MAP (
+				Clock			=> GTX_UserClock,
+				DataIn		=> GTX_RX_ElectricalIDLE,
+				DataOut		=> RX_ElectricalIDLE
 			);
 
 		--	==================================================================
@@ -582,7 +599,7 @@ BEGIN
 		GTX_TX_ComSAS			<= GTX_TX_ComSAS_r;
 
 		-- RX OOB signals (generate generic RX OOB status signals)
-		PROCESS(GTX_RX_ElectricalIDLE, GTX_RX_ComInitDetected, GTX_RX_ComWakeDetected, GTX_RX_ComSASDetected)
+		PROCESS(RX_ElectricalIDLE, GTX_RX_ComInitDetected, GTX_RX_ComWakeDetected, GTX_RX_ComSASDetected)
 		BEGIN
 			IF (GTX_RX_ComInitDetected	= '1') THEN
 				OOB_RX_Received_i			<= SATA_OOB_COMRESET;
@@ -590,7 +607,7 @@ BEGIN
 				OOB_RX_Received_i			<= SATA_OOB_COMWAKE;
 			ELSIF (GTX_RX_ComSASDetected	= '1') THEN
 				OOB_RX_Received_i			<= SATA_OOB_COMSAS;
-			ELSIF (GTX_RX_ElectricalIDLE	= '1') THEN
+			ELSIF (RX_ElectricalIDLE	= '1') THEN
 				OOB_RX_Received_i			<= SATA_OOB_READY;
 			ELSE
 				OOB_RX_Received_i		 	<= SATA_OOB_NONE;
@@ -631,32 +648,39 @@ BEGIN
 		--	==================================================================
 		-- device detection
 		blkDeviceDetector : BLOCK
-			SIGNAL ElectricalIDLE_sync				: STD_LOGIC;
+			CONSTANT NO_DEVICE_TIMEOUT							: TIME		:= ite(SIMULATION, 2.0 us, ms2Time(NO_DEVICE_TIMEOUT_MS));
+			CONSTANT NEW_DEVICE_TIMEOUT							: TIME		:= ite(SIMULATION, 0.1 us, ms2Time(NEW_DEVICE_TIMEOUT_MS));
+			
+			CONSTANT HIGH_SPIKE_SUPPRESSION_CYCLES	: NATURAL	:= TimingToCycles(NO_DEVICE_TIMEOUT,	MHz2Time(CLOCK_DD_FREQ_MHZ));
+			CONSTANT LOW_SPIKE_SUPPRESSION_CYCLES		: NATURAL	:= TimingToCycles(NEW_DEVICE_TIMEOUT,	MHz2Time(CLOCK_DD_FREQ_MHZ));
+		
+			SIGNAL RX_ElectricalIDLE_sync			: STD_LOGIC;
 			
 			SIGNAL NoDevice										: STD_LOGIC;
-			SIGNAL NoDevice_r									: STD_LOGIC			:= '0';
+			SIGNAL NoDevice_r									: STD_LOGIC			:= '1';		-- '0';		set to 1 if nodevice is constant in line 666
 			SIGNAL NoDevice_d									: STD_LOGIC			:= '0';
 			SIGNAL NoDevice_fe								: STD_LOGIC;
 		BEGIN
 			-- synchronize ElectricalIDLE to working clock domain
 			sync2_DDClock : ENTITY PoC.xil_SyncBits
 				PORT MAP (
-					Clock					=> DD_Clock,									-- Clock to be synchronized to
-					Input(0)			=> GTX_RX_ElectricalIDLE_a,		-- Data to be synchronized
-					Output(0)			=> ElectricalIDLE_sync				-- synchronised data
+					Clock					=> DD_Clock,											-- Clock to be synchronized to
+					Input(0)			=> GTX_RX_ElectricalIDLE_async,		-- Data to be synchronized
+					Output(0)			=> RX_ElectricalIDLE_sync					-- synchronised data
 				);
 			
-			GF : ENTITY PoC.io_GlitchFilter
+			filter2 : ENTITY PoC.io_GlitchFilter
 				GENERIC MAP (
-					CLOCK_FREQ_MHZ										=> CLOCK_DD_FREQ_MHZ,
-					HIGH_SPIKE_SUPPRESSION_TIME_NS		=> ite(SIMULATION, (2000.0),	(NO_DEVICE_TIMEOUT_MS * 1000.0 * 1000.0)),
-					LOW_SPIKE_SUPPRESSION_TIME_NS			=> ite(SIMULATION, (100.0),		(NEW_DEVICE_TIMEOUT_MS * 1000.0 * 1000.0))
+					HIGH_SPIKE_SUPPRESSION_CYCLES			=> HIGH_SPIKE_SUPPRESSION_CYCLES,
+					LOW_SPIKE_SUPPRESSION_CYCLES			=> LOW_SPIKE_SUPPRESSION_CYCLES
 				)
 				PORT MAP (
 					Clock		=> DD_Clock,
-					I				=> ElectricalIDLE_sync,
-					O				=> NoDevice
+					Input		=> RX_ElectricalIDLE_sync,
+					Output	=> OPEN	--NoDevice
 				);
+			
+			NoDevice	<= '0';
 			
 			sync3_RXUserClock : ENTITY PoC.xil_SyncBits
 				PORT MAP (
@@ -1083,14 +1107,14 @@ BEGIN
 				
 				-- ElectricalIDLE and OOB ports
 				TXELECIDLE											=> GTX_TX_ElectricalIDLE,					-- @TX_Clock2:	
-				RXELECIDLE											=> GTX_RX_ElectricalIDLE_a,				-- @async:	
+				RXELECIDLE											=> GTX_RX_ElectricalIDLE_async,		-- @async:	
 				TXPDELECIDLEMODE								=> '0',														-- @TX_Clock2:	treat TXPD and TXELECIDLE as asynchronous inputs
 				RXELECIDLEMODE									=> "00",													-- @async:			indicate ElectricalIDLE on RXELECIDLE
 				
-				TXCOMINIT												=> GTX_TX_ComInit,
-				TXCOMWAKE												=> GTX_TX_ComWake,
-				TXCOMSAS												=> GTX_TX_ComSAS,
-				TXCOMFINISH											=> GTX_TX_ComFinish,
+				TXCOMINIT												=> GTX_TX_ComInit,								-- @TX_Clock2:	
+				TXCOMWAKE												=> GTX_TX_ComWake,								-- @TX_Clock2:	
+				TXCOMSAS												=> GTX_TX_ComSAS,									-- @TX_Clock2:	
+				TXCOMFINISH											=> GTX_TX_ComFinish,							-- @TX_Clock2:	
 				
 				RXCOMINITDET										=> GTX_RX_ComInitDetected,				-- @RX_Clock2:	
 				RXCOMWAKEDET										=> GTX_RX_ComWakeDetected,				-- @RX_Clock2:	
