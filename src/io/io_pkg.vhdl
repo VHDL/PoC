@@ -47,6 +47,21 @@ PACKAGE io IS
 		GHz = 1000 MHz;
 		THz = 1000 GHz;
 	END UNITS;
+
+	TYPE BAUD IS RANGE 0 TO INTEGER'high UNITS
+		Bd;
+		kBd = 1000 Bd;
+		MBd = 1000 kBd;
+		GBd = 1000 MBd;
+	END UNITS;
+
+	TYPE MEMORY IS RANGE 0 TO INTEGER'high UNITS
+		B;
+		kiB = 1000 B;
+		MiB = 1000 kiB;
+		GiB = 1000 MiB;
+		TiB = 1000 GiB;
+	END UNITS;
 	
 	-- not yet supported by Xilinx ISE Simulator - the subsignal I (with reverse direction) is always 'U'
 	-- so use this record only in pure synthesis environments
@@ -214,14 +229,19 @@ PACKAGE io IS
 	FUNCTION Time2Real_us(t : TIME) RETURN REAL;
 	FUNCTION Time2Real_ms(t : TIME) RETURN REAL;
 
+	FUNCTION Freq2Real_Hz(f : FREQ)  RETURN REAL;
+	FUNCTION Freq2Real_kHz(f : FREQ) RETURN REAL;
+	FUNCTION Freq2Real_MHz(f : FREQ) RETURN REAL;
+	FUNCTION Freq2Real_GHz(f : FREQ) RETURN REAL;
+	
 	function TimingToCycles(Timing : TIME; Clock_Period			: TIME) return NATURAL;
 	function TimingToCycles(Timing : TIME; Clock_Frequency	: FREQ) return NATURAL;
 	-- end new
 	
 	-- Baud2***Hz
 	FUNCTION Baud2kHz(BaudRate : POSITIVE)	RETURN REAL;
-	FUNCTION Baud2kHz(BaudRate : REAL)			RETURN REAL;
 	FUNCTION Baud2MHz(BaudRate : POSITIVE)	RETURN REAL;
+	FUNCTION Baud2kHz(BaudRate : REAL)			RETURN REAL;
 	FUNCTION Baud2MHz(BaudRate : REAL)			RETURN REAL;
 
 	function io_7SegmentDisplayEncoding(hex	: STD_LOGIC_VECTOR(3 downto 0); dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR;
@@ -342,6 +362,26 @@ PACKAGE BODY io IS
 		RETURN BaudRate / (1000.0 * 1000.0);
 	END;
 
+	function Freq2Real_Hz(f : FREQ)  return REAL is
+	begin
+		return real(f / 1.0 Hz);
+	end function;
+	
+	function Freq2Real_kHz(f : FREQ) return REAL is
+	begin
+		return real(f / 1.0 kHz);
+	end function;
+	
+	function Freq2Real_MHz(f : FREQ) return REAL is
+	begin
+		return real(f / 1.0 MHz);
+	end function;
+	
+	function Freq2Real_GHz(f : FREQ) return REAL is
+	begin
+		return real(f / 1.0 GHz);
+	end function;
+	
 	-- type TIME not supported in Xilinx Synthese Tools (XST) - Version O.61xd 2011
 	--	declaration of constants with type TIME		=> ERROR
 	--	usage of type TIME in functions						=> ERROR
