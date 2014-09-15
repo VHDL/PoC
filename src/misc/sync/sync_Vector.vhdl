@@ -5,7 +5,7 @@
 -- =============================================================================
 -- Package:					TODO
 --
--- Authors:					Steffen Köhler
+-- Authors:					Steffen Koehler
 --									Patrick Lehmann
 --
 -- Description:
@@ -131,7 +131,7 @@ BEGIN
 	Busy					<= Busy_i;
 	Changed				<= D3;
 		
-	syncClk2 : ENTITY PoC.misc_Flag
+	syncClk2 : ENTITY PoC.sync_Flag
 		GENERIC MAP (
 			BITS				=> 1							-- number of bit to be synchronized
 		)
@@ -141,7 +141,7 @@ BEGIN
 			Output(0)		=> syncClk2_Out		-- @Clock:	output bits
 		);
 	
-	syncClk1 : ENTITY PoC.misc_Flag
+	syncClk1 : ENTITY PoC.sync_Flag
 		GENERIC MAP (
 			BITS				=> 1							-- number of bit to be synchronized
 		)

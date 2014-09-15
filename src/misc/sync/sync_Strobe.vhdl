@@ -6,7 +6,7 @@
 -- Package:					TODO
 --
 -- Authors:					Patrick Lehmann
---									Steffen Köhler
+--									Steffen Koehler
 --
 -- Description:
 -- ------------------------------------
