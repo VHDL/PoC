@@ -1,11 +1,38 @@
--- EDITOR Settings
--- emacs: -*- tab-width:2 -*-
--- kate: tab-width=2
--- vim: set tabstop=2
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- =============================================================================
+-- Package:					TODO
+--
+-- Authors:					Steffen Koehler
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+-- 
+-- License:
+-- =============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
 
 LIBRARY IEEE;
 USE		IEEE.STD_LOGIC_1164.ALL;
 USE		IEEE.NUMERIC_STD.ALL;
+
 
 LIBRARY PoC;
 USE		PoC.config.ALL;
@@ -15,59 +42,65 @@ USE		PoC.vectors.ALL;
 USE		PoC.strings.ALL;
 USE		PoC.sata_TransceiverTypes.ALL;
 
+
 entity sata_Transceiver_Stratix4GX_GXB is
 	generic (
-		CLOCK_IN_FREQ_MHZ	: REAL := 150.0;	-- 150 MHz
-		PORTS			: POSITIVE := 2;	-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR := T_SATA_GENERATION_VECTOR'(SATA_GENERATION_3, SATA_GENERATION_3)	-- intial SATA Generation
+		CLOCK_IN_FREQ_MHZ					: REAL			:= 150.0;	-- 150 MHz
+		PORTS											: POSITIVE	:= 2;			-- Number of Ports per Transceiver
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR := (0 => C_SATA_GENERATION_MAX, 1 => C_SATA_GENERATION_MAX)	-- intial SATA Generation
 	);
 	port (
-		SATA_Clock		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
-		ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		ClockNetwork_Reset	: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		ClockNetwork_ResetDone	: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-
-		RP_Reconfig		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_ReconfigComplete	: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_ConfigReloaded	: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_Lock			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_Locked		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-
-		SATA_Generation		: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
-		OOB_HandshakingComplete	: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-
-		Command		: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
+		PowerDown	: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Command		: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
 		Status		: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_Error	: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_Error	: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+		TX_Error	: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);	
+	
+		-- debug ports
+--		DebugPortIn					: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
+--		DebugPortOut				: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
+	
+		SATA_Clock					: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
-		RX_OOBStatus	: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-		RX_Data		: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		RX_CharIsK	: OUT	T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_Reconfig					: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_SATAGeneration		: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_ReconfigComplete	: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_ConfigReloaded		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_Lock							: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_Locked						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+
+		OOB_TX_Command				: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_TX_Complete				: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_RX_Received				: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_HandshakeComplete	: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+
+		TX_Data				: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
+		TX_CharIsK		: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
+		
+		RX_Data				: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
+		RX_CharIsK		: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
 		RX_IsAligned	: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-
-		TX_OOBCommand	: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_OOBComplete	: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_Data		: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		TX_CharIsK	: IN	T_SATA_CIK_VECTOR(PORTS - 1 DOWNTO 0);
-
---		DebugPortOut 	: OUT T_DBG_TRANSOUT_VECTOR(PORTS-1 DOWNTO 0);
 
 		-- Altera specific GXB ports
 		-- needs to be split in IN and OUT
-		VSS_Common_In	: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
+		VSS_Common_In		: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
 		VSS_Private_In	: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS - 1 DOWNTO 0);
 		VSS_Private_Out	: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS - 1 DOWNTO 0)
 	);
 end;
 
+
 ARCHITECTURE rtl OF sata_Transceiver_Stratix4GX_GXB IS
 
-	CONSTANT NO_DEVICE_TIMEOUT_MS						: REAL					:= 50.0;		-- simulation: 20 us, synthesis: 50 ms
-	CONSTANT NEW_DEVICE_TIMEOUT_MS						: REAL					:= 0.001;		-- FIXME: not used -> remove ???
+	CONSTANT NO_DEVICE_TIMEOUT_MS				: REAL					:= 50.0;		-- simulation: 20 us, synthesis: 50 ms
+	CONSTANT NEW_DEVICE_TIMEOUT_MS			: REAL					:= 0.001;		-- FIXME: not used -> remove ???
 
-	CONSTANT C_DEVICE_INFO										: T_DEVICE_INFO		:= DEVICE_INFO;
+	CONSTANT C_DEVICE_INFO							: T_DEVICE_INFO	:= DEVICE_INFO;
 
 	signal reconf_clk	: std_logic;
 	signal refclk		: std_logic;
@@ -76,10 +109,10 @@ BEGIN
 -- ==================================================================
 -- Assert statements
 -- ==================================================================
-	ASSERT (C_DEVICE_INFO.VENDOR = VENDOR_ALTERA)						REPORT "Vendor not yet supported."				SEVERITY FAILURE;
-	ASSERT (C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_STRATIX)	REPORT "Device family not yet supported."	SEVERITY FAILURE;
-	ASSERT (C_DEVICE_INFO.DEVICE = DEVICE_STRATIX4)					REPORT "Device not yet supported."				SEVERITY FAILURE;
-	ASSERT (PORTS <= 2)			REPORT "To many ports per transceiver."		SEVERITY FAILURE;
+	ASSERT (C_DEVICE_INFO.VENDOR = VENDOR_ALTERA)							REPORT "Vendor not yet supported."				SEVERITY FAILURE;
+	ASSERT (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB)	REPORT "This is a GXB wrapper component."	SEVERITY FAILURE;
+	ASSERT (C_DEVICE_INFO.DEVICE = DEVICE_STRATIX4)						REPORT "Device not yet supported."				SEVERITY FAILURE;
+	ASSERT (PORTS <= 2)																				REPORT "To many ports per transceiver."		SEVERITY FAILURE;
 
 -- 	Common modules shared by all ports
 	refclk <= VSS_Common_In.RefClockIn_150_MHz;
@@ -151,13 +184,13 @@ BEGIN
 		RX_Error(i) <= SATA_TRANSCEIVER_RX_ERROR_NONE;
 		TX_Error(i) <= SATA_TRANSCEIVER_TX_ERROR_NONE;
 
-		RX_OOBStatus(i) <= rx_oob_status;
+		OOB_RX_Received(i) <= rx_oob_status;
 		RX_Data(i) 	<= sata_rx_data;
 		RX_CharIsK(i)	<= sata_rx_ctrl;
 		RX_IsAligned(i)	<= sata_syncstatus;
 
-		tx_oob_command 		<= TX_OOBCommand(i);
-		TX_OOBComplete(i) 	<= tx_oob_complete;
+		tx_oob_command 		<= OOB_TX_Command(i);
+		OOB_TX_Complete(i) 	<= tx_oob_complete;
 		sata_tx_data 		<= TX_Data(i);
 		sata_tx_ctrl		<= TX_CharIsK(i);
 
@@ -185,7 +218,7 @@ BEGIN
 		process(ll_clk) begin
 			if rising_edge(ll_clk) then
 				if RP_Reconfig(i) = '1' then
-					sata_gen <= to_slv(SATA_Generation(i));
+					sata_gen <= to_slv(RP_SATAGeneration(i));
 				end if;
 				if gxb_busy = '0' and pll_busy = '0' then
 					config_state <= config_state(14 downto 0) & RP_Reconfig(i);
@@ -196,7 +229,7 @@ BEGIN
 		config_sync : entity PoC.EventSyncVector
 		generic map (
 			BITS => 2,
-			INIT => to_slv(SATA_GENERATION_3)
+			INIT => to_slv(C_SATA_GENERATION_MAX)
 		)
 		port map (
 			Clock1 => ll_clk,

@@ -55,7 +55,7 @@ package board is
 		BOARD_DE0,
 		BOARD_DE4,
 		BOARD_DE5,
-		BOARD_S2GXAVDK
+		BOARD_S2GXAV
 	);
 	
 	TYPE T_BOARD_ETHERNET_DESC IS RECORD
@@ -177,7 +177,7 @@ package body board is
 			)
 		),
 		
-		BOARD_S2GXAVDK => (
+		BOARD_S2GXAV => (
 			FPGADevice									=> conf("EP2SGX90FF1508C3"),												-- EP2SGX90FF1508C3
 			Ethernet => (
 				IPStyle										=> conf("IPSTYLE_SOFT"),
