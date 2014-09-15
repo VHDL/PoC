@@ -38,7 +38,6 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
 USE			PoC.io.ALL;
 
 
@@ -59,39 +58,36 @@ END;
 
 
 ARCHITECTURE rtl OF sata_DeviceDetector IS
-	ATTRIBUTE KEEP					: BOOLEAN;
-	ATTRIBUTE ASYNC_REG			: STRING;
-	ATTRIBUTE SHREG_EXTRACT	: STRING;
-
-	SIGNAL ElectricalIDLE_async				: STD_LOGIC									:= '0';	
-	SIGNAL ElectricalIDLE_sync				: STD_LOGIC									:= '0';	
+	CONSTANT NO_DEVICE_TIMEOUT							: TIME		:= ite(SIMULATION, 2.0 us, ms2Time(NO_DEVICE_TIMEOUT_MS));
+	CONSTANT NEW_DEVICE_TIMEOUT							: TIME		:= ite(SIMULATION, 0.1 us, ms2Time(NEW_DEVICE_TIMEOUT_MS));
+			
+	CONSTANT HIGH_SPIKE_SUPPRESSION_CYCLES	: NATURAL	:= TimingToCycles(NO_DEVICE_TIMEOUT,	MHz2Time(CLOCK_FREQ_MHZ));
+	CONSTANT LOW_SPIKE_SUPPRESSION_CYCLES		: NATURAL	:= TimingToCycles(NEW_DEVICE_TIMEOUT,	MHz2Time(CLOCK_FREQ_MHZ));
 	
-	-- Mark register "Serial***_async" as asynchronous
-	ATTRIBUTE ASYNC_REG OF ElectricalIDLE_async			: SIGNAL IS "TRUE";
+	SIGNAL ElectricalIDLE_sync	: STD_LOGIC;
 	
-	-- Prevent XST from translating two FFs into SRL plus FF
-	ATTRIBUTE SHREG_EXTRACT OF ElectricalIDLE_async	: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF ElectricalIDLE_sync	: SIGNAL IS "NO";
-
-	SIGNAL NoDevice_i									: STD_LOGIC;
-	SIGNAL NoDevice_d									: STD_LOGIC		:= '0';
-	SIGNAL NoDevice_re								: STD_LOGIC;
+	SIGNAL NoDevice_i						: STD_LOGIC;
+	SIGNAL NoDevice_d						: STD_LOGIC		:= '0';
+	SIGNAL NoDevice_re					: STD_LOGIC;
 
 BEGIN
 	-- synchronize ElectricalIDLE to working clock domain
-	ElectricalIDLE_async	<= ElectricalIDLE				WHEN rising_edge(Clock);
-	ElectricalIDLE_sync		<= ElectricalIDLE_async	WHEN rising_edge(Clock);
+	sync2_DDClock : ENTITY PoC.sync_Flag
+		PORT MAP (
+			Clock					=> Clock,								-- Clock to be synchronized to
+			Input(0)			=> ElectricalIDLE,			-- Data to be synchronized
+			Output(0)			=> ElectricalIDLE_sync	-- synchronised data
+		);
 	
 	GF : ENTITY PoC.io_GlitchFilter
 		GENERIC MAP (
-			CLOCK_FREQ_MHZ										=> CLOCK_FREQ_MHZ,
-			HIGH_SPIKE_SUPPRESSION_TIME_NS		=> NEW_DEVICE_TIMEOUT_MS * 1000.0 * 1000.0,
-			LOW_SPIKE_SUPPRESSION_TIME_NS			=> NO_DEVICE_TIMEOUT_MS * 1000.0 * 1000.0
+			HIGH_SPIKE_SUPPRESSION_CYCLES		=> HIGH_SPIKE_SUPPRESSION_CYCLES,
+			LOW_SPIKE_SUPPRESSION_CYCLES		=> LOW_SPIKE_SUPPRESSION_CYCLES
 		)
 		PORT MAP (
 			Clock		=> Clock,
-			I				=> ElectricalIDLE_sync,
-			O				=> NoDevice_i
+			Input		=> ElectricalIDLE_sync,
+			Output	=> NoDevice_i
 		);
 	
 	NoDevice_d	<= NoDevice_i WHEN rising_edge(Clock);

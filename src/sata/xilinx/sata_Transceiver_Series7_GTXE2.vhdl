@@ -8,6 +8,7 @@
 --           |  __/ (_) | |___   | |___| | |_) | | | (_| | |  | |_| |
 --           |_|   \___/ \____|  |_____|_|_.__/|_|  \__,_|_|   \__, |
 --                                                             |___/
+-- =============================================================================
 -- Package:					TODO
 --
 -- Authors:					Patrick Lehmann
@@ -21,7 +22,7 @@
 --		has a constant width of 32 bit per data word and 4 CharIsK marker bits.
 -- 
 -- License:
--- =============================================================================
+-- -----------------------------------------------------------------------------
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
@@ -67,10 +68,10 @@ ENTITY sata_Transceiver_Series7_GTXE2 IS
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)				-- intial SATA Generation
 	);
 	PORT (
-		Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 		PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
