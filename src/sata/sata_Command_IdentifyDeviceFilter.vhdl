@@ -76,10 +76,10 @@ ARCHITECTURE rtl OF sata_IdentifyDeviceFilter IS
 		ST_ERROR
 	);
 	
-	FUNCTION to_01(slv : STD_LOGIC_VECTOR) RETURN STD_LOGIC_VECTOR IS
-	BEGIN
-	  return  to_stdlogicvector(to_bitvector(slv));
-	END;
+--	FUNCTION to_01(slv : STD_LOGIC_VECTOR) RETURN STD_LOGIC_VECTOR IS
+--	BEGIN
+--	  return  to_stdlogicvector(to_bitvector(slv));
+--	END;
 	
 	FUNCTION calcSATAGenerationMin(SpeedBits : STD_LOGIC_VECTOR(6 DOWNTO 0)) RETURN T_SATA_GENERATION IS
 	BEGIN

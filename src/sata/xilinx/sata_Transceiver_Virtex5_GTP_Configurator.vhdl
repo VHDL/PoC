@@ -194,14 +194,14 @@ BEGIN
 		SIGNAL SATAGeneration_SATA	: T_SATA_GENERATION			:= INITIAL_SATA_GENERATIONS(I);
 	BEGIN
 		-- synchronize Reconfig(I), Lock(I), SATA_Generation(I) from SATA_Clock to DRP_Clock
-		sync1 : ENTITY PoC.misc_Synchronizer_Flag
+		sync1 : ENTITY PoC.sync_Flag
 			PORT MAP (
 				Clock				=> DRP_Clock,
 				Input(0)		=> Lock(I),
 				Output(0)		=> Lock_i
 			);
 
-		sync2 : ENTITY PoC.misc_Synchronizer_Strobe
+		sync2 : ENTITY PoC.sync_Strobe
 			PORT MAP (
 				Clock1			=> SATA_Clock(I),
 				Clock2			=> DRP_Clock,
@@ -232,7 +232,7 @@ BEGIN
 
 	genSyncDRP_SATA : FOR I IN 0 TO PORTS - 1 GENERATE
 		-- synchronize Locked_i from DRP_Clock to SATA_Clock(I)
-		sync1 : ENTITY PoC.misc_Synchronizer_Flag
+		sync1 : ENTITY PoC.sync_Flag
 			PORT MAP (
 				Clock				=> DRP_Clock,
 				Input(0)		=> Locked_i,
@@ -240,7 +240,7 @@ BEGIN
 			);
 		
 		-- synchronize ReconfigComplete, ConfigReloaded, Locked from DRP_Clock to SATA_Clock		
-		sync2 : ENTITY PoC.misc_Synchronizer_Strobe
+		sync2 : ENTITY PoC.sync_Strobe
 			GENERIC MAP (
 				BITS				=> 2
 			)

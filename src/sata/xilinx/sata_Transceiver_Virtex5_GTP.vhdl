@@ -366,7 +366,7 @@ BEGIN
 -- async SIGNAL handling
 -- ==================================================================
 	genSync : FOR I IN 0 TO (PORTS - 1) GENERATE
-		sync1 : ENTITY PoC.misc_Synchronizer_Flag
+		sync1 : ENTITY PoC.sync_Flag
 			PORT MAP (
 				Clock				=> GTP_Clock_4X(I),
 				Input(0)		=> GTP_RX_ElectricalIDLE(I),
@@ -551,7 +551,7 @@ BEGIN
 		-- OOB sequence is complete
 		GTP_TX_ComComplete(I) <= to_sl(GTP_RX_Status(I)(0) = '1');
 		
-		sync2 : ENTITY PoC.misc_Synchronizer_Strobe
+		sync2 : ENTITY PoC.sync_Strobe
 			PORT MAP (
 				Clock1		=> GTP_Clock_1X(I),						-- input clock domain
 				Clock2		=> GTP_Clock_4X(I),						-- output clock domain
@@ -586,7 +586,7 @@ BEGIN
 -- error handling
 -- ==================================================================
 	genError : FOR I IN 0 TO PORTS - 1 GENERATE
-		sync3 : ENTITY PoC.misc_Synchronizer_Strobe
+		sync3 : ENTITY PoC.sync_Strobe
 			GENERIC MAP (
 				BITS				=> 5															-- number of bit to be synchronized
 			)
@@ -663,14 +663,14 @@ BEGIN
 				NewDevice								=> DD_NewDevice								-- @DRP_Clock
 			);
 
-		sync4 : ENTITY PoC.misc_Synchronizer_Flag
+		sync4 : ENTITY PoC.sync_Flag
 			PORT MAP (
 				Clock				=> GTP_Clock_4X(I),
 				Input(0)		=> DD_NoDevice(I),
 				Output(0)		=> DD_NoDevice_i
 			);
 
-		sync5 : ENTITY PoC.misc_Synchronizer_Strobe
+		sync5 : ENTITY PoC.sync_Strobe
 			PORT MAP (
 				Clock1			=> Control_Clock,								-- input clock domain
 				Clock2			=> GTP_Clock_4X(I),							-- output clock domain
