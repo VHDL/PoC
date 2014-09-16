@@ -36,7 +36,6 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.physical.ALL;
---USE			PoC.io.ALL;
 
 
 ENTITY io_PulseWidthModulation IS

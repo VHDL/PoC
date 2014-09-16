@@ -111,7 +111,8 @@ begin
 
 	process(deb_out)
 	begin
-		if deb_out'event then
+		if ((deb_out'event) and (now /= 0.0 fs)) then
+			report "deb_out=" & to_char(deb_out) & " deb_out'last_value=" & to_char(deb_out'last_value) severity note;
 			EventCounter <= EventCounter + 1;
 		end if;
 	end process;

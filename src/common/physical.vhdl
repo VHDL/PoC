@@ -216,7 +216,7 @@ package body physical is
 		else										 res := (1.0 / real(f / 1.0 THz)) * 1.0 ps;
 		end if;
 
-		assert MY_VERBOSE report "to_time: f= " & to_string(f) & "  return " & to_string(res) severity note;
+		assert not MY_VERBOSE report "to_time: f= " & to_string(f) & "  return " & to_string(res) severity note;
 		return res;
 	end function;
 
@@ -231,7 +231,7 @@ package body physical is
 		else report "to_freq: input period exceeds output frequency scale." severity failure;
 		end if;
 
-		assert MY_VERBOSE report "to_freq: p= " & to_string(p) & "  return " & to_string(res) severity note;
+		assert not MY_VERBOSE report "to_freq: p= " & to_string(p) & "  return " & to_string(res) severity note;
 		return res;
 	end function;
 	
@@ -244,7 +244,7 @@ package body physical is
 		else											res := (real(br / 1.0 GBd)) * 1.0 GHz;
 		end if;
 
-		assert MY_VERBOSE report "to_freq: br= " & to_string(br) & "  return " & to_string(res) severity note;
+		assert not MY_VERBOSE report "to_freq: br= " & to_string(br) & "  return " & to_string(res) severity note;
 		return res;
 	end function;
 	
@@ -758,13 +758,19 @@ package body physical is
 	-- calculate needed counter cycles to achieve a given 1. timing/delay and 2. frequency/period
 	-- ===========================================================================
 	function TimingToCycles(Timing : TIME; Clock_Period : TIME) return NATURAL is
+		variable res	: REAL;
 	begin
-		return natural(real(Timing / Clock_Period));
+		res := real(Timing / Clock_Period);
+		assert not MY_VERBOSE report "TimingToCycles: Timing= " & to_string(Timing) & " Frequency=" & to_string(Clock_Period) & "  return " & str_format(res, 3) severity note;
+		return natural(res);
 	end;
 	
 	function TimingToCycles(Timing : TIME; Clock_Frequency : FREQ) return NATURAL is
+		variable res	: REAL;
 	begin
-		return natural(real(Timing / to_time(Clock_Frequency)));
+		res := real(Timing / to_time(Clock_Frequency));
+		assert not MY_VERBOSE report "TimingToCycles: Timing= " & to_string(Timing) & " Frequency=" & to_string(Clock_Frequency) & "  return " & str_format(res, 3) severity note;
+		return natural(res);
 	end;
 
 	-- convert and format physical types to STRING
