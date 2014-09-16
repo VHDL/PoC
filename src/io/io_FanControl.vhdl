@@ -148,16 +148,10 @@ BEGIN
 
 		PROCESS(StartUp, UserTemperature_sync, OverTemperature_sync)
 		BEGIN
-			PWM_PWMIn			<= (OTHERS => '0');
-			
-			IF (StartUp = '1') THEN
-				PWM_PWMIn		<= to_slv(2**(PWM_RESOLUTION) - 1, PWM_RESOLUTION);			-- 100%; start up
-			ELSIF (OverTemperature_sync = '1') THEN
-				PWM_PWMIn		<= to_slv(2**(PWM_RESOLUTION) - 1, PWM_RESOLUTION);			-- 100%
-			ELSIF (UserTemperature_sync = '1') THEN
-				PWM_PWMIn		<= to_slv(2**(PWM_RESOLUTION - 1), PWM_RESOLUTION);			-- 50%
-			ELSE
-				PWM_PWMIn		<= to_slv(4, PWM_RESOLUTION);														-- 13%
+			IF		(StartUp = '1') THEN								PWM_PWMIn <= to_slv(2**(PWM_RESOLUTION) - 1, PWM_RESOLUTION);			-- 100%; start up
+			ELSIF (OverTemperature_sync = '1') THEN		PWM_PWMIn <= to_slv(2**(PWM_RESOLUTION) - 1, PWM_RESOLUTION);			-- 100%
+			ELSIF (UserTemperature_sync = '1') THEN		PWM_PWMIn <= to_slv(2**(PWM_RESOLUTION - 1), PWM_RESOLUTION);			-- 50%
+			ELSE																			PWM_PWMIn <= to_slv(4, PWM_RESOLUTION);														-- 13%
 			END IF;
 		END PROCESS;
 	END GENERATE;
