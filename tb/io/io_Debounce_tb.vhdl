@@ -38,8 +38,8 @@ library PoC;
 use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
+use			PoC.physical.all;
 use			PoC.simulation.all;
-use			PoC.io.all;
 
 
 entity io_Debounce_tb is
