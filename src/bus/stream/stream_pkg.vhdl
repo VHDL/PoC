@@ -398,11 +398,11 @@ FUNCTION CountPatterns(Data : T_SIM_STREAM_WORD_VECTOR_8) RETURN NATURAL IS
 
 	-- checksum functions
 	-- ================================================================
-	-- Private function to_01 copied from GlobalTypes
-	FUNCTION to_01(slv : STD_LOGIC_VECTOR) RETURN STD_LOGIC_VECTOR IS
-	BEGIN
-	  return  to_stdlogicvector(to_bitvector(slv));
-	END;
+--	-- Private function to_01 copied from GlobalTypes
+--	FUNCTION to_01(slv : STD_LOGIC_VECTOR) RETURN STD_LOGIC_VECTOR IS
+--	BEGIN
+--	  return  to_stdlogicvector(to_bitvector(slv));
+--	END;
 	
 	FUNCTION sim_CRC8(words : T_SIM_STREAM_WORD_VECTOR_8) RETURN STD_LOGIC_VECTOR IS
 		CONSTANT CRC8_INIT					: T_SLV_8					:= x"FF";

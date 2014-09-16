@@ -94,6 +94,9 @@ begin
 		RawInput	<= '1';
 		wait for 100 ns;
 
+		RawInput	<= '0';
+		wait for 235 ns;
+
 		-- shut down simulation
 		RawInput	<= '0';
 		

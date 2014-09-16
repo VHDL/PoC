@@ -29,16 +29,15 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY	IEEE;
+LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.all;
 USE			ieee.numeric_std.all;
 
-LIBRARY PoC;
-USE			PoC.alu_prng;
-USE			PoC.functions.all;
+LIBRARY	PoC;
+USE			PoC.utils.all;
+USE			PoC.vectors.all;
+USE			PoC.arith_prng;
 
-LIBRARY	L_Global;
-USE			L_Global.GlobalTypes.all;
 
 ENTITY Stream_FrameGenerator IS
   GENERIC (

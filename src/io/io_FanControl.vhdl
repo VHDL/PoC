@@ -32,9 +32,13 @@
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 
+LIBRARY PoC;
+USE			PoC.physical.ALL;
+
+
 ENTITY io_FanControl IS
 	GENERIC (
-		CLOCK_FREQ_MHZ					: REAL
+		CLOCK_FREQ							: FREQ
 	);
 	PORT (
 		Clock										: IN	STD_LOGIC;
@@ -76,13 +80,11 @@ USE			PoC.components.ALL;
 USE			PoC.io.ALL;
 USE			PoC.xil.ALL;
 
-ARCHITECTURE rtl OF io_FanControl IS
-	ATTRIBUTE ASYNC_REG												: STRING;
-	ATTRIBUTE SHREG_EXTRACT										: STRING;
 
-	CONSTANT TIME_STARTUP_MS	: REAL																							:= 5000.0;	-- 500 ms StartUp time
-	CONSTANT PWM_RESOLUTION		: POSITIVE																					:= 4;				-- 4 Bit resolution => 0 to 15 steps
-	CONSTANT PWM_FREQ_KHZ			: REAL																							:= 0.020;		-- 20 Hz
+ARCHITECTURE rtl OF io_FanControl IS
+	CONSTANT TIME_STARTUP			: TIME																							:= 500.0 ms;	-- StartUp time
+	CONSTANT PWM_RESOLUTION		: POSITIVE																					:= 4;					-- 4 Bit resolution => 0 to 15 steps
+	CONSTANT PWM_FREQ					: FREQ																							:= 20 Hz;			-- 
 
 	CONSTANT TACHO_RESOLUTION	: POSITIVE																					:= 8;
 
@@ -91,16 +93,6 @@ ARCHITECTURE rtl OF io_FanControl IS
 
 	SIGNAL TC_Timeout					: STD_LOGIC;
 	SIGNAL StartUp						: STD_LOGIC;
-
-	SIGNAL Fan_Tacho_async		: STD_LOGIC																					:= '0';
-	SIGNAL Fan_Tacho_sync			: STD_LOGIC																					:= '0';
-	
-	-- Mark register "I_async" as asynchronous
-	ATTRIBUTE ASYNC_REG OF Fan_Tacho_async			: SIGNAL IS "TRUE";
-
-	-- Prevent XST from translating two FFs into SRL plus FF
-	ATTRIBUTE SHREG_EXTRACT OF Fan_Tacho_async	: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF Fan_Tacho_sync		: SIGNAL IS "NO";
 	
 	SIGNAL Tacho_Freq					: STD_LOGIC_VECTOR(TACHO_RESOLUTION - 1 DOWNTO 0);
 	SIGNAL Tacho_Frequency		: STD_LOGIC_VECTOR(TACHO_RESOLUTION + 4 DOWNTO 0);
@@ -108,40 +100,51 @@ BEGIN
 
 	-- System Monitor and temerature to PWM ratio calculation for Virtex6
 	-- ==========================================================================================================================================================
-	genVirtex6 : IF (DEVICE = DEVICE_VIRTEX6) GENERATE
-		SIGNAL OverTemperature				: STD_LOGIC;
-		SIGNAL OverTemperature_async	: STD_LOGIC						:= '0';
-		SIGNAL OverTemperature_sync		: STD_LOGIC						:= '0';
-		                                                  
-		SIGNAL UserTemperature				: STD_LOGIC;        
-		SIGNAL UserTemperature_async	: STD_LOGIC						:= '0';
-		SIGNAL UserTemperature_sync		: STD_LOGIC						:= '0';
+	genXilinx : IF (VENDOR = VENDOR_XILINX) GENERATE
+		SIGNAL OverTemperature_async	: STD_LOGIC;
+		SIGNAL OverTemperature_sync		: STD_LOGIC;
+		                                         
+		SIGNAL UserTemperature_async	: STD_LOGIC;
+		SIGNAL UserTemperature_sync		: STD_LOGIC;
 		
-		-- Mark register "I_async" as asynchronous
-		ATTRIBUTE ASYNC_REG OF OverTemperature_async			: SIGNAL IS "TRUE";
-		ATTRIBUTE ASYNC_REG OF UserTemperature_async			: SIGNAL IS "TRUE";
-
-		-- Prevent XST from translating two FFs into SRL plus FF
-		ATTRIBUTE SHREG_EXTRACT OF OverTemperature_async	: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF OverTemperature_sync		: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF UserTemperature_async	: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF UserTemperature_sync		: SIGNAL IS "NO";
 	BEGIN
-		SystemMonitor : xil_SystemMonitor_Virtex6
-			PORT MAP (
-				Reset								=> Reset,									-- Reset signal for the System Monitor control logic
-				
-				Alarm_UserTemp			=> UserTemperature,				-- Temperature-sensor alarm output
-				Alarm_OverTemp			=> OverTemperature,				-- Over-Temperature alarm output
-				Alarm								=> OPEN,									-- OR'ed output of all the Alarms
-				VP									=> '0',										-- Dedicated Analog Input Pair
-				VN									=> '0'
-			);
+		genVirtex6 : IF (DEVICE = DEVICE_VIRTEX6) GENERATE
+			SystemMonitor : xil_SystemMonitor_Virtex6
+				PORT MAP (
+					Reset								=> Reset,										-- Reset signal for the System Monitor control logic
+					
+					Alarm_UserTemp			=> UserTemperature_async,		-- Temperature-sensor alarm output
+					Alarm_OverTemp			=> OverTemperature_async,		-- Over-Temperature alarm output
+					Alarm								=> OPEN,										-- OR'ed output of all the Alarms
+					VP									=> '0',											-- Dedicated Analog Input Pair
+					VN									=> '0'
+				);
+		END GENERATE;
+		genSeries7 : IF (DEVICE_SERIES = 7) GENERATE
+			SystemMonitor : xil_SystemMonitor_Series7
+				PORT MAP (
+					Reset								=> Reset,										-- Reset signal for the System Monitor control logic
+					
+					Alarm_UserTemp			=> UserTemperature_async,		-- Temperature-sensor alarm output
+					Alarm_OverTemp			=> OverTemperature_async,		-- Over-Temperature alarm output
+					Alarm								=> OPEN,										-- OR'ed output of all the Alarms
+					VP									=> '0',											-- Dedicated Analog Input Pair
+					VN									=> '0'
+				);
+		END GENERATE;
 
-		OverTemperature_async	<= OverTemperature				WHEN rising_edge(Clock);
-		OverTemperature_sync	<= OverTemperature_async	WHEN rising_edge(Clock);
-		UserTemperature_async	<= UserTemperature				WHEN rising_edge(Clock);
-		UserTemperature_sync	<= UserTemperature_async	WHEN rising_edge(Clock);
+		sync : ENTITY PoC.xil_SyncBits
+			GENERIC MAP (
+				BITS			=> 2,
+				INIT			=> "00"
+			)
+			PORT MAP (
+				Clock				=> Clock,
+				Input(0)		=> OverTemperature_async,
+				Input(1)		=> OverTemperature_sync,
+				Output(0)		=> UserTemperature_async,
+				Output(1)		=> UserTemperature_sync
+			);
 
 		PROCESS(StartUp, UserTemperature_sync, OverTemperature_sync)
 		BEGIN
@@ -159,64 +162,11 @@ BEGIN
 		END PROCESS;
 	END GENERATE;
 	
-	-- System Monitor and temerature to PWM ratio calculation for Virtex7
-	-- ==========================================================================================================================================================
-	genSeries7 : IF (DEVICE_SERIES = 7) GENERATE
-		SIGNAL OverTemperature				: STD_LOGIC;
-		SIGNAL OverTemperature_async	: STD_LOGIC						:= '0';
-		SIGNAL OverTemperature_sync		: STD_LOGIC						:= '0';
-		                                                  
-		SIGNAL UserTemperature				: STD_LOGIC;        
-		SIGNAL UserTemperature_async	: STD_LOGIC						:= '0';
-		SIGNAL UserTemperature_sync		: STD_LOGIC						:= '0';
-		
-		-- Mark register "I_async" as asynchronous
-		ATTRIBUTE ASYNC_REG OF OverTemperature_async			: SIGNAL IS "TRUE";
-		ATTRIBUTE ASYNC_REG OF UserTemperature_async			: SIGNAL IS "TRUE";
-
-		-- Prevent XST from translating two FFs into SRL plus FF
-		ATTRIBUTE SHREG_EXTRACT OF OverTemperature_async	: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF OverTemperature_sync		: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF UserTemperature_async	: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF UserTemperature_sync		: SIGNAL IS "NO";
-	BEGIN
-		SystemMonitor : xil_SystemMonitor_Series7
-			PORT MAP (
-				Reset								=> Reset,									-- Reset signal for the System Monitor control logic
-				
-				Alarm_UserTemp			=> UserTemperature,				-- Temperature-sensor alarm output
-				Alarm_OverTemp			=> OverTemperature,				-- Over-Temperature alarm output
-				Alarm								=> OPEN,									-- OR'ed output of all the Alarms
-				VP									=> '0',										-- Dedicated Analog Input Pair
-				VN									=> '0'
-			);
-
-		OverTemperature_async	<= OverTemperature				WHEN rising_edge(Clock);
-		OverTemperature_sync	<= OverTemperature_async	WHEN rising_edge(Clock);
-		UserTemperature_async	<= UserTemperature				WHEN rising_edge(Clock);
-		UserTemperature_sync	<= UserTemperature_async	WHEN rising_edge(Clock);
-
-		PROCESS(StartUp, UserTemperature_sync, OverTemperature_sync)
-		BEGIN
-			PWM_PWMIn			<= (OTHERS => '0');
-		
-			IF (StartUp = '1') THEN
-				PWM_PWMIn		<= to_slv(2**(PWM_RESOLUTION) - 1, PWM_RESOLUTION);			-- 100%; start up
-			ELSIF (OverTemperature_sync = '1') THEN
-				PWM_PWMIn		<= to_slv(2**(PWM_RESOLUTION) - 1, PWM_RESOLUTION);			-- 100%
-			ELSIF (UserTemperature_sync = '1') THEN
-				PWM_PWMIn		<= to_slv(2**(PWM_RESOLUTION - 1), PWM_RESOLUTION);			-- 50%
-			ELSE
-				PWM_PWMIn		<= to_slv(4, PWM_RESOLUTION);														-- 13%
-			END IF;
-		END PROCESS;
-	END GENERATE;
-	
 	-- timer for warm-up control
 	-- ==========================================================================================================================================================
 	TC : ENTITY PoC.io_TimingCounter
 		GENERIC MAP (
-			TIMING_TABLE				=> (0 => TimingToCycles_ms(TIME_STARTUP_MS, Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)))	-- timing table
+			TIMING_TABLE				=> (0 => TimingToCycles(TIME_STARTUP, CLOCK_FREQ))	-- timing table
 		)
 		PORT MAP (
 			Clock								=> Clock,																			-- clock
@@ -232,9 +182,9 @@ BEGIN
 	-- ==========================================================================================================================================================
 	PWM : ENTITY PoC.io_PulseWidthModulation
 		GENERIC MAP (
-			CLOCK_FREQ_MHZ			=> CLOCK_FREQ_MHZ,			--
-			PWM_FREQ_kHz				=> PWM_FREQ_kHz,				-- 
-			PWM_RESOLUTION			=> PWM_RESOLUTION				-- 
+			CLOCK_FREQ					=> CLOCK_FREQ,				--
+			PWM_FREQ						=> PWM_FREQ,					-- 
+			PWM_RESOLUTION			=> PWM_RESOLUTION			-- 
 		)
 		PORT MAP (
 			Clock								=> Clock,
@@ -247,19 +197,16 @@ BEGIN
 	
 	-- tacho signal interpretation -> convert to RPM
 	-- ==========================================================================================================================================================
-	Fan_Tacho_async		<= Fan_Tacho				WHEN rising_edge(Clock);
-	Fan_Tacho_sync		<= Fan_Tacho_async	WHEN rising_edge(Clock);
-	
 	Tacho : ENTITY PoC.io_FrequencyCounter
 		GENERIC MAP (
-			CLOCK_FREQ_MHZ			=> CLOCK_FREQ_MHZ,			--
-			TIMEBASE_s					=> (60.0 / 64.0),				-- ca. 1 second
+			CLOCK_FREQ					=> CLOCK_FREQ,					--
+			TIMEBASE						=> (60.0 sec / 64.0),		-- ca. 1 second
 			RESOLUTION					=> 8										-- max. ca. 256 RPS -> max. ca. 16k RPM
 		)
 		PORT MAP (
 			Clock								=> Clock,
 			Reset								=> Reset,
-			FreqIn							=> Fan_Tacho_sync,
+			FreqIn							=> Fan_Tacho,
 			FreqOut							=> Tacho_Freq
 		);
 	

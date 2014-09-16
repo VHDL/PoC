@@ -5,3 +5,4 @@ py/config.private.ini
 *.pyc
 *~
 *.o
+vSim/

@@ -38,6 +38,7 @@ USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.satadbg.ALL;
 
@@ -46,13 +47,14 @@ ENTITY sata_PhysicalLayer IS
 	GENERIC (
 		DEBUG														: BOOLEAN													:= FALSE;
 		ENABLE_DEBUGPORT								: BOOLEAN													:= FALSE;
-		CLOCK_FREQ_MHZ									: REAL														:= 150.0;
+		CLOCK_FREQ											: FREQ														:= 150.0 MHz;
+--		CLOCK_FREQ_MHZ									: REAL														:= 150.0;
 		CONTROLLER_TYPE									: T_SATA_DEVICE_TYPE							:= SATA_DEVICE_TYPE_HOST;
 		ALLOW_SPEED_NEGOTIATION					: BOOLEAN													:= TRUE;
 		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= C_SATA_GENERATION_MAX;
 		ALLOW_AUTO_RECONNECT						: BOOLEAN													:= TRUE;
 		ALLOW_STANDARD_VIOLATION				: BOOLEAN													:= FALSE;
-		OOB_TIMEOUT_US									: INTEGER													:= 0;
+		OOB_TIMEOUT											: TIME														:= TIME'low;
 		GENERATION_CHANGE_COUNT					: INTEGER													:= 8;
 		ATTEMPTS_PER_GENERATION					: INTEGER													:= 4
 	);
@@ -314,9 +316,11 @@ BEGIN
 			GENERIC MAP (
 				DEBUG											=> DEBUG,
 				ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
-				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
+				CLOCK_FREQ								=> CLOCK_FREQ,
+--				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
 				ALLOW_STANDARD_VIOLATION	=> ALLOW_STANDARD_VIOLATION,
-				OOB_TIMEOUT_US						=> OOB_TIMEOUT_US
+				OOB_TIMEOUT								=> OOB_TIMEOUT
+--				OOB_TIMEOUT_US						=> OOB_TIMEOUT_US
 			)
 			PORT MAP (
 				Clock											=> Clock,
@@ -347,9 +351,11 @@ BEGIN
 			GENERIC MAP (
 				DEBUG											=> DEBUG,
 				ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
-				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
+				CLOCK_FREQ								=> CLOCK_FREQ,
+--				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
 				ALLOW_STANDARD_VIOLATION	=> ALLOW_STANDARD_VIOLATION,
-				OOB_TIMEOUT_US						=> OOB_TIMEOUT_US
+				OOB_TIMEOUT								=> OOB_TIMEOUT
+--				OOB_TIMEOUT_US						=> OOB_TIMEOUT_US
 			)
 			PORT MAP (
 				Clock											=> Clock,

@@ -35,13 +35,14 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.utils.ALL;
-USE			PoC.io.ALL;
+USE			PoC.physical.ALL;
+--USE			PoC.io.ALL;
 
 
 ENTITY io_PulseWidthModulation IS
 	GENERIC (
-		CLOCK_FREQ_MHZ						: REAL									:= 100.0;
-		PWM_FREQ_kHz							: REAL									:= 0.020;
+		CLOCK_FREQ								: FREQ									:= 100.0 MHz;
+		PWM_FREQ									: FREQ									:= 1.0 kHz;
 		PWM_RESOLUTION						: POSITIVE							:= 8
 	);
 	PORT (
@@ -52,10 +53,11 @@ ENTITY io_PulseWidthModulation IS
 	);
 END;
 
+
 ARCHITECTURE rtl OF io_PulseWidthModulation IS
-	CONSTANT PWM_STEPS									: REAL																					:= 2.0**PWM_RESOLUTION;
-	CONSTANT PWM_STEP_FREQ_KHZ					: REAL																					:= PWM_FREQ_kHz * (PWM_STEPS - 1.0);
-	CONSTANT PWM_FREQUENCYCOUNTER_MAX		: POSITIVE																			:= TimingToCycles_ns(Freq_kHz2Real_ns(PWM_STEP_FREQ_KHZ), Freq_MHz2Real_ns(CLOCK_FREQ_MHZ));
+	CONSTANT PWM_STEPS									: POSITIVE																			:= 2**PWM_RESOLUTION;
+	CONSTANT PWM_STEP_FREQ							: FREQ																					:= PWM_FREQ * real(PWM_STEPS - 1);
+	CONSTANT PWM_FREQUENCYCOUNTER_MAX		: POSITIVE																			:= TimingToCycles(to_time(PWM_STEP_FREQ), CLOCK_FREQ);
 	CONSTANT PWM_FREQUENCYCOUNTER_BITS	: POSITIVE																			:= log2ceilnz(PWM_FREQUENCYCOUNTER_MAX);
 	
 	SIGNAL PWM_FrequencyCounter_us			: UNSIGNED(PWM_FREQUENCYCOUNTER_BITS DOWNTO 0)	:= (OTHERS => '0');

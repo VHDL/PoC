@@ -40,8 +40,9 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
 
-library poc;
-use poc.functions.all;                       
+library	PoC;
+use			Poc.utils.all;                       
+
 
 entity fifo_shift is
   generic (

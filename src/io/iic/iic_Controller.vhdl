@@ -40,6 +40,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.components.ALL;
 USE			PoC.io.ALL;
 
@@ -47,7 +48,7 @@ USE			PoC.io.ALL;
 ENTITY iic_IICController IS
 	GENERIC (
 		DEBUG													: BOOLEAN												:= FALSE;
-		CLOCK_FREQ_MHZ								: REAL													:= 100.0;					-- 100 MHz
+		CLOCK_FREQ										: FREQ													:= 100.0 MHz;
 		IIC_BUSMODE										: T_IO_IIC_BUSMODE							:= IO_IIC_BUSMODE_STANDARDMODE;
 		IIC_ADDRESS										: STD_LOGIC_VECTOR							:= (7 DOWNTO 1 => '0') & '-';
 		ADDRESS_BITS									: POSITIVE											:= 7;
@@ -1056,7 +1057,7 @@ BEGIN
 
 	IICBC : ENTITY PoC.iic_IICBusController
 		GENERIC MAP (
-			CLOCK_FREQ_MHZ								=> CLOCK_FREQ_MHZ,
+			CLOCK_FREQ										=> CLOCK_FREQ,
 			IIC_BUSMODE										=> IIC_BUSMODE,
 			ALLOW_MEALY_TRANSITION				=> ALLOW_MEALY_TRANSITION
 		)
