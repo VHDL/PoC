@@ -39,6 +39,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.satacomp.ALL;
 USE			PoC.satadbg.ALL;
@@ -49,7 +50,7 @@ ENTITY sata_TransceiverLayer IS
 	GENERIC (
 		DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- export internal signals to upper layers for debug purposes
-		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																									-- 150 MHz
+		CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																							-- 150 MHz
 		PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 => SATA_GENERATION_2,	1 => SATA_GENERATION_2)				-- intial SATA Generation
 	);
@@ -152,7 +153,7 @@ BEGIN
 			Trans : sata_Transceiver_Virtex5_GTP
 				GENERIC MAP (
 					DEBUG											=> DEBUG,
-					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
+					CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
@@ -202,7 +203,7 @@ BEGIN
 			Trans : sata_Transceiver_Virtex6_GTXE1
 				GENERIC MAP (
 					DEBUG											=> DEBUG,
-					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
+					CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
@@ -253,7 +254,7 @@ BEGIN
 				GENERIC MAP (
 					DEBUG											=> DEBUG,
 					ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
-					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
+					CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
@@ -304,7 +305,7 @@ BEGIN
 		genS2GX_GXB : IF ((C_DEVICE_INFO.DEVICE = DEVICE_STRATIX2) AND (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB)) GENERATE
 			Trans : sata_Transceiver_Stratix2GX_GXB
 				GENERIC MAP (
-					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
+					CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
@@ -353,7 +354,7 @@ BEGIN
 		genS4GX_GXB : IF ((C_DEVICE_INFO.DEVICE = DEVICE_STRATIX4) AND (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB)) GENERATE
 			Trans : sata_Transceiver_Stratix4GX_GXB
 				GENERIC MAP (
-					CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
+					CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)

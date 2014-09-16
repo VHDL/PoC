@@ -53,7 +53,6 @@ package utils is
 	TYPE		T_NATVEC						IS ARRAY(NATURAL RANGE <>) OF NATURAL;
 	TYPE		T_POSVEC						IS ARRAY(NATURAL RANGE <>) OF POSITIVE;
 	TYPE		T_REALVEC						IS ARRAY(NATURAL RANGE <>) OF REAL;
-	TYPE		T_TIMEVEC						IS ARRAY(NATURAL RANGE <>) OF TIME;
 	
 	--+ Integer subranges sometimes useful for speeding up simulation ++++++++++
 	SUBTYPE T_INT_8							IS INTEGER RANGE -128 TO 127;
@@ -98,7 +97,6 @@ package utils is
 	--+ if-then-else (ite) +++++++++++++++++++++++++++++++++++++++++++++++++++++
 	function ite(cond : BOOLEAN; value1 : INTEGER; value2 : INTEGER) return INTEGER;
 	function ite(cond : BOOLEAN; value1 : REAL;	value2 : REAL) return REAL;
-	function ite(cond : BOOLEAN; value1 : TIME;	value2 : TIME) return TIME;
 	function ite(cond : BOOLEAN; value1 : STD_LOGIC; value2 : STD_LOGIC) return STD_LOGIC;
 	function ite(cond : BOOLEAN; value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;
 	function ite(cond : BOOLEAN; value1 : UNSIGNED; value2 : UNSIGNED) return UNSIGNED;
@@ -108,29 +106,24 @@ package utils is
   --+ Max / Min / Sum ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	function imin(arg1 : integer; arg2 : integer) return integer;		-- Calculates: min(arg1, arg2) for integers
 	function rmin(arg1 : real; arg2 : real) return real;						-- Calculates: min(arg1, arg2) for reals
-	function tmin(arg1 : time; arg2 : time) return time;						-- Calculates: min(arg1, arg2) for times
 	
 	function imin(vec : T_INTVEC) return INTEGER;										-- Calculates: min(vec) for a integer vector
 	function imin(vec : T_NATVEC) return NATURAL;										-- Calculates: min(vec) for a natural vector
 	function imin(vec : T_POSVEC) return POSITIVE;									-- Calculates: min(vec) for a positive vector
 	function rmin(vec : T_REALVEC) return real;	       							-- Calculates: min(vec) of real vector
-	function tmin(vec : T_TIMEVEC) return time;	       							-- Calculates: min(vec) of time vector
 
 	function imax(arg1 : integer; arg2 : integer) return integer;		-- Calculates: max(arg1, arg2) for integers
 	function rmax(arg1 : real; arg2 : real) return real;						-- Calculates: max(arg1, arg2) for reals
-	function tmax(arg1 : time; arg2 : time) return time;						-- Calculates: max(arg1, arg2) for times
 	
 	function imax(vec : T_INTVEC) return INTEGER;										-- Calculates: max(vec) for a integer vector
 	function imax(vec : T_NATVEC) return NATURAL;										-- Calculates: max(vec) for a natural vector
 	function imax(vec : T_POSVEC) return POSITIVE;									-- Calculates: max(vec) for a positive vector
 	function rmax(vec : T_REALVEC) return real;	       							-- Calculates: max(vec) of real vector
-	function tmax(vec : T_TIMEVEC) return time;	       							-- Calculates: max(vec) of time vector
 
 	function isum(vec : T_NATVEC) return NATURAL;										-- Calculates: sum(vec) for a natural vector
 	function isum(vec : T_POSVEC) return POSITIVE;									-- Calculates: sum(vec) for a positive vector
 	function isum(vec : T_INTVEC) return integer; 									-- Calculates: sum(vec) of integer vector
 	function rsum(vec : T_REALVEC) return real;	       							-- Calculates: sum(vec) of real vector
-	function tsum(vec : T_TIMEVEC) return time;	       							-- Calculates: sum(vec) of time vector
 
 	--+ Conversions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -340,15 +333,6 @@ package body utils is
 		end if;
 	end function;
 
-	function ite(cond : BOOLEAN; value1 : TIME; value2 : TIME) return TIME is
-	begin
-		if cond then
-			return value1;
-		else
-			return value2;
-		end if;
-	end function;
-
 	function ite(cond : BOOLEAN; value1 : STD_LOGIC; value2 : STD_LOGIC) return STD_LOGIC is
 	begin
 		if cond then
@@ -408,13 +392,6 @@ package body utils is
 		return arg2;
 	end function;
 	
-	function tmin(arg1 : time; arg2 : time) return time is
-	begin
-		if arg1 < arg2 then return arg1; end if;
-		return arg2;
-	end function;
-
-
 	FUNCTION imin(vec : T_INTVEC) RETURN INTEGER IS
 		VARIABLE Result		: INTEGER		:= INTEGER'high;
 	BEGIN
@@ -459,18 +436,6 @@ package body utils is
 		return  res;
 	end rmin;
 
-	function tmin(vec : T_TIMEVEC) return time is
-		variable  res : time := time'high;
-	begin
-		for i in vec'range loop
-			if vec(i) < res then
-				res := vec(i);
-			end if;
-		end loop;
-		return  res;
-	end tmin;
-
-
 	function imax(arg1 : integer; arg2 : integer) return integer is
 	begin
 		if arg1 > arg2 then return arg1; end if;
@@ -483,13 +448,6 @@ package body utils is
 		return arg2;
 	end function;
 	
-	function tmax(arg1 : time; arg2 : time) return time is
-	begin
-		if arg1 > arg2 then return arg1; end if;
-		return arg2;
-	end function;
-
-
 	FUNCTION imax(vec : T_INTVEC) RETURN INTEGER IS
 		VARIABLE Result		: INTEGER		:= INTEGER'low;
 	BEGIN
@@ -534,18 +492,6 @@ package body utils is
 		return  res;
 	end rmax;
 
-	function tmax(vec : T_TIMEVEC) return time is
-		variable  res : time := time'low;
-	begin
-		for i in vec'range loop
-			if vec(i) > res then
-				res := vec(i);
-			end if;
-		end loop;
-		return  res;
-	end tmax;
-
-
 	FUNCTION isum(vec : T_NATVEC) RETURN NATURAL IS
 		VARIABLE Result		: NATURAL		:= 0;
 	BEGIN
@@ -581,15 +527,6 @@ package body utils is
 		end loop;
 		return  res;
 	end rsum;
-
-	function tsum(vec : T_TIMEVEC) return time is
-		variable  res : time := 0.0 fs;
-	begin
-		for i in vec'range loop
-			res	:= res + vec(i);
-		end loop;
-		return  res;
-	end tsum;
 
 	-- Vector aggregate functions: slv_*
 	-- ==========================================================================
