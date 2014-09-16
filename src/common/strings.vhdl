@@ -76,6 +76,7 @@ package strings is
 	function raw_format_nat_hex(value : NATURAL)				return STRING;
 	
 	-- str_format_* functions
+	function str_format(value : REAL; precision : NATURAL := 3) return STRING;
 	
 	-- to_string
 	FUNCTION to_string(value : BOOLEAN) RETURN STRING;	
@@ -306,6 +307,15 @@ package body strings is
 	function raw_format_nat_hex(value : NATURAL) return STRING is
 	begin
 		return raw_format_slv_hex(to_slv(value, log2ceil(value)));
+	end function;
+	
+	-- str_format_* functions
+	-- ===========================================================================
+	function str_format(value : REAL; precision : NATURAL := 3) return STRING is
+		constant int	: INTEGER		:= integer(value);
+		constant frac	: NATURAL		:= integer((value - real(int)) * real(10**precision));
+	begin
+		return raw_format_nat_dec(int) & "." & raw_format_nat_dec(frac);
 	end function;
 	
 	-- to_string
