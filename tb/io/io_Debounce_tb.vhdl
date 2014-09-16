@@ -55,9 +55,6 @@ architecture test of io_Debounce_tb is
 
 	signal EventCounter			: NATURAL				:= 0;
 	
-	signal dummy						: STD_LOGIC			:= '0';
-	signal EventCounter2		: NATURAL				:= 0;
-	
 	-- unit Under Test (UUT) configuration
 	constant DEBOUNCE_TIME	:	TIME					:= 50.0 ns;
 	
@@ -72,8 +69,6 @@ begin
 	process
 	begin
 		wait for 5 ns;
-	
-		dummy			<= '1';
 	
 		RawInput	<= '0';
 		wait for 200 ns;
@@ -116,17 +111,9 @@ begin
 
 	process(deb_out)
 	begin
-		if deb_out'event then
+		if ((deb_out'event) and (now /= 0.0 fs)) then
 			report "deb_out=" & to_char(deb_out) & " deb_out'last_value=" & to_char(deb_out'last_value) severity note;
 			EventCounter <= EventCounter + 1;
-		end if;
-	end process;
-	
-	process(dummy)
-	begin
-		if dummy'event then
-			report "dummy=" & to_char(dummy) & " dummy'last_value=" & to_char(dummy'last_value) severity note;
-			EventCounter2 <= EventCounter2 + 1;
 		end if;
 	end process;
 	
