@@ -62,12 +62,16 @@ package utils is
 
 	--+ Enums ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	-- Intellectual Property (IP) type
-	TYPE T_IPSTYLE			IS (IPSTYLE_HARD, IPSTYLE_SOFT);
+	type T_IPSTYLE				is (IPSTYLE_HARD, IPSTYLE_SOFT);
 	
 	-- Bit Order
-	TYPE T_BIT_ORDER		IS (LSB_FIRST, MSB_FIRST);
-  -- Byte Order (Endian)
-	TYPE T_BYTE_ORDER		IS (LITTLE_ENDIAN, BIG_ENDIAN);
+	type T_BIT_ORDER			is (LSB_FIRST, MSB_FIRST);
+  
+	-- Byte Order (Endian)
+	type T_BYTE_ORDER			is (LITTLE_ENDIAN, BIG_ENDIAN);
+	
+	-- rounding style
+	type T_ROUNDING_STYLE	is (ROUND_TO_NEAREST, ROUND_TO_ZERO, ROUND_TO_INF, ROUND_UP, ROUND_DOWN);
 
 	-- Function declarations
 	-- ==========================================================================
