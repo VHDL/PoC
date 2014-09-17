@@ -36,6 +36,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 library PoC;
 use			PoC.my_config.all;
+use			PoC.physical.all;
 
 
 PACKAGE io IS
@@ -48,6 +49,9 @@ PACKAGE io IS
 	END RECORD;
 
 	TYPE T_IO_TRISTATE_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_IO_TRISTATE;
+
+
+	function io_7SegmentDisplayEncoding(hex	: STD_LOGIC_VECTOR(3 downto 0); dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR;
 	
 	-- IICBusController
 	-- ==========================================================================================================================================================
@@ -164,8 +168,18 @@ PACKAGE io IS
 		IO_LCDBUS_STATUS_ERROR
 	);
 	
+	-- Subnamespace PoC.io.uart
+  -- =========================================================================
+	CONSTANT C_UART_TYPICAL_BAUDRATES		: T_BAUDVEC		:= (
+		 0 =>		 300 Bd,	 1 =>		 600 Bd,	 2 =>		1200 Bd,	 3 =>		1800 Bd,	 4 =>		2400 Bd,
+		 5 =>		4000 Bd,	 6 =>		4800 Bd,	 7 =>		7200 Bd,	 8 =>		9600 Bd,	 9 =>	 14400 Bd,
+		10 =>	 16000 Bd,	11 =>	 19200 Bd,	12 =>	 28800 Bd,	13 =>	 38400 BD,	14 =>	 51200 Bd,
+		15 =>	 56000 Bd,	16 =>	 57600 Bd,	17 =>	 64000 Bd,	18 =>	 76800 Bd,	19 =>	115200 Bd,
+		20 =>	128000 Bd,	21 =>	153600 Bd,	22 =>	230400 Bd,	23 =>	250000 Bd,	24 =>	256000 BD,
+		25 =>	460800 Bd,	26 =>	500000 Bd,	27 =>	576000 Bd,	28 =>	921600 Bd
+	);
 	
-	function io_7SegmentDisplayEncoding(hex	: STD_LOGIC_VECTOR(3 downto 0); dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR;
+	function uart_IsTypicalBaudRate(br : BAUD) return BOOLEAN;
 
   -- Component Declarations
   -- =========================================================================
@@ -214,4 +228,13 @@ PACKAGE BODY io IS
 		return Result;
 	end function;
 
+	function uart_IsTypicalBaudRate(br : BAUD) return BOOLEAN is
+	begin
+		for i in C_UART_TYPICAL_BAUDRATES'range loop
+			if (br = C_UART_TYPICAL_BAUDRATES(i)) then
+				return TRUE;
+			end if;
+		end loop;
+		return FALSE;
+	end function;
 END PACKAGE BODY;

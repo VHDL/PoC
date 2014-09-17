@@ -37,6 +37,7 @@ use			IEEE.numeric_std.all;
 
 library	PoC;
 use			PoC.utils.all;
+use			PoC.my_config.MY_VERBOSE;
 
 
 package strings is
@@ -312,9 +313,10 @@ package body strings is
 	-- str_format_* functions
 	-- ===========================================================================
 	function str_format(value : REAL; precision : NATURAL := 3) return STRING is
-		constant int	: INTEGER		:= integer(value);
-		constant frac	: NATURAL		:= integer((value - real(int)) * real(10**precision));
+		constant int	: INTEGER		:= integer(value - 0.5);																		-- force ROUND_DOWN
+		constant frac	: INTEGER		:= integer(((value - real(int)) * 10.0**precision) - 0.5);	-- force ROUND_DOWN
 	begin
+		assert not MY_VERBOSE report "str_format: value=" & REAL'image(value) & "  int=" & INTEGER'image(int) & "  fraq=" & INTEGER'image(frac);
 		return raw_format_nat_dec(int) & "." & raw_format_nat_dec(frac);
 	end function;
 	
