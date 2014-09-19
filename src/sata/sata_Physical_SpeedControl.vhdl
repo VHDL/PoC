@@ -410,7 +410,7 @@ BEGIN
 	genDebug : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
 	
 		FUNCTION dbg_EncodeState(State : T_STATE) RETURN STD_LOGIC_VECTOR IS
-			CONSTANT ResultSize		: POSITIVE																	:= log2ceilnz(T_STATE'pos(T_STATE'high));
+			CONSTANT ResultSize		: POSITIVE																	:= log2ceilnz(T_STATE'pos(T_STATE'high) + 1);
 			CONSTANT Result				: STD_LOGIC_VECTOR(ResultSize - 1 DOWNTO 0)	:= to_slv(T_STATE'pos(State), ResultSize);
 		BEGIN
 			RETURN ite(DEBUG, bin2gray(Result), Result);

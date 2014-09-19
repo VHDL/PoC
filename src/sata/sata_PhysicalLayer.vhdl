@@ -48,7 +48,6 @@ ENTITY sata_PhysicalLayer IS
 		DEBUG														: BOOLEAN													:= FALSE;
 		ENABLE_DEBUGPORT								: BOOLEAN													:= FALSE;
 		CLOCK_FREQ											: FREQ														:= 150.0 MHz;
---		CLOCK_FREQ_MHZ									: REAL														:= 150.0;
 		CONTROLLER_TYPE									: T_SATA_DEVICE_TYPE							:= SATA_DEVICE_TYPE_HOST;
 		ALLOW_SPEED_NEGOTIATION					: BOOLEAN													:= TRUE;
 		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= C_SATA_GENERATION_MAX;
@@ -317,10 +316,8 @@ BEGIN
 				DEBUG											=> DEBUG,
 				ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
 				CLOCK_FREQ								=> CLOCK_FREQ,
---				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
 				ALLOW_STANDARD_VIOLATION	=> ALLOW_STANDARD_VIOLATION,
 				OOB_TIMEOUT								=> OOB_TIMEOUT
---				OOB_TIMEOUT_US						=> OOB_TIMEOUT_US
 			)
 			PORT MAP (
 				Clock											=> Clock,
@@ -352,10 +349,8 @@ BEGIN
 				DEBUG											=> DEBUG,
 				ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
 				CLOCK_FREQ								=> CLOCK_FREQ,
---				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
 				ALLOW_STANDARD_VIOLATION	=> ALLOW_STANDARD_VIOLATION,
 				OOB_TIMEOUT								=> OOB_TIMEOUT
---				OOB_TIMEOUT_US						=> OOB_TIMEOUT_US
 			)
 			PORT MAP (
 				Clock											=> Clock,
@@ -507,7 +502,7 @@ BEGIN
 	genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
 	
 		FUNCTION dbg_EncodeState(State : T_STATE) RETURN STD_LOGIC_VECTOR IS
-			CONSTANT ResultSize		: POSITIVE																	:= log2ceilnz(T_STATE'pos(T_STATE'high));
+			CONSTANT ResultSize		: POSITIVE																	:= log2ceilnz(T_STATE'pos(T_STATE'high) + 1);
 			CONSTANT Result				: STD_LOGIC_VECTOR(ResultSize - 1 DOWNTO 0)	:= to_slv(T_STATE'pos(State), ResultSize);
 		BEGIN
 			RETURN ite(DEBUG, bin2gray(Result), Result);
@@ -515,12 +510,13 @@ BEGIN
 		
 	BEGIN
 		DebugPortOut.FSM						<= dbg_EncodeState(State);
-		DebugPortOut.StatusY				<= Status_i;
+		DebugPortOut.PHY_Status			<= Status_i;
 	
 		DebugPortOut.TX_Data				<= Trans_TX_Data_i;
 		DebugPortOut.TX_CharIsK			<= Trans_TX_CharIsK_i;
 		DebugPortOut.RX_Data				<= Trans_RX_Data;
 		DebugPortOut.RX_CharIsK			<= Trans_RX_CharIsK;
+		DebugPortOut.RX_IsAligned		<= Trans_RX_IsAligned;
 	
 		DebugPortOut.OOBControl			<= OOBC_DebugPortOut;
 		DebugPortOut.SpeedControl		<= SC_DebugPortOut;

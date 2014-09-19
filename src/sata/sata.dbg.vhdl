@@ -97,7 +97,7 @@ package satadbg is
 	-- SATA Physical Layer Types
 	-- ===========================================================================
 	TYPE T_SATADBG_PHYSICAL_OOBCONTROL_OUT IS RECORD
-		FSM												: STD_LOGIC_VECTOR(3 DOWNTO 0);
+		FSM												: STD_LOGIC_VECTOR(4 DOWNTO 0);
 		Retry											: STD_LOGIC;
 		Timeout										: STD_LOGIC;
 		LinkOK										: STD_LOGIC;
@@ -128,16 +128,17 @@ package satadbg is
 	TYPE T_SATADBG_PHYSICAL_OUT IS RECORD
 		-- phy layer fsm
 		FSM												: STD_LOGIC_VECTOR(2 DOWNTO 0);
-		StatusY										: T_SATA_PHY_STATUS;
+		PHY_Status								: T_SATA_PHY_STATUS;
 		
 		-- device detector
 --		DD_NoDevice								: STD_LOGIC;
 --		DD_NewDevice							: STD_LOGIC;
-		
+
+		TX_Data										: T_SLV_32;
+		TX_CharIsK								: T_SLV_4;		
 		RX_Data										: T_SLV_32;
 		RX_CharIsK								: T_SLV_4;
-		TX_Data										: T_SLV_32;
-		TX_CharIsK								: T_SLV_4;
+		RX_IsAligned							: STD_LOGIC;
 		
 		OOBControl								: T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
 		SpeedControl							: T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT;
