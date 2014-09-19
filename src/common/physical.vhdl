@@ -82,22 +82,17 @@ package physical is
 		TiB = 1024 GiB;
 	end units;
 	
-	type CYCLE is range 0 to INTEGER'high units
-		Cy;
-		kCy	= 1000 Cy;
-	end units;
-	
 	--
+	subtype T_CYCLE							is NATURAL;
 	subtype	T_DELAY							is TIME;
 	subtype	T_PERIOD						is TIME;																	-- see QUESTIONs below
-	type		T_TIMEVEC						is array(NATURAL range <>) of TIME;				-- use short VEC names (see PoC.utils T_INTVEC) or long forms (like STD_LOGIC_VECTOR)?
+	type		T_TIMEVEC						is array(NATURAL range <>) of TIME;				-- QUESTION: use short VEC names (see PoC.utils T_INTVEC) or long forms (like STD_LOGIC_VECTOR)?
 	type		T_FREQVEC						is array(NATURAL range <>) of FREQ;
 	type		T_BAUDVEC						is array(NATURAL range <>) of BAUD;
 	type		T_MEMVEC						is array(NATURAL range <>) of MEMORY;
 	
-
-	-- preserve three magnitudes of precision
-	constant C_PHYSICAL_PRECISION : INTEGER := 3;
+	-- TODO
+	constant C_PHYSICAL_REPORT_TIMING_DEVIATION		: BOOLEAN		:= TRUE;
 	
 	-- conversion functions
 	function to_time(f : FREQ)	return TIME;
@@ -191,6 +186,9 @@ package physical is
 	function TimingToCycles(Timing : TIME; Clock_Period			: TIME; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return NATURAL;
 	function TimingToCycles(Timing : TIME; Clock_Frequency	: FREQ; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return NATURAL;
 	
+	function CyclesToDelay(Cycles : T_CYCLE; Clock_Period			: TIME) return T_DELAY;
+	function CyclesToDelay(Cycles : T_CYCLE; Clock_Frequency	: FREQ) return T_DELAY;
+	
 	-- convert and format physical types to STRING
 	function to_string(t : TIME; precision : NATURAL := 3)			return STRING;
 	function to_string(f : FREQ; precision : NATURAL := 3)			return STRING;
@@ -201,29 +199,26 @@ end physical;
 
 
 package body physical is
-	constant C_PRECISION_FACTOR_INT		: INTEGER		:= 10**C_PHYSICAL_PRECISION;
-	constant C_PRECISION_FACTOR_REAL	: REAL			:= 10.0**C_PHYSICAL_PRECISION;
-
-	-- real division for physical types; preserves C_PHYSICAL_PRECISION many fractional digits
+	-- real division for physical types
 	-- ===========================================================================
 	function div(a : TIME; b : TIME) return REAL is
 	begin
-		return real((a * C_PRECISION_FACTOR_INT) / b) / C_PRECISION_FACTOR_REAL;
+		return real(a / 1 fs) / real(b / 1 fs);
 	end function;
 	
 	function div(a : FREQ; b : FREQ) return REAL is
 	begin
-		return real((a * C_PRECISION_FACTOR_REAL) / b) / C_PRECISION_FACTOR_REAL;
+		return real(a / 1 Hz) / real(b / 1 Hz);
 	end function;
 	
 	function div(a : BAUD; b : BAUD) return REAL is
 	begin
-		return real((a * C_PRECISION_FACTOR_INT) / b) / C_PRECISION_FACTOR_REAL;
+		return real(a / 1 Bd) / real(b / 1 Bd);
 	end function;
 	
 	function div(a : MEMORY; b : MEMORY) return REAL is
 	begin
-		return real((a * C_PRECISION_FACTOR_INT) / b) / C_PRECISION_FACTOR_REAL;
+		return real(a / 1 B) / real(b / 1 B);
 	end function;
 
 	-- conversion functions
@@ -726,6 +721,8 @@ package body physical is
 	function TimingToCycles(Timing : TIME; Clock_Period : TIME; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return NATURAL is
 		variable res_real	: REAL;
 		variable res_nat	: NATURAL;
+		variable res_time	: TIME;
+		variable res_dev	: REAL;
 	begin
 		res_real := div(Timing, Clock_Period);	
 		case RoundingStyle is
@@ -734,9 +731,26 @@ package body physical is
 			when ROUND_DOWN =>				res_nat := natural(res_real);
 			when others =>	report "RoundingStyle '" & T_ROUNDING_STYLE'image(RoundingStyle) & "' not supported." severity failure;
 		end case;
-
---		assert not MY_VERBOSE report "TimingToCycles: Timing= " & TIME'image(Timing) & " Clock_Period=" & TIME'image(Clock_Period) & " result= " & REAL'image(res_real) & " => " & INTEGER'image(res_nat) severity note;
-		assert not MY_VERBOSE report "TimingToCycles: Timing= " & to_string(Timing) & " Clock_Period=" & to_string(Clock_Period) & " result= " & str_format(res_real, 3) & " => " & INTEGER'image(res_nat) severity note;
+		res_time	:= CyclesToDelay(res_nat, Clock_Period);
+		res_dev		:= (1.0 - div(res_time, Timing)) * 100.0;
+		
+		assert (not MY_VERBOSE)
+			report "TimingToCycles: " & 	CR &
+						 "  Timing: " &					to_string(Timing) & CR &
+						 "  Clock_Period: " &		to_string(Clock_Period) & CR &
+						 "  RoundingStyle: " &	str_substr(T_ROUNDING_STYLE'image(RoundingStyle), 7) & CR &
+						 "  res_real = " &			str_format(res_real, 3) & CR &
+						 "  => " &							INTEGER'image(res_nat)
+			severity note;
+			
+		assert (not C_PHYSICAL_REPORT_TIMING_DEVIATION)
+			report "TimingToCycles (timing deviation report): " & CR &
+						 "  timing to achieve: " & to_string(Timing) & CR &
+						 "  calculated cycles: " & INTEGER'image(res_nat) & " cy" & CR &
+						 "  resulting timing:  " & to_string(res_time) & CR &
+						 "  deviation:         " & to_string(Timing - res_time) & " (" & str_format(res_dev, 2) & "%)"
+			severity note;
+		
 		return res_nat;
 	end;
 	
@@ -745,6 +759,16 @@ package body physical is
 		return TimingToCycles(Timing, to_time(Clock_Frequency), RoundingStyle);
 	end function;
 
+	function CyclesToDelay(Cycles : T_CYCLE; Clock_Period : TIME) return T_DELAY is
+	begin
+		return Clock_Period * Cycles;
+	end function;
+
+	function CyclesToDelay(Cycles : T_CYCLE; Clock_Frequency : FREQ) return T_DELAY is
+	begin
+		return CyclesToDelay(Cycles, to_time(Clock_Frequency));
+	end function;
+	
 	-- convert and format physical types to STRING
 	function to_string(t : TIME; precision : NATURAL := 3) return STRING is
 		variable unit		: STRING(1 to 3)	:= (others => NUL);
