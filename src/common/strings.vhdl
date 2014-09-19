@@ -34,6 +34,7 @@
 library	IEEE;
 use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
+use			IEEE.math_real.all;
 
 library	PoC;
 use			PoC.utils.all;
@@ -313,11 +314,18 @@ package body strings is
 	-- str_format_* functions
 	-- ===========================================================================
 	function str_format(value : REAL; precision : NATURAL := 3) return STRING is
-		constant int	: INTEGER		:= integer(value - 0.5);																		-- force ROUND_DOWN
-		constant frac	: INTEGER		:= integer(((value - real(int)) * 10.0**precision) - 0.5);	-- force ROUND_DOWN
+		constant s		: REAL			:= sign(value);
+		constant int	: INTEGER		:= integer((value * s) - 0.5);																		-- force ROUND_DOWN
+		constant frac	: INTEGER		:= integer((((value * s) - real(int)) * 10.0**precision) - 0.5);	-- force ROUND_DOWN
+		constant res	: STRING		:= raw_format_nat_dec(int) & "." & raw_format_nat_dec(frac);
 	begin
-		assert not MY_VERBOSE report "str_format: value=" & REAL'image(value) & "  int=" & INTEGER'image(int) & "  fraq=" & INTEGER'image(frac);
-		return raw_format_nat_dec(int) & "." & raw_format_nat_dec(frac);
+--		assert (not MY_VERBOSE)
+--			report "str_format:" & CR &
+--						 "  value:" & REAL'image(value) & CR &
+--						 "  int = " & INTEGER'image(int) & CR &
+--						 "  frac = " & INTEGER'image(frac)
+--			severity note;
+		return ite((s	< 0.0), "-" & res, res);
 	end function;
 	
 	-- to_string

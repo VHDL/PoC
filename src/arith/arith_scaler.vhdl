@@ -10,7 +10,7 @@
 --
 -- Authors:					Thomas B. Preusser
 -- ===========================================================================
--- Copyright 2007-2014 Technische Universität Dresden - Germany
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
