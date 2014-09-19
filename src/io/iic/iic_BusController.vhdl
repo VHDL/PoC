@@ -3,15 +3,15 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:					I²C BusController (IICBusController)
+-- Module:					I2C BusController (IICBusController)
 -- 
 -- Authors:					Patrick Lehmann
 --
 -- Description:
 -- ------------------------------------
---		The IICBusController transmitts bits over the I²C bus (SerialClock - SCL,
+--		The IICBusController transmitts bits over the I2C bus (SerialClock - SCL,
 --		SerialData - SDA) and also receives them.	To send/receive words over the
---		I²C bus, use the IICController, which utilizes this controller. This
+--		I2C bus, use the IICController, which utilizes this controller. This
 --		controller is compatible to the System Management Bus (SMBus).
 --
 -- License:

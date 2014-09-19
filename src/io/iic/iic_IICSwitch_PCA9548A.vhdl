@@ -3,7 +3,7 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================================================================================================
--- Module:					I²C Switch Controller for a TI PCA9548A
+-- Module:					I2C Switch Controller for a TI PCA9548A
 -- 
 -- Authors:					Patrick Lehmann
 -- 
