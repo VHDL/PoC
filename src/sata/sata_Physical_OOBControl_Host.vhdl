@@ -34,10 +34,13 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+USE			PoC.my_project.ALL;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.strings.ALL;
 USE			PoC.physical.ALL;
+USE			PoC.debug.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.satadbg.ALL;
 
@@ -438,15 +441,31 @@ BEGIN
 	-- debug port
 	-- ===========================================================================
 	genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
-	
-		FUNCTION dbg_EncodeState(State : T_STATE) RETURN STD_LOGIC_VECTOR IS
-			CONSTANT ResultSize		: POSITIVE																	:= log2ceilnz(T_STATE'pos(T_STATE'high) + 1);
-			CONSTANT Result				: STD_LOGIC_VECTOR(ResultSize - 1 DOWNTO 0)	:= to_slv(T_STATE'pos(State), ResultSize);
-		BEGIN
-			RETURN ite(DEBUG, bin2gray(Result), Result);
-		END FUNCTION;
+		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+		begin
+			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
+		end function;
 		
+		function dbg_GenerateEncodingList return T_DBG_ENCODING_VECTOR is
+			variable i					: NATURAL		:= 0;
+			variable result			: T_DBG_ENCODING_VECTOR(0 to T_STATE'pos(T_STATE'high));
+		begin
+			for st in T_STATE loop
+				result(i).Name		:= resize(T_STATE'image(st), T_DBG_ENCODING.Name'length);
+				result(i).Binary	:= to_slv(T_STATE'pos(st),	 T_DBG_ENCODING.Binary'length);
+				i	:= i + 1;
+			end loop;
+			return result;
+		end function;
+
+		CONSTANT DBG_ENCODING_REPLACEMENTS		: T_DBG_ENCODING_REPLACEMENTS		:= C_DBG_DEFAULT_ENCODING_REPLACEMENTS & T_DBG_ENCODING_REPLACEMENTS'(
+			0 => (Pattern => resize("host_", C_DBG_STRING_LENGTH),			Replacement => resize("", C_DBG_STRING_LENGTH)),
+			1 => (Pattern => resize("handshake", C_DBG_STRING_LENGTH),	Replacement => resize("hs", C_DBG_STRING_LENGTH))
+		);
+		
+		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Host)", dbg_GenerateEncodingList, MY_PROJECT_DIR & "ChipScope\TokenFiles\FSM_OOBControl_Host.tok", DBG_ENCODING_REPLACEMENTS);
 	BEGIN
+
 		DebugPortOut.FSM												<= dbg_EncodeState(State);
 		DebugPortOut.Retry											<= Retry;
 		DebugPortOut.Timeout										<= Timeout_i;
