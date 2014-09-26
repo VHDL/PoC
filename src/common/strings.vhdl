@@ -120,9 +120,10 @@ package strings is
 	function str_equal(str1 : STRING; str2 : STRING)	return BOOLEAN;
 	function str_match(str1 : STRING; str2 : STRING)	return BOOLEAN;
 	function str_pos(str : STRING; chr : CHARACTER)		return INTEGER;
-	function str_pos(str1 : STRING; str2 : STRING)		return INTEGER;
+	function str_pos(str : STRING; search : STRING)		return INTEGER;
 	function str_find(str : STRING; chr : CHARACTER)	return BOOLEAN;
-	function str_find(str1 : STRING; str2 : STRING)		return BOOLEAN;
+	function str_find(str : STRING; search : STRING)	return BOOLEAN;
+	function str_replace(str : STRING; search : STRING; replace : STRING) return STRING;
 	function str_trim(str : STRING)										return STRING;
 	function str_to_lower(str : STRING)								return STRING;
 	function str_to_upper(str : STRING)								return STRING;
@@ -556,10 +557,13 @@ package body strings is
 	-- resize
 	-- ===========================================================================
 	FUNCTION resize(str : STRING; size : POSITIVE; FillChar : CHARACTER := NUL) RETURN STRING IS
-		CONSTANT MaxLength	: POSITIVE							:= imin(size, str'length);
+		CONSTANT MaxLength	: NATURAL								:= imin(size, str'length);
 		VARIABLE Result			: STRING(1 TO size)			:= (OTHERS => FillChar);
 	BEGIN
-		Result(1 TO MaxLength) := str(1 TO MaxLength);
+		report "resize: str='" & str & "' size=" & INTEGER'image(size) severity note;
+		if (MaxLength > 0) then
+			Result(1 TO MaxLength) := str(str'low TO str'low + MaxLength - 1);
+		end if;
 		RETURN Result;
 	END FUNCTION;
 
@@ -627,59 +631,93 @@ package body strings is
 	function str_pos(str : STRING; chr : CHARACTER) return INTEGER is
 	begin
 		for i in str'range loop
-			exit when (str(I) = NUL);
-			if (str(I) = chr) then
-				return I;
+			exit when (str(i) = NUL);
+			if (str(i) = chr) then
+				return i;
 			end if;
 		end loop;
 		return -1;
 	end function;
 	
-	function str_pos(str1 : STRING; str2 : STRING) return INTEGER is
-		variable PrefixTable	: T_INTVEC(0 to str2'length);
-		variable j						: INTEGER;
+	function str_pos(str : STRING; search : STRING) return INTEGER is
 	begin
-		-- construct prefix table for KMP algorithm
-		j								:= -1;
-		PrefixTable(0)	:= -1;
-		for i in str2'range loop
-			while ((j >= 0) and str2(j + 1) /= str2(i)) loop
-				j		:= PrefixTable(j);
-			end loop;
-		
-			j										:= j + 1;
-			PrefixTable(i - 1)	:= j + 1;
-		end loop;
-		
-		-- search pattern str2 in text str1
-		j := 0;
-		for i in str1'range loop
-			while ((j >= 0) and str1(i) /= str2(j + 1)) loop
-				j		:= PrefixTable(j);
-			end loop;
-		
-			j := j + 1;
-			if ((j + 1) = str2'high) then
-				return i - str2'length + 1;
+		for i in str'low to (str'high - search'length + 1) loop
+			exit when (str(i) = NUL);
+			if (str(i to i + search'length - 1) = search) then
+				return i;
 			end if;
 		end loop;
-
 		return -1;
 	end function;
+	
+--	function str_pos(str1 : STRING; str2 : STRING) return INTEGER is
+--		variable PrefixTable	: T_INTVEC(0 to str2'length);
+--		variable j						: INTEGER;
+--	begin
+--		-- construct prefix table for KMP algorithm
+--		j								:= -1;
+--		PrefixTable(0)	:= -1;
+--		for i in str2'range loop
+--			while ((j >= 0) and str2(j + 1) /= str2(i)) loop
+--				j		:= PrefixTable(j);
+--			end loop;
+--		
+--			j										:= j + 1;
+--			PrefixTable(i - 1)	:= j + 1;
+--		end loop;
+--		
+--		-- search pattern str2 in text str1
+--		j := 0;
+--		for i in str1'range loop
+--			while ((j >= 0) and str1(i) /= str2(j + 1)) loop
+--				j		:= PrefixTable(j);
+--			end loop;
+--		
+--			j := j + 1;
+--			if ((j + 1) = str2'high) then
+--				return i - str2'length + 1;
+--			end if;
+--		end loop;
+--
+--		return -1;
+--	end function;
 	
 	function str_find(str : STRING; chr : CHARACTER) return boolean is
 	begin
 		return (str_pos(str, chr) > 0);
 	end function;
 	
-	function str_find(str1 : STRING; str2 : STRING) return boolean is
+	function str_find(str : STRING; search : STRING) return boolean is
 	begin
-		return (str_pos(str1, str2) > 0);
+		return (str_pos(str, search) > 0);
+	end function;
+	
+	function str_replace(str : STRING; search : STRING; replace : STRING) return STRING is
+		variable pos		: INTEGER;
+	begin
+		pos := str_pos(str, search);
+		report "str_replace: pos=" & INTEGER'image(pos) severity note;
+		if (pos > 0) then
+			if (pos = 1) then
+				return replace & str(search'length + 1 to str'length);
+			elsif (pos = str'length - search'length + 1) then
+				return str(1 to str'length - search'length) & replace;
+			else
+				return str(1 to pos - 1) & replace & str(pos + search'length to str'length);
+			end if;
+		else
+			return str;
+		end if;
 	end function;
 	
 	function str_trim(str : STRING) return STRING is
+		constant len	: NATURAL	:= str_length(str);
 	begin
-		return resize(str, str_length(str));
+		if (len = 0) then
+			return "";
+		else
+			return resize(str, len);
+		end if;
 	end function;
 	
 	FUNCTION str_to_lower(str : STRING) RETURN STRING IS

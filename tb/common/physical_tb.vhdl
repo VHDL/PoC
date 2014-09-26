@@ -31,6 +31,10 @@
 -- =============================================================================
 
 entity physical_tb is
+	port (
+		input		: in std_logic;
+		output		: out std_logic
+	);
 end;
 
 
@@ -44,11 +48,19 @@ use			PoC.simulation.all;
 architecture tb of physical_tb is
 	signal SimQuiet		: BOOLEAN		:= true;
 	
+	constant clock_freq		: FREQ		:= 100.0 MHz;
+	constant delay				: T_DELAY	:= 256.8 ns;
+	
+	constant cycles				: T_CYCLE	:= TimingToCycles(delay, clock_freq);
+	
 	constant Time1			: TIME			:= 10.0 ns;
 	constant Time2			: TIME			:= 0.5 us;
 	
 begin
+	output		<= input;
+	
 	process
+		
 		variable res1		: INTEGER;
 		variable res2		: REAL;
 	begin
