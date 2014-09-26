@@ -141,8 +141,8 @@ BEGIN
 			PORT MAP (
 				Clock				=> Clock,
 				Input(0)		=> OverTemperature_async,
-				Input(1)		=> OverTemperature_sync,
-				Output(0)		=> UserTemperature_async,
+				Input(1)		=> UserTemperature_async,
+				Output(0)		=> OverTemperature_sync,
 				Output(1)		=> UserTemperature_sync
 			);
 

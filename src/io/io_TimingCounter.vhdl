@@ -34,6 +34,7 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+USE			PoC.my_config.ALL;
 USE			PoC.utils.ALL;
 
 
@@ -55,10 +56,10 @@ ARCHITECTURE rtl OF io_TimingCounter IS
 	FUNCTION transform(vec : T_NATVEC) RETURN T_INTVEC IS
     VARIABLE Result : T_INTVEC(vec'range);
   BEGIN
-		REPORT "TIMING_TABLE (transformed):" SEVERITY NOTE;
+		ASSERT (not MY_VERBOSE) REPORT "TIMING_TABLE (transformed):" SEVERITY NOTE;
     FOR I IN vec'range LOOP
 			Result(I)	 := vec(I) - 1;
-			REPORT "  " & INTEGER'image(I) & " - " & INTEGER'image(Result(I)) SEVERITY NOTE;
+			ASSERT (not MY_VERBOSE) REPORT "  " & INTEGER'image(I) & " - " & INTEGER'image(Result(I)) SEVERITY NOTE;
 		END LOOP;
 		RETURN Result;
   END;

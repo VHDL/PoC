@@ -153,7 +153,7 @@ BEGIN
 	END PROCESS;
 
 	PROCESS(State,
-		Request_or, Arb_Grant, Arb_Grant_bin,
+		Request, Request_or, Arb_Grant, Arb_Grant_bin,
 		Command, Address, WP_Valid, WP_Data, WP_Last, RP_Ack,
 		IICC_Grant, IICC_Status, IICC_WP_Ack, IICC_RP_Valid, IICC_RP_Data, IICC_RP_Last, IICC_Error)
 	BEGIN
