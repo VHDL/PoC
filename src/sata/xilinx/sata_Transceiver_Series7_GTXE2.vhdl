@@ -1332,9 +1332,9 @@ BEGIN
 		
 			DebugPortOut(I).TX_Data										<= GTX_TX_Data;
 			DebugPortOut(I).TX_CharIsK								<= GTX_TX_CharIsK;
-			DebugPortOut(I).TX_ComInit								<= GTX_TX_ComInit;
-			DebugPortOut(I).TX_ComWake								<= GTX_TX_ComWake;
-			DebugPortOut(I).TX_ComFinish							<= GTX_TX_ComFinish;
+			DebugPortOut(I).TX_ComInit								<= GTX_TX_ComInit_set;
+			DebugPortOut(I).TX_ComWake								<= GTX_TX_ComWake_set;
+			DebugPortOut(I).TX_ComFinish							<= TX_ComFinish;
 			DebugPortOut(I).TX_ElectricalIDLE					<= GTX_TX_ElectricalIDLE;
 
 			DebugPortOut(I).RX_Data										<= GTX_RX_Data;
