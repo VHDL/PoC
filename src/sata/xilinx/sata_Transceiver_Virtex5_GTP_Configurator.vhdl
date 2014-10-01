@@ -8,7 +8,7 @@ USE			PoC.utils.ALL;
 --USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
-USE			PoC.xilinx.ALL;
+USE			PoC.xil.ALL;
 
 
 -- ==================================================================
@@ -34,7 +34,7 @@ ENTITY sata_Transceiver_Virtex5_GTP_Configurator IS
 		DEBUG											: BOOLEAN											:= FALSE;																-- 
 		DRPCLOCK_FREQ_MHZ					: REAL												:= 0.0;																	-- 
 		PORTS											: POSITIVE										:= 1;																		-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1 => T_SATA_GENERATION'high)		-- intial SATA Generation
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1 => C_SATA_GENERATION_MAX)		-- intial SATA Generation
 	);
 	PORT (
 		DRP_Clock								: IN	STD_LOGIC;
@@ -166,14 +166,14 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP_Configurator IS
 	-- GTP_DualConfiguration - Statemachine
 	SIGNAL State											: T_STATE											:= ST_IDLE;
 	SIGNAL NextState									: T_STATE;
-	ATTRIBUTE FSM_ENCODING	OF State	: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING	OF State	: SIGNAL IS getFSMEncoding_gray(DEBUG);
 	
-	SIGNAL Reconfig_i									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Reconfig_DRP								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL ReconfigComplete_i					: STD_LOGIC;
 	SIGNAL ConfigReloaded_i						: STD_LOGIC;
-	SIGNAL SATA_Generation_i					: T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL SATAGeneration_DRP					: T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0)	:= INITIAL_SATA_GENERATIONS;
 	
-	SIGNAL Lock_i											: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Lock_DRP										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Locked_i										: STD_LOGIC;
 	
 	SIGNAL doReconfig									: STD_LOGIC;
@@ -185,88 +185,73 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP_Configurator IS
 	SIGNAL XilDRP_ReconfigDone				: STD_LOGIC;
 	SIGNAL XilDRP_ConfigSelect				: STD_LOGIC_VECTOR(XILDRP_CONFIGSELECT_BITS - 1 DOWNTO 0);
 
-
-	FUNCTION IsSupportedGeneration(SATAGen : T_SATA_GENERATION) RETURN BOOLEAN IS
-	BEGIN
-		CASE SATAGen IS
-			WHEN SATA_GENERATION_1 =>			RETURN TRUE;
-			WHEN SATA_GENERATION_2 =>			RETURN TRUE;
-			WHEN OTHERS =>								RETURN FALSE;
-		END CASE;
-	END;
-	
 BEGIN
 	ASSERT (PORTS <= 2)	REPORT "to many ports per transceiver"	SEVERITY FAILURE;
 	
 	-- cross clock domain bit synchronisation
-	genSync1 : FOR I IN 0 TO PORTS - 1 GENERATE
-		SIGNAL Lock_meta						: STD_LOGIC														:= '0';
-		SIGNAL Lock_d								: STD_LOGIC														:= '0';
-		
-		SIGNAL SATAGeneration_meta	: T_SATA_GENERATION										:= INITIAL_SATA_GENERATIONS(INITIAL_SATA_GENERATIONS'low + I);
-		SIGNAL SATAGeneration_d			: T_SATA_GENERATION										:= INITIAL_SATA_GENERATIONS(INITIAL_SATA_GENERATIONS'low + I);
-		
+	genSyncSATA_DRP : FOR I IN 0 TO PORTS - 1 GENERATE
+		SIGNAL Lock_i								: STD_LOGIC;
+		SIGNAL SATAGeneration_SATA	: T_SATA_GENERATION			:= INITIAL_SATA_GENERATIONS(I);
 	BEGIN
-		ASSERT IsSupportedGeneration(SATA_Generation(I))	REPORT "Member of T_SATA_GENERATION not supported"	SEVERITY FAILURE;
-	
 		-- synchronize Reconfig(I), Lock(I), SATA_Generation(I) from SATA_Clock to DRP_Clock
-		Lock_meta							<= Lock(I)							WHEN rising_edge(DRP_Clock);
-		Lock_d								<= Lock_meta						WHEN rising_edge(DRP_Clock);
-		Lock_i(I)							<= Lock_d	AND (NOT NoDevice(I));
-
-		SATAGeneration_meta		<= SATA_Generation(I)		WHEN rising_edge(DRP_Clock);
-		SATAGeneration_d			<= SATAGeneration_meta	WHEN rising_edge(DRP_Clock);
-		SATA_Generation_i(I)	<= SATAGeneration_d;
-		
-		SyncSATA_DRP : ENTITY PoC.misc_Synchronizer
-			GENERIC MAP (
-				BITS									=> 1,
-				GATED_INPUT_BY_BUSY		=> TRUE
-			)
+		sync1 : ENTITY PoC.sync_Flag
 			PORT MAP (
-				Clock1								=> SATA_Clock(I),
-				Clock2								=> DRP_Clock,
-				I(0)									=> Reconfig(I),
-				O(0)									=> Reconfig_i(I),
-				B											=> OPEN
+				Clock				=> DRP_Clock,
+				Input(0)		=> Lock(I),
+				Output(0)		=> Lock_i
 			);
+
+		sync2 : ENTITY PoC.sync_Strobe
+			PORT MAP (
+				Clock1			=> SATA_Clock(I),
+				Clock2			=> DRP_Clock,
+				Input(0)		=> Reconfig(I),
+				Output(0)		=> Reconfig_DRP(I)
+			);
+
+		-- only connected ports can request locks
+		Lock_DRP(I)					<= Lock_i	AND (NOT NoDevice(I));
+
+		-- register SATAGeneration in old clock domain
+		SATAGeneration_SATA	<= SATA_Generation(I) WHEN rising_edge(SATA_Clock(I));
+		
+		-- sample SATAGeneration in new clock domain if Reconfig occurs (SATAGeneration was stable for several cycles)
+		PROCESS(DRP_Clock)
+		BEGIN
+			IF rising_edge(DRP_Clock) THEN
+				IF (Reconfig_DRP(I) = '1') THEN
+					SATAGeneration_DRP(I)	<= SATAGeneration_SATA;
+				END IF;
+			END IF;
+		END PROCESS;
 	END GENERATE;
 
 	-- calculate shared control signals
-	doReconfig				<= slv_or(Reconfig_i);
-	doLock						<= slv_or(Lock_i);			-- only connected ports can request locks
+	doReconfig				<= slv_or(Reconfig_DRP);
+	doLock						<= slv_or(Lock_DRP);
 
 	genSyncDRP_SATA : FOR I IN 0 TO PORTS - 1 GENERATE
-		SIGNAL Locked_meta				: STD_LOGIC			:= '0';
-		SIGNAL Locked_d						: STD_LOGIC			:= '0';
-
-		SIGNAL SyncDRP_SATA_in		: STD_LOGIC_VECTOR(1 DOWNTO 0);
-		SIGNAL SyncDRP_SATA_out		: STD_LOGIC_VECTOR(1 DOWNTO 0);
-	BEGIN
 		-- synchronize Locked_i from DRP_Clock to SATA_Clock(I)
-		Locked_meta					<= Locked_i			WHEN rising_edge(SATA_Clock(I));
-		Locked_d						<= Locked_meta	WHEN rising_edge(SATA_Clock(I));
-		Locked(I)						<= Locked_d;
-
-		-- synchronize ReconfigComplete, ConfigReloaded, Locked from DRP_Clock to SATA_Clock		
-		SyncDRP_SATA_in(0)	<= ReconfigComplete_i;
-		SyncDRP_SATA_in(1)	<= ConfigReloaded_i;
+		sync1 : ENTITY PoC.sync_Flag
+			PORT MAP (
+				Clock				=> DRP_Clock,
+				Input(0)		=> Locked_i,
+				Output(0)		=> Locked(I)
+			);
 		
-		SyncDRP_SATA : ENTITY PoC.misc_Synchronizer
+		-- synchronize ReconfigComplete, ConfigReloaded, Locked from DRP_Clock to SATA_Clock		
+		sync2 : ENTITY PoC.sync_Strobe
 			GENERIC MAP (
-				BITS									=> 2,
-				GATED_INPUT_BY_BUSY		=> TRUE
+				BITS				=> 2
 			)
 			PORT MAP (
-				Clock1								=> DRP_Clock,
-				Clock2								=> SATA_Clock(I),
-				I											=> SyncDRP_SATA_in,
-				O											=> SyncDRP_SATA_out,
-				B											=> OPEN
+				Clock1			=> DRP_Clock,
+				Clock2			=> SATA_Clock(I),
+				Input(0)		=> ReconfigComplete_i,
+				Input(1)		=> ConfigReloaded_i,
+				Output(0)		=> ReconfigComplete(I),
+				Output(1)		=> ConfigReloaded(I)
 			);
-
-		ReconfigComplete(I)		<= SyncDRP_SATA_out(0);
-		ConfigReloaded(I)			<= SyncDRP_SATA_out(1);
 	END GENERATE;
 
 	PROCESS(DRP_Clock)
@@ -281,7 +266,7 @@ BEGIN
 	END PROCESS;
 
 
-	PROCESS(State, doReconfig, doLock, XilDRP_ReconfigDone, GTP_ReloadConfigDone, SATA_Generation_i)
+	PROCESS(State, doReconfig, doLock, XilDRP_ReconfigDone, GTP_ReloadConfigDone, SATAGeneration_DRP)
 	BEGIN
 		NextState				<= State;
 
@@ -340,12 +325,12 @@ BEGIN
 -- ------------------------------------------------------------------
 			WHEN ST_RECONFIG_PORT0 =>
 				XilDRP_Reconfig				<= '1';
-				XilDRP_ConfigSelect		<= ite((SATA_Generation_i(0) = SATA_GENERATION_1), to_slv(0, XILDRP_CONFIGSELECT_BITS), to_slv(1, XILDRP_CONFIGSELECT_BITS));
+				XilDRP_ConfigSelect		<= ite((SATAGeneration_DRP(0) = SATA_GENERATION_1), to_slv(0, XILDRP_CONFIGSELECT_BITS), to_slv(1, XILDRP_CONFIGSELECT_BITS));
 
 				NextState							<= ST_RECONFIG_PORT0_WAIT;
 			
 			WHEN ST_RECONFIG_PORT0_WAIT =>
-				XilDRP_ConfigSelect		<= ite((SATA_Generation_i(0) = SATA_GENERATION_1), to_slv(0, XILDRP_CONFIGSELECT_BITS), to_slv(1, XILDRP_CONFIGSELECT_BITS));
+				XilDRP_ConfigSelect		<= ite((SATAGeneration_DRP(0) = SATA_GENERATION_1), to_slv(0, XILDRP_CONFIGSELECT_BITS), to_slv(1, XILDRP_CONFIGSELECT_BITS));
 				
 				IF (XilDRP_ReconfigDone = '1') THEN
 					IF (PORTS = 2) THEN
@@ -358,12 +343,12 @@ BEGIN
 				
 			WHEN ST_RECONFIG_PORT1 =>
 				XilDRP_Reconfig				<= '1';
-				XilDRP_ConfigSelect		<= ite((SATA_Generation_i(imin(1, PORTS - 1)) = SATA_GENERATION_1), to_slv(2, XILDRP_CONFIGSELECT_BITS), to_slv(3, XILDRP_CONFIGSELECT_BITS));
+				XilDRP_ConfigSelect		<= ite((SATAGeneration_DRP(imin(1, PORTS - 1)) = SATA_GENERATION_1), to_slv(2, XILDRP_CONFIGSELECT_BITS), to_slv(3, XILDRP_CONFIGSELECT_BITS));
 
 				NextState							<= ST_RECONFIG_PORT1_WAIT;
 			
 			WHEN ST_RECONFIG_PORT1_WAIT =>
-				XilDRP_ConfigSelect		<= ite((SATA_Generation_i(imin(1, PORTS - 1)) = SATA_GENERATION_1), to_slv(2, XILDRP_CONFIGSELECT_BITS), to_slv(3, XILDRP_CONFIGSELECT_BITS));
+				XilDRP_ConfigSelect		<= ite((SATAGeneration_DRP(imin(1, PORTS - 1)) = SATA_GENERATION_1), to_slv(2, XILDRP_CONFIGSELECT_BITS), to_slv(3, XILDRP_CONFIGSELECT_BITS));
 				
 				IF (XilDRP_ReconfigDone = '1') THEN
 					ReconfigComplete_i	<= '1';

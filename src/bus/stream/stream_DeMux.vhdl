@@ -181,7 +181,7 @@ BEGIN
 	ChannelPointer_bin	<= onehot2bin(ChannelPointer_d);
 	idx									<= to_integer(ChannelPointer_bin);
 
-	In_Meta_rev				<= get_row(Out_Meta_rev, idx);
+	In_Meta_rev					<= get_row(Out_Meta_rev, idx);
 
 	genOutput : FOR I IN 0 TO PORTS - 1 GENERATE
 		Out_Valid(I)			<= Out_Valid_i AND ChannelPointer(I);

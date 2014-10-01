@@ -7,7 +7,6 @@
 ##		Quad117:		 
 ##			RefClock0		
 ##			RefClock1		KC705_SMA_RefClock
-#$	##			VCCO:					2,5V (VCC2V5_FPGA)
 ##		Placement:
 ##			SFP:				Quad117.Channel2 (GTXE2_CHANNEL_X0Y10)
 ##		Location:			P5
@@ -19,8 +18,8 @@ NET "KC705_SFP_LossOfSync"											LOC = "P19" | IOSTANDARD = LVCMOS25; ## #$	
 ## SFP+ LVDS signal-pairs
 NET "KC705_SFP_TX_n"														LOC = "H1";													## {OUT}	
 NET "KC705_SFP_TX_p"														LOC = "H2";													## {OUT}	
-NET "KC705_SFP_RX_n"														LOC = "G4";													## {IN}		
-NET "KC705_SFP_RX_p"														LOC = "G3";													## {IN}		
+NET "KC705_SFP_RX_n"														LOC = "G3";													## {IN}		
+NET "KC705_SFP_RX_p"														LOC = "G4";													## {IN}		
 #% END-TEMPLATE Transceiver_SFP %#
 
 #% BEGIN-TEMPLATE Tranceiver_SMA %#
@@ -30,12 +29,11 @@ NET "KC705_SFP_RX_p"														LOC = "G3";													## {IN}
 ##		Quad117:		 
 ##			RefClock0		
 ##			RefClock1		KC705_SMA_RefClock
-#$	##			VCCO:					2,5V (VCC2V5_FPGA)
 ##		Placement:
 ##			SMA:				Quad117.Channel0 (GTXE2_CHANNEL_X0Y8)
 ##		Location:
 ##			RefClock:		J15, J16
-##			Lane:				J17, J18, J19, J20
+##			Lane:				J17, J66, J19, J20
 ##
 ## reference clock
 ## --------------------------
@@ -44,9 +42,9 @@ NET "KC705_SMA_RefClock_p"											LOC = "J8";													## {IN}		J16; exter
 
 ## SMA LVDS signal-pairs
 ## --------------------------
-NET "KC705_SMA_TX_n"														LOC = "AP3";												## {OUT}	#$	J30
-NET "KC705_SMA_TX_p"														LOC = "AP4";												## {OUT}	#$	J29
-NET "KC705_SMA_RX_n"														LOC = "AN5";												## {IN}		#$	J28
-NET "KC705_SMA_RX_p"														LOC = "AN6";												## {IN}		#$	J27
+NET "KC705_SMA_TX_n"														LOC = "K1";													## {OUT}	J20
+NET "KC705_SMA_TX_p"														LOC = "K2";													## {OUT}	J19
+NET "KC705_SMA_RX_n"														LOC = "K5";													## {IN}		J66; external 0.01 µF decoupling capacitor
+NET "KC705_SMA_RX_p"														LOC = "K6";													## {IN}		J17; external 0.01 µF decoupling capacitor
 #% END-TEMPLATE Tranceiver_SMA %#
 #% END-TEMPLATEFILE %#

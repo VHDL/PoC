@@ -69,9 +69,9 @@ ENTITY sata_TransportFSM IS
 		RX_EOT														: OUT	STD_LOGIC;
 		
 		-- LinkLayer interface
-		Link_Command											: OUT	T_SATA_COMMAND;
-		Link_Status												: IN	T_SATA_STATUS;
-		Link_Error												: IN	T_SATA_ERROR;
+--		Link_Command											: OUT	T_SATA_COMMAND;
+		Link_Status												: IN	T_SATA_SATACONTROLLER_STATUS;
+--		Link_Error												: IN	T_SATA_ERROR;
 		
 		-- FIS-FSM interface
 		FISD_FISType											: IN	T_SATA_FISTYPE;
@@ -85,6 +85,7 @@ ENTITY sata_TransportFSM IS
 		FISE_EOP													: OUT	STD_LOGIC
 	);
 END;
+
 
 ARCHITECTURE rtl OF sata_TransportFSM IS
 	ATTRIBUTE KEEP									: BOOLEAN;
@@ -133,11 +134,11 @@ BEGIN
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF ((Reset = '1') OR (Command = SATA_TRANS_CMD_RESET)) THEN
-				State			<= ST_RESET;
-				Link_Command		<= SATA_CMD_RESET_LINKLAYER;
+				State						<= ST_RESET;
+--				Link_Command		<= SATA_CMD_RESET_LINKLAYER;
 			ELSE
-				State			<= NextState;
-				Link_Command		<= SATA_CMD_NONE;
+				State						<= NextState;
+--				Link_Command		<= SATA_CMD_NONE;
 			END IF;
 		END IF;
 	END PROCESS;
@@ -150,7 +151,7 @@ BEGIN
 		NextState																<= State;
 		
 		Status																	<= SATA_TRANS_STATUS_TRANSFERING;
-		Error_i																		<= SATA_TRANS_ERROR_NONE;
+		Error_i																	<= SATA_TRANS_ERROR_NONE;
     
 		CopyATADeviceRegisterStatus	            <= '0';
 		

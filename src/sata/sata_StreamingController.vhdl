@@ -85,9 +85,7 @@ ENTITY sata_StreamingController IS
 		
 		-- SATAController interface
 		-- ========================================================================
-		SATA_Command							: OUT	T_SATA_COMMAND;
-		SATA_Status								: IN	T_SATA_STATUS;
-		SATA_Error								: IN	T_SATA_ERROR;
+		SATA_Status								: IN	T_SATA_SATACONTROLLER_STATUS;
 	
 		-- TX port
 		SATA_TX_SOF								: OUT	STD_LOGIC;
@@ -396,9 +394,9 @@ BEGIN
 			RX_Ready										=> RX_Glue_Ready,
 			
 			-- LinkLayer interface
-			Link_Command								=> SATA_Command,
+--			Link_Command								=> SATA_Command,
 			Link_Status									=> SATA_Status,
-			Link_Error									=> SATA_Error,
+--			Link_Error									=> SATA_Error,
 			
 			-- TX path
 			Link_TX_Ready								=> SATA_TX_Ready,

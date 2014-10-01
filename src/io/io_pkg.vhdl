@@ -34,17 +34,12 @@ LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
+library PoC;
+use			PoC.my_config.all;
+use			PoC.physical.all;
+
 
 PACKAGE io IS
-	-- not yet supported by Xilinx Synthese Tools (XST) - Version 13.2 (O.61xd 2011)
---	TYPE FREQ IS RANGE 0 TO 2147483647
---		UNITS
---			Hz;
---			kHz = 1000 Hz;
---			MHz = 1000 kHz;
---			GHz = 1000 MHz;
---		END UNITS;
-	
 	-- not yet supported by Xilinx ISE Simulator - the subsignal I (with reverse direction) is always 'U'
 	-- so use this record only in pure synthesis environments
 	TYPE T_IO_TRISTATE IS RECORD
@@ -54,6 +49,9 @@ PACKAGE io IS
 	END RECORD;
 
 	TYPE T_IO_TRISTATE_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_IO_TRISTATE;
+
+
+	function io_7SegmentDisplayEncoding(hex	: STD_LOGIC_VECTOR(3 downto 0); dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR;
 	
 	-- IICBusController
 	-- ==========================================================================================================================================================
@@ -157,45 +155,46 @@ PACKAGE io IS
 		IO_MDIO_MDIOC_ERROR_FSM
 	);
 	
-	-- TimingToCycles_***
-	FUNCTION TimingToCycles_ns(Timing_NS : POSITIVE;	CLOCKSPEED_NS : REAL) RETURN NATURAL;
-	FUNCTION TimingToCycles_ns(Timing_NS : REAL;			CLOCKSPEED_NS : REAL) RETURN NATURAL;
+	TYPE T_IO_LCDBUS_COMMAND IS (
+		IO_LCDBUS_CMD_NONE,
+		IO_LCDBUS_CMD_READ,
+		IO_LCDBUS_CMD_WRITE
+	);
 	
-	FUNCTION TimingToCycles_us(Timing_US : POSITIVE;	CLOCKSPEED_NS : REAL) RETURN NATURAL;
-	FUNCTION TimingToCycles_us(Timing_US : REAL;			CLOCKSPEED_NS : REAL) RETURN NATURAL;
+	TYPE T_IO_LCDBUS_STATUS IS (
+		IO_LCDBUS_STATUS_IDLE,
+		IO_LCDBUS_STATUS_READING,
+		IO_LCDBUS_STATUS_WRITING,
+		IO_LCDBUS_STATUS_ERROR
+	);
 	
-	FUNCTION TimingToCycles_ms(Timing_MS : POSITIVE;	CLOCKSPEED_NS : REAL) RETURN NATURAL;
-	FUNCTION TimingToCycles_ms(Timing_MS : REAL;			CLOCKSPEED_NS : REAL) RETURN NATURAL;
+	-- Subnamespace PoC.io.uart
+  -- =========================================================================
+	CONSTANT C_UART_TYPICAL_BAUDRATES		: T_BAUDVEC		:= (
+		 0 =>		 300 Bd,	 1 =>		 600 Bd,	 2 =>		1200 Bd,	 3 =>		1800 Bd,	 4 =>		2400 Bd,
+		 5 =>		4000 Bd,	 6 =>		4800 Bd,	 7 =>		7200 Bd,	 8 =>		9600 Bd,	 9 =>	 14400 Bd,
+		10 =>	 16000 Bd,	11 =>	 19200 Bd,	12 =>	 28800 Bd,	13 =>	 38400 BD,	14 =>	 51200 Bd,
+		15 =>	 56000 Bd,	16 =>	 57600 Bd,	17 =>	 64000 Bd,	18 =>	 76800 Bd,	19 =>	115200 Bd,
+		20 =>	128000 Bd,	21 =>	153600 Bd,	22 =>	230400 Bd,	23 =>	250000 Bd,	24 =>	256000 BD,
+		25 =>	460800 Bd,	26 =>	500000 Bd,	27 =>	576000 Bd,	28 =>	921600 Bd
+	);
 	
-	FUNCTION TimingToCycles_s(Timing_S	 : POSITIVE;	CLOCKSPEED_NS : REAL) RETURN NATURAL;
-	FUNCTION TimingToCycles_s(Timing_S	 : REAL;			CLOCKSPEED_NS : REAL) RETURN NATURAL;
-	
-	-- Freq_***Hz2Real_ns
-	FUNCTION Freq_kHz2Real_ns(Freq_kHz : POSITIVE) RETURN REAL;
-	FUNCTION Freq_kHz2Real_ns(Freq_kHz : REAL) RETURN REAL;
-	FUNCTION Freq_MHz2Real_ns(Freq_MHz : POSITIVE) RETURN REAL;
-	FUNCTION Freq_MHz2Real_ns(Freq_MHz : REAL) RETURN REAL;
-	
-	-- Baud2***Hz
-	FUNCTION Baud2kHz(BaudRate : POSITIVE) RETURN REAL;
-	FUNCTION Baud2kHz(BaudRate : REAL) RETURN REAL;
-	FUNCTION Baud2MHz(BaudRate : POSITIVE) RETURN REAL;
-	FUNCTION Baud2MHz(BaudRate : REAL) RETURN REAL;
+	function uart_IsTypicalBaudRate(br : BAUD) return BOOLEAN;
 
   -- Component Declarations
   -- =========================================================================
   component io_FanControl
     generic (
-      CLOCK_FREQ_MHZ : real
+      CLOCK_FREQ_MHZ	: real
     );
     port (
-      Clock : in std_logic;
-      Reset : in std_logic;
+      Clock						: in	STD_LOGIC;
+      Reset						: in	STD_LOGIC;
 
-      Fan_PWM   : out std_logic;
-      Fan_Tacho : in  std_logic;
+      Fan_PWM					: out	STD_LOGIC;
+      Fan_Tacho				: in	STD_LOGIC;
 
-      TachoFrequency : out std_logic_vector(15 downto 0)
+      TachoFrequency	: out	STD_LOGIC_VECTOR(15 downto 0)
     );
 	end component;
 
@@ -203,158 +202,39 @@ END io;
 
 
 PACKAGE BODY io IS
-	-- TimingToCycles
-	-- ================================================================
-	-- nanoseconds
-	FUNCTION TimingToCycles_ns(Timing_NS : REAL; CLOCKSPEED_NS : REAL) RETURN NATURAL IS
-	BEGIN
-		RETURN natural(Timing_NS / CLOCKSPEED_NS);
-	END;
+	function io_7SegmentDisplayEncoding(hex	: STD_LOGIC_VECTOR(3 downto 0); dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR is
+		variable Result		: STD_LOGIC_VECTOR(7 downto 0);
+	begin
+		Result(7)		:= dot;
+		case hex is							-- segments:			GFEDCBA
+			when x"0" =>		Result(6 downto 0)	:= "1000000";
+			when x"1" =>		Result(6 downto 0)	:= "1111001";
+			when x"2" =>		Result(6 downto 0)	:= "0100100";
+			when x"3" =>		Result(6 downto 0)	:= "0110000";
+			when x"4" =>		Result(6 downto 0)	:= "0011001";
+			when x"5" =>		Result(6 downto 0)	:= "0010010";
+			when x"6" =>		Result(6 downto 0)	:= "0000010";
+			when x"7" =>		Result(6 downto 0)	:= "1111000";
+			when x"8" =>		Result(6 downto 0)	:= "0000000";
+			when x"9" =>		Result(6 downto 0)	:= "0010000";
+			when x"A" =>		Result(6 downto 0)	:= "0001000";
+			when x"B" =>		Result(6 downto 0)	:= "0000011";
+			when x"C" =>		Result(6 downto 0)	:= "1000110";
+			when x"D" =>		Result(6 downto 0)	:= "0100001";
+			when x"E" =>		Result(6 downto 0)	:= "0000110";
+			when x"F" =>		Result(6 downto 0)	:= "0001110";
+			when others =>	Result(6 downto 0)	:= "XXXXXXX";
+		end case;
+		return Result;
+	end function;
 
-	FUNCTION TimingToCycles_ns(Timing_NS : POSITIVE; CLOCKSPEED_NS : REAL) RETURN NATURAL IS
-	BEGIN
-		RETURN TimingToCycles_ns(real(Timing_NS), CLOCKSPEED_NS);
-	END;
-
-	-- microseconds
-	FUNCTION TimingToCycles_us(Timing_US : REAL; CLOCKSPEED_NS : REAL) RETURN NATURAL IS
-	BEGIN
-		RETURN natural((Timing_US * 1000.0) / CLOCKSPEED_NS);
-	END;
-
-	FUNCTION TimingToCycles_us(Timing_US : POSITIVE; CLOCKSPEED_NS : REAL) RETURN NATURAL IS
-	BEGIN
-		RETURN TimingToCycles_us(real(Timing_US), CLOCKSPEED_NS);
-	END;
-	
-	-- milliseconds
-	FUNCTION TimingToCycles_ms(Timing_MS : REAL; CLOCKSPEED_NS : REAL) RETURN NATURAL IS
-	BEGIN
-		RETURN natural((Timing_MS * 1000.0 * 1000.0) / CLOCKSPEED_NS);
-	END;
-
-	FUNCTION TimingToCycles_ms(Timing_MS : POSITIVE; CLOCKSPEED_NS : REAL) RETURN NATURAL IS
-	BEGIN
-		RETURN TimingToCycles_ms(real(Timing_MS), CLOCKSPEED_NS);
-	END;
-	
-	-- seconds
-	FUNCTION TimingToCycles_s(Timing_S : REAL; CLOCKSPEED_NS : REAL) RETURN NATURAL IS
-	BEGIN
-		RETURN natural((Timing_S * 1000.0 * 1000.0 * 1000.0) / CLOCKSPEED_NS);
-	END;
-
-	FUNCTION TimingToCycles_s(Timing_S : POSITIVE; CLOCKSPEED_NS : REAL) RETURN NATURAL IS
-	BEGIN
-		RETURN TimingToCycles_s(real(Timing_S), CLOCKSPEED_NS);
-	END;
-	
-	-- Freq_***Hz2Real_ns
-	-- ================================================================
-	-- kHz
-	FUNCTION Freq_kHz2Real_ns(Freq_kHz : POSITIVE) RETURN REAL IS
-	BEGIN
-		RETURN 1000000.0 / real(Freq_kHz);
-	END;
-
-	FUNCTION Freq_kHz2Real_ns(Freq_kHz : REAL) RETURN REAL IS
-	BEGIN
-		RETURN 1000000.0 / Freq_kHz;
-	END;
-
-	-- MHz
-	FUNCTION Freq_MHz2Real_ns(Freq_MHz : POSITIVE) RETURN REAL IS
-	BEGIN
-		RETURN 1000.0 / real(Freq_MHz);
-	END;
-
-	FUNCTION Freq_MHz2Real_ns(Freq_MHz : REAL) RETURN REAL IS
-	BEGIN
-		RETURN 1000.0 / Freq_MHz;
-	END;
-
-	-- Baud2***Hz
-	-- ================================================================
-	-- kHz
-	FUNCTION Baud2kHz(BaudRate : POSITIVE) RETURN REAL IS
-	BEGIN
-		RETURN real(BaudRate) / 1000.0;
-	END;
-	
-	FUNCTION Baud2kHz(BaudRate : REAL) RETURN REAL IS
-	BEGIN
-		RETURN BaudRate / 1000.0;
-	END;
-	
-	-- ================================================================
-	-- MHz
-	FUNCTION Baud2MHz(BaudRate : POSITIVE) RETURN REAL IS
-	BEGIN
-		RETURN real(BaudRate) / (1000.0 * 1000.0);
-	END;
-	
-	FUNCTION Baud2MHz(BaudRate : REAL) RETURN REAL IS
-	BEGIN
-		RETURN BaudRate / (1000.0 * 1000.0);
-	END;
-
-	-- type TIME not supported in Xilinx Synthese Tools (XST) - Version O.61xd 2011
-	--	declaration of constants with type TIME		=> ERROR
-	--	usage of type TIME in functions						=> ERROR
-
---	FUNCTION kHz2Time(Freq_kHz : POSITIVE) RETURN TIME IS
---	BEGIN
---		RETURN 1.0 ms / real(Freq_kHz);
---	END;
-
---	FUNCTION MHz2Time(Freq_MHz : POSITIVE) RETURN TIME IS
---	BEGIN
---		RETURN 1.0 us / real(Freq_MHz);
---	END;
-	
-	-- has no static result in Xilinx Synthese Tools (XST) - Version O.61xd 2011
---	FUNCTION kHz2Time(Freq_kHz : REAL) RETURN TIME IS
---	BEGIN
---		RETURN 1.0 ms / Freq_kHz;
---	END;
-	
-	-- has no static result in Xilinx Synthese Tools (XST) - Version O.61xd 2011
---	FUNCTION MHz2Time(Freq_MHz : REAL) RETURN TIME IS
---		CONSTANT result : TIME := 1.0 us / Freq_MHz;
---	BEGIN
---		RETURN result;
---	END;
-
-
---	FUNCTION Time2Real_ps(t : TIME) RETURN REAL IS
---	BEGIN
---		RETURN real(t / 1 ps);
---	END;
-
---	FUNCTION Time2Real_ns(t : TIME) RETURN REAL IS
---	BEGIN
---		RETURN real(t / 1 ns);
---	END;
-
---	FUNCTION Time2Real_us(t : TIME) RETURN REAL IS
---	BEGIN
---		RETURN real(t / 1 us);
---	END;
-
---	FUNCTION Time2Real_ms(t : TIME) RETURN REAL IS
---	BEGIN
---		RETURN real(t / 1 ms);
---	END;
-
---	FUNCTION TimingToCycles(Timing : TIME; CLOCKSPEED : TIME) RETURN NATURAL IS
---	BEGIN
---		RETURN natural(real(Timing / CLOCKSPEED));
---	END;
-	
---	FUNCTION TimingToCycles_us(Timing : TIME; CLOCKSPEED : TIME) RETURN UNSIGNED IS
---		CONSTANT CYCLES : NATURAL := TimingToCycles(Timing, CLOCKSPEED);
---	BEGIN
---		RETURN to_unsigned(CYCLES, log2ceilnz(CYCLES));
---	END;
-
+	function uart_IsTypicalBaudRate(br : BAUD) return BOOLEAN is
+	begin
+		for i in C_UART_TYPICAL_BAUDRATES'range loop
+			if (br = C_UART_TYPICAL_BAUDRATES(i)) then
+				return TRUE;
+			end if;
+		end loop;
+		return FALSE;
+	end function;
 END PACKAGE BODY;
