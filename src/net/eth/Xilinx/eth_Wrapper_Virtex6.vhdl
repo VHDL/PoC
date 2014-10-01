@@ -43,7 +43,7 @@ USE			PoC.vectors.ALL;
 USE			PoC.net.ALL;
 
 
-ENTITY eth_Wrapper_Virtex5 IS
+ENTITY eth_Wrapper_Virtex6 IS
 	GENERIC (
 		DEBUG											: BOOLEAN														:= FALSE;															-- 
 		CLOCK_FREQ_MHZ						: REAL															:= 125.0;															-- 125 MHz
@@ -78,6 +78,7 @@ ENTITY eth_Wrapper_Virtex5 IS
 		RX_EOF										: OUT	STD_LOGIC;
 		RX_Ready									: In	STD_LOGIC;
 		
+		-- PHY-SGMII interface
 		PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
 	);
 END ENTITY;
@@ -88,13 +89,13 @@ END ENTITY;
 --		o	TX_FIFO				- HardIP <=> LocalLink converter; cross clocking
 --		o	RX_FIFO				- HardIP <=> LocalLink converter; cross clocking
 --		genRS_GMII
---			o	TEMAC_V5		- with GMII interface
+--			o	TEMAC_V6		- with GMII interface
 --			genPHY_GMII
 --				o	GMII			- GMII-GMII adapter; FlipFlop and IDelay instances
 --			genPHY_SGMII
 --				o	SGMII			- GMII-SGMII adapter; transceiver
 --		genRS_TRANS
---			o	TEMAC_V5		- with Transceiver interface (GTP_DUAL)
+--			o	TEMAC_V6		- with Transceiver interface (GTXE1)
 --			genPHY_TRANS
 --				o	TRANS			- Transceiver with SGMII output
 --	genSoftIP
@@ -115,7 +116,7 @@ END ENTITY;
 -- |		"				|			GMII			|			SGMII			|			not implemented, yet							|
 -- +------------+---------------+---------------+---------------------------------------+
 
-ARCHITECTURE rtl OF eth_Wrapper_Virtex5 IS
+ARCHITECTURE rtl OF eth_Wrapper_Virtex6 IS
 	ATTRIBUTE KEEP									: BOOLEAN;
 
 	SIGNAL Reset_async							: STD_LOGIC;		-- FIXME: 
@@ -129,7 +130,7 @@ BEGIN
 	Reset_async		<= Reset;
 	
 	-- ==========================================================================================================================================================
-	-- Xilinx Virtex 5 Tri-Mode MAC_MDIOC MAC (TEMAC) HardIP
+	-- Xilinx Virtex 6 Tri-Mode MAC_MDIOC MAC (TEMAC) HardIP
 	-- ==========================================================================================================================================================
 	genHardIP	: IF (ETHERNET_IPSTYLE = IPSTYLE_HARD) GENERATE
 		SIGNAL TX_FIFO_Data						: T_SLV_8;
@@ -248,7 +249,7 @@ BEGIN
 			Eth_RX_Enable					<= '1';
 
 			-- Transmitter FIFO and LocalLink adapter
-			TX_FIFO	: ENTITY PoC.eth_TEMAC_TX_FIFO_Virtex5
+			TX_FIFO	: ENTITY PoC.eth_TEMAC_TX_FIFO_Virtex6
 				GENERIC MAP (
 					FULL_DUPLEX_ONLY	=> FALSE--TRUE
 				)
@@ -277,7 +278,7 @@ BEGIN
 				);
 			
 			-- Receiver FIFO and LocalLink adapter
-			RX_FIFO	: ENTITY PoC.eth_TEMAC_RX_FIFO_Virtex5
+			RX_FIFO	: ENTITY PoC.eth_TEMAC_RX_FIFO_Virtex6
 				PORT MAP (
 					rd_clk						=> RX_Clock,								-- Local link read clock
 					rd_sreset					=> RX_Reset,								-- synchronous reset (rd_clock)
@@ -317,8 +318,8 @@ BEGIN
 			SIGNAL RS_RX_Error					: STD_LOGIC;
 		BEGIN
 			
-			-- Instantiate the EMAC Wrapper (v5temac_gmii.vhd)
-			TEMAC_V5	: ENTITY PoC.eth_TEMAC_GMII_Virtex5
+			-- Instantiate the EMAC Wrapper (v6temac_gmii.vhd)
+			TEMAC_V6	: ENTITY PoC.eth_TEMAC_GMII_Virtex6
 				PORT MAP (
 					-- Asynchronous Reset
 					RESET														=> Reset_async,
@@ -333,10 +334,10 @@ BEGIN
 					EMAC0CLIENTRXDVLDMSW						=> OPEN,
 					EMAC0CLIENTRXGOODFRAME					=> Eth_RX_GoodFrame,
 					EMAC0CLIENTRXBADFRAME						=> Eth_RX_BadFrame,
-					EMAC0CLIENTRXFRAMEDROP					=> OPEN,													-- SOURCE: ml505_gmii_udp_top.vhdl
-					EMAC0CLIENTRXSTATS							=> OPEN,													-- SOURCE: ml505_gmii_udp_top.vhdl
-					EMAC0CLIENTRXSTATSVLD						=> OPEN,													-- SOURCE: ml505_gmii_udp_top.vhdl
-					EMAC0CLIENTRXSTATSBYTEVLD				=> OPEN,													-- SOURCE: ml505_gmii_udp_top.vhdl
+					EMAC0CLIENTRXFRAMEDROP					=> OPEN,													-- SOURCE: ml605_gmii_udp_top.vhdl
+					EMAC0CLIENTRXSTATS							=> OPEN,													-- SOURCE: ml605_gmii_udp_top.vhdl
+					EMAC0CLIENTRXSTATSVLD						=> OPEN,													-- SOURCE: ml605_gmii_udp_top.vhdl
+					EMAC0CLIENTRXSTATSBYTEVLD				=> OPEN,													-- SOURCE: ml605_gmii_udp_top.vhdl
 
 					-- Client Transmitter Interface - EMAC0
 					CLIENTEMAC0TXCLIENTCLKIN				=> Eth_TX_Clock,
@@ -346,18 +347,18 @@ BEGIN
 					CLIENTEMAC0TXDVLD								=> TX_FIFO_Valid,
 					CLIENTEMAC0TXDVLDMSW						=> '0',
 					EMAC0CLIENTTXACK								=> Eth_TX_Ack,
-					CLIENTEMAC0TXFIRSTBYTE					=> '0',														-- SOURCE: v5temac_gmii_locallink.vhd
-					CLIENTEMAC0TXUNDERRUN						=> '0',														-- SOURCE: v5temac_client_eth_fifo_8.vhd
+					CLIENTEMAC0TXFIRSTBYTE					=> '0',														-- SOURCE: v6temac_gmii_locallink.vhd
+					CLIENTEMAC0TXUNDERRUN						=> '0',														-- SOURCE: v6temac_client_eth_fifo_8.vhd
 					EMAC0CLIENTTXCOLLISION					=> Eth_TX_Collision,
 					EMAC0CLIENTTXRETRANSMIT					=> Eth_TX_Retransmit,
-					CLIENTEMAC0TXIFGDELAY						=> (OTHERS	=> '0'),								-- SOURCE: ml505_gmii_udp_top.vhdl
-					EMAC0CLIENTTXSTATS							=> OPEN,													-- SOURCE: ml505_gmii_udp_top.vhdl
-					EMAC0CLIENTTXSTATSVLD						=> OPEN,													-- SOURCE: ml505_gmii_udp_top.vhdl
-					EMAC0CLIENTTXSTATSBYTEVLD				=> OPEN,													-- SOURCE: ml505_gmii_udp_top.vhdl
+					CLIENTEMAC0TXIFGDELAY						=> (OTHERS	=> '0'),								-- SOURCE: ml605_gmii_udp_top.vhdl
+					EMAC0CLIENTTXSTATS							=> OPEN,													-- SOURCE: ml605_gmii_udp_top.vhdl
+					EMAC0CLIENTTXSTATSVLD						=> OPEN,													-- SOURCE: ml605_gmii_udp_top.vhdl
+					EMAC0CLIENTTXSTATSBYTEVLD				=> OPEN,													-- SOURCE: ml605_gmii_udp_top.vhdl
 
 					-- MAC Control Interface - EMAC0
-					CLIENTEMAC0PAUSEREQ							=> '0',														-- SOURCE: ml505_gmii_udp_top.vhdl
-					CLIENTEMAC0PAUSEVAL							=> (OTHERS	=> '0'),								-- SOURCE: ml505_gmii_udp_top.vhdl
+					CLIENTEMAC0PAUSEREQ							=> '0',														-- SOURCE: ml605_gmii_udp_top.vhdl
+					CLIENTEMAC0PAUSEVAL							=> (OTHERS	=> '0'),								-- SOURCE: ml605_gmii_udp_top.vhdl
 
 					-- Clock Signals - EMAC0
 					GTX_CLK_0												=> '0',														-- SOURCE: UG194, page 147
@@ -451,7 +452,7 @@ BEGIN
 			BEGIN
 				ASSERT FALSE REPORT "Physical interface SGMII is not implemented!" SEVERITY FAILURE;
 			
---				SGMII	: ENTITY PoC.eth_RSLayer_GMII_SGMII_Virtex5
+--				SGMII	: ENTITY PoC.eth_RSLayer_GMII_SGMII_Virtex6_GTXE1
 --		--			GENERIC MAP (
 --		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
 --		--			)
@@ -513,7 +514,7 @@ BEGIN
 		BEGIN
 			Trans_PHY_MDIOAddress		<= "00111";
 		
-			TEMAC_V5	: ENTITY PoC.eth_TEMAC_TRANS_Virtex5
+			TEMAC_V6	: ENTITY PoC.eth_TEMAC_TRANS_Virtex6
 				PORT MAP (
 					--					-- Asynchronous Reset
 					RESET														=> Reset,
@@ -529,10 +530,10 @@ BEGIN
 					EMAC0CLIENTRXDVLDMSW						=> OPEN,
 					EMAC0CLIENTRXGOODFRAME					=> Eth_RX_GoodFrame,
 					EMAC0CLIENTRXBADFRAME						=> Eth_RX_BadFrame,
-					EMAC0CLIENTRXFRAMEDROP					=> OPEN,													-- SOURCE: ml505_gmii_udp_top.vhdl
-					EMAC0CLIENTRXSTATS							=> OPEN,													-- SOURCE: ml505_gmii_udp_top.vhdl
-					EMAC0CLIENTRXSTATSVLD						=> OPEN,													-- SOURCE: ml505_gmii_udp_top.vhdl
-					EMAC0CLIENTRXSTATSBYTEVLD				=> OPEN,													-- SOURCE: ml505_gmii_udp_top.vhdl
+					EMAC0CLIENTRXFRAMEDROP					=> OPEN,													-- SOURCE: ml605_gmii_udp_top.vhdl
+					EMAC0CLIENTRXSTATS							=> OPEN,													-- SOURCE: ml605_gmii_udp_top.vhdl
+					EMAC0CLIENTRXSTATSVLD						=> OPEN,													-- SOURCE: ml605_gmii_udp_top.vhdl
+					EMAC0CLIENTRXSTATSBYTEVLD				=> OPEN,													-- SOURCE: ml605_gmii_udp_top.vhdl
 
 					-- Client Transmitter Interface - EMAC0
 					CLIENTEMAC0TXCLIENTCLKIN				=> Eth_TX_Clock,
@@ -542,18 +543,18 @@ BEGIN
 					CLIENTEMAC0TXDVLD								=> TX_FIFO_Valid,
 					CLIENTEMAC0TXDVLDMSW						=> '0',
 					EMAC0CLIENTTXACK								=> Eth_TX_Ack,
-					CLIENTEMAC0TXFIRSTBYTE					=> '0',														-- SOURCE: v5temac_gmii_locallink.vhd
-					CLIENTEMAC0TXUNDERRUN						=> '0',														-- SOURCE: v5temac_client_eth_fifo_8.vhd
+					CLIENTEMAC0TXFIRSTBYTE					=> '0',														-- SOURCE: v6temac_gmii_locallink.vhd
+					CLIENTEMAC0TXUNDERRUN						=> '0',														-- SOURCE: v6temac_client_eth_fifo_8.vhd
 					EMAC0CLIENTTXCOLLISION					=> Eth_TX_Collision,
 					EMAC0CLIENTTXRETRANSMIT					=> Eth_TX_Retransmit,
-					CLIENTEMAC0TXIFGDELAY						=> (OTHERS	=> '0'),								-- SOURCE: ml505_gmii_udp_top.vhdl
-					EMAC0CLIENTTXSTATS							=> OPEN,													-- SOURCE: ml505_gmii_udp_top.vhdl
-					EMAC0CLIENTTXSTATSVLD						=> OPEN,													-- SOURCE: ml505_gmii_udp_top.vhdl
-					EMAC0CLIENTTXSTATSBYTEVLD				=> OPEN,													-- SOURCE: ml505_gmii_udp_top.vhdl
+					CLIENTEMAC0TXIFGDELAY						=> (OTHERS	=> '0'),								-- SOURCE: ml605_gmii_udp_top.vhdl
+					EMAC0CLIENTTXSTATS							=> OPEN,													-- SOURCE: ml605_gmii_udp_top.vhdl
+					EMAC0CLIENTTXSTATSVLD						=> OPEN,													-- SOURCE: ml605_gmii_udp_top.vhdl
+					EMAC0CLIENTTXSTATSBYTEVLD				=> OPEN,													-- SOURCE: ml605_gmii_udp_top.vhdl
 
 					-- MAC Control Interface - EMAC0
-					CLIENTEMAC0PAUSEREQ							=> '0',														-- SOURCE: ml505_gmii_udp_top.vhdl
-					CLIENTEMAC0PAUSEVAL							=> (OTHERS	=> '0'),								-- SOURCE: ml505_gmii_udp_top.vhdl
+					CLIENTEMAC0PAUSEREQ							=> '0',														-- SOURCE: ml605_gmii_udp_top.vhdl
+					CLIENTEMAC0PAUSEVAL							=> (OTHERS	=> '0'),								-- SOURCE: ml605_gmii_udp_top.vhdl
 
 					-- Clock Signals - EMAC0
 					GTX_CLK_0												=> '0',														-- SOURCE: UG194, page 147
@@ -648,7 +649,7 @@ BEGIN
 						O		=> PHY_Interface.SGMII.SGMII_RXRefClock_Out
 					);
 			
---				TRANS	: ENTITY PoC.Eth_RSLayer_TRANS_GMII_Virtex5
+--				TRANS	: ENTITY PoC.eth_RSLayer_TRANS_SGMII_Virtex6_GTXE1
 --					GENERIC MAP (
 --						-- Simulation attributes
 --						TILE_SIM_GTPRESET_SPEEDUP				=> 0,					-- Set to 1 to speed up sim reset
@@ -768,10 +769,10 @@ BEGIN
 			SIGNAL RS_RX_Data						: T_SLV_8;
 			SIGNAL RS_RX_Error					: STD_LOGIC;
 		BEGIN
-			GEMAC	: ENTITY PoC.Eth_GEMAC_GMII
+			GEMAC	: ENTITY PoC.eth_GEMAC_GMII
 				GENERIC MAP (
-					DEBUG														=> TRUE,
-					CLOCK_FREQ_MHZ									=> CLOCK_FREQ_MHZ,		-- 
+					DEBUG									=> TRUE,
+					CLOCK_FREQ_MHZ									=> CLOCK_FREQ_MHZ,			-- 
 				
 					TX_FIFO_DEPTH										=> 2048,								-- 2 kiB TX Buffer
 					TX_INSERT_CROSSCLOCK_FIFO				=> true,								-- TODO: 
@@ -864,25 +865,25 @@ BEGIN
 			BEGIN
 				ASSERT FALSE REPORT "Physical interface SGMII is not implemented!" SEVERITY FAILURE;
 			
-				SGMII	: ENTITY PoC.Eth_RSLayer_GMII_SGMII_Virtex5
-		--			GENERIC MAP (
-		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
-		--			)
-					PORT MAP (
-						Clock										=> RS_TX_Clock,
-						Reset										=> Reset_async,
-						
-						-- GEMAC-GMII interface
-						RS_TX_Clock							=> RS_TX_Clock,
-						RS_TX_Valid							=> RS_TX_Valid,
-						RS_TX_Data							=> RS_TX_Data,
-						RS_TX_Error							=> RS_TX_Error,
-						
-						RS_RX_Clock							=> RS_RX_Clock,
-						RS_RX_Valid							=> RS_RX_Valid,
-						RS_RX_Data							=> RS_RX_Data,
-						RS_RX_Error							=> RS_RX_Error
-					);
+--				SGMII	: ENTITY PoC.eth_RSLayer_TRANS_SGMII_Virtex6_GTXE1
+--		--			GENERIC MAP (
+--		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
+--		--			)
+--					PORT MAP (
+--						Clock										=> RS_TX_Clock,
+--						Reset										=> Reset_async,
+--						
+--						-- GEMAC-GMII interface
+--						RS_TX_Clock							=> RS_TX_Clock,
+--						RS_TX_Valid							=> RS_TX_Valid,
+--						RS_TX_Data							=> RS_TX_Data,
+--						RS_TX_Error							=> RS_TX_Error,
+--						
+--						RS_RX_Clock							=> RS_RX_Clock,
+--						RS_RX_Valid							=> RS_RX_Valid,
+--						RS_RX_Data							=> RS_RX_Data,
+--						RS_RX_Error							=> RS_RX_Error
+--					);
 			END GENERATE;		-- PHY_DATA_INTERFACE: SGMII
 		END GENERATE;		-- RS_DATA_INTERFACE: GMII
 		
