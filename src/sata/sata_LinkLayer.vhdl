@@ -59,7 +59,7 @@ ENTITY sata_LinkLayer IS
 		Error										: OUT	T_SATA_LINK_ERROR;
 
 		-- Debug ports
-		DebugPortOut					 	: OUT T_SATADBG_LINKOUT;
+		DebugPortOut					 	: OUT T_SATADBG_LINK_OUT;
 		
 		-- TX port
 		TX_SOF									: IN	STD_LOGIC;
@@ -90,10 +90,10 @@ ENTITY sata_LinkLayer IS
 		Phy_Status							: IN	T_SATA_PHY_STATUS;
 		
 		Phy_RX_Data							: IN	T_SLV_32;
-		Phy_RX_CharIsK					: IN	T_SATA_CIK;
+		Phy_RX_CharIsK					: IN	T_SLV_4;
 		
 		Phy_TX_Data							: OUT	T_SLV_32;
-		Phy_TX_CharIsK					: OUT	T_SATA_CIK
+		Phy_TX_CharIsK					: OUT	T_SLV_4
 
 	);
 END;
@@ -241,11 +241,11 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	-- primitive section
 	SIGNAL PM_DataIn									: T_SLV_32;
 	SIGNAL PM_DataOut									: T_SLV_32;
-	SIGNAL PM_CharIsK									: T_SATA_CIK;
+	SIGNAL PM_CharIsK									: T_SLV_4;
 	SIGNAL TX_Primitive								: T_SATA_PRIMITIVE;
 
 	SIGNAL PD_DataIn									: T_SLV_32;
-	SIGNAL PD_CharIsK									: T_SATA_CIK;
+	SIGNAL PD_CharIsK									: T_SLV_4;
 	SIGNAL RX_Primitive								: T_SATA_PRIMITIVE;
 	SIGNAL RX_Primitive_d							: T_SATA_PRIMITIVE		:= SATA_PRIMITIVE_NONE;
 
@@ -253,8 +253,6 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	signal RX_Hold : STD_LOGIC;
 
 BEGIN
-	assert (C_SATADBG_TYPES = ENABLE_DEBUGPORT) report "DebugPorts are enabled, but debug types are not loaded. Load 'sata_dbg_on.vhdl' into your project!" severity failure;
-
 	-- ================================================================
 	-- link layer control FSM
 	-- ================================================================
@@ -636,16 +634,17 @@ BEGIN
 	-- primitive section
 	-- ================================================================
 	-- TX path
-	PM : ENTITY PoC.sata_PrimitiveMux
-		PORT MAP (
-			Primitive							=> TX_Primitive,
-			
-			TX_DataIn							=> PM_DataIn,
-			TX_DataOut						=> PM_DataOut,
-			TX_CharIsK						=> PM_CharIsK
-		);
-
-
+	PROCESS(TX_Primitive, PM_DataIn)
+	BEGIN
+		IF (TX_Primitive = SATA_PRIMITIVE_NONE) THEN		-- no primitive
+			PM_DataOut		<= PM_DataIn;										--	passthrough data word
+			PM_CharIsK		<= "0000";
+		ELSE																						-- Send Primitive
+			PM_DataOut		<= to_sata_word(TX_Primitive);	-- access ROM
+			PM_CharIsK		<= "0001";											-- mark primitive with K-symbols
+		END IF;
+	END PROCESS;
+	
 	-- RX path
 	PD : ENTITY PoC.sata_PrimitiveDetector
 		PORT MAP (
@@ -731,11 +730,7 @@ BEGIN
 		DBG_RX_IsFrame		<= (RX_FIFO_Valid and RX_FIFO_DataOut(33))	or RX_IsFrame_r;
 	END GENERATE;
 	
-	genDebug0 : if (ENABLE_DEBUGPORT = FALSE) generate
-	begin
-	
-	end generate genDebug0;
-	genDebug1 : if (ENABLE_DEBUGPORT = TRUE) generate
+	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
 	begin
 		-- from physical layer
 		DebugPortOut.Phy_Ready									<= Phy_Ready;
@@ -797,5 +792,5 @@ BEGIN
 		-- TX: to Physical Layer
 		DebugPortOut.TX_Phy_Data								<= PM_DataOut;
 		DebugPortOut.TX_Phy_CiK									<= PM_CharIsK;
-	end generate genDebug1;
+	end generate;
 END;

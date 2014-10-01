@@ -35,13 +35,13 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.utils.ALL;
-USE			PoC.io.ALL;
+USE			PoC.physical.ALL;
 
 
 ENTITY io_FrequencyCounter IS
 	GENERIC (
-		CLOCK_FREQ_MHZ						: REAL									:= 100.0;
-		TIMEBASE_S								: REAL									:= 1.0;
+		CLOCK_FREQ								: FREQ									:= 100.0 MHz;
+		TIMEBASE									: TIME									:= 1.0 sec;
 		RESOLUTION								: POSITIVE							:= 8
 	);
 	PORT (
@@ -54,7 +54,7 @@ END;
 
 
 ARCHITECTURE rtl OF io_FrequencyCounter IS
-	CONSTANT TIMEBASECOUNTER_MAX				: POSITIVE																		:= TimingToCycles_s(TIMEBASE_s, Freq_MHz2Real_ns(CLOCK_FREQ_MHZ));
+	CONSTANT TIMEBASECOUNTER_MAX				: POSITIVE																		:= TimingToCycles(TIMEBASE, CLOCK_FREQ);
 	CONSTANT TIMEBASECOUNTER_BITS				: POSITIVE																		:= log2ceilnz(TIMEBASECOUNTER_MAX);
 	CONSTANT REQUENCYCOUNTER_MAX				: POSITIVE																		:= 2**RESOLUTION;
 	CONSTANT FREQUENCYCOUNTER_BITS			: POSITIVE																		:= RESOLUTION;

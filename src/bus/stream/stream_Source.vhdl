@@ -37,9 +37,7 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalSimulation.ALL;
+USE			PoC.stream.ALL;
 
 
 ENTITY stream_Source IS
@@ -81,7 +79,7 @@ BEGIN
 	BEGIN
 		-- set interface to default values
 		Out_Valid					<= '0';
-		Out_Data					<= U8;
+		Out_Data					<= (OTHERS => 'U');
 		Out_SOF						<= '0';
 		Out_EOF						<= '0';
 
@@ -149,7 +147,7 @@ BEGIN
 		-- set interface to default values
 		WAIT UNTIL rising_edge(Clock);
 		Out_Valid					<= '0';
-		Out_Data						<= U8;
+		Out_Data					<= (OTHERS => 'U');
 		Out_SOF						<= '0';
 		Out_EOF						<= '0';
 	

@@ -78,9 +78,7 @@ ENTITY sata_TransportLayer IS
 		RX_Rollback										: OUT	STD_LOGIC;
 	
 		-- LinkLayer interface
-		Link_Command									: OUT	T_SATA_COMMAND;
-		Link_Status										: IN	T_SATA_STATUS;
-		Link_Error										: IN	T_SATA_ERROR;
+		Link_Status										: IN	T_SATA_SATACONTROLLER_STATUS;
 		
 		-- TX path
 		Link_TX_Ready									: IN	STD_LOGIC;
@@ -183,9 +181,9 @@ BEGIN
 			Error															=> Error_i,
 			
 			-- linkLayer interface
-			Link_Command											=> Link_Command,
+--			Link_Command											=> Link_Command,
 			Link_Status												=> Link_Status,
-			Link_Error												=> Link_Error,
+--			Link_Error												=> Link_Error,
 
       CopyATADeviceRegisterStatus       => CopyATADeviceRegisterStatus,
 			ATAHostRegisters									=> ATAHostRegisters_i,

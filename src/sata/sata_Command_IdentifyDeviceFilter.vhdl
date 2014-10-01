@@ -76,34 +76,21 @@ ARCHITECTURE rtl OF sata_IdentifyDeviceFilter IS
 		ST_ERROR
 	);
 	
-	FUNCTION to_01(slv : STD_LOGIC_VECTOR) RETURN STD_LOGIC_VECTOR IS
-	BEGIN
-	  return  to_stdlogicvector(to_bitvector(slv));
-	END;
-	
 	FUNCTION calcSATAGenerationMin(SpeedBits : STD_LOGIC_VECTOR(6 DOWNTO 0)) RETURN T_SATA_GENERATION IS
 	BEGIN
-		IF (SpeedBits(0) = '1') THEN
-			RETURN SATA_GENERATION_1;
-		ELSIF (SpeedBits(1) = '1') THEN
-			RETURN SATA_GENERATION_2;
-		ELSIF (SpeedBits(2) = '1') THEN
-			RETURN SATA_GENERATION_3;
-		ELSE
-			RETURN SATA_GENERATION_1;
+		IF (SpeedBits(0) = '1') THEN			RETURN SATA_GENERATION_1;
+		ELSIF (SpeedBits(1) = '1') THEN		RETURN SATA_GENERATION_2;
+		ELSIF (SpeedBits(2) = '1') THEN		RETURN SATA_GENERATION_3;
+		ELSE															RETURN SATA_GENERATION_1;
 		END IF;
 	END;
 	
 	FUNCTION calcSATAGenerationMax(SpeedBits : STD_LOGIC_VECTOR(6 DOWNTO 0)) RETURN T_SATA_GENERATION IS
 	BEGIN
-		IF (SpeedBits(2) = '1') THEN
-			RETURN SATA_GENERATION_3;
-		ELSIF (SpeedBits(1) = '1') THEN
-			RETURN SATA_GENERATION_2;
-		ELSIF (SpeedBits(0) = '1') THEN
-			RETURN SATA_GENERATION_1;
-		ELSE
-			RETURN SATA_GENERATION_1;
+		IF (SpeedBits(2) = '1') THEN			RETURN SATA_GENERATION_3;
+		ELSIF (SpeedBits(1) = '1') THEN		RETURN SATA_GENERATION_2;
+		ELSIF (SpeedBits(0) = '1') THEN		RETURN SATA_GENERATION_1;
+		ELSE															RETURN SATA_GENERATION_1;
 		END IF;
 	END;
 	
@@ -261,10 +248,10 @@ BEGIN
 		SIGNAL Checksum_nx2	: UNSIGNED(7 DOWNTO 0);
 		SIGNAL Checksum_us	: UNSIGNED(7 DOWNTO 0)					:= (OTHERS => '0');
 	BEGIN
-		byte0_us		<= unsigned(to_01(Data(byte0_us'range)));
-		byte1_us		<= unsigned(to_01(Data(byte1_us'range)));
-		byte2_us		<= unsigned(to_01(Data(byte2_us'range)));
-		byte3_us		<= unsigned(to_01(Data(byte3_us'range)));
+		byte0_us		<= unsigned(Data(byte0_us'range));
+		byte1_us		<= unsigned(Data(byte1_us'range));
+		byte2_us		<= unsigned(Data(byte2_us'range));
+		byte3_us		<= unsigned(Data(byte3_us'range));
 	
 		Checksum_nx1	<= byte0_us + byte1_us + byte2_us + byte3_us;
 		Checksum_nx2	<= byte0_us + byte1_us + byte2_us + byte3_us + Checksum_us;

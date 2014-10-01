@@ -244,9 +244,9 @@ package body vectors is
 	END FUNCTION;
 
 	FUNCTION slm_slice_cols(slm : T_SLM; High : NATURAL; Low : NATURAL) RETURN T_SLM IS
-		VARIABLE Result		: T_SLM(slm'range, High - Low DOWNTO 0)		:= (OTHERS => (OTHERS => '0'));
+		VARIABLE Result		: T_SLM(slm'range(1), High - Low DOWNTO 0)		:= (OTHERS => (OTHERS => '0'));
 	BEGIN
-		FOR I IN 0 TO slm'length - 1 LOOP
+		FOR I IN slm'range(1) LOOP
 			FOR J IN 0 TO High - Low LOOP
 				Result(I, J)		:= slm(I, low + J);
 			END LOOP;
