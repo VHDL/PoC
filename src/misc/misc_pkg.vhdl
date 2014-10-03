@@ -1,7 +1,7 @@
 
 
 
-	-- This module convertes std_logic_vectors with different bit widths.
+--	-- This module convertes std_logic_vectors with different bit widths.
 --	component comm_bitwidth_converter is
 --		generic (
 --			REGISTERED : boolean := false;		-- add output register @Clock2

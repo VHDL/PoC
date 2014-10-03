@@ -203,7 +203,17 @@ package body physical is
 	-- ===========================================================================
 	function div(a : TIME; b : TIME) return REAL is
 	begin
-		return real(a / 1 fs) / real(b / 1 fs);
+		--return real(a / 1 fs) / real(b / 1 fs);
+		
+		if	(a < 1 us) then
+			return real(a / 1 fs) / real(b / 1 fs);
+		elsif (a < 1 ms) then
+			return real(a / 1 ps) / real(b / 1 fs) * 1000.0;
+		elsif (a < 1 sec) then
+			return real(a / 1 us) / real(b / 1 fs) * 1000000.0;
+		else
+			return real(a / 1 ms) / real(b / 1 fs) * 1000000000.0;
+		end if;
 	end function;
 	
 	function div(a : FREQ; b : FREQ) return REAL is
@@ -733,6 +743,8 @@ package body physical is
 		end case;
 		res_time	:= CyclesToDelay(res_nat, Clock_Period);
 		res_dev		:= (1.0 - div(res_time, Timing)) * 100.0;
+		
+		report "res_real: " & REAL'image(res_real) severity note;
 		
 		assert (not MY_VERBOSE)
 			report "TimingToCycles: " & 	CR &
