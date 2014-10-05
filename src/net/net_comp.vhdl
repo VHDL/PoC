@@ -37,6 +37,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.io.ALL;
 USE			PoC.net.ALL;
 
@@ -107,7 +108,7 @@ PACKAGE net_comp IS
 
 	COMPONENT Eth_RSLayer_GMII_SGMII_Virtex5 IS
 		GENERIC (
-			CLOCK_IN_FREQ_MHZ					: REAL													:= 125.0					-- 125 MHz
+			CLOCK_IN_FREQ							: FREQ													:= 125.0 MHz					-- 125 MHz
 		);
 		PORT (
 			Clock											: IN	STD_LOGIC;
@@ -131,7 +132,7 @@ PACKAGE net_comp IS
 
 	COMPONENT Eth_RSLayer_GMII_SGMII_Virtex6 IS
 		GENERIC (
-			CLOCK_IN_FREQ_MHZ					: REAL													:= 125.0					-- 125 MHz
+			CLOCK_IN_FREQ							: FREQ													:= 125.0 MHz					-- 125 MHz
 		);
 		PORT (
 			Clock											: IN	STD_LOGIC;
@@ -155,7 +156,7 @@ PACKAGE net_comp IS
 
 	COMPONENT Eth_RSLayer_GMII_SGMII_Virtex7 IS
 		GENERIC (
-			CLOCK_IN_FREQ_MHZ					: REAL													:= 125.0					-- 125 MHz
+			CLOCK_IN_FREQ							: FREQ													:= 125.0 MHz					-- 125 MHz
 		);
 		PORT (
 			Clock											: IN	STD_LOGIC;
@@ -247,7 +248,7 @@ PACKAGE net_comp IS
 	COMPONENT Eth_Wrapper_Virtex5 IS
 		GENERIC (
 			DEBUG											: BOOLEAN														:= FALSE;															-- 
-			CLOCKIN_FREQ_MHZ					: REAL															:= 125.0;															-- 125 MHz
+			CLOCKIN_FREQ							: FREQ															:= 125.0 MHz;													-- 125 MHz
 			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
 			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
 			PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		-- 
@@ -287,7 +288,7 @@ PACKAGE net_comp IS
 	COMPONENT Eth_Wrapper_Virtex6 IS
 		GENERIC (
 			DEBUG											: BOOLEAN														:= FALSE;															-- 
-			CLOCKIN_FREQ_MHZ					: REAL															:= 125.0;															-- 125 MHz
+			CLOCKIN_FREQ							: FREQ															:= 125.0 MHz;													-- 125 MHz
 			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
 			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
 			PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		-- 
@@ -324,10 +325,10 @@ PACKAGE net_comp IS
 		);
 	END COMPONENT;
 	
-	COMPONENT Eth_Wrapper_Virtex7 IS
+	COMPONENT Eth_Wrapper_Series7 IS
 		GENERIC (
 			DEBUG											: BOOLEAN														:= FALSE;															-- 
-			CLOCKIN_FREQ_MHZ					: REAL															:= 125.0;															-- 125 MHz
+			CLOCKIN_FREQ							: FREQ															:= 125.0 MHz;													-- 125 MHz
 			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
 			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
 			PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		-- 

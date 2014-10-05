@@ -37,19 +37,20 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.io.ALL;
 USE			PoC.net.ALL;
 
 
 ENTITY Eth_PHYController IS
 	GENERIC (
-		DEBUG						: BOOLEAN																	:= FALSE;																			-- 
-		CLOCK_FREQ_MHZ						: REAL																		:= 125.0;																			-- 125 MHz
+		DEBUG											: BOOLEAN																	:= FALSE;																			-- 
+		CLOCK_FREQ								: FREQ																		:= 125.0 MHZ;																	-- 125 MHz
 		PCSCORE										: T_NET_ETH_PCSCORE												:= NET_ETH_PCSCORE_GENERIC_GMII;							-- 
 		PHY_DEVICE								: T_NET_ETH_PHY_DEVICE										:= NET_ETH_PHY_DEVICE_MARVEL_88E1111;					-- 
 		PHY_DEVICE_ADDRESS				: T_NET_ETH_PHY_DEVICE_ADDRESS						:= x"00";																			-- 
 		PHY_MANAGEMENT_INTERFACE	: T_NET_ETH_PHY_MANAGEMENT_INTERFACE			:= NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO;			-- 
-		BAUDRATE_BAUD							: REAL																		:= 1.0 * 1000.0 * 1000.0											-- 1.0 MBit/s
+		BAUDRATE									: BAUD																		:= 1.0 MBd																		-- 1.0 MBit/s
 	);
 	PORT (
 		Clock											: IN		STD_LOGIC;
@@ -84,7 +85,7 @@ ARCHITECTURE rtl OF Eth_PHYController IS
 	-- PCS_ADDRESS								: T_SLV_8																	:= x"00";
 BEGIN
 
-	ASSERT FALSE REPORT "BAUDRATE_BAUD =          " & REAL'image(BAUDRATE_BAUD)						& " Baud" SEVERITY NOTE;
+	ASSERT FALSE REPORT "BAUDRATE = " & BAUD'image(BAUDRATE) SEVERITY NOTE;
 --	ASSERT FALSE REPORT "MD_CLOCK_FREQUENCY_KHZ = " & REAL'image(MD_CLOCK_FREQUENCY_KHZ)	& " kHz" SEVERITY NOTE;
 
 	genMarvel88E1111 : IF (PHY_DEVICE = NET_ETH_PHY_DEVICE_MARVEL_88E1111) GENERATE
@@ -93,7 +94,7 @@ BEGIN
 		PHYC : ENTITY PoC.Eth_PHYController_Marvell_88E1111
 			GENERIC MAP (
 				DEBUG										=> DEBUG,
-				CLOCK_FREQ_MHZ					=> CLOCK_FREQ_MHZ,
+				CLOCK_FREQ							=> CLOCK_FREQ,
 				PHY_DEVICE_ADDRESS			=> PHY_DEVICE_ADDRESS
 			)
 			PORT MAP (
@@ -123,8 +124,8 @@ BEGIN
 		-- Management Data Input/Output Controller
 		MDIOC : ENTITY PoC.Eth_MDIOController
 			GENERIC MAP (
-				DEBUG						=> DEBUG,
-				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ
+				DEBUG											=> DEBUG,
+				CLOCK_FREQ								=> CLOCK_FREQ
 			)
 			PORT MAP (
 				Clock											=> Clock,
@@ -170,7 +171,7 @@ BEGIN
 	BEGIN
 		Adapter : ENTITY PoC.mdio_MDIO_IIC_Adapter
 			GENERIC MAP (
-				DEBUG						=> DEBUG
+				DEBUG											=> DEBUG
 			)
 			PORT MAP (
 				Clock											=> Clock,
@@ -209,7 +210,7 @@ BEGIN
 			GENERIC MAP (
 				DEBUG											=> DEBUG,
 				ALLOW_MEALY_TRANSITION		=> FALSE,
-				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
+				CLOCK_FREQ								=> CLOCK_FREQ,
 				IIC_BUSMODE								=> IO_IIC_BUSMODE_STANDARDMODE,
 				IIC_ADDRESS								=> x"01",
 				ADDRESS_BITS							=> 7,
