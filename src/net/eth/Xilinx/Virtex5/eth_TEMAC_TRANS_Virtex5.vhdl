@@ -1,520 +1,1050 @@
--------------------------------------------------------------------------------
--- Title      : Virtex-5 Ethernet MAC Wrapper
--- Project    : Virtex-5 Embedded Tri-Mode Ethernet MAC Wrapper
--- File       : TEMAC_Virtex5_SGMII.vhd
--- Version    : 1.8
--------------------------------------------------------------------------------
---
--- (c) Copyright 2004-2010 Xilinx, Inc. All rights reserved.
---
--- This file contains confidential and proprietary information
--- of Xilinx, Inc. and is protected under U.S. and
--- international copyright and other intellectual property
--- laws.
---
--- DISCLAIMER
--- This disclaimer is not a license and does not grant any
--- rights to the materials distributed herewith. Except as
--- otherwise provided in a valid license issued to you by
--- Xilinx, and to the maximum extent permitted by applicable
--- law: (1) THESE MATERIALS ARE MADE AVAILABLE "AS IS" AND
--- WITH ALL FAULTS, AND XILINX HEREBY DISCLAIMS ALL WARRANTIES
--- AND CONDITIONS, EXPRESS, IMPLIED, OR STATUTORY, INCLUDING
--- BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, NON-
--- INFRINGEMENT, OR FITNESS FOR ANY PARTICULAR PURPOSE; and
--- (2) Xilinx shall not be liable (whether in contract or tort,
--- including negligence, or under any other theory of
--- liability) for any loss or damage of any kind or nature
--- related to, arising under or in connection with these
--- materials, including for any direct, or any indirect,
--- special, incidental, or consequential loss or damage
--- (including loss of data, profits, goodwill, or any type of
--- loss or damage suffered as a result of any action brought
--- by a third party) even if such damage or loss was
--- reasonably foreseeable or Xilinx had been advised of the
--- possibility of the same.
---
--- CRITICAL APPLICATIONS
--- Xilinx products are not designed or intended to be fail-
--- safe, or for use in any application requiring fail-safe
--- performance, such as life-support or safety devices or
--- systems, Class III medical devices, nuclear facilities,
--- applications related to the deployment of airbags, or any
--- other applications that could lead to death, personal
--- injury, or severe property or environmental damage
--- (individually and collectively, "Critical
--- Applications"). Customer assumes the sole risk and
--- liability of any use of Xilinx products in Critical
--- Applications, subject only to applicable laws and
--- regulations governing limitations on product liability.
---
--- THIS COPYRIGHT NOTICE AND DISCLAIMER MUST BE RETAINED AS
--- PART OF THIS FILE AT ALL TIMES.
---
---------------------------------------------------------------------------------
--- Description:  This wrapper file instantiates the full Virtex-5 Ethernet 
---               MAC (EMAC) primitive.  For one or both of the two Ethernet MACs
---               (EMAC0/EMAC1):
---
---               * all unused input ports on the primitive will be tied to the
---                 appropriate logic level;
---
---               * all unused output ports on the primitive will be left 
---                 unconnected;
---
---               * the Tie-off Vector will be connected based on the options 
---                 selected from CORE Generator;
---
---               * only used ports will be connected to the ports of this 
---                 wrapper file.
---
---               This simplified wrapper should therefore be used as the 
---               instantiation template for the EMAC in customer designs.
---------------------------------------------------------------------------------
+library	ieee;
+use			ieee.std_logic_1164.all;
 
-library unisim;
-use unisim.vcomponents.all;
+library	unisim;
+use			unisim.vcomponents.all;
 
-library ieee;
-use ieee.std_logic_1164.all;
+library PoC;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.physical.all;
 
---------------------------------------------------------------------------------
--- The entity declaration for the Virtex-5 Embedded Ethernet MAC wrapper.
---------------------------------------------------------------------------------
 
 entity eth_TEMAC_TRANS_Virtex5 is
-    port(
-        -- Client Receiver Interface - EMAC0
-        EMAC0CLIENTRXCLIENTCLKOUT       : out std_logic;
-        CLIENTEMAC0RXCLIENTCLKIN        : in  std_logic;
-        EMAC0CLIENTRXD                  : out std_logic_vector(7 downto 0);
-        EMAC0CLIENTRXDVLD               : out std_logic;
-        EMAC0CLIENTRXDVLDMSW            : out std_logic;
-        EMAC0CLIENTRXGOODFRAME          : out std_logic;
-        EMAC0CLIENTRXBADFRAME           : out std_logic;
-        EMAC0CLIENTRXFRAMEDROP          : out std_logic;
-        EMAC0CLIENTRXSTATS              : out std_logic_vector(6 downto 0);
-        EMAC0CLIENTRXSTATSVLD           : out std_logic;
-        EMAC0CLIENTRXSTATSBYTEVLD       : out std_logic;
+	generic (
+		DEBUG														: BOOLEAN					:= FALSE;
+		PORTS														: POSITIVE				:= 1;
+		PCS_MDIO_ADDRESS								: T_SLVV_8;
+		
+		SUPPORT_JUMBO_FRAMES						: T_BOOLVEC;
+		TX_INSERT_CROSSCLOCK_FIFO				: T_BOOLVEC;
+		TX_FIFO_DEPTHS									: T_POSVEC;
+		TX_ENABLE_UNDERRUN_PROTECTION		: T_BOOLVEC;
+		RX_INSERT_CROSSCLOCK_FIFO				: T_BOOLVEC;
+		RX_FIFO_DEPTHS									: T_POSVEC
+	);
+	port(
+		-- clock interface
+		TX_Clock											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_Clock											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Eth_TX_Clock									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Eth_RX_Clock									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RS_TX_Clock										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RS_RX_Clock										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		
+		TX_Reset											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_Reset											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Eth_TX_Reset									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Eth_RX_Reset									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RS_TX_Reset										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RS_RX_Reset										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		
+		Ethernet_Clock								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Ethernet_ClockStable					: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		
+		Reset													: in	STD_LOGIC;				-- @async:	Reset
+	
+		-- PoC.Stream interface
+		TX_Valid											: in STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_Data												: in T_SLVV_8(PORTS - 1 downto 0);
+		TX_SOF												: in STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_EOF												: in STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_Ack												: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		
+		RX_Valid											: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_Data												: out	T_SLVV_8(PORTS - 1 downto 0);
+		RX_SOF												: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_EOF												: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_Ack												: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-        -- Client Transmitter Interface - EMAC0
-        EMAC0CLIENTTXCLIENTCLKOUT       : out std_logic;
-        CLIENTEMAC0TXCLIENTCLKIN        : in  std_logic;
-        CLIENTEMAC0TXD                  : in  std_logic_vector(7 downto 0);
-        CLIENTEMAC0TXDVLD               : in  std_logic;
-        CLIENTEMAC0TXDVLDMSW            : in  std_logic;
-        EMAC0CLIENTTXACK                : out std_logic;
-        CLIENTEMAC0TXFIRSTBYTE          : in  std_logic;
-        CLIENTEMAC0TXUNDERRUN           : in  std_logic;
-        EMAC0CLIENTTXCOLLISION          : out std_logic;
-        EMAC0CLIENTTXRETRANSMIT         : out std_logic;
-        CLIENTEMAC0TXIFGDELAY           : in  std_logic_vector(7 downto 0);
-        EMAC0CLIENTTXSTATS              : out std_logic;
-        EMAC0CLIENTTXSTATSVLD           : out std_logic;
-        EMAC0CLIENTTXSTATSBYTEVLD       : out std_logic;
+		-- Management interface
+		MDIO_Clock_i									: in	STD_LOGIC;
+		MDIO_Data_i										: in	STD_LOGIC;
+		MDIO_Data_o										: out	STD_LOGIC;
+	
+		-- TRANS interface
+		Trans_PowerDown								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Trans_TX_Reset								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Trans_RX_Reset								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Trans_LoopBack								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);										-- perform loopback testing
+		Trans_EnableCommaAlign				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- enable comma alignment
 
-        -- MAC Control Interface - EMAC0
-        CLIENTEMAC0PAUSEREQ             : in  std_logic;
-        CLIENTEMAC0PAUSEVAL             : in  std_logic_vector(15 downto 0);
+		-- TRANS TX interface
+		Trans_TX_Data									: out	T_SLVV_8(PORTS - 1 downto 0);
+		Trans_TX_CharIsK							: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Trans_TX_CharDisparityMode		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Trans_TX_CharDisparityValue		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Trans_TX_BufferError					: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-        -- Clock Signal - EMAC0
-        GTX_CLK_0                       : in  std_logic;
-        PHYEMAC0TXGMIIMIICLKIN          : in  std_logic;
-        EMAC0PHYTXGMIIMIICLKOUT         : out std_logic;
-
-        -- SGMII Interface - EMAC0
-        RXDATA_0                        : in  std_logic_vector(7 downto 0);
-        TXDATA_0                        : out std_logic_vector(7 downto 0);
-        DCM_LOCKED_0                    : in  std_logic;
-        AN_INTERRUPT_0                  : out std_logic;
-        SIGNAL_DETECT_0                 : in  std_logic;
-        PHYAD_0                         : in  std_logic_vector(4 downto 0);
-        ENCOMMAALIGN_0                  : out std_logic;
-        LOOPBACKMSB_0                   : out std_logic;
-        MGTRXRESET_0                    : out std_logic;
-        MGTTXRESET_0                    : out std_logic;
-        POWERDOWN_0                     : out std_logic;
-        SYNCACQSTATUS_0                 : out std_logic;
-        RXCLKCORCNT_0                   : in  std_logic_vector(2 downto 0);
-        RXBUFSTATUS_0                   : in  std_logic_vector(1 downto 0);
-        RXCHARISCOMMA_0                 : in  std_logic;
-        RXCHARISK_0                     : in  std_logic;
-        RXDISPERR_0                     : in  std_logic;
-        RXNOTINTABLE_0                  : in  std_logic;
-        RXREALIGN_0                     : in  std_logic;
-        RXRUNDISP_0                     : in  std_logic;
-        TXBUFERR_0                      : in  std_logic;
-        TXCHARDISPMODE_0                : out std_logic;
-        TXCHARDISPVAL_0                 : out std_logic;
-        TXCHARISK_0                     : out std_logic;
-        TXRUNDISP_0                     : in  std_logic;
-
-        -- MDIO Interface - EMAC0
-        MDC_0               		        : out std_logic;			-- Fixed: MDC_IN_0 => MDC_0
-        MDIO_0_I                        : in  std_logic;
-        MDIO_0_O                        : out std_logic;
-        MDIO_0_T                        : out std_logic;
-
-        -- Asynchronous Reset
-        RESET                           : in  std_logic
-        );
+		-- TRANS RX interface
+		Trans_RX_Data									: in	T_SLVV_8(PORTS - 1 downto 0);
+		Trans_RX_CharIsK							: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Trans_RX_CharIsComma					: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Trans_RX_DisparityError				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Trans_RX_NotInTable						: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Trans_RX_BufferStatus					: in	T_SLVV_2(PORTS - 1 downto 0);
+		Trans_RX_ClockCorrectionCount	: in	T_SLVV_3(PORTS - 1 downto 0)
+	);
 end;
 
 
+architecture rtl of eth_TEMAC_TRANS_Virtex5 is
 
-architecture core of eth_TEMAC_TRANS_Virtex5 is
-    --------
-    -- EMAC0
-    --------
-    -- Configure the PCS/PMA logic
-    -- PCS/PMA Reset not asserted (normal operating mode)
-    constant EMAC0_PHYRESET : boolean := FALSE;  
-    -- PCS/PMA Auto-Negotiation Enable (enabled)
-    constant EMAC0_PHYINITAUTONEG_ENABLE : boolean := TRUE;  
-    -- PCS/PMA Isolate (not enabled)
-    constant EMAC0_PHYISOLATE : boolean := FALSE;  
-    -- PCS/PMA Powerdown (not in power down: normal operating mode)
-    constant EMAC0_PHYPOWERDOWN : boolean := FALSE;  
-    -- PCS/PMA Loopback (not enabled)
-    constant EMAC0_PHYLOOPBACKMSB : boolean := FALSE;  
-    -- Do not allow over/underflow in the GTP during auto-negotiation
-    constant EMAC0_CONFIGVEC_79 : boolean := TRUE; 
-    -- GT loopback (not enabled)
-    constant EMAC0_GTLOOPBACK : boolean := FALSE; 
-    -- Do not allow TX without having established a valid link
-    constant EMAC0_UNIDIRECTION_ENABLE : boolean := FALSE; 
-    constant EMAC0_LINKTIMERVAL : bit_vector := x"032";
+	signal TEMAC_TX_Ack							: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal TX_FSM_Valid							: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal TX_FSM_Data							: T_SLVV_8(PORTS - 1 downto 0);
+	signal TX_FSM_UnderrunDetected	: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-    -- Configure the MAC operating mode
-    -- MDIO is enabled
-    constant EMAC0_MDIO_ENABLE : boolean := TRUE;  
-    -- Speed is defaulted to 1000Mb/s
-    constant EMAC0_SPEED_LSB : boolean := FALSE;
-    constant EMAC0_SPEED_MSB : boolean := TRUE; 
-    constant EMAC0_USECLKEN : boolean := FALSE;
-    constant EMAC0_BYTEPHY : boolean := FALSE;
-   
-    constant EMAC0_RGMII_ENABLE : boolean := FALSE;
-    -- SGMII is used to connect to PHY
-    constant EMAC0_SGMII_ENABLE : boolean := TRUE;  
-    constant EMAC0_1000BASEX_ENABLE : boolean := FALSE;
-    -- The Host I/F is not  in use
-    constant EMAC0_HOST_ENABLE : boolean := FALSE;  
-    -- 8-bit interface for Tx client
-    constant EMAC0_TX16BITCLIENT_ENABLE : boolean := FALSE;
-    -- 8-bit interface for Rx client  
-    constant EMAC0_RX16BITCLIENT_ENABLE : boolean := FALSE;  
-    -- The Address Filter (not enabled)
-    constant EMAC0_ADDRFILTER_ENABLE : boolean := FALSE;  
-
-    -- MAC configuration defaults
-    -- Rx Length/Type checking enabled (standard IEEE operation)
-    constant EMAC0_LTCHECK_DISABLE : boolean := FALSE;  
-    -- Rx Flow Control (enabled)
-    constant EMAC0_RXFLOWCTRL_ENABLE : boolean := TRUE;  
-    -- Tx Flow Control (enabled)
-    constant EMAC0_TXFLOWCTRL_ENABLE : boolean := TRUE;  
-    -- Transmitter is not held in reset not asserted (normal operating mode)
-    constant EMAC0_TXRESET : boolean := FALSE;  
-    -- Transmitter Jumbo Frames (enabled)
-    constant EMAC0_TXJUMBOFRAME_ENABLE : boolean := TRUE;    
-    -- Transmitter In-band FCS (not enabled)
-    constant EMAC0_TXINBANDFCS_ENABLE : boolean := FALSE;  
-    -- Transmitter Enabled
-    constant EMAC0_TX_ENABLE : boolean := TRUE;  
-    -- Transmitter VLAN mode (not enabled)
-    constant EMAC0_TXVLAN_ENABLE : boolean := FALSE;  
-    -- Transmitter Half Duplex mode (not enabled)
-    constant EMAC0_TXHALFDUPLEX : boolean := FALSE;  
-    -- Transmitter IFG Adjust (not enabled)
-    constant EMAC0_TXIFGADJUST_ENABLE : boolean := FALSE;  
-    -- Receiver is not held in reset not asserted (normal operating mode)
-    constant EMAC0_RXRESET : boolean := FALSE;  
-    -- Receiver Jumbo Frames (enabled)
-    constant EMAC0_RXJUMBOFRAME_ENABLE : boolean := TRUE;    
-    -- Receiver In-band FCS (not enabled)
-    constant EMAC0_RXINBANDFCS_ENABLE : boolean := FALSE;  
-    -- Receiver Enabled
-    constant EMAC0_RX_ENABLE : boolean := TRUE;  
-    -- Receiver VLAN mode (not enabled)
-    constant EMAC0_RXVLAN_ENABLE : boolean := FALSE;  
-    -- Receiver Half Duplex mode (not enabled)
-    constant EMAC0_RXHALFDUPLEX : boolean := FALSE;  
-
-    -- Set the Pause Address Default
-    constant EMAC0_PAUSEADDR : bit_vector := x"FFEEDDCCBBAA";
-
-    constant EMAC0_UNICASTADDR : bit_vector := x"000000000000";
- 
-    constant EMAC0_DCRBASEADDR : bit_vector := X"00";
- 
-
-    ----------------------------------------------------------------------------
-    -- Signals Declarations
-    ----------------------------------------------------------------------------
-
-
-    signal gnd_v48_i                      : std_logic_vector(47 downto 0);
-
-    signal client_rx_data_0_i             : std_logic_vector(15 downto 0);
-    signal client_tx_data_0_i             : std_logic_vector(15 downto 0);
-    signal client_tx_data_valid_0_i       : std_logic;
-    signal client_tx_data_valid_msb_0_i   : std_logic;
-
+	signal TEMAC_RX_Valid						: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal TEMAC_RX_Data						: T_SLVV_8(PORTS - 1 downto 0);
+	signal TEMAC_RX_GoodFrame				: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal TEMAC_RX_BadFrame				: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal RX_FSM_OverflowDetected	: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
 begin
 
+	genFIFOChain : for i in 0 to PORTS - 1 generate
+		constant SOF_BIT						: NATURAL			:= 8;
+		constant EOF_BIT						: NATURAL			:= 9;
+	
+		signal XClk_TX_FIFO_Valid		: STD_LOGIC;
+		signal XClk_TX_FIFO_DataOut	: STD_LOGIC_VECTOR(9 downto 0);
+		signal XClk_TX_FIFO_got			: STD_LOGIC;
 
-    ----------------------------------------------------------------------------
-    -- Main Body of Code
-    ----------------------------------------------------------------------------
+		signal TX_FIFO_DataOut			: STD_LOGIC_VECTOR(9 downto 0);
+		signal TX_FIFO_Full					: STD_LOGIC;
+		
+		signal TX_FIFO_Valid				: STD_LOGIC;
+		signal TX_FIFO_Data					: T_SLV_8;
+		signal TX_FIFO_SOF					: STD_LOGIC;
+		signal TX_FIFO_EOF					: STD_LOGIC;
+		signal TX_FSM_Commit				: STD_LOGIC;
+		signal TX_FSM_Rollback			: STD_LOGIC;
+		
+		signal TX_FSM_Ack						: STD_LOGIC;
+		
+		signal RX_FSM_Valid					: STD_LOGIC;
+		signal RX_FSM_Data					: T_SLV_8;
+		signal RX_FSM_SOF						: STD_LOGIC;
+		signal RX_FSM_EOF						: STD_LOGIC;
+		signal RX_FSM_Commit				: STD_LOGIC;
+		signal RX_FSM_Rollback			: STD_LOGIC;
+		
+		signal RX_FIFO_put					: STD_LOGIC;
+		signal RX_FIFO_DataIn				: STD_LOGIC_VECTOR(9 downto 0);
+		signal RX_FIFO_Full					: STD_LOGIC;
+		signal RX_FIFO_got					: STD_LOGIC;
+		signal RX_FIFO_Valid				: STD_LOGIC;
+		signal RX_FIFO_DataOut			: STD_LOGIC_VECTOR(9 downto 0);
+		signal RX_FIFO_Ack					: STD_LOGIC;
+		
+		signal XClk_RX_FIFO_Full		: STD_LOGIC;
 
 
-    gnd_v48_i <= "000000000000000000000000000000000000000000000000";
+	begin
+		-- ==========================================================================================================================================================
+		-- ASSERT statements
+		-- ==========================================================================================================================================================
+		assert ((TX_FIFO_DEPTHS(i) * 1 B) >= ite(TX_ENABLE_UNDERRUN_PROTECTION(i),	ite(SUPPORT_JUMBO_FRAMES(i), 10 KiB, 1522 B), 0 B))	report "TX-FIFO is to small" severity ERROR;
+		assert ((RX_FIFO_DEPTHS(i) * 1 B) >=																				ite(SUPPORT_JUMBO_FRAMES(i), 10 KiB, 1522 B))				report "RX-FIFO is to small" severity ERROR;
 
-    -- 8-bit client data on EMAC0
-    EMAC0CLIENTRXD <= client_rx_data_0_i(7 downto 0);
-    client_tx_data_0_i <= "00000000" & CLIENTEMAC0TXD after 4 ns;
-    client_tx_data_valid_0_i <= CLIENTEMAC0TXDVLD after 4 ns;
-    client_tx_data_valid_msb_0_i <= '0';
+		-- ==========================================================================================================================================================
+		-- TX path
+		-- ==========================================================================================================================================================
+		genTX_XClk0 : if (TX_INSERT_CROSSCLOCK_FIFO(i) = FALSE) generate
+			XClk_TX_FIFO_Valid											<= TX_Valid(i);
+			XClk_TX_FIFO_DataOut(TX_Data(i)'range)	<= TX_Data(i);
+			XClk_TX_FIFO_DataOut(SOF_BIT)						<= TX_SOF(i);
+			XClk_TX_FIFO_DataOut(EOF_BIT)						<= TX_EOF(i);
+			TX_Ack(i)																<= XClk_TX_FIFO_got;
+		end generate;
+		genTX_XClk1 : if (TX_INSERT_CROSSCLOCK_FIFO(i) = TRUE) generate
+			signal XClk_TX_FIFO_DataIn		: STD_LOGIC_VECTOR(9 downto 0);
+			signal XClk_TX_FIFO_Full			: STD_LOGIC;
+		begin
+			XClk_TX_FIFO_DataIn(TX_Data(i)'range)		<= TX_Data(i);
+			XClk_TX_FIFO_DataIn(SOF_BIT)						<= TX_SOF(i);
+			XClk_TX_FIFO_DataIn(EOF_BIT)						<= TX_EOF(i);
+		
+			XClk_TX_FIFO : entity PoC.fifo_ic_got
+				generic map (
+					D_BITS							=> XClk_TX_FIFO_DataIn'length,
+					MIN_DEPTH						=> 16,
+					DATA_REG						=> TRUE,
+					OUTPUT_REG					=> FALSE,
+					ESTATE_WR_BITS			=> 0,
+					FSTATE_RD_BITS			=> 0
+				)
+				port map (
+					-- Write Interface
+					clk_wr							=> TX_Clock(i),
+					rst_wr							=> TX_Reset(i),
+					put									=> TX_Valid(i),
+					din									=> XClk_TX_FIFO_DataIn,
+					full								=> XClk_TX_FIFO_Full,
+					estate_wr						=> open,
 
+					-- Read Interface
+					clk_rd							=> RS_TX_Clock(i),
+					rst_rd							=> RS_TX_Reset(i),
+					got									=> XClk_TX_FIFO_got,
+					valid								=> XClk_TX_FIFO_Valid,
+					dout								=> XClk_TX_FIFO_DataOut,
+					fstate_rd						=> open
+				);
+			
+			TX_Ack(i)	<= NOT XClk_TX_FIFO_Full;
+		end generate;
 
+		XClk_TX_FIFO_got	<= not TX_FIFO_Full;
 
+		-- TX-Buffer Underrun Protection (configured by: TX_DISABLE_UNDERRUN_PROTECTION)
+		-- ========================================================================================================================================================
+		--	transactional behaviour:
+		--	-	enabled:	each frame is committed when EOF is set (*_FIFO_Out(EOF_BIT))
+		--	-	disabled:	each word is immediately committed, so incomplete frames can be consumed by the TX-MAC-statemachine
+		--
+		--	impact an FIFO_DEPTH:
+		--	-	enabled:	FIFO_DEPTH must be greater than max. frame size (normal frames: ca. 1550 bytes; JumboFrames: ca. 9100 bytes)
+		--	-	disabled:	TX-FIFO becomes optional; set FIFO_DEPTH to 0 to disable TX-FIFO
+		-- ========================================================================================================================================================
+		gen0 : if (TX_ENABLE_UNDERRUN_PROTECTION(i) = FALSE) generate
+			TX_FIFO : entity PoC.fifo_cc_got_tempgot
+				generic map (
+					D_BITS							=> XClk_TX_FIFO_DataOut'length,
+					MIN_DEPTH						=> TX_FIFO_DEPTHS(i),
+					ESTATE_WR_BITS			=> 0,
+					FSTATE_RD_BITS			=> 0,
+					DATA_REG						=> FALSE,
+					STATE_REG						=> TRUE,
+					OUTPUT_REG					=> FALSE
+				)
+				port map (
+					clk									=> RS_TX_Clock(i),
+					rst									=> RS_TX_Reset(i),
 
+					-- Write Interface
+					put									=> XClk_TX_FIFO_Valid,
+					din									=> XClk_TX_FIFO_DataOut,
+					full								=> TX_FIFO_Full,
+					estate_wr						=> open,
 
+					-- Temporary put control
+					commit							=> TX_FSM_Commit,
+					rollback						=> TX_FSM_Rollback,
 
-    ----------------------------------------------------------------------------
-    -- Instantiate the Virtex-5 Embedded Ethernet EMAC
-    ----------------------------------------------------------------------------
-    v5_emac : TEMAC
-    generic map (
-		EMAC0_1000BASEX_ENABLE      => EMAC0_1000BASEX_ENABLE,
-		EMAC0_ADDRFILTER_ENABLE     => EMAC0_ADDRFILTER_ENABLE,
-		EMAC0_BYTEPHY               => EMAC0_BYTEPHY,
-		EMAC0_CONFIGVEC_79          => EMAC0_CONFIGVEC_79,
-		EMAC0_DCRBASEADDR           => EMAC0_DCRBASEADDR,
-		EMAC0_GTLOOPBACK            => EMAC0_GTLOOPBACK,
-		EMAC0_HOST_ENABLE           => EMAC0_HOST_ENABLE,
-		EMAC0_LINKTIMERVAL          => EMAC0_LINKTIMERVAL(3 to 11),
-		EMAC0_LTCHECK_DISABLE       => EMAC0_LTCHECK_DISABLE,
-		EMAC0_MDIO_ENABLE           => EMAC0_MDIO_ENABLE,
-		EMAC0_PAUSEADDR             => EMAC0_PAUSEADDR,
-		EMAC0_PHYINITAUTONEG_ENABLE => EMAC0_PHYINITAUTONEG_ENABLE,
-		EMAC0_PHYISOLATE            => EMAC0_PHYISOLATE,
-		EMAC0_PHYLOOPBACKMSB        => EMAC0_PHYLOOPBACKMSB,
-		EMAC0_PHYPOWERDOWN          => EMAC0_PHYPOWERDOWN,
-		EMAC0_PHYRESET              => EMAC0_PHYRESET,
-		EMAC0_RGMII_ENABLE          => EMAC0_RGMII_ENABLE,
-		EMAC0_RX16BITCLIENT_ENABLE  => EMAC0_RX16BITCLIENT_ENABLE,
-		EMAC0_RXFLOWCTRL_ENABLE     => EMAC0_RXFLOWCTRL_ENABLE,
-		EMAC0_RXHALFDUPLEX          => EMAC0_RXHALFDUPLEX,
-		EMAC0_RXINBANDFCS_ENABLE    => EMAC0_RXINBANDFCS_ENABLE,
-		EMAC0_RXJUMBOFRAME_ENABLE   => EMAC0_RXJUMBOFRAME_ENABLE,
-		EMAC0_RXRESET               => EMAC0_RXRESET,
-		EMAC0_RXVLAN_ENABLE         => EMAC0_RXVLAN_ENABLE,
-		EMAC0_RX_ENABLE             => EMAC0_RX_ENABLE,
-		EMAC0_SGMII_ENABLE          => EMAC0_SGMII_ENABLE,
-		EMAC0_SPEED_LSB             => EMAC0_SPEED_LSB,
-		EMAC0_SPEED_MSB             => EMAC0_SPEED_MSB,
-		EMAC0_TX16BITCLIENT_ENABLE  => EMAC0_TX16BITCLIENT_ENABLE,
-		EMAC0_TXFLOWCTRL_ENABLE     => EMAC0_TXFLOWCTRL_ENABLE,
-		EMAC0_TXHALFDUPLEX          => EMAC0_TXHALFDUPLEX,
-		EMAC0_TXIFGADJUST_ENABLE    => EMAC0_TXIFGADJUST_ENABLE,
-		EMAC0_TXINBANDFCS_ENABLE    => EMAC0_TXINBANDFCS_ENABLE,
-		EMAC0_TXJUMBOFRAME_ENABLE   => EMAC0_TXJUMBOFRAME_ENABLE,
-		EMAC0_TXRESET               => EMAC0_TXRESET,
-		EMAC0_TXVLAN_ENABLE         => EMAC0_TXVLAN_ENABLE,
-		EMAC0_TX_ENABLE             => EMAC0_TX_ENABLE,
-		EMAC0_UNICASTADDR           => EMAC0_UNICASTADDR,
-		EMAC0_UNIDIRECTION_ENABLE   => EMAC0_UNIDIRECTION_ENABLE,
-		EMAC0_USECLKEN              => EMAC0_USECLKEN,
-                EMAC1_LINKTIMERVAL          => "000000000"
-)
-    port map (
-        RESET                           => RESET,
+					-- Read Interface
+					got									=> TX_FSM_Ack,
+					valid								=> TX_FIFO_Valid,
+					dout								=> TX_FIFO_DataOut,
+					fstate_rd						=> open
+				);
+		end generate;
+		gen1 : if (TX_ENABLE_UNDERRUN_PROTECTION(i) = TRUE) generate
+			signal Commit			: STD_LOGIC;
+		begin
+			Commit		<= XClk_TX_FIFO_Valid and XClk_TX_FIFO_DataOut(EOF_BIT);
+		
+			TX_FIFO : entity PoC.fifo_cc_got_tempput
+				generic map (
+					D_BITS							=> XClk_TX_FIFO_DataOut'length,
+					MIN_DEPTH						=> TX_FIFO_DEPTHS(i),
+					ESTATE_WR_BITS			=> 0,
+					FSTATE_RD_BITS			=> 0,
+					DATA_REG						=> FALSE,
+					STATE_REG						=> TRUE,
+					OUTPUT_REG					=> FALSE
+				)
+				port map (
+					clk									=> RS_TX_Clock(i),
+					rst									=> RS_TX_Reset(i),
 
-        -- EMAC0
-        EMAC0CLIENTRXCLIENTCLKOUT       => EMAC0CLIENTRXCLIENTCLKOUT,
-        CLIENTEMAC0RXCLIENTCLKIN        => CLIENTEMAC0RXCLIENTCLKIN,
-        EMAC0CLIENTRXD                  => client_rx_data_0_i,
-        EMAC0CLIENTRXDVLD               => EMAC0CLIENTRXDVLD,
-        EMAC0CLIENTRXDVLDMSW            => EMAC0CLIENTRXDVLDMSW,
-        EMAC0CLIENTRXGOODFRAME          => EMAC0CLIENTRXGOODFRAME,
-        EMAC0CLIENTRXBADFRAME           => EMAC0CLIENTRXBADFRAME,
-        EMAC0CLIENTRXFRAMEDROP          => EMAC0CLIENTRXFRAMEDROP,
-        EMAC0CLIENTRXSTATS              => EMAC0CLIENTRXSTATS,
-        EMAC0CLIENTRXSTATSVLD           => EMAC0CLIENTRXSTATSVLD,
-        EMAC0CLIENTRXSTATSBYTEVLD       => EMAC0CLIENTRXSTATSBYTEVLD,
+					-- Write Interface
+					put									=> XClk_TX_FIFO_Valid,
+					din									=> XClk_TX_FIFO_DataOut,
+					full								=> TX_FIFO_Full,
+					estate_wr						=> open,
 
-        EMAC0CLIENTTXCLIENTCLKOUT       => EMAC0CLIENTTXCLIENTCLKOUT,
-        CLIENTEMAC0TXCLIENTCLKIN        => CLIENTEMAC0TXCLIENTCLKIN,
-        CLIENTEMAC0TXD                  => client_tx_data_0_i,
-        CLIENTEMAC0TXDVLD               => client_tx_data_valid_0_i,
-        CLIENTEMAC0TXDVLDMSW            => client_tx_data_valid_msb_0_i,
-        EMAC0CLIENTTXACK                => EMAC0CLIENTTXACK,
-        CLIENTEMAC0TXFIRSTBYTE          => CLIENTEMAC0TXFIRSTBYTE,
-        CLIENTEMAC0TXUNDERRUN           => CLIENTEMAC0TXUNDERRUN,
-        EMAC0CLIENTTXCOLLISION          => EMAC0CLIENTTXCOLLISION,
-        EMAC0CLIENTTXRETRANSMIT         => EMAC0CLIENTTXRETRANSMIT,
-        CLIENTEMAC0TXIFGDELAY           => CLIENTEMAC0TXIFGDELAY,
-        EMAC0CLIENTTXSTATS              => EMAC0CLIENTTXSTATS,
-        EMAC0CLIENTTXSTATSVLD           => EMAC0CLIENTTXSTATSVLD,
-        EMAC0CLIENTTXSTATSBYTEVLD       => EMAC0CLIENTTXSTATSBYTEVLD,
+					-- Temporary put control
+					commit							=> Commit,
+					rollback						=> '0',
 
-        CLIENTEMAC0PAUSEREQ             => CLIENTEMAC0PAUSEREQ,
-        CLIENTEMAC0PAUSEVAL             => CLIENTEMAC0PAUSEVAL,
+					-- Read Interface
+					got									=> TX_FSM_Ack,
+					valid								=> TX_FIFO_Valid,
+					dout								=> TX_FIFO_DataOut,
+					fstate_rd						=> open
+				);
+		end generate;
+		
+		TX_FIFO_Data		<= TX_FIFO_DataOut(TX_FIFO_Data'range);
+		TX_FIFO_SOF			<= TX_FIFO_DataOut(SOF_BIT);
+		TX_FIFO_EOF			<= TX_FIFO_DataOut(EOF_BIT);
 
-        PHYEMAC0GTXCLK                  => GTX_CLK_0,
-        PHYEMAC0TXGMIIMIICLKIN          => PHYEMAC0TXGMIIMIICLKIN,
-        EMAC0PHYTXGMIIMIICLKOUT         => EMAC0PHYTXGMIIMIICLKOUT,
-        PHYEMAC0RXCLK                   => '0',
-        PHYEMAC0MIITXCLK                => '0',
-        PHYEMAC0RXD                     => RXDATA_0,
-        PHYEMAC0RXDV                    => RXREALIGN_0,
-        PHYEMAC0RXER                    => '0',
-        EMAC0PHYTXCLK                   => open,
-        EMAC0PHYTXD                     => TXDATA_0,
-        EMAC0PHYTXEN                    => open,
-        EMAC0PHYTXER                    => open,
-        PHYEMAC0COL                     => TXRUNDISP_0,
-        PHYEMAC0CRS                     => '0',
-        CLIENTEMAC0DCMLOCKED            => DCM_LOCKED_0,
-        EMAC0CLIENTANINTERRUPT          => AN_INTERRUPT_0,
-        PHYEMAC0SIGNALDET               => SIGNAL_DETECT_0,
-        PHYEMAC0PHYAD                   => PHYAD_0,
-        EMAC0PHYENCOMMAALIGN            => ENCOMMAALIGN_0,
-        EMAC0PHYLOOPBACKMSB             => LOOPBACKMSB_0,
-        EMAC0PHYMGTRXRESET              => MGTRXRESET_0,
-        EMAC0PHYMGTTXRESET              => MGTTXRESET_0,
-        EMAC0PHYPOWERDOWN               => POWERDOWN_0,
-        EMAC0PHYSYNCACQSTATUS           => SYNCACQSTATUS_0,
-        PHYEMAC0RXCLKCORCNT             => RXCLKCORCNT_0,
-        PHYEMAC0RXBUFSTATUS             => RXBUFSTATUS_0,
-        PHYEMAC0RXBUFERR                => '0',
-        PHYEMAC0RXCHARISCOMMA           => RXCHARISCOMMA_0,
-        PHYEMAC0RXCHARISK               => RXCHARISK_0,
-        PHYEMAC0RXCHECKINGCRC           => '0',
-        PHYEMAC0RXCOMMADET              => '0',
-        PHYEMAC0RXDISPERR               => RXDISPERR_0,
-        PHYEMAC0RXLOSSOFSYNC            => gnd_v48_i(1 downto 0),
-        PHYEMAC0RXNOTINTABLE            => RXNOTINTABLE_0,
-        PHYEMAC0RXRUNDISP               => RXRUNDISP_0,
-        PHYEMAC0TXBUFERR                => TXBUFERR_0,
-        EMAC0PHYTXCHARDISPMODE          => TXCHARDISPMODE_0,
-        EMAC0PHYTXCHARDISPVAL           => TXCHARDISPVAL_0,
-        EMAC0PHYTXCHARISK               => TXCHARISK_0,
+		TX_FSM : entity PoC.eth_TEMAC_TX_FSM
+			port map (
+				Clock							=> Eth_TX_Clock(i),
+				Reset							=> Eth_TX_Reset(i),
+				
+				Valid							=> TX_FIFO_Valid,
+				Data							=> TX_FIFO_Data,
+				EOF								=> TX_FIFO_EOF,
+				Ack								=> TX_FSM_Ack,
+				Commit						=> TX_FSM_Commit,
+				Rollback					=> TX_FSM_Rollback,
+				
+				UnderrunDetected	=> TX_FSM_UnderrunDetected(i),
+				
+				TEMAC_Valid				=> TX_FSM_Valid(i),
+				TEMAC_Data				=> TX_FSM_Data(i),
+				TEMAC_Ack					=> TEMAC_TX_Ack(i)
+			);
 
-        EMAC0PHYMCLKOUT                 => MDC_0,														-- Fixed: open => MDC_OUT_0
-        PHYEMAC0MCLKIN                  => '0',															-- Fixed: MDC_IN_0 => '0'
-        PHYEMAC0MDIN                    => MDIO_0_I,
-        EMAC0PHYMDOUT                   => MDIO_0_O,
-        EMAC0PHYMDTRI                   => MDIO_0_T,
-        EMAC0SPEEDIS10100               => open,
+		-- =========================================================================
+		-- RX path
+		-- =========================================================================
+		RXFSM : entity PoC.eth_TEMAC_RX_FSM
+			port map (
+				Clock							=> Eth_TX_Clock(i),
+				Reset							=> Eth_TX_Reset(i),
+				
+				TEMAC_Valid				=> TEMAC_RX_Valid(i),
+				TEMAC_Data				=> TEMAC_RX_Data(i),
+				TEMAC_GoodFrame		=> TEMAC_RX_GoodFrame(i),
+				TEMAC_BadFrame		=> TEMAC_RX_BadFrame(i),
+				
+				OverflowDetected	=> RX_FSM_OverflowDetected(i),
+				
+				Valid							=> RX_FSM_Valid,
+				Data							=> RX_FSM_Data,
+				SOF								=> RX_FSM_SOF,
+				EOF								=> RX_FSM_EOF,
+				Ack								=> RX_FIFO_Ack,
+				Commit						=> RX_FSM_Commit,
+				Rollback					=> RX_FSM_Rollback
+			);
+		
+		RX_FIFO_put												<= RX_FSM_Valid;
+		RX_FIFO_DataIn(RX_FSM_Data'range)	<= RX_FSM_Data;
+		RX_FIFO_DataIn(SOF_BIT)						<= RX_FSM_SOF;
+		RX_FIFO_DataIn(EOF_BIT)						<= RX_FSM_EOF;
+		RX_FIFO_Ack												<= not RX_FIFO_Full;
+		
+		RX_FIFO : ENTITY PoC.fifo_cc_got_tempput
+			GENERIC MAP (
+				D_BITS							=> RX_FIFO_DataIn'length,
+				MIN_DEPTH						=> RX_FIFO_DEPTHS(i),
+				ESTATE_WR_BITS			=> 0,
+				FSTATE_RD_BITS			=> 0,
+				DATA_REG						=> FALSE,
+				STATE_REG						=> TRUE,
+				OUTPUT_REG					=> FALSE
+			)
+			PORT MAP (
+				clk									=> RS_RX_Clock(i),
+				rst									=> RS_RX_Reset(i),
 
-        -- EMAC1
-        EMAC1CLIENTRXCLIENTCLKOUT       => open,
-        CLIENTEMAC1RXCLIENTCLKIN        => '0',
-        EMAC1CLIENTRXD                  => open,
-        EMAC1CLIENTRXDVLD               => open,
-        EMAC1CLIENTRXDVLDMSW            => open,
-        EMAC1CLIENTRXGOODFRAME          => open,
-        EMAC1CLIENTRXBADFRAME           => open,
-        EMAC1CLIENTRXFRAMEDROP          => open,
-        EMAC1CLIENTRXSTATS              => open,
-        EMAC1CLIENTRXSTATSVLD           => open,
-        EMAC1CLIENTRXSTATSBYTEVLD       => open,
+				-- Write Interface
+				put									=> RX_FIFO_put,
+				din									=> RX_FIFO_DataIn,
+				full								=> RX_FIFO_Full,
+				estate_wr						=> OPEN,
 
-        EMAC1CLIENTTXCLIENTCLKOUT       => open,
-        CLIENTEMAC1TXCLIENTCLKIN        => '0',
-        CLIENTEMAC1TXD                  => gnd_v48_i(15 downto 0),
-        CLIENTEMAC1TXDVLD               => '0',
-        CLIENTEMAC1TXDVLDMSW            => '0',
-        EMAC1CLIENTTXACK                => open,
-        CLIENTEMAC1TXFIRSTBYTE          => '0',
-        CLIENTEMAC1TXUNDERRUN           => '0',
-        EMAC1CLIENTTXCOLLISION          => open,
-        EMAC1CLIENTTXRETRANSMIT         => open,
-        CLIENTEMAC1TXIFGDELAY           => gnd_v48_i(7 downto 0),
-        EMAC1CLIENTTXSTATS              => open,
-        EMAC1CLIENTTXSTATSVLD           => open,
-        EMAC1CLIENTTXSTATSBYTEVLD       => open,
+				-- Temporary put control
+				commit							=> RX_FSM_Commit,
+				rollback						=> RX_FSM_Rollback,
 
-        CLIENTEMAC1PAUSEREQ             => '0',
-        CLIENTEMAC1PAUSEVAL             => gnd_v48_i(15 downto 0),
+				-- Read Interface
+				got									=> RX_FIFO_got,
+				valid								=> RX_FIFO_Valid,
+				dout								=> RX_FIFO_DataOut,
+				fstate_rd						=> OPEN
+			);
 
-        PHYEMAC1GTXCLK                  => '0',
-        PHYEMAC1TXGMIIMIICLKIN          => '0',
-        EMAC1PHYTXGMIIMIICLKOUT         => open,
+		RX_FIFO_got			<= not XClk_RX_FIFO_Full;
+		
+		genRX_XClk0 : if (RX_INSERT_CROSSCLOCK_FIFO(i) = FALSE) generate
+			RX_Valid(i)							<= RX_FIFO_Valid;
+			RX_Data(i)							<= RX_FIFO_DataOut(RX_Data(i)'range);
+			RX_SOF(i)								<= RX_FIFO_DataOut(SOF_BIT);
+			RX_EOF(i)								<= RX_FIFO_DataOut(EOF_BIT);
+			XClk_RX_FIFO_Full				<= not RX_Ack(i);
+		end generate;
+		genRX_XClk1 : if (RX_INSERT_CROSSCLOCK_FIFO(i) = TRUE) generate
+			signal XClk_RX_FIFO_DataOut		: STD_LOGIC_VECTOR(9 downto 0);
+		begin
+			XClk_RX_FIFO : ENTITY PoC.fifo_ic_got
+				GENERIC MAP (
+					D_BITS							=> RX_FIFO_DataOut'length,
+					MIN_DEPTH						=> 16,
+					DATA_REG						=> TRUE,
+					OUTPUT_REG					=> FALSE,
+					ESTATE_WR_BITS			=> 0,
+					FSTATE_RD_BITS			=> 0
+				)
+				PORT MAP (
+					-- Write Interface
+					clk_wr							=> RS_RX_Clock(i),
+					rst_wr							=> RS_RX_Reset(i),
+					put									=> RX_FIFO_Valid,
+					din									=> RX_FIFO_DataOut,
+					full								=> XClk_RX_FIFO_Full,
+					estate_wr						=> OPEN,
 
-        PHYEMAC1RXCLK                   => '0',
-        PHYEMAC1RXD                     => gnd_v48_i(7 downto 0),
-        PHYEMAC1RXDV                    => '0',
-        PHYEMAC1RXER                    => '0',
-        PHYEMAC1MIITXCLK                => '0',
-        EMAC1PHYTXCLK                   => open,
-        EMAC1PHYTXD                     => open,
-        EMAC1PHYTXEN                    => open,
-        EMAC1PHYTXER                    => open,
-        PHYEMAC1COL                     => '0',
-        PHYEMAC1CRS                     => '0',
+					-- Read Interface
+					clk_rd							=> RX_Clock(i),
+					rst_rd							=> RX_Reset(i),
+					got									=> RX_Ack(i),
+					valid								=> RX_Valid(i),
+					dout								=> XClk_RX_FIFO_DataOut,
+					fstate_rd						=> OPEN
+				);
+	
+			RX_Data(i)	<= XClk_RX_FIFO_DataOut(RX_Data(i)'range);
+			RX_SOF(i)		<= XClk_RX_FIFO_DataOut(SOF_BIT);
+			RX_EOF(i)		<= XClk_RX_FIFO_DataOut(EOF_BIT);
+		end generate;
+	end generate;
 
-        CLIENTEMAC1DCMLOCKED            => '1',
-        EMAC1CLIENTANINTERRUPT          => open,
+	gen1 : if (PORTS = 1) generate
+		signal TEMAC_MDIO_Clock_i			: STD_LOGIC_VECTOR(0 downto 0);
+		signal TEMAC_MDIO_Data_i			: STD_LOGIC_VECTOR(0 downto 0);
+		signal TEMAC_MDIO_Data_o			: STD_LOGIC_VECTOR(0 downto 0);
+	begin
+	
+		TEMAC_MDIO_Clock_i		<= (others => MDIO_Clock_i);
+		TEMAC_MDIO_Data_i			<= (others => MDIO_Data_i);
+		MDIO_Data_o						<= slv_and(TEMAC_MDIO_Data_o);
+		
+		TEMAC_V5 : TEMAC
+			generic map (
+				EMAC0_ADDRFILTER_ENABLE			=> FALSE,
+				EMAC0_BYTEPHY								=> TRUE,
+				EMAC0_CONFIGVEC_79					=> TRUE,									-- reserved, set to TRUE
+				EMAC0_DCRBASEADDR						=> x"00",									-- DCR interface - base address
+				EMAC0_GTLOOPBACK						=> FALSE,
+				EMAC0_HOST_ENABLE						=> FALSE,
+				EMAC0_MDIO_ENABLE						=> TRUE,
+				EMAC0_LINKTIMERVAL					=> (others => '0'),
+				EMAC0_LTCHECK_DISABLE				=> TRUE,									-- disable the length/type field check
+				EMAC0_PAUSEADDR							=> (others => '0'),
+				EMAC0_PHYINITAUTONEG_ENABLE => FALSE,
+				EMAC0_PHYISOLATE						=> FALSE,
+				EMAC0_PHYLOOPBACKMSB				=> FALSE,
+				EMAC0_PHYPOWERDOWN					=> FALSE,
+				EMAC0_PHYRESET							=> TRUE,
+				EMAC0_RGMII_ENABLE					=> FALSE,
+				EMAC0_SGMII_ENABLE					=> FALSE,
+				EMAC0_1000BASEX_ENABLE			=> FALSE,
+				EMAC0_TX16BITCLIENT_ENABLE	=> FALSE,
+				EMAC0_RX16BITCLIENT_ENABLE	=> FALSE,
+				EMAC0_TXFLOWCTRL_ENABLE			=> FALSE,
+				EMAC0_RXFLOWCTRL_ENABLE			=> FALSE,
+				EMAC0_TXHALFDUPLEX					=> FALSE,
+				EMAC0_RXHALFDUPLEX					=> FALSE,
+				EMAC0_TXINBANDFCS_ENABLE		=> FALSE,									-- automatically add padding and FCS
+				EMAC0_RXINBANDFCS_ENABLE		=> FALSE,									-- verify FCS field on pass through; truncate FCS field
+				EMAC0_TXJUMBOFRAME_ENABLE		=> TRUE,
+				EMAC0_RXJUMBOFRAME_ENABLE		=> TRUE,
+				EMAC0_TXVLAN_ENABLE					=> TRUE,
+				EMAC0_RXVLAN_ENABLE					=> TRUE,
+				EMAC0_TX_ENABLE							=> TRUE,
+				EMAC0_RX_ENABLE							=> TRUE,
+				EMAC0_TXRESET								=> FALSE,
+				EMAC0_RXRESET								=> FALSE,
+				EMAC0_SPEED_MSB							=> TRUE,
+				EMAC0_SPEED_LSB							=> FALSE,
+				EMAC0_TXIFGADJUST_ENABLE		=> FALSE,									-- insert always the legal minimum IFG
+				EMAC0_UNICASTADDR						=> x"000000000000",
+				EMAC0_UNIDIRECTION_ENABLE		=> FALSE,
+				EMAC0_USECLKEN							=> FALSE,
+				
+				EMAC1_ADDRFILTER_ENABLE			=> FALSE,
+				EMAC1_BYTEPHY								=> TRUE,
+				EMAC1_CONFIGVEC_79					=> TRUE,									-- reserved, set to TRUE
+				EMAC1_DCRBASEADDR						=> x"00",									-- DCR interface - base address
+				EMAC1_GTLOOPBACK						=> FALSE,
+				EMAC1_HOST_ENABLE						=> FALSE,
+				EMAC1_MDIO_ENABLE						=> TRUE,
+				EMAC1_LINKTIMERVAL					=> (others => '0'),
+				EMAC1_LTCHECK_DISABLE				=> TRUE,									-- disable the length/type field check
+				EMAC1_PAUSEADDR							=> (others => '0'),
+				EMAC1_PHYINITAUTONEG_ENABLE => FALSE,
+				EMAC1_PHYISOLATE						=> FALSE,
+				EMAC1_PHYLOOPBACKMSB				=> FALSE,
+				EMAC1_PHYPOWERDOWN					=> FALSE,
+				EMAC1_PHYRESET							=> TRUE,
+				EMAC1_RGMII_ENABLE					=> FALSE,
+				EMAC1_SGMII_ENABLE					=> FALSE,
+				EMAC1_1000BASEX_ENABLE			=> FALSE,
+				EMAC1_TX16BITCLIENT_ENABLE	=> FALSE,
+				EMAC1_RX16BITCLIENT_ENABLE	=> FALSE,
+				EMAC1_TXFLOWCTRL_ENABLE			=> FALSE,
+				EMAC1_RXFLOWCTRL_ENABLE			=> FALSE,
+				EMAC1_TXHALFDUPLEX					=> FALSE,
+				EMAC1_RXHALFDUPLEX					=> FALSE,
+				EMAC1_TXINBANDFCS_ENABLE		=> FALSE,									-- automatically add padding and FCS
+				EMAC1_RXINBANDFCS_ENABLE		=> FALSE,									-- verify FCS field on pass through; truncate FCS field
+				EMAC1_TXJUMBOFRAME_ENABLE		=> TRUE,
+				EMAC1_RXJUMBOFRAME_ENABLE		=> TRUE,
+				EMAC1_TXVLAN_ENABLE					=> TRUE,
+				EMAC1_RXVLAN_ENABLE					=> TRUE,
+				EMAC1_TX_ENABLE							=> TRUE,
+				EMAC1_RX_ENABLE							=> TRUE,
+				EMAC1_TXRESET								=> FALSE,
+				EMAC1_RXRESET								=> FALSE,
+				EMAC1_SPEED_MSB							=> TRUE,
+				EMAC1_SPEED_LSB							=> FALSE,
+				EMAC1_TXIFGADJUST_ENABLE		=> FALSE,									-- insert always the legal minimum IFG
+				EMAC1_UNICASTADDR						=> x"000000000000",
+				EMAC1_UNIDIRECTION_ENABLE		=> FALSE,
+				EMAC1_USECLKEN							=> FALSE
+			)
+			port map (
+				RESET												=> Reset,											-- @async:	
 
-        PHYEMAC1SIGNALDET               => '0',
-        PHYEMAC1PHYAD                   => gnd_v48_i(4 downto 0),
-        EMAC1PHYENCOMMAALIGN            => open,
-        EMAC1PHYLOOPBACKMSB             => open,
-        EMAC1PHYMGTRXRESET              => open,
-        EMAC1PHYMGTTXRESET              => open,
-        EMAC1PHYPOWERDOWN               => open,
-        EMAC1PHYSYNCACQSTATUS           => open,
-        PHYEMAC1RXCLKCORCNT             => gnd_v48_i(2 downto 0),
-        PHYEMAC1RXBUFSTATUS             => gnd_v48_i(1 downto 0),
-        PHYEMAC1RXBUFERR                => '0',
-        PHYEMAC1RXCHARISCOMMA           => '0',
-        PHYEMAC1RXCHARISK               => '0',
-        PHYEMAC1RXCHECKINGCRC           => '0',
-        PHYEMAC1RXCOMMADET              => '0',
-        PHYEMAC1RXDISPERR               => '0',
-        PHYEMAC1RXLOSSOFSYNC            => gnd_v48_i(1 downto 0),
-        PHYEMAC1RXNOTINTABLE            => '0',
-        PHYEMAC1RXRUNDISP               => '0',
-        PHYEMAC1TXBUFERR                => '0',
-        EMAC1PHYTXCHARDISPMODE          => open,
-        EMAC1PHYTXCHARDISPVAL           => open,
-        EMAC1PHYTXCHARISK               => open,
+				-- Generic Host Bus interface 
+				HOSTCLK											=> '0',
+				HOSTOPCODE									=> "00",
+				HOSTREQ											=> '0',
+				HOSTADDR										=> (others => '0'),
+				HOSTMIIMSEL									=> '0',
+				HOSTEMAC1SEL								=> '0',
+				HOSTWRDATA									=> (others => '0'),
+				HOSTRDDATA									=> open,
+				HOSTMIIMRDY									=> open,
+				
+				-- DCR interface
+				DCREMACCLK									=> '0',
+				DCREMACABUS									=> (others => '0'),					-- address bus
+				DCREMACENABLE								=> '0',											-- bus enable:	'0' -> GHB interface; '1' -> DCR interface
+				DCREMACREAD									=> '0',											-- read
+				DCREMACWRITE								=> '0',											-- write
+				DCREMACDBUS									=> (others => '0'),					-- data in
+				EMACDCRDBUS									=> open,										-- data out
+				EMACDCRACK									=> open,										-- ack
+				DCRHOSTDONEIR								=> open,										-- interrupt (register access is complete)
 
-        EMAC1PHYMCLKOUT                 => open,
-        PHYEMAC1MCLKIN                  => '0',
-        PHYEMAC1MDIN                    => '0',
-        EMAC1PHYMDOUT                   => open,
-        EMAC1PHYMDTRI                   => open,
+				-- TEMAC - port 0
+				CLIENTEMAC0TXCLIENTCLKIN		=> Eth_TX_Clock(0),
+				CLIENTEMAC0RXCLIENTCLKIN		=> Eth_RX_Clock(0),
+				EMAC0CLIENTTXCLIENTCLKOUT		=> open,
+				EMAC0CLIENTRXCLIENTCLKOUT		=> open,
+				PHYEMAC0TXGMIIMIICLKIN			=> RS_TX_Clock(0),
+				PHYEMAC0RXCLK								=> RS_RX_Clock(0),
+				EMAC0PHYTXCLK								=> open,
+				PHYEMAC0GTXCLK							=> '0',
+				EMAC0PHYTXGMIIMIICLKOUT			=> open,
+				PHYEMAC0MIITXCLK						=> '0',
+				
+				CLIENTEMAC0DCMLOCKED				=> Ethernet_ClockStable(0),
+				
+				-- TX interface
+				CLIENTEMAC0TXDVLD						=> TX_FSM_Valid(0),
+				CLIENTEMAC0TXD							=> x"00" & TX_FSM_Data(0),
+				CLIENTEMAC0TXDVLDMSW				=> '0',													-- indicate odd bytes in last transmit word
+				EMAC0CLIENTTXACK						=> TEMAC_TX_Ack(0),
+				CLIENTEMAC0TXFIRSTBYTE			=> '0',
+				CLIENTEMAC0TXUNDERRUN				=> TX_FSM_UnderrunDetected(0),	-- tx buffer underrun - is not possible if fifo_cc_tempput is used
+				EMAC0CLIENTTXCOLLISION			=> open,												-- always deasserted in full duplex mode
+				EMAC0CLIENTTXRETRANSMIT			=> open,												-- always deasserted in full duplex mode
+				CLIENTEMAC0TXIFGDELAY				=> (others => '0'),
+				EMAC0CLIENTTXSTATS					=> open,												-- TX statistics
+				EMAC0CLIENTTXSTATSVLD				=> open,												-- TX statistics
+				EMAC0CLIENTTXSTATSBYTEVLD		=> open,												-- TX statistics
+				
+				-- RX interface
+				EMAC0CLIENTRXDVLD						=> TEMAC_RX_Valid(0),
+				EMAC0CLIENTRXD(7 downto 0)	=> TEMAC_RX_Data(0),
+				EMAC0CLIENTRXDVLDMSW				=> open,											-- indicate odd bytes in last receive word
+				EMAC0CLIENTRXGOODFRAME			=> TEMAC_RX_GoodFrame(0),
+				EMAC0CLIENTRXBADFRAME				=> TEMAC_RX_BadFrame(0),
+				EMAC0CLIENTRXFRAMEDROP			=> open,											-- indicate a address filter mismatch
+				EMAC0CLIENTRXSTATS					=> open,											-- RX statistics
+				EMAC0CLIENTRXSTATSVLD				=> open,											-- RX statistics
+				EMAC0CLIENTRXSTATSBYTEVLD		=> open,											-- RX statistics
 
-        EMAC1SPEEDIS10100               => open,
+				-- PCS configuration
+				PHYEMAC0PHYAD								=> PCS_MDIO_ADDRESS(0)(4 downto 0),
+				
+				-- Status interface
+				EMAC0CLIENTANINTERRUPT			=> open,											-- interrupt upon auto-negotiation
+				EMAC0SPEEDIS10100						=> open,											-- must be low in GbE mode
+				EMAC0PHYSYNCACQSTATUS				=> open,											-- receiver's synchronization FSM state (IEEE 802.3, clause 36)
+				
+				-- MAC layer flow control - user interface
+				CLIENTEMAC0PAUSEREQ					=> '0',
+				CLIENTEMAC0PAUSEVAL					=> x"0000",
+				
+				-- MDIO interface
+				EMAC0PHYMCLKOUT							=> open,
+				PHYEMAC0MCLKIN							=> MDIO_Clock_i,
+				PHYEMAC0MDIN								=> MDIO_Data_i,
+				EMAC0PHYMDOUT								=> MDIO_Data_o,
+				EMAC0PHYMDTRI								=> open,
+				
+				-- GMII interface
+				PHYEMAC0RXDV								=> '0',
+				PHYEMAC0RXER								=> '0',
+				EMAC0PHYTXEN								=> open,
+				EMAC0PHYTXER								=> open,
 
-        -- Host Interface 
-        HOSTCLK                         => '0',
- 
-        HOSTOPCODE                      => gnd_v48_i(1 downto 0),
-        HOSTREQ                         => '0',
-        HOSTMIIMSEL                     => '0',
-        HOSTADDR                        => gnd_v48_i(9 downto 0),
-        HOSTWRDATA                      => gnd_v48_i(31 downto 0), 
-        HOSTMIIMRDY                     => open,
-        HOSTRDDATA                      => open,
-        HOSTEMAC1SEL                    => '0',
+				PHYEMAC0COL									=> '0',		-- Collision Detect
+				PHYEMAC0CRS									=> '0',		-- Carrier Sense
 
-        -- DCR Interface
-        DCREMACCLK                      => '0',
-        DCREMACABUS                     => gnd_v48_i(9 downto 0),
-        DCREMACREAD                     => '0',
-        DCREMACWRITE                    => '0',
-        DCREMACDBUS                     => gnd_v48_i(31 downto 0),
-        EMACDCRACK                      => open,
-        EMACDCRDBUS                     => open,
-        DCREMACENABLE                   => '0',
-        DCRHOSTDONEIR                   => open
-        );
+				-- TRANS interface
+				EMAC0PHYPOWERDOWN						=> Trans_PowerDown(0),
+				EMAC0PHYMGTTXRESET					=> Trans_TX_Reset(0),
+				EMAC0PHYMGTRXRESET					=> Trans_RX_Reset(0),
+				EMAC0PHYLOOPBACKMSB					=> Trans_LoopBack(0),										-- perform loopback testing
+				EMAC0PHYENCOMMAALIGN				=> Trans_EnableCommaAlign(0),						-- enable comma alignment
 
-end core;
+				-- TRANS TX interface
+				EMAC0PHYTXD									=> Trans_TX_Data(0),
+				EMAC0PHYTXCHARISK						=> Trans_TX_CharIsK(0),
+				EMAC0PHYTXCHARDISPMODE			=> Trans_TX_CharDisparityMode(0),
+				EMAC0PHYTXCHARDISPVAL				=> Trans_TX_CharDisparityValue(0),
+				PHYEMAC0TXBUFERR						=> Trans_TX_BufferError(0),
+
+				-- TRANS RX interface
+				PHYEMAC0RXD									=> Trans_RX_Data(0),
+				PHYEMAC0RXCHARISK						=> Trans_RX_CharIsK(0),
+				PHYEMAC0RXCHARISCOMMA				=> Trans_RX_CharIsComma(0),
+				PHYEMAC0RXDISPERR						=> Trans_RX_DisparityError(0),
+				PHYEMAC0RXNOTINTABLE				=> Trans_RX_NotInTable(0),
+				PHYEMAC0RXBUFSTATUS					=> Trans_RX_BufferStatus(0),
+				PHYEMAC0RXCLKCORCNT					=> Trans_RX_ClockCorrectionCount(0),
+
+				-- reserved - tie to ground
+				PHYEMAC0RXCHECKINGCRC				=> '0',
+				PHYEMAC0RXCOMMADET					=> '0',
+				PHYEMAC0RXBUFERR						=> '0',
+				PHYEMAC0RXLOSSOFSYNC				=> "00",
+				PHYEMAC0RXRUNDISP						=> '0',
+				
+				-- optical light detected in optical transceiver
+				PHYEMAC0SIGNALDET						=> '1',											-- set to high for copper cables
+				
+				-- TEMAC - port 1
+				CLIENTEMAC1TXCLIENTCLKIN		=> '0',
+				CLIENTEMAC1RXCLIENTCLKIN		=> '0',
+				EMAC1CLIENTTXCLIENTCLKOUT		=> open,
+				EMAC1CLIENTRXCLIENTCLKOUT		=> open,
+				PHYEMAC1TXGMIIMIICLKIN			=> '0',
+				PHYEMAC1RXCLK								=> '0',
+				EMAC1PHYTXCLK								=> open,
+				PHYEMAC1GTXCLK							=> '0',
+				EMAC1PHYTXGMIIMIICLKOUT			=> open,
+				PHYEMAC1MIITXCLK						=> '0',
+				
+				CLIENTEMAC1DCMLOCKED				=> '0',
+				
+				-- TX interface
+				CLIENTEMAC1TXDVLD						=> '0',
+				CLIENTEMAC1TXD							=> x"0000",
+				CLIENTEMAC1TXDVLDMSW				=> '0',												-- indicate odd bytes in last transmit word
+				EMAC1CLIENTTXACK						=> open,
+				CLIENTEMAC1TXFIRSTBYTE			=> '0',
+				CLIENTEMAC1TXUNDERRUN				=> '0',												-- tx buffer underrun - is not possible if fifo_cc_tempput is used
+				EMAC1CLIENTTXCOLLISION			=> open,											-- always deasserted in full duplex mode
+				EMAC1CLIENTTXRETRANSMIT			=> open,											-- always deasserted in full duplex mode
+				CLIENTEMAC1TXIFGDELAY				=> (others => '0'),
+				EMAC1CLIENTTXSTATS					=> open,											-- TX statistics
+				EMAC1CLIENTTXSTATSVLD				=> open,											-- TX statistics
+				EMAC1CLIENTTXSTATSBYTEVLD		=> open,											-- TX statistics
+				
+				-- RX interface
+				EMAC1CLIENTRXDVLD						=> open,
+				EMAC1CLIENTRXD(7 downto 0)	=> open,
+				EMAC1CLIENTRXDVLDMSW				=> open,											-- indicate odd bytes in last receive word
+				EMAC1CLIENTRXGOODFRAME			=> open,
+				EMAC1CLIENTRXBADFRAME				=> open,
+				EMAC1CLIENTRXFRAMEDROP			=> open,											-- indicate a address filter mismatch
+				EMAC1CLIENTRXSTATS					=> open,											-- RX statistics
+				EMAC1CLIENTRXSTATSVLD				=> open,											-- RX statistics
+				EMAC1CLIENTRXSTATSBYTEVLD		=> open,											-- RX statistics
+
+				-- PCS configuration
+				PHYEMAC1PHYAD								=> PCS_MDIO_ADDRESS(1)(4 downto 0),
+				
+				-- Status interface
+				EMAC1CLIENTANINTERRUPT			=> open,											-- interrupt upon auto-negotiation
+				EMAC1SPEEDIS10100						=> open,											-- must be low in GbE mode
+				EMAC1PHYSYNCACQSTATUS				=> open,											-- receiver's synchronization FSM state (IEEE 802.3, clause 36)
+				
+				-- MAC layer flow control - user interface
+				CLIENTEMAC1PAUSEREQ					=> '0',
+				CLIENTEMAC1PAUSEVAL					=> x"0000",
+				
+				-- MDIO interface
+				EMAC1PHYMCLKOUT							=> open,
+				PHYEMAC1MCLKIN							=> '0',
+				PHYEMAC1MDIN								=> '0',
+				EMAC1PHYMDOUT								=> open,
+				EMAC1PHYMDTRI								=> open,
+				
+				-- GMII interface
+				PHYEMAC1RXD									=> (others => '0'),
+				PHYEMAC1RXDV								=> '0',
+				PHYEMAC1RXER								=> '0',
+				EMAC1PHYTXD									=> open,
+				EMAC1PHYTXEN								=> open,
+				EMAC1PHYTXER								=> open,
+
+				PHYEMAC1COL									=> '0',		-- Collision Detect
+				PHYEMAC1CRS									=> '0',		-- Carrier Sense
+
+				-- TRANS interface
+				EMAC1PHYPOWERDOWN						=> open,
+				EMAC1PHYMGTRXRESET					=> open,
+				EMAC1PHYMGTTXRESET					=> open,
+				EMAC1PHYLOOPBACKMSB					=> open,										-- perform loopback testing
+
+				-- TRANS TX interface
+				PHYEMAC1TXBUFERR						=> '0',
+				EMAC1PHYTXCHARDISPMODE			=> open,
+				EMAC1PHYTXCHARDISPVAL				=> open,
+				EMAC1PHYTXCHARISK						=> open,
+
+				-- TRANS RX interface
+				PHYEMAC1RXCHARISCOMMA				=> '0',
+				PHYEMAC1RXCHARISK						=> '0',
+				PHYEMAC1RXDISPERR						=> '0',
+				PHYEMAC1RXNOTINTABLE				=> '0',
+				EMAC1PHYENCOMMAALIGN				=> open,										-- enable comma alignment
+				PHYEMAC1RXCLKCORCNT					=> "000",
+				PHYEMAC1RXBUFSTATUS					=> "00",
+
+				-- reserved - tie to ground
+				PHYEMAC1RXCHECKINGCRC				=> '0',
+				PHYEMAC1RXCOMMADET					=> '0',
+				PHYEMAC1RXBUFERR						=> '0',
+				PHYEMAC1RXLOSSOFSYNC				=> "00",
+				PHYEMAC1RXRUNDISP						=> '0',
+				
+				-- optical light detected in optical transceiver
+				PHYEMAC1SIGNALDET						=> '1'											-- set to high for copper cables
+			);
+	end generate;
+	
+	gen2 : if (PORTS = 2) generate
+		signal TEMAC_MDIO_Clock_i			: STD_LOGIC_VECTOR(1 downto 0);
+		signal TEMAC_MDIO_Data_i			: STD_LOGIC_VECTOR(1 downto 0);
+		signal TEMAC_MDIO_Data_o			: STD_LOGIC_VECTOR(1 downto 0);
+	begin
+	
+		TEMAC_MDIO_Clock_i		<= (others => MDIO_Clock_i);
+		TEMAC_MDIO_Data_i			<= (others => MDIO_Data_i);
+		MDIO_Data_o						<= slv_and(TEMAC_MDIO_Data_o);
+	
+		TEMAC_V5 : TEMAC
+			generic map (
+				EMAC0_ADDRFILTER_ENABLE			=> FALSE,
+				EMAC0_BYTEPHY								=> TRUE,
+				EMAC0_CONFIGVEC_79					=> TRUE,									-- reserved, set to TRUE
+				EMAC0_DCRBASEADDR						=> x"00",									-- DCR interface - base address
+				EMAC0_GTLOOPBACK						=> FALSE,
+				EMAC0_HOST_ENABLE						=> FALSE,
+				EMAC0_MDIO_ENABLE						=> TRUE,
+				EMAC0_LINKTIMERVAL					=> (others => '0'),
+				EMAC0_LTCHECK_DISABLE				=> TRUE,									-- disable the length/type field check
+				EMAC0_PAUSEADDR							=> (others => '0'),
+				EMAC0_PHYINITAUTONEG_ENABLE => FALSE,
+				EMAC0_PHYISOLATE						=> FALSE,
+				EMAC0_PHYLOOPBACKMSB				=> FALSE,
+				EMAC0_PHYPOWERDOWN					=> FALSE,
+				EMAC0_PHYRESET							=> TRUE,
+				EMAC0_RGMII_ENABLE					=> FALSE,
+				EMAC0_SGMII_ENABLE					=> FALSE,
+				EMAC0_1000BASEX_ENABLE			=> FALSE,
+				EMAC0_TX16BITCLIENT_ENABLE	=> FALSE,
+				EMAC0_RX16BITCLIENT_ENABLE	=> FALSE,
+				EMAC0_TXFLOWCTRL_ENABLE			=> FALSE,
+				EMAC0_RXFLOWCTRL_ENABLE			=> FALSE,
+				EMAC0_TXHALFDUPLEX					=> FALSE,
+				EMAC0_RXHALFDUPLEX					=> FALSE,
+				EMAC0_TXINBANDFCS_ENABLE		=> FALSE,									-- automatically add padding and FCS
+				EMAC0_RXINBANDFCS_ENABLE		=> FALSE,									-- verify FCS field on pass through; truncate FCS field
+				EMAC0_TXJUMBOFRAME_ENABLE		=> TRUE,
+				EMAC0_RXJUMBOFRAME_ENABLE		=> TRUE,
+				EMAC0_TXVLAN_ENABLE					=> TRUE,
+				EMAC0_RXVLAN_ENABLE					=> TRUE,
+				EMAC0_TX_ENABLE							=> TRUE,
+				EMAC0_RX_ENABLE							=> TRUE,
+				EMAC0_TXRESET								=> FALSE,
+				EMAC0_RXRESET								=> FALSE,
+				EMAC0_SPEED_MSB							=> TRUE,
+				EMAC0_SPEED_LSB							=> FALSE,
+				EMAC0_TXIFGADJUST_ENABLE		=> FALSE,									-- insert always the legal minimum IFG
+				EMAC0_UNICASTADDR						=> x"000000000000",
+				EMAC0_UNIDIRECTION_ENABLE		=> FALSE,
+				EMAC0_USECLKEN							=> FALSE,
+				
+				EMAC1_ADDRFILTER_ENABLE			=> FALSE,
+				EMAC1_BYTEPHY								=> TRUE,
+				EMAC1_CONFIGVEC_79					=> TRUE,									-- reserved, set to TRUE
+				EMAC1_DCRBASEADDR						=> x"00",									-- DCR interface - base address
+				EMAC1_GTLOOPBACK						=> FALSE,
+				EMAC1_HOST_ENABLE						=> FALSE,
+				EMAC1_MDIO_ENABLE						=> TRUE,
+				EMAC1_LINKTIMERVAL					=> (others => '0'),
+				EMAC1_LTCHECK_DISABLE				=> TRUE,									-- disable the length/type field check
+				EMAC1_PAUSEADDR							=> (others => '0'),
+				EMAC1_PHYINITAUTONEG_ENABLE => FALSE,
+				EMAC1_PHYISOLATE						=> FALSE,
+				EMAC1_PHYLOOPBACKMSB				=> FALSE,
+				EMAC1_PHYPOWERDOWN					=> FALSE,
+				EMAC1_PHYRESET							=> TRUE,
+				EMAC1_RGMII_ENABLE					=> FALSE,
+				EMAC1_SGMII_ENABLE					=> FALSE,
+				EMAC1_1000BASEX_ENABLE			=> FALSE,
+				EMAC1_TX16BITCLIENT_ENABLE	=> FALSE,
+				EMAC1_RX16BITCLIENT_ENABLE	=> FALSE,
+				EMAC1_TXFLOWCTRL_ENABLE			=> FALSE,
+				EMAC1_RXFLOWCTRL_ENABLE			=> FALSE,
+				EMAC1_TXHALFDUPLEX					=> FALSE,
+				EMAC1_RXHALFDUPLEX					=> FALSE,
+				EMAC1_TXINBANDFCS_ENABLE		=> FALSE,									-- automatically add padding and FCS
+				EMAC1_RXINBANDFCS_ENABLE		=> FALSE,									-- verify FCS field on pass through; truncate FCS field
+				EMAC1_TXJUMBOFRAME_ENABLE		=> TRUE,
+				EMAC1_RXJUMBOFRAME_ENABLE		=> TRUE,
+				EMAC1_TXVLAN_ENABLE					=> TRUE,
+				EMAC1_RXVLAN_ENABLE					=> TRUE,
+				EMAC1_TX_ENABLE							=> TRUE,
+				EMAC1_RX_ENABLE							=> TRUE,
+				EMAC1_TXRESET								=> FALSE,
+				EMAC1_RXRESET								=> FALSE,
+				EMAC1_SPEED_MSB							=> TRUE,
+				EMAC1_SPEED_LSB							=> FALSE,
+				EMAC1_TXIFGADJUST_ENABLE		=> FALSE,									-- insert always the legal minimum IFG
+				EMAC1_UNICASTADDR						=> x"000000000000",
+				EMAC1_UNIDIRECTION_ENABLE		=> FALSE,
+				EMAC1_USECLKEN							=> FALSE
+			)
+			port map (
+				RESET												=> Reset,											-- @async:	
+
+				-- Generic Host Bus interface 
+				HOSTCLK											=> '0',
+				HOSTOPCODE									=> "00",
+				HOSTREQ											=> '0',
+				HOSTADDR										=> (others => '0'),
+				HOSTMIIMSEL									=> '0',
+				HOSTEMAC1SEL								=> '0',
+				HOSTWRDATA									=> (others => '0'),
+				HOSTRDDATA									=> open,
+				HOSTMIIMRDY									=> open,
+				
+				-- DCR interface
+				DCREMACCLK									=> '0',
+				DCREMACABUS									=> (others => '0'),					-- address bus
+				DCREMACENABLE								=> '0',											-- bus enable:	'0' -> GHB interface; '1' -> DCR interface
+				DCREMACREAD									=> '0',											-- read
+				DCREMACWRITE								=> '0',											-- write
+				DCREMACDBUS									=> (others => '0'),					-- data in
+				EMACDCRDBUS									=> open,										-- data out
+				EMACDCRACK									=> open,										-- ack
+				DCRHOSTDONEIR								=> open,										-- interrupt (register access is complete)
+
+				-- TEMAC - port 0
+				CLIENTEMAC0TXCLIENTCLKIN		=> Eth_TX_Clock(0),
+				CLIENTEMAC0RXCLIENTCLKIN		=> Eth_RX_Clock(0),
+				EMAC0CLIENTTXCLIENTCLKOUT		=> open,
+				EMAC0CLIENTRXCLIENTCLKOUT		=> open,
+				PHYEMAC0TXGMIIMIICLKIN			=> RS_TX_Clock(0),
+				PHYEMAC0RXCLK								=> RS_RX_Clock(0),
+				EMAC0PHYTXCLK								=> open,
+				PHYEMAC0GTXCLK							=> '0',
+				EMAC0PHYTXGMIIMIICLKOUT			=> open,
+				PHYEMAC0MIITXCLK						=> '0',
+				
+				CLIENTEMAC0DCMLOCKED				=> Ethernet_ClockStable(0),
+				
+				-- TX interface
+				CLIENTEMAC0TXDVLD						=> TX_FSM_Valid(0),
+				CLIENTEMAC0TXD							=> x"00" & TX_FSM_Data(0),
+				CLIENTEMAC0TXDVLDMSW				=> '0',													-- indicate odd bytes in last transmit word
+				EMAC0CLIENTTXACK						=> TEMAC_TX_Ack(0),
+				CLIENTEMAC0TXFIRSTBYTE			=> '0',
+				CLIENTEMAC0TXUNDERRUN				=> TX_FSM_UnderrunDetected(0),	-- tx buffer underrun - is not possible if fifo_cc_tempput is used
+				EMAC0CLIENTTXCOLLISION			=> open,												-- always deasserted in full duplex mode
+				EMAC0CLIENTTXRETRANSMIT			=> open,												-- always deasserted in full duplex mode
+				CLIENTEMAC0TXIFGDELAY				=> (others => '0'),
+				EMAC0CLIENTTXSTATS					=> open,												-- TX statistics
+				EMAC0CLIENTTXSTATSVLD				=> open,												-- TX statistics
+				EMAC0CLIENTTXSTATSBYTEVLD		=> open,												-- TX statistics
+				
+				-- RX interface
+				EMAC0CLIENTRXDVLD						=> TEMAC_RX_Valid(0),
+				EMAC0CLIENTRXD(7 downto 0)	=> TEMAC_RX_Data(0),
+				EMAC0CLIENTRXDVLDMSW				=> open,											-- indicate odd bytes in last receive word
+				EMAC0CLIENTRXGOODFRAME			=> TEMAC_RX_GoodFrame(0),
+				EMAC0CLIENTRXBADFRAME				=> TEMAC_RX_BadFrame(0),
+				EMAC0CLIENTRXFRAMEDROP			=> open,											-- indicate a address filter mismatch
+				EMAC0CLIENTRXSTATS					=> open,											-- RX statistics
+				EMAC0CLIENTRXSTATSVLD				=> open,											-- RX statistics
+				EMAC0CLIENTRXSTATSBYTEVLD		=> open,											-- RX statistics
+
+				-- PCS configuration
+				PHYEMAC0PHYAD								=> PCS_MDIO_ADDRESS(0)(4 downto 0),
+				
+				-- Status interface
+				EMAC0CLIENTANINTERRUPT			=> open,											-- interrupt upon auto-negotiation
+				EMAC0SPEEDIS10100						=> open,											-- must be low in GbE mode
+				EMAC0PHYSYNCACQSTATUS				=> open,											-- receiver's synchronization FSM state (IEEE 802.3, clause 36)
+				
+				-- MAC layer flow control - user interface
+				CLIENTEMAC0PAUSEREQ					=> '0',
+				CLIENTEMAC0PAUSEVAL					=> x"0000",
+				
+				-- MDIO interface
+				EMAC0PHYMCLKOUT							=> open,
+				PHYEMAC0MCLKIN							=> TEMAC_MDIO_Clock_i(0),
+				PHYEMAC0MDIN								=> TEMAC_MDIO_Data_i(0),
+				EMAC0PHYMDOUT								=> TEMAC_MDIO_Data_o(0),
+				EMAC0PHYMDTRI								=> open,
+				
+				-- GMII interface
+				PHYEMAC0RXDV								=> '0',
+				PHYEMAC0RXER								=> '0',
+				EMAC0PHYTXEN								=> open,
+				EMAC0PHYTXER								=> open,
+
+				PHYEMAC0COL									=> '0',		-- Collision Detect
+				PHYEMAC0CRS									=> '0',		-- Carrier Sense
+
+				-- TRANS interface
+				EMAC0PHYPOWERDOWN						=> Trans_PowerDown(0),
+				EMAC0PHYMGTTXRESET					=> Trans_TX_Reset(0),
+				EMAC0PHYMGTRXRESET					=> Trans_RX_Reset(0),
+				EMAC0PHYLOOPBACKMSB					=> Trans_LoopBack(0),							-- perform loopback testing
+				EMAC0PHYENCOMMAALIGN				=> Trans_EnableCommaAlign(0),			-- enable comma alignment
+
+				-- TRANS TX interface
+				EMAC0PHYTXD									=> Trans_TX_Data(0),
+				EMAC0PHYTXCHARISK						=> Trans_TX_CharIsK(0),
+				EMAC0PHYTXCHARDISPMODE			=> Trans_TX_CharDisparityMode(0),
+				EMAC0PHYTXCHARDISPVAL				=> Trans_TX_CharDisparityValue(0),
+				PHYEMAC0TXBUFERR						=> Trans_TX_BufferError(0),
+
+				-- TRANS RX interface
+				PHYEMAC0RXD									=> Trans_RX_Data(0),
+				PHYEMAC0RXCHARISK						=> Trans_RX_CharIsK(0),
+				PHYEMAC0RXCHARISCOMMA				=> Trans_RX_CharIsComma(0),
+				PHYEMAC0RXDISPERR						=> Trans_RX_DisparityError(0),
+				PHYEMAC0RXNOTINTABLE				=> Trans_RX_NotInTable(0),
+				PHYEMAC0RXCLKCORCNT					=> Trans_RX_ClockCorrectionCount(0),
+				PHYEMAC0RXBUFSTATUS					=> Trans_RX_BufferStatus(0),
+
+				-- reserved - tie to ground
+				PHYEMAC0RXCHECKINGCRC				=> '0',
+				PHYEMAC0RXCOMMADET					=> '0',
+				PHYEMAC0RXBUFERR						=> '0',
+				PHYEMAC0RXLOSSOFSYNC				=> "00",
+				PHYEMAC0RXRUNDISP						=> '0',
+				
+				-- optical light detected in optical transceiver
+				PHYEMAC0SIGNALDET						=> '1',											-- set to high for copper cables
+				
+				-- TEMAC - port 1
+				CLIENTEMAC1TXCLIENTCLKIN		=> Eth_TX_Clock(1),
+				CLIENTEMAC1RXCLIENTCLKIN		=> Eth_RX_Clock(1),
+				EMAC1CLIENTTXCLIENTCLKOUT		=> open,
+				EMAC1CLIENTRXCLIENTCLKOUT		=> open,
+				PHYEMAC1TXGMIIMIICLKIN			=> RS_TX_Clock(1),
+				PHYEMAC1RXCLK								=> RS_RX_Clock(1),
+				EMAC1PHYTXCLK								=> open,
+				PHYEMAC1GTXCLK							=> '0',
+				EMAC1PHYTXGMIIMIICLKOUT			=> open,
+				PHYEMAC1MIITXCLK						=> '0',
+				
+				CLIENTEMAC1DCMLOCKED				=> Ethernet_ClockStable(0),
+				
+				-- TX interface
+				CLIENTEMAC1TXDVLD						=> TX_FSM_Valid(1),
+				CLIENTEMAC1TXD							=> x"00" & TX_FSM_Data(1),
+				CLIENTEMAC1TXDVLDMSW				=> '0',													-- indicate odd bytes in last transmit word
+				EMAC1CLIENTTXACK						=> TEMAC_TX_Ack(1),
+				CLIENTEMAC1TXFIRSTBYTE			=> '0',
+				CLIENTEMAC1TXUNDERRUN				=> TX_FSM_UnderrunDetected(1),	-- tx buffer underrun - is not possible if fifo_cc_tempput is used
+				EMAC1CLIENTTXCOLLISION			=> open,												-- always deasserted in full duplex mode
+				EMAC1CLIENTTXRETRANSMIT			=> open,												-- always deasserted in full duplex mode
+				CLIENTEMAC1TXIFGDELAY				=> (others => '0'),
+				EMAC1CLIENTTXSTATS					=> open,												-- TX statistics
+				EMAC1CLIENTTXSTATSVLD				=> open,												-- TX statistics
+				EMAC1CLIENTTXSTATSBYTEVLD		=> open,												-- TX statistics
+				
+				-- RX interface
+				EMAC1CLIENTRXDVLD						=> TEMAC_RX_Valid(1),
+				EMAC1CLIENTRXD(7 downto 0)	=> TEMAC_RX_Data(1),
+				EMAC1CLIENTRXDVLDMSW				=> open,											-- indicate odd bytes in last receive word
+				EMAC1CLIENTRXGOODFRAME			=> TEMAC_RX_GoodFrame(1),
+				EMAC1CLIENTRXBADFRAME				=> TEMAC_RX_BadFrame(1),
+				EMAC1CLIENTRXFRAMEDROP			=> open,											-- indicate a address filter mismatch
+				EMAC1CLIENTRXSTATS					=> open,											-- RX statistics
+				EMAC1CLIENTRXSTATSVLD				=> open,											-- RX statistics
+				EMAC1CLIENTRXSTATSBYTEVLD		=> open,											-- RX statistics
+
+				-- PCS configuration
+				PHYEMAC1PHYAD								=> PCS_MDIO_ADDRESS(1)(4 downto 0),
+				
+				-- Status interface
+				EMAC1CLIENTANINTERRUPT			=> open,											-- interrupt upon auto-negotiation
+				EMAC1SPEEDIS10100						=> open,											-- must be low in GbE mode
+				EMAC1PHYSYNCACQSTATUS				=> open,											-- receiver's synchronization FSM state (IEEE 802.3, clause 36)
+				
+				-- MAC layer flow control - user interface
+				CLIENTEMAC1PAUSEREQ					=> '0',
+				CLIENTEMAC1PAUSEVAL					=> x"0000",
+				
+				-- MDIO interface
+				EMAC1PHYMCLKOUT							=> open,
+				PHYEMAC1MCLKIN							=> TEMAC_MDIO_Clock_i(1),
+				PHYEMAC1MDIN								=> TEMAC_MDIO_Data_i(1),
+				EMAC1PHYMDOUT								=> TEMAC_MDIO_Data_o(1),
+				EMAC1PHYMDTRI								=> open,
+				
+				-- GMII interface
+				PHYEMAC1RXDV								=> '0',
+				PHYEMAC1RXER								=> '0',
+				EMAC1PHYTXEN								=> open,
+				EMAC1PHYTXER								=> open,
+
+				PHYEMAC1COL									=> '0',		-- Collision Detect
+				PHYEMAC1CRS									=> '0',		-- Carrier Sense
+
+				-- TRANS interface
+				EMAC1PHYPOWERDOWN						=> Trans_PowerDown(1),
+				EMAC1PHYMGTTXRESET					=> Trans_TX_Reset(1),
+				EMAC1PHYMGTRXRESET					=> Trans_RX_Reset(1),
+				EMAC1PHYLOOPBACKMSB					=> Trans_LoopBack(1),							-- perform loopback testing
+				EMAC1PHYENCOMMAALIGN				=> Trans_EnableCommaAlign(1),			-- enable comma alignment
+
+				-- TRANS TX interface
+				EMAC1PHYTXD									=> Trans_TX_Data(1),
+				EMAC1PHYTXCHARISK						=> Trans_TX_CharIsK(1),
+				EMAC1PHYTXCHARDISPMODE			=> Trans_TX_CharDisparityMode(1),
+				EMAC1PHYTXCHARDISPVAL				=> Trans_TX_CharDisparityValue(1),
+				PHYEMAC1TXBUFERR						=> Trans_TX_BufferError(1),
+
+				-- TRANS RX interface
+				PHYEMAC1RXD									=> Trans_RX_Data(1),
+				PHYEMAC1RXCHARISK						=> Trans_RX_CharIsK(1),
+				PHYEMAC1RXCHARISCOMMA				=> Trans_RX_CharIsComma(1),
+				PHYEMAC1RXDISPERR						=> Trans_RX_DisparityError(1),
+				PHYEMAC1RXNOTINTABLE				=> Trans_RX_NotInTable(1),
+				PHYEMAC1RXCLKCORCNT					=> Trans_RX_ClockCorrectionCount(1),
+				PHYEMAC1RXBUFSTATUS					=> Trans_RX_BufferStatus(1),
+
+				-- reserved - tie to ground
+				PHYEMAC1RXCHECKINGCRC				=> '0',
+				PHYEMAC1RXCOMMADET					=> '0',
+				PHYEMAC1RXBUFERR						=> '0',
+				PHYEMAC1RXLOSSOFSYNC				=> "00",
+				PHYEMAC1RXRUNDISP						=> '0',
+				
+				-- optical light detected in optical transceiver
+				PHYEMAC1SIGNALDET						=> '1'											-- set to high for copper cables
+			);
+	end generate;	
+end;

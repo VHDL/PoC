@@ -42,7 +42,7 @@ USE			PoC.net.ALL;
 
 ENTITY eth_GEMAC_GMII IS
 	GENERIC (
-		DEBUG									: BOOLEAN									:= TRUE;
+		DEBUG														: BOOLEAN									:= TRUE;
 		CLOCK_FREQ_MHZ									: REAL										:= 125.0;					-- 125 MHz
 	
 		TX_FIFO_DEPTH										: POSITIVE								:= 2048;					-- 2 KiB TX Buffer

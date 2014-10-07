@@ -221,86 +221,86 @@ BEGIN
 			Eth_RX_Reset		<= Eth_RX_Reset_shift(Eth_RX_Reset_shift'high);
 		END BLOCK;
 
-		blkFIFO	: BLOCK
-			SIGNAL TX_Valid_n			: STD_LOGIC;
-			SIGNAL TX_SOF_n				: STD_LOGIC;
-			SIGNAL TX_EOF_n				: STD_LOGIC;
-			SIGNAL TX_Ready_n			: STD_LOGIC;
-
-			SIGNAL RX_Valid_n			: STD_LOGIC;
-			SIGNAL RX_SOF_n				: STD_LOGIC;
-			SIGNAL RX_EOF_n				: STD_LOGIC;
-			SIGNAL RX_Ready_n			: STD_LOGIC;
-		BEGIN
-			-- convert LocalLink interface from low-active to high-active and vv.
-			-- ========================================================================================================================================================
-			TX_Valid_n		<= NOT TX_Valid;
-			TX_SOF_n			<= NOT TX_SOF;
-			TX_EOF_n			<= NOT TX_EOF;
-			TX_Ready			<= NOT TX_Ready_n;
-
-			RX_Valid			<= NOT RX_Valid_n;
-			RX_SOF				<= NOT RX_SOF_n;
-			RX_EOF				<= NOT RX_EOF_n;
-			RX_Ready_n		<= NOT RX_Ready;
-
-			Eth_TX_Enable					<= '1';
-			Eth_RX_Enable					<= '1';
-
-			-- Transmitter FIFO and LocalLink adapter
-			TX_FIFO	: ENTITY PoC.eth_TEMAC_TX_FIFO_Virtex5
-				GENERIC MAP (
-					FULL_DUPLEX_ONLY	=> FALSE--TRUE
-				)
-				PORT MAP (
-					wr_clk						=> TX_Clock,								-- Local link write clock
-					wr_sreset					=> TX_Reset,								-- synchronous reset (wr_clock)
-					
-					-- Transmitter Local Link Interface
-					wr_data						=> TX_Data,									-- Data to TX FIFO
-					wr_sof_n					=> TX_SOF_n,							
-					wr_eof_n					=> TX_EOF_n,							
-					wr_src_rdy_n			=> TX_Valid_n,						
-					wr_dst_rdy_n			=> TX_Ready_n,						
-					wr_fifo_status		=> TX_FIFO_Status,					-- FIFO memory status
-
-					-- Transmitter MAC Client Interface
-					rd_clk						=> Eth_TX_Clock,						-- MAC transmit clock
-					rd_sreset					=> Eth_TX_Reset,						-- Synchronous reset (rd_clk)
-					rd_enable					=> Eth_TX_Enable,						-- Clock enable for rd_clk
-					tx_data						=> TX_FIFO_Data,						-- Data to MAC transmitter
-					tx_data_valid			=> TX_FIFO_Valid,						-- Valid signal to MAC transmitter
-					tx_ack						=> Eth_TX_Ack,							-- Ack signal from MAC transmitter
-					tx_collision			=> Eth_TX_Collision,				-- Collsion signal from MAC transmitter
-					tx_retransmit			=> Eth_TX_Retransmit,				-- Retransmit signal from MAC transmitter
-					overflow					=> TX_FIFO_Overflow					-- FIFO overflow indicator from FIFO
-				);
-			
-			-- Receiver FIFO and LocalLink adapter
-			RX_FIFO	: ENTITY PoC.eth_TEMAC_RX_FIFO_Virtex5
-				PORT MAP (
-					rd_clk						=> RX_Clock,								-- Local link read clock
-					rd_sreset					=> RX_Reset,								-- synchronous reset (rd_clock)
-					
-					-- Receiver Local Link Interface
-					rd_data_out				=> RX_Data,									-- Data from RX FIFO
-					rd_sof_n					=> RX_SOF_n,						
-					rd_eof_n					=> RX_EOF_n,						
-					rd_src_rdy_n			=> RX_Valid_n,					
-					rd_dst_rdy_n			=> RX_Ready_n,					
-					
-					-- Receiver MAC Client Interface
-					wr_clk						=> Eth_RX_Clock,						-- MAC receive clock
-					wr_sreset					=> Eth_RX_Reset,						-- Synchronous reset (wr_clk)
-					wr_enable					=> Eth_RX_Enable,						-- Clock enable for wr_clk
-					rx_data						=> Eth_RX_Data_r,						-- Data from MAC receiver
-					rx_data_valid			=> Eth_RX_Valid_r,					-- Valid signal from MAC receiver
-					rx_good_frame			=> Eth_RX_GoodFrame_r,			-- Good frame indicator from MAC receiver
-					rx_bad_frame			=> Eth_RX_BadFrame_r,				-- Bad frame indicator from MAC receiver
-					overflow					=> RX_FIFO_Overflow,				-- FIFO overflow indicator from FIFO
-					rx_fifo_status		=> RX_FIFO_Status						-- FIFO memory status [3:0]
-				);
-		END BLOCK;
+--		blkFIFO	: BLOCK
+--			SIGNAL TX_Valid_n			: STD_LOGIC;
+--			SIGNAL TX_SOF_n				: STD_LOGIC;
+--			SIGNAL TX_EOF_n				: STD_LOGIC;
+--			SIGNAL TX_Ready_n			: STD_LOGIC;
+--
+--			SIGNAL RX_Valid_n			: STD_LOGIC;
+--			SIGNAL RX_SOF_n				: STD_LOGIC;
+--			SIGNAL RX_EOF_n				: STD_LOGIC;
+--			SIGNAL RX_Ready_n			: STD_LOGIC;
+--		BEGIN
+--			-- convert LocalLink interface from low-active to high-active and vv.
+--			-- ========================================================================================================================================================
+--			TX_Valid_n		<= NOT TX_Valid;
+--			TX_SOF_n			<= NOT TX_SOF;
+--			TX_EOF_n			<= NOT TX_EOF;
+--			TX_Ready			<= NOT TX_Ready_n;
+--
+--			RX_Valid			<= NOT RX_Valid_n;
+--			RX_SOF				<= NOT RX_SOF_n;
+--			RX_EOF				<= NOT RX_EOF_n;
+--			RX_Ready_n		<= NOT RX_Ready;
+--
+--			Eth_TX_Enable					<= '1';
+--			Eth_RX_Enable					<= '1';
+--
+--			-- Transmitter FIFO and LocalLink adapter
+--			TX_FIFO	: ENTITY PoC.eth_TEMAC_TX_FIFO_Virtex5
+--				GENERIC MAP (
+--					FULL_DUPLEX_ONLY	=> FALSE--TRUE
+--				)
+--				PORT MAP (
+--					wr_clk						=> TX_Clock,								-- Local link write clock
+--					wr_sreset					=> TX_Reset,								-- synchronous reset (wr_clock)
+--					
+--					-- Transmitter Local Link Interface
+--					wr_data						=> TX_Data,									-- Data to TX FIFO
+--					wr_sof_n					=> TX_SOF_n,							
+--					wr_eof_n					=> TX_EOF_n,							
+--					wr_src_rdy_n			=> TX_Valid_n,						
+--					wr_dst_rdy_n			=> TX_Ready_n,						
+--					wr_fifo_status		=> TX_FIFO_Status,					-- FIFO memory status
+--
+--					-- Transmitter MAC Client Interface
+--					rd_clk						=> Eth_TX_Clock,						-- MAC transmit clock
+--					rd_sreset					=> Eth_TX_Reset,						-- Synchronous reset (rd_clk)
+--					rd_enable					=> Eth_TX_Enable,						-- Clock enable for rd_clk
+--					tx_data						=> TX_FIFO_Data,						-- Data to MAC transmitter
+--					tx_data_valid			=> TX_FIFO_Valid,						-- Valid signal to MAC transmitter
+--					tx_ack						=> Eth_TX_Ack,							-- Ack signal from MAC transmitter
+--					tx_collision			=> Eth_TX_Collision,				-- Collsion signal from MAC transmitter
+--					tx_retransmit			=> Eth_TX_Retransmit,				-- Retransmit signal from MAC transmitter
+--					overflow					=> TX_FIFO_Overflow					-- FIFO overflow indicator from FIFO
+--				);
+--			
+--			-- Receiver FIFO and LocalLink adapter
+--			RX_FIFO	: ENTITY PoC.eth_TEMAC_RX_FIFO_Virtex5
+--				PORT MAP (
+--					rd_clk						=> RX_Clock,								-- Local link read clock
+--					rd_sreset					=> RX_Reset,								-- synchronous reset (rd_clock)
+--					
+--					-- Receiver Local Link Interface
+--					rd_data_out				=> RX_Data,									-- Data from RX FIFO
+--					rd_sof_n					=> RX_SOF_n,						
+--					rd_eof_n					=> RX_EOF_n,						
+--					rd_src_rdy_n			=> RX_Valid_n,					
+--					rd_dst_rdy_n			=> RX_Ready_n,					
+--					
+--					-- Receiver MAC Client Interface
+--					wr_clk						=> Eth_RX_Clock,						-- MAC receive clock
+--					wr_sreset					=> Eth_RX_Reset,						-- Synchronous reset (wr_clk)
+--					wr_enable					=> Eth_RX_Enable,						-- Clock enable for wr_clk
+--					rx_data						=> Eth_RX_Data_r,						-- Data from MAC receiver
+--					rx_data_valid			=> Eth_RX_Valid_r,					-- Valid signal from MAC receiver
+--					rx_good_frame			=> Eth_RX_GoodFrame_r,			-- Good frame indicator from MAC receiver
+--					rx_bad_frame			=> Eth_RX_BadFrame_r,				-- Bad frame indicator from MAC receiver
+--					overflow					=> RX_FIFO_Overflow,				-- FIFO overflow indicator from FIFO
+--					rx_fifo_status		=> RX_FIFO_Status						-- FIFO memory status [3:0]
+--				);
+--		END BLOCK;
 	
 
 		-- ========================================================================================================================================================
@@ -450,6 +450,77 @@ BEGIN
 				SIGNAL RS_RX_Error					: STD_LOGIC;
 			BEGIN
 				ASSERT FALSE REPORT "Physical interface SGMII is not implemented!" SEVERITY FAILURE;
+			
+				PCS : ENTITY PoC.eth_GMII_SGMII_PCS_Virtex5
+					PORT MAP (
+
+						dcm_locked						=> 
+						
+						reset									=> 
+
+						-- status
+						status_vector					=> open,
+
+						-- configuration interface (disabled)
+						configuration_vector	=> (others => '0'),
+						configuration_valid		=> '0',
+					
+						-- auto-negotiation
+						an_restart_config			=> '0',
+						an_adv_config_val			=> '0',
+						an_adv_config_vector	=> (others => '0'),
+						an_interrupt					=> open,
+						
+						link_timer_value			=> (others => '0'),
+					
+						-- GMII Interface
+						gmii_isolate					=> open,
+						gmii_txd							=> RS_TX_Data,			-- Transmit data from client MAC.
+						gmii_tx_en						=> RS_TX_Valid,			-- Transmit control signal from client MAC.
+						gmii_tx_er						=> RS_TX_Error,			-- Transmit control signal from client MAC.
+						gmii_rxd							=> RS_RX_Data, 			-- Received Data to client MAC.
+						gmii_rx_dv						=> RS_RX_Valid,			-- Received control signal to client MAC.
+						gmii_rx_er						=> RS_RX_Error			-- Received control signal to client MAC.
+						
+						phyad									=> PCS_MDIO_ADDRESS(4 downto 0),
+						mdc										=> MDIO_Clock,
+						mdio_in								=> MDIO_Data_i,
+						mdio_out							=> MDIO_Data_o,
+						mdio_tri							=> MDIO_Data_t,
+						
+						-- TRANS interface
+						powerdown							=> PCS_PowerDown,
+						mgt_tx_reset					=> PCS_TX_Reset,
+						mgt_rx_reset					=> PCS_RX_Reset,
+						userclk								=> PCS_UserClock,
+						userclk2							=> PCS_UserClock2,
+						enablealign						=> PCS_EnableAlign,
+						
+						-- TRANS TX interface
+						txdata								=> PCS_TX_Data,
+						txcharisk							=> PCS_TX_CharIsK,
+						txchardispmode				=> PCS_TX_CharDisparityMode,
+						txchardispval					=> PCS_TX_CharDisparityValue,
+						txbuferr							=> Trans_TX_BufferError,
+						
+						-- TRANS RX interface
+						rxdata								=> Trans_RX_Data,
+						rxcharisk							=> Trans_RX_CharIsK,
+						rxchariscomma					=> Trans_RX_CharIsComma,
+						rxbufstatus						=> Trans_RX_BufferStatus,
+						rxdisperr							=> Trans_RX_DisparityError,
+						rxnotintable					=> Trans_RX_NotInTable,
+						rxrundisp							=> Trans_RX_RunningDisparity,
+						rxclkcorcnt						=> Trans_RX_ClockCorrectionCount,
+
+
+						-- optical light detected in optical transceiver
+						signal_detect					=> '1'
+						
+
+			--			sgmii_clk0					: out std_logic;										-- Clock for client MAC (125Mhz, 12.5MHz or 1.25MHz).
+
+					);
 			
 --				SGMII	: ENTITY PoC.eth_RSLayer_GMII_SGMII_Virtex5
 --		--			GENERIC MAP (
@@ -862,12 +933,10 @@ BEGIN
 			genPHY_SGMII	: IF (PHY_DATA_INTERFACE = NET_ETH_PHY_DATA_INTERFACE_SGMII) GENERATE
 			
 			BEGIN
-				ASSERT FALSE REPORT "Physical interface SGMII is not implemented!" SEVERITY FAILURE;
-			
 				SGMII	: ENTITY PoC.Eth_RSLayer_GMII_SGMII_Virtex5
-		--			GENERIC MAP (
-		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
-		--			)
+					GENERIC MAP (
+						CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
+					)
 					PORT MAP (
 						Clock										=> RS_TX_Clock,
 						Reset										=> Reset_async,
