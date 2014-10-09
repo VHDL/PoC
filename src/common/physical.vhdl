@@ -203,16 +203,14 @@ package body physical is
 	-- ===========================================================================
 	function div(a : TIME; b : TIME) return REAL is
 	begin
-		--return real(a / 1 fs) / real(b / 1 fs);
-		
 		if	(a < 1 us) then
 			return real(a / 1 fs) / real(b / 1 fs);
 		elsif (a < 1 ms) then
 			return real(a / 1 ps) / real(b / 1 fs) * 1000.0;
 		elsif (a < 1 sec) then
-			return real(a / 1 us) / real(b / 1 fs) * 1000000.0;
+			return real(a / 1 ns) / real(b / 1 fs) * 1000000.0;
 		else
-			return real(a / 1 ms) / real(b / 1 fs) * 1000000000.0;
+			return real(a / 1 us) / real(b / 1 fs) * 1000000000.0;
 		end if;
 	end function;
 	
