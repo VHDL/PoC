@@ -308,17 +308,16 @@ BEGIN
 			WHEN ST_RESET =>
 				Status_i												<= SATA_PHY_SPEED_STATUS_RESET;
 				
-				IF (Command = SATA_PHY_SPEED_CMD_RESET) THEN
-					SATAGeneration_rst						<= '1';
+				IF (Command = SATA_PHY_SPEED_CMD_RESET) OR (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
+					SATAGeneration_Change		<= '1';
+					SATAGeneration_rst		<= '1';
 					TryPerGeneration_Counter_rst	<= '1';
 					GenerationChange_Counter_rst	<= '1';
-					NextState											<= ST_RETRY;
-					
-				ELSIF (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
---					SATAGeneration_rst						<= '1';
-					TryPerGeneration_Counter_rst	<= '1';
---					GenerationChange_Counter_rst	<= '1';
-					NextState											<= ST_RETRY;
+					IF (SATAGeneration_Changed = '1') THEN
+						NextState	<= ST_RECONFIG;
+					ELSE
+						NextState	<= ST_RETRY;
+					END IF;
 				END IF;
 			
 			WHEN ST_RETRY =>
@@ -328,13 +327,19 @@ BEGIN
 			
 			WHEN ST_NEGOTIATION =>
 				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATING;
-				
-				IF (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
-					-- TODO:
-				END IF;
-				
-				IF (OOBC_Timeout = '1') THEN
-					NextState											<= ST_TIMEOUT;
+
+				IF (Command = SATA_PHY_SPEED_CMD_RESET) OR (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
+					SATAGeneration_Change		<= '1';
+					SATAGeneration_rst		<= '1';
+					TryPerGeneration_Counter_rst	<= '1';
+					GenerationChange_Counter_rst	<= '1';
+					IF (SATAGeneration_Changed = '1') THEN
+						NextState	<= ST_RECONFIG;
+					ELSE
+						NextState	<= ST_RETRY;
+					END IF;
+				ELSIF (OOBC_Timeout = '1') THEN
+					NextState	<= ST_TIMEOUT;
 				END IF;
 			
 			WHEN ST_TIMEOUT =>
@@ -345,13 +350,13 @@ BEGIN
 						NextState										<= ST_NEGOTIATION_ERROR;
 					ELSE																					-- generation change counter allows => generation change
 						SATAGeneration_Change				<= '1';
-						TryPerGeneration_Counter_rst<= '1';
+						TryPerGeneration_Counter_rst	<= '1';
 						GenerationChange_Counter_en	<= '1';
 						
 						IF (SATAGeneration_Changed = '1') THEN
-							NextState									<= ST_RECONFIG;
+							NextState	<= ST_RECONFIG;
 						ELSE
-							NextState									<= ST_RETRY;
+							NextState	<= ST_RETRY;
 						END IF;
 					END IF;
 				ELSE																						-- tries per generation counter allows an other try at current generation
@@ -370,24 +375,23 @@ BEGIN
 				Trans_RP_Lock_i									<= '0';
 				
 				IF (Trans_RP_ConfigReloaded = '1') THEN
-					NextState											<= ST_RETRY;
+					NextState	<= ST_RETRY;
 				END IF;
 
 			WHEN ST_NEGOTIATION_ERROR =>
 				Trans_RP_Lock_i									<= '0';
 				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR;
-				
-				IF (Command = SATA_PHY_SPEED_CMD_RESET) THEN
-					SATAGeneration_rst						<= '1';
+
+				IF (Command = SATA_PHY_SPEED_CMD_RESET) OR (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
+					SATAGeneration_Change		<= '1';
+					SATAGeneration_rst		<= '1';
 					TryPerGeneration_Counter_rst	<= '1';
 					GenerationChange_Counter_rst	<= '1';
-					NextState											<= ST_RETRY;
-					
-				ELSIF (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
---					SATAGeneration_rst						<= '1';
-					TryPerGeneration_Counter_rst	<= '1';
---					GenerationChange_Counter_rst	<= '1';
-					NextState											<= ST_RETRY;
+					IF (SATAGeneration_Changed = '1') THEN
+						NextState	<= ST_RECONFIG;
+					ELSE
+						NextState	<= ST_RETRY;
+					END IF;
 				END IF;
 
 		END CASE;
