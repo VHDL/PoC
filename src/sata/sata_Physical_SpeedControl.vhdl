@@ -410,6 +410,12 @@ BEGIN
 		
 	-- debug port
 	-- ===========================================================================
+	genSim : if (SIMULATION = TRUE) generate
+		signal sim_SATAGeneration	: UNSIGNED(2 downto 0);
+	begin
+		sim_SATAGeneration	<= to_unsigned(SATAGeneration_cur, 3) + 1;
+	end generate;
+	
 	genDebug : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
 		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
 		begin
