@@ -13,13 +13,14 @@ USE		PoC.sata.ALL;
 USE		PoC.utils.ALL;
 USE		PoC.vectors.ALL;
 USE		PoC.strings.ALL;
+USE		PoC.physical.ALL;
 USE		PoC.sata_TransceiverTypes.ALL;
 
 entity sata_Transceiver_Stratix2GX_GXB is
 	generic (
-		CLOCK_IN_FREQ_MHZ	: REAL	:= 150.0;	-- 150 MHz
-		PORTS			: POSITIVE:= 2;	-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR	:= T_SATA_GENERATION_VECTOR'(SATA_GENERATION_3, SATA_GENERATION_3)	-- intial SATA Generation
+		CLOCK_IN_FREQ			: FREQ		:= 150.0 MHz;	-- 150 MHz
+		PORTS				: POSITIVE	:= 2;	-- Number of Ports per Transceiver
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR := (0 => C_SATA_GENERATION_MAX, 1 => C_SATA_GENERATION_MAX)	-- intial SATA Generation
 	);
 	port (
 		SATA_Clock		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -64,10 +65,10 @@ end;
 
 ARCHITECTURE rtl OF sata_Transceiver_Stratix2GX_GXB IS
 
-	CONSTANT NO_DEVICE_TIMEOUT_MS						: REAL					:= 50.0;		-- simulation: 20 us, synthesis: 50 ms
-	CONSTANT NEW_DEVICE_TIMEOUT_MS						: REAL					:= 0.001;		-- FIXME: not used -> remove ???
+	CONSTANT NO_DEVICE_TIMEOUT		: TIME	:= 50.0 ms;		-- simulation: 20 us, synthesis: 50 ms
+	CONSTANT NEW_DEVICE_TIMEOUT		: TIME	:= 1000.0 ms;		--
 
-	CONSTANT C_DEVICE_INFO										: T_DEVICE_INFO		:= DEVICE_INFO;
+	CONSTANT C_DEVICE_INFO			: T_DEVICE_INFO		:= DEVICE_INFO;
 
 	signal reconf_clk	: std_logic;
 	signal refclk		: std_logic;
@@ -290,9 +291,9 @@ BEGIN
 
 		dev_detect : entity PoC.sata_DeviceDetector
 		generic map (
-			CLOCK_FREQ_MHZ => CLOCK_IN_FREQ_MHZ,		-- 150 MHz
-			NO_DEVICE_TIMEOUT_MS => NO_DEVICE_TIMEOUT_MS,	-- 1,0 ms
-			NEW_DEVICE_TIMEOUT_MS => NEW_DEVICE_TIMEOUT_MS	-- 1,0 ms
+			CLOCK_FREQ => CLOCK_IN_FREQ,
+			NO_DEVICE_TIMEOUT => NO_DEVICE_TIMEOUT,
+			NEW_DEVICE_TIMEOUT => NEW_DEVICE_TIMEOUT
 		)
 		port map (
 			Clock => refclk,
