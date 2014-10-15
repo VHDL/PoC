@@ -65,7 +65,7 @@ entity sata_Transceiver_Stratix4GX_GXB is
 	
 		-- debug ports
 --		DebugPortIn		: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
-		DebugPortOut		: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
+--		DebugPortOut		: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
 	
 		SATA_Clock		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
@@ -176,7 +176,7 @@ BEGIN
 		RP_ReconfigComplete(i) <= config_state(14);
 		RP_ConfigReloaded(i) <= config_state(15);
 		
-		--	TODO ? : Status Statemachine -> see SATATransceiver_Virtex5_GTP.vhd
+		-- TODO ? : Status Statemachine -> see SATATransceiver_Virtex5_GTP.vhd
 		Status(i) <=	SATA_TRANSCEIVER_STATUS_RESETING when Command(i) = SATA_TRANSCEIVER_CMD_RESET else
 				SATA_TRANSCEIVER_STATUS_RECONFIGURING when gxb_busy = '1' or pll_busy = '1' else
 				SATA_TRANSCEIVER_STATUS_NEW_DEVICE when ll_newdevice = '1' else
@@ -200,11 +200,6 @@ BEGIN
 		rx_errin(1) <= not pll_locked or not gxb_locked or pll_busy or gxb_busy or rx_errdetect(1);
 		rx_errin(2) <= not pll_locked or not gxb_locked or pll_busy or gxb_busy or rx_errdetect(2);
 		rx_errin(3) <= not pll_locked or not gxb_locked or pll_busy or gxb_busy or rx_errdetect(3);
-
-		-- debug
-
-		DebugPortOut(i).RX_Status(0) <= sata_syncstatus;
-		DebugPortOut(i).RX_Status(1) <= nodevice;
 
 		rx_electricalidle <= not rx_signaldetect;
 
