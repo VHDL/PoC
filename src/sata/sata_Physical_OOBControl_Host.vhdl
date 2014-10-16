@@ -190,7 +190,7 @@ BEGIN
 	BEGIN
 		NextState									<= State;
 		
-		TX_Primitive							<= SATA_PRIMITIVE_DIAL_TONE;
+		TX_Primitive							<= SATA_PRIMITIVE_ALIGN;
 	
 		-- general timeout
 		TC1_en										<= '0';
