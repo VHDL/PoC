@@ -9,8 +9,10 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
+USE			PoC.strings.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.sata.ALL;
+USE			PoC.satadbg.ALL;
 USE			PoC.sata_TransceiverTypes.ALL;
 USE			PoC.xil.ALL;
 
@@ -18,7 +20,7 @@ USE			PoC.xil.ALL;
 ENTITY sata_Transceiver_Virtex5_GTP IS
 	GENERIC (
 		DEBUG											: BOOLEAN											:= FALSE;																	-- generate ChipScope debugging "pins"
-		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																	-- 150 MHz
+		CLOCK_IN_FREQ					: FREQ												:= 150.0 MHz;
 		PORTS											: POSITIVE										:= 2;																			-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1 => C_SATA_GENERATION_MAX)			-- intial SATA Generation
 	);
@@ -71,8 +73,8 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP IS
 -- ==================================================================
 -- SATATransceiver configuration
 -- ==================================================================
-	CONSTANT NO_DEVICE_TIMEOUT_MS							: REAL						:= ite(SIMULATION, 0.020, 50.0);				-- simulation: 20 us, synthesis: 50 ms
-	CONSTANT NEW_DEVICE_TIMEOUT_MS						: REAL						:= 0.001;				-- FIXME: not used -> remove ???
+	CONSTANT NO_DEVICE_TIMEOUT				: TIME																			:= 50.0 ms;
+	CONSTANT NEW_DEVICE_TIMEOUT				: TIME																			:= 1000.0 ms;
 
 	CONSTANT C_DEVICE_INFO										: T_DEVICE_INFO		:= DEVICE_INFO;
 
@@ -641,6 +643,10 @@ BEGIN
 -- Transceiver status / DeviceDetection
 -- ==================================================================
 	genDeviceDetector : FOR I IN 0 TO PORTS - 1 GENERATE
+
+		CONSTANT NO_DEVICE_TIMEOUT				: TIME		:= ite(SIMULATION, 2.0 us, NO_DEVICE_TIMEOUT);
+		CONSTANT NEW_DEVICE_TIMEOUT				: TIME		:= ite(SIMULATION, 0.1 us, NEW_DEVICE_TIMEOUT);
+
 		SIGNAL DD_NoDevice_i					: STD_LOGIC;
 		SIGNAL DD_NewDevice						: STD_LOGIC;
 		SIGNAL DD_NewDevice_i					: STD_LOGIC;
@@ -650,10 +656,10 @@ BEGIN
 		-- device detection
 		DD : ENTITY PoC.sata_DeviceDetector
 			GENERIC MAP (
-				DEBUG										=> DEBUG,
-				CLOCK_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,					-- 150 MHz
-				NO_DEVICE_TIMEOUT_MS		=> NO_DEVICE_TIMEOUT_MS,			-- 1,0 ms
-				NEW_DEVICE_TIMEOUT_MS		=> NEW_DEVICE_TIMEOUT_MS			-- 1,0 us								-- TODO: unused?
+				DEBUG				=> DEBUG,
+				CLOCK_FREQ			=> CLOCK_IN_FREQ,					-- 150 MHz
+				NO_DEVICE_TIMEOUT		=> NO_DEVICE_TIMEOUT,
+				NEW_DEVICE_TIMEOUT		=> NEW_DEVICE_TIMEOUT
 			)
 			PORT MAP (
 				Clock										=> Control_Clock,
