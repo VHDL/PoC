@@ -289,6 +289,7 @@ BEGIN
 		port map (
 			Clock => refclk,
 			ElectricalIDLE => rx_electricalidle,
+			RX_OOBStatus => rx_oob_status,
 			NoDevice => nodevice,
 			NewDevice => newdevice
 		);

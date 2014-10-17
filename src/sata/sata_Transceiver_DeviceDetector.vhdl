@@ -39,6 +39,7 @@ USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.physical.ALL;
+USE			PoC.sata.ALL;
 
 
 ENTITY sata_DeviceDetector IS
@@ -51,6 +52,7 @@ ENTITY sata_DeviceDetector IS
 	PORT (
 		Clock		: IN STD_LOGIC;
 		ElectricalIDLE	: IN STD_LOGIC;
+		RX_OOBStatus	: IN T_SATA_OOB;
 		NoDevice	: OUT STD_LOGIC;
 		NewDevice	: OUT STD_LOGIC
 	);
@@ -62,7 +64,7 @@ ARCHITECTURE rtl OF sata_DeviceDetector IS
 	ATTRIBUTE FSM_ENCODING	: STRING;
 
 	-- Statemachine
-	TYPE T_State IS (ST_NORMAL_MODE, ST_NO_DEVICE, ST_NEW_DEVICE);
+	TYPE T_State IS (ST_NORMAL_MODE, ST_NO_DEVICE, ST_OOB_RESET, ST_NEW_DEVICE);
 
 	SIGNAL State				: T_State	:= ST_NORMAL_MODE;
 	SIGNAL NextState			: T_State;
@@ -71,22 +73,26 @@ ARCHITECTURE rtl OF sata_DeviceDetector IS
 	SIGNAL ElectricalIDLE_sync		: STD_LOGIC;
 	SIGNAL ElectricalIDLE_i			: STD_LOGIC_VECTOR(1 DOWNTO 0) := "00";
 
+	SIGNAL RX_OOBStatus_i			: T_SATA_OOB_VECTOR(1 DOWNTO 0);
+
 	SIGNAL TC_load				: STD_LOGIC;
 	SIGNAL TC_en				: STD_LOGIC;
 	SIGNAL TC_timeout			: STD_LOGIC;
+	SIGNAL TD_load				: STD_LOGIC;
 	SIGNAL TD_timeout			: STD_LOGIC;
 
 BEGIN
 
 	-- synchronize ElectricalIDLE to working clock domain
-	sync2_DDClock : ENTITY PoC.sync_Flag
+	sync1_DDClock : ENTITY PoC.sync_Flag
 	PORT MAP (
-		Clock		=> Clock,								-- Clock to be synchronized to
+		Clock		=> Clock,		-- Clock to be synchronized to
 		Input(0)	=> ElectricalIDLE,	-- Data to be synchronized
 		Output(0)	=> ElectricalIDLE_sync	-- synchronised data
 	);
 
 	ElectricalIDLE_i <= ElectricalIDLE_i(0) & ElectricalIDLE_sync WHEN rising_edge(Clock);
+	RX_OOBStatus_i <= RX_OOBStatus_i(0) & RX_OOBStatus WHEN rising_edge(Clock);
 
 	PROCESS(Clock)
 	BEGIN
@@ -101,6 +107,7 @@ BEGIN
 
 		NoDevice			<= '0';
 		NewDevice			<= '0';
+		TD_load				<= '0';
 
 		CASE State IS
 			WHEN ST_NORMAL_MODE =>
@@ -110,6 +117,13 @@ BEGIN
 
 			WHEN ST_NO_DEVICE =>
 				NoDevice		<= '1';
+
+				IF RX_OOBStatus_i(0) = SATA_OOB_COMRESET and RX_OOBStatus_i(1) /= SATA_OOB_COMRESET THEN
+					NextState	<= ST_OOB_RESET;
+					TD_load		<= '1';
+				END IF;
+				
+			WHEN ST_OOB_RESET =>
 
 				IF (TD_timeout = '1') THEN
 					NextState	<= ST_NEW_DEVICE;
@@ -122,7 +136,7 @@ BEGIN
 		END CASE;
 	END PROCESS;
 	
-	TC : ENTITY PoC.io_TimingCounter
+	NO_TC : ENTITY PoC.io_TimingCounter
 	GENERIC MAP ( -- timing table
 		TIMING_TABLE => T_NATVEC'(0 => TimingToCycles(NO_DEVICE_TIMEOUT, CLOCK_FREQ))
 	)
@@ -137,14 +151,14 @@ BEGIN
 	TC_load <= ElectricalIDLE_i(0) and not ElectricalIDLE_i(1);
 	TC_en <= ElectricalIDLE_i(0);
 
-	TD : ENTITY PoC.io_TimingCounter
+	NEW_TC : ENTITY PoC.io_TimingCounter
 	GENERIC MAP ( -- timing table
 		TIMING_TABLE => T_NATVEC'(0 => TimingToCycles(NEW_DEVICE_TIMEOUT, CLOCK_FREQ))
 	)
 	PORT MAP (
 		Clock	=> Clock,
 		Enable	=> '1',
-		Load	=> TC_timeout,
+		Load	=> TD_load,
 		Slot	=> 0,
 		Timeout	=> TD_timeout
 	);

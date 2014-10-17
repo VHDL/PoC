@@ -311,6 +311,7 @@ BEGIN
 		port map (
 			Clock => tx_clkout,
 			ElectricalIDLE => rx_electricalidle,
+			RX_OOBStatus => rx_oob_status,
 			NoDevice => nodevice,
 			NewDevice => newdevice
 		);
