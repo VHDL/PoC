@@ -660,7 +660,7 @@ BEGIN
 			PORT MAP (
 				Clock										=> Control_Clock,
 				Input(0)									=> RxComReset,
-				Output(0)									=> RxComReset_CC,
+				Output(0)									=> RxComReset_CC
 			);
 
 		-- device detection
@@ -674,7 +674,7 @@ BEGIN
 			PORT MAP (
 				Clock										=> Control_Clock,
 				ElectricalIDLE					=> GTP_RX_ElectricalIDLE(I),	-- async
-				RxComReset					=> RX_OOBStatus_CC,
+				RxComReset					=> RxComReset_CC,
 				NoDevice								=> DD_NoDevice(I),						-- @DRP_Clock
 				NewDevice								=> DD_NewDevice								-- @DRP_Clock
 			);
@@ -720,7 +720,7 @@ BEGIN
 	GTPConfig : ENTITY PoC.sata_Transceiver_Virtex5_GTP_Configurator
 		GENERIC MAP (
 			DEBUG								=> DEBUG,
-			DRPCLOCK_FREQ_MHZ							=> CLOCK_IN_FREQ_MHZ,
+			DRPCLOCK_FREQ							=> CLOCK_IN_FREQ,
 			PORTS													=> PORTS,
 			INITIAL_SATA_GENERATIONS			=> INITIAL_SATA_GENERATIONS
 		)
