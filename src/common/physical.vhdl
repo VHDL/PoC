@@ -283,7 +283,7 @@ package body physical is
 		else											res := div(br, 1.0 GBd) * 1.0 GHz;
 		end if;
 
---		assert not MY_VERBOSE report "to_freq: br= " & to_string(br) & "  return " & to_string(res) severity note;
+		assert not MY_VERBOSE report "to_freq: br= " & to_string(br) & "  return " & to_string(res) severity note;
 		return res;
 	end function;
 	

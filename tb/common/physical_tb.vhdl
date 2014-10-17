@@ -30,9 +30,13 @@
 -- limitations under the License.
 -- =============================================================================
 
+library IEEE;
+use			IEEE.std_logic_1164.all;
+
+
 entity physical_tb is
 	port (
-		input		: in std_logic;
+		input			: in std_logic;
 		output		: out std_logic
 	);
 end;

@@ -210,7 +210,7 @@ package sata is
 		SATA_PRIMITIVE_PM_REQ_S,					-- PMREQ_S							D	
 		SATA_PRIMITIVE_ILLEGAL
 	);
-	CONSTANT T_SATA_PRIMITIVE_COUNT		: INTEGER										:= T_SATA_PRIMITIVE'pos(SATA_PRIMITIVE_ILLEGAL) + 1;
+	CONSTANT T_SATA_PRIMITIVE_COUNT		: INTEGER										:= T_SATA_PRIMITIVE'pos(T_SATA_PRIMITIVE'high) + 1;
 
 	CONSTANT SATA_MAX_FRAMESIZE_B			: POSITIVE									:= 8192;
 	CONSTANT SATA_WORD_BITS						: POSITIVE									:= 32;
@@ -219,8 +219,10 @@ package sata is
 	TYPE T_SATA_LINK_STATUS_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_LINK_STATUS;
 	TYPE T_SATA_LINK_ERROR_VECTOR			IS ARRAY (NATURAL RANGE <>) OF T_SATA_LINK_ERROR;
 
-	FUNCTION to_slv(Primitive : T_SATA_PRIMITIVE)				RETURN STD_LOGIC_VECTOR;
-	FUNCTION to_sata_word(Primitive : T_SATA_PRIMITIVE)	RETURN T_SLV_32;
+	function to_slv(Primitive : T_SATA_PRIMITIVE)				return STD_LOGIC_VECTOR;
+	function to_slv(Status : T_SATA_LINK_STATUS)				return STD_LOGIC_VECTOR;
+	
+	function to_sata_word(Primitive : T_SATA_PRIMITIVE)	return T_SLV_32;
 	function to_sata_primitive(Data : T_SLV_32; CharIsK : T_SLV_4; DetectDialTone : BOOLEAN := FALSE)	return T_SATA_PRIMITIVE;
 	
 	-- ===========================================================================
@@ -556,26 +558,26 @@ PACKAGE BODY sata IS
 	-- -----------------------------------
 	function to_slv(Command : T_SATA_SATACONTROLLER_COMMAND) return STD_LOGIC_VECTOR is
 	begin
-		return to_slv(T_SATA_SATACONTROLLER_COMMAND'pos(Command), log2ceilnz(T_SATA_SATACONTROLLER_COMMAND'pos(T_SATA_SATACONTROLLER_COMMAND'high)));
+		return to_slv(T_SATA_SATACONTROLLER_COMMAND'pos(Command), log2ceilnz(T_SATA_SATACONTROLLER_COMMAND'pos(T_SATA_SATACONTROLLER_COMMAND'high) + 1));
 	end function;
 	
 	-- to_slv(Status : ***)
 	-- -----------------------------------
 	function to_slv(Status : T_SATA_PHY_STATUS) return STD_LOGIC_VECTOR is
 	begin
-		return to_slv(T_SATA_PHY_STATUS'pos(Status), log2ceilnz(T_SATA_PHY_STATUS'pos(T_SATA_PHY_STATUS'high)));
+		return to_slv(T_SATA_PHY_STATUS'pos(Status), log2ceilnz(T_SATA_PHY_STATUS'pos(T_SATA_PHY_STATUS'high) + 1));
 	end function;
 	
 	function to_slv(Status : T_SATA_PHY_SPEED_STATUS) return STD_LOGIC_VECTOR is
 	begin
-		return to_slv(T_SATA_PHY_SPEED_STATUS'pos(Status), log2ceilnz(T_SATA_PHY_SPEED_STATUS'pos(T_SATA_PHY_SPEED_STATUS'high)));
+		return to_slv(T_SATA_PHY_SPEED_STATUS'pos(Status), log2ceilnz(T_SATA_PHY_SPEED_STATUS'pos(T_SATA_PHY_SPEED_STATUS'high) + 1));
 	end function;
 
 	-- to_slv(Error : ***)
 	-- -----------------------------------
 	function to_slv(Error : T_SATA_PHY_ERROR) return STD_LOGIC_VECTOR is
 	begin
-		return to_slv(T_SATA_PHY_ERROR'pos(Error), log2ceilnz(T_SATA_PHY_ERROR'pos(T_SATA_PHY_ERROR'high)));
+		return to_slv(T_SATA_PHY_ERROR'pos(Error), log2ceilnz(T_SATA_PHY_ERROR'pos(T_SATA_PHY_ERROR'high) + 1));
 	end function;
 
 	-- to_slv(***)
@@ -587,8 +589,13 @@ PACKAGE BODY sata IS
 
 	FUNCTION to_slv(Primitive : T_SATA_PRIMITIVE) RETURN STD_LOGIC_VECTOR IS
 	BEGIN
-		RETURN to_slv(T_SATA_PRIMITIVE'pos(Primitive), log2ceilnz(T_SATA_PRIMITIVE'pos(T_SATA_PRIMITIVE'high)));
+		RETURN to_slv(T_SATA_PRIMITIVE'pos(Primitive), log2ceilnz(T_SATA_PRIMITIVE'pos(T_SATA_PRIMITIVE'high) + 1));
 	END FUNCTION;
+	
+	function to_slv(Status : T_SATA_LINK_STATUS) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_LINK_STATUS'pos(Status), log2ceilnz(T_SATA_LINK_STATUS'pos(T_SATA_LINK_STATUS'high) + 1));
+	end function;
 	
 	FUNCTION to_sata_word(Primitive : T_SATA_PRIMITIVE) RETURN T_SLV_32 IS	--																							K symbol
 	BEGIN																															-- primitive name				Byte 3	Byte 2	Byte 1	Byte 0
