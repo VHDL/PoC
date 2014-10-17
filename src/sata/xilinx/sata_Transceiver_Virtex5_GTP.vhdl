@@ -346,21 +346,21 @@ BEGIN
 	
 	ClkNet : ENTITY PoC.sata_Transceiver_Virtex5_GTP_ClockNetwork
 		GENERIC MAP (
-			DEBUG							=> DEBUG,
-			CLOCK_IN_FREQ_MHZ						=> CLOCK_IN_FREQ_MHZ,
-			PORTS												=> PORTS,
+			DEBUG					=> DEBUG,
+			CLOCK_IN_FREQ				=> CLOCK_IN_FREQ,
+			PORTS					=> PORTS,
 			INITIAL_SATA_GENERATIONS		=> INITIAL_SATA_GENERATIONS
 		)
 		PORT MAP (
-			ClockIn_150MHz							=> GTP_RefClockOut,							-- use stable clock after GTP_DUAL - not from CDR-Unit !! => enable elastic buffers
+			ClockIn_150MHz				=> GTP_RefClockOut,							-- use stable clock after GTP_DUAL - not from CDR-Unit !! => enable elastic buffers
 
-			ClockNetwork_Reset					=> ClkNet_Reset_x,
+			ClockNetwork_Reset			=> ClkNet_Reset_x,
 			ClockNetwork_ResetDone			=> ClkNet_ResetDone_i,
 			
-			SATA_Generation							=> SATA_Generation,
+			SATA_Generation				=> SATA_Generation,
 			
-			GTP_Clock_1X								=> GTP_Clock_1X,
-			GTP_Clock_4X								=> GTP_Clock_4X
+			GTP_Clock_1X				=> GTP_Clock_1X,
+			GTP_Clock_4X				=> GTP_Clock_4X
 		);
 
 
@@ -650,8 +650,18 @@ BEGIN
 		SIGNAL DD_NoDevice_i					: STD_LOGIC;
 		SIGNAL DD_NewDevice						: STD_LOGIC;
 		SIGNAL DD_NewDevice_i					: STD_LOGIC;
+		SIGNAL RxComReset					: STD_LOGIC;
+		SIGNAL RxComReset_CC					: STD_LOGIC;
 
 	BEGIN
+		RxComReset <= '1' when RX_OOBStatus_d(I) = SATA_OOB_COMRESET else '0';
+
+		OS : ENTITY PoC.sync_Flag
+			PORT MAP (
+				Clock										=> Control_Clock,
+				Input(0)									=> RxComReset,
+				Output(0)									=> RxComReset_CC,
+			);
 
 		-- device detection
 		DD : ENTITY PoC.sata_DeviceDetector
@@ -664,7 +674,7 @@ BEGIN
 			PORT MAP (
 				Clock										=> Control_Clock,
 				ElectricalIDLE					=> GTP_RX_ElectricalIDLE(I),	-- async
-				
+				RxComReset					=> RX_OOBStatus_CC,
 				NoDevice								=> DD_NoDevice(I),						-- @DRP_Clock
 				NewDevice								=> DD_NewDevice								-- @DRP_Clock
 			);

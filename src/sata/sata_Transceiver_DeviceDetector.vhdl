@@ -39,7 +39,7 @@ USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.physical.ALL;
-USE			PoC.sata.ALL;
+--USE			PoC.sata.ALL;
 
 
 ENTITY sata_DeviceDetector IS
@@ -52,7 +52,7 @@ ENTITY sata_DeviceDetector IS
 	PORT (
 		Clock		: IN STD_LOGIC;
 		ElectricalIDLE	: IN STD_LOGIC;
-		RX_OOBStatus	: IN T_SATA_OOB;
+		RxComReset	: IN STD_LOGIC;
 		NoDevice	: OUT STD_LOGIC;
 		NewDevice	: OUT STD_LOGIC
 	);
@@ -72,8 +72,7 @@ ARCHITECTURE rtl OF sata_DeviceDetector IS
 
 	SIGNAL ElectricalIDLE_sync		: STD_LOGIC;
 	SIGNAL ElectricalIDLE_i			: STD_LOGIC_VECTOR(1 DOWNTO 0) := "00";
-
-	SIGNAL RX_OOBStatus_i			: T_SATA_OOB_VECTOR(1 DOWNTO 0);
+	SIGNAL RxComReset_i			: STD_LOGIC_VECTOR(1 DOWNTO 0);
 
 	SIGNAL TC_load				: STD_LOGIC;
 	SIGNAL TC_en				: STD_LOGIC;
@@ -92,7 +91,7 @@ BEGIN
 	);
 
 	ElectricalIDLE_i <= ElectricalIDLE_i(0) & ElectricalIDLE_sync WHEN rising_edge(Clock);
-	RX_OOBStatus_i <= RX_OOBStatus_i(0) & RX_OOBStatus WHEN rising_edge(Clock);
+	RxComReset_i <= RxComReset_i(0) & RxComReset WHEN rising_edge(Clock);
 
 	PROCESS(Clock)
 	BEGIN
@@ -118,7 +117,7 @@ BEGIN
 			WHEN ST_NO_DEVICE =>
 				NoDevice		<= '1';
 
-				IF RX_OOBStatus_i(0) = SATA_OOB_COMRESET and RX_OOBStatus_i(1) /= SATA_OOB_COMRESET THEN
+				IF RxComReset_i = "01" THEN
 					NextState	<= ST_OOB_RESET;
 					TD_load		<= '1';
 				END IF;

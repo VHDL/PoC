@@ -149,6 +149,7 @@ BEGIN
 		signal rx_errin		: std_logic_vector(3 downto 0);
 		signal rx_oob_status	: T_SATA_OOB;
 		signal rx_signaldetect	: std_logic;
+		signal rx_comreset	: std_logic;
 
 		signal sata_rx_ctrl	: std_logic_vector(3 downto 0);
 		signal sata_rx_data	: std_logic_vector(31 downto 0);
@@ -202,6 +203,7 @@ BEGIN
 		rx_errin(3) <= not pll_locked or not gxb_locked or pll_busy or gxb_busy or rx_errdetect(3);
 
 		rx_electricalidle <= not rx_signaldetect;
+		rx_comreset <= '1' when rx_oob_status = SATA_OOB_COMRESET else '0';
 
 		-- speed reconfiguration (link layer interface)
 		process(ll_clk) begin
@@ -311,7 +313,7 @@ BEGIN
 		port map (
 			Clock => tx_clkout,
 			ElectricalIDLE => rx_electricalidle,
-			RX_OOBStatus => rx_oob_status,
+			RxComReset => rx_comreset,
 			NoDevice => nodevice,
 			NewDevice => newdevice
 		);
