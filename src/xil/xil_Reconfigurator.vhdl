@@ -37,13 +37,14 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.xil.ALL;
 
 
 ENTITY xil_Reconfigurator IS
 	GENERIC (
 		DEBUG										: BOOLEAN											:= FALSE;																				-- 
-		CLOCK_FREQ_MHZ					: REAL												:= 0.0;																					-- 
+		CLOCK_FREQ					: FREQ												:= 0.0 MHz;																					-- 
 		CONFIG_ROM							: IN	T_XIL_DRP_CONFIG_ROM		:= (0 DOWNTO 0 => C_XIL_DRP_CONFIG_SET_EMPTY)		-- 
 	);
 	PORT (
@@ -95,7 +96,7 @@ ARCHITECTURE rtl OF xil_Reconfigurator IS
 	ATTRIBUTE KEEP OF ROM_LastConfigWord	: SIGNAL IS DEBUG;
 BEGIN
 
---	ASSERT XilDRP_Assert(CLOCK_FREQ_MHZ) REPORT "DRP clock frequency not supported by device" SEVERITY FAILURE;
+--	ASSERT XilDRP_Assert(CLOCK_FREQ) REPORT "DRP clock frequency not supported by device" SEVERITY FAILURE;
 
 	-- configuration ROM
 	blkCONFIG_ROM : BLOCK
