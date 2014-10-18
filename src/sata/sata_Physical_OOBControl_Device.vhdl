@@ -451,7 +451,7 @@ BEGIN
 			1 => (Pattern => resize("handshake", C_DBG_STRING_LENGTH),	Replacement => resize("hs", C_DBG_STRING_LENGTH))
 		);
 		
-		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodingList,  MY_PROJECT_DIR & "ChipScope\TokenFiles\FSM_OOBControl_Device.tok", DBG_ENCODING_REPLACEMENTS);
+		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodingList,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Device.tok", DBG_ENCODING_REPLACEMENTS);
 	BEGIN
 		DebugPortOut.FSM												<= dbg_EncodeState(State);
 		DebugPortOut.Retry											<= Retry;

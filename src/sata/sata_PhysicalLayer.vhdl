@@ -519,7 +519,7 @@ BEGIN
 			return result;
 		end function;
 
-		CONSTANT test : boolean := dbg_ExportEncoding("Physical Layer", dbg_GenerateEncodingList,  MY_PROJECT_DIR & "ChipScope\TokenFiles\FSM_PhysicalLayer.tok");
+		CONSTANT test : boolean := dbg_ExportEncoding("Physical Layer", dbg_GenerateEncodingList,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_PhysicalLayer.tok");
 	BEGIN
 		DebugPortOut.FSM						<= dbg_EncodeState(State);
 		DebugPortOut.PHY_Status			<= Status_i;

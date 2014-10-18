@@ -68,7 +68,7 @@ end package;
 
 package body debug is
 	function dbg_ExportEncoding(Name : STRING; encodings : T_DBG_ENCODING_VECTOR; tokenFileName : STRING; Replacements: T_DBG_ENCODING_REPLACEMENTS := C_DBG_DEFAULT_ENCODING_REPLACEMENTS) return BOOLEAN is
-		file		 tokenFile						: TEXT open WRITE_MODE is	tokenFileName;		-- declare ouput file
+		file		 tokenFile						: TEXT open WRITE_MODE is	to_OSPath(tokenFileName);		-- declare ouput file
     variable tokenLine						: LINE;																			-- 
 		
 		variable nameLength						: NATURAL		:= 0;

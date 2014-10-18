@@ -446,7 +446,7 @@ BEGIN
 			0 => (Pattern => resize("negotiation_error", C_DBG_STRING_LENGTH), Replacement => resize("neg_error", C_DBG_STRING_LENGTH))
 		);
 		
-		CONSTANT test : boolean := dbg_ExportEncoding("SpeedControl", dbg_GenerateEncodingList,  MY_PROJECT_DIR & "ChipScope\TokenFiles\FSM_SpeedControl.tok", DBG_ENCODING_REPLACEMENTS);
+		CONSTANT test : boolean := dbg_ExportEncoding("SpeedControl", dbg_GenerateEncodingList,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_SpeedControl.tok", DBG_ENCODING_REPLACEMENTS);
 
 	BEGIN
 		DebugPortOut.FSM										<= dbg_EncodeState(State);
