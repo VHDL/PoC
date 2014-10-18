@@ -246,22 +246,19 @@ BEGIN
 	PROCESS(SATAGeneration_rst, SATAGeneration_cur, SATAGeneration_Change, SATAGenerationMin, SATAGenerationMax)
 		VARIABLE SATAGeneration_nxt_v : T_SATA_GENERATION;
 	BEGIN
-		SATAGeneration_nxt				<= SATAGeneration_cur;
-		SATAGeneration_Changed		<= '0';
+		if (SATAGeneration_rst = '1') then
+			SATAGeneration_nxt_v	:= ROM_StartGeneration(SATAGenerationMin)(SATAGenerationMax);
+		elsif (SATAGeneration_Change = '1') then
+			SATAGeneration_nxt_v	:= ROM_NextGeneration(SATAGeneration_cur)(SATAGenerationMin)(SATAGenerationMax);
+		else
+			SATAGeneration_nxt_v	:= SATAGeneration_cur;
+		end if;
 		
-		IF (SATAGeneration_Change = '1') THEN
-			IF (SATAGeneration_rst = '1') THEN
-				SATAGeneration_nxt_v	:= ROM_StartGeneration(SATAGenerationMin)(SATAGenerationMax);
-			ELSE
-				SATAGeneration_nxt_v	:= ROM_NextGeneration(SATAGeneration_cur)(SATAGenerationMin)(SATAGenerationMax);
-			END IF;
+		-- test if generation is going to be changed
+		SATAGeneration_Changed	<= to_sl(SATAGeneration_cur /= SATAGeneration_nxt_v);
 			
-			-- test if generation is going to be changed
-			SATAGeneration_Changed	<= to_sl(SATAGeneration_cur /= SATAGeneration_nxt_v);
-			
-			-- assign new generation to *_nxt signal
-			SATAGeneration_nxt			<= SATAGeneration_nxt_v;
-		END IF;
+		-- assign new generation to *_nxt signal
+		SATAGeneration_nxt			<= SATAGeneration_nxt_v;
 	END PROCESS;
 
 	-- export current SATA generation to other layers
