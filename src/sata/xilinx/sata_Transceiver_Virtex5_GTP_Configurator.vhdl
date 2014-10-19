@@ -6,7 +6,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 --USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.xil.ALL;
 
@@ -32,7 +32,7 @@ USE			PoC.xil.ALL;
 ENTITY sata_Transceiver_Virtex5_GTP_Configurator IS
 	GENERIC (
 		DEBUG											: BOOLEAN											:= FALSE;																-- 
-		DRPCLOCK_FREQ_MHZ					: REAL												:= 0.0;																	-- 
+		DRPCLOCK_FREQ					: FREQ												:= 0.0 MHz;																	-- 
 		PORTS											: POSITIVE										:= 1;																		-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1 => C_SATA_GENERATION_MAX)		-- intial SATA Generation
 	);
