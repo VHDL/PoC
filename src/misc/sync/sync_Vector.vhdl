@@ -51,8 +51,7 @@ USE			PoC.utils.ALL;
 ENTITY sync_Vector IS
   GENERIC (
 	  BITS								: POSITIVE					:= 8;											-- number of bit to be synchronized
-		INIT								: STD_LOGIC_VECTOR	:= x"00";									-- 
-		AUTO_RESET_OUPUT		: BOOLEAN						:= FALSE									-- 
+		INIT								: STD_LOGIC_VECTOR	:= x"00000000"						-- 
 	);
   PORT (
 		Clock1							: IN	STD_LOGIC;															-- <Clock>	input clock
