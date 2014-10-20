@@ -125,9 +125,10 @@ package strings is
 	function str_find(str : STRING; chr : CHARACTER)	return BOOLEAN;
 	function str_find(str : STRING; search : STRING)	return BOOLEAN;
 	function str_replace(str : STRING; search : STRING; replace : STRING) return STRING;
-	function str_trim(str : STRING)										return STRING;
-	function str_to_lower(str : STRING)								return STRING;
-	function str_to_upper(str : STRING)								return STRING;
+	function str_trim(str : STRING)											return STRING;
+	function str_ltrim(str : STRING; char : CHARACTER)	return STRING;
+	function str_to_lower(str : STRING)									return STRING;
+	function str_to_upper(str : STRING)									return STRING;
 	function str_substr(str : STRING; start : INTEGER := 0; length : INTEGER := 0) return STRING;
 
 	procedure stdout_write(str : STRING);
@@ -290,7 +291,8 @@ package body strings is
 		variable j						: NATURAL;
 	begin
 		-- convert input slv to a DOWNTO ranged vector; normalize range to slv'low = 0 and resize it to a multiple of 4
-		Value := resize(movez(ite(slv'ascending, descend(slv), slv)), (Result'length * 4));
+--		Value := resize(movez(ite(slv'ascending, descend(slv), slv)), (Result'length * 4));
+		Value := slv;
 		
 		-- convert 4 bit to a character
 		j				:= 0;
@@ -571,7 +573,7 @@ package body strings is
 		CONSTANT MaxLength	: NATURAL								:= imin(size, str'length);
 		VARIABLE Result			: STRING(1 TO size)			:= (OTHERS => FillChar);
 	BEGIN
-		report "resize: str='" & str & "' size=" & INTEGER'image(size) severity note;
+		--report "resize: str='" & str & "' size=" & INTEGER'image(size) severity note;
 		if (MaxLength > 0) then
 			Result(1 TO MaxLength) := str(str'low TO str'low + MaxLength - 1);
 		end if;
@@ -729,6 +731,17 @@ package body strings is
 		else
 			return resize(str, len);
 		end if;
+	end function;
+	
+	function str_ltrim(str : STRING; char : CHARACTER) return STRING is
+	begin
+		for i in str'range loop
+			report "str_ltrim: i=" & INTEGER'image(i) severity note;
+			if (str(i) /= char) then
+				return str(i to str'high);
+			end if;
+		end loop;
+		return "";
 	end function;
 	
 	FUNCTION str_to_lower(str : STRING) RETURN STRING IS
