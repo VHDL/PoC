@@ -41,7 +41,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
+USE			PoC.strings.ALL;
 
 
 package simulation is
@@ -104,15 +104,13 @@ package body simulation is
 	end;
 
 	procedure tbPrintResult is
-		variable l : line;
 	begin
-		write(l, string'("SIMULATION RESULT = "));
+		stdout_write("SIMULATION RESULT = ");
 		if pass then
-			write(l, string'("PASSED"));
+			stdout_write("PASSED");
 		else
-			write(l, string'("FAILED"));
+			stdout_write("FAILED");
 		end if;
-		writeline(output, l);
 	end procedure;
 
 	-- checksum functions

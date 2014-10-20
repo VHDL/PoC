@@ -42,7 +42,8 @@ library PoC;
 
 package my_project is
   -- Change these lines to setup configuration.
-  constant MY_PROJECT_DIR		: string	:= "CHANGE THIS"; -- e.g. "d:\vhdl\myproject\", "\home\me\projects\myproject\"
+  constant MY_PROJECT_DIR				: string	:= "CHANGE THIS";		-- e.g. "d:/vhdl/myproject/", "/home/me/projects/myproject/"
+	constant MY_OPERATING_SYSTEM	: string	:= "CHANGE THIS";		-- e.g. "WINDOWS", "LINUX"
 end my_project;
 
 
