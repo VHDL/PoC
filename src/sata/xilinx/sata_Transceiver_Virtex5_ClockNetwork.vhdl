@@ -8,13 +8,14 @@ USE			UNISIM.VCOMPONENTS.ALL;
 LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.io.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.sata.ALL;
 
 
 ENTITY sata_Transceiver_Virtex5_GTP_ClockNetwork IS
 	GENERIC (
 		DEBUG											: BOOLEAN												:= TRUE;
-		CLOCK_IN_FREQ_MHZ					: REAL													:= 150.0;																	-- 150 MHz
+		CLOCK_IN_FREQ							: FREQ													:= 150.0 MHz;																	-- 150 MHz
 		PORTS											: POSITIVE											:= 1;																			-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR			:= (0 to 1 => C_SATA_GENERATION_MAX)			-- intial SATA Generation
 	);
@@ -137,7 +138,7 @@ BEGIN
 	GTP_DCM : DCM_BASE
 		GENERIC MAP (
 			-- configure CLKIN input
-			CLKIN_PERIOD						=> Freq_MHz2Real_ns(CLOCK_IN_FREQ_MHZ),
+			CLKIN_PERIOD						=> to_real(to_time(CLOCK_IN_FREQ), 1.0 ns),
 			DLL_FREQUENCY_MODE			=> "HIGH",
 			DUTY_CYCLE_CORRECTION		=> TRUE,
 			FACTORY_JF							=> x"F0F0",
