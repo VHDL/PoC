@@ -289,7 +289,7 @@ BEGIN
 	BEGIN
 		NextState														<= State;
 		
-		Status_i														<= SATA_PHY_SPEED_STATUS_NEGOTIATION;
+		Status_i														<= SATA_PHY_SPEED_STATUS_WAITING;
 		
 		SATAGeneration_rst									<= '0';
 		SATAGeneration_Change								<= '0';
@@ -304,7 +304,7 @@ BEGIN
 	
 		CASE State IS
 			WHEN ST_WAIT =>
-				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATING;
+				Status_i												<= SATA_PHY_SPEED_STATUS_WAITING;
 				
 				IF (Command = SATA_PHY_SPEED_CMD_RESET) THEN
 					SATAGeneration_rst						<= '1';
@@ -321,12 +321,12 @@ BEGIN
 				END IF;
 			
 			WHEN ST_RETRY =>
-				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATING;
+				Status_i												<= SATA_PHY_SPEED_STATUS_WAITING;
 				OOBC_Retry_i										<= '1';
 				NextState												<= ST_WAIT;
 			
 			WHEN ST_TIMEOUT =>
-				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATING;
+				Status_i												<= SATA_PHY_SPEED_STATUS_WAITING;
 				
 				IF (TryPerGeneration_Counter_ov = '1') THEN
 					IF (GenerationChange_Counter_ov = '1') THEN
