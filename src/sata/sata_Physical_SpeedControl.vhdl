@@ -310,7 +310,11 @@ BEGIN
 					SATAGeneration_rst						<= '1';
 					TryPerGeneration_Counter_rst	<= '1';
 					GenerationChange_Counter_rst	<= '1';
-					NextState											<= ST_RETRY;
+					IF (SATAGeneration_Changed = '1') THEN
+						NextState									<= ST_RECONFIG;
+					ELSE
+						NextState									<= ST_RETRY;
+					END IF;
 				ELSIF (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
 --					SATAGeneration_rst						<= '1';
 					TryPerGeneration_Counter_rst	<= '1';
@@ -333,7 +337,7 @@ BEGIN
 						NextState										<= ST_ERROR;
 					ELSE																					-- generation change counter allows => generation change
 						SATAGeneration_Change				<= '1';
-						TryPerGeneration_Counter_rst<= '1';
+						TryPerGeneration_Counter_rst	<= '1';
 						GenerationChange_Counter_en	<= '1';
 						
 						IF (SATAGeneration_Changed = '1') THEN
@@ -369,7 +373,11 @@ BEGIN
 					SATAGeneration_rst						<= '1';
 					TryPerGeneration_Counter_rst	<= '1';
 					GenerationChange_Counter_rst	<= '1';
-					NextState											<= ST_RETRY;
+					IF (SATAGeneration_Changed = '1') THEN
+						NextState									<= ST_RECONFIG;
+					ELSE
+						NextState									<= ST_RETRY;
+					END IF;
 				ELSIF (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
 --					SATAGeneration_rst						<= '1';
 					TryPerGeneration_Counter_rst	<= '1';
@@ -388,11 +396,11 @@ BEGIN
 	-- ================================================================
 	-- try counters
 	-- ================================================================
-	TryPerGeneration_Counter_us	<= counter_inc(TryPerGeneration_Counter_us, TryPerGeneration_Counter_rst,	TryPerGeneration_Counter_en) WHEN rising_edge(Clock);		-- count attempts per generation
-	GenerationChange_Counter_us	<= counter_inc(GenerationChange_Counter_us, GenerationChange_Counter_rst,	GenerationChange_Counter_en) WHEN rising_edge(Clock);		-- count generation changes
+	TryPerGeneration_Counter_us	<= counter_inc(TryPerGeneration_Counter_us, TryPerGeneration_Counter_rst, TryPerGeneration_Counter_en) WHEN rising_edge(Clock);		-- count attempts per generation
+	GenerationChange_Counter_us	<= counter_inc(GenerationChange_Counter_us, GenerationChange_Counter_rst, GenerationChange_Counter_en) WHEN rising_edge(Clock);		-- count generation changes
 	
-	TryPerGeneration_Counter_ov	<= counter_eq(TryPerGeneration_Counter_us, (ATTEMPTS_PER_GENERATION - 1));
-	GenerationChange_Counter_ov	<= counter_eq(GenerationChange_Counter_us, (GENERATION_CHANGE_COUNT - 1));
+	TryPerGeneration_Counter_ov	<= counter_eq(TryPerGeneration_Counter_us, ATTEMPTS_PER_GENERATION);
+	GenerationChange_Counter_ov	<= counter_eq(GenerationChange_Counter_us, GENERATION_CHANGE_COUNT);
 	
 		
 	-- debug port
