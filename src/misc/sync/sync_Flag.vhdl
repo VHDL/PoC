@@ -58,7 +58,7 @@ USE			PoC.utils.ALL;
 ENTITY sync_Flag IS
   GENERIC (
 	  BITS								: POSITIVE						:= 1;										-- number of bit to be synchronized
-		INIT								: STD_LOGIC_VECTOR		:= x"00"
+		INIT								: STD_LOGIC_VECTOR		:= x"00000000"
 	);
   PORT (
 		Clock								: IN	STD_LOGIC;															-- <Clock>	output clock domain

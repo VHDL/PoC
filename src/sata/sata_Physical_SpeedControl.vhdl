@@ -324,7 +324,30 @@ BEGIN
 			WHEN ST_RETRY =>
 				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATING;
 				OOBC_Retry_i										<= '1';
+<<<<<<< HEAD
 				NextState												<= ST_WAIT;
+=======
+				NextState												<= ST_NEGOTIATION;
+			
+			WHEN ST_NEGOTIATION =>
+				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATING;
+				
+				IF (Command = SATA_PHY_SPEED_CMD_RESET) THEN
+					SATAGeneration_rst						<= '1';
+					TryPerGeneration_Counter_rst	<= '1';
+					GenerationChange_Counter_rst	<= '1';
+					NextState											<= ST_RETRY;
+				
+				ELSIF (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
+					TryPerGeneration_Counter_rst	<= '1';
+--					GenerationChange_Counter_rst	<= '1';
+					NextState											<= ST_RETRY;
+				END IF;
+				
+				IF (OOBC_Timeout = '1') THEN
+					NextState											<= ST_TIMEOUT;
+				END IF;
+>>>>>>> agios/paebbels/sata
 			
 			WHEN ST_TIMEOUT =>
 				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATING;

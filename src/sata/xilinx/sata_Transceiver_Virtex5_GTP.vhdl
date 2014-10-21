@@ -1529,7 +1529,7 @@ BEGIN
 				------------- Shared Ports - Dynamic Reconfiguration Port (DRP) ------------
 				DCLK													=>			GTP_DRP_Clock,
 				DEN														=>			GTP_DRP_en,
-				DADDR													=>			GTP_DRP_Address,
+				DADDR													=>			GTP_DRP_Address(6 downto 0),
 				DWE														=>			GTP_DRP_we,
 				DI														=>			GTP_DRP_DataIn,
 				DO														=>			GTP_DRP_DataOut,
