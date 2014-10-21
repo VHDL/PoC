@@ -77,7 +77,7 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP IS
 -- SATATransceiver configuration
 -- ==================================================================
 	CONSTANT NO_DEVICE_TIMEOUT								: TIME						:= ite(SIMULATION, 20.0 us, 50.0 ms);	-- simulation: 20 us, synthesis: 50 ms
-	CONSTANT NEW_DEVICE_TIMEOUT								: TIME						:= 1.0 us;
+	CONSTANT NEW_DEVICE_TIMEOUT								: TIME						:= ite(SIMULATION, 20.0 us, 1000.0 ms);
 
 	CONSTANT C_DEVICE_INFO										: T_DEVICE_INFO		:= DEVICE_INFO;
 
@@ -649,8 +649,18 @@ BEGIN
 		SIGNAL DD_NoDevice_i					: STD_LOGIC;
 		SIGNAL DD_NewDevice						: STD_LOGIC;
 		SIGNAL DD_NewDevice_i					: STD_LOGIC;
+		SIGNAL RxComReset					: STD_LOGIC;
+		SIGNAL RxComReset_CC					: STD_LOGIC;
 
 	BEGIN
+		RxComReset <= to_sl(OOB_RX_Received_d(I) = SATA_OOB_COMRESET);
+
+		OS : ENTITY PoC.sync_Flag
+			PORT MAP (
+				Clock				=> Control_Clock,
+				Input(0)		=> RxComReset,
+				Output(0)		=> RxComReset_CC
+			);
 
 		-- device detection
 		DD : ENTITY PoC.sata_DeviceDetector
@@ -663,7 +673,7 @@ BEGIN
 			PORT MAP (
 				Clock										=> Control_Clock,
 				ElectricalIDLE					=> GTP_RX_ElectricalIDLE(I),	-- async
-				
+				RxComReset					=> RxComReset_CC,
 				NoDevice								=> DD_NoDevice(I),						-- @DRP_Clock
 				NewDevice								=> DD_NewDevice								-- @DRP_Clock
 			);
