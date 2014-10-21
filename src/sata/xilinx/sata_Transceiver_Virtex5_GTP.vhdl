@@ -19,48 +19,51 @@ USE			PoC.xil.ALL;
 
 ENTITY sata_Transceiver_Virtex5_GTP IS
 	GENERIC (
-		DEBUG											: BOOLEAN											:= FALSE;																	-- generate ChipScope debugging "pins"
-		CLOCK_IN_FREQ					: FREQ												:= 150.0 MHz;
-		PORTS											: POSITIVE										:= 2;																			-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1 => C_SATA_GENERATION_MAX)			-- intial SATA Generation
+		DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
+		ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
+		CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
+		PORTS											: POSITIVE										:= 2;																				-- Number of Ports per Transceiver
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1	=> C_SATA_GENERATION_MAX)				-- intial SATA Generation
 	);
 	PORT (
-		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-
+		Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
+		PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
+		Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+		TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+		-- debug ports
+		DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
+		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
+
+		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	
 		RP_Reconfig								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_SATAGeneration					: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
 		RP_ReconfigComplete				: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RP_ConfigReloaded					: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RP_Lock										:	IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RP_Locked									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
-		SATA_Generation						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
-		OOB_HandshakingComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
+		OOB_HandshakeComplete			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
-		PowerDown									: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-		Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
-		Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-		RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+		TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
+		TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
 
---		DebugPortOut							: OUT T_DBG_TRANSOUT_VECTOR(PORTS	- 1 DOWNTO 0);
-
-		RX_OOBStatus							: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 		RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
 		RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
-		TX_OOBCommand							: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_OOBComplete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
-		
-		-- vendor specific signals (Xilinx)
+		-- vendor specific signals
 		VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
-		VSS_Private_In						: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS - 1 DOWNTO 0);
+		VSS_Private_In						: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0);
 		VSS_Private_Out						: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0)
 	);
 END;
@@ -73,8 +76,8 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP IS
 -- ==================================================================
 -- SATATransceiver configuration
 -- ==================================================================
-	CONSTANT NO_DEVICE_TIMEOUT				: TIME																			:= 50.0 ms;
-	CONSTANT NEW_DEVICE_TIMEOUT				: TIME																			:= 1000.0 ms;
+	CONSTANT NO_DEVICE_TIMEOUT								: TIME						:= ite(SIMULATION, 20.0 us, 50.0 ms);	-- simulation: 20 us, synthesis: 50 ms
+	CONSTANT NEW_DEVICE_TIMEOUT								: TIME						:= 1.0 us;
 
 	CONSTANT C_DEVICE_INFO										: T_DEVICE_INFO		:= DEVICE_INFO;
 
@@ -181,8 +184,8 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP IS
 
 	SIGNAL BWC_RX_Align												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
-	SIGNAL TX_OOBCommand_d										: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0)													:= (OTHERS => SATA_OOB_NONE);
-	SIGNAL TX_OOBComplete_i										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL OOB_TX_Command_d										: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0)													:= (OTHERS => SATA_OOB_NONE);
+	SIGNAL OOB_TX_Complete_i										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL TX_InvalidK												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL TX_BufferStatus										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	
@@ -195,10 +198,10 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP IS
 	SIGNAL RX_Error_i													: T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL TX_Error_i													: T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 	
-	SIGNAL RX_OOBStatus_i											: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL RX_OOBStatus_d											: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0)													:= (OTHERS => SATA_OOB_NONE);
+	SIGNAL OOB_RX_Received_i											: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL OOB_RX_Received_d											: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0)													:= (OTHERS => SATA_OOB_NONE);
 
-	ATTRIBUTE KEEP OF TX_OOBComplete									: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF OOB_TX_Complete									: SIGNAL IS DEBUG;
 	ATTRIBUTE KEEP OF BWC_RX_Align										: SIGNAL IS DEBUG;
 	ATTRIBUTE KEEP OF GTP_RX_ClockCorrectionStatus		: SIGNAL IS DEBUG;
 	ATTRIBUTE KEEP OF GTP_RX_BufferStatus							: SIGNAL IS DEBUG;
@@ -229,8 +232,8 @@ BEGIN
 		
 	genAssert : FOR I IN 0 TO PORTS - 1 GENERATE
 		ASSERT (CLOCK_DIVIDERS(I) > 0)												REPORT "illegal clock devider - unsupported initial SATA generation?" SEVERITY FAILURE;
-		ASSERT ((SATA_Generation(I) = SATA_GENERATION_1) OR
-						(SATA_Generation(I) = SATA_GENERATION_2))			REPORT "unsupported SATA generation"			SEVERITY FAILURE;
+		ASSERT ((RP_SATAGeneration(I) = SATA_GENERATION_1) OR
+						(RP_SATAGeneration(I) = SATA_GENERATION_2))			REPORT "unsupported SATA generation"			SEVERITY FAILURE;
 	END GENERATE;
 
 -- ============================================================================
@@ -264,29 +267,29 @@ BEGIN
 	GTP_Reset													<= GTP_PLL_Reset OR GTP_ReloadConfig;
 
 	genSync0 : FOR I IN 0 TO PORTS - 1 GENERATE
-		SIGNAL GTP_Reset_meta							: STD_LOGIC				:= '0';
+		SIGNAL GTP_Reset_meta						: STD_LOGIC				:= '0';
 		SIGNAL GTP_Reset_d							: STD_LOGIC				:= '0';
 		
 		-- ------------------------------------------
-		SIGNAL ClkNet_ResetDone_meta			: STD_LOGIC				:= '0';
-		SIGNAL ClkNet_ResetDone_d			: STD_LOGIC				:= '0';
+		SIGNAL ClkNet_ResetDone_meta		: STD_LOGIC				:= '0';
+		SIGNAL ClkNet_ResetDone_d				: STD_LOGIC				:= '0';
 		
-		SIGNAL GTP_PLL_ResetDone_meta			: STD_LOGIC				:= '0';
+		SIGNAL GTP_PLL_ResetDone_meta		: STD_LOGIC				:= '0';
 		SIGNAL GTP_PLL_ResetDone_d			: STD_LOGIC				:= '0';
 		
-		SIGNAL GTP_ResetDone_meta					: STD_LOGIC				:= '0';
+		SIGNAL GTP_ResetDone_meta				: STD_LOGIC				:= '0';
 		SIGNAL GTP_ResetDone_d					: STD_LOGIC				:= '0';
 		
 	BEGIN
-		GTP_Reset_meta										<= GTP_Reset				WHEN rising_edge(SATA_Clock_i(I));
-		GTP_Reset_d										<= GTP_Reset_meta			WHEN rising_edge(SATA_Clock_i(I));
+		GTP_Reset_meta									<= GTP_Reset				WHEN rising_edge(SATA_Clock_i(I));
+		GTP_Reset_d											<= GTP_Reset_meta		WHEN rising_edge(SATA_Clock_i(I));
 		
 		GTP_PortReset(I)								<= to_sl(Command(I) = SATA_TRANSCEIVER_CMD_RESET);
 		GTP_TX_PowerDown(I)							<= PowerDown(I) & PowerDown(I);														-- PowerDown => PowerDownState = P2
 		GTP_RX_PowerDown(I)							<= PowerDown(I) & PowerDown(I);														-- PowerDown => PowerDownState = P2
 		
 		GTP_TX_Reset(I)									<= GTP_Reset_d	OR GTP_PortReset(I);
-		GTP_RX_Reset(I)									<= GTP_Reset_d	OR GTP_PortReset(I) OR	OOB_HandshakingComplete(I);
+		GTP_RX_Reset(I)									<= GTP_Reset_d	OR GTP_PortReset(I) OR	OOB_HandshakeComplete(I);
 		GTP_RX_ElectricalIDLE_Reset(I)	<= GTP_RX_ElectricalIDLE(I)				AND GTP_ResetDone(I);				-- generate reset for CDR-unit (Clock-Data-Recovery) after OOB SIGNALing
 
 		-- ------------------------------------------
@@ -346,21 +349,21 @@ BEGIN
 	
 	ClkNet : ENTITY PoC.sata_Transceiver_Virtex5_GTP_ClockNetwork
 		GENERIC MAP (
-			DEBUG					=> DEBUG,
-			CLOCK_IN_FREQ				=> CLOCK_IN_FREQ,
-			PORTS					=> PORTS,
+			DEBUG												=> DEBUG,
+			CLOCK_IN_FREQ								=> CLOCK_IN_FREQ,
+			PORTS												=> PORTS,
 			INITIAL_SATA_GENERATIONS		=> INITIAL_SATA_GENERATIONS
 		)
 		PORT MAP (
-			ClockIn_150MHz				=> GTP_RefClockOut,							-- use stable clock after GTP_DUAL - not from CDR-Unit !! => enable elastic buffers
+			ClockIn_150MHz							=> GTP_RefClockOut,							-- use stable clock after GTP_DUAL - not from CDR-Unit !! => enable elastic buffers
 
-			ClockNetwork_Reset			=> ClkNet_Reset_x,
+			ClockNetwork_Reset					=> ClkNet_Reset_x,
 			ClockNetwork_ResetDone			=> ClkNet_ResetDone_i,
 			
-			SATA_Generation				=> SATA_Generation,
+			SATAGeneration							=> RP_SATAGeneration,
 			
-			GTP_Clock_1X				=> GTP_Clock_1X,
-			GTP_Clock_4X				=> GTP_Clock_4X
+			GTP_Clock_1X								=> GTP_Clock_1X,
+			GTP_Clock_4X								=> GTP_Clock_4X
 		);
 
 
@@ -494,19 +497,19 @@ BEGIN
 		SIGNAL ForceElectricalIDLE_re	: STD_LOGIC;
 		SIGNAL ForceElectricalIDLE_fe	: STD_LOGIC;
 	BEGIN
-		TX_OOBCommand_d(I)	<= TX_OOBCommand(I) WHEN rising_edge(GTP_Clock_4X(I));
+		OOB_TX_Command_d(I)	<= OOB_TX_Command(I) WHEN rising_edge(GTP_Clock_4X(I));
 
 		-- TX OOB signals (generate GTP specific OOB SIGNALs)
-		PROCESS(TX_OOBCommand_d(I))
+		PROCESS(OOB_TX_Command_d(I))
 		BEGIN
 			GTP_TX_ComStart(I)			<= '0';
 			ForceElectricalIDLE			<= '0';
 		
-			IF (TX_OOBCommand_d(I) = SATA_OOB_READY) THEN
+			IF (OOB_TX_Command_d(I) = SATA_OOB_READY) THEN
 				ForceElectricalIDLE		<= '1';
-			ELSIF (TX_OOBCommand_d(I) = SATA_OOB_COMRESET) THEN
+			ELSIF (OOB_TX_Command_d(I) = SATA_OOB_COMRESET) THEN
 				GTP_TX_ComStart(I) 		<= '1';
-			ELSIF (TX_OOBCommand_d(I) = SATA_OOB_COMWAKE) THEN
+			ELSIF (OOB_TX_Command_d(I) = SATA_OOB_COMWAKE) THEN
 				GTP_TX_ComStart(I) 		<= '1';
 			END IF;
 		END PROCESS;
@@ -526,7 +529,7 @@ BEGIN
 				ELSE
 					IF ((GTP_TX_ComStart(I) = '1') OR (ForceElectricalIDLE_re = '1')) THEN
 						GTP_TX_ElectricalIDLE(I)	<= '1';
-					ELSIF ((TX_OOBComplete_i(I) = '1') OR (ForceElectricalIDLE_fe = '1')) THEN
+					ELSIF ((OOB_TX_Complete_i(I) = '1') OR (ForceElectricalIDLE_fe = '1')) THEN
 						GTP_TX_ElectricalIDLE(I)	<= '0';
 					END IF;
 				END IF;
@@ -541,7 +544,7 @@ BEGIN
 		BEGIN
 			IF rising_edge(GTP_Clock_4X(I)) THEN
 				IF (GTP_TX_ComStart(I) = '1') THEN
-					CASE TX_OOBCommand_d(I) IS
+					CASE OOB_TX_Command_d(I) IS
 						WHEN SATA_OOB_COMRESET =>		GTP_TX_ComType(I)				<= '0';
 						WHEN SATA_OOB_COMWAKE =>		GTP_TX_ComType(I)				<= '1';
 						WHEN OTHERS =>							GTP_TX_ComType(I)				<= '0';
@@ -558,30 +561,30 @@ BEGIN
 				Clock1		=> GTP_Clock_1X(I),						-- input clock domain
 				Clock2		=> GTP_Clock_4X(I),						-- output clock domain
 				Input(0)	=> GTP_TX_ComComplete(I),			-- input bits
-				Output(0)	=> TX_OOBComplete_i(I)				-- output bits
+				Output(0)	=> OOB_TX_Complete_i(I)				-- output bits
 			);
 		
-		TX_OOBComplete		<= TX_OOBComplete_i;
+		OOB_TX_Complete		<= OOB_TX_Complete_i;
 		
 		-- RX OOB SIGNALs (generate generic RX OOB status SIGNALs)
 		PROCESS(GTP_RX_Status(I)(2 DOWNTO 1), RX_ElectricalIDLE(I))
 		BEGIN
-			RX_OOBStatus_i(I) 				<= SATA_OOB_NONE;
+			OOB_RX_Received_i(I) 				<= SATA_OOB_NONE;
 		
 			IF (RX_ElectricalIDLE(I) = '1') THEN
-				RX_OOBStatus_i(I)				<= SATA_OOB_READY;
+				OOB_RX_Received_i(I)				<= SATA_OOB_READY;
 			
 				CASE GTP_RX_Status(I)(2 DOWNTO 1) IS
-					WHEN "10" =>					RX_OOBStatus_i(I)		<= SATA_OOB_COMRESET;
-					WHEN "01" =>					RX_OOBStatus_i(I)		<= SATA_OOB_COMWAKE;
+					WHEN "10" =>					OOB_RX_Received_i(I)		<= SATA_OOB_COMRESET;
+					WHEN "01" =>					OOB_RX_Received_i(I)		<= SATA_OOB_COMWAKE;
 					WHEN OTHERS =>				NULL;
 				END CASE;
 			END IF;
 		END PROCESS;
 
 		-- convert to Word-Clock
-		RX_OOBStatus_d(I) <= RX_OOBStatus_i(I) WHEN rising_edge(GTP_Clock_4X(I));
-		RX_OOBStatus(I)		<= RX_OOBStatus_d(I);
+		OOB_RX_Received_d(I) <= OOB_RX_Received_i(I) WHEN rising_edge(GTP_Clock_4X(I));
+		OOB_RX_Received(I)		<= OOB_RX_Received_d(I);
 	END GENERATE;
 
 -- ==================================================================
@@ -643,38 +646,24 @@ BEGIN
 -- Transceiver status / DeviceDetection
 -- ==================================================================
 	genDeviceDetector : FOR I IN 0 TO PORTS - 1 GENERATE
-
-		CONSTANT NO_DEVICE_TIMEOUT				: TIME		:= ite(SIMULATION, 2.0 us, NO_DEVICE_TIMEOUT);
-		CONSTANT NEW_DEVICE_TIMEOUT				: TIME		:= ite(SIMULATION, 0.1 us, NEW_DEVICE_TIMEOUT);
-
 		SIGNAL DD_NoDevice_i					: STD_LOGIC;
 		SIGNAL DD_NewDevice						: STD_LOGIC;
 		SIGNAL DD_NewDevice_i					: STD_LOGIC;
-		SIGNAL RxComReset					: STD_LOGIC;
-		SIGNAL RxComReset_CC					: STD_LOGIC;
 
 	BEGIN
-		RxComReset <= '1' when RX_OOBStatus_d(I) = SATA_OOB_COMRESET else '0';
-
-		OS : ENTITY PoC.sync_Flag
-			PORT MAP (
-				Clock										=> Control_Clock,
-				Input(0)									=> RxComReset,
-				Output(0)									=> RxComReset_CC
-			);
 
 		-- device detection
 		DD : ENTITY PoC.sata_DeviceDetector
 			GENERIC MAP (
-				DEBUG				=> DEBUG,
-				CLOCK_FREQ			=> CLOCK_IN_FREQ,					-- 150 MHz
+				DEBUG								=> DEBUG,
+				CLOCK_FREQ					=> CLOCK_IN_FREQ,					-- 150 MHz
 				NO_DEVICE_TIMEOUT		=> NO_DEVICE_TIMEOUT,
-				NEW_DEVICE_TIMEOUT		=> NEW_DEVICE_TIMEOUT
+				NEW_DEVICE_TIMEOUT	=> NEW_DEVICE_TIMEOUT
 			)
 			PORT MAP (
 				Clock										=> Control_Clock,
 				ElectricalIDLE					=> GTP_RX_ElectricalIDLE(I),	-- async
-				RxComReset					=> RxComReset_CC,
+				
 				NoDevice								=> DD_NoDevice(I),						-- @DRP_Clock
 				NewDevice								=> DD_NewDevice								-- @DRP_Clock
 			);
@@ -719,34 +708,34 @@ BEGIN
 -- ==================================================================
 	GTPConfig : ENTITY PoC.sata_Transceiver_Virtex5_GTP_Configurator
 		GENERIC MAP (
-			DEBUG								=> DEBUG,
+			DEBUG											=> DEBUG,
 			DRPCLOCK_FREQ							=> CLOCK_IN_FREQ,
-			PORTS													=> PORTS,
-			INITIAL_SATA_GENERATIONS			=> INITIAL_SATA_GENERATIONS
+			PORTS											=> PORTS,
+			INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS
 		)
 		PORT MAP (
-			DRP_Clock											=> GTP_DRP_Clock,
-			DRP_Reset											=> GTPConfig_Reset,								-- @DRP_Clock
-			SATA_Clock										=> GTP_Clock_4X,
+			DRP_Clock									=> GTP_DRP_Clock,
+			DRP_Reset									=> GTPConfig_Reset,								-- @DRP_Clock
+			SATA_Clock								=> GTP_Clock_4X,
 	
-			Reconfig											=> RP_Reconfig,										-- @SATA_Clock
-			ReconfigComplete							=> RP_ReconfigComplete,						-- @SATA_Clock
-			ConfigReloaded								=> RP_ConfigReloaded,							-- @SATA_Clock
-			Lock													=> RP_Lock,												-- @SATA_Clock
-			Locked												=> RP_Locked,											-- @SATA_Clock
+			Reconfig									=> RP_Reconfig,										-- @SATA_Clock
+			SATAGeneration						=> RP_SATAGeneration,							-- @SATA_Clock
+			ReconfigComplete					=> RP_ReconfigComplete,						-- @SATA_Clock
+			ConfigReloaded						=> RP_ConfigReloaded,							-- @SATA_Clock
+			Lock											=> RP_Lock,												-- @SATA_Clock
+			Locked										=> RP_Locked,											-- @SATA_Clock
 	
-			SATA_Generation								=> SATA_Generation,								-- @SATA_Clock
-			NoDevice											=> DD_NoDevice,										-- @DRP_Clock
+			NoDevice									=> DD_NoDevice,										-- @DRP_Clock
 	
-			GTP_DRP_en										=> GTP_DRP_en,										-- @DRP_Clock
-			GTP_DRP_Address								=> GTP_DRP_Address,								-- @DRP_Clock
-			GTP_DRP_we										=> GTP_DRP_we,										-- @DRP_Clock
-			GTP_DRP_DataIn								=> GTP_DRP_DataOut,								-- @DRP_Clock
-			GTP_DRP_DataOut								=> GTP_DRP_DataIn,								-- @DRP_Clock
-			GTP_DRP_Ready									=> GTP_DRP_rdy,										-- @DRP_Clock
+			GTP_DRP_en								=> GTP_DRP_en,										-- @DRP_Clock
+			GTP_DRP_Address						=> GTP_DRP_Address,								-- @DRP_Clock
+			GTP_DRP_we								=> GTP_DRP_we,										-- @DRP_Clock
+			GTP_DRP_DataIn						=> GTP_DRP_DataOut,								-- @DRP_Clock
+			GTP_DRP_DataOut						=> GTP_DRP_DataIn,								-- @DRP_Clock
+			GTP_DRP_Ready							=> GTP_DRP_rdy,										-- @DRP_Clock
 			
-			GTP_ReloadConfig							=> GTP_ReloadConfig,							-- @DRP_Clock
-			GTP_ReloadConfigDone					=> GTP_ReloadConfigDone						-- @DRP_Clock
+			GTP_ReloadConfig					=> GTP_ReloadConfig,							-- @DRP_Clock
+			GTP_ReloadConfigDone			=> GTP_ReloadConfigDone						-- @DRP_Clock
 		);
 
 
@@ -1637,9 +1626,9 @@ BEGIN
 		SIGNAL DBG_GTP_TX_CharIsK										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		SIGNAL DBG_GTP_TX_Data											: T_SLVV_8(PORTS - 1 DOWNTO 0);
 		
-		SIGNAL DBG_RX_CharIsK												: T_SLVV_2(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_RX_CharIsK												: T_SLVV_4(PORTS - 1 DOWNTO 0);
 		SIGNAL DBG_RX_Data													: T_SLVV_32(PORTS - 1 DOWNTO 0);
-		SIGNAL DBG_TX_CharIsK												: T_SLVV_2(PORTS - 1 DOWNTO 0);
+		SIGNAL DBG_TX_CharIsK												: T_SLVV_4(PORTS - 1 DOWNTO 0);
 		SIGNAL DBG_TX_Data													: T_SLVV_32(PORTS - 1 DOWNTO 0);
 		
 		SIGNAL DBG_OOBStatus_COMRESET								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -1679,8 +1668,8 @@ BEGIN
 				DBG_TX_CharIsK(I)						<= TX_CharIsK(I);
 				DBG_TX_Data(I)							<= TX_Data(I);
 			
-				DBG_OOBStatus_COMRESET(I)		<= to_sl(RX_OOBStatus_i(I) = SATA_OOB_COMRESET);
-				DBG_OOBStatus_COMWAKE(I)		<= to_sl(RX_OOBStatus_i(I) = SATA_OOB_COMWAKE);
+				DBG_OOBStatus_COMRESET(I)		<= to_sl(OOB_RX_Received_i(I) = SATA_OOB_COMRESET);
+				DBG_OOBStatus_COMWAKE(I)		<= to_sl(OOB_RX_Received_i(I) = SATA_OOB_COMWAKE);
 			END GENERATE;
 	END GENERATE;
 	

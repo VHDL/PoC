@@ -1,3 +1,34 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Package:					TODO
+--
+-- Authors:					Patrick Lehmann
+-- 
+-- Description:
+-- ------------------------------------
+--		For detailed documentation see below.
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
@@ -32,7 +63,7 @@ USE			PoC.xil.ALL;
 ENTITY sata_Transceiver_Virtex5_GTP_Configurator IS
 	GENERIC (
 		DEBUG											: BOOLEAN											:= FALSE;																-- 
-		DRPCLOCK_FREQ					: FREQ												:= 0.0 MHz;																	-- 
+		DRPCLOCK_FREQ							: FREQ												:= 0.0 MHz;																	-- 
 		PORTS											: POSITIVE										:= 1;																		-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1 => C_SATA_GENERATION_MAX)		-- intial SATA Generation
 	);
@@ -43,12 +74,12 @@ ENTITY sata_Transceiver_Virtex5_GTP_Configurator IS
 		SATA_Clock							: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
 		Reconfig								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);							-- @SATA_Clock
+		SATAGeneration					: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);			-- @SATA_Clock
 		ReconfigComplete				: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);							-- @SATA_Clock
 		ConfigReloaded					: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);							-- @SATA_Clock
 		Lock										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);							-- @SATA_Clock
 		Locked									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);							-- @SATA_Clock
 		
-		SATA_Generation					: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);			-- @SATA_Clock
 		NoDevice								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);							-- @DRP_Clock
 			
 		GTP_DRP_en							: OUT	STD_LOGIC;																				-- @DRP_Clock
@@ -193,7 +224,7 @@ BEGIN
 		SIGNAL Lock_i								: STD_LOGIC;
 		SIGNAL SATAGeneration_SATA	: T_SATA_GENERATION			:= INITIAL_SATA_GENERATIONS(I);
 	BEGIN
-		-- synchronize Reconfig(I), Lock(I), SATA_Generation(I) from SATA_Clock to DRP_Clock
+		-- synchronize Reconfig(I), Lock(I), SATAGeneration(I) from SATA_Clock to DRP_Clock
 		sync1 : ENTITY PoC.sync_Flag
 			PORT MAP (
 				Clock				=> DRP_Clock,
@@ -213,7 +244,7 @@ BEGIN
 		Lock_DRP(I)					<= Lock_i	AND (NOT NoDevice(I));
 
 		-- register SATAGeneration in old clock domain
-		SATAGeneration_SATA	<= SATA_Generation(I) WHEN rising_edge(SATA_Clock(I));
+		SATAGeneration_SATA	<= SATAGeneration(I) WHEN rising_edge(SATA_Clock(I));
 		
 		-- sample SATAGeneration in new clock domain if Reconfig occurs (SATAGeneration was stable for several cycles)
 		PROCESS(DRP_Clock)
@@ -377,24 +408,24 @@ BEGIN
 
 	XilDRP : ENTITY PoC.xil_Reconfigurator
 		GENERIC MAP (
-			DEBUG					=> DEBUG,
-			CLOCK_FREQ					=> DRPCLOCK_FREQ,
-			CONFIG_ROM							=> XILDRP_CONFIG_ROM
+			DEBUG						=> DEBUG,
+			CLOCK_FREQ			=> DRPCLOCK_FREQ,
+			CONFIG_ROM			=> XILDRP_CONFIG_ROM
 		)
 		PORT MAP (
-			Clock										=> DRP_Clock,
-			Reset										=> DRP_Reset,
+			Clock						=> DRP_Clock,
+			Reset						=> DRP_Reset,
 			
-			Reconfig								=> XilDRP_Reconfig,
-			ReconfigDone						=> XilDRP_ReconfigDone,
-			ConfigSelect						=> XilDRP_ConfigSelect,
+			Reconfig				=> XilDRP_Reconfig,
+			ReconfigDone		=> XilDRP_ReconfigDone,
+			ConfigSelect		=> XilDRP_ConfigSelect,
 			
-			DRP_en									=> GTP_DRP_en,
-			DRP_Address							=> GTP_DRP_Address,
-			DRP_we									=> GTP_DRP_we,
-			DRP_DataIn							=> GTP_DRP_DataIn,
-			DRP_DataOut							=> GTP_DRP_DataOut,
-			DRP_Ready								=> GTP_DRP_Ready
+			DRP_en					=> GTP_DRP_en,
+			DRP_Address			=> GTP_DRP_Address,
+			DRP_we					=> GTP_DRP_we,
+			DRP_DataIn			=> GTP_DRP_DataIn,
+			DRP_DataOut			=> GTP_DRP_DataOut,
+			DRP_Ready				=> GTP_DRP_Ready
 		);
 		
 	-- GTP_ReloadConfig**** interface

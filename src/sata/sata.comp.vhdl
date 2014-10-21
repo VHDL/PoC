@@ -192,7 +192,7 @@ package satacomp is
 			ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
 			CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																				-- Number of Ports per Transceiver
-			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)			-- intial SATA Generation
+			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)				-- intial SATA Generation
 		);
 		PORT (
 			Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
