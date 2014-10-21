@@ -290,12 +290,9 @@ package body strings is
 		variable Result				: STRING(1 to div_ceil(slv'length, 4));
 		variable j						: NATURAL;
 	begin
-		-- convert input slv to a DOWNTO ranged vector; normalize range to slv'low = 0 and resize it to a multiple of 4
---		Value := resize(movez(ite(slv'ascending, descend(slv), slv)), (Result'length * 4));
 		Value := slv;
+		j			:= 0;
 		
-		-- convert 4 bit to a character
-		j				:= 0;
 		for i in Result'reverse_range loop
 			Digit			:= Value((j * 4) + 3 DOWNTO (j * 4));
 			Result(i)	:= to_char(to_integer(unsigned(Digit)));

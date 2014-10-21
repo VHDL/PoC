@@ -438,7 +438,7 @@ BEGIN
 		OOBC_Timeout_d				<= OOBC_Timeout WHEN rising_edge(Clock);
 		OOBC_Timeout_re				<= NOT OOBC_Timeout_d AND OOBC_Timeout;
 		SC_Retry							<= OOBC_Timeout_re AND NOT TryCounter_uf;
-		SC_Status							<= SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR WHEN (TryCounter_uf = '1') ELSE SATA_PHY_SPEED_STATUS_NEGOTIATING;
+		SC_Status							<= SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR WHEN (TryCounter_uf = '1') ELSE SATA_PHY_SPEED_STATUS_WAITING;
 
 		TryCounter_rst				<= '0';	-- FIXME: replace resets by commands ... SC_SATAGeneration_Reset OR SC_AttemptCounter_Reset;
 		TryCounter_en					<= OOBC_Timeout_re;
