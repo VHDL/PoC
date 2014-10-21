@@ -45,7 +45,7 @@ package debug is
 
 	type T_DBG_ENCODING is record
 		Name			: STRING(1 to C_DBG_STRING_LENGTH);
-		Binary		: T_SLV_64;
+		Binary		: T_SLV_32;
 	end record;
 
 	type T_DBG_ENCODING_REPLACEMENT is record
@@ -72,10 +72,10 @@ package body debug is
     variable tokenLine						: LINE;																			-- 
 		
 		variable nameLength						: NATURAL		:= 0;
-		variable BinaryLength					: NATURAL		:= 0;
+		variable hexLength						: NATURAL		:= 0;
 		variable nameBuffer						: STRING(1 to 128);
 		variable lineBuffer						: STRING(1 to 128);
-		variable binaryBuffer					: STRING(1 to (encodings(0).Binary'length / 4));
+		variable hexBuffer						: STRING(1 to (encodings(0).Binary'length / 4));
 	begin
 		report "Exporting encoding of '" & Name & "' to '" & tokenFileName & "'..." severity note;
 		
@@ -100,10 +100,15 @@ package body debug is
 			lineBuffer(1 to nameLength)	:= nameBuffer(1 to nameLength);
 			lineBuffer(nameLength + 1)	:= '=';
 			
-			binaryBuffer								:= raw_format_slv_hex(encodings(i).Binary);
-			BinaryLength								:= str_length(binaryBuffer);
-			lineBuffer(nameLength + 2 to nameLength + BinaryLength + 1)	:= binaryBuffer(1 to BinaryLength);
-			lineBuffer(nameLength + BinaryLength + 3)	:= NUL;
+			hexBuffer										:= resize(str_ltrim(raw_format_slv_hex(encodings(i).Binary), '0'), hexBuffer'length);
+			hexLength										:= str_length(hexBuffer);
+			if (hexLength > 0) then
+				lineBuffer(nameLength + 2 to nameLength + hexLength + 1)	:= hexBuffer(1 to hexLength);
+				lineBuffer(nameLength + hexLength + 2)										:= NUL;
+			else
+				lineBuffer(nameLength + 2)	:= '0';
+				lineBuffer(nameLength + 3)	:= NUL;
+			end if;
 			
 			write(tokenLine, str_trim(lineBuffer));
 			writeline(tokenFile, tokenLine);

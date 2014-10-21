@@ -191,7 +191,7 @@ ARCHITECTURE rtl OF sata_Physical_SpeedControl IS
 	CONSTANT ROM_StartGeneration							: T_SGEN2_SGEN	:= StartGen;
 	CONSTANT ROM_NextGeneration 							: T_SGEN3_SGEN	:= NextGen;
 
-	CONSTANT GENERATION_CHANGE_COUNTER_BITS		: POSITIVE			:= log2ceilnz(GENERATION_CHANGE_COUNT);
+	CONSTANT GENERATION_CHANGE_COUNTER_BITS		: POSITIVE			:= log2ceilnz(GENERATION_CHANGE_COUNT + 1);
 	CONSTANT TRY_PER_GENERATION_COUNTER_BITS	: POSITIVE			:= log2ceilnz(ATTEMPTS_PER_GENERATION);
 
 	TYPE T_STATE IS (
@@ -399,7 +399,7 @@ BEGIN
 	TryPerGeneration_Counter_us	<= counter_inc(TryPerGeneration_Counter_us, TryPerGeneration_Counter_rst, TryPerGeneration_Counter_en) WHEN rising_edge(Clock);		-- count attempts per generation
 	GenerationChange_Counter_us	<= counter_inc(GenerationChange_Counter_us, GenerationChange_Counter_rst, GenerationChange_Counter_en) WHEN rising_edge(Clock);		-- count generation changes
 	
-	TryPerGeneration_Counter_ov	<= counter_eq(TryPerGeneration_Counter_us, ATTEMPTS_PER_GENERATION);
+	TryPerGeneration_Counter_ov	<= counter_eq(TryPerGeneration_Counter_us, ATTEMPTS_PER_GENERATION - 1);
 	GenerationChange_Counter_ov	<= counter_eq(GenerationChange_Counter_us, GENERATION_CHANGE_COUNT);
 	
 		

@@ -190,7 +190,7 @@ BEGIN
 	BEGIN
 		NextState									<= State;
 		
-		TX_Primitive							<= SATA_PRIMITIVE_ALIGN;
+		TX_Primitive							<= SATA_PRIMITIVE_ALIGN;			-- TODO: check if it's better to send ALIGN or DIAL_TONE
 	
 		-- general timeout
 		TC1_en										<= '0';
