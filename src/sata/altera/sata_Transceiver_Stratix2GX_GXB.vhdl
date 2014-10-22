@@ -165,13 +165,13 @@ BEGIN
 		RX_Error(i) <= SATA_TRANSCEIVER_RX_ERROR_NONE;
 		TX_Error(i) <= SATA_TRANSCEIVER_TX_ERROR_NONE;
 
-		RX_OOBStatus(i) <= rx_oob_status;
+		OOB_RX_Received(i) <= rx_oob_status;
 		RX_Data(i) 	<= sata_rx_data;
 		RX_CharIsK(i)	<= sata_rx_ctrl;
 		RX_IsAligned(i)	<= sata_syncstatus;
 
-		tx_oob_command 		<= TX_OOBCommand(i);
-		TX_OOBComplete(i) 	<= tx_oob_complete;
+		tx_oob_command 		<= OOB_TX_Command(i);
+		OOB_TX_Complete(i) 	<= tx_oob_complete;
 		sata_tx_data 		<= TX_Data(i);
 		sata_tx_ctrl		<= TX_CharIsK(i);
 
@@ -187,7 +187,7 @@ BEGIN
 		process(ll_clk) begin
 			if rising_edge(ll_clk) then
 				if RP_Reconfig(i) = '1' then
-					sata_gen <= to_slv(SATA_Generation(i));
+					sata_gen <= to_slv(RP_SATAGeneration(i));
 				end if;
 				if gxb_busy = '0' and pll_busy = '0' then
 					config_state <= config_state(14 downto 0) & RP_Reconfig(i);
