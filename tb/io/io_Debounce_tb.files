@@ -6,6 +6,7 @@
 
 # board and device configuration
 vhdl poc	"tb/common/my_config_ML505.vhdl"
+vhdl poc	"tb/common/my_project.vhdl"
 
 # Xilinx Packages and Primitives
 xilinx unisim	"unisims/unisim_VCOMP.vhd"
