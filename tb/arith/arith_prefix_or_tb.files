@@ -6,6 +6,7 @@
 #
 # board and device configuration
 vhdl poc	"tb/common/my_config_ML505.vhdl"
+vhdl poc	"tb/common/my_project.vhdl"
 
 # Xilinx Primitives
 xilinx work	"unisims/primitive/MUXCY.vhd"

@@ -6,6 +6,7 @@
 #
 # board and device configuration
 vhdl poc	"tb/common/my_config_ML505.vhdl"
+vhdl poc	"tb/common/my_project.vhdl"
 
 # PoC core packages
 vhdl poc	"src/common/utils.vhdl"							# PoC utility collection
