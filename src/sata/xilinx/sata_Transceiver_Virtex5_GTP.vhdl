@@ -77,7 +77,7 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP IS
 -- SATATransceiver configuration
 -- ==================================================================
 	CONSTANT NO_DEVICE_TIMEOUT								: TIME						:= ite(SIMULATION, 20.0 us, 50.0 ms);	-- simulation: 20 us, synthesis: 50 ms
-	CONSTANT NEW_DEVICE_TIMEOUT								: TIME						:= ite(SIMULATION, 20.0 us, 1000.0 ms);
+	CONSTANT NEW_DEVICE_TIMEOUT								: TIME						:= ite(SIMULATION, 50.0 us, 1.0 sec);
 
 	CONSTANT C_DEVICE_INFO										: T_DEVICE_INFO		:= DEVICE_INFO;
 
@@ -198,8 +198,8 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP IS
 	SIGNAL RX_Error_i													: T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL TX_Error_i													: T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 	
-	SIGNAL OOB_RX_Received_i											: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL OOB_RX_Received_d											: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0)													:= (OTHERS => SATA_OOB_NONE);
+	SIGNAL OOB_RX_Received_i									: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL OOB_RX_Received_d									: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0)													:= (OTHERS => SATA_OOB_NONE);
 
 	ATTRIBUTE KEEP OF OOB_TX_Complete									: SIGNAL IS DEBUG;
 	ATTRIBUTE KEEP OF BWC_RX_Align										: SIGNAL IS DEBUG;
@@ -649,17 +649,17 @@ BEGIN
 		SIGNAL DD_NoDevice_i					: STD_LOGIC;
 		SIGNAL DD_NewDevice						: STD_LOGIC;
 		SIGNAL DD_NewDevice_i					: STD_LOGIC;
-		SIGNAL RxComReset					: STD_LOGIC;
-		SIGNAL RxComReset_CC					: STD_LOGIC;
+		SIGNAL RX_ComReset						: STD_LOGIC;
+		SIGNAL RX_ComReset_CC					: STD_LOGIC;
 
 	BEGIN
-		RxComReset <= to_sl(OOB_RX_Received_d(I) = SATA_OOB_COMRESET);
+		RX_ComReset <= to_sl(GTP_RX_Status(I)(2 DOWNTO 1) = "10");		-- received COMRESET
 
-		OS : ENTITY PoC.sync_Flag
+		syncCC : ENTITY PoC.sync_Flag
 			PORT MAP (
 				Clock				=> Control_Clock,
-				Input(0)		=> RxComReset,
-				Output(0)		=> RxComReset_CC
+				Input(0)		=> RX_ComReset,
+				Output(0)		=> RX_ComReset_CC
 			);
 
 		-- device detection
@@ -671,11 +671,11 @@ BEGIN
 				NEW_DEVICE_TIMEOUT	=> NEW_DEVICE_TIMEOUT
 			)
 			PORT MAP (
-				Clock										=> Control_Clock,
-				ElectricalIDLE					=> GTP_RX_ElectricalIDLE(I),	-- async
-				RxComReset					=> RxComReset_CC,
-				NoDevice								=> DD_NoDevice(I),						-- @DRP_Clock
-				NewDevice								=> DD_NewDevice								-- @DRP_Clock
+				Clock								=> Control_Clock,
+				ElectricalIDLE			=> GTP_RX_ElectricalIDLE(I),	-- async
+				RxComReset					=> RX_ComReset_CC,
+				NoDevice						=> DD_NoDevice(I),						-- @DRP_Clock
+				NewDevice						=> DD_NewDevice								-- @DRP_Clock
 			);
 
 		sync4 : ENTITY PoC.sync_Flag
