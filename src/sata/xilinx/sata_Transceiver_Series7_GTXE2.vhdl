@@ -820,11 +820,11 @@ BEGIN
 				-- RX clock correction attributes
 				CLK_CORRECT_USE													=> "TRUE",
 				CBCC_DATA_SOURCE_SEL										=> "DECODED",									-- search clock correction sequence in decoded data stream (data + k-indicator, independent of disparity)
-				CLK_COR_KEEP_IDLE												=> "FALSE",
+				CLK_COR_KEEP_IDLE												=> "TRUE",										-- see UG476, p. 261
 				CLK_COR_MIN_LAT													=> 24,												-- 3..60, divisible by 4
 				CLK_COR_MAX_LAT													=> 31,												-- 3..60
 				CLK_COR_PRECEDENCE											=> "TRUE",
-				CLK_COR_REPEAT_WAIT											=> 0,
+				CLK_COR_REPEAT_WAIT											=> 0,													-- 0 => ClockCorrection can occur at any time (see UG476, p. 261)
 				CLK_COR_SEQ_LEN													=> 4,
 				CLK_COR_SEQ_1_ENABLE										=> "1111",
 				CLK_COR_SEQ_1_1													=> "0110111100",
@@ -1222,9 +1222,9 @@ BEGIN
 				-- status ports
 				PHYSTATUS												=> GTX_PhyStatus,									-- @RX_Clock2:	
 				TXBUFSTATUS											=> GTX_TX_BufferStatus,						-- @TX_Clock2:	
-				RXBUFSTATUS											=> GTX_RX_BufferStatus,						-- @RX_Clock2:	
+				RXBUFSTATUS											=> GTX_RX_BufferStatus,						-- @RX_Clock2:	"1--" indicates buffer under/overflow
 				RXSTATUS												=> GTX_RX_Status,									-- @RX_Clock2:	
-				RXCLKCORCNT											=> GTX_RX_ClockCorrectionStatus,	-- @RX_Clock2:	"1--" indicates buffer under/overflow
+				RXCLKCORCNT											=> GTX_RX_ClockCorrectionStatus,	-- @RX_Clock2:	number of added or deleted ClockCorrection Words
 				
 				-- loopback port
 				LOOPBACK												=> "000",													-- @async:			000 => normal operation
