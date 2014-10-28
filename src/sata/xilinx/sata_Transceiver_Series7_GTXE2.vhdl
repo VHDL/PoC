@@ -127,8 +127,6 @@ ARCHITECTURE rtl OF sata_Transceiver_Series7_GTXE2 IS
 	SIGNAL ClockIn_150MHz_BUFR				: STD_LOGIC;
 	SIGNAL DD_Clock										: STD_LOGIC;
 	SIGNAL Control_Clock							: STD_LOGIC;
-	
---	SIGNAL OOBClockGen_Value					: STD_LOGIC_VECTOR(2 DOWNTO 0);
 	SIGNAL OOB_Clock									: STD_LOGIC;
 	
 	FUNCTION to_ClockDividerSelection(gen : T_SATA_GENERATION) RETURN STD_LOGIC_VECTOR IS
@@ -152,22 +150,9 @@ BEGIN
 	ASSERT (PORTS <= 4)																					REPORT "To many ports per transceiver."																					SEVERITY FAILURE;
 	
 	-- stable clock for device detection logics
-	DD_Clock												<= VSS_Common_In.RefClockIn_150_MHz;
-	Control_Clock										<= VSS_Common_In.RefClockIn_150_MHz;
-	
---	OOBClockGen : ENTITY PoC.arith_counter_ring
---		GENERIC MAP (
---			BITS							=> OOBClockGen_Value'length,
---			INVERT_FEEDBACK		=> TRUE				-- TRUE -> johnson counter
---		)
---		PORT MAP (
---			Clock							=> Control_Clock,
---			Reset							=> '0',
---			inc								=> '1',
---			value							=> OOBClockGen_Value
---		);
-		
-	OOB_Clock			<= '0';	--OOBClockGen_Value(OOBClockGen_Value'high);
+	DD_Clock					<= VSS_Common_In.RefClockIn_150_MHz;
+	Control_Clock			<= VSS_Common_In.RefClockIn_150_MHz;
+	OOB_Clock					<= '0';
 		
 	
 --	==================================================================
@@ -330,6 +315,7 @@ BEGIN
 		SIGNAL GTX_TX_Data									: T_SLV_32;
 		SIGNAL GTX_TX_CharIsK								: T_SLV_4;
 		
+		SIGNAL RX_CDR_Locked								: STD_LOGIC;															-- unused
 		SIGNAL GTX_RX_Data									: T_SLV_32;
 		SIGNAL GTX_RX_Data_float						: T_SLV_32;																-- open
 		SIGNAL GTX_RX_CommaDetected					: STD_LOGIC;															-- unused
@@ -361,23 +347,12 @@ BEGIN
 --		ATTRIBUTE KEEP OF GTX_Clock_2X						: SIGNAL IS TRUE;
 --		ATTRIBUTE KEEP OF GTX_Clock_4X						: SIGNAL IS TRUE;
 		
---		ATTRIBUTE KEEP OF GTX_RX_ByteIsAligned		: SIGNAL IS TRUE;
---		ATTRIBUTE KEEP OF GTX_RX_CharIsComma			: SIGNAL IS TRUE;
---		ATTRIBUTE KEEP OF GTX_RX_CharIsK					: SIGNAL IS TRUE;
---		ATTRIBUTE KEEP OF GTX_RX_Data							: SIGNAL IS TRUE;
---		ATTRIBUTE KEEP OF GTX_RX_BufferStatus			: SIGNAL IS TRUE;
---		ATTRIBUTE KEEP OF GTX_TX_CharIsK					: SIGNAL IS TRUE;
---		ATTRIBUTE KEEP OF GTX_TX_Data							: SIGNAL IS TRUE;
---		ATTRIBUTE KEEP OF GTX_TX_OOBComplete			: SIGNAL IS TRUE;
-		
 	BEGIN
 		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																											SEVERITY NOTE;
 		ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS_I(I) + 1)	SEVERITY NOTE;
-		--ASSERT FALSE REPORT "  ClockDivider:           " & to_string(CLOCK_DIVIDER_SELECTION, 'b')							SEVERITY NOTE;
-	
 		ASSERT ((RP_SATAGeneration(I) = SATA_GENERATION_1) OR
 						(RP_SATAGeneration(I) = SATA_GENERATION_2) OR
-						(RP_SATAGeneration(I) = SATA_GENERATION_3))		REPORT "unsupported SATA generation"							SEVERITY FAILURE;
+						(RP_SATAGeneration(I) = SATA_GENERATION_3))		REPORT "Unsupported SATA generation."							SEVERITY FAILURE;
 	
 		-- clock signals
 		GTX_QPLLRefClock							<= '0';
@@ -430,7 +405,7 @@ BEGIN
 		GTX_TX_PCSReset								<= '0';
 		GTX_TX_PMAReset								<= '0';
 		-- RX resets					
-		GTX_RX_Reset									<= (NOT GTX_CPLL_Locked_async) OR GTX_Reset;
+		GTX_RX_Reset									<= (NOT GTX_CPLL_Locked_async) OR GTX_Reset OR OOB_HandshakeComplete(I);
 		GTX_RX_PCSReset								<= '0';
 		GTX_RX_PMAReset								<= '0';
 		GTX_RX_BufferReset						<= '0';
@@ -912,10 +887,10 @@ BEGIN
 				--For GTX only: Display Port, HBR/RBR- set RXCDR_CFG=72'h0380008bff40200008
 				--For GTX only: Display Port, HBR2 -	 set RXCDR_CFG=72'h038C008bff20200010
 --				RXCDR_CFG																=> x"03000023ff20400020",				-- default from wizard
-				RXCDR_CFG																=> x"0380008BFF40100008",			-- 1.5 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
-				RXCDR_FR_RESET_ON_EIDLE									=> '0',
-				RXCDR_HOLD_DURING_EIDLE									=> '0',
-				RXCDR_PH_RESET_ON_EIDLE									=> '0',
+				RXCDR_CFG																=> x"0380008BFF40100008",					-- 1.5 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
+				RXCDR_FR_RESET_ON_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
+				RXCDR_HOLD_DURING_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
+				RXCDR_PH_RESET_ON_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
 				RXCDR_LOCK_CFG													=> "010101",
 
 				-- gearbox attributes
@@ -1032,7 +1007,7 @@ BEGIN
 				RXBUFRESET											=> GTX_RX_BufferReset,						-- @async:			
 				RXOOBRESET											=> '0',														-- @async:			reserved; tie to ground
 				EYESCANRESET										=> '0',														
-				RXCDRFREQRESET									=> '0',														-- @async:			CDR frquency detector reset
+				RXCDRFREQRESET									=> '0',														-- @async:			CDR frequency detector reset
 				RXCDRRESET											=> '0',														-- @async:			CDR phase detector reset
 				RXPRBSCNTRESET									=> '0',														-- @RX_Clock2:	reset PRBS error counter
 				-- reset done ports
@@ -1158,7 +1133,7 @@ BEGIN
 
 				-- Clock Data Recovery (CDR)
 				RXCDRHOLD												=> '0',														-- @async:			hold the CDR control loop frozen
-				RXCDRLOCK												=> open,													-- @async:			reserved; CDR locked
+				RXCDRLOCK												=> RX_CDR_Locked,									-- @async:			reserved; CDR locked
 				
 				-- TX gearbox ports
 				TXGEARBOXREADY									=> open,													-- @TX_Clock2:	indicates that data can be applied to the 64B/66B or 64B/67B gearbox
@@ -1329,6 +1304,7 @@ BEGIN
 			DebugPortOut(I).RX_Reset									<= GTX_RX_Reset;
 			DebugPortOut(I).TX_ResetDone							<= GTX_TX_ResetDone;
 			DebugPortOut(I).RX_ResetDone							<= GTX_RX_ResetDone;
+			DebugPortOut(I).RX_CDR_Locked							<= RX_CDR_Locked;
 		
 			DebugPortOut(I).TX_Data										<= GTX_TX_Data;
 			DebugPortOut(I).TX_CharIsK								<= GTX_TX_CharIsK;

@@ -67,6 +67,7 @@ package satadbg is
 		RX_Reset									: STD_LOGIC;
 		TX_ResetDone							: STD_LOGIC;
 		RX_ResetDone							: STD_LOGIC;
+		RX_CDR_Locked							: STD_LOGIC;
 		
 		TX_Data										: T_SLV_32;
 		TX_CharIsK								: T_SLV_4;
