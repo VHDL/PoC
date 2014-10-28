@@ -426,11 +426,11 @@ BEGIN
 			return res;
 		end function;
 
-		CONSTANT DBG_ENCODING_REPLACEMENTS		: T_DBG_ENCODING_REPLACEMENTS		:= C_DBG_DEFAULT_ENCODING_REPLACEMENTS & T_DBG_ENCODING_REPLACEMENTS'(
-			0 => (Pattern => new string'("negotiation_error"), Replacement => new string'("neg_error"))
-		);
+--		shared variable DBG_ENCODING_REPLACEMENTS		: T_DBG_ENCODING_REPLACEMENTS		:= C_DBG_DEFAULT_ENCODING_REPLACEMENTS & T_DBG_ENCODING_REPLACEMENTS'(
+--			0 => (Pattern => new string'("negotiation_error"), Replacement => new string'("neg_error"))
+--		);
 		
-		CONSTANT test : boolean := dbg_ExportEncoding("SpeedControl", dbg_GenerateEncodingList,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_SpeedControl.tok", DBG_ENCODING_REPLACEMENTS);
+		CONSTANT test : boolean := dbg_ExportEncoding("SpeedControl", dbg_GenerateEncodingList,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_SpeedControl.tok");--, DBG_ENCODING_REPLACEMENTS);
 
 	BEGIN
 		DebugPortOut.FSM										<= dbg_EncodeState(State);

@@ -443,12 +443,12 @@ BEGIN
 			return res;
 		end function;
 
-		CONSTANT DBG_ENCODING_REPLACEMENTS		: T_DBG_ENCODING_REPLACEMENTS		:= C_DBG_DEFAULT_ENCODING_REPLACEMENTS & T_DBG_ENCODING_REPLACEMENTS'(
-			0 => (Pattern => new string'("host_"),			Replacement => new string'(""),
-			1 => (Pattern => new string'("handshake"),	Replacement => new string'("hs"))
-		);
+--		shared variable DBG_ENCODING_REPLACEMENTS		: T_DBG_ENCODING_REPLACEMENTS		:= C_DBG_DEFAULT_ENCODING_REPLACEMENTS & T_DBG_ENCODING_REPLACEMENTS'(
+--			0 => (Pattern => new string'("host_"),			Replacement => new string'("")),
+--			1 => (Pattern => new string'("handshake"),	Replacement => new string'("hs"))
+--		);
 		
-		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodingList,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Device.tok", DBG_ENCODING_REPLACEMENTS);
+		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodingList,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Device.tok");--, DBG_ENCODING_REPLACEMENTS);
 	BEGIN
 		DebugPortOut.FSM												<= dbg_EncodeState(State);
 		DebugPortOut.Retry											<= Retry;

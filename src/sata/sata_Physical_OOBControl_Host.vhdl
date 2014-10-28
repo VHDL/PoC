@@ -33,6 +33,8 @@ LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
+use			STD.TextIO.all;
+
 LIBRARY PoC;
 USE			PoC.my_project.ALL;
 USE			PoC.config.ALL;
@@ -447,20 +449,21 @@ BEGIN
 		end function;
 		
 		function dbg_GenerateEncodingList return line_vector is
-			variable res : line_vector(0 to T_STATE'pos(T_STATE'high));
+		  variable l : line;
 		begin
-			for i in res'range loop
-				res(i) := new string'(T_STATE'image(T_STATE'val(i)));
+			for i in T_STATE loop
+				write(l, T_STATE'image(i));
+				write(l, NUL);
 			end loop;
-			return res;
+			return (1 to 1 => l);
 		end function;
 
-		CONSTANT DBG_ENCODING_REPLACEMENTS		: T_DBG_ENCODING_REPLACEMENTS		:= C_DBG_DEFAULT_ENCODING_REPLACEMENTS & T_DBG_ENCODING_REPLACEMENTS'(
-			0 => (Pattern => new string'("host_"),			Replacement => new string'(""),
-			1 => (Pattern => new string'("handshake"),	Replacement => new string'("hs"))
-		);
+--		shared variable DBG_ENCODING_REPLACEMENTS		: T_DBG_ENCODING_REPLACEMENTS		:= C_DBG_DEFAULT_ENCODING_REPLACEMENTS & T_DBG_ENCODING_REPLACEMENTS'(
+--			0 => (Pattern => new string'("host_"),			Replacement => new string'("")),
+--			1 => (Pattern => new string'("handshake"),	Replacement => new string'("hs"))
+--		);
 		
-		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Host)", dbg_GenerateEncodingList, MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Host.tok", DBG_ENCODING_REPLACEMENTS);
+		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Host)", dbg_GenerateEncodingList, MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Host.tok");--, DBG_ENCODING_REPLACEMENTS);
 	BEGIN
 
 		DebugPortOut.FSM												<= dbg_EncodeState(State);

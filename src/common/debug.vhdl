@@ -49,18 +49,18 @@ package debug is
 	end record;
 	type T_DBG_ENCODING_REPLACEMENTS is array(natural range <>) of T_DBG_ENCODING_REPLACEMENT;
 	
-	CONSTANT C_DBG_DEFAULT_ENCODING_REPLACEMENTS : T_DBG_ENCODING_REPLACEMENTS := (
-		(Pattern => new string'("st_"),				Replacement => new string'("")),
-		(Pattern => new string'("device"),		Replacement => new string'("dev"))
-	);
+--	shared variable C_DBG_DEFAULT_ENCODING_REPLACEMENTS : T_DBG_ENCODING_REPLACEMENTS := (
+--		(Pattern => new string'("st_"),				Replacement => new string'("")),
+--		(Pattern => new string'("device"),		Replacement => new string'("dev"))
+--	);
 
-	function dbg_ExportEncoding(Name : STRING; encodings : line_vector; tokenFileName : STRING; Replacements: T_DBG_ENCODING_REPLACEMENTS := C_DBG_DEFAULT_ENCODING_REPLACEMENTS) return BOOLEAN;
+	function dbg_ExportEncoding(Name : STRING; encodings : line_vector; tokenFileName : STRING) return BOOLEAN;--; Replacements: T_DBG_ENCODING_REPLACEMENTS := C_DBG_DEFAULT_ENCODING_REPLACEMENTS) return BOOLEAN;
 
 end package;
 
 
 package body debug is
-	function dbg_ExportEncoding(Name : STRING; encodings : line_vector; tokenFileName : STRING; Replacements: T_DBG_ENCODING_REPLACEMENTS := C_DBG_DEFAULT_ENCODING_REPLACEMENTS) return BOOLEAN is
+	function dbg_ExportEncoding(Name : STRING; encodings : line_vector; tokenFileName : STRING) return BOOLEAN is	--; Replacements: T_DBG_ENCODING_REPLACEMENTS := C_DBG_DEFAULT_ENCODING_REPLACEMENTS) return BOOLEAN is
 		file		 tokenFile						: TEXT open WRITE_MODE is	to_OSPath(tokenFileName);		-- declare ouput file
 		variable l, t : line;
 	begin
@@ -78,12 +78,12 @@ package body debug is
 		
 		-- write per device entires
 		for i in encodings'range loop
-			l := new string'(encodings(i).all);
-			for j in Replacements'range loop
-				t := l;
-				l := new string'(str_replace(t.all, Replacements(j).Pattern.all, Replacements(j).Replacement.all));
-				deallocate(t);
-			end loop;
+			write(l, encodings(i).all);
+--			for j in Replacements'range loop
+--				t := l;
+--				l := new string'(str_replace(t.all, Replacements(j).Pattern.all, Replacements(j).Replacement.all));
+--				deallocate(t);
+--			end loop;
 			write(l, character'('='));
 			write(l, raw_format_nat_hex(i));
 			writeline(tokenFile, l);
