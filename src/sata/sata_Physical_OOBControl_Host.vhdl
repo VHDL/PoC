@@ -446,21 +446,18 @@ BEGIN
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;
 		
-		function dbg_GenerateEncodingList return T_DBG_ENCODING_VECTOR is
-			variable i					: NATURAL		:= 0;
-			variable result			: T_DBG_ENCODING_VECTOR(0 to T_STATE'pos(T_STATE'high));
+		function dbg_GenerateEncodingList return line_vector is
+			variable res : line_vector(0 to T_STATE'pos(T_STATE'high));
 		begin
-			for st in T_STATE loop
-				result(i).Name		:= resize(T_STATE'image(st), T_DBG_ENCODING.Name'length);
-				result(i).Binary	:= to_slv(T_STATE'pos(st),	 T_DBG_ENCODING.Binary'length);
-				i	:= i + 1;
+			for i in res'range loop
+				res(i) := new string'(T_STATE'image(T_STATE'val(i)));
 			end loop;
-			return result;
+			return res;
 		end function;
 
 		CONSTANT DBG_ENCODING_REPLACEMENTS		: T_DBG_ENCODING_REPLACEMENTS		:= C_DBG_DEFAULT_ENCODING_REPLACEMENTS & T_DBG_ENCODING_REPLACEMENTS'(
-			0 => (Pattern => resize("host_", C_DBG_STRING_LENGTH),			Replacement => resize("", C_DBG_STRING_LENGTH)),
-			1 => (Pattern => resize("handshake", C_DBG_STRING_LENGTH),	Replacement => resize("hs", C_DBG_STRING_LENGTH))
+			0 => (Pattern => new string'("host_"),			Replacement => new string'(""),
+			1 => (Pattern => new string'("handshake"),	Replacement => new string'("hs"))
 		);
 		
 		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Host)", dbg_GenerateEncodingList, MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Host.tok", DBG_ENCODING_REPLACEMENTS);
