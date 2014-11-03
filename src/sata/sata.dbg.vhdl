@@ -38,6 +38,7 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
 use			PoC.sata.all;
+use			PoC.xil.all;
 
 
 package satadbg is
@@ -90,11 +91,15 @@ package satadbg is
 		RX_Valid									: STD_LOGIC;
 		RX_BufferStatus						: STD_LOGIC_VECTOR(2 DOWNTO 0);
 		RX_ClockCorrectionStatus	: STD_LOGIC_VECTOR(1 DOWNTO 0);
+		
+		DRP												: T_XIL_DRP_BUS_OUT;
 	END RECORD;
 	
 	TYPE T_SATADBG_TRANSCEIVER_IN IS RECORD
 		ForceOOBCommand						: T_SATA_OOB;
 		ForceTXElectricalIdle			: STD_LOGIC;
+		
+		DRP												: T_XIL_DRP_BUS_IN;
 	END RECORD;
 	
 	-- ===========================================================================

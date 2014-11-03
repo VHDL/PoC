@@ -1297,6 +1297,12 @@ BEGIN
 		genCSP1 : if (ENABLE_DEBUGPORT = TRUE) generate
 		
 		begin
+			GTX_DRP_Clock			<= DebugPortIn(I).DRP.Clock;
+			GTX_DRP_en				<= DebugPortIn(I).DRP.Enable;
+			GTX_DRP_we				<= DebugPortIn(I).DRP.ReadWrite;
+			GTX_DRP_Address		<= DebugPortIn(I).DRP.Address(8 downto 0);
+			GTX_DRP_DataIn		<= DebugPortIn(I).DRP.Data;
+			
 			DebugPortOut(I).ClockNetwork_Reset				<= ClkNet_Reset;
 			DebugPortOut(I).ClockNetwork_ResetDone		<= ClkNet_ResetDone;
 			DebugPortOut(I).Reset											<= GTX_Reset;
@@ -1342,6 +1348,9 @@ BEGIN
 			DebugPortOut(I).RX_Valid									<= GTX_RX_Valid;
 			DebugPortOut(I).RX_BufferStatus						<= GTX_RX_BufferStatus;
 			DebugPortOut(I).RX_ClockCorrectionStatus	<= GTX_RX_ClockCorrectionStatus;
-		END GENERATE;
-	END GENERATE;
+			
+			DebugPortOut(I).DRP.Data									<= GTX_DRP_DataOut;
+			DebugPortOut(I).DRP.Ready									<= GTX_DRP_Ready;
+		end generate;
+	end generate;
 end;
