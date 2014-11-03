@@ -433,14 +433,15 @@ BEGIN
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;
-		
-		function dbg_GenerateEncodingList return line_vector is
-			variable res : line_vector(0 to T_STATE'pos(T_STATE'high));
+
+		function dbg_GenerateEncodings return string is
+			variable  l : line;
 		begin
-			for i in res'range loop
-				res(i) := new string'(T_STATE'image(T_STATE'val(i)));
+			for i in T_STATE loop
+				write(l, T_STATE'image(i));
+				write(l, NUL);
 			end loop;
-			return res;
+			return  l.all;
 		end function;
 
 --		shared variable DBG_ENCODING_REPLACEMENTS		: T_DBG_ENCODING_REPLACEMENTS		:= C_DBG_DEFAULT_ENCODING_REPLACEMENTS & T_DBG_ENCODING_REPLACEMENTS'(
@@ -448,7 +449,7 @@ BEGIN
 --			1 => (Pattern => new string'("handshake"),	Replacement => new string'("hs"))
 --		);
 		
-		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodingList,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Device.tok");--, DBG_ENCODING_REPLACEMENTS);
+		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Device.tok");
 	BEGIN
 		DebugPortOut.FSM												<= dbg_EncodeState(State);
 		DebugPortOut.Retry											<= Retry;

@@ -448,14 +448,14 @@ BEGIN
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;
 		
-		function dbg_GenerateEncodingList return line_vector is
+		function dbg_GenerateEncodings return string is
 		  variable l : line;
 		begin
 			for i in T_STATE loop
 				write(l, T_STATE'image(i));
 				write(l, NUL);
 			end loop;
-			return (1 to 1 => l);
+			return  l.all;
 		end function;
 
 --		shared variable DBG_ENCODING_REPLACEMENTS		: T_DBG_ENCODING_REPLACEMENTS		:= C_DBG_DEFAULT_ENCODING_REPLACEMENTS & T_DBG_ENCODING_REPLACEMENTS'(
