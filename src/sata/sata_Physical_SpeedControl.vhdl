@@ -421,8 +421,8 @@ BEGIN
 			variable  l : STD.TextIO.line;
 		begin
 			for i in T_STATE loop
-				STD.TextIO.write(l, str_replace(T_STATE'image(i), "ST_", ""));
-				STD.TextIO.write(l, NUL);
+				STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_", ""));
+				STD.TextIO.write(l, ';');
 			end loop;
 			return  l.all;
 		end function;

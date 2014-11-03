@@ -54,6 +54,7 @@ package body debug is
 		variable l : line;
 	begin
 		report "Exporting encoding of '" & Name & "' to '" & tokenFileName & "'..." severity note;
+		report "dbg_ExportEncoding: '" & encodings & "'" severity note;
 		
 		-- write file header
 		write(l, "# Encoding file for '" & Name & "'");	writeline(tokenFile, l);
@@ -69,7 +70,7 @@ package body debug is
 		cnt  := 0;
 		base := encodings'left;
 		for i in encodings'range loop
-			if encodings(i) = NUL then
+			if encodings(i) = ';' then
 				write(l, encodings(base to i-1));
 				write(l, character'('='));
 			  write(l, raw_format_nat_hex(cnt));

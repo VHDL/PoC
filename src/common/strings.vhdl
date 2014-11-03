@@ -304,12 +304,20 @@ package body strings is
 
 	function raw_format_nat_bin(value : NATURAL) return STRING is
 	begin
-		return raw_format_slv_bin(to_slv(value, log2ceilnz(value)));
+		if (value = 0) then
+			return "0";
+		else
+			return raw_format_slv_bin(to_slv(value, log2ceilnz(value)));
+		end if;
 	end function;
 	
 	function raw_format_nat_oct(value : NATURAL) return STRING is
 	begin
-		return raw_format_slv_oct(to_slv(value, log2ceilnz(value)));
+		if (value = 0) then
+			return "0";
+		else
+			return raw_format_slv_oct(to_slv(value, log2ceilnz(value)));
+		end if;
 	end function;
 	
 	function raw_format_nat_dec(value : NATURAL) return STRING is
@@ -319,7 +327,11 @@ package body strings is
 	
 	function raw_format_nat_hex(value : NATURAL) return STRING is
 	begin
-		return raw_format_slv_hex(to_slv(value, log2ceilnz(value)));
+		if (value = 0) then
+			return "0";
+		else
+			return raw_format_slv_hex(to_slv(value, log2ceilnz(value)));
+		end if;
 	end function;
 	
 	-- str_format_* functions
