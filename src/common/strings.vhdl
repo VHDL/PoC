@@ -640,7 +640,7 @@ package body strings is
 
 	function str_pos(str : STRING; chr : CHARACTER; start : NATURAL := 0) return INTEGER is
 	begin
-		for i in ite((start = 0), str'low, start) to str'high loop
+		for i in imax(str'low, start) to str'high loop
 			exit when (str(i) = NUL);
 			if (str(i) = chr) then
 				return i;
@@ -651,7 +651,7 @@ package body strings is
 	
 	function str_pos(str : STRING; search : STRING; start : NATURAL := 0) return INTEGER is
 	begin
-		for i in ite((start = 0), str'low, start) to (str'high - search'length + 1) loop
+		for i in imax(str'low, start) to (str'high - search'length + 1) loop
 			exit when (str(i) = NUL);
 			if (str(i to i + search'length - 1) = search) then
 				return i;
