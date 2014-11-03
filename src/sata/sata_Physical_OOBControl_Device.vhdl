@@ -433,25 +433,18 @@ BEGIN
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;
-		
-		function dbg_GenerateEncodingList return T_DBG_ENCODING_VECTOR is
-			variable i					: NATURAL		:= 0;
-			variable result			: T_DBG_ENCODING_VECTOR(0 to T_STATE'pos(T_STATE'high));
-		begin
-			for st in T_STATE loop
-				result(i).Name		:= resize(T_STATE'image(st), T_DBG_ENCODING.Name'length);
-				result(i).Binary	:= to_slv(T_STATE'pos(st),	 T_DBG_ENCODING.Binary'length);
-				i	:= i + 1;
-			end loop;
-			return result;
-		end function;
 
-		CONSTANT DBG_ENCODING_REPLACEMENTS		: T_DBG_ENCODING_REPLACEMENTS		:= C_DBG_DEFAULT_ENCODING_REPLACEMENTS & T_DBG_ENCODING_REPLACEMENTS'(
-			0 => (Pattern => resize("host_", C_DBG_STRING_LENGTH),			Replacement => resize("", C_DBG_STRING_LENGTH)),
-			1 => (Pattern => resize("handshake", C_DBG_STRING_LENGTH),	Replacement => resize("hs", C_DBG_STRING_LENGTH))
-		);
+		function dbg_GenerateEncodings return string is
+			variable  l : line;
+		begin
+			for i in T_STATE loop
+				write(l, str_replace(T_STATE'image(i), "ST_DEV_", ""));
+				write(l, NUL);
+			end loop;
+			return  l.all;
+		end function;
 		
-		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodingList,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Device.tok", DBG_ENCODING_REPLACEMENTS);
+		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Device.tok");
 	BEGIN
 		DebugPortOut.FSM												<= dbg_EncodeState(State);
 		DebugPortOut.Retry											<= Retry;

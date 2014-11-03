@@ -507,16 +507,13 @@ BEGIN
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;
 		
-		function dbg_GenerateEncodingList return T_DBG_ENCODING_VECTOR is
-			variable i					: NATURAL		:= 0;
-			variable result			: T_DBG_ENCODING_VECTOR(0 to T_STATE'pos(T_STATE'high));
+		function dbg_GenerateEncodingList return line_vector is
+			variable res : line_vector(0 to T_STATE'pos(T_STATE'high));
 		begin
-			for st in T_STATE loop
-				result(i).Name		:= resize(T_STATE'image(st), T_DBG_ENCODING.Name'length);
-				result(i).Binary	:= to_slv(T_STATE'pos(st),	 T_DBG_ENCODING.Binary'length);
-				i	:= i + 1;
+			for i in res'range loop
+				res(i) := new string'(T_STATE'image(T_STATE'val(i)));
 			end loop;
-			return result;
+			return res;
 		end function;
 
 		CONSTANT test : boolean := dbg_ExportEncoding("Physical Layer", dbg_GenerateEncodingList,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_PhysicalLayer.tok");
