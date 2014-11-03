@@ -438,16 +438,11 @@ BEGIN
 			variable  l : line;
 		begin
 			for i in T_STATE loop
-				write(l, T_STATE'image(i));
+				write(l, str_replace(T_STATE'image(i), "ST_DEV_", ""));
 				write(l, NUL);
 			end loop;
 			return  l.all;
 		end function;
-
---		shared variable DBG_ENCODING_REPLACEMENTS		: T_DBG_ENCODING_REPLACEMENTS		:= C_DBG_DEFAULT_ENCODING_REPLACEMENTS & T_DBG_ENCODING_REPLACEMENTS'(
---			0 => (Pattern => new string'("host_"),			Replacement => new string'("")),
---			1 => (Pattern => new string'("handshake"),	Replacement => new string'("hs"))
---		);
 		
 		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Device.tok");
 	BEGIN

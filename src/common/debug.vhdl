@@ -41,7 +41,6 @@ use			PoC.vectors.all;
 
 
 package debug is
-	constant C_DBG_DEFAULT_ENCODING_REPLACEMENTS : string := "st_=" &NUL& "device=dev" &NUL;
 
 	function dbg_ExportEncoding(Name : STRING; encodings : line_vector; tokenFileName : STRING) return BOOLEAN;
 
