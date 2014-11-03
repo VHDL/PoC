@@ -40,6 +40,7 @@ USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
 USE			PoC.physical.ALL;
+USE			PoC.components.ALL;
 USE			PoC.debug.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.satadbg.ALL;
@@ -88,6 +89,7 @@ ARCHITECTURE rtl OF sata_Physical_OOBControl_Host IS
 	CONSTANT CLOCK_GEN3_FREQ							: FREQ				:= CLOCK_FREQ / 1.0;			-- SATAClock frequency in MHz for SATA generation 3
 
 	CONSTANT DEFAULT_OOB_TIMEOUT					: TIME				:= 880.0 us;
+	constant CONSECUTIVE_ALIGN_MIN				: POSITIVE		:= 15;
 	
 	CONSTANT OOB_TIMEOUT_I								: TIME				:= ite((OOB_TIMEOUT = TIME'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
 	CONSTANT COMRESET_TIMEOUT							: TIME				:= 450.0 ns;
@@ -151,6 +153,10 @@ ARCHITECTURE rtl OF sata_Physical_OOBControl_Host IS
 	SIGNAL OOB_TX_Command_i						: T_SATA_OOB;
 	SIGNAL OOB_HandshakeComplete_i		: STD_LOGIC;
 
+	signal AlignCounter_rst						: STD_LOGIC;
+	signal AlignCounter_en						: STD_LOGIC;
+	signal AlignCounter_us						: UNSIGNED(log2ceilnz(CONSECUTIVE_ALIGN_MIN) - 1 downto 0)						:= (others => '0');
+
 	-- Timing-Counter
 	-- ===========================================================================
 	-- general timeouts
@@ -186,11 +192,14 @@ BEGIN
 	END PROCESS;
 
 
-	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_IsAligned, RX_Primitive, TC1_Timeout, TC2_Timeout)
+	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, AlignCounter_us, TC1_Timeout, TC2_Timeout)
 	BEGIN
 		NextState									<= State;
 		
 		TX_Primitive							<= SATA_PRIMITIVE_ALIGN;			-- TODO: check if it's better to send ALIGN or DIAL_TONE
+	
+		AlignCounter_rst					<= '0';
+		AlignCounter_en						<= '0';
 	
 		-- general timeout
 		TC1_en										<= '0';
@@ -340,16 +349,22 @@ BEGIN
 				
 				WHEN ST_HOST_SEND_D10_2 =>
 					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;
+					AlignCounter_rst				<= '1';
 					TC1_en									<= '1';
 					
 					-- TODO
 					-- 		wait for 53,3 ns (64 UIs ~= 2 Gen1-DWords) before accepting ALIGN (<= crosstalking)
 					--		source: ATA8-AST page 75, transition HP8:HP9, => note text
 					
-					IF ((ALLOW_STANDARD_VIOLATION = FALSE) AND (OOB_RX_Received /= SATA_OOB_NONE)) THEN						-- disallow OOB signals after "OOB_HandshakeComplete"
+					IF ((ALLOW_STANDARD_VIOLATION = FALSE) AND (OOB_RX_Received /= SATA_OOB_NONE)) THEN				-- disallow OOB signals after "OOB_HandshakeComplete"
 						NextState							<= ST_HOST_LINK_DEAD;
-					ELSIF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) AND (RX_IsAligned = '1')) THEN										-- ALIGN detected
-						NextState							<= ST_HOST_SEND_ALIGN;
+					ELSIF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) AND (RX_Valid = '1')) THEN										-- ALIGN detected
+						AlignCounter_rst			<= '0';
+						AlignCounter_en				<= '1';
+					
+						IF (AlignCounter_us = CONSECUTIVE_ALIGN_MIN - 1) then
+							NextState						<= ST_HOST_SEND_ALIGN;
+						END IF;
 					END IF;
 				
 				WHEN ST_HOST_SEND_ALIGN =>
@@ -411,6 +426,7 @@ BEGIN
 	OOB_TX_Command					<= OOB_TX_Command_i;
 	OOB_HandshakeComplete		<= OOB_HandshakeComplete_i;
 	
+	AlignCounter_us <= counter_inc(cnt => AlignCounter_us, rst => AlignCounter_rst, en => AlignCounter_en) when rising_edge(Clock);
 	
 	-- overall timeout counter
 	TC1 : ENTITY PoC.io_TimingCounter
