@@ -507,16 +507,17 @@ BEGIN
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;
 		
-		function dbg_GenerateEncodingList return line_vector is
-			variable res : line_vector(0 to T_STATE'pos(T_STATE'high));
+		function dbg_GenerateEncoding return string is
+			variable  l : STD.TextIO.line;
 		begin
-			for i in res'range loop
-				res(i) := new string'(T_STATE'image(T_STATE'val(i)));
+			for i in T_STATE loop
+				STD.TextIO.write(l, str_replace(T_STATE'image(i), "ST_", ""));
+				STD.TextIO.write(l, NUL);
 			end loop;
-			return res;
+			return  l.all;
 		end function;
 
-		CONSTANT test : boolean := dbg_ExportEncoding("Physical Layer", dbg_GenerateEncodingList,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_PhysicalLayer.tok");
+		CONSTANT test : boolean := dbg_ExportEncoding("Physical Layer", dbg_GenerateEncoding,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_PhysicalLayer.tok");
 	BEGIN
 		DebugPortOut.FSM						<= dbg_EncodeState(State);
 		DebugPortOut.PHY_Status			<= Status_i;

@@ -42,7 +42,7 @@ use			PoC.vectors.all;
 
 package debug is
 
-	function dbg_ExportEncoding(Name : STRING; encodings : line_vector; tokenFileName : STRING) return BOOLEAN;
+	function dbg_ExportEncoding(Name : STRING; encodings : string; tokenFileName : STRING) return BOOLEAN;
 
 end package;
 
