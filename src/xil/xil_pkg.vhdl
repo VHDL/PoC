@@ -29,41 +29,55 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
+library PoC;
+use			PoC.utils.all;
+use			PoC.vectors.all;
 
 -- Usage
 -- ====================================
 -- LIBRARY	PoC;
 -- USE			PoC.Xilinx.ALL;
 
-PACKAGE xil IS
+package xil is
 	-- ChipScope
 	-- ==========================================================================
-	SUBTYPE	T_XIL_CHIPSCOPE_CONTROL IS STD_LOGIC_VECTOR(35 DOWNTO 0);
-	TYPE		T_XIL_CHIPSCOPE_CONTROL_VECTOR IS ARRAY (NATURAL RANGE <>) OF T_XIL_CHIPSCOPE_CONTROL;
+	subtype	T_XIL_CHIPSCOPE_CONTROL					is STD_LOGIC_VECTOR(35 downto 0);
+	type		T_XIL_CHIPSCOPE_CONTROL_VECTOR	is array (NATURAL range <>) of T_XIL_CHIPSCOPE_CONTROL;
 
 	-- Dynamic Reconfiguration Port (DRP)
 	-- ==========================================================================
-	SUBTYPE T_XIL_DRP_ADDRESS						IS T_SLV_16;
-	SUBTYPE T_XIL_DRP_DATA							IS T_SLV_16;
+	subtype T_XIL_DRP_ADDRESS						is T_SLV_16;
+	subtype T_XIL_DRP_DATA							is T_SLV_16;
 
-	TYPE		T_XIL_DRP_ADDRESS_VECTOR						IS ARRAY (NATURAL RANGE <>) OF T_XIL_DRP_ADDRESS;
-	TYPE		T_XIL_DRP_DATA_VECTOR								IS ARRAY (NATURAL RANGE <>) OF T_XIL_DRP_DATA;
+	type		T_XIL_DRP_ADDRESS_VECTOR						is array (NATURAL range <>) of T_XIL_DRP_ADDRESS;
+	type		T_XIL_DRP_DATA_VECTOR								is array (NATURAL range <>) of T_XIL_DRP_DATA;
 
-	TYPE T_XIL_DRP_CONFIG IS RECORD
+	type T_XIL_DRP_BUS_IN is record
+		Clock					: STD_LOGIC;
+		Enable				: STD_LOGIC;
+		ReadWrite			: STD_LOGIC;
+		Address				: T_XIL_DRP_ADDRESS;
+		Data					: T_XIL_DRP_DATA;
+	end record;
+
+	type T_XIL_DRP_BUS_OUT is record
+		Data					: T_XIL_DRP_DATA;
+		Ready					: STD_LOGIC;
+	end record;
+
+	type T_XIL_DRP_CONFIG is record
 		Address														: T_XIL_DRP_ADDRESS;
 		Mask															: T_XIL_DRP_DATA;
 		Data															: T_XIL_DRP_DATA;
-	END RECORD;
+	end record;
 	
 	-- define array indices
-	CONSTANT C_XIL_DRP_MAX_CONFIG_COUNT		: POSITIVE	:= 8;
+	CONSTANT C_XIL_DRP_MAX_CONFIG_COUNT	: POSITIVE	:= 8;
+	
 	SUBTYPE T_XIL_DRP_CONFIG_INDEX			IS INTEGER RANGE 0 TO C_XIL_DRP_MAX_CONFIG_COUNT - 1;
 	TYPE		T_XIL_DRP_CONFIG_VECTOR			IS ARRAY (NATURAL RANGE <>) OF T_XIL_DRP_CONFIG;
 	
