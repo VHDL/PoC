@@ -74,7 +74,7 @@ ENTITY sata_Physical_OOBControl_Host IS
 		
 		TX_Primitive							: OUT	T_SATA_PRIMITIVE;
 		RX_Primitive							: IN	T_SATA_PRIMITIVE;
-		RX_IsAligned							: IN	STD_LOGIC
+		RX_Valid									: IN	STD_LOGIC
 	);
 END;
 
@@ -358,7 +358,7 @@ BEGIN
 				
 					IF (OOB_RX_Received /= SATA_OOB_NONE) THEN
 						NextState							<= ST_HOST_LINK_DEAD;
-					ELSIF (RX_IsAligned = '0') THEN
+					ELSIF (RX_Valid = '0') THEN
 						NextState							<= ST_HOST_LINK_BROKEN;
 					ELSIF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN																				-- SYNC detected
 						NextState							<= ST_HOST_LINK_OK;
@@ -370,14 +370,14 @@ BEGIN
 					
 					IF (OOB_RX_Received /= SATA_OOB_NONE) THEN
 						NextState							<= ST_HOST_LINK_DEAD;
-					ELSIF (RX_IsAligned = '0') THEN
+					ELSIF (RX_Valid = '0') THEN
 						NextState							<= ST_HOST_LINK_BROKEN;
 					END IF;
 				
 				WHEN ST_HOST_LINK_BROKEN =>
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
 					
-					IF (RX_IsAligned = '1') THEN
+					IF (RX_Valid = '1') THEN
 						NextState							<= ST_HOST_LINK_OK;
 					END IF;
 					

@@ -105,7 +105,7 @@ ENTITY sata_PhysicalLayer IS
 
 		Trans_RX_Data										: IN	T_SLV_32;
 		Trans_RX_CharIsK								: IN	T_SLV_4;
-		Trans_RX_IsAligned							: IN	STD_LOGIC
+		Trans_RX_Valid									: IN	STD_LOGIC
 	);
 END;
 
@@ -342,7 +342,7 @@ BEGIN
 				
 				TX_Primitive							=> OOBC_TX_Primitive,
 				RX_Primitive							=> RX_Primitive,
-				RX_IsAligned							=> Trans_RX_IsAligned
+				RX_Valid									=> Trans_RX_Valid
 			);
 	END GENERATE;
 	genDev : IF (CONTROLLER_TYPE = SATA_DEVICE_TYPE_DEVICE) GENERATE
@@ -375,7 +375,7 @@ BEGIN
 				
 				TX_Primitive							=> OOBC_TX_Primitive,
 				RX_Primitive							=> RX_Primitive,
-				RX_IsAligned							=> Trans_RX_IsAligned
+				RX_Valid									=> Trans_RX_Valid
 			);
 	END GENERATE;
 	
@@ -528,7 +528,7 @@ BEGIN
 		DebugPortOut.TX_CharIsK			<= Trans_TX_CharIsK_i;
 		DebugPortOut.RX_Data				<= Trans_RX_Data;
 		DebugPortOut.RX_CharIsK			<= Trans_RX_CharIsK;
-		DebugPortOut.RX_IsAligned		<= Trans_RX_IsAligned;
+		DebugPortOut.RX_Valid				<= Trans_RX_Valid;
 	
 		DebugPortOut.OOBControl			<= OOBC_DebugPortOut;
 		DebugPortOut.SpeedControl		<= SC_DebugPortOut;

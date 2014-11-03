@@ -161,7 +161,7 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	SIGNAL Phy_TX_CharIsK								: T_SLVV_4(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_RX_Data								: T_SLVV_32(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_RX_CharIsK							: T_SLVV_4(PORTS - 1 DOWNTO 0);
-	SIGNAL Trans_RX_IsAligned						: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Trans_RX_Valid								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 	SIGNAL Trans_DebugPortIn						: T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_DebugPortOut						: T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS - 1 DOWNTO 0);
@@ -384,14 +384,12 @@ BEGIN
 				DEBUG													=> DEBUG,
 				ENABLE_DEBUGPORT							=> ENABLE_DEBUGPORT,
 				CLOCK_FREQ										=> CLOCK_IN_FREQ,
---				CLOCK_FREQ_MHZ								=> CLOCK_IN_FREQ_MHZ,
 				CONTROLLER_TYPE								=> CONTROLLER_TYPES_I(I),
 				ALLOW_SPEED_NEGOTIATION				=> ALLOW_SPEED_NEGOTIATION_I(I),
 				INITIAL_SATA_GENERATION				=> INITIAL_SATA_GENERATIONS_I(I),
 				ALLOW_AUTO_RECONNECT					=> ALLOW_AUTO_RECONNECT_I(I),
 				ALLOW_STANDARD_VIOLATION			=> ALLOW_STANDARD_VIOLATION_I(I),
 				OOB_TIMEOUT										=> OOB_TIMEOUT_I(I),		--ite(SIMULATION, 15, OOB_TIMEOUT_US(I)),			-- simulation: limit OOBTimeout to 15 us 
---				OOB_TIMEOUT_US								=> OOB_TIMEOUT_US_I(I),		--ite(SIMULATION, 15, OOB_TIMEOUT_US(I)),			-- simulation: limit OOBTimeout to 15 us 
 				GENERATION_CHANGE_COUNT				=> GENERATION_CHANGE_COUNT_I(I),
 				ATTEMPTS_PER_GENERATION				=> ATTEMPTS_PER_GENERATION_I(I)
 			)
@@ -441,7 +439,7 @@ BEGIN
 				
 				Trans_RX_Data									=> Trans_RX_Data(I),
 				Trans_RX_CharIsK							=> Trans_RX_CharIsK(I),
-				Trans_RX_IsAligned						=> Trans_RX_IsAligned(I)
+				Trans_RX_Valid								=> Trans_RX_Valid(I)
 			);
 		
 		-- =========================================================================
@@ -519,7 +517,7 @@ BEGIN
 
 			RX_Data										=> Trans_RX_Data,
 			RX_CharIsK								=> Trans_RX_CharIsK,
-			RX_IsAligned							=> Trans_RX_IsAligned,
+			RX_Valid									=> Trans_RX_Valid,
 			
 			-- vendor specific signals
 			VSS_Common_In							=> VSS_Common_In,

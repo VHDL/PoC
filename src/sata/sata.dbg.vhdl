@@ -71,6 +71,7 @@ package satadbg is
 		
 		TX_Data										: T_SLV_32;
 		TX_CharIsK								: T_SLV_4;
+		TX_BufferStatus						: STD_LOGIC_VECTOR(1 DOWNTO 0);
 		TX_ComInit								: STD_LOGIC;
 		TX_ComWake								: STD_LOGIC;
 		TX_ComFinish							: STD_LOGIC;
@@ -81,11 +82,13 @@ package satadbg is
 		RX_CharIsComma						: T_SLV_4;
 		RX_CommaDetected					: STD_LOGIC;
 		RX_ByteIsAligned					: STD_LOGIC;
+		RX_DisparityError					: T_SLV_4;
+		RX_NotInTableError				: T_SLV_4;
 		RX_ElectricalIDLE					: STD_LOGIC;
 		RX_ComInitDetected				: STD_LOGIC;
 		RX_ComWakeDetected				: STD_LOGIC;
 		RX_Valid									: STD_LOGIC;
-		RX_Status									: STD_LOGIC_VECTOR(2 DOWNTO 0);
+		RX_BufferStatus						: STD_LOGIC_VECTOR(2 DOWNTO 0);
 		RX_ClockCorrectionStatus	: STD_LOGIC_VECTOR(1 DOWNTO 0);
 	END RECORD;
 	
@@ -139,7 +142,7 @@ package satadbg is
 		TX_CharIsK								: T_SLV_4;		
 		RX_Data										: T_SLV_32;
 		RX_CharIsK								: T_SLV_4;
-		RX_IsAligned							: STD_LOGIC;
+		RX_Valid									: STD_LOGIC;
 		
 		OOBControl								: T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
 		SpeedControl							: T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT;

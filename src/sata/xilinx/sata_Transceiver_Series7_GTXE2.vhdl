@@ -101,7 +101,7 @@ ENTITY sata_Transceiver_Series7_GTXE2 IS
 
 		RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 		RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-		RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
 		-- vendor specific signals
 		VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -243,6 +243,7 @@ BEGIN
 		
 		SIGNAL GTX_TX_ElectricalIDLE				: STD_LOGIC;
 		SIGNAL GTX_RX_ElectricalIDLE				: STD_LOGIC;
+		signal GTX_RX_ElectricalIDLE_Mode		: T_SLV_2						:= "00";
 		SIGNAL GTX_RX_ElectricalIDLE_async	: STD_LOGIC;
 		SIGNAL RX_ElectricalIDLE						: STD_LOGIC;
 		
@@ -369,7 +370,7 @@ BEGIN
 				O						=> GTX_RefClockOut
 			);
 
-		GTX_DRP_Clock									<= '0';
+--		GTX_DRP_Clock									<= '0';
 
 		GTX_UserClock_Locked					<= GTX_CPLL_Locked;
 		GTX_UserClock									<= GTX_RefClockOut;
@@ -413,10 +414,10 @@ BEGIN
 		-- =========================================================================
 		-- LineRate control / linerate clock divider selection / reconfiguration port
 		-- =========================================================================
-		GTX_DRP_en										<= '0';
-		GTX_DRP_we										<= '0';
-		GTX_DRP_Address								<= "000000000";
-		GTX_DRP_DataIn								<= x"0000";
+--		GTX_DRP_en										<= '0';
+--		GTX_DRP_we										<= '0';
+--		GTX_DRP_Address								<= "000000000";
+--		GTX_DRP_DataIn								<= x"0000";
 		--	<float>										<= GTX_DRP_DataOut;
 		--	<float>										<= GTX_DRP_Ready;
 
@@ -459,7 +460,7 @@ BEGIN
 		-- RX path
 		RX_Data(I)							<= GTX_RX_Data;
 		RX_CharIsK(I)						<= GTX_RX_CharIsK;
-		RX_IsAligned(I)					<= GTX_RX_ByteIsAligned;
+		RX_Valid(I)							<= GTX_RX_Valid;
 
 --		GTX_PhyStatus
 --		GTX_TX_BufferStatus
@@ -558,6 +559,8 @@ BEGIN
 				Slot					=> OOBTO_Slot,
 				Timeout				=> OOBTO_Timeout
 			);
+	
+		GTX_RX_ElectricalIDLE_Mode	<= ffdre(q => GTX_RX_ElectricalIDLE_Mode, d => "11", rst => to_sl(OOB_TX_Command_d /= SATA_OOB_NONE), en => OOB_HandshakeComplete(I)) when rising_edge(GTX_UserClock);
 	
 		-- TX OOB sequence is complete
 		OOBTO_Timeout_d			<= OOBTO_Timeout WHEN rising_edge(GTX_UserClock);
@@ -795,7 +798,7 @@ BEGIN
 				-- RX clock correction attributes
 				CLK_CORRECT_USE													=> "TRUE",
 				CBCC_DATA_SOURCE_SEL										=> "DECODED",									-- search clock correction sequence in decoded data stream (data + k-indicator, independent of disparity)
-				CLK_COR_KEEP_IDLE												=> "TRUE",										-- see UG476, p. 261
+				CLK_COR_KEEP_IDLE												=> "FALSE",										-- see UG476, p. 261
 				CLK_COR_MIN_LAT													=> 24,												-- 3..60, divisible by 4
 				CLK_COR_MAX_LAT													=> 31,												-- 3..60
 				CLK_COR_PRECEDENCE											=> "TRUE",
@@ -833,7 +836,7 @@ BEGIN
 				FTS_LANE_DESKEW_EN											=> "FALSE",
 
 				-- RX margin analysis attributes
-				ES_EYE_SCAN_EN													=> "FALSE",
+				ES_EYE_SCAN_EN													=> "TRUE",
 				ES_ERRDET_EN														=> "FALSE",
 				ES_CONTROL															=> "000000",
 				ES_HORZ_OFFSET													=> x"000",
@@ -887,7 +890,10 @@ BEGIN
 				--For GTX only: Display Port, HBR/RBR- set RXCDR_CFG=72'h0380008bff40200008
 				--For GTX only: Display Port, HBR2 -	 set RXCDR_CFG=72'h038C008bff20200010
 --				RXCDR_CFG																=> x"03000023ff20400020",				-- default from wizard
+
 				RXCDR_CFG																=> x"0380008BFF40100008",					-- 1.5 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
+--				RXCDR_CFG																=> x"0388008BFF40200008",					-- 3.0 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
+--				RXCDR_CFG																=> x"0380008BFF10200010",					-- 6.0 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
 				RXCDR_FR_RESET_ON_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
 				RXCDR_HOLD_DURING_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
 				RXCDR_PH_RESET_ON_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
@@ -1084,7 +1090,7 @@ BEGIN
 				TXELECIDLE											=> GTX_TX_ElectricalIDLE,					-- @TX_Clock2:	
 				RXELECIDLE											=> GTX_RX_ElectricalIDLE_async,		-- @async:	
 				TXPDELECIDLEMODE								=> '0',														-- @TX_Clock2:	treat TXPD and TXELECIDLE as asynchronous inputs
-				RXELECIDLEMODE									=> "00",													-- @async:			indicate ElectricalIDLE on RXELECIDLE
+				RXELECIDLEMODE									=> GTX_RX_ElectricalIDLE_Mode,		-- @async:			indicate ElectricalIDLE on RXELECIDLE
 				
 				TXCOMINIT												=> GTX_TX_ComInit,								-- @TX_Clock2:	
 				TXCOMWAKE												=> GTX_TX_ComWake,								-- @TX_Clock2:	
@@ -1279,9 +1285,18 @@ BEGIN
 		VSS_Private_Out(I).TX_n		<= GTX_TX_n;
 		VSS_Private_Out(I).TX_p		<= GTX_TX_p;
 		
-		genCSP : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
+		genCSP0 : if (ENABLE_DEBUGPORT = FALSE) generate
+			GTX_DRP_Clock									<= '0';
+			GTX_DRP_en										<= '0';
+			GTX_DRP_we										<= '0';
+			GTX_DRP_Address								<= "000000000";
+			GTX_DRP_DataIn								<= x"0000";
+			--	<float>										<= GTX_DRP_DataOut;
+			--	<float>										<= GTX_DRP_Ready;
+		end generate;
+		genCSP1 : if (ENABLE_DEBUGPORT = TRUE) generate
 		
-		BEGIN
+		begin
 			DebugPortOut(I).ClockNetwork_Reset				<= ClkNet_Reset;
 			DebugPortOut(I).ClockNetwork_ResetDone		<= ClkNet_ResetDone;
 			DebugPortOut(I).Reset											<= GTX_Reset;
@@ -1308,6 +1323,7 @@ BEGIN
 		
 			DebugPortOut(I).TX_Data										<= GTX_TX_Data;
 			DebugPortOut(I).TX_CharIsK								<= GTX_TX_CharIsK;
+			DebugPortOut(I).TX_BufferStatus						<= GTX_TX_BufferStatus;
 			DebugPortOut(I).TX_ComInit								<= GTX_TX_ComInit_set;
 			DebugPortOut(I).TX_ComWake								<= GTX_TX_ComWake_set;
 			DebugPortOut(I).TX_ComFinish							<= TX_ComFinish;
@@ -1317,13 +1333,15 @@ BEGIN
 			DebugPortOut(I).RX_CharIsK								<= GTX_RX_CharIsK;
 			DebugPortOut(I).RX_CharIsComma						<= GTX_RX_CharIsComma;
 			DebugPortOut(I).RX_CommaDetected					<= GTX_RX_CommaDetected;
+			DebugPortOut(I).RX_DisparityError					<= GTX_RX_DisparityError;
+			DebugPortOut(I).RX_NotInTableError				<= GTX_RX_NotInTableError;
 			DebugPortOut(I).RX_ByteIsAligned					<= GTX_RX_ByteIsAligned;
 			DebugPortOut(I).RX_ElectricalIDLE					<= GTX_RX_ElectricalIDLE;
 			DebugPortOut(I).RX_ComInitDetected				<= GTX_RX_ComInitDetected;
 			DebugPortOut(I).RX_ComWakeDetected				<= GTX_RX_ComWakeDetected;
 			DebugPortOut(I).RX_Valid									<= GTX_RX_Valid;
-			DebugPortOut(I).RX_Status									<= GTX_RX_Status;
+			DebugPortOut(I).RX_BufferStatus						<= GTX_RX_BufferStatus;
 			DebugPortOut(I).RX_ClockCorrectionStatus	<= GTX_RX_ClockCorrectionStatus;
 		END GENERATE;
 	END GENERATE;
-END;
+end;

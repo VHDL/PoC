@@ -74,7 +74,7 @@ ENTITY sata_Physical_OOBControl_Device IS
 		
 		TX_Primitive							: OUT	T_SATA_PRIMITIVE;
 		RX_Primitive							: IN	T_SATA_PRIMITIVE;
-		RX_IsAligned							: IN	STD_LOGIC
+		RX_Valid									: IN	STD_LOGIC
 	);
 END;
 
@@ -182,7 +182,7 @@ BEGIN
 	END PROCESS;
 
 
-	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_IsAligned, RX_Primitive, TC1_Timeout, TC2_Timeout)
+	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, TC1_Timeout, TC2_Timeout)
 	BEGIN
 		NextState									<= State;
 		
@@ -332,7 +332,7 @@ BEGIN
 				WHEN ST_DEV_SEND_ALIGN =>
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
 				
-					IF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) AND (RX_IsAligned = '1')) THEN												-- ALIGN detected
+					IF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) AND (RX_Valid = '1')) THEN												-- ALIGN detected
 						NextState							<= ST_DEV_LINK_OK;
 					END IF;
 				
@@ -342,7 +342,7 @@ BEGIN
 					
 					IF (OOB_RX_Received /= SATA_OOB_NONE) THEN
 						NextState							<= ST_DEV_LINK_DEAD;
-					ELSIF (RX_IsAligned = '0') THEN
+					ELSIF (RX_Valid = '0') THEN
 						NextState							<= ST_DEV_LINK_BROKEN;
 					END IF;
 				
@@ -350,7 +350,7 @@ BEGIN
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '0';
 					
-					IF (RX_IsAligned = '1') THEN
+					IF (RX_Valid = '1') THEN
 						NextState							<= ST_DEV_LINK_OK;
 					END IF;
 				

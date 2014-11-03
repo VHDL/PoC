@@ -228,7 +228,7 @@ package satacomp is
 
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -279,7 +279,7 @@ package satacomp is
 
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -330,7 +330,7 @@ package satacomp is
 
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -379,7 +379,7 @@ package satacomp is
 
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -428,7 +428,7 @@ package satacomp is
 
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
