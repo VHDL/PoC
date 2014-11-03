@@ -46,6 +46,10 @@ PACKAGE components IS
 	FUNCTION ffrs(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant rst
 	FUNCTION ffsr(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant set
 
+	-- adder
+	function inc(value : STD_LOGIC_VECTOR; increment : NATURAL := 1) return STD_LOGIC_VECTOR;
+	function inc(value : UNSIGNED; increment : NATURAL := 1) return UNSIGNED;
+
 	-- counter
 	function counter_inc(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return UNSIGNED;
 	function counter_eq(cnt : UNSIGNED; value : NATURAL) return STD_LOGIC;
@@ -98,6 +102,17 @@ PACKAGE BODY components IS
 	BEGIN
 		RETURN (q AND NOT rst) OR set;
 	END FUNCTION;
+	
+	-- adder
+	function inc(value : STD_LOGIC_VECTOR; increment : NATURAL := 1) return STD_LOGIC_VECTOR is
+	begin
+		return std_logic_vector(inc(unsigned(value), increment));
+	end function;
+	
+	function inc(value : UNSIGNED; increment : NATURAL := 1) return UNSIGNED is
+	begin
+		return value + increment;
+	end function;
 	
 	-- counter
 	function counter_inc(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return UNSIGNED is
