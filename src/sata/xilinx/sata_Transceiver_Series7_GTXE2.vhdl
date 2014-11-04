@@ -866,11 +866,12 @@ BEGIN
 				PMA_RSV																	=> x"00018480",						-- reserved; These bits relate to RXPI and are line rate dependent:
 																																					--	0x00018480 => Lower line rates: CPLL full range and 6 GHz = QPLL VCO rate < 6.6 GHz
 																																					--	0x001E7080 => Higher line rates: QPLL > 6.6 GHz
-				PMA_RSV2																=> x"2050",								-- PMA_RSV2(5) = 0; set to '1' if eye-scan circuit should be powered-up
+				PMA_RSV2																=> x"2070",								-- PMA_RSV2(5) = 0; set to '1' if eye-scan circuit should be powered-up
 				PMA_RSV3																=> "00",
 				PMA_RSV4																=> x"00000000",
 				RX_BIAS_CFG															=> "000000000100",
-				DMONITOR_CFG														=> x"000A00",
+--				DMONITOR_CFG														=> x"000A00",
+				DMONITOR_CFG														=> x"000A01",							-- DMONITOR_CFG(0) enable digital monitor
 				RX_CM_SEL																=> "11",									-- RX termination voltage: 00 => AVTT; 01 => GND; 10 => Floating; 11 => programmable (PMA_RSV(4) & RX_CM_TRIM)
 				RX_CM_TRIM															=> "011",									-- RX termination voltage: 1010 => 800 mV; 1011 => 850 mV; bit 3 is encoded in PMA_RSV2(4)
 				RX_DEBUG_CFG														=> "000000000000",
@@ -887,13 +888,10 @@ BEGIN
 				PCS_RSVD_ATTR														=> PCS_RSVD_ATTR,					-- 
 
 				-- CDR attributes
-				--For GTX only: Display Port, HBR/RBR- set RXCDR_CFG=72'h0380008bff40200008
-				--For GTX only: Display Port, HBR2 -	 set RXCDR_CFG=72'h038C008bff20200010
 --				RXCDR_CFG																=> x"03000023ff20400020",				-- default from wizard
-
-				RXCDR_CFG																=> x"0380008BFF40100008",					-- 1.5 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
+--				RXCDR_CFG																=> x"0380008BFF40100008",					-- 1.5 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
 --				RXCDR_CFG																=> x"0388008BFF40200008",					-- 3.0 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
---				RXCDR_CFG																=> x"0380008BFF10200010",					-- 6.0 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
+				RXCDR_CFG																=> x"0380008BFF10200010",					-- 6.0 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
 				RXCDR_FR_RESET_ON_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
 				RXCDR_HOLD_DURING_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
 				RXCDR_PH_RESET_ON_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
@@ -942,12 +940,14 @@ BEGIN
 				RX_DFE_H4_CFG														=> "00011110000",
 				RX_DFE_H5_CFG														=> "00011100000",
 				RX_DFE_KL_CFG														=> "0000011111110",
-				RX_DFE_KL_CFG2													=> x"3010D90C",
+				RX_DFE_KL_CFG2													=> x"3010D90C",					-- ISE wizard
+--				RX_DFE_KL_CFG2													=> x"301148AC",						-- Vivado wizard
 				RX_DFE_XYD_CFG													=> "0000000000000",
-				RX_DFE_LPM_CFG													=> x"0954",
+				RX_DFE_LPM_CFG													=> x"0954",							-- ISE wizard
+--				RX_DFE_LPM_CFG													=> x"0904",								-- AR# 45360
 				RX_DFE_LPM_HOLD_DURING_EIDLE						=> '0',
 				RX_DFE_UT_CFG														=> "10001111000000000",
-				RX_DFE_VP_CFG														=> "00011111100000011",
+				RX_DFE_VP_CFG														=> "00011111100000011",		--03f03
 
 				-- TX configurable driver attributes
 				TX_QPI_STATUS_EN												=> '0',
@@ -1013,8 +1013,8 @@ BEGIN
 				RXBUFRESET											=> GTX_RX_BufferReset,						-- @async:			
 				RXOOBRESET											=> '0',														-- @async:			reserved; tie to ground
 				EYESCANRESET										=> '0',														
-				RXCDRFREQRESET									=> '0',														-- @async:			CDR frequency detector reset
-				RXCDRRESET											=> '0',														-- @async:			CDR phase detector reset
+				RXCDRFREQRESET									=> OOB_HandshakeComplete,														-- @async:			CDR frequency detector reset
+				RXCDRRESET											=> OOB_HandshakeComplete,														-- @async:			CDR phase detector reset
 				RXPRBSCNTRESET									=> '0',														-- @RX_Clock2:	reset PRBS error counter
 				-- reset done ports
 				TXRESETDONE											=> GTX_TX_ResetDone,							-- @TX_Clock2:	
@@ -1102,7 +1102,8 @@ BEGIN
 				RXCOMSASDET											=> GTX_RX_ComSASDetected,					-- @RX_Clock2:	
 
 				-- RX	LPM equalizer ports (LPM - low-power mode)
-				RXLPMEN													=> '0',														-- @RX_Clock2:	0 => use DFE; 1 => use LPM
+--				RXLPMEN													=> '0',														-- @RX_Clock2:	0 => use DFE; 1 => use LPM
+				RXLPMEN													=> '1',														-- @RX_Clock2:	0 => use DFE; 1 => use LPM
 				RXLPMLFHOLD											=> '0',														-- @RX_Clock2:	
 				RXLPMLFKLOVRDEN									=> '0',														-- @RX_Clock2:	
 				RXLPMHFHOLD											=> '0',														-- @RX_Clock2:	
@@ -1114,6 +1115,7 @@ BEGIN
 				RXDFECM1EN											=> '0',
 				RXDFELFHOLD											=> '0',														-- @RX_Clock2:	DFE KL Low Frequency - don't care if RXDFELFOVRDEN is '1'
 				RXDFELFOVRDEN										=> '1',														-- @RX_Clock2:	DFE KL Low Frequency - Override KL value according to attribute RX_DFE_KL_CFG
+--				RXDFELFOVRDEN										=> '0',														-- @RX_Clock2:	DFE KL Low Frequency - Override KL value according to attribute RX_DFE_KL_CFG
 				RXDFELPMRESET										=> '0',
 				RXDFETAP2HOLD										=> '0',
 				RXDFETAP2OVRDEN									=> '0',
