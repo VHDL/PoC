@@ -35,20 +35,17 @@
 use			STD.TextIO.all;
 
 library	PoC;
-use			PoC.utils.all;
 use			PoC.strings.all;
-use			PoC.vectors.all;
 
 
 package debug is
-
-	function dbg_ExportEncoding(Name : STRING; encodings : string; tokenFileName : STRING) return BOOLEAN;
+	impure function dbg_ExportEncoding(Name : STRING; encodings : string; tokenFileName : STRING) return BOOLEAN;
 
 end package;
 
 package body debug is
-	function dbg_ExportEncoding(Name : STRING; encodings : string; tokenFileName : STRING) return BOOLEAN is
-		file		 tokenFile : TEXT open WRITE_MODE is tokenFileName;
+	impure function dbg_ExportEncoding(Name : STRING; encodings : string; tokenFileName : STRING) return BOOLEAN is
+		file		tokenFile : TEXT open WRITE_MODE is tokenFileName;
 
 		variable cnt, base : integer;
 		variable l : line;
@@ -66,12 +63,14 @@ package body debug is
 		write(l, "@DEFAULT_TOKEN=");										writeline(tokenFile, l);
 		write(l, "#");																	writeline(tokenFile, l);
 		
-		-- write per device entires
+		-- write state entires
 		cnt  := 0;
 		base := encodings'left;
 		for i in encodings'range loop
 			if encodings(i) = ';' then
-				write(l, encodings(base to i-1));
+				-- Leave the str_trim call in!
+				-- Otherwise, the new parser of ISE 14.7 fails to slice properly.
+				write(l, str_trim(encodings(base to i-1)));
 				write(l, character'('='));
 			  write(l, raw_format_nat_hex(cnt));
 				writeline(tokenFile, l);

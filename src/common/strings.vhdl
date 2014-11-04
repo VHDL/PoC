@@ -178,14 +178,9 @@ package body strings is
 
 	-- TODO: rename to to_HexDigit(..) ?
 	function to_char(value : natural) return character is
+	  constant  HEX : string := "0123456789ABCDEF";
 	begin
-		if (value < 10) then
-			return character'val(character'pos('0') + value);
-		elsif (value < 16) then
-			return character'val(character'pos('A') + value - 10);
-		else
-			return 'X';
-		end if;
+		return  ite(value < 16, HEX(value+1), 'X');
 	end function;
 
 	FUNCTION to_char(rawchar : T_RAWCHAR) RETURN CHARACTER IS
@@ -285,14 +280,13 @@ package body strings is
 	end function;
 	
 	function raw_format_slv_hex(slv : STD_LOGIC_VECTOR) return STRING is
-		variable Value				: STD_LOGIC_VECTOR(4*((slv'length+3)/4) - 1 downto 0);
+		variable Value				: STD_LOGIC_VECTOR(4*div_ceil(slv'length, 4) - 1 downto 0);
 		variable Digit				: STD_LOGIC_VECTOR(3 downto 0);
 		variable Result				: STRING(1 to div_ceil(slv'length, 4));
 		variable j						: NATURAL;
 	begin
 		Value := resize(slv, Value'length);
 		j			:= 0;
-		
 		for i in Result'reverse_range loop
 			Digit			:= Value((j * 4) + 3 DOWNTO (j * 4));
 			Result(i)	:= to_char(to_integer(unsigned(Digit)));
@@ -304,20 +298,12 @@ package body strings is
 
 	function raw_format_nat_bin(value : NATURAL) return STRING is
 	begin
-		if (value = 0) then
-			return "0";
-		else
-			return raw_format_slv_bin(to_slv(value, log2ceilnz(value)));
-		end if;
+		return raw_format_slv_bin(to_slv(value, log2ceilnz(value+1)));
 	end function;
 	
 	function raw_format_nat_oct(value : NATURAL) return STRING is
 	begin
-		if (value = 0) then
-			return "0";
-		else
-			return raw_format_slv_oct(to_slv(value, log2ceilnz(value)));
-		end if;
+		return raw_format_slv_oct(to_slv(value, log2ceilnz(value+1)));
 	end function;
 	
 	function raw_format_nat_dec(value : NATURAL) return STRING is
@@ -327,11 +313,7 @@ package body strings is
 	
 	function raw_format_nat_hex(value : NATURAL) return STRING is
 	begin
-		if (value = 0) then
-			return "0";
-		else
-			return raw_format_slv_hex(to_slv(value, log2ceilnz(value)));
-		end if;
+		return raw_format_slv_hex(to_slv(value, log2ceilnz(value+1)));
 	end function;
 	
 	-- str_format_* functions
