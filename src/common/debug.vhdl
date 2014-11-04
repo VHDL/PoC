@@ -46,7 +46,7 @@ end package;
 
 package body debug is
 	impure function dbg_ExportEncoding(Name : STRING; encodings : string; tokenFileName : STRING) return BOOLEAN is
-		file		 tokenFile : TEXT open WRITE_MODE is tokenFileName;
+		file		tokenFile : TEXT open WRITE_MODE is tokenFileName;
 
 		variable cnt, base : integer;
 		variable l : line;
@@ -67,8 +67,10 @@ package body debug is
 		cnt  := 0;
 		base := encodings'left;
 		for i in encodings'range loop
-			if encodings(i) = NUL then
-				write(l, encodings(base to i-1));
+			if encodings(i) = ';' then
+				-- Leave the str_trim call in!
+				-- Otherwise, the new parser of ISE 14.7 fails to slice properly.
+				write(l, str_trim(encodings(base to i-1)));
 				write(l, character'('='));
 			  write(l, raw_format_nat_hex(cnt));
 				writeline(tokenFile, l);
