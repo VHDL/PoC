@@ -597,9 +597,11 @@ package body utils is
 	-- Convert to vector: to_slv
 	-- ==========================================================================
 	-- short for std_logic_vector(to_unsigned(Value, Size))
+	-- the return value is guaranteed to have the range (Size-1 downto 0)
 	FUNCTION to_slv(Value : NATURAL; Size : POSITIVE) RETURN STD_LOGIC_VECTOR IS
+	  constant  res : std_logic_vector(Size-1 downto 0) := std_logic_vector(to_unsigned(Value, Size));
 	BEGIN
-		RETURN std_logic_vector(to_unsigned(Value, Size));
+		return  res;
 	END FUNCTION;
 
 	FUNCTION to_index(slv : UNSIGNED; max : NATURAL := 0) RETURN INTEGER IS
