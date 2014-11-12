@@ -93,6 +93,7 @@ package satadbg is
 		RX_ClockCorrectionStatus	: STD_LOGIC_VECTOR(1 DOWNTO 0);
 		
 		DRP												: T_XIL_DRP_BUS_OUT;
+		DMonitor									: T_SLV_8;
 	END RECORD;
 	
 	TYPE T_SATADBG_TRANSCEIVER_IN IS RECORD
