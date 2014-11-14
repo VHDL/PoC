@@ -135,8 +135,8 @@ architecture rtl of arith_addw is
   end compute_blocks;
   constant BLOCKS : integer_vector(K-1 downto 0) := compute_blocks;
   
-  signal c0 : std_logic_vector(K-1 downto 1);  -- Block Carry-out (cin=0)
-  signal c1 : std_logic_vector(K-1 downto 1);  -- Block Carry-out (cin=1)
+  signal gg : std_logic_vector(K-1 downto 1);  -- Block Generate
+  signal pp : std_logic_vector(K-1 downto 1);  -- Block Propagate
   signal c  : std_logic_vector(K-1 downto 1);  -- Block Carry-in
 begin
 
@@ -151,15 +151,15 @@ begin
       signal x, y : unsigned(K+M-2 downto 0);
       signal z    : unsigned(K+M-1 downto 0);
     begin
-      x <= unsigned(c0 & a(M-1 downto 0));
-      y <= unsigned(c1 & b(M-1 downto 0));
+      x <= unsigned(gg & a(M-1 downto 0));
+      y <= unsigned((gg or pp) & b(M-1 downto 0));
       z <= ('0' & x) + y + (0 to 0 => cin);
 
       -- output of rightmost block
       s(M-1 downto 0) <= std_logic_vector(z(M-1 downto 0));
 
       -- carry recovery for other blocks
-      c <= std_logic_vector(z(K+M-2 downto M)) xor (c1 and not c0);
+      c <= std_logic_vector(z(K+M-2 downto M)) xor pp;
 
       -- carry output
       cout <= z(z'left);
@@ -179,7 +179,7 @@ begin
       begin
         -- carry forwarding
         t(1)            <= z(M);
-        t(K downto 2)   <= c0 or (c1 and c);
+        t(K downto 2)   <= gg or (pp and c);
         c    <= t(K-1 downto 1);
         cout <= t(K);
       end generate genPlain;
@@ -192,8 +192,8 @@ begin
         signal   p, g   : tLevels(0 to LEVELS);
       begin
         -- carry forwarding
-        p(0) <= c1 & 'X';
-        g(0) <= c0 & z(M);
+        p(0) <= pp & 'X';
+        g(0) <= gg & z(M);
         genLevels: for i in 1 to LEVELS generate
           constant D : positive := 2**(i-1);
         begin
@@ -212,8 +212,8 @@ begin
         signal   p, g   : tLevels(0 to 2*LEVELS-1);
       begin
         -- carry forwarding
-        p(0) <= c1 & 'X';
-        g(0) <= c0 & z(M);
+        p(0) <= pp & 'X';
+        g(0) <= gg & z(M);
         genMerge: for i in 1 to LEVELS generate
           constant D : positive := 2**(i-1);
         begin
@@ -279,8 +279,8 @@ begin
     begin
       s0 <= ('0' & aa) + bb;
       s1 <= ('0' & aa) + bb + 1;
-      c0(i) <= s0(HI+1);
-      c1(i) <= s1(HI+1);
+      gg(i) <= s0(HI+1);
+      pp(i) <= s1(HI+1) xor s0(HI+1);
       ss <= s0(HI downto LO) when c(i) = '0' else s1(HI downto LO);
     end generate genAAM;
 
@@ -289,18 +289,18 @@ begin
       signal s0 : unsigned(HI+1 downto LO);     -- Block Sum (cin=0)
     begin
       s0 <= ('0' & aa) + bb;
-      c0(i) <= s0(HI+1);
-      c1(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
-               '1' when aa >= not bb else '0';
+      gg(i) <= s0(HI+1);
+      pp(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
+               '1' when (aa xor bb) = (aa'range => '1') else '0';
       ss <= s0(HI downto LO) when c(i) = '0' else s0(HI downto LO)+1;
     end generate genCAI;
 
     -- Compare-Compare-Add
     genCCA: if ARCH = CCA generate
-      c0(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
+      gg(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
                '1' when aa >  not bb else '0';
-      c1(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
-               '1' when aa >= not bb else '0';
+      pp(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
+               '1' when (aa xor bb) = (aa'range => '1') else '0';
       ss <= aa + bb + (0 to 0 => c(i));
     end generate genCCA;
 
