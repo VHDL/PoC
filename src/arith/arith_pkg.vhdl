@@ -101,6 +101,28 @@ package arith is
 			arg1, arg2 : in	std_logic_vector(N-1 downto 0);
 			res				: out std_logic_vector(N-1 downto 0));
 	end component;
+
+  type tArch     is (AAM, CAI, CCA);
+  type tBlocking is (DEFAULT, FIX, ASC, DESC);
+  type tSkipping is (PLAIN, CCC, PPN_KS, PPN_BK);
+  component arith_addw is
+    generic (
+      N : positive;                    -- Operand Width
+      K : positive;                    -- Block Count
+
+      ARCH     : tArch     := AAM;        -- Architecture
+      BLOCKING : tBlocking := DEFAULT;    -- Blocking Scheme
+      SKIPPING : tSkipping := CCC         -- Carry Skip Scheme
+    );
+    port (
+      a, b : in std_logic_vector(N-1 downto 0);
+      cin  : in std_logic;
+
+      s    : out std_logic_vector(N-1 downto 0);
+      cout : out std_logic
+    );
+  end component arith_addw;
+
 end arith;
 
 package body arith is
