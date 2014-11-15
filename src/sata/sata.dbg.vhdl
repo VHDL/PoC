@@ -101,6 +101,8 @@ package satadbg is
 	TYPE T_SATADBG_TRANSCEIVER_IN IS RECORD
 		ForceOOBCommand						: T_SATA_OOB;
 		ForceTXElectricalIdle			: STD_LOGIC;
+		ForceEnableHold						: STD_LOGIC;
+		ForceInvertHold						: STD_LOGIC;
 		
 		AlignDetected							: STD_LOGIC;
 		

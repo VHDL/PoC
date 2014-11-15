@@ -91,7 +91,7 @@ ARCHITECTURE rtl OF sata_Physical_OOBControl_Host IS
 	CONSTANT CLOCK_GEN3_FREQ							: FREQ				:= CLOCK_FREQ / 1.0;			-- SATAClock frequency in MHz for SATA generation 3
 
 	CONSTANT DEFAULT_OOB_TIMEOUT					: TIME				:= 880.0 us;
-	constant CONSECUTIVE_ALIGN_MIN				: POSITIVE		:= 15;
+	constant CONSECUTIVE_ALIGN_MIN				: POSITIVE		:= 63;
 	
 	CONSTANT OOB_TIMEOUT_I								: TIME				:= ite((OOB_TIMEOUT = TIME'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
 	CONSTANT COMRESET_TIMEOUT							: TIME				:= 450.0 ns;

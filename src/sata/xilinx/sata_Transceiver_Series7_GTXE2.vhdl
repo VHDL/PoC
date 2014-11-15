@@ -601,6 +601,21 @@ BEGIN
 		--RX_OOBStatus_d		<= RX_OOBStatus_i;		-- WHEN rising_edge(SATA_Clock_i(I));
 		OOB_RX_Received(I)		<= OOB_RX_Received_i;
 
+
+
+
+		blkTest : block
+			signal reg : STD_LOGIC	:= '1';
+		begin
+			reg <= ffrs(q => reg, rst => DebugPortIn(I).AlignDetected, set => to_sl(OOB_TX_Command_d /= SATA_OOB_NONE)) when rising_edge(GTX_UserClock);
+			
+			GTX_RX_CDR_Hold	<= reg;	--(reg xor DebugPortIn(I).ForceInvertHold) and DebugPortIn(I).ForceEnableHold;
+		end block;
+		
+
+
+
+
 		--	==================================================================
 		-- error handling
 		--	==================================================================
@@ -1113,39 +1128,39 @@ BEGIN
 --				RXLPMEN													=> '0',														-- @RX_Clock2:	0 => use DFE; 1 => use LPM
 				RXLPMEN													=> '1',														-- @RX_Clock2:	0 => use DFE; 1 => use LPM
 				RXLPMLFHOLD											=> '0',														-- @RX_Clock2:	
-				RXLPMLFKLOVRDEN									=> '0',														-- @RX_Clock2:	
+				RXLPMLFKLOVRDEN									=> '1',														-- @RX_Clock2:	
 				RXLPMHFHOLD											=> '0',														-- @RX_Clock2:	
-				RXLPMHFOVRDEN										=> '0',														-- @RX_Clock2:	
+				RXLPMHFOVRDEN										=> '1',														-- @RX_Clock2:	
 				
 				-- RX	DFE equalizer ports (discrete-time filter equalizer)
 				RXDFEAGCHOLD										=> '0',														-- @RX_Clock2:	DFE Automatic Gain Control - don't care if RXDFEAGCOVRDEN is '1'
-				RXDFEAGCOVRDEN									=> '0',														-- @RX_Clock2:	DFE Automatic Gain Control
+				RXDFEAGCOVRDEN									=> '1',														-- @RX_Clock2:	DFE Automatic Gain Control
 				RXDFECM1EN											=> '0',
 				RXDFELFHOLD											=> '0',														-- @RX_Clock2:	DFE KL Low Frequency - don't care if RXDFELFOVRDEN is '1'
 				RXDFELFOVRDEN										=> '1',														-- @RX_Clock2:	DFE KL Low Frequency - Override KL value according to attribute RX_DFE_KL_CFG
 --				RXDFELFOVRDEN										=> '0',														-- @RX_Clock2:	DFE KL Low Frequency - Override KL value according to attribute RX_DFE_KL_CFG
 				RXDFELPMRESET										=> '0',
 				RXDFETAP2HOLD										=> '0',
-				RXDFETAP2OVRDEN									=> '0',
+				RXDFETAP2OVRDEN									=> '1',
 				RXDFETAP3HOLD										=> '0',
-				RXDFETAP3OVRDEN									=> '0',
+				RXDFETAP3OVRDEN									=> '1',
 				RXDFETAP4HOLD										=> '0',
-				RXDFETAP4OVRDEN									=> '0',
+				RXDFETAP4OVRDEN									=> '1',
 				RXDFETAP5HOLD										=> '0',
-				RXDFETAP5OVRDEN									=> '0',
+				RXDFETAP5OVRDEN									=> '1',
 				RXDFEUTHOLD											=> '0',
-				RXDFEUTOVRDEN										=> '0',
+				RXDFEUTOVRDEN										=> '1',
 				RXDFEVPHOLD											=> '0',
-				RXDFEVPOVRDEN										=> '0',
+				RXDFEVPOVRDEN										=> '1',
 				RXDFEVSEN												=> '0',
 				RXDFEXYDEN											=> '1',														-- @RX_Clock2:	reserved; tie to vcc
 				RXDFEXYDHOLD										=> '0',														-- @RX_Clock2:	reserved; 
-				RXDFEXYDOVRDEN									=> '0',														-- @RX_Clock2:	reserved; 
+				RXDFEXYDOVRDEN									=> '1',														-- @RX_Clock2:	reserved; 
 
 				RXMONITORSEL										=> GTX_RX_Monitor_sel,
 				RXMONITOROUT										=> GTX_RX_Monitor_Data,
 				RXOSHOLD												=> '0',
-				RXOSOVRDEN											=> '0',
+				RXOSOVRDEN											=> '1',
 
 				-- Clock Data Recovery (CDR)
 				RXCDRHOLD												=> GTX_RX_CDR_Hold,								-- @async:			hold the CDR control loop frozen
