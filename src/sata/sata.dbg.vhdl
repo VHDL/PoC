@@ -69,6 +69,7 @@ package satadbg is
 		TX_ResetDone							: STD_LOGIC;
 		RX_ResetDone							: STD_LOGIC;
 		RX_CDR_Locked							: STD_LOGIC;
+		RX_CDR_Hold								: STD_LOGIC;
 		
 		TX_Data										: T_SLV_32;
 		TX_CharIsK								: T_SLV_4;
@@ -93,14 +94,18 @@ package satadbg is
 		RX_ClockCorrectionStatus	: STD_LOGIC_VECTOR(1 DOWNTO 0);
 		
 		DRP												: T_XIL_DRP_BUS_OUT;
-		DMonitor									: T_SLV_8;
+		DigitalMonitor						: T_SLV_8;
+		RX_Monitor_Data						: T_SLV_8;
 	END RECORD;
 	
 	TYPE T_SATADBG_TRANSCEIVER_IN IS RECORD
 		ForceOOBCommand						: T_SATA_OOB;
 		ForceTXElectricalIdle			: STD_LOGIC;
 		
+		AlignDetected							: STD_LOGIC;
+		
 		DRP												: T_XIL_DRP_BUS_IN;
+		RX_Monitor_sel						: T_SLV_2;
 	END RECORD;
 	
 	-- ===========================================================================
@@ -117,6 +122,8 @@ package satadbg is
 		OOB_TX_Complete						: STD_LOGIC;
 		OOB_RX_Received						: T_SATA_OOB;
 		OOB_HandshakeComplete			: STD_LOGIC;
+		
+		AlignDetected							: STD_LOGIC;
 	END RECORD;
 	
 	TYPE T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT IS RECORD

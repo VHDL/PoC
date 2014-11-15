@@ -235,7 +235,9 @@ BEGIN
 		SIGNAL GTX_DRP_DataOut							: T_XIL_DRP_DATA;
 		SIGNAL GTX_DRP_Ready								: STD_LOGIC;
 		
-		signal GTX_DMonitor									: T_SLV_8;
+		signal GTX_DigitalMonitor						: T_SLV_8;
+		signal GTX_RX_Monitor_sel						: T_SLV_2;
+		signal GTX_RX_Monitor_Data					: STD_LOGIC_VECTOR(6 DOWNTO 0);
 		
 		SIGNAL GTX_PhyStatus								: STD_LOGIC;
 		SIGNAL GTX_TX_BufferStatus					: STD_LOGIC_VECTOR(1 DOWNTO 0);
@@ -319,6 +321,8 @@ BEGIN
 		SIGNAL GTX_TX_CharIsK								: T_SLV_4;
 		
 		SIGNAL RX_CDR_Locked								: STD_LOGIC;															-- unused
+		SIGNAL GTX_RX_CDR_Hold							: STD_LOGIC;
+		
 		SIGNAL GTX_RX_Data									: T_SLV_32;
 		SIGNAL GTX_RX_Data_float						: T_SLV_32;																-- open
 		SIGNAL GTX_RX_CommaDetected					: STD_LOGIC;															-- unused
@@ -897,7 +901,7 @@ BEGIN
 				RXCDR_FR_RESET_ON_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
 				RXCDR_HOLD_DURING_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
 				RXCDR_PH_RESET_ON_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
-				RXCDR_LOCK_CFG													=> "010101",
+				RXCDR_LOCK_CFG													=> "010101",											-- [5:3] Window Size, [2:1] Delta Code, [0] Enable Detection (https://github.com/ShepardSiegel/ocpi/blob/master/coregen/pcie_4243_axi_k7_x4_125/source/pcie_7x_v1_3_gt_wrapper.v)
 
 				-- gearbox attributes
 				TXGEARBOX_EN														=> "FALSE",
@@ -934,8 +938,10 @@ BEGIN
 				TX_RXDETECT_REF													=> "100",
 
 				-- RX equalizer attributes
-				RXLPM_HF_CFG														=> "00000011110000",
-				RXLPM_LF_CFG														=> "00000011110000",
+--				RXLPM_HF_CFG														=> "00000011110000",			-- long channel; >2.5 dB loss
+				RXLPM_HF_CFG														=> "00000000000000",				-- short channel; <2.5 dB loss
+--				RXLPM_LF_CFG														=> "00000011110000",			-- long channel; >2.5 dB loss
+				RXLPM_LF_CFG														=> "00000000000000",				-- short channel; <2.5 dB loss
 				RX_DFE_GAIN_CFG													=> x"020FEA",
 				RX_DFE_H2_CFG														=> "000000000000",
 				RX_DFE_H3_CFG														=> "000001000000",
@@ -945,8 +951,8 @@ BEGIN
 				RX_DFE_KL_CFG2													=> x"3010D90C",					-- ISE wizard
 --				RX_DFE_KL_CFG2													=> x"301148AC",						-- Vivado wizard
 				RX_DFE_XYD_CFG													=> "0000000000000",
-				RX_DFE_LPM_CFG													=> x"0954",							-- ISE wizard
---				RX_DFE_LPM_CFG													=> x"0904",								-- AR# 45360
+--				RX_DFE_LPM_CFG													=> x"0954",							-- ISE wizard
+				RX_DFE_LPM_CFG													=> x"0904",								-- AR# 45360
 				RX_DFE_LPM_HOLD_DURING_EIDLE						=> '0',
 				RX_DFE_UT_CFG														=> "10001111000000000",
 				RX_DFE_VP_CFG														=> "00011111100000011",		--03f03
@@ -1015,8 +1021,8 @@ BEGIN
 				RXBUFRESET											=> GTX_RX_BufferReset,						-- @async:			
 				RXOOBRESET											=> '0',														-- @async:			reserved; tie to ground
 				EYESCANRESET										=> '0',														
-				RXCDRFREQRESET									=> OOB_HandshakeComplete,														-- @async:			CDR frequency detector reset
-				RXCDRRESET											=> OOB_HandshakeComplete,														-- @async:			CDR phase detector reset
+				RXCDRFREQRESET									=> '0',														-- @async:			CDR frequency detector reset
+				RXCDRRESET											=> '0',														-- @async:			CDR phase detector reset
 				RXPRBSCNTRESET									=> '0',														-- @RX_Clock2:	reset PRBS error counter
 				-- reset done ports
 				TXRESETDONE											=> GTX_TX_ResetDone,							-- @TX_Clock2:	
@@ -1136,13 +1142,13 @@ BEGIN
 				RXDFEXYDHOLD										=> '0',														-- @RX_Clock2:	reserved; 
 				RXDFEXYDOVRDEN									=> '0',														-- @RX_Clock2:	reserved; 
 
-				RXMONITORSEL										=> "00",
-				RXMONITOROUT										=> open,
+				RXMONITORSEL										=> GTX_RX_Monitor_sel,
+				RXMONITOROUT										=> GTX_RX_Monitor_Data,
 				RXOSHOLD												=> '0',
 				RXOSOVRDEN											=> '0',
 
 				-- Clock Data Recovery (CDR)
-				RXCDRHOLD												=> '0',														-- @async:			hold the CDR control loop frozen
+				RXCDRHOLD												=> GTX_RX_CDR_Hold,								-- @async:			hold the CDR control loop frozen
 				RXCDRLOCK												=> RX_CDR_Locked,									-- @async:			reserved; CDR locked
 				
 				-- TX gearbox ports
@@ -1222,7 +1228,7 @@ BEGIN
 				RXPRBSERR												=> open,													-- @RX_Clock2:	PRBS error have occurred; error counter 'RX_PRBS_ERR_CNT' can only be accessed by DRP at address 0x15C
 				
 				-- Digital Monitor Ports
-				DMONITOROUT											=> GTX_DMonitor,
+				DMONITOROUT											=> GTX_DigitalMonitor,
 				
 				EYESCANMODE											=> '0',														-- @async:			
 				EYESCANTRIGGER									=> '0',														-- @async:			
@@ -1330,6 +1336,7 @@ BEGIN
 			DebugPortOut(I).TX_ResetDone							<= GTX_TX_ResetDone;
 			DebugPortOut(I).RX_ResetDone							<= GTX_RX_ResetDone;
 			DebugPortOut(I).RX_CDR_Locked							<= RX_CDR_Locked;
+			DebugPortOut(I).RX_CDR_Hold								<= GTX_RX_CDR_Hold;
 		
 			DebugPortOut(I).TX_Data										<= GTX_TX_Data;
 			DebugPortOut(I).TX_CharIsK								<= GTX_TX_CharIsK;
@@ -1356,7 +1363,9 @@ BEGIN
 			DebugPortOut(I).DRP.Data									<= GTX_DRP_DataOut;
 			DebugPortOut(I).DRP.Ready									<= GTX_DRP_Ready;
 			
-			DebugPortOut(I).DMonitor									<= GTX_DMonitor;
+			DebugPortOut(I).DigitalMonitor						<= GTX_DigitalMonitor;
+			GTX_RX_Monitor_sel												<= DebugPortIn(I).RX_Monitor_sel;
+			DebugPortOut(I).RX_Monitor_Data						<= '0' & GTX_RX_Monitor_Data;
 		end generate;
 	end generate;
 end;

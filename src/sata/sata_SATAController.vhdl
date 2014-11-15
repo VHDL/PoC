@@ -459,7 +459,11 @@ BEGIN
 			DebugPortOut(I).Physical_Error				<= Phy_Error;								-- 
 
 			-- Transceiver Layer
-			Trans_DebugPortIn(I)									<= DebugPortIn(I).Transceiver;
+			process(DebugPortIn(I).Transceiver, Phy_DebugPortOut.OOBControl.AlignDetected)
+			begin
+				Trans_DebugPortIn(I)								<= DebugPortIn(I).Transceiver;
+				Trans_DebugPortIn(I).AlignDetected	<= Phy_DebugPortOut.OOBControl.AlignDetected;
+			end process;
 			
 			DebugPortOut(I).Transceiver						<= Trans_DebugPortOut(I);		-- 
 			DebugPortOut(I).Transceiver_Command		<= Trans_Command(I);				-- 

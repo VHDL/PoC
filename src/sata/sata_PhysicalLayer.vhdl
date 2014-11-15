@@ -216,12 +216,10 @@ BEGIN
 			
 				IF (Command = SATA_PHY_CMD_RESET) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Trans_RP_Reconfig_i = '1') THEN
@@ -239,12 +237,10 @@ BEGIN
 			
 				IF (Command = SATA_PHY_CMD_RESET) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (OOBC_LinkOK = '0') THEN
@@ -262,12 +258,10 @@ BEGIN
 			
 				IF (Command = SATA_PHY_CMD_RESET) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (OOBC_LinkOK = '1') THEN
@@ -292,12 +286,10 @@ BEGIN
 				
 				IF (Command = SATA_PHY_CMD_RESET) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (OOBC_ReceivedReset = '1') THEN

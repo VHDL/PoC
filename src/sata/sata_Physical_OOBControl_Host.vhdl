@@ -219,7 +219,9 @@ BEGIN
 		ReceivedReset_i						<= '0';
 		
 		OOB_TX_Command_i					<= SATA_OOB_NONE;
-		OOB_HandshakeComplete_i	<= '0';
+		OOB_HandshakeComplete_i		<= '0';
+
+		DebugPortOut.AlignDetected	<= '0';
 
 		-- handle timeout with highest priority
 		IF (TC1_Timeout = '1') THEN
@@ -365,6 +367,8 @@ BEGIN
 						AlignCounter_en				<= '1';
 					
 						IF (AlignCounter_us = CONSECUTIVE_ALIGN_MIN - 1) then
+							DebugPortOut.AlignDetected	<= '1';
+							
 							NextState						<= ST_HOST_SEND_ALIGN;
 						END IF;
 					END IF;
