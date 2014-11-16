@@ -239,8 +239,7 @@ package satadbg is
 		Transceiver						: T_SATADBG_TRANSCEIVER_OUT;
 		Transceiver_Command		: T_SATA_TRANSCEIVER_COMMAND;
 		Transceiver_Status		: T_SATA_TRANSCEIVER_STATUS;
-		Transceiver_TX_Error	: T_SATA_TRANSCEIVER_TX_ERROR;
-		Transceiver_RX_Error	: T_SATA_TRANSCEIVER_RX_ERROR;
+		Transceiver_Error			: T_SATA_TRANSCEIVER_ERROR;
 		-- Physical Layer
 		Physical							: T_SATADBG_PHYSICAL_OUT;
 		Physical_Command			: T_SATA_PHY_COMMAND;

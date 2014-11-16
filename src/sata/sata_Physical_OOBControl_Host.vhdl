@@ -70,6 +70,9 @@ ENTITY sata_Physical_OOBControl_Host IS
 		LinkDead									: OUT	STD_LOGIC;
 		ReceivedReset							: OUT	STD_LOGIC;
 		
+		Trans_Status							: IN	T_SATA_TRANSCEIVER_STATUS;
+		Trans_Error								: IN	T_SATA_TRANSCEIVER_ERROR;
+		
 		OOB_TX_Command						: OUT	T_SATA_OOB;
 		OOB_TX_Complete						: IN	STD_LOGIC;
 		OOB_RX_Received						: IN	T_SATA_OOB;
@@ -194,7 +197,7 @@ BEGIN
 	END PROCESS;
 
 
-	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, AlignCounter_us, TC1_Timeout, TC2_Timeout)
+	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, AlignCounter_us, TC1_Timeout, TC2_Timeout, Trans_Status, Trans_Error.RX)
 	BEGIN
 		NextState									<= State;
 		
@@ -373,56 +376,56 @@ BEGIN
 						END IF;
 					END IF;
 				
-				WHEN ST_HOST_SEND_ALIGN =>
+				when ST_HOST_SEND_ALIGN =>
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '1';
 				
-					IF (OOB_RX_Received /= SATA_OOB_NONE) THEN
+					if (OOB_RX_Received /= SATA_OOB_NONE) then
 						NextState							<= ST_HOST_LINK_DEAD;
-					ELSIF (RX_Valid = '0') THEN
+					elsif ((Trans_Status = SATA_TRANSCEIVER_STATUS_ERROR) and (Trans_Error.RX /= SATA_TRANSCEIVER_RX_ERROR_NONE)) then
 						NextState							<= ST_HOST_LINK_BROKEN;
-					ELSIF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN																				-- SYNC detected
+					elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then																				-- SYNC detected
 						NextState							<= ST_HOST_LINK_OK;
-					END IF;
+					end if;
 					
-				WHEN ST_HOST_LINK_OK =>
+				when ST_HOST_LINK_OK =>
 					LinkOK_i								<= '1';
 					TX_Primitive						<= SATA_PRIMITIVE_NONE;
 					
-					IF (OOB_RX_Received /= SATA_OOB_NONE) THEN
+					if (OOB_RX_Received /= SATA_OOB_NONE) then
 						NextState							<= ST_HOST_LINK_DEAD;
-					ELSIF (RX_Valid = '0') THEN
+					elsif ((Trans_Status = SATA_TRANSCEIVER_STATUS_ERROR) and (Trans_Error.RX /= SATA_TRANSCEIVER_RX_ERROR_NONE)) then
 						NextState							<= ST_HOST_LINK_BROKEN;
-					END IF;
+					end if;
 				
-				WHEN ST_HOST_LINK_BROKEN =>
+				when ST_HOST_LINK_BROKEN =>
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
 					
-					IF (RX_Valid = '1') THEN
+					if (RX_Valid = '1') then
 						NextState							<= ST_HOST_LINK_OK;
-					END IF;
+					end if;
 					
-					IF (Retry = '1') THEN
+					if (Retry = '1') then
 						NextState							<= ST_HOST_SEND_COMRESET;
-					END IF;
+					end if;
 				
-				WHEN ST_HOST_LINK_DEAD =>
+				when ST_HOST_LINK_DEAD =>
 					LinkDead_i							<= '1';
 					
-					IF (Retry = '1') THEN
-						NextState							<= ST_HOST_SEND_COMRESET;
-					END IF;
+					if (Retry = '1') then
+						nextstate							<= st_host_send_comreset;
+					end if;
 				
-				WHEN ST_HOST_TIMEOUT =>
+				when ST_HOST_TIMEOUT =>
 					Timeout_i								<= '1';
 				
-					IF (Retry = '1') THEN
+					if (Retry = '1') then
 						NextState							<= ST_HOST_SEND_COMRESET;
-					END IF;
+					end if;
 				
-			END CASE;
-		END IF;
-	END PROCESS;
+			end case;
+		end if;
+	end process;
 	
 	LinkOK									<= LinkOK_i;
 	LinkDead								<= LinkDead_i;

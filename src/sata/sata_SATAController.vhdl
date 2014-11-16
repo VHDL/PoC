@@ -149,8 +149,7 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	
 	SIGNAL Trans_Command								: T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_Status									: T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Trans_RX_Error								: T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Trans_TX_Error								: T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Trans_Error									: T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 
 	SIGNAL Phy_OOB_TX_Command						: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_OOB_TX_Complete				: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);	
@@ -247,8 +246,7 @@ BEGIN
 		
 		Error(I).LinkLayer						<= Link_Error;
 		Error(I).PhysicalLayer				<= Phy_Error;
-		Error(I).TransceiverLayer_TX	<= Trans_TX_Error(I);
-		Error(I).TransceiverLayer_RX	<= Trans_RX_Error(I);
+		Error(I).TransceiverLayer			<= Trans_Error(I);
 
 		-- TX port
 		SATAC_TX_SOF									<= TX_SOF(I);
@@ -418,8 +416,7 @@ BEGIN
 				
 				Trans_Command									=> Trans_Command(I),
 				Trans_Status									=> Trans_Status(I),
-				Trans_RX_Error								=> Trans_RX_Error(I),
-				Trans_TX_Error								=> Trans_TX_Error(I),
+				Trans_Error										=> Trans_Error(I),
 				
 				-- reconfiguration interface
 				Trans_RP_Reconfig							=> Phy_RP_Reconfig(I),
@@ -468,8 +465,7 @@ BEGIN
 			DebugPortOut(I).Transceiver						<= Trans_DebugPortOut(I);		-- 
 			DebugPortOut(I).Transceiver_Command		<= Trans_Command(I);				-- 
 			DebugPortOut(I).Transceiver_Status		<= Trans_Status(I);					-- 
-			DebugPortOut(I).Transceiver_TX_Error	<= Trans_TX_Error(I);				-- 
-			DebugPortOut(I).Transceiver_RX_Error	<= Trans_RX_Error(I);				-- 
+			DebugPortOut(I).Transceiver_Error			<= Trans_Error(I);					-- 
 		end generate;
 	END GENERATE;
   
@@ -496,8 +492,8 @@ BEGIN
 			-- CSE interface
 			Command										=> Trans_Command,
 			Status										=> Trans_Status,
-			TX_Error									=> Trans_TX_Error,
-			RX_Error									=> Trans_RX_Error,
+			Error											=> Trans_Error,
+
 			-- debug ports
 			DebugPortIn								=> Trans_DebugPortIn,
 			DebugPortOut							=> Trans_DebugPortOut,
