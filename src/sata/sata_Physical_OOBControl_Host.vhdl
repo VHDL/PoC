@@ -366,9 +366,9 @@ BEGIN
 						AlignCounter_rst			<= '0';
 						AlignCounter_en				<= '1';
 					
+						DebugPortOut.AlignDetected	<= '1';
+						
 						IF (AlignCounter_us = CONSECUTIVE_ALIGN_MIN - 1) then
-							DebugPortOut.AlignDetected	<= '1';
-							
 							NextState						<= ST_HOST_SEND_ALIGN;
 						END IF;
 					END IF;
