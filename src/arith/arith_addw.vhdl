@@ -93,7 +93,7 @@ architecture rtl of arith_addw is
           report "Cannot have more blocks than input bits."
           severity failure;
         for i in res'range loop
-          res(i) := (i+1)*N/K;
+          res(i) := ((i+1)*N+K/2)/K;
         end loop;
 
       when ASC =>
@@ -101,7 +101,7 @@ architecture rtl of arith_addw is
           report "Too few input bits to implement growing block sizes."
           severity failure;
         for i in res'range loop
-          res(i) := (i+1)*(N-K*(K-1)/2)/K + (i+1)*i/2;
+          res(i) := ((i+1)*(N-K*(K-1)/2)+K/2)/K + (i+1)*i/2;
         end loop;
 
       when DESC =>
@@ -109,21 +109,20 @@ architecture rtl of arith_addw is
           report "Too few input bits to implement growing block sizes."
           severity failure;
         for i in res'range loop
-          res(i) := (i+1)*(N+K*(K-1)/2)/K - (i+1)*i/2;
+          res(i) := ((i+1)*(N+K*(K-1)/2)+K/2)/K - (i+1)*i/2;
         end loop;
 
       when others =>
         report "Unknown blocking scheme: "&tBlocking'image(bs) severity failure;
 
     end case;
-    write(l, "Implementing wide "&integer'image(N)&"-bit adder: ARCH="&tArch'image(ARCH)&
+    write(l, "Implementing "&integer'image(N)&"-bit wide adder: ARCH="&tArch'image(ARCH)&
              ", BLOCKING="&tBlocking'image(bs)&'[');
-    for i in res'range loop
-      write(l, res(i));
-      if i /= res'right then
-        write(l, ',');
-      end if;
+    for i in K-1 downto 1 loop
+      write(l, res(i)-res(i-1));
+      write(l, ',');
     end loop;
+    write(l, res(0));
     write(l, "], SKIPPING="&tSkipping'image(SKIPPING));
     writeline(output, l);
 --    report
