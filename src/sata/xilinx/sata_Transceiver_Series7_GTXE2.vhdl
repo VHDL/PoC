@@ -351,8 +351,7 @@ BEGIN
 		SIGNAL RX_Error_i										: T_SATA_TRANSCEIVER_RX_ERROR;
 		
 		-- keep internal clock nets, so timing constrains from UCF can find them
---		ATTRIBUTE KEEP OF GTX_Clock_2X						: SIGNAL IS TRUE;
---		ATTRIBUTE KEEP OF GTX_Clock_4X						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF GTX_TX_RefClockOut	: SIGNAL IS TRUE;
 		
 	BEGIN
 		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																											SEVERITY NOTE;
@@ -460,13 +459,13 @@ BEGIN
 		-- Data path / status / error detection
 		-- ==================================================================
 		-- TX path
-		GTX_TX_Data							<= TX_Data(I);
-		GTX_TX_CharIsK					<= TX_CharIsK(I);
+		GTX_TX_Data							<= TX_Data(I)			when rising_edge(GTX_UserClock);
+		GTX_TX_CharIsK					<= TX_CharIsK(I)	when rising_edge(GTX_UserClock);
 
 		-- RX path
-		RX_Data(I)							<= GTX_RX_Data;
-		RX_CharIsK(I)						<= GTX_RX_CharIsK;
-		RX_Valid(I)							<= GTX_RX_Valid;
+		RX_Data(I)							<= GTX_RX_Data		when rising_edge(GTX_UserClock);
+		RX_CharIsK(I)						<= GTX_RX_CharIsK	when rising_edge(GTX_UserClock);
+		RX_Valid(I)							<= GTX_RX_Valid		when rising_edge(GTX_UserClock);
 
 --		GTX_PhyStatus
 --		GTX_TX_BufferStatus
@@ -896,7 +895,7 @@ BEGIN
 				DMONITOR_CFG														=> x"000A01",							-- DMONITOR_CFG(0) enable digital monitor
 				RX_CM_SEL																=> "11",									-- RX termination voltage: 00 => AVTT; 01 => GND; 10 => Floating; 11 => programmable (PMA_RSV(4) & RX_CM_TRIM)
 				RX_CM_TRIM															=> "011",									-- RX termination voltage: 1010 => 800 mV; 1011 => 850 mV; bit 3 is encoded in PMA_RSV2(4)
-				RX_DEBUG_CFG														=> "000000000000",
+				RX_DEBUG_CFG														=> "000000001000",				-- connect LPM HF to DMONITOROUT [6:0]
 				RX_OS_CFG																=> "0000010000000",
 				TERM_RCAL_CFG														=> "10000",								-- Controls the internal termination calibration circuit. This feature is intended for internal testing purposes only.
 				TERM_RCAL_OVRD													=> '0',										-- Selects whether the external 100?? precision resistor is connected to the MGTRREF pin or a value defined by TERM_RCAL_CFG [4:0]. This feature is intended for internal testing purposes only.
@@ -912,8 +911,8 @@ BEGIN
 				-- CDR attributes
 --				RXCDR_CFG																=> x"03000023ff20400020",				-- default from wizard
 --				RXCDR_CFG																=> x"0380008BFF40100008",					-- 1.5 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
---				RXCDR_CFG																=> x"0388008BFF40200008",					-- 3.0 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
-				RXCDR_CFG																=> x"0380008BFF10200010",					-- 6.0 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
+				RXCDR_CFG																=> x"0388008BFF40200008",					-- 3.0 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
+--				RXCDR_CFG																=> x"0380008BFF10200010",					-- 6.0 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
 				RXCDR_FR_RESET_ON_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
 				RXCDR_HOLD_DURING_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
 				RXCDR_PH_RESET_ON_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
@@ -1080,27 +1079,27 @@ BEGIN
 				RX8B10BEN												=> '1',														-- @RX_Clock2:	enable 8B710B decoder
 
 				-- FPGA-Fabric - TX interface ports
-				TXDATA(63 downto 32)						=> (63 downto 32 => '0'),					-- @TX_Clock2:	
 				TXDATA(31 downto 0)							=> GTX_TX_Data,										-- @TX_Clock2:	
+				TXDATA(63 downto 32)						=> (63 downto 32 => '0'),					-- @TX_Clock2:	
 				
-				TXCHARISK(7 downto 4)						=> (7 downto 4 => '0'),						-- @TX_Clock2:	
 				TXCHARISK(3 downto 0)						=> GTX_TX_CharIsK,								-- @TX_Clock2:	
+				TXCHARISK(7 downto 4)						=> (7 downto 4 => '0'),						-- @TX_Clock2:	
 				TXCHARDISPMODE									=> x"00",													-- @TX_Clock2:	per-byte set running disparity to TXCHARDISPVAL(i); TXCHARDISPMODE(0) is also called TXCOMPLIANCE in a PIPE interface
 				TXCHARDISPVAL										=> x"00",													-- @TX_Clock2:	per-byte set running disparity
 				
 				-- FPGA-Fabric - RX interface ports
-				RXDATA(63 downto 32)						=> GTX_RX_Data_float,							-- @RX_Clock2:	
 				RXDATA(31 downto 0)							=> GTX_RX_Data,										-- @RX_Clock2:	
+				RXDATA(63 downto 32)						=> GTX_RX_Data_float,							-- @RX_Clock2:	
 				RXVALID													=> GTX_RX_Valid,									-- @RX_Clock2:	
 				
-				RXCHARISCOMMA(7 downto 4)				=> GTX_RX_CharIsComma_float,			-- @RX_Clock2:	
 				RXCHARISCOMMA(3 downto 0)				=> GTX_RX_CharIsComma,						-- @RX_Clock2:	
-				RXCHARISK(7 downto 4)						=> GTX_RX_CharIsK_float,					-- @RX_Clock2:	
+				RXCHARISCOMMA(7 downto 4)				=> GTX_RX_CharIsComma_float,			-- @RX_Clock2:	
 				RXCHARISK(3 downto 0)						=> GTX_RX_CharIsK,								-- @RX_Clock2:	
-				RXDISPERR(7 downto 4)						=> GTX_RX_DisparityError_float,		-- @RX_Clock2:	
+				RXCHARISK(7 downto 4)						=> GTX_RX_CharIsK_float,					-- @RX_Clock2:	
 				RXDISPERR(3 downto 0)						=> GTX_RX_DisparityError,					-- @RX_Clock2:	
-				RXNOTINTABLE(7 downto 4)				=> GTX_RX_NotInTableError_float,	-- @RX_Clock2:	
+				RXDISPERR(7 downto 4)						=> GTX_RX_DisparityError_float,		-- @RX_Clock2:	
 				RXNOTINTABLE(3 downto 0)				=> GTX_RX_NotInTableError,				-- @RX_Clock2:	
+				RXNOTINTABLE(7 downto 4)				=> GTX_RX_NotInTableError_float,	-- @RX_Clock2:	
 				
 				-- RX Byte and Word Alignment
 				RXBYTEISALIGNED									=> GTX_RX_ByteIsAligned,

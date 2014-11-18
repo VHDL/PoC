@@ -526,7 +526,6 @@ package sata is
 	
 	-- to_slv
 	-- ===========================================================================
-	function to_slv(SATAGen : T_SATA_GENERATION)							return STD_LOGIC_VECTOR;
 	function to_slv(FISType : T_SATA_FISTYPE)									return STD_LOGIC_VECTOR;
 	function to_slv(Command : T_SATA_ATA_COMMAND)							return STD_LOGIC_VECTOR;
 	function to_slv(reg : T_SATA_ATA_DEVICE_FLAGS)						return STD_LOGIC_VECTOR;
@@ -587,11 +586,6 @@ PACKAGE BODY sata IS
 
 	-- to_slv(***)
 	-- -----------------------------------
-	function to_slv(SATAGen : T_SATA_GENERATION) return STD_LOGIC_VECTOR is
-	begin
-		return std_logic_vector(to_unsigned(SATAGen, 2));
-	end function;
-
 	FUNCTION to_slv(Primitive : T_SATA_PRIMITIVE) RETURN STD_LOGIC_VECTOR IS
 	BEGIN
 		RETURN to_slv(T_SATA_PRIMITIVE'pos(Primitive), log2ceilnz(T_SATA_PRIMITIVE'pos(T_SATA_PRIMITIVE'high) + 1));
