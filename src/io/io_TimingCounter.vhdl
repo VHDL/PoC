@@ -34,6 +34,7 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+USE			PoC.my_config.ALL;
 USE			PoC.utils.ALL;
 
 
@@ -55,17 +56,19 @@ ARCHITECTURE rtl OF io_TimingCounter IS
 	FUNCTION transform(vec : T_NATVEC) RETURN T_INTVEC IS
     VARIABLE Result : T_INTVEC(vec'range);
   BEGIN
+		ASSERT (not MY_VERBOSE) REPORT "TIMING_TABLE (transformed):" SEVERITY NOTE;
     FOR I IN vec'range LOOP
 			Result(I)	 := vec(I) - 1;
+			ASSERT (not MY_VERBOSE) REPORT "  " & INTEGER'image(I) & " - " & INTEGER'image(Result(I)) SEVERITY NOTE;
 		END LOOP;
 		RETURN Result;
   END;
 
 	CONSTANT TIMING_TABLE2	: T_INTVEC		:= transform(TIMING_TABLE);
 	CONSTANT TIMING_MAX			: NATURAL			:= imax(TIMING_TABLE2);
-	CONSTANT COUNTER_BW			: NATURAL			:= log2ceilnz(TIMING_MAX);
+	CONSTANT COUNTER_BITS		: NATURAL			:= log2ceilnz(TIMING_MAX + 1);
 
-	SIGNAL Counter_s				: SIGNED(COUNTER_BW DOWNTO 0)		:= to_signed(TIMING_TABLE2(0), COUNTER_BW + 1);
+	SIGNAL Counter_s				: SIGNED(COUNTER_BITS DOWNTO 0)		:= to_signed(TIMING_TABLE2(0), COUNTER_BITS + 1);
 	
 BEGIN
 

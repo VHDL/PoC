@@ -37,6 +37,7 @@ library PoC;
 use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
+use			PoC.physical.all;
 use			PoC.sata.all;
 use			PoC.satadbg.all;
 use			PoC.sata_transceivertypes.all;
@@ -123,14 +124,14 @@ package satacomp is
 	COMPONENT sata_SATAController IS
 		GENERIC (
 			DEBUG												: BOOLEAN														:= TRUE;
-			CLOCK_IN_FREQ_MHZ						: REAL															:= 150.0;
+			CLOCK_IN_FREQ								: FREQ															:= 150.0 MHz;
 			PORTS												: POSITIVE													:= 1;												-- Port 0									Port 1
 			CONTROLLER_TYPES						: T_SATA_DEVICE_TYPE_VECTOR					:= T_SATA_DEVICE_TYPE_VECTOR'(0 => SATA_DEVICE_TYPE_HOST,	1 => SATA_DEVICE_TYPE_DEVICE);
 			INITIAL_SATA_GENERATIONS		: T_SATA_GENERATION_VECTOR					:= T_SATA_GENERATION_VECTOR'(	0 => SATA_GENERATION_1,			1 => SATA_GENERATION_1);
 			ALLOW_SPEED_NEGOTIATION			: T_BOOLVEC													:= T_BOOLVEC'(								0 => TRUE,							1 => TRUE);
 			ALLOW_STANDARD_VIOLATION		: T_BOOLVEC													:= T_BOOLVEC'(								0 => TRUE,							1 => TRUE);
 			ALLOW_AUTO_RECONNECT				: T_BOOLVEC													:= T_BOOLVEC'(								0 => TRUE,							1 => TRUE);
-			OOB_TIMEOUT_US							: T_INTVEC													:= T_INTVEC'(									0 => 0,									1 => 0);
+			OOB_TIMEOUT									: T_TIMEVEC													:= T_TIMEVEC'(								0 => TIME'low,					1 => TIME'low);
 			GENERATION_CHANGE_COUNT			: T_INTVEC													:= T_INTVEC'(									0 => 8,									1 => 8);
 			TRYS_PER_GENERATION					: T_INTVEC													:= T_INTVEC'(									0 => 5,									1 => 3);
 			AHEAD_CYCLES_FOR_INSERT_EOF	: T_INTVEC													:= T_INTVEC'(									0 => 1,									1 => 1);
@@ -189,9 +190,9 @@ package satacomp is
 		GENERIC (
 			DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 			ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
-			CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																		-- 150 MHz
+			CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																				-- Number of Ports per Transceiver
-			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)			-- intial SATA Generation
+			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)				-- intial SATA Generation
 		);
 		PORT (
 			Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -202,8 +203,8 @@ package satacomp is
 			PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 			Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+			Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+
 			-- debug ports
 			DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
 			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -220,14 +221,14 @@ package satacomp is
 			OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-			OOB_HandshakeComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			OOB_HandshakeComplete			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
 
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -240,7 +241,7 @@ package satacomp is
 		GENERIC (
 			DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 			ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
-			CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																		-- 150 MHz
+			CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																				-- Number of Ports per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)			-- intial SATA Generation
 		);
@@ -253,8 +254,8 @@ package satacomp is
 			PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 			Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+			Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+
 			-- debug ports
 			DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
 			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -271,14 +272,14 @@ package satacomp is
 			OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-			OOB_HandshakeComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			OOB_HandshakeComplete			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
 
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -291,7 +292,7 @@ package satacomp is
 		GENERIC (
 			DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 			ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
-			CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																		-- 150 MHz
+			CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																				-- Number of Ports per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)			-- intial SATA Generation
 		);
@@ -304,8 +305,8 @@ package satacomp is
 			PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 			Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+			Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+
 			-- debug ports
 			DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
 			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -322,14 +323,14 @@ package satacomp is
 			OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-			OOB_HandshakeComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			OOB_HandshakeComplete			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
 
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -340,7 +341,7 @@ package satacomp is
 	
 	COMPONENT sata_Transceiver_Stratix2GX_GXB IS
 		GENERIC (
-			CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																																-- 150 MHz
+			CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																																		-- Number of Ports per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= T_SATA_GENERATION_VECTOR'(SATA_GENERATION_2, SATA_GENERATION_2)			-- intial SATA Generation
 		);
@@ -353,8 +354,8 @@ package satacomp is
 			PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 			Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+			Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+
 			-- debug ports
 --			DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
 --			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -371,14 +372,14 @@ package satacomp is
 			OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-			OOB_HandshakeComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			OOB_HandshakeComplete			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
 
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -389,7 +390,7 @@ package satacomp is
 	
 	COMPONENT sata_Transceiver_Stratix4GX_GXB IS
 		GENERIC (
-			CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																																-- 150 MHz
+			CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																																		-- Number of Ports per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= T_SATA_GENERATION_VECTOR'(SATA_GENERATION_2, SATA_GENERATION_2)			-- intial SATA Generation
 		);
@@ -402,8 +403,8 @@ package satacomp is
 			PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 			Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+			Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+
 			-- debug ports
 --			DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
 --			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -420,14 +421,14 @@ package satacomp is
 			OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-			OOB_HandshakeComplete		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			OOB_HandshakeComplete			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
 
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;

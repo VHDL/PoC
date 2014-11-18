@@ -62,12 +62,16 @@ package utils is
 
 	--+ Enums ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	-- Intellectual Property (IP) type
-	TYPE T_IPSTYLE			IS (IPSTYLE_HARD, IPSTYLE_SOFT);
+	type T_IPSTYLE				is (IPSTYLE_HARD, IPSTYLE_SOFT);
 	
 	-- Bit Order
-	TYPE T_BIT_ORDER		IS (LSB_FIRST, MSB_FIRST);
-  -- Byte Order (Endian)
-	TYPE T_BYTE_ORDER		IS (LITTLE_ENDIAN, BIG_ENDIAN);
+	type T_BIT_ORDER			is (LSB_FIRST, MSB_FIRST);
+  
+	-- Byte Order (Endian)
+	type T_BYTE_ORDER			is (LITTLE_ENDIAN, BIG_ENDIAN);
+	
+	-- rounding style
+	type T_ROUNDING_STYLE	is (ROUND_TO_NEAREST, ROUND_TO_ZERO, ROUND_TO_INF, ROUND_UP, ROUND_DOWN);
 
 	-- Function declarations
 	-- ==========================================================================
@@ -95,31 +99,33 @@ package utils is
 	FUNCTION log10ceilnz(arg	: POSITIVE)	RETURN POSITIVE;
 	
 	--+ if-then-else (ite) +++++++++++++++++++++++++++++++++++++++++++++++++++++
-	FUNCTION ite(cond : BOOLEAN; value1 : INTEGER; value2 : INTEGER) RETURN INTEGER;
-	FUNCTION ite(cond : BOOLEAN; value1 : REAL;	value2 : REAL) RETURN REAL;
-	FUNCTION ite(cond : BOOLEAN; value1 : STD_LOGIC; value2 : STD_LOGIC) RETURN STD_LOGIC;
-	FUNCTION ite(cond : BOOLEAN; value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) RETURN STD_LOGIC_VECTOR;
-	FUNCTION ite(cond : BOOLEAN; value1 : UNSIGNED; value2 : UNSIGNED) RETURN UNSIGNED;
-	FUNCTION ite(cond : BOOLEAN; value1 : CHARACTER; value2 : CHARACTER) RETURN CHARACTER;
-	FUNCTION ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) RETURN STRING;
+	function ite(cond : BOOLEAN; value1 : INTEGER; value2 : INTEGER) return INTEGER;
+	function ite(cond : BOOLEAN; value1 : REAL;	value2 : REAL) return REAL;
+	function ite(cond : BOOLEAN; value1 : STD_LOGIC; value2 : STD_LOGIC) return STD_LOGIC;
+	function ite(cond : BOOLEAN; value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;
+	function ite(cond : BOOLEAN; value1 : UNSIGNED; value2 : UNSIGNED) return UNSIGNED;
+	function ite(cond : BOOLEAN; value1 : CHARACTER; value2 : CHARACTER) return CHARACTER;
+	function ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) return STRING;
 
   --+ Max / Min / Sum ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	function imin(arg1 : integer; arg2 : integer) return integer;		-- Calculates: min(arg1, arg2) for integers
-	FUNCTION imin(vec : T_INTVEC) RETURN INTEGER;										-- Calculates: min(vector) for a integer vector
-	FUNCTION imin(vec : T_NATVEC) RETURN NATURAL;										-- Calculates: min(vector) for a natural vector
-	FUNCTION imin(vec : T_POSVEC) RETURN POSITIVE;									-- Calculates: min(vector) for a positive vector
 	function rmin(arg1 : real; arg2 : real) return real;						-- Calculates: min(arg1, arg2) for reals
+	
+	function imin(vec : T_INTVEC) return INTEGER;										-- Calculates: min(vec) for a integer vector
+	function imin(vec : T_NATVEC) return NATURAL;										-- Calculates: min(vec) for a natural vector
+	function imin(vec : T_POSVEC) return POSITIVE;									-- Calculates: min(vec) for a positive vector
 	function rmin(vec : T_REALVEC) return real;	       							-- Calculates: min(vec) of real vector
 
 	function imax(arg1 : integer; arg2 : integer) return integer;		-- Calculates: max(arg1, arg2) for integers
-	FUNCTION imax(vec : T_INTVEC) RETURN INTEGER;										-- Calculates: max(vector) for a integer vector
-	FUNCTION imax(vec : T_NATVEC) RETURN NATURAL;										-- Calculates: max(vector) for a natural vector
-	FUNCTION imax(vec : T_POSVEC) RETURN POSITIVE;									-- Calculates: max(vector) for a positive vector
 	function rmax(arg1 : real; arg2 : real) return real;						-- Calculates: max(arg1, arg2) for reals
+	
+	function imax(vec : T_INTVEC) return INTEGER;										-- Calculates: max(vec) for a integer vector
+	function imax(vec : T_NATVEC) return NATURAL;										-- Calculates: max(vec) for a natural vector
+	function imax(vec : T_POSVEC) return POSITIVE;									-- Calculates: max(vec) for a positive vector
 	function rmax(vec : T_REALVEC) return real;	       							-- Calculates: max(vec) of real vector
 
-	FUNCTION isum(vec : T_NATVEC) RETURN NATURAL;										-- Calculates: sum(vector) for a natural vector
-	FUNCTION isum(vec : T_POSVEC) RETURN POSITIVE;									-- Calculates: sum(vector) for a positive vector
+	function isum(vec : T_NATVEC) return NATURAL;										-- Calculates: sum(vec) for a natural vector
+	function isum(vec : T_POSVEC) return POSITIVE;									-- Calculates: sum(vec) for a positive vector
 	function isum(vec : T_INTVEC) return integer; 									-- Calculates: sum(vec) of integer vector
 	function rsum(vec : T_REALVEC) return real;	       							-- Calculates: sum(vec) of real vector
 
@@ -223,6 +229,9 @@ package utils is
   --
   function gray2bin (gray_val : std_logic_vector) return std_logic_vector;
 	
+	-- Binary-Code to One-Hot-Code
+	function bin2onehot(value : std_logic_vector) return std_logic_vector;
+	
 	-- Binary-Code to Gray-Code
 	function bin2gray(value : std_logic_vector) return std_logic_vector;
 	
@@ -310,6 +319,71 @@ package body utils is
 	begin
 		return imax(1, log10ceil(arg));
 	end function;
+
+	-- if-then-else (ite)
+	-- ==========================================================================
+	function ite(cond : BOOLEAN; value1 : INTEGER; value2 : INTEGER) return INTEGER is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+
+	function ite(cond : BOOLEAN; value1 : REAL; value2 : REAL) return REAL is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+
+	function ite(cond : BOOLEAN; value1 : STD_LOGIC; value2 : STD_LOGIC) return STD_LOGIC is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+
+	function ite(cond : BOOLEAN; value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+
+	function ite(cond : BOOLEAN; value1 : UNSIGNED; value2 : UNSIGNED) return UNSIGNED is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+
+	function ite(cond : BOOLEAN; value1 : CHARACTER; value2 : CHARACTER) return CHARACTER is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+	
+	function ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) return STRING is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
 	
 	-- *min / *max / *sum
 	-- ==========================================================================
@@ -319,6 +393,12 @@ package body utils is
 		return arg2;
 	end function;
 
+	function rmin(arg1 : real; arg2 : real) return real is
+	begin
+		if arg1 < arg2 then return arg1; end if;
+		return arg2;
+	end function;
+	
 	FUNCTION imin(vec : T_INTVEC) RETURN INTEGER IS
 		VARIABLE Result		: INTEGER		:= INTEGER'high;
 	BEGIN
@@ -352,12 +432,6 @@ package body utils is
 		RETURN Result;
 	END FUNCTION;
 
-	function rmin(arg1 : real; arg2 : real) return real is
-	begin
-		if arg1 < arg2 then return arg1; end if;
-		return arg2;
-	end function;
-
 	function rmin(vec : T_REALVEC) return real is
 		variable  res : real := real'high;
 	begin
@@ -375,6 +449,12 @@ package body utils is
 		return arg2;
 	end function;
 
+	function rmax(arg1 : real; arg2 : real) return real is
+	begin
+		if arg1 > arg2 then return arg1; end if;
+		return arg2;
+	end function;
+	
 	FUNCTION imax(vec : T_INTVEC) RETURN INTEGER IS
 		VARIABLE Result		: INTEGER		:= INTEGER'low;
 	BEGIN
@@ -407,12 +487,6 @@ package body utils is
 		END LOOP;
 		RETURN Result;
 	END FUNCTION;
-
-	function rmax(arg1 : real; arg2 : real) return real is
-	begin
-		if arg1 > arg2 then return arg1; end if;
-		return arg2;
-	end function;
 
 	function rmax(vec : T_REALVEC) return real is
 		variable  res : real := real'low;
@@ -526,9 +600,11 @@ package body utils is
 	-- Convert to vector: to_slv
 	-- ==========================================================================
 	-- short for std_logic_vector(to_unsigned(Value, Size))
+	-- the return value is guaranteed to have the range (Size-1 downto 0)
 	FUNCTION to_slv(Value : NATURAL; Size : POSITIVE) RETURN STD_LOGIC_VECTOR IS
+	  constant  res : std_logic_vector(Size-1 downto 0) := std_logic_vector(to_unsigned(Value, Size));
 	BEGIN
-		RETURN std_logic_vector(to_unsigned(Value, Size));
+		return  res;
 	END FUNCTION;
 
 	FUNCTION to_index(slv : UNSIGNED; max : NATURAL := 0) RETURN INTEGER IS
@@ -653,6 +729,15 @@ package body utils is
 		return res;
 	end gray2bin;
 	
+	-- Binary-Code to One-Hot-Code
+	function bin2onehot(value : std_logic_vector) return std_logic_vector is
+		variable result		: std_logic_vector(2**value'length - 1 downto 0);
+	begin
+		result	:= (others => '0');
+		result(2 ** to_integer(unsigned(value))) := '1';
+		return result;
+	end function;
+	
 	-- Binary-Code to Gray-Code
 	function bin2gray(value : std_logic_vector) return std_logic_vector is
 		variable result		: std_logic_vector(value'range);
@@ -718,71 +803,6 @@ package body utils is
 		return  mssb_idx(slv);
 	end mssb_idx;
 
-	-- if-then-else (ite)
-	-- ==========================================================================
-	FUNCTION ite(cond : BOOLEAN; value1 : INTEGER; value2 : INTEGER) RETURN INTEGER IS
-	BEGIN
-		IF cond THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END FUNCTION;
-
-	FUNCTION ite(cond : BOOLEAN; value1 : REAL; value2 : REAL) RETURN REAL IS
-	BEGIN
-		IF cond THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END FUNCTION;
-
-	FUNCTION ite(cond : BOOLEAN; value1 : STD_LOGIC; value2 : STD_LOGIC) RETURN STD_LOGIC IS
-	BEGIN
-		IF cond THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END FUNCTION;
-
-	FUNCTION ite(cond : BOOLEAN; value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) RETURN STD_LOGIC_VECTOR IS
-	BEGIN
-		IF cond THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END FUNCTION;
-
-	FUNCTION ite(cond : BOOLEAN; value1 : UNSIGNED; value2 : UNSIGNED) RETURN UNSIGNED IS
-	BEGIN
-		IF cond THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END FUNCTION;
-
-	FUNCTION ite(cond : BOOLEAN; value1 : CHARACTER; value2 : CHARACTER) RETURN CHARACTER IS
-	BEGIN
-		IF cond THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END FUNCTION;
-	
-	FUNCTION ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) RETURN STRING IS
-	BEGIN
-		IF cond THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END FUNCTION;
-	
 	function resize(vec : bit_vector; length : natural; fill : bit := '0') return bit_vector is
     constant  high2b : natural := vec'low+length-1;
 		constant  highcp : natural := imin(vec'high, high2b);

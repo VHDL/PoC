@@ -40,14 +40,13 @@ USE			PoC.io.ALL;
 
 ENTITY io_GlitchFilter IS
   GENERIC (
-		CLOCK_FREQ_MHZ										: REAL				:= 100.0;
-		HIGH_SPIKE_SUPPRESSION_TIME_NS		: REAL				:= 50.0;
-		LOW_SPIKE_SUPPRESSION_TIME_NS			: REAL				:= 50.0
+		HIGH_SPIKE_SUPPRESSION_CYCLES			: NATURAL				:= 5;
+		LOW_SPIKE_SUPPRESSION_CYCLES			: NATURAL				:= 5
 	);
   PORT (
 		Clock		: IN	STD_LOGIC;
-		I				: IN	STD_LOGIC;
-		O				: OUT STD_LOGIC
+		Input		: IN	STD_LOGIC;
+		Output	: OUT STD_LOGIC
 	);
 END;
 
@@ -59,8 +58,8 @@ ARCHITECTURE rtl OF io_GlitchFilter IS
 	
 	-- Timing table
 	CONSTANT TIMING_TABLE						: T_NATVEC	:= (
-		TTID_HIGH_SPIKE			=> TimingToCycles_ns(HIGH_SPIKE_SUPPRESSION_TIME_NS,	Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)),
-		TTID_LOW_SPIKE			=> TimingToCycles_ns(LOW_SPIKE_SUPPRESSION_TIME_NS,		Freq_MHz2Real_ns(CLOCK_FREQ_MHZ))
+		TTID_HIGH_SPIKE			=> HIGH_SPIKE_SUPPRESSION_CYCLES,
+		TTID_LOW_SPIKE			=> LOW_SPIKE_SUPPRESSION_CYCLES
 	);
 
 	SIGNAL State										: STD_LOGIC												:= '0';
@@ -83,7 +82,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-	PROCESS(State, I, TC_Timeout)
+	PROCESS(State, Input, TC_Timeout)
 	BEGIN
 		NextState		<= State;
 		
@@ -95,26 +94,26 @@ BEGIN
 			WHEN '0' =>
 				TC_Slot			<= TTID_HIGH_SPIKE;
 			
-				IF (I = '1') THEN
+				IF (Input = '1') THEN
 					TC_en			<= '1';
 				ELSE
 					TC_Load		<= '1';
 				END IF;
 				
-				IF ((I AND TC_Timeout) = '1') THEN
+				IF ((Input AND TC_Timeout) = '1') THEN
 					NextState	<= '1';
 				END IF;
 
 			WHEN '1' =>
 				TC_Slot			<= TTID_LOW_SPIKE;
 			
-				IF (I = '0') THEN
+				IF (Input = '0') THEN
 					TC_en			<= '1';
 				ELSE
 					TC_Load		<= '1';
 				END IF;
 				
-				IF ((NOT I AND TC_Timeout) = '1') THEN
+				IF ((NOT Input AND TC_Timeout) = '1') THEN
 					NextState	<= '0';
 				END IF;
 			
@@ -136,5 +135,5 @@ BEGIN
 			Timeout							=> TC_Timeout											-- timing reached
 		);	
 
-	O <= State;
+	Output <= State;
 END;

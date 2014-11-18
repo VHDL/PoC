@@ -57,9 +57,9 @@ USE			PoC.utils.ALL;
 
 ENTITY sync_Reset IS
   PORT (
-		Clock			: IN	STD_LOGIC;															-- <Clock>	output clock domain
-		Input			: IN	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);		-- @async:	reset input
-		Output		: OUT STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)			-- @Clock:	reset output
+		Clock			: IN	STD_LOGIC;		-- <Clock>	output clock domain
+		Input			: IN	STD_LOGIC;		-- @async:	reset input
+		Output		: OUT STD_LOGIC			-- @Clock:	reset output
 	);
 END;
 
@@ -104,9 +104,9 @@ BEGIN
 		-- locally component declaration removes the dependancy to 'PoC.xil.ALL'
 		COMPONENT xil_SyncReset IS
 			PORT (
-				Clock					: IN	STD_LOGIC;														-- Clock to be synchronized to
-				Input					: IN	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);	-- Data to be synchronized
-				Output				: OUT	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)		-- synchronised data
+				Clock					: IN	STD_LOGIC;		-- Clock to be synchronized to
+				Input					: IN	STD_LOGIC;		-- Data to be synchronized
+				Output				: OUT	STD_LOGIC			-- synchronised data
 			);
 		END COMPONENT;
 	BEGIN

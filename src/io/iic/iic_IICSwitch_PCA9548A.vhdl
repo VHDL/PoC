@@ -3,7 +3,7 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================================================================================================
--- Module:					I²C Switch Controller for a TI PCA9548A
+-- Module:					I2C Switch Controller for a TI PCA9548A
 -- 
 -- Authors:					Patrick Lehmann
 -- 
@@ -153,7 +153,7 @@ BEGIN
 	END PROCESS;
 
 	PROCESS(State,
-		Request_or, Arb_Grant, Arb_Grant_bin,
+		Request, Request_or, Arb_Grant, Arb_Grant_bin,
 		Command, Address, WP_Valid, WP_Data, WP_Last, RP_Ack,
 		IICC_Grant, IICC_Status, IICC_WP_Ack, IICC_RP_Valid, IICC_RP_Data, IICC_RP_Last, IICC_Error)
 	BEGIN
@@ -173,6 +173,9 @@ BEGIN
 		IICC_WP_Valid							<= '0';
 		IICC_WP_Data							<= (OTHERS => '0');
 		IICC_WP_Last							<= '0';
+		IICC_RP_Ack								<= '0';
+		
+		IICSwitch_Reset						<= '0';
 		
 		FSM_Arbitrate							<= '0';
 		

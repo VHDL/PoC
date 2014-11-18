@@ -34,9 +34,12 @@
 library	IEEE;
 use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
+use			IEEE.math_real.all;
 
 library	PoC;
 use			PoC.utils.all;
+use			PoC.my_config.MY_VERBOSE;
+use			PoC.my_project.MY_OPERATING_SYSTEM;
 
 
 package strings is
@@ -76,6 +79,7 @@ package strings is
 	function raw_format_nat_hex(value : NATURAL)				return STRING;
 	
 	-- str_format_* functions
+	function str_format(value : REAL; precision : NATURAL := 3) return STRING;
 	
 	-- to_string
 	FUNCTION to_string(value : BOOLEAN) RETURN STRING;	
@@ -116,15 +120,27 @@ package strings is
 	function str_length(str : STRING)									return NATURAL;
 	function str_equal(str1 : STRING; str2 : STRING)	return BOOLEAN;
 	function str_match(str1 : STRING; str2 : STRING)	return BOOLEAN;
-	function str_pos(str : STRING; chr : CHARACTER)		return INTEGER;
-	function str_pos(str1 : STRING; str2 : STRING)		return INTEGER;
+	function str_pos(str : STRING; chr : CHARACTER; start : NATURAL := 0)	return INTEGER;
+	function str_pos(str : STRING; search : STRING; start : NATURAL := 0)	return INTEGER;
 	function str_find(str : STRING; chr : CHARACTER)	return BOOLEAN;
-	function str_find(str1 : STRING; str2 : STRING)		return BOOLEAN;
-	function str_trim(str : STRING)										return STRING;
-	function str_to_lower(str : STRING)								return STRING;
-	function str_to_upper(str : STRING)								return STRING;
+	function str_find(str : STRING; search : STRING)	return BOOLEAN;
+	function str_replace(str : STRING; search : STRING; replace : STRING) return STRING;
+	function str_trim(str : STRING)											return STRING;
+	function str_ltrim(str : STRING; char : CHARACTER)	return STRING;
+	function str_to_lower(str : STRING)									return STRING;
+	function str_to_upper(str : STRING)									return STRING;
 	function str_substr(str : STRING; start : INTEGER := 0; length : INTEGER := 0) return STRING;
 
+	procedure stdout_write(str : STRING);
+	procedure stdout_writeline(str : STRING := "");
+	procedure stderr_write(str : STRING);
+	procedure stderr_writeline(str : STRING := "");
+
+	function to_OSPath(str : STRING) return STRING;
+
+	-- Constant declarations
+	-- ===========================================================================
+	constant C_LINEBREAK	: STRING		:= ite(str_equal(MY_OPERATING_SYSTEM, "WINDOWS"), (CR & LF), (1 => LF));
 end package strings;
 
 
@@ -162,14 +178,9 @@ package body strings is
 
 	-- TODO: rename to to_HexDigit(..) ?
 	function to_char(value : natural) return character is
+	  constant  HEX : string := "0123456789ABCDEF";
 	begin
-		if (value < 10) then
-			return character'val(character'pos('0') + value);
-		elsif (value < 16) then
-			return character'val(character'pos('A') + value - 10);
-		else
-			return 'X';
-		end if;
+		return  ite(value < 16, HEX(value+1), 'X');
 	end function;
 
 	FUNCTION to_char(rawchar : T_RAWCHAR) RETURN CHARACTER IS
@@ -269,16 +280,13 @@ package body strings is
 	end function;
 	
 	function raw_format_slv_hex(slv : STD_LOGIC_VECTOR) return STRING is
-		variable Value				: STD_LOGIC_VECTOR(slv'length - 1 downto 0);
+		variable Value				: STD_LOGIC_VECTOR(4*div_ceil(slv'length, 4) - 1 downto 0);
 		variable Digit				: STD_LOGIC_VECTOR(3 downto 0);
 		variable Result				: STRING(1 to div_ceil(slv'length, 4));
 		variable j						: NATURAL;
 	begin
-		-- convert input slv to a DOWNTO ranged vector; normalize range to slv'low = 0 and resize it to a multiple of 4
-		Value := resize(movez(ite(slv'ascending, descend(slv), slv)), (Result'length * 4));
-		
-		-- convert 4 bit to a character
-		j				:= 0;
+		Value := resize(slv, Value'length);
+		j			:= 0;
 		for i in Result'reverse_range loop
 			Digit			:= Value((j * 4) + 3 DOWNTO (j * 4));
 			Result(i)	:= to_char(to_integer(unsigned(Digit)));
@@ -290,12 +298,12 @@ package body strings is
 
 	function raw_format_nat_bin(value : NATURAL) return STRING is
 	begin
-		return raw_format_slv_bin(to_slv(value, log2ceil(value)));
+		return raw_format_slv_bin(to_slv(value, log2ceilnz(value+1)));
 	end function;
 	
 	function raw_format_nat_oct(value : NATURAL) return STRING is
 	begin
-		return raw_format_slv_oct(to_slv(value, log2ceil(value)));
+		return raw_format_slv_oct(to_slv(value, log2ceilnz(value+1)));
 	end function;
 	
 	function raw_format_nat_dec(value : NATURAL) return STRING is
@@ -305,7 +313,24 @@ package body strings is
 	
 	function raw_format_nat_hex(value : NATURAL) return STRING is
 	begin
-		return raw_format_slv_hex(to_slv(value, log2ceil(value)));
+		return raw_format_slv_hex(to_slv(value, log2ceilnz(value+1)));
+	end function;
+	
+	-- str_format_* functions
+	-- ===========================================================================
+	function str_format(value : REAL; precision : NATURAL := 3) return STRING is
+		constant s		: REAL			:= sign(value);
+		constant int	: INTEGER		:= integer((value * s) - 0.5);																		-- force ROUND_DOWN
+		constant frac	: INTEGER		:= integer((((value * s) - real(int)) * 10.0**precision) - 0.5);	-- force ROUND_DOWN
+		constant res	: STRING		:= raw_format_nat_dec(int) & "." & raw_format_nat_dec(frac);
+	begin
+--		assert (not MY_VERBOSE)
+--			report "str_format:" & CR &
+--						 "  value:" & REAL'image(value) & CR &
+--						 "  int = " & INTEGER'image(int) & CR &
+--						 "  frac = " & INTEGER'image(frac)
+--			severity note;
+		return ite((s	< 0.0), "-" & res, res);
 	end function;
 	
 	-- to_string
@@ -478,9 +503,9 @@ package body strings is
 		variable Digit			: INTEGER;
 	begin
 		for i in str'range loop
-			Digit	:= to_digit_oct(str(I));
+			Digit	:= to_digit_dec(str(I));
 			if (Digit /= -1) then
-				Result	:= Result * 8 + Digit;
+				Result	:= Result * 10 + Digit;
 			else
 				return -1;
 			end if;
@@ -536,10 +561,13 @@ package body strings is
 	-- resize
 	-- ===========================================================================
 	FUNCTION resize(str : STRING; size : POSITIVE; FillChar : CHARACTER := NUL) RETURN STRING IS
-		CONSTANT MaxLength	: POSITIVE							:= imin(size, str'length);
+		CONSTANT MaxLength	: NATURAL								:= imin(size, str'length);
 		VARIABLE Result			: STRING(1 TO size)			:= (OTHERS => FillChar);
 	BEGIN
-		Result(1 TO MaxLength) := str(1 TO MaxLength);
+		--report "resize: str='" & str & "' size=" & INTEGER'image(size) severity note;
+		if (MaxLength > 0) then
+			Result(1 TO MaxLength) := str(str'low TO str'low + MaxLength - 1);
+		end if;
 		RETURN Result;
 	END FUNCTION;
 
@@ -604,62 +632,107 @@ package body strings is
 		END IF;
 	END FUNCTION;
 
-	function str_pos(str : STRING; chr : CHARACTER) return INTEGER is
+	function str_pos(str : STRING; chr : CHARACTER; start : NATURAL := 0) return INTEGER is
 	begin
-		for i in str'range loop
-			exit when (str(I) = NUL);
-			if (str(I) = chr) then
-				return I;
+		for i in imax(str'low, start) to str'high loop
+			exit when (str(i) = NUL);
+			if (str(i) = chr) then
+				return i;
 			end if;
 		end loop;
 		return -1;
 	end function;
 	
-	function str_pos(str1 : STRING; str2 : STRING) return INTEGER is
-		variable PrefixTable	: T_INTVEC(0 to str2'length);
-		variable j						: INTEGER;
+	function str_pos(str : STRING; search : STRING; start : NATURAL := 0) return INTEGER is
 	begin
-		-- construct prefix table for KMP algorithm
-		j								:= -1;
-		PrefixTable(0)	:= -1;
-		for i in str2'range loop
-			while ((j >= 0) and str2(j + 1) /= str2(i)) loop
-				j		:= PrefixTable(j);
-			end loop;
-		
-			j										:= j + 1;
-			PrefixTable(i - 1)	:= j + 1;
-		end loop;
-		
-		-- search pattern str2 in text str1
-		j := 0;
-		for i in str1'range loop
-			while ((j >= 0) and str1(i) /= str2(j + 1)) loop
-				j		:= PrefixTable(j);
-			end loop;
-		
-			j := j + 1;
-			if ((j + 1) = str2'high) then
-				return i - str2'length + 1;
+		for i in imax(str'low, start) to (str'high - search'length + 1) loop
+			exit when (str(i) = NUL);
+			if (str(i to i + search'length - 1) = search) then
+				return i;
 			end if;
 		end loop;
-
 		return -1;
 	end function;
+	
+--	function str_pos(str1 : STRING; str2 : STRING) return INTEGER is
+--		variable PrefixTable	: T_INTVEC(0 to str2'length);
+--		variable j						: INTEGER;
+--	begin
+--		-- construct prefix table for KMP algorithm
+--		j								:= -1;
+--		PrefixTable(0)	:= -1;
+--		for i in str2'range loop
+--			while ((j >= 0) and str2(j + 1) /= str2(i)) loop
+--				j		:= PrefixTable(j);
+--			end loop;
+--		
+--			j										:= j + 1;
+--			PrefixTable(i - 1)	:= j + 1;
+--		end loop;
+--		
+--		-- search pattern str2 in text str1
+--		j := 0;
+--		for i in str1'range loop
+--			while ((j >= 0) and str1(i) /= str2(j + 1)) loop
+--				j		:= PrefixTable(j);
+--			end loop;
+--		
+--			j := j + 1;
+--			if ((j + 1) = str2'high) then
+--				return i - str2'length + 1;
+--			end if;
+--		end loop;
+--
+--		return -1;
+--	end function;
 	
 	function str_find(str : STRING; chr : CHARACTER) return boolean is
 	begin
 		return (str_pos(str, chr) > 0);
 	end function;
 	
-	function str_find(str1 : STRING; str2 : STRING) return boolean is
+	function str_find(str : STRING; search : STRING) return boolean is
 	begin
-		return (str_pos(str1, str2) > 0);
+		return (str_pos(str, search) > 0);
+	end function;
+	
+	function str_replace(str : STRING; search : STRING; replace : STRING) return STRING is
+		variable pos		: INTEGER;
+	begin
+		pos := str_pos(str, search);
+		report "str_replace: pos=" & INTEGER'image(pos) severity note;
+		if (pos > 0) then
+			if (pos = 1) then
+				return replace & str(search'length + 1 to str'length);
+			elsif (pos = str'length - search'length + 1) then
+				return str(1 to str'length - search'length) & replace;
+			else
+				return str(1 to pos - 1) & replace & str(pos + search'length to str'length);
+			end if;
+		else
+			return str;
+		end if;
 	end function;
 	
 	function str_trim(str : STRING) return STRING is
+		constant len	: NATURAL	:= str_length(str);
 	begin
-		return resize(str, str_length(str));
+		if (len = 0) then
+			return "";
+		else
+			return resize(str, len);
+		end if;
+	end function;
+	
+	function str_ltrim(str : STRING; char : CHARACTER) return STRING is
+	begin
+		for i in str'range loop
+			report "str_ltrim: i=" & INTEGER'image(i) severity note;
+			if (str(i) /= char) then
+				return str(i to str'high);
+			end if;
+		end loop;
+		return "";
 	end function;
 	
 	FUNCTION str_to_lower(str : STRING) RETURN STRING IS
@@ -714,5 +787,45 @@ package body strings is
 		if (EndOfString < str'high) then			report "EndOfString is out of str's range. (str=" & str & ")" severity error;			end if;
 		
 		return str(StartOfString to EndOfString);
+	end function;
+	
+	procedure stdout_write(str : STRING) is
+	begin
+		std.textio.write(std.textio.output, str);
+	end procedure;
+	
+	procedure stdout_writeline(str : STRING := "") is
+	begin
+		stdout_write(str & C_LINEBREAK);
+	end procedure;
+	
+	procedure stderr_write(str : STRING) is
+	begin
+		std.textio.write(std.textio.output, str);
+	end procedure;
+	
+	procedure stderr_writeline(str : STRING := "") is
+	begin
+		stderr_write(str & C_LINEBREAK);
+	end procedure;
+	
+	function to_OSPath(str : STRING) return STRING is
+		constant path			: STRING							:= str_trim(str);
+		variable temp			: STRING(path'range);
+	begin
+		if (str_equal(MY_OPERATING_SYSTEM, "WINDOWS")) then
+			temp	:= path;
+--			for i in temp'range loop
+--				if (temp(i) = '/') then
+--					temp(i) := '\';
+--				end if;
+--			end loop;
+			
+			return temp;
+		elsif (str_equal(MY_OPERATING_SYSTEM, "WINDOWS")) then
+			return path;
+		else
+			report "to_OSPath: Operating system '" & MY_OPERATING_SYSTEM & "' is not supported." severity failure;
+		end if;
 	end function;
 end strings;

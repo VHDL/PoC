@@ -37,29 +37,30 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.xil.ALL;
 
 
 ENTITY xil_Reconfigurator IS
 	GENERIC (
-		DEBUG										: BOOLEAN											:= FALSE;																				-- 
-		CLOCK_FREQ_MHZ					: REAL												:= 0.0;																					-- 
-		CONFIG_ROM							: IN	T_XIL_DRP_CONFIG_ROM		:= (0 DOWNTO 0 => C_XIL_DRP_CONFIG_SET_EMPTY)		-- 
+		DEBUG						: BOOLEAN										:= FALSE;																				-- 
+		CLOCK_FREQ			: FREQ											:= 0.0 MHz;																					-- 
+		CONFIG_ROM			: IN	T_XIL_DRP_CONFIG_ROM	:= (0 DOWNTO 0 => C_XIL_DRP_CONFIG_SET_EMPTY)		-- 
 	);
 	PORT (
-		Clock										: IN	STD_LOGIC;
-		Reset										: IN	STD_LOGIC;
+		Clock						: IN	STD_LOGIC;
+		Reset						: IN	STD_LOGIC;
 		
-		Reconfig								: IN	STD_LOGIC;																				--
-		ReconfigDone						: OUT	STD_LOGIC;																				--
-		ConfigSelect						: IN	STD_LOGIC_VECTOR;																	-- 
+		Reconfig				: IN	STD_LOGIC;																				--
+		ReconfigDone		: OUT	STD_LOGIC;																				--
+		ConfigSelect		: IN	STD_LOGIC_VECTOR;																	-- 
 		
-		DRP_en									: OUT	STD_LOGIC;																				-- 
-		DRP_Address							: OUT	T_XIL_DRP_ADDRESS;																-- 
-		DRP_we									: OUT	STD_LOGIC;																				-- 
-		DRP_DataIn							: IN	T_XIL_DRP_DATA;																		-- 
-		DRP_DataOut							: OUT	T_XIL_DRP_DATA;																		-- 
-		DRP_Ready								: IN	STD_LOGIC																					-- 
+		DRP_en					: OUT	STD_LOGIC;																				-- 
+		DRP_Address			: OUT	T_XIL_DRP_ADDRESS;																-- 
+		DRP_we					: OUT	STD_LOGIC;																				-- 
+		DRP_DataIn			: IN	T_XIL_DRP_DATA;																		-- 
+		DRP_DataOut			: OUT	T_XIL_DRP_DATA;																		-- 
+		DRP_Ready				: IN	STD_LOGIC																					-- 
 	);
 END;
 
@@ -94,8 +95,6 @@ ARCHITECTURE rtl OF xil_Reconfigurator IS
 	
 	ATTRIBUTE KEEP OF ROM_LastConfigWord	: SIGNAL IS DEBUG;
 BEGIN
-
---	ASSERT XilDRP_Assert(CLOCK_FREQ_MHZ) REPORT "DRP clock frequency not supported by device" SEVERITY FAILURE;
 
 	-- configuration ROM
 	blkCONFIG_ROM : BLOCK

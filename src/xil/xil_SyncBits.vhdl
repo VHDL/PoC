@@ -61,7 +61,7 @@ USE			PoC.utils.ALL;
 ENTITY xil_SyncBits IS
 	GENERIC (
 		BITS					: POSITIVE						:= 1;									-- number of bit to be synchronized
-		INIT					: STD_LOGIC_VECTOR		:= x"00"							-- number of BITS to synchronize
+		INIT					: STD_LOGIC_VECTOR		:= x"00000000"				-- number of BITS to synchronize
 	);
 	PORT (
 		Clock					: IN	STD_LOGIC;														-- Clock to be synchronized to
@@ -108,7 +108,7 @@ BEGIN
 			)
 			PORT MAP (
 				C				=> Clock,
-				D				=> Data_async,
+				D				=> Data_meta,
 				Q				=> Data_sync
 			);
 		

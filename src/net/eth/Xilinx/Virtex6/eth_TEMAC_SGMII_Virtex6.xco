@@ -1,0 +1,92 @@
+##############################################################
+#
+# Xilinx Core Generator version 14.7
+# Date: Tue Jul 29 19:08:44 2014
+#
+##############################################################
+#
+#  This file contains the customisation parameters for a
+#  Xilinx CORE Generator IP GUI. It is strongly recommended
+#  that you do not manually alter this file as it may cause
+#  unexpected and unsupported behavior.
+#
+##############################################################
+#
+#  Generated from component: xilinx.com:ip:v6_emac:1.6
+#
+##############################################################
+#
+# BEGIN Project Options
+SET addpads = false
+SET asysymbol = false
+SET busformat = BusFormatAngleBracketNotRipped
+SET createndf = false
+SET designentry = VHDL
+SET device = xc6vlx240t
+SET devicefamily = virtex6
+SET flowvendor = Other
+SET formalverification = false
+SET foundationsym = false
+SET implementationfiletype = Ngc
+SET package = ff1156
+SET removerpms = false
+SET simulationfiles = None
+SET speedgrade = -1
+SET verilogsim = false
+SET vhdlsim = true
+# END Project Options
+# BEGIN Select
+SELECT Virtex-6_Embedded_Tri-Mode_Ethernet_MAC_Wrapper xilinx.com:ip:v6_emac:1.6
+# END Select
+# BEGIN Parameters
+CSET address_filter_enable=false
+CSET byte_phy=false
+CSET client_side_data_width=8_bit
+CSET clock_enable=false
+CSET component_name=eth_TEMAC_SGMII_Virtex6
+CSET dcr_base_address=00
+CSET host_type=None
+CSET mdio=true
+CSET overclocking=None
+CSET phy_an_enable=true
+CSET phy_ignore_adzero=false
+CSET phy_isolate=true
+CSET phy_link_timer_value=032
+CSET phy_loopback_in_gtp=false
+CSET phy_loopback_msb=false
+CSET phy_powerdown=false
+CSET phy_reset=false
+CSET phy_unidirection_enable=false
+CSET physical_interface=SGMII
+CSET rx_ctrl_lencheck_disable=false
+CSET rx_disable_length=true
+CSET rx_enable=true
+CSET rx_flow_control_enable=true
+CSET rx_half_duplex_enable=false
+CSET rx_in_band_fcs_enable=false
+CSET rx_jumbo_frame_enable=true
+CSET rx_reset=false
+CSET rx_vlan_enable=true
+CSET serial_mode_switch_enable=false
+CSET sgmii_mode=No_clock
+CSET speed=1000_Mbps
+CSET tx_enable=true
+CSET tx_flow_control_enable=true
+CSET tx_half_duplex_enable=false
+CSET tx_ifg_adjust_enable=false
+CSET tx_in_band_fcs_enable=false
+CSET tx_jumbo_frame_enable=true
+CSET tx_reset=false
+CSET tx_vlan_enable=true
+CSET unicast_pause_mac_address_1=AA
+CSET unicast_pause_mac_address_2=BB
+CSET unicast_pause_mac_address_3=CC
+CSET unicast_pause_mac_address_4=DD
+CSET unicast_pause_mac_address_5=EE
+CSET unicast_pause_mac_address_6=FF
+# END Parameters
+# BEGIN Extra information
+MISC pkg_timestamp=2013-10-13T18:11:33Z
+# END Extra information
+GENERATE
+# CRC:  49c3b58

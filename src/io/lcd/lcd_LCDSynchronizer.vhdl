@@ -36,12 +36,13 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.lcd.ALL;
 
 
 ENTITY lcd_LCDSynchronizer IS
 	GENERIC (
-		CLOCK_FREQ_MHZ			: REAL		:= 100.0			-- 100 MHz
+		CLOCK_FREQ					: FREQ		:= 100.0 MHz
 	);
 	PORT (
 		Clock								: IN	STD_LOGIC;

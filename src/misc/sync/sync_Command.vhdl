@@ -6,7 +6,7 @@
 -- Package:					TODO
 --
 -- Authors:					Patrick Lehmann
---									Steffen Köhler
+--									Steffen Koehler
 --
 -- Description:
 -- ------------------------------------
@@ -52,7 +52,7 @@ USE			PoC.utils.ALL;
 ENTITY sync_Command IS
   GENERIC (
 	  BITS								: POSITIVE					:= 8;											-- number of bit to be synchronized
-		INIT								: STD_LOGIC_VECTOR	:= x"00"									-- 
+		INIT								: STD_LOGIC_VECTOR	:= x"00000000"						-- 
 	);
   PORT (
 		Clock1							: IN	STD_LOGIC;															-- <Clock>	input clock

@@ -38,6 +38,7 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.satadbg.ALL;
 USE			PoC.sata_TransceiverTypes.ALL;
@@ -47,14 +48,16 @@ ENTITY sata_SATAController IS
 	GENERIC (
 		DEBUG												: BOOLEAN														:= FALSE;
 		ENABLE_DEBUGPORT						: BOOLEAN														:= FALSE;
-		CLOCK_IN_FREQ_MHZ						: REAL															:= 150.0;
+		CLOCK_IN_FREQ								: FREQ															:= 150.0 MHz;
+--		CLOCK_IN_FREQ_MHZ						: REAL															:= 150.0;
 		PORTS												: POSITIVE													:= 2;	-- Port 0									Port 1
 		CONTROLLER_TYPES						: T_SATA_DEVICE_TYPE_VECTOR					:= (0 => SATA_DEVICE_TYPE_HOST,	1 => SATA_DEVICE_TYPE_HOST);
 		INITIAL_SATA_GENERATIONS		: T_SATA_GENERATION_VECTOR					:= (0 => SATA_GENERATION_2,			1 => SATA_GENERATION_2);
 		ALLOW_SPEED_NEGOTIATION			: T_BOOLVEC													:= (0 => TRUE,									1 => TRUE);
 		ALLOW_STANDARD_VIOLATION		: T_BOOLVEC													:= (0 => TRUE,									1 => TRUE);
 		ALLOW_AUTO_RECONNECT				: T_BOOLVEC													:= (0 => TRUE,									1 => TRUE);
-		OOB_TIMEOUT_US							: T_INTVEC													:= (0 => 0,											1 => 0);
+		OOB_TIMEOUT									: T_TIMEVEC													:= (0 => TIME'low,							1 => TIME'low);
+--		OOB_TIMEOUT_US							: T_INTVEC													:= (0 => 0,											1 => 0);
 		GENERATION_CHANGE_COUNT			: T_INTVEC													:= (0 => 8,											1 => 8);
 		ATTEMPTS_PER_GENERATION			: T_INTVEC													:= (0 => 5,											1 => 3);
 		AHEAD_CYCLES_FOR_INSERT_EOF	: T_INTVEC													:= (0 => 1,											1 => 1);
@@ -121,7 +124,8 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	CONSTANT ALLOW_SPEED_NEGOTIATION_I			: T_BOOLVEC(0 TO PORTS - 1)									:= ALLOW_SPEED_NEGOTIATION;
 	CONSTANT ALLOW_STANDARD_VIOLATION_I			: T_BOOLVEC(0 TO PORTS - 1)									:= ALLOW_STANDARD_VIOLATION;
 	CONSTANT ALLOW_AUTO_RECONNECT_I					: T_BOOLVEC(0 TO PORTS - 1)									:= ALLOW_AUTO_RECONNECT;
-	CONSTANT OOB_TIMEOUT_US_I								: T_INTVEC(0 TO PORTS - 1)									:= OOB_TIMEOUT_US;
+	CONSTANT OOB_TIMEOUT_I									: T_TIMEVEC(0 TO PORTS - 1)									:= OOB_TIMEOUT;
+--	CONSTANT OOB_TIMEOUT_US_I								: T_INTVEC(0 TO PORTS - 1)									:= OOB_TIMEOUT_US;
 	CONSTANT GENERATION_CHANGE_COUNT_I			: T_INTVEC(0 TO PORTS - 1)									:= GENERATION_CHANGE_COUNT;
 	CONSTANT ATTEMPTS_PER_GENERATION_I			: T_INTVEC(0 TO PORTS - 1)									:= ATTEMPTS_PER_GENERATION;
 	CONSTANT AHEAD_CYCLES_FOR_INSERT_EOF_I	: T_INTVEC(0 TO PORTS - 1)									:= AHEAD_CYCLES_FOR_INSERT_EOF;
@@ -145,8 +149,7 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	
 	SIGNAL Trans_Command								: T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_Status									: T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Trans_RX_Error								: T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Trans_TX_Error								: T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Trans_Error									: T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 
 	SIGNAL Phy_OOB_TX_Command						: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_OOB_TX_Complete				: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);	
@@ -157,7 +160,7 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	SIGNAL Phy_TX_CharIsK								: T_SLVV_4(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_RX_Data								: T_SLVV_32(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_RX_CharIsK							: T_SLVV_4(PORTS - 1 DOWNTO 0);
-	SIGNAL Trans_RX_IsAligned						: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL Trans_RX_Valid								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 	SIGNAL Trans_DebugPortIn						: T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_DebugPortOut						: T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS - 1 DOWNTO 0);
@@ -243,8 +246,7 @@ BEGIN
 		
 		Error(I).LinkLayer						<= Link_Error;
 		Error(I).PhysicalLayer				<= Phy_Error;
-		Error(I).TransceiverLayer_TX	<= Trans_TX_Error(I);
-		Error(I).TransceiverLayer_RX	<= Trans_RX_Error(I);
+		Error(I).TransceiverLayer			<= Trans_Error(I);
 
 		-- TX port
 		SATAC_TX_SOF									<= TX_SOF(I);
@@ -379,13 +381,13 @@ BEGIN
 			GENERIC MAP (
 				DEBUG													=> DEBUG,
 				ENABLE_DEBUGPORT							=> ENABLE_DEBUGPORT,
-				CLOCK_FREQ_MHZ								=> CLOCK_IN_FREQ_MHZ,
+				CLOCK_FREQ										=> CLOCK_IN_FREQ,
 				CONTROLLER_TYPE								=> CONTROLLER_TYPES_I(I),
 				ALLOW_SPEED_NEGOTIATION				=> ALLOW_SPEED_NEGOTIATION_I(I),
 				INITIAL_SATA_GENERATION				=> INITIAL_SATA_GENERATIONS_I(I),
 				ALLOW_AUTO_RECONNECT					=> ALLOW_AUTO_RECONNECT_I(I),
 				ALLOW_STANDARD_VIOLATION			=> ALLOW_STANDARD_VIOLATION_I(I),
-				OOB_TIMEOUT_US								=> OOB_TIMEOUT_US_I(I),		--ite(SIMULATION, 15, OOB_TIMEOUT_US(I)),			-- simulation: limit OOBTimeout to 15 us 
+				OOB_TIMEOUT										=> OOB_TIMEOUT_I(I),		--ite(SIMULATION, 15, OOB_TIMEOUT_US(I)),			-- simulation: limit OOBTimeout to 15 us 
 				GENERATION_CHANGE_COUNT				=> GENERATION_CHANGE_COUNT_I(I),
 				ATTEMPTS_PER_GENERATION				=> ATTEMPTS_PER_GENERATION_I(I)
 			)
@@ -414,8 +416,7 @@ BEGIN
 				
 				Trans_Command									=> Trans_Command(I),
 				Trans_Status									=> Trans_Status(I),
-				Trans_RX_Error								=> Trans_RX_Error(I),
-				Trans_TX_Error								=> Trans_TX_Error(I),
+				Trans_Error										=> Trans_Error(I),
 				
 				-- reconfiguration interface
 				Trans_RP_Reconfig							=> Phy_RP_Reconfig(I),
@@ -435,7 +436,7 @@ BEGIN
 				
 				Trans_RX_Data									=> Trans_RX_Data(I),
 				Trans_RX_CharIsK							=> Trans_RX_CharIsK(I),
-				Trans_RX_IsAligned						=> Trans_RX_IsAligned(I)
+				Trans_RX_Valid								=> Trans_RX_Valid(I)
 			);
 		
 		-- =========================================================================
@@ -455,13 +456,16 @@ BEGIN
 			DebugPortOut(I).Physical_Error				<= Phy_Error;								-- 
 
 			-- Transceiver Layer
-			Trans_DebugPortIn(I)									<= DebugPortIn(I).Transceiver;
+			process(DebugPortIn(I).Transceiver, Phy_DebugPortOut.OOBControl.AlignDetected)
+			begin
+				Trans_DebugPortIn(I)								<= DebugPortIn(I).Transceiver;
+				Trans_DebugPortIn(I).AlignDetected	<= Phy_DebugPortOut.OOBControl.AlignDetected;
+			end process;
 			
 			DebugPortOut(I).Transceiver						<= Trans_DebugPortOut(I);		-- 
 			DebugPortOut(I).Transceiver_Command		<= Trans_Command(I);				-- 
 			DebugPortOut(I).Transceiver_Status		<= Trans_Status(I);					-- 
-			DebugPortOut(I).Transceiver_TX_Error	<= Trans_TX_Error(I);				-- 
-			DebugPortOut(I).Transceiver_RX_Error	<= Trans_RX_Error(I);				-- 
+			DebugPortOut(I).Transceiver_Error			<= Trans_Error(I);					-- 
 		end generate;
 	END GENERATE;
   
@@ -472,7 +476,8 @@ BEGIN
 		GENERIC MAP (
 			DEBUG											=> DEBUG,
 			ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
-			CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
+			CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
+--			CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
 			PORTS											=> PORTS,
 			INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS_I
 		)
@@ -487,8 +492,8 @@ BEGIN
 			-- CSE interface
 			Command										=> Trans_Command,
 			Status										=> Trans_Status,
-			TX_Error									=> Trans_TX_Error,
-			RX_Error									=> Trans_RX_Error,
+			Error											=> Trans_Error,
+
 			-- debug ports
 			DebugPortIn								=> Trans_DebugPortIn,
 			DebugPortOut							=> Trans_DebugPortOut,
@@ -512,7 +517,7 @@ BEGIN
 
 			RX_Data										=> Trans_RX_Data,
 			RX_CharIsK								=> Trans_RX_CharIsK,
-			RX_IsAligned							=> Trans_RX_IsAligned,
+			RX_Valid									=> Trans_RX_Valid,
 			
 			-- vendor specific signals
 			VSS_Common_In							=> VSS_Common_In,
