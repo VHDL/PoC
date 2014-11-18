@@ -34,9 +34,12 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+USE			PoC.my_project.ALL;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.strings.ALL;
+USE			PoC.debug.ALL;
 USE			PoC.components.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.satadbg.ALL;
@@ -188,19 +191,20 @@ ARCHITECTURE rtl OF sata_Physical_SpeedControl IS
 	CONSTANT ROM_StartGeneration							: T_SGEN2_SGEN	:= StartGen;
 	CONSTANT ROM_NextGeneration 							: T_SGEN3_SGEN	:= NextGen;
 
-	CONSTANT GENERATION_CHANGE_COUNTER_BITS		: POSITIVE			:= log2ceilnz(GENERATION_CHANGE_COUNT);
+	CONSTANT GENERATION_CHANGE_COUNTER_BITS		: POSITIVE			:= log2ceilnz(GENERATION_CHANGE_COUNT + 1);
 	CONSTANT TRY_PER_GENERATION_COUNTER_BITS	: POSITIVE			:= log2ceilnz(ATTEMPTS_PER_GENERATION);
 
 	TYPE T_STATE IS (
-		ST_RESET,
-		ST_RECONFIG,		ST_RECONFIG_WAIT,
-		ST_NEGOTIATION,	ST_RETRY,
+		ST_WAIT,
+		ST_RETRY,
+		ST_RECONFIG,
+		ST_RECONFIG_WAIT,
 		ST_TIMEOUT,
-		ST_NEGOTIATION_ERROR
+		ST_ERROR
 	);
 	
 	-- Speed Negotiation - Statemachine
-	SIGNAL State												: T_STATE												:= ST_RESET;
+	SIGNAL State												: T_STATE												:= ST_WAIT;
 	SIGNAL NextState										: T_STATE;
 	ATTRIBUTE FSM_ENCODING	OF State		: SIGNAL IS getFSMEncoding_gray(DEBUG);
 
@@ -243,22 +247,19 @@ BEGIN
 	PROCESS(SATAGeneration_rst, SATAGeneration_cur, SATAGeneration_Change, SATAGenerationMin, SATAGenerationMax)
 		VARIABLE SATAGeneration_nxt_v : T_SATA_GENERATION;
 	BEGIN
-		SATAGeneration_nxt				<= SATAGeneration_cur;
-		SATAGeneration_Changed		<= '0';
+		if (SATAGeneration_rst = '1') then
+			SATAGeneration_nxt_v	:= ROM_StartGeneration(SATAGenerationMin)(SATAGenerationMax);
+		elsif (SATAGeneration_Change = '1') then
+			SATAGeneration_nxt_v	:= ROM_NextGeneration(SATAGeneration_cur)(SATAGenerationMin)(SATAGenerationMax);
+		else
+			SATAGeneration_nxt_v	:= SATAGeneration_cur;
+		end if;
 		
-		IF (SATAGeneration_Change = '1') THEN
-			IF (SATAGeneration_rst = '1') THEN
-				SATAGeneration_nxt_v	:= ROM_StartGeneration(SATAGenerationMin)(SATAGenerationMax);
-			ELSE
-				SATAGeneration_nxt_v	:= ROM_NextGeneration(SATAGeneration_cur)(SATAGenerationMin)(SATAGenerationMax);
-			END IF;
+		-- test if generation is going to be changed
+		SATAGeneration_Changed	<= to_sl(SATAGeneration_cur /= SATAGeneration_nxt_v);
 			
-			-- test if generation is going to be changed
-			SATAGeneration_Changed	<= to_sl(SATAGeneration_cur /= SATAGeneration_nxt_v);
-			
-			-- assign new generation to *_nxt signal
-			SATAGeneration_nxt			<= SATAGeneration_nxt_v;
-		END IF;
+		-- assign new generation to *_nxt signal
+		SATAGeneration_nxt			<= SATAGeneration_nxt_v;
 	END PROCESS;
 
 	-- export current SATA generation to other layers
@@ -272,7 +273,7 @@ BEGIN
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
-				State	<= ST_RESET;
+				State	<= ST_WAIT;
 			ELSIF (ClockEnable = '1') THEN
 				State	<= NextState;
 			END IF;
@@ -288,7 +289,7 @@ BEGIN
 	BEGIN
 		NextState														<= State;
 		
-		Status_i														<= SATA_PHY_SPEED_STATUS_RESET;
+		Status_i														<= SATA_PHY_SPEED_STATUS_WAITING;
 		
 		SATAGeneration_rst									<= '0';
 		SATAGeneration_Change								<= '0';
@@ -302,47 +303,41 @@ BEGIN
 		GenerationChange_Counter_en					<= '0';
 	
 		CASE State IS
-			WHEN ST_RESET =>
-				Status_i												<= SATA_PHY_SPEED_STATUS_RESET;
+			WHEN ST_WAIT =>
+				Status_i												<= SATA_PHY_SPEED_STATUS_WAITING;
 				
 				IF (Command = SATA_PHY_SPEED_CMD_RESET) THEN
 					SATAGeneration_rst						<= '1';
 					TryPerGeneration_Counter_rst	<= '1';
 					GenerationChange_Counter_rst	<= '1';
-					NextState											<= ST_RETRY;
-					
+					IF (SATAGeneration_Changed = '1') THEN
+						NextState									<= ST_RECONFIG;
+					ELSE
+						NextState									<= ST_RETRY;
+					END IF;
 				ELSIF (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
 --					SATAGeneration_rst						<= '1';
 					TryPerGeneration_Counter_rst	<= '1';
 --					GenerationChange_Counter_rst	<= '1';
 					NextState											<= ST_RETRY;
-				END IF;
-			
-			WHEN ST_RETRY =>
-				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATING;
-				OOBC_Retry_i										<= '1';
-				NextState												<= ST_NEGOTIATION;
-			
-			WHEN ST_NEGOTIATION =>
-				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATING;
-				
-				IF (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
-					-- TODO:
-				END IF;
-				
-				IF (OOBC_Timeout = '1') THEN
+				ELSIF (OOBC_Timeout = '1') THEN
 					NextState											<= ST_TIMEOUT;
 				END IF;
 			
+			WHEN ST_RETRY =>
+				Status_i												<= SATA_PHY_SPEED_STATUS_WAITING;
+				OOBC_Retry_i										<= '1';
+				NextState												<= ST_WAIT;
+			
 			WHEN ST_TIMEOUT =>
-				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATING;
+				Status_i												<= SATA_PHY_SPEED_STATUS_WAITING;
 				
 				IF (TryPerGeneration_Counter_ov = '1') THEN
 					IF (GenerationChange_Counter_ov = '1') THEN
-						NextState										<= ST_NEGOTIATION_ERROR;
+						NextState										<= ST_ERROR;
 					ELSE																					-- generation change counter allows => generation change
 						SATAGeneration_Change				<= '1';
-						TryPerGeneration_Counter_rst<= '1';
+						TryPerGeneration_Counter_rst	<= '1';
 						GenerationChange_Counter_en	<= '1';
 						
 						IF (SATAGeneration_Changed = '1') THEN
@@ -370,7 +365,7 @@ BEGIN
 					NextState											<= ST_RETRY;
 				END IF;
 
-			WHEN ST_NEGOTIATION_ERROR =>
+			WHEN ST_ERROR =>
 				Trans_RP_Lock_i									<= '0';
 				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR;
 				
@@ -378,8 +373,11 @@ BEGIN
 					SATAGeneration_rst						<= '1';
 					TryPerGeneration_Counter_rst	<= '1';
 					GenerationChange_Counter_rst	<= '1';
-					NextState											<= ST_RETRY;
-					
+					IF (SATAGeneration_Changed = '1') THEN
+						NextState									<= ST_RECONFIG;
+					ELSE
+						NextState									<= ST_RETRY;
+					END IF;
 				ELSIF (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
 --					SATAGeneration_rst						<= '1';
 					TryPerGeneration_Counter_rst	<= '1';
@@ -390,32 +388,47 @@ BEGIN
 		END CASE;
 	END PROCESS;
 
-	Status						<= Status_i;
-	OOBC_Retry				<= OOBC_Retry_i;
+	Status			<= Status_i;
+	OOBC_Retry		<= OOBC_Retry_i;
 	Trans_RP_Reconfig	<= Trans_RP_Reconfig_i;
-	Trans_RP_Lock			<= Trans_RP_Lock_i;
+	Trans_RP_Lock		<= Trans_RP_Lock_i;
 
 	-- ================================================================
 	-- try counters
 	-- ================================================================
-	TryPerGeneration_Counter_us	<= counter_inc(TryPerGeneration_Counter_us, TryPerGeneration_Counter_rst,	TryPerGeneration_Counter_en) WHEN rising_edge(Clock);		-- count attempts per generation
-	GenerationChange_Counter_us	<= counter_inc(GenerationChange_Counter_us, GenerationChange_Counter_rst,	GenerationChange_Counter_en) WHEN rising_edge(Clock);		-- count generation changes
+	TryPerGeneration_Counter_us	<= counter_inc(TryPerGeneration_Counter_us, TryPerGeneration_Counter_rst, TryPerGeneration_Counter_en) WHEN rising_edge(Clock);		-- count attempts per generation
+	GenerationChange_Counter_us	<= counter_inc(GenerationChange_Counter_us, GenerationChange_Counter_rst, GenerationChange_Counter_en) WHEN rising_edge(Clock);		-- count generation changes
 	
-	TryPerGeneration_Counter_ov	<= counter_eq(TryPerGeneration_Counter_us, ATTEMPTS_PER_GENERATION);
+	TryPerGeneration_Counter_ov	<= counter_eq(TryPerGeneration_Counter_us, ATTEMPTS_PER_GENERATION - 1);
 	GenerationChange_Counter_ov	<= counter_eq(GenerationChange_Counter_us, GENERATION_CHANGE_COUNT);
 	
 		
 	-- debug port
 	-- ===========================================================================
-	genDebug : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
+	genSim : if (SIMULATION = TRUE) generate
+		signal sim_SATAGeneration	: UNSIGNED(2 downto 0);
+	begin
+		sim_SATAGeneration	<= to_unsigned(SATAGeneration_cur, 3) + 1;
+	end generate;
 	
-		FUNCTION dbg_EncodeState(State : T_STATE) RETURN STD_LOGIC_VECTOR IS
-			CONSTANT ResultSize		: POSITIVE																	:= log2ceilnz(T_STATE'pos(T_STATE'high));
-			CONSTANT Result				: STD_LOGIC_VECTOR(ResultSize - 1 DOWNTO 0)	:= to_slv(T_STATE'pos(State), ResultSize);
-		BEGIN
-			RETURN ite(DEBUG, bin2gray(Result), Result);
-		END FUNCTION;
+	genDebug : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
+		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+		begin
+			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
+		end function;
 		
+		function dbg_GenerateEncodings return string is
+			variable  l : STD.TextIO.line;
+		begin
+			for i in T_STATE loop
+				STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_", ""));
+				STD.TextIO.write(l, ';');
+			end loop;
+			return  l.all;
+		end function;
+		
+		CONSTANT test : boolean := dbg_ExportEncoding("SpeedControl", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_SpeedControl.tok");
+
 	BEGIN
 		DebugPortOut.FSM										<= dbg_EncodeState(State);
 		DebugPortOut.Status									<= Status_i;

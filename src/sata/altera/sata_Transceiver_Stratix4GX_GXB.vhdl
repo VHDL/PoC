@@ -42,56 +42,57 @@ USE		PoC.vectors.ALL;
 USE		PoC.strings.ALL;
 USE		PoC.physical.ALL;
 USE		PoC.sata_TransceiverTypes.ALL;
+USE		PoC.satadbg.ALL;
 
 
 entity sata_Transceiver_Stratix4GX_GXB is
 	generic (
-		CLOCK_IN_FREQ							: FREQ			:= 150.0 MHz;
-		PORTS											: POSITIVE	:= 2;			-- Number of Ports per Transceiver
+		CLOCK_IN_FREQ			: FREQ		:= 150.0 MHz;
+		PORTS				: POSITIVE	:= 2;			-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR := (0 => C_SATA_GENERATION_MAX, 1 => C_SATA_GENERATION_MAX)	-- intial SATA Generation
 	);
 	port (
-		ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		ClockNetwork_Reset	: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		ClockNetwork_ResetDone	: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		Reset			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
-		PowerDown	: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Command		: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
-		Status		: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-		RX_Error	: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_Error	: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);	
+		PowerDown		: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Command			: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
+		Status			: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_Error		: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+		TX_Error		: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);	
 	
 		-- debug ports
---		DebugPortIn					: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
---		DebugPortOut				: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
+--		DebugPortIn		: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
+--		DebugPortOut		: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
 	
-		SATA_Clock					: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SATA_Clock		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
-		RP_Reconfig					: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_SATAGeneration		: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_Reconfig		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_SATAGeneration	: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
 		RP_ReconfigComplete	: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_ConfigReloaded		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_Lock							: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_Locked						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_ConfigReloaded	: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_Lock			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_Locked		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
-		OOB_TX_Command				: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-		OOB_TX_Complete				: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		OOB_RX_Received				: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_TX_Command		: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_TX_Complete		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_RX_Received		: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 		OOB_HandshakeComplete	: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
-		TX_Data				: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
+		TX_Data			: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 		TX_CharIsK		: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
 		
-		RX_Data				: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
+		RX_Data			: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 		RX_CharIsK		: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-		RX_IsAligned	: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_IsAligned		: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 		-- Altera specific GXB ports
 		-- needs to be split in IN and OUT
 		VSS_Common_In		: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
-		VSS_Private_In	: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS - 1 DOWNTO 0);
-		VSS_Private_Out	: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS - 1 DOWNTO 0)
+		VSS_Private_In		: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS - 1 DOWNTO 0);
+		VSS_Private_Out		: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS - 1 DOWNTO 0)
 	);
 end;
 
@@ -99,7 +100,7 @@ end;
 ARCHITECTURE rtl OF sata_Transceiver_Stratix4GX_GXB IS
 
 	CONSTANT NO_DEVICE_TIMEOUT					: TIME					:= 50.0 ms;		-- simulation: 20 us, synthesis: 50 ms
-	CONSTANT NEW_DEVICE_TIMEOUT					: TIME					:= 1 us;			-- FIXME: not used -> remove ???
+	CONSTANT NEW_DEVICE_TIMEOUT					: TIME					:= 1000.0 ms;		-- 
 
 	CONSTANT C_DEVICE_INFO							: T_DEVICE_INFO	:= DEVICE_INFO;
 
@@ -148,6 +149,7 @@ BEGIN
 		signal rx_errin		: std_logic_vector(3 downto 0);
 		signal rx_oob_status	: T_SATA_OOB;
 		signal rx_signaldetect	: std_logic;
+		signal rx_comreset	: std_logic;
 
 		signal sata_rx_ctrl	: std_logic_vector(3 downto 0);
 		signal sata_rx_data	: std_logic_vector(31 downto 0);
@@ -175,7 +177,7 @@ BEGIN
 		RP_ReconfigComplete(i) <= config_state(14);
 		RP_ConfigReloaded(i) <= config_state(15);
 		
-		--	TODO ? : Status Statemachine -> see SATATransceiver_Virtex5_GTP.vhd
+		-- TODO ? : Status Statemachine -> see SATATransceiver_Virtex5_GTP.vhd
 		Status(i) <=	SATA_TRANSCEIVER_STATUS_RESETING when Command(i) = SATA_TRANSCEIVER_CMD_RESET else
 				SATA_TRANSCEIVER_STATUS_RECONFIGURING when gxb_busy = '1' or pll_busy = '1' else
 				SATA_TRANSCEIVER_STATUS_NEW_DEVICE when ll_newdevice = '1' else
@@ -200,20 +202,8 @@ BEGIN
 		rx_errin(2) <= not pll_locked or not gxb_locked or pll_busy or gxb_busy or rx_errdetect(2);
 		rx_errin(3) <= not pll_locked or not gxb_locked or pll_busy or gxb_busy or rx_errdetect(3);
 
-		-- 7seg
---		DebugPortOut(i).seg7 <= sata_rx_data(15 downto 0);
-
-		-- leds
---		DebugPortOut(i).leds(0) <= rx_signaldetect;
---		DebugPortOut(i).leds(1) <= sata_syncstatus;
---		DebugPortOut(i).leds(2) <= sata_rx_ctrl(0);
---		DebugPortOut(i).leds(3) <= sata_rx_ctrl(1);
---		DebugPortOut(i).leds(4) <= sata_rx_ctrl(2);
---		DebugPortOut(i).leds(5) <= sata_rx_ctrl(3);
---		DebugPortOut(i).leds(6) <= sata_gen(0);
---		DebugPortOut(i).leds(7) <= sata_gen(1);
-
 		rx_electricalidle <= not rx_signaldetect;
+		rx_comreset <= '1' when rx_oob_status = SATA_OOB_COMRESET else '0';
 
 		-- speed reconfiguration (link layer interface)
 		process(ll_clk) begin
@@ -316,13 +306,14 @@ BEGIN
 
 		dev_detect : entity PoC.sata_DeviceDetector
 		generic map (
-			CLOCK_FREQ					=> CLOCK_IN_FREQ,			-- 150 MHz
-			NO_DEVICE_TIMEOUT		=> NO_DEVICE_TIMEOUT,	-- 1,0 ms
-			NEW_DEVICE_TIMEOUT	=> NEW_DEVICE_TIMEOUT	-- 1,0 ms
+			CLOCK_FREQ		=> CLOCK_IN_FREQ,
+			NO_DEVICE_TIMEOUT	=> NO_DEVICE_TIMEOUT,
+			NEW_DEVICE_TIMEOUT	=> NEW_DEVICE_TIMEOUT
 		)
 		port map (
 			Clock => tx_clkout,
 			ElectricalIDLE => rx_electricalidle,
+			RxComReset => rx_comreset,
 			NoDevice => nodevice,
 			NewDevice => newdevice
 		);

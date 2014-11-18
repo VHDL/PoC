@@ -5,17 +5,20 @@
 -- =============================================================================
 -- Package:					Project specific configuration.
 -- 
--- Authors:         Patrick Lehmann
+-- Authors:         Thomas B. Preusser
+--                  Martin Zabel
+--                  Patrick Lehmann
 --
 -- Description:
 -- ------------------------------------
 --		This is a template file. 
 --		
---		TODO
+--		The global packages common/config and common/board evaluate the settings
+--		declared in this file.
 --
 --		USAGE:
 --			1) Copy this file into your project's source directory and rename it to
---				 "my_project.vhdl".
+--				 "my_config.vhdl".
 --			2) Add file to library "poc" in your synthesis tool.
 --			3) Change setup appropriately.
 --
@@ -39,14 +42,13 @@
 
 library PoC;
 
-
-package my_project is
+package my_config is
   -- Change these lines to setup configuration.
-  constant MY_PROJECT_DIR				: string	:= "CHANGE THIS";		-- e.g. "d:/vhdl/myproject/", "/home/me/projects/myproject/"
-	constant MY_OPERATING_SYSTEM	: string	:= "CHANGE THIS";		-- e.g. "WINDOWS", "LINUX"
-end my_project;
+  constant MY_BOARD		: string	:= "S2GXAV";		-- Stratix II GX Audio Video Development Kit
+  constant MY_DEVICE	: string	:= "None";			-- infer from MY_BOARD
+ 	constant MY_VERBOSE	: boolean	:= true;
+end my_config;
 
+package body my_config is
 
-package body my_project is
-
-end my_project;
+end my_config;

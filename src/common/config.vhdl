@@ -177,14 +177,14 @@ package body config is
 		-- abort if no digit can be found
 		if (low = -1) then		return 0; end if;
 		
-		for i in low to str'high loop
+		for i in (low + 1) to str'high loop
 			if chr_isAlpha(str(i)) then
 				high := i - 1;
 				exit;
 			end if;
 		end loop;
 		
-		high	:= ite((high /= -1), high, str'high);		-- if number reaches until the string end, set high to string end
+		if (high = -1) then		return 0; end if;
 		return to_natural_dec(str(low to high));			-- convert substring to a number
 	end function;
 

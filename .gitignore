@@ -2,7 +2,8 @@ temp/
 netlist/
 py/__pycache__/
 py/config.private.ini
+tb/common/my_project.vhdl
+vSim/
 *.pyc
 *~
 *.o
-vSim/
