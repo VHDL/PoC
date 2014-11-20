@@ -38,6 +38,7 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
 use			PoC.sata.all;
+use			PoC.xil.all;
 
 
 package satadbg is
@@ -67,9 +68,12 @@ package satadbg is
 		RX_Reset									: STD_LOGIC;
 		TX_ResetDone							: STD_LOGIC;
 		RX_ResetDone							: STD_LOGIC;
+		RX_CDR_Locked							: STD_LOGIC;
+		RX_CDR_Hold								: STD_LOGIC;
 		
 		TX_Data										: T_SLV_32;
 		TX_CharIsK								: T_SLV_4;
+		TX_BufferStatus						: STD_LOGIC_VECTOR(1 DOWNTO 0);
 		TX_ComInit								: STD_LOGIC;
 		TX_ComWake								: STD_LOGIC;
 		TX_ComFinish							: STD_LOGIC;
@@ -80,17 +84,30 @@ package satadbg is
 		RX_CharIsComma						: T_SLV_4;
 		RX_CommaDetected					: STD_LOGIC;
 		RX_ByteIsAligned					: STD_LOGIC;
+		RX_DisparityError					: T_SLV_4;
+		RX_NotInTableError				: T_SLV_4;
 		RX_ElectricalIDLE					: STD_LOGIC;
 		RX_ComInitDetected				: STD_LOGIC;
 		RX_ComWakeDetected				: STD_LOGIC;
 		RX_Valid									: STD_LOGIC;
-		RX_Status									: STD_LOGIC_VECTOR(2 DOWNTO 0);
+		RX_BufferStatus						: STD_LOGIC_VECTOR(2 DOWNTO 0);
 		RX_ClockCorrectionStatus	: STD_LOGIC_VECTOR(1 DOWNTO 0);
+		
+		DRP												: T_XIL_DRP_BUS_OUT;
+		DigitalMonitor						: T_SLV_8;
+		RX_Monitor_Data						: T_SLV_8;
 	END RECORD;
 	
 	TYPE T_SATADBG_TRANSCEIVER_IN IS RECORD
 		ForceOOBCommand						: T_SATA_OOB;
 		ForceTXElectricalIdle			: STD_LOGIC;
+		ForceEnableHold						: STD_LOGIC;
+		ForceInvertHold						: STD_LOGIC;
+		
+		AlignDetected							: STD_LOGIC;
+		
+		DRP												: T_XIL_DRP_BUS_IN;
+		RX_Monitor_sel						: T_SLV_2;
 	END RECORD;
 	
 	-- ===========================================================================
@@ -107,6 +124,8 @@ package satadbg is
 		OOB_TX_Complete						: STD_LOGIC;
 		OOB_RX_Received						: T_SATA_OOB;
 		OOB_HandshakeComplete			: STD_LOGIC;
+		
+		AlignDetected							: STD_LOGIC;
 	END RECORD;
 	
 	TYPE T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT IS RECORD
@@ -138,7 +157,7 @@ package satadbg is
 		TX_CharIsK								: T_SLV_4;		
 		RX_Data										: T_SLV_32;
 		RX_CharIsK								: T_SLV_4;
-		RX_IsAligned							: STD_LOGIC;
+		RX_Valid									: STD_LOGIC;
 		
 		OOBControl								: T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
 		SpeedControl							: T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT;
@@ -220,8 +239,7 @@ package satadbg is
 		Transceiver						: T_SATADBG_TRANSCEIVER_OUT;
 		Transceiver_Command		: T_SATA_TRANSCEIVER_COMMAND;
 		Transceiver_Status		: T_SATA_TRANSCEIVER_STATUS;
-		Transceiver_TX_Error	: T_SATA_TRANSCEIVER_TX_ERROR;
-		Transceiver_RX_Error	: T_SATA_TRANSCEIVER_RX_ERROR;
+		Transceiver_Error			: T_SATA_TRANSCEIVER_ERROR;
 		-- Physical Layer
 		Physical							: T_SATADBG_PHYSICAL_OUT;
 		Physical_Command			: T_SATA_PHY_COMMAND;

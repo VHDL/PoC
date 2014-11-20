@@ -63,8 +63,8 @@ ENTITY sata_TransceiverLayer IS
 		PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 		Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-		RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+		Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+
 		-- debug ports
 		DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
 		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -88,7 +88,7 @@ ENTITY sata_TransceiverLayer IS
 
 		RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 		RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-		RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
 		-- vendor specific signals
 		VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -104,14 +104,9 @@ ARCHITECTURE rtl OF sata_TransceiverLayer IS
 	CONSTANT C_DEVICE_INFO				: T_DEVICE_INFO		:= DEVICE_INFO;
 	
 BEGIN
-
 	genReport : FOR I IN 0 TO PORTS - 1 GENERATE
-		ASSERT FALSE REPORT "Port:    " & ite((I = 0), "0", ite((I = 1), "1", ite((I = 2), "2", ite((I = 3), "3", ite((I = 4), "4", "X"))))) SEVERITY NOTE;
---		ASSERT FALSE REPORT "  ControllerType:         " & ite((CONTROLLER_TYPES(I)					= SATA_DEVICE_TYPE_HOST), "HOST", "DEVICE") SEVERITY NOTE;
---		ASSERT FALSE REPORT "  AllowSpeedNegotiation:  " & ite((ALLOW_SPEED_NEGOTIATION(I)	= TRUE),									"YES",	"NO")			SEVERITY NOTE;
---		ASSERT FALSE REPORT "  AllowAutoReconnect:     " & ite((ALLOW_AUTO_RECONNECT(I)			= TRUE),									"YES",	"NO")			SEVERITY NOTE;
---		ASSERT FALSE REPORT "  AllowStandardViolation: " & ite((ALLOW_STANDARD_VIOLATION(I)	= TRUE),									"YES",	"NO")			SEVERITY NOTE;
-		ASSERT FALSE REPORT "  Init. SATA Generation:  " & ite((INITIAL_SATA_GENERATIONS(I)	= SATA_GENERATION_1),			"Gen1", "Gen2")		SEVERITY NOTE;
+		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																										SEVERITY NOTE;
+		ASSERT FALSE REPORT "  Init. SATA Generation: Gen " & INTEGER'image(INITIAL_SATA_GENERATIONS(I) + 1)	SEVERITY NOTE;
 	END GENERATE;
 
 -- ==================================================================
@@ -166,8 +161,8 @@ BEGIN
 					PowerDown									=> PowerDown,
 					Command										=> Command,
 					Status										=> Status,
-					RX_Error									=> RX_Error,
-					TX_Error									=> TX_Error,
+					Error											=> Error,
+
 					-- debug ports
 					DebugPortIn								=> DebugPortIn,
 					DebugPortOut							=> DebugPortOut,
@@ -191,7 +186,7 @@ BEGIN
 					
 					RX_Data										=> RX_Data,
 					RX_CharIsK								=> RX_CharIsK,
-					RX_IsAligned							=> RX_IsAligned,
+					RX_Valid									=> RX_Valid,
 					
 					-- vendor specific signals
 					VSS_Common_In							=> VSS_Common_In,
@@ -216,8 +211,8 @@ BEGIN
 					PowerDown									=> PowerDown,
 					Command										=> Command,
 					Status										=> Status,
-					RX_Error									=> RX_Error,
-					TX_Error									=> TX_Error,
+					Error											=> Error,
+
 					-- debug ports
 					DebugPortIn								=> DebugPortIn,
 					DebugPortOut							=> DebugPortOut,
@@ -241,7 +236,7 @@ BEGIN
 					
 					RX_Data										=> RX_Data,
 					RX_CharIsK								=> RX_CharIsK,
-					RX_IsAligned							=> RX_IsAligned,
+					RX_Valid									=> RX_Valid,
 					
 					-- vendor specific signals
 					VSS_Common_In							=> VSS_Common_In,
@@ -267,8 +262,8 @@ BEGIN
 					PowerDown									=> PowerDown,
 					Command										=> Command,
 					Status										=> Status,
-					RX_Error									=> RX_Error,
-					TX_Error									=> TX_Error,
+					Error											=> Error,
+
 					-- debug ports
 					DebugPortIn								=> DebugPortIn,
 					DebugPortOut							=> DebugPortOut,
@@ -292,7 +287,7 @@ BEGIN
 					
 					RX_Data										=> RX_Data,
 					RX_CharIsK								=> RX_CharIsK,
-					RX_IsAligned							=> RX_IsAligned,
+					RX_Valid									=> RX_Valid,
 					
 					-- vendor specific signals
 					VSS_Common_In							=> VSS_Common_In,
@@ -318,8 +313,8 @@ BEGIN
 					PowerDown									=> PowerDown,
 					Command										=> Command,
 					Status										=> Status,
-					RX_Error									=> RX_Error,
-					TX_Error									=> TX_Error,
+					Error											=> Error,
+
 					-- debug ports
 --					DebugPortIn								=> DebugPortIn,
 --					DebugPortOut							=> DebugPortOut,
@@ -343,7 +338,7 @@ BEGIN
 					
 					RX_Data										=> RX_Data,
 					RX_CharIsK								=> RX_CharIsK,
-					RX_IsAligned							=> RX_IsAligned,
+					RX_Valid									=> RX_Valid,
 					
 					-- vendor specific signals
 					VSS_Common_In							=> VSS_Common_In,
@@ -367,8 +362,8 @@ BEGIN
 					PowerDown									=> PowerDown,
 					Command										=> Command,
 					Status										=> Status,
-					RX_Error									=> RX_Error,
-					TX_Error									=> TX_Error,
+					Error											=> Error,
+
 					-- debug ports
 --					DebugPortIn								=> DebugPortIn,
 --					DebugPortOut							=> DebugPortOut,
@@ -392,7 +387,7 @@ BEGIN
 					
 					RX_Data										=> RX_Data,
 					RX_CharIsK								=> RX_CharIsK,
-					RX_IsAligned							=> RX_IsAligned,
+					RX_Valid									=> RX_Valid,
 					
 					-- vendor specific signals
 					VSS_Common_In							=> VSS_Common_In,

@@ -85,8 +85,7 @@ ENTITY sata_PhysicalLayer IS
 		
 		Trans_Command										: OUT	T_SATA_TRANSCEIVER_COMMAND;
 		Trans_Status										: IN	T_SATA_TRANSCEIVER_STATUS;
-		Trans_TX_Error									: IN	T_SATA_TRANSCEIVER_TX_ERROR;
-		Trans_RX_Error									: IN	T_SATA_TRANSCEIVER_RX_ERROR;
+		Trans_Error											: IN	T_SATA_TRANSCEIVER_ERROR;
 
 		Trans_RP_Reconfig								: OUT	STD_LOGIC;
 		Trans_RP_SATAGeneration					: OUT	T_SATA_GENERATION;
@@ -105,7 +104,7 @@ ENTITY sata_PhysicalLayer IS
 
 		Trans_RX_Data										: IN	T_SLV_32;
 		Trans_RX_CharIsK								: IN	T_SLV_4;
-		Trans_RX_IsAligned							: IN	STD_LOGIC
+		Trans_RX_Valid									: IN	STD_LOGIC
 	);
 END;
 
@@ -216,12 +215,10 @@ BEGIN
 			
 				IF (Command = SATA_PHY_CMD_RESET) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Trans_RP_Reconfig_i = '1') THEN
@@ -239,12 +236,10 @@ BEGIN
 			
 				IF (Command = SATA_PHY_CMD_RESET) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (OOBC_LinkOK = '0') THEN
@@ -262,12 +257,10 @@ BEGIN
 			
 				IF (Command = SATA_PHY_CMD_RESET) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (OOBC_LinkOK = '1') THEN
@@ -292,12 +285,10 @@ BEGIN
 				
 				IF (Command = SATA_PHY_CMD_RESET) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (OOBC_ReceivedReset = '1') THEN
@@ -335,6 +326,9 @@ BEGIN
 				LinkDead									=> OOBC_LinkDead,
 				ReceivedReset							=> OOBC_ReceivedReset,
 				
+				Trans_Status							=> Trans_Status,
+				Trans_Error								=> Trans_Error,
+				
 				OOB_TX_Command						=> Trans_OOB_TX_Command,
 				OOB_TX_Complete						=> Trans_OOB_TX_Complete,
 				OOB_RX_Received						=> Trans_OOB_RX_Received,
@@ -342,7 +336,7 @@ BEGIN
 				
 				TX_Primitive							=> OOBC_TX_Primitive,
 				RX_Primitive							=> RX_Primitive,
-				RX_IsAligned							=> Trans_RX_IsAligned
+				RX_Valid									=> Trans_RX_Valid
 			);
 	END GENERATE;
 	genDev : IF (CONTROLLER_TYPE = SATA_DEVICE_TYPE_DEVICE) GENERATE
@@ -375,7 +369,7 @@ BEGIN
 				
 				TX_Primitive							=> OOBC_TX_Primitive,
 				RX_Primitive							=> RX_Primitive,
-				RX_IsAligned							=> Trans_RX_IsAligned
+				RX_Valid									=> Trans_RX_Valid
 			);
 	END GENERATE;
 	
@@ -507,19 +501,17 @@ BEGIN
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;
 		
-		function dbg_GenerateEncodingList return T_DBG_ENCODING_VECTOR is
-			variable i					: NATURAL		:= 0;
-			variable result			: T_DBG_ENCODING_VECTOR(0 to T_STATE'pos(T_STATE'high));
+		function dbg_GenerateEncodings return string is
+			variable  l : STD.TextIO.line;
 		begin
-			for st in T_STATE loop
-				result(i).Name		:= resize(T_STATE'image(st), T_DBG_ENCODING.Name'length);
-				result(i).Binary	:= to_slv(T_STATE'pos(st),	 T_DBG_ENCODING.Binary'length);
-				i	:= i + 1;
+			for i in T_STATE loop
+				STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_", ""));
+				STD.TextIO.write(l, ';');
 			end loop;
-			return result;
+			return  l.all;
 		end function;
 
-		CONSTANT test : boolean := dbg_ExportEncoding("Physical Layer", dbg_GenerateEncodingList,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_PhysicalLayer.tok");
+		CONSTANT test : boolean := dbg_ExportEncoding("Physical Layer", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_PhysicalLayer.tok");
 	BEGIN
 		DebugPortOut.FSM						<= dbg_EncodeState(State);
 		DebugPortOut.PHY_Status			<= Status_i;
@@ -528,7 +520,7 @@ BEGIN
 		DebugPortOut.TX_CharIsK			<= Trans_TX_CharIsK_i;
 		DebugPortOut.RX_Data				<= Trans_RX_Data;
 		DebugPortOut.RX_CharIsK			<= Trans_RX_CharIsK;
-		DebugPortOut.RX_IsAligned		<= Trans_RX_IsAligned;
+		DebugPortOut.RX_Valid				<= Trans_RX_Valid;
 	
 		DebugPortOut.OOBControl			<= OOBC_DebugPortOut;
 		DebugPortOut.SpeedControl		<= SC_DebugPortOut;

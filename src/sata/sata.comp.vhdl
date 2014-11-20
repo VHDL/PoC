@@ -203,8 +203,8 @@ package satacomp is
 			PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 			Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+			Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+
 			-- debug ports
 			DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
 			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -228,7 +228,7 @@ package satacomp is
 
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -254,8 +254,8 @@ package satacomp is
 			PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 			Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+			Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+
 			-- debug ports
 			DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
 			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -279,7 +279,7 @@ package satacomp is
 
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -305,8 +305,8 @@ package satacomp is
 			PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 			Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+			Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+
 			-- debug ports
 			DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
 			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -330,7 +330,7 @@ package satacomp is
 
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -354,8 +354,8 @@ package satacomp is
 			PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 			Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+			Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+
 			-- debug ports
 --			DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
 --			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -379,7 +379,7 @@ package satacomp is
 
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -403,8 +403,8 @@ package satacomp is
 			PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 			Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+			Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+
 			-- debug ports
 --			DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
 --			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -428,7 +428,7 @@ package satacomp is
 
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;

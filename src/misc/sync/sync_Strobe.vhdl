@@ -14,7 +14,8 @@
 --		'Clock1' to clock domain 'Clock2'. The clock domain boundary crossing is
 --		done by a T-FF, two synchronizer D-FFs and a reconstructive XOR. A busy
 --		flag is additionally calculated and can be used to block new inputs. All
---		bits are independent from each other.
+--		bits are independent from each other. Multiple consecutive strobes are
+--		suppressed by a rising edge detection.
 -- 
 --		CONSTRAINTS:
 --			General:

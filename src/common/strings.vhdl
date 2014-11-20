@@ -120,8 +120,8 @@ package strings is
 	function str_length(str : STRING)									return NATURAL;
 	function str_equal(str1 : STRING; str2 : STRING)	return BOOLEAN;
 	function str_match(str1 : STRING; str2 : STRING)	return BOOLEAN;
-	function str_pos(str : STRING; chr : CHARACTER)		return INTEGER;
-	function str_pos(str : STRING; search : STRING)		return INTEGER;
+	function str_pos(str : STRING; chr : CHARACTER; start : NATURAL := 0)	return INTEGER;
+	function str_pos(str : STRING; search : STRING; start : NATURAL := 0)	return INTEGER;
 	function str_find(str : STRING; chr : CHARACTER)	return BOOLEAN;
 	function str_find(str : STRING; search : STRING)	return BOOLEAN;
 	function str_replace(str : STRING; search : STRING; replace : STRING) return STRING;
@@ -178,14 +178,9 @@ package body strings is
 
 	-- TODO: rename to to_HexDigit(..) ?
 	function to_char(value : natural) return character is
+	  constant  HEX : string := "0123456789ABCDEF";
 	begin
-		if (value < 10) then
-			return character'val(character'pos('0') + value);
-		elsif (value < 16) then
-			return character'val(character'pos('A') + value - 10);
-		else
-			return 'X';
-		end if;
+		return  ite(value < 16, HEX(value+1), 'X');
 	end function;
 
 	FUNCTION to_char(rawchar : T_RAWCHAR) RETURN CHARACTER IS
@@ -285,14 +280,13 @@ package body strings is
 	end function;
 	
 	function raw_format_slv_hex(slv : STD_LOGIC_VECTOR) return STRING is
-		variable Value				: STD_LOGIC_VECTOR(slv'length - 1 downto 0);
+		variable Value				: STD_LOGIC_VECTOR(4*div_ceil(slv'length, 4) - 1 downto 0);
 		variable Digit				: STD_LOGIC_VECTOR(3 downto 0);
 		variable Result				: STRING(1 to div_ceil(slv'length, 4));
 		variable j						: NATURAL;
 	begin
-		Value := slv;
+		Value := resize(slv, Value'length);
 		j			:= 0;
-		
 		for i in Result'reverse_range loop
 			Digit			:= Value((j * 4) + 3 DOWNTO (j * 4));
 			Result(i)	:= to_char(to_integer(unsigned(Digit)));
@@ -304,12 +298,12 @@ package body strings is
 
 	function raw_format_nat_bin(value : NATURAL) return STRING is
 	begin
-		return raw_format_slv_bin(to_slv(value, log2ceil(value)));
+		return raw_format_slv_bin(to_slv(value, log2ceilnz(value+1)));
 	end function;
 	
 	function raw_format_nat_oct(value : NATURAL) return STRING is
 	begin
-		return raw_format_slv_oct(to_slv(value, log2ceil(value)));
+		return raw_format_slv_oct(to_slv(value, log2ceilnz(value+1)));
 	end function;
 	
 	function raw_format_nat_dec(value : NATURAL) return STRING is
@@ -319,7 +313,7 @@ package body strings is
 	
 	function raw_format_nat_hex(value : NATURAL) return STRING is
 	begin
-		return raw_format_slv_hex(to_slv(value, log2ceil(value)));
+		return raw_format_slv_hex(to_slv(value, log2ceilnz(value+1)));
 	end function;
 	
 	-- str_format_* functions
@@ -638,9 +632,9 @@ package body strings is
 		END IF;
 	END FUNCTION;
 
-	function str_pos(str : STRING; chr : CHARACTER) return INTEGER is
+	function str_pos(str : STRING; chr : CHARACTER; start : NATURAL := 0) return INTEGER is
 	begin
-		for i in str'range loop
+		for i in imax(str'low, start) to str'high loop
 			exit when (str(i) = NUL);
 			if (str(i) = chr) then
 				return i;
@@ -649,9 +643,9 @@ package body strings is
 		return -1;
 	end function;
 	
-	function str_pos(str : STRING; search : STRING) return INTEGER is
+	function str_pos(str : STRING; search : STRING; start : NATURAL := 0) return INTEGER is
 	begin
-		for i in str'low to (str'high - search'length + 1) loop
+		for i in imax(str'low, start) to (str'high - search'length + 1) loop
 			exit when (str(i) = NUL);
 			if (str(i to i + search'length - 1) = search) then
 				return i;
@@ -821,11 +815,11 @@ package body strings is
 	begin
 		if (str_equal(MY_OPERATING_SYSTEM, "WINDOWS")) then
 			temp	:= path;
-			for i in temp'range loop
-				if (temp(i) = '/') then
-					temp(i) := '\';
-				end if;
-			end loop;
+--			for i in temp'range loop
+--				if (temp(i) = '/') then
+--					temp(i) := '\';
+--				end if;
+--			end loop;
 			
 			return temp;
 		elsif (str_equal(MY_OPERATING_SYSTEM, "WINDOWS")) then

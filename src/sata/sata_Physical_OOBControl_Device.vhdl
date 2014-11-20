@@ -74,7 +74,7 @@ ENTITY sata_Physical_OOBControl_Device IS
 		
 		TX_Primitive							: OUT	T_SATA_PRIMITIVE;
 		RX_Primitive							: IN	T_SATA_PRIMITIVE;
-		RX_IsAligned							: IN	STD_LOGIC
+		RX_Valid									: IN	STD_LOGIC
 	);
 END;
 
@@ -182,7 +182,7 @@ BEGIN
 	END PROCESS;
 
 
-	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_IsAligned, RX_Primitive, TC1_Timeout, TC2_Timeout)
+	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, TC1_Timeout, TC2_Timeout)
 	BEGIN
 		NextState									<= State;
 		
@@ -332,7 +332,7 @@ BEGIN
 				WHEN ST_DEV_SEND_ALIGN =>
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
 				
-					IF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) AND (RX_IsAligned = '1')) THEN												-- ALIGN detected
+					IF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) AND (RX_Valid = '1')) THEN												-- ALIGN detected
 						NextState							<= ST_DEV_LINK_OK;
 					END IF;
 				
@@ -342,7 +342,7 @@ BEGIN
 					
 					IF (OOB_RX_Received /= SATA_OOB_NONE) THEN
 						NextState							<= ST_DEV_LINK_DEAD;
-					ELSIF (RX_IsAligned = '0') THEN
+					ELSIF (RX_Valid = '0') THEN
 						NextState							<= ST_DEV_LINK_BROKEN;
 					END IF;
 				
@@ -350,7 +350,7 @@ BEGIN
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '0';
 					
-					IF (RX_IsAligned = '1') THEN
+					IF (RX_Valid = '1') THEN
 						NextState							<= ST_DEV_LINK_OK;
 					END IF;
 				
@@ -433,25 +433,18 @@ BEGIN
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;
-		
-		function dbg_GenerateEncodingList return T_DBG_ENCODING_VECTOR is
-			variable i					: NATURAL		:= 0;
-			variable result			: T_DBG_ENCODING_VECTOR(0 to T_STATE'pos(T_STATE'high));
-		begin
-			for st in T_STATE loop
-				result(i).Name		:= resize(T_STATE'image(st), T_DBG_ENCODING.Name'length);
-				result(i).Binary	:= to_slv(T_STATE'pos(st),	 T_DBG_ENCODING.Binary'length);
-				i	:= i + 1;
-			end loop;
-			return result;
-		end function;
 
-		CONSTANT DBG_ENCODING_REPLACEMENTS		: T_DBG_ENCODING_REPLACEMENTS		:= C_DBG_DEFAULT_ENCODING_REPLACEMENTS & T_DBG_ENCODING_REPLACEMENTS'(
-			0 => (Pattern => resize("host_", C_DBG_STRING_LENGTH),			Replacement => resize("", C_DBG_STRING_LENGTH)),
-			1 => (Pattern => resize("handshake", C_DBG_STRING_LENGTH),	Replacement => resize("hs", C_DBG_STRING_LENGTH))
-		);
+		function dbg_GenerateEncodings return string is
+			variable  l : STD.TextIO.line;
+		begin
+			for i in T_STATE loop
+				STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_dev_", ""));
+				STD.TextIO.write(l, ';');
+			end loop;
+			return  l.all;
+		end function;
 		
-		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodingList,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Device.tok", DBG_ENCODING_REPLACEMENTS);
+		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Device.tok");
 	BEGIN
 		DebugPortOut.FSM												<= dbg_EncodeState(State);
 		DebugPortOut.Retry											<= Retry;

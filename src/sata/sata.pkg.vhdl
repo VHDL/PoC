@@ -75,7 +75,7 @@ package sata is
 	);
 
 	-- transceiver error
-	TYPE T_SATA_TRANSCEIVER_ERROR IS (
+	TYPE T_SATA_TRANSCEIVER_COMMON_ERROR IS (
 		SATA_TRANSCEIVER_ERROR_NONE,
 		SATA_TRANSCEIVER_ERROR_FSM
 	);
@@ -96,9 +96,16 @@ package sata is
 		SATA_TRANSCEIVER_RX_ERROR_BUFFER
 	);
 
+	type T_SATA_TRANSCEIVER_ERROR is record
+		Common	: T_SATA_TRANSCEIVER_COMMON_ERROR;
+		TX			: T_SATA_TRANSCEIVER_TX_ERROR;
+		RX			: T_SATA_TRANSCEIVER_RX_ERROR;
+	end record;
+
 	TYPE T_SATA_OOB_VECTOR										IS ARRAY (NATURAL RANGE <>) OF T_SATA_OOB;
 	TYPE T_SATA_TRANSCEIVER_COMMAND_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_COMMAND;
 	TYPE T_SATA_TRANSCEIVER_STATUS_VECTOR			IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_STATUS;
+	TYPE T_SATA_TRANSCEIVER_ERROR_VECTOR			IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_ERROR;
 	TYPE T_SATA_TRANSCEIVER_TX_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_TX_ERROR;
 	TYPE T_SATA_TRANSCEIVER_RX_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_RX_ERROR;
 
@@ -253,8 +260,7 @@ package sata is
 	TYPE T_SATA_SATACONTROLLER_ERROR IS RECORD
 		LinkLayer							: T_SATA_LINK_ERROR;
 		PhysicalLayer					: T_SATA_PHY_ERROR;
-		TransceiverLayer_TX		: T_SATA_TRANSCEIVER_TX_ERROR;
-		TransceiverLayer_RX		: T_SATA_TRANSCEIVER_RX_ERROR;
+		TransceiverLayer			: T_SATA_TRANSCEIVER_ERROR;
 	END RECORD;
 
 	
@@ -520,7 +526,6 @@ package sata is
 	
 	-- to_slv
 	-- ===========================================================================
-	function to_slv(SATAGen : T_SATA_GENERATION)							return STD_LOGIC_VECTOR;
 	function to_slv(FISType : T_SATA_FISTYPE)									return STD_LOGIC_VECTOR;
 	function to_slv(Command : T_SATA_ATA_COMMAND)							return STD_LOGIC_VECTOR;
 	function to_slv(reg : T_SATA_ATA_DEVICE_FLAGS)						return STD_LOGIC_VECTOR;
@@ -581,11 +586,6 @@ PACKAGE BODY sata IS
 
 	-- to_slv(***)
 	-- -----------------------------------
-	function to_slv(SATAGen : T_SATA_GENERATION) return STD_LOGIC_VECTOR is
-	begin
-		return std_logic_vector(to_unsigned(SATAGen, 2));
-	end function;
-
 	FUNCTION to_slv(Primitive : T_SATA_PRIMITIVE) RETURN STD_LOGIC_VECTOR IS
 	BEGIN
 		RETURN to_slv(T_SATA_PRIMITIVE'pos(Primitive), log2ceilnz(T_SATA_PRIMITIVE'pos(T_SATA_PRIMITIVE'high) + 1));

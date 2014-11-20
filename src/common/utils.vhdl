@@ -229,6 +229,9 @@ package utils is
   --
   function gray2bin (gray_val : std_logic_vector) return std_logic_vector;
 	
+	-- Binary-Code to One-Hot-Code
+	function bin2onehot(value : std_logic_vector) return std_logic_vector;
+	
 	-- Binary-Code to Gray-Code
 	function bin2gray(value : std_logic_vector) return std_logic_vector;
 	
@@ -597,9 +600,11 @@ package body utils is
 	-- Convert to vector: to_slv
 	-- ==========================================================================
 	-- short for std_logic_vector(to_unsigned(Value, Size))
+	-- the return value is guaranteed to have the range (Size-1 downto 0)
 	FUNCTION to_slv(Value : NATURAL; Size : POSITIVE) RETURN STD_LOGIC_VECTOR IS
+	  constant  res : std_logic_vector(Size-1 downto 0) := std_logic_vector(to_unsigned(Value, Size));
 	BEGIN
-		RETURN std_logic_vector(to_unsigned(Value, Size));
+		return  res;
 	END FUNCTION;
 
 	FUNCTION to_index(slv : UNSIGNED; max : NATURAL := 0) RETURN INTEGER IS
@@ -723,6 +728,15 @@ package body utils is
 		end loop;
 		return res;
 	end gray2bin;
+	
+	-- Binary-Code to One-Hot-Code
+	function bin2onehot(value : std_logic_vector) return std_logic_vector is
+		variable result		: std_logic_vector(2**value'length - 1 downto 0);
+	begin
+		result	:= (others => '0');
+		result(2 ** to_integer(unsigned(value))) := '1';
+		return result;
+	end function;
 	
 	-- Binary-Code to Gray-Code
 	function bin2gray(value : std_logic_vector) return std_logic_vector is
