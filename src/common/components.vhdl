@@ -63,7 +63,7 @@ PACKAGE components IS
 	-- multiplexing
 	function mux(sel : STD_LOGIC; sl0		: STD_LOGIC;				sl1		: STD_LOGIC)				return STD_LOGIC;
 	function mux(sel : STD_LOGIC; slv0	: STD_LOGIC_VECTOR;	slv1	: STD_LOGIC_VECTOR)	return STD_LOGIC_VECTOR;
-	function mux(sel : STD_LOGIC; us0	: UNSIGNED;						us1	: UNSIGNED)						return UNSIGNED;
+	function mux(sel : STD_LOGIC; us0		: UNSIGNED;					us1		: UNSIGNED)					return UNSIGNED;
 END;
 
 
