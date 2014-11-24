@@ -175,6 +175,8 @@ BEGIN
 		IICC_WP_Last							<= '0';
 		IICC_RP_Ack								<= '0';
 		
+		IICSwitch_Reset						<= '0';
+		
 		FSM_Arbitrate							<= '0';
 		
 		CASE State IS

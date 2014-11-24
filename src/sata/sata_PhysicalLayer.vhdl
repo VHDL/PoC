@@ -85,8 +85,7 @@ ENTITY sata_PhysicalLayer IS
 		
 		Trans_Command										: OUT	T_SATA_TRANSCEIVER_COMMAND;
 		Trans_Status										: IN	T_SATA_TRANSCEIVER_STATUS;
-		Trans_TX_Error									: IN	T_SATA_TRANSCEIVER_TX_ERROR;
-		Trans_RX_Error									: IN	T_SATA_TRANSCEIVER_RX_ERROR;
+		Trans_Error											: IN	T_SATA_TRANSCEIVER_ERROR;
 
 		Trans_RP_Reconfig								: OUT	STD_LOGIC;
 		Trans_RP_SATAGeneration					: OUT	T_SATA_GENERATION;
@@ -216,12 +215,10 @@ BEGIN
 			
 				IF (Command = SATA_PHY_CMD_RESET) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Trans_RP_Reconfig_i = '1') THEN
@@ -239,12 +236,10 @@ BEGIN
 			
 				IF (Command = SATA_PHY_CMD_RESET) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (OOBC_LinkOK = '0') THEN
@@ -262,12 +257,10 @@ BEGIN
 			
 				IF (Command = SATA_PHY_CMD_RESET) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (OOBC_LinkOK = '1') THEN
@@ -292,12 +285,10 @@ BEGIN
 				
 				IF (Command = SATA_PHY_CMD_RESET) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (OOBC_ReceivedReset = '1') THEN
@@ -334,6 +325,9 @@ BEGIN
 				LinkOK										=> OOBC_LinkOK,
 				LinkDead									=> OOBC_LinkDead,
 				ReceivedReset							=> OOBC_ReceivedReset,
+				
+				Trans_Status							=> Trans_Status,
+				Trans_Error								=> Trans_Error,
 				
 				OOB_TX_Command						=> Trans_OOB_TX_Command,
 				OOB_TX_Complete						=> Trans_OOB_TX_Complete,

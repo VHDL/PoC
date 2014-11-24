@@ -69,6 +69,7 @@ package satadbg is
 		TX_ResetDone							: STD_LOGIC;
 		RX_ResetDone							: STD_LOGIC;
 		RX_CDR_Locked							: STD_LOGIC;
+		RX_CDR_Hold								: STD_LOGIC;
 		
 		TX_Data										: T_SLV_32;
 		TX_CharIsK								: T_SLV_4;
@@ -93,13 +94,20 @@ package satadbg is
 		RX_ClockCorrectionStatus	: STD_LOGIC_VECTOR(1 DOWNTO 0);
 		
 		DRP												: T_XIL_DRP_BUS_OUT;
+		DigitalMonitor						: T_SLV_8;
+		RX_Monitor_Data						: T_SLV_8;
 	END RECORD;
 	
 	TYPE T_SATADBG_TRANSCEIVER_IN IS RECORD
 		ForceOOBCommand						: T_SATA_OOB;
 		ForceTXElectricalIdle			: STD_LOGIC;
+		ForceEnableHold						: STD_LOGIC;
+		ForceInvertHold						: STD_LOGIC;
+		
+		AlignDetected							: STD_LOGIC;
 		
 		DRP												: T_XIL_DRP_BUS_IN;
+		RX_Monitor_sel						: T_SLV_2;
 	END RECORD;
 	
 	-- ===========================================================================
@@ -116,6 +124,8 @@ package satadbg is
 		OOB_TX_Complete						: STD_LOGIC;
 		OOB_RX_Received						: T_SATA_OOB;
 		OOB_HandshakeComplete			: STD_LOGIC;
+		
+		AlignDetected							: STD_LOGIC;
 	END RECORD;
 	
 	TYPE T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT IS RECORD
@@ -229,8 +239,7 @@ package satadbg is
 		Transceiver						: T_SATADBG_TRANSCEIVER_OUT;
 		Transceiver_Command		: T_SATA_TRANSCEIVER_COMMAND;
 		Transceiver_Status		: T_SATA_TRANSCEIVER_STATUS;
-		Transceiver_TX_Error	: T_SATA_TRANSCEIVER_TX_ERROR;
-		Transceiver_RX_Error	: T_SATA_TRANSCEIVER_RX_ERROR;
+		Transceiver_Error			: T_SATA_TRANSCEIVER_ERROR;
 		-- Physical Layer
 		Physical							: T_SATADBG_PHYSICAL_OUT;
 		Physical_Command			: T_SATA_PHY_COMMAND;

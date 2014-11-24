@@ -76,8 +76,8 @@ ENTITY sata_Transceiver_Series7_GTXE2 IS
 		PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 		Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-		RX_Error									: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_Error									: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+		Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+
 		-- debug ports
 		DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
 		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -235,6 +235,10 @@ BEGIN
 		SIGNAL GTX_DRP_DataOut							: T_XIL_DRP_DATA;
 		SIGNAL GTX_DRP_Ready								: STD_LOGIC;
 		
+		signal GTX_DigitalMonitor						: T_SLV_8;
+		signal GTX_RX_Monitor_sel						: T_SLV_2;
+		signal GTX_RX_Monitor_Data					: STD_LOGIC_VECTOR(6 DOWNTO 0);
+		
 		SIGNAL GTX_PhyStatus								: STD_LOGIC;
 		SIGNAL GTX_TX_BufferStatus					: STD_LOGIC_VECTOR(1 DOWNTO 0);
 		SIGNAL GTX_RX_BufferStatus					: STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -317,6 +321,8 @@ BEGIN
 		SIGNAL GTX_TX_CharIsK								: T_SLV_4;
 		
 		SIGNAL RX_CDR_Locked								: STD_LOGIC;															-- unused
+		SIGNAL GTX_RX_CDR_Hold							: STD_LOGIC;
+		
 		SIGNAL GTX_RX_Data									: T_SLV_32;
 		SIGNAL GTX_RX_Data_float						: T_SLV_32;																-- open
 		SIGNAL GTX_RX_CommaDetected					: STD_LOGIC;															-- unused
@@ -345,8 +351,7 @@ BEGIN
 		SIGNAL RX_Error_i										: T_SATA_TRANSCEIVER_RX_ERROR;
 		
 		-- keep internal clock nets, so timing constrains from UCF can find them
---		ATTRIBUTE KEEP OF GTX_Clock_2X						: SIGNAL IS TRUE;
---		ATTRIBUTE KEEP OF GTX_Clock_4X						: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF GTX_TX_RefClockOut	: SIGNAL IS TRUE;
 		
 	BEGIN
 		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																											SEVERITY NOTE;
@@ -454,13 +459,13 @@ BEGIN
 		-- Data path / status / error detection
 		-- ==================================================================
 		-- TX path
-		GTX_TX_Data							<= TX_Data(I);
-		GTX_TX_CharIsK					<= TX_CharIsK(I);
+		GTX_TX_Data							<= TX_Data(I)			when rising_edge(GTX_UserClock);
+		GTX_TX_CharIsK					<= TX_CharIsK(I)	when rising_edge(GTX_UserClock);
 
 		-- RX path
-		RX_Data(I)							<= GTX_RX_Data;
-		RX_CharIsK(I)						<= GTX_RX_CharIsK;
-		RX_Valid(I)							<= GTX_RX_Valid;
+		RX_Data(I)							<= GTX_RX_Data		when rising_edge(GTX_UserClock);
+		RX_CharIsK(I)						<= GTX_RX_CharIsK	when rising_edge(GTX_UserClock);
+		RX_Valid(I)							<= GTX_RX_Valid		when rising_edge(GTX_UserClock);
 
 --		GTX_PhyStatus
 --		GTX_TX_BufferStatus
@@ -595,6 +600,21 @@ BEGIN
 		--RX_OOBStatus_d		<= RX_OOBStatus_i;		-- WHEN rising_edge(SATA_Clock_i(I));
 		OOB_RX_Received(I)		<= OOB_RX_Received_i;
 
+
+
+
+		blkTest : block
+			signal reg : STD_LOGIC	:= '1';
+		begin
+			reg <= ffrs(q => reg, rst => DebugPortIn(I).AlignDetected, set => to_sl(OOB_TX_Command_d /= SATA_OOB_NONE)) when rising_edge(GTX_UserClock);
+			
+			GTX_RX_CDR_Hold	<= reg;	--(reg xor DebugPortIn(I).ForceInvertHold) and DebugPortIn(I).ForceEnableHold;
+		end block;
+		
+
+
+
+
 		--	==================================================================
 		-- error handling
 		--	==================================================================
@@ -689,8 +709,9 @@ BEGIN
 		END PROCESS;
 	
 		Status(I)				<= Status_i;
-		TX_Error(I)			<= TX_Error_i;
-		RX_Error(I)			<= RX_Error_i;
+		Error(I).Common	<= SATA_TRANSCEIVER_ERROR_NONE;
+		Error(I).TX			<= TX_Error_i;
+		Error(I).RX			<= RX_Error_i;
 
 		-- ==================================================================
 		-- GTXE2_CHANNEL instance for Port I
@@ -874,7 +895,7 @@ BEGIN
 				DMONITOR_CFG														=> x"000A01",							-- DMONITOR_CFG(0) enable digital monitor
 				RX_CM_SEL																=> "11",									-- RX termination voltage: 00 => AVTT; 01 => GND; 10 => Floating; 11 => programmable (PMA_RSV(4) & RX_CM_TRIM)
 				RX_CM_TRIM															=> "011",									-- RX termination voltage: 1010 => 800 mV; 1011 => 850 mV; bit 3 is encoded in PMA_RSV2(4)
-				RX_DEBUG_CFG														=> "000000000000",
+				RX_DEBUG_CFG														=> "000000001000",				-- connect LPM HF to DMONITOROUT [6:0]
 				RX_OS_CFG																=> "0000010000000",
 				TERM_RCAL_CFG														=> "10000",								-- Controls the internal termination calibration circuit. This feature is intended for internal testing purposes only.
 				TERM_RCAL_OVRD													=> '0',										-- Selects whether the external 100?? precision resistor is connected to the MGTRREF pin or a value defined by TERM_RCAL_CFG [4:0]. This feature is intended for internal testing purposes only.
@@ -890,12 +911,12 @@ BEGIN
 				-- CDR attributes
 --				RXCDR_CFG																=> x"03000023ff20400020",				-- default from wizard
 --				RXCDR_CFG																=> x"0380008BFF40100008",					-- 1.5 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
---				RXCDR_CFG																=> x"0388008BFF40200008",					-- 3.0 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
-				RXCDR_CFG																=> x"0380008BFF10200010",					-- 6.0 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
+				RXCDR_CFG																=> x"0388008BFF40200008",					-- 3.0 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
+--				RXCDR_CFG																=> x"0380008BFF10200010",					-- 6.0 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
 				RXCDR_FR_RESET_ON_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
 				RXCDR_HOLD_DURING_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
 				RXCDR_PH_RESET_ON_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
-				RXCDR_LOCK_CFG													=> "010101",
+				RXCDR_LOCK_CFG													=> "010101",											-- [5:3] Window Size, [2:1] Delta Code, [0] Enable Detection (https://github.com/ShepardSiegel/ocpi/blob/master/coregen/pcie_4243_axi_k7_x4_125/source/pcie_7x_v1_3_gt_wrapper.v)
 
 				-- gearbox attributes
 				TXGEARBOX_EN														=> "FALSE",
@@ -932,8 +953,10 @@ BEGIN
 				TX_RXDETECT_REF													=> "100",
 
 				-- RX equalizer attributes
-				RXLPM_HF_CFG														=> "00000011110000",
-				RXLPM_LF_CFG														=> "00000011110000",
+--				RXLPM_HF_CFG														=> "00000011110000",			-- long channel; >2.5 dB loss
+				RXLPM_HF_CFG														=> "00000000000000",				-- short channel; <2.5 dB loss
+--				RXLPM_LF_CFG														=> "00000011110000",			-- long channel; >2.5 dB loss
+				RXLPM_LF_CFG														=> "00000000000000",				-- short channel; <2.5 dB loss
 				RX_DFE_GAIN_CFG													=> x"020FEA",
 				RX_DFE_H2_CFG														=> "000000000000",
 				RX_DFE_H3_CFG														=> "000001000000",
@@ -943,8 +966,8 @@ BEGIN
 				RX_DFE_KL_CFG2													=> x"3010D90C",					-- ISE wizard
 --				RX_DFE_KL_CFG2													=> x"301148AC",						-- Vivado wizard
 				RX_DFE_XYD_CFG													=> "0000000000000",
-				RX_DFE_LPM_CFG													=> x"0954",							-- ISE wizard
---				RX_DFE_LPM_CFG													=> x"0904",								-- AR# 45360
+--				RX_DFE_LPM_CFG													=> x"0954",							-- ISE wizard
+				RX_DFE_LPM_CFG													=> x"0904",								-- AR# 45360
 				RX_DFE_LPM_HOLD_DURING_EIDLE						=> '0',
 				RX_DFE_UT_CFG														=> "10001111000000000",
 				RX_DFE_VP_CFG														=> "00011111100000011",		--03f03
@@ -1013,8 +1036,8 @@ BEGIN
 				RXBUFRESET											=> GTX_RX_BufferReset,						-- @async:			
 				RXOOBRESET											=> '0',														-- @async:			reserved; tie to ground
 				EYESCANRESET										=> '0',														
-				RXCDRFREQRESET									=> OOB_HandshakeComplete,														-- @async:			CDR frequency detector reset
-				RXCDRRESET											=> OOB_HandshakeComplete,														-- @async:			CDR phase detector reset
+				RXCDRFREQRESET									=> '0',														-- @async:			CDR frequency detector reset
+				RXCDRRESET											=> '0',														-- @async:			CDR phase detector reset
 				RXPRBSCNTRESET									=> '0',														-- @RX_Clock2:	reset PRBS error counter
 				-- reset done ports
 				TXRESETDONE											=> GTX_TX_ResetDone,							-- @TX_Clock2:	
@@ -1056,27 +1079,27 @@ BEGIN
 				RX8B10BEN												=> '1',														-- @RX_Clock2:	enable 8B710B decoder
 
 				-- FPGA-Fabric - TX interface ports
-				TXDATA(63 downto 32)						=> (63 downto 32 => '0'),					-- @TX_Clock2:	
 				TXDATA(31 downto 0)							=> GTX_TX_Data,										-- @TX_Clock2:	
+				TXDATA(63 downto 32)						=> (63 downto 32 => '0'),					-- @TX_Clock2:	
 				
-				TXCHARISK(7 downto 4)						=> (7 downto 4 => '0'),						-- @TX_Clock2:	
 				TXCHARISK(3 downto 0)						=> GTX_TX_CharIsK,								-- @TX_Clock2:	
+				TXCHARISK(7 downto 4)						=> (7 downto 4 => '0'),						-- @TX_Clock2:	
 				TXCHARDISPMODE									=> x"00",													-- @TX_Clock2:	per-byte set running disparity to TXCHARDISPVAL(i); TXCHARDISPMODE(0) is also called TXCOMPLIANCE in a PIPE interface
 				TXCHARDISPVAL										=> x"00",													-- @TX_Clock2:	per-byte set running disparity
 				
 				-- FPGA-Fabric - RX interface ports
-				RXDATA(63 downto 32)						=> GTX_RX_Data_float,							-- @RX_Clock2:	
 				RXDATA(31 downto 0)							=> GTX_RX_Data,										-- @RX_Clock2:	
+				RXDATA(63 downto 32)						=> GTX_RX_Data_float,							-- @RX_Clock2:	
 				RXVALID													=> GTX_RX_Valid,									-- @RX_Clock2:	
 				
-				RXCHARISCOMMA(7 downto 4)				=> GTX_RX_CharIsComma_float,			-- @RX_Clock2:	
 				RXCHARISCOMMA(3 downto 0)				=> GTX_RX_CharIsComma,						-- @RX_Clock2:	
-				RXCHARISK(7 downto 4)						=> GTX_RX_CharIsK_float,					-- @RX_Clock2:	
+				RXCHARISCOMMA(7 downto 4)				=> GTX_RX_CharIsComma_float,			-- @RX_Clock2:	
 				RXCHARISK(3 downto 0)						=> GTX_RX_CharIsK,								-- @RX_Clock2:	
-				RXDISPERR(7 downto 4)						=> GTX_RX_DisparityError_float,		-- @RX_Clock2:	
+				RXCHARISK(7 downto 4)						=> GTX_RX_CharIsK_float,					-- @RX_Clock2:	
 				RXDISPERR(3 downto 0)						=> GTX_RX_DisparityError,					-- @RX_Clock2:	
-				RXNOTINTABLE(7 downto 4)				=> GTX_RX_NotInTableError_float,	-- @RX_Clock2:	
+				RXDISPERR(7 downto 4)						=> GTX_RX_DisparityError_float,		-- @RX_Clock2:	
 				RXNOTINTABLE(3 downto 0)				=> GTX_RX_NotInTableError,				-- @RX_Clock2:	
+				RXNOTINTABLE(7 downto 4)				=> GTX_RX_NotInTableError_float,	-- @RX_Clock2:	
 				
 				-- RX Byte and Word Alignment
 				RXBYTEISALIGNED									=> GTX_RX_ByteIsAligned,
@@ -1105,42 +1128,42 @@ BEGIN
 --				RXLPMEN													=> '0',														-- @RX_Clock2:	0 => use DFE; 1 => use LPM
 				RXLPMEN													=> '1',														-- @RX_Clock2:	0 => use DFE; 1 => use LPM
 				RXLPMLFHOLD											=> '0',														-- @RX_Clock2:	
-				RXLPMLFKLOVRDEN									=> '0',														-- @RX_Clock2:	
+				RXLPMLFKLOVRDEN									=> '1',														-- @RX_Clock2:	
 				RXLPMHFHOLD											=> '0',														-- @RX_Clock2:	
-				RXLPMHFOVRDEN										=> '0',														-- @RX_Clock2:	
+				RXLPMHFOVRDEN										=> '1',														-- @RX_Clock2:	
 				
 				-- RX	DFE equalizer ports (discrete-time filter equalizer)
 				RXDFEAGCHOLD										=> '0',														-- @RX_Clock2:	DFE Automatic Gain Control - don't care if RXDFEAGCOVRDEN is '1'
-				RXDFEAGCOVRDEN									=> '0',														-- @RX_Clock2:	DFE Automatic Gain Control
+				RXDFEAGCOVRDEN									=> '1',														-- @RX_Clock2:	DFE Automatic Gain Control
 				RXDFECM1EN											=> '0',
 				RXDFELFHOLD											=> '0',														-- @RX_Clock2:	DFE KL Low Frequency - don't care if RXDFELFOVRDEN is '1'
 				RXDFELFOVRDEN										=> '1',														-- @RX_Clock2:	DFE KL Low Frequency - Override KL value according to attribute RX_DFE_KL_CFG
 --				RXDFELFOVRDEN										=> '0',														-- @RX_Clock2:	DFE KL Low Frequency - Override KL value according to attribute RX_DFE_KL_CFG
 				RXDFELPMRESET										=> '0',
 				RXDFETAP2HOLD										=> '0',
-				RXDFETAP2OVRDEN									=> '0',
+				RXDFETAP2OVRDEN									=> '1',
 				RXDFETAP3HOLD										=> '0',
-				RXDFETAP3OVRDEN									=> '0',
+				RXDFETAP3OVRDEN									=> '1',
 				RXDFETAP4HOLD										=> '0',
-				RXDFETAP4OVRDEN									=> '0',
+				RXDFETAP4OVRDEN									=> '1',
 				RXDFETAP5HOLD										=> '0',
-				RXDFETAP5OVRDEN									=> '0',
+				RXDFETAP5OVRDEN									=> '1',
 				RXDFEUTHOLD											=> '0',
-				RXDFEUTOVRDEN										=> '0',
+				RXDFEUTOVRDEN										=> '1',
 				RXDFEVPHOLD											=> '0',
-				RXDFEVPOVRDEN										=> '0',
+				RXDFEVPOVRDEN										=> '1',
 				RXDFEVSEN												=> '0',
 				RXDFEXYDEN											=> '1',														-- @RX_Clock2:	reserved; tie to vcc
 				RXDFEXYDHOLD										=> '0',														-- @RX_Clock2:	reserved; 
-				RXDFEXYDOVRDEN									=> '0',														-- @RX_Clock2:	reserved; 
+				RXDFEXYDOVRDEN									=> '1',														-- @RX_Clock2:	reserved; 
 
-				RXMONITORSEL										=> "00",
-				RXMONITOROUT										=> open,
+				RXMONITORSEL										=> GTX_RX_Monitor_sel,
+				RXMONITOROUT										=> GTX_RX_Monitor_Data,
 				RXOSHOLD												=> '0',
-				RXOSOVRDEN											=> '0',
+				RXOSOVRDEN											=> '1',
 
 				-- Clock Data Recovery (CDR)
-				RXCDRHOLD												=> '0',														-- @async:			hold the CDR control loop frozen
+				RXCDRHOLD												=> GTX_RX_CDR_Hold,								-- @async:			hold the CDR control loop frozen
 				RXCDRLOCK												=> RX_CDR_Locked,									-- @async:			reserved; CDR locked
 				
 				-- TX gearbox ports
@@ -1220,7 +1243,7 @@ BEGIN
 				RXPRBSERR												=> open,													-- @RX_Clock2:	PRBS error have occurred; error counter 'RX_PRBS_ERR_CNT' can only be accessed by DRP at address 0x15C
 				
 				-- Digital Monitor Ports
-				DMONITOROUT											=> open,
+				DMONITOROUT											=> GTX_DigitalMonitor,
 				
 				EYESCANMODE											=> '0',														-- @async:			
 				EYESCANTRIGGER									=> '0',														-- @async:			
@@ -1328,6 +1351,7 @@ BEGIN
 			DebugPortOut(I).TX_ResetDone							<= GTX_TX_ResetDone;
 			DebugPortOut(I).RX_ResetDone							<= GTX_RX_ResetDone;
 			DebugPortOut(I).RX_CDR_Locked							<= RX_CDR_Locked;
+			DebugPortOut(I).RX_CDR_Hold								<= GTX_RX_CDR_Hold;
 		
 			DebugPortOut(I).TX_Data										<= GTX_TX_Data;
 			DebugPortOut(I).TX_CharIsK								<= GTX_TX_CharIsK;
@@ -1353,6 +1377,10 @@ BEGIN
 			
 			DebugPortOut(I).DRP.Data									<= GTX_DRP_DataOut;
 			DebugPortOut(I).DRP.Ready									<= GTX_DRP_Ready;
+			
+			DebugPortOut(I).DigitalMonitor						<= GTX_DigitalMonitor;
+			GTX_RX_Monitor_sel												<= DebugPortIn(I).RX_Monitor_sel;
+			DebugPortOut(I).RX_Monitor_Data						<= '0' & GTX_RX_Monitor_Data;
 		end generate;
 	end generate;
 end;

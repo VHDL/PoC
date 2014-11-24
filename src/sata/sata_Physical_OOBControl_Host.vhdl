@@ -70,6 +70,9 @@ ENTITY sata_Physical_OOBControl_Host IS
 		LinkDead									: OUT	STD_LOGIC;
 		ReceivedReset							: OUT	STD_LOGIC;
 		
+		Trans_Status							: IN	T_SATA_TRANSCEIVER_STATUS;
+		Trans_Error								: IN	T_SATA_TRANSCEIVER_ERROR;
+		
 		OOB_TX_Command						: OUT	T_SATA_OOB;
 		OOB_TX_Complete						: IN	STD_LOGIC;
 		OOB_RX_Received						: IN	T_SATA_OOB;
@@ -91,7 +94,7 @@ ARCHITECTURE rtl OF sata_Physical_OOBControl_Host IS
 	CONSTANT CLOCK_GEN3_FREQ							: FREQ				:= CLOCK_FREQ / 1.0;			-- SATAClock frequency in MHz for SATA generation 3
 
 	CONSTANT DEFAULT_OOB_TIMEOUT					: TIME				:= 880.0 us;
-	constant CONSECUTIVE_ALIGN_MIN				: POSITIVE		:= 15;
+	constant CONSECUTIVE_ALIGN_MIN				: POSITIVE		:= 63;
 	
 	CONSTANT OOB_TIMEOUT_I								: TIME				:= ite((OOB_TIMEOUT = TIME'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
 	CONSTANT COMRESET_TIMEOUT							: TIME				:= 450.0 ns;
@@ -194,7 +197,7 @@ BEGIN
 	END PROCESS;
 
 
-	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, AlignCounter_us, TC1_Timeout, TC2_Timeout)
+	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, AlignCounter_us, TC1_Timeout, TC2_Timeout, Trans_Status, Trans_Error.RX)
 	BEGIN
 		NextState									<= State;
 		
@@ -219,7 +222,9 @@ BEGIN
 		ReceivedReset_i						<= '0';
 		
 		OOB_TX_Command_i					<= SATA_OOB_NONE;
-		OOB_HandshakeComplete_i	<= '0';
+		OOB_HandshakeComplete_i		<= '0';
+
+		DebugPortOut.AlignDetected	<= '0';
 
 		-- handle timeout with highest priority
 		IF (TC1_Timeout = '1') THEN
@@ -364,61 +369,63 @@ BEGIN
 						AlignCounter_rst			<= '0';
 						AlignCounter_en				<= '1';
 					
+						DebugPortOut.AlignDetected	<= '1';
+						
 						IF (AlignCounter_us = CONSECUTIVE_ALIGN_MIN - 1) then
 							NextState						<= ST_HOST_SEND_ALIGN;
 						END IF;
 					END IF;
 				
-				WHEN ST_HOST_SEND_ALIGN =>
+				when ST_HOST_SEND_ALIGN =>
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '1';
 				
-					IF (OOB_RX_Received /= SATA_OOB_NONE) THEN
+					if (OOB_RX_Received /= SATA_OOB_NONE) then
 						NextState							<= ST_HOST_LINK_DEAD;
-					ELSIF (RX_Valid = '0') THEN
+					elsif ((Trans_Status = SATA_TRANSCEIVER_STATUS_ERROR) and (Trans_Error.RX /= SATA_TRANSCEIVER_RX_ERROR_NONE)) then
 						NextState							<= ST_HOST_LINK_BROKEN;
-					ELSIF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN																				-- SYNC detected
+					elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then																				-- SYNC detected
 						NextState							<= ST_HOST_LINK_OK;
-					END IF;
+					end if;
 					
-				WHEN ST_HOST_LINK_OK =>
+				when ST_HOST_LINK_OK =>
 					LinkOK_i								<= '1';
 					TX_Primitive						<= SATA_PRIMITIVE_NONE;
 					
-					IF (OOB_RX_Received /= SATA_OOB_NONE) THEN
+					if (OOB_RX_Received /= SATA_OOB_NONE) then
 						NextState							<= ST_HOST_LINK_DEAD;
-					ELSIF (RX_Valid = '0') THEN
+					elsif ((Trans_Status = SATA_TRANSCEIVER_STATUS_ERROR) and (Trans_Error.RX /= SATA_TRANSCEIVER_RX_ERROR_NONE)) then
 						NextState							<= ST_HOST_LINK_BROKEN;
-					END IF;
+					end if;
 				
-				WHEN ST_HOST_LINK_BROKEN =>
+				when ST_HOST_LINK_BROKEN =>
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
 					
-					IF (RX_Valid = '1') THEN
+					if (RX_Valid = '1') then
 						NextState							<= ST_HOST_LINK_OK;
-					END IF;
+					end if;
 					
-					IF (Retry = '1') THEN
+					if (Retry = '1') then
 						NextState							<= ST_HOST_SEND_COMRESET;
-					END IF;
+					end if;
 				
-				WHEN ST_HOST_LINK_DEAD =>
+				when ST_HOST_LINK_DEAD =>
 					LinkDead_i							<= '1';
 					
-					IF (Retry = '1') THEN
-						NextState							<= ST_HOST_SEND_COMRESET;
-					END IF;
+					if (Retry = '1') then
+						nextstate							<= st_host_send_comreset;
+					end if;
 				
-				WHEN ST_HOST_TIMEOUT =>
+				when ST_HOST_TIMEOUT =>
 					Timeout_i								<= '1';
 				
-					IF (Retry = '1') THEN
+					if (Retry = '1') then
 						NextState							<= ST_HOST_SEND_COMRESET;
-					END IF;
+					end if;
 				
-			END CASE;
-		END IF;
-	END PROCESS;
+			end case;
+		end if;
+	end process;
 	
 	LinkOK									<= LinkOK_i;
 	LinkDead								<= LinkDead_i;

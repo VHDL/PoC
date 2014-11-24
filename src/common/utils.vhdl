@@ -229,6 +229,9 @@ package utils is
   --
   function gray2bin (gray_val : std_logic_vector) return std_logic_vector;
 	
+	-- Binary-Code to One-Hot-Code
+	function bin2onehot(value : std_logic_vector) return std_logic_vector;
+	
 	-- Binary-Code to Gray-Code
 	function bin2gray(value : std_logic_vector) return std_logic_vector;
 	
@@ -725,6 +728,15 @@ package body utils is
 		end loop;
 		return res;
 	end gray2bin;
+	
+	-- Binary-Code to One-Hot-Code
+	function bin2onehot(value : std_logic_vector) return std_logic_vector is
+		variable result		: std_logic_vector(2**value'length - 1 downto 0);
+	begin
+		result	:= (others => '0');
+		result(2 ** to_integer(unsigned(value))) := '1';
+		return result;
+	end function;
 	
 	-- Binary-Code to Gray-Code
 	function bin2gray(value : std_logic_vector) return std_logic_vector is
