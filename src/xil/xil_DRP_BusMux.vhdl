@@ -131,13 +131,18 @@ begin
 		end if;
 	end process;
 	
-	process(State, Request_or, Arb_Grant_bin, Reg_Request, Reg_ReadWrite, Reg_Address, Reg_Data, Out_Ready, LockCounter_us)
+	process(State, Request_or, Arb_Grant, Arb_Grant_bin, Reg_Request, Reg_ReadWrite, Reg_Address, Reg_Data, Out_Ready, LockCounter_us)
 	begin
 		NextState						<= State;
 		
 		FSM_Arbitrate				<= '0';
 		FSM_Ready						<= '1';
 		LockCounter_rst			<= '1';
+	
+		Out_Enable					<= '0';
+		Out_ReadWrite				<= Reg_ReadWrite(to_index(Arb_Grant_bin));
+		Out_Address					<= Reg_Address(to_index(Arb_Grant_bin));
+		Out_DataOut					<= Reg_Data(to_index(Arb_Grant_bin));
 	
 		case State is
 			when ST_IDLE =>
@@ -148,10 +153,6 @@ begin
 			
 			when ST_BUS_TRANSACTION_START =>
 				Out_Enable					<= '1';
-				Out_ReadWrite				<= Reg_ReadWrite(to_index(Arb_Grant_bin));
-				Out_Address					<= Reg_Address(to_index(Arb_Grant_bin));
-				Out_DataOut					<= Reg_Data(to_index(Arb_Grant_bin));
-				
 				NextState						<= ST_BUS_TRANSACTION_WAIT;
 			
 			when ST_BUS_TRANSACTION_WAIT =>
