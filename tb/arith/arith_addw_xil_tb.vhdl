@@ -42,7 +42,7 @@ architecture tb of arith_addw_xil_tb is
   constant N : positive := 9;
   constant K : positive := 2;
 
-	subtype tArch_test is tArch range AAM to CAI;
+	subtype tArch_test is tArch range AAM to CCA;
 	subtype tSkip_test is tSkipping;
 	
   -- component ports

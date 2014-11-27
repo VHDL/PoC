@@ -476,7 +476,7 @@ begin
 			begin
 				gp_lut: LUT6_2
           generic map (
-            INIT => x"12480000_11770000"
+            INIT => x"12480000_EE880000"
 					)
           port map (
             O6 => pl(j),
