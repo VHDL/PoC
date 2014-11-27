@@ -23,6 +23,7 @@
 --     Marcin Rogawski, Kris Gaj and Ekawat Homsirikamol:
 --       A Novel Modular Adder for One Thousand Bits and More
 --       Using Fast Carry Chains of Modern FPGAs, FPL 2014.
+--      -> ARCH:		 PAI
 --      -> SKIPPING: PPN_KS, PPN_BK
 --
 --
@@ -75,7 +76,7 @@ architecture rtl of arith_addw is
 
   -- Determine Block Boundaries
   type tBlocking_vector is array(tArch) of tBlocking;
-  constant DEFAULT_BLOCKING : tBlocking_vector := (AAM => ASC, CAI => DESC, CCA => DESC);
+  constant DEFAULT_BLOCKING : tBlocking_vector := (AAM => ASC, CAI => DESC, PAI => DESC, CCA => DESC);
 
   type integer_vector is array(natural range<>) of integer;
   function compute_blocks return integer_vector is
@@ -116,6 +117,7 @@ architecture rtl of arith_addw is
         report "Unknown blocking scheme: "&tBlocking'image(bs) severity failure;
 
     end case;
+    --synthesis translate_off
     write(l, "Implementing "&integer'image(N)&"-bit wide adder: ARCH="&tArch'image(ARCH)&
              ", BLOCKING="&tBlocking'image(bs)&'[');
     for i in K-1 downto 1 loop
@@ -125,11 +127,7 @@ architecture rtl of arith_addw is
     write(l, res(0));
     write(l, "], SKIPPING="&tSkipping'image(SKIPPING));
     writeline(output, l);
---    report
---        "Implementing wide "&integer'image(N)&"-bit adder: ARCH="&tArch'image(ARCH)&
---        ", BLOCKING="&tBlocking'image(bs)&'/'&integer'image(K)&
---        ", SKIPPING="&tSkipping'image(SKIPPING)
---      severity note;
+    --synthesis translate_on
     return  res;
   end compute_blocks;
   constant BLOCKS : integer_vector(K-1 downto 0) := compute_blocks;
@@ -293,6 +291,17 @@ begin
                '1' when (aa xor bb) = (aa'range => '1') else '0';
       ss <= s0(HI downto LO) when c(i) = '0' else s0(HI downto LO)+1;
     end generate genCAI;
+
+    -- Propagate-Add-Increment
+    genPAI: if ARCH = PAI generate
+      signal s0 : unsigned(HI+1 downto LO);     -- Block Sum (cin=0)
+    begin
+      s0 <= ('0' & aa) + bb;
+      gg(i) <= s0(HI+1);
+      pp(i) <= 'X' when Is_X(std_logic_vector(s0)) else
+               '1' when s0(HI downto LO) = (HI downto LO => '1') else '0';
+      ss <= s0(HI downto LO) when c(i) = '0' else s0(HI downto LO)+1;
+    end generate genPAI;
 
     -- Compare-Compare-Add
     genCCA: if ARCH = CCA generate

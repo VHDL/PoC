@@ -102,7 +102,7 @@ package arith is
 			res				: out std_logic_vector(N-1 downto 0));
 	end component;
 
-  type tArch     is (AAM, CAI, CCA);
+  type tArch     is (AAM, CAI, CCA, PAI);
   type tBlocking is (DEFAULT, FIX, ASC, DESC);
   type tSkipping is (PLAIN, CCC, PPN_KS, PPN_BK);
   component arith_addw is
