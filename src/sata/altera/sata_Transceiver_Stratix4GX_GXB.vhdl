@@ -60,8 +60,7 @@ entity sata_Transceiver_Stratix4GX_GXB is
 		PowerDown		: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		Command			: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
 		Status			: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-		RX_Error		: OUT	T_SATA_TRANSCEIVER_RX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_Error		: OUT	T_SATA_TRANSCEIVER_TX_ERROR_VECTOR(PORTS - 1 DOWNTO 0);	
+		Error			: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 	
 		-- debug ports
 --		DebugPortIn		: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -86,7 +85,7 @@ entity sata_Transceiver_Stratix4GX_GXB is
 		
 		RX_Data			: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 		RX_CharIsK		: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-		RX_IsAligned		: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_Valid		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 		-- Altera specific GXB ports
 		-- needs to be split in IN and OUT
@@ -157,7 +156,7 @@ BEGIN
 		signal sata_tx_ctrl	: std_logic_vector(3 downto 0);
 		signal sata_tx_data	: std_logic_vector(31 downto 0);
 
-		signal sata_gen		: std_logic_vector(1 downto 0) := to_slv(INITIAL_SATA_GENERATIONS(i));
+		signal sata_gen		: std_logic_vector(1 downto 0) := to_slv(INITIAL_SATA_GENERATIONS(i),2);
 		signal config_state	: std_logic_vector(15 downto 0) := (others => '0');
 
 		signal nodevice		: std_logic;
@@ -184,13 +183,13 @@ BEGIN
 				SATA_TRANSCEIVER_STATUS_NO_DEVICE when nodevice = '1' else
 				SATA_TRANSCEIVER_STATUS_READY;
 
-		RX_Error(i) <= SATA_TRANSCEIVER_RX_ERROR_NONE;
-		TX_Error(i) <= SATA_TRANSCEIVER_TX_ERROR_NONE;
+		Error(i).RX <= SATA_TRANSCEIVER_RX_ERROR_NONE;
+		Error(i).TX <= SATA_TRANSCEIVER_TX_ERROR_NONE;
 
 		OOB_RX_Received(i) <= rx_oob_status;
 		RX_Data(i) 	<= sata_rx_data;
 		RX_CharIsK(i)	<= sata_rx_ctrl;
-		RX_IsAligned(i)	<= sata_syncstatus;
+		RX_Valid(i)	<= sata_syncstatus;
 
 		tx_oob_command 		<= OOB_TX_Command(i);
 		OOB_TX_Complete(i) 	<= tx_oob_complete;
@@ -209,7 +208,7 @@ BEGIN
 		process(ll_clk) begin
 			if rising_edge(ll_clk) then
 				if RP_Reconfig(i) = '1' then
-					sata_gen <= to_slv(RP_SATAGeneration(i));
+					sata_gen <= to_slv(RP_SATAGeneration(i),2);
 				end if;
 				if gxb_busy = '0' and pll_busy = '0' then
 					config_state <= config_state(14 downto 0) & RP_Reconfig(i);
@@ -220,7 +219,7 @@ BEGIN
 		config_sync : entity PoC.EventSyncVector
 		generic map (
 			BITS => 2,
-			INIT => to_slv(C_SATA_GENERATION_MAX)
+			INIT => to_slv(C_SATA_GENERATION_MAX,2)
 		)
 		port map (
 			Clock1 => ll_clk,

@@ -416,20 +416,22 @@ BEGIN
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;
-		
-		function dbg_GenerateEncodings return string is
-			variable  l : STD.TextIO.line;
-		begin
-			for i in T_STATE loop
-				STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_", ""));
-				STD.TextIO.write(l, ';');
-			end loop;
-			return  l.all;
-		end function;
-		
-		CONSTANT test : boolean := dbg_ExportEncoding("SpeedControl", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_SpeedControl.tok");
+	begin
+		genXilinx : if (VENDOR = VENDOR_XILINX) generate
+			function dbg_GenerateEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_STATE loop
+					STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
 
-	BEGIN
+			constant test : boolean := dbg_ExportEncoding("SpeedControl", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_SpeedControl.tok");
+		begin
+		end generate;
+
 		DebugPortOut.FSM										<= dbg_EncodeState(State);
 		DebugPortOut.Status									<= Status_i;
 		DebugPortOut.SATAGeneration					<= SATAGeneration_cur;
