@@ -610,6 +610,8 @@ package body utils is
 	FUNCTION to_index(slv : UNSIGNED; max : NATURAL := 0) RETURN INTEGER IS
 		variable  res : integer;
 	BEGIN
+		if (slv'length = 0) then	return 0;	end if;
+	
 		res := to_integer(slv);
 		if SIMULATION and max > 0 then
 			res := imin(res, max);
