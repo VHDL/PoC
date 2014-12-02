@@ -1,5 +1,5 @@
 DUT_PATH := ../../src/arith
-SRCS := ../common/my_project.vhdl ../common/my_config_ML505.vhdl \
+SRCS := ../common/my_config_ML505.vhdl \
 	$(DUT_PATH)/../common/utils.vhdl $(DUT_PATH)/../common/strings.vhdl \
 	$(DUT_PATH)/../common/vectors.vhdl $(DUT_PATH)/../common/board.vhdl \
 	$(DUT_PATH)/../common/config.vhdl \
