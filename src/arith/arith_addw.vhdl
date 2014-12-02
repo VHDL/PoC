@@ -132,9 +132,9 @@ architecture rtl of arith_addw is
   end compute_blocks;
   constant BLOCKS : integer_vector(K-1 downto 0) := compute_blocks;
 
-  signal gg : std_logic_vector(K-1 downto 1);  -- Block Generate
-  signal pp : std_logic_vector(K-1 downto 1);  -- Block Propagate
-  signal c  : std_logic_vector(K-1 downto 1);  -- Block Carry-in
+  signal g : std_logic_vector(K-1 downto 1);  -- Block Generate
+  signal p : std_logic_vector(K-1 downto 1);  -- Block Propagate
+  signal c : std_logic_vector(K-1 downto 1);  -- Block Carry-in
 begin
 
   -----------------------------------------------------------------------------
@@ -148,15 +148,15 @@ begin
       signal x, y : unsigned(K+M-2 downto 0);
       signal z    : unsigned(K+M-1 downto 0);
     begin
-      x <= unsigned(gg & a(M-1 downto 0));
-      y <= unsigned((gg or pp) & b(M-1 downto 0));
+      x <= unsigned(g & a(M-1 downto 0));
+      y <= unsigned((g or p) & b(M-1 downto 0));
       z <= ('0' & x) + y + (0 to 0 => cin);
 
       -- output of rightmost block
       s(M-1 downto 0) <= std_logic_vector(z(M-1 downto 0));
 
       -- carry recovery for other blocks
-      c <= std_logic_vector(z(K+M-2 downto M)) xor pp;
+      c <= std_logic_vector(z(K+M-2 downto M)) xor p;
 
       -- carry output
       cout <= z(z'left);
@@ -176,71 +176,71 @@ begin
       begin
         -- carry forwarding
         t(1)            <= z(M);
-        t(K downto 2)   <= gg or (pp and c);
+        t(K downto 2)   <= g or (p and c);
         c    <= t(K-1 downto 1);
         cout <= t(K);
       end generate genPlain;
 
-      -- Kogge-Stome Parellel Prefix Network
-      genPPN_KS: if SKIPPING = PPN_KS generate
-        subtype tLevel is std_logic_vector(K-1 downto 0);
-        type tLevels is array(natural range<>) of tLevel;
-        constant LEVELS : positive := log2ceil(K);
-        signal   p, g   : tLevels(0 to LEVELS);
-      begin
-        -- carry forwarding
-        p(0) <= pp & 'X';
-        g(0) <= gg & z(M);
-        genLevels: for i in 1 to LEVELS generate
-          constant D : positive := 2**(i-1);
-        begin
-          p(i) <= (p(i-1)(K-1 downto D) and p(i-1)(K-D-1 downto 0)) & p(i-1)(D-1 downto 0);
-          g(i) <= (g(i-1)(K-1 downto D) or (p(i-1)(K-1 downto D) and g(i-1)(K-D-1 downto 0))) & g(i-1)(D-1 downto 0);
-        end generate genLevels;
-        c    <= g(LEVELS)(K-2 downto 0);
-        cout <= g(LEVELS)(K-1);
+			-- Kogge-Stone Parallel Prefix Network
+			genPPN_KS: if SKIPPING = PPN_KS generate
+				subtype tLevel is std_logic_vector(K-1 downto 0);
+				type tLevels is array(natural range<>) of tLevel;
+				constant LEVELS : positive := log2ceil(K);
+				signal   pp, gg : tLevels(0 to LEVELS);
+			begin
+				-- carry forwarding
+				pp(0) <= p & 'X';
+				gg(0) <= g & z(M);
+				genLevels: for i in 1 to LEVELS generate
+					constant D : positive := 2**(i-1);
+				begin
+					pp(i) <= (pp(i-1)(K-1 downto D) and pp(i-1)(K-D-1 downto 0)) & pp(i-1)(D-1 downto 0);
+					gg(i) <= (gg(i-1)(K-1 downto D) or (pp(i-1)(K-1 downto D) and gg(i-1)(K-D-1 downto 0))) & gg(i-1)(D-1 downto 0);
+				end generate genLevels;
+        c    <= gg(LEVELS)(K-2 downto 0);
+        cout <= gg(LEVELS)(K-1);
       end generate genPPN_KS;
 
-      -- Brent-Kung Parallel Prefix Network
-      genPPN_BK: if SKIPPING = PPN_BK generate
-        subtype tLevel is std_logic_vector(K-1 downto 0);
-        type tLevels is array(natural range<>) of tLevel;
-        constant LEVELS : positive := log2ceil(K);
-        signal   p, g   : tLevels(0 to 2*LEVELS-1);
-      begin
-        -- carry forwarding
-        p(0) <= pp & 'X';
-        g(0) <= gg & z(M);
-        genMerge: for i in 1 to LEVELS generate
-          constant D : positive := 2**(i-1);
-        begin
-          genBits: for j in 0 to K-1 generate
-            genOp: if j mod (2*D) = 2*D-1 generate
-                g(i)(j) <= (p(i-1)(j) and g(i-1)(j-D)) or g(i-1)(j);
-                p(i)(j) <=  p(i-1)(j) and p(i-1)(j-D);
-            end generate;
-            genCp: if j mod (2*D) /= 2*D-1 generate
-                g(i)(j) <= g(i-1)(j);
-                p(i)(j) <= p(i-1)(j);
-            end generate;
-          end generate;
-        end generate genMerge;
-        genSpread: for i in LEVELS+1 to 2*LEVELS-1 generate
-          constant D : positive := 2**(2*LEVELS-i-1);
-        begin
-          genBits: for j in 0 to K-1 generate
-            genOp: if j > D and (j+1) mod (2*D) = D generate
-                g(i)(j) <= (p(i-1)(j) and g(i-1)(j-D)) or g(i-1)(j);
-                p(i)(j) <=  p(i-1)(j) and p(i-1)(j-D);
-            end generate;
-            genCp: if j <= D or (j+1) mod (2*D) /= D generate
-                g(i)(j) <= g(i-1)(j);
-                p(i)(j) <= p(i-1)(j);
-            end generate;
-          end generate;
-        end generate genSpread;
-        c    <= g(g'high)(K-2 downto 0);
-        cout <= g(g'high)(K-1);
+			-- Brent-Kung Parallel Prefix Network
+			genPPN_BK: if SKIPPING = PPN_BK generate
+				subtype tLevel is std_logic_vector(K-1 downto 0);
+				type tLevels is array(natural range<>) of tLevel;
+				constant LEVELS : positive := log2ceil(K);
+				signal   pp, gg : tLevels(0 to 2*LEVELS-1);
+			begin
+				-- carry forwarding
+				pp(0) <= p & 'X';
+				gg(0) <= g & z(M);
+				genMerge: for i in 1 to LEVELS generate
+					constant D : positive := 2**(i-1);
+				begin
+					genBits: for j in 0 to K-1 generate
+						genOp: if j mod (2*D) = 2*D-1 generate
+							gg(i)(j) <= (pp(i-1)(j) and gg(i-1)(j-D)) or gg(i-1)(j);
+							pp(i)(j) <=  pp(i-1)(j) and pp(i-1)(j-D);
+						end generate;
+						genCp: if j mod (2*D) /= 2*D-1 generate
+							gg(i)(j) <= gg(i-1)(j);
+							pp(i)(j) <= pp(i-1)(j);
+						end generate;
+					end generate;
+				end generate genMerge;
+				genSpread: for i in LEVELS+1 to 2*LEVELS-1 generate
+					constant D : positive := 2**(2*LEVELS-i-1);
+				begin
+					genBits: for j in 0 to K-1 generate
+						genOp: if j > D and (j+1) mod (2*D) = D generate
+							gg(i)(j) <= (pp(i-1)(j) and gg(i-1)(j-D)) or gg(i-1)(j);
+							pp(i)(j) <=  pp(i-1)(j) and pp(i-1)(j-D);
+						end generate;
+						genCp: if j <= D or (j+1) mod (2*D) /= D generate
+							gg(i)(j) <= gg(i-1)(j);
+							pp(i)(j) <= pp(i-1)(j);
+						end generate;
+					end generate;
+				end generate genSpread;
+        c    <= gg(gg'high)(K-2 downto 0);
+        cout <= gg(gg'high)(K-1);
       end generate genPPN_BK;
 
     end generate genLUT;
@@ -276,8 +276,8 @@ begin
     begin
       s0 <= ('0' & aa) + bb;
       s1 <= ('0' & aa) + bb + 1;
-      gg(i) <= s0(HI+1);
-      pp(i) <= s1(HI+1) xor s0(HI+1);
+      g(i) <= s0(HI+1);
+      p(i) <= s1(HI+1) xor s0(HI+1);
       ss <= s0(HI downto LO) when c(i) = '0' else s1(HI downto LO);
     end generate genAAM;
 
@@ -286,9 +286,9 @@ begin
       signal s0 : unsigned(HI+1 downto LO);     -- Block Sum (cin=0)
     begin
       s0 <= ('0' & aa) + bb;
-      gg(i) <= s0(HI+1);
-      pp(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
-               '1' when (aa xor bb) = (aa'range => '1') else '0';
+      g(i) <= s0(HI+1);
+      p(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
+              '1' when (aa xor bb) = (aa'range => '1') else '0';
       ss <= s0(HI downto LO) when c(i) = '0' else s0(HI downto LO)+1;
     end generate genCAI;
 
@@ -297,18 +297,18 @@ begin
       signal s0 : unsigned(HI+1 downto LO);     -- Block Sum (cin=0)
     begin
       s0 <= ('0' & aa) + bb;
-      gg(i) <= s0(HI+1);
-      pp(i) <= 'X' when Is_X(std_logic_vector(s0)) else
-               '1' when s0(HI downto LO) = (HI downto LO => '1') else '0';
+      g(i) <= s0(HI+1);
+      p(i) <= 'X' when Is_X(std_logic_vector(s0)) else
+              '1' when s0(HI downto LO) = (HI downto LO => '1') else '0';
       ss <= s0(HI downto LO) when c(i) = '0' else s0(HI downto LO)+1;
     end generate genPAI;
 
     -- Compare-Compare-Add
     genCCA: if ARCH = CCA generate
-      gg(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
-               '1' when aa >  not bb else '0';
-      pp(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
-               '1' when (aa xor bb) = (aa'range => '1') else '0';
+      g(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
+              '1' when aa >  not bb else '0';
+      p(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
+              '1' when (aa xor bb) = (aa'range => '1') else '0';
       ss <= aa + bb + (0 to 0 => c(i));
     end generate genCCA;
 
