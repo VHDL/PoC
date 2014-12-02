@@ -53,9 +53,10 @@ entity arith_addw is
     N : positive;                    -- Operand Width
     K : positive;                    -- Block Count
 
-    ARCH     : tArch     := AAM;        -- Architecture
-    BLOCKING : tBlocking := DEFAULT;    -- Blocking Scheme
-    SKIPPING : tSkipping := CCC         -- Carry Skip Scheme
+    ARCH        : tArch     := AAM;        -- Architecture
+    BLOCKING    : tBlocking := DEFAULT;    -- Blocking Scheme
+    SKIPPING    : tSkipping := CCC;        -- Carry Skip Scheme
+		P_INCLUSIVE : boolean   := false       -- Use Inclusive Propagate, i.e. c^1
   );
   port (
     a, b : in std_logic_vector(N-1 downto 0);
@@ -149,14 +150,20 @@ begin
       signal z    : unsigned(K+M-1 downto 0);
     begin
       x <= unsigned(g & a(M-1 downto 0));
-      y <= unsigned((g or p) & b(M-1 downto 0));
+			genExcl: if not P_INCLUSIVE generate
+				y <= unsigned((g or p) & b(M-1 downto 0));
+				-- carry recovery for other blocks
+				c <= std_logic_vector(z(K+M-2 downto M)) xor p;
+			end generate genExcl;
+			genIncl: if P_INCLUSIVE generate
+				y <= unsigned(p & b(M-1 downto 0));
+				-- carry recovery for other blocks
+				c <= std_logic_vector(z(K+M-2 downto M)) xor (p xor g);
+			end generate genIncl;
       z <= ('0' & x) + y + (0 to 0 => cin);
 
       -- output of rightmost block
       s(M-1 downto 0) <= std_logic_vector(z(M-1 downto 0));
-
-      -- carry recovery for other blocks
-      c <= std_logic_vector(z(K+M-2 downto M)) xor p;
 
       -- carry output
       cout <= z(z'left);
@@ -277,7 +284,13 @@ begin
       s0 <= ('0' & aa) + bb;
       s1 <= ('0' & aa) + bb + 1;
       g(i) <= s0(HI+1);
-      p(i) <= s1(HI+1) xor s0(HI+1);
+			genExcl: if not P_INCLUSIVE generate
+				p(i) <= s1(HI+1) xor s0(HI+1);
+			end generate genExcl;
+			genIncl: if P_INCLUSIVE generate
+				p(i) <= s1(HI+1);
+			end generate genIncl;
+
       ss <= s0(HI downto LO) when c(i) = '0' else s1(HI downto LO);
     end generate genAAM;
 
@@ -287,8 +300,14 @@ begin
     begin
       s0 <= ('0' & aa) + bb;
       g(i) <= s0(HI+1);
-      p(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
-              '1' when (aa xor bb) = (aa'range => '1') else '0';
+			genExcl: if not P_INCLUSIVE generate
+				p(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
+								'1' when (aa xor bb) = (aa'range => '1') else '0';
+			end generate genExcl;
+			genIncl: if P_INCLUSIVE generate
+				p(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
+								'1' when aa >= not bb else '0';
+			end generate genIncl;
       ss <= s0(HI downto LO) when c(i) = '0' else s0(HI downto LO)+1;
     end generate genCAI;
 
@@ -298,8 +317,14 @@ begin
     begin
       s0 <= ('0' & aa) + bb;
       g(i) <= s0(HI+1);
-      p(i) <= 'X' when Is_X(std_logic_vector(s0)) else
-              '1' when s0(HI downto LO) = (HI downto LO => '1') else '0';
+			genExcl: if not P_INCLUSIVE generate
+				p(i) <= 'X' when Is_X(std_logic_vector(s0)) else
+								'1' when s0(HI downto LO) = (HI downto LO => '1') else '0';
+			end generate genExcl;
+			genIncl: if P_INCLUSIVE generate
+				p(i) <= 'X' when Is_X(std_logic_vector(s0)) else
+								'1' when s0(HI downto LO) = (HI downto LO => '1') else g(i);
+			end generate genIncl;
       ss <= s0(HI downto LO) when c(i) = '0' else s0(HI downto LO)+1;
     end generate genPAI;
 
@@ -307,8 +332,14 @@ begin
     genCCA: if ARCH = CCA generate
       g(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
               '1' when aa >  not bb else '0';
-      p(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
-              '1' when (aa xor bb) = (aa'range => '1') else '0';
+			genExcl: if not P_INCLUSIVE generate
+				p(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
+								'1' when (aa xor bb) = (aa'range => '1') else '0';
+			end generate genExcl;
+			genIncl: if P_INCLUSIVE generate
+				p(i) <= 'X' when Is_X(std_logic_vector(aa&bb)) else
+								'1' when aa >= not bb else '0';
+			end generate genIncl;
       ss <= aa + bb + (0 to 0 => c(i));
     end generate genCCA;
 

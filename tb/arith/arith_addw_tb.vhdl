@@ -47,8 +47,8 @@ architecture tb of arith_addw_tb is
 	
   -- component ports
   subtype word is std_logic_vector(N-1 downto 0);
-  type word_vector is array(tArch_test, tSkip_test) of word;
-  type carry_vector is array(tArch_test, tSkip_test) of std_logic;
+  type word_vector is array(tArch_test, tSkip_test, boolean) of word;
+  type carry_vector is array(tArch_test, tSkip_test, boolean) of std_logic;
 
   signal a, b : word;
   signal cin  : std_logic;
@@ -59,22 +59,25 @@ begin
 
   -- DUTs
   genArchs: for i in tArch_test generate
-   genSkips: for j in tSkip_test generate
-    DUT: entity poc.arith_addw
-      generic map (
-        N    => N,
-        K    => K,
-        ARCH => i,
-        SKIPPING => j
-      )
-      port map (
-        a    => a,
-        b    => b,
-        cin  => cin,
-        s    => s(i, j),
-        cout => cout(i, j)
-      );
-   end generate;
+    genSkips: for j in tSkip_test generate
+      genIncl: for p in false to true generate
+        DUT : entity poc.arith_addw
+          generic map (
+            N           => N,
+            K           => K,
+            ARCH        => i,
+            SKIPPING    => j,
+            P_INCLUSIVE => p
+          )
+          port map (
+            a    => a,
+            b    => b,
+            cin  => cin,
+            s    => s(i, j, p),
+            cout => cout(i, j, p)
+          );
+      end generate genIncl;
+    end generate;
   end generate;
 
   -- Stimuli
@@ -88,27 +91,31 @@ begin
         cin <= '0';
         wait for 5 ns;
         for arch in tArch_test loop
-         for skip in tSkip_test loop
-          assert (i+j) mod 2**(N+1) = to_integer(unsigned(cout(arch, skip) & s(arch, skip)))
-            report
-              "Output Error["&tArch'image(arch)&','&tSkipping'image(skip)&"]: "&
-              integer'image(i)&'+'&integer'image(j)&" != "&
-              integer'image(to_integer(unsigned(cout(arch, skip) & s(arch, skip))))
-            severity failure;
-				 end loop;
+					for skip in tSkip_test loop
+						for incl in boolean loop
+							assert (i+j) mod 2**(N+1) = to_integer(unsigned(cout(arch, skip, incl) & s(arch, skip, incl)))
+								report
+								  "Output Error["&tArch'image(arch)&','&tSkipping'image(skip)&','&boolean'image(incl)&"]: "&
+								  integer'image(i)&'+'&integer'image(j)&" != "&
+								  integer'image(to_integer(unsigned(cout(arch, skip, incl) & s(arch, skip, incl))))
+								severity failure;
+						end loop;
+					end loop;
         end loop;
         
         cin <= '1';
         wait for 5 ns;
         for arch in tArch_test loop
-         for skip in tSkip_test loop
-          assert (i+j+1) mod 2**(N+1) = to_integer(unsigned(cout(arch, skip) & s(arch, skip)))
-            report
-              "Output Error["&tArch'image(arch)&','&tSkipping'image(skip)&"]: "&
-              integer'image(i)&'+'&integer'image(j)&"+1 != "&
-              integer'image(to_integer(unsigned(cout(arch, skip) & s(arch, skip))))
-            severity failure;
-				 end loop;
+					for skip in tSkip_test loop
+						for incl in boolean loop
+							assert (i+j+1) mod 2**(N+1) = to_integer(unsigned(cout(arch, skip, incl) & s(arch, skip, incl)))
+							  report
+								  "Output Error["&tArch'image(arch)&','&tSkipping'image(skip)&','&boolean'image(incl)&"]: "&
+								  integer'image(i)&'+'&integer'image(j)&"+1 != "&
+								  integer'image(to_integer(unsigned(cout(arch, skip, incl) & s(arch, skip, incl))))
+								severity failure;
+						end loop;
+					end loop;
         end loop;
 
       end loop;  -- j
