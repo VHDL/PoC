@@ -742,46 +742,46 @@ BEGIN
 		--	==================================================================
 		-- device detection
 		blkDeviceDetector : BLOCK
-			CONSTANT NO_DEVICE_TIMEOUT							: TIME		:= ite(SIMULATION, 2.0 us, NO_DEVICE_TIMEOUT);
-			CONSTANT NEW_DEVICE_TIMEOUT							: TIME		:= ite(SIMULATION, 0.1 us, NEW_DEVICE_TIMEOUT);
+--			CONSTANT NO_DEVICE_TIMEOUT							: TIME		:= ite(SIMULATION, 2.0 us, NO_DEVICE_TIMEOUT);
+--			CONSTANT NEW_DEVICE_TIMEOUT							: TIME		:= ite(SIMULATION, 0.1 us, NEW_DEVICE_TIMEOUT);
 			
-			CONSTANT HIGH_SPIKE_SUPPRESSION_CYCLES	: NATURAL	:= TimingToCycles(NO_DEVICE_TIMEOUT,	CLOCK_DD_FREQ);
-			CONSTANT LOW_SPIKE_SUPPRESSION_CYCLES		: NATURAL	:= TimingToCycles(NEW_DEVICE_TIMEOUT,	CLOCK_DD_FREQ);
+--			CONSTANT HIGH_SPIKE_SUPPRESSION_CYCLES	: NATURAL	:= TimingToCycles(NO_DEVICE_TIMEOUT,	CLOCK_DD_FREQ);
+--			CONSTANT LOW_SPIKE_SUPPRESSION_CYCLES		: NATURAL	:= TimingToCycles(NEW_DEVICE_TIMEOUT,	CLOCK_DD_FREQ);
 		
-			SIGNAL RX_ElectricalIDLE_sync			: STD_LOGIC;
+--			SIGNAL RX_ElectricalIDLE_sync			: STD_LOGIC;
 			
-			SIGNAL NoDevice										: STD_LOGIC;
+--			SIGNAL NoDevice										: STD_LOGIC;
 			SIGNAL NoDevice_r									: STD_LOGIC			:= '1';		-- '0';		set to 1 if nodevice is constant in line 666
 			SIGNAL NoDevice_d									: STD_LOGIC			:= '0';
 			SIGNAL NoDevice_fe								: STD_LOGIC;
 		BEGIN
-			-- synchronize ElectricalIDLE to working clock domain
-			sync2_DDClock : ENTITY PoC.xil_SyncBits
-				PORT MAP (
-					Clock					=> DD_Clock,											-- Clock to be synchronized to
-					Input(0)			=> GTX_RX_ElectricalIDLE_async,		-- Data to be synchronized
-					Output(0)			=> RX_ElectricalIDLE_sync					-- synchronised data
-				);
+--			-- synchronize ElectricalIDLE to working clock domain
+--			sync2_DDClock : ENTITY PoC.xil_SyncBits
+--				PORT MAP (
+--					Clock					=> DD_Clock,											-- Clock to be synchronized to
+--					Input(0)			=> GTX_RX_ElectricalIDLE_async,		-- Data to be synchronized
+--					Output(0)			=> RX_ElectricalIDLE_sync					-- synchronised data
+--				);
+--			
+--			filter2 : ENTITY PoC.io_GlitchFilter
+--				GENERIC MAP (
+--					HIGH_SPIKE_SUPPRESSION_CYCLES			=> HIGH_SPIKE_SUPPRESSION_CYCLES,
+--					LOW_SPIKE_SUPPRESSION_CYCLES			=> LOW_SPIKE_SUPPRESSION_CYCLES
+--				)
+--				PORT MAP (
+--					Clock		=> DD_Clock,
+--					Input		=> RX_ElectricalIDLE_sync,
+--					Output	=> OPEN	--NoDevice
+--				);
 			
-			filter2 : ENTITY PoC.io_GlitchFilter
-				GENERIC MAP (
-					HIGH_SPIKE_SUPPRESSION_CYCLES			=> HIGH_SPIKE_SUPPRESSION_CYCLES,
-					LOW_SPIKE_SUPPRESSION_CYCLES			=> LOW_SPIKE_SUPPRESSION_CYCLES
-				)
-				PORT MAP (
-					Clock		=> DD_Clock,
-					Input		=> RX_ElectricalIDLE_sync,
-					Output	=> OPEN	--NoDevice
-				);
+--			sync3_RXUserClock : ENTITY PoC.xil_SyncBits
+--				PORT MAP (
+--					Clock					=> GTX_UserClock,			-- Clock to be synchronized to
+--					Input(0)			=> NoDevice,					-- Data to be synchronized
+--					Output(0)			=> DD_NoDevice				-- synchronised data
+--				);
 			
-			NoDevice	<= '0';
-			
-			sync3_RXUserClock : ENTITY PoC.xil_SyncBits
-				PORT MAP (
-					Clock					=> GTX_UserClock,			-- Clock to be synchronized to
-					Input(0)			=> NoDevice,					-- Data to be synchronized
-					Output(0)			=> DD_NoDevice				-- synchronised data
-				);
+			DD_NoDevice	<= '0';
 			
 			NoDevice_r		<= DD_NoDevice OR (NoDevice_r AND NOT ResetDone_r) WHEN rising_edge(GTX_UserClock);		-- latch NoDevide state until ResetDone, after that work as D-FF
 			NoDevice_d		<= NoDevice_r WHEN rising_edge(GTX_UserClock);
