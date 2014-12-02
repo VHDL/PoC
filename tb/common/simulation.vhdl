@@ -32,17 +32,11 @@
 -- limitations under the License.
 -- =============================================================================
 
-USE			STD.TextIO.ALL;
-
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
-USE			PoC.strings.ALL;
-
 
 package simulation is
 	constant U8								: T_SLV_8							:= (others => 'U');
@@ -80,6 +74,8 @@ package simulation is
 end;
 
 
+use	std.TextIO.all;
+
 package body simulation is
 
   --+ Test Bench Status Management ++++++++++++++++++++++++++++++++++++++++++
@@ -104,13 +100,15 @@ package body simulation is
 	end;
 
 	procedure tbPrintResult is
+		variable l : line;
 	begin
-		stdout_write("SIMULATION RESULT = ");
+		write(l, string'("SIMULATION RESULT = "));
 		if pass then
-			stdout_write("PASSED");
+			write(l, string'("PASSED"));
 		else
-			stdout_write("FAILED");
+			write(l, string'("FAILED"));
 		end if;
+		writeline(output, l);
 	end procedure;
 
 	-- checksum functions

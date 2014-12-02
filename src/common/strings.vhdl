@@ -39,8 +39,6 @@ use			IEEE.math_real.all;
 library	PoC;
 use			PoC.utils.all;
 use			PoC.my_config.MY_VERBOSE;
-use			PoC.my_project.MY_OPERATING_SYSTEM;
-
 
 package strings is
 	-- Type declarations
@@ -131,16 +129,6 @@ package strings is
 	function str_to_upper(str : STRING)									return STRING;
 	function str_substr(str : STRING; start : INTEGER := 0; length : INTEGER := 0) return STRING;
 
-	procedure stdout_write(str : STRING);
-	procedure stdout_writeline(str : STRING := "");
-	procedure stderr_write(str : STRING);
-	procedure stderr_writeline(str : STRING := "");
-
-	function to_OSPath(str : STRING) return STRING;
-
-	-- Constant declarations
-	-- ===========================================================================
-	constant C_LINEBREAK	: STRING		:= ite(str_equal(MY_OPERATING_SYSTEM, "WINDOWS"), (CR & LF), (1 => LF));
 end package strings;
 
 
@@ -789,43 +777,4 @@ package body strings is
 		return str(StartOfString to EndOfString);
 	end function;
 	
-	procedure stdout_write(str : STRING) is
-	begin
-		std.textio.write(std.textio.output, str);
-	end procedure;
-	
-	procedure stdout_writeline(str : STRING := "") is
-	begin
-		stdout_write(str & C_LINEBREAK);
-	end procedure;
-	
-	procedure stderr_write(str : STRING) is
-	begin
-		std.textio.write(std.textio.output, str);
-	end procedure;
-	
-	procedure stderr_writeline(str : STRING := "") is
-	begin
-		stderr_write(str & C_LINEBREAK);
-	end procedure;
-	
-	function to_OSPath(str : STRING) return STRING is
-		constant path			: STRING							:= str_trim(str);
-		variable temp			: STRING(path'range);
-	begin
-		if (str_equal(MY_OPERATING_SYSTEM, "WINDOWS")) then
-			temp	:= path;
---			for i in temp'range loop
---				if (temp(i) = '/') then
---					temp(i) := '\';
---				end if;
---			end loop;
-			
-			return temp;
-		elsif (str_equal(MY_OPERATING_SYSTEM, "WINDOWS")) then
-			return path;
-		else
-			report "to_OSPath: Operating system '" & MY_OPERATING_SYSTEM & "' is not supported." severity failure;
-		end if;
-	end function;
 end strings;

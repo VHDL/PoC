@@ -39,12 +39,12 @@ use			PoC.utils.all;
 
 PACKAGE components IS
 	-- FlipFlop functions
-	FUNCTION ffdre(q : STD_LOGIC; d : STD_LOGIC; rst : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC;												-- D-FlipFlop with reset and enable
-	FUNCTION ffdre(q : STD_LOGIC_VECTOR; d : STD_LOGIC_VECTOR; rst : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC_VECTOR;	-- D-FlipFlop with reset and enable
-	FUNCTION ffdse(q : STD_LOGIC; d : STD_LOGIC; set : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC;												-- D-FlipFlop with set and enable
-	FUNCTION fftre(q : STD_LOGIC; rst : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC;																			-- T-FlipFlop with reset and enable
-	FUNCTION ffrs(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant rst
-	FUNCTION ffsr(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant set
+	FUNCTION ffdre(q : STD_LOGIC; d : STD_LOGIC; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1') RETURN STD_LOGIC;												-- D-FlipFlop with reset and enable
+	FUNCTION ffdre(q : STD_LOGIC_VECTOR; d : STD_LOGIC_VECTOR; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1') RETURN STD_LOGIC_VECTOR;	-- D-FlipFlop with reset and enable
+	FUNCTION ffdse(q : STD_LOGIC; d : STD_LOGIC; set : STD_LOGIC := '0'; en : STD_LOGIC) RETURN STD_LOGIC;												-- D-FlipFlop with set and enable
+	FUNCTION fftre(q : STD_LOGIC; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1') RETURN STD_LOGIC;																			-- T-FlipFlop with reset and enable
+	FUNCTION ffrs(q : STD_LOGIC; rst : STD_LOGIC := '0'; set : STD_LOGIC := '0') RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant rst
+	FUNCTION ffsr(q : STD_LOGIC; rst : STD_LOGIC := '0'; set : STD_LOGIC := '0') RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant set
 
 	-- adder
 	function inc(value : STD_LOGIC_VECTOR; increment : NATURAL := 1) return STD_LOGIC_VECTOR;
@@ -68,40 +68,40 @@ END;
 
 
 PACKAGE BODY components IS
-	-- D-FlipFlop with reset and enable
-	FUNCTION ffdre(q : STD_LOGIC; d : STD_LOGIC; rst : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC IS
-	BEGIN
-		RETURN ((d AND en) OR (q AND NOT en)) AND NOT rst;
-	END FUNCTION;
+	-- d-flipflop with reset and enable
+	function ffdre(q : STD_LOGIC; d : STD_LOGIC; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1') return STD_LOGIC is
+	begin
+		return ((d and en) or (q and not en)) and not rst;
+	end function;
 	
-	FUNCTION ffdre(q : STD_LOGIC_VECTOR; d : STD_LOGIC_VECTOR; rst : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC_VECTOR IS
-	BEGIN
-		RETURN ((d AND (q'range => en)) OR (q AND NOT (q'range => en))) AND NOT (q'range => rst);
-	END FUNCTION;
+	function ffdre(q : STD_LOGIC_VECTOR; d : STD_LOGIC_VECTOR; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1') return STD_LOGIC_VECTOR is
+	begin
+		return ((d and (q'range => en)) or (q and not (q'range => en))) and not (q'range => rst);
+	end function;
 	
-	-- D-FlipFlop with set and enable
-	FUNCTION ffdse(q : STD_LOGIC; d : STD_LOGIC; set : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC IS
-	BEGIN
-		RETURN ((d AND en) OR (q AND NOT en)) OR set;
-	END FUNCTION;
+	-- d-flipflop with set and enable
+	function ffdse(q : STD_LOGIC; d : STD_LOGIC; set : STD_LOGIC := '0'; en : STD_LOGIC := '1') return STD_LOGIC is
+	begin
+		return ((d and en) or (q and not en)) or set;
+	end function;
 	
-	-- T-FlipFlop with reset and enable
-	FUNCTION fftre(q : STD_LOGIC; rst : STD_LOGIC; en : STD_LOGIC) RETURN STD_LOGIC IS
-	BEGIN
-		RETURN ((NOT q AND en) OR (q AND NOT en)) AND NOT rst;
-	END FUNCTION;
+	-- t-flipflop with reset and enable
+	function fftre(q : STD_LOGIC; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1') return STD_LOGIC is
+	begin
+		return ((not q and en) or (q and not en)) and not rst;
+	end function;
 	
-	-- RS-FlipFlop with dominant rst
-	FUNCTION ffrs(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC IS
-	BEGIN
-		RETURN (q OR set) AND NOT rst;
-	END FUNCTION;
+	-- rs-flipflop with dominant rst
+	function ffrs(q : STD_LOGIC; rst : STD_LOGIC := '0'; set : STD_LOGIC := '0') return STD_LOGIC is
+	begin
+		return (q or set) and not rst;
+	end function;
 	
-	-- RS-FlipFlop with dominant set
-	FUNCTION ffsr(q : STD_LOGIC; rst : STD_LOGIC; set : STD_LOGIC) RETURN STD_LOGIC IS
-	BEGIN
-		RETURN (q AND NOT rst) OR set;
-	END FUNCTION;
+	-- rs-flipflop with dominant set
+	function ffsr(q : STD_LOGIC; rst : STD_LOGIC := '0'; set : STD_LOGIC := '0') return STD_LOGIC is
+	begin
+		return (q and not rst) or set;
+	end function;
 	
 	-- adder
 	function inc(value : STD_LOGIC_VECTOR; increment : NATURAL := 1) return STD_LOGIC_VECTOR is
