@@ -1,7 +1,7 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Entity:      arith_addw
 --
@@ -32,9 +32,9 @@
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --              http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -131,7 +131,7 @@ architecture rtl of arith_addw is
     return  res;
   end compute_blocks;
   constant BLOCKS : integer_vector(K-1 downto 0) := compute_blocks;
-  
+
   signal gg : std_logic_vector(K-1 downto 1);  -- Block Generate
   signal pp : std_logic_vector(K-1 downto 1);  -- Block Propagate
   signal c  : std_logic_vector(K-1 downto 1);  -- Block Carry-in
@@ -228,7 +228,7 @@ begin
         genSpread: for i in LEVELS+1 to 2*LEVELS-1 generate
           constant D : positive := 2**(2*LEVELS-i-1);
         begin
-          genBits: for j in 0 to K-1 generate            
+          genBits: for j in 0 to K-1 generate
             genOp: if j > D and (j+1) mod (2*D) = D generate
                 g(i)(j) <= (p(i-1)(j) and g(i-1)(j-D)) or g(i-1)(j);
                 p(i)(j) <=  p(i-1)(j) and p(i-1)(j-D);
@@ -244,8 +244,8 @@ begin
       end generate genPPN_BK;
 
     end generate genLUT;
-    
- end block blkCore;
+
+  end block blkCore;
 
   -----------------------------------------------------------------------------
   -- Implement Carry-Select Variant
@@ -262,7 +262,7 @@ begin
     signal ss : unsigned(HI downto LO);
   begin
 
-    -- Connect common block interface    
+    -- Connect common block interface
     aa <= unsigned(a(HI downto LO));
     bb <= unsigned(b(HI downto LO));
     s(HI downto LO) <= std_logic_vector(ss);
