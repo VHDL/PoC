@@ -37,10 +37,6 @@ library PoC;
 use			PoC.utils.all;
 use			PoC.vectors.all;
 
--- Usage
--- ====================================
--- LIBRARY	PoC;
--- USE			PoC.Xilinx.ALL;
 
 package xil is
 	-- ChipScope
@@ -294,44 +290,44 @@ package xil is
 		);
 	end component;
 	
-	COMPONENT xil_SyncBlock IS
-		GENERIC (
+	component xil_SyncBlock is
+		generic (
 			BITS								: POSITIVE						:= 1;									-- number of bit to be synchronized
 			INIT								: STD_LOGIC_VECTOR		:= x"00"							-- number of BITS to synchronize
 		);
-		PORT (
-			Clock								: IN	STD_LOGIC;														-- Clock to be synchronized to
-			Input								: IN	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);	-- Data to be synchronized
-			Output							: OUT	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)		-- synchronised data
+		port (
+			Clock								: in	STD_LOGIC;														-- Clock to be synchronized to
+			Input								: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);	-- Data to be synchronized
+			Output							: out	STD_LOGIC_VECTOR(BITS - 1 downto 0)		-- synchronised data
 		);
-	END COMPONENT;
+	end component;
 	
-	COMPONENT xil_SystemMonitor_Virtex6 IS
-		PORT (
-			Reset								: IN	STD_LOGIC;				-- Reset signal for the System Monitor control logic
+	component xil_SystemMonitor_Virtex6 is
+		port (
+			Reset								: in	STD_LOGIC;				-- Reset signal for the System Monitor control logic
 			
-			Alarm_UserTemp			: OUT	STD_LOGIC;				-- Temperature-sensor alarm output
-			Alarm_OverTemp			: OUT	STD_LOGIC;				-- Over-Temperature alarm output
-			Alarm								: OUT	STD_LOGIC;				-- OR'ed output of all the Alarms
-			VP									: IN	STD_LOGIC;				-- Dedicated Analog Input Pair
-			VN									: IN	STD_LOGIC
+			Alarm_UserTemp			: out	STD_LOGIC;				-- Temperature-sensor alarm output
+			Alarm_OverTemp			: out	STD_LOGIC;				-- Over-Temperature alarm output
+			Alarm								: out	STD_LOGIC;				-- OR'ed output of all the Alarms
+			VP									: in	STD_LOGIC;				-- Dedicated Analog Input Pair
+			VN									: in	STD_LOGIC
 		);
-	END COMPONENT;
+	end component;
 
-	COMPONENT xil_SystemMonitor_Series7 IS
-		PORT (
-			Reset								: IN	STD_LOGIC;				-- Reset signal for the System Monitor control logic
+	component xil_SystemMonitor_Series7 is
+		port (
+			Reset								: in	STD_LOGIC;				-- Reset signal for the System Monitor control logic
 			
-			Alarm_UserTemp			: OUT	STD_LOGIC;				-- Temperature-sensor alarm output
-			Alarm_OverTemp			: OUT	STD_LOGIC;				-- Over-Temperature alarm output
-			Alarm								: OUT	STD_LOGIC;				-- OR'ed output of all the Alarms
-			VP									: IN	STD_LOGIC;				-- Dedicated Analog Input Pair
-			VN									: IN	STD_LOGIC
+			Alarm_UserTemp			: out	STD_LOGIC;				-- Temperature-sensor alarm output
+			Alarm_OverTemp			: out	STD_LOGIC;				-- Over-Temperature alarm output
+			Alarm								: out	STD_LOGIC;				-- OR'ed output of all the Alarms
+			VP									: in	STD_LOGIC;				-- Dedicated Analog Input Pair
+			VN									: in	STD_LOGIC
 		);
-	END COMPONENT;
-END;
+	end component;
+end;
 
 
-PACKAGE BODY xil IS
+package body xil is
 
-END PACKAGE BODY;
+end package body;

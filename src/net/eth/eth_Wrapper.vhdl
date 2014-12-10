@@ -37,6 +37,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.net.ALL;
 USE			PoC.net_comp.ALL;
 
@@ -68,7 +69,7 @@ LIBRARY work;
 ENTITY Eth_Wrapper IS
 	GENERIC (
 		DEBUG						: BOOLEAN															:= FALSE;
-		CLOCKIN_FREQ_MHZ					: REAL																:= 125.0;																		-- 125 MHz
+		CLOCKIN_FREQ					: FREQ																:= 125.0 MHz;																		-- 125 MHz
 		ETHERNET_IPSTYLE					: T_IPSTYLE														:= IPSTYLE_SOFT;														-- 
 		RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE					:= NET_ETH_RS_DATA_INTERFACE_GMII;					-- 
 		PHY_DEVICE								: T_NET_ETH_PHY_DEVICE								:= NET_ETH_PHY_DEVICE_MARVEL_88E1111;				-- 
@@ -136,7 +137,7 @@ BEGIN
 		Eth : Eth_Wrapper_Virtex5
 			GENERIC MAP (
 				DEBUG						=> DEBUG,
-				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ,
+				CLOCKIN_FREQ					=> CLOCKIN_FREQ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
 				PHY_DATA_INTERFACE				=> PHY_DATA_INTERFACE
@@ -177,7 +178,7 @@ BEGIN
 		Eth : Eth_Wrapper_Virtex6
 			GENERIC MAP (
 				DEBUG						=> DEBUG,
-				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ,
+				CLOCKIN_FREQ					=> CLOCKIN_FREQ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
 				PHY_DATA_INTERFACE				=> PHY_DATA_INTERFACE
@@ -219,7 +220,7 @@ BEGIN
 		Eth : Eth_Wrapper_Series7
 			GENERIC MAP (
 				DEBUG											=> DEBUG,
-				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ,
+				CLOCKIN_FREQ					=> CLOCKIN_FREQ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
 				PHY_DATA_INTERFACE				=> PHY_DATA_INTERFACE
@@ -299,7 +300,7 @@ BEGIN
 		PHYC : ENTITY PoC.Eth_PHYController
 			GENERIC MAP (
 				DEBUG									=> DEBUG,
-				CLOCK_FREQ_MHZ									=> CLOCKIN_FREQ_MHZ,
+				CLOCK_FREQ									=> CLOCKIN_FREQ,
 				PHY_DEVICE											=> PHY_DEVICE,
 				PHY_DEVICE_ADDRESS							=> PHY_DEVICE_ADDRESS,
 				PHY_MANAGEMENT_INTERFACE				=> PHY_MANAGEMENT_INTERFACE,																				--			MDIO = 1 MBaud				IIC = 100 kBaud

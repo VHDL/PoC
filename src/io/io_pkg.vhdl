@@ -30,16 +30,16 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.ALL;
+use			IEEE.NUMERIC_STD.ALL;
 
 library PoC;
 use			PoC.my_config.all;
 use			PoC.physical.all;
 
 
-PACKAGE io IS
+package io is
 	-- not yet supported by Xilinx ISE Simulator - the subsignal I (with reverse direction) is always 'U'
 	-- so use this record only in pure synthesis environments
 	TYPE T_IO_TRISTATE IS RECORD
@@ -198,10 +198,10 @@ PACKAGE io IS
     );
 	end component;
 
-END io;
+end io;
 
 
-PACKAGE BODY io IS
+package body io is
 	function io_7SegmentDisplayEncoding(hex	: STD_LOGIC_VECTOR(3 downto 0); dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR is
 		variable Result		: STD_LOGIC_VECTOR(7 downto 0);
 	begin
@@ -237,4 +237,4 @@ PACKAGE BODY io IS
 		end loop;
 		return FALSE;
 	end function;
-END PACKAGE BODY;
+end package body;

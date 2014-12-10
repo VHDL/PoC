@@ -776,7 +776,7 @@ PACKAGE BODY net IS
 		VARIABLE MAC						: T_NET_MAC_ADDRESS;
 	BEGIN
 		FOR I IN Segments'range LOOP
-			MAC(I)	:= to_slv(to_nat(Segments(I), 'h'), 8);
+			MAC(I)	:= to_slv(to_natural_hex(Segments(I)), 8);
 		END LOOP;
 		RETURN MAC;
 	END FUNCTION;
@@ -903,7 +903,7 @@ PACKAGE BODY net IS
 		VARIABLE IP							: T_NET_IPV4_ADDRESS;
 	BEGIN
 		FOR I IN Segments'range LOOP
-			IP(I) := to_slv(to_nat(Segments(I), 'd'), 8);
+			IP(I) := to_slv(to_natural_dec(Segments(I)), 8);
 		END LOOP;
 		RETURN IP;
 	END FUNCTION;
@@ -1031,14 +1031,14 @@ PACKAGE BODY net IS
 	
 		RETURN Segments;
 	END FUNCTION;
-	
+		
 	FUNCTION to_net_ipv6_address(str : STRING) RETURN T_NET_IPV6_ADDRESS IS
 		VARIABLE Segments				: IPV6_ADDRESS_SEGMENT_VECTOR(0 TO 7)	:= ipv6_split(str);
 		VARIABLE Segment				: T_SLV_16;
 		VARIABLE IP							: T_NET_IPV6_ADDRESS;
 	BEGIN
 		FOR I IN Segments'range LOOP
-			Segment								:= to_slv(to_nat(Segments(I), 'h'), 16);
+			Segment								:= to_slv(to_natural_hex(Segments(I)), 16);
 			IP(I * 2)							:= Segment(7 DOWNTO 0);
 			IP((I * 2) + 1)				:= Segment(15 DOWNTO 8);
 		END LOOP;
