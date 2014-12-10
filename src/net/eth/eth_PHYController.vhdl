@@ -37,6 +37,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.io.ALL;
 USE			PoC.net.ALL;
 
@@ -44,7 +45,7 @@ USE			PoC.net.ALL;
 ENTITY Eth_PHYController IS
 	GENERIC (
 		DEBUG						: BOOLEAN																	:= FALSE;																			-- 
-		CLOCK_FREQ_MHZ						: REAL																		:= 125.0;																			-- 125 MHz
+		CLOCK_FREQ						: FREQ																		:= 125.0 Mhz;																			-- 125 MHz
 		PCSCORE										: T_NET_ETH_PCSCORE												:= NET_ETH_PCSCORE_GENERIC_GMII;							-- 
 		PHY_DEVICE								: T_NET_ETH_PHY_DEVICE										:= NET_ETH_PHY_DEVICE_MARVEL_88E1111;					-- 
 		PHY_DEVICE_ADDRESS				: T_NET_ETH_PHY_DEVICE_ADDRESS						:= x"00";																			-- 
@@ -93,7 +94,7 @@ BEGIN
 		PHYC : ENTITY PoC.Eth_PHYController_Marvell_88E1111
 			GENERIC MAP (
 				DEBUG										=> DEBUG,
-				CLOCK_FREQ_MHZ					=> CLOCK_FREQ_MHZ,
+				CLOCK_FREQ					=> CLOCK_FREQ,
 				PHY_DEVICE_ADDRESS			=> PHY_DEVICE_ADDRESS
 			)
 			PORT MAP (
@@ -124,7 +125,7 @@ BEGIN
 		MDIOC : ENTITY PoC.Eth_MDIOController
 			GENERIC MAP (
 				DEBUG						=> DEBUG,
-				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ
+				CLOCK_FREQ						=> CLOCK_FREQ
 			)
 			PORT MAP (
 				Clock											=> Clock,
@@ -209,7 +210,7 @@ BEGIN
 			GENERIC MAP (
 				DEBUG											=> DEBUG,
 				ALLOW_MEALY_TRANSITION		=> FALSE,
-				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
+				CLOCK_FREQ						=> CLOCK_FREQ,
 				IIC_BUSMODE								=> IO_IIC_BUSMODE_STANDARDMODE,
 				IIC_ADDRESS								=> x"01",
 				ADDRESS_BITS							=> 7,

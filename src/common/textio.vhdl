@@ -81,5 +81,5 @@ package body txtio is
 		writeline(stderr_line);
 	end procedure;
 	
-package body txtio is
+end package body; 
 

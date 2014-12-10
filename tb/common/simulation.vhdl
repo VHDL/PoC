@@ -10,9 +10,7 @@
 -- 
 -- Description:
 -- ------------------------------------
---		Automated testbench for PoC.arith_prng
---		The Pseudo-Random Number Generator is instanziated for 8 bits. The
---		output sequence is compared to 256 precalculated values.
+--		TODO
 --
 -- License:
 -- =============================================================================

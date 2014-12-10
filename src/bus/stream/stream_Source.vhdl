@@ -121,7 +121,7 @@ BEGIN
 				WAIT UNTIL rising_edge(Clock);
 				-- write frame data to interface
 				Out_Valid					<= CurFG.Data(WordIndex).Valid;
-				Out_Data						<= CurFG.Data(WordIndex).Data;
+				Out_Data					<= CurFG.Data(WordIndex).Data;
 				Out_SOF						<= CurFG.Data(WordIndex).SOF;
 				Out_EOF						<= CurFG.Data(WordIndex).EOF;
 				

@@ -411,13 +411,13 @@ FUNCTION CountPatterns(Data : T_SIM_STREAM_WORD_VECTOR_8) RETURN NATURAL IS
 		VARIABLE CRC8_Value					: T_SLV_8					:= CRC8_INIT;
 
 --		VARIABLE Pattern						: T_DATAFIFO_PATTERN;
-		VARIABLE Word								: T_SLV_8;
+		VARIABLE Word								: UNSIGNED(T_SLV_8'range);
 	BEGIN
 		REPORT "Computing CRC8 for Words " & to_string(words'low) & " to " & to_string(words'high) SEVERITY NOTE;
 		
 		FOR I IN words'range LOOP
 			IF (words(I).Valid = '1') THEN
-				Word	:= to_01(words(I).Data);
+				Word	:= to_01(unsigned(words(I).Data));
 
 --					ASSERT (J > 9) REPORT str_merge("  Word: 0x", hstr(Word), "    CRC16_Value: 0x", hstr(CRC16_Value)) SEVERITY NOTE;
 
