@@ -54,7 +54,7 @@ entity arith_addw is
     K : positive;                    -- Block Count
 
     ARCH        : tArch     := AAM;        -- Architecture
-    BLOCKING    : tBlocking := DEFAULT;    -- Blocking Scheme
+    BLOCKING    : tBlocking := DFLT;       -- Blocking Scheme
     SKIPPING    : tSkipping := CCC;        -- Carry Skip Scheme
 		P_INCLUSIVE : boolean   := false       -- Use Inclusive Propagate, i.e. c^1
   );
@@ -86,7 +86,7 @@ architecture rtl of arith_addw is
 
     variable l : line;
   begin
-    if bs = DEFAULT then
+    if bs = DFLT then
       bs := DEFAULT_BLOCKING(ARCH);
     end if;
     case bs is

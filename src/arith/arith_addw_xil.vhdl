@@ -54,7 +54,7 @@ entity arith_addw_xil is
     K : positive;                    -- Block Count
 
     ARCH     : tArch     := CAI;        -- Architecture
-    BLOCKING : tBlocking := DEFAULT;    -- Blocking Scheme
+    BLOCKING : tBlocking := DFLT;       -- Blocking Scheme
     SKIPPING : tSkipping := CCC         -- Carry Skip Scheme
   );
   port (
@@ -91,7 +91,7 @@ architecture rtl of arith_addw_xil is
 
     variable l : line;
   begin
-    if bs = DEFAULT then
+    if bs = DFLT then
       bs := DEFAULT_BLOCKING(ARCH);
     end if;
     case bs is
