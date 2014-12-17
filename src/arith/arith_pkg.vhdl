@@ -103,7 +103,7 @@ package arith is
 	end component;
 
   type tArch     is (AAM, CAI, CCA, PAI);
-  type tBlocking is (DEFAULT, FIX, ASC, DESC);
+  type tBlocking is (DFLT, FIX, ASC, DESC);
   type tSkipping is (PLAIN, CCC, PPN_KS, PPN_BK);
   component arith_addw is
     generic (
@@ -111,7 +111,7 @@ package arith is
       K : positive;                    -- Block Count
 
       ARCH     : tArch     := AAM;        -- Architecture
-      BLOCKING : tBlocking := DEFAULT;    -- Blocking Scheme
+      BLOCKING : tBlocking := DFLT;       -- Blocking Scheme
       SKIPPING : tSkipping := CCC         -- Carry Skip Scheme
     );
     port (
