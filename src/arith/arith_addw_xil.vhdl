@@ -1,7 +1,7 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Entity:      arith_addw_xil
 --
@@ -33,10 +33,10 @@
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --              http://www.apache.org/licenses/LICENSE-2.0
--- 
--- Unless required by aplicable law or agreed to in writing, software
+--
+-- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
@@ -50,11 +50,11 @@ use PoC.arith.all;
 
 entity arith_addw_xil is
   generic (
-    N : positive := 3;                    -- Operand Width
-    K : positive := 2;                    -- Block Count
+    N : positive;                    -- Operand Width
+    K : positive;                    -- Block Count
 
     ARCH     : tArch     := CAI;        -- Architecture
-    BLOCKING : tBlocking := DEFAULT;    -- Blocking Scheme
+    BLOCKING : tBlocking := DFLT;       -- Blocking Scheme
     SKIPPING : tSkipping := CCC         -- Carry Skip Scheme
   );
   port (
@@ -91,7 +91,7 @@ architecture rtl of arith_addw_xil is
 
     variable l : line;
   begin
-    if bs = DEFAULT then
+    if bs = DFLT then
       bs := DEFAULT_BLOCKING(ARCH);
     end if;
     case bs is
@@ -123,8 +123,8 @@ architecture rtl of arith_addw_xil is
         report "Unknown blocking scheme: "&tBlocking'image(bs) severity failure;
 
     end case;
-	  --synthesis translate_off
-    write(l, integer'image(N)&"-bit wide adder: ARCH="&tArch'image(ARCH)&
+    --synthesis translate_off
+    write(l, "Implementing "&integer'image(N)&"-bit wide adder: ARCH="&tArch'image(ARCH)&
              ", BLOCKING="&tBlocking'image(bs)&'[');
     for i in K-1 downto 1 loop
       write(l, res(i)-res(i-1));
@@ -133,11 +133,11 @@ architecture rtl of arith_addw_xil is
     write(l, res(0));
     write(l, "], SKIPPING="&tSkipping'image(SKIPPING));
     writeline(output, l);
-	  --synthesis translate_on
+    --synthesis translate_on
     return  res;
   end compute_blocks;
   constant BLOCKS : integer_vector(K-1 downto 0) := compute_blocks;
-  
+
   signal g : std_logic_vector(K-1 downto 1);  -- Block Generate
   signal p : std_logic_vector(K-1 downto 1);  -- Block Propagate
   signal c : std_logic_vector(K-1 downto 1);  -- Block Carry-in
@@ -145,7 +145,7 @@ begin
 
   -----------------------------------------------------------------------------
   -- Rightmost Block and Core Carry Chain
-	blkCore: block is
+	blkCore: block
     constant M : positive := BLOCKS(0);  -- Rightmost Block Width
 		signal cc : std_logic_vector(K+M-1 downto 0);
 	begin
@@ -189,7 +189,7 @@ begin
 			cc(cc'left downto M+1) <= g or (p and cc(K+M-2 downto M));
 		end generate genPlain;
 
-		-- Kogge-Stone Parellel Prefix Network
+		-- Kogge-Stone Parallel Prefix Network
 		genPPN_KS: if SKIPPING = PPN_KS generate
 			subtype tLevel is std_logic_vector(K-1 downto 0);
 			type tLevels is array(natural range<>) of tLevel;
@@ -235,7 +235,7 @@ begin
 			genSpread: for i in LEVELS+1 to 2*LEVELS-1 generate
 				constant D : positive := 2**(2*LEVELS-i-1);
 			begin
-				genBits: for j in 0 to K-1 generate            
+				genBits: for j in 0 to K-1 generate
 					genOp: if j > D and (j+1) mod (2*D) = D generate
 						gg(i)(j) <= (pp(i-1)(j) and gg(i-1)(j-D)) or gg(i-1)(j);
 						pp(i)(j) <=  pp(i-1)(j) and pp(i-1)(j-D);
@@ -293,7 +293,7 @@ begin
 						CI => c0(j),
 						LI => p0
 					);
-			
+
 				-- Computation of (c1, s1) and Block Sum
 				c1_lut: LUT6_2
           generic map (
@@ -468,7 +468,7 @@ begin
 
 			signal pl : std_logic_vector(M-D-1 downto 0);
 			signal pc : std_logic_vector(M-D   downto 0);
-			
+
 		begin
 			pc(0) <= '0';
 			genDoubles: for j in 0 to D-1 generate
