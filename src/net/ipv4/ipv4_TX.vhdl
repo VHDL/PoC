@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,7 +52,7 @@ ENTITY IPv4_TX IS
 		In_Data													: IN	T_SLV_8;
 		In_SOF													: IN	STD_LOGIC;
 		In_EOF													: IN	STD_LOGIC;
-		In_Ready												: OUT	STD_LOGIC;
+		In_Ack													: OUT	STD_LOGIC;
 		In_Meta_rst											: OUT	STD_LOGIC;
 		In_Meta_SrcIPv4Address_nxt			: OUT	STD_LOGIC;
 		In_Meta_SrcIPv4Address_Data			: IN	T_SLV_8;
@@ -74,7 +74,7 @@ ENTITY IPv4_TX IS
 		Out_Data												: OUT	T_SLV_8;
 		Out_SOF													: OUT	STD_LOGIC;
 		Out_EOF													: OUT	STD_LOGIC;
-		Out_Ready												: IN	STD_LOGIC;
+		Out_Ack													: IN	STD_LOGIC;
 		Out_Meta_rst										: IN	STD_LOGIC;
 		Out_Meta_DestMACAddress_nxt			: IN	STD_LOGIC;
 		Out_Meta_DestMACAddress_Data		: OUT	T_SLV_8
@@ -134,7 +134,7 @@ ARCHITECTURE rtl OF IPv4_TX IS
 	SIGNAL NextState									: T_STATE;
 	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	SIGNAL In_Ready_i									: STD_LOGIC;
+	SIGNAL In_Ack_i									: STD_LOGIC;
 
 	SIGNAL UpperLayerPacketLength			: STD_LOGIC_VECTOR(15 DOWNTO 0);
 
@@ -201,7 +201,7 @@ BEGIN
 
 	PROCESS(State, In_Valid, In_SOF, In_EOF, In_Data,
 					In_Meta_Length,
-					Out_Ready, Out_Meta_rst, Out_Meta_DestMACAddress_nxt,
+					Out_Ack, Out_Meta_rst, Out_Meta_DestMACAddress_nxt,
 					ARP_IPCache_Valid, ARP_IPCache_IPv4Address_rst, ARP_IPCache_IPv4Address_nxt, ARP_IPCache_MACAddress_Data,
 					In_Meta_DestIPv4Address_Data, In_Meta_SrcIPv4Address_Data, In_Meta_Protocol,
 					InternetHeaderLength, UpperLayerPacketLength, TypeOfService, Flag_DontFragment, Flag_MoreFragments,
@@ -210,7 +210,7 @@ BEGIN
 	BEGIN
 		NextState													<= State;
 		
-		In_Ready_i												<= '0';
+		In_Ack_i												<= '0';
 		
 		Out_Valid													<= '0';
 		Out_Data													<= (OTHERS => '0');
@@ -263,7 +263,7 @@ BEGIN
 					Out_Valid										<= '1';
 					In_Meta_rst									<= '1';		-- reset metadata
 					
---					IF (Out_Ready = '1') THEN
+--					IF (Out_Ack	 = '1') THEN
 --						NextState									<= ST_SEND_TYPE_OF_SERVICE;
 --					ELSE
 --						NextState									<= ST_SEND_VERSION;
@@ -285,7 +285,7 @@ BEGIN
 					Out_Valid										<= '1';
 					In_Meta_rst									<= '1';		-- reset metadata
 					
---					IF (Out_Ready = '1') THEN
+--					IF (Out_Ack	 = '1') THEN
 --						NextState									<= ST_SEND_TYPE_OF_SERVICE;
 --					ELSE
 --						NextState									<= ST_SEND_VERSION;
@@ -383,7 +383,7 @@ BEGIN
 				Out_Data											<= x"4" & InternetHeaderLength;
 				Out_SOF												<= '1';
 
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_TYPE_OF_SERVICE;
 				END IF;
 			
@@ -391,7 +391,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= to_slv(TypeOfService);
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_TOTAL_LENGTH_0;
 				END IF;
 
@@ -399,7 +399,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= std_logic_vector(TotalLength(15 DOWNTO 8));
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_TOTAL_LENGTH_1;
 				END IF;
 				
@@ -407,7 +407,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= std_logic_vector(TotalLength(7 DOWNTO 0));
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_IDENTIFICATION_0;
 				END IF;
 				
@@ -415,7 +415,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= Identification(15 DOWNTO 8);
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_IDENTIFICATION_1;
 				END IF;
 				
@@ -423,7 +423,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= Identification(7 DOWNTO 0);
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_FLAGS;
 				END IF;
 				
@@ -434,7 +434,7 @@ BEGIN
 				Out_Data(5)										<= Flag_MoreFragments;
 				Out_Data(4 DOWNTO 0)					<= FragmentOffset(12 DOWNTO 8);
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_FRAGMENT_OFFSET;
 				END IF;
 			
@@ -442,7 +442,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= FragmentOffset(7 DOWNTO 0);
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_TIME_TO_LIVE;
 				END IF;
 				
@@ -450,7 +450,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= TimeToLive;
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_PROTOCOL;
 				END IF;
 				
@@ -458,7 +458,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= Protocol;
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_HEADER_CHECKSUM_0;
 				END IF;
 				
@@ -466,7 +466,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= Checksum(15 DOWNTO 8);
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_HEADER_CHECKSUM_1;
 				END IF;
 
@@ -474,7 +474,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= Checksum(7 DOWNTO 0);
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_SOURCE_ADDRESS;
 				END IF;
 			
@@ -482,7 +482,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= In_Meta_SrcIPv4Address_Data;
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					In_Meta_SrcIPv4Address_nxt	<= '1';
 					IPv4SeqCounter_en						<= '1';
 				
@@ -495,7 +495,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= In_Meta_DestIPv4Address_Data;
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					In_Meta_DestIPv4Address_nxt	<= '1';
 					IPv4SeqCounter_en						<= '1';
 				
@@ -508,9 +508,9 @@ BEGIN
 				Out_Valid												<= In_Valid;
 				Out_Data												<= In_Data;
 				Out_EOF													<= In_EOF;
-				In_Ready_i											<= Out_Ready;
+				In_Ack_i											<= Out_Ack;
 				
-				IF ((In_EOF AND Out_Ready) = '1') THEN
+				IF ((In_EOF AND Out_Ack) = '1') THEN
 					In_Meta_rst										<= '1';
 					NextState											<= ST_IDLE;
 				END IF;
@@ -582,5 +582,5 @@ Checksum0_nxt0_us		<= ("0" & Checksum1_d_us)
 		END IF;
 	END PROCESS;
 
-	In_Ready												<= In_Ready_i;
+	In_Ack													<= In_Ack_i;
 END;

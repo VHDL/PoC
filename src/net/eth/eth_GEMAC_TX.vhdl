@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,7 +56,7 @@ ENTITY Eth_GEMAC_TX IS
 		TX_Data										: IN	T_SLV_8;
 		TX_SOF										: IN	STD_LOGIC;
 		TX_EOF										: IN	STD_LOGIC;
-		TX_Ready									: OUT	STD_LOGIC;
+		TX_Ack										: OUT	STD_LOGIC;
 		
 		-- Reconcilation Sublayer interface
 		RS_TX_Valid								: OUT	STD_LOGIC;
@@ -127,7 +127,7 @@ BEGIN
 
 		BufferUnderrun							<= '0';
 
-		TX_Ready										<= '0';
+		TX_Ack											<= '0';
 
 		RS_TX_Valid									<= '0';
 		RS_TX_Data									<= x"55";
@@ -169,7 +169,7 @@ BEGIN
 				NextState								<= ST_SEND_DATA_0;
 			
 			WHEN ST_SEND_DATA_0 =>
-				TX_Ready								<= '1';
+				TX_Ack									<= '1';
 				RS_TX_Data							<= TX_Data;
 				
 				RS_TX_Valid							<= '1';
@@ -200,7 +200,7 @@ BEGIN
 				END IF;
 
 			WHEN ST_SEND_DATA_N =>
-				TX_Ready								<= '1';
+				TX_Ack									<= '1';
 				RS_TX_Data							<= TX_Data;
 				
 				RS_TX_Valid							<= '1';
@@ -267,7 +267,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_DISCARD_FRAME =>
-				TX_Ready								<= '1';
+				TX_Ack									<= '1';
 				
 				IF (Is_EOF = '1') THEN
 					NextState							<= ST_IDLE;

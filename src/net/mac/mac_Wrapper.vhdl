@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,19 +52,19 @@ ENTITY MAC_Wrapper IS
 		Eth_TX_Data									: OUT	T_SLV_8;
 		Eth_TX_SOF									: OUT	STD_LOGIC;
 		Eth_TX_EOF									: OUT	STD_LOGIC;
-		Eth_TX_Ready								: IN	STD_LOGIC;
+		Eth_TX_Ack									: IN	STD_LOGIC;
 		
 		Eth_RX_Valid								: IN	STD_LOGIC;
 		Eth_RX_Data									: IN	T_SLV_8;
 		Eth_RX_SOF									: IN	STD_LOGIC;
 		Eth_RX_EOF									: IN	STD_LOGIC;
-		Eth_RX_Ready								: OUT	STD_LOGIC;
+		Eth_RX_Ack									: OUT	STD_LOGIC;
 		
 		TX_Valid										: IN	STD_LOGIC_VECTOR(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
 		TX_Data											: IN	T_SLVV_8(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
 		TX_SOF											: IN	STD_LOGIC_VECTOR(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
 		TX_EOF											: IN	STD_LOGIC_VECTOR(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
-		TX_Ready										: OUT	STD_LOGIC_VECTOR(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
+		TX_Ack											: OUT	STD_LOGIC_VECTOR(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
 		Tx_Meta_rst									: OUT	STD_LOGIC_VECTOR(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
 		TX_Meta_DestMACAddress_nxt	: OUT	STD_LOGIC_VECTOR(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
 		TX_Meta_DestMACAddress_Data	: IN	T_SLVV_8(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
@@ -73,7 +73,7 @@ ENTITY MAC_Wrapper IS
 		RX_Data											: OUT	T_SLVV_8(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
 		RX_SOF											: OUT	STD_LOGIC_VECTOR(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
 		RX_EOF											: OUT	STD_LOGIC_VECTOR(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
-		RX_Ready										: IN	STD_LOGIC_VECTOR(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
+		RX_Ack											: IN	STD_LOGIC_VECTOR(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
 		RX_Meta_rst									: IN	STD_LOGIC_VECTOR(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
 		RX_Meta_SrcMACAddress_nxt		: IN	STD_LOGIC_VECTOR(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
 		RX_Meta_SrcMACAddress_Data	: OUT	T_SLVV_8(getPortCount(MAC_CONFIG) - 1 DOWNTO 0);
@@ -175,7 +175,7 @@ ARCHITECTURE rtl OF MAC_Wrapper IS
 	SIGNAL DestEth_RX_EOF												: STD_LOGIC_VECTOR(INTERFACE_COUNT - 1 DOWNTO 0);
 	SIGNAL DestEth_RX_Meta_DestMACAddress_Data	: T_SLVV_8(INTERFACE_COUNT - 1 DOWNTO 0);
 
-	SIGNAL SrcEth_RX_Ready											: STD_LOGIC_VECTOR(INTERFACE_COUNT - 1 DOWNTO 0);
+	SIGNAL SrcEth_RX_Ack												: STD_LOGIC_VECTOR(INTERFACE_COUNT - 1 DOWNTO 0);
 	SIGNAL SrcEth_RX_Meta_rst										: STD_LOGIC_VECTOR(INTERFACE_COUNT - 1 DOWNTO 0);
 	SIGNAL SrcEth_RX_Meta_DestMACAddress_nxt		: STD_LOGIC_VECTOR(INTERFACE_COUNT - 1 DOWNTO 0);
 
@@ -189,12 +189,12 @@ ARCHITECTURE rtl OF MAC_Wrapper IS
 	SIGNAL SrcEth_TX_Data												: T_SLV_8;
 	SIGNAL SrcEth_TX_SOF												: STD_LOGIC;
 	SIGNAL SrcEth_TX_EOF												: STD_LOGIC;
-	SIGNAL SrcEth_TX_Ready											: STD_LOGIC_VECTOR(INTERFACE_COUNT - 1 DOWNTO 0);
+	SIGNAL SrcEth_TX_Ack												: STD_LOGIC_VECTOR(INTERFACE_COUNT - 1 DOWNTO 0);
 	SIGNAL SrcEth_TX_Meta_rst										: STD_LOGIC_VECTOR(INTERFACE_COUNT - 1 DOWNTO 0);
 	SIGNAL SrcEth_TX_Meta_DestMACAddress_nxt		: STD_LOGIC_VECTOR(INTERFACE_COUNT - 1 DOWNTO 0);
 	SIGNAL SrcEth_TX_Meta_DestMACAddress_Data		: T_SLV_8;
 							
-	SIGNAL DestEth_TX_Ready											: STD_LOGIC;
+	SIGNAL DestEth_TX_Ack												: STD_LOGIC;
 	SIGNAL DestEth_TX_Meta_rst									: STD_LOGIC;
 	SIGNAL DestEth_TX_Meta_DestMACAddress_nxt		: STD_LOGIC;
 	
@@ -214,13 +214,13 @@ BEGIN
 			In_Data												=> Eth_RX_Data,
 			In_SOF												=> Eth_RX_SOF,
 			In_EOF												=> Eth_RX_EOF,
-			In_Ready											=> Eth_RX_Ready,
+			In_Ack												=> Eth_RX_Ack,
 
 			Out_Valid											=> DestEth_RX_Valid,
 			Out_Data											=> DestEth_RX_Data,
 			Out_SOF												=> DestEth_RX_SOF,
 			Out_EOF												=> DestEth_RX_EOF,
-			Out_Ready											=> SrcEth_RX_Ready,
+			Out_Ack												=> SrcEth_RX_Ack,
 			Out_Meta_DestMACAddress_rst		=> SrcEth_RX_Meta_rst,
 			Out_Meta_DestMACAddress_nxt		=> SrcEth_RX_Meta_DestMACAddress_nxt,
 			Out_Meta_DestMACAddress_Data	=> DestEth_RX_Meta_DestMACAddress_Data
@@ -247,7 +247,7 @@ BEGIN
 		SIGNAL SrcEth_RX_Meta_DestMACAddress_Data		: T_SLV_8;
 		SIGNAL SrcEth_RX_Meta_SrcMACAddress_Data		: T_SLV_8;
 		
-		SIGNAL EthEth_RX_Ready											: STD_LOGIC;
+		SIGNAL EthEth_RX_Ack												: STD_LOGIC;
 		SIGNAL EthEth_RX_Meta_rst										: STD_LOGIC;
 		SIGNAL EthEth_RX_Meta_DestMACAddress_nxt		: STD_LOGIC;
 		SIGNAL EthEth_RX_Meta_SrcMACAddress_nxt			: STD_LOGIC;
@@ -270,7 +270,7 @@ BEGIN
 				In_Data												=> DestEth_RX_Data(I),
 				In_SOF												=> DestEth_RX_SOF(I),
 				In_EOF												=> DestEth_RX_EOF(I),
-				In_Ready				 							=> SrcEth_RX_Ready(I),
+				In_Ack					 							=> SrcEth_RX_Ack	(I),
 				In_Meta_rst										=> SrcEth_RX_Meta_rst(I),
 				In_Meta_DestMACAddress_nxt		=> SrcEth_RX_Meta_DestMACAddress_nxt(I),
 				In_Meta_DestMACAddress_Data		=> DestEth_RX_Meta_DestMACAddress_Data(I),
@@ -279,7 +279,7 @@ BEGIN
 				Out_Data											=> SrcEth_RX_Data,
 				Out_SOF												=> SrcEth_RX_SOF,
 				Out_EOF												=> SrcEth_RX_EOF,
-				Out_Ready											=> EthEth_RX_Ready,
+				Out_Ack												=> EthEth_RX_Ack,
 				Out_Meta_rst									=> EthEth_RX_Meta_rst,
 				Out_Meta_DestMACAddress_nxt		=> EthEth_RX_Meta_DestMACAddress_nxt,
 				Out_Meta_DestMACAddress_Data	=> SrcEth_RX_Meta_DestMACAddress_Data,
@@ -300,7 +300,7 @@ BEGIN
 				In_Data												=> SrcEth_RX_Data,
 				In_SOF												=> SrcEth_RX_SOF,
 				In_EOF												=> SrcEth_RX_EOF,
-				In_Ready											=> EthEth_RX_Ready,
+				In_Ack												=> EthEth_RX_Ack,
 				In_Meta_rst										=> EthEth_RX_Meta_rst,
 				In_Meta_DestMACAddress_nxt		=> EthEth_RX_Meta_DestMACAddress_nxt,
 				In_Meta_DestMACAddress_Data		=> SrcEth_RX_Meta_DestMACAddress_Data,
@@ -311,7 +311,7 @@ BEGIN
 				Out_Data											=> RX_Data(PORT_INDEX_TO DOWNTO PORT_INDEX_FROM),
 				Out_SOF												=> RX_SOF(PORT_INDEX_TO DOWNTO PORT_INDEX_FROM),
 				Out_EOF												=> RX_EOF(PORT_INDEX_TO DOWNTO PORT_INDEX_FROM),
-				Out_Ready											=> RX_Ready(PORT_INDEX_TO DOWNTO PORT_INDEX_FROM),
+				Out_Ack												=> RX_Ack	(PORT_INDEX_TO DOWNTO PORT_INDEX_FROM),
 				Out_Meta_rst									=> RX_Meta_rst(PORT_INDEX_TO DOWNTO PORT_INDEX_FROM),
 				Out_Meta_DestMACAddress_nxt		=> RX_Meta_DestMACAddress_nxt(PORT_INDEX_TO DOWNTO PORT_INDEX_FROM),
 				Out_Meta_DestMACAddress_Data	=> RX_Meta_DestMACAddress_Data(PORT_INDEX_TO DOWNTO PORT_INDEX_FROM),
@@ -333,7 +333,7 @@ BEGIN
 				In_Data												=> TX_Data(PORT_INDEX_TO DOWNTO PORT_INDEX_FROM),
 				In_SOF												=> TX_SOF(PORT_INDEX_TO DOWNTO PORT_INDEX_FROM),
 				In_EOF												=> TX_EOF(PORT_INDEX_TO DOWNTO PORT_INDEX_FROM),
-				In_Ready											=> TX_Ready(PORT_INDEX_TO DOWNTO PORT_INDEX_FROM),
+				In_Ack												=> TX_Ack	(PORT_INDEX_TO DOWNTO PORT_INDEX_FROM),
 				In_Meta_rst										=> TX_Meta_rst(PORT_INDEX_TO DOWNTO PORT_INDEX_FROM),
 				In_Meta_DestMACAddress_nxt		=> TX_Meta_DestMACAddress_nxt(PORT_INDEX_TO DOWNTO PORT_INDEX_FROM),
 				In_Meta_DestMACAddress_Data		=> TX_Meta_DestMACAddress_Data(PORT_INDEX_TO DOWNTO PORT_INDEX_FROM),
@@ -342,7 +342,7 @@ BEGIN
 				Out_Data											=> EthType_TX_Data(I),
 				Out_SOF												=> EthType_TX_SOF(I),
 				Out_EOF												=> EthType_TX_EOF(I),
-				Out_Ready											=> SrcEth_TX_Ready(I),
+				Out_Ack												=> SrcEth_TX_Ack	(I),
 				Out_Meta_rst									=> SrcEth_TX_Meta_rst(I),
 				Out_Meta_DestMACAddress_nxt		=> SrcEth_TX_Meta_DestMACAddress_nxt(I),
 				Out_Meta_DestMACAddress_Data	=> EthType_TX_Meta_DestMACAddress_Data(I)
@@ -362,7 +362,7 @@ BEGIN
 			In_Data												=> EthType_TX_Data,
 			In_SOF												=> EthType_TX_SOF,
 			In_EOF												=> EthType_TX_EOF,
-			In_Ready											=> SrcEth_TX_Ready,
+			In_Ack												=> SrcEth_TX_Ack,
 			In_Meta_rst										=> SrcEth_TX_Meta_rst,
 			In_Meta_DestMACAddress_nxt		=> SrcEth_TX_Meta_DestMACAddress_nxt,
 			In_Meta_DestMACAddress_Data		=> EthType_TX_Meta_DestMACAddress_Data,
@@ -371,7 +371,7 @@ BEGIN
 			Out_Data											=> SrcEth_TX_Data,
 			Out_SOF												=> SrcEth_TX_SOF,
 			Out_EOF												=> SrcEth_TX_EOF,
-			Out_Ready											=> DestEth_TX_Ready,
+			Out_Ack												=> DestEth_TX_Ack,
 			Out_Meta_rst									=> DestEth_TX_Meta_rst,
 			Out_Meta_DestMACAddress_nxt		=> DestEth_TX_Meta_DestMACAddress_nxt,
 			Out_Meta_DestMACAddress_Data	=> SrcEth_TX_Meta_DestMACAddress_Data
@@ -387,7 +387,7 @@ BEGIN
 			In_Data												=> SrcEth_TX_Data,
 			In_SOF												=> SrcEth_TX_SOF,
 			In_EOF												=> SrcEth_TX_EOF,
-			In_Ready											=> DestEth_TX_Ready,
+			In_Ack												=> DestEth_TX_Ack,
 
 			In_Meta_rst										=> DestEth_TX_Meta_rst,
 			In_Meta_DestMACAddress_nxt		=> DestEth_TX_Meta_DestMACAddress_nxt,
@@ -397,7 +397,7 @@ BEGIN
 			Out_Data											=> Eth_TX_Data,
 			Out_SOF												=> Eth_TX_SOF,
 			Out_EOF												=> Eth_TX_EOF,
-			Out_Ready											=> Eth_TX_Ready
+			Out_Ack												=> Eth_TX_Ack	
 		);
 
 END ARCHITECTURE;

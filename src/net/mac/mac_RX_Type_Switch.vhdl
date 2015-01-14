@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,7 +53,7 @@ ENTITY MAC_RX_Type_Switch IS
 		In_Data												: IN	T_SLV_8;
 		In_SOF												: IN	STD_LOGIC;
 		In_EOF												: IN	STD_LOGIC;
-		In_Ready											: OUT	STD_LOGIC;
+		In_Ack												: OUT	STD_LOGIC;
 		In_Meta_rst										: OUT	STD_LOGIC;
 		In_Meta_SrcMACAddress_nxt			: OUT	STD_LOGIC;
 		In_Meta_SrcMACAddress_Data		: IN	T_SLV_8;
@@ -64,7 +64,7 @@ ENTITY MAC_RX_Type_Switch IS
 		Out_Data											: OUT	T_SLVV_8(ETHERNET_TYPES'length - 1 DOWNTO 0);
 		Out_SOF												: OUT	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 DOWNTO 0);
 		Out_EOF												: OUT	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 DOWNTO 0);
-		Out_Ready											: IN	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 DOWNTO 0);
+		Out_Ack												: IN	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 DOWNTO 0);
 		Out_Meta_rst									: IN	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 DOWNTO 0);
 		Out_Meta_SrcMACAddress_nxt		: IN	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 DOWNTO 0);
 		Out_Meta_SrcMACAddress_Data		: OUT	T_SLVV_8(ETHERNET_TYPES'length - 1 DOWNTO 0);
@@ -96,14 +96,14 @@ ARCHITECTURE rtl OF MAC_RX_Type_Switch IS
 	SIGNAL NextState											: T_STATE;
 	ATTRIBUTE FSM_ENCODING OF State				: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	SIGNAL In_Ready_i											: STD_LOGIC;
+	SIGNAL In_Ack_i												: STD_LOGIC;
 	SIGNAL Is_DataFlow										: STD_LOGIC;
 	SIGNAL Is_SOF													: STD_LOGIC;
 	SIGNAL Is_EOF													: STD_LOGIC;
 	
 	SIGNAL New_Valid_i										: STD_LOGIC;
 	SIGNAL New_SOF_i											: STD_LOGIC;
-	SIGNAL Out_Ready_i										: STD_LOGIC;
+	SIGNAL Out_Ack_i											: STD_LOGIC;
 	
 	SIGNAL EthernetType_CompareIndex			: T_ETHERNETTYPE_BYTEINDEX;
 	
@@ -121,8 +121,8 @@ ARCHITECTURE rtl OF MAC_RX_Type_Switch IS
 	
 BEGIN
 
-	In_Ready			<= In_Ready_i;
-	Is_DataFlow		<= In_Valid AND In_Ready_i;
+	In_Ack				<= In_Ack_i;
+	Is_DataFlow		<= In_Valid AND In_Ack_i;
 	Is_SOF				<= In_Valid AND In_SOF;
 	Is_EOF				<= In_Valid AND In_EOF;
 
@@ -137,11 +137,11 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-	PROCESS(State, Is_DataFlow, Is_SOF, Is_EOF, In_Valid, NoHits, Out_Ready_i)
+	PROCESS(State, Is_DataFlow, Is_SOF, Is_EOF, In_Valid, NoHits, Out_Ack_i)
 	BEGIN
 		NextState												<= State;
 
-		In_Ready_i											<= '0';
+		In_Ack_i												<= '0';
 		
 		New_Valid_i											<= '0';
 		New_SOF_i												<= '0';
@@ -164,7 +164,7 @@ BEGIN
 				IF (Is_SOF = '1') THEN
 					EthernetType_rst					<= '0';
 					EthernetType_en						<= '1';
-					In_Ready_i								<= '1';
+					In_Ack_i									<= '1';
 				
 					IF (Is_EOF = '0') THEN
 						NextState								<= ST_TYPE_1;
@@ -180,7 +180,7 @@ BEGIN
 				CompareRegister_en					<= In_Valid;
 			
 				IF (In_Valid = '1') THEN
-					In_Ready_i								<= '1';
+					In_Ack_i									<= '1';
 				
 					IF (Is_EOF = '0') THEN
 						NextState								<= ST_PAYLOAD_1;
@@ -192,13 +192,13 @@ BEGIN
 			WHEN ST_PAYLOAD_1 =>
 				IF (NoHits = '1') THEN
 					IF (Is_EOF = '0') THEN
-						In_Ready_i							<= '1';
+						In_Ack_i								<= '1';
 						NextState								<= ST_DISCARD_FRAME;
 					ELSE
 						NextState								<= ST_IDLE;
 					END IF;
 				ELSE
-					In_Ready_i								<= Out_Ready_i;
+					In_Ack_i									<= Out_Ack_i;
 					New_Valid_i								<= In_Valid;
 					New_SOF_i									<= '1';
 				
@@ -212,7 +212,7 @@ BEGIN
 				END IF;
 				
 			WHEN ST_PAYLOAD_N =>
-				In_Ready_i									<= Out_Ready_i;
+				In_Ack_i										<= Out_Ack_i;
 				New_Valid_i									<= In_Valid;
 			
 				IF ((IS_DataFlow AND Is_EOF) = '1') THEN
@@ -220,7 +220,7 @@ BEGIN
 				END IF;
 				
 			WHEN ST_DISCARD_FRAME =>
-				In_Ready_i									<= '1';
+				In_Ack_i										<= '1';
 			
 				IF ((IS_DataFlow AND Is_EOF) = '1') THEN
 					NextState									<= ST_IDLE;
@@ -272,7 +272,7 @@ BEGIN
 	Out_Data											<= (Out_Data'range	=> In_Data);
 	Out_SOF												<= (Out_SOF'range		=> New_SOF_i);
 	Out_EOF												<= (Out_EOF'range		=> In_EOF);
-	Out_Ready_i										<= slv_or(Out_Ready AND CompareRegister_d);
+	Out_Ack_i											<= slv_or(Out_Ack	 AND CompareRegister_d);
 
 	-- Meta: rst
 	In_Meta_rst										<= slv_or(Out_Meta_rst AND CompareRegister_d);

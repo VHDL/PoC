@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,7 +54,7 @@ ENTITY FrameLoopback IS
 		In_Meta										: IN	STD_LOGIC_VECTOR(META_BW - 1 DOWNTO 0);
 		In_SOF										: IN	STD_LOGIC;
 		In_EOF										: IN	STD_LOGIC;
-		In_Ready									: OUT	STD_LOGIC;
+		In_Ack										: OUT	STD_LOGIC;
 		
 
 		Out_Valid									: OUT	STD_LOGIC;
@@ -62,7 +62,7 @@ ENTITY FrameLoopback IS
 		Out_Meta									: OUT	STD_LOGIC_VECTOR(META_BW - 1 DOWNTO 0);
 		Out_SOF										: OUT	STD_LOGIC;
 		Out_EOF										: OUT	STD_LOGIC;
-		Out_Ready									: IN	STD_LOGIC
+		Out_Ack										: IN	STD_LOGIC
 	);
 END;
 
@@ -114,7 +114,7 @@ BEGIN
 			In_Data												=> TX_Data(I),
 			In_SOF												=> TX_SOF(I),
 			In_EOF												=> TX_EOF(I),
-			In_Ready											=> TX_Ready(I),
+			In_Ack												=> TX_Ack	(I),
 			In_Meta_rst										=> Meta_rst,
 			In_Meta_nxt										=> Meta_nxt,
 			In_Meta_Data									=> Pipe_MetaIn,
@@ -123,7 +123,7 @@ BEGIN
 			Out_Data											=> Pipe_DataOut,
 			Out_SOF												=> Funnel_In_SOF(I),
 			Out_EOF												=> Funnel_In_EOF(I),
-			Out_Ready											=> Funnel_In_Ready(I),
+			Out_Ack												=> Funnel_In_Ack	(I),
 			Out_Meta_rst									=> Pipe_Meta_rst,
 			Out_Meta_nxt									=> Pipe_Meta_nxt,
 			Out_Meta_Data									=> Pipe_MetaOut

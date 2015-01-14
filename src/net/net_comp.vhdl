@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -272,13 +272,13 @@ PACKAGE net_comp IS
 			TX_Data										: IN	T_SLV_8;
 			TX_SOF										: IN	STD_LOGIC;
 			TX_EOF										: IN	STD_LOGIC;
-			TX_Ready									: OUT	STD_LOGIC;
+			TX_Ack										: OUT	STD_LOGIC;
 
 			RX_Valid									: OUT	STD_LOGIC;
 			RX_Data										: OUT	T_SLV_8;
 			RX_SOF										: OUT	STD_LOGIC;
 			RX_EOF										: OUT	STD_LOGIC;
-			RX_Ready									: In	STD_LOGIC;
+			RX_Ack										: In	STD_LOGIC;
 			
 			-- PHY-SGMII interface
 			PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
@@ -312,13 +312,13 @@ PACKAGE net_comp IS
 			TX_Data										: IN	T_SLV_8;
 			TX_SOF										: IN	STD_LOGIC;
 			TX_EOF										: IN	STD_LOGIC;
-			TX_Ready									: OUT	STD_LOGIC;
+			TX_Ack										: OUT	STD_LOGIC;
 
 			RX_Valid									: OUT	STD_LOGIC;
 			RX_Data										: OUT	T_SLV_8;
 			RX_SOF										: OUT	STD_LOGIC;
 			RX_EOF										: OUT	STD_LOGIC;
-			RX_Ready									: In	STD_LOGIC;
+			RX_Ack										: In	STD_LOGIC;
 			
 			-- PHY-SGMII interface
 			PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
@@ -352,13 +352,13 @@ PACKAGE net_comp IS
 			TX_Data										: IN	T_SLV_8;
 			TX_SOF										: IN	STD_LOGIC;
 			TX_EOF										: IN	STD_LOGIC;
-			TX_Ready									: OUT	STD_LOGIC;
+			TX_Ack										: OUT	STD_LOGIC;
 
 			RX_Valid									: OUT	STD_LOGIC;
 			RX_Data										: OUT	T_SLV_8;
 			RX_SOF										: OUT	STD_LOGIC;
 			RX_EOF										: OUT	STD_LOGIC;
-			RX_Ready									: In	STD_LOGIC;
+			RX_Ack										: In	STD_LOGIC;
 			
 			-- PHY-SGMII interface
 			PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES

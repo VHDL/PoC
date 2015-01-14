@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,7 +52,7 @@ ENTITY MAC_TX_DestMAC_Prepender IS
 		In_Data												: IN	T_SLV_8;
 		In_SOF												: IN	STD_LOGIC;
 		In_EOF												: IN	STD_LOGIC;
-		In_Ready											: OUT	STD_LOGIC;
+		In_Ack												: OUT	STD_LOGIC;
 		In_Meta_rst										: OUT	STD_LOGIC;
 		In_Meta_DestMACAddress_nxt		: OUT	STD_LOGIC;
 		In_Meta_DestMACAddress_Data		: IN	T_SLV_8;
@@ -61,7 +61,7 @@ ENTITY MAC_TX_DestMAC_Prepender IS
 		Out_Data											: OUT	T_SLV_8;
 		Out_SOF												: OUT	STD_LOGIC;
 		Out_EOF												: OUT	STD_LOGIC;
-		Out_Ready											: IN	STD_LOGIC
+		Out_Ack												: IN	STD_LOGIC
 	);
 END;
 
@@ -90,7 +90,7 @@ ARCHITECTURE rtl OF MAC_TX_DestMAC_Prepender IS
 	
 BEGIN
 
-	Is_DataFlow		<= In_Valid AND Out_Ready;
+	Is_DataFlow		<= In_Valid AND Out_Ack;
 	Is_SOF				<= In_Valid AND In_SOF;
 	Is_EOF				<= In_Valid AND In_EOF;
 	
@@ -105,7 +105,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-	PROCESS(State, In_Valid, In_Data, In_EOF, Is_DataFlow, Is_SOF, Is_EOF, Out_Ready, In_Meta_DestMACAddress_Data)
+	PROCESS(State, In_Valid, In_Data, In_EOF, Is_DataFlow, Is_SOF, Is_EOF, Out_Ack, In_Meta_DestMACAddress_Data)
 	BEGIN
 		NextState										<= State;
 		
@@ -114,7 +114,7 @@ BEGIN
 		Out_SOF											<= '0';
 		Out_EOF											<= '0';
 
-		In_Ready										<= '0';
+		In_Ack											<= '0';
 		In_Meta_rst									<= '0';
 --		In_Meta_DestMACAddress_rev	<= '1';					-- read destination MAC address in Big-Endian order
 		In_Meta_DestMACAddress_nxt	<= '0';
@@ -126,68 +126,68 @@ BEGIN
 					
 				IF (Is_SOF = '1') THEN
 					In_Meta_rst										<= '0';
-					In_Meta_DestMACAddress_nxt		<= Out_Ready;
+					In_Meta_DestMACAddress_nxt		<= Out_Ack;
 				
 					Out_Valid											<= '1';
 					Out_SOF												<= '1';
 					
-					IF (Out_Ready = '1') THEN
+					IF (Out_Ack	 = '1') THEN
 						NextState										<= ST_PREPEND_DEST_MAC_1;
 					END IF;
 				END IF;
 
 			WHEN ST_PREPEND_DEST_MAC_1 =>
-				In_Meta_DestMACAddress_nxt			<= Out_Ready;
+				In_Meta_DestMACAddress_nxt			<= Out_Ack;
 				
 				Out_Valid												<= '1';
 				Out_Data												<= In_Meta_DestMACAddress_Data;
 					
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState											<= ST_PREPEND_DEST_MAC_2;
 				END IF;
 
 			WHEN ST_PREPEND_DEST_MAC_2 =>
-				In_Meta_DestMACAddress_nxt			<= Out_Ready;
+				In_Meta_DestMACAddress_nxt			<= Out_Ack;
 				
 				Out_Valid												<= '1';
 				Out_Data												<= In_Meta_DestMACAddress_Data;
 					
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState											<= ST_PREPEND_DEST_MAC_3;
 				END IF;
 				
 			WHEN ST_PREPEND_DEST_MAC_3 =>
-				In_Meta_DestMACAddress_nxt			<= Out_Ready;
+				In_Meta_DestMACAddress_nxt			<= Out_Ack;
 				
 				Out_Valid												<= '1';
 				Out_Data												<= In_Meta_DestMACAddress_Data;
 					
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState											<= ST_PREPEND_DEST_MAC_4;
 				END IF;
 				
 			WHEN ST_PREPEND_DEST_MAC_4 =>
-				In_Meta_DestMACAddress_nxt			<= Out_Ready;
+				In_Meta_DestMACAddress_nxt			<= Out_Ack;
 				
 				Out_Valid												<= '1';
 				Out_Data												<= In_Meta_DestMACAddress_Data;
 					
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState											<= ST_PREPEND_DEST_MAC_5;
 				END IF;
 				
 			WHEN ST_PREPEND_DEST_MAC_5 =>
-				In_Meta_DestMACAddress_nxt			<= Out_Ready;
+				In_Meta_DestMACAddress_nxt			<= Out_Ack;
 				
 				Out_Valid												<= '1';
 				Out_Data												<= In_Meta_DestMACAddress_Data;
 					
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState											<= ST_PAYLOAD;
 				END IF;
 			
 			WHEN ST_PAYLOAD =>
-				In_Ready												<= Out_Ready;
+				In_Ack													<= Out_Ack;
 				
 				Out_Valid												<= In_Valid;
 				Out_EOF													<= In_EOF;
