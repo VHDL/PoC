@@ -135,13 +135,17 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 		# assemble fuse command as list of parameters
 		parameterList = [
 			str(fuseExecutablePath),
-			('work.%s' % testbenchName),
+			('test.%s' % testbenchName),
 			'--incremental',
 			'-prj',	str(prjFilePath),
 			'-o',		str(exeFilePath)
 		]
+		
+		# --timeprecision_vhdl 1fs
+		# -mt n - multithread support
+		
 		self.printDebug("call fuse: %s" % str(parameterList))
-		self.printVerbose('%s work.%s --incremental -prj "%s" -o "%s"' % (str(fuseExecutablePath), testbenchName, str(prjFilePath), str(exeFilePath)))
+		self.printVerbose('%s test.%s --incremental -prj "%s" -o "%s"' % (str(fuseExecutablePath), testbenchName, str(prjFilePath), str(exeFilePath)))
 		linkerLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
 		
 		if self.showLogs:

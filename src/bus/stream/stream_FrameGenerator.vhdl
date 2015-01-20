@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,7 +66,7 @@ ENTITY Stream_FrameGenerator IS
 		Out_Data							: OUT	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
 		Out_SOF								: OUT	STD_LOGIC;
 		Out_EOF								: OUT	STD_LOGIC;
-		Out_Ready							: IN	STD_LOGIC
+		Out_Ack								: IN	STD_LOGIC
 	);
 END;
 
@@ -110,7 +110,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-	PROCESS(State, Command, Out_Ready,
+	PROCESS(State, Command, Out_Ack,
 					Sequences, FrameLength,
 					FrameLengthCounter_us,
 					SequencesCounter_us, ContentCounter_us,
@@ -174,7 +174,7 @@ BEGIN
 				Out_Data											<= std_logic_vector(ContentCounter_us);
 				Out_SOF												<= '1';
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					FrameLengthCounter_en				<= '1';
 					ContentCounter_en						<= '1';
 					
@@ -185,7 +185,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= std_logic_vector(ContentCounter_us);
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					FrameLengthCounter_en				<= '1';
 					ContentCounter_en						<= '1';
 					
@@ -199,7 +199,7 @@ BEGIN
 				Out_Data											<= std_logic_vector(ContentCounter_us);
 				Out_EOF												<= '1';
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					FrameLengthCounter_rst			<= '1';
 					ContentCounter_en						<= '1';
 					SequencesCounter_en					<= '1';
@@ -221,7 +221,7 @@ BEGIN
 				Out_Data									<= PRNG_Data;
 				Out_SOF										<= '1';
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					FrameLengthCounter_en		<= '1';
 					PRNG_got								<= '1';
 					NextState								<= ST_RANDOM_DATA;
@@ -231,7 +231,7 @@ BEGIN
 				Out_Valid									<= '1';
 				Out_Data									<= PRNG_Data;
 
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					FrameLengthCounter_en		<= '1';
 					PRNG_got								<= '1';
 					
@@ -247,7 +247,7 @@ BEGIN
 				
 				FrameLengthCounter_rst		<= '1';
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					PRNG_rst								<= '1';
 					NextState								<= ST_IDLE;
 				END IF;

@@ -22,7 +22,7 @@ ENTITY ICMPv6_TX IS
 		TX_Data										: OUT	T_SLV_8;
 		TX_SOF										: OUT	STD_LOGIC;
 		TX_EOF										: OUT	STD_LOGIC;
-		TX_Ready									: IN	STD_LOGIC;
+		TX_Ack										: IN	STD_LOGIC;
 		
 		Send_EchoResponse					: IN	STD_LOGIC;
 		Send_Complete							: OUT STD_LOGIC
@@ -64,7 +64,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-	PROCESS(State, Send_EchoResponse, TX_Ready)
+	PROCESS(State, Send_EchoResponse, TX_Ack)
 	BEGIN
 		NextState							<= State;
 		

@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,7 +54,7 @@ ENTITY IPv4_RX IS
 		In_Data													: IN	T_SLV_8;
 		In_SOF													: IN	STD_LOGIC;
 		In_EOF													: IN	STD_LOGIC;
-		In_Ready												: OUT	STD_LOGIC;
+		In_Ack													: OUT	STD_LOGIC;
 		In_Meta_rst											: OUT	STD_LOGIC;
 		In_Meta_SrcMACAddress_nxt				: OUT	STD_LOGIC;
 		In_Meta_SrcMACAddress_Data			: IN	T_SLV_8;
@@ -66,7 +66,7 @@ ENTITY IPv4_RX IS
 		Out_Data												: OUT	T_SLV_8;
 		Out_SOF													: OUT	STD_LOGIC;
 		Out_EOF													: OUT	STD_LOGIC;
-		Out_Ready												: IN	STD_LOGIC;
+		Out_Ack													: IN	STD_LOGIC;
 		Out_Meta_rst										: IN	STD_LOGIC;
 		Out_Meta_SrcMACAddress_nxt			: IN	STD_LOGIC;
 		Out_Meta_SrcMACAddress_Data			: OUT	T_SLV_8;
@@ -130,7 +130,7 @@ ARCHITECTURE rtl OF IPv4_RX IS
 	SIGNAL NextState											: T_STATE;
 	ATTRIBUTE FSM_ENCODING OF State				: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	SIGNAL In_Ready_i											: STD_LOGIC;
+	SIGNAL In_Ack_i											: STD_LOGIC;
 	SIGNAL Is_DataFlow										: STD_LOGIC;
 	SIGNAL Is_SOF													: STD_LOGIC;
 	SIGNAL Is_EOF													: STD_LOGIC;
@@ -190,8 +190,8 @@ ARCHITECTURE rtl OF IPv4_RX IS
 
 BEGIN
 
-	In_Ready			<= In_Ready_i;
-	Is_DataFlow		<= In_Valid AND In_Ready_i;
+	In_Ack				<= In_Ack_i;
+	Is_DataFlow		<= In_Valid AND In_Ack_i;
 	Is_SOF				<= In_Valid AND In_SOF;
 	Is_EOF				<= In_Valid AND In_EOF;
 
@@ -206,13 +206,13 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-	PROCESS(State, Is_DataFlow, Is_SOF, Is_EOF, In_Valid, In_Data, In_EOF, IPv4SeqCounter_us, Out_Ready)
+	PROCESS(State, Is_DataFlow, Is_SOF, Is_EOF, In_Valid, In_Data, In_EOF, IPv4SeqCounter_us, Out_Ack)
 	BEGIN
 		NextState									<= State;
 
 		Error											<= '0';
 		
-		In_Ready_i								<= '0';
+		In_Ack_i								<= '0';
 		Out_Valid_i								<= '0';
 		Out_SOF_i									<= '0';
 		Out_EOF_i									<= In_EOF;
@@ -241,7 +241,7 @@ BEGIN
 		CASE State IS
 			WHEN ST_IDLE =>
 				IF (Is_SOF = '1') THEN
-					In_Ready_i						<= '1';
+					In_Ack_i						<= '1';
 				
 					IF (Is_EOF = '0') THEN
 						IF (In_Data(3 DOWNTO 0) = x"4") THEN
@@ -257,7 +257,7 @@ BEGIN
 			
 			WHEN ST_RECEIVE_TYPE_OF_SERVICE =>
 				IF (In_Valid = '1') THEN
-					In_Ready_i							<= '1';
+					In_Ack_i							<= '1';
 					
 					IF (Is_EOF = '0') THEN
 						TypeOfService_en			<= '1';
@@ -269,7 +269,7 @@ BEGIN
 				
 			WHEN ST_RECEIVE_TOTAL_LENGTH_0 =>
 				IF (In_Valid = '1') THEN
-					In_Ready_i							<= '1';
+					In_Ack_i							<= '1';
 					
 					IF (Is_EOF = '0') THEN
 						TotalLength_en0				<= '1';
@@ -281,7 +281,7 @@ BEGIN
 				
 			WHEN ST_RECEIVE_TOTAL_LENGTH_1 =>
 				IF (In_Valid = '1') THEN
-					In_Ready_i							<= '1';
+					In_Ack_i							<= '1';
 					
 					IF (Is_EOF = '0') THEN
 						TotalLength_en1				<= '1';
@@ -293,7 +293,7 @@ BEGIN
 				
 			WHEN ST_RECEIVE_IDENTIFICATION_0 =>
 				IF (In_Valid = '1') THEN
-					In_Ready_i							<= '1';
+					In_Ack_i							<= '1';
 					
 					IF (Is_EOF = '0') THEN
 --						Identification_en0		<= '1';
@@ -305,7 +305,7 @@ BEGIN
 				
 			WHEN ST_RECEIVE_IDENTIFICATION_1 =>
 				IF (In_Valid = '1') THEN
-					In_Ready_i							<= '1';
+					In_Ack_i							<= '1';
 					
 					IF (Is_EOF = '0') THEN
 --						Identification_en1		<= '1';
@@ -317,7 +317,7 @@ BEGIN
 				
 			WHEN ST_RECEIVE_FLAGS =>
 				IF (In_Valid = '1') THEN
-					In_Ready_i							<= '1';
+					In_Ack_i							<= '1';
 					
 					IF (Is_EOF = '0') THEN
 						Flags_en							<= '1';
@@ -330,7 +330,7 @@ BEGIN
 				
 			WHEN ST_RECEIVE_FRAGMENT_OFFSET_1 =>
 				IF (In_Valid = '1') THEN
-					In_Ready_i							<= '1';
+					In_Ack_i							<= '1';
 					
 					IF (Is_EOF = '0') THEN
 --						FragmentOffset_en1		<= '1';
@@ -342,7 +342,7 @@ BEGIN
 				
 			WHEN ST_RECEIVE_TIME_TO_LIVE =>
 				IF (In_Valid = '1') THEN
-					In_Ready_i							<= '1';
+					In_Ack_i							<= '1';
 					
 					IF (Is_EOF = '0') THEN
 						TimeToLive_en					<= '1';
@@ -354,7 +354,7 @@ BEGIN
 				
 			WHEN ST_RECEIVE_PROTOCOL =>
 				IF (In_Valid = '1') THEN
-					In_Ready_i							<= '1';
+					In_Ack_i							<= '1';
 					
 					IF (Is_EOF = '0') THEN
 						Protocol_en						<= '1';
@@ -366,7 +366,7 @@ BEGIN
 
 			WHEN ST_RECEIVE_HEADER_CHECKSUM_0 =>
 				IF (In_Valid = '1') THEN
-					In_Ready_i							<= '1';
+					In_Ack_i							<= '1';
 					
 					IF (Is_EOF = '0') THEN
 						HeaderChecksum_en0		<= '1';
@@ -380,7 +380,7 @@ BEGIN
 				IPv4SeqCounter_rst				<= '1';
 				
 				IF (In_Valid = '1') THEN
-					In_Ready_i							<= '1';
+					In_Ack_i							<= '1';
 					
 					IF (Is_EOF = '0') THEN
 						HeaderChecksum_en1		<= '1';
@@ -392,7 +392,7 @@ BEGIN
 			
 			WHEN ST_RECEIVE_SOURCE_ADDRESS =>
 				IF (In_Valid = '1') THEN
-					In_Ready_i							<= '1';
+					In_Ack_i							<= '1';
 					
 					SourceIPv4Address_en		<= '1';
 					IPv4SeqCounter_en				<= '1';
@@ -409,7 +409,7 @@ BEGIN
 			
 			WHEN ST_RECEIVE_DESTINATION_ADDRESS =>
 				IF (In_Valid = '1') THEN
-					In_Ready_i							<= '1';
+					In_Ack_i							<= '1';
 					
 					DestIPv4Address_en			<= '1';
 					IPv4SeqCounter_en				<= '1';
@@ -425,7 +425,7 @@ BEGIN
 				END IF;
 				
 			WHEN ST_RECEIVE_DATA_1 =>
-				In_Ready_i								<= Out_Ready;
+				In_Ack_i								<= Out_Ack;
 				Out_Valid_i								<= In_Valid;
 				Out_SOF_i									<= '1';
 				Out_EOF_i									<= In_EOF;
@@ -439,7 +439,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_RECEIVE_DATA_N =>
-				In_Ready_i								<= Out_Ready;
+				In_Ack_i								<= Out_Ack;
 				Out_Valid_i								<= In_Valid;
 				Out_EOF_i									<= In_EOF;
 				
@@ -448,7 +448,7 @@ BEGIN
 				END IF;
 				
 			WHEN ST_DISCARD_FRAME =>
-				In_Ready_i								<= '1';
+				In_Ack_i								<= '1';
 				
 				IF (Is_EOF = '1') THEN
 					NextState								<= ST_ERROR;

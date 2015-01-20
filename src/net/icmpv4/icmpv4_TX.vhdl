@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,7 +57,7 @@ ENTITY ICMPv4_TX IS
 		Out_Data											: OUT	T_SLV_8;
 		Out_SOF												: OUT	STD_LOGIC;
 		Out_EOF												: OUT	STD_LOGIC;
-		Out_Ready											: IN	STD_LOGIC;
+		Out_Ack												: IN	STD_LOGIC;
 		Out_Meta_rst									: IN	STD_LOGIC;
 		Out_Meta_SrcIPv4Address_nxt		: IN	STD_LOGIC;
 		Out_Meta_SrcIPv4Address_Data	: OUT	T_SLV_8;
@@ -156,7 +156,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-	PROCESS(State, Command, Out_Ready, PayloadROM_Reader_ov, PayloadROM_Data)
+	PROCESS(State, Command, Out_Ack, PayloadROM_Reader_ov, PayloadROM_Data)
 	BEGIN
 		NextState													<= State;
 
@@ -194,7 +194,7 @@ BEGIN
 				Out_Data											<= In_Meta_Type;
 				Out_SOF												<= '1';
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_ECHO_CODE;
 				END IF;
 			
@@ -204,7 +204,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= In_Meta_Code;
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_ECHOREQUEST_CHECKSUM_0;
 				END IF;
 			
@@ -214,7 +214,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= Checksum(15 DOWNTO 8);
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_ECHOREQUEST_CHECKSUM_1;
 				END IF;
 			
@@ -224,7 +224,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= Checksum(7 DOWNTO 0);
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_ECHOREQUEST_IDENTIFIER_0;
 				END IF;
 			
@@ -234,7 +234,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= In_Meta_Identification(15 DOWNTO 8);
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_ECHOREQUEST_IDENTIFIER_1;
 				END IF;
 			
@@ -244,7 +244,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= In_Meta_Identification(7 DOWNTO 0);
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_ECHOREQUEST_SEQUENCENUMBER_0;
 				END IF;
 			
@@ -254,7 +254,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= In_Meta_SequenceNumber(15 DOWNTO 8);
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_ECHOREQUEST_SEQUENCENUMBER_1;
 				END IF;
 			
@@ -264,7 +264,7 @@ BEGIN
 				Out_Valid											<= '1';
 				Out_Data											<= In_Meta_SequenceNumber(7 DOWNTO 0);
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					NextState										<= ST_SEND_ECHOREQUEST_DATA;
 				END IF;
 			
@@ -276,7 +276,7 @@ BEGIN
 				
 				PayloadROM_Reader_nxt					<= '1';
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					IF (PayloadROM_Reader_ov = '1') THEN
 						Out_EOF										<= '1';
 						NextState									<= ST_COMPLETE;
@@ -291,7 +291,7 @@ BEGIN
 				
 				In_Meta_Payload_nxt						<= '1';
 				
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					IF (In_Meta_Payload_last = '1') THEN
 						Out_EOF											<= '1';
 				

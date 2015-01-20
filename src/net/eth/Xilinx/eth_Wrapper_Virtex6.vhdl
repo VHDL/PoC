@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -70,13 +70,13 @@ ENTITY eth_Wrapper_Virtex6 IS
 		TX_Data										: IN	T_SLV_8;
 		TX_SOF										: IN	STD_LOGIC;
 		TX_EOF										: IN	STD_LOGIC;
-		TX_Ready									: OUT	STD_LOGIC;
+		TX_Ack										: OUT	STD_LOGIC;
 
 		RX_Valid									: OUT	STD_LOGIC;
 		RX_Data										: OUT	T_SLV_8;
 		RX_SOF										: OUT	STD_LOGIC;
 		RX_EOF										: OUT	STD_LOGIC;
-		RX_Ready									: In	STD_LOGIC;
+		RX_Ack										: In	STD_LOGIC;
 		
 		-- PHY-SGMII interface
 		PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
@@ -226,24 +226,24 @@ BEGIN
 			SIGNAL TX_Valid_n			: STD_LOGIC;
 			SIGNAL TX_SOF_n				: STD_LOGIC;
 			SIGNAL TX_EOF_n				: STD_LOGIC;
-			SIGNAL TX_Ready_n			: STD_LOGIC;
+			SIGNAL TX_Ack	_n			: STD_LOGIC;
 
 			SIGNAL RX_Valid_n			: STD_LOGIC;
 			SIGNAL RX_SOF_n				: STD_LOGIC;
 			SIGNAL RX_EOF_n				: STD_LOGIC;
-			SIGNAL RX_Ready_n			: STD_LOGIC;
+			SIGNAL RX_Ack	_n			: STD_LOGIC;
 		BEGIN
 			-- convert LocalLink interface from low-active to high-active and vv.
 			-- ========================================================================================================================================================
 			TX_Valid_n		<= NOT TX_Valid;
 			TX_SOF_n			<= NOT TX_SOF;
 			TX_EOF_n			<= NOT TX_EOF;
-			TX_Ready			<= NOT TX_Ready_n;
+			TX_Ack				<= NOT TX_Ack	_n;
 
 			RX_Valid			<= NOT RX_Valid_n;
 			RX_SOF				<= NOT RX_SOF_n;
 			RX_EOF				<= NOT RX_EOF_n;
-			RX_Ready_n		<= NOT RX_Ready;
+			RX_Ack	_n		<= NOT RX_Ack;
 
 			Eth_TX_Enable					<= '1';
 			Eth_RX_Enable					<= '1';
@@ -262,7 +262,7 @@ BEGIN
 					wr_sof_n					=> TX_SOF_n,							
 					wr_eof_n					=> TX_EOF_n,							
 					wr_src_rdy_n			=> TX_Valid_n,						
-					wr_dst_rdy_n			=> TX_Ready_n,						
+					wr_dst_rdy_n			=> TX_Ack	_n,						
 					wr_fifo_status		=> TX_FIFO_Status,					-- FIFO memory status
 
 					-- Transmitter MAC Client Interface
@@ -288,7 +288,7 @@ BEGIN
 					rd_sof_n					=> RX_SOF_n,						
 					rd_eof_n					=> RX_EOF_n,						
 					rd_src_rdy_n			=> RX_Valid_n,					
-					rd_dst_rdy_n			=> RX_Ready_n,					
+					rd_dst_rdy_n			=> RX_Ack	_n,					
 					
 					-- Receiver MAC Client Interface
 					wr_clk						=> Eth_RX_Clock,						-- MAC receive clock
@@ -806,13 +806,13 @@ BEGIN
 					TX_Data										=> TX_Data,
 					TX_SOF										=> TX_SOF,
 					TX_EOF										=> TX_EOF,
-					TX_Ready									=> TX_Ready,
+					TX_Ack										=> TX_Ack,
 
 					RX_Valid									=> RX_Valid,
 					RX_Data										=> RX_Data,
 					RX_SOF										=> RX_SOF,
 					RX_EOF										=> RX_EOF,
-					RX_Ready									=> RX_Ready,
+					RX_Ack										=> RX_Ack,
 					
 					-- RS-GMII interface
 					RS_TX_Valid								=> RS_TX_Valid,
