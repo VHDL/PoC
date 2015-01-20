@@ -60,6 +60,11 @@ PACKAGE components IS
 	function rr_left(q : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;
 	function rr_right(q : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;
 
+	-- compare
+	function comp(value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;
+	function comp(value1 : UNSIGNED; value2 : UNSIGNED) return UNSIGNED;
+	function comp(value1 : SIGNED; value2 : SIGNED) return SIGNED;
+	
 	-- multiplexing
 	function mux(sel : STD_LOGIC; sl0		: STD_LOGIC;				sl1		: STD_LOGIC)				return STD_LOGIC;
 	function mux(sel : STD_LOGIC; slv0	: STD_LOGIC_VECTOR;	slv1	: STD_LOGIC_VECTOR)	return STD_LOGIC_VECTOR;
@@ -151,6 +156,38 @@ PACKAGE BODY components IS
 	function rr_right(q : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
 	begin
 		return q(q'right) & q(q'left downto q'right - 1);
+	end function;
+	
+	-- compare functions
+	-- return value 1- => value1 < value2 (difference is negative)
+	-- return value 00 => value1 = value2 (difference is zero)
+	-- return value -1 => value1 > value2 (difference is positive)
+	function comp(value1 : UNSIGNED; value2 : UNSIGNED) return UNSIGNED is
+	begin
+		if (value1 < value2) then
+			return "10";
+		elsif (value1 = value2) then
+			return "00";
+		else
+			return "01";
+		end if;
+	end function;
+
+	function comp(value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
+	begin
+		report "Comparing two STD_LOGIC_VECTORs - implicit conversion to UNSIGNED" severity WARNING;
+		return std_logic_vector(comp(unsigned(value1), unsigned(value2)));
+	end function;
+
+	function comp(value1 : SIGNED; value2 : SIGNED) return SIGNED is
+	begin
+		if (value1 < value2) then
+			return "10";
+		elsif (value1 = value2) then
+			return "00";
+		else
+			return "01";
+		end if;
 	end function;
 	
 	-- multiplexing
