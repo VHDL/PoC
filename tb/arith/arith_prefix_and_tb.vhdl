@@ -63,9 +63,10 @@ begin  -- tb
 
   -- Stimuli
   process
+		constant MaxCycles	: POSITIVE	:= 2**N;
   begin
 		-- Exhaustive Testing
-    for i in 0 to 2**N-1 loop
+    for i in 0 to MaxCycles-1 loop
       x <= std_logic_vector(to_unsigned(i, N));
       wait for 10 ns;
       for j in 0 to N-1 loop
