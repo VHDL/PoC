@@ -130,16 +130,18 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 						vhdlFilePath = self.host.directories["ISEInstallation"] / "ISE/vhdl/src" / filesLineRegExpMatch.group('VHDLFile')
 					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
 
+					if (not vhdlFilePath.exists()):
+						raise PoCSimulator.PoCSimulatorException("Can not analyse " + str(vhdlFilePath)) from FileNotFoundError(str(vhdlFilePath))
+					
 					# assemble fuse command as list of parameters
 					parameterList = [
 						str(ghdlExecutablePath),
-						'-a', '-P.', '--syn-binding', #'--std=02',
+						'-a', '-P.', '--syn-binding', '--std=93',
 						('--work=%s' % vhdlLibraryName),
 						str(vhdlFilePath)
 					]
+					command = " ".join(parameterList)	#'%s -a --std=93 -P. --work=%s "%s"' % (str(ghdlExecutablePath), vhdlLibraryName, str(vhdlFilePath))
 					
-					#command = '%s -a --std=02 -P. --work=%s "%s"' % (str(ghdlExecutablePath), vhdlLibraryName, str(vhdlFilePath))
-					command = '%s -a -P. --work=%s "%s"' % (str(ghdlExecutablePath), vhdlLibraryName, str(vhdlFilePath))
 					self.printDebug("call ghdl: %s" % str(parameterList))
 					self.printVerbose("    command: %s" % command)
 					
@@ -168,11 +170,11 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		
 			parameterList = [
 				str(ghdlExecutablePath),
-				'-r', '--syn-binding', '-P.',
+				'-r', '--std=93', '--syn-binding', '-P.',
 				'--work=test',
 				testbenchName
 			]
-			command = "%s -r --syn-binding -P. --work=test %s" % (str(ghdlExecutablePath), testbenchName)
+			command = " ".join(parameterList)	#"%s -r --std=93 --syn-binding -P. --work=test %s" % (str(ghdlExecutablePath), testbenchName)
 		
 			self.printDebug("call ghdl: %s" % str(parameterList))
 			self.printVerbose("    command: %s" % command)
@@ -201,11 +203,11 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		
 			parameterList = [
 				str(ghdlExecutablePath),
-				'-e', '--syn-binding', '-P.',
+				'-e', '--std=93', '--syn-binding', '-P.',
 				'--work=test',
 				testbenchName
 			]
-			command = "%s -e --syn-binding -P. --work=test %s" % (str(ghdlExecutablePath), testbenchName)
+			command = " ".join(parameterList)	#%s -e --std=93 --syn-binding -P. --work=test %s" % (str(ghdlExecutablePath), testbenchName)
 		
 			self.printDebug("call ghdl: %s" % str(parameterList))
 			self.printVerbose("    command: %s" % command)
@@ -251,7 +253,7 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 			self.printNonQuiet("  running simulation...")
 		
 			parameterList = [str(exeFilePath)]
-			command = str(exeFilePath)
+			command = " ".join(parameterList)
 		
 			self.printDebug("call ghdl: %s" % str(parameterList))
 			self.printVerbose("    command: %s" % command)
