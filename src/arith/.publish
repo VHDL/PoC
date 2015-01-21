@@ -1,8 +1,18 @@
-arith_pkg.vhdl
+arith.pkg.vhdl
+
+# Logical
 arith_prefix_*.vhdl
 arith_same.vhdl
+arith_barrell_shifter.vhdl
+
+# Counters
 arith_counter_gray.vhdl
 arith_counter_ring.vhdl
+
+# Arithmetic
 arith_div.vhdl
 arith_scaler.vhdl
 arith_sqrt.vhdl
+
+# Random Numbers
+arith_prng.vhdl
