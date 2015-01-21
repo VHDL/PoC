@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,7 +57,7 @@ ENTITY Stream_Mux IS
 		In_Meta_rev								: OUT	T_SLM(PORTS - 1 DOWNTO 0, META_REV_BITS - 1 DOWNTO 0);
 		In_SOF										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		In_EOF										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		In_Ready									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		In_Ack										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		-- OUT Port
 		Out_Valid									: OUT	STD_LOGIC;
 		Out_Data									: OUT	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
@@ -65,7 +65,7 @@ ENTITY Stream_Mux IS
 		Out_Meta_rev							: IN	STD_LOGIC_VECTOR(META_REV_BITS - 1 DOWNTO 0);
 		Out_SOF										: OUT	STD_LOGIC;
 		Out_EOF										: OUT	STD_LOGIC;
-		Out_Ready									: IN	STD_LOGIC
+		Out_Ack										: IN	STD_LOGIC
 	);
 END;
 
@@ -79,6 +79,8 @@ ARCHITECTURE rtl OF Stream_Mux IS
 	
 	SIGNAL State											: T_STATE					:= ST_IDLE;
 	SIGNAL NextState									: T_STATE;
+	
+	signal FSM_Dataflow_en						: STD_LOGIC;
 	
 	SIGNAL RequestVector							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL RequestWithSelf						: STD_LOGIC;
@@ -115,9 +117,11 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	PROCESS(State, RequestWithSelf, RequestWithoutSelf, Out_Ready, Out_EOF_i, ChannelPointer_d, ChannelPointer_nxt)
+	PROCESS(State, RequestWithSelf, RequestWithoutSelf, Out_Ack, Out_EOF_i, ChannelPointer_d, ChannelPointer_nxt)
 	BEGIN
 		NextState									<= State;
+		
+		FSM_Dataflow_en						<= '0';
 		
 		ChannelPointer_en					<= '0';
 		ChannelPointer						<= ChannelPointer_d;
@@ -131,7 +135,9 @@ BEGIN
 				END IF;
 			
 			WHEN ST_DATAFLOW =>
-				IF ((Out_Ready AND Out_EOF_i) = '1') THEN
+				FSM_Dataflow_en				<= '1';
+			
+				IF ((Out_Ack	 AND Out_EOF_i) = '1') THEN
 					IF (RequestWithoutSelf = '0') THEN
 						NextState					<= ST_IDLE;
 					ELSE
@@ -168,10 +174,10 @@ BEGIN
 	
 	Out_SOF							<= In_SOF(to_integer(ChannelPointer_bin));
 	Out_EOF_i						<= In_EOF(to_integer(ChannelPointer_bin));
-	Out_Valid						<= In_Valid(to_integer(ChannelPointer_bin));
+	Out_Valid						<= In_Valid(to_integer(ChannelPointer_bin)) and FSM_Dataflow_en;
 	Out_EOF							<= Out_EOF_i;
 	
-	In_Ready						<= (In_Ready'range => Out_Ready) AND ChannelPointer;
+	In_Ack							<= (In_Ack	'range => (Out_Ack	 and FSM_Dataflow_en)) AND ChannelPointer;
 
 	genMetaReverse_0 : IF (META_REV_BITS = 0) GENERATE
 		In_Meta_rev		<= (OTHERS => (OTHERS => '0'));

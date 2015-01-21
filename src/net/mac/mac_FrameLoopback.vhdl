@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,7 +52,7 @@ ENTITY MAC_FrameLoopback IS
 		In_Data												: IN	T_SLV_8;
 		In_SOF												: IN	STD_LOGIC;
 		In_EOF												: IN	STD_LOGIC;
-		In_Ready											: OUT	STD_LOGIC;
+		In_Ack												: OUT	STD_LOGIC;
 		In_Meta_rst										: OUT	STD_LOGIC;
 		In_Meta_SrcMACAddress_nxt			: OUT	STD_LOGIC;
 		In_Meta_SrcMACAddress_Data		: IN	T_SLV_8;
@@ -63,7 +63,7 @@ ENTITY MAC_FrameLoopback IS
 		Out_Data											: OUT	T_SLV_8;
 		Out_SOF												: OUT	STD_LOGIC;
 		Out_EOF												: OUT	STD_LOGIC;
-		Out_Ready											: IN	STD_LOGIC;
+		Out_Ack												: IN	STD_LOGIC;
 		Out_Meta_rst									: IN	STD_LOGIC;
 		Out_Meta_SrcMACAddress_nxt		: IN	STD_LOGIC;
 		Out_Meta_SrcMACAddress_Data		: OUT	T_SLV_8;
@@ -117,7 +117,7 @@ BEGIN
 			In_Data												=> In_Data,
 			In_SOF												=> In_SOF,
 			In_EOF												=> In_EOF,
-			In_Ready											=> In_Ready,
+			In_Ack												=> In_Ack,
 			In_Meta_rst										=> In_Meta_rst,
 			In_Meta_nxt										=> LLBuf_MetaIn_nxt,
 			In_Meta_Data									=> LLBuf_MetaIn_Data,
@@ -126,7 +126,7 @@ BEGIN
 			Out_Data											=> Out_Data,
 			Out_SOF												=> Out_SOF,
 			Out_EOF												=> Out_EOF,
-			Out_Ready											=> Out_Ready,
+			Out_Ack												=> Out_Ack,
 			Out_Meta_rst									=> Out_Meta_rst,
 			Out_Meta_nxt									=> LLBuf_MetaOut_nxt,
 			Out_Meta_Data									=> LLBuf_MetaOut_Data

@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,7 +52,7 @@ ENTITY ARP_UniCast_Receiver IS
 		RX_Data											: IN	T_SLV_8;
 		RX_SOF											: IN	STD_LOGIC;
 		RX_EOF											: IN	STD_LOGIC;
-		RX_Ready										: OUT	STD_LOGIC;
+		RX_Ack											: OUT	STD_LOGIC;
 		RX_Meta_rst									: OUT	STD_LOGIC;
 		RX_Meta_SrcMACAddress_nxt		: OUT	STD_LOGIC;
 		RX_Meta_SrcMACAddress_Data	: IN	T_SLV_8;
@@ -202,7 +202,7 @@ BEGIN
 	BEGIN
 		NextState											<= State;
 		
-		RX_Ready											<= '0';
+		RX_Ack												<= '0';
 
 		ResponseReceived							<= '0';
 		Error													<= '0';
@@ -236,7 +236,7 @@ BEGIN
 		CASE State IS
 			WHEN ST_IDLE =>
 				IF (Is_SOF = '1') THEN
-					RX_Ready				<= '1';
+					RX_Ack					<= '1';
 				
 					IF (Is_EOF = '0') THEN
 						IF (RX_Data = x"00") THEN
@@ -251,7 +251,7 @@ BEGIN
 			
 			WHEN ST_RECEIVE_HARDWARE_TYPE_1 =>
 				IF (RX_Valid = '1') THEN
-					RX_Ready				<= '1';
+					RX_Ack					<= '1';
 				
 					IF (Is_EOF = '0') THEN
 						IF (RX_Data = x"01") THEN
@@ -266,7 +266,7 @@ BEGIN
 		
 			WHEN ST_RECEIVE_PROTOCOL_TYPE_0 =>
 				IF (RX_Valid = '1') THEN
-					RX_Ready				<= '1';
+					RX_Ack					<= '1';
 				
 					IF (Is_EOF = '0') THEN
 						IF ((ALLOWED_PROTOCOL_IPV4 = TRUE) AND (RX_Data = x"08")) THEN
@@ -285,7 +285,7 @@ BEGIN
 		
 			WHEN ST_RECEIVE_PROTOCOL_TYPE_1 =>
 				IF (RX_Valid = '1') THEN
-					RX_Ready				<= '1';
+					RX_Ack					<= '1';
 				
 					IF (Is_EOF = '0') THEN
 						IF ((IsIPv4_r = '1') AND (RX_Data = x"00")) THEN
@@ -302,7 +302,7 @@ BEGIN
 		
 			WHEN ST_RECEIVE_HARDWARE_ADDRESS_LENGTH =>
 				IF (RX_Valid = '1') THEN
-					RX_Ready				<= '1';
+					RX_Ack					<= '1';
 				
 					IF (Is_EOF = '0') THEN
 						IF (RX_Data = x"06") THEN
@@ -317,7 +317,7 @@ BEGIN
 				
 			WHEN ST_RECEIVE_PROTOCOL_ADDRESS_LENGTH =>
 				IF (RX_Valid = '1') THEN
-					RX_Ready				<= '1';
+					RX_Ack					<= '1';
 				
 					IF (Is_EOF = '0') THEN
 						IF ((IsIPv4_r = '1') AND (RX_Data = x"04")) THEN
@@ -334,7 +334,7 @@ BEGIN
 
 			WHEN ST_RECEIVE_OPERATION_0 =>
 				IF (RX_Valid = '1') THEN
-					RX_Ready				<= '1';
+					RX_Ack					<= '1';
 					
 					IF (Is_EOF = '0') THEN
 						IF (RX_Data = x"00") THEN
@@ -349,7 +349,7 @@ BEGIN
 			
 			WHEN ST_RECEIVE_OPERATION_1 =>
 				IF (RX_Valid = '1') THEN
-					RX_Ready				<= '1';
+					RX_Ack					<= '1';
 					
 					IF (Is_EOF = '0') THEN
 						IF (RX_Data = x"02") THEN
@@ -364,7 +364,7 @@ BEGIN
 			
 			WHEN ST_RECEIVE_SENDER_MAC =>
 				IF (RX_Valid = '1') THEN
-					RX_Ready									<= '1';
+					RX_Ack										<= '1';
 					Writer_Counter_en					<= '1';
 					SenderHardwareAddress_en	<= '1';
 					
@@ -380,7 +380,7 @@ BEGIN
 			
 			WHEN ST_RECEIVE_SENDER_IP =>
 				IF (RX_Valid = '1') THEN
-					RX_Ready									<= '1';
+					RX_Ack										<= '1';
 					Writer_Counter_en					<= '1';
 					SenderProtocolAddress_en	<= '1';
 					
@@ -399,7 +399,7 @@ BEGIN
 			
 			WHEN ST_RECEIVE_TARGET_MAC =>
 				IF (RX_Valid = '1') THEN
-					RX_Ready									<= '1';
+					RX_Ack										<= '1';
 					Writer_Counter_en					<= '1';
 					TargetHardwareAddress_en	<= '1';
 					
@@ -415,7 +415,7 @@ BEGIN
 			
 			WHEN ST_RECEIVE_TARGET_IP =>
 				IF (RX_Valid = '1') THEN
-					RX_Ready									<= '1';
+					RX_Ack										<= '1';
 					Writer_Counter_en					<= '1';
 					TargetProtocolAddress_en	<= '1';
 					
@@ -442,7 +442,7 @@ BEGIN
 	
 			WHEN ST_DISCARD_ETHERNET_PADDING_BYTES =>
 				ResponseReceived						<= '1';
-				RX_Ready										<= '1';
+				RX_Ack											<= '1';
 				
 				IF (Is_EOF = '1') THEN
 					NextState									<= ST_COMPLETE;
@@ -456,7 +456,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_DISCARD_FRAME =>
-				RX_Ready										<= '1';
+				RX_Ack											<= '1';
 				
 				IF (Is_EOF = '1') THEN
 					NextState									<= ST_ERROR;

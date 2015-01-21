@@ -95,18 +95,18 @@ ARCHITECTURE rtl OF iic_IICBusController IS
 		END CASE;
 	END FUNCTION;
 	
-	FUNCTION getBusFreeTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN TIME IS
-	BEGIN
-		IF SIMULATION THEN											RETURN 500.0 ns;	END IF;
-		CASE IIC_BUSMODE IS
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4700.0 ns;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4700.0 ns;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 1300.0 ns;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 500.0 ns;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0 ns;
-			WHEN OTHERS =>												RETURN 0.0 ns;
-		END CASE;
-	END FUNCTION;
+	function getBusFreeTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) return TIME is
+	begin
+		if SIMULATION then											return 500.0 ns;	end if;
+		case IIC_BUSMODE IS
+			when IO_IIC_BUSMODE_SMBUS =>					return 4700.0 ns;
+			when IO_IIC_BUSMODE_STANDARDMODE =>		return 4700.0 ns;
+			when IO_IIC_BUSMODE_FASTMODE =>				return 1300.0 ns;
+			when IO_IIC_BUSMODE_FASTMODEPLUS =>		return 500.0 ns;
+			when IO_IIC_BUSMODE_HIGHSPEEDMODE =>	return 0.0 ns;
+			when others =>												return 0.0 ns;
+		end case;
+	end function;
 	
 	FUNCTION getClockHighTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN TIME IS
 	BEGIN
@@ -234,7 +234,7 @@ ARCHITECTURE rtl OF iic_IICBusController IS
 	CONSTANT TTID_SETUP_DATA									: NATURAL		:= 6;
 	
 	-- Timing table
-	CONSTANT TIMING_TABLE											: T_NATVEC	:= (
+	constant TIMING_TABLE											: T_NATVEC	:= (
 		TTID_BUS_FREE_TIME						=> TimingToCycles(TIME_BUS_FREE,								CLOCK_FREQ),
 		TTID_HOLD_CLOCK_AFTER_START		=> TimingToCycles(TIME_HOLD_CLOCK_AFTER_START,	CLOCK_FREQ),
 		TTID_CLOCK_LOW								=> TimingToCycles(TIME_CLOCK_LOW,								CLOCK_FREQ),

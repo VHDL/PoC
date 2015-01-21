@@ -16,7 +16,7 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2014 Technische Universitaet Dresden - Germany
+# Copyright 2007-2015 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,7 +53,7 @@ if ($PyWrapper_Debug -eq $true ) {
 	Write-Host "  working:       $PoC_WorkingDir" -ForegroundColor Yellow
 	Write-Host "Script:" -ForegroundColor Yellow
 	Write-Host "  Filename:      $PyWrapper_Script" -ForegroundColor Yellow
-	Write-Host "  Parameters:    $PyWrapper_Paramters" -ForegroundColor Yellow
+	Write-Host "  Parameters:    $PyWrapper_Parameters" -ForegroundColor Yellow
 	Write-Host "Load Environment:" -ForegroundColor Yellow
 	Write-Host "  Xilinx ISE:    $PyWrapper_LoadEnv_ISE" -ForegroundColor Yellow
 	Write-Host "  Xilinx VIVADO: $PyWrapper_LoadEnv_Vivado" -ForegroundColor Yellow
@@ -141,7 +141,7 @@ if ($PoC_ExitCode -eq 0) {
 # execute script with appropriate python interpreter and all given parameters
 if ($PoC_ExitCode -eq 0) {
 	$Python_Script =						"$PoC_RootDir_AbsPath\$PoC_PythonScriptDir\$PyWrapper_Script"
-	$Python_ScriptParameters =	$PyWrapper_Paramters
+	$Python_ScriptParameters =	$PyWrapper_Parameters
 	
 	# execute script with appropriate python interpreter and all given parameters
 	if ($PyWrapper_Debug -eq $true) {

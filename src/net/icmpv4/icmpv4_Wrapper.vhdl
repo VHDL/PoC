@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,7 +61,7 @@ ENTITY ICMPv4_Wrapper IS
 		IP_TX_Data													: OUT	T_SLV_8;
 		IP_TX_SOF														: OUT	STD_LOGIC;
 		IP_TX_EOF														: OUT	STD_LOGIC;
-		IP_TX_Ready													: IN	STD_LOGIC;
+		IP_TX_Ack														: IN	STD_LOGIC;
 		IP_TX_Meta_rst											: IN	STD_LOGIC;
 		IP_TX_Meta_SrcIPv4Address_nxt				: IN	STD_LOGIC;
 		IP_TX_Meta_SrcIPv4Address_Data			: OUT	T_SLV_8;
@@ -73,7 +73,7 @@ ENTITY ICMPv4_Wrapper IS
 		IP_RX_Data													: IN	T_SLV_8;
 		IP_RX_SOF														: IN	STD_LOGIC;
 		IP_RX_EOF														: IN	STD_LOGIC;
-		IP_RX_Ready													: OUT	STD_LOGIC;
+		IP_RX_Ack														: OUT	STD_LOGIC;
 		IP_RX_Meta_rst											: OUT	STD_LOGIC;
 		IP_RX_Meta_SrcMACAddress_nxt				: OUT	STD_LOGIC;
 		IP_RX_Meta_SrcMACAddress_Data				: IN	T_SLV_8;
@@ -326,7 +326,7 @@ BEGIN
 			Out_Data											=> IP_TX_Data,
 			Out_SOF												=> IP_TX_SOF,
 			Out_EOF												=> IP_TX_EOF,
-			Out_Ready											=> IP_TX_Ready,
+			Out_Ack												=> IP_TX_Ack,
 			Out_Meta_rst									=> IP_TX_Meta_rst,
 			Out_Meta_SrcIPv4Address_nxt		=> IP_TX_Meta_SrcIPv4Address_nxt,
 			Out_Meta_SrcIPv4Address_Data	=> IP_TX_Meta_SrcIPv4Address_Data,
@@ -365,7 +365,7 @@ BEGIN
 			In_Data												=> IP_RX_Data,
 			In_SOF												=> IP_RX_SOF,
 			In_EOF												=> IP_RX_EOF,
-			In_Ready											=> IP_RX_Ready,
+			In_Ack												=> IP_RX_Ack,
 			In_Meta_rst										=> IP_RX_Meta_rst,
 			In_Meta_SrcMACAddress_nxt			=> IP_RX_Meta_SrcMACAddress_nxt,
 			In_Meta_SrcMACAddress_Data		=> IP_RX_Meta_SrcMACAddress_Data,

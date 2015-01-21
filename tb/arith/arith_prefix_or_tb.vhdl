@@ -15,7 +15,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,18 +43,7 @@ use			PoC.simulation.ALL;
 
 
 architecture tb of arith_prefix_or_tb is
-
-  component arith_prefix_or is
-    generic (
-      N : positive
-    );
-    port (
-      x : in  std_logic_vector(N-1 downto 0);
-      y : out std_logic_vector(N-1 downto 0)
-    );
-  end component;
-
-  -- component generics
+	-- component generics
   constant N : positive := 8;
 
   -- component ports
@@ -64,7 +53,7 @@ architecture tb of arith_prefix_or_tb is
 begin  -- tb
 
   -- component instantiation
-  DUT: arith_prefix_or
+  DUT: entity PoC.arith_prefix_or
     generic map (
       N => N
     )
@@ -75,9 +64,10 @@ begin  -- tb
 
   -- Stimuli
   process
+		constant MaxCycles	: POSITIVE	:= 2**N;
   begin
 		-- Exhaustive Testing
-    for i in 0 to 2**N-1 loop
+    for i in 0 to MaxCycles-1 loop
       x <= std_logic_vector(to_unsigned(i, N));
       wait for 10 ns;
       for j in 0 to N-1 loop

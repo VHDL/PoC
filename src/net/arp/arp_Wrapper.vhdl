@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -71,7 +71,7 @@ ENTITY ARP_Wrapper IS
 		Eth_UC_TX_Data											: OUT	T_SLV_8;
 		Eth_UC_TX_SOF												: OUT	STD_LOGIC;
 		Eth_UC_TX_EOF												: OUT	STD_LOGIC;
-		Eth_UC_TX_Ready											: IN	STD_LOGIC;
+		Eth_UC_TX_Ack												: IN	STD_LOGIC;
 		Eth_UC_TX_Meta_rst									: IN	STD_LOGIC;
 		Eth_UC_TX_Meta_DestMACAddress_nxt		: IN	STD_LOGIC;
 		Eth_UC_TX_Meta_DestMACAddress_Data	: OUT	T_SLV_8;
@@ -80,7 +80,7 @@ ENTITY ARP_Wrapper IS
 		Eth_UC_RX_Data											: IN	T_SLV_8;
 		Eth_UC_RX_SOF												: IN	STD_LOGIC;
 		Eth_UC_RX_EOF												: IN	STD_LOGIC;
-		Eth_UC_RX_Ready											: OUT	STD_LOGIC;
+		Eth_UC_RX_Ack												: OUT	STD_LOGIC;
 		Eth_UC_RX_Meta_rst									: OUT	STD_LOGIC;
 		Eth_UC_RX_Meta_SrcMACAddress_nxt		: OUT	STD_LOGIC;
 		Eth_UC_RX_Meta_SrcMACAddress_Data		: IN	T_SLV_8;
@@ -91,7 +91,7 @@ ENTITY ARP_Wrapper IS
 		Eth_BC_RX_Data											: IN	T_SLV_8;
 		Eth_BC_RX_SOF												: IN	STD_LOGIC;
 		Eth_BC_RX_EOF												: IN	STD_LOGIC;
-		Eth_BC_RX_Ready											: OUT	STD_LOGIC;
+		Eth_BC_RX_Ack												: OUT	STD_LOGIC;
 		Eth_BC_RX_Meta_rst									: OUT	STD_LOGIC;
 		Eth_BC_RX_Meta_SrcMACAddress_nxt		: OUT	STD_LOGIC;
 		Eth_BC_RX_Meta_SrcMACAddress_Data		: IN	T_SLV_8;
@@ -171,7 +171,7 @@ ARCHITECTURE rtl OF ARP_Wrapper IS
 	SIGNAL UCRsp_TX_Data													: T_SLV_8;
 	SIGNAL UCRsp_TX_SOF														: STD_LOGIC;
 	SIGNAL UCRsp_TX_EOF														: STD_LOGIC;
-	SIGNAL UCRsp_TX_Ready													: STD_LOGIC;
+	SIGNAL UCRsp_TX_Ack														: STD_LOGIC;
 	SIGNAL UCRsp_TX_Meta_DestMACAddress_rst				: STD_LOGIC;
 	SIGNAL UCRsp_TX_Meta_DestMACAddress_nxt				: STD_LOGIC;
 	SIGNAL UCRsp_TX_Meta_DestMACAddress_Data			: T_SLV_8;
@@ -256,7 +256,7 @@ ARCHITECTURE rtl OF ARP_Wrapper IS
 	SIGNAL BCReq_TX_Data													: T_SLV_8;
 	SIGNAL BCReq_TX_SOF														: STD_LOGIC;
 	SIGNAL BCReq_TX_EOF														: STD_LOGIC;
-	SIGNAL BCReq_TX_Ready													: STD_LOGIC;
+	SIGNAL BCReq_TX_Ack														: STD_LOGIC;
 	SIGNAL BCReq_TX_Meta_DestMACAddress_rst				: STD_LOGIC;
 	SIGNAL BCReq_TX_Meta_DestMACAddress_nxt				: STD_LOGIC;
 	SIGNAL BCReq_TX_Meta_DestMACAddress_Data			: T_SLV_8;
@@ -402,7 +402,7 @@ BEGIN
 			RX_Data												=> Eth_BC_RX_Data,
 			RX_SOF												=> Eth_BC_RX_SOF,
 			RX_EOF												=> Eth_BC_RX_EOF,
-			RX_Ready											=> Eth_BC_RX_Ready,
+			RX_Ack												=> Eth_BC_RX_Ack,
 			RX_Meta_rst										=> Eth_BC_RX_Meta_rst,
 			RX_Meta_SrcMACAddress_nxt			=> Eth_BC_RX_Meta_SrcMACAddress_nxt,
 			RX_Meta_SrcMACAddress_Data		=> Eth_BC_RX_Meta_SrcMACAddress_Data,
@@ -468,7 +468,7 @@ BEGIN
 			TX_Data												=> UCRsp_TX_Data,
 			TX_SOF												=> UCRsp_TX_SOF,
 			TX_EOF												=> UCRsp_TX_EOF,
-			TX_Ready											=> UCRsp_TX_Ready,
+			TX_Ack												=> UCRsp_TX_Ack,
 			TX_Meta_DestMACAddress_rst		=> UCRsp_TX_Meta_DestMACAddress_rst,
 			TX_Meta_DestMACAddress_nxt		=> UCRsp_TX_Meta_DestMACAddress_nxt,
 			TX_Meta_DestMACAddress_Data		=> UCRsp_TX_Meta_DestMACAddress_Data
@@ -694,7 +694,7 @@ BEGIN
 			RX_Data												=> Eth_UC_RX_Data,
 			RX_SOF												=> Eth_UC_RX_SOF,
 			RX_EOF												=> Eth_UC_RX_EOF,
-			RX_Ready											=> Eth_UC_RX_Ready,
+			RX_Ack												=> Eth_UC_RX_Ack,
 			RX_Meta_rst										=> Eth_UC_RX_Meta_rst,
 			RX_Meta_SrcMACAddress_nxt			=> Eth_UC_RX_Meta_SrcMACAddress_nxt,
 			RX_Meta_SrcMACAddress_Data		=> Eth_UC_RX_Meta_SrcMACAddress_Data,
@@ -770,7 +770,7 @@ BEGIN
 			TX_Data												=> BCReq_TX_Data,
 			TX_SOF												=> BCReq_TX_SOF,
 			TX_EOF												=> BCReq_TX_EOF,
-			TX_Ready											=> BCReq_TX_Ready,
+			TX_Ack												=> BCReq_TX_Ack,
 			TX_Meta_DestMACAddress_rst		=> BCReq_TX_Meta_DestMACAddress_rst,
 			TX_Meta_DestMACAddress_nxt		=> BCReq_TX_Meta_DestMACAddress_nxt,
 			TX_Meta_DestMACAddress_Data		=> BCReq_TX_Meta_DestMACAddress_Data
@@ -797,7 +797,7 @@ BEGIN
 		SIGNAL LLMux_In_Meta_rev		: T_SLM(LLMUX_PORTS - 1 DOWNTO 0, META_REV_BITS - 1 DOWNTO 0)		:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
 		SIGNAL LLMux_In_SOF					: STD_LOGIC_VECTOR(LLMUX_PORTS - 1 DOWNTO 0);
 		SIGNAL LLMux_In_EOF					: STD_LOGIC_VECTOR(LLMUX_PORTS - 1 DOWNTO 0);
-		SIGNAL LLMux_In_Ready				: STD_LOGIC_VECTOR(LLMUX_PORTS - 1 DOWNTO 0);
+		SIGNAL LLMux_In_Ack					: STD_LOGIC_VECTOR(LLMUX_PORTS - 1 DOWNTO 0);
 		
 		SIGNAL LLMux_Out_Meta				: STD_LOGIC_VECTOR(META_BITS - 1 DOWNTO 0);
 		SIGNAL LLMux_Out_Meta_rev		: STD_LOGIC_VECTOR(META_REV_BITS - 1 DOWNTO 0);
@@ -809,7 +809,7 @@ BEGIN
 		assign_row(LLMux_In_Data, BCReq_TX_Data,	LLMUX_PORT_BCREQ);
 		LLMux_In_SOF(LLMUX_PORT_BCREQ)					<= BCReq_TX_SOF;
 		LLMux_In_EOF(LLMUX_PORT_BCREQ)					<= BCReq_TX_EOF;
-		BCReq_TX_Ready													<= LLMux_In_Ready(LLMUX_PORT_BCREQ);
+		BCReq_TX_Ack														<= LLMux_In_Ack	(LLMUX_PORT_BCREQ);
 		assign_row(LLMux_In_Meta, BCReq_TX_Meta_DestMACAddress_Data, LLMUX_PORT_BCREQ);
 		BCReq_TX_Meta_DestMACAddress_rst				<= LLMux_In_Meta_rev(LLMUX_PORT_BCREQ, META_RST_BIT);
 		BCReq_TX_Meta_DestMACAddress_nxt				<= LLMux_In_Meta_rev(LLMUX_PORT_BCREQ, META_DEST_NXT_BIT);
@@ -819,7 +819,7 @@ BEGIN
 		assign_row(LLMux_In_Data, UCRsp_TX_Data,	LLMUX_PORT_UCRSP);
 		LLMux_In_SOF(LLMUX_PORT_UCRSP)					<= UCRsp_TX_SOF;
 		LLMux_In_EOF(LLMUX_PORT_UCRSP)					<= UCRsp_TX_EOF;
-		UCRsp_TX_Ready													<= LLMux_In_Ready(LLMUX_PORT_UCRSP);
+		UCRsp_TX_Ack														<= LLMux_In_Ack	(LLMUX_PORT_UCRSP);
 		UCRsp_TX_Meta_DestMACAddress_rst				<= LLMux_In_Meta_rev(LLMUX_PORT_UCRSP, META_RST_BIT);
 		UCRsp_TX_Meta_DestMACAddress_nxt				<= LLMux_In_Meta_rev(LLMUX_PORT_UCRSP, META_DEST_NXT_BIT);
 		assign_row(LLMux_In_Meta, UCRsp_TX_Meta_DestMACAddress_Data, LLMUX_PORT_UCRSP);
@@ -841,7 +841,7 @@ BEGIN
 				In_Meta_rev						=> LLMux_In_Meta_rev,
 				In_SOF								=> LLMux_In_SOF,
 				In_EOF								=> LLMux_In_EOF,
-				In_Ready							=> LLMux_In_Ready,
+				In_Ack								=> LLMux_In_Ack,
 				
 				Out_Valid							=> Eth_UC_TX_Valid,
 				Out_Data							=> Eth_UC_TX_Data,
@@ -849,7 +849,7 @@ BEGIN
 				Out_Meta_rev					=> LLMux_Out_Meta_rev,
 				Out_SOF								=> Eth_UC_TX_SOF,
 				Out_EOF								=> Eth_UC_TX_EOF,
-				Out_Ready							=> Eth_UC_TX_Ready
+				Out_Ack								=> Eth_UC_TX_Ack	
 			);
 	
 		LLMux_Out_Meta_rev(META_RST_BIT)				<= Eth_UC_TX_Meta_rst;
