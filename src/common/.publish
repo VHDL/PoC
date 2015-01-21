@@ -1,5 +1,9 @@
-config.vhdl
-board.vhdl
+# Basics
 utils.vhdl
 vectors.vhdl
 strings.vhdl
+
+# Configuration
+config.vhdl
+board.vhdl
+
