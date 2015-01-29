@@ -207,22 +207,22 @@ package body io is
 	begin
 		Result(7)		:= dot;
 		case hex is							-- segments:			GFEDCBA
-			when x"0" =>		Result(6 downto 0)	:= "1000000";
-			when x"1" =>		Result(6 downto 0)	:= "1111001";
-			when x"2" =>		Result(6 downto 0)	:= "0100100";
-			when x"3" =>		Result(6 downto 0)	:= "0110000";
-			when x"4" =>		Result(6 downto 0)	:= "0011001";
-			when x"5" =>		Result(6 downto 0)	:= "0010010";
-			when x"6" =>		Result(6 downto 0)	:= "0000010";
-			when x"7" =>		Result(6 downto 0)	:= "1111000";
-			when x"8" =>		Result(6 downto 0)	:= "0000000";
-			when x"9" =>		Result(6 downto 0)	:= "0010000";
-			when x"A" =>		Result(6 downto 0)	:= "0001000";
-			when x"B" =>		Result(6 downto 0)	:= "0000011";
-			when x"C" =>		Result(6 downto 0)	:= "1000110";
-			when x"D" =>		Result(6 downto 0)	:= "0100001";
-			when x"E" =>		Result(6 downto 0)	:= "0000110";
-			when x"F" =>		Result(6 downto 0)	:= "0001110";
+			when x"0" =>		Result(6 downto 0)	:= "0111111";
+			when x"1" =>		Result(6 downto 0)	:= "0000110";
+			when x"2" =>		Result(6 downto 0)	:= "1011011";
+			when x"3" =>		Result(6 downto 0)	:= "1001111";
+			when x"4" =>		Result(6 downto 0)	:= "1100110";
+			when x"5" =>		Result(6 downto 0)	:= "1101101";
+			when x"6" =>		Result(6 downto 0)	:= "1111101";
+			when x"7" =>		Result(6 downto 0)	:= "0000111";
+			when x"8" =>		Result(6 downto 0)	:= "1111111";
+			when x"9" =>		Result(6 downto 0)	:= "1101111";
+			when x"A" =>		Result(6 downto 0)	:= "1110111";
+			when x"B" =>		Result(6 downto 0)	:= "1111100";
+			when x"C" =>		Result(6 downto 0)	:= "0111001";
+			when x"D" =>		Result(6 downto 0)	:= "1011110";
+			when x"E" =>		Result(6 downto 0)	:= "1111001";
+			when x"F" =>		Result(6 downto 0)	:= "1110001";
 			when others =>	Result(6 downto 0)	:= "XXXXXXX";
 		end case;
 		return Result;
@@ -231,9 +231,8 @@ package body io is
 	function uart_IsTypicalBaudRate(br : BAUD) return BOOLEAN is
 	begin
 		for i in C_UART_TYPICAL_BAUDRATES'range loop
-			if (br = C_UART_TYPICAL_BAUDRATES(i)) then
-				return TRUE;
-			end if;
+			next when (br /= C_UART_TYPICAL_BAUDRATES(i));
+			return TRUE;
 		end loop;
 		return FALSE;
 	end function;
