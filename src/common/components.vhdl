@@ -55,10 +55,7 @@ PACKAGE components IS
 	function dec(value : SIGNED;						increment : NATURAL := 1) return SIGNED;
 
 	-- negate
-	function neg(value : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;		-- negate if necessary (uses cpl)
-	
-	-- complement
-	function cpl(value : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;		-- calculate 2's complement
+	function neg(value : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;		-- calculate 2's complement
 	
 	-- counter
 	function counter_inc(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return UNSIGNED;
@@ -152,12 +149,6 @@ PACKAGE BODY components IS
 	
 	-- negate
 	function neg(value : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
-	begin
-		return mux(value(value'high), value, cpl(value));
-	end function;
-	
-	-- complement
-	function cpl(value : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
 	begin
 		return std_logic_vector(inc(unsigned(not value)));		-- 2's complement
 	end function;
