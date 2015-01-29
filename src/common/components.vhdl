@@ -177,7 +177,7 @@ PACKAGE BODY components IS
 	function counter_dec(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return SIGNED is
 	begin
 		if (rst = '1') then
-			return to_unsigned(init, cnt'length);
+			return to_signed(init, cnt'length);
 		elsif (en = '1') then
 			return cnt - 1;
 		else
