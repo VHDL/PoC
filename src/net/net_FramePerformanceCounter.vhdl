@@ -25,13 +25,13 @@ ENTITY LocalLink_PerformanceCounter IS
 		In_Data										: IN	T_SLV_8;
 		In_SOF										: IN	STD_LOGIC;
 		In_EOF										: IN	STD_LOGIC;
-		In_Ready									: OUT	STD_LOGIC;
+		In_Ack										: OUT	STD_LOGIC;
 
 		Out_Valid									: OUT	STD_LOGIC;
 		Out_Data									: OUT	T_SLV_8;
 		Out_SOF										: OUT	STD_LOGIC;
 		Out_EOF										: OUT	STD_LOGIC;
-		Out_Ready									: IN	STD_LOGIC;
+		Out_Ack										: IN	STD_LOGIC;
 		
 		PacketsPerSecond					: OUT	T_SLV_32;
 		BytesPerSecond						: OUT	T_SLV_32
@@ -42,7 +42,7 @@ ARCHITECTURE rtl OF LocalLink_PerformanceCounter IS
 	ATTRIBUTE KEEP										: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING						: STRING;
 
-	SIGNAL In_Ready_i									: STD_LOGIC;
+	SIGNAL In_Ack_i									: STD_LOGIC;
 	
 	SIGNAL Is_NewPacket								: STD_LOGIC;
 	SIGNAL Is_DataFlow								: STD_LOGIC;
@@ -69,12 +69,12 @@ BEGIN
 	Out_SOF			<= In_SOF;
 	Out_EOF			<= In_EOF;
 	
-	In_Ready_i	<= Out_Ready;
-	In_Ready		<= In_Ready_i;
+	In_Ack_i	<= Out_Ack;
+	In_Ack			<= In_Ack_i;
 	
 	-- triggers
 	Is_NewPacket	<= In_Valid AND In_SOF;
-	Is_DataFlow		<= In_Valid AND In_Ready_i;
+	Is_DataFlow		<= In_Valid AND In_Ack_i;
 	
 	-- counter control
 	PacketCounter_rst	<= TimeBaseCounter_ov;

@@ -26,7 +26,7 @@ ENTITY IPv6_Wrapper IS
 		MAC_TX_Data											: OUT	T_SLV_8;
 		MAC_TX_SOF											: OUT	STD_LOGIC;
 		MAC_TX_EOF											: OUT	STD_LOGIC;
-		MAC_TX_Ready										: IN	STD_LOGIC;
+		MAC_TX_Ack											: IN	STD_LOGIC;
 		MAC_TX_Meta_rst									: IN	STD_LOGIC;
 		MAC_TX_Meta_DestMACAddress_nxt	: IN	STD_LOGIC;
 		MAC_TX_Meta_DestMACAddress_Data	: OUT	T_SLV_8;
@@ -35,7 +35,7 @@ ENTITY IPv6_Wrapper IS
 		MAC_RX_Data											: IN	T_SLV_8;
 		MAC_RX_SOF											: IN	STD_LOGIC;
 		MAC_RX_EOF											: IN	STD_LOGIC;
-		MAC_RX_Ready										: OUT	STD_LOGIC;
+		MAC_RX_Ack											: OUT	STD_LOGIC;
 		MAC_RX_Meta_rst									: OUT	STD_LOGIC;
 		MAC_RX_Meta_SrcMACAddress_nxt		: OUT	STD_LOGIC;
 		MAC_RX_Meta_SrcMACAddress_Data	: IN	T_SLV_8;
@@ -57,7 +57,7 @@ ENTITY IPv6_Wrapper IS
 		TX_Data													: IN	T_SLVV_8(PACKET_TYPES'length - 1 DOWNTO 0);
 		TX_SOF													: IN	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
 		TX_EOF													: IN	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
-		TX_Ready												: OUT	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
+		TX_Ack													: OUT	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
 		TX_Meta_rst											: OUT	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
 		TX_Meta_SrcIPv6Address_nxt			: OUT	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
 		TX_Meta_SrcIPv6Address_Data			: IN	T_SLVV_8(PACKET_TYPES'length - 1 DOWNTO 0);
@@ -71,7 +71,7 @@ ENTITY IPv6_Wrapper IS
 		RX_Data													: OUT	T_SLVV_8(PACKET_TYPES'length - 1 DOWNTO 0);
 		RX_SOF													: OUT	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
 		RX_EOF													: OUT	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
-		RX_Ready												: IN	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
+		RX_Ack													: IN	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
 		RX_Meta_rst											: IN	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
 		RX_Meta_SrcMACAddress_nxt				: IN	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
 		RX_Meta_SrcMACAddress_Data			: OUT	T_SLVV_8(PACKET_TYPES'length - 1 DOWNTO 0);
@@ -105,7 +105,7 @@ ARCHITECTURE rtl OF IPv6_Wrapper IS
 	SIGNAL LLMux_In_Meta_rev										: T_SLM(IPV6_SWITCH_PORTS - 1 DOWNTO 0, LLMUX_META_REV_BITS - 1 DOWNTO 0)		:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
 	SIGNAL LLMux_In_SOF													: STD_LOGIC_VECTOR(IPV6_SWITCH_PORTS - 1 DOWNTO 0);
 	SIGNAL LLMux_In_EOF													: STD_LOGIC_VECTOR(IPV6_SWITCH_PORTS - 1 DOWNTO 0);
-	SIGNAL LLMux_In_Ready												: STD_LOGIC_VECTOR(IPV6_SWITCH_PORTS - 1 DOWNTO 0);
+	SIGNAL LLMux_In_Ack													: STD_LOGIC_VECTOR(IPV6_SWITCH_PORTS - 1 DOWNTO 0);
 	
 	SIGNAL TX_LLMux_Valid												: STD_LOGIC;
 	SIGNAL TX_LLMux_Data												: T_SLV_8;
@@ -118,7 +118,7 @@ ARCHITECTURE rtl OF IPv6_Wrapper IS
 	SIGNAL TX_LLMux_Length											: STD_LOGIC_VECTOR(31 DOWNTO 16);
 	SIGNAL TX_LLMux_NextHeader									: STD_LOGIC_VECTOR(39 DOWNTO 32);
 	
-	SIGNAL IPv6_TX_Ready												: STD_LOGIC;
+	SIGNAL IPv6_TX_Ack													: STD_LOGIC;
 	SIGNAL IPv6_TX_Meta_rst											: STD_LOGIC;
 	SIGNAL IPv6_TX_Meta_SrcIPv6Address_nxt			: STD_LOGIC;
 	SIGNAL IPv6_TX_Meta_DestIPv6Address_nxt			: STD_LOGIC;
@@ -164,7 +164,7 @@ ARCHITECTURE rtl OF IPv6_Wrapper IS
 	);
 	CONSTANT LLDEMUX_META_REV_BITS							: NATURAL					:= 5;							-- sum over all control bits (rst, nxt, nxt, nxt, nxt)
 	
-	SIGNAL RX_LLDeMux_Ready											: STD_LOGIC;
+	SIGNAL RX_LLDeMux_Ack												: STD_LOGIC;
 	SIGNAL RX_LLDeMux_Meta_rst									: STD_LOGIC;
 	SIGNAL RX_LLDeMux_Meta_SrcMACAddress_nxt		: STD_LOGIC;
 	SIGNAL RX_LLDeMux_Meta_DestMACAddress_nxt		: STD_LOGIC;
@@ -230,7 +230,7 @@ BEGIN
 				In_Data												=> TX_Data(I),
 				In_SOF												=> TX_SOF(I),
 				In_EOF												=> TX_EOF(I),
-				In_Ready											=> TX_Ready(I),
+				In_Ack												=> TX_Ack	(I),
 				In_Meta_rst										=> Meta_rst,
 				In_Meta_nxt										=> Meta_nxt,
 				In_Meta_Data									=> LLBuf_MetaIn,
@@ -239,7 +239,7 @@ BEGIN
 				Out_Data											=> LLBuf_DataOut,
 				Out_SOF												=> LLMux_In_SOF(I),
 				Out_EOF												=> LLMux_In_EOF(I),
-				Out_Ready											=> LLMux_In_Ready(I),
+				Out_Ack												=> LLMux_In_Ack	(I),
 				Out_Meta_rst									=> LLBuf_Meta_rst,
 				Out_Meta_nxt									=> LLBuf_Meta_nxt,
 				Out_Meta_Data									=> LLBuf_MetaOut
@@ -284,7 +284,7 @@ BEGIN
 			In_Meta_rev						=> LLMux_In_Meta_rev,
 			In_SOF								=> LLMux_In_SOF,
 			In_EOF								=> LLMux_In_EOF,
-			In_Ready							=> LLMux_In_Ready,
+			In_Ack								=> LLMux_In_Ack,
 			
 			Out_Valid							=> TX_LLMux_Valid,
 			Out_Data							=> TX_LLMux_Data,
@@ -292,7 +292,7 @@ BEGIN
 			Out_Meta_rev					=> TX_LLMux_Meta_rev,
 			Out_SOF								=> TX_LLMux_SOF,
 			Out_EOF								=> TX_LLMux_EOF,
-			Out_Ready							=> IPv6_TX_Ready
+			Out_Ack								=> IPv6_TX_Ack	
 		);
 
 	TX_LLMux_SrcIPv6Address_Data								<= TX_LLMux_Meta(TX_LLMux_SrcIPv6Address_Data'range);
@@ -316,7 +316,7 @@ BEGIN
 			In_Data												=> TX_LLMux_Data,
 			In_SOF												=> TX_LLMux_SOF,
 			In_EOF												=> TX_LLMux_EOF,
-			In_Ready											=> IPv6_TX_Ready,
+			In_Ack												=> IPv6_TX_Ack,
 			In_Meta_rst										=> IPv6_TX_Meta_rst,
 			In_Meta_SrcIPv6Address_nxt		=> IPv6_TX_Meta_SrcIPv6Address_nxt,
 			In_Meta_SrcIPv6Address_Data		=> TX_LLMux_SrcIPv6Address_Data,
@@ -341,7 +341,7 @@ BEGIN
 			Out_Data											=> MAC_TX_Data,
 			Out_SOF												=> MAC_TX_SOF,
 			Out_EOF												=> MAC_TX_EOF,
-			Out_Ready											=> MAC_TX_Ready,
+			Out_Ack												=> MAC_TX_Ack,
 			Out_Meta_rst									=> MAC_TX_Meta_rst,
 			Out_Meta_DestMACAddress_nxt		=> MAC_TX_Meta_DestMACAddress_nxt,
 			Out_Meta_DestMACAddress_Data	=> MAC_TX_Meta_DestMACAddress_Data
@@ -362,7 +362,7 @@ BEGIN
 			In_Data													=> MAC_RX_Data,
 			In_SOF													=> MAC_RX_SOF,
 			In_EOF													=> MAC_RX_EOF,
-			In_Ready												=> MAC_RX_Ready,
+			In_Ack													=> MAC_RX_Ack,
 			In_Meta_rst											=> MAC_RX_Meta_rst,
 			In_Meta_SrcMACAddress_nxt				=> MAC_RX_Meta_SrcMACAddress_nxt,
 			In_Meta_SrcMACAddress_Data			=> MAC_RX_Meta_SrcMACAddress_Data,
@@ -374,7 +374,7 @@ BEGIN
 			Out_Data												=> IPv6_RX_Data,
 			Out_SOF													=> IPv6_RX_SOF,
 			Out_EOF													=> IPv6_RX_EOF,
-			Out_Ready												=> RX_LLDeMux_Ready,
+			Out_Ack													=> RX_LLDeMux_Ack,
 			Out_Meta_rst										=> RX_LLDeMux_Meta_rst,
 			Out_Meta_SrcMACAddress_nxt			=> RX_LLDeMux_Meta_SrcMACAddress_nxt,
 			Out_Meta_SrcMACAddress_Data			=> IPv6_RX_Meta_SrcMACAddress_Data,
@@ -430,7 +430,7 @@ BEGIN
 			In_Meta_rev							=> RX_LLDeMux_MetaIn_rev,
 			In_SOF									=> IPv6_RX_SOF,
 			In_EOF									=> IPv6_RX_EOF,
-			In_Ready								=> RX_LLDeMux_Ready,
+			In_Ack									=> RX_LLDeMux_Ack,
 			
 			Out_Valid								=> RX_Valid,
 			Out_Data								=> RX_LLDeMux_Data,
@@ -438,7 +438,7 @@ BEGIN
 			Out_Meta_rev						=> RX_LLDeMux_MetaOut_rev,
 			Out_SOF									=> RX_SOF,
 			Out_EOF									=> RX_EOF,
-			Out_Ready								=> RX_Ready
+			Out_Ack									=> RX_Ack	
 		);
 
 	assign_col(RX_LLDeMux_MetaOut_rev, RX_Meta_rst,									LLDEMUX_META_RST_BIT);

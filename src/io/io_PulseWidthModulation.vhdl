@@ -38,31 +38,31 @@ USE			PoC.utils.ALL;
 USE			PoC.physical.ALL;
 
 
-ENTITY io_PulseWidthModulation IS
-	GENERIC (
+entity io_PulseWidthModulation is
+	generic (
 		CLOCK_FREQ								: FREQ									:= 100.0 MHz;
 		PWM_FREQ									: FREQ									:= 1.0 kHz;
 		PWM_RESOLUTION						: POSITIVE							:= 8
 	);
-	PORT (
-		Clock				: IN	STD_LOGIC;
-		Reset				: IN	STD_LOGIC;
-    PWMIn				: IN	STD_LOGIC_VECTOR(PWM_RESOLUTION - 1 DOWNTO 0);
-		PWMOut			: OUT	STD_LOGIC
+	port (
+		Clock				: in	STD_LOGIC;
+		Reset				: in	STD_LOGIC;
+    PWMIn				: in	STD_LOGIC_VECTOR(PWM_RESOLUTION - 1 downto 0);
+		PWMOut			: out	STD_LOGIC
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF io_PulseWidthModulation IS
-	CONSTANT PWM_STEPS									: POSITIVE																			:= 2**PWM_RESOLUTION;
-	CONSTANT PWM_STEP_FREQ							: FREQ																					:= PWM_FREQ * real(PWM_STEPS - 1);
-	CONSTANT PWM_FREQUENCYCOUNTER_MAX		: POSITIVE																			:= TimingToCycles(to_time(PWM_STEP_FREQ), CLOCK_FREQ);
-	CONSTANT PWM_FREQUENCYCOUNTER_BITS	: POSITIVE																			:= log2ceilnz(PWM_FREQUENCYCOUNTER_MAX);
+architecture rtl of io_PulseWidthModulation is
+	constant PWM_STEPS									: POSITIVE																			:= 2**PWM_RESOLUTION;
+	constant PWM_STEP_FREQ							: FREQ																					:= PWM_FREQ * real(PWM_STEPS - 1);
+	constant PWM_FREQUENCYCOUNTER_MAX		: POSITIVE																			:= TimingToCycles(to_time(PWM_STEP_FREQ), CLOCK_FREQ);
+	constant PWM_FREQUENCYCOUNTER_BITS	: POSITIVE																			:= log2ceilnz(PWM_FREQUENCYCOUNTER_MAX);
 	
-	SIGNAL PWM_FrequencyCounter_us			: UNSIGNED(PWM_FREQUENCYCOUNTER_BITS DOWNTO 0)	:= (OTHERS => '0');
-	SIGNAL PWM_FrequencyCounter_ov			: STD_LOGIC;
-	SIGNAL PWM_PulseCounter_us					: UNSIGNED(PWM_RESOLUTION - 1 DOWNTO 0)					:= (OTHERS => '0');
-	SIGNAL PWM_PulseCounter_ov					: STD_LOGIC;
+	signal PWM_FrequencyCounter_us			: UNSIGNED(PWM_FREQUENCYCOUNTER_BITS downto 0)	:= (others => '0');
+	signal PWM_FrequencyCounter_ov			: STD_LOGIC;
+	signal PWM_PulseCounter_us					: UNSIGNED(PWM_RESOLUTION - 1 downto 0)					:= (others => '0');
+	signal PWM_PulseCounter_ov					: STD_LOGIC;
 	
 BEGIN
 	-- PWM frequency counter

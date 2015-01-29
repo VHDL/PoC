@@ -55,7 +55,7 @@ package simulation is
 
   --* If the passed condition has evaluated false, the testbench is marked
   --* as failed. In this case, the optional message will be reported as an
-  --* an error if one was provided.
+  --* error if one was provided.
 	procedure tbAssert(cond : in boolean; msg : in string := "");
 
   --* Prints out the overall testbench result as defined by the automated
