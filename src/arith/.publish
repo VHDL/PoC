@@ -3,7 +3,7 @@ arith.pkg.vhdl
 # Logical
 arith_prefix_*.vhdl
 arith_same.vhdl
-arith_barrell_shifter.vhdl
+arith_shifter_barrell.vhdl
 
 # Counters
 arith_counter_gray.vhdl
