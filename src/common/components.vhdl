@@ -47,11 +47,19 @@ PACKAGE components IS
 	FUNCTION ffsr(q : STD_LOGIC; rst : STD_LOGIC := '0'; set : STD_LOGIC := '0') RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant set
 
 	-- adder
-	function inc(value : STD_LOGIC_VECTOR; increment : NATURAL := 1) return STD_LOGIC_VECTOR;
-	function inc(value : UNSIGNED; increment : NATURAL := 1) return UNSIGNED;
+	function inc(value : STD_LOGIC_VECTOR;	increment : NATURAL := 1) return STD_LOGIC_VECTOR;
+	function inc(value : UNSIGNED;					increment : NATURAL := 1) return UNSIGNED;
+	function inc(value : SIGNED;						increment : NATURAL := 1) return SIGNED;
+	function dec(value : STD_LOGIC_VECTOR;	increment : NATURAL := 1) return STD_LOGIC_VECTOR;
+	function dec(value : UNSIGNED;					increment : NATURAL := 1) return UNSIGNED;
+	function dec(value : SIGNED;						increment : NATURAL := 1) return SIGNED;
 
+	-- negate
+	function neg(value : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;		-- calculate 2's complement
+	
 	-- counter
 	function counter_inc(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return UNSIGNED;
+	function counter_dec(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return SIGNED;
 	function counter_eq(cnt : UNSIGNED; value : NATURAL) return STD_LOGIC;
 
 	-- shift/rotate registers
@@ -118,6 +126,32 @@ PACKAGE BODY components IS
 	begin
 		return value + increment;
 	end function;
+
+	function inc(value : SIGNED; increment : NATURAL := 1) return SIGNED is
+	begin
+		return value + increment;
+	end function;
+	
+	function dec(value : STD_LOGIC_VECTOR; decrement : NATURAL := 1) return STD_LOGIC_VECTOR is
+	begin
+		return std_logic_vector(dec(unsigned(value), decrement));
+	end function;
+	
+	function dec(value : UNSIGNED; decrement : NATURAL := 1) return UNSIGNED is
+	begin
+		return value + decrement;
+	end function;
+
+	function dec(value : SIGNED; decrement : NATURAL := 1) return SIGNED is
+	begin
+		return value + decrement;
+	end function;
+	
+	-- negate
+	function neg(value : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
+	begin
+		return std_logic_vector(inc(unsigned(not value)));		-- 2's complement
+	end function;
 	
 	-- counter
 	function counter_inc(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return UNSIGNED is
@@ -129,7 +163,17 @@ PACKAGE BODY components IS
 		else
 			return cnt;
 		end if;
---		return mux(rst, mux(en, cnt, cnt + 1), to_unsigned(init, cnt'length));
+	end function;
+	
+	function counter_dec(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return SIGNED is
+	begin
+		if (rst = '1') then
+			return to_signed(init, cnt'length);
+		elsif (en = '1') then
+			return cnt - 1;
+		else
+			return cnt;
+		end if;
 	end function;
 	
 	function counter_eq(cnt : UNSIGNED; value : NATURAL) return STD_LOGIC is

@@ -1,5 +1,13 @@
-fifo_pkg.vhdl
+fifo.pkg.vhdl
+
+# Basic FIFOs
 fifo_glue.vhdl
 fifo_shift.vhdl
+
+# Regular FIFOs
 fifo_cc_got.vhdl
 fifo_ic_got.vhdl
+
+# Transactional FIFOs
+fifo_cc_got_tempgot.vhdl
+fifo_cc_got_tempput.vhdl
