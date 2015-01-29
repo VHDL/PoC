@@ -73,6 +73,11 @@ package utils is
 	-- rounding style
 	type T_ROUNDING_STYLE	is (ROUND_TO_NEAREST, ROUND_TO_ZERO, ROUND_TO_INF, ROUND_UP, ROUND_DOWN);
 
+	subtype T_BCD					is UNSIGNED(3 downto 0);
+	type		T_BCD_VECTOR	is array (NATURAL range <>) of T_BCD;
+	constant C_BCD_MINUS	: T_BCD		:= "1010";
+	
+	
 	-- Function declarations
 	-- ==========================================================================
 
