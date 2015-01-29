@@ -1,0 +1,9 @@
+ucf-mode.el
+  URL:		https://sites.google.com/site/jimw567/
+  LICENCE:	GNU GENERAL PUBLIC LICENSE - Version 2
+  DATE:		2014.12.05
+
+vivado-mode.el
+  URL:		https://sites.google.com/site/jimw567/
+  LICENCE:	GNU GENERAL PUBLIC LICENSE - Version 2
+  DATE:		2014.12.05

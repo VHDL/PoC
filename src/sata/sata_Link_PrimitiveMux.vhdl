@@ -49,7 +49,7 @@ ENTITY sata_PrimitiveMux IS
 		
 		TX_DataIn							: IN	T_SLV_32;
 		TX_DataOut						: OUT	T_SLV_32;
-		TX_CharIsK						: OUT T_SATA_CIK
+		TX_CharIsK						: OUT T_SLV_4
 	);
 END;
 
@@ -74,7 +74,7 @@ BEGIN
 				REPORT "illegal PRIMTIVE" SEVERITY FAILURE;
 
 			WHEN OTHERS =>													-- Send Primitive
-				TX_DataOut		<= to_slv(Primitive);		-- access ROM
+				TX_DataOut		<= to_sata_word(Primitive);		-- access ROM
 				TX_CharIsK		<= "0001";							-- mark primitive with K-symbols
 		
 		END CASE;

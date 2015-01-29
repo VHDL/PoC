@@ -2,7 +2,7 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- ============================================================================================================================================================
+-- =============================================================================
 -- Package:					Project specific configuration.
 -- 
 -- Authors:         Thomas B. Preusser
@@ -12,16 +12,19 @@
 -- Description:
 -- ------------------------------------
 --		This is a template file. 
---		The global package common/config evaluates the settings declared in this file.
+--		
+--		The global packages common/config and common/board evaluate the settings
+--		declared in this file.
 --
--- Usage:
---		1) Copy this file into your project's source directory and rename it to my_config.vhdl.
---		2) Add file to library "poc" in your synthesis tool.
---		3) Change setup appropriately.
+--		USAGE:
+--			1) Copy this file into your project's source directory and rename it to
+--				 "my_config.vhdl".
+--			2) Add file to library "poc" in your synthesis tool.
+--			3) Change setup appropriately.
 --
 -- License:
--- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- =============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,14 +38,15 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================================================================================================
+-- =============================================================================
+
 library PoC;
 
 package my_config is
   -- Change these lines to setup configuration.
-  constant MY_BOARD		: string := "VC707";								-- VC707 - Xilinx Virtex 7 reference design board: XC7V485T
-  constant MY_DEVICE	: string := "None";									-- infer from MY_BOARD
- 
+  constant MY_BOARD		: string := "VC707";		-- VC707 - Xilinx Virtex 7 reference design board: XC7V485T
+  constant MY_DEVICE	: string := "None";			-- infer from MY_BOARD
+	constant MY_VERBOSE	: boolean	:= true;
 end my_config;
 
 package body my_config is

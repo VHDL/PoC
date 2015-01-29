@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -55,7 +55,7 @@ ENTITY net_FrameChecksum IS
 		In_Data												: IN	T_SLV_8;
 		In_SOF												: IN	STD_LOGIC;
 		In_EOF												: IN	STD_LOGIC;
-		In_Ready											: OUT	STD_LOGIC;
+		In_Ack												: OUT	STD_LOGIC;
 		In_Meta_rst										: OUT	STD_LOGIC;
 		In_Meta_nxt										: OUT	STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
 		In_Meta_Data									: IN	STD_LOGIC_VECTOR(isum(META_BITS) - 1 DOWNTO 0);
@@ -64,7 +64,7 @@ ENTITY net_FrameChecksum IS
 		Out_Data											: OUT	T_SLV_8;
 		Out_SOF												: OUT	STD_LOGIC;
 		Out_EOF												: OUT	STD_LOGIC;
-		Out_Ready											: IN	STD_LOGIC;
+		Out_Ack												: IN	STD_LOGIC;
 		Out_Meta_rst									: IN	STD_LOGIC;
 		Out_Meta_nxt									: IN	STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
 		Out_Meta_Data									: OUT	STD_LOGIC_VECTOR(isum(META_BITS) - 1 DOWNTO 0);
@@ -154,7 +154,7 @@ BEGIN
 		DataFIFO_put										<= '0';
 		MetaFIFO_Misc_put								<= '0';
 		
-		In_Ready												<= NOT DataFIFO_Full;
+		In_Ack													<= NOT DataFIFO_Full;
 		
 		WordCounter_rst									<= '0';
 		WordCounter_en									<= '0';
@@ -203,7 +203,7 @@ BEGIN
 				END IF;
 				
 			WHEN ST_CARRY_1 =>			
-				In_Ready										<= '0';
+				In_Ack											<= '0';
 
 				Checksum_Data_us						<= (OTHERS => '0');
 				
@@ -221,7 +221,7 @@ BEGIN
 				END IF;
 				
 			WHEN ST_CARRY_2 =>			
-				In_Ready										<= '0';
+				In_Ack											<= '0';
 
 				Checksum_Data_us						<= (OTHERS => '0');
 				Checksum_rst								<= '1';
@@ -236,7 +236,7 @@ BEGIN
 
 
 	PROCESS(Reader_State,
-					Out_Ready,
+					Out_Ack,
 					DataFIFO_Valid, DataFIFO_DataOut,
 					MetaFIFO_Misc_Valid, MetaFIFO_Misc_DataOut)
 	BEGIN
@@ -258,7 +258,7 @@ BEGIN
 				IF ((DataFIFO_Valid AND MetaFIFO_Misc_Valid) = '1') THEN
 					Out_Valid									<= '1';
 					
-					IF (Out_Ready = '1') THEN
+					IF (Out_Ack	 = '1') THEN
 						DataFIFO_got						<= '1';
 					
 						IF (DataFIFO_DataOut(EOF_BIT) = '0') THEN
@@ -270,7 +270,7 @@ BEGIN
 			WHEN ST_FRAME =>
 				Out_Valid										<= DataFIFO_Valid;
 
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					DataFIFO_got							<= '1';
 					
 					IF (DataFIFO_DataOut(EOF_BIT) = '1') THEN
@@ -375,7 +375,7 @@ BEGIN
 	Out_Meta_Length					<= resize(MetaFIFO_Misc_DataOut(WordCount'range), Out_Meta_Length'length);
 	Out_Meta_Checksum				<= MetaFIFO_Misc_DataOut(Checksum'range);
 	
-	FrameCommit							<= DataFIFO_Valid AND DataFIFO_DataOut(EOF_BIT) AND Out_Ready;
+	FrameCommit							<= DataFIFO_Valid AND DataFIFO_DataOut(EOF_BIT) AND Out_Ack;
 	MetaFIFO_Misc_got				<= FrameCommit;
 	
 	genMeta : FOR I IN 0 TO META_BITS'length - 1 GENERATE

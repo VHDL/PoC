@@ -130,18 +130,28 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 						vhdlFilePath = self.host.directories["ISEInstallation"] / "ISE/vhdl/src" / filesLineRegExpMatch.group('VHDLFile')
 					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
 
+					if (not vhdlFilePath.exists()):
+						raise PoCSimulator.PoCSimulatorException("Can not analyse " + str(vhdlFilePath)) from FileNotFoundError(str(vhdlFilePath))
+					
 					# assemble fuse command as list of parameters
 					parameterList = [
 						str(ghdlExecutablePath),
-						'-a', '-P.',
+						'-a', '-P.', '--syn-binding', '--std=93',
 						('--work=%s' % vhdlLibraryName),
 						str(vhdlFilePath)
 					]
+					command = " ".join(parameterList)	#'%s -a --std=93 -P. --work=%s "%s"' % (str(ghdlExecutablePath), vhdlLibraryName, str(vhdlFilePath))
 					
-					command = '%s -a -P. --work=%s "%s"' % (str(ghdlExecutablePath), vhdlLibraryName, str(vhdlFilePath))
 					self.printDebug("call ghdl: %s" % str(parameterList))
-					self.printVerbose('command: %s' % command)
-					ghdlLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+					self.printVerbose("    command: %s" % command)
+					
+					try:
+						ghdlLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+					except subprocess.CalledProcessError as ex:
+							print("ERROR while executing ghdl: %s" % str(vhdlFilePath))
+							print("Return Code: %i" % ex.returncode)
+							print("--------------------------------------------------------------------------------")
+							print(ex.output)
 
 					if self.showLogs:
 						if (ghdlLog != ""):
@@ -160,15 +170,22 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		
 			parameterList = [
 				str(ghdlExecutablePath),
-				'-r', '--syn-binding', '-P.',
-				'--work=work',
+				'-r', '--std=93', '--syn-binding', '-P.',
+				'--work=test',
 				testbenchName
 			]
-			command = "%s -r --syn-binding -P. --work=work %s" % (str(ghdlExecutablePath), testbenchName)
+			command = " ".join(parameterList)	#"%s -r --std=93 --syn-binding -P. --work=test %s" % (str(ghdlExecutablePath), testbenchName)
 		
 			self.printDebug("call ghdl: %s" % str(parameterList))
-			self.printVerbose('command: %s' % command)
-			simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+			self.printVerbose("    command: %s" % command)
+			
+			try:
+				simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+			except subprocess.CalledProcessError as ex:
+				print("ERROR while executing ghdl command: %s" % command)
+				print("Return Code: %i" % ex.returncode)
+				print("--------------------------------------------------------------------------------")
+				print(ex.output)
 #		
 			if self.showLogs:
 				if (simulatorLog != ""):
@@ -186,15 +203,21 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		
 			parameterList = [
 				str(ghdlExecutablePath),
-				'-e', '--syn-binding', '-P.',
-				'--work=work',
+				'-e', '--std=93', '--syn-binding', '-P.',
+				'--work=test',
 				testbenchName
 			]
-			command = "%s -e --syn-binding -P. --work=work %s" % (str(ghdlExecutablePath), testbenchName)
+			command = " ".join(parameterList)	#%s -e --std=93 --syn-binding -P. --work=test %s" % (str(ghdlExecutablePath), testbenchName)
 		
 			self.printDebug("call ghdl: %s" % str(parameterList))
-			self.printVerbose('command: %s' % command)
-			elaborateLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+			self.printVerbose("    command: %s" % command)
+			try:
+				elaborateLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+			except subprocess.CalledProcessError as ex:
+				print("ERROR while executing ghdl command: %s" % command)
+				print("Return Code: %i" % ex.returncode)
+				print("--------------------------------------------------------------------------------")
+				print(ex.output)
 #		
 			if self.showLogs:
 				if (elaborateLog != ""):
@@ -230,11 +253,17 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 			self.printNonQuiet("  running simulation...")
 		
 			parameterList = [str(exeFilePath)]
-			command = str(exeFilePath)
+			command = " ".join(parameterList)
 		
 			self.printDebug("call ghdl: %s" % str(parameterList))
-			self.printVerbose('command: %s' % command)
-			simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+			self.printVerbose("    command: %s" % command)
+			try:
+				simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+			except subprocess.CalledProcessError as ex:
+				print("ERROR while executing ghdl command: %s" % command)
+				print("Return Code: %i" % ex.returncode)
+				print("--------------------------------------------------------------------------------")
+				print(ex.output)
 #		
 			if self.showLogs:
 				if (simulatorLog != ""):

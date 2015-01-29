@@ -36,12 +36,13 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.lcd.ALL;
 
 
 ENTITY lcd_LCDSynchronizer IS
 	GENERIC (
-		CLOCK_FREQ_MHZ			: REAL		:= 100.0			-- 100 MHz
+		CLOCK_FREQ					: FREQ		:= 100.0 MHz
 	);
 	PORT (
 		Clock								: IN	STD_LOGIC;
@@ -59,7 +60,7 @@ ENTITY lcd_LCDSynchronizer IS
 		LCD_rw							: OUT	STD_LOGIC;
 		LCD_rs							: OUT	STD_LOGIC;								-- LCD Register Select
 		LCD_Data_o					: OUT	T_SLV_4;
-    LCD_Data_t    			: OUT STD_LOGIC;
+    LCD_Data_t    			: OUT T_SLV_4;
     LCD_Data_i    			: IN  T_SLV_4
 	);
 END;
@@ -102,6 +103,8 @@ ARCHITECTURE rtl OF lcd_LCDSynchronizer IS
 	SIGNAL LCDI_Address			: STD_LOGIC;
 	SIGNAL LCDI_Data				: T_SLV_8;
 	SIGNAL LCDI_Ready				: STD_LOGIC;
+
+	SIGNAL LCD_Data_tt			: STD_LOGIC;
 
 	SIGNAL CSP_Trigger_1		: STD_LOGIC;
 	ATTRIBUTE KEEP OF CSP_Trigger_1 : SIGNAL IS "TRUE";
@@ -314,7 +317,9 @@ BEGIN
 			lcd_rs  		=> LCD_rs,
 			lcd_rw  		=> LCD_rw,
 			lcd_dat_o 	=> LCD_Data_o,
-			lcd_dat_t 	=> LCD_Data_t,
+			lcd_dat_t 	=> LCD_Data_tt,
 			lcd_dat_i	  => LCD_Data_i
 		);
+	
+	LCD_Data_t	<= (OTHERS => LCD_Data_tt);
 END;
