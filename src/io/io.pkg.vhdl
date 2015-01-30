@@ -36,6 +36,7 @@ use			IEEE.NUMERIC_STD.ALL;
 
 library PoC;
 use			PoC.my_config.all;
+use			PoC.utils.all;
 use			PoC.physical.all;
 
 
@@ -52,6 +53,7 @@ package io is
 
 
 	function io_7SegmentDisplayEncoding(hex	: STD_LOGIC_VECTOR(3 downto 0); dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR;
+	function io_7SegmentDisplayEncoding(digit	: T_BCD; dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR;
 	
 	-- IICBusController
 	-- ==========================================================================================================================================================
@@ -226,6 +228,11 @@ package body io is
 			when others =>	Result(6 downto 0)	:= "XXXXXXX";
 		end case;
 		return Result;
+	end function;
+	
+	function io_7SegmentDisplayEncoding(digit	: T_BCD; dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR is
+	begin
+		return io_7SegmentDisplayEncoding(std_logic_vector(digit), dot);
 	end function;
 
 	function uart_IsTypicalBaudRate(br : BAUD) return BOOLEAN is
