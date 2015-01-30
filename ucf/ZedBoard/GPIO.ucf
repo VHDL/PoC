@@ -1,0 +1,66 @@
+#% BEGIN-TEMPLATEFILE Board = "ZED" %#
+#% BEGIN-TEMPLATE GPIO %#
+## =============================================================================================================================================================
+## General Purpose IO
+## =============================================================================================================================================================
+#% END-TEMPLATE GPIO %#
+
+#% BEGIN-TEMPLATE GPIO_SpecialButtons %#
+#$ Special Buttons
+#$ -----------------------------------------------------------------------------
+#$	Bank:						34
+#$		VCCO:					1.5V (VCC1V5_FPGA)
+#$	Location:				SW7
+#$ -----------------------------------------------------------------------------
+#NET "ZED_GPIO_Button_CPU_Reset"				LOC =  "AB7"	| IOSTANDARD = LVCMOS15;			## {IN}		SW7; high-active; external 4k7 pulldown resistor
+#% END-TEMPLATE GPIO_SpecialButtons %#
+
+#% BEGIN-TEMPLATE GPIO_CursorButtons %#
+## Cursor Buttons
+## -----------------------------------------------------------------------------
+##	Bank:						18, 33, 34
+##		VCCO:					2.5V, 1.5V, 1.5V (VADJ_FPGA, VCC1V5_FPGA, VCC1V5_FPGA)
+##	Location:				SW2, SW3, SW4, SW5, SW6
+## -----------------------------------------------------------------------------
+#NET "ZED_GPIO_Button_North"						LOC = "AA12"	| IOSTANDARD = LVCMOS15;			## {IN}		SW2; high-active; external 4k7 pulldown resistor; Bank 33; VCCO=VCC1V5_FPGA
+#NET "ZED_GPIO_Button_West"						LOC =  "AC6"	| IOSTANDARD = LVCMOS15;			## {IN}		SW6; high-active; external 4k7 pulldown resistor; Bank 34; VCCO=VCC1V5_FPGA
+#NET "ZED_GPIO_Button_Center"					LOC =  "G12"	| IOSTANDARD = LVCMOS25;			## {IN}		SW5; high-active; external 4k7 pulldown resistor; Bank 18; VCCO=VADJ_FPGA
+#NET "ZED_GPIO_Button_East"						LOC =  "AG5"	| IOSTANDARD = LVCMOS15;			## {IN}		SW3; high-active; external 4k7 pulldown resistor; Bank 34; VCCO=VCC1V5_FPGA
+#NET "ZED_GPIO_Button_South"						LOC = "AB12"	| IOSTANDARD = LVCMOS15;			## {IN}		SW4; high-active; external 4k7 pulldown resistor; Bank 33; VCCO=VCC1V5_FPGA
+#% END-TEMPLATE GPIO_CursorButtons %#
+
+#% BEGIN-TEMPLATE GPIO_Switches %#
+## DIP-Switches
+## -----------------------------------------------------------------------------
+##	Bank:						34, 35
+##		VCCO:					2.5V (VADJ)
+##	Location:				SW0, SW1, SW2, SW3, SW4, SW5, SW6, SW7
+## -----------------------------------------------------------------------------
+NET "ZED_GPIO_Switches<0>"						LOC = "F22"	| IOSTANDARD = LVCMOS25;			## {IN}		SW0
+NET "ZED_GPIO_Switches<1>"						LOC = "G22"	| IOSTANDARD = LVCMOS25;			## {IN}		SW1
+NET "ZED_GPIO_Switches<2>"						LOC = "H22"	| IOSTANDARD = LVCMOS25;			## {IN}		SW2
+NET "ZED_GPIO_Switches<3>"						LOC = "F21"	| IOSTANDARD = LVCMOS25;			## {IN}		SW3
+NET "ZED_GPIO_Switches<4>"						LOC = "H19"	| IOSTANDARD = LVCMOS25;			## {IN}		SW4
+NET "ZED_GPIO_Switches<5>"						LOC = "H18"	| IOSTANDARD = LVCMOS25;			## {IN}		SW5
+NET "ZED_GPIO_Switches<6>"						LOC = "H17"	| IOSTANDARD = LVCMOS25;			## {IN}		SW6
+NET "ZED_GPIO_Switches<7>"						LOC = "M15"	| IOSTANDARD = LVCMOS25;			## {IN}		SW7
+#% END-TEMPLATE GPIO_Switches %#
+
+#% BEGIN-TEMPLATE GPIO_LED %#
+## LEDs
+## -----------------------------------------------------------------------------
+##	Bank:						33
+##		VCCO:					3.3V (VCC3V3)
+##	Location:				LD0, LD1, LD2, LD3, LD4, LD5, LD6, LD7
+## -----------------------------------------------------------------------------
+NET "ZED_GPIO_LED<0>"									LOC = "T22"	| IOSTANDARD = LVCMOS33;			## {OUT}	LD0
+NET "ZED_GPIO_LED<1>"									LOC = "T21"	| IOSTANDARD = LVCMOS33;			## {OUT}	LD1
+NET "ZED_GPIO_LED<2>"									LOC = "U22"	| IOSTANDARD = LVCMOS33;			## {OUT}	LD2
+NET "ZED_GPIO_LED<3>"									LOC = "U21"	| IOSTANDARD = LVCMOS33;			## {OUT}	LD3
+NET "ZED_GPIO_LED<4>"									LOC = "V22"	| IOSTANDARD = LVCMOS33;			## {OUT}	LD4
+NET "ZED_GPIO_LED<5>"									LOC = "W22"	| IOSTANDARD = LVCMOS33;			## {OUT}	LD5
+NET "ZED_GPIO_LED<6>"									LOC = "U19"	| IOSTANDARD = LVCMOS33;			## {OUT}	LD6
+NET "ZED_GPIO_LED<7>"									LOC = "U14"	| IOSTANDARD = LVCMOS33;			## {OUT}	LD7
+#% END-TEMPLATE GPIO_LED %#
+
+#% END-TEMPLATEFILE %#
