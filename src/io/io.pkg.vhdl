@@ -31,8 +31,8 @@
 -- ============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.ALL;
-use			IEEE.NUMERIC_STD.ALL;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
 library PoC;
 use			PoC.my_config.all;
@@ -43,13 +43,19 @@ use			PoC.physical.all;
 package io is
 	-- not yet supported by Xilinx ISE Simulator - the subsignal I (with reverse direction) is always 'U'
 	-- so use this record only in pure synthesis environments
-	TYPE T_IO_TRISTATE IS RECORD
+	type T_IO_TRISTATE is record
 		I			: STD_LOGIC;					-- input / from device to FPGA
 		O			: STD_LOGIC;					-- output / from FPGA to device
 		T			: STD_LOGIC;					-- output disable / tristate enable
-	END RECORD;
+	end record;
 
-	TYPE T_IO_TRISTATE_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_IO_TRISTATE;
+	type T_IO_LVDS is record
+		P			: STD_LOGIC;
+		N			: STD_LOGIC;
+	end record;
+
+	type T_IO_TRISTATE_VECTOR	is array(NATURAL range <>) of T_IO_TRISTATE;
+	type T_IO_LVDS_VECTOR			is array(NATURAL range <>) of T_IO_LVDS;
 
 
 	function io_7SegmentDisplayEncoding(hex	: STD_LOGIC_VECTOR(3 downto 0); dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR;

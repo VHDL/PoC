@@ -10,6 +10,7 @@ USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.physical.ALL;
+USE			PoC.io.ALL;
 USE			PoC.xil.ALL;
 
 
@@ -20,24 +21,39 @@ ENTITY eth_Transceiver_Virtex5_GTP IS
 		PORTS											: POSITIVE										:= 2																			-- Number of Ports per Transceiver
 	);
 	PORT (
-		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-
-		ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-
-		PowerDown									: IN	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);
-
---		DebugPortOut							: OUT T_DBG_TRANSOUT_VECTOR(PORTS	- 1 DOWNTO 0);
-
-		RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-		RX_IsAligned							: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		PowerDown								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RefClockIn_125_MHz			: in	STD_LOGIC;
+		ClockNetwork_Reset			: in	STD_LOGIC;
+		ClockNetwork_ResetDone	: out	STD_LOGIC;
 		
-		TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
+		TX_Clock								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_Clock								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		
+		TX_Reset								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_Reset								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		
+		LoopBack								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);										-- perform loopback testing
+		EnableCommaAlign				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- enable comma alignment
 
+		-- TX interface
+		TX_Data									: in	T_SLVV_8(PORTS - 1 downto 0);
+		TX_CharIsK							: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_DisparityMode				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_DisparityValue				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_BufferError					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+
+		-- RX interface
+		RX_Data									: out	T_SLVV_8(PORTS - 1 downto 0);
+		RX_CharIsK							: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_CharIsComma					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_RunningDisparity			: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_DisparityError				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_NotInTable						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_BufferStatus					: out	T_SLVV_2(PORTS - 1 downto 0);
+		RX_ClockCorrectionCount	: out	T_SLVV_3(PORTS - 1 downto 0);
+		
+		TX_ds										: out	T_IO_LVDS_VECTOR(PORTS - 1 downto 0);
+		RX_ds										: in	T_IO_LVDS_VECTOR(PORTS - 1 downto 0)
 	);
 END;
 
@@ -76,80 +92,37 @@ ARCHITECTURE rtl OF eth_Transceiver_Virtex5_GTP IS
 	SIGNAL ClockNetwork_ResetDone_i						: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	
 	SIGNAL GTP_PortReset											: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_RX_Reset												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_RX_CDR_Reset										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);		-- Clock Data Recovery
-	SIGNAL GTP_RX_BufferReset									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_TX_Reset												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
-	SIGNAL GTP_PLL_PowerDown									: STD_LOGIC;
-	SIGNAL GTP_TX_PowerDown										: T_SLVV_2(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_RX_PowerDown										: T_SLVV_2(PORTS - 1 DOWNTO 0);
-
-	SIGNAL GTP_TX_InvalidK										: T_SLVV_2(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_TX_BufferStatus								: T_SLVV_2(PORTS - 1 DOWNTO 0);
-
-	SIGNAL GTP_RX_Status											: T_SLVV_3(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_RX_DisparityError							: T_SLVV_2(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_RX_Illegal8B10BCode						: T_SLVV_2(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_RX_LossOfSync									: T_SLVV_2(PORTS - 1 DOWNTO 0);																	-- unused
-	SIGNAL GTP_RX_ClockCorrectionStatus				: T_SLVV_3(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_RX_BufferStatus								: T_SLVV_3(PORTS - 1 DOWNTO 0);
-	
-	SIGNAL GTP_RX_Data												: T_SLVV_16(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_RX_CharIsComma									: T_SLVV_2(PORTS - 1 DOWNTO 0);																	-- unused
-	SIGNAL GTP_RX_CharIsK											: T_SLVV_2(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_RX_ByteIsAligned								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_RX_ByteRealign									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);													-- unused
-	SIGNAL GTP_RX_Valid												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);													-- unused
-		
-	SIGNAL GTP_TX_Data												: T_SLVV_16(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_TX_CharIsK											: T_SLVV_2(PORTS - 1 DOWNTO 0);
-
-	SIGNAL TX_InvalidK												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL TX_BufferStatus										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	
-	SIGNAL RX_DisparityError									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL RX_Illegal8B10BCode								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL RX_BufferStatus										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	
 	-- keep internal clock nets, so timing constrains from UCF can find them
-	ATTRIBUTE KEEP OF GTP_TX_RefClockOut							: SIGNAL IS DEBUG;
-	ATTRIBUTE KEEP OF GTP_RX_RefClockOut							: SIGNAL IS DEBUG;
-	ATTRIBUTE KEEP OF GTP_RefClockOut 								: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF GTP_TX_RefClockOut			: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF GTP_RX_RefClockOut			: SIGNAL IS DEBUG;
+	ATTRIBUTE KEEP OF GTP_RefClockOut 				: SIGNAL IS DEBUG;
 
-	ATTRIBUTE KEEP OF SATA_Clock_i										: SIGNAL IS TRUE;
-	ATTRIBUTE TNM OF SATA_Clock_i											: SIGNAL IS "TGRP_SATA_Clock0";
+--	ATTRIBUTE KEEP OF SATA_Clock_i										: SIGNAL IS TRUE;
+--	ATTRIBUTE TNM OF SATA_Clock_i											: SIGNAL IS "TGRP_SATA_Clock0";
+	
+	signal RX_CharIsComma_float								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	signal RX_CharIsK_float										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	signal RX_DisparityError_float						: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	signal RX_Data_float											: T_SLVV_8(PORTS - 1 DOWNTO 0);
+	signal RX_NotInTable_float								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	signal RX_RunningDisparity_float					: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	signal GTP_RX_BufferStatus_float					: T_SLVV_2(PORTS - 1 DOWNTO 0);
+	signal GTP_TX_BufferStatus_float					: T_SLVV_2(PORTS - 1 DOWNTO 0);
 	
 BEGIN
-	genReport : FOR I IN 0 TO PORTS - 1 GENERATE
-		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																								SEVERITY NOTE;
-		ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS(I))	SEVERITY NOTE;
-		ASSERT FALSE REPORT "  ClockDivider:           " & INTEGER'image(I)																SEVERITY NOTE;
-	END GENERATE;
-
--- ==================================================================
--- Assert statements
--- ==================================================================
+	-- ===========================================================================
+	-- Assert statements
+	-- ===========================================================================
 	ASSERT (C_DEVICE_INFO.VENDOR = VENDOR_XILINX)						REPORT "Vendor not yet supported."				SEVERITY FAILURE;
 	ASSERT (C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_VIRTEX)	REPORT "Device family not yet supported."	SEVERITY FAILURE;
 	ASSERT (C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX5)					REPORT "Device not yet supported."				SEVERITY FAILURE;
 	ASSERT (PORTS <= 2)																			REPORT "To many ports per transceiver."		SEVERITY FAILURE;
 		
-	genAssert : FOR I IN 0 TO PORTS - 1 GENERATE
-		ASSERT (CLOCK_DIVIDERS(I) > 0)												REPORT "illegal clock devider - unsupported initial SATA generation?" SEVERITY FAILURE;
-		ASSERT ((SATA_Generation(I) = SATA_GENERATION_1) OR
-						(SATA_Generation(I) = SATA_GENERATION_2))			REPORT "unsupported SATA generation"			SEVERITY FAILURE;
-	END GENERATE;
-
--- ============================================================================
--- mapping of vendor specific ports
--- ============================================================================
-	ClockIn_125MHz										<= VSS_Common_In.RefClockIn_150_MHz;
-	
--- ==================================================================
--- ResetControl
--- ==================================================================
-	ClkNet_Reset_i										<= slv_or(ClockNetwork_Reset);
+	-- ===========================================================================
+	-- ResetControl
+	-- ===========================================================================
+	ClkNet_Reset_i										<= ClockNetwork_Reset;
 	
 	blkSync1 : BLOCK
 		SIGNAL ClkNet_Reset_shift				: STD_LOGIC_VECTOR(15 DOWNTO 0)				:= (OTHERS => '0');
@@ -166,64 +139,49 @@ BEGIN
 	END BLOCK;
 
 	GTP_PLL_Reset											<= ClkNet_Reset;
-	GTPConfig_Reset										<= ClkNet_Reset;
-	-- PLL reset must be mapped to global GTP reset
-	-- reload configuration must be mapped to global GTP reset
-	GTP_Reset													<= GTP_PLL_Reset OR GTP_ReloadConfig;
+	GTP_Reset													<= GTP_PLL_Reset;					-- PLL reset must be mapped to global GTP reset
 
 	genSync0 : FOR I IN 0 TO PORTS - 1 GENERATE
-		SIGNAL GTP_Reset_meta							: STD_LOGIC				:= '0';
+		SIGNAL GTP_Reset_meta						: STD_LOGIC				:= '0';
 		SIGNAL GTP_Reset_d							: STD_LOGIC				:= '0';
 		
 		-- ------------------------------------------
-		SIGNAL ClkNet_ResetDone_meta			: STD_LOGIC				:= '0';
-		SIGNAL ClkNet_ResetDone_d			: STD_LOGIC				:= '0';
+		SIGNAL ClkNet_ResetDone_meta		: STD_LOGIC				:= '0';
+		SIGNAL ClkNet_ResetDone_d				: STD_LOGIC				:= '0';
 		
-		SIGNAL GTP_PLL_ResetDone_meta			: STD_LOGIC				:= '0';
+		SIGNAL GTP_PLL_ResetDone_meta		: STD_LOGIC				:= '0';
 		SIGNAL GTP_PLL_ResetDone_d			: STD_LOGIC				:= '0';
 		
-		SIGNAL GTP_ResetDone_meta					: STD_LOGIC				:= '0';
+		SIGNAL GTP_ResetDone_meta				: STD_LOGIC				:= '0';
 		SIGNAL GTP_ResetDone_d					: STD_LOGIC				:= '0';
 		
 	BEGIN
-		GTP_Reset_meta										<= GTP_Reset				WHEN rising_edge(SATA_Clock_i(I));
-		GTP_Reset_d										<= GTP_Reset_meta			WHEN rising_edge(SATA_Clock_i(I));
+		GTP_Reset_meta									<= GTP_Reset				WHEN rising_edge(Control_Clock);
+		GTP_Reset_d											<= GTP_Reset_meta		WHEN rising_edge(Control_Clock);
 		
-		GTP_PortReset(I)								<= to_sl(Command(I) = SATA_TRANSCEIVER_CMD_RESET);
-		GTP_TX_PowerDown(I)							<= PowerDown(I) & PowerDown(I);														-- PowerDown => PowerDownState = P2
-		GTP_RX_PowerDown(I)							<= PowerDown(I) & PowerDown(I);														-- PowerDown => PowerDownState = P2
-		
-		GTP_TX_Reset(I)									<= GTP_Reset_d	OR GTP_PortReset(I);
-		GTP_RX_Reset(I)									<= GTP_Reset_d	OR GTP_PortReset(I) OR	OOB_HandshakingComplete(I);
-		GTP_RX_ElectricalIDLE_Reset(I)	<= GTP_RX_ElectricalIDLE(I)				AND GTP_ResetDone(I);				-- generate reset for CDR-unit (Clock-Data-Recovery) after OOB SIGNALing
-
 		-- ------------------------------------------
---		ClkNet_ResetDone_meta						<= ClkNet_ResetDone_i			WHEN rising_edge(SATA_Clock_i(I));
---		ClkNet_ResetDone_d							<= ClkNet_ResetDone_meta	WHEN rising_edge(SATA_Clock_i(I));
+--		ClkNet_ResetDone_meta						<= ClkNet_ResetDone_i			WHEN rising_edge(Control_Clock);
+--		ClkNet_ResetDone_d							<= ClkNet_ResetDone_meta	WHEN rising_edge(Control_Clock);
 		ClkNet_ResetDone(I)							<= ClkNet_ResetDone_i;
 		
-		GTP_PLL_ResetDone_meta					<= GTP_PLL_ResetDone_i		WHEN rising_edge(SATA_Clock_i(I));
-		GTP_PLL_ResetDone_d							<= GTP_PLL_ResetDone_meta	WHEN rising_edge(SATA_Clock_i(I));
+		GTP_PLL_ResetDone_meta					<= GTP_PLL_ResetDone_i		WHEN rising_edge(Control_Clock);
+		GTP_PLL_ResetDone_d							<= GTP_PLL_ResetDone_meta	WHEN rising_edge(Control_Clock);
 		GTP_PLL_ResetDone(I)						<= GTP_PLL_ResetDone_d;
 		
-		GTP_ResetDone_meta							<= GTP_ResetDone_i(I)			WHEN rising_edge(SATA_Clock_i(I));
-		GTP_ResetDone_d									<= GTP_ResetDone_meta			WHEN rising_edge(SATA_Clock_i(I));
+		GTP_ResetDone_meta							<= GTP_ResetDone_i(I)			WHEN rising_edge(Control_Clock);
+		GTP_ResetDone_d									<= GTP_ResetDone_meta			WHEN rising_edge(Control_Clock);
 		GTP_ResetDone(I)								<= GTP_ResetDone_d;
 	END GENERATE;
 	
 	ClockNetwork_ResetDone						<= ClkNet_ResetDone;
 	
 	ClockNetwork_ResetDone_i					<= GTP_PLL_ResetDone				AND ClkNet_ResetDone;
-	ResetDone													<= ClockNetwork_ResetDone_i AND GTP_ResetDone;
-	
-  GTP_RX_CDR_Reset                  <= (OTHERS => '0');
-  GTP_RX_BufferReset                <= (OTHERS => '0');
-	GTP_PLL_PowerDown									<= '0';
+--	ResetDone													<= ClockNetwork_ResetDone_i AND GTP_ResetDone;
 	
 	-- ==================================================================
 	-- ClockNetwork (37.5, 75, 150, 300 MHz)
 	-- ==================================================================
-	GTP_RefClockIn		<= ClockIn_125MHz;
+	GTP_RefClockIn		<= RefClockIn_125_MHz;
 	
 	BUFG_GTP_RefClockOut : BUFG
 		PORT MAP (
@@ -233,53 +191,28 @@ BEGIN
 	
 	Control_Clock										<= GTP_RefClockOut;							-- use stable clock after GTP_DUAL / before DCM for reset control and so on
 	
-	SATA_Clock_i										<= GTP_Clock_4X;							-- SATAClock is a 4 Byte (Word) clock
-	SATA_Clock											<= SATA_Clock_i;
-	
-	ClkNet : ENTITY PoC.eth_Transceiver_Virtex5_GTP_ClockNetwork
-		GENERIC MAP (
-			DEBUG							=> DEBUG,
-			CLOCK_IN_FREQ_MHZ						=> CLOCK_IN_FREQ_MHZ,
-			PORTS												=> PORTS,
-			INITIAL_SATA_GENERATIONS		=> INITIAL_SATA_GENERATIONS
-		)
-		PORT MAP (
-			ClockIn_150MHz							=> GTP_RefClockOut,							-- use stable clock after GTP_DUAL - not from CDR-Unit !! => enable elastic buffers
-
-			ClockNetwork_Reset					=> ClkNet_Reset_x,
-			ClockNetwork_ResetDone			=> ClkNet_ResetDone_i,
-			
-			SATA_Generation							=> SATA_Generation,
-			
-			GTP_Clock_1X								=> GTP_Clock_1X,
-			GTP_Clock_4X								=> GTP_Clock_4X
-		);
-
 	
 	-- ===========================================================================
 	-- GTP_DUAL - 1 used port
 	-- ===========================================================================
 	SinglePort : IF (PORTS = 1) GENERATE
-	 SIGNAL GTP_RX_DisableElectricalIDLEReset : STD_LOGIC;
 	 
 	BEGIN
-		GTP_RX_DisableElectricalIDLEReset		<= NOT GTP_RX_EnableElectricalIDLEReset;
-
 		GTP : GTP_DUAL
 			GENERIC MAP (
 				-- ===================== Simulation-Only Attributes ====================
-	--			SIM_RECEIVER_DETECT_PASS0	 		=>			 TRUE,
-	--			SIM_RECEIVER_DETECT_PASS1	 		=>			 TRUE,
+				SIM_RECEIVER_DETECT_PASS0	 		=>			 TRUE,
+				SIM_RECEIVER_DETECT_PASS1	 		=>			 TRUE,
 				SIM_MODE											=>			 "FAST",				
-				SIM_GTPRESET_SPEEDUP					=>			 0,
-	--			SIM_PLL_PERDIV2								=>			 TILE_SIM_PLL_PERDIV2,
+				SIM_GTPRESET_SPEEDUP					=>			 1,
+				SIM_PLL_PERDIV2								=>			 x"190",
 
 				-- ========================== Shared Attributes ========================
 				-------------------------- Tile and PLL Attributes ---------------------
-				CLK25_DIVIDER									=>			 6, 
-				CLKINDC_B											=>			 TRUE,
-				OOB_CLK_DIVIDER								=>			 6,							-- divide 150 MHz to 25 MHz => DIVIDER = 6
-				OVERSAMPLE_MODE								=>			 FALSE,
+				CLK25_DIVIDER									=>			 5, 						-- 
+				CLKINDC_B											=>			 TRUE,					-- 
+				OOB_CLK_DIVIDER								=>			 4,							-- 
+				OVERSAMPLE_MODE								=>			 FALSE,					-- 
 				PLL_DIVSEL_FB									=>			 2,							-- PLL clock feedback devider 
 				PLL_DIVSEL_REF								=>			 1,							-- PLL input clock devider
 				PLL_TXDIVSEL_COMM_OUT					=>			 1,							-- don't devide common TX clock, use private TXDIVSEL_OUT clock deviders
@@ -296,55 +229,55 @@ BEGIN
 				TXRX_INVERT_1									=>			 "00000",				
 
 				--------------------- TX Serial Line Rate settings ---------------------	 
-				PLL_TXDIVSEL_OUT_0						=>			 CLOCK_DIVIDERS(0),												-- 1 => GENERATION_2, 2 => GENERATION_1
-				PLL_TXDIVSEL_OUT_1						=>			 CLOCK_DIVIDERS(0),												-- 1 => GENERATION_2, 2 => GENERATION_1
+				PLL_TXDIVSEL_OUT_0						=>			 2,												-- 
+				PLL_TXDIVSEL_OUT_1						=>			 2,												-- 
 
 				--------------------- TX Driver and OOB SIGNALling --------------------	
 				TX_DIFF_BOOST_0								=>			 TRUE,
 				TX_DIFF_BOOST_1								=>			 TRUE,
 
 				------------------ TX Pipe Control for PCI Express/SATA ---------------
-				COM_BURST_VAL_0								=>			 "0110",																	-- TX OOB burst counter
-				COM_BURST_VAL_1								=>			 "0110",																	-- TX OOB burst counter
+				COM_BURST_VAL_0								=>			 "1111",																	-- TX OOB burst counter
+				COM_BURST_VAL_1								=>			 "1111",																	-- TX OOB burst counter
 					
 				-- =================== Receive Interface Attributes ===================
 				------------ RX Driver,OOB SIGNALling,Coupling and Eq,CDR -------------	
 				AC_CAP_DIS_0									=>			 FALSE,
-				OOBDETECT_THRESHOLD_0					=>			 "100",																		-- Threshold between RXN and RXP is 105 mV
-				PMA_CDR_SCAN_0								=>			 x"6C08040",
-				PMA_RX_CFG_0									=>			 x"0DCE111",	
+				OOBDETECT_THRESHOLD_0					=>			 "001",																		-- Threshold between RXN and RXP is 105 mV
+				PMA_CDR_SCAN_0								=>			 x"6c07640",
+				PMA_RX_CFG_0									=>			 x"09f0088",	
 				RCV_TERM_GND_0								=>			 FALSE,
-				RCV_TERM_MID_0								=>			 TRUE,
-				RCV_TERM_VTTRX_0							=>			 TRUE,
+				RCV_TERM_MID_0								=>			 FALSE,
+				RCV_TERM_VTTRX_0							=>			 FALSE,
 				TERMINATION_IMP_0							=>			 50,																			-- 50 Ohm Terminierung
 
 				AC_CAP_DIS_1									=>			 FALSE,
-				OOBDETECT_THRESHOLD_1					=>			 "100",																		-- Threshold between RXN and RXP is 105 mV
-				PMA_CDR_SCAN_1								=>			 x"6C08040",
-				PMA_RX_CFG_1									=>			 x"0DCE111",	
+				OOBDETECT_THRESHOLD_1					=>			 "001",																		-- Threshold between RXN and RXP is 105 mV
+				PMA_CDR_SCAN_1								=>			 x"6c07640",
+				PMA_RX_CFG_1									=>			 x"09f0088",	
 				RCV_TERM_GND_1								=>			 FALSE,
-				RCV_TERM_MID_1								=>			 TRUE,
-				RCV_TERM_VTTRX_1							=>			 TRUE,
+				RCV_TERM_MID_1								=>			 FALSE,
+				RCV_TERM_VTTRX_1							=>			 FALSE,
 				TERMINATION_IMP_1							=>			 50,																			-- 50 Ohm Terminierung
 
-	--			PCS_COM_CFG										=>			 x"1680a0e",	
+				PCS_COM_CFG										=>			 x"1680a0e",	
 				TERMINATION_CTRL							=>			 "10100",
 				TERMINATION_OVRD							=>			 FALSE,
 
 				--------------------- RX Serial Line Rate Attributes ------------------	 
-				PLL_RXDIVSEL_OUT_0						=>			 CLOCK_DIVIDERS(0),												-- 1 => GENERATION_2, 2 => GENERATION_1
-				PLL_RXDIVSEL_OUT_1						=>			 CLOCK_DIVIDERS(0),
+				PLL_RXDIVSEL_OUT_0						=>			 2,												-- 
+				PLL_RXDIVSEL_OUT_1						=>			 2,
 
 				PLL_SATA_0										=>			 FALSE,
 				PLL_SATA_1										=>			 FALSE,
 
 				----------------------- PRBS Detection Attributes ---------------------	
-				PRBS_ERR_THRESHOLD_0					=>			 x"00000008",
-				PRBS_ERR_THRESHOLD_1					=>			 x"00000008",
+				PRBS_ERR_THRESHOLD_0					=>			 x"00000001",
+				PRBS_ERR_THRESHOLD_1					=>			 x"00000001",
 
 				---------------- Comma Detection and Alignment Attributes -------------	
 				ALIGN_COMMA_WORD_0						=>			 1,
-				COMMA_10B_ENABLE_0						=>			 "1111111111",
+				COMMA_10B_ENABLE_0						=>			 "0001111111",
 				COMMA_DOUBLE_0								=>			 FALSE,
 				DEC_MCOMMA_DETECT_0						=>			 TRUE,
 				DEC_PCOMMA_DETECT_0						=>			 TRUE,
@@ -356,7 +289,7 @@ BEGIN
 				RX_SLIDE_MODE_0								=>			 "PCS",
 
 				ALIGN_COMMA_WORD_1						=>			 1,
-				COMMA_10B_ENABLE_1						=>			 "1111111111",
+				COMMA_10B_ENABLE_1						=>			 "0001111111",
 				COMMA_DOUBLE_1								=>			 FALSE,
 				DEC_MCOMMA_DETECT_1						=>			 TRUE,
 				DEC_PCOMMA_DETECT_1						=>			 TRUE,
@@ -385,47 +318,47 @@ BEGIN
 
 				------------------------ Clock Correction Attributes ------------------	 
 				CLK_CORRECT_USE_0							=>			 TRUE,
-				CLK_COR_ADJ_LEN_0							=>			 4,
-				CLK_COR_DET_LEN_0							=>			 4,
+				CLK_COR_ADJ_LEN_0							=>			 2,
+				CLK_COR_DET_LEN_0							=>			 2,
 				CLK_COR_INSERT_IDLE_FLAG_0		=>			 FALSE,
 				CLK_COR_KEEP_IDLE_0						=>			 FALSE,
 				CLK_COR_MIN_LAT_0							=>			 16,
-				CLK_COR_MAX_LAT_0							=>			 22,
+				CLK_COR_MAX_LAT_0							=>			 18,
 				CLK_COR_PRECEDENCE_0					=>			 TRUE,
 				CLK_COR_REPEAT_WAIT_0					=>			 0,
 				CLK_COR_SEQ_1_1_0							=>			 "0110111100",
-				CLK_COR_SEQ_1_2_0							=>			 "0001001010",
-				CLK_COR_SEQ_1_3_0							=>			 "0001001010",
-				CLK_COR_SEQ_1_4_0							=>			 "0001111011",
-				CLK_COR_SEQ_1_ENABLE_0				=>			 "1111",
-				CLK_COR_SEQ_2_1_0							=>			 "0000000000",
-				CLK_COR_SEQ_2_2_0							=>			 "0000000000",
+				CLK_COR_SEQ_1_2_0							=>			 "0001010000",
+				CLK_COR_SEQ_1_3_0							=>			 "0000000000",
+				CLK_COR_SEQ_1_4_0							=>			 "0000000000",
+				CLK_COR_SEQ_1_ENABLE_0				=>			 "0011",
+				CLK_COR_SEQ_2_1_0							=>			 "0110111100",
+				CLK_COR_SEQ_2_2_0							=>			 "0010110101",
 				CLK_COR_SEQ_2_3_0							=>			 "0000000000",
 				CLK_COR_SEQ_2_4_0							=>			 "0000000000",
-				CLK_COR_SEQ_2_ENABLE_0				=>			 "0000",
-				CLK_COR_SEQ_2_USE_0						=>			 FALSE,
+				CLK_COR_SEQ_2_ENABLE_0				=>			 "0011",
+				CLK_COR_SEQ_2_USE_0						=>			 TRUE,
 				RX_DECODE_SEQ_MATCH_0					=>			 TRUE,
 
 				CLK_CORRECT_USE_1							=>			 TRUE,
-				CLK_COR_ADJ_LEN_1							=>			 4,
-				CLK_COR_DET_LEN_1							=>			 4,
+				CLK_COR_ADJ_LEN_1							=>			 2,
+				CLK_COR_DET_LEN_1							=>			 2,
 				CLK_COR_INSERT_IDLE_FLAG_1		=>			 FALSE,
 				CLK_COR_KEEP_IDLE_1						=>			 FALSE,
 				CLK_COR_MIN_LAT_1							=>			 16,
-				CLK_COR_MAX_LAT_1							=>			 22,
+				CLK_COR_MAX_LAT_1							=>			 18,
 				CLK_COR_PRECEDENCE_1					=>			 TRUE,
 				CLK_COR_REPEAT_WAIT_1					=>			 0,
-				CLK_COR_SEQ_1_ENABLE_1				=>			 "1111",
 				CLK_COR_SEQ_1_1_1							=>			 "0110111100",
-				CLK_COR_SEQ_1_2_1							=>			 "0001001010",
-				CLK_COR_SEQ_1_3_1							=>			 "0001001010",
-				CLK_COR_SEQ_1_4_1							=>			 "0001111011",
-				CLK_COR_SEQ_2_USE_1						=>			 FALSE,
-				CLK_COR_SEQ_2_ENABLE_1				=>			 "0000",
-				CLK_COR_SEQ_2_1_1							=>			 "0000000000",
-				CLK_COR_SEQ_2_2_1							=>			 "0000000000",
+				CLK_COR_SEQ_1_2_1							=>			 "0001010000",
+				CLK_COR_SEQ_1_3_1							=>			 "0000000000",
+				CLK_COR_SEQ_1_4_1							=>			 "0000000000",
+				CLK_COR_SEQ_1_ENABLE_1				=>			 "0011",
+				CLK_COR_SEQ_2_1_1							=>			 "0110111100",
+				CLK_COR_SEQ_2_2_1							=>			 "0010110101",
 				CLK_COR_SEQ_2_3_1							=>			 "0000000000",
 				CLK_COR_SEQ_2_4_1							=>			 "0000000000",
+				CLK_COR_SEQ_2_ENABLE_1				=>			 "0011",
+				CLK_COR_SEQ_2_USE_1						=>			 TRUE,
 				RX_DECODE_SEQ_MATCH_1					=>			 TRUE,
 
 				------------------------ Channel Bonding Attributes -------------------	 
@@ -467,53 +400,59 @@ BEGIN
 
 				------------------ RX Attributes for PCI Express/SATA ---------------
 				-- OOB COM*** SIGNAL detector @ 25 MHz with DDR (20 ns)
-				RX_STATUS_FMT_0								=>			 "SATA",
+				RX_STATUS_FMT_0								=>			 "PCIE",
 				SATA_BURST_VAL_0							=>			 "100",							-- Burst count to detect OOB COM*** SIGNALs
-				SATA_IDLE_VAL_0								=>			 "011",							-- IDLE count between bursts in OOB COM*** SIGNALs
-				SATA_MIN_BURST_0							=>			 4,									-- 80 ns				SATA Spec Rev 1.1		55 ns
-				SATA_MAX_BURST_0							=>			 7,									-- 140 ns				SATA Spec Rev 1.1		175 ns
-				SATA_MIN_INIT_0								=>			 12,								-- 240 ns				SATA Spec Rev 1.1		175 ns
-				SATA_MAX_INIT_0								=>			 22,								-- 440 ns				SATA Spec Rev 1.1		525 ns
-				SATA_MIN_WAKE_0								=>			 4,									-- 80 ns				SATA Spec Rev 1.1		55 ns
-				SATA_MAX_WAKE_0								=>			 7,									-- 140 ns				SATA Spec Rev 1.1		175 ns
+				SATA_IDLE_VAL_0								=>			 "100",							-- IDLE count between bursts in OOB COM*** SIGNALs
+				SATA_MIN_BURST_0							=>			 5,									-- 
+				SATA_MAX_BURST_0							=>			 9,									-- 
+				SATA_MIN_INIT_0								=>			 15,								-- 
+				SATA_MAX_INIT_0								=>			 27,								-- 
+				SATA_MIN_WAKE_0								=>			 5,									-- 
+				SATA_MAX_WAKE_0								=>			 9,									-- 
 				TRANS_TIME_FROM_P2_0					=>			 x"0060",
 				TRANS_TIME_NON_P2_0						=>			 x"0025",
 				TRANS_TIME_TO_P2_0						=>			 x"0100",
 
-				RX_STATUS_FMT_1								=>			"SATA",
+				RX_STATUS_FMT_1								=>			"PCIE",
 				SATA_BURST_VAL_1							=>			"100",							-- Burst count to detect OOB COM*** SIGNALs
 				SATA_IDLE_VAL_1								=>			"100",							-- IDLE count between bursts in OOB COM*** SIGNALs
-				SATA_MAX_BURST_1							=>			7,
-				SATA_MAX_INIT_1								=>			22,
-				SATA_MAX_WAKE_1								=>			7,
-				SATA_MIN_BURST_1							=>			4,
-				SATA_MIN_INIT_1								=>			12,
-				SATA_MIN_WAKE_1								=>			4,
+				SATA_MIN_BURST_1							=>			 5,									-- 
+				SATA_MAX_BURST_1							=>			 9,									-- 
+				SATA_MIN_INIT_1								=>			 15,								-- 
+				SATA_MAX_INIT_1								=>			 27,								-- 
+				SATA_MIN_WAKE_1								=>			 5,									-- 
+				SATA_MAX_WAKE_1								=>			 9,									-- 
 				TRANS_TIME_FROM_P2_1					=>			x"0060",
 				TRANS_TIME_NON_P2_1						=>			x"0025",
 				TRANS_TIME_TO_P2_1						=>			x"0100"
-			) 
+			)
 			PORT MAP (
 				------------------------ Loopback and Powerdown Ports ----------------------
-				LOOPBACK0											=>			"000",
+				LOOPBACK0(0)									=>			Loopback(0),
+				LOOPBACK0(2 downto 1)					=>			"00",
 				LOOPBACK1											=>			"000",
-				RXPOWERDOWN0									=>			GTP_RX_PowerDown(0),
-				RXPOWERDOWN1									=>			"11",
-				TXPOWERDOWN0									=>			GTP_TX_PowerDown(0),
-				TXPOWERDOWN1									=>			"11",
+				TXPOWERDOWN0									=>			(others => Powerdown(0)),
+				RXPOWERDOWN0									=>			(others => Powerdown(0)),
+				TXPOWERDOWN1									=>			(others => '1'),
+				RXPOWERDOWN1									=>			(others => '1'),
 				----------------------- Receive Ports - 8b10b Decoder ----------------------
-				RXCHARISCOMMA0								=>			GTP_RX_CharIsComma(0),				-- @ GTP_ClockRX_2X,	
-				RXCHARISCOMMA1								=>			OPEN,
-				RXCHARISK0										=>			GTP_RX_CharIsK(0),						-- @ GTP_ClockRX_2X,	
-				RXCHARISK1										=>			OPEN,
+				RXCHARISCOMMA0(0)							=>			RX_CharIsComma(0),						-- @ GTP_ClockRX_2X,	
+				RXCHARISCOMMA0(1)							=>			RX_CharIsComma_float(0),			-- @ GTP_ClockRX_2X,	
+				RXCHARISCOMMA1								=>			open,
+				RXCHARISK0(0)									=>			RX_CharIsK(0),								-- @ GTP_ClockRX_2X,	
+				RXCHARISK0(1)									=>			RX_CharIsK_float(0),					-- @ GTP_ClockRX_2X,	
+				RXCHARISK1										=>			open,
 				RXDEC8B10BUSE0								=>			'1',
-				RXDEC8B10BUSE1								=>			'0',
-				RXDISPERR0										=>			GTP_RX_DisparityError(0),			-- @ GTP_ClockRX_2X,	
-				RXDISPERR1										=>			OPEN,
-				RXNOTINTABLE0									=>			GTP_RX_Illegal8B10BCode(0),		-- @ GTP_ClockRX_2X,	
-				RXNOTINTABLE1									=>			OPEN,
-				RXRUNDISP0										=>			OPEN,
-				RXRUNDISP1										=>			OPEN,
+				RXDEC8B10BUSE1								=>			'1',
+				RXDISPERR0(0)									=>			RX_DisparityError(0),					-- @ GTP_ClockRX_2X,	
+				RXDISPERR0(1)									=>			RX_DisparityError_float(0),		-- @ GTP_ClockRX_2X,	
+				RXDISPERR1										=>			open,
+				RXNOTINTABLE0(0)							=>			RX_NotInTable(0),							-- @ GTP_ClockRX_2X,	
+				RXNOTINTABLE0(1)							=>			RX_NotInTable_float(0),				-- @ GTP_ClockRX_2X,	
+				RXNOTINTABLE1									=>			open,
+				RXRUNDISP0(0)									=>			RX_RunningDisparity(0),
+				RXRUNDISP0(1)									=>			RX_RunningDisparity_float(0),
+				RXRUNDISP1										=>			open,
 				------------------- Receive Ports - Channel Bonding Ports ------------------
 				RXCHANBONDSEQ0								=>			OPEN,
 				RXCHANBONDSEQ1								=>			OPEN,
@@ -524,17 +463,17 @@ BEGIN
 				RXENCHANSYNC0									=>			'0',
 				RXENCHANSYNC1									=>			'0',
 				------------------- Receive Ports - Clock Correction Ports -----------------
-				RXCLKCORCNT0									=>			GTP_RX_ClockCorrectionStatus(0),
-				RXCLKCORCNT1									=>			OPEN,
+				RXCLKCORCNT0									=>			RX_ClockCorrectionCount(0),
+				RXCLKCORCNT1									=>			open,
 				--------------- Receive Ports - Comma Detection and Alignment --------------
-				RXBYTEISALIGNED0							=>			GTP_RX_ByteIsAligned(0),									-- @ GTP_ClockRX_2X,	high-active, long SIGNAL			bytes are aligned			
-				RXBYTEISALIGNED1							=>			OPEN,
-				RXBYTEREALIGN0								=>			GTP_RX_ByteRealign(0),										-- @ GTP_ClockRX_2X,	hight-active, short pulse			alignment has changed
-				RXBYTEREALIGN1								=>			OPEN,
-				RXCOMMADET0										=>			GTP_RX_CommaDetected(0),
-				RXCOMMADET1										=>			OPEN,
+				RXBYTEISALIGNED0							=>			open,	--RX_ByteIsAligned(0),									-- @ GTP_ClockRX_2X,	high-active, long SIGNAL			bytes are aligned			
+				RXBYTEISALIGNED1							=>			open,	--RX_ByteIsAligned(1),
+				RXBYTEREALIGN0								=>			open,	--RX_ByteRealign(0),										-- @ GTP_ClockRX_2X,	hight-active, short pulse			alignment has changed
+				RXBYTEREALIGN1								=>			open,	--RX_ByteRealign(1),
+				RXCOMMADET0										=>			open,	--RX_CommaDetected(0),
+				RXCOMMADET1										=>			open,	--RX_CommaDetected(1),
 				RXCOMMADETUSE0								=>			'1',
-				RXCOMMADETUSE1								=>			'0',
+				RXCOMMADETUSE1								=>			'1',
 				RXENMCOMMAALIGN0							=>			'1',
 				RXENMCOMMAALIGN1							=>			'1',
 				RXENPCOMMAALIGN0							=>			'1',
@@ -549,24 +488,25 @@ BEGIN
 				RXPRBSERR0										=>			OPEN,
 				RXPRBSERR1										=>			OPEN,
 				------------------- Receive Ports - RX Data Path interface -----------------
-				RXDATA0												=>			GTP_RX_Data(0),
-				RXDATA1												=>			OPEN,
+				RXDATA0(7 downto 0)						=>			RX_Data(0),
+				RXDATA0(15 downto 8)					=>			RX_Data_float(0),
+				RXDATA1												=>			open,
 				RXDATAWIDTH0									=>			'0',																			-- 8 Bit data interface
 				RXDATAWIDTH1									=>			'0',																			-- 8 Bit data interface
 				RXRECCLK0											=>			GTP_RX_RefClockOut(0),										-- recovered clock from CDR
-				RXRECCLK1											=>			OPEN,
-				RXRESET0											=>			GTP_RX_Reset(0),
+				RXRECCLK1											=>			open,
+				RXRESET0											=>			RX_Reset(0),
 				RXRESET1											=>			'0',
-				RXUSRCLK0											=>			GTP_Clock_1X(0),
+				RXUSRCLK0											=>			RX_Clock(0),
 				RXUSRCLK1											=>			'0',
-				RXUSRCLK20										=>			GTP_Clock_1X(0),
+				RXUSRCLK20										=>			RX_Clock(0),
 				RXUSRCLK21										=>			'0',
 				------- Receive Ports - RX Driver,OOB SIGNALing,Coupling and Eq.,CDR ------
-				RXCDRRESET0										=>			GTP_RX_CDR_Reset(0),											-- CDR => Clock Data Recovery
+				RXCDRRESET0										=>			'0',											-- CDR => Clock Data Recovery
 				RXCDRRESET1										=>			'0',
-				RXELECIDLE0										=>			GTP_RX_ElectricalIDLE(0),
-				RXELECIDLE1										=>			OPEN,
-				RXELECIDLERESET0							=>			GTP_RX_ElectricalIDLE_Reset(0),
+				RXELECIDLE0										=>			open,
+				RXELECIDLE1										=>			open,
+				RXELECIDLERESET0							=>			'0',
 				RXELECIDLERESET1							=>			'0',
 				RXENEQB0											=>			'1',
 				RXENEQB1											=>			'1',
@@ -574,106 +514,112 @@ BEGIN
 				RXEQMIX1											=>			"00",
 				RXEQPOLE0											=>			"0000",
 				RXEQPOLE1											=>			"0000",
-				RXN0													=>			VSS_Private_In(0).RX_n,
-				RXP0													=>			VSS_Private_In(0).RX_p,
+				RXN0													=>			RX_ds(0).N,
+				RXP0													=>			RX_ds(0).P,
 				RXN1													=>			'0',
 				RXP1													=>			'1',
 				-------- Receive Ports - RX Elastic Buffer and Phase Alignment Ports -------
-				RXBUFRESET0										=>			GTP_RX_BufferReset(0),
+				RXBUFRESET0										=>			RX_Reset(0),
 				RXBUFRESET1										=>			'0',
-				RXBUFSTATUS0									=>			GTP_RX_BufferStatus(0),										-- GTP_ClockRX_2X,	RX buffer status (over/underflow)
-				RXBUFSTATUS1									=>			OPEN,
-				RXCHANISALIGNED0							=>			OPEN,
-				RXCHANISALIGNED1							=>			OPEN,
-				RXCHANREALIGN0								=>			OPEN,
-				RXCHANREALIGN1								=>			OPEN,
+				RXBUFSTATUS0(1 downto 0)			=>			GTP_RX_BufferStatus_float(0),					-- GTP_ClockRX_2X,	RX buffer status (over/underflow)
+				RXBUFSTATUS0(2)								=>			RX_BufferError(0),										-- GTP_ClockRX_2X,	RX buffer status (over/underflow)
+				RXBUFSTATUS1									=>			open,																	-- GTP_ClockRX_2X,	RX buffer status (over/underflow)
+				RXCHANISALIGNED0							=>			open,
+				RXCHANISALIGNED1							=>			open,
+				RXCHANREALIGN0								=>			open,
+				RXCHANREALIGN1								=>			open,
 				RXPMASETPHASE0								=>			'0',
 				RXPMASETPHASE1								=>			'0',
-				RXSTATUS0											=>			GTP_RX_Status(0),
-				RXSTATUS1											=>			OPEN,
+				RXSTATUS0											=>			open,
+				RXSTATUS1											=>			open,
 				--------------- Receive Ports - RX Loss-of-sync State Machine --------------
-				RXLOSSOFSYNC0									=>			GTP_RX_LossOfSync(0),											-- Xilinx example has connected SIGNAL
-				RXLOSSOFSYNC1									=>			OPEN,
+				RXLOSSOFSYNC0									=>			open,											-- Xilinx example has connected SIGNAL
+				RXLOSSOFSYNC1									=>			open,
 				---------------------- Receive Ports - RX Oversampling ---------------------
 				RXENSAMPLEALIGN0							=>			'0',
 				RXENSAMPLEALIGN1							=>			'0',
-				RXOVERSAMPLEERR0							=>			OPEN,
-				RXOVERSAMPLEERR1							=>			OPEN,
+				RXOVERSAMPLEERR0							=>			open,
+				RXOVERSAMPLEERR1							=>			open,
 				-------------- Receive Ports - RX Pipe Control for PCI Express -------------
-				PHYSTATUS0										=>			OPEN,
-				PHYSTATUS1										=>			OPEN,
-				RXVALID0											=>			GTP_RX_Valid(0),
-				RXVALID1											=>			OPEN,
+				PHYSTATUS0										=>			open,
+				PHYSTATUS1										=>			open,
+				RXVALID0											=>			open,
+				RXVALID1											=>			open,
 				----------------- Receive Ports - RX Polarity Control Ports ----------------
 				RXPOLARITY0										=>			'0',
 				RXPOLARITY1										=>			'0',
 				------------- Shared Ports - Dynamic Reconfiguration Port (DRP) ------------
-				DCLK													=>			GTP_DRP_Clock,
-				DEN														=>			GTP_DRP_en,
-				DADDR													=>			GTP_DRP_Address(6 DOWNTO 0),							-- resize vector to GTP_DUAL specific address bits
-				DWE														=>			GTP_DRP_we,
-				DI														=>			GTP_DRP_DataIn,
-				DO														=>			GTP_DRP_DataOut,
-				DRDY													=>			GTP_DRP_rdy,
+				DCLK													=>			'0',
+				DEN														=>			'0',
+				DADDR													=>			(others => '0'),																			-- resize vector to GTP_DUAL specific address bits
+				DWE														=>			'0',
+				DI														=>			(others => '0'),
+				DO														=>			open,
+				DRDY													=>			open,
 				--------------------- Shared Ports - Tile and PLL Ports --------------------
 				CLKIN													=>			GTP_RefClockIn,
 				GTPRESET											=>			GTP_Reset,
 				GTPTEST												=>			"0000",
 				INTDATAWIDTH									=>			'1',																									-- 10 Bit internal datawidth
-				PLLLKDET											=>			GTP_PLL_ResetDone_i,																		-- GTP PLL lock detected
+				PLLLKDET											=>			GTP_PLL_ResetDone_i,																	-- GTP PLL lock detected
 				PLLLKDETEN										=>			'1',
-				PLLPOWERDOWN									=>			GTP_PLL_PowerDown,
+				PLLPOWERDOWN									=>			'0',
 				REFCLKOUT											=>			GTP_RefClockOut_i,
 				REFCLKPWRDNB									=>			'1',
 				RESETDONE0										=>			GTP_ResetDone_i(0),
-				RESETDONE1										=>			OPEN,
-				RXENELECIDLERESETB						=>			GTP_RX_DisableElectricalIDLEReset,									-- low-active => disable
+				RESETDONE1										=>			open,
+				RXENELECIDLERESETB						=>			'1',																									-- low-active => disable
 				TXENPMAPHASEALIGN							=>			'0',
 				TXPMASETPHASE									=>			'0',
 					---------------- Transmit Ports - 8b10b Encoder Control Ports --------------
 				TXBYPASS8B10B0								=>			"00",																									-- encode both bytes with 8B10B
 				TXBYPASS8B10B1								=>			"00",
-				TXCHARDISPMODE0								=>			"00",
+				TXCHARDISPMODE0(0)						=>			TX_DisparityMode(0),
+				TXCHARDISPMODE0(1)						=>			'0',
 				TXCHARDISPMODE1								=>			"00",
-				TXCHARDISPVAL0								=>			"00",
+				TXCHARDISPVAL0(0)							=>			TX_DisparityValue(0),
+				TXCHARDISPVAL0(1)							=>			'0',
 				TXCHARDISPVAL1								=>			"00",
-				TXCHARISK0										=>			GTP_TX_CharIsK(0),
+				TXCHARISK0(0)									=>			TX_CharIsK(0),
+				TXCHARISK0(1)									=>			'0',
 				TXCHARISK1										=>			"00",
 				TXENC8B10BUSE0								=>			'1',																									-- use internal 8B10B encoder
-				TXENC8B10BUSE1								=>			'0',
-				TXKERR0												=>			GTP_TX_InvalidK(0),																		-- invalid K charakter
-				TXKERR1												=>			OPEN,
-				TXRUNDISP0										=>			OPEN,																									-- running disparity
-				TXRUNDISP1										=>			OPEN,
+				TXENC8B10BUSE1								=>			'1',
+				TXKERR0												=>			open,																									-- invalid K charakter
+				TXKERR1												=>			open,
+				TXRUNDISP0										=>			open,																									-- running disparity
+				TXRUNDISP1										=>			open,
 				------------- Transmit Ports - TX Buffering and Phase Alignment ------------
-				TXBUFSTATUS0									=>			GTP_TX_BufferStatus(0),
-				TXBUFSTATUS1									=>			OPEN,
+				TXBUFSTATUS0(0)								=>			GTP_TX_BufferStatus_float(0),
+				TXBUFSTATUS0(1)								=>			TX_BufferError(0),
+				TXBUFSTATUS1									=>			open,
 				------------------ Transmit Ports - TX Data Path interface -----------------
-				TXDATA0												=>			GTP_TX_Data(0),
-				TXDATA1												=>			(OTHERS => '0'),
+				TXDATA0(7 downto 0)						=>			TX_Data(0),
+				TXDATA0(15 downto 8)					=>			(others => '0'),
+				TXDATA1												=>			(others => '0'),
 				TXDATAWIDTH0									=>			'0',																									-- 8 Bit interface
 				TXDATAWIDTH1									=>			'0',
 				TXOUTCLK0											=>			GTP_TX_RefClockOut(0),
-				TXOUTCLK1											=>			OPEN,
-				TXRESET0											=>			GTP_TX_Reset(0),
-				TXRESET1											=>			'0',								-- GTP_TX_Reset
-				TXUSRCLK0											=>			GTP_Clock_1X(0),
-				TXUSRCLK1											=>			'0',								-- GTP_Clock_1X
-				TXUSRCLK20										=>			GTP_Clock_1X(0),	--GTP_ClockTX_2X(0),
-				TXUSRCLK21										=>			'0',								-- GTP_ClockTX_2X
+				TXOUTCLK1											=>			open,
+				TXRESET0											=>			TX_Reset(0),
+				TXRESET1											=>			'0',												-- GTP_TX_Reset
+				TXUSRCLK0											=>			TX_Clock(0),
+				TXUSRCLK1											=>			'0',												-- 
+				TXUSRCLK20										=>			TX_Clock(0),								-- 
+				TXUSRCLK21										=>			'0',												-- 
 				--------------- Transmit Ports - TX Driver and OOB SIGNALing --------------
-				TXBUFDIFFCTRL0								=>			"001",
-				TXBUFDIFFCTRL1								=>			"001",
-				TXDIFFCTRL0										=>			"100",
-				TXDIFFCTRL1										=>			"100",
+				TXBUFDIFFCTRL0								=>			"000",
+				TXBUFDIFFCTRL1								=>			"000",
+				TXDIFFCTRL0										=>			"000",
+				TXDIFFCTRL1										=>			"000",
 				TXINHIBIT0										=>			'0',
 				TXINHIBIT1										=>			'0',
-				TXN0													=>			VSS_Private_Out(0).TX_n,
-				TXP0													=>			VSS_Private_Out(0).TX_p,
-				TXN1													=>			OPEN,
-				TXP1													=>			OPEN,
-				TXPREEMPHASIS0								=>			"011",
-				TXPREEMPHASIS1								=>			"011",
+				TXN0													=>			TX_ds(0).N,
+				TXP0													=>			TX_ds(0).P,
+				TXN1													=>			open,
+				TXP1													=>			open,
+				TXPREEMPHASIS0								=>			"000",
+				TXPREEMPHASIS1								=>			"000",
 				--------------------- Transmit Ports - TX PRBS Generator -------------------
 				TXENPRBSTST0									=>			"00",
 				TXENPRBSTST1									=>			"00",
@@ -683,12 +629,12 @@ BEGIN
 					----------------- Transmit Ports - TX Ports for PCI Express ----------------
 				TXDETECTRX0										=>			'0',
 				TXDETECTRX1										=>			'0',
-				TXELECIDLE0										=>			GTP_TX_ElectricalIDLE(0),
-				TXELECIDLE1										=>			'1',
+				TXELECIDLE0										=>			'0',
+				TXELECIDLE1										=>			'0',
 					--------------------- Transmit Ports - TX Ports for SATA -------------------
-				TXCOMSTART0										=>			GTP_TX_ComStart(0),
+				TXCOMSTART0										=>			'0',
 				TXCOMSTART1										=>			'0',
-				TXCOMTYPE0										=>			GTP_TX_ComType(0),
+				TXCOMTYPE0										=>			'0',
 				TXCOMTYPE1										=>			'0'
 			);
 	END GENERATE;
@@ -698,28 +644,27 @@ BEGIN
 	-- GTP_DUAL - 2 used ports
 	-- ===========================================================================
 	DualPort : IF (PORTS = 2) GENERATE
-		SIGNAL GTP_RX_DisableElectricalIDLEReset : STD_LOGIC;
+
 	BEGIN
-		GTP_RX_DisableElectricalIDLEReset		<= NOT GTP_RX_EnableElectricalIDLEReset;
 		
 		GTP : GTP_DUAL
 			GENERIC MAP (
 				-- ===================== Simulation-Only Attributes ====================
-	--			SIM_RECEIVER_DETECT_PASS0	 		=>			 TRUE,
-	--			SIM_RECEIVER_DETECT_PASS1	 		=>			 TRUE,
+				SIM_RECEIVER_DETECT_PASS0	 		=>			 TRUE,
+				SIM_RECEIVER_DETECT_PASS1	 		=>			 TRUE,
 				SIM_MODE											=>			 "FAST",				
 				SIM_GTPRESET_SPEEDUP					=>			 1,
-	--			SIM_PLL_PERDIV2								=>			 TILE_SIM_PLL_PERDIV2,
+				SIM_PLL_PERDIV2								=>			 x"190",
 
 				-- ========================== Shared Attributes ========================
 				-------------------------- Tile and PLL Attributes ---------------------
-				CLK25_DIVIDER									=>			 6, 
-				CLKINDC_B											=>			 TRUE,
-				OOB_CLK_DIVIDER								=>			 6,
-				OVERSAMPLE_MODE								=>			 FALSE,
-				PLL_DIVSEL_FB									=>			 2,
-				PLL_DIVSEL_REF								=>			 1,
-				PLL_TXDIVSEL_COMM_OUT					=>			 1,
+				CLK25_DIVIDER									=>			 5, 						-- 
+				CLKINDC_B											=>			 TRUE,					-- 
+				OOB_CLK_DIVIDER								=>			 4,							-- 
+				OVERSAMPLE_MODE								=>			 FALSE,					-- 
+				PLL_DIVSEL_FB									=>			 2,							-- PLL clock feedback devider 
+				PLL_DIVSEL_REF								=>			 1,							-- PLL input clock devider
+				PLL_TXDIVSEL_COMM_OUT					=>			 1,							-- don't devide common TX clock, use private TXDIVSEL_OUT clock deviders
 				TX_SYNC_FILTERB								=>			 1,	 
 
 				-- ================== Transmit Interface Attributes ====================
@@ -733,74 +678,74 @@ BEGIN
 				TXRX_INVERT_1									=>			 "00000",				
 
 				--------------------- TX Serial Line Rate settings ---------------------	 
-				PLL_TXDIVSEL_OUT_0						=>			 CLOCK_DIVIDERS(0),							-- 1 => GENERATION_2, 2 => GENERATION_1
-				PLL_TXDIVSEL_OUT_1						=>			 CLOCK_DIVIDERS(1),
+				PLL_TXDIVSEL_OUT_0						=>			 2,												-- 
+				PLL_TXDIVSEL_OUT_1						=>			 2,												-- 
 
 				--------------------- TX Driver and OOB SIGNALling --------------------	
 				TX_DIFF_BOOST_0								=>			 TRUE,
 				TX_DIFF_BOOST_1								=>			 TRUE,
 
 				------------------ TX Pipe Control for PCI Express/SATA ---------------
-				COM_BURST_VAL_0								=>			 "0110",
-				COM_BURST_VAL_1								=>			 "0110",
+				COM_BURST_VAL_0								=>			 "1111",																	-- TX OOB burst counter
+				COM_BURST_VAL_1								=>			 "1111",																	-- TX OOB burst counter
 					
 				-- =================== Receive Interface Attributes ===================
 				------------ RX Driver,OOB SIGNALling,Coupling and Eq,CDR -------------	
 				AC_CAP_DIS_0									=>			 FALSE,
-				OOBDETECT_THRESHOLD_0					=>			 "100",					-- treshold voltage = 105 mV
-				PMA_CDR_SCAN_0								=>			 x"6C08040",
-				PMA_RX_CFG_0									=>			 x"0DCE111",	
+				OOBDETECT_THRESHOLD_0					=>			 "001",																		-- Threshold between RXN and RXP is 105 mV
+				PMA_CDR_SCAN_0								=>			 x"6c07640",
+				PMA_RX_CFG_0									=>			 x"09f0088",	
 				RCV_TERM_GND_0								=>			 FALSE,
-				RCV_TERM_MID_0								=>			 TRUE,
-				RCV_TERM_VTTRX_0							=>			 TRUE,
-				TERMINATION_IMP_0							=>			 50,						-- 50 Ohm termination
+				RCV_TERM_MID_0								=>			 FALSE,
+				RCV_TERM_VTTRX_0							=>			 FALSE,
+				TERMINATION_IMP_0							=>			 50,																			-- 50 Ohm Terminierung
 
 				AC_CAP_DIS_1									=>			 FALSE,
-				OOBDETECT_THRESHOLD_1					=>			 "100",					-- treshold voltage = 105 mV
-				PMA_CDR_SCAN_1								=>			 x"6C08040",
-				PMA_RX_CFG_1									=>			 x"0DCE111",	
+				OOBDETECT_THRESHOLD_1					=>			 "001",																		-- Threshold between RXN and RXP is 105 mV
+				PMA_CDR_SCAN_1								=>			 x"6c07640",
+				PMA_RX_CFG_1									=>			 x"09f0088",	
 				RCV_TERM_GND_1								=>			 FALSE,
-				RCV_TERM_MID_1								=>			 TRUE,
-				RCV_TERM_VTTRX_1							=>			 TRUE,
-				TERMINATION_IMP_1							=>			 50,						-- 50 Ohm termination
+				RCV_TERM_MID_1								=>			 FALSE,
+				RCV_TERM_VTTRX_1							=>			 FALSE,
+				TERMINATION_IMP_1							=>			 50,																			-- 50 Ohm Terminierung
 
-	--			PCS_COM_CFG										=>			 x"1680a0e",	
+				PCS_COM_CFG										=>			 x"1680a0e",	
 				TERMINATION_CTRL							=>			 "10100",
 				TERMINATION_OVRD							=>			 FALSE,
 
 				--------------------- RX Serial Line Rate Attributes ------------------	 
-				PLL_RXDIVSEL_OUT_0						=>			 CLOCK_DIVIDERS(0),							-- 1 => GENERATION_2, 2 => GENERATION_1
-				PLL_RXDIVSEL_OUT_1						=>			 CLOCK_DIVIDERS(1),							-- 1 => GENERATION_2, 2 => GENERATION_1
-				
+				PLL_RXDIVSEL_OUT_0						=>			 2,												-- 
+				PLL_RXDIVSEL_OUT_1						=>			 2,
+
 				PLL_SATA_0										=>			 FALSE,
 				PLL_SATA_1										=>			 FALSE,
 
 				----------------------- PRBS Detection Attributes ---------------------	
-				PRBS_ERR_THRESHOLD_0					=>			 x"00000008",
-				PRBS_ERR_THRESHOLD_1					=>			 x"00000008",
+				PRBS_ERR_THRESHOLD_0					=>			 x"00000001",
+				PRBS_ERR_THRESHOLD_1					=>			 x"00000001",
 
 				---------------- Comma Detection and Alignment Attributes -------------	
 				ALIGN_COMMA_WORD_0						=>			 1,
-				COMMA_10B_ENABLE_0						=>			 "1111111111",
+				COMMA_10B_ENABLE_0						=>			 "0001111111",
 				COMMA_DOUBLE_0								=>			 FALSE,
 				DEC_MCOMMA_DETECT_0						=>			 TRUE,
 				DEC_PCOMMA_DETECT_0						=>			 TRUE,
 				DEC_VALID_COMMA_ONLY_0				=>			 FALSE,
-				MCOMMA_10B_VALUE_0						=>			 "1010000011",
+				MCOMMA_10B_VALUE_0						=>			 "1010000011",														-- K28.5
 				MCOMMA_DETECT_0								=>			 TRUE,
-				PCOMMA_10B_VALUE_0						=>			 "0101111100",
+				PCOMMA_10B_VALUE_0						=>			 "0101111100",														-- K28.5
 				PCOMMA_DETECT_0								=>			 TRUE,
 				RX_SLIDE_MODE_0								=>			 "PCS",
 
 				ALIGN_COMMA_WORD_1						=>			 1,
-				COMMA_10B_ENABLE_1						=>			 "1111111111",
+				COMMA_10B_ENABLE_1						=>			 "0001111111",
 				COMMA_DOUBLE_1								=>			 FALSE,
 				DEC_MCOMMA_DETECT_1						=>			 TRUE,
 				DEC_PCOMMA_DETECT_1						=>			 TRUE,
 				DEC_VALID_COMMA_ONLY_1				=>			 FALSE,
-				MCOMMA_10B_VALUE_1						=>			 "1010000011",
+				MCOMMA_10B_VALUE_1						=>			 "1010000011",														-- K28.5
 				MCOMMA_DETECT_1								=>			 TRUE,
-				PCOMMA_10B_VALUE_1						=>			 "0101111100",
+				PCOMMA_10B_VALUE_1						=>			 "0101111100",														-- K28.5
 				PCOMMA_DETECT_1								=>			 TRUE,
 				RX_SLIDE_MODE_1								=>			 "PCS",
 
@@ -822,8 +767,8 @@ BEGIN
 
 				------------------------ Clock Correction Attributes ------------------	 
 				CLK_CORRECT_USE_0							=>			 TRUE,
-				CLK_COR_ADJ_LEN_0							=>			 4,
-				CLK_COR_DET_LEN_0							=>			 4,
+				CLK_COR_ADJ_LEN_0							=>			 2,
+				CLK_COR_DET_LEN_0							=>			 2,
 				CLK_COR_INSERT_IDLE_FLAG_0		=>			 FALSE,
 				CLK_COR_KEEP_IDLE_0						=>			 FALSE,
 				CLK_COR_MIN_LAT_0							=>			 16,
@@ -831,21 +776,21 @@ BEGIN
 				CLK_COR_PRECEDENCE_0					=>			 TRUE,
 				CLK_COR_REPEAT_WAIT_0					=>			 0,
 				CLK_COR_SEQ_1_1_0							=>			 "0110111100",
-				CLK_COR_SEQ_1_2_0							=>			 "0001001010",
-				CLK_COR_SEQ_1_3_0							=>			 "0001001010",
-				CLK_COR_SEQ_1_4_0							=>			 "0001111011",
-				CLK_COR_SEQ_1_ENABLE_0				=>			 "1111",
-				CLK_COR_SEQ_2_1_0							=>			 "0000000000",
-				CLK_COR_SEQ_2_2_0							=>			 "0000000000",
+				CLK_COR_SEQ_1_2_0							=>			 "0001010000",
+				CLK_COR_SEQ_1_3_0							=>			 "0000000000",
+				CLK_COR_SEQ_1_4_0							=>			 "0000000000",
+				CLK_COR_SEQ_1_ENABLE_0				=>			 "0011",
+				CLK_COR_SEQ_2_1_0							=>			 "0110111100",
+				CLK_COR_SEQ_2_2_0							=>			 "0010110101",
 				CLK_COR_SEQ_2_3_0							=>			 "0000000000",
 				CLK_COR_SEQ_2_4_0							=>			 "0000000000",
-				CLK_COR_SEQ_2_ENABLE_0				=>			 "0000",
-				CLK_COR_SEQ_2_USE_0						=>			 FALSE,
+				CLK_COR_SEQ_2_ENABLE_0				=>			 "0011",
+				CLK_COR_SEQ_2_USE_0						=>			 TRUE,
 				RX_DECODE_SEQ_MATCH_0					=>			 TRUE,
 
 				CLK_CORRECT_USE_1							=>			 TRUE,
-				CLK_COR_ADJ_LEN_1							=>			 4,
-				CLK_COR_DET_LEN_1							=>			 4,
+				CLK_COR_ADJ_LEN_1							=>			 2,
+				CLK_COR_DET_LEN_1							=>			 2,
 				CLK_COR_INSERT_IDLE_FLAG_1		=>			 FALSE,
 				CLK_COR_KEEP_IDLE_1						=>			 FALSE,
 				CLK_COR_MIN_LAT_1							=>			 16,
@@ -853,16 +798,16 @@ BEGIN
 				CLK_COR_PRECEDENCE_1					=>			 TRUE,
 				CLK_COR_REPEAT_WAIT_1					=>			 0,
 				CLK_COR_SEQ_1_1_1							=>			 "0110111100",
-				CLK_COR_SEQ_1_2_1							=>			 "0001001010",
-				CLK_COR_SEQ_1_3_1							=>			 "0001001010",
-				CLK_COR_SEQ_1_4_1							=>			 "0001111011",
-				CLK_COR_SEQ_1_ENABLE_1				=>			 "1111",
-				CLK_COR_SEQ_2_1_1							=>			 "0000000000",
-				CLK_COR_SEQ_2_2_1							=>			 "0000000000",
+				CLK_COR_SEQ_1_2_1							=>			 "0001010000",
+				CLK_COR_SEQ_1_3_1							=>			 "0000000000",
+				CLK_COR_SEQ_1_4_1							=>			 "0000000000",
+				CLK_COR_SEQ_1_ENABLE_1				=>			 "0011",
+				CLK_COR_SEQ_2_1_1							=>			 "0110111100",
+				CLK_COR_SEQ_2_2_1							=>			 "0010110101",
 				CLK_COR_SEQ_2_3_1							=>			 "0000000000",
 				CLK_COR_SEQ_2_4_1							=>			 "0000000000",
-				CLK_COR_SEQ_2_ENABLE_1				=>			 "0000",
-				CLK_COR_SEQ_2_USE_1						=>			 FALSE,
+				CLK_COR_SEQ_2_ENABLE_1				=>			 "0011",
+				CLK_COR_SEQ_2_USE_1						=>			 TRUE,
 				RX_DECODE_SEQ_MATCH_1					=>			 TRUE,
 
 				------------------------ Channel Bonding Attributes -------------------	 
@@ -870,86 +815,99 @@ BEGIN
 				CHAN_BOND_2_MAX_SKEW_0				=>			 7,
 				CHAN_BOND_LEVEL_0							=>			 0,
 				CHAN_BOND_MODE_0							=>			 "OFF",
+				CHAN_BOND_SEQ_LEN_0						=>			 1,
+				CHAN_BOND_SEQ_1_ENABLE_0			=>			 "0000",
 				CHAN_BOND_SEQ_1_1_0						=>			 "0000000000",
 				CHAN_BOND_SEQ_1_2_0						=>			 "0000000000",
 				CHAN_BOND_SEQ_1_3_0						=>			 "0000000000",
 				CHAN_BOND_SEQ_1_4_0						=>			 "0000000000",
-				CHAN_BOND_SEQ_1_ENABLE_0			=>			 "0000",
+				CHAN_BOND_SEQ_2_USE_0					=>			 FALSE,	
+				CHAN_BOND_SEQ_2_ENABLE_0			=>			 "0000",
 				CHAN_BOND_SEQ_2_1_0						=>			 "0000000000",
 				CHAN_BOND_SEQ_2_2_0						=>			 "0000000000",
 				CHAN_BOND_SEQ_2_3_0						=>			 "0000000000",
 				CHAN_BOND_SEQ_2_4_0						=>			 "0000000000",
-				CHAN_BOND_SEQ_2_ENABLE_0			=>			 "0000",
-				CHAN_BOND_SEQ_2_USE_0					=>			 FALSE,	
-				CHAN_BOND_SEQ_LEN_0						=>			 1,
 				PCI_EXPRESS_MODE_0						=>			 FALSE,	 
 			 
 				CHAN_BOND_1_MAX_SKEW_1				=>			 7,
 				CHAN_BOND_2_MAX_SKEW_1				=>			 7,
 				CHAN_BOND_LEVEL_1							=>			 0,
 				CHAN_BOND_MODE_1							=>			 "OFF",
+				CHAN_BOND_SEQ_LEN_1						=>			 1,
+				CHAN_BOND_SEQ_1_ENABLE_1			=>			 "0000",
 				CHAN_BOND_SEQ_1_1_1						=>			 "0000000000",
 				CHAN_BOND_SEQ_1_2_1						=>			 "0000000000",
 				CHAN_BOND_SEQ_1_3_1						=>			 "0000000000",
 				CHAN_BOND_SEQ_1_4_1						=>			 "0000000000",
-				CHAN_BOND_SEQ_1_ENABLE_1			=>			 "0000",
+				CHAN_BOND_SEQ_2_USE_1					=>			 FALSE,	
+				CHAN_BOND_SEQ_2_ENABLE_1			=>			 "0000",
 				CHAN_BOND_SEQ_2_1_1						=>			 "0000000000",
 				CHAN_BOND_SEQ_2_2_1						=>			 "0000000000",
 				CHAN_BOND_SEQ_2_3_1						=>			 "0000000000",
 				CHAN_BOND_SEQ_2_4_1						=>			 "0000000000",
-				CHAN_BOND_SEQ_2_ENABLE_1			=>			 "0000",
-				CHAN_BOND_SEQ_2_USE_1					=>			 FALSE,	
-				CHAN_BOND_SEQ_LEN_1						=>			 1,
 				PCI_EXPRESS_MODE_1						=>			 FALSE,
 
 				------------------ RX Attributes for PCI Express/SATA ---------------
-				RX_STATUS_FMT_0								=>			 "SATA",
-				SATA_BURST_VAL_0							=>			 "100",
-				SATA_IDLE_VAL_0								=>			 "011",
-				SATA_MIN_BURST_0							=>			 4,
-				SATA_MAX_BURST_0							=>			 7,
-				SATA_MIN_INIT_0								=>			 12,
-				SATA_MAX_INIT_0								=>			 22,
-				SATA_MIN_WAKE_0								=>			 4,
-				SATA_MAX_WAKE_0								=>			 7,
+				-- OOB COM*** SIGNAL detector @ 25 MHz with DDR (20 ns)
+				RX_STATUS_FMT_0								=>			 "PCIE",
+				SATA_BURST_VAL_0							=>			 "100",							-- Burst count to detect OOB COM*** SIGNALs
+				SATA_IDLE_VAL_0								=>			 "100",							-- IDLE count between bursts in OOB COM*** SIGNALs
+				SATA_MIN_BURST_0							=>			 5,									-- 
+				SATA_MAX_BURST_0							=>			 9,									-- 
+				SATA_MIN_INIT_0								=>			 15,								-- 
+				SATA_MAX_INIT_0								=>			 27,								-- 
+				SATA_MIN_WAKE_0								=>			 5,									-- 
+				SATA_MAX_WAKE_0								=>			 9,									-- 
 				TRANS_TIME_FROM_P2_0					=>			 x"0060",
 				TRANS_TIME_NON_P2_0						=>			 x"0025",
 				TRANS_TIME_TO_P2_0						=>			 x"0100",
 
-				RX_STATUS_FMT_1								=>			"SATA",
-				SATA_BURST_VAL_1							=>			"100",
-				SATA_IDLE_VAL_1								=>			"011",
-				SATA_MIN_BURST_1							=>			4,
-				SATA_MAX_BURST_1							=>			7,
-				SATA_MIN_INIT_1								=>			12,
-				SATA_MAX_INIT_1								=>			22,
-				SATA_MIN_WAKE_1								=>			4,
-				SATA_MAX_WAKE_1								=>			7,
+				RX_STATUS_FMT_1								=>			"PCIE",
+				SATA_BURST_VAL_1							=>			"100",							-- Burst count to detect OOB COM*** SIGNALs
+				SATA_IDLE_VAL_1								=>			"100",							-- IDLE count between bursts in OOB COM*** SIGNALs
+				SATA_MIN_BURST_1							=>			 5,									-- 
+				SATA_MAX_BURST_1							=>			 9,									-- 
+				SATA_MIN_INIT_1								=>			 15,								-- 
+				SATA_MAX_INIT_1								=>			 27,								-- 
+				SATA_MIN_WAKE_1								=>			 5,									-- 
+				SATA_MAX_WAKE_1								=>			 9,									-- 
 				TRANS_TIME_FROM_P2_1					=>			x"0060",
 				TRANS_TIME_NON_P2_1						=>			x"0025",
 				TRANS_TIME_TO_P2_1						=>			x"0100"
-			) 
+			)
 			PORT MAP (
 				------------------------ Loopback and Powerdown Ports ----------------------
-				LOOPBACK0											=>			"000",
-				LOOPBACK1											=>			"000",
-				RXPOWERDOWN0									=>			GTP_RX_PowerDown(0),
-				RXPOWERDOWN1									=>			GTP_RX_PowerDown(1),
-				TXPOWERDOWN0									=>			GTP_TX_PowerDown(0),
-				TXPOWERDOWN1									=>			GTP_TX_PowerDown(1),
+				LOOPBACK0(0)									=>			Loopback(0),
+				LOOPBACK0(2 downto 1)					=>			"00",
+				LOOPBACK1(0)									=>			Loopback(1),
+				LOOPBACK1(2 downto 1)					=>			"00",
+				TXPOWERDOWN0									=>			(others => Powerdown(0)),
+				RXPOWERDOWN0									=>			(others => Powerdown(0)),
+				TXPOWERDOWN1									=>			(others => Powerdown(1)),
+				RXPOWERDOWN1									=>			(others => Powerdown(1)),
 				----------------------- Receive Ports - 8b10b Decoder ----------------------
-				RXCHARISCOMMA0								=>			GTP_RX_CharIsComma(0),				-- @ GTP_ClockRX_2X,	
-				RXCHARISCOMMA1								=>			GTP_RX_CharIsComma(1),
-				RXCHARISK0										=>			GTP_RX_CharIsK(0),						-- @ GTP_ClockRX_2X,	
-				RXCHARISK1										=>			GTP_RX_CharIsK(1),
+				RXCHARISCOMMA0(0)							=>			RX_CharIsComma(0),						-- @ GTP_ClockRX_2X,	
+				RXCHARISCOMMA0(1)							=>			RX_CharIsComma_float(0),			-- @ GTP_ClockRX_2X,	
+				RXCHARISCOMMA1(0)							=>			RX_CharIsComma(1),
+				RXCHARISCOMMA1(1)							=>			RX_CharIsComma_float(1),
+				RXCHARISK0(0)									=>			RX_CharIsK(0),								-- @ GTP_ClockRX_2X,	
+				RXCHARISK0(1)									=>			RX_CharIsK_float(0),					-- @ GTP_ClockRX_2X,	
+				RXCHARISK1(0)									=>			RX_CharIsK(1),
+				RXCHARISK1(1)									=>			RX_CharIsK_float(1),
 				RXDEC8B10BUSE0								=>			'1',
 				RXDEC8B10BUSE1								=>			'1',
-				RXDISPERR0										=>			GTP_RX_DisparityError(0),			-- @ GTP_ClockRX_2X,	
-				RXDISPERR1										=>			GTP_RX_DisparityError(1),
-				RXNOTINTABLE0									=>			GTP_RX_Illegal8B10BCode(0),		-- @ GTP_ClockRX_2X,	
-				RXNOTINTABLE1									=>			GTP_RX_Illegal8B10BCode(1),
-				RXRUNDISP0										=>			OPEN,
-				RXRUNDISP1										=>			OPEN,
+				RXDISPERR0(0)									=>			RX_DisparityError(0),					-- @ GTP_ClockRX_2X,	
+				RXDISPERR0(1)									=>			RX_DisparityError_float(0),		-- @ GTP_ClockRX_2X,	
+				RXDISPERR1(0)									=>			RX_DisparityError(1),
+				RXDISPERR1(1)									=>			RX_DisparityError_float(1),
+				RXNOTINTABLE0(0)							=>			RX_NotInTable(0),							-- @ GTP_ClockRX_2X,	
+				RXNOTINTABLE0(1)							=>			RX_NotInTable_float(0),							-- @ GTP_ClockRX_2X,	
+				RXNOTINTABLE1(0)							=>			RX_NotInTable(1),
+				RXNOTINTABLE1(1)							=>			RX_NotInTable_float(1),
+				RXRUNDISP0(0)									=>			RX_RunningDisparity(0),
+				RXRUNDISP0(1)									=>			RX_RunningDisparity_float(0),
+				RXRUNDISP1(0)									=>			RX_RunningDisparity(1),
+				RXRUNDISP1(1)									=>			RX_RunningDisparity_float(1),
 				------------------- Receive Ports - Channel Bonding Ports ------------------
 				RXCHANBONDSEQ0								=>			OPEN,
 				RXCHANBONDSEQ1								=>			OPEN,
@@ -960,15 +918,15 @@ BEGIN
 				RXENCHANSYNC0									=>			'0',
 				RXENCHANSYNC1									=>			'0',
 				------------------- Receive Ports - Clock Correction Ports -----------------
-				RXCLKCORCNT0									=>			GTP_RX_ClockCorrectionStatus(0),
-				RXCLKCORCNT1									=>			GTP_RX_ClockCorrectionStatus(1),
+				RXCLKCORCNT0									=>			RX_ClockCorrectionCount(0),
+				RXCLKCORCNT1									=>			RX_ClockCorrectionCount(1),
 				--------------- Receive Ports - Comma Detection and Alignment --------------
-				RXBYTEISALIGNED0							=>			GTP_RX_ByteIsAligned(0),									-- @ GTP_ClockRX_2X,	high-active, long SIGNAL			bytes are aligned			
-				RXBYTEISALIGNED1							=>			GTP_RX_ByteIsAligned(1),
-				RXBYTEREALIGN0								=>			GTP_RX_ByteRealign(0),										-- @ GTP_ClockRX_2X,	hight-active, short pulse			alignment has changed
-				RXBYTEREALIGN1								=>			GTP_RX_ByteRealign(1),
-				RXCOMMADET0										=>			GTP_RX_CommaDetected(0),
-				RXCOMMADET1										=>			GTP_RX_CommaDetected(1),
+				RXBYTEISALIGNED0							=>			open,	--RX_ByteIsAligned(0),									-- @ GTP_ClockRX_2X,	high-active, long SIGNAL			bytes are aligned			
+				RXBYTEISALIGNED1							=>			open,	--RX_ByteIsAligned(1),
+				RXBYTEREALIGN0								=>			open,	--RX_ByteRealign(0),										-- @ GTP_ClockRX_2X,	hight-active, short pulse			alignment has changed
+				RXBYTEREALIGN1								=>			open,	--RX_ByteRealign(1),
+				RXCOMMADET0										=>			open,	--RX_CommaDetected(0),
+				RXCOMMADET1										=>			open,	--RX_CommaDetected(1),
 				RXCOMMADETUSE0								=>			'1',
 				RXCOMMADETUSE1								=>			'1',
 				RXENMCOMMAALIGN0							=>			'1',
@@ -985,131 +943,141 @@ BEGIN
 				RXPRBSERR0										=>			OPEN,
 				RXPRBSERR1										=>			OPEN,
 				------------------- Receive Ports - RX Data Path interface -----------------
-				RXDATA0												=>			GTP_RX_Data(0),
-				RXDATA1												=>			GTP_RX_Data(1),
+				RXDATA0(7 downto 0)						=>			RX_Data(0),
+				RXDATA0(15 downto 8)					=>			RX_Data_float(0),
+				RXDATA1(7 downto 0)						=>			RX_Data(0),
+				RXDATA1(15 downto 8)					=>			RX_Data_float(1),
 				RXDATAWIDTH0									=>			'0',																			-- 8 Bit data interface
 				RXDATAWIDTH1									=>			'0',																			-- 8 Bit data interface
 				RXRECCLK0											=>			GTP_RX_RefClockOut(0),										-- recovered clock from CDR
-				RXRECCLK1											=>			GTP_RX_RefClockOut(1),										-- recovered clock from CDR
-				RXRESET0											=>			GTP_RX_Reset(0),
-				RXRESET1											=>			GTP_RX_Reset(1),
-				RXUSRCLK0											=>			GTP_Clock_1X(0),
-				RXUSRCLK1											=>			GTP_Clock_1X(1),
-				RXUSRCLK20										=>			GTP_Clock_1X(0),
-				RXUSRCLK21										=>			GTP_Clock_1X(1),
+				RXRECCLK1											=>			GTP_RX_RefClockOut(1),
+				RXRESET0											=>			RX_Reset(0),
+				RXRESET1											=>			RX_Reset(1),
+				RXUSRCLK0											=>			RX_Clock(0),
+				RXUSRCLK1											=>			RX_Clock(1),
+				RXUSRCLK20										=>			RX_Clock(0),
+				RXUSRCLK21										=>			RX_Clock(1),
 				------- Receive Ports - RX Driver,OOB SIGNALing,Coupling and Eq.,CDR ------
-				RXCDRRESET0										=>			GTP_RX_CDR_Reset(0),											-- CDR => Clock Data Recovery
-				RXCDRRESET1										=>			GTP_RX_CDR_Reset(1),
-				RXELECIDLE0										=>			GTP_RX_ElectricalIDLE(0),
-				RXELECIDLE1										=>			GTP_RX_ElectricalIDLE(1),
-				RXELECIDLERESET0							=>			GTP_RX_ElectricalIDLE_Reset(0),
-				RXELECIDLERESET1							=>			GTP_RX_ElectricalIDLE_Reset(1),
+				RXCDRRESET0										=>			'0',											-- CDR => Clock Data Recovery
+				RXCDRRESET1										=>			'0',
+				RXELECIDLE0										=>			open,
+				RXELECIDLE1										=>			open,
+				RXELECIDLERESET0							=>			'0',
+				RXELECIDLERESET1							=>			'0',
 				RXENEQB0											=>			'1',
 				RXENEQB1											=>			'1',
 				RXEQMIX0											=>			"00",
 				RXEQMIX1											=>			"00",
 				RXEQPOLE0											=>			"0000",
 				RXEQPOLE1											=>			"0000",
-				RXN0													=>			VSS_Private_In(0).RX_n,
-				RXP0													=>			VSS_Private_In(0).RX_p,
-				RXN1													=>			VSS_Private_In(1).RX_n,
-				RXP1													=>			VSS_Private_In(1).RX_p,
+				RXN0													=>			RX_ds(0).N,
+				RXP0													=>			RX_ds(0).P,
+				RXN1													=>			RX_ds(1).N,
+				RXP1													=>			RX_ds(1).P,
 				-------- Receive Ports - RX Elastic Buffer and Phase Alignment Ports -------
-				RXBUFRESET0										=>			GTP_RX_BufferReset(0),
-				RXBUFRESET1										=>			GTP_RX_BufferReset(1),
-				RXBUFSTATUS0									=>			GTP_RX_BufferStatus(0),													-- @GTP_ClockRX_2X,	RX buffer status (over/underflow)
-				RXBUFSTATUS1									=>			GTP_RX_BufferStatus(1),
-				RXCHANISALIGNED0							=>			OPEN,
-				RXCHANISALIGNED1							=>			OPEN,
-				RXCHANREALIGN0								=>			OPEN,
-				RXCHANREALIGN1								=>			OPEN,
+				RXBUFRESET0										=>			RX_Reset(0),
+				RXBUFRESET1										=>			RX_Reset(1),
+				RXBUFSTATUS0(1 downto 0)			=>			GTP_RX_BufferStatus_float(0),					-- GTP_ClockRX_2X,	RX buffer status (over/underflow)
+				RXBUFSTATUS0(2)								=>			RX_BufferError(0),										-- GTP_ClockRX_2X,	RX buffer status (over/underflow)
+				RXBUFSTATUS1(1 downto 0)			=>			GTP_RX_BufferStatus_float(1),					-- GTP_ClockRX_2X,	RX buffer status (over/underflow)
+				RXBUFSTATUS1(2)								=>			RX_BufferError(1),										-- GTP_ClockRX_2X,	RX buffer status (over/underflow)
+				RXCHANISALIGNED0							=>			open,
+				RXCHANISALIGNED1							=>			open,
+				RXCHANREALIGN0								=>			open,
+				RXCHANREALIGN1								=>			open,
 				RXPMASETPHASE0								=>			'0',
 				RXPMASETPHASE1								=>			'0',
-				RXSTATUS0											=>			GTP_RX_Status(0),
-				RXSTATUS1											=>			GTP_RX_Status(1),
+				RXSTATUS0											=>			open,
+				RXSTATUS1											=>			open,
 				--------------- Receive Ports - RX Loss-of-sync State Machine --------------
-				RXLOSSOFSYNC0									=>			GTP_RX_LossOfSync(0),														-- Xilinx example has connected SIGNAL
-				RXLOSSOFSYNC1									=>			GTP_RX_LossOfSync(1),
+				RXLOSSOFSYNC0									=>			open,											-- Xilinx example has connected SIGNAL
+				RXLOSSOFSYNC1									=>			open,
 				---------------------- Receive Ports - RX Oversampling ---------------------
 				RXENSAMPLEALIGN0							=>			'0',
 				RXENSAMPLEALIGN1							=>			'0',
-				RXOVERSAMPLEERR0							=>			OPEN,
-				RXOVERSAMPLEERR1							=>			OPEN,
+				RXOVERSAMPLEERR0							=>			open,
+				RXOVERSAMPLEERR1							=>			open,
 				-------------- Receive Ports - RX Pipe Control for PCI Express -------------
-				PHYSTATUS0										=>			OPEN,
-				PHYSTATUS1										=>			OPEN,
-				RXVALID0											=>			GTP_RX_Valid(0),
-				RXVALID1											=>			GTP_RX_Valid(1),
+				PHYSTATUS0										=>			open,
+				PHYSTATUS1										=>			open,
+				RXVALID0											=>			open,
+				RXVALID1											=>			open,
 				----------------- Receive Ports - RX Polarity Control Ports ----------------
 				RXPOLARITY0										=>			'0',
 				RXPOLARITY1										=>			'0',
 				------------- Shared Ports - Dynamic Reconfiguration Port (DRP) ------------
-				DCLK													=>			GTP_DRP_Clock,
-				DEN														=>			GTP_DRP_en,
-				DADDR													=>			GTP_DRP_Address,
-				DWE														=>			GTP_DRP_we,
-				DI														=>			GTP_DRP_DataIn,
-				DO														=>			GTP_DRP_DataOut,
-				DRDY													=>			GTP_DRP_rdy,
+				DCLK													=>			'0',
+				DEN														=>			'0',
+				DADDR													=>			(others => '0'),																			-- resize vector to GTP_DUAL specific address bits
+				DWE														=>			'0',
+				DI														=>			(others => '0'),
+				DO														=>			open,
+				DRDY													=>			open,
 				--------------------- Shared Ports - Tile and PLL Ports --------------------
 				CLKIN													=>			GTP_RefClockIn,
 				GTPRESET											=>			GTP_Reset,
 				GTPTEST												=>			"0000",
-				INTDATAWIDTH									=>			'1',																			-- 10 Bit internal datawidth
-				PLLLKDET											=>			GTP_PLL_ResetDone_i,												-- GTP PLL lock detected
+				INTDATAWIDTH									=>			'1',																									-- 10 Bit internal datawidth
+				PLLLKDET											=>			GTP_PLL_ResetDone_i,																	-- GTP PLL lock detected
 				PLLLKDETEN										=>			'1',
-				PLLPOWERDOWN									=>			GTP_PLL_PowerDown,
+				PLLPOWERDOWN									=>			'0',
 				REFCLKOUT											=>			GTP_RefClockOut_i,
 				REFCLKPWRDNB									=>			'1',
 				RESETDONE0										=>			GTP_ResetDone_i(0),
 				RESETDONE1										=>			GTP_ResetDone_i(1),
-				RXENELECIDLERESETB						=>			GTP_RX_DisableElectricalIDLEReset,				-- low-active
+				RXENELECIDLERESETB						=>			'1',																									-- low-active => disable
 				TXENPMAPHASEALIGN							=>			'0',
 				TXPMASETPHASE									=>			'0',
 					---------------- Transmit Ports - 8b10b Encoder Control Ports --------------
-				TXBYPASS8B10B0								=>			"00",																			-- encode both bytes with 8B10B
+				TXBYPASS8B10B0								=>			"00",																									-- encode both bytes with 8B10B
 				TXBYPASS8B10B1								=>			"00",
-				TXCHARDISPMODE0								=>			"00",
-				TXCHARDISPMODE1								=>			"00",
-				TXCHARDISPVAL0								=>			"00",
-				TXCHARDISPVAL1								=>			"00",
-				TXCHARISK0										=>			GTP_TX_CharIsK(0),
-				TXCHARISK1										=>			GTP_TX_CharIsK(1),
-				TXENC8B10BUSE0								=>			'1',																			-- use internal 8B10B encoder
+				TXCHARDISPMODE0								=>			TX_DisparityMode(0),
+				TXCHARDISPMODE1								=>			TX_DisparityMode(1),
+				TXCHARDISPVAL0								=>			TX_DisparityValue(0),
+				TXCHARDISPVAL1								=>			TX_DisparityValue(1),
+				TXCHARISK0(0)									=>			TX_CharIsK(0),
+				TXCHARISK0(1)									=>			'0',
+				TXCHARISK1(0)									=>			TX_CharIsK(1),
+				TXCHARISK1(1)									=>			'0',
+				TXENC8B10BUSE0								=>			'1',																									-- use internal 8B10B encoder
 				TXENC8B10BUSE1								=>			'1',
-				TXKERR0												=>			GTP_TX_InvalidK(0),												-- invalid K charakter
-				TXKERR1												=>			GTP_TX_InvalidK(1),
-				TXRUNDISP0										=>			OPEN,																			-- running disparity
-				TXRUNDISP1										=>			OPEN,
+				TXKERR0												=>			open,																									-- invalid K charakter
+				TXKERR1												=>			open,
+				TXRUNDISP0										=>			open,																									-- running disparity
+				TXRUNDISP1										=>			open,
 				------------- Transmit Ports - TX Buffering and Phase Alignment ------------
-				TXBUFSTATUS0									=>			GTP_TX_BufferStatus(0),
-				TXBUFSTATUS1									=>			GTP_TX_BufferStatus(1),
+				TXBUFSTATUS0(0)								=>			GTP_TX_BufferStatus_float(0),
+				TXBUFSTATUS0(1)								=>			TX_BufferError(0),
+				TXBUFSTATUS1(0)								=>			GTP_TX_BufferStatus_float(1),
+				TXBUFSTATUS1(1)								=>			TX_BufferError(1),
 				------------------ Transmit Ports - TX Data Path interface -----------------
-				TXDATA0												=>			GTP_TX_Data(0),
-				TXDATA1												=>			GTP_TX_Data(1),
-				TXDATAWIDTH0									=>			'0',																			-- 8 Bit data interface
-				TXDATAWIDTH1									=>			'0',																			-- 8 Bit data interface
+				TXDATA0(7 downto 0)						=>			TX_Data(0),
+				TXDATA0(15 downto 8)					=>			(others => '0'),
+				TXDATA1(7 downto 0)						=>			TX_Data(1),
+				TXDATA1(15 downto 8)					=>			(others => '0'),
+				TXDATAWIDTH0									=>			'0',																									-- 8 Bit interface
+				TXDATAWIDTH1									=>			'0',
 				TXOUTCLK0											=>			GTP_TX_RefClockOut(0),
 				TXOUTCLK1											=>			GTP_TX_RefClockOut(1),
-				TXRESET0											=>			GTP_TX_Reset(0),
-				TXRESET1											=>			GTP_TX_Reset(1),													-- GTP_TX_Reset
-				TXUSRCLK0											=>			GTP_Clock_1X(0),
-				TXUSRCLK1											=>			GTP_Clock_1X(1),												-- GTP_Clock_1X
-				TXUSRCLK20										=>			GTP_Clock_1X(0),
-				TXUSRCLK21										=>			GTP_Clock_1X(1),												-- GTP_ClockTX_2X
+				TXRESET0											=>			TX_Reset(0),
+				TXRESET1											=>			TX_Reset(1),								-- GTP_TX_Reset
+				TXUSRCLK0											=>			TX_Clock(0),
+				TXUSRCLK1											=>			TX_Clock(1),								-- 
+				TXUSRCLK20										=>			TX_Clock(0),								-- 
+				TXUSRCLK21										=>			TX_Clock(1),								-- 
 				--------------- Transmit Ports - TX Driver and OOB SIGNALing --------------
-				TXBUFDIFFCTRL0								=>			"001",
-				TXBUFDIFFCTRL1								=>			"001",
-				TXDIFFCTRL0										=>			"100",
-				TXDIFFCTRL1										=>			"100",
+				TXBUFDIFFCTRL0								=>			"000",
+				TXBUFDIFFCTRL1								=>			"000",
+				TXDIFFCTRL0										=>			"000",
+				TXDIFFCTRL1										=>			"000",
 				TXINHIBIT0										=>			'0',
 				TXINHIBIT1										=>			'0',
-				TXN0													=>			VSS_Private_Out(0).TX_n,
-				TXP0													=>			VSS_Private_Out(0).TX_p,
-				TXN1													=>			VSS_Private_Out(1).TX_n,
-				TXP1													=>			VSS_Private_Out(1).TX_p,
-				TXPREEMPHASIS0								=>			"011",
-				TXPREEMPHASIS1								=>			"011",
+				TXN0													=>			TX_ds(0).N,
+				TXP0													=>			TX_ds(0).P,
+				TXN1													=>			TX_ds(1).N,
+				TXP1													=>			TX_ds(1).P,
+				TXPREEMPHASIS0								=>			"000",
+				TXPREEMPHASIS1								=>			"000",
 				--------------------- Transmit Ports - TX PRBS Generator -------------------
 				TXENPRBSTST0									=>			"00",
 				TXENPRBSTST1									=>			"00",
@@ -1119,13 +1087,13 @@ BEGIN
 					----------------- Transmit Ports - TX Ports for PCI Express ----------------
 				TXDETECTRX0										=>			'0',
 				TXDETECTRX1										=>			'0',
-				TXELECIDLE0										=>			GTP_TX_ElectricalIDLE(0),
-				TXELECIDLE1										=>			GTP_TX_ElectricalIDLE(1),
+				TXELECIDLE0										=>			'0',
+				TXELECIDLE1										=>			'0',
 					--------------------- Transmit Ports - TX Ports for SATA -------------------
-				TXCOMSTART0										=>			GTP_TX_ComStart(0),
-				TXCOMSTART1										=>			GTP_TX_ComStart(1),
-				TXCOMTYPE0										=>			GTP_TX_ComType(0),
-				TXCOMTYPE1										=>			GTP_TX_ComType(1)
+				TXCOMSTART0										=>			'0',
+				TXCOMSTART1										=>			'0',
+				TXCOMTYPE0										=>			'0',
+				TXCOMTYPE1										=>			'0'
 			);
 	END GENERATE;
 END;

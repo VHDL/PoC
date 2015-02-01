@@ -72,8 +72,8 @@ entity eth_TEMAC_TRANS_Virtex5 is
 		-- TRANS TX interface
 		Trans_TX_Data									: out	T_SLVV_8(PORTS - 1 downto 0);
 		Trans_TX_CharIsK							: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Trans_TX_CharDisparityMode		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Trans_TX_CharDisparityValue		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Trans_TX_DisparityMode				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Trans_TX_DisparityValue				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		Trans_TX_BufferError					: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
 		-- TRANS RX interface
@@ -602,8 +602,8 @@ begin
 				-- TRANS TX interface
 				EMAC0PHYTXD									=> Trans_TX_Data(0),
 				EMAC0PHYTXCHARISK						=> Trans_TX_CharIsK(0),
-				EMAC0PHYTXCHARDISPMODE			=> Trans_TX_CharDisparityMode(0),
-				EMAC0PHYTXCHARDISPVAL				=> Trans_TX_CharDisparityValue(0),
+				EMAC0PHYTXCHARDISPMODE			=> Trans_TX_DisparityMode(0),
+				EMAC0PHYTXCHARDISPVAL				=> Trans_TX_DisparityValue(0),
 				PHYEMAC0TXBUFERR						=> Trans_TX_BufferError(0),
 
 				-- TRANS RX interface
@@ -923,8 +923,8 @@ begin
 				-- TRANS TX interface
 				EMAC0PHYTXD									=> Trans_TX_Data(0),
 				EMAC0PHYTXCHARISK						=> Trans_TX_CharIsK(0),
-				EMAC0PHYTXCHARDISPMODE			=> Trans_TX_CharDisparityMode(0),
-				EMAC0PHYTXCHARDISPVAL				=> Trans_TX_CharDisparityValue(0),
+				EMAC0PHYTXCHARDISPMODE			=> Trans_TX_DisparityMode(0),
+				EMAC0PHYTXCHARDISPVAL				=> Trans_TX_DisparityValue(0),
 				PHYEMAC0TXBUFERR						=> Trans_TX_BufferError(0),
 
 				-- TRANS RX interface
@@ -1023,8 +1023,8 @@ begin
 				-- TRANS TX interface
 				EMAC1PHYTXD									=> Trans_TX_Data(1),
 				EMAC1PHYTXCHARISK						=> Trans_TX_CharIsK(1),
-				EMAC1PHYTXCHARDISPMODE			=> Trans_TX_CharDisparityMode(1),
-				EMAC1PHYTXCHARDISPVAL				=> Trans_TX_CharDisparityValue(1),
+				EMAC1PHYTXCHARDISPMODE			=> Trans_TX_DisparityMode(1),
+				EMAC1PHYTXCHARDISPVAL				=> Trans_TX_DisparityValue(1),
 				PHYEMAC1TXBUFERR						=> Trans_TX_BufferError(1),
 
 				-- TRANS RX interface
