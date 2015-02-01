@@ -34,7 +34,8 @@ begin
 	
 	Strobe : entity PoC.misc_StrobeGenerator
 		generic map (
-			STROBE_PERIOD_CYCLES	=> TimingToCycles(to_time(REFRESH_RATE), CLOCK_FREQ)
+			STROBE_PERIOD_CYCLES	=> TimingToCycles(to_time(REFRESH_RATE), CLOCK_FREQ),
+			INITIAL_STROBE				=> FALSE
 		)
 		port map (
 			Clock		=> Clock,
@@ -42,11 +43,11 @@ begin
 		);
 	
 	-- 
-	DigitCounter_rst	<= counter_eq(DigitCounter_us, DIGITS - 1);
+	DigitCounter_rst	<= counter_eq(DigitCounter_us, DIGITS - 1) and DigitCounter_en;
 	DigitCounter_us		<= counter_inc(DigitCounter_us, DigitCounter_rst, DigitCounter_en) when rising_edge(Clock);
 	DigitControl			<= resize(bin2onehot(std_logic_vector(DigitCounter_us)), DigitControl'length);
 
-	process(DigitCounter_en)
+	process(BCDDigits, BCDDots, DigitCounter_us)
 		variable BCDDigit : T_BCD;
 		variable BCDDot 	: STD_LOGIC;
 	begin
