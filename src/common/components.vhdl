@@ -41,7 +41,7 @@ PACKAGE components IS
 	-- FlipFlop functions
 	FUNCTION ffdre(q : STD_LOGIC; d : STD_LOGIC; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1') RETURN STD_LOGIC;												-- D-FlipFlop with reset and enable
 	FUNCTION ffdre(q : STD_LOGIC_VECTOR; d : STD_LOGIC_VECTOR; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1') RETURN STD_LOGIC_VECTOR;	-- D-FlipFlop with reset and enable
-	FUNCTION ffdse(q : STD_LOGIC; d : STD_LOGIC; set : STD_LOGIC := '0'; en : STD_LOGIC) RETURN STD_LOGIC;												-- D-FlipFlop with set and enable
+	FUNCTION ffdse(q : STD_LOGIC; d : STD_LOGIC; set : STD_LOGIC := '0'; en : STD_LOGIC := '1') RETURN STD_LOGIC;												-- D-FlipFlop with set and enable
 	FUNCTION fftre(q : STD_LOGIC; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1') RETURN STD_LOGIC;																			-- T-FlipFlop with reset and enable
 	FUNCTION ffrs(q : STD_LOGIC; rst : STD_LOGIC := '0'; set : STD_LOGIC := '0') RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant rst
 	FUNCTION ffsr(q : STD_LOGIC; rst : STD_LOGIC := '0'; set : STD_LOGIC := '0') RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant set
@@ -50,9 +50,9 @@ PACKAGE components IS
 	function inc(value : STD_LOGIC_VECTOR;	increment : NATURAL := 1) return STD_LOGIC_VECTOR;
 	function inc(value : UNSIGNED;					increment : NATURAL := 1) return UNSIGNED;
 	function inc(value : SIGNED;						increment : NATURAL := 1) return SIGNED;
-	function dec(value : STD_LOGIC_VECTOR;	increment : NATURAL := 1) return STD_LOGIC_VECTOR;
-	function dec(value : UNSIGNED;					increment : NATURAL := 1) return UNSIGNED;
-	function dec(value : SIGNED;						increment : NATURAL := 1) return SIGNED;
+	function dec(value : STD_LOGIC_VECTOR;	decrement : NATURAL := 1) return STD_LOGIC_VECTOR;
+	function dec(value : UNSIGNED;					decrement : NATURAL := 1) return UNSIGNED;
+	function dec(value : SIGNED;						decrement : NATURAL := 1) return SIGNED;
 
 	-- negate
 	function neg(value : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;		-- calculate 2's complement
