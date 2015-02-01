@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,7 +54,7 @@ ENTITY Stream_Mirror IS
 		In_Data										: IN	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
 		In_SOF										: IN	STD_LOGIC;
 		In_EOF										: IN	STD_LOGIC;
-		In_Ready									: OUT	STD_LOGIC;
+		In_Ack										: OUT	STD_LOGIC;
 		In_Meta_rst								: OUT	STD_LOGIC;
 		In_Meta_nxt								: OUT	STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
 		In_Meta_Data							: IN	STD_LOGIC_VECTOR(isum(META_BITS) - 1 DOWNTO 0);
@@ -63,7 +63,7 @@ ENTITY Stream_Mirror IS
 		Out_Data									: OUT	T_SLM(PORTS - 1 DOWNTO 0, DATA_BITS - 1 DOWNTO 0);
 		Out_SOF										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		Out_EOF										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		Out_Ready									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		Out_Ack										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		Out_Meta_rst							: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		Out_Meta_nxt							: IN	T_SLM(PORTS - 1 DOWNTO 0, META_BITS'length - 1 DOWNTO 0);
 		Out_Meta_Data							: OUT	T_SLM(PORTS - 1 DOWNTO 0, isum(META_BITS) - 1 DOWNTO 0)
@@ -82,7 +82,7 @@ ARCHITECTURE rtl OF Stream_Mirror IS
 	SIGNAL FIFOGlue_DataOut						: STD_LOGIC_VECTOR(DATA_BITS + 1 DOWNTO 0);
 	SIGNAL FIFOGlue_got								: STD_LOGIC;
 	
-	SIGNAL Ready_i										: STD_LOGIC;
+	SIGNAL Ack_i											: STD_LOGIC;
 	SIGNAL Mask_r											: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0)												:= (OTHERS => '1');
 	
 	SIGNAL MetaOut_rst								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -98,7 +98,7 @@ BEGIN
 	FIFOGlue_DataIn(DATA_BITS + 0)						<= In_SOF;
 	FIFOGlue_DataIn(DATA_BITS + 1)						<= In_EOF;
 	
-	In_Ready																	<= NOT FIFOGlue_Full;
+	In_Ack																		<= NOT FIFOGlue_Full;
 	
 	FIFOGlue : ENTITY PoC.fifo_glue
 		GENERIC MAP (
@@ -124,8 +124,8 @@ BEGIN
 		assign_row(Out_Data_i, FIFOGlue_DataOut(DATA_BITS - 1 DOWNTO 0), I);
 	END GENERATE;
 	
-	Ready_i				<= slv_and(Out_Ready) OR slv_and(NOT Mask_r OR Out_Ready);
-	FIFOGlue_got	<= Ready_i;
+	Ack_i					<= slv_and(Out_Ack) OR slv_and(NOT Mask_r OR Out_Ack);
+	FIFOGlue_got	<= Ack_i	;
 
 	Out_Valid			<= (PORTS - 1 DOWNTO 0 => FIFOGlue_Valid) AND Mask_r;
 	Out_Data			<= Out_Data_i;
@@ -135,10 +135,10 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF ((Reset OR Ready_i) = '1') THEN
+			IF ((Reset OR Ack_i	) = '1') THEN
 				Mask_r		<= (OTHERS => '1');
 			ELSE
-				Mask_r		<= Mask_r AND NOT Out_Ready;
+				Mask_r		<= Mask_r AND NOT Out_Ack;
 			END IF;
 		END IF;
 	END PROCESS;

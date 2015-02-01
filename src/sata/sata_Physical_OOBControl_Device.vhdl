@@ -34,10 +34,13 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+USE			PoC.my_project.ALL;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.strings.ALL;
 USE			PoC.physical.ALL;
+USE			PoC.debug.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.satadbg.ALL;
 
@@ -47,7 +50,6 @@ ENTITY sata_Physical_OOBControl_Device IS
 		DEBUG											: BOOLEAN														:= FALSE;												-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: BOOLEAN														:= FALSE;												-- enables the assignment of signals to the debugport
 		CLOCK_FREQ								: FREQ															:= 150.0 MHz;										-- 
---		CLOCK_FREQ_MHZ						: REAL															:= 150.0;												-- 
 		ALLOW_STANDARD_VIOLATION	: BOOLEAN														:= FALSE;
 		OOB_TIMEOUT								: TIME															:= TIME'low
 	);
@@ -72,7 +74,7 @@ ENTITY sata_Physical_OOBControl_Device IS
 		
 		TX_Primitive							: OUT	T_SATA_PRIMITIVE;
 		RX_Primitive							: IN	T_SATA_PRIMITIVE;
-		RX_IsAligned							: IN	STD_LOGIC
+		RX_Valid									: IN	STD_LOGIC
 	);
 END;
 
@@ -91,16 +93,6 @@ ARCHITECTURE rtl OF sata_Physical_OOBControl_Device IS
 	CONSTANT COMRESET_TIMEOUT							: TIME				:= 450.0 ns;
 	CONSTANT COMWAKE_TIMEOUT							: TIME				:= 250.0 ns;
 
---	CONSTANT CLOCK_GEN1_FREQ_MHZ					: REAL				:= CLOCK_FREQ_MHZ / 4.0;			-- SATAClock frequency in MHz for SATA generation 1
---	CONSTANT CLOCK_GEN2_FREQ_MHZ					: REAL				:= CLOCK_FREQ_MHZ / 2.0;			-- SATAClock frequency in MHz for SATA generation 2
---	CONSTANT CLOCK_GEN3_FREQ_MHZ					: REAL				:= CLOCK_FREQ_MHZ / 1.0;			-- SATAClock frequency in MHz for SATA generation 3
---
---	CONSTANT DEFAULT_OOB_TIMEOUT_I_US				: POSITIVE		:= 880;
---	
---	CONSTANT OOB_TIMEOUT_I_NS								: INTEGER			:= ite((OOB_TIMEOUT_I_US = 0), DEFAULT_OOB_TIMEOUT_I_US, OOB_TIMEOUT_I_US) * 1000;
---	CONSTANT COMRESET_TIMEOUT_NS					: INTEGER			:= 450;
---	CONSTANT COMWAKE_TIMEOUT_NS						: INTEGER			:= 250;
-
 	CONSTANT TTID1_OOB_TIMEOUT_GEN1				: NATURAL			:= 0;
 	CONSTANT TTID1_OOB_TIMEOUT_GEN2				: NATURAL			:= 1;
 	CONSTANT TTID1_OOB_TIMEOUT_GEN3				: NATURAL			:= 2;
@@ -115,9 +107,6 @@ ARCHITECTURE rtl OF sata_Physical_OOBControl_Device IS
 		TTID1_OOB_TIMEOUT_GEN1 => TimingToCycles(OOB_TIMEOUT_I,	CLOCK_GEN1_FREQ),							-- slot 0
 		TTID1_OOB_TIMEOUT_GEN2 => TimingToCycles(OOB_TIMEOUT_I,	CLOCK_GEN2_FREQ),							-- slot 1
 		TTID1_OOB_TIMEOUT_GEN3 => TimingToCycles(OOB_TIMEOUT_I,	CLOCK_GEN3_FREQ)							-- slot 2
---		TTID1_OOB_TIMEOUT_GEN1 => TimingToCycles_ns(OOB_TIMEOUT_I_NS,	Freq_MHz2Real_ns(CLOCK_GEN1_FREQ_MHZ)),							-- slot 0
---		TTID1_OOB_TIMEOUT_GEN2 => TimingToCycles_ns(OOB_TIMEOUT_I_NS,	Freq_MHz2Real_ns(CLOCK_GEN2_FREQ_MHZ)),							-- slot 1
---		TTID1_OOB_TIMEOUT_GEN3 => TimingToCycles_ns(OOB_TIMEOUT_I_NS,	Freq_MHz2Real_ns(CLOCK_GEN3_FREQ_MHZ))							-- slot 2
 	);
 	
 	CONSTANT TC2_TIMING_TABLE					: T_NATVEC				:= (
@@ -127,12 +116,6 @@ ARCHITECTURE rtl OF sata_Physical_OOBControl_Device IS
 		TTID2_COMWAKE_TIMEOUT_GEN1	=> TimingToCycles(COMWAKE_TIMEOUT,	CLOCK_GEN1_FREQ),		-- slot 3
 		TTID2_COMWAKE_TIMEOUT_GEN2	=> TimingToCycles(COMWAKE_TIMEOUT,	CLOCK_GEN2_FREQ),		-- slot 4
 		TTID2_COMWAKE_TIMEOUT_GEN3	=> TimingToCycles(COMWAKE_TIMEOUT,	CLOCK_GEN3_FREQ)		-- slot 5
---		TTID2_COMRESET_TIMEOUT_GEN1	=> TimingToCycles_ns(COMRESET_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN1_FREQ_MHZ)),		-- slot 0
---		TTID2_COMRESET_TIMEOUT_GEN2	=> TimingToCycles_ns(COMRESET_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN2_FREQ_MHZ)),		-- slot 1
---		TTID2_COMRESET_TIMEOUT_GEN3	=> TimingToCycles_ns(COMRESET_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN3_FREQ_MHZ)),		-- slot 2
---		TTID2_COMWAKE_TIMEOUT_GEN1	=> TimingToCycles_ns(COMWAKE_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN1_FREQ_MHZ)),		-- slot 3
---		TTID2_COMWAKE_TIMEOUT_GEN2	=> TimingToCycles_ns(COMWAKE_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN2_FREQ_MHZ)),		-- slot 4
---		TTID2_COMWAKE_TIMEOUT_GEN3	=> TimingToCycles_ns(COMWAKE_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN3_FREQ_MHZ))		-- slot 5
 	);
 
 	TYPE T_STATE IS (
@@ -199,7 +182,7 @@ BEGIN
 	END PROCESS;
 
 
-	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_IsAligned, RX_Primitive, TC1_Timeout, TC2_Timeout)
+	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, TC1_Timeout, TC2_Timeout)
 	BEGIN
 		NextState									<= State;
 		
@@ -349,7 +332,7 @@ BEGIN
 				WHEN ST_DEV_SEND_ALIGN =>
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
 				
-					IF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) AND (RX_IsAligned = '1')) THEN												-- ALIGN detected
+					IF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) AND (RX_Valid = '1')) THEN												-- ALIGN detected
 						NextState							<= ST_DEV_LINK_OK;
 					END IF;
 				
@@ -359,7 +342,7 @@ BEGIN
 					
 					IF (OOB_RX_Received /= SATA_OOB_NONE) THEN
 						NextState							<= ST_DEV_LINK_DEAD;
-					ELSIF (RX_IsAligned = '0') THEN
+					ELSIF (RX_Valid = '0') THEN
 						NextState							<= ST_DEV_LINK_BROKEN;
 					END IF;
 				
@@ -367,7 +350,7 @@ BEGIN
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '0';
 					
-					IF (RX_IsAligned = '1') THEN
+					IF (RX_Valid = '1') THEN
 						NextState							<= ST_DEV_LINK_OK;
 					END IF;
 				
@@ -446,14 +429,22 @@ BEGIN
 	-- debug port
 	-- ===========================================================================
 	genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
-	
-		FUNCTION dbg_EncodeState(State : T_STATE) RETURN STD_LOGIC_VECTOR IS
-			CONSTANT ResultSize		: POSITIVE																	:= log2ceilnz(T_STATE'pos(T_STATE'high));
-			CONSTANT Result				: STD_LOGIC_VECTOR(ResultSize - 1 DOWNTO 0)	:= to_slv(T_STATE'pos(State), ResultSize);
-		BEGIN
-			RETURN ite(DEBUG, bin2gray(Result), Result);
-		END FUNCTION;
+		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+		begin
+			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
+		end function;
+
+		function dbg_GenerateEncodings return string is
+			variable  l : STD.TextIO.line;
+		begin
+			for i in T_STATE loop
+				STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_dev_", ""));
+				STD.TextIO.write(l, ';');
+			end loop;
+			return  l.all;
+		end function;
 		
+		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Device.tok");
 	BEGIN
 		DebugPortOut.FSM												<= dbg_EncodeState(State);
 		DebugPortOut.Retry											<= Retry;

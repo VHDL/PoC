@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -70,13 +70,13 @@ ENTITY eth_Wrapper_Virtex5 IS
 		TX_Data										: IN	T_SLV_8;
 		TX_SOF										: IN	STD_LOGIC;
 		TX_EOF										: IN	STD_LOGIC;
-		TX_Ready									: OUT	STD_LOGIC;
+		TX_Ack										: OUT	STD_LOGIC;
 
 		RX_Valid									: OUT	STD_LOGIC;
 		RX_Data										: OUT	T_SLV_8;
 		RX_SOF										: OUT	STD_LOGIC;
 		RX_EOF										: OUT	STD_LOGIC;
-		RX_Ready									: In	STD_LOGIC;
+		RX_Ack										: In	STD_LOGIC;
 		
 		PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
 	);
@@ -221,86 +221,86 @@ BEGIN
 			Eth_RX_Reset		<= Eth_RX_Reset_shift(Eth_RX_Reset_shift'high);
 		END BLOCK;
 
---		blkFIFO	: BLOCK
---			SIGNAL TX_Valid_n			: STD_LOGIC;
---			SIGNAL TX_SOF_n				: STD_LOGIC;
---			SIGNAL TX_EOF_n				: STD_LOGIC;
---			SIGNAL TX_Ready_n			: STD_LOGIC;
---
---			SIGNAL RX_Valid_n			: STD_LOGIC;
---			SIGNAL RX_SOF_n				: STD_LOGIC;
---			SIGNAL RX_EOF_n				: STD_LOGIC;
---			SIGNAL RX_Ready_n			: STD_LOGIC;
---		BEGIN
---			-- convert LocalLink interface from low-active to high-active and vv.
---			-- ========================================================================================================================================================
---			TX_Valid_n		<= NOT TX_Valid;
---			TX_SOF_n			<= NOT TX_SOF;
---			TX_EOF_n			<= NOT TX_EOF;
---			TX_Ready			<= NOT TX_Ready_n;
---
---			RX_Valid			<= NOT RX_Valid_n;
---			RX_SOF				<= NOT RX_SOF_n;
---			RX_EOF				<= NOT RX_EOF_n;
---			RX_Ready_n		<= NOT RX_Ready;
---
---			Eth_TX_Enable					<= '1';
---			Eth_RX_Enable					<= '1';
---
---			-- Transmitter FIFO and LocalLink adapter
---			TX_FIFO	: ENTITY PoC.eth_TEMAC_TX_FIFO_Virtex5
---				GENERIC MAP (
---					FULL_DUPLEX_ONLY	=> FALSE--TRUE
---				)
---				PORT MAP (
---					wr_clk						=> TX_Clock,								-- Local link write clock
---					wr_sreset					=> TX_Reset,								-- synchronous reset (wr_clock)
---					
---					-- Transmitter Local Link Interface
---					wr_data						=> TX_Data,									-- Data to TX FIFO
---					wr_sof_n					=> TX_SOF_n,							
---					wr_eof_n					=> TX_EOF_n,							
---					wr_src_rdy_n			=> TX_Valid_n,						
---					wr_dst_rdy_n			=> TX_Ready_n,						
---					wr_fifo_status		=> TX_FIFO_Status,					-- FIFO memory status
---
---					-- Transmitter MAC Client Interface
---					rd_clk						=> Eth_TX_Clock,						-- MAC transmit clock
---					rd_sreset					=> Eth_TX_Reset,						-- Synchronous reset (rd_clk)
---					rd_enable					=> Eth_TX_Enable,						-- Clock enable for rd_clk
---					tx_data						=> TX_FIFO_Data,						-- Data to MAC transmitter
---					tx_data_valid			=> TX_FIFO_Valid,						-- Valid signal to MAC transmitter
---					tx_ack						=> Eth_TX_Ack,							-- Ack signal from MAC transmitter
---					tx_collision			=> Eth_TX_Collision,				-- Collsion signal from MAC transmitter
---					tx_retransmit			=> Eth_TX_Retransmit,				-- Retransmit signal from MAC transmitter
---					overflow					=> TX_FIFO_Overflow					-- FIFO overflow indicator from FIFO
---				);
---			
---			-- Receiver FIFO and LocalLink adapter
---			RX_FIFO	: ENTITY PoC.eth_TEMAC_RX_FIFO_Virtex5
---				PORT MAP (
---					rd_clk						=> RX_Clock,								-- Local link read clock
---					rd_sreset					=> RX_Reset,								-- synchronous reset (rd_clock)
---					
---					-- Receiver Local Link Interface
---					rd_data_out				=> RX_Data,									-- Data from RX FIFO
---					rd_sof_n					=> RX_SOF_n,						
---					rd_eof_n					=> RX_EOF_n,						
---					rd_src_rdy_n			=> RX_Valid_n,					
---					rd_dst_rdy_n			=> RX_Ready_n,					
---					
---					-- Receiver MAC Client Interface
---					wr_clk						=> Eth_RX_Clock,						-- MAC receive clock
---					wr_sreset					=> Eth_RX_Reset,						-- Synchronous reset (wr_clk)
---					wr_enable					=> Eth_RX_Enable,						-- Clock enable for wr_clk
---					rx_data						=> Eth_RX_Data_r,						-- Data from MAC receiver
---					rx_data_valid			=> Eth_RX_Valid_r,					-- Valid signal from MAC receiver
---					rx_good_frame			=> Eth_RX_GoodFrame_r,			-- Good frame indicator from MAC receiver
---					rx_bad_frame			=> Eth_RX_BadFrame_r,				-- Bad frame indicator from MAC receiver
---					overflow					=> RX_FIFO_Overflow,				-- FIFO overflow indicator from FIFO
---					rx_fifo_status		=> RX_FIFO_Status						-- FIFO memory status [3:0]
---				);
---		END BLOCK;
+		blkFIFO	: BLOCK
+			SIGNAL TX_Valid_n			: STD_LOGIC;
+			SIGNAL TX_SOF_n				: STD_LOGIC;
+			SIGNAL TX_EOF_n				: STD_LOGIC;
+			SIGNAL TX_Ack	_n			: STD_LOGIC;
+
+			SIGNAL RX_Valid_n			: STD_LOGIC;
+			SIGNAL RX_SOF_n				: STD_LOGIC;
+			SIGNAL RX_EOF_n				: STD_LOGIC;
+			SIGNAL RX_Ack	_n			: STD_LOGIC;
+		BEGIN
+			-- convert LocalLink interface from low-active to high-active and vv.
+			-- ========================================================================================================================================================
+			TX_Valid_n		<= NOT TX_Valid;
+			TX_SOF_n			<= NOT TX_SOF;
+			TX_EOF_n			<= NOT TX_EOF;
+			TX_Ack				<= NOT TX_Ack	_n;
+
+			RX_Valid			<= NOT RX_Valid_n;
+			RX_SOF				<= NOT RX_SOF_n;
+			RX_EOF				<= NOT RX_EOF_n;
+			RX_Ack	_n		<= NOT RX_Ack;
+
+			Eth_TX_Enable					<= '1';
+			Eth_RX_Enable					<= '1';
+
+			-- Transmitter FIFO and LocalLink adapter
+			TX_FIFO	: ENTITY PoC.eth_TEMAC_TX_FIFO_Virtex5
+				GENERIC MAP (
+					FULL_DUPLEX_ONLY	=> FALSE--TRUE
+				)
+				PORT MAP (
+					wr_clk						=> TX_Clock,								-- Local link write clock
+					wr_sreset					=> TX_Reset,								-- synchronous reset (wr_clock)
+					
+					-- Transmitter Local Link Interface
+					wr_data						=> TX_Data,									-- Data to TX FIFO
+					wr_sof_n					=> TX_SOF_n,							
+					wr_eof_n					=> TX_EOF_n,							
+					wr_src_rdy_n			=> TX_Valid_n,						
+					wr_dst_rdy_n			=> TX_Ack	_n,						
+					wr_fifo_status		=> TX_FIFO_Status,					-- FIFO memory status
+
+					-- Transmitter MAC Client Interface
+					rd_clk						=> Eth_TX_Clock,						-- MAC transmit clock
+					rd_sreset					=> Eth_TX_Reset,						-- Synchronous reset (rd_clk)
+					rd_enable					=> Eth_TX_Enable,						-- Clock enable for rd_clk
+					tx_data						=> TX_FIFO_Data,						-- Data to MAC transmitter
+					tx_data_valid			=> TX_FIFO_Valid,						-- Valid signal to MAC transmitter
+					tx_ack						=> Eth_TX_Ack,							-- Ack signal from MAC transmitter
+					tx_collision			=> Eth_TX_Collision,				-- Collsion signal from MAC transmitter
+					tx_retransmit			=> Eth_TX_Retransmit,				-- Retransmit signal from MAC transmitter
+					overflow					=> TX_FIFO_Overflow					-- FIFO overflow indicator from FIFO
+				);
+			
+			-- Receiver FIFO and LocalLink adapter
+			RX_FIFO	: ENTITY PoC.eth_TEMAC_RX_FIFO_Virtex5
+				PORT MAP (
+					rd_clk						=> RX_Clock,								-- Local link read clock
+					rd_sreset					=> RX_Reset,								-- synchronous reset (rd_clock)
+					
+					-- Receiver Local Link Interface
+					rd_data_out				=> RX_Data,									-- Data from RX FIFO
+					rd_sof_n					=> RX_SOF_n,						
+					rd_eof_n					=> RX_EOF_n,						
+					rd_src_rdy_n			=> RX_Valid_n,					
+					rd_dst_rdy_n			=> RX_Ack	_n,					
+					
+					-- Receiver MAC Client Interface
+					wr_clk						=> Eth_RX_Clock,						-- MAC receive clock
+					wr_sreset					=> Eth_RX_Reset,						-- Synchronous reset (wr_clk)
+					wr_enable					=> Eth_RX_Enable,						-- Clock enable for wr_clk
+					rx_data						=> Eth_RX_Data_r,						-- Data from MAC receiver
+					rx_data_valid			=> Eth_RX_Valid_r,					-- Valid signal from MAC receiver
+					rx_good_frame			=> Eth_RX_GoodFrame_r,			-- Good frame indicator from MAC receiver
+					rx_bad_frame			=> Eth_RX_BadFrame_r,				-- Bad frame indicator from MAC receiver
+					overflow					=> RX_FIFO_Overflow,				-- FIFO overflow indicator from FIFO
+					rx_fifo_status		=> RX_FIFO_Status						-- FIFO memory status [3:0]
+				);
+		END BLOCK;
 	
 
 		-- ========================================================================================================================================================
@@ -876,13 +876,13 @@ BEGIN
 					TX_Data										=> TX_Data,
 					TX_SOF										=> TX_SOF,
 					TX_EOF										=> TX_EOF,
-					TX_Ready									=> TX_Ready,
+					TX_Ack										=> TX_Ack,
 
 					RX_Valid									=> RX_Valid,
 					RX_Data										=> RX_Data,
 					RX_SOF										=> RX_SOF,
 					RX_EOF										=> RX_EOF,
-					RX_Ready									=> RX_Ready,
+					RX_Ack										=> RX_Ack,
 					
 					-- RS-GMII interface
 					RS_TX_Valid								=> RS_TX_Valid,

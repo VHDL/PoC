@@ -3,9 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
+--
+-- Module:				 	xil_SyncReset
 -- 
 -- Description:
 -- ------------------------------------
@@ -32,7 +32,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,47 +48,46 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
 
-LIBRARY UNISIM;
-USE			UNISIM.VCOMPONENTS.ALL;
+library UNISIM;
+use			UNISIM.VCOMPONENTS.all;
 
 
-ENTITY xil_SyncReset IS
-	PORT (
-		Clock				: IN	STD_LOGIC;					-- clock to be sync'ed to
-		Input				: IN	STD_LOGIC;					-- Active high asynchronous reset
-		Output			: OUT	STD_LOGIC						-- "Synchronised" reset signal ()
+entity xil_SyncReset is
+	port (
+		Clock				: in	STD_LOGIC;					-- Clock to be synchronized to
+		Input				: in	STD_LOGIC;					-- high active asynchronous reset
+		Output			: out	STD_LOGIC						-- "Synchronised" reset signal
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF xil_SyncReset IS
-	ATTRIBUTE ASYNC_REG											: STRING;
-	ATTRIBUTE SHREG_EXTRACT									: STRING;
+architecture rtl of xil_SyncReset is
+	attribute ASYNC_REG											: STRING;
+	attribute SHREG_EXTRACT									: STRING;
 
-	SIGNAL Reset_async											: STD_LOGIC;
-	SIGNAL Reset_meta												: STD_LOGIC;
-	SIGNAL Reset_sync												: STD_LOGIC;
+	signal Reset_async											: STD_LOGIC;
+	signal Reset_meta												: STD_LOGIC;
+	signal Reset_sync												: STD_LOGIC;
 
 	-- Mark register "Reset_meta" and "Output" as asynchronous
-	ATTRIBUTE ASYNC_REG OF Reset_meta				: SIGNAL IS "TRUE";
-	ATTRIBUTE ASYNC_REG OF Reset_sync				: SIGNAL IS "TRUE";
+	attribute ASYNC_REG of Reset_meta				: signal is "TRUE";
+	attribute ASYNC_REG of Reset_sync				: signal is "TRUE";
 
 	-- Prevent XST from translating two FFs into SRL plus FF
-	ATTRIBUTE SHREG_EXTRACT OF Reset_meta		: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF Reset_sync		: SIGNAL IS "NO";
+	attribute SHREG_EXTRACT of Reset_meta		: signal is "NO";
+	attribute SHREG_EXTRACT of Reset_sync		: signal is "NO";
 
-BEGIN
-
+begin
 	Reset_async		<= Input;
 
 	FF1 : FDP
-		GENERIC MAP (
+		generic map (
 			INIT		=> '1'
 		)
-		PORT MAP (
+		port map (
 			C				=> Clock,
 			PRE			=> Reset_async,
 			D				=> '0',
@@ -96,10 +95,10 @@ BEGIN
 	);
 
 	FF2 : FDP
-		GENERIC MAP (
+		generic map (
 			INIT		=> '1'
 		)
-		PORT MAP (
+		port map (
 			C				=> Clock,
 			PRE			=> Reset_async,
 			D				=> Reset_meta,
@@ -107,4 +106,4 @@ BEGIN
 	);
 
 	Output	<= Reset_sync;
-END;
+end;

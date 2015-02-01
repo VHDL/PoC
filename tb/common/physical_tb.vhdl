@@ -14,7 +14,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,9 +30,13 @@
 -- limitations under the License.
 -- =============================================================================
 
+library IEEE;
+use			IEEE.std_logic_1164.all;
+
+
 entity physical_tb is
 	port (
-		input		: in std_logic;
+		input			: in std_logic;
 		output		: out std_logic
 	);
 end;
@@ -48,7 +52,7 @@ use			PoC.simulation.all;
 architecture tb of physical_tb is
 	signal SimQuiet		: BOOLEAN		:= true;
 	
-	constant clock_freq		: FREQ		:= 100.0 MHz;
+	constant CLOCK_FREQ		: FREQ		:= 100.0 MHz;
 	constant delay				: T_DELAY	:= 256.8 ns;
 	
 	constant cycles				: T_CYCLE	:= TimingToCycles(delay, clock_freq);
@@ -57,6 +61,9 @@ architecture tb of physical_tb is
 	constant Time2			: TIME			:= 0.5 us;
 	
 begin
+	assert false report "CLOCK_FREQ: " & FREQ'image(CLOCK_FREQ) severity note;
+	assert false report "CLOCK_FREQ: " & to_string(CLOCK_FREQ)  severity note;
+
 	output		<= input;
 	
 	process
@@ -69,7 +76,8 @@ begin
 		
 		report "res1=" & INTEGER'image(res1);
 		report "res2=" & REAL'image(res2);
-
+		report "CLOCK_FREQ: " & FREQ'image(CLOCK_FREQ) severity note;
+		report "CLOCK_FREQ: " & to_string(CLOCK_FREQ)  severity note;
 		-- simulation completed
 		
 		-- Report overall simulation result

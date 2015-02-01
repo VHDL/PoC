@@ -29,41 +29,51 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
+library PoC;
+use			PoC.utils.all;
+use			PoC.vectors.all;
 
--- Usage
--- ====================================
--- LIBRARY	PoC;
--- USE			PoC.Xilinx.ALL;
 
-PACKAGE xil IS
+package xil is
 	-- ChipScope
 	-- ==========================================================================
-	SUBTYPE	T_XIL_CHIPSCOPE_CONTROL IS STD_LOGIC_VECTOR(35 DOWNTO 0);
-	TYPE		T_XIL_CHIPSCOPE_CONTROL_VECTOR IS ARRAY (NATURAL RANGE <>) OF T_XIL_CHIPSCOPE_CONTROL;
+	subtype	T_XIL_CHIPSCOPE_CONTROL					is STD_LOGIC_VECTOR(35 downto 0);
+	type		T_XIL_CHIPSCOPE_CONTROL_VECTOR	is array (NATURAL range <>) of T_XIL_CHIPSCOPE_CONTROL;
 
 	-- Dynamic Reconfiguration Port (DRP)
 	-- ==========================================================================
-	SUBTYPE T_XIL_DRP_ADDRESS						IS T_SLV_16;
-	SUBTYPE T_XIL_DRP_DATA							IS T_SLV_16;
+	subtype T_XIL_DRP_ADDRESS						is T_SLV_16;
+	subtype T_XIL_DRP_DATA							is T_SLV_16;
 
-	TYPE		T_XIL_DRP_ADDRESS_VECTOR						IS ARRAY (NATURAL RANGE <>) OF T_XIL_DRP_ADDRESS;
-	TYPE		T_XIL_DRP_DATA_VECTOR								IS ARRAY (NATURAL RANGE <>) OF T_XIL_DRP_DATA;
+	type		T_XIL_DRP_ADDRESS_VECTOR						is array (NATURAL range <>) of T_XIL_DRP_ADDRESS;
+	type		T_XIL_DRP_DATA_VECTOR								is array (NATURAL range <>) of T_XIL_DRP_DATA;
 
-	TYPE T_XIL_DRP_CONFIG IS RECORD
+	type T_XIL_DRP_BUS_IN is record
+		Clock					: STD_LOGIC;
+		Enable				: STD_LOGIC;
+		ReadWrite			: STD_LOGIC;
+		Address				: T_XIL_DRP_ADDRESS;
+		Data					: T_XIL_DRP_DATA;
+	end record;
+
+	type T_XIL_DRP_BUS_OUT is record
+		Data					: T_XIL_DRP_DATA;
+		Ready					: STD_LOGIC;
+	end record;
+
+	type T_XIL_DRP_CONFIG is record
 		Address														: T_XIL_DRP_ADDRESS;
 		Mask															: T_XIL_DRP_DATA;
 		Data															: T_XIL_DRP_DATA;
-	END RECORD;
+	end record;
 	
 	-- define array indices
-	CONSTANT C_XIL_DRP_MAX_CONFIG_COUNT		: POSITIVE	:= 8;
+	CONSTANT C_XIL_DRP_MAX_CONFIG_COUNT	: POSITIVE	:= 8;
+	
 	SUBTYPE T_XIL_DRP_CONFIG_INDEX			IS INTEGER RANGE 0 TO C_XIL_DRP_MAX_CONFIG_COUNT - 1;
 	TYPE		T_XIL_DRP_CONFIG_VECTOR			IS ARRAY (NATURAL RANGE <>) OF T_XIL_DRP_CONFIG;
 	
@@ -280,44 +290,44 @@ PACKAGE xil IS
 		);
 	end component;
 	
-	COMPONENT xil_SyncBlock IS
-		GENERIC (
+	component xil_SyncBlock is
+		generic (
 			BITS								: POSITIVE						:= 1;									-- number of bit to be synchronized
 			INIT								: STD_LOGIC_VECTOR		:= x"00"							-- number of BITS to synchronize
 		);
-		PORT (
-			Clock								: IN	STD_LOGIC;														-- Clock to be synchronized to
-			Input								: IN	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);	-- Data to be synchronized
-			Output							: OUT	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)		-- synchronised data
+		port (
+			Clock								: in	STD_LOGIC;														-- Clock to be synchronized to
+			Input								: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);	-- Data to be synchronized
+			Output							: out	STD_LOGIC_VECTOR(BITS - 1 downto 0)		-- synchronised data
 		);
-	END COMPONENT;
+	end component;
 	
-	COMPONENT xil_SystemMonitor_Virtex6 IS
-		PORT (
-			Reset								: IN	STD_LOGIC;				-- Reset signal for the System Monitor control logic
+	component xil_SystemMonitor_Virtex6 is
+		port (
+			Reset								: in	STD_LOGIC;				-- Reset signal for the System Monitor control logic
 			
-			Alarm_UserTemp			: OUT	STD_LOGIC;				-- Temperature-sensor alarm output
-			Alarm_OverTemp			: OUT	STD_LOGIC;				-- Over-Temperature alarm output
-			Alarm								: OUT	STD_LOGIC;				-- OR'ed output of all the Alarms
-			VP									: IN	STD_LOGIC;				-- Dedicated Analog Input Pair
-			VN									: IN	STD_LOGIC
+			Alarm_UserTemp			: out	STD_LOGIC;				-- Temperature-sensor alarm output
+			Alarm_OverTemp			: out	STD_LOGIC;				-- Over-Temperature alarm output
+			Alarm								: out	STD_LOGIC;				-- OR'ed output of all the Alarms
+			VP									: in	STD_LOGIC;				-- Dedicated Analog Input Pair
+			VN									: in	STD_LOGIC
 		);
-	END COMPONENT;
+	end component;
 
-	COMPONENT xil_SystemMonitor_Series7 IS
-		PORT (
-			Reset								: IN	STD_LOGIC;				-- Reset signal for the System Monitor control logic
+	component xil_SystemMonitor_Series7 is
+		port (
+			Reset								: in	STD_LOGIC;				-- Reset signal for the System Monitor control logic
 			
-			Alarm_UserTemp			: OUT	STD_LOGIC;				-- Temperature-sensor alarm output
-			Alarm_OverTemp			: OUT	STD_LOGIC;				-- Over-Temperature alarm output
-			Alarm								: OUT	STD_LOGIC;				-- OR'ed output of all the Alarms
-			VP									: IN	STD_LOGIC;				-- Dedicated Analog Input Pair
-			VN									: IN	STD_LOGIC
+			Alarm_UserTemp			: out	STD_LOGIC;				-- Temperature-sensor alarm output
+			Alarm_OverTemp			: out	STD_LOGIC;				-- Over-Temperature alarm output
+			Alarm								: out	STD_LOGIC;				-- OR'ed output of all the Alarms
+			VP									: in	STD_LOGIC;				-- Dedicated Analog Input Pair
+			VN									: in	STD_LOGIC
 		);
-	END COMPONENT;
-END;
+	end component;
+end;
 
 
-PACKAGE BODY xil IS
+package body xil is
 
-END PACKAGE BODY;
+end package body;

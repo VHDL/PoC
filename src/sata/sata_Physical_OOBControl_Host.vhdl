@@ -33,11 +33,17 @@ LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
+use			STD.TextIO.all;
+
 LIBRARY PoC;
+USE			PoC.my_project.ALL;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.strings.ALL;
 USE			PoC.physical.ALL;
+USE			PoC.components.ALL;
+USE			PoC.debug.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.satadbg.ALL;
 
@@ -47,7 +53,6 @@ ENTITY sata_Physical_OOBControl_Host IS
 		DEBUG											: BOOLEAN														:= FALSE;												-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: BOOLEAN														:= FALSE;												-- enables the assignment of signals to the debugport
 		CLOCK_FREQ								: FREQ															:= 150.0 MHz;										-- 
---		CLOCK_FREQ_MHZ						: REAL															:= 150.0;												-- 
 		ALLOW_STANDARD_VIOLATION	: BOOLEAN														:= FALSE;
 		OOB_TIMEOUT								: TIME															:= TIME'low
 	);
@@ -65,6 +70,9 @@ ENTITY sata_Physical_OOBControl_Host IS
 		LinkDead									: OUT	STD_LOGIC;
 		ReceivedReset							: OUT	STD_LOGIC;
 		
+		Trans_Status							: IN	T_SATA_TRANSCEIVER_STATUS;
+		Trans_Error								: IN	T_SATA_TRANSCEIVER_ERROR;
+		
 		OOB_TX_Command						: OUT	T_SATA_OOB;
 		OOB_TX_Complete						: IN	STD_LOGIC;
 		OOB_RX_Received						: IN	T_SATA_OOB;
@@ -72,7 +80,7 @@ ENTITY sata_Physical_OOBControl_Host IS
 		
 		TX_Primitive							: OUT	T_SATA_PRIMITIVE;
 		RX_Primitive							: IN	T_SATA_PRIMITIVE;
-		RX_IsAligned							: IN	STD_LOGIC
+		RX_Valid									: IN	STD_LOGIC
 	);
 END;
 
@@ -86,20 +94,11 @@ ARCHITECTURE rtl OF sata_Physical_OOBControl_Host IS
 	CONSTANT CLOCK_GEN3_FREQ							: FREQ				:= CLOCK_FREQ / 1.0;			-- SATAClock frequency in MHz for SATA generation 3
 
 	CONSTANT DEFAULT_OOB_TIMEOUT					: TIME				:= 880.0 us;
+	constant CONSECUTIVE_ALIGN_MIN				: POSITIVE		:= 63;
 	
 	CONSTANT OOB_TIMEOUT_I								: TIME				:= ite((OOB_TIMEOUT = TIME'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
 	CONSTANT COMRESET_TIMEOUT							: TIME				:= 450.0 ns;
 	CONSTANT COMWAKE_TIMEOUT							: TIME				:= 250.0 ns;
-
---	CONSTANT CLOCK_GEN1_FREQ_MHZ					: REAL				:= CLOCK_FREQ_MHZ / 4.0;			-- SATAClock frequency in MHz for SATA generation 1
---	CONSTANT CLOCK_GEN2_FREQ_MHZ					: REAL				:= CLOCK_FREQ_MHZ / 2.0;			-- SATAClock frequency in MHz for SATA generation 2
---	CONSTANT CLOCK_GEN3_FREQ_MHZ					: REAL				:= CLOCK_FREQ_MHZ / 1.0;			-- SATAClock frequency in MHz for SATA generation 3
---
---	CONSTANT DEFAULT_OOB_TIMEOUT_I_US				: POSITIVE		:= 880;
---	
---	CONSTANT OOB_TIMEOUT_I_NS								: INTEGER			:= ite((OOB_TIMEOUT_I_US = 0), DEFAULT_OOB_TIMEOUT_I_US, OOB_TIMEOUT_I_US) * 1000;
---	CONSTANT COMRESET_TIMEOUT_NS					: INTEGER			:= 450;
---	CONSTANT COMWAKE_TIMEOUT_NS						: INTEGER			:= 250;
 
 	CONSTANT TTID1_OOB_TIMEOUT_GEN1				: NATURAL			:= 0;
 	CONSTANT TTID1_OOB_TIMEOUT_GEN2				: NATURAL			:= 1;
@@ -115,9 +114,6 @@ ARCHITECTURE rtl OF sata_Physical_OOBControl_Host IS
 		TTID1_OOB_TIMEOUT_GEN1 => TimingToCycles(OOB_TIMEOUT_I,	CLOCK_GEN1_FREQ),							-- slot 0
 		TTID1_OOB_TIMEOUT_GEN2 => TimingToCycles(OOB_TIMEOUT_I,	CLOCK_GEN2_FREQ),							-- slot 1
 		TTID1_OOB_TIMEOUT_GEN3 => TimingToCycles(OOB_TIMEOUT_I,	CLOCK_GEN3_FREQ)							-- slot 2
---		TTID1_OOB_TIMEOUT_GEN1 => TimingToCycles_ns(OOB_TIMEOUT_I_NS,	Freq_MHz2Real_ns(CLOCK_GEN1_FREQ_MHZ)),							-- slot 0
---		TTID1_OOB_TIMEOUT_GEN2 => TimingToCycles_ns(OOB_TIMEOUT_I_NS,	Freq_MHz2Real_ns(CLOCK_GEN2_FREQ_MHZ)),							-- slot 1
---		TTID1_OOB_TIMEOUT_GEN3 => TimingToCycles_ns(OOB_TIMEOUT_I_NS,	Freq_MHz2Real_ns(CLOCK_GEN3_FREQ_MHZ))							-- slot 2
 	);
 	
 	CONSTANT TC2_TIMING_TABLE					: T_NATVEC				:= (
@@ -127,12 +123,6 @@ ARCHITECTURE rtl OF sata_Physical_OOBControl_Host IS
 		TTID2_COMWAKE_TIMEOUT_GEN1	=> TimingToCycles(COMWAKE_TIMEOUT,	CLOCK_GEN1_FREQ),		-- slot 3
 		TTID2_COMWAKE_TIMEOUT_GEN2	=> TimingToCycles(COMWAKE_TIMEOUT,	CLOCK_GEN2_FREQ),		-- slot 4
 		TTID2_COMWAKE_TIMEOUT_GEN3	=> TimingToCycles(COMWAKE_TIMEOUT,	CLOCK_GEN3_FREQ)		-- slot 5
---		TTID2_COMRESET_TIMEOUT_GEN1	=> TimingToCycles_ns(COMRESET_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN1_FREQ_MHZ)),		-- slot 0
---		TTID2_COMRESET_TIMEOUT_GEN2	=> TimingToCycles_ns(COMRESET_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN2_FREQ_MHZ)),		-- slot 1
---		TTID2_COMRESET_TIMEOUT_GEN3	=> TimingToCycles_ns(COMRESET_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN3_FREQ_MHZ)),		-- slot 2
---		TTID2_COMWAKE_TIMEOUT_GEN1	=> TimingToCycles_ns(COMWAKE_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN1_FREQ_MHZ)),		-- slot 3
---		TTID2_COMWAKE_TIMEOUT_GEN2	=> TimingToCycles_ns(COMWAKE_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN2_FREQ_MHZ)),		-- slot 4
---		TTID2_COMWAKE_TIMEOUT_GEN3	=> TimingToCycles_ns(COMWAKE_TIMEOUT_NS,	Freq_MHz2Real_ns(CLOCK_GEN3_FREQ_MHZ))		-- slot 5
 	);
 
 	TYPE T_STATE IS (
@@ -167,6 +157,10 @@ ARCHITECTURE rtl OF sata_Physical_OOBControl_Host IS
 
 	SIGNAL OOB_TX_Command_i						: T_SATA_OOB;
 	SIGNAL OOB_HandshakeComplete_i		: STD_LOGIC;
+
+	signal AlignCounter_rst						: STD_LOGIC;
+	signal AlignCounter_en						: STD_LOGIC;
+	signal AlignCounter_us						: UNSIGNED(log2ceilnz(CONSECUTIVE_ALIGN_MIN) - 1 downto 0)						:= (others => '0');
 
 	-- Timing-Counter
 	-- ===========================================================================
@@ -203,11 +197,14 @@ BEGIN
 	END PROCESS;
 
 
-	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_IsAligned, RX_Primitive, TC1_Timeout, TC2_Timeout)
+	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, AlignCounter_us, TC1_Timeout, TC2_Timeout, Trans_Status, Trans_Error.RX)
 	BEGIN
 		NextState									<= State;
 		
-		TX_Primitive							<= SATA_PRIMITIVE_DIAL_TONE;
+		TX_Primitive							<= SATA_PRIMITIVE_ALIGN;			-- TODO: check if it's better to send ALIGN or DIAL_TONE
+	
+		AlignCounter_rst					<= '0';
+		AlignCounter_en						<= '0';
 	
 		-- general timeout
 		TC1_en										<= '0';
@@ -225,7 +222,9 @@ BEGIN
 		ReceivedReset_i						<= '0';
 		
 		OOB_TX_Command_i					<= SATA_OOB_NONE;
-		OOB_HandshakeComplete_i	<= '0';
+		OOB_HandshakeComplete_i		<= '0';
+
+		DebugPortOut.AlignDetected	<= '0';
 
 		-- handle timeout with highest priority
 		IF (TC1_Timeout = '1') THEN
@@ -357,68 +356,76 @@ BEGIN
 				
 				WHEN ST_HOST_SEND_D10_2 =>
 					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;
+					AlignCounter_rst				<= '1';
 					TC1_en									<= '1';
 					
 					-- TODO
 					-- 		wait for 53,3 ns (64 UIs ~= 2 Gen1-DWords) before accepting ALIGN (<= crosstalking)
 					--		source: ATA8-AST page 75, transition HP8:HP9, => note text
 					
-					IF ((ALLOW_STANDARD_VIOLATION = FALSE) AND (OOB_RX_Received /= SATA_OOB_NONE)) THEN						-- disallow OOB signals after "OOB_HandshakeComplete"
+					IF ((ALLOW_STANDARD_VIOLATION = FALSE) AND (OOB_RX_Received /= SATA_OOB_NONE)) THEN				-- disallow OOB signals after "OOB_HandshakeComplete"
 						NextState							<= ST_HOST_LINK_DEAD;
-					ELSIF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) AND (RX_IsAligned = '1')) THEN										-- ALIGN detected
-						NextState							<= ST_HOST_SEND_ALIGN;
+					ELSIF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) AND (RX_Valid = '1')) THEN										-- ALIGN detected
+						AlignCounter_rst			<= '0';
+						AlignCounter_en				<= '1';
+					
+						DebugPortOut.AlignDetected	<= '1';
+						
+						IF (AlignCounter_us = CONSECUTIVE_ALIGN_MIN - 1) then
+							NextState						<= ST_HOST_SEND_ALIGN;
+						END IF;
 					END IF;
 				
-				WHEN ST_HOST_SEND_ALIGN =>
+				when ST_HOST_SEND_ALIGN =>
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '1';
 				
-					IF (OOB_RX_Received /= SATA_OOB_NONE) THEN
+					if (OOB_RX_Received /= SATA_OOB_NONE) then
 						NextState							<= ST_HOST_LINK_DEAD;
-					ELSIF (RX_IsAligned = '0') THEN
+					elsif ((Trans_Status = SATA_TRANSCEIVER_STATUS_ERROR) and (Trans_Error.RX /= SATA_TRANSCEIVER_RX_ERROR_NONE)) then
 						NextState							<= ST_HOST_LINK_BROKEN;
-					ELSIF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN																				-- SYNC detected
+					elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then																				-- SYNC detected
 						NextState							<= ST_HOST_LINK_OK;
-					END IF;
+					end if;
 					
-				WHEN ST_HOST_LINK_OK =>
+				when ST_HOST_LINK_OK =>
 					LinkOK_i								<= '1';
 					TX_Primitive						<= SATA_PRIMITIVE_NONE;
 					
-					IF (OOB_RX_Received /= SATA_OOB_NONE) THEN
+					if (OOB_RX_Received /= SATA_OOB_NONE) then
 						NextState							<= ST_HOST_LINK_DEAD;
-					ELSIF (RX_IsAligned = '0') THEN
+					elsif ((Trans_Status = SATA_TRANSCEIVER_STATUS_ERROR) and (Trans_Error.RX /= SATA_TRANSCEIVER_RX_ERROR_NONE)) then
 						NextState							<= ST_HOST_LINK_BROKEN;
-					END IF;
+					end if;
 				
-				WHEN ST_HOST_LINK_BROKEN =>
+				when ST_HOST_LINK_BROKEN =>
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
 					
-					IF (RX_IsAligned = '1') THEN
+					if (RX_Valid = '1') then
 						NextState							<= ST_HOST_LINK_OK;
-					END IF;
+					end if;
 					
-					IF (Retry = '1') THEN
+					if (Retry = '1') then
 						NextState							<= ST_HOST_SEND_COMRESET;
-					END IF;
+					end if;
 				
-				WHEN ST_HOST_LINK_DEAD =>
+				when ST_HOST_LINK_DEAD =>
 					LinkDead_i							<= '1';
 					
-					IF (Retry = '1') THEN
-						NextState							<= ST_HOST_SEND_COMRESET;
-					END IF;
+					if (Retry = '1') then
+						nextstate							<= st_host_send_comreset;
+					end if;
 				
-				WHEN ST_HOST_TIMEOUT =>
+				when ST_HOST_TIMEOUT =>
 					Timeout_i								<= '1';
 				
-					IF (Retry = '1') THEN
+					if (Retry = '1') then
 						NextState							<= ST_HOST_SEND_COMRESET;
-					END IF;
+					end if;
 				
-			END CASE;
-		END IF;
-	END PROCESS;
+			end case;
+		end if;
+	end process;
 	
 	LinkOK									<= LinkOK_i;
 	LinkDead								<= LinkDead_i;
@@ -428,6 +435,7 @@ BEGIN
 	OOB_TX_Command					<= OOB_TX_Command_i;
 	OOB_HandshakeComplete		<= OOB_HandshakeComplete_i;
 	
+	AlignCounter_us <= counter_inc(cnt => AlignCounter_us, rst => AlignCounter_rst, en => AlignCounter_en) when rising_edge(Clock);
 	
 	-- overall timeout counter
 	TC1 : ENTITY PoC.io_TimingCounter
@@ -458,15 +466,26 @@ BEGIN
 	-- debug port
 	-- ===========================================================================
 	genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
-	
-		FUNCTION dbg_EncodeState(State : T_STATE) RETURN STD_LOGIC_VECTOR IS
-			CONSTANT ResultSize		: POSITIVE																	:= log2ceilnz(T_STATE'pos(T_STATE'high));
-			CONSTANT Result				: STD_LOGIC_VECTOR(ResultSize - 1 DOWNTO 0)	:= to_slv(T_STATE'pos(State), ResultSize);
-		BEGIN
-			RETURN ite(DEBUG, bin2gray(Result), Result);
-		END FUNCTION;
+		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+		begin
+			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
+		end function;
+	begin
+		genXilinx : if (VENDOR = VENDOR_XILINX) generate
+			function dbg_GenerateEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_STATE loop
+					STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_host_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+
+			constant test : boolean := dbg_ExportEncoding("OOBControl (Host)", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Host.tok");
+		begin
+		end generate;
 		
-	BEGIN
 		DebugPortOut.FSM												<= dbg_EncodeState(State);
 		DebugPortOut.Retry											<= Retry;
 		DebugPortOut.Timeout										<= Timeout_i;

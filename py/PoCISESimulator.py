@@ -122,6 +122,9 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 						vhdlFilePath = self.host.directories["ISEInstallation"] / "ISE/vhdl/src" / regExpMatch.group('VHDLFile')
 					vhdlLibraryName = regExpMatch.group('VHDLLibrary')
 					iSimProjectFileContent += "vhdl %s \"%s\"\n" % (vhdlLibraryName, str(vhdlFilePath))
+					
+					if (not vhdlFilePath.exists()):
+						raise PoCSimulator.PoCSimulatorException("Can not find " + str(vhdlFilePath)) from FileNotFoundError(str(vhdlFilePath))
 		
 		# write iSim project file
 		self.printDebug("Writing iSim project file to '%s'" % str(prjFilePath))
@@ -135,14 +138,25 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 		# assemble fuse command as list of parameters
 		parameterList = [
 			str(fuseExecutablePath),
-			('work.%s' % testbenchName),
+			('test.%s' % testbenchName),
 			'--incremental',
+			'--timeprecision_vhdl 1fs',			# set minimum time precision to 1 fs
+			'-mt 4',												# enable multithread support
 			'-prj',	str(prjFilePath),
 			'-o',		str(exeFilePath)
 		]
+		command = " ".join(parameterList)
+		
 		self.printDebug("call fuse: %s" % str(parameterList))
-		self.printVerbose('%s work.%s --incremental -prj "%s" -o "%s"' % (str(fuseExecutablePath), testbenchName, str(prjFilePath), str(exeFilePath)))
-		linkerLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
+		self.printVerbose("    command: %s" % command)
+		
+		try:
+			linkerLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
+		except subprocess.CalledProcessError as ex:
+			print("ERROR while executing ghdl: %s" % str(vhdlFilePath))
+			print("Return Code: %i" % ex.returncode)
+			print("--------------------------------------------------------------------------------")
+			print(ex.output)
 		
 		if self.showLogs:
 			print("fuse log (fuse)")
@@ -152,10 +166,22 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 		
 		# running simulation
 		self.printNonQuiet("  running simulation...")
-		parameterList = [str(exeFilePath), '-tclbatch', str(tclFilePath)]
+		parameterList = [
+			str(exeFilePath),
+			'-tclbatch', str(tclFilePath)
+		]
+		command = " ".join(parameterList)
+		
 		self.printDebug("call simulation: %s" % str(parameterList))
-		self.printVerbose('%s -tclbatch "%s"' % (str(exeFilePath), str(tclFilePath)))
-		simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
+		self.printVerbose("    command: %s" % command)
+		
+		try:
+			simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
+		except subprocess.CalledProcessError as ex:
+			print("ERROR while executing ghdl: %s" % str(vhdlFilePath))
+			print("Return Code: %i" % ex.returncode)
+			print("--------------------------------------------------------------------------------")
+			print(ex.output)
 		
 		if self.showLogs:
 			print("simulator log")

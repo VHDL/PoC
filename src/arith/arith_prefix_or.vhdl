@@ -8,7 +8,7 @@
 -- 
 -- Authors:					Thomas B. Preusser
 -- ================================================================================
--- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2015 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@
 library	ieee;
 use			ieee.std_logic_1164.all;
 use			ieee.numeric_std.all;
+
+library unisim;
 
 library	poc;
 use			poc.config.all;
@@ -85,7 +87,7 @@ begin
 							O	=> c(i)
 						);
 				end generate genChain;
-	y(N-1 downto 2) <= c(N-1 downto 2);
+				y(N-1 downto 2) <= c(N-1 downto 2);
 			end generate genXilinx;
 
 		end generate gen2;

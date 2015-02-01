@@ -6,6 +6,7 @@
 #
 # board and device configuration
 vhdl poc	"tb/common/my_config_KC705.vhdl"
+vhdl poc	"tb/common/my_project.vhdl"
 
 # PoC core packages
 vhdl poc	"src/common/utils.vhdl"							# PoC utility collection
@@ -17,4 +18,4 @@ vhdl poc	"tb/common/physical.vhdl"						# PoC simulation helper
 vhdl poc	"tb/common/simulation.vhdl"					# PoC simulation helper
 
 # Testbench file(s)
-vhdl work	"tb/common/physical_tb.vhdl"				# Testbench
+vhdl test	"tb/common/physical_tb.vhdl"				# Testbench

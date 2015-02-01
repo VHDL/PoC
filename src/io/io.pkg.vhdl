@@ -30,16 +30,17 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.ALL;
+use			IEEE.NUMERIC_STD.ALL;
 
 library PoC;
 use			PoC.my_config.all;
+use			PoC.utils.all;
 use			PoC.physical.all;
 
 
-PACKAGE io IS
+package io is
 	-- not yet supported by Xilinx ISE Simulator - the subsignal I (with reverse direction) is always 'U'
 	-- so use this record only in pure synthesis environments
 	TYPE T_IO_TRISTATE IS RECORD
@@ -52,6 +53,7 @@ PACKAGE io IS
 
 
 	function io_7SegmentDisplayEncoding(hex	: STD_LOGIC_VECTOR(3 downto 0); dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR;
+	function io_7SegmentDisplayEncoding(digit	: T_BCD; dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR;
 	
 	-- IICBusController
 	-- ==========================================================================================================================================================
@@ -198,43 +200,47 @@ PACKAGE io IS
     );
 	end component;
 
-END io;
+end io;
 
 
-PACKAGE BODY io IS
+package body io is
 	function io_7SegmentDisplayEncoding(hex	: STD_LOGIC_VECTOR(3 downto 0); dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR is
 		variable Result		: STD_LOGIC_VECTOR(7 downto 0);
 	begin
 		Result(7)		:= dot;
 		case hex is							-- segments:			GFEDCBA
-			when x"0" =>		Result(6 downto 0)	:= "1000000";
-			when x"1" =>		Result(6 downto 0)	:= "1111001";
-			when x"2" =>		Result(6 downto 0)	:= "0100100";
-			when x"3" =>		Result(6 downto 0)	:= "0110000";
-			when x"4" =>		Result(6 downto 0)	:= "0011001";
-			when x"5" =>		Result(6 downto 0)	:= "0010010";
-			when x"6" =>		Result(6 downto 0)	:= "0000010";
-			when x"7" =>		Result(6 downto 0)	:= "1111000";
-			when x"8" =>		Result(6 downto 0)	:= "0000000";
-			when x"9" =>		Result(6 downto 0)	:= "0010000";
-			when x"A" =>		Result(6 downto 0)	:= "0001000";
-			when x"B" =>		Result(6 downto 0)	:= "0000011";
-			when x"C" =>		Result(6 downto 0)	:= "1000110";
-			when x"D" =>		Result(6 downto 0)	:= "0100001";
-			when x"E" =>		Result(6 downto 0)	:= "0000110";
-			when x"F" =>		Result(6 downto 0)	:= "0001110";
+			when x"0" =>		Result(6 downto 0)	:= "0111111";
+			when x"1" =>		Result(6 downto 0)	:= "0000110";
+			when x"2" =>		Result(6 downto 0)	:= "1011011";
+			when x"3" =>		Result(6 downto 0)	:= "1001111";
+			when x"4" =>		Result(6 downto 0)	:= "1100110";
+			when x"5" =>		Result(6 downto 0)	:= "1101101";
+			when x"6" =>		Result(6 downto 0)	:= "1111101";
+			when x"7" =>		Result(6 downto 0)	:= "0000111";
+			when x"8" =>		Result(6 downto 0)	:= "1111111";
+			when x"9" =>		Result(6 downto 0)	:= "1101111";
+			when x"A" =>		Result(6 downto 0)	:= "1110111";
+			when x"B" =>		Result(6 downto 0)	:= "1111100";
+			when x"C" =>		Result(6 downto 0)	:= "0111001";
+			when x"D" =>		Result(6 downto 0)	:= "1011110";
+			when x"E" =>		Result(6 downto 0)	:= "1111001";
+			when x"F" =>		Result(6 downto 0)	:= "1110001";
 			when others =>	Result(6 downto 0)	:= "XXXXXXX";
 		end case;
 		return Result;
+	end function;
+	
+	function io_7SegmentDisplayEncoding(digit	: T_BCD; dot : STD_LOGIC := '0') return STD_LOGIC_VECTOR is
+	begin
+		return io_7SegmentDisplayEncoding(std_logic_vector(digit), dot);
 	end function;
 
 	function uart_IsTypicalBaudRate(br : BAUD) return BOOLEAN is
 	begin
 		for i in C_UART_TYPICAL_BAUDRATES'range loop
-			if (br = C_UART_TYPICAL_BAUDRATES(i)) then
-				return TRUE;
-			end if;
+			next when (br /= C_UART_TYPICAL_BAUDRATES(i));
+			return TRUE;
 		end loop;
 		return FALSE;
 	end function;
-END PACKAGE BODY;
+end package body;

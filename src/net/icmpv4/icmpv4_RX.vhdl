@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,7 +56,7 @@ ENTITY ICMPv4_RX IS
 		In_Data												: IN	T_SLV_8;
 		In_SOF												: IN	STD_LOGIC;
 		In_EOF												: IN	STD_LOGIC;
-		In_Ready											: OUT	STD_LOGIC;
+		In_Ack												: OUT	STD_LOGIC;
 		In_Meta_rst										: OUT	STD_LOGIC;
 		In_Meta_SrcMACAddress_nxt			: OUT	STD_LOGIC;
 		In_Meta_SrcMACAddress_Data		: IN	T_SLV_8;
@@ -192,7 +192,7 @@ BEGIN
 		Status														<= NET_ICMPV4_RX_STATUS_IDLE;
 		Error															<= NET_ICMPV4_RX_ERROR_NONE;
 		
-		In_Ready													<= '0';
+		In_Ack														<= '0';
 		In_Meta_rst												<= '0';
 		In_Meta_SrcMACAddress_nxt					<= '0';
 		In_Meta_DestMACAddress_nxt				<= '0';
@@ -219,7 +219,7 @@ BEGIN
 		CASE State IS
 			WHEN ST_IDLE =>
 				IF ((In_Valid AND In_SOF) = '1') THEN
-					In_Ready										<= '1';
+					In_Ack											<= '1';
 				
 					IF (In_EOF = '0') THEN
 						Type_en										<= '1';
@@ -240,7 +240,7 @@ BEGIN
 				Status												<= NET_ICMPV4_RX_STATUS_RECEIVING;
 				
 				IF (In_Valid = '1') THEN
-					In_Ready										<= '1';
+					In_Ack											<= '1';
 				
 					IF (In_EOF = '0') THEN
 						Code_en										<= '1';
@@ -261,7 +261,7 @@ BEGIN
 				Status												<= NET_ICMPV4_RX_STATUS_RECEIVING;
 				
 				IF (In_Valid = '1') THEN
-					In_Ready										<= '1';
+					In_Ack											<= '1';
 				
 					IF (In_EOF = '0') THEN
 						Checksum_en0							<= '1';
@@ -275,7 +275,7 @@ BEGIN
 				Status												<= NET_ICMPV4_RX_STATUS_RECEIVING;
 				
 				IF (In_Valid = '1') THEN
-					In_Ready										<= '1';
+					In_Ack											<= '1';
 				
 					IF (In_EOF = '0') THEN
 						Checksum_en1							<= '1';
@@ -289,7 +289,7 @@ BEGIN
 				Status												<= NET_ICMPV4_RX_STATUS_RECEIVING;
 				
 				IF (In_Valid = '1') THEN
-					In_Ready										<= '1';
+					In_Ack											<= '1';
 				
 					IF (In_EOF = '0') THEN
 						Identification_en0				<= '1';
@@ -303,7 +303,7 @@ BEGIN
 				Status												<= NET_ICMPV4_RX_STATUS_RECEIVING;
 				
 				IF (In_Valid = '1') THEN
-					In_Ready										<= '1';
+					In_Ack											<= '1';
 				
 					IF (In_EOF = '0') THEN
 						Identification_en1				<= '1';
@@ -317,7 +317,7 @@ BEGIN
 				Status												<= NET_ICMPV4_RX_STATUS_RECEIVING;
 				
 				IF (In_Valid = '1') THEN
-					In_Ready										<= '1';
+					In_Ack											<= '1';
 				
 					IF (In_EOF = '0') THEN
 						SequenceNumber_en0				<= '1';
@@ -331,7 +331,7 @@ BEGIN
 				Status												<= NET_ICMPV4_RX_STATUS_RECEIVING;
 				
 				IF (In_Valid = '1') THEN
-					In_Ready										<= '1';
+					In_Ack											<= '1';
 				
 					IF (In_EOF = '0') THEN
 						SequenceNumber_en1				<= '1';
@@ -345,7 +345,7 @@ BEGIN
 				Status												<= NET_ICMPV4_RX_STATUS_RECEIVING;
 				
 				IF (In_Valid = '1') THEN
-					In_Ready										<= '1';
+					In_Ack											<= '1';
 				
 					MetaFIFO_put								<= '1';
 	
@@ -375,7 +375,7 @@ BEGIN
 				END IF;
 
 			WHEN ST_DISCARD_FRAME =>
-				In_Ready											<= '1';
+				In_Ack												<= '1';
 				
 				IF ((In_Valid AND In_EOF) = '1') THEN
 					NextState										<= ST_ERROR;

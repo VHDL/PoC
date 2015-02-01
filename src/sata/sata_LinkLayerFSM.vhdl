@@ -783,6 +783,7 @@ BEGIN
 				-- error handling
 				-- ----------------------------------------------------------
 				WHEN ST_TXFSM_FSM_ERROR =>
+					TXFSM_Primitive								<= SATA_PRIMITIVE_SYNC;
 					TXFSM_IDLE										<= '1';
 					TXFSM_Error										<= '0';		-- '1';
 					

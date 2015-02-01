@@ -84,7 +84,7 @@ USE			PoC.xil.ALL;
 ARCHITECTURE rtl OF io_FanControl IS
 	CONSTANT TIME_STARTUP			: TIME																							:= 500.0 ms;	-- StartUp time
 	CONSTANT PWM_RESOLUTION		: POSITIVE																					:= 4;					-- 4 Bit resolution => 0 to 15 steps
-	CONSTANT PWM_FREQ					: FREQ																							:= 20 Hz;			-- 
+	CONSTANT PWM_FREQ					: FREQ																							:= 100 Hz;		-- 
 
 	CONSTANT TACHO_RESOLUTION	: POSITIVE																					:= 8;
 

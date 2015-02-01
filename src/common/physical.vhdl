@@ -21,7 +21,7 @@
 --			vec - vector
 --			
 --		ATTENTION:
---			This package is not supported by Xilinx Synthese Tools prior to 14.x!
+--			This package is not supported by Xilinx Synthese Tools prior to 14.7!
 --			
 --			It was successfully tested with:
 --				- Xilinx Synthesis Tool (XST) 14.7 and Xilinx ISE Simulator (iSim) 14.7
@@ -32,7 +32,7 @@
 --		
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -75,18 +75,15 @@ package physical is
 	end units;
 
 	type MEMORY is range 0 to INTEGER'high units
-		B;
-		KiB = 1024 B;
+		Byte;
+		KiB = 1024 Byte;
 		MiB = 1024 KiB;
 		GiB = 1024 MiB;
 		TiB = 1024 GiB;
 	end units;
 	
 	--
-	subtype T_CYCLE							is NATURAL;
-	subtype	T_DELAY							is TIME;
-	subtype	T_PERIOD						is TIME;																	-- see QUESTIONs below
-	type		T_TIMEVEC						is array(NATURAL range <>) of TIME;				-- QUESTION: use short VEC names (see PoC.utils T_INTVEC) or long forms (like STD_LOGIC_VECTOR)?
+	type		T_TIMEVEC						is array(NATURAL range <>) of TIME;
 	type		T_FREQVEC						is array(NATURAL range <>) of FREQ;
 	type		T_BAUDVEC						is array(NATURAL range <>) of BAUD;
 	type		T_MEMVEC						is array(NATURAL range <>) of MEMORY;
@@ -149,7 +146,6 @@ package physical is
 	function sec2Time(t_sec : REAL)			return TIME;
 	
 	-- convert standard types (NATURAL, REAL) to period (TIME)
-	-- QUESTION: rename 'Time' to 'Period' and change result type to 'PERIOD' (<=> subtype of TIME)
 	function Hz2Time(f_Hz : NATURAL)		return TIME;
 	function kHz2Time(f_kHz : NATURAL)	return TIME;
 	function MHz2Time(f_MHz : NATURAL)	return TIME;
@@ -182,28 +178,48 @@ package physical is
 	function to_real(mem : MEMORY;	scale : MEMORY)	return REAL;
 	
 	-- calculate needed counter cycles to achieve a given 1. timing/delay and 2. frequency/period
-	-- QUESTION: if a type PERIOD (as subtype of TIME) is introduced, change TIME to PERIOD?
 	function TimingToCycles(Timing : TIME; Clock_Period			: TIME; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return NATURAL;
 	function TimingToCycles(Timing : TIME; Clock_Frequency	: FREQ; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return NATURAL;
 	
-	function CyclesToDelay(Cycles : T_CYCLE; Clock_Period			: TIME) return T_DELAY;
-	function CyclesToDelay(Cycles : T_CYCLE; Clock_Frequency	: FREQ) return T_DELAY;
+	function CyclesToDelay(Cycles : NATURAL; Clock_Period			: TIME) return TIME;
+	function CyclesToDelay(Cycles : NATURAL; Clock_Frequency	: FREQ) return TIME;
 	
 	-- convert and format physical types to STRING
 	function to_string(t : TIME; precision : NATURAL := 3)			return STRING;
 	function to_string(f : FREQ; precision : NATURAL := 3)			return STRING;
 	function to_string(br : BAUD; precision : NATURAL := 3)			return STRING;
 	function to_string(mem : MEMORY; precision : NATURAL := 3)	return STRING;
-	
 end physical;
 
 
 package body physical is
+
+	-- iSim 14.7 does not support fs in simulation (fs values are converted to 0 ps)
+	function MinimalTimeResolutionInSimulation return TIME is
+	begin
+		if		(1 fs > 0 sec) then	return 1 fs;
+		elsif	(1 ps > 0 sec) then	return 1 ps;
+		elsif	(1 ns > 0 sec) then	return 1 ns;
+		elsif	(1 us > 0 sec) then	return 1 us;
+		elsif	(1 ms > 0 sec) then	return 1 ms;
+		else											return 1 sec;
+		end if;
+	end function;
+
 	-- real division for physical types
 	-- ===========================================================================
 	function div(a : TIME; b : TIME) return REAL is
+		constant MTRIS	: TIME		:= MinimalTimeResolutionInSimulation;
 	begin
-		return real(a / 1 fs) / real(b / 1 fs);
+		if	(a < 1 us) then
+			return real(a / MTRIS) / real(b / MTRIS);
+		elsif (a < 1 ms) then
+			return real(a / (1000 * MTRIS)) / real(b / MTRIS) * 1000.0;
+		elsif (a < 1 sec) then
+			return real(a / (1000000 * MTRIS)) / real(b / MTRIS) * 1000000.0;
+		else
+			return real(a / (1000000000 * MTRIS)) / real(b / MTRIS) * 1000000000.0;
+		end if;
 	end function;
 	
 	function div(a : FREQ; b : FREQ) return REAL is
@@ -218,7 +234,7 @@ package body physical is
 	
 	function div(a : MEMORY; b : MEMORY) return REAL is
 	begin
-		return real(a / 1 B) / real(b / 1 B);
+		return real(a / 1 Byte) / real(b / 1 Byte);
 	end function;
 
 	-- conversion functions
@@ -491,7 +507,7 @@ package body physical is
 	
 	-- Calculates: sum(vec) for a memory vector
 	function sum(vec : T_MEMVEC)	return MEMORY is
-		variable  res : MEMORY := 0.0 B;
+		variable  res : MEMORY := 0.0 Byte;
 	begin
 		for i in vec'range loop
 			res	:= res + vec(i);
@@ -677,7 +693,7 @@ package body physical is
 		elsif	(scale = 1.0	us) then	return div(t, 1.0	 us);
 		elsif	(scale = 1.0	ms) then	return div(t, 1.0	 ms);
 		elsif	(scale = 1.0 sec) then	return div(t, 1.0 sec);
-		else	report "to_real: scale must have a value of '1.0 <uni>'" severity failure;
+		else	report "to_real: scale must have a value of '1.0 <unit>'" severity failure;
 		end if;
 	end;
 
@@ -688,7 +704,7 @@ package body physical is
 		elsif	(scale = 1.0 MHz) then	return div(f, 1.0 MHz);
 		elsif	(scale = 1.0 GHz) then	return div(f, 1.0 GHz);
 		elsif	(scale = 1.0 THz) then	return div(f, 1.0 THz);
-		else	report "to_real: scale must have a value of '1.0 <uni>'" severity failure;
+		else	report "to_real: scale must have a value of '1.0 <unit>'" severity failure;
 		end if;
 	end;
 
@@ -698,18 +714,18 @@ package body physical is
 		elsif	(scale = 1.0 kBd) then	return div(br, 1.0 kBd);
 		elsif	(scale = 1.0 MBd) then	return div(br, 1.0 MBd);
 		elsif	(scale = 1.0 GBd) then	return div(br, 1.0 GBd);
-		else	report "to_real: scale must have a value of '1.0 <uni>'" severity failure;
+		else	report "to_real: scale must have a value of '1.0 <unit>'" severity failure;
 		end if;
 	end;
 	
 	function to_real(mem : MEMORY; scale : MEMORY) return REAL is
 	begin
-		if		(scale = 1.0	 B) then	return div(mem, 1.0		B);
-		elsif	(scale = 1.0 KiB) then	return div(mem, 1.0 KiB);
-		elsif	(scale = 1.0 MiB) then	return div(mem, 1.0 MiB);
-		elsif	(scale = 1.0 GiB) then	return div(mem, 1.0 GiB);
-		elsif	(scale = 1.0 TiB) then	return div(mem, 1.0 TiB);
-		else	report "to_real: scale must have a value of '1.0 <uni>'" severity failure;
+		if		(scale = 1.0 Byte)	then	return div(mem, 1.0	Byte);
+		elsif	(scale = 1.0 KiB)		then	return div(mem, 1.0 KiB);
+		elsif	(scale = 1.0 MiB)		then	return div(mem, 1.0 MiB);
+		elsif	(scale = 1.0 GiB)		then	return div(mem, 1.0 GiB);
+		elsif	(scale = 1.0 TiB)		then	return div(mem, 1.0 TiB);
+		else	report "to_real: scale must have a value of '1.0 <unit>'" severity failure;
 		end if;
 	end;
 	
@@ -734,6 +750,8 @@ package body physical is
 		res_time	:= CyclesToDelay(res_nat, Clock_Period);
 		res_dev		:= (1.0 - div(res_time, Timing)) * 100.0;
 		
+		report "res_real: " & REAL'image(res_real) severity note;
+		
 		assert (not MY_VERBOSE)
 			report "TimingToCycles: " & 	CR &
 						 "  Timing: " &					to_string(Timing) & CR &
@@ -743,13 +761,13 @@ package body physical is
 						 "  => " &							INTEGER'image(res_nat)
 			severity note;
 			
-		assert (not C_PHYSICAL_REPORT_TIMING_DEVIATION)
-			report "TimingToCycles (timing deviation report): " & CR &
-						 "  timing to achieve: " & to_string(Timing) & CR &
-						 "  calculated cycles: " & INTEGER'image(res_nat) & " cy" & CR &
-						 "  resulting timing:  " & to_string(res_time) & CR &
-						 "  deviation:         " & to_string(Timing - res_time) & " (" & str_format(res_dev, 2) & "%)"
-			severity note;
+--		assert (not C_PHYSICAL_REPORT_TIMING_DEVIATION)
+--			report "TimingToCycles (timing deviation report): " & CR &
+--						 "  timing to achieve: " & to_string(Timing) & CR &
+--						 "  calculated cycles: " & INTEGER'image(res_nat) & " cy" & CR &
+--						 "  resulting timing:  " & to_string(res_time) & CR &
+--						 "  deviation:         " & to_string(Timing - res_time) & " (" & str_format(res_dev, 2) & "%)"
+--			severity note;
 		
 		return res_nat;
 	end;
@@ -759,12 +777,12 @@ package body physical is
 		return TimingToCycles(Timing, to_time(Clock_Frequency), RoundingStyle);
 	end function;
 
-	function CyclesToDelay(Cycles : T_CYCLE; Clock_Period : TIME) return T_DELAY is
+	function CyclesToDelay(Cycles : NATURAL; Clock_Period : TIME) return TIME is
 	begin
 		return Clock_Period * Cycles;
 	end function;
 
-	function CyclesToDelay(Cycles : T_CYCLE; Clock_Frequency : FREQ) return T_DELAY is
+	function CyclesToDelay(Cycles : NATURAL; Clock_Frequency : FREQ) return TIME is
 	begin
 		return CyclesToDelay(Cycles, to_time(Clock_Frequency));
 	end function;
@@ -848,7 +866,7 @@ package body physical is
 	begin
 		if (mem < 1.0 KiB) then
 			unit(1)				:= 'B';
-			value					:= to_real(mem, 1.0 B);
+			value					:= to_real(mem, 1.0 Byte);
 		elsif (mem < 1.0 MiB) then
 			unit					:= "KiB";
 			value					:= to_real(mem, 1.0 KiB);

@@ -34,11 +34,13 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+USE			PoC.my_project.ALL;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
 USE			PoC.physical.ALL;
+USE			PoC.debug.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.satadbg.ALL;
 
@@ -48,7 +50,6 @@ ENTITY sata_PhysicalLayer IS
 		DEBUG														: BOOLEAN													:= FALSE;
 		ENABLE_DEBUGPORT								: BOOLEAN													:= FALSE;
 		CLOCK_FREQ											: FREQ														:= 150.0 MHz;
---		CLOCK_FREQ_MHZ									: REAL														:= 150.0;
 		CONTROLLER_TYPE									: T_SATA_DEVICE_TYPE							:= SATA_DEVICE_TYPE_HOST;
 		ALLOW_SPEED_NEGOTIATION					: BOOLEAN													:= TRUE;
 		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= C_SATA_GENERATION_MAX;
@@ -84,8 +85,7 @@ ENTITY sata_PhysicalLayer IS
 		
 		Trans_Command										: OUT	T_SATA_TRANSCEIVER_COMMAND;
 		Trans_Status										: IN	T_SATA_TRANSCEIVER_STATUS;
-		Trans_TX_Error									: IN	T_SATA_TRANSCEIVER_TX_ERROR;
-		Trans_RX_Error									: IN	T_SATA_TRANSCEIVER_RX_ERROR;
+		Trans_Error											: IN	T_SATA_TRANSCEIVER_ERROR;
 
 		Trans_RP_Reconfig								: OUT	STD_LOGIC;
 		Trans_RP_SATAGeneration					: OUT	T_SATA_GENERATION;
@@ -104,7 +104,7 @@ ENTITY sata_PhysicalLayer IS
 
 		Trans_RX_Data										: IN	T_SLV_32;
 		Trans_RX_CharIsK								: IN	T_SLV_4;
-		Trans_RX_IsAligned							: IN	STD_LOGIC
+		Trans_RX_Valid									: IN	STD_LOGIC
 	);
 END;
 
@@ -215,12 +215,10 @@ BEGIN
 			
 				IF (Command = SATA_PHY_CMD_RESET) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Trans_RP_Reconfig_i = '1') THEN
@@ -238,12 +236,10 @@ BEGIN
 			
 				IF (Command = SATA_PHY_CMD_RESET) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (OOBC_LinkOK = '0') THEN
@@ -261,12 +257,10 @@ BEGIN
 			
 				IF (Command = SATA_PHY_CMD_RESET) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (OOBC_LinkOK = '1') THEN
@@ -291,12 +285,10 @@ BEGIN
 				
 				IF (Command = SATA_PHY_CMD_RESET) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				ELSIF (Command = SATA_PHY_CMD_NEWLINK_UP) THEN
 					OOBC_Reset				<= '1';
---					FSM_SC_Reset			<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				ELSIF (OOBC_ReceivedReset = '1') THEN
@@ -317,10 +309,8 @@ BEGIN
 				DEBUG											=> DEBUG,
 				ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
 				CLOCK_FREQ								=> CLOCK_FREQ,
---				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
 				ALLOW_STANDARD_VIOLATION	=> ALLOW_STANDARD_VIOLATION,
 				OOB_TIMEOUT								=> OOB_TIMEOUT
---				OOB_TIMEOUT_US						=> OOB_TIMEOUT_US
 			)
 			PORT MAP (
 				Clock											=> Clock,
@@ -336,6 +326,9 @@ BEGIN
 				LinkDead									=> OOBC_LinkDead,
 				ReceivedReset							=> OOBC_ReceivedReset,
 				
+				Trans_Status							=> Trans_Status,
+				Trans_Error								=> Trans_Error,
+				
 				OOB_TX_Command						=> Trans_OOB_TX_Command,
 				OOB_TX_Complete						=> Trans_OOB_TX_Complete,
 				OOB_RX_Received						=> Trans_OOB_RX_Received,
@@ -343,7 +336,7 @@ BEGIN
 				
 				TX_Primitive							=> OOBC_TX_Primitive,
 				RX_Primitive							=> RX_Primitive,
-				RX_IsAligned							=> Trans_RX_IsAligned
+				RX_Valid									=> Trans_RX_Valid
 			);
 	END GENERATE;
 	genDev : IF (CONTROLLER_TYPE = SATA_DEVICE_TYPE_DEVICE) GENERATE
@@ -352,10 +345,8 @@ BEGIN
 				DEBUG											=> DEBUG,
 				ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
 				CLOCK_FREQ								=> CLOCK_FREQ,
---				CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
 				ALLOW_STANDARD_VIOLATION	=> ALLOW_STANDARD_VIOLATION,
 				OOB_TIMEOUT								=> OOB_TIMEOUT
---				OOB_TIMEOUT_US						=> OOB_TIMEOUT_US
 			)
 			PORT MAP (
 				Clock											=> Clock,
@@ -378,7 +369,7 @@ BEGIN
 				
 				TX_Primitive							=> OOBC_TX_Primitive,
 				RX_Primitive							=> RX_Primitive,
-				RX_IsAligned							=> Trans_RX_IsAligned
+				RX_Valid									=> Trans_RX_Valid
 			);
 	END GENERATE;
 	
@@ -441,7 +432,7 @@ BEGIN
 		OOBC_Timeout_d				<= OOBC_Timeout WHEN rising_edge(Clock);
 		OOBC_Timeout_re				<= NOT OOBC_Timeout_d AND OOBC_Timeout;
 		SC_Retry							<= OOBC_Timeout_re AND NOT TryCounter_uf;
-		SC_Status							<= SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR WHEN (TryCounter_uf = '1') ELSE SATA_PHY_SPEED_STATUS_NEGOTIATING;
+		SC_Status							<= SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR WHEN (TryCounter_uf = '1') ELSE SATA_PHY_SPEED_STATUS_WAITING;
 
 		TryCounter_rst				<= '0';	-- FIXME: replace resets by commands ... SC_SATAGeneration_Reset OR SC_AttemptCounter_Reset;
 		TryCounter_en					<= OOBC_Timeout_re;
@@ -505,22 +496,34 @@ BEGIN
 	-- debug port
 	-- ===========================================================================
 	genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
-	
-		FUNCTION dbg_EncodeState(State : T_STATE) RETURN STD_LOGIC_VECTOR IS
-			CONSTANT ResultSize		: POSITIVE																	:= log2ceilnz(T_STATE'pos(T_STATE'high));
-			CONSTANT Result				: STD_LOGIC_VECTOR(ResultSize - 1 DOWNTO 0)	:= to_slv(T_STATE'pos(State), ResultSize);
-		BEGIN
-			RETURN ite(DEBUG, bin2gray(Result), Result);
-		END FUNCTION;
+		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+		begin
+			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
+		end function;
+	begin
+		genXilinx : if (VENDOR = VENDOR_XILINX) generate
+			function dbg_GenerateEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_STATE loop
+					STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+
+			constant test : boolean := dbg_ExportEncoding("Physical Layer", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_PhysicalLayer.tok");
+		begin
+		end generate;
 		
-	BEGIN
 		DebugPortOut.FSM						<= dbg_EncodeState(State);
-		DebugPortOut.StatusY				<= Status_i;
+		DebugPortOut.PHY_Status			<= Status_i;
 	
 		DebugPortOut.TX_Data				<= Trans_TX_Data_i;
 		DebugPortOut.TX_CharIsK			<= Trans_TX_CharIsK_i;
 		DebugPortOut.RX_Data				<= Trans_RX_Data;
 		DebugPortOut.RX_CharIsK			<= Trans_RX_CharIsK;
+		DebugPortOut.RX_Valid				<= Trans_RX_Valid;
 	
 		DebugPortOut.OOBControl			<= OOBC_DebugPortOut;
 		DebugPortOut.SpeedControl		<= SC_DebugPortOut;

@@ -73,6 +73,12 @@ package utils is
 	-- rounding style
 	type T_ROUNDING_STYLE	is (ROUND_TO_NEAREST, ROUND_TO_ZERO, ROUND_TO_INF, ROUND_UP, ROUND_DOWN);
 
+	subtype T_BCD					is UNSIGNED(3 downto 0);
+	type		T_BCD_VECTOR	is array (NATURAL range <>) of T_BCD;
+	constant C_BCD_MINUS	: T_BCD		:= "1010";
+	constant C_BCD_OFF		: T_BCD		:= "1011";
+	
+	
 	-- Function declarations
 	-- ==========================================================================
 
@@ -228,6 +234,9 @@ package utils is
   -- @synthesis supported
   --
   function gray2bin (gray_val : std_logic_vector) return std_logic_vector;
+	
+	-- Binary-Code to One-Hot-Code
+	function bin2onehot(value : std_logic_vector) return std_logic_vector;
 	
 	-- Binary-Code to Gray-Code
 	function bin2gray(value : std_logic_vector) return std_logic_vector;
@@ -597,14 +606,18 @@ package body utils is
 	-- Convert to vector: to_slv
 	-- ==========================================================================
 	-- short for std_logic_vector(to_unsigned(Value, Size))
+	-- the return value is guaranteed to have the range (Size-1 downto 0)
 	FUNCTION to_slv(Value : NATURAL; Size : POSITIVE) RETURN STD_LOGIC_VECTOR IS
+	  constant  res : std_logic_vector(Size-1 downto 0) := std_logic_vector(to_unsigned(Value, Size));
 	BEGIN
-		RETURN std_logic_vector(to_unsigned(Value, Size));
+		return  res;
 	END FUNCTION;
 
 	FUNCTION to_index(slv : UNSIGNED; max : NATURAL := 0) RETURN INTEGER IS
 		variable  res : integer;
 	BEGIN
+		if (slv'length = 0) then	return 0;	end if;
+	
 		res := to_integer(slv);
 		if SIMULATION and max > 0 then
 			res := imin(res, max);
@@ -723,6 +736,15 @@ package body utils is
 		end loop;
 		return res;
 	end gray2bin;
+	
+	-- Binary-Code to One-Hot-Code
+	function bin2onehot(value : std_logic_vector) return std_logic_vector is
+		variable result		: std_logic_vector(2**value'length - 1 downto 0);
+	begin
+		result	:= (others => '0');
+		result(to_index(value)) := '1';
+		return result;
+	end function;
 	
 	-- Binary-Code to Gray-Code
 	function bin2gray(value : std_logic_vector) return std_logic_vector is

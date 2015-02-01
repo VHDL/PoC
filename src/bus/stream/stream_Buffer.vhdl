@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -55,7 +55,7 @@ ENTITY Stream_Buffer IS
 		In_Data												: IN	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
 		In_SOF												: IN	STD_LOGIC;
 		In_EOF												: IN	STD_LOGIC;
-		In_Ready											: OUT	STD_LOGIC;
+		In_Ack												: OUT	STD_LOGIC;
 		In_Meta_rst										: OUT	STD_LOGIC;
 		In_Meta_nxt										: OUT	STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
 		In_Meta_Data									: IN	STD_LOGIC_VECTOR(isum(META_BITS) - 1 DOWNTO 0);
@@ -64,7 +64,7 @@ ENTITY Stream_Buffer IS
 		Out_Data											: OUT	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
 		Out_SOF												: OUT	STD_LOGIC;
 		Out_EOF												: OUT	STD_LOGIC;
-		Out_Ready											: IN	STD_LOGIC;
+		Out_Ack												: IN	STD_LOGIC;
 		Out_Meta_rst									: IN	STD_LOGIC;
 		Out_Meta_nxt									: IN	STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
 		Out_Meta_Data									: OUT	STD_LOGIC_VECTOR(isum(META_BITS) - 1 DOWNTO 0)
@@ -120,7 +120,7 @@ BEGIN
 	BEGIN
 		Writer_NextState									<= Writer_State;
 		
-		In_Ready													<= '0';
+		In_Ack														<= '0';
 		
 		DataFIFO_put											<= '0';
 		DataFIFO_DataIn(In_Data'range)		<= In_Data;
@@ -128,7 +128,7 @@ BEGIN
 		
 		CASE Writer_State IS
 			WHEN ST_IDLE =>
-				In_Ready											<= NOT DataFIFO_Full;
+				In_Ack												<= NOT DataFIFO_Full;
 				DataFIFO_put									<= In_Valid;
 						
 				IF ((In_Valid AND In_SOF AND NOT In_EOF) = '1') THEN
@@ -137,7 +137,7 @@ BEGIN
 				END IF;
 				
 			WHEN ST_FRAME =>
-				In_Ready											<= NOT DataFIFO_Full;
+				In_Ack												<= NOT DataFIFO_Full;
 				DataFIFO_put									<= In_Valid;
 			
 				IF ((In_Valid AND In_EOF AND NOT DataFIFO_Full) = '1') THEN
@@ -149,7 +149,7 @@ BEGIN
 	
 
 	PROCESS(Reader_State,
-					Out_Ready,
+					Out_Ack,
 					DataFIFO_Valid, DataFIFO_DataOut)
 	BEGIN
 		Reader_NextState								<= Reader_State;
@@ -165,17 +165,17 @@ BEGIN
 			WHEN ST_IDLE =>
 				Out_Valid										<= DataFIFO_Valid;
 				Out_SOF											<= '1';
-				DataFIFO_got								<= Out_Ready;
+				DataFIFO_got								<= Out_Ack;
 			
-				IF ((DataFIFO_Valid AND NOT DataFIFO_DataOut(EOF_BIT) AND Out_Ready) = '1') THEN
+				IF ((DataFIFO_Valid AND NOT DataFIFO_DataOut(EOF_BIT) AND Out_Ack) = '1') THEN
 					Reader_NextState					<= ST_FRAME;
 				END IF;
 			
 			WHEN ST_FRAME =>
 				Out_Valid										<= DataFIFO_Valid;
-				DataFIFO_got								<= Out_Ready;
+				DataFIFO_got								<= Out_Ack;
 
-				IF ((DataFIFO_Valid AND DataFIFO_DataOut(EOF_BIT) AND Out_Ready) = '1') THEN
+				IF ((DataFIFO_Valid AND DataFIFO_DataOut(EOF_BIT) AND Out_Ack) = '1') THEN
 					Reader_NextState					<= ST_IDLE;
 				END IF;
 
@@ -210,7 +210,7 @@ BEGIN
 			fstate_rd						=> OPEN
 		);
 	
-	FrameCommit		<= DataFIFO_Valid AND DataFIFO_DataOut(EOF_BIT) AND Out_Ready;
+	FrameCommit		<= DataFIFO_Valid AND DataFIFO_DataOut(EOF_BIT) AND Out_Ack;
 	In_Meta_rst		<= slv_and(Meta_rst);
 	
 	genMeta : FOR I IN 0 TO META_BITS'length - 1 GENERATE

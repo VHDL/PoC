@@ -730,11 +730,7 @@ BEGIN
 		DBG_RX_IsFrame		<= (RX_FIFO_Valid and RX_FIFO_DataOut(33))	or RX_IsFrame_r;
 	END GENERATE;
 	
-	genDebug0 : if (ENABLE_DEBUGPORT = FALSE) generate
-	begin
-	
-	end generate genDebug0;
-	genDebug1 : if (ENABLE_DEBUGPORT = TRUE) generate
+	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
 	begin
 		-- from physical layer
 		DebugPortOut.Phy_Ready									<= Phy_Ready;
@@ -796,5 +792,5 @@ BEGIN
 		-- TX: to Physical Layer
 		DebugPortOut.TX_Phy_Data								<= PM_DataOut;
 		DebugPortOut.TX_Phy_CiK									<= PM_CharIsK;
-	end generate genDebug1;
+	end generate;
 END;

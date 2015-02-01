@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -96,13 +96,13 @@ ENTITY Eth_Wrapper IS
 		TX_Data										: IN	T_SLV_8;
 		TX_SOF										: IN	STD_LOGIC;
 		TX_EOF										: IN	STD_LOGIC;
-		TX_Ready									: OUT	STD_LOGIC;
+		TX_Ack										: OUT	STD_LOGIC;
 	
 		RX_Valid									: OUT	STD_LOGIC;
 		RX_Data										: OUT	T_SLV_8;
 		RX_SOF										: OUT	STD_LOGIC;
 		RX_EOF										: OUT	STD_LOGIC;
-		RX_Ready									: IN	STD_LOGIC;
+		RX_Ack										: IN	STD_LOGIC;
 		
 		-- GMII PHY interface
 -- TODO:		GMII_Reset								: OUT	STD_LOGIC;				-- 						 RST		-> PHY Reset
@@ -160,13 +160,13 @@ BEGIN
 				TX_Data										=> TX_Data,
 				TX_SOF										=> TX_SOF,
 				TX_EOF										=> TX_EOF,
-				TX_Ready									=> TX_Ready,
+				TX_Ack										=> TX_Ack,
 
 				RX_Valid									=> RX_Valid,
 				RX_Data										=> RX_Data,
 				RX_SOF										=> RX_SOF,
 				RX_EOF										=> RX_EOF,
-				RX_Ready									=> RX_Ready,
+				RX_Ack										=> RX_Ack,
 				
 				PHY_Interface							=> PHY_Interface
 			);
@@ -202,13 +202,13 @@ BEGIN
 				TX_Data										=> TX_Data,
 				TX_SOF										=> TX_SOF,
 				TX_EOF										=> TX_EOF,
-				TX_Ready									=> TX_Ready,
+				TX_Ack										=> TX_Ack,
 
 				RX_Valid									=> RX_Valid,
 				RX_Data										=> RX_Data,
 				RX_SOF										=> RX_SOF,
 				RX_EOF										=> RX_EOF,
-				RX_Ready									=> RX_Ready,
+				RX_Ack										=> RX_Ack,
 				
 				PHY_Interface							=> PHY_Interface
 			);
@@ -244,13 +244,13 @@ BEGIN
 				TX_Data										=> TX_Data,
 				TX_SOF										=> TX_SOF,
 				TX_EOF										=> TX_EOF,
-				TX_Ready									=> TX_Ready,
+				TX_Ack										=> TX_Ack,
 
 				RX_Valid									=> RX_Valid,
 				RX_Data										=> RX_Data,
 				RX_SOF										=> RX_SOF,
 				RX_EOF										=> RX_EOF,
-				RX_Ready									=> RX_Ready,
+				RX_Ack										=> RX_Ack,
 				
 				PHY_Interface							=> PHY_Interface
 			);

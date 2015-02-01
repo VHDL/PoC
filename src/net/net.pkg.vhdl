@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -1031,7 +1031,7 @@ PACKAGE BODY net IS
 	
 		RETURN Segments;
 	END FUNCTION;
-	
+		
 	FUNCTION to_net_ipv6_address(str : STRING) RETURN T_NET_IPV6_ADDRESS IS
 		VARIABLE Segments				: IPV6_ADDRESS_SEGMENT_VECTOR(0 TO 7)	:= ipv6_split(str);
 		VARIABLE Segment				: T_SLV_16;

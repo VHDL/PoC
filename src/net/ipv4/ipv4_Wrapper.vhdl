@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,7 +53,7 @@ ENTITY IPv4_Wrapper IS
 		MAC_TX_Data											: OUT	T_SLV_8;
 		MAC_TX_SOF											: OUT	STD_LOGIC;
 		MAC_TX_EOF											: OUT	STD_LOGIC;
-		MAC_TX_Ready										: IN	STD_LOGIC;
+		MAC_TX_Ack											: IN	STD_LOGIC;
 		MAC_TX_Meta_rst									: IN	STD_LOGIC;
 		MAC_TX_Meta_DestMACAddress_nxt	: IN	STD_LOGIC;
 		MAC_TX_Meta_DestMACAddress_Data	: OUT	T_SLV_8;
@@ -62,7 +62,7 @@ ENTITY IPv4_Wrapper IS
 		MAC_RX_Data											: IN	T_SLV_8;
 		MAC_RX_SOF											: IN	STD_LOGIC;
 		MAC_RX_EOF											: IN	STD_LOGIC;
-		MAC_RX_Ready										: OUT	STD_LOGIC;
+		MAC_RX_Ack											: OUT	STD_LOGIC;
 		MAC_RX_Meta_rst									: OUT	STD_LOGIC;
 		MAC_RX_Meta_SrcMACAddress_nxt		: OUT	STD_LOGIC;
 		MAC_RX_Meta_SrcMACAddress_Data	: IN	T_SLV_8;
@@ -84,7 +84,7 @@ ENTITY IPv4_Wrapper IS
 		TX_Data													: IN	T_SLVV_8(PACKET_TYPES'length - 1 DOWNTO 0);
 		TX_SOF													: IN	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
 		TX_EOF													: IN	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
-		TX_Ready												: OUT	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
+		TX_Ack													: OUT	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
 		TX_Meta_rst											: OUT	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
 		TX_Meta_SrcIPv4Address_nxt			: OUT	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
 		TX_Meta_SrcIPv4Address_Data			: IN	T_SLVV_8(PACKET_TYPES'length - 1 DOWNTO 0);
@@ -96,7 +96,7 @@ ENTITY IPv4_Wrapper IS
 		RX_Data													: OUT	T_SLVV_8(PACKET_TYPES'length - 1 DOWNTO 0);
 		RX_SOF													: OUT	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
 		RX_EOF													: OUT	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
-		RX_Ready												: IN	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
+		RX_Ack													: IN	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
 		RX_Meta_rst											: IN	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
 		RX_Meta_SrcMACAddress_nxt				: IN	STD_LOGIC_VECTOR(PACKET_TYPES'length - 1 DOWNTO 0);
 		RX_Meta_SrcMACAddress_Data			: OUT	T_SLVV_8(PACKET_TYPES'length - 1 DOWNTO 0);
@@ -140,7 +140,7 @@ ARCHITECTURE rtl OF IPv4_Wrapper IS
 	SIGNAL StmMux_In_Meta_rev									: T_SLM(IPV4_SWITCH_PORTS - 1 DOWNTO 0, TXSTMMUX_META_REV_BITS - 1 DOWNTO 0)		:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
 	SIGNAL StmMux_In_SOF											: STD_LOGIC_VECTOR(IPV4_SWITCH_PORTS - 1 DOWNTO 0);
 	SIGNAL StmMux_In_EOF											: STD_LOGIC_VECTOR(IPV4_SWITCH_PORTS - 1 DOWNTO 0);
-	SIGNAL StmMux_In_Ready										: STD_LOGIC_VECTOR(IPV4_SWITCH_PORTS - 1 DOWNTO 0);
+	SIGNAL StmMux_In_Ack											: STD_LOGIC_VECTOR(IPV4_SWITCH_PORTS - 1 DOWNTO 0);
 	
 	SIGNAL TX_StmMux_Valid										: STD_LOGIC;
 	SIGNAL TX_StmMux_Data											: T_SLV_8;
@@ -153,7 +153,7 @@ ARCHITECTURE rtl OF IPv4_Wrapper IS
 	SIGNAL TX_StmMux_Length										: T_SLV_16;
 	SIGNAL TX_StmMux_Protocol									: T_SLV_8;
 	
-	SIGNAL IPv4_TX_Ready											: STD_LOGIC;
+	SIGNAL IPv4_TX_Ack												: STD_LOGIC;
 	SIGNAL IPv4_TX_Meta_rst										: STD_LOGIC;
 	SIGNAL IPv4_TX_Meta_SrcIPv4Address_nxt		: STD_LOGIC;
 	SIGNAL IPv4_TX_Meta_DestIPv4Address_nxt		: STD_LOGIC;
@@ -197,7 +197,7 @@ ARCHITECTURE rtl OF IPv4_Wrapper IS
 	);
 	CONSTANT LLDEMUX_META_REV_BITS							: NATURAL					:= 5;							-- sum over all control bits (rst, nxt, nxt, nxt, nxt)
 	
-	SIGNAL RX_LLDeMux_Ready											: STD_LOGIC;
+	SIGNAL RX_LLDeMux_Ack												: STD_LOGIC;
 	SIGNAL RX_LLDeMux_Meta_rst									: STD_LOGIC;
 	SIGNAL RX_LLDeMux_Meta_SrcMACAddress_nxt		: STD_LOGIC;
 	SIGNAL RX_LLDeMux_Meta_DestMACAddress_nxt		: STD_LOGIC;
@@ -274,7 +274,7 @@ BEGIN
 				In_Data												=> TX_Data(I),
 				In_SOF												=> TX_SOF(I),
 				In_EOF												=> TX_EOF(I),
-				In_Ready											=> TX_Ready(I),
+				In_Ack												=> TX_Ack	(I),
 				In_Meta_rst										=> TX_Meta_rst(I),
 				In_Meta_nxt										=> StmBuf_MetaIn_nxt,
 				In_Meta_Data									=> StmBuf_MetaIn_Data,
@@ -283,7 +283,7 @@ BEGIN
 				Out_Data											=> StmBuf_DataOut,
 				Out_SOF												=> StmMux_In_SOF(I),
 				Out_EOF												=> StmMux_In_EOF(I),
-				Out_Ready											=> StmMux_In_Ready(I),
+				Out_Ack												=> StmMux_In_Ack	(I),
 				Out_Meta_rst									=> StmBuf_Meta_rst,
 				Out_Meta_nxt									=> StmBuf_MetaOut_nxt,
 				Out_Meta_Data									=> StmBuf_MetaOut_Data
@@ -328,7 +328,7 @@ BEGIN
 			In_Meta_rev						=> StmMux_In_Meta_rev,
 			In_SOF								=> StmMux_In_SOF,
 			In_EOF								=> StmMux_In_EOF,
-			In_Ready							=> StmMux_In_Ready,
+			In_Ack								=> StmMux_In_Ack,
 			
 			Out_Valid							=> TX_StmMux_Valid,
 			Out_Data							=> TX_StmMux_Data,
@@ -336,7 +336,7 @@ BEGIN
 			Out_Meta_rev					=> TX_StmMux_Meta_rev,
 			Out_SOF								=> TX_StmMux_SOF,
 			Out_EOF								=> TX_StmMux_EOF,
-			Out_Ready							=> IPv4_TX_Ready
+			Out_Ack								=> IPv4_TX_Ack	
 		);
 
 	TX_StmMux_SrcIPv4Address_Data										<= TX_StmMux_Meta(TX_StmMux_SrcIPv4Address_Data'range);
@@ -360,7 +360,7 @@ BEGIN
 			In_Data												=> TX_StmMux_Data,
 			In_SOF												=> TX_StmMux_SOF,
 			In_EOF												=> TX_StmMux_EOF,
-			In_Ready											=> IPv4_TX_Ready,
+			In_Ack												=> IPv4_TX_Ack,
 			In_Meta_rst										=> IPv4_TX_Meta_rst,
 			In_Meta_SrcIPv4Address_nxt		=> IPv4_TX_Meta_SrcIPv4Address_nxt,
 			In_Meta_SrcIPv4Address_Data		=> TX_StmMux_SrcIPv4Address_Data,
@@ -383,7 +383,7 @@ BEGIN
 			Out_Data											=> MAC_TX_Data,
 			Out_SOF												=> MAC_TX_SOF,
 			Out_EOF												=> MAC_TX_EOF,
-			Out_Ready											=> MAC_TX_Ready,
+			Out_Ack												=> MAC_TX_Ack,
 			Out_Meta_rst									=> MAC_TX_Meta_rst,
 			Out_Meta_DestMACAddress_nxt		=> MAC_TX_Meta_DestMACAddress_nxt,
 			Out_Meta_DestMACAddress_Data	=> MAC_TX_Meta_DestMACAddress_Data
@@ -404,7 +404,7 @@ BEGIN
 			In_Data													=> MAC_RX_Data,
 			In_SOF													=> MAC_RX_SOF,
 			In_EOF													=> MAC_RX_EOF,
-			In_Ready												=> MAC_RX_Ready,
+			In_Ack													=> MAC_RX_Ack,
 			In_Meta_rst											=> MAC_RX_Meta_rst,
 			In_Meta_SrcMACAddress_nxt				=> MAC_RX_Meta_SrcMACAddress_nxt,
 			In_Meta_SrcMACAddress_Data			=> MAC_RX_Meta_SrcMACAddress_Data,
@@ -416,7 +416,7 @@ BEGIN
 			Out_Data												=> IPv4_RX_Data,
 			Out_SOF													=> IPv4_RX_SOF,
 			Out_EOF													=> IPv4_RX_EOF,
-			Out_Ready												=> RX_LLDeMux_Ready,
+			Out_Ack													=> RX_LLDeMux_Ack,
 			Out_Meta_rst										=> RX_LLDeMux_Meta_rst,
 			Out_Meta_SrcMACAddress_nxt			=> RX_LLDeMux_Meta_SrcMACAddress_nxt,
 			Out_Meta_SrcMACAddress_Data			=> IPv4_RX_Meta_SrcMACAddress_Data,
@@ -470,7 +470,7 @@ BEGIN
 			In_Meta_rev							=> RX_LLDeMux_MetaIn_rev,
 			In_SOF									=> IPv4_RX_SOF,
 			In_EOF									=> IPv4_RX_EOF,
-			In_Ready								=> RX_LLDeMux_Ready,
+			In_Ack									=> RX_LLDeMux_Ack,
 			
 			Out_Valid								=> RX_Valid,
 			Out_Data								=> RX_LLDeMux_Data,
@@ -478,7 +478,7 @@ BEGIN
 			Out_Meta_rev						=> RX_LLDeMux_MetaOut_rev,
 			Out_SOF									=> RX_SOF,
 			Out_EOF									=> RX_EOF,
-			Out_Ready								=> RX_Ready
+			Out_Ack									=> RX_Ack	
 		);
 
 	assign_col(RX_LLDeMux_MetaOut_rev, RX_Meta_rst,									LLDEMUX_META_RST_BIT);

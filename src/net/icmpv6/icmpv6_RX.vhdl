@@ -24,7 +24,7 @@ ENTITY ICMPv6_RX IS
 		RX_Data										: IN	T_SLV_8;
 		RX_SOF										: IN	STD_LOGIC;
 		RX_EOF										: IN	STD_LOGIC;
-		RX_Ready									: OUT	STD_LOGIC;
+		RX_Ack										: OUT	STD_LOGIC;
 		
 		Received_EchoRequest			: OUT	STD_LOGIC
 	);
@@ -70,14 +70,14 @@ BEGIN
 	BEGIN
 		NextState													<= State;
 		
-		RX_Ready													<= '0';
+		RX_Ack														<= '0';
 
 		Received_EchoRequest							<= '0';
 
 		CASE State IS
 			WHEN ST_IDLE =>
 				IF (Is_SOF = '1') THEN
-					RX_Ready								<= '1';
+					RX_Ack									<= '1';
 				
 					IF (Is_EOF = '0') THEN
 						IF (RX_Data = x"08") THEN
@@ -91,7 +91,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_RECEIVED_ECHOREQUEST =>
-				RX_Ready									<= '1';
+				RX_Ack										<= '1';
 				
 				IF (Is_EOF = '0') THEN
 					IF (RX_Data = x"00") THEN
@@ -104,7 +104,7 @@ BEGIN
 				END IF;
 
 			WHEN ST_RECEIVED_ECHOREQUEST_CODEFIELD =>
-				RX_Ready									<= '1';
+				RX_Ack										<= '1';
 				
 				IF (Is_EOF = '0') THEN
 					IF (RX_Data = x"00") THEN
@@ -117,7 +117,7 @@ BEGIN
 				END IF;
 	
 			WHEN ST_RECEIVED_ECHOREQUEST_CHECKSUM_0 =>
-				RX_Ready									<= '1';
+				RX_Ack										<= '1';
 				
 				IF (Is_EOF = '1') THEN
 					IF (RX_Data = x"00") THEN
@@ -134,7 +134,7 @@ BEGIN
 				NULL;
 
 			WHEN ST_DISCARD_FRAME =>
-				RX_Ready										<= '1';
+				RX_Ack											<= '1';
 				
 				IF (Is_EOF = '1') THEN
 					NextState									<= ST_ERROR;

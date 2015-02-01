@@ -10,9 +10,7 @@
 -- 
 -- Description:
 -- ------------------------------------
---		Automated testbench for PoC.arith_prng
---		The Pseudo-Random Number Generator is instanziated for 8 bits. The
---		output sequence is compared to 256 precalculated values.
+--		TODO
 --
 -- License:
 -- =============================================================================
@@ -32,17 +30,11 @@
 -- limitations under the License.
 -- =============================================================================
 
-USE			STD.TextIO.ALL;
-
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
-
 
 package simulation is
 	constant U8								: T_SLV_8							:= (others => 'U');
@@ -63,7 +55,7 @@ package simulation is
 
   --* If the passed condition has evaluated false, the testbench is marked
   --* as failed. In this case, the optional message will be reported as an
-  --* an error if one was provided.
+  --* error if one was provided.
 	procedure tbAssert(cond : in boolean; msg : in string := "");
 
   --* Prints out the overall testbench result as defined by the automated
@@ -79,6 +71,8 @@ package simulation is
 	-- TODO: move checksum functions here
 end;
 
+
+use	std.TextIO.all;
 
 package body simulation is
 
