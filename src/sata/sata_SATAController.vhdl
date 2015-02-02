@@ -89,10 +89,10 @@ ENTITY sata_SATAController IS
 		TX_EOF											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_Valid										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_Data											: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		TX_Ready										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		TX_Ack											: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_InsertEOF								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
-		TX_FS_Ready									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		TX_FS_Ack										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_FS_Valid									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_FS_SendOK								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_FS_Abort									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -102,9 +102,9 @@ ENTITY sata_SATAController IS
 		RX_EOF											: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_Valid										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_Data											: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		RX_Ready										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_Ack											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
-		RX_FS_Ready									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_FS_Ack										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_FS_Valid									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_FS_CRCOK								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_FS_Abort									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -196,11 +196,11 @@ BEGIN
 		SIGNAL SATAC_TX_EOF						: STD_LOGIC;
 		SIGNAL SATAC_TX_Valid					: STD_LOGIC;
 		SIGNAL SATAC_TX_Data					: T_SLV_32;
-		SIGNAL SATAC_TX_FS_Ready			: STD_LOGIC;
-		SIGNAL SATAC_RX_Ready					: STD_LOGIC;
-		SIGNAL SATAC_RX_FS_Ready			: STD_LOGIC;
+		SIGNAL SATAC_TX_FS_Ack				: STD_LOGIC;
+		SIGNAL SATAC_RX_Ack						: STD_LOGIC;
+		SIGNAL SATAC_RX_FS_Ack				: STD_LOGIC;
 
-		SIGNAL Link_TX_Ready					: STD_LOGIC;
+		SIGNAL Link_TX_Ack						: STD_LOGIC;
 		SIGNAl Link_TX_InsertEOF			: STD_LOGIC;
 		SIGNAL Link_TX_FS_Valid				: STD_LOGIC;
 		SIGNAL Link_TX_FS_SendOK			: STD_LOGIC;
@@ -253,10 +253,10 @@ BEGIN
 		SATAC_TX_EOF									<= TX_EOF(I);
 		SATAC_TX_Valid								<= TX_Valid(I);
 		SATAC_TX_Data									<= TX_Data(I);
-		TX_Ready(I)										<= Link_TX_Ready;
+		TX_Ack(I)										<= Link_TX_Ack;
 		TX_InsertEOF(I)								<= Link_TX_InsertEOF;
 		
-		SATAC_TX_FS_Ready							<= TX_FS_Ready(I);
+		SATAC_TX_FS_Ack								<= TX_FS_Ack(I);
 		TX_FS_Valid(I)								<= Link_TX_FS_Valid;
 		TX_FS_SendOK(I)								<= Link_TX_FS_SendOK;
 		TX_FS_Abort(I)								<= Link_TX_FS_Abort;
@@ -266,9 +266,9 @@ BEGIN
 		RX_EOF(I)											<= Link_RX_EOF;
 		RX_Valid(I)										<= Link_RX_Valid;
 		RX_Data(I)										<= Link_RX_Data;
-		SATAC_RX_Ready								<= RX_Ready(I);
+		SATAC_RX_Ack									<= RX_Ack(I);
 		
-		SATAC_RX_FS_Ready							<= RX_FS_Ready(I);
+		SATAC_RX_FS_Ack								<= RX_FS_Ack(I);
 		RX_FS_Valid(I)								<= Link_RX_FS_Valid;
 		RX_FS_CRCOK(I)								<= Link_RX_FS_CRCOK;
 		RX_FS_Abort(I)								<= Link_RX_FS_Abort;
@@ -343,10 +343,10 @@ BEGIN
 				TX_EOF									=> SATAC_TX_EOF,
 				TX_Valid								=> SATAC_TX_Valid,
 				TX_Data									=> SATAC_TX_Data,
-				TX_Ready								=> Link_TX_Ready,
+				TX_Ack									=> Link_TX_Ack,
 				TX_InsertEOF						=> Link_TX_InsertEOF,
 				
-				TX_FS_Ready							=> SATAC_TX_FS_Ready,
+				TX_FS_Ack								=> SATAC_TX_FS_Ack,
 				TX_FS_Valid							=> Link_TX_FS_Valid,
 				TX_FS_SendOK						=> Link_TX_FS_SendOK,
 				TX_FS_Abort							=> Link_TX_FS_Abort,
@@ -356,9 +356,9 @@ BEGIN
 				RX_EOF									=> Link_RX_EOF,
 				RX_Valid								=> Link_RX_Valid,
 				RX_Data									=> Link_RX_Data,
-				RX_Ready								=> SATAC_RX_Ready,
+				RX_Ack									=> SATAC_RX_Ack,
 				
-				RX_FS_Ready							=> SATAC_RX_FS_Ready,
+				RX_FS_Ack								=> SATAC_RX_FS_Ack,
 				RX_FS_Valid							=> Link_RX_FS_Valid,
 				RX_FS_CRCOK							=> Link_RX_FS_CRCOK,
 				RX_FS_Abort							=> Link_RX_FS_Abort,

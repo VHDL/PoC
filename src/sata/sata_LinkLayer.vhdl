@@ -66,10 +66,10 @@ ENTITY sata_LinkLayer IS
 		TX_EOF									: IN	STD_LOGIC;
 		TX_Valid								: IN	STD_LOGIC;
 		TX_Data									: IN	T_SLV_32;
-		TX_Ready								: OUT	STD_LOGIC;
+		TX_Ack									: OUT	STD_LOGIC;
 		TX_InsertEOF						: OUT	STD_LOGIC;
 		
-		TX_FS_Ready							: IN	STD_LOGIC;
+		TX_FS_Ack								: IN	STD_LOGIC;
 		TX_FS_Valid							:	OUT	STD_LOGIC;
 		TX_FS_SendOK						: OUT	STD_LOGIC;
 		TX_FS_Abort							: OUT	STD_LOGIC;
@@ -79,9 +79,9 @@ ENTITY sata_LinkLayer IS
 		RX_EOF									: OUT	STD_LOGIC;
 		RX_Valid								: OUT	STD_LOGIC;
 		RX_Data									: OUT	T_SLV_32;
-		RX_Ready								: IN	STD_LOGIC;
+		RX_Ack									: IN	STD_LOGIC;
 		
-		RX_FS_Ready							: IN	STD_LOGIC;
+		RX_FS_Ack								: IN	STD_LOGIC;
 		RX_FS_Valid							:	OUT	STD_LOGIC;
 		RX_FS_CRCOK						: OUT	STD_LOGIC;
 		RX_FS_Abort							: OUT	STD_LOGIC;
@@ -351,13 +351,13 @@ BEGIN
 	-- TX path
 	TX_FIFO_DataIn							<= TX_EOF & TX_SOF & TX_Data;
 	TX_FIFO_put									<= TX_Valid;
-	TX_Ready										<= NOT TX_FIFO_Full;
+	TX_Ack											<= NOT TX_FIFO_Full;
 	
 	Trans_TX_SOF								<= TX_FIFO_DataOut(TX_SOF_BIT);
 	Trans_TX_EOF								<= TX_FIFO_DataOut(TX_EOF_BIT);
 
 	-- TX frame status FIFO
-	TX_FSFIFO_got								<= TX_FS_Ready;
+	TX_FSFIFO_got								<= TX_FS_Ack;
 	TX_FS_Valid									<= TX_FSFIFO_Valid;
 	
 	TX_FSFIFO_DataIn						<= (TX_SENDOK_BIT =>	Trans_TXFS_SendOK,
@@ -370,12 +370,12 @@ BEGIN
 	RX_SOF											<= RX_FIFO_DataOut(RX_SOF_BIT);
 	RX_EOF											<= RX_FIFO_DataOut(RX_EOF_BIT);
 	RX_Valid										<= RX_FIFO_Valid;
-	RX_FIFO_got									<= RX_Ready;
+	RX_FIFO_got									<= RX_Ack;
 	
 	RX_FIFO_DataIn							<= Trans_RX_EOF & Trans_RX_SOF & RX_DataReg_DataOut;
 	
 	-- RX frame status FIFO
-	RX_FSFIFO_got								<= RX_FS_Ready;
+	RX_FSFIFO_got								<= RX_FS_Ack;
 	RX_FS_Valid									<= RX_FSFIFO_Valid;
 	
 	RX_FSFIFO_DataIn						<= (RX_CRCOK_BIT => Trans_RXFS_CRCOK,
@@ -758,22 +758,22 @@ BEGIN
 		-- RX: after RX_FIFO
 		DebugPortOut.RX_Data										<= RX_FIFO_DataOut(RX_Data'range);
 		DebugPortOut.RX_Valid										<= RX_FIFO_Valid;
-		DebugPortOut.RX_Ready										<= RX_Ready;
+		DebugPortOut.RX_Ack											<= RX_Ack;
 		DebugPortOut.RX_SOF											<= RX_FIFO_DataOut(RX_SOF_BIT);
 		DebugPortOut.RX_EOF											<= RX_FIFO_DataOut(RX_EOF_BIT);
 		DebugPortOut.RX_FS_Valid								<= RX_FSFIFO_Valid;
-		DebugPortOut.RX_FS_Ready								<= RX_FS_Ready;
+		DebugPortOut.RX_FS_Ack									<= RX_FS_Ack;
 		DebugPortOut.RX_FS_CRCOK								<= RX_FSFIFO_DataOut(RX_CRCOK_BIT);
 		DebugPortOut.RX_FS_Abort								<= RX_FSFIFO_DataOut(RX_ABORT_BIT);
 		--																			
 		-- TX: from Link Layer
 		DebugPortOut.TX_Data										<= TX_Data;
 		DebugPortOut.TX_Valid										<= TX_Valid;
-		DebugPortOut.TX_Ready										<= not TX_FIFO_Full;
+		DebugPortOut.TX_Ack											<= not TX_FIFO_Full;
 		DebugPortOut.TX_SOF											<= TX_SOF;
 		DebugPortOut.TX_EOF											<= TX_EOF;
 		DebugPortOut.TX_FS_Valid								<= TX_FSFIFO_Valid;
-		DebugPortOut.TX_FS_Ready								<= not TX_FSFIFO_Full;
+		DebugPortOut.TX_FS_Ack									<= not TX_FSFIFO_Full;
 		DebugPortOut.TX_FS_Send_OK							<= TX_FSFIFO_DataIn(TX_SENDOK_BIT);
 		DebugPortOut.TX_FS_Abort								<= TX_FSFIFO_DataIn(TX_ABORT_BIT);
 		-- TX: TXFIFO

@@ -136,356 +136,321 @@ entity eth_TEMAC_GMII_Virtex5 is
 end;
 
 
+architecture rtl of eth_TEMAC_GMII_Virtex5 is
+	
+	signal TEMAC_TX_Ack							: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal TX_FSM_Valid							: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal TX_FSM_Data							: T_SLVV_8(PORTS - 1 downto 0);
+	signal TX_FSM_UnderrunDetected	: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-architecture core of eth_TEMAC_GMII_Virtex5 is
-
-    ----------------------------------------------------------------------------
-    -- Attribute declarations
-    ----------------------------------------------------------------------------
-    --------
-    -- EMAC0
-    --------
-    -- PCS/PMA logic is not in use
-    constant EMAC0_PHYINITAUTONEG_ENABLE : boolean := FALSE;
-    constant EMAC0_PHYISOLATE : boolean := FALSE;
-    constant EMAC0_PHYLOOPBACKMSB : boolean := FALSE;
-    constant EMAC0_PHYPOWERDOWN : boolean := FALSE;
-    constant EMAC0_PHYRESET : boolean := TRUE;
-    constant EMAC0_CONFIGVEC_79 : boolean := FALSE;
-    constant EMAC0_GTLOOPBACK : boolean := FALSE;
-    constant EMAC0_UNIDIRECTION_ENABLE : boolean := FALSE;
-    constant EMAC0_LINKTIMERVAL : bit_vector := x"000";
-
-    -- Configure the MAC operating mode
-    -- MDIO is not enabled
-    constant EMAC0_MDIO_ENABLE : boolean := FALSE;  
-    -- Speed is defaulted to 1000Mb/s
-    constant EMAC0_SPEED_LSB : boolean := FALSE;
-    constant EMAC0_SPEED_MSB : boolean := TRUE; 
-    constant EMAC0_USECLKEN : boolean := FALSE;
-    constant EMAC0_BYTEPHY : boolean := FALSE;
-   
-    constant EMAC0_RGMII_ENABLE : boolean := FALSE;
-    constant EMAC0_SGMII_ENABLE : boolean := FALSE;
-    constant EMAC0_1000BASEX_ENABLE : boolean := FALSE;
-    -- The Host I/F is not  in use
-    constant EMAC0_HOST_ENABLE : boolean := FALSE;  
-    -- 8-bit interface for Tx client
-    constant EMAC0_TX16BITCLIENT_ENABLE : boolean := FALSE;
-    -- 8-bit interface for Rx client  
-    constant EMAC0_RX16BITCLIENT_ENABLE : boolean := FALSE;  
-    -- The Address Filter (not enabled)
-    constant EMAC0_ADDRFILTER_ENABLE : boolean := FALSE;  
-
-    -- MAC configuration defaults
-    -- Rx Length/Type checking enabled (standard IEEE operation)
-    constant EMAC0_LTCHECK_DISABLE : boolean := FALSE;  
-    -- Rx Flow Control (not enabled)
-    constant EMAC0_RXFLOWCTRL_ENABLE : boolean := FALSE;  
-    -- Tx Flow Control (not enabled)
-    constant EMAC0_TXFLOWCTRL_ENABLE : boolean := FALSE;  
-    -- Transmitter is not held in reset not asserted (normal operating mode)
-    constant EMAC0_TXRESET : boolean := FALSE;  
-    -- Transmitter Jumbo Frames (not enabled)
-    constant EMAC0_TXJUMBOFRAME_ENABLE : boolean := FALSE;  
-    -- Transmitter In-band FCS (not enabled)
-    constant EMAC0_TXINBANDFCS_ENABLE : boolean := FALSE;  
-    -- Transmitter Enabled
-    constant EMAC0_TX_ENABLE : boolean := TRUE;  
-    -- Transmitter VLAN mode (not enabled)
-    constant EMAC0_TXVLAN_ENABLE : boolean := FALSE;  
-    -- Transmitter Half Duplex mode (not enabled)
-    constant EMAC0_TXHALFDUPLEX : boolean := FALSE;  
-    -- Transmitter IFG Adjust (not enabled)
-    constant EMAC0_TXIFGADJUST_ENABLE : boolean := FALSE;  
-    -- Receiver is not held in reset not asserted (normal operating mode)
-    constant EMAC0_RXRESET : boolean := FALSE;  
-    -- Receiver Jumbo Frames (not enabled)
-    constant EMAC0_RXJUMBOFRAME_ENABLE : boolean := FALSE;  
-    -- Receiver In-band FCS (not enabled)
-    constant EMAC0_RXINBANDFCS_ENABLE : boolean := FALSE;  
-    -- Receiver Enabled
-    constant EMAC0_RX_ENABLE : boolean := TRUE;  
-    -- Receiver VLAN mode (not enabled)
-    constant EMAC0_RXVLAN_ENABLE : boolean := FALSE;  
-    -- Receiver Half Duplex mode (not enabled)
-    constant EMAC0_RXHALFDUPLEX : boolean := FALSE;  
-
-    -- Set the Pause Address Default
-    constant EMAC0_PAUSEADDR : bit_vector := x"FFEEDDCCBBAA";
-
-    constant EMAC0_UNICASTADDR : bit_vector := x"000000000000";
- 
-    constant EMAC0_DCRBASEADDR : bit_vector := X"00";
- 
-
-    ----------------------------------------------------------------------------
-    -- Signals Declarations
-    ----------------------------------------------------------------------------
-
-
-    signal gnd_v48_i                      : std_logic_vector(47 downto 0);
-
-    signal client_rx_data_0_i             : std_logic_vector(15 downto 0);
-    signal client_tx_data_0_i             : std_logic_vector(15 downto 0);
-    signal client_tx_data_valid_0_i       : std_logic;
-    signal client_tx_data_valid_msb_0_i   : std_logic;
-
+	signal TEMAC_RX_Valid						: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal TEMAC_RX_Data						: T_SLVV_8(PORTS - 1 downto 0);
+	signal TEMAC_RX_GoodFrame				: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal TEMAC_RX_BadFrame				: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal RX_FSM_OverflowDetected	: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
 begin
 
+	genFIFOChain : for i in 0 to PORTS - 1 generate
+		constant SOF_BIT						: NATURAL			:= 8;
+		constant EOF_BIT						: NATURAL			:= 9;
+	
+		signal XClk_TX_FIFO_Valid		: STD_LOGIC;
+		signal XClk_TX_FIFO_DataOut	: STD_LOGIC_VECTOR(9 downto 0);
+		signal XClk_TX_FIFO_got			: STD_LOGIC;
 
-    ----------------------------------------------------------------------------
-    -- Main Body of Code
-    ----------------------------------------------------------------------------
+		signal TX_FIFO_DataOut			: STD_LOGIC_VECTOR(9 downto 0);
+		signal TX_FIFO_Full					: STD_LOGIC;
+		
+		signal TX_FIFO_Valid				: STD_LOGIC;
+		signal TX_FIFO_Data					: T_SLV_8;
+		signal TX_FIFO_SOF					: STD_LOGIC;
+		signal TX_FIFO_EOF					: STD_LOGIC;
+		signal TX_FSM_Commit				: STD_LOGIC;
+		signal TX_FSM_Rollback			: STD_LOGIC;
+		
+		signal TX_FSM_Ack						: STD_LOGIC;
+		
+		signal RX_FSM_Valid					: STD_LOGIC;
+		signal RX_FSM_Data					: T_SLV_8;
+		signal RX_FSM_SOF						: STD_LOGIC;
+		signal RX_FSM_EOF						: STD_LOGIC;
+		signal RX_FSM_Commit				: STD_LOGIC;
+		signal RX_FSM_Rollback			: STD_LOGIC;
+		
+		signal RX_FIFO_put					: STD_LOGIC;
+		signal RX_FIFO_DataIn				: STD_LOGIC_VECTOR(9 downto 0);
+		signal RX_FIFO_Full					: STD_LOGIC;
+		signal RX_FIFO_got					: STD_LOGIC;
+		signal RX_FIFO_Valid				: STD_LOGIC;
+		signal RX_FIFO_DataOut			: STD_LOGIC_VECTOR(9 downto 0);
+		signal RX_FIFO_Ack					: STD_LOGIC;
+		
+		signal XClk_RX_FIFO_Full		: STD_LOGIC;
 
 
-    gnd_v48_i <= "000000000000000000000000000000000000000000000000";
+	begin
+		-- ==========================================================================================================================================================
+		-- ASSERT statements
+		-- ==========================================================================================================================================================
+		assert ((TX_FIFO_DEPTHS(i) * 1 Byte) >= ite(TX_ENABLE_UNDERRUN_PROTECTION(i),	ite(SUPPORT_JUMBO_FRAMES(i), 10 KiB, 1522 Byte), 0 Byte))	report "TX-FIFO is to small" severity ERROR;
+		assert ((RX_FIFO_DEPTHS(i) * 1 Byte) >=																				ite(SUPPORT_JUMBO_FRAMES(i), 10 KiB, 1522 Byte))					report "RX-FIFO is to small" severity ERROR;
 
-    -- 8-bit client data on EMAC0
-    EMAC0CLIENTRXD <= client_rx_data_0_i(7 downto 0);
-    client_tx_data_0_i <= "00000000" & CLIENTEMAC0TXD after 4 ns;
-    client_tx_data_valid_0_i <= CLIENTEMAC0TXDVLD after 4 ns;
-    client_tx_data_valid_msb_0_i <= '0';
+		-- ==========================================================================================================================================================
+		-- TX path
+		-- ==========================================================================================================================================================
+		genTX_XClk0 : if (TX_INSERT_CROSSCLOCK_FIFO(i) = FALSE) generate
+			XClk_TX_FIFO_Valid											<= TX_Valid(i);
+			XClk_TX_FIFO_DataOut(TX_Data(i)'range)	<= TX_Data(i);
+			XClk_TX_FIFO_DataOut(SOF_BIT)						<= TX_SOF(i);
+			XClk_TX_FIFO_DataOut(EOF_BIT)						<= TX_EOF(i);
+			TX_Ack(i)																<= XClk_TX_FIFO_got;
+		end generate;
+		genTX_XClk1 : if (TX_INSERT_CROSSCLOCK_FIFO(i) = TRUE) generate
+			signal XClk_TX_FIFO_DataIn		: STD_LOGIC_VECTOR(9 downto 0);
+			signal XClk_TX_FIFO_Full			: STD_LOGIC;
+		begin
+			XClk_TX_FIFO_DataIn(TX_Data(i)'range)		<= TX_Data(i);
+			XClk_TX_FIFO_DataIn(SOF_BIT)						<= TX_SOF(i);
+			XClk_TX_FIFO_DataIn(EOF_BIT)						<= TX_EOF(i);
+		
+			XClk_TX_FIFO : entity PoC.fifo_ic_got
+				generic map (
+					D_BITS							=> XClk_TX_FIFO_DataIn'length,
+					MIN_DEPTH						=> 16,
+					DATA_REG						=> TRUE,
+					OUTPUT_REG					=> FALSE,
+					ESTATE_WR_BITS			=> 0,
+					FSTATE_RD_BITS			=> 0
+				)
+				port map (
+					-- Write Interface
+					clk_wr							=> TX_Clock(i),
+					rst_wr							=> TX_Reset(i),
+					put									=> TX_Valid(i),
+					din									=> XClk_TX_FIFO_DataIn,
+					full								=> XClk_TX_FIFO_Full,
+					estate_wr						=> open,
 
+					-- Read Interface
+					clk_rd							=> RS_TX_Clock(i),
+					rst_rd							=> RS_TX_Reset(i),
+					got									=> XClk_TX_FIFO_got,
+					valid								=> XClk_TX_FIFO_Valid,
+					dout								=> XClk_TX_FIFO_DataOut,
+					fstate_rd						=> open
+				);
+			
+			TX_Ack(i)	<= NOT XClk_TX_FIFO_Full;
+		end generate;
 
+		XClk_TX_FIFO_got	<= not TX_FIFO_Full;
 
+		-- TX-Buffer Underrun Protection (configured by: TX_DISABLE_UNDERRUN_PROTECTION)
+		-- ========================================================================================================================================================
+		--	transactional behaviour:
+		--	-	enabled:	each frame is committed when EOF is set (*_FIFO_Out(EOF_BIT))
+		--	-	disabled:	each word is immediately committed, so incomplete frames can be consumed by the TX-MAC-statemachine
+		--
+		--	impact an FIFO_DEPTH:
+		--	-	enabled:	FIFO_DEPTH must be greater than max. frame size (normal frames: ca. 1550 bytes; JumboFrames: ca. 9100 bytes)
+		--	-	disabled:	TX-FIFO becomes optional; set FIFO_DEPTH to 0 to disable TX-FIFO
+		-- ========================================================================================================================================================
+		gen0 : if (TX_ENABLE_UNDERRUN_PROTECTION(i) = FALSE) generate
+			TX_FIFO : entity PoC.fifo_cc_got_tempgot
+				generic map (
+					D_BITS							=> XClk_TX_FIFO_DataOut'length,
+					MIN_DEPTH						=> TX_FIFO_DEPTHS(i),
+					ESTATE_WR_BITS			=> 0,
+					FSTATE_RD_BITS			=> 0,
+					DATA_REG						=> FALSE,
+					STATE_REG						=> TRUE,
+					OUTPUT_REG					=> FALSE
+				)
+				port map (
+					clk									=> RS_TX_Clock(i),
+					rst									=> RS_TX_Reset(i),
 
+					-- Write Interface
+					put									=> XClk_TX_FIFO_Valid,
+					din									=> XClk_TX_FIFO_DataOut,
+					full								=> TX_FIFO_Full,
+					estate_wr						=> open,
 
+					-- Temporary put control
+					commit							=> TX_FSM_Commit,
+					rollback						=> TX_FSM_Rollback,
 
-    ----------------------------------------------------------------------------
-    -- Instantiate the Virtex-5 Embedded Ethernet EMAC
-    ----------------------------------------------------------------------------
-    v5_emac : TEMAC
-    generic map (
-		EMAC0_1000BASEX_ENABLE      => EMAC0_1000BASEX_ENABLE,
-		EMAC0_ADDRFILTER_ENABLE     => EMAC0_ADDRFILTER_ENABLE,
-		EMAC0_BYTEPHY               => EMAC0_BYTEPHY,
-		EMAC0_CONFIGVEC_79          => EMAC0_CONFIGVEC_79,
-		EMAC0_DCRBASEADDR           => EMAC0_DCRBASEADDR,
-		EMAC0_GTLOOPBACK            => EMAC0_GTLOOPBACK,
-		EMAC0_HOST_ENABLE           => EMAC0_HOST_ENABLE,
-		EMAC0_LINKTIMERVAL          => EMAC0_LINKTIMERVAL(3 to 11),
-		EMAC0_LTCHECK_DISABLE       => EMAC0_LTCHECK_DISABLE,
-		EMAC0_MDIO_ENABLE           => EMAC0_MDIO_ENABLE,
-		EMAC0_PAUSEADDR             => EMAC0_PAUSEADDR,
-		EMAC0_PHYINITAUTONEG_ENABLE => EMAC0_PHYINITAUTONEG_ENABLE,
-		EMAC0_PHYISOLATE            => EMAC0_PHYISOLATE,
-		EMAC0_PHYLOOPBACKMSB        => EMAC0_PHYLOOPBACKMSB,
-		EMAC0_PHYPOWERDOWN          => EMAC0_PHYPOWERDOWN,
-		EMAC0_PHYRESET              => EMAC0_PHYRESET,
-		EMAC0_RGMII_ENABLE          => EMAC0_RGMII_ENABLE,
-		EMAC0_RX16BITCLIENT_ENABLE  => EMAC0_RX16BITCLIENT_ENABLE,
-		EMAC0_RXFLOWCTRL_ENABLE     => EMAC0_RXFLOWCTRL_ENABLE,
-		EMAC0_RXHALFDUPLEX          => EMAC0_RXHALFDUPLEX,
-		EMAC0_RXINBANDFCS_ENABLE    => EMAC0_RXINBANDFCS_ENABLE,
-		EMAC0_RXJUMBOFRAME_ENABLE   => EMAC0_RXJUMBOFRAME_ENABLE,
-		EMAC0_RXRESET               => EMAC0_RXRESET,
-		EMAC0_RXVLAN_ENABLE         => EMAC0_RXVLAN_ENABLE,
-		EMAC0_RX_ENABLE             => EMAC0_RX_ENABLE,
-		EMAC0_SGMII_ENABLE          => EMAC0_SGMII_ENABLE,
-		EMAC0_SPEED_LSB             => EMAC0_SPEED_LSB,
-		EMAC0_SPEED_MSB             => EMAC0_SPEED_MSB,
-		EMAC0_TX16BITCLIENT_ENABLE  => EMAC0_TX16BITCLIENT_ENABLE,
-		EMAC0_TXFLOWCTRL_ENABLE     => EMAC0_TXFLOWCTRL_ENABLE,
-		EMAC0_TXHALFDUPLEX          => EMAC0_TXHALFDUPLEX,
-		EMAC0_TXIFGADJUST_ENABLE    => EMAC0_TXIFGADJUST_ENABLE,
-		EMAC0_TXINBANDFCS_ENABLE    => EMAC0_TXINBANDFCS_ENABLE,
-		EMAC0_TXJUMBOFRAME_ENABLE   => EMAC0_TXJUMBOFRAME_ENABLE,
-		EMAC0_TXRESET               => EMAC0_TXRESET,
-		EMAC0_TXVLAN_ENABLE         => EMAC0_TXVLAN_ENABLE,
-		EMAC0_TX_ENABLE             => EMAC0_TX_ENABLE,
-		EMAC0_UNICASTADDR           => EMAC0_UNICASTADDR,
-		EMAC0_UNIDIRECTION_ENABLE   => EMAC0_UNIDIRECTION_ENABLE,
-		EMAC0_USECLKEN              => EMAC0_USECLKEN,
-                EMAC1_LINKTIMERVAL          => "000000000"
-)
-    port map (
-        RESET                           => RESET,
+					-- Read Interface
+					got									=> TX_FSM_Ack,
+					valid								=> TX_FIFO_Valid,
+					dout								=> TX_FIFO_DataOut,
+					fstate_rd						=> open
+				);
+		end generate;
+		gen1 : if (TX_ENABLE_UNDERRUN_PROTECTION(i) = TRUE) generate
+			signal Commit			: STD_LOGIC;
+		begin
+			Commit		<= XClk_TX_FIFO_Valid and XClk_TX_FIFO_DataOut(EOF_BIT);
+		
+			TX_FIFO : entity PoC.fifo_cc_got_tempput
+				generic map (
+					D_BITS							=> XClk_TX_FIFO_DataOut'length,
+					MIN_DEPTH						=> TX_FIFO_DEPTHS(i),
+					ESTATE_WR_BITS			=> 0,
+					FSTATE_RD_BITS			=> 0,
+					DATA_REG						=> FALSE,
+					STATE_REG						=> TRUE,
+					OUTPUT_REG					=> FALSE
+				)
+				port map (
+					clk									=> RS_TX_Clock(i),
+					rst									=> RS_TX_Reset(i),
 
-        -- EMAC0
-        EMAC0CLIENTRXCLIENTCLKOUT       => EMAC0CLIENTRXCLIENTCLKOUT,
-        CLIENTEMAC0RXCLIENTCLKIN        => CLIENTEMAC0RXCLIENTCLKIN,
-        EMAC0CLIENTRXD                  => client_rx_data_0_i,
-        EMAC0CLIENTRXDVLD               => EMAC0CLIENTRXDVLD,
-        EMAC0CLIENTRXDVLDMSW            => EMAC0CLIENTRXDVLDMSW,
-        EMAC0CLIENTRXGOODFRAME          => EMAC0CLIENTRXGOODFRAME,
-        EMAC0CLIENTRXBADFRAME           => EMAC0CLIENTRXBADFRAME,
-        EMAC0CLIENTRXFRAMEDROP          => EMAC0CLIENTRXFRAMEDROP,
-        EMAC0CLIENTRXSTATS              => EMAC0CLIENTRXSTATS,
-        EMAC0CLIENTRXSTATSVLD           => EMAC0CLIENTRXSTATSVLD,
-        EMAC0CLIENTRXSTATSBYTEVLD       => EMAC0CLIENTRXSTATSBYTEVLD,
+					-- Write Interface
+					put									=> XClk_TX_FIFO_Valid,
+					din									=> XClk_TX_FIFO_DataOut,
+					full								=> TX_FIFO_Full,
+					estate_wr						=> open,
 
-        EMAC0CLIENTTXCLIENTCLKOUT       => EMAC0CLIENTTXCLIENTCLKOUT,
-        CLIENTEMAC0TXCLIENTCLKIN        => CLIENTEMAC0TXCLIENTCLKIN,
-        CLIENTEMAC0TXD                  => client_tx_data_0_i,
-        CLIENTEMAC0TXDVLD               => client_tx_data_valid_0_i,
-        CLIENTEMAC0TXDVLDMSW            => client_tx_data_valid_msb_0_i,
-        EMAC0CLIENTTXACK                => EMAC0CLIENTTXACK,
-        CLIENTEMAC0TXFIRSTBYTE          => CLIENTEMAC0TXFIRSTBYTE,
-        CLIENTEMAC0TXUNDERRUN           => CLIENTEMAC0TXUNDERRUN,
-        EMAC0CLIENTTXCOLLISION          => EMAC0CLIENTTXCOLLISION,
-        EMAC0CLIENTTXRETRANSMIT         => EMAC0CLIENTTXRETRANSMIT,
-        CLIENTEMAC0TXIFGDELAY           => CLIENTEMAC0TXIFGDELAY,
-        EMAC0CLIENTTXSTATS              => EMAC0CLIENTTXSTATS,
-        EMAC0CLIENTTXSTATSVLD           => EMAC0CLIENTTXSTATSVLD,
-        EMAC0CLIENTTXSTATSBYTEVLD       => EMAC0CLIENTTXSTATSBYTEVLD,
+					-- Temporary put control
+					commit							=> Commit,
+					rollback						=> '0',
 
-        CLIENTEMAC0PAUSEREQ             => CLIENTEMAC0PAUSEREQ,
-        CLIENTEMAC0PAUSEVAL             => CLIENTEMAC0PAUSEVAL,
+					-- Read Interface
+					got									=> TX_FSM_Ack,
+					valid								=> TX_FIFO_Valid,
+					dout								=> TX_FIFO_DataOut,
+					fstate_rd						=> open
+				);
+		end generate;
+		
+		TX_FIFO_Data		<= TX_FIFO_DataOut(TX_FIFO_Data'range);
+		TX_FIFO_SOF			<= TX_FIFO_DataOut(SOF_BIT);
+		TX_FIFO_EOF			<= TX_FIFO_DataOut(EOF_BIT);
 
-        PHYEMAC0GTXCLK                  => GTX_CLK_0,
-        PHYEMAC0TXGMIIMIICLKIN          => PHYEMAC0TXGMIIMIICLKIN,
-        EMAC0PHYTXGMIIMIICLKOUT         => EMAC0PHYTXGMIIMIICLKOUT,
-        PHYEMAC0RXCLK                   => GMII_RX_CLK_0,
-        PHYEMAC0RXD                     => GMII_RXD_0,
-        PHYEMAC0RXDV                    => GMII_RX_DV_0,
-        PHYEMAC0RXER                    => GMII_RX_ER_0,
-        EMAC0PHYTXCLK                   => open,
-        EMAC0PHYTXD                     => GMII_TXD_0,
-        EMAC0PHYTXEN                    => GMII_TX_EN_0,
-        EMAC0PHYTXER                    => GMII_TX_ER_0,
-        PHYEMAC0MIITXCLK                => '0',
-        PHYEMAC0COL                     => '0',
-        PHYEMAC0CRS                     => '0',
+		TX_FSM : entity PoC.eth_TEMAC_TX_FSM
+			port map (
+				Clock							=> Eth_TX_Clock(i),
+				Reset							=> Eth_TX_Reset(i),
+				
+				Valid							=> TX_FIFO_Valid,
+				Data							=> TX_FIFO_Data,
+				EOF								=> TX_FIFO_EOF,
+				Ack								=> TX_FSM_Ack,
+				Commit						=> TX_FSM_Commit,
+				Rollback					=> TX_FSM_Rollback,
+				
+				UnderrunDetected	=> TX_FSM_UnderrunDetected(i),
+				
+				TEMAC_Valid				=> TX_FSM_Valid(i),
+				TEMAC_Data				=> TX_FSM_Data(i),
+				TEMAC_Ack					=> TEMAC_TX_Ack(i)
+			);
 
-        CLIENTEMAC0DCMLOCKED            => DCM_LOCKED_0,
-        EMAC0CLIENTANINTERRUPT          => open,
-        PHYEMAC0SIGNALDET               => '0',
-        PHYEMAC0PHYAD                   => gnd_v48_i(4 downto 0),
-        EMAC0PHYENCOMMAALIGN            => open,
-        EMAC0PHYLOOPBACKMSB             => open,
-        EMAC0PHYMGTRXRESET              => open,
-        EMAC0PHYMGTTXRESET              => open,
-        EMAC0PHYPOWERDOWN               => open,
-        EMAC0PHYSYNCACQSTATUS           => open,
-        PHYEMAC0RXCLKCORCNT             => gnd_v48_i(2 downto 0),
-        PHYEMAC0RXBUFSTATUS             => gnd_v48_i(1 downto 0),
-        PHYEMAC0RXBUFERR                => '0',
-        PHYEMAC0RXCHARISCOMMA           => '0',
-        PHYEMAC0RXCHARISK               => '0',
-        PHYEMAC0RXCHECKINGCRC           => '0',
-        PHYEMAC0RXCOMMADET              => '0',
-        PHYEMAC0RXDISPERR               => '0',
-        PHYEMAC0RXLOSSOFSYNC            => gnd_v48_i(1 downto 0),
-        PHYEMAC0RXNOTINTABLE            => '0',
-        PHYEMAC0RXRUNDISP               => '0',
-        PHYEMAC0TXBUFERR                => '0',
-        EMAC0PHYTXCHARDISPMODE          => open,
-        EMAC0PHYTXCHARDISPVAL           => open,
-        EMAC0PHYTXCHARISK               => open,
+		-- =========================================================================
+		-- RX path
+		-- =========================================================================
+		RXFSM : entity PoC.eth_TEMAC_RX_FSM
+			port map (
+				Clock							=> Eth_TX_Clock(i),
+				Reset							=> Eth_TX_Reset(i),
+				
+				TEMAC_Valid				=> TEMAC_RX_Valid(i),
+				TEMAC_Data				=> TEMAC_RX_Data(i),
+				TEMAC_GoodFrame		=> TEMAC_RX_GoodFrame(i),
+				TEMAC_BadFrame		=> TEMAC_RX_BadFrame(i),
+				
+				OverflowDetected	=> RX_FSM_OverflowDetected(i),
+				
+				Valid							=> RX_FSM_Valid,
+				Data							=> RX_FSM_Data,
+				SOF								=> RX_FSM_SOF,
+				EOF								=> RX_FSM_EOF,
+				Ack								=> RX_FIFO_Ack,
+				Commit						=> RX_FSM_Commit,
+				Rollback					=> RX_FSM_Rollback
+			);
+		
+		RX_FIFO_put												<= RX_FSM_Valid;
+		RX_FIFO_DataIn(RX_FSM_Data'range)	<= RX_FSM_Data;
+		RX_FIFO_DataIn(SOF_BIT)						<= RX_FSM_SOF;
+		RX_FIFO_DataIn(EOF_BIT)						<= RX_FSM_EOF;
+		RX_FIFO_Ack												<= not RX_FIFO_Full;
+		
+		RX_FIFO : ENTITY PoC.fifo_cc_got_tempput
+			GENERIC MAP (
+				D_BITS							=> RX_FIFO_DataIn'length,
+				MIN_DEPTH						=> RX_FIFO_DEPTHS(i),
+				ESTATE_WR_BITS			=> 0,
+				FSTATE_RD_BITS			=> 0,
+				DATA_REG						=> FALSE,
+				STATE_REG						=> TRUE,
+				OUTPUT_REG					=> FALSE
+			)
+			PORT MAP (
+				clk									=> RS_RX_Clock(i),
+				rst									=> RS_RX_Reset(i),
 
-        EMAC0PHYMCLKOUT                 => open,
-        PHYEMAC0MCLKIN                  => '0',
-        PHYEMAC0MDIN                    => '1',
-        EMAC0PHYMDOUT                   => open,
-        EMAC0PHYMDTRI                   => open,
-        EMAC0SPEEDIS10100               => open,
+				-- Write Interface
+				put									=> RX_FIFO_put,
+				din									=> RX_FIFO_DataIn,
+				full								=> RX_FIFO_Full,
+				estate_wr						=> OPEN,
 
-        -- EMAC1
-        EMAC1CLIENTRXCLIENTCLKOUT       => open,
-        CLIENTEMAC1RXCLIENTCLKIN        => '0',
-        EMAC1CLIENTRXD                  => open,
-        EMAC1CLIENTRXDVLD               => open,
-        EMAC1CLIENTRXDVLDMSW            => open,
-        EMAC1CLIENTRXGOODFRAME          => open,
-        EMAC1CLIENTRXBADFRAME           => open,
-        EMAC1CLIENTRXFRAMEDROP          => open,
-        EMAC1CLIENTRXSTATS              => open,
-        EMAC1CLIENTRXSTATSVLD           => open,
-        EMAC1CLIENTRXSTATSBYTEVLD       => open,
+				-- Temporary put control
+				commit							=> RX_FSM_Commit,
+				rollback						=> RX_FSM_Rollback,
 
-        EMAC1CLIENTTXCLIENTCLKOUT       => open,
-        CLIENTEMAC1TXCLIENTCLKIN        => '0',
-        CLIENTEMAC1TXD                  => gnd_v48_i(15 downto 0),
-        CLIENTEMAC1TXDVLD               => '0',
-        CLIENTEMAC1TXDVLDMSW            => '0',
-        EMAC1CLIENTTXACK                => open,
-        CLIENTEMAC1TXFIRSTBYTE          => '0',
-        CLIENTEMAC1TXUNDERRUN           => '0',
-        EMAC1CLIENTTXCOLLISION          => open,
-        EMAC1CLIENTTXRETRANSMIT         => open,
-        CLIENTEMAC1TXIFGDELAY           => gnd_v48_i(7 downto 0),
-        EMAC1CLIENTTXSTATS              => open,
-        EMAC1CLIENTTXSTATSVLD           => open,
-        EMAC1CLIENTTXSTATSBYTEVLD       => open,
+				-- Read Interface
+				got									=> RX_FIFO_got,
+				valid								=> RX_FIFO_Valid,
+				dout								=> RX_FIFO_DataOut,
+				fstate_rd						=> OPEN
+			);
 
-        CLIENTEMAC1PAUSEREQ             => '0',
-        CLIENTEMAC1PAUSEVAL             => gnd_v48_i(15 downto 0),
+		RX_FIFO_got			<= not XClk_RX_FIFO_Full;
+		
+		genRX_XClk0 : if (RX_INSERT_CROSSCLOCK_FIFO(i) = FALSE) generate
+			RX_Valid(i)							<= RX_FIFO_Valid;
+			RX_Data(i)							<= RX_FIFO_DataOut(RX_Data(i)'range);
+			RX_SOF(i)								<= RX_FIFO_DataOut(SOF_BIT);
+			RX_EOF(i)								<= RX_FIFO_DataOut(EOF_BIT);
+			XClk_RX_FIFO_Full				<= not RX_Ack(i);
+		end generate;
+		genRX_XClk1 : if (RX_INSERT_CROSSCLOCK_FIFO(i) = TRUE) generate
+			signal XClk_RX_FIFO_DataOut		: STD_LOGIC_VECTOR(9 downto 0);
+		begin
+			XClk_RX_FIFO : ENTITY PoC.fifo_ic_got
+				GENERIC MAP (
+					D_BITS							=> RX_FIFO_DataOut'length,
+					MIN_DEPTH						=> 16,
+					DATA_REG						=> TRUE,
+					OUTPUT_REG					=> FALSE,
+					ESTATE_WR_BITS			=> 0,
+					FSTATE_RD_BITS			=> 0
+				)
+				PORT MAP (
+					-- Write Interface
+					clk_wr							=> RS_RX_Clock(i),
+					rst_wr							=> RS_RX_Reset(i),
+					put									=> RX_FIFO_Valid,
+					din									=> RX_FIFO_DataOut,
+					full								=> XClk_RX_FIFO_Full,
+					estate_wr						=> OPEN,
 
-        PHYEMAC1GTXCLK                  => '0',
-        PHYEMAC1TXGMIIMIICLKIN          => '0',
-        EMAC1PHYTXGMIIMIICLKOUT         => open,
-
-        PHYEMAC1RXCLK                   => '0',
-        PHYEMAC1RXD                     => gnd_v48_i(7 downto 0),
-        PHYEMAC1RXDV                    => '0',
-        PHYEMAC1RXER                    => '0',
-        PHYEMAC1MIITXCLK                => '0',
-        EMAC1PHYTXCLK                   => open,
-        EMAC1PHYTXD                     => open,
-        EMAC1PHYTXEN                    => open,
-        EMAC1PHYTXER                    => open,
-        PHYEMAC1COL                     => '0',
-        PHYEMAC1CRS                     => '0',
-
-        CLIENTEMAC1DCMLOCKED            => '1',
-        EMAC1CLIENTANINTERRUPT          => open,
-
-        PHYEMAC1SIGNALDET               => '0',
-        PHYEMAC1PHYAD                   => gnd_v48_i(4 downto 0),
-        EMAC1PHYENCOMMAALIGN            => open,
-        EMAC1PHYLOOPBACKMSB             => open,
-        EMAC1PHYMGTRXRESET              => open,
-        EMAC1PHYMGTTXRESET              => open,
-        EMAC1PHYPOWERDOWN               => open,
-        EMAC1PHYSYNCACQSTATUS           => open,
-        PHYEMAC1RXCLKCORCNT             => gnd_v48_i(2 downto 0),
-        PHYEMAC1RXBUFSTATUS             => gnd_v48_i(1 downto 0),
-        PHYEMAC1RXBUFERR                => '0',
-        PHYEMAC1RXCHARISCOMMA           => '0',
-        PHYEMAC1RXCHARISK               => '0',
-        PHYEMAC1RXCHECKINGCRC           => '0',
-        PHYEMAC1RXCOMMADET              => '0',
-        PHYEMAC1RXDISPERR               => '0',
-        PHYEMAC1RXLOSSOFSYNC            => gnd_v48_i(1 downto 0),
-        PHYEMAC1RXNOTINTABLE            => '0',
-        PHYEMAC1RXRUNDISP               => '0',
-        PHYEMAC1TXBUFERR                => '0',
-        EMAC1PHYTXCHARDISPMODE          => open,
-        EMAC1PHYTXCHARDISPVAL           => open,
-        EMAC1PHYTXCHARISK               => open,
-
-        EMAC1PHYMCLKOUT                 => open,
-        PHYEMAC1MCLKIN                  => '0',
-        PHYEMAC1MDIN                    => '0',
-        EMAC1PHYMDOUT                   => open,
-        EMAC1PHYMDTRI                   => open,
-
-        EMAC1SPEEDIS10100               => open,
-
-        -- Host Interface 
-        HOSTCLK                         => '0',
- 
-        HOSTOPCODE                      => gnd_v48_i(1 downto 0),
-        HOSTREQ                         => '0',
-        HOSTMIIMSEL                     => '0',
-        HOSTADDR                        => gnd_v48_i(9 downto 0),
-        HOSTWRDATA                      => gnd_v48_i(31 downto 0), 
-        HOSTMIIMRDY                     => open,
-        HOSTRDDATA                      => open,
-        HOSTEMAC1SEL                    => '0',
-
-        -- DCR Interface
-        DCREMACCLK                      => '0',
-        DCREMACABUS                     => gnd_v48_i(9 downto 0),
-        DCREMACREAD                     => '0',
-        DCREMACWRITE                    => '0',
-        DCREMACDBUS                     => gnd_v48_i(31 downto 0),
-        EMACDCRACK                      => open,
-        EMACDCRDBUS                     => open,
-        DCREMACENABLE                   => '0',
-        DCRHOSTDONEIR                   => open
-        );
-
+					-- Read Interface
+					clk_rd							=> RX_Clock(i),
+					rst_rd							=> RX_Reset(i),
+					got									=> RX_Ack(i),
+					valid								=> RX_Valid(i),
+					dout								=> XClk_RX_FIFO_DataOut,
+					fstate_rd						=> OPEN
+				);
+	
+			RX_Data(i)	<= XClk_RX_FIFO_DataOut(RX_Data(i)'range);
+			RX_SOF(i)		<= XClk_RX_FIFO_DataOut(SOF_BIT);
+			RX_EOF(i)		<= XClk_RX_FIFO_DataOut(EOF_BIT);
+		end generate;
+	end generate;
 end;

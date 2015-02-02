@@ -75,14 +75,14 @@ ENTITY sata_CommandLayer IS
 		TX_Data												: IN	T_SLV_32;
 		TX_SOR												: IN	STD_LOGIC;
 		TX_EOR												: IN	STD_LOGIC;
-		TX_Ready											: OUT	STD_LOGIC;
+		TX_Ack												: OUT	STD_LOGIC;
 
 		-- RX path
 		RX_Valid											: OUT	STD_LOGIC;
 		RX_Data												: OUT	T_SLV_32;
 		RX_SOR												: OUT	STD_LOGIC;
 		RX_EOR												: OUT	STD_LOGIC;
-		RX_Ready											: IN	STD_LOGIC;
+		RX_Ack												: IN	STD_LOGIC;
 
 		-- TransportLayer interface
 		-- ========================================================================
@@ -100,7 +100,7 @@ ENTITY sata_CommandLayer IS
 		Trans_TX_Data									: OUT	T_SLV_32;
 		Trans_TX_SOT									: OUT	STD_LOGIC;
 		Trans_TX_EOT									: OUT	STD_LOGIC;
-		Trans_TX_Ready								: IN	STD_LOGIC;
+		Trans_TX_Ack									: IN	STD_LOGIC;
 
 		-- RX path
 		Trans_RX_Valid								: IN	STD_LOGIC;
@@ -109,7 +109,7 @@ ENTITY sata_CommandLayer IS
 		Trans_RX_EOT									: IN	STD_LOGIC;
 		Trans_RX_Commit								: IN	STD_LOGIC;
 		Trans_RX_Rollback							: IN	STD_LOGIC;
-		Trans_RX_Ready								: OUT	STD_LOGIC
+		Trans_RX_Ack									: OUT	STD_LOGIC
 	);
 END;
 
@@ -153,11 +153,11 @@ ARCHITECTURE rtl OF sata_CommandLayer IS
 	SIGNAL TX_FIFO_SOR											: STD_LOGIC;
 	SIGNAL TX_FIFO_EOR											: STD_LOGIC;
 	SIGNAL TX_FIFO_Valid										: STD_LOGIC;		
-	SIGNAL TX_FIFO_Ready										: STD_LOGIC;
+	SIGNAL TX_FIFO_Ack											: STD_LOGIC;
 	
 	-- TX path
 	-- ==========================================================================
-	SIGNAL TC_TX_Ready											: STD_LOGIC;
+	SIGNAL TC_TX_Ack												: STD_LOGIC;
 	SIGNAL TC_TX_Valid											: STD_LOGIC;
 	SIGNAL TC_TX_Data												: T_SLV_32;
 	SIGNAL TC_TX_SOT												: STD_LOGIC;
@@ -268,13 +268,13 @@ BEGIN
 
 	-- TX_FIFO signals
 	genTXFIFO0 : IF (TX_FIFO_DEPTH = 0) GENERATE
-		TX_Ready					<= NOT TX_FIFO_Full;
+		TX_Ack						<= NOT TX_FIFO_Full;
 		TX_FIFO_Data			<= TX_Data;
 		TX_FIFO_SOR				<= TX_SOR;
 		TX_FIFO_EOR				<= TX_EOR;
 		TX_FIFO_Valid			<= TX_Valid;
 		
-		TX_FIFO_Full			<= NOT Trans_TX_Ready;
+		TX_FIFO_Full			<= NOT Trans_TX_Ack;
 		Trans_TX_Data			<= TX_FIFO_Data;
 		Trans_TX_Valid		<= TX_FIFO_Valid;
 	END GENERATE;
@@ -288,7 +288,7 @@ BEGIN
 	BEGIN
 		TX_FIFO_rst																<= Reset OR to_sl(Command = SATA_CMD_CMD_RESET);
 		TX_FIFO_put																<= TX_Valid;
-		TX_FIFO_got																<= TC_TX_Ready;
+		TX_FIFO_got																<= TC_TX_Ack;
 		
 		TX_FIFO_DataIn(TX_Data'range)							<= TX_Data;
 		TX_FIFO_DataIn(TX_Data'length	+ 0)				<= TX_SOR;
@@ -326,8 +326,8 @@ BEGIN
 				fstate_rd				=> OPEN
 			);
 
-		TX_FIFO_Ready		<= NOT TX_FIFO_Full;
-		TX_Ready				<= TX_FIFO_Ready;
+		TX_FIFO_Ack			<= NOT TX_FIFO_Full;
+		TX_Ack					<= TX_FIFO_Ack;
 	END GENERATE;
 
 	-- TX TransportCutter
@@ -347,9 +347,9 @@ BEGIN
 	BEGIN
 		-- enable TX data path
 		TC_TX_Valid					<= TX_FIFO_Valid		AND CFSM_TX_en;
-		TC_TX_Ready					<= Trans_TX_Ready		AND CFSM_TX_en;
+		TC_TX_Ack						<= Trans_TX_Ack			AND CFSM_TX_en;
 
-		TC_TX_DataFlow			<= TC_TX_Valid			AND TC_TX_Ready;
+		TC_TX_DataFlow			<= TC_TX_Valid			AND TC_TX_Ack;
 
 		InsertEOT_d					<= TC_TX_InsertEOT	WHEN rising_edge(Clock) AND (TC_TX_DataFlow = '1');
 		InsertEOT_re				<= TC_TX_InsertEOT	AND NOT InsertEOT_d;
@@ -434,7 +434,7 @@ BEGIN
 	RX_FIFO_Commit														<= (Trans_RX_Commit		AND NOT IDF_Enable);
 	RX_FIFO_Rollback													<= Trans_RX_Rollback	AND NOT IDF_Enable;
 
-	RX_FIFO_got																<= RX_Ready;
+	RX_FIFO_got																<= RX_Ack;
 
 	RX_FIFO_DataIn(Trans_RX_Data'range)				<= Trans_RX_Data;
 	RX_FIFO_DataIn(Trans_RX_Data'length	+ 0)	<= CFSM_RX_SOR;
@@ -475,7 +475,7 @@ BEGIN
 			fstate_rd 		=> OPEN
 		);
 	
-	Trans_RX_Ready 	<= (NOT RX_FIFO_Full) WHEN (IDF_Enable = '0') ELSE '1';					-- RX_Ready multiplexer
+	Trans_RX_Ack	 	<= (NOT RX_FIFO_Full) WHEN (IDF_Enable = '0') ELSE '1';					-- RX_Ack	 multiplexer
 	RX_Valid				<= RX_FIFO_Valid;
 
 	

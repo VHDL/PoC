@@ -225,24 +225,24 @@ BEGIN
 			SIGNAL TX_Valid_n			: STD_LOGIC;
 			SIGNAL TX_SOF_n				: STD_LOGIC;
 			SIGNAL TX_EOF_n				: STD_LOGIC;
-			SIGNAL TX_Ack	_n			: STD_LOGIC;
+			SIGNAL TX_Ack_n				: STD_LOGIC;
 
 			SIGNAL RX_Valid_n			: STD_LOGIC;
 			SIGNAL RX_SOF_n				: STD_LOGIC;
 			SIGNAL RX_EOF_n				: STD_LOGIC;
-			SIGNAL RX_Ack	_n			: STD_LOGIC;
+			SIGNAL RX_Ack_n				: STD_LOGIC;
 		BEGIN
 			-- convert LocalLink interface from low-active to high-active and vv.
 			-- ========================================================================================================================================================
 			TX_Valid_n		<= NOT TX_Valid;
 			TX_SOF_n			<= NOT TX_SOF;
 			TX_EOF_n			<= NOT TX_EOF;
-			TX_Ack				<= NOT TX_Ack	_n;
+			TX_Ack				<= NOT TX_Ack_n;
 
 			RX_Valid			<= NOT RX_Valid_n;
 			RX_SOF				<= NOT RX_SOF_n;
 			RX_EOF				<= NOT RX_EOF_n;
-			RX_Ack	_n		<= NOT RX_Ack;
+			RX_Ack_n			<= NOT RX_Ack;
 
 			Eth_TX_Enable					<= '1';
 			Eth_RX_Enable					<= '1';
@@ -261,7 +261,7 @@ BEGIN
 					wr_sof_n					=> TX_SOF_n,							
 					wr_eof_n					=> TX_EOF_n,							
 					wr_src_rdy_n			=> TX_Valid_n,						
-					wr_dst_rdy_n			=> TX_Ack	_n,						
+					wr_dst_rdy_n			=> TX_Ack_n,						
 					wr_fifo_status		=> TX_FIFO_Status,					-- FIFO memory status
 
 					-- Transmitter MAC Client Interface
@@ -287,7 +287,7 @@ BEGIN
 					rd_sof_n					=> RX_SOF_n,						
 					rd_eof_n					=> RX_EOF_n,						
 					rd_src_rdy_n			=> RX_Valid_n,					
-					rd_dst_rdy_n			=> RX_Ack	_n,					
+					rd_dst_rdy_n			=> RX_Ack_n,					
 					
 					-- Receiver MAC Client Interface
 					wr_clk						=> Eth_RX_Clock,						-- MAC receive clock

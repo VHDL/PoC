@@ -60,7 +60,7 @@ ENTITY xil_Reconfigurator IS
 		DRP_we					: OUT	STD_LOGIC;																				-- 
 		DRP_DataIn			: IN	T_XIL_DRP_DATA;																		-- 
 		DRP_DataOut			: OUT	T_XIL_DRP_DATA;																		-- 
-		DRP_Ready				: IN	STD_LOGIC																					-- 
+		DRP_Ack					: IN	STD_LOGIC																					-- 
 	);
 END;
 
@@ -158,7 +158,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-	PROCESS(State, Reconfig, ROM_LastConfigWord, DRP_Ready)
+	PROCESS(State, Reconfig, ROM_LastConfigWord, DRP_Ack	)
 	BEGIN
 		NextState								<= State;
 
@@ -188,7 +188,7 @@ BEGIN
 				NextState									<= ST_READ_WAIT;
 			
 			WHEN ST_READ_WAIT =>
-				IF (DRP_Ready = '1') THEN
+				IF (DRP_Ack = '1') THEN
 					DataBuffer_en						<= '1';
 				
 					NextState								<= ST_WRITE_BEGIN;
@@ -201,7 +201,7 @@ BEGIN
 				NextState									<= ST_WRITE_WAIT;
 			
 			WHEN ST_WRITE_WAIT =>
-				IF (DRP_Ready = '1') THEN
+				IF (DRP_Ack = '1') THEN
 					IF (ROM_LastConfigWord = '1') THEN
 						NextState							<= ST_DONE;
 					ELSE
