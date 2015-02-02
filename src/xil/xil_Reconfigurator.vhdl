@@ -83,32 +83,29 @@ ARCHITECTURE rtl OF xil_Reconfigurator IS
 	ATTRIBUTE FSM_ENCODING	OF State	: SIGNAL IS ite(DEBUG, "gray", "speed1");
 	
 	SIGNAL DataBuffer_en							: STD_LOGIC;
-	SIGNAL DataBuffer_d								: T_XIL_DRP_DATA													:= (OTHERS => '0');
+	SIGNAL DataBuffer_d								: T_XIL_DRP_DATA												:= (OTHERS => '0');
 
 	SIGNAL ROM_Entry									: T_XIL_DRP_CONFIG;
 	SIGNAL ROM_LastConfigWord					: STD_LOGIC;
 
-	CONSTANT CONFIGINDEX_BW						: POSITIVE															:= log2ceilnz(C_XIL_DRP_MAX_CONFIG_COUNT);
+	CONSTANT CONFIGINDEX_BITS					: POSITIVE															:= log2ceilnz(CONFIG_ROM'length);
 	SIGNAL ConfigIndex_rst						: STD_LOGIC;
 	SIGNAL ConfigIndex_en							: STD_LOGIC;
-	SIGNAL ConfigIndex_us							: UNSIGNED(CONFIGINDEX_BW - 1 DOWNTO 0);
+	SIGNAL ConfigIndex_us							: UNSIGNED(CONFIGINDEX_BITS - 1 DOWNTO 0);
 	
 	ATTRIBUTE KEEP OF ROM_LastConfigWord	: SIGNAL IS DEBUG;
 BEGIN
 
 	-- configuration ROM
 	blkCONFIG_ROM : BLOCK
-		SIGNAL SetIndex 		: INTEGER;
-		SIGNAL RowIndex 		: INTEGER;
+		SIGNAL SetIndex 						: INTEGER range 0 to CONFIG_ROM'high;
+		SIGNAL RowIndex 						: T_XIL_DRP_CONFIG_INDEX;
 		
---		ATTRIBUTE SIGNAL_ENCODING OF SetIndex		: SIGNAL IS "user";
---		ATTRIBUTE SIGNAL_ENCODING OF RowIndex		: SIGNAL IS "user";
-		
-		ATTRIBUTE KEEP OF SetIndex							: SIGNAL IS DEBUG;
-		ATTRIBUTE KEEP OF RowIndex							: SIGNAL IS DEBUG;
+		ATTRIBUTE KEEP OF SetIndex	: SIGNAL IS DEBUG;
+		ATTRIBUTE KEEP OF RowIndex	: SIGNAL IS DEBUG;
 	BEGIN
-		SetIndex							<= to_integer(unsigned(ConfigSelect));
-		RowIndex							<= to_integer(ConfigIndex_us);
+		SetIndex							<= to_index(unsigned(ConfigSelect), CONFIG_ROM'high);
+		RowIndex							<= to_index(ConfigIndex_us, T_XIL_DRP_CONFIG_INDEX'high);
 		ROM_Entry							<= CONFIG_ROM(SetIndex).Configs(RowIndex);
 		ROM_LastConfigWord		<= to_sl(RowIndex = CONFIG_ROM(SetIndex).LastIndex);
 	END BLOCK;
