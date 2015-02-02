@@ -511,7 +511,7 @@ BEGIN
 				In_ReadWrite	=> DebugPortIn(i).DRP.ReadWrite,
 				In_DataIn			=> DebugPortIn(i).DRP.Data,
 				In_DataOut		=> DebugPortOut(i).DRP.Data,
-				In_Ack				=> DebugPortOut(i).DRP.Ready,
+				In_Ack				=> DebugPortOut(i).DRP.Ack,
 				
 				Out_Clock			=> GTX_DRP_Clock,
 				Out_Reset			=> '0',
@@ -687,7 +687,7 @@ BEGIN
 			ELSIF (GTX_RX_ComSASDetected	= '1') THEN
 				OOB_RX_Received_i			<= SATA_OOB_COMSAS;
 			ELSIF (RX_ElectricalIDLE	= '1') THEN
-				OOB_RX_Received_i			<= SATA_OOB_Ack;
+				OOB_RX_Received_i			<= SATA_OOB_READY;
 			ELSE
 				OOB_RX_Received_i		 	<= SATA_OOB_NONE;
 			END IF;
@@ -791,7 +791,7 @@ BEGIN
 
 		PROCESS(DD_NoDevice, DD_NewDevice, TX_Error_i, RX_Error_i)	-- GTX_ResetDone, 
 		BEGIN
-			Status_i	 		<= SATA_TRANSCEIVER_STATUS_Ack;
+			Status_i	 		<= SATA_TRANSCEIVER_STATUS_READY;
 			
 			IF (DD_NoDevice	= '1') THEN
 				Status_i		<= SATA_TRANSCEIVER_STATUS_NO_DEVICE;

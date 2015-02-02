@@ -62,7 +62,7 @@ package xil is
 
 	type T_XIL_DRP_BUS_OUT is record
 		Data					: T_XIL_DRP_DATA;
-		Ready					: STD_LOGIC;
+		Ack						: STD_LOGIC;
 	end record;
 
 	type T_XIL_DRP_CONFIG is record
