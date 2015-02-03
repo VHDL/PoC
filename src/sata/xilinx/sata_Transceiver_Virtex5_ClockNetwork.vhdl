@@ -1,3 +1,34 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Package:					TODO
+--
+-- Authors:					Patrick Lehmann
+-- 
+-- Description:
+-- ------------------------------------
+--		For detailed documentation see below.
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
+
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
@@ -5,21 +36,19 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY UNISIM;
 USE			UNISIM.VCOMPONENTS.ALL;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+LIBRARY PoC;
+USE			PoC.utils.ALL;
+USE			PoC.physical.ALL;
+USE			PoC.io.ALL;
+USE			PoC.sata.ALL;
 
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
 
-LIBRARY L_SATAController;
-USE			L_SATAController.SATATypes.ALL;
-
-ENTITY SATATransceiver_Virtex5_ClockNetwork IS
+ENTITY sata_Transceiver_Virtex5_GTP_ClockNetwork IS
 	GENERIC (
-		CHIPSCOPE_KEEP						: BOOLEAN												:= TRUE;
-		CLOCK_IN_FREQ_MHZ					: REAL													:= 150.0;																									-- 150 MHz
-		PORTS											: POSITIVE											:= 1;																											-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR			:= T_SATA_GENERATION_VECTOR'(SATA_GENERATION_2, SATA_GENERATION_2)			-- intial SATA Generation
+		DEBUG											: BOOLEAN												:= TRUE;
+		CLOCK_IN_FREQ							: FREQ													:= 150.0 MHz;															-- 150 MHz
+		PORTS											: POSITIVE											:= 1;																			-- Number of Ports per Transceiver
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR			:= (0 to 1 => C_SATA_GENERATION_MAX)			-- intial SATA Generation
 	);
 	PORT (
 		ClockIn_150MHz						: IN	STD_LOGIC;
@@ -27,14 +56,15 @@ ENTITY SATATransceiver_Virtex5_ClockNetwork IS
 		ClockNetwork_Reset				: IN	STD_LOGIC;
 		ClockNetwork_ResetDone		:	OUT	STD_LOGIC;
 		
-		SATA_Generation						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
+		SATAGeneration						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
 		
 		GTP_Clock_1X							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		GTP_Clock_4X							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0)
 	);
 END;
 
-ARCHITECTURE rtl OF SATATransceiver_Virtex5_ClockNetwork IS
+
+ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP_ClockNetwork IS
 	ATTRIBUTE KEEP											: BOOLEAN;
 
 	SIGNAL ClkNet_Reset									: STD_LOGIC;
@@ -57,21 +87,8 @@ ARCHITECTURE rtl OF SATATransceiver_Virtex5_ClockNetwork IS
 	SIGNAL GTP_Clock_1X_i								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL GTP_Clock_4X_i								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	
-	FUNCTION IsSupportedGeneration(SATAGen : T_SATA_GENERATION) RETURN BOOLEAN IS
-	BEGIN
-		CASE SATAGen IS
-			WHEN SATA_GENERATION_1 =>			RETURN TRUE;
-			WHEN SATA_GENERATION_2 =>			RETURN TRUE;
-			WHEN OTHERS =>					RETURN FALSE;
-		END CASE;
-	END;
-	
 BEGIN
 	ASSERT (PORTS <= 2)	REPORT "to many ports per transceiver"	SEVERITY FAILURE;
-	
-	gen0 : FOR I IN 0 TO PORTS - 1 GENERATE
-		ASSERT IsSupportedGeneration(SATA_Generation(I))	REPORT "Member of T_SATA_GENERATION not supported"	SEVERITY FAILURE;
-	END GENERATE;
 	
 	-- reset generation
 	-- ======================================================================
@@ -108,15 +125,15 @@ BEGIN
 -- ClockMultiplexers
 -- ==================================================================
 	gen1 : FOR I IN 0 TO PORTS - 1 GENERATE
-		SIGNAL SATA_Generation_d1				: T_SATA_GENERATION		:= INITIAL_SATA_GENERATIONS(INITIAL_SATA_GENERATIONS'low + I);
-		SIGNAL SATA_Generation_d2				: T_SATA_GENERATION		:= INITIAL_SATA_GENERATIONS(INITIAL_SATA_GENERATIONS'low + I);
+		SIGNAL SATAGeneration_d1				: T_SATA_GENERATION		:= INITIAL_SATA_GENERATIONS(INITIAL_SATA_GENERATIONS'low + I);
+		SIGNAL SATAGeneration_d2				: T_SATA_GENERATION		:= INITIAL_SATA_GENERATIONS(INITIAL_SATA_GENERATIONS'low + I);
 		SIGNAL MuxControl								: STD_LOGIC;
 		
-		ATTRIBUTE KEEP OF MuxControl		: SIGNAL IS CHIPSCOPE_KEEP;
+		ATTRIBUTE KEEP OF MuxControl		: SIGNAL IS DEBUG;
 	BEGIN
-		SATA_Generation_d1		<= SATA_Generation(I) WHEN rising_edge(ClockIn_150MHz);
-		SATA_Generation_d2		<= SATA_Generation_d1 WHEN rising_edge(ClockIn_150MHz);
-		MuxControl						<= to_sl(SATA_Generation_d2 = SATA_GENERATION_2);
+		SATAGeneration_d1		<= SATAGeneration(I) WHEN rising_edge(ClockIn_150MHz);
+		SATAGeneration_d2		<= SATAGeneration_d1 WHEN rising_edge(ClockIn_150MHz);
+		MuxControl						<= to_sl(SATAGeneration_d2 = SATA_GENERATION_2);
 
 		MUX_Clock_1X : BUFGMUX
 			PORT MAP (
@@ -140,7 +157,7 @@ BEGIN
 	GTP_DCM : DCM_BASE
 		GENERIC MAP (
 			-- configure CLKIN input
-			CLKIN_PERIOD						=> Freq_MHz2Real_ns(CLOCK_IN_FREQ_MHZ),
+			CLKIN_PERIOD						=> to_real(to_time(CLOCK_IN_FREQ), 1.0 ns),
 			DLL_FREQUENCY_MODE			=> "HIGH",
 			DUTY_CYCLE_CORRECTION		=> TRUE,
 			FACTORY_JF							=> x"F0F0",
@@ -174,15 +191,15 @@ BEGIN
 	GTP_Clock_1X			<= GTP_Clock_1X_i;
 	GTP_Clock_4X			<= GTP_Clock_4X_i;
 
-	genCSP : IF (CHIPSCOPE_KEEP = TRUE) GENERATE
-		SIGNAL CSP_Clock_300MHz								: STD_LOGIC;
+	genCSP : IF (DEBUG = TRUE) GENERATE
+		SIGNAL DBG_Clock_300MHz								: STD_LOGIC;
 		
-		ATTRIBUTE KEEP OF CSP_Clock_300MHz		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_Clock_300MHz		: SIGNAL IS TRUE;
 	BEGIN
 		BUFG_Clock_300MHz : BUFG
 			PORT MAP (
 				I		=> DCM_Clock_300MHz,
-				O		=> CSP_Clock_300MHz
+				O		=> DBG_Clock_300MHz
 			);
 	END GENERATE;
 

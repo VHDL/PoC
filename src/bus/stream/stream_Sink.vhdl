@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,9 +37,7 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalSimulation.ALL;
+USE			PoC.stream.ALL;
 
 
 ENTITY stream_Sink IS
@@ -57,7 +55,7 @@ ENTITY stream_Sink IS
 		In_Data													: IN	T_SLV_8;
 		In_SOF													: IN	STD_LOGIC;
 		In_EOF													: IN	STD_LOGIC;
-		In_Ready												: OUT	STD_LOGIC
+		In_Ack													: OUT	STD_LOGIC
 	);
 END ENTITY;
 
@@ -66,6 +64,6 @@ ARCHITECTURE rtl OF stream_Sink IS
 
 BEGIN
 
-	In_Ready		<= '1';-- RX_Valid;
+	In_Ack			<= '1';-- RX_Valid;
 
 END ARCHITECTURE;

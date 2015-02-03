@@ -10,12 +10,12 @@
 -- Description:
 -- ------------------------------------
 --		Automated testbench for PoC.arith_prng
---		The Pseudo-Random Number Generator is instanziated for 8 bits. The
---		output sequence is compared to 256 precalculated values.
+--		The Pseudo-Random Number Generator is instantiated for 8 bits. The
+--		output sequence is compared to 256 pre calculated values.
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,7 +47,7 @@ END;
 
 
 ARCHITECTURE test OF arith_prng_tb IS
-	CONSTANT CLOCK_100MHZ_PERIOD			: TIME															:= 10.0 ns;
+	CONSTANT CLOCK_PERIOD_100MHZ			: TIME															:= 10.0 ns;
 
 	CONSTANT COMPARE_LIST_8_BITS			: T_SLVV_8(0 TO 255)								:= (
 		x"12", x"24", x"48", x"90", x"21", x"42", x"85", x"0A", x"14", x"28", x"51", x"A2", x"45", x"8B", x"17", x"2E",
@@ -68,8 +68,7 @@ ARCHITECTURE test OF arith_prng_tb IS
 		x"9A", x"34", x"69", x"D3", x"A7", x"4F", x"9E", x"3C", x"78", x"F0", x"E0", x"C1", x"82", x"04", x"09", x"12"
 	);
 
-	SIGNAL SimStop			: BOOLEAN				:= FALSE;
-	SIGNAL SimError			: BOOLEAN				:= FALSE;
+	SIGNAL SimStop			: std_logic := '0';
 
 	SIGNAL Clock				: STD_LOGIC			:= '1';
 	SIGNAL Reset				: STD_LOGIC			:= '0';
@@ -78,18 +77,9 @@ ARCHITECTURE test OF arith_prng_tb IS
 	
 BEGIN
 
-	ClockProcess100MHz : PROCESS(Clock)
-  BEGIN
-		IF (SimStop = FALSE) THEN
-			Clock <= NOT Clock AFTER CLOCK_100MHZ_PERIOD / 2;
-		ELSE
-			Clock	<= '0';
-		END IF;
-  END PROCESS;
+	Clock <= Clock xnor SimStop after CLOCK_PERIOD_100MHZ / 2.0;
 
 	PROCESS
---		VARIABLE l				: LINE;
-		
 	BEGIN
 		WAIT UNTIL rising_edge(Clock);
 		
@@ -98,28 +88,16 @@ BEGIN
 	
 		Reset						<= '0';
 		WAIT UNTIL rising_edge(Clock);
-	
+
 		FOR I IN 0 TO 255 LOOP
 			Test_got				<= '1';
 			WAIT UNTIL rising_edge(Clock);
-			
---			REPORT "I=" & INTEGER'image(I) & " Value=" & to_string(PRNG_Value, 'h') & " Expected=" & to_string(COMPARE_LIST_8_BITS(I), 'h');
-			IF (PRNG_Value /= COMPARE_LIST_8_BITS(I)) THEN
-				SimError <= TRUE;
-				EXIT;
-			END IF;
+			tbAssert((PRNG_Value = COMPARE_LIST_8_BITS(I)), "I=" & integer'image(I) &	" Value=" & raw_format_slv_hex(PRNG_Value) & " Expected=" & raw_format_slv_hex(COMPARE_LIST_8_BITS(I)));
 		END LOOP;
 		
 		-- Report overall simulation result
-		printSimulationResult(NOT SimError);
---		IF SimError THEN
---			write(l, string'("SIMULATION RESULT = FAILED"));
---		ELSE
---			write(l, string'("SIMULATION RESULT = PASSED"));
---		END IF;
---		writeline(output, l);
-		
-		SimStop	<= TRUE;
+		tbPrintResult;
+		SimStop	<= '1';
 		WAIT;
 	END PROCESS;
 

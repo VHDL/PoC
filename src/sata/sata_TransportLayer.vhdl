@@ -37,12 +37,12 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
---USE			PoC.sata.ALL;
+USE			PoC.sata.ALL;
 
 
 ENTITY sata_TransportLayer IS
   GENERIC (
-		DEBUG														: BOOLEAN											:= FALSE;					-- generate ChipScope CSP_* signals
+		DEBUG														: BOOLEAN											:= FALSE;					-- generate ChipScope DBG_* signals
 		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: BOOLEAN											:= TRUE						-- required by ATA/SATA standard
   );
 	PORT (
@@ -54,12 +54,12 @@ ENTITY sata_TransportLayer IS
 		Status													: OUT	T_SATA_TRANS_STATUS;
 		Error														: OUT	T_SATA_TRANS_ERROR;	
 	
-		DebugPort												: OUT T_DBG_TRANSPORT_OUT;
+--		DebugPort												: OUT T_DBG_TRANSPORT_OUT;
 	
 		-- ATA registers
 		UpdateATAHostRegisters					: IN	STD_LOGIC;
-		ATAHostRegisters								: IN	T_ATA_HOST_REGISTERS;
-		ATADeviceRegisters							: OUT	T_ATA_DEVICE_REGISTERS;
+		ATAHostRegisters								: IN	T_SATA_ATA_HOST_REGISTERS;
+		ATADeviceRegisters							: OUT	T_SATA_ATA_DEVICE_REGISTERS;
 	
 		-- TX path
 		TX_Ready											: OUT	STD_LOGIC;
@@ -78,9 +78,7 @@ ENTITY sata_TransportLayer IS
 		RX_Rollback										: OUT	STD_LOGIC;
 	
 		-- LinkLayer interface
-		Link_Command									: OUT	T_SATA_COMMAND;
-		Link_Status										: IN	T_SATA_STATUS;
-		Link_Error										: IN	T_SATA_ERROR;
+		Link_Status										: IN	T_SATA_SATACONTROLLER_STATUS;
 		
 		-- TX path
 		Link_TX_Ready									: IN	STD_LOGIC;
@@ -103,7 +101,7 @@ ENTITY sata_TransportLayer IS
 		Link_RX_Valid									: IN	STD_LOGIC;
 			
 		Link_RX_FS_Ready							: OUT	STD_LOGIC;
-		Link_RX_FS_CRC_OK							: IN	STD_LOGIC;
+		Link_RX_FS_CRCOK							: IN	STD_LOGIC;
 		Link_RX_FS_Abort							: IN	STD_LOGIC;
 		Link_RX_FS_Valid							: IN	STD_LOGIC
 	);
@@ -112,13 +110,13 @@ END;
 ARCHITECTURE rtl OF sata_TransportLayer IS
 	ATTRIBUTE KEEP														: BOOLEAN;
 
-	SIGNAL ATAHostRegisters_i									: T_ATA_HOST_REGISTERS;
-	SIGNAL ATAHostRegisters_d									: T_ATA_HOST_REGISTERS;
+	SIGNAL ATAHostRegisters_i									: T_SATA_ATA_HOST_REGISTERS;
+	SIGNAL ATAHostRegisters_d									: T_SATA_ATA_HOST_REGISTERS;
 
 	SIGNAL UpdateATADeviceRegisters						: STD_LOGIC;
 	SIGNAL CopyATADeviceRegisterStatus				: STD_LOGIC;
-	SIGNAL ATADeviceRegisters_i								: T_ATA_DEVICE_REGISTERS;
-	SIGNAL ATADeviceRegisters_d								: T_ATA_DEVICE_REGISTERS;
+	SIGNAL ATADeviceRegisters_i								: T_SATA_ATA_DEVICE_REGISTERS;
+	SIGNAL ATADeviceRegisters_d								: T_SATA_ATA_DEVICE_REGISTERS;
 
 	-- TransportFSM
 	SIGNAL Status_i														: T_SATA_TRANS_STATUS;
@@ -145,13 +143,13 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 
 	-- FISEncoder
 	SIGNAL FISE_Reset													: STD_LOGIC;
-	SIGNAL FISE_Status												: T_FISENCODER_STATUS;
+	SIGNAL FISE_Status												: T_SATA_FISENCODER_STATUS;
 	SIGNAL FISE_TX_Ready											: STD_LOGIC;
 	SIGNAL FISE_TX_InsertEOP									: STD_LOGIC;
 	
 	-- FISDecoder
 	SIGNAL FISD_Reset													: STD_LOGIC;
-	SIGNAL FISD_Status												: T_FISDECODER_STATUS;
+	SIGNAL FISD_Status												: T_SATA_FISDECODER_STATUS;
 	SIGNAL FISD_FISType												: T_SATA_FISTYPE;
 	SIGNAL FISD_RX_Data												: T_SLV_32;
 	SIGNAL FISD_RX_SOP												: STD_LOGIC;
@@ -159,7 +157,7 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 	SIGNAL FISD_RX_Valid											: STD_LOGIC;
 	SIGNAL FISD_RX_Commit											: STD_LOGIC;
 	SIGNAL FISD_RX_Rollback										: STD_LOGIC;
-	SIGNAL FISD_ATADeviceRegisters						: T_ATA_DEVICE_REGISTERS;
+	SIGNAL FISD_ATADeviceRegisters						: T_SATA_ATA_DEVICE_REGISTERS;
 
 BEGIN
 	FISE_Reset		<= Reset OR to_sl(Command = SATA_TRANS_CMD_RESET);
@@ -183,9 +181,9 @@ BEGIN
 			Error															=> Error_i,
 			
 			-- linkLayer interface
-			Link_Command											=> Link_Command,
+--			Link_Command											=> Link_Command,
 			Link_Status												=> Link_Status,
-			Link_Error												=> Link_Error,
+--			Link_Error												=> Link_Error,
 
       CopyATADeviceRegisterStatus       => CopyATADeviceRegisterStatus,
 			ATAHostRegisters									=> ATAHostRegisters_i,
@@ -385,8 +383,8 @@ BEGIN
 		RX_Commit							<= RXReg_Commit;
 		RX_Rollback						<= RXReg_Rollback;
 		
-		DebugPort.SOT					<= RXReg_SOT;
-		DebugPort.EOT					<= RXReg_EOT;
+--		DebugPort.SOT					<= RXReg_SOT;
+--		DebugPort.EOT					<= RXReg_EOT;
 	END BLOCK;
 
 
@@ -463,47 +461,47 @@ BEGIN
 			
 			-- LinkLayer FS-FIFO interface
 			Link_RX_FS_Ready						=> Link_RX_FS_Ready,
-			Link_RX_FS_CRC_OK						=> Link_RX_FS_CRC_OK,
+			Link_RX_FS_CRCOK						=> Link_RX_FS_CRCOK,
 			Link_RX_FS_Abort						=> Link_RX_FS_Abort,
 			Link_RX_FS_Valid						=> Link_RX_FS_Valid
 		);
 	
 	-- debug ports
 	-- ==========================================================================================================================================================
-	DebugPort.Command											<= Command;
-	DebugPort.Status											<= Status_i;
-	DebugPort.Error												<= Error_i;
-		
-	DebugPort.UpdateATAHostRegisters			<= UpdateATAHostRegisters;
-	DebugPort.ATAHostRegisters						<= ATAHostRegisters_i;
-	DebugPort.UpdateATADeviceRegisters		<= UpdateATADeviceRegisters;
-	DebugPort.ATADeviceRegisters					<= ATADeviceRegisters_i;
-		
-	DebugPort.FISE_FISType								<= TFSM_FISType;
-	DebugPort.FISE_Status									<= FISE_Status;
-	DebugPort.FISD_FISType								<= FISD_FISType;
-	DebugPort.FISD_Status									<= FISD_Status;
-		
-	DebugPort.SOF													<= Link_RX_SOF;
-	DebugPort.EOF													<= Link_RX_EOF;
+--	DebugPort.Command											<= Command;
+--	DebugPort.Status											<= Status_i;
+--	DebugPort.Error												<= Error_i;
+--		
+--	DebugPort.UpdateATAHostRegisters			<= UpdateATAHostRegisters;
+--	DebugPort.ATAHostRegisters						<= ATAHostRegisters_i;
+--	DebugPort.UpdateATADeviceRegisters		<= UpdateATADeviceRegisters;
+--	DebugPort.ATADeviceRegisters					<= ATADeviceRegisters_i;
+--		
+--	DebugPort.FISE_FISType								<= TFSM_FISType;
+--	DebugPort.FISE_Status									<= FISE_Status;
+--	DebugPort.FISD_FISType								<= FISD_FISType;
+--	DebugPort.FISD_Status									<= FISD_Status;
+--		
+--	DebugPort.SOF													<= Link_RX_SOF;
+--	DebugPort.EOF													<= Link_RX_EOF;
 	
 	-- ChipScope
 	-- ==========================================================================================================================================================
 	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL CSP_UpdateATAHostRegisters							: STD_LOGIC;
-		SIGNAL CSP_ATAHostRegisters										: T_ATA_HOST_REGISTERS;
-		SIGNAL CSP_ATADeviceRegisters									: T_ATA_DEVICE_REGISTERS;
-		SIGNAL CSP_FISD_Error													: STD_LOGIC;
+		SIGNAL DBG_UpdateATAHostRegisters							: STD_LOGIC;
+		SIGNAL DBG_ATAHostRegisters										: T_SATA_ATA_HOST_REGISTERS;
+		SIGNAL DBG_ATADeviceRegisters									: T_SATA_ATA_DEVICE_REGISTERS;
+		SIGNAL DBG_FISD_Error													: STD_LOGIC;
 		
-		ATTRIBUTE KEEP OF CSP_UpdateATAHostRegisters	: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_ATAHostRegisters				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_ATADeviceRegisters			: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_FISD_Error							: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_UpdateATAHostRegisters	: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_ATAHostRegisters				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_ATADeviceRegisters			: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_FISD_Error							: SIGNAL IS TRUE;
 	BEGIN
-		CSP_UpdateATAHostRegisters	<= UpdateATAHostRegisters;
-		CSP_ATAHostRegisters				<= ATAHostRegisters_d;
-		CSP_ATADeviceRegisters			<= ATADeviceRegisters_d;
+		DBG_UpdateATAHostRegisters	<= UpdateATAHostRegisters;
+		DBG_ATAHostRegisters				<= ATAHostRegisters_d;
+		DBG_ATADeviceRegisters			<= ATADeviceRegisters_d;
 
-		CSP_FISD_Error							<= to_sl(FISD_Status = FISD_STATUS_CRC_ERROR);
+		DBG_FISD_Error							<= to_sl(FISD_Status = SATA_FISD_STATUS_CRC_ERROR);
 	END GENERATE;
 END;

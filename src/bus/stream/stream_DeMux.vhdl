@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,7 +58,7 @@ ENTITY Stream_DeMux IS
 		In_Meta_rev								: OUT	STD_LOGIC_VECTOR(META_REV_BITS - 1 DOWNTO 0);
 		In_SOF										: IN	STD_LOGIC;
 		In_EOF										: IN	STD_LOGIC;
-		In_Ready									: OUT	STD_LOGIC;
+		In_Ack										: OUT	STD_LOGIC;
 		-- OUT Ports
 		Out_Valid									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		Out_Data									: OUT	T_SLM(PORTS - 1 DOWNTO 0, DATA_BITS - 1 DOWNTO 0);
@@ -66,7 +66,7 @@ ENTITY Stream_DeMux IS
 		Out_Meta_rev							: IN	T_SLM(PORTS - 1 DOWNTO 0, META_REV_BITS - 1 DOWNTO 0);
 		Out_SOF										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		Out_EOF										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		Out_Ready									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0)
+		Out_Ack										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0)
 	);
 END;
 
@@ -84,7 +84,7 @@ ARCHITECTURE rtl OF Stream_DeMux IS
 	SIGNAL Is_SOF								: STD_LOGIC;
 	SIGNAL Is_EOF								: STD_LOGIC;
 	
-	SIGNAL In_Ready_i						: STD_LOGIC;
+	SIGNAL In_Ack_i							: STD_LOGIC;
 	SIGNAL Out_Valid_i					: STD_LOGIC;
 	SIGNAL DiscardFrame					: STD_LOGIC;
 	
@@ -100,7 +100,7 @@ ARCHITECTURE rtl OF Stream_DeMux IS
 	SIGNAL Out_Meta_i						: T_SLM(PORTS - 1 DOWNTO 0, META_BITS - 1 DOWNTO 0)		:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
 BEGIN
 	
-	In_Ready_i		<= slv_or(Out_Ready AND ChannelPointer);
+	In_Ack_i			<= slv_or(Out_Ack	 AND ChannelPointer);
 	DiscardFrame	<= slv_nor(DeMuxControl);
 	
 	Is_SOF			<= In_Valid AND In_SOF;
@@ -117,7 +117,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	PROCESS(State, In_Ready_i, In_Valid, Is_SOF, Is_EOF, DiscardFrame, DeMuxControl, ChannelPointer_d)
+	PROCESS(State, In_Ack_i, In_Valid, Is_SOF, Is_EOF, DiscardFrame, DeMuxControl, ChannelPointer_d)
 	BEGIN
 		NextState									<= State;
 		
@@ -125,7 +125,7 @@ BEGIN
 		ChannelPointer_en					<= '0';
 		ChannelPointer						<= ChannelPointer_d;
 		
-		In_Ready									<= '0';
+		In_Ack										<= '0';
 		Out_Valid_i								<= '0';
 		
 		CASE State IS
@@ -135,19 +135,19 @@ BEGIN
 				IF (Is_SOF = '1') THEN
 					IF (DiscardFrame = '0') THEN
 						ChannelPointer_en		<= '1';
-						In_Ready						<= In_Ready_i;
+						In_Ack							<= In_Ack_i;
 						Out_Valid_i					<= '1';
 					
 						NextState						<= ST_DATAFLOW;
 					ELSE
-						In_Ready						<= '1';
+						In_Ack							<= '1';
 						
 						NextState						<= ST_DISCARD_FRAME;
 					END IF;
 				END IF;
 			
 			WHEN ST_DATAFLOW =>
-				In_Ready								<= In_Ready_i;
+				In_Ack									<= In_Ack_i;
 				Out_Valid_i							<= In_Valid;
 				ChannelPointer					<= ChannelPointer_d;
 			
@@ -156,7 +156,7 @@ BEGIN
 				END IF;
 				
 			WHEN ST_DISCARD_FRAME =>
-				In_Ready								<= '1';
+				In_Ack									<= '1';
 			
 				IF (Is_EOF = '1') THEN
 					NextState							<= ST_IDLE;
@@ -181,7 +181,7 @@ BEGIN
 	ChannelPointer_bin	<= onehot2bin(ChannelPointer_d);
 	idx									<= to_integer(ChannelPointer_bin);
 
-	In_Meta_rev				<= get_row(Out_Meta_rev, idx);
+	In_Meta_rev					<= get_row(Out_Meta_rev, idx);
 
 	genOutput : FOR I IN 0 TO PORTS - 1 GENERATE
 		Out_Valid(I)			<= Out_Valid_i AND ChannelPointer(I);

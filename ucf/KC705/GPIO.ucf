@@ -1,0 +1,94 @@
+#% BEGIN-TEMPLATEFILE Board = "KC705" %#
+#% BEGIN-TEMPLATE GPIO %#
+## =============================================================================================================================================================
+## General Purpose IO
+## =============================================================================================================================================================
+#% END-TEMPLATE GPIO %#
+
+#% BEGIN-TEMPLATE GPIO_SpecialButtons %#
+## Special Buttons
+## -----------------------------------------------------------------------------
+##	Bank:						34
+##		VCCO:					1.5V (VCC1V5_FPGA)
+##	Location:				SW7
+## -----------------------------------------------------------------------------
+NET "KC705_GPIO_Button_CPU_Reset"				LOC =  "AB7"	| IOSTANDARD = LVCMOS15;			## {IN}		SW7; high-active; external 4k7 pulldown resistor
+#% END-TEMPLATE GPIO_SpecialButtons %#
+
+#% BEGIN-TEMPLATE GPIO_CursorButtons %#
+## Cursor Buttons
+## -----------------------------------------------------------------------------
+##	Bank:						18, 33, 34
+##		VCCO:					2.5V, 1.5V, 1.5V (VADJ_FPGA, VCC1V5_FPGA, VCC1V5_FPGA)
+##	Location:				SW2, SW3, SW4, SW5, SW6
+## -----------------------------------------------------------------------------
+NET "KC705_GPIO_Button_North"						LOC = "AA12"	| IOSTANDARD = LVCMOS15;			## {IN}		SW2; high-active; external 4k7 pulldown resistor; Bank 33; VCCO=VCC1V5_FPGA
+NET "KC705_GPIO_Button_West"						LOC =  "AC6"	| IOSTANDARD = LVCMOS15;			## {IN}		SW6; high-active; external 4k7 pulldown resistor; Bank 34; VCCO=VCC1V5_FPGA
+NET "KC705_GPIO_Button_Center"					LOC =  "G12"	| IOSTANDARD = LVCMOS25;			## {IN}		SW5; high-active; external 4k7 pulldown resistor; Bank 18; VCCO=VADJ_FPGA
+NET "KC705_GPIO_Button_East"						LOC =  "AG5"	| IOSTANDARD = LVCMOS15;			## {IN}		SW3; high-active; external 4k7 pulldown resistor; Bank 34; VCCO=VCC1V5_FPGA
+NET "KC705_GPIO_Button_South"						LOC = "AB12"	| IOSTANDARD = LVCMOS15;			## {IN}		SW4; high-active; external 4k7 pulldown resistor; Bank 33; VCCO=VCC1V5_FPGA
+#% END-TEMPLATE GPIO_CursorButtons %#
+
+#% BEGIN-TEMPLATE GPIO_Switches %#
+## DIP-Switches
+## -----------------------------------------------------------------------------
+##	Bank:						13
+##		VCCO:					2.5V (VADJ_FPGA)
+##	Location:				SW11
+## -----------------------------------------------------------------------------
+NET "KC705_GPIO_Switches<0>"						LOC =  "Y29"	| IOSTANDARD = LVCMOS25;			## {IN}		SW11.4; high-active; external 4k7 pulldown resistor
+NET "KC705_GPIO_Switches<1>"						LOC =  "W29"	| IOSTANDARD = LVCMOS25;			## {IN}		SW11.3; high-active; external 4k7 pulldown resistor
+NET "KC705_GPIO_Switches<2>"						LOC = "AA28"	| IOSTANDARD = LVCMOS25;			## {IN}		SW11.2; high-active; external 4k7 pulldown resistor
+NET "KC705_GPIO_Switches<3>"						LOC =  "Y28"	| IOSTANDARD = LVCMOS25;			## {IN}		SW11.1; high-active; external 4k7 pulldown resistor
+#% END-TEMPLATE GPIO_Switches %#
+
+#% BEGIN-TEMPLATE GPIO_RotaryButton %#
+## Rotary-Button
+## -----------------------------------------------------------------------------
+#$	##	Bank:						13
+#$	##		VCCO:					1,8V (VCC1V8_FPGA)
+##	Location:				SW8
+## -----------------------------------------------------------------------------
+#$	NET "KC705_GPIO_Rotary_Button"					LOC = "AW31"	| IOSTANDARD = LVCMOS18;			## {IN}		SW10.5; high-active; external 4k7 pulldown resistor
+#$	NET "KC705_GPIO_Rotary_IncA"						LOC = "AR33"	| IOSTANDARD = LVCMOS18;			## {IN}		SW10.1; high-active; external 4k7 pulldown resistor
+#$	NET "KC705_GPIO_Rotary_IncB"						LOC = "AT31"	| IOSTANDARD = LVCMOS18;			## {IN}		SW10.6; high-active; external 4k7 pulldown resistor
+#% END-TEMPLATE GPIO_RotaryButton %#
+
+#% BEGIN-TEMPLATE GPIO_LED %#
+## LEDs
+## -----------------------------------------------------------------------------
+##	Bank:						17, 18, 33
+##		VCCO:					2.5, 2.5, 1.5V (VADJ_FPGA, VADJ_FPGA, VCC1V5_FPGA)
+##	Location:				DS1, DS2, DS3, DS4, DS10, DS25, DS26, DS27
+## -----------------------------------------------------------------------------
+NET "KC705_GPIO_LED<0>"									LOC =  "AB8"	| IOSTANDARD = LVCMOS15;			## {OUT}	DS4; Bank 33; VCCO=VCC1V5_FPGA
+NET "KC705_GPIO_LED<1>"									LOC =  "AA8"	| IOSTANDARD = LVCMOS15;			## {OUT}	DS1; Bank 33; VCCO=VCC1V5_FPGA
+NET "KC705_GPIO_LED<2>"									LOC =  "AC9"	| IOSTANDARD = LVCMOS15;			## {OUT}	DS10; Bank 33; VCCO=VCC1V5_FPGA
+NET "KC705_GPIO_LED<3>"									LOC =  "AB9"	| IOSTANDARD = LVCMOS15;			## {OUT}	DS2; Bank 33; VCCO=VCC1V5_FPGA
+NET "KC705_GPIO_LED<4>"									LOC = "AE26"	| IOSTANDARD = LVCMOS25;			## {OUT}	DS3; Bank 13; VCCO=VADJ_FPGA
+NET "KC705_GPIO_LED<5>"									LOC =  "G19"	| IOSTANDARD = LVCMOS25;			## {OUT}	DS25; Bank 17; VCCO=VADJ_FPGA
+NET "KC705_GPIO_LED<6>"									LOC =  "E18"	| IOSTANDARD = LVCMOS25;			## {OUT}	DS26; Bank 17; VCCO=VADJ_FPGA
+NET "KC705_GPIO_LED<7>"									LOC =  "F16"	| IOSTANDARD = LVCMOS25;			## {OUT}	DS27; Bank 18; VCCO=VADJ_FPGA
+#% END-TEMPLATE GPIO_LED %#
+
+#% BEGIN-TEMPLATE GPIO_SMA %#
+## GPIO SMA
+## -----------------------------------------------------------------------------
+##	Bank:						12
+##		VCCO:					2.5V (VADJ_FPGA)
+##	Location:				J13, J14
+NET "KC705_GPIO_SMA_n"									LOC =  "Y24" | IOSTANDARD = LVCMOS25;				## {INOUT}	J14
+NET "KC705_GPIO_SMA_p"									LOC =  "Y23" | IOSTANDARD = LVCMOS25;				## {INOUT}	J13
+#% END-TEMPLATE GPIO_SMA %#
+
+#% BEGIN-TEMPLATE FanControl %#
+## Fan Control
+## -----------------------------------------------------------------------------
+##	Bank:						14, 15
+##		VCCO:					2.5V, 2.5V (VCC2V5_FPGA, VCC2V5_FPGA)
+##	Location:				J61, Q17 (NDT3055L)
+## -----------------------------------------------------------------------------
+NET "KC705_FanControl_PWM"							LOC =  "L26"	| IOSTANDARD = LVCMOS25;			## {OUT}		Q17.Gate; external 1k pullup resistor; Q17.Drain connects to J61.1 (GND)
+NET "KC705_FanControl_Tacho"						LOC =  "U22"	| IOSTANDARD = LVCMOS25;			## {IN}			J61.3; voltage limited by D15 (MM3Z2V7B; 2.7V zener-diode)
+#% END-TEMPLATE FanControl %#
+#% END-TEMPLATEFILE %#

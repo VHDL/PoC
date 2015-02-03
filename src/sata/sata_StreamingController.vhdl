@@ -45,7 +45,8 @@ ENTITY sata_StreamingController IS
 	GENERIC (
     SIM_WAIT_FOR_INITIAL_REGDH_FIS		: BOOLEAN                     := TRUE;      -- required by ATA/SATA standard
 		SIM_EXECUTE_IDENTIFY_DEVICE				: BOOLEAN											:= TRUE;			-- required by CommandLayer: load device parameters
-		DEBUG															: BOOLEAN											:= FALSE;			-- generate ChipScope CSP_* signals
+		DEBUG															: BOOLEAN											:= FALSE;			-- generate ChipScope DBG_* signals
+		ENABLE_DEBUGPORT									: BOOLEAN											:= FALSE;			-- 
 		LOGICAL_BLOCK_SIZE_ldB						: POSITIVE										:= 13					-- accessable logical block size: 8 kB (independant from device)
 	);
 	PORT (
@@ -54,12 +55,12 @@ ENTITY sata_StreamingController IS
 		
 		-- ATAStreamingController interface
 		-- ========================================================================
-		Command										: IN	T_ATASC_COMMAND;
-		Status										: OUT	T_ATASC_STATUS;
-		Error											: OUT	T_ATASC_ERROR;
+		Command										: IN	T_SATA_STREAMC_COMMAND;
+		Status										: OUT	T_SATA_STREAMC_STATUS;
+		Error											: OUT	T_SATA_STREAMC_ERROR;
 
 		-- debug ports
-		DebugPort									: OUT	T_DBG_ATASC_OUT;
+--		DebugPort									: OUT	T_DBG_SATA_STREAMC_OUT;
 
 		-- for measurement purposes only
 		Config_BurstSize					: IN	T_SLV_16;
@@ -84,9 +85,7 @@ ENTITY sata_StreamingController IS
 		
 		-- SATAController interface
 		-- ========================================================================
-		SATA_Command							: OUT	T_SATA_COMMAND;
-		SATA_Status								: IN	T_SATA_STATUS;
-		SATA_Error								: IN	T_SATA_ERROR;
+		SATA_Status								: IN	T_SATA_SATACONTROLLER_STATUS;
 	
 		-- TX port
 		SATA_TX_SOF								: OUT	STD_LOGIC;
@@ -110,7 +109,7 @@ ENTITY sata_StreamingController IS
 		
 		SATA_RX_FS_Ready					: OUT	STD_LOGIC;
 		SATA_RX_FS_Valid					: IN	STD_LOGIC;
-		SATA_RX_FS_CRC_OK					: IN	STD_LOGIC;
+		SATA_RX_FS_CRCOK					: IN	STD_LOGIC;
 		SATA_RX_FS_Abort					: IN	STD_LOGIC
 	);
 END;
@@ -138,25 +137,25 @@ ARCHITECTURE rtl OF sata_StreamingController IS
 	
 	-- CommandLayer
 	-- ==========================================================================
-	SIGNAL Cmd_Command											: T_ATA_CMD_COMMAND;
-	SIGNAL Cmd_Status												: T_ATA_CMD_STATUS;
-	SIGNAL Cmd_Error												: T_ATA_CMD_ERROR;
+	SIGNAL Cmd_Command											: T_SATA_CMD_COMMAND;
+	SIGNAL Cmd_Status												: T_SATA_CMD_STATUS;
+	SIGNAL Cmd_Error												: T_SATA_CMD_ERROR;
 	
-	SIGNAL Cmd_ATA_Command									: T_ATA_COMMAND;
+	SIGNAL Cmd_ATA_Command									: T_SATA_ATA_COMMAND;
 	SIGNAL Cmd_ATA_Address_LB								: T_SLV_48;
 	SIGNAL Cmd_ATA_BlockCount_LB						: T_SLV_16;
 
-	SIGNAL Cmd_DriveInformation							: T_DRIVE_INFORMATION;
+	SIGNAL Cmd_DriveInformation							: T_SATA_DRIVE_INFORMATION;
 
 	SIGNAL Cmd_UpdateATAHostRegisters				: STD_LOGIC;
-	SIGNAL Cmd_ATAHostRegisters							: T_ATA_HOST_REGISTERS;
+	SIGNAL Cmd_ATAHostRegisters							: T_SATA_ATA_HOST_REGISTERS;
 
 	-- TransportLayer
 	SIGNAL Trans_Command										: T_SATA_TRANS_COMMAND;
 	SIGNAL Trans_Status											: T_SATA_TRANS_STATUS;
 	SIGNAL Trans_Error											:	T_SATA_TRANS_ERROR;
 
-	SIGNAL Trans_ATADeviceRegisters					: T_ATA_DEVICE_REGISTERS;
+	SIGNAL Trans_ATADeviceRegisters					: T_SATA_ATA_DEVICE_REGISTERS;
 
 	SIGNAL Cmd_TX_Valid				: STD_LOGIC;
 	SIGNAL Cmd_TX_Data				: T_SLV_32;
@@ -164,33 +163,33 @@ ARCHITECTURE rtl OF sata_StreamingController IS
 	SIGNAL Cmd_TX_EOT					: STD_LOGIC;
 	SIGNAL Cmd_RX_Ready				: STD_LOGIC;
 	
-	SIGNAL TX_Glue_Ready				: STD_LOGIC;
-	SIGNAL TX_Glue_Valid				: STD_LOGIC;
+	SIGNAL TX_Glue_Ready			: STD_LOGIC;
+	SIGNAL TX_Glue_Valid			: STD_LOGIC;
 	SIGNAL TX_Glue_Data				: T_SLV_32;
-	SIGNAL TX_Glue_SOT					: STD_LOGIC;
-	SIGNAL TX_Glue_EOT					: STD_LOGIC;
+	SIGNAL TX_Glue_SOT				: STD_LOGIC;
+	SIGNAL TX_Glue_EOT				: STD_LOGIC;
 	
-	SIGNAL RX_Glue_Valid				: STD_LOGIC;
+	SIGNAL RX_Glue_Valid			: STD_LOGIC;
 	SIGNAL RX_Glue_Data				: T_SLV_32;
-	SIGNAL RX_Glue_SOT					: STD_LOGIC;
-	SIGNAL RX_Glue_EOT					: STD_LOGIC;
+	SIGNAL RX_Glue_SOT				: STD_LOGIC;
+	SIGNAL RX_Glue_EOT				: STD_LOGIC;
 	SIGNAL RX_Glue_Commit			: STD_LOGIC;
 	SIGNAL RX_Glue_Rollback		: STD_LOGIC;
 	SIGNAL RX_Glue_Ready				: STD_LOGIC;
 
 	SIGNAL Trans_RX_Valid			: STD_LOGIC;
-	SIGNAL Trans_RX_Data				: T_SLV_32;
+	SIGNAL Trans_RX_Data			: T_SLV_32;
 	SIGNAL Trans_RX_SOT				: STD_LOGIC;
 	SIGNAL Trans_RX_EOT				: STD_LOGIC;
 	SIGNAL Trans_RX_Commit		: STD_LOGIC;
-	SIGNAL Trans_RX_Rollback		: STD_LOGIC;
+	SIGNAL Trans_RX_Rollback	: STD_LOGIC;
 	SIGNAL Trans_TX_Ready			: STD_LOGIC;			
 	
 	-- SATAController (LinkLayer)
-	SIGNAL SATA_TX_Data_i										: T_SLV_32;
-	SIGNAL SATA_TX_SOF_i										: STD_LOGIC;
-	SIGNAL SATA_TX_EOF_i										: STD_LOGIC;
-	SIGNAL SATA_TX_Valid_i									: STD_LOGIC;
+	SIGNAL SATA_TX_Data_i			: T_SLV_32;
+	SIGNAL SATA_TX_SOF_i			: STD_LOGIC;
+	SIGNAL SATA_TX_EOF_i			: STD_LOGIC;
+	SIGNAL SATA_TX_Valid_i		: STD_LOGIC;
 
 BEGIN
 
@@ -199,12 +198,12 @@ BEGIN
 	PROCESS(Command)
 	BEGIN
 		CASE Command IS
-			WHEN ATASC_CMD_NONE =>							Cmd_Command	<= ATA_CMD_CMD_NONE;
-			WHEN ATASC_CMD_RESET =>							Cmd_Command	<= ATA_CMD_CMD_RESET;
-			WHEN ATASC_CMD_READ =>							Cmd_Command	<= ATA_CMD_CMD_READ;
-			WHEN ATASC_CMD_WRITE =>							Cmd_Command	<= ATA_CMD_CMD_WRITE;
-			WHEN ATASC_CMD_FLUSH_CACHE =>				Cmd_Command	<= ATA_CMD_CMD_FLUSH_CACHE;
-			WHEN OTHERS =>											Cmd_Command	<= ATA_CMD_CMD_NONE;
+			WHEN SATA_STREAMC_CMD_NONE =>					Cmd_Command	<= SATA_CMD_CMD_NONE;
+			WHEN SATA_STREAMC_CMD_RESET =>				Cmd_Command	<= SATA_CMD_CMD_RESET;
+			WHEN SATA_STREAMC_CMD_READ =>					Cmd_Command	<= SATA_CMD_CMD_READ;
+			WHEN SATA_STREAMC_CMD_WRITE =>				Cmd_Command	<= SATA_CMD_CMD_WRITE;
+			WHEN SATA_STREAMC_CMD_FLUSH_CACHE =>	Cmd_Command	<= SATA_CMD_CMD_FLUSH_CACHE;
+			WHEN OTHERS =>												Cmd_Command	<= SATA_CMD_CMD_NONE;
 		END CASE;
 	END PROCESS;
 
@@ -221,7 +220,7 @@ BEGIN
 	Cmd : ENTITY PoC.sata_CommandLayer
 		GENERIC MAP (
 			SIM_EXECUTE_IDENTIFY_DEVICE	=> SIM_EXECUTE_IDENTIFY_DEVICE,				-- required by CommandLayer: load device parameters
-			DEBUG												=> DEBUG					,										-- generate ChipScope CSP_* signals
+			DEBUG												=> DEBUG					,										-- generate ChipScope DBG_* signals
 			TX_FIFO_DEPTH								=> TX_FIFO_DEPTH,
 			RX_FIFO_DEPTH								=> RX_FIFO_DEPTH,
 			LOGICAL_BLOCK_SIZE_ldB			=> LOGICAL_BLOCK_SIZE_ldB
@@ -238,7 +237,7 @@ BEGIN
 			Status											=> Cmd_Status,
 			Error												=> Cmd_Error,
 		
-			DebugPort										=> DebugPort.Commandlayer,
+--			DebugPort										=> DebugPort.Commandlayer,
 		
 			Address_AppLB								=> Address_AppLB,
 			BlockCount_AppLB						=> BlockCount_AppLB,
@@ -371,7 +370,7 @@ BEGIN
 			Status											=> Trans_Status,
 			Error												=> Trans_Error,
 		
-			DebugPort										=> DebugPort.TransportLayer,
+--			DebugPort										=> DebugPort.TransportLayer,
 		
 			-- ATA registers
 			UpdateATAHostRegisters			=> Cmd_UpdateATAHostRegisters,
@@ -395,9 +394,9 @@ BEGIN
 			RX_Ready										=> RX_Glue_Ready,
 			
 			-- LinkLayer interface
-			Link_Command								=> SATA_Command,
+--			Link_Command								=> SATA_Command,
 			Link_Status									=> SATA_Status,
-			Link_Error									=> SATA_Error,
+--			Link_Error									=> SATA_Error,
 			
 			-- TX path
 			Link_TX_Ready								=> SATA_TX_Ready,
@@ -420,7 +419,7 @@ BEGIN
 			Link_RX_Valid								=> SATA_RX_Valid,
 				
 			Link_RX_FS_Ready						=> SATA_RX_FS_Ready,
-			Link_RX_FS_CRC_OK						=> SATA_RX_FS_CRC_OK,
+			Link_RX_FS_CRCOK						=> SATA_RX_FS_CRCOK,
 			Link_RX_FS_Abort						=> SATA_RX_FS_Abort,
 			Link_RX_FS_Valid						=> SATA_RX_FS_Valid
 		);
@@ -433,50 +432,50 @@ BEGIN
 	-- ChipScope
 	-- ==========================================================================================================================================================
 	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL CSP_CMD_TX_SOR										: STD_LOGIC;
-		SIGNAL CSP_CMD_TX_EOR										: STD_LOGIC;
-		SIGNAL CSP_CMD_RX_SOR										: STD_LOGIC;
-		SIGNAL CSP_CMD_RX_EOR										: STD_LOGIC;
+		SIGNAL DBG_CMD_TX_SOR										: STD_LOGIC;
+		SIGNAL DBG_CMD_TX_EOR										: STD_LOGIC;
+		SIGNAL DBG_CMD_RX_SOR										: STD_LOGIC;
+		SIGNAL DBG_CMD_RX_EOR										: STD_LOGIC;
 		
-		SIGNAL CSP_TRANS_TX_SOT									: STD_LOGIC;
-		SIGNAL CSP_TRANS_TX_EOT									: STD_LOGIC;
-		SIGNAL CSP_TRANS_RX_SOT									: STD_LOGIC;
-		SIGNAL CSP_TRANS_RX_EOT									: STD_LOGIC;
+		SIGNAL DBG_TRANS_TX_SOT									: STD_LOGIC;
+		SIGNAL DBG_TRANS_TX_EOT									: STD_LOGIC;
+		SIGNAL DBG_TRANS_RX_SOT									: STD_LOGIC;
+		SIGNAL DBG_TRANS_RX_EOT									: STD_LOGIC;
 		
-		SIGNAL CSP_LINK_TX_SOF									: STD_LOGIC;
-		SIGNAL CSP_LINK_TX_EOF									: STD_LOGIC;
-		SIGNAL CSP_LINK_RX_SOF									: STD_LOGIC;
-		SIGNAL CSP_LINK_RX_EOF									: STD_LOGIC;
+		SIGNAL DBG_LINK_TX_SOF									: STD_LOGIC;
+		SIGNAL DBG_LINK_TX_EOF									: STD_LOGIC;
+		SIGNAL DBG_LINK_RX_SOF									: STD_LOGIC;
+		SIGNAL DBG_LINK_RX_EOF									: STD_LOGIC;
 		
-		ATTRIBUTE KEEP OF CSP_CMD_TX_SOR				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_CMD_TX_EOR				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_CMD_RX_SOR				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_CMD_RX_EOR				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_CMD_TX_SOR				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_CMD_TX_EOR				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_CMD_RX_SOR				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_CMD_RX_EOR				: SIGNAL IS TRUE;
 		
-		ATTRIBUTE KEEP OF CSP_TRANS_TX_SOT			: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_TRANS_TX_EOT			: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_TRANS_RX_SOT			: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_TRANS_RX_EOT			: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TRANS_TX_SOT			: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TRANS_TX_EOT			: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TRANS_RX_SOT			: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TRANS_RX_EOT			: SIGNAL IS TRUE;
 		
-		ATTRIBUTE KEEP OF CSP_LINK_TX_SOF				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_LINK_TX_EOF				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_LINK_RX_SOF				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_LINK_RX_EOF				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_LINK_TX_SOF				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_LINK_TX_EOF				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_LINK_RX_SOF				: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_LINK_RX_EOF				: SIGNAL IS TRUE;
 		
 	BEGIN
-		CSP_CMD_TX_SOR		<= TX_Valid					AND TX_SOR;
-		CSP_CMD_TX_EOR		<= TX_Valid					AND TX_EOR;
-		CSP_CMD_RX_SOR		<= RX_Valid_i				AND RX_SOR_i;
-		CSP_CMD_RX_EOR		<= RX_Valid_i				AND RX_EOR_i;
+		DBG_CMD_TX_SOR		<= TX_Valid					AND TX_SOR;
+		DBG_CMD_TX_EOR		<= TX_Valid					AND TX_EOR;
+		DBG_CMD_RX_SOR		<= RX_Valid_i				AND RX_SOR_i;
+		DBG_CMD_RX_EOR		<= RX_Valid_i				AND RX_EOR_i;
 		
-		CSP_TRANS_TX_SOT	<= Cmd_TX_Valid			AND Cmd_TX_SOT;
-		CSP_TRANS_TX_EOT	<= Cmd_TX_Valid			AND Cmd_TX_EOT;
-		CSP_TRANS_RX_SOT	<= Trans_RX_Valid		AND Trans_RX_SOT;
-		CSP_TRANS_RX_EOT	<= Trans_RX_Valid		AND Trans_RX_EOT;
+		DBG_TRANS_TX_SOT	<= Cmd_TX_Valid			AND Cmd_TX_SOT;
+		DBG_TRANS_TX_EOT	<= Cmd_TX_Valid			AND Cmd_TX_EOT;
+		DBG_TRANS_RX_SOT	<= Trans_RX_Valid		AND Trans_RX_SOT;
+		DBG_TRANS_RX_EOT	<= Trans_RX_Valid		AND Trans_RX_EOT;
 		
-		CSP_LINK_TX_SOF		<= SATA_TX_Valid_i	AND SATA_TX_SOF_i;
-		CSP_LINK_TX_EOF		<= SATA_TX_Valid_i	AND SATA_TX_EOF_i;
-		CSP_LINK_RX_SOF		<= SATA_RX_Valid		AND SATA_RX_SOF;
-		CSP_LINK_RX_EOF		<= SATA_RX_Valid		AND SATA_RX_EOF;
+		DBG_LINK_TX_SOF		<= SATA_TX_Valid_i	AND SATA_TX_SOF_i;
+		DBG_LINK_TX_EOF		<= SATA_TX_Valid_i	AND SATA_TX_EOF_i;
+		DBG_LINK_RX_SOF		<= SATA_RX_Valid		AND SATA_RX_SOF;
+		DBG_LINK_RX_EOF		<= SATA_RX_Valid		AND SATA_RX_EOF;
 	END GENERATE;
 END;

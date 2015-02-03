@@ -36,12 +36,13 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.lcd.ALL;
 
 
 ENTITY lcd_LCDSynchronizer IS
 	GENERIC (
-		CLOCK_FREQ_MHZ			: REAL		:= 100.0			-- 100 MHz
+		CLOCK_FREQ					: FREQ		:= 100.0 MHz
 	);
 	PORT (
 		Clock								: IN	STD_LOGIC;
@@ -59,7 +60,7 @@ ENTITY lcd_LCDSynchronizer IS
 		LCD_rw							: OUT	STD_LOGIC;
 		LCD_rs							: OUT	STD_LOGIC;								-- LCD Register Select
 		LCD_Data_o					: OUT	T_SLV_4;
-    LCD_Data_t    			: OUT STD_LOGIC;
+    LCD_Data_t    			: OUT T_SLV_4;
     LCD_Data_i    			: IN  T_SLV_4
 	);
 END;
@@ -103,6 +104,8 @@ ARCHITECTURE rtl OF lcd_LCDSynchronizer IS
 	SIGNAL LCDI_Data				: T_SLV_8;
 	SIGNAL LCDI_Ready				: STD_LOGIC;
 
+	SIGNAL LCD_Data_tt			: STD_LOGIC;
+
 	SIGNAL CSP_Trigger_1		: STD_LOGIC;
 	ATTRIBUTE KEEP OF CSP_Trigger_1 : SIGNAL IS "TRUE";
 
@@ -133,7 +136,7 @@ BEGIN
 		
 		LCDI_Strobe				<= '0';
 		LCDI_Address			<= '0';
-		LCDI_Data					<= LCDCMD_NONE;
+		LCDI_Data					<= KS0066U_CMD_NONE;
 		
 		CSP_Trigger_1			<= '0';
 		
@@ -148,7 +151,7 @@ BEGIN
 			WHEN ST_INIT_SET_FUNCTION =>
 				LCDI_Strobe			<= '1';
 				LCDI_Address		<= '0';
-				LCDI_Data				<= LCDCMD_SET_FUNCTION;
+				LCDI_Data				<= KS0066U_CMD_SET_FUNCTION;
 				
 				NextState				<= ST_INIT_SET_FUNCTION_WAIT;
 			
@@ -172,7 +175,7 @@ BEGIN
 			WHEN ST_INIT_DISPLAY_CLEAR =>
 				LCDI_Strobe			<= '1';
 				LCDI_Address		<= '0';
-				LCDI_Data				<= LCDCMD_DISPLAY_CLEAR;
+				LCDI_Data				<= KS0066U_CMD_DISPLAY_CLEAR;
 				
 				NextState				<= ST_INIT_DISPLAY_CLEAR_WAIT;
 			
@@ -184,7 +187,7 @@ BEGIN
 			WHEN ST_INIT_ENTRY_MODE =>
 				LCDI_Strobe			<= '1';
 				LCDI_Address		<= '0';
-				LCDI_Data				<= LCDCMD_ENTRY_MODE;
+				LCDI_Data				<= KS0066U_CMD_ENTRY_MODE;
 				
 				NextState				<= ST_INIT_ENTRY_MODE_WAIT;
 			
@@ -314,7 +317,9 @@ BEGIN
 			lcd_rs  		=> LCD_rs,
 			lcd_rw  		=> LCD_rw,
 			lcd_dat_o 	=> LCD_Data_o,
-			lcd_dat_t 	=> LCD_Data_t,
+			lcd_dat_t 	=> LCD_Data_tt,
 			lcd_dat_i	  => LCD_Data_i
 		);
+	
+	LCD_Data_t	<= (OTHERS => LCD_Data_tt);
 END;

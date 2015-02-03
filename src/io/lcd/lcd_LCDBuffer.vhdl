@@ -34,6 +34,7 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 
 LIBRARY	PoC;
 USE			PoC.utils.ALL;
+USE			PoC.strings.ALL;
 USE			PoC.io.ALL;
 USE			PoC.lcd.ALL;
 

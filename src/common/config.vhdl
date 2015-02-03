@@ -48,7 +48,7 @@ package config is
 --		VENDOR_LATTICE
 	);
 
-	-- Device family
+	-- Device
 	-- ===========================================================================
 	type device_t is (
 		DEVICE_SPARTAN3, DEVICE_SPARTAN6,																		-- Xilinx.Spartan
@@ -59,6 +59,20 @@ package config is
 
 		DEVICE_CYCLONE1, DEVICE_CYCLONE2, DEVICE_CYCLONE3,									-- Altera.Cyclone
 		DEVICE_STRATIX1, DEVICE_STRATIX2, DEVICE_STRATIX4, DEVICE_STRATIX5	-- Altera.Stratix
+	);
+
+	-- Device family
+	-- ===========================================================================
+	type T_DEVICE_FAMILY is (
+		-- Xilinx
+		DEVICE_FAMILY_SPARTAN,
+		DEVICE_FAMILY_ZYNQ,
+		DEVICE_FAMILY_ARTIX,
+		DEVICE_FAMILY_KINTEX,
+		DEVICE_FAMILY_VIRTEX,
+
+		DEVICE_FAMILY_CYCLONE,
+		DEVICE_FAMILY_STRATIX
 	);
 
 	type T_DEVICE_SUBTYPE is (
@@ -76,7 +90,10 @@ package config is
 		DEVICE_SUBTYPE_CXT,
 		DEVICE_SUBTYPE_HXT,
 		-- Altera
-		DEVICE_SUBTYPE_GX
+		DEVICE_SUBTYPE_E,
+		DEVICE_SUBTYPE_GS,
+		DEVICE_SUBTYPE_GX,
+		DEVICE_SUBTYPE_GT
 	);
 
 	-- Transceiver (sub-)type
@@ -95,6 +112,21 @@ package config is
 
 	-- Properties of FPGA architecture
 	-- ===========================================================================
+	-- EXPERIMENTAL: applied consistent nameschema, prefixed members with 'Dev' -> subtype is a keyword
+	type T_DEVICE_INFO is record
+		Vendor						: vendor_t;
+		Device						: device_t;
+		DevFamily					: T_DEVICE_FAMILY;
+		DevNumber					: natural;
+		DevSubType				: T_DEVICE_SUBTYPE;
+		DevSeries					: natural;
+		
+		TransceiverType		: T_TRANSCEIVER;
+		LUT_FanIn					: positive;
+	end record;
+
+
+	-- QUESTION: replace archprops with DEVICE_INFO ?
 	type archprops_t is record
 		LUT_K						: positive;	-- LUT Fanin
 	end record;
@@ -104,6 +136,7 @@ package config is
 	-- ===========================================================================
 	function VENDOR(DeviceString : string := "None")						return vendor_t;
 	function DEVICE(DeviceString : string := "None")						return device_t;
+	function DEVICE_FAMILY(DeviceString : string := "None")			return T_DEVICE_FAMILY;
 	function DEVICE_NUMBER(DeviceString : string := "None")			return natural;
 	function DEVICE_SUBTYPE(DeviceString : string := "None")		return T_DEVICE_SUBTYPE;
 	function DEVICE_SERIES(DeviceString : string := "None")			return natural;
@@ -111,8 +144,12 @@ package config is
 	function TRANSCEIVER_TYPE(DeviceString : string := "None")	return T_TRANSCEIVER;
 	function LUT_FANIN(DeviceString : string := "None")					return positive;
 
+	function DEVICE_INFO(DeviceString : string := "None")				return T_DEVICE_INFO;
+
 	function ARCH_PROPS return archprops_t;
 
+	-- force FSM to predefined encoding in debug mode
+	function getFSMEncoding_gray(debug : BOOLEAN) return STRING;
 end config;
 
 package body config is
@@ -120,15 +157,36 @@ package body config is
 	begin
 		if (DeviceString /= "None") then
 			return DeviceString;
+		elsif (MY_DEVICE /= "None") then
+			return MY_DEVICE;
 		else
-			if (MY_DEVICE /= "None") then
-				return MY_DEVICE;
-			else
-				return MY_DEVICE_STRING;
-			end if;
+			return MY_DEVICE_STRING;
 		end if;
 	end function;
 
+	function extractFirstNumber(str : STRING) return NATURAL is
+		variable low			: integer					:= -1;
+		variable high			: integer					:= -1;
+	begin
+		for i in str'low to str'high loop
+			if chr_isDigit(str(i)) then
+				low := i;
+				exit;
+			end if;
+		end loop;
+		-- abort if no digit can be found
+		if (low = -1) then		return 0; end if;
+		
+		for i in (low + 1) to str'high loop
+			if chr_isAlpha(str(i)) then
+				high := i - 1;
+				exit;
+			end if;
+		end loop;
+		
+		if (high = -1) then		return 0; end if;
+		return to_natural_dec(str(low to high));			-- convert substring to a number
+	end function;
 
 	-- purpose: extract vendor from MY_DEVICE
 	function VENDOR(DeviceString : string := "None") return vendor_t is
@@ -180,6 +238,35 @@ package body config is
 		end case;
 	end DEVICE;
 
+	-- purpose: extract device from MY_DEVICE
+	function DEVICE_FAMILY(DeviceString : string := "None") return T_DEVICE_FAMILY is
+		constant MY_DEV	: string(1 to 15)	:= resize(getLocalDeviceString(DeviceString), 15);
+		constant VEN		: vendor_t				:= VENDOR(MY_DEV(1 to 2));
+		constant FAM		: character				:= MY_DEV(4);
+	begin	-- DEVICE
+		case VEN is
+			when VENDOR_ALTERA =>
+				case FAM is
+					when 'C'		=> return DEVICE_FAMILY_CYCLONE;
+					when 'S'		=> return DEVICE_FAMILY_STRATIX;
+					when others	=> report "Unknown Altera device family in MY_DEVICE = " & MY_DEV & "." severity failure;
+				end case;
+
+			when VENDOR_XILINX =>
+				case FAM is
+					when 'A'		=> return DEVICE_FAMILY_ARTIX;
+					when 'K'		=> return DEVICE_FAMILY_KINTEX;
+					when 'S'		=> return DEVICE_FAMILY_SPARTAN;
+					when 'V'		=> return DEVICE_FAMILY_VIRTEX;
+					when 'Z'		=> return DEVICE_FAMILY_ZYNQ;
+					when others => report "Unknown Xilinx device family in MY_DEVICE = " & MY_DEV & "." severity failure;
+				end case;
+				
+			when others => report "Unknown vendor in MY_DEVICE = " & MY_DEV & "." severity failure;
+										 -- return statement is explicitly missing otherwise XST won't stop
+		end case;
+	end DEVICE_FAMILY;
+
 	function DEVICE_SERIES(DeviceString : string := "None") return natural is
 		constant MY_DEV : string		:= getLocalDeviceString(DeviceString);
 		constant DEV		: device_t	:= DEVICE(MY_DEV);
@@ -193,46 +280,13 @@ package body config is
 	function DEVICE_NUMBER(DeviceString : string := "None") return natural is
 		constant MY_DEV		: string(1 to 15)	:= resize(getLocalDeviceString(DeviceString), 15);
 		constant VEN			: vendor_t				:= VENDOR(MY_DEV(1 to 2));
-		variable low			: integer					:= -1;
-		variable high			: integer					:= -1;
 	begin
 		case VEN is
-			when VENDOR_ALTERA =>
-				for i in 5 to MY_DEV'high loop
-					if (low = -1) then			-- search for first digit
-						if chr_isDigit(MY_DEV(i)) then
-							low := i;
-						end if;
-					elsif (low /= -1) then	-- search for last digit
-						if chr_isAlpha(MY_DEV(i)) then
-							high := i - 1;
-							exit;
-						end if;
-					end if;
-				end loop;
-			
-			when VENDOR_XILINX =>
-				for i in 5 to MY_DEV'high loop
-					if (low = -1) then			-- search for first digit
-						if chr_isDigit(MY_DEV(i)) then
-							low := i;
-						end if;
-					elsif (low /= -1) then	-- search for last digit
-						if chr_isAlpha(MY_DEV(i)) then
-							high := i - 1;
-							exit;
-						end if;
-					end if;
-				end loop;
-			
-			when others => report "Unknown vendor in MY_DEVICE = " & MY_DEV & "." severity failure;
-										 -- return statement is explicitly missing otherwise XST won't stop
+			when VENDOR_ALTERA =>		return extractFirstNumber(MY_DEV(5 to MY_DEV'high));
+			when VENDOR_XILINX =>		return extractFirstNumber(MY_DEV(5 to MY_DEV'high));
+			when others =>					report "Unknown vendor in MY_DEVICE = " & MY_DEV & "." severity failure;
+															-- return statement is explicitly missing otherwise XST won't stop
 		end case;
-
-		if ((low /= -1) and (high /= -1)) then
-			return to_nat(MY_DEV(low to high), 'd');
-		end if;
-		return 0;
 	end function;
 	
 	function DEVICE_SUBTYPE(DeviceString : string := "None") return t_device_subtype is
@@ -243,46 +297,59 @@ package body config is
 		case DEV is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>				return DEVICE_SUBTYPE_NONE;		-- Altera Cyclon I, II, III devices have no subtype
 
+			when DEVICE_STRATIX2 =>
+				if		chr_isDigit(DEV_SUB(1)) then																								return DEVICE_SUBTYPE_NONE;
+				elsif	(DEV_SUB = "GX") then																												return DEVICE_SUBTYPE_GX;
+				else	report "Unknown Stratix II subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
+				end if;
+
+			when DEVICE_STRATIX4 =>
+				if		(DEV_SUB(1) = 'E') then																											return DEVICE_SUBTYPE_E;
+				elsif	(DEV_SUB = "GX") then																												return DEVICE_SUBTYPE_GX;
+--				elsif	(DEV_SUB = "GT") then																												return DEVICE_SUBTYPE_GT;
+				else	report "Unknown Stratix II subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
+				end if;
+
 			when DEVICE_SPARTAN3 => report "TODO: parse Spartan3 / Spartan3E / Spartan3AN device subtype." severity failure;
 
 			when DEVICE_SPARTAN6 =>
-				if		((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') < 0)) then		return DEVICE_SUBTYPE_LX;
-				elsif	((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_LXT;
+				if		((DEV_SUB = "LX") and (not	str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LX;
+				elsif	((DEV_SUB = "LX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LXT;
 				else	report "Unknown Virtex-5 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 			
 			when DEVICE_VIRTEX5 =>
-				if		((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') < 0)) then		return DEVICE_SUBTYPE_LX;
-				elsif	((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_LXT;
-				elsif	((DEV_SUB = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_SXT;
-				elsif	((DEV_SUB = "TX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_TXT;
-				elsif	((DEV_SUB = "FX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_FXT;
+				if		((DEV_SUB = "LX") and (not	str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LX;
+				elsif	((DEV_SUB = "LX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LXT;
+				elsif	((DEV_SUB = "SX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_SXT;
+				elsif	((DEV_SUB = "TX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_TXT;
+				elsif	((DEV_SUB = "FX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_FXT;
 				else	report "Unknown Virtex-5 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 
 			when DEVICE_VIRTEX6 =>
-				if		((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') < 0)) then		return DEVICE_SUBTYPE_LX;
-				elsif	((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_LXT;
-				elsif	((DEV_SUB = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_SXT;
-				elsif	((DEV_SUB = "CX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_CXT;
-				elsif	((DEV_SUB = "HX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_HXT;
+				if		((DEV_SUB = "LX") and (not	str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LX;
+				elsif	((DEV_SUB = "LX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LXT;
+				elsif	((DEV_SUB = "SX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_SXT;
+				elsif	((DEV_SUB = "CX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_CXT;
+				elsif	((DEV_SUB = "HX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_HXT;
 				else	report "Unknown Virtex-6 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 
 			when DEVICE_ARTIX7 =>
-				if		(												(str_pos(MY_DEV(5 TO MY_DEV'high), 'T') > 0)) then	return DEVICE_SUBTYPE_T;
+				if		(											(			str_find(MY_DEV(5 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_T;
 				else	report "Unknown Artix-7 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 				
 			when DEVICE_KINTEX7 =>
-				if		(												(str_pos(MY_DEV(5 TO MY_DEV'high), 'T') > 0)) then	return DEVICE_SUBTYPE_T;
+				if		(											(			str_find(MY_DEV(5 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_T;
 				else	report "Unknown Kintex-7 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 				
 			when DEVICE_VIRTEX7 =>
-				if		(												(str_pos(MY_DEV(5 TO MY_DEV'high), 'T') > 0)) then	return DEVICE_SUBTYPE_T;
-				elsif	((DEV_SUB(1) = 'X') and (str_pos(MY_DEV(6 TO MY_DEV'high), 'T') > 0)) then	return DEVICE_SUBTYPE_XT;
-				elsif	((DEV_SUB(1) = 'H') and (str_pos(MY_DEV(6 TO MY_DEV'high), 'T') > 0)) then	return DEVICE_SUBTYPE_HT;
+				if		(												(		str_find(MY_DEV(5 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_T;
+				elsif	((DEV_SUB(1) = 'X') and (		str_find(MY_DEV(6 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_XT;
+				elsif	((DEV_SUB(1) = 'H') and (		str_find(MY_DEV(6 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_HT;
 				else	report "Unknown Virtex-7 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 
@@ -363,12 +430,30 @@ package body config is
 					when others =>								report "Unknown Virtex-7 subtype: " & t_device_subtype'image(DEV_SUB) severity failure;
 				end case;
 				
+			when DEVICE_STRATIX2 => return TRANSCEIVER_GXB;
+			when DEVICE_STRATIX4 => return TRANSCEIVER_GXB;
+				
 			when others => report "Unknown device." severity failure;
 									-- return statement is explicitly missing otherwise XST won't stop
 		end case;
 	end function;
 
 	-- purpose: extract architecture properties from DEVICE
+	function DEVICE_INFO(DeviceString : string := "None") return T_DEVICE_INFO is
+		variable Result					: T_DEVICE_INFO;
+	begin
+		Result.Vendor						:= VENDOR(DeviceString);
+		Result.Device						:= DEVICE(DeviceString);
+		Result.DevFamily				:= DEVICE_FAMILY(DeviceString);
+		Result.DevNumber				:= DEVICE_NUMBER(DeviceString);
+		Result.DevSubType				:= DEVICE_SUBTYPE(DeviceString);
+		Result.DevSeries				:= DEVICE_SERIES(DeviceString);
+		Result.TransceiverType	:= TRANSCEIVER_TYPE(DeviceString);
+		Result.LUT_FanIn				:= LUT_FANIN(DeviceString);
+		
+		return Result;
+	end function;
+	
 	function ARCH_PROPS return archprops_t is
 		variable result : archprops_t;
 	begin
@@ -377,4 +462,18 @@ package body config is
 		return	result;
 	end function;
 
+	-- force FSM to predefined encoding in debug mode
+	function getFSMEncoding_gray(debug : BOOLEAN) return STRING is
+	begin
+		if (debug = true) then
+			return "gray";
+		else
+			case VENDOR is
+				when VENDOR_XILINX =>		return "auto";
+				when VENDOR_ALTERA =>		return "default";
+				when others =>					report "Unknown vendor ." severity failure;
+																-- return statement is explicitly missing otherwise XST won't stop
+			end case;
+		end if;
+	end function;
 end config;

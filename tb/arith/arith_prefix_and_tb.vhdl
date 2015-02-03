@@ -6,16 +6,15 @@
 -- Testbench:				Testbench for arith_prefix_and.
 -- 
 -- Authors:					Thomas B. Preusser
+--									Patrick Lehmann
 -- 
 -- Description:
 -- ------------------------------------
---		Automated testbench for PoC.arith_prng
---		The Pseudo-Random Number Generator is instanziated for 8 bits. The
---		output sequence is compared to 256 precalculated values.
+--		Automated testbench for PoC.arith.prefix_and
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,17 +42,6 @@ use			PoC.simulation.ALL;
 
 
 architecture tb of arith_prefix_and_tb is
-
-  component arith_prefix_and
-    generic (
-      N : positive
-    );
-    port (
-      x : in  std_logic_vector(N-1 downto 0);
-      y : out std_logic_vector(N-1 downto 0)
-    );
-  end component;
-
   -- component generics
   constant N : positive := 8;
 
@@ -64,7 +52,7 @@ architecture tb of arith_prefix_and_tb is
 begin  -- tb
 
   -- component instantiation
-  DUT: arith_prefix_and
+  DUT: entity PoC.arith_prefix_and
     generic map (
       N => N
     )
@@ -75,24 +63,19 @@ begin  -- tb
 
   -- Stimuli
   process
-		variable pass : boolean;
   begin
-		pass := true;
-
 		-- Exhaustive Testing
-    for i in 0 to 2**N-1 loop
+    for i in NATURAL range 0 to 2**N-1 loop
       x <= std_logic_vector(to_unsigned(i, N));
       wait for 10 ns;
       for j in 0 to N-1 loop
-        if (y(j) = '1') /= (x(j downto 0) = (j downto 0 => '1')) then
-          report "Wrong result for "&integer'image(i)&" / "&integer'image(j) severity error;
-					pass := false;
-				end if;
+				tbAssert((y(j) = '1') = (x(j downto 0) = (j downto 0 => '1')),
+								 "Wrong result for "&integer'image(i)&" / "&integer'image(j));
 			end loop;
     end loop;
 
 		-- Report overall result
-		printSimulationResult(pass);
+		tbPrintResult;
 
     wait;  -- forever
   end process;

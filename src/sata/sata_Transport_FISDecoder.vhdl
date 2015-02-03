@@ -34,10 +34,11 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
---USE			PoC.sata.ALL;
+USE			PoC.sata.ALL;
 
 
 ENTITY sata_FISDecoder IS
@@ -48,11 +49,11 @@ ENTITY sata_FISDecoder IS
 		Clock													: IN	STD_LOGIC;
 		Reset													: IN	STD_LOGIC;
 		
-		Status												: OUT	T_FISDECODER_STATUS;
+		Status												: OUT	T_SATA_FISDECODER_STATUS;
 		FISType												: OUT T_SATA_FISTYPE;
 		
 		UpdateATARegisters						: OUT	STD_LOGIC;
-		ATADeviceRegisters						: OUT	T_ATA_DEVICE_REGISTERS;
+		ATADeviceRegisters						: OUT	T_SATA_ATA_DEVICE_REGISTERS;
 
 		-- TransportLayer RX_ interface
 		RX_Commit											: OUT	STD_LOGIC;
@@ -72,7 +73,7 @@ ENTITY sata_FISDecoder IS
 		
 		-- LinkLayer FS-FIFO interface
 		Link_RX_FS_Ready							: OUT	STD_LOGIC;
-		Link_RX_FS_CRC_OK							: IN	STD_LOGIC;
+		Link_RX_FS_CRCOK							: IN	STD_LOGIC;
 		Link_RX_FS_Abort							: IN	STD_LOGIC;
 		Link_RX_FS_Valid							: IN	STD_LOGIC
 	);
@@ -155,7 +156,7 @@ ARCHITECTURE rtl OF sata_FISDecoder IS
 BEGIN
 
 	IsFISHeader		<= Link_RX_Valid AND Link_RX_SOF;
-	FISType_i			<= to_fistype(Alias_FISType, Link_RX_Valid);
+	FISType_i			<= to_sata_fistype(Alias_FISType, Link_RX_Valid);
 
 	PROCESS(Clock)
 	BEGIN
@@ -168,11 +169,11 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	PROCESS(State, IsFISHeader, FISType_i, Link_RX_Valid, Link_RX_Data, Link_RX_SOF, Link_RX_EOF, Link_RX_FS_Valid, Link_RX_FS_CRC_OK, Link_RX_FS_Abort, RX_Ready)
+	PROCESS(State, IsFISHeader, FISType_i, Link_RX_Valid, Link_RX_Data, Link_RX_SOF, Link_RX_EOF, Link_RX_FS_Valid, Link_RX_FS_CRCOK, Link_RX_FS_Abort, RX_Ready)
 	BEGIN
 		NextState										<= State;
 		
-		Status											<= FISD_STATUS_RECEIVING;
+		Status											<= SATA_FISD_STATUS_RECEIVING;
 		
 		Link_RX_Ready								<= '0';
 		Link_RX_FS_Ready						<= '0';
@@ -213,7 +214,7 @@ BEGIN
 						IF (Link_RX_EOF = '0') THEN
 							NextState 								<= ST_FIS_PIO_SETUP_WORD_1;
 						ELSE
-							Status										<= FISD_STATUS_ERROR;
+							Status										<= SATA_FISD_STATUS_ERROR;
 							NextState 								<= ST_IDLE;
 						END IF;
 					ELSIF (FISType_i = SATA_FISTYPE_REG_DEV_HOST) THEN
@@ -226,7 +227,7 @@ BEGIN
 						IF (Link_RX_EOF = '0') THEN
 							NextState 								<= ST_FIS_REG_DEV_HOST_WORD_1;
 						ELSE
-							Status										<= FISD_STATUS_ERROR;
+							Status										<= SATA_FISD_STATUS_ERROR;
 							NextState 								<= ST_IDLE;
 						END IF;
 					ELSIF (FISType_i = SATA_FISTYPE_DMA_ACTIVATE) THEN
@@ -235,7 +236,7 @@ BEGIN
 						IF (Link_RX_EOF = '1') THEN
 							NextState 								<= ST_FIS_DMA_ACTIVATE_CHECK_FRAMESTATE;
 						ELSE
-							Status										<= FISD_STATUS_ERROR;
+							Status										<= SATA_FISD_STATUS_ERROR;
 							NextState 								<= ST_IDLE;
 						END IF;
 						
@@ -245,15 +246,15 @@ BEGIN
 						IF (Link_RX_EOF = '0') THEN
 							NextState 								<= ST_FIS_DATA_1;						-- goto DataFIS processing
 						ELSE
-							Status										<= FISD_STATUS_ERROR;
+							Status										<= SATA_FISD_STATUS_ERROR;
 							NextState 								<= ST_IDLE;
 						END IF;
 					ELSE
-						Status											<= FISD_STATUS_ERROR;
+						Status											<= SATA_FISD_STATUS_ERROR;
 						NextState 									<= ST_IDLE;
 					END IF;	-- FISType_i
 				ELSE
-					Status												<= FISD_STATUS_IDLE;
+					Status												<= SATA_FISD_STATUS_IDLE;
 				END IF;	-- IsHeader
 			
 			-- ============================================================
@@ -271,7 +272,7 @@ BEGIN
 					IF (Link_RX_EOF = '0') THEN
 						NextState 									<= ST_FIS_REG_DEV_HOST_WORD_2;
 					ELSE
-						Status											<= FISD_STATUS_ERROR;
+						Status											<= SATA_FISD_STATUS_ERROR;
 						NextState 									<= ST_IDLE;
 					END IF;
 				END IF;
@@ -287,7 +288,7 @@ BEGIN
 					IF (Link_RX_EOF = '0') THEN
 						NextState 									<= ST_FIS_REG_DEV_HOST_WORD_3;
 					ELSE
-						Status											<= FISD_STATUS_ERROR;
+						Status											<= SATA_FISD_STATUS_ERROR;
 						NextState 									<= ST_IDLE;
 					END IF;
 				END IF;
@@ -302,7 +303,7 @@ BEGIN
 					IF (Link_RX_EOF = '0') THEN
 						NextState 									<= ST_FIS_REG_DEV_HOST_WORD_4;
 					ELSE
-						Status											<= FISD_STATUS_ERROR;
+						Status											<= SATA_FISD_STATUS_ERROR;
 						NextState 									<= ST_IDLE;
 					END IF;
 				END IF;
@@ -315,29 +316,29 @@ BEGIN
 						-- last word -> check framestate
 						IF (Link_RX_FS_Valid = '1') THEN
 							IF (Link_RX_FS_Abort = '1') THEN
-								IF (Link_RX_FS_CRC_OK = '1') THEN							-- abort with good crc => shortend frame
+								IF (Link_RX_FS_CRCOK = '1') THEN							-- abort with good crc => shortend frame
 									UpdateATARegisters		<= '1';
 									Link_RX_FS_Ready			<= '1';
 									
 									NextState 						<= ST_DELAY_TRANSFER_OK;
 								ELSE																					-- abort with bad crc => ERROR
-									Status								<= FISD_STATUS_CRC_ERROR;
+									Status								<= SATA_FISD_STATUS_CRC_ERROR;
 									Link_RX_FS_Ready			<= '1';
 									
 									NextState 						<= ST_IDLE;
-								END IF;	-- CRC_OK
+								END IF;	-- CRCOK
 							ELSE	-- Abort
-								IF (Link_RX_FS_CRC_OK = '1') THEN							-- good crc => normal frame
+								IF (Link_RX_FS_CRCOK = '1') THEN							-- good crc => normal frame
 									UpdateATARegisters		<= '1';
 									Link_RX_FS_Ready			<= '1';
 									
 									NextState 						<= ST_DELAY_TRANSFER_OK;
 								ELSE																					-- abort with bad crc => ERROR
-									Status								<= FISD_STATUS_CRC_ERROR;
+									Status								<= SATA_FISD_STATUS_CRC_ERROR;
 									Link_RX_FS_Ready			<= '1';
 									
 									NextState 						<= ST_IDLE;
-								END IF;	-- CRC_OK
+								END IF;	-- CRCOK
 							END IF;	-- Abort
 						ELSE	-- Link_RX_FS_Valid
 							NextState 								<= ST_FIS_REG_DEV_HOST_CHECK_FRAMESTATE;
@@ -345,40 +346,40 @@ BEGIN
 					ELSE
 						-- TODO: discard frame and framestate?
 					
-						Status											<= FISD_STATUS_ERROR;
+						Status											<= SATA_FISD_STATUS_ERROR;
 						NextState 									<= ST_IDLE;
 					END IF;
 				END IF;
 			
 			WHEN ST_FIS_REG_DEV_HOST_CHECK_FRAMESTATE =>
-				Status													<= FISD_STATUS_CHECKING_CRC;
+				Status													<= SATA_FISD_STATUS_CHECKING_CRC;
 			
 				-- check for FrameState information
 				IF (Link_RX_FS_Valid = '1') THEN
 					IF (Link_RX_FS_Abort = '1') THEN
-						IF (Link_RX_FS_CRC_OK = '1') THEN							-- abort with good crc => shortend frame
+						IF (Link_RX_FS_CRCOK = '1') THEN							-- abort with good crc => shortend frame
 							UpdateATARegisters				<= '1';
 							Link_RX_FS_Ready					<= '1';
 							
 							NextState 								<= ST_DELAY_TRANSFER_OK;
 						ELSE																					-- abort with bad crc => ERROR
-							Status										<= FISD_STATUS_CRC_ERROR;
+							Status										<= SATA_FISD_STATUS_CRC_ERROR;
 							Link_RX_FS_Ready					<= '1';
 							
 							NextState 								<= ST_IDLE;
-						END IF;	-- CRC_OK
+						END IF;	-- CRCOK
 					ELSE	-- Abort
-						IF (Link_RX_FS_CRC_OK = '1') THEN							-- abort with good crc => shortend frame
+						IF (Link_RX_FS_CRCOK = '1') THEN							-- abort with good crc => shortend frame
 							UpdateATARegisters				<= '1';
 							Link_RX_FS_Ready					<= '1';
 							
 							NextState 								<= ST_DELAY_TRANSFER_OK;
 						ELSE																					-- abort with bad crc => ERROR
-							Status										<= FISD_STATUS_CRC_ERROR;
+							Status										<= SATA_FISD_STATUS_CRC_ERROR;
 							Link_RX_FS_Ready					<= '1';
 							
 							NextState 								<= ST_IDLE;
-						END IF;	-- CRC_OK
+						END IF;	-- CRCOK
 					END IF;
 				END IF;
 			
@@ -397,7 +398,7 @@ BEGIN
 					IF (Link_RX_EOF = '0') THEN
 						NextState 									<= ST_FIS_PIO_SETUP_WORD_2;
 					ELSE
-						Status											<= FISD_STATUS_ERROR;
+						Status											<= SATA_FISD_STATUS_ERROR;
 						NextState 									<= ST_IDLE;
 					END IF;
 				END IF;
@@ -413,7 +414,7 @@ BEGIN
 					IF (Link_RX_EOF = '0') THEN
 						NextState 									<= ST_FIS_PIO_SETUP_WORD_3;
 					ELSE
-						Status											<= FISD_STATUS_ERROR;
+						Status											<= SATA_FISD_STATUS_ERROR;
 						NextState 									<= ST_IDLE;
 					END IF;
 				END IF;
@@ -429,7 +430,7 @@ BEGIN
 					IF (Link_RX_EOF = '0') THEN
 						NextState 									<= ST_FIS_PIO_SETUP_WORD_4;
 					ELSE
-						Status											<= FISD_STATUS_ERROR;
+						Status											<= SATA_FISD_STATUS_ERROR;
 						NextState 									<= ST_IDLE;
 					END IF;
 				END IF;
@@ -444,29 +445,29 @@ BEGIN
 						-- last word -> check framestate
 						IF (Link_RX_FS_Valid = '1') THEN
 							IF (Link_RX_FS_Abort = '1') THEN
-								IF (Link_RX_FS_CRC_OK = '1') THEN							-- abort with good crc => shortend frame
+								IF (Link_RX_FS_CRCOK = '1') THEN							-- abort with good crc => shortend frame
 									UpdateATARegisters		<= '1';
 									Link_RX_FS_Ready			<= '1';
 									
 									NextState 						<= ST_DELAY_TRANSFER_OK;
 								ELSE																					-- abort with bad crc => ERROR
-									Status								<= FISD_STATUS_CRC_ERROR;
+									Status								<= SATA_FISD_STATUS_CRC_ERROR;
 									Link_RX_FS_Ready			<= '1';
 									
 									NextState 						<= ST_IDLE;
-								END IF;	-- CRC_OK
+								END IF;	-- CRCOK
 							ELSE	-- Abort
-								IF (Link_RX_FS_CRC_OK = '1') THEN							-- good crc => normal frame
+								IF (Link_RX_FS_CRCOK = '1') THEN							-- good crc => normal frame
 									UpdateATARegisters		<= '1';
 									Link_RX_FS_Ready			<= '1';
 									
 									NextState 						<= ST_DELAY_TRANSFER_OK;
 								ELSE																					-- abort with bad crc => ERROR
-									Status								<= FISD_STATUS_CRC_ERROR;
+									Status								<= SATA_FISD_STATUS_CRC_ERROR;
 									Link_RX_FS_Ready			<= '1';
 									
 									NextState 						<= ST_IDLE;
-								END IF;	-- CRC_OK
+								END IF;	-- CRCOK
 							END IF;	-- Abort
 						ELSE	-- Link_RX_FS_Valid
 							NextState 								<= ST_FIS_PIO_SETUP_CHECK_FRAMESTATE;
@@ -474,77 +475,77 @@ BEGIN
 					ELSE
 						-- TODO: discard frame and framestate?
 					
-						Status											<= FISD_STATUS_ERROR;
+						Status											<= SATA_FISD_STATUS_ERROR;
 						NextState 									<= ST_IDLE;
 					END IF;
 				END IF;
 			
 			WHEN ST_FIS_PIO_SETUP_CHECK_FRAMESTATE =>
-				Status													<= FISD_STATUS_CHECKING_CRC;
+				Status													<= SATA_FISD_STATUS_CHECKING_CRC;
 			
 				-- check for FrameState information
 				IF (Link_RX_FS_Valid = '1') THEN
 					IF (Link_RX_FS_Abort = '1') THEN
-						IF (Link_RX_FS_CRC_OK = '1') THEN							-- abort with good crc => shortend frame
+						IF (Link_RX_FS_CRCOK = '1') THEN							-- abort with good crc => shortend frame
 							UpdateATARegisters				<= '1';
 							Link_RX_FS_Ready					<= '1';
 							
 							NextState 								<= ST_DELAY_TRANSFER_OK;
 						ELSE																					-- abort with bad crc => ERROR
-							Status										<= FISD_STATUS_CRC_ERROR;
+							Status										<= SATA_FISD_STATUS_CRC_ERROR;
 							Link_RX_FS_Ready					<= '1';
 							
 							NextState 								<= ST_IDLE;
-						END IF;	-- CRC_OK
+						END IF;	-- CRCOK
 					ELSE	-- Abort
-						IF (Link_RX_FS_CRC_OK = '1') THEN							-- abort with good crc => shortend frame
+						IF (Link_RX_FS_CRCOK = '1') THEN							-- abort with good crc => shortend frame
 							UpdateATARegisters				<= '1';
 							Link_RX_FS_Ready					<= '1';
 							
 							NextState 								<= ST_DELAY_TRANSFER_OK;
 						ELSE																					-- abort with bad crc => ERROR
-							Status										<= FISD_STATUS_CRC_ERROR;
+							Status										<= SATA_FISD_STATUS_CRC_ERROR;
 							Link_RX_FS_Ready					<= '1';
 							
 							NextState 								<= ST_IDLE;
-						END IF;	-- CRC_OK
+						END IF;	-- CRCOK
 					END IF;
 				END IF;
 
 			WHEN ST_FIS_DMA_ACTIVATE_CHECK_FRAMESTATE =>
-				Status													<= FISD_STATUS_CHECKING_CRC;
+				Status													<= SATA_FISD_STATUS_CHECKING_CRC;
 			
 				-- check for FrameState information
 				IF (Link_RX_FS_Valid = '1') THEN
 					IF (Link_RX_FS_Abort = '1') THEN
-						IF (Link_RX_FS_CRC_OK = '1') THEN							-- abort with good crc => shortend frame
+						IF (Link_RX_FS_CRCOK = '1') THEN							-- abort with good crc => shortend frame
 --							UpdateATARegisters				<= '1';
 							Link_RX_FS_Ready					<= '1';
 							
 							NextState 								<= ST_DELAY_TRANSFER_OK;
 						ELSE																					-- abort with bad crc => ERROR
-							Status										<= FISD_STATUS_CRC_ERROR;
+							Status										<= SATA_FISD_STATUS_CRC_ERROR;
 							Link_RX_FS_Ready					<= '1';
 							
 							NextState 								<= ST_IDLE;
-						END IF;	-- CRC_OK
+						END IF;	-- CRCOK
 					ELSE	-- Abort
-						IF (Link_RX_FS_CRC_OK = '1') THEN							-- abort with good crc => shortend frame
+						IF (Link_RX_FS_CRCOK = '1') THEN							-- abort with good crc => shortend frame
 --							UpdateATARegisters				<= '1';
 							Link_RX_FS_Ready					<= '1';
 							
 							NextState 								<= ST_DELAY_TRANSFER_OK;
 						ELSE																					-- abort with bad crc => ERROR
-							Status										<= FISD_STATUS_CRC_ERROR;
+							Status										<= SATA_FISD_STATUS_CRC_ERROR;
 							Link_RX_FS_Ready					<= '1';
 							
 							NextState 								<= ST_IDLE;
-						END IF;	-- CRC_OK
+						END IF;	-- CRCOK
 					END IF;
 				END IF;
 			
 			WHEN ST_DELAY_TRANSFER_OK =>
-				Status													<= FISD_STATUS_RECEIVE_OK;
+				Status													<= SATA_FISD_STATUS_RECEIVE_OK;
 				NextState												<= ST_IDLE;
 			
 			-- ============================================================
@@ -564,41 +565,41 @@ BEGIN
 						-- check for FrameState information
 						IF (Link_RX_FS_Valid = '1') THEN
 							IF (Link_RX_FS_Abort = '1') THEN
-								IF (Link_RX_FS_CRC_OK = '1') THEN							-- abort with good crc => shortend frame
-									Status								<= FISD_STATUS_RECEIVE_OK;
+								IF (Link_RX_FS_CRCOK = '1') THEN							-- abort with good crc => shortend frame
+									Status								<= SATA_FISD_STATUS_RECEIVE_OK;
 									RX_Commit							<= '1';
 									Link_RX_FS_Ready			<= '1';
 									
 									NextState 						<= ST_IDLE;
 								ELSE																					-- abort with bad crc => ERROR
-									Status								<= FISD_STATUS_CRC_ERROR;
+									Status								<= SATA_FISD_STATUS_CRC_ERROR;
 									RX_Rollback						<= '1';
 									Link_RX_FS_Ready			<= '1';
 									
 									NextState 						<= ST_IDLE;
-								END IF;	-- CRC_OK
+								END IF;	-- CRCOK
 							ELSE	-- Abort
-								IF (Link_RX_FS_CRC_OK = '1') THEN							-- good crc => normal frame
-									Status								<= FISD_STATUS_RECEIVE_OK;
+								IF (Link_RX_FS_CRCOK = '1') THEN							-- good crc => normal frame
+									Status								<= SATA_FISD_STATUS_RECEIVE_OK;
 									RX_Commit							<= '1';
 									Link_RX_FS_Ready			<= '1';
 									
 									NextState 						<= ST_IDLE;
 								ELSE																					-- abort with bad crc => ERROR
-									Status								<= FISD_STATUS_CRC_ERROR;
+									Status								<= SATA_FISD_STATUS_CRC_ERROR;
 									RX_Rollback						<= '1';
 									Link_RX_FS_Ready			<= '1';
 									
 									NextState 						<= ST_IDLE;
-								END IF;	-- CRC_OK
+								END IF;	-- CRCOK
 							END IF;	-- Abort
 						ELSE	-- Link_RX_FS_Valid
 							NextState 								<= ST_FIS_DATA_CHECK_FRAMESTATE;
 						END IF;
 					ELSE	-- EOF
 						IF (Link_RX_FS_Valid = '1') THEN
-							IF ((Link_RX_FS_Abort = '1') AND (Link_RX_FS_CRC_OK = '0')) THEN		-- abort with bad crc => ERROR
-								Status									<= FISD_STATUS_ERROR;
+							IF ((Link_RX_FS_Abort = '1') AND (Link_RX_FS_CRCOK = '0')) THEN		-- abort with bad crc => ERROR
+								Status									<= SATA_FISD_STATUS_ERROR;
 								RX_Rollback							<= '1';
 								Link_RX_FS_Ready				<= '1';
 									
@@ -610,8 +611,8 @@ BEGIN
 					END IF;
 				ELSE -- streaming is possible
 					IF (Link_RX_FS_Valid = '1') THEN
-						IF ((Link_RX_FS_Abort = '1') AND (Link_RX_FS_CRC_OK = '0')) THEN		-- abort with bad crc => ERROR
-							Status										<= FISD_STATUS_ERROR;
+						IF ((Link_RX_FS_Abort = '1') AND (Link_RX_FS_CRCOK = '0')) THEN		-- abort with bad crc => ERROR
+							Status										<= SATA_FISD_STATUS_ERROR;
 							RX_Rollback								<= '1';
 							Link_RX_FS_Ready					<= '1';
 								
@@ -633,41 +634,41 @@ BEGIN
 						-- check for FrameState information
 						IF (Link_RX_FS_Valid = '1') THEN
 							IF (Link_RX_FS_Abort = '1') THEN
-								IF (Link_RX_FS_CRC_OK = '1') THEN							-- abort with good crc => shortend frame
-									Status								<= FISD_STATUS_RECEIVE_OK;
+								IF (Link_RX_FS_CRCOK = '1') THEN							-- abort with good crc => shortend frame
+									Status								<= SATA_FISD_STATUS_RECEIVE_OK;
 									RX_Commit							<= '1';
 									Link_RX_FS_Ready			<= '1';
 									
 									NextState 						<= ST_IDLE;
 								ELSE																					-- abort with bad crc => ERROR
-									Status								<= FISD_STATUS_CRC_ERROR;
+									Status								<= SATA_FISD_STATUS_CRC_ERROR;
 									RX_Rollback						<= '1';
 									Link_RX_FS_Ready			<= '1';
 									
 									NextState 						<= ST_IDLE;
-								END IF;	-- CRC_OK
+								END IF;	-- CRCOK
 							ELSE	-- Abort
-								IF (Link_RX_FS_CRC_OK = '1') THEN							-- good crc => normal frame
-									Status								<= FISD_STATUS_RECEIVE_OK;
+								IF (Link_RX_FS_CRCOK = '1') THEN							-- good crc => normal frame
+									Status								<= SATA_FISD_STATUS_RECEIVE_OK;
 									RX_Commit							<= '1';
 									Link_RX_FS_Ready			<= '1';
 									
 									NextState 						<= ST_IDLE;
 								ELSE																					-- abort with bad crc => ERROR
-									Status								<= FISD_STATUS_CRC_ERROR;
+									Status								<= SATA_FISD_STATUS_CRC_ERROR;
 									RX_Rollback						<= '1';
 									Link_RX_FS_Ready			<= '1';
 									
 									NextState 						<= ST_IDLE;
-								END IF;	-- CRC_OK
+								END IF;	-- CRCOK
 							END IF;	-- Abort
 						ELSE	-- Link_RX_FS_Valid
 							NextState 								<= ST_FIS_DATA_CHECK_FRAMESTATE;
 						END IF;
 					ELSE	-- EOF
 						IF (Link_RX_FS_Valid = '1') THEN
-							IF ((Link_RX_FS_Abort = '1') AND (Link_RX_FS_CRC_OK = '0')) THEN		-- abort with bad crc => ERROR
-								Status									<= FISD_STATUS_ERROR;
+							IF ((Link_RX_FS_Abort = '1') AND (Link_RX_FS_CRCOK = '0')) THEN		-- abort with bad crc => ERROR
+								Status									<= SATA_FISD_STATUS_ERROR;
 								RX_Rollback							<= '1';
 								Link_RX_FS_Ready				<= '1';
 									
@@ -679,8 +680,8 @@ BEGIN
 					END IF;
 				ELSE -- streaming is possible
 					IF (Link_RX_FS_Valid = '1') THEN
-						IF ((Link_RX_FS_Abort = '1') AND (Link_RX_FS_CRC_OK = '0')) THEN		-- abort with bad crc => ERROR
-							Status										<= FISD_STATUS_ERROR;
+						IF ((Link_RX_FS_Abort = '1') AND (Link_RX_FS_CRCOK = '0')) THEN		-- abort with bad crc => ERROR
+							Status										<= SATA_FISD_STATUS_ERROR;
 							RX_Rollback								<= '1';
 							Link_RX_FS_Ready					<= '1';
 								
@@ -692,43 +693,43 @@ BEGIN
 				END IF;
 			
 			WHEN ST_FIS_DATA_CHECK_FRAMESTATE =>
-				Status													<= FISD_STATUS_CHECKING_CRC;
+				Status													<= SATA_FISD_STATUS_CHECKING_CRC;
 			
 				-- check for FrameState information
 				IF (Link_RX_FS_Valid = '1') THEN
 					IF (Link_RX_FS_Abort = '1') THEN
-						IF (Link_RX_FS_CRC_OK = '1') THEN							-- abort with good crc => shortend frame
-							Status										<= FISD_STATUS_RECEIVE_OK;
+						IF (Link_RX_FS_CRCOK = '1') THEN							-- abort with good crc => shortend frame
+							Status										<= SATA_FISD_STATUS_RECEIVE_OK;
 							RX_Commit									<= '1';
 							Link_RX_FS_Ready					<= '1';
 							
 							NextState 								<= ST_IDLE;
 						ELSE																					-- abort with bad crc => ERROR
-							Status										<= FISD_STATUS_CRC_ERROR;
+							Status										<= SATA_FISD_STATUS_CRC_ERROR;
 							RX_Rollback								<= '1';
 							Link_RX_FS_Ready					<= '1';
 							
 							NextState 								<= ST_IDLE;
-						END IF;	-- CRC_OK
+						END IF;	-- CRCOK
 					ELSE	-- Abort
-						IF (Link_RX_FS_CRC_OK = '1') THEN							-- abort with good crc => shortend frame
-							Status										<= FISD_STATUS_RECEIVE_OK;
+						IF (Link_RX_FS_CRCOK = '1') THEN							-- abort with good crc => shortend frame
+							Status										<= SATA_FISD_STATUS_RECEIVE_OK;
 							RX_Commit									<= '1';
 							Link_RX_FS_Ready					<= '1';
 							
 							NextState 								<= ST_IDLE;
 						ELSE																					-- abort with bad crc => ERROR
-							Status										<= FISD_STATUS_CRC_ERROR;
+							Status										<= SATA_FISD_STATUS_CRC_ERROR;
 							RX_Rollback								<= '1';
 							Link_RX_FS_Ready					<= '1';
 							
 							NextState 								<= ST_IDLE;
-						END IF;	-- CRC_OK
+						END IF;	-- CRCOK
 					END IF;
 				END IF;
 		
 			WHEN ST_DISCARD_FRAME =>
-				Status													<= FISD_STATUS_DISCARD_FRAME;
+				Status													<= SATA_FISD_STATUS_DISCARD_FRAME;
 				Link_RX_Ready										<= '1';
 				
 				IF ((Link_RX_Valid = '1') AND (Link_RX_EOF = '1')) THEN
@@ -816,10 +817,10 @@ BEGIN
 	
 	FISType															<= FISType_i;
 	
-	ATADeviceRegisters.Flags						<= to_ata_device_flags(FlagRegister);
-	ATADeviceRegisters.Status						<= to_ata_device_register_status(StatusRegister);
-	ATADeviceRegisters.EndStatus				<= to_ata_device_register_status(EndStatusRegister);
-	ATADeviceRegisters.Error						<= to_ata_device_register_error(ErrorRegister);
+	ATADeviceRegisters.Flags						<= to_sata_ata_device_flags(FlagRegister);
+	ATADeviceRegisters.Status						<= to_sata_ata_device_register_status(StatusRegister);
+	ATADeviceRegisters.EndStatus				<= to_sata_ata_device_register_status(EndStatusRegister);
+	ATADeviceRegisters.Error						<= to_sata_ata_device_register_error(ErrorRegister);
 	ATADeviceRegisters.LBlockAddress		<= AddressRegister;
 	ATADeviceRegisters.SectorCount			<= SectorCountRegister;
 	ATADeviceRegisters.TransferCount		<= TransferCountRegister WHEN (TransferCountRegister_en = '0') ELSE Alias_TransferCount;

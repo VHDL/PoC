@@ -37,13 +37,13 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
---USE			PoC.sata.ALL;
+USE			PoC.sata.ALL;
 
 
 ENTITY sata_CommandLayer IS
 	GENERIC (
 		SIM_EXECUTE_IDENTIFY_DEVICE		: BOOLEAN									:= TRUE;			-- required by CommandLayer: load device parameters
-		DEBUG													: BOOLEAN									:= FALSE;			-- generate ChipScope CSP_* signals
+		DEBUG													: BOOLEAN									:= FALSE;			-- generate ChipScope DBG_* signals
 		TX_FIFO_DEPTH									: NATURAL									:= 0;
 		RX_FIFO_DEPTH									: POSITIVE;
 		LOGICAL_BLOCK_SIZE_ldB				: POSITIVE
@@ -54,11 +54,11 @@ ENTITY sata_CommandLayer IS
 
 		-- CommandLayer interface
 		-- ========================================================================
-		Command												: IN	T_ATA_CMD_COMMAND;
-		Status												: OUT	T_ATA_CMD_STATUS;
-		Error													: OUT	T_ATA_CMD_ERROR;
+		Command												: IN	T_SATA_CMD_COMMAND;
+		Status												: OUT	T_SATA_CMD_STATUS;
+		Error													: OUT	T_SATA_CMD_ERROR;
 
-		DebugPort											: OUT T_DBG_COMMAND_OUT;
+--		DebugPort											: OUT T_DBG_COMMAND_OUT;
 
 		-- for measurement purposes only
 		Config_BurstSize							: IN	T_SLV_16;
@@ -68,7 +68,7 @@ ENTITY sata_CommandLayer IS
 		BlockCount_AppLB							: IN	T_SLV_48;
 		
 		-- 
-		DriveInformation							: OUT T_DRIVE_INFORMATION;
+		DriveInformation							: OUT T_SATA_DRIVE_INFORMATION;
 
 		-- TX path
 		TX_Valid											: IN	STD_LOGIC;
@@ -92,8 +92,8 @@ ENTITY sata_CommandLayer IS
 	
 		-- ATA registers
 		Trans_UpdateATAHostRegisters	: OUT	STD_LOGIC;
-		Trans_ATAHostRegisters				: OUT	T_ATA_HOST_REGISTERS;
-		Trans_ATADeviceRegisters			: IN	T_ATA_DEVICE_REGISTERS;
+		Trans_ATAHostRegisters				: OUT	T_SATA_ATA_HOST_REGISTERS;
+		Trans_ATADeviceRegisters			: IN	T_SATA_ATA_DEVICE_REGISTERS;
 	
 		-- TX path
 		Trans_TX_Valid								: OUT	STD_LOGIC;
@@ -125,10 +125,10 @@ ARCHITECTURE rtl OF sata_CommandLayer IS
 
 	-- CommandFSM
 	-- ==========================================================================
-	SIGNAL Status_i													: T_ATA_CMD_STATUS;
-	SIGNAL Error_i													: T_ATA_CMD_ERROR;
+	SIGNAL Status_i													: T_SATA_CMD_STATUS;
+	SIGNAL Error_i													: T_SATA_CMD_ERROR;
 
-	SIGNAL CFSM_ATA_Command									: T_ATA_COMMAND;
+	SIGNAL CFSM_ATA_Command									: T_SATA_ATA_COMMAND;
 	SIGNAL CFSM_ATA_Address_LB							: T_SLV_48;
 	SIGNAL CFSM_ATA_BlockCount_LB						: T_SLV_16;
 	
@@ -137,7 +137,7 @@ ARCHITECTURE rtl OF sata_CommandLayer IS
 	SIGNAL CFSM_RX_SOR											: STD_LOGIC;
 	SIGNAL CFSM_RX_EOR											: STD_LOGIC;
 
-	SIGNAL ATA_CommandCategory							: T_ATA_COMMAND_CATEGORY;
+	SIGNAL ATA_CommandCategory							: T_SATA_COMMAND_CATEGORY;
 	
 	-- AddressCalculation
 	-- ==========================================================================
@@ -189,7 +189,7 @@ ARCHITECTURE rtl OF sata_CommandLayer IS
 	SIGNAL IDF_SOT													: STD_LOGIC;
 	SIGNAL IDF_EOT													: STD_LOGIC;
 	SIGNAL IDF_CRC_OK												: STD_LOGIC;
-	SIGNAL IDF_DriveInformation							: T_DRIVE_INFORMATION;
+	SIGNAL IDF_DriveInformation							: T_SATA_DRIVE_INFORMATION;
 	
 BEGIN
 	-- ================================================================
@@ -286,7 +286,7 @@ BEGIN
 		SIGNAL TX_FIFO_DataIn										: STD_LOGIC_VECTOR(33 DOWNTO 0);
 		SIGNAL TX_FIFO_DataOut									: STD_LOGIC_VECTOR(33 DOWNTO 0);
 	BEGIN
-		TX_FIFO_rst																<= Reset OR to_sl(Command = ATA_CMD_CMD_RESET);
+		TX_FIFO_rst																<= Reset OR to_sl(Command = SATA_CMD_CMD_RESET);
 		TX_FIFO_put																<= TX_Valid;
 		TX_FIFO_got																<= TC_TX_Ready;
 		
@@ -364,19 +364,19 @@ BEGIN
 		IEOTC_inc						<= TC_TX_DataFlow		AND NOT IEOTC_ov;
 		
 		IEOTC : BLOCK	-- InsertEOTCounter
-			CONSTANT MAX_BLOCKCOUNT						: POSITIVE															:= ite(SIMULATION, SIM_MAX_BLOCKCOUNT, ATA_MAX_BLOCKCOUNT);
+			CONSTANT MAX_BLOCKCOUNT						: POSITIVE															:= ite(SIMULATION, C_SIM_MAX_BLOCKCOUNT, C_SATA_ATA_MAX_BLOCKCOUNT);
 			CONSTANT MIN_TRANSFER_SIZE_ldB  	: POSITIVE															:= log2ceilnz(MAX_BLOCKCOUNT)+9;
 			CONSTANT MIN_TRANSFER_SIZE_B			: POSITIVE															:= 2**MIN_TRANSFER_SIZE_ldB;
 			CONSTANT MAX_TRANSFER_SIZE_ldB		: POSITIVE															:= MIN_TRANSFER_SIZE_ldB + (SHIFT_WIDTH - 1);
 			CONSTANT IEOT_COUNTER_START				: POSITIVE															:= (MIN_TRANSFER_SIZE_B / 4) - AHEAD_CYCLES_FOR_INSERT_EOT - 3;		-- FIXME: replace with dynamic calculation
-			CONSTANT IEOT_COUNTER_BITS					: POSITIVE															:= MAX_TRANSFER_SIZE_ldB - 2;
+			CONSTANT IEOT_COUNTER_BITS				: POSITIVE															:= MAX_TRANSFER_SIZE_ldB - 2;
 			
 			SIGNAL Counter_us									: SIGNED(IEOT_COUNTER_BITS DOWNTO 0)			:= to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);
 		BEGIN
 			PROCESS(Clock)
 			BEGIN
 				IF rising_edge(Clock) THEN
-					IF ((Reset = '1') OR (Command = ATA_CMD_CMD_RESET) OR (IEOTC_Load = '1')) THEN
+					IF ((Reset = '1') OR (Command = SATA_CMD_CMD_RESET) OR (IEOTC_Load = '1')) THEN
 						Counter_us				<=  to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);		-- FIXME: replace with dynamic calculation
 					ELSE
 						IF (IEOTC_inc = '1') THEN
@@ -413,23 +413,23 @@ BEGIN
 		TC_TX_LastWord	<= TC_TX_EOT OR TC_TX_LastWord_r;		-- LastWord in transfer
 		
 		genCSP : IF (DEBUG = TRUE) GENERATE
-			SIGNAL CSP_TX_DataFlow							: STD_LOGIC;
-			SIGNAL CSP_TX_LastWord							: STD_LOGIC;
-			SIGNAL CSP_InsertEOT								: STD_LOGIC;
+			SIGNAL DBG_TX_DataFlow							: STD_LOGIC;
+			SIGNAL DBG_TX_LastWord							: STD_LOGIC;
+			SIGNAL DBG_InsertEOT								: STD_LOGIC;
 		
-			ATTRIBUTE KEEP OF CSP_TX_DataFlow		: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_TX_LastWord		: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_InsertEOT			: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_TX_DataFlow		: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_TX_LastWord		: SIGNAL IS TRUE;
+			ATTRIBUTE KEEP OF DBG_InsertEOT			: SIGNAL IS TRUE;
 			
 		BEGIN
-			CSP_TX_DataFlow		<= TC_TX_DataFlow;
-			CSP_TX_LastWord		<= TC_TX_LastWord;
-			CSP_InsertEOT			<= TC_TX_InsertEOT;
+			DBG_TX_DataFlow		<= TC_TX_DataFlow;
+			DBG_TX_LastWord		<= TC_TX_LastWord;
+			DBG_InsertEOT			<= TC_TX_InsertEOT;
 		END GENERATE;
 	END BLOCK;	-- TransferCutter
 
 	-- CommandLayer RX_FIFO
-	RX_FIFO_rst																<= Reset OR to_sl(Command = ATA_CMD_CMD_RESET);
+	RX_FIFO_rst																<= Reset OR to_sl(Command = SATA_CMD_CMD_RESET);
 	RX_FIFO_put																<= Trans_RX_Valid			AND NOT IDF_Enable;
 	RX_FIFO_Commit														<= (Trans_RX_Commit		AND NOT IDF_Enable);
 	RX_FIFO_Rollback													<= Trans_RX_Rollback	AND NOT IDF_Enable;
@@ -497,7 +497,7 @@ BEGIN
 	-- ================================================================
 	-- IdentifyDeviceFilter
 	-- ================================================================
-	IDF_Reset		<= Reset OR to_sl(Command = ATA_CMD_CMD_RESET);
+	IDF_Reset		<= Reset OR to_sl(Command = SATA_CMD_CMD_RESET);
 	IDF_Valid		<= Trans_RX_Valid;
 	IDF_Data		<= Trans_RX_Data;
 	IDF_SOT			<= Trans_RX_SOT;
@@ -528,32 +528,32 @@ BEGIN
 
 	-- debug ports
 	-- ==========================================================================================================================================================
-	DebugPort.Command						<= Command;
-	DebugPort.Status						<= Status_i;
-	DebugPort.Error							<= Error_i;
+--	DebugPort.Command						<= Command;
+--	DebugPort.Status						<= Status_i;
+--	DebugPort.Error							<= Error_i;
 	
-	DebugPort.DriveInformation.Valid	<= '0';
---	DebugPort.DriveInformation	<= IDF_DriveInformation;
+--	DebugPort.DriveInformation.Valid	<= '0';
+----	DebugPort.DriveInformation	<= IDF_DriveInformation;
 
 	-- ChipScope
 	-- ==========================================================================================================================================================
 	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL CSP_TXFIFO_SOR								: STD_LOGIC;
-		SIGNAL CSP_TXFIFO_EOR								: STD_LOGIC;
+		SIGNAL DBG_TXFIFO_SOR								: STD_LOGIC;
+		SIGNAL DBG_TXFIFO_EOR								: STD_LOGIC;
 	
-		SIGNAL CSP_RXFIFO_SOR								: STD_LOGIC;
-		SIGNAL CSP_RXFIFO_EOR								: STD_LOGIC;
+		SIGNAL DBG_RXFIFO_SOR								: STD_LOGIC;
+		SIGNAL DBG_RXFIFO_EOR								: STD_LOGIC;
 	
-		ATTRIBUTE KEEP OF CSP_TXFIFO_SOR		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_TXFIFO_EOR		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TXFIFO_SOR		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_TXFIFO_EOR		: SIGNAL IS TRUE;
 		
-		ATTRIBUTE KEEP OF CSP_RXFIFO_SOR		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF CSP_RXFIFO_EOR		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_RXFIFO_SOR		: SIGNAL IS TRUE;
+		ATTRIBUTE KEEP OF DBG_RXFIFO_EOR		: SIGNAL IS TRUE;
 	BEGIN
-		CSP_TXFIFO_SOR		<= TX_FIFO_Valid	AND TX_FIFO_SOR;
-		CSP_TXFIFO_EOR		<= TX_FIFO_Valid	AND TX_FIFO_EOR;
+		DBG_TXFIFO_SOR		<= TX_FIFO_Valid	AND TX_FIFO_SOR;
+		DBG_TXFIFO_EOR		<= TX_FIFO_Valid	AND TX_FIFO_EOR;
 		
-		CSP_RXFIFO_SOR		<= Trans_RX_Valid	AND CFSM_RX_SOR;
-		CSP_RXFIFO_EOR		<= Trans_RX_Valid	AND CFSM_RX_EOR;
+		DBG_RXFIFO_SOR		<= Trans_RX_Valid	AND CFSM_RX_SOR;
+		DBG_RXFIFO_EOR		<= Trans_RX_Valid	AND CFSM_RX_EOR;
 	END GENERATE;
 END;

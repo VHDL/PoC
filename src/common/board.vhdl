@@ -55,7 +55,7 @@ package board is
 		BOARD_DE0,
 		BOARD_DE4,
 		BOARD_DE5,
-		BOARD_S2GXAVDK
+		BOARD_S2GXAV
 	);
 	
 	TYPE T_BOARD_ETHERNET_DESC IS RECORD
@@ -99,7 +99,7 @@ package body board is
 	-- ===========================================================================
 	CONSTANT C_BOARD_DESCRIPTION_LIST		: T_BOARD_DESCRIPTION_VECTOR		:= (
 		BOARD_ML505 => (
-			FPGADevice									=> conf("XC5VLX50T"),																-- XC5VLX50T-1FFG1136
+			FPGADevice									=> conf("XC5VLX50T-1FF1136"),												-- XC5VLX50T-1FF1136
 			Ethernet => (
 				IPStyle										=> conf("IPSTYLE_HARD"),	--SOFT"),
 				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
@@ -110,7 +110,7 @@ package body board is
 			)
 		),
 		BOARD_ML605 => (
-			FPGADevice									=> conf("XC6VLX240T"),															-- XC6VLX240T-1FFG1156
+			FPGADevice									=> conf("XC6VLX240T-1FF1156"),											-- XC6VLX240T-1FF1156
 			Ethernet => (
 				IPStyle										=> conf("IPSTYLE_SOFT"),	--HARD"),
 				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
@@ -121,7 +121,7 @@ package body board is
 			)
 		),
 		BOARD_KC705 => (
-			FPGADevice									=> conf("XC7K325T"),																-- XC7K325T-2FFG900C
+			FPGADevice									=> conf("XC7K325T-2FFG900C"),												-- XC7K325T-2FFG900C
 			Ethernet => (
 				IPStyle										=> conf("IPSTYLE_SOFT"),
 				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
@@ -132,7 +132,7 @@ package body board is
 			)
 		),
 		BOARD_VC707 => (
-			FPGADevice									=> conf("XC7VX485T"),																-- XC7VX485T-2FFG1761C
+			FPGADevice									=> conf("XC7VX485T-2FFG1761C"),											-- XC7VX485T-2FFG1761C
 			Ethernet => (
 				IPStyle										=> conf("IPSTYLE_SOFT"),
 				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
@@ -177,7 +177,7 @@ package body board is
 			)
 		),
 		
-		BOARD_S2GXAVDK => (
+		BOARD_S2GXAV => (
 			FPGADevice									=> conf("EP2SGX90FF1508C3"),												-- EP2SGX90FF1508C3
 			Ethernet => (
 				IPStyle										=> conf("IPSTYLE_SOFT"),
@@ -203,13 +203,6 @@ package body board is
 		)
 	);
 
-	-- private functions
-	-- ===========================================================================
-	-- TODO: move to PoC.strings; find a better function name??
-	function str_trim(str : string) return string is
-	begin
-		return resize(str, str_length(str));
-	end function;
 
 	-- public functions
 	-- ===========================================================================

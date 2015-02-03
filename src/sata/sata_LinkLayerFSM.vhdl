@@ -34,6 +34,7 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
@@ -67,7 +68,7 @@ ENTITY sata_LinkLayerFSM IS
 		Trans_RX_EOF						: OUT	STD_LOGIC;
 		--TODO: Trans_RX_Abort					: IN	STD_LOGIC;
 		
-		Trans_RXFS_CRC_OK				: OUT	STD_LOGIC;
+		Trans_RXFS_CRCOK				: OUT	STD_LOGIC;
 		Trans_RXFS_Abort				: OUT	STD_LOGIC;
 
 		-- physical layer interface
@@ -782,6 +783,7 @@ BEGIN
 				-- error handling
 				-- ----------------------------------------------------------
 				WHEN ST_TXFSM_FSM_ERROR =>
+					TXFSM_Primitive								<= SATA_PRIMITIVE_SYNC;
 					TXFSM_IDLE										<= '1';
 					TXFSM_Error										<= '0';		-- '1';
 					
@@ -863,7 +865,7 @@ BEGIN
 		RX_FSFIFO_rst									<= '0';
 		RX_FSFIFO_put									<= '0';
 		
-		Trans_RXFS_CRC_OK							<= '0';
+		Trans_RXFS_CRCOK							<= '0';
 		Trans_RXFS_Abort							<= '0';
 		
 		-- CRC interface
@@ -1196,7 +1198,7 @@ BEGIN
 							RX_FSFIFO_put							<= '1';
 
 							IF (RX_CRC_OKReg_r = '1') THEN
-								Trans_RXFS_CRC_OK				<= '1';
+								Trans_RXFS_CRCOK				<= '1';
 								RXFSM_NextState					<= ST_RXFSM_SEND_R_OK;
 							ELSE
 								RXFSM_NextState					<= ST_RXFSM_SEND_R_ERROR;
@@ -1249,7 +1251,7 @@ BEGIN
 							
 							IF (RX_CRC_OKReg_r = '1') THEN
 								RXFSM_Primitive					<= SATA_PRIMITIVE_R_OK;
-								Trans_RXFS_CRC_OK				<= '1';
+								Trans_RXFS_CRCOK				<= '1';
 								
 								RXFSM_NextState					<= ST_RXFSM_SEND_R_OK;
 							ELSE
@@ -1329,7 +1331,7 @@ BEGIN
 							RX_FSFIFO_put							<= '1';
 						
 							IF (RX_CRC_OKReg_r = '1') THEN
-								Trans_RXFS_CRC_OK				<= '1';
+								Trans_RXFS_CRCOK				<= '1';
 								RXFSM_NextState					<= ST_RXFSM_SEND_R_OK;
 							ELSE
 								RXFSM_NextState					<= ST_RXFSM_SEND_R_ERROR;
@@ -1374,7 +1376,7 @@ BEGIN
 							
 							IF (RX_CRC_OKReg_r = '1') THEN
 								RXFSM_Primitive					<= SATA_PRIMITIVE_R_OK;
-								Trans_RXFS_CRC_OK				<= '1';
+								Trans_RXFS_CRCOK				<= '1';
 								RXFSM_NextState					<= ST_RXFSM_SEND_R_OK;
 							ELSE
 								RXFSM_Primitive					<= SATA_PRIMITIVE_R_ERROR;

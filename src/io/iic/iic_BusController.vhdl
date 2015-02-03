@@ -3,15 +3,15 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:					I²C BusController (IICBusController)
+-- Module:					I2C BusController (IICBusController)
 -- 
 -- Authors:					Patrick Lehmann
 --
 -- Description:
 -- ------------------------------------
---		The IICBusController transmitts bits over the I²C bus (SerialClock - SCL,
+--		The IICBusController transmitts bits over the I2C bus (SerialClock - SCL,
 --		SerialData - SDA) and also receives them.	To send/receive words over the
---		I²C bus, use the IICController, which utilizes this controller. This
+--		I2C bus, use the IICController, which utilizes this controller. This
 --		controller is compatible to the System Management Bus (SMBus).
 --
 -- License:
@@ -40,13 +40,16 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 --USE			PoC.strings.ALL;
 --USE			PoC.vectors.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.components.ALL;
 USE			PoC.io.ALL;
 
 
 ENTITY iic_IICBusController IS
 	GENERIC (
-		CLOCK_FREQ_MHZ								: REAL													:= 100.0;														-- 100 MHz
+		CLOCK_FREQ										: FREQ													:= 100.0 MHz;
+--		CLOCK_FREQ_MHZ								: REAL													:= 100.0;														-- 100 MHz
+		ADD_INPUT_SYNCHRONIZER				: BOOLEAN												:= FALSE;
 		IIC_BUSMODE										: T_IO_IIC_BUSMODE							:= IO_IIC_BUSMODE_STANDARDMODE;			-- 100 kHz
 		ALLOW_MEALY_TRANSITION				: BOOLEAN												:= TRUE
 	);
@@ -77,152 +80,150 @@ END ENTITY;
 
 ARCHITECTURE rtl OF iic_IICBusController IS
 	ATTRIBUTE KEEP														: BOOLEAN;
-	ATTRIBUTE ASYNC_REG												: STRING;
-	ATTRIBUTE SHREG_EXTRACT										: STRING;
 	ATTRIBUTE FSM_ENCODING										: STRING;
 	
-	FUNCTION getSpikeSupressionTime_ns(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN REAL IS
+	FUNCTION getSpikeSupressionTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN TIME IS
 	BEGIN
-		IF SIMULATION THEN											RETURN 50.0;	END IF;
+		IF SIMULATION THEN											RETURN 50.0 ns;	END IF;
 		CASE IIC_BUSMODE IS
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 50.0;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 50.0;		-- Changed to 50 ns; original value from NXP UM 10204: 0.0 ns
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 50.0;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 50.0;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 50.0;
-			WHEN OTHERS =>												RETURN 50.0;
+			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 50.0 ns;
+			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 50.0 ns;		-- Changed to 50 ns; original value from NXP UM 10204: 0.0 ns
+			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 50.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 50.0 ns;
+			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 50.0 ns;
+			WHEN OTHERS =>												RETURN 50.0 ns;
 		END CASE;
 	END FUNCTION;
 	
-	FUNCTION getBusFreeTime_ns(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN REAL IS
+	function getBusFreeTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) return TIME is
+	begin
+		if SIMULATION then											return 500.0 ns;	end if;
+		case IIC_BUSMODE IS
+			when IO_IIC_BUSMODE_SMBUS =>					return 4700.0 ns;
+			when IO_IIC_BUSMODE_STANDARDMODE =>		return 4700.0 ns;
+			when IO_IIC_BUSMODE_FASTMODE =>				return 1300.0 ns;
+			when IO_IIC_BUSMODE_FASTMODEPLUS =>		return 500.0 ns;
+			when IO_IIC_BUSMODE_HIGHSPEEDMODE =>	return 0.0 ns;
+			when others =>												return 0.0 ns;
+		end case;
+	end function;
+	
+	FUNCTION getClockHighTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN TIME IS
 	BEGIN
-		IF SIMULATION THEN											RETURN 500.0;	END IF;
+		IF SIMULATION THEN											RETURN 260.0 ns;	END IF;
 		CASE IIC_BUSMODE IS
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4700.0;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4700.0;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 1300.0;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 500.0;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0;
-			WHEN OTHERS =>												RETURN 0.0;
+			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4000.0 ns;
+			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4000.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 600.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 260.0 ns;
+			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0 ns;
+			WHEN OTHERS =>												RETURN 0.0 ns;
 		END CASE;
 	END FUNCTION;
 	
-	FUNCTION getClockHighTime_ns(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN REAL IS
+	FUNCTION getClockLowTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN TIME IS
 	BEGIN
-		IF SIMULATION THEN											RETURN 260.0;	END IF;
+		IF SIMULATION THEN											RETURN 500.0 ns;	END IF;
 		CASE IIC_BUSMODE IS
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4000.0;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4000.0;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 600.0;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 260.0;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0;
-			WHEN OTHERS =>												RETURN 0.0;
+			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4700.0 ns;
+			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4700.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 1300.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 500.0 ns;
+			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0 ns;
+			WHEN OTHERS =>												RETURN 0.0 ns;
 		END CASE;
 	END FUNCTION;
 	
-	FUNCTION getClockLowTime_ns(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN REAL IS
+	FUNCTION getSetupRepeatedStartTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN TIME IS
 	BEGIN
-		IF SIMULATION THEN											RETURN 500.0;	END IF;
+		IF SIMULATION THEN											RETURN 260.0 ns;	END IF;
 		CASE IIC_BUSMODE IS
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4700.0;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4700.0;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 1300.0;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 500.0;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0;
-			WHEN OTHERS =>												RETURN 0.0;
-		END CASE;
-	END FUNCTION;
-	
-	FUNCTION getSetupRepeatedStartTime_ns(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN REAL IS
-	BEGIN
-		IF SIMULATION THEN											RETURN 260.0;	END IF;
-		CASE IIC_BUSMODE IS
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4700.0;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4700.0;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 600.0;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 260.0;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0;
-			WHEN OTHERS =>												RETURN 0.0;
+			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4700.0 ns;
+			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4700.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 600.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 260.0 ns;
+			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0 ns;
+			WHEN OTHERS =>												RETURN 0.0 ns;
 		END CASE;
 	END FUNCTION;
 
-	FUNCTION getSetupStopTime_ns(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN REAL IS
+	FUNCTION getSetupStopTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN TIME IS
 	BEGIN
-		IF SIMULATION THEN											RETURN 260.0;	END IF;
+		IF SIMULATION THEN											RETURN 260.0 ns;	END IF;
 		CASE IIC_BUSMODE IS
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4000.0;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4000.0;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 600.0;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 260.0;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0;
-			WHEN OTHERS =>												RETURN 0.0;
+			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4000.0 ns;
+			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4000.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 600.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 260.0 ns;
+			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0 ns;
+			WHEN OTHERS =>												RETURN 0.0 ns;
 		END CASE;
 	END FUNCTION;
 	
-	FUNCTION getSetupDataTime_ns(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN REAL IS
+	FUNCTION getSetupDataTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN TIME IS
 	BEGIN
-		IF SIMULATION THEN											RETURN 50.0;	END IF;
+		IF SIMULATION THEN											RETURN 50.0 ns;	END IF;
 		CASE IIC_BUSMODE IS
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 250.0;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 250.0;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 100.0;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 50.0;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0;
-			WHEN OTHERS =>												RETURN 0.0;
+			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 250.0 ns;
+			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 250.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 100.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 50.0 ns;
+			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0 ns;
+			WHEN OTHERS =>												RETURN 0.0 ns;
 		END CASE;
 	END FUNCTION;
 	
-	FUNCTION getHoldDataTime_ns(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN REAL IS
+	FUNCTION getHoldDataTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN TIME IS
 	BEGIN
-		IF SIMULATION THEN											RETURN 0.0;	END IF;
+		IF SIMULATION THEN											RETURN 0.0 ns;	END IF;
 		CASE IIC_BUSMODE IS
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 300.0;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 0.0;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 0.0;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 0.0;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0;
-			WHEN OTHERS =>												RETURN 0.0;
+			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 300.0 ns;
+			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 0.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 0.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 0.0 ns;
+			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0 ns;
+			WHEN OTHERS =>												RETURN 0.0 ns;
 		END CASE;
 	END FUNCTION;
 
-	FUNCTION getValidDataTime_ns(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN REAL IS
+	FUNCTION getValidDataTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN TIME IS
 	BEGIN
-		IF SIMULATION THEN											RETURN 450.0;	END IF;
+		IF SIMULATION THEN											RETURN 450.0 ns;	END IF;
 		CASE IIC_BUSMODE IS
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 0.0;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 3450.0;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 900.0;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 450.0;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0;
-			WHEN OTHERS =>												RETURN 0.0;
+			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 0.0 ns;
+			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 3450.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 900.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 450.0 ns;
+			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0 ns;
+			WHEN OTHERS =>												RETURN 0.0 ns;
 		END CASE;
 	END FUNCTION;
 	
-	FUNCTION getHoldClockAfterStartTime_ns(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN REAL IS
+	FUNCTION getHoldClockAfterStartTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN TIME IS
 	BEGIN
-		IF SIMULATION THEN											RETURN 260.0;	END IF;
+		IF SIMULATION THEN											RETURN 260.0 ns;	END IF;
 		CASE IIC_BUSMODE IS
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4000.0;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4000.0;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 600.0;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 260.0;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0;
-			WHEN OTHERS =>												RETURN 0.0;
+			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4000.0 ns;
+			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4000.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 600.0 ns;
+			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 260.0 ns;
+			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0 ns;
+			WHEN OTHERS =>												RETURN 0.0 ns;
 		END CASE;
 	END FUNCTION;
 	
 	-- Timing definitions
-	CONSTANT TIME_SPIKE_SUPPRESSION_NS				: REAL			:= getSpikeSupressionTime_ns(IIC_BUSMODE);
-	CONSTANT TIME_BUS_FREE_NS									: REAL			:= getBusFreeTime_ns(IIC_BUSMODE);
-	CONSTANT TIME_CLOCK_HIGH_NS								: REAL			:= getClockHighTime_ns(IIC_BUSMODE);
-	CONSTANT TIME_CLOCK_LOW_NS								: REAL			:= getClockLowTime_ns(IIC_BUSMODE);
-	CONSTANT TIME_SETUP_REPEAT_START_NS				: REAL			:= getSetupRepeatedStartTime_ns(IIC_BUSMODE);
-	CONSTANT TIME_SETUP_STOP_NS								: REAL			:= getSetupStopTime_ns(IIC_BUSMODE);
-	CONSTANT TIME_SETUP_DATA_NS								: REAL			:= getSetupDataTime_ns(IIC_BUSMODE);
-	CONSTANT TIME_HOLD_CLOCK_AFTER_START_NS		: REAL			:= getHoldClockAfterStartTime_ns(IIC_BUSMODE);
-	CONSTANT TIME_HOLD_DATA_NS								: REAL			:= getHoldDataTime_ns(IIC_BUSMODE);
-	CONSTANT TIME_VALID_DATA_NS								: REAL			:= getValidDataTime_ns(IIC_BUSMODE);
-	
+	CONSTANT TIME_SPIKE_SUPPRESSION						: TIME			:= getSpikeSupressionTime(IIC_BUSMODE);
+	CONSTANT TIME_BUS_FREE										: TIME			:= getBusFreeTime(IIC_BUSMODE);
+	CONSTANT TIME_CLOCK_HIGH									: TIME			:= getClockHighTime(IIC_BUSMODE);
+	CONSTANT TIME_CLOCK_LOW										: TIME			:= getClockLowTime(IIC_BUSMODE);
+	CONSTANT TIME_SETUP_REPEAT_START					: TIME			:= getSetupRepeatedStartTime(IIC_BUSMODE);
+	CONSTANT TIME_SETUP_STOP									: TIME			:= getSetupStopTime(IIC_BUSMODE);
+	CONSTANT TIME_SETUP_DATA									: TIME			:= getSetupDataTime(IIC_BUSMODE);
+	CONSTANT TIME_HOLD_CLOCK_AFTER_START			: TIME			:= getHoldClockAfterStartTime(IIC_BUSMODE);
+	CONSTANT TIME_HOLD_DATA										: TIME			:= getHoldDataTime(IIC_BUSMODE);
+	CONSTANT TIME_VALID_DATA									: TIME			:= getValidDataTime(IIC_BUSMODE);
+
 	-- Timing table ID
 	CONSTANT TTID_BUS_FREE_TIME								: NATURAL		:= 0;
 	CONSTANT TTID_HOLD_CLOCK_AFTER_START			: NATURAL		:= 1;
@@ -233,13 +234,13 @@ ARCHITECTURE rtl OF iic_IICBusController IS
 	CONSTANT TTID_SETUP_DATA									: NATURAL		:= 6;
 	
 	-- Timing table
-	CONSTANT TIMING_TABLE											: T_NATVEC	:= (
-		TTID_BUS_FREE_TIME						=> TimingToCycles_ns(TIME_BUS_FREE_NS,								Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)),
-		TTID_HOLD_CLOCK_AFTER_START		=> TimingToCycles_ns(TIME_HOLD_CLOCK_AFTER_START_NS,	Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)),
-		TTID_CLOCK_LOW								=> TimingToCycles_ns(TIME_CLOCK_LOW_NS,								Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)),
-		TTID_CLOCK_HIGH								=> TimingToCycles_ns(TIME_CLOCK_HIGH_NS,							Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)),
-		TTID_SETUP_REPEAT_START				=> TimingToCycles_ns(TIME_SETUP_REPEAT_START_NS,			Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)),
-		TTID_SETUP_STOP								=> TimingToCycles_ns(TIME_SETUP_STOP_NS,							Freq_MHz2Real_ns(CLOCK_FREQ_MHZ))
+	constant TIMING_TABLE											: T_NATVEC	:= (
+		TTID_BUS_FREE_TIME						=> TimingToCycles(TIME_BUS_FREE,								CLOCK_FREQ),
+		TTID_HOLD_CLOCK_AFTER_START		=> TimingToCycles(TIME_HOLD_CLOCK_AFTER_START,	CLOCK_FREQ),
+		TTID_CLOCK_LOW								=> TimingToCycles(TIME_CLOCK_LOW,								CLOCK_FREQ),
+		TTID_CLOCK_HIGH								=> TimingToCycles(TIME_CLOCK_HIGH,							CLOCK_FREQ),
+		TTID_SETUP_REPEAT_START				=> TimingToCycles(TIME_SETUP_REPEAT_START,			CLOCK_FREQ),
+		TTID_SETUP_STOP								=> TimingToCycles(TIME_SETUP_STOP,							CLOCK_FREQ)
 	);
 	
 	-- Bus TimingCounter (BusTC)
@@ -304,66 +305,76 @@ ARCHITECTURE rtl OF iic_IICBusController IS
 	SIGNAL Status_nxt										: T_IO_IICBUS_STATUS;
 	SIGNAL Status_d											: T_IO_IICBUS_STATUS				:= IO_IICBUS_STATUS_ERROR;
 	
-	SIGNAL SerialClock_async						: STD_LOGIC									:= '0';
-	SIGNAL SerialClock_sync							: STD_LOGIC									:= '0';
-	SIGNAL SerialClockIn								: STD_LOGIC									:= '0';
+	SIGNAL SerialClock_raw							: STD_LOGIC;
+	SIGNAL SerialClockIn								: STD_LOGIC;
 	SIGNAL SerialClock_o_r							: STD_LOGIC									:= '0';
 	SIGNAL SerialClock_t_r							: STD_LOGIC									:= '1';
-	
-	SIGNAL SerialData_async							: STD_LOGIC									:= '0';
-	SIGNAL SerialData_sync							: STD_LOGIC									:= '0';
-	SIGNAL SerialDataIn									: STD_LOGIC									:= '0';
+
+	SIGNAL SerialData_raw								: STD_LOGIC;
+	SIGNAL SerialDataIn									: STD_LOGIC;
 	SIGNAL SerialData_o_r								: STD_LOGIC									:= '0';
 	SIGNAL SerialData_t_r								: STD_LOGIC									:= '1';
 
-	-- Mark register "Serial***_async" as asynchronous
-	ATTRIBUTE ASYNC_REG OF SerialClock_async			: SIGNAL IS "TRUE";
-	ATTRIBUTE ASYNC_REG OF SerialData_async				: SIGNAL IS "TRUE";
-
-	-- Prevent XST from translating two FFs into SRL plus FF
-	ATTRIBUTE SHREG_EXTRACT OF SerialClock_async	: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF SerialClock_sync		: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF SerialData_async		: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF SerialData_sync		: SIGNAL IS "NO";
-	
 	ATTRIBUTE KEEP OF SerialClockIn								: SIGNAL IS TRUE;
 	ATTRIBUTE KEEP OF SerialDataIn								: SIGNAL IS TRUE;
 	
 BEGIN
-	SerialClock_async	<= SerialClock_i			WHEN rising_edge(Clock);
-	SerialClock_sync	<= SerialClock_async	WHEN rising_edge(Clock);
+
+	genSync0 : IF (ADD_INPUT_SYNCHRONIZER = FALSE) GENERATE
+		SerialClock_raw		<= SerialClock_i;
+		SerialData_raw		<= SerialData_i;
+	END GENERATE;
+	genSync1 : IF (ADD_INPUT_SYNCHRONIZER = TRUE) GENERATE
+		sync : ENTITY PoC.sync_Flag
+			GENERIC MAP (
+				BITS			=> 2
+			)
+			PORT MAP (
+				Clock			=> Clock,							-- Clock to be synchronized to
+				Input(0)	=> SerialClock_i,			-- Data to be synchronized
+				Input(1)	=> SerialData_i,			-- Data to be synchronized
+				Output(0)	=> SerialClock_raw,		-- synchronised data
+				Output(1)	=> SerialData_raw			-- synchronised data
+			);
+	END GENERATE;
+
+	-- Output D-FFs
 	SerialClock_o			<= '0';
 	SerialClock_t			<= SerialClock_t_r		WHEN rising_edge(Clock);
 	
-	SerialData_async	<= SerialData_i				WHEN rising_edge(Clock);
-	SerialData_sync		<= SerialData_async		WHEN rising_edge(Clock);
 	SerialData_o			<= '0';
 	SerialData_t			<= SerialData_t_r			WHEN rising_edge(Clock);
 
-	SerialClockGF : ENTITY PoC.io_GlitchFilter
-		GENERIC MAP (
-			CLOCK_FREQ_MHZ										=> CLOCK_FREQ_MHZ,
-			HIGH_SPIKE_SUPPRESSION_TIME_NS		=> TIME_SPIKE_SUPPRESSION_NS,
-			LOW_SPIKE_SUPPRESSION_TIME_NS			=> TIME_SPIKE_SUPPRESSION_NS
-		)
-		PORT MAP (
-			Clock		=> Clock,
-			I				=> SerialClock_sync,
-			O				=> SerialClockIn
-		);
-		
-	SerialDataGF : ENTITY PoC.io_GlitchFilter
-		GENERIC MAP (
-			CLOCK_FREQ_MHZ										=> CLOCK_FREQ_MHZ,
-			HIGH_SPIKE_SUPPRESSION_TIME_NS		=> TIME_SPIKE_SUPPRESSION_NS,
-			LOW_SPIKE_SUPPRESSION_TIME_NS			=> TIME_SPIKE_SUPPRESSION_NS
-		)
-		PORT MAP (
-			Clock		=> Clock,
-			I				=> SerialData_sync,
-			O				=> SerialDataIn
-		);
-
+	genSpikeSupp0 : IF (TIME_SPIKE_SUPPRESSION <= to_time(CLOCK_FREQ)) GENERATE
+		SerialClockIn	<= SerialClock_raw;
+		SerialDataIn	<= SerialData_raw;
+	END GENERATE;
+	genSpikeSupp1 : IF (TIME_SPIKE_SUPPRESSION > to_time(CLOCK_FREQ)) GENERATE
+		CONSTANT SPIKE_SUPPRESSION_CYCLES		: NATURAL := TimingToCycles(TIME_SPIKE_SUPPRESSION, CLOCK_FREQ);
+	BEGIN
+		SerialClockGF : ENTITY PoC.io_GlitchFilter
+			GENERIC MAP (
+				HIGH_SPIKE_SUPPRESSION_CYCLES		=> SPIKE_SUPPRESSION_CYCLES,
+				LOW_SPIKE_SUPPRESSION_CYCLES		=> SPIKE_SUPPRESSION_CYCLES
+			)
+			PORT MAP (
+				Clock		=> Clock,
+				Input		=> SerialClock_raw,
+				Output	=> SerialClockIn
+			);
+			
+		SerialDataGF : ENTITY PoC.io_GlitchFilter
+			GENERIC MAP (
+				HIGH_SPIKE_SUPPRESSION_CYCLES		=> SPIKE_SUPPRESSION_CYCLES,
+				LOW_SPIKE_SUPPRESSION_CYCLES		=> SPIKE_SUPPRESSION_CYCLES
+			)
+			PORT MAP (
+				Clock		=> Clock,
+				Input		=> SerialData_raw,
+				Output	=> SerialDataIn
+			);
+	END GENERATE;
+	
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
@@ -380,7 +391,9 @@ BEGIN
 		NextState									<= State;
 
 		Grant											<= '0';
-		Status										<= IO_IICBUS_STATUS_RESETING;
+		Status_en									<= '0';
+		Status_nxt								<= IO_IICBUS_STATUS_IDLE;
+		Status										<= IO_IICBUS_STATUS_IDLE;
 
 		SerialClock_t_r_set				<= '0';
 		SerialClock_t_r_rst				<= '0';

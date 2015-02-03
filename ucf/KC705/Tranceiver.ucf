@@ -1,0 +1,50 @@
+#% BEGIN-TEMPLATEFILE Board = "KC705" %#
+#% BEGIN-TEMPLATE Transceiver_SFP %#
+## Ethernet PHY - Marvell Alaska Ultra
+## -----------------------------------------------------------------------------
+##	Bank:						12, 15, 117
+##		VCCO:					2.5V, 2.5V (VADJ_FPGA, VADJ_FPGA)
+##		Quad117:		 
+##			RefClock0		
+##			RefClock1		KC705_SMA_RefClock
+##		Placement:
+##			SFP:				Quad117.Channel2 (GTXE2_CHANNEL_X0Y10)
+##		Location:			P5
+#$	##		I²C-Address:	0xA0 (1010 000xb)
+NET "KC705_SFP_TX_Disable"											LOC = "Y20" | IOSTANDARD = LVCMOS25; ## #$	; low-active; external 4k7 pullup resistor; level shifted by Q4 (NDS331N)
+NET "KC705_SFP_LossOfSync"											LOC = "P19" | IOSTANDARD = LVCMOS25; ## #$	; low-active; external 4k7 pullup resistor; level shifted by U69 (SN74AVC1T45)
+##
+## --------------------------
+## SFP+ LVDS signal-pairs
+NET "KC705_SFP_TX_n"														LOC = "H1";													## {OUT}	
+NET "KC705_SFP_TX_p"														LOC = "H2";													## {OUT}	
+NET "KC705_SFP_RX_n"														LOC = "G3";													## {IN}		
+NET "KC705_SFP_RX_p"														LOC = "G4";													## {IN}		
+#% END-TEMPLATE Transceiver_SFP %#
+
+#% BEGIN-TEMPLATE Tranceiver_SMA %#
+## Transceiver - SMA interface
+## -----------------------------------------------------------------------------
+##	Bank:						117
+##		Quad117:		 
+##			RefClock0		
+##			RefClock1		KC705_SMA_RefClock
+##		Placement:
+##			SMA:				Quad117.Channel0 (GTXE2_CHANNEL_X0Y8)
+##		Location:
+##			RefClock:		J15, J16
+##			Lane:				J17, J66, J19, J20
+##
+## reference clock
+## --------------------------
+NET "KC705_SMA_RefClock_n"											LOC = "J7";													## {IN}		J15; external 0.01 µF decoupling capacitor
+NET "KC705_SMA_RefClock_p"											LOC = "J8";													## {IN}		J16; external 0.01 µF decoupling capacitor
+
+## SMA LVDS signal-pairs
+## --------------------------
+NET "KC705_SMA_TX_n"														LOC = "K1";													## {OUT}	J20
+NET "KC705_SMA_TX_p"														LOC = "K2";													## {OUT}	J19
+NET "KC705_SMA_RX_n"														LOC = "K5";													## {IN}		J66; external 0.01 µF decoupling capacitor
+NET "KC705_SMA_RX_p"														LOC = "K6";													## {IN}		J17; external 0.01 µF decoupling capacitor
+#% END-TEMPLATE Tranceiver_SMA %#
+#% END-TEMPLATEFILE %#
