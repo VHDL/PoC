@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,6 +37,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.net.ALL;
 USE			PoC.net_comp.ALL;
 
@@ -67,8 +68,8 @@ LIBRARY work;
 
 ENTITY Eth_Wrapper IS
 	GENERIC (
-		DEBUG						: BOOLEAN															:= FALSE;
-		CLOCKIN_FREQ_MHZ					: REAL																:= 125.0;																		-- 125 MHz
+		DEBUG											: BOOLEAN															:= FALSE;
+		CLOCKIN_FREQ							: FREQ																:= 125.0 MHz;																-- 125 MHz
 		ETHERNET_IPSTYLE					: T_IPSTYLE														:= IPSTYLE_SOFT;														-- 
 		RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE					:= NET_ETH_RS_DATA_INTERFACE_GMII;					-- 
 		PHY_DEVICE								: T_NET_ETH_PHY_DEVICE								:= NET_ETH_PHY_DEVICE_MARVEL_88E1111;				-- 
@@ -95,13 +96,13 @@ ENTITY Eth_Wrapper IS
 		TX_Data										: IN	T_SLV_8;
 		TX_SOF										: IN	STD_LOGIC;
 		TX_EOF										: IN	STD_LOGIC;
-		TX_Ready									: OUT	STD_LOGIC;
+		TX_Ack										: OUT	STD_LOGIC;
 	
 		RX_Valid									: OUT	STD_LOGIC;
 		RX_Data										: OUT	T_SLV_8;
 		RX_SOF										: OUT	STD_LOGIC;
 		RX_EOF										: OUT	STD_LOGIC;
-		RX_Ready									: IN	STD_LOGIC;
+		RX_Ack										: IN	STD_LOGIC;
 		
 		-- GMII PHY interface
 -- TODO:		GMII_Reset								: OUT	STD_LOGIC;				-- 						 RST		-> PHY Reset
@@ -135,8 +136,8 @@ BEGIN
 	BEGIN
 		Eth : Eth_Wrapper_Virtex5
 			GENERIC MAP (
-				DEBUG						=> DEBUG,
-				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ,
+				DEBUG											=> DEBUG,
+				CLOCKIN_FREQ							=> CLOCKIN_FREQ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
 				PHY_DATA_INTERFACE				=> PHY_DATA_INTERFACE
@@ -159,13 +160,13 @@ BEGIN
 				TX_Data										=> TX_Data,
 				TX_SOF										=> TX_SOF,
 				TX_EOF										=> TX_EOF,
-				TX_Ready									=> TX_Ready,
+				TX_Ack										=> TX_Ack,
 
 				RX_Valid									=> RX_Valid,
 				RX_Data										=> RX_Data,
 				RX_SOF										=> RX_SOF,
 				RX_EOF										=> RX_EOF,
-				RX_Ready									=> RX_Ready,
+				RX_Ack										=> RX_Ack,
 				
 				PHY_Interface							=> PHY_Interface
 			);
@@ -176,8 +177,8 @@ BEGIN
 	BEGIN
 		Eth : Eth_Wrapper_Virtex6
 			GENERIC MAP (
-				DEBUG						=> DEBUG,
-				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ,
+				DEBUG											=> DEBUG,
+				CLOCKIN_FREQ							=> CLOCKIN_FREQ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
 				PHY_DATA_INTERFACE				=> PHY_DATA_INTERFACE
@@ -201,13 +202,13 @@ BEGIN
 				TX_Data										=> TX_Data,
 				TX_SOF										=> TX_SOF,
 				TX_EOF										=> TX_EOF,
-				TX_Ready									=> TX_Ready,
+				TX_Ack										=> TX_Ack,
 
 				RX_Valid									=> RX_Valid,
 				RX_Data										=> RX_Data,
 				RX_SOF										=> RX_SOF,
 				RX_EOF										=> RX_EOF,
-				RX_Ready									=> RX_Ready,
+				RX_Ack										=> RX_Ack,
 				
 				PHY_Interface							=> PHY_Interface
 			);
@@ -219,7 +220,7 @@ BEGIN
 		Eth : Eth_Wrapper_Series7
 			GENERIC MAP (
 				DEBUG											=> DEBUG,
-				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ,
+				CLOCKIN_FREQ							=> CLOCKIN_FREQ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
 				PHY_DATA_INTERFACE				=> PHY_DATA_INTERFACE
@@ -243,13 +244,13 @@ BEGIN
 				TX_Data										=> TX_Data,
 				TX_SOF										=> TX_SOF,
 				TX_EOF										=> TX_EOF,
-				TX_Ready									=> TX_Ready,
+				TX_Ack										=> TX_Ack,
 
 				RX_Valid									=> RX_Valid,
 				RX_Data										=> RX_Data,
 				RX_SOF										=> RX_SOF,
 				RX_EOF										=> RX_EOF,
-				RX_Ready									=> RX_Ready,
+				RX_Ack										=> RX_Ack,
 				
 				PHY_Interface							=> PHY_Interface
 			);
@@ -298,12 +299,12 @@ BEGIN
 		
 		PHYC : ENTITY PoC.Eth_PHYController
 			GENERIC MAP (
-				DEBUG									=> DEBUG,
-				CLOCK_FREQ_MHZ									=> CLOCKIN_FREQ_MHZ,
+				DEBUG														=> DEBUG,
+				CLOCK_FREQ											=> CLOCKIN_FREQ,
 				PHY_DEVICE											=> PHY_DEVICE,
 				PHY_DEVICE_ADDRESS							=> PHY_DEVICE_ADDRESS,
-				PHY_MANAGEMENT_INTERFACE				=> PHY_MANAGEMENT_INTERFACE,																				--			MDIO = 1 MBaud				IIC = 100 kBaud
-				BAUDRATE_BAUD										=> ite((PHY_MANAGEMENT_INTERFACE = NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO), 1.0 * 1000.0 * 1000.0, 100.0 * 1000.0)
+				PHY_MANAGEMENT_INTERFACE				=> PHY_MANAGEMENT_INTERFACE,																--			MDIO = 1 MBaud	IIC = 100 kBaud
+				BAUDRATE												=> ite((PHY_MANAGEMENT_INTERFACE = NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO), 1.0 MBd, 100.0 kBd)
 			)
 			PORT MAP (
 				Clock														=> TX_Clock,

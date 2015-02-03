@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -70,13 +70,13 @@ ENTITY eth_Wrapper_Virtex5 IS
 		TX_Data										: IN	T_SLV_8;
 		TX_SOF										: IN	STD_LOGIC;
 		TX_EOF										: IN	STD_LOGIC;
-		TX_Ready									: OUT	STD_LOGIC;
+		TX_Ack										: OUT	STD_LOGIC;
 
 		RX_Valid									: OUT	STD_LOGIC;
 		RX_Data										: OUT	T_SLV_8;
 		RX_SOF										: OUT	STD_LOGIC;
 		RX_EOF										: OUT	STD_LOGIC;
-		RX_Ready									: In	STD_LOGIC;
+		RX_Ack										: In	STD_LOGIC;
 		
 		PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
 	);
@@ -225,24 +225,24 @@ BEGIN
 			SIGNAL TX_Valid_n			: STD_LOGIC;
 			SIGNAL TX_SOF_n				: STD_LOGIC;
 			SIGNAL TX_EOF_n				: STD_LOGIC;
-			SIGNAL TX_Ready_n			: STD_LOGIC;
+			SIGNAL TX_Ack_n				: STD_LOGIC;
 
 			SIGNAL RX_Valid_n			: STD_LOGIC;
 			SIGNAL RX_SOF_n				: STD_LOGIC;
 			SIGNAL RX_EOF_n				: STD_LOGIC;
-			SIGNAL RX_Ready_n			: STD_LOGIC;
+			SIGNAL RX_Ack_n				: STD_LOGIC;
 		BEGIN
 			-- convert LocalLink interface from low-active to high-active and vv.
 			-- ========================================================================================================================================================
 			TX_Valid_n		<= NOT TX_Valid;
 			TX_SOF_n			<= NOT TX_SOF;
 			TX_EOF_n			<= NOT TX_EOF;
-			TX_Ready			<= NOT TX_Ready_n;
+			TX_Ack				<= NOT TX_Ack_n;
 
 			RX_Valid			<= NOT RX_Valid_n;
 			RX_SOF				<= NOT RX_SOF_n;
 			RX_EOF				<= NOT RX_EOF_n;
-			RX_Ready_n		<= NOT RX_Ready;
+			RX_Ack_n			<= NOT RX_Ack;
 
 			Eth_TX_Enable					<= '1';
 			Eth_RX_Enable					<= '1';
@@ -261,7 +261,7 @@ BEGIN
 					wr_sof_n					=> TX_SOF_n,							
 					wr_eof_n					=> TX_EOF_n,							
 					wr_src_rdy_n			=> TX_Valid_n,						
-					wr_dst_rdy_n			=> TX_Ready_n,						
+					wr_dst_rdy_n			=> TX_Ack_n,						
 					wr_fifo_status		=> TX_FIFO_Status,					-- FIFO memory status
 
 					-- Transmitter MAC Client Interface
@@ -287,7 +287,7 @@ BEGIN
 					rd_sof_n					=> RX_SOF_n,						
 					rd_eof_n					=> RX_EOF_n,						
 					rd_src_rdy_n			=> RX_Valid_n,					
-					rd_dst_rdy_n			=> RX_Ready_n,					
+					rd_dst_rdy_n			=> RX_Ack_n,					
 					
 					-- Receiver MAC Client Interface
 					wr_clk						=> Eth_RX_Clock,						-- MAC receive clock
@@ -451,25 +451,113 @@ BEGIN
 			BEGIN
 				ASSERT FALSE REPORT "Physical interface SGMII is not implemented!" SEVERITY FAILURE;
 			
---				SGMII	: ENTITY PoC.eth_RSLayer_GMII_SGMII_Virtex5
---		--			GENERIC MAP (
---		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
---		--			)
---					PORT MAP (
---						Clock										=> RS_TX_Clock,
---						Reset										=> Reset_async,
---						
---						-- GEMAC-GMII interface
---						RS_TX_Clock							=> RS_TX_Clock,
---						RS_TX_Valid							=> RS_TX_Valid,
---						RS_TX_Data							=> RS_TX_Data,
---						RS_TX_Error							=> RS_TX_Error,
---						
---						RS_RX_Clock							=> RS_RX_Clock,
---						RS_RX_Valid							=> RS_RX_Valid,
---						RS_RX_Data							=> RS_RX_Data,
---						RS_RX_Error							=> RS_RX_Error
---					);
+				PCS : ENTITY PoC.eth_GMII_SGMII_PCS_Virtex5
+					PORT MAP (
+						dcm_locked						=> 'X',
+						
+						reset									=> 'X',
+
+						-- status
+						status_vector					=> open,
+
+						-- configuration interface (disabled)
+						configuration_vector	=> (others => '0'),
+						configuration_valid		=> '0',
+					
+						-- auto-negotiation
+						an_restart_config			=> '0',
+						an_adv_config_val			=> '0',
+						an_adv_config_vector	=> (others => '0'),
+						an_interrupt					=> open,
+						
+						link_timer_value			=> (others => '0'),
+					
+						-- GMII Interface
+						gmii_isolate					=> open,
+						gmii_txd							=> RS_TX_Data,			-- Transmit data from client MAC.
+						gmii_tx_en						=> RS_TX_Valid,			-- Transmit control signal from client MAC.
+						gmii_tx_er						=> RS_TX_Error,			-- Transmit control signal from client MAC.
+						gmii_rxd							=> RS_RX_Data, 			-- Received Data to client MAC.
+						gmii_rx_dv						=> RS_RX_Valid,			-- Received control signal to client MAC.
+						gmii_rx_er						=> RS_RX_Error,			-- Received control signal to client MAC.
+						
+						phyad									=> PCS_MDIO_ADDRESS(4 downto 0),
+						mdc										=> MDIO_Clock,
+						mdio_in								=> MDIO_Data_i,
+						mdio_out							=> MDIO_Data_o,
+						mdio_tri							=> MDIO_Data_t,
+						
+						-- TRANS interface
+						powerdown							=> PCS_PowerDown,
+						mgt_tx_reset					=> PCS_TX_Reset,
+						mgt_rx_reset					=> PCS_RX_Reset,
+						userclk								=> PCS_UserClock,
+						userclk2							=> PCS_UserClock2,
+						enablealign						=> PCS_EnableAlign,
+						
+						-- TRANS TX interface
+						txdata								=> PCS_TX_Data,
+						txcharisk							=> PCS_TX_CharIsK,
+						txchardispmode				=> PCS_TX_CharDisparityMode,
+						txchardispval					=> PCS_TX_CharDisparityValue,
+						txbuferr							=> Trans_TX_BufferError,
+						
+						-- TRANS RX interface
+						rxdata								=> Trans_RX_Data,
+						rxcharisk							=> Trans_RX_CharIsK,
+						rxchariscomma					=> Trans_RX_CharIsComma,
+						rxbufstatus						=> Trans_RX_BufferStatus,
+						rxdisperr							=> Trans_RX_DisparityError,
+						rxnotintable					=> Trans_RX_NotInTable,
+						rxrundisp							=> Trans_RX_RunningDisparity,
+						rxclkcorcnt						=> Trans_RX_ClockCorrectionCount,
+
+
+						-- optical light detected in optical transceiver
+						signal_detect					=> '1'
+						
+
+			--			sgmii_clk0					: out std_logic;										-- Clock for client MAC (125Mhz, 12.5MHz or 1.25MHz).
+
+					);
+			
+			Trans : entity PoC.eth_Transceiver_Virtex5_GTP
+				generic map (
+					DEBUG										=> DEBUG,
+					CLOCK_IN_FREQ						=> CLOCK_FREQ,
+					PORTS										=> PORTS
+				)
+				port map (
+					PowerDown								=> PCS_PowerDown,
+					TX_Reset								=> PCS_TX_Reset,
+					RX_Reset								=> PCS_RX_Reset,
+					UserClock								=> PCS_UserClock,
+					UserClock2							=> PCS_UserClock2,
+					EnableAlignment					=> PCS_EnableAlign,
+					
+					-- TRANS TX interface
+					TX_Data									=> PCS_TX_Data,
+					TX_CharIsK							=> PCS_TX_CharIsK,
+					TX_CharDisparityMode		=> PCS_TX_CharDisparityMode,
+					TX_CharDisparityValue		=> PCS_TX_CharDisparityValue,
+					TX_BufferError					=> Trans_TX_BufferError,
+					
+					-- TRANS RX interface
+					RX_Data									=> Trans_RX_Data,
+					RX_CharIsK							=> Trans_RX_CharIsK,
+					RX_CharIsComma					=> Trans_RX_CharIsComma,
+					RX_BufferStatus					=> Trans_RX_BufferStatus,
+					RX_DisparityError				=> Trans_RX_DisparityError,
+					RX_NotInTable						=> Trans_RX_NotInTable,
+					RX_RunningDisparity			=> Trans_RX_RunningDisparity,
+					RX_ClockCorrectionCount	=> Trans_RX_ClockCorrectionCount,
+					
+					TX_n										=> open,
+					TX_p										=> open,
+					RX_n										=> 'X',
+					RX_p										=> 'X'
+				);
+
 			END GENERATE;		-- PHY_DATA_INTERFACE: SGMII
 		END GENERATE;		-- RS_DATA_INTERFACE: GMII
 		
@@ -619,132 +707,46 @@ BEGIN
 			-- FPGA-PHY inferface: SGMII
 			-- ========================================================================================================================================================
 			genPHY_SGMII	: IF (PHY_DATA_INTERFACE = NET_ETH_PHY_DATA_INTERFACE_SGMII) GENERATE
-				SIGNAL DCM_Locked								: STD_LOGIC;
-				SIGNAL Trans_PLL_Locked					: STD_LOGIC;
-				SIGNAL Trans_TX_Clock						: STD_LOGIC;
-				SIGNAL Trans_RX_Clock						: STD_LOGIC;
-				
-				SIGNAL Trans_RefClockOut				: STD_LOGIC;
-				SIGNAL Trans_TX_ClockOut				: STD_LOGIC;
-				SIGNAL Trans_RX_RecoveredClock	: STD_LOGIC;
-				
-				SIGNAL Trans_TX_Reset						: STD_LOGIC;
-				SIGNAL Trans_RX_Reset						: STD_LOGIC;
-				SIGNAL Trans_ResetDone					: STD_LOGIC;
-				SIGNAL Trans_TX_BufferReset			: STD_LOGIC;
-				SIGNAL Trans_RX_BufferReset			: STD_LOGIC;
-				
-				SIGNAL Trans_RX_ElectricalIDLE	: STD_LOGIC;
-				SIGNAL Trans_LoopBack						: T_SLV_3;
-				
-				SIGNAL Trans_TX_BufferStatus		: T_SLV_2;
-				SIGNAL Trans_PowerDown					: T_SLV_2;
+
 			BEGIN
-				Trans_PowerDown		<= (OTHERS => TEMAC_PowerDown);
-				
-				BUFG_RefClockOut : BUFG
-					PORT MAP (
-						I		=> Trans_RefClockOut,
-						O		=> PHY_Interface.SGMII.SGMII_RXRefClock_Out
+			
+				Trans : entity PoC.eth_Transceiver_Virtex5_GTP
+					generic map (
+						DEBUG										=> DEBUG,
+						CLOCK_IN_FREQ						=> CLOCK_FREQ,
+						PORTS										=> PORTS
+					)
+					port map (
+						PowerDown								=> PCS_PowerDown,
+						TX_Reset								=> PCS_TX_Reset,
+						RX_Reset								=> PCS_RX_Reset,
+						UserClock								=> PCS_UserClock,
+						UserClock2							=> PCS_UserClock2,
+						EnableAlignment					=> PCS_EnableAlign,
+						
+						-- TRANS TX interface
+						TX_Data									=> PCS_TX_Data,
+						TX_CharIsK							=> PCS_TX_CharIsK,
+						TX_CharDisparityMode		=> PCS_TX_CharDisparityMode,
+						TX_CharDisparityValue		=> PCS_TX_CharDisparityValue,
+						TX_BufferError					=> Trans_TX_BufferError,
+						
+						-- TRANS RX interface
+						RX_Data									=> Trans_RX_Data,
+						RX_CharIsK							=> Trans_RX_CharIsK,
+						RX_CharIsComma					=> Trans_RX_CharIsComma,
+						RX_BufferStatus					=> Trans_RX_BufferStatus,
+						RX_DisparityError				=> Trans_RX_DisparityError,
+						RX_NotInTable						=> Trans_RX_NotInTable,
+						RX_RunningDisparity			=> Trans_RX_RunningDisparity,
+						RX_ClockCorrectionCount	=> Trans_RX_ClockCorrectionCount,
+						
+						TX_n										=> open,
+						TX_p										=> open,
+						RX_n										=> '0',
+						RX_p										=> '0'
 					);
 			
---				TRANS	: ENTITY PoC.Eth_RSLayer_TRANS_GMII_Virtex5
---					GENERIC MAP (
---						-- Simulation attributes
---						TILE_SIM_GTPRESET_SPEEDUP				=> 0,					-- Set to 1 to speed up sim reset
---						TILE_SIM_PLL_PERDIV2						=> x"190",		-- Set to the VCO Unit Interval time 
---
---						-- Channel bonding attributes
---						TILE_CHAN_BOND_MODE_0						=> "OFF",			-- "MASTER", "SLAVE", or "OFF"
---						TILE_CHAN_BOND_LEVEL_0					=> 0,					-- 0 to 7. See UG for details
---						
---						TILE_CHAN_BOND_MODE_1						=> "OFF",			-- "MASTER", "SLAVE", or "OFF"
---						TILE_CHAN_BOND_LEVEL_1					=> 0					-- 0 to 7. See UG for details
---					)
---					PORT MAP (
---						------------------------ Loopback and Powerdown Ports ----------------------
---						LOOPBACK0_IN										=> Trans_LoopBack,					-- 2:0
---						LOOPBACK1_IN										=> "000",
---						RXPOWERDOWN0_IN									=> Trans_PowerDown,					-- 1:0
---						TXPOWERDOWN0_IN									=> Trans_PowerDown,
---						RXPOWERDOWN1_IN									=> "11",
---						TXPOWERDOWN1_IN									=> "11",
---						----------------------- Receive Ports - 8b10b Decoder ----------------------
---						RXCHARISCOMMA0_OUT							=> Trans_RX_CharIsComma,
---						RXCHARISCOMMA1_OUT							=> OPEN,
---						RXCHARISK0_OUT									=> Trans_RX_CharIsK,
---						RXCHARISK1_OUT									=> OPEN,
---						RXDISPERR0_OUT									=> Trans_RX_DisparityError,
---						RXDISPERR1_OUT									=> OPEN,
---						RXNOTINTABLE0_OUT								=> Trans_RX_CharIsNotInTable,
---						RXNOTINTABLE1_OUT								=> OPEN,
---						RXRUNDISP0_OUT									=> Trans_RX_RunningDisparity,
---						RXRUNDISP1_OUT									=> OPEN,
---						------------------- Receive Ports - Clock Correction Ports -----------------
---						RXCLKCORCNT0_OUT								=> Trans_RX_ClockCorrectionCount,
---						RXCLKCORCNT1_OUT								=> OPEN,
---						--------------- Receive Ports - Comma Detection and Alignment --------------
---						RXENMCOMMAALIGN0_IN							=> '1',
---						RXENMCOMMAALIGN1_IN							=> '0',
---						RXENPCOMMAALIGN0_IN							=> '1',
---						RXENPCOMMAALIGN1_IN							=> '0',
---						------------------- Receive Ports - RX Data Path interface -----------------
---						RXDATA0_OUT											=> Trans_RX_Data,
---						RXDATA1_OUT											=> OPEN,
---						RXRECCLK0_OUT										=> Trans_RX_RecoveredClock,
---						RXRECCLK1_OUT										=> OPEN,
---						RXRESET0_IN											=> Trans_RX_Reset,
---						RXRESET1_IN											=> '0',
---						RXUSRCLK0_IN										=> Trans_RX_Clock,
---						RXUSRCLK1_IN										=> '0',
---						RXUSRCLK20_IN										=> Trans_RX_Clock,
---						RXUSRCLK21_IN										=> '0',
---						------- Receive Ports - RX Driver,OOB signalling,Coupling and Eq.,CDR ------
---						RXELECIDLE0_OUT									=> Trans_RX_ElectricalIDLE,
---						RXELECIDLE1_OUT									=> OPEN,
---						RXN0_IN													=> PHY_Interface.SGMII.RX_n,
---						RXN1_IN													=> '0',
---						RXP0_IN													=> PHY_Interface.SGMII.RX_p,
---						RXP1_IN													=> '0',
---						-------- Receive Ports - RX Elastic Buffer and Phase Alignment Ports -------
---						RXBUFRESET0_IN									=> Trans_RX_BufferReset,
---						RXBUFRESET1_IN									=> '0',
---						RXBUFSTATUS0_OUT								=> Trans_RX_BufferStatus,
---						RXBUFSTATUS1_OUT								=> OPEN,
---						--------------------- Shared Ports - Tile and PLL Ports --------------------
---						CLKIN_IN												=> PHY_Interface.SGMII.SGMII_RefClock_In,
---						GTPRESET_IN											=> '0',
---						PLLLKDET_OUT										=> Trans_PLL_Locked,
---						REFCLKOUT_OUT										=> Trans_RefClockOut,
---						RESETDONE0_OUT									=> Trans_ResetDone,
---						RESETDONE1_OUT									=> OPEN,
---						---------------- Transmit Ports - 8b10b Encoder Control Ports --------------
---						TXCHARDISPMODE0_IN							=> Trans_TX_CharDisparityMode,
---						TXCHARDISPMODE1_IN							=> '0',
---						TXCHARDISPVAL0_IN								=> Trans_TX_CharDisparityValue,
---						TXCHARDISPVAL1_IN								=> '0',
---						TXCHARISK0_IN										=> Trans_TX_CharIsK,
---						TXCHARISK1_IN										=> '0',
---						------------- Transmit Ports - TX Buffering and Phase Alignment ------------
---						TXBUFSTATUS0_OUT								=> Trans_TX_BufferStatus,
---						TXBUFSTATUS1_OUT								=> OPEn,
---						------------------ Transmit Ports - TX Data Path interface -----------------
---						TXDATA0_IN											=> Trans_TX_Data,
---						TXDATA1_IN											=> x"00",
---						TXOUTCLK0_OUT										=> Trans_TX_ClockOut,
---						TXOUTCLK1_OUT										=> OPEN,
---						TXRESET0_IN											=> Trans_TX_Reset,
---						TXRESET1_IN											=> '0',
---						TXUSRCLK0_IN										=> Trans_TX_Clock,
---						TXUSRCLK1_IN										=> '0',
---						TXUSRCLK20_IN										=> Trans_TX_Clock,
---						TXUSRCLK21_IN										=> '0',
---						--------------- Transmit Ports - TX Driver and OOB signalling --------------
---						TXN0_OUT												=> PHY_Interface.SGMII.TX_n,
---						TXN1_OUT												=> OPEN,
---						TXP0_OUT												=> PHY_Interface.SGMII.TX_p,
---						TXP1_OUT												=> OPEN
---					);
 			END GENERATE;		-- PHY_DATA_INTERFACE: SGMII
 		END GENERATE;		-- RS_DATA_INTERFACE: TRANSCEIVER
 	END GENERATE;		-- MAC_IP: IPSTYLE_HARD
@@ -805,13 +807,13 @@ BEGIN
 					TX_Data										=> TX_Data,
 					TX_SOF										=> TX_SOF,
 					TX_EOF										=> TX_EOF,
-					TX_Ready									=> TX_Ready,
+					TX_Ack										=> TX_Ack,
 
 					RX_Valid									=> RX_Valid,
 					RX_Data										=> RX_Data,
 					RX_SOF										=> RX_SOF,
 					RX_EOF										=> RX_EOF,
-					RX_Ready									=> RX_Ready,
+					RX_Ack										=> RX_Ack,
 					
 					-- RS-GMII interface
 					RS_TX_Valid								=> RS_TX_Valid,
@@ -862,26 +864,113 @@ BEGIN
 			genPHY_SGMII	: IF (PHY_DATA_INTERFACE = NET_ETH_PHY_DATA_INTERFACE_SGMII) GENERATE
 			
 			BEGIN
-				ASSERT FALSE REPORT "Physical interface SGMII is not implemented!" SEVERITY FAILURE;
 			
-				SGMII	: ENTITY PoC.Eth_RSLayer_GMII_SGMII_Virtex5
-		--			GENERIC MAP (
-		--				CLOCKIN_FREQ_MHZ					=> CLOCKIN_FREQ_MHZ					-- 125 MHz
-		--			)
-					PORT MAP (
-						Clock										=> RS_TX_Clock,
-						Reset										=> Reset_async,
+			
+				PCS : entity PoC.eth_GMII_SGMII_PCS_Virtex5
+					port map (
+						dcm_locked						=> 'X',
 						
-						-- GEMAC-GMII interface
-						RS_TX_Clock							=> RS_TX_Clock,
-						RS_TX_Valid							=> RS_TX_Valid,
-						RS_TX_Data							=> RS_TX_Data,
-						RS_TX_Error							=> RS_TX_Error,
+						reset									=> 'X',
+
+						-- status
+						status_vector					=> open,
+
+						-- configuration interface (disabled)
+						configuration_vector	=> (others => '0'),
+						configuration_valid		=> '0',
+					
+						-- auto-negotiation
+						an_restart_config			=> '0',
+						an_adv_config_val			=> '0',
+						an_adv_config_vector	=> (others => '0'),
+						an_interrupt					=> open,
 						
-						RS_RX_Clock							=> RS_RX_Clock,
-						RS_RX_Valid							=> RS_RX_Valid,
-						RS_RX_Data							=> RS_RX_Data,
-						RS_RX_Error							=> RS_RX_Error
+						link_timer_value			=> (others => '0'),
+					
+						-- GMII Interface
+						gmii_isolate					=> open,
+						gmii_txd							=> RS_TX_Data,			-- Transmit data from client MAC.
+						gmii_tx_en						=> RS_TX_Valid,			-- Transmit control signal from client MAC.
+						gmii_tx_er						=> RS_TX_Error,			-- Transmit control signal from client MAC.
+						gmii_rxd							=> RS_RX_Data, 			-- Received Data to client MAC.
+						gmii_rx_dv						=> RS_RX_Valid,			-- Received control signal to client MAC.
+						gmii_rx_er						=> RS_RX_Error,			-- Received control signal to client MAC.
+						
+						phyad									=> PCS_MDIO_ADDRESS(4 downto 0),
+						mdc										=> MDIO_Clock,
+						mdio_in								=> MDIO_Data_i,
+						mdio_out							=> MDIO_Data_o,
+						mdio_tri							=> MDIO_Data_t,
+						
+						-- TRANS interface
+						powerdown							=> PCS_PowerDown,
+						mgt_tx_reset					=> PCS_TX_Reset,
+						mgt_rx_reset					=> PCS_RX_Reset,
+						userclk								=> PCS_UserClock,
+						userclk2							=> PCS_UserClock2,
+						enablealign						=> PCS_EnableAlign,
+						
+						-- TRANS TX interface
+						txdata								=> PCS_TX_Data,
+						txcharisk							=> PCS_TX_CharIsK,
+						txchardispmode				=> PCS_TX_CharDisparityMode,
+						txchardispval					=> PCS_TX_CharDisparityValue,
+						txbuferr							=> Trans_TX_BufferError,
+						
+						-- TRANS RX interface
+						rxdata								=> Trans_RX_Data,
+						rxcharisk							=> Trans_RX_CharIsK,
+						rxchariscomma					=> Trans_RX_CharIsComma,
+						rxbufstatus						=> Trans_RX_BufferStatus,
+						rxdisperr							=> Trans_RX_DisparityError,
+						rxnotintable					=> Trans_RX_NotInTable,
+						rxrundisp							=> Trans_RX_RunningDisparity,
+						rxclkcorcnt						=> Trans_RX_ClockCorrectionCount,
+
+
+						-- optical light detected in optical transceiver
+						signal_detect					=> '1'
+						
+
+			--			sgmii_clk0					: out std_logic;										-- Clock for client MAC (125Mhz, 12.5MHz or 1.25MHz).
+
+					);
+				
+				Trans : entity PoC.eth_Transceiver_Virtex5_GTP
+					generic map (
+						DEBUG										=> DEBUG,
+						CLOCK_IN_FREQ						=> CLOCK_FREQ,
+						PORTS										=> PORTS
+					)
+					port map (
+						PowerDown								=> PCS_PowerDown,
+						TX_Reset								=> PCS_TX_Reset,
+						RX_Reset								=> PCS_RX_Reset,
+						UserClock								=> PCS_UserClock,
+						UserClock2							=> PCS_UserClock2,
+						EnableAlignment					=> PCS_EnableAlign,
+						
+						-- TRANS TX interface
+						TX_Data									=> PCS_TX_Data,
+						TX_CharIsK							=> PCS_TX_CharIsK,
+						TX_CharDisparityMode		=> PCS_TX_CharDisparityMode,
+						TX_CharDisparityValue		=> PCS_TX_CharDisparityValue,
+						TX_BufferError					=> Trans_TX_BufferError,
+						
+						-- TRANS RX interface
+						RX_Data									=> Trans_RX_Data,
+						RX_CharIsK							=> Trans_RX_CharIsK,
+						RX_CharIsComma					=> Trans_RX_CharIsComma,
+						RX_BufferStatus					=> Trans_RX_BufferStatus,
+						RX_DisparityError				=> Trans_RX_DisparityError,
+						RX_NotInTable						=> Trans_RX_NotInTable,
+						RX_RunningDisparity			=> Trans_RX_RunningDisparity,
+						RX_ClockCorrectionCount	=> Trans_RX_ClockCorrectionCount,
+						
+						TX_n										=> open,
+						TX_p										=> open,
+						RX_n										=> '0',
+						RX_p										=> '0'
 					);
 			END GENERATE;		-- PHY_DATA_INTERFACE: SGMII
 		END GENERATE;		-- RS_DATA_INTERFACE: GMII

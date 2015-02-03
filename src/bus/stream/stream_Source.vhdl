@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,7 +54,7 @@ ENTITY stream_Source IS
 		Out_Data												: OUT	T_SLV_8;
 		Out_SOF													: OUT	STD_LOGIC;
 		Out_EOF													: OUT	STD_LOGIC;
-		Out_Ready												: IN	STD_LOGIC
+		Out_Ack													: IN	STD_LOGIC
 	);
 END ENTITY;
 
@@ -121,13 +121,13 @@ BEGIN
 				WAIT UNTIL rising_edge(Clock);
 				-- write frame data to interface
 				Out_Valid					<= CurFG.Data(WordIndex).Valid;
-				Out_Data						<= CurFG.Data(WordIndex).Data;
+				Out_Data					<= CurFG.Data(WordIndex).Data;
 				Out_SOF						<= CurFG.Data(WordIndex).SOF;
 				Out_EOF						<= CurFG.Data(WordIndex).EOF;
 				
 				WAIT UNTIL falling_edge(Clock);
 				-- go to next word if interface counterpart has accepted the current word
-				IF (Out_Ready = '1') THEN
+				IF (Out_Ack	 = '1') THEN
 					WordIndex := WordIndex + 1;
 				END IF;
 			

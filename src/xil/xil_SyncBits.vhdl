@@ -3,9 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
+--
+-- Module:				 	xil_SyncBits
 -- 
 -- Description:
 -- ------------------------------------
@@ -32,7 +32,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,70 +48,70 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
 
-LIBRARY UNISIM;
-USE			UNISIM.VCOMPONENTS.ALL;
+library UNISIM;
+use			UNISIM.VCOMPONENTS.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
+library PoC;
+use			PoC.utils.ALL;
 
 
-ENTITY xil_SyncBits IS
-	GENERIC (
+entity xil_SyncBits is
+	generic (
 		BITS					: POSITIVE						:= 1;									-- number of bit to be synchronized
-		INIT					: STD_LOGIC_VECTOR		:= x"00000000"				-- number of BITS to synchronize
+		INIT					: STD_LOGIC_VECTOR		:= x"00000000"				-- initialitation bits
 	);
-	PORT (
-		Clock					: IN	STD_LOGIC;														-- Clock to be synchronized to
-		Input					: IN	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);	-- Data to be synchronized
-		Output				: OUT	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)		-- synchronised data
+	port (
+		Clock					: in	STD_LOGIC;														-- Clock to be synchronized to
+		Input					: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);	-- Data to be synchronized
+		Output				: out	STD_LOGIC_VECTOR(BITS - 1 downto 0)		-- synchronised data
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF xil_SyncBits IS
-	ATTRIBUTE ASYNC_REG				: STRING;
-	ATTRIBUTE SHREG_EXTRACT		: STRING;
+architecture rtl of xil_SyncBits is
+	attribute ASYNC_REG				: STRING;
+	attribute SHREG_EXTRACT		: STRING;
 
-	CONSTANT INIT_I						: STD_LOGIC_VECTOR		:= descend(INIT);
-BEGIN
+	constant INIT_I						: STD_LOGIC_VECTOR		:= resize(descend(INIT), BITS);
 
-	gen : FOR I IN 0 TO BITS - 1 GENERATE
-		SIGNAL Data_async				: STD_LOGIC;
-		SIGNAL Data_meta				: STD_LOGIC;
-		SIGNAL Data_sync				: STD_LOGIC;
+begin
+	gen : for i in 0 to BITS - 1 generate
+		signal Data_async				: STD_LOGIC;
+		signal Data_meta				: STD_LOGIC;
+		signal Data_sync				: STD_LOGIC;
 	
 		-- Mark register Data_async's input as asynchronous
-		ATTRIBUTE ASYNC_REG			OF Data_meta	: SIGNAL IS "TRUE";
+		attribute ASYNC_REG			of Data_meta	: signal is "TRUE";
 
 		-- Prevent XST from translating two FFs into SRL plus FF
-		ATTRIBUTE SHREG_EXTRACT OF Data_meta	: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF Data_sync	: SIGNAL IS "NO";
-	BEGIN
-		Data_async	<= Input(I);
+		attribute SHREG_EXTRACT of Data_meta	: signal is "NO";
+		attribute SHREG_EXTRACT of Data_sync	: signal is "NO";
+	begin
+		Data_async	<= Input(i);
 	
 		FF1 : FD
-			GENERIC MAP (
-				INIT		=> to_bit(INIT_I(I))
+			generic map (
+				INIT		=> to_bit(INIT_I(i))
 			)
-			PORT MAP (
+			port map (
 				C				=> Clock,
 				D				=> Data_async,
 				Q				=> Data_meta
 			);
 
 		FF2 : FD
-			GENERIC MAP (
-				INIT		=> to_bit(INIT_I(I))
+			generic map (
+				INIT		=> to_bit(INIT_I(i))
 			)
-			PORT MAP (
+			port map (
 				C				=> Clock,
 				D				=> Data_meta,
 				Q				=> Data_sync
 			);
 		
-		Output(I)		<= Data_sync;
-	END GENERATE;
-END ARCHITECTURE;
+		Output(i)		<= Data_sync;
+	end generate;
+end architecture;

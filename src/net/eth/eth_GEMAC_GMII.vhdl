@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,7 +42,7 @@ USE			PoC.net.ALL;
 
 ENTITY eth_GEMAC_GMII IS
 	GENERIC (
-		DEBUG									: BOOLEAN									:= TRUE;
+		DEBUG														: BOOLEAN									:= TRUE;
 		CLOCK_FREQ_MHZ									: REAL										:= 125.0;					-- 125 MHz
 	
 		TX_FIFO_DEPTH										: POSITIVE								:= 2048;					-- 2 KiB TX Buffer
@@ -79,13 +79,13 @@ ENTITY eth_GEMAC_GMII IS
 		TX_Data										: IN	T_SLV_8;
 		TX_SOF										: IN	STD_LOGIC;
 		TX_EOF										: IN	STD_LOGIC;
-		TX_Ready									: OUT	STD_LOGIC;
+		TX_Ack										: OUT	STD_LOGIC;
 
 		RX_Valid									: OUT	STD_LOGIC;
 		RX_Data										: OUT	T_SLV_8;
 		RX_SOF										: OUT	STD_LOGIC;
 		RX_EOF										: OUT	STD_LOGIC;
-		RX_Ready									: In	STD_LOGIC;
+		RX_Ack										: In	STD_LOGIC;
 		
 		-- MAC-GMII interface
 		RS_TX_Valid								: OUT	STD_LOGIC;
@@ -115,7 +115,7 @@ ARCHITECTURE rtl OF eth_GEMAC_GMII IS
 	SIGNAL TX_FIFO_EOF					: STD_LOGIC;
 	SIGNAL TX_FIFO_Commit				: STD_LOGIC;
 	
-	SIGNAL TX_MAC_Ready					: STD_LOGIC;
+	SIGNAL TX_MAC_Ack						: STD_LOGIC;
 
 
 	SIGNAL RX_MAC_Valid					: STD_LOGIC;
@@ -184,7 +184,7 @@ BEGIN
 					fstate_rd						=> OPEN
 				);
 			
-			TX_Ready	<= NOT XClk_TX_FIFO_Full;
+			TX_Ack		<= NOT XClk_TX_FIFO_Full;
 		END GENERATE;
 		genTX_XClk_1 : IF (TX_INSERT_CROSSCLOCK_FIFO = FALSE) GENERATE
 			Glue_TX_FIFO : ENTITY PoC.fifo_glue
@@ -244,7 +244,7 @@ BEGIN
 				rollback						=> '0',
 
 				-- Read Interface
-				got									=> TX_MAC_Ready,
+				got									=> TX_MAC_Ack,
 				valid								=> TX_FIFO_Valid,
 				dout								=> TX_FIFO_DataOut,
 				fstate_rd						=> OPEN
@@ -270,7 +270,7 @@ BEGIN
 			TX_Data										=> TX_FIFO_Data,
 			TX_SOF										=> TX_FIFO_SOF,
 			TX_EOF										=> TX_FIFO_EOF,
-			TX_Ready									=> TX_MAC_Ready,
+			TX_Ack										=> TX_MAC_Ack,
 			
 			-- Reconcilation Sublayer interface
 			RS_TX_Valid								=> RS_TX_Valid,
@@ -440,7 +440,7 @@ BEGIN
 						di									=> RX_FIFO_DataOut,
 						ful									=> XClk_RX_FIFO_Full,
 						-- Output
-						got									=> RX_Ready,
+						got									=> RX_Ack,
 						vld									=> RX_Valid,
 						do									=> XClk_RX_FIFO_DataOut
 					);
@@ -467,7 +467,7 @@ BEGIN
 					-- Read Interface
 					clk_rd							=> RX_Clock,
 					rst_rd							=> RX_Reset,
-					got									=> RX_Ready,
+					got									=> RX_Ack,
 					valid								=> RX_Valid,
 					dout								=> XClk_RX_FIFO_DataOut,
 					fstate_rd						=> OPEN

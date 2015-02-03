@@ -73,6 +73,12 @@ package utils is
 	-- rounding style
 	type T_ROUNDING_STYLE	is (ROUND_TO_NEAREST, ROUND_TO_ZERO, ROUND_TO_INF, ROUND_UP, ROUND_DOWN);
 
+	subtype T_BCD					is UNSIGNED(3 downto 0);
+	type		T_BCD_VECTOR	is array (NATURAL range <>) of T_BCD;
+	constant C_BCD_MINUS	: T_BCD		:= "1010";
+	constant C_BCD_OFF		: T_BCD		:= "1011";
+	
+	
 	-- Function declarations
 	-- ==========================================================================
 
@@ -610,6 +616,8 @@ package body utils is
 	FUNCTION to_index(slv : UNSIGNED; max : NATURAL := 0) RETURN INTEGER IS
 		variable  res : integer;
 	BEGIN
+		if (slv'length = 0) then	return 0;	end if;
+	
 		res := to_integer(slv);
 		if SIMULATION and max > 0 then
 			res := imin(res, max);
@@ -734,7 +742,7 @@ package body utils is
 		variable result		: std_logic_vector(2**value'length - 1 downto 0);
 	begin
 		result	:= (others => '0');
-		result(2 ** to_integer(unsigned(value))) := '1';
+		result(to_index(value)) := '1';
 		return result;
 	end function;
 	

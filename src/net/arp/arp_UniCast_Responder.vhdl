@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,7 +66,7 @@ ENTITY ARP_UniCast_Responder IS
 		TX_Data												: OUT	T_SLV_8;
 		TX_SOF												: OUT	STD_LOGIC;
 		TX_EOF												: OUT	STD_LOGIC;
-		TX_Ready											: IN	STD_LOGIC;
+		TX_Ack												: IN	STD_LOGIC;
 		TX_Meta_DestMACAddress_rst		: IN	STD_LOGIC;
 		TX_Meta_DestMACAddress_nxt		: IN	STD_LOGIC;
 		TX_Meta_DestMACAddress_Data		: OUT	T_SLV_8
@@ -144,7 +144,7 @@ BEGIN
 	PROCESS(State,
 					SendResponse,
 					IsIPv4_l, IsIPv6_l,
-					TX_Ready, TX_Meta_DestMACAddress_rst, TX_Meta_DestMACAddress_nxt,
+					TX_Ack, TX_Meta_DestMACAddress_rst, TX_Meta_DestMACAddress_nxt,
 					SenderMACAddress_Data, SenderIPv4Address_Data, TargetMACAddress_Data, TargetIPv4Address_Data,
 					Reader_Counter_us)
 	BEGIN
@@ -182,7 +182,7 @@ BEGIN
 				Address_rst								<= TX_Meta_DestMACAddress_rst;
 				TargetMACAddress_nxt			<= TX_Meta_DestMACAddress_nxt;
 			
-				IF (TX_Ready = '1') THEN
+				IF (TX_Ack	 = '1') THEN
 					NextState								<= ST_SEND_HARDWARE_TYPE_1;
 				END IF;
 
@@ -190,7 +190,7 @@ BEGIN
 				TX_Valid									<= '1';
 				TX_Data										<= x"01";
 			
-				IF (TX_Ready = '1') THEN
+				IF (TX_Ack	 = '1') THEN
 					NextState								<= ST_SEND_PROTOCOL_TYPE_0;
 				END IF;
 
@@ -203,7 +203,7 @@ BEGIN
 					TX_Data									<= x"86";
 				END IF;
 			
-				IF (TX_Ready = '1') THEN
+				IF (TX_Ack	 = '1') THEN
 					NextState								<= ST_SEND_PROTOCOL_TYPE_1;
 				END IF;
 
@@ -216,7 +216,7 @@ BEGIN
 					TX_Data									<= x"DD";
 				END IF;
 			
-				IF (TX_Ready = '1') THEN
+				IF (TX_Ack	 = '1') THEN
 					NextState								<= ST_SEND_HARDWARE_ADDRESS_LENGTH;
 				END IF;
 
@@ -224,7 +224,7 @@ BEGIN
 				TX_Valid									<= '1';
 				TX_Data										<= x"06";
 			
-				IF (TX_Ready = '1') THEN
+				IF (TX_Ack	 = '1') THEN
 					NextState								<= ST_SEND_PROTOCOL_ADDRESS_LENGTH;
 				END IF;
 
@@ -237,7 +237,7 @@ BEGIN
 					TX_Data									<= x"10";
 				END IF;
 				
-				IF (TX_Ready = '1') THEN
+				IF (TX_Ack	 = '1') THEN
 					NextState								<= ST_SEND_OPERATION_0;
 				END IF;
 
@@ -245,7 +245,7 @@ BEGIN
 				TX_Valid									<= '1';
 				TX_Data										<= x"00";
 			
-				IF (TX_Ready = '1') THEN
+				IF (TX_Ack	 = '1') THEN
 					NextState								<= ST_SEND_OPERATION_1;
 				END IF;
 
@@ -255,7 +255,7 @@ BEGIN
 				
 				Address_rst								<= '1';
 			
-				IF (TX_Ready = '1') THEN
+				IF (TX_Ack	 = '1') THEN
 					NextState								<= ST_SEND_SENDER_MAC;
 				END IF;
 
@@ -263,7 +263,7 @@ BEGIN
 				TX_Valid									<= '1';
 				TX_Data										<= SenderMACAddress_Data;
 			
-				IF (TX_Ready = '1') THEN
+				IF (TX_Ack	 = '1') THEN
 					SenderMACAddress_nxt		<= '1';
 					Reader_Counter_en				<= '1';
 					
@@ -277,7 +277,7 @@ BEGIN
 				TX_Valid									<= '1';
 				TX_Data										<= SenderIPv4Address_Data;
 			
-				IF (TX_Ready = '1') THEN
+				IF (TX_Ack	 = '1') THEN
 					SenderIPv4Address_nxt		<= '1';
 					Reader_Counter_en				<= '1';
 					
@@ -294,7 +294,7 @@ BEGIN
 				TX_Valid									<= '1';
 				TX_Data										<= TargetMACAddress_Data;
 			
-				IF (TX_Ready = '1') THEN
+				IF (TX_Ack	 = '1') THEN
 					TargetMACAddress_nxt		<= '1';
 					Reader_Counter_en				<= '1';
 					
@@ -308,7 +308,7 @@ BEGIN
 				TX_Valid									<= '1';
 				TX_Data										<= TargetIPv4Address_Data;
 			
-				IF (TX_Ready = '1') THEN
+				IF (TX_Ack	 = '1') THEN
 					TargetIPv4Address_nxt		<= '1';
 					Reader_Counter_en				<= '1';
 					

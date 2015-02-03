@@ -17,4 +17,4 @@ vhdl poc	"src/common/config.vhdl"						# PoC device configuration mechanism
 vhdl poc	"tb/common/simulation.vhdl"					# PoC simulation helper
 
 # Testbench file(s)
-vhdl work	"tb/common/config_tb.vhdl"					# Testbench
+vhdl test	"tb/common/config_tb.vhdl"					# Testbench

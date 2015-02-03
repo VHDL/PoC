@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,7 +54,7 @@ ENTITY UDP_Wrapper IS
 		IP_TX_Data												: OUT	T_SLV_8;
 		IP_TX_SOF													: OUT	STD_LOGIC;
 		IP_TX_EOF													: OUT	STD_LOGIC;
-		IP_TX_Ready												: IN	STD_LOGIC;
+		IP_TX_Ack													: IN	STD_LOGIC;
 		IP_TX_Meta_rst										: IN	STD_LOGIC;
 		IP_TX_Meta_SrcIPAddress_nxt				: IN	STD_LOGIC;
 		IP_TX_Meta_SrcIPAddress_Data			: OUT	T_SLV_8;
@@ -66,7 +66,7 @@ ENTITY UDP_Wrapper IS
 		IP_RX_Data												: IN	T_SLV_8;
 		IP_RX_SOF													: IN	STD_LOGIC;
 		IP_RX_EOF													: IN	STD_LOGIC;
-		IP_RX_Ready												: OUT	STD_LOGIC;
+		IP_RX_Ack													: OUT	STD_LOGIC;
 		IP_RX_Meta_rst										: OUT	STD_LOGIC;
 		IP_RX_Meta_SrcMACAddress_nxt			: OUT	STD_LOGIC;
 		IP_RX_Meta_SrcMACAddress_Data			: IN	T_SLV_8;
@@ -86,7 +86,7 @@ ENTITY UDP_Wrapper IS
 		TX_Data														: IN	T_SLVV_8(PORTPAIRS'length - 1 DOWNTO 0);
 		TX_SOF														: IN	STD_LOGIC_VECTOR(PORTPAIRS'length - 1 DOWNTO 0);
 		TX_EOF														: IN	STD_LOGIC_VECTOR(PORTPAIRS'length - 1 DOWNTO 0);
-		TX_Ready													: OUT	STD_LOGIC_VECTOR(PORTPAIRS'length - 1 DOWNTO 0);
+		TX_Ack														: OUT	STD_LOGIC_VECTOR(PORTPAIRS'length - 1 DOWNTO 0);
 		TX_Meta_rst												: OUT	STD_LOGIC_VECTOR(PORTPAIRS'length - 1 DOWNTO 0);
 		TX_Meta_SrcIPAddress_nxt					: OUT	STD_LOGIC_VECTOR(PORTPAIRS'length - 1 DOWNTO 0);
 		TX_Meta_SrcIPAddress_Data					: IN	T_SLVV_8(PORTPAIRS'length - 1 DOWNTO 0);
@@ -100,7 +100,7 @@ ENTITY UDP_Wrapper IS
 		RX_Data														: OUT	T_SLVV_8(PORTPAIRS'length - 1 DOWNTO 0);
 		RX_SOF														: OUT	STD_LOGIC_VECTOR(PORTPAIRS'length - 1 DOWNTO 0);
 		RX_EOF														: OUT	STD_LOGIC_VECTOR(PORTPAIRS'length - 1 DOWNTO 0);
-		RX_Ready													: IN	STD_LOGIC_VECTOR(PORTPAIRS'length - 1 DOWNTO 0);
+		RX_Ack														: IN	STD_LOGIC_VECTOR(PORTPAIRS'length - 1 DOWNTO 0);
 		RX_Meta_rst												: IN	STD_LOGIC_VECTOR(PORTPAIRS'length - 1 DOWNTO 0);
 		RX_Meta_SrcMACAddress_nxt					: IN	STD_LOGIC_VECTOR(PORTPAIRS'length - 1 DOWNTO 0);
 		RX_Meta_SrcMACAddress_Data				: OUT	T_SLVV_8(PORTPAIRS'length - 1 DOWNTO 0);
@@ -150,7 +150,7 @@ ARCHITECTURE rtl OF UDP_Wrapper IS
 	SIGNAL StmMux_In_Meta_rev										: T_SLM(UDP_SWITCH_PORTS - 1 DOWNTO 0, STMMUX_META_REV_BITS - 1 DOWNTO 0)		:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
 	SIGNAL StmMux_In_SOF												: STD_LOGIC_VECTOR(UDP_SWITCH_PORTS - 1 DOWNTO 0);
 	SIGNAL StmMux_In_EOF												: STD_LOGIC_VECTOR(UDP_SWITCH_PORTS - 1 DOWNTO 0);
-	SIGNAL StmMux_In_Ready											: STD_LOGIC_VECTOR(UDP_SWITCH_PORTS - 1 DOWNTO 0);
+	SIGNAL StmMux_In_Ack												: STD_LOGIC_VECTOR(UDP_SWITCH_PORTS - 1 DOWNTO 0);
 	
 	SIGNAL StmMux_Out_Valid											: STD_LOGIC;
 	SIGNAL StmMux_Out_Data											: T_SLV_8;
@@ -199,12 +199,12 @@ ARCHITECTURE rtl OF UDP_Wrapper IS
 	SIGNAL TX_FCS_Meta_Checksum									: T_SLV_16;
 	SIGNAL TX_FCS_Meta_Length										: T_SLV_16;
 	
-	SIGNAL TX_FCS_Ready													: STD_LOGIC;
+	SIGNAL TX_FCS_Ack														: STD_LOGIC;
 	SIGNAL TX_FCS_MetaIn_rst										: STD_LOGIC;
 	SIGNAL TX_FCS_MetaIn_nxt										: STD_LOGIC_VECTOR(TX_FCS_META_BITS'length - 1 DOWNTO 0);
 	SIGNAL TX_FCS_MetaIn_Data										: STD_LOGIC_VECTOR(isum(TX_FCS_META_BITS) - 1 DOWNTO 0);
 	
-	SIGNAL UDP_TX_Ready													: STD_LOGIC;
+	SIGNAL UDP_TX_Ack														: STD_LOGIC;
 	SIGNAL UDP_TX_Meta_rst											: STD_LOGIC;
 	SIGNAL UDP_TX_Meta_SrcIPAddress_nxt					: STD_LOGIC;
 	SIGNAL UDP_TX_Meta_DestIPAddress_nxt				: STD_LOGIC;
@@ -254,7 +254,7 @@ ARCHITECTURE rtl OF UDP_Wrapper IS
 	);
 	CONSTANT STMDEMUX_META_REV_BITS							: NATURAL					:= 5;							-- sum over all control bits (rst, nxt, nxt, nxt, nxt)
 	
-	SIGNAL StmDeMux_Out_Ready										: STD_LOGIC;
+	SIGNAL StmDeMux_Out_Ack											: STD_LOGIC;
 	SIGNAL StmDeMux_Out_Meta_rst								: STD_LOGIC;
 	SIGNAL StmDeMux_Out_Meta_SrcMACAddress_nxt	: STD_LOGIC;
 	SIGNAL StmDeMux_Out_Meta_DestMACAddress_nxt	: STD_LOGIC;
@@ -310,7 +310,7 @@ BEGIN
 			In_Meta_rev						=> StmMux_In_Meta_rev,
 			In_SOF								=> TX_SOF,
 			In_EOF								=> TX_EOF,
-			In_Ready							=> TX_Ready,
+			In_Ack								=> TX_Ack,
 			
 			Out_Valid							=> StmMux_Out_Valid,
 			Out_Data							=> StmMux_Out_Data,
@@ -318,7 +318,7 @@ BEGIN
 			Out_Meta_rev					=> StmMux_Out_Meta_rev,
 			Out_SOF								=> StmMux_Out_SOF,
 			Out_EOF								=> StmMux_Out_EOF,
-			Out_Ready							=> TX_FCS_Ready
+			Out_Ack								=> TX_FCS_Ack	
 		);
 
 	StmMux_Out_Meta_rev(StmMUX_META_RST_BIT)				<= TX_FCS_MetaIn_rst;
@@ -342,7 +342,7 @@ BEGIN
 			In_Data												=> StmMux_Out_Data,
 			In_SOF												=> StmMux_Out_SOF,
 			In_EOF												=> StmMux_Out_EOF,
-			In_Ready											=> TX_FCS_Ready,
+			In_Ack												=> TX_FCS_Ack,
 			In_Meta_rst										=> TX_FCS_MetaIn_rst,
 			In_Meta_nxt										=> TX_FCS_MetaIn_nxt,
 			In_Meta_Data									=> TX_FCS_MetaIn_Data,
@@ -351,7 +351,7 @@ BEGIN
 			Out_Data											=> TX_FCS_Data,
 			Out_SOF												=> TX_FCS_SOF,
 			Out_EOF												=> TX_FCS_EOF,
-			Out_Ready											=> UDP_TX_Ready,
+			Out_Ack												=> UDP_TX_Ack,
 			Out_Meta_rst									=> TX_FCS_MetaOut_rst,
 			Out_Meta_nxt									=> TX_FCS_MetaOut_nxt,
 			Out_Meta_Data									=> TX_FCS_MetaOut_Data,
@@ -384,7 +384,7 @@ BEGIN
 			In_Data											=> TX_FCS_Data,
 			In_SOF											=> TX_FCS_SOF,
 			In_EOF											=> TX_FCS_EOF,
-			In_Ready										=> UDP_TX_Ready,
+			In_Ack											=> UDP_TX_Ack,
 			In_Meta_rst									=> UDP_TX_Meta_rst,
 			In_Meta_SrcIPAddress_nxt		=> UDP_TX_Meta_SrcIPAddress_nxt,
 			In_Meta_SrcIPAddress_Data		=> TX_FCS_Meta_SrcIPAddress_Data,
@@ -399,7 +399,7 @@ BEGIN
 			Out_Data										=> IP_TX_Data,
 			Out_SOF											=> IP_TX_SOF,
 			Out_EOF											=> IP_TX_EOF,
-			Out_Ready										=> IP_TX_Ready,
+			Out_Ack											=> IP_TX_Ack,
 			Out_Meta_rst								=> IP_TX_Meta_rst,
 			Out_Meta_SrcIPAddress_nxt		=> IP_TX_Meta_SrcIPAddress_nxt,
 			Out_Meta_SrcIPAddress_Data	=> IP_TX_Meta_SrcIPAddress_Data,
@@ -424,7 +424,7 @@ BEGIN
 			In_Data													=> IP_RX_Data,
 			In_SOF													=> IP_RX_SOF,
 			In_EOF													=> IP_RX_EOF,
-			In_Ready												=> IP_RX_Ready,
+			In_Ack													=> IP_RX_Ack,
 			In_Meta_rst											=> IP_RX_Meta_rst,
 			In_Meta_SrcMACAddress_nxt				=> IP_RX_Meta_SrcMACAddress_nxt,
 			In_Meta_SrcMACAddress_Data			=> IP_RX_Meta_SrcMACAddress_Data,
@@ -442,7 +442,7 @@ BEGIN
 			Out_Data												=> UDP_RX_Data,
 			Out_SOF													=> UDP_RX_SOF,
 			Out_EOF													=> UDP_RX_EOF,
-			Out_Ready												=> StmDeMux_Out_Ready,
+			Out_Ack													=> StmDeMux_Out_Ack,
 			Out_Meta_rst										=> StmDeMux_Out_Meta_rst,
 			Out_Meta_SrcMACAddress_nxt			=> StmDeMux_Out_Meta_SrcMACAddress_nxt,
 			Out_Meta_SrcMACAddress_Data			=> UDP_RX_Meta_SrcMACAddress_Data,
@@ -500,7 +500,7 @@ BEGIN
 			In_Meta_rev							=> StmDeMux_Out_MetaIn_rev,
 			In_SOF									=> UDP_RX_SOF,
 			In_EOF									=> UDP_RX_EOF,
-			In_Ready								=> StmDeMux_Out_Ready,
+			In_Ack									=> StmDeMux_Out_Ack,
 			
 			Out_Valid								=> RX_Valid,
 			Out_Data								=> StmDeMux_Out_Data,
@@ -508,7 +508,7 @@ BEGIN
 			Out_Meta_rev						=> StmDeMux_Out_MetaOut_rev,
 			Out_SOF									=> RX_SOF,
 			Out_EOF									=> RX_EOF,
-			Out_Ready								=> RX_Ready
+			Out_Ack									=> RX_Ack	
 		);
 
 	assign_col(StmDeMux_Out_MetaOut_rev, RX_Meta_rst,									StmDEMUX_META_RST_BIT);
