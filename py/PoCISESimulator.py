@@ -140,8 +140,8 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 			str(fuseExecutablePath),
 			('test.%s' % testbenchName),
 			'--incremental',
-			'--timeprecision_vhdl 1fs',			# set minimum time precision to 1 fs
-			'-mt 4',												# enable multithread support
+			'--timeprecision_vhdl', '1fs',		# set minimum time precision to 1 fs
+			'-mt', '4',												# enable multithread support
 			'-prj',	str(prjFilePath),
 			'-o',		str(exeFilePath)
 		]
