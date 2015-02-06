@@ -109,6 +109,7 @@ package utils is
 	function ite(cond : BOOLEAN; value1 : REAL;	value2 : REAL) return REAL;
 	function ite(cond : BOOLEAN; value1 : STD_LOGIC; value2 : STD_LOGIC) return STD_LOGIC;
 	function ite(cond : BOOLEAN; value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;
+	function ite(cond : BOOLEAN; value1 : BIT_VECTOR; value2 : BIT_VECTOR) return BIT_VECTOR;
 	function ite(cond : BOOLEAN; value1 : UNSIGNED; value2 : UNSIGNED) return UNSIGNED;
 	function ite(cond : BOOLEAN; value1 : CHARACTER; value2 : CHARACTER) return CHARACTER;
 	function ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) return STRING;
@@ -356,6 +357,15 @@ package body utils is
 	end function;
 
 	function ite(cond : BOOLEAN; value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+	
+	function ite(cond : BOOLEAN; value1 : BIT_VECTOR; value2 : BIT_VECTOR) return BIT_VECTOR is
 	begin
 		if cond then
 			return value1;

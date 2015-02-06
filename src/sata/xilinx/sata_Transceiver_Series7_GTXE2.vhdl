@@ -161,12 +161,18 @@ BEGIN
 	genGTXE2 : FOR I IN 0 TO (PORTS	- 1) GENERATE
 		CONSTANT CLOCK_DIVIDER_SELECTION		:	STD_LOGIC_VECTOR(2 DOWNTO 0)	:= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(I));
 		
-		CONSTANT PCS_RSVD_ATTR							: BIT_VECTOR(47 DOWNTO 0)				:= (
+		constant GTX_PCS_RSVD_ATTR					: BIT_VECTOR(47 downto 0)				:= (
 			3 =>			'0',							-- select alternative OOB circuit clock source; 0 => sysclk; 1 => CLKRSVD(0)
 			6 =>			'1',							-- reserved; set to '1'
 			8 =>			'1',							-- power up OOB circuit
-			OTHERS =>	'0'								-- not documented; set to "0..0" ?
+			others =>	'0'								-- not documented; set to "0..0" ?
 		);
+	
+		constant GTX_RXCDR_CFG							: BIT_VECTOR(71 downto 0)				:= 
+			ite((INITIAL_SATA_GENERATIONS_I(i) = SATA_GENERATION_1), x"0380008BFF40100008",					-- 1.5 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
+			ite((INITIAL_SATA_GENERATIONS_I(i) = SATA_GENERATION_2), x"0388008BFF40200008",					-- 3.0 GHz line rate
+			ite((INITIAL_SATA_GENERATIONS_I(i) = SATA_GENERATION_3), x"0380008BFF10200010",					-- 6.0 GHz line rate
+																															 x"03000023ff20400020")));			-- default value from wizard
 	
 		-- ClockNetwork resets
 		SIGNAL ClkNet_Reset									: STD_LOGIC;
@@ -543,13 +549,19 @@ BEGIN
 				In_DataOut				=> DRPMux_In_DataOut,
 				In_Ack						=> DRPMux_Ack,
 				
-				Out_Enable				=> GTX_DRP_Enable,
-				Out_Address				=> GTX_DRP_Address,
-				Out_ReadWrite			=> GTX_DRP_ReadWrite,
+				Out_Enable				=> open,	--GTX_DRP_Enable,
+				Out_Address				=> open,	--GTX_DRP_Address,
+				Out_ReadWrite			=> open,	--GTX_DRP_ReadWrite,
 				Out_DataIn				=> GTX_DRP_DataOut,
-				Out_DataOut				=> DRPMux_Out_DataOut,
-				Out_Ack						=> GTX_DRP_Ack	
+				Out_DataOut				=> open,	--DRPMux_Out_DataOut,
+				Out_Ack						=> '0'		--GTX_DRP_Ack	
 			);
+		
+		GTX_DRP_Enable			<= '0';
+		GTX_DRP_Address			<= (others => '0');
+		GTX_DRP_ReadWrite		<= '0';
+		DRPMux_Out_DataOut	<= (others => '0');
+		GTX_DRP_Ack					<= '0';
 		
 		-- ==================================================================
 		-- Data path / status / error detection
@@ -1002,17 +1014,14 @@ BEGIN
 				PCS_PCIE_EN															=> "FALSE",
 
 
-				PCS_RSVD_ATTR														=> PCS_RSVD_ATTR,					-- 
+				PCS_RSVD_ATTR														=> GTX_PCS_RSVD_ATTR,			-- 
 
 				-- CDR attributes
---				RXCDR_CFG																=> x"03000023ff20400020",				-- default from wizard
---				RXCDR_CFG																=> x"0380008BFF40100008",					-- 1.5 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
-				RXCDR_CFG																=> x"0388008BFF40200008",					-- 3.0 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
---				RXCDR_CFG																=> x"0380008BFF10200010",					-- 6.0 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
-				RXCDR_FR_RESET_ON_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
-				RXCDR_HOLD_DURING_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
-				RXCDR_PH_RESET_ON_EIDLE									=> '0',														-- feature not used due to spurious RX_ElectricalIdle
-				RXCDR_LOCK_CFG													=> "010101",											-- [5:3] Window Size, [2:1] Delta Code, [0] Enable Detection (https://github.com/ShepardSiegel/ocpi/blob/master/coregen/pcie_4243_axi_k7_x4_125/source/pcie_7x_v1_3_gt_wrapper.v)
+				RXCDR_CFG																=> GTX_RXCDR_CFG,					-- 
+				RXCDR_FR_RESET_ON_EIDLE									=> '0',										-- feature not used due to spurious RX_ElectricalIdle
+				RXCDR_HOLD_DURING_EIDLE									=> '0',										-- feature not used due to spurious RX_ElectricalIdle
+				RXCDR_PH_RESET_ON_EIDLE									=> '0',										-- feature not used due to spurious RX_ElectricalIdle
+				RXCDR_LOCK_CFG													=> "010101",							-- [5:3] Window Size, [2:1] Delta Code, [0] Enable Detection (https://github.com/ShepardSiegel/ocpi/blob/master/coregen/pcie_4243_axi_k7_x4_125/source/pcie_7x_v1_3_gt_wrapper.v)
 
 				-- gearbox attributes
 				TXGEARBOX_EN														=> "FALSE",
