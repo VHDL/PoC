@@ -804,10 +804,10 @@ BEGIN
 			END IF;
 		END PROCESS;
 	
-		Status(I)				<= Status_i;
+		Status(I)				<= Status_i		when rising_edge(GTX_UserClock);
 		Error(I).Common	<= SATA_TRANSCEIVER_ERROR_NONE;
-		Error(I).TX			<= TX_Error_i;
-		Error(I).RX			<= RX_Error_i;
+		Error(I).TX			<= TX_Error_i	when rising_edge(GTX_UserClock);
+		Error(I).RX			<= RX_Error_i	when rising_edge(GTX_UserClock);
 
 		-- ==================================================================
 		-- GTXE2_CHANNEL instance for Port I
