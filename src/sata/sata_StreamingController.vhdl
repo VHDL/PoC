@@ -220,7 +220,7 @@ BEGIN
 	Cmd : ENTITY PoC.sata_CommandLayer
 		GENERIC MAP (
 			SIM_EXECUTE_IDENTIFY_DEVICE	=> SIM_EXECUTE_IDENTIFY_DEVICE,				-- required by CommandLayer: load device parameters
-			DEBUG												=> DEBUG					,										-- generate ChipScope DBG_* signals
+			DEBUG												=> DEBUG,										-- generate ChipScope DBG_* signals
 			TX_FIFO_DEPTH								=> TX_FIFO_DEPTH,
 			RX_FIFO_DEPTH								=> RX_FIFO_DEPTH,
 			LOGICAL_BLOCK_SIZE_ldB			=> LOGICAL_BLOCK_SIZE_ldB
@@ -358,7 +358,7 @@ BEGIN
 	-- ==========================================================================================================================================================
 	Trans : ENTITY PoC.sata_TransportLayer
     GENERIC MAP (
-			DEBUG														=> DEBUG					,
+			DEBUG														=> DEBUG,
       SIM_WAIT_FOR_INITIAL_REGDH_FIS  => SIM_WAIT_FOR_INITIAL_REGDH_FIS
     )
 		PORT MAP (

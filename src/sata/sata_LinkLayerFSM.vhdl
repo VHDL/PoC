@@ -183,8 +183,8 @@ ARCHITECTURE rtl OF sata_LinkLayerFSM IS
 	SIGNAL RXFSM_State					: T_RXFSM_STATE																		:= ST_RXFSM_RESET;
 	SIGNAL RXFSM_NextState			: T_RXFSM_STATE;
 	
-	ATTRIBUTE FSM_ENCODING	OF TXFSM_State		: SIGNAL IS ite(DEBUG					, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
-	ATTRIBUTE FSM_ENCODING	OF RXFSM_State		: SIGNAL IS ite(DEBUG					, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING	OF TXFSM_State		: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING	OF RXFSM_State		: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
 
 	CONSTANT INSERT_ALIGN_COUNTER_BITS	: POSITIVE																:= log2ceilnz(INSERT_ALIGN_INTERVAL);

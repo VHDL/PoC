@@ -168,7 +168,7 @@ BEGIN
 	-- ================================================================
 	TFSM : ENTITY PoC.sata_TransportFSM
     GENERIC MAP (
-			DEBUG															=> DEBUG					,
+			DEBUG															=> DEBUG,
       SIM_WAIT_FOR_INITIAL_REGDH_FIS    => SIM_WAIT_FOR_INITIAL_REGDH_FIS
     )
 		PORT MAP (
