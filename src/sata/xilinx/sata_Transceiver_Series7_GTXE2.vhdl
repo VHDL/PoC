@@ -239,14 +239,14 @@ BEGIN
 		
 		signal DRPMux_In_DataOut						: T_XIL_DRP_DATA_VECTOR(1 downto 0);
 		signal DRPMux_Out_DataOut						: T_XIL_DRP_DATA;
-		signal DRPMux_Ready									: STD_LOGIC_VECTOR(1 downto 0);
+		signal DRPMux_Ack										: STD_LOGIC_VECTOR(1 downto 0);
 		
 		SIGNAL GTX_DRP_Clock								: STD_LOGIC;
 		SIGNAL GTX_DRP_Enable								: STD_LOGIC;
 		SIGNAL GTX_DRP_ReadWrite						: STD_LOGIC;
 		SIGNAL GTX_DRP_Address							: T_XIL_DRP_ADDRESS;
 		SIGNAL GTX_DRP_DataOut							: T_XIL_DRP_DATA;
-		SIGNAL GTX_DRP_Ready								: STD_LOGIC;
+		SIGNAL GTX_DRP_Ack									: STD_LOGIC;
 		
 		signal GTX_DigitalMonitor						: T_SLV_8;
 		signal GTX_RX_Monitor_sel						: T_SLV_2;
@@ -441,7 +441,7 @@ BEGIN
 --		GTX_DRP_Address								<= "000000000";
 --		GTX_DRP_DataOut								<= x"0000";
 		--	<float>										<= GTX_DRP_DataOutOut;
-		--	<float>										<= GTX_DRP_Ready;
+		--	<float>										<= GTX_DRP_Ack;
 
 		PROCESS(GTX_UserClock)
 		BEGIN
@@ -496,7 +496,7 @@ BEGIN
 				GTX_DRP_ReadWrite					=> GTXConfig_ReadWrite,						-- @DRP_Clock
 				GTX_DRP_DataIn						=> DRPMux_In_DataOut(0),					-- @DRP_Clock
 				GTX_DRP_DataOut						=> GTXConfig_DataOut,							-- @DRP_Clock
-				GTX_DRP_Ready							=> DRPMux_Ready(0),								-- @DRP_Clock
+				GTX_DRP_Ack								=> DRPMux_Ack(0),								-- @DRP_Clock
 				
 				GTX_ReloadConfig					=> open,								--GTX_ReloadConfig,							-- @DRP_Clock
 				GTX_ReloadConfigDone			=> ResetDone_r					-- @DRP_Clock
@@ -511,7 +511,7 @@ BEGIN
 				In_ReadWrite	=> DebugPortIn(i).DRP.ReadWrite,
 				In_DataIn			=> DebugPortIn(i).DRP.Data,
 				In_DataOut		=> DebugPortOut(i).DRP.Data,
-				In_Ready			=> DebugPortOut(i).DRP.Ready,
+				In_Ack				=> DebugPortOut(i).DRP.Ack,
 				
 				Out_Clock			=> GTX_DRP_Clock,
 				Out_Reset			=> '0',
@@ -520,7 +520,7 @@ BEGIN
 				Out_ReadWrite	=> DRPSync_ReadWrite,
 				Out_DataIn		=> DRPMux_In_DataOut(1),
 				Out_DataOut		=> DRPSync_DataOut,
-				Out_Ready			=> DRPMux_Ready(1)
+				Out_Ack				=> DRPMux_Ack(1)
 			);
 
 		DRPMux : entity PoC.xil_DRP_BusMux
@@ -541,14 +541,14 @@ BEGIN
 				In_DataIn(0)			=> GTXConfig_DataOut,
 				In_DataIn(1)			=> DRPSync_DataOut,
 				In_DataOut				=> DRPMux_In_DataOut,
-				In_Ready					=> DRPMux_Ready,
+				In_Ack						=> DRPMux_Ack,
 				
 				Out_Enable				=> GTX_DRP_Enable,
 				Out_Address				=> GTX_DRP_Address,
 				Out_ReadWrite			=> GTX_DRP_ReadWrite,
 				Out_DataIn				=> GTX_DRP_DataOut,
 				Out_DataOut				=> DRPMux_Out_DataOut,
-				Out_Ready					=> GTX_DRP_Ready
+				Out_Ack						=> GTX_DRP_Ack	
 			);
 		
 		-- ==================================================================
@@ -804,10 +804,10 @@ BEGIN
 			END IF;
 		END PROCESS;
 	
-		Status(I)				<= Status_i;
+		Status(I)				<= Status_i		when rising_edge(GTX_UserClock);
 		Error(I).Common	<= SATA_TRANSCEIVER_ERROR_NONE;
-		Error(I).TX			<= TX_Error_i;
-		Error(I).RX			<= RX_Error_i;
+		Error(I).TX			<= TX_Error_i	when rising_edge(GTX_UserClock);
+		Error(I).RX			<= RX_Error_i	when rising_edge(GTX_UserClock);
 
 		-- ==================================================================
 		-- GTXE2_CHANNEL instance for Port I
@@ -1167,7 +1167,7 @@ BEGIN
 				DRPADDR													=> GTX_DRP_Address(8 downto 0),		-- @DRP_Clock:	
 				DRPDI														=> DRPMux_Out_DataOut,								-- @DRP_Clock:	
 				DRPDO														=> GTX_DRP_DataOut,								-- @DRP_Clock:	
-				DRPRDY													=> GTX_DRP_Ready,									-- @DRP_Clock:	
+				DRPRDY													=> GTX_DRP_Ack,									-- @DRP_Clock:	
 				
 				-- datapath configuration
 				TX8B10BEN												=> '1',														-- @TX_Clock2:	enable 8B/10B encoder
@@ -1413,7 +1413,7 @@ BEGIN
 --			GTX_DRP_Address								<= "000000000";
 --			GTX_DRP_DataOut								<= x"0000";
 --			--	<float>										<= GTX_DRP_DataOutOut;
---			--	<float>										<= GTX_DRP_Ready;
+--			--	<float>										<= GTX_DRP_Ack;
 		end generate;
 		genCSP1 : if (ENABLE_DEBUGPORT = TRUE) generate
 		
@@ -1472,7 +1472,7 @@ BEGIN
 			DebugPortOut(I).RX_ClockCorrectionStatus	<= GTX_RX_ClockCorrectionStatus;
 			
 --			DebugPortOut(I).DRP.Data									<= DRPMux_In_DataOut(1);
---			DebugPortOut(I).DRP.Ready									<= DRPMux_Ready(1);
+--			DebugPortOut(I).DRP.Ready									<= DRPMux_Ack(1);
 			
 			DebugPortOut(I).DigitalMonitor						<= GTX_DigitalMonitor;
 			GTX_RX_Monitor_sel												<= DebugPortIn(I).RX_Monitor_sel;

@@ -74,14 +74,14 @@ ENTITY sata_StreamingController IS
 		TX_Data										: IN	T_SLV_32;
 		TX_SOR										: IN	STD_LOGIC;
 		TX_EOR										: IN	STD_LOGIC;
-		TX_Ready									: OUT	STD_LOGIC;
+		TX_Ack										: OUT	STD_LOGIC;
 		
 		-- RX path
 		RX_Valid									: OUT	STD_LOGIC;
 		RX_Data										: OUT	T_SLV_32;
 		RX_SOR										: OUT	STD_LOGIC;
 		RX_EOR										: OUT	STD_LOGIC;
-		RX_Ready									: IN	STD_LOGIC;
+		RX_Ack										: IN	STD_LOGIC;
 		
 		-- SATAController interface
 		-- ========================================================================
@@ -92,10 +92,10 @@ ENTITY sata_StreamingController IS
 		SATA_TX_EOF								: OUT	STD_LOGIC;
 		SATA_TX_Valid							: OUT	STD_LOGIC;
 		SATA_TX_Data							: OUT	T_SLV_32;
-		SATA_TX_Ready							: IN	STD_LOGIC;
+		SATA_TX_Ack								: IN	STD_LOGIC;
 		SATA_TX_InsertEOF					: IN	STD_LOGIC;															-- helper signal: insert EOF - max frame size reached
 		
-		SATA_TX_FS_Ready					: OUT	STD_LOGIC;
+		SATA_TX_FS_Ack						: OUT	STD_LOGIC;
 		SATA_TX_FS_Valid					: IN	STD_LOGIC;
 		SATA_TX_FS_SendOK					: IN	STD_LOGIC;
 		SATA_TX_FS_Abort					: IN	STD_LOGIC;
@@ -105,9 +105,9 @@ ENTITY sata_StreamingController IS
 		SATA_RX_EOF								: IN	STD_LOGIC;
 		SATA_RX_Valid							: IN	STD_LOGIC;
 		SATA_RX_Data							: IN	T_SLV_32;
-		SATA_RX_Ready							: OUT	STD_LOGIC;
+		SATA_RX_Ack								: OUT	STD_LOGIC;
 		
-		SATA_RX_FS_Ready					: OUT	STD_LOGIC;
+		SATA_RX_FS_Ack						: OUT	STD_LOGIC;
 		SATA_RX_FS_Valid					: IN	STD_LOGIC;
 		SATA_RX_FS_CRCOK					: IN	STD_LOGIC;
 		SATA_RX_FS_Abort					: IN	STD_LOGIC
@@ -161,9 +161,9 @@ ARCHITECTURE rtl OF sata_StreamingController IS
 	SIGNAL Cmd_TX_Data				: T_SLV_32;
 	SIGNAL Cmd_TX_SOT					: STD_LOGIC;
 	SIGNAL Cmd_TX_EOT					: STD_LOGIC;
-	SIGNAL Cmd_RX_Ready				: STD_LOGIC;
+	SIGNAL Cmd_RX_Ack					: STD_LOGIC;
 	
-	SIGNAL TX_Glue_Ready			: STD_LOGIC;
+	SIGNAL TX_Glue_Ack				: STD_LOGIC;
 	SIGNAL TX_Glue_Valid			: STD_LOGIC;
 	SIGNAL TX_Glue_Data				: T_SLV_32;
 	SIGNAL TX_Glue_SOT				: STD_LOGIC;
@@ -175,7 +175,7 @@ ARCHITECTURE rtl OF sata_StreamingController IS
 	SIGNAL RX_Glue_EOT				: STD_LOGIC;
 	SIGNAL RX_Glue_Commit			: STD_LOGIC;
 	SIGNAL RX_Glue_Rollback		: STD_LOGIC;
-	SIGNAL RX_Glue_Ready				: STD_LOGIC;
+	SIGNAL RX_Glue_Ack					: STD_LOGIC;
 
 	SIGNAL Trans_RX_Valid			: STD_LOGIC;
 	SIGNAL Trans_RX_Data			: T_SLV_32;
@@ -183,7 +183,7 @@ ARCHITECTURE rtl OF sata_StreamingController IS
 	SIGNAL Trans_RX_EOT				: STD_LOGIC;
 	SIGNAL Trans_RX_Commit		: STD_LOGIC;
 	SIGNAL Trans_RX_Rollback	: STD_LOGIC;
-	SIGNAL Trans_TX_Ready			: STD_LOGIC;			
+	SIGNAL Trans_TX_Ack				: STD_LOGIC;			
 	
 	-- SATAController (LinkLayer)
 	SIGNAL SATA_TX_Data_i			: T_SLV_32;
@@ -220,7 +220,7 @@ BEGIN
 	Cmd : ENTITY PoC.sata_CommandLayer
 		GENERIC MAP (
 			SIM_EXECUTE_IDENTIFY_DEVICE	=> SIM_EXECUTE_IDENTIFY_DEVICE,				-- required by CommandLayer: load device parameters
-			DEBUG												=> DEBUG					,										-- generate ChipScope DBG_* signals
+			DEBUG												=> DEBUG,										-- generate ChipScope DBG_* signals
 			TX_FIFO_DEPTH								=> TX_FIFO_DEPTH,
 			RX_FIFO_DEPTH								=> RX_FIFO_DEPTH,
 			LOGICAL_BLOCK_SIZE_ldB			=> LOGICAL_BLOCK_SIZE_ldB
@@ -248,14 +248,14 @@ BEGIN
 			TX_Data											=> TX_Data,
 			TX_SOR											=> TX_SOR,
 			TX_EOR											=> TX_EOR,
-			TX_Ready										=> TX_Ready,
+			TX_Ack											=> TX_Ack,
 		
 			-- RX path
 			RX_Valid										=> RX_Valid_i,
 			RX_Data											=> RX_Data_i,
 			RX_SOR											=> RX_SOR_i,
 			RX_EOR											=> RX_EOR_i,
-			RX_Ready										=> RX_Ready,
+			RX_Ack											=> RX_Ack,
 			
 			-- TransferLayer interface
 			Trans_Command								=> Trans_Command,
@@ -272,7 +272,7 @@ BEGIN
 			Trans_TX_Data								=> Cmd_TX_Data,
 			Trans_TX_SOT								=> Cmd_TX_SOT,
 			Trans_TX_EOT								=> Cmd_TX_EOT,
-			Trans_TX_Ready							=> TX_Glue_Ready,
+			Trans_TX_Ack								=> TX_Glue_Ack,
 			
 			-- RX path
 			Trans_RX_Valid							=> RX_Glue_Valid,
@@ -281,7 +281,7 @@ BEGIN
 			Trans_RX_EOT								=> RX_Glue_EOT,
 			Trans_RX_Commit							=> RX_Glue_Commit,
 			Trans_RX_Rollback						=> RX_Glue_Rollback,
-			Trans_RX_Ready							=> Cmd_RX_Ready
+			Trans_RX_Ack								=> Cmd_RX_Ack	
 		);
 	
 	RX_Data		<= RX_Data_i;
@@ -310,12 +310,12 @@ BEGIN
 				
 				do 	=> FIFO_DataOut,
 				vld => RX_Glue_Valid,
-				got => Cmd_RX_Ready
+				got => Cmd_RX_Ack	
 			);
 
 		FIFO_DataIn 			<= (Trans_RX_Commit & Trans_RX_SOT & Trans_RX_EOT & Trans_RX_Data);
 		FIFO_Reset 				<= Trans_RX_Rollback or Reset;
-		RX_Glue_Ready 		<= not FIFO_Full;
+		RX_Glue_Ack	 		<= not FIFO_Full;
 		RX_Glue_Rollback 	<= Trans_RX_Rollback when rising_edge(Clock);
 		RX_Glue_Data 			<= FIFO_DataOut(31 downto 0);
 		-- ensure convertion from data signal to control signal
@@ -344,11 +344,11 @@ BEGIN
 				
 				do 	=> FIFO_DataOut,
 				vld => TX_Glue_Valid, 
-				got => Trans_TX_Ready
+				got => Trans_TX_Ack	
 			);
 
 		FIFO_DataIn 	<= (Cmd_TX_SOT & Cmd_TX_EOT & Cmd_TX_Data);
-		TX_Glue_Ready <= not FIFO_Full;
+		TX_Glue_Ack	 <= not FIFO_Full;
 		TX_Glue_Data	<= FIFO_DataOut(31 downto 0);
 		TX_Glue_SOT		<= FIFO_DataOut(33);
 		TX_Glue_EOT		<= FIFO_DataOut(32);
@@ -358,7 +358,7 @@ BEGIN
 	-- ==========================================================================================================================================================
 	Trans : ENTITY PoC.sata_TransportLayer
     GENERIC MAP (
-			DEBUG														=> DEBUG					,
+			DEBUG														=> DEBUG,
       SIM_WAIT_FOR_INITIAL_REGDH_FIS  => SIM_WAIT_FOR_INITIAL_REGDH_FIS
     )
 		PORT MAP (
@@ -382,7 +382,7 @@ BEGIN
 			TX_Data											=> TX_Glue_Data,
 			TX_SOT											=> TX_Glue_SOT,
 			TX_EOT											=> TX_Glue_EOT,
-			TX_Ready										=> Trans_TX_Ready,
+			TX_Ack											=> Trans_TX_Ack,
 		
 			-- RX path
 			RX_Valid										=> Trans_RX_Valid,
@@ -391,7 +391,7 @@ BEGIN
 			RX_EOT											=> Trans_RX_EOT,
 			RX_Commit										=> Trans_RX_Commit,
 			RX_Rollback									=> Trans_RX_Rollback,
-			RX_Ready										=> RX_Glue_Ready,
+			RX_Ack											=> RX_Glue_Ack,
 			
 			-- LinkLayer interface
 --			Link_Command								=> SATA_Command,
@@ -399,26 +399,26 @@ BEGIN
 --			Link_Error									=> SATA_Error,
 			
 			-- TX path
-			Link_TX_Ready								=> SATA_TX_Ready,
+			Link_TX_Ack									=> SATA_TX_Ack,
 			Link_TX_Data								=> SATA_TX_Data_i,
 			Link_TX_SOF									=> SATA_TX_SOF_i,
 			Link_TX_EOF									=> SATA_TX_EOF_i,
 			Link_TX_Valid								=> SATA_TX_Valid_i,
 			Link_TX_InsertEOF						=> SATA_TX_InsertEOF,															-- helper signal: insert EOF - max frame size reached
 				
-			Link_TX_FS_Ready						=> SATA_TX_FS_Ready,
+			Link_TX_FS_Ack							=> SATA_TX_FS_Ack,
 			Link_TX_FS_SendOK						=> SATA_TX_FS_SendOK,
 			Link_TX_FS_Abort						=> SATA_TX_FS_Abort,
 			Link_TX_FS_Valid						=> SATA_TX_FS_Valid,
 		
 			-- RX path
-			Link_RX_Ready								=> SATA_RX_Ready,
+			Link_RX_Ack									=> SATA_RX_Ack,
 			Link_RX_Data								=> SATA_RX_Data,
 			Link_RX_SOF									=> SATA_RX_SOF,
 			Link_RX_EOF									=> SATA_RX_EOF,
 			Link_RX_Valid								=> SATA_RX_Valid,
 				
-			Link_RX_FS_Ready						=> SATA_RX_FS_Ready,
+			Link_RX_FS_Ack							=> SATA_RX_FS_Ack,
 			Link_RX_FS_CRCOK						=> SATA_RX_FS_CRCOK,
 			Link_RX_FS_Abort						=> SATA_RX_FS_Abort,
 			Link_RX_FS_Valid						=> SATA_RX_FS_Valid

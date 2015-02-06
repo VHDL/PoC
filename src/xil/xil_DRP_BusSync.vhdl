@@ -49,7 +49,7 @@ entity xil_DRP_BusSync is
 		In_ReadWrite	: in	STD_LOGIC;																				-- 
 		In_DataIn			: in	T_XIL_DRP_DATA;																		-- 
 		In_DataOut		: out	T_XIL_DRP_DATA;																		-- 
-		In_Ready			: out	STD_LOGIC;																				-- 
+		In_Ack				: out	STD_LOGIC;																				-- 
 		
 		Out_Clock			: in	STD_LOGIC;
 		Out_Reset			: in	STD_LOGIC;
@@ -58,7 +58,7 @@ entity xil_DRP_BusSync is
 		Out_ReadWrite	: out	STD_LOGIC;																				-- 
 		Out_DataIn		: in	T_XIL_DRP_DATA;																		-- 
 		Out_DataOut		: out	T_XIL_DRP_DATA;																		-- 
-		Out_Ready			: in	STD_LOGIC																					-- 
+		Out_Ack				: in	STD_LOGIC																					-- 
 	);
 end;
 
@@ -100,7 +100,7 @@ begin
 			Clock1			=> Out_Clock,
 			Clock2			=> In_Clock,
 			Input(0)		=> Out_Reset,
-			Input(1)		=> Out_Ready,
+			Input(1)		=> Out_Ack,
 			Output(0)		=> Reset_1,
 			Output(1)		=> Ready_1
 		);
@@ -140,7 +140,7 @@ begin
 	end process;
 	
 	In_DataOut		<= Reg_DataIn_1;
-	In_Ready			<= Ready_1	when rising_edge(In_Clock);
+	In_Ack				<= Ready_1	when rising_edge(In_Clock);
 	
 	Out_Enable		<= Enable_2 when rising_edge(Out_Clock);
 	Out_ReadWrite	<= Reg_ReadWrite_2;
@@ -153,7 +153,7 @@ begin
 			if ((Reset_2 or Out_Reset) = '1') then
 				Reg_DataIn_2			<= (others => '0');
 			else
-				if (Out_Ready = '1') then
+				if (Out_Ack = '1') then
 					Reg_DataIn_2		<= Out_DataIn;
 				end if;
 			end if;

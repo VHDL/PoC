@@ -54,7 +54,7 @@ ENTITY sata_FISEncoder IS
 		ATARegisters								: IN	T_SATA_ATA_HOST_REGISTERS;
 		
 		-- writer interface
-		TX_Ready										: OUT	STD_LOGIC;
+		TX_Ack											: OUT	STD_LOGIC;
 		TX_SOP											: IN	STD_LOGIC;
 		TX_EOP											: IN	STD_LOGIC;
 		TX_Data											: IN	T_SLV_32;
@@ -62,14 +62,14 @@ ENTITY sata_FISEncoder IS
 		TX_InsertEOP								: OUT	STD_LOGIC;
 		
 		-- SATAController interface (LinkLayer)
-		Link_TX_Ready								: IN	STD_LOGIC;
+		Link_TX_Ack									: IN	STD_LOGIC;
 		Link_TX_Data								: OUT	T_SLV_32;
 		Link_TX_SOF									: OUT STD_LOGIC;
 		Link_TX_EOF									: OUT STD_LOGIC;
 		Link_TX_Valid								: OUT	STD_LOGIC;
 		Link_TX_InsertEOF						: IN	STD_LOGIC;
 		
-		Link_TX_FS_Ready						: OUT	STD_LOGIC;
+		Link_TX_FS_Ack							: OUT	STD_LOGIC;
 		Link_TX_FS_SendOK						: IN	STD_LOGIC;
 		Link_TX_FS_Abort						: IN	STD_LOGIC;
 		Link_TX_FS_Valid						: IN	STD_LOGIC
@@ -133,13 +133,13 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	PROCESS(State, FISType, ATARegisters, TX_Valid, TX_Data, TX_SOP, TX_EOP, Link_TX_Ready, Link_TX_FS_Valid, Link_TX_FS_SendOK, Link_TX_FS_Abort, Link_TX_InsertEOF)
+	PROCESS(State, FISType, ATARegisters, TX_Valid, TX_Data, TX_SOP, TX_EOP, Link_TX_Ack, Link_TX_FS_Valid, Link_TX_FS_SendOK, Link_TX_FS_Abort, Link_TX_InsertEOF)
 	BEGIN
 		NextState										<= State;
 		
 		Status											<= SATA_FISE_STATUS_SENDING;
 		
-		TX_Ready										<= '0';
+		TX_Ack											<= '0';
     TX_InsertEOP                <= '0';
 		
 		Link_TX_Valid								<= '0';
@@ -147,7 +147,7 @@ BEGIN
 		Link_TX_SOF									<= '0';
 		Link_TX_Data								<= (OTHERS => '0');
 
-		Link_TX_FS_Ready						<= '0';
+		Link_TX_FS_Ack							<= '0';
 
 		-- FIS Word 0
 		Alias_FISType								<= x"00";
@@ -190,7 +190,7 @@ BEGIN
 						Alias_CommandReg			<= ATARegisters.Command;
 						Alias_FeatureReg			<= x"00";
 
-						IF (Link_TX_Ready = '1') THEN							
+						IF (Link_TX_Ack = '1') THEN							
 							NextState						<= ST_FIS_REG_HOST_DEV_WORD_1;
 						ELSE
 							NextState						<= ST_FIS_REG_HOST_DEV_WORD_0;
@@ -222,7 +222,7 @@ BEGIN
 				Alias_CommandReg					<= ATARegisters.Command;
 				Alias_FeatureReg					<= x"00";
 
-				IF (Link_TX_Ready = '1') THEN					
+				IF (Link_TX_Ack = '1') THEN					
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_1;
 				END IF;
 
@@ -236,7 +236,7 @@ BEGIN
 				Alias_Device							<=  "0";																								-- Device number
 				Alias_FlagLBA48						<= is_LBA48_Command(to_sata_ata_command(ATARegisters.Command));	-- LBA-48 adressing mode
 
-				IF (Link_TX_Ready = '1') THEN					
+				IF (Link_TX_Ack = '1') THEN					
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_2;
 				END IF;
 					
@@ -247,7 +247,7 @@ BEGIN
 				Alias_LBA32								<= ATARegisters.LBlockAddress(39 DOWNTO 32);
 				Alias_LBA40								<= ATARegisters.LBlockAddress(47 DOWNTO 40);
 
-				IF (Link_TX_Ready = '1') THEN					
+				IF (Link_TX_Ack = '1') THEN					
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_3;
 				END IF;
 				
@@ -258,7 +258,7 @@ BEGIN
 				Alias_SecCount8						<= ATARegisters.SectorCount(15 DOWNTO 8);					-- Sector Count expanded
 				Alias_ControlReg					<= ATARegisters.Control;													-- Control register		
 
-				IF (Link_TX_Ready = '1') THEN					
+				IF (Link_TX_Ack = '1') THEN					
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_4;
 				END IF;
 					
@@ -266,21 +266,21 @@ BEGIN
 				Link_TX_Valid							<= '1';
 				Link_TX_EOF								<= '1';
 
-				IF (Link_TX_Ready = '1') THEN
+				IF (Link_TX_Ack = '1') THEN
 					NextState								<= ST_EVALUATE_FRAMESTATE;
 				END IF;
 				
 			WHEN ST_DATA_0 =>
 				Link_TX_Data							<= TX_Data;
 
-				TX_Ready									<= Link_TX_Ready;
+				TX_Ack										<= Link_TX_Ack;
 				TX_InsertEOP							<= Link_TX_InsertEOF;
 				Link_TX_EOF								<= TX_EOP;
 				Link_TX_Valid							<= TX_Valid;
 				
 				IF (TX_Valid = '1') THEN
 					IF (TX_SOP = '1') THEN
-						IF (Link_TX_Ready = '1') THEN
+						IF (Link_TX_Ack = '1') THEN
 							NextState						<= ST_DATA_N;
 						
 							IF (TX_EOP = '1') THEN
@@ -296,13 +296,13 @@ BEGIN
 			WHEN ST_DATA_N =>
 				Link_TX_Data							<= TX_Data;
 
-				TX_Ready									<= Link_TX_Ready;
+				TX_Ack										<= Link_TX_Ack;
 				TX_InsertEOP							<= Link_TX_InsertEOF;
 				Link_TX_EOF								<= TX_EOP;
 				Link_TX_Valid							<= TX_Valid;
 				
 				IF (TX_Valid = '1') THEN
-					IF (Link_TX_Ready = '1') THEN
+					IF (Link_TX_Ack = '1') THEN
 						IF (TX_EOP = '1') THEN
 							NextState						<= ST_EVALUATE_FRAMESTATE;
 						END IF;
@@ -312,12 +312,12 @@ BEGIN
 			WHEN ST_EVALUATE_FRAMESTATE =>
 				IF (Link_TX_FS_Valid = '1') THEN
 					IF (Link_TX_FS_SendOK = '1') THEN
-						Link_TX_FS_Ready			<= '1';
+						Link_TX_FS_Ack				<= '1';
 						Status								<= SATA_FISE_STATUS_SEND_OK;
 						
 						NextState							<= ST_IDLE;
 					ELSE
-						Link_TX_FS_Ready			<= '1';
+						Link_TX_FS_Ack				<= '1';
 						Status								<= SATA_FISE_STATUS_ERROR;
 						
 						NextState							<= ST_IDLE;

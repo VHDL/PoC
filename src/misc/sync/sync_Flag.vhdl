@@ -3,9 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+--
+-- Package:					sync_Flag
 --
 -- Description:
 -- ------------------------------------
@@ -30,7 +30,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,87 +46,86 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
 
 
-ENTITY sync_Flag IS
-  GENERIC (
+entity sync_Flag is
+  generic (
 	  BITS								: POSITIVE						:= 1;										-- number of bit to be synchronized
 		INIT								: STD_LOGIC_VECTOR		:= x"00000000"
 	);
-  PORT (
-		Clock								: IN	STD_LOGIC;															-- <Clock>	output clock domain
-		Input								: IN	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);		-- @async:	input bits
-		Output							: OUT STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)			-- @Clock:	output bits
+  port (
+		Clock								: in	STD_LOGIC;															-- <Clock>	output clock domain
+		Input								: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);		-- @async:	input bits
+		Output							: out STD_LOGIC_VECTOR(BITS - 1 downto 0)			-- @Clock:	output bits
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF sync_Flag IS
-	CONSTANT INIT_I		: STD_LOGIC_VECTOR		:= descend(INIT);
+architecture rtl of sync_Flag is
+	constant INIT_I		: STD_LOGIC_VECTOR		:= resize(descend(INIT), BITS);
 
-BEGIN
-	genXilinx0 : IF (VENDOR /= VENDOR_XILINX) GENERATE
-		ATTRIBUTE ASYNC_REG							: STRING;
-		ATTRIBUTE SHREG_EXTRACT					: STRING;
-	BEGIN
-		gen : FOR I IN 0 TO BITS - 1 GENERATE
-			SIGNAL Data_async							: STD_LOGIC;
-			SIGNAL Data_meta							: STD_LOGIC		:= INIT_I(I);
-			SIGNAL Data_sync							: STD_LOGIC		:= INIT_I(I);
+begin
+	genXilinx0 : if (VENDOR /= VENDOR_XILINX) generate
+		attribute ASYNC_REG							: STRING;
+		attribute SHREG_EXTRACT					: STRING;
+	begin
+		gen : for i in 0 to BITS - 1 generate
+			signal Data_async							: STD_LOGIC;
+			signal Data_meta							: STD_LOGIC		:= INIT_I(i);
+			signal Data_sync							: STD_LOGIC		:= INIT_I(i);
 			
 			-- Mark register DataSync_async's input as asynchronous and ignore timings (TIG)
-			ATTRIBUTE ASYNC_REG			OF Data_meta	: SIGNAL IS "TRUE";
+			attribute ASYNC_REG			of Data_meta	: signal is "TRUE";
 
 			-- Prevent XST from translating two FFs into SRL plus FF
-			ATTRIBUTE SHREG_EXTRACT OF Data_meta	: SIGNAL IS "NO";
-			ATTRIBUTE SHREG_EXTRACT OF Data_sync	: SIGNAL IS "NO";
-		BEGIN
-			Data_async			<= Input(I);
+			attribute SHREG_EXTRACT of Data_meta	: signal is "NO";
+			attribute SHREG_EXTRACT of Data_sync	: signal is "NO";
+		begin
+			Data_async			<= Input(i);
 		
-			PROCESS(Clock)
-			BEGIN
-				IF rising_edge(Clock) THEN
+			process(Clock)
+			begin
+				if rising_edge(Clock) then
 					Data_meta		<= Data_async;
 					Data_sync		<= Data_meta;
-				END IF;
-			END PROCESS;		
+				end if;
+			end process;		
 			
-			Output(I)	<= Data_sync;
-		END GENERATE;
-	END GENERATE;
+			Output(i)	<= Data_sync;
+		end generate;
+	end generate;
 
-	genXilinx1 : IF (VENDOR = VENDOR_XILINX) GENERATE
+	genXilinx1 : if (VENDOR = VENDOR_XILINX) generate
 		-- locally component declaration removes the dependancy to 'PoC.xil.ALL'
-		COMPONENT xil_SyncBits IS
-			GENERIC (
-				BITS					: POSITIVE						:= 1;									-- number of bit to be synchronized
-				INIT					: STD_LOGIC_VECTOR		:= x"00"
+		component xil_SyncBits is
+			generic (
+				BITS		: POSITIVE						:= 1;									-- number of bit to be synchronized
+				INIT		: STD_LOGIC_VECTOR		:= x"00000000"				-- initialitation bits
 			);
-			PORT (
-				Clock					: IN	STD_LOGIC;														-- Clock to be synchronized to
-				Input					: IN	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);	-- Data to be synchronized
-				Output				: OUT	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)		-- synchronised data
+			port (
+				Clock		: in	STD_LOGIC;														-- Clock to be synchronized to
+				Input		: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);	-- Data to be synchronized
+				Output	: out	STD_LOGIC_VECTOR(BITS - 1 downto 0)		-- synchronised data
 			);
-		END COMPONENT;
-	BEGIN
+		end component;
+	begin
 		-- use dedicated and optimized 2 D-FF synchronizer for Xilinx FPGAs
 		sync : xil_SyncBits
-			GENERIC MAP (
+			generic map (
 				BITS			=> BITS,
 				INIT			=> INIT_I
 			)
-			PORT MAP (
+			port map (
 				Clock			=> Clock,
 				Input			=> Input,
 				Output		=> Output
 			);
-	END GENERATE;
+	end generate;
 
-END;
+end;

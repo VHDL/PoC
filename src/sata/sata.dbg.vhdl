@@ -194,22 +194,22 @@ package satadbg is
 		-- RX: after RX_FIFO
 		RX_Data											: T_SLV_32;
 		RX_Valid										: STD_LOGIC;
-		RX_Ready										: STD_LOGIC;
+		RX_Ack											: STD_LOGIC;
 		RX_SOF											: STD_LOGIC;
 		RX_EOF											: STD_LOGIC;
 		RX_FS_Valid									: STD_LOGIC;
-		RX_FS_Ready									: STD_LOGIC;
+		RX_FS_Ack										: STD_LOGIC;
 		RX_FS_CRCOK									: STD_LOGIC;
 		RX_FS_Abort									: STD_LOGIC;
 		--																													=> 125 bit
 		-- TX: from Link Layer
 		TX_Data											: T_SLV_32;
 		TX_Valid										: STD_LOGIC;
-		TX_Ready										: STD_LOGIC;
+		TX_Ack											: STD_LOGIC;
 		TX_SOF											: STD_LOGIC;
 		TX_EOF											: STD_LOGIC;
 		TX_FS_Valid									: STD_LOGIC;
-		TX_FS_Ready									: STD_LOGIC;
+		TX_FS_Ack										: STD_LOGIC;
 		TX_FS_Send_OK								: STD_LOGIC;
 		TX_FS_Abort									: STD_LOGIC;
 		-- TX: TXFIFO

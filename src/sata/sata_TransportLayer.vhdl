@@ -62,14 +62,14 @@ ENTITY sata_TransportLayer IS
 		ATADeviceRegisters							: OUT	T_SATA_ATA_DEVICE_REGISTERS;
 	
 		-- TX path
-		TX_Ready											: OUT	STD_LOGIC;
+		TX_Ack												: OUT	STD_LOGIC;
 		TX_SOT												: IN	STD_LOGIC;
 		TX_EOT												: IN	STD_LOGIC;
 		TX_Data												: IN	T_SLV_32;
 		TX_Valid											: IN	STD_LOGIC;
 	
 		-- RX path
-		RX_Ready											: IN	STD_LOGIC;
+		RX_Ack												: IN	STD_LOGIC;
 		RX_SOT												: OUT STD_LOGIC;
 		RX_EOT												: OUT STD_LOGIC;
 		RX_Data												: OUT	T_SLV_32;
@@ -81,26 +81,26 @@ ENTITY sata_TransportLayer IS
 		Link_Status										: IN	T_SATA_SATACONTROLLER_STATUS;
 		
 		-- TX path
-		Link_TX_Ready									: IN	STD_LOGIC;
+		Link_TX_Ack										: IN	STD_LOGIC;
 		Link_TX_Data									: OUT	T_SLV_32;
 		Link_TX_SOF										: OUT	STD_LOGIC;
 		Link_TX_EOF										: OUT	STD_LOGIC;
 		Link_TX_Valid									: OUT	STD_LOGIC;
 		Link_TX_InsertEOF							: IN	STD_LOGIC;															-- helper signal: insert EOF - max frame size reached
 			
-		Link_TX_FS_Ready							: OUT	STD_LOGIC;
+		Link_TX_FS_Ack								: OUT	STD_LOGIC;
 		Link_TX_FS_SendOK							: IN	STD_LOGIC;
 		Link_TX_FS_Abort							: IN	STD_LOGIC;
 		Link_TX_FS_Valid							: IN	STD_LOGIC;
 	
 		-- RX path
-		Link_RX_Ready									: OUT	STD_LOGIC;
+		Link_RX_Ack										: OUT	STD_LOGIC;
 		Link_RX_Data									: IN	T_SLV_32;
 		Link_RX_SOF										: IN	STD_LOGIC;
 		Link_RX_EOF										: IN	STD_LOGIC;
 		Link_RX_Valid									: IN	STD_LOGIC;
 			
-		Link_RX_FS_Ready							: OUT	STD_LOGIC;
+		Link_RX_FS_Ack								: OUT	STD_LOGIC;
 		Link_RX_FS_CRCOK							: IN	STD_LOGIC;
 		Link_RX_FS_Abort							: IN	STD_LOGIC;
 		Link_RX_FS_Valid							: IN	STD_LOGIC
@@ -135,16 +135,16 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 	SIGNAL TC_TX_EOP													: STD_LOGIC;
 	SIGNAL TC_TX_Data													: T_SLV_32;
 	SIGNAL TC_TX_Valid												: STD_LOGIC;
-	SIGNAL TC_TX_Ready												: STD_LOGIC;
+	SIGNAL TC_TX_Ack													: STD_LOGIC;
 	SIGNAl TC_TX_LastWord											: STD_LOGIC;
 
 	-- RX_Registers
-	SIGNAL RXReg_Ready												: STD_LOGIC;
+	SIGNAL RXReg_Ack													: STD_LOGIC;
 
 	-- FISEncoder
 	SIGNAL FISE_Reset													: STD_LOGIC;
 	SIGNAL FISE_Status												: T_SATA_FISENCODER_STATUS;
-	SIGNAL FISE_TX_Ready											: STD_LOGIC;
+	SIGNAL FISE_TX_Ack												: STD_LOGIC;
 	SIGNAL FISE_TX_InsertEOP									: STD_LOGIC;
 	
 	-- FISDecoder
@@ -168,7 +168,7 @@ BEGIN
 	-- ================================================================
 	TFSM : ENTITY PoC.sata_TransportFSM
     GENERIC MAP (
-			DEBUG															=> DEBUG					,
+			DEBUG															=> DEBUG,
       SIM_WAIT_FOR_INITIAL_REGDH_FIS    => SIM_WAIT_FOR_INITIAL_REGDH_FIS
     )
 		PORT MAP (
@@ -274,9 +274,9 @@ BEGIN
 	BEGIN
 		-- enable TX data path
 		TC_TX_Valid					<= TX_Valid				AND TFSM_TX_en;
-		TC_TX_Ready					<= FISE_TX_Ready	AND TFSM_TX_en;
+		TC_TX_Ack						<= FISE_TX_Ack		AND TFSM_TX_en;
 
-		TC_TX_DataFlow			<= TC_TX_Valid		AND TC_TX_Ready;
+		TC_TX_DataFlow			<= TC_TX_Valid		AND TC_TX_Ack;
 
 		InsertEOP_d					<= FISE_TX_InsertEOP	WHEN rising_edge(Clock) AND (TC_TX_DataFlow = '1');
 		InsertEOP_re				<= FISE_TX_InsertEOP	AND NOT InsertEOP_d;
@@ -287,7 +287,7 @@ BEGIN
 		TC_TX_EOP						<= TX_EOT	OR InsertEOP_re_d;
 		TC_TX_Data					<= TX_Data;
 
-		TX_Ready						<= TC_TX_Ready;
+		TX_Ack							<= TC_TX_Ack;
 	END BLOCK;	-- TransferCutter
 
 
@@ -321,8 +321,8 @@ BEGIN
 		RX_Data								<= FISD_RX_Data WHEN (RXReg_mux = '0') ELSE RXReg_Data_d;
 		RX_Valid							<= (FISD_RX_Valid AND NOT RXReg_Data_en) OR RXReg_LastWord;
 
-		RXReg_Ready						<= (RX_Ready OR RXReg_Data_en) AND NOT RXReg_mux;
-		RXReg_LastWordCommit	<= RXReg_LastWord AND RX_Ready;
+		RXReg_Ack							<= (RX_Ack	 OR RXReg_Data_en) AND NOT RXReg_mux;
+		RXReg_LastWordCommit	<= RXReg_LastWord AND RX_Ack;
 
 		RXReg_SOT							<= TFSM_RX_SOT;
 		RXReg_EOT							<= RXReg_EOT_r				OR TFSM_RX_EOT;
@@ -403,7 +403,7 @@ BEGIN
 			ATARegisters								=> ATAHostRegisters_i,
 			
 			-- TransportLayer TX_FIFO interface
-			TX_Ready										=> FISE_TX_Ready,
+			TX_Ack											=> FISE_TX_Ack,
 			TX_SOP											=> TC_TX_SOP,
 			TX_EOP											=> TC_TX_EOP,
 			TX_Data											=> TC_TX_Data,
@@ -411,7 +411,7 @@ BEGIN
 			TX_InsertEOP								=> FISE_TX_InsertEOP,
 			
 			-- LinkLayer FIFO interface
-			Link_TX_Ready								=> Link_TX_Ready,
+			Link_TX_Ack									=> Link_TX_Ack,
 			Link_TX_SOF									=> Link_TX_SOF,
 			Link_TX_EOF									=> Link_TX_EOF,
 			Link_TX_Data								=> Link_TX_Data,
@@ -420,7 +420,7 @@ BEGIN
 			
 			-- LinkLayer FS-FIFO interface
 			Link_TX_FS_Valid						=> Link_TX_FS_Valid,
-			Link_TX_FS_Ready						=> Link_TX_FS_Ready,
+			Link_TX_FS_Ack							=> Link_TX_FS_Ack,
 			Link_TX_FS_SendOK						=> Link_TX_FS_SendOK,
 			Link_TX_FS_Abort						=> Link_TX_FS_Abort
 		);
@@ -450,17 +450,17 @@ BEGIN
 			RX_Data											=> FISD_RX_Data,
 			RX_SOP											=> FISD_RX_SOP,
 			RX_EOP											=> FISD_RX_EOP,
-			RX_Ready										=> RXReg_Ready,
+			RX_Ack											=> RXReg_Ack,
 			
 			-- LinkLayer FIFO interface
-			Link_RX_Ready								=> Link_RX_Ready,
+			Link_RX_Ack									=> Link_RX_Ack,
 			Link_RX_Data								=> Link_RX_Data,
 			Link_RX_SOF									=> Link_RX_SOF,
 			Link_RX_EOF									=> Link_RX_EOF,
 			Link_RX_Valid								=> Link_RX_Valid,
 			
 			-- LinkLayer FS-FIFO interface
-			Link_RX_FS_Ready						=> Link_RX_FS_Ready,
+			Link_RX_FS_Ack							=> Link_RX_FS_Ack,
 			Link_RX_FS_CRCOK						=> Link_RX_FS_CRCOK,
 			Link_RX_FS_Abort						=> Link_RX_FS_Abort,
 			Link_RX_FS_Valid						=> Link_RX_FS_Valid

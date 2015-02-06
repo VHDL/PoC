@@ -82,7 +82,7 @@ ENTITY sata_Transceiver_Series7_GTXE2_Configurator IS
 		GTX_DRP_ReadWrite				: OUT	STD_LOGIC;							-- @DRP_Clock
 		GTX_DRP_DataIn					: IN	T_XIL_DRP_DATA;					-- @DRP_Clock
 		GTX_DRP_DataOut					: OUT	T_XIL_DRP_DATA;					-- @DRP_Clock
-		GTX_DRP_Ready						: IN	STD_LOGIC;							-- @DRP_Clock
+		GTX_DRP_Ack							: IN	STD_LOGIC;							-- @DRP_Clock
 		
 		GTX_ReloadConfig				: OUT	STD_LOGIC;							-- @DRP_Clock
 		GTX_ReloadConfigDone		: IN	STD_LOGIC								-- @DRP_Clock
@@ -305,7 +305,7 @@ BEGIN
 			DRP_we					=> GTX_DRP_ReadWrite,
 			DRP_DataIn			=> GTX_DRP_DataIn,
 			DRP_DataOut			=> GTX_DRP_DataOut,
-			DRP_Ready				=> GTX_DRP_Ready
+			DRP_Ack					=> GTX_DRP_Ack	
 		);
 		
 	-- GTX_ReloadConfig**** interface

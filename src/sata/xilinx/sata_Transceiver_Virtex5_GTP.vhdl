@@ -742,7 +742,7 @@ BEGIN
 			GTP_DRP_we								=> GTP_DRP_we,										-- @DRP_Clock
 			GTP_DRP_DataIn						=> GTP_DRP_DataOut,								-- @DRP_Clock
 			GTP_DRP_DataOut						=> GTP_DRP_DataIn,								-- @DRP_Clock
-			GTP_DRP_Ready							=> GTP_DRP_rdy,										-- @DRP_Clock
+			GTP_DRP_Ack								=> GTP_DRP_rdy,										-- @DRP_Clock
 			
 			GTP_ReloadConfig					=> GTP_ReloadConfig,							-- @DRP_Clock
 			GTP_ReloadConfigDone			=> GTP_ReloadConfigDone						-- @DRP_Clock
