@@ -255,12 +255,49 @@ package satadbg is
 	TYPE T_SATADBG_SATAC_IN IS RECORD
 		Transceiver						: T_SATADBG_TRANSCEIVER_IN;
 	END RECORD;
+
+
 	-- ===========================================================================
 	-- ATA Command Layer types
 	-- ===========================================================================
+
+  type T_SATADBG_CMD_FSM_OUT is record
+    FSM          : std_logic_Vector(3 downto 0);
+    Load         : std_logic;
+    NextTransfer : std_logic;
+    LastTransfer : std_logic;
+	end record;
 	
-	
-	
+  TYPE T_SATADBG_COMMAND_OUT IS RECORD
+    Command              : T_SATA_CMD_COMMAND;
+    Status               : T_SATA_CMD_STATUS;
+    Error                : T_SATA_CMD_ERROR;
+    Address_AppLB        : T_SLV48;
+    BlockCount_AppLB     : T_SLV48;
+    Address_DevLB        : T_SLV48;
+    BlockCount_DevLB     : T_SLV48;
+    IDF_Reset            : STD_LOGIC;
+    IDF_Enable           : STD_LOGIC;
+    IDF_Error            : STD_LOGIC;
+    IDF_Finished         : STD_LOGIC;
+    IDF_CRC_OK           : STD_LOGIC;
+    IDF_DriveInformation : T_SATA_DRIVE_INFORMATION;
+    CFSM                 : T_SATADBG_CMD_FSM_OUT;
+    RX_Valid             : STD_LOGIC;
+    RX_Data              : T_SLV_32;
+    RX_SOR               : STD_LOGIC;
+    RX_EOR               : STD_LOGIC;
+    RX_Ack               : STD_LOGIC;
+    CFSM_RX_Valid        : STD_LOGIC;
+    CFSM_RX_SOR          : STD_LOGIC;
+    CFSM_RX_EOR          : STD_LOGIC;
+    CFSM_RX_Ack          : STD_LOGIC;
+    Trans_RX_Valid       : STD_LOGIC;
+    Trans_RX_Data        : T_SLV_32;
+    Trans_RX_SOT         : STD_LOGIC;
+    Trans_RX_EOT         : STD_LOGIC;
+    Trans_RX_Ack         : STD_LOGIC;
+	END RECORD;
 	
 
 	-- ===========================================================================
@@ -296,17 +333,6 @@ package satadbg is
 --		RX_Primitive				: T_SATA_PRIMITIVE;
 --	END RECORD;
 
---	TYPE T_DBG_COMMAND_OUT IS RECORD
---		Command											: T_SATA_CMD_COMMAND;
---		Status											: T_SATA_CMD_STATUS;
---		Error												: T_SATA_CMD_ERROR;
---		
---		SOR													: STD_LOGIC;
---		EOR													: STD_LOGIC;
---		
---		DriveInformation						: T_DRIVE_INFORMATION;
---	END RECORD;
---	
 --	TYPE T_DBG_TRANSPORT_OUT IS RECORD
 --		Command											: T_SATA_TRANS_COMMAND;
 --		Status											: T_SATA_TRANS_STATUS;

@@ -43,6 +43,7 @@ USE			PoC.sata.ALL;
 
 ENTITY sata_CommandFSM IS
 	GENERIC (
+		ENABLE_DEBUGPORT									: BOOLEAN								:= FALSE;			-- export internal signals to upper layers for debug purposes
 		DEBUG															: BOOLEAN								:= FALSE;
 		SIM_EXECUTE_IDENTIFY_DEVICE				: BOOLEAN								:= TRUE				-- required by CommandLayer: load device parameters
 	);
@@ -58,6 +59,8 @@ ENTITY sata_CommandFSM IS
 		Status														: OUT	T_SATA_CMD_STATUS;
 		Error															: OUT	T_SATA_CMD_ERROR;
 
+		DebugPortOut 											: out T_SATADBG_CMD_FSM_OUT;
+		
 		Address_LB												: IN	T_SLV_48;
 		BlockCount_LB											: IN	T_SLV_48;
 
@@ -615,4 +618,33 @@ BEGIN
 			END IF;
 		END IF;
 	END PROCESS;
+
+
+	-- debug port
+	-- ===========================================================================
+	genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
+		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+		begin
+			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
+		end function;
+	begin
+		genXilinx : if (VENDOR = VENDOR_XILINX) generate
+			function dbg_GenerateEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_STATE loop
+					STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+
+			constant test : boolean := dbg_ExportEncoding("Command Layer", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_CommandLayer.tok");
+		begin
+		end generate;
+		
+    DebugPortOut.FSM          <= dbg_EncodeState(State);
+    DebugPortOut.Load         <= Load;
+    DebugPortOut.NextTransfer <= NextTransfer;
+    DebugPortOut.LastTransfer <= LastTransfer;
 END;

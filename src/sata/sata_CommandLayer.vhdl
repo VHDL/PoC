@@ -42,8 +42,9 @@ USE			PoC.sata.ALL;
 
 ENTITY sata_CommandLayer IS
 	GENERIC (
+		ENABLE_DEBUGPORT							: BOOLEAN									:= FALSE;			-- export internal signals to upper layers for debug purposes
+		DEBUG													: BOOLEAN									:= FALSE;
 		SIM_EXECUTE_IDENTIFY_DEVICE		: BOOLEAN									:= TRUE;			-- required by CommandLayer: load device parameters
-		DEBUG													: BOOLEAN									:= FALSE;			-- generate ChipScope DBG_* signals
 		TX_FIFO_DEPTH									: NATURAL									:= 0;
 		RX_FIFO_DEPTH									: POSITIVE;
 		LOGICAL_BLOCK_SIZE_ldB				: POSITIVE
@@ -58,7 +59,7 @@ ENTITY sata_CommandLayer IS
 		Status												: OUT	T_SATA_CMD_STATUS;
 		Error													: OUT	T_SATA_CMD_ERROR;
 
---		DebugPort											: OUT T_DBG_COMMAND_OUT;
+		DebugPortOut									: OUT T_SATADBG_CMD_OUT;
 
 		-- for measurement purposes only
 		Config_BurstSize							: IN	T_SLV_16;
@@ -128,14 +129,16 @@ ARCHITECTURE rtl OF sata_CommandLayer IS
 	SIGNAL Status_i													: T_SATA_CMD_STATUS;
 	SIGNAL Error_i													: T_SATA_CMD_ERROR;
 
-	SIGNAL CFSM_ATA_Command									: T_SATA_ATA_COMMAND;
-	SIGNAL CFSM_ATA_Address_LB							: T_SLV_48;
-	SIGNAL CFSM_ATA_BlockCount_LB						: T_SLV_16;
+	--SIGNAL CFSM_ATA_Command									: T_SATA_ATA_COMMAND;
+	--SIGNAL CFSM_ATA_Address_LB							: T_SLV_48;
+	--SIGNAL CFSM_ATA_BlockCount_LB						: T_SLV_16;
 	
 	SIGNAL CFSM_TX_en												: STD_LOGIC;
 	
 	SIGNAL CFSM_RX_SOR											: STD_LOGIC;
 	SIGNAL CFSM_RX_EOR											: STD_LOGIC;
+
+	SIGNAL CFSM_DebugPortOut								: T_SATADBG_CMD_CFSM_OUT;
 
 	SIGNAL ATA_CommandCategory							: T_SATA_COMMAND_CATEGORY;
 	
@@ -190,6 +193,10 @@ ARCHITECTURE rtl OF sata_CommandLayer IS
 	SIGNAL IDF_EOT													: STD_LOGIC;
 	SIGNAL IDF_CRC_OK												: STD_LOGIC;
 	SIGNAL IDF_DriveInformation							: T_SATA_DRIVE_INFORMATION;
+
+	-- Internal version of output signals
+	-- ========================================================================
+	signal Trans_RX_Ack_i : std_logic;
 	
 BEGIN
 	-- ================================================================
@@ -221,6 +228,7 @@ BEGIN
 	-- ================================================================
 	CFSM : ENTITY PoC.sata_CommandFSM
 		GENERIC MAP (
+			ENABLE_DEBUGPORT 							=> ENABLE_DEBUGPORT,
 			SIM_EXECUTE_IDENTIFY_DEVICE		=> SIM_EXECUTE_IDENTIFY_DEVICE,
 			DEBUG													=> DEBUG					
 		)
@@ -235,6 +243,8 @@ BEGIN
 			Command												=> Command,
 			Status												=> Status_i,
 			Error													=> Error_i,
+
+			DebugPortOut                  => CFSM_DebugPortOut,
 			
 			Address_LB										=> AdrCalc_Address_DevLB,
 			BlockCount_LB									=> AdrCalc_BlockCount_DevLB,
@@ -475,7 +485,8 @@ BEGIN
 			fstate_rd 		=> OPEN
 		);
 	
-	Trans_RX_Ack	 	<= (NOT RX_FIFO_Full) WHEN (IDF_Enable = '0') ELSE '1';					-- RX_Ack	 multiplexer
+	Trans_RX_Ack_i	 	<= (NOT RX_FIFO_Full) WHEN (IDF_Enable = '0') ELSE '1';					-- RX_Ack	 multiplexer
+	Trans_RX_Ack      <= Trans_RX_Ack_i;
 	RX_Valid				<= RX_FIFO_Valid;
 
 	
@@ -526,34 +537,53 @@ BEGIN
 			DriveInformation				=> IDF_DriveInformation
 		);
 
-	-- debug ports
-	-- ==========================================================================================================================================================
---	DebugPort.Command						<= Command;
---	DebugPort.Status						<= Status_i;
---	DebugPort.Error							<= Error_i;
-	
---	DebugPort.DriveInformation.Valid	<= '0';
-----	DebugPort.DriveInformation	<= IDF_DriveInformation;
+  -- debug ports
+  -- ==========================================================================================================================================================
+  genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
+  begin
+    DebugPortOut.Command          <= Command;
+    DebugPortOut.Status           <= Status_i;
+    DebugPortOut.Error            <= Error_i;
 
-	-- ChipScope
-	-- ==========================================================================================================================================================
-	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL DBG_TXFIFO_SOR								: STD_LOGIC;
-		SIGNAL DBG_TXFIFO_EOR								: STD_LOGIC;
-	
-		SIGNAL DBG_RXFIFO_SOR								: STD_LOGIC;
-		SIGNAL DBG_RXFIFO_EOR								: STD_LOGIC;
-	
-		ATTRIBUTE KEEP OF DBG_TXFIFO_SOR		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_TXFIFO_EOR		: SIGNAL IS TRUE;
+    DebugPortOut.Address_AppLB    <= Address_AppLB;
+    DebugPortOut.BlockCount_AppLB <= BlockCount_AppLB;
+    DebugPortOut.Address_DevLB    <= Address_DevLB;
+    DebugPortOut.BlockCount_DevLB <= BlockCount_DevLB;
+
+    -- drive information filter
+    DebugPortOut.IDF_Reset            <= IDF_Reset;
+    DebugPortOut.IDF_Enable           <= IDF_Enable;
+    DebugPortOut.IDF_Error            <= IDF_Error;
+    DebugPortOut.IDF_Finished         <= IDF_Finished;
+    DebugPortOut.IDF_CRC_OK           <= IDF_CRC_OK;
+    DebugPortOut.IDF_DriveInformation <= IDF_DriveInformation;
+
+    -- debug port of command fsm, for RX datapath see below
+    DebugPortOut.CFSM <= CFSM_DebugPortOut;
 		
-		ATTRIBUTE KEEP OF DBG_RXFIFO_SOR		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_RXFIFO_EOR		: SIGNAL IS TRUE;
-	BEGIN
-		DBG_TXFIFO_SOR		<= TX_FIFO_Valid	AND TX_FIFO_SOR;
-		DBG_TXFIFO_EOR		<= TX_FIFO_Valid	AND TX_FIFO_EOR;
+    -- RX datapath to upper layer
+    DebugPortOut.RX_Valid <= RX_FIFO_Valid;
+    DebugPortOut.RX_Data  <= RX_FIFO_DataOut(RX_Data'length);
+    DebugPortOut.RX_SOR   <= RX_FIFO_DataOut(RX_Data'length + 0);
+    DebugPortOut.RX_EOR   <= RX_FIFO_DataOut(RX_Data'length + 1);
+    DebugPortOut.RX_Ack   <= RX_Ack;
+
+		-- RX datapath between demultiplexer, RX_FIFO and CFSM
+    DebugPortOut.CFSM_RX_Valid <= RX_FIFO_put;
+    --see below DebugPortOut.CFSM_RX_Data  <= Trans_RX_Data;
+    DebugPortOut.CFSM_RX_SOR   <= CFSM_RX_SOR;
+    DebugPortOut.CFSM_RX_EOR   <= CFSM_RX_EOR;
+    DebugPortOut.CFSM_RX_Ack   <= not RX_FIFO_FULL;
 		
-		DBG_RXFIFO_SOR		<= Trans_RX_Valid	AND CFSM_RX_SOR;
-		DBG_RXFIFO_EOR		<= Trans_RX_Valid	AND CFSM_RX_EOR;
-	END GENERATE;
+		-- RX datapath between demultiplexer and IDF
+		-- is same as input from transport layer
+
+		-- RX datapath from transport layer
+    DebugPortOut.Trans_RX_Valid <= Trans_RX_Valid;
+    DebugPortOut.Trans_RX_Data  <= Trans_RX_Data;
+    DebugPortOut.Trans_RX_SOT   <= Trans_RX_SOT;
+    DebugPortOut.Trans_RX_EOT   <= Trans_RX_EOT;
+    DebugPortOut.Trans_RX_Ack   <= Trans_RX_Ack_i;
+		
+
 END;
