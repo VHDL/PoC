@@ -394,7 +394,7 @@ BEGIN
 				O						=> GTX_RefClockOut
 			);
 
-		GTX_DRP_Clock									<= Control_Clock;
+--		GTX_DRP_Clock									<= Control_Clock;
 
 		GTX_UserClock_Locked					<= GTX_CPLL_Locked;
 		GTX_UserClock									<= GTX_RefClockOut;
@@ -474,94 +474,88 @@ BEGIN
 		
 		-- reconfiguration port
 		RP_Locked(I)						<= '0';																							-- all ports are independant	=> never set a lock
---		RP_Reconfig_d						<= RP_Reconfig(I) WHEN rising_edge(GTX_UserClock);	-- delay reconfiguration command
---		RP_ReconfigComplete(I)	<= RP_Reconfig_d;																		-- acknoledge reconfiguration with 1 cycle latency
---		RP_ConfigReloaded(I)		<= RateChangeDone_re;																-- acknoledge reload
+		RP_Reconfig_d						<= RP_Reconfig(I) WHEN rising_edge(GTX_UserClock);	-- delay reconfiguration command
+		RP_ReconfigComplete(I)	<= RP_Reconfig_d;																		-- acknoledge reconfiguration with 1 cycle latency
+		RP_ConfigReloaded(I)		<= RateChangeDone_re;																-- acknoledge reload
 
 		-- ==================================================================
 		-- DRP - dynamic reconfiguration port
 		-- ==================================================================
-		GTXConfig : ENTITY PoC.sata_Transceiver_Series7_GTXE2_Configurator
-			GENERIC MAP (
-				DEBUG											=> DEBUG,
-				DRPCLOCK_FREQ							=> CLOCK_IN_FREQ,
-				INITIAL_SATA_GENERATION		=> INITIAL_SATA_GENERATIONS(I)
-			)
-			PORT MAP (
-				DRP_Clock									=> GTX_DRP_Clock,
-				DRP_Reset									=> '0',														-- @DRP_Clock
-				SATA_Clock								=> GTX_UserClock,
-		
-				Reconfig									=> RP_Reconfig(I),								-- @SATA_Clock
-				SATAGeneration						=> RP_SATAGeneration(I),					-- @SATA_Clock
-				ReconfigComplete					=> RP_ReconfigComplete(I),				-- @SATA_Clock
-				ConfigReloaded						=> RP_ConfigReloaded(I),					-- @SATA_Clock
-		
-				GTX_DRP_Enable						=> GTXConfig_Enable,							-- @DRP_Clock
-				GTX_DRP_Address						=> GTXConfig_Address,							-- @DRP_Clock
-				GTX_DRP_ReadWrite					=> GTXConfig_ReadWrite,						-- @DRP_Clock
-				GTX_DRP_DataIn						=> DRPMux_In_DataOut(0),					-- @DRP_Clock
-				GTX_DRP_DataOut						=> GTXConfig_DataOut,							-- @DRP_Clock
-				GTX_DRP_Ack								=> DRPMux_Ack(0),								-- @DRP_Clock
-				
-				GTX_ReloadConfig					=> open,								--GTX_ReloadConfig,							-- @DRP_Clock
-				GTX_ReloadConfigDone			=> ResetDone_r					-- @DRP_Clock
-			);
-
-		DRPSync : entity PoC.xil_DRP_BusSync
-			port map (
-				In_Clock			=> DebugPortIn(i).DRP.Clock,
-				In_Reset			=> '0',
-				In_Enable			=> DebugPortIn(i).DRP.Enable,
-				In_Address		=> DebugPortIn(i).DRP.Address,
-				In_ReadWrite	=> DebugPortIn(i).DRP.ReadWrite,
-				In_DataIn			=> DebugPortIn(i).DRP.Data,
-				In_DataOut		=> DebugPortOut(i).DRP.Data,
-				In_Ack				=> DebugPortOut(i).DRP.Ack,
-				
-				Out_Clock			=> GTX_DRP_Clock,
-				Out_Reset			=> '0',
-				Out_Enable		=> DRPSync_Enable,
-				Out_Address		=> DRPSync_Address,
-				Out_ReadWrite	=> DRPSync_ReadWrite,
-				Out_DataIn		=> DRPMux_In_DataOut(1),
-				Out_DataOut		=> DRPSync_DataOut,
-				Out_Ack				=> DRPMux_Ack(1)
-			);
-
-		DRPMux : entity PoC.xil_DRP_BusMux
-			generic map (
-				DEBUG							=> DEBUG,
-				PORTS							=> 2
-			)
-			port map (
-				Clock							=> GTX_DRP_Clock,
-				Reset							=> '0',
-				
-				In_Enable(0)			=> GTXConfig_Enable,
-				In_Enable(1)			=> DRPSync_Enable,
-				In_Address(0)			=> GTXConfig_Address,
-				In_Address(1)			=> DRPSync_Address,
-				In_ReadWrite(0)		=> GTXConfig_ReadWrite,
-				In_ReadWrite(1)		=> DRPSync_ReadWrite,
-				In_DataIn(0)			=> GTXConfig_DataOut,
-				In_DataIn(1)			=> DRPSync_DataOut,
-				In_DataOut				=> DRPMux_In_DataOut,
-				In_Ack						=> DRPMux_Ack,
-				
-				Out_Enable				=> open,	--GTX_DRP_Enable,
-				Out_Address				=> open,	--GTX_DRP_Address,
-				Out_ReadWrite			=> open,	--GTX_DRP_ReadWrite,
-				Out_DataIn				=> GTX_DRP_DataOut,
-				Out_DataOut				=> open,	--DRPMux_Out_DataOut,
-				Out_Ack						=> '0'		--GTX_DRP_Ack	
-			);
-		
-		GTX_DRP_Enable			<= '0';
-		GTX_DRP_Address			<= (others => '0');
-		GTX_DRP_ReadWrite		<= '0';
-		DRPMux_Out_DataOut	<= (others => '0');
-		GTX_DRP_Ack					<= '0';
+--		GTXConfig : ENTITY PoC.sata_Transceiver_Series7_GTXE2_Configurator
+--			GENERIC MAP (
+--				DEBUG											=> DEBUG,
+--				DRPCLOCK_FREQ							=> CLOCK_IN_FREQ,
+--				INITIAL_SATA_GENERATION		=> INITIAL_SATA_GENERATIONS(I)
+--			)
+--			PORT MAP (
+--				DRP_Clock									=> GTX_DRP_Clock,
+--				DRP_Reset									=> '0',														-- @DRP_Clock
+--				SATA_Clock								=> GTX_UserClock,
+--		
+--				Reconfig									=> RP_Reconfig(I),								-- @SATA_Clock
+--				SATAGeneration						=> RP_SATAGeneration(I),					-- @SATA_Clock
+--				ReconfigComplete					=> RP_ReconfigComplete(I),				-- @SATA_Clock
+--				ConfigReloaded						=> RP_ConfigReloaded(I),					-- @SATA_Clock
+--		
+--				GTX_DRP_Enable						=> GTXConfig_Enable,							-- @DRP_Clock
+--				GTX_DRP_Address						=> GTXConfig_Address,							-- @DRP_Clock
+--				GTX_DRP_ReadWrite					=> GTXConfig_ReadWrite,						-- @DRP_Clock
+--				GTX_DRP_DataIn						=> DRPMux_In_DataOut(0),					-- @DRP_Clock
+--				GTX_DRP_DataOut						=> GTXConfig_DataOut,							-- @DRP_Clock
+--				GTX_DRP_Ack								=> DRPMux_Ack(0),								-- @DRP_Clock
+--				
+--				GTX_ReloadConfig					=> open,								--GTX_ReloadConfig,							-- @DRP_Clock
+--				GTX_ReloadConfigDone			=> ResetDone_r					-- @DRP_Clock
+--			);
+--
+--		DRPSync : entity PoC.xil_DRP_BusSync
+--			port map (
+--				In_Clock			=> DebugPortIn(i).DRP.Clock,
+--				In_Reset			=> '0',
+--				In_Enable			=> DebugPortIn(i).DRP.Enable,
+--				In_Address		=> DebugPortIn(i).DRP.Address,
+--				In_ReadWrite	=> DebugPortIn(i).DRP.ReadWrite,
+--				In_DataIn			=> DebugPortIn(i).DRP.Data,
+--				In_DataOut		=> DebugPortOut(i).DRP.Data,
+--				In_Ack				=> DebugPortOut(i).DRP.Ack,
+--				
+--				Out_Clock			=> GTX_DRP_Clock,
+--				Out_Reset			=> '0',
+--				Out_Enable		=> DRPSync_Enable,
+--				Out_Address		=> DRPSync_Address,
+--				Out_ReadWrite	=> DRPSync_ReadWrite,
+--				Out_DataIn		=> DRPMux_In_DataOut(1),
+--				Out_DataOut		=> DRPSync_DataOut,
+--				Out_Ack				=> DRPMux_Ack(1)
+--			);
+--
+--		DRPMux : entity PoC.xil_DRP_BusMux
+--			generic map (
+--				DEBUG							=> DEBUG,
+--				PORTS							=> 2
+--			)
+--			port map (
+--				Clock							=> GTX_DRP_Clock,
+--				Reset							=> '0',
+--				
+--				In_Enable(0)			=> GTXConfig_Enable,
+--				In_Enable(1)			=> DRPSync_Enable,
+--				In_Address(0)			=> GTXConfig_Address,
+--				In_Address(1)			=> DRPSync_Address,
+--				In_ReadWrite(0)		=> GTXConfig_ReadWrite,
+--				In_ReadWrite(1)		=> DRPSync_ReadWrite,
+--				In_DataIn(0)			=> GTXConfig_DataOut,
+--				In_DataIn(1)			=> DRPSync_DataOut,
+--				In_DataOut				=> DRPMux_In_DataOut,
+--				In_Ack						=> DRPMux_Ack,
+--				
+--				Out_Enable				=> open,	--GTX_DRP_Enable,
+--				Out_Address				=> open,	--GTX_DRP_Address,
+--				Out_ReadWrite			=> open,	--GTX_DRP_ReadWrite,
+--				Out_DataIn				=> GTX_DRP_DataOut,
+--				Out_DataOut				=> open,	--DRPMux_Out_DataOut,
+--				Out_Ack						=> '0'		--GTX_DRP_Ack	
+--			);
 		
 		-- ==================================================================
 		-- Data path / status / error detection
@@ -1174,9 +1168,9 @@ BEGIN
 				DRPEN														=> GTX_DRP_Enable,								-- @DRP_Clock:	
 				DRPWE														=> GTX_DRP_ReadWrite,							-- @DRP_Clock:	
 				DRPADDR													=> GTX_DRP_Address(8 downto 0),		-- @DRP_Clock:	
-				DRPDI														=> DRPMux_Out_DataOut,								-- @DRP_Clock:	
+				DRPDI														=> DRPMux_Out_DataOut,						-- @DRP_Clock:	
 				DRPDO														=> GTX_DRP_DataOut,								-- @DRP_Clock:	
-				DRPRDY													=> GTX_DRP_Ack,									-- @DRP_Clock:	
+				DRPRDY													=> GTX_DRP_Ack,										-- @DRP_Clock:	
 				
 				-- datapath configuration
 				TX8B10BEN												=> '1',														-- @TX_Clock2:	enable 8B/10B encoder
@@ -1416,22 +1410,22 @@ BEGIN
 		VSS_Private_Out(I).TX_p		<= GTX_TX_p;
 		
 		genCSP0 : if (ENABLE_DEBUGPORT = FALSE) generate
---			GTX_DRP_Clock									<= '0';
---			GTX_DRP_Enable										<= '0';
---			GTX_DRP_ReadWrite										<= '0';
---			GTX_DRP_Address								<= "000000000";
---			GTX_DRP_DataOut								<= x"0000";
---			--	<float>										<= GTX_DRP_DataOutOut;
---			--	<float>										<= GTX_DRP_Ack;
+			GTX_DRP_Clock									<= '0';
+			GTX_DRP_Enable								<= '0';
+			GTX_DRP_ReadWrite							<= '0';
+			GTX_DRP_Address								<= "000000000";
+			GTX_DRP_DataOut								<= x"0000";
+			--	<float>										<= GTX_DRP_DataOutOut;
+			--	<float>										<= GTX_DRP_Ack;
 		end generate;
 		genCSP1 : if (ENABLE_DEBUGPORT = TRUE) generate
 		
 		begin
---			GTX_DRP_Clock			<= DebugPortIn(I).DRP.Clock;
---			GTX_DRP_Enable				<= DebugPortIn(I).DRP.Enable;
---			GTX_DRP_ReadWrite				<= DebugPortIn(I).DRP.ReadWrite;
---			GTX_DRP_Address		<= DebugPortIn(I).DRP.Address(8 downto 0);
---			GTX_DRP_DataOut		<= DebugPortIn(I).DRP.Data;
+			GTX_DRP_Clock			<= DebugPortIn(I).DRP.Clock;
+			GTX_DRP_Enable		<= DebugPortIn(I).DRP.Enable;
+			GTX_DRP_ReadWrite	<= DebugPortIn(I).DRP.ReadWrite;
+			GTX_DRP_Address		<= DebugPortIn(I).DRP.Address;
+			GTX_DRP_DataOut		<= DebugPortIn(I).DRP.Data;
 			
 			DebugPortOut(I).ClockNetwork_Reset				<= ClkNet_Reset;
 			DebugPortOut(I).ClockNetwork_ResetDone		<= ClkNet_ResetDone;
@@ -1480,8 +1474,8 @@ BEGIN
 			DebugPortOut(I).RX_BufferStatus						<= GTX_RX_BufferStatus;
 			DebugPortOut(I).RX_ClockCorrectionStatus	<= GTX_RX_ClockCorrectionStatus;
 			
---			DebugPortOut(I).DRP.Data									<= DRPMux_In_DataOut(1);
---			DebugPortOut(I).DRP.Ready									<= DRPMux_Ack(1);
+			DebugPortOut(I).DRP.Data									<= DRPMux_In_DataOut(1);
+			DebugPortOut(I).DRP.Ack										<= DRPMux_Ack(1);
 			
 			DebugPortOut(I).DigitalMonitor						<= GTX_DigitalMonitor;
 			GTX_RX_Monitor_sel												<= DebugPortIn(I).RX_Monitor_sel;
