@@ -3,9 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+--									Martin Zabel
+--
+-- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
@@ -13,7 +14,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,17 +35,20 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+use			PoC.my_project.all;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
+USE			PoC.strings.ALL;
+use			PoC.debug.all;
 USE			PoC.sata.ALL;
+use			PoC.satadbg.all;
 
 
 ENTITY sata_CommandFSM IS
 	GENERIC (
-		ENABLE_DEBUGPORT									: BOOLEAN								:= FALSE;			-- export internal signals to upper layers for debug purposes
 		DEBUG															: BOOLEAN								:= FALSE;
+		ENABLE_DEBUGPORT									: BOOLEAN								:= FALSE;			-- export internal signals to upper layers for debug purposes
 		SIM_EXECUTE_IDENTIFY_DEVICE				: BOOLEAN								:= TRUE				-- required by CommandLayer: load device parameters
 	);
 	PORT (
@@ -59,7 +63,7 @@ ENTITY sata_CommandFSM IS
 		Status														: OUT	T_SATA_CMD_STATUS;
 		Error															: OUT	T_SATA_CMD_ERROR;
 
-		DebugPortOut 											: out T_SATADBG_CMD_FSM_OUT;
+		DebugPortOut 											: out T_SATADBG_CMD_CFSM_OUT;
 		
 		Address_LB												: IN	T_SLV_48;
 		BlockCount_LB											: IN	T_SLV_48;
@@ -86,6 +90,7 @@ ENTITY sata_CommandFSM IS
 		IDF_Error													: IN	STD_LOGIC
 	);
 END;
+
 
 ARCHITECTURE rtl OF sata_CommandFSM IS
 	ATTRIBUTE KEEP												: BOOLEAN;
@@ -647,4 +652,5 @@ BEGIN
     DebugPortOut.Load         <= Load;
     DebugPortOut.NextTransfer <= NextTransfer;
     DebugPortOut.LastTransfer <= LastTransfer;
-END;
+	end generate;
+end;

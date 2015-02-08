@@ -34,7 +34,7 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.my_project.ALL;
+use			PoC.my_project.all;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
@@ -495,7 +495,7 @@ BEGIN
 		
 	-- debug port
 	-- ===========================================================================
-	genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
+	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
 		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
@@ -527,5 +527,5 @@ BEGIN
 	
 		DebugPortOut.OOBControl			<= OOBC_DebugPortOut;
 		DebugPortOut.SpeedControl		<= SC_DebugPortOut;
-	END GENERATE;
-END;
+	end generate;
+end;

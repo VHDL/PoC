@@ -3,9 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+--									Martin Zabel
+--
+-- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
@@ -13,7 +14,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,6 +39,7 @@ USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
+USE			PoC.satadbg.ALL;
 
 
 ENTITY sata_CommandLayer IS
@@ -541,16 +543,16 @@ BEGIN
   -- ==========================================================================================================================================================
   genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
   begin
-    DebugPortOut.Command          <= Command;
-    DebugPortOut.Status           <= Status_i;
-    DebugPortOut.Error            <= Error_i;
+    DebugPortOut.Command         		 <= Command;
+    DebugPortOut.Status          		 <= Status_i;
+    DebugPortOut.Error           		 <= Error_i;
 
-    DebugPortOut.Address_AppLB    <= Address_AppLB;
-    DebugPortOut.BlockCount_AppLB <= BlockCount_AppLB;
-    DebugPortOut.Address_DevLB    <= Address_DevLB;
-    DebugPortOut.BlockCount_DevLB <= BlockCount_DevLB;
+    DebugPortOut.Address_AppLB    		<= Address_AppLB;
+    DebugPortOut.BlockCount_AppLB 		<= BlockCount_AppLB;
+    DebugPortOut.Address_DevLB    		<= AdrCalc_Address_DevLB;
+    DebugPortOut.BlockCount_DevLB 		<= AdrCalc_BlockCount_DevLB;
 
-    -- drive information filter
+    -- identify device filter
     DebugPortOut.IDF_Reset            <= IDF_Reset;
     DebugPortOut.IDF_Enable           <= IDF_Enable;
     DebugPortOut.IDF_Error            <= IDF_Error;
@@ -562,18 +564,18 @@ BEGIN
     DebugPortOut.CFSM <= CFSM_DebugPortOut;
 		
     -- RX datapath to upper layer
-    DebugPortOut.RX_Valid <= RX_FIFO_Valid;
-    DebugPortOut.RX_Data  <= RX_FIFO_DataOut(RX_Data'length);
-    DebugPortOut.RX_SOR   <= RX_FIFO_DataOut(RX_Data'length + 0);
-    DebugPortOut.RX_EOR   <= RX_FIFO_DataOut(RX_Data'length + 1);
-    DebugPortOut.RX_Ack   <= RX_Ack;
+    DebugPortOut.RX_Valid 			<= RX_FIFO_Valid;
+    DebugPortOut.RX_Data  			<= RX_FIFO_DataOut(RX_Data'range);
+    DebugPortOut.RX_SOR   			<= RX_FIFO_DataOut(RX_Data'length + 0);
+    DebugPortOut.RX_EOR   			<= RX_FIFO_DataOut(RX_Data'length + 1);
+    DebugPortOut.RX_Ack   			<= RX_Ack;
 
 		-- RX datapath between demultiplexer, RX_FIFO and CFSM
-    DebugPortOut.CFSM_RX_Valid <= RX_FIFO_put;
+    DebugPortOut.CFSM_RX_Valid	<= RX_FIFO_put;
     --see below DebugPortOut.CFSM_RX_Data  <= Trans_RX_Data;
-    DebugPortOut.CFSM_RX_SOR   <= CFSM_RX_SOR;
-    DebugPortOut.CFSM_RX_EOR   <= CFSM_RX_EOR;
-    DebugPortOut.CFSM_RX_Ack   <= not RX_FIFO_FULL;
+    DebugPortOut.CFSM_RX_SOR		<= CFSM_RX_SOR;
+    DebugPortOut.CFSM_RX_EOR		<= CFSM_RX_EOR;
+    DebugPortOut.CFSM_RX_Ack		<= not RX_FIFO_FULL;
 		
 		-- RX datapath between demultiplexer and IDF
 		-- is same as input from transport layer
@@ -584,6 +586,6 @@ BEGIN
     DebugPortOut.Trans_RX_SOT   <= Trans_RX_SOT;
     DebugPortOut.Trans_RX_EOT   <= Trans_RX_EOT;
     DebugPortOut.Trans_RX_Ack   <= Trans_RX_Ack_i;
-		
+	end generate;
 
-END;
+end;

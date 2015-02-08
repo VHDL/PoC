@@ -3,9 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+--
+-- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
@@ -13,7 +13,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -252,7 +252,10 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	-- signal hold_counter : UNSIGNED(31 downto 0) := (OTHERS => '0') ;
 	signal RX_Hold : STD_LOGIC;
 
-BEGIN
+	-- DebugPort
+	signal LLFSM_DebugPortOut					: T_SATADBG_LINK_LLFSM_OUT;
+	
+begin
 	-- ================================================================
 	-- link layer control FSM
 	-- ================================================================
@@ -272,6 +275,9 @@ BEGIN
 			Status									=> Status,
 			Error										=> Error,
 			-- normal vs. dma modus
+
+			-- DebugPort
+			DebugPortOut						=> LLFSM_DebugPortOut,
 
 			-- transport layer interface
 			Trans_TX_SOF						=> Trans_TX_SOF,
@@ -675,63 +681,10 @@ BEGIN
 	-- ================================================================
 	-- debug ports
 	-- ================================================================
---	DebugPort_Out.RX_Primitive	<= RX_Primitive;
-	
-
-	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL DBG_TX_SOF				: STD_LOGIC;
-		SIGNAL DBG_TX_EOF				: STD_LOGIC;
-		signal TX_IsFrame_r			: STD_LOGIC		:= '0';
-		signal DBG_TX_IsFrame		: STD_LOGIC;
-		
-		SIGNAL DBG_TXFS_SendOK	: STD_LOGIC;
-		SIGNAL DBG_TXFS_SendOKn	: STD_LOGIC;
-		
-		SIGNAL DBG_RX_SOF				: STD_LOGIC;
-		SIGNAL DBG_RX_EOF				: STD_LOGIC;
-		signal RX_IsFrame_r			: STD_LOGIC		:= '0';
-		signal DBG_RX_IsFrame		: STD_LOGIC;
-		
-		SIGNAL DBG_RXFS_CRCOK		: STD_LOGIC;
-		SIGNAL DBG_RXFS_CRCOKn	: STD_LOGIC;
-		
-		ATTRIBUTE KEEP OF DBG_TX_SOF				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_TX_EOF				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_TX_IsFrame		: SIGNAL IS TRUE;
-		
-		ATTRIBUTE KEEP OF DBG_TXFS_SendOK		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_TXFS_SendOKn	: SIGNAL IS TRUE;
-		
-		ATTRIBUTE KEEP OF DBG_RX_SOF				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_RX_EOF				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_RX_IsFrame		: SIGNAL IS TRUE;
-		
-		ATTRIBUTE KEEP OF DBG_RXFS_CRCOK		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_RXFS_CRCOKn		: SIGNAL IS TRUE;
-	BEGIN
-	
-	
-		DBG_TX_SOF				<= TX_Valid AND TX_SOF;
-		DBG_TX_EOF				<= TX_Valid AND TX_EOF;
-		
-		DBG_TXFS_SendOK		<= TX_FSFIFO_Valid AND			TX_FSFIFO_DataOut(0);
-		DBG_TXFS_SendOKn	<= TX_FSFIFO_Valid AND NOT	TX_FSFIFO_DataOut(0);
-		
-		DBG_RX_SOF				<= RX_FIFO_Valid AND RX_FIFO_DataOut(32);
-		DBG_RX_EOF				<= RX_FIFO_Valid AND RX_FIFO_DataOut(33);
-		
-		DBG_RXFS_CRCOK		<= RX_FSFIFO_Valid AND			RX_FSFIFO_DataOut(0);
-		DBG_RXFS_CRCOKn		<= RX_FSFIFO_Valid AND NOT	RX_FSFIFO_DataOut(0);
-		
-		--									RS-FF		Q							rst																		set
-		TX_IsFrame_r			<= ffrs(TX_IsFrame_r, TX_Valid and TX_SOF,										TX_Valid and TX_EOF)										when rising_edge(Clock);
-		RX_IsFrame_r			<= ffrs(RX_IsFrame_r, RX_FIFO_Valid and RX_FIFO_DataOut(33),	RX_FIFO_Valid and RX_FIFO_DataOut(32))	when rising_edge(Clock);
-		DBG_TX_IsFrame		<= (TX_Valid and TX_SOF)										or TX_IsFrame_r;
-		DBG_RX_IsFrame		<= (RX_FIFO_Valid and RX_FIFO_DataOut(33))	or RX_IsFrame_r;
-	END GENERATE;
-	
 	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
 	begin
+		DebugPortOut.LLFSM											<= LLFSM_DebugPortOut;
+	
 		-- from physical layer
 		DebugPortOut.Phy_Ready									<= Phy_Ready;
 		-- RX: from physical layer
