@@ -311,7 +311,7 @@ package satadbg is
 	-- SATA Transport Layer Types
 	-- ===========================================================================
 	type T_SATADBG_TRANS_TFSM_OUT is record
-		FSM													: STD_LOGIC_VECTOR(3 downto 0);				-- 5 bits
+		FSM													: STD_LOGIC_VECTOR(4 downto 0);				-- 5 bits
 	end record;
 	
 	type T_SATADBG_TRANS_FISE_OUT is record
@@ -319,7 +319,7 @@ package satadbg is
 	end record;
 	
 	type T_SATADBG_TRANS_FISD_OUT is record
-		FSM													: STD_LOGIC_VECTOR(3 downto 0);				-- 5 bits
+		FSM													: STD_LOGIC_VECTOR(4 downto 0);				-- 5 bits
 	end record;
 	
 	type T_SATADBG_TRANS_OUT is record
