@@ -727,7 +727,7 @@ begin
 		DebugPortOut.TX_EOF											<= TX_EOF;
 		DebugPortOut.TX_FS_Valid								<= TX_FSFIFO_Valid;
 		DebugPortOut.TX_FS_Ack									<= not TX_FSFIFO_Full;
-		DebugPortOut.TX_FS_Send_OK							<= TX_FSFIFO_DataIn(TX_SENDOK_BIT);
+		DebugPortOut.TX_FS_SendOK								<= TX_FSFIFO_DataIn(TX_SENDOK_BIT);
 		DebugPortOut.TX_FS_Abort								<= TX_FSFIFO_DataIn(TX_ABORT_BIT);
 		-- TX: TXFIFO
 		DebugPortOut.TX_FIFO_got								<= TX_FIFO_got;

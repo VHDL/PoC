@@ -39,6 +39,7 @@ USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
+USE			PoC.satadbg.ALL;
 
 
 ENTITY sata_StreamingController IS
@@ -60,7 +61,7 @@ ENTITY sata_StreamingController IS
 		Error											: OUT	T_SATA_STREAMC_ERROR;
 
 		-- debug ports
---		DebugPort									: OUT	T_DBG_SATA_STREAMC_OUT;
+		DebugPort									: OUT	T_SATADBG_SATASC_OUT;
 
 		-- for measurement purposes only
 		Config_BurstSize					: IN	T_SLV_16;

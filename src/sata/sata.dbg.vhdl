@@ -217,7 +217,7 @@ package satadbg is
 		TX_EOF											: STD_LOGIC;
 		TX_FS_Valid									: STD_LOGIC;
 		TX_FS_Ack										: STD_LOGIC;
-		TX_FS_Send_OK								: STD_LOGIC;
+		TX_FS_SendOK								: STD_LOGIC;
 		TX_FS_Abort									: STD_LOGIC;
 		-- TX: TXFIFO
 		TX_FIFO_got									: STD_LOGIC;
@@ -392,6 +392,41 @@ package satadbg is
 		Command_Error				: T_SATA_CMD_ERROR;										-- 3 bit
 	end record;
 	
+	-- ===========================================================================
+	-- SATA StreamingController Types
+	-- ===========================================================================
+	type T_SATADBG_SATAS_OUT is record
+		-- Transceiver Layer
+		TransceiverLayer		: T_SATADBG_TRANSCEIVER_OUT;
+		Transceiver_Command	: T_SATA_TRANSCEIVER_COMMAND;
+		Transceiver_Status	: T_SATA_TRANSCEIVER_STATUS;
+		Transceiver_Error		: T_SATA_TRANSCEIVER_ERROR;
+		-- Physical Layer
+		PhysicalLayer				: T_SATADBG_PHYSICAL_OUT;
+		Physical_Command		: T_SATA_PHY_COMMAND;
+		Physical_Status			: T_SATA_PHY_STATUS;									-- 3 bit
+		Physical_Error			: T_SATA_PHY_ERROR;
+		-- Link Layer
+		LinkLayer						: T_SATADBG_LINK_OUT;									-- RX: 125 + TX: 120 bit
+		Link_Command				: T_SATA_LINK_COMMAND;								-- 1 bit
+		Link_Status					: T_SATA_LINK_STATUS;									-- 3 bit
+		Link_Error					: T_SATA_LINK_ERROR;									-- 2 bit
+	
+		-- Transceiver Layer
+		TransportLayer			: T_SATADBG_TRANS_OUT;
+		Transport_Command		: T_SATA_TRANS_COMMAND;								-- 2 bit
+		Transport_Status		: T_SATA_TRANS_STATUS;								-- 3 bit
+		Transport_Error			: T_SATA_TRANS_ERROR;									-- 3 bit
+		-- Physical Layer
+		CommandLayer				: T_SATADBG_CMD_OUT;
+		Command_Command			: T_SATA_CMD_COMMAND;									-- 3 bit
+		Command_Status			: T_SATA_CMD_STATUS;									-- 3 bit
+		Command_Error				: T_SATA_CMD_ERROR;										-- 3 bit
+	end record;
+	
+	type T_SATADBG_SATAS_IN is record
+		TransceiverLayer		: T_SATADBG_TRANSCEIVER_IN;
+	end record;
 	
 	type T_SATADBG_TRANSCEIVER_OUT_VECTOR		is array (NATURAL range <>)	of T_SATADBG_TRANSCEIVER_OUT;
 	type T_SATADBG_TRANSCEIVER_IN_VECTOR		is array (NATURAL range <>)	of T_SATADBG_TRANSCEIVER_IN;
