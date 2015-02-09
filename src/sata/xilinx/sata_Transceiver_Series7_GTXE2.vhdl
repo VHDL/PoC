@@ -1413,7 +1413,7 @@ BEGIN
 			GTX_DRP_Clock									<= '0';
 			GTX_DRP_Enable								<= '0';
 			GTX_DRP_ReadWrite							<= '0';
-			GTX_DRP_Address								<= "000000000";
+			GTX_DRP_Address								<= (others => '0');
 			GTX_DRP_DataOut								<= x"0000";
 			--	<float>										<= GTX_DRP_DataOutOut;
 			--	<float>										<= GTX_DRP_Ack;
