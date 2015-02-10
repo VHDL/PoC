@@ -29,25 +29,29 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
-USE			PoC.sata.ALL;
+library PoC;
+use			PoC.my_project.all;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.strings.all;
+use			PoC.debug.all;
+use			PoC.sata.all;
+use			PoC.satadbg.all;
 
 
-ENTITY sata_LinkLayerFSM IS
-	GENERIC (
+entity sata_LinkLayerFSM is
+	generic (
 		DEBUG										: BOOLEAN																:= FALSE;
+		ENABLE_DEBUGPORT				: BOOLEAN																:= FALSE;
 		CONTROLLER_TYPE					: T_SATA_DEVICE_TYPE										:= SATA_DEVICE_TYPE_HOST;
 		INSERT_ALIGN_INTERVAL		: POSITIVE															:= 256
 	);
-	PORT (
+	port (
 		Clock										: IN	STD_LOGIC;
 		Reset										: IN	STD_LOGIC;
 
@@ -55,6 +59,9 @@ ENTITY sata_LinkLayerFSM IS
 		Error										: OUT	T_SATA_LINK_ERROR;
 			-- normal vs. dma modus
 			-- bad transition ??
+			
+		-- DebugPort
+		DebugPortOut						: out	T_SATADBG_LINK_LLFSM_OUT;
 
 		-- transport layer interface
 		Trans_TX_SOF						: IN	STD_LOGIC;
@@ -1816,4 +1823,47 @@ BEGIN
 	Trans_RX_SOF			<= RX_SOFReg_d2;
 	Trans_RX_EOF			<= RXFSM_IsEOF;
 
-END;
+	-- debug port
+	-- ===========================================================================
+	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
+		function dbg_EncodeTXState(st : T_TXFSM_STATE) return STD_LOGIC_VECTOR is
+		begin
+			return to_slv(T_TXFSM_STATE'pos(st), log2ceilnz(T_TXFSM_STATE'pos(T_TXFSM_STATE'high) + 1));
+		end function;
+		
+		function dbg_EncodeRXState(st : T_RXFSM_STATE) return STD_LOGIC_VECTOR is
+		begin
+			return to_slv(T_RXFSM_STATE'pos(st), log2ceilnz(T_RXFSM_STATE'pos(T_RXFSM_STATE'high) + 1));
+		end function;
+		
+	begin
+		genXilinx : if (VENDOR = VENDOR_XILINX) generate
+			function dbg_GenerateTXEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_TXFSM_STATE loop
+					STD.TextIO.write(l, str_replace(T_TXFSM_STATE'image(i), "st_txfsm_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			function dbg_GenerateRXEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_RXFSM_STATE loop
+					STD.TextIO.write(l, str_replace(T_RXFSM_STATE'image(i), "st_rxfsm_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+
+			constant test1 : boolean := dbg_ExportEncoding("Link Layer", dbg_GenerateTXEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_LinkLayer_TX.tok");
+			constant test2 : boolean := dbg_ExportEncoding("Link Layer", dbg_GenerateRXEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_LinkLayer_RX.tok");
+		begin
+		end generate;
+		
+		DebugPortOut.TXFSM					<= dbg_EncodeTXState(TXFSM_State);
+		DebugPortOut.RXFSM					<= dbg_EncodeRXState(RXFSM_State);
+	end generate;
+end;
