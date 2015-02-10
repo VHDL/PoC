@@ -259,7 +259,7 @@ BEGIN
 			RX_EOR											=> RX_EOR_i,
 			RX_Ack											=> RX_Ack,
 			
-			-- TransferLayer interface
+			-- TransportLayer interface
 			Trans_Command								=> Trans_Command,
 			Trans_Status								=> Trans_Status,
 			Trans_Error									=> Trans_Error,
@@ -432,7 +432,16 @@ BEGIN
 	SATA_TX_EOF					<= SATA_TX_EOF_i;
 	SATA_TX_Valid				<= SATA_TX_Valid_i;
 	
-	-- ChipScope
+	-- DebugPort
 	-- ==========================================================================================================================================================
-	
+	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
+	begin
+		DebugPortOut.Command_Command <= Cmd_Command;
+		DebugPortOut.Command_Status  <= Cmd_Status;
+		DebugPortOut.Command_Error   <= Cmd_Error;
+
+		DebugPortOut.Transport_Command <= Trans_Command;
+		DebugPortOut.Transport_Status  <=	Trans_Status;
+		DebugPortOut.Transport_Error   <=	Trans_Error;
+	end generate;
 END;
