@@ -177,7 +177,8 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 	signal TFSM_DebugPortOut						: T_SATADBG_TRANS_TFSM_OUT;
 	signal FISE_DebugPortOut						: T_SATADBG_TRANS_FISE_OUT;
 	signal FISD_DebugPortOut						: T_SATADBG_TRANS_FISD_OUT;
-BEGIN
+	
+begin
 	FISE_Reset		<= Reset OR to_sl(Command = SATA_TRANS_CMD_RESET);
 	FISD_Reset		<= Reset OR to_sl(Command = SATA_TRANS_CMD_RESET);
 
@@ -198,6 +199,9 @@ BEGIN
 			Command														=> Command,
 			Status														=> Status_i,
 			Error															=> Error_i,
+
+			-- DebugPort
+			DebugPortOut											=> TFSM_DebugPortOut,
 			
 			-- linkLayer interface
 --			Link_Command											=> Link_Command,

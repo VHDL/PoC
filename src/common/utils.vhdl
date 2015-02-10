@@ -155,10 +155,10 @@ package utils is
 	--+ Basic Vector Utilities +++++++++++++++++++++++++++++++++++++++++++++++++
 
   -- Aggregate Functions
-  FUNCTION slv_or  (vec : STD_LOGIC_VECTOR) RETURN STD_LOGIC;
-  FUNCTION slv_nor (vec : STD_LOGIC_VECTOR) RETURN STD_LOGIC;
-  FUNCTION slv_and (vec : STD_LOGIC_VECTOR) RETURN STD_LOGIC;
-  FUNCTION slv_nand(vec : STD_LOGIC_VECTOR) RETURN STD_LOGIC;
+  function slv_or  (vec : STD_LOGIC_VECTOR) return STD_LOGIC;
+  function slv_nor (vec : STD_LOGIC_VECTOR) return STD_LOGIC;
+  function slv_and (vec : STD_LOGIC_VECTOR) return STD_LOGIC;
+  function slv_nand(vec : STD_LOGIC_VECTOR) return STD_LOGIC;
   function slv_xor (vec : std_logic_vector) return std_logic;
 	-- NO slv_xnor! This operation would not be well-defined as
 	-- not xor(vec) /= vec_{n-1} xnor ... xnor vec_1 xnor vec_0 iff n is odd.
@@ -553,33 +553,33 @@ package body utils is
 
 	-- Vector aggregate functions: slv_*
 	-- ==========================================================================
-	FUNCTION slv_or(vec : STD_LOGIC_VECTOR) RETURN STD_LOGIC IS
-		VARIABLE Result : STD_LOGIC := '0';
-	BEGIN
-		FOR i IN vec'range LOOP
-			Result	:= Result OR vec(i);
-		END LOOP;
-		RETURN Result;
-	END FUNCTION;
+	function slv_or(vec : STD_LOGIC_VECTOR) return STD_LOGIC is
+		variable Result : STD_LOGIC := '0';
+	begin
+		for i in vec'range loop
+			Result	:= Result or vec(i);
+		end loop;
+		return Result;
+	end function;
 
-	FUNCTION slv_nor(vec : STD_LOGIC_VECTOR) RETURN STD_LOGIC IS
-	BEGIN
-		RETURN NOT slv_or(vec);
-	END FUNCTION;
+	function slv_nor(vec : STD_LOGIC_VECTOR) return STD_LOGIC is
+	begin
+		return not slv_or(vec);
+	end function;
 
-	FUNCTION slv_and(vec : STD_LOGIC_VECTOR) RETURN STD_LOGIC IS
-		VARIABLE Result : STD_LOGIC := '1';
-	BEGIN
-		FOR i IN vec'range LOOP
-			Result	:= Result AND vec(i);
-		END LOOP;
-		RETURN Result;
-	END FUNCTION;
+	function slv_and(vec : STD_LOGIC_VECTOR) return STD_LOGIC is
+		variable Result : STD_LOGIC := '1';
+	begin
+		for i in vec'range loop
+			Result	:= Result and vec(i);
+		end loop;
+		return Result;
+	end function;
 
-	FUNCTION slv_nand(vec : STD_LOGIC_VECTOR) RETURN STD_LOGIC IS
-	BEGIN
-		RETURN NOT slv_and(vec);
-	END FUNCTION;
+	function slv_nand(vec : STD_LOGIC_VECTOR) return STD_LOGIC is
+	begin
+		return not slv_and(vec);
+	end function;
 
 	function slv_xor(vec : std_logic_vector) return std_logic is
 		variable  res : std_logic;
@@ -593,25 +593,25 @@ package body utils is
 	
 	-- Convert to bit: to_sl
 	-- ==========================================================================
-	FUNCTION to_sl(Value : BOOLEAN) RETURN STD_LOGIC IS
-	BEGIN
-		RETURN ite(Value, '1', '0');
-	END FUNCTION;
+	function to_sl(Value : BOOLEAN) return STD_LOGIC is
+	begin
+		return ite(Value, '1', '0');
+	end function;
 
-	FUNCTION to_sl(Value : CHARACTER) RETURN STD_LOGIC IS
-	BEGIN
-		CASE Value IS
-			WHEN 'U' =>			RETURN 'U';
-			WHEN '0' =>			RETURN '0';
-			WHEN '1' =>			RETURN '1';
-			WHEN 'Z' =>			RETURN 'Z';
-			WHEN 'W' =>			RETURN 'W';
-			WHEN 'L' =>			RETURN 'L';
-			WHEN 'H' =>			RETURN 'H';
-			WHEN '-' =>			RETURN '-';
-			WHEN OTHERS =>	RETURN 'X';
-		END CASE;
-	END FUNCTION;
+	function to_sl(Value : CHARACTER) return STD_LOGIC is
+	begin
+		case Value is
+			when 'U' =>			return 'U';
+			when '0' =>			return '0';
+			when '1' =>			return '1';
+			when 'Z' =>			return 'Z';
+			when 'W' =>			return 'W';
+			when 'L' =>			return 'L';
+			when 'H' =>			return 'H';
+			when '-' =>			return '-';
+			when OTHERS =>	return 'X';
+		end case;
+	end function;
 
 	-- Convert to vector: to_slv
 	-- ==========================================================================
@@ -623,9 +623,9 @@ package body utils is
 		return  res;
 	END FUNCTION;
 
-	FUNCTION to_index(slv : UNSIGNED; max : NATURAL := 0) RETURN INTEGER IS
+	function to_index(slv : UNSIGNED; max : NATURAL := 0) return INTEGER is
 		variable  res : integer;
-	BEGIN
+	begin
 		if (slv'length = 0) then	return 0;	end if;
 	
 		res := to_integer(slv);
@@ -633,12 +633,12 @@ package body utils is
 			res := imin(res, max);
 		end if;
 		return  res;
-	END FUNCTION;
+	end function;
 
-	FUNCTION to_index(slv : STD_LOGIC_VECTOR; max : NATURAL := 0) RETURN INTEGER IS
-	BEGIN
-		RETURN to_index(unsigned(slv), max);
-	END FUNCTION;
+	function to_index(slv : STD_LOGIC_VECTOR; max : NATURAL := 0) return INTEGER is
+	begin
+		return to_index(unsigned(slv), max);
+	end function;
 	
   -- is_*
   -- ==========================================================================
