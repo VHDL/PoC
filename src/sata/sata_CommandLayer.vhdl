@@ -220,8 +220,8 @@ BEGIN
 			BlockCount_AppLB_Shifted(I)			<= BlockCount_AppLB(Address_AppLB'high - I DOWNTO 0)	& (I - 1 DOWNTO 0 => '0');
 		END GENERATE;
 		
-		AdrCalc_Address_DevLB 						<= Address_AppLB_Shifted(to_integer(to_01(Shift_us, '0')));
-		AdrCalc_BlockCount_DevLB					<= BlockCount_AppLB_Shifted(to_integer(to_01(Shift_us, '0')));
+		AdrCalc_Address_DevLB 						<= Address_AppLB_Shifted(to_index(Shift_us, Address_AppLB_Shifted'length));
+		AdrCalc_BlockCount_DevLB					<= BlockCount_AppLB_Shifted(to_index(Shift_us, BlockCount_AppLB_Shifted'length));
 	END BLOCK;
 	
 
