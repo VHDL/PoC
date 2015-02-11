@@ -79,14 +79,14 @@ package satacomp is
 			TX_Data										: IN	T_SLV_32;
 			TX_SOR										: IN	STD_LOGIC;
 			TX_EOR										: IN	STD_LOGIC;
-			TX_Ready									: OUT	STD_LOGIC;
+			TX_Ack										: OUT	STD_LOGIC;
 			
 			-- RX path
 			RX_Valid									: OUT	STD_LOGIC;
 			RX_Data										: OUT	T_SLV_32;
 			RX_SOR										: OUT	STD_LOGIC;
 			RX_EOR										: OUT	STD_LOGIC;
-			RX_Ready									: IN	STD_LOGIC;
+			RX_Ack										: IN	STD_LOGIC;
 			
 			-- SATAController interface
 			-- ========================================================================
@@ -99,10 +99,10 @@ package satacomp is
 			SATA_TX_EOF								: OUT	STD_LOGIC;
 			SATA_TX_Valid							: OUT	STD_LOGIC;
 			SATA_TX_Data							: OUT	T_SLV_32;
-			SATA_TX_Ready							: IN	STD_LOGIC;
+			SATA_TX_Ack								: IN	STD_LOGIC;
 			SATA_TX_InsertEOF					: IN	STD_LOGIC;															-- helper signal: insert EOF - max frame size reached
 			
-			SATA_TX_FS_Ready					: OUT	STD_LOGIC;
+			SATA_TX_FS_Ack						: OUT	STD_LOGIC;
 			SATA_TX_FS_Valid					: IN	STD_LOGIC;
 			SATA_TX_FS_SendOK					: IN	STD_LOGIC;
 			SATA_TX_FS_Abort					: IN	STD_LOGIC;
@@ -112,9 +112,9 @@ package satacomp is
 			SATA_RX_EOF								: IN	STD_LOGIC;
 			SATA_RX_Valid							: IN	STD_LOGIC;
 			SATA_RX_Data							: IN	T_SLV_32;
-			SATA_RX_Ready							: OUT	STD_LOGIC;
+			SATA_RX_Ack								: OUT	STD_LOGIC;
 			
-			SATA_RX_FS_Ready					: OUT	STD_LOGIC;
+			SATA_RX_FS_Ack						: OUT	STD_LOGIC;
 			SATA_RX_FS_Valid					: IN	STD_LOGIC;
 			SATA_RX_FS_CRC_OK					: IN	STD_LOGIC;
 			SATA_RX_FS_Abort					: IN	STD_LOGIC
@@ -159,10 +159,10 @@ package satacomp is
 			TX_EOF										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			TX_Valid									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-			TX_Ready									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			TX_Ack										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			TX_InsertEOF							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
-			TX_FS_Ready								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			TX_FS_Ack									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			TX_FS_Valid								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			TX_FS_SendOK							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			TX_FS_Abort								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -172,9 +172,9 @@ package satacomp is
 			RX_EOF										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			RX_Valid									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
-			RX_Ready									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Ack										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
-			RX_FS_Ready								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_FS_Ack									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			RX_FS_Valid								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			RX_FS_CRC_OK							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			RX_FS_Abort								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);

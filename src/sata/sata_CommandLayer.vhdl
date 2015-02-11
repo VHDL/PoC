@@ -3,9 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+--									Martin Zabel
+--
+-- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
@@ -13,7 +14,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,12 +39,14 @@ USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
+USE			PoC.satadbg.ALL;
 
 
 ENTITY sata_CommandLayer IS
 	GENERIC (
+		ENABLE_DEBUGPORT							: BOOLEAN									:= FALSE;			-- export internal signals to upper layers for debug purposes
+		DEBUG													: BOOLEAN									:= FALSE;
 		SIM_EXECUTE_IDENTIFY_DEVICE		: BOOLEAN									:= TRUE;			-- required by CommandLayer: load device parameters
-		DEBUG													: BOOLEAN									:= FALSE;			-- generate ChipScope DBG_* signals
 		TX_FIFO_DEPTH									: NATURAL									:= 0;
 		RX_FIFO_DEPTH									: POSITIVE;
 		LOGICAL_BLOCK_SIZE_ldB				: POSITIVE
@@ -58,7 +61,7 @@ ENTITY sata_CommandLayer IS
 		Status												: OUT	T_SATA_CMD_STATUS;
 		Error													: OUT	T_SATA_CMD_ERROR;
 
---		DebugPort											: OUT T_DBG_COMMAND_OUT;
+		DebugPortOut									: OUT T_SATADBG_CMD_OUT;
 
 		-- for measurement purposes only
 		Config_BurstSize							: IN	T_SLV_16;
@@ -75,14 +78,14 @@ ENTITY sata_CommandLayer IS
 		TX_Data												: IN	T_SLV_32;
 		TX_SOR												: IN	STD_LOGIC;
 		TX_EOR												: IN	STD_LOGIC;
-		TX_Ready											: OUT	STD_LOGIC;
+		TX_Ack												: OUT	STD_LOGIC;
 
 		-- RX path
 		RX_Valid											: OUT	STD_LOGIC;
 		RX_Data												: OUT	T_SLV_32;
 		RX_SOR												: OUT	STD_LOGIC;
 		RX_EOR												: OUT	STD_LOGIC;
-		RX_Ready											: IN	STD_LOGIC;
+		RX_Ack												: IN	STD_LOGIC;
 
 		-- TransportLayer interface
 		-- ========================================================================
@@ -100,7 +103,7 @@ ENTITY sata_CommandLayer IS
 		Trans_TX_Data									: OUT	T_SLV_32;
 		Trans_TX_SOT									: OUT	STD_LOGIC;
 		Trans_TX_EOT									: OUT	STD_LOGIC;
-		Trans_TX_Ready								: IN	STD_LOGIC;
+		Trans_TX_Ack									: IN	STD_LOGIC;
 
 		-- RX path
 		Trans_RX_Valid								: IN	STD_LOGIC;
@@ -109,7 +112,7 @@ ENTITY sata_CommandLayer IS
 		Trans_RX_EOT									: IN	STD_LOGIC;
 		Trans_RX_Commit								: IN	STD_LOGIC;
 		Trans_RX_Rollback							: IN	STD_LOGIC;
-		Trans_RX_Ready								: OUT	STD_LOGIC
+		Trans_RX_Ack									: OUT	STD_LOGIC
 	);
 END;
 
@@ -128,14 +131,16 @@ ARCHITECTURE rtl OF sata_CommandLayer IS
 	SIGNAL Status_i													: T_SATA_CMD_STATUS;
 	SIGNAL Error_i													: T_SATA_CMD_ERROR;
 
-	SIGNAL CFSM_ATA_Command									: T_SATA_ATA_COMMAND;
-	SIGNAL CFSM_ATA_Address_LB							: T_SLV_48;
-	SIGNAL CFSM_ATA_BlockCount_LB						: T_SLV_16;
+	--SIGNAL CFSM_ATA_Command									: T_SATA_ATA_COMMAND;
+	--SIGNAL CFSM_ATA_Address_LB							: T_SLV_48;
+	--SIGNAL CFSM_ATA_BlockCount_LB						: T_SLV_16;
 	
 	SIGNAL CFSM_TX_en												: STD_LOGIC;
 	
 	SIGNAL CFSM_RX_SOR											: STD_LOGIC;
 	SIGNAL CFSM_RX_EOR											: STD_LOGIC;
+
+	SIGNAL CFSM_DebugPortOut								: T_SATADBG_CMD_CFSM_OUT;
 
 	SIGNAL ATA_CommandCategory							: T_SATA_COMMAND_CATEGORY;
 	
@@ -153,11 +158,11 @@ ARCHITECTURE rtl OF sata_CommandLayer IS
 	SIGNAL TX_FIFO_SOR											: STD_LOGIC;
 	SIGNAL TX_FIFO_EOR											: STD_LOGIC;
 	SIGNAL TX_FIFO_Valid										: STD_LOGIC;		
-	SIGNAL TX_FIFO_Ready										: STD_LOGIC;
+	SIGNAL TX_FIFO_Ack											: STD_LOGIC;
 	
 	-- TX path
 	-- ==========================================================================
-	SIGNAL TC_TX_Ready											: STD_LOGIC;
+	SIGNAL TC_TX_Ack												: STD_LOGIC;
 	SIGNAL TC_TX_Valid											: STD_LOGIC;
 	SIGNAL TC_TX_Data												: T_SLV_32;
 	SIGNAL TC_TX_SOT												: STD_LOGIC;
@@ -190,6 +195,10 @@ ARCHITECTURE rtl OF sata_CommandLayer IS
 	SIGNAL IDF_EOT													: STD_LOGIC;
 	SIGNAL IDF_CRC_OK												: STD_LOGIC;
 	SIGNAL IDF_DriveInformation							: T_SATA_DRIVE_INFORMATION;
+
+	-- Internal version of output signals
+	-- ========================================================================
+	signal Trans_RX_Ack_i : std_logic;
 	
 BEGIN
 	-- ================================================================
@@ -211,8 +220,8 @@ BEGIN
 			BlockCount_AppLB_Shifted(I)			<= BlockCount_AppLB(Address_AppLB'high - I DOWNTO 0)	& (I - 1 DOWNTO 0 => '0');
 		END GENERATE;
 		
-		AdrCalc_Address_DevLB 						<= Address_AppLB_Shifted(to_integer(to_01(Shift_us, '0')));
-		AdrCalc_BlockCount_DevLB					<= BlockCount_AppLB_Shifted(to_integer(to_01(Shift_us, '0')));
+		AdrCalc_Address_DevLB 						<= Address_AppLB_Shifted(to_index(Shift_us, Address_AppLB_Shifted'length));
+		AdrCalc_BlockCount_DevLB					<= BlockCount_AppLB_Shifted(to_index(Shift_us, BlockCount_AppLB_Shifted'length));
 	END BLOCK;
 	
 
@@ -221,6 +230,7 @@ BEGIN
 	-- ================================================================
 	CFSM : ENTITY PoC.sata_CommandFSM
 		GENERIC MAP (
+			ENABLE_DEBUGPORT 							=> ENABLE_DEBUGPORT,
 			SIM_EXECUTE_IDENTIFY_DEVICE		=> SIM_EXECUTE_IDENTIFY_DEVICE,
 			DEBUG													=> DEBUG					
 		)
@@ -235,6 +245,8 @@ BEGIN
 			Command												=> Command,
 			Status												=> Status_i,
 			Error													=> Error_i,
+
+			DebugPortOut                  => CFSM_DebugPortOut,
 			
 			Address_LB										=> AdrCalc_Address_DevLB,
 			BlockCount_LB									=> AdrCalc_BlockCount_DevLB,
@@ -268,13 +280,13 @@ BEGIN
 
 	-- TX_FIFO signals
 	genTXFIFO0 : IF (TX_FIFO_DEPTH = 0) GENERATE
-		TX_Ready					<= NOT TX_FIFO_Full;
+		TX_Ack						<= NOT TX_FIFO_Full;
 		TX_FIFO_Data			<= TX_Data;
 		TX_FIFO_SOR				<= TX_SOR;
 		TX_FIFO_EOR				<= TX_EOR;
 		TX_FIFO_Valid			<= TX_Valid;
 		
-		TX_FIFO_Full			<= NOT Trans_TX_Ready;
+		TX_FIFO_Full			<= NOT Trans_TX_Ack;
 		Trans_TX_Data			<= TX_FIFO_Data;
 		Trans_TX_Valid		<= TX_FIFO_Valid;
 	END GENERATE;
@@ -288,7 +300,7 @@ BEGIN
 	BEGIN
 		TX_FIFO_rst																<= Reset OR to_sl(Command = SATA_CMD_CMD_RESET);
 		TX_FIFO_put																<= TX_Valid;
-		TX_FIFO_got																<= TC_TX_Ready;
+		TX_FIFO_got																<= TC_TX_Ack;
 		
 		TX_FIFO_DataIn(TX_Data'range)							<= TX_Data;
 		TX_FIFO_DataIn(TX_Data'length	+ 0)				<= TX_SOR;
@@ -326,8 +338,8 @@ BEGIN
 				fstate_rd				=> OPEN
 			);
 
-		TX_FIFO_Ready		<= NOT TX_FIFO_Full;
-		TX_Ready				<= TX_FIFO_Ready;
+		TX_FIFO_Ack			<= NOT TX_FIFO_Full;
+		TX_Ack					<= TX_FIFO_Ack;
 	END GENERATE;
 
 	-- TX TransportCutter
@@ -347,9 +359,9 @@ BEGIN
 	BEGIN
 		-- enable TX data path
 		TC_TX_Valid					<= TX_FIFO_Valid		AND CFSM_TX_en;
-		TC_TX_Ready					<= Trans_TX_Ready		AND CFSM_TX_en;
+		TC_TX_Ack						<= Trans_TX_Ack			AND CFSM_TX_en;
 
-		TC_TX_DataFlow			<= TC_TX_Valid			AND TC_TX_Ready;
+		TC_TX_DataFlow			<= TC_TX_Valid			AND TC_TX_Ack;
 
 		InsertEOT_d					<= TC_TX_InsertEOT	WHEN rising_edge(Clock) AND (TC_TX_DataFlow = '1');
 		InsertEOT_re				<= TC_TX_InsertEOT	AND NOT InsertEOT_d;
@@ -434,7 +446,7 @@ BEGIN
 	RX_FIFO_Commit														<= (Trans_RX_Commit		AND NOT IDF_Enable);
 	RX_FIFO_Rollback													<= Trans_RX_Rollback	AND NOT IDF_Enable;
 
-	RX_FIFO_got																<= RX_Ready;
+	RX_FIFO_got																<= RX_Ack;
 
 	RX_FIFO_DataIn(Trans_RX_Data'range)				<= Trans_RX_Data;
 	RX_FIFO_DataIn(Trans_RX_Data'length	+ 0)	<= CFSM_RX_SOR;
@@ -475,7 +487,8 @@ BEGIN
 			fstate_rd 		=> OPEN
 		);
 	
-	Trans_RX_Ready 	<= (NOT RX_FIFO_Full) WHEN (IDF_Enable = '0') ELSE '1';					-- RX_Ready multiplexer
+	Trans_RX_Ack_i	 	<= (NOT RX_FIFO_Full) WHEN (IDF_Enable = '0') ELSE '1';					-- RX_Ack	 multiplexer
+	Trans_RX_Ack      <= Trans_RX_Ack_i;
 	RX_Valid				<= RX_FIFO_Valid;
 
 	
@@ -526,34 +539,53 @@ BEGIN
 			DriveInformation				=> IDF_DriveInformation
 		);
 
-	-- debug ports
-	-- ==========================================================================================================================================================
---	DebugPort.Command						<= Command;
---	DebugPort.Status						<= Status_i;
---	DebugPort.Error							<= Error_i;
-	
---	DebugPort.DriveInformation.Valid	<= '0';
-----	DebugPort.DriveInformation	<= IDF_DriveInformation;
+  -- debug ports
+  -- ==========================================================================================================================================================
+  genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
+  begin
+    DebugPortOut.Command         		 <= Command;
+    DebugPortOut.Status          		 <= Status_i;
+    DebugPortOut.Error           		 <= Error_i;
 
-	-- ChipScope
-	-- ==========================================================================================================================================================
-	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL DBG_TXFIFO_SOR								: STD_LOGIC;
-		SIGNAL DBG_TXFIFO_EOR								: STD_LOGIC;
-	
-		SIGNAL DBG_RXFIFO_SOR								: STD_LOGIC;
-		SIGNAL DBG_RXFIFO_EOR								: STD_LOGIC;
-	
-		ATTRIBUTE KEEP OF DBG_TXFIFO_SOR		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_TXFIFO_EOR		: SIGNAL IS TRUE;
+    DebugPortOut.Address_AppLB    		<= Address_AppLB;
+    DebugPortOut.BlockCount_AppLB 		<= BlockCount_AppLB;
+    DebugPortOut.Address_DevLB    		<= AdrCalc_Address_DevLB;
+    DebugPortOut.BlockCount_DevLB 		<= AdrCalc_BlockCount_DevLB;
+
+    -- identify device filter
+    DebugPortOut.IDF_Reset            <= IDF_Reset;
+    DebugPortOut.IDF_Enable           <= IDF_Enable;
+    DebugPortOut.IDF_Error            <= IDF_Error;
+    DebugPortOut.IDF_Finished         <= IDF_Finished;
+    DebugPortOut.IDF_CRC_OK           <= IDF_CRC_OK;
+    DebugPortOut.IDF_DriveInformation <= IDF_DriveInformation;
+
+    -- debug port of command fsm, for RX datapath see below
+    DebugPortOut.CFSM <= CFSM_DebugPortOut;
 		
-		ATTRIBUTE KEEP OF DBG_RXFIFO_SOR		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_RXFIFO_EOR		: SIGNAL IS TRUE;
-	BEGIN
-		DBG_TXFIFO_SOR		<= TX_FIFO_Valid	AND TX_FIFO_SOR;
-		DBG_TXFIFO_EOR		<= TX_FIFO_Valid	AND TX_FIFO_EOR;
+    -- RX datapath to upper layer
+    DebugPortOut.RX_Valid 			<= RX_FIFO_Valid;
+    DebugPortOut.RX_Data  			<= RX_FIFO_DataOut(RX_Data'range);
+    DebugPortOut.RX_SOR   			<= RX_FIFO_DataOut(RX_Data'length + 0);
+    DebugPortOut.RX_EOR   			<= RX_FIFO_DataOut(RX_Data'length + 1);
+    DebugPortOut.RX_Ack   			<= RX_Ack;
+
+		-- RX datapath between demultiplexer, RX_FIFO and CFSM
+    DebugPortOut.CFSM_RX_Valid	<= RX_FIFO_put;
+    --see below DebugPortOut.CFSM_RX_Data  <= Trans_RX_Data;
+    DebugPortOut.CFSM_RX_SOR		<= CFSM_RX_SOR;
+    DebugPortOut.CFSM_RX_EOR		<= CFSM_RX_EOR;
+    DebugPortOut.CFSM_RX_Ack		<= not RX_FIFO_FULL;
 		
-		DBG_RXFIFO_SOR		<= Trans_RX_Valid	AND CFSM_RX_SOR;
-		DBG_RXFIFO_EOR		<= Trans_RX_Valid	AND CFSM_RX_EOR;
-	END GENERATE;
-END;
+		-- RX datapath between demultiplexer and IDF
+		-- is same as input from transport layer
+
+		-- RX datapath from transport layer
+    DebugPortOut.Trans_RX_Valid <= Trans_RX_Valid;
+    DebugPortOut.Trans_RX_Data  <= Trans_RX_Data;
+    DebugPortOut.Trans_RX_SOT   <= Trans_RX_SOT;
+    DebugPortOut.Trans_RX_EOT   <= Trans_RX_EOT;
+    DebugPortOut.Trans_RX_Ack   <= Trans_RX_Ack_i;
+	end generate;
+
+end;

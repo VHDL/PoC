@@ -46,47 +46,7 @@ PACKAGE net_comp IS
 	-- ==========================================================================================================================================================
 	-- Ethernet: reconcilation sublayer (RS)
 	-- ==========================================================================================================================================================
-	COMPONENT Eth_RSLayer_GMII_GMII_Virtex5 IS
-		PORT (
-			Reset_async								: IN	STD_LOGIC;																	-- @async: 
-			
-			-- RS-GMII interface
-			RS_TX_Clock								: IN	STD_LOGIC;
-			RS_TX_Valid								: IN	STD_LOGIC;
-			RS_TX_Data								: IN	T_SLV_8;
-			RS_TX_Error								: IN	STD_LOGIC;
-			
-			RS_RX_Clock								: IN	STD_LOGIC;
-			RS_RX_Valid								: OUT	STD_LOGIC;
-			RS_RX_Data								: OUT	T_SLV_8;
-			RS_RX_Error								: OUT	STD_LOGIC;
-
-			-- PHY-GMII interface		
-			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_GMII
-		);
-	END COMPONENT;
-
-	COMPONENT Eth_RSLayer_GMII_GMII_Virtex6 IS
-		PORT (
-			Reset_async								: IN	STD_LOGIC;																	-- @async: 
-			
-			-- RS-GMII interface
-			RS_TX_Clock								: IN	STD_LOGIC;
-			RS_TX_Valid								: IN	STD_LOGIC;
-			RS_TX_Data								: IN	T_SLV_8;
-			RS_TX_Error								: IN	STD_LOGIC;
-			
-			RS_RX_Clock								: IN	STD_LOGIC;
-			RS_RX_Valid								: OUT	STD_LOGIC;
-			RS_RX_Data								: OUT	T_SLV_8;
-			RS_RX_Error								: OUT	STD_LOGIC;
-
-			-- PHY-GMII interface		
-			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_GMII
-		);
-	END COMPONENT;
-
-	COMPONENT Eth_RSLayer_GMII_GMII_Virtex7 IS
+	COMPONENT Eth_RSLayer_GMII_GMII_Xilinx IS
 		PORT (
 			Reset_async								: IN	STD_LOGIC;																	-- @async: 
 			
@@ -108,7 +68,7 @@ PACKAGE net_comp IS
 
 	COMPONENT Eth_RSLayer_GMII_SGMII_Virtex5 IS
 		GENERIC (
-			CLOCK_IN_FREQ_MHZ					: REAL													:= 125.0					-- 125 MHz
+			CLOCK_IN_FREQ							: FREQ													:= 125.0 MHz					-- 125 MHz
 		);
 		PORT (
 			Clock											: IN	STD_LOGIC;
@@ -132,7 +92,7 @@ PACKAGE net_comp IS
 
 	COMPONENT Eth_RSLayer_GMII_SGMII_Virtex6 IS
 		GENERIC (
-			CLOCK_IN_FREQ_MHZ					: REAL													:= 125.0					-- 125 MHz
+			CLOCK_IN_FREQ							: FREQ													:= 125.0 MHz					-- 125 MHz
 		);
 		PORT (
 			Clock											: IN	STD_LOGIC;
@@ -154,9 +114,9 @@ PACKAGE net_comp IS
 		);
 	END COMPONENT;
 
-	COMPONENT Eth_RSLayer_GMII_SGMII_Virtex7 IS
+	COMPONENT Eth_RSLayer_GMII_SGMII_Series7 IS
 		GENERIC (
-			CLOCK_IN_FREQ_MHZ					: REAL													:= 125.0					-- 125 MHz
+			CLOCK_IN_FREQ							: FREQ													:= 125.0 MHz					-- 125 MHz
 		);
 		PORT (
 			Clock											: IN	STD_LOGIC;
@@ -248,7 +208,7 @@ PACKAGE net_comp IS
 	COMPONENT Eth_Wrapper_Virtex5 IS
 		GENERIC (
 			DEBUG											: BOOLEAN														:= FALSE;															-- 
-			CLOCKIN_FREQ					: FREQ															:= 125.0 MHz;															-- 125 MHz
+			CLOCKIN_FREQ							: FREQ															:= 125.0 MHz;													-- 125 MHz
 			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
 			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
 			PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		-- 
@@ -288,7 +248,7 @@ PACKAGE net_comp IS
 	COMPONENT Eth_Wrapper_Virtex6 IS
 		GENERIC (
 			DEBUG											: BOOLEAN														:= FALSE;															-- 
-			CLOCKIN_FREQ					: FREQ															:= 125.0 MHz;															-- 125 MHz
+			CLOCKIN_FREQ							: FREQ															:= 125.0 MHz;													-- 125 MHz
 			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
 			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
 			PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		-- 
@@ -328,7 +288,8 @@ PACKAGE net_comp IS
 	COMPONENT Eth_Wrapper_Series7 IS
 		GENERIC (
 			DEBUG											: BOOLEAN														:= FALSE;															-- 
-			CLOCKIN_FREQ					: FREQ															:= 125.0 MHz;															-- 125 MHz
+
+			CLOCKIN_FREQ							: FREQ															:= 125.0 MHz;													-- 125 MHz
 			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
 			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
 			PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		-- 

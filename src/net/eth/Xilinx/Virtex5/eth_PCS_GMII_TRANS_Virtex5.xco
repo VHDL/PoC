@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 14.7
-# Date: Tue Jul 29 19:05:54 2014
+# Date: Tue Oct 07 09:20:33 2014
 #
 ##############################################################
 #
@@ -40,7 +40,7 @@ SELECT Ethernet_1000BASE-X_PCS/PMA_or_SGMII xilinx.com:ip:gig_eth_pcs_pma:11.5
 # END Select
 # BEGIN Parameters
 CSET auto_negotiation=true
-CSET component_name=eth_GMII_SGMII_PCS_Virtex5
+CSET component_name=eth_PCS_GMII_TRANS_Virtex5
 CSET enable_1588=false
 CSET management_interface=true
 CSET physical_interface=Transceiver
@@ -54,4 +54,4 @@ CSET transceiver_tile=A
 MISC pkg_timestamp=2012-07-11T07:25:50Z
 # END Extra information
 GENERATE
-# CRC: cf947d2f
+# CRC: 35ab31e3
