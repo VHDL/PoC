@@ -482,6 +482,9 @@ package sata is
 	function to_slv(Command : T_SATA_TRANS_COMMAND)	return STD_LOGIC_VECTOR;
 	function to_slv(Status : T_SATA_TRANS_STATUS)		return STD_LOGIC_VECTOR;
 	function to_slv(Error : T_SATA_TRANS_ERROR)			return STD_LOGIC_VECTOR;
+	function to_slv(Status : T_SATA_FISENCODER_STATUS) return STD_LOGIC_VECTOR;
+	function to_slv(Status : T_SATA_FISDECODER_STATUS) return STD_LOGIC_VECTOR;
+	
 	-- ===========================================================================
 	-- SATA StreamingController types
 	-- ===========================================================================
@@ -643,6 +646,16 @@ PACKAGE BODY sata IS
 	function to_slv(Status : T_SATA_TRANS_STATUS) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_TRANS_STATUS'pos(Status), log2ceilnz(T_SATA_TRANS_STATUS'pos(T_SATA_TRANS_STATUS'high) + 1));
+	end function;
+
+	function to_slv(Status : T_SATA_FISENCODER_STATUS) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_FISENCODER_STATUS'pos(Status), log2ceilnz(T_SATA_FISENCODER_STATUS'pos(T_SATA_FISENCODER_STATUS'high) + 1));
+	end function;
+
+	function to_slv(Status : T_SATA_FISDECODER_STATUS) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_FISDECODER_STATUS'pos(Status), log2ceilnz(T_SATA_FISDECODER_STATUS'pos(T_SATA_FISDECODER_STATUS'high) + 1));
 	end function;
 
 	-- to_slv(Error : ***)
