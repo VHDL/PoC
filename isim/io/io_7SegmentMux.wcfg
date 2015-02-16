@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="D:/git/SATAController/Projects/StreamDBTest_KC705_ISE/ise/io_7SegmentMux_tb_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="components" />
+            <top_module name="io" />
+            <top_module name="io_7segmentmux_tb" />
+            <top_module name="math_real" />
+            <top_module name="my_config" />
+            <top_module name="numeric_std" />
+            <top_module name="physical" />
+            <top_module name="simulation" />
+            <top_module name="std_logic_1164" />
+            <top_module name="strings" />
+            <top_module name="textio" />
+            <top_module name="utils" />
+            <top_module name="vectors" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="16" />
+   <wvobject fp_name="/io_7segmentmux_tb/clock" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clock</obj_property>
+      <obj_property name="ObjectShortName">clock</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider256" type="divider">
+      <obj_property name="label">Display BCD</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">128 128 255</obj_property>
+      <obj_property name="TextColor">230 230 230</obj_property>
+   </wvobject>
+   <wvobject fp_name="/io_7segmentmux_tb/Display_BCD/bcddigits" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">bcddigits[4:0]</obj_property>
+      <obj_property name="ObjectShortName">bcddigits[4:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/io_7segmentmux_tb/Display_BCD/bcddots" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">bcddots[4:0]</obj_property>
+      <obj_property name="ObjectShortName">bcddots[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/io_7segmentmux_tb/Display_BCD/segmentcontrol" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">segmentcontrol[7:0]</obj_property>
+      <obj_property name="ObjectShortName">segmentcontrol[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/io_7segmentmux_tb/Display_BCD/digitcontrol" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">digitcontrol[4:0]</obj_property>
+      <obj_property name="ObjectShortName">digitcontrol[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/io_7segmentmux_tb/Display_BCD/digitcounter_rst" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">digitcounter_rst</obj_property>
+      <obj_property name="ObjectShortName">digitcounter_rst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/io_7segmentmux_tb/Display_BCD/digitcounter_us" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">digitcounter_us[2:0]</obj_property>
+      <obj_property name="ObjectShortName">digitcounter_us[2:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/io_7segmentmux_tb/Display_BCD/Strobe/o" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">o</obj_property>
+      <obj_property name="ObjectShortName">o</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider260" type="divider">
+      <obj_property name="label">Display HEX</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="BkColor">128 128 255</obj_property>
+      <obj_property name="TextColor">230 230 230</obj_property>
+   </wvobject>
+   <wvobject fp_name="/io_7segmentmux_tb/Display_HEX/hexdigits" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">hexdigits[4:0]</obj_property>
+      <obj_property name="ObjectShortName">hexdigits[4:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/io_7segmentmux_tb/Display_HEX/hexdots" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">hexdots[4:0]</obj_property>
+      <obj_property name="ObjectShortName">hexdots[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/io_7segmentmux_tb/Display_HEX/segmentcontrol" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">segmentcontrol[7:0]</obj_property>
+      <obj_property name="ObjectShortName">segmentcontrol[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/io_7segmentmux_tb/Display_HEX/digitcontrol" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">digitcontrol[4:0]</obj_property>
+      <obj_property name="ObjectShortName">digitcontrol[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/io_7segmentmux_tb/Display_HEX/digitcounter_rst" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">digitcounter_rst</obj_property>
+      <obj_property name="ObjectShortName">digitcounter_rst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/io_7segmentmux_tb/Display_HEX/digitcounter_us" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">digitcounter_us[2:0]</obj_property>
+      <obj_property name="ObjectShortName">digitcounter_us[2:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+</wave_config>

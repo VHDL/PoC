@@ -35,6 +35,8 @@ library ieee;
 use			ieee.std_logic_1164.all;
 use			ieee.numeric_std.all;
 
+library PoC;
+use 		PoC.utils.all;
 
 package arith is
 
@@ -53,6 +55,16 @@ package arith is
 		);
 	end component;
 
+	component arith_counter_bcd is
+		generic (
+			DIGITS : positive);
+		port (
+			clk : in	std_logic;
+			rst : in	std_logic;
+			inc : in	std_logic;
+			val : out T_BCD_VECTOR(DIGITS-1 downto 0));
+	end component arith_counter_bcd;
+	
 	component arith_prng
 		generic (
 			BITS : positive;

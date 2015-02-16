@@ -5,7 +5,7 @@
 -- ============================================================================
 -- Module:				 	arith_counter_bcd_tb
 --
--- Authors:				 	Martin Zabel <martin.zabel@tu-dresden.de>
+-- Authors:				 	Martin Zabel
 -- 
 -- Description:
 -- ------------------------------------

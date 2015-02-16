@@ -87,7 +87,7 @@ ENTITY sata_Transceiver_Virtex5_GTP_Configurator IS
 		GTP_DRP_we							: OUT	STD_LOGIC;																				-- @DRP_Clock
 		GTP_DRP_DataIn					: IN	T_XIL_DRP_DATA;																		-- @DRP_Clock
 		GTP_DRP_DataOut					: OUT	T_XIL_DRP_DATA;																		-- @DRP_Clock
-		GTP_DRP_Ready						: IN	STD_LOGIC;																				-- @DRP_Clock
+		GTP_DRP_Ack							: IN	STD_LOGIC;																				-- @DRP_Clock
 		
 		GTP_ReloadConfig				: OUT	STD_LOGIC;																				-- @DRP_Clock
 		GTP_ReloadConfigDone		: IN	STD_LOGIC																					-- @DRP_Clock
@@ -425,7 +425,7 @@ BEGIN
 			DRP_we					=> GTP_DRP_we,
 			DRP_DataIn			=> GTP_DRP_DataIn,
 			DRP_DataOut			=> GTP_DRP_DataOut,
-			DRP_Ready				=> GTP_DRP_Ready
+			DRP_Ack					=> GTP_DRP_Ack	
 		);
 		
 	-- GTP_ReloadConfig**** interface

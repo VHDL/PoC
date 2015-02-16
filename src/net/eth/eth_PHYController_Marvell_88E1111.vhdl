@@ -44,8 +44,8 @@ USE			PoC.net.ALL;
 
 ENTITY Eth_PHYController_Marvell_88E1111 IS
 	GENERIC (
-		DEBUG						: BOOLEAN													:= FALSE;
-		CLOCK_FREQ						: FREQ														:= 125.0 MHz;										-- 125 MHz
+		DEBUG											: BOOLEAN													:= FALSE;
+		CLOCK_FREQ								: FREQ														:= 125.0 MHz;					-- 125 MHz
 		PHY_DEVICE_ADDRESS				: T_NET_ETH_PHY_DEVICE_ADDRESS		:= "XXXXX"
 	);
 	PORT (
@@ -121,7 +121,7 @@ ARCHITECTURE rtl OF Eth_PHYController_Marvell_88E1111 IS
 	CONSTANT TTID_WAITTIME_AFTER_LINK_UP							: NATURAL		:= 1;
 	
 	CONSTANT TIMING_TABLE															: T_NATVEC	:= (
-		TTID_RESET_PULSE								=> TimingToCycles(5000.0 ms,		CLOCK_FREQ),
+		TTID_RESET_PULSE								=> TimingToCycles(5000.0 ms,	CLOCK_FREQ),
 		TTID_WAITTIME_AFTER_LINK_UP			=> TimingToCycles(1.0 ms,			CLOCK_FREQ)
 	);
 

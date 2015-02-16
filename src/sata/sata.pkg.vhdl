@@ -3,9 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+--
+-- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
@@ -13,7 +13,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -314,6 +314,12 @@ package sata is
 		SATA_ATA_CMD_UNKNOWN
 	);
 	
+	function to_sata_Cmd_Command(slv : STD_LOGIC_VECTOR) return T_SATA_CMD_COMMAND;
+
+	function to_slv(Command : T_SATA_CMD_COMMAND)	return STD_LOGIC_VECTOR;
+	function to_slv(Status : T_SATA_CMD_STATUS)		return STD_LOGIC_VECTOR;
+	function to_slv(Error : T_SATA_CMD_ERROR)			return STD_LOGIC_VECTOR;
+	
 	-- ===========================================================================
 	-- SATA Transport Layer Types
 	-- ===========================================================================
@@ -471,6 +477,11 @@ package sata is
 	CONSTANT C_SATA_ATA_MAX_BLOCKCOUNT			: POSITIVE				:= 2**16; 			--	= 32 MiB at 512 Bytes logical blocks
 	CONSTANT C_SIM_MAX_BLOCKCOUNT						: POSITIVE				:= 64; 					--	= 32 KiB at 512 Bytes logical blocks
 	
+	function to_sata_Trans_Command(slv : STD_LOGIC_VECTOR) return T_SATA_TRANS_COMMAND;
+
+	function to_slv(Command : T_SATA_TRANS_COMMAND)	return STD_LOGIC_VECTOR;
+	function to_slv(Status : T_SATA_TRANS_STATUS)		return STD_LOGIC_VECTOR;
+	function to_slv(Error : T_SATA_TRANS_ERROR)			return STD_LOGIC_VECTOR;
 	-- ===========================================================================
 	-- SATA StreamingController types
 	-- ===========================================================================
@@ -494,6 +505,11 @@ package sata is
 		TransportLayer		: T_SATA_TRANS_ERROR;
 	END RECORD;
 	
+	function to_sata_StreamC_Command(slv : STD_LOGIC_VECTOR) return T_SATA_STREAMC_COMMAND;
+
+	function to_slv(Command : T_SATA_STREAMC_COMMAND)	return STD_LOGIC_VECTOR;
+
+
 	-- ===========================================================================
 	-- ATA Drive Information
 	-- ===========================================================================
@@ -556,6 +572,33 @@ PACKAGE BODY sata IS
 		end if;
 	end function;
 
+	function to_sata_Cmd_Command(slv : STD_LOGIC_VECTOR) return T_SATA_CMD_COMMAND is
+	begin
+		if (to_integer(unsigned(slv)) <= T_SATA_CMD_COMMAND'pos(T_SATA_CMD_COMMAND'high)) then
+			return T_SATA_CMD_COMMAND'val(to_integer(unsigned(slv)));
+		else
+			return SATA_CMD_CMD_NONE;
+		end if;
+	end function;
+
+	function to_sata_Trans_Command(slv : STD_LOGIC_VECTOR) return T_SATA_TRANS_COMMAND is
+	begin
+		if (to_integer(unsigned(slv)) <= T_SATA_TRANS_COMMAND'pos(T_SATA_TRANS_COMMAND'high)) then
+			return T_SATA_TRANS_COMMAND'val(to_integer(unsigned(slv)));
+		else
+			return SATA_TRANS_CMD_NONE;
+		end if;
+	end function;
+
+	function to_sata_StreamC_Command(slv : STD_LOGIC_VECTOR) return T_SATA_STREAMC_COMMAND is
+	begin
+		if (to_integer(unsigned(slv)) <= T_SATA_STREAMC_COMMAND'pos(T_SATA_STREAMC_COMMAND'high)) then
+			return T_SATA_STREAMC_COMMAND'val(to_integer(unsigned(slv)));
+		else
+			return SATA_STREAMC_CMD_NONE;
+		end if;
+	end function;
+
 	-- to_slv
 	-- ===========================================================================
 	-- to_slv(Command : ***)
@@ -563,6 +606,21 @@ PACKAGE BODY sata IS
 	function to_slv(Command : T_SATA_SATACONTROLLER_COMMAND) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_SATACONTROLLER_COMMAND'pos(Command), log2ceilnz(T_SATA_SATACONTROLLER_COMMAND'pos(T_SATA_SATACONTROLLER_COMMAND'high) + 1));
+	end function;
+	
+	function to_slv(Command : T_SATA_CMD_COMMAND) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_CMD_COMMAND'pos(Command), log2ceilnz(T_SATA_CMD_COMMAND'pos(T_SATA_CMD_COMMAND'high) + 1));
+	end function;
+	
+	function to_slv(Command : T_SATA_TRANS_COMMAND) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_TRANS_COMMAND'pos(Command), log2ceilnz(T_SATA_TRANS_COMMAND'pos(T_SATA_TRANS_COMMAND'high) + 1));
+	end function;
+	
+	function to_slv(Command : T_SATA_STREAMC_COMMAND) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_STREAMC_COMMAND'pos(Command), log2ceilnz(T_SATA_STREAMC_COMMAND'pos(T_SATA_STREAMC_COMMAND'high) + 1));
 	end function;
 	
 	-- to_slv(Status : ***)
@@ -577,11 +635,31 @@ PACKAGE BODY sata IS
 		return to_slv(T_SATA_PHY_SPEED_STATUS'pos(Status), log2ceilnz(T_SATA_PHY_SPEED_STATUS'pos(T_SATA_PHY_SPEED_STATUS'high) + 1));
 	end function;
 
+	function to_slv(Status : T_SATA_CMD_STATUS) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_CMD_STATUS'pos(Status), log2ceilnz(T_SATA_CMD_STATUS'pos(T_SATA_CMD_STATUS'high) + 1));
+	end function;
+	
+	function to_slv(Status : T_SATA_TRANS_STATUS) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_TRANS_STATUS'pos(Status), log2ceilnz(T_SATA_TRANS_STATUS'pos(T_SATA_TRANS_STATUS'high) + 1));
+	end function;
+
 	-- to_slv(Error : ***)
 	-- -----------------------------------
 	function to_slv(Error : T_SATA_PHY_ERROR) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_PHY_ERROR'pos(Error), log2ceilnz(T_SATA_PHY_ERROR'pos(T_SATA_PHY_ERROR'high) + 1));
+	end function;
+
+	function to_slv(Error : T_SATA_CMD_ERROR) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_CMD_ERROR'pos(Error), log2ceilnz(T_SATA_CMD_ERROR'pos(T_SATA_CMD_ERROR'high) + 1));
+	end function;
+	
+	function to_slv(Error : T_SATA_TRANS_ERROR) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_TRANS_ERROR'pos(Error), log2ceilnz(T_SATA_TRANS_ERROR'pos(T_SATA_TRANS_ERROR'high) + 1));
 	end function;
 
 	-- to_slv(***)
