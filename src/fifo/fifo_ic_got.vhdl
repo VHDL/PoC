@@ -71,7 +71,7 @@ use			IEEE.numeric_std.all;
 
 library	poc;
 USE			PoC.utils.ALL;
-use			poc.ocram.ocram_sdp;
+use			poc.ocram.all; -- "all" required by Quartus RTL simulation
 
 
 entity fifo_ic_got is
