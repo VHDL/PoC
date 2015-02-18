@@ -10,25 +10,32 @@
 -- 
 -- Description:
 -- ------------------------------------
--- Inferring / instantiating simple dual-port memory.
+-- Inferring / instantiating simple dual-port memory, with:
 --
--- - dual clock, clock enable
--- - 1 read port plus 1 write port
+-- * dual clock, clock enable,
+-- * 1 read port plus 1 write port.
 -- 
--- Reading at write address returns unknown data. Putting the different RAM
--- behaviours (Altera, Xilinx, some ASICs) together, then the Altera M512/M4K
--- TriMatrix memory defines the minimum time after which the written data can
--- be read out again. As stated in the Stratix Handbook, Volume 2, page 2-13,
--- data is actually written with the falling (instead of the rising) edge of
--- the clock. So that data can be read out after half of the write-clock period
--- plus the write-cycle time.
+-- The generalized behavior across Altera and Xilinx FPGAs since
+-- Stratix/Cyclone and Spartan-3/Virtex-5, respectively, is as follows:
 --
--- To generalize this behaviour, it can be assumed, that written data is 
--- available at the read-port with the next rising write!-clock edge. Both,
--- read- and write-clock edge might be at the same time, to satisfy this rule.
--- An example would be, that write- and read-clock are the same.
+--   The Altera M512/M4K TriMatrix memory (as found e.g. in Stratix and
+--   Stratix II FPGAs) defines the minimum time after which the written data at
+--   the write port can be read-out at read port again. As stated in the Stratix
+--   Handbook, Volume 2, page 2-13, data is actually written with the falling
+--   (instead of the rising) edge of the clock into the memory array. The write
+--   itself takes the write-cycle time which is less or equal to the minimum
+--   clock-period time. After this, the data can be read-out at the other port.
+--   Consequently, data "d" written at the rising-edge of "wclk" at address
+--   "wa" can be read-out at the read port from the same address with the
+--   2nd rising-edge of "rclk" following the falling-edge of "wclk".
+--   If the rising-edge of "rclk" coincides with the falling-edge of "wclk"
+--   (e.g. same clock signal), then it is counted as the 1st rising-edge of
+--   "rclk" in this timing.
 --
--- If latency is an issue, then memory blocks should be directly instantiated.
+-- WARNING: The simulated behavior on RT-level is not correct.
+--
+-- TODO: add timing diagram
+-- TODO: implement correct behavior for RT-level simulation
 -- 
 -- License:
 -- ============================================================================
