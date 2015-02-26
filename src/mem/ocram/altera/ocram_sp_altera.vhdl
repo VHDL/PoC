@@ -1,32 +1,37 @@
---
--- Copyright (c) 2008
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
+-- ============================================================================
+-- Module:				 	Instantiate single-port memory on Altera FPGAs.
 --
-
---
--- Entity: ocram_sp_altera
--- Author(s): Martin Zabel
+-- Authors:				 	Martin Zabel
 -- 
--- Instantiating single-port RAM using Altera Megafunctions.
+-- Description:
+-- ------------------------------------
+-- Quartus synthesis does not infer this RAM type correctly.
+-- Instead, altsyncram is instantiated directly.
 --
--- - single clock, clock enable
--- - 1 read/write port
+-- For further documentation see module "ocram_sp" 
+-- (src/mem/ocram/ocram_sp.vhdl).
+--
+-- License:
+-- ============================================================================
+-- Copyright 2008-2015 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
--- Written data is passed through the memory and output again as read-data 'q'.
--- This is the normal behaviour of a single-port RAM and also known as
--- write-first mode or read-through-write behaviour.
---
--- Inference does not work due to 'ce', so the altsyncram macro is used.
---
--- Revision:    $Revision: 1.4 $
--- Last change: $Date: 2008-12-11 17:29:55 $
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
 
 library ieee;
 use ieee.std_logic_1164.all;
