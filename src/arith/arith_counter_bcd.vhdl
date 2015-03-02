@@ -38,7 +38,6 @@
 
 library	ieee;
 use			ieee.std_logic_1164.all;
-use			ieee.numeric_std.all;
 
 library poc;
 use poc.utils.all;
@@ -56,36 +55,38 @@ entity arith_counter_bcd is
 end arith_counter_bcd;
 
 
+library	IEEE;
+use IEEE.numeric_std.all;
+
 architecture rtl of arith_counter_bcd is
-	-- carry(i) = carry-in of stage 'i' and carry-out of stage 'i-1'
-	signal carry : std_logic_vector(DIGITS downto 0);
-	
+  -- c(i) = carry-in of stage 'i'
+  signal p : unsigned(DIGITS-1 downto 0);  -- Stage Overflows=Propagates
+  signal c : unsigned(DIGITS   downto 0);  -- Inter-Stage Carries
 begin
-	carry(0) <= '1';
+	-- Compute Carries using standard addition
+  c <= ('0'&p) xor (('0'&p) + 1);
 
 	-- Generate for each BCD stage
 	gDigit : for i in 0 to DIGITS-1 generate
-		signal cnt_r		: unsigned(3 downto 0) := x"0";	 -- Counter of stage
-		signal cnt_done : std_logic;						 -- reached last digit
-		
+		signal cnt_r : t_BCD := x"0";	 -- Counter Digit of this Stage
 	begin
-		cnt_done	 <= '1' when cnt_r = x"9" else '0';
-		val(i)		 <= T_BCD(cnt_r);							 -- map to output
-		carry(i+1) <= cnt_done and carry(i);		 -- carry-out of our stage
-		
+		p(i) <= cnt_r(3) and cnt_r(0); -- Local Overflow at digit 9
 		process(clk)
 		begin
 			if(rising_edge(clk)) then
 				if rst = '1' then
 					cnt_r <= (others => '0');
-				elsif (inc and carry(i)) = '1' then  -- short critical path for 'inc'
-					if cnt_done = '1' then -- our counter reached last digit
+				elsif (inc and c(i)) = '1' then  -- short critical path for 'inc'
+					if p(i) = '1' then -- our counter reached last digit
 						cnt_r <= x"0";
 					else
-						cnt_r <= cnt_r + 1;
+						cnt_r <= t_BCD(unsigned(cnt_r) + 1);
 					end if;
 				end if;
 			end if;
 		end process;
+
+		-- Digit Output
+		val(i) <= cnt_r;
 	end generate gDigit;
 end rtl;
