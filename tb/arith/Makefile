@@ -7,13 +7,16 @@ SRCS := ../common/my_config_ML505.vhdl \
 	$(DUT_PATH)/arith.pkg.vhdl \
 	$(DUT_PATH)/arith_prefix_and.vhdl arith_prefix_and_tb.vhdl \
 	$(DUT_PATH)/arith_prefix_or.vhdl arith_prefix_or_tb.vhdl \
+	$(DUT_PATH)/arith_firstone.vhdl arith_firstone_tb.vhdl \
+	$(DUT_PATH)/arith_counter_bcd.vhdl arith_counter_bcd_tb.vhdl \
 	$(DUT_PATH)/arith_prng.vhdl arith_prng_tb.vhdl \
 	$(DUT_PATH)/arith_addw.vhdl arith_addw_tb.vhdl \
 	$(DUT_PATH)/xilinx/arith_addw_xil.vhdl arith_addw_xil_tb.vhdl
 
 .PHONY: all clean
 
-all: arith_prefix_and_tb arith_prefix_or_tb arith_prng_tb \
+all: arith_prefix_and_tb arith_prefix_or_tb arith_firstone_tb \
+     arith_counter_bcd_tb arith_prng_tb \
      arith_addw_tb arith_addw_xil_tb
 
 %_tb: ../xilinx/unisim-obj93.cf poc-obj93.cf

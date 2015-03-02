@@ -40,7 +40,20 @@ use 		PoC.utils.all;
 
 package arith is
 
-	component arith_counter_gray is
+	component arith_firstone is
+		generic (
+			N : positive                                -- Length of Token Chain
+		);
+		port (
+			tin  : in  std_logic := '1';                -- Enable:   Fed Token
+			rqst : in  std_logic_vector(N-1 downto 0);  -- Request:  Token Requests
+			grnt : out std_logic_vector(N-1 downto 0);  -- Grant:    Token Output
+			tout : out std_logic;                       -- Inactive: Unused Token
+			bin  : out std_logic_vector(log2ceil(N)-1 downto 0)  -- Binary Grant Index
+		);
+	end component;
+
+  component arith_counter_gray is
 		generic (
 			BITS : positive;			-- Bit width of the counter
 			INIT : natural := 0		-- Initial/reset counter value
