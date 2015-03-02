@@ -83,9 +83,9 @@ begin
   -- Stimuli
   process
   begin
-    for i in 0 to 2**N-1 loop
+    for i in natural range 0 to 2**N-1 loop
       a <= std_logic_vector(to_unsigned(i, N));
-      for j in 0 to 2**N-1 loop
+      for j in natural range 0 to 2**N-1 loop
         b <= std_logic_vector(to_unsigned(j, N));
 
         cin <= '0';
