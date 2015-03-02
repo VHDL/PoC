@@ -6,6 +6,7 @@
 -- Module:				 	BCD counter.
 --
 -- Authors:				 	Martin Zabel
+--									Thomas B. Preusser
 -- 
 -- Description:
 -- ------------------------------------
@@ -64,7 +65,7 @@ begin
 
 	-- Generate for each BCD stage
 	gDigit : for i in 0 to DIGITS-1 generate
-		signal cnt_r		: unsigned(3 downto 0);	 -- Counter of stage
+		signal cnt_r		: unsigned(3 downto 0) := x"0";	 -- Counter of stage
 		signal cnt_done : std_logic;						 -- reached last digit
 		
 	begin
