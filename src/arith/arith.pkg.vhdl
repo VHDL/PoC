@@ -135,9 +135,10 @@ package arith is
       N : positive;                    -- Operand Width
       K : positive;                    -- Block Count
 
-      ARCH     : tArch     := AAM;        -- Architecture
-      BLOCKING : tBlocking := DFLT;       -- Blocking Scheme
-      SKIPPING : tSkipping := CCC         -- Carry Skip Scheme
+      ARCH				: tArch     := AAM;		-- Architecture
+      BLOCKING		: tBlocking := DFLT;	-- Blocking Scheme
+      SKIPPING		: tSkipping := CCC;		-- Carry Skip Scheme
+			P_INCLUSIVE	: boolean := false		-- Use Inclusive Propagate, i.e. c^1
     );
     port (
       a, b : in std_logic_vector(N-1 downto 0);

@@ -19,7 +19,8 @@ vhdl poc	"src/common/config.vhdl"						# PoC device configuration mechanism
 vhdl poc	"tb/common/simulation.v93.vhdl"			# PoC simulation helper
 
 # PoC.arith
-vhdl poc	"src/arith/arith_prefix_or.vhdl"		# Unit Under Test
+vhdl poc	"src/arith/arith.pkg.vhdl"				# Package
+vhdl poc	"src/arith/arith_firstone.vhdl"		# DUT
 
 # Testbench file(s)
-vhdl test	"tb/arith/arith_prefix_or_tb.vhdl"	# Testbench
+vhdl test	"tb/arith/arith_firstone_tb.vhdl"	# Testbench
