@@ -3,28 +3,31 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
 --									Steffen Koehler
 --
+-- Module:					Synchronizes a strobe signal across clock-domain boundaries
+--
 -- Description:
 -- ------------------------------------
---		This module synchronizes multiple high-active bits from clock domain
---		'Clock1' to clock domain 'Clock2'. The clock domain boundary crossing is
+--		This module synchronizes multiple high-active bits from clock-domain
+--		'Clock1' to clock-domain 'Clock2'. The clock-domain boundary crossing is
 --		done by a T-FF, two synchronizer D-FFs and a reconstructive XOR. A busy
 --		flag is additionally calculated and can be used to block new inputs. All
 --		bits are independent from each other. Multiple consecutive strobes are
 --		suppressed by a rising edge detection.
 -- 
+--		ATTENTION:
+--			Use this synchronizer only for one-cycle high-active signals (strobes).
+--		
 --		CONSTRAINTS:
 --			General:
---				This module uses sub modules which need to be constrainted. Please
+--				This module uses sub modules which need to be constrained. Please
 --				attend to the notes of the instantiated sub modules.
 --			
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,102 +43,102 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
+library PoC;
 
 
-ENTITY sync_Strobe IS
-  GENERIC (
+entity sync_Strobe IS
+  generic (
 	  BITS								: POSITIVE		:= 1;														-- number of bit to be synchronized
 		GATED_INPUT_BY_BUSY	: BOOLEAN			:= TRUE													-- use gated input (by busy signal)
 	);
-  PORT (
-		Clock1							: IN	STD_LOGIC;															-- <Clock>	input clock domain
-		Clock2							: IN	STD_LOGIC;															-- <Clock>	output clock domain
-		Input								: IN	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);		-- @Clock1:	input bits
-		Output							: OUT STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);		-- @Clock2:	output bits
-		Busy								: OUT	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)			-- @Clock1:	busy bits
+  port (
+		Clock1							: in	STD_LOGIC;															-- <Clock>	input clock domain
+		Clock2							: in	STD_LOGIC;															-- <Clock>	output clock domain
+		Input								: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);		-- @Clock1:	input bits
+		Output							: out STD_LOGIC_VECTOR(BITS - 1 downto 0);		-- @Clock2:	output bits
+		Busy								: out	STD_LOGIC_VECTOR(BITS - 1 downto 0)			-- @Clock1:	busy bits
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF sync_Strobe IS
-	ATTRIBUTE SHREG_EXTRACT										: STRING;
+architecture rtl of sync_Strobe is
+	attribute SHREG_EXTRACT										: STRING;
 
-	SIGNAL syncClk1_In		: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
-	SIGNAL syncClk1_Out		: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
-	SIGNAL syncClk2_In		: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
-	SIGNAL syncClk2_Out		: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
+	signal syncClk1_In		: STD_LOGIC_VECTOR(BITS - 1 downto 0);
+	signal syncClk1_Out		: STD_LOGIC_VECTOR(BITS - 1 downto 0);
+	signal syncClk2_In		: STD_LOGIC_VECTOR(BITS - 1 downto 0);
+	signal syncClk2_Out		: STD_LOGIC_VECTOR(BITS - 1 downto 0);
 	
 BEGIN
 
-	gen : FOR I IN 0 TO BITS - 1 GENERATE
-		SIGNAL D0							: STD_LOGIC			:= '0';
-		SIGNAL T1							: STD_LOGIC			:= '0';
-		SIGNAL D2							: STD_LOGIC			:= '0';
+	gen : for i in 0 to BITS - 1 generate
+		signal D0							: STD_LOGIC			:= '0';
+		signal T1							: STD_LOGIC			:= '0';
+		signal D2							: STD_LOGIC			:= '0';
 
-		SIGNAL Changed_Clk1		: STD_LOGIC;
-		SIGNAL Changed_Clk2		: STD_LOGIC;
-		SIGNAL Busy_i					: STD_LOGIC;
+		signal Changed_Clk1		: STD_LOGIC;
+		signal Changed_Clk2		: STD_LOGIC;
+		signal Busy_i					: STD_LOGIC;
 		
 		-- Prevent XST from translating two FFs into SRL plus FF
-		ATTRIBUTE SHREG_EXTRACT OF D0	: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF T1	: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF D2	: SIGNAL IS "NO";
+		attribute SHREG_EXTRACT OF D0	: signal is "NO";
+		attribute SHREG_EXTRACT OF T1	: signal is "NO";
+		attribute SHREG_EXTRACT OF D2	: signal is "NO";
 		
-	BEGIN
+	begin
 		
-		PROCESS(Clock1)
-		BEGIN
-			IF rising_edge(Clock1) THEN
+		process(Clock1)
+		begin
+			if rising_edge(Clock1) then
 				-- input delay for rising edge detection
 				D0		<= Input(I);
 			
 				-- T-FF to converts a strobe to a flag signal
-				IF (GATED_INPUT_BY_BUSY = TRUE) THEN
-					T1	<= (Changed_Clk1 AND NOT Busy_i) XOR T1;
-				ELSE
-					T1	<= Changed_Clk1 XOR T1;
-				END IF;
-			END IF;
-		END PROCESS;
+				if (GATED_INPUT_BY_BUSY = TRUE) then
+					T1	<= (Changed_Clk1 and not Busy_i) xor T1;
+				else
+					T1	<= Changed_Clk1 xor T1;
+				end if;
+			end if;
+		end process;
 		
 		-- D-FF for level change detection (both edges)
-		D2	<= syncClk2_Out(I) WHEN rising_edge(Clock2);
+		D2	<= syncClk2_Out(I) when rising_edge(Clock2);
 
 		-- assign syncClk*_In signals
 		syncClk2_In(I)	<= T1;
 		syncClk1_In(I)	<= syncClk2_Out(I);	-- D2
 
-		Changed_Clk1		<= NOT D0 AND Input(I);				-- rising edge detection
-		Changed_Clk2		<= syncClk2_Out(I) XOR D2;		-- level change detection; restore strobe signal from flag
-		Busy_i					<= T1 XOR syncClk1_Out(I);		-- calculate busy signal
+		Changed_Clk1		<= not D0 and Input(I);				-- rising edge detection
+		Changed_Clk2		<= syncClk2_Out(I) xor D2;		-- level change detection; restore strobe signal from flag
+		Busy_i					<= T1 xor syncClk1_Out(I);		-- calculate busy signal
 
 		-- output signals
 		Output(I)				<= Changed_Clk2;
 		Busy(I)					<= Busy_i;
-	END GENERATE;
+	end generate;
 	
-	syncClk2 : ENTITY PoC.sync_Flag
-		GENERIC MAP (
+	syncClk2 : entity PoC.sync_Flag
+		generu
 			BITS				=> BITS						-- number of bit to be synchronized
 		)
-		PORT MAP (
+		port map (
 			Clock				=> Clock2,				-- <Clock>	output clock domain
 			Input				=> syncClk2_In,		-- @async:	input bits
 			Output			=> syncClk2_Out		-- @Clock:	output bits
 		);
 	
-	syncClk1 : ENTITY PoC.sync_Flag
-		GENERIC MAP (
+	syncClk1 : entity PoC.sync_Flag
+		generic map (
 			BITS				=> BITS						-- number of bit to be synchronized
 		)
-		PORT MAP (
+		port map (
 			Clock				=> Clock1,				-- <Clock>	output clock domain
 			Input				=> syncClk1_In,		-- @async:	input bits
 			Output			=> syncClk1_Out		-- @Clock:	output bits
 		);
-END;
+end;
