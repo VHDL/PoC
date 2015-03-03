@@ -123,7 +123,7 @@ BEGIN
 	end generate;
 	
 	syncClk2 : entity PoC.sync_Flag
-		generu
+		generic map (
 			BITS				=> BITS						-- number of bit to be synchronized
 		)
 		port map (
