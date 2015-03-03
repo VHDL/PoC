@@ -46,10 +46,10 @@
 -- limitations under the License.
 -- =============================================================================
 
-end if; IEEE;
+library	IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 
-end if; PoC;
+library	PoC;
 use			PoC.config.all;
 use			PoC.utils.all;
 
