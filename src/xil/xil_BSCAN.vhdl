@@ -3,18 +3,22 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:					JTAG / Boundary Scan wrapper
--- 
 -- Authors:					Patrick Lehmann
+-- 
+-- Module:					JTAG / Boundary Scan wrapper
 --
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module wraps Xilinx "Boundary Scan" (JTAG) primitives in a generic module.
+--		Supported devices:
+--			- Spartan-6
+--			- Virtex-6
+--			- Series-7
 --		
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +39,7 @@ use			IEEE.STD_LOGIC_1164.ALL;
 use			IEEE.NUMERIC_STD.ALL;
 
 library UniSim;
-use			UniSim.vcomponents.all;
+use			UniSim.vComponents.all;
 
 library PoC;
 use			PoC.config.all;
@@ -63,9 +67,7 @@ end;
 
 
 architecture rtl of xil_BSCAN is
-
 begin
-	
 	genSpartan6 : if (DEVICE = DEVICE_SPARTAN6) generate
 	begin
 		bscan : BSCAN_SPARTAN6
@@ -130,5 +132,5 @@ begin
 				TDO				=> Test_DataOut
 			);
 	end generate;
- 
- end;
+  end;
+	
