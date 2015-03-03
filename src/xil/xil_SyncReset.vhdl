@@ -9,9 +9,9 @@
 -- 
 -- Description:
 -- ------------------------------------
---		This is a clock domain crossing for reset signals optimized for Xilinx
---		FPGAs. It utilizes two 'FDP' instances from UNISIM.VCOMPONENTS. If you
---		need a platform independent version of this Synchronizer, please use
+--		This is a clock-domain-crossing circuit for reset signals optimized for
+--		Xilinx FPGAs. It utilizes two 'FDP' instances from UniSim.vComponents. If
+--		you need a platform independent version of this synchronizer, please use
 --		'PoC.misc.sync.sync_Reset', which internally instantiates this module if
 --		a Xilinx FPGA is detected.
 --		
@@ -19,12 +19,18 @@
 --			Only use this synchronizer for reset signals.
 --
 --		CONSTRAINTS:
---			This relative placement of the internal sites is constrained by RLOCs
+--			This relative placement of the internal sites is constrained by RLOCs.
 --		
 --			Xilinx ISE UCF or XCF file:
 --				NET "*_async"		TIG;
 --				INST "*_meta"		TNM = "METASTABILITY_FFS";
 --				TIMESPEC "TS_MetaStability" = FROM FFS TO "METASTABILITY_FFS" TIG;
+--
+--				## Assign synchronization FF pairs to the same slice -> minimal routing delay
+--				BEGIN MODEL xil_SyncBlock
+--				  INST "FF1"	RLOC = X0Y0;
+--				  INST "FF2"	RLOC = X0Y0;
+--				END;
 --			
 --			Xilinx Vivado xdc file:
 --				TODO
