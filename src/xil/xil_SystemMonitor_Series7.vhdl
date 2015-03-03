@@ -3,17 +3,18 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
+--
+-- Module:				 	XADC wrapper for temperature supervision applications
 -- 
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module wraps a Series-7 XADC to report if preconfigured temperature values
+--		are overrun. The XADC was formerly known as "System Monitor".
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,29 +30,28 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.all;
-USE			IEEE.NUMERIC_STD.all;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY	UNISIM;
-USE			UNISIM.VCOMPONENTS.ALL;
+library	UniSim;
+use			UniSim.vComponents.all;
 
 
-ENTITY xil_SystemMonitor_Series7 IS
-	PORT (
-		Reset								: IN	STD_LOGIC;				-- Reset signal for the System Monitor control logic
+entity xil_SystemMonitor_Series7 is
+	port (
+		Reset								: in	STD_LOGIC;				-- Reset signal for the System Monitor control logic
 		
-		Alarm_UserTemp			: OUT	STD_LOGIC;				-- Temperature-sensor alarm output
-		Alarm_OverTemp			: OUT	STD_LOGIC;				-- Over-Temperature alarm output
-		Alarm								: OUT	STD_LOGIC;				-- OR'ed output of all the Alarms
-		VP									: IN	STD_LOGIC;				-- Dedicated Analog Input Pair
-		VN									: IN	STD_LOGIC
+		Alarm_UserTemp			: out	STD_LOGIC;				-- Temperature-sensor alarm output
+		Alarm_OverTemp			: out	STD_LOGIC;				-- Over-Temperature alarm output
+		Alarm								: out	STD_LOGIC;				-- OR'ed output of all the Alarms
+		VP									: in	STD_LOGIC;				-- Dedicated Analog Input Pair
+		VN									: in	STD_LOGIC
 	);
-END;
+end;
 
 
-ARCHITECTURE xilinx OF xil_SystemMonitor_Series7 IS
-
+architecture xilinx of xil_SystemMonitor_Series7 IS
 	SIGNAL FLOAT_VCCAUX_ALARM		: STD_LOGIC;
 	SIGNAL FLOAT_VCCINT_ALARM		: STD_LOGIC;
 	SIGNAL FLOAT_VBRAM_ALARM		: STD_LOGIC;
@@ -59,15 +59,16 @@ ARCHITECTURE xilinx OF xil_SystemMonitor_Series7 IS
 	SIGNAL aux_channel_p				: STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL aux_channel_n				: STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL XADC_Alarm						: STD_LOGIC_VECTOR(7 DOWNTO 0);
-begin
 
-	genAUXChannel : FOR I IN 0 TO 15 GENERATE
+	begin
+
+	genAUXChannel : for i in 0 to 15 generate
 		aux_channel_p(I) <= '0';
 		aux_channel_n(I) <= '0';
-	END GENERATE;
+	end generate;
 
 	SysMonitor : XADC
-		GENERIC MAP (
+		generic map (
 			INIT_40							=> x"8000",					-- config reg 0
 			INIT_41							=> x"8f0c",					-- config reg 1
 			INIT_42							=> x"0400",					-- config reg 2
@@ -92,7 +93,7 @@ begin
 			SIM_DEVICE					=> "7SERIES",
 			SIM_MONITOR_FILE		=> "design.txt"
 		)
-		PORT MAP (
+		port map (
 			-- Control and Clock
 			RESET								=> Reset,
 			CONVSTCLK						=> '0',
@@ -103,11 +104,11 @@ begin
 			DADDR								=> "0000000",
 			DWE									=> '0',
 			DI									=> x"0000",
-			DO									=> OPEN,
-			DRDY								=> OPEN,
+			DO									=> open,
+			DRDY								=> open,
 			-- External analog inputs
-			VAUXN								=> aux_channel_n(15 DOWNTO 0),
-			VAUXP								=> aux_channel_p(15 DOWNTO 0),
+			VAUXN								=> aux_channel_n(15 downto 0),
+			VAUXP								=> aux_channel_p(15 downto 0),
 			VN									=> VN,
 			VP									=> VP,
 			-- Alarms
@@ -115,16 +116,16 @@ begin
 			ALM									=> XADC_Alarm,
 			-- Status
 			MUXADDR							=> FLOAT_MUXADDR,
-			CHANNEL							=> OPEN,
-			BUSY								=> OPEN,
-			EOC									=> OPEN,
-			EOS									=> OPEN,
+			CHANNEL							=> open,
+			BUSY								=> open,
+			EOC									=> open,
+			EOS									=> open,
 
-			JTAGBUSY						=> OPEN,
-			JTAGLOCKED					=> OPEN,
-			JTAGMODIFIED				=> OPEN
+			JTAGBUSY						=> open,
+			JTAGLOCKED					=> open,
+			JTAGMODIFIED				=> open
 	 );
 	 
 	Alarm						<= XADC_Alarm(7);
 	Alarm_UserTemp	<= XADC_Alarm(0);
-END;
+end;

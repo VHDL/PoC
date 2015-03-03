@@ -2,3 +2,4 @@ common/
 arith/
 fifo/
 mem/
+xil/
