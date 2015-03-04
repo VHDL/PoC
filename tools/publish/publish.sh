@@ -41,17 +41,53 @@
 # limitations under the License.
 # ==============================================================================
 set -e
-dst=PoC.export/
-cd $(dirname $0)/../../..
+
+# configure script here
+# ----------------------
+# suffix for the exported git repository
+destRepoSuffix=".export"
+debug=0
+
+# gether information from execution environment
+workingDir=`pwd`
+# TODO: preserve arguments -> see poc.sh/wrapper.sh scripts
+
+# 
+# TODO: get repo name from current path
+srcRepoName="PoC"
+
+src="$srcRepoName/"
+dst="$srcRepoName$destRepoSuffix/"
+
+repoRoot="$workingDir/../../.."
+
+cd $repoRoot
 mkdir -p $dst
 
+rsyncOptions=( \
+    --archive \
+    --itemize-changes \
+    --human-readable \
+    --verbose \
+    '--filter=:en+ .publish' \
+    '--filter=- *' \
+    '--filter=P .git' \
+    --delete --delete-excluded --prune-empty-dirs \
+    --stats)
+
+# add dry-run option if debug is enabled
+if [ $debug -eq 1 ]; then
+    rsyncOptions+=(--dry-run)
+    echo "DEBUG: rsync ${rsyncOptions[@]} $src $dst"
+fi;
 
 
-rsync -av --filter='dir-merge,en+ .publish' \
-          --filter='exclude *' \
-          --filter='protect .git' \
-          --delete --delete-excluded --prune-empty-dirs \
-          --stats \
-          PoC/ $dst
+# execute rsync command
+if command -v grc $2>/dev/null; then
+    rsync "${rsyncOptions[@]}" $src $dst | grcat "$workingDir/publish.grcrules"
+else
+    rsync "${rsyncOptions[@]}" $src $dst
+fi;
 
-#          --dry-run \
+# restore working directory
+cd $workingDir
