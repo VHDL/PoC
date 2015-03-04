@@ -8,7 +8,8 @@
 #                  public GitHub repository.
 #
 #   Authors: Thomas B. Preußer
-# 
+#            Patrick Lehmann
+#
 # Description:
 # ------------------------------------
 #   Traverses the PoC file hierarchy and copies selected entries to an
@@ -24,7 +25,7 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2014 Technische Universitaet Dresden - Germany
+# Copyright 2007-2015 Technische Universitaet Dresden - Germany
 #                     Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,8 +41,17 @@
 # limitations under the License.
 # ==============================================================================
 set -e
-dst=poc.export/
+dst=PoC.export/
 cd $(dirname $0)/../../..
 mkdir -p $dst
-rsync -av --filter=':en+ .publish' --filter='- *' \
-          --prune-empty-dirs --delete poc/ $dst
+
+
+
+rsync -av --filter='dir-merge,en+ .publish' \
+          --filter='exclude *' \
+          --filter='protect .git' \
+          --delete --delete-excluded --prune-empty-dirs \
+          --stats \
+          PoC/ $dst
+
+#          --dry-run \
