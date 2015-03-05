@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 # EMACS settings: -*-   tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
-# 
+#
 # ==============================================================================
 #   Shell Script:  Publish selected parts of the PoC library to the
 #                  public GitHub repository.
@@ -44,25 +44,8 @@ set -e
 
 # configure script here
 # ----------------------
-# suffix for the exported git repository
-destRepoSuffix=".export"
 debug=0
-
-# gether information from execution environment
-workingDir=`pwd`
-# TODO: preserve arguments -> see poc.sh/wrapper.sh scripts
-
-# 
-# TODO: get repo name from current path
-srcRepoName="PoC"
-
-src="$srcRepoName/"
-dst="$srcRepoName$destRepoSuffix/"
-
-repoRoot="$workingDir/../../.."
-
-cd $repoRoot
-mkdir -p $dst
+dstSuffix=".export"
 
 rsyncOptions=( \
     --archive \
@@ -74,20 +57,42 @@ rsyncOptions=( \
     '--filter=P .git' \
     --delete --delete-excluded --prune-empty-dirs \
     --stats)
-
 # add dry-run option if debug is enabled
-if [ $debug -eq 1 ]; then
-    rsyncOptions+=(--dry-run)
-    echo "DEBUG: rsync ${rsyncOptions[@]} $src $dst"
-fi;
+if [ $debug -ne 0 ]; then
+  rsyncOptions+=(--dry-run)
+  echo "DEBUG: rsync ${rsyncOptions[@]} $src $dst"
+fi
 
 
-# execute rsync command
-if command -v grc $2>/dev/null; then
-    rsync "${rsyncOptions[@]}" $src $dst | grcat "$workingDir/publish.grcrules"
+# Collect directory information finally changing into parent of repo base
+cd $(dirname $0)             # script location
+
+# Check if output filter grcat is available and install it
+if grcat publish.grcrules</dev/null 2>/dev/null; then
+	{ coproc grcat publish.grcrules 1>&3; } 3>&1
+  exec 1>&${COPROC[1]}-
+fi
+
+cd ../..                     # repo base
+src="$(basename $(pwd))"
+dst="${src}$dstSuffix"
+cd ..                        # parent of repo base
+
+# Print destination info and perform the export
+ret=1
+if [ -e "$dst" ]; then
+  if [ -d "$dst" ] &&	git -C "$dst" status >/dev/null 2>&1; then
+	  echo "Updating exisiting public export repository $dst ..."
+		rsync "${rsyncOptions[@]}" "$src" "$dst"
+		ret=$?
+	else
+		echo 1>&2 "Abort: no git repository found in existing destination $dst."
+	fi
 else
-    rsync "${rsyncOptions[@]}" $src $dst
-fi;
+  echo 1>&2 "Abort: public export repository does not exist in destination $dst."
+fi
 
-# restore working directory
-cd $workingDir
+# Cleanup and exit
+exec 1>&-
+wait # for output filter
+exit $ret
