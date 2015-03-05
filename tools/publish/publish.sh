@@ -57,12 +57,6 @@ rsyncOptions=( \
     '--filter=P .git' \
     --delete --delete-excluded --prune-empty-dirs \
     --stats)
-# add dry-run option if debug is enabled
-if [ $debug -ne 0 ]; then
-  rsyncOptions+=(--dry-run)
-  echo "DEBUG: rsync ${rsyncOptions[@]} $src $dst"
-fi
-
 
 # Collect directory information finally changing into parent of repo base
 cd $(dirname $0)             # script location
@@ -78,12 +72,18 @@ src="$(basename $(pwd))"
 dst="${src}$dstSuffix"
 cd ..                        # parent of repo base
 
+# add dry-run option if debug is enabled
+if [ $debug -ne 0 ]; then
+  rsyncOptions+=(--dry-run)
+  echo "DEBUG: rsync ${rsyncOptions[@]} $src/ $dst/"
+fi
+
 # Print destination info and perform the export
 ret=1
 if [ -e "$dst" ]; then
   if [ -d "$dst" ] &&	git -C "$dst" status >/dev/null 2>&1; then
 	  echo "Updating exisiting public export repository $dst ..."
-		rsync "${rsyncOptions[@]}" "$src" "$dst"
+		rsync "${rsyncOptions[@]}" "$src/" "$dst/"
 		ret=$?
 	else
 		echo 1>&2 "Abort: no git repository found in existing destination $dst."
