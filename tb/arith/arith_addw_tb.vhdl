@@ -35,6 +35,7 @@ use IEEE.numeric_std.all;
 
 library PoC;
 use PoC.arith.all;
+use PoC.simulation.all;
 
 architecture tb of arith_addw_tb is
 
@@ -61,7 +62,7 @@ begin
   genArchs: for i in tArch_test generate
     genSkips: for j in tSkip_test generate
       genIncl: for p in false to true generate
-        DUT : entity poc.arith_addw
+        DUT : arith_addw
           generic map (
             N           => N,
             K           => K,
@@ -83,9 +84,9 @@ begin
   -- Stimuli
   process
   begin
-    for i in 0 to 2**N-1 loop
+    for i in natural range 0 to 2**N-1 loop
       a <= std_logic_vector(to_unsigned(i, N));
-      for j in 0 to 2**N-1 loop
+      for j in natural range 0 to 2**N-1 loop
         b <= std_logic_vector(to_unsigned(j, N));
 
         cin <= '0';
@@ -93,12 +94,10 @@ begin
         for arch in tArch_test loop
 					for skip in tSkip_test loop
 						for incl in boolean loop
-							assert (i+j) mod 2**(N+1) = to_integer(unsigned(cout(arch, skip, incl) & s(arch, skip, incl)))
-								report
+							tbAssert((i+j) mod 2**(N+1) = to_integer(unsigned(cout(arch, skip, incl) & s(arch, skip, incl))),
 								  "Output Error["&tArch'image(arch)&','&tSkipping'image(skip)&','&boolean'image(incl)&"]: "&
 								  integer'image(i)&'+'&integer'image(j)&" != "&
-								  integer'image(to_integer(unsigned(cout(arch, skip, incl) & s(arch, skip, incl))))
-								severity failure;
+								  integer'image(to_integer(unsigned(cout(arch, skip, incl) & s(arch, skip, incl)))));
 						end loop;
 					end loop;
         end loop;
@@ -108,19 +107,17 @@ begin
         for arch in tArch_test loop
 					for skip in tSkip_test loop
 						for incl in boolean loop
-							assert (i+j+1) mod 2**(N+1) = to_integer(unsigned(cout(arch, skip, incl) & s(arch, skip, incl)))
-							  report
+							tbAssert((i+j+1) mod 2**(N+1) = to_integer(unsigned(cout(arch, skip, incl) & s(arch, skip, incl))),
 								  "Output Error["&tArch'image(arch)&','&tSkipping'image(skip)&','&boolean'image(incl)&"]: "&
 								  integer'image(i)&'+'&integer'image(j)&"+1 != "&
-								  integer'image(to_integer(unsigned(cout(arch, skip, incl) & s(arch, skip, incl))))
-								severity failure;
+								  integer'image(to_integer(unsigned(cout(arch, skip, incl) & s(arch, skip, incl)))));
 						end loop;
 					end loop;
         end loop;
 
       end loop;  -- j
     end loop;  -- i
-    report "Test completed." severity note;
+    tbPrintResult;
     wait;                               -- forever
   end process;
 

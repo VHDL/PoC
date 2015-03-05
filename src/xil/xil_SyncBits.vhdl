@@ -9,22 +9,28 @@
 -- 
 -- Description:
 -- ------------------------------------
---		This is a multiple bit clock domain crossing optimized for Xilinx FPGAs.
---		It utilizes two 'FD' instances from UNISIM.VCOMPONENTS. If you need a
---		platform independent version of this Synchronizer, please use
---		'PoC.misc.sync.snyc_Flag', which internally instantiates this module if
+--		This is a multi-bit clock-domain-crossing circuit optimized for Xilinx FPGAs.
+--		It utilizes two 'FD' instances from UniSim.vComponents. If you need a
+--		platform independent version of this synchronizer, please use
+--		'PoC.misc.sync.sync_Flag', which internally instantiates this module if
 --		a Xilinx FPGA is detected.
 --		
 --		ATTENTION:
---			Only use this synchronizer for long time stable signals (flags).
+--			Use this synchronizer only for long time stable signals (flags).
 --
 --		CONSTRAINTS:
---			This relative placement of the internal sites is constrained by RLOCs
+--			This relative placement of the internal sites is constrained by RLOCs.
 --		
 --			Xilinx ISE UCF or XCF file:
 --				NET "*_async"		TIG;
 --				INST "*_meta"		TNM = "METASTABILITY_FFS";
 --				TIMESPEC "TS_MetaStability" = FROM FFS TO "METASTABILITY_FFS" TIG;
+--				
+--				## Assign synchronization FF pairs to the same slice -> minimal routing delay
+--				BEGIN MODEL xil_SyncBits
+--				  INST "FF1"	RLOC = X0Y0;
+--				  INST "FF2"	RLOC = X0Y0;
+--				END;
 --			
 --			Xilinx Vivado xdc file:
 --				TODO
@@ -51,8 +57,8 @@
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 
-library UNISIM;
-use			UNISIM.VCOMPONENTS.all;
+library UniSim;
+use			UniSim.vComponents.all;
 
 library PoC;
 use			PoC.utils.ALL;
