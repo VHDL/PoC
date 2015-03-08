@@ -98,7 +98,7 @@ class PoCConfiguration(PoC.PoCBase):
 				except PoC.PoCException as ex:
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
-					raise Exception
+					raise
 			
 			# configure LabTools on Windows
 			next = False
@@ -109,7 +109,7 @@ class PoCConfiguration(PoC.PoCBase):
 				except PoC.PoCException as ex:
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
-					raise Exception
+					raise
 			
 			# configure Vivado on Windows
 			next = False
@@ -120,7 +120,7 @@ class PoCConfiguration(PoC.PoCBase):
 				except PoC.PoCException as ex:
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
-					raise Exception
+					raise
 			
 			# configure HardwareServer on Windows
 			next = False
@@ -131,7 +131,7 @@ class PoCConfiguration(PoC.PoCBase):
 				except PoC.PoCException as ex:
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
-					raise Exception
+					raise
 			
 			# configure GHDL on Windows
 			next = False
@@ -142,7 +142,7 @@ class PoCConfiguration(PoC.PoCBase):
 				except PoC.PoCException as ex:
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
-					raise Exception
+					raise
 		
 		# configure Linux
 		elif (self.platform == 'Linux'):
@@ -155,7 +155,7 @@ class PoCConfiguration(PoC.PoCBase):
 				except PoC.PoCException as ex:
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
-					raise Exception
+					raise
 			
 			# configure LabTools on Linux
 			next = False
@@ -166,7 +166,7 @@ class PoCConfiguration(PoC.PoCBase):
 				except PoC.PoCException as ex:
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
-					raise Exception
+					raise
 			
 			# configure Vivado on Linux
 			next = False
@@ -177,7 +177,7 @@ class PoCConfiguration(PoC.PoCBase):
 				except PoC.PoCException as ex:
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
-					raise Exception
+					raise
 			
 			# configure HardwareServer on Linux
 			next = False
@@ -188,7 +188,7 @@ class PoCConfiguration(PoC.PoCBase):
 				except PoC.PoCException as ex:
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
-					raise Exception
+					raise
 					
 			# configure GHDL on Linux
 			next = False
@@ -199,7 +199,7 @@ class PoCConfiguration(PoC.PoCBase):
 				except PoC.PoCException as ex:
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
-					raise Exception
+					raise
 		else:
 			raise PoC.PoCPlatformNotSupportedException(self.platform)
 	
@@ -263,14 +263,14 @@ class PoCConfiguration(PoC.PoCBase):
 		if (isXilinxLabTools != 'p'):
 			if (isXilinxLabTools == 'Y'):
 				xilinxDirectory =	input('Xilinx Installation Directory [C:\Xilinx]: ')
-				iseVersion =			input('Xilinx LabTools Version Number [14.7]: ')
+				labToolsVersion =	input('Xilinx LabTools Version Number [14.7]: ')
 				print()
 				
 				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "C:\Xilinx"
-				iseVersion = labToolsVersion if labToolsVersion != "" else "14.7"
+				labToolsVersion = labToolsVersion if labToolsVersion != "" else "14.7"
 				
 				xilinxDirectoryPath = Path(xilinxDirectory)
-				iseDirectoryPath = xilinxDirectoryPath / labToolsVersion / "LabTools/LabTools"
+				labToolsDirectoryPath = xilinxDirectoryPath / labToolsVersion / "LabTools/LabTools"
 				
 				if not xilinxDirectoryPath.exists():		raise PoC.PoCException("Xilinx Installation Directory '%s' does not exist." % xilinxDirectory)
 				if not labToolsDirectoryPath.exists():	raise PoC.PoCException("Xilinx LabTools version '%s' is not installed." % labToolsVersion)
@@ -284,7 +284,7 @@ class PoCConfiguration(PoC.PoCBase):
 			else:
 				raise PoC.PoCException("unknown option")
 	
-		def manualConfigureWindowsVivado(self):
+	def manualConfigureWindowsVivado(self):
 		# Ask for installed Xilinx Vivado
 		isXilinxVivado = input('Is Xilinx Vivado installed on your system? [Y/n/p]: ')
 		isXilinxVivado = isXilinxVivado if isXilinxVivado != "" else "Y"
@@ -395,21 +395,21 @@ class PoCConfiguration(PoC.PoCBase):
 			else:
 				raise PoC.PoCException("unknown option")
 	
-		def manualConfigureLinuxLabTools(self):
+	def manualConfigureLinuxLabTools(self):
 		# Ask for installed Xilinx LabTools
 		isXilinxLabTools = input('Is Xilinx LabTools installed on your system? [Y/n/p]: ')
 		isXilinxLabTools = isXilinxLabTools if isXilinxLabTools != "" else "Y"
 		if (isXilinxLabTools != 'p'):
 			if (isXilinxLabTools == 'Y'):
 				xilinxDirectory =	input('Xilinx Installation Directory [/opt/Xilinx]: ')
-				iseVersion =			input('Xilinx LabTools Version Number [14.7]: ')
+				labToolsVersion =	input('Xilinx LabTools Version Number [14.7]: ')
 				print()
 			
 				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/Xilinx"
-				iseVersion = labToolsVersion if labToolsVersion != "" else "14.7"
+				labToolsVersion = labToolsVersion if labToolsVersion != "" else "14.7"
 			
 				xilinxDirectoryPath = Path(xilinxDirectory)
-				iseDirectoryPath = xilinxDirectoryPath / labToolsVersion / "LabTools/LabTools"
+				labToolsDirectoryPath = xilinxDirectoryPath / labToolsVersion / "LabTools/LabTools"
 			
 				if not xilinxDirectoryPath.exists():		raise PoC.PoCException("Xilinx Installation Directory '%s' does not exist." % xilinxDirectory)
 				if not labToolsDirectoryPath.exists():	raise PoC.PoCException("Xilinx LabTools version '%s' is not installed." % labToolsVersion)
