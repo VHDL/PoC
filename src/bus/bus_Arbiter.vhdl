@@ -3,17 +3,19 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
+--
+-- Module:				 	Generic arbiter
 -- 
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module implements a generic arbiter. It currently support the
+--		following arbitration strategies:
+--			- Round Robin (RR)
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,121 +31,112 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
+library PoC;
+use			PoC.utils.all;
 
--- Strategies:
---	RR				RoundRobin
---	LOT				Lottery
 
-ENTITY bus_Arbiter IS
-	GENERIC (
+entity bus_Arbiter is
+	generic (
 		STRATEGY									: STRING										:= "RR";			-- RR, LOT
 		PORTS											: POSITIVE									:= 1;
 		WEIGHTS										: T_INTVEC									:= (0 => 1);
 		OUTPUT_REG								: BOOLEAN										:= TRUE
 	);
-	PORT (
-		Clock											: IN	STD_LOGIC;
-		Reset											: IN	STD_LOGIC;
+	port (
+		Clock											: in	STD_LOGIC;
+		Reset											: in	STD_LOGIC;
 		
-		Arbitrate									: IN	STD_LOGIC;
-		Request_Vector						: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		Arbitrate									: in	STD_LOGIC;
+		Request_Vector						: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		
-		Arbitrated								: OUT	STD_LOGIC;
-		Grant_Vector							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		Grant_Index								: OUT	STD_LOGIC_VECTOR(log2ceilnz(PORTS) - 1 DOWNTO 0)
+		Arbitrated								: out	STD_LOGIC;
+		Grant_Vector							: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Grant_Index								: out	STD_LOGIC_VECTOR(log2ceilnz(PORTS) - 1 downto 0)
 	);
-END;
+end;
 
-ARCHITECTURE rtl OF bus_Arbiter IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
 
-BEGIN
+architecture rtl of bus_Arbiter is
+	attribute KEEP										: BOOLEAN;
+	attribute FSM_ENCODING						: STRING;
+
+begin
 
 	-- Assert STRATEGY for known strings
 	-- ==========================================================================================================================================================
-	ASSERT ((STRATEGY = "RR") OR (STRATEGY = "LOT"))
-		REPORT "Unknown arbiter strategy." SEVERITY FAILURE;
+	assert ((STRATEGY = "RR") OR (STRATEGY = "LOT"))
+		report "Unknown arbiter strategy." severity FAILURE;
 
 	-- Round Robin Arbiter
 	-- ==========================================================================================================================================================
-	genRR : IF (STRATEGY = "RR") GENERATE
-		SIGNAL RequestLeft								: UNSIGNED(PORTS - 1 DOWNTO 0);
-		SIGNAL SelectLeft									: UNSIGNED(PORTS - 1 DOWNTO 0);
-		SIGNAL SelectRight								: UNSIGNED(PORTS - 1 DOWNTO 0);
+	genRR : if (STRATEGY = "RR") generate
+		signal RequestLeft								: UNSIGNED(PORTS - 1 downto 0);
+		signal SelectLeft									: UNSIGNED(PORTS - 1 downto 0);
+		signal SelectRight								: UNSIGNED(PORTS - 1 downto 0);
 		
-		SIGNAL ChannelPointer_en					: STD_LOGIC;
-		SIGNAL ChannelPointer							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		SIGNAL ChannelPointer_d						: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0)								:= to_slv(1, PORTS);
-		SIGNAL ChannelPointer_nxt					: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		signal ChannelPointer_en					: STD_LOGIC;
+		signal ChannelPointer							: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		signal ChannelPointer_d						: STD_LOGIC_VECTOR(PORTS - 1 downto 0)								:= to_slv(1, PORTS);
+		signal ChannelPointer_nxt					: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 	
-	BEGIN
+	begin
 
 		ChannelPointer_en		<= Arbitrate;
 
-		RequestLeft					<= (NOT ((unsigned(ChannelPointer_d) - 1) OR unsigned(ChannelPointer_d))) AND unsigned(Request_Vector);
-		SelectLeft					<= (unsigned(NOT RequestLeft) + 1)		AND RequestLeft;
-		SelectRight					<= (unsigned(NOT Request_Vector) + 1)	AND unsigned(Request_Vector);
+		RequestLeft					<= (not ((unsigned(ChannelPointer_d) - 1) or unsigned(ChannelPointer_d))) and unsigned(Request_Vector);
+		SelectLeft					<= (unsigned(not RequestLeft) + 1)		and RequestLeft;
+		SelectRight					<= (unsigned(not Request_Vector) + 1)	and unsigned(Request_Vector);
 		ChannelPointer_nxt	<= std_logic_vector(ite((RequestLeft = (RequestLeft'range => '0')), SelectRight, SelectLeft));
 	
 		-- generate ChannelPointer register and unregistered outputs
-		genREG0 : IF (OUTPUT_REG = FALSE) GENERATE
-			PROCESS(Clock)
-			BEGIN
-				IF rising_edge(Clock) THEN
-					IF (Reset = '1') THEN
+		genREG0 : if (OUTPUT_REG = FALSE) generate
+			process(Clock)
+			begin
+				if rising_edge(Clock) then
+					if (Reset = '1') then
 						ChannelPointer_d		<= to_slv(1, PORTS);
-					ELSIF (ChannelPointer_en = '1') THEN
+					elsif (ChannelPointer_en = '1') then
 						ChannelPointer_d		<= ChannelPointer_nxt;
-					END IF;
-				END IF;
-			END PROCESS;
+					end if;
+				end if;
+			end process;
 
 			Arbitrated				<= Arbitrate;
 			Grant_Vector			<= ChannelPointer_nxt;
 			Grant_Index				<= std_logic_vector(onehot2bin(ChannelPointer_nxt));
-		END GENERATE;
+		end generate;
 		
 		-- generate ChannelPointer register and registered outputs
-		genREG1 : IF (OUTPUT_REG = TRUE) GENERATE
-			SIGNAL ChannelPointer_bin_d				: STD_LOGIC_VECTOR(log2ceilnz(PORTS) - 1 DOWNTO 0)		:= to_slv(0, log2ceilnz(PORTS) - 1);
-		BEGIN
-			PROCESS(Clock)
-			BEGIN
-				IF rising_edge(Clock) THEN
-					IF (Reset = '1') THEN
+		genREG1 : if (OUTPUT_REG = TRUE) generate
+			signal ChannelPointer_bin_d				: STD_LOGIC_VECTOR(log2ceilnz(PORTS) - 1 downto 0)		:= to_slv(0, log2ceilnz(PORTS) - 1);
+		begin
+			process(Clock)
+			begin
+				if rising_edge(Clock) then
+					if (Reset = '1') then
 						ChannelPointer_d			<= to_slv(1, PORTS);
 						ChannelPointer_bin_d	<= to_slv(0, log2ceilnz(PORTS) - 1);
-					ELSIF (ChannelPointer_en = '1') THEN
+					elsif (ChannelPointer_en = '1') then
 						ChannelPointer_d			<= ChannelPointer_nxt;
 						ChannelPointer_bin_d	<= std_logic_vector(onehot2bin(ChannelPointer_nxt));
-					END IF;
-				END IF;
-			END PROCESS;
+					end if;
+				end if;
+			end process;
 			
-			Arbitrated				<= Arbitrate WHEN rising_edge(Clock);
+			Arbitrated				<= Arbitrate when rising_edge(Clock);
 			Grant_Vector			<= ChannelPointer_d;
 			Grant_Index				<= ChannelPointer_bin_d;
-		END GENERATE;
-	END GENERATE;
+		end generate;
+	end generate;
 	
 	-- Lottery Arbiter
 	-- ==========================================================================================================================================================
-	genLOT : IF (STRATEGY = "RR") GENERATE
-	
-	
-	BEGIN
-	
-	
-	END GENERATE;
-	
-	
-
-	
-END ARCHITECTURE;
+--	genLOT : if (STRATEGY = "RR") generate
+--	begin
+--	
+--	end generate;
+end architecture;
