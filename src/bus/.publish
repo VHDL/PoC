@@ -1,5 +1,5 @@
-
-#stream/
+# include subnamespaces
+stream/
 #wb/
 
 bus_Arbiter.vhdl
