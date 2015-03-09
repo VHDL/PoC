@@ -1,1 +1,15 @@
-# empty
+# package
+stream.pkg.vhdl
+
+# common PoC.Stream dataflow modules
+stream_Buffer.vhdl
+stream_DeMux.vhdl
+stream_Mux.vhdl
+stream_Mirror.vhdl
+
+# data sources
+stream_FrameGenerator.vhdl
+
+# simulation only modules
+stream_Source.vhdl
+#stream_Sink.vhdl

@@ -3,9 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Package:					Cache functions and types
---
 -- Authors:					Patrick Lehmann
+--
+-- Package:					Cache functions and types
 --
 -- Description:
 -- ------------------------------------
@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,24 +40,21 @@ package cache is
 	-- cache-lookup Result
 	TYPE T_CACHE_RESULT	IS (CACHE_RESULT_NONE, CACHE_RESULT_HIT, CACHE_RESULT_MISS);
 
-	FUNCTION to_Cache_Result(CacheHit : STD_LOGIC; CacheMiss : STD_LOGIC) RETURN T_CACHE_RESULT;
+	function to_Cache_Result(CacheHit : STD_LOGIC; CacheMiss : STD_LOGIC) return T_CACHE_RESULT;
 	
 end package cache;
 
 
 package body cache is
 
-	FUNCTION to_cache_Result(CacheHit : STD_LOGIC; CacheMiss : STD_LOGIC) RETURN T_CACHE_RESULT IS
-	BEGIN
-		IF (CacheMiss = '1') THEN
-			RETURN CACHE_RESULT_MISS;
-		ELSIF (CacheHit = '1') THEN
-			RETURN CACHE_RESULT_HIT;
-		END IF;
-		RETURN CACHE_RESULT_NONE;
-	END FUNCTION;
-
+	function to_cache_Result(CacheHit : STD_LOGIC; CacheMiss : STD_LOGIC) return T_CACHE_RESULT is
+	begin
+		if (CacheMiss = '1') then
+			return CACHE_RESULT_MISS;
+		elsif (CacheHit = '1') then
+			return CACHE_RESULT_HIT;
+		else
+			return CACHE_RESULT_NONE;
+		end if;
+	end function;
 end cache;
-
-
-
