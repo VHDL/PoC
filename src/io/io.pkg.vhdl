@@ -3,18 +3,18 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Package:					VHDL package for component declarations, types and
---									functions assoziated to the PoC.io namespace
---
 -- Authors:					Patrick Lehmann
 -- 
+-- Package:					VHDL package for component declarations, types and
+--									functions associated to the PoC.io namespace
+--
 -- Description:
 -- ------------------------------------
 --		For detailed documentation see below.
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
