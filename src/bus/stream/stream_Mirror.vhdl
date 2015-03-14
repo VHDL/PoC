@@ -3,13 +3,15 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	A generic buffer module for the PoC.Stream protocol.
+--
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module implements a generic buffer (FifO) for the PoC.Stream protocol.
+--		It is generic in DATA_BITS and in META_BITS as well as in FifO depths for
+--		data and meta information.
 --
 -- License:
 -- ============================================================================
@@ -23,234 +25,234 @@
 --		http://www.apache.org/licenses/LICENSE-2.0
 -- 
 -- Unless required by applicable law or agreed to in writing, software
--- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- distributed under the License is distributed on an "AS is" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS of ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
 
 
-ENTITY Stream_Mirror IS
-	GENERIC (
-		PORTS											: POSITIVE									:= 2;
+entity Stream_Mirror is
+	generic (
+		portS											: POSITIVE									:= 2;
 		DATA_BITS									: POSITIVE									:= 8;
 		META_BITS									: T_POSVEC									:= (0 => 8);
 		META_LENGTH								: T_POSVEC									:= (0 => 16)
 	);
-	PORT (
-		Clock											: IN	STD_LOGIC;
-		Reset											: IN	STD_LOGIC;
+	port (
+		Clock											: in	STD_LOGIC;
+		Reset											: in	STD_LOGIC;
 		
-		In_Valid									: IN	STD_LOGIC;
-		In_Data										: IN	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
-		In_SOF										: IN	STD_LOGIC;
-		In_EOF										: IN	STD_LOGIC;
-		In_Ack										: OUT	STD_LOGIC;
-		In_Meta_rst								: OUT	STD_LOGIC;
-		In_Meta_nxt								: OUT	STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
-		In_Meta_Data							: IN	STD_LOGIC_VECTOR(isum(META_BITS) - 1 DOWNTO 0);
+		In_Valid									: in	STD_LOGIC;
+		In_Data										: in	STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
+		In_SOF										: in	STD_LOGIC;
+		In_EOF										: in	STD_LOGIC;
+		In_Ack										: out	STD_LOGIC;
+		In_Meta_rst								: out	STD_LOGIC;
+		In_Meta_nxt								: out	STD_LOGIC_VECTOR(META_BITS'length - 1 downto 0);
+		In_Meta_Data							: in	STD_LOGIC_VECTOR(isum(META_BITS) - 1 downto 0);
 		
-		Out_Valid									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		Out_Data									: OUT	T_SLM(PORTS - 1 DOWNTO 0, DATA_BITS - 1 DOWNTO 0);
-		Out_SOF										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		Out_EOF										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		Out_Ack										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		Out_Meta_rst							: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		Out_Meta_nxt							: IN	T_SLM(PORTS - 1 DOWNTO 0, META_BITS'length - 1 DOWNTO 0);
-		Out_Meta_Data							: OUT	T_SLM(PORTS - 1 DOWNTO 0, isum(META_BITS) - 1 DOWNTO 0)
+		Out_Valid									: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		Out_Data									: out	T_SLM(portS - 1 downto 0, DATA_BITS - 1 downto 0);
+		Out_SOF										: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		Out_EOF										: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		Out_Ack										: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		Out_Meta_rst							: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		Out_Meta_nxt							: in	T_SLM(portS - 1 downto 0, META_BITS'length - 1 downto 0);
+		Out_Meta_Data							: out	T_SLM(portS - 1 downto 0, isum(META_BITS) - 1 downto 0)
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF Stream_Mirror IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
+architecture rtl of Stream_Mirror is
+	attribute KEEP										: BOOLEAN;
+	attribute FSM_ENCODING						: STRING;
 	
-	SIGNAL FIFOGlue_put								: STD_LOGIC;
-	SIGNAL FIFOGlue_DataIn						: STD_LOGIC_VECTOR(DATA_BITS + 1 DOWNTO 0);
-	SIGNAL FIFOGlue_Full							: STD_LOGIC;
-	SIGNAL FIFOGlue_Valid							: STD_LOGIC;
-	SIGNAL FIFOGlue_DataOut						: STD_LOGIC_VECTOR(DATA_BITS + 1 DOWNTO 0);
-	SIGNAL FIFOGlue_got								: STD_LOGIC;
+	signal FifOGlue_put								: STD_LOGIC;
+	signal FifOGlue_DataIn						: STD_LOGIC_VECTOR(DATA_BITS + 1 downto 0);
+	signal FifOGlue_Full							: STD_LOGIC;
+	signal FifOGlue_Valid							: STD_LOGIC;
+	signal FifOGlue_DataOut						: STD_LOGIC_VECTOR(DATA_BITS + 1 downto 0);
+	signal FifOGlue_got								: STD_LOGIC;
 	
-	SIGNAL Ack_i											: STD_LOGIC;
-	SIGNAL Mask_r											: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0)												:= (OTHERS => '1');
+	signal Ack_i											: STD_LOGIC;
+	signal Mask_r											: STD_LOGIC_VECTOR(portS - 1 downto 0)												:= (others => '1');
 	
-	SIGNAL MetaOut_rst								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	signal MetaOut_rst								: STD_LOGIC_VECTOR(portS - 1 downto 0);
 	
-	SIGNAL Out_Data_i									: T_SLM(PORTS - 1 DOWNTO 0, DATA_BITS - 1 DOWNTO 0)						:= (OTHERS => (OTHERS => 'Z'));
-	SIGNAL Out_Meta_Data_i						: T_SLM(PORTS - 1 DOWNTO 0, isum(META_BITS) - 1 DOWNTO 0)			:= (OTHERS => (OTHERS => 'Z'));
-BEGIN
+	signal Out_Data_i									: T_SLM(portS - 1 downto 0, DATA_BITS - 1 downto 0)						:= (others => (others => 'Z'));
+	signal Out_Meta_Data_i						: T_SLM(portS - 1 downto 0, isum(META_BITS) - 1 downto 0)			:= (others => (others => 'Z'));
+begin
 	
 	-- Data path
 	-- ==========================================================================================================================================================
-	FIFOGlue_put															<= In_Valid;
-	FIFOGlue_DataIn(DATA_BITS - 1 DOWNTO 0)		<= In_Data;
-	FIFOGlue_DataIn(DATA_BITS + 0)						<= In_SOF;
-	FIFOGlue_DataIn(DATA_BITS + 1)						<= In_EOF;
+	FifOGlue_put															<= In_Valid;
+	FifOGlue_DataIn(DATA_BITS - 1 downto 0)		<= In_Data;
+	FifOGlue_DataIn(DATA_BITS + 0)						<= In_SOF;
+	FifOGlue_DataIn(DATA_BITS + 1)						<= In_EOF;
 	
-	In_Ack																		<= NOT FIFOGlue_Full;
+	In_Ack																		<= not FifOGlue_Full;
 	
-	FIFOGlue : ENTITY PoC.fifo_glue
-		GENERIC MAP (
+	FifOGlue : entity PoC.fifo_glue
+		generic map (
 			D_BITS		=> DATA_BITS + 2					-- Data Width
 		)
-		PORT MAP (
+		port map (
 			-- Control
 			clk				=> Clock,									-- Clock
 			rst				=> Reset,									-- Synchronous Reset
 	
 			-- Input
-			put				=> FIFOGlue_put,					-- Put Value
-			di				=> FIFOGlue_DataIn,				-- Data Input
-			ful				=> FIFOGlue_Full,					-- Full
+			put				=> FifOGlue_put,					-- Put Value
+			di				=> FifOGlue_DataIn,				-- Data Input
+			ful				=> FifOGlue_Full,					-- Full
 	
 			-- Output
-			vld				=> FIFOGlue_Valid,				-- Data Available
-			do				=> FIFOGlue_DataOut,			-- Data Output
-			got				=> FIFOGlue_got						-- Data Consumed
+			vld				=> FifOGlue_Valid,				-- Data Available
+			do				=> FifOGlue_DataOut,			-- Data Output
+			got				=> FifOGlue_got						-- Data Consumed
   );
 
-	genPorts : FOR I IN 0 TO PORTS - 1 GENERATE
-		assign_row(Out_Data_i, FIFOGlue_DataOut(DATA_BITS - 1 DOWNTO 0), I);
-	END GENERATE;
+	genPorts : for i in 0 to portS - 1 generate
+		assign_row(Out_Data_i, FifOGlue_DataOut(DATA_BITS - 1 downto 0), i);
+	end generate;
 	
-	Ack_i					<= slv_and(Out_Ack) OR slv_and(NOT Mask_r OR Out_Ack);
-	FIFOGlue_got	<= Ack_i	;
+	Ack_i					<= slv_and(Out_Ack) or slv_and(not Mask_r or Out_Ack);
+	FifOGlue_got	<= Ack_i	;
 
-	Out_Valid			<= (PORTS - 1 DOWNTO 0 => FIFOGlue_Valid) AND Mask_r;
+	Out_Valid			<= (portS - 1 downto 0 => FifOGlue_Valid) and Mask_r;
 	Out_Data			<= Out_Data_i;
-	Out_SOF				<= (PORTS - 1 DOWNTO 0 => FIFOGlue_DataOut(DATA_BITS + 0));
-	Out_EOF				<= (PORTS - 1 DOWNTO 0 => FIFOGlue_DataOut(DATA_BITS + 1));
+	Out_SOF				<= (portS - 1 downto 0 => FifOGlue_DataOut(DATA_BITS + 0));
+	Out_EOF				<= (portS - 1 downto 0 => FifOGlue_DataOut(DATA_BITS + 1));
 		
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR Ack_i	) = '1') THEN
-				Mask_r		<= (OTHERS => '1');
-			ELSE
-				Mask_r		<= Mask_r AND NOT Out_Ack;
-			END IF;
-		END IF;
-	END PROCESS;
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset or Ack_i	) = '1') then
+				Mask_r		<= (others => '1');
+			else
+				Mask_r		<= Mask_r and not Out_Ack;
+			end if;
+		end if;
+	end process;
 	
 	-- Metadata path
 	-- ==========================================================================================================================================================	
 	In_Meta_rst		<= slv_and(MetaOut_rst);
 	
-	genMeta : FOR I IN 0 TO META_BITS'length - 1 GENERATE
-		SUBTYPE T_METAMEMORY						IS STD_LOGIC_VECTOR(META_BITS(I) - 1 DOWNTO 0);
-		TYPE T_METAMEMORY_VECTOR				IS ARRAY(NATURAL RANGE <>) OF T_METAMEMORY;
+	genMeta : for i in 0 to META_BITS'length - 1 generate
+		subtype T_METAMEMORY						is STD_LOGIC_VECTOR(META_BITS(i) - 1 downto 0);
+		type T_METAMEMORY_VECTOR				is array(NATURAL range <>) of T_METAMEMORY;
 		
-	BEGIN
-		genReg : IF (META_LENGTH(I) = 1) GENERATE
-			SIGNAL MetaMemory_en					: STD_LOGIC;
-			SIGNAL MetaMemory							: T_METAMEMORY;
-		BEGIN
-			MetaMemory_en		<= In_Valid AND In_SOF;
+	begin
+		genReg : if (META_LENGTH(i) = 1) generate
+			signal MetaMemory_en					: STD_LOGIC;
+			signal MetaMemory							: T_METAMEMORY;
+		begin
+			MetaMemory_en		<= In_Valid and In_SOF;
 		
-			PROCESS(Clock)
-			BEGIN
-				IF rising_edge(Clock) THEN
-					IF (MetaMemory_en = '1') THEN
-						MetaMemory		<= In_Meta_Data(high(META_BITS, I) DOWNTO low(META_BITS, I));
-					END IF;
-				END IF;
-			END PROCESS;
+			process(Clock)
+			begin
+				if rising_edge(Clock) then
+					if (MetaMemory_en = '1') then
+						MetaMemory		<= In_Meta_Data(high(META_BITS, I) downto low(META_BITS, I));
+					end if;
+				end if;
+			end process;
 			
-			genReader : FOR J IN 0 TO PORTS - 1 GENERATE
+			genReader : FOR J IN 0 to portS - 1 generate
 				assign_row(Out_Meta_Data_i, MetaMemory, J, high(META_BITS, I), low(META_BITS, I));
-			END GENERATE;
-		END GENERATE;
-		genMem : IF (META_LENGTH(I) > 1) GENERATE
-			SIGNAL MetaMemory_en					: STD_LOGIC;
-			SIGNAL MetaMemory							: T_METAMEMORY_VECTOR(META_LENGTH(I) - 1 DOWNTO 0);
+			end generate;
+		end generate;
+		genMem : if (META_LENGTH(i) > 1) generate
+			signal MetaMemory_en					: STD_LOGIC;
+			signal MetaMemory							: T_METAMEMORY_VECTOR(META_LENGTH(i) - 1 downto 0);
 			
-			SIGNAL Writer_CounterControl	: STD_LOGIC																						:= '0';
+			signal Writer_CounterControl	: STD_LOGIC																						:= '0';
 			
-			SIGNAL Writer_en							: STD_LOGIC;
-			SIGNAL Writer_rst							: STD_LOGIC;
-			SIGNAL Writer_us							: UNSIGNED(log2ceilnz(META_LENGTH(I)) - 1 DOWNTO 0)		:= (OTHERS => '0');
-		BEGIN
+			signal Writer_en							: STD_LOGIC;
+			signal Writer_rst							: STD_LOGIC;
+			signal Writer_us							: UNSIGNED(log2ceilnz(META_LENGTH(i)) - 1 downto 0)		:= (others => '0');
+		begin
 			-- MetaMemory Write Pointer Control
-			PROCESS(Clock)
-			BEGIN
-				IF rising_edge(Clock) THEN
-					IF (Reset = '1') THEN
+			process(Clock)
+			begin
+				if rising_edge(Clock) then
+					if (Reset = '1') then
 						Writer_CounterControl			<= '0';
-					ELSE
-						IF ((In_Valid AND In_SOF) = '1') THEN
+					else
+						if ((In_Valid and In_SOF) = '1') then
 							Writer_CounterControl		<= '1';
-						ELSIF (Writer_us = (META_LENGTH(I) - 1)) THEN
+						ELSif (Writer_us = (META_LENGTH(i) - 1)) then
 							Writer_CounterControl		<= '0';
-						END IF;
-					END IF;
-				END IF;
-			END PROCESS;
+						end if;
+					end if;
+				end if;
+			end process;
 		
-			Writer_en				<= (In_Valid AND In_SOF) OR Writer_CounterControl;
+			Writer_en				<= (In_Valid and In_SOF) or Writer_CounterControl;
 			
-			In_Meta_nxt(I)	<= Writer_en;
+			In_Meta_nxt(i)	<= Writer_en;
 			MetaMemory_en		<= Writer_en;
-			MetaOut_rst(I)	<= NOT Writer_en;
+			MetaOut_rst(i)	<= NOT Writer_en;
 			
 			-- MetaMemory - Write Pointer
-			PROCESS(Clock)
-			BEGIN
-				IF rising_edge(Clock) THEN
-					IF (Writer_en = '0') THEN
-						Writer_us			<= (OTHERS => '0');
-					ELSE
+			process(Clock)
+			begin
+				if rising_edge(Clock) then
+					if (Writer_en = '0') then
+						Writer_us			<= (others => '0');
+					else
 						Writer_us			<= Writer_us + 1;
-					END IF;
-				END IF;
-			END PROCESS;
+					end if;
+				end if;
+			end process;
 
 			-- MetaMemory
-			PROCESS(Clock)
-			BEGIN
-				IF rising_edge(Clock) THEN
-					IF (MetaMemory_en = '1') THEN
-						MetaMemory(to_integer(Writer_us))		<= In_Meta_Data(high(META_BITS, I) DOWNTO low(META_BITS, I));
-					END IF;
-				END IF;
-			END PROCESS;
+			process(Clock)
+			begin
+				if rising_edge(Clock) then
+					if (MetaMemory_en = '1') then
+						MetaMemory(to_integer(Writer_us))		<= In_Meta_Data(high(META_BITS, I) downto low(META_BITS, I));
+					end if;
+				end if;
+			end process;
 		
-			genReader : FOR J IN 0 TO PORTS - 1 GENERATE
-				SIGNAL Row							: T_METAMEMORY;
+			genReader : for j in 0 to portS - 1 generate
+				signal Row							: T_METAMEMORY;
 				
-				SIGNAL Reader_en				: STD_LOGIC;
-				SIGNAL Reader_rst				: STD_LOGIC;
-				SIGNAL Reader_us				: UNSIGNED(log2ceilnz(META_LENGTH(I)) - 1 DOWNTO 0)		:= (OTHERS => '0');
-			BEGIN
-				Reader_rst		<= Out_Meta_rst(J) OR (In_Valid AND In_SOF);
-				Reader_en			<= Out_Meta_nxt(J, I);
+				signal Reader_en				: STD_LOGIC;
+				signal Reader_rst				: STD_LOGIC;
+				signal Reader_us				: UNSIGNED(log2ceilnz(META_LENGTH(i)) - 1 downto 0)		:= (others => '0');
+			begin
+				Reader_rst		<= Out_Meta_rst(j) or (In_Valid and In_SOF);
+				Reader_en			<= Out_Meta_nxt(j, I);
 			
-				PROCESS(Clock)
-				BEGIN
-					IF rising_edge(Clock) THEN
-						IF (Reader_rst = '1') THEN
-							Reader_us			<= (OTHERS => '0');
-						ELSIF (Reader_en = '1') THEN
+				process(Clock)
+				begin
+					if rising_edge(Clock) then
+						if (Reader_rst = '1') then
+							Reader_us			<= (others => '0');
+						ELSif (Reader_en = '1') then
 							Reader_us			<= Reader_us + 1;
-						END IF;
-					END IF;
-				END PROCESS;
+						end if;
+					end if;
+				end process;
 			
 				Row <= MetaMemory(to_integer(Reader_us));
-				assign_row(Out_Meta_Data_i, Row, J, high(META_BITS, I), low(META_BITS, I));
-			END GENERATE;		-- for each port
-		END GENERATE;		-- if length > 1
-	END GENERATE;		-- for each metadata stream
+				assign_row(Out_Meta_Data_i, Row, j, high(META_BITS, i), low(META_BITS, i));
+			end generate;		-- for each port
+		end generate;		-- if length > 1
+	end generate;		-- for each metadata stream
 	
 	Out_Meta_Data		<= Out_Meta_Data_i;
-END ARCHITECTURE;
+end architecture;

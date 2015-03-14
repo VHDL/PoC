@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 # EMACS settings: -*-   tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
-# 
+#
 # ==============================================================================
 #   Shell Script:  Publish selected parts of the PoC library to the
 #                  public GitHub repository.
@@ -41,17 +41,58 @@
 # limitations under the License.
 # ==============================================================================
 set -e
-dst=PoC.export/
-cd $(dirname $0)/../../..
-mkdir -p $dst
 
+# configure script here
+# ----------------------
+debug=0
+dstSuffix=".export"
 
+rsyncOptions=( \
+    --archive \
+    --itemize-changes \
+    --human-readable \
+    --verbose \
+    '--filter=:en+ .publish' \
+    '--filter=- *' \
+    '--filter=P .git' \
+    --delete --delete-excluded --prune-empty-dirs \
+    --stats)
 
-rsync -av --filter='dir-merge,en+ .publish' \
-          --filter='exclude *' \
-          --filter='protect .git' \
-          --delete --delete-excluded --prune-empty-dirs \
-          --stats \
-          PoC/ $dst
+# Collect directory information finally changing into parent of repo base
+cd $(dirname $0)             # script location
 
-#          --dry-run \
+# Check if output filter grcat is available and install it
+if grcat publish.grcrules</dev/null 2>/dev/null; then
+	{ coproc grcat publish.grcrules 1>&3; } 3>&1
+  exec 1>&${COPROC[1]}-
+fi
+
+cd ../..                     # repo base
+src="$(basename $(pwd))"
+dst="${src}$dstSuffix"
+cd ..                        # parent of repo base
+
+# add dry-run option if debug is enabled
+if [ $debug -ne 0 ]; then
+  rsyncOptions+=(--dry-run)
+  echo "DEBUG: rsync ${rsyncOptions[@]} $src/ $dst/"
+fi
+
+# Print destination info and perform the export
+ret=1
+if [ -e "$dst" ]; then
+  if [ -d "$dst" ] &&	git -C "$dst" status >/dev/null 2>&1; then
+	  echo "Updating exisiting public export repository $dst ..."
+		rsync "${rsyncOptions[@]}" "$src/" "$dst/"
+		ret=$?
+	else
+		echo 1>&2 "Abort: no git repository found in existing destination $dst."
+	fi
+else
+  echo 1>&2 "Abort: public export repository does not exist in destination $dst."
+fi
+
+# Cleanup and exit
+exec 1>&-
+wait # for output filter
+exit $ret
