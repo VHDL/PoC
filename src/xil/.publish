@@ -6,8 +6,8 @@ xil_SyncBits.vhdl
 xil_SyncReset.vhdl
 
 # ChipScope
-xil_ChipScope_ICON.vhdl
-xil_ChipScope_ICON_*.xco
+xil_ChipScopeICON.vhdl
+xil_ChipScopeICON_*.xco
 
 # JTAG / Boundary Scan
 xil_BSCAN.vhdl

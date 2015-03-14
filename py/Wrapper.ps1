@@ -3,9 +3,9 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-#	PowerShell Script:	Wrapper Script to execute a given python script
-# 
 #	Authors:				 		Patrick Lehmann
+# 
+#	PowerShell Script:	Wrapper Script to execute a given python script
 # 
 # Description:
 # ------------------------------------
