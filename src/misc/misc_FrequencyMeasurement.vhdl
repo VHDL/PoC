@@ -3,18 +3,20 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+--
+-- Package:					measures a input frequency relativ to a reference frequency
 --
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module counts 1 second in a reference timer at reference clock. This
+--		reference time is used to start and stop a timer at input clock. The counter
+--		value is the measured frequency in Hz.
 --		
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,15 +32,15 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.physical.ALL;
-USE			PoC.components.ALL;
+library PoC;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.physical.all;
+use			PoC.components.all;
 
 
 entity misc_FrequencyMeasurement is
@@ -61,8 +63,8 @@ architecture rtl of misc_FrequencyMeasurement is
 	constant TIMEBASE_COUNTER_BITS		: POSITIVE																:= log2ceilnz(TIMEBASE_COUNTER_MAX);
 
 	signal TimeBase_Counter_rst				: STD_LOGIC;
-	signal TimeBase_Counter_s					: SIGNED(TIMEBASE_COUNTER_BITS DOWNTO 0)	:= to_signed(-1, TIMEBASE_COUNTER_BITS + 1);
-	signal TimeBase_Counter_nxt				: SIGNED(TIMEBASE_COUNTER_BITS DOWNTO 0);
+	signal TimeBase_Counter_s					: SIGNED(TIMEBASE_COUNTER_BITS downto 0)	:= to_signed(-1, TIMEBASE_COUNTER_BITS + 1);
+	signal TimeBase_Counter_nxt				: SIGNED(TIMEBASE_COUNTER_BITS downto 0);
 	signal TimeBase_Counter_uf				: STD_LOGIC;
 
 	signal Stop												: STD_LOGIC;
@@ -71,12 +73,13 @@ architecture rtl of misc_FrequencyMeasurement is
 	signal sync1_Busy									: T_SLV_2;
 
 	signal Frequency_Counter_en_r			: STD_LOGIC																:= '0';
-	signal Frequency_Counter_us				: UNSIGNED(31 DOWNTO 0)										:= (OTHERS => '0');
+	signal Frequency_Counter_us				: UNSIGNED(31 downto 0)										:= (others => '0');
 	
 	signal CaptureResult							: STD_LOGIC;
-	signal CaptureResult_d						: STD_LOGIC																:= '0';
+	signal CaptureResult_d1						: STD_LOGIC																:= '0';
+	signal CaptureResult_d2						: STD_LOGIC																:= '0';
 	signal Result_en									: STD_LOGIC;
-	signal Result_d										: T_SLV_32																:= (OTHERS => '0');
+	signal Result_d										: T_SLV_32																:= (others => '0');
 begin
 	
 	TimeBase_Counter_rst	<= Start;
@@ -97,7 +100,7 @@ begin
 	Stop									<= not TimeBase_Counter_s(TimeBase_Counter_s'high) and TimeBase_Counter_nxt(TimeBase_Counter_nxt'high);
 	
 	sync1 : entity poc.sync_Strobe
-		GENERIC MAP (
+		generic map (
 			BITS			=> 2													-- number of bit to be synchronized
 		)
 		port map (
@@ -123,11 +126,13 @@ begin
 		end if;
 	end process;
 	
+	CaptureResult			<= sync1_Busy(1);
+	CaptureResult_d1	<= CaptureResult		when rising_edge(Reference_Clock);
+	CaptureResult_d2	<= CaptureResult_d1	when rising_edge(Reference_Clock);
+	Result_en					<= CaptureResult_d1	and not CaptureResult;
 	
-	CaptureResult		<= sync1_Busy(1);
-	CaptureResult_d	<= CaptureResult when rising_edge(Reference_Clock);
-	Result_en				<= CaptureResult_d and not CaptureResult;
-	
+	-- Result_d can becaptured from Frequency_Counter_us, because it's stable
+	-- for more than one clock cycle and will not change until the next Start
 	process(Reference_Clock)
 	begin
 		if rising_edge(Reference_Clock) then
@@ -137,6 +142,6 @@ begin
 		end if;
 	end process;
 	
-	Done		<= CaptureResult;
+	Done		<= CaptureResult_d2;
 	Result	<= Result_d;
 end;
