@@ -3,6 +3,7 @@ netlist/
 py/
 src/
 tb/
+tools/
 examples/
 
 # 
