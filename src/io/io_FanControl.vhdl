@@ -33,7 +33,13 @@ library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 
 library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
 use			PoC.physical.all;
+use			PoC.components.all;
+--use			PoC.io.all;
+use			PoC.xil.all;
 
 
 entity io_FanControl is
@@ -69,16 +75,16 @@ end;
 --
 -- ============================================================================================================================================================
 
-library IEEE;
-use			IEEE.NUMERIC_STD.ALL;
-
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.components.all;
-use			PoC.io.all;
-use			PoC.xil.all;
+--library IEEE;
+--use			IEEE.NUMERIC_STD.ALL;
+--
+--library PoC;
+--use			PoC.config.all;
+--use			PoC.utils.all;
+--use			PoC.vectors.all;
+--use			PoC.components.all;
+--use			PoC.io.all;
+--use			PoC.xil.all;
 
 
 ARCHITECTURE rtl of io_FanControl IS
