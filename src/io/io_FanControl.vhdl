@@ -75,19 +75,7 @@ end;
 --
 -- ============================================================================================================================================================
 
---library IEEE;
---use			IEEE.NUMERIC_STD.ALL;
---
---library PoC;
---use			PoC.config.all;
---use			PoC.utils.all;
---use			PoC.vectors.all;
---use			PoC.components.all;
---use			PoC.io.all;
---use			PoC.xil.all;
-
-
-ARCHITECTURE rtl of io_FanControl IS
+architecture rtl of io_FanControl is
 	constant TIME_STARTUP			: TIME																							:= 500.0 ms;	-- StartUp time
 	constant PWM_RESOLUTION		: POSITIVE																					:= 4;					-- 4 Bit resolution => 0 to 15 steps
 	constant PWM_FREQ					: FREQ																							:= 100 Hz;		-- 
