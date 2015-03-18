@@ -1,0 +1,26 @@
+##
+## Ethernet PHY - Marvell Alaska Ultra
+## -----------------------------------------------------------------------------
+##	Bank:						14, 15, 117
+##		VCCO:					2.5V, 2.5V (VCC2V5_FPGA, VCC2V5_FPGA)
+##	Location:				U37
+##		Vendor:				Marvell
+##		Device:				M88E1111 - BAB1C000
+##		MDIO-Address:	0x05 (---0 0111b)
+##		I²C-Address:	I²C management mode is not enabled
+##
+## single-ended, parallel TX path
+NET "KC705_EthernetPHY_TX_Valid"								LOC = "M27" | IOSTANDARD = LVCMOS25;	## {OUT}		U37.16
+NET "KC705_EthernetPHY_TX_Error"								LOC = "N29" | IOSTANDARD = LVCMOS25;	## {OUT}		U37.13
+NET "KC705_EthernetPHY_TX_DATA<0>"							LOC = "N27" | IOSTANDARD = LVCMOS25;	## {OUT}		U37.18
+NET "KC705_EthernetPHY_TX_DATA<1>"							LOC = "N25" | IOSTANDARD = LVCMOS25;	## {OUT}		U37.19
+NET "KC705_EthernetPHY_TX_DATA<2>"							LOC = "M29" | IOSTANDARD = LVCMOS25;	## {OUT}		U37.20
+NET "KC705_EthernetPHY_TX_DATA<3>"							LOC = "L28" | IOSTANDARD = LVCMOS25;	## {OUT}		U37.24
+##
+## single-ended, parallel RX path
+NET "KC705_EthernetPHY_RX_Valid"								LOC = "R28" | IOSTANDARD = LVCMOS25;	## {IN}			U37.4
+NET "KC705_EthernetPHY_RX_Error"								LOC = "V26" | IOSTANDARD = LVCMOS25;	## {IN}			U37.8
+NET "KC705_EthernetPHY_RX_DATA<0>"							LOC = "U30" | IOSTANDARD = LVCMOS25;	## {IN}			U37.3
+NET "KC705_EthernetPHY_RX_DATA<1>"							LOC = "U25" | IOSTANDARD = LVCMOS25;	## {IN}			U37.128
+NET "KC705_EthernetPHY_RX_DATA<2>"							LOC = "T25" | IOSTANDARD = LVCMOS25;	## {IN}			U37.126
+NET "KC705_EthernetPHY_RX_DATA<3>"							LOC = "U28" | IOSTANDARD = LVCMOS25;	## {IN}			U37.125

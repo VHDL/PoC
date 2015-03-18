@@ -1,5 +1,4 @@
-#% BEGIN-TEMPLATEFILE Board = "KC705" %#
-#% BEGIN-TEMPLATE Display_LCD %#
+##
 ## Liquid Cristal Display
 ## =============================================================================================================================================================
 ##	Bank:						33, 14
@@ -19,5 +18,3 @@ NET "KC705_LCD_DB[4]"							LOC = "AA13" | IOSTANDARD = LVCMOS15;				## J31.4			
 NET "KC705_LCD_DB[5]"							LOC = "AA10" | IOSTANDARD = LVCMOS15;				## J31.3			; level shifted by U10 (TXS0108E)
 NET "KC705_LCD_DB[6]"							LOC = "AA11" | IOSTANDARD = LVCMOS15;				## J31.2			; level shifted by U10 (TXS0108E)
 NET "KC705_LCD_DB[7]"							LOC =  "Y10" | IOSTANDARD = LVCMOS15;				## J31.1			; level shifted by U10 (TXS0108E)
-#% END-TEMPLATE Display_LCD %#
-#% END-TEMPLATEFILE %#
