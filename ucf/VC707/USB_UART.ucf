@@ -1,4 +1,3 @@
-#% BEGIN-TEMPLATE USB_UART %#
 ## USB UART
 ## =============================================================================
 ##	Bank:						13
@@ -10,4 +9,3 @@ NET "VC707_USB_UART_RX"						LOC = "AU36" | IOSTANDARD = LVCMOS18;		##
 NET "VC707_USB_UART_RTS"					LOC = "AT32" | IOSTANDARD = LVCMOS18;		## 
 NET "VC707_USB_UART_TX"						LOC = "AU33" | IOSTANDARD = LVCMOS18;		## 
 NET "VC707_USB_UART_CTS"					LOC = "AR34" | IOSTANDARD = LVCMOS18;		## 
-#% BEGIN-TEMPLATE USB_UART %#
