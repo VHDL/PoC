@@ -17,9 +17,19 @@
 ##		MDIO-Address:	0x05 (---0 0111b)
 ##		I²C-Address:	I²C management mode is not enabled
 ##
-## common signals and management
+## SGMII LVDS signal-pairs
 ## --------------------------
-NET "ML605_EthernetPHY_Reset_n"									LOC = "AH13" | IOSTANDARD = LVCMOS25; ## {IN}			U80.36
-NET "ML605_EthernetPHY_Interrupt_n"							LOC = "AH14" | IOSTANDARD = LVCMOS25; ## {IN}			U80.32
-NET "ML605_EthernetPHY_Management_Clock"				LOC = "AP14" | IOSTANDARD = LVCMOS25; ## {OUT}		U80.35
-NET "ML605_EthernetPHY_Management_Data"					LOC = "AN14" | IOSTANDARD = LVCMOS25; ## {INOUT}	U80.33
+##	Bank:						116
+##	Transceiver:
+##		Location:			
+##	ReferenceClock
+##		Location:			U82 (ICS844021I_TSSOP8)
+##		Vendor:				
+##		Device:				ICS844021I
+##		Frequency:		125 MHz
+NET "ML605_EthernetPHY_RefClock_125MHz_p"				LOC = "H6";														## {IN}			U82.7
+NET "ML605_EthernetPHY_RefClock_125MHz_n"				LOC = "H5";														## {IN}			U82.6
+NET "ML605_EthernetPHY_SGMII_TX_p"							LOC = "A3";														## {OUT}		U80.113
+NET "ML605_EthernetPHY_SGMII_TX_n"							LOC = "A4";														## {OUT}		U80.112
+NET "ML605_EthernetPHY_SGMII_RX_p"							LOC = "B5";														## {IN}			U80.107
+NET "ML605_EthernetPHY_SGMII_RX_n"							LOC = "B6";														## {IN}			U80.105

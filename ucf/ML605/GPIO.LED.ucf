@@ -7,19 +7,21 @@
 ##		Package:			FF1156
 ##		Speedgrade:		-1
 ## =============================================================================================================================================================
-## Low Speed I/O
+## General Purpose I/O
 ## =============================================================================================================================================================
 ##
-## USB UART
+## LEDs
 ## =============================================================================
-##	Bank:						24
-##		VCCO:					2.5V (VCC2V5_FPGA)
-##	Location:				U34
-##		Vendor:				Silicon Labs
-##		Device:				CP2103-GM
-##		Baud-Rate:		300 Bd - 1 MBd
-##	Note:						USB-UART is the master, FPGA is the slave => so TX is an input and RX an output
-NET "ML605_USB_UART_TX"						LOC = "J24" | IOSTANDARD = LVCMOS25;		## {IN}			U34.25 {OUT}
-NET "ML605_USB_UART_RX"						LOC = "J25" | IOSTANDARD = LVCMOS25;		## {OUT}		U34.24 {IN}
-NET "ML605_USB_UART_RTS_n"				LOC = "T23" | IOSTANDARD = LVCMOS25;		## {IN}			U34.23 {OUT}	Ready to Transmit (USB-UART has new data)
-NET "ML605_USB_UART_CTS_n"				LOC = "T24" | IOSTANDARD = LVCMOS25;		## {OUT}		U34.22 {IN}		Clear to Send (FPGA is able to receive data)
+##	Bank:						15
+##		VCCO:					1,8V (VCC1V8_FPGA)
+##	Location:				DS12, DS11, DS9, DS10, DS15, DS14, DS22, DS21
+## -----------------------------------------------------------------------------
+NET "ML605_GPIO_LED<0>"									LOC = "AC22";						## DS12
+NET "ML605_GPIO_LED<1>"									LOC = "AC24";						## DS11
+NET "ML605_GPIO_LED<2>"									LOC = "AE22";						## DS9
+NET "ML605_GPIO_LED<3>"									LOC = "AE23";						## DS10
+NET "ML605_GPIO_LED<4>"									LOC = "AB23";						## DS15
+NET "ML605_GPIO_LED<5>"									LOC = "AG23";						## DS14
+NET "ML605_GPIO_LED<6>"									LOC = "AE24";						## DS22
+NET "ML605_GPIO_LED<7>"									LOC = "AD24";						## DS21
+NET "ML605_GPIO_LED<?>"									IOSTANDARD = LVCMOS18;	## 

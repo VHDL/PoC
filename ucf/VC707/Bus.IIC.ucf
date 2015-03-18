@@ -1,5 +1,3 @@
-#% BEGIN-TEMPLATEFILE Board = "ML605" %#
-#% BEGIN-TEMPLATE Bus_IIC %#
 ## I²C-MainBus
 ## =============================================================================
 ##	Bank:						13, 15
@@ -43,18 +41,3 @@
 NET "VC707_IIC_SerialClock"						LOC = "AT35"	| IOSTANDARD = LVCMOS18;			## U52 - Pin 19 - SerialClock
 NET "VC707_IIC_SerialData"						LOC = "AU32"	| IOSTANDARD = LVCMOS18;			## U52 - Pin 20 - SerialData
 NET "VC707_IIC_Switch_Reset_n"				LOC = "AY42"	| IOSTANDARD = LVCMOS18;			## U52 - Pin 24 - Reset (low-active); level shifted by U70 (TXS0108E)
-#% END-TEMPLATE Bus_IIC %#
-
-#% BEGIN-TEMPLATE Bus_PMBus %#
-## PowerManagementBus (PMBus)
-## =============================================================================
-##		Bank:						15
-##			VCCO:					1,8V (VCC1V8_FPGA)
-##		Location:				
-##			Vendor:				
-##			Device:				
-##NET "VC707_PMBus_Clock"								LOC = "AW37" | IOSTANDARD = LVCMOS18; ## 
-##NET "VC707_PMBus_Data"								LOC = "AY39" | IOSTANDARD = LVCMOS18; ## 
-##NET "VC707_PMBus_Alert"								LOC = "AV38" | IOSTANDARD = LVCMOS18; ## 
-#% END-TEMPLATE Bus_PMBus %#
-#% END-TEMPLATEFILE %#
