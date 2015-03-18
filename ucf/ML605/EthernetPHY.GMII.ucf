@@ -18,29 +18,29 @@
 ##		I²C-Address:	I²C management mode is not enabled
 ##
 ## single-ended, parallel TX path
-NET "ML605_EthernetPHY_TX_Valid"								LOC = "AJ10" | IOSTANDARD = LVCMOS25; ## {OUT}		U80.16
-NET "ML605_EthernetPHY_TX_Error"								LOC = "AH10" | IOSTANDARD = LVCMOS25; ## {OUT}		U80.13
-NET "ML605_EthernetPHY_TX_DATA<0>"							LOC = "AM11" | IOSTANDARD = LVCMOS25; ## {OUT}		U80.18
-NET "ML605_EthernetPHY_TX_DATA<1>"							LOC = "AL11" | IOSTANDARD = LVCMOS25; ## {OUT}		U80.19
-NET "ML605_EthernetPHY_TX_DATA<2>"							LOC = "AG10" | IOSTANDARD = LVCMOS25; ## {OUT}		U80.20
-NET "ML605_EthernetPHY_TX_DATA<3>"							LOC = "AG11" | IOSTANDARD = LVCMOS25; ## {OUT}		U80.24
-NET "ML605_EthernetPHY_TX_DATA<4>"							LOC = "AL10" | IOSTANDARD = LVCMOS25; ## {OUT}		U80.25
-NET "ML605_EthernetPHY_TX_DATA<5>"							LOC = "AM10" | IOSTANDARD = LVCMOS25; ## {OUT}		U80.26
-NET "ML605_EthernetPHY_TX_DATA<6>"							LOC = "AE11" | IOSTANDARD = LVCMOS25; ## {OUT}		U80.28
-NET "ML605_EthernetPHY_TX_DATA<7>"							LOC = "AF11" | IOSTANDARD = LVCMOS25; ## {OUT}		U80.29
+NET "ML605_EthernetPHY_TX_Valid"								LOC = "AJ10"						## {OUT}		U80.16
+NET "ML605_EthernetPHY_TX_Error"								LOC = "AH10"						## {OUT}		U80.13
+NET "ML605_EthernetPHY_TX_DATA<0>"							LOC = "AM11"						## {OUT}		U80.18
+NET "ML605_EthernetPHY_TX_DATA<1>"							LOC = "AL11"						## {OUT}		U80.19
+NET "ML605_EthernetPHY_TX_DATA<2>"							LOC = "AG10"						## {OUT}		U80.20
+NET "ML605_EthernetPHY_TX_DATA<3>"							LOC = "AG11"						## {OUT}		U80.24
+NET "ML605_EthernetPHY_TX_DATA<4>"							LOC = "AL10"						## {OUT}		U80.25
+NET "ML605_EthernetPHY_TX_DATA<5>"							LOC = "AM10"						## {OUT}		U80.26
+NET "ML605_EthernetPHY_TX_DATA<6>"							LOC = "AE11"						## {OUT}		U80.28
+NET "ML605_EthernetPHY_TX_DATA<7>"							LOC = "AF11"						## {OUT}		U80.29
 ##
 ## single-ended, parallel RX path
-NET "ML605_EthernetPHY_RX_Valid"								LOC = "AM13" | IOSTANDARD = LVCMOS25; ## {IN}			U80.4
-NET "ML605_EthernetPHY_RX_Error"								LOC = "AG12" | IOSTANDARD = LVCMOS25; ## {IN}			U80.8
-NET "ML605_EthernetPHY_RX_DATA<0>"							LOC = "AN13" | IOSTANDARD = LVCMOS25; ## {IN}			U80.3
-NET "ML605_EthernetPHY_RX_DATA<1>"							LOC = "AF14" | IOSTANDARD = LVCMOS25; ## {IN}			U80.128
-NET "ML605_EthernetPHY_RX_DATA<2>"							LOC = "AE14" | IOSTANDARD = LVCMOS25; ## {IN}			U80.126
-NET "ML605_EthernetPHY_RX_DATA<3>"							LOC = "AN12" | IOSTANDARD = LVCMOS25; ## {IN}			U80.125
-NET "ML605_EthernetPHY_RX_DATA<4>"							LOC = "AM12" | IOSTANDARD = LVCMOS25; ## {IN}			U80.124
-NET "ML605_EthernetPHY_RX_DATA<5>"							LOC = "AD11" | IOSTANDARD = LVCMOS25; ## {IN}			U80.123
-NET "ML605_EthernetPHY_RX_DATA<6>"							LOC = "AC12" | IOSTANDARD = LVCMOS25; ## {IN}			U80.121
-NET "ML605_EthernetPHY_RX_DATA<7>"							LOC = "AC13" | IOSTANDARD = LVCMOS25; ## {IN}			U80.120
-NET "ML605_EthernetPHY_*"												IOSTANDARD = "LVCMOS25";
+NET "ML605_EthernetPHY_RX_Valid"								LOC = "AM13"						## {IN}			U80.4
+NET "ML605_EthernetPHY_RX_Error"								LOC = "AG12"						## {IN}			U80.8
+NET "ML605_EthernetPHY_RX_DATA<0>"							LOC = "AN13"						## {IN}			U80.3
+NET "ML605_EthernetPHY_RX_DATA<1>"							LOC = "AF14"						## {IN}			U80.128
+NET "ML605_EthernetPHY_RX_DATA<2>"							LOC = "AE14"						## {IN}			U80.126
+NET "ML605_EthernetPHY_RX_DATA<3>"							LOC = "AN12"						## {IN}			U80.125
+NET "ML605_EthernetPHY_RX_DATA<4>"							LOC = "AM12"						## {IN}			U80.124
+NET "ML605_EthernetPHY_RX_DATA<5>"							LOC = "AD11"						## {IN}			U80.123
+NET "ML605_EthernetPHY_RX_DATA<6>"							LOC = "AC12"						## {IN}			U80.121
+NET "ML605_EthernetPHY_RX_DATA<7>"							LOC = "AC13"						## {IN}			U80.120
+NET "ML605_EthernetPHY_*"												IOSTANDARD = LVCMOS25;
 NET "ML605_EthernetPHY_*"												SLEW = FAST;
 ##
 ## Timing names
@@ -56,27 +56,3 @@ TIMESPEC "TS_EthernetPHY_RX_Clock" = PERIOD "TGRP_EthernetPHY_RX_Clock" 125 MHz 
 ##		t_SETUP(RCVR) = 2.0 ns
 ##		t_HOLD(RCVR)	= 0.0 ns
 TIMEGRP "EthernetPHY_RX" OFFSET = IN 2.0 VALID 2.0 ns BEFORE "ML605_EthernetPHY_RX_Clock" RISING;
-##
-## select appropriate delay controller
-##INST "*genRS_GMII.genPHY_GMII.GMII/IDELAYCTRL_RX_Clock"				LOC = "IDELAYCTRL_X1Y4";
-##INST "*genRS_GMII.genPHY_GMII.GMII/IDELAYCTRL_RX_Data"					LOC = "IDELAYCTRL_X0Y3";
-##
-## Set the IDELAY values on the data inputs. Please modify so that above timing constraint is fulfilled.
-INST "*genRS_GMII.genPHY_GMII.GMII/IODly_RX_Clock"							IDELAY_VALUE = 0;
-INST "*genRS_GMII.genPHY_GMII.GMII/blkIDelay.genIDelay[?].dly"	IDELAY_VALUE = 26;
-##
-## Group all IODELAY-related instances
-INST "*genRS_GMII.genPHY_GMII.GMII/IODly_RX_Clock"							IODELAY_GROUP = "EthernetPHY_IODelayGroup";
-INST "*genRS_GMII.genPHY_GMII.GMII/blkIDelay.genIDelay[?].dly"	IODELAY_GROUP = "EthernetPHY_IODelayGroup";
-##
-## Place BUFG to prevent placement skewing IODELAY value
-INST "*genRS_GMII.genPHY_GMII.GMII/BUFG_RX_Clock"								LOC = "BUFGCTRL_X0Y6";
-##
-## GMII Receiver Constraints:  place flip-flops in IOB, might also be enforced by XST option "-iob true"
-INST "*genRS_GMII.genPHY_GMII.GMII/PHY_Interface.TX_Data_?" 	 	IOB = true;
-INST "*genRS_GMII.genPHY_GMII.GMII/PHY_Interface.TX_Valid"	  	IOB = true;
-INST "*genRS_GMII.genPHY_GMII.GMII/PHY_Interface.TX_Error" 			IOB = true;
-##
-INST "*genRS_GMII.genPHY_GMII.GMII/RS_RX_Data_?" 								IOB = true;
-INST "*genRS_GMII.genPHY_GMII.GMII/RS_RX_Valid" 		 				 		IOB = true;
-##INST "*genRS_GMII.genPHY_GMII.GMII/RS_RX_Error"	 						 	IOB = true;
