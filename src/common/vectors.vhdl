@@ -244,9 +244,9 @@ package body vectors is
 	END FUNCTION;
 
 	FUNCTION slm_slice_cols(slm : T_SLM; High : NATURAL; Low : NATURAL) RETURN T_SLM IS
-		VARIABLE Result		: T_SLM(slm'range, High - Low DOWNTO 0)		:= (OTHERS => (OTHERS => '0'));
+		VARIABLE Result		: T_SLM(slm'range(1), High - Low DOWNTO 0)		:= (OTHERS => (OTHERS => '0'));
 	BEGIN
-		FOR I IN 0 TO slm'length - 1 LOOP
+		FOR I IN slm'range(1) LOOP
 			FOR J IN 0 TO High - Low LOOP
 				Result(I, J)		:= slm(I, low + J);
 			END LOOP;
@@ -312,7 +312,7 @@ package body vectors is
 	BEGIN
 		IF ((slv'length MOD 4) /= 0) THEN	REPORT "to_slvv_4: width mismatch - slv'length is no multiple of 4 (slv'length=" & INTEGER'image(slv'length) & ")" SEVERITY FAILURE;	END IF;
 		
-		FOR I IN 0 TO (slv'length / 4) - 1 LOOP
+		FOR I IN Result'range LOOP
 			Result(I)	:= slv((I * 4) + 3 DOWNTO (I * 4));
 		END LOOP;
 		RETURN Result;
@@ -324,7 +324,7 @@ package body vectors is
 	BEGIN
 		IF ((slv'length MOD 8) /= 0) THEN	REPORT "to_slvv_8: width mismatch - slv'length is no multiple of 8 (slv'length=" & INTEGER'image(slv'length) & ")" SEVERITY FAILURE;	END IF;
 		
-		FOR I IN 0 TO (slv'length / 8) - 1 LOOP
+		FOR I IN Result'range LOOP
 			Result(I)	:= slv((I * 8) + 7 DOWNTO (I * 8));
 		END LOOP;
 		RETURN Result;
@@ -336,7 +336,7 @@ package body vectors is
 	BEGIN
 		IF ((slv'length MOD 12) /= 0) THEN	REPORT "to_slvv_12: width mismatch - slv'length is no multiple of 12 (slv'length=" & INTEGER'image(slv'length) & ")" SEVERITY FAILURE;	END IF;
 		
-		FOR I IN 0 TO (slv'length / 12) - 1 LOOP
+		FOR I IN Result'range LOOP
 			Result(I)	:= slv((I * 12) + 11 DOWNTO (I * 12));
 		END LOOP;
 		RETURN Result;
@@ -348,7 +348,7 @@ package body vectors is
 	BEGIN
 		IF ((slv'length MOD 16) /= 0) THEN	REPORT "to_slvv_16: width mismatch - slv'length is no multiple of 16 (slv'length=" & INTEGER'image(slv'length) & ")" SEVERITY FAILURE;	END IF;
 		
-		FOR I IN 0 TO (slv'length / 16) - 1 LOOP
+		FOR I IN Result'range LOOP
 			Result(I)	:= slv((I * 16) + 15 DOWNTO (I * 16));
 		END LOOP;
 		RETURN Result;
@@ -360,7 +360,7 @@ package body vectors is
 	BEGIN
 		IF ((slv'length MOD 32) /= 0) THEN	REPORT "to_slvv_32: width mismatch - slv'length is no multiple of 32 (slv'length=" & INTEGER'image(slv'length) & ")" SEVERITY FAILURE;	END IF;
 		
-		FOR I IN 0 TO (slv'length / 32) - 1 LOOP
+		FOR I IN Result'range LOOP
 			Result(I)	:= slv((I * 32) + 31 DOWNTO (I * 32));
 		END LOOP;
 		RETURN Result;
@@ -372,7 +372,7 @@ package body vectors is
 	BEGIN
 		IF ((slv'length MOD 64) /= 0) THEN	REPORT "to_slvv_64: width mismatch - slv'length is no multiple of 64 (slv'length=" & INTEGER'image(slv'length) & ")" SEVERITY FAILURE;	END IF;
 		
-		FOR I IN 0 TO (slv'length / 64) - 1 LOOP
+		FOR I IN Result'range LOOP
 			Result(I)	:= slv((I * 64) + 63 DOWNTO (I * 64));
 		END LOOP;
 		RETURN Result;
@@ -384,7 +384,7 @@ package body vectors is
 	BEGIN
 		IF ((slv'length MOD 128) /= 0) THEN	REPORT "to_slvv_128: width mismatch - slv'length is no multiple of 128 (slv'length=" & INTEGER'image(slv'length) & ")" SEVERITY FAILURE;	END IF;
 		
-		FOR I IN 0 TO (slv'length / 128) - 1 LOOP
+		FOR I IN Result'range LOOP
 			Result(I)	:= slv((I * 128) + 127 DOWNTO (I * 128));
 		END LOOP;
 		RETURN Result;
@@ -396,7 +396,7 @@ package body vectors is
 	BEGIN
 		IF ((slv'length MOD 256) /= 0) THEN	REPORT "to_slvv_256: width mismatch - slv'length is no multiple of 256 (slv'length=" & INTEGER'image(slv'length) & ")" SEVERITY FAILURE;	END IF;
 		
-		FOR I IN 0 TO (slv'length / 256) - 1 LOOP
+		FOR I IN Result'range LOOP
 			Result(I)	:= slv((I * 256) + 255 DOWNTO (I * 256));
 		END LOOP;
 		RETURN Result;
@@ -408,7 +408,7 @@ package body vectors is
 	BEGIN
 		IF ((slv'length MOD 512) /= 0) THEN	REPORT "to_slvv_512: width mismatch - slv'length is no multiple of 512 (slv'length=" & INTEGER'image(slv'length) & ")" SEVERITY FAILURE;	END IF;
 		
-		FOR I IN 0 TO (slv'length / 512) - 1 LOOP
+		FOR I IN Result'range LOOP
 			Result(I)	:= slv((I * 512) + 511 DOWNTO (I * 512));
 		END LOOP;
 		RETURN Result;
@@ -418,11 +418,11 @@ package body vectors is
 	-- ==========================================================================
 	-- create vector-vector from matrix (4 bit)
 	FUNCTION to_slvv_4(slm : T_SLM) RETURN T_SLVV_4 IS
-		VARIABLE Result		: T_SLVV_4(slm'range);
+		VARIABLE Result		: T_SLVV_4(slm'range(1));
 	BEGIN
 		IF (slm'length(2) /= 4) THEN	REPORT "to_slvv_4: type mismatch - slm'length(2)=" & INTEGER'image(slm'length(2)) SEVERITY FAILURE;	END IF;
 		
-		FOR I IN slm'range LOOP
+		FOR I IN slm'range(1) LOOP
 			Result(I)	:= get_row(slm, I);
 		END LOOP;
 		RETURN Result;
@@ -430,11 +430,11 @@ package body vectors is
 	
 	-- create vector-vector from matrix (8 bit)
 	FUNCTION to_slvv_8(slm : T_SLM) RETURN T_SLVV_8 IS
-		VARIABLE Result		: T_SLVV_8(slm'range);
+		VARIABLE Result		: T_SLVV_8(slm'range(1));
 	BEGIN
 		IF (slm'length(2) /= 8) THEN	REPORT "to_slvv_8: type mismatch - slm'length(2)=" & INTEGER'image(slm'length(2)) SEVERITY FAILURE;	END IF;
 		
-		FOR I IN slm'range LOOP
+		FOR I IN slm'range(1) LOOP
 			Result(I)	:= get_row(slm, I);
 		END LOOP;
 		RETURN Result;
@@ -442,11 +442,11 @@ package body vectors is
 	
 	-- create vector-vector from matrix (12 bit)
 	FUNCTION to_slvv_12(slm : T_SLM) RETURN T_SLVV_12 IS
-		VARIABLE Result		: T_SLVV_12(slm'range);
+		VARIABLE Result		: T_SLVV_12(slm'range(1));
 	BEGIN
 		IF (slm'length(2) /= 12) THEN	REPORT "to_slvv_12: type mismatch - slm'length(2)=" & INTEGER'image(slm'length(2)) SEVERITY FAILURE;	END IF;
 		
-		FOR I IN slm'range LOOP
+		FOR I IN slm'range(1) LOOP
 			Result(I)	:= get_row(slm, I);
 		END LOOP;
 		RETURN Result;
@@ -454,11 +454,11 @@ package body vectors is
 	
 	-- create vector-vector from matrix (16 bit)
 	FUNCTION to_slvv_16(slm : T_SLM) RETURN T_SLVV_16 IS
-		VARIABLE Result		: T_SLVV_16(slm'range);
+		VARIABLE Result		: T_SLVV_16(slm'range(1));
 	BEGIN
 		IF (slm'length(2) /= 16) THEN	REPORT "to_slvv_16: type mismatch - slm'length(2)=" & INTEGER'image(slm'length(2)) SEVERITY FAILURE;	END IF;
 		
-		FOR I IN slm'range LOOP
+		FOR I IN slm'range(1) LOOP
 			Result(I)	:= get_row(slm, I);
 		END LOOP;
 		RETURN Result;
@@ -466,11 +466,11 @@ package body vectors is
 	
 	-- create vector-vector from matrix (32 bit)
 	FUNCTION to_slvv_32(slm : T_SLM) RETURN T_SLVV_32 IS
-		VARIABLE Result		: T_SLVV_32(slm'range);
+		VARIABLE Result		: T_SLVV_32(slm'range(1));
 	BEGIN
 		IF (slm'length(2) /= 32) THEN	REPORT "to_slvv_32: type mismatch - slm'length(2)=" & INTEGER'image(slm'length(2)) SEVERITY FAILURE;	END IF;
 		
-		FOR I IN slm'range LOOP
+		FOR I IN slm'range(1) LOOP
 			Result(I)	:= get_row(slm, I);
 		END LOOP;
 		RETURN Result;
@@ -478,11 +478,11 @@ package body vectors is
 
 	-- create vector-vector from matrix (64 bit)
 	FUNCTION to_slvv_64(slm : T_SLM) RETURN T_SLVV_64 IS
-		VARIABLE Result		: T_SLVV_64(slm'range);
+		VARIABLE Result		: T_SLVV_64(slm'range(1));
 	BEGIN
 		IF (slm'length(2) /= 64) THEN	REPORT "to_slvv_64: type mismatch - slm'length(2)=" & INTEGER'image(slm'length(2)) SEVERITY FAILURE;	END IF;
 		
-		FOR I IN slm'range LOOP
+		FOR I IN slm'range(1) LOOP
 			Result(I)	:= get_row(slm, I);
 		END LOOP;
 		RETURN Result;
@@ -490,11 +490,11 @@ package body vectors is
 	
 	-- create vector-vector from matrix (128 bit)
 	FUNCTION to_slvv_128(slm : T_SLM) RETURN T_SLVV_128 IS
-		VARIABLE Result		: T_SLVV_128(slm'range);
+		VARIABLE Result		: T_SLVV_128(slm'range(1));
 	BEGIN
 		IF (slm'length(2) /= 128) THEN	REPORT "to_slvv_128: type mismatch - slm'length(2)=" & INTEGER'image(slm'length(2)) SEVERITY FAILURE;	END IF;
 		
-		FOR I IN slm'range LOOP
+		FOR I IN slm'range(1) LOOP
 			Result(I)	:= get_row(slm, I);
 		END LOOP;
 		RETURN Result;
@@ -514,11 +514,11 @@ package body vectors is
 	
 	-- create vector-vector from matrix (512 bit)
 	FUNCTION to_slvv_512(slm : T_SLM) RETURN T_SLVV_512 IS
-		VARIABLE Result		: T_SLVV_512(slm'range);
+		VARIABLE Result		: T_SLVV_512(slm'range(1));
 	BEGIN
 		IF (slm'length(2) /= 512) THEN	REPORT "to_slvv_512: type mismatch - slm'length(2)=" & INTEGER'image(slm'length(2)) SEVERITY FAILURE;	END IF;
 		
-		FOR I IN slm'range LOOP
+		FOR I IN slm'range(1) LOOP
 			Result(I)	:= get_row(slm, I);
 		END LOOP;
 		RETURN Result;

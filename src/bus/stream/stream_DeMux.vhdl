@@ -3,17 +3,19 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	A generic buffer module for the PoC.Stream protocol.
+--
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module implements a generic buffer (FifO) for the PoC.Stream protocol.
+--		It is generic in DATA_BITS and in META_BITS as well as in FifO depths for
+--		data and meta information.
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,174 +25,174 @@
 --		http://www.apache.org/licenses/LICENSE-2.0
 -- 
 -- Unless required by applicable law or agreed to in writing, software
--- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- distributed under the License is distributed on an "AS is" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS of ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
 
 
-ENTITY Stream_DeMux IS
-	GENERIC (
-		PORTS											: POSITIVE									:= 2;
+entity Stream_DeMux is
+	generic (
+		portS											: POSITIVE									:= 2;
 		DATA_BITS									: POSITIVE									:= 8;
 		META_BITS									: NATURAL										:= 8;
 		META_REV_BITS							: NATURAL										:= 2
 	);
-	PORT (
-		Clock											: IN	STD_LOGIC;
-		Reset											: IN	STD_LOGIC;
+	port (
+		Clock											: in	STD_LOGIC;
+		Reset											: in	STD_LOGIC;
 		-- Control interface
-		DeMuxControl							: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		DeMuxControl							: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
 		-- IN Port
-		In_Valid									: IN	STD_LOGIC;
-		In_Data										: IN	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
-		In_Meta										: IN	STD_LOGIC_VECTOR(META_BITS - 1 DOWNTO 0);
-		In_Meta_rev								: OUT	STD_LOGIC_VECTOR(META_REV_BITS - 1 DOWNTO 0);
-		In_SOF										: IN	STD_LOGIC;
-		In_EOF										: IN	STD_LOGIC;
-		In_Ready									: OUT	STD_LOGIC;
+		In_Valid									: in	STD_LOGIC;
+		In_Data										: in	STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
+		In_Meta										: in	STD_LOGIC_VECTOR(META_BITS - 1 downto 0);
+		In_Meta_rev								: out	STD_LOGIC_VECTOR(META_REV_BITS - 1 downto 0);
+		In_SOF										: in	STD_LOGIC;
+		In_EOF										: in	STD_LOGIC;
+		In_Ack										: out	STD_LOGIC;
 		-- OUT Ports
-		Out_Valid									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		Out_Data									: OUT	T_SLM(PORTS - 1 DOWNTO 0, DATA_BITS - 1 DOWNTO 0);
-		Out_Meta									: OUT	T_SLM(PORTS - 1 DOWNTO 0, META_BITS - 1 DOWNTO 0);
-		Out_Meta_rev							: IN	T_SLM(PORTS - 1 DOWNTO 0, META_REV_BITS - 1 DOWNTO 0);
-		Out_SOF										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		Out_EOF										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		Out_Ready									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0)
+		Out_Valid									: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		Out_Data									: out	T_SLM(portS - 1 downto 0, DATA_BITS - 1 downto 0);
+		Out_Meta									: out	T_SLM(portS - 1 downto 0, META_BITS - 1 downto 0);
+		Out_Meta_rev							: in	T_SLM(portS - 1 downto 0, META_REV_BITS - 1 downto 0);
+		Out_SOF										: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		Out_EOF										: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		Out_Ack										: in	STD_LOGIC_VECTOR(portS - 1 downto 0)
 	);
-END;
+end;
 
-ARCHITECTURE rtl OF Stream_DeMux IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
+architecture rtl of Stream_DeMux is
+	attribute KEEP										: BOOLEAN;
+	attribute FSM_ENCODING						: STRING;
 	
-	SUBTYPE T_CHANNEL_INDEX IS NATURAL RANGE 0 TO PORTS - 1;
+	subtype T_CHANNEL_INDEX is NATURAL range 0 to portS - 1;
 	
-	TYPE T_STATE		IS (ST_IDLE, ST_DATAFLOW, ST_DISCARD_FRAME);
+	type T_STATE		is (ST_IDLE, ST_DATAFLOW, ST_DISCARD_FRAME);
 	
-	SIGNAL State								: T_STATE					:= ST_IDLE;
-	SIGNAL NextState						: T_STATE;
+	signal State								: T_STATE					:= ST_IDLE;
+	signal NextState						: T_STATE;
 	
-	SIGNAL Is_SOF								: STD_LOGIC;
-	SIGNAL Is_EOF								: STD_LOGIC;
+	signal Is_SOF								: STD_LOGIC;
+	signal Is_EOF								: STD_LOGIC;
 	
-	SIGNAL In_Ready_i						: STD_LOGIC;
-	SIGNAL Out_Valid_i					: STD_LOGIC;
-	SIGNAL DiscardFrame					: STD_LOGIC;
+	signal In_Ack_i							: STD_LOGIC;
+	signal Out_Valid_i					: STD_LOGIC;
+	signal DiscardFrame					: STD_LOGIC;
 	
-	SIGNAL ChannelPointer_rst		: STD_LOGIC;
-	SIGNAL ChannelPointer_en		: STD_LOGIC;
-	SIGNAL ChannelPointer				: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL ChannelPointer_d			: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0)								:= (OTHERS => '0');
+	signal ChannelPointer_rst		: STD_LOGIC;
+	signal ChannelPointer_en		: STD_LOGIC;
+	signal ChannelPointer				: STD_LOGIC_VECTOR(portS - 1 downto 0);
+	signal ChannelPointer_d			: STD_LOGIC_VECTOR(portS - 1 downto 0)								:= (others => '0');
 	
-	SIGNAL ChannelPointer_bin		: UNSIGNED(log2ceilnz(PORTS) - 1 DOWNTO 0);
-	SIGNAL idx									: T_CHANNEL_INDEX;
+	signal ChannelPointer_bin		: UNSIGNED(log2ceilnz(portS) - 1 downto 0);
+	signal idx									: T_CHANNEL_INDEX;
 	
-	SIGNAL Out_Data_i						: T_SLM(PORTS - 1 DOWNTO 0, DATA_BITS - 1 DOWNTO 0)		:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
-	SIGNAL Out_Meta_i						: T_SLM(PORTS - 1 DOWNTO 0, META_BITS - 1 DOWNTO 0)		:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
-BEGIN
+	signal Out_Data_i						: T_SLM(portS - 1 downto 0, DATA_BITS - 1 downto 0)		:= (others => (others => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
+	signal Out_Meta_i						: T_SLM(portS - 1 downto 0, META_BITS - 1 downto 0)		:= (others => (others => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
+begin
 	
-	In_Ready_i		<= slv_or(Out_Ready AND ChannelPointer);
+	In_Ack_i			<= slv_or(Out_Ack	 and ChannelPointer);
 	DiscardFrame	<= slv_nor(DeMuxControl);
 	
-	Is_SOF			<= In_Valid AND In_SOF;
-	Is_EOF			<= In_Valid AND In_EOF;
+	Is_SOF			<= In_Valid and In_SOF;
+	Is_EOF			<= In_Valid and In_EOF;
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				State				<= ST_IDLE;
-			ELSE
+			else
 				State				<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 	
-	PROCESS(State, In_Ready_i, In_Valid, Is_SOF, Is_EOF, DiscardFrame, DeMuxControl, ChannelPointer_d)
-	BEGIN
+	process(State, In_Ack_i, In_Valid, Is_SOF, Is_EOF, DiscardFrame, DeMuxControl, ChannelPointer_d)
+	begin
 		NextState									<= State;
 		
 		ChannelPointer_rst				<= Is_EOF;
 		ChannelPointer_en					<= '0';
 		ChannelPointer						<= ChannelPointer_d;
 		
-		In_Ready									<= '0';
+		In_Ack										<= '0';
 		Out_Valid_i								<= '0';
 		
-		CASE State IS
-			WHEN ST_IDLE =>
+		case State is
+			when ST_IDLE =>
 				ChannelPointer					<= DeMuxControl;
 
-				IF (Is_SOF = '1') THEN
-					IF (DiscardFrame = '0') THEN
+				if (Is_SOF = '1') then
+					if (DiscardFrame = '0') then
 						ChannelPointer_en		<= '1';
-						In_Ready						<= In_Ready_i;
+						In_Ack							<= In_Ack_i;
 						Out_Valid_i					<= '1';
 					
 						NextState						<= ST_DATAFLOW;
-					ELSE
-						In_Ready						<= '1';
+					else
+						In_Ack							<= '1';
 						
 						NextState						<= ST_DISCARD_FRAME;
-					END IF;
-				END IF;
+					end if;
+				end if;
 			
-			WHEN ST_DATAFLOW =>
-				In_Ready								<= In_Ready_i;
+			when ST_DATAFLOW =>
+				In_Ack									<= In_Ack_i;
 				Out_Valid_i							<= In_Valid;
 				ChannelPointer					<= ChannelPointer_d;
 			
-				IF (Is_EOF = '1') THEN
+				if (Is_EOF = '1') then
 					NextState							<= ST_IDLE;
-				END IF;
+				end if;
 				
-			WHEN ST_DISCARD_FRAME =>
-				In_Ready								<= '1';
+			when ST_DISCARD_FRAME =>
+				In_Ack									<= '1';
 			
-				IF (Is_EOF = '1') THEN
+				if (Is_EOF = '1') then
 					NextState							<= ST_IDLE;
-				END IF;
-		END CASE;
-	END PROCESS;
+				end if;
+		end case;
+	end process;
 	
 	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR ChannelPointer_rst) = '1') THEN
-				ChannelPointer_d			<= (OTHERS => '0');
-			ELSE
-				IF (ChannelPointer_en = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset or ChannelPointer_rst) = '1') then
+				ChannelPointer_d			<= (others => '0');
+			else
+				if (ChannelPointer_en = '1') then
 					ChannelPointer_d		<= DeMuxControl;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	ChannelPointer_bin	<= onehot2bin(ChannelPointer_d);
 	idx									<= to_integer(ChannelPointer_bin);
 
-	In_Meta_rev				<= get_row(Out_Meta_rev, idx);
+	In_Meta_rev					<= get_row(Out_Meta_rev, idx);
 
-	genOutput : FOR I IN 0 TO PORTS - 1 GENERATE
-		Out_Valid(I)			<= Out_Valid_i AND ChannelPointer(I);
-		assign_row(Out_Data_i, In_Data, I);
-		assign_row(Out_Meta_i, In_Meta, I);
-		Out_SOF(I)				<= In_SOF;
-		Out_EOF(I)				<= In_EOF;
-	END GENERATE;
+	genOutput : for i in 0 to portS - 1 generate
+		Out_Valid(i)			<= Out_Valid_i and ChannelPointer(i);
+		assign_row(Out_Data_i, In_Data, i);
+		assign_row(Out_Meta_i, In_Meta, i);
+		Out_SOF(i)				<= In_SOF;
+		Out_EOF(i)				<= In_EOF;
+	end generate;
 	
 	Out_Data		<= Out_Data_i;
 	Out_Meta		<= Out_Meta_i;
-END ARCHITECTURE;
+end architecture;

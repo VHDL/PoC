@@ -52,10 +52,11 @@ package board is
 		BOARD_ML605,
 		BOARD_KC705,
 		BOARD_VC707,
+		BOARD_ZEDBOARD,
 		BOARD_DE0,
 		BOARD_DE4,
 		BOARD_DE5,
-		BOARD_S2GXAVDK
+		BOARD_S2GXAV
 	);
 	
 	TYPE T_BOARD_ETHERNET_DESC IS RECORD
@@ -142,6 +143,17 @@ package body board is
 				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
 			)
 		),
+		BOARD_ZEDBOARD => (
+			FPGADevice									=> conf("XC7Z020-1CLG484"),													-- XC7Z020-1CLG484
+			Ethernet => (
+				IPStyle										=> conf("IPSTYLE_SOFT"),
+				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1518"),
+				PHY_DeviceAddress					=> x"07",
+				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_RGMII"),
+				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
+			)
+		),
 		-- Altera boards
 		BOARD_DE0 => (
 			FPGADevice									=> conf("EP3C16F484"),															-- EP3C16F484
@@ -177,7 +189,7 @@ package body board is
 			)
 		),
 		
-		BOARD_S2GXAVDK => (
+		BOARD_S2GXAV => (
 			FPGADevice									=> conf("EP2SGX90FF1508C3"),												-- EP2SGX90FF1508C3
 			Ethernet => (
 				IPStyle										=> conf("IPSTYLE_SOFT"),
@@ -203,13 +215,6 @@ package body board is
 		)
 	);
 
-	-- private functions
-	-- ===========================================================================
-	-- TODO: move to PoC.strings; find a better function name??
-	function str_trim(str : string) return string is
-	begin
-		return resize(str, str_length(str));
-	end function;
 
 	-- public functions
 	-- ===========================================================================

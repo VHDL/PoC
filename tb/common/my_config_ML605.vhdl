@@ -2,26 +2,21 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- ============================================================================
--- Package:					Project specific configuration.
--- 
+-- =============================================================================
 -- Authors:         Thomas B. Preusser
 --                  Martin Zabel
 --                  Patrick Lehmann
 --
+-- Package:					Project specific configuration.
+-- 
 -- Description:
 -- ------------------------------------
---		This is a template file. 
---		The global package common/config evaluates the settings declared in this file.
---
--- Usage:
---		1) Copy this file into your project's source directory and rename it to my_config.vhdl.
---		2) Add file to library "poc" in your synthesis tool.
---		3) Change setup appropriately.
+--		This file was created from template <PoCRoot>/src/common/my_config.template.vhdl.
+--		
 --
 -- License:
--- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- =============================================================================
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,17 +30,19 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library PoC;
 
+
 package my_config is
   -- Change these lines to setup configuration.
-  constant MY_BOARD		: string := "ML605";								-- ML605 - Xilinx Virtex 6 reference design board: XC6VLX240T
-  constant MY_DEVICE	: string := "None";									-- infer from MY_BOARD
- 
-end my_config;
+  constant MY_BOARD		: string := "ML605";		-- ML605 - Xilinx Virtex 6 reference design board: XC6VLX240T
+  constant MY_DEVICE	: string := "None";			-- infer from MY_BOARD
+	constant MY_VERBOSE	: boolean	:= true;
+end;
+
 
 package body my_config is
 
-end my_config;
+end;

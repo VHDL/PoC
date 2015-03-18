@@ -34,16 +34,20 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+use			PoC.my_project.all;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
+USE			PoC.strings.ALL;
+use			PoC.debug.all;
 USE			PoC.sata.ALL;
+use			PoC.satadbg.all;
 
 
 ENTITY sata_TransportFSM IS
   GENERIC (
 		DEBUG															: BOOLEAN											:= FALSE;
+		ENABLE_DEBUGPORT									: BOOLEAN											:= FALSE;
     SIM_WAIT_FOR_INITIAL_REGDH_FIS    : BOOLEAN                     := TRUE -- required by ATA/SATA standard
   );
 	PORT (
@@ -54,6 +58,9 @@ ENTITY sata_TransportFSM IS
 		Command														: IN	T_SATA_TRANS_COMMAND;
 		Status														: OUT	T_SATA_TRANS_STATUS;
 		Error															: OUT	T_SATA_TRANS_ERROR;
+		
+		-- DebugPort
+		DebugPortOut											: out	T_SATADBG_TRANS_TFSM_OUT;
 		
 		CopyATADeviceRegisterStatus				: OUT	STD_LOGIC;
 		ATAHostRegisters									: IN	T_SATA_ATA_HOST_REGISTERS;
@@ -69,9 +76,9 @@ ENTITY sata_TransportFSM IS
 		RX_EOT														: OUT	STD_LOGIC;
 		
 		-- LinkLayer interface
-		Link_Command											: OUT	T_SATA_COMMAND;
-		Link_Status												: IN	T_SATA_STATUS;
-		Link_Error												: IN	T_SATA_ERROR;
+--		Link_Command											: OUT	T_SATA_COMMAND;
+		Link_Status												: IN	T_SATA_SATACONTROLLER_STATUS;
+--		Link_Error												: IN	T_SATA_ERROR;
 		
 		-- FIS-FSM interface
 		FISD_FISType											: IN	T_SATA_FISTYPE;
@@ -85,6 +92,7 @@ ENTITY sata_TransportFSM IS
 		FISE_EOP													: OUT	STD_LOGIC
 	);
 END;
+
 
 ARCHITECTURE rtl OF sata_TransportFSM IS
 	ATTRIBUTE KEEP									: BOOLEAN;
@@ -133,11 +141,11 @@ BEGIN
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF ((Reset = '1') OR (Command = SATA_TRANS_CMD_RESET)) THEN
-				State			<= ST_RESET;
-				Link_Command		<= SATA_CMD_RESET_LINKLAYER;
+				State						<= ST_RESET;
+--				Link_Command		<= SATA_CMD_RESET_LINKLAYER;
 			ELSE
-				State			<= NextState;
-				Link_Command		<= SATA_CMD_NONE;
+				State						<= NextState;
+--				Link_Command		<= SATA_CMD_NONE;
 			END IF;
 		END IF;
 	END PROCESS;
@@ -150,7 +158,7 @@ BEGIN
 		NextState																<= State;
 		
 		Status																	<= SATA_TRANS_STATUS_TRANSFERING;
-		Error_i																		<= SATA_TRANS_ERROR_NONE;
+		Error_i																	<= SATA_TRANS_ERROR_NONE;
     
 		CopyATADeviceRegisterStatus	            <= '0';
 		
@@ -663,5 +671,31 @@ BEGIN
 				
 		END CASE;
 	END PROCESS;
-	
+
+	-- debug ports
+	-- ==========================================================================================================================================================
+	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
+		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+		begin
+			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
+		end function;
+		
+	begin
+		genXilinx : if (VENDOR = VENDOR_XILINX) generate
+			function dbg_GenerateEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_STATE loop
+					STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			constant test : boolean := dbg_ExportEncoding("Transport Layer - TFSM", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_TransLayer_TFSM.tok");
+		begin
+		end generate;
+		
+		DebugPortOut.FSM		<= dbg_EncodeState(State);
+	end generate;
 END;

@@ -3,17 +3,17 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,69 +29,68 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.io.ALL;
+library PoC;
+use			PoC.utils.all;
+use			PoC.physical.all;
 
 
-ENTITY io_PulseWidthModulation IS
-	GENERIC (
-		CLOCK_FREQ_MHZ						: REAL									:= 100.0;
-		PWM_FREQ_kHz							: REAL									:= 0.020;
+entity io_PulseWidthModulation is
+	generic (
+		CLOCK_FREQ								: FREQ									:= 100.0 MHz;
+		PWM_FREQ									: FREQ									:= 1.0 kHz;
 		PWM_RESOLUTION						: POSITIVE							:= 8
 	);
-	PORT (
-		Clock				: IN	STD_LOGIC;
-		Reset				: IN	STD_LOGIC;
-    PWMIn				: IN	STD_LOGIC_VECTOR(PWM_RESOLUTION - 1 DOWNTO 0);
-		PWMOut			: OUT	STD_LOGIC
+	port (
+		Clock				: in	STD_LOGIC;
+		Reset				: in	STD_LOGIC;
+    PWMIn				: in	STD_LOGIC_VECTOR(PWM_RESOLUTION - 1 downto 0);
+		PWMOut			: out	STD_LOGIC
 	);
-END;
+end;
 
-ARCHITECTURE rtl OF io_PulseWidthModulation IS
-	CONSTANT PWM_STEPS									: REAL																					:= 2.0**PWM_RESOLUTION;
-	CONSTANT PWM_STEP_FREQ_KHZ					: REAL																					:= PWM_FREQ_kHz * (PWM_STEPS - 1.0);
-	CONSTANT PWM_FREQUENCYCOUNTER_MAX		: POSITIVE																			:= TimingToCycles_ns(Freq_kHz2Real_ns(PWM_STEP_FREQ_KHZ), Freq_MHz2Real_ns(CLOCK_FREQ_MHZ));
-	CONSTANT PWM_FREQUENCYCOUNTER_BITS	: POSITIVE																			:= log2ceilnz(PWM_FREQUENCYCOUNTER_MAX);
+
+architecture rtl of io_PulseWidthModulation is
+	constant PWM_STEPS									: POSITIVE																			:= 2**PWM_RESOLUTION;
+	constant PWM_STEP_FREQ							: FREQ																					:= PWM_FREQ * real(PWM_STEPS - 1);
+	constant PWM_FREQUENCYCOUNTER_MAX		: POSITIVE																			:= TimingToCycles(to_time(PWM_STEP_FREQ), CLOCK_FREQ);
+	constant PWM_FREQUENCYCOUNTER_BITS	: POSITIVE																			:= log2ceilnz(PWM_FREQUENCYCOUNTER_MAX);
 	
-	SIGNAL PWM_FrequencyCounter_us			: UNSIGNED(PWM_FREQUENCYCOUNTER_BITS DOWNTO 0)	:= (OTHERS => '0');
-	SIGNAL PWM_FrequencyCounter_ov			: STD_LOGIC;
-	SIGNAL PWM_PulseCounter_us					: UNSIGNED(PWM_RESOLUTION - 1 DOWNTO 0)					:= (OTHERS => '0');
-	SIGNAL PWM_PulseCounter_ov					: STD_LOGIC;
+	signal PWM_FrequencyCounter_us			: UNSIGNED(PWM_FREQUENCYCOUNTER_BITS downto 0)	:= (others => '0');
+	signal PWM_FrequencyCounter_ov			: STD_LOGIC;
+	signal PWM_PulseCounter_us					: UNSIGNED(PWM_RESOLUTION - 1 downto 0)					:= (others => '0');
+	signal PWM_PulseCounter_ov					: STD_LOGIC;
 	
-BEGIN
+begin
 	-- PWM frequency counter
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') OR (PWM_FrequencyCounter_ov = '1') THEN
-				PWM_FrequencyCounter_us		<= (OTHERS => '0');
-			ELSE
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset or PWM_FrequencyCounter_ov) = '1') then
+				PWM_FrequencyCounter_us		<= (others => '0');
+			else
 				PWM_FrequencyCounter_us		<= PWM_FrequencyCounter_us + 1;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 	
 	PWM_FrequencyCounter_ov	<= to_sl(PWM_FrequencyCounter_us = PWM_FREQUENCYCOUNTER_MAX);
 	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') OR (PWM_PulseCounter_ov = '1') THEN
-				PWM_PulseCounter_us					<= (OTHERS => '0');
-			ELSE
-				IF (PWM_FrequencyCounter_ov = '1') THEN
-					PWM_PulseCounter_us				<= PWM_PulseCounter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset or PWM_PulseCounter_ov) = '1') then
+				PWM_PulseCounter_us				<= (others => '0');
+			elsif (PWM_FrequencyCounter_ov = '1') then
+				PWM_PulseCounter_us				<= PWM_PulseCounter_us + 1;
+			end if;
+		end if;
+	end process;
 	
-	PWM_PulseCounter_ov <= to_sl(PWM_PulseCounter_us = ((2**PWM_RESOLUTION) - 2)) AND PWM_FrequencyCounter_ov;
+	PWM_PulseCounter_ov <= to_sl(PWM_PulseCounter_us = ((2**PWM_RESOLUTION) - 2)) and PWM_FrequencyCounter_ov;
 	
 	PWMOut		<= to_sl(PWM_PulseCounter_us < unsigned(PWMIn));
-END;
+end;

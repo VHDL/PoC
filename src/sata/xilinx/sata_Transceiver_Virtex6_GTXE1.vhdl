@@ -21,7 +21,7 @@ ENTITY SATATransceiver_Virtex6_GTXE1 IS
 		CHIPSCOPE_KEEP						: BOOLEAN											:= TRUE;
 		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																	-- 150 MHz
 		PORTS											: POSITIVE										:= 2;																			-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3 => T_SATA_GENERATION'high)			-- intial SATA Generation
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3 => C_SATA_GENERATION_MAX)			-- intial SATA Generation
 	);
 	PORT (
 		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS	- 1 DOWNTO 0);

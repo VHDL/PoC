@@ -3,17 +3,19 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	A generic buffer module for the PoC.Stream protocol.
+--
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module implements a generic buffer (FifO) for the PoC.Stream protocol.
+--		It is generic in DATA_BITS and in META_BITS as well as in FifO depths for
+--		data and meta information.
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,106 +25,105 @@
 --		http://www.apache.org/licenses/LICENSE-2.0
 -- 
 -- Unless required by applicable law or agreed to in writing, software
--- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- distributed under the License is distributed on an "AS is" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS of ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY	IEEE;
-USE			IEEE.STD_LOGIC_1164.all;
-USE			ieee.numeric_std.all;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			ieee.numeric_std.all;
 
-LIBRARY PoC;
-USE			PoC.alu_prng;
-USE			PoC.functions.all;
+library	PoC;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.arith_prng;
 
-LIBRARY	L_Global;
-USE			L_Global.GlobalTypes.all;
 
-ENTITY Stream_FrameGenerator IS
-  GENERIC (
+entity Stream_FrameGenerator is
+  generic (
     DATA_BITS							: POSITIVE														:= 8;
 		WORD_BITS							: POSITIVE														:= 16;
-		APPEND								: T_FRAMEGEN_APPEND										:= FRAMEGEN_APP_NONE;
+		APPend								: T_FRAMEGEN_APPend										:= FRAMEGEN_APP_NONE;
 		FRAMEGROUPS						: T_FRAMEGEN_FRAMEGROUP_VECTOR_8			:= (0 => C_FRAMEGEN_FRAMEGROUP_EMPTY)
   );
-	PORT (
-		Clock									: IN	STD_LOGIC;
-		Reset									: IN	STD_LOGIC;
+	port (
+		Clock									: in	STD_LOGIC;
+		Reset									: in	STD_LOGIC;
 
 		-- CSE interface
-		Command								: IN	T_FRAMEGEN_COMMAND;
-		Status								: OUT	T_FRAMEGEN_STATUS;
+		Command								: in	T_FRAMEGEN_COMMAND;
+		Status								: out	T_FRAMEGEN_STATUS;
 
 		-- Control interface
-		Pause									: IN	T_SLV_16;
-		FrameGroupIndex				: IN	T_SLV_8;
-		FrameIndex						: IN	T_SLV_8;
-		Sequences							: IN	T_SLV_16;
-		FrameLength						: IN	T_SLV_16;
+		Pause									: in	T_SLV_16;
+		FrameGroupIndex				: in	T_SLV_8;
+		FrameIndex						: in	T_SLV_8;
+		Sequences							: in	T_SLV_16;
+		FrameLength						: in	T_SLV_16;
 		
 		-- OUT Port
-		Out_Valid							: OUT	STD_LOGIC;
-		Out_Data							: OUT	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
-		Out_SOF								: OUT	STD_LOGIC;
-		Out_EOF								: OUT	STD_LOGIC;
-		Out_Ready							: IN	STD_LOGIC
+		Out_Valid							: out	STD_LOGIC;
+		Out_Data							: out	STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
+		Out_SOF								: out	STD_LOGIC;
+		Out_EOF								: out	STD_LOGIC;
+		Out_Ack								: in	STD_LOGIC
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF Stream_FrameGenerator IS
+architecture rtl of Stream_FrameGenerator is
 
-	TYPE T_STATE IS (
+	type T_STATE is (
 		ST_IDLE,
 			ST_SEQUENCE_SOF,	ST_SEQUENCE_DATA,	ST_SEQUENCE_EOF,
 			ST_RANDOM_SOF,		ST_RANDOM_DATA,		ST_RANDOM_EOF,
 		ST_ERROR
 	);
 	
-	SIGNAL State											: T_STATE														:= ST_IDLE;
-	SIGNAL NextState									: T_STATE;
+	signal State											: T_STATE														:= ST_IDLE;
+	signal NextState									: T_STATE;
 	
-	SIGNAL FrameLengthCounter_rst			: STD_LOGIC;
-	SIGNAL FrameLengthCounter_en			: STD_LOGIC;
-	SIGNAL FrameLengthCounter_us			: UNSIGNED(15 DOWNTO 0)							:= (OTHERS => '0');
+	signal FrameLengthCounter_rst			: STD_LOGIC;
+	signal FrameLengthCounter_en			: STD_LOGIC;
+	signal FrameLengthCounter_us			: UNSIGNED(15 downto 0)							:= (others => '0');
 	
-	SIGNAL SequencesCounter_rst				: STD_LOGIC;
-	SIGNAL SequencesCounter_en				: STD_LOGIC;
-	SIGNAL SequencesCounter_us				: UNSIGNED(15 DOWNTO 0)							:= (OTHERS => '0');
-	SIGNAL ContentCounter_rst					: STD_LOGIC;
-	SIGNAL ContentCounter_en					: STD_LOGIC;
-	SIGNAL ContentCounter_us					: UNSIGNED(WORD_BITS - 1 DOWNTO 0)	:= (OTHERS => '0');
+	signal SequencesCounter_rst				: STD_LOGIC;
+	signal SequencesCounter_en				: STD_LOGIC;
+	signal SequencesCounter_us				: UNSIGNED(15 downto 0)							:= (others => '0');
+	signal ContentCounter_rst					: STD_LOGIC;
+	signal ContentCounter_en					: STD_LOGIC;
+	signal ContentCounter_us					: UNSIGNED(WORD_BITS - 1 downto 0)	:= (others => '0');
 	
-	SIGNAL PRNG_rst										: STD_LOGIC;
-	SIGNAL PRNG_got										: STD_LOGIC;
-	SIGNAL PRNG_Data									: STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
-BEGIN
+	signal PRNG_rst										: STD_LOGIC;
+	signal PRNG_got										: STD_LOGIC;
+	signal PRNG_Data									: STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
+begin
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				State		<= ST_IDLE;
-			ELSE
+			else
 				State		<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State, Command, Out_Ready,
+	process(State, Command, Out_Ack,
 					Sequences, FrameLength,
 					FrameLengthCounter_us,
 					SequencesCounter_us, ContentCounter_us,
 					PRNG_Data)
-	BEGIN
+	begin
 		NextState													<= State;
 		
 		Status														<= FRAMEGEN_STATUS_GENERATING;
 		
 		Out_Valid													<= '0';
-		Out_Data													<= (OTHERS => '0');
+		Out_Data													<= (others => '0');
 		Out_SOF														<= '0';
 		Out_EOF														<= '0';
 		
@@ -136,8 +137,8 @@ BEGIN
 		PRNG_rst													<= '0';
 		PRNG_got													<= '0';
 		
-		CASE State IS
-			WHEN ST_IDLE =>
+		case State is
+			when ST_IDLE =>
 				Status												<= FRAMEGEN_STATUS_IDLE;
 				
 				FrameLengthCounter_rst				<= '1';
@@ -145,168 +146,168 @@ BEGIN
 				ContentCounter_rst						<= '1';
 				PRNG_rst											<= '1';
 			
-				CASE Command IS
-					WHEN FRAMEGEN_CMD_NONE =>
+				case Command is
+					when FRAMEGEN_CMD_NONE =>
 						NULL;
 					
-					WHEN FRAMEGEN_CMD_SEQUENCE =>
+					when FRAMEGEN_CMD_SEQUENCE =>
 						NextState									<= ST_SEQUENCE_SOF;
 						
-					WHEN FRAMEGEN_CMD_RANDOM =>
+					when FRAMEGEN_CMD_RANDOM =>
 						NextState									<= ST_RANDOM_SOF;
 					
-					WHEN FRAMEGEN_CMD_SINGLE_FRAME =>
+					when FRAMEGEN_CMD_SINGLE_FRAME =>
 						NextState									<= ST_ERROR;
 						
-					WHEN FRAMEGEN_CMD_SINGLE_FRAMEGROUP =>
+					when FRAMEGEN_CMD_SINGLE_FRAMEGROUP =>
 						NextState									<= ST_ERROR;
 						
-					WHEN FRAMEGEN_CMD_ALL_FRAMES =>
+					when FRAMEGEN_CMD_ALL_FRAMES =>
 						NextState									<= ST_ERROR;
 						
-					WHEN OTHERS =>
+					when others =>
 						NextState									<= ST_ERROR;
-				END CASE;
+				end case;
 			
 			-- generate sequential numbers
 			-- ----------------------------------------------------------------------
-			WHEN ST_SEQUENCE_SOF =>
+			when ST_SEQUENCE_SOF =>
 				Out_Valid											<= '1';
 				Out_Data											<= std_logic_vector(ContentCounter_us);
 				Out_SOF												<= '1';
 				
-				IF (Out_Ready = '1') THEN
+				if (Out_Ack	 = '1') then
 					FrameLengthCounter_en				<= '1';
 					ContentCounter_en						<= '1';
 					
 					NextState										<= ST_SEQUENCE_DATA;
-				END IF;
+				end if;
 			
-			WHEN ST_SEQUENCE_DATA =>
+			when ST_SEQUENCE_DATA =>
 				Out_Valid											<= '1';
 				Out_Data											<= std_logic_vector(ContentCounter_us);
 				
-				IF (Out_Ready = '1') THEN
+				if (Out_Ack	 = '1') then
 					FrameLengthCounter_en				<= '1';
 					ContentCounter_en						<= '1';
 					
-					IF (FrameLengthCounter_us = (unsigned(FrameLength) - 2)) THEN
+					if (FrameLengthCounter_us = (unsigned(FrameLength) - 2)) then
 						NextState									<= ST_SEQUENCE_EOF;
-					END IF;
-				END IF;
+					end if;
+				end if;
 				
-			WHEN ST_SEQUENCE_EOF =>
+			when ST_SEQUENCE_EOF =>
 				Out_Valid											<= '1';
 				Out_Data											<= std_logic_vector(ContentCounter_us);
 				Out_EOF												<= '1';
 				
-				IF (Out_Ready = '1') THEN
+				if (Out_Ack	 = '1') then
 					FrameLengthCounter_rst			<= '1';
 					ContentCounter_en						<= '1';
 					SequencesCounter_en					<= '1';
 					
---					IF (Pause = (Pause'range => '0')) THEN
-					IF (SequencesCounter_us = (unsigned(Sequences) - 1)) THEN
+--					if (Pause = (Pause'range => '0')) then
+					if (SequencesCounter_us = (unsigned(Sequences) - 1)) then
 						Status										<= FRAMEGEN_STATUS_COMPLETE;
 						NextState									<= ST_IDLE;
-					ELSE
+					else
 						NextState									<= ST_SEQUENCE_SOF;
-					END IF;
---					END IF;
-				END IF;
+					end if;
+--					end if;
+				end if;
 			
 			-- generate random numbers
 			-- ----------------------------------------------------------------------
-			WHEN ST_RANDOM_SOF =>
+			when ST_RANDOM_SOF =>
 				Out_Valid									<= '1';
 				Out_Data									<= PRNG_Data;
 				Out_SOF										<= '1';
 				
-				IF (Out_Ready = '1') THEN
+				if (Out_Ack	 = '1') then
 					FrameLengthCounter_en		<= '1';
 					PRNG_got								<= '1';
 					NextState								<= ST_RANDOM_DATA;
-				END IF;
+				end if;
 	
-			WHEN ST_RANDOM_DATA =>
+			when ST_RANDOM_DATA =>
 				Out_Valid									<= '1';
 				Out_Data									<= PRNG_Data;
 
-				IF (Out_Ready = '1') THEN
+				if (Out_Ack	 = '1') then
 					FrameLengthCounter_en		<= '1';
 					PRNG_got								<= '1';
 					
-					IF (FrameLengthCounter_us = (unsigned(FrameLength) - 2)) THEN
+					if (FrameLengthCounter_us = (unsigned(FrameLength) - 2)) then
 						NextState							<= ST_RANDOM_EOF;
-					END IF;
-				END IF;
+					end if;
+				end if;
 			
-			WHEN ST_RANDOM_EOF =>
+			when ST_RANDOM_EOF =>
 				Out_Valid									<= '1';
 				Out_Data									<= PRNG_Data;
 				Out_EOF										<= '1';
 				
 				FrameLengthCounter_rst		<= '1';
 				
-				IF (Out_Ready = '1') THEN
+				if (Out_Ack	 = '1') then
 					PRNG_rst								<= '1';
 					NextState								<= ST_IDLE;
-				END IF;
+				end if;
 			
-			WHEN ST_ERROR =>
+			when ST_ERROR =>
 				Status										<= FRAMEGEN_STATUS_ERROR;
 				NextState									<= ST_IDLE;
 				
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR FrameLengthCounter_rst) = '1') THEN
-				FrameLengthCounter_us			<= (OTHERS => '0');
-			ELSE
-				IF (FrameLengthCounter_en = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset or FrameLengthCounter_rst) = '1') then
+				FrameLengthCounter_us			<= (others => '0');
+			else
+				if (FrameLengthCounter_en = '1') then
 					FrameLengthCounter_us		<= FrameLengthCounter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR SequencesCounter_rst) = '1') THEN
-				SequencesCounter_us			<= (OTHERS => '0');
-			ELSE
-				IF (SequencesCounter_en = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset or SequencesCounter_rst) = '1') then
+				SequencesCounter_us			<= (others => '0');
+			else
+				if (SequencesCounter_en = '1') then
 					SequencesCounter_us		<= SequencesCounter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR ContentCounter_rst) = '1') THEN
-				ContentCounter_us				<= (OTHERS => '0');
-			ELSE
-				IF (ContentCounter_en = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset or ContentCounter_rst) = '1') then
+				ContentCounter_us				<= (others => '0');
+			else
+				if (ContentCounter_en = '1') then
 					ContentCounter_us			<= ContentCounter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 	
-	PRNG : ENTITY Poc.alu_prng
-    GENERIC MAP (
+	PRNG : entity Poc.alu_prng
+    generic map (
       BITS		=> DATA_BITS
 		)
-    PORT MAP (
+    port map (
       clk			=> Clock,
       rst			=> PRNG_rst,
       got			=> PRNG_got,
       val			=> PRNG_Data
      );
-END;
+end;

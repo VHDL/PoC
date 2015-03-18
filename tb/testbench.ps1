@@ -38,7 +38,7 @@ $PyWrapper_Script =					"Testbench.py"
 $PyWrapper_MinVersion =			"3.4.0"
 
 # save parameters and current working directory
-$PyWrapper_Paramters =	$args
+$PyWrapper_Parameters =	$args
 $PyWrapper_ScriptDir =	$PSScriptRoot
 $PyWrapper_WorkingDir =	Get-Location
 $PoC_RootDir_AbsPath =	Convert-Path (Resolve-Path ($PSScriptRoot + "\.."))
@@ -49,7 +49,7 @@ $PyWrapper_LoadEnv_ISE =			$false
 $PyWrapper_LoadEnv_Vivado =		$false
 
 # search parameters for specific options like '-D' to enable batch script debug mode
-foreach ($i in $args) {
+foreach ($i in $PyWrapper_Parameters) {
 	$PyWrapper_Debug =					$PyWrapper_Debug -or					($i -clike "-*D*")
 	$PyWrapper_LoadEnv_ISE =		$PyWrapper_LoadEnv_ISE -or		($i -ceq "--isim")
 	$PyWrapper_LoadEnv_Vivado = $PyWrapper_LoadEnv_Vivado -or ($i -ceq "--xsim")

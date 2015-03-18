@@ -1,0 +1,76 @@
+#% BEGIN-TEMPLATEFILE Board = "ZED" %#
+#% BEGIN-TEMPLATE PMOD %#
+## =============================================================================================================================================================
+## Peripheral Modules (Pmods)
+## =============================================================================================================================================================
+#% END-TEMPLATE PMOD %#
+
+#% BEGIN-TEMPLATE PMOD_PortA %#
+## Pmod Port A (2x6 pins)
+## -----------------------------------------------------------------------------
+##	Bank:						13
+##		VCCO:					3.3V (VCC3V3)
+##	Location:				JA1
+## -----------------------------------------------------------------------------
+NET "ZED_PMOD_PortA<0>"					LOC =  "Y11"	| IOSTANDARD = LVCMOS33;			## {IN}		JA1.1
+NET "ZED_PMOD_PortA<1>"					LOC = "AA11"	| IOSTANDARD = LVCMOS33;			## {IN}		JA1.2
+NET "ZED_PMOD_PortA<2>"					LOC =  "Y10"	| IOSTANDARD = LVCMOS33;			## {IN}		JA1.3
+NET "ZED_PMOD_PortA<3>"					LOC =  "AA9"	| IOSTANDARD = LVCMOS33;			## {IN}		JA1.4
+NET "ZED_PMOD_PortA<4>"					LOC = "AB11"	| IOSTANDARD = LVCMOS33;			## {IN}		JA1.7
+NET "ZED_PMOD_PortA<5>"					LOC = "AB10"	| IOSTANDARD = LVCMOS33;			## {IN}		JA1.8
+NET "ZED_PMOD_PortA<6>"					LOC =  "AB9"	| IOSTANDARD = LVCMOS33;			## {IN}		JA1.9
+NET "ZED_PMOD_PortA<7>"					LOC =  "AA8"	| IOSTANDARD = LVCMOS33;			## {IN}		JA1.10
+#% END-TEMPLATE PMOD_PortA %#
+
+#% BEGIN-TEMPLATE PMOD_PortB %#
+## Pmod Port B (2x6 pins)
+## -----------------------------------------------------------------------------
+##	Bank:						13
+##		VCCO:					3.3V (VCC3V3)
+##	Location:				JB1
+## -----------------------------------------------------------------------------
+NET "ZED_PMOD_PortB<0>"					LOC =  "W12"	| IOSTANDARD = LVCMOS33;			## {IN}		JB1.1
+NET "ZED_PMOD_PortB<1>"					LOC =  "W11"	| IOSTANDARD = LVCMOS33;			## {IN}		JB1.2
+NET "ZED_PMOD_PortB<2>"					LOC =  "V10"	| IOSTANDARD = LVCMOS33;			## {IN}		JB1.3
+NET "ZED_PMOD_PortB<3>"					LOC =   "W8"	| IOSTANDARD = LVCMOS33;			## {IN}		JB1.4
+NET "ZED_PMOD_PortB<4>"					LOC =  "V12"	| IOSTANDARD = LVCMOS33;			## {IN}		JB1.7
+NET "ZED_PMOD_PortB<5>"					LOC =  "W10"	| IOSTANDARD = LVCMOS33;			## {IN}		JB1.8
+NET "ZED_PMOD_PortB<6>"					LOC =   "V9"	| IOSTANDARD = LVCMOS33;			## {IN}		JB1.9
+NET "ZED_PMOD_PortB<7>"					LOC =   "V8"	| IOSTANDARD = LVCMOS33;			## {IN}		JB1.10
+#% END-TEMPLATE PMOD_PortB %#
+
+#% BEGIN-TEMPLATE PMOD_PortC %#
+## Pmod Port C (2x6 pins)
+## -----------------------------------------------------------------------------
+##	Bank:						13
+##		VCCO:					3.3V (VCC3V3)
+##	Location:				JC1
+## -----------------------------------------------------------------------------
+NET "ZED_PMOD_PortC<0>"					LOC =  "AB6"	| IOSTANDARD = LVCMOS33;			## {IN}		JC1.1
+NET "ZED_PMOD_PortC<1>"					LOC =  "AB7"	| IOSTANDARD = LVCMOS33;			## {IN}		JC1.2
+NET "ZED_PMOD_PortC<2>"					LOC =  "AA4"	| IOSTANDARD = LVCMOS33;			## {IN}		JC1.3
+NET "ZED_PMOD_PortC<3>"					LOC =   "Y4"	| IOSTANDARD = LVCMOS33;			## {IN}		JC1.4
+NET "ZED_PMOD_PortC<4>"					LOC =   "T6"	| IOSTANDARD = LVCMOS33;			## {IN}		JC1.7
+NET "ZED_PMOD_PortC<5>"					LOC =   "R6"	| IOSTANDARD = LVCMOS33;			## {IN}		JC1.8
+NET "ZED_PMOD_PortC<6>"					LOC =   "U4"	| IOSTANDARD = LVCMOS33;			## {IN}		JC1.9
+NET "ZED_PMOD_PortC<7>"					LOC =   "T4"	| IOSTANDARD = LVCMOS33;			## {IN}		JC1.10
+#% END-TEMPLATE PMOD_PortC %#
+
+#% BEGIN-TEMPLATE PMOD_PortD %#
+## Pmod Port D (2x6 pins)
+## -----------------------------------------------------------------------------
+##	Bank:						13
+##		VCCO:					3.3V (VCC3V3)
+##	Location:				JD1
+## -----------------------------------------------------------------------------
+NET "ZED_PMOD_PortD<0>"					LOC =   "W7"	| IOSTANDARD = LVCMOS33;			## {IN}		JD1.1
+NET "ZED_PMOD_PortD<1>"					LOC =   "V7"	| IOSTANDARD = LVCMOS33;			## {IN}		JD1.2
+NET "ZED_PMOD_PortD<2>"					LOC =   "V4"	| IOSTANDARD = LVCMOS33;			## {IN}		JD1.3
+NET "ZED_PMOD_PortD<3>"					LOC =   "V5"	| IOSTANDARD = LVCMOS33;			## {IN}		JD1.4
+NET "ZED_PMOD_PortD<4>"					LOC =   "W5"	| IOSTANDARD = LVCMOS33;			## {IN}		JD1.7
+NET "ZED_PMOD_PortD<5>"					LOC =   "W6"	| IOSTANDARD = LVCMOS33;			## {IN}		JD1.8
+NET "ZED_PMOD_PortD<6>"					LOC =   "U5"	| IOSTANDARD = LVCMOS33;			## {IN}		JD1.9
+NET "ZED_PMOD_PortD<7>"					LOC =   "U6"	| IOSTANDARD = LVCMOS33;			## {IN}		JD1.10
+#% END-TEMPLATE PMOD_PortD %#
+
+#% END-TEMPLATEFILE %#

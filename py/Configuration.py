@@ -3,19 +3,20 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Python Main Module:  Entry point to configure the local copy of this PoC repository.
-# 
 # Authors:         		 Patrick Lehmann
+# 
+# Python Main Module:  Entry point to configure the local copy of this PoC repository.
 # 
 # Description:
 # ------------------------------------
-#    This is a python main module (executable) which:
-#    - configures the PoC Library to your local environment,
-#    - ...
+#		This is a python main module (executable) which:
+#		- configures the PoC Library to your local environment,
+#		- return the paths to tool chain files (e.g. ISE settings file)
+#		- ...
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2014 Technische Universitaet Dresden - Germany
+# Copyright 2007-2015 Technische Universitaet Dresden - Germany
 #                     Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +39,7 @@ import PoC
 
 class PoCConfiguration(PoC.PoCBase):
 	
-	__privateSections = ["PoC", "Xilinx", "Xilinx-ISE", "Xilinx-Vivado", "Altera-QuartusII", "Altera-ModelSim", "Questa-ModelSim", "GHDL", "GTKWave", "Solutions"]
+	__privateSections = ["PoC", "Xilinx", "Xilinx-ISE", "Xilinx-LabTools", "Xilinx-Vivado", "Xilinx-HardwareServer", "Altera-QuartusII", "Altera-ModelSim", "Questa-ModelSim", "GHDL", "GTKWave", "Solutions"]
 	
 	def __init__(self, debug, verbose, quiet):
 		try:
@@ -59,15 +60,17 @@ class PoCConfiguration(PoC.PoCBase):
 			self.pocConfig['PoC']['Version'] = '0.0.0'
 			self.pocConfig['PoC']['InstallationDirectory'] = self.directories['PoCRoot'].as_posix()
 
-			self.pocConfig['Xilinx'] =						OrderedDict()
-			self.pocConfig['Xilinx-ISE'] =				OrderedDict()
-			self.pocConfig['Xilinx-Vivado'] =			OrderedDict()
-			self.pocConfig['Altera-QuartusII'] =	OrderedDict()
-			self.pocConfig['Altera-ModelSim'] =		OrderedDict()
-			self.pocConfig['Questa-ModelSim'] =		OrderedDict()
-			self.pocConfig['GHDL'] =							OrderedDict()
-			self.pocConfig['GTKWave'] =						OrderedDict()
-			self.pocConfig['Solutions'] =					OrderedDict()
+			self.pocConfig['Xilinx'] =								OrderedDict()
+			self.pocConfig['Xilinx-ISE'] =						OrderedDict()
+			self.pocConfig['Xilinx-LabTools'] =				OrderedDict()
+			self.pocConfig['Xilinx-Vivado'] =					OrderedDict()
+			self.pocConfig['Xilinx-HardwareServer'] =	OrderedDict()
+			self.pocConfig['Altera-QuartusII'] =			OrderedDict()
+			self.pocConfig['Altera-ModelSim'] =				OrderedDict()
+			self.pocConfig['Questa-ModelSim'] =				OrderedDict()
+			self.pocConfig['GHDL'] =									OrderedDict()
+			self.pocConfig['GTKWave'] =								OrderedDict()
+			self.pocConfig['Solutions'] =							OrderedDict()
 
 			# Writing configuration to disc
 			with self.files['PoCPrivateConfig'].open('w') as configFileHandle:
@@ -95,7 +98,18 @@ class PoCConfiguration(PoC.PoCBase):
 				except PoC.PoCException as ex:
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
-					raise Exception
+					raise
+			
+			# configure LabTools on Windows
+			next = False
+			while (next == False):
+				try:
+					self.manualConfigureWindowsLabTools()
+					next = True
+				except PoC.PoCException as ex:
+					print("FAULT: %s" % ex.message)
+				except Exception as ex:
+					raise
 			
 			# configure Vivado on Windows
 			next = False
@@ -106,7 +120,18 @@ class PoCConfiguration(PoC.PoCBase):
 				except PoC.PoCException as ex:
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
-					raise Exception
+					raise
+			
+			# configure HardwareServer on Windows
+			next = False
+			while (next == False):
+				try:
+					self.manualConfigureWindowsHardwareServer()
+					next = True
+				except PoC.PoCException as ex:
+					print("FAULT: %s" % ex.message)
+				except Exception as ex:
+					raise
 			
 			# configure GHDL on Windows
 			next = False
@@ -117,7 +142,7 @@ class PoCConfiguration(PoC.PoCBase):
 				except PoC.PoCException as ex:
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
-					raise Exception
+					raise
 		
 		# configure Linux
 		elif (self.platform == 'Linux'):
@@ -130,7 +155,18 @@ class PoCConfiguration(PoC.PoCBase):
 				except PoC.PoCException as ex:
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
-					raise Exception
+					raise
+			
+			# configure LabTools on Linux
+			next = False
+			while (next == False):
+				try:
+					self.manualConfigureLinuxLabTools()
+					next = True
+				except PoC.PoCException as ex:
+					print("FAULT: %s" % ex.message)
+				except Exception as ex:
+					raise
 			
 			# configure Vivado on Linux
 			next = False
@@ -141,7 +177,18 @@ class PoCConfiguration(PoC.PoCBase):
 				except PoC.PoCException as ex:
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
-					raise Exception
+					raise
+			
+			# configure HardwareServer on Linux
+			next = False
+			while (next == False):
+				try:
+					self.manualConfigureLinuxHardwareServer()
+					next = True
+				except PoC.PoCException as ex:
+					print("FAULT: %s" % ex.message)
+				except Exception as ex:
+					raise
 					
 			# configure GHDL on Linux
 			next = False
@@ -152,7 +199,7 @@ class PoCConfiguration(PoC.PoCBase):
 				except PoC.PoCException as ex:
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
-					raise Exception
+					raise
 		else:
 			raise PoC.PoCPlatformNotSupportedException(self.platform)
 	
@@ -208,7 +255,35 @@ class PoCConfiguration(PoC.PoCBase):
 				self.pocConfig['Xilinx-ISE'] = {}
 			else:
 				raise PoC.PoCException("unknown option")
-		
+	
+	def manualConfigureWindowsLabTools(self):
+		# Ask for installed Xilinx LabTools
+		isXilinxLabTools = input('Is Xilinx LabTools installed on your system? [Y/n/p]: ')
+		isXilinxLabTools = isXilinxLabTools if isXilinxLabTools != "" else "Y"
+		if (isXilinxLabTools != 'p'):
+			if (isXilinxLabTools == 'Y'):
+				xilinxDirectory =	input('Xilinx Installation Directory [C:\Xilinx]: ')
+				labToolsVersion =	input('Xilinx LabTools Version Number [14.7]: ')
+				print()
+				
+				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "C:\Xilinx"
+				labToolsVersion = labToolsVersion if labToolsVersion != "" else "14.7"
+				
+				xilinxDirectoryPath = Path(xilinxDirectory)
+				labToolsDirectoryPath = xilinxDirectoryPath / labToolsVersion / "LabTools/LabTools"
+				
+				if not xilinxDirectoryPath.exists():		raise PoC.PoCException("Xilinx Installation Directory '%s' does not exist." % xilinxDirectory)
+				if not labToolsDirectoryPath.exists():	raise PoC.PoCException("Xilinx LabTools version '%s' is not installed." % labToolsVersion)
+				
+				self.pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
+				self.pocConfig['Xilinx-LabTools']['Version'] = labToolsVersion
+				self.pocConfig['Xilinx-LabTools']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/${Version}/LabTools'
+				self.pocConfig['Xilinx-LabTools']['BinaryDirectory'] = '${InstallationDirectory}/LabTools/bin/nt64'
+			elif (isXilinxLabTools == 'n'):
+				self.pocConfig['Xilinx-LabTools'] = {}
+			else:
+				raise PoC.PoCException("unknown option")
+	
 	def manualConfigureWindowsVivado(self):
 		# Ask for installed Xilinx Vivado
 		isXilinxVivado = input('Is Xilinx Vivado installed on your system? [Y/n/p]: ')
@@ -234,6 +309,34 @@ class PoCConfiguration(PoC.PoCBase):
 				self.pocConfig['Xilinx-Vivado']['BinaryDirectory'] = '${InstallationDirectory}/bin'
 			elif (isXilinxVivado == 'n'):
 				self.pocConfig['Xilinx-Vivado'] = {}
+			else:
+				raise PoC.PoCException("unknown option")
+	
+	def manualConfigureWindowsHardwareServer(self):
+		# Ask for installed Xilinx HardwareServer
+		isXilinxHardwareServer = input('Is Xilinx HardwareServer installed on your system? [Y/n/p]: ')
+		isXilinxHardwareServer = isXilinxHardwareServer if isXilinxHardwareServer != "" else "Y"
+		if (isXilinxHardwareServer != 'p'):
+			if (isXilinxHardwareServer == 'Y'):
+				xilinxDirectory =	input('Xilinx Installation Directory [C:\Xilinx]: ')
+				hardwareServerVersion =		input('Xilinx HardwareServer Version Number [2014.1]: ')
+				print()
+			
+				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "C:\Xilinx"
+				hardwareServerVersion = hardwareServerVersion if hardwareServerVersion != "" else "2014.1"
+			
+				xilinxDirectoryPath = Path(xilinxDirectory)
+				hardwareServerDirectoryPath = xilinxDirectoryPath / "HardwareServer" / hardwareServerVersion
+			
+				if not xilinxDirectoryPath.exists():					raise PoC.PoCException("Xilinx Installation Directory '%s' does not exist." % xilinxDirectory)
+				if not hardwareServerDirectoryPath.exists():	raise PoC.PoCException("Xilinx HardwareServer version '%s' is not installed." % hardwareServerVersion)
+			
+				self.pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
+				self.pocConfig['Xilinx-HardwareServer']['Version'] = hardwareServerVersion
+				self.pocConfig['Xilinx-HardwareServer']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/HardwareServer/${Version}'
+				self.pocConfig['Xilinx-HardwareServer']['BinaryDirectory'] = '${InstallationDirectory}/bin'
+			elif (isXilinxHardwareServer == 'n'):
+				self.pocConfig['Xilinx-HardwareServer'] = {}
 			else:
 				raise PoC.PoCException("unknown option")
 		
@@ -291,6 +394,34 @@ class PoCConfiguration(PoC.PoCBase):
 				self.pocConfig['Xilinx-ISE'] = {}
 			else:
 				raise PoC.PoCException("unknown option")
+	
+	def manualConfigureLinuxLabTools(self):
+		# Ask for installed Xilinx LabTools
+		isXilinxLabTools = input('Is Xilinx LabTools installed on your system? [Y/n/p]: ')
+		isXilinxLabTools = isXilinxLabTools if isXilinxLabTools != "" else "Y"
+		if (isXilinxLabTools != 'p'):
+			if (isXilinxLabTools == 'Y'):
+				xilinxDirectory =	input('Xilinx Installation Directory [/opt/Xilinx]: ')
+				labToolsVersion =	input('Xilinx LabTools Version Number [14.7]: ')
+				print()
+			
+				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/Xilinx"
+				labToolsVersion = labToolsVersion if labToolsVersion != "" else "14.7"
+			
+				xilinxDirectoryPath = Path(xilinxDirectory)
+				labToolsDirectoryPath = xilinxDirectoryPath / labToolsVersion / "LabTools/LabTools"
+			
+				if not xilinxDirectoryPath.exists():		raise PoC.PoCException("Xilinx Installation Directory '%s' does not exist." % xilinxDirectory)
+				if not labToolsDirectoryPath.exists():	raise PoC.PoCException("Xilinx LabTools version '%s' is not installed." % labToolsVersion)
+			
+				self.pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
+				self.pocConfig['Xilinx-LabTools']['Version'] = labToolsVersion
+				self.pocConfig['Xilinx-LabTools']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/${Version}/LabTools'
+				self.pocConfig['Xilinx-LabTools']['BinaryDirectory'] = '${InstallationDirectory}/LabTools/bin/lin64'
+			elif (isXilinxLabTools == 'n'):
+				self.pocConfig['Xilinx-LabTools'] = {}
+			else:
+				raise PoC.PoCException("unknown option")
 		
 	def manualConfigureLinuxVivado(self):
 		# Ask for installed Xilinx Vivado
@@ -317,6 +448,34 @@ class PoCConfiguration(PoC.PoCBase):
 				self.pocConfig['Xilinx-Vivado']['BinaryDirectory'] = '${InstallationDirectory}/bin'
 			elif (isXilinxVivado == 'n'):
 				self.pocConfig['Xilinx-Vivado'] = {}
+			else:
+				raise PoC.PoCException("unknown option")
+	
+	def manualConfigureLinuxHardwareServer(self):
+		# Ask for installed Xilinx HardwareServer
+		isXilinxHardwareServer = input('Is Xilinx HardwareServer installed on your system? [Y/n/p]: ')
+		isXilinxHardwareServer = isXilinxHardwareServer if isXilinxHardwareServer != "" else "Y"
+		if (isXilinxHardwareServer != 'p'):
+			if (isXilinxHardwareServer == 'Y'):
+				xilinxDirectory =	input('Xilinx Installation Directory [/opt/Xilinx]: ')
+				hardwareServerVersion =		input('Xilinx HardwareServer Version Number [2014.1]: ')
+				print()
+			
+				xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/Xilinx"
+				hardwareServerVersion = hardwareServerVersion if hardwareServerVersion != "" else "2014.1"
+			
+				xilinxDirectoryPath = Path(xilinxDirectory)
+				hardwareServerDirectoryPath = xilinxDirectoryPath / "HardwareServer" / hardwareServerVersion
+			
+				if not xilinxDirectoryPath.exists():					raise PoC.PoCException("Xilinx Installation Directory '%s' does not exist." % xilinxDirectory)
+				if not hardwareServerDirectoryPath.exists():	raise PoC.PoCException("Xilinx HardwareServer version '%s' is not installed." % hardwareServerVersion)
+			
+				self.pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
+				self.pocConfig['Xilinx-HardwareServer']['Version'] = hardwareServerVersion
+				self.pocConfig['Xilinx-HardwareServer']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/HardwareServer/${Version}'
+				self.pocConfig['Xilinx-HardwareServer']['BinaryDirectory'] = '${InstallationDirectory}/bin'
+			elif (isXilinxHardwareServer == 'n'):
+				self.pocConfig['Xilinx-HardwareServer'] = {}
 			else:
 				raise PoC.PoCException("unknown option")
 	
@@ -402,24 +561,36 @@ class PoCConfiguration(PoC.PoCBase):
 		self.readPoCConfiguration()
 	
 	def getISESettingsFile(self):
-		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):
-			raise PoCNotConfiguredException("ERROR: Xilinx ISE is not configured on this system.")
-		
-		iseInstallationDirectoryPath = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
-		
-		if		(self.platform == "Windows"):		return (str(iseInstallationDirectoryPath / "settings64.bat"))
-		elif	(self.platform == "Linux"):			return (str(iseInstallationDirectoryPath / "settings64.sh"))
-		else:	raise PoCPlatformNotSupportedException(self.platform)
-		
+		if (len(self.pocConfig.options("Xilinx-ISE")) != 0):
+			iseInstallationDirectoryPath = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
+			
+			if		(self.platform == "Windows"):		return (str(iseInstallationDirectoryPath / "settings64.bat"))
+			elif	(self.platform == "Linux"):			return (str(iseInstallationDirectoryPath / "settings64.sh"))
+			else:	raise PoCPlatformNotSupportedException(self.platform)
+		elif (len(self.pocConfig.options("Xilinx-LabTools")) != 0):
+			labToolsInstallationDirectoryPath = Path(self.pocConfig['Xilinx-LabTools']['InstallationDirectory'])
+			
+			if		(self.platform == "Windows"):		return (str(labToolsInstallationDirectoryPath / "settings64.bat"))
+			elif	(self.platform == "Linux"):			return (str(labToolsInstallationDirectoryPath / "settings64.sh"))
+			else:	raise PoCPlatformNotSupportedException(self.platform)
+		else:
+			raise PoCNotConfiguredException("ERROR: Xilinx ISE or Xilinx LabTools is not configured on this system.")
+			
 	def getVivadoSettingsFile(self):
-		if (len(self.pocConfig.options("Xilinx-Vivado")) == 0):
-			raise PoCNotConfiguredException("ERROR: Xilinx Vivado is not configured on this system.")
-		
-		vivadoInstallationDirectoryPath = Path(self.pocConfig['Xilinx-Vivado']['InstallationDirectory'])
-		
-		if		(self.platform == "Windows"):		return (str(vivadoInstallationDirectoryPath / "settings64.bat"))
-		elif	(self.platform == "Linux"):			return (str(vivadoInstallationDirectoryPath / "settings64.sh"))
-		else:	raise PoCPlatformNotSupportedException(self.platform)
+		if (len(self.pocConfig.options("Xilinx-Vivado")) != 0):
+			vivadoInstallationDirectoryPath = Path(self.pocConfig['Xilinx-Vivado']['InstallationDirectory'])
+			
+			if		(self.platform == "Windows"):		return (str(vivadoInstallationDirectoryPath / "settings64.bat"))
+			elif	(self.platform == "Linux"):			return (str(vivadoInstallationDirectoryPath / "settings64.sh"))
+			else:	raise PoCPlatformNotSupportedException(self.platform)
+		elif (len(self.pocConfig.options("Xilinx-HardwareServer")) != 0):
+			hardwareServerInstallationDirectoryPath = Path(self.pocConfig['Xilinx-HardwareServer']['InstallationDirectory'])
+			
+			if		(self.platform == "Windows"):		return (str(hardwareServerInstallationDirectoryPath / "settings64.bat"))
+			elif	(self.platform == "Linux"):			return (str(hardwareServerInstallationDirectoryPath / "settings64.sh"))
+			else:	raise PoCPlatformNotSupportedException(self.platform)
+		else:
+			raise PoCNotConfiguredException("ERROR: Xilinx Vivado or Xilinx HardwareServer is not configured on this system.")
 	
 # main program
 def main():
