@@ -7,6 +7,20 @@
 ##		Package:			FF1156
 ##		Speedgrade:		-1
 ## =============================================================================================================================================================
-## Miscellaneous
+## Clock Sources
 ## =============================================================================================================================================================
-CONFIG PART = XC6VLX240TFF1156-1;
+##
+## User Clock
+## =============================================================================
+##		Bank:						24
+##			VCCO:					2.5V (VCC2V5)
+##		Location:				X5 single-ended clock socket
+##		Oscillator:			66 MHz
+##			Vendor:				MMD Components
+##			Device:				MBH2100H-66.000 MHz
+##			Frequency:		66 MHz, 100ppm
+NET "ML605_UserClock"								LOC = "U23";						## {IN}			U11.5
+NET "ML605_UserClock"								IOSTANDARD = LVCMOS25;
+##
+NET "ML605_UserClock"								TNM_NET = "TGRP_UserClock";
+TIMESPEC "TS_UserClock"	= PERIOD "TGRP_UserClock"		66 MHz	HIGH 40 %;

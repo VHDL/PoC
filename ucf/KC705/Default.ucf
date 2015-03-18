@@ -33,8 +33,9 @@ CONFIG PART = XC7K325T-FFG900-2;
 ##			Vendor:				SiTime
 ##			Device:				SIT9102AI-243N25E200.0000 - 1 to 220 MHz High Performance Oscillator
 ##			Frequency:		200 MHz, 50ppm
-NET "KC705_SystemClock_200MHz_n"				LOC = "AD11" | IOSTANDARD = LVDS;				## {IN}		U6.5
-NET "KC705_SystemClock_200MHz_p"				LOC = "AD12" | IOSTANDARD = LVDS;				## {IN}		U6.4
+NET "KC705_SystemClock_200MHz_n"				LOC = "AD11";						## {IN}		U6.5
+NET "KC705_SystemClock_200MHz_p"				LOC = "AD12";						## {IN}		U6.4
+NET "KC705_SystemClock_200MHz_?"				IOSTANDARD = LVDS;
 NET "KC705_SystemClock_200MHz_p"				TNM_NET = "NET_SystemClock_200MHz";
 #% END-TEMPLATE ClockSource_SystemClock %#
 
