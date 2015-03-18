@@ -58,6 +58,7 @@ entity io_7SegmentMux_HEX is
 	);
 end;
 
+
 architecture rtl of io_7SegmentMux_HEX is
 	signal DigitCounter_rst		: STD_LOGIC;
 	signal DigitCounter_en		: STD_LOGIC;

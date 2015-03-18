@@ -57,6 +57,7 @@ entity io_7SegmentMux_BCD is
 	);
 end;
 
+
 architecture rtl of io_7SegmentMux_BCD is
 	signal DigitCounter_rst		: STD_LOGIC;
 	signal DigitCounter_en		: STD_LOGIC;
