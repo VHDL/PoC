@@ -1,4 +1,3 @@
-#% BEGIN-TEMPLATE Display_LCD %#
 ## Liquid Cristal Display
 ## =============================================================================================================================================================
 ##	Bank:						15
@@ -18,4 +17,3 @@ NET "VC707_LCD_DB[7]"														LOC = "AN40" | IOSTANDARD = LVCMOS18;				## J
 NET "VC707_LCD_E"																LOC = "AT40" | IOSTANDARD = LVCMOS18;				## J23 - Pin 9			; level shifted by U33 (TXS0108E)
 NET "VC707_LCD_RS"															LOC = "AN41" | IOSTANDARD = LVCMOS18;				## J23 - Pin 11			; level shifted by U33 (TXS0108E)
 NET "VC707_LCD_RW"															LOC = "AR42" | IOSTANDARD = LVCMOS18;				## J23 - Pin 10			; level shifted by U33 (TXS0108E)
-#% END-TEMPLATE Display_LCD %#

@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -29,97 +29,93 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.physical.ALL;
+library PoC;
+use			PoC.utils.all;
+use			PoC.physical.all;
 
 
-ENTITY io_FrequencyCounter IS
-	GENERIC (
+entity io_FrequencyCounter is
+	generic (
 		CLOCK_FREQ								: FREQ									:= 100.0 MHz;
 		TIMEBASE									: TIME									:= 1.0 sec;
 		RESOLUTION								: POSITIVE							:= 8
 	);
-	PORT (
-		Clock				: IN	STD_LOGIC;
-		Reset				: IN	STD_LOGIC;
-    FreqIn			: IN	STD_LOGIC;
-		FreqOut			: OUT	STD_LOGIC_VECTOR(RESOLUTION - 1 DOWNTO 0)
+	port (
+		Clock				: in	STD_LOGIC;
+		Reset				: in	STD_LOGIC;
+    FreqIn			: in	STD_LOGIC;
+		FreqOut			: out	STD_LOGIC_VECTOR(RESOLUTION - 1 downto 0)
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF io_FrequencyCounter IS
-	CONSTANT TIMEBASECOUNTER_MAX				: POSITIVE																		:= TimingToCycles(TIMEBASE, CLOCK_FREQ);
-	CONSTANT TIMEBASECOUNTER_BITS				: POSITIVE																		:= log2ceilnz(TIMEBASECOUNTER_MAX);
-	CONSTANT REQUENCYCOUNTER_MAX				: POSITIVE																		:= 2**RESOLUTION;
-	CONSTANT FREQUENCYCOUNTER_BITS			: POSITIVE																		:= RESOLUTION;
+architecture rtl of io_FrequencyCounter is
+	constant TIMEBASECOUNTER_MAX				: POSITIVE																		:= TimingToCycles(TIMEBASE, CLOCK_FREQ);
+	constant TIMEBASECOUNTER_BITS				: POSITIVE																		:= log2ceilnz(TIMEBASECOUNTER_MAX);
+	constant REQUENCYCOUNTER_MAX				: POSITIVE																		:= 2**RESOLUTION;
+	constant FREQUENCYCOUNTER_BITS			: POSITIVE																		:= RESOLUTION;
 	
-	SIGNAL TimeBaseCounter_us						: UNSIGNED(TIMEBASECOUNTER_BITS - 1 DOWNTO 0)	:= (OTHERS => '0');
-	SIGNAL TimeBaseCounter_ov						: STD_LOGIC;
-	SIGNAL FrequencyCounter_us					: UNSIGNED(FREQUENCYCOUNTER_BITS DOWNTO 0)		:= (OTHERS => '0');
-	SIGNAL FrequencyCounter_ov					: STD_LOGIC;
+	signal TimeBaseCounter_us						: UNSIGNED(TIMEBASECOUNTER_BITS - 1 downto 0)	:= (others => '0');
+	signal TimeBaseCounter_ov						: STD_LOGIC;
+	signal FrequencyCounter_us					: UNSIGNED(FREQUENCYCOUNTER_BITS downto 0)		:= (others => '0');
+	signal FrequencyCounter_ov					: STD_LOGIC;
 	
-	SIGNAL FreqIn_d											: STD_LOGIC																		:= '0';
-	SIGNAL FreqIn_re										: STD_LOGIC;
+	signal FreqIn_d											: STD_LOGIC																		:= '0';
+	signal FreqIn_re										: STD_LOGIC;
 	
-	SIGNAL FreqOut_d										: STD_LOGIC_VECTOR(RESOLUTION - 1 DOWNTO 0)		:= (OTHERS => '0');
-BEGIN
-
-	FreqIn_d	<= FreqIn WHEN rising_edge(Clock);
-	FreqIn_re	<= NOT FreqIn_d AND FreqIn;
+	signal FreqOut_d										: STD_LOGIC_VECTOR(RESOLUTION - 1 downto 0)		:= (others => '0');
+	
+begin
+	FreqIn_d	<= FreqIn when rising_edge(Clock);
+	FreqIn_re	<= not FreqIn_d and FreqIn;
 
 	-- timebase counter
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') OR (TimeBaseCounter_ov = '1') THEN
-				TimeBaseCounter_us		<= (OTHERS => '0');
-			ELSE
+	process(Clock)
+	begin
+		if rising_edge(clock) then
+			if ((Reset or TimeBaseCounter_ov) = '1') then
+				TimeBaseCounter_us		<= (others => '0');
+			else
 				TimeBaseCounter_us		<= TimeBaseCounter_us + 1;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 	
 	TimeBaseCounter_ov	<= to_sl(TimeBaseCounter_us = TIMEBASECOUNTER_MAX);
 	
 	-- frequency counter
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') OR (TimeBaseCounter_ov = '1') THEN
-				FrequencyCounter_us		<= (OTHERS => '0');
-			ELSE
-				IF (FrequencyCounter_ov = '0') AND (FreqIn_re = '1') THEN
-					FrequencyCounter_us		<= FrequencyCounter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset or TimeBaseCounter_ov) = '1') then
+				FrequencyCounter_us		<= (others => '0');
+			elsif (FrequencyCounter_ov = '0') and (FreqIn_re = '1') then
+				FrequencyCounter_us		<= FrequencyCounter_us + 1;
+			end if;
+		end if;
+	end process;
 	
 	FrequencyCounter_ov	<= FrequencyCounter_us(FrequencyCounter_us'high);
 	
 	-- hold counter value until next TimeBaseCounter event
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
-				FreqOut_d			<= (OTHERS => '0');
-			ELSE
-				IF (TimeBaseCounter_ov = '1') THEN
-					IF (FrequencyCounter_ov = '1') THEN
-						FreqOut_d	<= (OTHERS => '1');
-					ELSE
-						FreqOut_d	<= std_logic_vector(FrequencyCounter_us(FreqOut_d'range));
-					END IF;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
+				FreqOut_d			<= (others => '0');
+			elsif (TimeBaseCounter_ov = '1') then
+				if (FrequencyCounter_ov = '1') then
+					FreqOut_d	<= (others => '1');
+				else
+					FreqOut_d	<= std_logic_vector(FrequencyCounter_us(FreqOut_d'range));
+				end if;
+			end if;
+		end if;
+	end process;
 	
 	FreqOut		<= FreqOut_d;
-END;
+end;
