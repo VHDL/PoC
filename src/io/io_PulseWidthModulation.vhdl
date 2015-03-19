@@ -5,11 +5,12 @@
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
 -- 
--- Module:				 	TODO
+-- Module:				 	Pulse Width Modulated (PWM) signal generator
 --
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module generates a pulse width modulated signal, that can be configured
+--		in frequency (PWM_FREQ) and modulation granularity (PWM_RESOLUTION).
 --
 -- License:
 -- ============================================================================

@@ -5,11 +5,13 @@
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
 --
--- Module:				 	TODO
+-- Module:				 	time multiplexed 7 Segment Display Controller for HEX chars
 -- 
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module is a 7 segment display controller that uses time multiplexing
+--		to control a common anode for each digit in the display. The shown characters
+--		are HEX encoded. A dot per digit is optional.
 --
 -- License:
 -- ============================================================================
