@@ -1,0 +1,13 @@
+# Board specific pin constraints
+#ML505/
+ML605/
+KC705/
+VC707/
+#ZedBoard/
+
+# module level constraints
+net/
+xil/
+
+# 
+MetaStability.ucf
