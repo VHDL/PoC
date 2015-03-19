@@ -57,7 +57,7 @@ ENTITY MMCMConfigurator_Virtex6 IS
 		MMCM_DRP_we							: OUT	STD_LOGIC;																				-- @DRP_Clock
 		MMCM_DRP_DataIn					: IN	T_SLV_16;																					-- @DRP_Clock
 		MMCM_DRP_DataOut				: OUT	T_SLV_16;																					-- @DRP_Clock
-		MMCM_DRP_Ready					: IN	STD_LOGIC;																				-- @DRP_Clock
+		MMCM_DRP_Ack						: IN	STD_LOGIC;																				-- @DRP_Clock
 		
 		MMCM_ReloadConfig				: OUT	STD_LOGIC;																				-- @DRP_Clock
 		MMCM_ReloadConfigDone		: IN	STD_LOGIC																					-- @DRP_Clock
@@ -361,7 +361,7 @@ BEGIN
 			DRP_we									=> MMCM_DRP_we,
 			DRP_DataIn							=> MMCM_DRP_DataIn,
 			DRP_DataOut							=> MMCM_DRP_DataOut,
-			DRP_Ready								=> MMCM_DRP_Ready
+			DRP_Ack									=> MMCM_DRP_Ack	
 		);
 		
 

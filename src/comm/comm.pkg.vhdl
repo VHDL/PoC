@@ -2,18 +2,20 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- ============================================================================================================================================================
--- Package:					VHDL package for component declarations, types and functions assoziated to the PoC.comm namespace
+-- ============================================================================
+-- Authors:				 	Thomas B. Preusser
 --
--- Authors:					Thomas B. Preusser
---
--- Description:			
--- ------------------------------------
---		For detailed documentation see below.
+-- Module:				 	VHDL package for component declarations, types and
+--									functions associated to the PoC.comm namespace
 -- 
+-- Description:
+-- ------------------------------------
+--		TODO
+--
 -- License:
--- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- ============================================================================
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -26,10 +28,11 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================================================================================================
+-- ============================================================================
 
 library	IEEE;
 use			IEEE.std_logic_1164.all;
+
 
 package comm is
 	-- Calculates the Remainder of the Division by the Generator Polynomial GEN.

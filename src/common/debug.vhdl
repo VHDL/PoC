@@ -3,20 +3,20 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 --
 -- ============================================================================
--- Package:					Global configuration settings.
---
 -- Authors:					Thomas B. Preusser
 --									Martin Zabel
 --									Patrick Lehmann
 --
+-- Package:					Debug helper functions.
+--
 -- Description:
 -- ------------------------------------
---		This file evaluates the settings declared in the project specific package my_config.
---		See also template file my_config.vhdl.template.
+--		This file declares a debug helper function to export enum encodings as a
+--		ChipScope readable token file (*.tok).
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,6 +42,7 @@ package debug is
 	impure function dbg_ExportEncoding(Name : STRING; encodings : string; tokenFileName : STRING) return BOOLEAN;
 
 end package;
+
 
 package body debug is
 	impure function dbg_ExportEncoding(Name : STRING; encodings : string; tokenFileName : STRING) return BOOLEAN is

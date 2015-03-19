@@ -2,6 +2,7 @@
 utils.vhdl
 vectors.vhdl
 strings.vhdl
+physical.vhdl
 
 # Templates
 my_*.vhdl.template
@@ -10,3 +11,5 @@ my_*.vhdl.template
 config.vhdl
 board.vhdl
 
+# Common primitives described as a function
+components.vhdl

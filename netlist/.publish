@@ -1,0 +1,12 @@
+# 
+netlist.ps1
+netlist.sh
+
+# 
+configuration.ini
+
+# 
+template.cgc
+
+# created folders - don't publish them
+#XC*/

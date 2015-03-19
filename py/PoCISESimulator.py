@@ -3,9 +3,9 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Python Class:			TODO
-# 
 # Authors:				 	Patrick Lehmann
+# 
+# Python Class:			TODO
 # 
 # Description:
 # ------------------------------------
@@ -15,7 +15,7 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2014 Technische Universitaet Dresden - Germany
+# Copyright 2007-2015 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -140,8 +140,8 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 			str(fuseExecutablePath),
 			('test.%s' % testbenchName),
 			'--incremental',
-			'--timeprecision_vhdl 1fs',			# set minimum time precision to 1 fs
-			'-mt 4',												# enable multithread support
+			'--timeprecision_vhdl', '1fs',			# set minimum time precision to 1 fs
+			'-mt', '4',													# enable multithread support
 			'-prj',	str(prjFilePath),
 			'-o',		str(exeFilePath)
 		]
@@ -153,7 +153,7 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 		try:
 			linkerLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
 		except subprocess.CalledProcessError as ex:
-			print("ERROR while executing ghdl: %s" % str(vhdlFilePath))
+			print("ERROR while executing fuse: %s" % str(vhdlFilePath))
 			print("Return Code: %i" % ex.returncode)
 			print("--------------------------------------------------------------------------------")
 			print(ex.output)

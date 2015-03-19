@@ -1,4 +1,3 @@
-#% BEGIN-TEMPLATE EthernetPHY %#
 ## Ethernet PHY - Marvell Alaska Ultra
 ## =============================================================================
 ##	Bank:						14
@@ -12,19 +11,3 @@ NET "VC707_EthernetPHY_Reset_n"									LOC = "AJ33" | IOSTANDARD = LVCMOS18; ##
 NET "VC707_EthernetPHY_Interrupt_n"							LOC = "AL31" | IOSTANDARD = LVCMOS18; ## U50 - Pin L1					; level shifted by U70 (TXS0108E)
 NET "VC707_EthernetPHY_Management_Clock"				LOC = "AH31" | IOSTANDARD = LVCMOS18; ## U50 - Pin L3					; level shifted by U70 (TXS0108E)
 NET "VC707_EthernetPHY_Management_Data"					LOC = "AK33" | IOSTANDARD = LVCMOS18; ## U50 - Pin M1					; level shifted by U70 (TXS0108E)
-
-## SGMII LVDS signal-pairs
-## --------------------------
-##	Bank:						113
-##	ReferenceClock
-##		Location:			U2 (ICS844021I_TSSOP8)
-##		Vendor:				
-##		Device:				ICS844021I
-##		Frequency:		125 MHz
-NET "VC707_EthernetPHY_RefClock_125MHz_n"				LOC = "AH7";													## 
-NET "VC707_EthernetPHY_RefClock_125MHz_p"				LOC = "AH8";													## 
-NET "VC707_EthernetPHY_SGMII_TX_n"							LOC = "AN1";													## 
-NET "VC707_EthernetPHY_SGMII_TX_p"							LOC = "AN2";													## 
-NET "VC707_EthernetPHY_SGMII_RX_n"							LOC = "AM7";													## 
-NET "VC707_EthernetPHY_SGMII_RX_p"							LOC = "AM8";													## 
-#% END-TEMPLATE EthernetPHY %#
