@@ -5,11 +5,28 @@
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
 -- 
--- Module:				 	TODO
+-- Module:				 	Generic Fan Controller
 --
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module generates a PWM signal for a 3-pin (transistor controlled) or
+--		4-pin fan header. The FPGAs temperature is read from device specific system
+--		monitors (normal, user temperature, over temperature).
+--
+--		For example the Xilinx System Monitors are configured as follows:
+--
+--										|											 /-----\
+--		Temp_ov	 on=80	|	-	-	-	-	-	-	/-------/				\
+--										|						 /				|				 \
+--		Temp_ov	off=60	|	-	-	-	-	-	/	-	-	-	-	|	-	-	-	-	\----\
+--										|					 /					|								\
+--										|					/						|							 | \
+--		Temp_us	 on=35	|	-	 /---/						|							 |	\
+--		Temp_us	off=30	|	-	/	-	-|-	-	-	-	-	-	|	-	-	-	-	-	-	-|-  \------\
+--										|  /		 |						|							 |					 \
+--		----------------|--------|------------|--------------|----------|---------
+--		pwm =						|		min	 |	medium		|		max				 |	medium	|	min
+--
 --
 -- License:
 -- ============================================================================
@@ -57,23 +74,6 @@ entity io_FanControl is
 	);
 end;
 
---	System Monitor settings
--- ============================================================================================================================================================
---
---
---									|											 /-----\
---	Temp_ov	 on=80	|	-	-	-	-	-	-	/-------/				\
---									|						 /				|				 \
---	Temp_ov	off=60	|	-	-	-	-	-	/	-	-	-	-	|	-	-	-	-	\----\
---									|					 /					|								\
---									|					/						|							 | \
---	Temp_us	 on=35	|	-	 /---/						|							 |	\
---	Temp_us	off=30	|	-	/	-	-|-	-	-	-	-	-	|	-	-	-	-	-	-	-|-  \------\
---									|  /		 |						|							 |					 \
---	----------------|--------|------------|--------------|----------|---------
---	pwm =						|		min	 |	medium		|		max				 |	medium	|	min
---
--- ============================================================================================================================================================
 
 architecture rtl of io_FanControl is
 	constant TIME_STARTUP			: TIME																							:= 500.0 ms;	-- StartUp time
@@ -92,7 +92,7 @@ architecture rtl of io_FanControl is
 	signal Tacho_Frequency		: STD_LOGIC_VECTOR(TACHO_RESOLUTION + 4 downto 0);
 	
 begin
-	-- System Monitor and temerature to PWM ratio calculation for Virtex6
+	-- System Monitor and temperature to PWM ratio calculation for Virtex6
 	-- ==========================================================================================================================================================
 	genXilinx : if (VENDOR = VENDOR_XILINX) generate
 		signal OverTemperature_async	: STD_LOGIC;

@@ -5,11 +5,14 @@
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
 --
--- Module:				 	TODO
+-- Module:				 	time multiplexed 7 Segment Display Controller for BCD chars
 -- 
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module is a 7 segment display controller that uses time multiplexing
+--		to control a common anode for each digit in the display. The shown characters
+--		are BCD encoded. A dot per digit is optional. A minus sign for negative
+--		numbers is supported.
 --
 -- License:
 -- ============================================================================

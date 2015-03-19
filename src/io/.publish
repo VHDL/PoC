@@ -1,0 +1,22 @@
+# low speed protocols
+#iic/
+#lcd/
+#mdio/
+#ow/
+#ps2/
+#uart/
+#vga/
+
+# devices
+#device/
+
+# common files
+io.pkg.vhdl
+io_7SegmentMux_BCD.vhdl
+io_7SegmentMux_HEX.vhdl
+#io_Debounce.vhdl
+io_FanControl.vhdl
+#io_FrequencyCounter.vhdl
+#io_GlitchFilter.vhdl
+io_PulseWidthModulation.vhdl
+io_TimingCounter.vhdl
