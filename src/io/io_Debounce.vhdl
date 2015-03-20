@@ -5,11 +5,12 @@
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
 -- 
--- Module:				 	TODO
+-- Module:				 	Debounce module for BITS many unreliable input pins
 --
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module debounces several input pins. Each wire (pin) is feed through
+--		a PoC.io.GlitchFilter. An optional two FF input synchronizes can be added.
 --
 -- License:
 -- ============================================================================
@@ -46,9 +47,9 @@ entity io_Debounce is
 		ADD_INPUT_SYNCHRONIZER	: BOOLEAN			:= TRUE
 	);
   port (
-		Clock		: in STD_LOGIC;
-		Input		: in STD_LOGIC_VECTOR(BITS - 1 downto 0);
-		Output	: out STD_LOGIC_VECTOR(BITS - 1 downto 0)
+		Clock		: in	STD_LOGIC;
+		Input		: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);
+		Output	: out	STD_LOGIC_VECTOR(BITS - 1 downto 0)
 	);
 end;
 
