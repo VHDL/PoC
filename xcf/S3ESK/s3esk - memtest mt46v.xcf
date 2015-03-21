@@ -1,0 +1,1 @@
+NET "clk_mem" PERIOD = 10 ns;
