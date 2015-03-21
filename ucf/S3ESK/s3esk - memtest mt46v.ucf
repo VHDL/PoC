@@ -1,0 +1,238 @@
+#####################################################
+### SPARTAN-3E STARTER KIT BOARD CONSTRAINTS FILE
+###
+### Taken from Xilinx User Guide
+###
+### Changes by Martin Zabel:
+### - Adjusted signal names.
+### - Added timing constraints.
+#####################################################
+
+# === Common ===
+TIMEGRP "TGRP_rising_ffs"  = RISING  FFS;
+TIMEGRP "TGRP_falling_ffs" = FALLING FFS;
+
+# ==== Pushbuttons (BTN) =====
+#NET "btn_east" LOC = "H13" | IOSTANDARD = LVTTL | PULLDOWN ;
+#NET "btn_north" LOC = "V4" | IOSTANDARD = LVTTL | PULLDOWN ;
+NET "btn_south" LOC = "K17" | IOSTANDARD = LVTTL | PULLDOWN ;
+#NET "btn_west" LOC = "D18" | IOSTANDARD = LVTTL | PULLDOWN ;
+
+#NET "BTN_Reset"			LOC = "K17" | IOSTANDARD = LVTTL | PULLDOWN ;
+#NET "BTN_SingleStep"	LOC = "D18" | IOSTANDARD = LVTTL | PULLDOWN ;
+
+# ==== Switches (SW) =====
+#NET "SW_Debug"				LOC = "L13" | IOSTANDARD = LVTTL | PULLDOWN ;
+
+# ==== Clock inputs (CLK) ====
+NET "clk_in" LOC = "C9" | IOSTANDARD = LVCMOS33 ;
+# Define clock period for 50 MHz oscillator (40%/60% duty-cycle)
+NET "clk_in" TNM_NET = "TGRP_clk_in";
+TIMESPEC "TS_clk_in" = PERIOD "TGRP_clk_in" 20 ns HIGH 40 %;
+
+NET "clk_sys"     TNM = "TGRP_sys";
+NET "clk_mem"     TNM = "TGRP_mem";
+NET "clk_mem_n"   TNM = "TGRP_mem_n";
+NET "clk_mem90"   TNM = "TGRP_mem90";
+NET "clk_mem90_n" TNM = "TGRP_mem90_n";
+
+NET "sd_ck_fb" TNM_NET = "TGRP_sd_ck_fb";
+TIMESPEC "TS_sd_ck_fb" = PERIOD "TGRP_sd_ck_fb" 10 ns HIGH 50 %;
+
+NET "clk_memfb90"   TNM = "TGRP_memfb90";
+NET "clk_memfb90_n" TNM = "TGRP_memfb90_n";
+
+# Cross-clock paths.
+# Maximum delay is period of fastest clock.
+# clk_sys and clk_mem are related, but automatic constraints do not work.
+# clk_sys and clk_memfb90_n are not related.
+
+TIMESPEC "TS_cross1" = FROM "TGRP_sys"       TO "TGRP_mem"       10 ns;
+TIMESPEC "TS_cross2" = FROM "TGRP_mem"       TO "TGRP_sys"       10 ns;
+
+TIMESPEC "TS_cross3" = FROM "TGRP_sys"       TO "TGRP_memfb90_n" 10 ns;
+TIMESPEC "TS_cross4" = FROM "TGRP_memfb90_n" TO "TGRP_sys"       10 ns;
+
+# ==== Discrete LEDs (LED) ====
+# These are shared connections with the FX2 connector
+NET "led<7>" LOC = "F9" | IOSTANDARD = LVTTL | SLEW = SLOW | DRIVE = 8 ;
+NET "led<6>" LOC = "E9" | IOSTANDARD = LVTTL | SLEW = SLOW | DRIVE = 8 ;
+NET "led<5>" LOC = "D11" | IOSTANDARD = LVTTL | SLEW = SLOW | DRIVE = 8 ;
+NET "led<4>" LOC = "C11" | IOSTANDARD = LVTTL | SLEW = SLOW | DRIVE = 8 ;
+NET "led<3>" LOC = "F11" | IOSTANDARD = LVTTL | SLEW = SLOW | DRIVE = 8 ;
+NET "led<2>" LOC = "E11" | IOSTANDARD = LVTTL | SLEW = SLOW | DRIVE = 8 ;
+NET "led<1>" LOC = "E12" | IOSTANDARD = LVTTL | SLEW = SLOW | DRIVE = 8 ;
+NET "led<0>" LOC = "F12" | IOSTANDARD = LVTTL | SLEW = SLOW | DRIVE = 8 ;
+
+# ==== FX2 Connector (FX2) ====
+# These four connections are shared with the J1 6-pin accessory headers
+#NET "fx2_io<1>" LOC = "B4" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<2>" LOC = "A4" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<3>" LOC = "D5" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<4>" LOC = "C5" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+# These four connections are shared with the J2 6-pin accessory header
+#NET "fx2_io<5>" LOC = "A6" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<6>" LOC = "B6" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<7>" LOC = "E7" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<8>" LOC = "F7" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+# These four connections are shared with the J4 6-pin accessory header
+#NET "fx2_io<9>" LOC = "D7" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<10>" LOC = "C7" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<11>" LOC = "F8" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<12>" LOC = "E8" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+# The discrete LEDs are shared with the following 8 FX2 connections
+#NET "fx2_io<13>" LOC = "F9" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<14>" LOC = "E9" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<15>" LOC = "D11" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<16>" LOC = "C11" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<17>" LOC = "F11" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<18>" LOC = "E11" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<19>" LOC = "E12" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<20>" LOC = "F12" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<21>" LOC = "A13" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<22>" LOC = "B13" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<23>" LOC = "A14" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<24>" LOC = "B14" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<25>" LOC = "C14" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<26>" LOC = "D14" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<27>" LOC = "A16" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<28>" LOC = "B16" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<29>" LOC = "E13" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<30>" LOC = "C4" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<31>" LOC = "B11" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<32>" LOC = "A11" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<33>" LOC = "A8" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+#NET "fx2_io<34>" LOC = "G9" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8 ;
+
+
+# ==== RS-232 Serial Ports (RS232) ====
+#NET "rs232_dce_rxd" LOC = "R7" | IOSTANDARD = LVTTL ;
+#NET "rs232_dce_txd" LOC = "M14" | IOSTANDARD = LVTTL | DRIVE = 8 | SLEW = SLOW ;
+
+# ==== DDR SDRAM (SD) ==== (I/O Bank 3, VCCO=2.5V)
+NET "sd_a<12>" LOC = "P2" | IOSTANDARD = SSTL2_I ;
+NET "sd_a<11>" LOC = "N5" | IOSTANDARD = SSTL2_I ;
+NET "sd_a<10>" LOC = "T2" | IOSTANDARD = SSTL2_I ;
+NET "sd_a<9>" LOC = "N4" | IOSTANDARD = SSTL2_I ;
+NET "sd_a<8>" LOC = "H2" | IOSTANDARD = SSTL2_I ;
+NET "sd_a<7>" LOC = "H1" | IOSTANDARD = SSTL2_I ;
+NET "sd_a<6>" LOC = "H3" | IOSTANDARD = SSTL2_I ;
+NET "sd_a<5>" LOC = "H4" | IOSTANDARD = SSTL2_I ;
+NET "sd_a<4>" LOC = "F4" | IOSTANDARD = SSTL2_I ;
+NET "sd_a<3>" LOC = "P1" | IOSTANDARD = SSTL2_I ;
+NET "sd_a<2>" LOC = "R2" | IOSTANDARD = SSTL2_I ;
+NET "sd_a<1>" LOC = "R3" | IOSTANDARD = SSTL2_I ;
+NET "sd_a<0>" LOC = "T1" | IOSTANDARD = SSTL2_I ;
+NET "sd_dq<15>" LOC = "H5" | IOSTANDARD = SSTL2_I ;
+NET "sd_dq<14>" LOC = "H6" | IOSTANDARD = SSTL2_I ;
+NET "sd_dq<13>" LOC = "G5" | IOSTANDARD = SSTL2_I ;
+NET "sd_dq<12>" LOC = "G6" | IOSTANDARD = SSTL2_I ;
+NET "sd_dq<11>" LOC = "F2" | IOSTANDARD = SSTL2_I ;
+NET "sd_dq<10>" LOC = "F1" | IOSTANDARD = SSTL2_I ;
+NET "sd_dq<9>" LOC = "E1" | IOSTANDARD = SSTL2_I ;
+NET "sd_dq<8>" LOC = "E2" | IOSTANDARD = SSTL2_I ;
+NET "sd_dq<7>" LOC = "M6" | IOSTANDARD = SSTL2_I ;
+NET "sd_dq<6>" LOC = "M5" | IOSTANDARD = SSTL2_I ;
+NET "sd_dq<5>" LOC = "M4" | IOSTANDARD = SSTL2_I ;
+NET "sd_dq<4>" LOC = "M3" | IOSTANDARD = SSTL2_I ;
+NET "sd_dq<3>" LOC = "L4" | IOSTANDARD = SSTL2_I ;
+NET "sd_dq<2>" LOC = "L3" | IOSTANDARD = SSTL2_I ;
+NET "sd_dq<1>" LOC = "L1" | IOSTANDARD = SSTL2_I ;
+NET "sd_dq<0>" LOC = "L2" | IOSTANDARD = SSTL2_I ;
+NET "sd_ba<0>" LOC = "K5" | IOSTANDARD = SSTL2_I ;
+NET "sd_ba<1>" LOC = "K6" | IOSTANDARD = SSTL2_I ;
+NET "sd_cas" LOC = "C2" | IOSTANDARD = SSTL2_I ;
+NET "sd_ck_n" LOC = "J4" | IOSTANDARD = SSTL2_I ;
+NET "sd_ck_p" LOC = "J5" | IOSTANDARD = SSTL2_I ;
+NET "sd_cke" LOC = "K3" | IOSTANDARD = SSTL2_I ;
+NET "sd_cs" LOC = "K4" | IOSTANDARD = SSTL2_I ;
+NET "sd_ldm" LOC = "J2" | IOSTANDARD = SSTL2_I ;
+NET "sd_ldqs" LOC = "L6" | IOSTANDARD = SSTL2_I ;
+NET "sd_ras" LOC = "C1" | IOSTANDARD = SSTL2_I ;
+NET "sd_udm" LOC = "J1" | IOSTANDARD = SSTL2_I ;
+NET "sd_udqs" LOC = "G3" | IOSTANDARD = SSTL2_I ;
+NET "sd_we" LOC = "D1" | IOSTANDARD = SSTL2_I ;
+# Path to allow connection to top DCM connection
+NET "sd_ck_fb" LOC = "B9" | IOSTANDARD = LVCMOS33 ;	
+# Prohibit VREF pins
+CONFIG PROHIBIT = D2;
+CONFIG PROHIBIT = G4;
+CONFIG PROHIBIT = J6;
+CONFIG PROHIBIT = L5;
+CONFIG PROHIBIT = R4;
+
+NET "sd_ck_p"  TNM = "TGRP_sd_clk";
+NET "sd_ck_n"  TNM = "TGRP_sd_clk";
+NET "sd_ldqs"  TNM = "TGRP_sd_clk";
+NET "sd_udqs"  TNM = "TGRP_sd_clk";
+
+# Timing constraints such that (T)FFs must be placed in IOBs.
+TIMEGRP "TGRP_sd_clk" OFFSET = OUT  6.7 ns AFTER clk_in
+		      	       TIMEGRP "TGRP_rising_ffs";
+TIMEGRP "TGRP_sd_clk" OFFSET = OUT 11.7 ns AFTER clk_in
+		      	       TIMEGRP "TGRP_falling_ffs";
+
+NET "sd_a[*]"  TNM = "TGRP_sd_cmd";
+NET "sd_ba[*]" TNM = "TGRP_sd_cmd";
+NET "sd_cke"   TNM = "TGRP_sd_cmd";
+NET "sd_cs"    TNM = "TGRP_sd_cmd";
+NET "sd_ras"   TNM = "TGRP_sd_cmd";
+NET "sd_cas"   TNM = "TGRP_sd_cmd";
+NET "sd_we"    TNM = "TGRP_sd_cmd";
+
+# Timing constraints such that FFs must be placed in IOBs.
+TIMEGRP "TGRP_sd_cmd" OFFSET = OUT 4.2 ns AFTER clk_in; 
+
+NET "sd_dq[*]" TNM = "TGRP_sd_dq";
+NET "sd_dq[*]" IFD_DELAY_VALUE = 0;
+
+# Timing constraints to check clock setup.
+TIMEGRP "TGRP_sd_dq" OFFSET = OUT  4.2 ns AFTER clk_in
+		     	      TIMEGRP "TGRP_rising_ffs";
+TIMEGRP "TGRP_sd_dq" OFFSET = OUT  9.2 ns AFTER clk_in
+		     	      TIMEGRP "TGRP_falling_ffs";
+
+# Input timing
+TIMEGRP "TGRP_sd_dq" OFFSET = IN -0.7 ns VALID 3.6 ns BEFORE "sd_ck_fb"
+		     	      TIMEGRP "TGRP_memfb90";
+TIMEGRP "TGRP_sd_dq" OFFSET = IN -5.7 ns VALID 3.6 ns BEFORE "sd_ck_fb"
+		     	      TIMEGRP "TGRP_memfb90_n";
+
+
+# ==== Slide Switches (SW) ====
+NET "sw<0>" LOC = "L13" | IOSTANDARD = LVTTL | PULLUP ;
+#NET "sw<1>" LOC = "L14" | IOSTANDARD = LVTTL | PULLUP ;
+#NET "sw<2>" LOC = "H18" | IOSTANDARD = LVTTL | PULLUP ;
+#NET "sw<3>" LOC = "N17" | IOSTANDARD = LVTTL | PULLUP ;
+
+##############################################################################
+### Constraints for clockgen_s3esk
+##############################################################################
+INST "clockgen/dcm_memfb" LOC = "DCM_X0Y1" ;
+INST "clockgen/dcm_sys"   LOC = "DCM_X1Y1" ;
+
+##############################################################################
+### Constraints for mt46v_ctrl_phy_s3esk
+##############################################################################
+
+# A FROM:TO constraint between the two read enable register (as shown below)
+# can't be specified due to the unrelated clocks.
+# (The timing analyzer falsely relates clk_in and sd_ck_fb.)
+#
+# INST "mem_ctrl/phy/rden1_r" TNM = "TGRP_rden1_r";
+# INST "mem_ctrl/phy/rden2_r" TNM = "TGRP_rden2_r";
+# TIMESPEC "TS_rden" = FROM "TGRP_rden1_r" TO "TGRP_rden2_r" 2 ns;
+#
+# Instead the maximum net delay is kept as short as possible.
+#
+NET "mem_ctrl/phy/rden1_r" MAXDELAY = 0.5 ns;
+
+INST "mem_ctrl/phy/dqs_obuf[*].tff" IOB = TRUE;
+INST "mem_ctrl/phy/dq_obuf[*].tff"  IOB = TRUE;
+
+##############################################################################
+### Misc
+##############################################################################
+OFFSET = IN  10 ns BEFORE "clk_in";
+OFFSET = OUT 10 ns AFTER  "clk_in";
+OFFSET = OUT 20 ns AFTER  "sd_ck_fb";
