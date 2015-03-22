@@ -9,7 +9,8 @@
 --
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module filters glitches on a wire. The high and low spike suppression
+--		cycle counts can be configured.
 --
 -- License:
 -- ============================================================================
@@ -71,9 +72,11 @@ architecture rtl of io_GlitchFilter is
 	signal TC_Timeout								: STD_LOGIC;
 
 begin
-	assert FALSE report "GlitchFilter: " &
-											"HighSpikeSuppressionCycles=" & INTEGER'image(TIMING_TABLE(TTID_HIGH_SPIKE)) & "  " &
-											"LowSpikeSuppressionCycles=" & INTEGER'image(TIMING_TABLE(TTID_LOW_SPIKE)) & "  " severity NOTE;
+	assert FALSE
+		report "GlitchFilter: " &
+					 "HighSpikeSuppressionCycles="	& INTEGER'image(TIMING_TABLE(TTID_HIGH_SPIKE))	& "  " &
+					 "LowSpikeSuppressionCycles="		& INTEGER'image(TIMING_TABLE(TTID_LOW_SPIKE))		& "  "
+		severity NOTE;
 	
 	process(Clock)
 	begin
