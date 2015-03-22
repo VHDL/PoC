@@ -46,13 +46,27 @@ package satadbg is
 	-- SATA Transceiver Types
 	-- ===========================================================================
 	TYPE T_SATADBG_TRANSCEIVER_OUT IS RECORD
+		PowerDown									: STD_LOGIC;
 		ClockNetwork_Reset				: STD_LOGIC;
 		ClockNetwork_ResetDone		: STD_LOGIC;
 		Reset											: STD_LOGIC;
 		ResetDone									: STD_LOGIC;
-		PowerDown									: STD_LOGIC;
+		
+		CPLL_PowerDown						: STD_LOGIC;
 		CPLL_Reset								: STD_LOGIC;
 		CPLL_Locked								: STD_LOGIC;
+
+		GTX_TX_PowerDown					: STD_LOGIC;
+		GTX_RX_PowerDown					: STD_LOGIC;
+		
+		UserClock									: STD_LOGIC;
+		UserClock_Stable					: STD_LOGIC;
+
+		TX_Reset									: STD_LOGIC;
+		RX_Reset									: STD_LOGIC;
+		TX_ResetDone							: STD_LOGIC;
+		RX_ResetDone							: STD_LOGIC;
+		
 		OOB_Clock									: STD_LOGIC;
 		RP_SATAGeneration					: T_SATA_GENERATION;
 		RP_Reconfig								: STD_LOGIC;
@@ -64,10 +78,6 @@ package satadbg is
 		RX_RateSelection					: STD_LOGIC_VECTOR(2 DOWNTo 0);
 		TX_RateSelectionDone			: STD_LOGIC;
 		RX_RateSelectionDone			: STD_LOGIC;
-		TX_Reset									: STD_LOGIC;
-		RX_Reset									: STD_LOGIC;
-		TX_ResetDone							: STD_LOGIC;
-		RX_ResetDone							: STD_LOGIC;
 		RX_CDR_Locked							: STD_LOGIC;
 		RX_CDR_Hold								: STD_LOGIC;
 		

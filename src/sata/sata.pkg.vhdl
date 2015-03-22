@@ -109,6 +109,9 @@ package sata is
 	TYPE T_SATA_TRANSCEIVER_TX_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_TX_ERROR;
 	TYPE T_SATA_TRANSCEIVER_RX_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_RX_ERROR;
 
+	function to_slv(Status : T_SATA_TRANSCEIVER_COMMAND)	return STD_LOGIC_VECTOR;
+	function to_slv(Status : T_SATA_TRANSCEIVER_STATUS)		return STD_LOGIC_VECTOR;
+
 	-- ===========================================================================
 	-- SATA Physical Layer Types
 	-- ===========================================================================
@@ -606,6 +609,11 @@ PACKAGE BODY sata IS
 	-- ===========================================================================
 	-- to_slv(Command : ***)
 	-- -----------------------------------
+	function to_slv(Command : T_SATA_TRANSCEIVER_COMMAND)	return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_TRANSCEIVER_COMMAND'pos(Command), log2ceilnz(T_SATA_TRANSCEIVER_COMMAND'pos(T_SATA_TRANSCEIVER_COMMAND'high) + 1));
+	end function;
+	
 	function to_slv(Command : T_SATA_SATACONTROLLER_COMMAND) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_SATACONTROLLER_COMMAND'pos(Command), log2ceilnz(T_SATA_SATACONTROLLER_COMMAND'pos(T_SATA_SATACONTROLLER_COMMAND'high) + 1));
@@ -628,6 +636,11 @@ PACKAGE BODY sata IS
 	
 	-- to_slv(Status : ***)
 	-- -----------------------------------
+	function to_slv(Status : T_SATA_TRANSCEIVER_STATUS)		return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_TRANSCEIVER_STATUS'pos(Status), log2ceilnz(T_SATA_TRANSCEIVER_STATUS'pos(T_SATA_TRANSCEIVER_STATUS'high) + 1));
+	end function;
+	
 	function to_slv(Status : T_SATA_PHY_STATUS) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_PHY_STATUS'pos(Status), log2ceilnz(T_SATA_PHY_STATUS'pos(T_SATA_PHY_STATUS'high) + 1));
