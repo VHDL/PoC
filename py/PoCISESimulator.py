@@ -165,6 +165,7 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 			print()
 		
 		# running simulation
+		# ==========================================================================
 		self.printNonQuiet("  running simulation...")
 		parameterList = [
 			str(exeFilePath),
