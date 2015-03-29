@@ -206,15 +206,15 @@ begin
 		signal CC_ClkNet_Reset_fe						: STD_LOGIC;
 		signal CC_Reset_fe									: STD_LOGIC;
 
-		signal CC_PowerDown_R1							: STD_LOGIC			:= '0';
-		signal CC_PowerDown_R2							: STD_LOGIC			:= '0';
-		signal CC_ClkNet_Reset_R1						: STD_LOGIC			:= '0';
-		signal CC_ClkNet_Reset_R2						: STD_LOGIC			:= '0';
-		signal CC_ClkNet_Reset_R3						: STD_LOGIC			:= '0';
-		signal CC_GTX_Reset_R1							: STD_LOGIC			:= '0';
-		signal CC_GTX_Reset_R2							: STD_LOGIC			:= '0';
-		signal CC_FSM_Reset_R1							: STD_LOGIC			:= '0';
-		signal CC_FSM_Reset_R2							: STD_LOGIC			:= '0';
+		signal CC_PowerDown_R1							: STD_LOGIC			:= '1';
+		signal CC_PowerDown_R2							: STD_LOGIC			:= '1';
+		signal CC_ClkNet_Reset_R1						: STD_LOGIC			:= '1';
+		signal CC_ClkNet_Reset_R2						: STD_LOGIC			:= '1';
+		signal CC_ClkNet_Reset_R3						: STD_LOGIC			:= '1';
+		signal CC_GTX_Reset_R1							: STD_LOGIC			:= '1';
+		signal CC_GTX_Reset_R2							: STD_LOGIC			:= '1';
+		signal CC_FSM_Reset_R1							: STD_LOGIC			:= '1';
+		signal CC_FSM_Reset_R2							: STD_LOGIC			:= '1';
 
 		signal CC_PowerDown_R1_re						: STD_LOGIC;
 		signal CC_PowerDown_R1_fe						: STD_LOGIC;
@@ -549,7 +549,8 @@ begin
 		-- =========================================================================
 		syncCtrlClock : entity PoC.xil_SyncBits
 			generic map (
-				BITS					=> 3
+				BITS					=> 3,
+				INIT					=> "001"
 			)
 			port map (
 				Clock					=> Control_Clock,						-- Clock to be synchronized to
@@ -574,28 +575,28 @@ begin
 		CC_Reset_fe						<= CC_Reset_d					and not CC_Reset;
 		
 		process(Control_Clock)
-			variable PowerDown_R1			: STD_LOGIC		:= '0';
-			variable PowerDown_R2			: STD_LOGIC		:= '0';
-			variable ClkNet_Reset_R1	: STD_LOGIC		:= '0';
-			variable ClkNet_Reset_R2	: STD_LOGIC		:= '0';
-			variable ClkNet_Reset_R3	: STD_LOGIC		:= '0';
-			variable GTX_Reset_R1			: STD_LOGIC		:= '0';
-			variable GTX_Reset_R2			: STD_LOGIC		:= '0';
-			variable FSM_Reset_R1			: STD_LOGIC		:= '0';
-			variable FSM_Reset_R2			: STD_LOGIC		:= '0';
+			variable PowerDown_R1			: STD_LOGIC		:= '1';
+			variable PowerDown_R2			: STD_LOGIC		:= '1';
+			variable ClkNet_Reset_R1	: STD_LOGIC		:= '1';
+			variable ClkNet_Reset_R2	: STD_LOGIC		:= '1';
+			variable ClkNet_Reset_R3	: STD_LOGIC		:= '1';
+			variable GTX_Reset_R1			: STD_LOGIC		:= '1';
+			variable GTX_Reset_R2			: STD_LOGIC		:= '1';
+			variable FSM_Reset_R1			: STD_LOGIC		:= '1';
+			variable FSM_Reset_R2			: STD_LOGIC		:= '1';
 			
-			variable temp : STD_LOGIC	:= '0';
+			variable temp							: STD_LOGIC		:= '0';
 		begin
 			-- PowerDown Control
-			if (temp = '1') then
+			if (CC_PowerDown_fe = '1') then
 				PowerDown_R1	:= '0';
 			elsif ((CC_ClkNet_Reset_R2_re and CC_PowerDown) = '1') then
 				PowerDown_R1	:= '1';
 			end if;
 			
-			if (temp = '1') then
+			if (CC_PowerDown_R1 = '0') then		-- TODO: is this correct?
 				PowerDown_R2	:= '0';
-			elsif (PowerDown_R1 = '1') then	-- TODO: is this correct?
+			elsif (CC_PowerDown_R1 = '1') then	-- TODO: is this correct?
 				PowerDown_R2	:= '1';
 			end if;
 			
@@ -612,7 +613,7 @@ begin
 				ClkNet_Reset_R2	:= '1';
 			end if;
 			
-			if (temp = '1') then
+			if (CC_PowerDown_R2_fe = '1') then
 				ClkNet_Reset_R3	:= '0';
 			elsif ((CC_UserClock_Stable_fe and (CC_PowerDown or CC_ClkNet_Reset)) = '1') then
 				ClkNet_Reset_R3	:= '1';
@@ -692,7 +693,8 @@ begin
 		
 		syncUserClock : entity PoC.xil_SyncBits
 			generic map (
-				BITS					=> 5
+				BITS					=> 5,
+				INIT					=> "11001"
 			)
 			port map (
 				Clock					=> GTX_UserClock,						-- Clock to be synchronized to
@@ -718,7 +720,8 @@ begin
 
 		syncControlClock : entity PoC.xil_SyncBits
 			generic map (
-				BITS					=> 7
+				BITS					=> 7,
+				INIT					=> "0000001"
 			)
 			port map (
 				Clock					=> Control_Clock,								-- Clock to be synchronized to
@@ -786,6 +789,7 @@ begin
 		end process;
 		
 		process(State, Command,
+						UC_FSM_DoPowerDown, UC_FSM_DoClkNet_Reset, UC_FSM_DoReset,
 						DD_NoDevice, DD_NewDevice,
 						GTX_TX_BufferStatus(1),
 						GTX_RX_ByteIsAligned, GTX_RX_DisparityError, GTX_RX_NotInTableError, GTX_RX_BufferStatus(2))
