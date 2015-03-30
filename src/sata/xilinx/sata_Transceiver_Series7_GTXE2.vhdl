@@ -935,7 +935,7 @@ begin
 		
 		-- ResetDone calculations
 		ClkNet_ResetDone						<= GTX_CPLL_Locked_async and GTX_TX_ResetDone;				-- @async
-		ClockNetwork_ResetDone(I)		<= ClkNet_ResetDone;																	-- @async
+--		ClockNetwork_ResetDone(I)		<= ClkNet_ResetDone;																	-- @async
 		
 		
 	
@@ -947,12 +947,12 @@ begin
 		GTX_Reset											<= CC_GTX_DoReset;	--UC_GTX_DoReset
 		-- TX resets					
 		GTX_TX_Reset									<= GTX_Reset;
-		GTX_TX_PCSReset								<= '0';
 		GTX_TX_PMAReset								<= '0';
+		GTX_TX_PCSReset								<= '0';
 		-- RX resets					
 		GTX_RX_Reset									<= GTX_Reset or OOB_HandshakeComplete(I);
-		GTX_RX_PCSReset								<= '0';
 		GTX_RX_PMAReset								<= '0';
+		GTX_RX_PCSReset								<= '0';
 		GTX_RX_BufferReset						<= '0';
 
 		-- ResetDone calculations
