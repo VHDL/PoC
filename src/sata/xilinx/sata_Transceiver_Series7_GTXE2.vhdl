@@ -1896,7 +1896,10 @@ begin
 			--	<float>										<= GTX_DRP_Ack;
 		end generate;
 		genCSP1 : if (ENABLE_DEBUGPORT = TRUE) generate
-		
+			function to_slv(Status : T_STATE) return STD_LOGIC_VECTOR is
+			begin
+				return to_slv(T_STATE'pos(Status), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
+			end function;
 		begin
 			GTX_DRP_Clock			<= DebugPortIn(I).DRP.Clock;
 			GTX_DRP_Enable		<= DebugPortIn(I).DRP.Enable;
@@ -1910,15 +1913,42 @@ begin
 			DebugPortOut(I).Reset											<= GTX_Reset;
 			DebugPortOut(I).ResetDone									<= ResetDone_r;
 			
-			DebugPortOut(I).CPLL_PowerDown						<= GTX_CPLL_PowerDown;
-			DebugPortOut(I).CPLL_Reset								<= GTX_CPLL_Reset;
-			DebugPortOut(I).CPLL_Locked								<= GTX_CPLL_Locked_async;
-			
-			DebugPortOut(I).GTX_TX_PowerDown					<= GTX_TX_PowerDown(0);
-			DebugPortOut(I).GTX_RX_PowerDown					<= GTX_RX_PowerDown(0);
-		
 			DebugPortOut(I).UserClock									<= GTX_UserClock;
 			DebugPortOut(I).UserClock_Stable					<= GTX_UserClock_Locked;
+			
+			DebugPortOut(I).CC_PowerDown							<= CC_PowerDown;
+			DebugPortOut(I).CC_ClkNet_Reset						<= CC_ClkNet_Reset;
+			DebugPortOut(I).CC_Reset									<= CC_Reset;
+			
+			DebugPortOut(I).CC_PowerDown_R1						<= CC_PowerDown_R1;
+			DebugPortOut(I).CC_PowerDown_R2						<= CC_PowerDown_R2;
+			DebugPortOut(I).GTX_CPLL_PowerDown				<= GTX_CPLL_PowerDown;
+			DebugPortOut(I).GTX_TX_PowerDown					<= GTX_TX_PowerDown(0);
+			DebugPortOut(I).GTX_RX_PowerDown					<= GTX_RX_PowerDown(0);
+			
+			DebugPortOut(I).CC_ClkNet_Reset_R1				<= CC_ClkNet_Reset_R1;
+			DebugPortOut(I).CC_ClkNet_Reset_R2				<= CC_ClkNet_Reset_R2;
+			DebugPortOut(I).CC_ClkNet_Reset_R3				<= CC_ClkNet_Reset_R3;
+			DebugPortOut(I).GTX_CPLL_Reset						<= GTX_CPLL_Reset;
+			DebugPortOut(I).GTX_CPLL_Locked						<= GTX_CPLL_Locked_async;
+			DebugPortOut(I).CC_GTX_CPLL_Locked				<= GTX_CPLL_Locked;
+			
+			DebugPortOut(I).CC_GTX_Reset_R1						<= CC_GTX_Reset_R1;
+			DebugPortOut(I).CC_GTX_Reset_R2						<= CC_GTX_Reset_R2;
+			DebugPortOut(I).UC_GTX_DoReset						<= UC_GTX_DoReset;
+			DebugPortOut(I).GTX_TX_Reset							<= GTX_TX_Reset;
+			DebugPortOut(I).GTX_RX_Reset							<= GTX_RX_Reset;
+			DebugPortOut(I).GTX_TX_ResetDone					<= GTX_TX_ResetDone;
+			DebugPortOut(I).GTX_RX_ResetDone					<= GTX_RX_ResetDone;
+			DebugPortOut(I).CC_GTX_TX_ResetDone				<= CC_GTX_TX_ResetDone;
+			DebugPortOut(I).CC_GTX_RX_ResetDone				<= CC_GTX_RX_ResetDone;
+			
+			DebugPortOut(I).CC_FSM_Reset_R1						<= CC_FSM_Reset_R1;
+			DebugPortOut(I).CC_FSM_Reset_R2						<= CC_FSM_Reset_R2;
+			DebugPortOut(I).UC_PowerDown							<= UC_PowerDown;
+			DebugPortOut(I).UC_ClkNet_Reset						<= UC_ClkNet_Reset;
+			DebugPortOut(I).UC_Reset									<= UC_Reset;
+			DebugPortOut(I).FSM												<= to_slv(State);
 			
 			DebugPortOut(I).OOB_Clock									<= OOB_Clock;
 			DebugPortOut(I).RP_SATAGeneration					<= RP_SATAGeneration(I);
@@ -1931,10 +1961,6 @@ begin
 			DebugPortOut(I).RX_RateSelection					<= GTX_RX_LineRateSelect;
 			DebugPortOut(I).TX_RateSelectionDone			<= GTX_TX_LineRateSelectDone;
 			DebugPortOut(I).RX_RateSelectionDone			<= GTX_RX_LineRateSelectDone;
-			DebugPortOut(I).TX_Reset									<= GTX_TX_Reset;
-			DebugPortOut(I).RX_Reset									<= GTX_RX_Reset;
-			DebugPortOut(I).TX_ResetDone							<= GTX_TX_ResetDone;
-			DebugPortOut(I).RX_ResetDone							<= GTX_RX_ResetDone;
 			DebugPortOut(I).RX_CDR_Locked							<= RX_CDR_Locked;
 			DebugPortOut(I).RX_CDR_Hold								<= GTX_RX_CDR_Hold;
 		
