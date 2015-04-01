@@ -308,8 +308,8 @@ package body strings is
 	-- ===========================================================================
 	function str_format(value : REAL; precision : NATURAL := 3) return STRING is
 		constant s		: REAL			:= sign(value);
-		constant int	: INTEGER		:= integer((value * s) - 0.5);																		-- force ROUND_DOWN
-		constant frac	: INTEGER		:= integer((((value * s) - real(int)) * 10.0**precision) - 0.5);	-- force ROUND_DOWN
+		constant int	: INTEGER		:= imax(0, integer((value * s) - 0.5));																		-- force ROUND_DOWN
+		constant frac	: INTEGER		:= imax(0, integer((((value * s) - real(int)) * 10.0**precision) - 0.5));	-- force ROUND_DOWN
 		constant res	: STRING		:= raw_format_nat_dec(int) & "." & raw_format_nat_dec(frac);
 	begin
 --		assert (not MY_VERBOSE)
