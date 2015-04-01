@@ -4,6 +4,7 @@
 -- 
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
+--									Thomas B. Preußer
 -- 
 -- Module:				 	TODO
 --
@@ -31,17 +32,14 @@
 
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
 
 library PoC;
 use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
-
+use			PoC.physical.all;
 
 PACKAGE lcd IS
-	SUBTYPE T_BCD						IS UNSIGNED(3 DOWNTO 0);
-	TYPE		T_BCD_VECTOR		IS ARRAY (NATURAL RANGE <>)	OF T_BCD;
 	
 	-- define array indices
 	CONSTANT MAX_LCD_COLUMN_COUNT			: POSITIVE			:= 16;
@@ -130,12 +128,43 @@ PACKAGE lcd IS
 	CONSTANT KS0066U_CMD_SET_FUNCTION					: T_SLV_8		:= x"2C";			-- (4 Bit interface, 2-line, 5x8 dots)
 	CONSTANT KS0066U_CMD_ENTRY_MODE						: T_SLV_8		:= x"06";			-- entry mode: move: RIGHT; shift OFF
 
+	component lcd_dotmatrix is
+		generic(
+			CLOCK_FREQ : freq;
+			DATA_WIDTH : positive;  				-- Width of data bus (4 or 8)
 
+			T_W        : time     :=  500 ns; -- Minimum width of E pulse
+			T_SU       : time     :=   60 ns; -- Minimum RS + R/W setup time
+			T_H        : time     :=   20 ns; -- Minimum RS + R/W hole time
+			T_C        : time     := 1000 ns; -- Minimum cycle time
+
+			B_RECOVER_TIME : time := 5 us  -- Recover time after cleared Busy flag
+		);
+		port(
+			-- Global Reset and Clock
+			clk, rst : in std_logic;
+
+			skip_bf : in std_logic := '0';  		-- Skip test for cleared busy flag
+
+			-- Upper Layer Interface
+			rdy : out std_logic;  									 -- ready for command or data
+			stb : in  std_logic;  									 -- input strobe
+			cmd : in  std_logic;  									 -- command / no data selector
+			dat : in  std_logic_vector(7 downto 0);  -- command or data word
+
+			-- LCD Connections
+			lcd_e     : out std_logic;  -- Enable
+			lcd_rs    : out std_logic;  -- Register Select
+			lcd_rw    : out std_logic;  -- Read /Write, Data Direction Selector
+			lcd_dat_i : in  std_logic_vector(DATA_WIDTH-1 downto 0);  -- Data Input
+			lcd_dat_o : out std_logic_vector(DATA_WIDTH-1 downto 0)  	-- Data Output
+		);
+	end component;
 
 
 	PROCEDURE LCDBufferProjection(SIGNAL buffer1 : IN T_LCD_CHAR_VECTOR; SIGNAL buffer2 : OUT T_LCD_CHAR_VECTOR);
 
-	FUNCTION Bin2BCD(Sum_In : T_BCD; C_In : STD_LOGIC) RETURN UNSIGNED;
+	FUNCTION Bin2BCD(Sum_In : T_BCD; C_In : STD_LOGIC) RETURN T_BCD;
 
 	FUNCTION calc_length(slv_length : POSITIVE) RETURN POSITIVE;
 
@@ -149,7 +178,7 @@ PACKAGE lcd IS
 	
 	FUNCTION LCD_CHAR2Bin(char : T_LCD_CHAR) RETURN T_SLV_8;
 	
-	FUNCTION lcd_go_home(row_us : UNSIGNED) RETURN T_SLV_8;
+	FUNCTION lcd_go_home(row_us : std_logic_vector) RETURN T_SLV_8;
 	FUNCTION lcd_display_on(ShowCursor : BOOLEAN; Blink : BOOLEAN) RETURN T_SLV_8;
 	
 	FUNCTION ite(cond : BOOLEAN; value1 : T_LCD_CHAR; value2 : T_LCD_CHAR) RETURN T_LCD_CHAR;
@@ -157,12 +186,14 @@ PACKAGE lcd IS
 
 END;
 
+library IEEE;
+use IEEE.numeric_std.all;
 
 PACKAGE BODY lcd IS
 	FUNCTION to_char(bcd : T_BCD) RETURN CHARACTER IS
 		VARIABLE temp		: T_UINT_8;
 	BEGIN
-		temp	:= to_integer(bcd);
+		temp := to_integer(unsigned(bcd));
 		RETURN ite((temp <= 9), CHARACTER'val(temp), '?');
 	END;
 
@@ -500,10 +531,9 @@ PACKAGE BODY lcd IS
 		END CASE;
 	END;
 	
-	FUNCTION lcd_go_home(row_us : UNSIGNED) RETURN T_SLV_8 IS
-		VARIABLE slv		: STD_LOGIC_VECTOR(row_us'range)		:= std_logic_vector(row_us);
+	FUNCTION lcd_go_home(row_us : std_logic_vector) RETURN T_SLV_8 IS
 	BEGIN
-		RETURN '1' & slv(0) & "000000";
+		RETURN '1' & row_us(0) & "000000";
 	END;
 
 	FUNCTION lcd_display_on(ShowCursor : BOOLEAN; Blink : BOOLEAN) RETURN T_SLV_8 IS
@@ -540,7 +570,7 @@ PACKAGE BODY lcd IS
 		END IF;
 	END;
 	
-	FUNCTION Bin2BCD(Sum_In : T_BCD; C_In : STD_LOGIC) RETURN UNSIGNED IS
+	FUNCTION Bin2BCD(Sum_In : T_BCD; C_In : STD_LOGIC) RETURN T_BCD IS
 	BEGIN
 		IF C_In = '0' THEN
 			CASE Sum_In IS
