@@ -47,7 +47,7 @@ end;
 
 
 architecture test of io_Debounce_tb is 
-	constant CLOCK_FREQ			: FREQ					:= 100.0 MHz;
+	constant CLOCK_FREQ			: FREQ					:= 100 MHz;
 
 	-- simulation signals
 	signal SimStop					: STD_LOGIC 		:= '0';
@@ -56,7 +56,7 @@ architecture test of io_Debounce_tb is
 	signal EventCounter			: NATURAL				:= 0;
 	
 	-- unit Under Test (UUT) configuration
-	constant DEBOUNCE_TIME	:	TIME					:= 50.0 ns;
+	constant BOUNCE_TIME		:	TIME					:= 50.0 ns;
 	
 	signal RawInput					: STD_LOGIC			:= '0';
 	signal deb_out					: STD_LOGIC;
@@ -119,13 +119,14 @@ begin
 	
 	uut : entity PoC.io_Debounce
 		generic map (
-			CLOCK_FREQ				=> CLOCK_FREQ,			-- 
-			DEBOUNCE_TIME			=> DEBOUNCE_TIME,		-- 
-			BITS							=> 1								-- 1 bit
+			CLOCK_FREQ			=> CLOCK_FREQ,
+			BOUNCE_TIME			=> BOUNCE_TIME,
+			BITS						=> 1
 		)
 		port map (
-			Clock							=> Clock,
-			Input(0)					=> RawInput,
-			Output(0)					=> deb_out
+			clk				=> Clock,
+			rst				=> '0',
+			Input(0)	=> RawInput,
+			Output(0)	=> deb_out
 		);
 END;
