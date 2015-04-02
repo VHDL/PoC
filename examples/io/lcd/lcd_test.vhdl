@@ -42,7 +42,7 @@ entity lcd_test is
     lcd_e   : out   std_logic;
     lcd_rs  : out   std_logic;
     lcd_rw  : out   std_logic;
-    lcd_dat : inout std_logic_vector(DATA_WIDTH-1 downto 0)
+    lcd_dat : inout std_logic_vector(7 downto 0)
   );
 end entity lcd_test;
 
@@ -124,8 +124,16 @@ begin
         lcd_dat_o => lcd_dat_o
       );
     lcd_rw    <= lcd_rw_l;
-    lcd_dat   <= lcd_dat_o when lcd_rw_l = '0' else (others => 'Z');
-    lcd_dat_i <= lcd_dat;
+    lcd_dat_i <= lcd_dat(DATA_WIDTH-1 downto 0);
+    process(lcd_rw_l, lcd_dat_o)
+    begin
+      if lcd_rw_l = '1' then
+        lcd_dat <= (others => 'Z');
+      else
+        lcd_dat                        <= (others => '0');
+        lcd_dat(DATA_WIDTH-1 downto 0) <= lcd_dat_o;
+      end if;
+    end process;
   end block;
 
   -- Sequence Counter
