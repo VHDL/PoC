@@ -53,16 +53,16 @@ use IEEE.numeric_std.all;
 library PoC;
 use PoC.lcd.all;
 
-architecture lcd_test_impl of lcd_test is
+architecture rtl of lcd_test is
 
   ----------------------------------------------------------------------------
   -- Transmission Sequence
   type tSeq is array (natural range<>) of std_logic_vector(8 downto 0);
   constant OutSeq : tSeq := (
-    "1001110--",  -- Function Set:     "001", 8-bit, 2-line, off, "--"
-    "100001100",  -- Display on/off:   "00001", on, no cursor, no blink
+    '1' & lcd_functionset(DATA_WIDTH, 2, 0),  -- two line, 5x8 font
+    '1' & lcd_displayctrl(true, false, false),-- on, no cursor, no blink
     "100000001",  -- Display Clear:    "00000001"
-    "100000110",  -- Entry Mode Set:   "000001", inc, no shift
+    '1' & lcd_entrymode(true, false),   -- inc, no shift
     "10000001-",  -- Return Home:      "0000001-"
     "001010000",  -- P
     "001100001",  -- a

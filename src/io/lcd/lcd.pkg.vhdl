@@ -161,6 +161,9 @@ PACKAGE lcd IS
 		);
 	end component;
 
+  function lcd_functionset(datalength : positive; lines : positive; font : natural) return t_slv_8;
+  function lcd_displayctrl(turn_on : boolean; cursor : boolean; blink : boolean) return t_slv_8;
+  function lcd_entrymode(inc_ndec : boolean; shift : boolean) return t_slv_8;
 
 	PROCEDURE LCDBufferProjection(SIGNAL buffer1 : IN T_LCD_CHAR_VECTOR; SIGNAL buffer2 : OUT T_LCD_CHAR_VECTOR);
 
@@ -530,7 +533,31 @@ PACKAGE BODY lcd IS
 			WHEN OTHERS =>				RETURN x"FF";
 		END CASE;
 	END;
-	
+
+  function lcd_functionset(datalength : positive; lines : positive; font : natural) return t_slv_8 is
+		variable dl : std_logic;
+  begin
+    assert datalength = 4 or datalength = 8 report "Invalid display data length." severity error;
+    case datalength is
+      when 4      => dl := '0';
+      when 8      => dl := '1';
+      when others => dl := 'X';
+    end case;
+		assert lines <= 2 report "Invalid display line number." severity error;
+		assert font <= 1 report "Invalid display font selection." severity error;
+    return "001" & dl & to_sl(lines = 2) & to_sl(font > 0) & "--";
+  end;
+
+  function lcd_displayctrl(turn_on : boolean; cursor : boolean; blink : boolean) return t_slv_8 is
+	begin
+		return "00001" & to_sl(turn_on) & to_sl(cursor) & to_sl(blink);
+	end;
+
+  function lcd_entrymode(inc_ndec : boolean; shift : boolean) return t_slv_8 is
+	begin
+		return "000001" & to_sl(inc_ndec) & to_sl(shift);
+	end;
+
 	FUNCTION lcd_go_home(row_us : std_logic_vector) RETURN T_SLV_8 IS
 	BEGIN
 		RETURN '1' & row_us(0) & "000000";
