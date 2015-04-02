@@ -131,7 +131,7 @@ begin
         lcd_dat <= (others => 'Z');
       else
         lcd_dat                        <= (others => '0');
-        lcd_dat(DATA_WIDTH-1 downto 0) <= lcd_dat_o;
+        lcd_dat(7 downto 8-DATA_WIDTH) <= lcd_dat_o;
       end if;
     end process;
   end block;
