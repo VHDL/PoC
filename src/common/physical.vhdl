@@ -739,7 +739,7 @@ package body physical is
 	--	@param Timing					A given timing or delay, which should be achived
 	--	@param Clock_Period		The period of the circuits clock
 	--	@RoundingStyle				Default = round to nearest; other choises: ROUND_UP, ROUND_DOWN
-	function TimingToCycles(Timing : TIME; Clock_Period : TIME; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return NATURAL is
+	function TimingToCycles(Timing : TIME; Clock_Period : TIME; RoundingStyle : T_ROUNDING_STYLE := ROUND_UP) return NATURAL is
 		variable res_real	: REAL;
 		variable res_nat	: NATURAL;
 		variable res_time	: TIME;
@@ -777,7 +777,7 @@ package body physical is
 		return res_nat;
 	end;
 	
-	function TimingToCycles(Timing : TIME; Clock_Frequency	: FREQ; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return NATURAL is
+	function TimingToCycles(Timing : TIME; Clock_Frequency	: FREQ; RoundingStyle : T_ROUNDING_STYLE := ROUND_UP) return NATURAL is
 	begin
 		return TimingToCycles(Timing, to_time(Clock_Frequency), RoundingStyle);
 	end function;
