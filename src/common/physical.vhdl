@@ -183,8 +183,8 @@ package physical is
 	function to_real(mem : MEMORY;	scale : MEMORY)	return REAL;
 	
 	-- calculate needed counter cycles to achieve a given 1. timing/delay and 2. frequency/period
-	function TimingToCycles(Timing : TIME; Clock_Period			: TIME; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return NATURAL;
-	function TimingToCycles(Timing : TIME; Clock_Frequency	: FREQ; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return NATURAL;
+	function TimingToCycles(Timing : TIME; Clock_Period			: TIME; RoundingStyle : T_ROUNDING_STYLE := ROUND_UP) return NATURAL;
+	function TimingToCycles(Timing : TIME; Clock_Frequency	: FREQ; RoundingStyle : T_ROUNDING_STYLE := ROUND_UP) return NATURAL;
 	
 	function CyclesToDelay(Cycles : NATURAL; Clock_Period			: TIME) return TIME;
 	function CyclesToDelay(Cycles : NATURAL; Clock_Frequency	: FREQ) return TIME;
