@@ -484,6 +484,7 @@ package sata is
 	CONSTANT C_SIM_MAX_BLOCKCOUNT						: POSITIVE				:= 64; 					--	= 32 KiB at 512 Bytes logical blocks
 	
 	function to_sata_Trans_Command(slv : STD_LOGIC_VECTOR) return T_SATA_TRANS_COMMAND;
+	function to_sata_Trans_Status(slv : STD_LOGIC_VECTOR) return T_SATA_TRANS_STATUS;
 
 	function to_slv(Command : T_SATA_TRANS_COMMAND)	return STD_LOGIC_VECTOR;
 	function to_slv(Status : T_SATA_TRANS_STATUS)		return STD_LOGIC_VECTOR;
@@ -596,6 +597,15 @@ PACKAGE BODY sata IS
 			return T_SATA_TRANS_COMMAND'val(to_integer(unsigned(slv)));
 		else
 			return SATA_TRANS_CMD_NONE;
+		end if;
+	end function;
+
+	function to_sata_Trans_Status(slv : STD_LOGIC_VECTOR) return T_SATA_TRANS_STATUS is
+	begin
+		if (to_integer(unsigned(slv)) <= T_SATA_TRANS_STATUS'pos(T_SATA_TRANS_STATUS'high)) then
+			return T_SATA_TRANS_STATUS'val(to_integer(unsigned(slv)));
+		else
+			return SATA_TRANS_STATUS_ERROR;
 		end if;
 	end function;
 
