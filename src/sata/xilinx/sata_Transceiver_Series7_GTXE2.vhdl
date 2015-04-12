@@ -539,7 +539,7 @@ begin
 		
 		BUFG_RefClockOut : BUFG
 			port map (
-				I						=> GTX_TX_RefClockOut,
+				I						=> GTX_RefClockGlobal,	--GTX_TX_RefClockOut,
 				O						=> GTX_RefClockOut
 			);
 
