@@ -112,7 +112,7 @@ package sata is
 	TYPE T_SATA_TRANSCEIVER_TX_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_TX_ERROR;
 	TYPE T_SATA_TRANSCEIVER_RX_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_RX_ERROR;
 
-	function to_slv(Status : T_SATA_TRANSCEIVER_COMMAND)	return STD_LOGIC_VECTOR;
+	function to_slv(Command : T_SATA_TRANSCEIVER_COMMAND)	return STD_LOGIC_VECTOR;
 	function to_slv(Status : T_SATA_TRANSCEIVER_STATUS)		return STD_LOGIC_VECTOR;
 
 	-- ===========================================================================

@@ -55,14 +55,14 @@ package body debug is
 		report "dbg_ExportEncoding: '" & encodings & "'" severity note;
 		
 		-- write file header
-		write(l, "# Encoding file for '" & Name & "'");	writeline(tokenFile, l);
-		write(l, "#");																	writeline(tokenFile, l);
-		write(l, "# ChipScope Token File Version");			writeline(tokenFile, l);
-		write(l, "@FILE_VERSION=1.0.0");								writeline(tokenFile, l);
-		write(l, "#");																	writeline(tokenFile, l);
-		write(l, "# Default token value");							writeline(tokenFile, l);
-		write(l, "@DEFAULT_TOKEN=");										writeline(tokenFile, l);
-		write(l, "#");																	writeline(tokenFile, l);
+		write(l, STRING'("# Encoding file for '" & Name & "'"));	writeline(tokenFile, l);
+		write(l, STRING'("#"));																	writeline(tokenFile, l);
+		write(l, STRING'("# ChipScope Token File Version"));			writeline(tokenFile, l);
+		write(l, STRING'("@FILE_VERSION=1.0.0"));								writeline(tokenFile, l);
+		write(l, STRING'("#"));																	writeline(tokenFile, l);
+		write(l, STRING'("# Default token value"));							writeline(tokenFile, l);
+		write(l, STRING'("@DEFAULT_TOKEN="));										writeline(tokenFile, l);
+		write(l, STRING'("#"));																	writeline(tokenFile, l);
 		
 		-- write state entires
 		cnt  := 0;

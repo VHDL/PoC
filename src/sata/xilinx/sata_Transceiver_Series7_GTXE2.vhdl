@@ -579,10 +579,14 @@ begin
 		CC_Reset_fe						<= CC_Reset_d					and not CC_Reset;
 		
 		process(Control_Clock,
-				CC_PowerDown_R1, CC_PowerDown_R2,
-				CC_ClkNet_Reset_R1, CC_ClkNet_Reset_R2, CC_ClkNet_Reset_R3,
-				CC_GTX_Reset_R1, CC_GTX_Reset_R2,
-				CC_FSM_Reset_R1, CC_FSM_Reset_R2)
+				CC_PowerDown_re, CC_PowerDown_fe, CC_ClkNet_Reset_re, CC_Reset_re,
+				CC_PowerDown_R1, CC_PowerDown_R2, CC_PowerDown_R2_fe,
+				CC_ClkNet_Reset_R1, CC_ClkNet_Reset_R2, CC_ClkNet_Reset_R3, CC_ClkNet_Reset_R2_re,
+				CC_CPLL_Locked_re, CC_CPLL_Locked_fe,
+				CC_UserClock_Stable_re, CC_UserClock_Stable_fe,
+				CC_GTX_Reset_R1, CC_GTX_Reset_R2, CC_GTX_Locked_re, CC_GTX_Reset_R2_re, CC_GTX_Reset_R2_fe, CC_GTX_ResetDone_re, CC_GTX_ResetDone_fe,
+				CC_FSM_Reset_R1, CC_FSM_Reset_R2, CC_FSM_Reset_R2_re,
+				CC_FSM_DoneReady_re, CC_FSM_DonePowerDown_re, CC_FSM_DoneClkNet_Reset_re, CC_FSM_DoneReset_re)
 			variable PowerDown_R1			: STD_LOGIC		:= '1';
 			variable PowerDown_R2			: STD_LOGIC		:= '1';
 			variable ClkNet_Reset_R1	: STD_LOGIC		:= '1';
@@ -600,12 +604,16 @@ begin
 				PowerDown_R1	:= '0';
 			elsif ((CC_ClkNet_Reset_R2_re and CC_PowerDown) = '1') then
 				PowerDown_R1	:= '1';
+			else
+				PowerDown_R1	:= CC_PowerDown_R1;
 			end if;
 			
 			if (CC_PowerDown_R1 = '0') then		-- TODO: is this correct?
 				PowerDown_R2	:= '0';
 			elsif (CC_PowerDown_R1 = '1') then	-- TODO: is this correct?
 				PowerDown_R2	:= '1';
+			else
+				PowerDown_R2	:= CC_PowerDown_R2;
 			end if;
 			
 			-- ClkNet_Reset Control
@@ -613,18 +621,24 @@ begin
 				ClkNet_Reset_R1	:= '0';
 			elsif ((CC_GTX_Reset_R2_re and (CC_PowerDown or CC_ClkNet_Reset)) = '1') then
 				ClkNet_Reset_R1	:= '1';
+			else
+				ClkNet_Reset_R1	:= CC_ClkNet_Reset_R1;
 			end if;
 			
 			if (CC_UserClock_Stable_re = '1') then
 				ClkNet_Reset_R2	:= '0';
 			elsif (CC_CPLL_Locked_fe = '1') then
 				ClkNet_Reset_R2	:= '1';
+			else
+				ClkNet_Reset_R2	:= CC_ClkNet_Reset_R2;
 			end if;
 			
 			if (CC_PowerDown_R2_fe = '1') then
 				ClkNet_Reset_R3	:= '0';
 			elsif ((CC_UserClock_Stable_fe and (CC_PowerDown or CC_ClkNet_Reset)) = '1') then
 				ClkNet_Reset_R3	:= '1';
+			else
+				ClkNet_Reset_R3	:= CC_ClkNet_Reset_R3;
 			end if;
 			
 			-- GTX_Reset Control
@@ -632,12 +646,16 @@ begin
 				GTX_Reset_R1	:= '0';
 			elsif ((CC_FSM_Reset_R2_re and (CC_PowerDown or CC_ClkNet_Reset or CC_Reset)) = '1') then
 				GTX_Reset_R1	:= '1';
+			else
+				GTX_Reset_R1	:= CC_GTX_Reset_R1;
 			end if;
 			
 			if (CC_GTX_ResetDone_re = '1') then
 				GTX_Reset_R2	:= '0';
 			elsif ((CC_GTX_ResetDone_fe and (CC_PowerDown or CC_ClkNet_Reset or CC_Reset)) = '1') then
 				GTX_Reset_R2	:= '1';
+			else
+				GTX_Reset_R2	:= CC_GTX_Reset_R2;
 			end if;
 			
 			-- FSM Reset Control
@@ -645,6 +663,8 @@ begin
 				FSM_Reset_R1	:= '0';
 			elsif ((CC_PowerDown_re or CC_ClkNet_Reset_re or CC_Reset_re) = '1') then
 				FSM_Reset_R1	:= '1';
+			else
+				FSM_Reset_R1	:= CC_FSM_Reset_R1;
 			end if;
 			
 			if (CC_FSM_DoneReady_re = '1') then
@@ -653,6 +673,8 @@ begin
 							(CC_FSM_DoneClkNet_Reset_re	and CC_ClkNet_Reset) or
 							(CC_FSM_DoneReset_re				and CC_Reset))= '1') then
 				FSM_Reset_R2	:= '1';
+			else
+				FSM_Reset_R2	:= CC_FSM_Reset_R2;
 			end if;
 			
 			if rising_edge(Control_Clock) then
