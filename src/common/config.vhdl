@@ -34,12 +34,17 @@
 
 library	PoC;
 use			PoC.my_config.all;
+use			PoC.my_project.all;
 use			PoC.board.all;
 use			PoC.utils.all;
 use			PoC.strings.all;
 
 
 package config is
+
+	constant PROJECT_DIR			: string	:= MY_PROJECT_DIR;
+	constant OPERATING_SYSTEM	: string	:= MY_OPERATING_SYSTEM;
+
 	-- FPGA / Chip vendor
 	-- ===========================================================================
 	type vendor_t is (

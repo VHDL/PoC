@@ -56,13 +56,13 @@ package body debug is
 		
 		-- write file header
 		write(l, STRING'("# Encoding file for '" & Name & "'"));	writeline(tokenFile, l);
-		write(l, STRING'("#"));																	writeline(tokenFile, l);
+		write(l, STRING'("#"));																		writeline(tokenFile, l);
 		write(l, STRING'("# ChipScope Token File Version"));			writeline(tokenFile, l);
-		write(l, STRING'("@FILE_VERSION=1.0.0"));								writeline(tokenFile, l);
-		write(l, STRING'("#"));																	writeline(tokenFile, l);
-		write(l, STRING'("# Default token value"));							writeline(tokenFile, l);
-		write(l, STRING'("@DEFAULT_TOKEN="));										writeline(tokenFile, l);
-		write(l, STRING'("#"));																	writeline(tokenFile, l);
+		write(l, STRING'("@FILE_VERSION=1.0.0"));									writeline(tokenFile, l);
+		write(l, STRING'("#"));																		writeline(tokenFile, l);
+		write(l, STRING'("# Default token value"));								writeline(tokenFile, l);
+		write(l, STRING'("@DEFAULT_TOKEN="));											writeline(tokenFile, l);
+		write(l, STRING'("#"));																		writeline(tokenFile, l);
 		
 		-- write state entires
 		cnt  := 0;
