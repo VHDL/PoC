@@ -307,7 +307,7 @@ begin
 
 		signal GTX_UserClock_Stable					: STD_LOGIC;
 		
-		type T_STATE is (ST_POWERDOWN, ST_CLKNET_RESET, ST_TRANSCEIVER_RESET, ST_RESET, ST_READY, ST_RECONFIGURATION);
+		type T_STATE is (ST_POWERDOWN, ST_CLKNET_RESET, ST_TRANSCEIVER_RESET, ST_RESET, ST_READY, ST_COMMUNICATION, ST_RECONFIGURATION);
 		
 		signal State												: T_STATE				:= ST_POWERDOWN;
 		signal NextState										: T_STATE;
@@ -893,10 +893,17 @@ begin
 						null;		-- TODO:
 						
 					elsif (UC_FSM_DoClkNet_Reset = '1') then
+						NextState		<= ST_CLKNET_RESET;
+					
 						null;		-- TODO:
 						
 					elsif (UC_FSM_DoReset = '1') then
+						NextState		<= ST_RESET;
+					
 						null;		-- TODO:
+					
+					elsif (OOB_HandshakeComplete(i) = '1') then
+						NextState		<= ST_COMMUNICATION;
 					
 					else
 						null;		-- TODO: reconfig?
@@ -907,30 +914,39 @@ begin
 							Status_i		<= SATA_TRANSCEIVER_STATUS_NEW_DEVICE;
 						end if;
 							
-						-- error handling
-						--	================================================================
-						-- TX errors
-						if (GTX_TX_BufferStatus(1)	= '1') then
-							Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
-							Error_i.TX	<= SATA_TRANSCEIVER_TX_ERROR_BUFFER;
-						end if;
-					
-						-- RX errors
-						if (GTX_RX_ByteIsAligned	= '0') then
-							Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
-							Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_ALIGNEMENT;
-						elsif (slv_or(GTX_RX_DisparityError)	= '1') then
-							Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
-							Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_DISPARITY;
-						elsif (slv_or(GTX_RX_NotInTableError)	= '1') then
-							Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
-							Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_DECODER;
-						elsif (GTX_RX_BufferStatus(2)	= '1') then
-							Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
-							Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_BUFFER;
-						end if;
+
 					end if;
+				
+				when ST_COMMUNICATION =>
+					Status_i			<= SATA_TRANSCEIVER_STATUS_READY;
 					
+					if (OOB_TX_Command(i) /= SATA_OOB_NONE) then
+						NextState			<= ST_READY;
+					end if;
+				
+					-- error handling
+					--	================================================================
+					-- TX errors
+					if (GTX_TX_BufferStatus(1)	= '1') then
+						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
+						Error_i.TX	<= SATA_TRANSCEIVER_TX_ERROR_BUFFER;
+					end if;
+				
+					-- RX errors
+					if (GTX_RX_ByteIsAligned	= '0') then
+						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
+						Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_ALIGNEMENT;
+					elsif (slv_or(GTX_RX_DisparityError)	= '1') then
+						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
+						Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_DISPARITY;
+					elsif (slv_or(GTX_RX_NotInTableError)	= '1') then
+						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
+						Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_DECODER;
+					elsif (GTX_RX_BufferStatus(2)	= '1') then
+						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
+						Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_BUFFER;
+					end if;
+				
 				when ST_RECONFIGURATION =>
 					Status_i			<= SATA_TRANSCEIVER_STATUS_RECONFIGURING;
 					
