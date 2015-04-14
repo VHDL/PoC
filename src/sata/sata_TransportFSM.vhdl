@@ -34,7 +34,6 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-use			PoC.my_project.all;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
@@ -692,7 +691,7 @@ BEGIN
 				return  l.all;
 			end function;
 			
-			constant test : boolean := dbg_ExportEncoding("Transport Layer - TFSM", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_TransLayer_TFSM.tok");
+			constant dummy : boolean := dbg_ExportEncoding("Transport Layer - TFSM", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_TransLayer_TFSM.tok");
 		begin
 		end generate;
 		

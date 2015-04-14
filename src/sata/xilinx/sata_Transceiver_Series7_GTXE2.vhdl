@@ -48,7 +48,6 @@ use			UNISIM.VCOMPONENTS.all;
 
 library PoC;
 use			PoC.config.all;
-use			PoC.my_project.all;
 use			PoC.components.all;
 use			PoC.utils.all;
 use			PoC.vectors.all;
@@ -308,7 +307,7 @@ begin
 
 		signal GTX_UserClock_Stable					: STD_LOGIC;
 		
-		type T_STATE is (ST_POWERDOWN, ST_CLKNET_RESET, ST_TRANSCEIVER_RESET, ST_RESET, ST_READY, ST_RECONFIGURATION);
+		type T_STATE is (ST_POWERDOWN, ST_CLKNET_RESET, ST_TRANSCEIVER_RESET, ST_RESET, ST_READY, ST_COMMUNICATION, ST_RECONFIGURATION);
 		
 		signal State												: T_STATE				:= ST_POWERDOWN;
 		signal NextState										: T_STATE;
@@ -894,10 +893,17 @@ begin
 						null;		-- TODO:
 						
 					elsif (UC_FSM_DoClkNet_Reset = '1') then
+						NextState		<= ST_CLKNET_RESET;
+					
 						null;		-- TODO:
 						
 					elsif (UC_FSM_DoReset = '1') then
+						NextState		<= ST_RESET;
+					
 						null;		-- TODO:
+					
+					elsif (OOB_HandshakeComplete(i) = '1') then
+						NextState		<= ST_COMMUNICATION;
 					
 					else
 						null;		-- TODO: reconfig?
@@ -908,30 +914,39 @@ begin
 							Status_i		<= SATA_TRANSCEIVER_STATUS_NEW_DEVICE;
 						end if;
 							
-						-- error handling
-						--	================================================================
-						-- TX errors
-						if (GTX_TX_BufferStatus(1)	= '1') then
-							Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
-							Error_i.TX	<= SATA_TRANSCEIVER_TX_ERROR_BUFFER;
-						end if;
-					
-						-- RX errors
-						if (GTX_RX_ByteIsAligned	= '0') then
-							Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
-							Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_ALIGNEMENT;
-						elsif (slv_or(GTX_RX_DisparityError)	= '1') then
-							Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
-							Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_DISPARITY;
-						elsif (slv_or(GTX_RX_NotInTableError)	= '1') then
-							Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
-							Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_DECODER;
-						elsif (GTX_RX_BufferStatus(2)	= '1') then
-							Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
-							Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_BUFFER;
-						end if;
+
 					end if;
+				
+				when ST_COMMUNICATION =>
+					Status_i			<= SATA_TRANSCEIVER_STATUS_READY;
 					
+					if (OOB_TX_Command(i) /= SATA_OOB_NONE) then
+						NextState			<= ST_READY;
+					end if;
+				
+					-- error handling
+					--	================================================================
+					-- TX errors
+					if (GTX_TX_BufferStatus(1)	= '1') then
+						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
+						Error_i.TX	<= SATA_TRANSCEIVER_TX_ERROR_BUFFER;
+					end if;
+				
+					-- RX errors
+					if (GTX_RX_ByteIsAligned	= '0') then
+						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
+						Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_ALIGNEMENT;
+					elsif (slv_or(GTX_RX_DisparityError)	= '1') then
+						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
+						Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_DISPARITY;
+					elsif (slv_or(GTX_RX_NotInTableError)	= '1') then
+						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
+						Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_DECODER;
+					elsif (GTX_RX_BufferStatus(2)	= '1') then
+						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
+						Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_BUFFER;
+					end if;
+				
 				when ST_RECONFIGURATION =>
 					Status_i			<= SATA_TRANSCEIVER_STATUS_RECONFIGURING;
 					
@@ -939,8 +954,8 @@ begin
 			end case;
 		end process;
 		
-		Status(i)		<= Status_i	when rising_edge(GTX_UserClock);
-		Error(i)		<= Error_i	when rising_edge(GTX_UserClock);
+		Status(i)		<= Status_i;	--	when rising_edge(GTX_UserClock);
+		Error(i)		<= Error_i;	--	when rising_edge(GTX_UserClock);
 		
 		-- =========================================================================
 		-- Power control
@@ -1944,15 +1959,15 @@ begin
 				variable  l : STD.TextIO.line;
 			begin
 				for i in T_SATA_TRANSCEIVER_STATUS loop
-					STD.TextIO.write(l, str_replace(T_SATA_TRANSCEIVER_STATUS'image(i), "SATA_TRANSCEIVER_STATUS_", ""));
+					STD.TextIO.write(l, str_replace(T_SATA_TRANSCEIVER_STATUS'image(i), "sata_transceiver_status_", ""));
 					STD.TextIO.write(l, ';');
 				end loop;
 				return  l.all;
 			end function;
 
 			constant dummy : T_BOOLVEC := (
-				0 => dbg_ExportEncoding("Transceiver (7-Series, GTXE2)",		dbg_GenerateStateEncodings,		MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_Transceiver_Series7_GTXE2.tok"),
-				1 => dbg_ExportEncoding("Transceiver Layer - Status Enum",	dbg_GenerateStatusEncodings,	MY_PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Transceiver_Status.tok")
+				0 => dbg_ExportEncoding("Transceiver (7-Series, GTXE2)",		dbg_GenerateStateEncodings,		PROJECT_DIR & "ChipScope/TokenFiles/FSM_Transceiver_Series7_GTXE2.tok"),
+				1 => dbg_ExportEncoding("Transceiver Layer - Status Enum",	dbg_GenerateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Transceiver_Status.tok")
 			);
 			
 		begin

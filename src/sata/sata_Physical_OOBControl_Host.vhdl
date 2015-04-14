@@ -36,7 +36,6 @@ use			IEEE.NUMERIC_STD.all;
 use			STD.TextIO.all;
 
 library PoC;
-use			PoC.my_project.all;
 use			PoC.config.all;
 use			PoC.utils.all;
 use			PoC.vectors.all;
@@ -482,7 +481,7 @@ begin
 				return  l.all;
 			end function;
 
-			constant dummy : boolean := dbg_ExportEncoding("OOBControl (Host)", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Host.tok");
+			constant dummy : boolean := dbg_ExportEncoding("OOBControl (Host)", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Host.tok");
 		begin
 		end generate;
 		
