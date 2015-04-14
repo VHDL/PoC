@@ -3,9 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+--
+-- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
@@ -13,7 +13,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,52 +29,59 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
-USE			PoC.sata.ALL;
+library PoC;
+use			PoC.my_project.all;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.strings.all;
+use			PoC.debug.all;
+use			PoC.sata.all;
+use			PoC.satadbg.all;
 
 
-ENTITY sata_FISEncoder IS
-	GENERIC (
-		DEBUG												: BOOLEAN						:= FALSE
+entity sata_FISEncoder IS
+	generic (
+		DEBUG												: BOOLEAN						:= FALSE;
+		ENABLE_DEBUGPORT						: BOOLEAN						:= FALSE
 	);
-	PORT (
-		Clock												: IN	STD_LOGIC;
-		Reset												: IN	STD_LOGIC;
+	port (
+		Clock												: in	STD_LOGIC;
+		Reset												: in	STD_LOGIC;
 		
-		FISType											: IN	T_SATA_FISTYPE;
-		Status											: OUT	T_SATA_FISENCODER_STATUS;
-		ATARegisters								: IN	T_SATA_ATA_HOST_REGISTERS;
+		FISType											: in	T_SATA_FISTYPE;
+		Status											: out	T_SATA_FISENCODER_STATUS;
+		ATARegisters								: in	T_SATA_ATA_HOST_REGISTERS;
+		
+		-- debugPort
+		DebugPortOut								: out	T_SATADBG_TRANS_FISE_OUT;
 		
 		-- writer interface
-		TX_Ack											: OUT	STD_LOGIC;
-		TX_SOP											: IN	STD_LOGIC;
-		TX_EOP											: IN	STD_LOGIC;
-		TX_Data											: IN	T_SLV_32;
-		TX_Valid										: IN	STD_LOGIC;
-		TX_InsertEOP								: OUT	STD_LOGIC;
+		TX_Ack											: out	STD_LOGIC;
+		TX_SOP											: in	STD_LOGIC;
+		TX_EOP											: in	STD_LOGIC;
+		TX_Data											: in	T_SLV_32;
+		TX_Valid										: in	STD_LOGIC;
+		TX_InsertEOP								: out	STD_LOGIC;
 		
 		-- SATAController interface (LinkLayer)
-		Link_TX_Ack									: IN	STD_LOGIC;
-		Link_TX_Data								: OUT	T_SLV_32;
-		Link_TX_SOF									: OUT STD_LOGIC;
-		Link_TX_EOF									: OUT STD_LOGIC;
-		Link_TX_Valid								: OUT	STD_LOGIC;
-		Link_TX_InsertEOF						: IN	STD_LOGIC;
+		Link_TX_Ack									: in	STD_LOGIC;
+		Link_TX_Data								: out	T_SLV_32;
+		Link_TX_SOF									: out STD_LOGIC;
+		Link_TX_EOF									: out STD_LOGIC;
+		Link_TX_Valid								: out	STD_LOGIC;
+		Link_TX_InsertEOF						: in	STD_LOGIC;
 		
-		Link_TX_FS_Ack							: OUT	STD_LOGIC;
-		Link_TX_FS_SendOK						: IN	STD_LOGIC;
-		Link_TX_FS_Abort						: IN	STD_LOGIC;
-		Link_TX_FS_Valid						: IN	STD_LOGIC
+		Link_TX_FS_Ack							: out	STD_LOGIC;
+		Link_TX_FS_SendOK						: in	STD_LOGIC;
+		Link_TX_FS_Abort						: in	STD_LOGIC;
+		Link_TX_FS_Valid						: in	STD_LOGIC
 	);
-END;
+end;
 
 ARCHITECTURE rtl OF sata_FISEncoder IS
 	ATTRIBUTE KEEP									: BOOLEAN;
@@ -321,10 +328,37 @@ BEGIN
 						Status								<= SATA_FISE_STATUS_ERROR;
 						
 						NextState							<= ST_IDLE;
-					END IF;
-				END IF;
+					end if;
+				end if;
 			
-		END CASE;
-	END PROCESS;
-	
-END;
+		end case;
+	end process;
+
+
+	-- debug ports
+	-- ==========================================================================================================================================================
+	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
+		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+		begin
+			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
+		end function;
+		
+	begin
+		genXilinx : if (VENDOR = VENDOR_XILINX) generate
+			function dbg_GenerateEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_STATE loop
+					STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			constant test : boolean := dbg_ExportEncoding("Transport Layer - FIS-Encoder", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_TransLayer_FISE.tok");
+		begin
+		end generate;
+		
+		DebugPortOut.FSM		<= dbg_EncodeState(State);
+	end generate;
+end;

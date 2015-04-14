@@ -4,7 +4,7 @@
 -- 
 -- =============================================================================
 -- Package:					VHDL package for component declarations, types and functions
---									assoziated to the PoC.arith namespace
+--									associated to the PoC.arith namespace
 --
 -- Authors:					Thomas B. Preusser
 --									Martin Zabel
@@ -35,10 +35,25 @@ library ieee;
 use			ieee.std_logic_1164.all;
 use			ieee.numeric_std.all;
 
+library PoC;
+use 		PoC.utils.all;
 
 package arith is
 
-	component arith_counter_gray is
+	component arith_firstone is
+		generic (
+			N : positive                                -- Length of Token Chain
+		);
+		port (
+			tin  : in  std_logic := '1';                -- Enable:   Fed Token
+			rqst : in  std_logic_vector(N-1 downto 0);  -- Request:  Token Requests
+			grnt : out std_logic_vector(N-1 downto 0);  -- Grant:    Token Output
+			tout : out std_logic;                       -- Inactive: Unused Token
+			bin  : out std_logic_vector(log2ceil(N)-1 downto 0)  -- Binary Grant Index
+		);
+	end component;
+
+  component arith_counter_gray is
 		generic (
 			BITS : positive;			-- Bit width of the counter
 			INIT : natural := 0		-- Initial/reset counter value
@@ -53,6 +68,16 @@ package arith is
 		);
 	end component;
 
+	component arith_counter_bcd is
+		generic (
+			DIGITS : positive);
+		port (
+			clk : in	std_logic;
+			rst : in	std_logic;
+			inc : in	std_logic;
+			val : out T_BCD_VECTOR(DIGITS-1 downto 0));
+	end component arith_counter_bcd;
+	
 	component arith_prng
 		generic (
 			BITS : positive;
@@ -110,9 +135,10 @@ package arith is
       N : positive;                    -- Operand Width
       K : positive;                    -- Block Count
 
-      ARCH     : tArch     := AAM;        -- Architecture
-      BLOCKING : tBlocking := DFLT;       -- Blocking Scheme
-      SKIPPING : tSkipping := CCC         -- Carry Skip Scheme
+      ARCH				: tArch     := AAM;		-- Architecture
+      BLOCKING		: tBlocking := DFLT;	-- Blocking Scheme
+      SKIPPING		: tSkipping := CCC;		-- Carry Skip Scheme
+			P_INCLUSIVE	: boolean := false		-- Use Inclusive Propagate, i.e. c^1
     );
     port (
       a, b : in std_logic_vector(N-1 downto 0);

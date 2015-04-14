@@ -3,9 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+--
+-- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
@@ -13,7 +13,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,23 +29,25 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
-USE			PoC.sata.ALL;
+library PoC;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.strings.all;
+use			PoC.sata.all;
+use			PoC.satadbg.all;
 
 
-ENTITY sata_TransportLayer IS
-  GENERIC (
-		DEBUG														: BOOLEAN											:= FALSE;					-- generate ChipScope DBG_* signals
-		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: BOOLEAN											:= TRUE						-- required by ATA/SATA standard
+entity sata_TransportLayer is
+  generic (
+		DEBUG														: BOOLEAN						:= FALSE;					-- generate ChipScope DBG_* signals
+		ENABLE_DEBUGPORT								: BOOLEAN						:= FALSE;
+		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: BOOLEAN						:= TRUE						-- required by ATA/SATA standard
   );
-	PORT (
+	port (
 		Clock														: IN	STD_LOGIC;
 		Reset														: IN	STD_LOGIC;
 
@@ -54,7 +56,7 @@ ENTITY sata_TransportLayer IS
 		Status													: OUT	T_SATA_TRANS_STATUS;
 		Error														: OUT	T_SATA_TRANS_ERROR;	
 	
---		DebugPort												: OUT T_DBG_TRANSPORT_OUT;
+		DebugPortOut										: OUT T_SATADBG_TRANS_OUT;
 	
 		-- ATA registers
 		UpdateATAHostRegisters					: IN	STD_LOGIC;
@@ -105,61 +107,78 @@ ENTITY sata_TransportLayer IS
 		Link_RX_FS_Abort							: IN	STD_LOGIC;
 		Link_RX_FS_Valid							: IN	STD_LOGIC
 	);
-END;
+end;
 
 ARCHITECTURE rtl OF sata_TransportLayer IS
-	ATTRIBUTE KEEP														: BOOLEAN;
+	ATTRIBUTE KEEP											: BOOLEAN;
 
-	SIGNAL ATAHostRegisters_i									: T_SATA_ATA_HOST_REGISTERS;
-	SIGNAL ATAHostRegisters_d									: T_SATA_ATA_HOST_REGISTERS;
+	signal ATAHostRegisters_i						: T_SATA_ATA_HOST_REGISTERS;
+	signal ATAHostRegisters_d						: T_SATA_ATA_HOST_REGISTERS;
 
-	SIGNAL UpdateATADeviceRegisters						: STD_LOGIC;
-	SIGNAL CopyATADeviceRegisterStatus				: STD_LOGIC;
-	SIGNAL ATADeviceRegisters_i								: T_SATA_ATA_DEVICE_REGISTERS;
-	SIGNAL ATADeviceRegisters_d								: T_SATA_ATA_DEVICE_REGISTERS;
+	signal UpdateATADeviceRegisters			: STD_LOGIC;
+	signal CopyATADeviceRegisterStatus	: STD_LOGIC;
+	signal ATADeviceRegisters_i					: T_SATA_ATA_DEVICE_REGISTERS;
+	signal ATADeviceRegisters_d					: T_SATA_ATA_DEVICE_REGISTERS;
 
 	-- TransportFSM
-	SIGNAL Status_i														: T_SATA_TRANS_STATUS;
-	SIGNAL Error_i														: T_SATA_TRANS_ERROR;
+	signal Status_i											: T_SATA_TRANS_STATUS;
+	signal Error_i											: T_SATA_TRANS_ERROR;
 
-	SIGNAL TFSM_FISType												: T_SATA_FISTYPE;
-	SIGNAL TFSM_TX_en													: STD_LOGIC;
-	SIGNAL TFSM_TX_SOP												: STD_LOGIC;
-	SIGNAL TFSM_TX_EOP												: STD_LOGIC;
-	SIGNAL TFSM_RX_LastWord										: STD_LOGIC;
-	SIGNAL TFSM_RX_SOT												: STD_LOGIC;
-	SIGNAL TFSM_RX_EOT												: STD_LOGIC;
+	signal TFSM_FISType									: T_SATA_FISTYPE;
+	signal TFSM_TX_en										: STD_LOGIC;
+	signal TFSM_TX_SOP									: STD_LOGIC;
+	signal TFSM_TX_EOP									: STD_LOGIC;
+	signal TFSM_RX_LastWord							: STD_LOGIC;
+	signal TFSM_RX_SOT									: STD_LOGIC;
+	signal TFSM_RX_EOT									: STD_LOGIC;
 
 	-- TX path (transport cut)
-	SIGNAL TC_TX_SOP													: STD_LOGIC;
-	SIGNAL TC_TX_EOP													: STD_LOGIC;
-	SIGNAL TC_TX_Data													: T_SLV_32;
-	SIGNAL TC_TX_Valid												: STD_LOGIC;
-	SIGNAL TC_TX_Ack													: STD_LOGIC;
-	SIGNAl TC_TX_LastWord											: STD_LOGIC;
+	signal TC_TX_SOP										: STD_LOGIC;
+	signal TC_TX_EOP										: STD_LOGIC;
+	signal TC_TX_Data										: T_SLV_32;
+	signal TC_TX_Valid									: STD_LOGIC;
+	signal TC_TX_Ack										: STD_LOGIC;
+	signal TC_TX_LastWord								: STD_LOGIC;
 
 	-- RX_Registers
-	SIGNAL RXReg_Ack													: STD_LOGIC;
+	signal RXReg_Ack										: STD_LOGIC;
+	signal RXReg_RX_Valid								: STD_LOGIC;
+	signal RXReg_RX_Data								: T_SLV_32;
+	signal RXReg_RX_SOT									: STD_LOGIC;
+	signal RXReg_RX_EOT									: STD_LOGIC;
+	signal RXReg_RX_Commit							: STD_LOGIC;
+	signal RXReg_RX_Rollback						: STD_LOGIC;
 
 	-- FISEncoder
-	SIGNAL FISE_Reset													: STD_LOGIC;
-	SIGNAL FISE_Status												: T_SATA_FISENCODER_STATUS;
-	SIGNAL FISE_TX_Ack												: STD_LOGIC;
-	SIGNAL FISE_TX_InsertEOP									: STD_LOGIC;
+	signal FISE_Reset										: STD_LOGIC;
+	signal FISE_Status									: T_SATA_FISENCODER_STATUS;
+	signal FISE_TX_Ack									: STD_LOGIC;
+	signal FISE_TX_InsertEOP						: STD_LOGIC;
+	signal FISE_Link_TX_Valid						: STD_LOGIC;
+	signal FISE_Link_TX_Data						: T_SLV_32;
+	signal FISE_Link_TX_SOF							: STD_LOGIC;
+	signal FISE_Link_TX_EOF							: STD_LOGIC;
+	signal FISE_Link_TX_FS_Ack					: STD_LOGIC;
 	
 	-- FISDecoder
-	SIGNAL FISD_Reset													: STD_LOGIC;
-	SIGNAL FISD_Status												: T_SATA_FISDECODER_STATUS;
-	SIGNAL FISD_FISType												: T_SATA_FISTYPE;
-	SIGNAL FISD_RX_Data												: T_SLV_32;
-	SIGNAL FISD_RX_SOP												: STD_LOGIC;
-	SIGNAL FISD_RX_EOP												: STD_LOGIC;
-	SIGNAL FISD_RX_Valid											: STD_LOGIC;
-	SIGNAL FISD_RX_Commit											: STD_LOGIC;
-	SIGNAL FISD_RX_Rollback										: STD_LOGIC;
-	SIGNAL FISD_ATADeviceRegisters						: T_SATA_ATA_DEVICE_REGISTERS;
+	signal FISD_Reset										: STD_LOGIC;
+	signal FISD_Status									: T_SATA_FISDECODER_STATUS;
+	signal FISD_FISType									: T_SATA_FISTYPE;
+	signal FISD_RX_Data									: T_SLV_32;
+	signal FISD_RX_SOP									: STD_LOGIC;
+	signal FISD_RX_EOP									: STD_LOGIC;
+	signal FISD_RX_Valid								: STD_LOGIC;
+	signal FISD_RX_Commit								: STD_LOGIC;
+	signal FISD_RX_Rollback							: STD_LOGIC;
+	signal FISD_ATADeviceRegisters			: T_SATA_ATA_DEVICE_REGISTERS;
+	signal FISD_Link_RX_Ack							: STD_LOGIC;
+	signal FISD_Link_RX_FS_Ack					: STD_LOGIC;
 
-BEGIN
+	signal TFSM_DebugPortOut						: T_SATADBG_TRANS_TFSM_OUT;
+	signal FISE_DebugPortOut						: T_SATADBG_TRANS_FISE_OUT;
+	signal FISD_DebugPortOut						: T_SATADBG_TRANS_FISD_OUT;
+	
+begin
 	FISE_Reset		<= Reset OR to_sl(Command = SATA_TRANS_CMD_RESET);
 	FISD_Reset		<= Reset OR to_sl(Command = SATA_TRANS_CMD_RESET);
 
@@ -168,7 +187,8 @@ BEGIN
 	-- ================================================================
 	TFSM : ENTITY PoC.sata_TransportFSM
     GENERIC MAP (
-			DEBUG															=> DEBUG					,
+			DEBUG															=> DEBUG,
+			ENABLE_DEBUGPORT									=> ENABLE_DEBUGPORT,
       SIM_WAIT_FOR_INITIAL_REGDH_FIS    => SIM_WAIT_FOR_INITIAL_REGDH_FIS
     )
 		PORT MAP (
@@ -179,6 +199,9 @@ BEGIN
 			Command														=> Command,
 			Status														=> Status_i,
 			Error															=> Error_i,
+
+			-- DebugPort
+			DebugPortOut											=> TFSM_DebugPortOut,
 			
 			-- linkLayer interface
 --			Link_Command											=> Link_Command,
@@ -264,12 +287,12 @@ BEGIN
 	-- TX FrameCutter logic
 	-- ==========================================================================================================================================================
 	FrameCutter : BLOCK
-		SIGNAL TC_TX_DataFlow								: STD_LOGIC;
+		signal TC_TX_DataFlow								: STD_LOGIC;
 		
-		SIGNAL InsertEOP_d									: STD_LOGIC						:= '0';
-		SIGNAL InsertEOP_re									: STD_LOGIC;
-		SIGNAL InsertEOP_re_d								: STD_LOGIC						:= '0';
-		SIGNAL InsertEOP_re_d2							: STD_LOGIC						:= '0';
+		signal InsertEOP_d									: STD_LOGIC						:= '0';
+		signal InsertEOP_re									: STD_LOGIC;
+		signal InsertEOP_re_d								: STD_LOGIC						:= '0';
+		signal InsertEOP_re_d2							: STD_LOGIC						:= '0';
 		
 	BEGIN
 		-- enable TX data path
@@ -294,32 +317,32 @@ BEGIN
 	-- RX registers
 	-- ==========================================================================================================================================================
 	RXReg : BLOCK
-		SIGNAL RXReg_mux_set										: STD_LOGIC;
-		SIGNAL RXReg_mux_rst										: STD_LOGIC;
-		SIGNAL RXReg_mux_r											: STD_LOGIC												:= '0';
-		SIGNAL RXReg_mux												: STD_LOGIC;
-		SIGNAL RXReg_Data_en										: STD_LOGIC;
-		SIGNAL RXReg_Data_d											: T_SLV_32												:= (OTHERS => '0');	
-		SIGNAL RXReg_EOT_r											: STD_LOGIC												:= '0';
-		SIGNAL RXReg_Commit_r										: STD_LOGIC												:= '0';
-		SIGNAL RXReg_Rollback_r									: STD_LOGIC												:= '0';
+		signal RXReg_mux_set										: STD_LOGIC;
+		signal RXReg_mux_rst										: STD_LOGIC;
+		signal RXReg_mux_r											: STD_LOGIC												:= '0';
+		signal RXReg_mux												: STD_LOGIC;
+		signal RXReg_Data_en										: STD_LOGIC;
+		signal RXReg_Data_d											: T_SLV_32												:= (OTHERS => '0');	
+		signal RXReg_EOT_r											: STD_LOGIC												:= '0';
+		signal RXReg_Commit_r										: STD_LOGIC												:= '0';
+		signal RXReg_Rollback_r									: STD_LOGIC												:= '0';
 	
-		SIGNAL RXReg_LastWord										: STD_LOGIC;
-		SIGNAL RXReg_LastWord_r									: STD_LOGIC												:= '0';
-		SIGNAL RXReg_LastWordCommit							: STD_LOGIC;
+		signal RXReg_LastWord										: STD_LOGIC;
+		signal RXReg_LastWord_r									: STD_LOGIC												:= '0';
+		signal RXReg_LastWordCommit							: STD_LOGIC;
 		
-		SIGNAL RXReg_SOT												: STD_LOGIC;
-		SIGNAL RXReg_EOT												: STD_LOGIC;
-		SIGNAL RXReg_Commit											: STD_LOGIC;
-		SIGNAL RXReg_Rollback										: STD_LOGIC;
+		signal RXReg_SOT												: STD_LOGIC;
+		signal RXReg_EOT												: STD_LOGIC;
+		signal RXReg_Commit											: STD_LOGIC;
+		signal RXReg_Rollback										: STD_LOGIC;
 	BEGIN
 
 		RXReg_Data_en					<= FISD_RX_Valid AND FISD_RX_EOP;
 		RXReg_mux_set					<= FISD_RX_Valid AND FISD_RX_EOP;
 		RXReg_mux_rst					<= RXReg_LastWordCommit; --RXReg_mux AND RXReg_LastWordCommit;
 		
-		RX_Data								<= FISD_RX_Data WHEN (RXReg_mux = '0') ELSE RXReg_Data_d;
-		RX_Valid							<= (FISD_RX_Valid AND NOT RXReg_Data_en) OR RXReg_LastWord;
+		RXReg_RX_Data					<= FISD_RX_Data WHEN (RXReg_mux = '0') ELSE RXReg_Data_d;
+		RXReg_RX_Valid				<= (FISD_RX_Valid AND NOT RXReg_Data_en) OR RXReg_LastWord;
 
 		RXReg_Ack							<= (RX_Ack	 OR RXReg_Data_en) AND NOT RXReg_mux;
 		RXReg_LastWordCommit	<= RXReg_LastWord AND RX_Ack;
@@ -378,19 +401,24 @@ BEGIN
 			END IF;
 		END PROCESS;
 
-		RX_SOT								<= RXReg_SOT;
-		RX_EOT								<= RXReg_EOT;
-		RX_Commit							<= RXReg_Commit;
-		RX_Rollback						<= RXReg_Rollback;
-		
---		DebugPort.SOT					<= RXReg_SOT;
---		DebugPort.EOT					<= RXReg_EOT;
+		RXReg_RX_SOT				<= RXReg_SOT;
+		RXReg_RX_EOT				<= RXReg_EOT;
+		RXReg_RX_Commit			<= RXReg_Commit;
+		RXReg_RX_Rollback		<= RXReg_Rollback;
 	END BLOCK;
+
+	RX_Valid			<= RXReg_RX_Valid;
+	RX_Data				<= RXReg_RX_Data;
+	RX_SOT				<= RXReg_RX_SOT;
+	RX_EOT				<= RXReg_RX_EOT;
+	RX_Commit			<= RXReg_RX_Commit;
+	RX_Rollback		<= RXReg_RX_Rollback;
 
 
 	FISE : ENTITY PoC.sata_FISEncoder
 		GENERIC MAP (
-			DEBUG												=> DEBUG					
+			DEBUG												=> DEBUG		,
+			ENABLE_DEBUGPORT						=> ENABLE_DEBUGPORT			
 		)
 		PORT MAP (
 			Clock												=> Clock,
@@ -399,6 +427,9 @@ BEGIN
 			-- FISEncoder interface
 			Status											=> FISE_Status,
 			FISType											=> TFSM_FISType,
+			
+			-- DebugPort
+			DebugPortOut								=> FISE_DebugPortOut,
 			
 			ATARegisters								=> ATAHostRegisters_i,
 			
@@ -411,18 +442,18 @@ BEGIN
 			TX_InsertEOP								=> FISE_TX_InsertEOP,
 			
 			-- LinkLayer FIFO interface
+			Link_TX_Valid								=> FISE_Link_TX_Valid,
+			Link_TX_Data								=> FISE_Link_TX_Data,
+			Link_TX_SOF									=> FISE_Link_TX_SOF,
+			Link_TX_EOF									=> FISE_Link_TX_EOF,
 			Link_TX_Ack									=> Link_TX_Ack,
-			Link_TX_SOF									=> Link_TX_SOF,
-			Link_TX_EOF									=> Link_TX_EOF,
-			Link_TX_Data								=> Link_TX_Data,
-			Link_TX_Valid								=> Link_TX_Valid,
 			Link_TX_InsertEOF						=> Link_TX_InsertEOF,
 			
 			-- LinkLayer FS-FIFO interface
 			Link_TX_FS_Valid						=> Link_TX_FS_Valid,
-			Link_TX_FS_Ack							=> Link_TX_FS_Ack,
 			Link_TX_FS_SendOK						=> Link_TX_FS_SendOK,
-			Link_TX_FS_Abort						=> Link_TX_FS_Abort
+			Link_TX_FS_Abort						=> Link_TX_FS_Abort,
+			Link_TX_FS_Ack							=> FISE_Link_TX_FS_Ack
 		);
 
 	-- ================================================================
@@ -430,7 +461,8 @@ BEGIN
 	-- ================================================================
 	FISD : ENTITY PoC.sata_FISDecoder
 		GENERIC MAP (
-			DEBUG												=> DEBUG					
+			DEBUG												=> DEBUG,
+			ENABLE_DEBUGPORT						=> ENABLE_DEBUGPORT
 		)
 		PORT MAP (
 			Clock												=> Clock,
@@ -438,6 +470,9 @@ BEGIN
 			
 			Status											=> FISD_Status,
 			FISType											=> FISD_FISType,
+			
+			-- DebugPort
+			DebugPortOut								=> FISD_DebugPortOut,
 			
 			UpdateATARegisters					=> UpdateATADeviceRegisters,
 			ATADeviceRegisters					=> FISD_ATADeviceRegisters,
@@ -453,55 +488,79 @@ BEGIN
 			RX_Ack											=> RXReg_Ack,
 			
 			-- LinkLayer FIFO interface
-			Link_RX_Ack									=> Link_RX_Ack,
+			Link_RX_Valid								=> Link_RX_Valid,
 			Link_RX_Data								=> Link_RX_Data,
 			Link_RX_SOF									=> Link_RX_SOF,
 			Link_RX_EOF									=> Link_RX_EOF,
-			Link_RX_Valid								=> Link_RX_Valid,
-			
+			Link_RX_Ack									=> FISD_Link_RX_Ack,
 			-- LinkLayer FS-FIFO interface
-			Link_RX_FS_Ack							=> Link_RX_FS_Ack,
+			Link_RX_FS_Valid						=> Link_RX_FS_Valid,
 			Link_RX_FS_CRCOK						=> Link_RX_FS_CRCOK,
 			Link_RX_FS_Abort						=> Link_RX_FS_Abort,
-			Link_RX_FS_Valid						=> Link_RX_FS_Valid
+			Link_RX_FS_Ack							=> FISD_Link_RX_FS_Ack
 		);
+	
+	Link_TX_Valid				<= FISE_Link_TX_Valid;
+	Link_TX_Data				<= FISE_Link_TX_Data;
+	Link_TX_SOF					<= FISE_Link_TX_SOF;
+	Link_TX_EOF					<= FISE_Link_TX_EOF;
+	Link_TX_FS_Ack			<= FISE_Link_TX_FS_Ack;
+	
+	Link_RX_Ack					<= FISD_Link_RX_Ack;
+	Link_RX_FS_Ack			<= FISD_Link_RX_FS_Ack;
 	
 	-- debug ports
 	-- ==========================================================================================================================================================
---	DebugPort.Command											<= Command;
---	DebugPort.Status											<= Status_i;
---	DebugPort.Error												<= Error_i;
---		
---	DebugPort.UpdateATAHostRegisters			<= UpdateATAHostRegisters;
---	DebugPort.ATAHostRegisters						<= ATAHostRegisters_i;
---	DebugPort.UpdateATADeviceRegisters		<= UpdateATADeviceRegisters;
---	DebugPort.ATADeviceRegisters					<= ATADeviceRegisters_i;
---		
---	DebugPort.FISE_FISType								<= TFSM_FISType;
---	DebugPort.FISE_Status									<= FISE_Status;
---	DebugPort.FISD_FISType								<= FISD_FISType;
---	DebugPort.FISD_Status									<= FISD_Status;
---		
---	DebugPort.SOF													<= Link_RX_SOF;
---	DebugPort.EOF													<= Link_RX_EOF;
-	
-	-- ChipScope
-	-- ==========================================================================================================================================================
-	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL DBG_UpdateATAHostRegisters							: STD_LOGIC;
-		SIGNAL DBG_ATAHostRegisters										: T_SATA_ATA_HOST_REGISTERS;
-		SIGNAL DBG_ATADeviceRegisters									: T_SATA_ATA_DEVICE_REGISTERS;
-		SIGNAL DBG_FISD_Error													: STD_LOGIC;
+	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
+		DebugPortOut.TFSM												<= TFSM_DebugPortOut;
+		DebugPortOut.FISE												<= FISE_DebugPortOut;
+		DebugPortOut.FISD												<= FISD_DebugPortOut;
 		
-		ATTRIBUTE KEEP OF DBG_UpdateATAHostRegisters	: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_ATAHostRegisters				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_ATADeviceRegisters			: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_FISD_Error							: SIGNAL IS TRUE;
-	BEGIN
-		DBG_UpdateATAHostRegisters	<= UpdateATAHostRegisters;
-		DBG_ATAHostRegisters				<= ATAHostRegisters_d;
-		DBG_ATADeviceRegisters			<= ATADeviceRegisters_d;
-
-		DBG_FISD_Error							<= to_sl(FISD_Status = SATA_FISD_STATUS_CRC_ERROR);
-	END GENERATE;
-END;
+		DebugPortOut.UpdateATAHostRegisters			<= UpdateATAHostRegisters;
+		DebugPortOut.ATAHostRegisters						<= ATAHostRegisters_i;
+		DebugPortOut.UpdateATADeviceRegisters		<= UpdateATADeviceRegisters;
+		DebugPortOut.ATADeviceRegisters					<= ATADeviceRegisters_i;
+		
+		DebugPortOut.TX_Valid										<= TX_Valid;
+		DebugPortOut.TX_Data										<= TX_Data;
+		DebugPortOut.TX_SOT											<= TX_SOT;
+		DebugPortOut.TX_EOT											<= TX_EOT;
+		DebugPortOut.TX_Ack											<= TC_TX_Ack;
+		
+		DebugPortOut.RX_Valid										<= RXReg_RX_Valid;
+		DebugPortOut.RX_Data										<= RXReg_RX_Data;
+		DebugPortOut.RX_SOT											<= RXReg_RX_SOT;
+		DebugPortOut.RX_EOT											<= RXReg_RX_EOT;
+		DebugPortOut.RX_Ack											<= RX_Ack;
+		DebugPortOut.RX_Commit									<= RXReg_RX_Commit;
+		DebugPortOut.RX_Rollback								<= RXReg_RX_Rollback;
+		
+		-- RXReg?
+		
+		DebugPortOut.FISE_FISType								<= TFSM_FISType;
+		DebugPortOut.FISE_Status								<= FISE_Status;
+		
+		DebugPortOut.FISD_FISType								<= FISD_FISType;
+		DebugPortOut.FISD_Status								<= FISD_Status;
+		
+		DebugPortOut.Link_TX_Valid							<= FISE_Link_TX_Valid;
+		DebugPortOut.Link_TX_Data								<= FISE_Link_TX_Data;
+		DebugPortOut.Link_TX_SOF								<= FISE_Link_TX_SOF;
+		DebugPortOut.Link_TX_EOF								<= FISE_Link_TX_EOF;
+		DebugPortOut.Link_TX_Ack								<= Link_TX_Ack;
+		DebugPortOut.Link_TX_FS_Valid						<= Link_TX_FS_Valid;
+		DebugPortOut.Link_TX_FS_SendOK					<= Link_TX_FS_SendOK;
+		DebugPortOut.Link_TX_FS_Abort						<= Link_TX_FS_Abort;
+		DebugPortOut.Link_TX_FS_Ack							<= FISE_Link_TX_FS_Ack;
+		
+		DebugPortOut.Link_RX_Valid							<= Link_RX_Valid;
+		DebugPortOut.Link_RX_Data								<= Link_RX_Data;
+		DebugPortOut.Link_RX_SOF								<= Link_RX_SOF;
+		DebugPortOut.Link_RX_EOF								<= Link_RX_EOF;
+		DebugPortOut.Link_RX_Ack								<= FISD_Link_RX_Ack;
+		DebugPortOut.Link_RX_FS_Valid						<= Link_RX_FS_Valid;
+		DebugPortOut.Link_RX_FS_CRCOK						<= Link_RX_FS_CRCOK;
+		DebugPortOut.Link_RX_FS_Abort						<= Link_RX_FS_Abort;
+		DebugPortOut.Link_RX_FS_Ack							<= FISD_Link_RX_FS_Ack;
+	end generate;
+end;

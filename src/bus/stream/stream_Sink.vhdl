@@ -3,13 +3,15 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	A generic buffer module for the PoC.Stream protocol.
+--
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module implements a generic buffer (FifO) for the PoC.Stream protocol.
+--		It is generic in DATA_BITS and in META_BITS as well as in FifO depths for
+--		data and meta information.
 --
 -- License:
 -- ============================================================================
@@ -23,47 +25,47 @@
 --		http://www.apache.org/licenses/LICENSE-2.0
 -- 
 -- Unless required by applicable law or agreed to in writing, software
--- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- distributed under the License is distributed on an "AS is" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS of ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.strings.ALL;
-USE			PoC.stream.ALL;
+library PoC;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.strings.all;
+use			PoC.stream.all;
 
 
-ENTITY stream_Sink IS
-	GENERIC (
-		TESTCASES												: T_SIM_STREAM_FRAMEGROUP_VECTOR_8
+entity stream_Sink is
+	generic (
+		TESTcaseS												: T_SIM_STREAM_FRAMEGROUP_VECTOR_8
 	);
-	PORT (
-		Clock														: IN	STD_LOGIC;
-		Reset														: IN	STD_LOGIC;
+	port (
+		Clock														: in	STD_LOGIC;
+		Reset														: in	STD_LOGIC;
 		-- Control interface
-		Enable													: IN	STD_LOGIC;
-		Error														: OUT	STD_LOGIC;
+		Enable													: in	STD_LOGIC;
+		Error														: out	STD_LOGIC;
 		-- IN Port
-		In_Valid												: IN	STD_LOGIC;
-		In_Data													: IN	T_SLV_8;
-		In_SOF													: IN	STD_LOGIC;
-		In_EOF													: IN	STD_LOGIC;
-		In_Ack													: OUT	STD_LOGIC
+		In_Valid												: in	STD_LOGIC;
+		In_Data													: in	T_SLV_8;
+		In_SOF													: in	STD_LOGIC;
+		In_EOF													: in	STD_LOGIC;
+		In_Ack													: out	STD_LOGIC
 	);
-END ENTITY;
+end entity;
 
 
-ARCHITECTURE rtl OF stream_Sink IS
+architecture rtl of stream_Sink is
 
-BEGIN
+begin
 
 	In_Ack			<= '1';-- RX_Valid;
 
-END ARCHITECTURE;
+end architecture;

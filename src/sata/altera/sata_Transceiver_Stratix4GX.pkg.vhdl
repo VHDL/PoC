@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Steffen Koehler
 --									Patrick Lehmann
+--
+-- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
@@ -14,7 +14,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,60 +30,60 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY	IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library	IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
 
-PACKAGE sata_TransceiverTypes IS
-	TYPE T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS IS RECORD
+package sata_TransceiverTypes is
+	type T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS is record
 		RefClockIn_50_MHz	: STD_LOGIC;
 		RefClockIn_150_MHz	: STD_LOGIC;
-	END RECORD;
+	end record;
 
-	TYPE T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS IS RECORD
+	type T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS is record
 		RX	: STD_LOGIC;
-	END RECORD;
+	end record;
 
-	TYPE T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS IS RECORD
+	type T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS is record
 		TX	: STD_LOGIC;
-	END RECORD;
+	end record;
 	
-	TYPE T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR		IS ARRAY(NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS;
-	TYPE T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS;
+	type T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR		is array(NATURAL range <>) of T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS;
+	type T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR	is array(NATURAL range <>) of T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS;
 	
 	component sata_basic is port (
-		reset			: in std_logic;
-		inclk			: in std_logic;
-		locked			: out std_logic;
-		rx_clkout		: out std_logic;
-		rx_datain		: in std_logic;
-		rx_dataout		: out std_logic_vector (31 downto 0);
-		rx_ctrlout		: out std_logic_vector (3 downto 0);
-		rx_disperr		: out std_logic_vector (3 downto 0);
-		rx_errdetect		: out std_logic_vector (3 downto 0);
+		reset							: in std_logic;
+		inclk							: in std_logic;
+		locked						: out std_logic;
+		rx_clkout					: out std_logic;
+		rx_datain					: in std_logic;
+		rx_dataout				: out std_logic_vector (31 downto 0);
+		rx_ctrlout				: out std_logic_vector (3 downto 0);
+		rx_disperr				: out std_logic_vector (3 downto 0);
+		rx_errdetect			: out std_logic_vector (3 downto 0);
 		rx_signaldetect		: out std_logic;
-		tx_clkout		: out std_logic;
+		tx_clkout					: out std_logic;
 		tx_forceelecidle	: in std_logic;
-		tx_datain		: in std_logic_vector (31 downto 0);
-		tx_ctrlin		: in std_logic_vector (3 downto 0);
-		tx_dataout		: out std_logic;
-		reconf_clk		: in std_logic;
-		reconfig		: in std_logic;
-		sata_gen		: in std_logic_vector(1 downto 0);
-		busy			: out std_logic
+		tx_datain					: in std_logic_vector (31 downto 0);
+		tx_ctrlin					: in std_logic_vector (3 downto 0);
+		tx_dataout				: out std_logic;
+		reconf_clk				: in std_logic;
+		reconfig					: in std_logic;
+		sata_gen					: in std_logic_vector(1 downto 0);
+		busy							: out std_logic
 	);
 	end component;
 
 	component sata_pll is port (
-		reset		: in std_logic;
-		inclk		: in std_logic;
-		outclk		: out std_logic;
-		locked		: out std_logic;
+		reset				: in std_logic;
+		inclk				: in std_logic;
+		outclk			: out std_logic;
+		locked			: out std_logic;
 		reconf_clk	: in std_logic;
-		reconfig	: in std_logic;
-		sata_gen	: in std_logic_vector(1 downto 0);
-		busy		: out std_logic
+		reconfig		: in std_logic;
+		sata_gen		: in std_logic_vector(1 downto 0);
+		busy				: out std_logic
 	);
 	end component;
 
@@ -110,8 +110,8 @@ PACKAGE sata_TransceiverTypes IS
 	);
 	end component;
 
-END sata_TransceiverTypes;
+end sata_TransceiverTypes;
 
 
-PACKAGE BODY sata_TransceiverTypes IS
-END PACKAGE BODY;
+package body sata_TransceiverTypes is
+end package body;

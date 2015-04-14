@@ -126,7 +126,7 @@ BEGIN
 		Meta	(15 DOWNTO	0)	<= to_slv(ETHERNET_TYPES(I));
 		Meta	(23 DOWNTO 16)	<= In_Meta_DestMACAddress_Data(I);
 		
-		assign_row(LLMux_In_Meta	, Meta	, I);
+		assign_row(LLMux_In_Meta, Meta, I);
 	END GENERATE;
 	
 	In_Meta_rst									<= get_col(LLMux_In_Meta_rev, META_RST_BIT);

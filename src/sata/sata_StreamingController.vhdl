@@ -39,6 +39,7 @@ USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 --USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
+USE			PoC.satadbg.ALL;
 
 
 ENTITY sata_StreamingController IS
@@ -60,7 +61,7 @@ ENTITY sata_StreamingController IS
 		Error											: OUT	T_SATA_STREAMC_ERROR;
 
 		-- debug ports
---		DebugPort									: OUT	T_DBG_SATA_STREAMC_OUT;
+		DebugPortOut							: OUT	T_SATADBG_SATASC_OUT;
 
 		-- for measurement purposes only
 		Config_BurstSize					: IN	T_SLV_16;
@@ -220,7 +221,8 @@ BEGIN
 	Cmd : ENTITY PoC.sata_CommandLayer
 		GENERIC MAP (
 			SIM_EXECUTE_IDENTIFY_DEVICE	=> SIM_EXECUTE_IDENTIFY_DEVICE,				-- required by CommandLayer: load device parameters
-			DEBUG												=> DEBUG					,										-- generate ChipScope DBG_* signals
+			DEBUG												=> DEBUG,										-- generate ChipScope DBG_* signals
+			ENABLE_DEBUGPORT						=> ENABLE_DEBUGPORT,
 			TX_FIFO_DEPTH								=> TX_FIFO_DEPTH,
 			RX_FIFO_DEPTH								=> RX_FIFO_DEPTH,
 			LOGICAL_BLOCK_SIZE_ldB			=> LOGICAL_BLOCK_SIZE_ldB
@@ -237,7 +239,7 @@ BEGIN
 			Status											=> Cmd_Status,
 			Error												=> Cmd_Error,
 		
---			DebugPort										=> DebugPort.Commandlayer,
+			DebugPortOut								=> DebugPortOut.Commandlayer,
 		
 			Address_AppLB								=> Address_AppLB,
 			BlockCount_AppLB						=> BlockCount_AppLB,
@@ -257,7 +259,7 @@ BEGIN
 			RX_EOR											=> RX_EOR_i,
 			RX_Ack											=> RX_Ack,
 			
-			-- TransferLayer interface
+			-- TransportLayer interface
 			Trans_Command								=> Trans_Command,
 			Trans_Status								=> Trans_Status,
 			Trans_Error									=> Trans_Error,
@@ -358,7 +360,8 @@ BEGIN
 	-- ==========================================================================================================================================================
 	Trans : ENTITY PoC.sata_TransportLayer
     GENERIC MAP (
-			DEBUG														=> DEBUG					,
+			DEBUG														=> DEBUG,
+			ENABLE_DEBUGPORT								=> ENABLE_DEBUGPORT,
       SIM_WAIT_FOR_INITIAL_REGDH_FIS  => SIM_WAIT_FOR_INITIAL_REGDH_FIS
     )
 		PORT MAP (
@@ -370,7 +373,7 @@ BEGIN
 			Status											=> Trans_Status,
 			Error												=> Trans_Error,
 		
---			DebugPort										=> DebugPort.TransportLayer,
+			DebugPortOut								=> DebugPortOut.TransportLayer,
 		
 			-- ATA registers
 			UpdateATAHostRegisters			=> Cmd_UpdateATAHostRegisters,
@@ -429,53 +432,16 @@ BEGIN
 	SATA_TX_EOF					<= SATA_TX_EOF_i;
 	SATA_TX_Valid				<= SATA_TX_Valid_i;
 	
-	-- ChipScope
+	-- DebugPort
 	-- ==========================================================================================================================================================
-	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL DBG_CMD_TX_SOR										: STD_LOGIC;
-		SIGNAL DBG_CMD_TX_EOR										: STD_LOGIC;
-		SIGNAL DBG_CMD_RX_SOR										: STD_LOGIC;
-		SIGNAL DBG_CMD_RX_EOR										: STD_LOGIC;
-		
-		SIGNAL DBG_TRANS_TX_SOT									: STD_LOGIC;
-		SIGNAL DBG_TRANS_TX_EOT									: STD_LOGIC;
-		SIGNAL DBG_TRANS_RX_SOT									: STD_LOGIC;
-		SIGNAL DBG_TRANS_RX_EOT									: STD_LOGIC;
-		
-		SIGNAL DBG_LINK_TX_SOF									: STD_LOGIC;
-		SIGNAL DBG_LINK_TX_EOF									: STD_LOGIC;
-		SIGNAL DBG_LINK_RX_SOF									: STD_LOGIC;
-		SIGNAL DBG_LINK_RX_EOF									: STD_LOGIC;
-		
-		ATTRIBUTE KEEP OF DBG_CMD_TX_SOR				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_CMD_TX_EOR				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_CMD_RX_SOR				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_CMD_RX_EOR				: SIGNAL IS TRUE;
-		
-		ATTRIBUTE KEEP OF DBG_TRANS_TX_SOT			: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_TRANS_TX_EOT			: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_TRANS_RX_SOT			: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_TRANS_RX_EOT			: SIGNAL IS TRUE;
-		
-		ATTRIBUTE KEEP OF DBG_LINK_TX_SOF				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_LINK_TX_EOF				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_LINK_RX_SOF				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_LINK_RX_EOF				: SIGNAL IS TRUE;
-		
-	BEGIN
-		DBG_CMD_TX_SOR		<= TX_Valid					AND TX_SOR;
-		DBG_CMD_TX_EOR		<= TX_Valid					AND TX_EOR;
-		DBG_CMD_RX_SOR		<= RX_Valid_i				AND RX_SOR_i;
-		DBG_CMD_RX_EOR		<= RX_Valid_i				AND RX_EOR_i;
-		
-		DBG_TRANS_TX_SOT	<= Cmd_TX_Valid			AND Cmd_TX_SOT;
-		DBG_TRANS_TX_EOT	<= Cmd_TX_Valid			AND Cmd_TX_EOT;
-		DBG_TRANS_RX_SOT	<= Trans_RX_Valid		AND Trans_RX_SOT;
-		DBG_TRANS_RX_EOT	<= Trans_RX_Valid		AND Trans_RX_EOT;
-		
-		DBG_LINK_TX_SOF		<= SATA_TX_Valid_i	AND SATA_TX_SOF_i;
-		DBG_LINK_TX_EOF		<= SATA_TX_Valid_i	AND SATA_TX_EOF_i;
-		DBG_LINK_RX_SOF		<= SATA_RX_Valid		AND SATA_RX_SOF;
-		DBG_LINK_RX_EOF		<= SATA_RX_Valid		AND SATA_RX_EOF;
-	END GENERATE;
+	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
+	begin
+		DebugPortOut.Command_Command <= Cmd_Command;
+		DebugPortOut.Command_Status  <= Cmd_Status;
+		DebugPortOut.Command_Error   <= Cmd_Error;
+
+		DebugPortOut.Transport_Command <= Trans_Command;
+		DebugPortOut.Transport_Status  <=	Trans_Status;
+		DebugPortOut.Transport_Error   <=	Trans_Error;
+	end generate;
 END;

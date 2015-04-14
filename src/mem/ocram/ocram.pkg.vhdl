@@ -1,27 +1,41 @@
---
--- Copyright (c) 2008
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
+-- ============================================================================
+-- Authors:				 	Martin Zabel
+-- 
+-- Package:				 	VHDL package for component declarations, types and functions
+--									associated to the PoC.mem.ocram namespace
 --
+-- Description:
+-- ------------------------------------
+--		On-Chip RAM for FPGAs and so on.
+--
+--		A detailed documentation is included in each module.
+--
+-- License:
+-- ============================================================================
+-- Copyright 2008-2015 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
 
---
--- Package: ocram
--- Author(s): Martin Zabel
--- 
--- On-Chip RAM for FPGAs and so on.
---
--- Revision:    $Revision: 1.6 $
--- Last change: $Date: 2009-01-22 13:44:25 $
---
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+library	ieee;
+use			ieee.std_logic_1164.all;
+use			ieee.numeric_std.all;
+
 
 package ocram is
   
@@ -115,8 +129,7 @@ package ocram is
   end component;
 end ocram;
 
-package body ocram is
 
-  
+package body ocram is
 
 end ocram;

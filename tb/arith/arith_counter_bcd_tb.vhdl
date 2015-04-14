@@ -5,7 +5,8 @@
 -- ============================================================================
 -- Module:				 	arith_counter_bcd_tb
 --
--- Authors:				 	Martin Zabel <martin.zabel@tu-dresden.de>
+-- Authors:				 	Martin Zabel
+--									Thomas B. Preusser
 -- 
 -- Description:
 -- ------------------------------------
@@ -92,10 +93,10 @@ begin
 							--increment
 							inc <= '1';
 							cycle;
-							tbAssert(val = (to_unsigned(d3,4),
-															to_unsigned(d2,4),
-															to_unsigned(d1,4),
-															to_unsigned(d0,4)),
+							tbAssert(val = (t_BCD(to_unsigned(d3,4)),
+															t_BCD(to_unsigned(d2,4)),
+															t_BCD(to_unsigned(d1,4)),
+															t_BCD(to_unsigned(d0,4))),
 											 "Must be incremented to state "&
 											 integer'image(d3)&
 											 integer'image(d2)&
@@ -106,10 +107,10 @@ begin
 						-- keep state
 						inc <= '0';
 						cycle;
-						tbAssert(val = (to_unsigned(d3,4),
-														to_unsigned(d2,4),
-														to_unsigned(d1,4),
-														to_unsigned(d0,4)),
+						tbAssert(val = (t_BCD(to_unsigned(d3,4)),
+														t_BCD(to_unsigned(d2,4)),
+														t_BCD(to_unsigned(d1,4)),
+														t_BCD(to_unsigned(d0,4))),
 										 "Must keep in state "&
 										 integer'image(d3)&
 										 integer'image(d2)&

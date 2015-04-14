@@ -15,5 +15,5 @@ vhdl poc	"src/common/board.vhdl"							# PoC board configuration mechanism
 vhdl poc	"src/common/config.vhdl"						# PoC device configuration mechanism
 
 # OCRAM
-vhdl poc	"src/mem/ocram/ocram_pkg.vhdl"			# OCRAM package
+vhdl poc	"src/mem/ocram/ocram.pkg.vhdl"			# OCRAM package
 vhdl poc	"src/mem/ocram/ocram_sdp.vhdl"			#	Synthesis top module

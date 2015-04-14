@@ -80,7 +80,7 @@ architecture rtl of arith_addw is
   constant DEFAULT_BLOCKING : tBlocking_vector := (AAM => ASC, CAI => DESC, PAI => DESC, CCA => DESC);
 
   type integer_vector is array(natural range<>) of integer;
-  function compute_blocks return integer_vector is
+  impure function compute_blocks return integer_vector is
     variable  bs  : tBlocking := BLOCKING;
     variable  res : integer_vector(K-1 downto 0);
 

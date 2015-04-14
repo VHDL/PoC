@@ -688,7 +688,7 @@ package body strings is
 		variable pos		: INTEGER;
 	begin
 		pos := str_pos(str, search);
-		report "str_replace: pos=" & INTEGER'image(pos) severity note;
+--		report "str_replace: pos=" & INTEGER'image(pos) severity note;
 		if (pos > 0) then
 			if (pos = 1) then
 				return replace & str(search'length + 1 to str'length);

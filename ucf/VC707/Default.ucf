@@ -1,5 +1,3 @@
-#% BEGIN-CONDITION Board = "VC707" %#
-#% BEGIN-TEMPLATE Miscellaneous %#
 ## =============================================================================================================================================================
 ## Xilinx User Constraint File (UCF)
 ## =============================================================================================================================================================
@@ -13,72 +11,3 @@
 ## Miscellaneous
 ## =============================================================================================================================================================
 CONFIG PART = XC7VX485T-FFG1761-2;
-#% END-TEMPLATE Miscellaneous %#
-
-#% BEGIN-TEMPLATE ClockSource_SystemClock %#
-## System Clock
-## =============================================================================
-##		Bank:						38
-##			VCCO:					1.5V (VCC1V5_FPGA)
-##		Location:				U51 (SIT9102)
-##			Vendor:				SiTime
-##			Device:				SiT9102 - 1 to 220 MHz High Performance Oscillator
-##			Frequency:		200 MHz, 50ppm
-NET "VC707_SystemClock_200MHz_n"				LOC = "E18" | IOSTANDARD = LVDS;	## U51.5
-NET "VC707_SystemClock_200MHz_p"				LOC = "E19" | IOSTANDARD = LVDS;	## U51.4
-#% END-TEMPLATE ClockSource_SystemClock %#
-
-#% BEGIN-TEMPLATE ClockSource_UserClock %#
-## User Clock
-## =============================================================================
-##		Bank:						14
-##			VCCO:					1.8V (VCC1V8_FPGA)
-##		Location:				U34 (Si570)
-##			Vendor:				Silicon Labs
-##			Device:				SI570 - 10 MHz to 1.4 GHz I²C Programmable XO/VCXO
-##			I²C-Address:	0xE0 (1110 000xb)
-NET "VC707_UserClock_n"									LOC = "AL34" | IOSTANDARD = LVCMOS18;	## U34.5
-NET "VC707_UserClock_p"									LOC = "AK34" | IOSTANDARD = LVCMOS18;	## U34.4
-#% END-TEMPLATE ClockSource_UserClock %#
-
-#% BEGIN-TEMPLATE ClockSource_SMAClock %#
-## SMA Clock
-## =============================================================================
-##		Bank:						14
-##			VCCO:					1.8V (VCC1V8_FPGA)
-##		Location:				J31, J32
-NET "VC707_SMAClock_n"									LOC = "AK32" | IOSTANDARD = LVCMOS18;	## J32
-NET "VC707_SMAClock_p"									LOC = "AJ32" | IOSTANDARD = LVCMOS18;	## J31
-#% END-TEMPLATE ClockSource_SMAClock %#
-
-#% BEGIN-TEMPLATE GPIO_SMA %###
-## SMA Clock
-## =============================================================================
-##		Bank:						13
-##			VCCO:					1.8V (VCC1V8_FPGA)
-##		Location:				J33, J34
-NET "VC707_GPIO_SMA_n"									LOC = "AP31" | IOSTANDARD = LVCMOS18;	## J34
-NET "VC707_GPIO_SMA_p"									LOC = "AN31" | IOSTANDARD = LVCMOS18;	## J33
-#% END-TEMPLATE GPIO_SMA %#
-
-#% BEGIN-TEMPLATE ClockSource_RecoveryClock %#
-## User Clock
-## =============================================================================
-##		Bank:						13, 114
-##			VCCO:					1.8V (VCC1V8_FPGA)
-##		Location:				U24 (Si5324-C-GM)
-##			Vendor:				Silicon Labs
-##			Device:				SI5324 - Any-Frequency Precision Clock Multiplier/Jitter Attenuator
-##			I²C-Address:	0xA0 (1010 000xb)
-NET "VC707_Si5324_Alarm_n"							LOC = "AU34"	| IOSTANDARD = LVCMOS18; ## U24.3; level shifted by U33 (SN74AVC1T45)
-NET "VC707_Si5324_Reset_n"							LOC = "AT36"	| IOSTANDARD = LVCMOS18; ## U24.1; level shifted by U39 (SN74AVC4T245)
-
-## recovered clock output
-NET "VC707_Si5324_ClockIn_n"						LOC = "AW33"	| IOSTANDARD = LVCMOS18;	## U24.17
-NET "VC707_Si5324_ClockIn_p"						LOC = "AW32"	| IOSTANDARD = LVCMOS18;	## U24.16
-
-## feedback input clock to transceiver quad at bank 114
-NET "VC707_Si5324_ClockOut_n"						LOC = "AD7"		| IOSTANDARD = LVCMOS18;	## U24.29
-NET "VC707_Si5324_ClockOut_p"						LOC = "AD8"		| IOSTANDARD = LVCMOS18;	## U24.28
-#% END-TEMPLATE ClockSource_RecoveryClock %#
-#% END-CONDITION Board = "VC707" %#

@@ -1,12 +1,10 @@
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY	L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY	L_LCD;
-USE			L_LCD.LCDTypes.ALL;
+library PoC;
+use			PoC.utils.all;
+--use			PoC.lcd.all;
 
 
 ENTITY BCDDigit IS

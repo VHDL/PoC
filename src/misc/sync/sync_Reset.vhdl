@@ -5,16 +5,16 @@
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --
--- Package:					sync_Reset
+-- Module:					Synchronizes a reset signal across clock-domain boundaries
 --
 -- Description:
 -- ------------------------------------
---		This module synchronizes multiple flag bits from clock domain
---		'Clock1' to clock domain 'Clock'. The clock domain boundary crossing is
---		done by two synchronizer D-FFs. All bits are independent from each other.
+--		This module synchronizes one reset signal from clock-domain 'Clock1' to
+--		clock-domain 'Clock'. The clock-domain boundary crossing is done by two
+--		synchronizer D-FFs. All bits are independent from each other.
 -- 
 --		ATTENTION:
---			Only use this synchronizer for reset signals.
+--			Use this synchronizer only for reset signals.
 --
 --		CONSTRAINTS:
 --			General:
@@ -22,7 +22,7 @@
 --				timing ignore constraints to all '_async' signals.
 --			
 --			Xilinx:
---				In case of a xilinx device, this module will instantiate the optimized
+--				In case of a Xilinx device, this module will instantiate the optimized
 --				module xil_SyncReset. Please attend to the notes of xil_SyncReset.
 --		
 --			Altera sdc file:
@@ -46,10 +46,10 @@
 -- limitations under the License.
 -- =============================================================================
 
-library IEEE;
+library	IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 
-library PoC;
+library	PoC;
 use			PoC.config.all;
 use			PoC.utils.all;
 
@@ -66,7 +66,7 @@ end;
 architecture rtl of sync_Reset is
 
 begin
-	genXilinx0 : if (VENDOR /= VENDOR_XILINX) generate
+	genGeneric : if (VENDOR /= VENDOR_XILINX) generate
 		attribute ASYNC_REG										: STRING;
 		attribute SHREG_EXTRACT								: STRING;
 		
@@ -99,8 +99,8 @@ begin
 		Output		<= Data_sync;
 	end generate;
 
-	genXilinx1 : if (VENDOR = VENDOR_XILINX) generate
-		-- locally component declaration removes the dependancy to 'PoC.xil.ALL'
+	genXilinx : if (VENDOR = VENDOR_XILINX) generate
+		-- locally component declaration removes the dependancy to 'PoC.xil.all'
 		component xil_SyncReset is
 			port (
 				Clock		: in	STD_LOGIC;	-- Clock to be synchronized to
