@@ -39,28 +39,30 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY UNISIM;
-USE			UNISIM.VCOMPONENTS.ALL;
+library UNISIM;
+use			UNISIM.VCOMPONENTS.all;
 
-LIBRARY PoC;
---USE			PoC.config.ALL;
-USE			PoC.components.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.strings.ALL;
-USE			PoC.physical.ALL;
-USE			PoC.sata.ALL;
-USE			PoC.satadbg.ALL;
-USE			PoC.sata_TransceiverTypes.ALL;
-USE			PoC.xil.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.my_project.all;
+use			PoC.components.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.strings.all;
+use			PoC.physical.all;
+use			PoC.debug.all;
+use			PoC.sata.all;
+use			PoC.satadbg.all;
+use			PoC.sata_TransceiverTypes.all;
+use			PoC.xil.all;
 
 
 entity sata_Transceiver_Series7_GTXE2 is
-	GENERIC (
+	generic (
 		DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
 		CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
@@ -545,7 +547,7 @@ begin
 
 --		GTX_DRP_Clock									<= Control_Clock;
 
-		GTX_UserClock									<= GTX_RefClockOut;
+		GTX_UserClock									<= transport GTX_RefClockOut after 3 ns;
 		SATA_Clock(I)									<= GTX_RefClockOut;
 
 		-- =========================================================================
@@ -617,7 +619,7 @@ begin
 			end if;
 			
 			-- ClkNet_Reset Control
-			if (CC_GTX_Locked_re = '1') then
+			if (CC_PowerDown_R2_fe = '1') then --(CC_GTX_Locked_re = '1') then
 				ClkNet_Reset_R1	:= '0';
 			elsif ((CC_GTX_Reset_R2_re and (CC_PowerDown or CC_ClkNet_Reset)) = '1') then
 				ClkNet_Reset_R1	:= '1';
@@ -642,7 +644,7 @@ begin
 			end if;
 			
 			-- GTX_Reset Control
-			if (CC_CPLL_Locked_re = '1') then --CC_PowerDown_R2_fe = '1') then -- TODO: this is a fix
+			if (CC_GTX_Locked_re = '1') then --CC_PowerDown_R2_fe = '1') then -- TODO: this is a fix
 				GTX_Reset_R1	:= '0';
 			elsif ((CC_FSM_Reset_R2_re and (CC_PowerDown or CC_ClkNet_Reset or CC_Reset)) = '1') then
 				GTX_Reset_R1	:= '1';
@@ -806,7 +808,7 @@ begin
 		delayCtrlClock : entity PoC.misc_Delay
 			generic map (
 				BITS					=> 1,
-				TAPS					=> (0 => 127)
+				TAPS					=> (0 => 15)	--127)
 			)
 			port map(
 				Clock					=> Control_Clock,						-- clock
@@ -1922,6 +1924,37 @@ begin
 			begin
 				return to_slv(T_STATE'pos(Status), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 			end function;
+			
+			function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+			begin
+				return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
+			end function;			
+
+			function dbg_GenerateStateEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_STATE loop
+					STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+
+			function dbg_GenerateStatusEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_TRANSCEIVER_STATUS loop
+					STD.TextIO.write(l, str_replace(T_SATA_TRANSCEIVER_STATUS'image(i), "SATA_TRANSCEIVER_STATUS_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+
+			constant dummy : T_BOOLVEC := (
+				0 => dbg_ExportEncoding("Transceiver (7-Series, GTXE2)",		dbg_GenerateStateEncodings,		MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_Transceiver_Series7_GTXE2.tok"),
+				1 => dbg_ExportEncoding("Transceiver Layer - Status Enum",	dbg_GenerateStatusEncodings,	MY_PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Transceiver_Status.tok")
+			);
+			
 		begin
 			GTX_DRP_Clock			<= DebugPortIn(I).DRP.Clock;
 			GTX_DRP_Enable		<= DebugPortIn(I).DRP.Enable;
