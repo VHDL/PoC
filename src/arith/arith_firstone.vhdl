@@ -63,8 +63,6 @@ use IEEE.numeric_std.all;
 library PoC;
 use PoC.config.all;
 
-library unisim;
-
 architecture rtl of arith_firstone is
 begin
   -- Generic Carry Chain through Addition
