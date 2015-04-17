@@ -55,39 +55,19 @@ package satadbg is
 		UserClock									: STD_LOGIC;
 		UserClock_Stable					: STD_LOGIC;
 
-		CC_PowerDown							: STD_LOGIC;
-		CC_ClkNet_Reset						: STD_LOGIC;
-		CC_Reset									: STD_LOGIC;
-		
-		CC_PowerDown_R1						: STD_LOGIC;
-		CC_PowerDown_R2						: STD_LOGIC;
 		GTX_CPLL_PowerDown				: STD_LOGIC;
 		GTX_TX_PowerDown					: STD_LOGIC;
 		GTX_RX_PowerDown					: STD_LOGIC;
 
-		CC_ClkNet_Reset_R1				: STD_LOGIC;
-		CC_ClkNet_Reset_R2				: STD_LOGIC;
-		CC_ClkNet_Reset_R3				: STD_LOGIC;
 		GTX_CPLL_Reset						: STD_LOGIC;
 		GTX_CPLL_Locked						: STD_LOGIC;
-		CC_GTX_CPLL_Locked				: STD_LOGIC;
 
-		CC_GTX_Reset_R1						: STD_LOGIC;
-		CC_GTX_Reset_R2						: STD_LOGIC;
-		UC_GTX_DoReset						: STD_LOGIC;
 		GTX_TX_Reset							: STD_LOGIC;
 		GTX_RX_Reset							: STD_LOGIC;
 		GTX_TX_ResetDone					: STD_LOGIC;
 		GTX_RX_ResetDone					: STD_LOGIC;
-		CC_GTX_TX_ResetDone				: STD_LOGIC;
-		CC_GTX_RX_ResetDone				: STD_LOGIC;
 		
-		CC_FSM_Reset_R1						: STD_LOGIC;
-		CC_FSM_Reset_R2						: STD_LOGIC;
-		UC_PowerDown							: STD_LOGIC;
-		UC_ClkNet_Reset						: STD_LOGIC;
-		UC_Reset									: STD_LOGIC;
-		FSM												: STD_LOGIC_VECTOR(2 DOWNTO 0);
+		FSM												: STD_LOGIC_VECTOR(3 DOWNTO 0);
 		
 		OOB_Clock									: STD_LOGIC;
 		RP_SATAGeneration					: T_SATA_GENERATION;

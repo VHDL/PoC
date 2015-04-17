@@ -11,8 +11,11 @@
 --
 -- Description:
 -- ------------------------------------
---		TODO
--- 
+-- Asynchronous signals: PowerDown, ClockNetwork_Reset, ClockNetwork_ResetDone
+-- Transceiver In/Outputs: VSS_*
+--
+-- All other signals are synchronous to SATA_Clock.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -57,12 +60,15 @@ entity sata_TransceiverLayer is
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 => SATA_GENERATION_2,	1 => SATA_GENERATION_2)				-- intial SATA Generation
 	);
 	port (
-		Reset											: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
-		ResetDone									: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		-- @async --------------------------------------------------------------------------------
+		PowerDown									: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
 		ClockNetwork_Reset				: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
 		ClockNetwork_ResetDone		: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
 
-		PowerDown									: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		-- @SATA_Clock ---------------------------------------------------------------------------
+		Reset											: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		ResetDone									: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
+
 		Command										: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(portS - 1 downto 0);
 		Status										: out	T_SATA_TRANSCEIVER_STATUS_VECTOR(portS - 1 downto 0);
 		Error											: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(portS - 1 downto 0);
