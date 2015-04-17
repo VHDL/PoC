@@ -2,6 +2,7 @@ common/
 arith/
 bus/
 fifo/
+io/
 mem/
 misc/
 xil/

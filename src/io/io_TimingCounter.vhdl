@@ -5,11 +5,14 @@
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
 --
--- Module:				 	Timing Counter
+-- Module:				 	optimized down-counter to control timings for low speed signals
 -- 
 -- Description:
 -- ------------------------------------
---		TODO
+--		This down-counter can be configured with a TIMING_TABLE (a ROM), from which
+--		the initial counter value is loaded. The table index can be selected by
+--		'Slot'. 'Timeout' is a registered output. Up to 16 values fit into one ROM
+--		consisting of 'log2ceilnz(imax(TIMING_TABLE)) + 1' 6-input LUTs.
 --
 -- License:
 -- ============================================================================

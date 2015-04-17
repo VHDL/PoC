@@ -12,6 +12,22 @@
 --		This module wraps a Virtex-6 System Monitor primitive to report if preconfigured
 --		temperature values are overrun.
 --
+--		Temperature curve:
+--		------------------
+--
+--										|											 /-----\
+--		Temp_ov	 on=80	|	-	-	-	-	-	-	/-------/				\
+--										|						 /				|				 \
+--		Temp_ov	off=60	|	-	-	-	-	-	/	-	-	-	-	|	-	-	-	-	\----\
+--										|					 /					|								\
+--										|					/						|							 | \
+--		Temp_us	 on=35	|	-	 /---/						|							 |	\
+--		Temp_us	off=30	|	-	/	-	-|-	-	-	-	-	-	|	-	-	-	-	-	-	-|-  \------\
+--										|  /		 |						|							 |					 \
+--		----------------|--------|------------|--------------|----------|---------
+--		pwm =						|		min	 |	medium		|		max				 |	medium	|	min
+--
+--
 -- License:
 -- ============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -58,7 +74,7 @@ architecture xilinx of xil_SystemMonitor_Virtex6 is
 	signal aux_channel_n				: STD_LOGIC_VECTOR(15 downto 0);
 
 	signal SysMonitor_Alarm			: STD_LOGIC_VECTOR(2 downto 0);
-	
+	signal SysMonitor_OverTemp	: STD_LOGIC;
 begin
 	genAUXChannel : for i in 0 to 15 generate
 		aux_channel_p(i) <= '0';
@@ -108,7 +124,7 @@ begin
 			VN									=> VN,
 			VP									=> VP,
 			-- Alarms
-			OT									=> Alarm_OverTemp,
+			OT									=> SysMonitor_OverTemp,
 			ALM									=> SysMonitor_Alarm,
 			-- Status
 			CHANNEL							=> open,
@@ -122,4 +138,6 @@ begin
 		);
 	
 	Alarm_UserTemp	<= SysMonitor_Alarm(0);
+	Alarm_OverTemp	<= SysMonitor_OverTemp;
+	Alarm						<= SysMonitor_Alarm(0) or SysMonitor_OverTemp;
 end;

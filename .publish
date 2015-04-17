@@ -3,7 +3,8 @@ netlist/
 py/
 src/
 tb/
-examples/
+tools/
+ucf/
 
 # 
 .gitignore

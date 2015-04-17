@@ -63,7 +63,9 @@ package sata is
 	
 	-- transceiver status
 	TYPE T_SATA_TRANSCEIVER_STATUS IS (
+		SATA_TRANSCEIVER_STATUS_POWERING_DOWN,
 		SATA_TRANSCEIVER_STATUS_POWERED_DOWN,
+		SATA_TRANSCEIVER_STATUS_RESETING_CLOCKNET,
 		SATA_TRANSCEIVER_STATUS_RESETING,
 		SATA_TRANSCEIVER_STATUS_RECONFIGURING,
 		SATA_TRANSCEIVER_STATUS_RELOADING,
@@ -108,6 +110,9 @@ package sata is
 	TYPE T_SATA_TRANSCEIVER_ERROR_VECTOR			IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_ERROR;
 	TYPE T_SATA_TRANSCEIVER_TX_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_TX_ERROR;
 	TYPE T_SATA_TRANSCEIVER_RX_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_RX_ERROR;
+
+	function to_slv(Command : T_SATA_TRANSCEIVER_COMMAND)	return STD_LOGIC_VECTOR;
+	function to_slv(Status : T_SATA_TRANSCEIVER_STATUS)		return STD_LOGIC_VECTOR;
 
 	-- ===========================================================================
 	-- SATA Physical Layer Types
@@ -478,6 +483,7 @@ package sata is
 	CONSTANT C_SIM_MAX_BLOCKCOUNT						: POSITIVE				:= 64; 					--	= 32 KiB at 512 Bytes logical blocks
 	
 	function to_sata_Trans_Command(slv : STD_LOGIC_VECTOR) return T_SATA_TRANS_COMMAND;
+	function to_sata_Trans_Status(slv : STD_LOGIC_VECTOR) return T_SATA_TRANS_STATUS;
 
 	function to_slv(Command : T_SATA_TRANS_COMMAND)	return STD_LOGIC_VECTOR;
 	function to_slv(Status : T_SATA_TRANS_STATUS)		return STD_LOGIC_VECTOR;
@@ -593,6 +599,15 @@ PACKAGE BODY sata IS
 		end if;
 	end function;
 
+	function to_sata_Trans_Status(slv : STD_LOGIC_VECTOR) return T_SATA_TRANS_STATUS is
+	begin
+		if (to_integer(unsigned(slv)) <= T_SATA_TRANS_STATUS'pos(T_SATA_TRANS_STATUS'high)) then
+			return T_SATA_TRANS_STATUS'val(to_integer(unsigned(slv)));
+		else
+			return SATA_TRANS_STATUS_ERROR;
+		end if;
+	end function;
+
 	function to_sata_StreamC_Command(slv : STD_LOGIC_VECTOR) return T_SATA_STREAMC_COMMAND is
 	begin
 		if (to_integer(unsigned(slv)) <= T_SATA_STREAMC_COMMAND'pos(T_SATA_STREAMC_COMMAND'high)) then
@@ -606,6 +621,11 @@ PACKAGE BODY sata IS
 	-- ===========================================================================
 	-- to_slv(Command : ***)
 	-- -----------------------------------
+	function to_slv(Command : T_SATA_TRANSCEIVER_COMMAND)	return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_TRANSCEIVER_COMMAND'pos(Command), log2ceilnz(T_SATA_TRANSCEIVER_COMMAND'pos(T_SATA_TRANSCEIVER_COMMAND'high) + 1));
+	end function;
+	
 	function to_slv(Command : T_SATA_SATACONTROLLER_COMMAND) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_SATACONTROLLER_COMMAND'pos(Command), log2ceilnz(T_SATA_SATACONTROLLER_COMMAND'pos(T_SATA_SATACONTROLLER_COMMAND'high) + 1));
@@ -628,6 +648,11 @@ PACKAGE BODY sata IS
 	
 	-- to_slv(Status : ***)
 	-- -----------------------------------
+	function to_slv(Status : T_SATA_TRANSCEIVER_STATUS)		return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_TRANSCEIVER_STATUS'pos(Status), log2ceilnz(T_SATA_TRANSCEIVER_STATUS'pos(T_SATA_TRANSCEIVER_STATUS'high) + 1));
+	end function;
+	
 	function to_slv(Status : T_SATA_PHY_STATUS) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_PHY_STATUS'pos(Status), log2ceilnz(T_SATA_PHY_STATUS'pos(T_SATA_PHY_STATUS'high) + 1));
