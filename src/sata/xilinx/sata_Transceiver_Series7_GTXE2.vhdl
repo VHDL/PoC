@@ -432,7 +432,7 @@ begin
 		-- the appropiate ports of the ClockNetwork module. 
 		BUFG_RefClockOut : BUFG
 			port map (
-				I						=> GTX_RefClockGlobal,	--GTX_TX_RefClockOut,
+				I						=> GTX_TX_RefClockOut,
 				O						=> GTX_UserClock
 			);
 
@@ -1349,7 +1349,7 @@ begin
 
 				-- internal clock selects and clock outputs
 				TXSYSCLKSEL											=> "00",													-- @async:		00 => use CPLL und gtxe2_channel refclock; 11 => use QPLL and gtxe2_common refclock
-				TXOUTCLKSEL											=> "010",													-- @async:		010 => select TXOUTCLKPMA
+				TXOUTCLKSEL											=> "011",													-- @async:		011 => select TXPLLREFCLK_DIV1
 				TXOUTCLKFABRIC									=> open,													-- @clock:		internal clock after TXSYSCLKSEL-mux
 				TXOUTCLKPCS											=> open,													-- @clock:		internal clock from PCS sublayer
 				TXOUTCLK												=> GTX_TX_RefClockOut,						-- @clock:		TX output clock
