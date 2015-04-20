@@ -253,7 +253,7 @@ BEGIN
 		SATAC_TX_EOF									<= TX_EOF(I);
 		SATAC_TX_Valid								<= TX_Valid(I);
 		SATAC_TX_Data									<= TX_Data(I);
-		TX_Ack(I)										<= Link_TX_Ack;
+		TX_Ack(I)											<= Link_TX_Ack;
 		TX_InsertEOF(I)								<= Link_TX_InsertEOF;
 		
 		SATAC_TX_FS_Ack								<= TX_FS_Ack(I);
