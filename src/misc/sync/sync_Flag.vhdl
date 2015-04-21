@@ -5,16 +5,16 @@
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --
--- Package:					sync_Flag
+-- Module:					Synchronizes a flag signal across clock-domain boundaries
 --
 -- Description:
 -- ------------------------------------
---		This module synchronizes multiple flag bits from clock domain
---		'Clock1' to clock domain 'Clock'. The clock domain boundary crossing is
---		done by two synchronizer D-FFs. All bits are independent from each other.
+--		This module synchronizes multiple flag bits from clock-domain 'Clock1' to
+--		clock-domain 'Clock'. The clock-domain boundary crossing is done by two
+--		synchronizer D-FFs. All bits are independent from each other.
 --		
 --		ATTENTION:
---			Only use this synchronizer for long time stable signals (flags).
+--			Use this synchronizer only for long time stable signals (flags).
 --
 --		CONSTRAINTS:
 --			General:
@@ -22,8 +22,8 @@
 --				timing ignore constraints to all '_async' signals.
 --			
 --			Xilinx:
---				In case of a xilinx device, this module will instantiate the optimized
---				module xil_SyncBits. Please attend to the notes of xil_SyncBits.
+--				In case of a Xilinx device, this module will instantiate the optimized
+--				module PoC.xil.SyncBits. Please attend to the notes of xil_SyncBits.vhdl.
 --		
 --			Altera sdc file:
 --				TODO
@@ -46,10 +46,10 @@
 -- limitations under the License.
 -- =============================================================================
 
-library IEEE;
+library	IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 
-library PoC;
+library	PoC;
 use			PoC.config.all;
 use			PoC.utils.all;
 
@@ -71,7 +71,7 @@ architecture rtl of sync_Flag is
 	constant INIT_I		: STD_LOGIC_VECTOR		:= resize(descend(INIT), BITS);
 
 begin
-	genXilinx0 : if (VENDOR /= VENDOR_XILINX) generate
+	genGeneric : if (VENDOR /= VENDOR_XILINX) generate
 		attribute ASYNC_REG							: STRING;
 		attribute SHREG_EXTRACT					: STRING;
 	begin
@@ -101,8 +101,8 @@ begin
 		end generate;
 	end generate;
 
-	genXilinx1 : if (VENDOR = VENDOR_XILINX) generate
-		-- locally component declaration removes the dependancy to 'PoC.xil.ALL'
+	genXilinx : if (VENDOR = VENDOR_XILINX) generate
+		-- locally component declaration removes the dependency to 'PoC.xil.all'
 		component xil_SyncBits is
 			generic (
 				BITS		: POSITIVE						:= 1;									-- number of bit to be synchronized

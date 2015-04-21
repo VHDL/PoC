@@ -3,11 +3,11 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
+-- Authors:					Patrick Lehmann
+-- 
 -- Package:					This VHDL package declares new physical types and their
 --									conversion functions.
 --
--- Authors:					Patrick Lehmann
--- 
 -- Description:
 -- ------------------------------------
 --		For detailed documentation see below.
@@ -25,10 +25,15 @@
 --			
 --			It was successfully tested with:
 --				- Xilinx Synthesis Tool (XST) 14.7 and Xilinx ISE Simulator (iSim) 14.7
---				- Xilinx Vivado	Synthesis 2014.2 and Xilinx Vivado Simulator (xSim) 2014.2
 --				- Quartus II 13.1
 --				- QuestaSim 10.0d
 --				- GHDL 0.31
+--
+--			Tool chains with known issues:
+--				- Xilinx Vivado	Synthesis 2014.4
+--
+--			Untested tool chains
+--				- Xilinx Vivado Simulator (xSim) 2014.4
 --		
 -- License:
 -- ============================================================================

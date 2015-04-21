@@ -1,0 +1,9 @@
+# scripts to customize git
+git/
+
+# editor plugins, syntax-highlighting, ...
+#emacs/
+Notepad++/
+
+# the publish scripts
+#publish/

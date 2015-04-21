@@ -3,20 +3,20 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 --
 -- ============================================================================
--- Package:					Global configuration settings.
---
 -- Authors:					Thomas B. Preusser
 --									Martin Zabel
 --									Patrick Lehmann
 --
+-- Package:					Debug helper functions.
+--
 -- Description:
 -- ------------------------------------
---		This file evaluates the settings declared in the project specific package my_config.
---		See also template file my_config.vhdl.template.
+--		This file declares a debug helper function to export enum encodings as a
+--		ChipScope readable token file (*.tok).
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,6 +43,7 @@ package debug is
 
 end package;
 
+
 package body debug is
 	impure function dbg_ExportEncoding(Name : STRING; encodings : string; tokenFileName : STRING) return BOOLEAN is
 		file		tokenFile : TEXT open WRITE_MODE is tokenFileName;
@@ -54,14 +55,14 @@ package body debug is
 		report "dbg_ExportEncoding: '" & encodings & "'" severity note;
 		
 		-- write file header
-		write(l, "# Encoding file for '" & Name & "'");	writeline(tokenFile, l);
-		write(l, "#");																	writeline(tokenFile, l);
-		write(l, "# ChipScope Token File Version");			writeline(tokenFile, l);
-		write(l, "@FILE_VERSION=1.0.0");								writeline(tokenFile, l);
-		write(l, "#");																	writeline(tokenFile, l);
-		write(l, "# Default token value");							writeline(tokenFile, l);
-		write(l, "@DEFAULT_TOKEN=");										writeline(tokenFile, l);
-		write(l, "#");																	writeline(tokenFile, l);
+		write(l, STRING'("# Encoding file for '" & Name & "'"));	writeline(tokenFile, l);
+		write(l, STRING'("#"));																		writeline(tokenFile, l);
+		write(l, STRING'("# ChipScope Token File Version"));			writeline(tokenFile, l);
+		write(l, STRING'("@FILE_VERSION=1.0.0"));									writeline(tokenFile, l);
+		write(l, STRING'("#"));																		writeline(tokenFile, l);
+		write(l, STRING'("# Default token value"));								writeline(tokenFile, l);
+		write(l, STRING'("@DEFAULT_TOKEN="));											writeline(tokenFile, l);
+		write(l, STRING'("#"));																		writeline(tokenFile, l);
 		
 		-- write state entires
 		cnt  := 0;

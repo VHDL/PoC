@@ -1,5 +1,19 @@
-LICENSE
-AUTHORS
+# folders
+netlist/
+py/
 src/
 tb/
-examples/
+tools/
+ucf/
+
+# 
+.gitignore
+
+# files
+LICENSE
+AUTHORS
+README.md
+
+# 
+poc.sh
+poc.ps1

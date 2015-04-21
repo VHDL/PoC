@@ -3,15 +3,15 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Steffen Koehler
 --									Patrick Lehmann
 --
+-- Module:					Synchronizes a signal vector across clock-domain boundaries
+--
 -- Description:
 -- ------------------------------------
---		This module synchronizes a vector of bits from clock domain 'Clock1' to
---		clock domain 'Clock2'. The clock domain boundary crossing is done by a
+--		This module synchronizes a vector of bits from clock-domain 'Clock1' to
+--		clock-domain 'Clock2'. The clock-domain boundary crossing is done by a
 --		change comparator, a T-FF, two synchronizer D-FFs and a reconstructive
 --		XOR indicating a value change on the input. This changed signal is used
 --		to capture the input for the new output. A busy flag is additionally
@@ -24,7 +24,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,112 +41,112 @@
 -- =============================================================================
 
 LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
 LIBRARY PoC;
-USE			PoC.utils.ALL;
+use			PoC.utils.all;
 
 
-ENTITY sync_Vector IS
-  GENERIC (
+entity sync_Vector IS
+  generic (
 	  BITS								: POSITIVE					:= 8;											-- number of bit to be synchronized
 		INIT								: STD_LOGIC_VECTOR	:= x"00000000"						-- 
 	);
   PORT (
-		Clock1							: IN	STD_LOGIC;															-- <Clock>	input clock
-		Clock2							: IN	STD_LOGIC;															-- <Clock>	output clock
-		Input								: IN	STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);		-- @Clock1:	input vector
-		Output							: OUT STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);		-- @Clock2:	output vector
-		Busy								: OUT	STD_LOGIC;															-- @Clock1:	busy bit 
-		Changed							: OUT	STD_LOGIC																-- @Clock2:	changed bit
+		Clock1							: in	STD_LOGIC;															-- <Clock>	input clock
+		Clock2							: in	STD_LOGIC;															-- <Clock>	output clock
+		Input								: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);		-- @Clock1:	input vector
+		Output							: out STD_LOGIC_VECTOR(BITS - 1 downto 0);		-- @Clock2:	output vector
+		Busy								: out	STD_LOGIC;															-- @Clock1:	busy bit 
+		Changed							: out	STD_LOGIC																-- @Clock2:	changed bit
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF sync_Vector IS
-	ATTRIBUTE SHREG_EXTRACT				: STRING;
+architecture rtl of sync_Vector is
+	attribute SHREG_EXTRACT				: STRING;
 	
-	CONSTANT INIT_I								: STD_LOGIC_VECTOR												:= descend(INIT)(BITS - 1 DOWNTO 0);
+	constant INIT_I								: STD_LOGIC_VECTOR												:= descend(INIT)(BITS - 1 downto 0);
 	
-	SIGNAL D0											: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)			:= INIT_I;
-	SIGNAL T1											: STD_LOGIC																:= '0';
-	SIGNAL D2											: STD_LOGIC																:= '0';
-	SIGNAL D3											: STD_LOGIC																:= '0';
-	SIGNAL D4											: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)			:= INIT_I;
+	signal D0											: STD_LOGIC_VECTOR(BITS - 1 downto 0)			:= INIT_I;
+	signal T1											: STD_LOGIC																:= '0';
+	signal D2											: STD_LOGIC																:= '0';
+	signal D3											: STD_LOGIC																:= '0';
+	signal D4											: STD_LOGIC_VECTOR(BITS - 1 downto 0)			:= INIT_I;
 
-	SIGNAL Changed_Clk1						: STD_LOGIC;
-	SIGNAL Changed_Clk2						: STD_LOGIC;
-	SIGNAL Busy_i									: STD_LOGIC;
+	signal Changed_Clk1						: STD_LOGIC;
+	signal Changed_Clk2						: STD_LOGIC;
+	signal Busy_i									: STD_LOGIC;
 	
 	-- Prevent XST from translating two FFs into SRL plus FF
-	ATTRIBUTE SHREG_EXTRACT OF D0	: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF T1	: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF D2	: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF D3	: SIGNAL IS "NO";
-	ATTRIBUTE SHREG_EXTRACT OF D4	: SIGNAL IS "NO";
+	attribute SHREG_EXTRACT of D0	: signal IS "NO";
+	attribute SHREG_EXTRACT of T1	: signal IS "NO";
+	attribute SHREG_EXTRACT of D2	: signal IS "NO";
+	attribute SHREG_EXTRACT of D3	: signal IS "NO";
+	attribute SHREG_EXTRACT of D4	: signal IS "NO";
 
-	SIGNAL syncClk1_In		: STD_LOGIC;
-	SIGNAL syncClk1_Out		: STD_LOGIC;
-	SIGNAL syncClk2_In		: STD_LOGIC;
-	SIGNAL syncClk2_Out		: STD_LOGIC;
+	signal syncClk1_In		: STD_LOGIC;
+	signal syncClk1_Out		: STD_LOGIC;
+	signal syncClk2_In		: STD_LOGIC;
+	signal syncClk2_Out		: STD_LOGIC;
 
-BEGIN
+begin
 
 	-- input D-FF @Clock1 -> changed detection
-	PROCESS(Clock1)
-	BEGIN
-		IF rising_edge(Clock1) THEN
-			IF (Busy_i = '0') THEN
+	process(Clock1)
+	begin
+		if rising_edge(Clock1) then
+			if (Busy_i = '0') then
 				D0	<= Input;									-- delay input vector for change detection; gated by busy flag
-				T1	<= T1 XOR Changed_Clk1;		-- toggle T1 if input vector has changed
-			END IF;
-		END IF;
-	END PROCESS;
+				T1	<= T1 xor Changed_Clk1;		-- toggle T1 if input vector has changed
+			end if;
+		end if;
+	end process;
 	
 	-- D-FF for level change detection (both edges)
-	PROCESS(Clock2)
-	BEGIN
-		IF rising_edge(Clock2) THEN
+	process(Clock2)
+	begin
+		if rising_edge(Clock2) then
 			D2		<= syncClk2_Out;
 			D3		<= Changed_Clk2;
 			
-			IF (Changed_Clk2 = '1') THEN
+			if (Changed_Clk2 = '1') then
 				D4	<= D0;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
 	-- assign syncClk*_In signals
 	syncClk2_In		<= T1;
 	syncClk1_In		<= D2;
 	
-	Changed_Clk1	<='0' WHEN (D0 = Input) ELSE '1';		-- input change detection
-	Changed_Clk2	<= syncClk2_Out XOR D2;							-- level change detection; restore strobe signal from flag
-	Busy_i				<= T1 XOR syncClk1_Out;							-- calculate busy signal
+	Changed_Clk1	<='0' when (D0 = Input) else '1';		-- input change detection
+	Changed_Clk2	<= syncClk2_Out xor D2;							-- level change detection; restore strobe signal from flag
+	Busy_i				<= T1 xor syncClk1_Out;							-- calculate busy signal
 	
 	-- output signals
 	Output				<= D4;
 	Busy					<= Busy_i;
 	Changed				<= D3;
 		
-	syncClk2 : ENTITY PoC.sync_Flag
-		GENERIC MAP (
+	syncClk2 : entity PoC.sync_Flag
+		generic map (
 			BITS				=> 1							-- number of bit to be synchronized
 		)
-		PORT MAP (
+		port map (
 			Clock				=> Clock2,				-- <Clock>	output clock domain
 			Input(0)		=> syncClk2_In,		-- @async:	input bits
 			Output(0)		=> syncClk2_Out		-- @Clock:	output bits
 		);
 	
-	syncClk1 : ENTITY PoC.sync_Flag
-		GENERIC MAP (
+	syncClk1 : entity PoC.sync_Flag
+		generic map (
 			BITS				=> 1							-- number of bit to be synchronized
 		)
-		PORT MAP (
+		port map (
 			Clock				=> Clock1,				-- <Clock>	output clock domain
 			Input(0)		=> syncClk1_In,		-- @async:	input bits
 			Output(0)		=> syncClk1_Out		-- @Clock:	output bits
 		);
-END;
+end;

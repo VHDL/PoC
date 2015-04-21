@@ -3,18 +3,18 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Package:					VHDL package for component declarations, types and
---									functions assoziated to the PoC.io namespace
---
 -- Authors:					Patrick Lehmann
 -- 
+-- Package:					VHDL package for component declarations, types and
+--									functions associated to the PoC.io namespace
+--
 -- Description:
 -- ------------------------------------
 --		For detailed documentation see below.
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -63,7 +63,7 @@ package io is
 	
 	-- IICBusController
 	-- ==========================================================================================================================================================
-	TYPE T_IO_IIC_BUSMODE IS (
+	type T_IO_IIC_BUSMODE is (
 		IO_IIC_BUSMODE_SMBUS,							--   100 kHz; additional timing restrictions
 		IO_IIC_BUSMODE_STANDARDMODE,			--   100 kHz
 		IO_IIC_BUSMODE_FASTMODE,					--   400 kHz
@@ -72,7 +72,7 @@ package io is
 		IO_IIC_BUSMODE_ULTRAFASTMODE			-- 5.000 kHz; unidirectional
 	);
 
-	TYPE T_IO_IICBUS_COMMAND IS (
+	type T_IO_IICBUS_COMMAND is (
 		IO_IICBUS_CMD_NONE,
 		IO_IICBUS_CMD_SEND_START_CONDITION,
 		IO_IICBUS_CMD_SEND_RESTART_CONDITION,
@@ -82,7 +82,7 @@ package io is
 		IO_IICBUS_CMD_RECEIVE
 	);
 	
-	TYPE T_IO_IICBUS_STATUS IS (
+	type T_IO_IICBUS_STATUS is (
 		IO_IICBUS_STATUS_RESETING,
 		IO_IICBUS_STATUS_IDLE,
 		IO_IICBUS_STATUS_SENDING,
@@ -98,7 +98,7 @@ package io is
 	
 	-- IICController
 	-- ==========================================================================================================================================================
-	TYPE T_IO_IIC_COMMAND IS (
+	type T_IO_IIC_COMMAND is (
 		IO_IIC_CMD_NONE,
 		IO_IIC_CMD_QUICKCOMMAND_READ,	-- use this to check for an device address
 		IO_IIC_CMD_QUICKCOMMAND_WRITE,
@@ -107,7 +107,7 @@ package io is
 		IO_IIC_CMD_PROCESS_CALL
 	);
 	
-	TYPE T_IO_IIC_STATUS IS (
+	type T_IO_IIC_STATUS is (
 		IO_IIC_STATUS_IDLE,
 		IO_IIC_STATUS_EXECUTING,
 		IO_IIC_STATUS_EXECUTE_OK,
@@ -121,7 +121,7 @@ package io is
 		IO_IIC_STATUS_ERROR
 	);
 
-	TYPE T_IO_IIC_ERROR IS (
+	type T_IO_IIC_ERROR is (
 		IO_IIC_ERROR_NONE,
 		IO_IIC_ERROR_ADDRESS_ERROR,
 		IO_IIC_ERROR_ACK_ERROR,
@@ -129,15 +129,15 @@ package io is
 		IO_IIC_ERROR_FSM
 	);
 	
-	TYPE T_IO_IIC_COMMAND_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_IO_IIC_COMMAND;
-	TYPE T_IO_IIC_STATUS_VECTOR		IS ARRAY(NATURAL RANGE <>) OF T_IO_IIC_STATUS;
-	TYPE T_IO_IIC_ERROR_VECTOR		IS ARRAY(NATURAL RANGE <>) OF T_IO_IIC_ERROR;
+	type T_IO_IIC_COMMAND_VECTOR	is array(NATURAL range <>) of T_IO_IIC_COMMAND;
+	type T_IO_IIC_STATUS_VECTOR		is array(NATURAL range <>) of T_IO_IIC_STATUS;
+	type T_IO_IIC_ERROR_VECTOR		is array(NATURAL range <>) of T_IO_IIC_ERROR;
 	
 	
 	
 	-- MDIOController
 	-- ==========================================================================================================================================================
-	TYPE T_IO_MDIO_MDIOCONTROLLER_COMMAND IS (
+	type T_IO_MDIO_MDIOCONTROLLER_COMMAND is (
 		IO_MDIO_MDIOC_CMD_NONE,
 		IO_MDIO_MDIOC_CMD_CHECK_ADDRESS,
 		IO_MDIO_MDIOC_CMD_READ,
@@ -145,7 +145,7 @@ package io is
 		IO_MDIO_MDIOC_CMD_ABORT
 	);
 	
-	TYPE T_IO_MDIO_MDIOCONTROLLER_STATUS IS (
+	type T_IO_MDIO_MDIOCONTROLLER_STATUS is (
 		IO_MDIO_MDIOC_STATUS_IDLE,
 		IO_MDIO_MDIOC_STATUS_CHECKING,
 		IO_MDIO_MDIOC_STATUS_CHECK_OK,
@@ -157,19 +157,19 @@ package io is
 		IO_MDIO_MDIOC_STATUS_ERROR
 	);
 	
-	TYPE T_IO_MDIO_MDIOCONTROLLER_ERROR IS (
+	type T_IO_MDIO_MDIOCONTROLLER_ERROR is (
 		IO_MDIO_MDIOC_ERROR_NONE,
 		IO_MDIO_MDIOC_ERROR_ADDRESS_NOT_FOUND,
 		IO_MDIO_MDIOC_ERROR_FSM
 	);
 	
-	TYPE T_IO_LCDBUS_COMMAND IS (
+	type T_IO_LCDBUS_COMMAND is (
 		IO_LCDBUS_CMD_NONE,
 		IO_LCDBUS_CMD_READ,
 		IO_LCDBUS_CMD_WRITE
 	);
 	
-	TYPE T_IO_LCDBUS_STATUS IS (
+	type T_IO_LCDBUS_STATUS is (
 		IO_LCDBUS_STATUS_IDLE,
 		IO_LCDBUS_STATUS_READING,
 		IO_LCDBUS_STATUS_WRITING,
@@ -178,7 +178,7 @@ package io is
 	
 	-- Subnamespace PoC.io.uart
   -- =========================================================================
-	CONSTANT C_UART_TYPICAL_BAUDRATES		: T_BAUDVEC		:= (
+	constant C_UART_TYPICAL_BAUDRATES		: T_BAUDVEC		:= (
 		 0 =>		 300 Bd,	 1 =>		 600 Bd,	 2 =>		1200 Bd,	 3 =>		1800 Bd,	 4 =>		2400 Bd,
 		 5 =>		4000 Bd,	 6 =>		4800 Bd,	 7 =>		7200 Bd,	 8 =>		9600 Bd,	 9 =>	 14400 Bd,
 		10 =>	 16000 Bd,	11 =>	 19200 Bd,	12 =>	 28800 Bd,	13 =>	 38400 BD,	14 =>	 51200 Bd,

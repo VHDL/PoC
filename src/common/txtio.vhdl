@@ -38,14 +38,14 @@
 -- =============================================================================
 
 library	PoC;
+use			PoC.config.OPERATING_SYSTEM;
 use			PoC.utils.all;
-use			PoC.my_project.MY_OPERATING_SYSTEM;
 
 
 package txtio is
 	-----------------------------------------------------------------------------
 	-- Constant declarations
-	constant C_LINEBREAK : STRING := ite(str_equal(MY_OPERATING_SYSTEM, "WINDOWS"), (CR & LF), (1 => LF));
+	constant C_LINEBREAK : STRING := ite(str_equal(OPERATING_SYSTEM, "WINDOWS"), (CR & LF), (1 => LF));
 
 	procedure stdout_write    (str : STRING);
 	procedure stdout_writeline(str : STRING := "");

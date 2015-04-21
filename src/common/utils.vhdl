@@ -42,7 +42,7 @@ library	PoC;
 package utils is
   --+ Environment +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   -- Distinguishes Simulation from Synthesis
-	function SIMULATION return boolean;
+	constant SIMULATION					: BOOLEAN;				-- deferred constant declaration
 	
 	-- Type declarations
 	-- ==========================================================================
@@ -73,8 +73,8 @@ package utils is
 	-- rounding style
 	type T_ROUNDING_STYLE	is (ROUND_TO_NEAREST, ROUND_TO_ZERO, ROUND_TO_INF, ROUND_UP, ROUND_DOWN);
 
-	subtype T_BCD					is UNSIGNED(3 downto 0);
-	type		T_BCD_VECTOR	is array (NATURAL range <>) of T_BCD;
+	type T_BCD				is array(3 downto 0) of std_logic;
+	type T_BCD_VECTOR	is array(NATURAL range <>) of T_BCD;
 	constant C_BCD_MINUS	: T_BCD		:= "1010";
 	constant C_BCD_OFF		: T_BCD		:= "1011";
 	
@@ -249,7 +249,7 @@ package body utils is
 
 	-- Environment
 	-- ==========================================================================
-	function SIMULATION return boolean is
+	function is_simulation return boolean is
 		variable ret : boolean;
 	begin
 		ret := false;
@@ -258,6 +258,9 @@ package body utils is
 		--synthesis translate_on
 		return	ret;
 	end function;
+
+	-- deferred constant assignment
+	constant SIMULATION	: BOOLEAN		:= is_simulation;
 
 	-- Divisions: div_*
 	FUNCTION div_ceil(a : NATURAL; b : POSITIVE) RETURN NATURAL IS	-- calculates: ceil(a / b)
