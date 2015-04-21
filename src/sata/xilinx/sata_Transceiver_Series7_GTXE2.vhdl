@@ -316,7 +316,7 @@ begin
 		signal GTX_RX_ComWakeDetected				: STD_LOGIC;
 		signal GTX_RX_ComSASDetected				: STD_LOGIC;
 		
-		signal OOB_TX_Command_d							: T_SATA_OOB;
+		signal OOB_TX_Command_d							: T_SATA_OOB				:= SATA_OOB_NONE;
 		signal OOB_RX_Received_i						: T_SATA_OOB;
 		
 		-- timings
@@ -1717,10 +1717,10 @@ begin
 			GTX_DRP_Address		<= DebugPortIn(I).DRP.Address;
 			GTX_DRP_DataOut		<= DebugPortIn(I).DRP.Data;
 			
-			DebugPortOut(I).PowerDown									<= PowerDown(I);
+			DebugPortOut(I).PowerDown									<= PowerDown(i);
 			DebugPortOut(I).ClockNetwork_Reset				<= ClockNetwork_Reset(i);
 			DebugPortOut(I).ClockNetwork_ResetDone		<= ClockNetwork_ResetDone_i;
-			DebugPortOut(I).Reset											<= Reset(I);
+			DebugPortOut(I).Reset											<= Reset(i);
 			DebugPortOut(I).ResetDone									<= ResetDone_r;
 			
 			DebugPortOut(I).UserClock									<= GTX_UserClock;

@@ -42,7 +42,7 @@ library	PoC;
 package utils is
   --+ Environment +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   -- Distinguishes Simulation from Synthesis
-	function SIMULATION return boolean;
+	constant SIMULATION					: BOOLEAN;				-- deferred constant declaration
 	
 	-- Type declarations
 	-- ==========================================================================
@@ -249,7 +249,7 @@ package body utils is
 
 	-- Environment
 	-- ==========================================================================
-	function SIMULATION return boolean is
+	function is_simulation return boolean is
 		variable ret : boolean;
 	begin
 		ret := false;
@@ -258,6 +258,9 @@ package body utils is
 		--synthesis translate_on
 		return	ret;
 	end function;
+
+	-- deferred constant assignment
+	constant SIMULATION	: BOOLEAN		:= is_simulation;
 
 	-- Divisions: div_*
 	FUNCTION div_ceil(a : NATURAL; b : POSITIVE) RETURN NATURAL IS	-- calculates: ceil(a / b)
