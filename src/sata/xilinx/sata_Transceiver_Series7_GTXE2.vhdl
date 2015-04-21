@@ -189,6 +189,7 @@ begin
 		signal Unblock_PowerDown 						: std_logic;
 		signal Unblock_ClockNetwork_Reset		: std_logic;
 		signal GTX_Reset_by_FSM							: std_logic;
+		signal GTX_Reset_by_FSM_d						: std_logic;
 		
 		-- async events synchronized to GTX_UserClock
 		signal UC_PowerDown 								: std_logic;
@@ -487,6 +488,7 @@ begin
 		begin
 			if rising_edge(GTX_UserClock) then
 				State		<= NextState;
+				GTX_Reset_by_FSM_d <= GTX_Reset_by_FSM;
 			end if;
 		end process;
 		
@@ -511,7 +513,7 @@ begin
 			Kill_GTX_UserClock_Stable <= '0';
 			Unblock_PowerDown <= '0';
 			Unblock_ClockNetwork_Reset <= '0';
-			GTX_Reset_by_FSM  <= '0';
+			GTX_Reset_by_FSM  <= '0'; -- if asserted, then NextState must be ST_RESET_BY_FSM
 			ResetDone_set 		<= '0';
 			ResetDone_rst 		<= '0';
 			
@@ -584,12 +586,14 @@ begin
 						
 					elsif (Reset(i) = '1') or (Command(i) = SATA_TRANSCEIVER_CMD_RESET) then
 						GTX_Reset_by_FSM <= '1';
+						NextState <= ST_RESET_BY_FSM;
 						
 					elsif (GTX_RX_ResetDone = '1') then
 						-- Normally, TX will be ready after ~316 clock cycles and RX after
 						-- ~2516 clock cycles. 
 						if (GTX_TX_ResetDone = '0') then
 							-- TX seems not to get ready. Try Again.
+							GTX_Reset_by_FSM <= '1';
 							NextState   <= ST_RESET_BY_FSM;
 						else
 							ResetDone_set <= '1';
@@ -598,8 +602,11 @@ begin
 					end if;		
 
 				when ST_RESET_BY_FSM =>
-					-- assert for one clock cycle
-					GTX_Reset_by_FSM <= '1';
+					-- GTX_Reset_by_FSM_d is asserted in this cycle. This signal drives
+					-- the asynchronous GTTXRESET and GTRXRESET inputs of the
+					-- transceiver. Thus, glitches due to binary encoding of the FSM state
+					-- must be avoided. This is achieved by asserting GTX_Reset_by_FSM
+					-- and switching to this state.
 					NextState <= ST_RESET;
 
 				when ST_READY =>
@@ -614,7 +621,7 @@ begin
 						ResetDone_rst <= '1';
 						
 					elsif (Reset(i) = '1') or (Command(i) = SATA_TRANSCEIVER_CMD_RESET) then
-						NextState		<= ST_RESET;
+						NextState		<= ST_RESET_BY_FSM;
 						ResetDone_rst <= '1';
 						GTX_Reset_by_FSM <= '1';
 					
@@ -647,7 +654,7 @@ begin
 						ResetDone_rst <= '1';
 						
 					elsif (Reset(i) = '1') or (Command(i) = SATA_TRANSCEIVER_CMD_RESET) then
-						NextState		<= ST_RESET;
+						NextState		<= ST_RESET_BY_FSM;
 						ResetDone_rst <= '1';
 						GTX_Reset_by_FSM <= '1';
 					
@@ -668,7 +675,7 @@ begin
 						ResetDone_rst <= '1';
 						
 					elsif (Reset(i) = '1') or (Command(i) = SATA_TRANSCEIVER_CMD_RESET) then
-						NextState		<= ST_RESET;
+						NextState		<= ST_RESET_BY_FSM;
 						ResetDone_rst <= '1';
 						GTX_Reset_by_FSM <= '1';
 					
@@ -727,7 +734,7 @@ begin
 		-- Transceiver resets
 		--   GTX_CPLL_Locked will be asserted some clock cycles after GTX_CPLL_Locked_async
 		--   Thus GTX_Reset will be deasserted some time after the CPLL gets locked.
-		GTX_Reset											<= (not GTX_CPLL_Locked_async) or (not GTX_CPLL_Locked) or GTX_Reset_by_FSM; -- or GTX_ReloadConfig;
+		GTX_Reset											<= (not GTX_CPLL_Locked_async) or (not GTX_CPLL_Locked) or GTX_Reset_by_FSM_d; -- or GTX_ReloadConfig;
 		-- TX resets					
 		GTX_TX_Reset									<= GTX_Reset;
 		GTX_TX_PMAReset								<= '0';
