@@ -39,17 +39,23 @@ else:
 	from sys import exit
 
 	print("=" * 80)
-	print("{: ^80s}".format("PoC Library - Python Class PoCISESimulator"))
+	print("{: ^80s}".format("The PoC Library - Python Module Simulator.ISESimulator"))
 	print("=" * 80)
 	print()
 	print("This is no executable file!")
 	exit(1)
 
-import PoCSimulator
+from pathlib import Path
 
-class PoCISESimulator(PoCSimulator.PoCSimulator):
+from Base.Exceptions import *
+from Simulator.Base import PoCSimulator 
+from Simulator.Exceptions import *
+
+
+class Simulator(PoCSimulator):
 
 	__executables = {}
+	__vhdlStandard = "93"
 
 	def __init__(self, host, showLogs, showReport):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
@@ -61,10 +67,9 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 			self.__executables['vhcomp'] =	"vhpcomp"
 			self.__executables['fuse'] =		"fuse"
 		else:
-			raise PoC.PoCPlatformNotSupportedException(self.platform)
+			raise PlatformNotSupportedException(self.platform)
 		
 	def run(self, pocEntity):
-		from pathlib import Path
 		import os
 		import re
 		import subprocess
@@ -104,27 +109,30 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 		os.chdir(str(tempISimPath))
 
 		# parse project filelist
-		regExpStr =	 r"\s*(?P<Keyword>(vhdl|xilinx))"				# Keywords: vhdl, xilinx
-		regExpStr += r"\s+(?P<VHDLLibrary>[_a-zA-Z0-9]+)"		#	VHDL library name
-		regExpStr += r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
-		regExp = re.compile(regExpStr)
+		filesLineRegExpStr =	r"\s*(?P<Keyword>(vhdl(\-(87|93|02|08))?|xilinx))"				# Keywords: vhdl[-nn], xilinx
+		filesLineRegExpStr += r"\s+(?P<VHDLLibrary>[_a-zA-Z0-9]+)"		#	VHDL library name
+		filesLineRegExpStr += r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
+		filesLineRegExp = re.compile(filesLineRegExpStr)
 
 		self.printDebug("Reading filelist '%s'" % str(fileListFilePath))
 		iSimProjectFileContent = ""
 		with fileListFilePath.open('r') as prjFileHandle:
 			for line in prjFileHandle:
-				regExpMatch = regExp.match(line)
+				filesLineRegExpMatch = filesLineRegExp.match(line)
 				
-				if (regExpMatch is not None):
-					if (regExpMatch.group('Keyword') == "vhdl"):
-						vhdlFilePath = self.host.directories["PoCRoot"] / regExpMatch.group('VHDLFile')
-					elif (regExpMatch.group('Keyword') == "xilinx"):
-						vhdlFilePath = self.host.directories["ISEInstallation"] / "ISE/vhdl/src" / regExpMatch.group('VHDLFile')
-					vhdlLibraryName = regExpMatch.group('VHDLLibrary')
+				if (filesLineRegExpMatch is not None):
+					if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
+						vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
+					elif (filesLineRegExpMatch.group('Keyword')[0:5] == "vhdl-"):
+						if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
+							vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
+					elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
+						vhdlFilePath = self.host.directories["ISEInstallation"] / "ISE/vhdl/src" / filesLineRegExpMatch.group('VHDLFile')
+					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
 					iSimProjectFileContent += "vhdl %s \"%s\"\n" % (vhdlLibraryName, str(vhdlFilePath))
 					
 					if (not vhdlFilePath.exists()):
-						raise PoCSimulator.PoCSimulatorException("Can not find " + str(vhdlFilePath)) from FileNotFoundError(str(vhdlFilePath))
+						raise SimulatorException("Can not find " + str(vhdlFilePath)) from FileNotFoundError(str(vhdlFilePath))
 		
 		# write iSim project file
 		self.printDebug("Writing iSim project file to '%s'" % str(prjFilePath))
@@ -165,7 +173,6 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 			print()
 		
 		# running simulation
-		# ==========================================================================
 		self.printNonQuiet("  running simulation...")
 		parameterList = [
 			str(exeFilePath),
@@ -199,6 +206,6 @@ class PoCISESimulator(PoCSimulator.PoCSimulator):
 			else:
 				print("Testbench '%s': FAILED" % testbenchName)
 				
-		except PoCSimulatorException as ex:
-			raise PoCTestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
+		except SimulatorException as ex:
+			raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
 	

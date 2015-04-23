@@ -39,26 +39,25 @@ else:
 	from sys import exit
 
 	print("=" * 80)
-	print("{: ^80s}".format("PoC Library - Python Class PoCQuestaSimulator"))
+	print("{: ^80s}".format("The PoC Library - Python Module Simulator.VivadoSimulator"))
 	print("=" * 80)
 	print()
 	print("This is no executable file!")
 	exit(1)
 
-import PoCSimulator
+from pathlib import Path
 
-class PoCQuestaSimulator(PoCSimulator.PoCSimulator):
+from Base.Exceptions import *
+from Simulator.Base import PoCSimulator 
+from Simulator.Exceptions import * 
+
+class Simulator(PoCSimulator):
 
 	def __init__(self, debug, verbose):
 		super(self.__class__, self).__init__(debug, verbose)
-		raise NotImplementedException("Mentor Graphics Questa Simulator is not supported, yet!")
+		raise NotImplementedException("Xilinx Vivado Simulator is not supported, yet!")
 		
 	def run(self, module, showLogs):
-		raise NotImplementedException("Mentor Graphics Questa Simulator is not supported, yet!")
+		raise NotImplementedException("Xilinx Vivado Simulator is not supported, yet!")
 		
-		
-#		if ((len(self.__pocConfig.options("Altera-ModelSim")) == 0) or (len(self.__pocConfig.options("Mentor-ModelSim")) == 0)):
-#			print("ModelSim is not configured on this system.")
-#			print("Run 'PoC.py --configure' to configure your ModelSim environment.")
-#			return
-#		
+	

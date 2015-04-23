@@ -27,7 +27,7 @@ vhdl PoC	"src/xil/xil_SyncBits.vhdl"					#
 vhdl PoC	"src/misc/sync/sync_Flag.vhdl"			# 
 
 # PoC.io
-vhdl PoC	"src/io/io_pkg.vhdl"								# 
+vhdl PoC	"src/io/io.pkg.vhdl"								# 
 vhdl PoC	"src/io/io_TimingCounter.vhdl"			# 
 vhdl PoC	"src/io/io_GlitchFilter.vhdl"				# 
 vhdl PoC	"src/io/io_Debounce.vhdl"						# Unit Under Test

@@ -37,9 +37,9 @@ library PoC;
 
 package my_config is
   -- Change these lines to setup configuration.
-  constant MY_BOARD		: string := "ML505";		-- ML505 - Xilinx Virtex 5 reference design board: XC5VLX50T
-  constant MY_DEVICE	: string := "None";			-- infer from MY_BOARD
-	constant MY_VERBOSE	: boolean	:= true;
+  constant MY_BOARD		: string	:= "ML505";			-- ML505 - Xilinx Virtex 5 reference design board: XC5VLX50T
+  constant MY_DEVICE	: string	:= "None";			-- infer from MY_BOARD
+	constant MY_VERBOSE	: boolean	:= FALSE;
 end;
 
 

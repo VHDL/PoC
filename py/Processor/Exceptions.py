@@ -38,56 +38,21 @@ if __name__ != "__main__":
 else:
 	from sys import exit
 
-	print("========================================================================")
-	print("                  SATAController - Python Class Processor               ")
-	print("========================================================================")
+	print("=" * 80)
+	print("{: ^80s}".format("The PoC Library - Python Module Processor.Exceptions"))
+	print("=" * 80)
 	print()
 	print("This is no executable file!")
 	exit(1)
 
-import Base
+from Base.Exceptions import *
 
-
-class Processor(object):
-	__host = None
-	__debug = False
-	__verbose = False
-	__quiet = False
-	showLogs = False
-	showReport = False
-	dryRun = False
-
-	def __init__(self, host, showLogs, showReport):
-		self.__debug = host.getDebug()
-		self.__verbose = host.getVerbose()
-		self.__quiet = host.getQuiet()
-		self.host = host
-		self.showLogs = showLogs
-		self.showReport = showReport
-
-	def getDebug(self):
-		return self.__debug
+class ProcessorException(BaseException):
+	def __init__(self, message=""):
+		super().__init__(message)
+		self.message = message
 		
-	def getVerbose(self):
-		return self.__verbose
-		
-	def getQuiet(self):
-		return self.__quiet
-		
-	def printDebug(self, message):
-		if (self.__debug):
-			print("DEBUG: " + message)
-			
-	def printVerbose(self, message):
-		if (self.__verbose):
-			print(message)
-	
-	def printNonQuiet(self, message):
-		if (not self.__quiet):
-			print(message)
-
-
-class ProcessorException(Base.BaseException):
+class PostProcessorException(ProcessorException):
 	def __init__(self, message=""):
 		super().__init__(message)
 		self.message = message
