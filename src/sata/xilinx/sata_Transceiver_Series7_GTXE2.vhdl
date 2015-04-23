@@ -9,9 +9,10 @@
 --           |_|   \___/ \____|  |_____|_|_.__/|_|  \__,_|_|   \__, |
 --                                                             |___/
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+--									Martin Zabel
+--
+-- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
@@ -23,7 +24,7 @@
 -- 
 -- License:
 -- -----------------------------------------------------------------------------
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,127 +40,130 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY UNISIM;
-USE			UNISIM.VCOMPONENTS.ALL;
+library UNISIM;
+use			UNISIM.VCOMPONENTS.all;
 
-LIBRARY PoC;
---USE			PoC.config.ALL;
-USE			PoC.components.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.strings.ALL;
-USE			PoC.physical.ALL;
-USE			PoC.sata.ALL;
-USE			PoC.satadbg.ALL;
-USE			PoC.sata_TransceiverTypes.ALL;
-USE			PoC.xil.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.components.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.strings.all;
+use			PoC.physical.all;
+use			PoC.debug.all;
+use			PoC.sata.all;
+use			PoC.satadbg.all;
+use			PoC.sata_TransceiverTypes.all;
+use			PoC.xil.all;
 
 
-ENTITY sata_Transceiver_Series7_GTXE2 IS
-	GENERIC (
+entity sata_Transceiver_Series7_GTXE2 is
+	generic (
 		DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
 		CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
 		PORTS											: POSITIVE										:= 2;																				-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)				-- intial SATA Generation
 	);
-	PORT (
-		ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	port (
+		ClockNetwork_Reset				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		ClockNetwork_ResetDone		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Reset											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		ResetDone									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-		PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
-		Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-		Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+		PowerDown									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Command										: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
+		Status										: out	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 downto 0);
+		Error											: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 downto 0);
 
 		-- debug ports
-		DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
-		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
+		DebugPortIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
+		DebugPortOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
-		SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SATA_Clock								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		SATA_Clock_Stable					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-		RP_Reconfig								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_SATAGeneration					: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_ReconfigComplete				: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_ConfigReloaded					: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_Lock										:	IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_Locked									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_Reconfig								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RP_SATAGeneration					: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
+		RP_ReconfigComplete				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RP_ConfigReloaded					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RP_Lock										:	in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RP_Locked									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-		OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-		OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-		OOB_HandshakeComplete			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_TX_Command						: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
+		OOB_TX_Complete						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);		
+		OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		
-		TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
+		TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
+		TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
 
-		RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-		RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_Data										: out	T_SLVV_32(PORTS - 1 downto 0);
+		RX_CharIsK								: out	T_SLVV_4(PORTS - 1 downto 0);
+		RX_Valid									: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		
 		-- vendor specific signals
-		VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
-		VSS_Private_In						: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0);
-		VSS_Private_Out						: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0)
+		VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_signalS;
+		VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_signalS_VECTOR(PORTS	- 1 downto 0);
+		VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_signalS_VECTOR(PORTS	- 1 downto 0)
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF sata_Transceiver_Series7_GTXE2 IS
-	ATTRIBUTE KEEP 										: BOOLEAN;
+architecture rtl of sata_Transceiver_Series7_GTXE2 is
+	attribute KEEP 										: BOOLEAN;
 
 	-- ===========================================================================
 	-- SATATransceiver configuration
 	-- ===========================================================================
-	CONSTANT INITIAL_SATA_GENERATIONS_I	: T_SATA_GENERATION_VECTOR(0 TO PORTS - 1)	:= INITIAL_SATA_GENERATIONS;
+	constant INITIAL_SATA_GENERATIONS_I	: T_SATA_GENERATION_VECTOR(0 to PORTS - 1)	:= INITIAL_SATA_GENERATIONS;
 	
-	CONSTANT NO_DEVICE_TIMEOUT				: TIME																			:= 50.0 ms;
-	CONSTANT NEW_DEVICE_TIMEOUT				: TIME																			:= 1.0 us;
+	constant NO_DEVICE_TIMEOUT				: TIME																			:= 50.0 ms;
+	constant NEW_DEVICE_TIMEOUT				: TIME																			:= 1.0 us;
 
---	CONSTANT C_DEVICE_INFO						: T_DEVICE_INFO		:= DEVICE_INFO;
+--	constant C_DEVICE_INFO						: T_DEVICE_INFO		:= DEVICE_INFO;
 	
-	SIGNAL ClockIn_150MHz_BUFR				: STD_LOGIC;
-	SIGNAL DD_Clock										: STD_LOGIC;
-	SIGNAL Control_Clock							: STD_LOGIC;
-	SIGNAL OOB_Clock									: STD_LOGIC;
+	signal RefClockIn_150_MHz_BUFR		: STD_LOGIC;
+	signal DD_Clock										: STD_LOGIC;
+	signal OOB_Clock									: STD_LOGIC;
 	
-	FUNCTION to_ClockDividerSelection(gen : T_SATA_GENERATION) RETURN STD_LOGIC_VECTOR IS
-	BEGIN
-		CASE gen IS
-			WHEN SATA_GENERATION_1 =>			RETURN "011";				-- **PLL Divider (D) = 4
-			WHEN SATA_GENERATION_2 =>			RETURN "010";				-- **PLL Divider (D) = 2
-			WHEN SATA_GENERATION_3 =>			RETURN "001";				-- **PLL Divider (D) = 1
-			WHEN OTHERS =>								RETURN "000";				-- **PLL Divider (D) = RXOUT_DIV
-		END CASE;
-	END FUNCTION;
+	function to_ClockDividerSelection(gen : T_SATA_GENERATION) return STD_LOGIC_VECTOR is
+	begin
+		case gen is
+			when SATA_GENERATION_1 =>			return "011";				-- **PLL Divider (D) = 4
+			when SATA_GENERATION_2 =>			return "010";				-- **PLL Divider (D) = 2
+			when SATA_GENERATION_3 =>			return "001";				-- **PLL Divider (D) = 1
+			when others =>								return "000";				-- **PLL DIVIDER (D) = RXOUT_DIV
+		end case;
+	end function;
 	
-BEGIN
+begin
 
 -- ==================================================================
 -- Assert statements
 -- ==================================================================
---	ASSERT (C_DEVICE_INFO.VENDOR = VENDOR_XILINX)								REPORT "This is a vendor dependent component. Vendor must be Xilinx!"						SEVERITY FAILURE;
---	ASSERT (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2)	REPORT "This is a GTXE2 wrapper component."																			SEVERITY FAILURE;
---	ASSERT (C_DEVICE_INFO.DEVICE = DEVICE_KINTEX7)							REPORT "Device " & DEVICE_T'image(C_DEVICE_INFO.DEVICE) & " not yet supported."	SEVERITY FAILURE;
-	ASSERT (PORTS <= 4)																					REPORT "To many ports per transceiver."																					SEVERITY FAILURE;
+--	assert (C_DEVICE_INFO.VendOR = VendOR_XILINX)								report "This is a vendor dependent component. Vendor must be Xilinx!"						severity FAILURE;
+--	assert (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2)	report "This is a GTXE2 wrapper component."																			severity FAILURE;
+--	assert (C_DEVICE_INFO.DEVICE = DEVICE_KINTEX7)							report "Device " & DEVICE_T'image(C_DEVICE_INFO.DEVICE) & " not yet supported."	severity FAILURE;
+	assert (PORTS <= 4)																					report "To many ports per transceiver."																					severity FAILURE;
 	
+	-- ==================================================================
+	-- ClockBuffers
+	-- ==================================================================
 	-- stable clock for device detection logics
-	DD_Clock					<= VSS_Common_In.RefClockIn_150_MHz;
-	Control_Clock			<= VSS_Common_In.RefClockIn_150_MHz;
+	DD_Clock					<= RefClockIn_150_MHz_BUFR;
 	OOB_Clock					<= '0';
 		
 	
 --	==================================================================
 -- data path buffers
 --	==================================================================
-	genGTXE2 : FOR I IN 0 TO (PORTS	- 1) GENERATE
-		CONSTANT CLOCK_DIVIDER_SELECTION		:	STD_LOGIC_VECTOR(2 DOWNTO 0)	:= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(I));
+	genGTXE2 : for i in 0 to (PORTS	- 1) generate
+		constant CLOCK_DIVIDER_SELECTION		:	STD_LOGIC_VECTOR(2 downto 0)	:= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(I));
 		
 		constant GTX_PCS_RSVD_ATTR					: BIT_VECTOR(47 downto 0)				:= (
 			3 =>			'0',							-- select alternative OOB circuit clock source; 0 => sysclk; 1 => CLKRSVD(0)
@@ -173,65 +177,91 @@ BEGIN
 			ite((INITIAL_SATA_GENERATIONS_I(i) = SATA_GENERATION_2), x"0388008BFF40200008",					-- 3.0 GHz line rate
 			ite((INITIAL_SATA_GENERATIONS_I(i) = SATA_GENERATION_3), x"0380008BFF10200010",					-- 6.0 GHz line rate
 																															 x"03000023ff20400020")));			-- default value from wizard
-	
-		-- ClockNetwork resets
-		SIGNAL ClkNet_Reset									: STD_LOGIC;
-		SIGNAL ClkNet_ResetDone							: STD_LOGIC;
+
+
+		-- Control FSM @SATA_Clock
+		type T_STATE is (ST_POWERDOWN, ST_CLKNET_RESET, ST_RESET, ST_READY, ST_COMMUNICATION, ST_RECONFIGURATION, ST_INIT_POWERDOWN, ST_INIT_CLKNET_RESET, ST_RESET_BY_FSM, ST_CLEAR_RX_BUF);
 		
-		SIGNAL ResetDone_rst								: STD_LOGIC;
-		SIGNAL ResetDone_r									: STD_LOGIC							:= '0';
+		signal State												: T_STATE				:= ST_POWERDOWN;
+		signal NextState										: T_STATE;
+
+		signal Kill_GTX_UserClock_Stable 		: std_logic;
+		signal Unblock_PowerDown 						: std_logic;
+		signal Unblock_ClockNetwork_Reset		: std_logic;
+		signal GTX_Reset_by_FSM							: std_logic;
+		signal GTX_Reset_by_FSM_d						: std_logic;
+		
+		-- async events synchronized to GTX_UserClock
+		signal UC_PowerDown 								: std_logic;
+		signal UC_ClockNetwork_Reset 				: std_logic;
+		signal UC_ClkNet_ResetDone 					: std_logic;
+		signal UC_ClkNet_ResetDone_d				: std_logic;
+		signal UC_ClkNet_ResetDone_re				: std_logic;
+		
+		-- Actual PowerDown & ClockNetwork_Reset
+		signal Gated_PowerDown 							: std_logic; 	-- @async
+		signal Gated_ClockNetwork_Reset			: std_logic; 	-- @async
+		
+		-- Input/Outputs of ClockNetwork module/block
+		signal ClkNet_Reset									: STD_LOGIC;
+		signal ClkNet_ResetDone							: STD_LOGIC;
+
+		-- Transceiver resets
+		signal ResetDone_rst								: STD_LOGIC;
+		signal ResetDone_set								: STD_LOGIC;
+		signal ResetDone_r									: STD_LOGIC							:= '0';
+		signal ClockNetwork_ResetDone_i 		: STD_LOGIC;
 		
 		-- Clock signals
-		SIGNAL GTX_RefClockGlobal						: STD_LOGIC;
-		SIGNAL GTX_RefClockNorth						: T_SLV_2;
-		SIGNAL GTX_RefClock									: T_SLV_2;
-		SIGNAL GTX_RefClockSouth						: T_SLV_2;
-		SIGNAL GTX_QPLLClock								: STD_LOGIC;
-		SIGNAL GTX_QPLLRefClock							: STD_LOGIC;
+		signal GTX_RefClockGlobal						: STD_LOGIC;
+		signal GTX_RefClockNorth						: T_SLV_2;
+		signal GTX_RefClock									: T_SLV_2;
+		signal GTX_RefClockSouth						: T_SLV_2;
+		signal GTX_QPLLClock								: STD_LOGIC;
+		signal GTX_QPLLRefClock							: STD_LOGIC;
 		
-		SIGNAL GTX_CPLL_Locked_async				: STD_LOGIC;
-		SIGNAL GTX_CPLL_Locked							: STD_LOGIC;
-		SIGNAL GTX_TX_RefClockOut						: STD_LOGIC;
-		SIGNAL GTX_RX_RefClockOut_float			: STD_LOGIC;
-		SIGNAL GTX_RefClockOut							: STD_LOGIC;
-		
-		SIGNAL GTX_UserClock_Locked					: STD_LOGIC;
-		SIGNAL GTX_UserClock								: STD_LOGIC;
+		signal GTX_CPLL_Locked_async				: STD_LOGIC;
+		signal GTX_CPLL_Locked							: STD_LOGIC;
+		signal GTX_TX_RefClockOut						: STD_LOGIC;
+		signal GTX_RX_RefClockOut_float			: STD_LOGIC;
+
+		signal GTX_UserClock 				     		: std_logic;
+		signal GTX_UserClock_Stable      		: std_logic 						:= '0';
 		
 		-- PowerDown signals
-		SIGNAL GTX_CPLL_PowerDown						: STD_LOGIC;
-		SIGNAL GTX_TX_PowerDown							: T_SLV_2;
-		SIGNAL GTX_RX_PowerDown							: T_SLV_2;
+		signal Trans_PowerDown							: STD_LOGIC;
+		signal GTX_CPLL_PowerDown						: STD_LOGIC;
+		signal GTX_TX_PowerDown							: T_SLV_2;
+		signal GTX_RX_PowerDown							: T_SLV_2;
 		
-		SIGNAL GTX_Reset										: STD_LOGIC;
-		SIGNAL GTX_ResetDone								: STD_LOGIC;
-		SIGNAL GTX_ResetDone_d							: STD_LOGIC							:= '0';
-		SIGNAL GTX_ResetDone_re							: STD_LOGIC;
+		-- CPLL reset
+		signal GTX_CPLL_Reset								: STD_LOGIC;
+
+		-- Reset both TX & RX
+		signal GTX_Reset										: STD_LOGIC;
 	
-		-- CPLL resets
-		SIGNAL GTX_CPLL_Reset								: STD_LOGIC;
 		-- TX resets
-		SIGNAL GTX_TX_Reset									: STD_LOGIC;
-		SIGNAL GTX_TX_PCSReset							: STD_LOGIC;
-		SIGNAL GTX_TX_PMAReset							: STD_LOGIC;
+		signal GTX_TX_Reset									: STD_LOGIC;
+		signal GTX_TX_PCSReset							: STD_LOGIC;
+		signal GTX_TX_PMAReset							: STD_LOGIC;
 		-- RX resets
-		SIGNAL GTX_RX_Reset									: STD_LOGIC;
-		SIGNAL GTX_RX_PCSReset							: STD_LOGIC;
-		SIGNAL GTX_RX_PMAReset							: STD_LOGIC;
-		SIGNAL GTX_RX_BufferReset						: STD_LOGIC;
+		signal GTX_RX_Reset									: STD_LOGIC;
+		signal GTX_RX_PCSReset							: STD_LOGIC;
+		signal GTX_RX_PMAReset							: STD_LOGIC;
+		signal GTX_RX_BufferReset						: STD_LOGIC;
 		
-		SIGNAL GTX_TX_ResetDone							: STD_LOGIC;
-		SIGNAL GTX_RX_ResetDone							: STD_LOGIC;
+		signal GTX_TX_ResetDone							: STD_LOGIC;
+		signal GTX_RX_ResetDone							: STD_LOGIC;
 		
 		-- linerate clock divider selection
 		-- =====================================================================
-		SIGNAL RP_Reconfig_d								: STD_LOGIC						:= '0';
+		signal RP_Reconfig_d								: STD_LOGIC						:= '0';
 		
-		SIGNAL GTX_TX_LineRateSelect				: STD_LOGIC_VECTOR(2 DOWNTO 0)		:= CLOCK_DIVIDER_SELECTION;
-		SIGNAL GTX_RX_LineRateSelect				: STD_LOGIC_VECTOR(2 DOWNTO 0)		:= CLOCK_DIVIDER_SELECTION;
+		signal GTX_TX_LineRateSelect				: STD_LOGIC_VECTOR(2 downto 0)		:= CLOCK_DIVIDER_SELECTION;
+		signal GTX_RX_LineRateSelect				: STD_LOGIC_VECTOR(2 downto 0)		:= CLOCK_DIVIDER_SELECTION;
 		
-		SIGNAL GTX_TX_LineRateSelectDone		: STD_LOGIC;
-		SIGNAL GTX_RX_LineRateSelectDone		: STD_LOGIC;
+		signal GTX_TX_LineRateSelectDone		: STD_LOGIC;
+		signal GTX_RX_LineRateSelectDone		: STD_LOGIC;
 		
 		signal GTXConfig_Enable							: STD_LOGIC;
 		signal GTXConfig_Address						: T_XIL_DRP_ADDRESS;
@@ -247,71 +277,71 @@ BEGIN
 		signal DRPMux_Out_DataOut						: T_XIL_DRP_DATA;
 		signal DRPMux_Ack										: STD_LOGIC_VECTOR(1 downto 0);
 		
-		SIGNAL GTX_DRP_Clock								: STD_LOGIC;
-		SIGNAL GTX_DRP_Enable								: STD_LOGIC;
-		SIGNAL GTX_DRP_ReadWrite						: STD_LOGIC;
-		SIGNAL GTX_DRP_Address							: T_XIL_DRP_ADDRESS;
-		SIGNAL GTX_DRP_DataOut							: T_XIL_DRP_DATA;
-		SIGNAL GTX_DRP_Ack									: STD_LOGIC;
+		signal GTX_DRP_Clock								: STD_LOGIC;
+		signal GTX_DRP_Enable								: STD_LOGIC;
+		signal GTX_DRP_ReadWrite						: STD_LOGIC;
+		signal GTX_DRP_Address							: T_XIL_DRP_ADDRESS;
+		signal GTX_DRP_DataOut							: T_XIL_DRP_DATA;
+		signal GTX_DRP_Ack									: STD_LOGIC;
 		
 		signal GTX_DigitalMonitor						: T_SLV_8;
 		signal GTX_RX_Monitor_sel						: T_SLV_2;
-		signal GTX_RX_Monitor_Data					: STD_LOGIC_VECTOR(6 DOWNTO 0);
+		signal GTX_RX_Monitor_Data					: STD_LOGIC_VECTOR(6 downto 0);
 		
-		SIGNAL GTX_PhyStatus								: STD_LOGIC;
-		SIGNAL GTX_TX_BufferStatus					: STD_LOGIC_VECTOR(1 DOWNTO 0);
-		SIGNAL GTX_RX_BufferStatus					: STD_LOGIC_VECTOR(2 DOWNTO 0);
-		SIGNAL GTX_RX_Status								: STD_LOGIC_VECTOR(2 DOWNTO 0);
-		SIGNAL GTX_RX_ClockCorrectionStatus	: STD_LOGIC_VECTOR(1 DOWNTO 0);
+		signal GTX_PhyStatus								: STD_LOGIC;
+		signal GTX_TX_BufferStatus					: STD_LOGIC_VECTOR(1 downto 0);
+		signal GTX_RX_BufferStatus					: STD_LOGIC_VECTOR(2 downto 0);
+		signal GTX_RX_Status								: STD_LOGIC_VECTOR(2 downto 0);
+		signal GTX_RX_ClockCorrectionStatus	: STD_LOGIC_VECTOR(1 downto 0);
 		
-		SIGNAL GTX_TX_ElectricalIDLE				: STD_LOGIC;
-		SIGNAL GTX_RX_ElectricalIDLE				: STD_LOGIC;
+		signal GTX_TX_ElectricalIDLE				: STD_LOGIC;
+		signal GTX_RX_ElectricalIDLE				: STD_LOGIC;
 		signal GTX_RX_ElectricalIDLE_Mode		: T_SLV_2						:= "00";
-		SIGNAL GTX_RX_ElectricalIDLE_async	: STD_LOGIC;
-		SIGNAL RX_ElectricalIDLE						: STD_LOGIC;
+		signal GTX_RX_ElectricalIDLE_async	: STD_LOGIC;
+		signal RX_ElectricalIDLE						: STD_LOGIC;
 		
-		SIGNAL GTX_TX_ComInit								: STD_LOGIC;
-		SIGNAL GTX_TX_ComWake								: STD_LOGIC;
-		SIGNAL GTX_TX_ComSAS								: STD_LOGIC;
-		SIGNAL GTX_TX_ComFinish							: STD_LOGIC;
+		signal GTX_TX_ComInit								: STD_LOGIC;
+		signal GTX_TX_ComWake								: STD_LOGIC;
+		signal GTX_TX_ComSAS								: STD_LOGIC;
+		signal GTX_TX_ComFinish							: STD_LOGIC;
 		
-		SIGNAL GTX_TX_ComInit_set						: STD_LOGIC;
-		SIGNAL GTX_TX_ComInit_r							: STD_LOGIC					:= '0';
-		SIGNAL GTX_TX_ComWake_set						: STD_LOGIC;
-		SIGNAL GTX_TX_ComWake_r							: STD_LOGIC					:= '0';
-		SIGNAL GTX_TX_ComSAS_set						: STD_LOGIC;
-		SIGNAL GTX_TX_ComSAS_r							: STD_LOGIC					:= '0';
+		signal GTX_TX_ComInit_set						: STD_LOGIC;
+		signal GTX_TX_ComInit_r							: STD_LOGIC					:= '0';
+		signal GTX_TX_ComWake_set						: STD_LOGIC;
+		signal GTX_TX_ComWake_r							: STD_LOGIC					:= '0';
+		signal GTX_TX_ComSAS_set						: STD_LOGIC;
+		signal GTX_TX_ComSAS_r							: STD_LOGIC					:= '0';
 		
-		SIGNAL GTX_RX_ComInitDetected				: STD_LOGIC;
-		SIGNAL GTX_RX_ComWakeDetected				: STD_LOGIC;
-		SIGNAL GTX_RX_ComSASDetected				: STD_LOGIC;
+		signal GTX_RX_ComInitDetected				: STD_LOGIC;
+		signal GTX_RX_ComWakeDetected				: STD_LOGIC;
+		signal GTX_RX_ComSASDetected				: STD_LOGIC;
 		
-		SIGNAL OOB_TX_Command_d							: T_SATA_OOB;
-		SIGNAL OOB_RX_Received_i						: T_SATA_OOB;
+		signal OOB_TX_Command_d							: T_SATA_OOB				:= SATA_OOB_NONE;
+		signal OOB_RX_Received_i						: T_SATA_OOB;
 		
 		-- timings
-		CONSTANT CLOCK_GEN1_FREQ						: FREQ						:= CLOCK_IN_FREQ / 4.0;
-		CONSTANT CLOCK_GEN2_FREQ						: FREQ						:= CLOCK_IN_FREQ / 2.0;
-		CONSTANT CLOCK_GEN3_FREQ						: FREQ						:= CLOCK_IN_FREQ / 1.0;
-		CONSTANT CLOCK_DD_FREQ							: FREQ						:= CLOCK_IN_FREQ / 1.0;
+		constant CLOCK_GEN1_FREQ						: FREQ						:= CLOCK_IN_FREQ / 4.0;
+		constant CLOCK_GEN2_FREQ						: FREQ						:= CLOCK_IN_FREQ / 2.0;
+		constant CLOCK_GEN3_FREQ						: FREQ						:= CLOCK_IN_FREQ / 1.0;
+		constant CLOCK_DD_FREQ							: FREQ						:= CLOCK_IN_FREQ / 1.0;
 		
-		CONSTANT COMRESET_TIMEOUT						: TIME						:= 2600.0 ns;
-		CONSTANT COMWAKE_TIMEOUT						: TIME						:= 1300.0 ns;
-		CONSTANT COMSAS_TIMEOUT							: TIME						:= 6450.0 ns;
+		constant COMRESET_TIMEOUT						: TIME						:= 2600.0 ns;
+		constant COMWAKE_TIMEOUT						: TIME						:= 1300.0 ns;
+		constant COMSAS_TIMEOUT							: TIME						:= 6450.0 ns;
 		
 		-- Timing table ID
-		CONSTANT TTID_COMRESET_TIMEOUT_GEN1	: NATURAL					:= 0;
-		CONSTANT TTID_COMRESET_TIMEOUT_GEN2	: NATURAL					:= 1;
-		CONSTANT TTID_COMRESET_TIMEOUT_GEN3	: NATURAL					:= 2;
-		CONSTANT TTID_COMWAKE_TIMEOUT_GEN1	: NATURAL					:= 3;
-		CONSTANT TTID_COMWAKE_TIMEOUT_GEN2	: NATURAL					:= 4;
-		CONSTANT TTID_COMWAKE_TIMEOUT_GEN3	: NATURAL					:= 5;
-		CONSTANT TTID_COMSAS_TIMEOUT_GEN1		: NATURAL					:= 6;
-		CONSTANT TTID_COMSAS_TIMEOUT_GEN2		: NATURAL					:= 7;
-		CONSTANT TTID_COMSAS_TIMEOUT_GEN3		: NATURAL					:= 8;
+		constant TTID_COMRESET_TIMEOUT_GEN1	: NATURAL					:= 0;
+		constant TTID_COMRESET_TIMEOUT_GEN2	: NATURAL					:= 1;
+		constant TTID_COMRESET_TIMEOUT_GEN3	: NATURAL					:= 2;
+		constant TTID_COMWAKE_TIMEOUT_GEN1	: NATURAL					:= 3;
+		constant TTID_COMWAKE_TIMEOUT_GEN2	: NATURAL					:= 4;
+		constant TTID_COMWAKE_TIMEOUT_GEN3	: NATURAL					:= 5;
+		constant TTID_COMSAS_TIMEOUT_GEN1		: NATURAL					:= 6;
+		constant TTID_COMSAS_TIMEOUT_GEN2		: NATURAL					:= 7;
+		constant TTID_COMSAS_TIMEOUT_GEN3		: NATURAL					:= 8;
 
 		-- Timing table
-		CONSTANT TIMING_TABLE								: T_NATVEC				:= (
+		constant TIMING_TABLE								: T_NATVEC				:= (
 			TTID_COMRESET_TIMEOUT_GEN1	=> TimingToCycles(COMRESET_TIMEOUT,	CLOCK_GEN1_FREQ),		-- slot 0
 			TTID_COMRESET_TIMEOUT_GEN2	=> TimingToCycles(COMRESET_TIMEOUT,	CLOCK_GEN2_FREQ),		-- slot 1
 			TTID_COMRESET_TIMEOUT_GEN3	=> TimingToCycles(COMRESET_TIMEOUT,	CLOCK_GEN3_FREQ),		-- slot 2
@@ -323,61 +353,60 @@ BEGIN
 			TTID_COMSAS_TIMEOUT_GEN3		=> TimingToCycles(COMSAS_TIMEOUT,		CLOCK_GEN3_FREQ)		-- slot 8
 		);
 		
-		SIGNAL OOBTO_Load										: STD_LOGIC;
-		SIGNAL OOBTO_Slot										: NATURAL;
-		SIGNAL OOBTO_en											: STD_LOGIC;
-		SIGNAL OOBTO_Timeout								: STD_LOGIC;
-		SIGNAL OOBTO_Timeout_d							: STD_LOGIC					:= '0';
-		SIGNAL TX_ComFinish									: STD_LOGIC;
+		signal OOBTO_Load										: STD_LOGIC;
+		signal OOBTO_Slot										: NATURAL;
+		signal OOBTO_en											: STD_LOGIC;
+		signal OOBTO_Timeout								: STD_LOGIC;
+		signal OOBTO_Timeout_d							: STD_LOGIC					:= '0';
+		signal TX_ComFinish									: STD_LOGIC;
 		
-		SIGNAL TX_RateChangeDone						: STD_LOGIC					:= '0';
-		SIGNAL RX_RateChangeDone						: STD_LOGIC					:= '0';
-		SIGNAL RateChangeDone								: STD_LOGIC;
-		SIGNAL RateChangeDone_d							: STD_LOGIC					:= '0';
-		SIGNAL RateChangeDone_re						: STD_LOGIC;
+		signal TX_RateChangeDone						: STD_LOGIC					:= '0';
+		signal RX_RateChangeDone						: STD_LOGIC					:= '0';
+		signal RateChangeDone								: STD_LOGIC;
+		signal RateChangeDone_d							: STD_LOGIC					:= '0';
+		signal RateChangeDone_re						: STD_LOGIC;
 		
-		SIGNAL GTX_TX_Data									: T_SLV_32;
-		SIGNAL GTX_TX_CharIsK								: T_SLV_4;
+		signal GTX_TX_Data									: T_SLV_32;
+		signal GTX_TX_CharIsK								: T_SLV_4;
 		
-		SIGNAL RX_CDR_Locked								: STD_LOGIC;															-- unused
-		SIGNAL GTX_RX_CDR_Hold							: STD_LOGIC;
+		signal RX_CDR_Locked								: STD_LOGIC;															-- unused
+		signal GTX_RX_CDR_Hold							: STD_LOGIC;
 		
-		SIGNAL GTX_RX_Data									: T_SLV_32;
-		SIGNAL GTX_RX_Data_float						: T_SLV_32;																-- open
-		SIGNAL GTX_RX_CommaDetected					: STD_LOGIC;															-- unused
-		SIGNAL GTX_RX_CharIsComma						: T_SLV_4;																-- unused
-		SIGNAL GTX_RX_CharIsComma_float			: T_SLV_4;																-- open
-		SIGNAL GTX_RX_CharIsK								: T_SLV_4;
-		SIGNAL GTX_RX_CharIsK_float					: T_SLV_4;																-- open
-		SIGNAL GTX_RX_DisparityError				: T_SLV_4;																-- unused
-		SIGNAL GTX_RX_DisparityError_float	: T_SLV_4;																-- open
-		SIGNAL GTX_RX_NotInTableError				: T_SLV_4;																-- unused
-		SIGNAL GTX_RX_NotInTableError_float	: T_SLV_4;																-- open
-		SIGNAL GTX_RX_ByteIsAligned					: STD_LOGIC;
-		SIGNAL GTX_RX_ByteRealign						: STD_LOGIC;															-- unused
-		SIGNAL GTX_RX_Valid									: STD_LOGIC;															-- unused
+		signal GTX_RX_Data									: T_SLV_32;
+		signal GTX_RX_Data_float						: T_SLV_32;																-- open
+		signal GTX_RX_CommaDetected					: STD_LOGIC;															-- unused
+		signal GTX_RX_CharIsComma						: T_SLV_4;																-- unused
+		signal GTX_RX_CharIsComma_float			: T_SLV_4;																-- open
+		signal GTX_RX_CharIsK								: T_SLV_4;
+		signal GTX_RX_CharIsK_float					: T_SLV_4;																-- open
+		signal GTX_RX_DisparityError				: T_SLV_4;																-- unused
+		signal GTX_RX_DisparityError_float	: T_SLV_4;																-- open
+		signal GTX_RX_NotInTableError				: T_SLV_4;																-- unused
+		signal GTX_RX_NotInTableError_float	: T_SLV_4;																-- open
+		signal GTX_RX_ByteIsAligned					: STD_LOGIC;
+		signal GTX_RX_ByteRealign						: STD_LOGIC;															-- unused
+		signal GTX_RX_Valid									: STD_LOGIC;															-- unused
 		
-		SIGNAL GTX_TX_n											: STD_LOGIC;
-		SIGNAL GTX_TX_p											: STD_LOGIC;
-		SIGNAL GTX_RX_n											: STD_LOGIC;
-		SIGNAL GTX_RX_p											: STD_LOGIC;
+		signal GTX_TX_n											: STD_LOGIC;
+		signal GTX_TX_p											: STD_LOGIC;
+		signal GTX_RX_n											: STD_LOGIC;
+		signal GTX_RX_p											: STD_LOGIC;
 		
-		SIGNAL DD_NoDevice									: STD_LOGIC;
-		SIGNAL DD_NewDevice									: STD_LOGIC;
+		signal DD_NoDevice									: STD_LOGIC;
+		signal DD_NewDevice									: STD_LOGIC;
 		
-		SIGNAL Status_i											: T_SATA_TRANSCEIVER_STATUS;
-		SIGNAL TX_Error_i										: T_SATA_TRANSCEIVER_TX_ERROR;
-		SIGNAL RX_Error_i										: T_SATA_TRANSCEIVER_RX_ERROR;
+		signal Status_i											: T_SATA_TRANSCEIVER_STATUS;
+		signal Error_i											: T_SATA_TRANSCEIVER_ERROR;
 		
 		-- keep internal clock nets, so timing constrains from UCF can find them
-		ATTRIBUTE KEEP OF GTX_TX_RefClockOut	: SIGNAL IS TRUE;
+		attribute KEEP of GTX_TX_RefClockOut	: signal is TRUE;
 		
-	BEGIN
-		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																											SEVERITY NOTE;
-		ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS_I(I) + 1)	SEVERITY NOTE;
-		ASSERT ((RP_SATAGeneration(I) = SATA_GENERATION_1) OR
-						(RP_SATAGeneration(I) = SATA_GENERATION_2) OR
-						(RP_SATAGeneration(I) = SATA_GENERATION_3))		REPORT "Unsupported SATA generation."							SEVERITY FAILURE;
+	begin
+		assert FALSE report "Port:    " & INTEGER'image(I)																											severity NOTE;
+		assert FALSE report "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS_I(I) + 1)	severity NOTE;
+		assert ((RP_SATAGeneration(I) = SATA_GENERATION_1) or
+						(RP_SATAGeneration(I) = SATA_GENERATION_2) or
+						(RP_SATAGeneration(I) = SATA_GENERATION_3))		report "Unsupported SATA generation."							severity FAILURE;
 	
 		-- clock signals
 		GTX_QPLLRefClock							<= '0';
@@ -386,58 +415,335 @@ BEGIN
 		GTX_RefClockNorth							<= "00";
 		GTX_RefClockSouth							<= "00";
 		GTX_RefClock									<= "00";
-		
-		
+
+		-- ======================================================================
+		-- ClockNetwork
+		--
+		-- TODO Implement module which generates the appropiate
+		-- SATA_Clock according to the selected generation.
+		-- Use 150 MHz input clock for SATA Gen3 at the moment.
+		--
+		-- The transceiver must be brought up with PowerDown = '1'.
+		-- The ClockNetwork is reset (signal ClkNet_Reset) when PowerDown = '1' or
+		-- ClockNetwork_Reset = '1'. But both control signals are gated by the
+		-- Control FSM defined below.
+		-- ======================================================================
+
+		-- ClkNet_Reset, ClkNet_Reset_Done and GTX_UserClock will be connected to
+		-- the appropiate ports of the ClockNetwork module. 
 		BUFG_RefClockOut : BUFG
-			PORT MAP (
+			port map (
 				I						=> GTX_TX_RefClockOut,
-				O						=> GTX_RefClockOut
+				O						=> GTX_UserClock
 			);
 
---		GTX_DRP_Clock									<= Control_Clock;
+		ClkNet_Reset        	<= Gated_PowerDown or Gated_ClockNetwork_Reset;
+		ClkNet_ResetDone 			<= not ClkNet_Reset;
+		
+		SATA_Clock(I)					<= GTX_UserClock;
 
-		GTX_UserClock_Locked					<= GTX_CPLL_Locked;
-		GTX_UserClock									<= GTX_RefClockOut;
-		SATA_Clock(I)									<= GTX_RefClockOut;
 
 		-- =========================================================================
-		-- PowerDown control
+		-- Control FSM for PowerDown, ClockNetwork_Reset and Transceiver Status
+		--
+		-- When the SATA Controller ist powered down or the clock network is reset,
+		-- then the SATA_Clock / GTX_UserClock goes instable. But before, this FSM
+		-- must enter the respective state to force a correct re-initialization.
+		-- Thus, these events are delayed for some cycles by gating the respective
+		-- control inputs.
+		--
+		-- Just deactivating the SATA_Clock is not sufficient, because the SATA
+		-- stack would resume at the old state when the SATA controller is powered
+		-- up again.
 		-- =========================================================================
-		GTX_CPLL_PowerDown						<= PowerDown(I);
-		GTX_TX_PowerDown							<= PowerDown(I) & PowerDown(I);
-		GTX_RX_PowerDown							<= PowerDown(I) & PowerDown(I);
+		Gated_PowerDown 					<= PowerDown(i) 					and Unblock_PowerDown; 					--@async
+		Gated_ClockNetwork_Reset 	<= ClockNetwork_Reset(i) 	and Unblock_ClockNetwork_Reset; --@async
 
+		syncUserClock : entity PoC.xil_SyncBits
+			generic map (
+				BITS					=> 3,
+				INIT					=> "001"
+			)
+			port map (
+				Clock					=> GTX_UserClock, 					-- Clock to be synchronized to
+				Input(0)			=> PowerDown(i),						-- Data to be synchronized
+				Input(1)			=> ClockNetwork_Reset(i),		-- 
+				Input(2)      => ClkNet_ResetDone,				-- 
+				Output(0)			=> UC_PowerDown,						-- synchronised data
+				Output(1)			=> UC_ClockNetwork_Reset,		-- 
+				Output(2)			=> UC_ClkNet_ResetDone		  -- 
+			);
+
+		-- GTX_UserClock_Stable Control
+		-- signal is   asserted when ClkNet_ResetDone goes(!) high
+		-- signal is deasserted when Kill_GTX_UserClock_Stable is high
+		UC_ClkNet_ResetDone_d 	<= UC_ClkNet_ResetDone when rising_edge(GTX_UserClock);
+		UC_ClkNet_ResetDone_re 	<= UC_ClkNet_ResetDone and not UC_ClkNet_ResetDone_d;
+		
+		GTX_UserClock_Stable	 	<= ffrs(q => GTX_UserClock_Stable, rst => Kill_GTX_UserClock_Stable, set => UC_ClkNet_ResetDone_re) when rising_edge(GTX_UserClock);
+		
+		SATA_Clock_Stable(I) 		<= GTX_UserClock_Stable;
+		
+		process(GTX_UserClock)
+		begin
+			if rising_edge(GTX_UserClock) then
+				State		<= NextState;
+				GTX_Reset_by_FSM_d <= GTX_Reset_by_FSM;
+			end if;
+		end process;
+		
+		ResetDone_r		<= ffrs(q => ResetDone_r, rst => ResetDone_rst, set => ResetDone_set) when rising_edge(GTX_UserClock);
+		ResetDone(I)	<= ResetDone_r;
+
+		
+		process(State, Command, 
+						UC_PowerDown, UC_ClockNetwork_Reset, 
+						GTX_UserClock_Stable, GTX_TX_ResetDone, GTX_RX_ResetDone,
+						DD_NoDevice, DD_NewDevice,
+						GTX_TX_BufferStatus(1),
+						GTX_RX_ByteIsAligned, GTX_RX_DisparityError, GTX_RX_NotInTableError, GTX_RX_BufferStatus(2))
+		begin
+			NextState				<= State;
+			
+			Status_i				<= SATA_TRANSCEIVER_STATUS_POWERED_DOWN;
+			Error_i.Common	<= SATA_TRANSCEIVER_ERROR_NONE;
+			Error_i.TX			<= SATA_TRANSCEIVER_TX_ERROR_NONE;
+			Error_i.RX			<= SATA_TRANSCEIVER_RX_ERROR_NONE;
+
+			Kill_GTX_UserClock_Stable <= '0';
+			Unblock_PowerDown <= '0';
+			Unblock_ClockNetwork_Reset <= '0';
+			GTX_Reset_by_FSM  <= '0'; -- if asserted, then NextState must be ST_RESET_BY_FSM
+			ResetDone_set 		<= '0';
+			ResetDone_rst 		<= '0';
+			
+			case State is
+				when ST_INIT_POWERDOWN =>
+					-- Initiate powerdown after transceiver was up.
+					-- Report to upper layers so they can do special tasks.
+					-- SATA_Clock is still stable.
+					Status_i			<= SATA_TRANSCEIVER_STATUS_POWERED_DOWN;
+
+					-- Insert more wait states if neccessary.
+					Kill_GTX_UserClock_Stable 	<= '1';
+					NextState 							<= ST_POWERDOWN;
+			  
+				when ST_POWERDOWN => -- startup state
+					-- The transceiver is hold in power-down mode
+					-- until signal PowerDown is deasserted asynchronously.
+					-- The following status cannot be evaluated by the upper layers
+					-- because SATA_Clock is not stable, just prevent toggling until
+					-- SATA_Clock is stable again.
+					Status_i			<= SATA_TRANSCEIVER_STATUS_POWERED_DOWN;
+
+					-- Normally the PowerDown command is blocked, so that the upper
+					-- layers can do special tasks (see ST_INIT_POWERDOWN) before the
+					-- command is unblocked here for execution.
+					UnBlock_PowerDown <= '1';
+
+					-- If power-up was successful then GTX_UserClock_Stable will go high.
+					if GTX_UserClock_Stable = '1' then
+						NextState		<= ST_RESET;
+					end if;
+
+				when ST_INIT_CLKNET_RESET =>
+					-- Reset clock network after transceiver was up.
+					-- Report to upper layers so they can do special tasks.
+					-- SATA_Clock is still stable.
+					Status_i			<= SATA_TRANSCEIVER_STATUS_RESETING_CLOCKNET;
+					
+					-- Insert more wait states if neccessary.
+					Kill_GTX_UserClock_Stable 	<= '1';
+					NextState     <= ST_CLKNET_RESET;
+					
+				when ST_CLKNET_RESET =>
+					-- The clock network is hold in reset mode
+					-- until signal ClocKNetwork_Reset is deasserted asynchronously.
+					-- The following status cannot be evaluated by the upper layers
+					-- because SATA_Clock is not stable, just prevent toggling until
+					-- SATA_Clock is stable again.
+					Status_i			<= SATA_TRANSCEIVER_STATUS_RESETING_CLOCKNET;
+				
+					-- Normally the ClockNetwork_Reset command is blocked, so that the
+					-- upper layers can do special tasks (see ST_INIT_CLKNET_RESET)
+					-- before the command is unblocked here for execution.
+					UnBlock_PowerDown <= '1';
+					UnBlock_ClockNetwork_Reset <= '1';
+
+					-- If power-up was successful then GTX_UserClock_Stable will go high.
+					if GTX_UserClock_Stable = '1' then
+						NextState		<= ST_RESET;
+					end if;				
+				
+				when ST_RESET =>
+					Status_i			<= SATA_TRANSCEIVER_STATUS_RESETING;
+
+					if (UC_PowerDown = '1') then
+						NextState		<= ST_INIT_POWERDOWN;
+						
+					elsif (UC_ClockNetwork_Reset = '1') then
+						NextState		<= ST_INIT_CLKNET_RESET;
+						
+					elsif (Reset(i) = '1') or (Command(i) = SATA_TRANSCEIVER_CMD_RESET) then
+						GTX_Reset_by_FSM <= '1';
+						NextState <= ST_RESET_BY_FSM;
+						
+					elsif (GTX_RX_ResetDone = '1') then
+						-- Normally, TX will be ready after ~316 clock cycles and RX after
+						-- ~2516 clock cycles. 
+						if (GTX_TX_ResetDone = '0') then
+							-- TX seems not to get ready. Try Again.
+							GTX_Reset_by_FSM <= '1';
+							NextState   <= ST_RESET_BY_FSM;
+						else
+							ResetDone_set <= '1';
+							NextState			<= ST_READY;
+						end if;
+					end if;		
+
+				when ST_RESET_BY_FSM =>
+					-- GTX_Reset_by_FSM_d is asserted in this cycle. This signal drives
+					-- the asynchronous GTTXRESET and GTRXRESET inputs of the
+					-- transceiver. Thus, glitches due to binary encoding of the FSM state
+					-- must be avoided. This is achieved by asserting GTX_Reset_by_FSM
+					-- and switching to this state.
+					NextState <= ST_RESET;
+
+				when ST_READY =>
+					Status_i			<= SATA_TRANSCEIVER_STATUS_READY;
+				
+					if (UC_PowerDown = '1') then
+						NextState		<= ST_INIT_POWERDOWN;
+						ResetDone_rst <= '1';
+						
+					elsif (UC_ClockNetwork_Reset = '1') then
+						NextState		<= ST_INIT_CLKNET_RESET;
+						ResetDone_rst <= '1';
+						
+					elsif (Reset(i) = '1') or (Command(i) = SATA_TRANSCEIVER_CMD_RESET) then
+						NextState		<= ST_RESET_BY_FSM;
+						ResetDone_rst <= '1';
+						GTX_Reset_by_FSM <= '1';
+					
+					elsif (OOB_HandshakeComplete(i) = '1') then
+						-- GTX_RX_Reset is asserted below
+						NextState		<= ST_CLEAR_RX_BUF;
+					
+					else
+						null;		-- TODO: reconfig?
+						
+						if (DD_NoDevice	= '1') then
+							Status_i		<= SATA_TRANSCEIVER_STATUS_NO_DEVICE;
+						elsif (DD_NewDevice	= '1') then
+							Status_i		<= SATA_TRANSCEIVER_STATUS_NEW_DEVICE;
+						end if;
+							
+					end if;
+
+					
+				when ST_CLEAR_RX_BUF =>
+					-- RX buffer must be cleared after OOB handshake. Do not report errors.
+					Status_i			<= SATA_TRANSCEIVER_STATUS_READY;
+					
+					if (UC_PowerDown = '1') then
+						NextState		<= ST_INIT_POWERDOWN;
+						ResetDone_rst <= '1';
+						
+					elsif (UC_ClockNetwork_Reset = '1') then
+						NextState		<= ST_INIT_CLKNET_RESET;
+						ResetDone_rst <= '1';
+						
+					elsif (Reset(i) = '1') or (Command(i) = SATA_TRANSCEIVER_CMD_RESET) then
+						NextState		<= ST_RESET_BY_FSM;
+						ResetDone_rst <= '1';
+						GTX_Reset_by_FSM <= '1';
+					
+					elsif GTX_RX_ResetDone = '1' then
+						NextState		<= ST_COMMUNICATION;
+					end if;
+
+					
+				when ST_COMMUNICATION =>
+					Status_i			<= SATA_TRANSCEIVER_STATUS_READY;
+					
+					if (UC_PowerDown = '1') then
+						NextState		<= ST_INIT_POWERDOWN;
+						ResetDone_rst <= '1';
+						
+					elsif (UC_ClockNetwork_Reset = '1') then
+						NextState		<= ST_INIT_CLKNET_RESET;
+						ResetDone_rst <= '1';
+						
+					elsif (Reset(i) = '1') or (Command(i) = SATA_TRANSCEIVER_CMD_RESET) then
+						NextState		<= ST_RESET_BY_FSM;
+						ResetDone_rst <= '1';
+						GTX_Reset_by_FSM <= '1';
+					
+					elsif (OOB_TX_Command(i) /= SATA_OOB_NONE) then
+						NextState			<= ST_READY;
+					end if;
+				
+					-- error handling
+					--	================================================================
+					-- TX errors
+					if (GTX_TX_BufferStatus(1)	= '1') then
+						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
+						Error_i.TX	<= SATA_TRANSCEIVER_TX_ERROR_BUFFER;
+					end if;
+				
+					-- RX errors
+					if (GTX_RX_ByteIsAligned	= '0') then
+						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
+						Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_ALIGNEMENT;
+					elsif (slv_or(GTX_RX_DisparityError)	= '1') then
+						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
+						Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_DISPARITY;
+					elsif (slv_or(GTX_RX_NotInTableError)	= '1') then
+						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
+						Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_DECODER;
+					elsif (GTX_RX_BufferStatus(2)	= '1') then
+						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
+						Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_BUFFER;
+					end if;
+				
+				when ST_RECONFIGURATION =>
+					Status_i			<= SATA_TRANSCEIVER_STATUS_RECONFIGURING;
+					
+					null;
+			end case;
+		end process;
+		
+		Status(i)		<= Status_i;	--	when rising_edge(GTX_UserClock);
+		Error(i)		<= Error_i;	--	when rising_edge(GTX_UserClock);
+		
+		-- =========================================================================
+		-- GTX Power and Clock control
+		-- =========================================================================
+		GTX_CPLL_PowerDown				<= Gated_PowerDown;
+		GTX_TX_PowerDown					<= Gated_PowerDown & Gated_PowerDown;
+		GTX_RX_PowerDown					<= Gated_PowerDown & Gated_PowerDown;
+
+		GTX_CPLL_Reset						<= Gated_PowerDown or Gated_ClockNetwork_Reset;		
+		ClockNetwork_ResetDone_i	<= GTX_CPLL_Locked_async and ClkNet_ResetDone;	-- @async
+		ClockNetwork_ResetDone(i) <= ClockNetwork_ResetDone_i;
+		
+	
 		-- =========================================================================
 		-- Reset control
 		-- =========================================================================
-		-- Clocknetwork resets
-		ClkNet_Reset									<= ClockNetwork_Reset(I);
-		-- CPLL resets
-		GTX_CPLL_Reset								<= ClkNet_Reset;		
-		
-		-- ResetDone calculations
-		ClkNet_ResetDone							<= GTX_CPLL_Locked_async AND GTX_TX_ResetDone;				-- @
-		ClockNetwork_ResetDone(I)			<= ClkNet_ResetDone;																	-- @
-		
 		-- Transceiver resets
-		GTX_Reset											<= (not GTX_CPLL_Locked_async) or Reset(I) or to_sl(Command(I)	= SATA_TRANSCEIVER_CMD_RESET); -- or GTX_ReloadConfig;
+		--   GTX_CPLL_Locked will be asserted some clock cycles after GTX_CPLL_Locked_async
+		--   Thus GTX_Reset will be deasserted some time after the CPLL gets locked.
+		GTX_Reset											<= (not GTX_CPLL_Locked_async) or (not GTX_CPLL_Locked) or GTX_Reset_by_FSM_d; -- or GTX_ReloadConfig;
 		-- TX resets					
 		GTX_TX_Reset									<= GTX_Reset;
-		GTX_TX_PCSReset								<= '0';
 		GTX_TX_PMAReset								<= '0';
+		GTX_TX_PCSReset								<= '0';
 		-- RX resets					
-		GTX_RX_Reset									<= GTX_Reset OR OOB_HandshakeComplete(I);
-		GTX_RX_PCSReset								<= '0';
+		GTX_RX_Reset									<= GTX_Reset or OOB_HandshakeComplete(I);
 		GTX_RX_PMAReset								<= '0';
+		GTX_RX_PCSReset								<= '0';
 		GTX_RX_BufferReset						<= '0';
-
-		-- ResetDone calculations
-		GTX_ResetDone									<= GTX_TX_ResetDone AND GTX_RX_ResetDone;
-		GTX_ResetDone_d								<= GTX_ResetDone WHEN rising_edge(GTX_UserClock);
-		GTX_ResetDone_re							<= NOT GTX_ResetDone_d AND GTX_ResetDone;
-		ResetDone_rst									<= GTX_Reset OR NOT GTX_CPLL_Locked;
-		ResetDone_r										<= ffrs(q => ResetDone_r, rst => ResetDone_rst, set => GTX_ResetDone_re) WHEN rising_edge(GTX_UserClock);
-		ResetDone(I)									<= ResetDone_r;
 
 		-- =========================================================================
 		-- LineRate control / linerate clock divider selection / reconfiguration port
@@ -449,32 +755,32 @@ BEGIN
 		--	<float>										<= GTX_DRP_DataOutOut;
 		--	<float>										<= GTX_DRP_Ack;
 
-		PROCESS(GTX_UserClock)
-		BEGIN
-			IF rising_edge(GTX_UserClock) THEN
-				IF (Reset(I) = '1') THEN
+		process(GTX_UserClock)
+		begin
+			if rising_edge(GTX_UserClock) then
+				if (Reset(I) = '1') then
 					GTX_TX_LineRateSelect			<= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(I));
 					GTX_RX_LineRateSelect			<= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(I));
-				ELSE
-					IF (RP_Reconfig(I)	= '1') THEN
+				else
+					if (RP_Reconfig(I)	= '1') then
 						GTX_TX_LineRateSelect		<= to_ClockDividerSelection(RP_SATAGeneration(I));
 						GTX_RX_LineRateSelect		<= to_ClockDividerSelection(RP_SATAGeneration(I));
-					END IF;
-				END IF;
-			END IF;
-		END PROCESS;
+					end if;
+				end if;
+			end if;
+		end process;
 		
 		-- RS-FF															Q											rst															set																	clk
-		TX_RateChangeDone <= ffrs(q => TX_RateChangeDone, rst => RP_Reconfig(I), set => GTX_TX_LineRateSelectDone) WHEN rising_edge(GTX_UserClock);
-		RX_RateChangeDone <= ffrs(q => RX_RateChangeDone, rst => RP_Reconfig(I), set => GTX_RX_LineRateSelectDone) WHEN rising_edge(GTX_UserClock);
+		TX_RateChangeDone <= ffrs(q => TX_RateChangeDone, rst => RP_Reconfig(I), set => GTX_TX_LineRateSelectDone) when rising_edge(GTX_UserClock);
+		RX_RateChangeDone <= ffrs(q => RX_RateChangeDone, rst => RP_Reconfig(I), set => GTX_RX_LineRateSelectDone) when rising_edge(GTX_UserClock);
 		
-		RateChangeDone		<= TX_RateChangeDone AND RX_RateChangeDone;
-		RateChangeDone_d	<= RateChangeDone WHEN rising_edge(GTX_UserClock);
-		RateChangeDone_re	<= NOT RateChangeDone_d AND RateChangeDone;
+		RateChangeDone		<= TX_RateChangeDone and RX_RateChangeDone;
+		RateChangeDone_d	<= RateChangeDone when rising_edge(GTX_UserClock);
+		RateChangeDone_re	<= not RateChangeDone_d and RateChangeDone;
 		
 		-- reconfiguration port
 		RP_Locked(I)						<= '0';																							-- all ports are independant	=> never set a lock
-		RP_Reconfig_d						<= RP_Reconfig(I) WHEN rising_edge(GTX_UserClock);	-- delay reconfiguration command
+		RP_Reconfig_d						<= RP_Reconfig(I) when rising_edge(GTX_UserClock);	-- delay reconfiguration command
 		RP_ReconfigComplete(I)	<= RP_Reconfig_d;																		-- acknoledge reconfiguration with 1 cycle latency
 		RP_ConfigReloaded(I)		<= RateChangeDone_re;																-- acknoledge reload
 
@@ -575,11 +881,11 @@ BEGIN
 --		GTX_RX_Status
 --		GTX_RX_ClockCorrectionStatus
 
-		sync1_RXUserClock : ENTITY PoC.xil_SyncBits
-			GENERIC MAP (
+		sync1_RXUserClock : entity PoC.xil_SyncBits
+			generic map (
 				BITS			=> 2															-- number of BITS to synchronize
 			)
-			PORT MAP (
+			port map (
 				Clock			=> GTX_UserClock,									-- Clock to be synchronized to
 				Input(0)	=> GTX_CPLL_Locked_async,					-- Data to be synchronized
 				Input(1)	=> GTX_RX_ElectricalIDLE_async,		-- 
@@ -587,11 +893,11 @@ BEGIN
 				Output(1)	=> GTX_RX_ElectricalIDLE					-- 
 			);
 
-		filter1 : ENTITY PoC.filter_and
-			GENERIC MAP (
+		filter1 : entity PoC.filter_and
+			generic map (
 				TAPS			=> 3
 			)
-			PORT MAP (
+			port map (
 				Clock			=> GTX_UserClock,
 				DataIn		=> GTX_RX_ElectricalIDLE,
 				DataOut		=> RX_ElectricalIDLE
@@ -600,11 +906,11 @@ BEGIN
 		--	==================================================================
 		-- OOB signaling
 		--	==================================================================
-		OOB_TX_Command_d						<= OOB_TX_Command(I) WHEN DebugPortIn(I).ForceOOBCommand = SATA_OOB_NONE ELSE DebugPortIn(I).ForceOOBCommand;	-- WHEN rising_edge(GTX_ClockTX_2X(I));
+		OOB_TX_Command_d						<= OOB_TX_Command(I) when DebugPortIn(I).ForceOOBCommand = SATA_OOB_NONE else DebugPortIn(I).ForceOOBCommand;	-- when rising_edge(GTX_ClockTX_2X(I));
 
 		-- TX OOB signals (generate GTX specific OOB signals)
-		PROCESS(GTX_UserClock, OOB_TX_Command_d, PowerDown(I), RP_SATAGeneration(I), GTX_TX_ComInit_r, GTX_TX_ComWake_r, GTX_TX_ComSAS_r, TX_ComFinish)
-		BEGIN
+		process(GTX_UserClock, OOB_TX_Command_d, PowerDown(I), RP_SATAGeneration(I), GTX_TX_ComInit_r, GTX_TX_ComWake_r, GTX_TX_ComSAS_r, TX_ComFinish)
+		begin
 			OOBTO_Load						<= '0';
 			OOBTO_Slot						<= 0;
 			OOBTO_en							<= GTX_TX_ComInit_r or GTX_TX_ComWake_r or GTX_TX_ComSAS_r;
@@ -615,51 +921,51 @@ BEGIN
 			GTX_TX_ComWake_set		<= '0';
 			GTX_TX_ComSAS_set			<= '0';
 		
-			CASE OOB_TX_Command_d IS
-				WHEN SATA_OOB_NONE =>
-					NULL;
+			case OOB_TX_Command_d is
+				when SATA_OOB_NONE =>
+					null;
 				
-				WHEN SATA_OOB_COMRESET =>
+				when SATA_OOB_COMRESET =>
 					GTX_TX_ComInit_set	<= '1';
 					OOBTO_Load					<= '1';
-					CASE RP_SATAGeneration(I) IS
-						WHEN SATA_GENERATION_1 =>		OOBTO_Slot	<= TTID_COMRESET_TIMEOUT_GEN1;
-						WHEN SATA_GENERATION_2 =>		OOBTO_Slot	<= TTID_COMRESET_TIMEOUT_GEN2;
-						WHEN SATA_GENERATION_3 =>		OOBTO_Slot	<= TTID_COMRESET_TIMEOUT_GEN3;
-						WHEN OTHERS =>							OOBTO_Slot	<= TTID_COMRESET_TIMEOUT_GEN3;
-					END CASE;
+					case RP_SATAGeneration(I) is
+						when SATA_GENERATION_1 =>		OOBTO_Slot	<= TTID_COMRESET_TIMEOUT_GEN1;
+						when SATA_GENERATION_2 =>		OOBTO_Slot	<= TTID_COMRESET_TIMEOUT_GEN2;
+						when SATA_GENERATION_3 =>		OOBTO_Slot	<= TTID_COMRESET_TIMEOUT_GEN3;
+						when others =>							OOBTO_Slot	<= TTID_COMRESET_TIMEOUT_GEN3;
+					end case;
 					
-				WHEN SATA_OOB_COMWAKE	=>
+				when SATA_OOB_COMWAKE	=>
 					GTX_TX_ComWake_set	<= '1';
 					OOBTO_Load					<= '1';
-					CASE RP_SATAGeneration(I) IS
-						WHEN SATA_GENERATION_1 =>		OOBTO_Slot	<= TTID_COMWAKE_TIMEOUT_GEN1;
-						WHEN SATA_GENERATION_2 =>		OOBTO_Slot	<= TTID_COMWAKE_TIMEOUT_GEN2;
-						WHEN SATA_GENERATION_3 =>		OOBTO_Slot	<= TTID_COMWAKE_TIMEOUT_GEN3;
-						WHEN OTHERS =>							OOBTO_Slot	<= TTID_COMWAKE_TIMEOUT_GEN3;
-					END CASE;
+					case RP_SATAGeneration(I) is
+						when SATA_GENERATION_1 =>		OOBTO_Slot	<= TTID_COMWAKE_TIMEOUT_GEN1;
+						when SATA_GENERATION_2 =>		OOBTO_Slot	<= TTID_COMWAKE_TIMEOUT_GEN2;
+						when SATA_GENERATION_3 =>		OOBTO_Slot	<= TTID_COMWAKE_TIMEOUT_GEN3;
+						when others =>							OOBTO_Slot	<= TTID_COMWAKE_TIMEOUT_GEN3;
+					end case;
 					
-				WHEN SATA_OOB_COMSAS =>
+				when SATA_OOB_COMSAS =>
 					GTX_TX_ComSAS_set		<= '1';
 					OOBTO_Load					<= '1';
-					CASE RP_SATAGeneration(I) IS
-						WHEN SATA_GENERATION_1 =>		OOBTO_Slot	<= TTID_COMSAS_TIMEOUT_GEN1;
-						WHEN SATA_GENERATION_2 =>		OOBTO_Slot	<= TTID_COMSAS_TIMEOUT_GEN2;
-						WHEN SATA_GENERATION_3 =>		OOBTO_Slot	<= TTID_COMSAS_TIMEOUT_GEN3;
-						WHEN OTHERS =>							OOBTO_Slot	<= TTID_COMSAS_TIMEOUT_GEN3;
-					END CASE;
+					case RP_SATAGeneration(I) is
+						when SATA_GENERATION_1 =>		OOBTO_Slot	<= TTID_COMSAS_TIMEOUT_GEN1;
+						when SATA_GENERATION_2 =>		OOBTO_Slot	<= TTID_COMSAS_TIMEOUT_GEN2;
+						when SATA_GENERATION_3 =>		OOBTO_Slot	<= TTID_COMSAS_TIMEOUT_GEN3;
+						when others =>							OOBTO_Slot	<= TTID_COMSAS_TIMEOUT_GEN3;
+					end case;
 					
-				WHEN OTHERS =>
-					NULL;
+				when others =>
+					null;
 					
-			END CASE;
-		END PROCESS;
+			end case;
+		end process;
 	
-		OOBTO : ENTITY PoC.io_TimingCounter
-			GENERIC MAP (
+		OOBTO : entity PoC.io_TimingCounter
+			generic map (
 				TIMING_TABLE	=> TIMING_TABLE				-- timing table
 			)
-			PORT MAP (
+			port map (
 				Clock					=> GTX_UserClock,
 				Enable				=> OOBTO_en,
 				Load					=> OOBTO_Load,
@@ -670,41 +976,41 @@ BEGIN
 		GTX_RX_ElectricalIDLE_Mode	<= ffdre(q => GTX_RX_ElectricalIDLE_Mode, d => "11", rst => to_sl(OOB_TX_Command_d /= SATA_OOB_NONE), en => OOB_HandshakeComplete(I)) when rising_edge(GTX_UserClock);
 	
 		-- TX OOB sequence is complete
-		OOBTO_Timeout_d			<= OOBTO_Timeout WHEN rising_edge(GTX_UserClock);
+		OOBTO_Timeout_d			<= OOBTO_Timeout when rising_edge(GTX_UserClock);
 		TX_ComFinish				<= NOT OOBTO_Timeout_d AND OOBTO_Timeout;		-- GTX_TX_ComFinish is not always generated -> replaced by a timer workaround
 		OOB_TX_Complete(I)	<= TX_ComFinish;
 	
 		-- hold registers; hold GTX_TX_Com* signal until sequence is complete
-		GTX_TX_ComInit_r	<= ffsr(q => GTX_TX_ComInit_r,	rst => TX_ComFinish, set => GTX_TX_ComInit_set)	WHEN rising_edge(GTX_UserClock);
-		GTX_TX_ComWake_r	<= ffsr(q => GTX_TX_ComWake_r,	rst => TX_ComFinish, set => GTX_TX_ComWake_set)	WHEN rising_edge(GTX_UserClock);
-		GTX_TX_ComSAS_r		<= ffsr(q => GTX_TX_ComSAS_r,		rst => TX_ComFinish, set => GTX_TX_ComSAS_set)	WHEN rising_edge(GTX_UserClock);
+		GTX_TX_ComInit_r	<= ffsr(q => GTX_TX_ComInit_r,	rst => TX_ComFinish, set => GTX_TX_ComInit_set)	when rising_edge(GTX_UserClock);
+		GTX_TX_ComWake_r	<= ffsr(q => GTX_TX_ComWake_r,	rst => TX_ComFinish, set => GTX_TX_ComWake_set)	when rising_edge(GTX_UserClock);
+		GTX_TX_ComSAS_r		<= ffsr(q => GTX_TX_ComSAS_r,		rst => TX_ComFinish, set => GTX_TX_ComSAS_set)	when rising_edge(GTX_UserClock);
 	
 		GTX_TX_ComInit		<= GTX_TX_ComInit_r;
 		GTX_TX_ComWake		<= GTX_TX_ComWake_r;
 		GTX_TX_ComSAS			<= GTX_TX_ComSAS_r;
 
 		-- RX OOB signals (generate generic RX OOB status signals)
-		PROCESS(RX_ElectricalIDLE, GTX_RX_ComInitDetected, GTX_RX_ComWakeDetected, GTX_RX_ComSASDetected)
-		BEGIN
-			IF (GTX_RX_ComInitDetected	= '1') THEN
+		process(RX_ElectricalIDLE, GTX_RX_ComInitDetected, GTX_RX_ComWakeDetected, GTX_RX_ComSASDetected)
+		begin
+			if (GTX_RX_ComInitDetected	= '1') then
 				OOB_RX_Received_i			<= SATA_OOB_COMRESET;
-			ELSIF (GTX_RX_ComWakeDetected	= '1') THEN
+			elsif (GTX_RX_ComWakeDetected	= '1') then
 				OOB_RX_Received_i			<= SATA_OOB_COMWAKE;
-			ELSIF (GTX_RX_ComSASDetected	= '1') THEN
+			elsif (GTX_RX_ComSASDetected	= '1') then
 				OOB_RX_Received_i			<= SATA_OOB_COMSAS;
-			ELSIF (RX_ElectricalIDLE	= '1') THEN
+			elsif (RX_ElectricalIDLE	= '1') then
 				OOB_RX_Received_i			<= SATA_OOB_READY;
 			ELSE
 				OOB_RX_Received_i		 	<= SATA_OOB_NONE;
-			END IF;
-		END PROCESS;
+			end if;
+		end process;
 
-		--RX_OOBStatus_d		<= RX_OOBStatus_i;		-- WHEN rising_edge(SATA_Clock_i(I));
+		--RX_OOBStatus_d		<= RX_OOBStatus_i;		-- when rising_edge(SATA_Clock_i(I));
 		OOB_RX_Received(I)		<= OOB_RX_Received_i;
 
 
 
-
+-- TODO: still needed?
 		blkTest : block
 			signal reg : STD_LOGIC	:= '1';
 		begin
@@ -713,113 +1019,63 @@ BEGIN
 			GTX_RX_CDR_Hold	<= reg;	--(reg xor DebugPortIn(I).ForceInvertHold) and DebugPortIn(I).ForceEnableHold;
 		end block;
 		
-
-
-
-
-		--	==================================================================
-		-- error handling
-		--	==================================================================
-		PROCESS(GTX_TX_BufferStatus(1),
-						GTX_RX_ByteIsAligned, GTX_RX_DisparityError, GTX_RX_NotInTableError, GTX_RX_BufferStatus(2))
-		BEGIN
-			TX_Error_i		<= SATA_TRANSCEIVER_TX_ERROR_NONE;
-			RX_Error_i		<= SATA_TRANSCEIVER_RX_ERROR_NONE;
-			
-			-- TX errors
-			IF (GTX_TX_BufferStatus(1)	= '1') THEN
-				TX_Error_i	<= SATA_TRANSCEIVER_TX_ERROR_BUFFER;
-			END IF;
-		
-			-- RX errors
-			IF (GTX_RX_ByteIsAligned	= '0') THEN
-				RX_Error_i	<= SATA_TRANSCEIVER_RX_ERROR_ALIGNEMENT;
-			ELSIF (slv_or(GTX_RX_DisparityError)	= '1') THEN
-				RX_Error_i	<= SATA_TRANSCEIVER_RX_ERROR_DISPARITY;
-			ELSIF (slv_or(GTX_RX_NotInTableError)	= '1') THEN
-				RX_Error_i	<= SATA_TRANSCEIVER_RX_ERROR_DECODER;
-			ELSIF (GTX_RX_BufferStatus(2)	= '1') THEN
-				RX_Error_i	<= SATA_TRANSCEIVER_RX_ERROR_BUFFER;
-			END IF;
-		END PROCESS;
-
 		--	==================================================================
 		-- Transceiver status
 		--	==================================================================
 		-- device detection
-		blkDeviceDetector : BLOCK
-			CONSTANT NO_DEVICE_TIMEOUT							: TIME		:= ite(SIMULATION, 2.0 us, NO_DEVICE_TIMEOUT);
-			CONSTANT NEW_DEVICE_TIMEOUT							: TIME		:= ite(SIMULATION, 0.1 us, NEW_DEVICE_TIMEOUT);
+		blkDeviceDetector : block
+--			constant NO_DEVICE_TIMEOUT							: TIME		:= ite(SIMULATION, 2.0 us, NO_DEVICE_TIMEOUT);
+--			constant NEW_DEVICE_TIMEOUT							: TIME		:= ite(SIMULATION, 0.1 us, NEW_DEVICE_TIMEOUT);
 			
-			CONSTANT HIGH_SPIKE_SUPPRESSION_CYCLES	: NATURAL	:= TimingToCycles(NO_DEVICE_TIMEOUT,	CLOCK_DD_FREQ);
-			CONSTANT LOW_SPIKE_SUPPRESSION_CYCLES		: NATURAL	:= TimingToCycles(NEW_DEVICE_TIMEOUT,	CLOCK_DD_FREQ);
+--			constant HIGH_SPIKE_SUPPRESSION_CYCLES	: NATURAL	:= TimingToCycles(NO_DEVICE_TIMEOUT,	CLOCK_DD_FREQ);
+--			constant LOW_SPIKE_SUPPRESSION_CYCLES		: NATURAL	:= TimingToCycles(NEW_DEVICE_TIMEOUT,	CLOCK_DD_FREQ);
 		
-			SIGNAL RX_ElectricalIDLE_sync			: STD_LOGIC;
+--			signal RX_ElectricalIDLE_sync			: STD_LOGIC;
 			
-			SIGNAL NoDevice										: STD_LOGIC;
-			SIGNAL NoDevice_r									: STD_LOGIC			:= '1';		-- '0';		set to 1 if nodevice is constant in line 666
-			SIGNAL NoDevice_d									: STD_LOGIC			:= '0';
-			SIGNAL NoDevice_fe								: STD_LOGIC;
-		BEGIN
-			-- synchronize ElectricalIDLE to working clock domain
-			sync2_DDClock : ENTITY PoC.xil_SyncBits
-				PORT MAP (
-					Clock					=> DD_Clock,											-- Clock to be synchronized to
-					Input(0)			=> GTX_RX_ElectricalIDLE_async,		-- Data to be synchronized
-					Output(0)			=> RX_ElectricalIDLE_sync					-- synchronised data
-				);
+--			signal NoDevice										: STD_LOGIC;
+			signal NoDevice_r									: STD_LOGIC			:= '1';		-- '0';		set to 1 if nodevice is constant in line 666
+			signal NoDevice_d									: STD_LOGIC			:= '0';
+			signal NoDevice_fe								: STD_LOGIC;
+		begin
+--			-- synchronize ElectricalIDLE to working clock domain
+--			sync2_DDClock : ENTITY PoC.xil_SyncBits
+--				PORT MAP (
+--					Clock					=> DD_Clock,											-- Clock to be synchronized to
+--					Input(0)			=> GTX_RX_ElectricalIDLE_async,		-- Data to be synchronized
+--					Output(0)			=> RX_ElectricalIDLE_sync					-- synchronised data
+--				);
+--			
+--			filter2 : ENTITY PoC.io_GlitchFilter
+--				GENERIC MAP (
+--					HIGH_SPIKE_SUPPRESSION_CYCLES			=> HIGH_SPIKE_SUPPRESSION_CYCLES,
+--					LOW_SPIKE_SUPPRESSION_CYCLES			=> LOW_SPIKE_SUPPRESSION_CYCLES
+--				)
+--				PORT MAP (
+--					Clock		=> DD_Clock,
+--					Input		=> RX_ElectricalIDLE_sync,
+--					Output	=> OPEN	--NoDevice
+--				);
 			
-			filter2 : ENTITY PoC.io_GlitchFilter
-				GENERIC MAP (
-					HIGH_SPIKE_SUPPRESSION_CYCLES			=> HIGH_SPIKE_SUPPRESSION_CYCLES,
-					LOW_SPIKE_SUPPRESSION_CYCLES			=> LOW_SPIKE_SUPPRESSION_CYCLES
-				)
-				PORT MAP (
-					Clock		=> DD_Clock,
-					Input		=> RX_ElectricalIDLE_sync,
-					Output	=> OPEN	--NoDevice
-				);
+--			sync3_RXUserClock : ENTITY PoC.xil_SyncBits
+--				PORT MAP (
+--					Clock					=> GTX_UserClock,			-- Clock to be synchronized to
+--					Input(0)			=> NoDevice,					-- Data to be synchronized
+--					Output(0)			=> DD_NoDevice				-- synchronised data
+--				);
 			
-			NoDevice	<= '0';
+			DD_NoDevice	<= '0';
 			
-			sync3_RXUserClock : ENTITY PoC.xil_SyncBits
-				PORT MAP (
-					Clock					=> GTX_UserClock,			-- Clock to be synchronized to
-					Input(0)			=> NoDevice,					-- Data to be synchronized
-					Output(0)			=> DD_NoDevice				-- synchronised data
-				);
-			
-			NoDevice_r		<= DD_NoDevice OR (NoDevice_r AND NOT ResetDone_r) WHEN rising_edge(GTX_UserClock);		-- latch NoDevide state until ResetDone, after that work as D-FF
-			NoDevice_d		<= NoDevice_r WHEN rising_edge(GTX_UserClock);
-			NoDevice_fe		<= NoDevice_d AND NOT NoDevice_r;
+			NoDevice_r		<= DD_NoDevice or (NoDevice_r and not ResetDone_r) when rising_edge(GTX_UserClock);		-- latch NoDevide state until ResetDone, after that work as D-FF
+			NoDevice_d		<= NoDevice_r when rising_edge(GTX_UserClock);
+			NoDevice_fe		<= NoDevice_d and not NoDevice_r;
 			DD_NewDevice	<= NoDevice_fe;
-		END BLOCK;
-
-		PROCESS(DD_NoDevice, DD_NewDevice, TX_Error_i, RX_Error_i)	-- GTX_ResetDone, 
-		BEGIN
-			Status_i	 		<= SATA_TRANSCEIVER_STATUS_READY;
-			
-			IF (DD_NoDevice	= '1') THEN
-				Status_i		<= SATA_TRANSCEIVER_STATUS_NO_DEVICE;
-			ELSIF (DD_NewDevice	= '1') THEN
-				Status_i		<= SATA_TRANSCEIVER_STATUS_NEW_DEVICE;
-			ELSIF ((TX_Error_i /= SATA_TRANSCEIVER_TX_ERROR_NONE) OR (RX_Error_i /= SATA_TRANSCEIVER_RX_ERROR_NONE)) THEN
-				Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
--- TODO:
--- TRANS_STATUS_CONFIGURATION,
-			END IF;
-		END PROCESS;
-	
-		Status(I)				<= Status_i		when rising_edge(GTX_UserClock);
-		Error(I).Common	<= SATA_TRANSCEIVER_ERROR_NONE;
-		Error(I).TX			<= TX_Error_i	when rising_edge(GTX_UserClock);
-		Error(I).RX			<= RX_Error_i	when rising_edge(GTX_UserClock);
+		end block;
 
 		-- ==================================================================
 		-- GTXE2_CHANNEL instance for Port I
 		-- ==================================================================
 		GTX : GTXE2_CHANNEL
-			GENERIC MAP (
+			generic map (
 				-- Simulation-Only attributes
 				SIM_RECEIVER_DETECT_PASS								=> "TRUE",
 				SIM_RESET_SPEEDUP												=> "TRUE",										-- set to "TRUE" to speed up simulation reset
@@ -965,7 +1221,7 @@ BEGIN
 				ES_HORZ_OFFSET													=> x"000",
 				ES_PMA_CFG															=> "0000000000",
 				ES_PRESCALE															=> "00000",
-				ES_QUALIFIER														=> x"00000000000000000000",
+				ES_QUALifIER														=> x"00000000000000000000",
 				ES_QUAL_MASK														=> x"00000000000000000000",
 				ES_SDATA_MASK														=> x"00000000000000000000",
 				ES_VERT_OFFSET													=> "000000000",
@@ -1077,7 +1333,7 @@ BEGIN
 				-- TX configurable driver attributes
 				TX_PREDRIVER_MODE												=> '0'
 			)
-			PORT MAP (
+			port map (
 				-- clock selects and clock inputs
 				CPLLREFCLKSEL										=> "111",													-- @async:		111 => use GTGREFCLK
 				
@@ -1100,7 +1356,7 @@ BEGIN
 
 				-- internal clock selects and clock outputs
 				TXSYSCLKSEL											=> "00",													-- @async:		00 => use CPLL und gtxe2_channel refclock; 11 => use QPLL and gtxe2_common refclock
-				TXOUTCLKSEL											=> "010",													-- @async:		010 => select TXOUTCLKPMA
+				TXOUTCLKSEL											=> "011",													-- @async:		011 => select TXPLLREFCLK_DIV1
 				TXOUTCLKFABRIC									=> open,													-- @clock:		internal clock after TXSYSCLKSEL-mux
 				TXOUTCLKPCS											=> open,													-- @clock:		internal clock from PCS sublayer
 				TXOUTCLK												=> GTX_TX_RefClockOut,						-- @clock:		TX output clock
@@ -1145,11 +1401,11 @@ BEGIN
 				-- FPGA-Fabric interface clocks
 				-- =====================================================================
 				-- TX
-				TXUSERRDY												=> GTX_UserClock_Locked,					-- @async:			@TX_Clock2 is stable/locked
+				TXUSERRDY												=> GTX_UserClock_Stable,					-- @async:			@TX_Clock2 is stable/locked
 				TXUSRCLK												=> GTX_UserClock,									-- @clock:			
 				TXUSRCLK2												=> GTX_UserClock,									-- @clock:			
 				-- RX
-				RXUSERRDY												=> GTX_UserClock_Locked,					-- @async:			@TX_Clock2 is stable/locked
+				RXUSERRDY												=> GTX_UserClock_Stable,					-- @async:			@TX_Clock2 is stable/locked
 				RXUSRCLK												=> GTX_UserClock,									-- @clock:			
 				RXUSRCLK2												=> GTX_UserClock,									-- @clock:			
 
@@ -1370,9 +1626,9 @@ BEGIN
 				-- TX configurable driver ports
 				TXPISOPD												=> '0',														-- @async:			reserved; ParallelIn/SerialOut (PISO) power-down
 				TXINHIBIT												=> '0',														-- @TX_Clock2:	forces GTXTXP to 0 and GTXTXN to 1
-				TXDIFFPD												=> '0',														-- @async:			reserved; TX driver power-down
-				TXDIFFCTRL											=> "0101",												-- @TX_Clock2:	TX driver swing control [mV_PPD]; 0101 => 609 mV peak-peak-differential voltage
-				TXBUFDIFFCTRL										=> "100",													-- @TX_Clock2:	TX pre-driver swing control; default is 100; do not modify
+				TXDifFPD												=> '0',														-- @async:			reserved; TX driver power-down
+				TXDifFCTRL											=> "0101",												-- @TX_Clock2:	TX driver swing control [mV_PPD]; 0101 => 609 mV peak-peak-differential voltage
+				TXBUFDifFCTRL										=> "100",													-- @TX_Clock2:	TX pre-driver swing control; default is 100; do not modify
 				TXDEEMPH												=> '0',														-- @TX_Clock2:	TX de-emphasis control
 				TXMARGIN												=> "000",													-- @async:			TX margin control
 				TXSWING													=> '0',														-- @async:			TX swing control; 0 => full swing; 1 => half-swing
@@ -1389,7 +1645,7 @@ BEGIN
 				TXQPISENN												=> open,													-- @async:			sense output for GTXTXN
 				TXQPISENP												=> open,													-- @async:			sense output for GTXTXP
 				
-				-- RX Analog FrontEnd (AFE) ports
+				-- RX Analog Frontend (AFE) ports
 				RXQPIEN													=> '0',														-- @async:			disables RX termination for the QPI protocol
 				RXQPISENN												=> open,													-- @async:			Sense output on GTXRXN
 				RXQPISENP												=> open,													-- @async:			Sense output on GTXRXP
@@ -1419,7 +1675,41 @@ BEGIN
 			--	<float>										<= GTX_DRP_Ack;
 		end generate;
 		genCSP1 : if (ENABLE_DEBUGPORT = TRUE) generate
-		
+			function to_slv(Status : T_STATE) return STD_LOGIC_VECTOR is
+			begin
+				return to_slv(T_STATE'pos(Status), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
+			end function;
+			
+			function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+			begin
+				return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
+			end function;			
+
+			function dbg_GenerateStateEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_STATE loop
+					STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+
+			function dbg_GenerateStatusEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_TRANSCEIVER_STATUS loop
+					STD.TextIO.write(l, str_replace(T_SATA_TRANSCEIVER_STATUS'image(i), "sata_transceiver_status_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+
+			constant dummy : T_BOOLVEC := (
+				0 => dbg_ExportEncoding("Transceiver (7-Series, GTXE2)",		dbg_GenerateStateEncodings,		PROJECT_DIR & "ChipScope/TokenFiles/FSM_Transceiver_Series7_GTXE2.tok"),
+				1 => dbg_ExportEncoding("Transceiver Layer - Status Enum",	dbg_GenerateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Transceiver_Status.tok")
+			);
+			
 		begin
 			GTX_DRP_Clock			<= DebugPortIn(I).DRP.Clock;
 			GTX_DRP_Enable		<= DebugPortIn(I).DRP.Enable;
@@ -1427,13 +1717,28 @@ BEGIN
 			GTX_DRP_Address		<= DebugPortIn(I).DRP.Address;
 			GTX_DRP_DataOut		<= DebugPortIn(I).DRP.Data;
 			
-			DebugPortOut(I).ClockNetwork_Reset				<= ClkNet_Reset;
-			DebugPortOut(I).ClockNetwork_ResetDone		<= ClkNet_ResetDone;
-			DebugPortOut(I).Reset											<= GTX_Reset;
+			DebugPortOut(I).PowerDown									<= PowerDown(i);
+			DebugPortOut(I).ClockNetwork_Reset				<= ClockNetwork_Reset(i);
+			DebugPortOut(I).ClockNetwork_ResetDone		<= ClockNetwork_ResetDone_i;
+			DebugPortOut(I).Reset											<= Reset(i);
 			DebugPortOut(I).ResetDone									<= ResetDone_r;
-			DebugPortOut(I).PowerDown									<= PowerDown(I);
-			DebugPortOut(I).CPLL_Reset								<= GTX_CPLL_Reset;
-			DebugPortOut(I).CPLL_Locked								<= GTX_CPLL_Locked_async;
+			
+			DebugPortOut(I).UserClock									<= GTX_UserClock;
+			DebugPortOut(I).UserClock_Stable					<= GTX_UserClock_Stable;
+			
+			DebugPortOut(I).GTX_CPLL_PowerDown				<= GTX_CPLL_PowerDown;
+			DebugPortOut(I).GTX_TX_PowerDown					<= GTX_TX_PowerDown(0);
+			DebugPortOut(I).GTX_RX_PowerDown					<= GTX_RX_PowerDown(0);
+			
+			DebugPortOut(I).GTX_CPLL_Reset						<= GTX_CPLL_Reset;
+			DebugPortOut(I).GTX_CPLL_Locked						<= GTX_CPLL_Locked_async;
+			
+			DebugPortOut(I).GTX_TX_Reset							<= GTX_TX_Reset;
+			DebugPortOut(I).GTX_RX_Reset							<= GTX_RX_Reset;
+			DebugPortOut(I).GTX_TX_ResetDone					<= GTX_TX_ResetDone;
+			DebugPortOut(I).GTX_RX_ResetDone					<= GTX_RX_ResetDone;
+			DebugPortOut(I).FSM												<= to_slv(State);
+			
 			DebugPortOut(I).OOB_Clock									<= OOB_Clock;
 			DebugPortOut(I).RP_SATAGeneration					<= RP_SATAGeneration(I);
 			DebugPortOut(I).RP_Reconfig								<= RP_Reconfig(I);
@@ -1445,10 +1750,6 @@ BEGIN
 			DebugPortOut(I).RX_RateSelection					<= GTX_RX_LineRateSelect;
 			DebugPortOut(I).TX_RateSelectionDone			<= GTX_TX_LineRateSelectDone;
 			DebugPortOut(I).RX_RateSelectionDone			<= GTX_RX_LineRateSelectDone;
-			DebugPortOut(I).TX_Reset									<= GTX_TX_Reset;
-			DebugPortOut(I).RX_Reset									<= GTX_RX_Reset;
-			DebugPortOut(I).TX_ResetDone							<= GTX_TX_ResetDone;
-			DebugPortOut(I).RX_ResetDone							<= GTX_RX_ResetDone;
 			DebugPortOut(I).RX_CDR_Locked							<= RX_CDR_Locked;
 			DebugPortOut(I).RX_CDR_Hold								<= GTX_RX_CDR_Hold;
 		

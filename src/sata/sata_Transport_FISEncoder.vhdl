@@ -34,7 +34,6 @@ use			IEEE.STD_LOGIC_1164.all;
 use			IEEE.NUMERIC_STD.all;
 
 library PoC;
-use			PoC.my_project.all;
 use			PoC.config.all;
 use			PoC.utils.all;
 use			PoC.vectors.all;
@@ -355,7 +354,7 @@ BEGIN
 				return  l.all;
 			end function;
 			
-			constant test : boolean := dbg_ExportEncoding("Transport Layer - FIS-Encoder", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_TransLayer_FISE.tok");
+			constant dummy : boolean := dbg_ExportEncoding("Transport Layer - FIS-Encoder", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_TransLayer_FISE.tok");
 		begin
 		end generate;
 		

@@ -34,7 +34,6 @@ use			IEEE.STD_LOGIC_1164.all;
 use			IEEE.NUMERIC_STD.all;
 
 library PoC;
-use			PoC.my_project.all;
 use			PoC.config.all;
 use			PoC.utils.all;
 use			PoC.vectors.all;
@@ -1858,8 +1857,10 @@ BEGIN
 				return  l.all;
 			end function;
 
-			constant test1 : boolean := dbg_ExportEncoding("Link Layer", dbg_GenerateTXEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_LinkLayer_TX.tok");
-			constant test2 : boolean := dbg_ExportEncoding("Link Layer", dbg_GenerateRXEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_LinkLayer_RX.tok");
+			constant dummy : T_BOOLVEC := (
+				0 => dbg_ExportEncoding("Link Layer", dbg_GenerateTXEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_LinkLayer_TX.tok"),
+				1 => dbg_ExportEncoding("Link Layer", dbg_GenerateRXEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_LinkLayer_RX.tok")
+			);
 		begin
 		end generate;
 		
