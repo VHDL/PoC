@@ -120,7 +120,7 @@ class NetList(CommandLineProgram):
 		
 		entityToCompile = Entity(self, entity)
 
-		compiler = XSTCompiler.PoCXSTCompiler(self, showLogs, showReport)
+		compiler = XSTCompiler.Compiler(self, showLogs, showReport)
 		compiler.dryRun = self.dryRun
 		compiler.run(entityToCompile, device)
 

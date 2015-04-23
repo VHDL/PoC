@@ -1,10 +1,9 @@
 
-import re
 
-from Base import Extractor
-from Processor import ProcessorException
+from Base.Base import BaseExtractor
+from Processor.Exceptions import *
 
-class WarningExtractor(Extractor):
+class Extractor(BaseExtractor):
 
 	@classmethod
 	def getInitializationRegExpString(cls):
@@ -23,6 +22,8 @@ class WarningExtractor(Extractor):
 	
 	@classmethod
 	def createGenerator(cls):
+		import re
+		
 		startRegExp =			re.compile(cls.getStartRegExpString())		# move out
 		
 		line = yield

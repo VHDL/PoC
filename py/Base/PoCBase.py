@@ -167,9 +167,3 @@ class CommandLineProgram(object):
 	def printNonQuiet(self, message):
 		if (not self.__quiet):
 			print(message)
-
-
-
-
-class Extractor(object):
-	pass
