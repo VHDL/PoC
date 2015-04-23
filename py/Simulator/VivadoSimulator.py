@@ -45,6 +45,8 @@ else:
 	print("This is no executable file!")
 	exit(1)
 
+from pathlib import Path
+
 from Base.Exceptions import *
 from Simulator.Base import PoCSimulator 
 from Simulator.Exceptions import * 

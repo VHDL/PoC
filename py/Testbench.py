@@ -33,12 +33,6 @@
 
 from pathlib import Path
 
-#import PoCSimulator
-#import PoCISESimulator
-#import PoCVivadoSimulator
-#import PoCQuestaSimulator
-#import PoCGHDLSimulator
-
 from Base.Exceptions import *
 from Base.PoCBase import CommandLineProgram
 from PoC.Entity import *
