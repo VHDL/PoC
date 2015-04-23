@@ -180,7 +180,7 @@ begin
 
 
 		-- Control FSM @SATA_Clock
-		type T_STATE is (ST_POWERDOWN, ST_CLKNET_RESET, ST_RESET, ST_READY, ST_COMMUNICATION, ST_RECONFIGURATION, ST_INIT_POWERDOWN, ST_INIT_CLKNET_RESET);
+		type T_STATE is (ST_POWERDOWN, ST_CLKNET_RESET, ST_RESET, ST_READY, ST_COMMUNICATION, ST_RECONFIGURATION, ST_INIT_POWERDOWN, ST_INIT_CLKNET_RESET, ST_RESET_BY_FSM, ST_CLEAR_RX_BUF);
 		
 		signal State												: T_STATE				:= ST_POWERDOWN;
 		signal NextState										: T_STATE;
@@ -188,11 +188,12 @@ begin
 		signal Kill_GTX_UserClock_Stable 		: std_logic;
 		signal Unblock_PowerDown 						: std_logic;
 		signal Unblock_ClockNetwork_Reset		: std_logic;
-
+		signal GTX_Reset_by_FSM							: std_logic;
+		signal GTX_Reset_by_FSM_d						: std_logic;
+		
 		-- async events synchronized to GTX_UserClock
 		signal UC_PowerDown 								: std_logic;
 		signal UC_ClockNetwork_Reset 				: std_logic;
-		signal UC_Reset  			 							: std_logic;
 		signal UC_ClkNet_ResetDone 					: std_logic;
 		signal UC_ClkNet_ResetDone_d				: std_logic;
 		signal UC_ClkNet_ResetDone_re				: std_logic;
@@ -207,7 +208,9 @@ begin
 
 		-- Transceiver resets
 		signal ResetDone_rst								: STD_LOGIC;
+		signal ResetDone_set								: STD_LOGIC;
 		signal ResetDone_r									: STD_LOGIC							:= '0';
+		signal ClockNetwork_ResetDone_i 		: STD_LOGIC;
 		
 		-- Clock signals
 		signal GTX_RefClockGlobal						: STD_LOGIC;
@@ -231,13 +234,12 @@ begin
 		signal GTX_TX_PowerDown							: T_SLV_2;
 		signal GTX_RX_PowerDown							: T_SLV_2;
 		
-		signal GTX_Reset										: STD_LOGIC;
-		signal GTX_ResetDone								: STD_LOGIC;
-		signal GTX_ResetDone_d							: STD_LOGIC							:= '0';
-		signal GTX_ResetDone_re							: STD_LOGIC;
-	
-		-- CPLL resets
+		-- CPLL reset
 		signal GTX_CPLL_Reset								: STD_LOGIC;
+
+		-- Reset both TX & RX
+		signal GTX_Reset										: STD_LOGIC;
+	
 		-- TX resets
 		signal GTX_TX_Reset									: STD_LOGIC;
 		signal GTX_TX_PCSReset							: STD_LOGIC;
@@ -314,7 +316,7 @@ begin
 		signal GTX_RX_ComWakeDetected				: STD_LOGIC;
 		signal GTX_RX_ComSASDetected				: STD_LOGIC;
 		
-		signal OOB_TX_Command_d							: T_SATA_OOB;
+		signal OOB_TX_Command_d							: T_SATA_OOB				:= SATA_OOB_NONE;
 		signal OOB_RX_Received_i						: T_SATA_OOB;
 		
 		-- timings
@@ -431,7 +433,7 @@ begin
 		-- the appropiate ports of the ClockNetwork module. 
 		BUFG_RefClockOut : BUFG
 			port map (
-				I						=> GTX_RefClockGlobal,	--GTX_TX_RefClockOut,
+				I						=> GTX_TX_RefClockOut,
 				O						=> GTX_UserClock
 			);
 
@@ -459,19 +461,17 @@ begin
 
 		syncUserClock : entity PoC.xil_SyncBits
 			generic map (
-				BITS					=> 4,
-				INIT					=> "0001"
+				BITS					=> 3,
+				INIT					=> "001"
 			)
 			port map (
 				Clock					=> GTX_UserClock, 					-- Clock to be synchronized to
 				Input(0)			=> PowerDown(i),						-- Data to be synchronized
 				Input(1)			=> ClockNetwork_Reset(i),		-- 
-				Input(2)			=> Reset(i),								--
-				Input(3)      => ClkNet_ResetDone,				-- 
+				Input(2)      => ClkNet_ResetDone,				-- 
 				Output(0)			=> UC_PowerDown,						-- synchronised data
 				Output(1)			=> UC_ClockNetwork_Reset,		-- 
-				Output(2)			=> UC_Reset,								-- 
-				Output(3)			=> UC_ClkNet_ResetDone		  -- 
+				Output(2)			=> UC_ClkNet_ResetDone		  -- 
 			);
 
 		-- GTX_UserClock_Stable Control
@@ -488,12 +488,17 @@ begin
 		begin
 			if rising_edge(GTX_UserClock) then
 				State		<= NextState;
+				GTX_Reset_by_FSM_d <= GTX_Reset_by_FSM;
 			end if;
 		end process;
 		
+		ResetDone_r		<= ffrs(q => ResetDone_r, rst => ResetDone_rst, set => ResetDone_set) when rising_edge(GTX_UserClock);
+		ResetDone(I)	<= ResetDone_r;
+
+		
 		process(State, Command, 
-						UC_PowerDown, UC_ClockNetwork_Reset, UC_Reset,
-						GTX_UserClock_Stable, GTX_ResetDone,
+						UC_PowerDown, UC_ClockNetwork_Reset, 
+						GTX_UserClock_Stable, GTX_TX_ResetDone, GTX_RX_ResetDone,
 						DD_NoDevice, DD_NewDevice,
 						GTX_TX_BufferStatus(1),
 						GTX_RX_ByteIsAligned, GTX_RX_DisparityError, GTX_RX_NotInTableError, GTX_RX_BufferStatus(2))
@@ -508,6 +513,9 @@ begin
 			Kill_GTX_UserClock_Stable <= '0';
 			Unblock_PowerDown <= '0';
 			Unblock_ClockNetwork_Reset <= '0';
+			GTX_Reset_by_FSM  <= '0'; -- if asserted, then NextState must be ST_RESET_BY_FSM
+			ResetDone_set 		<= '0';
+			ResetDone_rst 		<= '0';
 			
 			case State is
 				when ST_INIT_POWERDOWN =>
@@ -559,6 +567,7 @@ begin
 					-- Normally the ClockNetwork_Reset command is blocked, so that the
 					-- upper layers can do special tasks (see ST_INIT_CLKNET_RESET)
 					-- before the command is unblocked here for execution.
+					UnBlock_PowerDown <= '1';
 					UnBlock_ClockNetwork_Reset <= '1';
 
 					-- If power-up was successful then GTX_UserClock_Stable will go high.
@@ -568,25 +577,57 @@ begin
 				
 				when ST_RESET =>
 					Status_i			<= SATA_TRANSCEIVER_STATUS_RESETING;
-				
-					if GTX_ResetDone = '1' then
-						NextState		<= ST_READY;
-					end if;		
-					
-				when ST_READY =>
-					Status_i			<= SATA_TRANSCEIVER_STATUS_READY;
-				
+
 					if (UC_PowerDown = '1') then
 						NextState		<= ST_INIT_POWERDOWN;
 						
 					elsif (UC_ClockNetwork_Reset = '1') then
 						NextState		<= ST_INIT_CLKNET_RESET;
 						
-					elsif (UC_Reset = '1') or (Command(i) = SATA_TRANSCEIVER_CMD_RESET) then
-						NextState		<= ST_RESET;
+					elsif (Reset(i) = '1') or (Command(i) = SATA_TRANSCEIVER_CMD_RESET) then
+						GTX_Reset_by_FSM <= '1';
+						NextState <= ST_RESET_BY_FSM;
+						
+					elsif (GTX_RX_ResetDone = '1') then
+						-- Normally, TX will be ready after ~316 clock cycles and RX after
+						-- ~2516 clock cycles. 
+						if (GTX_TX_ResetDone = '0') then
+							-- TX seems not to get ready. Try Again.
+							GTX_Reset_by_FSM <= '1';
+							NextState   <= ST_RESET_BY_FSM;
+						else
+							ResetDone_set <= '1';
+							NextState			<= ST_READY;
+						end if;
+					end if;		
+
+				when ST_RESET_BY_FSM =>
+					-- GTX_Reset_by_FSM_d is asserted in this cycle. This signal drives
+					-- the asynchronous GTTXRESET and GTRXRESET inputs of the
+					-- transceiver. Thus, glitches due to binary encoding of the FSM state
+					-- must be avoided. This is achieved by asserting GTX_Reset_by_FSM
+					-- and switching to this state.
+					NextState <= ST_RESET;
+
+				when ST_READY =>
+					Status_i			<= SATA_TRANSCEIVER_STATUS_READY;
+				
+					if (UC_PowerDown = '1') then
+						NextState		<= ST_INIT_POWERDOWN;
+						ResetDone_rst <= '1';
+						
+					elsif (UC_ClockNetwork_Reset = '1') then
+						NextState		<= ST_INIT_CLKNET_RESET;
+						ResetDone_rst <= '1';
+						
+					elsif (Reset(i) = '1') or (Command(i) = SATA_TRANSCEIVER_CMD_RESET) then
+						NextState		<= ST_RESET_BY_FSM;
+						ResetDone_rst <= '1';
+						GTX_Reset_by_FSM <= '1';
 					
 					elsif (OOB_HandshakeComplete(i) = '1') then
-						NextState		<= ST_COMMUNICATION;
+						-- GTX_RX_Reset is asserted below
+						NextState		<= ST_CLEAR_RX_BUF;
 					
 					else
 						null;		-- TODO: reconfig?
@@ -597,20 +638,46 @@ begin
 							Status_i		<= SATA_TRANSCEIVER_STATUS_NEW_DEVICE;
 						end if;
 							
-
 					end if;
-				
+
+					
+				when ST_CLEAR_RX_BUF =>
+					-- RX buffer must be cleared after OOB handshake. Do not report errors.
+					Status_i			<= SATA_TRANSCEIVER_STATUS_READY;
+					
+					if (UC_PowerDown = '1') then
+						NextState		<= ST_INIT_POWERDOWN;
+						ResetDone_rst <= '1';
+						
+					elsif (UC_ClockNetwork_Reset = '1') then
+						NextState		<= ST_INIT_CLKNET_RESET;
+						ResetDone_rst <= '1';
+						
+					elsif (Reset(i) = '1') or (Command(i) = SATA_TRANSCEIVER_CMD_RESET) then
+						NextState		<= ST_RESET_BY_FSM;
+						ResetDone_rst <= '1';
+						GTX_Reset_by_FSM <= '1';
+					
+					elsif GTX_RX_ResetDone = '1' then
+						NextState		<= ST_COMMUNICATION;
+					end if;
+
+					
 				when ST_COMMUNICATION =>
 					Status_i			<= SATA_TRANSCEIVER_STATUS_READY;
 					
 					if (UC_PowerDown = '1') then
 						NextState		<= ST_INIT_POWERDOWN;
+						ResetDone_rst <= '1';
 						
 					elsif (UC_ClockNetwork_Reset = '1') then
 						NextState		<= ST_INIT_CLKNET_RESET;
+						ResetDone_rst <= '1';
 						
-					elsif (UC_Reset = '1') or (Command(i) = SATA_TRANSCEIVER_CMD_RESET) then
-						NextState		<= ST_RESET;
+					elsif (Reset(i) = '1') or (Command(i) = SATA_TRANSCEIVER_CMD_RESET) then
+						NextState		<= ST_RESET_BY_FSM;
+						ResetDone_rst <= '1';
+						GTX_Reset_by_FSM <= '1';
 					
 					elsif (OOB_TX_Command(i) /= SATA_OOB_NONE) then
 						NextState			<= ST_READY;
@@ -656,16 +723,18 @@ begin
 		GTX_TX_PowerDown					<= Gated_PowerDown & Gated_PowerDown;
 		GTX_RX_PowerDown					<= Gated_PowerDown & Gated_PowerDown;
 
-		GTX_CPLL_Reset						<= Gated_ClockNetwork_Reset;		
-		ClockNetwork_ResetDone(I)	<= GTX_CPLL_Locked_async and ClkNet_ResetDone;	-- @async
-		
+		GTX_CPLL_Reset						<= Gated_PowerDown or Gated_ClockNetwork_Reset;		
+		ClockNetwork_ResetDone_i	<= GTX_CPLL_Locked_async and ClkNet_ResetDone;	-- @async
+		ClockNetwork_ResetDone(i) <= ClockNetwork_ResetDone_i;
 		
 	
 		-- =========================================================================
 		-- Reset control
 		-- =========================================================================
 		-- Transceiver resets
-		GTX_Reset											<= (not GTX_CPLL_Locked_async) or Reset(I) or to_sl(Command(I)	= SATA_TRANSCEIVER_CMD_RESET); -- or GTX_ReloadConfig;
+		--   GTX_CPLL_Locked will be asserted some clock cycles after GTX_CPLL_Locked_async
+		--   Thus GTX_Reset will be deasserted some time after the CPLL gets locked.
+		GTX_Reset											<= (not GTX_CPLL_Locked_async) or (not GTX_CPLL_Locked) or GTX_Reset_by_FSM_d; -- or GTX_ReloadConfig;
 		-- TX resets					
 		GTX_TX_Reset									<= GTX_Reset;
 		GTX_TX_PMAReset								<= '0';
@@ -675,14 +744,6 @@ begin
 		GTX_RX_PMAReset								<= '0';
 		GTX_RX_PCSReset								<= '0';
 		GTX_RX_BufferReset						<= '0';
-
-		-- ResetDone calculations
-		GTX_ResetDone									<= GTX_TX_ResetDone and GTX_RX_ResetDone;
-		GTX_ResetDone_d								<= GTX_ResetDone when rising_edge(GTX_UserClock);
-		GTX_ResetDone_re							<= not GTX_ResetDone_d and GTX_ResetDone;
-		ResetDone_rst									<= GTX_Reset or not GTX_CPLL_Locked;
-		ResetDone_r										<= ffrs(q => ResetDone_r, rst => ResetDone_rst, set => GTX_ResetDone_re) when rising_edge(GTX_UserClock);
-		ResetDone(I)									<= ResetDone_r;
 
 		-- =========================================================================
 		-- LineRate control / linerate clock divider selection / reconfiguration port
@@ -1295,7 +1356,7 @@ begin
 
 				-- internal clock selects and clock outputs
 				TXSYSCLKSEL											=> "00",													-- @async:		00 => use CPLL und gtxe2_channel refclock; 11 => use QPLL and gtxe2_common refclock
-				TXOUTCLKSEL											=> "010",													-- @async:		010 => select TXOUTCLKPMA
+				TXOUTCLKSEL											=> "011",													-- @async:		011 => select TXPLLREFCLK_DIV1
 				TXOUTCLKFABRIC									=> open,													-- @clock:		internal clock after TXSYSCLKSEL-mux
 				TXOUTCLKPCS											=> open,													-- @clock:		internal clock from PCS sublayer
 				TXOUTCLK												=> GTX_TX_RefClockOut,						-- @clock:		TX output clock
@@ -1656,47 +1717,26 @@ begin
 			GTX_DRP_Address		<= DebugPortIn(I).DRP.Address;
 			GTX_DRP_DataOut		<= DebugPortIn(I).DRP.Data;
 			
-			DebugPortOut(I).PowerDown									<= PowerDown(I);
-			DebugPortOut(I).ClockNetwork_Reset				<= ClkNet_Reset;
-			DebugPortOut(I).ClockNetwork_ResetDone		<= ClkNet_ResetDone;
-			DebugPortOut(I).Reset											<= GTX_Reset;
+			DebugPortOut(I).PowerDown									<= PowerDown(i);
+			DebugPortOut(I).ClockNetwork_Reset				<= ClockNetwork_Reset(i);
+			DebugPortOut(I).ClockNetwork_ResetDone		<= ClockNetwork_ResetDone_i;
+			DebugPortOut(I).Reset											<= Reset(i);
 			DebugPortOut(I).ResetDone									<= ResetDone_r;
 			
 			DebugPortOut(I).UserClock									<= GTX_UserClock;
 			DebugPortOut(I).UserClock_Stable					<= GTX_UserClock_Stable;
 			
-			DebugPortOut(I).CC_PowerDown							<= '0';
-			DebugPortOut(I).CC_ClkNet_Reset						<= '0';
-			DebugPortOut(I).CC_Reset									<= '0';
-			
-			DebugPortOut(I).CC_PowerDown_R1						<= '0';
-			DebugPortOut(I).CC_PowerDown_R2						<= '0';
 			DebugPortOut(I).GTX_CPLL_PowerDown				<= GTX_CPLL_PowerDown;
 			DebugPortOut(I).GTX_TX_PowerDown					<= GTX_TX_PowerDown(0);
 			DebugPortOut(I).GTX_RX_PowerDown					<= GTX_RX_PowerDown(0);
 			
-			DebugPortOut(I).CC_ClkNet_Reset_R1				<= '0';
-			DebugPortOut(I).CC_ClkNet_Reset_R2				<= '0';
-			DebugPortOut(I).CC_ClkNet_Reset_R3				<= '0';
 			DebugPortOut(I).GTX_CPLL_Reset						<= GTX_CPLL_Reset;
 			DebugPortOut(I).GTX_CPLL_Locked						<= GTX_CPLL_Locked_async;
-			DebugPortOut(I).CC_GTX_CPLL_Locked				<= GTX_CPLL_Locked;
 			
-			DebugPortOut(I).CC_GTX_Reset_R1						<= '0';
-			DebugPortOut(I).CC_GTX_Reset_R2						<= '0';
-			DebugPortOut(I).UC_GTX_DoReset						<= '0';
 			DebugPortOut(I).GTX_TX_Reset							<= GTX_TX_Reset;
 			DebugPortOut(I).GTX_RX_Reset							<= GTX_RX_Reset;
 			DebugPortOut(I).GTX_TX_ResetDone					<= GTX_TX_ResetDone;
 			DebugPortOut(I).GTX_RX_ResetDone					<= GTX_RX_ResetDone;
-			DebugPortOut(I).CC_GTX_TX_ResetDone				<= '0';
-			DebugPortOut(I).CC_GTX_RX_ResetDone				<= '0';
-			
-			DebugPortOut(I).CC_FSM_Reset_R1						<= '0';
-			DebugPortOut(I).CC_FSM_Reset_R2						<= '0';
-			DebugPortOut(I).UC_PowerDown							<= '0';
-			DebugPortOut(I).UC_ClkNet_Reset						<= '0';
-			DebugPortOut(I).UC_Reset									<= '0';
 			DebugPortOut(I).FSM												<= to_slv(State);
 			
 			DebugPortOut(I).OOB_Clock									<= OOB_Clock;
