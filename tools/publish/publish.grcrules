@@ -1,0 +1,60 @@
+# common
+regexp=^Number of regular files transferred.*
+colours=yellow
+count=stop
+=========
+# deleted
+regexp=^Number of deleted files.*
+colours=red
+count=stop
+=========
+# created
+regexp=^Number of created files.*
+colours=green
+count=stop
+=========
+
+# deleting
+regexp=^(\*deleting )(.*)
+colours=red
+count=more
+=========
+regexp=^(\*deleting  )
+replace=-
+count=stop
+=========
+
+# new files
+regexp=^(>f\+{9} )(.*)
+colours=green
+count=more
+=========
+regexp=^(>f\+{9})
+replace=+
+count=stop
+=========
+
+# change files
+regexp=^(>f[\.|s|t|o|g]{9} )(.*)
+colours=yellow
+count=more
+=========
+regexp=^(>f[\.|s|t|o|g]{9})
+replace=<
+count=stop
+=========
+
+# new directory
+regexp=^(cd\+{9} )(.*)
+colours=green
+count=more
+=========
+regexp=^(cd\+{9})
+replace=+
+count=stop
+=========
+
+# changed directory time
+regexp=^(\.d\.{2}t\.{6})
+skip=yes
+

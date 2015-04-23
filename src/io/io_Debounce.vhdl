@@ -3,17 +3,18 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	Debounce module for BITS many unreliable input pins
+--
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module debounces several input pins. Each wire (pin) is feed through
+--		a PoC.io.GlitchFilter. An optional two FF input synchronizes can be added.
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,65 +30,63 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.io.ALL;
+library PoC;
+use			PoC.utils.all;
+use			PoC.physical.all;
 
 
-ENTITY io_Debounce IS
-  GENERIC (
-		CLOCK_FREQ_MHZ			: REAL				:= 50.0;
-		DEBOUNCE_TIME_MS		: REAL				:= 5.0;
-		BITS								: POSITIVE		:= 1
+entity io_Debounce is
+  generic (
+		CLOCK_FREQ							: FREQ				:= 100.0 MHz;
+		DEBOUNCE_TIME						: TIME				:= 5.0 ms;
+		BITS										: POSITIVE		:= 1;
+		ADD_INPUT_SYNCHRONIZER	: BOOLEAN			:= TRUE
 	);
-  PORT (
-		Clock		: IN STD_LOGIC;
-		I				: IN STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
-		O				: OUT STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)
+  port (
+		Clock		: in	STD_LOGIC;
+		Input		: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);
+		Output	: out	STD_LOGIC_VECTOR(BITS - 1 downto 0)
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF io_Debounce IS
-	ATTRIBUTE KEEP														: BOOLEAN;
-	ATTRIBUTE ASYNC_REG												: STRING;
-	ATTRIBUTE SHREG_EXTRACT										: STRING;
+architecture rtl of io_Debounce is
+	signal Input_sync					: STD_LOGIC_VECTOR(Input'range);
 
-  -- Debounce Clock Cycles
-	CONSTANT COUNTER_CYCLES		: POSITIVE			:= TimingToCycles_ms(DEBOUNCE_TIME_MS, Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)) - 1;
-	CONSTANT COUNTER_BITS			: POSITIVE			:= log2ceil(COUNTER_CYCLES);
-
-BEGIN
-
-	gen : FOR J IN 0 TO BITS - 1 GENERATE
-		SIGNAL I_async			: STD_LOGIC			:= '0';
-		SIGNAL I_sync				: STD_LOGIC			:= '0';
-		
-		-- Mark register "I_async" as asynchronous
-		ATTRIBUTE ASYNC_REG OF I_async			: SIGNAL IS "TRUE";
-
-		-- Prevent XST from translating two FFs into SRL plus FF
-		ATTRIBUTE SHREG_EXTRACT OF I_async	: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF I_sync		: SIGNAL IS "NO";
-		
-	BEGIN
-		I_async	<= I(J)			WHEN rising_edge(Clock);
-		I_sync	<= I_async	WHEN rising_edge(Clock);
-	
-		GF : ENTITY PoC.io_GlitchFilter
-			GENERIC MAP (
-				CLOCK_FREQ_MHZ										=> CLOCK_FREQ_MHZ,
-				HIGH_SPIKE_SUPPRESSION_TIME_NS		=> DEBOUNCE_TIME_MS * 1000.0 * 1000.0,
-				LOW_SPIKE_SUPPRESSION_TIME_NS			=> DEBOUNCE_TIME_MS * 1000.0 * 1000.0
+begin
+	-- input synchronization
+	genNoSync : if (ADD_INPUT_SYNCHRONIZER = FALSE) generate
+		Input_sync	<= Input;
+	end generate;	
+	genSync : if (ADD_INPUT_SYNCHRONIZER = TRUE) generate
+		sync : entity PoC.sync_Flag
+			generic map (
+				BITS		=> BITS
 			)
-			PORT MAP (
-				Clock		=> Clock,
-				I				=> I_sync,
-				O				=> O(J)
+			port map (
+				Clock		=> Clock,				-- Clock to be synchronized to
+				Input		=> Input,				-- Data to be synchronized
+				Output	=> Input_sync		-- synchronised data
 			);
-	END GENERATE;
-END;
+	end generate;
+
+	-- glitch filter
+	genGF : for i in 0 to BITS - 1 generate
+		constant SPIKE_SUPPRESSION_CYCLES		: NATURAL		:= TimingToCycles(DEBOUNCE_TIME, CLOCK_FREQ);
+	begin
+		GF : entity PoC.io_GlitchFilter
+			generic map (
+				HIGH_SPIKE_SUPPRESSION_CYCLES		=> SPIKE_SUPPRESSION_CYCLES,
+				LOW_SPIKE_SUPPRESSION_CYCLES		=> SPIKE_SUPPRESSION_CYCLES
+			)
+			port map (
+				Clock		=> Clock,
+				Input		=> Input_sync(i),
+				Output	=> Output(i)
+			);
+	end generate;
+end;

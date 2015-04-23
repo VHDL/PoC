@@ -3,9 +3,9 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Python Class:			TODO
-# 
 # Authors:				 	Patrick Lehmann
+# 
+# Python Class:			TODO
 # 
 # Description:
 # ------------------------------------
@@ -15,7 +15,7 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2014 Technische Universitaet Dresden - Germany
+# Copyright 2007-2015 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -139,9 +139,9 @@ class PoCXSTCompiler(PoCCompiler.PoCCompiler):
 			'KeepHierarchy' :										self.host.netListConfig[str(pocEntity)]['XSTOption.KeepHierarchy'],
 			'NetListHierarchy' :								self.host.netListConfig[str(pocEntity)]['XSTOption.NetListHierarchy'],
 			'GenerateRTLView' :									self.host.netListConfig[str(pocEntity)]['XSTOption.GenerateRTLView'],
-			'Globaloptimization' :							self.host.netListConfig[str(pocEntity)]['XSTOption.Globaloptimization'],
+			'GlobalOptimization' :							self.host.netListConfig[str(pocEntity)]['XSTOption.Globaloptimization'],
 			'ReadCores' :												self.host.netListConfig[str(pocEntity)]['XSTOption.ReadCores'],
-			'Searchdirectories' :								'"%s"' % str(coreGenOutputPath),
+			'SearchDirectories' :								'"%s"' % str(coreGenOutputPath),
 			'WriteTimingConstraints' :					self.host.netListConfig[str(pocEntity)]['XSTOption.WriteTimingConstraints'],
 			'CrossClockAnalysis' :							self.host.netListConfig[str(pocEntity)]['XSTOption.CrossClockAnalysis'],
 			'HierarchySeparator' :							self.host.netListConfig[str(pocEntity)]['XSTOption.HierarchySeparator'],

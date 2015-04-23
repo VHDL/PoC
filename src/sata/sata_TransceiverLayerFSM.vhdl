@@ -86,7 +86,7 @@ ARCHITECTURE rtl OF sata_SATATransceiverFSM IS
 	
 	SIGNAL State											: T_STATE							:= ST_RESET_WAIT;
 	SIGNAL NextState									: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS ite(DEBUG					, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 	
 	SIGNAL FSM_Reset									: STD_LOGIC;
 	

@@ -3,9 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+--
+-- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
@@ -13,7 +13,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,8 +34,11 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.strings.ALL;
+USE			PoC.debug.ALL;
 USE			PoC.components.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.satadbg.ALL;
@@ -59,17 +62,17 @@ ENTITY sata_LinkLayer IS
 		Error										: OUT	T_SATA_LINK_ERROR;
 
 		-- Debug ports
-		DebugPortOut					 	: OUT T_SATADBG_LINKOUT;
+		DebugPortOut					 	: OUT T_SATADBG_LINK_OUT;
 		
 		-- TX port
 		TX_SOF									: IN	STD_LOGIC;
 		TX_EOF									: IN	STD_LOGIC;
 		TX_Valid								: IN	STD_LOGIC;
 		TX_Data									: IN	T_SLV_32;
-		TX_Ready								: OUT	STD_LOGIC;
+		TX_Ack									: OUT	STD_LOGIC;
 		TX_InsertEOF						: OUT	STD_LOGIC;
 		
-		TX_FS_Ready							: IN	STD_LOGIC;
+		TX_FS_Ack								: IN	STD_LOGIC;
 		TX_FS_Valid							:	OUT	STD_LOGIC;
 		TX_FS_SendOK						: OUT	STD_LOGIC;
 		TX_FS_Abort							: OUT	STD_LOGIC;
@@ -79,9 +82,9 @@ ENTITY sata_LinkLayer IS
 		RX_EOF									: OUT	STD_LOGIC;
 		RX_Valid								: OUT	STD_LOGIC;
 		RX_Data									: OUT	T_SLV_32;
-		RX_Ready								: IN	STD_LOGIC;
+		RX_Ack									: IN	STD_LOGIC;
 		
-		RX_FS_Ready							: IN	STD_LOGIC;
+		RX_FS_Ack								: IN	STD_LOGIC;
 		RX_FS_Valid							:	OUT	STD_LOGIC;
 		RX_FS_CRCOK						: OUT	STD_LOGIC;
 		RX_FS_Abort							: OUT	STD_LOGIC;
@@ -90,10 +93,10 @@ ENTITY sata_LinkLayer IS
 		Phy_Status							: IN	T_SATA_PHY_STATUS;
 		
 		Phy_RX_Data							: IN	T_SLV_32;
-		Phy_RX_CharIsK					: IN	T_SATA_CIK;
+		Phy_RX_CharIsK					: IN	T_SLV_4;
 		
 		Phy_TX_Data							: OUT	T_SLV_32;
-		Phy_TX_CharIsK					: OUT	T_SATA_CIK
+		Phy_TX_CharIsK					: OUT	T_SLV_4
 
 	);
 END;
@@ -241,20 +244,21 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	-- primitive section
 	SIGNAL PM_DataIn									: T_SLV_32;
 	SIGNAL PM_DataOut									: T_SLV_32;
-	SIGNAL PM_CharIsK									: T_SATA_CIK;
+	SIGNAL PM_CharIsK									: T_SLV_4;
 	SIGNAL TX_Primitive								: T_SATA_PRIMITIVE;
 
 	SIGNAL PD_DataIn									: T_SLV_32;
-	SIGNAL PD_CharIsK									: T_SATA_CIK;
+	SIGNAL PD_CharIsK									: T_SLV_4;
 	SIGNAL RX_Primitive								: T_SATA_PRIMITIVE;
 	SIGNAL RX_Primitive_d							: T_SATA_PRIMITIVE		:= SATA_PRIMITIVE_NONE;
 
 	-- signal hold_counter : UNSIGNED(31 downto 0) := (OTHERS => '0') ;
 	signal RX_Hold : STD_LOGIC;
 
-BEGIN
-	assert (C_SATADBG_TYPES = ENABLE_DEBUGPORT) report "DebugPorts are enabled, but debug types are not loaded. Load 'sata_dbg_on.vhdl' into your project!" severity failure;
-
+	-- DebugPort
+	signal LLFSM_DebugPortOut					: T_SATADBG_LINK_LLFSM_OUT;
+	
+begin
 	-- ================================================================
 	-- link layer control FSM
 	-- ================================================================
@@ -263,7 +267,8 @@ BEGIN
 	
 	LLFSM : ENTITY PoC.sata_LinkLayerFSM
 		GENERIC MAP (
-			DEBUG										=> DEBUG					,
+			DEBUG										=> DEBUG,
+			ENABLE_DEBUGPORT				=> ENABLE_DEBUGPORT,
 			CONTROLLER_TYPE					=> CONTROLLER_TYPE,
 			INSERT_ALIGN_INTERVAL		=> INSERT_ALIGN_INTERVAL
 		)
@@ -274,6 +279,9 @@ BEGIN
 			Status									=> Status,
 			Error										=> Error,
 			-- normal vs. dma modus
+
+			-- DebugPort
+			DebugPortOut						=> LLFSM_DebugPortOut,
 
 			-- transport layer interface
 			Trans_TX_SOF						=> Trans_TX_SOF,
@@ -353,13 +361,13 @@ BEGIN
 	-- TX path
 	TX_FIFO_DataIn							<= TX_EOF & TX_SOF & TX_Data;
 	TX_FIFO_put									<= TX_Valid;
-	TX_Ready										<= NOT TX_FIFO_Full;
+	TX_Ack											<= NOT TX_FIFO_Full;
 	
 	Trans_TX_SOF								<= TX_FIFO_DataOut(TX_SOF_BIT);
 	Trans_TX_EOF								<= TX_FIFO_DataOut(TX_EOF_BIT);
 
 	-- TX frame status FIFO
-	TX_FSFIFO_got								<= TX_FS_Ready;
+	TX_FSFIFO_got								<= TX_FS_Ack;
 	TX_FS_Valid									<= TX_FSFIFO_Valid;
 	
 	TX_FSFIFO_DataIn						<= (TX_SENDOK_BIT =>	Trans_TXFS_SendOK,
@@ -372,12 +380,12 @@ BEGIN
 	RX_SOF											<= RX_FIFO_DataOut(RX_SOF_BIT);
 	RX_EOF											<= RX_FIFO_DataOut(RX_EOF_BIT);
 	RX_Valid										<= RX_FIFO_Valid;
-	RX_FIFO_got									<= RX_Ready;
+	RX_FIFO_got									<= RX_Ack;
 	
 	RX_FIFO_DataIn							<= Trans_RX_EOF & Trans_RX_SOF & RX_DataReg_DataOut;
 	
 	-- RX frame status FIFO
-	RX_FSFIFO_got								<= RX_FS_Ready;
+	RX_FSFIFO_got								<= RX_FS_Ack;
 	RX_FS_Valid									<= RX_FSFIFO_Valid;
 	
 	RX_FSFIFO_DataIn						<= (RX_CRCOK_BIT => Trans_RXFS_CRCOK,
@@ -636,16 +644,17 @@ BEGIN
 	-- primitive section
 	-- ================================================================
 	-- TX path
-	PM : ENTITY PoC.sata_PrimitiveMux
-		PORT MAP (
-			Primitive							=> TX_Primitive,
-			
-			TX_DataIn							=> PM_DataIn,
-			TX_DataOut						=> PM_DataOut,
-			TX_CharIsK						=> PM_CharIsK
-		);
-
-
+	PROCESS(TX_Primitive, PM_DataIn)
+	BEGIN
+		IF (TX_Primitive = SATA_PRIMITIVE_NONE) THEN		-- no primitive
+			PM_DataOut		<= PM_DataIn;										--	passthrough data word
+			PM_CharIsK		<= "0000";
+		ELSE																						-- Send Primitive
+			PM_DataOut		<= to_sata_word(TX_Primitive);	-- access ROM
+			PM_CharIsK		<= "0001";											-- mark primitive with K-symbols
+		END IF;
+	END PROCESS;
+	
 	-- RX path
 	PD : ENTITY PoC.sata_PrimitiveDetector
 		PORT MAP (
@@ -676,67 +685,49 @@ BEGIN
 	-- ================================================================
 	-- debug ports
 	-- ================================================================
---	DebugPort_Out.RX_Primitive	<= RX_Primitive;
-	
-
-	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL DBG_TX_SOF				: STD_LOGIC;
-		SIGNAL DBG_TX_EOF				: STD_LOGIC;
-		signal TX_IsFrame_r			: STD_LOGIC		:= '0';
-		signal DBG_TX_IsFrame		: STD_LOGIC;
-		
-		SIGNAL DBG_TXFS_SendOK	: STD_LOGIC;
-		SIGNAL DBG_TXFS_SendOKn	: STD_LOGIC;
-		
-		SIGNAL DBG_RX_SOF				: STD_LOGIC;
-		SIGNAL DBG_RX_EOF				: STD_LOGIC;
-		signal RX_IsFrame_r			: STD_LOGIC		:= '0';
-		signal DBG_RX_IsFrame		: STD_LOGIC;
-		
-		SIGNAL DBG_RXFS_CRCOK		: STD_LOGIC;
-		SIGNAL DBG_RXFS_CRCOKn	: STD_LOGIC;
-		
-		ATTRIBUTE KEEP OF DBG_TX_SOF				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_TX_EOF				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_TX_IsFrame		: SIGNAL IS TRUE;
-		
-		ATTRIBUTE KEEP OF DBG_TXFS_SendOK		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_TXFS_SendOKn	: SIGNAL IS TRUE;
-		
-		ATTRIBUTE KEEP OF DBG_RX_SOF				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_RX_EOF				: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_RX_IsFrame		: SIGNAL IS TRUE;
-		
-		ATTRIBUTE KEEP OF DBG_RXFS_CRCOK		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_RXFS_CRCOKn		: SIGNAL IS TRUE;
-	BEGIN
-	
-	
-		DBG_TX_SOF				<= TX_Valid AND TX_SOF;
-		DBG_TX_EOF				<= TX_Valid AND TX_EOF;
-		
-		DBG_TXFS_SendOK		<= TX_FSFIFO_Valid AND			TX_FSFIFO_DataOut(0);
-		DBG_TXFS_SendOKn	<= TX_FSFIFO_Valid AND NOT	TX_FSFIFO_DataOut(0);
-		
-		DBG_RX_SOF				<= RX_FIFO_Valid AND RX_FIFO_DataOut(32);
-		DBG_RX_EOF				<= RX_FIFO_Valid AND RX_FIFO_DataOut(33);
-		
-		DBG_RXFS_CRCOK		<= RX_FSFIFO_Valid AND			RX_FSFIFO_DataOut(0);
-		DBG_RXFS_CRCOKn		<= RX_FSFIFO_Valid AND NOT	RX_FSFIFO_DataOut(0);
-		
-		--									RS-FF		Q							rst																		set
-		TX_IsFrame_r			<= ffrs(TX_IsFrame_r, TX_Valid and TX_SOF,										TX_Valid and TX_EOF)										when rising_edge(Clock);
-		RX_IsFrame_r			<= ffrs(RX_IsFrame_r, RX_FIFO_Valid and RX_FIFO_DataOut(33),	RX_FIFO_Valid and RX_FIFO_DataOut(32))	when rising_edge(Clock);
-		DBG_TX_IsFrame		<= (TX_Valid and TX_SOF)										or TX_IsFrame_r;
-		DBG_RX_IsFrame		<= (RX_FIFO_Valid and RX_FIFO_DataOut(33))	or RX_IsFrame_r;
-	END GENERATE;
-	
-	genDebug0 : if (ENABLE_DEBUGPORT = FALSE) generate
+	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
 	begin
+		genXilinx : if (VENDOR = VENDOR_XILINX) generate
+			function dbg_generateCommandEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_LINK_COMMAND loop
+					STD.TextIO.write(l, str_replace(T_SATA_LINK_COMMAND'image(i), "sata_link_cmd", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			function dbg_generateStatusEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_LINK_STATUS loop
+					STD.TextIO.write(l, str_replace(T_SATA_LINK_STATUS'image(i), "sata_link_status_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			function dbg_generateErrorEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_LINK_ERROR loop
+					STD.TextIO.write(l, str_replace(T_SATA_LINK_ERROR'image(i), "sata_link_error_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+		
+			constant dummy : T_BOOLVEC := (
+				0 => dbg_ExportEncoding("Link Layer - Command Enum",	dbg_generateCommandEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Link_Command.tok"),
+				1 => dbg_ExportEncoding("Link Layer - Status Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Link_Status.tok"),
+				2 => dbg_ExportEncoding("Link Layer - Error Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Link_Error.tok")
+			);
+		begin
+		end generate;
 	
-	end generate genDebug0;
-	genDebug1 : if (ENABLE_DEBUGPORT = TRUE) generate
-	begin
+		DebugPortOut.LLFSM											<= LLFSM_DebugPortOut;
+	
 		-- from physical layer
 		DebugPortOut.Phy_Ready									<= Phy_Ready;
 		-- RX: from physical layer
@@ -763,23 +754,23 @@ BEGIN
 		-- RX: after RX_FIFO
 		DebugPortOut.RX_Data										<= RX_FIFO_DataOut(RX_Data'range);
 		DebugPortOut.RX_Valid										<= RX_FIFO_Valid;
-		DebugPortOut.RX_Ready										<= RX_Ready;
+		DebugPortOut.RX_Ack											<= RX_Ack;
 		DebugPortOut.RX_SOF											<= RX_FIFO_DataOut(RX_SOF_BIT);
 		DebugPortOut.RX_EOF											<= RX_FIFO_DataOut(RX_EOF_BIT);
 		DebugPortOut.RX_FS_Valid								<= RX_FSFIFO_Valid;
-		DebugPortOut.RX_FS_Ready								<= RX_FS_Ready;
+		DebugPortOut.RX_FS_Ack									<= RX_FS_Ack;
 		DebugPortOut.RX_FS_CRCOK								<= RX_FSFIFO_DataOut(RX_CRCOK_BIT);
 		DebugPortOut.RX_FS_Abort								<= RX_FSFIFO_DataOut(RX_ABORT_BIT);
 		--																			
 		-- TX: from Link Layer
 		DebugPortOut.TX_Data										<= TX_Data;
 		DebugPortOut.TX_Valid										<= TX_Valid;
-		DebugPortOut.TX_Ready										<= not TX_FIFO_Full;
+		DebugPortOut.TX_Ack											<= not TX_FIFO_Full;
 		DebugPortOut.TX_SOF											<= TX_SOF;
 		DebugPortOut.TX_EOF											<= TX_EOF;
 		DebugPortOut.TX_FS_Valid								<= TX_FSFIFO_Valid;
-		DebugPortOut.TX_FS_Ready								<= not TX_FSFIFO_Full;
-		DebugPortOut.TX_FS_Send_OK							<= TX_FSFIFO_DataIn(TX_SENDOK_BIT);
+		DebugPortOut.TX_FS_Ack									<= not TX_FSFIFO_Full;
+		DebugPortOut.TX_FS_SendOK								<= TX_FSFIFO_DataIn(TX_SENDOK_BIT);
 		DebugPortOut.TX_FS_Abort								<= TX_FSFIFO_DataIn(TX_ABORT_BIT);
 		-- TX: TXFIFO
 		DebugPortOut.TX_FIFO_got								<= TX_FIFO_got;
@@ -797,5 +788,5 @@ BEGIN
 		-- TX: to Physical Layer
 		DebugPortOut.TX_Phy_Data								<= PM_DataOut;
 		DebugPortOut.TX_Phy_CiK									<= PM_CharIsK;
-	end generate genDebug1;
+	end generate;
 END;

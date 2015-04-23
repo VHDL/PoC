@@ -3,17 +3,19 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	A generic buffer module for the PoC.Stream protocol.
+--
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module implements a generic buffer (FifO) for the PoC.Stream protocol.
+--		It is generic in DATA_BITS and in META_BITS as well as in FifO depths for
+--		data and meta information.
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,308 +25,308 @@
 --		http://www.apache.org/licenses/LICENSE-2.0
 -- 
 -- Unless required by applicable law or agreed to in writing, software
--- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- distributed under the License is distributed on an "AS is" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS of ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
 
 
-ENTITY Stream_Buffer IS
-	GENERIC (
+entity Stream_Buffer is
+	generic (
 		FRAMES												: POSITIVE																								:= 2;
 		DATA_BITS											: POSITIVE																								:= 8;
-		DATA_FIFO_DEPTH								: POSITIVE																								:= 8;
+		DATA_FifO_DEPTH								: POSITIVE																								:= 8;
 		META_BITS											: T_POSVEC																								:= (0 => 8);
-		META_FIFO_DEPTH								: T_POSVEC																								:= (0 => 16)
+		META_FifO_DEPTH								: T_POSVEC																								:= (0 => 16)
 	);
-	PORT (
-		Clock													: IN	STD_LOGIC;
-		Reset													: IN	STD_LOGIC;
+	port (
+		Clock													: in	STD_LOGIC;
+		Reset													: in	STD_LOGIC;
 		-- IN Port
-		In_Valid											: IN	STD_LOGIC;
-		In_Data												: IN	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
-		In_SOF												: IN	STD_LOGIC;
-		In_EOF												: IN	STD_LOGIC;
-		In_Ready											: OUT	STD_LOGIC;
-		In_Meta_rst										: OUT	STD_LOGIC;
-		In_Meta_nxt										: OUT	STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
-		In_Meta_Data									: IN	STD_LOGIC_VECTOR(isum(META_BITS) - 1 DOWNTO 0);
+		In_Valid											: in	STD_LOGIC;
+		In_Data												: in	STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
+		In_SOF												: in	STD_LOGIC;
+		In_EOF												: in	STD_LOGIC;
+		In_Ack												: out	STD_LOGIC;
+		In_Meta_rst										: out	STD_LOGIC;
+		In_Meta_nxt										: out	STD_LOGIC_VECTOR(META_BITS'length - 1 downto 0);
+		In_Meta_Data									: in	STD_LOGIC_VECTOR(isum(META_BITS) - 1 downto 0);
 		-- OUT Port
-		Out_Valid											: OUT	STD_LOGIC;
-		Out_Data											: OUT	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
-		Out_SOF												: OUT	STD_LOGIC;
-		Out_EOF												: OUT	STD_LOGIC;
-		Out_Ready											: IN	STD_LOGIC;
-		Out_Meta_rst									: IN	STD_LOGIC;
-		Out_Meta_nxt									: IN	STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
-		Out_Meta_Data									: OUT	STD_LOGIC_VECTOR(isum(META_BITS) - 1 DOWNTO 0)
+		Out_Valid											: out	STD_LOGIC;
+		Out_Data											: out	STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
+		Out_SOF												: out	STD_LOGIC;
+		Out_EOF												: out	STD_LOGIC;
+		Out_Ack												: in	STD_LOGIC;
+		Out_Meta_rst									: in	STD_LOGIC;
+		Out_Meta_nxt									: in	STD_LOGIC_VECTOR(META_BITS'length - 1 downto 0);
+		Out_Meta_Data									: out	STD_LOGIC_VECTOR(isum(META_BITS) - 1 downto 0)
 	);
-END;
+end;
 
-ARCHITECTURE rtl OF Stream_Buffer IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
+architecture rtl of Stream_Buffer is
+	attribute KEEP										: BOOLEAN;
+	attribute FSM_ENCODING						: STRING;
 
-	CONSTANT META_STREAMS							: POSITIVE																						:= META_BITS'length;
+	constant META_STREAMS							: POSITIVE																						:= META_BITS'length;
 
-	TYPE T_WRITER_STATE IS (ST_IDLE, ST_FRAME);
-	TYPE T_READER_STATE IS (ST_IDLE, ST_FRAME);
+	type T_WRITER_STATE is (ST_IDLE, ST_FRAME);
+	type T_READER_STATE is (ST_IDLE, ST_FRAME);
 	
-	SIGNAL Writer_State								: T_WRITER_STATE																			:= ST_IDLE;
-	SIGNAL Writer_NextState						: T_WRITER_STATE;
-	SIGNAL Reader_State								: T_READER_STATE																			:= ST_IDLE;
-	SIGNAL Reader_NextState						: T_READER_STATE;
+	signal Writer_State								: T_WRITER_STATE																			:= ST_IDLE;
+	signal Writer_NextState						: T_WRITER_STATE;
+	signal Reader_State								: T_READER_STATE																			:= ST_IDLE;
+	signal Reader_NextState						: T_READER_STATE;
 
-	CONSTANT EOF_BIT									: NATURAL																							:= DATA_BITS;
+	constant EOF_BIT									: NATURAL																							:= DATA_BITS;
 
-	SIGNAL DataFIFO_put								: STD_LOGIC;
-	SIGNAL DataFIFO_DataIn						: STD_LOGIC_VECTOR(DATA_BITS DOWNTO 0);
-	SIGNAL DataFIFO_Full							: STD_LOGIC;
+	signal DataFifO_put								: STD_LOGIC;
+	signal DataFifO_DataIn						: STD_LOGIC_VECTOR(DATA_BITS downto 0);
+	signal DataFifO_Full							: STD_LOGIC;
 	
-	SIGNAL DataFIFO_got								: STD_LOGIC;
-	SIGNAL DataFIFO_DataOut						: STD_LOGIC_VECTOR(DataFIFO_DataIn'range);
-	SIGNAL DataFIFO_Valid							: STD_LOGIC;
+	signal DataFifO_got								: STD_LOGIC;
+	signal DataFifO_DataOut						: STD_LOGIC_VECTOR(DataFifO_DataIn'range);
+	signal DataFifO_Valid							: STD_LOGIC;
 
-	SIGNAL FrameCommit								: STD_LOGIC;
-	SIGNAL Meta_rst										: STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
+	signal FrameCommit								: STD_LOGIC;
+	signal Meta_rst										: STD_LOGIC_VECTOR(META_BITS'length - 1 downto 0);
 
-BEGIN
-	ASSERT (META_BITS'length = META_FIFO_DEPTH'length) REPORT "META_BITS'length /= META_FIFO_DEPTH'length" SEVERITY FAILURE;
+begin
+	assert (META_BITS'length = META_FifO_DEPTH'length) report "META_BITS'length /= META_FifO_DEPTH'length" severity FAILURE;
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				Writer_State					<= ST_IDLE;
 				Reader_State					<= ST_IDLE;
-			ELSE
+			else
 				Writer_State					<= Writer_NextState;
 				Reader_State					<= Reader_NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(Writer_State,
+	process(Writer_State,
 					In_Valid, In_Data, In_SOF, In_EOF,
-					DataFIFO_Full)
-	BEGIN
+					DataFifO_Full)
+	begin
 		Writer_NextState									<= Writer_State;
 		
-		In_Ready													<= '0';
+		In_Ack														<= '0';
 		
-		DataFIFO_put											<= '0';
-		DataFIFO_DataIn(In_Data'range)		<= In_Data;
-		DataFIFO_DataIn(EOF_BIT)					<= In_EOF;
+		DataFifO_put											<= '0';
+		DataFifO_DataIn(In_Data'range)		<= In_Data;
+		DataFifO_DataIn(EOF_BIT)					<= In_EOF;
 		
-		CASE Writer_State IS
-			WHEN ST_IDLE =>
-				In_Ready											<= NOT DataFIFO_Full;
-				DataFIFO_put									<= In_Valid;
+		case Writer_State is
+			when ST_IDLE =>
+				In_Ack												<= NOT DataFifO_Full;
+				DataFifO_put									<= In_Valid;
 						
-				IF ((In_Valid AND In_SOF AND NOT In_EOF) = '1') THEN
+				if ((In_Valid AND In_SOF AND NOT In_EOF) = '1') then
 					
 					Writer_NextState						<= ST_FRAME;
-				END IF;
+				end if;
 				
-			WHEN ST_FRAME =>
-				In_Ready											<= NOT DataFIFO_Full;
-				DataFIFO_put									<= In_Valid;
+			when ST_FRAME =>
+				In_Ack												<= NOT DataFifO_Full;
+				DataFifO_put									<= In_Valid;
 			
-				IF ((In_Valid AND In_EOF AND NOT DataFIFO_Full) = '1') THEN
+				if ((In_Valid AND In_EOF AND NOT DataFifO_Full) = '1') then
 				
 					Writer_NextState						<= ST_IDLE;
-				END IF;
-		END CASE;
-	END PROCESS;
+				end if;
+		end case;
+	end process;
 	
 
-	PROCESS(Reader_State,
-					Out_Ready,
-					DataFIFO_Valid, DataFIFO_DataOut)
-	BEGIN
+	process(Reader_State,
+					Out_Ack,
+					DataFifO_Valid, DataFifO_DataOut)
+	begin
 		Reader_NextState								<= Reader_State;
 		
 		Out_Valid												<= '0';
-		Out_Data												<= DataFIFO_DataOut(Out_Data'range);
+		Out_Data												<= DataFifO_DataOut(Out_Data'range);
 		Out_SOF													<= '0';
-		Out_EOF													<= DataFIFO_DataOut(EOF_BIT);
+		Out_EOF													<= DataFifO_DataOut(EOF_BIT);
 		
-		DataFIFO_got										<= '0';
+		DataFifO_got										<= '0';
 	
-		CASE Reader_State IS
-			WHEN ST_IDLE =>
-				Out_Valid										<= DataFIFO_Valid;
+		case Reader_State is
+			when ST_IDLE =>
+				Out_Valid										<= DataFifO_Valid;
 				Out_SOF											<= '1';
-				DataFIFO_got								<= Out_Ready;
+				DataFifO_got								<= Out_Ack;
 			
-				IF ((DataFIFO_Valid AND NOT DataFIFO_DataOut(EOF_BIT) AND Out_Ready) = '1') THEN
+				if ((DataFifO_Valid AND NOT DataFifO_DataOut(EOF_BIT) AND Out_Ack) = '1') then
 					Reader_NextState					<= ST_FRAME;
-				END IF;
+				end if;
 			
-			WHEN ST_FRAME =>
-				Out_Valid										<= DataFIFO_Valid;
-				DataFIFO_got								<= Out_Ready;
+			when ST_FRAME =>
+				Out_Valid										<= DataFifO_Valid;
+				DataFifO_got								<= Out_Ack;
 
-				IF ((DataFIFO_Valid AND DataFIFO_DataOut(EOF_BIT) AND Out_Ready) = '1') THEN
+				if ((DataFifO_Valid AND DataFifO_DataOut(EOF_BIT) AND Out_Ack) = '1') then
 					Reader_NextState					<= ST_IDLE;
-				END IF;
+				end if;
 
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 	
-	DataFIFO : ENTITY PoC.fifo_cc_got
-		GENERIC MAP (
+	DataFifO : entity PoC.fifo_cc_got
+		generic map (
 			D_BITS							=> DATA_BITS + 1,								-- Data Width
-			MIN_DEPTH						=> (DATA_FIFO_DEPTH * FRAMES),	-- Minimum FIFO Depth
-			DATA_REG						=> ((DATA_FIFO_DEPTH * FRAMES) <= 128),											-- Store Data Content in Registers
+			MIN_DEPTH						=> (DATA_FifO_DEPTH * FRAMES),	-- Minimum FifO Depth
+			DATA_REG						=> ((DATA_FifO_DEPTH * FRAMES) <= 128),											-- Store Data Content in Registers
 			STATE_REG						=> TRUE,												-- Registered Full/Empty Indicators
-			OUTPUT_REG					=> FALSE,												-- Registered FIFO Output
+			OUTPUT_REG					=> FALSE,												-- Registered FifO Output
 			ESTATE_WR_BITS			=> 0,														-- Empty State Bits
 			FSTATE_RD_BITS			=> 0														-- Full State Bits
 		)
-		PORT MAP (
+		port map (
 			-- Global Reset and Clock
 			clk									=> Clock,
 			rst									=> Reset,
 			
 			-- Writing Interface
-			put									=> DataFIFO_put,
-			din									=> DataFIFO_DataIn,
-			full								=> DataFIFO_Full,
+			put									=> DataFifO_put,
+			din									=> DataFifO_DataIn,
+			full								=> DataFifO_Full,
 			estate_wr						=> OPEN,
 
 			-- Reading Interface
-			got									=> DataFIFO_got,
-			dout								=> DataFIFO_DataOut,
-			valid								=> DataFIFO_Valid,
+			got									=> DataFifO_got,
+			dout								=> DataFifO_DataOut,
+			valid								=> DataFifO_Valid,
 			fstate_rd						=> OPEN
 		);
 	
-	FrameCommit		<= DataFIFO_Valid AND DataFIFO_DataOut(EOF_BIT) AND Out_Ready;
+	FrameCommit		<= DataFifO_Valid AND DataFifO_DataOut(EOF_BIT) AND Out_Ack;
 	In_Meta_rst		<= slv_and(Meta_rst);
 	
-	genMeta : FOR I IN 0 TO META_BITS'length - 1 GENERATE
+	genMeta : for i in 0 to META_BITS'length - 1 generate
 		
-	BEGIN
-		genReg : IF (META_FIFO_DEPTH(I) = 1) GENERATE
-			SIGNAL MetaReg_DataIn				: STD_LOGIC_VECTOR(META_BITS(I) - 1 DOWNTO 0);
-			SIGNAL MetaReg_d						: STD_LOGIC_VECTOR(META_BITS(I) - 1 DOWNTO 0)		:= (OTHERS => '0');
-			SIGNAL MetaReg_DataOut			: STD_LOGIC_VECTOR(META_BITS(I) - 1 DOWNTO 0);
-		BEGIN
-			MetaReg_DataIn		<= In_Meta_Data(high(META_BITS, I) DOWNTO low(META_BITS, I));
+	begin
+		genReg : if (META_FifO_DEPTH(i) = 1) generate
+			signal MetaReg_DataIn				: STD_LOGIC_VECTOR(META_BITS(i) - 1 downto 0);
+			signal MetaReg_d						: STD_LOGIC_VECTOR(META_BITS(i) - 1 downto 0)		:= (others => '0');
+			signal MetaReg_DataOut			: STD_LOGIC_VECTOR(META_BITS(i) - 1 downto 0);
+		begin
+			MetaReg_DataIn		<= In_Meta_Data(high(META_BITS, I) downto low(META_BITS, I));
 		
-			PROCESS(Clock)
-			BEGIN
-				IF rising_edge(Clock) THEN
-					IF (Reset = '1') THEN
-						MetaReg_d			<= (OTHERS => '0');
-					ELSE
-						IF ((In_Valid AND In_SOF) = '1') THEN
+			process(Clock)
+			begin
+				if rising_edge(Clock) then
+					if (Reset = '1') then
+						MetaReg_d			<= (others => '0');
+					else
+						if ((In_Valid AND In_SOF) = '1') then
 							MetaReg_d		<= MetaReg_DataIn;
-						END IF;
-					END IF;
-				END IF;
-			END PROCESS;
+						end if;
+					end if;
+				end if;
+			end process;
 			
 			MetaReg_DataOut		<= MetaReg_d;
-			Out_Meta_Data(high(META_BITS, I) DOWNTO low(META_BITS, I))	<= MetaReg_DataOut;
-		END GENERATE;	-- META_FIFO_DEPTH(I) = 1
-		genFIFO : IF (META_FIFO_DEPTH(I) > 1) GENERATE
-			SIGNAL MetaFIFO_put								: STD_LOGIC;
-			SIGNAL MetaFIFO_DataIn						: STD_LOGIC_VECTOR(META_BITS(I) - 1 DOWNTO 0);
-			SIGNAL MetaFIFO_Full							: STD_LOGIC;
+			Out_Meta_Data(high(META_BITS, I) downto low(META_BITS, I))	<= MetaReg_DataOut;
+		end generate;	-- META_FifO_DEPTH(i) = 1
+		genFifO : if (META_FifO_DEPTH(i) > 1) generate
+			signal MetaFifO_put								: STD_LOGIC;
+			signal MetaFifO_DataIn						: STD_LOGIC_VECTOR(META_BITS(i) - 1 downto 0);
+			signal MetaFifO_Full							: STD_LOGIC;
 			
-			SIGNAL MetaFIFO_Commit						: STD_LOGIC;
-			SIGNAL MetaFIFO_Rollback					: STD_LOGIC;
+			signal MetaFifO_Commit						: STD_LOGIC;
+			signal MetaFifO_Rollback					: STD_LOGIC;
 			
-			SIGNAL MetaFIFO_got								: STD_LOGIC;
-			SIGNAL MetaFIFO_DataOut						: STD_LOGIC_VECTOR(MetaFIFO_DataIn'range);
-			SIGNAL MetaFIFO_Valid							: STD_LOGIC;
+			signal MetaFifO_got								: STD_LOGIC;
+			signal MetaFifO_DataOut						: STD_LOGIC_VECTOR(MetaFifO_DataIn'range);
+			signal MetaFifO_Valid							: STD_LOGIC;
 			
-			SIGNAL Writer_CounterControl			: STD_LOGIC																																:= '0';
-			SIGNAL Writer_Counter_en					: STD_LOGIC;
-			SIGNAL Writer_Counter_us					: UNSIGNED(log2ceilnz(META_FIFO_DEPTH(I)) - 1 DOWNTO 0)										:= (OTHERS => '0');
-		BEGIN
-			PROCESS(Clock)
-			BEGIN
-				IF rising_edge(Clock) THEN
-					IF (Reset = '1') THEN
+			signal Writer_CounterControl			: STD_LOGIC																																:= '0';
+			signal Writer_Counter_en					: STD_LOGIC;
+			signal Writer_Counter_us					: UNSIGNED(log2ceilnz(META_FifO_DEPTH(i)) - 1 downto 0)										:= (others => '0');
+		begin
+			process(Clock)
+			begin
+				if rising_edge(Clock) then
+					if (Reset = '1') then
 						Writer_CounterControl			<= '0';
-					ELSE
-						IF ((In_Valid AND In_SOF) = '1') THEN
+					else
+						if ((In_Valid AND In_SOF) = '1') then
 							Writer_CounterControl		<= '1';
-						ELSIF (Writer_Counter_us = (META_FIFO_DEPTH(I) - 1)) THEN
+						ELSif (Writer_Counter_us = (META_FifO_DEPTH(i) - 1)) then
 							Writer_CounterControl		<= '0';
-						END IF;
-					END IF;
-				END IF;
-			END PROCESS;
+						end if;
+					end if;
+				end if;
+			end process;
 		
 			Writer_Counter_en		<= (In_Valid AND In_SOF) OR Writer_CounterControl;
 			
-			PROCESS(Clock)
-			BEGIN
-				IF rising_edge(Clock) THEN
-					IF (Writer_Counter_en = '0') THEN
-						Writer_Counter_us					<= (OTHERS => '0');
-					ELSE
+			process(Clock)
+			begin
+				if rising_edge(Clock) then
+					if (Writer_Counter_en = '0') then
+						Writer_Counter_us					<= (others => '0');
+					else
 						Writer_Counter_us					<= Writer_Counter_us + 1;
-					END IF;
-				END IF;
-			END PROCESS;
+					end if;
+				end if;
+			end process;
 			
-			Meta_rst(I)					<= NOT Writer_Counter_en;
-			In_Meta_nxt(I)			<= Writer_Counter_en;
+			Meta_rst(i)					<= NOT Writer_Counter_en;
+			In_Meta_nxt(i)			<= Writer_Counter_en;
 			
-			MetaFIFO_put				<= Writer_Counter_en;
-			MetaFIFO_DataIn			<= In_Meta_Data(high(META_BITS, I) DOWNTO low(META_BITS, I));
+			MetaFifO_put				<= Writer_Counter_en;
+			MetaFifO_DataIn			<= In_Meta_Data(high(META_BITS, I) downto low(META_BITS, I));
 		
-			MetaFIFO : ENTITY PoC.fifo_cc_got_tempgot
-				GENERIC MAP (
-					D_BITS							=> META_BITS(I),										-- Data Width
-					MIN_DEPTH						=> (META_FIFO_DEPTH(I) * FRAMES),		-- Minimum FIFO Depth
+			MetaFifO : entity PoC.fifo_cc_got_tempgot
+				generic map (
+					D_BITS							=> META_BITS(i),										-- Data Width
+					MIN_DEPTH						=> (META_FifO_DEPTH(i) * FRAMES),		-- Minimum FifO Depth
 					DATA_REG						=> TRUE,														-- Store Data Content in Registers
 					STATE_REG						=> FALSE,														-- Registered Full/Empty Indicators
-					OUTPUT_REG					=> FALSE,														-- Registered FIFO Output
+					OUTPUT_REG					=> FALSE,														-- Registered FifO Output
 					ESTATE_WR_BITS			=> 0,																-- Empty State Bits
 					FSTATE_RD_BITS			=> 0																-- Full State Bits
 				)
-				PORT MAP (
+				port map (
 					-- Global Reset and Clock
 					clk									=> Clock,
 					rst									=> Reset,
 					
 					-- Writing Interface
-					put									=> MetaFIFO_put,
-					din									=> MetaFIFO_DataIn,
-					full								=> MetaFIFO_Full,
+					put									=> MetaFifO_put,
+					din									=> MetaFifO_DataIn,
+					full								=> MetaFifO_Full,
 					estate_wr						=> OPEN,
 
 					-- Reading Interface
-					got									=> MetaFIFO_got,
-					dout								=> MetaFIFO_DataOut,
-					valid								=> MetaFIFO_Valid,
+					got									=> MetaFifO_got,
+					dout								=> MetaFifO_DataOut,
+					valid								=> MetaFifO_Valid,
 					fstate_rd						=> OPEN,
 
-					commit							=> MetaFIFO_Commit,
-					rollback						=> MetaFIFO_Rollback
+					commit							=> MetaFifO_Commit,
+					rollback						=> MetaFifO_Rollback
 				);
 		
-			MetaFIFO_got				<= Out_Meta_nxt(I);
-			MetaFIFO_Commit			<= FrameCommit;
-			MetaFIFO_Rollback		<= Out_Meta_rst;
+			MetaFifO_got				<= Out_Meta_nxt(i);
+			MetaFifO_Commit			<= FrameCommit;
+			MetaFifO_Rollback		<= Out_Meta_rst;
 		
-			Out_Meta_Data(high(META_BITS, I) DOWNTO low(META_BITS, I))	<= MetaFIFO_DataOut;
-		END GENERATE;	-- (META_FIFO_DEPTH(I) > 1)
-	END GENERATE;
-END;
+			Out_Meta_Data(high(META_BITS, I) downto low(META_BITS, I))	<= MetaFifO_DataOut;
+		end generate;	-- (META_FifO_DEPTH(i) > 1)
+	end generate;
+end;

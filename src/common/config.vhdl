@@ -3,11 +3,11 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 --
 -- ============================================================================
--- Package:					Global configuration settings.
---
 -- Authors:					Thomas B. Preusser
 --									Martin Zabel
 --									Patrick Lehmann
+--
+-- Package:					Global configuration settings.
 --
 -- Description:
 -- ------------------------------------
@@ -16,7 +16,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,12 +34,17 @@
 
 library	PoC;
 use			PoC.my_config.all;
+use			PoC.my_project.all;
 use			PoC.board.all;
 use			PoC.utils.all;
 use			PoC.strings.all;
 
 
 package config is
+
+	constant PROJECT_DIR			: string	:= MY_PROJECT_DIR;
+	constant OPERATING_SYSTEM	: string	:= MY_OPERATING_SYSTEM;
+
 	-- FPGA / Chip vendor
 	-- ===========================================================================
 	type vendor_t is (
@@ -148,6 +153,8 @@ package config is
 
 	function ARCH_PROPS return archprops_t;
 
+	-- force FSM to predefined encoding in debug mode
+	function getFSMEncoding_gray(debug : BOOLEAN) return STRING;
 end config;
 
 package body config is
@@ -155,15 +162,36 @@ package body config is
 	begin
 		if (DeviceString /= "None") then
 			return DeviceString;
+		elsif (MY_DEVICE /= "None") then
+			return MY_DEVICE;
 		else
-			if (MY_DEVICE /= "None") then
-				return MY_DEVICE;
-			else
-				return MY_DEVICE_STRING;
-			end if;
+			return MY_DEVICE_STRING;
 		end if;
 	end function;
 
+	function extractFirstNumber(str : STRING) return NATURAL is
+		variable low			: integer					:= -1;
+		variable high			: integer					:= -1;
+	begin
+		for i in str'low to str'high loop
+			if chr_isDigit(str(i)) then
+				low := i;
+				exit;
+			end if;
+		end loop;
+		-- abort if no digit can be found
+		if (low = -1) then		return 0; end if;
+		
+		for i in (low + 1) to str'high loop
+			if chr_isAlpha(str(i)) then
+				high := i - 1;
+				exit;
+			end if;
+		end loop;
+		
+		if (high = -1) then		return 0; end if;
+		return to_natural_dec(str(low to high));			-- convert substring to a number
+	end function;
 
 	-- purpose: extract vendor from MY_DEVICE
 	function VENDOR(DeviceString : string := "None") return vendor_t is
@@ -257,46 +285,13 @@ package body config is
 	function DEVICE_NUMBER(DeviceString : string := "None") return natural is
 		constant MY_DEV		: string(1 to 15)	:= resize(getLocalDeviceString(DeviceString), 15);
 		constant VEN			: vendor_t				:= VENDOR(MY_DEV(1 to 2));
-		variable low			: integer					:= -1;
-		variable high			: integer					:= -1;
 	begin
 		case VEN is
-			when VENDOR_ALTERA =>
-				for i in 5 to MY_DEV'high loop
-					if (low = -1) then			-- search for first digit
-						if chr_isDigit(MY_DEV(i)) then
-							low := i;
-						end if;
-					elsif (low /= -1) then	-- search for last digit
-						if chr_isAlpha(MY_DEV(i)) then
-							high := i - 1;
-							exit;
-						end if;
-					end if;
-				end loop;
-			
-			when VENDOR_XILINX =>
-				for i in 5 to MY_DEV'high loop
-					if (low = -1) then			-- search for first digit
-						if chr_isDigit(MY_DEV(i)) then
-							low := i;
-						end if;
-					elsif (low /= -1) then	-- search for last digit
-						if chr_isAlpha(MY_DEV(i)) then
-							high := i - 1;
-							exit;
-						end if;
-					end if;
-				end loop;
-			
-			when others => report "Unknown vendor in MY_DEVICE = " & MY_DEV & "." severity failure;
-										 -- return statement is explicitly missing otherwise XST won't stop
+			when VENDOR_ALTERA =>		return extractFirstNumber(MY_DEV(5 to MY_DEV'high));
+			when VENDOR_XILINX =>		return extractFirstNumber(MY_DEV(5 to MY_DEV'high));
+			when others =>					report "Unknown vendor in MY_DEVICE = " & MY_DEV & "." severity failure;
+															-- return statement is explicitly missing otherwise XST won't stop
 		end case;
-
-		if ((low /= -1) and (high /= -1)) then
-			return to_nat(MY_DEV(low to high), 'd');
-		end if;
-		return 0;
 	end function;
 	
 	function DEVICE_SUBTYPE(DeviceString : string := "None") return t_device_subtype is
@@ -323,43 +318,43 @@ package body config is
 			when DEVICE_SPARTAN3 => report "TODO: parse Spartan3 / Spartan3E / Spartan3AN device subtype." severity failure;
 
 			when DEVICE_SPARTAN6 =>
-				if		((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') < 0)) then		return DEVICE_SUBTYPE_LX;
-				elsif	((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_LXT;
+				if		((DEV_SUB = "LX") and (not	str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LX;
+				elsif	((DEV_SUB = "LX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LXT;
 				else	report "Unknown Virtex-5 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 			
 			when DEVICE_VIRTEX5 =>
-				if		((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') < 0)) then		return DEVICE_SUBTYPE_LX;
-				elsif	((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_LXT;
-				elsif	((DEV_SUB = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_SXT;
-				elsif	((DEV_SUB = "TX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_TXT;
-				elsif	((DEV_SUB = "FX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_FXT;
+				if		((DEV_SUB = "LX") and (not	str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LX;
+				elsif	((DEV_SUB = "LX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LXT;
+				elsif	((DEV_SUB = "SX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_SXT;
+				elsif	((DEV_SUB = "TX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_TXT;
+				elsif	((DEV_SUB = "FX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_FXT;
 				else	report "Unknown Virtex-5 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 
 			when DEVICE_VIRTEX6 =>
-				if		((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') < 0)) then		return DEVICE_SUBTYPE_LX;
-				elsif	((DEV_SUB = "LX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_LXT;
-				elsif	((DEV_SUB = "SX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_SXT;
-				elsif	((DEV_SUB = "CX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_CXT;
-				elsif	((DEV_SUB = "HX") and (str_pos(MY_DEV(7 TO MY_DEV'high), 'T') > 0)) then		return DEVICE_SUBTYPE_HXT;
+				if		((DEV_SUB = "LX") and (not	str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LX;
+				elsif	((DEV_SUB = "LX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LXT;
+				elsif	((DEV_SUB = "SX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_SXT;
+				elsif	((DEV_SUB = "CX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_CXT;
+				elsif	((DEV_SUB = "HX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_HXT;
 				else	report "Unknown Virtex-6 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 
 			when DEVICE_ARTIX7 =>
-				if		(												(str_pos(MY_DEV(5 TO MY_DEV'high), 'T') > 0)) then	return DEVICE_SUBTYPE_T;
+				if		(											(			str_find(MY_DEV(5 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_T;
 				else	report "Unknown Artix-7 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 				
 			when DEVICE_KINTEX7 =>
-				if		(												(str_pos(MY_DEV(5 TO MY_DEV'high), 'T') > 0)) then	return DEVICE_SUBTYPE_T;
+				if		(											(			str_find(MY_DEV(5 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_T;
 				else	report "Unknown Kintex-7 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 				
 			when DEVICE_VIRTEX7 =>
-				if		(												(str_pos(MY_DEV(5 TO MY_DEV'high), 'T') > 0)) then	return DEVICE_SUBTYPE_T;
-				elsif	((DEV_SUB(1) = 'X') and (str_pos(MY_DEV(6 TO MY_DEV'high), 'T') > 0)) then	return DEVICE_SUBTYPE_XT;
-				elsif	((DEV_SUB(1) = 'H') and (str_pos(MY_DEV(6 TO MY_DEV'high), 'T') > 0)) then	return DEVICE_SUBTYPE_HT;
+				if		(												(		str_find(MY_DEV(5 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_T;
+				elsif	((DEV_SUB(1) = 'X') and (		str_find(MY_DEV(6 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_XT;
+				elsif	((DEV_SUB(1) = 'H') and (		str_find(MY_DEV(6 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_HT;
 				else	report "Unknown Virtex-7 subtype: MY_DEVICE = " & MY_DEV & "." severity failure;
 				end if;
 
@@ -472,4 +467,18 @@ package body config is
 		return	result;
 	end function;
 
+	-- force FSM to predefined encoding in debug mode
+	function getFSMEncoding_gray(debug : BOOLEAN) return STRING is
+	begin
+		if (debug = true) then
+			return "gray";
+		else
+			case VENDOR is
+				when VENDOR_XILINX =>		return "auto";
+				when VENDOR_ALTERA =>		return "default";
+				when others =>					report "Unknown vendor ." severity failure;
+																-- return statement is explicitly missing otherwise XST won't stop
+			end case;
+		end if;
+	end function;
 end config;

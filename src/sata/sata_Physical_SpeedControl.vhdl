@@ -37,57 +37,58 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
+USE			PoC.strings.ALL;
+USE			PoC.debug.ALL;
+USE			PoC.components.ALL;
 USE			PoC.sata.ALL;
+USE			PoC.satadbg.ALL;
 
-ENTITY sata_SpeedControl IS
+
+ENTITY sata_Physical_SpeedControl IS
 	GENERIC (
-		DEBUG							: BOOLEAN := FALSE;
-		INITIAL_SATA_GENERATION	: T_SATA_GENERATION := SATA_GENERATION_2;
-		GENERATION_CHANGE_COUNT	: INTEGER := 32;
-		ATTEMPTS_PER_GENERATION	: INTEGER := 8
+		DEBUG											: BOOLEAN							:= FALSE;												-- generate additional debug signals and preserve them (attribute keep)
+		ENABLE_DEBUGPORT					: BOOLEAN							:= FALSE;												-- enables the assignment of signals to the debugport
+		INITIAL_SATA_GENERATION		: T_SATA_GENERATION		:= C_SATA_GENERATION_MAX;
+		GENERATION_CHANGE_COUNT		: INTEGER							:= 32;
+		ATTEMPTS_PER_GENERATION		: INTEGER							:= 8
 	);
 	PORT (
-		Clock				: IN	STD_LOGIC;
-		Reset				: IN	STD_LOGIC;
+		Clock											: IN	STD_LOGIC;
+		ClockEnable								: IN	STD_LOGIC;
+		Reset											: IN	STD_LOGIC;
 
-		SATAGeneration_Reset		: IN	STD_LOGIC;													--	=> reset SATA_Generation, reset all attempt counters => if necessary reconfigure GTP
-		AttemptCounter_Reset		: IN	STD_LOGIC;													-- 
+		Command										: IN	T_SATA_PHY_SPEED_COMMAND;
+		Status										: OUT	T_SATA_PHY_SPEED_STATUS;
+		SATAGenerationMin					: IN	T_SATA_GENERATION;									-- 
+		SATAGenerationMax					: IN	T_SATA_GENERATION;									-- 
 
---		DebugPortOut			: OUT	T_DBG_PHYOUT;
+		DebugPortOut							: OUT	T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT;
 
-		OOB_Timeout			: IN	STD_LOGIC;
-		OOB_Retry			: OUT	STD_LOGIC;
-
-		SATA_GenerationMin		: IN	T_SATA_GENERATION;									-- 
-		SATA_GenerationMax		: IN	T_SATA_GENERATION;									-- 
-		SATA_Generation			: OUT	T_SATA_GENERATION;									-- 
-		NegotiationError		: OUT	STD_LOGIC;													-- speed negotiation unsuccessful
+		OOBC_Timeout							: IN	STD_LOGIC;
+		OOBC_Retry								: OUT	STD_LOGIC;
 		
 		-- reconfiguration interface
-		Trans_Reconfig			: OUT	STD_LOGIC;
-		Trans_ConfigReloaded		: IN	STD_LOGIC;
-		Trans_Lock			: OUT	STD_LOGIC;
-		Trans_Locked			: IN	STD_LOGIC
+		Trans_RP_Reconfig					: OUT	STD_LOGIC;
+		Trans_RP_SATAGeneration		: OUT	T_SATA_GENERATION;									-- 
+		Trans_RP_ReconfigComplete	: IN	STD_LOGIC;
+		Trans_RP_ConfigReloaded		: IN	STD_LOGIC;
+		Trans_RP_Lock							: OUT	STD_LOGIC;
+		Trans_RP_Locked						: IN	STD_LOGIC
 	);
 END;
 
-ARCHITECTURE rtl OF sata_SpeedControl IS
-	ATTRIBUTE KEEP : BOOLEAN;
+
+ARCHITECTURE rtl OF sata_Physical_SpeedControl IS
+	ATTRIBUTE KEEP					: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING	: STRING;
 
-	FUNCTION IsSupportedGeneration(SATAGen : T_SATA_GENERATION) RETURN BOOLEAN IS
-	BEGIN
-		CASE SATAGen IS
-			WHEN SATA_GENERATION_AUTO => RETURN TRUE;
-			WHEN SATA_GENERATION_1 => RETURN TRUE;
-			WHEN SATA_GENERATION_2 => RETURN TRUE;
-			WHEN OTHERS => RETURN FALSE;
-		END CASE;
-	END;
-	
+	TYPE T_SGEN_SGEN	IS ARRAY (T_SATA_GENERATION) OF T_SATA_GENERATION;
+	TYPE T_SGEN2_SGEN	IS ARRAY (T_SATA_GENERATION) OF T_SGEN_SGEN;
+	TYPE T_SGEN3_SGEN	IS ARRAY (T_SATA_GENERATION) OF T_SGEN2_SGEN;
+
 	FUNCTION StartGen RETURN T_SGEN2_SGEN IS
-		VARIABLE SG : T_SGEN2_SGEN := (OTHERS => (OTHERS => SATA_GENERATION_ERROR));
+		CONSTANT ERROR_VALUE	: T_SATA_GENERATION	:= ite(SIMULATION, SATA_GENERATION_ERROR, SATA_GENERATION_1);
+		VARIABLE SG						: T_SGEN2_SGEN			:= (OTHERS => (OTHERS => ERROR_VALUE));
 	BEGIN
 		-- minimal			/	maximal gen.		==>	cmp value
 		-- ========================================================================
@@ -95,63 +96,28 @@ ARCHITECTURE rtl OF sata_SpeedControl IS
 		SG(SATA_GENERATION_AUTO)(SATA_GENERATION_1)				:= SATA_GENERATION_1;
 		SG(SATA_GENERATION_AUTO)(SATA_GENERATION_2)				:= SATA_GENERATION_2;
 		SG(SATA_GENERATION_AUTO)(SATA_GENERATION_3)				:= SATA_GENERATION_3;
-		SG(SATA_GENERATION_AUTO)(SATA_GENERATION_ERROR)		:= SATA_GENERATION_ERROR;
 	
 		SG(SATA_GENERATION_1)(SATA_GENERATION_AUTO)				:= SATA_GENERATION_3;
 		SG(SATA_GENERATION_1)(SATA_GENERATION_1)					:= SATA_GENERATION_1;
 		SG(SATA_GENERATION_1)(SATA_GENERATION_2)					:= SATA_GENERATION_2;
 		SG(SATA_GENERATION_1)(SATA_GENERATION_3)					:= SATA_GENERATION_3;
-		SG(SATA_GENERATION_1)(SATA_GENERATION_ERROR)			:= SATA_GENERATION_ERROR;
 		
 		SG(SATA_GENERATION_2)(SATA_GENERATION_AUTO)				:= SATA_GENERATION_3;
 		SG(SATA_GENERATION_2)(SATA_GENERATION_1)					:= SATA_GENERATION_1;
 		SG(SATA_GENERATION_2)(SATA_GENERATION_2)					:= SATA_GENERATION_2;
 		SG(SATA_GENERATION_2)(SATA_GENERATION_3)					:= SATA_GENERATION_3;
-		SG(SATA_GENERATION_2)(SATA_GENERATION_ERROR)			:= SATA_GENERATION_ERROR;
 
 		SG(SATA_GENERATION_3)(SATA_GENERATION_AUTO)				:= SATA_GENERATION_3;
 		SG(SATA_GENERATION_3)(SATA_GENERATION_1)					:= SATA_GENERATION_1;
 		SG(SATA_GENERATION_3)(SATA_GENERATION_2)					:= SATA_GENERATION_2;
 		SG(SATA_GENERATION_3)(SATA_GENERATION_3)					:= SATA_GENERATION_3;
-		SG(SATA_GENERATION_3)(SATA_GENERATION_ERROR)			:= SATA_GENERATION_ERROR;
 				
 		RETURN SG;
 	END;
 	
-	FUNCTION CmpGen RETURN T_SGEN2_INT IS
-		VARIABLE CG : T_SGEN2_INT := (OTHERS => (OTHERS => -10));
-	BEGIN
-		-- minimal			/	maximal gen.		==>	cmp value
-		-- ========================================================================
-		CG(SATA_GENERATION_AUTO)(SATA_GENERATION_AUTO)		:= 0;
-		CG(SATA_GENERATION_AUTO)(SATA_GENERATION_1)				:= 10;
-		CG(SATA_GENERATION_AUTO)(SATA_GENERATION_2)				:= 10;
-		CG(SATA_GENERATION_AUTO)(SATA_GENERATION_3)				:= 10;
-		CG(SATA_GENERATION_AUTO)(SATA_GENERATION_ERROR)		:= -10;
-		
-		CG(SATA_GENERATION_1)(SATA_GENERATION_AUTO)				:= 10;
-		CG(SATA_GENERATION_1)(SATA_GENERATION_1)					:= 0;
-		CG(SATA_GENERATION_1)(SATA_GENERATION_2)					:= -1;
-		CG(SATA_GENERATION_1)(SATA_GENERATION_3)					:= -1;
-		CG(SATA_GENERATION_1)(SATA_GENERATION_ERROR)			:= -10;
-
-		CG(SATA_GENERATION_2)(SATA_GENERATION_AUTO)				:= 10;
-		CG(SATA_GENERATION_2)(SATA_GENERATION_1)					:= 1;
-		CG(SATA_GENERATION_2)(SATA_GENERATION_2)					:= 0;
-		CG(SATA_GENERATION_2)(SATA_GENERATION_3)					:= -1;
-		CG(SATA_GENERATION_2)(SATA_GENERATION_ERROR)			:= -10;	
-
-		CG(SATA_GENERATION_3)(SATA_GENERATION_AUTO)				:= 10;
-		CG(SATA_GENERATION_3)(SATA_GENERATION_1)					:= 1;
-		CG(SATA_GENERATION_3)(SATA_GENERATION_2)					:= 1;
-		CG(SATA_GENERATION_3)(SATA_GENERATION_3)					:= 0;
-		CG(SATA_GENERATION_3)(SATA_GENERATION_ERROR)			:= -10;	
-
-		RETURN CG;
-	END;
-	
 	FUNCTION NextGen RETURN T_SGEN3_SGEN IS
-		VARIABLE NG : T_SGEN3_SGEN := (OTHERS => (OTHERS => (OTHERS => SATA_GENERATION_ERROR)));
+		CONSTANT ERROR_VALUE	: T_SATA_GENERATION	:= ite(SIMULATION, SATA_GENERATION_ERROR, SATA_GENERATION_1);
+		VARIABLE NG						: T_SGEN3_SGEN			:= (OTHERS => (OTHERS => (OTHERS => ERROR_VALUE)));
 	BEGIN
 		-- current 		/ minimal			/	maximal gen.		==>	next gen.
 		-- ========================================================================
@@ -160,303 +126,323 @@ ARCHITECTURE rtl OF sata_SpeedControl IS
 		NG(SATA_GENERATION_1)(SATA_GENERATION_AUTO)(SATA_GENERATION_1)			:= SATA_GENERATION_1;
 		NG(SATA_GENERATION_1)(SATA_GENERATION_AUTO)(SATA_GENERATION_2)			:= SATA_GENERATION_2;
 		NG(SATA_GENERATION_1)(SATA_GENERATION_AUTO)(SATA_GENERATION_3)			:= SATA_GENERATION_3;
-		NG(SATA_GENERATION_1)(SATA_GENERATION_AUTO)(SATA_GENERATION_ERROR)	:= SATA_GENERATION_ERROR;
 		
 		NG(SATA_GENERATION_1)(SATA_GENERATION_1)(SATA_GENERATION_AUTO)			:= SATA_GENERATION_3;
 		NG(SATA_GENERATION_1)(SATA_GENERATION_1)(SATA_GENERATION_1)					:= SATA_GENERATION_1;
 		NG(SATA_GENERATION_1)(SATA_GENERATION_1)(SATA_GENERATION_2)					:= SATA_GENERATION_2;
 		NG(SATA_GENERATION_1)(SATA_GENERATION_1)(SATA_GENERATION_3)					:= SATA_GENERATION_3;
-		NG(SATA_GENERATION_1)(SATA_GENERATION_1)(SATA_GENERATION_ERROR)			:= SATA_GENERATION_ERROR;
 
 		NG(SATA_GENERATION_1)(SATA_GENERATION_2)(SATA_GENERATION_AUTO)			:= SATA_GENERATION_3;
 		NG(SATA_GENERATION_1)(SATA_GENERATION_2)(SATA_GENERATION_1)					:= SATA_GENERATION_1;
 		NG(SATA_GENERATION_1)(SATA_GENERATION_2)(SATA_GENERATION_2)					:= SATA_GENERATION_2;
 		NG(SATA_GENERATION_1)(SATA_GENERATION_2)(SATA_GENERATION_3)					:= SATA_GENERATION_3;
-		NG(SATA_GENERATION_1)(SATA_GENERATION_2)(SATA_GENERATION_ERROR)			:= SATA_GENERATION_ERROR;
 
 		NG(SATA_GENERATION_1)(SATA_GENERATION_3)(SATA_GENERATION_AUTO)			:= SATA_GENERATION_3;
 		NG(SATA_GENERATION_1)(SATA_GENERATION_3)(SATA_GENERATION_1)					:= SATA_GENERATION_1;
 		NG(SATA_GENERATION_1)(SATA_GENERATION_3)(SATA_GENERATION_2)					:= SATA_GENERATION_2;
 		NG(SATA_GENERATION_1)(SATA_GENERATION_3)(SATA_GENERATION_3)					:= SATA_GENERATION_3;
-		NG(SATA_GENERATION_1)(SATA_GENERATION_3)(SATA_GENERATION_ERROR)			:= SATA_GENERATION_ERROR;
 
 		-- current generation is SATA_GENERATION_2
 		NG(SATA_GENERATION_2)(SATA_GENERATION_AUTO)(SATA_GENERATION_AUTO)		:= SATA_GENERATION_1;
 		NG(SATA_GENERATION_2)(SATA_GENERATION_AUTO)(SATA_GENERATION_1)			:= SATA_GENERATION_1;
 		NG(SATA_GENERATION_2)(SATA_GENERATION_AUTO)(SATA_GENERATION_2)			:= SATA_GENERATION_1;
 		NG(SATA_GENERATION_2)(SATA_GENERATION_AUTO)(SATA_GENERATION_3)			:= SATA_GENERATION_1;
-		NG(SATA_GENERATION_2)(SATA_GENERATION_AUTO)(SATA_GENERATION_ERROR)	:= SATA_GENERATION_ERROR;
 		
 		NG(SATA_GENERATION_2)(SATA_GENERATION_1)(SATA_GENERATION_AUTO)			:= SATA_GENERATION_1;
 		NG(SATA_GENERATION_2)(SATA_GENERATION_1)(SATA_GENERATION_1)					:= SATA_GENERATION_1;
 		NG(SATA_GENERATION_2)(SATA_GENERATION_1)(SATA_GENERATION_2)					:= SATA_GENERATION_1;
 		NG(SATA_GENERATION_2)(SATA_GENERATION_1)(SATA_GENERATION_3)					:= SATA_GENERATION_1;
-		NG(SATA_GENERATION_2)(SATA_GENERATION_1)(SATA_GENERATION_ERROR)			:= SATA_GENERATION_ERROR;
 
 		NG(SATA_GENERATION_2)(SATA_GENERATION_2)(SATA_GENERATION_AUTO)			:= SATA_GENERATION_3;
 		NG(SATA_GENERATION_2)(SATA_GENERATION_2)(SATA_GENERATION_1)					:= SATA_GENERATION_1;
 		NG(SATA_GENERATION_2)(SATA_GENERATION_2)(SATA_GENERATION_2)					:= SATA_GENERATION_2;
 		NG(SATA_GENERATION_2)(SATA_GENERATION_2)(SATA_GENERATION_3)					:= SATA_GENERATION_3;
-		NG(SATA_GENERATION_2)(SATA_GENERATION_2)(SATA_GENERATION_ERROR)			:= SATA_GENERATION_ERROR;
 
 		NG(SATA_GENERATION_3)(SATA_GENERATION_3)(SATA_GENERATION_AUTO)			:= SATA_GENERATION_3;
 		NG(SATA_GENERATION_3)(SATA_GENERATION_3)(SATA_GENERATION_1)					:= SATA_GENERATION_1;
 		NG(SATA_GENERATION_3)(SATA_GENERATION_3)(SATA_GENERATION_2)					:= SATA_GENERATION_2;
 		NG(SATA_GENERATION_3)(SATA_GENERATION_3)(SATA_GENERATION_3)					:= SATA_GENERATION_3;
-		NG(SATA_GENERATION_3)(SATA_GENERATION_3)(SATA_GENERATION_ERROR)			:= SATA_GENERATION_ERROR;
 
 		-- current generation is SATA_GENERATION_3
 		NG(SATA_GENERATION_3)(SATA_GENERATION_AUTO)(SATA_GENERATION_AUTO)		:= SATA_GENERATION_2;
 		NG(SATA_GENERATION_3)(SATA_GENERATION_AUTO)(SATA_GENERATION_1)			:= SATA_GENERATION_1;
 		NG(SATA_GENERATION_3)(SATA_GENERATION_AUTO)(SATA_GENERATION_2)			:= SATA_GENERATION_2;
 		NG(SATA_GENERATION_3)(SATA_GENERATION_AUTO)(SATA_GENERATION_3)			:= SATA_GENERATION_2;
-		NG(SATA_GENERATION_3)(SATA_GENERATION_AUTO)(SATA_GENERATION_ERROR)	:= SATA_GENERATION_ERROR;
 		
 		NG(SATA_GENERATION_3)(SATA_GENERATION_1)(SATA_GENERATION_AUTO)			:= SATA_GENERATION_2;
 		NG(SATA_GENERATION_3)(SATA_GENERATION_1)(SATA_GENERATION_1)					:= SATA_GENERATION_1;
 		NG(SATA_GENERATION_3)(SATA_GENERATION_1)(SATA_GENERATION_2)					:= SATA_GENERATION_2;
 		NG(SATA_GENERATION_3)(SATA_GENERATION_1)(SATA_GENERATION_3)					:= SATA_GENERATION_2;
-		NG(SATA_GENERATION_3)(SATA_GENERATION_1)(SATA_GENERATION_ERROR)			:= SATA_GENERATION_ERROR;
 
 		NG(SATA_GENERATION_3)(SATA_GENERATION_2)(SATA_GENERATION_AUTO)			:= SATA_GENERATION_2;
 		NG(SATA_GENERATION_3)(SATA_GENERATION_2)(SATA_GENERATION_1)					:= SATA_GENERATION_1;
 		NG(SATA_GENERATION_3)(SATA_GENERATION_2)(SATA_GENERATION_2)					:= SATA_GENERATION_2;
 		NG(SATA_GENERATION_3)(SATA_GENERATION_2)(SATA_GENERATION_3)					:= SATA_GENERATION_2;
-		NG(SATA_GENERATION_3)(SATA_GENERATION_2)(SATA_GENERATION_ERROR)			:= SATA_GENERATION_ERROR;
 
 		NG(SATA_GENERATION_3)(SATA_GENERATION_3)(SATA_GENERATION_AUTO)			:= SATA_GENERATION_3;
 		NG(SATA_GENERATION_3)(SATA_GENERATION_3)(SATA_GENERATION_1)					:= SATA_GENERATION_1;
 		NG(SATA_GENERATION_3)(SATA_GENERATION_3)(SATA_GENERATION_2)					:= SATA_GENERATION_2;
 		NG(SATA_GENERATION_3)(SATA_GENERATION_3)(SATA_GENERATION_3)					:= SATA_GENERATION_3;
-		NG(SATA_GENERATION_3)(SATA_GENERATION_3)(SATA_GENERATION_ERROR)			:= SATA_GENERATION_ERROR;
 
 		RETURN NG;
 	END;
 	
-	CONSTANT CmpGeneration		: T_SGEN2_INT	:= CmpGen;
-	CONSTANT StartGeneration	: T_SGEN2_SGEN	:= StartGen;
-	CONSTANT NextGeneration 	: T_SGEN3_SGEN	:= NextGen;
+	CONSTANT ROM_StartGeneration							: T_SGEN2_SGEN	:= StartGen;
+	CONSTANT ROM_NextGeneration 							: T_SGEN3_SGEN	:= NextGen;
 
-	CONSTANT GENERATION_CHANGE_COUNTER_BITS	: POSITIVE := log2ceilnz(GENERATION_CHANGE_COUNT);
-	CONSTANT TRY_PER_GENERATION_COUNTER_BITS	: POSITIVE := log2ceilnz(ATTEMPTS_PER_GENERATION);
+	CONSTANT GENERATION_CHANGE_COUNTER_BITS		: POSITIVE			:= log2ceilnz(GENERATION_CHANGE_COUNT + 1);
+	CONSTANT TRY_PER_GENERATION_COUNTER_BITS	: POSITIVE			:= log2ceilnz(ATTEMPTS_PER_GENERATION);
 
-	TYPE T_SPEEDCONTROL_STATE IS (
-		ST_RECONFIG, ST_RECONFIG_WAIT,
-		ST_RETRY, ST_WAIT, ST_TIMEOUT,
-		ST_NEGOTIATION_ERROR
+	TYPE T_STATE IS (
+		ST_WAIT,
+		ST_RETRY,
+		ST_RECONFIG,
+		ST_RECONFIG_WAIT,
+		ST_TIMEOUT,
+		ST_ERROR
 	);
 	
 	-- Speed Negotiation - Statemachine
-	SIGNAL SpeedControl_State		: T_SPEEDCONTROL_STATE := ST_WAIT;
-	SIGNAL SpeedControl_NextState		: T_SPEEDCONTROL_STATE;
-	ATTRIBUTE FSM_ENCODING	OF SpeedControl_State	: SIGNAL IS ite(DEBUG					, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	SIGNAL State												: T_STATE												:= ST_WAIT;
+	SIGNAL NextState										: T_STATE;
+	ATTRIBUTE FSM_ENCODING	OF State		: SIGNAL IS getFSMEncoding_gray(DEBUG);
 
-	SIGNAL SATAGeneration_Current		: T_SATA_GENERATION := INITIAL_SATA_GENERATION;
-	SIGNAL SATAGeneration_Next		: T_SATA_GENERATION;
+	SIGNAL Status_i											: T_SATA_PHY_SPEED_STATUS;
 
-	SIGNAL ChangeGeneration			: STD_LOGIC;
-	SIGNAL GenerationChanged		: STD_LOGIC;
+	SIGNAL SATAGeneration_rst						: STD_LOGIC;
+	SIGNAL SATAGeneration_Change				: STD_LOGIC;
+	SIGNAL SATAGeneration_Changed				: STD_LOGIC;
+	SIGNAL SATAGeneration_cur						: T_SATA_GENERATION							:= INITIAL_SATA_GENERATION;
+	SIGNAL SATAGeneration_nxt						: T_SATA_GENERATION;
 
-	SIGNAL ResetGeneration			: STD_LOGIC := '0';
+	SIGNAL OOBC_Retry_i									: STD_LOGIC;
+	SIGNAL Trans_RP_Reconfig_i					: STD_LOGIC;
+	SIGNAL Trans_RP_Lock_i							: STD_LOGIC;
 	
+	SIGNAL GenerationChange_Counter_rst	: STD_LOGIC;
 	SIGNAL GenerationChange_Counter_en	: STD_LOGIC;
 	SIGNAL GenerationChange_Counter_us	: UNSIGNED(GENERATION_CHANGE_COUNTER_BITS DOWNTO 0) := (OTHERS => '0');
 	SIGNAL GenerationChange_Counter_ov	: STD_LOGIC;
 	
+	SIGNAL TryPerGeneration_Counter_rst	: STD_LOGIC;
 	SIGNAL TryPerGeneration_Counter_en	: STD_LOGIC;
 	SIGNAL TryPerGeneration_Counter_us	: UNSIGNED(TRY_PER_GENERATION_COUNTER_BITS DOWNTO 0) := (OTHERS => '0');
 	SIGNAL TryPerGeneration_Counter_ov	: STD_LOGIC;
 	
 BEGIN
-	ASSERT IsSupportedGeneration(SATA_GenerationMin) REPORT "Member of T_SATA_GENERATION not supported" SEVERITY ERROR;
-	ASSERT IsSupportedGeneration(SATA_GenerationMax) REPORT "Member of T_SATA_GENERATION not supported" SEVERITY ERROR;
-	ASSERT (CmpGeneration(SATA_GenerationMax)(SATA_GenerationMin) >= 0) REPORT "min is less then max" SEVERITY ERROR;
 
--- ==================================================================
--- Speed Negotiation - Statemachine
--- ==================================================================
+	-- ===========================================================================
+	-- Speed Negotiation - Statemachine
+	-- ===========================================================================
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			SATAGeneration_Current	<= SATAGeneration_Next;
+			IF (ClockEnable = '1') THEN
+				SATAGeneration_cur	<= SATAGeneration_nxt;
+			END IF;
 		END IF;
 	END PROCESS;
 	
-	PROCESS(Clock)
+	PROCESS(SATAGeneration_rst, SATAGeneration_cur, SATAGeneration_Change, SATAGenerationMin, SATAGenerationMax)
+		VARIABLE SATAGeneration_nxt_v : T_SATA_GENERATION;
 	BEGIN
-		IF rising_edge(Clock) THEN
-			IF SATAGeneration_Reset = '1' THEN
-				ResetGeneration <= '1';
-			ELSIF ChangeGeneration = '1' THEN
-				ResetGeneration <= '0';
-			END IF;
-		END IF;
+		if (SATAGeneration_rst = '1') then
+			SATAGeneration_nxt_v	:= ROM_StartGeneration(SATAGenerationMin)(SATAGenerationMax);
+		elsif (SATAGeneration_Change = '1') then
+			SATAGeneration_nxt_v	:= ROM_NextGeneration(SATAGeneration_cur)(SATAGenerationMin)(SATAGenerationMax);
+		else
+			SATAGeneration_nxt_v	:= SATAGeneration_cur;
+		end if;
+		
+		-- test if generation is going to be changed
+		SATAGeneration_Changed	<= to_sl(SATAGeneration_cur /= SATAGeneration_nxt_v);
+			
+		-- assign new generation to *_nxt signal
+		SATAGeneration_nxt			<= SATAGeneration_nxt_v;
 	END PROCESS;
 
-	PROCESS(ResetGeneration, ChangeGeneration, SATAGeneration_Current, SATA_GenerationMin, SATA_GenerationMax)
-		VARIABLE SATAGeneration_Next_v : T_SATA_GENERATION;
-	BEGIN
-		SATAGeneration_Next	<= SATAGeneration_Current;
-		
-		GenerationChanged	<= '0';
-		
-		IF (ChangeGeneration = '1') THEN
-			IF (ResetGeneration = '1') THEN
-				SATAGeneration_Next_v	:= StartGeneration(SATA_GenerationMin)(SATA_GenerationMax);
-			ELSE
-				SATAGeneration_Next_v	:= NextGeneration(SATAGeneration_Current)(SATA_GenerationMin)(SATA_GenerationMax);
-			END IF;
-			
-			SATAGeneration_Next	<= SATAGeneration_Next_v;
-			
-			IF (SATAGeneration_Current /= SATAGeneration_Next_v) THEN
-				GenerationChanged	<= '1';
-			END IF;
-		END IF;
-	END PROCESS;
-
-	SATA_Generation <= SATAGeneration_Current;
+	-- export current SATA generation to other layers
+	Trans_RP_SATAGeneration <= SATAGeneration_cur;
 
 
--- ==================================================================
--- SpeedControl - Statemachine
--- ==================================================================
+	-- ===========================================================================
+	-- SpeedControl - Statemachine
+	-- ===========================================================================
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
-				SpeedControl_State	<= ST_WAIT;
-			ELSE
-				SpeedControl_State	<= SpeedControl_NextState;
+				State	<= ST_WAIT;
+			ELSIF (ClockEnable = '1') THEN
+				State	<= NextState;
 			END IF;
 		END IF;
 	END PROCESS;
 
-	PROCESS(SpeedControl_State, Trans_ConfigReloaded, OOB_Timeout, Reset, ResetGeneration, GenerationChanged, TryPerGeneration_Counter_ov, GenerationChange_Counter_ov)
+	PROCESS(State,
+					Command,
+					OOBC_Timeout,
+					Trans_RP_ConfigReloaded,
+					SATAGeneration_Changed,
+					TryPerGeneration_Counter_ov, GenerationChange_Counter_ov)
 	BEGIN
-		SpeedControl_NextState			<= SpeedControl_State;
+		NextState														<= State;
 		
-		ChangeGeneration			<= '0';
-		Trans_Reconfig				<= '0';
-		Trans_Lock				<= '1';
-		OOB_Retry				<= '0';
-		NegotiationError			<= '0';
+		Status_i														<= SATA_PHY_SPEED_STATUS_WAITING;
 		
-		TryPerGeneration_Counter_en		<= '0';
-		GenerationChange_Counter_en		<= '0';
+		SATAGeneration_rst									<= '0';
+		SATAGeneration_Change								<= '0';
+		OOBC_Retry_i												<= '0';
+		Trans_RP_Reconfig_i									<= '0';
+		Trans_RP_Lock_i											<= '1';
+		
+		TryPerGeneration_Counter_rst				<= '0';
+		TryPerGeneration_Counter_en					<= '0';
+		GenerationChange_Counter_rst				<= '0';
+		GenerationChange_Counter_en					<= '0';
 	
-		CASE SpeedControl_State IS
-
+		CASE State IS
 			WHEN ST_WAIT =>
-				IF (ResetGeneration = '1') THEN
-					ChangeGeneration <= not Reset;
-					IF (GenerationChanged = '1') THEN
-						SpeedControl_NextState <= ST_RECONFIG;
-					END IF;
-				ELSIF (OOB_Timeout = '1') THEN
-					SpeedControl_NextState <= ST_TIMEOUT;
-				END IF;
+				Status_i												<= SATA_PHY_SPEED_STATUS_WAITING;
 				
+				IF (Command = SATA_PHY_SPEED_CMD_RESET) THEN
+					SATAGeneration_rst						<= '1';
+					TryPerGeneration_Counter_rst	<= '1';
+					GenerationChange_Counter_rst	<= '1';
+					IF (SATAGeneration_Changed = '1') THEN
+						NextState									<= ST_RECONFIG;
+					ELSE
+						NextState									<= ST_RETRY;
+					END IF;
+				ELSIF (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
+--					SATAGeneration_rst						<= '1';
+					TryPerGeneration_Counter_rst	<= '1';
+--					GenerationChange_Counter_rst	<= '1';
+					NextState											<= ST_RETRY;
+				ELSIF (OOBC_Timeout = '1') THEN
+					NextState											<= ST_TIMEOUT;
+				END IF;
+			
+			WHEN ST_RETRY =>
+				Status_i												<= SATA_PHY_SPEED_STATUS_WAITING;
+				OOBC_Retry_i										<= '1';
+				NextState												<= ST_WAIT;
+			
 			WHEN ST_TIMEOUT =>
+				Status_i												<= SATA_PHY_SPEED_STATUS_WAITING;
+				
 				IF (TryPerGeneration_Counter_ov = '1') THEN
 					IF (GenerationChange_Counter_ov = '1') THEN
-						SpeedControl_NextState		<= ST_NEGOTIATION_ERROR;
-					ELSE																													-- generation change counter allows => generation change
-						ChangeGeneration		<= '1';
+						NextState										<= ST_ERROR;
+					ELSE																					-- generation change counter allows => generation change
+						SATAGeneration_Change				<= '1';
+						TryPerGeneration_Counter_rst	<= '1';
 						GenerationChange_Counter_en	<= '1';
 						
-						IF (GenerationChanged = '1') THEN
-							SpeedControl_NextState		<= ST_RECONFIG;
+						IF (SATAGeneration_Changed = '1') THEN
+							NextState									<= ST_RECONFIG;
 						ELSE
-							SpeedControl_NextState		<= ST_RETRY;
+							NextState									<= ST_RETRY;
 						END IF;
 					END IF;
-				ELSE																														-- tries per generation counter allows an other try at current generation
-					SpeedControl_NextState		<= ST_RETRY;
+				ELSE																						-- tries per generation counter allows an other try at current generation
+					TryPerGeneration_Counter_en		<= '1';
+					NextState											<= ST_RETRY;
 				END IF;
 
 			WHEN ST_RECONFIG =>
-				Trans_Lock			<= '0';
-				Trans_Reconfig			<= '1';
-				
-				SpeedControl_NextState		<= ST_RECONFIG_WAIT;
+				Status_i												<= SATA_PHY_SPEED_STATUS_RECONFIGURATING;
+				Trans_RP_Lock_i									<= '0';
+				Trans_RP_Reconfig_i							<= '1';
+				NextState												<= ST_RECONFIG_WAIT;
 
 			WHEN ST_RECONFIG_WAIT =>
-				Trans_Lock			<= '0';
+				Status_i												<= SATA_PHY_SPEED_STATUS_RECONFIGURATING;
+				Trans_RP_Lock_i									<= '0';
 				
-				IF (Trans_ConfigReloaded = '1') THEN
-					SpeedControl_NextState		<= ST_RETRY;
+				IF (Trans_RP_ConfigReloaded = '1') THEN
+					NextState											<= ST_RETRY;
 				END IF;
 
-			WHEN ST_RETRY =>
-				OOB_Retry			<= '1';
-				TryPerGeneration_Counter_en	<= '1';
+			WHEN ST_ERROR =>
+				Trans_RP_Lock_i									<= '0';
+				Status_i												<= SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR;
+				
+				IF (Command = SATA_PHY_SPEED_CMD_RESET) THEN
+					SATAGeneration_rst						<= '1';
+					TryPerGeneration_Counter_rst	<= '1';
+					GenerationChange_Counter_rst	<= '1';
+					IF (SATAGeneration_Changed = '1') THEN
+						NextState									<= ST_RECONFIG;
+					ELSE
+						NextState									<= ST_RETRY;
+					END IF;
+				ELSIF (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
+--					SATAGeneration_rst						<= '1';
+					TryPerGeneration_Counter_rst	<= '1';
+--					GenerationChange_Counter_rst	<= '1';
+					NextState											<= ST_RETRY;
+				END IF;
 
-				SpeedControl_NextState		<= ST_WAIT;
-			
-			WHEN ST_NEGOTIATION_ERROR =>
-				Trans_Lock			<= '0';
-				NegotiationError		<= '1';
-
-			END CASE;
+		END CASE;
 	END PROCESS;
 
+	Status			<= Status_i;
+	OOBC_Retry		<= OOBC_Retry_i;
+	Trans_RP_Reconfig	<= Trans_RP_Reconfig_i;
+	Trans_RP_Lock		<= Trans_RP_Lock_i;
 
 	-- ================================================================
 	-- try counters
 	-- ================================================================
-	-- count attempts per generation
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset = '1') OR (ChangeGeneration = '1')) THEN
-				TryPerGeneration_Counter_us <= (OTHERS => '0');
-			ELSE
-				IF (TryPerGeneration_Counter_en = '1') THEN
-					TryPerGeneration_Counter_us <= TryPerGeneration_Counter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
-
-	TryPerGeneration_Counter_ov <= to_sl(TryPerGeneration_Counter_us = to_unsigned(ATTEMPTS_PER_GENERATION, TryPerGeneration_Counter_us'length));
+	TryPerGeneration_Counter_us	<= counter_inc(TryPerGeneration_Counter_us, TryPerGeneration_Counter_rst, TryPerGeneration_Counter_en) WHEN rising_edge(Clock);		-- count attempts per generation
+	GenerationChange_Counter_us	<= counter_inc(GenerationChange_Counter_us, GenerationChange_Counter_rst, GenerationChange_Counter_en) WHEN rising_edge(Clock);		-- count generation changes
 	
+	TryPerGeneration_Counter_ov	<= counter_eq(TryPerGeneration_Counter_us, ATTEMPTS_PER_GENERATION - 1);
+	GenerationChange_Counter_ov	<= counter_eq(GenerationChange_Counter_us, GENERATION_CHANGE_COUNT);
 	
-	-- count generation changes
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (AttemptCounter_Reset = '1') THEN
-				GenerationChange_Counter_us <= (OTHERS => '0');
-			ELSE
-				IF (GenerationChange_Counter_en = '1') THEN
-					GenerationChange_Counter_us <= GenerationChange_Counter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
-
-	GenerationChange_Counter_ov <= to_sl(GenerationChange_Counter_us = to_unsigned(GENERATION_CHANGE_COUNT, GenerationChange_Counter_us'length));
-
 		
-	-- ================================================================
-	-- ChipScope
-	-- ================================================================
-	genCSP : IF (DEBUG = TRUE) GENERATE
-		SIGNAL DBG_ChangeGeneration	: STD_LOGIC;
-		SIGNAL DBG_GenerationChanged	: STD_LOGIC;
-	
-		ATTRIBUTE KEEP OF DBG_ChangeGeneration		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_GenerationChanged		: SIGNAL IS TRUE;
-	BEGIN
-		DBG_ChangeGeneration	<= ChangeGeneration;
-		DBG_GenerationChanged	<= GenerationChanged;
-	END GENERATE;
-
-	-- ================================================================
 	-- debug port
-	-- ================================================================
---	DebugPortOut.GenerationChanges	<= resize(GenerationChange_Counter_us, DebugPortOut.GenerationChanges'length);
---	DebugPortOut.TrysPerGeneration	<= resize(TryPerGeneration_Counter_us, DebugPortOut.TrysPerGeneration'length);
---	DebugPortOut.SATAGeneration	<= SATAGeneration_Current;
+	-- ===========================================================================
+	genSim : if (SIMULATION = TRUE) generate
+		signal sim_SATAGeneration	: UNSIGNED(2 downto 0);
+	begin
+		sim_SATAGeneration	<= to_unsigned(SATAGeneration_cur, 3) + 1;
+	end generate;
+	
+	genDebug : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
+		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+		begin
+			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
+		end function;
+	begin
+		genXilinx : if (VENDOR = VENDOR_XILINX) generate
+			function dbg_GenerateEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_STATE loop
+					STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+
+			constant dummy : boolean := dbg_ExportEncoding("SpeedControl", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_SpeedControl.tok");
+		begin
+		end generate;
+
+		DebugPortOut.FSM										<= dbg_EncodeState(State);
+		DebugPortOut.Status									<= Status_i;
+		DebugPortOut.SATAGeneration					<= SATAGeneration_cur;
+		DebugPortOut.SATAGeneration_Reset		<= SATAGeneration_rst;
+		DebugPortOut.SATAGeneration_Change	<= SATAGeneration_Change;
+		DebugPortOut.SATAGeneration_Changed	<= SATAGeneration_Changed;
+		DebugPortOut.OOBC_Retry							<= OOBC_Retry_i;
+		DebugPortOut.OOBC_Timeout						<= OOBC_Timeout;
+		DebugPortOut.Trans_Reconfig					<= Trans_RP_Reconfig_i;
+		DebugPortOut.Trans_ReconfigComplete	<= Trans_RP_ReconfigComplete;
+		DebugPortOut.Trans_ConfigReloaded		<= Trans_RP_ConfigReloaded;
+		DebugPortOut.GenerationChanges			<= resize(std_logic_vector(GenerationChange_Counter_us), DebugPortOut.GenerationChanges'length);
+		DebugPortOut.TrysPerGeneration			<= resize(std_logic_vector(TryPerGeneration_Counter_us), DebugPortOut.TrysPerGeneration'length);
+	END GENERATE;
 END;

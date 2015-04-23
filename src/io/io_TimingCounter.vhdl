@@ -3,17 +3,20 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	Timing Counter
---
 -- Authors:				 	Patrick Lehmann
+--
+-- Module:				 	optimized down-counter to control timings for low speed signals
 -- 
 -- Description:
 -- ------------------------------------
---		TODO
+--		This down-counter can be configured with a TIMING_TABLE (a ROM), from which
+--		the initial counter value is loaded. The table index can be selected by
+--		'Slot'. 'Timeout' is a registered output. Up to 16 values fit into one ROM
+--		consisting of 'log2ceilnz(imax(TIMING_TABLE)) + 1' 6-input LUTs.
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,58 +32,58 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
+library PoC;
+use			PoC.my_config.all;
+use			PoC.utils.all;
 
 
-ENTITY io_TimingCounter IS
-  GENERIC (
-	  TIMING_TABLE				: T_NATVEC																		-- timing table
+entity io_TimingCounter is
+  generic (
+	  TIMING_TABLE	: T_NATVEC																					-- timing table
 	);
-  PORT (
-	  Clock								: IN	STD_LOGIC;															-- clock
-		Enable							: IN	STD_LOGIC;															-- enable counter
-		Load								: IN	STD_LOGIC;															-- load Timing Value from TIMING_TABLE selected by slot
-		Slot								: IN	NATURAL;																-- 
-		Timeout							: OUT STD_LOGIC																-- timing reached
+  port (
+	  Clock					: in	STD_LOGIC;																		-- clock
+		Enable				: in	STD_LOGIC;																		-- enable counter
+		Load					: in	STD_LOGIC;																		-- load Timing Value from TIMING_TABLE selected by slot
+		Slot					: in	NATURAL range 0 to (TIMING_TABLE'length - 1);	-- 
+		Timeout				: out STD_LOGIC																			-- timing reached
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF io_TimingCounter IS
-	FUNCTION transform(vec : T_NATVEC) RETURN T_INTVEC IS
-    VARIABLE Result : T_INTVEC(vec'range);
-  BEGIN
-    FOR I IN vec'range LOOP
+architecture rtl of io_TimingCounter is
+	function transform(vec : T_NATVEC) return T_INTVEC is
+    variable Result : T_INTVEC(vec'range);
+  begin
+		assert (not MY_VERBOSE) report "TIMING_TABLE (transformed):" severity NOTE;
+    for i in vec'range loop
 			Result(I)	 := vec(I) - 1;
-		END LOOP;
-		RETURN Result;
-  END;
+			assert (not MY_VERBOSE) report "  " & INTEGER'image(I) & " - " & INTEGER'image(Result(I)) severity NOTE;
+		end loop;
+		return Result;
+  end;
 
-	CONSTANT TIMING_TABLE2	: T_INTVEC		:= transform(TIMING_TABLE);
-	CONSTANT TIMING_MAX			: NATURAL			:= imax(TIMING_TABLE2);
-	CONSTANT COUNTER_BW			: NATURAL			:= log2ceilnz(TIMING_MAX);
+	constant TIMING_TABLE2	: T_INTVEC		:= transform(TIMING_TABLE);
+	constant TIMING_MAX			: NATURAL			:= imax(TIMING_TABLE2);
+	constant COUNTER_BITS		: NATURAL			:= log2ceilnz(TIMING_MAX + 1);
 
-	SIGNAL Counter_s				: SIGNED(COUNTER_BW DOWNTO 0)		:= to_signed(TIMING_TABLE2(0), COUNTER_BW + 1);
+	signal Counter_s				: SIGNED(COUNTER_BITS downto 0)		:= to_signed(TIMING_TABLE2(0), COUNTER_BITS + 1);
 	
-BEGIN
-
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Load = '1') THEN
+begin
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Load = '1') then
 				Counter_s		<= to_signed(TIMING_TABLE2(Slot), Counter_s'length);
-			ELSE
-				IF ((Enable = '1') AND (Counter_s(Counter_s'high) = '0')) THEN
-					Counter_s	<= Counter_s - 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+			elsif ((Enable = '1') and (Counter_s(Counter_s'high) = '0')) then
+				Counter_s	<= Counter_s - 1;
+			end if;
+		end if;
+	end process;
 	
 	timeout <= Counter_s(Counter_s'high);
-END;
+end;

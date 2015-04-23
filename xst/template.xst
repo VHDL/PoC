@@ -1,4 +1,3 @@
-set -tmpdir "xst/projnav.tmp"
 set -xsthdpdir "xst"
 run
 -ifn {prjFile}
@@ -16,7 +15,7 @@ run
 -keep_hierarchy {KeepHierarchy}
 -netlist_hierarchy {NetListHierarchy}
 -rtlview {GenerateRTLView}
--glob_opt {Globaloptimization}
+-glob_opt {GlobalOptimization}
 -read_cores {ReadCores}
 -sd {SearchDirectories}
 -write_timing_constraints {WriteTimingConstraints}

@@ -1,0 +1,53 @@
+#% BEGIN-TEMPLATEFILE Board = "ML505" %#
+
+
+#$NET  PCIE_WAKE_B_LS            LOC = AV33 | IOSTANDARD=LVCMOS18; # Bank  13 VCCO - VCC1V8_FPGA - IO_L11N_T1_SRCC_13
+#$NET  PCIE_PERST_LS             LOC = AV35 | IOSTANDARD=LVCMOS18; # Bank  13 VCCO - VCC1V8_FPGA - IO_L13N_T2_MRCC_13
+
+#$NET  PCIE_TX4_P                LOC = AG2                       ; # Bank 114                 - MGTXTXP3_114
+#$NET  PCIE_RX4_P                LOC = AD4                       ; # Bank 114                 - MGTXRXP3_114
+#$NET  PCIE_TX4_N                LOC = AG1                       ; # Bank 114                 - MGTXTXN3_114
+#$NET  PCIE_RX4_N                LOC = AD3                       ; # Bank 114                 - MGTXRXN3_114
+#$NET  PCIE_TX5_P                LOC = AH4                       ; # Bank 114                 - MGTXTXP2_114
+#$NET  PCIE_RX5_P                LOC = AE6                       ; # Bank 114                 - MGTXRXP2_114
+#$NET  PCIE_TX5_N                LOC = AH3                       ; # Bank 114                 - MGTXTXN2_114
+#$NET  PCIE_RX5_N                LOC = AE5                       ; # Bank 114                 - MGTXRXN2_114
+#$NET  PCIE_TX6_P                LOC = AJ2                       ; # Bank 114                 - MGTXTXP1_114
+#$NET  PCIE_RX6_P                LOC = AF4                       ; # Bank 114                 - MGTXRXP1_114
+#$NET  PCIE_TX6_N                LOC = AJ1                       ; # Bank 114                 - MGTXTXN1_114
+#$NET  PCIE_RX6_N                LOC = AF3                       ; # Bank 114                 - MGTXRXN1_114
+#$NET  PCIE_TX7_P                LOC = AK4                       ; # Bank 114                 - MGTXTXP0_114
+#$NET  PCIE_RX7_P                LOC = AG6                       ; # Bank 114                 - MGTXRXP0_114
+#$NET  PCIE_TX7_N                LOC = AK3                       ; # Bank 114                 - MGTXTXN0_114
+#$NET  PCIE_RX7_N                LOC = AG5                       ; # Bank 114                 - MGTXRXN0_114
+#$NET  PCIE_TX0_P                LOC = W2                        ; # Bank 115                 - MGTXTXP3_115
+#$NET  PCIE_RX0_P                LOC = Y4                        ; # Bank 115                 - MGTXRXP3_115
+#$NET  PCIE_TX0_N                LOC = W1                        ; # Bank 115                 - MGTXTXN3_115
+#$NET  PCIE_RX0_N                LOC = Y3                        ; # Bank 115                 - MGTXRXN3_115
+#$NET  PCIE_TX1_P                LOC = AA2                       ; # Bank 115                 - MGTXTXP2_115
+#$NET  PCIE_RX1_P                LOC = AA6                       ; # Bank 115                 - MGTXRXP2_115
+#$NET  PCIE_TX1_N                LOC = AA1                       ; # Bank 115                 - MGTXTXN2_115
+#$NET  PCIE_RX1_N                LOC = AA5                       ; # Bank 115                 - MGTXRXN2_115
+#$NET  PCIE_CLK_QO_N             LOC = AB7                       ; # Bank 115                 - MGTREFCLK1N_115
+#$NET  PCIE_CLK_QO_P             LOC = AB8                       ; # Bank 115                 - MGTREFCLK1P_115
+#$NET  PCIE_TX2_P                LOC = AC2                       ; # Bank 115                 - MGTXTXP1_115
+#$NET  PCIE_RX2_P                LOC = AB4                       ; # Bank 115                 - MGTXRXP1_115
+#$NET  PCIE_TX2_N                LOC = AC1                       ; # Bank 115                 - MGTXTXN1_115
+#$NET  PCIE_RX2_N                LOC = AB3                       ; # Bank 115                 - MGTXRXN1_115
+#$NET  PCIE_TX3_P                LOC = AE2                       ; # Bank 115                 - MGTXTXP0_115
+#$NET  PCIE_RX3_P                LOC = AC6                       ; # Bank 115                 - MGTXRXP0_115
+#$NET  PCIE_TX3_N                LOC = AE1                       ; # Bank 115                 - MGTXTXN0_115
+#$NET  PCIE_RX3_N                LOC = AC5                       ; # Bank 115                 - MGTXRXN0_115
+
+
+
+
+
+
+
+
+
+
+
+
+#% END-TEMPLATEFILE %#

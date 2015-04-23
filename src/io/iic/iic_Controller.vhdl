@@ -3,15 +3,15 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:					I²C Controller
+-- Module:					I2C Controller
 -- 
 -- Authors:					Patrick Lehmann
 --
 -- Description:
 -- ------------------------------------
---		The IICController transmitts words over the I²C bus (SerialClock - SCL,
+--		The IICController transmitts words over the I2C bus (SerialClock - SCL,
 --		SerialData - SDA) and also receives them. This controller utilizes the
---		IICBusController to send/receive bits over the I²C bus. This controller
+--		IICBusController to send/receive bits over the I2C bus. This controller
 --		is compatible to the System Management Bus (SMBus).
 --
 -- License:
@@ -40,6 +40,7 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.components.ALL;
 USE			PoC.io.ALL;
 
@@ -47,7 +48,7 @@ USE			PoC.io.ALL;
 ENTITY iic_IICController IS
 	GENERIC (
 		DEBUG													: BOOLEAN												:= FALSE;
-		CLOCK_FREQ_MHZ								: REAL													:= 100.0;					-- 100 MHz
+		CLOCK_FREQ										: FREQ													:= 100.0 MHz;
 		IIC_BUSMODE										: T_IO_IIC_BUSMODE							:= IO_IIC_BUSMODE_STANDARDMODE;
 		IIC_ADDRESS										: STD_LOGIC_VECTOR							:= (7 DOWNTO 1 => '0') & '-';
 		ADDRESS_BITS									: POSITIVE											:= 7;
@@ -157,8 +158,6 @@ ARCHITECTURE rtl OF iic_IICController IS
 	
 	SIGNAL IICBC_Request								: STD_LOGIC;
 	SIGNAL IICBC_Grant									: STD_LOGIC;
-	SIGNAL IICBC_BusMaster							: STD_LOGIC;
-	SIGNAL IICBC_BusMode								: STD_LOGIC;
 	SIGNAL IICBC_Command								: T_IO_IICBUS_COMMAND;
 	SIGNAL IICBC_Status									: T_IO_IICBUS_STATUS;
 	
@@ -224,8 +223,6 @@ BEGIN
 		BitCounter_en							<= '0';
 
 		IICBC_Request							<= '0';
-		IICBC_BusMaster						<= '0';
-		IICBC_BusMode							<= '0';
 		IICBC_Command							<= IO_IICBUS_CMD_NONE;
 
 		-- precalculated command categories
@@ -1060,7 +1057,7 @@ BEGIN
 
 	IICBC : ENTITY PoC.iic_IICBusController
 		GENERIC MAP (
-			CLOCK_FREQ_MHZ								=> CLOCK_FREQ_MHZ,
+			CLOCK_FREQ										=> CLOCK_FREQ,
 			IIC_BUSMODE										=> IIC_BUSMODE,
 			ALLOW_MEALY_TRANSITION				=> ALLOW_MEALY_TRANSITION
 		)
@@ -1074,9 +1071,6 @@ BEGIN
 			Command												=> IICBC_Command,
 			Status												=> IICBC_Status,
 
---			BusMaster											=> IICBC_BusMaster,
---			BusMode												=> IICBC_BusMode,											-- 0 = passive; 1 = active
-			
 			SerialClock_i									=> SerialClock_i,
 			SerialClock_o									=> SerialClock_o,
 			SerialClock_t									=> SerialClock_t_i,
