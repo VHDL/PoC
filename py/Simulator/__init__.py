@@ -1,28 +1,27 @@
-# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:         			Patrick Lehmann
 # 
-# Python Class:			TODO
+# Python Sub Module:  	Saves the PoC Library configuration as python source code.
 # 
 # Description:
 # ------------------------------------
-#		TODO:
-#		- 
-#		- 
+#    TODO:
+#    
 #
 # License:
 # ==============================================================================
 # Copyright 2007-2015 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#		http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,29 +30,18 @@
 # limitations under the License.
 # ==============================================================================
 
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from sys import exit
 
-	print("=" * 80)
-	print("{: ^80s}".format("PoC Library - Python Class PoCVivadoSimulator"))
-	print("=" * 80)
-	print()
-	print("This is no executable file!")
-	exit(1)
+## entry point
+#if __name__ == "__main__":
+#	print("PoC Library - Repository Service Tool")
+#	print("========================================================================")
+#	print()
+#	print("This is no executable file!")
+#else:
+#	pass
+#	
 
-import PoCSimulator
-
-class PoCVivadoSimulator(PoCSimulator.PoCSimulator):
-
-	def __init__(self, debug, verbose):
-		super(self.__class__, self).__init__(debug, verbose)
-		raise NotImplementedException("Xilinx Vivado Simulator is not supported, yet!")
-		
-	def run(self, module, showLogs):
-		raise NotImplementedException("Xilinx Vivado Simulator is not supported, yet!")
-		
-	
+import Simulator.ISESimulator
+import Simulator.VivadoSimulator
+import Simulator.QuestaSimulator
+import Simulator.GHDLSimulator

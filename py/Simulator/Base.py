@@ -39,14 +39,14 @@ else:
 	from sys import exit
 
 	print("=" * 80)
-	print("{: ^80s}".format("PoC Library - Python Class PoCSimulator"))
+	print("{: ^80s}".format("PoC Library - Python Module Simulator.Base"))
 	print("=" * 80)
 	print()
 	print("This is no executable file!")
 	exit(1)
 
-import PoC
-from libDecorators import property
+from Base.Exceptions import *
+from Simulator.Exceptions import *
 
 class PoCSimulator(object):
 	__host =				None
@@ -68,34 +68,22 @@ class PoCSimulator(object):
 	# class properties
 	# ============================================================================
 	@property
-	def debug():
-		def fget(self):
-			return self.__debug
+	def debug(self):			return self.__debug
 	
 	@property
-	def verbose():
-		def fget(self):
-			return self.__verbose
+	def verbose(self):		return self.__verbose
 	
 	@property
-	def quiet():
-		def fget(self):
-			return self.__quiet	
+	def quiet(self):			return self.__quiet	
 
 	@property
-	def host():
-		def fget(self):
-			return self.__host
+	def host(self):				return self.__host
 	
 	@property
-	def showLogs():
-		def fget(self):
-			return self.__showLogs
+	def showLogs(self):		return self.__showLogs
 	
 	@property
-	def showReport():
-		def fget(self):
-			return self.__showReport
+	def showReport(self):	return self.__showReport
 
 	# print messages
 	# ============================================================================
@@ -119,9 +107,9 @@ class PoCSimulator(object):
 			elif (simulatorOutput[matchPos + 20: matchPos + 26] == "FAILED"):
 				return False
 			else:
-				raise PoCSimulatorException()
+				raise SimulatorException()
 		else:
-			raise PoCSimulatorException()
+			raise SimulatorException()
 
 
 class PoCSimulatorTestbench(object):
@@ -146,14 +134,3 @@ class PoCSimulatorTestbenchGroup(object):
 	def __getitem__(self, key):
 		return self.members[key]
 	
-		
-class PoCSimulatorException(PoC.PoCException):
-	def __init__(self, message=""):
-		super().__init__(message)
-		self.message = message
-	
-class PoCTestbenchException(PoCSimulatorException):
-	def __init__(self, pocEntity, testbench, message):
-		super().__init__(message)
-		self.pocEntity = pocEntity
-		self.testbench = testbench
