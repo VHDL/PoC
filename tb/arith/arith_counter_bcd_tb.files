@@ -6,7 +6,7 @@
 #
 # board and device configuration
 vhdl poc	"tb/common/my_config_ML505.vhdl"
-#vhdl poc	"tb/common/my_project.vhdl"
+vhdl poc	"tb/common/my_project.vhdl"
 
 # PoC core packages
 vhdl poc	"src/common/utils.vhdl"							# PoC utility collection
@@ -17,8 +17,9 @@ vhdl poc	"src/common/config.vhdl"						# PoC device configuration mechanism
 vhdl poc	"tb/common/simulation.v93.vhdl"			# PoC simulation helper
 
 # PoC.arith
-vhdl poc	"src/arith/arith_counter_bcd.vhdl"					# Unit Under Test
+vhdl poc	"src/arith/arith.pkg.vhdl"							# Package
+vhdl poc	"src/arith/arith_counter_bcd.vhdl"			# Unit Under Test
 
 # Testbench file(s)
-vhdl test	"tb/arith/arith_counter_bcd_tb.vhdl"				# Testbench
+vhdl test	"tb/arith/arith_counter_bcd_tb.vhdl"		# Testbench
 
