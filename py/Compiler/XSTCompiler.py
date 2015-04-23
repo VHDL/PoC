@@ -39,18 +39,19 @@ else:
 	from sys import exit
 
 	print("=" * 80)
-	print("{: ^80s}".format("PoC Library - Python Class PoCXSTCompiler"))
+	print("{: ^80s}".format("The PoC Library - Python Module XSTCompiler"))
 	print("=" * 80)
 	print()
 	print("This is no executable file!")
 	exit(1)
 
 from pathlib import Path
-import re
-	
-import PoCCompiler
 
-class PoCXSTCompiler(PoCCompiler.PoCCompiler):
+from Base.Exceptions import *
+from Compiler.Base import PoCCompiler 
+from Compiler.Exceptions import *
+
+class Compiler(PoCCompiler):
 
 	executables = {}
 
@@ -63,6 +64,7 @@ class PoCXSTCompiler(PoCCompiler.PoCCompiler):
 		
 	def run(self, pocEntity, device):
 		import os
+		import re
 		import shutil
 		import subprocess
 		import textwrap
@@ -108,7 +110,7 @@ class PoCXSTCompiler(PoCCompiler.PoCCompiler):
 		
 		# read netlist settings from configuration file
 		if (self.host.netListConfig[str(pocEntity)]['Type'] != "XilinxSynthesis"):
-			raise PoC.PoCCompilerException("This entity is not configured for XST compilation.")
+			raise CompilerException("This entity is not configured for XST compilation.")
 		
 		topModuleName =				self.host.netListConfig[str(pocEntity)]['TopModule']
 		fileListFilePath =		self.host.directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['FileListFile']
@@ -120,7 +122,7 @@ class PoCXSTCompiler(PoCCompiler.PoCCompiler):
 		reportFilePath =			tempXSTPath / (topModuleName + ".log")
 
 		# read/write XST options file
-		self.printDebug("Reading Xilinx Synthesis Tool option file from '%s'" % str(xstTemplateFilePath))
+		self.printDebug("Reading Xilinx Compiler Tool option file from '%s'" % str(xstTemplateFilePath))
 		with xstTemplateFilePath.open('r') as xstFileHandle:
 			xstFileContent = xstFileHandle.read()
 			
@@ -192,7 +194,7 @@ class PoCXSTCompiler(PoCCompiler.PoCCompiler):
 		if (self.host.netListConfig.has_option(str(pocEntity), 'XSTOption.Generics')):
 			xstFileContent += "-generics { %s }" % self.host.netListConfig[str(pocEntity)]['XSTOption.Generics']
 
-		self.printDebug("Writing Xilinx Synthesis Tool option file to '%s'" % str(xstFilePath))
+		self.printDebug("Writing Xilinx Compiler Tool option file to '%s'" % str(xstFilePath))
 		with xstFilePath.open('w') as xstFileHandle:
 			xstFileHandle.write(xstFileContent)
 		
@@ -243,7 +245,7 @@ class PoCXSTCompiler(PoCCompiler.PoCCompiler):
 			xstLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
 		
 			if self.showLogs:
-				print("Synthesis log (XST)")
+				print("Compiler log (XST)")
 				print("--------------------------------------------------------------------------------")
 				print(xstLog)
 				print()
@@ -255,7 +257,7 @@ class PoCXSTCompiler(PoCCompiler.PoCCompiler):
 		self.printNonQuiet('  copy result files into output directory...')
 		for task in copyTasks:
 			(fromPath, toPath) = task
-			if not fromPath.exists():		raise PoCCompiler.PoCCompilerException("File '%s' does not exist!" % str(fromPath))
+			if not fromPath.exists():		raise CompilerException("File '%s' does not exist!" % str(fromPath))
 			#if not toPath.exists():			raise PoCCompiler.PoCCompilerException("File '%s' does not exist!" % str(toPath))
 		
 			self.printVerbose("  copying '%s'" % str(fromPath))

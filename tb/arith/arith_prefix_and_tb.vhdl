@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Testbench:				Testbench for arith_prefix_and.
--- 
 -- Authors:					Thomas B. Preusser
 --									Patrick Lehmann
+-- 
+-- Testbench:				Testbench for arith_prefix_and.
 -- 
 -- Description:
 -- ------------------------------------

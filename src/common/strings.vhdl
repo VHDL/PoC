@@ -3,11 +3,11 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Package:					String related functions and types
---
 -- Authors:					Thomas B. Preusser
 --									Martin Zabel
 --									Patrick Lehmann
+--
+-- Package:					String related functions and types
 --
 -- Description:
 -- ------------------------------------
@@ -15,7 +15,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,17 +43,17 @@ use			PoC.my_config.MY_VERBOSE;
 package strings is
 	-- Type declarations
 	-- ===========================================================================
-	SUBTYPE T_RAWCHAR				IS STD_LOGIC_VECTOR(7 DOWNTO 0);
-	TYPE		T_RAWSTRING			IS ARRAY (NATURAL RANGE <>) OF T_RAWCHAR;
+	subtype T_RAWCHAR				is STD_LOGIC_VECTOR(7 downto 0);
+	type		T_RAWSTRING			is array (NATURAL range <>) of T_RAWCHAR;
 	
 	-- testing area:
 	-- ===========================================================================
-	FUNCTION to_IPStyle(str : STRING)			RETURN T_IPSTYLE;
+	function to_IPStyle(str : STRING)			return T_IPSTYLE;
 
 	-- to_char
-	FUNCTION to_char(value : STD_LOGIC)		RETURN CHARACTER;
-	FUNCTION to_char(value : NATURAL)			RETURN CHARACTER;
-	FUNCTION to_char(rawchar : T_RAWCHAR) RETURN CHARACTER;	
+	function to_char(value : STD_LOGIC)		return CHARACTER;
+	function to_char(value : NATURAL)			return CHARACTER;
+	function to_char(rawchar : T_RAWCHAR) return CHARACTER;	
 
 	-- chr_is* function
 	function chr_isDigit(chr : character)					return boolean;
