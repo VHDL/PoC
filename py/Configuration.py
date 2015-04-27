@@ -148,7 +148,18 @@ class Configuration(CommandLineProgram):
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
 					raise
-		
+				
+			# configure GTKWave on Windows
+			next = False
+			while (next == False):
+				try:
+					self.manualConfigureWindowsGTKW()
+					next = True
+				except BaseException as ex:
+					print("FAULT: %s" % ex.message)
+				except Exception as ex:
+					raise
+				
 		# configure Linux
 		elif (self.platform == 'Linux'):
 			# configure ISE on Linux
@@ -200,6 +211,17 @@ class Configuration(CommandLineProgram):
 			while (next == False):
 				try:
 					self.manualConfigureLinuxGHDL()
+					next = True
+				except BaseException as ex:
+					print("FAULT: %s" % ex.message)
+				except Exception as ex:
+					raise
+			
+			# configure GTKWave on Linux
+			next = False
+			while (next == False):
+				try:
+					self.manualConfigureLinuxGTKW()
 					next = True
 				except BaseException as ex:
 					print("FAULT: %s" % ex.message)
@@ -371,7 +393,34 @@ class Configuration(CommandLineProgram):
 				self.pocConfig['GHDL'] = {}
 			else:
 				raise BaseException("unknown option")
-		
+	
+	def manualConfigureWindowsGTKW(self):
+		# Ask for installed GTKWave
+		isGTKW = input('Is GTKWave installed on your system? [Y/n/p]: ')
+		isGTKW = isGTKW if isGTKW != "" else "Y"
+		if (isGTKW != 'p'):
+			if (isGTKW == 'Y'):
+				gtkwDirectory =	input('GTKWave Installation Directory [C:\Program Files (x86)\GTKWave]: ')
+				gtkwVersion =		input('GTKWave Version Number [3.3.61]: ')
+				print()
+			
+				gtkwDirectory = gtkwDirectory if gtkwDirectory != "" else "C:\Program Files (x86)\GTKWave"
+				gtkwVersion = gtkwVersion if gtkwVersion != "" else "3.3.61"
+			
+				gtkwDirectoryPath = Path(gtkwDirectory)
+				gtkwExecutablePath = gtkwDirectoryPath / "bin" / "gtkwave.exe"
+			
+				if not gtkwDirectoryPath.exists():	raise BaseException("GTKWave Installation Directory '%s' does not exist." % gtkwDirectory)
+				if not gtkwExecutablePath.exists():	raise BaseException("GTKWave is not installed.")
+			
+				self.pocConfig['GTKWave']['Version'] = gtkwVersion
+				self.pocConfig['GTKWave']['InstallationDirectory'] = gtkwDirectoryPath.as_posix()
+				self.pocConfig['GTKWave']['BinaryDirectory'] = '${InstallationDirectory}/bin'
+			elif (isGTKW == 'n'):
+				self.pocConfig['GTKWave'] = {}
+			else:
+				raise BaseException("unknown option")
+	
 	def manualConfigureLinuxISE(self):
 		# Ask for installed Xilinx ISE
 		isXilinxISE = input('Is Xilinx ISE installed on your system? [Y/n/p]: ')
@@ -510,7 +559,34 @@ class Configuration(CommandLineProgram):
 				self.pocConfig['GHDL'] = {}
 			else:
 				raise BaseException("unknown option")
-				
+
+	def manualConfigureLinuxGTKW(self):
+		# Ask for installed GTKWave
+		isGTKW = input('Is GTKWave installed on your system? [Y/n/p]: ')
+		isGTKW = isGTKW if isGTKW != "" else "Y"
+		if (isGTKW != 'p'):
+			if (isGTKW == 'Y'):
+				gtkwDirectory =	input('GTKWave Installation Directory [/usr/bin]: ')
+				gtkwVersion =		input('GTKWave Version Number [3.3.61]: ')
+				print()
+			
+				gtkwDirectory = gtkwDirectory if gtkwDirectory != "" else "/usr/bin"
+				gtkwVersion = gtkwVersion if gtkwVersion != "" else "3.3.61"
+			
+				gtkwDirectoryPath = Path(gtkwDirectory)
+				gtkwExecutablePath = gtkwDirectoryPath / "gtkwave"
+			
+				if not gtkwDirectoryPath.exists():	raise BaseException("GTKWave Installation Directory '%s' does not exist." % gtkwDirectory)
+				if not gtkwExecutablePath.exists():	raise BaseException("GTKWave is not installed.")
+			
+				self.pocConfig['GTKWave']['Version'] = gtkwVersion
+				self.pocConfig['GTKWave']['InstallationDirectory'] = gtkwDirectoryPath.as_posix()
+				self.pocConfig['GTKWave']['BinaryDirectory'] = '${InstallationDirectory}'
+			elif (isGTKW == 'n'):
+				self.pocConfig['GTKWave'] = {}
+			else:
+				raise BaseException("unknown option")
+	
 	def newSolution(self, solutionName):
 		print("new solution: name=%s" % solutionName)
 		print("solution here: %s" % self.directories['Working'])
