@@ -397,6 +397,7 @@ begin
 		
 		signal Status_i											: T_SATA_TRANSCEIVER_STATUS;
 		signal Error_i											: T_SATA_TRANSCEIVER_ERROR;
+		signal Error_on_TX_RX								: STD_LOGIC; -- '1' if an RX or TX error is present
 		
 		-- keep internal clock nets, so timing constrains from UCF can find them
 		attribute KEEP of GTX_TX_RefClockOut	: signal is TRUE;
@@ -496,7 +497,7 @@ begin
 		ResetDone(I)	<= ResetDone_r;
 
 		
-		process(State, Command, 
+		process(State, Command, Error_on_TX_RX,
 						UC_PowerDown, UC_ClockNetwork_Reset, 
 						GTX_UserClock_Stable, GTX_TX_ResetDone, GTX_RX_ResetDone,
 						DD_NoDevice, DD_NewDevice,
@@ -507,8 +508,6 @@ begin
 			
 			Status_i				<= SATA_TRANSCEIVER_STATUS_POWERED_DOWN;
 			Error_i.Common	<= SATA_TRANSCEIVER_ERROR_NONE;
-			Error_i.TX			<= SATA_TRANSCEIVER_TX_ERROR_NONE;
-			Error_i.RX			<= SATA_TRANSCEIVER_RX_ERROR_NONE;
 
 			Kill_GTX_UserClock_Stable <= '0';
 			Unblock_PowerDown <= '0';
@@ -684,27 +683,10 @@ begin
 					end if;
 				
 					-- error handling
-					--	================================================================
-					-- TX errors
-					if (GTX_TX_BufferStatus(1)	= '1') then
+					if (Error_on_TX_RX = '1') then
 						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
-						Error_i.TX	<= SATA_TRANSCEIVER_TX_ERROR_BUFFER;
 					end if;
 				
-					-- RX errors
-					if (GTX_RX_ByteIsAligned	= '0') then
-						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
-						Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_ALIGNEMENT;
-					elsif (slv_or(GTX_RX_DisparityError)	= '1') then
-						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
-						Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_DISPARITY;
-					elsif (slv_or(GTX_RX_NotInTableError)	= '1') then
-						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
-						Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_DECODER;
-					elsif (GTX_RX_BufferStatus(2)	= '1') then
-						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
-						Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_BUFFER;
-					end if;
 				
 				when ST_RECONFIGURATION =>
 					Status_i			<= SATA_TRANSCEIVER_STATUS_RECONFIGURING;
@@ -712,9 +694,39 @@ begin
 					null;
 			end case;
 		end process;
+
+		-- Encode RX/TX Errors
+		process(GTX_UserClock)
+		begin
+			if rising_edge(GTX_UserClock) then
+				Error_i.TX			<= SATA_TRANSCEIVER_TX_ERROR_NONE;
+				Error_i.RX			<= SATA_TRANSCEIVER_RX_ERROR_NONE;
+				Error_on_TX_RX  <= '0';
+				
+				if (GTX_TX_BufferStatus(1)	= '1') then
+					Error_i.TX	<= SATA_TRANSCEIVER_TX_ERROR_BUFFER;
+					Error_on_TX_RX  <= '1';
+				end if;
+				
+				-- RX errors
+				if (GTX_RX_ByteIsAligned	= '0') then
+					Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_ALIGNEMENT;
+					Error_on_TX_RX  <= '1';
+				elsif (slv_or(GTX_RX_DisparityError)	= '1') then
+					Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_DISPARITY;
+					Error_on_TX_RX  <= '1';
+				elsif (slv_or(GTX_RX_NotInTableError)	= '1') then
+					Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_DECODER;
+					Error_on_TX_RX  <= '1';
+				elsif (GTX_RX_BufferStatus(2)	= '1') then
+					Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_BUFFER;
+					Error_on_TX_RX  <= '1';
+				end if;
+			end if;
+		end process;
 		
-		Status(i)		<= Status_i;	--	when rising_edge(GTX_UserClock);
-		Error(i)		<= Error_i;	--	when rising_edge(GTX_UserClock);
+		Status(i)		<= Status_i;
+		Error(i)		<= Error_i;
 		
 		-- =========================================================================
 		-- GTX Power and Clock control
