@@ -97,10 +97,12 @@ class Simulator(PoCSimulator):
 		
 		testbenchName =			self.host.tbConfig[str(pocEntity)]['TestbenchModule']
 		fileListFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
-		tclFilePath =				self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['xSimTclScript']
+		tclBatchFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['xSimBatchScript']
+		tclGUIFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['xSimGUIScript']
 		wcfgFilePath =			self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['waveformConfigFile']
 		prjFilePath =				tempXSimPath / (testbenchName + ".prj")
-		logFilePath =				tempXSimPath / (testbenchName + ".log")
+		xelabLogFilePath =	tempXSimPath / (testbenchName + ".xelab.log")
+		xSimLogFilePath =		tempXSimPath / (testbenchName + ".xsim.log")
 		snapshotName =			testbenchName
 
 		# report the next steps in execution
@@ -155,9 +157,9 @@ class Simulator(PoCSimulator):
 		parameterList = [
 			str(xelabExecutablePath),
 			'--prj',	str(prjFilePath),
-			'--log',	str(logFilePath),
+			'--log',	str(xelabLogFilePath),
 			'--timeprecision_vhdl', '1fs',			# set minimum time precision to 1 fs
-			'--mt', '4',													# enable multithread support
+			'--mt', '4',												# enable multithread support
 			'--O2',
 			'--debug', 'typical',
 			'--snapshot',	snapshotName,
@@ -196,7 +198,7 @@ class Simulator(PoCSimulator):
 		self.printNonQuiet("  running simulation...")
 		parameterList = [
 			str(xSimExecutablePath),
-			'--log', str(logFilePath),
+			'--log', str(xSimLogFilePath),
 			'--stats'
 		]
 		
@@ -206,12 +208,15 @@ class Simulator(PoCSimulator):
 			parameterList += ['--onfinish', 'stop']
 			
 		if (not self.__guiMode):
-			parameterList += ['--tclbatch', str(tclFilePath)]
+			parameterList += ['-tclbatch', str(tclBatchFilePath)]
 		else:
-			parameterList += ['--gui']
+			parameterList += [
+				'-tclbatch', str(tclGUIFilePath),
+				'-gui'
+			]
 			# if waveform configuration file exists, load it's settings
 			if wcfgFilePath.exists():
-				parameterList += ['--wave', str(wcfgFilePath)]
+				parameterList += ['--view', str(wcfgFilePath)]
 		
 		# append testbench name
 		parameterList += [
