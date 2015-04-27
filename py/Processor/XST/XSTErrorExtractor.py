@@ -1,10 +1,10 @@
 
 import re
 
-from Base import Extractor
-from Processor import ProcessorException
+from Base.Base import BaseExtractor
+from Processor.Exceptions import *
 
-class ErrorExtractor(Extractor):
+class Extractor(BaseExtractor):
 
 	@classmethod
 	def getInitializationRegExpString(cls):

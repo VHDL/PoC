@@ -39,31 +39,36 @@ else:
 	from sys import exit
 
 	print("=" * 80)
-	print("{: ^80s}".format("PoC Library - Python Class PoCGHDLSimulator"))
+	print("{: ^80s}".format("The PoC Library - Python Module Simulator.GHDLSimulator"))
 	print("=" * 80)
 	print()
 	print("This is no executable file!")
 	exit(1)
 
-import PoC
-import PoCSimulator
+from pathlib import Path
 
-class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
+from Base.Exceptions import *
+from Simulator.Base import PoCSimulator 
+from Simulator.Exceptions import * 
+
+class Simulator(PoCSimulator):
 
 	__executables = {}
+	__vhdlStandard = ""
 
-	def __init__(self, host, showLogs, showReport):
+	def __init__(self, host, showLogs, showReport, vhdlStandard):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
+
+		self.__vhdlStandard = vhdlStandard
 
 		if (host.platform == "Windows"):
 			self.__executables['ghdl'] = "ghdl.exe"
 		elif (host.platform == "Linux"):
 			self.__executables['ghdl'] = "ghdl"
 		else:
-			raise PoC.PoCPlatformNotSupportedException(self.platform)
+			raise PlatformNotSupportedException(self.platform)
 		
 	def run(self, pocEntity):
-		from pathlib import Path
 		import os
 		import re
 		import subprocess
@@ -79,10 +84,10 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 			tempGHDLPath.mkdir(parents=True)
 
 		# setup all needed paths to execute fuse
-		ghdlExecutablePath =		self.host.directories["GHDLBinary"] / self.__executables['ghdl']
+		ghdlExecutablePath =	self.host.directories["GHDLBinary"] / self.__executables['ghdl']
 		
-		testbenchName = self.host.tbConfig[str(pocEntity)]['TestbenchModule']
-		fileListFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['FileListFile']
+		testbenchName =				self.host.tbConfig[str(pocEntity)]['TestbenchModule']
+		fileListFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
 		
 		if (self.verbose):
 			print("  Commands to be run:")
@@ -101,7 +106,7 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		os.chdir(str(tempGHDLPath))
 
 		# parse project filelist
-		filesLineRegExpStr =	r"\s*(?P<Keyword>(vhdl|xilinx))"				# Keywords: vhdl, xilinx
+		filesLineRegExpStr =	r"\s*(?P<Keyword>(vhdl(\-(87|93|02|08))?|xilinx))"				# Keywords: vhdl[-nn], xilinx
 		filesLineRegExpStr +=	r"\s+(?P<VHDLLibrary>[_a-zA-Z0-9]+)"		#	VHDL library name
 		filesLineRegExpStr +=	r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
 		filesLineRegExp = re.compile(filesLineRegExpStr)
@@ -119,11 +124,14 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 				if (filesLineRegExpMatch is not None):
 					if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
 						vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
+					elif (filesLineRegExpMatch.group('Keyword')[0:5] == "vhdl-"):
+						if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
+							vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
 					elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
 						if not self.host.directories.__contains__("ISEInstallation"):
 							# check if ISE is configure
 							if (len(self.host.pocConfig.options("Xilinx-ISE")) == 0):
-								raise PoCNotConfiguredException("This testbench requires some Xilinx Primitves. Please configure Xilinx ISE / Vivado")
+								raise NotConfiguredException("This testbench requires some Xilinx Primitves. Please configure Xilinx ISE / Vivado")
 
 							self.host.directories["ISEInstallation"] = Path(self.host.pocConfig['Xilinx-ISE']['InstallationDirectory'])
 						
@@ -131,12 +139,13 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
 
 					if (not vhdlFilePath.exists()):
-						raise PoCSimulator.PoCSimulatorException("Can not analyse " + str(vhdlFilePath)) from FileNotFoundError(str(vhdlFilePath))
+						raise SimulatorException("Can not analyse " + str(vhdlFilePath)) from FileNotFoundError(str(vhdlFilePath))
 					
 					# assemble fuse command as list of parameters
 					parameterList = [
 						str(ghdlExecutablePath),
-						'-a', '-P.', '--syn-binding', '--std=93',
+						'-a', '-P.', '--syn-binding',
+						('--std=%s' % self.__vhdlStandard),
 						('--work=%s' % vhdlLibraryName),
 						str(vhdlFilePath)
 					]
@@ -170,7 +179,9 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		
 			parameterList = [
 				str(ghdlExecutablePath),
-				'-r', '--std=93', '--syn-binding', '-P.',
+				'-r', '-P.',
+				('--std=%s' % self.__vhdlStandard),
+				'--syn-binding',
 				'--work=test',
 				testbenchName
 			]
@@ -203,7 +214,9 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 		
 			parameterList = [
 				str(ghdlExecutablePath),
-				'-e', '--std=93', '--syn-binding', '-P.',
+				'-e', '-P.',
+				('--std=%s' % self.__vhdlStandard),
+				'--syn-binding',
 				'--work=test',
 				testbenchName
 			]
@@ -246,7 +259,7 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 				for err in analyzeErrors:
 					print("    %s: '%s' in file '%s' at line %s" % (err['Type'], err['Component'], err['File'], err['Line']))
 			
-				raise PoCSimulator.PoCSimulatorException("Errors while GHDL analysis phase.")
+				raise SimulatorException("Errors while GHDL analysis phase.")
 
 	
 			# run simulation
@@ -280,6 +293,6 @@ class PoCGHDLSimulator(PoCSimulator.PoCSimulator):
 			else:
 				print("Testbench '%s': FAILED" % testbenchName)
 				
-		except PoCSimulator.PoCSimulatorException as ex:
-			raise PoCTestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
+		except SimulatorException as ex:
+			raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
 	

@@ -38,17 +38,17 @@ if __name__ != "__main__":
 else:
 	from sys import exit
 
-	print("========================================================================")
-	print("                  SATAController - Python Class Processor               ")
-	print("========================================================================")
+	print("=" * 80)
+	print("{: ^80s}".format("The PoC Library - Python Module Processor.Base"))
+	print("=" * 80)
 	print()
 	print("This is no executable file!")
 	exit(1)
 
-import Base
 
+from Base.Exceptions import *
 
-class Processor(object):
+class PoCProcessor(object):
 	__host = None
 	__debug = False
 	__verbose = False
@@ -87,7 +87,7 @@ class Processor(object):
 			print(message)
 
 
-class ProcessorException(Base.BaseException):
+class ProcessorException(BaseException):
 	def __init__(self, message=""):
 		super().__init__(message)
 		self.message = message

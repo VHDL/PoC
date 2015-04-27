@@ -30,7 +30,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+#
 # entry point
 if __name__ != "__main__":
 	# place library initialization code here
@@ -38,57 +38,103 @@ if __name__ != "__main__":
 else:
 	from sys import exit
 
-	print("========================================================================")
-	print("                  SATAController - Python Class Base                    ")
-	print("========================================================================")
+	print("=" * 80)
+	print("{: ^80s}".format("The PoC Library - Python Module Base.SolutionBase"))
+	print("=" * 80)
 	print()
 	print("This is no executable file!")
 	exit(1)
 
 
-from enum import Enum, EnumMeta, unique
-import configparser
 from pathlib import Path
-import re
+from Base.Exceptions import *
 
 
-class Base(object):
-	from platform import system
+class CommandLineProgram(object):
+	import platform
 	
-	__debug = False
-	__verbose = False
-	__quiet = False
-	platform = system()
+	# configure hard coded variables here
+	__scriptDirectoryName = 			"py"
+	__pocPrivateConfigFileName =	"config.private.ini"
+	__pocPublicConfigFileName =		"config.public.ini"
 
-	Directories = {
-		"Root"					: Path.cwd()
-		}
+	# private fields
+	__debug =			False
+	__verbose =		False
+	__quiet =			False
+	__platform = platform.system()			# load platform information (Windows, Linux, ...)
+
+	__directories =	{}
+	__files =				{}
+	__pocConfig =		None
 	
-	Files = {
-		"Config"				: None
-	}
+	# constructor
+	# ============================================================================
+	def __init__(self, debug, verbose, quiet):
+		from os import environ
+		
+		# save flags
+		self.__debug =		debug
+		self.__verbose =	verbose
+		self.__quiet =		quiet
+		
+		# check for environment variables
+		if (environ.get('PoCRootDirectory') == None):			raise EnvironmentException("Shell environment does not provide 'PoCRootDirectory' variable.")
+		if (environ.get('PoCScriptDirectory') == None):		raise EnvironmentException("Shell environment does not provide 'PoCScriptDirectory' variable.")
+		
+		self.directories['Working'] =			Path.cwd()
+		self.directories['PoCRoot'] =			Path(environ.get('PoCRootDirectory'))
+		self.directories['ScriptRoot'] =	Path(environ.get('PoCRootDirectory'))
+		self.files['PoCPrivateConfig'] =	self.directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPrivateConfigFileName
+		self.files['PoCPublicConfig'] =		self.directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPublicConfigFileName
+		
+		self.readPoCConfiguration()
+
+	# class properties
+	# ============================================================================
+	@property
+	def debug(self):				return self.__debug
+	
+	@property
+	def verbose(self):			return self.__verbose
+	
+	@property
+	def quiet(self):				return self.__quiet
+	
+	@property
+	def platform(self):			return self.__platform
+	
+	@property
+	def directories(self):	return self.__directories
+			
+	@property
+	def files(self):				return self.__files
+	
+
+#	Directories = {
+#		"Root"					: Path.cwd()
+#		}
+#	
+#	Files = {
+#		"Config"				: None
+#	}
 	
 	__configFileName = "configuration.ini"
 	config = None
-	
-	def __init__(self, debug, verbose, quiet):
-		self.__debug = debug
-		self.__verbose = verbose
-		self.__quiet = quiet
 
-		self.__readConfiguration()
 		
 	# read  configuration
 	# ============================================================================
 	def __readConfiguration(self):
+		from configparser import ConfigParser, ExtendedInterpolation
+		
 		configFilePath = self.Directories["Root"] / self.__configFileName
 		self.Files["Configuration"]	= configFilePath
 		
 		self.printDebug("Reading configuration from '%s'" % str(configFilePath))
-		if not configFilePath.exists():
-			raise NotConfiguredException("Configuration file does not exist. (%s)" % str(configFilePath))
+		if not configFilePath.exists():	raise NotConfiguredException("Configuration file does not exist. (%s)" % str(configFilePath))
 		
-		self.config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+		self.config = ConfigParser(interpolation=ExtendedInterpolation())
 		self.config.optionxform = str
 		self.config.read(str(configFilePath))
 		
@@ -114,15 +160,9 @@ class Base(object):
 #		self.Directories["XSTTemp"] =				self.Directories["Temp"] / self.structure['DirectoryNames']['ISESynthesisFiles']
 #		#self.Directories["QuartusTemp"] =	self.Directories["Temp"] / self.structure['DirectoryNames']['QuartusSynthesisFiles']
 	
-	def getDebug(self):
-		return self.__debug
-		
-	def getVerbose(self):
-		return self.__verbose
 	
-	def getQuiet(self):
-		return self.__quiet
-	
+	# print messages
+	# ============================================================================
 	def printDebug(self, message):
 		if (self.__debug):
 			print("DEBUG: " + message)
@@ -138,36 +178,3 @@ class Base(object):
 
 class Extractor(object):
 	pass
-			
-class NotImplementedException(Exception):
-	def __init__(self, message):
-		super().__init__()
-		self.message = message
-	
-class ArgumentException(Exception):
-	def __init__(self, message):
-		super().__init__()
-		self.message = message
-		
-class BaseException(Exception):
-	def __init__(self, message=""):
-		super().__init__()
-		self.message = message
-
-	def __str__(self):
-		return self.message
-		
-class EnvironmentException(BaseException):
-	def __init__(self, message=""):
-		super().__init__(message)
-		self.message = message
-
-class PlatformNotSupportedException(BaseException):
-	def __init__(self, message=""):
-		super().__init__(message)
-		self.message = message
-
-class NotConfiguredException(BaseException):
-	def __init__(self, message=""):
-		super().__init__(message)
-		self.message = message

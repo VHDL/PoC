@@ -32,18 +32,13 @@
 # ==============================================================================
 
 from pathlib import Path
-import configparser
-import enum
-import os
-import re
 
-import Base
-from Processor							import Processor, ProcessorException
-from WarningExtractor				import WarningExtractor
-from ErrorExtractor					import ErrorExtractor
-from FSMTokenFileExtractor	import FSMTokenFileExtractor
+from Base.Exceptions import *
+from Processor.Base import PoCProcessor 
+from Processor.Exceptions import *
+from Processor.XST import *
 
-class PostProcessor(Base.Base):
+class PostProcessor(PoCProcessor):
 	#__netListConfigFileName = "configuration.ini"
 	dryRun = False
 	#netListConfig = None
@@ -51,10 +46,12 @@ class PostProcessor(Base.Base):
 	processors = []
 	
 	def __init__(self, debug, verbose, quiet):
+		from configparser import ConfigParser, ExtendedInterpolation
+		
 		super(self.__class__, self).__init__(debug, verbose, quiet)
 
 		if not ((self.platform == "Windows") or (self.platform == "Linux")):
-			raise Base.PlatformNotSupportedException(self.platform)
+			raise PlatformNotSupportedException(self.platform)
 		
 		# hard coded
 		projectName = "StreamDBTest_ML505"
@@ -69,10 +66,10 @@ class PostProcessor(Base.Base):
 		
 		if not projectConfigurationFilePath.exists():
 			raise NotConfiguredException("Project configuration file does not exist. (%s)" % str(projectConfigurationFilePath))
-		if not xstReportFilePath.exists():							raise Exception("Synthesis report file does not exist. (%s)" % str(xstReportFilePath))
+		if not xstReportFilePath.exists():							raise Exception("Compiler report file does not exist. (%s)" % str(xstReportFilePath))
 
 		self.printDebug("Reading project configuration from '%s'" % str(projectConfigurationFilePath))		
-		self.projectConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+		self.projectConfig = ConfigParser(interpolation=ExtendedInterpolation())
 		self.projectConfig.optionxform = str
 		self.projectConfig.read([str(self.Files["Configuration"]), str(projectConfigurationFilePath)])
 	
@@ -133,6 +130,8 @@ class PostProcessor(Base.Base):
 				self.analyzeFSMEncodings(value)
 
 	def analyzeWarnings(self, warnings):
+		import re
+		
 		regExpString = r"(?P<Process>\w+)\((?P<WarningID>\d+)\)"
 		regExp = re.compile(regExpString)
 	
@@ -162,6 +161,8 @@ class PostProcessor(Base.Base):
 			
 				
 	def analyzeFSMEncodings(self, stateMachines):
+		import re
+		
 		print("FSMs found: (%i)" % len(stateMachines))
 		
 		for fsm in stateMachines:
@@ -200,11 +201,13 @@ class PostProcessor(Base.Base):
 				tokenFileHandle.write(tokenFileContent)
 		
 	def compileRegExp(self):
+		import re
+		
 		for processor in self.processors:
 			processor['RegExp'] = re.compile(processor['RegExpString'])
 					
 	def enableFSMTokenFileExtraction(self):
-		ext = FSMTokenFileExtractor
+		ext = XSTFSMTokenFileExtractor.Extractor
 		self.processors.append({
 			'Name' :					ext.__name__,
 			'RegExpString' :	ext.getInitializationRegExpString(),
@@ -213,7 +216,7 @@ class PostProcessor(Base.Base):
 		})
 	
 	def enableErrorExtraction(self):
-		ext = ErrorExtractor
+		ext = XSTErrorExtractor.Extractor
 		self.processors.append({
 			'Name' :					ext.__name__,
 			'RegExpString' :	ext.getInitializationRegExpString(),
@@ -222,7 +225,7 @@ class PostProcessor(Base.Base):
 		})
 	
 	def enableWarningExtraction(self):
-		ext = WarningExtractor
+		ext = XSTWarningExtractor.Extractor
 		self.processors.append({
 			'Name' :					ext.__name__,
 			'RegExpString' :	ext.getInitializationRegExpString(),
@@ -327,12 +330,12 @@ def main():
 #		print()
 #		return
 	
-	except Base.BaseException as ex:
+	except BaseException as ex:
 		print("ERROR: %s" % ex.message)
 		print()
 		return
 	
-	except Base.NotImplementedException as ex:
+	except NotImplementedException as ex:
 		print("ERROR: %s" % ex.message)
 		print()
 		return

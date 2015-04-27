@@ -39,7 +39,7 @@ package my_config is
   -- Change these lines to setup configuration.
   constant MY_BOARD		: string	:= "KC705";		-- KC705 - Xilinx Kintex 7 reference design board: XC7K325T
   constant MY_DEVICE	: string	:= "None";		-- infer from MY_BOARD
- 	constant MY_VERBOSE	: boolean	:= true;
+ 	constant MY_VERBOSE	: boolean	:= FALSE;
 end;
 
 
