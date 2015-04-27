@@ -108,7 +108,7 @@ class Testbench(CommandLineProgram):
 		simulator = ISESimulator.Simulator(self, showLogs, showReport)
 		simulator.run(entityToSimulate)
 
-	def xSimSimulation(self, module, showLogs, showReport):
+	def xSimSimulation(self, module, showLogs, showReport, xSimInteractiveMode, xSimGUIMode):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx-Vivado")) == 0):	raise NotConfiguredException("Xilinx Vivado is not configured on this system.")
 
@@ -118,7 +118,7 @@ class Testbench(CommandLineProgram):
 
 		entityToSimulate = Entity(self, module)
 
-		simulator = VivadoSimulator.Simulator(self, showLogs, showReport)
+		simulator = VivadoSimulator.Simulator(self, showLogs, showReport, xSimInteractiveMode, xSimGUIMode)
 		simulator.run(entityToSimulate)
 
 	def vSimSimulation(self, module, showLogs, showReport):
@@ -181,6 +181,8 @@ def main():
 		group21.add_argument('--ghdl',	metavar="<Entity>",	dest="ghdl",				help='use GHDL Simulator (ghdl)')
 		group3 = argParser.add_argument_group('Options')
 		group3.add_argument('--std',	metavar="<version>",	dest="std",					help='set VHDL standard [87,93,02,08]; default=93')
+		group3.add_argument('-i', '--interactive',					dest="interactive",	help='start simulation in interactive mode',	action='store_const', const=True, default=False)
+		group3.add_argument('-g', '--gui',									dest="gui",					help='start simulation in gui mode',					action='store_const', const=True, default=False)
 
 		# parse command line options
 		args = argParser.parse_args()
@@ -207,7 +209,10 @@ def main():
 		elif (args.isim is not None):
 			test.iSimSimulation(args.isim, args.showLog, args.showReport)
 		elif (args.xsim is not None):
-			test.xSimSimulation(args.xsim, args.showLog, args.showReport)
+			xSimInteractiveMode =	args.interactive
+			xSimGUIMode =					args.gui
+			
+			test.xSimSimulation(args.xsim, args.showLog, args.showReport, xSimInteractiveMode, xSimGUIMode)
 		elif (args.vsim is not None):
 			test.vSimSimulation(args.vsim, args.showLog, args.showReport)
 		elif (args.ghdl is not None):

@@ -54,11 +54,16 @@ from Simulator.Exceptions import *
 
 class Simulator(PoCSimulator):
 
-	__executables = {}
-	__vhdlStandard = "93"
+	__executables =			{}
+	__vhdlStandard =		"93"
+	__interactiveMode =	False
+	__guiMode =					False
 
-	def __init__(self, host, showLogs, showReport):
+	def __init__(self, host, showLogs, showReport, interactiveMode, guiMode):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
+
+		self.__interactiveMode =	interactiveMode
+		self.__guiMode =					guiMode
 
 		if (host.platform == "Windows"):
 			self.__executables['xElab'] =		"xelab.bat"
@@ -90,9 +95,10 @@ class Simulator(PoCSimulator):
 		xelabExecutablePath =		self.host.directories["VivadoBinary"] / self.__executables['xElab']
 		xSimExecutablePath =		self.host.directories["VivadoBinary"] / self.__executables['xSim']
 		
-		testbenchName =		 self.host.tbConfig[str(pocEntity)]['TestbenchModule']
-		fileListFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['FileListFile']
+		testbenchName =			self.host.tbConfig[str(pocEntity)]['TestbenchModule']
+		fileListFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
 		tclFilePath =				self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['xSimTclScript']
+		wcfgFilePath =			self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['waveformConfigFile']
 		prjFilePath =				tempXSimPath / (testbenchName + ".prj")
 		logFilePath =				tempXSimPath / (testbenchName + ".log")
 		snapshotName =			testbenchName
@@ -191,9 +197,21 @@ class Simulator(PoCSimulator):
 		parameterList = [
 			str(xSimExecutablePath),
 			'--log', str(logFilePath),
-			'--tclbatch', str(tclFilePath),
 			'--stats'
 		]
+		
+		if (not self.__interactiveMode):
+			parameterList += ['--onfinish', 'quit']
+		else:
+			parameterList += ['--onfinish', 'stop']
+			
+		if (not self.__guiMode):
+			parameterList += ['--tclbatch', str(tclFilePath)]
+		else:
+			parameterList += ['--gui']
+			# if waveform configuration file exists, load it's settings
+			if wcfgFilePath.exists():
+				parameterList += ['--wave', str(wcfgFilePath)]
 		
 		# append testbench name
 		parameterList += [
@@ -220,14 +238,15 @@ class Simulator(PoCSimulator):
 			print("--------------------------------------------------------------------------------")		
 	
 		print()
-		try:
-			result = self.checkSimulatorOutput(simulatorLog)
-			
-			if (result == True):
-				print("Testbench '%s': PASSED" % testbenchName)
-			else:
-				print("Testbench '%s': FAILED" % testbenchName)
+		if (not self.__guiMode):
+			try:
+				result = self.checkSimulatorOutput(simulatorLog)
 				
-		except SimulatorException as ex:
-			raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
-	
+				if (result == True):
+					print("Testbench '%s': PASSED" % testbenchName)
+				else:
+					print("Testbench '%s': FAILED" % testbenchName)
+					
+			except SimulatorException as ex:
+				raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
+		
