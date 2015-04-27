@@ -54,9 +54,9 @@ use			PoC.sata_TransceiverTypes.all;
 entity sata_TransceiverLayer is
 	generic (
 		DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
-		ENABLE_DEBUGport					: BOOLEAN											:= FALSE;																		-- export internal signals to upper layers for debug purposes
+		ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- export internal signals to upper layers for debug purposes
 		CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																							-- 150 MHz
-		portS											: POSITIVE										:= 2;																											-- Number of ports per Transceiver
+		PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 => SATA_GENERATION_2,	1 => SATA_GENERATION_2)				-- intial SATA Generation
 	);
 	port (
@@ -74,8 +74,8 @@ entity sata_TransceiverLayer is
 		Error											: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(portS - 1 downto 0);
 
 		-- debug ports
-		DebugportIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(portS	- 1 downto 0);
-		DebugportOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(portS	- 1 downto 0);
+		DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
+		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
 
 		SATA_Clock								: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
 
@@ -157,7 +157,7 @@ begin
 				generic map (
 					DEBUG											=> DEBUG,
 					CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
-					portS											=> portS,													-- Number of ports per Transceiver
+					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
 				port map (
@@ -172,8 +172,8 @@ begin
 					Error											=> Error,
 
 					-- debug ports
-					DebugportIn								=> DebugportIn,
-					DebugportOut							=> DebugportOut,
+					DebugPortIn								=> DebugPortIn,
+					DebugPortOut							=> DebugPortOut,
 
 					SATA_Clock								=> SATA_Clock,
 
@@ -207,7 +207,7 @@ begin
 				generic map (
 					DEBUG											=> DEBUG,
 					CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
-					portS											=> portS,													-- Number of ports per Transceiver
+					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
 				port map (
@@ -222,8 +222,8 @@ begin
 					Error											=> Error,
 
 					-- debug ports
-					DebugportIn								=> DebugportIn,
-					DebugportOut							=> DebugportOut,
+					DebugPortIn								=> DebugPortIn,
+					DebugPortOut							=> DebugPortOut,
 
 					SATA_Clock								=> SATA_Clock,
 
@@ -256,9 +256,9 @@ begin
 			Trans : sata_Transceiver_Series7_GTXE2
 				generic map (
 					DEBUG											=> DEBUG,
-					ENABLE_DEBUGport					=> ENABLE_DEBUGport,
+					ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
 					CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
-					portS											=> portS,													-- Number of ports per Transceiver
+					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
 				port map (
@@ -273,8 +273,8 @@ begin
 					Error											=> Error,
 
 					-- debug ports
-					DebugportIn								=> DebugportIn,
-					DebugportOut							=> DebugportOut,
+					DebugPortIn								=> DebugPortIn,
+					DebugPortOut							=> DebugPortOut,
 
 					SATA_Clock								=> SATA_Clock,
 
@@ -309,7 +309,7 @@ begin
 			Trans : sata_Transceiver_Stratix2GX_GXB
 				generic map (
 					CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
-					portS											=> portS,													-- Number of ports per Transceiver
+					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
 				port map (
@@ -324,8 +324,8 @@ begin
 					Error											=> Error,
 
 					-- debug ports
---					DebugportIn								=> DebugportIn,
---					DebugportOut							=> DebugportOut,
+--					DebugPortIn								=> DebugPortIn,
+--					DebugPortOut							=> DebugPortOut,
 
 					SATA_Clock								=> SATA_Clock,
 
@@ -358,7 +358,7 @@ begin
 			Trans : sata_Transceiver_Stratix4GX_GXB
 				generic map (
 					CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
-					portS											=> portS,													-- Number of ports per Transceiver
+					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
 				port map (
@@ -373,8 +373,8 @@ begin
 					Error											=> Error,
 
 					-- debug ports
---					DebugportIn								=> DebugportIn,
---					DebugportOut							=> DebugportOut,
+--					DebugPortIn								=> DebugPortIn,
+--					DebugPortOut							=> DebugPortOut,
 
 					SATA_Clock								=> SATA_Clock,
 

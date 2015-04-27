@@ -87,7 +87,7 @@ class Simulator(PoCSimulator):
 		ghdlExecutablePath =	self.host.directories["GHDLBinary"] / self.__executables['ghdl']
 		
 		testbenchName =				self.host.tbConfig[str(pocEntity)]['TestbenchModule']
-		fileListFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['FileListFile']
+		fileListFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
 		
 		if (self.verbose):
 			print("  Commands to be run:")

@@ -1,3 +1,3 @@
 run all
 show time
-quit
+exit
