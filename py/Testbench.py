@@ -90,7 +90,7 @@ class Testbench(CommandLineProgram):
 		return("return ...")
 		return
 	
-	def isimSimulation(self, module, showLogs, showReport):
+	def iSimSimulation(self, module, showLogs, showReport):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
 		
@@ -108,16 +108,20 @@ class Testbench(CommandLineProgram):
 		simulator = ISESimulator.Simulator(self, showLogs, showReport)
 		simulator.run(entityToSimulate)
 
-	def xsimSimulation(self, module, showLogs, showReport):
+	def xSimSimulation(self, module, showLogs, showReport):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx-Vivado")) == 0):	raise NotConfiguredException("Xilinx Vivado is not configured on this system.")
+
+		# prepare some paths
+		self.directories["VivadoInstallation"] =	Path(self.pocConfig['Xilinx-Vivado']['InstallationDirectory'])
+		self.directories["VivadoBinary"] =				Path(self.pocConfig['Xilinx-Vivado']['BinaryDirectory'])
 
 		entityToSimulate = Entity(self, module)
 
 		simulator = VivadoSimulator.Simulator(self, showLogs, showReport)
 		simulator.run(entityToSimulate)
 
-	def vsimSimulation(self, module, showLogs, showReport):
+	def vSimSimulation(self, module, showLogs, showReport):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Questa")) == 0):	raise NotConfiguredException("Mentor Graphics Questa is not configured on this system.")
 
@@ -201,11 +205,11 @@ def main():
 		elif (args.list is not None):
 			test.listSimulations(args.list)
 		elif (args.isim is not None):
-			test.isimSimulation(args.isim, args.showLog, args.showReport)
+			test.iSimSimulation(args.isim, args.showLog, args.showReport)
 		elif (args.xsim is not None):
-			test.xsimSimulation(args.xsim, args.showLog, args.showReport)
+			test.xSimSimulation(args.xsim, args.showLog, args.showReport)
 		elif (args.vsim is not None):
-			test.vsimSimulation(args.vsim, args.showLog, args.showReport)
+			test.vSimSimulation(args.vsim, args.showLog, args.showReport)
 		elif (args.ghdl is not None):
 			if ((args.std is not None) and (args.std in ["87","93","02","08"])):
 				vhdlStandard = args.std

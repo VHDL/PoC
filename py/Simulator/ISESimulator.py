@@ -186,7 +186,7 @@ class Simulator(PoCSimulator):
 		try:
 			simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
 		except subprocess.CalledProcessError as ex:
-			print("ERROR while executing ghdl: %s" % str(vhdlFilePath))
+			print("ERROR while executing iSim: %s" % str(vhdlFilePath))
 			print("Return Code: %i" % ex.returncode)
 			print("--------------------------------------------------------------------------------")
 			print(ex.output)
