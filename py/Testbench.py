@@ -90,7 +90,7 @@ class Testbench(CommandLineProgram):
 		return("return ...")
 		return
 	
-	def iSimSimulation(self, module, showLogs, showReport):
+	def iSimSimulation(self, module, showLogs, showReport, iSimInteractiveMode, iSimGUIMode):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
 		
@@ -105,7 +105,7 @@ class Testbench(CommandLineProgram):
 		entityToSimulate = Entity(self, module)
 
 
-		simulator = ISESimulator.Simulator(self, showLogs, showReport)
+		simulator = ISESimulator.Simulator(self, showLogs, showReport, iSimInteractiveMode, iSimGUIMode)
 		simulator.run(entityToSimulate)
 
 	def xSimSimulation(self, module, showLogs, showReport, xSimInteractiveMode, xSimGUIMode):
@@ -207,7 +207,10 @@ def main():
 		elif (args.list is not None):
 			test.listSimulations(args.list)
 		elif (args.isim is not None):
-			test.iSimSimulation(args.isim, args.showLog, args.showReport)
+			iSimInteractiveMode =	args.interactive
+			iSimGUIMode =					args.gui
+			
+			test.iSimSimulation(args.isim, args.showLog, args.showReport, iSimInteractiveMode, iSimGUIMode)
 		elif (args.xsim is not None):
 			xSimInteractiveMode =	args.interactive
 			xSimGUIMode =					args.gui

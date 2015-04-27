@@ -54,11 +54,16 @@ from Simulator.Exceptions import *
 
 class Simulator(PoCSimulator):
 
-	__executables = {}
-	__vhdlStandard = "93"
+	__executables =			{}
+	__vhdlStandard =		"93"
+	__interactiveMode =	False
+	__guiMode =					False
 
-	def __init__(self, host, showLogs, showReport):
+	def __init__(self, host, showLogs, showReport, interactiveMode, guiMode):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
+
+		self.__interactiveMode =	interactiveMode
+		self.__guiMode =					guiMode
 
 		if (host.platform == "Windows"):
 			self.__executables['vhcomp'] =	"vhpcomp.exe"
@@ -89,11 +94,14 @@ class Simulator(PoCSimulator):
 		#vhpcompExecutablePath =	self.host.directories["ISEBinary"] / self.__executables['vhpcomp']
 		fuseExecutablePath =		self.host.directories["ISEBinary"] / self.__executables['fuse']
 		
-		testbenchName =		 self.host.tbConfig[str(pocEntity)]['TestbenchModule']
-		fileListFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['FileListFile']
-		tclFilePath =				self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['iSimTclScript']
+		testbenchName =			self.host.tbConfig[str(pocEntity)]['TestbenchModule']
+		fileListFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
+		tclBatchFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['iSimBatchScript']
+		tclGUIFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['iSimGUIScript']
+		wcfgFilePath =			self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['waveformConfigFile']
 		prjFilePath =				tempISimPath / (testbenchName + ".prj")
 		exeFilePath =				tempISimPath / (testbenchName + ".exe")
+		iSimLogFilePath =		tempISimPath / (testbenchName + ".isim.log")
 
 		# report the next steps in execution
 #		if (self.getVerbose()):
@@ -149,9 +157,10 @@ class Simulator(PoCSimulator):
 			('test.%s' % testbenchName),
 			'--incremental',
 			'--timeprecision_vhdl', '1fs',			# set minimum time precision to 1 fs
-			'-mt', '4',													# enable multithread support
-			'-prj',	str(prjFilePath),
-			'-o',		str(exeFilePath)
+			'--mt', '4',												# enable multithread support
+			'--rangecheck',
+			'--prj',	str(prjFilePath),
+			'-o',			str(exeFilePath)
 		]
 		command = " ".join(parameterList)
 		
@@ -176,8 +185,23 @@ class Simulator(PoCSimulator):
 		self.printNonQuiet("  running simulation...")
 		parameterList = [
 			str(exeFilePath),
-			'-tclbatch', str(tclFilePath)
+			'-log', str(iSimLogFilePath)
 		]
+		
+		if (not self.__guiMode):
+			parameterList += ['-tclbatch', str(tclBatchFilePath)]
+		else:
+			parameterList += [
+				'-tclbatch', str(tclGUIFilePath),
+				'-gui'
+			]
+			
+			self.printDebug("waveform config file: %s" % str(wcfgFilePath))
+			
+			# if waveform configuration file exists, load it's settings
+			if wcfgFilePath.exists():
+				parameterList += ['-view', str(wcfgFilePath)]
+		
 		command = " ".join(parameterList)
 		
 		self.printDebug("call simulation: %s" % str(parameterList))
@@ -198,14 +222,15 @@ class Simulator(PoCSimulator):
 			print("--------------------------------------------------------------------------------")		
 	
 		print()
-		try:
-			result = self.checkSimulatorOutput(simulatorLog)
-			
-			if (result == True):
-				print("Testbench '%s': PASSED" % testbenchName)
-			else:
-				print("Testbench '%s': FAILED" % testbenchName)
+		if (not self.__guiMode):
+			try:
+				result = self.checkSimulatorOutput(simulatorLog)
 				
-		except SimulatorException as ex:
-			raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
+				if (result == True):
+					print("Testbench '%s': PASSED" % testbenchName)
+				else:
+					print("Testbench '%s': FAILED" % testbenchName)
+					
+			except SimulatorException as ex:
+				raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
 	
