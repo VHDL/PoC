@@ -203,8 +203,7 @@ package utils is
   function lssb(arg : std_logic_vector) return std_logic_vector;
   function lssb(arg : bit_vector) return bit_vector;
 
-  -- Returns the position of the least-significant set bit assigning
-  -- the rightmost position an index of zero (0).
+  -- Returns the index of the least-significant set bit.
   --
   -- @synthesis supported
   --

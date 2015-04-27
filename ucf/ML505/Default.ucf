@@ -52,7 +52,7 @@ TIMESPEC "TS_SystemClock"	= PERIOD "TGRP_SystemClock"		200 MHz	HIGH 50 %;
 #$;			Device:					MBH2100H-66.000 MHz
 ##			Frequency:			100 MHz, #$;100ppm
 NET "ML505_UserClock"				LOC = "AH15";						## {IN}			X1.Out
-NET "ML505_UserClock"				IOSTANDARD = LVDS_25;
+NET "ML505_UserClock"				IOSTANDARD = LVCMOS33;
 ##
 NET "ML505_UserClock"				TNM_NET = "TGRP_UserClock";
 TIMESPEC "TS_UserClock"	= PERIOD "TGRP_UserClock"		100 MHz	HIGH 40 %;
