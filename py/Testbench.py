@@ -90,7 +90,7 @@ class Testbench(CommandLineProgram):
 		return("return ...")
 		return
 	
-	def iSimSimulation(self, module, showLogs, showReport, iSimGUIMode):
+	def iSimSimulation(self, module, showLogs, showReport, guiMode):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
 		
@@ -105,10 +105,10 @@ class Testbench(CommandLineProgram):
 		entityToSimulate = Entity(self, module)
 
 
-		simulator = ISESimulator.Simulator(self, showLogs, showReport, iSimGUIMode)
+		simulator = ISESimulator.Simulator(self, showLogs, showReport, guiMode)
 		simulator.run(entityToSimulate)
 
-	def xSimSimulation(self, module, showLogs, showReport, xSimGUIMode):
+	def xSimSimulation(self, module, showLogs, showReport, guiMode):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx-Vivado")) == 0):	raise NotConfiguredException("Xilinx Vivado is not configured on this system.")
 
@@ -118,7 +118,7 @@ class Testbench(CommandLineProgram):
 
 		entityToSimulate = Entity(self, module)
 
-		simulator = VivadoSimulator.Simulator(self, showLogs, showReport, xSimGUIMode)
+		simulator = VivadoSimulator.Simulator(self, showLogs, showReport, guiMode)
 		simulator.run(entityToSimulate)
 
 	def vSimSimulation(self, module, showLogs, showReport):
@@ -130,7 +130,7 @@ class Testbench(CommandLineProgram):
 		simulator = QuestaSimulator.Simulator(self, showLogs, showReport)
 		simulator.run(entityToSimulate)
 		
-	def ghdlSimulation(self, module, showLogs, showReport, vhdlStandard):
+	def ghdlSimulation(self, module, showLogs, showReport, vhdlStandard, guiMode):
 		# check if GHDL is configure
 		if (len(self.pocConfig.options("GHDL")) == 0):		raise NotConfiguredException("GHDL is not configured on this system.")
 		
@@ -138,9 +138,13 @@ class Testbench(CommandLineProgram):
 		self.directories["GHDLInstallation"] =	Path(self.pocConfig['GHDL']['InstallationDirectory'])
 		self.directories["GHDLBinary"] =				Path(self.pocConfig['GHDL']['BinaryDirectory'])
 		
+		if (len(self.pocConfig.options("GTKWave")) != 0):		
+			self.directories["GTKWInstallation"] =	Path(self.pocConfig['GTKWave']['InstallationDirectory'])
+			self.directories["GTKWBinary"] =				Path(self.pocConfig['GTKWave']['BinaryDirectory'])
+		
 		entityToSimulate = Entity(self, module)
 
-		simulator = GHDLSimulator.Simulator(self, showLogs, showReport, vhdlStandard)
+		simulator = GHDLSimulator.Simulator(self, showLogs, showReport, vhdlStandard, guiMode)
 		simulator.run(entityToSimulate)
 
 
@@ -221,7 +225,10 @@ def main():
 				vhdlStandard = args.std
 			else:
 				vhdlStandard = "93"
-			test.ghdlSimulation(args.ghdl, args.showLog, args.showReport, vhdlStandard)
+			
+			ghdlGUIMode =					args.gui
+			
+			test.ghdlSimulation(args.ghdl, args.showLog, args.showReport, vhdlStandard, ghdlGUIMode)
 		else:
 			argParser.print_help()
 	
