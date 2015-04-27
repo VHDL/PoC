@@ -3,9 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+--
+-- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
@@ -13,7 +13,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,7 +45,7 @@ package satadbg is
 	-- ===========================================================================
 	-- SATA Transceiver Types
 	-- ===========================================================================
-	TYPE T_SATADBG_TRANSCEIVER_OUT IS RECORD
+	type T_SATADBG_TRANSCEIVER_OUT is record
 		ClockNetwork_Reset				: STD_LOGIC;
 		ClockNetwork_ResetDone		: STD_LOGIC;
 		Reset											: STD_LOGIC;
@@ -60,8 +60,8 @@ package satadbg is
 		RP_ConfigRealoaded				: STD_LOGIC;
 		DD_NoDevice								: STD_LOGIC;
 		DD_NewDevice							: STD_LOGIC;
-		TX_RateSelection					: STD_LOGIC_VECTOR(2 DOWNTo 0);
-		RX_RateSelection					: STD_LOGIC_VECTOR(2 DOWNTo 0);
+		TX_RateSelection					: STD_LOGIC_VECTOR(2 downto 0);
+		RX_RateSelection					: STD_LOGIC_VECTOR(2 downto 0);
 		TX_RateSelectionDone			: STD_LOGIC;
 		RX_RateSelectionDone			: STD_LOGIC;
 		TX_Reset									: STD_LOGIC;
@@ -73,7 +73,7 @@ package satadbg is
 		
 		TX_Data										: T_SLV_32;
 		TX_CharIsK								: T_SLV_4;
-		TX_BufferStatus						: STD_LOGIC_VECTOR(1 DOWNTO 0);
+		TX_BufferStatus						: STD_LOGIC_VECTOR(1 downto 0);
 		TX_ComInit								: STD_LOGIC;
 		TX_ComWake								: STD_LOGIC;
 		TX_ComFinish							: STD_LOGIC;
@@ -90,15 +90,15 @@ package satadbg is
 		RX_ComInitDetected				: STD_LOGIC;
 		RX_ComWakeDetected				: STD_LOGIC;
 		RX_Valid									: STD_LOGIC;
-		RX_BufferStatus						: STD_LOGIC_VECTOR(2 DOWNTO 0);
-		RX_ClockCorrectionStatus	: STD_LOGIC_VECTOR(1 DOWNTO 0);
+		RX_BufferStatus						: STD_LOGIC_VECTOR(2 downto 0);
+		RX_ClockCorrectionStatus	: STD_LOGIC_VECTOR(1 downto 0);
 		
 		DRP												: T_XIL_DRP_BUS_OUT;
 		DigitalMonitor						: T_SLV_8;
 		RX_Monitor_Data						: T_SLV_8;
-	END RECORD;
+	end record;
 	
-	TYPE T_SATADBG_TRANSCEIVER_IN IS RECORD
+	type T_SATADBG_TRANSCEIVER_IN is record
 		ForceOOBCommand						: T_SATA_OOB;
 		ForceTXElectricalIdle			: STD_LOGIC;
 		ForceEnableHold						: STD_LOGIC;
@@ -108,13 +108,13 @@ package satadbg is
 		
 		DRP												: T_XIL_DRP_BUS_IN;
 		RX_Monitor_sel						: T_SLV_2;
-	END RECORD;
+	end record;
 	
 	-- ===========================================================================
 	-- SATA Physical Layer Types
 	-- ===========================================================================
-	TYPE T_SATADBG_PHYSICAL_OOBCONTROL_OUT IS RECORD
-		FSM												: STD_LOGIC_VECTOR(4 DOWNTO 0);
+	type T_SATADBG_PHYSICAL_OOBCONTROL_OUT is record
+		FSM												: STD_LOGIC_VECTOR(4 downto 0);
 		Retry											: STD_LOGIC;
 		Timeout										: STD_LOGIC;
 		LinkOK										: STD_LOGIC;
@@ -126,10 +126,10 @@ package satadbg is
 		OOB_HandshakeComplete			: STD_LOGIC;
 		
 		AlignDetected							: STD_LOGIC;
-	END RECORD;
+	end record;
 	
-	TYPE T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT IS RECORD
-		FSM												: STD_LOGIC_VECTOR(2 DOWNTO 0);
+	type T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT is record
+		FSM												: STD_LOGIC_VECTOR(2 downto 0);
 		Status										: T_SATA_PHY_SPEED_STATUS;
 		SATAGeneration						: T_SATA_GENERATION;
 		SATAGeneration_Reset			: STD_LOGIC;
@@ -140,13 +140,13 @@ package satadbg is
 		Trans_Reconfig						: STD_LOGIC;
 		Trans_ReconfigComplete		: STD_LOGIC;
 		Trans_ConfigReloaded			: STD_LOGIC;
-		GenerationChanges					: STD_LOGIC_VECTOR(7 DOWNTO 0);
-		TrysPerGeneration					: STD_LOGIC_VECTOR(7 DOWNTO 0);
-	END RECORD;
+		GenerationChanges					: STD_LOGIC_VECTOR(7 downto 0);
+		TrysPerGeneration					: STD_LOGIC_VECTOR(7 downto 0);
+	end record;
 	
-	TYPE T_SATADBG_PHYSICAL_OUT IS RECORD
+	type T_SATADBG_PHYSICAL_OUT is record
 		-- phy layer fsm
-		FSM												: STD_LOGIC_VECTOR(2 DOWNTO 0);
+		FSM												: STD_LOGIC_VECTOR(2 downto 0);
 		PHY_Status								: T_SATA_PHY_STATUS;
 		
 		-- device detector
@@ -161,18 +161,18 @@ package satadbg is
 		
 		OOBControl								: T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
 		SpeedControl							: T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT;
-	END RECORD;
+	end record;
 	
 	
 	-- ===========================================================================
 	-- SATA Link Layer Types
 	-- ===========================================================================
-	TYPE T_SATADBG_LINK_LLFSM_OUT IS RECORD
-		TXFSM												: STD_LOGIC_VECTOR(3 DOWNTO 0);
-		RXFSM												: STD_LOGIC_VECTOR(4 DOWNTO 0);
+	type T_SATADBG_LINK_LLFSM_OUT is record
+		TXFSM												: STD_LOGIC_VECTOR(3 downto 0);
+		RXFSM												: STD_LOGIC_VECTOR(4 downto 0);
 	end record;
 	
-	TYPE T_SATADBG_LINK_OUT IS RECORD
+	type T_SATADBG_LINK_OUT is record
 		LLFSM												: T_SATADBG_LINK_LLFSM_OUT;
 	
 		-- from physical layer
@@ -235,7 +235,7 @@ package satadbg is
 		-- TX: to Physical Layer
 		TX_Phy_Data									: T_SLV_32;											
 		TX_Phy_CiK									: T_SLV_4;										-- 4 bit
-	END RECORD;		--																							=> 120 bit
+	end record;		--																							=> 120 bit
 	
 	
 	-- ===========================================================================
@@ -275,7 +275,7 @@ package satadbg is
     LastTransfer : std_logic;
 	end record;
 	
-  TYPE T_SATADBG_CMD_OUT IS RECORD
+  type T_SATADBG_CMD_OUT is record
     Command              : T_SATA_CMD_COMMAND;
     Status               : T_SATA_CMD_STATUS;
     Error                : T_SATA_CMD_ERROR;
@@ -304,7 +304,7 @@ package satadbg is
     Trans_RX_SOT         : STD_LOGIC;
     Trans_RX_EOT         : STD_LOGIC;
     Trans_RX_Ack         : STD_LOGIC;
-	END RECORD;
+	end record;
 	
 
 	-- ===========================================================================

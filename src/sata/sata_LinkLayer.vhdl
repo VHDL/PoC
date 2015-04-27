@@ -34,8 +34,11 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.strings.ALL;
+USE			PoC.debug.ALL;
 USE			PoC.components.ALL;
 USE			PoC.sata.ALL;
 USE			PoC.satadbg.ALL;
@@ -684,6 +687,45 @@ begin
 	-- ================================================================
 	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
 	begin
+		genXilinx : if (VENDOR = VENDOR_XILINX) generate
+			function dbg_generateCommandEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_LINK_COMMAND loop
+					STD.TextIO.write(l, str_replace(T_SATA_LINK_COMMAND'image(i), "sata_link_cmd", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			function dbg_generateStatusEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_LINK_STATUS loop
+					STD.TextIO.write(l, str_replace(T_SATA_LINK_STATUS'image(i), "sata_link_status_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			function dbg_generateErrorEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_LINK_ERROR loop
+					STD.TextIO.write(l, str_replace(T_SATA_LINK_ERROR'image(i), "sata_link_error_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+		
+			constant dummy : T_BOOLVEC := (
+				0 => dbg_ExportEncoding("Link Layer - Command Enum",	dbg_generateCommandEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Link_Command.tok"),
+				1 => dbg_ExportEncoding("Link Layer - Status Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Link_Status.tok"),
+				2 => dbg_ExportEncoding("Link Layer - Error Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Link_Error.tok")
+			);
+		begin
+		end generate;
+	
 		DebugPortOut.LLFSM											<= LLFSM_DebugPortOut;
 	
 		-- from physical layer
