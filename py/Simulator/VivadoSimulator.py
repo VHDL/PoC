@@ -56,13 +56,11 @@ class Simulator(PoCSimulator):
 
 	__executables =			{}
 	__vhdlStandard =		"93"
-	__interactiveMode =	False
 	__guiMode =					False
 
-	def __init__(self, host, showLogs, showReport, interactiveMode, guiMode):
+	def __init__(self, host, showLogs, showReport, guiMode):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
-		self.__interactiveMode =	interactiveMode
 		self.__guiMode =					guiMode
 
 		if (host.platform == "Windows"):
@@ -202,11 +200,6 @@ class Simulator(PoCSimulator):
 			'--stats'
 		]
 		
-		if (not self.__interactiveMode):
-			parameterList += ['--onfinish', 'quit']
-		else:
-			parameterList += ['--onfinish', 'stop']
-			
 		if (not self.__guiMode):
 			parameterList += ['-tclbatch', str(tclBatchFilePath)]
 		else:
