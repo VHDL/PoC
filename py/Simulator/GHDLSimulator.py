@@ -53,18 +53,22 @@ from Simulator.Exceptions import *
 
 class Simulator(PoCSimulator):
 
-	__executables = {}
-	__vhdlStandard = ""
+	__executables =		{}
+	__vhdlStandard =	"93"
+	__guiMode =				False
 
-	def __init__(self, host, showLogs, showReport, vhdlStandard):
+	def __init__(self, host, showLogs, showReport, vhdlStandard, guiMode):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
-		self.__vhdlStandard = vhdlStandard
+		self.__vhdlStandard =	vhdlStandard
+		self.__guiMode =			guiMode
 
 		if (host.platform == "Windows"):
-			self.__executables['ghdl'] = "ghdl.exe"
+			self.__executables['ghdl'] =		"ghdl.exe"
+			self.__executables['gtkwave'] =	"gtkwave.exe"
 		elif (host.platform == "Linux"):
-			self.__executables['ghdl'] = "ghdl"
+			self.__executables['ghdl'] =		"ghdl"
+			self.__executables['gtkwave'] =	"gtkwave"
 		else:
 			raise PlatformNotSupportedException(self.platform)
 		
@@ -85,9 +89,12 @@ class Simulator(PoCSimulator):
 
 		# setup all needed paths to execute fuse
 		ghdlExecutablePath =	self.host.directories["GHDLBinary"] / self.__executables['ghdl']
+		gtkwExecutablePath =	self.host.directories["GTKWBinary"] / self.__executables['gtkwave']
 		
 		testbenchName =				self.host.tbConfig[str(pocEntity)]['TestbenchModule']
 		fileListFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
+		vcdFilePath =					tempGHDLPath / (testbenchName + ".vcd")
+		gtkwSaveFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['gtkwaveSaveFile']
 		
 		if (self.verbose):
 			print("  Commands to be run:")
@@ -185,7 +192,12 @@ class Simulator(PoCSimulator):
 				'--work=test',
 				testbenchName
 			]
-			command = " ".join(parameterList)	#"%s -r --std=93 --syn-binding -P. --work=test %s" % (str(ghdlExecutablePath), testbenchName)
+
+			# append RUNOPTS to save simulation results to *.vcd file
+			if (self.__guiMode):
+				parameterList += [('--vcd=%s' % str(vcdFilePath))]
+				
+			command = " ".join(parameterList)
 		
 			self.printDebug("call ghdl: %s" % str(parameterList))
 			self.printVerbose("    command: %s" % command)
@@ -220,7 +232,12 @@ class Simulator(PoCSimulator):
 				'--work=test',
 				testbenchName
 			]
-			command = " ".join(parameterList)	#%s -e --std=93 --syn-binding -P. --work=test %s" % (str(ghdlExecutablePath), testbenchName)
+
+			# append RUNOPTS to save simulation results to *.vcd file
+			if (self.__guiMode):
+				parameterList += [('--vcd=%s' % str(vcdFilePath))]
+				
+			command = " ".join(parameterList)
 		
 			self.printDebug("call ghdl: %s" % str(parameterList))
 			self.printVerbose("    command: %s" % command)
@@ -285,14 +302,59 @@ class Simulator(PoCSimulator):
 					print(simulatorLog)
 
 		print()
-		try:
-			result = self.checkSimulatorOutput(simulatorLog)
-			
-			if (result == True):
-				print("Testbench '%s': PASSED" % testbenchName)
-			else:
-				print("Testbench '%s': FAILED" % testbenchName)
+		
+		if (not self.__guiMode):
+			try:
+				result = self.checkSimulatorOutput(simulatorLog)
 				
-		except SimulatorException as ex:
-			raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
-	
+				if (result == True):
+					print("Testbench '%s': PASSED" % testbenchName)
+				else:
+					print("Testbench '%s': FAILED" % testbenchName)
+					
+			except SimulatorException as ex:
+				raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
+		
+		else:	# guiMode
+			# run GTKWave GUI
+			self.printNonQuiet("  launching GTKWave...")
+		
+			parameterList = [
+				str(gtkwExecutablePath),
+				('--dump=%s' % vcdFilePath)
+			]
+
+			# if GTKWave savefile exists, load it's settings
+			if gtkwSaveFilePath.exists():
+				parameterList += ['--save', str(gtkwSaveFilePath)]
+				
+			command = " ".join(parameterList)
+		
+			self.printDebug("call GTKWave: %s" % str(parameterList))
+			self.printVerbose("    command: %s" % command)
+			try:
+				gtkwLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+			except subprocess.CalledProcessError as ex:
+				print("ERROR while executing GTKWave command: %s" % command)
+				print("Return Code: %i" % ex.returncode)
+				print("--------------------------------------------------------------------------------")
+				print(ex.output)
+#		
+			if self.showLogs:
+				if (gtkwLog != ""):
+					print("GTKWave messages:")
+					print("--------------------------------------------------------------------------------")
+					print(gtkwLog)
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
