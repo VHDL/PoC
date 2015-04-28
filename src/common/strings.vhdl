@@ -594,7 +594,7 @@ package body strings is
 	begin
 		for i in str'range loop
 			if (str(i) = NUL) then
-				return i - str'low + 1;
+				return i - str'low;
 			end if;
 		end loop;
 		return str'length;
