@@ -121,13 +121,28 @@ class Testbench(CommandLineProgram):
 		simulator = VivadoSimulator.Simulator(self, showLogs, showReport, guiMode)
 		simulator.run(entityToSimulate)
 
-	def vSimSimulation(self, module, showLogs, showReport):
+	def vSimSimulation(self, module, showLogs, showReport, vhdlStandard, guiMode):
 		# check if ISE is configure
-		if (len(self.pocConfig.options("Questa")) == 0):	raise NotConfiguredException("Mentor Graphics Questa is not configured on this system.")
+		if (len(self.pocConfig.options("Questa-SIM")) != 0):
+			# prepare some paths
+			self.directories["vSimInstallation"] =	Path(self.pocConfig['Questa-SIM']['InstallationDirectory'])
+			self.directories["vSimBinary"] =				Path(self.pocConfig['Questa-SIM']['BinaryDirectory'])
+		
+		elif (len(self.pocConfig.options("Altera-ModelSim")) != 0):
+			# prepare some paths
+			self.directories["vSimInstallation"] =	Path(self.pocConfig['Altera-ModelSim']['InstallationDirectory'])
+			self.directories["vSimBinary"] =				Path(self.pocConfig['Altera-ModelSim']['BinaryDirectory'])
+				
+		else:
+			raise NotConfiguredException("Neither Mentor Graphics Questa-SIM nor ModelSim are configured on this system.")
+
+		if (len(self.pocConfig.options("GTKWave")) != 0):		
+			self.directories["GTKWInstallation"] =	Path(self.pocConfig['GTKWave']['InstallationDirectory'])
+			self.directories["GTKWBinary"] =				Path(self.pocConfig['GTKWave']['BinaryDirectory'])
 
 		entityToSimulate = Entity(self, module)
 
-		simulator = QuestaSimulator.Simulator(self, showLogs, showReport)
+		simulator = QuestaSimulator.Simulator(self, showLogs, showReport, vhdlStandard, guiMode)
 		simulator.run(entityToSimulate)
 		
 	def ghdlSimulation(self, module, showLogs, showReport, vhdlStandard, guiMode):
@@ -219,7 +234,14 @@ def main():
 			
 			test.xSimSimulation(args.xsim, args.showLog, args.showReport, xSimGUIMode)
 		elif (args.vsim is not None):
-			test.vSimSimulation(args.vsim, args.showLog, args.showReport)
+			if ((args.std is not None) and (args.std in ["87","93","02","08"])):
+				vhdlStandard = args.std
+			else:
+				vhdlStandard = "93"
+			
+			vSimGUIMode =					args.gui
+			
+			test.vSimSimulation(args.vsim, args.showLog, args.showReport, vhdlStandard, vSimGUIMode)
 		elif (args.ghdl is not None):
 			if ((args.std is not None) and (args.std in ["87","93","02","08"])):
 				vhdlStandard = args.std

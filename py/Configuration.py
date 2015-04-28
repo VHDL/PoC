@@ -404,7 +404,7 @@ class Configuration(CommandLineProgram):
 			
 				self.pocConfig['Questa-SIM']['Version'] =								questaSIMVersion
 				self.pocConfig['Questa-SIM']['InstallationDirectory'] =	questaSIMDirectoryPath.as_posix()
-				self.pocConfig['Questa-SIM']['BinaryDirectory'] =				'${InstallationDirectory}'
+				self.pocConfig['Questa-SIM']['BinaryDirectory'] =				'${InstallationDirectory}/win64'
 			elif (isQuestaSIM == 'n'):
 				self.pocConfig['Questa-SIM'] = {}
 			else:
@@ -590,14 +590,14 @@ class Configuration(CommandLineProgram):
 				questaSIMVersion =		questaSIMVersion		if questaSIMVersion != ""		else "10.2c"
 			
 				questaSIMDirectoryPath = Path(questaSIMDirectory)
-				questaSIMExecutablePath = questaSIMDirectoryPath / "bin"
+				questaSIMExecutablePath = questaSIMDirectoryPath / "bin" / "vsim"
 			
 				if not questaSIMDirectoryPath.exists():		raise BaseException("Questa-SIM Installation Directory '%s' does not exist." % questaSIMDirectory)
 				if not questaSIMExecutablePath.exists():	raise BaseException("Questa-SIM is not installed.")
 			
-				self.pocConfig['Questa-SIM']['Version'] = questaSIMVersion
-				self.pocConfig['Questa-SIM']['InstallationDirectory'] = questaSIMDirectoryPath.as_posix()
-				self.pocConfig['Questa-SIM']['BinaryDirectory'] = '${InstallationDirectory}'
+				self.pocConfig['Questa-SIM']['Version'] =								questaSIMVersion
+				self.pocConfig['Questa-SIM']['InstallationDirectory'] =	questaSIMDirectoryPath.as_posix()
+				self.pocConfig['Questa-SIM']['BinaryDirectory'] =				'${InstallationDirectory}/bin'
 			elif (isQuestaSIM == 'n'):
 				self.pocConfig['Questa-SIM'] = {}
 			else:

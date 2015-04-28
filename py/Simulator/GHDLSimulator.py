@@ -156,7 +156,7 @@ class Simulator(PoCSimulator):
 						('--work=%s' % vhdlLibraryName),
 						str(vhdlFilePath)
 					]
-					command = " ".join(parameterList)	#'%s -a --std=93 -P. --work=%s "%s"' % (str(ghdlExecutablePath), vhdlLibraryName, str(vhdlFilePath))
+					command = " ".join(parameterList)
 					
 					self.printDebug("call ghdl: %s" % str(parameterList))
 					self.printVerbose("    command: %s" % command)
