@@ -212,7 +212,7 @@ package body config is
 
 	-- purpose: extract vendor from MY_DEVICE
 	function VENDOR(DeviceString : string := C_DEVICE_STRING_EMPTY) return vendor_t is
-		constant MY_DEV		: string(1 to 33)	:= getLocalDeviceString(DeviceString);
+		constant MY_DEV		: string(1 to 32)	:= getLocalDeviceString(DeviceString);
 		constant VEN_STR	: string(1 to 2)  := MY_DEV(1 to 2);
 	begin
 		case VEN_STR is
