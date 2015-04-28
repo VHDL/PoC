@@ -97,7 +97,7 @@ class Simulator(PoCSimulator):
 		fileListFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
 		tclBatchFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['xSimBatchScript']
 		tclGUIFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['xSimGUIScript']
-		wcfgFilePath =			self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['waveformConfigFile']
+		wcfgFilePath =			self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['xSimWaveformConfigFile']
 		prjFilePath =				tempXSimPath / (testbenchName + ".prj")
 		xelabLogFilePath =	tempXSimPath / (testbenchName + ".xelab.log")
 		xSimLogFilePath =		tempXSimPath / (testbenchName + ".xsim.log")

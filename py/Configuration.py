@@ -34,19 +34,13 @@
 
 from pathlib import Path
 
-#import PoCSimulator
-#import PoCISESimulator
-#import PoCVivadoSimulator
-#import PoCQuestaSimulator
-#import PoCGHDLSimulator
-
 from Base.Exceptions import *
 from Base.PoCBase import CommandLineProgram
 from collections import OrderedDict
 
 class Configuration(CommandLineProgram):
 	
-	__privateSections = ["PoC", "Xilinx", "Xilinx-ISE", "Xilinx-LabTools", "Xilinx-Vivado", "Xilinx-HardwareServer", "Altera-QuartusII", "Altera-ModelSim", "Questa-ModelSim", "GHDL", "GTKWave", "Solutions"]
+	__privateSections = ["PoC", "Xilinx", "Xilinx-ISE", "Xilinx-LabTools", "Xilinx-Vivado", "Xilinx-HardwareServer", "Altera-QuartusII", "Altera-ModelSim", "Questa-SIM", "GHDL", "GTKWave", "Solutions"]
 	
 	def __init__(self, debug, verbose, quiet):
 		try:
@@ -72,7 +66,7 @@ class Configuration(CommandLineProgram):
 			self.pocConfig['Xilinx-HardwareServer'] =	OrderedDict()
 			self.pocConfig['Altera-QuartusII'] =			OrderedDict()
 			self.pocConfig['Altera-ModelSim'] =				OrderedDict()
-			self.pocConfig['Questa-ModelSim'] =				OrderedDict()
+			self.pocConfig['Questa-SIM'] =						OrderedDict()
 			self.pocConfig['GHDL'] =									OrderedDict()
 			self.pocConfig['GTKWave'] =								OrderedDict()
 			self.pocConfig['Solutions'] =							OrderedDict()
@@ -137,7 +131,18 @@ class Configuration(CommandLineProgram):
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
 					raise
-			
+				
+			# configure Questa-SIM on Windows
+			next = False
+			while (next == False):
+				try:
+					self.manualConfigureWindowsQuestaSIM()
+					next = True
+				except BaseException as ex:
+					print("FAULT: %s" % ex.message)
+				except Exception as ex:
+					raise
+				
 			# configure GHDL on Windows
 			next = False
 			while (next == False):
@@ -205,7 +210,18 @@ class Configuration(CommandLineProgram):
 					print("FAULT: %s" % ex.message)
 				except Exception as ex:
 					raise
-					
+			
+			# configure Questa-SIM on Linux
+			next = False
+			while (next == False):
+				try:
+					self.manualConfigureLinuxQuestaSIM()
+					next = True
+				except BaseException as ex:
+					print("FAULT: %s" % ex.message)
+				except Exception as ex:
+					raise
+			
 			# configure GHDL on Linux
 			next = False
 			while (next == False):
@@ -366,7 +382,34 @@ class Configuration(CommandLineProgram):
 				self.pocConfig['Xilinx-HardwareServer'] = {}
 			else:
 				raise BaseException("unknown option")
-		
+
+	def manualConfigureWindowsQuestaSIM(self):
+		# Ask for installed Questa-SIM
+		isQuestaSIM = input('Is Questa-SIM installed on your system? [Y/n/p]: ')
+		isQuestaSIM = isQuestaSIM if isQuestaSIM != "" else "Y"
+		if (isQuestaSIM != 'p'):
+			if (isQuestaSIM == 'Y'):
+				questaSIMDirectory =	input('Questa-SIM Installation Directory [C:\Mentor\QuestaSim64\\10.2c]: ')
+				questaSIMVersion =		input('Questa-SIM Version Number [10.2c]: ')
+				print()
+			
+				questaSIMDirectory =	questaSIMDirectory	if questaSIMDirectory != ""	else "C:\Mentor\QuestaSim64\\10.2c"
+				questaSIMVersion =		questaSIMVersion		if questaSIMVersion != ""		else "10.2c"
+			
+				questaSIMDirectoryPath =	Path(questaSIMDirectory)
+				questaSIMExecutablePath = questaSIMDirectoryPath / "win64" / "vsim.exe"
+			
+				if not questaSIMDirectoryPath.exists():		raise BaseException("Questa-SIM Installation Directory '%s' does not exist." % questaSIMDirectory)
+				if not questaSIMExecutablePath.exists():	raise BaseException("Questa-SIM is not installed.")
+			
+				self.pocConfig['Questa-SIM']['Version'] =								questaSIMVersion
+				self.pocConfig['Questa-SIM']['InstallationDirectory'] =	questaSIMDirectoryPath.as_posix()
+				self.pocConfig['Questa-SIM']['BinaryDirectory'] =				'${InstallationDirectory}/win64'
+			elif (isQuestaSIM == 'n'):
+				self.pocConfig['Questa-SIM'] = {}
+			else:
+				raise BaseException("unknown option")
+
 	def manualConfigureWindowsGHDL(self):
 		# Ask for installed GHDL
 		isGHDL = input('Is GHDL installed on your system? [Y/n/p]: ')
@@ -530,6 +573,33 @@ class Configuration(CommandLineProgram):
 				self.pocConfig['Xilinx-HardwareServer']['BinaryDirectory'] = '${InstallationDirectory}/bin'
 			elif (isXilinxHardwareServer == 'n'):
 				self.pocConfig['Xilinx-HardwareServer'] = {}
+			else:
+				raise BaseException("unknown option")
+			
+	def manualConfigureLinuxQuestaSIM(self):
+		# Ask for installed Questa-SIM
+		isQuestaSIM = input('Is Questa-SIM installed on your system? [Y/n/p]: ')
+		isQuestaSIM = isQuestaSIM if isQuestaSIM != "" else "Y"
+		if (isQuestaSIM != 'p'):
+			if (isQuestaSIM == 'Y'):
+				questaSIMDirectory =	input('Questa-SIM Installation Directory [/opt/QuestaSim/10.2c]: ')
+				questaSIMVersion =		input('Questa-SIM Version Number [10.2c]: ')
+				print()
+			
+				questaSIMDirectory =	questaSIMDirectory	if questaSIMDirectory != ""	else "/opt/QuestaSim/10.2c"
+				questaSIMVersion =		questaSIMVersion		if questaSIMVersion != ""		else "10.2c"
+			
+				questaSIMDirectoryPath = Path(questaSIMDirectory)
+				questaSIMExecutablePath = questaSIMDirectoryPath / "bin" / "vsim"
+			
+				if not questaSIMDirectoryPath.exists():		raise BaseException("Questa-SIM Installation Directory '%s' does not exist." % questaSIMDirectory)
+				if not questaSIMExecutablePath.exists():	raise BaseException("Questa-SIM is not installed.")
+			
+				self.pocConfig['Questa-SIM']['Version'] =								questaSIMVersion
+				self.pocConfig['Questa-SIM']['InstallationDirectory'] =	questaSIMDirectoryPath.as_posix()
+				self.pocConfig['Questa-SIM']['BinaryDirectory'] =				'${InstallationDirectory}/bin'
+			elif (isQuestaSIM == 'n'):
+				self.pocConfig['Questa-SIM'] = {}
 			else:
 				raise BaseException("unknown option")
 	
