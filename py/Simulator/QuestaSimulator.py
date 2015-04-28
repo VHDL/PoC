@@ -97,6 +97,10 @@ class Simulator(PoCSimulator):
 		
 		testbenchName =				self.host.tbConfig[str(pocEntity)]['TestbenchModule']
 		fileListFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
+		tclBatchFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['vSimBatchScript']
+		tclGUIFilePath =			self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['vSimGUIScript']
+		tclWaveFilePath =			self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['vSimWaveScript']
+		
 #		vcdFilePath =					tempvSimPath / (testbenchName + ".vcd")
 #		gtkwSaveFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['gtkwaveSaveFile']
 		
@@ -220,14 +224,23 @@ class Simulator(PoCSimulator):
 			str(vSimExecutablePath),
 			'-vopt',
 			'-t', '1fs',
-			'-do', 'run -all; quit'
 		]
 
 		# append RUNOPTS to save simulation results to *.vcd file
 		if (self.__guiMode):
 			parameterList += ['-title', testbenchName]
+			
+			if (tclWaveFilePath.exists()):
+				self.printDebug("Found waveform script: '%s'" % str(tclWaveFilePath))
+				parameterList += ['-do', ('do {%s}; do {%s}' % (str(tclWaveFilePath), str(tclGUIFilePath)))]
+			else:
+				self.printDebug("Didn't find waveform script: '%s'. Loading default commands." % str(tclWaveFilePath))
+				parameterList += ['-do', ('%s; do {%s}' % ("add wave *", str(tclGUIFilePath)))]
 		else:
-			parameterList += ['-c']
+			parameterList += [
+				'-c',
+				'-do', str(tclBatchFilePath)
+			]
 		
 		# append testbench name
 		parameterList += [('test.%s' % testbenchName)]

@@ -96,7 +96,7 @@ class Simulator(PoCSimulator):
 		fileListFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
 		tclBatchFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['iSimBatchScript']
 		tclGUIFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['iSimGUIScript']
-		wcfgFilePath =			self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['waveformConfigFile']
+		wcfgFilePath =			self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['iSimWaveformConfigFile']
 		prjFilePath =				tempISimPath / (testbenchName + ".prj")
 		exeFilePath =				tempISimPath / (testbenchName + ".exe")
 		iSimLogFilePath =		tempISimPath / (testbenchName + ".isim.log")

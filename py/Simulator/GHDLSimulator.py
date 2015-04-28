@@ -94,7 +94,7 @@ class Simulator(PoCSimulator):
 		testbenchName =				self.host.tbConfig[str(pocEntity)]['TestbenchModule']
 		fileListFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
 		vcdFilePath =					tempGHDLPath / (testbenchName + ".vcd")
-		gtkwSaveFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['gtkwaveSaveFile']
+		gtkwSaveFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['gtkwSaveFile']
 		
 		if (self.verbose):
 			print("  Commands to be run:")
@@ -326,8 +326,11 @@ class Simulator(PoCSimulator):
 
 			# if GTKWave savefile exists, load it's settings
 			if gtkwSaveFilePath.exists():
+				self.printDebug("Found waveform save file: '%s'" % str(gtkwSaveFilePath))
 				parameterList += ['--save', str(gtkwSaveFilePath)]
-				
+			else:
+				self.printDebug("Didn't find waveform save file: '%s'." % str(gtkwSaveFilePath))
+			
 			command = " ".join(parameterList)
 		
 			self.printDebug("call GTKWave: %s" % str(parameterList))
