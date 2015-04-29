@@ -1,0 +1,23 @@
+# git files
+.gitignore
+
+# TCL batch files for varous simulators
+iSim.batch.tcl
+iSim.gui.tcl
+xSim.batch.tcl
+xSim.gui.tcl
+vSim.batch.tcl
+vSim.gui.tcl
+
+# Default waveform configuration files
+vSim.default.wdo
+
+# PoC subnamespaces
+arith/
+comm/
+common/
+io/
+mem/
+misc/
+#sata/
+xil/
