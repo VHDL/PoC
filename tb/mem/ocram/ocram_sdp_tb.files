@@ -17,8 +17,8 @@ vhdl poc	"src/common/config.vhdl"						# PoC device configuration mechanism
 vhdl poc	"tb/common/simulation.vhdl"					# PoC simulation helper
 
 # OCRAM
-vhdl poc	"src/mem/ocram/ocram_pkg.vhdl"			# OCRAM package
+#vhdl poc	"src/mem/ocram/ocram_pkg.vhdl"			# OCRAM package
 vhdl poc	"src/mem/ocram/ocram_sdp.vhdl"			#	Unit Under Test
 
 # Testbench files
-vhdl work	"tb/mem/ocram/ocram_sdp_tb.vhdl"		# Testbench
+vhdl test	"tb/mem/ocram/ocram_sdp_tb.vhdl"		# Testbench
