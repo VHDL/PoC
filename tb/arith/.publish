@@ -1,0 +1,27 @@
+# git files
+.gitignore
+
+# subnamespace
+
+# --------------------------------------
+# adder
+arith_addw_tb.*
+
+# converter
+
+# counter
+arith_counter_bcd_tb.*
+#arith_counter_gray_tb.*
+#arith_counter_ring_tb.*
+
+# prefix modules
+arith_prefix_and_tb.*
+arith_prefix_or_tb.*
+
+# random number generators
+arith_prng_tb.*
+
+# misc
+#arith_firstone_tb.*
+#arith_same_tb.*
+#arith_sqrt_tb.*

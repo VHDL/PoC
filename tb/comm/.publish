@@ -1,0 +1,11 @@
+# git files
+.gitignore
+
+# subnamespace
+
+# --------------------------------------
+# cyclic redundancy check (CRC)
+#comm_crc_tb.*
+
+# scramblers
+#comm_scramble_tb.*

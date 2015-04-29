@@ -1,29 +1,22 @@
-# 
-__init__.py
-
 # Wrappers
 Wrapper.ps1
 wrapper.sh
 
-# executables
-PoC.py
+# Executables
+Configuration.py
 Netlist.py
+Testbench.py
 #PostProcessor.py
 
-#
+# Configuration files
 config.public.ini
 
-#
-Base.py
-Configuration.py
-libDecorators.py
-
-PoCCompiler.py
-PoCXCOCompiler.py
-PoCXSTCompiler.py
-
-#PoCProcessor.py
-#PoCXSTPostProcessor.py
-#PoCXSTWarningExtractor.py
-#PoCXSTErrorExtractor.py
-#PoCXSTFSMTokenFileExtractor.py
+# Packages
+__init__.py
+lib/
+Base/
+PoC/
+Compiler/
+Generator/
+Processor/
+Simulator/
