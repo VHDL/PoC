@@ -43,6 +43,12 @@
 -- asserted again after the PLL locks, followed by the assertion of ResetDone
 -- as described above.
 --
+-- ATTENTION: Apply a maxskew constraint to the driving signal of the
+-- Async_Reset input, e.g., in VHDL:
+--
+--   attribute MAXSKEW : string;
+--   attribute MAXSKEW of Async_Reset_Driver : signal is "1 ns";
+--
 -- Use cases for Async_Reset:
 -- - Assert at power-up if the reference clock of the PLL is not yet stable.
 -- - Powerdown of the SATA controller.

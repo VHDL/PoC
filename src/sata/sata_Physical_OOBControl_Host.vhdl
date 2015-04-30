@@ -75,7 +75,7 @@ entity sata_Physical_OOBControl_Host is
 		OOB_TX_Command						: out	T_SATA_OOB;
 		OOB_TX_Complete						: in	STD_LOGIC;
 		OOB_RX_Received						: in	T_SATA_OOB;
-		OOB_HandshakeComplete			:	OUT	STD_LOGIC;
+		OOB_HandshakeComplete			:	OUT	STD_LOGIC; 	-- MUST BE driven by register
 		
 		TX_Primitive							: out	T_SATA_PRIMITIVE;
 		RX_Primitive							: in	T_SATA_PRIMITIVE;
@@ -155,7 +155,7 @@ architecture rtl of sata_Physical_OOBControl_Host is
 	signal ReceivedReset_i						: STD_LOGIC;
 
 	signal OOB_TX_Command_i						: T_SATA_OOB;
-	signal OOB_HandshakeComplete_i		: STD_LOGIC;
+	signal OOB_HandshakeComplete_i		: STD_LOGIC; 	-- MUST BE driven by register
 
 	signal AlignCounter_rst						: STD_LOGIC;
 	signal AlignCounter_en						: STD_LOGIC;
@@ -221,7 +221,7 @@ begin
 		ReceivedReset_i						<= '0';
 		
 		OOB_TX_Command_i					<= SATA_OOB_NONE;
-		OOB_HandshakeComplete_i		<= '0';
+		OOB_HandshakeComplete_i		<= '0'; 	-- MUST BE driven by register
 
 		DebugPortOut.AlignDetected	<= '0';
 
@@ -348,7 +348,7 @@ begin
 				
 				when ST_HOST_OOB_HANDSHAKE_COMPLETE =>
 					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;
-					OOB_HandshakeComplete_i	<= '1';
+					OOB_HandshakeComplete_i	<= '1'; 	-- MUST BE driven by register
 					TC1_en									<= '1';
 						
 					NextState								<= ST_HOST_SEND_D10_2;
@@ -432,7 +432,7 @@ begin
 	ReceivedReset						<= ReceivedReset_i;
 
 	OOB_TX_Command					<= OOB_TX_Command_i;
-	OOB_HandshakeComplete		<= OOB_HandshakeComplete_i;
+	OOB_HandshakeComplete		<= OOB_HandshakeComplete_i; 	-- MUST BE driven by register
 	
 	AlignCounter_us <= counter_inc(cnt => AlignCounter_us, rst => AlignCounter_rst, en => AlignCounter_en) when rising_edge(Clock);
 	
