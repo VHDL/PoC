@@ -9,9 +9,11 @@
 --           |_|   \___/ \____|  |_____|_|_.__/|_|  \__,_|_|   \__, |
 --                                                             |___/
 -- =============================================================================
+-- Module:					sata_Transceiver_ClockStable
+--
 -- Authors:					Martin Zabel
 --
--- Package:					TODO
+-- Package:					PoC.sata
 --
 -- Description:
 -- ------------------------------------
@@ -72,7 +74,7 @@ use			UNISIM.VCOMPONENTS.all;
 
 library PoC;
 
-entity sata_Transceiver_ResetCtrl is
+entity sata_Transceiver_ClockStable is
 	port (
 		-- @async
 		Async_Reset						: in	STD_LOGIC := '0';
@@ -89,7 +91,7 @@ entity sata_Transceiver_ResetCtrl is
 end;
 
 
-architecture rtl of sata_Transceiver_ResetCtrl is
+architecture rtl of sata_Transceiver_ClockStable is
 	attribute ASYNC_REG				: STRING;
 	attribute SHREG_EXTRACT		: STRING;
 	attribute RLOC						: STRING;

@@ -3,13 +3,13 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Testbench:				Test reset control of SATA transceiver layer.
+-- Testbench:				sata_Transceiver_ClockStable_tb1
 -- 
 -- Authors:					Martin Zabel
 -- 
 -- Description:
 -- ------------------------------------
--- Automated testbench for 'PoC.sata_Transceiver_ResetCtrl'.
+-- Automated testbench for 'PoC.sata_Transceiver_ClockStable'.
 --
 -- Test power-up without using input Async_Reset.
 --
@@ -39,13 +39,13 @@ use PoC.simulation.all;
 
 -------------------------------------------------------------------------------
 
-entity sata_Transceiver_ResetCtrl_tb1 is
+entity sata_Transceiver_ClockStable_tb1 is
 
-end entity sata_Transceiver_ResetCtrl_tb1;
+end entity sata_Transceiver_ClockStable_tb1;
 
 -------------------------------------------------------------------------------
 
-architecture behavioral of sata_Transceiver_ResetCtrl_tb1 is
+architecture behavioral of sata_Transceiver_ClockStable_tb1 is
 
 	-- component ports
 	signal PLL_Locked				 : STD_LOGIC;
@@ -58,7 +58,7 @@ architecture behavioral of sata_Transceiver_ResetCtrl_tb1 is
 begin  -- architecture behavioral
 
   -- component instantiation
-  DUT: entity work.sata_Transceiver_ResetCtrl
+  DUT: entity work.sata_Transceiver_ClockStable
     port map (
       -- Async_Reset is not supported for Altera transceivers
       PLL_Locked	=> PLL_Locked,

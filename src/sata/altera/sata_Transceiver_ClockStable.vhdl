@@ -9,9 +9,11 @@
 --           |_|   \___/ \____|  |_____|_|_.__/|_|  \__,_|_|   \__, |
 --                                                             |___/
 -- =============================================================================
+-- Module:					sata_Transceiver_ClockStable
+--
 -- Authors:					Martin Zabel
 --
--- Package:					TODO
+-- Package:					PoC.sata
 --
 -- Description:
 -- ------------------------------------
@@ -57,7 +59,7 @@
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 
-entity sata_Transceiver_ResetCtrl is
+entity sata_Transceiver_ClockStable is
 	port (
 		-- @async
 		PLL_Locked            : in  STD_LOGIC;
@@ -73,7 +75,7 @@ entity sata_Transceiver_ResetCtrl is
 end;
 
 
-architecture rtl of sata_Transceiver_ResetCtrl is
+architecture rtl of sata_Transceiver_ClockStable is
 	signal Locked_meta 			: std_logic := '0';
 	signal Locked_sync1 		: std_logic := '0';
 	signal Locked_sync2 		: std_logic := '0';
