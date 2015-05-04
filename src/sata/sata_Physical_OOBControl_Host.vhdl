@@ -187,10 +187,12 @@ begin
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if (Reset = '1') then
-				State			<= ST_HOST_RESET;
-			elsif (ClockEnable = '1') then
-				State			<= NextState;
+			if (ClockEnable = '1') then
+				if (Reset = '1') then
+					State			<= ST_HOST_RESET;
+				else
+					State			<= NextState;
+				end if;
 			end if;
 		end if;
 	end process;

@@ -78,6 +78,7 @@ entity sata_TransceiverLayer is
 		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
 
 		SATA_Clock								: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		SATA_Clock_Stable					: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
 
 		RP_Reconfig								: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
 		RP_SATAGeneration					: in	T_SATA_GENERATION_VECTOR(portS - 1 downto 0);
@@ -277,6 +278,7 @@ begin
 					DebugPortOut							=> DebugPortOut,
 
 					SATA_Clock								=> SATA_Clock,
+					SATA_Clock_Stable					=> SATA_Clock_Stable,
 
 					RP_Reconfig								=> RP_Reconfig,
 					RP_SATAGeneration					=> RP_SATAGeneration,

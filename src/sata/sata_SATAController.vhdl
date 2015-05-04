@@ -3,18 +3,47 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
+-- Module:					sata_SATAController
+--
+-- Package:					sata
 --
 -- Authors:					Patrick Lehmann
 --									Steffen Koehler
+--									Martin Zabel
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- Provides a SATA link to transport ATA commands and data from host to device
+-- and vice versa.
+--
+-- Reset Procedure:
+-- ----------------
+-- The SATAController automatically powers up, if inputs PowerDown and
+-- ClockNetwork_Reset are low. The SATAController synchronously asserts
+-- ResetDone when his Command-Status-Error interface is ready after power-up.
+-- It is only deasserted asynchronously in case of asynchronously asserting
+-- PowerDown or ClockNetwork_Reset, but both are optional features.
+--
+-- All upper layers must be hold in reset as long as ResetDone is deasserted.
+--
+-- The output SATA_Clock_Stable is synchronously asserted if the output
+-- SATA_Clock delivers a stable clock signal, so it can be used as clock
+-- enable. SATA_Clock_Stable is hight at least one cycle before ResetDone
+-- is asserted. 
+--
+-- SATA_Clock_Stable might be deasserted synchronously when a change of the
+-- SATA generation is needed and SATA_Clock is instable for a while. ResetDone
+-- is kept asserted because Status and Error are still valid but are not
+-- changing until the SATA_Clock is stable again. The inputs Command and
+-- (synchronous) Reset are ignored when SATA_Clock_Stable is low.
 -- 
+-- ClockNetwork_ResetDone is asserted asynchronously when all internal clock
+-- networks are stable. This signal can be used for debugging or if another
+-- PLL/DLL is connected to SATA_Clock.
+--
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -64,17 +93,18 @@ ENTITY sata_SATAController IS
 		MAX_FRAME_SIZE_B						: T_INTVEC													:= (0 => 4 * (2048 + 1),				1 => 4 * (2048 + 1))
 	);
 	PORT (
-		ClockNetwork_Reset					: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @async:			reset all / hard reset
+		ClockNetwork_Reset					: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @async:			asynchronous reset
 		ClockNetwork_ResetDone			: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @async:			all clocks are stable
 		PowerDown										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @async:			
-		Reset												: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @SATA_Clock:	hard reset
-		ResetDone										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @SATA_Clock:	initialisation done
+		Reset												: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @SATA_Clock:	synchronous reset, done in next cycle
+		ResetDone										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @SATA_Clock: layers have been resetted after powerup / hard reset
 		
 		SATAGenerationMin						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);		-- 
 		SATAGenerationMax						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);		-- 
 		SATAGeneration          	  : OUT T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
 		
 		SATA_Clock									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SATA_Clock_Stable						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
 		Command											: IN	T_SATA_SATACONTROLLER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 		Status											: OUT T_SATA_SATACONTROLLER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
@@ -131,22 +161,20 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	CONSTANT AHEAD_CYCLES_FOR_INSERT_EOF_I	: T_INTVEC(0 TO PORTS - 1)									:= AHEAD_CYCLES_FOR_INSERT_EOF;
 	CONSTANT MAX_FRAME_SIZE_B_I							: T_INTVEC(0 TO PORTS - 1)									:= MAX_FRAME_SIZE_B;
 
+	-- Clocking & ResetDone, provided by transceiver layer
 	SIGNAL SATA_Clock_i									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL SATA_ResetDone								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL SATA_Clock_Stable_i					: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	SIGNAL ResetDone_i									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	
 	-- physical layer <=> transceiver layer signals
-	SIGNAL Trans_ClockNetwork_ResetDone	: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Trans_PowerDown							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Trans_Reset									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Trans_ResetDone							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	
 	SIGNAL Phy_RP_Reconfig							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Phy_RP_SATAGeneration				: T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_RP_ReconfigComplete		: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_RP_ConfigReloaded			: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Phy_RP_Lock									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_RP_Locked							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	
+
+	signal Trans_Reset 									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_Command								: T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_Status									: T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_Error									: T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
@@ -177,13 +205,8 @@ BEGIN
 		ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS_I(I) + 1)	SEVERITY NOTE;
 	END GENERATE;
 
-	-- *_ResetDone
-	ClockNetwork_ResetDone	<= Trans_ClockNetwork_ResetDone;
-	ResetDone								<= Trans_ResetDone;
-
 	-- generate layer moduls per port
 	gen1 : FOR I IN 0 TO PORTS - 1 GENERATE
-		SIGNAL ClockEnable						: STD_LOGIC;
 		
 		-- link layer signals
 		SIGNAL Link_Reset							: STD_LOGIC;
@@ -236,8 +259,6 @@ BEGIN
 		-- SATAController interface
 		-- =========================================================================
 		-- common signals
-		SATA_Clock(I)									<= SATA_Clock_i(I);
-		ClockEnable										<= Trans_ClockNetwork_ResetDone(I);
 		SATAGeneration(I)							<= Phy_RP_SATAGeneration(I);
 
 		Status(I).LinkLayer						<= Link_Status;
@@ -274,46 +295,55 @@ BEGIN
 		RX_FS_Abort(I)								<= Link_RX_FS_Abort;
 		
 
-		-- ==================================================================
+		-- =======================================================================
 		-- Reset control
-		-- ==================================================================
-		PROCESS(Command, PowerDown, Reset, Trans_Status)
+		--
+		-- The transceiver asserts ResetDone when his Command-Status-Error
+		-- interface is ready after powerup or asynchronous reset. It is only
+		-- deasserted in case of powerdown or asynchronous reset, if supported by
+		-- the transceiver. SATA clock is stable at least one cycle before
+		-- ResetDone is asserted. All upper layers must be hold in reset as long as
+		-- ResetDone is deasserted. See also description in header.
+		--
+		-- SATA_Clock might go instable (SATA_Clock_Stable low) during change of
+		-- SATA generation. ResetDone is kept asserted because Status and Error are
+		-- still valid but are not changing until the SATA_Clock is stable again.
+		--
+		-- The transceiver has its own internal reset procedure. Synchronous reset
+		-- via Trans_Reset is an optional feature.
+		-- =======================================================================
+		Link_Reset  		<= Reset(i) or not ResetDone_i(i);
+		Phy_Reset   		<= Reset(i) or not ResetDone_i(i);
+		Trans_Reset(i) 	<= Reset(i);
+		
+		PROCESS(Command, Trans_Status)
 		BEGIN
-			Trans_PowerDown(I)						<= PowerDown(I);
 			
-			Link_Reset										<= Reset(I);										-- hard reset all logic
-			Phy_Reset											<= Reset(I);										-- hard reset all logic
-			Trans_Reset(I)								<= Reset(I);										-- hard reset all logic
-
 			Link_Command									<= SATA_LINK_CMD_NONE;
 			Phy_Command										<= SATA_PHY_CMD_NONE;
 
 			CASE Command(I) IS
-				WHEN SATA_SATACTRL_CMD_RESET =>
+				WHEN SATA_SATACTRL_CMD_INIT_CONNECTION =>
 					Link_Command							<= SATA_LINK_CMD_RESET;					-- soft reset
 					Phy_Command								<= SATA_PHY_CMD_RESET;					-- soft reset; invoke COMRESET/COMINIT; reset TrysPerGeneration and GenerationChanges counters
 				
-				WHEN SATA_SATACTRL_CMD_RESET_CONNECTION =>
+				WHEN SATA_SATACTRL_CMD_REINIT_CONNECTION =>
 					Link_Command							<= SATA_LINK_CMD_RESET;					-- soft reset
 					Phy_Command								<= SATA_PHY_CMD_NEWLINK_UP;			-- invoke COMRESET/COMINIT at same SATA_Generation, reset TrysPerGeneration counter but not GenerationChanges counter
 
-				WHEN SATA_SATACTRL_CMD_RESET_LINKLAYER =>										-- reset LinkLayer => send SYNC-primitives
+				WHEN SATA_SATACTRL_CMD_SYNC_LINK =>													-- reset LinkLayer => send SYNC-primitives
 					Link_Command							<= SATA_LINK_CMD_RESET;
 			
 				WHEN SATA_SATACTRL_CMD_NONE =>
-					-- check for auto reconnect feature
-					IF ((ALLOW_AUTO_RECONNECT_I(I)	= TRUE) AND
+					-- TO BE CHANGED: check for auto reconnect feature
+			    IF ((ALLOW_AUTO_RECONNECT_I(I)	= TRUE) AND
 							(CONTROLLER_TYPES_I(I)			= SATA_DEVICE_TYPE_HOST) AND
 							(Trans_Status(I)						= SATA_TRANSCEIVER_STATUS_NEW_DEVICE))
 					THEN
 						Link_Command						<= SATA_LINK_CMD_RESET;					-- soft reset
 						Phy_Command							<= SATA_PHY_CMD_RESET;					-- soft reset; invoke COMRESET/COMINIT; reset TrysPerGeneration and GenerationChanges counters
 					END IF;
-
-				WHEN OTHERS =>
-					NULL;
-	
-			END CASE;
+			end CASE;
 		END PROCESS;
 
 		-- =========================================================================
@@ -329,6 +359,7 @@ BEGIN
 			)
 			PORT MAP (
 				Clock										=> SATA_Clock_i(I),
+				ClockEnable							=> SATA_Clock_Stable_i(I),
 				Reset										=> Link_Reset,
 				
 				Command									=> Link_Command,
@@ -393,9 +424,8 @@ BEGIN
 			)
 			PORT MAP (
 				Clock													=> SATA_Clock_i(I),
-				ClockEnable										=> ClockEnable,
-				Reset													=> Phy_Reset,													-- general logic reset without some counter resets while Clock is unstable
-																																						--   => preserve SATA_Generation between connection-cycles
+				ClockEnable										=> SATA_Clock_Stable_i(i),
+				Reset													=> Phy_Reset, 												-- main FSM reset
 				SATAGenerationMin							=> SATAGenerationMin(I),							-- 
 				SATAGenerationMax							=> SATAGenerationMax(I),							-- 
 
@@ -412,7 +442,7 @@ BEGIN
 				Link_TX_CharIsK								=> Link_TX_CharIsK,
 
 				-- transceiver interface
-				Trans_ResetDone								=> Trans_ResetDone(I),
+				Trans_ResetDone								=> ResetDone_i(i),
 				
 				Trans_Command									=> Trans_Command(I),
 				Trans_Status									=> Trans_Status(I),
@@ -438,7 +468,7 @@ BEGIN
 				Trans_RX_CharIsK							=> Trans_RX_CharIsK(I),
 				Trans_RX_Valid								=> Trans_RX_Valid(I)
 			);
-		
+
 		-- =========================================================================
 		-- debug port
 		-- =========================================================================
@@ -483,11 +513,11 @@ BEGIN
 		)
 		PORT MAP (
 			ClockNetwork_Reset				=> ClockNetwork_Reset,
-			ClockNetwork_ResetDone		=> Trans_ClockNetwork_ResetDone,
+			ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,
 
-			PowerDown									=> Trans_PowerDown,
+			PowerDown									=> PowerDown,
 			Reset											=> Trans_Reset,
-			ResetDone									=> Trans_ResetDone,
+			ResetDone									=> ResetDone_i,
 			
 			-- CSE interface
 			Command										=> Trans_Command,
@@ -499,6 +529,7 @@ BEGIN
 			DebugPortOut							=> Trans_DebugPortOut,
 
 			SATA_Clock								=> SATA_Clock_i,
+			SATA_Clock_Stable					=> SATA_Clock_Stable_i,
 			
 			RP_Reconfig								=> Phy_RP_Reconfig,
 			RP_SATAGeneration					=> Phy_RP_SATAGeneration,
@@ -524,5 +555,9 @@ BEGIN
 			VSS_Private_In						=> VSS_Private_In,
 			VSS_Private_Out						=> VSS_Private_Out
 		);
+
+	ResetDone 				<= ResetDone_i;
+	SATA_Clock 				<= SATA_Clock_i;
+	SATA_Clock_Stable <= SATA_Clock_Stable_i;
 	
 END;

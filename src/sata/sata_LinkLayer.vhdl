@@ -55,6 +55,7 @@ ENTITY sata_LinkLayer IS
 	);
 	PORT (
 		Clock										: IN	STD_LOGIC;
+		ClockEnable							: IN	STD_LOGIC;
 		Reset										: IN	STD_LOGIC;
 		
 		Command									: IN	T_SATA_LINK_COMMAND;
@@ -274,6 +275,7 @@ begin
 		)
 		PORT MAP (
 			Clock										=> Clock,
+			ClockEnable 						=> ClockEnable,
 			Reset										=> Reset_i,
 
 			Status									=> Status,

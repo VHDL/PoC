@@ -6,6 +6,7 @@
 -- Package:					TODO
 --
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
 --
 -- Description:
 -- ------------------------------------
@@ -13,7 +14,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,6 +53,7 @@ entity sata_LinkLayerFSM is
 	);
 	port (
 		Clock										: IN	STD_LOGIC;
+		ClockEnable							: IN	STD_LOGIC;
 		Reset										: IN	STD_LOGIC;
 
 		Status									: OUT	T_SATA_LINK_STATUS;
@@ -269,11 +271,13 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF Reset = '1' THEN
-				TXFSM_State 	<= ST_TXFSM_RESET;
-			ELSE
-				TXFSM_State 	<= TXFSM_NextState;
-			END IF;
+			if ClockEnable = '1' then
+				if Reset = '1' then
+					TXFSM_State 	<= ST_TXFSM_RESET;
+				else
+					TXFSM_State 	<= TXFSM_NextState;
+				end if;
+			end if;
 		END IF;
 	END PROCESS;
 
@@ -844,11 +848,13 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF Reset = '1' THEN
-				RXFSM_State 	<= ST_RXFSM_RESET;
-			ELSE
-				RXFSM_State 	<= RXFSM_NextState;
-			END IF;
+			if ClockEnable = '1' then
+				if Reset = '1' then
+					RXFSM_State 	<= ST_RXFSM_RESET;
+				else
+					RXFSM_State 	<= RXFSM_NextState;
+				end if;
+			end if;
 		END IF;
 	END PROCESS;
 

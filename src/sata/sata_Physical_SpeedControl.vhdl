@@ -6,6 +6,7 @@
 -- Package:					TODO
 --
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
 --
 -- Description:
 -- ------------------------------------
@@ -13,7 +14,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -271,11 +272,13 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
-				State	<= ST_WAIT;
-			ELSIF (ClockEnable = '1') THEN
-				State	<= NextState;
-			END IF;
+			if (ClockEnable = '1') then
+				if (Reset = '1') then
+					State	<= ST_WAIT;
+				else
+					State	<= NextState;
+					end if;
+			end if;
 		END IF;
 	END PROCESS;
 

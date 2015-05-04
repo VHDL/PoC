@@ -4,6 +4,7 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
 --
 -- Package:					TODO
 --
@@ -247,9 +248,9 @@ package sata is
 	-- ===========================================================================
 	TYPE T_SATA_SATACONTROLLER_COMMAND IS (
 		SATA_SATACTRL_CMD_NONE,
-		SATA_SATACTRL_CMD_RESET,									-- 
-		SATA_SATACTRL_CMD_RESET_CONNECTION,				-- invoke COMRESET / COMINIT
-		SATA_SATACTRL_CMD_RESET_LINKLAYER					-- reset LinkLayer => send SYNC-primitive
+		SATA_SATACTRL_CMD_INIT_CONNECTION,				-- init connection to device with speed negotation
+		SATA_SATACTRL_CMD_REINIT_CONNECTION,			-- init connection at same speed
+		SATA_SATACTRL_CMD_SYNC_LINK								-- reset LinkLayer => send SYNC-primitive
 	);
 
 	TYPE T_SATA_SATACONTROLLER_STATUS IS RECORD

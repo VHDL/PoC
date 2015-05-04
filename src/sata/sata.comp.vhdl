@@ -6,6 +6,7 @@
 -- Package:					TODO
 --
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
 --
 -- Description:
 -- ------------------------------------
@@ -312,6 +313,7 @@ package satacomp is
 			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
 
 			SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			SATA_Clock_Stable					: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 			RP_Reconfig								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			RP_SATAGeneration					: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
