@@ -429,6 +429,9 @@ begin
 		
 		signal OOB_Timeout_d			: STD_LOGIC					:= '0';
 		signal OOB_Timeout_re			: STD_LOGIC;
+
+		-- Issue first SC_Retry after respective SC_Command
+		signal SC_StartOver 			: STD_LOGIC 				:= '0';
 		
 	begin
 		SC_SATAGeneration			<= INITIAL_SATA_GENERATION;
@@ -438,15 +441,23 @@ begin
 	
 		OOBC_Timeout_d				<= OOBC_Timeout when rising_edge(Clock);
 		OOBC_Timeout_re				<= not OOBC_Timeout_d and OOBC_Timeout;
-		SC_Retry							<= (OOBC_Timeout_re and not TryCounter_uf) or TryCounter_rst;
+		SC_Retry							<= (OOBC_Timeout_re and not TryCounter_uf) or SC_StartOver;
 		SC_Status							<= SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR when (TryCounter_uf = '1') else SATA_PHY_SPEED_STATUS_WAITING;
 
-		TryCounter_rst				<= to_sl((FSM_SC_Command = SATA_PHY_SPEED_CMD_RESET) or (FSM_SC_COMMAND = SATA_PHY_SPEED_CMD_NEWLINK_UP));
+		TryCounter_rst				<= SC_StartOver;
 		TryCounter_en					<= OOBC_Timeout_re;
 	
 		process(Clock)
 		begin
 			if rising_edge(Clock) then
+				if ClockEnable = '1' then
+					if (FSM_SC_Command = SATA_PHY_SPEED_CMD_RESET) or (FSM_SC_COMMAND = SATA_PHY_SPEED_CMD_NEWLINK_UP) then
+						SC_StartOver 					<= '1';
+					else
+						SC_StartOver 					<= '0'; -- includes reset
+					end if;
+				end if;
+				
 				if (TryCounter_rst = '1') then
 					TryCounter_s		<= to_signed(ATTEMPTS_PER_GENERATION, TryCounter_s'length);
 				else
