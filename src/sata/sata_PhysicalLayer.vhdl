@@ -174,11 +174,13 @@ begin
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if (ClockEnable = '1') then
+			if (Trans_ResetDone = '0') then
+				State 		<= ST_RESET;
+			elsif (ClockEnable = '1') then
 				if (Reset = '1') then
 					State 	<= ST_RESET;
 				else
-					State			<= NextState;
+					State		<= NextState;
 				end if;
 			end if;
 			
@@ -191,7 +193,7 @@ begin
 	end process;
 	
 	process(State, Command, SC_Status,
-					Trans_ResetDone, Trans_RP_Reconfig_i, Trans_RP_ConfigReloaded,
+					Trans_RP_Reconfig_i, Trans_RP_ConfigReloaded,
 					OOBC_LinkOK, OOBC_LinkDead, OOBC_ReceivedReset)
 	begin
 		NextState								<= State;
@@ -209,17 +211,20 @@ begin
 		
 		case State is
 			when ST_RESET =>
+				Error_rst 					<= '1';
+				OOBC_Reset 					<= '1';
+				FSM_SC_Reset 				<= '1';
 				Status_i						<= SATA_PHY_STATUS_RESET;
 				NextState						<= ST_LINK_UP;
 	
 			when ST_LINK_UP =>
 				Status_i						<= SATA_PHY_STATUS_LINK_UP;
 			
-				if (Command = SATA_PHY_CMD_RESET) then
+				if (Command = SATA_PHY_CMD_INIT_CONNECTION) then
 					OOBC_Reset				<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
-				elsif (Command = SATA_PHY_CMD_NEWLINK_UP) then
+				elsif (Command = SATA_PHY_CMD_REINIT_CONNECTION) then
 					OOBC_Reset				<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
@@ -236,11 +241,11 @@ begin
 			when ST_LINK_OK =>
 				Status_i						<= SATA_PHY_STATUS_LINK_OK;
 			
-				IF (Command = SATA_PHY_CMD_RESET) then
+				IF (Command = SATA_PHY_CMD_INIT_CONNECTION) then
 					OOBC_Reset				<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
-				elsif (Command = SATA_PHY_CMD_NEWLINK_UP) then
+				elsif (Command = SATA_PHY_CMD_REINIT_CONNECTION) then
 					OOBC_Reset				<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
@@ -257,11 +262,11 @@ begin
 			when ST_LINK_BROKEN =>
 				Status_i						<= SATA_PHY_STATUS_LINK_BROKEN;
 			
-				if (Command = SATA_PHY_CMD_RESET) then
+				if (Command = SATA_PHY_CMD_INIT_CONNECTION) then
 					OOBC_Reset				<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
-				elsif (Command = SATA_PHY_CMD_NEWLINK_UP) then
+				elsif (Command = SATA_PHY_CMD_REINIT_CONNECTION) then
 					OOBC_Reset				<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
@@ -285,11 +290,11 @@ begin
 			when ST_ERROR =>
 				Status_i						<= SATA_PHY_STATUS_ERROR;
 				
-				if (Command = SATA_PHY_CMD_RESET) then
+				if (Command = SATA_PHY_CMD_INIT_CONNECTION) then
 					OOBC_Reset				<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
-				elsif (Command = SATA_PHY_CMD_NEWLINK_UP) then
+				elsif (Command = SATA_PHY_CMD_REINIT_CONNECTION) then
 					OOBC_Reset				<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
@@ -433,10 +438,10 @@ begin
 	
 		OOBC_Timeout_d				<= OOBC_Timeout when rising_edge(Clock);
 		OOBC_Timeout_re				<= not OOBC_Timeout_d and OOBC_Timeout;
-		SC_Retry							<= OOBC_Timeout_re and not TryCounter_uf;
+		SC_Retry							<= (OOBC_Timeout_re and not TryCounter_uf) or TryCounter_rst;
 		SC_Status							<= SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR when (TryCounter_uf = '1') else SATA_PHY_SPEED_STATUS_WAITING;
 
-		TryCounter_rst				<= '0';	-- FIXME: replace resets by commands ... SC_SATAGeneration_Reset OR SC_AttemptCounter_Reset;
+		TryCounter_rst				<= to_sl((FSM_SC_Command = SATA_PHY_SPEED_CMD_RESET) or (FSM_SC_COMMAND = SATA_PHY_SPEED_CMD_NEWLINK_UP));
 		TryCounter_en					<= OOBC_Timeout_re;
 	
 		process(Clock)

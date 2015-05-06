@@ -80,7 +80,8 @@ entity sata_LinkLayerFSM is
 		Trans_RXFS_Abort				: OUT	STD_LOGIC;
 
 		-- physical layer interface
-		Phy_Ready								: IN	STD_LOGIC;
+		Phy_ResetDone						: IN	STD_LOGIC;
+		Phy_Status							: IN	T_SATA_PHY_STATUS;
 		
 		TX_Primitive						: OUT	T_SATA_PRIMITIVE;
 		RX_Primitive						: IN	T_SATA_PRIMITIVE;
@@ -243,14 +244,14 @@ BEGIN
 -- ==================================================================
 	Error	<= SATA_LINK_ERROR_LINK_RXFIFO_FULL WHEN RX_FIFO_Full = '1' ELSE SATA_LINK_ERROR_NONE;
 
-	PROCESS(Phy_Ready, TXFSM_Error, RXFSM_Error, TXFSM_IDLE, RXFSM_IDLE, TXFSM_Sending, RXFSM_Receiving)
+	PROCESS(Phy_Status, TXFSM_Error, RXFSM_Error, TXFSM_IDLE, RXFSM_IDLE, TXFSM_Sending, RXFSM_Receiving)
 	BEGIN
 		Status			<= SATA_LINK_STATUS_COMMUNICATION_ERROR;
 		-- TODO:
 		-- evaluate FIFO fill grades
 		-- 	=> receive error
 		
-		IF (Phy_Ready = '0') THEN
+		IF (Phy_Status /= SATA_PHY_STATUS_LINK_OK) THEN
 			Status			<= SATA_LINK_STATUS_COMMUNICATION_ERROR;
 		ELSIF ((TXFSM_Error				OR	RXFSM_Error)			= '1') THEN				-- error
 			Status			<= SATA_LINK_STATUS_ERROR;
@@ -271,7 +272,9 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			if ClockEnable = '1' then
+			if Phy_ResetDone = '0' then
+				TXFSM_State 		<= ST_TXFSM_RESET;
+			elsif ClockEnable = '1' then
 				if Reset = '1' then
 					TXFSM_State 	<= ST_TXFSM_RESET;
 				else
@@ -282,7 +285,7 @@ BEGIN
 	END PROCESS;
 
 
-	PROCESS(TXFSM_State, Phy_Ready, RX_Primitive, Trans_TX_SOF, Trans_TX_EOF, TX_FIFO_Valid, InsertALIGN)
+	PROCESS(TXFSM_State, Phy_Status, RX_Primitive, Trans_TX_SOF, Trans_TX_EOF, TX_FIFO_Valid, InsertALIGN)
 	BEGIN
 		TXFSM_NextState								<= TXFSM_State;
 
@@ -318,7 +321,7 @@ BEGIN
 --		ScramblerMux_ctrl							<= '0';
 		
 		-- handle PhyNotReady with highest priority
-		IF ((Phy_Ready = '0') AND NOT
+		IF ((Phy_Status /= SATA_PHY_STATUS_LINK_OK) AND NOT
 				((TXFSM_State = ST_TXFSM_RESET) OR
 				 (TXFSM_State = ST_TXFSM_NO_COMMUNICATION) OR
 				 (TXFSM_State = ST_TXFSM_NO_COMMUNICATION_ERROR)
@@ -341,7 +344,7 @@ BEGIN
 					TXFSM_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					TXFSM_Error										<= '1';
 					
-					IF (Phy_Ready = '1') THEN
+					IF (Phy_Status = SATA_PHY_STATUS_LINK_OK) THEN
 						TXFSM_NextState							<= ST_TXFSM_IDLE;			-- ST_TXFSM_SEND_ALIGN;
 					END IF;
 
@@ -848,7 +851,9 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			if ClockEnable = '1' then
+			if Phy_ResetDone = '0' then
+				RXFSM_State 		<= ST_RXFSM_RESET;
+			elsif ClockEnable = '1' then
 				if Reset = '1' then
 					RXFSM_State 	<= ST_RXFSM_RESET;
 				else
@@ -859,7 +864,7 @@ BEGIN
 	END PROCESS;
 
 
-	PROCESS(RXFSM_State, Phy_Ready, Trans_TX_SOF, TX_FIFO_Valid, RX_Primitive, RX_FIFO_Full, RX_FIFO_SpaceAvailable, RX_FSFIFO_Full, RX_CRC_OKReg_r, InsertALIGN)
+	PROCESS(RXFSM_State, Phy_Status, Trans_TX_SOF, TX_FIFO_Valid, RX_Primitive, RX_FIFO_Full, RX_FIFO_SpaceAvailable, RX_FSFIFO_Full, RX_CRC_OKReg_r, InsertALIGN)
 	BEGIN
 		RXFSM_NextState								<= RXFSM_State;
 
@@ -889,7 +894,7 @@ BEGIN
 		DataUnscrambler_rst						<= '0';
 		
 		-- handle PhyNotReady with highest priority
-		IF ((Phy_Ready = '0') AND NOT
+		IF ((Phy_Status /= SATA_PHY_STATUS_LINK_OK) AND NOT
 				((RXFSM_State = ST_RXFSM_RESET) OR
 				 (RXFSM_State = ST_RXFSM_NO_COMMUNICATION) OR
 				 (RXFSM_State = ST_RXFSM_NO_COMMUNICATION_ERROR)
@@ -910,7 +915,7 @@ BEGIN
 					RXFSM_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					RXFSM_Error										<= '1';
 					
-					IF (Phy_Ready = '1') THEN
+					IF (Phy_Status = SATA_PHY_STATUS_LINK_OK) THEN
 						RXFSM_NextState							<= ST_RXFSM_IDLE;
 					END IF;
 

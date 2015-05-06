@@ -125,9 +125,9 @@ package sata is
 	CONSTANT C_SATA_GENERATION_MAX	: T_SATA_GENERATION		:= SATA_GENERATION_3;
 	
 	TYPE T_SATA_PHY_COMMAND IS (
-		SATA_PHY_CMD_NONE,					-- no command
-		SATA_PHY_CMD_RESET,					-- reset retry and generation counters => reprogramm to initial configuration
-		SATA_PHY_CMD_NEWLINK_UP			-- reset retry counter use same generation
+		SATA_PHY_CMD_NONE,							-- no command
+		SATA_PHY_CMD_INIT_CONNECTION,		-- init connection with speed negotiation
+		SATA_PHY_CMD_REINIT_CONNECTION	-- reinit connection at last speed
 	);
 
 	TYPE T_SATA_PHY_STATUS IS (
@@ -175,8 +175,7 @@ package sata is
 	-- SATA Link Layer Types
 	-- ===========================================================================
 	TYPE T_SATA_LINK_COMMAND IS (
-		SATA_LINK_CMD_NONE,
-		SATA_LINK_CMD_RESET
+		SATA_LINK_CMD_NONE
 	);
 
 	TYPE T_SATA_LINK_STATUS IS (

@@ -164,7 +164,6 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	-- Clocking & ResetDone, provided by transceiver layer
 	SIGNAL SATA_Clock_i									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL SATA_Clock_Stable_i					: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL ResetDone_i									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	
 	-- physical layer <=> transceiver layer signals
 	SIGNAL Phy_RP_Reconfig							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -174,7 +173,7 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	SIGNAL Phy_RP_Lock									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_RP_Locked							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
-	signal Trans_Reset 									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	signal Trans_ResetDone							: STD_LOGIC_VECTOR(PORTS-1 DOWNTO 0);
 	SIGNAL Trans_Command								: T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_Status									: T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Trans_Error									: T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
@@ -210,6 +209,7 @@ BEGIN
 		
 		-- link layer signals
 		SIGNAL Link_Reset							: STD_LOGIC;
+		signal Link_ResetDone 				: STD_LOGIC;
 		SIGNAL Link_Command						: T_SATA_LINK_COMMAND;
 		SIGNAL Link_Status						: T_SATA_LINK_STATUS;
 		SIGNAL Link_Error							: T_SATA_LINK_ERROR;
@@ -238,7 +238,7 @@ BEGIN
 		SIGNAL Link_RX_FS_Abort				: STD_LOGIC;
 
 		-- physical layer signals
-		SIGNAL Phy_Reset							: STD_LOGIC;
+		signal Phy_ResetDone 					: STD_LOGIC;
 		SIGNAL Phy_Command						: T_SATA_PHY_COMMAND;
 		SIGNAL Phy_Status							: T_SATA_PHY_STATUS;
 		SIGNAl Phy_Error							: T_SATA_PHY_ERROR;
@@ -269,6 +269,8 @@ BEGIN
 		Error(I).PhysicalLayer				<= Phy_Error;
 		Error(I).TransceiverLayer			<= Trans_Error(I);
 
+		ResetDone(i) 									<= Link_ResetDone;
+		
 		-- TX port
 		SATAC_TX_SOF									<= TX_SOF(I);
 		SATAC_TX_EOF									<= TX_EOF(I);
@@ -296,43 +298,30 @@ BEGIN
 		
 
 		-- =======================================================================
-		-- Reset control
-		--
-		-- The transceiver asserts ResetDone when his Command-Status-Error
-		-- interface is ready after powerup or asynchronous reset. It is only
-		-- deasserted in case of powerdown or asynchronous reset, if supported by
-		-- the transceiver. SATA clock is stable at least one cycle before
-		-- ResetDone is asserted. All upper layers must be hold in reset as long as
-		-- ResetDone is deasserted. See also description in header.
-		--
-		-- SATA_Clock might go instable (SATA_Clock_Stable low) during change of
-		-- SATA generation. ResetDone is kept asserted because Status and Error are
-		-- still valid but are not changing until the SATA_Clock is stable again.
-		--
-		-- The transceiver has its own internal reset procedure. Synchronous reset
-		-- via Trans_Reset is an optional feature.
+		-- Command decoding for SATAController.
+		-- Newdevice handling has to be changed.
 		-- =======================================================================
-		Link_Reset  		<= Reset(i) or not ResetDone_i(i);
-		Phy_Reset   		<= Reset(i) or not ResetDone_i(i);
-		Trans_Reset(i) 	<= Reset(i);
-		
-		PROCESS(Command, Trans_Status)
+		PROCESS(Command, Trans_Status, Reset)
 		BEGIN
 			
+			Link_Reset 										<= Reset(i);
 			Link_Command									<= SATA_LINK_CMD_NONE;
 			Phy_Command										<= SATA_PHY_CMD_NONE;
 
 			CASE Command(I) IS
 				WHEN SATA_SATACTRL_CMD_INIT_CONNECTION =>
-					Link_Command							<= SATA_LINK_CMD_RESET;					-- soft reset
-					Phy_Command								<= SATA_PHY_CMD_RESET;					-- soft reset; invoke COMRESET/COMINIT; reset TrysPerGeneration and GenerationChanges counters
+					-- Init new conenction with speed negotation
+					Link_Reset								<= '1';
+					Phy_Command								<= SATA_PHY_CMD_INIT_CONNECTION;
 				
 				WHEN SATA_SATACTRL_CMD_REINIT_CONNECTION =>
-					Link_Command							<= SATA_LINK_CMD_RESET;					-- soft reset
-					Phy_Command								<= SATA_PHY_CMD_NEWLINK_UP;			-- invoke COMRESET/COMINIT at same SATA_Generation, reset TrysPerGeneration counter but not GenerationChanges counter
+					-- Reinit conenction at same speed as last time
+					Link_Reset								<= '1';
+					Phy_Command								<= SATA_PHY_CMD_REINIT_CONNECTION;
 
-				WHEN SATA_SATACTRL_CMD_SYNC_LINK =>													-- reset LinkLayer => send SYNC-primitives
-					Link_Command							<= SATA_LINK_CMD_RESET;
+				WHEN SATA_SATACTRL_CMD_SYNC_LINK =>													
+					-- Reset LinkLayer => send SYNC-primitives
+					Link_Reset								<= '1';
 			
 				WHEN SATA_SATACTRL_CMD_NONE =>
 					-- TO BE CHANGED: check for auto reconnect feature
@@ -340,8 +329,8 @@ BEGIN
 							(CONTROLLER_TYPES_I(I)			= SATA_DEVICE_TYPE_HOST) AND
 							(Trans_Status(I)						= SATA_TRANSCEIVER_STATUS_NEW_DEVICE))
 					THEN
-						Link_Command						<= SATA_LINK_CMD_RESET;					-- soft reset
-						Phy_Command							<= SATA_PHY_CMD_RESET;					-- soft reset; invoke COMRESET/COMINIT; reset TrysPerGeneration and GenerationChanges counters
+						Link_Reset							<= '1';
+						Phy_Command							<= SATA_PHY_CMD_INIT_CONNECTION;
 					END IF;
 			end CASE;
 		END PROCESS;
@@ -395,6 +384,7 @@ BEGIN
 				RX_FS_Abort							=> Link_RX_FS_Abort,
 				
 				-- physical layer interface
+				Phy_ResetDone 					=> Phy_ResetDone,
 				Phy_Status							=> Phy_Status,
 				
 				Phy_RX_Data							=> Phy_RX_Data,
@@ -404,6 +394,9 @@ BEGIN
 				Phy_TX_CharIsK					=> Link_TX_CharIsK
 			);
 
+		-- The CSE interface of the Linklayer is ready, when the CSE interface
+		-- of the PHY is ready.
+		Link_ResetDone <= Phy_ResetDone;
 
 		-- =========================================================================
 		-- physical layer
@@ -425,9 +418,9 @@ BEGIN
 			PORT MAP (
 				Clock													=> SATA_Clock_i(I),
 				ClockEnable										=> SATA_Clock_Stable_i(i),
-				Reset													=> Phy_Reset, 												-- main FSM reset
-				SATAGenerationMin							=> SATAGenerationMin(I),							-- 
-				SATAGenerationMax							=> SATAGenerationMax(I),							-- 
+				Reset													=> Reset(i),
+				SATAGenerationMin							=> SATAGenerationMin(I),
+				SATAGenerationMax							=> SATAGenerationMax(I),
 
 				Command												=> Phy_Command,
 				Status												=> Phy_Status,
@@ -442,7 +435,7 @@ BEGIN
 				Link_TX_CharIsK								=> Link_TX_CharIsK,
 
 				-- transceiver interface
-				Trans_ResetDone								=> ResetDone_i(i),
+				Trans_ResetDone								=> Trans_ResetDone(i),
 				
 				Trans_Command									=> Trans_Command(I),
 				Trans_Status									=> Trans_Status(I),
@@ -469,6 +462,10 @@ BEGIN
 				Trans_RX_Valid								=> Trans_RX_Valid(I)
 			);
 
+		-- The CSE interface of the PHY is ready, when the CSE interface
+		-- of the transceiver is ready.
+		Phy_ResetDone <= Trans_ResetDone(i);
+		
 		-- =========================================================================
 		-- debug port
 		-- =========================================================================
@@ -516,10 +513,10 @@ BEGIN
 			ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,
 
 			PowerDown									=> PowerDown,
-			Reset											=> Trans_Reset,
-			ResetDone									=> ResetDone_i,
+			Reset											=> Reset,
 			
 			-- CSE interface
+			ResetDone									=> Trans_ResetDone,
 			Command										=> Trans_Command,
 			Status										=> Trans_Status,
 			Error											=> Trans_Error,
@@ -556,7 +553,6 @@ BEGIN
 			VSS_Private_Out						=> VSS_Private_Out
 		);
 
-	ResetDone 				<= ResetDone_i;
 	SATA_Clock 				<= SATA_Clock_i;
 	SATA_Clock_Stable <= SATA_Clock_Stable_i;
 	

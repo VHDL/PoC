@@ -91,6 +91,7 @@ ENTITY sata_LinkLayer IS
 		RX_FS_Abort							: OUT	STD_LOGIC;
 
 		-- physical layer interface
+		Phy_ResetDone 					: in  STD_LOGIC;
 		Phy_Status							: IN	T_SATA_PHY_STATUS;
 		
 		Phy_RX_Data							: IN	T_SLV_32;
@@ -135,9 +136,6 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	CONSTANT RX_FSFIFO_DEPTH						: POSITIVE				:= 8;																		--				 8								 8								max frames in RX_FIFO
 	CONSTANT RX_FSFIFO_EMPTYSTATE_BITS	: POSITIVE				:= log2ceilnz(RX_FSFIFO_DEPTH);
 
-	-- 
-	SIGNAL Reset_i											: STD_LOGIC;
-
 	-- transport layer interface
 	SIGNAL Trans_TX_SOF									: STD_LOGIC;
 	SIGNAL Trans_TX_EOF									: STD_LOGIC;
@@ -153,12 +151,6 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	SIGNAL Trans_RXFS_CRCOK							: STD_LOGIC;
 	SIGNAL Trans_RXFS_Abort							: STD_LOGIC;
 	
-	-- physical layer interface
-	SIGNAL Phy_Ready										: STD_LOGIC;
-	
-	-- link layer control FSM
-
-
 	-- TX FSM section
 	SIGNAL CRCMux_ctrl									: STD_LOGIC;
 --	SIGNAL ScramblerMux_ctrl						: STD_LOGIC;
@@ -263,9 +255,6 @@ begin
 	-- ================================================================
 	-- link layer control FSM
 	-- ================================================================
-	Phy_Ready	<= to_sl(Phy_Status = SATA_PHY_STATUS_LINK_OK);
-	Reset_i		<= Reset OR to_sl(Command = SATA_LINK_CMD_RESET);
-	
 	LLFSM : ENTITY PoC.sata_LinkLayerFSM
 		GENERIC MAP (
 			DEBUG										=> DEBUG,
@@ -276,7 +265,7 @@ begin
 		PORT MAP (
 			Clock										=> Clock,
 			ClockEnable 						=> ClockEnable,
-			Reset										=> Reset_i,
+			Reset										=> Reset,
 
 			Status									=> Status,
 			Error										=> Error,
@@ -301,7 +290,8 @@ begin
 			Trans_RXFS_Abort				=> Trans_RXFS_Abort,
 
 			-- physical layer interface
-			Phy_Ready								=> Phy_Ready,
+			Phy_ResetDone 					=> Phy_ResetDone,
+			Phy_Status							=> Phy_Status,
 			
 			-- primitive interface
 			TX_Primitive						=> TX_Primitive,
@@ -419,13 +409,15 @@ begin
 			PROCESS(Clock)
 			BEGIN
 				IF rising_edge(Clock) THEN
-					IF ((Reset = '1') OR (Command = SATA_LINK_CMD_RESET) OR (IEOFC_Load = '1')) THEN
+					if Phy_ResetDone = '0' then
 						Counter_us				<=  to_signed(IEOF_COUNTER_START, IEOF_COUNTER_BITS + 1);
-					ELSE
-						IF (IEOFC_inc = '1') THEN
+					elsif ClockEnable = '1' then
+						if ((Reset = '1') or (IEOFC_Load = '1')) then
+							Counter_us			<=  to_signed(IEOF_COUNTER_START, IEOF_COUNTER_BITS + 1);
+						elsif (IEOFC_inc = '1') then
 							Counter_us			<= Counter_us - 1;
-						END IF;
-					END IF;
+						end if;
+					end if;
 				END IF;
 			END PROCESS;
 			
@@ -731,7 +723,7 @@ begin
 		DebugPortOut.LLFSM											<= LLFSM_DebugPortOut;
 	
 		-- from physical layer
-		DebugPortOut.Phy_Ready									<= Phy_Ready;
+		DebugPortOut.Phy_Ready									<= to_sl(Phy_Status = SATA_PHY_STATUS_LINK_OK);
 		-- RX: from physical layer
 		DebugPortOut.RX_Phy_Data								<= Phy_RX_Data;
 		DebugPortOut.RX_Phy_CiK									<= Phy_RX_CharIsK;
