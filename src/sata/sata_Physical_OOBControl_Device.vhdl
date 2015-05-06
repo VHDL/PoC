@@ -9,7 +9,7 @@
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- TODO: Implementation of instable clock!
 -- 
 -- License:
 -- =============================================================================
@@ -54,7 +54,6 @@ ENTITY sata_Physical_OOBControl_Device IS
 	);
 	PORT (
 		Clock											: IN	STD_LOGIC;
-		ClockEnable								: IN	STD_LOGIC;
 		Reset											: IN	STD_LOGIC;
 		-- debug ports
 		DebugPortOut							: OUT	T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
@@ -172,12 +171,10 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			if (ClockEnable = '1') then
-				if (Reset = '1') then
-					State			<= ST_DEV_RESET;
-				else
-					State			<= NextState;
-				end if;
+			if (Reset = '1') then
+				State			<= ST_DEV_RESET;
+			else
+				State			<= NextState;
 			end if;
 		END IF;
 	END PROCESS;

@@ -4,13 +4,25 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
+--									Martin Zabel
 --
 -- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
---		TODO
--- 
+-- Executes the COMRESET / COMINIT procedure.
+--
+-- The Clock might be only unstable in two states: ST_HOST_RESET and
+-- ST_HOST_TIMEOUT. This is accomplished by:
+--
+-- a) During Power-up or a ClockNetwork_Reset this unit must be hold in the
+--    reset state ST_HOST_RESET. Asserting Retry is only permitted after the
+--    clock is stable.
+--
+-- b) Before reconfiguration on behalf of the SpeedController, this unit must
+-- 	  enter on one the states listed above. Asserting Retry is only permitted
+-- 	  after the clock is stable again (after reconfiguration).
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -57,7 +69,6 @@ entity sata_Physical_OOBControl_Host is
 	);
 	port (
 		Clock											: in	STD_LOGIC;
-		ClockEnable								: in	STD_LOGIC;
 		Reset											: in	STD_LOGIC;
 		-- debug ports
 		DebugPortOut							: out	T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
@@ -187,12 +198,10 @@ begin
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if (ClockEnable = '1') then
-				if (Reset = '1') then
-					State			<= ST_HOST_RESET;
-				else
-					State			<= NextState;
-				end if;
+			if (Reset = '1') then
+				State			<= ST_HOST_RESET;
+			else
+				State			<= NextState;
 			end if;
 		end if;
 	end process;
@@ -227,18 +236,10 @@ begin
 
 		DebugPortOut.AlignDetected	<= '0';
 
-		-- handle timeout with highest priority
-		if (TC1_Timeout = '1') then
-			TC1_en											<= '0';
-			TC1_Load										<= '1';
-			TC1_Slot										<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
-																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
-																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
-																																							 TTID1_OOB_TIMEOUT_GEN3)));
-			NextState										<= ST_HOST_TIMEOUT;
-		else
 			case State is
 				when ST_HOST_RESET =>
+					-- Clock might be unstable when FSM is in this state. See description
+					-- in header.
 					if (Retry = '1') then
 						NextState							<= ST_HOST_SEND_COMRESET;
 					end if;
@@ -259,7 +260,9 @@ begin
 					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '1';
 				
-					if (OOB_TX_Complete = '1') then
+					if (TC1_Timeout = '1') then
+						NextState 						<= ST_HOST_TIMEOUT;
+					elsif (OOB_TX_Complete = '1') then
 						NextState							<= ST_HOST_WAIT_DEV_COMINIT;
 					elsif ((ALLOW_STANDARD_VIOLATION = TRUE) and (OOB_RX_Received = SATA_OOB_COMRESET)) then					-- allow premature OOB response
 						NextState							<= ST_HOST_WAIT_AFTER_DEV_COMINIT;
@@ -269,7 +272,9 @@ begin
 					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '1';
 				
-					if (OOB_RX_Received = SATA_OOB_COMRESET) then																										-- device cominit detected
+					if (TC1_Timeout = '1') then
+						NextState 						<= ST_HOST_TIMEOUT;
+					elsif (OOB_RX_Received = SATA_OOB_COMRESET) then																										-- device cominit detected
 						TC2_Load							<= '1';
 						TC2_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID2_COMRESET_TIMEOUT_GEN1,
 																		 ite((SATAGeneration = SATA_GENERATION_2), TTID2_COMRESET_TIMEOUT_GEN2,
@@ -283,7 +288,9 @@ begin
 					TC2_en									<= '1';
 					TC1_en									<= '1';
 
-					if (OOB_RX_Received = SATA_OOB_COMRESET) then
+					if (TC1_Timeout = '1') then
+						NextState 						<= ST_HOST_TIMEOUT;
+					elsif (OOB_RX_Received = SATA_OOB_COMRESET) then
 						TC2_Load							<= '1';
 						TC2_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID2_COMRESET_TIMEOUT_GEN1,
 																		 ite((SATAGeneration = SATA_GENERATION_2), TTID2_COMRESET_TIMEOUT_GEN2,
@@ -297,13 +304,19 @@ begin
 					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
 					OOB_TX_Command_i				<= SATA_OOB_COMWAKE;
 					TC1_en									<= '1';
-					NextState								<= ST_HOST_SEND_COMWAKE_WAIT;
-			
+					if (TC1_Timeout = '1') then
+						NextState 						<= ST_HOST_TIMEOUT;
+					else
+						NextState							<= ST_HOST_SEND_COMWAKE_WAIT;
+					end if;
+					
 				when ST_HOST_SEND_COMWAKE_WAIT =>
 					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '1';
 				
-					if (OOB_TX_Complete = '1') then
+					if (TC1_Timeout = '1') then
+						NextState 						<= ST_HOST_TIMEOUT;
+					elsif (OOB_TX_Complete = '1') then
 						NextState							<= ST_HOST_WAIT_DEV_COMWAKE;
 					elsif ((ALLOW_STANDARD_VIOLATION = TRUE) and (OOB_RX_Received = SATA_OOB_COMWAKE)) then						-- allow premature OOB response
 						NextState							<= ST_HOST_WAIT_AFTER_COMWAKE;
@@ -313,7 +326,9 @@ begin
 					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '1';
 				
-					if (OOB_RX_Received = SATA_OOB_COMWAKE) then																											-- device comwake detected
+					if (TC1_Timeout = '1') then
+						NextState 						<= ST_HOST_TIMEOUT;
+					elsif (OOB_RX_Received = SATA_OOB_COMWAKE) then																											-- device comwake detected
 						TC2_Load							<= '1';
 						TC2_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID2_COMWAKE_TIMEOUT_GEN1,
 																		 ite((SATAGeneration = SATA_GENERATION_2), TTID2_COMWAKE_TIMEOUT_GEN2,
@@ -330,7 +345,9 @@ begin
 					TC1_en									<= '1';
 					TC2_en									<= '1';
 
-					if (OOB_RX_Received = SATA_OOB_COMWAKE) then
+					if (TC1_Timeout = '1') then
+						NextState 						<= ST_HOST_TIMEOUT;
+					elsif (OOB_RX_Received = SATA_OOB_COMWAKE) then
 						TC2_Load							<= '1';
 						TC2_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID2_COMWAKE_TIMEOUT_GEN1,
 																		 ite((SATAGeneration = SATA_GENERATION_2), TTID2_COMWAKE_TIMEOUT_GEN2,
@@ -344,7 +361,9 @@ begin
 					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;
 					TC1_en									<= '1';
 				
-					if (OOB_RX_Received = SATA_OOB_NONE) then
+					if (TC1_Timeout = '1') then
+						NextState 						<= ST_HOST_TIMEOUT;
+					elsif (OOB_RX_Received = SATA_OOB_NONE) then
 						NextState							<= ST_HOST_OOB_HANDSHAKE_COMPLETE;
 					end if;
 				
@@ -353,8 +372,12 @@ begin
 					OOB_HandshakeComplete_i	<= '1'; 	-- MUST BE driven by register
 					TC1_en									<= '1';
 						
-					NextState								<= ST_HOST_SEND_D10_2;
-				
+					if (TC1_Timeout = '1') then
+						NextState 						<= ST_HOST_TIMEOUT;
+					else
+						NextState								<= ST_HOST_SEND_D10_2;
+					end if;
+					
 				when ST_HOST_SEND_D10_2 =>
 					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;
 					AlignCounter_rst				<= '1';
@@ -364,7 +387,9 @@ begin
 					-- 		wait for 53,3 ns (64 UIs ~= 2 Gen1-DWords) before accepting ALIGN (<= crosstalking)
 					--		source: ATA8-AST page 75, transition HP8:HP9, => note text
 					
-					if ((ALLOW_STANDARD_VIOLATION = FALSE) and (OOB_RX_Received /= SATA_OOB_NONE)) then				-- disallow OOB signals after "OOB_HandshakeComplete"
+					if (TC1_Timeout = '1') then
+						NextState 						<= ST_HOST_TIMEOUT;
+					elsif ((ALLOW_STANDARD_VIOLATION = FALSE) and (OOB_RX_Received /= SATA_OOB_NONE)) then				-- disallow OOB signals after "OOB_HandshakeComplete"
 						NextState							<= ST_HOST_LINK_DEAD;
 					elsif ((RX_Primitive = SATA_PRIMITIVE_ALIGN) and (RX_Valid = '1')) then										-- ALIGN detected
 						AlignCounter_rst			<= '0';
@@ -381,7 +406,9 @@ begin
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '1';
 				
-					if (OOB_RX_Received /= SATA_OOB_NONE) then
+					if (TC1_Timeout = '1') then
+						NextState 						<= ST_HOST_TIMEOUT;
+					elsif (OOB_RX_Received /= SATA_OOB_NONE) then
 						NextState							<= ST_HOST_LINK_DEAD;
 					elsif ((Trans_Status = SATA_TRANSCEIVER_STATUS_ERROR) and (Trans_Error.RX /= SATA_TRANSCEIVER_RX_ERROR_NONE)) then
 						NextState							<= ST_HOST_LINK_BROKEN;
@@ -418,6 +445,8 @@ begin
 					end if;
 				
 				when ST_HOST_TIMEOUT =>
+					-- Clock might be unstable when FSM is in this state. See description
+					-- in header.
 					Timeout_i								<= '1';
 				
 					if (Retry = '1') then
@@ -425,7 +454,6 @@ begin
 					end if;
 				
 			end case;
-		end if;
 	end process;
 	
 	LinkOK									<= LinkOK_i;

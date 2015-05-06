@@ -10,8 +10,20 @@
 --
 -- Description:
 -- ------------------------------------
---		TODO
--- 
+-- Handles speed negotiation.
+--
+-- The Clock might be only unstable in two states: ST_WAIT and
+-- ST_RECONFIG_WAIT. This is accomplished by:
+--
+-- a) During Power-up or a ClockNetwork_Reset this unit must be hold in the
+--    reset state ST_WAIT. Asserting any command is only permitted after the
+--    clock is stable. OOBC_Timeout can not be signaled because the OOB
+--    Controller must be resetted too.
+--
+-- b) During reconfiguration, this unit is in the ST_RECONFIG_WAIT state.
+-- 	  Asserting Trans_RP_ConfigReloaded is only permitted
+-- 	  after the clock is stable again.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -55,7 +67,6 @@ ENTITY sata_Physical_SpeedControl IS
 	);
 	PORT (
 		Clock											: IN	STD_LOGIC;
-		ClockEnable								: IN	STD_LOGIC;
 		Reset											: IN	STD_LOGIC;
 
 		Command										: IN	T_SATA_PHY_SPEED_COMMAND;
@@ -67,7 +78,7 @@ ENTITY sata_Physical_SpeedControl IS
 
 		OOBC_Timeout							: IN	STD_LOGIC;
 		OOBC_Retry								: OUT	STD_LOGIC;
-		
+
 		-- reconfiguration interface
 		Trans_RP_Reconfig					: OUT	STD_LOGIC;
 		Trans_RP_SATAGeneration		: OUT	T_SATA_GENERATION;									-- 
@@ -238,7 +249,7 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF (ClockEnable = '1') THEN
+			IF (Reset = '0') THEN
 				SATAGeneration_cur	<= SATAGeneration_nxt;
 			END IF;
 		END IF;
@@ -272,12 +283,10 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			if (ClockEnable = '1') then
-				if (Reset = '1') then
-					State	<= ST_WAIT;
-				else
-					State	<= NextState;
-					end if;
+			if (Reset = '1') then
+				State	<= ST_WAIT;
+			else
+				State	<= NextState;
 			end if;
 		END IF;
 	END PROCESS;
@@ -306,9 +315,12 @@ BEGIN
 	
 		CASE State IS
 			WHEN ST_WAIT =>
+				-- Clock might be unstable when FSM is in this state. See description
+				-- in header.
 				Status_i												<= SATA_PHY_SPEED_STATUS_WAITING;
 				
 				IF (Command = SATA_PHY_SPEED_CMD_RESET) THEN
+					-- OOB Controller must be resetted at the same time.
 					SATAGeneration_rst						<= '1';
 					TryPerGeneration_Counter_rst	<= '1';
 					GenerationChange_Counter_rst	<= '1';
@@ -318,6 +330,7 @@ BEGIN
 						NextState									<= ST_RETRY;
 					END IF;
 				ELSIF (Command = SATA_PHY_SPEED_CMD_NEWLINK_UP) THEN
+					-- OOB Controller must be resetted at the same time.
 --					SATAGeneration_rst						<= '1';
 					TryPerGeneration_Counter_rst	<= '1';
 --					GenerationChange_Counter_rst	<= '1';
@@ -327,6 +340,8 @@ BEGIN
 				END IF;
 			
 			WHEN ST_RETRY =>
+				-- Clock must be stable when entering this state and must be kept
+				-- stable until the OOB Controller signals a timeout or a stable link.
 				Status_i												<= SATA_PHY_SPEED_STATUS_WAITING;
 				OOBC_Retry_i										<= '1';
 				NextState												<= ST_WAIT;
@@ -360,6 +375,8 @@ BEGIN
 				NextState												<= ST_RECONFIG_WAIT;
 
 			WHEN ST_RECONFIG_WAIT =>
+				-- Clock might be unstable when FSM is in this state. See description
+				-- in header.
 				Status_i												<= SATA_PHY_SPEED_STATUS_RECONFIGURATING;
 				Trans_RP_Lock_i									<= '0';
 				

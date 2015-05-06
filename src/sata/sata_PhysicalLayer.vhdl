@@ -208,9 +208,17 @@ begin
 		FSM_SC_Reset						<= '0';
 		FSM_SC_Command					<= SATA_PHY_SPEED_CMD_NONE;
 		OOBC_Reset							<= '0';
-		
+
+		------------------------------------------------------------------
+		-- Implementation notes:
+		--
+		-- OOBControl must be reseted when a SpeedControl command is issued.
+		------------------------------------------------------------------
 		case State is
 			when ST_RESET =>
+				-- Trans_ResetDone = '0' will hold the FSM in this state.
+				-- Hold sub-components also in reset, until the transceiver
+				-- interface is ready and the clock the first time stable.
 				Error_rst 					<= '1';
 				OOBC_Reset 					<= '1';
 				FSM_SC_Reset 				<= '1';
@@ -321,7 +329,6 @@ begin
 			)
 			port map (
 				Clock											=> Clock,
-				ClockEnable								=> ClockEnable,
 				Reset											=> OOBC_Reset,
 				
 				DebugPortOut							=> OOBC_DebugPortOut,
@@ -357,7 +364,6 @@ begin
 			)
 			port map (
 				Clock											=> Clock,
-				ClockEnable								=> ClockEnable,
 				Reset											=> OOBC_Reset,
 				
 				DebugPortOut							=> OOBC_DebugPortOut,
@@ -394,7 +400,6 @@ begin
 			)
 			port map (
 				Clock											=> Clock,
-				ClockEnable								=> ClockEnable,
 				Reset											=> FSM_SC_Reset,
 
 				Command										=> FSM_SC_Command,
