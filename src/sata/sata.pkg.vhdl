@@ -326,7 +326,6 @@ package sata is
 	-- ===========================================================================
 	TYPE T_SATA_TRANS_COMMAND IS (
 		SATA_TRANS_CMD_NONE,
-		SATA_TRANS_CMD_RESET,
 		SATA_TRANS_CMD_TRANSFER,
 		SATA_TRANS_CMD_ABORT
 	);

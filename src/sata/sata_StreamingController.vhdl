@@ -53,7 +53,7 @@ ENTITY sata_StreamingController IS
 	PORT (
 		Clock											: IN	STD_LOGIC;
 		Reset											: IN	STD_LOGIC;
-		
+
 		-- ATAStreamingController interface
 		-- ========================================================================
 		Command										: IN	T_SATA_STREAMC_COMMAND;
@@ -86,6 +86,7 @@ ENTITY sata_StreamingController IS
 		
 		-- SATAController interface
 		-- ========================================================================
+		SATA_ResetDone 						: in  STD_LOGIC;
 		SATA_Status								: IN	T_SATA_SATACONTROLLER_STATUS;
 	
 		-- TX port
@@ -152,6 +153,7 @@ ARCHITECTURE rtl OF sata_StreamingController IS
 	SIGNAL Cmd_ATAHostRegisters							: T_SATA_ATA_HOST_REGISTERS;
 
 	-- TransportLayer
+	signal Trans_ResetDone									: STD_LOGIC;
 	SIGNAL Trans_Command										: T_SATA_TRANS_COMMAND;
 	SIGNAL Trans_Status											: T_SATA_TRANS_STATUS;
 	SIGNAL Trans_Error											:	T_SATA_TRANS_ERROR;
@@ -260,6 +262,7 @@ BEGIN
 			RX_Ack											=> RX_Ack,
 			
 			-- TransportLayer interface
+			Trans_ResetDone 						=> Trans_ResetDone,
 			Trans_Command								=> Trans_Command,
 			Trans_Status								=> Trans_Status,
 			Trans_Error									=> Trans_Error,
@@ -397,6 +400,7 @@ BEGIN
 			RX_Ack											=> RX_Glue_Ack,
 			
 			-- LinkLayer interface
+			Link_ResetDone 							=> SATA_ResetDone, -- input from lower layer
 --			Link_Command								=> SATA_Command,
 			Link_Status									=> SATA_Status,
 --			Link_Error									=> SATA_Error,
@@ -431,6 +435,10 @@ BEGIN
 	SATA_TX_SOF					<= SATA_TX_SOF_i;
 	SATA_TX_EOF					<= SATA_TX_EOF_i;
 	SATA_TX_Valid				<= SATA_TX_Valid_i;
+
+	-- The interface of the Transportlayer is ready, when the interface of the
+	-- LinkLayer is ready.
+	Trans_ResetDone 		<= SATA_ResetDone;
 	
 	-- DebugPort
 	-- ==========================================================================================================================================================

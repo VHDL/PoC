@@ -89,6 +89,7 @@ ENTITY sata_CommandLayer IS
 
 		-- TransportLayer interface
 		-- ========================================================================
+		Trans_ResetDone 							: in  STD_LOGIC;
 		Trans_Command									: OUT	T_SATA_TRANS_COMMAND;
 		Trans_Status									: IN	T_SATA_TRANS_STATUS;
 		Trans_Error										: IN	T_SATA_TRANS_ERROR;
@@ -257,6 +258,7 @@ BEGIN
 			RX_EOR												=> CFSM_RX_EOR,
 			
 			-- TransportLayer interface
+			Trans_ResetDone 							=> Trans_ResetDone,
 			Trans_Command									=> Trans_Command,
 			Trans_Status									=> Trans_Status,
 			Trans_Error										=> Trans_Error,
@@ -298,7 +300,7 @@ BEGIN
 		SIGNAL TX_FIFO_DataIn										: STD_LOGIC_VECTOR(33 DOWNTO 0);
 		SIGNAL TX_FIFO_DataOut									: STD_LOGIC_VECTOR(33 DOWNTO 0);
 	BEGIN
-		TX_FIFO_rst																<= Reset OR to_sl(Command = SATA_CMD_CMD_RESET);
+		TX_FIFO_rst																<= Reset or not Trans_ResetDone;
 		TX_FIFO_put																<= TX_Valid;
 		TX_FIFO_got																<= TC_TX_Ack;
 		
@@ -388,7 +390,7 @@ BEGIN
 			PROCESS(Clock)
 			BEGIN
 				IF rising_edge(Clock) THEN
-					IF ((Reset = '1') OR (Command = SATA_CMD_CMD_RESET) OR (IEOTC_Load = '1')) THEN
+					IF ((Reset = '1') OR (Trans_ResetDone = '0') OR (IEOTC_Load = '1')) THEN
 						Counter_us				<=  to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);		-- FIXME: replace with dynamic calculation
 					ELSE
 						IF (IEOTC_inc = '1') THEN
@@ -441,7 +443,7 @@ BEGIN
 	END BLOCK;	-- TransferCutter
 
 	-- CommandLayer RX_FIFO
-	RX_FIFO_rst																<= Reset OR to_sl(Command = SATA_CMD_CMD_RESET);
+	RX_FIFO_rst																<= Reset or not Trans_ResetDone;
 	RX_FIFO_put																<= Trans_RX_Valid			AND NOT IDF_Enable;
 	RX_FIFO_Commit														<= (Trans_RX_Commit		AND NOT IDF_Enable);
 	RX_FIFO_Rollback													<= Trans_RX_Rollback	AND NOT IDF_Enable;
@@ -510,7 +512,7 @@ BEGIN
 	-- ================================================================
 	-- IdentifyDeviceFilter
 	-- ================================================================
-	IDF_Reset		<= Reset OR to_sl(Command = SATA_CMD_CMD_RESET);
+	IDF_Reset		<= Reset or not Trans_ResetDone;
 	IDF_Valid		<= Trans_RX_Valid;
 	IDF_Data		<= Trans_RX_Data;
 	IDF_SOT			<= Trans_RX_SOT;

@@ -80,6 +80,7 @@ entity sata_TransportLayer is
 		RX_Rollback										: OUT	STD_LOGIC;
 	
 		-- LinkLayer interface
+		Link_ResetDone 								: in  STD_LOGIC;
 		Link_Status										: IN	T_SATA_SATACONTROLLER_STATUS;
 		
 		-- TX path
@@ -179,8 +180,8 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 	signal FISD_DebugPortOut						: T_SATADBG_TRANS_FISD_OUT;
 	
 begin
-	FISE_Reset		<= Reset OR to_sl(Command = SATA_TRANS_CMD_RESET);
-	FISD_Reset		<= Reset OR to_sl(Command = SATA_TRANS_CMD_RESET);
+	FISE_Reset		<= Reset or not Link_ResetDone;
+	FISD_Reset		<= Reset or not Link_ResetDone;
 
 	-- ================================================================
 	-- TransportLayer FSM
@@ -204,6 +205,7 @@ begin
 			DebugPortOut											=> TFSM_DebugPortOut,
 			
 			-- linkLayer interface
+			Link_ResetDone 										=> Link_ResetDone,
 --			Link_Command											=> Link_Command,
 			Link_Status												=> Link_Status,
 --			Link_Error												=> Link_Error,
@@ -243,7 +245,7 @@ begin
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF ((Reset = '1') OR (Command = SATA_TRANS_CMD_RESET)) THEN
+			IF ((Reset = '1') OR (Link_ResetDone = '0')) THEN
 				ATAHostRegisters_d.Flag_C								<= '0';												-- set C flag => access Command register on device
 				ATAHostRegisters_d.Command							<= (OTHERS => '0');						-- Command register
 				ATAHostRegisters_d.Control							<= (OTHERS => '0');						-- Control register
@@ -357,7 +359,7 @@ begin
 		PROCESS(Clock)
 		BEGIN
 			IF rising_edge(Clock) THEN
-				IF ((Reset = '1') OR (Command = SATA_TRANS_CMD_RESET)) THEN
+				IF ((Reset = '1') OR (Link_ResetDone = '0')) THEN
 					RXReg_Data_d				<= (OTHERS => '0');
 					RXReg_mux_r					<= '0';
 					RXReg_EOT_r					<= '0';
