@@ -80,7 +80,6 @@ entity sata_TransportLayer is
 		RX_Rollback										: OUT	STD_LOGIC;
 	
 		-- LinkLayer interface
-		Link_ResetDone 								: in  STD_LOGIC;
 		Link_Status										: IN	T_SATA_SATACONTROLLER_STATUS;
 		
 		-- TX path
@@ -113,6 +112,8 @@ end;
 ARCHITECTURE rtl OF sata_TransportLayer IS
 	ATTRIBUTE KEEP											: BOOLEAN;
 
+	signal MyReset 											: STD_LOGIC;
+	
 	signal ATAHostRegisters_i						: T_SATA_ATA_HOST_REGISTERS;
 	signal ATAHostRegisters_d						: T_SATA_ATA_HOST_REGISTERS;
 
@@ -151,7 +152,6 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 	signal RXReg_RX_Rollback						: STD_LOGIC;
 
 	-- FISEncoder
-	signal FISE_Reset										: STD_LOGIC;
 	signal FISE_Status									: T_SATA_FISENCODER_STATUS;
 	signal FISE_TX_Ack									: STD_LOGIC;
 	signal FISE_TX_InsertEOP						: STD_LOGIC;
@@ -162,7 +162,6 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 	signal FISE_Link_TX_FS_Ack					: STD_LOGIC;
 	
 	-- FISDecoder
-	signal FISD_Reset										: STD_LOGIC;
 	signal FISD_Status									: T_SATA_FISDECODER_STATUS;
 	signal FISD_FISType									: T_SATA_FISTYPE;
 	signal FISD_RX_Data									: T_SLV_32;
@@ -180,9 +179,6 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 	signal FISD_DebugPortOut						: T_SATADBG_TRANS_FISD_OUT;
 	
 begin
-	FISE_Reset		<= Reset or not Link_ResetDone;
-	FISD_Reset		<= Reset or not Link_ResetDone;
-
 	-- ================================================================
 	-- TransportLayer FSM
 	-- ================================================================
@@ -205,7 +201,6 @@ begin
 			DebugPortOut											=> TFSM_DebugPortOut,
 			
 			-- linkLayer interface
-			Link_ResetDone 										=> Link_ResetDone,
 --			Link_Command											=> Link_Command,
 			Link_Status												=> Link_Status,
 --			Link_Error												=> Link_Error,
@@ -245,7 +240,7 @@ begin
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF ((Reset = '1') OR (Link_ResetDone = '0')) THEN
+			IF (Reset = '1') THEN
 				ATAHostRegisters_d.Flag_C								<= '0';												-- set C flag => access Command register on device
 				ATAHostRegisters_d.Command							<= (OTHERS => '0');						-- Command register
 				ATAHostRegisters_d.Control							<= (OTHERS => '0');						-- Control register
@@ -359,7 +354,7 @@ begin
 		PROCESS(Clock)
 		BEGIN
 			IF rising_edge(Clock) THEN
-				IF ((Reset = '1') OR (Link_ResetDone = '0')) THEN
+				IF (Reset = '1') THEN
 					RXReg_Data_d				<= (OTHERS => '0');
 					RXReg_mux_r					<= '0';
 					RXReg_EOT_r					<= '0';
@@ -424,7 +419,7 @@ begin
 		)
 		PORT MAP (
 			Clock												=> Clock,
-			Reset												=> FISE_Reset,
+			Reset												=> Reset,
 
 			-- FISEncoder interface
 			Status											=> FISE_Status,
@@ -468,7 +463,7 @@ begin
 		)
 		PORT MAP (
 			Clock												=> Clock,
-			Reset												=> FISD_Reset,
+			Reset												=> Reset,
 			
 			Status											=> FISD_Status,
 			FISType											=> FISD_FISType,

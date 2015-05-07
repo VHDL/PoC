@@ -75,7 +75,6 @@ ENTITY sata_TransportFSM IS
 		RX_EOT														: OUT	STD_LOGIC;
 		
 		-- LinkLayer interface
-		Link_ResetDone 										: in  STD_LOGIC;
 --		Link_Command											: OUT	T_SATA_COMMAND;
 		Link_Status												: IN	T_SATA_SATACONTROLLER_STATUS;
 --		Link_Error												: IN	T_SATA_ERROR;
@@ -140,7 +139,7 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF ((Reset = '1') OR (Link_ResetDone = '0')) THEN
+			IF (Reset = '1') THEN
 				State						<= ST_RESET;
 --				Link_Command		<= SATA_CMD_RESET_LINKLAYER;
 			ELSE

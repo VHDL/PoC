@@ -126,6 +126,7 @@ architecture rtl of sata_PhysicalLayer is
 	signal NextState									: T_STATE;
 	attribute FSM_ENCODING of State		: signal is getFSMEncoding_gray(DEBUG);
 
+	signal Reset_i 										: STD_LOGIC;
 	signal Status_i										: T_SATA_PHY_STATUS;
 
 	signal FSM_SC_Reset								: STD_LOGIC;
@@ -172,17 +173,18 @@ begin
 	-- ================================================================
 	-- physical layer control
 	-- ================================================================
+
+	-- Reset this unit until initial reset of lower layer has been completed.
+	-- Allow synchronous 'Reset' only when ClockEnable = '1'.
+	Reset_i <= (not Trans_ResetDone) or (Reset and ClockEnable);
+	
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if (Trans_ResetDone = '0') then
-				State 		<= ST_RESET;
-			elsif (ClockEnable = '1') then
-				if (Reset = '1') then
-					State 	<= ST_RESET;
-				else
-					State		<= NextState;
-				end if;
+			if (Reset_i = '1') then
+				State 	<= ST_RESET;
+			else
+				State		<= NextState;
 			end if;
 			
 			if (Error_rst = '1') then

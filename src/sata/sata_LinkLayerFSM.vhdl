@@ -10,7 +10,7 @@
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- For input 'MyReset' see module 'sata_LinkLayer'.
 -- 
 -- License:
 -- =============================================================================
@@ -53,8 +53,7 @@ entity sata_LinkLayerFSM is
 	);
 	port (
 		Clock										: IN	STD_LOGIC;
-		ClockEnable							: IN	STD_LOGIC;
-		Reset										: IN	STD_LOGIC;
+		MyReset									: IN	STD_LOGIC;
 
 		Status									: OUT	T_SATA_LINK_STATUS;
 		Error										: OUT	T_SATA_LINK_ERROR;
@@ -80,7 +79,6 @@ entity sata_LinkLayerFSM is
 		Trans_RXFS_Abort				: OUT	STD_LOGIC;
 
 		-- physical layer interface
-		Phy_ResetDone						: IN	STD_LOGIC;
 		Phy_Status							: IN	T_SATA_PHY_STATUS;
 		
 		TX_Primitive						: OUT	T_SATA_PRIMITIVE;
@@ -272,14 +270,10 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			if Phy_ResetDone = '0' then
-				TXFSM_State 		<= ST_TXFSM_RESET;
-			elsif ClockEnable = '1' then
-				if Reset = '1' then
-					TXFSM_State 	<= ST_TXFSM_RESET;
-				else
-					TXFSM_State 	<= TXFSM_NextState;
-				end if;
+			if MyReset = '1' then
+				TXFSM_State 	<= ST_TXFSM_RESET;
+			else
+				TXFSM_State 	<= TXFSM_NextState;
 			end if;
 		END IF;
 	END PROCESS;
@@ -851,14 +845,10 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			if Phy_ResetDone = '0' then
-				RXFSM_State 		<= ST_RXFSM_RESET;
-			elsif ClockEnable = '1' then
-				if Reset = '1' then
-					RXFSM_State 	<= ST_RXFSM_RESET;
-				else
-					RXFSM_State 	<= RXFSM_NextState;
-				end if;
+			if MyReset = '1' then
+				RXFSM_State 	<= ST_RXFSM_RESET;
+			else
+				RXFSM_State 	<= RXFSM_NextState;
 			end if;
 		END IF;
 	END PROCESS;

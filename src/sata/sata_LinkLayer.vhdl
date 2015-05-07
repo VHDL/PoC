@@ -136,6 +136,12 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	CONSTANT RX_FSFIFO_DEPTH						: POSITIVE				:= 8;																		--				 8								 8								max frames in RX_FIFO
 	CONSTANT RX_FSFIFO_EMPTYSTATE_BITS	: POSITIVE				:= log2ceilnz(RX_FSFIFO_DEPTH);
 
+-- ==================================================================
+-- Signals
+-- ==================================================================
+	-- my reset
+	signal MyReset 											: STD_LOGIC;
+	
 	-- transport layer interface
 	SIGNAL Trans_TX_SOF									: STD_LOGIC;
 	SIGNAL Trans_TX_EOF									: STD_LOGIC;
@@ -252,7 +258,12 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	signal LLFSM_DebugPortOut					: T_SATADBG_LINK_LLFSM_OUT;
 	
 begin
-	-- ================================================================
+	-- Reset this unit until initial reset of lower layer has been completed.
+	-- Allow synchronous 'Reset' only when ClockEnable = '1'.
+	MyReset <= (not Phy_ResetDone) or (Reset and ClockEnable);
+	
+
+  -- ================================================================
 	-- link layer control FSM
 	-- ================================================================
 	LLFSM : ENTITY PoC.sata_LinkLayerFSM
@@ -264,8 +275,7 @@ begin
 		)
 		PORT MAP (
 			Clock										=> Clock,
-			ClockEnable 						=> ClockEnable,
-			Reset										=> Reset,
+			MyReset									=> MyReset,
 
 			Status									=> Status,
 			Error										=> Error,
@@ -290,7 +300,6 @@ begin
 			Trans_RXFS_Abort				=> Trans_RXFS_Abort,
 
 			-- physical layer interface
-			Phy_ResetDone 					=> Phy_ResetDone,
 			Phy_Status							=> Phy_Status,
 			
 			-- primitive interface
@@ -409,14 +418,10 @@ begin
 			PROCESS(Clock)
 			BEGIN
 				IF rising_edge(Clock) THEN
-					if Phy_ResetDone = '0' then
-						Counter_us				<=  to_signed(IEOF_COUNTER_START, IEOF_COUNTER_BITS + 1);
-					elsif ClockEnable = '1' then
-						if ((Reset = '1') or (IEOFC_Load = '1')) then
-							Counter_us			<=  to_signed(IEOF_COUNTER_START, IEOF_COUNTER_BITS + 1);
-						elsif (IEOFC_inc = '1') then
-							Counter_us			<= Counter_us - 1;
-						end if;
+					if ((MyReset = '1') or (IEOFC_Load = '1')) then
+						Counter_us			<=  to_signed(IEOF_COUNTER_START, IEOF_COUNTER_BITS + 1);
+					elsif (IEOFC_inc = '1') then
+						Counter_us			<= Counter_us - 1;
 					end if;
 				END IF;
 			END PROCESS;

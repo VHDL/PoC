@@ -4,7 +4,6 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
---									Martin Zabel
 --
 -- Package:					TODO
 --
@@ -73,7 +72,6 @@ ENTITY sata_CommandFSM IS
 		RX_EOR														: OUT	STD_LOGIC;
 
 		-- TransporTrans interface
-		Trans_ResetDone 									: in  STD_LOGIC;
 		Trans_Command											: OUT	T_SATA_TRANS_COMMAND;
 		Trans_Status											: IN	T_SATA_TRANS_STATUS;
 		Trans_Error												: IN	T_SATA_TRANS_ERROR;
@@ -146,7 +144,7 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF (Reset = '1') or (Trans_ResetDone = '0') THEN
+			IF (Reset = '1') THEN
 				State			<= ST_RESET;
 			ELSE
 				State			<= NextState;
@@ -612,7 +610,7 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF (Reset = '1') or (Trans_ResetDone = '0') THEN
+			IF (Reset = '1') THEN
 				Address_LB_us_d						<= (OTHERS => '0');
 				BlockCount_LB_us_d				<= (OTHERS => '0');
 			ELSE

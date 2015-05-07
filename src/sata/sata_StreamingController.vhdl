@@ -52,6 +52,7 @@ ENTITY sata_StreamingController IS
 	);
 	PORT (
 		Clock											: IN	STD_LOGIC;
+		ClockEnable								: IN	STD_LOGIC;
 		Reset											: IN	STD_LOGIC;
 
 		-- ATAStreamingController interface
@@ -130,6 +131,10 @@ ARCHITECTURE rtl OF sata_StreamingController IS
 	-- RX path
 	CONSTANT RX_FIFO_DEPTH									: POSITIVE		:= 4096;				--	1024						2048
 	
+	-- Common
+	-- ==========================================================================
+	signal MyReset 													: STD_LOGIC;
+	
 	-- ApplicationLayer
 	-- ==========================================================================
 	SIGNAL RX_Data_i												: T_SLV_32;
@@ -195,9 +200,14 @@ ARCHITECTURE rtl OF sata_StreamingController IS
 	SIGNAL SATA_TX_Valid_i		: STD_LOGIC;
 
 BEGIN
+	-- Reset sub-components until initial reset of SATAController has been
+	-- completed. Allow synchronous 'Reset' only when ClockEnable = '1'.
+	-- ===========================================================================
+	MyReset <= (not SATA_ResetDone) or (Reset and ClockEnable);
 
+	
 	-- rewrite StreamingController commands to ATA command layer commands
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	PROCESS(Command)
 	BEGIN
 		CASE Command IS
@@ -219,7 +229,7 @@ BEGIN
 	Error.TransportLayer			<= Trans_Error;
 	
 	-- CommandLayer
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	Cmd : ENTITY PoC.sata_CommandLayer
 		GENERIC MAP (
 			SIM_EXECUTE_IDENTIFY_DEVICE	=> SIM_EXECUTE_IDENTIFY_DEVICE,				-- required by CommandLayer: load device parameters
@@ -231,7 +241,7 @@ BEGIN
 		)
 		PORT MAP (
 			Clock												=> Clock,
-			Reset												=> Reset,
+			Reset												=> MyReset,
 
 			-- for measurement purposes only
 			Config_BurstSize						=> Config_BurstSize,
@@ -262,7 +272,6 @@ BEGIN
 			RX_Ack											=> RX_Ack,
 			
 			-- TransportLayer interface
-			Trans_ResetDone 						=> Trans_ResetDone,
 			Trans_Command								=> Trans_Command,
 			Trans_Status								=> Trans_Status,
 			Trans_Error									=> Trans_Error,
@@ -319,7 +328,7 @@ BEGIN
 			);
 
 		FIFO_DataIn 			<= (Trans_RX_Commit & Trans_RX_SOT & Trans_RX_EOT & Trans_RX_Data);
-		FIFO_Reset 				<= Trans_RX_Rollback or Reset;
+		FIFO_Reset 				<= Trans_RX_Rollback or MyReset;
 		RX_Glue_Ack	 		<= not FIFO_Full;
 		RX_Glue_Rollback 	<= Trans_RX_Rollback when rising_edge(Clock);
 		RX_Glue_Data 			<= FIFO_DataOut(31 downto 0);
@@ -341,7 +350,7 @@ BEGIN
 			)
 			PORT MAP (
 				clk => Clock,
-				rst => Reset,
+				rst => MyReset,
 				
 				di 	=> FIFO_DataIn,
 				ful => FIFO_Full,
@@ -369,7 +378,7 @@ BEGIN
     )
 		PORT MAP (
 			Clock												=> Clock,
-			Reset												=> Reset,
+			Reset												=> MyReset,
 
 			-- TransportLayer interface
 			Command											=> Trans_Command,
@@ -400,7 +409,6 @@ BEGIN
 			RX_Ack											=> RX_Glue_Ack,
 			
 			-- LinkLayer interface
-			Link_ResetDone 							=> SATA_ResetDone, -- input from lower layer
 --			Link_Command								=> SATA_Command,
 			Link_Status									=> SATA_Status,
 --			Link_Error									=> SATA_Error,
@@ -436,12 +444,8 @@ BEGIN
 	SATA_TX_EOF					<= SATA_TX_EOF_i;
 	SATA_TX_Valid				<= SATA_TX_Valid_i;
 
-	-- The interface of the Transportlayer is ready, when the interface of the
-	-- LinkLayer is ready.
-	Trans_ResetDone 		<= SATA_ResetDone;
-	
 	-- DebugPort
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
 	begin
 		DebugPortOut.Command_Command <= Cmd_Command;

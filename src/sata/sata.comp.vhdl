@@ -57,6 +57,7 @@ package satacomp is
 		);
 		PORT (
 			Clock											: IN	STD_LOGIC;
+			ClockEnable								: IN	STD_LOGIC;
 			Reset											: IN	STD_LOGIC;
 			
 			-- ATAStreamingController interface
@@ -91,9 +92,10 @@ package satacomp is
 			
 			-- SATAController interface
 			-- ========================================================================
-			SATA_Command							: OUT	T_SATA_SATACONTROLLER_COMMAND;
+			SATA_ResetDone 						: in  STD_LOGIC;
+--			SATA_Command							: OUT	T_SATA_SATACONTROLLER_COMMAND;
 			SATA_Status								: IN	T_SATA_SATACONTROLLER_STATUS;
-			SATA_Error								: IN	T_SATA_SATACONTROLLER_ERROR;
+--			SATA_Error								: IN	T_SATA_SATACONTROLLER_ERROR;
 		
 			-- TX port
 			SATA_TX_SOF								: OUT	STD_LOGIC;
