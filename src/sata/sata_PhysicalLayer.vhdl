@@ -132,7 +132,8 @@ architecture rtl of sata_PhysicalLayer is
 	signal FSM_SC_Command							: T_SATA_PHY_SPEED_COMMAND;
 	
 	signal SC_Status									: T_SATA_PHY_SPEED_STATUS;	
-	signal SC_Retry										: STD_LOGIC;
+	signal SC_OOBC_Reset							: STD_LOGIC;
+	signal SC_OOBC_Retry							: STD_LOGIC;
 	signal SC_SATAGeneration					: T_SATA_GENERATION;
 		
 	signal OOBC_Reset									: STD_LOGIC;
@@ -192,7 +193,7 @@ begin
 		end if;
 	end process;
 	
-	process(State, Command, SC_Status,
+	process(State, Command, SC_Status, SC_OOBC_Reset,
 					Trans_RP_Reconfig_i, Trans_RP_ConfigReloaded,
 					OOBC_LinkOK, OOBC_LinkDead, OOBC_ReceivedReset)
 	begin
@@ -207,8 +208,9 @@ begin
 		
 		FSM_SC_Reset						<= '0';
 		FSM_SC_Command					<= SATA_PHY_SPEED_CMD_NONE;
-		OOBC_Reset							<= '0';
 
+		OOBC_Reset 							<= SC_OOBC_Reset;
+		
 		------------------------------------------------------------------
 		-- Implementation notes:
 		--
@@ -220,24 +222,24 @@ begin
 				-- Hold sub-components also in reset, until the transceiver
 				-- interface is ready and the clock the first time stable.
 				Error_rst 					<= '1';
-				OOBC_Reset 					<= '1';
 				FSM_SC_Reset 				<= '1';
+				OOBC_Reset 					<= '1'; -- override
 				Status_i						<= SATA_PHY_STATUS_RESET;
 				NextState						<= ST_LINK_UP;
 	
 			when ST_LINK_UP =>
 				Status_i						<= SATA_PHY_STATUS_LINK_UP;
 			
-				if (Command = SATA_PHY_CMD_INIT_CONNECTION) then
-					OOBC_Reset				<= '1';
+				if (Trans_RP_Reconfig_i = '1') then
+					-- Must be highest priority to reach safe state during
+					-- reconfiguration (where clock can be unstable).
+					NextState					<= ST_CHANGE_SPEED;
+				elsif (Command = SATA_PHY_CMD_INIT_CONNECTION) then
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				elsif (Command = SATA_PHY_CMD_REINIT_CONNECTION) then
-					OOBC_Reset				<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
-				elsif (Trans_RP_Reconfig_i = '1') then
-					NextState					<= ST_CHANGE_SPEED;
 				elsif (OOBC_LinkOK = '1') then
 					NextState					<= ST_LINK_OK;
 				elsif (SC_Status = SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR) then
@@ -250,11 +252,9 @@ begin
 				Status_i						<= SATA_PHY_STATUS_LINK_OK;
 			
 				IF (Command = SATA_PHY_CMD_INIT_CONNECTION) then
-					OOBC_Reset				<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				elsif (Command = SATA_PHY_CMD_REINIT_CONNECTION) then
-					OOBC_Reset				<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				elsif (OOBC_LinkOK = '0') then
@@ -271,11 +271,9 @@ begin
 				Status_i						<= SATA_PHY_STATUS_LINK_BROKEN;
 			
 				if (Command = SATA_PHY_CMD_INIT_CONNECTION) then
-					OOBC_Reset				<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				elsif (Command = SATA_PHY_CMD_REINIT_CONNECTION) then
-					OOBC_Reset				<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				elsif (OOBC_LinkOK = '1') then
@@ -289,6 +287,9 @@ begin
 				end if;
 				
 			when ST_CHANGE_SPEED =>
+				-- Clock can be unstable in this state.
+				-- Trans_RP_ReconfigReloaded must not be asserted before clock is
+				-- stable again.
 				Status_i						<= SATA_PHY_STATUS_CHANGE_SPEED;
 
 				if (Trans_RP_ConfigReloaded = '1') then
@@ -299,11 +300,9 @@ begin
 				Status_i						<= SATA_PHY_STATUS_ERROR;
 				
 				if (Command = SATA_PHY_CMD_INIT_CONNECTION) then
-					OOBC_Reset				<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
 					NextState					<= ST_LINK_UP;
 				elsif (Command = SATA_PHY_CMD_REINIT_CONNECTION) then
-					OOBC_Reset				<= '1';
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
 				elsif (OOBC_ReceivedReset = '1') then
@@ -315,7 +314,7 @@ begin
 	end process;
 	
 	Status	<= Status_i;
-	
+
 	-- OOB (out of band) signaling
 	-- ===========================================================================
 	genHost : if (CONTROLLER_TYPE = SATA_DEVICE_TYPE_HOST) generate
@@ -333,7 +332,7 @@ begin
 				
 				DebugPortOut							=> OOBC_DebugPortOut,
 
-				Retry											=> SC_Retry,
+				Retry											=> SC_OOBC_Retry,
 				SATAGeneration						=> SC_SATAGeneration,
 				Timeout										=> OOBC_Timeout,
 				LinkOK										=> OOBC_LinkOK,
@@ -368,7 +367,7 @@ begin
 				
 				DebugPortOut							=> OOBC_DebugPortOut,
 
-				Retry											=> SC_Retry,
+				Retry											=> SC_OOBC_Retry,
 				SATAGeneration						=> SC_SATAGeneration,
 				Timeout										=> OOBC_Timeout,
 				LinkOK										=> OOBC_LinkOK,
@@ -412,7 +411,8 @@ begin
 
 				-- OOBControl interface
 				OOBC_Timeout							=> OOBC_Timeout,
-				OOBC_Retry								=> SC_Retry,
+				OOBC_Reset 								=> SC_OOBC_Reset,
+				OOBC_Retry								=> SC_OOBC_Retry,
 
 				-- reconfiguration interface
 				Trans_RP_Reconfig					=> Trans_RP_Reconfig_i,
@@ -446,7 +446,9 @@ begin
 	
 		OOBC_Timeout_d				<= OOBC_Timeout when rising_edge(Clock);
 		OOBC_Timeout_re				<= not OOBC_Timeout_d and OOBC_Timeout;
-		SC_Retry							<= (OOBC_Timeout_re and not TryCounter_uf) or SC_StartOver;
+		
+		SC_OOBC_Reset 				<= to_sl((FSM_SC_Command = SATA_PHY_SPEED_CMD_RESET) or (FSM_SC_COMMAND = SATA_PHY_SPEED_CMD_NEWLINK_UP));
+		SC_OOBC_Retry					<= (OOBC_Timeout_re and not TryCounter_uf) or SC_StartOver;
 		SC_Status							<= SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR when (TryCounter_uf = '1') else SATA_PHY_SPEED_STATUS_WAITING;
 
 		TryCounter_rst				<= SC_StartOver;
@@ -455,13 +457,8 @@ begin
 		process(Clock)
 		begin
 			if rising_edge(Clock) then
-				if ClockEnable = '1' then
-					if (FSM_SC_Command = SATA_PHY_SPEED_CMD_RESET) or (FSM_SC_COMMAND = SATA_PHY_SPEED_CMD_NEWLINK_UP) then
-						SC_StartOver 					<= '1';
-					else
-						SC_StartOver 					<= '0'; -- includes reset
-					end if;
-				end if;
+				-- C_OOBC_Reset is low, when PhysicalLayer is reset.
+				SC_StartOver 		<= SC_OOBC_Reset;
 				
 				if (TryCounter_rst = '1') then
 					TryCounter_s		<= to_signed(ATTEMPTS_PER_GENERATION, TryCounter_s'length);

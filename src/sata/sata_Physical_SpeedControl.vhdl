@@ -76,8 +76,9 @@ ENTITY sata_Physical_SpeedControl IS
 
 		DebugPortOut							: OUT	T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT;
 
-		OOBC_Timeout							: IN	STD_LOGIC;
-		OOBC_Retry								: OUT	STD_LOGIC;
+		OOBC_Timeout							: in	STD_LOGIC;
+		OOBC_Reset								: out	STD_LOGIC;
+		OOBC_Retry								: out	STD_LOGIC;
 
 		-- reconfiguration interface
 		Trans_RP_Reconfig					: OUT	STD_LOGIC;
@@ -305,6 +306,7 @@ BEGIN
 		SATAGeneration_rst									<= '0';
 		SATAGeneration_Change								<= '0';
 		OOBC_Retry_i												<= '0';
+		OOBC_Reset 													<= '0';
 		Trans_RP_Reconfig_i									<= '0';
 		Trans_RP_Lock_i											<= '1';
 		
@@ -315,8 +317,9 @@ BEGIN
 	
 		CASE State IS
 			WHEN ST_WAIT =>
-				-- Clock might be unstable when FSM is in this state. See description
-				-- in header.
+				-- Clock might be unstable when FSM is in this state. FSM is kept in
+				-- this state due to reset. Only reset of other components is permitted
+				-- here. See also description in header.
 				Status_i												<= SATA_PHY_SPEED_STATUS_WAITING;
 				
 				IF (Command = SATA_PHY_SPEED_CMD_RESET) THEN
@@ -324,6 +327,7 @@ BEGIN
 					SATAGeneration_rst						<= '1';
 					TryPerGeneration_Counter_rst	<= '1';
 					GenerationChange_Counter_rst	<= '1';
+					OOBC_Reset 										<= '1';
 					IF (SATAGeneration_Changed = '1') THEN
 						NextState									<= ST_RECONFIG;
 					ELSE
@@ -334,6 +338,7 @@ BEGIN
 --					SATAGeneration_rst						<= '1';
 					TryPerGeneration_Counter_rst	<= '1';
 --					GenerationChange_Counter_rst	<= '1';
+					OOBC_Reset 										<= '1';
 					NextState											<= ST_RETRY;
 				ELSIF (OOBC_Timeout = '1') THEN
 					NextState											<= ST_TIMEOUT;
@@ -392,6 +397,7 @@ BEGIN
 					SATAGeneration_rst						<= '1';
 					TryPerGeneration_Counter_rst	<= '1';
 					GenerationChange_Counter_rst	<= '1';
+					OOBC_Reset 										<= '1';
 					IF (SATAGeneration_Changed = '1') THEN
 						NextState									<= ST_RECONFIG;
 					ELSE
@@ -401,6 +407,7 @@ BEGIN
 --					SATAGeneration_rst						<= '1';
 					TryPerGeneration_Counter_rst	<= '1';
 --					GenerationChange_Counter_rst	<= '1';
+					OOBC_Reset 										<= '1';
 					NextState											<= ST_RETRY;
 				END IF;
 
