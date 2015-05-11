@@ -80,9 +80,6 @@ entity sata_Physical_OOBControl_Host is
 		LinkDead									: out	STD_LOGIC;
 		ReceivedReset							: out	STD_LOGIC;
 		
-		Trans_Status							: in	T_SATA_TRANSCEIVER_STATUS;
-		Trans_Error								: in	T_SATA_TRANSCEIVER_ERROR;
-		
 		OOB_TX_Command						: out	T_SATA_OOB;
 		OOB_TX_Complete						: in	STD_LOGIC;
 		OOB_RX_Received						: in	T_SATA_OOB;
@@ -151,7 +148,6 @@ architecture rtl of sata_Physical_OOBControl_Host is
 		ST_HOST_SEND_ALIGN,
 		ST_HOST_TIMEOUT,
 		ST_HOST_LINK_OK,
-		ST_HOST_LINK_BROKEN,
 		ST_HOST_LINK_DEAD
 	);
 
@@ -207,7 +203,7 @@ begin
 	end process;
 
 
-	process(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, AlignCounter_us, TC1_Timeout, TC2_Timeout, Trans_Status, Trans_Error.RX)
+	process(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, AlignCounter_us, TC1_Timeout, TC2_Timeout)
 	begin
 		NextState									<= State;
 		
@@ -410,8 +406,6 @@ begin
 						NextState 						<= ST_HOST_TIMEOUT;
 					elsif (OOB_RX_Received /= SATA_OOB_NONE) then
 						NextState							<= ST_HOST_LINK_DEAD;
-					elsif ((Trans_Status = SATA_TRANSCEIVER_STATUS_ERROR) and (Trans_Error.RX /= SATA_TRANSCEIVER_RX_ERROR_NONE)) then
-						NextState							<= ST_HOST_LINK_BROKEN;
 					elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then																				-- SYNC detected
 						NextState							<= ST_HOST_LINK_OK;
 					end if;
@@ -422,19 +416,6 @@ begin
 					
 					if (OOB_RX_Received /= SATA_OOB_NONE) then
 						NextState							<= ST_HOST_LINK_DEAD;
-					elsif ((Trans_Status = SATA_TRANSCEIVER_STATUS_ERROR) and (Trans_Error.RX /= SATA_TRANSCEIVER_RX_ERROR_NONE)) then
-						NextState							<= ST_HOST_LINK_BROKEN;
-					end if;
-				
-				when ST_HOST_LINK_BROKEN =>
-					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
-					
-					if (RX_Valid = '1') then
-						NextState							<= ST_HOST_LINK_OK;
-					end if;
-					
-					if (Retry = '1') then
-						NextState							<= ST_HOST_SEND_COMRESET;
 					end if;
 				
 				when ST_HOST_LINK_DEAD =>
@@ -515,7 +496,7 @@ begin
 		begin
 		end generate;
 		
-		DebugPortOut.FSM												<= dbg_EncodeState(State);
+		DebugPortOut.FSM												<= '0' & dbg_EncodeState(State);
 		DebugPortOut.Retry											<= Retry;
 		DebugPortOut.Timeout										<= Timeout_i;
 		DebugPortOut.LinkOK											<= LinkOK_i;

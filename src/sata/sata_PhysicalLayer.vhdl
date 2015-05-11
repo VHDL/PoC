@@ -118,7 +118,6 @@ architecture rtl of sata_PhysicalLayer is
 		ST_LINK_UP,
 		ST_CHANGE_SPEED,
 		ST_LINK_OK,
-		ST_LINK_BROKEN,
 		ST_ERROR
 	);
 	
@@ -259,8 +258,6 @@ begin
 				elsif (Command = SATA_PHY_CMD_REINIT_CONNECTION) then
 					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
 					NextState					<= ST_LINK_UP;
-				elsif (OOBC_LinkOK = '0') then
-					NextState					<= ST_LINK_BROKEN;
 				elsif (OOBC_LinkDead = '1') then
 					Error_nxt					<= SATA_PHY_ERROR_LINK_DEAD;
 					Error_en					<= '1';
@@ -269,25 +266,6 @@ begin
 					NextState					<= ST_LINK_UP;
 				end if;
 			
-			when ST_LINK_BROKEN =>
-				Status_i						<= SATA_PHY_STATUS_LINK_BROKEN;
-			
-				if (Command = SATA_PHY_CMD_INIT_CONNECTION) then
-					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
-					NextState					<= ST_LINK_UP;
-				elsif (Command = SATA_PHY_CMD_REINIT_CONNECTION) then
-					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
-					NextState					<= ST_LINK_UP;
-				elsif (OOBC_LinkOK = '1') then
-					NextState					<= ST_LINK_OK;
-				elsif (OOBC_LinkDead = '1') then
-					Error_nxt					<= SATA_PHY_ERROR_LINK_DEAD;
-					Error_en					<= '1';
-					NextState					<= ST_ERROR;
-				elsif (OOBC_ReceivedReset = '1') then
-					NextState					<= ST_LINK_UP;
-				end if;
-				
 			when ST_CHANGE_SPEED =>
 				-- Clock can be unstable in this state.
 				-- Trans_RP_ReconfigReloaded must not be asserted before clock is
@@ -340,9 +318,6 @@ begin
 				LinkOK										=> OOBC_LinkOK,
 				LinkDead									=> OOBC_LinkDead,
 				ReceivedReset							=> OOBC_ReceivedReset,
-				
-				Trans_Status							=> Trans_Status,
-				Trans_Error								=> Trans_Error,
 				
 				OOB_TX_Command						=> Trans_OOB_TX_Command,
 				OOB_TX_Complete						=> Trans_OOB_TX_Complete,

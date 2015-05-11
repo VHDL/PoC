@@ -128,7 +128,6 @@ ARCHITECTURE rtl OF sata_Physical_OOBControl_Device IS
 		ST_DEV_SEND_ALIGN,
 		ST_DEV_TIMEOUT,
 		ST_DEV_LINK_OK,
-		ST_DEV_LINK_BROKEN,
 		ST_DEV_LINK_DEAD
 	);
 
@@ -340,25 +339,6 @@ BEGIN
 					
 					IF (OOB_RX_Received /= SATA_OOB_NONE) THEN
 						NextState							<= ST_DEV_LINK_DEAD;
-					ELSIF (RX_Valid = '0') THEN
-						NextState							<= ST_DEV_LINK_BROKEN;
-					END IF;
-				
-				WHEN ST_DEV_LINK_BROKEN =>
-					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
-					TC1_en									<= '0';
-					
-					IF (RX_Valid = '1') THEN
-						NextState							<= ST_DEV_LINK_OK;
-					END IF;
-				
-					IF (Retry = '1') THEN
-						TC1_Load							<= '1';
-						TC1_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
-																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
-																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
-																																							 TTID1_OOB_TIMEOUT_GEN3)));
-						NextState							<= ST_DEV_WAIT_HOST_COMRESET;
 					END IF;
 				
 				WHEN ST_DEV_LINK_DEAD =>

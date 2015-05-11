@@ -249,7 +249,10 @@ BEGIN
 		-- evaluate FIFO fill grades
 		-- 	=> receive error
 		
-		IF (Phy_Status /= SATA_PHY_STATUS_LINK_OK) THEN
+		if ((TXFSM_State = ST_TXFSM_RESET) or
+				(TXFSM_State = ST_TXFSM_NO_COMMUNICATION) or
+				(TXFSM_State = ST_TXFSM_NO_COMMUNICATION_ERROR)) then
+			-- RXFSM will be in the corresponding RXFSM state
 			Status			<= SATA_LINK_STATUS_COMMUNICATION_ERROR;
 		ELSIF ((TXFSM_Error				OR	RXFSM_Error)			= '1') THEN				-- error
 			Status			<= SATA_LINK_STATUS_ERROR;
