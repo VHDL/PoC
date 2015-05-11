@@ -4,12 +4,13 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
 --
 -- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- See notes on module 'sata_TransportLayer'.
 -- 
 -- License:
 -- =============================================================================
@@ -69,6 +70,9 @@ entity sata_FISDecoder is
 		RX_EOP												: out	STD_LOGIC;
 		RX_Ack												: in	STD_LOGIC;
 		
+		-- SATAController Status
+		Phy_Status										: IN	T_SATA_PHY_STATUS;
+		
 		-- LinkLayer FIFO interface
 		Link_RX_Ack										: out	STD_LOGIC;
 		Link_RX_Data									: in	T_SLV_32;
@@ -89,7 +93,7 @@ ARCHITECTURE rtl OF sata_FISDecoder IS
 	ATTRIBUTE FSM_ENCODING					: STRING;
 
 	TYPE T_STATE IS (
-		ST_IDLE,
+		ST_RESET, ST_IDLE,
 		ST_FIS_REG_DEV_HOST_WORD_1,	ST_FIS_REG_DEV_HOST_WORD_2,	ST_FIS_REG_DEV_HOST_WORD_3,	ST_FIS_REG_DEV_HOST_WORD_4,	ST_FIS_REG_DEV_HOST_CHECK_FRAMESTATE,
 		ST_FIS_PIO_SETUP_WORD_1,		ST_FIS_PIO_SETUP_WORD_2,		ST_FIS_PIO_SETUP_WORD_3,		ST_FIS_PIO_SETUP_WORD_4,		ST_FIS_PIO_SETUP_CHECK_FRAMESTATE,
 																																																										ST_FIS_DMA_ACTIVATE_CHECK_FRAMESTATE,
@@ -132,7 +136,7 @@ ARCHITECTURE rtl OF sata_FISDecoder IS
 	SIGNAL IsFISHeader										: STD_LOGIC;
 	SIGNAL FISType_i											: T_SATA_FISTYPE;
 	
-	SIGNAL State													: T_STATE													:= ST_IDLE;
+	SIGNAL State													: T_STATE													:= ST_RESET;
 	SIGNAL NextState											: T_STATE;
 	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 	
@@ -167,7 +171,7 @@ BEGIN
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
-				State			<= ST_IDLE;
+				State			<= ST_RESET;
 			ELSE
 				State			<= NextState;
 			END IF;
@@ -207,6 +211,18 @@ BEGIN
 		UpdateATARegisters					<= '0';
 
 		CASE State IS
+			when ST_RESET =>
+				-- Clock might be unstable is this state. In this case either
+				-- a) Reset is asserted because inital reset of the SATAController is
+				--    not finished yet.
+				-- b) Phy_Status is constant and not equal to SATA_PHY_STATUS_LINK_OK.
+				--    This may happen during reconfiguration due to speed negotiation.
+        Status													<= SATA_FISD_STATUS_RESET;
+        
+        IF (Phy_Status = SATA_PHY_STATUS_LINK_OK) THEN
+					NextState <= ST_IDLE;
+        END IF;
+				
 			WHEN ST_IDLE =>
 				IF (IsFISHeader = '1' ) THEN
 					IF (FISType_i = SATA_FISTYPE_PIO_SETUP) THEN

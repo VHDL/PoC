@@ -4,13 +4,25 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
+--									Martin Zabel
 --
 -- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
---		TODO
--- 
+-- Provides transport of frames via SATA links for the Host endpoint.
+--
+-- Automatically awaits a Register Frame after the link has been established.
+-- To initiate a new connection (later on), synchronously reset this layer and
+-- the underlying SATAController at the same time.
+--
+-- Clock might be instable in two conditions:
+-- a) Reset is asserted, e.g., wenn ResetDone of SATAController is not asserted
+-- 	  yet.
+-- b) After power-up or reset: Phy_Status is constant and not equal to
+-- 	  SATA_PHY_STATUS_LINK_OK. After SATA_PHY_STATUS_LINK_OK was signaled,
+-- 	  reset must be asserted before the clock might be instable again.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -79,8 +91,8 @@ entity sata_TransportLayer is
 		RX_Commit											: OUT	STD_LOGIC;
 		RX_Rollback										: OUT	STD_LOGIC;
 	
-		-- LinkLayer interface
-		Link_Status										: IN	T_SATA_SATACONTROLLER_STATUS;
+		-- SATAController Status
+		Phy_Status										: IN	T_SATA_PHY_STATUS;
 		
 		-- TX path
 		Link_TX_Ack										: IN	STD_LOGIC;
@@ -200,11 +212,7 @@ begin
 			-- DebugPort
 			DebugPortOut											=> TFSM_DebugPortOut,
 			
-			-- linkLayer interface
---			Link_Command											=> Link_Command,
-			Link_Status												=> Link_Status,
---			Link_Error												=> Link_Error,
-
+			-- ATA
       CopyATADeviceRegisterStatus       => CopyATADeviceRegisterStatus,
 			ATAHostRegisters									=> ATAHostRegisters_i,
 			ATADeviceRegisters								=> ATADeviceRegisters_i,
@@ -218,6 +226,9 @@ begin
 			RX_SOT														=> TFSM_RX_SOT,
 			RX_EOT														=> TFSM_RX_EOT,
 			
+			-- SATAController Status
+			Phy_Status 												=> Phy_Status,
+
 			-- FISDecoder interface
 			FISD_FISType											=> FISD_FISType,
 			FISD_Status												=> FISD_Status,
@@ -437,6 +448,9 @@ begin
 			TX_Data											=> TC_TX_Data,
 			TX_Valid										=> TC_TX_Valid,
 			TX_InsertEOP								=> FISE_TX_InsertEOP,
+
+			-- SATAController Status
+			Phy_Status 									=> Phy_Status,
 			
 			-- LinkLayer FIFO interface
 			Link_TX_Valid								=> FISE_Link_TX_Valid,
@@ -483,6 +497,9 @@ begin
 			RX_SOP											=> FISD_RX_SOP,
 			RX_EOP											=> FISD_RX_EOP,
 			RX_Ack											=> RXReg_Ack,
+			
+			-- SATAController Status
+			Phy_Status 									=> Phy_Status,
 			
 			-- LinkLayer FIFO interface
 			Link_RX_Valid								=> Link_RX_Valid,

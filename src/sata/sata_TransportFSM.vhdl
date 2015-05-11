@@ -6,10 +6,11 @@
 -- Package:					TODO
 --
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- See notes on module 'sata_TransportLayer'.
 -- 
 -- License:
 -- =============================================================================
@@ -60,7 +61,8 @@ ENTITY sata_TransportFSM IS
 		
 		-- DebugPort
 		DebugPortOut											: out	T_SATADBG_TRANS_TFSM_OUT;
-		
+
+		-- ATA
 		CopyATADeviceRegisterStatus				: OUT	STD_LOGIC;
 		ATAHostRegisters									: IN	T_SATA_ATA_HOST_REGISTERS;
 		ATADeviceRegisters								: IN	T_SATA_ATA_DEVICE_REGISTERS;
@@ -74,10 +76,8 @@ ENTITY sata_TransportFSM IS
 		RX_SOT														: OUT	STD_LOGIC;
 		RX_EOT														: OUT	STD_LOGIC;
 		
-		-- LinkLayer interface
---		Link_Command											: OUT	T_SATA_COMMAND;
-		Link_Status												: IN	T_SATA_SATACONTROLLER_STATUS;
---		Link_Error												: IN	T_SATA_ERROR;
+		-- SATAController Status
+		Phy_Status												: IN	T_SATA_PHY_STATUS;
 		
 		-- FIS-FSM interface
 		FISD_FISType											: IN	T_SATA_FISTYPE;
@@ -152,7 +152,7 @@ BEGIN
 	Error <= Error_i WHEN rising_edge(Clock);
 	
 	PROCESS(State, Command, ATA_Command_Category, ATADeviceRegisters, FISE_Status, FISD_Status, FISD_FISType, FISD_SOP, FISD_EOP, 
-          Link_Status)
+          Phy_Status)
 	BEGIN
 		NextState																<= State;
 		
@@ -172,9 +172,14 @@ BEGIN
 		
 		CASE State IS
       WHEN ST_RESET =>
+				-- Clock might be unstable is this state. In this case either
+				-- a) Reset is asserted because inital reset of the SATAController is
+				--    not finished yet.
+				-- b) Phy_Status is constant and not equal to SATA_PHY_STATUS_LINK_OK.
+				--    This may happen during reconfiguration due to speed negotiation.
         Status															<= SATA_TRANS_STATUS_RESET;
         
-        IF (Link_Status.PhysicalLayer = SATA_PHY_STATUS_LINK_OK) THEN
+        IF (Phy_Status = SATA_PHY_STATUS_LINK_OK) THEN
           IF (SIM_WAIT_FOR_INITIAL_REGDH_FIS = TRUE) THEN
             NextState <= ST_INIT_AWAIT_FIS;
           ELSE

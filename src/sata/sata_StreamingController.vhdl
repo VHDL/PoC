@@ -408,10 +408,8 @@ BEGIN
 			RX_Rollback									=> Trans_RX_Rollback,
 			RX_Ack											=> RX_Glue_Ack,
 			
-			-- LinkLayer interface
---			Link_Command								=> SATA_Command,
-			Link_Status									=> SATA_Status,
---			Link_Error									=> SATA_Error,
+			-- SATAController Status
+			Phy_Status									=> SATA_Status.PhysicalLayer,
 			
 			-- TX path
 			Link_TX_Ack									=> SATA_TX_Ack,

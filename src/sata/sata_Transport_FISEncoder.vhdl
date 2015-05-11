@@ -4,12 +4,13 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
+--									Martin Zabel
 --
 -- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- See notes on module 'sata_TransportLayer'.
 -- 
 -- License:
 -- =============================================================================
@@ -67,7 +68,10 @@ entity sata_FISEncoder IS
 		TX_Valid										: in	STD_LOGIC;
 		TX_InsertEOP								: out	STD_LOGIC;
 		
-		-- SATAController interface (LinkLayer)
+		-- SATAController Status
+		Phy_Status										: IN	T_SATA_PHY_STATUS;
+		
+		-- LinkLayer FIFO interface
 		Link_TX_Ack									: in	STD_LOGIC;
 		Link_TX_Data								: out	T_SLV_32;
 		Link_TX_SOF									: out STD_LOGIC;
@@ -87,7 +91,7 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 	ATTRIBUTE FSM_ENCODING					: STRING;
 
 	TYPE T_STATE IS (
-		ST_IDLE,
+		ST_RESET, ST_IDLE,
 		ST_FIS_REG_HOST_DEV_WORD_0, ST_FIS_REG_HOST_DEV_WORD_1,	ST_FIS_REG_HOST_DEV_WORD_2,	ST_FIS_REG_HOST_DEV_WORD_3,	ST_FIS_REG_HOST_DEV_WORD_4,
 		ST_DATA_0, ST_DATA_N,
 		ST_EVALUATE_FRAMESTATE
@@ -122,7 +126,7 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 	-- Word 4
 --	ALIAS Alias_TransferCount							: T_SLV_16												IS Link_TX_Data(15 DOWNTO 0);				-- Transfer Count
 	
-	SIGNAL State													: T_STATE													:= ST_IDLE;
+	SIGNAL State													: T_STATE													:= ST_RESET;
 	SIGNAL NextState											: T_STATE;
 	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 	
@@ -132,7 +136,7 @@ BEGIN
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
-				State			<= ST_IDLE;
+				State			<= ST_RESET;
 			ELSE
 				State			<= NextState;
 			END IF;
@@ -180,6 +184,18 @@ BEGIN
 		Alias_ControlReg						<= x"00";													-- Control register		
 
 		CASE State IS
+			when ST_RESET =>
+				-- Clock might be unstable is this state. In this case either
+				-- a) Reset is asserted because inital reset of the SATAController is
+				--    not finished yet.
+				-- b) Phy_Status is constant and not equal to SATA_PHY_STATUS_LINK_OK.
+				--    This may happen during reconfiguration due to speed negotiation.
+        Status										<= SATA_FISE_STATUS_RESET;
+        
+        IF (Phy_Status = SATA_PHY_STATUS_LINK_OK) THEN
+					NextState <= ST_IDLE;
+        END IF;
+				
 			WHEN ST_IDLE =>
 				Status										<= SATA_FISE_STATUS_IDLE;
 			
