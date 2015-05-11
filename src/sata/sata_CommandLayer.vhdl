@@ -4,13 +4,26 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
 --
 -- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
---		TODO
--- 
+-- Executes ATA commands.
+--
+-- Automatically issues an "identify device" when the transport layer is
+-- idle after power-up or reset.
+-- To initiate a new connection (later on), synchronously reset this layer, the
+-- transport layer and the underlying SATAController at the same time.
+--
+-- Clock might be instable in two conditions:
+-- a) Reset is asserted, e.g., wenn ResetDone of SATAController is not asserted
+-- 	  yet.
+-- b) After power-up or reset: Trans_Status is constant equal to
+-- 	  SATA_TRANS_STATUS_RESET. After SATA_TRANS_STATUS_IDLE was signaled,
+-- 	  reset must be asserted before the clock might be instable again.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany

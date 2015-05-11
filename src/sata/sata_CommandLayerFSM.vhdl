@@ -4,12 +4,13 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
 --
 -- Package:					TODO
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- See notes on module 'sata_CommandLayer'.
 -- 
 -- License:
 -- =============================================================================
@@ -180,6 +181,11 @@ BEGIN
 		
 		CASE State IS
 			WHEN ST_RESET =>
+				-- Clock might be unstable is this state. In this case either
+				-- a) Reset is asserted because inital reset of the SATAController is
+				--    not finished yet.
+				-- b) Trans_Status is constant and not equal to SATA_TRANS_STATUS_IDLE.
+				--    This may happen during reconfiguration due to speed negotiation.
 				Status																			<= SATA_CMD_STATUS_RESET;
         
         IF (Trans_Status = SATA_TRANS_STATUS_IDLE) THEN
