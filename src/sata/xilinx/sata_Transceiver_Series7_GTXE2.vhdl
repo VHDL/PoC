@@ -373,7 +373,6 @@ begin
 		signal GTX_RX_NotInTableError_float	: T_SLV_4;																-- open
 		signal GTX_RX_ByteIsAligned					: STD_LOGIC;
 		signal GTX_RX_ByteRealign						: STD_LOGIC;															-- unused
-		signal GTX_RX_Valid									: STD_LOGIC;															-- unused
 		
 		signal GTX_TX_n											: STD_LOGIC;
 		signal GTX_TX_p											: STD_LOGIC;
@@ -766,7 +765,7 @@ begin
 		-- RX path
 		RX_Data(I)							<= GTX_RX_Data		when rising_edge(SATA_Clock_i);
 		RX_CharIsK(I)						<= GTX_RX_CharIsK	when rising_edge(SATA_Clock_i);
-		RX_Valid(I)							<= GTX_RX_Valid		when rising_edge(SATA_Clock_i);
+		RX_Valid(I)							<= '1'; -- do not use undocumented RXVALID output of transceiver
 
 --		GTX_PhyStatus
 --		GTX_TX_BufferStatus
@@ -1292,7 +1291,7 @@ begin
 				-- FPGA-Fabric - RX interface ports
 				RXDATA(31 downto 0)							=> GTX_RX_Data,										-- @RX_Clock2:	
 				RXDATA(63 downto 32)						=> GTX_RX_Data_float,							-- @RX_Clock2:	
-				RXVALID													=> GTX_RX_Valid,									-- @RX_Clock2:	
+				RXVALID													=> open,													-- @RX_Clock2:	
 				
 				RXCHARISCOMMA(3 downto 0)				=> GTX_RX_CharIsComma,						-- @RX_Clock2:	
 				RXCHARISCOMMA(7 downto 4)				=> GTX_RX_CharIsComma_float,			-- @RX_Clock2:	
@@ -1618,7 +1617,7 @@ begin
 			DebugPortOut(I).RX_ElectricalIDLE					<= GTX_RX_ElectricalIDLE;
 			DebugPortOut(I).RX_ComInitDetected				<= GTX_RX_ComInitDetected;
 			DebugPortOut(I).RX_ComWakeDetected				<= GTX_RX_ComWakeDetected;
-			DebugPortOut(I).RX_Valid									<= GTX_RX_Valid;
+			DebugPortOut(I).RX_Valid									<= '1';
 			DebugPortOut(I).RX_BufferStatus						<= GTX_RX_BufferStatus;
 			DebugPortOut(I).RX_ClockCorrectionStatus	<= GTX_RX_ClockCorrectionStatus;
 			
