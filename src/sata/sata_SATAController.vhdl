@@ -299,7 +299,8 @@ BEGIN
 
 		-- =======================================================================
 		-- Command decoding for SATAController.
-		-- Newdevice handling has to be changed.
+		-- 
+		-- TODO CHECK: PhysicalLayer accepts commands only in same states.
 		-- =======================================================================
 		PROCESS(Command, Trans_Status, Reset)
 		BEGIN
@@ -322,16 +323,9 @@ BEGIN
 				WHEN SATA_SATACTRL_CMD_SYNC_LINK =>													
 					-- Reset LinkLayer => send SYNC-primitives
 					Link_Reset								<= '1';
-			
-				WHEN SATA_SATACTRL_CMD_NONE =>
-					-- TO BE CHANGED: check for auto reconnect feature
-			    IF ((ALLOW_AUTO_RECONNECT_I(I)	= TRUE) AND
-							(CONTROLLER_TYPES_I(I)			= SATA_DEVICE_TYPE_HOST) AND
-							(Trans_Status(I)						= SATA_TRANSCEIVER_STATUS_NEW_DEVICE))
-					THEN
-						Link_Reset							<= '1';
-						Phy_Command							<= SATA_PHY_CMD_INIT_CONNECTION;
-					END IF;
+
+				when SATA_SATACTRL_CMD_NONE =>
+					null;
 			end CASE;
 		END PROCESS;
 
@@ -444,7 +438,6 @@ BEGIN
 				-- reconfiguration interface
 				Trans_RP_Reconfig							=> Phy_RP_Reconfig(I),
 				Trans_RP_SATAGeneration				=> Phy_RP_SATAGeneration(I),
-				Trans_RP_ReconfigComplete			=> Trans_RP_ReconfigComplete(I),
 				Trans_RP_ConfigReloaded				=> Trans_RP_ConfigReloaded(I),
 				Trans_RP_Lock									=> Phy_RP_Lock(I),
 				Trans_RP_Locked								=> Trans_RP_Locked(I),

@@ -219,9 +219,9 @@ BEGIN
 				--    This may happen during reconfiguration due to speed negotiation.
         Status													<= SATA_FISD_STATUS_RESET;
         
-        IF (Phy_Status = SATA_PHY_STATUS_LINK_OK) THEN
+        if (Phy_Status = SATA_PHY_STATUS_COMMUNICATING) then
 					NextState <= ST_IDLE;
-        END IF;
+        end if;
 				
 			WHEN ST_IDLE =>
 				IF (IsFISHeader = '1' ) THEN

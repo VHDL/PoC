@@ -179,13 +179,13 @@ BEGIN
 				--    This may happen during reconfiguration due to speed negotiation.
         Status															<= SATA_TRANS_STATUS_RESET;
         
-        IF (Phy_Status = SATA_PHY_STATUS_LINK_OK) THEN
+        if (Phy_Status = SATA_PHY_STATUS_COMMUNICATING) then
           IF (SIM_WAIT_FOR_INITIAL_REGDH_FIS = TRUE) THEN
             NextState <= ST_INIT_AWAIT_FIS;
           ELSE
             NextState <= ST_IDLE;
           END IF;
-        END IF;
+        end if;
         
       WHEN ST_INIT_AWAIT_FIS =>
         -- await initial RegDH FIS

@@ -3,7 +3,7 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
+-- Package:					sata
 --
 -- Authors:					Patrick Lehmann
 --
@@ -58,12 +58,11 @@ ENTITY sata_Physical_OOBControl_Device IS
 		-- debug ports
 		DebugPortOut							: OUT	T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
 
-		Retry											: IN	STD_LOGIC;
 		Timeout										: OUT	STD_LOGIC;
 		SATAGeneration						: IN	T_SATA_GENERATION;
+		HostDetected							: OUT	STD_LOGIC;
 		LinkOK										: OUT	STD_LOGIC;
 		LinkDead									: OUT	STD_LOGIC;
-		ReceivedReset							: OUT	STD_LOGIC;
 		
 		OOB_TX_Command						: OUT	T_SATA_OOB;
 		OOB_TX_Complete						: IN	STD_LOGIC;
@@ -136,6 +135,7 @@ ARCHITECTURE rtl OF sata_Physical_OOBControl_Device IS
 	SIGNAL NextState									: T_STATE;
 	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS getFSMEncoding_gray(DEBUG);
 
+	SIGNAL HostDetected_i							: STD_LOGIC;
 	SIGNAL LinkOK_i										: STD_LOGIC;
 	SIGNAL LinkDead_i									: STD_LOGIC;
 	SIGNAL Timeout_i									: STD_LOGIC;
@@ -179,7 +179,7 @@ BEGIN
 	END PROCESS;
 
 
-	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, TC1_Timeout, TC2_Timeout)
+	PROCESS(State, SATAGeneration, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, TC1_Timeout, TC2_Timeout)
 	BEGIN
 		NextState									<= State;
 		
@@ -195,10 +195,10 @@ BEGIN
 		TC2_Load									<= '0';
 		TC2_Slot									<= 0;
 	
+		HostDetected_i						<= '0';
 		LinkOK_i									<= '0';
 		LinkDead_i								<= '0';
 		Timeout_i									<= '0';
-		ReceivedReset_i						<= '0';
 		
 		OOB_TX_Command_i					<= SATA_OOB_NONE;
 		OOB_HandshakeComplete_i		<= '0';
@@ -213,35 +213,17 @@ BEGIN
 																																							 TTID1_OOB_TIMEOUT_GEN3)));
 			NextState										<= ST_DEV_TIMEOUT;
 			
-		-- treat COMRESET as communication reset
-		ELSIF ((OOB_RX_Received = SATA_OOB_COMRESET) AND
-					 ((State /= ST_DEV_WAIT_HOST_COMRESET) OR
-					  (State /= ST_DEV_WAIT_AFTER_HOST_COMRESET)))
-		THEN
-			ReceivedReset_i							<= '1';
-
-			TC1_Load										<= '1';
-			TC2_Load										<= '1';
-			TC1_Slot										<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
-																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
-																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
-																																								TTID1_OOB_TIMEOUT_GEN3)));
-			TC2_Slot										<= ite((SATAGeneration = SATA_GENERATION_1), TTID2_COMRESET_TIMEOUT_GEN1,
-																		 ite((SATAGeneration = SATA_GENERATION_2), TTID2_COMRESET_TIMEOUT_GEN2,
-																		 ite((SATAGeneration = SATA_GENERATION_3), TTID2_COMRESET_TIMEOUT_GEN3,
-																																								TTID2_COMRESET_TIMEOUT_GEN3)));
-			NextState										<= ST_DEV_WAIT_AFTER_HOST_COMRESET;
 		ELSE
 			CASE State IS
 				WHEN ST_DEV_RESET =>
-					IF (Retry = '1') THEN
+					-- Start automatically when Reset is deasserted.
 						TC1_Load							<= '1';
 						TC1_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
 																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
 																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
 																																								TTID1_OOB_TIMEOUT_GEN3)));
 						NextState							<= ST_DEV_WAIT_HOST_COMRESET;
-					END IF;
+
 
 				WHEN ST_DEV_WAIT_HOST_COMRESET =>
 					IF (OOB_RX_Received = SATA_OOB_COMRESET) THEN																										-- host comreset detected
@@ -256,9 +238,11 @@ BEGIN
 																		 ite((SATAGeneration = SATA_GENERATION_3), TTID2_COMRESET_TIMEOUT_GEN3,
 																																								TTID2_COMRESET_TIMEOUT_GEN3)));
 						NextState							<= ST_DEV_WAIT_AFTER_HOST_COMRESET;
+						HostDetected_i 				<= '1'; 
 					END IF;
 		
 				WHEN ST_DEV_WAIT_AFTER_HOST_COMRESET =>
+					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '1';
 					TC2_en									<= '1';
 
@@ -275,8 +259,8 @@ BEGIN
 					END IF;
 
 				WHEN ST_DEV_SEND_COMINIT =>
-					TC1_en									<= '1';
 					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
+					TC1_en									<= '1';
 					
 					IF (OOB_TX_Complete = '1') THEN
 						NextState					<= ST_DEV_WAIT_HOST_COMWAKE;
@@ -342,37 +326,35 @@ BEGIN
 					END IF;
 				
 				WHEN ST_DEV_LINK_DEAD =>
+					-- Reset must be asserted to leave this state.
 					LinkDead_i							<= '1';
 					
-					IF (Retry = '1') THEN
 						TC1_Load							<= '1';
 						TC1_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
 																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
 																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
 																																							 TTID1_OOB_TIMEOUT_GEN3)));
 						NextState							<= ST_DEV_WAIT_HOST_COMRESET;
-					END IF;
 				
 				WHEN ST_DEV_TIMEOUT =>
+					-- Reset must be asserted to leave this state.
 					Timeout_i								<= '1';
 				
-					IF (Retry = '1') THEN
 						TC1_Load							<= '1';
 						TC1_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
 																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
 																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
 																																							 TTID1_OOB_TIMEOUT_GEN3)));
 						NextState							<= ST_DEV_WAIT_HOST_COMRESET;
-					END IF;
 				
 			END CASE;
 		END IF;
 	END PROCESS;
 	
+	HostDetected						<= HostDetected_i;
 	LinkOK									<= LinkOK_i;
 	LinkDead								<= LinkDead_i;
 	Timeout									<= Timeout_i;
-	ReceivedReset						<= ReceivedReset_i;
 
 	OOB_TX_Command					<= OOB_TX_Command_i;
 	OOB_HandshakeComplete		<= OOB_HandshakeComplete_i;
@@ -425,11 +407,10 @@ BEGIN
 		CONSTANT dummy : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Device.tok");
 	BEGIN
 		DebugPortOut.FSM												<= dbg_EncodeState(State);
-		DebugPortOut.Retry											<= Retry;
+		DebugPortOut.DeviceOrHostDetected				<= HostDetected_i;
 		DebugPortOut.Timeout										<= Timeout_i;
 		DebugPortOut.LinkOK											<= LinkOK_i;
 		DebugPortOut.LinkDead										<= LinkDead_i;
-		DebugPortOut.ReceivedReset							<= ReceivedReset_i;
 		
 		DebugPortOut.OOB_TX_Command							<= OOB_TX_Command_i;
 		DebugPortOut.OOB_TX_Complete						<= OOB_TX_Complete;

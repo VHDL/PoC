@@ -68,8 +68,6 @@ package sata is
 		SATA_TRANSCEIVER_STATUS_RELOADING,
 		SATA_TRANSCEIVER_STATUS_READY,
 		SATA_TRANSCEIVER_STATUS_READY_LOCKED,
-		SATA_TRANSCEIVER_STATUS_NO_DEVICE,
-		SATA_TRANSCEIVER_STATUS_NEW_DEVICE,
 		SATA_TRANSCEIVER_STATUS_ERROR
 	);
 
@@ -124,40 +122,27 @@ package sata is
 	
 	CONSTANT C_SATA_GENERATION_MAX	: T_SATA_GENERATION		:= SATA_GENERATION_3;
 	
+	-- Described in module 'sata_PhysicalLayer'.
 	TYPE T_SATA_PHY_COMMAND IS (
-		SATA_PHY_CMD_NONE,							-- no command
-		SATA_PHY_CMD_INIT_CONNECTION,		-- init connection with speed negotiation
-		SATA_PHY_CMD_REINIT_CONNECTION	-- reinit connection at last speed
+		SATA_PHY_CMD_NONE,
+		SATA_PHY_CMD_INIT_CONNECTION,
+		SATA_PHY_CMD_REINIT_CONNECTION
 	);
 
+	-- Described in module 'sata_PhysicalLayer'.
 	TYPE T_SATA_PHY_STATUS IS (
 		SATA_PHY_STATUS_RESET,
-		SATA_PHY_STATUS_LINK_UP,
-		SATA_PHY_STATUS_LINK_OK,
-		SATA_PHY_STATUS_RECEIVED_RESET,
-		SATA_PHY_STATUS_CHANGE_SPEED,
-		SATA_PHY_STATUS_ERROR							-- FIXME: unused?
+		SATA_PHY_STATUS_NODEVICE,
+		SATA_PHY_STATUS_NOCOMMUNICATION,
+		SATA_PHY_STATUS_COMMUNICATING,
+		SATA_PHY_STATUS_ERROR
 	);
 
-	-- FIXME: unused?
+	-- Described in module 'sata_PhysicalLayer'.
 	TYPE T_SATA_PHY_ERROR IS (
 		SATA_PHY_ERROR_NONE,
-		SATA_PHY_ERROR_COMRESET,
 		SATA_PHY_ERROR_LINK_DEAD,
-		SATA_PHY_ERROR_NEGOTIATION_ERROR,
-		SATA_PHY_ERROR_FSM
-	);
-
-	TYPE T_SATA_PHY_SPEED_COMMAND IS (
-		SATA_PHY_SPEED_CMD_NONE,					-- no command
-		SATA_PHY_SPEED_CMD_RESET,					-- reset retry and generation counters => reprogramm to initial configuration
-		SATA_PHY_SPEED_CMD_NEWLINK_UP			-- reset retry counter use same generation
-	);
-
-	TYPE T_SATA_PHY_SPEED_STATUS IS (
-		SATA_PHY_SPEED_STATUS_WAITING,
-		SATA_PHY_SPEED_STATUS_RECONFIGURATING,
-		SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR
+		SATA_PHY_ERROR_NEGOTIATION
 	);
 
 	TYPE T_SATA_GENERATION_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_GENERATION;
@@ -165,9 +150,8 @@ package sata is
 	TYPE T_SATA_PHY_STATUS_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_PHY_STATUS;
 	TYPE T_SATA_PHY_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_PHY_ERROR;
 
+	function to_slv(Status : T_SATA_PHY_COMMAND)				return STD_LOGIC_VECTOR;
 	function to_slv(Status : T_SATA_PHY_STATUS)				return STD_LOGIC_VECTOR;
-	function to_slv(Status : T_SATA_PHY_SPEED_STATUS)	return STD_LOGIC_VECTOR;
-
 	function to_slv(Error : T_SATA_PHY_ERROR)					return STD_LOGIC_VECTOR;
 
 	-- ===========================================================================
@@ -622,6 +606,11 @@ PACKAGE BODY sata IS
 		return to_slv(T_SATA_TRANSCEIVER_COMMAND'pos(Command), log2ceilnz(T_SATA_TRANSCEIVER_COMMAND'pos(T_SATA_TRANSCEIVER_COMMAND'high) + 1));
 	end function;
 	
+	function to_slv(Command : T_SATA_PHY_COMMAND)	return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_PHY_COMMAND'pos(Command), log2ceilnz(T_SATA_PHY_COMMAND'pos(T_SATA_PHY_COMMAND'high) + 1));
+	end function;
+	
 	function to_slv(Command : T_SATA_SATACONTROLLER_COMMAND) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_SATACONTROLLER_COMMAND'pos(Command), log2ceilnz(T_SATA_SATACONTROLLER_COMMAND'pos(T_SATA_SATACONTROLLER_COMMAND'high) + 1));
@@ -654,11 +643,6 @@ PACKAGE BODY sata IS
 		return to_slv(T_SATA_PHY_STATUS'pos(Status), log2ceilnz(T_SATA_PHY_STATUS'pos(T_SATA_PHY_STATUS'high) + 1));
 	end function;
 	
-	function to_slv(Status : T_SATA_PHY_SPEED_STATUS) return STD_LOGIC_VECTOR is
-	begin
-		return to_slv(T_SATA_PHY_SPEED_STATUS'pos(Status), log2ceilnz(T_SATA_PHY_SPEED_STATUS'pos(T_SATA_PHY_SPEED_STATUS'high) + 1));
-	end function;
-
 	function to_slv(Status : T_SATA_CMD_STATUS) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_CMD_STATUS'pos(Status), log2ceilnz(T_SATA_CMD_STATUS'pos(T_SATA_CMD_STATUS'high) + 1));

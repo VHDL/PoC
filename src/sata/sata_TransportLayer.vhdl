@@ -20,8 +20,8 @@
 -- a) Reset is asserted, e.g., wenn ResetDone of SATAController is not asserted
 -- 	  yet.
 -- b) After power-up or reset: Phy_Status is constant and not equal to
--- 	  SATA_PHY_STATUS_LINK_OK. After SATA_PHY_STATUS_LINK_OK was signaled,
--- 	  reset must be asserted before the clock might be instable again.
+-- 	  SATA_PHY_STATUS_COMMUNICATING. After SATA_PHY_STATUS_COMMUNICATING was
+-- 	  signaled, reset must be asserted before the clock might be instable again.
 --
 -- If these conditions are met, then Status will be constant and equal to
 -- SATA_TRANS_STATUS_RESET during an unstable clock, especially in case b).

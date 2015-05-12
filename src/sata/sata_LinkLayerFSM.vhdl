@@ -318,7 +318,7 @@ BEGIN
 --		ScramblerMux_ctrl							<= '0';
 		
 		-- handle PhyNotReady with highest priority
-		IF ((Phy_Status /= SATA_PHY_STATUS_LINK_OK) AND NOT
+		IF ((Phy_Status /= SATA_PHY_STATUS_COMMUNICATING) AND NOT
 				((TXFSM_State = ST_TXFSM_RESET) OR
 				 (TXFSM_State = ST_TXFSM_NO_COMMUNICATION) OR
 				 (TXFSM_State = ST_TXFSM_NO_COMMUNICATION_ERROR)
@@ -341,7 +341,7 @@ BEGIN
 					TXFSM_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					TXFSM_Error										<= '1';
 					
-					IF (Phy_Status = SATA_PHY_STATUS_LINK_OK) THEN
+					IF (Phy_Status = SATA_PHY_STATUS_COMMUNICATING) THEN
 						TXFSM_NextState							<= ST_TXFSM_IDLE;			-- ST_TXFSM_SEND_ALIGN;
 					END IF;
 
@@ -887,7 +887,7 @@ BEGIN
 		DataUnscrambler_rst						<= '0';
 		
 		-- handle PhyNotReady with highest priority
-		IF ((Phy_Status /= SATA_PHY_STATUS_LINK_OK) AND NOT
+		IF ((Phy_Status /= SATA_PHY_STATUS_COMMUNICATING) AND NOT
 				((RXFSM_State = ST_RXFSM_RESET) OR
 				 (RXFSM_State = ST_RXFSM_NO_COMMUNICATION) OR
 				 (RXFSM_State = ST_RXFSM_NO_COMMUNICATION_ERROR)
@@ -908,7 +908,7 @@ BEGIN
 					RXFSM_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					RXFSM_Error										<= '1';
 					
-					IF (Phy_Status = SATA_PHY_STATUS_LINK_OK) THEN
+					IF (Phy_Status = SATA_PHY_STATUS_COMMUNICATING) THEN
 						RXFSM_NextState							<= ST_RXFSM_IDLE;
 					END IF;
 

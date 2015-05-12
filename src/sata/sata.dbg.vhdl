@@ -126,12 +126,11 @@ package satadbg is
 	-- SATA Physical Layer Types
 	-- ===========================================================================
 	type T_SATADBG_PHYSICAL_OOBCONTROL_OUT is record
-		FSM												: STD_LOGIC_VECTOR(4 downto 0);
-		Retry											: STD_LOGIC;
+		FSM												: STD_LOGIC_VECTOR(3 downto 0);
 		Timeout										: STD_LOGIC;
+		DeviceOrHostDetected			: STD_LOGIC;
 		LinkOK										: STD_LOGIC;
 		LinkDead									: STD_LOGIC;
-		ReceivedReset							: STD_LOGIC;
 		OOB_TX_Command						: T_SATA_OOB;
 		OOB_TX_Complete						: STD_LOGIC;
 		OOB_RX_Received						: T_SATA_OOB;
@@ -140,31 +139,23 @@ package satadbg is
 		AlignDetected							: STD_LOGIC;
 	end record;
 	
-	type T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT is record
-		FSM												: STD_LOGIC_VECTOR(2 downto 0);
-		Status										: T_SATA_PHY_SPEED_STATUS;
+	type T_SATADBG_PHYSICAL_PFSM_OUT is record
+		FSM												: STD_LOGIC_VECTOR(3 downto 0);
+		Command 									: T_SATA_PHY_COMMAND;
+		Status										: T_SATA_PHY_STATUS;
+		Error 										: T_SATA_PHY_ERROR;
 		SATAGeneration						: T_SATA_GENERATION;
 		SATAGeneration_Reset			: STD_LOGIC;
 		SATAGeneration_Change			: STD_LOGIC;
 		SATAGeneration_Changed		: STD_LOGIC;
-		OOBC_Retry								: STD_LOGIC;
-		OOBC_Timeout							: STD_LOGIC;
+		OOBC_Reset 								: STD_LOGIC;
 		Trans_Reconfig						: STD_LOGIC;
-		Trans_ReconfigComplete		: STD_LOGIC;
 		Trans_ConfigReloaded			: STD_LOGIC;
 		GenerationChanges					: STD_LOGIC_VECTOR(7 downto 0);
 		TrysPerGeneration					: STD_LOGIC_VECTOR(7 downto 0);
 	end record;
 	
 	type T_SATADBG_PHYSICAL_OUT is record
-		-- phy layer fsm
-		FSM												: STD_LOGIC_VECTOR(2 downto 0);
-		PHY_Status								: T_SATA_PHY_STATUS;
-		
-		-- device detector
---		DD_NoDevice								: STD_LOGIC;
---		DD_NewDevice							: STD_LOGIC;
-
 		TX_Data										: T_SLV_32;
 		TX_CharIsK								: T_SLV_4;		
 		RX_Data										: T_SLV_32;
@@ -172,7 +163,7 @@ package satadbg is
 		RX_Valid									: STD_LOGIC;
 		
 		OOBControl								: T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
-		SpeedControl							: T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT;
+		PFSM											: T_SATADBG_PHYSICAL_PFSM_OUT;
 	end record;
 	
 	

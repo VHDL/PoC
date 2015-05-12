@@ -728,7 +728,7 @@ begin
 		DebugPortOut.LLFSM											<= LLFSM_DebugPortOut;
 	
 		-- from physical layer
-		DebugPortOut.Phy_Ready									<= to_sl(Phy_Status = SATA_PHY_STATUS_LINK_OK);
+		DebugPortOut.Phy_Ready									<= to_sl(Phy_Status = SATA_PHY_STATUS_COMMUNICATING);
 		-- RX: from physical layer
 		DebugPortOut.RX_Phy_Data								<= Phy_RX_Data;
 		DebugPortOut.RX_Phy_CiK									<= Phy_RX_CharIsK;

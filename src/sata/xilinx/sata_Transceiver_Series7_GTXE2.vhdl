@@ -181,7 +181,7 @@ begin
 
 
 		-- Control FSM @SATA_Clock
-		type T_STATE is (ST_RESET, ST_READY, ST_COMMUNICATION, ST_RECONFIGURATION, ST_RESET_BY_FSM, ST_CLEAR_RX_BUF, ST_NEWDEVICE);
+		type T_STATE is (ST_RESET, ST_READY, ST_COMMUNICATION, ST_RECONFIGURATION, ST_RESET_BY_FSM, ST_CLEAR_RX_BUF);
 		
 		signal State												: T_STATE				:= ST_RESET;
 		signal NextState										: T_STATE;
@@ -379,8 +379,6 @@ begin
 		signal GTX_RX_n											: STD_LOGIC;
 		signal GTX_RX_p											: STD_LOGIC;
 		
-		signal DD_NoDevice									: STD_LOGIC;
-		
 		signal Status_i											: T_SATA_TRANSCEIVER_STATUS;
 		signal Error_i											: T_SATA_TRANSCEIVER_ERROR;
 		signal Error_on_TX_RX								: STD_LOGIC; -- '1' if an RX or TX error is present
@@ -465,8 +463,7 @@ begin
 		end process;
 		
 		process(State, Command, Error_on_TX_RX, Reset,
-						SATA_Clock_Stable_i, GTX_TX_ResetDone, GTX_RX_ResetDone,
-						DD_NoDevice)
+						SATA_Clock_Stable_i, GTX_TX_ResetDone, GTX_RX_ResetDone)
 		begin
 			NextState				<= State;
 			
@@ -491,7 +488,7 @@ begin
 							GTX_Reset_by_FSM <= '1';
 							NextState   <= ST_RESET_BY_FSM;
 						else
-							NextState			<= ST_NEWDEVICE;
+							NextState			<= ST_READY;
 						end if;
 					end if;		
 
@@ -510,17 +507,8 @@ begin
 						NextState <= ST_RESET;
 					end if;
 
-				when ST_NEWDEVICE =>
-					-- TODO: remove this state when application has to init the connection
-					Status_i			<= SATA_TRANSCEIVER_STATUS_NEW_DEVICE;
-					NextState  		<= ST_READY;
-					
 				when ST_READY =>
-					if (DD_NoDevice	= '1') then
-						Status_i		<= SATA_TRANSCEIVER_STATUS_NO_DEVICE;
-				  else
-						Status_i			<= SATA_TRANSCEIVER_STATUS_READY;
-					end if;
+					Status_i			<= SATA_TRANSCEIVER_STATUS_READY;
 					
 					if (Reset(i) = '1') then
 						NextState		<= ST_RESET_BY_FSM;
@@ -911,12 +899,6 @@ begin
 			GTX_RX_CDR_Hold	<= reg;	--(reg xor DebugPortIn(I).ForceInvertHold) and DebugPortIn(I).ForceEnableHold;
 		end block;
 		
-		--	==================================================================
-		-- Transceiver status
-		--	==================================================================
-		-- device detection
-		DD_NoDevice	<= '0';
-
 		-- ==================================================================
 		-- GTXE2_CHANNEL instance for Port I
 		-- ==================================================================
@@ -1590,7 +1572,7 @@ begin
 			DebugPortOut(I).RP_Reconfig								<= RP_Reconfig(I);
 			DebugPortOut(I).RP_ReconfigComplete				<= RP_Reconfig_d;
 			DebugPortOut(I).RP_ConfigRealoaded				<= RateChangeDone_re;
-			DebugPortOut(I).DD_NoDevice								<= DD_NoDevice;
+			DebugPortOut(I).DD_NoDevice								<= '0';
 			DebugPortOut(I).DD_NewDevice							<= '0';
 			DebugPortOut(I).TX_RateSelection					<= GTX_TX_LineRateSelect;
 			DebugPortOut(I).RX_RateSelection					<= GTX_RX_LineRateSelect;

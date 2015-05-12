@@ -192,9 +192,9 @@ BEGIN
 				--    This may happen during reconfiguration due to speed negotiation.
         Status										<= SATA_FISE_STATUS_RESET;
         
-        IF (Phy_Status = SATA_PHY_STATUS_LINK_OK) THEN
+        if (Phy_Status = SATA_PHY_STATUS_COMMUNICATING) then
 					NextState <= ST_IDLE;
-        END IF;
+        end if;
 				
 			WHEN ST_IDLE =>
 				Status										<= SATA_FISE_STATUS_IDLE;

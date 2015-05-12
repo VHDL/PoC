@@ -12,16 +12,8 @@
 -- ------------------------------------
 -- Executes the COMRESET / COMINIT procedure.
 --
--- The Clock might be only unstable in two states: ST_HOST_RESET and
--- ST_HOST_TIMEOUT. This is accomplished by:
---
--- a) During Power-up or a ClockNetwork_Reset this unit must be hold in the
---    reset state ST_HOST_RESET. Asserting Retry is only permitted after the
---    clock is stable.
---
--- b) Before reconfiguration on behalf of the SpeedController, this unit must
--- 	  enter on one the states listed above. Asserting Retry is only permitted
--- 	  after the clock is stable again (after reconfiguration).
+-- If the clock is unstable, than Reset must be asserted.
+-- Automatically tries to establish a communication when Reset is deasserted.
 --
 -- License:
 -- =============================================================================
@@ -73,12 +65,11 @@ entity sata_Physical_OOBControl_Host is
 		-- debug ports
 		DebugPortOut							: out	T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
 
-		Retry											: in	STD_LOGIC;
 		Timeout										: out	STD_LOGIC;
 		SATAGeneration						: in	T_SATA_GENERATION;
+		DeviceDetected 						: out STD_LOGIC;
 		LinkOK										: out	STD_LOGIC;
 		LinkDead									: out	STD_LOGIC;
-		ReceivedReset							: out	STD_LOGIC;
 		
 		OOB_TX_Command						: out	T_SATA_OOB;
 		OOB_TX_Complete						: in	STD_LOGIC;
@@ -156,10 +147,10 @@ architecture rtl of sata_Physical_OOBControl_Host is
 	signal NextState									: T_STATE;
 	attribute FSM_ENCODING of State		: signal is getFSMEncoding_gray(DEBUG);
 
+	signal DeviceDetected_i						: STD_LOGIC;
 	signal LinkOK_i										: STD_LOGIC;
 	signal LinkDead_i									: STD_LOGIC;
 	signal Timeout_i									: STD_LOGIC;
-	signal ReceivedReset_i						: STD_LOGIC;
 
 	signal OOB_TX_Command_i						: T_SATA_OOB;
 	signal OOB_HandshakeComplete_i		: STD_LOGIC; 	-- MUST BE driven by register
@@ -203,7 +194,7 @@ begin
 	end process;
 
 
-	process(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, AlignCounter_us, TC1_Timeout, TC2_Timeout)
+	process(State, SATAGeneration, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, AlignCounter_us, TC1_Timeout, TC2_Timeout)
 	begin
 		NextState									<= State;
 		
@@ -221,11 +212,11 @@ begin
 		TC2_en										<= '0';
 		TC2_Load									<= '0';
 		TC2_Slot									<= 0;
-	
+
+		DeviceDetected_i					<= '0';
 		LinkOK_i									<= '0';
 		LinkDead_i								<= '0';
 		Timeout_i									<= '0';
-		ReceivedReset_i						<= '0';
 		
 		OOB_TX_Command_i					<= SATA_OOB_NONE;
 		OOB_HandshakeComplete_i		<= '0'; 	-- MUST BE driven by register
@@ -234,11 +225,9 @@ begin
 
 			case State is
 				when ST_HOST_RESET =>
-					-- Clock might be unstable when FSM is in this state. See description
-					-- in header.
-					if (Retry = '1') then
-						NextState							<= ST_HOST_SEND_COMRESET;
-					end if;
+					-- If clock is unstable then FSM must be hold in this state.
+					-- Try to establish a communication after Reset is deasserted.
+					NextState							<= ST_HOST_SEND_COMRESET;
 			
 				when ST_HOST_SEND_COMRESET =>
 					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
@@ -262,6 +251,7 @@ begin
 						NextState							<= ST_HOST_WAIT_DEV_COMINIT;
 					elsif ((ALLOW_STANDARD_VIOLATION = TRUE) and (OOB_RX_Received = SATA_OOB_COMRESET)) then					-- allow premature OOB response
 						NextState							<= ST_HOST_WAIT_AFTER_DEV_COMINIT;
+						DeviceDetected_i 			<= '1';
 					end if;
 					
 				when ST_HOST_WAIT_DEV_COMINIT =>
@@ -270,7 +260,8 @@ begin
 				
 					if (TC1_Timeout = '1') then
 						NextState 						<= ST_HOST_TIMEOUT;
-					elsif (OOB_RX_Received = SATA_OOB_COMRESET) then																										-- device cominit detected
+					elsif (OOB_RX_Received = SATA_OOB_COMRESET) then																	-- device cominit detected
+						DeviceDetected_i 			<= '1';
 						TC2_Load							<= '1';
 						TC2_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID2_COMRESET_TIMEOUT_GEN1,
 																		 ite((SATAGeneration = SATA_GENERATION_2), TTID2_COMRESET_TIMEOUT_GEN2,
@@ -281,6 +272,7 @@ begin
 					end if;
 		
 				when ST_HOST_WAIT_AFTER_DEV_COMINIT =>
+					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
 					TC2_en									<= '1';
 					TC1_en									<= '1';
 
@@ -419,28 +411,20 @@ begin
 					end if;
 				
 				when ST_HOST_LINK_DEAD =>
+					-- Reset must be asserted to leave this state.
 					LinkDead_i							<= '1';
 					
-					if (Retry = '1') then
-						nextstate							<= st_host_send_comreset;
-					end if;
-				
 				when ST_HOST_TIMEOUT =>
-					-- Clock might be unstable when FSM is in this state. See description
-					-- in header.
+					-- Reset must be asserted to leave this state.
 					Timeout_i								<= '1';
-				
-					if (Retry = '1') then
-						NextState							<= ST_HOST_SEND_COMRESET;
-					end if;
 				
 			end case;
 	end process;
 	
+	DeviceDetected					<= DeviceDetected_i;
 	LinkOK									<= LinkOK_i;
 	LinkDead								<= LinkDead_i;
 	Timeout									<= Timeout_i;
-	ReceivedReset						<= ReceivedReset_i;
 
 	OOB_TX_Command					<= OOB_TX_Command_i;
 	OOB_HandshakeComplete		<= OOB_HandshakeComplete_i; 	-- MUST BE driven by register
@@ -496,12 +480,11 @@ begin
 		begin
 		end generate;
 		
-		DebugPortOut.FSM												<= '0' & dbg_EncodeState(State);
-		DebugPortOut.Retry											<= Retry;
+		DebugPortOut.FSM												<= dbg_EncodeState(State);
 		DebugPortOut.Timeout										<= Timeout_i;
+		DebugPortOut.DeviceOrHostDetected				<= DeviceDetected_i;
 		DebugPortOut.LinkOK											<= LinkOK_i;
 		DebugPortOut.LinkDead										<= LinkDead_i;
-		DebugPortOut.ReceivedReset							<= ReceivedReset_i;
 		
 		DebugPortOut.OOB_TX_Command							<= OOB_TX_Command_i;
 		DebugPortOut.OOB_TX_Complete						<= OOB_TX_Complete;

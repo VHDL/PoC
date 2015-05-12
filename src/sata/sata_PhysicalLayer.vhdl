@@ -3,14 +3,48 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
+-- Package:					sata
+--
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Package:					TODO
---
 -- Description:
 -- ------------------------------------
---		TODO
+-- Represents the PhysicalLayer of the SATA stack. Detects if a device is
+-- present and establishes a communication, both using OOB.
+--
+-- Clock might be unstable as defined in module sata_PhysicalLayerFSM.
+--
+-- After Power-Up or a ClockNetwork_Reset (indicated by Trans_ResetDone = '0')
+-- this layer automatically tries to establish a communication with speed
+-- negotiation. A device is detected by indefinitly polling using OOB COMRESET.
+-- The result is indicated by output Status:
+-- 
+-- Status can be one of the following:
+-- - SATA_PHY_STATUS_RESET: 					PhysicalLayer is resetting.
+-- - SATA_PHY_STATUS_NODEVICE: 				No device detected yet.
+-- - SATA_PHY_STATUS_NOCOMMUNICATION: Device detected, but communication not
+-- 																		yet established.
+-- - SATA_PHY_STATUS_COMMUNICATING:		Device detected and communication
+-- 																		established.
+-- - SATA_PHY_STATUS_ERROR:						See output Error.
+--
+-- It is guaranteed, that after SATA_PHY_STATUS_COMMUNICATING is signaled,
+-- the clock is stable (i.e. no reconfiguration) until a Command or a global
+-- Reset/PowerDown/ClockNetwork_Reset is applied.
+--
+-- Error can be one of the following:
+-- - SATA_PHY_ERROR_NONE: 				No error.
+-- - SATA_PHY_ERROR_LINK_DEAD: 		Received OOB sequences after link was
+-- 																established. Resetting this stack on behalf
+-- 																of receiving COMRESET is not yet supported.
+-- - SATA_PHY_ERROR_NEGOTIATION:	Speed negotiation failed.
+--
+-- Commands are only accepted when Status is SATA_PHY_STATUS_COMMUNICATING or
+-- SATA_PHY_STATUS_ERROR. Possible Commands are:
+-- - SATA_PHY_CMD_NONE: 							Do nothing.
+-- - SATA_PHY_CMD_INIT_CONNECTION: 		Init connection with speed negotiation.
+-- - SATA_PHY_CMD_REINIT_CONNECTION: 	Reinit connection at same speed.
 -- 
 -- License:
 -- =============================================================================
@@ -89,7 +123,6 @@ entity sata_PhysicalLayer is
 
 		Trans_RP_Reconfig								: out	STD_LOGIC;
 		Trans_RP_SATAGeneration					: out	T_SATA_GENERATION;
-		Trans_RP_ReconfigComplete				: in	STD_LOGIC;
 		Trans_RP_ConfigReloaded					: in	STD_LOGIC;
 		Trans_RP_Lock										: out	STD_LOGIC;
 		Trans_RP_Locked									: in	STD_LOGIC;
@@ -110,43 +143,13 @@ END;
 
 
 architecture rtl of sata_PhysicalLayer is
-	attribute KEEP						: BOOLEAN;
-	attribute FSM_ENCODING		: STRING;
-	
-	type T_STATE is (
-		ST_RESET,
-		ST_LINK_UP,
-		ST_CHANGE_SPEED,
-		ST_LINK_OK,
-		ST_ERROR
-	);
-	
-	signal State											: T_STATE													:= ST_RESET;
-	signal NextState									: T_STATE;
-	attribute FSM_ENCODING of State		: signal is getFSMEncoding_gray(DEBUG);
-
-	signal Reset_i 										: STD_LOGIC;
-	signal Status_i										: T_SATA_PHY_STATUS;
-
-	signal FSM_SC_Reset								: STD_LOGIC;
-	signal FSM_SC_Command							: T_SATA_PHY_SPEED_COMMAND;
-	
-	signal SC_Status									: T_SATA_PHY_SPEED_STATUS;	
-	signal SC_OOBC_Reset							: STD_LOGIC;
-	signal SC_OOBC_Retry							: STD_LOGIC;
-	signal SC_SATAGeneration					: T_SATA_GENERATION;
-		
 	signal OOBC_Reset									: STD_LOGIC;
+	signal OOBC_DeviceOrHostDetected	: STD_LOGIC;
 	signal OOBC_LinkOK								: STD_LOGIC;
 	signal OOBC_LinkDead							: STD_LOGIC;
 	signal OOBC_Timeout								: STD_LOGIC;
-	signal OOBC_Timeout_d							: STD_LOGIC;
-	signal OOBC_Timeout_re						: STD_LOGIC;
-	signal OOBC_ReceivedReset					: STD_LOGIC;
 
-	signal ResetGeneration						: STD_LOGIC;
-	signal ResetTrysPerGeneration_i		: STD_LOGIC;
-	signal Trans_RP_Reconfig_i				: STD_LOGIC;
+	signal Trans_RP_SATAGeneration_i	: T_SATA_GENERATION;
 
 	signal OOBC_TX_Primitive					: T_SATA_PRIMITIVE;
 	signal RX_Primitive								: T_SATA_PRIMITIVE;
@@ -154,11 +157,7 @@ architecture rtl of sata_PhysicalLayer is
 	signal Trans_TX_CharIsK_i					: T_SLV_4;
 	
 	signal OOBC_DebugPortOut					: T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
-	signal SC_DebugPortOut						: T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT;
-	
-	signal Error_rst									: STD_LOGIC;
-	signal Error_en										: STD_LOGIC;
-	signal Error_nxt									: T_SATA_PHY_ERROR;
+	signal PFSM_DebugPortOut					: T_SATADBG_PHYSICAL_PFSM_OUT;
 	
 begin
 
@@ -169,132 +168,43 @@ begin
 	assert FALSE report "  AllowStandardViolation: " & to_string(ALLOW_STANDARD_VIOLATION)						severity NOTE;
 	assert FALSE report "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATION + 1)	severity NOTE;
 
-	-- ================================================================
-	-- physical layer control
-	-- ================================================================
+	-- The FSM
+	-- ===========================================================================
+	PFSM: entity work.sata_PhysicalLayerFSM
+		generic map (
+			DEBUG										=> DEBUG,
+			ALLOW_SPEED_NEGOTIATION => ALLOW_SPEED_NEGOTIATION,
+			ENABLE_DEBUGPORT				=> ENABLE_DEBUGPORT,
+			INITIAL_SATA_GENERATION => INITIAL_SATA_GENERATION,
+			GENERATION_CHANGE_COUNT => GENERATION_CHANGE_COUNT,
+			ATTEMPTS_PER_GENERATION => ATTEMPTS_PER_GENERATION)
+		port map (
+			Clock											=> Clock,
+			ClockEnable 							=> ClockEnable,
+			Reset 										=> Reset,
+			Command										=> Command,
+			Status										=> Status,
+			Error											=> Error,
+			SATAGenerationMin					=> SATAGenerationMin,
+			SATAGenerationMax					=> SATAGenerationMax,
+			DebugPortOut							=> PFSM_DebugPortOut,
+			OOBC_Timeout							=> OOBC_Timeout,
+			OOBC_DeviceOrHostDetected => OOBC_DeviceOrHostDetected,
+			OOBC_LinkOK								=> OOBC_LinkOK,
+			OOBC_LinkDead							=> OOBC_LinkDead,
+			OOBC_Reset								=> OOBC_Reset,
+			Trans_ResetDone  					=> Trans_ResetDone,
+			Trans_Status     					=> Trans_Status,
+			Trans_RP_Reconfig					=> Trans_RP_Reconfig,
+			Trans_RP_SATAGeneration		=> Trans_RP_SATAGeneration_i,
+			Trans_RP_ConfigReloaded		=> Trans_RP_ConfigReloaded,
+			Trans_RP_Lock							=> Trans_RP_Lock,
+			Trans_RP_Locked						=> Trans_RP_Locked);
 
-	-- Reset this unit until initial reset of lower layer has been completed.
-	-- Allow synchronous 'Reset' only when ClockEnable = '1'.
-	Reset_i <= (not Trans_ResetDone) or (Reset and ClockEnable);
+	-- TODO: Replace Trans_RP_* signals by CSE interface
+	Trans_Command 					<= SATA_TRANSCEIVER_CMD_NONE;
+	Trans_RP_SATAGeneration <= Trans_RP_SATAGeneration_i;
 	
-	process(Clock)
-	begin
-		if rising_edge(Clock) then
-			if (Reset_i = '1') then
-				State 	<= ST_RESET;
-			else
-				State		<= NextState;
-			end if;
-			
-			if (Error_rst = '1') then
-				Error			<= SATA_PHY_ERROR_NONE;
-			elsif (Error_en = '1') then
-				Error			<= Error_nxt;
-			end if;
-		end if;
-	end process;
-	
-	process(State, Command, SC_Status, SC_OOBC_Reset,
-					Trans_RP_Reconfig_i, Trans_RP_ConfigReloaded,
-					OOBC_LinkOK, OOBC_LinkDead, OOBC_ReceivedReset)
-	begin
-		NextState								<= State;
-		
-		Status_i								<= SATA_PHY_STATUS_ERROR;
-		Error_rst								<= '0';
-		Error_en								<= '0';
-		Error_nxt								<= SATA_PHY_ERROR_NONE;
-		
-		Trans_Command						<= SATA_TRANSCEIVER_CMD_NONE;
-		
-		FSM_SC_Reset						<= '0';
-		FSM_SC_Command					<= SATA_PHY_SPEED_CMD_NONE;
-
-		OOBC_Reset 							<= SC_OOBC_Reset;
-		
-		------------------------------------------------------------------
-		-- Implementation notes:
-		--
-		-- OOBControl must be reseted when a SpeedControl command is issued.
-		------------------------------------------------------------------
-		case State is
-			when ST_RESET =>
-				-- Trans_ResetDone = '0' will hold the FSM in this state.
-				-- Hold sub-components also in reset, until the transceiver
-				-- interface is ready and the clock the first time stable.
-				Error_rst 					<= '1';
-				FSM_SC_Reset 				<= '1';
-				OOBC_Reset 					<= '1'; -- override
-				Status_i						<= SATA_PHY_STATUS_RESET;
-				NextState						<= ST_LINK_UP;
-	
-			when ST_LINK_UP =>
-				Status_i						<= SATA_PHY_STATUS_LINK_UP;
-			
-				if (Trans_RP_Reconfig_i = '1') then
-					-- Must be highest priority to reach safe state during
-					-- reconfiguration (where clock can be unstable).
-					NextState					<= ST_CHANGE_SPEED;
-				elsif (Command = SATA_PHY_CMD_INIT_CONNECTION) then
-					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
-					NextState					<= ST_LINK_UP;
-				elsif (Command = SATA_PHY_CMD_REINIT_CONNECTION) then
-					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
-					NextState					<= ST_LINK_UP;
-				elsif (OOBC_LinkOK = '1') then
-					NextState					<= ST_LINK_OK;
-				elsif (SC_Status = SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR) then
-					Error_nxt					<= SATA_PHY_ERROR_NEGOTIATION_ERROR;
-					Error_en					<= '1';
-					NextState					<= ST_ERROR;
-				end if;
-				
-			when ST_LINK_OK =>
-				Status_i						<= SATA_PHY_STATUS_LINK_OK;
-			
-				IF (Command = SATA_PHY_CMD_INIT_CONNECTION) then
-					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
-					NextState					<= ST_LINK_UP;
-				elsif (Command = SATA_PHY_CMD_REINIT_CONNECTION) then
-					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
-					NextState					<= ST_LINK_UP;
-				elsif (OOBC_LinkDead = '1') then
-					Error_nxt					<= SATA_PHY_ERROR_LINK_DEAD;
-					Error_en					<= '1';
-					NextState					<= ST_ERROR;
-				elsif (OOBC_ReceivedReset = '1') then
-					NextState					<= ST_LINK_UP;
-				end if;
-			
-			when ST_CHANGE_SPEED =>
-				-- Clock can be unstable in this state.
-				-- Trans_RP_ReconfigReloaded must not be asserted before clock is
-				-- stable again.
-				Status_i						<= SATA_PHY_STATUS_CHANGE_SPEED;
-
-				if (Trans_RP_ConfigReloaded = '1') then
-					NextState					<= ST_LINK_UP;
-				end if;
-			
-			when ST_ERROR =>
-				Status_i						<= SATA_PHY_STATUS_ERROR;
-				
-				if (Command = SATA_PHY_CMD_INIT_CONNECTION) then
-					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_RESET;
-					NextState					<= ST_LINK_UP;
-				elsif (Command = SATA_PHY_CMD_REINIT_CONNECTION) then
-					FSM_SC_Command		<= SATA_PHY_SPEED_CMD_NEWLINK_UP;
-					NextState					<= ST_LINK_UP;
-				elsif (OOBC_ReceivedReset = '1') then
-					Error_rst					<= '1';
-					NextState					<= ST_LINK_UP;
-				end if;
-				
-		end case;
-	end process;
-	
-	Status	<= Status_i;
-
 	-- OOB (out of band) signaling
 	-- ===========================================================================
 	genHost : if (CONTROLLER_TYPE = SATA_DEVICE_TYPE_HOST) generate
@@ -312,12 +222,11 @@ begin
 				
 				DebugPortOut							=> OOBC_DebugPortOut,
 
-				Retry											=> SC_OOBC_Retry,
-				SATAGeneration						=> SC_SATAGeneration,
+				SATAGeneration						=> Trans_RP_SATAGeneration_i,
 				Timeout										=> OOBC_Timeout,
+				DeviceDetected 						=> OOBC_DeviceOrHostDetected,
 				LinkOK										=> OOBC_LinkOK,
 				LinkDead									=> OOBC_LinkDead,
-				ReceivedReset							=> OOBC_ReceivedReset,
 				
 				OOB_TX_Command						=> Trans_OOB_TX_Command,
 				OOB_TX_Complete						=> Trans_OOB_TX_Complete,
@@ -344,12 +253,11 @@ begin
 				
 				DebugPortOut							=> OOBC_DebugPortOut,
 
-				Retry											=> SC_OOBC_Retry,
-				SATAGeneration						=> SC_SATAGeneration,
+				SATAGeneration						=> Trans_RP_SATAGeneration_i,
+				HostDetected 							=> OOBC_DeviceOrHostDetected,
 				Timeout										=> OOBC_Timeout,
 				LinkOK										=> OOBC_LinkOK,
 				LinkDead									=> OOBC_LinkDead,
-				ReceivedReset							=> OOBC_ReceivedReset,
 				
 				OOB_TX_Command						=> Trans_OOB_TX_Command,
 				OOB_TX_Complete						=> Trans_OOB_TX_Complete,
@@ -363,98 +271,9 @@ begin
 	end generate;
 	
 
-	-- SpeedControl
-	-- ===========================================================================
-	genSC : if (ALLOW_SPEED_NEGOTIATION = TRUE) generate
-		SC : entity PoC.sata_Physical_SpeedControl
-			generic map (
-				DEBUG											=> DEBUG,
-				ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
-				INITIAL_SATA_GENERATION		=> INITIAL_SATA_GENERATION,
-				GENERATION_CHANGE_COUNT		=> GENERATION_CHANGE_COUNT,
-				ATTEMPTS_PER_GENERATION		=> ATTEMPTS_PER_GENERATION
-			)
-			port map (
-				Clock											=> Clock,
-				Reset											=> FSM_SC_Reset,
-
-				Command										=> FSM_SC_Command,
-				Status										=> SC_Status,
-
-				DebugPortOut							=> SC_DebugPortOut,
-
-				SATAGenerationMin					=> SATAGenerationMin,								-- 
-				SATAGenerationMax					=> SATAGenerationMax,								-- 
-
-				-- OOBControl interface
-				OOBC_Timeout							=> OOBC_Timeout,
-				OOBC_Reset 								=> SC_OOBC_Reset,
-				OOBC_Retry								=> SC_OOBC_Retry,
-
-				-- reconfiguration interface
-				Trans_RP_Reconfig					=> Trans_RP_Reconfig_i,
-				Trans_RP_SATAGeneration		=> SC_SATAGeneration,								-- 
-				Trans_RP_ReconfigComplete	=> Trans_RP_ReconfigComplete,
-				Trans_RP_ConfigReloaded		=> Trans_RP_ConfigReloaded,
-				Trans_RP_Lock							=> Trans_RP_Lock,
-				Trans_RP_Locked						=> Trans_RP_Locked
-			);
-	end generate;
-	--
-	-- no SpeedControl
-	-- ===========================================================================
-	genNoSC : if (ALLOW_SPEED_NEGOTIATION = FALSE) generate
-		signal TryCounter_rst			: STD_LOGIC;
-		signal TryCounter_en			: STD_LOGIC;
-		signal TryCounter_s				: SIGNED(log2ceilnz(ATTEMPTS_PER_GENERATION) downto 0)			:= (others => '0');
-		signal TryCounter_uf			: STD_LOGIC;
-		
-		signal OOB_Timeout_d			: STD_LOGIC					:= '0';
-		signal OOB_Timeout_re			: STD_LOGIC;
-
-		-- Issue first SC_Retry after respective SC_Command
-		signal SC_StartOver 			: STD_LOGIC 				:= '0';
-		
-	begin
-		SC_SATAGeneration			<= INITIAL_SATA_GENERATION;
-		
-		Trans_RP_Reconfig_i		<= '0';
-		Trans_RP_Lock					<= NOT TryCounter_uf;
-	
-		OOBC_Timeout_d				<= OOBC_Timeout when rising_edge(Clock);
-		OOBC_Timeout_re				<= not OOBC_Timeout_d and OOBC_Timeout;
-		
-		SC_OOBC_Reset 				<= to_sl((FSM_SC_Command = SATA_PHY_SPEED_CMD_RESET) or (FSM_SC_COMMAND = SATA_PHY_SPEED_CMD_NEWLINK_UP));
-		SC_OOBC_Retry					<= (OOBC_Timeout_re and not TryCounter_uf) or SC_StartOver;
-		SC_Status							<= SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR when (TryCounter_uf = '1') else SATA_PHY_SPEED_STATUS_WAITING;
-
-		TryCounter_rst				<= SC_StartOver;
-		TryCounter_en					<= OOBC_Timeout_re;
-	
-		process(Clock)
-		begin
-			if rising_edge(Clock) then
-				-- C_OOBC_Reset is low, when PhysicalLayer is reset.
-				SC_StartOver 		<= SC_OOBC_Reset;
-				
-				if (TryCounter_rst = '1') then
-					TryCounter_s		<= to_signed(ATTEMPTS_PER_GENERATION, TryCounter_s'length);
-				else
-					if (TryCounter_en = '1') then
-						TryCounter_s	<= TryCounter_s - 1;
-					end if;
-				end if;
-			end if;
-		end process;
-	
-		TryCounter_uf <= TryCounter_s(TryCounter_s'high);
-	
-	end generate;
-
-	Trans_RP_Reconfig					<= Trans_RP_Reconfig_i;
-	Trans_RP_SATAGeneration		<= SC_SATAGeneration;
 
 	-- physical layer PrimitiveMux
+	-- ===========================================================================
 	process(OOBC_TX_Primitive, Link_TX_Data, Link_TX_CharIsK)
 	begin
 		case OOBC_TX_Primitive is
@@ -493,64 +312,7 @@ begin
 	-- debug port
 	-- ===========================================================================
 	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
-		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
-		begin
-			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
-		end function;
 	begin
-		genXilinx : if (VENDOR = VENDOR_XILINX) generate
-			function dbg_generateStateEncodings return string is
-				variable  l : STD.TextIO.line;
-			begin
-				for i in T_STATE loop
-					STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_", ""));
-					STD.TextIO.write(l, ';');
-				end loop;
-				return  l.all;
-			end function;
-
-			function dbg_generateCommandEncodings return string is
-				variable  l : STD.TextIO.line;
-			begin
-				for i in T_SATA_PHY_COMMAND loop
-					STD.TextIO.write(l, str_replace(T_SATA_PHY_COMMAND'image(i), "sata_phy_cmd", ""));
-					STD.TextIO.write(l, ';');
-				end loop;
-				return  l.all;
-			end function;
-			
-			function dbg_generateStatusEncodings return string is
-				variable  l : STD.TextIO.line;
-			begin
-				for i in T_SATA_PHY_STATUS loop
-					STD.TextIO.write(l, str_replace(T_SATA_PHY_STATUS'image(i), "sata_phy_status_", ""));
-					STD.TextIO.write(l, ';');
-				end loop;
-				return  l.all;
-			end function;
-			
-			function dbg_generateErrorEncodings return string is
-				variable  l : STD.TextIO.line;
-			begin
-				for i in T_SATA_PHY_ERROR loop
-					STD.TextIO.write(l, str_replace(T_SATA_PHY_ERROR'image(i), "sata_phy_error_", ""));
-					STD.TextIO.write(l, ';');
-				end loop;
-				return  l.all;
-			end function;
-		
-			constant dummy : T_BOOLVEC := (
-				0 => dbg_ExportEncoding("Physical Layer - Layer FSM",			dbg_generateStateEncodings,		PROJECT_DIR & "ChipScope/TokenFiles/FSM_PhysicalLayer.tok"),
-				1 => dbg_ExportEncoding("Physical Layer - Command Enum",	dbg_generateCommandEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Phy_Command.tok"),
-				2 => dbg_ExportEncoding("Physical Layer - Status Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Phy_Status.tok"),
-				3 => dbg_ExportEncoding("Physical Layer - Error Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Phy_Error.tok")
-			);
-		begin
-		end generate;
-		
-		DebugPortOut.FSM						<= dbg_EncodeState(State);
-		DebugPortOut.PHY_Status			<= Status_i;
-	
 		DebugPortOut.TX_Data				<= Trans_TX_Data_i;
 		DebugPortOut.TX_CharIsK			<= Trans_TX_CharIsK_i;
 		DebugPortOut.RX_Data				<= Trans_RX_Data;
@@ -558,6 +320,6 @@ begin
 		DebugPortOut.RX_Valid				<= Trans_RX_Valid;
 	
 		DebugPortOut.OOBControl			<= OOBC_DebugPortOut;
-		DebugPortOut.SpeedControl		<= SC_DebugPortOut;
+		DebugPortOut.PFSM 					<= PFSM_DebugPortOut;
 	end generate;
 end;
