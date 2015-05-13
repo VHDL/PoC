@@ -828,7 +828,7 @@ BEGIN
 	-- -----------------------------
 	-- update register if data is received, reset if EOF occurs
 	RX_CRC_OKReg_set	<= RXFSM_IsData	AND RX_CRC_OK;
-	RX_CRC_OKReg_rst	<= RXFSM_IsEOF	OR (NOT RX_CRC_OK AND RXFSM_IsData);
+	RX_CRC_OKReg_rst	<= to_sl(RX_Primitive = SATA_PRIMITIVE_SYNC) OR (NOT RX_CRC_OK AND RXFSM_IsData);
 
 	PROCESS(Clock)
 	BEGIN
@@ -959,11 +959,6 @@ BEGIN
 							ELSE
 								NULL;																											-- nothing to do
 							END IF;
-						ELSE
-							RXFSM_IDLE								<= '0';
-							RXFSM_Error								<= '1';
-								
-							RXFSM_NextState						<= ST_RXFSM_FSM_ERROR;
 						END IF;
 					ELSE	-- InsertALIGN
 						RXFSM_Primitive							<= SATA_PRIMITIVE_SYNC;
@@ -1005,11 +1000,6 @@ BEGIN
 							IF ((Trans_TX_SOF = '1') AND (TX_FIFO_Valid = '1')) THEN
 								RXFSM_NextState					<= ST_RXFSM_SENDING;							-- go to sending; TXFSM is working
 							END IF;
-						ELSE
-							RXFSM_IDLE								<= '0';
-							RXFSM_Error								<= '1';
-								
-							RXFSM_NextState						<= ST_RXFSM_FSM_ERROR;
 						END IF;
 					END IF;
 
@@ -1218,16 +1208,20 @@ BEGIN
 							RX_FSFIFO_put							<= '1';
 							Trans_RXFS_Abort					<= '1';
 						
+							RXFSM_NextState						<= ST_RXFSM_SEND_R_ERROR;
+
+						ELSIF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN
+							RX_FSFIFO_put							<= '1';
+							Trans_RXFS_Abort					<= '1';
+						
 							RXFSM_NextState						<= ST_RXFSM_IDLE;
+
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_NONE) THEN
 							IF (RX_FIFO_SpaceAvailable = '1') THEN
 								NULL;
 							ELSE
 								RXFSM_NextState					<= ST_RXFSM_SEND_HOLD;
 							END IF;
-						ELSE
-							RXFSM_Error								<= '1';
-							RXFSM_NextState						<= ST_RXFSM_FSM_ERROR;
 						END IF;
 					ELSE		-- InsertALIGN
 						RXFSM_Primitive							<= SATA_PRIMITIVE_R_IP;
@@ -1270,10 +1264,19 @@ BEGIN
 							END IF;
 							
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) THEN
+							RXFSM_Primitive						<= SATA_PRIMITIVE_R_ERROR;
+							RX_FSFIFO_put							<= '1';
+							Trans_RXFS_Abort					<= '1';
+						
+							RXFSM_NextState						<= ST_RXFSM_SEND_R_ERROR;
+
+						ELSIF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN
+							RXFSM_Primitive						<= SATA_PRIMITIVE_SYNC;
 							RX_FSFIFO_put							<= '1';
 							Trans_RXFS_Abort					<= '1';
 						
 							RXFSM_NextState						<= ST_RXFSM_IDLE;
+
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_NONE) THEN
 							IF (RX_FIFO_SpaceAvailable = '1') THEN
 								NULL;
@@ -1281,28 +1284,6 @@ BEGIN
 								RXFSM_Primitive					<= SATA_PRIMITIVE_HOLD;
 								RXFSM_NextState					<= ST_RXFSM_SEND_HOLD;
 							END IF;
-						ELSE
-							RXFSM_Error								<= '1';
-							RXFSM_NextState						<= ST_RXFSM_FSM_ERROR;
-						END IF;
-					END IF;
-				
-					-- RXFIFO error => override all bits
-					IF (RX_FIFO_Full = '1') THEN
-						RXFSM_Error									<= '1';
-						
-						RXFSM_IsData								<= '0';
-						RX_CRC_Valid								<= '0';
-						DataUnscrambler_en					<= '0';
-						
-						RX_FSFIFO_put								<= '1';
-						
-						IF (InsertALIGN = '1') THEN
-							RXFSM_Primitive						<= SATA_PRIMITIVE_ALIGN;
-							RXFSM_NextState						<= ST_RXFSM_SEND_DMA_TERM;
-						ELSE
-							RXFSM_Primitive						<= SATA_PRIMITIVE_DMA_TERM;
-							RXFSM_NextState						<= ST_RXFSM_RXFIFO_FULL;
 						END IF;
 					END IF;
 				
@@ -1401,26 +1382,6 @@ BEGIN
 						END IF;
 					END IF;
 				
-					-- RXFIFO error => override all bits
-					IF (RX_FIFO_Full = '1') THEN
-						RXFSM_Receiving							<= '1';
-						RXFSM_Error									<= '1';
-						
-						RXFSM_IsData								<= '0';
-						RX_CRC_Valid								<= '0';
-						DataUnscrambler_en					<= '0';
-						
-						RX_FSFIFO_put								<= '1';
-						
-						IF (InsertALIGN = '1') THEN
-							RXFSM_Primitive						<= SATA_PRIMITIVE_ALIGN;
-							RXFSM_NextState						<= ST_RXFSM_SEND_DMA_TERM;
-						ELSE
-							RXFSM_Primitive						<= SATA_PRIMITIVE_DMA_TERM;
-							RXFSM_NextState						<= ST_RXFSM_RXFIFO_FULL;
-						END IF;
-					END IF;
-				
 				WHEN ST_RXFSM_RECEIVED_HOLD =>
 					RXFSM_Receiving								<= '1';
 					
@@ -1437,8 +1398,6 @@ BEGIN
 							DataUnscrambler_en				<= '1';
 							
 							RXFSM_NextState						<= ST_RXFSM_RECEIVE_DATA;
-						ELSE
-							NULL;
 						END IF;
 					ELSE		-- InsertALIGN
 						RXFSM_Primitive							<= SATA_PRIMITIVE_HOLD_ACK;
@@ -1455,27 +1414,6 @@ BEGIN
 							DataUnscrambler_en				<= '1';
 							
 							RXFSM_NextState						<= ST_RXFSM_RECEIVE_DATA;
-						ELSE
-							NULL;
-						END IF;
-					END IF;
-				
-					-- RXFIFO error => override all bits
-					IF (RX_FIFO_Full = '1') THEN
-						RXFSM_Error									<= '1';
-						
-						RXFSM_IsData								<= '0';
-						RX_CRC_Valid								<= '0';
-						DataUnscrambler_en					<= '0';
-						
-						RX_FSFIFO_put								<= '1';
-						
-						IF (InsertALIGN = '1') THEN
-							RXFSM_Primitive						<= SATA_PRIMITIVE_ALIGN;
-							RXFSM_NextState						<= ST_RXFSM_SEND_DMA_TERM;
-						ELSE
-							RXFSM_Primitive						<= SATA_PRIMITIVE_DMA_TERM;
-							RXFSM_NextState						<= ST_RXFSM_RXFIFO_FULL;
 						END IF;
 					END IF;
 				
@@ -1515,24 +1453,6 @@ BEGIN
 						END IF;
 					END IF;
 				
-					-- RXFIFO error => override all bits
-					IF (RX_FIFO_Full = '1') THEN
-						RXFSM_Error									<= '1';
-						
-						RXFSM_IsData								<= '0';
-						RX_CRC_Valid								<= '0';
-						DataUnscrambler_en					<= '0';
-						
-						RX_FSFIFO_put								<= '1';
-						
-						IF (InsertALIGN = '1') THEN
-							RXFSM_Primitive						<= SATA_PRIMITIVE_ALIGN;
-							RXFSM_NextState						<= ST_RXFSM_SEND_DMA_TERM;
-						ELSE
-							RXFSM_Primitive						<= SATA_PRIMITIVE_DMA_TERM;
-							RXFSM_NextState						<= ST_RXFSM_RXFIFO_FULL;
-						END IF;
-					END IF;
 
 -- ==================================================================
 -- ST_RXFSM_SEND_R_OK
@@ -1549,25 +1469,8 @@ BEGIN
 								RXFSM_IDLE										<= '1';
 								RXFSM_Receiving								<= '0';
 								RXFSM_NextState								<= ST_RXFSM_IDLE;
-							WHEN SATA_PRIMITIVE_SOF =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_EOF =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_HOLD =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_HOLD_ACK =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_CONT =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_OK =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_ERROR =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_IP =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_RX_RDY =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_TX_RDY =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_DMA_TERM =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_WAIT_TERM =>		NULL;
-							WHEN SATA_PRIMITIVE_PM_ACK =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_NACK =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_REQ_P =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_REQ_S =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_ILLEGAL =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_DIAL_TONE =>		RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_NONE =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
+							when OTHERS =>
+								NULL;
 						END CASE;
 					ELSE	-- InsertAlign
 						RXFSM_Primitive										<= SATA_PRIMITIVE_R_OK;
@@ -1578,25 +1481,8 @@ BEGIN
 								RXFSM_IDLE										<= '1';
 								RXFSM_Receiving								<= '0';
 								RXFSM_NextState								<= ST_RXFSM_IDLE;
-							WHEN SATA_PRIMITIVE_SOF =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_EOF =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_HOLD =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_HOLD_ACK =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_CONT =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_OK =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_ERROR =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_IP =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_RX_RDY =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_TX_RDY =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_DMA_TERM =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_WAIT_TERM =>		NULL;
-							WHEN SATA_PRIMITIVE_PM_ACK =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_NACK =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_REQ_P =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_REQ_S =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_ILLEGAL =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_DIAL_TONE =>		RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_NONE =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
+							when OTHERS =>
+								NULL;
 						END CASE;
 					END IF;
 

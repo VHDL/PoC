@@ -98,6 +98,7 @@ entity sata_Transceiver_Series7_GTXE2 is
 		OOB_TX_Complete						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);		
 		OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		OOB_AlignDetected    			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		
 		TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
 		TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
@@ -358,7 +359,7 @@ begin
 		signal GTX_TX_CharIsK								: T_SLV_4;
 		
 		signal RX_CDR_Locked								: STD_LOGIC;															-- unused
-		signal GTX_RX_CDR_Hold							: STD_LOGIC;
+		signal GTX_RX_CDR_Hold							: STD_LOGIC 				:= '1';
 		
 		signal GTX_RX_Data									: T_SLV_32;
 		signal GTX_RX_Data_float						: T_SLV_32;																-- open
@@ -886,19 +887,9 @@ begin
 			end if;
 		end process;
 
-		--RX_OOBStatus_d		<= RX_OOBStatus_i;		-- when rising_edge(SATA_Clock_i(I));
 		OOB_RX_Received(I)		<= OOB_RX_Received_i;
 
-
-
--- TODO: still needed?
-		blkTest : block
-			signal reg : STD_LOGIC	:= '1';
-		begin
-			reg <= ffrs(q => reg, rst => DebugPortIn(I).AlignDetected, set => to_sl(OOB_TX_Command_d /= SATA_OOB_NONE)) when rising_edge(SATA_Clock_i);
-			
-			GTX_RX_CDR_Hold	<= reg;	--(reg xor DebugPortIn(I).ForceInvertHold) and DebugPortIn(I).ForceEnableHold;
-		end block;
+		GTX_RX_CDR_Hold <= ffrs(q => GTX_RX_CDR_Hold, rst => OOB_AlignDetected(i), set => to_sl(OOB_TX_Command_d /= SATA_OOB_NONE)) when rising_edge(SATA_Clock_i);
 		
 		-- ==================================================================
 		-- GTXE2_CHANNEL instance for Port I

@@ -131,6 +131,7 @@ entity sata_PhysicalLayer is
 		Trans_OOB_TX_Complete						: in	STD_LOGIC;
 		Trans_OOB_RX_Received						: in	T_SATA_OOB;
 		Trans_OOB_HandshakeComplete			: out	STD_LOGIC;		
+		Trans_OOB_AlignDetected    			: out	STD_LOGIC;		
 
 		Trans_TX_Data										: out	T_SLV_32;
 		Trans_TX_CharIsK								: out T_SLV_4;
@@ -232,6 +233,7 @@ begin
 				OOB_TX_Complete						=> Trans_OOB_TX_Complete,
 				OOB_RX_Received						=> Trans_OOB_RX_Received,
 				OOB_HandshakeComplete			=> Trans_OOB_HandshakeComplete,
+				OOB_AlignDetected					=> Trans_OOB_AlignDetected,
 				
 				TX_Primitive							=> OOBC_TX_Primitive,
 				RX_Primitive							=> RX_Primitive,
@@ -263,11 +265,14 @@ begin
 				OOB_TX_Complete						=> Trans_OOB_TX_Complete,
 				OOB_RX_Received						=> Trans_OOB_RX_Received,
 				OOB_HandshakeComplete			=> Trans_OOB_HandshakeComplete,
+--			OOB_AlignDetected					=> Trans_OOB_AlignDetected,
 				
 				TX_Primitive							=> OOBC_TX_Primitive,
 				RX_Primitive							=> RX_Primitive,
 				RX_Valid									=> Trans_RX_Valid
-			);
+				);
+
+		Trans_OOB_AlignDetected <= '0';
 	end generate;
 	
 

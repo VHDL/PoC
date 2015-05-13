@@ -113,14 +113,17 @@ package satadbg is
 	type T_SATADBG_TRANSCEIVER_IN is record
 		ForceOOBCommand						: T_SATA_OOB;
 		ForceTXElectricalIdle			: STD_LOGIC;
-		ForceEnableHold						: STD_LOGIC;
-		ForceInvertHold						: STD_LOGIC;
-		
-		AlignDetected							: STD_LOGIC;
-		
+		InsertBitErrorTX 					: STD_LOGIC;
+		InsertBitErrorRX 					: STD_LOGIC;
 		DRP												: T_XIL_DRP_BUS_IN;
 		RX_Monitor_sel						: T_SLV_2;
 	end record;
+
+	constant C_SATADBG_TRANSCEIVER_IN_EMPTY : T_SATADBG_TRANSCEIVER_IN := (
+		ForceOOBCommand => SATA_OOB_NONE,
+		DRP							=> C_XIL_DRP_BUS_IN_EMPTY,
+		RX_Monitor_sel	=> "00",
+		others					=> '0');
 	
 	-- ===========================================================================
 	-- SATA Physical Layer Types

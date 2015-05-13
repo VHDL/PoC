@@ -58,6 +58,7 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
 use			PoC.physical.all;
+use			PoC.components.all;
 use			PoC.debug.all;
 use			PoC.sata.all;
 use			PoC.satacomp.all;
@@ -105,6 +106,7 @@ entity sata_TransceiverLayer is
 		OOB_TX_Complete						: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
 		OOB_RX_Received						: out	T_SATA_OOB_VECTOR(portS - 1 downto 0);		
 		OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		OOB_AlignDetected    			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		
 		TX_Data										: in	T_SLVV_32(portS - 1 downto 0);
 		TX_CharIsK								: in	T_SLVV_4(portS - 1 downto 0);
@@ -125,6 +127,9 @@ architecture rtl of sata_TransceiverLayer is
 	attribute KEEP 								: BOOLEAN;
 
 	constant C_DEVICE_INFO				: T_DEVICE_INFO		:= DEVICE_INFO;
+
+	signal TX_Data_i : T_SLVV_32(portS - 1 downto 0);
+	signal RX_Data_i : T_SLVV_32(portS - 1 downto 0);
 	
 begin
 	genreport : for i in 0 to portS - 1 generate
@@ -165,6 +170,29 @@ begin
 					((C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB)			and (portS <= 2)))
 		report "To many ports per transceiver."
 		severity FAILURE;
+
+	
+-- ==================================================================
+-- insert bit errors
+-- ==================================================================
+	
+	genBitError : if (ENABLE_DEBUGPORT = TRUE) generate
+		-- Insert BitErrors
+		genPort : for i in 0 to PORTS - 1 generate
+			TX_Data_i(i) <= mux(DebugPortIn(i).InsertBitErrorTX, TX_Data(i),   not TX_Data(i));
+			RX_Data  (i) <= mux(DebugPortIn(i).InsertBitErrorRX, RX_Data_i(i), not RX_Data_i(i));
+		end generate;
+	end generate;
+
+	genNoBitError : if not(ENABLE_DEBUGPORT = TRUE) generate
+		TX_Data_i <= TX_Data;
+		RX_Data 	<= RX_Data_i;
+	end generate;
+
+	
+-- ==================================================================
+-- transeiver instances
+-- ==================================================================
 	
 	genXilinx : if (C_DEVICE_INFO.VENDOR = VENDOR_XILINX) generate
 		genGPT_DUAL : if (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTP_DUAL) generate
@@ -204,10 +232,10 @@ begin
 					OOB_RX_Received						=> OOB_RX_Received,
 					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
 
-					TX_Data										=> TX_Data,
+					TX_Data										=> TX_Data_i,
 					TX_CharIsK								=> TX_CharIsK,
 					
-					RX_Data										=> RX_Data,
+					RX_Data										=> RX_Data_i,
 					RX_CharIsK								=> RX_CharIsK,
 					RX_Valid									=> RX_Valid,
 					
@@ -254,10 +282,10 @@ begin
 					OOB_RX_Received						=> OOB_RX_Received,
 					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
 
-					TX_Data										=> TX_Data,
+					TX_Data										=> TX_Data_i,
 					TX_CharIsK								=> TX_CharIsK,
 					
-					RX_Data										=> RX_Data,
+					RX_Data										=> RX_Data_i,
 					RX_CharIsK								=> RX_CharIsK,
 					RX_Valid									=> RX_Valid,
 					
@@ -305,11 +333,12 @@ begin
 					OOB_TX_Complete						=> OOB_TX_Complete,
 					OOB_RX_Received						=> OOB_RX_Received,
 					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
+					OOB_AlignDetected 				=> OOB_AlignDetected,
 
-					TX_Data										=> TX_Data,
+					TX_Data										=> TX_Data_i,
 					TX_CharIsK								=> TX_CharIsK,
 					
-					RX_Data										=> RX_Data,
+					RX_Data										=> RX_Data_i,
 					RX_CharIsK								=> RX_CharIsK,
 					RX_Valid									=> RX_Valid,
 					
@@ -357,10 +386,10 @@ begin
 					OOB_RX_Received						=> OOB_RX_Received,
 					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
 
-					TX_Data										=> TX_Data,
+					TX_Data										=> TX_Data_i,
 					TX_CharIsK								=> TX_CharIsK,
 					
-					RX_Data										=> RX_Data,
+					RX_Data										=> RX_Data_i,
 					RX_CharIsK								=> RX_CharIsK,
 					RX_Valid									=> RX_Valid,
 					
@@ -406,10 +435,10 @@ begin
 					OOB_RX_Received						=> OOB_RX_Received,
 					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
 
-					TX_Data										=> TX_Data,
+					TX_Data										=> TX_Data_i,
 					TX_CharIsK								=> TX_CharIsK,
 					
-					RX_Data										=> RX_Data,
+					RX_Data										=> RX_Data_i,
 					RX_CharIsK								=> RX_CharIsK,
 					RX_Valid									=> RX_Valid,
 					
@@ -421,7 +450,11 @@ begin
 		end generate;	-- Altera.Stratix4.GXB
 	end generate;		-- Altera.*
 	
-	genDebugport : if (ENABLE_DEBUGport = TRUE) generate
+-- ==================================================================
+-- debugport
+-- ==================================================================
+	
+	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
 		function dbg_generateCommandEncodings return string is
 			variable  l : STD.TextIO.line;
 		begin

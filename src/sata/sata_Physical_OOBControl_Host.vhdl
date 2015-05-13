@@ -75,6 +75,7 @@ entity sata_Physical_OOBControl_Host is
 		OOB_TX_Complete						: in	STD_LOGIC;
 		OOB_RX_Received						: in	T_SATA_OOB;
 		OOB_HandshakeComplete			:	OUT	STD_LOGIC; 	-- MUST BE driven by register
+		OOB_AlignDetected    			:	OUT	STD_LOGIC;
 		
 		TX_Primitive							: out	T_SATA_PRIMITIVE;
 		RX_Primitive							: in	T_SATA_PRIMITIVE;
@@ -221,7 +222,7 @@ begin
 		OOB_TX_Command_i					<= SATA_OOB_NONE;
 		OOB_HandshakeComplete_i		<= '0'; 	-- MUST BE driven by register
 
-		DebugPortOut.AlignDetected	<= '0';
+		OOB_AlignDetected					<= '0';
 
 			case State is
 				when ST_HOST_RESET =>
@@ -383,7 +384,7 @@ begin
 						AlignCounter_rst			<= '0';
 						AlignCounter_en				<= '1';
 					
-						DebugPortOut.AlignDetected	<= '1';
+						OOB_AlignDetected			<= '1';
 						
 						if (AlignCounter_us = CONSECUTIVE_ALIGN_MIN - 1) then
 							nextstate						<= st_host_send_align;
@@ -427,7 +428,7 @@ begin
 	Timeout									<= Timeout_i;
 
 	OOB_TX_Command					<= OOB_TX_Command_i;
-	OOB_HandshakeComplete		<= OOB_HandshakeComplete_i; 	-- MUST BE driven by register
+	OOB_HandshakeComplete		<= OOB_HandshakeComplete_i when rising_edge(Clock);  	-- MUST BE driven by register
 	
 	AlignCounter_us <= counter_inc(cnt => AlignCounter_us, rst => AlignCounter_rst, en => AlignCounter_en) when rising_edge(Clock);
 	

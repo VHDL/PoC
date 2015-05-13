@@ -182,6 +182,7 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	SIGNAL Trans_OOB_TX_Complete				: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);	
 	SIGNAL Trans_OOB_RX_Received				: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Phy_OOB_HandshakeComplete		: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);	
+	signal Phy_OOB_AlignDetected    		: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);	
 
 	SIGNAL Phy_TX_Data									: T_SLVV_32(PORTS - 1 DOWNTO 0);
 	SIGNAL Phy_TX_CharIsK								: T_SLVV_4(PORTS - 1 DOWNTO 0);
@@ -446,6 +447,7 @@ BEGIN
 				Trans_OOB_TX_Complete					=> Trans_OOB_TX_Complete(I),
 				Trans_OOB_RX_Received					=> Trans_OOB_RX_Received(I),
 				Trans_OOB_HandshakeComplete		=> Phy_OOB_HandshakeComplete(I),
+				Trans_OOB_AlignDetected				=> Phy_OOB_AlignDetected(i),
 				
 				Trans_TX_Data									=> Phy_TX_Data(I),
 				Trans_TX_CharIsK							=> Phy_TX_CharIsK(I),
@@ -476,22 +478,26 @@ BEGIN
 			DebugPortOut(I).Physical_Error				<= Phy_Error;								-- 
 
 			-- Transceiver Layer
-			process(DebugPortIn(I).Transceiver, Phy_DebugPortOut.OOBControl.AlignDetected)
-			begin
-				Trans_DebugPortIn(I)								<= DebugPortIn(I).Transceiver;
-				Trans_DebugPortIn(I).AlignDetected	<= Phy_DebugPortOut.OOBControl.AlignDetected;
-			end process;
+			Trans_DebugPortIn(I)									<= DebugPortIn(I).Transceiver;
 			
 			DebugPortOut(I).Transceiver						<= Trans_DebugPortOut(I);		-- 
 			DebugPortOut(I).Transceiver_Command		<= Trans_Command(I);				-- 
 			DebugPortOut(I).Transceiver_Status		<= Trans_Status(I);					-- 
-			DebugPortOut(I).Transceiver_Error			<= Trans_Error(I);					-- 
+			DebugPortOut(I).Transceiver_Error			<= Trans_Error(I);					--
+
 		end generate;
+
+		genNoDebug : if not(ENABLE_DEBUGPORT = TRUE) generate
+			Trans_DebugPortIn(I)	<= C_SATADBG_TRANSCEIVER_IN_EMPTY;
+		end generate;
+
 	END GENERATE;
   
 	-- ===========================================================================
 	-- transceiver layer
 	-- ===========================================================================
+
+	
 	Trans : ENTITY PoC.sata_TransceiverLayer
 		GENERIC MAP (
 			DEBUG											=> DEBUG,
@@ -532,6 +538,7 @@ BEGIN
 			OOB_TX_Complete						=> Trans_OOB_TX_Complete,
 			OOB_RX_Received						=> Trans_OOB_RX_Received,
 			OOB_HandshakeComplete			=> Phy_OOB_HandshakeComplete,
+			OOB_AlignDetected 				=> Phy_OOB_AlignDetected,
 			
 			TX_Data										=> Phy_TX_Data,
 			TX_CharIsK								=> Phy_TX_CharIsK,
