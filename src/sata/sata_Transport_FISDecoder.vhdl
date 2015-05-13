@@ -178,7 +178,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	PROCESS(State, IsFISHeader, FISType_i, Link_RX_Valid, Link_RX_Data, Link_RX_SOF, Link_RX_EOF, Link_RX_FS_Valid, Link_RX_FS_CRCOK, Link_RX_FS_Abort, RX_Ack	)
+	PROCESS(State, Phy_Status, IsFISHeader, FISType_i, Link_RX_Valid, Link_RX_Data, Link_RX_SOF, Link_RX_EOF, Link_RX_FS_Valid, Link_RX_FS_CRCOK, Link_RX_FS_Abort, RX_Ack	)
 	BEGIN
 		NextState										<= State;
 		

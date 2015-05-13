@@ -242,7 +242,7 @@ BEGIN
 -- ==================================================================
 	Error	<= SATA_LINK_ERROR_LINK_RXFIFO_FULL WHEN RX_FIFO_Full = '1' ELSE SATA_LINK_ERROR_NONE;
 
-	PROCESS(Phy_Status, TXFSM_Error, RXFSM_Error, TXFSM_IDLE, RXFSM_IDLE, TXFSM_Sending, RXFSM_Receiving)
+	PROCESS(Phy_Status, TXFSM_State, TXFSM_Error, RXFSM_Error, TXFSM_IDLE, RXFSM_IDLE, TXFSM_Sending, RXFSM_Receiving)
 	BEGIN
 		Status			<= SATA_LINK_STATUS_COMMUNICATION_ERROR;
 		-- TODO:

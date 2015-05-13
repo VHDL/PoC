@@ -463,6 +463,7 @@ begin
 		end process;
 		
 		process(State, Command, Error_on_TX_RX, Reset,
+						OOB_HandshakeComplete, OOB_TX_Command,
 						SATA_Clock_Stable_i, GTX_TX_ResetDone, GTX_RX_ResetDone)
 		begin
 			NextState				<= State;

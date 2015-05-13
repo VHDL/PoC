@@ -143,7 +143,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	PROCESS(State, FISType, ATARegisters, TX_Valid, TX_Data, TX_SOP, TX_EOP, Link_TX_Ack, Link_TX_FS_Valid, Link_TX_FS_SendOK, Link_TX_FS_Abort, Link_TX_InsertEOF)
+	PROCESS(State, Phy_Status, FISType, ATARegisters, TX_Valid, TX_Data, TX_SOP, TX_EOP, Link_TX_Ack, Link_TX_FS_Valid, Link_TX_FS_SendOK, Link_TX_FS_Abort, Link_TX_InsertEOF)
 	BEGIN
 		NextState										<= State;
 		
