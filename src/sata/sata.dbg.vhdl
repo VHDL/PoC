@@ -174,8 +174,7 @@ package satadbg is
 	-- SATA Link Layer Types
 	-- ===========================================================================
 	type T_SATADBG_LINK_LLFSM_OUT is record
-		TXFSM												: STD_LOGIC_VECTOR(3 downto 0);
-		RXFSM												: STD_LOGIC_VECTOR(4 downto 0);
+		FSM													: STD_LOGIC_VECTOR(4 downto 0);
 	end record;
 	
 	type T_SATADBG_LINK_OUT is record
