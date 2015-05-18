@@ -159,7 +159,6 @@ ARCHITECTURE rtl OF sata_LinkLayerFSM IS
 		ST_RX_SEND_RX_RDY,
 		ST_RX_RECEIVE_DATA,
 		ST_RX_SEND_HOLD,
-		ST_RX_RECEIVED_HOLD_ACK,
 		ST_RX_RECEIVED_HOLD,
 		ST_RX_SEND_R_OK,
 		ST_RX_SEND_R_ERROR
@@ -556,7 +555,8 @@ BEGIN
 					ELSE	-- InsertAlign
 						TX_Primitive								<= SATA_PRIMITIVE_HOLD_ACK;
 					
-						if (RX_Primitive = SATA_PRIMITIVE_HOLD) then
+						if ((RX_Primitive = SATA_PRIMITIVE_HOLD) or
+								(RX_Primitive = SATA_PRIMITIVE_ALIGN))	then
 							NULL;
 						elsif (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) then						-- insert CRC32	after HOLDA
 							NextState									<= ST_TX_SEND_CRC;
@@ -653,17 +653,8 @@ BEGIN
 						
 					IF (InsertALIGN = '1') THEN
 						TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
+						-- All cases are handled after InsertAlign is deasserted.
 						
-						IF (RX_Primitive = SATA_PRIMITIVE_TX_RDY) THEN
-							IF (RX_FIFO_SpaceAvailable = '1') THEN
-								NextState								<= ST_RX_SEND_RX_RDY;
-							END IF;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_ALIGN) THEN
-							NULL;
-						ELSE
-							NextState									<= ST_IDLE;
-						END IF;				
-
 					ELSE		-- InsertALIGN
 						TX_Primitive								<= SATA_PRIMITIVE_SYNC;
 						
@@ -674,29 +665,27 @@ BEGIN
 							END IF;
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_ALIGN) THEN
 							NULL;
-						ELSE
+						else 																													-- abort
+							TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+							RX_FSFIFO_put 						<= '1';
 							NextState									<= ST_IDLE;
 						END IF;				
 					END IF;
 					
 				-- ----------------------------------------------------------
 				WHEN ST_RX_SEND_RX_RDY =>
+					-- assert(RX_FIFO_SpaceAvailable = '1')
 					Status												<= SATA_LINK_STATUS_RECEIVING;
 						
 					IF (InsertALIGN = '1') THEN
 						TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 						
-						IF ((RX_Primitive = SATA_PRIMITIVE_TX_RDY) OR
-								(RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN
-							NULL;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_SOF) THEN
+						IF (RX_Primitive = SATA_PRIMITIVE_SOF) THEN
 							RX_CRC_rst								<= '1';
 							DataUnscrambler_rst				<= '1';
 							NextState									<= ST_RX_RECEIVE_DATA;
-						ELSE
-							NextState									<= ST_IDLE;
 						END IF;
+						-- All other cases are handled after InsertAlign is deasserted.
 
 					ELSE		-- InsertALIGN
 						TX_Primitive								<= SATA_PRIMITIVE_RX_RDY;
@@ -710,7 +699,9 @@ BEGIN
 							RX_CRC_rst								<= '1';
 							DataUnscrambler_rst				<= '1';
 							NextState									<= ST_RX_RECEIVE_DATA;
-						ELSE
+						else  																												-- abort
+							TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+							RX_FSFIFO_put 						<= '1';
 							NextState									<= ST_IDLE;
 						END IF;
 					END IF;
@@ -720,29 +711,20 @@ BEGIN
 					Status												<= SATA_LINK_STATUS_RECEIVING;
 						
 					IF (InsertALIGN = '1') THEN
-						TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
-						RX_IsData										<= '1';
-						RX_CRC_Valid								<= '1';
-						DataUnscrambler_en					<= '1';
+						TX_Primitive 								<= SATA_PRIMITIVE_ALIGN;
 						
-						IF (RX_Primitive = SATA_PRIMITIVE_HOLD) THEN
-							RX_IsData									<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
+						if (RX_Primitive = SATA_PRIMITIVE_NONE) then 						-- data
+							RX_IsData									<= '1';
+							RX_CRC_Valid							<= '1';
+							DataUnscrambler_en				<= '1';
+							IF (RX_FIFO_SpaceAvailable = '0') THEN
+								NextState								<= ST_RX_SEND_HOLD;
+							END IF;
+						elsif (RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) then
+							null; -- stay here even Transport Layer requests abort in the future
+						elsif (RX_Primitive = SATA_PRIMITIVE_HOLD) then
 							NextState									<= ST_RX_RECEIVED_HOLD;
-							
-						ELSIF ((RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-									 (RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN
-							RX_IsData									<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-							NextState									<= ST_RX_RECEIVE_DATA;
-							
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
-							RX_IsData									<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
 							RX_FSFIFO_put							<= '1';
 							IF (RX_CRC_OKReg_r = '1') THEN
 								Trans_RXFS_CRCOK				<= '1';
@@ -750,51 +732,27 @@ BEGIN
 							ELSE
 								NextState								<= ST_RX_SEND_R_ERROR;
 							END IF;
+						end if;
 						
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) THEN
-							RX_FSFIFO_put							<= '1';
-							Trans_RXFS_Abort					<= '1';
-							NextState									<= ST_RX_SEND_R_ERROR;
-
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN
-							RX_FSFIFO_put							<= '1';
-							Trans_RXFS_Abort					<= '1';
-						
-							NextState									<= ST_IDLE;
-
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_NONE) THEN
-							IF (RX_FIFO_SpaceAvailable = '1') THEN
-								NULL;
-							ELSE
-								NextState								<= ST_RX_SEND_HOLD;
-							END IF;
-						END IF;
+						-- WTRM and SYNC are handled after InsertAlign is low again.
 
 					ELSE		-- InsertALIGN
 						TX_Primitive								<= SATA_PRIMITIVE_R_IP;
-						RX_IsData										<= '1';
-						RX_CRC_Valid								<= '1';
-						DataUnscrambler_en					<= '1';
 						
-						IF (RX_Primitive = SATA_PRIMITIVE_HOLD) THEN
+						if (RX_Primitive = SATA_PRIMITIVE_NONE) then 						-- data
+							RX_IsData										<= '1';
+							RX_CRC_Valid								<= '1';
+							DataUnscrambler_en					<= '1';
+							IF (RX_FIFO_SpaceAvailable = '0') THEN
+								TX_Primitive						<= SATA_PRIMITIVE_HOLD;
+								NextState								<= ST_RX_SEND_HOLD;
+							END IF;
+						elsif (RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) then
+							null; -- stay here even Transport Layer requests abort in the future
+						elsif (RX_Primitive = SATA_PRIMITIVE_HOLD) then
 							TX_Primitive							<= SATA_PRIMITIVE_HOLD_ACK;
-							RX_IsData									<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
 							NextState									<= ST_RX_RECEIVED_HOLD;
-
-						ELSIF ((RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-									 (RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN
-							RX_IsData									<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-							NextState									<= ST_RX_RECEIVE_DATA;
-							
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
-							RX_IsData									<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
 							RX_FSFIFO_put							<= '1';
 							IF (RX_CRC_OKReg_r = '1') THEN
 								TX_Primitive						<= SATA_PRIMITIVE_R_OK;
@@ -804,26 +762,14 @@ BEGIN
 								TX_Primitive						<= SATA_PRIMITIVE_R_ERROR;
 								NextState								<= ST_RX_SEND_R_ERROR;
 							END IF;
-							
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) THEN
 							TX_Primitive							<= SATA_PRIMITIVE_R_ERROR;
 							RX_FSFIFO_put							<= '1';
-							Trans_RXFS_Abort					<= '1';
 							NextState									<= ST_RX_SEND_R_ERROR;
-
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN
 							TX_Primitive							<= SATA_PRIMITIVE_SYNC;
 							RX_FSFIFO_put							<= '1';
-							Trans_RXFS_Abort					<= '1';
 							NextState									<= ST_IDLE;
-
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_NONE) THEN
-							IF (RX_FIFO_SpaceAvailable = '1') THEN
-								NULL;
-							ELSE
-								TX_Primitive						<= SATA_PRIMITIVE_HOLD;
-								NextState								<= ST_RX_SEND_HOLD;
-							END IF;
 						END IF;
 					END IF;
 				
@@ -832,31 +778,16 @@ BEGIN
 					Status												<= SATA_LINK_STATUS_RECEIVING;
 						
 					IF (InsertALIGN = '1') THEN
-						TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
-						RX_IsData										<= '1';
-						RX_CRC_Valid								<= '1';
-						DataUnscrambler_en					<= '1';
+						TX_Primitive 								<= SATA_PRIMITIVE_ALIGN;
 						
-						IF (RX_Primitive = SATA_PRIMITIVE_HOLD) THEN
-							RX_IsData									<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-						
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) THEN
-							RX_IsData									<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-							NextState									<= ST_RX_RECEIVED_HOLD_ACK;
-							
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_ALIGN) THEN
-							RX_IsData									<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-							
+						if (RX_Primitive = SATA_PRIMITIVE_NONE) then 						-- data
+							RX_IsData									<= '1';
+							RX_CRC_Valid							<= '1';
+							DataUnscrambler_en				<= '1';
+							IF (RX_FIFO_SpaceAvailable = '1') THEN
+								NextState								<= ST_RX_RECEIVE_DATA;
+							END IF;
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
-							RX_IsData									<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
 							RX_FSFIFO_put							<= '1';
 							IF (RX_CRC_OKReg_r = '1') THEN
 								Trans_RXFS_CRCOK				<= '1';
@@ -864,39 +795,28 @@ BEGIN
 							ELSE
 								NextState								<= ST_RX_SEND_R_ERROR;
 							END IF;
-
-						ELSE
-							IF (RX_FIFO_SpaceAvailable = '1') THEN
-								NextState					<= ST_RX_RECEIVE_DATA;
-							END IF;
 						END IF;
+
+						-- All other primitives are handled after InsertAlign is low again.
 
 					ELSE		-- InsertALIGN
 						TX_Primitive								<= SATA_PRIMITIVE_HOLD;
-						RX_IsData										<= '1';
-						RX_CRC_Valid								<= '1';
-						DataUnscrambler_en					<= '1';
 						
-						IF (RX_Primitive = SATA_PRIMITIVE_HOLD) THEN
-							RX_IsData									<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-						
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) THEN
-							RX_IsData									<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-							NextState									<= ST_RX_RECEIVED_HOLD_ACK;
-							
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_ALIGN) THEN
-							RX_IsData									<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-							
+						if (RX_Primitive = SATA_PRIMITIVE_NONE) then 						-- data
+							RX_IsData									<= '1';
+							RX_CRC_Valid							<= '1';
+							DataUnscrambler_en				<= '1';
+							IF (RX_FIFO_SpaceAvailable = '1') THEN
+								TX_Primitive						<= SATA_PRIMITIVE_R_IP;
+								NextState								<= ST_RX_RECEIVE_DATA;
+							END IF;
+						elsif (RX_Primitive = SATA_PRIMITIVE_HOLD) then
+							-- yes, only when FIFO space available!
+							IF (RX_FIFO_SpaceAvailable = '1') THEN
+								TX_Primitive						<= SATA_PRIMITIVE_HOLD_ACK;
+								NextState								<= ST_RX_RECEIVED_HOLD;
+							END IF;
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
-							RX_IsData									<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
 							RX_FSFIFO_put							<= '1';
 							IF (RX_CRC_OKReg_r = '1') THEN
 								TX_Primitive						<= SATA_PRIMITIVE_R_OK;
@@ -906,9 +826,13 @@ BEGIN
 								TX_Primitive						<= SATA_PRIMITIVE_R_ERROR;
 								NextState								<= ST_RX_SEND_R_ERROR;
 							END IF;
-
+						ELSIF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN
+							TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+							RX_FSFIFO_put							<= '1';
+							NextState									<= ST_IDLE;
 						ELSE
 							IF (RX_FIFO_SpaceAvailable = '1') THEN
+								TX_Primitive						<= SATA_PRIMITIVE_R_IP;
 								NextState								<= ST_RX_RECEIVE_DATA;
 							END IF;
 						END IF;
@@ -926,51 +850,47 @@ BEGIN
 							RX_CRC_Valid							<= '1';
 							DataUnscrambler_en				<= '1';
 							NextState									<= ST_RX_RECEIVE_DATA;
+						elsif (RX_Primitive = SATA_PRIMITIVE_EOF) then
+							RX_FSFIFO_put							<= '1';
+							IF (RX_CRC_OKReg_r = '1') THEN
+								Trans_RXFS_CRCOK				<= '1';
+								NextState								<= ST_RX_SEND_R_OK;
+							ELSE
+								NextState								<= ST_RX_SEND_R_ERROR;
+							END IF;
 						END IF;
+						
+						-- All other primitives are handled after InsertAlign is low again.
 
 					ELSE		-- InsertALIGN
 						TX_Primitive								<= SATA_PRIMITIVE_HOLD_ACK;
-						IF (RX_Primitive = SATA_PRIMITIVE_NONE) THEN
+						
+						IF (RX_Primitive = SATA_PRIMITIVE_NONE) then 							-- data
 							TX_Primitive							<= SATA_PRIMITIVE_R_IP;
 							RX_IsData									<= '1';
 							RX_CRC_Valid							<= '1';
 							DataUnscrambler_en				<= '1';
 							NextState									<= ST_RX_RECEIVE_DATA;
-						END IF;
-					END IF;
-				
-				-- ----------------------------------------------------------
-				WHEN ST_RX_RECEIVED_HOLD_ACK =>
-					Status												<= SATA_LINK_STATUS_RECEIVING;
-						
-					IF (InsertALIGN = '1') THEN
-						TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
-						
-						IF ((RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-								(RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN
-							IF (RX_FIFO_SpaceAvailable = '1') THEN
-								NextState								<= ST_RX_RECEIVE_DATA;
-							END IF;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN
-							-- TODO: SYNC edge
+						elsif (RX_Primitive = SATA_PRIMITIVE_HOLD) then
 							NULL;
-						END IF;
-
-					ELSE		-- InsertALIGN
-						TX_Primitive								<= SATA_PRIMITIVE_HOLD;
-						
-						IF ((RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-								(RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN
-							IF (RX_FIFO_SpaceAvailable = '1') THEN
+						elsif (RX_Primitive = SATA_PRIMITIVE_EOF) then
+							RX_FSFIFO_put							<= '1';
+							IF (RX_CRC_OKReg_r = '1') THEN
+								TX_Primitive						<= SATA_PRIMITIVE_R_OK;
+								Trans_RXFS_CRCOK				<= '1';
+								NextState								<= ST_RX_SEND_R_OK;
+							ELSE
+								TX_Primitive						<= SATA_PRIMITIVE_R_ERROR;
+								NextState								<= ST_RX_SEND_R_ERROR;
+							END IF;
+						elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then
+							TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+							RX_FSFIFO_put							<= '1';
+							NextState									<= ST_IDLE;
+						else -- all other primitives
 								TX_Primitive						<= SATA_PRIMITIVE_R_IP;
 								NextState								<= ST_RX_RECEIVE_DATA;
-							END IF;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN
-							-- TODO: SYNC edge
-							NULL;
-						END IF;
+						end if;
 					END IF;
 				
 				-- ----------------------------------------------------------
@@ -981,10 +901,7 @@ BEGIN
 						
 					IF (InsertALIGN = '1') THEN
 						TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
-						
-						if (RX_Primitive = SATA_PRIMITIVE_SYNC) then
-							NextState									<= ST_IDLE;
-						end if;
+						-- All cases are handled after InsertAlign is deasserted
 
 					ELSE	-- InsertAlign
 						TX_Primitive								<= SATA_PRIMITIVE_R_OK;
@@ -1001,13 +918,10 @@ BEGIN
 						
 					IF (InsertALIGN = '1') THEN
 						TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
-						
-						if (RX_Primitive = SATA_PRIMITIVE_SYNC) then
-							NextState									<= ST_IDLE;
-						end if;
+						-- All cases are handled after InsertAlign is deasserted
 
 					ELSE	-- InsertAlign
-						TX_Primitive								<= SATA_PRIMITIVE_R_OK;
+						TX_Primitive								<= SATA_PRIMITIVE_R_ERROR;
 						
 						if (RX_Primitive = SATA_PRIMITIVE_SYNC) then
 							TX_Primitive							<= SATA_PRIMITIVE_SYNC;
