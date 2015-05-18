@@ -304,7 +304,7 @@ begin
 			
 			-- primitive interface
 			TX_Primitive						=> TX_Primitive,
-			RX_Primitive						=> RX_Primitive,
+			RX_Primitive						=> RX_Primitive_d,
 
 			-- TX FIFO interface
 			TX_FIFO_rst							=> TX_FIFO_rst,
@@ -662,10 +662,10 @@ begin
 			RX_DataIn							=> PD_DataIn,
 			RX_CharIsK						=> PD_CharIsK,
 			
-			Primitive							=> RX_Primitive_d
+			Primitive							=> RX_Primitive
 		);
 	
-	RX_Primitive	<= 	RX_Primitive_d WHEN rising_edge(Clock);
+	RX_Primitive_d	<= 	RX_Primitive WHEN rising_edge(Clock);
 
 	-- ================================================================
 	-- physical layer interface

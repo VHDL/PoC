@@ -180,6 +180,8 @@ ARCHITECTURE rtl OF sata_LinkLayerFSM IS
 	SIGNAL IAC_Finished_d						: STD_LOGIC																	:= '0';
 	SIGNAL InsertALIGN							: STD_LOGIC;
 
+	SIGNAL RX_FIFO_rst_i						: STD_LOGIC;
+	
 	SIGNAL RX_IsSOF									: STD_LOGIC;
 	SIGNAL RX_IsEOF									: STD_LOGIC;
 	SIGNAL RX_IsData								: STD_LOGIC;
@@ -229,7 +231,9 @@ BEGIN
 
 
 	PROCESS(State, Phy_Status, RX_Primitive, Trans_TX_SOF, Trans_TX_EOF, TX_FIFO_Valid,
-					RX_FIFO_Full, RX_FIFO_SpaceAvailable, RX_FSFIFO_Full, RX_CRC_OKReg_r, InsertALIGN)
+					RX_FIFO_Full, RX_FIFO_SpaceAvailable, RX_FSFIFO_Full,
+					RX_SOF_r, RX_SOFReg_d1, RX_SOFReg_d2,
+					RX_CRC_OKReg_r, InsertALIGN)
 	BEGIN
 		NextState											<= State;
 		Status 												<= SATA_LINK_STATUS_IDLE;
@@ -261,8 +265,10 @@ BEGIN
 --		ScramblerMux_ctrl							<= '0';
 
 		-- RX FIFO interface
-		RX_FIFO_rst										<= '0';
+		RX_FIFO_rst_i									<= '0';
 		RX_IsData											<= '0';
+		RX_IsSOF											<= '0';
+		RX_IsEOF											<= '0';
 		RX_FSFIFO_rst									<= '0';
 		RX_FSFIFO_put									<= '0';
 		
@@ -294,7 +300,7 @@ BEGIN
 					TX_Primitive									<= SATA_PRIMITIVE_ALIGN;
 					TX_FIFO_rst										<= '1';
 					TX_FSFIFO_rst									<= '1';
-					RX_FIFO_rst										<= '1';
+					RX_FIFO_rst_i									<= '1';
 					RX_FSFIFO_rst									<= '1';
 					NextState											<= ST_NO_COMMUNICATION;
 			
@@ -665,9 +671,9 @@ BEGIN
 							END IF;
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_ALIGN) THEN
 							NULL;
-						else 																													-- abort
+						else 	-- may be caused by bit errors
+							-- no frame started yet
 							TX_Primitive							<= SATA_PRIMITIVE_SYNC;
-							RX_FSFIFO_put 						<= '1';
 							NextState									<= ST_IDLE;
 						END IF;				
 					END IF;
@@ -681,6 +687,7 @@ BEGIN
 						TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 						
 						IF (RX_Primitive = SATA_PRIMITIVE_SOF) THEN
+							RX_IsSOF 									<= '1';
 							RX_CRC_rst								<= '1';
 							DataUnscrambler_rst				<= '1';
 							NextState									<= ST_RX_RECEIVE_DATA;
@@ -696,12 +703,12 @@ BEGIN
 							NULL;
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_SOF) THEN
 							TX_Primitive							<= SATA_PRIMITIVE_R_IP;
+							RX_IsSOF 									<= '1';
 							RX_CRC_rst								<= '1';
 							DataUnscrambler_rst				<= '1';
 							NextState									<= ST_RX_RECEIVE_DATA;
 						else  																												-- abort
 							TX_Primitive							<= SATA_PRIMITIVE_SYNC;
-							RX_FSFIFO_put 						<= '1';
 							NextState									<= ST_IDLE;
 						END IF;
 					END IF;
@@ -725,6 +732,7 @@ BEGIN
 						elsif (RX_Primitive = SATA_PRIMITIVE_HOLD) then
 							NextState									<= ST_RX_RECEIVED_HOLD;
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
+							RX_IsEOF 									<= '1';
 							RX_FSFIFO_put							<= '1';
 							IF (RX_CRC_OKReg_r = '1') THEN
 								Trans_RXFS_CRCOK				<= '1';
@@ -753,6 +761,7 @@ BEGIN
 							TX_Primitive							<= SATA_PRIMITIVE_HOLD_ACK;
 							NextState									<= ST_RX_RECEIVED_HOLD;
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
+							RX_IsEOF 									<= '1';
 							RX_FSFIFO_put							<= '1';
 							IF (RX_CRC_OKReg_r = '1') THEN
 								TX_Primitive						<= SATA_PRIMITIVE_R_OK;
@@ -788,6 +797,7 @@ BEGIN
 								NextState								<= ST_RX_RECEIVE_DATA;
 							END IF;
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
+							RX_IsEOF 									<= '1';
 							RX_FSFIFO_put							<= '1';
 							IF (RX_CRC_OKReg_r = '1') THEN
 								Trans_RXFS_CRCOK				<= '1';
@@ -817,6 +827,7 @@ BEGIN
 								NextState								<= ST_RX_RECEIVED_HOLD;
 							END IF;
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
+							RX_IsEOF 									<= '1';
 							RX_FSFIFO_put							<= '1';
 							IF (RX_CRC_OKReg_r = '1') THEN
 								TX_Primitive						<= SATA_PRIMITIVE_R_OK;
@@ -851,6 +862,7 @@ BEGIN
 							DataUnscrambler_en				<= '1';
 							NextState									<= ST_RX_RECEIVE_DATA;
 						elsif (RX_Primitive = SATA_PRIMITIVE_EOF) then
+							RX_IsEOF 									<= '1';
 							RX_FSFIFO_put							<= '1';
 							IF (RX_CRC_OKReg_r = '1') THEN
 								Trans_RXFS_CRCOK				<= '1';
@@ -874,6 +886,7 @@ BEGIN
 						elsif (RX_Primitive = SATA_PRIMITIVE_HOLD) then
 							NULL;
 						elsif (RX_Primitive = SATA_PRIMITIVE_EOF) then
+							RX_IsEOF 									<= '1';
 							RX_FSFIFO_put							<= '1';
 							IF (RX_CRC_OKReg_r = '1') THEN
 								TX_Primitive						<= SATA_PRIMITIVE_R_OK;
@@ -931,20 +944,21 @@ BEGIN
 			END CASE;
 		END IF;
 	END PROCESS;
+
+	RX_FIFO_rst <= RX_FIFO_rst_i;
 	
 -- ==================================================================
 -- Flag registers
 -- ==================================================================
-	RX_IsSOF 		<= to_sl(RX_Primitive = SATA_PRIMITIVE_SOF);
-	RX_IsEOF 		<= to_sl(RX_Primitive = SATA_PRIMITIVE_EOF);
-	
 	-- register for SOF
 	-- -----------------------------
 	-- update register if SOF is received, reset if DATA occurs
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF (RX_IsSOF = '1') THEN
+			if (RX_FIFO_rst_i = '1') then
+				RX_SOF_r <= '0';
+			elsif (RX_IsSOF = '1') THEN
 				RX_SOF_r		<= '1';
 			ELSIF (RX_IsData = '1') THEN
 				RX_SOF_r		<= '0';
@@ -1015,7 +1029,9 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF (RX_DataReg_en1_i = '1') THEN
+			if (RX_FIFO_rst_i = '1') then
+				RX_SOFReg_d1 <= '0';
+			elsif (RX_DataReg_en1_i = '1') THEN
 				RX_SOFReg_d1		<= RX_SOF_r;
 			END IF;
 		END IF;
@@ -1024,7 +1040,9 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF (RX_DataReg_en2_i = '1') THEN
+			if (RX_FIFO_rst_i = '1') then
+				RX_SOFReg_d2 <= '0';
+			elsif	(RX_DataReg_en2_i = '1') THEN
 				RX_SOFReg_d2		<= RX_SOFReg_d1;
 			END IF;
 		END IF;
