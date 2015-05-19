@@ -220,6 +220,7 @@ package satadbg is
 		TX_Ack											: STD_LOGIC;
 		TX_SOF											: STD_LOGIC;
 		TX_EOF											: STD_LOGIC;
+		TX_InsertEOF 								: STD_LOGIC;
 		TX_FS_Valid									: STD_LOGIC;
 		TX_FS_Ack										: STD_LOGIC;
 		TX_FS_SendOK								: STD_LOGIC;
@@ -309,6 +310,18 @@ package satadbg is
     Trans_RX_SOT         : STD_LOGIC;
     Trans_RX_EOT         : STD_LOGIC;
     Trans_RX_Ack         : STD_LOGIC;
+    TX_Valid             : STD_LOGIC;
+    TX_Data              : T_SLV_32;
+    TX_SOR               : STD_LOGIC;
+    TX_EOR               : STD_LOGIC;
+    TX_Ack               : STD_LOGIC;
+    TC_TX_Valid          : STD_LOGIC;
+    TC_TX_Data           : T_SLV_32;
+    TC_TX_SOT            : STD_LOGIC;
+    TC_TX_EOT            : STD_LOGIC;
+    TC_TX_Ack            : STD_LOGIC;
+    TC_TX_LastWord 		   : STD_LOGIC;
+    TC_TX_InsertEOT 		 : STD_LOGIC;
 	end record;
 	
 

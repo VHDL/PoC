@@ -52,6 +52,7 @@ library PoC;
 use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
+use 		PoC.components.all;
 use			PoC.sata.all;
 use			PoC.satadbg.all;
 
@@ -127,8 +128,6 @@ end;
 ARCHITECTURE rtl OF sata_TransportLayer IS
 	ATTRIBUTE KEEP											: BOOLEAN;
 
-	signal MyReset 											: STD_LOGIC;
-	
 	signal ATAHostRegisters_i						: T_SATA_ATA_HOST_REGISTERS;
 	signal ATAHostRegisters_d						: T_SATA_ATA_HOST_REGISTERS;
 
@@ -312,10 +311,10 @@ begin
 
 		TC_TX_DataFlow			<= TC_TX_Valid		AND TC_TX_Ack;
 
-		InsertEOP_d					<= FISE_TX_InsertEOP	WHEN rising_edge(Clock) AND (TC_TX_DataFlow = '1');
+		InsertEOP_d					<= ffdre(q => InsertEOP_d,     rst => Reset, en => TC_TX_DataFlow, d => FISE_TX_InsertEOP) 	when rising_edge(Clock);
 		InsertEOP_re				<= FISE_TX_InsertEOP	AND NOT InsertEOP_d;
-		InsertEOP_re_d			<= InsertEOP_re				WHEN rising_edge(Clock) AND (TC_TX_DataFlow = '1');
-		InsertEOP_re_d2			<= InsertEOP_re_d			WHEN rising_edge(Clock) AND (TC_TX_DataFlow = '1');
+		InsertEOP_re_d			<= ffdre(q => InsertEOP_re_d,  rst => Reset, en => TC_TX_DataFlow, d => InsertEOP_re  ) 		when rising_edge(Clock);
+		InsertEOP_re_d2			<= ffdre(q => InsertEOP_re_d2, rst => Reset, en => TC_TX_DataFlow, d => InsertEOP_re_d) 		when rising_edge(Clock);
 
 		TC_TX_SOP						<= TX_SOT OR InsertEOP_re_d2;
 		TC_TX_EOP						<= TX_EOT	OR InsertEOP_re_d;

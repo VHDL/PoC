@@ -49,7 +49,7 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
+use			PoC.components.all;
 USE			PoC.sata.ALL;
 USE			PoC.satadbg.ALL;
 
@@ -299,8 +299,6 @@ BEGIN
 		TX_FIFO_Valid			<= TX_Valid;
 		
 		TX_FIFO_Full			<= NOT Trans_TX_Ack;
-		Trans_TX_Data			<= TX_FIFO_Data;
-		Trans_TX_Valid		<= TX_FIFO_Valid;
 	END GENERATE;
 	genTXFIFO1 : IF (TX_FIFO_DEPTH > 0) GENERATE
 		SIGNAL TX_FIFO_rst											: STD_LOGIC;
@@ -375,10 +373,10 @@ BEGIN
 
 		TC_TX_DataFlow			<= TC_TX_Valid			AND TC_TX_Ack;
 
-		InsertEOT_d					<= TC_TX_InsertEOT	WHEN rising_edge(Clock) AND (TC_TX_DataFlow = '1');
+		InsertEOT_d					<= ffdre(q => InsertEOT_d,     rst => Reset, en => TC_TX_DataFlow, d => TC_TX_InsertEOT) 	when rising_edge(Clock);
 		InsertEOT_re				<= TC_TX_InsertEOT	AND NOT InsertEOT_d;
-		InsertEOT_re_d			<= InsertEOT_re			WHEN rising_edge(Clock) AND (TC_TX_DataFlow = '1');
-		InsertEOT_re_d2			<= InsertEOT_re_d		WHEN rising_edge(Clock) AND (TC_TX_DataFlow = '1');
+		InsertEOT_re_d			<= ffdre(q => InsertEOT_re_d,  rst => Reset, en => TC_TX_DataFlow, d => InsertEOT_re) 		when rising_edge(Clock);
+		InsertEOT_re_d2			<= ffdre(q => InsertEOT_re_d2, rst => Reset, en => TC_TX_DataFlow, d => InsertEOT_re_d) 	when rising_edge(Clock);
 
 		TC_TX_Data					<= TX_FIFO_Data;
 		TC_TX_SOT						<= TX_FIFO_SOR			OR InsertEOT_re_d2;
@@ -574,7 +572,8 @@ BEGIN
 
     -- debug port of command fsm, for RX datapath see below
     DebugPortOut.CFSM <= CFSM_DebugPortOut;
-		
+
+		-- RX ----------------------------------------------------------------
     -- RX datapath to upper layer
     DebugPortOut.RX_Valid 			<= RX_FIFO_Valid;
     DebugPortOut.RX_Data  			<= RX_FIFO_DataOut(RX_Data'range);
@@ -598,6 +597,24 @@ BEGIN
     DebugPortOut.Trans_RX_SOT   <= Trans_RX_SOT;
     DebugPortOut.Trans_RX_EOT   <= Trans_RX_EOT;
     DebugPortOut.Trans_RX_Ack   <= Trans_RX_Ack_i;
+
+		-- TX ----------------------------------------------------------------
+    -- TX datapath to upper layer
+		DebugPortOut.TX_Valid 			<= TX_Valid;
+    DebugPortOut.TX_Data  			<= TX_Data;
+		DebugPortOut.TX_SOR 				<= TX_SOR;
+		DebugPortOut.TX_EOR 				<= TX_EOR;
+		DebugPortOut.TX_Ack 				<= not TX_FIFO_Full;
+
+		-- TX datapath of transport cutter
+		DebugPortOut.TC_TX_Valid			<= TC_TX_Valid;
+		DebugPortOut.TC_TX_Data				<= TC_TX_Data;
+		DebugPortOut.TC_TX_SOT				<= TC_TX_SOT;
+		DebugPortOut.TC_TX_EOT				<= TC_TX_EOT;
+		DebugPortOut.TC_TX_Ack				<= TC_TX_Ack;	
+		DebugPortOut.TC_TX_LastWord		<= TC_TX_LastWord;
+		DebugPortOut.TC_TX_InsertEOT	<= TC_TX_InsertEOT;
+
 	end generate;
 
 end;

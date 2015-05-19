@@ -141,8 +141,11 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 -- ==================================================================
 	-- my reset
 	signal MyReset 											: STD_LOGIC;
-	
-	-- transport layer interface
+
+	-- internal version of transport layer outputs
+	signal TX_InsertEOF_i 							: STD_LOGIC;
+		
+	-- transport layer interface below FIFO
 	SIGNAL Trans_TX_SOF									: STD_LOGIC;
 	SIGNAL Trans_TX_EOF									: STD_LOGIC;
 	SIGNAL Trans_TX_Abort								: STD_LOGIC;
@@ -429,7 +432,8 @@ begin
 			IEOFC_ov			<= Counter_us(Counter_us'high);
 		END BLOCK;	-- InsertEOFCounter
 
-		TX_InsertEOF		<= IEOFC_ov;
+		TX_InsertEOF_i		<= IEOFC_ov;
+		TX_InsertEOF 			<= TX_InsertEOF_i;
 	END BLOCK;	-- FrameCutter
 	
 	-- ==========================================================================
@@ -767,6 +771,7 @@ begin
 		DebugPortOut.TX_Ack											<= not TX_FIFO_Full;
 		DebugPortOut.TX_SOF											<= TX_SOF;
 		DebugPortOut.TX_EOF											<= TX_EOF;
+		DebugPortOut.TX_InsertEOF								<= TX_InsertEOF_i;
 		DebugPortOut.TX_FS_Valid								<= TX_FSFIFO_Valid;
 		DebugPortOut.TX_FS_Ack									<= not TX_FSFIFO_Full;
 		DebugPortOut.TX_FS_SendOK								<= TX_FSFIFO_DataIn(TX_SENDOK_BIT);
