@@ -405,34 +405,34 @@ begin
 		
 		SIGNAL IEOFC_Load										: STD_LOGIC;
 		SIGNAL IEOFC_inc										: STD_LOGIC;
-		SIGNAl IEOFC_ov											: STD_LOGIC;
+		SIGNAl IEOFC_uf											: STD_LOGIC;
 	BEGIN
 		FC_TX_DataFlow			<= TX_Valid AND NOT TX_FIFO_Full;
 
 		IEOFC_Load					<= TX_SOF;
-		IEOFC_inc						<= FC_TX_DataFlow AND NOT IEOFC_ov;
+		IEOFC_inc						<= FC_TX_DataFlow AND NOT IEOFC_uf;
 		
 		IEOFC : BLOCK	-- InsertEOFCounter
 			CONSTANT IEOF_COUNTER_START				: POSITIVE															:= (MAX_FRAME_SIZE_B / 4) - AHEAD_CYCLES_FOR_INSERT_EOF - 3;
 			CONSTANT IEOF_COUNTER_BITS				: POSITIVE															:= log2ceilnz(IEOF_COUNTER_START);
 			
-			SIGNAL Counter_us									: SIGNED(IEOF_COUNTER_BITS DOWNTO 0)		:= to_signed(IEOF_COUNTER_START, IEOF_COUNTER_BITS + 1);
+			SIGNAL Counter_s									: SIGNED(IEOF_COUNTER_BITS DOWNTO 0)		:= to_signed(IEOF_COUNTER_START, IEOF_COUNTER_BITS + 1);
 		BEGIN
 			PROCESS(Clock)
 			BEGIN
 				IF rising_edge(Clock) THEN
 					if ((MyReset = '1') or (IEOFC_Load = '1')) then
-						Counter_us			<=  to_signed(IEOF_COUNTER_START, IEOF_COUNTER_BITS + 1);
+						Counter_s			<=  to_signed(IEOF_COUNTER_START, IEOF_COUNTER_BITS + 1);
 					elsif (IEOFC_inc = '1') then
-						Counter_us			<= Counter_us - 1;
+						Counter_s			<= Counter_s - 1;
 					end if;
 				END IF;
 			END PROCESS;
 			
-			IEOFC_ov			<= Counter_us(Counter_us'high);
+			IEOFC_uf			<= Counter_s(Counter_s'high);
 		END BLOCK;	-- InsertEOFCounter
 
-		TX_InsertEOF_i		<= IEOFC_ov;
+		TX_InsertEOF_i		<= IEOFC_uf;
 		TX_InsertEOF 			<= TX_InsertEOF_i;
 	END BLOCK;	-- FrameCutter
 	

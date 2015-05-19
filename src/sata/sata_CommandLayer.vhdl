@@ -365,7 +365,7 @@ BEGIN
 		
 		SIGNAL IEOTC_Load										: STD_LOGIC;
 		SIGNAL IEOTC_inc										: STD_LOGIC;
-		SIGNAl IEOTC_ov											: STD_LOGIC;
+		SIGNAl IEOTC_uf											: STD_LOGIC;
 	BEGIN
 		-- enable TX data path
 		TC_TX_Valid					<= TX_FIFO_Valid		AND CFSM_TX_en;
@@ -383,7 +383,7 @@ BEGIN
 		TC_TX_EOT						<= TX_FIFO_EOR			OR InsertEOT_re_d;
 
 		IEOTC_Load					<= TC_TX_SOT				AND TC_TX_Valid;
-		IEOTC_inc						<= TC_TX_DataFlow		AND NOT IEOTC_ov;
+		IEOTC_inc						<= TC_TX_DataFlow		AND NOT IEOTC_uf;
 		
 		IEOTC : BLOCK	-- InsertEOTCounter
 			CONSTANT MAX_BLOCKCOUNT						: POSITIVE															:= ite(SIMULATION, C_SIM_MAX_BLOCKCOUNT, C_SATA_ATA_MAX_BLOCKCOUNT);
@@ -393,25 +393,25 @@ BEGIN
 			CONSTANT IEOT_COUNTER_START				: POSITIVE															:= (MIN_TRANSFER_SIZE_B / 4) - AHEAD_CYCLES_FOR_INSERT_EOT - 3;		-- FIXME: replace with dynamic calculation
 			CONSTANT IEOT_COUNTER_BITS				: POSITIVE															:= MAX_TRANSFER_SIZE_ldB - 2;
 			
-			SIGNAL Counter_us									: SIGNED(IEOT_COUNTER_BITS DOWNTO 0)			:= to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);
+			SIGNAL Counter_s									: SIGNED(IEOT_COUNTER_BITS DOWNTO 0)			:= to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);
 		BEGIN
 			PROCESS(Clock)
 			BEGIN
 				IF rising_edge(Clock) THEN
 					IF ((Reset = '1') OR (IEOTC_Load = '1')) THEN
-						Counter_us				<=  to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);		-- FIXME: replace with dynamic calculation
+						Counter_s				<=  to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);		-- FIXME: replace with dynamic calculation
 					ELSE
 						IF (IEOTC_inc = '1') THEN
-							Counter_us			<= Counter_us - 1;
+							Counter_s			<= Counter_s - 1;
 						END IF;
 					END IF;
 				END IF;
 			END PROCESS;
 			
-			IEOTC_ov					<= Counter_us(Counter_us'high);
+			IEOTC_uf					<= Counter_s(Counter_s'high);
 		END BLOCK;	-- InsertEOTCounter
 
-		TC_TX_InsertEOT			<= IEOTC_ov;
+		TC_TX_InsertEOT			<= IEOTC_uf;
 		
 		Trans_TX_Valid			<= TC_TX_Valid;
 		Trans_TX_Data				<= TC_TX_Data;

@@ -39,6 +39,7 @@ use			PoC.config.all;
 use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
+use			PoC.components.all;
 use			PoC.debug.all;
 use			PoC.sata.all;
 use			PoC.satadbg.all;
@@ -57,8 +58,6 @@ entity sata_LinkLayerFSM is
 
 		Status									: OUT	T_SATA_LINK_STATUS;
 		Error										: OUT	T_SATA_LINK_ERROR;
-			-- normal vs. dma modus
-			-- bad transition ??
 			
 		-- DebugPort
 		DebugPortOut						: out	T_SATADBG_LINK_LLFSM_OUT;
@@ -180,8 +179,6 @@ ARCHITECTURE rtl OF sata_LinkLayerFSM IS
 	SIGNAL IAC_Finished_d						: STD_LOGIC																	:= '0';
 	SIGNAL InsertALIGN							: STD_LOGIC;
 
-	SIGNAL RX_FIFO_rst_i						: STD_LOGIC;
-	
 	SIGNAL RX_IsSOF									: STD_LOGIC;
 	SIGNAL RX_IsEOF									: STD_LOGIC;
 	SIGNAL RX_IsData								: STD_LOGIC;
@@ -198,6 +195,9 @@ ARCHITECTURE rtl OF sata_LinkLayerFSM IS
 	SIGNAL RX_DataReg_en2_d					: STD_LOGIC																	:= '0';
 	SIGNAL RX_DataReg_Valid2				: STD_LOGIC																	:= '0';
 
+	signal RX_FIFO_put_i 						: STD_LOGIC;
+	signal RX_FIFO_Overflow_r 			: STD_LOGIC 																:= '0';
+	
 	SIGNAL RX_SOFReg_d1							: STD_LOGIC																	:= '0';
 	SIGNAL RX_SOFReg_d2							: STD_LOGIC																	:= '0';
 	
@@ -231,7 +231,7 @@ BEGIN
 
 
 	PROCESS(State, Phy_Status, RX_Primitive, Trans_TX_SOF, Trans_TX_EOF, TX_FIFO_Valid,
-					RX_FIFO_Full, RX_FIFO_SpaceAvailable, RX_FSFIFO_Full,
+					RX_FIFO_Overflow_r, RX_FIFO_SpaceAvailable, RX_FSFIFO_Full,
 					RX_SOF_r, RX_SOFReg_d1, RX_SOFReg_d2,
 					RX_CRC_OKReg_r, InsertALIGN)
 	BEGIN
@@ -265,7 +265,7 @@ BEGIN
 --		ScramblerMux_ctrl							<= '0';
 
 		-- RX FIFO interface
-		RX_FIFO_rst_i									<= '0';
+		RX_FIFO_rst										<= '0';
 		RX_IsData											<= '0';
 		RX_IsSOF											<= '0';
 		RX_IsEOF											<= '0';
@@ -300,7 +300,7 @@ BEGIN
 					TX_Primitive									<= SATA_PRIMITIVE_ALIGN;
 					TX_FIFO_rst										<= '1';
 					TX_FSFIFO_rst									<= '1';
-					RX_FIFO_rst_i									<= '1';
+					RX_FIFO_rst										<= '1';
 					RX_FSFIFO_rst									<= '1';
 					NextState											<= ST_NO_COMMUNICATION;
 			
@@ -325,37 +325,15 @@ BEGIN
 					
 					IF (InsertALIGN = '1') THEN
 						TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
-					
-						if (RX_Primitive = SATA_PRIMITIVE_TX_RDY) then								-- transmission attempt received
-							IF (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_HOST) THEN						-- 
-								IF (RX_FIFO_SpaceAvailable = '1') THEN										-- RX FIFO has space => send RX_RDY
-									NextState							<= ST_RX_SEND_RX_RDY;
-								ELSE																											-- RX FIFO has no space => wait for space
-									NextState							<= ST_RX_WAIT_FIFO;
-								END IF;
-							ELSIF (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_DEVICE) THEN			--
-								IF ((Trans_TX_SOF = '1') AND (TX_FIFO_Valid = '1')) THEN	-- start own transmission attempt?
-									NextState							<= ST_TX_SEND_TX_RDY;
-								ELSE
-									IF (RX_FIFO_SpaceAvailable = '1') THEN									-- RX FIFO has space => send RX_RDY
-										NextState						<= ST_RX_SEND_RX_RDY;
-									ELSE																										-- RX FIFO has no space => wait for space
-										NextState						<= ST_RX_WAIT_FIFO;
-									END IF;
-								END IF;
-							END IF;
-						else
-							IF ((Trans_TX_SOF = '1') AND (TX_FIFO_Valid = '1')) THEN
-								NextState							<= ST_TX_SEND_TX_RDY;
-							END IF;
-						END IF;
+						
+						-- All cases are handled after InsertAlign is '0' again.
 
 					ELSE	-- InsertALIGN
 						TX_Primitive								<= SATA_PRIMITIVE_SYNC;
 					
 						if (RX_Primitive = SATA_PRIMITIVE_TX_RDY) then								-- transmission attempt received
 							IF (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_HOST) THEN						-- 
-								IF (RX_FIFO_SpaceAvailable = '1') THEN										-- RX FIFO has space => send RX_RDY
+								IF (RX_FIFO_SpaceAvailable = '1') and (RX_FSFIFO_Full = '0') THEN		-- RX FIFOs have space => send RX_RDY
 									TX_Primitive					<= SATA_PRIMITIVE_RX_RDY;
 									NextState							<= ST_RX_SEND_RX_RDY;
 								ELSE																											-- RX FIFO has no space => wait for space
@@ -367,7 +345,7 @@ BEGIN
 									TX_Primitive					<= SATA_PRIMITIVE_TX_RDY;
 									NextState							<= ST_TX_SEND_TX_RDY;
 								ELSE
-									IF (RX_FIFO_SpaceAvailable = '1') THEN									-- RX FIFO has space => send RX_RDY
+									IF (RX_FIFO_SpaceAvailable = '1') and (RX_FSFIFO_Full = '0') THEN	-- RX FIFOs have space => send RX_RDY
 										TX_Primitive				<= SATA_PRIMITIVE_RX_RDY;
 										NextState						<= ST_RX_SEND_RX_RDY;
 									ELSE																										-- RX FIFO has no space => wait for space
@@ -665,7 +643,7 @@ BEGIN
 						TX_Primitive								<= SATA_PRIMITIVE_SYNC;
 						
 						IF (RX_Primitive = SATA_PRIMITIVE_TX_RDY) THEN
-							IF (RX_FIFO_SpaceAvailable = '1') THEN
+							IF (RX_FIFO_SpaceAvailable = '1') and (RX_FSFIFO_Full = '0') THEN
 								TX_Primitive						<= SATA_PRIMITIVE_RX_RDY;
 								NextState								<= ST_RX_SEND_RX_RDY;
 							END IF;
@@ -734,7 +712,7 @@ BEGIN
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
 							RX_IsEOF 									<= '1';
 							RX_FSFIFO_put							<= '1';
-							IF (RX_CRC_OKReg_r = '1') THEN
+							IF (RX_CRC_OKReg_r = '1') and (RX_FIFO_Overflow_r = '0') THEN
 								Trans_RXFS_CRCOK				<= '1';
 								NextState								<= ST_RX_SEND_R_OK;
 							ELSE
@@ -763,7 +741,7 @@ BEGIN
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
 							RX_IsEOF 									<= '1';
 							RX_FSFIFO_put							<= '1';
-							IF (RX_CRC_OKReg_r = '1') THEN
+							IF (RX_CRC_OKReg_r = '1') and (RX_FIFO_Overflow_r = '0') THEN
 								TX_Primitive						<= SATA_PRIMITIVE_R_OK;
 								Trans_RXFS_CRCOK				<= '1';
 								NextState								<= ST_RX_SEND_R_OK;
@@ -799,7 +777,7 @@ BEGIN
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
 							RX_IsEOF 									<= '1';
 							RX_FSFIFO_put							<= '1';
-							IF (RX_CRC_OKReg_r = '1') THEN
+							IF (RX_CRC_OKReg_r = '1') and (RX_FIFO_Overflow_r = '0') THEN
 								Trans_RXFS_CRCOK				<= '1';
 								NextState								<= ST_RX_SEND_R_OK;
 							ELSE
@@ -829,7 +807,7 @@ BEGIN
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
 							RX_IsEOF 									<= '1';
 							RX_FSFIFO_put							<= '1';
-							IF (RX_CRC_OKReg_r = '1') THEN
+							IF (RX_CRC_OKReg_r = '1') and (RX_FIFO_Overflow_r = '0') THEN
 								TX_Primitive						<= SATA_PRIMITIVE_R_OK;
 								Trans_RXFS_CRCOK				<= '1';
 								NextState								<= ST_RX_SEND_R_OK;
@@ -864,7 +842,7 @@ BEGIN
 						elsif (RX_Primitive = SATA_PRIMITIVE_EOF) then
 							RX_IsEOF 									<= '1';
 							RX_FSFIFO_put							<= '1';
-							IF (RX_CRC_OKReg_r = '1') THEN
+							IF (RX_CRC_OKReg_r = '1') and (RX_FIFO_Overflow_r = '0') THEN
 								Trans_RXFS_CRCOK				<= '1';
 								NextState								<= ST_RX_SEND_R_OK;
 							ELSE
@@ -888,7 +866,7 @@ BEGIN
 						elsif (RX_Primitive = SATA_PRIMITIVE_EOF) then
 							RX_IsEOF 									<= '1';
 							RX_FSFIFO_put							<= '1';
-							IF (RX_CRC_OKReg_r = '1') THEN
+							IF (RX_CRC_OKReg_r = '1') and (RX_FIFO_Overflow_r = '0') THEN
 								TX_Primitive						<= SATA_PRIMITIVE_R_OK;
 								Trans_RXFS_CRCOK				<= '1';
 								NextState								<= ST_RX_SEND_R_OK;
@@ -945,18 +923,17 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-	RX_FIFO_rst <= RX_FIFO_rst_i;
-	
 -- ==================================================================
 -- Flag registers
 -- ==================================================================
 	-- register for SOF
 	-- -----------------------------
 	-- update register if SOF is received, reset if DATA occurs
+	-- reset when back in IDLE to allow error processing
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			if (RX_FIFO_rst_i = '1') then
+			if (State = ST_IDLE) then
 				RX_SOF_r <= '0';
 			elsif (RX_IsSOF = '1') THEN
 				RX_SOF_r		<= '1';
@@ -972,16 +949,14 @@ BEGIN
 	RX_CRC_OKReg_set	<= RX_IsData	AND RX_CRC_OK;
 	RX_CRC_OKReg_rst	<= to_sl(RX_Primitive = SATA_PRIMITIVE_SYNC) OR (NOT RX_CRC_OK AND RX_IsData);
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (RX_CRC_OKReg_set = '1') THEN
-				RX_CRC_OKReg_r			<= '1';
-			ELSIF (RX_CRC_OKReg_rst = '1') THEN
-				RX_CRC_OKReg_r			<= '0';
-			END IF;
-		END IF;
-	END PROCESS;
+	RX_CRC_OKReg_r 		<= ffsr(q => RX_CRC_OKReg_r, set => RX_CRC_OKReg_set, rst => RX_CRC_OKReg_rst) when rising_edge(Clock);
+	
+	-- register for RX_FIFO overflow
+	-- -----------------------------
+	-- If other side continous sending data even if we send HOLD, then the
+	-- RX_FIFO might overflow.
+	-- Reset flag when back in IDLE to allow error processing.
+	RX_FIFO_Overflow_r <= ffrs(q => RX_FIFO_Overflow_r, rst => to_sl(State = ST_IDLE), set => RX_FIFO_put_i and RX_FIFO_Full) when rising_edge(Clock); 
 	
 -- ==================================================================
 -- insert align counter
@@ -1029,52 +1004,28 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			if (RX_FIFO_rst_i = '1') then
-				RX_SOFReg_d1 <= '0';
-			elsif (RX_DataReg_en1_i = '1') THEN
-				RX_SOFReg_d1		<= RX_SOF_r;
-			END IF;
-		END IF;
-	END PROCESS;
-
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			if (RX_FIFO_rst_i = '1') then
-				RX_SOFReg_d2 <= '0';
-			elsif	(RX_DataReg_en2_i = '1') THEN
-				RX_SOFReg_d2		<= RX_SOFReg_d1;
-			END IF;
-		END IF;
-	END PROCESS;
-
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (RX_IsSOF = '1') THEN
-				RX_DataReg_Valid1			<= '0';
-			ELSE
-				IF (RX_DataReg_en1_i = '1') THEN
-					RX_DataReg_Valid1		<= RX_IsData;
-				END IF;
+			-- reset when back in IDLE to allow error processing
+			if (State = ST_IDLE) then
+				RX_SOFReg_d1 			<= '0';
+				RX_SOFReg_d2 			<= '0';
+				RX_DataReg_Valid1	<= '0';
+				RX_DataReg_Valid2	<= '0';
+			else
+				if (RX_DataReg_en1_i = '1') then
+					RX_SOFReg_d1			<= RX_SOF_r;
+					RX_DataReg_Valid1	<= RX_IsData;
+				end if;
+				
+				if	(RX_DataReg_en2_i = '1') then
+					RX_SOFReg_d2			<= RX_SOFReg_d1;
+					RX_DataReg_Valid2	<= RX_DataReg_Valid1;
+				end if;
 			END IF;
 		END IF;
 	END PROCESS;
 	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (RX_IsSOF = '1') THEN
-				RX_DataReg_Valid2			<= '0';
-			ELSE
-				IF (RX_DataReg_en2_i = '1') THEN
-					RX_DataReg_Valid2		<= RX_DataReg_Valid1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
-
-	RX_FIFO_put				<= ((RX_DataReg_en2_d AND RX_IsData) OR (RX_IsData_re AND NOT RX_SOF_r) OR RX_IsEOF) AND RX_DataReg_Valid2;
+	RX_FIFO_put_i			<= ((RX_DataReg_en2_d AND RX_IsData) OR (RX_IsData_re AND NOT RX_SOF_r) OR RX_IsEOF) AND RX_DataReg_Valid2;
+	RX_FIFO_put 			<= RX_FIFO_put_i;
 	
 	Trans_RX_SOF			<= RX_SOFReg_d2;
 	Trans_RX_EOF			<= RX_IsEOF;
