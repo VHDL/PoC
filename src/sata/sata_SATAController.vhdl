@@ -3,13 +3,11 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Module:					sata_SATAController
---
--- Package:					sata
---
 -- Authors:					Patrick Lehmann
 --									Steffen Koehler
 --									Martin Zabel
+--
+-- Module:					SATA Controller (Physical and Link Layer)
 --
 -- Description:
 -- ------------------------------------
@@ -40,6 +38,10 @@
 -- ClockNetwork_ResetDone is asserted asynchronously when all internal clock
 -- networks are stable. This signal can be used for debugging or if another
 -- PLL/DLL is connected to SATA_Clock.
+--
+-- Command:
+-- -------
+-- Commands are only accepted when PHY_STATUS is COMMUNICATING or ERROR.
 --
 -- License:
 -- =============================================================================
@@ -300,8 +302,6 @@ BEGIN
 
 		-- =======================================================================
 		-- Command decoding for SATAController.
-		-- 
-		-- TODO CHECK: PhysicalLayer accepts commands only in same states.
 		-- =======================================================================
 		PROCESS(Command, Trans_Status, Reset)
 		BEGIN

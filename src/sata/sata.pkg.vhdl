@@ -6,7 +6,7 @@
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Package:					TODO
+-- Package:					SATA Types and Functions
 --
 -- Description:
 -- ------------------------------------

@@ -6,7 +6,7 @@
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Package:					TODO
+-- Module:					FSM for SATA Command Layer
 --
 -- Description:
 -- ------------------------------------

@@ -4,8 +4,9 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
 --
--- Package:					TODO
+-- Module:					SATA Link Layer
 --
 -- Description:
 -- ------------------------------------
@@ -232,7 +233,7 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	SIGNAL DataScrambler_DataIn				: T_SLV_32;
 	SIGNAL DataScrambler_DataOut			: T_SLV_32;
 	
-	-- TODO: 
+	-- TODO: To be implemeted to reduce EMI.
 --	SIGNAL DummyScrambler_en					: STD_LOGIC;
 --	SIGNAL DummyScrambler_rst					: STD_LOGIC;
 --	SIGNAL DummyScrambler_DataIn			: T_SLV_32;
@@ -291,14 +292,14 @@ begin
 			-- transport layer interface
 			Trans_TX_SOF						=> Trans_TX_SOF,
 			Trans_TX_EOF						=> Trans_TX_EOF,
-			--TODO: Trans_TX_Abort					=> Trans_TX_Abort,
+			--TODO: Trans_TX_Abort					=> Trans_TX_Abort, -- see FSM
 
 			Trans_TXFS_SendOK				=> Trans_TXFS_SendOK,
 			Trans_TXFS_Abort				=> Trans_TXFS_Abort,
 
 			Trans_RX_SOF						=> Trans_RX_SOF,
 			Trans_RX_EOF						=> Trans_RX_EOF,
-			--TODO: Trans_RX_Abort					=> Trans_RX_Abort,
+			--TODO: Trans_RX_Abort					=> Trans_RX_Abort, -- see FSM
 
 			Trans_RXFS_CRCOK				=> Trans_RXFS_CRCOK,
 			Trans_RXFS_SyncEsc			=> Trans_RXFS_SyncEsc,
@@ -588,7 +589,6 @@ begin
 			DataOut				=> RX_CRC_DataOut
 		);
 	
-	-- TODO: calculate signal
 	RX_CRC_OK <= to_sl(RX_CRC_DataOut = DataUnscrambler_DataOut);
 	
 	
@@ -610,7 +610,7 @@ begin
 			DataOut									=> DataScrambler_DataOut
 		);
 
-  --TODO:
+  --TODO: To be implemented to reduce EMI.
 --  DummyScrambler_DataIn <= (others => '0');
 	
 --	DummyScrambler : ENTITY PoC.sata_Scrambler

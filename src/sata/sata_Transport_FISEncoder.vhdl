@@ -374,7 +374,7 @@ BEGIN
 				variable  l : STD.TextIO.line;
 			begin
 				for i in T_SATA_FISENCODER_STATUS loop
-					STD.TextIO.write(l, str_replace(T_SATA_FISENCODER_STATUS'image(i), "sata_fisencoder_status_", ""));
+					STD.TextIO.write(l, str_replace(T_SATA_FISENCODER_STATUS'image(i), "sata_fise_status_", ""));
 					STD.TextIO.write(l, ';');
 				end loop;
 				return  l.all;

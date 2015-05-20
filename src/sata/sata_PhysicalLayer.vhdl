@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					sata
---
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
+--
+-- Module:					SATA Physical Layer
 --
 -- Description:
 -- ------------------------------------

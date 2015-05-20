@@ -4,8 +4,9 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
 --
--- Package:					TODO
+-- Package:					SATA Debug Types and Functions
 --
 -- Description:
 -- ------------------------------------

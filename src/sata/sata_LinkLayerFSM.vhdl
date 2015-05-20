@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
+--
+-- Module:					FSM for SATA Link Layer
 --
 -- Description:
 -- ------------------------------------
@@ -65,14 +65,14 @@ entity sata_LinkLayerFSM is
 		-- transport layer interface
 		Trans_TX_SOF						: IN	STD_LOGIC;
 		Trans_TX_EOF						: IN	STD_LOGIC;
-		--TODO: Trans_TX_Abort					: IN	STD_LOGIC;
+		--TODO: Trans_TX_Abort					: IN	STD_LOGIC; -- SyncEscape from Transport Layer
 
 		Trans_TXFS_SendOK				: OUT	STD_LOGIC;
 		Trans_TXFS_Abort				: OUT	STD_LOGIC;
 
 		Trans_RX_SOF						: OUT	STD_LOGIC;
 		Trans_RX_EOF						: OUT	STD_LOGIC;
-		--TODO: Trans_RX_Abort					: IN	STD_LOGIC;
+		--TODO: Trans_RX_Abort					: IN	STD_LOGIC; -- SyncEscape from Transport Layer
 		
 		Trans_RXFS_CRCOK				: OUT	STD_LOGIC;
 		Trans_RXFS_SyncEsc			: OUT	STD_LOGIC;
@@ -205,9 +205,6 @@ BEGIN
 
 -- ==================================================================
 -- LinkLayer - Status
---
--- TODO: Wishlist
---   Replace Frame-State FIFO by Status/Error reporting.
 -- ==================================================================
 	Error		<= SATA_LINK_ERROR_NONE;
 	
