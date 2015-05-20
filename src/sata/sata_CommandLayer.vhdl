@@ -47,9 +47,12 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
+use 		PoC.config.all;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+use			PoC.strings.all;
 use			PoC.components.all;
+use 		PoC.debug.all;
 USE			PoC.sata.ALL;
 USE			PoC.satadbg.ALL;
 
@@ -510,6 +513,45 @@ BEGIN
   -- ==========================================================================================================================================================
   genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
   begin
+		genXilinx : if (VENDOR = VENDOR_XILINX) generate
+			function dbg_generateCommandEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_CMD_COMMAND loop
+					STD.TextIO.write(l, str_replace(T_SATA_CMD_COMMAND'image(i), "sata_cmd_cmd", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			function dbg_generateStatusEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_CMD_STATUS loop
+					STD.TextIO.write(l, str_replace(T_SATA_CMD_STATUS'image(i), "sata_cmd_status_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			function dbg_generateErrorEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_CMD_ERROR loop
+					STD.TextIO.write(l, str_replace(T_SATA_CMD_ERROR'image(i), "sata_cmd_error_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+		
+			constant dummy : T_BOOLVEC := (
+				0 => dbg_ExportEncoding("Command Layer - Command Enum",	dbg_generateCommandEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Cmd_Command.tok"),
+				1 => dbg_ExportEncoding("Command Layer - Status Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Cmd_Status.tok"),
+				2 => dbg_ExportEncoding("Command Layer - Error Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Cmd_Error.tok")
+			);
+		begin
+		end generate;
+	
     DebugPortOut.Command         		 <= Command;
     DebugPortOut.Status          		 <= Status_i;
     DebugPortOut.Error           		 <= Error_i;

@@ -128,7 +128,7 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 	
 	SIGNAL State													: T_STATE													:= ST_RESET;
 	SIGNAL NextState											: T_STATE;
-	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS getFSMEncoding_gray(DEBUG);
 	
 BEGIN
 
@@ -360,7 +360,7 @@ BEGIN
 		
 	begin
 		genXilinx : if (VENDOR = VENDOR_XILINX) generate
-			function dbg_GenerateEncodings return string is
+			function dbg_GenerateStateEncodings return string is
 				variable  l : STD.TextIO.line;
 			begin
 				for i in T_STATE loop
@@ -370,7 +370,20 @@ BEGIN
 				return  l.all;
 			end function;
 			
-			constant dummy : boolean := dbg_ExportEncoding("Transport Layer - FIS-Encoder", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_TransLayer_FISE.tok");
+			function dbg_generateStatusEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_FISENCODER_STATUS loop
+					STD.TextIO.write(l, str_replace(T_SATA_FISENCODER_STATUS'image(i), "sata_fisencoder_status_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			constant dummy : T_BOOLVEC := (
+				0 => dbg_ExportEncoding("Transport Layer FIS-Encoder - FSM", dbg_GenerateStateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_TransLayer_FISE.tok"),
+				1 => dbg_ExportEncoding("Transport Layer FIS-Encoder - Status", dbg_GenerateStatusEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Trans_FISE_Status.tok")
+			);
 		begin
 		end generate;
 		

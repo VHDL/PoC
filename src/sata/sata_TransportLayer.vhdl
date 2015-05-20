@@ -49,10 +49,12 @@ use			IEEE.STD_LOGIC_1164.all;
 use			IEEE.NUMERIC_STD.all;
 
 library PoC;
+use 		PoC.config.all;
 use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
 use 		PoC.components.all;
+use 		PoC.debug.all;
 use			PoC.sata.all;
 use			PoC.satadbg.all;
 
@@ -495,6 +497,45 @@ begin
 	-- debug ports
 	-- ==========================================================================================================================================================
 	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
+		genXilinx : if (VENDOR = VENDOR_XILINX) generate
+			function dbg_generateCommandEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_TRANS_COMMAND loop
+					STD.TextIO.write(l, str_replace(T_SATA_TRANS_COMMAND'image(i), "sata_trans_cmd", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			function dbg_generateStatusEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_TRANS_STATUS loop
+					STD.TextIO.write(l, str_replace(T_SATA_TRANS_STATUS'image(i), "sata_trans_status_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			function dbg_generateErrorEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_TRANS_ERROR loop
+					STD.TextIO.write(l, str_replace(T_SATA_TRANS_ERROR'image(i), "sata_trans_error_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+		
+			constant dummy : T_BOOLVEC := (
+				0 => dbg_ExportEncoding("Trans Layer - Command Enum",	dbg_generateCommandEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Trans_Command.tok"),
+				1 => dbg_ExportEncoding("Trans Layer - Status Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Trans_Status.tok"),
+				2 => dbg_ExportEncoding("Trans Layer - Error Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Trans_Error.tok")
+			);
+		begin
+		end generate;
+	
 		DebugPortOut.TFSM												<= TFSM_DebugPortOut;
 		DebugPortOut.FISE												<= FISE_DebugPortOut;
 		DebugPortOut.FISD												<= FISD_DebugPortOut;

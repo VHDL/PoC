@@ -150,7 +150,7 @@ package sata is
 	TYPE T_SATA_PHY_STATUS_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_PHY_STATUS;
 	TYPE T_SATA_PHY_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_PHY_ERROR;
 
-	function to_slv(Status : T_SATA_PHY_COMMAND)				return STD_LOGIC_VECTOR;
+	function to_slv(Command : T_SATA_PHY_COMMAND)			return STD_LOGIC_VECTOR;
 	function to_slv(Status : T_SATA_PHY_STATUS)				return STD_LOGIC_VECTOR;
 	function to_slv(Error : T_SATA_PHY_ERROR)					return STD_LOGIC_VECTOR;
 

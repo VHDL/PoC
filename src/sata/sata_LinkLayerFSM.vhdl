@@ -170,8 +170,7 @@ ARCHITECTURE rtl OF sata_LinkLayerFSM IS
 	SIGNAL State										: T_STATE																		:= ST_RESET;
 	SIGNAL NextState								: T_STATE;
 	
-	ATTRIBUTE FSM_ENCODING	OF State		: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
-
+	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS getFSMEncoding_gray(DEBUG);
 
 	CONSTANT INSERT_ALIGN_COUNTER_BITS	: POSITIVE																:= log2ceilnz(INSERT_ALIGN_INTERVAL);
 
@@ -229,8 +228,7 @@ BEGIN
 
 	PROCESS(State, Phy_Status, RX_Primitive, Trans_TX_SOF, Trans_TX_EOF, TX_FIFO_Valid,
 					RX_FIFO_Overflow_r, RX_FIFO_SpaceAvailable, RX_FSFIFO_Full,
-					RX_SOF_r, RX_SOFReg_d1, RX_SOFReg_d2,
-					RX_CRC_OKReg_r, InsertALIGN)
+					RX_DataReg_Valid2, RX_CRC_OKReg_r, InsertALIGN)
 	BEGIN
 		NextState											<= State;
 		Status 												<= SATA_LINK_STATUS_IDLE;
