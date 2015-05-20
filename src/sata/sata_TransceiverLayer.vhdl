@@ -6,8 +6,9 @@
 -- Authors:					Patrick Lehmann
 --									Thomas Frank
 --									Steffen Koehler
+--									Martin Zabel
 --
--- Package:					TODO
+-- Module: 					Wrapper for Device-Specific Transceivers
 --
 -- Description:
 -- ------------------------------------

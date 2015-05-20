@@ -6,7 +6,7 @@
 -- Authors:					Patrick Lehmann
 --									Martin Zabel
 --
--- Package:					TODO
+-- Module: 					SATA Transport Layer
 --
 -- Description:
 -- ------------------------------------
@@ -216,7 +216,6 @@ begin
 			ATADeviceRegisters								=> ATADeviceRegisters_i,
 			
 			TX_en															=> TFSM_TX_en,
-			--TODO: TX_LastWord												=> TC_TX_LastWord,
 			TX_SOT														=> TX_SOT,
 			TX_EOT														=> TX_EOT,
 			

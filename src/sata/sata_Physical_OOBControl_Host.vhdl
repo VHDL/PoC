@@ -6,7 +6,7 @@
 -- Authors:					Patrick Lehmann
 --									Martin Zabel
 --
--- Package:					TODO
+-- Module:					OOB Sequencer for SATA Physical Layer - Host Side
 --
 -- Description:
 -- ------------------------------------
@@ -199,7 +199,7 @@ begin
 	begin
 		NextState									<= State;
 		
-		TX_Primitive							<= SATA_PRIMITIVE_ALIGN;			-- TODO: check if it's better to send ALIGN or DIAL_TONE
+		TX_Primitive							<= SATA_PRIMITIVE_ALIGN;
 	
 		AlignCounter_rst					<= '0';
 		AlignCounter_en						<= '0';

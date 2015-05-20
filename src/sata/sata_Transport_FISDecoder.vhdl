@@ -6,7 +6,7 @@
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Package:					TODO
+-- Module:					FIS Decoder for SATA Transport Layer
 --
 -- Description:
 -- ------------------------------------

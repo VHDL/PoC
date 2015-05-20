@@ -3,13 +3,17 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					sata
---
 -- Authors:					Patrick Lehmann
+--									Martin Zabel
+--
+-- Module:					OOB Sequencer for SATA Physical Layer - Device Side
 --
 -- Description:
 -- ------------------------------------
--- TODO: Implementation of instable clock!
+-- Executes the COMRESET / COMINIT procedure.
+--
+-- If the clock is unstable, than Reset must be asserted.
+-- Automatically tries to establish a communication when Reset is deasserted.
 -- 
 -- License:
 -- =============================================================================
