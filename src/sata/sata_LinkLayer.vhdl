@@ -206,8 +206,7 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	SIGNAL RX_FSFIFO_DataOut					: STD_LOGIC_VECTOR(RX_FSFIFO_BITS - 1 DOWNTO 0);
 
 	-- RX FIFO input/hold registers
-	SIGNAL RX_DataReg_en1							: STD_LOGIC;
-	SIGNAL RX_DataReg_en2							: STD_LOGIC;
+	SIGNAL RX_DataReg_shift						: STD_LOGIC;
 	SIGNAL RX_DataReg_DataIn					: T_SLV_32;
 	SIGNAL RX_DataReg_d								: T_SLV_32													:= (OTHERS => '0');
 	SIGNAL RX_DataReg_d2							: T_SLV_32													:= (OTHERS => '0');
@@ -326,8 +325,7 @@ begin
 			RX_FIFO_SpaceAvailable	=> RX_FIFO_SpaceAvailable,		-- lack of space 
 
 			-- RX FIFO input/hold register interface
-			RX_DataReg_en1					=> RX_DataReg_en1,
-			RX_DataReg_en2					=> RX_DataReg_en2,
+			RX_DataReg_shift				=> RX_DataReg_shift,
 
 			-- RX_FSFIFO interface
 			RX_FSFIFO_rst						=> RX_FSFIFO_rst,
@@ -523,8 +521,8 @@ begin
 	RX_FIFO_SpaceAvailable <= to_sl(RX_FIFO_EmptyState /= (RX_FIFO_EmptyState'range => '0'));
 	
 	RX_DataReg_DataIn		<= DataUnscrambler_DataOut;
-	RX_DataReg_d				<= RX_DataReg_DataIn	WHEN (rising_edge(Clock) AND (RX_DataReg_en1 = '1'));
-	RX_DataReg_d2				<= RX_DataReg_d				WHEN (rising_edge(Clock) AND (RX_DataReg_en2 = '1'));
+	RX_DataReg_d				<= RX_DataReg_DataIn	WHEN (rising_edge(Clock) AND (RX_DataReg_shift = '1'));
+	RX_DataReg_d2				<= RX_DataReg_d				WHEN (rising_edge(Clock) AND (RX_DataReg_shift = '1'));
 	RX_DataReg_DataOut	<= RX_DataReg_d2;
 
 	-- RX frame status path
@@ -746,8 +744,7 @@ begin
 		DebugPortOut.RX_CRC_rst									<= RX_CRC_rst;
 		DebugPortOut.RX_CRC_en									<= RX_CRC_Valid;
 		-- RX: DataRegisters
-		DebugPortOut.RX_DataReg_en1							<= RX_DataReg_en1;
-		DebugPortOut.RX_DataReg_en2							<= RX_DataReg_en2;
+		DebugPortOut.RX_DataReg_shift						<= RX_DataReg_shift;
 		-- RX: before RX_FIFO
 		DebugPortOut.RX_FIFO_SpaceAvailable			<= RX_FIFO_SpaceAvailable;
 		DebugPortOut.RX_FIFO_rst								<= RX_FIFO_rst;

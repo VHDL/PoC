@@ -100,8 +100,7 @@ entity sata_LinkLayerFSM is
 		RX_FIFO_SpaceAvailable	: IN	STD_LOGIC;
 		
 		-- RX FIFO input/hold register interface
-		RX_DataReg_en1					: OUT	STD_LOGIC;
-		RX_DataReg_en2					: OUT	STD_LOGIC;
+		RX_DataReg_shift				: out	STD_LOGIC;
 
 		-- RX_FSFIFO interface
 		RX_FSFIFO_rst						: OUT	STD_LOGIC;
@@ -187,12 +186,7 @@ ARCHITECTURE rtl OF sata_LinkLayerFSM IS
 
 	SIGNAL RX_SOF_r									: STD_LOGIC																	:= '0';
 
-	SIGNAL RX_DataReg_en1_i					: STD_LOGIC;
-	SIGNAL RX_DataReg_en1_d					: STD_LOGIC																	:= '0';
 	SIGNAL RX_DataReg_Valid1				: STD_LOGIC																	:= '0';
-	
-	SIGNAL RX_DataReg_en2_i					: STD_LOGIC;
-	SIGNAL RX_DataReg_en2_d					: STD_LOGIC																	:= '0';
 	SIGNAL RX_DataReg_Valid2				: STD_LOGIC																	:= '0';
 
 	signal RX_FIFO_put_i 						: STD_LOGIC;
@@ -989,17 +983,7 @@ BEGIN
 -- ==================================================================
 -- delay for FIFO inputs
 -- ==================================================================
-	RX_IsData_d				<= RX_IsData WHEN rising_edge(Clock);
-	RX_IsData_re			<= NOT RX_IsData_d AND RX_IsData;
-	
-	RX_DataReg_en1_i	<= RX_IsData;
-	RX_DataReg_en2_i	<= (RX_DataReg_en1_d AND RX_IsData) OR (RX_IsData_re AND NOT RX_SOF_r);
-
-	RX_DataReg_en1		<= RX_DataReg_en1_i;
-	RX_DataReg_en2		<= RX_DataReg_en2_i;
-
-	RX_DataReg_en1_d	<= RX_DataReg_en1_i WHEN rising_edge(Clock);
-	RX_DataReg_en2_d	<= RX_DataReg_en2_i WHEN rising_edge(Clock);
+	RX_DataReg_shift <= RX_IsData;
 
 	PROCESS(Clock)
 	BEGIN
@@ -1010,21 +994,16 @@ BEGIN
 				RX_SOFReg_d2 			<= '0';
 				RX_DataReg_Valid1	<= '0';
 				RX_DataReg_Valid2	<= '0';
-			else
-				if (RX_DataReg_en1_i = '1') then
-					RX_SOFReg_d1			<= RX_SOF_r;
-					RX_DataReg_Valid1	<= RX_IsData;
-				end if;
-				
-				if	(RX_DataReg_en2_i = '1') then
-					RX_SOFReg_d2			<= RX_SOFReg_d1;
-					RX_DataReg_Valid2	<= RX_DataReg_Valid1;
-				end if;
+			elsif (RX_IsData = '1') then
+				RX_SOFReg_d1			<= RX_SOF_r;
+				RX_SOFReg_d2			<= RX_SOFReg_d1;
+				RX_DataReg_Valid1	<= '1';
+				RX_DataReg_Valid2	<= RX_DataReg_Valid1;
 			END IF;
 		END IF;
 	END PROCESS;
 	
-	RX_FIFO_put_i			<= ((RX_DataReg_en2_d AND RX_IsData) OR (RX_IsData_re AND NOT RX_SOF_r) OR RX_IsEOF) AND RX_DataReg_Valid2;
+	RX_FIFO_put_i			<= (RX_IsData OR RX_IsEOF) AND RX_DataReg_Valid2;
 	RX_FIFO_put 			<= RX_FIFO_put_i;
 	
 	Trans_RX_SOF			<= RX_SOFReg_d2;

@@ -138,8 +138,6 @@ package satadbg is
 		OOB_TX_Complete						: STD_LOGIC;
 		OOB_RX_Received						: T_SATA_OOB;
 		OOB_HandshakeComplete			: STD_LOGIC;
-		
-		AlignDetected							: STD_LOGIC;
 	end record;
 	
 	type T_SATADBG_PHYSICAL_PFSM_OUT is record
@@ -195,8 +193,7 @@ package satadbg is
 		RX_CRC_rst									: STD_LOGIC;
 		RX_CRC_en										: STD_LOGIC;
 		-- RX: DataRegisters
-		RX_DataReg_en1							: STD_LOGIC;
-		RX_DataReg_en2							: STD_LOGIC;
+		RX_DataReg_shift						: STD_LOGIC;
 		-- RX: before RX_FIFO
 		RX_FIFO_SpaceAvailable			: STD_LOGIC;
 		RX_FIFO_rst									: STD_LOGIC;
