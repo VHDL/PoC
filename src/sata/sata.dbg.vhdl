@@ -198,6 +198,8 @@ package satadbg is
 		RX_FIFO_SpaceAvailable			: STD_LOGIC;
 		RX_FIFO_rst									: STD_LOGIC;
 		RX_FIFO_put									: STD_LOGIC;
+		RX_FIFO_commit							: STD_LOGIC;
+		RX_FIFO_rollback						: STD_LOGIC;
 		RX_FSFIFO_rst								: STD_LOGIC;
 		RX_FSFIFO_put								: STD_LOGIC;
 		-- RX: after RX_FIFO
@@ -209,7 +211,7 @@ package satadbg is
 		RX_FS_Valid									: STD_LOGIC;
 		RX_FS_Ack										: STD_LOGIC;
 		RX_FS_CRCOK									: STD_LOGIC;
-		RX_FS_Abort									: STD_LOGIC;
+		RX_FS_SyncEsc								: STD_LOGIC;
 		--																													=> 125 bit
 		-- TX: from Link Layer
 		TX_Data											: T_SLV_32;
@@ -290,7 +292,6 @@ package satadbg is
     IDF_Enable           : STD_LOGIC;
     IDF_Error            : STD_LOGIC;
     IDF_Finished         : STD_LOGIC;
-    IDF_CRC_OK           : STD_LOGIC;
     IDF_DriveInformation : T_SATA_DRIVE_INFORMATION;
     CFSM                 : T_SATADBG_CMD_CFSM_OUT;
     RX_Valid             : STD_LOGIC;
@@ -358,10 +359,7 @@ package satadbg is
 		RX_Ack											: STD_LOGIC;
 		RX_SOT											: STD_LOGIC;
 		RX_EOT											: STD_LOGIC;
-		RX_Commit										: STD_LOGIC;
-		RX_Rollback									: STD_LOGIC;
-		
-		-- RXReg?
+		RX_LastWord									: STD_LOGIC;
 		
 		FISE_FISType								: T_SATA_FISTYPE;							-- 4 bit
 		FISE_Status									: T_SATA_FISENCODER_STATUS;		-- 3 bit
@@ -387,7 +385,7 @@ package satadbg is
 		Link_RX_FS_Valid						: STD_LOGIC;
 		Link_RX_FS_Ack							: STD_LOGIC;
 		Link_RX_FS_CRCOK						: STD_LOGIC;
-		Link_RX_FS_Abort						: STD_LOGIC;
+		Link_RX_FS_SyncEsc					: STD_LOGIC;
 	end record;
 	
 	

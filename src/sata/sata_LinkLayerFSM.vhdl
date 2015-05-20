@@ -75,7 +75,7 @@ entity sata_LinkLayerFSM is
 		--TODO: Trans_RX_Abort					: IN	STD_LOGIC;
 		
 		Trans_RXFS_CRCOK				: OUT	STD_LOGIC;
-		Trans_RXFS_Abort				: OUT	STD_LOGIC;
+		Trans_RXFS_SyncEsc			: OUT	STD_LOGIC;
 
 		-- physical layer interface
 		Phy_Status							: IN	T_SATA_PHY_STATUS;
@@ -96,6 +96,8 @@ entity sata_LinkLayerFSM is
 		-- RX_FIFO interface
 		RX_FIFO_rst							: OUT	STD_LOGIC;
 		RX_FIFO_put							: OUT	STD_LOGIC;
+		RX_FIFO_commit					: OUT	STD_LOGIC;
+		RX_FIFO_rollback				: OUT	STD_LOGIC;
 		RX_FIFO_Full						: IN	STD_LOGIC;
 		RX_FIFO_SpaceAvailable	: IN	STD_LOGIC;
 		
@@ -158,6 +160,7 @@ ARCHITECTURE rtl OF sata_LinkLayerFSM IS
 		ST_RX_RECEIVE_DATA,
 		ST_RX_SEND_HOLD,
 		ST_RX_RECEIVED_HOLD,
+		ST_RX_RECEIVED_EOF,
 		ST_RX_SEND_R_OK,
 		ST_RX_SEND_R_ERROR
 	);
@@ -260,6 +263,8 @@ BEGIN
 
 		-- RX FIFO interface
 		RX_FIFO_rst										<= '0';
+		RX_FIFO_commit								<= '0';
+		RX_FIFO_rollback							<= '0';
 		RX_IsData											<= '0';
 		RX_IsSOF											<= '0';
 		RX_IsEOF											<= '0';
@@ -267,7 +272,7 @@ BEGIN
 		RX_FSFIFO_put									<= '0';
 		
 		Trans_RXFS_CRCOK							<= '0';
-		Trans_RXFS_Abort							<= '0';
+		Trans_RXFS_SyncEsc						<= '0';
 		
 		-- RX CRC interface
 		RX_CRC_rst										<= '0';
@@ -705,13 +710,7 @@ BEGIN
 							NextState									<= ST_RX_RECEIVED_HOLD;
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
 							RX_IsEOF 									<= '1';
-							RX_FSFIFO_put							<= '1';
-							IF (RX_CRC_OKReg_r = '1') and (RX_FIFO_Overflow_r = '0') THEN
-								Trans_RXFS_CRCOK				<= '1';
-								NextState								<= ST_RX_SEND_R_OK;
-							ELSE
-								NextState								<= ST_RX_SEND_R_ERROR;
-							END IF;
+							NextState 								<= ST_RX_RECEIVED_EOF;
 						end if;
 						
 						-- WTRM and SYNC are handled after InsertAlign is low again.
@@ -734,22 +733,20 @@ BEGIN
 							NextState									<= ST_RX_RECEIVED_HOLD;
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
 							RX_IsEOF 									<= '1';
-							RX_FSFIFO_put							<= '1';
-							IF (RX_CRC_OKReg_r = '1') and (RX_FIFO_Overflow_r = '0') THEN
-								TX_Primitive						<= SATA_PRIMITIVE_R_OK;
-								Trans_RXFS_CRCOK				<= '1';
-								NextState								<= ST_RX_SEND_R_OK;
-							ELSE
-								TX_Primitive						<= SATA_PRIMITIVE_R_ERROR;
-								NextState								<= ST_RX_SEND_R_ERROR;
-							END IF;
+							NextState 								<= ST_RX_RECEIVED_EOF;
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) THEN
+							-- In case of bit errors, the single EOF might be missed. After that
+							-- WTRM is received. Signal as CRC error.
 							TX_Primitive							<= SATA_PRIMITIVE_R_ERROR;
+							RX_FIFO_rollback 					<= '1';
 							RX_FSFIFO_put							<= '1';
 							NextState									<= ST_RX_SEND_R_ERROR;
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN
+							-- SyncEscape by sender.
 							TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+							RX_FIFO_rollback 					<= '1';
 							RX_FSFIFO_put							<= '1';
+							Trans_RXFS_SyncEsc				<= '1';
 							NextState									<= ST_IDLE;
 						END IF;
 					END IF;
@@ -770,13 +767,7 @@ BEGIN
 							END IF;
 						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
 							RX_IsEOF 									<= '1';
-							RX_FSFIFO_put							<= '1';
-							IF (RX_CRC_OKReg_r = '1') and (RX_FIFO_Overflow_r = '0') THEN
-								Trans_RXFS_CRCOK				<= '1';
-								NextState								<= ST_RX_SEND_R_OK;
-							ELSE
-								NextState								<= ST_RX_SEND_R_ERROR;
-							END IF;
+							NextState 								<= ST_RX_RECEIVED_EOF;
 						END IF;
 
 						-- All other primitives are handled after InsertAlign is low again.
@@ -798,22 +789,25 @@ BEGIN
 								TX_Primitive						<= SATA_PRIMITIVE_HOLD_ACK;
 								NextState								<= ST_RX_RECEIVED_HOLD;
 							END IF;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
+						elsif (RX_Primitive = SATA_PRIMITIVE_EOF) then
 							RX_IsEOF 									<= '1';
+							NextState 								<= ST_RX_RECEIVED_EOF;
+						elsif (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) then
+							-- Extension to SATA specification:
+							-- In case of bit errors, the single EOF might be missed. After that
+							-- WTRM is received, but no FIFO space gets available.
+							TX_Primitive							<= SATA_PRIMITIVE_R_ERROR;
+							RX_FIFO_rollback 					<= '1';
 							RX_FSFIFO_put							<= '1';
-							IF (RX_CRC_OKReg_r = '1') and (RX_FIFO_Overflow_r = '0') THEN
-								TX_Primitive						<= SATA_PRIMITIVE_R_OK;
-								Trans_RXFS_CRCOK				<= '1';
-								NextState								<= ST_RX_SEND_R_OK;
-							ELSE
-								TX_Primitive						<= SATA_PRIMITIVE_R_ERROR;
-								NextState								<= ST_RX_SEND_R_ERROR;
-							END IF;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN
+							NextState									<= ST_RX_SEND_R_ERROR;
+						elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then
+							-- SyncEscape by sender.
 							TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+							RX_FIFO_rollback 					<= '1';
 							RX_FSFIFO_put							<= '1';
+							Trans_RXFS_SyncEsc				<= '1';
 							NextState									<= ST_IDLE;
-						ELSE
+						else
 							IF (RX_FIFO_SpaceAvailable = '1') THEN
 								TX_Primitive						<= SATA_PRIMITIVE_R_IP;
 								NextState								<= ST_RX_RECEIVE_DATA;
@@ -835,13 +829,7 @@ BEGIN
 							NextState									<= ST_RX_RECEIVE_DATA;
 						elsif (RX_Primitive = SATA_PRIMITIVE_EOF) then
 							RX_IsEOF 									<= '1';
-							RX_FSFIFO_put							<= '1';
-							IF (RX_CRC_OKReg_r = '1') and (RX_FIFO_Overflow_r = '0') THEN
-								Trans_RXFS_CRCOK				<= '1';
-								NextState								<= ST_RX_SEND_R_OK;
-							ELSE
-								NextState								<= ST_RX_SEND_R_ERROR;
-							END IF;
+							NextState 								<= ST_RX_RECEIVED_EOF;
 						END IF;
 						
 						-- All other primitives are handled after InsertAlign is low again.
@@ -855,22 +843,27 @@ BEGIN
 							RX_CRC_Valid							<= '1';
 							DataUnscrambler_en				<= '1';
 							NextState									<= ST_RX_RECEIVE_DATA;
-						elsif (RX_Primitive = SATA_PRIMITIVE_HOLD) then
+						elsif ((RX_Primitive = SATA_PRIMITIVE_HOLD) or
+									 (RX_Primitive = SATA_PRIMITIVE_ALIGN)) then
 							NULL;
 						elsif (RX_Primitive = SATA_PRIMITIVE_EOF) then
 							RX_IsEOF 									<= '1';
+							NextState 								<= ST_RX_RECEIVED_EOF;
+						elsif (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) then
+							-- Extension to SATA specification:
+							-- In case of bit errors, the single EOF might be missed. After that
+							-- WTRM is received. Signal as CRC error here, instead of going
+							-- to ST_RX_RECEIVE_DATA first.
+							TX_Primitive							<= SATA_PRIMITIVE_R_ERROR;
+							RX_FIFO_rollback 					<= '1';
 							RX_FSFIFO_put							<= '1';
-							IF (RX_CRC_OKReg_r = '1') and (RX_FIFO_Overflow_r = '0') THEN
-								TX_Primitive						<= SATA_PRIMITIVE_R_OK;
-								Trans_RXFS_CRCOK				<= '1';
-								NextState								<= ST_RX_SEND_R_OK;
-							ELSE
-								TX_Primitive						<= SATA_PRIMITIVE_R_ERROR;
-								NextState								<= ST_RX_SEND_R_ERROR;
-							END IF;
+							NextState									<= ST_RX_SEND_R_ERROR;
 						elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then
+							-- SyncEscape by sender.
 							TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+							RX_FIFO_rollback 					<= '1';
 							RX_FSFIFO_put							<= '1';
+							Trans_RXFS_SyncEsc				<= '1';
 							NextState									<= ST_IDLE;
 						else -- all other primitives
 								TX_Primitive						<= SATA_PRIMITIVE_R_IP;
@@ -880,6 +873,36 @@ BEGIN
 				
 				-- ----------------------------------------------------------
 				-- Frame Received
+				-- ----------------------------------------------------------
+				when ST_RX_RECEIVED_EOF =>
+					Status												<= SATA_LINK_STATUS_RECEIVING;
+					
+					-- Last data word already inserted with EOF. Check error conditions.
+					-- RX_FSFIFO_Full is checked before receive begins.
+					if ((RX_CRC_OKReg_r = '0') or 			-- caused by bit errors
+							(RX_FIFO_Overflow_r = '1') or 	-- send HOLD failed
+							(RX_DataReg_Valid2 = '0')) 			-- frame too short	
+					then
+						if (InsertAlign = '1') then
+							TX_Primitive 							<= SATA_PRIMITIVE_ALIGN;
+						else
+							TX_Primitive 							<= SATA_PRIMITIVE_R_ERROR;
+						end if;
+						RX_FIFO_rollback 						<= '1';
+						RX_FSFIFO_put 							<= '1';
+						NextState 									<= ST_RX_SEND_R_ERROR;
+					else
+						if (InsertAlign = '1') then
+							TX_Primitive 							<= SATA_PRIMITIVE_ALIGN;
+						else
+							TX_Primitive 							<= SATA_PRIMITIVE_R_OK;
+						end if;
+						RX_FIFO_commit 							<= '1';
+						RX_FSFIFO_put 							<= '1';
+						Trans_RXFS_CRCOK 						<= '1';
+						NextState 									<= ST_RX_SEND_R_OK;
+					end if;
+						
 				-- ----------------------------------------------------------
 				WHEN ST_RX_SEND_R_OK =>
 					Status												<= SATA_LINK_STATUS_RECEIVING;

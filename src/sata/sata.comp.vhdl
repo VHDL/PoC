@@ -120,7 +120,7 @@ package satacomp is
 			SATA_RX_FS_Ack						: OUT	STD_LOGIC;
 			SATA_RX_FS_Valid					: IN	STD_LOGIC;
 			SATA_RX_FS_CRC_OK					: IN	STD_LOGIC;
-			SATA_RX_FS_Abort					: IN	STD_LOGIC
+			SATA_RX_FS_SyncEsc				: IN	STD_LOGIC
 		);
 	END COMPONENT;
 	
@@ -180,7 +180,7 @@ package satacomp is
 			RX_FS_Ack									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			RX_FS_Valid								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			RX_FS_CRC_OK							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_FS_Abort								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_FS_SyncEsc							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;

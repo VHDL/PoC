@@ -136,8 +136,8 @@ ENTITY sata_SATAController IS
 		
 		RX_FS_Ack										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		RX_FS_Valid									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RX_FS_CRCOK								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RX_FS_Abort									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_FS_CRCOK									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_FS_SyncEsc								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
 		-- vendor specific signals
 		VSS_Common_In								: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -236,7 +236,7 @@ BEGIN
 		SIGNAL Link_RX_Data						: T_SLV_32;
 		SIGNAL Link_RX_FS_Valid				: STD_LOGIC;
 		SIGNAL Link_RX_FS_CRCOK				: STD_LOGIC;
-		SIGNAL Link_RX_FS_Abort				: STD_LOGIC;
+		SIGNAL Link_RX_FS_SyncEsc			: STD_LOGIC;
 
 		-- physical layer signals
 		signal Phy_ResetDone 					: STD_LOGIC;
@@ -295,7 +295,7 @@ BEGIN
 		SATAC_RX_FS_Ack								<= RX_FS_Ack(I);
 		RX_FS_Valid(I)								<= Link_RX_FS_Valid;
 		RX_FS_CRCOK(I)								<= Link_RX_FS_CRCOK;
-		RX_FS_Abort(I)								<= Link_RX_FS_Abort;
+		RX_FS_SyncEsc(I)							<= Link_RX_FS_SyncEsc;
 		
 
 		-- =======================================================================
@@ -376,7 +376,7 @@ BEGIN
 				RX_FS_Ack								=> SATAC_RX_FS_Ack,
 				RX_FS_Valid							=> Link_RX_FS_Valid,
 				RX_FS_CRCOK							=> Link_RX_FS_CRCOK,
-				RX_FS_Abort							=> Link_RX_FS_Abort,
+				RX_FS_SyncEsc						=> Link_RX_FS_SyncEsc,
 				
 				-- physical layer interface
 				Phy_ResetDone 					=> Phy_ResetDone,

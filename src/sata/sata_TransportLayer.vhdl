@@ -92,8 +92,6 @@ entity sata_TransportLayer is
 		RX_EOT												: OUT STD_LOGIC;
 		RX_Data												: OUT	T_SLV_32;
 		RX_Valid											: OUT	STD_LOGIC;
-		RX_Commit											: OUT	STD_LOGIC;
-		RX_Rollback										: OUT	STD_LOGIC;
 	
 		-- SATAController Status
 		Phy_Status										: IN	T_SATA_PHY_STATUS;
@@ -120,7 +118,7 @@ entity sata_TransportLayer is
 			
 		Link_RX_FS_Ack								: OUT	STD_LOGIC;
 		Link_RX_FS_CRCOK							: IN	STD_LOGIC;
-		Link_RX_FS_Abort							: IN	STD_LOGIC;
+		Link_RX_FS_SyncEsc						: IN	STD_LOGIC;
 		Link_RX_FS_Valid							: IN	STD_LOGIC
 	);
 end;
@@ -162,8 +160,6 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 	signal RXReg_RX_Data								: T_SLV_32;
 	signal RXReg_RX_SOT									: STD_LOGIC;
 	signal RXReg_RX_EOT									: STD_LOGIC;
-	signal RXReg_RX_Commit							: STD_LOGIC;
-	signal RXReg_RX_Rollback						: STD_LOGIC;
 
 	-- FISEncoder
 	signal FISE_Status									: T_SATA_FISENCODER_STATUS;
@@ -182,8 +178,6 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 	signal FISD_RX_SOP									: STD_LOGIC;
 	signal FISD_RX_EOP									: STD_LOGIC;
 	signal FISD_RX_Valid								: STD_LOGIC;
-	signal FISD_RX_Commit								: STD_LOGIC;
-	signal FISD_RX_Rollback							: STD_LOGIC;
 	signal FISD_ATADeviceRegisters			: T_SATA_ATA_DEVICE_REGISTERS;
 	signal FISD_Link_RX_Ack							: STD_LOGIC;
 	signal FISD_Link_RX_FS_Ack					: STD_LOGIC;
@@ -334,35 +328,29 @@ begin
 		signal RXReg_Data_en										: STD_LOGIC;
 		signal RXReg_Data_d											: T_SLV_32												:= (OTHERS => '0');	
 		signal RXReg_EOT_r											: STD_LOGIC												:= '0';
-		signal RXReg_Commit_r										: STD_LOGIC												:= '0';
-		signal RXReg_Rollback_r									: STD_LOGIC												:= '0';
 	
 		signal RXReg_LastWord										: STD_LOGIC;
 		signal RXReg_LastWord_r									: STD_LOGIC												:= '0';
-		signal RXReg_LastWordCommit							: STD_LOGIC;
+		signal RXReg_LastWordAck								: STD_LOGIC;
 		
 		signal RXReg_SOT												: STD_LOGIC;
 		signal RXReg_EOT												: STD_LOGIC;
-		signal RXReg_Commit											: STD_LOGIC;
-		signal RXReg_Rollback										: STD_LOGIC;
 	BEGIN
 
 		RXReg_Data_en					<= FISD_RX_Valid AND FISD_RX_EOP;
 		RXReg_mux_set					<= FISD_RX_Valid AND FISD_RX_EOP;
-		RXReg_mux_rst					<= RXReg_LastWordCommit; --RXReg_mux AND RXReg_LastWordCommit;
+		RXReg_mux_rst					<= RXReg_LastWordAck;
 		
 		RXReg_RX_Data					<= FISD_RX_Data WHEN (RXReg_mux = '0') ELSE RXReg_Data_d;
 		RXReg_RX_Valid				<= (FISD_RX_Valid AND NOT RXReg_Data_en) OR RXReg_LastWord;
 
 		RXReg_Ack							<= (RX_Ack	 OR RXReg_Data_en) AND NOT RXReg_mux;
-		RXReg_LastWordCommit	<= RXReg_LastWord AND RX_Ack;
+		RXReg_LastWordAck			<= RXReg_LastWord AND RX_Ack;
 
 		RXReg_SOT							<= TFSM_RX_SOT;
 		RXReg_EOT							<= RXReg_EOT_r				OR TFSM_RX_EOT;
 		RXReg_LastWord				<= RXReg_LastWord_r 	OR TFSM_RX_LastWord;
 		RXReg_mux							<= RXReg_mux_r;
-		RXReg_Commit					<= RXReg_Commit_r			OR FISD_RX_Commit;
-		RXReg_Rollback				<= RXReg_Rollback_r		OR FISD_RX_Rollback;
 
 		PROCESS(Clock)
 		BEGIN
@@ -371,8 +359,6 @@ begin
 					RXReg_Data_d				<= (OTHERS => '0');
 					RXReg_mux_r					<= '0';
 					RXReg_EOT_r					<= '0';
-					RXReg_Commit_r			<= '0';
-					RXReg_Rollback_r		<= '0';
 				ELSE
 					IF (RXReg_Data_en = '1') THEN
 						RXReg_Data_d			<= FISD_RX_Data;
@@ -395,34 +381,18 @@ begin
 					ELSIF (TFSM_RX_EOT = '1') THEN
 						RXReg_EOT_r		<= '1';
 					END IF;
-					
-					IF (RXReg_mux_rst = '1') THEN
-						RXReg_Commit_r		<= '0';
-					ELSIF (FISD_RX_Commit = '1') THEN
-						RXReg_Commit_r		<= '1';
-					END IF;
-					
-					IF (RXReg_mux_rst = '1') THEN
-						RXReg_Rollback_r		<= '0';
-					ELSIF (FISD_RX_Rollback = '1') THEN
-						RXReg_Rollback_r		<= '1';
-					END IF;
 				END IF;
 			END IF;
 		END PROCESS;
 
 		RXReg_RX_SOT				<= RXReg_SOT;
 		RXReg_RX_EOT				<= RXReg_EOT;
-		RXReg_RX_Commit			<= RXReg_Commit;
-		RXReg_RX_Rollback		<= RXReg_Rollback;
 	END BLOCK;
 
 	RX_Valid			<= RXReg_RX_Valid;
 	RX_Data				<= RXReg_RX_Data;
 	RX_SOT				<= RXReg_RX_SOT;
 	RX_EOT				<= RXReg_RX_EOT;
-	RX_Commit			<= RXReg_RX_Commit;
-	RX_Rollback		<= RXReg_RX_Rollback;
 
 
 	FISE : ENTITY PoC.sata_FISEncoder
@@ -491,9 +461,6 @@ begin
 			ATADeviceRegisters					=> FISD_ATADeviceRegisters,
 			
 			-- TransportLayer FIFO interface
-			RX_Commit										=> FISD_RX_Commit,
-			RX_Rollback									=> FISD_RX_Rollback,
-			
 			RX_Valid										=> FISD_RX_Valid,
 			RX_Data											=> FISD_RX_Data,
 			RX_SOP											=> FISD_RX_SOP,
@@ -512,7 +479,7 @@ begin
 			-- LinkLayer FS-FIFO interface
 			Link_RX_FS_Valid						=> Link_RX_FS_Valid,
 			Link_RX_FS_CRCOK						=> Link_RX_FS_CRCOK,
-			Link_RX_FS_Abort						=> Link_RX_FS_Abort,
+			Link_RX_FS_SyncEsc					=> Link_RX_FS_SyncEsc,
 			Link_RX_FS_Ack							=> FISD_Link_RX_FS_Ack
 		);
 	
@@ -548,10 +515,7 @@ begin
 		DebugPortOut.RX_SOT											<= RXReg_RX_SOT;
 		DebugPortOut.RX_EOT											<= RXReg_RX_EOT;
 		DebugPortOut.RX_Ack											<= RX_Ack;
-		DebugPortOut.RX_Commit									<= RXReg_RX_Commit;
-		DebugPortOut.RX_Rollback								<= RXReg_RX_Rollback;
-		
-		-- RXReg?
+		DebugPortOut.RX_LastWord								<= TFSM_RX_LastWord;
 		
 		DebugPortOut.FISE_FISType								<= TFSM_FISType;
 		DebugPortOut.FISE_Status								<= FISE_Status;
@@ -576,7 +540,7 @@ begin
 		DebugPortOut.Link_RX_Ack								<= FISD_Link_RX_Ack;
 		DebugPortOut.Link_RX_FS_Valid						<= Link_RX_FS_Valid;
 		DebugPortOut.Link_RX_FS_CRCOK						<= Link_RX_FS_CRCOK;
-		DebugPortOut.Link_RX_FS_Abort						<= Link_RX_FS_Abort;
+		DebugPortOut.Link_RX_FS_SyncEsc					<= Link_RX_FS_SyncEsc;
 		DebugPortOut.Link_RX_FS_Ack							<= FISD_Link_RX_FS_Ack;
 	end generate;
 end;

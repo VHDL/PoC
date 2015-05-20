@@ -87,8 +87,8 @@ ENTITY sata_LinkLayer IS
 		
 		RX_FS_Ack								: IN	STD_LOGIC;
 		RX_FS_Valid							:	OUT	STD_LOGIC;
-		RX_FS_CRCOK						: OUT	STD_LOGIC;
-		RX_FS_Abort							: OUT	STD_LOGIC;
+		RX_FS_CRCOK							: OUT	STD_LOGIC;
+		RX_FS_SyncEsc						: OUT	STD_LOGIC;
 
 		-- physical layer interface
 		Phy_ResetDone 					: in  STD_LOGIC;
@@ -131,7 +131,7 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	CONSTANT RX_FIFO_EMPTYSTATE_BITS		: POSITIVE				:= log2ceilnz(RX_FIFO_DEPTH / RX_FIFO_MIN_FREE_SPACE);
 
 	CONSTANT RX_CRCOK_BIT								: NATURAL					:= 0;
-	CONSTANT RX_ABORT_BIT								: NATURAL					:= 1;
+	CONSTANT RX_SYNCESC_BIT							: NATURAL					:= 1;
 	CONSTANT RX_FSFIFO_BITS							: NATURAL					:= 2;
 	CONSTANT RX_FSFIFO_DEPTH						: POSITIVE				:= 8;																		--				 8								 8								max frames in RX_FIFO
 	CONSTANT RX_FSFIFO_EMPTYSTATE_BITS	: POSITIVE				:= log2ceilnz(RX_FSFIFO_DEPTH);
@@ -158,7 +158,7 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	SIGNAL Trans_RX_Abort								: STD_LOGIC;
 
 	SIGNAL Trans_RXFS_CRCOK							: STD_LOGIC;
-	SIGNAL Trans_RXFS_Abort							: STD_LOGIC;
+	signal Trans_RXFS_SyncEsc						: STD_LOGIC;
 	
 	-- TX FSM section
 	SIGNAL CRCMux_ctrl									: STD_LOGIC;
@@ -188,6 +188,8 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	
 	SIGNAL RX_FIFO_rst								: STD_LOGIC;
 	SIGNAL RX_FIFO_put								: STD_LOGIC;
+	signal RX_FIFO_commit							: STD_LOGIC;
+	signal RX_FIFO_rollback						: STD_LOGIC;
 	SIGNAL RX_FIFO_EmptyState					: STD_LOGIC_VECTOR(RX_FIFO_EMPTYSTATE_BITS - 1 DOWNTO 0);
 	SIGNAL RX_FIFO_SpaceAvailable			: STD_LOGIC;
 	SIGNAL RX_FIFO_Full								: STD_LOGIC;
@@ -299,7 +301,7 @@ begin
 			--TODO: Trans_RX_Abort					=> Trans_RX_Abort,
 
 			Trans_RXFS_CRCOK				=> Trans_RXFS_CRCOK,
-			Trans_RXFS_Abort				=> Trans_RXFS_Abort,
+			Trans_RXFS_SyncEsc			=> Trans_RXFS_SyncEsc,
 
 			-- physical layer interface
 			Phy_Status							=> Phy_Status,
@@ -321,6 +323,8 @@ begin
 			-- RX_FIFO interface
 			RX_FIFO_rst							=> RX_FIFO_rst,
 			RX_FIFO_put							=> RX_FIFO_put,
+			RX_FIFO_commit					=> RX_FIFO_commit,
+			RX_FIFO_rollback				=> RX_FIFO_rollback,
 			RX_FIFO_Full						=> RX_FIFO_Full,
 			RX_FIFO_SpaceAvailable	=> RX_FIFO_SpaceAvailable,		-- lack of space 
 
@@ -390,10 +394,10 @@ begin
 	RX_FSFIFO_got								<= RX_FS_Ack;
 	RX_FS_Valid									<= RX_FSFIFO_Valid;
 	
-	RX_FSFIFO_DataIn						<= (RX_CRCOK_BIT => Trans_RXFS_CRCOK,
-																	RX_ABORT_BIT => Trans_RXFS_Abort);
+	RX_FSFIFO_DataIn						<= (RX_CRCOK_BIT 		=> Trans_RXFS_CRCOK,
+																	RX_SYNCESC_BIT 	=> Trans_RXFS_SyncEsc);
 	RX_FS_CRCOK									<= RX_FSFIFO_DataOut(RX_CRCOK_BIT);
-	RX_FS_Abort									<= RX_FSFIFO_DataOut(RX_ABORT_BIT);
+	RX_FS_SyncEsc								<= RX_FSFIFO_DataOut(RX_SYNCESC_BIT);
 
 	-- ==========================================================================	
 	-- TX path input pre-processing
@@ -492,7 +496,7 @@ begin
 		);
 	
 	-- RX path
-	RX_FIFO : ENTITY PoC.fifo_cc_got
+	RX_FIFO : ENTITY PoC.fifo_cc_got_tempput
 		GENERIC MAP (
 			D_BITS					=> RX_FIFO_BITS,								-- data width
 			MIN_DEPTH				=> RX_FIFO_DEPTH,								-- minimum FIFO depth
@@ -510,6 +514,8 @@ begin
 			din							=> RX_FIFO_DataIn,
 			estate_wr				=> RX_FIFO_EmptyState,
 			full						=> RX_FIFO_Full,
+			commit 					=> RX_FIFO_commit,
+			rollback 				=> RX_FIFO_rollback,
 			
 			-- Read Interface
 			got							=> RX_FIFO_got,
@@ -749,6 +755,8 @@ begin
 		DebugPortOut.RX_FIFO_SpaceAvailable			<= RX_FIFO_SpaceAvailable;
 		DebugPortOut.RX_FIFO_rst								<= RX_FIFO_rst;
 		DebugPortOut.RX_FIFO_put								<= RX_FIFO_put;
+		DebugPortOut.RX_FIFO_commit							<= RX_FIFO_commit;
+		DebugPortOut.RX_FIFO_rollback						<= RX_FIFO_rollback;
 		DebugPortOut.RX_FSFIFO_rst							<= RX_FSFIFO_rst;
 		DebugPortOut.RX_FSFIFO_put							<= RX_FSFIFO_put;
 		-- RX: after RX_FIFO
@@ -760,7 +768,7 @@ begin
 		DebugPortOut.RX_FS_Valid								<= RX_FSFIFO_Valid;
 		DebugPortOut.RX_FS_Ack									<= RX_FS_Ack;
 		DebugPortOut.RX_FS_CRCOK								<= RX_FSFIFO_DataOut(RX_CRCOK_BIT);
-		DebugPortOut.RX_FS_Abort								<= RX_FSFIFO_DataOut(RX_ABORT_BIT);
+		DebugPortOut.RX_FS_SyncEsc							<= RX_FSFIFO_DataOut(RX_SYNCESC_BIT);
 		--																			
 		-- TX: from Link Layer
 		DebugPortOut.TX_Data										<= TX_Data;

@@ -60,7 +60,6 @@ ENTITY sata_CommandLayer IS
 		DEBUG													: BOOLEAN									:= FALSE;
 		SIM_EXECUTE_IDENTIFY_DEVICE		: BOOLEAN									:= TRUE;			-- required by CommandLayer: load device parameters
 		TX_FIFO_DEPTH									: NATURAL									:= 0;
-		RX_FIFO_DEPTH									: POSITIVE;
 		LOGICAL_BLOCK_SIZE_ldB				: POSITIVE
 	);
 	PORT (
@@ -122,8 +121,6 @@ ENTITY sata_CommandLayer IS
 		Trans_RX_Data									: IN	T_SLV_32;
 		Trans_RX_SOT									: IN	STD_LOGIC;
 		Trans_RX_EOT									: IN	STD_LOGIC;
-		Trans_RX_Commit								: IN	STD_LOGIC;
-		Trans_RX_Rollback							: IN	STD_LOGIC;
 		Trans_RX_Ack									: OUT	STD_LOGIC
 	);
 END;
@@ -184,13 +181,10 @@ ARCHITECTURE rtl OF sata_CommandLayer IS
 	
 	-- RX_FIFO
 	-- ==========================================================================
-	SIGNAL RX_FIFO_rst											: STD_LOGIC;
 	SIGNAL RX_FIFO_put											: STD_LOGIC;
 	SIGNAL RX_FIFO_got											: STD_LOGIC;
 	SIGNAL RX_FIFO_DataIn										: STD_LOGIC_VECTOR(33 DOWNTO 0);
 	SIGNAL RX_FIFO_DataOut									: STD_LOGIC_VECTOR(33 DOWNTO 0);
-	SIGNAL RX_FIFO_Commit										: STD_LOGIC;
-	SIGNAL RX_FIFO_Rollback									: STD_LOGIC;
 	SIGNAL RX_FIFO_Valid										: STD_LOGIC;
 	SIGNAL RX_FIFO_Full											: STD_LOGIC;
 
@@ -205,7 +199,6 @@ ARCHITECTURE rtl OF sata_CommandLayer IS
 	SIGNAL IDF_Data													: T_SLV_32;
 	SIGNAL IDF_SOT													: STD_LOGIC;
 	SIGNAL IDF_EOT													: STD_LOGIC;
-	SIGNAL IDF_CRC_OK												: STD_LOGIC;
 	SIGNAL IDF_DriveInformation							: T_SATA_DRIVE_INFORMATION;
 
 	-- Internal version of output signals
@@ -301,14 +294,12 @@ BEGIN
 		TX_FIFO_Full			<= NOT Trans_TX_Ack;
 	END GENERATE;
 	genTXFIFO1 : IF (TX_FIFO_DEPTH > 0) GENERATE
-		SIGNAL TX_FIFO_rst											: STD_LOGIC;
 		SIGNAL TX_FIFO_put											: STD_LOGIC;
 		SIGNAL TX_FIFO_got											: STD_LOGIC;
 		
 		SIGNAL TX_FIFO_DataIn										: STD_LOGIC_VECTOR(33 DOWNTO 0);
 		SIGNAL TX_FIFO_DataOut									: STD_LOGIC_VECTOR(33 DOWNTO 0);
 	BEGIN
-		TX_FIFO_rst																<= Reset;
 		TX_FIFO_put																<= TX_Valid;
 		TX_FIFO_got																<= TC_TX_Ack;
 		
@@ -333,7 +324,7 @@ BEGIN
 			)
 			PORT MAP (
 				clk							=> Clock,
-				rst							=> TX_FIFO_rst,
+				rst							=> Reset,
 
 				-- write interface
 				put							=> TX_FIFO_put,
@@ -433,68 +424,37 @@ BEGIN
 		END PROCESS;
 		
 		TC_TX_LastWord	<= TC_TX_EOT OR TC_TX_LastWord_r;		-- LastWord in transfer
-		
-		genCSP : IF (DEBUG = TRUE) GENERATE
-			SIGNAL DBG_TX_DataFlow							: STD_LOGIC;
-			SIGNAL DBG_TX_LastWord							: STD_LOGIC;
-			SIGNAL DBG_InsertEOT								: STD_LOGIC;
-		
-			ATTRIBUTE KEEP OF DBG_TX_DataFlow		: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF DBG_TX_LastWord		: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF DBG_InsertEOT			: SIGNAL IS TRUE;
-			
-		BEGIN
-			DBG_TX_DataFlow		<= TC_TX_DataFlow;
-			DBG_TX_LastWord		<= TC_TX_LastWord;
-			DBG_InsertEOT			<= TC_TX_InsertEOT;
-		END GENERATE;
 	END BLOCK;	-- TransferCutter
 
 	-- CommandLayer RX_FIFO
-	RX_FIFO_rst																<= Reset;
 	RX_FIFO_put																<= Trans_RX_Valid			AND NOT IDF_Enable;
-	RX_FIFO_Commit														<= (Trans_RX_Commit		AND NOT IDF_Enable);
-	RX_FIFO_Rollback													<= Trans_RX_Rollback	AND NOT IDF_Enable;
-
-	RX_FIFO_got																<= RX_Ack;
-
 	RX_FIFO_DataIn(Trans_RX_Data'range)				<= Trans_RX_Data;
 	RX_FIFO_DataIn(Trans_RX_Data'length	+ 0)	<= CFSM_RX_SOR;
 	RX_FIFO_DataIn(Trans_RX_Data'length	+ 1)	<= CFSM_RX_EOR;
 
+
+	RX_FIFO_got																<= RX_Ack;
 	RX_Data																		<= RX_FIFO_DataOut(RX_Data'range);
 	RX_SOR																		<= RX_FIFO_DataOut(RX_Data'length	+ 0);
 	RX_EOR																		<= RX_FIFO_DataOut(RX_Data'length	+ 1);
 	
-	RX_FIFO : ENTITY PoC.fifo_cc_got_tempput
+	RX_FIFO : ENTITY PoC.fifo_glue
 		GENERIC MAP (
-			D_BITS						=> 34,													 
-			MIN_DEPTH 				=> RX_FIFO_DEPTH,								 
-			ESTATE_WR_BITS		=> 0,														
-			FSTATE_RD_BITS		=> 0,														
-			OUTPUT_REG				=> TRUE,
-			DATA_REG					=> FALSE,
-			STATE_REG					=> FALSE
+			D_BITS						=> 34
 		)
 		PORT MAP (
 			clk						=> Clock,
-			rst						=> RX_FIFO_rst,
+			rst						=> Reset,
 
 			-- write interface
 			put						=> RX_FIFO_put,
-			din						=> RX_FIFO_DataIn,
-			estate_wr			=> OPEN,
-			full					=> RX_FIFO_Full,
-
-			-- temporary put control
-			commit				=> RX_FIFO_Commit,
-			rollback			=> RX_FIFO_Rollback,
+			di						=> RX_FIFO_DataIn,
+			ful						=> RX_FIFO_Full,
 
 			-- read interface
 			got						=> RX_FIFO_got,
-			valid					=> RX_FIFO_Valid,
-			dout					=> RX_FIFO_DataOut,
-			fstate_rd 		=> OPEN
+			vld						=> RX_FIFO_Valid,
+			do						=> RX_FIFO_DataOut
 		);
 	
 	Trans_RX_Ack_i	 	<= (NOT RX_FIFO_Full) WHEN (IDF_Enable = '0') ELSE '1';					-- RX_Ack	 multiplexer
@@ -525,11 +485,10 @@ BEGIN
 	IDF_Data		<= Trans_RX_Data;
 	IDF_SOT			<= Trans_RX_SOT;
 	IDF_EOT			<= Trans_RX_EOT;
-	IDF_CRC_OK	<= Trans_RX_Commit;
 	
 	IDF : ENTITY PoC.sata_IdentifyDeviceFilter
 		GENERIC MAP (
-			DEBUG												=> DEBUG					
+			DEBUG										=> DEBUG					
 		)
 		PORT MAP (
 			Clock										=> Clock,
@@ -543,8 +502,6 @@ BEGIN
 			Data										=> IDF_Data,
 			SOT											=> IDF_SOT,
 			EOT											=> IDF_EOT,
-			
-			CRC_OK									=> IDF_CRC_OK,
 			
 			DriveInformation				=> IDF_DriveInformation
 		);
@@ -567,7 +524,6 @@ BEGIN
     DebugPortOut.IDF_Enable           <= IDF_Enable;
     DebugPortOut.IDF_Error            <= IDF_Error;
     DebugPortOut.IDF_Finished         <= IDF_Finished;
-    DebugPortOut.IDF_CRC_OK           <= IDF_CRC_OK;
     DebugPortOut.IDF_DriveInformation <= IDF_DriveInformation;
 
     -- debug port of command fsm, for RX datapath see below

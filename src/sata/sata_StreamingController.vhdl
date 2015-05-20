@@ -113,7 +113,7 @@ ENTITY sata_StreamingController IS
 		SATA_RX_FS_Ack						: OUT	STD_LOGIC;
 		SATA_RX_FS_Valid					: IN	STD_LOGIC;
 		SATA_RX_FS_CRCOK					: IN	STD_LOGIC;
-		SATA_RX_FS_Abort					: IN	STD_LOGIC
+		SATA_RX_FS_SyncEsc				: IN	STD_LOGIC
 	);
 END;
 
@@ -127,9 +127,6 @@ ARCHITECTURE rtl OF sata_StreamingController IS
 	
 	-- TX path																						current value				test value			default value
 	CONSTANT TX_FIFO_DEPTH									: NATURAL			:= 16;					--		 0							 0
-
-	-- RX path
-	CONSTANT RX_FIFO_DEPTH									: POSITIVE		:= 4096;				--	1024						2048
 	
 	-- Common
 	-- ==========================================================================
@@ -181,16 +178,12 @@ ARCHITECTURE rtl OF sata_StreamingController IS
 	SIGNAL RX_Glue_Data				: T_SLV_32;
 	SIGNAL RX_Glue_SOT				: STD_LOGIC;
 	SIGNAL RX_Glue_EOT				: STD_LOGIC;
-	SIGNAL RX_Glue_Commit			: STD_LOGIC;
-	SIGNAL RX_Glue_Rollback		: STD_LOGIC;
 	SIGNAL RX_Glue_Ack					: STD_LOGIC;
 
 	SIGNAL Trans_RX_Valid			: STD_LOGIC;
 	SIGNAL Trans_RX_Data			: T_SLV_32;
 	SIGNAL Trans_RX_SOT				: STD_LOGIC;
 	SIGNAL Trans_RX_EOT				: STD_LOGIC;
-	SIGNAL Trans_RX_Commit		: STD_LOGIC;
-	SIGNAL Trans_RX_Rollback	: STD_LOGIC;
 	SIGNAL Trans_TX_Ack				: STD_LOGIC;			
 	
 	-- SATAController (LinkLayer)
@@ -236,7 +229,6 @@ BEGIN
 			DEBUG												=> DEBUG,										-- generate ChipScope DBG_* signals
 			ENABLE_DEBUGPORT						=> ENABLE_DEBUGPORT,
 			TX_FIFO_DEPTH								=> TX_FIFO_DEPTH,
-			RX_FIFO_DEPTH								=> RX_FIFO_DEPTH,
 			LOGICAL_BLOCK_SIZE_ldB			=> LOGICAL_BLOCK_SIZE_ldB
 		)
 		PORT MAP (
@@ -293,8 +285,6 @@ BEGIN
 			Trans_RX_Data								=> RX_Glue_Data,
 			Trans_RX_SOT								=> RX_Glue_SOT,
 			Trans_RX_EOT								=> RX_Glue_EOT,
-			Trans_RX_Commit							=> RX_Glue_Commit,
-			Trans_RX_Rollback						=> RX_Glue_Rollback,
 			Trans_RX_Ack								=> Cmd_RX_Ack	
 		);
 	
@@ -304,19 +294,18 @@ BEGIN
 	RX_Valid	<= RX_Valid_i;
 
 	RX_Glue : BLOCK IS
-		SIGNAL FIFO_Reset		: STD_LOGIC;
 		SIGNAL FIFO_Full		: STD_LOGIC;
-		SIGNAL FIFO_DataOut	: STD_LOGIC_VECTOR(34 DOWNTO 0);
-		SIGNAL FIFO_DataIn	: STD_LOGIC_VECTOR(34 DOWNTO 0);
+		SIGNAL FIFO_DataOut	: STD_LOGIC_VECTOR(33 DOWNTO 0);
+		SIGNAL FIFO_DataIn	: STD_LOGIC_VECTOR(33 DOWNTO 0);
 		
 	BEGIN
 		RX_FIFO : ENTITY PoC.fifo_glue
 			GENERIC MAP ( 
-				D_BITS => 35
+				D_BITS => 34
 			)
 			PORT MAP (
 				clk => Clock,
-				rst => FIFO_Reset,
+				rst => MyReset,
 				
 				di 	=> FIFO_DataIn,
 				ful => FIFO_Full,
@@ -327,13 +316,9 @@ BEGIN
 				got => Cmd_RX_Ack	
 			);
 
-		FIFO_DataIn 			<= (Trans_RX_Commit & Trans_RX_SOT & Trans_RX_EOT & Trans_RX_Data);
-		FIFO_Reset 				<= Trans_RX_Rollback or MyReset;
-		RX_Glue_Ack	 		<= not FIFO_Full;
-		RX_Glue_Rollback 	<= Trans_RX_Rollback when rising_edge(Clock);
+		FIFO_DataIn 			<= (Trans_RX_SOT & Trans_RX_EOT & Trans_RX_Data);
+		RX_Glue_Ack		 		<= not FIFO_Full;
 		RX_Glue_Data 			<= FIFO_DataOut(31 downto 0);
-		-- ensure convertion from data signal to control signal
-		RX_Glue_Commit 		<= FIFO_DataOut(34) AND RX_Glue_Valid; 			
 		RX_Glue_SOT 			<= FIFO_DataOut(33);
 		RX_Glue_EOT 			<= FIFO_DataOut(32);
 	END BLOCK;
@@ -404,8 +389,6 @@ BEGIN
 			RX_Data											=> Trans_RX_Data,
 			RX_SOT											=> Trans_RX_SOT,
 			RX_EOT											=> Trans_RX_EOT,
-			RX_Commit										=> Trans_RX_Commit,
-			RX_Rollback									=> Trans_RX_Rollback,
 			RX_Ack											=> RX_Glue_Ack,
 			
 			-- SATAController Status
@@ -433,7 +416,7 @@ BEGIN
 				
 			Link_RX_FS_Ack							=> SATA_RX_FS_Ack,
 			Link_RX_FS_CRCOK						=> SATA_RX_FS_CRCOK,
-			Link_RX_FS_Abort						=> SATA_RX_FS_Abort,
+			Link_RX_FS_SyncEsc					=> SATA_RX_FS_SyncEsc,
 			Link_RX_FS_Valid						=> SATA_RX_FS_Valid
 		);
 	

@@ -58,8 +58,6 @@ ENTITY sata_IdentifyDeviceFilter IS
 		SOT													: IN	STD_LOGIC;
 		EOT													: IN	STD_LOGIC;
 		
-		CRC_OK											: IN	STD_LOGIC;
-		
 		DriveInformation						: OUT	T_SATA_DRIVE_INFORMATION
 	);
 END;
@@ -144,7 +142,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	PROCESS(State, Enable, Valid, SOT, EOT, WordAC_Finished, CRC_OK, ChecksumOK)
+	PROCESS(State, Enable, Valid, SOT, EOT, WordAC_Finished, ChecksumOK)
 	BEGIN
 		NextState										<= State;
 		
@@ -174,15 +172,11 @@ BEGIN
 						
 						IF (EOT = '1') THEN
 							IF (WordAC_Finished = '1') THEN
-								IF (CRC_OK = '1') THEN
-									IF (ChecksumOK = '1') THEN
-										Commit			<= '1';
-										NextState		<= ST_FINISHED;
-									ELSE
-										NextState		<= ST_ERROR;
-									END IF;
+								IF (ChecksumOK = '1') THEN
+									Commit				<= '1';
+									NextState			<= ST_FINISHED;
 								ELSE
-									NextState			<= ST_COMPLETE;
+									NextState			<= ST_ERROR;
 								END IF;
 							ELSE																	-- only EOT => frame to short
 								NextState				<= ST_ERROR;
@@ -197,14 +191,12 @@ BEGIN
 			
 			-- TODO: use ChecksumOK !!!!
 			WHEN ST_COMPLETE =>
-				IF (CRC_OK = '1') THEN
-					IF (ChecksumOK = '1') THEN
-						Commit							<= '1';
-						NextState						<= ST_FINISHED;
-					ELSE
-						NextState						<= ST_ERROR;
-					END IF;
-				END IF; -- CRC_OK
+				IF (ChecksumOK = '1') THEN
+					Commit								<= '1';
+					NextState							<= ST_FINISHED;
+				ELSE
+					NextState							<= ST_ERROR;
+				END IF;
 			
 			WHEN ST_FINISHED =>
 				Finished								<= '1';
