@@ -3,17 +3,18 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+--
+-- Module:					IDENTIFY DEVICE Response Handler for ATA Command Layer
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- Extracts drive configuration from repsonse to ATA IDENTIFY command. For
+-- example, delviers information about drive size and capability flags.
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,8 +59,6 @@ ENTITY sata_IdentifyDeviceFilter IS
 		SOT													: IN	STD_LOGIC;
 		EOT													: IN	STD_LOGIC;
 		
-		CRC_OK											: IN	STD_LOGIC;
-		
 		DriveInformation						: OUT	T_SATA_DRIVE_INFORMATION
 	);
 END;
@@ -98,7 +97,7 @@ ARCHITECTURE rtl OF sata_IdentifyDeviceFilter IS
 	
 	SIGNAL State																			: T_STATE									:= ST_IDLE;
 	SIGNAL NextState																	: T_STATE;
-	ATTRIBUTE FSM_ENCODING	OF State									: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING	OF State									: SIGNAL IS getFSMEncoding_gray(DEBUG);
 	
 	SIGNAL WordAC_inc																	: STD_LOGIC;
 	SIGNAL WordAC_Load																: STD_LOGIC;
@@ -144,7 +143,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	PROCESS(State, Enable, Valid, SOT, EOT, WordAC_Finished, CRC_OK, ChecksumOK)
+	PROCESS(State, Enable, Valid, SOT, EOT, WordAC_Finished, ChecksumOK)
 	BEGIN
 		NextState										<= State;
 		
@@ -174,15 +173,11 @@ BEGIN
 						
 						IF (EOT = '1') THEN
 							IF (WordAC_Finished = '1') THEN
-								IF (CRC_OK = '1') THEN
-									IF (ChecksumOK = '1') THEN
-										Commit			<= '1';
-										NextState		<= ST_FINISHED;
-									ELSE
-										NextState		<= ST_ERROR;
-									END IF;
+								IF (ChecksumOK = '1') THEN
+									Commit				<= '1';
+									NextState			<= ST_FINISHED;
 								ELSE
-									NextState			<= ST_COMPLETE;
+									NextState			<= ST_ERROR;
 								END IF;
 							ELSE																	-- only EOT => frame to short
 								NextState				<= ST_ERROR;
@@ -195,16 +190,13 @@ BEGIN
 					END IF;
 				END IF;
 			
-			-- TODO: use ChecksumOK !!!!
 			WHEN ST_COMPLETE =>
-				IF (CRC_OK = '1') THEN
-					IF (ChecksumOK = '1') THEN
-						Commit							<= '1';
-						NextState						<= ST_FINISHED;
-					ELSE
-						NextState						<= ST_ERROR;
-					END IF;
-				END IF; -- CRC_OK
+				IF (ChecksumOK = '1') THEN
+					Commit								<= '1';
+					NextState							<= ST_FINISHED;
+				ELSE
+					NextState							<= ST_ERROR;
+				END IF;
 			
 			WHEN ST_FINISHED =>
 				Finished								<= '1';

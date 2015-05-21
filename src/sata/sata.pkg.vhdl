@@ -4,12 +4,13 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
 --
--- Package:					TODO
+-- Package:					SATA Types and Functions
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- Declares types and functions required for the whole SATA stack.
 -- 
 -- License:
 -- =============================================================================
@@ -56,23 +57,17 @@ package sata is
 	-- transceiver commands
 	TYPE T_SATA_TRANSCEIVER_COMMAND IS (
 		SATA_TRANSCEIVER_CMD_NONE,
-		SATA_TRANSCEIVER_CMD_RESET,
 		SATA_TRANSCEIVER_CMD_RECONFIG,
 		SATA_TRANSCEIVER_CMD_UNLOCK
 	);
 	
 	-- transceiver status
 	TYPE T_SATA_TRANSCEIVER_STATUS IS (
-		SATA_TRANSCEIVER_STATUS_POWERING_DOWN,
-		SATA_TRANSCEIVER_STATUS_POWERED_DOWN,
-		SATA_TRANSCEIVER_STATUS_RESETING_CLOCKNET,
-		SATA_TRANSCEIVER_STATUS_RESETING,
+		SATA_TRANSCEIVER_STATUS_INIT,
 		SATA_TRANSCEIVER_STATUS_RECONFIGURING,
 		SATA_TRANSCEIVER_STATUS_RELOADING,
 		SATA_TRANSCEIVER_STATUS_READY,
 		SATA_TRANSCEIVER_STATUS_READY_LOCKED,
-		SATA_TRANSCEIVER_STATUS_NO_DEVICE,
-		SATA_TRANSCEIVER_STATUS_NEW_DEVICE,
 		SATA_TRANSCEIVER_STATUS_ERROR
 	);
 
@@ -127,41 +122,27 @@ package sata is
 	
 	CONSTANT C_SATA_GENERATION_MAX	: T_SATA_GENERATION		:= SATA_GENERATION_3;
 	
+	-- Described in module 'sata_PhysicalLayer'.
 	TYPE T_SATA_PHY_COMMAND IS (
-		SATA_PHY_CMD_NONE,					-- no command
-		SATA_PHY_CMD_RESET,					-- reset retry and generation counters => reprogramm to initial configuration
-		SATA_PHY_CMD_NEWLINK_UP			-- reset retry counter use same generation
+		SATA_PHY_CMD_NONE,
+		SATA_PHY_CMD_INIT_CONNECTION,
+		SATA_PHY_CMD_REINIT_CONNECTION
 	);
 
+	-- Described in module 'sata_PhysicalLayer'.
 	TYPE T_SATA_PHY_STATUS IS (
 		SATA_PHY_STATUS_RESET,
-		SATA_PHY_STATUS_LINK_UP,
-		SATA_PHY_STATUS_LINK_OK,
-		SATA_PHY_STATUS_LINK_BROKEN,
-		SATA_PHY_STATUS_RECEIVED_RESET,
-		SATA_PHY_STATUS_CHANGE_SPEED,
-		SATA_PHY_STATUS_ERROR							-- FIXME: unused?
+		SATA_PHY_STATUS_NODEVICE,
+		SATA_PHY_STATUS_NOCOMMUNICATION,
+		SATA_PHY_STATUS_COMMUNICATING,
+		SATA_PHY_STATUS_ERROR
 	);
 
-	-- FIXME: unused?
+	-- Described in module 'sata_PhysicalLayer'.
 	TYPE T_SATA_PHY_ERROR IS (
 		SATA_PHY_ERROR_NONE,
-		SATA_PHY_ERROR_COMRESET,
 		SATA_PHY_ERROR_LINK_DEAD,
-		SATA_PHY_ERROR_NEGOTIATION_ERROR,
-		SATA_PHY_ERROR_FSM
-	);
-
-	TYPE T_SATA_PHY_SPEED_COMMAND IS (
-		SATA_PHY_SPEED_CMD_NONE,					-- no command
-		SATA_PHY_SPEED_CMD_RESET,					-- reset retry and generation counters => reprogramm to initial configuration
-		SATA_PHY_SPEED_CMD_NEWLINK_UP			-- reset retry counter use same generation
-	);
-
-	TYPE T_SATA_PHY_SPEED_STATUS IS (
-		SATA_PHY_SPEED_STATUS_WAITING,
-		SATA_PHY_SPEED_STATUS_RECONFIGURATING,
-		SATA_PHY_SPEED_STATUS_NEGOTIATION_ERROR
+		SATA_PHY_ERROR_NEGOTIATION
 	);
 
 	TYPE T_SATA_GENERATION_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_GENERATION;
@@ -169,33 +150,29 @@ package sata is
 	TYPE T_SATA_PHY_STATUS_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_PHY_STATUS;
 	TYPE T_SATA_PHY_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_PHY_ERROR;
 
+	function to_slv(Command : T_SATA_PHY_COMMAND)			return STD_LOGIC_VECTOR;
 	function to_slv(Status : T_SATA_PHY_STATUS)				return STD_LOGIC_VECTOR;
-	function to_slv(Status : T_SATA_PHY_SPEED_STATUS)	return STD_LOGIC_VECTOR;
-
 	function to_slv(Error : T_SATA_PHY_ERROR)					return STD_LOGIC_VECTOR;
 
 	-- ===========================================================================
 	-- SATA Link Layer Types
 	-- ===========================================================================
 	TYPE T_SATA_LINK_COMMAND IS (
-		SATA_LINK_CMD_NONE,
-		SATA_LINK_CMD_RESET
+		SATA_LINK_CMD_NONE
 	);
 
 	TYPE T_SATA_LINK_STATUS IS (
+		SATA_LINK_STATUS_NO_COMMUNICATION,
 		SATA_LINK_STATUS_IDLE,
 		SATA_LINK_STATUS_SENDING,
 		SATA_LINK_STATUS_RECEIVING,
-		SATA_LINK_STATUS_COMMUNICATION_ERROR,
+		SATA_LINK_STATUS_SYNC_ESCAPE,
 		SATA_LINK_STATUS_ERROR
 	);
 	
 	TYPE T_SATA_LINK_ERROR IS (
 		SATA_LINK_ERROR_NONE,
-		SATA_LINK_ERROR_PHY_COMRESET,
-		SATA_LINK_ERROR_PHY_8B10B_ERROR,
-		SATA_LINK_ERROR_LINK_RXFIFO_FULL,
-		SATA_LINK_ERROR_LINK_FSM
+		SATA_LINK_ERROR_COMMUNICATION_ERROR
 	);
 	
 	TYPE T_SATA_PRIMITIVE IS (					-- Primitive Name				Byte 3,	Byte 2,	Byte 1,	Byte 0
@@ -251,9 +228,9 @@ package sata is
 	-- ===========================================================================
 	TYPE T_SATA_SATACONTROLLER_COMMAND IS (
 		SATA_SATACTRL_CMD_NONE,
-		SATA_SATACTRL_CMD_RESET,									-- 
-		SATA_SATACTRL_CMD_RESET_CONNECTION,				-- invoke COMRESET / COMINIT
-		SATA_SATACTRL_CMD_RESET_LINKLAYER					-- reset LinkLayer => send SYNC-primitive
+		SATA_SATACTRL_CMD_INIT_CONNECTION,				-- init connection to device with speed negotation
+		SATA_SATACTRL_CMD_REINIT_CONNECTION,			-- init connection at same speed
+		SATA_SATACTRL_CMD_SYNC_LINK								-- reset LinkLayer => send SYNC-primitive
 	);
 
 	TYPE T_SATA_SATACONTROLLER_STATUS IS RECORD
@@ -330,7 +307,6 @@ package sata is
 	-- ===========================================================================
 	TYPE T_SATA_TRANS_COMMAND IS (
 		SATA_TRANS_CMD_NONE,
-		SATA_TRANS_CMD_RESET,
 		SATA_TRANS_CMD_TRANSFER,
 		SATA_TRANS_CMD_ABORT
 	);
@@ -383,14 +359,17 @@ package sata is
 	);
 
 	TYPE T_SATA_FISENCODER_STATUS IS (
+		SATA_FISE_STATUS_RESET,
 		SATA_FISE_STATUS_IDLE,
 		SATA_FISE_STATUS_SENDING,
 		SATA_FISE_STATUS_SENDING_DISCONTINUED,
 		SATA_FISE_STATUS_SEND_OK,
-		SATA_FISE_STATUS_ERROR
+		SATA_FISE_STATUS_ERROR,
+		SATA_FISE_STATUS_CRC_ERROR
 	);
 	
 	TYPE T_SATA_FISDECODER_STATUS IS (
+		SATA_FISD_STATUS_RESET,
 		SATA_FISD_STATUS_IDLE,
 		SATA_FISD_STATUS_RECEIVING,
 		SATA_FISD_STATUS_CHECKING_CRC,
@@ -494,7 +473,7 @@ package sata is
 	-- ===========================================================================
 	-- SATA StreamingController types
 	-- ===========================================================================
-	-- TODO: rename STREAMC to STREAMCONTROLLER
+	-- TODO Feature Request: rename STREAMC to STREAMCONTROLLER
 	TYPE T_SATA_STREAMC_COMMAND IS (
 		SATA_STREAMC_CMD_NONE,
 		SATA_STREAMC_CMD_RESET,
@@ -626,6 +605,11 @@ PACKAGE BODY sata IS
 		return to_slv(T_SATA_TRANSCEIVER_COMMAND'pos(Command), log2ceilnz(T_SATA_TRANSCEIVER_COMMAND'pos(T_SATA_TRANSCEIVER_COMMAND'high) + 1));
 	end function;
 	
+	function to_slv(Command : T_SATA_PHY_COMMAND)	return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_PHY_COMMAND'pos(Command), log2ceilnz(T_SATA_PHY_COMMAND'pos(T_SATA_PHY_COMMAND'high) + 1));
+	end function;
+	
 	function to_slv(Command : T_SATA_SATACONTROLLER_COMMAND) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_SATACONTROLLER_COMMAND'pos(Command), log2ceilnz(T_SATA_SATACONTROLLER_COMMAND'pos(T_SATA_SATACONTROLLER_COMMAND'high) + 1));
@@ -658,11 +642,6 @@ PACKAGE BODY sata IS
 		return to_slv(T_SATA_PHY_STATUS'pos(Status), log2ceilnz(T_SATA_PHY_STATUS'pos(T_SATA_PHY_STATUS'high) + 1));
 	end function;
 	
-	function to_slv(Status : T_SATA_PHY_SPEED_STATUS) return STD_LOGIC_VECTOR is
-	begin
-		return to_slv(T_SATA_PHY_SPEED_STATUS'pos(Status), log2ceilnz(T_SATA_PHY_SPEED_STATUS'pos(T_SATA_PHY_SPEED_STATUS'high) + 1));
-	end function;
-
 	function to_slv(Status : T_SATA_CMD_STATUS) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_CMD_STATUS'pos(Status), log2ceilnz(T_SATA_CMD_STATUS'pos(T_SATA_CMD_STATUS'high) + 1));

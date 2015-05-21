@@ -4,13 +4,13 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
---									Martin Zabel
+-- 									Martin Zabel
 --
--- Package:					TODO
+-- Module:					FSM for SATA Command Layer
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- See notes on module 'sata_CommandLayer'.
 -- 
 -- License:
 -- =============================================================================
@@ -71,6 +71,7 @@ ENTITY sata_CommandFSM IS
 
 		RX_SOR														: OUT	STD_LOGIC;
 		RX_EOR														: OUT	STD_LOGIC;
+		RX_ForcePut												: OUT	STD_LOGIC;
 
 		-- TransporTrans interface
 		Trans_Command											: OUT	T_SATA_TRANS_COMMAND;
@@ -114,7 +115,9 @@ ARCHITECTURE rtl OF sata_CommandFSM IS
 	
 	SIGNAL State													: T_STATE													:= ST_RESET;
 	SIGNAL NextState											: T_STATE;
-	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS getFSMEncoding_gray(DEBUG);
+
+	signal Error_nxt 											: T_SATA_CMD_ERROR;
 	
 	SIGNAL Trans_Command_i								: T_SATA_TRANS_COMMAND;
 	
@@ -147,8 +150,15 @@ BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
 				State			<= ST_RESET;
+				Error 		<= SATA_CMD_ERROR_NONE;
 			ELSE
 				State			<= NextState;
+				
+				if NextState = ST_ERROR then
+					Error 				<= Error_nxt;
+				elsif (Command /= SATA_CMD_CMD_NONE) then
+					Error 				<= SATA_CMD_ERROR_NONE; -- clear when issuing new command
+				end if;
 			END IF;
 		END IF;
 	END PROCESS;
@@ -158,7 +168,7 @@ BEGIN
 		NextState																		<= State;
 		
 		Status																			<= SATA_CMD_STATUS_RESET; -- just in case
-		Error																				<= SATA_CMD_ERROR_NONE;
+		Error_nxt																		<= SATA_CMD_ERROR_NONE;
 		
 		Load																				<= '0';
 		NextTransfer																<= '0';
@@ -167,6 +177,7 @@ BEGIN
 		
 		RX_SOR																			<= '0';
 		RX_EOR																			<= '0';
+		RX_ForcePut																	<= '0';
 		
 		Trans_Command_i															<= SATA_TRANS_CMD_NONE;
 		Trans_UpdateATAHostRegisters								<= '0';
@@ -181,6 +192,11 @@ BEGIN
 		
 		CASE State IS
 			WHEN ST_RESET =>
+				-- Clock might be unstable is this state. In this case either
+				-- a) Reset is asserted because inital reset of the SATAController is
+				--    not finished yet.
+				-- b) Trans_Status is constant and not equal to SATA_TRANS_STATUS_IDLE.
+				--    This may happen during reconfiguration due to speed negotiation.
 				Status																			<= SATA_CMD_STATUS_RESET;
         
         IF (Trans_Status = SATA_TRANS_STATUS_IDLE) THEN
@@ -303,8 +319,7 @@ BEGIN
 						NextState																<= ST_FLUSH_CACHE_WAIT;
 						
 					WHEN OTHERS =>
-						Status																	<= SATA_CMD_STATUS_ERROR;
-						Error																		<= SATA_CMD_ERROR_FSM;
+						Error_nxt																<= SATA_CMD_ERROR_FSM;
 						NextState																<= ST_ERROR;
 
 				END CASE;
@@ -320,21 +335,18 @@ BEGIN
 				
 				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
 					IF (IDF_Error = '1') THEN
-						Status																	<= SATA_CMD_STATUS_ERROR;
-						Error																		<= SATA_CMD_ERROR_IDENTIFY_DEVICE_ERROR;
+						Error_nxt																<= SATA_CMD_ERROR_IDENTIFY_DEVICE_ERROR;
 						NextState																<= ST_ERROR;
 					END IF;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
 					IF (IDF_Error = '0') THEN
 						NextState																<= ST_IDENTIFY_DEVICE_CHECK;
 					ELSE
-						Status																	<= SATA_CMD_STATUS_ERROR;
-						Error																		<= SATA_CMD_ERROR_IDENTIFY_DEVICE_ERROR;
+						Error_nxt																<= SATA_CMD_ERROR_IDENTIFY_DEVICE_ERROR;
 						NextState																<= ST_ERROR;
 					END IF;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Status																		<= SATA_CMD_STATUS_ERROR;
-					Error																			<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt																	<= SATA_CMD_ERROR_TRANSPORT_ERROR;
 					NextState																	<= ST_ERROR;
 				END IF;
 				
@@ -349,14 +361,12 @@ BEGIN
 							(IDF_DriveInformation.ATACapabilityFlags.SupportsFLUSH_CACHE_EXT = '1')) THEN
 						NextState																<= ST_IDLE;
 					ELSE	-- device not supported
-						Status																	<= SATA_CMD_STATUS_ERROR;
-						Error																		<= SATA_CMD_ERROR_DEVICE_NOT_SUPPORTED;
+						Error_nxt																<= SATA_CMD_ERROR_DEVICE_NOT_SUPPORTED;
 						NextState																<= ST_ERROR;
 					END IF;
 				ELSE
 					-- information are not valid
-					Status																		<= SATA_CMD_STATUS_ERROR;
-					Error																			<= SATA_CMD_ERROR_IDENTIFY_DEVICE_ERROR;
+					Error_nxt																	<= SATA_CMD_ERROR_IDENTIFY_DEVICE_ERROR;
 					NextState																	<= ST_ERROR;
 				END IF;
 				
@@ -374,8 +384,7 @@ BEGIN
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
 					NextState															<= ST_IDLE;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Status																<= SATA_CMD_STATUS_ERROR;
-					Error																	<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 			
@@ -406,8 +415,7 @@ BEGIN
 						NextState														<= ST_READ_L_WAIT;
 					END IF;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Status																<= SATA_CMD_STATUS_ERROR;
-					Error																	<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 			
@@ -436,8 +444,9 @@ BEGIN
 						NextState														<= ST_READ_L_WAIT;
 					END IF;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Status																<= SATA_CMD_STATUS_ERROR;
-					Error																	<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					RX_EOR 																<= '1';
+					RX_ForcePut 													<= '1';
+					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 			
@@ -451,8 +460,7 @@ BEGIN
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
 					NextState															<= ST_IDLE;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Status																<= SATA_CMD_STATUS_ERROR;
-					Error																	<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 			
@@ -468,8 +476,7 @@ BEGIN
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
 					NextState															<= ST_IDLE;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Status																<= SATA_CMD_STATUS_ERROR;
-					Error																	<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 				
@@ -499,8 +506,7 @@ BEGIN
 						NextState														<= ST_WRITE_L_WAIT;
 					END IF;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Status																<= SATA_CMD_STATUS_ERROR;
-					Error																	<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 			
@@ -530,8 +536,7 @@ BEGIN
 						NextState														<= ST_WRITE_L_WAIT;
 					END IF;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Status																<= SATA_CMD_STATUS_ERROR;
-					Error																	<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 			
@@ -544,8 +549,7 @@ BEGIN
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
 					NextState															<= ST_IDLE;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Status																<= SATA_CMD_STATUS_ERROR;
-					Error																	<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 		
@@ -560,14 +564,13 @@ BEGIN
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
 					NextState															<= ST_IDLE;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Status																<= SATA_CMD_STATUS_ERROR;
-					Error																	<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 
 			WHEN ST_ERROR =>
 				Status																	<= SATA_CMD_STATUS_ERROR;
-				Error																		<= SATA_CMD_ERROR_FSM;
+				NextState 															<= ST_IDLE;
 
 		END CASE;
 	END PROCESS;

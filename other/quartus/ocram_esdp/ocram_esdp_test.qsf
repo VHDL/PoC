@@ -56,6 +56,10 @@ set_global_assignment -name EDA_TEST_BENCH_RUN_SIM_FOR "2000 ns" -section_id ocr
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME ocram_esdp_test_tb -section_id ocram_esdp_test_tb
 set_global_assignment -name EDA_TEST_BENCH_FILE ocram_esdp_test_tb.vhdl -section_id ocram_esdp_test_tb
 
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
+
+set_global_assignment -name VHDL_FILE my_project.vhdl
 set_global_assignment -name VHDL_FILE ../../../src/mem/ocram/altera/ocram_esdp_altera.vhdl -library poc
 set_global_assignment -name VHDL_FILE my_config.vhdl -library poc
 set_global_assignment -name VHDL_FILE ocram_esdp_test.vhdl
@@ -66,7 +70,4 @@ set_global_assignment -name VHDL_FILE ../../../src/common/utils.vhdl -library po
 set_global_assignment -name VHDL_FILE ../../../src/common/physical.vhdl -library poc
 set_global_assignment -name VHDL_FILE ../../../src/common/config.vhdl -library poc
 set_global_assignment -name VHDL_FILE ../../../src/common/board.vhdl -library poc
-set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
-set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
-
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

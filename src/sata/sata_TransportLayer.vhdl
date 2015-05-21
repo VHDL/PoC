@@ -4,13 +4,28 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
+--									Martin Zabel
 --
--- Package:					TODO
+-- Module: 					SATA Transport Layer
 --
 -- Description:
 -- ------------------------------------
---		TODO
--- 
+-- Provides transport of frames via SATA links for the Host endpoint.
+--
+-- Automatically awaits a Register Frame after the link has been established.
+-- To initiate a new connection (later on), synchronously reset this layer and
+-- the underlying SATAController at the same time.
+--
+-- Clock might be instable in two conditions:
+-- a) Reset is asserted, e.g., wenn ResetDone of SATAController is not asserted
+-- 	  yet.
+-- b) After power-up or reset: Phy_Status is constant and not equal to
+-- 	  SATA_PHY_STATUS_COMMUNICATING. After SATA_PHY_STATUS_COMMUNICATING was
+-- 	  signaled, reset must be asserted before the clock might be instable again.
+--
+-- If these conditions are met, then Status will be constant and equal to
+-- SATA_TRANS_STATUS_RESET during an unstable clock, especially in case b).
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -34,9 +49,12 @@ use			IEEE.STD_LOGIC_1164.all;
 use			IEEE.NUMERIC_STD.all;
 
 library PoC;
+use 		PoC.config.all;
 use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
+use 		PoC.components.all;
+use 		PoC.debug.all;
 use			PoC.sata.all;
 use			PoC.satadbg.all;
 
@@ -76,11 +94,9 @@ entity sata_TransportLayer is
 		RX_EOT												: OUT STD_LOGIC;
 		RX_Data												: OUT	T_SLV_32;
 		RX_Valid											: OUT	STD_LOGIC;
-		RX_Commit											: OUT	STD_LOGIC;
-		RX_Rollback										: OUT	STD_LOGIC;
 	
-		-- LinkLayer interface
-		Link_Status										: IN	T_SATA_SATACONTROLLER_STATUS;
+		-- SATAController Status
+		Phy_Status										: IN	T_SATA_PHY_STATUS;
 		
 		-- TX path
 		Link_TX_Ack										: IN	STD_LOGIC;
@@ -104,7 +120,7 @@ entity sata_TransportLayer is
 			
 		Link_RX_FS_Ack								: OUT	STD_LOGIC;
 		Link_RX_FS_CRCOK							: IN	STD_LOGIC;
-		Link_RX_FS_Abort							: IN	STD_LOGIC;
+		Link_RX_FS_SyncEsc						: IN	STD_LOGIC;
 		Link_RX_FS_Valid							: IN	STD_LOGIC
 	);
 end;
@@ -146,11 +162,8 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 	signal RXReg_RX_Data								: T_SLV_32;
 	signal RXReg_RX_SOT									: STD_LOGIC;
 	signal RXReg_RX_EOT									: STD_LOGIC;
-	signal RXReg_RX_Commit							: STD_LOGIC;
-	signal RXReg_RX_Rollback						: STD_LOGIC;
 
 	-- FISEncoder
-	signal FISE_Reset										: STD_LOGIC;
 	signal FISE_Status									: T_SATA_FISENCODER_STATUS;
 	signal FISE_TX_Ack									: STD_LOGIC;
 	signal FISE_TX_InsertEOP						: STD_LOGIC;
@@ -161,15 +174,12 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 	signal FISE_Link_TX_FS_Ack					: STD_LOGIC;
 	
 	-- FISDecoder
-	signal FISD_Reset										: STD_LOGIC;
 	signal FISD_Status									: T_SATA_FISDECODER_STATUS;
 	signal FISD_FISType									: T_SATA_FISTYPE;
 	signal FISD_RX_Data									: T_SLV_32;
 	signal FISD_RX_SOP									: STD_LOGIC;
 	signal FISD_RX_EOP									: STD_LOGIC;
 	signal FISD_RX_Valid								: STD_LOGIC;
-	signal FISD_RX_Commit								: STD_LOGIC;
-	signal FISD_RX_Rollback							: STD_LOGIC;
 	signal FISD_ATADeviceRegisters			: T_SATA_ATA_DEVICE_REGISTERS;
 	signal FISD_Link_RX_Ack							: STD_LOGIC;
 	signal FISD_Link_RX_FS_Ack					: STD_LOGIC;
@@ -179,9 +189,6 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 	signal FISD_DebugPortOut						: T_SATADBG_TRANS_FISD_OUT;
 	
 begin
-	FISE_Reset		<= Reset OR to_sl(Command = SATA_TRANS_CMD_RESET);
-	FISD_Reset		<= Reset OR to_sl(Command = SATA_TRANS_CMD_RESET);
-
 	-- ================================================================
 	-- TransportLayer FSM
 	-- ================================================================
@@ -203,17 +210,12 @@ begin
 			-- DebugPort
 			DebugPortOut											=> TFSM_DebugPortOut,
 			
-			-- linkLayer interface
---			Link_Command											=> Link_Command,
-			Link_Status												=> Link_Status,
---			Link_Error												=> Link_Error,
-
+			-- ATA
       CopyATADeviceRegisterStatus       => CopyATADeviceRegisterStatus,
 			ATAHostRegisters									=> ATAHostRegisters_i,
 			ATADeviceRegisters								=> ATADeviceRegisters_i,
 			
 			TX_en															=> TFSM_TX_en,
-			--TODO: TX_LastWord												=> TC_TX_LastWord,
 			TX_SOT														=> TX_SOT,
 			TX_EOT														=> TX_EOT,
 			
@@ -221,6 +223,9 @@ begin
 			RX_SOT														=> TFSM_RX_SOT,
 			RX_EOT														=> TFSM_RX_EOT,
 			
+			-- SATAController Status
+			Phy_Status 												=> Phy_Status,
+
 			-- FISDecoder interface
 			FISD_FISType											=> FISD_FISType,
 			FISD_Status												=> FISD_Status,
@@ -243,7 +248,7 @@ begin
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF ((Reset = '1') OR (Command = SATA_TRANS_CMD_RESET)) THEN
+			IF (Reset = '1') THEN
 				ATAHostRegisters_d.Flag_C								<= '0';												-- set C flag => access Command register on device
 				ATAHostRegisters_d.Command							<= (OTHERS => '0');						-- Command register
 				ATAHostRegisters_d.Control							<= (OTHERS => '0');						-- Control register
@@ -301,10 +306,10 @@ begin
 
 		TC_TX_DataFlow			<= TC_TX_Valid		AND TC_TX_Ack;
 
-		InsertEOP_d					<= FISE_TX_InsertEOP	WHEN rising_edge(Clock) AND (TC_TX_DataFlow = '1');
+		InsertEOP_d					<= ffdre(q => InsertEOP_d,     rst => Reset, en => TC_TX_DataFlow, d => FISE_TX_InsertEOP) 	when rising_edge(Clock);
 		InsertEOP_re				<= FISE_TX_InsertEOP	AND NOT InsertEOP_d;
-		InsertEOP_re_d			<= InsertEOP_re				WHEN rising_edge(Clock) AND (TC_TX_DataFlow = '1');
-		InsertEOP_re_d2			<= InsertEOP_re_d			WHEN rising_edge(Clock) AND (TC_TX_DataFlow = '1');
+		InsertEOP_re_d			<= ffdre(q => InsertEOP_re_d,  rst => Reset, en => TC_TX_DataFlow, d => InsertEOP_re  ) 		when rising_edge(Clock);
+		InsertEOP_re_d2			<= ffdre(q => InsertEOP_re_d2, rst => Reset, en => TC_TX_DataFlow, d => InsertEOP_re_d) 		when rising_edge(Clock);
 
 		TC_TX_SOP						<= TX_SOT OR InsertEOP_re_d2;
 		TC_TX_EOP						<= TX_EOT	OR InsertEOP_re_d;
@@ -324,45 +329,37 @@ begin
 		signal RXReg_Data_en										: STD_LOGIC;
 		signal RXReg_Data_d											: T_SLV_32												:= (OTHERS => '0');	
 		signal RXReg_EOT_r											: STD_LOGIC												:= '0';
-		signal RXReg_Commit_r										: STD_LOGIC												:= '0';
-		signal RXReg_Rollback_r									: STD_LOGIC												:= '0';
 	
 		signal RXReg_LastWord										: STD_LOGIC;
 		signal RXReg_LastWord_r									: STD_LOGIC												:= '0';
-		signal RXReg_LastWordCommit							: STD_LOGIC;
+		signal RXReg_LastWordAck								: STD_LOGIC;
 		
 		signal RXReg_SOT												: STD_LOGIC;
 		signal RXReg_EOT												: STD_LOGIC;
-		signal RXReg_Commit											: STD_LOGIC;
-		signal RXReg_Rollback										: STD_LOGIC;
 	BEGIN
 
 		RXReg_Data_en					<= FISD_RX_Valid AND FISD_RX_EOP;
 		RXReg_mux_set					<= FISD_RX_Valid AND FISD_RX_EOP;
-		RXReg_mux_rst					<= RXReg_LastWordCommit; --RXReg_mux AND RXReg_LastWordCommit;
+		RXReg_mux_rst					<= RXReg_LastWordAck;
 		
 		RXReg_RX_Data					<= FISD_RX_Data WHEN (RXReg_mux = '0') ELSE RXReg_Data_d;
 		RXReg_RX_Valid				<= (FISD_RX_Valid AND NOT RXReg_Data_en) OR RXReg_LastWord;
 
 		RXReg_Ack							<= (RX_Ack	 OR RXReg_Data_en) AND NOT RXReg_mux;
-		RXReg_LastWordCommit	<= RXReg_LastWord AND RX_Ack;
+		RXReg_LastWordAck			<= RXReg_LastWord AND RX_Ack;
 
 		RXReg_SOT							<= TFSM_RX_SOT;
 		RXReg_EOT							<= RXReg_EOT_r				OR TFSM_RX_EOT;
 		RXReg_LastWord				<= RXReg_LastWord_r 	OR TFSM_RX_LastWord;
 		RXReg_mux							<= RXReg_mux_r;
-		RXReg_Commit					<= RXReg_Commit_r			OR FISD_RX_Commit;
-		RXReg_Rollback				<= RXReg_Rollback_r		OR FISD_RX_Rollback;
 
 		PROCESS(Clock)
 		BEGIN
 			IF rising_edge(Clock) THEN
-				IF ((Reset = '1') OR (Command = SATA_TRANS_CMD_RESET)) THEN
+				IF (Reset = '1') THEN
 					RXReg_Data_d				<= (OTHERS => '0');
 					RXReg_mux_r					<= '0';
 					RXReg_EOT_r					<= '0';
-					RXReg_Commit_r			<= '0';
-					RXReg_Rollback_r		<= '0';
 				ELSE
 					IF (RXReg_Data_en = '1') THEN
 						RXReg_Data_d			<= FISD_RX_Data;
@@ -385,34 +382,18 @@ begin
 					ELSIF (TFSM_RX_EOT = '1') THEN
 						RXReg_EOT_r		<= '1';
 					END IF;
-					
-					IF (RXReg_mux_rst = '1') THEN
-						RXReg_Commit_r		<= '0';
-					ELSIF (FISD_RX_Commit = '1') THEN
-						RXReg_Commit_r		<= '1';
-					END IF;
-					
-					IF (RXReg_mux_rst = '1') THEN
-						RXReg_Rollback_r		<= '0';
-					ELSIF (FISD_RX_Rollback = '1') THEN
-						RXReg_Rollback_r		<= '1';
-					END IF;
 				END IF;
 			END IF;
 		END PROCESS;
 
 		RXReg_RX_SOT				<= RXReg_SOT;
 		RXReg_RX_EOT				<= RXReg_EOT;
-		RXReg_RX_Commit			<= RXReg_Commit;
-		RXReg_RX_Rollback		<= RXReg_Rollback;
 	END BLOCK;
 
 	RX_Valid			<= RXReg_RX_Valid;
 	RX_Data				<= RXReg_RX_Data;
 	RX_SOT				<= RXReg_RX_SOT;
 	RX_EOT				<= RXReg_RX_EOT;
-	RX_Commit			<= RXReg_RX_Commit;
-	RX_Rollback		<= RXReg_RX_Rollback;
 
 
 	FISE : ENTITY PoC.sata_FISEncoder
@@ -422,7 +403,7 @@ begin
 		)
 		PORT MAP (
 			Clock												=> Clock,
-			Reset												=> FISE_Reset,
+			Reset												=> Reset,
 
 			-- FISEncoder interface
 			Status											=> FISE_Status,
@@ -440,6 +421,9 @@ begin
 			TX_Data											=> TC_TX_Data,
 			TX_Valid										=> TC_TX_Valid,
 			TX_InsertEOP								=> FISE_TX_InsertEOP,
+
+			-- SATAController Status
+			Phy_Status 									=> Phy_Status,
 			
 			-- LinkLayer FIFO interface
 			Link_TX_Valid								=> FISE_Link_TX_Valid,
@@ -466,7 +450,7 @@ begin
 		)
 		PORT MAP (
 			Clock												=> Clock,
-			Reset												=> FISD_Reset,
+			Reset												=> Reset,
 			
 			Status											=> FISD_Status,
 			FISType											=> FISD_FISType,
@@ -478,14 +462,14 @@ begin
 			ATADeviceRegisters					=> FISD_ATADeviceRegisters,
 			
 			-- TransportLayer FIFO interface
-			RX_Commit										=> FISD_RX_Commit,
-			RX_Rollback									=> FISD_RX_Rollback,
-			
 			RX_Valid										=> FISD_RX_Valid,
 			RX_Data											=> FISD_RX_Data,
 			RX_SOP											=> FISD_RX_SOP,
 			RX_EOP											=> FISD_RX_EOP,
 			RX_Ack											=> RXReg_Ack,
+			
+			-- SATAController Status
+			Phy_Status 									=> Phy_Status,
 			
 			-- LinkLayer FIFO interface
 			Link_RX_Valid								=> Link_RX_Valid,
@@ -496,7 +480,7 @@ begin
 			-- LinkLayer FS-FIFO interface
 			Link_RX_FS_Valid						=> Link_RX_FS_Valid,
 			Link_RX_FS_CRCOK						=> Link_RX_FS_CRCOK,
-			Link_RX_FS_Abort						=> Link_RX_FS_Abort,
+			Link_RX_FS_SyncEsc					=> Link_RX_FS_SyncEsc,
 			Link_RX_FS_Ack							=> FISD_Link_RX_FS_Ack
 		);
 	
@@ -512,6 +496,45 @@ begin
 	-- debug ports
 	-- ==========================================================================================================================================================
 	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
+		genXilinx : if (VENDOR = VENDOR_XILINX) generate
+			function dbg_generateCommandEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_TRANS_COMMAND loop
+					STD.TextIO.write(l, str_replace(T_SATA_TRANS_COMMAND'image(i), "sata_trans_cmd", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			function dbg_generateStatusEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_TRANS_STATUS loop
+					STD.TextIO.write(l, str_replace(T_SATA_TRANS_STATUS'image(i), "sata_trans_status_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			function dbg_generateErrorEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_TRANS_ERROR loop
+					STD.TextIO.write(l, str_replace(T_SATA_TRANS_ERROR'image(i), "sata_trans_error_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+		
+			constant dummy : T_BOOLVEC := (
+				0 => dbg_ExportEncoding("Trans Layer - Command Enum",	dbg_generateCommandEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Trans_Command.tok"),
+				1 => dbg_ExportEncoding("Trans Layer - Status Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Trans_Status.tok"),
+				2 => dbg_ExportEncoding("Trans Layer - Error Enum",		dbg_generateErrorEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Trans_Error.tok")
+			);
+		begin
+		end generate;
+	
 		DebugPortOut.TFSM												<= TFSM_DebugPortOut;
 		DebugPortOut.FISE												<= FISE_DebugPortOut;
 		DebugPortOut.FISD												<= FISD_DebugPortOut;
@@ -532,10 +555,7 @@ begin
 		DebugPortOut.RX_SOT											<= RXReg_RX_SOT;
 		DebugPortOut.RX_EOT											<= RXReg_RX_EOT;
 		DebugPortOut.RX_Ack											<= RX_Ack;
-		DebugPortOut.RX_Commit									<= RXReg_RX_Commit;
-		DebugPortOut.RX_Rollback								<= RXReg_RX_Rollback;
-		
-		-- RXReg?
+		DebugPortOut.RX_LastWord								<= TFSM_RX_LastWord;
 		
 		DebugPortOut.FISE_FISType								<= TFSM_FISType;
 		DebugPortOut.FISE_Status								<= FISE_Status;
@@ -560,7 +580,7 @@ begin
 		DebugPortOut.Link_RX_Ack								<= FISD_Link_RX_Ack;
 		DebugPortOut.Link_RX_FS_Valid						<= Link_RX_FS_Valid;
 		DebugPortOut.Link_RX_FS_CRCOK						<= Link_RX_FS_CRCOK;
-		DebugPortOut.Link_RX_FS_Abort						<= Link_RX_FS_Abort;
+		DebugPortOut.Link_RX_FS_SyncEsc					<= Link_RX_FS_SyncEsc;
 		DebugPortOut.Link_RX_FS_Ack							<= FISD_Link_RX_FS_Ack;
 	end generate;
 end;
