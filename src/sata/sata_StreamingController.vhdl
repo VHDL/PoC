@@ -123,14 +123,6 @@ END;
 ARCHITECTURE rtl OF sata_StreamingController IS
 	ATTRIBUTE KEEP													: BOOLEAN;
 
-	-- ==========================================================================
-	-- ATAStreamingController configuration
-	-- ==========================================================================
-	CONSTANT AHEAD_CYCLES_FOR_INSERT_EOT		: NATURAL			:= 1;
-	
-	-- TX path																						current value				test value			default value
-	CONSTANT TX_FIFO_DEPTH									: NATURAL			:= 16;					--		 0							 0
-	
 	-- Common
 	-- ==========================================================================
 	signal MyReset 													: STD_LOGIC;
@@ -231,7 +223,6 @@ BEGIN
 			SIM_EXECUTE_IDENTIFY_DEVICE	=> SIM_EXECUTE_IDENTIFY_DEVICE,				-- required by CommandLayer: load device parameters
 			DEBUG												=> DEBUG,										-- generate ChipScope DBG_* signals
 			ENABLE_DEBUGPORT						=> ENABLE_DEBUGPORT,
-			TX_FIFO_DEPTH								=> TX_FIFO_DEPTH,
 			LOGICAL_BLOCK_SIZE_ldB			=> LOGICAL_BLOCK_SIZE_ldB
 		)
 		PORT MAP (

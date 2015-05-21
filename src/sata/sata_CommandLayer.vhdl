@@ -62,7 +62,6 @@ ENTITY sata_CommandLayer IS
 		ENABLE_DEBUGPORT							: BOOLEAN									:= FALSE;			-- export internal signals to upper layers for debug purposes
 		DEBUG													: BOOLEAN									:= FALSE;
 		SIM_EXECUTE_IDENTIFY_DEVICE		: BOOLEAN									:= TRUE;			-- required by CommandLayer: load device parameters
-		TX_FIFO_DEPTH									: NATURAL									:= 0;
 		LOGICAL_BLOCK_SIZE_ldB				: POSITIVE
 	);
 	PORT (
@@ -164,13 +163,16 @@ ARCHITECTURE rtl OF sata_CommandLayer IS
 	-- TX_FIFO
 	-- ==========================================================================
 	SIGNAL TX_FIFO_Full											: STD_LOGIC;
+	SIGNAL TX_FIFO_put											: STD_LOGIC;
+	SIGNAL TX_FIFO_got											: STD_LOGIC;
+	SIGNAL TX_FIFO_DataIn										: STD_LOGIC_VECTOR(33 DOWNTO 0);
+	SIGNAL TX_FIFO_DataOut									: STD_LOGIC_VECTOR(33 DOWNTO 0);
 	
 	-- TX path data interface after TX_FIFO
 	SIGNAL TX_FIFO_Data											: T_SLV_32;
 	SIGNAL TX_FIFO_SOR											: STD_LOGIC;
 	SIGNAL TX_FIFO_EOR											: STD_LOGIC;
 	SIGNAL TX_FIFO_Valid										: STD_LOGIC;		
-	SIGNAL TX_FIFO_Ack											: STD_LOGIC;
 	
 	-- TX path
 	-- ==========================================================================
@@ -286,65 +288,38 @@ BEGIN
 	Error										<= Error_i;
 	DriveInformation				<= IDF_DriveInformation;
 
-	-- TX_FIFO signals
-	genTXFIFO0 : IF (TX_FIFO_DEPTH = 0) GENERATE
-		TX_Ack						<= NOT TX_FIFO_Full;
-		TX_FIFO_Data			<= TX_Data;
-		TX_FIFO_SOR				<= TX_SOR;
-		TX_FIFO_EOR				<= TX_EOR;
-		TX_FIFO_Valid			<= TX_Valid;
+	TX_FIFO_put																<= TX_Valid;
+	TX_FIFO_got																<= TC_TX_Ack;
 		
-		TX_FIFO_Full			<= NOT Trans_TX_Ack;
-	END GENERATE;
-	genTXFIFO1 : IF (TX_FIFO_DEPTH > 0) GENERATE
-		SIGNAL TX_FIFO_put											: STD_LOGIC;
-		SIGNAL TX_FIFO_got											: STD_LOGIC;
+	TX_FIFO_DataIn(TX_Data'range)							<= TX_Data;
+	TX_FIFO_DataIn(TX_Data'length	+ 0)				<= TX_SOR;
+	TX_FIFO_DataIn(TX_Data'length	+ 1)				<= TX_EOR;
 		
-		SIGNAL TX_FIFO_DataIn										: STD_LOGIC_VECTOR(33 DOWNTO 0);
-		SIGNAL TX_FIFO_DataOut									: STD_LOGIC_VECTOR(33 DOWNTO 0);
-	BEGIN
-		TX_FIFO_put																<= TX_Valid;
-		TX_FIFO_got																<= TC_TX_Ack;
+	TX_FIFO_Data															<= TX_FIFO_DataOut(TX_FIFO_Data'range);
+	TX_FIFO_SOR																<= TX_FIFO_DataOut(TX_Data'length	+ 0);
+	TX_FIFO_EOR																<= TX_FIFO_DataOut(TX_Data'length	+ 1);
 		
-		TX_FIFO_DataIn(TX_Data'range)							<= TX_Data;
-		TX_FIFO_DataIn(TX_Data'length	+ 0)				<= TX_SOR;
-		TX_FIFO_DataIn(TX_Data'length	+ 1)				<= TX_EOR;
-		
-		TX_FIFO_Data															<= TX_FIFO_DataOut(TX_FIFO_Data'range);
-		TX_FIFO_SOR																<= TX_FIFO_DataOut(TX_Data'length	+ 0);
-		TX_FIFO_EOR																<= TX_FIFO_DataOut(TX_Data'length	+ 1);
-		
-		-- Commandlayer TX_FIFO
-		TX_FIFO : ENTITY PoC.fifo_cc_got
-			GENERIC MAP (
-				D_BITS					=> TX_FIFO_DataIn'length,				-- 
-				MIN_DEPTH 			=> TX_FIFO_DEPTH,								-- 
-				DATA_REG				=> FALSE,
-				STATE_REG				=> FALSE,
-				OUTPUT_REG			=> TRUE,
-				ESTATE_WR_BITS	=> 0,
-				FSTATE_RD_BITS	=> 0														-- 
-			)
-			PORT MAP (
-				clk							=> Clock,
-				rst							=> Reset,
+	-- Commandlayer TX_FIFO
+	TX_FIFO : ENTITY PoC.fifo_glue
+		GENERIC MAP (
+			D_BITS					=> TX_FIFO_DataIn'length
+		)
+		PORT MAP (
+			clk							=> Clock,
+			rst							=> Reset,
+			
+			-- write interface
+			put							=> TX_FIFO_put,
+			di							=> TX_FIFO_DataIn,
+			ful							=> TX_FIFO_Full,
 
-				-- write interface
-				put							=> TX_FIFO_put,
-				din							=> TX_FIFO_DataIn,
-				estate_wr				=> OPEN,
-				full						=> TX_FIFO_Full,
+			-- read interface
+			got							=> TX_FIFO_got,
+			vld							=> TX_FIFO_Valid,
+			do							=> TX_FIFO_DataOut
+		);
 
-				-- read interface
-				got							=> TX_FIFO_got,
-				valid						=> TX_FIFO_Valid,
-				dout						=> TX_FIFO_DataOut,
-				fstate_rd				=> OPEN
-			);
-
-		TX_FIFO_Ack			<= NOT TX_FIFO_Full;
-		TX_Ack					<= TX_FIFO_Ack;
-	END GENERATE;
+	TX_Ack					<= NOT TX_FIFO_Full;
 
 	-- TX TransportCutter
 	-- ==========================================================================================================================================================
@@ -462,7 +437,7 @@ BEGIN
 	
 	Trans_RX_Ack_i	 	<= (NOT RX_FIFO_Full) WHEN (IDF_Enable = '0') ELSE '1';					-- RX_Ack	 multiplexer
 	Trans_RX_Ack      <= Trans_RX_Ack_i;
-	RX_Valid				<= RX_FIFO_Valid;
+	RX_Valid					<= RX_FIFO_Valid;
 
 	
 	-- ================================================================

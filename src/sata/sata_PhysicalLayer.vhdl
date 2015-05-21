@@ -87,7 +87,6 @@ entity sata_PhysicalLayer is
 		CONTROLLER_TYPE									: T_SATA_DEVICE_TYPE							:= SATA_DEVICE_TYPE_HOST;
 		ALLOW_SPEED_NEGOTIATION					: BOOLEAN													:= TRUE;
 		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= C_SATA_GENERATION_MAX;
-		ALLOW_AUTO_RECONNECT						: BOOLEAN													:= TRUE;
 		ALLOW_STANDARD_VIOLATION				: BOOLEAN													:= FALSE;
 		OOB_TIMEOUT											: TIME														:= TIME'low;
 		GENERATION_CHANGE_COUNT					: INTEGER													:= 8;
@@ -165,7 +164,6 @@ begin
 	assert FALSE report "Physical Layer"																															severity NOTE;
 	assert FALSE report "  ControllerType:         " & T_SATA_DEVICE_TYPE'image(CONTROLLER_TYPE)			severity NOTE;
 	assert FALSE report "  AllowSpeedNegotiation:  " & to_string(ALLOW_SPEED_NEGOTIATION)							severity NOTE;
-	assert FALSE report "  AllowAutoReconnect:     " & to_string(ALLOW_AUTO_RECONNECT)								severity NOTE;
 	assert FALSE report "  AllowStandardViolation: " & to_string(ALLOW_STANDARD_VIOLATION)						severity NOTE;
 	assert FALSE report "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATION + 1)	severity NOTE;
 

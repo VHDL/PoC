@@ -501,7 +501,7 @@ BEGIN
 				
 				-- ErrorRegister
 				IF (ErrorRegister_en	= '1') THEN
-					ErrorRegister	<= Alias_StatusReg;
+					ErrorRegister	<= Alias_ErrorReg;
 				END IF;
 				
 				-- AddressRegister
