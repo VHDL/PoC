@@ -150,6 +150,7 @@ ARCHITECTURE rtl OF sata_CommandLayer IS
 	
 	SIGNAL CFSM_RX_SOR											: STD_LOGIC;
 	SIGNAL CFSM_RX_EOR											: STD_LOGIC;
+	signal CFSM_RX_ForcePut									: STD_LOGIC;
 
 	SIGNAL CFSM_DebugPortOut								: T_SATADBG_CMD_CFSM_OUT;
 
@@ -265,6 +266,7 @@ BEGIN
 			
 			RX_SOR												=> CFSM_RX_SOR,
 			RX_EOR												=> CFSM_RX_EOR,
+			RX_ForcePut										=> CFSM_RX_ForcePut,
 			
 			-- TransportLayer interface
 			Trans_Command									=> Trans_Command,
@@ -405,7 +407,7 @@ BEGIN
 	END BLOCK;	-- TransferCutter
 
 	-- CommandLayer RX_FIFO
-	RX_FIFO_put																<= Trans_RX_Valid			AND NOT IDF_Enable;
+	RX_FIFO_put																<= (Trans_RX_Valid and not IDF_Enable) or CFSM_RX_ForcePut;
 	RX_FIFO_DataIn(Trans_RX_Data'range)				<= Trans_RX_Data;
 	RX_FIFO_DataIn(Trans_RX_Data'length	+ 0)	<= CFSM_RX_SOR;
 	RX_FIFO_DataIn(Trans_RX_Data'length	+ 1)	<= CFSM_RX_EOR;

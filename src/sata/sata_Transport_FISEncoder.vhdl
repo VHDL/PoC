@@ -336,12 +336,16 @@ BEGIN
 					IF (Link_TX_FS_SendOK = '1') THEN
 						Link_TX_FS_Ack				<= '1';
 						Status								<= SATA_FISE_STATUS_SEND_OK;
-						
 						NextState							<= ST_IDLE;
-					ELSE
+					elsif (Link_TX_FS_Abort = '1') THEN
+						-- SyncEscape requested by device
 						Link_TX_FS_Ack				<= '1';
 						Status								<= SATA_FISE_STATUS_ERROR;
-						
+						NextState							<= ST_IDLE;
+					ELSE
+						-- CRC error
+						Link_TX_FS_Ack				<= '1';
+						Status								<= SATA_FISE_STATUS_CRC_ERROR;
 						NextState							<= ST_IDLE;
 					end if;
 				end if;

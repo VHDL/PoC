@@ -71,6 +71,7 @@ ENTITY sata_CommandFSM IS
 
 		RX_SOR														: OUT	STD_LOGIC;
 		RX_EOR														: OUT	STD_LOGIC;
+		RX_ForcePut												: OUT	STD_LOGIC;
 
 		-- TransporTrans interface
 		Trans_Command											: OUT	T_SATA_TRANS_COMMAND;
@@ -176,6 +177,7 @@ BEGIN
 		
 		RX_SOR																			<= '0';
 		RX_EOR																			<= '0';
+		RX_ForcePut																	<= '0';
 		
 		Trans_Command_i															<= SATA_TRANS_CMD_NONE;
 		Trans_UpdateATAHostRegisters								<= '0';
@@ -442,6 +444,8 @@ BEGIN
 						NextState														<= ST_READ_L_WAIT;
 					END IF;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+					RX_EOR 																<= '1';
+					RX_ForcePut 													<= '1';
 					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
