@@ -5,11 +5,12 @@
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --
--- Module:					Extract Configuration from ATA IDENTIFY DEVICE Response
+-- Module:					IDENTIFY DEVICE Response Handler for ATA Command Layer
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- Extracts drive configuration from repsonse to ATA IDENTIFY command. For
+-- example, delviers information about drive size and capability flags.
 -- 
 -- License:
 -- =============================================================================

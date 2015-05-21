@@ -372,7 +372,7 @@ begin
 					AlignCounter_rst				<= '1';
 					TC1_en									<= '1';
 					
-					-- TODO
+					-- TODO Low Priority: Fulfill specification, but no problem detected yet.
 					-- 		wait for 53,3 ns (64 UIs ~= 2 Gen1-DWords) before accepting ALIGN (<= crosstalking)
 					--		source: ATA8-AST page 75, transition HP8:HP9, => note text
 					

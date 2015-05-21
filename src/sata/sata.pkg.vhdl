@@ -10,7 +10,7 @@
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- Declares types and functions required for the whole SATA stack.
 -- 
 -- License:
 -- =============================================================================
@@ -474,7 +474,7 @@ package sata is
 	-- ===========================================================================
 	-- SATA StreamingController types
 	-- ===========================================================================
-	-- TODO: rename STREAMC to STREAMCONTROLLER
+	-- TODO Feature Request: rename STREAMC to STREAMCONTROLLER
 	TYPE T_SATA_STREAMC_COMMAND IS (
 		SATA_STREAMC_CMD_NONE,
 		SATA_STREAMC_CMD_RESET,

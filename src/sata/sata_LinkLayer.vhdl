@@ -10,7 +10,14 @@
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- Represents the Link Layer of the SATA stack and provides a logical link for
+-- transmitting frames. The frames are transmitted across the physical link
+-- provided by the Physical Layer (sata_PhysicalLayer). 
+--
+-- The SATA Transport Layer and Link layer are connected via the TX_* path for
+-- sending frames and RX_* path for receiving frames. Success or failure of a
+-- transmission is indicated via the frame state FIFOs TX_FS_* and RX_FS_* for
+-- each direction, respectivly.
 -- 
 -- License:
 -- =============================================================================
@@ -109,33 +116,37 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 -- ==================================================================
 -- LinkLayer configuration
 -- ==================================================================
--- TX path																							current value																	test value			default value
-	CONSTANT INSERT_ALIGN_INTERVAL			: POSITIVE				:= 256;																	--				16							 256
+-- TX path																							
+	CONSTANT INSERT_ALIGN_INTERVAL			: POSITIVE				:= 256;
 
 	CONSTANT TX_SOF_BIT									: NATURAL					:= 32;
 	CONSTANT TX_EOF_BIT									: NATURAL					:= 33;
 	CONSTANT TX_FIFO_BITS								: POSITIVE				:= 34;
-	CONSTANT TX_FIFO_DEPTH							: POSITIVE				:= ite(SIMULATION, 16, 32);							--				16								32
+	CONSTANT TX_FIFO_DEPTH							: POSITIVE				:= 32;
 
 	CONSTANT TX_SENDOK_BIT							: NATURAL					:= 0;
 	CONSTANT TX_ABORT_BIT								: NATURAL					:= 1;
 	CONSTANT TX_FSFIFO_BITS							: POSITIVE				:= 2;
-	CONSTANT TX_FSFIFO_DEPTH						: POSITIVE				:= 4;																		-- 				 4								 4								max frames in TX_FIFO
+	CONSTANT TX_FSFIFO_DEPTH						: POSITIVE				:= 4;
 	CONSTANT TX_FSFIFO_EMPTYSTATE_BITS	: POSITIVE				:= log2ceilnz(TX_FSFIFO_DEPTH);
 	
 -- RX path
 	CONSTANT RX_SOF_BIT									: NATURAL					:= 32;
 	CONSTANT RX_EOF_BIT									: NATURAL					:= 33;
 	CONSTANT RX_FIFO_BITS								: POSITIVE				:= 34;
-	CONSTANT RX_FIFO_DEPTH							: POSITIVE				:= ite(SIMULATION, 64, 4096);						--				64							4096								max frame payload length between SOF end EOF is 2064 Bytes
-	CONSTANT RX_FIFO_MIN_FREE_SPACE			: POSITIVE				:= ite(SIMULATION, 32, 	64);						-- 				32								64								min. free space in RX FIFO, min. 32 32-Bit words
+	CONSTANT RX_FIFO_DEPTH							: POSITIVE				:= 4096;
+	CONSTANT RX_FIFO_MIN_FREE_SPACE			: POSITIVE				:= 64;
 	CONSTANT RX_FIFO_EMPTYSTATE_BITS		: POSITIVE				:= log2ceilnz(RX_FIFO_DEPTH / RX_FIFO_MIN_FREE_SPACE);
 
 	CONSTANT RX_CRCOK_BIT								: NATURAL					:= 0;
 	CONSTANT RX_SYNCESC_BIT							: NATURAL					:= 1;
 	CONSTANT RX_FSFIFO_BITS							: NATURAL					:= 2;
-	CONSTANT RX_FSFIFO_DEPTH						: POSITIVE				:= 8;																		--				 8								 8								max frames in RX_FIFO
+	CONSTANT RX_FSFIFO_DEPTH						: POSITIVE				:= 8;
 	CONSTANT RX_FSFIFO_EMPTYSTATE_BITS	: POSITIVE				:= log2ceilnz(RX_FSFIFO_DEPTH);
+
+-- CRC
+	CONSTANT CRC32_POLYNOMIAL		: BIT_VECTOR(35 DOWNTO 0) := x"104C11DB7";
+	CONSTANT CRC32_INIT					: T_SLV_32								:= x"52325032";
 
 -- ==================================================================
 -- Signals
@@ -233,7 +244,7 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	SIGNAL DataScrambler_DataIn				: T_SLV_32;
 	SIGNAL DataScrambler_DataOut			: T_SLV_32;
 	
-	-- TODO: To be implemeted to reduce EMI.
+	-- TODO Feature Request: To be implemeted to reduce EMI.
 --	SIGNAL DummyScrambler_en					: STD_LOGIC;
 --	SIGNAL DummyScrambler_rst					: STD_LOGIC;
 --	SIGNAL DummyScrambler_DataIn			: T_SLV_32;
@@ -292,14 +303,12 @@ begin
 			-- transport layer interface
 			Trans_TX_SOF						=> Trans_TX_SOF,
 			Trans_TX_EOF						=> Trans_TX_EOF,
-			--TODO: Trans_TX_Abort					=> Trans_TX_Abort, -- see FSM
 
 			Trans_TXFS_SendOK				=> Trans_TXFS_SendOK,
 			Trans_TXFS_Abort				=> Trans_TXFS_Abort,
 
 			Trans_RX_SOF						=> Trans_RX_SOF,
 			Trans_RX_EOF						=> Trans_RX_EOF,
-			--TODO: Trans_RX_Abort					=> Trans_RX_Abort, -- see FSM
 
 			Trans_RXFS_CRCOK				=> Trans_RXFS_CRCOK,
 			Trans_RXFS_SyncEsc			=> Trans_RXFS_SyncEsc,
@@ -564,29 +573,43 @@ begin
 	-- ================================================================
 	-- TX path
 	TX_CRC_DataIn			<= TX_FIFO_DataOut(TX_CRC_DataIn'range);
-	
-	TX_CRC : ENTITY PoC.sata_TX_CRC32
-		PORT MAP (
-			Clock					=> Clock,
-			Reset					=> TX_CRC_rst,
 
-			Valid					=> TX_CRC_Valid,
-			DataIn				=> TX_CRC_DataIn,
-			DataOut				=> TX_CRC_DataOut
+	TX_CRC : ENTITY PoC.comm_crc
+		GENERIC MAP (
+			GEN							=> CRC32_POLYNOMIAL(32 DOWNTO 0),		-- Generator Polynom
+			BITS						=> 32																-- Number of Bits to be processed in parallel
+		)
+		PORT MAP (
+			clk							=> Clock,														-- Clock
+			
+			set							=> TX_CRC_rst,											-- Parallel Preload of Remainder
+			init						=> CRC32_INIT,											
+			step						=> TX_CRC_Valid,										-- Process Input Data (MSB first)
+			din							=> TX_CRC_DataIn,
+
+			rmd							=> TX_CRC_DataOut,									-- Remainder
+			zero						=> OPEN															-- Remainder is Zero
 		);
 
 	DataScrambler_DataIn <= TX_CRC_DataIn WHEN (CRCMux_ctrl = '0') ELSE TX_CRC_DataOut;
 	
 	
 	-- RX path
-	RX_CRC : ENTITY PoC.sata_RX_CRC32
+	RX_CRC : ENTITY PoC.comm_crc
+		GENERIC MAP (
+			GEN							=> CRC32_POLYNOMIAL(32 DOWNTO 0),		-- Generator Polynom
+			BITS						=> 32																-- Number of Bits to be processed in parallel
+		)
 		PORT MAP (
-			Clock					=> Clock,
-			Reset					=> RX_CRC_rst,
+			clk							=> Clock,														-- Clock
+			
+			set							=> RX_CRC_rst,											-- Parallel Preload of Remainder
+			init						=> CRC32_INIT,											
+			step						=> RX_CRC_Valid,										-- Process Input Data (MSB first)
+			din							=> DataUnscrambler_DataOut,
 
-			Valid					=> RX_CRC_Valid,
-			DataIn				=> DataUnscrambler_DataOut,
-			DataOut				=> RX_CRC_DataOut
+			rmd							=> RX_CRC_DataOut,									-- Remainder
+			zero						=> OPEN															-- Remainder is Zero
 		);
 	
 	RX_CRC_OK <= to_sl(RX_CRC_DataOut = DataUnscrambler_DataOut);
@@ -610,7 +633,7 @@ begin
 			DataOut									=> DataScrambler_DataOut
 		);
 
-  --TODO: To be implemented to reduce EMI.
+  --TODO Feature Request: To be implemented to reduce EMI.
 --  DummyScrambler_DataIn <= (others => '0');
 	
 --	DummyScrambler : ENTITY PoC.sata_Scrambler

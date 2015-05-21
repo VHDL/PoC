@@ -10,7 +10,7 @@
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- Declares types and function for debugging purpose.
 -- 
 -- License:
 -- =============================================================================

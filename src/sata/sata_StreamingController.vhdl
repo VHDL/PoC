@@ -11,7 +11,9 @@
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- Combines ATA Command and SATA Transport Layer. Provides a simple interface
+-- to stream data from the device to the host (read data) and vice versa (write
+-- data).
 -- 
 -- License:
 -- =============================================================================

@@ -10,8 +10,13 @@
 --
 -- Description:
 -- ------------------------------------
---		TODO
--- 
+-- For end users:
+-- Provides component declarations of the main components
+-- "sata_StreamingController" and "sata_SATAController".
+--
+-- For internal use:
+-- Provides component declarations of device-specific transceivers.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany

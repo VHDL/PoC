@@ -9,7 +9,7 @@
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- Scrambles or unscrambles transmitted data over the physical link.
 -- 
 -- License:
 -- =============================================================================

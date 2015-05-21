@@ -202,7 +202,7 @@ begin
 			Trans_RP_Lock							=> Trans_RP_Lock,
 			Trans_RP_Locked						=> Trans_RP_Locked);
 
-	-- TODO: Replace Trans_RP_* signals by CSE interface
+	-- TODO Feature Request: Replace Trans_RP_* signals by CSE interface
 	Trans_Command 					<= SATA_TRANSCEIVER_CMD_NONE;
 	Trans_RP_SATAGeneration <= Trans_RP_SATAGeneration_i;
 	
