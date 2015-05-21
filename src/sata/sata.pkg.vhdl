@@ -107,8 +107,9 @@ package sata is
 	type T_SATA_TRANSCEIVER_TX_ERROR_VECTOR		is array (NATURAL range <>) of T_SATA_TRANSCEIVER_TX_ERROR;
 	type T_SATA_TRANSCEIVER_RX_ERROR_VECTOR		is array (NATURAL range <>) of T_SATA_TRANSCEIVER_RX_ERROR;
 
-	function to_slv(Command : T_SATA_TRANSCEIVER_COMMAND)	return STD_LOGIC_VECTOR;
-	function to_slv(Status : T_SATA_TRANSCEIVER_STATUS)		return STD_LOGIC_VECTOR;
+	function to_slv(Command : T_SATA_TRANSCEIVER_COMMAND)			return STD_LOGIC_VECTOR;
+	function to_slv(Status : T_SATA_TRANSCEIVER_STATUS)				return STD_LOGIC_VECTOR;
+	function to_slv(Error : T_SATA_TRANSCEIVER_COMMON_ERROR)	return STD_LOGIC_VECTOR;
 
 	-- ===========================================================================
 	-- SATA Physical Layer Types
@@ -210,6 +211,7 @@ package sata is
 
 	function to_slv(Primitive : T_SATA_PRIMITIVE)				return STD_LOGIC_VECTOR;
 	function to_slv(Status : T_SATA_LINK_STATUS)				return STD_LOGIC_VECTOR;
+	function to_slv(Error : T_SATA_LINK_ERROR)					return STD_LOGIC_VECTOR;
 	
 	function to_sata_word(Primitive : T_SATA_PRIMITIVE)	return T_SLV_32;
 	function to_sata_primitive(Data : T_SLV_32; CharIsK : T_SLV_4; DetectDialTone : BOOLEAN := FALSE)	return T_SATA_PRIMITIVE;
@@ -538,13 +540,13 @@ package sata is
 	function to_slv(reg	: T_SATA_ATA_DEVICE_REGISTER_ERROR)		return STD_LOGIC_VECTOR;
 	
 	function to_sata_generation(slv : STD_LOGIC_VECTOR)	return T_SATA_GENERATION;
-	FUNCTION to_sata_fistype(slv : T_SLV_8; valid : STD_LOGIC := '1') RETURN T_SATA_FISTYPE;
-	FUNCTION to_sata_ata_command(slv : T_SLV_8) RETURN T_SATA_ATA_COMMAND;
-	FUNCTION to_sata_cmdcat(cmd : T_SATA_ATA_COMMAND) RETURN T_SATA_COMMAND_CATEGORY;
-	FUNCTION is_lba48_command(cmd : T_SATA_ATA_COMMAND) RETURN STD_LOGIC;
-	FUNCTION to_sata_ata_device_flags(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_FLAGS;
-	FUNCTION to_sata_ata_device_register_status(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_REGISTER_STATUS;
-	FUNCTION to_sata_ata_device_register_error(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_REGISTER_ERROR;
+	FUNCTION to_sata_fistype(slv : T_SLV_8; valid : STD_LOGIC := '1') return T_SATA_FISTYPE;
+	FUNCTION to_sata_ata_command(slv : T_SLV_8) return T_SATA_ATA_COMMAND;
+	FUNCTION to_sata_cmdcat(cmd : T_SATA_ATA_COMMAND) return T_SATA_COMMAND_CATEGORY;
+	FUNCTION is_lba48_command(cmd : T_SATA_ATA_COMMAND) return STD_LOGIC;
+	FUNCTION to_sata_ata_device_flags(slv : T_SLV_8) return T_SATA_ATA_DEVICE_FLAGS;
+	FUNCTION to_sata_ata_device_register_status(slv : T_SLV_8) return T_SATA_ATA_DEVICE_REGISTER_STATUS;
+	FUNCTION to_sata_ata_device_register_error(slv : T_SLV_8) return T_SATA_ATA_DEVICE_REGISTER_ERROR;
 
 END;
 
@@ -643,14 +645,19 @@ PACKAGE BODY sata IS
 		return to_slv(T_SATA_PHY_STATUS'pos(Status), log2ceilnz(T_SATA_PHY_STATUS'pos(T_SATA_PHY_STATUS'high) + 1));
 	end function;
 	
-	function to_slv(Status : T_SATA_CMD_STATUS) return STD_LOGIC_VECTOR is
+	function to_slv(Status : T_SATA_LINK_STATUS) return STD_LOGIC_VECTOR is
 	begin
-		return to_slv(T_SATA_CMD_STATUS'pos(Status), log2ceilnz(T_SATA_CMD_STATUS'pos(T_SATA_CMD_STATUS'high) + 1));
+		return to_slv(T_SATA_LINK_STATUS'pos(Status), log2ceilnz(T_SATA_LINK_STATUS'pos(T_SATA_LINK_STATUS'high) + 1));
 	end function;
-	
+
 	function to_slv(Status : T_SATA_TRANS_STATUS) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_TRANS_STATUS'pos(Status), log2ceilnz(T_SATA_TRANS_STATUS'pos(T_SATA_TRANS_STATUS'high) + 1));
+	end function;
+	
+	function to_slv(Status : T_SATA_CMD_STATUS) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_CMD_STATUS'pos(Status), log2ceilnz(T_SATA_CMD_STATUS'pos(T_SATA_CMD_STATUS'high) + 1));
 	end function;
 
 	function to_slv(Status : T_SATA_FISENCODER_STATUS) return STD_LOGIC_VECTOR is
@@ -665,59 +672,64 @@ PACKAGE BODY sata IS
 
 	-- to_slv(Error : ***)
 	-- -----------------------------------
+	function to_slv(Error : T_SATA_TRANSCEIVER_COMMON_ERROR) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_TRANSCEIVER_COMMON_ERROR'pos(Error), log2ceilnz(T_SATA_TRANSCEIVER_COMMON_ERROR'pos(T_SATA_TRANSCEIVER_COMMON_ERROR'high) + 1));
+	end function;
+
 	function to_slv(Error : T_SATA_PHY_ERROR) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_PHY_ERROR'pos(Error), log2ceilnz(T_SATA_PHY_ERROR'pos(T_SATA_PHY_ERROR'high) + 1));
+	end function;
+
+	function to_slv(Error : T_SATA_LINK_ERROR) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_LINK_ERROR'pos(Error), log2ceilnz(T_SATA_LINK_ERROR'pos(T_SATA_LINK_ERROR'high) + 1));
+	end function;
+
+	function to_slv(Error : T_SATA_TRANS_ERROR) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_TRANS_ERROR'pos(Error), log2ceilnz(T_SATA_TRANS_ERROR'pos(T_SATA_TRANS_ERROR'high) + 1));
 	end function;
 
 	function to_slv(Error : T_SATA_CMD_ERROR) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_CMD_ERROR'pos(Error), log2ceilnz(T_SATA_CMD_ERROR'pos(T_SATA_CMD_ERROR'high) + 1));
 	end function;
-	
-	function to_slv(Error : T_SATA_TRANS_ERROR) return STD_LOGIC_VECTOR is
-	begin
-		return to_slv(T_SATA_TRANS_ERROR'pos(Error), log2ceilnz(T_SATA_TRANS_ERROR'pos(T_SATA_TRANS_ERROR'high) + 1));
-	end function;
 
 	-- to_slv(***)
 	-- -----------------------------------
-	FUNCTION to_slv(Primitive : T_SATA_PRIMITIVE) RETURN STD_LOGIC_VECTOR IS
-	BEGIN
-		RETURN to_slv(T_SATA_PRIMITIVE'pos(Primitive), log2ceilnz(T_SATA_PRIMITIVE'pos(T_SATA_PRIMITIVE'high) + 1));
-	END FUNCTION;
-	
-	function to_slv(Status : T_SATA_LINK_STATUS) return STD_LOGIC_VECTOR is
+	function to_slv(Primitive : T_SATA_PRIMITIVE) return STD_LOGIC_VECTOR is
 	begin
-		return to_slv(T_SATA_LINK_STATUS'pos(Status), log2ceilnz(T_SATA_LINK_STATUS'pos(T_SATA_LINK_STATUS'high) + 1));
+		return to_slv(T_SATA_PRIMITIVE'pos(Primitive), log2ceilnz(T_SATA_PRIMITIVE'pos(T_SATA_PRIMITIVE'high) + 1));
 	end function;
 	
-	FUNCTION to_sata_word(Primitive : T_SATA_PRIMITIVE) RETURN T_SLV_32 IS	--																							K symbol
-	BEGIN																															-- primitive name				Byte 3	Byte 2	Byte 1	Byte 0
-		CASE Primitive IS																								-- =======================================================
-			WHEN SATA_PRIMITIVE_NONE =>				RETURN x"00000000";					-- no primitive					
-			WHEN SATA_PRIMITIVE_ALIGN =>			RETURN x"7B4A4ABC";					-- ALIGN								D27.3,	D10.2,	D10.2,	K28.5
-			WHEN SATA_PRIMITIVE_SYNC =>				RETURN x"B5B5957C";					-- SYNC									D21.5,	D21.5,	D21.4,	K28.3
-			WHEN SATA_PRIMITIVE_SOF =>				RETURN x"3737B57C";					-- SOF									D23.1,	D23.1,	D21.5,	K28.3
-			WHEN SATA_PRIMITIVE_EOF =>				RETURN x"D5D5B57C";					-- EOF									D21.6,	D21.6,	D21.5,	K28.3
-			WHEN SATA_PRIMITIVE_HOLD =>				RETURN x"D5D5AA7C";					-- HOLD									D21.6,	D21.6,	D10.5,	K28.3
-			WHEN SATA_PRIMITIVE_HOLD_ACK =>		RETURN x"9595AA7C";					-- HOLDA								D21.4,	D21.4,	D10.5,	K28.3
-			WHEN SATA_PRIMITIVE_CONT =>				RETURN x"9999AA7C";					-- CONT									D25.4,	D25.4,	D10.5,	K28.3
-			WHEN SATA_PRIMITIVE_R_OK =>				RETURN x"3535B57C";					-- R_OK									D21.1,	D21.1,	D21.5,	K28.3
-			WHEN SATA_PRIMITIVE_R_ERROR =>		RETURN x"5656B57C";					-- R_ERR								D22.2,	D22.2,	D21.5,	K28.3
-			WHEN SATA_PRIMITIVE_R_IP =>				RETURN x"5555B57C";					-- R_IP									D21.2,	D21.2,	D21.5,	K28.3
-			WHEN SATA_PRIMITIVE_RX_RDY =>			RETURN x"4A4A957C";					-- R_RDY								D10.2,	D10.2,	D21.4,	K28.3
-			WHEN SATA_PRIMITIVE_TX_RDY =>			RETURN x"5757B57C";					-- X_RDY								D23.2,	D23.2,	D21.5,	K28.3
-			WHEN SATA_PRIMITIVE_DMA_TERM =>		RETURN x"3636B57C";					-- DMAT									D22.1,	D22.1,	D21.5,	K28.3
-			WHEN SATA_PRIMITIVE_WAIT_TERM =>	RETURN x"5858B57C";					-- WTRM									D24.2,	D24.2,	D21.5,	K28.3
-			WHEN SATA_PRIMITIVE_PM_ACK =>			RETURN x"9595957C";					-- PMACK								D21.4,	D21.4,	D21.4,	K28.3
-			WHEN SATA_PRIMITIVE_PM_NACK =>		RETURN x"F5F5957C";					-- PMNAK								D21.7,	D21.7,	D21.4,	K28.3
-			WHEN SATA_PRIMITIVE_PM_REQ_P =>		RETURN x"1717B57C";					-- PMREQ_P							D23.0,	D23.0,	D21.5,	K28.3
-			WHEN SATA_PRIMITIVE_PM_REQ_S =>		RETURN x"7575957C";					-- PMREQ_S							D21.3,	D21.3,	D21.4,	K28.3
-			WHEN SATA_PRIMITIVE_DIAL_TONE =>	RETURN x"4A4A4A4A";					-- 											D10.2,	D10.2,	D10.2,	D10.2
-			WHEN SATA_PRIMITIVE_ILLEGAL =>		RETURN (OTHERS => 'X');			-- "ERROR"
-		END CASE;
-	END;
+	function to_sata_word(Primitive : T_SATA_PRIMITIVE) return T_SLV_32 is	--																							K symbol
+	begin																															-- primitive name				Byte 3	Byte 2	Byte 1	Byte 0
+		case Primitive is																								-- =======================================================
+			when SATA_PRIMITIVE_NONE =>				return x"00000000";					-- no primitive					
+			when SATA_PRIMITIVE_ALIGN =>			return x"7B4A4ABC";					-- ALIGN								D27.3,	D10.2,	D10.2,	K28.5
+			when SATA_PRIMITIVE_SYNC =>				return x"B5B5957C";					-- SYNC									D21.5,	D21.5,	D21.4,	K28.3
+			when SATA_PRIMITIVE_SOF =>				return x"3737B57C";					-- SOF									D23.1,	D23.1,	D21.5,	K28.3
+			when SATA_PRIMITIVE_EOF =>				return x"D5D5B57C";					-- EOF									D21.6,	D21.6,	D21.5,	K28.3
+			when SATA_PRIMITIVE_HOLD =>				return x"D5D5AA7C";					-- HOLD									D21.6,	D21.6,	D10.5,	K28.3
+			when SATA_PRIMITIVE_HOLD_ACK =>		return x"9595AA7C";					-- HOLDA								D21.4,	D21.4,	D10.5,	K28.3
+			when SATA_PRIMITIVE_CONT =>				return x"9999AA7C";					-- CONT									D25.4,	D25.4,	D10.5,	K28.3
+			when SATA_PRIMITIVE_R_OK =>				return x"3535B57C";					-- R_OK									D21.1,	D21.1,	D21.5,	K28.3
+			when SATA_PRIMITIVE_R_ERROR =>		return x"5656B57C";					-- R_ERR								D22.2,	D22.2,	D21.5,	K28.3
+			when SATA_PRIMITIVE_R_IP =>				return x"5555B57C";					-- R_IP									D21.2,	D21.2,	D21.5,	K28.3
+			when SATA_PRIMITIVE_RX_RDY =>			return x"4A4A957C";					-- R_RDY								D10.2,	D10.2,	D21.4,	K28.3
+			when SATA_PRIMITIVE_TX_RDY =>			return x"5757B57C";					-- X_RDY								D23.2,	D23.2,	D21.5,	K28.3
+			when SATA_PRIMITIVE_DMA_TERM =>		return x"3636B57C";					-- DMAT									D22.1,	D22.1,	D21.5,	K28.3
+			when SATA_PRIMITIVE_WAIT_TERM =>	return x"5858B57C";					-- WTRM									D24.2,	D24.2,	D21.5,	K28.3
+			when SATA_PRIMITIVE_PM_ACK =>			return x"9595957C";					-- PMACK								D21.4,	D21.4,	D21.4,	K28.3
+			when SATA_PRIMITIVE_PM_NACK =>		return x"F5F5957C";					-- PMNAK								D21.7,	D21.7,	D21.4,	K28.3
+			when SATA_PRIMITIVE_PM_REQ_P =>		return x"1717B57C";					-- PMREQ_P							D23.0,	D23.0,	D21.5,	K28.3
+			when SATA_PRIMITIVE_PM_REQ_S =>		return x"7575957C";					-- PMREQ_S							D21.3,	D21.3,	D21.4,	K28.3
+			when SATA_PRIMITIVE_DIAL_TONE =>	return x"4A4A4A4A";					-- 											D10.2,	D10.2,	D10.2,	D10.2
+			when SATA_PRIMITIVE_ILLEGAL =>		return (others => 'X');			-- "ERROR"
+		end case;
+	end;
 	
 	function to_sata_primitive(Data : T_SLV_32; CharIsK : T_SLV_4; DetectDialTone : BOOLEAN := FALSE) return T_SATA_PRIMITIVE is
 	begin
@@ -743,132 +755,132 @@ PACKAGE BODY sata IS
 		return to_integer(unsigned(slv));
 	end function;
 
-	FUNCTION to_slv(FIStype : T_SATA_FISTYPE) RETURN STD_LOGIC_VECTOR IS
-	BEGIN
-		CASE FIStype IS
-			WHEN SATA_FISTYPE_REG_HOST_DEV		=> RETURN	x"27";
-			WHEN SATA_FISTYPE_REG_DEV_HOST		=> RETURN	x"34";
-			WHEN SATA_FISTYPE_SET_DEV_BITS		=> RETURN	x"A1";
-			WHEN SATA_FISTYPE_DMA_ACTIVATE		=> RETURN	x"39";
-			WHEN SATA_FISTYPE_DMA_SETUP				=> RETURN	x"41";
-			WHEN SATA_FISTYPE_BIST						=> RETURN	x"58";
-			WHEN SATA_FISTYPE_PIO_SETUP				=> RETURN	x"5F";
-			WHEN SATA_FISTYPE_DATA						=> RETURN	x"46";
-			WHEN SATA_FISTYPE_UNKNOWN					=> RETURN x"00";
-		END CASE;
-	END;
+	function to_slv(FIStype : T_SATA_FISTYPE) return STD_LOGIC_VECTOR is
+	begin
+		case FIStype is
+			when SATA_FISTYPE_REG_HOST_DEV		=> return	x"27";
+			when SATA_FISTYPE_REG_DEV_HOST		=> return	x"34";
+			when SATA_FISTYPE_SET_DEV_BITS		=> return	x"A1";
+			when SATA_FISTYPE_DMA_ACTIVATE		=> return	x"39";
+			when SATA_FISTYPE_DMA_SETUP				=> return	x"41";
+			when SATA_FISTYPE_BIST						=> return	x"58";
+			when SATA_FISTYPE_PIO_SETUP				=> return	x"5F";
+			when SATA_FISTYPE_DATA						=> return	x"46";
+			when SATA_FISTYPE_UNKNOWN					=> return x"00";
+		end case;
+	end;
 
-	FUNCTION to_slv(Command : T_SATA_ATA_COMMAND) RETURN STD_LOGIC_VECTOR IS
-	BEGIN
-		CASE Command IS
-			WHEN SATA_ATA_CMD_NONE =>							RETURN x"00";
-			WHEN SATA_ATA_CMD_IDENTIFY_DEVICE =>	RETURN x"EC";
-			WHEN SATA_ATA_CMD_DMA_READ_EXT =>			RETURN x"25";
-			WHEN SATA_ATA_CMD_DMA_WRITE_EXT =>		RETURN x"35";
-			WHEN SATA_ATA_CMD_FLUSH_CACHE_EXT =>	RETURN x"EA";
-			WHEN OTHERS =>												RETURN x"00";
-		END CASE;
-	END;
+	function to_slv(Command : T_SATA_ATA_COMMAND) return STD_LOGIC_VECTOR is
+	begin
+		case Command is
+			when SATA_ATA_CMD_NONE =>							return x"00";
+			when SATA_ATA_CMD_IDENTIFY_DEVICE =>	return x"EC";
+			when SATA_ATA_CMD_DMA_READ_EXT =>			return x"25";
+			when SATA_ATA_CMD_DMA_WRITE_EXT =>		return x"35";
+			when SATA_ATA_CMD_FLUSH_CACHE_EXT =>	return x"EA";
+			when others =>												return x"00";
+		end case;
+	end;
 
 	-- to_*
 	-- ===========================================================================
-	FUNCTION to_sata_fistype(slv : T_SLV_8; valid : STD_LOGIC := '1') RETURN T_SATA_FIStype IS
-	BEGIN
+	function to_sata_fistype(slv : T_SLV_8; valid : STD_LOGIC := '1') return T_SATA_FIStype is
+	begin
 		IF (valid = '1') THEN
 			FOR I IN T_SATA_FIStype LOOP
 				IF (slv = to_slv(I)) THEN
-					RETURN I;
+					return I;
 				END IF;
 			END LOOP;
 		END IF;
-		RETURN SATA_FISTYPE_UNKNOWN;
-	END;
+		return SATA_FISTYPE_UNKNOWN;
+	end;
 	
-	FUNCTION to_sata_ata_command(slv : T_SLV_8) RETURN T_SATA_ATA_COMMAND IS
+	function to_sata_ata_command(slv : T_SLV_8) return T_SATA_ATA_COMMAND is
 	BEGIN
 		FOR I IN T_SATA_ATA_COMMAND LOOP
 			IF (slv = to_slv(I)) THEN
-				RETURN I;
+				return I;
 			END IF;
 		END LOOP;
-		RETURN SATA_ATA_CMD_NONE;
+		return SATA_ATA_CMD_NONE;
 	END;
 	
-	FUNCTION to_sata_cmdcat(cmd : T_SATA_ATA_COMMAND) RETURN T_SATA_COMMAND_CATEGORY IS
-	BEGIN
-		CASE cmd IS
+	function to_sata_cmdcat(cmd : T_SATA_ATA_COMMAND) return T_SATA_COMMAND_CATEGORY is
+	begin
+		case cmd is
 			-- non-data commands
-			WHEN SATA_ATA_CMD_FLUSH_CACHE_EXT =>		RETURN SATA_CMDCAT_NON_DATA;
+			when SATA_ATA_CMD_FLUSH_CACHE_EXT =>		return SATA_CMDCAT_NON_DATA;
 			
 			-- PIO data-in commands
-			WHEN SATA_ATA_CMD_IDENTIFY_DEVICE =>		RETURN SATA_CMDCAT_PIO_IN;
+			when SATA_ATA_CMD_IDENTIFY_DEVICE =>		return SATA_CMDCAT_PIO_IN;
 			
 			-- PIO data-out commands
 			
 			-- DMA data-in commands
-			WHEN SATA_ATA_CMD_DMA_READ_EXT =>				RETURN SATA_CMDCAT_DMA_IN;
+			when SATA_ATA_CMD_DMA_READ_EXT =>				return SATA_CMDCAT_DMA_IN;
 			
 			-- DMA data-out commands
-			WHEN SATA_ATA_CMD_DMA_WRITE_EXT =>			RETURN SATA_CMDCAT_DMA_OUT;
+			when SATA_ATA_CMD_DMA_WRITE_EXT =>			return SATA_CMDCAT_DMA_OUT;
 			
 			-- other enum members
-			WHEN SATA_ATA_CMD_NONE =>								RETURN SATA_CMDCAT_UNKNOWN;
-			WHEN SATA_ATA_CMD_UNKNOWN =>						RETURN SATA_CMDCAT_UNKNOWN;
-			WHEN OTHERS =>													RETURN SATA_CMDCAT_UNKNOWN;
-		END CASE;
-	END;
+			when SATA_ATA_CMD_NONE =>								return SATA_CMDCAT_UNKNOWN;
+			when SATA_ATA_CMD_UNKNOWN =>						return SATA_CMDCAT_UNKNOWN;
+			when others =>													return SATA_CMDCAT_UNKNOWN;
+		end case;
+	end;
 	
-	FUNCTION is_lba48_command(cmd : T_SATA_ATA_COMMAND) RETURN STD_LOGIC IS
-	BEGIN
-		CASE cmd IS
+	function is_lba48_command(cmd : T_SATA_ATA_COMMAND) return STD_LOGIC is
+	begin
+		case cmd is
 			-- non-data commands
-			WHEN SATA_ATA_CMD_FLUSH_CACHE_EXT =>	RETURN '0';
+			when SATA_ATA_CMD_FLUSH_CACHE_EXT =>	return '0';
 			
 			-- PIO data-in commands
-			WHEN SATA_ATA_CMD_IDENTIFY_DEVICE =>	RETURN '0';
+			when SATA_ATA_CMD_IDENTIFY_DEVICE =>	return '0';
 			
 			-- PIO data-out commands
 			
 			-- DMA data-in commands
-			WHEN SATA_ATA_CMD_DMA_READ_EXT =>			RETURN '1';
+			when SATA_ATA_CMD_DMA_READ_EXT =>			return '1';
 			
 			-- DMA data-out commands
-			WHEN SATA_ATA_CMD_DMA_WRITE_EXT =>		RETURN '1';
+			when SATA_ATA_CMD_DMA_WRITE_EXT =>		return '1';
 			
 			-- other enum members
-			WHEN SATA_ATA_CMD_NONE =>							RETURN '0';
-			WHEN SATA_ATA_CMD_UNKNOWN =>					RETURN '0';
-			WHEN OTHERS =>												RETURN '0';
-		END CASE;
-	END;
+			when SATA_ATA_CMD_NONE =>							return '0';
+			when SATA_ATA_CMD_UNKNOWN =>					return '0';
+			when others =>												return '0';
+		end case;
+	end;
 	
-	FUNCTION to_sata_ata_device_register_status(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_REGISTER_STATUS IS
-		VARIABLE Result				: T_SATA_ATA_DEVICE_REGISTER_STATUS;
-	BEGIN
+	function to_sata_ata_device_register_status(slv : T_SLV_8) return T_SATA_ATA_DEVICE_REGISTER_STATUS is
+		variable Result				: T_SATA_ATA_DEVICE_REGISTER_STATUS;
+	begin
 		Result.Error					:= slv(0);
 		Result.DataRequest		:= slv(3);
 		Result.DeviceFault		:= slv(5);
 		Result.DataReady			:= slv(6);
 		Result.Busy						:= slv(7);
 		
-		Return Result;
-	END;
+		return Result;
+	end;
 	
-	FUNCTION to_slv(reg : T_SATA_ATA_DEVICE_REGISTER_STATUS) RETURN STD_LOGIC_VECTOR IS
-		VARIABLE Result				: T_SLV_8		:= (OTHERS => '0');
-	BEGIN
+	function to_slv(reg : T_SATA_ATA_DEVICE_REGISTER_STATUS) return STD_LOGIC_VECTOR is
+		variable Result				: T_SLV_8		:= (others => '0');
+	begin
 		Result(0)							:= reg.Error;
 		Result(3)							:= reg.DataRequest;
 		Result(5)							:= reg.DeviceFault;
 		Result(6)							:= reg.DataReady;
 		Result(7)							:= reg.Busy;
 		
-		Return Result;
-	END;
+		return Result;
+	end;
 	
-	FUNCTION to_sata_ata_device_register_error(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_REGISTER_ERROR IS
-		VARIABLE Result							: T_SATA_ATA_DEVICE_REGISTER_ERROR;
-	BEGIN
+	function to_sata_ata_device_register_error(slv : T_SLV_8) return T_SATA_ATA_DEVICE_REGISTER_ERROR is
+		variable Result							: T_SATA_ATA_DEVICE_REGISTER_ERROR;
+	begin
 		Result.NoMediaPresent				:= slv(1);
 		Result.CommandAborted				:= slv(2);
 		Result.MediaChangeRequest		:= slv(3);
@@ -877,12 +889,12 @@ PACKAGE BODY sata IS
 		Result.UncorrectableError		:= slv(6);
 		Result.InterfaceCRCError		:= slv(7);
 		
-		Return Result;
-	END;
+		return Result;
+	end;
 	
-	FUNCTION to_slv(reg	: T_SATA_ATA_DEVICE_REGISTER_ERROR) RETURN STD_LOGIC_VECTOR IS
-		VARIABLE Result							: T_SLV_8			:= (OTHERS => '0');
-	BEGIN
+	function to_slv(reg	: T_SATA_ATA_DEVICE_REGISTER_ERROR) return STD_LOGIC_VECTOR is
+		variable Result							: T_SLV_8			:= (others => '0');
+	begin
 		Result(1)										:= reg.NoMediaPresent;
 		Result(2)										:= reg.CommandAborted;
 		Result(3)										:= reg.MediaChangeRequest;
@@ -891,27 +903,27 @@ PACKAGE BODY sata IS
 		Result(6)										:= reg.UncorrectableError;
 		Result(7)										:= reg.InterfaceCRCError;
 		
-		Return Result;
-	END;
+		return Result;
+	end;
 	
-	FUNCTION to_sata_ata_device_flags(slv : T_SLV_8) RETURN T_SATA_ATA_DEVICE_FLAGS IS
-		VARIABLE Result							: T_SATA_ATA_DEVICE_FLAGS;
-	BEGIN
+	function to_sata_ata_device_flags(slv : T_SLV_8) return T_SATA_ATA_DEVICE_FLAGS is
+		variable Result							: T_SATA_ATA_DEVICE_FLAGS;
+	begin
 		Result.Direction						:= slv(5);
 		Result.Interrupt						:= slv(6);
 		Result.C										:= slv(7);
 		
-		Return Result;
-	END;
+		return Result;
+	end;
 	
-	FUNCTION to_slv(reg	: T_SATA_ATA_DEVICE_FLAGS) RETURN STD_LOGIC_VECTOR IS
-		VARIABLE Result							: T_SLV_8			:= (OTHERS => '0');
-	BEGIN
+	function to_slv(reg	: T_SATA_ATA_DEVICE_FLAGS) return STD_LOGIC_VECTOR is
+		variable Result							: T_SLV_8			:= (others => '0');
+	begin
 		Result(5)										:= reg.Direction;
 		Result(6)										:= reg.Interrupt;
 		Result(7)										:= reg.C;
 		
-		Return Result;
-	END;
+		return Result;
+	end;
 
-END PACKAGE BODY;
+end package body;
