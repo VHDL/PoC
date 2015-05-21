@@ -80,18 +80,16 @@ ENTITY sata_SATAController IS
 		DEBUG												: BOOLEAN														:= FALSE;
 		ENABLE_DEBUGPORT						: BOOLEAN														:= FALSE;
 		CLOCK_IN_FREQ								: FREQ															:= 150.0 MHz;
---		CLOCK_IN_FREQ_MHZ						: REAL															:= 150.0;
 		PORTS												: POSITIVE													:= 2;	-- Port 0									Port 1
 		CONTROLLER_TYPES						: T_SATA_DEVICE_TYPE_VECTOR					:= (0 => SATA_DEVICE_TYPE_HOST,	1 => SATA_DEVICE_TYPE_HOST);
-		INITIAL_SATA_GENERATIONS		: T_SATA_GENERATION_VECTOR					:= (0 => SATA_GENERATION_2,			1 => SATA_GENERATION_2);
+		INITIAL_SATA_GENERATIONS		: T_SATA_GENERATION_VECTOR					:= (0 => C_SATA_GENERATION_MAX,	1 => C_SATA_GENERATION_MAX);
 		ALLOW_SPEED_NEGOTIATION			: T_BOOLVEC													:= (0 => TRUE,									1 => TRUE);
 		ALLOW_STANDARD_VIOLATION		: T_BOOLVEC													:= (0 => TRUE,									1 => TRUE);
 		OOB_TIMEOUT									: T_TIMEVEC													:= (0 => TIME'low,							1 => TIME'low);
---		OOB_TIMEOUT_US							: T_INTVEC													:= (0 => 0,											1 => 0);
 		GENERATION_CHANGE_COUNT			: T_INTVEC													:= (0 => 8,											1 => 8);
 		ATTEMPTS_PER_GENERATION			: T_INTVEC													:= (0 => 5,											1 => 3);
 		AHEAD_CYCLES_FOR_INSERT_EOF	: T_INTVEC													:= (0 => 1,											1 => 1);
-		MAX_FRAME_SIZE_B						: T_INTVEC													:= (0 => 4 * (2048 + 1),				1 => 4 * (2048 + 1))
+		MAX_FRAME_SIZE							: T_MEMVEC													:= (0 => C_SATA_MAX_FRAMESIZE,	1 => C_SATA_MAX_FRAMESIZE)
 	);
 	PORT (
 		ClockNetwork_Reset					: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @async:			asynchronous reset
@@ -150,16 +148,15 @@ END;
 ARCHITECTURE rtl OF sata_SATAController IS
 	ATTRIBUTE KEEP													: BOOLEAN;
 
-	CONSTANT CONTROLLER_TYPES_I							: T_SATA_DEVICE_TYPE_VECTOR(0 TO PORTS - 1)	:= CONTROLLER_TYPES;
-	CONSTANT INITIAL_SATA_GENERATIONS_I			: T_SATA_GENERATION_VECTOR(0 TO PORTS - 1)	:= INITIAL_SATA_GENERATIONS;
-	CONSTANT ALLOW_SPEED_NEGOTIATION_I			: T_BOOLVEC(0 TO PORTS - 1)									:= ALLOW_SPEED_NEGOTIATION;
-	CONSTANT ALLOW_STANDARD_VIOLATION_I			: T_BOOLVEC(0 TO PORTS - 1)									:= ALLOW_STANDARD_VIOLATION;
-	CONSTANT OOB_TIMEOUT_I									: T_TIMEVEC(0 TO PORTS - 1)									:= OOB_TIMEOUT;
---	CONSTANT OOB_TIMEOUT_US_I								: T_INTVEC(0 TO PORTS - 1)									:= OOB_TIMEOUT_US;
-	CONSTANT GENERATION_CHANGE_COUNT_I			: T_INTVEC(0 TO PORTS - 1)									:= GENERATION_CHANGE_COUNT;
-	CONSTANT ATTEMPTS_PER_GENERATION_I			: T_INTVEC(0 TO PORTS - 1)									:= ATTEMPTS_PER_GENERATION;
-	CONSTANT AHEAD_CYCLES_FOR_INSERT_EOF_I	: T_INTVEC(0 TO PORTS - 1)									:= AHEAD_CYCLES_FOR_INSERT_EOF;
-	CONSTANT MAX_FRAME_SIZE_B_I							: T_INTVEC(0 TO PORTS - 1)									:= MAX_FRAME_SIZE_B;
+	CONSTANT CONTROLLER_TYPES_I							: T_SATA_DEVICE_TYPE_VECTOR(0 TO PORTS - 1)	:= CONTROLLER_TYPES(0 TO PORTS - 1);
+	CONSTANT INITIAL_SATA_GENERATIONS_I			: T_SATA_GENERATION_VECTOR(0 TO PORTS - 1)	:= INITIAL_SATA_GENERATIONS(0 TO PORTS - 1);
+	CONSTANT ALLOW_SPEED_NEGOTIATION_I			: T_BOOLVEC(0 TO PORTS - 1)									:= ALLOW_SPEED_NEGOTIATION(0 TO PORTS - 1);
+	CONSTANT ALLOW_STANDARD_VIOLATION_I			: T_BOOLVEC(0 TO PORTS - 1)									:= ALLOW_STANDARD_VIOLATION(0 TO PORTS - 1);
+	CONSTANT OOB_TIMEOUT_I									: T_TIMEVEC(0 TO PORTS - 1)									:= OOB_TIMEOUT(0 TO PORTS - 1);
+	CONSTANT GENERATION_CHANGE_COUNT_I			: T_INTVEC(0 TO PORTS - 1)									:= GENERATION_CHANGE_COUNT(0 TO PORTS - 1);
+	CONSTANT ATTEMPTS_PER_GENERATION_I			: T_INTVEC(0 TO PORTS - 1)									:= ATTEMPTS_PER_GENERATION(0 TO PORTS - 1);
+	CONSTANT AHEAD_CYCLES_FOR_INSERT_EOF_I	: T_INTVEC(0 TO PORTS - 1)									:= AHEAD_CYCLES_FOR_INSERT_EOF(0 TO PORTS - 1);
+	CONSTANT MAX_FRAME_SIZE_I								: T_MEMVEC(0 TO PORTS - 1)									:= MAX_FRAME_SIZE(0 TO PORTS - 1);
 
 	-- Clocking & ResetDone, provided by transceiver layer
 	SIGNAL SATA_Clock_i									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -197,11 +194,11 @@ ARCHITECTURE rtl OF sata_SATAController IS
 
 BEGIN
 	genReport : FOR I IN 0 TO PORTS - 1 GENERATE
-		ASSERT FALSE REPORT "Port:    " & INTEGER'image(I)																											SEVERITY NOTE;
-		ASSERT FALSE REPORT "  ControllerType:         " & T_SATA_DEVICE_TYPE'image(CONTROLLER_TYPES_I(I))			SEVERITY NOTE;
-		ASSERT FALSE REPORT "  AllowSpeedNegotiation:  " & to_string(ALLOW_SPEED_NEGOTIATION_I(I))							SEVERITY NOTE;
-		ASSERT FALSE REPORT "  AllowStandardViolation: " & to_string(ALLOW_STANDARD_VIOLATION_I(I))							SEVERITY NOTE;
-		ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS_I(I) + 1)	SEVERITY NOTE;
+		ASSERT FALSE REPORT "Port:    " & INTEGER'image(i)																											SEVERITY NOTE;
+		ASSERT FALSE REPORT "  ControllerType:         " & T_SATA_DEVICE_TYPE'image(CONTROLLER_TYPES_I(i))			SEVERITY NOTE;
+		ASSERT FALSE REPORT "  AllowSpeedNegotiation:  " & to_string(ALLOW_SPEED_NEGOTIATION_I(i))							SEVERITY NOTE;
+		ASSERT FALSE REPORT "  AllowStandardViolation: " & to_string(ALLOW_STANDARD_VIOLATION_I(i))							SEVERITY NOTE;
+		ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS_I(i) + 1)	SEVERITY NOTE;
 	END GENERATE;
 
 	-- generate layer moduls per port
@@ -259,42 +256,42 @@ BEGIN
 		-- SATAController interface
 		-- =========================================================================
 		-- common signals
-		SATAGeneration(I)							<= Phy_RP_SATAGeneration(I);
+		SATAGeneration(i)							<= Phy_RP_SATAGeneration(i);
 
-		Status(I).LinkLayer						<= Link_Status;
-		Status(I).PhysicalLayer				<= Phy_Status;
-		Status(I).TransceiverLayer		<= Trans_Status(I);
+		Status(i).LinkLayer						<= Link_Status;
+		Status(i).PhysicalLayer				<= Phy_Status;
+		Status(i).TransceiverLayer		<= Trans_Status(i);
 		
-		Error(I).LinkLayer						<= Link_Error;
-		Error(I).PhysicalLayer				<= Phy_Error;
-		Error(I).TransceiverLayer			<= Trans_Error(I);
+		Error(i).LinkLayer						<= Link_Error;
+		Error(i).PhysicalLayer				<= Phy_Error;
+		Error(i).TransceiverLayer			<= Trans_Error(i);
 
 		ResetDone(i) 									<= Link_ResetDone;
 		
 		-- TX port
-		SATAC_TX_SOF									<= TX_SOF(I);
-		SATAC_TX_EOF									<= TX_EOF(I);
-		SATAC_TX_Valid								<= TX_Valid(I);
-		SATAC_TX_Data									<= TX_Data(I);
-		TX_Ack(I)											<= Link_TX_Ack;
-		TX_InsertEOF(I)								<= Link_TX_InsertEOF;
+		SATAC_TX_SOF									<= TX_SOF(i);
+		SATAC_TX_EOF									<= TX_EOF(i);
+		SATAC_TX_Valid								<= TX_Valid(i);
+		SATAC_TX_Data									<= TX_Data(i);
+		TX_Ack(i)											<= Link_TX_Ack;
+		TX_InsertEOF(i)								<= Link_TX_InsertEOF;
 		
-		SATAC_TX_FS_Ack								<= TX_FS_Ack(I);
-		TX_FS_Valid(I)								<= Link_TX_FS_Valid;
-		TX_FS_SendOK(I)								<= Link_TX_FS_SendOK;
-		TX_FS_Abort(I)								<= Link_TX_FS_Abort;
+		SATAC_TX_FS_Ack								<= TX_FS_Ack(i);
+		TX_FS_Valid(i)								<= Link_TX_FS_Valid;
+		TX_FS_SendOK(i)								<= Link_TX_FS_SendOK;
+		TX_FS_Abort(i)								<= Link_TX_FS_Abort;
 		
 		-- RX port
-		RX_SOF(I)											<= Link_RX_SOF;
-		RX_EOF(I)											<= Link_RX_EOF;
-		RX_Valid(I)										<= Link_RX_Valid;
-		RX_Data(I)										<= Link_RX_Data;
-		SATAC_RX_Ack									<= RX_Ack(I);
+		RX_SOF(i)											<= Link_RX_SOF;
+		RX_EOF(i)											<= Link_RX_EOF;
+		RX_Valid(i)										<= Link_RX_Valid;
+		RX_Data(i)										<= Link_RX_Data;
+		SATAC_RX_Ack									<= RX_Ack(i);
 		
-		SATAC_RX_FS_Ack								<= RX_FS_Ack(I);
-		RX_FS_Valid(I)								<= Link_RX_FS_Valid;
-		RX_FS_CRCOK(I)								<= Link_RX_FS_CRCOK;
-		RX_FS_SyncEsc(I)							<= Link_RX_FS_SyncEsc;
+		SATAC_RX_FS_Ack								<= RX_FS_Ack(i);
+		RX_FS_Valid(i)								<= Link_RX_FS_Valid;
+		RX_FS_CRCOK(i)								<= Link_RX_FS_CRCOK;
+		RX_FS_SyncEsc(i)							<= Link_RX_FS_SyncEsc;
 		
 
 		-- =======================================================================
@@ -307,7 +304,7 @@ BEGIN
 			Link_Command									<= SATA_LINK_CMD_NONE;
 			Phy_Command										<= SATA_PHY_CMD_NONE;
 
-			CASE Command(I) IS
+			CASE Command(i) IS
 				WHEN SATA_SATACTRL_CMD_INIT_CONNECTION =>
 					-- Init new conenction with speed negotation
 					Link_Reset								<= '1';
@@ -334,13 +331,13 @@ BEGIN
 			GENERIC MAP (
 				DEBUG												=> DEBUG,
 				ENABLE_DEBUGPORT						=> ENABLE_DEBUGPORT,
-				CONTROLLER_TYPE							=> CONTROLLER_TYPES_I(I),
-				AHEAD_CYCLES_FOR_INSERT_EOF	=> AHEAD_CYCLES_FOR_INSERT_EOF_I(I),
-				MAX_FRAME_SIZE_B						=> MAX_FRAME_SIZE_B_I(I)
+				CONTROLLER_TYPE							=> CONTROLLER_TYPES_I(i),
+				AHEAD_CYCLES_FOR_INSERT_EOF	=> AHEAD_CYCLES_FOR_INSERT_EOF_I(i),
+				MAX_FRAME_SIZE							=> MAX_FRAME_SIZE_I(i)
 			)
 			PORT MAP (
-				Clock										=> SATA_Clock_i(I),
-				ClockEnable							=> SATA_Clock_Stable_i(I),
+				Clock										=> SATA_Clock_i(i),
+				ClockEnable							=> SATA_Clock_Stable_i(i),
 				Reset										=> Link_Reset,
 				
 				Command									=> Link_Command,
@@ -398,20 +395,20 @@ BEGIN
 				DEBUG													=> DEBUG,
 				ENABLE_DEBUGPORT							=> ENABLE_DEBUGPORT,
 				CLOCK_FREQ										=> CLOCK_IN_FREQ,
-				CONTROLLER_TYPE								=> CONTROLLER_TYPES_I(I),
-				ALLOW_SPEED_NEGOTIATION				=> ALLOW_SPEED_NEGOTIATION_I(I),
-				INITIAL_SATA_GENERATION				=> INITIAL_SATA_GENERATIONS_I(I),
-				ALLOW_STANDARD_VIOLATION			=> ALLOW_STANDARD_VIOLATION_I(I),
-				OOB_TIMEOUT										=> OOB_TIMEOUT_I(I),		--ite(SIMULATION, 15, OOB_TIMEOUT_US(I)),			-- simulation: limit OOBTimeout to 15 us 
-				GENERATION_CHANGE_COUNT				=> GENERATION_CHANGE_COUNT_I(I),
-				ATTEMPTS_PER_GENERATION				=> ATTEMPTS_PER_GENERATION_I(I)
+				CONTROLLER_TYPE								=> CONTROLLER_TYPES_I(i),
+				ALLOW_SPEED_NEGOTIATION				=> ALLOW_SPEED_NEGOTIATION_I(i),
+				INITIAL_SATA_GENERATION				=> INITIAL_SATA_GENERATIONS_I(i),
+				ALLOW_STANDARD_VIOLATION			=> ALLOW_STANDARD_VIOLATION_I(i),
+				OOB_TIMEOUT										=> OOB_TIMEOUT_I(i),		--ite(SIMULATION, 15, OOB_TIMEOUT_US(i)),			-- simulation: limit OOBTimeout to 15 us 
+				GENERATION_CHANGE_COUNT				=> GENERATION_CHANGE_COUNT_I(i),
+				ATTEMPTS_PER_GENERATION				=> ATTEMPTS_PER_GENERATION_I(i)
 			)
 			PORT MAP (
-				Clock													=> SATA_Clock_i(I),
+				Clock													=> SATA_Clock_i(i),
 				ClockEnable										=> SATA_Clock_Stable_i(i),
 				Reset													=> Reset(i),
-				SATAGenerationMin							=> SATAGenerationMin(I),
-				SATAGenerationMax							=> SATAGenerationMax(I),
+				SATAGenerationMin							=> SATAGenerationMin(i),
+				SATAGenerationMax							=> SATAGenerationMax(i),
 
 				Command												=> Phy_Command,
 				Status												=> Phy_Status,
@@ -428,29 +425,29 @@ BEGIN
 				-- transceiver interface
 				Trans_ResetDone								=> Trans_ResetDone(i),
 				
-				Trans_Command									=> Trans_Command(I),
-				Trans_Status									=> Trans_Status(I),
-				Trans_Error										=> Trans_Error(I),
+				Trans_Command									=> Trans_Command(i),
+				Trans_Status									=> Trans_Status(i),
+				Trans_Error										=> Trans_Error(i),
 				
 				-- reconfiguration interface
-				Trans_RP_Reconfig							=> Phy_RP_Reconfig(I),
-				Trans_RP_SATAGeneration				=> Phy_RP_SATAGeneration(I),
-				Trans_RP_ConfigReloaded				=> Trans_RP_ConfigReloaded(I),
-				Trans_RP_Lock									=> Phy_RP_Lock(I),
-				Trans_RP_Locked								=> Trans_RP_Locked(I),
+				Trans_RP_Reconfig							=> Phy_RP_Reconfig(i),
+				Trans_RP_SATAGeneration				=> Phy_RP_SATAGeneration(i),
+				Trans_RP_ConfigReloaded				=> Trans_RP_ConfigReloaded(i),
+				Trans_RP_Lock									=> Phy_RP_Lock(i),
+				Trans_RP_Locked								=> Trans_RP_Locked(i),
 				
-				Trans_OOB_TX_Command					=> Phy_OOB_TX_Command(I),
-				Trans_OOB_TX_Complete					=> Trans_OOB_TX_Complete(I),
-				Trans_OOB_RX_Received					=> Trans_OOB_RX_Received(I),
-				Trans_OOB_HandshakeComplete		=> Phy_OOB_HandshakeComplete(I),
+				Trans_OOB_TX_Command					=> Phy_OOB_TX_Command(i),
+				Trans_OOB_TX_Complete					=> Trans_OOB_TX_Complete(i),
+				Trans_OOB_RX_Received					=> Trans_OOB_RX_Received(i),
+				Trans_OOB_HandshakeComplete		=> Phy_OOB_HandshakeComplete(i),
 				Trans_OOB_AlignDetected				=> Phy_OOB_AlignDetected(i),
 				
-				Trans_TX_Data									=> Phy_TX_Data(I),
-				Trans_TX_CharIsK							=> Phy_TX_CharIsK(I),
+				Trans_TX_Data									=> Phy_TX_Data(i),
+				Trans_TX_CharIsK							=> Phy_TX_CharIsK(i),
 				
-				Trans_RX_Data									=> Trans_RX_Data(I),
-				Trans_RX_CharIsK							=> Trans_RX_CharIsK(I),
-				Trans_RX_Valid								=> Trans_RX_Valid(I)
+				Trans_RX_Data									=> Trans_RX_Data(i),
+				Trans_RX_CharIsK							=> Trans_RX_CharIsK(i),
+				Trans_RX_Valid								=> Trans_RX_Valid(i)
 			);
 
 		-- The CSE interface of the PHY is ready, when the CSE interface
@@ -460,46 +457,41 @@ BEGIN
 		-- =========================================================================
 		-- debug port
 		-- =========================================================================
-		genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
+		genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
 			-- Link Layer
-			DebugPortOut(I).Link									<= Link_DebugPortOut;				-- RX: 125 + TX: 120 bit
-			DebugPortOut(I).Link_Command					<= Link_Command;						-- 1 bit
-			DebugPortOut(I).Link_Status						<= Link_Status;							-- 3 bit
-			DebugPortOut(I).Link_Error						<= Link_Error;						
+			DebugPortOut(i).Link									<= Link_DebugPortOut;				-- RX: 125 + TX: 120 bit
+			DebugPortOut(i).Link_Command					<= Link_Command;						-- 1 bit
+			DebugPortOut(i).Link_Status						<= Link_Status;							-- 3 bit
+			DebugPortOut(i).Link_Error						<= Link_Error;						
 			
 			-- Physical Layer
-			DebugPortOut(I).Physical							<= Phy_DebugPortOut;				-- 
-			DebugPortOut(I).Physical_Command			<= Phy_Command;							-- 
-			DebugPortOut(I).Physical_Status				<= Phy_Status;							-- 3 bit
-			DebugPortOut(I).Physical_Error				<= Phy_Error;								-- 
+			DebugPortOut(i).Physical							<= Phy_DebugPortOut;				-- 
+			DebugPortOut(i).Physical_Command			<= Phy_Command;							-- 
+			DebugPortOut(i).Physical_Status				<= Phy_Status;							-- 3 bit
+			DebugPortOut(i).Physical_Error				<= Phy_Error;								-- 
 
 			-- Transceiver Layer
-			Trans_DebugPortIn(I)									<= DebugPortIn(I).Transceiver;
+			Trans_DebugPortIn(i)									<= DebugPortIn(i).Transceiver;
 			
-			DebugPortOut(I).Transceiver						<= Trans_DebugPortOut(I);		-- 
-			DebugPortOut(I).Transceiver_Command		<= Trans_Command(I);				-- 
-			DebugPortOut(I).Transceiver_Status		<= Trans_Status(I);					-- 
-			DebugPortOut(I).Transceiver_Error			<= Trans_Error(I);					--
+			DebugPortOut(i).Transceiver						<= Trans_DebugPortOut(i);		-- 
+			DebugPortOut(i).Transceiver_Command		<= Trans_Command(i);				-- 
+			DebugPortOut(i).Transceiver_Status		<= Trans_Status(i);					-- 
+			DebugPortOut(i).Transceiver_Error			<= Trans_Error(i);					--
 
 		end generate;
-
-		genNoDebug : if not(ENABLE_DEBUGPORT = TRUE) generate
-			Trans_DebugPortIn(I)	<= C_SATADBG_TRANSCEIVER_IN_EMPTY;
+		genNoDebugPort : if not(ENABLE_DEBUGPORT = TRUE) generate
+			Trans_DebugPortIn(i)									<= C_SATADBG_TRANSCEIVER_IN_EMPTY;
 		end generate;
-
-	END GENERATE;
+	end generate;
   
 	-- ===========================================================================
 	-- transceiver layer
 	-- ===========================================================================
-
-	
 	Trans : ENTITY PoC.sata_TransceiverLayer
 		GENERIC MAP (
 			DEBUG											=> DEBUG,
 			ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
 			CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
---			CLOCK_IN_FREQ_MHZ					=> CLOCK_IN_FREQ_MHZ,
 			PORTS											=> PORTS,
 			INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS_I
 		)
@@ -551,5 +543,4 @@ BEGIN
 
 	SATA_Clock 				<= SATA_Clock_i;
 	SATA_Clock_Stable <= SATA_Clock_Stable_i;
-	
-END;
+end;

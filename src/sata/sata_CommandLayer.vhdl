@@ -42,210 +42,212 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
+library PoC;
 use 		PoC.config.all;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
+use			PoC.utils.all;
+use			PoC.vectors.all;
 use			PoC.strings.all;
+use			PoC.physical.all;
 use			PoC.components.all;
 use 		PoC.debug.all;
-USE			PoC.sata.ALL;
-USE			PoC.satadbg.ALL;
+use			PoC.sata.all;
+use			PoC.satadbg.all;
 
 
-ENTITY sata_CommandLayer IS
-	GENERIC (
+entity sata_CommandLayer is
+	generic (
 		ENABLE_DEBUGPORT							: BOOLEAN									:= FALSE;			-- export internal signals to upper layers for debug purposes
 		DEBUG													: BOOLEAN									:= FALSE;
 		SIM_EXECUTE_IDENTIFY_DEVICE		: BOOLEAN									:= TRUE;			-- required by CommandLayer: load device parameters
-		LOGICAL_BLOCK_SIZE_ldB				: POSITIVE
+		LOGICAL_BLOCK_SIZE						: MEMORY
 	);
-	PORT (
-		Clock													: IN	STD_LOGIC;
-		Reset													: IN	STD_LOGIC;
+	port (
+		Clock													: in	STD_LOGIC;
+		Reset													: in	STD_LOGIC;
 
 		-- CommandLayer interface
 		-- ========================================================================
-		Command												: IN	T_SATA_CMD_COMMAND;
-		Status												: OUT	T_SATA_CMD_STATUS;
-		Error													: OUT	T_SATA_CMD_ERROR;
+		Command												: in	T_SATA_CMD_COMMAND;
+		Status												: out	T_SATA_CMD_STATUS;
+		Error													: out	T_SATA_CMD_ERROR;
 
-		DebugPortOut									: OUT T_SATADBG_CMD_OUT;
+		DebugPortOut									: out T_SATADBG_CMD_OUT;
 
 		-- for measurement purposes only
-		Config_BurstSize							: IN	T_SLV_16;
+		Config_BurstSize							: in	T_SLV_16;
 		
 		-- address interface (valid on Command /= *_NONE)
-		Address_AppLB									: IN	T_SLV_48;
-		BlockCount_AppLB							: IN	T_SLV_48;
+		Address_AppLB									: in	T_SLV_48;
+		BlockCount_AppLB							: in	T_SLV_48;
 		
 		-- 
-		DriveInformation							: OUT T_SATA_DRIVE_INFORMATION;
+		DriveInformation							: out T_SATA_DRIVE_INFORMATION;
 
 		-- TX path
-		TX_Valid											: IN	STD_LOGIC;
-		TX_Data												: IN	T_SLV_32;
-		TX_SOR												: IN	STD_LOGIC;
-		TX_EOR												: IN	STD_LOGIC;
-		TX_Ack												: OUT	STD_LOGIC;
+		TX_Valid											: in	STD_LOGIC;
+		TX_Data												: in	T_SLV_32;
+		TX_SOR												: in	STD_LOGIC;
+		TX_EOR												: in	STD_LOGIC;
+		TX_Ack												: out	STD_LOGIC;
 
 		-- RX path
-		RX_Valid											: OUT	STD_LOGIC;
-		RX_Data												: OUT	T_SLV_32;
-		RX_SOR												: OUT	STD_LOGIC;
-		RX_EOR												: OUT	STD_LOGIC;
-		RX_Ack												: IN	STD_LOGIC;
+		RX_Valid											: out	STD_LOGIC;
+		RX_Data												: out	T_SLV_32;
+		RX_SOR												: out	STD_LOGIC;
+		RX_EOR												: out	STD_LOGIC;
+		RX_Ack												: in	STD_LOGIC;
 
 		-- TransportLayer interface
 		-- ========================================================================
-		Trans_Command									: OUT	T_SATA_TRANS_COMMAND;
-		Trans_Status									: IN	T_SATA_TRANS_STATUS;
-		Trans_Error										: IN	T_SATA_TRANS_ERROR;
+		Trans_Command									: out	T_SATA_TRANS_COMMAND;
+		Trans_Status									: in	T_SATA_TRANS_STATUS;
+		Trans_Error										: in	T_SATA_TRANS_ERROR;
 	
 		-- ATA registers
-		Trans_UpdateATAHostRegisters	: OUT	STD_LOGIC;
-		Trans_ATAHostRegisters				: OUT	T_SATA_ATA_HOST_REGISTERS;
-		Trans_ATADeviceRegisters			: IN	T_SATA_ATA_DEVICE_REGISTERS;
+		Trans_UpdateATAHostRegisters	: out	STD_LOGIC;
+		Trans_ATAHostRegisters				: out	T_SATA_ATA_HOST_REGISTERS;
+		Trans_ATADeviceRegisters			: in	T_SATA_ATA_DEVICE_REGISTERS;
 	
 		-- TX path
-		Trans_TX_Valid								: OUT	STD_LOGIC;
-		Trans_TX_Data									: OUT	T_SLV_32;
-		Trans_TX_SOT									: OUT	STD_LOGIC;
-		Trans_TX_EOT									: OUT	STD_LOGIC;
-		Trans_TX_Ack									: IN	STD_LOGIC;
+		Trans_TX_Valid								: out	STD_LOGIC;
+		Trans_TX_Data									: out	T_SLV_32;
+		Trans_TX_SOT									: out	STD_LOGIC;
+		Trans_TX_EOT									: out	STD_LOGIC;
+		Trans_TX_Ack									: in	STD_LOGIC;
 
 		-- RX path
-		Trans_RX_Valid								: IN	STD_LOGIC;
-		Trans_RX_Data									: IN	T_SLV_32;
-		Trans_RX_SOT									: IN	STD_LOGIC;
-		Trans_RX_EOT									: IN	STD_LOGIC;
-		Trans_RX_Ack									: OUT	STD_LOGIC
+		Trans_RX_Valid								: in	STD_LOGIC;
+		Trans_RX_Data									: in	T_SLV_32;
+		Trans_RX_SOT									: in	STD_LOGIC;
+		Trans_RX_EOT									: in	STD_LOGIC;
+		Trans_RX_Ack									: out	STD_LOGIC
 	);
-END;
+end;
 
-ARCHITECTURE rtl OF sata_CommandLayer IS
-	ATTRIBUTE KEEP													: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING									: STRING;
+
+architecture rtl of sata_CommandLayer is
+	attribute KEEP													: BOOLEAN;
+	attribute FSM_ENCODING									: STRING;
 
 	-- ==========================================================================================================================================================
 	-- CommandLayer configurations
 	-- ==========================================================================================================================================================
-	CONSTANT SHIFT_WIDTH										: POSITIVE								:= 8;						-- supports logical block sizes from 512 B to 4 KiB
-	CONSTANT AHEAD_CYCLES_FOR_INSERT_EOT		: NATURAL									:= 1;
+	constant SHIFT_WIDTH										: POSITIVE								:= 8;						-- supports logical block sizes from 512 B to 4 KiB
+	constant AHEAD_CYCLES_FOR_INSERT_EOT		: NATURAL									:= 1;
 
 	-- CommandFSM
 	-- ==========================================================================
-	SIGNAL Status_i													: T_SATA_CMD_STATUS;
-	SIGNAL Error_i													: T_SATA_CMD_ERROR;
+	signal Status_i													: T_SATA_CMD_STATUS;
+	signal Error_i													: T_SATA_CMD_ERROR;
 
-	--SIGNAL CFSM_ATA_Command									: T_SATA_ATA_COMMAND;
-	--SIGNAL CFSM_ATA_Address_LB							: T_SLV_48;
-	--SIGNAL CFSM_ATA_BlockCount_LB						: T_SLV_16;
+	--signal CFSM_ATA_Command									: T_SATA_ATA_COMMAND;
+	--signal CFSM_ATA_Address_LB							: T_SLV_48;
+	--signal CFSM_ATA_BlockCount_LB						: T_SLV_16;
 	
-	SIGNAL CFSM_TX_en												: STD_LOGIC;
+	signal CFSM_TX_en												: STD_LOGIC;
 	
-	SIGNAL CFSM_RX_SOR											: STD_LOGIC;
-	SIGNAL CFSM_RX_EOR											: STD_LOGIC;
+	signal CFSM_RX_SOR											: STD_LOGIC;
+	signal CFSM_RX_EOR											: STD_LOGIC;
 	signal CFSM_RX_ForcePut									: STD_LOGIC;
 
-	SIGNAL CFSM_DebugPortOut								: T_SATADBG_CMD_CFSM_OUT;
+	signal CFSM_DebugPortOut								: T_SATADBG_CMD_CFSM_OUT;
 
-	SIGNAL ATA_CommandCategory							: T_SATA_COMMAND_CATEGORY;
+	signal ATA_CommandCategory							: T_SATA_COMMAND_CATEGORY;
 	
 	-- AddressCalculation
 	-- ==========================================================================
-	SIGNAL AdrCalc_Address_DevLB						: T_SLV_48;
-	SIGNAL AdrCalc_BlockCount_DevLB					: T_SLV_48;
+	signal AdrCalc_Address_DevLB						: T_SLV_48;
+	signal AdrCalc_BlockCount_DevLB					: T_SLV_48;
 
 	-- TX_FIFO
 	-- ==========================================================================
-	SIGNAL TX_FIFO_Full											: STD_LOGIC;
-	SIGNAL TX_FIFO_put											: STD_LOGIC;
-	SIGNAL TX_FIFO_got											: STD_LOGIC;
-	SIGNAL TX_FIFO_DataIn										: STD_LOGIC_VECTOR(33 DOWNTO 0);
-	SIGNAL TX_FIFO_DataOut									: STD_LOGIC_VECTOR(33 DOWNTO 0);
+	signal TX_FIFO_Full											: STD_LOGIC;
+	signal TX_FIFO_put											: STD_LOGIC;
+	signal TX_FIFO_got											: STD_LOGIC;
+	signal TX_FIFO_DataIn										: STD_LOGIC_VECTOR(33 downto 0);
+	signal TX_FIFO_DataOut									: STD_LOGIC_VECTOR(33 downto 0);
 	
 	-- TX path data interface after TX_FIFO
-	SIGNAL TX_FIFO_Data											: T_SLV_32;
-	SIGNAL TX_FIFO_SOR											: STD_LOGIC;
-	SIGNAL TX_FIFO_EOR											: STD_LOGIC;
-	SIGNAL TX_FIFO_Valid										: STD_LOGIC;		
+	signal TX_FIFO_Data											: T_SLV_32;
+	signal TX_FIFO_SOR											: STD_LOGIC;
+	signal TX_FIFO_EOR											: STD_LOGIC;
+	signal TX_FIFO_Valid										: STD_LOGIC;		
 	
 	-- TX path
 	-- ==========================================================================
-	SIGNAL TC_TX_Ack												: STD_LOGIC;
-	SIGNAL TC_TX_Valid											: STD_LOGIC;
-	SIGNAL TC_TX_Data												: T_SLV_32;
-	SIGNAL TC_TX_SOT												: STD_LOGIC;
-	SIGNAL TC_TX_EOT												: STD_LOGIC;
-	SIGNAL TC_TX_LastWord										: STD_LOGIC;
-	SIGNAL TC_TX_InsertEOT									: STD_LOGIC;
+	signal TC_TX_Ack												: STD_LOGIC;
+	signal TC_TX_Valid											: STD_LOGIC;
+	signal TC_TX_Data												: T_SLV_32;
+	signal TC_TX_SOT												: STD_LOGIC;
+	signal TC_TX_EOT												: STD_LOGIC;
+	signal TC_TX_LastWord										: STD_LOGIC;
+	signal TC_TX_InsertEOT									: STD_LOGIC;
 	
 	-- RX_FIFO
 	-- ==========================================================================
-	SIGNAL RX_FIFO_put											: STD_LOGIC;
-	SIGNAL RX_FIFO_got											: STD_LOGIC;
-	SIGNAL RX_FIFO_DataIn										: STD_LOGIC_VECTOR(33 DOWNTO 0);
-	SIGNAL RX_FIFO_DataOut									: STD_LOGIC_VECTOR(33 DOWNTO 0);
-	SIGNAL RX_FIFO_Valid										: STD_LOGIC;
-	SIGNAL RX_FIFO_Full											: STD_LOGIC;
+	signal RX_FIFO_put											: STD_LOGIC;
+	signal RX_FIFO_got											: STD_LOGIC;
+	signal RX_FIFO_DataIn										: STD_LOGIC_VECTOR(33 downto 0);
+	signal RX_FIFO_DataOut									: STD_LOGIC_VECTOR(33 downto 0);
+	signal RX_FIFO_Valid										: STD_LOGIC;
+	signal RX_FIFO_Full											: STD_LOGIC;
 
 	-- IdentifyDeviceFilter
 	-- ==========================================================================
-	SIGNAL IDF_Reset												: STD_LOGIC;
-	SIGNAL IDF_Enable												: STD_LOGIC;
-	SIGNAL IDF_Error												: STD_LOGIC;
-	SIGNAL IDF_Finished											: STD_LOGIC;
+	signal IDF_Reset												: STD_LOGIC;
+	signal IDF_Enable												: STD_LOGIC;
+	signal IDF_Error												: STD_LOGIC;
+	signal IDF_Finished											: STD_LOGIC;
 	
-	SIGNAL IDF_Valid												: STD_LOGIC;
-	SIGNAL IDF_Data													: T_SLV_32;
-	SIGNAL IDF_SOT													: STD_LOGIC;
-	SIGNAL IDF_EOT													: STD_LOGIC;
-	SIGNAL IDF_DriveInformation							: T_SATA_DRIVE_INFORMATION;
+	signal IDF_Valid												: STD_LOGIC;
+	signal IDF_Data													: T_SLV_32;
+	signal IDF_SOT													: STD_LOGIC;
+	signal IDF_EOT													: STD_LOGIC;
+	signal IDF_DriveInformation							: T_SATA_DRIVE_INFORMATION;
 
 	-- Internal version of output signals
 	-- ========================================================================
 	signal Trans_RX_Ack_i : std_logic;
 	
-BEGIN
+begin
 	-- ================================================================
 	-- logical block address calculations
 	-- ================================================================
-	AdrCalc : BLOCK
-		SIGNAL Shift_us										: UNSIGNED(log2ceilnz(SHIFT_WIDTH) - 1 DOWNTO 0);
-		TYPE T_SHIFTED										IS ARRAY(NATURAL RANGE <>) OF T_SLV_48;
-		SIGNAL Address_AppLB_Shifted			: T_SHIFTED(SHIFT_WIDTH - 1 DOWNTO 0);
-		SIGNAL BlockCount_AppLB_Shifted		: T_SHIFTED(SHIFT_WIDTH - 1 DOWNTO 0);
-	BEGIN
-		Shift_us													<= to_unsigned(LOGICAL_BLOCK_SIZE_ldB - to_integer(to_01(IDF_DriveInformation.LogicalBlockSize_ldB)), Shift_us'length);
+	AdrCalc : block
+		signal Shift_us										: UNSIGNED(log2ceilnz(SHIFT_WIDTH) - 1 downto 0);
+		type T_SHIFTED										is array(NATURAL range <>) of T_SLV_48;
+		signal Address_AppLB_Shifted			: T_SHIFTED(SHIFT_WIDTH - 1 downto 0);
+		signal BlockCount_AppLB_Shifted		: T_SHIFTED(SHIFT_WIDTH - 1 downto 0);
+	begin
+		Shift_us													<= to_unsigned(log2ceil(to_int(LOGICAL_BLOCK_SIZE, 1 Byte)) - to_integer(to_01(IDF_DriveInformation.LogicalBlockSize_ldB)), Shift_us'length);
 
 		Address_AppLB_Shifted(0)					<= Address_AppLB;
 		BlockCount_AppLB_Shifted(0)				<= BlockCount_AppLB;
 		
-		genShifted : FOR I IN 1 TO SHIFT_WIDTH - 1 GENERATE
-			Address_AppLB_Shifted(I)				<= Address_AppLB(Address_AppLB'high - I DOWNTO 0)			& (I - 1 DOWNTO 0 => '0');
-			BlockCount_AppLB_Shifted(I)			<= BlockCount_AppLB(Address_AppLB'high - I DOWNTO 0)	& (I - 1 DOWNTO 0 => '0');
-		END GENERATE;
+		genShifted : for i in 1 to SHIFT_WIDTH - 1 generate
+			Address_AppLB_Shifted(i)				<= Address_AppLB(Address_AppLB'high - i downto 0)			& (i - 1 downto 0 => '0');
+			BlockCount_AppLB_Shifted(i)			<= BlockCount_AppLB(Address_AppLB'high - i downto 0)	& (i - 1 downto 0 => '0');
+		end generate;
 		
 		AdrCalc_Address_DevLB 						<= Address_AppLB_Shifted(to_index(Shift_us, Address_AppLB_Shifted'length));
 		AdrCalc_BlockCount_DevLB					<= BlockCount_AppLB_Shifted(to_index(Shift_us, BlockCount_AppLB_Shifted'length));
-	END BLOCK;
+	end block;
 	
 
 	-- ================================================================
 	-- CommandLayer FSM
 	-- ================================================================
-	CFSM : ENTITY PoC.sata_CommandFSM
-		GENERIC MAP (
+	CFSM : entity PoC.sata_CommandFSM
+		generic map (
 			ENABLE_DEBUGPORT 							=> ENABLE_DEBUGPORT,
 			SIM_EXECUTE_IDENTIFY_DEVICE		=> SIM_EXECUTE_IDENTIFY_DEVICE,
 			DEBUG													=> DEBUG					
 		)
-		PORT MAP (
+		port map (
 			Clock													=> Clock,
 			Reset													=> Reset,
 
@@ -302,11 +304,11 @@ BEGIN
 	TX_FIFO_EOR																<= TX_FIFO_DataOut(TX_Data'length	+ 1);
 		
 	-- Commandlayer TX_FIFO
-	TX_FIFO : ENTITY PoC.fifo_glue
-		GENERIC MAP (
+	TX_FIFO : entity PoC.fifo_glue
+		generic map (
 			D_BITS					=> TX_FIFO_DataIn'length
 		)
-		PORT MAP (
+		port map (
 			clk							=> Clock,
 			rst							=> Reset,
 			
@@ -321,66 +323,66 @@ BEGIN
 			do							=> TX_FIFO_DataOut
 		);
 
-	TX_Ack					<= NOT TX_FIFO_Full;
+	TX_Ack					<= not TX_FIFO_Full;
 
 	-- TX TransportCutter
 	-- ==========================================================================================================================================================
-	TransportCutter : BLOCK
-		SIGNAL TC_TX_DataFlow								: STD_LOGIC;
-		SIGNAL TC_TX_LastWord_r							: STD_LOGIC						:= '0';
+	TransportCutter : block
+		signal TC_TX_DataFlow								: STD_LOGIC;
+		signal TC_TX_LastWord_r							: STD_LOGIC						:= '0';
 		
-		SIGNAL InsertEOT_d									: STD_LOGIC						:= '0';
-		SIGNAL InsertEOT_re									: STD_LOGIC;
-		SIGNAL InsertEOT_re_d								: STD_LOGIC						:= '0';
-		SIGNAL InsertEOT_re_d2							: STD_LOGIC						:= '0';
+		signal InsertEOT_d									: STD_LOGIC						:= '0';
+		signal InsertEOT_re									: STD_LOGIC;
+		signal InsertEOT_re_d								: STD_LOGIC						:= '0';
+		signal InsertEOT_re_d2							: STD_LOGIC						:= '0';
 		
-		SIGNAL IEOTC_Load										: STD_LOGIC;
-		SIGNAL IEOTC_inc										: STD_LOGIC;
-		SIGNAl IEOTC_uf											: STD_LOGIC;
-	BEGIN
+		signal IEOTC_Load										: STD_LOGIC;
+		signal IEOTC_inc										: STD_LOGIC;
+		signal IEOTC_uf											: STD_LOGIC;
+	begin
 		-- enable TX data path
-		TC_TX_Valid					<= TX_FIFO_Valid		AND CFSM_TX_en;
-		TC_TX_Ack						<= Trans_TX_Ack			AND CFSM_TX_en;
+		TC_TX_Valid					<= TX_FIFO_Valid		and CFSM_TX_en;
+		TC_TX_Ack						<= Trans_TX_Ack			and CFSM_TX_en;
 
-		TC_TX_DataFlow			<= TC_TX_Valid			AND TC_TX_Ack;
+		TC_TX_DataFlow			<= TC_TX_Valid			and TC_TX_Ack;
 
 		InsertEOT_d					<= ffdre(q => InsertEOT_d,     rst => Reset, en => TC_TX_DataFlow, d => TC_TX_InsertEOT) 	when rising_edge(Clock);
-		InsertEOT_re				<= TC_TX_InsertEOT	AND NOT InsertEOT_d;
+		InsertEOT_re				<= TC_TX_InsertEOT	and not InsertEOT_d;
 		InsertEOT_re_d			<= ffdre(q => InsertEOT_re_d,  rst => Reset, en => TC_TX_DataFlow, d => InsertEOT_re) 		when rising_edge(Clock);
 		InsertEOT_re_d2			<= ffdre(q => InsertEOT_re_d2, rst => Reset, en => TC_TX_DataFlow, d => InsertEOT_re_d) 	when rising_edge(Clock);
 
 		TC_TX_Data					<= TX_FIFO_Data;
-		TC_TX_SOT						<= TX_FIFO_SOR			OR InsertEOT_re_d2;
-		TC_TX_EOT						<= TX_FIFO_EOR			OR InsertEOT_re_d;
+		TC_TX_SOT						<= TX_FIFO_SOR			or InsertEOT_re_d2;
+		TC_TX_EOT						<= TX_FIFO_EOR			or InsertEOT_re_d;
 
-		IEOTC_Load					<= TC_TX_SOT				AND TC_TX_Valid;
-		IEOTC_inc						<= TC_TX_DataFlow		AND NOT IEOTC_uf;
+		IEOTC_Load					<= TC_TX_SOT				and TC_TX_Valid;
+		IEOTC_inc						<= TC_TX_DataFlow		and not IEOTC_uf;
 		
-		IEOTC : BLOCK	-- InsertEOTCounter
-			CONSTANT MAX_BLOCKCOUNT						: POSITIVE															:= ite(SIMULATION, C_SIM_MAX_BLOCKCOUNT, C_SATA_ATA_MAX_BLOCKCOUNT);
-			CONSTANT MIN_TRANSFER_SIZE_ldB  	: POSITIVE															:= log2ceilnz(MAX_BLOCKCOUNT)+9;
-			CONSTANT MIN_TRANSFER_SIZE_B			: POSITIVE															:= 2**MIN_TRANSFER_SIZE_ldB;
-			CONSTANT MAX_TRANSFER_SIZE_ldB		: POSITIVE															:= MIN_TRANSFER_SIZE_ldB + (SHIFT_WIDTH - 1);
-			CONSTANT IEOT_COUNTER_START				: POSITIVE															:= (MIN_TRANSFER_SIZE_B / 4) - AHEAD_CYCLES_FOR_INSERT_EOT - 3;		-- FIXME: replace with dynamic calculation
-			CONSTANT IEOT_COUNTER_BITS				: POSITIVE															:= MAX_TRANSFER_SIZE_ldB - 2;
+		IEOTC : block	-- InsertEOTCounter
+			constant MAX_BLOCKCOUNT						: POSITIVE															:= ite(SIMULATION, C_SIM_MAX_BLOCKCOUNT, C_SATA_ATA_MAX_BLOCKCOUNT);
+			constant MIN_TRANSFER_SIZE_ldB  	: POSITIVE															:= log2ceilnz(MAX_BLOCKCOUNT)+9;
+			constant MIN_TRANSFER_SIZE_B			: POSITIVE															:= 2**MIN_TRANSFER_SIZE_ldB;
+			constant MAX_TRANSFER_SIZE_ldB		: POSITIVE															:= MIN_TRANSFER_SIZE_ldB + (SHIFT_WIDTH - 1);
+			constant IEOT_COUNTER_START				: POSITIVE															:= (MIN_TRANSFER_SIZE_B / 4) - AHEAD_CYCLES_FOR_INSERT_EOT - 3;		-- FIXME: replace with dynamic calculation
+			constant IEOT_COUNTER_BITS				: POSITIVE															:= MAX_TRANSFER_SIZE_ldB - 2;
 			
-			SIGNAL Counter_s									: SIGNED(IEOT_COUNTER_BITS DOWNTO 0)			:= to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);
-		BEGIN
-			PROCESS(Clock)
-			BEGIN
-				IF rising_edge(Clock) THEN
-					IF ((Reset = '1') OR (IEOTC_Load = '1')) THEN
+			signal Counter_s									: SIGNED(IEOT_COUNTER_BITS downto 0)			:= to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);
+		begin
+			process(Clock)
+			begin
+				IF rising_edge(Clock) then
+					if ((Reset = '1') or (IEOTC_Load = '1')) then
 						Counter_s				<=  to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);		-- FIXME: replace with dynamic calculation
-					ELSE
-						IF (IEOTC_inc = '1') THEN
+					else
+						if (IEOTC_inc = '1') then
 							Counter_s			<= Counter_s - 1;
-						END IF;
-					END IF;
-				END IF;
-			END PROCESS;
+						end if;
+					end if;
+				end if;
+			end process;
 			
 			IEOTC_uf					<= Counter_s(Counter_s'high);
-		END BLOCK;	-- InsertEOTCounter
+		end block;	-- InsertEOTCounter
 
 		TC_TX_InsertEOT			<= IEOTC_uf;
 		
@@ -392,19 +394,19 @@ BEGIN
 		-- RS-FF for TC_TX_LastWord
 		-- FF.set = TX_EOT
 		-- FF.rst = TX_SOT
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF (TC_TX_EOT = '1') THEN
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if (TC_TX_EOT = '1') then
 					TC_TX_LastWord_r		<= '1';
-				ELSIF (TC_TX_SOT = '1') THEN
+				elsif (TC_TX_SOT = '1') then
 					TC_TX_LastWord_r		<= '0';
-				END IF;
-			END IF;
-		END PROCESS;
+				end if;
+			end if;
+		end process;
 		
-		TC_TX_LastWord	<= TC_TX_EOT OR TC_TX_LastWord_r;		-- LastWord in transfer
-	END BLOCK;	-- TransferCutter
+		TC_TX_LastWord	<= TC_TX_EOT or TC_TX_LastWord_r;		-- LastWord in transfer
+	end block;	-- TransferCutter
 
 	-- CommandLayer RX_FIFO
 	RX_FIFO_put																<= (Trans_RX_Valid and not IDF_Enable) or CFSM_RX_ForcePut;
@@ -418,11 +420,11 @@ BEGIN
 	RX_SOR																		<= RX_FIFO_DataOut(RX_Data'length	+ 0);
 	RX_EOR																		<= RX_FIFO_DataOut(RX_Data'length	+ 1);
 	
-	RX_FIFO : ENTITY PoC.fifo_glue
-		GENERIC MAP (
-			D_BITS						=> 34
+	RX_FIFO : entity PoC.fifo_glue
+		generic map (
+			D_BITS						=> RX_FIFO_DataIn'length
 		)
-		PORT MAP (
+		port map (
 			clk						=> Clock,
 			rst						=> Reset,
 
@@ -437,7 +439,7 @@ BEGIN
 			do						=> RX_FIFO_DataOut
 		);
 	
-	Trans_RX_Ack_i	 	<= (NOT RX_FIFO_Full) WHEN (IDF_Enable = '0') ELSE '1';					-- RX_Ack	 multiplexer
+	Trans_RX_Ack_i	 	<= (not RX_FIFO_Full) when (IDF_Enable = '0') else '1';					-- RX_Ack	 multiplexer
 	Trans_RX_Ack      <= Trans_RX_Ack_i;
 	RX_Valid					<= RX_FIFO_Valid;
 
@@ -466,11 +468,11 @@ BEGIN
 	IDF_SOT			<= Trans_RX_SOT;
 	IDF_EOT			<= Trans_RX_EOT;
 	
-	IDF : ENTITY PoC.sata_IdentifyDeviceFilter
-		GENERIC MAP (
+	IDF : entity PoC.sata_IdentifyDeviceFilter
+		generic map (
 			DEBUG										=> DEBUG					
 		)
-		PORT MAP (
+		port map (
 			Clock										=> Clock,
 			Reset										=> IDF_Reset,
 			
@@ -488,7 +490,7 @@ BEGIN
 
   -- debug ports
   -- ==========================================================================================================================================================
-  genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
+  genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) generate
   begin
 		genXilinx : if (VENDOR = VENDOR_XILINX) generate
 			function dbg_generateCommandEncodings return string is
@@ -591,5 +593,4 @@ BEGIN
 		DebugPortOut.TC_TX_InsertEOT	<= TC_TX_InsertEOT;
 
 	end generate;
-
 end;

@@ -6,7 +6,7 @@
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Package:					SATA Types and Functions
+-- Package:					SATA Types, Constants and Functions
 --
 -- Description:
 -- ------------------------------------
@@ -25,7 +25,7 @@
 -- 
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- WITHOUT WARRANTIES OR CONDITIONS of ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- =============================================================================
@@ -38,6 +38,7 @@ library PoC;
 use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
+use			PoC.physical.all;
 use			PoC.sata_transceivertypes.all;
 
 
@@ -46,7 +47,7 @@ package sata is
 	-- SATA Transceiver Types
 	-- ===========================================================================
 	-- OOB signals (Out-Of-Band)
-	TYPE T_SATA_OOB IS (
+	type T_SATA_OOB is (
 		SATA_OOB_NONE,
 		SATA_OOB_READY,
 		SATA_OOB_COMRESET,
@@ -55,14 +56,14 @@ package sata is
 	);
 	
 	-- transceiver commands
-	TYPE T_SATA_TRANSCEIVER_COMMAND IS (
+	type T_SATA_TRANSCEIVER_COMMAND is (
 		SATA_TRANSCEIVER_CMD_NONE,
 		SATA_TRANSCEIVER_CMD_RECONFIG,
 		SATA_TRANSCEIVER_CMD_UNLOCK
 	);
 	
 	-- transceiver status
-	TYPE T_SATA_TRANSCEIVER_STATUS IS (
+	type T_SATA_TRANSCEIVER_STATUS is (
 		SATA_TRANSCEIVER_STATUS_INIT,
 		SATA_TRANSCEIVER_STATUS_RECONFIGURING,
 		SATA_TRANSCEIVER_STATUS_RELOADING,
@@ -72,20 +73,20 @@ package sata is
 	);
 
 	-- transceiver error
-	TYPE T_SATA_TRANSCEIVER_COMMON_ERROR IS (
+	type T_SATA_TRANSCEIVER_COMMON_ERROR is (
 		SATA_TRANSCEIVER_ERROR_NONE,
 		SATA_TRANSCEIVER_ERROR_FSM
 	);
 
 	-- transmitter errors
-	TYPE T_SATA_TRANSCEIVER_TX_ERROR IS (
+	type T_SATA_TRANSCEIVER_TX_ERROR is (
 		SATA_TRANSCEIVER_TX_ERROR_NONE,
 		SATA_TRANSCEIVER_TX_ERROR_ENCODER,
 		SATA_TRANSCEIVER_TX_ERROR_BUFFER
 	);
 	
 	-- receiver errors
-	TYPE T_SATA_TRANSCEIVER_RX_ERROR IS (
+	type T_SATA_TRANSCEIVER_RX_ERROR is (
 		SATA_TRANSCEIVER_RX_ERROR_NONE,
 		SATA_TRANSCEIVER_RX_ERROR_ALIGNEMENT,
 		SATA_TRANSCEIVER_RX_ERROR_DISPARITY,
@@ -99,12 +100,12 @@ package sata is
 		RX			: T_SATA_TRANSCEIVER_RX_ERROR;
 	end record;
 
-	TYPE T_SATA_OOB_VECTOR										IS ARRAY (NATURAL RANGE <>) OF T_SATA_OOB;
-	TYPE T_SATA_TRANSCEIVER_COMMAND_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_COMMAND;
-	TYPE T_SATA_TRANSCEIVER_STATUS_VECTOR			IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_STATUS;
-	TYPE T_SATA_TRANSCEIVER_ERROR_VECTOR			IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_ERROR;
-	TYPE T_SATA_TRANSCEIVER_TX_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_TX_ERROR;
-	TYPE T_SATA_TRANSCEIVER_RX_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_TRANSCEIVER_RX_ERROR;
+	type T_SATA_OOB_VECTOR										is array (NATURAL range <>) of T_SATA_OOB;
+	type T_SATA_TRANSCEIVER_COMMAND_VECTOR		is array (NATURAL range <>) of T_SATA_TRANSCEIVER_COMMAND;
+	type T_SATA_TRANSCEIVER_STATUS_VECTOR			is array (NATURAL range <>) of T_SATA_TRANSCEIVER_STATUS;
+	type T_SATA_TRANSCEIVER_ERROR_VECTOR			is array (NATURAL range <>) of T_SATA_TRANSCEIVER_ERROR;
+	type T_SATA_TRANSCEIVER_TX_ERROR_VECTOR		is array (NATURAL range <>) of T_SATA_TRANSCEIVER_TX_ERROR;
+	type T_SATA_TRANSCEIVER_RX_ERROR_VECTOR		is array (NATURAL range <>) of T_SATA_TRANSCEIVER_RX_ERROR;
 
 	function to_slv(Command : T_SATA_TRANSCEIVER_COMMAND)	return STD_LOGIC_VECTOR;
 	function to_slv(Status : T_SATA_TRANSCEIVER_STATUS)		return STD_LOGIC_VECTOR;
@@ -112,25 +113,25 @@ package sata is
 	-- ===========================================================================
 	-- SATA Physical Layer Types
 	-- ===========================================================================
-	SUBTYPE T_SATA_GENERATION				IS INTEGER RANGE 0 TO 5;
+	subtype T_SATA_GENERATION				is INTEGER range 0 TO 5;
 	
-	CONSTANT SATA_GENERATION_1			: T_SATA_GENERATION		:= 0;
-	CONSTANT SATA_GENERATION_2			: T_SATA_GENERATION		:= 1;
-	CONSTANT SATA_GENERATION_3			: T_SATA_GENERATION		:= 2;
-	CONSTANT SATA_GENERATION_AUTO		: T_SATA_GENERATION		:= 4;
-	CONSTANT SATA_GENERATION_ERROR	: T_SATA_GENERATION		:= 5;
+	constant SATA_GENERATION_1			: T_SATA_GENERATION		:= 0;
+	constant SATA_GENERATION_2			: T_SATA_GENERATION		:= 1;
+	constant SATA_GENERATION_3			: T_SATA_GENERATION		:= 2;
+	constant SATA_GENERATION_AUTO		: T_SATA_GENERATION		:= 4;
+	constant SATA_GENERATION_ERROR	: T_SATA_GENERATION		:= 5;
 	
-	CONSTANT C_SATA_GENERATION_MAX	: T_SATA_GENERATION		:= SATA_GENERATION_3;
+	constant C_SATA_GENERATION_MAX	: T_SATA_GENERATION		:= SATA_GENERATION_3;
 	
 	-- Described in module 'sata_PhysicalLayer'.
-	TYPE T_SATA_PHY_COMMAND IS (
+	type T_SATA_PHY_COMMAND is (
 		SATA_PHY_CMD_NONE,
 		SATA_PHY_CMD_INIT_CONNECTION,
 		SATA_PHY_CMD_REINIT_CONNECTION
 	);
 
 	-- Described in module 'sata_PhysicalLayer'.
-	TYPE T_SATA_PHY_STATUS IS (
+	type T_SATA_PHY_STATUS is (
 		SATA_PHY_STATUS_RESET,
 		SATA_PHY_STATUS_NODEVICE,
 		SATA_PHY_STATUS_NOCOMMUNICATION,
@@ -139,16 +140,16 @@ package sata is
 	);
 
 	-- Described in module 'sata_PhysicalLayer'.
-	TYPE T_SATA_PHY_ERROR IS (
+	type T_SATA_PHY_ERROR is (
 		SATA_PHY_ERROR_NONE,
 		SATA_PHY_ERROR_LINK_DEAD,
 		SATA_PHY_ERROR_NEGOTIATION
 	);
 
-	TYPE T_SATA_GENERATION_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_GENERATION;
-	TYPE T_SATA_PHY_COMMAND_VECTOR	IS ARRAY (NATURAL RANGE <>) OF T_SATA_PHY_COMMAND;
-	TYPE T_SATA_PHY_STATUS_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_PHY_STATUS;
-	TYPE T_SATA_PHY_ERROR_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_PHY_ERROR;
+	type T_SATA_GENERATION_VECTOR		is array (NATURAL range <>) of T_SATA_GENERATION;
+	type T_SATA_PHY_COMMAND_VECTOR	is array (NATURAL range <>) of T_SATA_PHY_COMMAND;
+	type T_SATA_PHY_STATUS_VECTOR		is array (NATURAL range <>) of T_SATA_PHY_STATUS;
+	type T_SATA_PHY_ERROR_VECTOR		is array (NATURAL range <>) of T_SATA_PHY_ERROR;
 
 	function to_slv(Command : T_SATA_PHY_COMMAND)			return STD_LOGIC_VECTOR;
 	function to_slv(Status : T_SATA_PHY_STATUS)				return STD_LOGIC_VECTOR;
@@ -157,11 +158,11 @@ package sata is
 	-- ===========================================================================
 	-- SATA Link Layer Types
 	-- ===========================================================================
-	TYPE T_SATA_LINK_COMMAND IS (
+	type T_SATA_LINK_COMMAND is (
 		SATA_LINK_CMD_NONE
 	);
 
-	TYPE T_SATA_LINK_STATUS IS (
+	type T_SATA_LINK_STATUS is (
 		SATA_LINK_STATUS_NO_COMMUNICATION,
 		SATA_LINK_STATUS_IDLE,
 		SATA_LINK_STATUS_SENDING,
@@ -170,12 +171,12 @@ package sata is
 		SATA_LINK_STATUS_ERROR
 	);
 	
-	TYPE T_SATA_LINK_ERROR IS (
+	type T_SATA_LINK_ERROR is (
 		SATA_LINK_ERROR_NONE,
 		SATA_LINK_ERROR_COMMUNICATION_ERROR
 	);
 	
-	TYPE T_SATA_PRIMITIVE IS (					-- Primitive Name				Byte 3,	Byte 2,	Byte 1,	Byte 0
+	type T_SATA_PRIMITIVE is (					-- Primitive Name				Byte 3,	Byte 2,	Byte 1,	Byte 0
 		SATA_PRIMITIVE_NONE,							-- no primitive
 		SATA_PRIMITIVE_ALIGN,							-- ALIGN								D27.3,	D10.2,	D10.2,	K28.5
 		SATA_PRIMITIVE_SYNC,							-- SYNC									D21.5,	D21.5,	D21.4,	K28.3
@@ -198,14 +199,14 @@ package sata is
 		SATA_PRIMITIVE_PM_REQ_S,					-- PMREQ_S							D	
 		SATA_PRIMITIVE_ILLEGAL
 	);
-	CONSTANT T_SATA_PRIMITIVE_COUNT		: INTEGER										:= T_SATA_PRIMITIVE'pos(T_SATA_PRIMITIVE'high) + 1;
+	constant T_SATA_PRIMITIVE_COUNT		: INTEGER										:= T_SATA_PRIMITIVE'pos(T_SATA_PRIMITIVE'high) + 1;
 
-	CONSTANT SATA_MAX_FRAMESIZE_B			: POSITIVE									:= 8192;
-	CONSTANT SATA_WORD_BITS						: POSITIVE									:= 32;
+	constant C_SATA_MAX_FRAMESIZE			: MEMORY										:= 8196 Byte;
+	constant C_SATA_WORD_BITS					: POSITIVE									:= 32;
 
-	TYPE T_SATA_LINK_COMMAND_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_LINK_COMMAND;
-	TYPE T_SATA_LINK_STATUS_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_SATA_LINK_STATUS;
-	TYPE T_SATA_LINK_ERROR_VECTOR			IS ARRAY (NATURAL RANGE <>) OF T_SATA_LINK_ERROR;
+	type T_SATA_LINK_COMMAND_VECTOR		is array (NATURAL range <>) of T_SATA_LINK_COMMAND;
+	type T_SATA_LINK_STATUS_VECTOR		is array (NATURAL range <>) of T_SATA_LINK_STATUS;
+	type T_SATA_LINK_ERROR_VECTOR			is array (NATURAL range <>) of T_SATA_LINK_ERROR;
 
 	function to_slv(Primitive : T_SATA_PRIMITIVE)				return STD_LOGIC_VECTOR;
 	function to_slv(Status : T_SATA_LINK_STATUS)				return STD_LOGIC_VECTOR;
@@ -216,39 +217,39 @@ package sata is
 	-- ===========================================================================
 	-- Common SATA Types
 	-- ===========================================================================
-	TYPE T_SATA_DEVICE_TYPE IS (
+	type T_SATA_DEVICE_type is (
 		SATA_DEVICE_TYPE_HOST,
 		SATA_DEVICE_TYPE_DEVICE
 	);
 
-	TYPE T_SATA_DEVICE_TYPE_VECTOR		IS ARRAY (NATURAL RANGE <>) OF  T_SATA_DEVICE_TYPE;
+	type T_SATA_DEVICE_TYPE_VECTOR		is array (NATURAL range <>) of  T_SATA_DEVICE_TYPE;
 	
 	-- ===========================================================================
 	-- SATA Controller Types
 	-- ===========================================================================
-	TYPE T_SATA_SATACONTROLLER_COMMAND IS (
+	type T_SATA_SATACONTROLLER_COMMAND is (
 		SATA_SATACTRL_CMD_NONE,
 		SATA_SATACTRL_CMD_INIT_CONNECTION,				-- init connection to device with speed negotation
 		SATA_SATACTRL_CMD_REINIT_CONNECTION,			-- init connection at same speed
 		SATA_SATACTRL_CMD_SYNC_LINK								-- reset LinkLayer => send SYNC-primitive
 	);
 
-	TYPE T_SATA_SATACONTROLLER_STATUS IS RECORD
+	type T_SATA_SATACONTROLLER_STATUS IS RECORD
 		LinkLayer							: T_SATA_LINK_STATUS;
 		PhysicalLayer					: T_SATA_PHY_STATUS;
 		TransceiverLayer			: T_SATA_TRANSCEIVER_STATUS;
 	END RECORD;
 	
-	TYPE T_SATA_SATACONTROLLER_ERROR IS RECORD
+	type T_SATA_SATACONTROLLER_ERROR IS RECORD
 		LinkLayer							: T_SATA_LINK_ERROR;
 		PhysicalLayer					: T_SATA_PHY_ERROR;
 		TransceiverLayer			: T_SATA_TRANSCEIVER_ERROR;
 	END RECORD;
 
 	
-	TYPE T_SATA_SATACONTROLLER_COMMAND_VECTOR		IS ARRAY (NATURAL RANGE <>) OF  T_SATA_SATACONTROLLER_COMMAND;
-	TYPE T_SATA_SATACONTROLLER_STATUS_VECTOR		IS ARRAY (NATURAL RANGE <>) OF  T_SATA_SATACONTROLLER_STATUS;
-	TYPE T_SATA_SATACONTROLLER_ERROR_VECTOR			IS ARRAY (NATURAL RANGE <>) OF  T_SATA_SATACONTROLLER_ERROR;
+	type T_SATA_SATACONTROLLER_COMMAND_VECTOR		is array (NATURAL range <>) of  T_SATA_SATACONTROLLER_COMMAND;
+	type T_SATA_SATACONTROLLER_STATUS_VECTOR		is array (NATURAL range <>) of  T_SATA_SATACONTROLLER_STATUS;
+	type T_SATA_SATACONTROLLER_ERROR_VECTOR			is array (NATURAL range <>) of  T_SATA_SATACONTROLLER_ERROR;
 
 	function to_sata_SATAController_Command(slv : STD_LOGIC_VECTOR) return T_SATA_SATACONTROLLER_COMMAND;
 
@@ -257,7 +258,7 @@ package sata is
 	-- ===========================================================================
 	-- ATA Command Layer Types
 	-- ===========================================================================
-	TYPE T_SATA_CMD_COMMAND IS (
+	type T_SATA_CMD_COMMAND is (
 		SATA_CMD_CMD_NONE,
 		SATA_CMD_CMD_RESET,
 		SATA_CMD_CMD_READ,
@@ -267,7 +268,7 @@ package sata is
 		SATA_CMD_CMD_ABORT
 	);
 
-	TYPE T_SATA_CMD_STATUS IS (
+	type T_SATA_CMD_STATUS is (
 		SATA_CMD_STATUS_RESET,
 		SATA_CMD_STATUS_INITIALIZING,
 		SATA_CMD_STATUS_IDLE,
@@ -278,7 +279,7 @@ package sata is
 		SATA_CMD_STATUS_ERROR
 	);
 	
-	TYPE T_SATA_CMD_ERROR IS (
+	type T_SATA_CMD_ERROR is (
 		SATA_CMD_ERROR_NONE,
 		SATA_CMD_ERROR_IDENTIFY_DEVICE_ERROR,
 		SATA_CMD_ERROR_DEVICE_NOT_SUPPORTED,
@@ -287,7 +288,7 @@ package sata is
 		SATA_CMD_ERROR_FSM												-- ILLEGAL_TRANSITION
 	);
 	
-	TYPE T_SATA_ATA_COMMAND IS (
+	type T_SATA_ATA_COMMAND is (
 		SATA_ATA_CMD_NONE,
 		SATA_ATA_CMD_IDENTIFY_DEVICE,
 		SATA_ATA_CMD_DMA_READ_EXT,
@@ -305,13 +306,13 @@ package sata is
 	-- ===========================================================================
 	-- SATA Transport Layer Types
 	-- ===========================================================================
-	TYPE T_SATA_TRANS_COMMAND IS (
+	type T_SATA_TRANS_COMMAND is (
 		SATA_TRANS_CMD_NONE,
 		SATA_TRANS_CMD_TRANSFER,
 		SATA_TRANS_CMD_ABORT
 	);
 
-	TYPE T_SATA_TRANS_STATUS IS (
+	type T_SATA_TRANS_STATUS is (
 		SATA_TRANS_STATUS_RESET,
 		SATA_TRANS_STATUS_IDLE,
 		SATA_TRANS_STATUS_TRANSFERING,
@@ -320,7 +321,7 @@ package sata is
 		SATA_TRANS_STATUS_ERROR
 	);
 	
-	TYPE T_SATA_TRANS_ERROR IS (
+	type T_SATA_TRANS_ERROR is (
 		SATA_TRANS_ERROR_NONE,
 		SATA_TRANS_ERROR_FISENCODER,
 		SATA_TRANS_ERROR_FISDECODER,
@@ -331,7 +332,7 @@ package sata is
 		SATA_TRANS_ERROR_FSM												-- ILLEGAL_TRANSITION
 	);
 
-	TYPE T_SATA_COMMAND_CATEGORY IS (
+	type T_SATA_COMMAND_CATEGORY is (
 		SATA_CMDCAT_NON_DATA,
 		SATA_CMDCAT_PIO_IN,
 		SATA_CMDCAT_PIO_OUT,
@@ -346,7 +347,7 @@ package sata is
 		SATA_CMDCAT_UNKNOWN
 	);
 	
-	TYPE T_SATA_FISTYPE IS (
+	type T_SATA_FIStype is (
 		SATA_FISTYPE_UNKNOWN,
 		SATA_FISTYPE_REG_HOST_DEV,
 		SATA_FISTYPE_REG_DEV_HOST,
@@ -358,7 +359,7 @@ package sata is
 		SATA_FISTYPE_DATA
 	);
 
-	TYPE T_SATA_FISENCODER_STATUS IS (
+	type T_SATA_FISENCODER_STATUS is (
 		SATA_FISE_STATUS_RESET,
 		SATA_FISE_STATUS_IDLE,
 		SATA_FISE_STATUS_SENDING,
@@ -368,7 +369,7 @@ package sata is
 		SATA_FISE_STATUS_CRC_ERROR
 	);
 	
-	TYPE T_SATA_FISDECODER_STATUS IS (
+	type T_SATA_FISDECODER_STATUS is (
 		SATA_FISD_STATUS_RESET,
 		SATA_FISD_STATUS_IDLE,
 		SATA_FISD_STATUS_RECEIVING,
@@ -379,7 +380,7 @@ package sata is
 		SATA_FISD_STATUS_CRC_ERROR
 	);
 	
-	TYPE T_SATA_ATA_HOST_REGISTERS IS RECORD
+	type T_SATA_ATA_HOST_REGISTERS IS RECORD
 		Flag_C						: STD_LOGIC;
 		Command						: T_SLV_8;
 		Control						: T_SLV_8;
@@ -388,13 +389,13 @@ package sata is
 		SectorCount				: T_SLV_16;
 	END RECORD;
 	
-	TYPE T_SATA_ATA_DEVICE_FLAGS IS RECORD
+	type T_SATA_ATA_DEVICE_FLAGS IS RECORD
 		Interrupt					: STD_LOGIC;
 		Direction					: STD_LOGIC;
 		C									: STD_LOGIC;
 	END RECORD;
 	
-	TYPE T_SATA_ATA_DEVICE_REGISTER_STATUS IS RECORD
+	type T_SATA_ATA_DEVICE_REGISTER_STATUS IS RECORD
 		Error							: STD_LOGIC;
 		DataRequest				: STD_LOGIC;
 		DeviceFault				: STD_LOGIC;
@@ -402,7 +403,7 @@ package sata is
 		Busy							: STD_LOGIC;
 	END RECORD;
 	
-	TYPE T_SATA_ATA_DEVICE_REGISTER_ERROR IS RECORD
+	type T_SATA_ATA_DEVICE_REGISTER_ERROR IS RECORD
 		NoMediaPresent				: STD_LOGIC;
 		CommandAborted				: STD_LOGIC;
 		MediaChangeRequest		: STD_LOGIC;
@@ -412,7 +413,7 @@ package sata is
 		InterfaceCRCError			: STD_LOGIC;
 	END RECORD;
 	
-	TYPE T_SATA_ATA_DEVICE_REGISTERS IS RECORD
+	type T_SATA_ATA_DEVICE_REGISTERS IS RECORD
 		Flags							: T_SATA_ATA_DEVICE_FLAGS;
 		Status						: T_SATA_ATA_DEVICE_REGISTER_STATUS;
 		EndStatus					: T_SATA_ATA_DEVICE_REGISTER_STATUS;
@@ -422,14 +423,14 @@ package sata is
 		TransferCount			: T_SLV_16;
 	END RECORD;
 	
-	TYPE T_SATA_HOST_REGISTER_STATUS IS RECORD
+	type T_SATA_HOST_REGISTER_STATUS IS RECORD
 		Detect						: T_SLV_4;
 		Speed							: T_SLV_4;
 		PowerManagement		: T_SLV_4;
 		-- reserved				: T_SLV_20
 	END RECORD;
 
-	TYPE T_SATA_HOST_REGISTER_ERROR IS RECORD
+	type T_SATA_HOST_REGISTER_ERROR IS RECORD
 		-- error field
 		DataIntegrityError						: STD_LOGIC;
 		LinkCommunicationError				: STD_LOGIC;
@@ -453,13 +454,13 @@ package sata is
 		PortSelectorDetected					: STD_LOGIC;
 	END RECORD;
 	
-	TYPE T_SATA_HOST_REGISTERS IS RECORD
+	type T_SATA_HOST_REGISTERS IS RECORD
 		Status				: T_SATA_HOST_REGISTER_STATUS;
 		Error					: T_SATA_HOST_REGISTER_ERROR;
 	END RECORD;
 	
-	CONSTANT C_SATA_ATA_MAX_BLOCKCOUNT			: POSITIVE				:= 2**16; 			--	= 32 MiB at 512 Bytes logical blocks
-	CONSTANT C_SIM_MAX_BLOCKCOUNT						: POSITIVE				:= 64; 					--	= 32 KiB at 512 Bytes logical blocks
+	constant C_SATA_ATA_MAX_BLOCKCOUNT			: POSITIVE				:= 2**16; 			--	= 32 MiB at 512 Bytes logical blocks
+	constant C_SIM_MAX_BLOCKCOUNT						: POSITIVE				:= 64; 					--	= 32 KiB at 512 Bytes logical blocks
 	
 	function to_sata_Trans_Command(slv : STD_LOGIC_VECTOR) return T_SATA_TRANS_COMMAND;
 	function to_sata_Trans_Status(slv : STD_LOGIC_VECTOR) return T_SATA_TRANS_STATUS;
@@ -474,7 +475,7 @@ package sata is
 	-- SATA StreamingController types
 	-- ===========================================================================
 	-- TODO Feature Request: rename STREAMC to STREAMCONTROLLER
-	TYPE T_SATA_STREAMC_COMMAND IS (
+	type T_SATA_STREAMC_COMMAND is (
 		SATA_STREAMC_CMD_NONE,
 		SATA_STREAMC_CMD_RESET,
 		SATA_STREAMC_CMD_READ,
@@ -483,12 +484,12 @@ package sata is
 		SATA_STREAMC_CMD_ABORT
 	);
 
-	TYPE T_SATA_STREAMC_STATUS IS RECORD
+	type T_SATA_STREAMC_STATUS IS RECORD
 		CommandLayer			: T_SATA_CMD_STATUS;
 		TransportLayer		: T_SATA_TRANS_STATUS;
 	END RECORD;
 	
-	TYPE T_SATA_STREAMC_ERROR IS RECORD
+	type T_SATA_STREAMC_ERROR IS RECORD
 		CommandLayer			: T_SATA_CMD_ERROR;
 		TransportLayer		: T_SATA_TRANS_ERROR;
 	END RECORD;
@@ -501,7 +502,7 @@ package sata is
 	-- ===========================================================================
 	-- ATA Drive Information
 	-- ===========================================================================
-	TYPE T_SATA_ATA_CAPABILITY IS RECORD
+	type T_SATA_ATA_CAPABILITY IS RECORD
 		SupportsDMA								: STD_LOGIC;
 		SupportsLBA								: STD_LOGIC;
 		Supports48BitLBA					: STD_LOGIC;
@@ -510,13 +511,13 @@ package sata is
 		SupportsFLUSH_CACHE_EXT		: STD_LOGIC;
 	END RECORD;
 	
-	TYPE T_SATA_SATA_CAPABILITY IS RECORD
+	type T_SATA_SATA_CAPABILITY IS RECORD
 		SupportsNCQ								: STD_LOGIC;
 		SATAGenerationMin					: T_SATA_GENERATION;
 		SATAGenerationMax					: T_SATA_GENERATION;
 	END RECORD;
 	
-	TYPE T_SATA_DRIVE_INFORMATION IS RECORD
+	type T_SATA_DRIVE_INFORMATION IS RECORD
 		DriveName									: T_RAWSTRING(0 TO 39);
 		DriveSize_LB							: UNSIGNED(63 DOWNTO 0); -- unit is Drive Logical Blocks (DevLB)
 		PhysicalBlockSize_ldB			: UNSIGNED(7 DOWNTO 0);  -- log_2(size_in_bytes)
@@ -530,7 +531,7 @@ package sata is
 	
 	-- to_slv
 	-- ===========================================================================
-	function to_slv(FISType : T_SATA_FISTYPE)									return STD_LOGIC_VECTOR;
+	function to_slv(FIStype : T_SATA_FISTYPE)									return STD_LOGIC_VECTOR;
 	function to_slv(Command : T_SATA_ATA_COMMAND)							return STD_LOGIC_VECTOR;
 	function to_slv(reg : T_SATA_ATA_DEVICE_FLAGS)						return STD_LOGIC_VECTOR;
 	function to_slv(reg : T_SATA_ATA_DEVICE_REGISTER_STATUS)	return STD_LOGIC_VECTOR;
@@ -742,9 +743,9 @@ PACKAGE BODY sata IS
 		return to_integer(unsigned(slv));
 	end function;
 
-	FUNCTION to_slv(FISType : T_SATA_FISTYPE) RETURN STD_LOGIC_VECTOR IS
+	FUNCTION to_slv(FIStype : T_SATA_FISTYPE) RETURN STD_LOGIC_VECTOR IS
 	BEGIN
-		CASE FISType IS
+		CASE FIStype IS
 			WHEN SATA_FISTYPE_REG_HOST_DEV		=> RETURN	x"27";
 			WHEN SATA_FISTYPE_REG_DEV_HOST		=> RETURN	x"34";
 			WHEN SATA_FISTYPE_SET_DEV_BITS		=> RETURN	x"A1";
@@ -771,10 +772,10 @@ PACKAGE BODY sata IS
 
 	-- to_*
 	-- ===========================================================================
-	FUNCTION to_sata_fistype(slv : T_SLV_8; valid : STD_LOGIC := '1') RETURN T_SATA_FISTYPE IS
+	FUNCTION to_sata_fistype(slv : T_SLV_8; valid : STD_LOGIC := '1') RETURN T_SATA_FIStype IS
 	BEGIN
 		IF (valid = '1') THEN
-			FOR I IN T_SATA_FISTYPE LOOP
+			FOR I IN T_SATA_FIStype LOOP
 				IF (slv = to_slv(I)) THEN
 					RETURN I;
 				END IF;
