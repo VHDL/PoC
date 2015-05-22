@@ -154,7 +154,7 @@ BEGIN
 			ELSE
 				State						<= NextState;
 				
-				if NextState = ST_ERROR then
+				if (State /= ST_ERROR) and (NextState = ST_ERROR) then
 					Error 				<= Error_nxt;
 				elsif (Command /= SATA_CMD_CMD_NONE) then
 					Error 				<= SATA_CMD_ERROR_NONE; -- clear when issuing new command
@@ -554,7 +554,7 @@ BEGIN
 
 			-- ============================================================
 			-- Error
-			-- stay here if IDENTIFY DEVICE failed
+			-- stay here if IDENTIFY DEVICE failed, previous error is hold
 			-- ============================================================
 			WHEN ST_ERROR =>
 				Status																	<= SATA_CMD_STATUS_ERROR;
