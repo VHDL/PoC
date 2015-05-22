@@ -63,6 +63,7 @@ ENTITY sata_TransportFSM IS
 		DebugPortOut											: out	T_SATADBG_TRANS_TFSM_OUT;
 
 		-- ATA
+		UpdateATAHostRegisters 						: OUT	STD_LOGIC;
 		CopyATADeviceRegisterStatus				: OUT	STD_LOGIC;
 		ATAHostRegisters									: IN	T_SATA_ATA_HOST_REGISTERS;
 		ATADeviceRegisters								: IN	T_SATA_ATA_DEVICE_REGISTERS;
@@ -97,7 +98,7 @@ ARCHITECTURE rtl OF sata_TransportFSM IS
 	ATTRIBUTE FSM_ENCODING					: STRING;
 
 	TYPE T_STATE IS (
-		ST_RESET, ST_IDLE, ST_ERROR,
+		ST_RESET, ST_IDLE, ST_CHECK_ATA_HOST_REG, ST_ERROR,
     ST_INIT_AWAIT_FIS, ST_INIT_RECEIVE_FIS,
 		ST_CMDCAT_NODATA_SEND_REGISTER_WAIT,
 			ST_CMDCAT_NODATA_AWAIT_FIS,
@@ -161,6 +162,7 @@ BEGIN
 		Status																	<= SATA_TRANS_STATUS_TRANSFERING;
 		Error_nxt																<= SATA_TRANS_ERROR_NONE;
     
+		UpdateATAHostRegisters			            <= '0';
 		CopyATADeviceRegisterStatus	            <= '0';
 		
 		TX_en																		<= '0';
@@ -189,6 +191,9 @@ BEGIN
           END IF;
         end if;
         
+			-- ============================================================
+			-- Receive initial register FIS
+			-- ============================================================
       WHEN ST_INIT_AWAIT_FIS =>
         -- await initial RegDH FIS
  				IF (FISD_Status = SATA_FISD_STATUS_RECEIVING) THEN
@@ -199,84 +204,91 @@ BEGIN
 						NextState											<= ST_ERROR;
 					END IF;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_CRC_ERROR) THEN
-					Error_nxt												<= SATA_TRANS_ERROR_RECEIVE_ERROR;
-					NextState												<= ST_ERROR;
+					-- Register FIS with CRC error received, will be
+					-- automatically retried by device. Wait for FIS with valid CRC. 
+					NULL;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
 					Error_nxt												<= SATA_TRANS_ERROR_FISDECODER;
 					NextState												<= ST_ERROR;
 				END IF;
      
       WHEN ST_INIT_RECEIVE_FIS =>
+				-- Register FIS with valid CRC received.
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
-					-- check ATADeviceRegisters
+					-- register FIS with correct content, check ATADeviceRegisters
 					IF (ATADeviceRegisters.Status.Error = '1') THEN
 						Error_nxt											<= SATA_TRANS_ERROR_DEVICE_ERROR;
 						NextState											<= ST_ERROR;
 					ELSE
 						NextState											<= ST_IDLE;
 					END IF;
-				ELSIF (FISD_Status = SATA_FISD_STATUS_CRC_ERROR) THEN
-					Error_nxt												<= SATA_TRANS_ERROR_RECEIVE_ERROR;
-					NextState												<= ST_ERROR;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
+					-- register FIS with invalid content 
 					Error_nxt												<= SATA_TRANS_ERROR_FISDECODER;
 					NextState												<= ST_ERROR;
 				END IF;
       
+			-- ============================================================
+			-- IDLE / Check for command
+			-- ============================================================
 			WHEN ST_IDLE =>
-				Status															<= SATA_TRANS_Status_IDLE;
+				Status															<= SATA_TRANS_STATUS_IDLE;
 
 				IF (Command = SATA_TRANS_CMD_TRANSFER) THEN
-					CASE ATA_Command_Category IS																			-- choose SATA FIS transfer sequence by ATA command category
-						WHEN SATA_CMDCAT_NON_DATA =>
-							FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
-							NextState											<= ST_CMDCAT_NODATA_SEND_REGISTER_WAIT;
+					UpdateATAHostRegisters 						<= '1';
+					NextState 												<= ST_CHECK_ATA_HOST_REG;
+				end if;
+
+			when ST_CHECK_ATA_HOST_REG =>
+				CASE ATA_Command_Category IS																			-- choose SATA FIS transfer sequence by ATA command category
+					WHEN SATA_CMDCAT_NON_DATA =>
+						FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
+						NextState											<= ST_CMDCAT_NODATA_SEND_REGISTER_WAIT;
 						
-						WHEN SATA_CMDCAT_PIO_IN =>
-							FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
-							NextState											<= ST_CMDCAT_PIOIN_SEND_REGISTER_WAIT;
-							
+					WHEN SATA_CMDCAT_PIO_IN =>
+						FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
+						NextState											<= ST_CMDCAT_PIOIN_SEND_REGISTER_WAIT;
+						
 --						WHEN ATA_CMDCAT_PIO_OUT =>
 --							FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
 --							NextState											<= ST_CMDCAT_PIOOUT_SEND_REGISTER_WAIT;
-							
-						WHEN SATA_CMDCAT_DMA_IN =>
-							FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
-							NextState											<= ST_CMDCAT_DMAIN_SEND_REGISTER_WAIT;
-							
-						WHEN SATA_CMDCAT_DMA_OUT =>
-							FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
-							NextState											<= ST_CMDCAT_DMAOUT_SEND_REGISTER_WAIT;
-							
+						
+					WHEN SATA_CMDCAT_DMA_IN =>
+						FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
+						NextState											<= ST_CMDCAT_DMAIN_SEND_REGISTER_WAIT;
+						
+					WHEN SATA_CMDCAT_DMA_OUT =>
+						FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
+						NextState											<= ST_CMDCAT_DMAOUT_SEND_REGISTER_WAIT;
+						
 --						WHEN ATA_CMDCAT_DMA_IN_QUEUED =>
 --							FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
 --							NextState											<= ST_CMDCAT_DMAINQ_SEND_REGISTER_WAIT;
-							
+						
 --						WHEN ATA_CMDCAT_DMA_IN_QUEUED =>
 --							FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
 --							NextState											<= ST_CMDCAT_DMAOUTQ_SEND_REGISTER_WAIT;
-							
+						
 --						WHEN ATA_CMDCAT_PACKET =>
 --							NextState									<= ST_IDLE;
-							
+						
 --						WHEN ATA_CMDCAT_SERVICE =>
 --							NextState									<= ST_IDLE;
-							
+						
 --						WHEN ATA_CMDCAT_DEVICE_RESET =>
 --							NextState									<= ST_IDLE;
-							
+						
 --						WHEN ATA_CMDCAT_DEVICE_DIAGNOSTICS =>
 --							NextState									<= ST_IDLE;
-							
+						
 --						WHEN ATA_CMDCAT_UNKNOWN =>
 --							NextState									<= ST_IDLE;
-							
-						WHEN OTHERS =>
-							Error_nxt											<= SATA_TRANS_ERROR_FSM;
-							NextState											<= ST_ERROR;
-							
-					END CASE;
-				END IF;
+						
+					WHEN OTHERS =>
+						Error_nxt											<= SATA_TRANS_ERROR_FSM;
+						NextState											<= ST_ERROR;
+						
+				END CASE;
 			
 			-- ============================================================
 			-- ATA command category: NO-DATA
@@ -285,8 +297,8 @@ BEGIN
 				IF (FISE_Status = SATA_FISE_STATUS_SEND_OK) THEN
 					NextState													<= ST_CMDCAT_NODATA_AWAIT_FIS;
 				ELSIF (FISE_Status = SATA_FISE_STATUS_CRC_ERROR) THEN
-					-- TODO: retry
-					Error_nxt													<= SATA_TRANS_ERROR_FISENCODER;
+					-- Retry finally failed.
+					Error_nxt													<= SATA_TRANS_ERROR_TRANSMIT_ERROR;
 					NextState													<= ST_ERROR;
 				ELSIF (FISE_Status = SATA_FISE_STATUS_ERROR) THEN
 					Error_nxt													<= SATA_TRANS_ERROR_FISENCODER;
@@ -333,8 +345,8 @@ BEGIN
 				IF (FISE_Status = SATA_FISE_STATUS_SEND_OK) THEN
 					NextState													<= ST_CMDCAT_PIOIN_AWAIT_PIO_SETUP_F;
 				ELSIF (FISE_Status = SATA_FISE_STATUS_CRC_ERROR) THEN
-					-- TODO: retry
-					Error_nxt													<= SATA_TRANS_ERROR_FISENCODER;
+					-- Retry finally failed.
+					Error_nxt													<= SATA_TRANS_ERROR_TRANSMIT_ERROR;
 					NextState													<= ST_ERROR;
 				ELSIF (FISE_Status = SATA_FISE_STATUS_ERROR) THEN
 					Error_nxt													<= SATA_TRANS_ERROR_FISENCODER;
@@ -350,16 +362,18 @@ BEGIN
 						NextState												<= ST_ERROR;
 					END IF;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_CRC_ERROR) THEN
-					Error_nxt													<= SATA_TRANS_ERROR_RECEIVE_ERROR;
-					NextState													<= ST_ERROR;
+					-- PIO setup FIS with CRC error received, will be
+					-- automatically retried by device. Wait for FIS with valid CRC. 
+					NULL;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
 					NextState													<= ST_ERROR;
 				END IF;
 				
 			WHEN ST_CMDCAT_PIOIN_RECEIVE_PIO_SETUP_F =>
+				-- PIO setup FIS with valid CRC received.
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
-					-- check ATADeviceRegisters
+					-- correct content, check ATADeviceRegisters
 					IF (ATADeviceRegisters.Status.Error = '1') THEN
 						Error_nxt												<= SATA_TRANS_ERROR_DEVICE_ERROR;
 						NextState												<= ST_ERROR;
@@ -373,10 +387,8 @@ BEGIN
 					ELSE
 						NextState												<= ST_CMDCAT_PIOIN_AWAIT_DATA_F;
 					END IF;
-				ELSIF (FISD_Status = SATA_FISD_STATUS_CRC_ERROR) THEN
-					Error_nxt													<= SATA_TRANS_ERROR_RECEIVE_ERROR;
-					NextState													<= ST_ERROR;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
+					-- incorrect content
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
 					NextState													<= ST_ERROR;
 				END IF;
@@ -390,6 +402,7 @@ BEGIN
 						NextState												<= ST_ERROR;
 					END IF;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_CRC_ERROR) THEN
+					-- TODO: do we have to await a register FIS?
 					Error_nxt													<= SATA_TRANS_ERROR_RECEIVE_ERROR;
 					NextState													<= ST_ERROR;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
@@ -398,8 +411,9 @@ BEGIN
 				END IF;
 			
 			WHEN ST_CMDCAT_PIOIN_RECEIVE_DATA_F =>
+				-- Receiving data packet with valid CRC.
 				IF (FISD_SOP = '1') THEN
-					RX_SOT													<= '1';
+					RX_SOT														<= '1';
 				END IF;
 				
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
@@ -423,7 +437,7 @@ BEGIN
 						IF (ATADeviceRegisters.EndStatus.Busy = '0') THEN
 							RX_LastWord										<= '1';
 							RX_EOT												<= '1';
-							CopyATADeviceRegisterStatus	<= '1';
+							CopyATADeviceRegisterStatus		<= '1';
 							NextState											<= ST_TRANSFER_OK;
 						ELSE
 							-- Closing of actual frame must be delayed until next valid data
@@ -431,11 +445,6 @@ BEGIN
 							NextState											<= ST_CMDCAT_PIOIN_AWAIT_PIO_SETUP_N;
 						END IF;
 					END IF;
-				ELSIF (FISD_Status = SATA_FISD_STATUS_CRC_ERROR) THEN
-					RX_LastWord												<= '1';
-					RX_EOT														<= '1';
-					Error_nxt													<= SATA_TRANS_ERROR_RECEIVE_ERROR;
-					NextState													<= ST_ERROR;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
 					RX_LastWord												<= '1';
 					RX_EOT														<= '1';
@@ -454,6 +463,7 @@ BEGIN
 						NextState												<= ST_ERROR;
 					END IF;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_CRC_ERROR) THEN
+					-- TODO: do we have to await a register FIS?
 					RX_LastWord												<= '1';
 					RX_EOT														<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_RECEIVE_ERROR;
@@ -466,8 +476,9 @@ BEGIN
 				END IF;
 				
 			WHEN ST_CMDCAT_PIOIN_RECEIVE_PIO_SETUP_N =>
+				-- PIO setup FIS with valid CRC received.
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
-					-- check ATADeviceRegisters
+					-- correct content, check ATADeviceRegisters
 					IF (ATADeviceRegisters.Status.Error = '1') THEN
 						RX_LastWord											<= '1';
 						RX_EOT													<= '1';
@@ -487,12 +498,8 @@ BEGIN
 					ELSE
 						NextState												<= ST_CMDCAT_PIOIN_AWAIT_DATA_N;
 					END IF;
-				ELSIF (FISD_Status = SATA_FISD_STATUS_CRC_ERROR) THEN
-					RX_LastWord												<= '1';
-					RX_EOT														<= '1';
-					Error_nxt													<= SATA_TRANS_ERROR_RECEIVE_ERROR;
-					NextState													<= ST_ERROR;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
+					-- incorrect content
 					RX_LastWord												<= '1';
 					RX_EOT														<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
@@ -512,6 +519,7 @@ BEGIN
 						NextState												<= ST_ERROR;
 					END IF;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_CRC_ERROR) THEN
+					-- TODO: do we have to await a register FIS?
 					RX_LastWord												<= '1';
 					RX_EOT														<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_RECEIVE_ERROR;
@@ -524,6 +532,7 @@ BEGIN
 				END IF;
 			
 			WHEN ST_CMDCAT_PIOIN_RECEIVE_DATA_N =>
+				-- Receiving data packet with valid CRC.
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
 					-- check ATADeviceRegisters
 					IF (ATADeviceRegisters.EndStatus.Error = '1') THEN
@@ -547,9 +556,6 @@ BEGIN
 							NextState											<= ST_CMDCAT_PIOIN_AWAIT_PIO_SETUP_N;
 						END IF;
 					END IF;
-				ELSIF (FISD_Status = SATA_FISD_STATUS_CRC_ERROR) THEN
-					Error_nxt													<= SATA_TRANS_ERROR_RECEIVE_ERROR;
-					NextState													<= ST_ERROR;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
 					NextState													<= ST_ERROR;
@@ -563,8 +569,8 @@ BEGIN
 				IF (FISE_Status = SATA_FISE_STATUS_SEND_OK) THEN
 					NextState													<= ST_CMDCAT_DMAIN_AWAIT_FIS_DATA;
 				ELSIF (FISE_Status = SATA_FISE_STATUS_CRC_ERROR) THEN
-					-- TODO: retry
-					Error_nxt													<= SATA_TRANS_ERROR_FISENCODER;
+					-- Retry finally failed.
+					Error_nxt													<= SATA_TRANS_ERROR_TRANSMIT_ERROR;
 					NextState													<= ST_ERROR;
 				ELSIF (FISE_Status = SATA_FISE_STATUS_ERROR) THEN
 					Error_nxt													<= SATA_TRANS_ERROR_FISENCODER;
@@ -675,8 +681,8 @@ BEGIN
 				IF (FISE_Status = SATA_FISE_STATUS_SEND_OK) THEN
 					NextState													<= ST_CMDCAT_DMAOUT_AWAIT_FIS;
 				ELSIF (FISE_Status = SATA_FISE_STATUS_CRC_ERROR) THEN
-					-- TODO: retry
-					Error_nxt													<= SATA_TRANS_ERROR_FISENCODER;
+					-- Retry finally failed.
+					Error_nxt													<= SATA_TRANS_ERROR_TRANSMIT_ERROR;
 					NextState													<= ST_ERROR;
 				ELSIF (FISE_Status = SATA_FISE_STATUS_ERROR) THEN
 					Error_nxt													<= SATA_TRANS_ERROR_FISENCODER;
@@ -745,7 +751,13 @@ BEGIN
 
 			WHEN ST_TRANSFER_OK =>
 				Status			<= SATA_TRANS_STATUS_TRANSFER_OK;
-				NextState		<= ST_IDLE;
+				
+				if (Command = SATA_TRANS_CMD_TRANSFER) then
+					UpdateATAHostRegisters 						<= '1';
+					NextState 												<= ST_CHECK_ATA_HOST_REG;
+				else
+					NextState		<= ST_IDLE;
+				end if;
 				
 			WHEN ST_ERROR =>
 				Status			<= SATA_TRANS_STATUS_ERROR;

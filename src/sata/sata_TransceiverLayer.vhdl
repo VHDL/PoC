@@ -180,7 +180,8 @@ begin
 	genBitError : if (ENABLE_DEBUGPORT = TRUE) generate
 		-- Insert BitErrors
 		genPort : for i in 0 to PORTS - 1 generate
-			TX_Data_i(i) <= mux(DebugPortIn(i).InsertBitErrorTX, TX_Data(i),   not TX_Data(i));
+			TX_Data_i(i) <= mux(DebugPortIn(i).InsertBitErrorTX and not TX_CharIsK(i)(0), -- only for data
+											                                     TX_Data(i),   not TX_Data(i));
 			RX_Data  (i) <= mux(DebugPortIn(i).InsertBitErrorRX, RX_Data_i(i), not RX_Data_i(i));
 		end generate;
 	end generate;

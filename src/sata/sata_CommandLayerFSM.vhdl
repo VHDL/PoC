@@ -11,7 +11,7 @@
 -- Description:
 -- ------------------------------------
 -- See notes on module 'sata_CommandLayer'.
--- 
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -78,7 +78,6 @@ ENTITY sata_CommandFSM IS
 		Trans_Status											: IN	T_SATA_TRANS_STATUS;
 		Trans_Error												: IN	T_SATA_TRANS_ERROR;
 		
-		Trans_UpdateATAHostRegisters			: OUT STD_LOGIC;
 		Trans_ATAHostRegisters						: OUT T_SATA_ATA_HOST_REGISTERS;
 		
 		Trans_RX_SOT											: IN	STD_LOGIC;
@@ -149,10 +148,11 @@ BEGIN
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
-				State			<= ST_RESET;
-				Error 		<= SATA_CMD_ERROR_NONE;
+				State						<= ST_RESET;
+				Error 					<= SATA_CMD_ERROR_NONE;
+	
 			ELSE
-				State			<= NextState;
+				State						<= NextState;
 				
 				if NextState = ST_ERROR then
 					Error 				<= Error_nxt;
@@ -180,7 +180,6 @@ BEGIN
 		RX_ForcePut																	<= '0';
 		
 		Trans_Command_i															<= SATA_TRANS_CMD_NONE;
-		Trans_UpdateATAHostRegisters								<= '0';
 		Trans_ATAHostRegisters.Flag_C								<= '0';
 		Trans_ATAHostRegisters.Command							<= to_slv(SATA_ATA_CMD_NONE);	-- Command register
 		Trans_ATAHostRegisters.Control							<= (OTHERS => '0');						-- Control register
@@ -211,9 +210,8 @@ BEGIN
         -- assert Trans_Status = SATA_TRANS_STATUS_IDLE
 				Status																			<= SATA_CMD_STATUS_INITIALIZING;
 						
-				-- TransferLayer
+				-- TransportLayer
 				Trans_Command_i															<= SATA_TRANS_CMD_TRANSFER;
-				Trans_UpdateATAHostRegisters								<= '1';
 				Trans_ATAHostRegisters.Flag_C								<= '1';
 				Trans_ATAHostRegisters.Command							<= to_slv(SATA_ATA_CMD_IDENTIFY_DEVICE);	-- Command register
 				Trans_ATAHostRegisters.Control							<= (OTHERS => '0');												-- Control register
@@ -238,11 +236,8 @@ BEGIN
 						NULL;
 					
 					WHEN SATA_CMD_CMD_IDENTIFY_DEVICE =>
-						Status																	<= SATA_CMD_STATUS_EXECUTING;
-						
-						-- TransferLayer
+						-- TransportLayer
 						Trans_Command_i													<= SATA_TRANS_CMD_TRANSFER;
-						Trans_UpdateATAHostRegisters						<= '1';
 						Trans_ATAHostRegisters.Flag_C						<= '1';
 						Trans_ATAHostRegisters.Command					<= to_slv(SATA_ATA_CMD_IDENTIFY_DEVICE);	-- Command register
 						Trans_ATAHostRegisters.Control					<= (OTHERS => '0');												-- Control register
@@ -256,14 +251,11 @@ BEGIN
 						NextState																<= ST_IDENTIFY_DEVICE_WAIT;
 						
 					WHEN SATA_CMD_CMD_READ =>
-						Status																	<= SATA_CMD_STATUS_RECEIVING;
-		
 						-- TransferGenerator
 						Load																		<= '1';
 						
-						-- TransferLayer
+						-- TransportLayer
 						Trans_Command_i													<= SATA_TRANS_CMD_TRANSFER;
-						Trans_UpdateATAHostRegisters						<= '1';
 						Trans_ATAHostRegisters.Flag_C						<= '1';
 						Trans_ATAHostRegisters.Command					<= to_slv(SATA_ATA_CMD_DMA_READ_EXT);		-- Command register
 						Trans_ATAHostRegisters.Control					<= (OTHERS => '0');											-- Control register
@@ -278,14 +270,11 @@ BEGIN
 						END IF;
 						
 					WHEN SATA_CMD_CMD_WRITE =>
-						Status																	<= SATA_CMD_STATUS_SENDING;
-						
 						-- TransferGenerator
 						Load																		<= '1';
 						
-						-- TransferLayer
+						-- TransportLayer
 						Trans_Command_i													<= SATA_TRANS_CMD_TRANSFER;
-						Trans_UpdateATAHostRegisters						<= '1';
 						Trans_ATAHostRegisters.Flag_C						<= '1';
 						Trans_ATAHostRegisters.Command					<= to_slv(SATA_ATA_CMD_DMA_WRITE_EXT);	-- Command register
 						Trans_ATAHostRegisters.Control					<= (OTHERS => '0');											-- Control register
@@ -306,9 +295,8 @@ BEGIN
 							Status																<= SATA_CMD_STATUS_EXECUTING;
 						END IF;
 						
-						-- TransferLayer
+						-- TransportLayer
 						Trans_Command_i													<= SATA_TRANS_CMD_TRANSFER;
-						Trans_UpdateATAHostRegisters						<= '1';
 						Trans_ATAHostRegisters.Flag_C						<= '1';
 						Trans_ATAHostRegisters.Command					<= to_slv(SATA_ATA_CMD_FLUSH_CACHE_EXT);	-- Command register
 						Trans_ATAHostRegisters.Control					<= (OTHERS => '0');												-- Control register
@@ -346,7 +334,7 @@ BEGIN
 						NextState																<= ST_ERROR;
 					END IF;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Error_nxt																	<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt																	<= SATA_CMD_ERROR_IDENTIFY_DEVICE_ERROR;
 					NextState																	<= ST_ERROR;
 				END IF;
 				
@@ -399,9 +387,8 @@ BEGIN
 					-- TransferGenerator
 					NextTransfer													<= '1';
 					
-					-- TransferLayer
+					-- TransportLayer
 					Trans_Command_i												<= SATA_TRANS_CMD_TRANSFER;
-					Trans_UpdateATAHostRegisters					<= '1';
 					Trans_ATAHostRegisters.Flag_C					<= '1';
 					Trans_ATAHostRegisters.Command				<= to_slv(SATA_ATA_CMD_DMA_READ_EXT);				-- Command register
 					Trans_ATAHostRegisters.Control				<= (OTHERS => '0');											-- Control register
@@ -428,9 +415,8 @@ BEGIN
 					-- TransferGenerator
 					NextTransfer													<= '1';
 					
-					-- TransferLayer
+					-- TransportLayer
 					Trans_Command_i												<= SATA_TRANS_CMD_TRANSFER;
-					Trans_UpdateATAHostRegisters					<= '1';
 					Trans_ATAHostRegisters.Flag_C					<= '1';
 					Trans_ATAHostRegisters.Command				<= to_slv(SATA_ATA_CMD_DMA_READ_EXT);				-- Command register
 					Trans_ATAHostRegisters.Control				<= (OTHERS => '0');											-- Control register
@@ -490,9 +476,8 @@ BEGIN
 					-- TransferGenerator
 					NextTransfer													<= '1';
 					
-					-- TransferLayer
+					-- TransportLayer
 					Trans_Command_i												<= SATA_TRANS_CMD_TRANSFER;
-					Trans_UpdateATAHostRegisters					<= '1';
 					Trans_ATAHostRegisters.Flag_C					<= '1';
 					Trans_ATAHostRegisters.Command				<= to_slv(SATA_ATA_CMD_DMA_WRITE_EXT);				-- Command register
 					Trans_ATAHostRegisters.Control				<= (OTHERS => '0');											-- Control register
@@ -520,9 +505,8 @@ BEGIN
 					-- TransferGenerator
 					NextTransfer													<= '1';
 					
-					-- TransferLayer
+					-- TransportLayer
 					Trans_Command_i												<= SATA_TRANS_CMD_TRANSFER;
-					Trans_UpdateATAHostRegisters					<= '1';
 					Trans_ATAHostRegisters.Flag_C					<= '1';
 					Trans_ATAHostRegisters.Command				<= to_slv(SATA_ATA_CMD_DMA_WRITE_EXT);				-- Command register
 					Trans_ATAHostRegisters.Control				<= (OTHERS => '0');											-- Control register
@@ -568,14 +552,34 @@ BEGIN
 					NextState															<= ST_ERROR;
 				END IF;
 
+			-- ============================================================
+			-- Error
+			-- stay here if IDENTIFY DEVICE failed
+			-- ============================================================
 			WHEN ST_ERROR =>
 				Status																	<= SATA_CMD_STATUS_ERROR;
-				NextState 															<= ST_IDLE;
+				if (IDF_DriveInformation.Valid = '1') then
+					NextState 														<= ST_IDLE;
+				elsif (Command = SATA_CMD_CMD_IDENTIFY_DEVICE) then
+					-- TransportLayer
+					Trans_Command_i												<= SATA_TRANS_CMD_TRANSFER;
+					Trans_ATAHostRegisters.Flag_C					<= '1';
+					Trans_ATAHostRegisters.Command				<= to_slv(SATA_ATA_CMD_IDENTIFY_DEVICE);	-- Command register
+					Trans_ATAHostRegisters.Control				<= (OTHERS => '0');												-- Control register
+					Trans_ATAHostRegisters.Feature				<= (OTHERS => '0');												-- Feature register
+					Trans_ATAHostRegisters.LBlockAddress	<= (OTHERS => '0');												-- logical block address (LBA)
+					Trans_ATAHostRegisters.SectorCount		<= (OTHERS => '0');												-- 
+					
+					-- IdentifyDeviceFilter
+					IDF_Enable														<= '1';
+					
+					NextState															<= ST_IDENTIFY_DEVICE_WAIT;
+				end if;
 
 		END CASE;
 	END PROCESS;
-	
-	Trans_Command				<= Trans_Command_i WHEN rising_edge(Clock);
+
+	Trans_Command <= Trans_Command_i;
 	
 	-- transfer and address generation
 	Address_LB_us				<= unsigned(Address_LB);

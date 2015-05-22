@@ -140,13 +140,7 @@ ARCHITECTURE rtl OF sata_StreamingController IS
 	SIGNAL Cmd_Status												: T_SATA_CMD_STATUS;
 	SIGNAL Cmd_Error												: T_SATA_CMD_ERROR;
 	
-	SIGNAL Cmd_ATA_Command									: T_SATA_ATA_COMMAND;
-	SIGNAL Cmd_ATA_Address_LB								: T_SLV_48;
-	SIGNAL Cmd_ATA_BlockCount_LB						: T_SLV_16;
-
 	SIGNAL Cmd_DriveInformation							: T_SATA_DRIVE_INFORMATION;
-
-	SIGNAL Cmd_UpdateATAHostRegisters				: STD_LOGIC;
 	SIGNAL Cmd_ATAHostRegisters							: T_SATA_ATA_HOST_REGISTERS;
 
 	-- TransportLayer
@@ -263,7 +257,6 @@ BEGIN
 			Trans_Error									=> Trans_Error,
 
 			-- ATARegister interface
-			Trans_UpdateATAHostRegisters	=> Cmd_UpdateATAHostRegisters,
 			Trans_ATAHostRegisters				=> Cmd_ATAHostRegisters,
 			Trans_ATAdeviceRegisters			=> Trans_ATAdeviceRegisters,
 			
@@ -367,7 +360,6 @@ BEGIN
 			DebugPortOut								=> DebugPortOut.TransportLayer,
 		
 			-- ATA registers
-			UpdateATAHostRegisters			=> Cmd_UpdateATAHostRegisters,
 			ATAHostRegisters						=> Cmd_ATAHostRegisters,
 			ATADeviceRegisters					=> Trans_ATADeviceRegisters,
 		

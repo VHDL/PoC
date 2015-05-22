@@ -24,6 +24,12 @@
 -- 	  SATA_TRANS_STATUS_RESET. After SATA_TRANS_STATUS_IDLE was signaled,
 -- 	  reset must be asserted before the clock might be instable again.
 --
+-- If initial or requested IDENTIFY DEVICE failed, then FSM stays in error state.
+-- Either *_ERROR_IDENTIFY_DEVICE_ERROR or *_ERROR_DEVICE_NOT_SUPPORTED are
+-- signaled. To leave this state, apply one of the following:
+-- - assert synchronous reset
+-- - issue *_CMD_IDENTIFY_DEVICE
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -107,7 +113,6 @@ ENTITY sata_CommandLayer IS
 		Trans_Error										: IN	T_SATA_TRANS_ERROR;
 	
 		-- ATA registers
-		Trans_UpdateATAHostRegisters	: OUT	STD_LOGIC;
 		Trans_ATAHostRegisters				: OUT	T_SATA_ATA_HOST_REGISTERS;
 		Trans_ATADeviceRegisters			: IN	T_SATA_ATA_DEVICE_REGISTERS;
 	
@@ -273,7 +278,6 @@ BEGIN
 			Trans_Status									=> Trans_Status,
 			Trans_Error										=> Trans_Error,
 			
-			Trans_UpdateATAHostRegisters	=> Trans_UpdateATAHostRegisters,
 			Trans_ATAHostRegisters				=> Trans_ATAHostRegisters,
 			
 			Trans_RX_SOT									=> Trans_RX_SOT,
