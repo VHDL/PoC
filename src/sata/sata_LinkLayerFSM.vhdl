@@ -68,7 +68,7 @@ entity sata_LinkLayerFSM is
 		--TODO Feature Request: Trans_TX_Abort					: IN	STD_LOGIC; -- SyncEscape from Transport Layer
 
 		Trans_TXFS_SendOK				: OUT	STD_LOGIC;
-		Trans_TXFS_Abort				: OUT	STD_LOGIC;
+		Trans_TXFS_SyncEsc			: OUT	STD_LOGIC;
 
 		Trans_RX_SOF						: OUT	STD_LOGIC;
 		Trans_RX_EOF						: OUT	STD_LOGIC;
@@ -237,7 +237,7 @@ BEGIN
 		TX_FSFIFO_put									<= '0';
 		
 		Trans_TXFS_SendOK							<= '0';
-		Trans_TXFS_Abort							<= '0';
+		Trans_TXFS_SyncEsc						<= '0';
 		
 		-- TX CRC interface
 		TX_CRC_rst										<= '0';
@@ -431,8 +431,10 @@ BEGIN
 						
 						IF (Trans_TX_EOF = '1') THEN																-- last payload word in Frame
 							if (RX_Primitive = SATA_PRIMITIVE_SYNC) then 							-- abort
+								-- SyncEscape by receiver.
 								TX_Primitive					<= SATA_PRIMITIVE_SYNC;
 								TX_FSFIFO_put 				<= '1';
+								Trans_TXFS_SyncEsc		<= '1';
 								NextState 						<= ST_IDLE;
 							else 																											-- send CRC
 								NextState							<= ST_TX_SEND_CRC;
@@ -447,15 +449,19 @@ BEGIN
 							ELSIF (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) THEN				-- insert CRC32	after this data word
 								NextState							<= ST_TX_SEND_CRC;
 							elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then 					-- abort
+								-- SyncEscape by receiver.
 								TX_Primitive					<= SATA_PRIMITIVE_SYNC;
 								TX_FSFIFO_put 				<= '1';
+								Trans_TXFS_SyncEsc		<= '1';
 								NextState 						<= ST_IDLE;
 							END IF;
 						END IF;
 					ELSE																													-- empty TX_FIFO => insert HOLD
 						if (RX_Primitive = SATA_PRIMITIVE_SYNC) then 								-- abort
+								-- SyncEscape by receiver.
 							TX_Primitive						<= SATA_PRIMITIVE_SYNC;
 							TX_FSFIFO_put 					<= '1';
+							Trans_TXFS_SyncEsc			<= '1';
 							NextState 							<= ST_IDLE;
 						else
 							TX_Primitive						<= SATA_PRIMITIVE_HOLD;
@@ -486,8 +492,10 @@ BEGIN
 						
 						IF (Trans_TX_EOF = '1') THEN																-- last payload word in frame
 							if (RX_Primitive = SATA_PRIMITIVE_SYNC) then 							-- abort
+								-- SyncEscape by receiver.
 								TX_Primitive					<= SATA_PRIMITIVE_SYNC;
 								TX_FSFIFO_put 				<= '1';
+								Trans_TXFS_SyncEsc		<= '1';
 								NextState 						<= ST_IDLE;
 							else
 								NextState							<= ST_TX_SEND_CRC;
@@ -502,15 +510,19 @@ BEGIN
 							ELSIF (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) THEN				-- insert CRC32	after this data word
 								NextState							<= ST_TX_SEND_CRC;
 							elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then 					-- abort
+								-- SyncEscape by receiver.
 								TX_Primitive					<= SATA_PRIMITIVE_SYNC;
 								TX_FSFIFO_put 				<= '1';
+								Trans_TXFS_SyncEsc		<= '1';
 								NextState 						<= ST_IDLE;
 							END IF;
 						END IF;
 					ELSE																													-- empty FIFO => insert HOLD
 						if (RX_Primitive = SATA_PRIMITIVE_SYNC) then 								-- abort
+								-- SyncEscape by receiver.
 							TX_Primitive						<= SATA_PRIMITIVE_SYNC;
 							TX_FSFIFO_put 					<= '1';
+							Trans_TXFS_SyncEsc			<= '1';
 							NextState 							<= ST_IDLE;
 						elsif (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) then				-- insert CRC32	after HOLD
 							TX_Primitive						<= SATA_PRIMITIVE_HOLD;
@@ -544,8 +556,10 @@ BEGIN
 					elsif (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) then						-- insert CRC32	after HOLDA
 						NextState									<= ST_TX_SEND_CRC;
 					elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then 							-- abort
+						-- SyncEscape by receiver.
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
 						TX_FSFIFO_put 						<= '1';
+						Trans_TXFS_SyncEsc				<= '1';
 						NextState 								<= ST_IDLE;
 					else 																													-- resume sending data
 						TX_Primitive							<= SATA_PRIMITIVE_NONE;
@@ -570,8 +584,10 @@ BEGIN
 
 				ELSE
 					if (RX_Primitive = SATA_PRIMITIVE_SYNC) then 									-- abort
+						-- SyncEscape by receiver.
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
 						TX_FSFIFO_put 						<= '1';
+						Trans_TXFS_SyncEsc				<= '1';
 						NextState 								<= ST_IDLE;
 					else
 						TX_Primitive							<= SATA_PRIMITIVE_NONE;
@@ -591,8 +607,10 @@ BEGIN
 
 				ELSE
 					if (RX_Primitive = SATA_PRIMITIVE_SYNC) then 									-- abort
+						-- SyncEscape by receiver.
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
 						TX_FSFIFO_put 						<= '1';
+						Trans_TXFS_SyncEsc				<= '1';
 						NextState 								<= ST_IDLE;
 					else
 						TX_Primitive							<= SATA_PRIMITIVE_EOF;
@@ -621,8 +639,10 @@ BEGIN
 						TX_FSFIFO_put							<= '1';
 						NextState									<= ST_IDLE;
 					elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then 							-- abort
+						-- SyncEscape by receiver.
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
 						TX_FSFIFO_put 						<= '1';
+						Trans_TXFS_SyncEsc				<= '1';
 						NextState 								<= ST_IDLE;
 					END IF;
 				END IF;

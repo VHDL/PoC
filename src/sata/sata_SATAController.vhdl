@@ -126,7 +126,7 @@ ENTITY sata_SATAController IS
 		TX_FS_Ack										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_FS_Valid									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		TX_FS_SendOK								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_FS_Abort									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		TX_FS_SyncEsc								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		
 		-- RX port
 		RX_SOF											: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -227,7 +227,7 @@ BEGIN
 		SIGNAl Link_TX_InsertEOF			: STD_LOGIC;
 		SIGNAL Link_TX_FS_Valid				: STD_LOGIC;
 		SIGNAL Link_TX_FS_SendOK			: STD_LOGIC;
-		SIGNAL Link_TX_FS_Abort				: STD_LOGIC;
+		SIGNAL Link_TX_FS_SyncEsc			: STD_LOGIC;
 		
 		SIGNAL Link_RX_SOF						: STD_LOGIC;
 		SIGNAL Link_RX_EOF						: STD_LOGIC;
@@ -282,7 +282,7 @@ BEGIN
 		SATAC_TX_FS_Ack								<= TX_FS_Ack(I);
 		TX_FS_Valid(I)								<= Link_TX_FS_Valid;
 		TX_FS_SendOK(I)								<= Link_TX_FS_SendOK;
-		TX_FS_Abort(I)								<= Link_TX_FS_Abort;
+		TX_FS_SyncEsc(I)							<= Link_TX_FS_SyncEsc;
 		
 		-- RX port
 		RX_SOF(I)											<= Link_RX_SOF;
@@ -361,7 +361,7 @@ BEGIN
 				TX_FS_Ack								=> SATAC_TX_FS_Ack,
 				TX_FS_Valid							=> Link_TX_FS_Valid,
 				TX_FS_SendOK						=> Link_TX_FS_SendOK,
-				TX_FS_Abort							=> Link_TX_FS_Abort,
+				TX_FS_SyncEsc						=> Link_TX_FS_SyncEsc,
 				
 				-- RX port
 				RX_SOF									=> Link_RX_SOF,

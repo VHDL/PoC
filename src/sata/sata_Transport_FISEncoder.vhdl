@@ -81,7 +81,7 @@ entity sata_FISEncoder IS
 		
 		Link_TX_FS_Ack							: out	STD_LOGIC;
 		Link_TX_FS_SendOK						: in	STD_LOGIC;
-		Link_TX_FS_Abort						: in	STD_LOGIC;
+		Link_TX_FS_SyncEsc					: in	STD_LOGIC;
 		Link_TX_FS_Valid						: in	STD_LOGIC
 	);
 end;
@@ -93,7 +93,7 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 	TYPE T_STATE IS (
 		ST_RESET, ST_IDLE,
 		ST_FIS_REG_HOST_DEV_WORD_0, ST_FIS_REG_HOST_DEV_WORD_1,	ST_FIS_REG_HOST_DEV_WORD_2,	ST_FIS_REG_HOST_DEV_WORD_3,	ST_FIS_REG_HOST_DEV_WORD_4,
-		ST_DATA_0, ST_DATA_N,
+		ST_DATA_0, ST_DATA_N, ST_DISCARD_FRAME,
 		ST_EVALUATE_FRAMESTATE
 	);
 	
@@ -143,7 +143,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	PROCESS(State, Phy_Status, FISType, ATARegisters, TX_Valid, TX_Data, TX_SOP, TX_EOP, Link_TX_Ack, Link_TX_FS_Valid, Link_TX_FS_SendOK, Link_TX_FS_Abort, Link_TX_InsertEOF)
+	PROCESS(State, Phy_Status, FISType, ATARegisters, TX_Valid, TX_Data, TX_SOP, TX_EOP, Link_TX_Ack, Link_TX_FS_Valid, Link_TX_FS_SendOK, Link_TX_FS_SyncEsc, Link_TX_InsertEOF)
 	BEGIN
 		NextState										<= State;
 		
@@ -308,6 +308,12 @@ BEGIN
 							IF (TX_EOP = '1') THEN
 								NextState					<= ST_EVALUATE_FRAMESTATE;
 							END IF;
+						elsif (Link_TX_FS_Valid = '1') then
+							-- LinkLayer does not acknowledge,
+							-- check for SyncEscape by receiver.
+							if (Link_TX_FS_SyncEsc = '1') then
+								NextState 				<= ST_DISCARD_FRAME;
+							end if;
 						END IF;
 					ELSE
 						Status								<= SATA_FISE_STATUS_ERROR;
@@ -328,16 +334,30 @@ BEGIN
 						IF (TX_EOP = '1') THEN
 							NextState						<= ST_EVALUATE_FRAMESTATE;
 						END IF;
+					elsif (Link_TX_FS_Valid = '1') then
+						-- LinkLayer does not acknowledge,
+						-- check for SyncEscape by receiver.
+						if (Link_TX_FS_SyncEsc = '1') then
+							NextState 					<= ST_DISCARD_FRAME;
+						end if;
 					END IF;
 				END IF;
 
+			when ST_DISCARD_FRAME =>
+				TX_Ack 										<= '1';
+				if (TX_Valid = '1') then
+					if (TX_EOP = '1') then
+						NextState						<= ST_EVALUATE_FRAMESTATE;
+					end if;
+				end if;
+				
 			WHEN ST_EVALUATE_FRAMESTATE =>
 				IF (Link_TX_FS_Valid = '1') THEN
 					IF (Link_TX_FS_SendOK = '1') THEN
 						Link_TX_FS_Ack				<= '1';
 						Status								<= SATA_FISE_STATUS_SEND_OK;
 						NextState							<= ST_IDLE;
-					elsif (Link_TX_FS_Abort = '1') THEN
+					elsif (Link_TX_FS_SyncEsc = '1') THEN
 						-- SyncEscape requested by device
 						Link_TX_FS_Ack				<= '1';
 						Status								<= SATA_FISE_STATUS_ERROR;

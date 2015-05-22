@@ -125,6 +125,7 @@ ARCHITECTURE rtl OF sata_TransportFSM IS
 			ST_CMDCAT_DMAOUT_RECEIVE_REGISTER,
 			ST_CMDCAT_DMAOUT_SEND_DATA,
 			ST_CMDCAT_DMAOUT_DISCARD_TRANSFER,
+			ST_CMDCAT_DMAOUT_DISCARD_TRANSFER2,
 			ST_TRANSFER_OK
 	);
 	
@@ -685,8 +686,7 @@ BEGIN
 					NextState													<= ST_CMDCAT_DMAOUT_AWAIT_FIS;
 				ELSIF (FISE_Status = SATA_FISE_STATUS_CRC_ERROR) THEN
 					-- Retry finally failed.
-					Error_nxt													<= SATA_TRANS_ERROR_TRANSMIT_ERROR;
-					NextState													<= ST_ERROR;
+					NextState													<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER2;
 				ELSIF (FISE_Status = SATA_FISE_STATUS_ERROR) THEN
 					Error_nxt													<= SATA_TRANS_ERROR_FISENCODER;
 					NextState													<= ST_ERROR;
@@ -752,12 +752,22 @@ BEGIN
 				END IF;
 
 			when ST_CMDCAT_DMAOUT_DISCARD_TRANSFER =>
-				-- Wait for SOT
+				-- Abort during data transfer. Wait for EOT
 				Status 															<= SATA_TRANS_STATUS_DISCARD_TXDATA;
 				TX_ForceAck 												<= '1';
 				
 				if (TX_Valid and TX_EOT) = '1' then
 					Error_nxt													<= SATA_TRANS_ERROR_DEVICE_ERROR;
+					NextState 												<= ST_ERROR;
+				end if;
+				
+			when ST_CMDCAT_DMAOUT_DISCARD_TRANSFER2 =>
+				-- Abort during send register. Wait for EOT
+				Status 															<= SATA_TRANS_STATUS_DISCARD_TXDATA;
+				TX_ForceAck 												<= '1';
+				
+				if (TX_Valid and TX_EOT) = '1' then
+					Error_nxt													<= SATA_TRANS_ERROR_TRANSMIT_ERROR;
 					NextState 												<= ST_ERROR;
 				end if;
 				

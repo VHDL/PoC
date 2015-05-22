@@ -104,7 +104,7 @@ ENTITY sata_StreamingController IS
 		SATA_TX_FS_Ack						: OUT	STD_LOGIC;
 		SATA_TX_FS_Valid					: IN	STD_LOGIC;
 		SATA_TX_FS_SendOK					: IN	STD_LOGIC;
-		SATA_TX_FS_Abort					: IN	STD_LOGIC;
+		SATA_TX_FS_SyncEsc				: IN	STD_LOGIC;
 		
 		-- RX port
 		SATA_RX_SOF								: IN	STD_LOGIC;
@@ -390,7 +390,7 @@ BEGIN
 				
 			Link_TX_FS_Ack							=> SATA_TX_FS_Ack,
 			Link_TX_FS_SendOK						=> SATA_TX_FS_SendOK,
-			Link_TX_FS_Abort						=> SATA_TX_FS_Abort,
+			Link_TX_FS_SyncEsc					=> SATA_TX_FS_SyncEsc,
 			Link_TX_FS_Valid						=> SATA_TX_FS_Valid,
 		
 			-- RX path

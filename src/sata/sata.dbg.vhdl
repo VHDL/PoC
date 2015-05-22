@@ -224,7 +224,7 @@ package satadbg is
 		TX_FS_Valid									: STD_LOGIC;
 		TX_FS_Ack										: STD_LOGIC;
 		TX_FS_SendOK								: STD_LOGIC;
-		TX_FS_Abort									: STD_LOGIC;
+		TX_FS_SyncEsc								: STD_LOGIC;
 		-- TX: TXFIFO
 		TX_FIFO_got									: STD_LOGIC;
 		TX_FSFIFO_got								: STD_LOGIC;
@@ -376,7 +376,7 @@ package satadbg is
 		Link_TX_FS_Valid						: STD_LOGIC;
 		Link_TX_FS_Ack							: STD_LOGIC;
 		Link_TX_FS_SendOK						: STD_LOGIC;
-		Link_TX_FS_Abort						: STD_LOGIC;
+		Link_TX_FS_SyncEsc					: STD_LOGIC;
 		
 		Link_RX_Data								: T_SLV_32;
 		Link_RX_Valid								: STD_LOGIC;

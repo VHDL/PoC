@@ -84,7 +84,7 @@ ENTITY sata_LinkLayer IS
 		TX_FS_Ack								: IN	STD_LOGIC;
 		TX_FS_Valid							:	OUT	STD_LOGIC;
 		TX_FS_SendOK						: OUT	STD_LOGIC;
-		TX_FS_Abort							: OUT	STD_LOGIC;
+		TX_FS_SyncEsc						: OUT	STD_LOGIC;
 		
 		-- RX port
 		RX_SOF									: OUT	STD_LOGIC;
@@ -125,7 +125,7 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	CONSTANT TX_FIFO_DEPTH							: POSITIVE				:= 32;
 
 	CONSTANT TX_SENDOK_BIT							: NATURAL					:= 0;
-	CONSTANT TX_ABORT_BIT								: NATURAL					:= 1;
+	CONSTANT TX_SYNCESC_BIT							: NATURAL					:= 1;
 	CONSTANT TX_FSFIFO_BITS							: POSITIVE				:= 2;
 	CONSTANT TX_FSFIFO_DEPTH						: POSITIVE				:= 4;
 	CONSTANT TX_FSFIFO_EMPTYSTATE_BITS	: POSITIVE				:= log2ceilnz(TX_FSFIFO_DEPTH);
@@ -160,14 +160,12 @@ ARCHITECTURE rtl OF sata_LinkLayer IS
 	-- transport layer interface below FIFO
 	SIGNAL Trans_TX_SOF									: STD_LOGIC;
 	SIGNAL Trans_TX_EOF									: STD_LOGIC;
-	SIGNAL Trans_TX_Abort								: STD_LOGIC;
 
 	SIGNAL Trans_TXFS_SendOK						: STD_LOGIC;
-	SIGNAL Trans_TXFS_Abort							: STD_LOGIC;
+	SIGNAL Trans_TXFS_SyncEsc						: STD_LOGIC;
 
 	SIGNAL Trans_RX_SOF									: STD_LOGIC;
 	SIGNAL Trans_RX_EOF									: STD_LOGIC;
-	SIGNAL Trans_RX_Abort								: STD_LOGIC;
 
 	SIGNAL Trans_RXFS_CRCOK							: STD_LOGIC;
 	signal Trans_RXFS_SyncEsc						: STD_LOGIC;
@@ -305,7 +303,7 @@ begin
 			Trans_TX_EOF						=> Trans_TX_EOF,
 
 			Trans_TXFS_SendOK				=> Trans_TXFS_SendOK,
-			Trans_TXFS_Abort				=> Trans_TXFS_Abort,
+			Trans_TXFS_SyncEsc			=> Trans_TXFS_SyncEsc,
 
 			Trans_RX_SOF						=> Trans_RX_SOF,
 			Trans_RX_EOF						=> Trans_RX_EOF,
@@ -387,9 +385,9 @@ begin
 	TX_FS_Valid									<= TX_FSFIFO_Valid;
 	
 	TX_FSFIFO_DataIn						<= (TX_SENDOK_BIT =>	Trans_TXFS_SendOK,
-																	TX_ABORT_BIT =>		Trans_TXFS_Abort);
+																	TX_SYNCESC_BIT =>	Trans_TXFS_SyncEsc);
 	TX_FS_SendOK								<= TX_FSFIFO_DataOut(TX_SENDOK_BIT);
-	TX_FS_Abort									<= TX_FSFIFO_DataOut(TX_ABORT_BIT);
+	TX_FS_SyncEsc								<= TX_FSFIFO_DataOut(TX_SYNCESC_BIT);
 	
 	-- RX path
 	RX_Data											<= RX_FIFO_DataOut(RX_Data'range);
@@ -802,8 +800,8 @@ begin
 		DebugPortOut.TX_InsertEOF								<= TX_InsertEOF_i;
 		DebugPortOut.TX_FS_Valid								<= TX_FSFIFO_Valid;
 		DebugPortOut.TX_FS_Ack									<= not TX_FSFIFO_Full;
-		DebugPortOut.TX_FS_SendOK								<= TX_FSFIFO_DataIn(TX_SENDOK_BIT);
-		DebugPortOut.TX_FS_Abort								<= TX_FSFIFO_DataIn(TX_ABORT_BIT);
+		DebugPortOut.TX_FS_SendOK								<= TX_FSFIFO_DataOut(TX_SENDOK_BIT);
+		DebugPortOut.TX_FS_SyncEsc							<= TX_FSFIFO_DataOut(TX_SYNCESC_BIT);
 		-- TX: TXFIFO
 		DebugPortOut.TX_FIFO_got								<= TX_FIFO_got;
 		DebugPortOut.TX_FSFIFO_got							<= TX_FSFIFO_got;

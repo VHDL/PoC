@@ -112,7 +112,7 @@ entity sata_TransportLayer is
 			
 		Link_TX_FS_Ack								: OUT	STD_LOGIC;
 		Link_TX_FS_SendOK							: IN	STD_LOGIC;
-		Link_TX_FS_Abort							: IN	STD_LOGIC;
+		Link_TX_FS_SyncEsc 						: IN	STD_LOGIC;
 		Link_TX_FS_Valid							: IN	STD_LOGIC;
 	
 		-- RX path
@@ -441,7 +441,7 @@ begin
 			-- LinkLayer FS-FIFO interface
 			Link_TX_FS_Valid						=> Link_TX_FS_Valid,
 			Link_TX_FS_SendOK						=> Link_TX_FS_SendOK,
-			Link_TX_FS_Abort						=> Link_TX_FS_Abort,
+			Link_TX_FS_SyncEsc					=> Link_TX_FS_SyncEsc,
 			Link_TX_FS_Ack							=> FISE_Link_TX_FS_Ack
 		);
 
@@ -575,7 +575,7 @@ begin
 		DebugPortOut.Link_TX_Ack								<= Link_TX_Ack;
 		DebugPortOut.Link_TX_FS_Valid						<= Link_TX_FS_Valid;
 		DebugPortOut.Link_TX_FS_SendOK					<= Link_TX_FS_SendOK;
-		DebugPortOut.Link_TX_FS_Abort						<= Link_TX_FS_Abort;
+		DebugPortOut.Link_TX_FS_SyncEsc					<= Link_TX_FS_SyncEsc;
 		DebugPortOut.Link_TX_FS_Ack							<= FISE_Link_TX_FS_Ack;
 		
 		DebugPortOut.Link_RX_Valid							<= Link_RX_Valid;
