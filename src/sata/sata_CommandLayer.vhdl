@@ -152,6 +152,8 @@ ARCHITECTURE rtl OF sata_CommandLayer IS
 	--SIGNAL CFSM_ATA_BlockCount_LB						: T_SLV_16;
 	
 	SIGNAL CFSM_TX_en												: STD_LOGIC;
+	SIGNAL CFSM_TX_ForceEOT									: STD_LOGIC;
+	SIGNAL CFSM_TX_FIFO_ForceGot						: STD_LOGIC;
 	
 	SIGNAL CFSM_RX_SOR											: STD_LOGIC;
 	SIGNAL CFSM_RX_EOR											: STD_LOGIC;
@@ -187,7 +189,6 @@ ARCHITECTURE rtl OF sata_CommandLayer IS
 	SIGNAL TC_TX_Data												: T_SLV_32;
 	SIGNAL TC_TX_SOT												: STD_LOGIC;
 	SIGNAL TC_TX_EOT												: STD_LOGIC;
-	SIGNAL TC_TX_LastWord										: STD_LOGIC;
 	SIGNAL TC_TX_InsertEOT									: STD_LOGIC;
 	
 	-- RX_FIFO
@@ -266,8 +267,14 @@ BEGIN
 			
 			Address_LB										=> AdrCalc_Address_DevLB,
 			BlockCount_LB									=> AdrCalc_BlockCount_DevLB,
-			
+
+			TX_FIFO_Valid 								=> TX_FIFO_Valid,
+			TX_FIFO_EOR 									=> TX_FIFO_EOR,
+			TX_FIFO_ForceGot							=> CFSM_TX_FIFO_ForceGot,
+
+			Trans_TX_Ack 									=> Trans_TX_Ack,
 			TX_en													=> CFSM_TX_en,
+			TX_ForceEOT										=> CFSM_TX_ForceEOT,
 			
 			RX_SOR												=> CFSM_RX_SOR,
 			RX_EOR												=> CFSM_RX_EOR,
@@ -295,7 +302,7 @@ BEGIN
 	DriveInformation				<= IDF_DriveInformation;
 
 	TX_FIFO_put																<= TX_Valid;
-	TX_FIFO_got																<= TC_TX_Ack;
+	TX_FIFO_got																<= TC_TX_Ack or CFSM_TX_FIFO_ForceGot;
 		
 	TX_FIFO_DataIn(TX_Data'range)							<= TX_Data;
 	TX_FIFO_DataIn(TX_Data'length	+ 0)				<= TX_SOR;
@@ -331,7 +338,6 @@ BEGIN
 	-- ==========================================================================================================================================================
 	TransportCutter : BLOCK
 		SIGNAL TC_TX_DataFlow								: STD_LOGIC;
-		SIGNAL TC_TX_LastWord_r							: STD_LOGIC						:= '0';
 		
 		SIGNAL InsertEOT_d									: STD_LOGIC						:= '0';
 		SIGNAL InsertEOT_re									: STD_LOGIC;
@@ -388,26 +394,11 @@ BEGIN
 
 		TC_TX_InsertEOT			<= IEOTC_uf;
 		
-		Trans_TX_Valid			<= TC_TX_Valid;
+		Trans_TX_Valid			<= TC_TX_Valid or CFSM_TX_ForceEOT;
 		Trans_TX_Data				<= TC_TX_Data;
 		Trans_TX_SOT				<= TC_TX_SOT;
-		Trans_TX_EOT				<= TC_TX_EOT;
+		Trans_TX_EOT				<= TC_TX_EOT   or CFSM_TX_ForceEOT;
 		
-		-- RS-FF for TC_TX_LastWord
-		-- FF.set = TX_EOT
-		-- FF.rst = TX_SOT
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF (TC_TX_EOT = '1') THEN
-					TC_TX_LastWord_r		<= '1';
-				ELSIF (TC_TX_SOT = '1') THEN
-					TC_TX_LastWord_r		<= '0';
-				END IF;
-			END IF;
-		END PROCESS;
-		
-		TC_TX_LastWord	<= TC_TX_EOT OR TC_TX_LastWord_r;		-- LastWord in transfer
 	END BLOCK;	-- TransferCutter
 
 	-- CommandLayer RX_FIFO
@@ -578,6 +569,8 @@ BEGIN
     DebugPortOut.Trans_RX_Ack   <= Trans_RX_Ack_i;
 
 		-- TX ----------------------------------------------------------------
+    DebugPortOut.CFSM_TX_ForceEOT	<= CFSM_TX_ForceEOT;
+		
     -- TX datapath to upper layer
 		DebugPortOut.TX_Valid 			<= TX_Valid;
     DebugPortOut.TX_Data  			<= TX_Data;
@@ -591,7 +584,6 @@ BEGIN
 		DebugPortOut.TC_TX_SOT				<= TC_TX_SOT;
 		DebugPortOut.TC_TX_EOT				<= TC_TX_EOT;
 		DebugPortOut.TC_TX_Ack				<= TC_TX_Ack;	
-		DebugPortOut.TC_TX_LastWord		<= TC_TX_LastWord;
 		DebugPortOut.TC_TX_InsertEOT	<= TC_TX_InsertEOT;
 
 	end generate;

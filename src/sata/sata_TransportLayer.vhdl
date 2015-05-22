@@ -146,6 +146,7 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 
 	signal TFSM_FISType									: T_SATA_FISTYPE;
 	signal TFSM_TX_en										: STD_LOGIC;
+	signal TFSM_TX_ForceAck							: STD_LOGIC;
 	signal TFSM_TX_SOP									: STD_LOGIC;
 	signal TFSM_TX_EOP									: STD_LOGIC;
 	signal TFSM_RX_LastWord							: STD_LOGIC;
@@ -221,7 +222,8 @@ begin
 			ATADeviceRegisters								=> ATADeviceRegisters_i,
 			
 			TX_en															=> TFSM_TX_en,
-			TX_SOT														=> TX_SOT,
+			TX_ForceAck												=> TFSM_TX_ForceAck,
+			TX_Valid													=> TX_Valid,
 			TX_EOT														=> TX_EOT,
 			
 			RX_LastWord												=> TFSM_RX_LastWord,
@@ -247,9 +249,11 @@ begin
 	Status	<= Status_i;
 	Error		<= Error_i;
 
-	-- ==========================================================================================================================================================
+	TX_Ack								<= TC_TX_Ack or TFSM_TX_ForceAck; -- when editing also update DebugPort
+
+	-- ===========================================================================
 	-- ATA registers
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
@@ -318,10 +322,7 @@ begin
 		TC_TX_SOP						<= TX_SOT OR InsertEOP_re_d2;
 		TC_TX_EOP						<= TX_EOT	OR InsertEOP_re_d;
 		TC_TX_Data					<= TX_Data;
-
-		TX_Ack							<= TC_TX_Ack;
 	END BLOCK;	-- TransferCutter
-
 
 	-- RX registers
 	-- ==========================================================================================================================================================
@@ -552,7 +553,7 @@ begin
 		DebugPortOut.TX_Data										<= TX_Data;
 		DebugPortOut.TX_SOT											<= TX_SOT;
 		DebugPortOut.TX_EOT											<= TX_EOT;
-		DebugPortOut.TX_Ack											<= TC_TX_Ack;
+		DebugPortOut.TX_Ack											<= TC_TX_Ack or TFSM_TX_ForceAck;
 		
 		DebugPortOut.RX_Valid										<= RXReg_RX_Valid;
 		DebugPortOut.RX_Data										<= RXReg_RX_Data;

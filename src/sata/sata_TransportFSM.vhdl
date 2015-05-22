@@ -69,7 +69,8 @@ ENTITY sata_TransportFSM IS
 		ATADeviceRegisters								: IN	T_SATA_ATA_DEVICE_REGISTERS;
 		
 		TX_en															: OUT	STD_LOGIC;
-		TX_SOT														: IN	STD_LOGIC;
+		TX_ForceAck												: OUT	STD_LOGIC;
+		TX_Valid													: IN	STD_LOGIC;
 		TX_EOT														: IN	STD_LOGIC;
 		
 		RX_LastWord												: OUT	STD_LOGIC;
@@ -123,6 +124,7 @@ ARCHITECTURE rtl OF sata_TransportFSM IS
 			ST_CMDCAT_DMAOUT_RECEIVE_DMA_ACTIVATE,
 			ST_CMDCAT_DMAOUT_RECEIVE_REGISTER,
 			ST_CMDCAT_DMAOUT_SEND_DATA,
+			ST_CMDCAT_DMAOUT_DISCARD_TRANSFER,
 			ST_TRANSFER_OK
 	);
 	
@@ -155,7 +157,7 @@ BEGIN
 	END PROCESS;
 	
 	PROCESS(State, Command, ATA_Command_Category, ATADeviceRegisters, FISE_Status, FISD_Status, FISD_FISType, FISD_SOP, FISD_EOP, 
-          Phy_Status)
+          Phy_Status, TX_Valid, TX_EOT)
 	BEGIN
 		NextState																<= State;
 		
@@ -166,6 +168,7 @@ BEGIN
 		CopyATADeviceRegisterStatus	            <= '0';
 		
 		TX_en																		<= '0';
+		TX_ForceAck															<= '0';
 		FISE_FISType														<= SATA_FISTYPE_UNKNOWN;
 		FISE_SOP																<= '0';
 		FISE_EOP																<= '0';
@@ -738,8 +741,7 @@ BEGIN
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
 					-- register FIS with correct content, check ATADeviceRegisters
 					IF (ATADeviceRegisters.Status.Error = '1') THEN
-						Error_nxt												<= SATA_TRANS_ERROR_DEVICE_ERROR;
-						NextState												<= ST_ERROR;
+						NextState												<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER;
 					ELSE
 						NextState												<= ST_TRANSFER_OK;
 					END IF;
@@ -749,6 +751,19 @@ BEGIN
 					NextState													<= ST_ERROR;
 				END IF;
 
+			when ST_CMDCAT_DMAOUT_DISCARD_TRANSFER =>
+				-- Wait for SOT
+				Status 															<= SATA_TRANS_STATUS_DISCARD_TXDATA;
+				TX_ForceAck 												<= '1';
+				
+				if (TX_Valid and TX_EOT) = '1' then
+					Error_nxt													<= SATA_TRANS_ERROR_DEVICE_ERROR;
+					NextState 												<= ST_ERROR;
+				end if;
+				
+			-- ============================================================
+			-- Finished
+			-- ============================================================
 			WHEN ST_TRANSFER_OK =>
 				Status			<= SATA_TRANS_STATUS_TRANSFER_OK;
 				

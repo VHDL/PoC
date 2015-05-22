@@ -67,7 +67,13 @@ ENTITY sata_CommandFSM IS
 		Address_LB												: IN	T_SLV_48;
 		BlockCount_LB											: IN	T_SLV_48;
 
+		TX_FIFO_Valid											: IN	STD_LOGIC;
+		TX_FIFO_EOR												: IN	STD_LOGIC;
+		TX_FIFO_ForceGot									: OUT	STD_LOGIC;
+		
+		Trans_TX_Ack											: IN	STD_LOGIC;
 		TX_en															: OUT	STD_LOGIC;
+		TX_ForceEOT												: OUT	STD_LOGIC;
 
 		RX_SOR														: OUT	STD_LOGIC;
 		RX_EOR														: OUT	STD_LOGIC;
@@ -108,6 +114,7 @@ ARCHITECTURE rtl OF sata_CommandFSM IS
 		ST_IDENTIFY_DEVICE_WAIT,	ST_IDENTIFY_DEVICE_CHECK,
 		ST_READ_1_WAIT,		ST_READ_F_WAIT,		ST_READ_N_WAIT,		ST_READ_L_WAIT,
 		ST_WRITE_1_WAIT,	ST_WRITE_F_WAIT,	ST_WRITE_N_WAIT,	ST_WRITE_L_WAIT,
+		ST_WRITE_ABORT_TRANSFER, ST_WRITE_DISCARD_REQUEST, ST_WRITE_WAIT_IDLE,
 		ST_FLUSH_CACHE_WAIT,
 		ST_ERROR
 	);
@@ -163,7 +170,8 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	PROCESS(State, Command, Trans_Status, IDF_Error, IDF_DriveInformation, ATA_Address_LB, ATA_BlockCount_LB, LastTransfer, Trans_RX_SOT, Trans_RX_EOT)
+	PROCESS(State, Command, Trans_Status, IDF_Error, IDF_DriveInformation, ATA_Address_LB, ATA_BlockCount_LB,
+					LastTransfer, Trans_RX_SOT, Trans_RX_EOT, TX_FIFO_Valid, TX_FIFO_EOR, Trans_TX_Ack)
 	BEGIN
 		NextState																		<= State;
 		
@@ -174,6 +182,8 @@ BEGIN
 		NextTransfer																<= '0';
 		
 		TX_en																				<= '0';
+		TX_ForceEOT																	<= '0';
+		TX_FIFO_ForceGot														<= '0';
 		
 		RX_SOR																			<= '0';
 		RX_EOR																			<= '0';
@@ -461,6 +471,8 @@ BEGIN
 					NULL;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
 					NextState															<= ST_IDLE;
+				elsif (Trans_Status = SATA_TRANS_STATUS_DISCARD_TXDATA) then
+					NextState 														<= ST_WRITE_ABORT_TRANSFER;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
 					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
@@ -490,6 +502,8 @@ BEGIN
 					ELSE
 						NextState														<= ST_WRITE_L_WAIT;
 					END IF;
+				elsif (Trans_Status = SATA_TRANS_STATUS_DISCARD_TXDATA) then
+					NextState 														<= ST_WRITE_ABORT_TRANSFER;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
 					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
@@ -519,6 +533,8 @@ BEGIN
 					ELSE
 						NextState														<= ST_WRITE_L_WAIT;
 					END IF;
+				elsif (Trans_Status = SATA_TRANS_STATUS_DISCARD_TXDATA) then
+					NextState 														<= ST_WRITE_ABORT_TRANSFER;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
 					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
@@ -532,11 +548,44 @@ BEGIN
 					NULL;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
 					NextState															<= ST_IDLE;
+				elsif (Trans_Status = SATA_TRANS_STATUS_DISCARD_TXDATA) then
+					NextState 														<= ST_WRITE_ABORT_TRANSFER;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
 					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
-		
+
+			when ST_WRITE_ABORT_TRANSFER =>
+					-- Close transfer for Transport Layer
+				Status 																	<= SATA_CMD_STATUS_DISCARD_TXDATA;
+				TX_ForceEOT															<= '1';
+				if (Trans_TX_Ack = '1') then
+					NextState															<= ST_WRITE_DISCARD_REQUEST;
+				end if;
+				
+			when ST_WRITE_DISCARD_REQUEST =>
+				-- Transfer for Transport Layer has been closed.
+				-- Signal DISCARD for Application Layer and wait until that layer
+				-- inserts TX_EOR.
+				Status 																	<= SATA_CMD_STATUS_DISCARD_TXDATA;
+				TX_FIFO_ForceGot 												<= '1';
+
+				if (TX_FIFO_Valid and TX_FIFO_EOR) = '1' then
+					NextState 														<= ST_WRITE_WAIT_IDLE;
+				end if;
+
+			when ST_WRITE_WAIT_IDLE =>
+				-- Wait until TransportLayer signals IDLE or ERROR.
+				-- Transport status depends on wether the TransportLayer (IDLE) or the
+				-- CommandLayer (ERROR) is faster in discarding data. Timing depends on
+				-- FIFO depth between both layers.
+				Status 																	<= SATA_CMD_STATUS_DISCARD_TXDATA;
+				if ((Trans_Status = SATA_TRANS_STATUS_ERROR) or
+						(Trans_Status = SATA_TRANS_STATUS_IDLE)) then
+					NextState 														<= ST_ERROR;
+					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+				end if;
+				
 			-- ============================================================
 			-- ATA command: ATA_CMD_CMD_FLUSH_CACHE
 			-- ============================================================
