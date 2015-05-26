@@ -113,7 +113,7 @@ package satacomp is
 			SATA_TX_FS_Ack						: OUT	STD_LOGIC;
 			SATA_TX_FS_Valid					: IN	STD_LOGIC;
 			SATA_TX_FS_SendOK					: IN	STD_LOGIC;
-			SATA_TX_FS_Abort					: IN	STD_LOGIC;
+			SATA_TX_FS_SyncEsc				: IN	STD_LOGIC;
 			
 			-- RX port
 			SATA_RX_SOF								: IN	STD_LOGIC;
@@ -173,7 +173,7 @@ package satacomp is
 			TX_FS_Ack									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			TX_FS_Valid								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			TX_FS_SendOK							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_FS_Abort								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			TX_FS_SyncEsc							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- RX port
 			RX_SOF										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);

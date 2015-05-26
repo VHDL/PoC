@@ -26,6 +26,11 @@
 -- If these conditions are met, then Status will be constant and equal to
 -- SATA_TRANS_STATUS_RESET during an unstable clock, especially in case b).
 --
+-- CSE Interface:
+-- --------------
+-- New commands are accepted when Status is *_STATUS_IDLE oder *_STATUS_TRANSFER_OK.
+-- ATAHostHostRegisters must be applied with command *_CMD_TRANSFER.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -77,7 +82,6 @@ entity sata_TransportLayer is
 		DebugPortOut										: OUT T_SATADBG_TRANS_OUT;
 	
 		-- ATA registers
-		UpdateATAHostRegisters					: IN	STD_LOGIC;
 		ATAHostRegisters								: IN	T_SATA_ATA_HOST_REGISTERS;
 		ATADeviceRegisters							: OUT	T_SATA_ATA_DEVICE_REGISTERS;
 	
@@ -108,7 +112,7 @@ entity sata_TransportLayer is
 			
 		Link_TX_FS_Ack								: OUT	STD_LOGIC;
 		Link_TX_FS_SendOK							: IN	STD_LOGIC;
-		Link_TX_FS_Abort							: IN	STD_LOGIC;
+		Link_TX_FS_SyncEsc 						: IN	STD_LOGIC;
 		Link_TX_FS_Valid							: IN	STD_LOGIC;
 	
 		-- RX path
@@ -128,13 +132,13 @@ end;
 ARCHITECTURE rtl OF sata_TransportLayer IS
 	ATTRIBUTE KEEP											: BOOLEAN;
 
-	signal ATAHostRegisters_i						: T_SATA_ATA_HOST_REGISTERS;
-	signal ATAHostRegisters_d						: T_SATA_ATA_HOST_REGISTERS;
+	signal ATAHostRegisters_r						: T_SATA_ATA_HOST_REGISTERS;
 
+	signal UpdateATAHostRegisters				: STD_LOGIC;
 	signal UpdateATADeviceRegisters			: STD_LOGIC;
 	signal CopyATADeviceRegisterStatus	: STD_LOGIC;
 	signal ATADeviceRegisters_i					: T_SATA_ATA_DEVICE_REGISTERS;
-	signal ATADeviceRegisters_d					: T_SATA_ATA_DEVICE_REGISTERS;
+	signal ATADeviceRegisters_r					: T_SATA_ATA_DEVICE_REGISTERS;
 
 	-- TransportFSM
 	signal Status_i											: T_SATA_TRANS_STATUS;
@@ -142,6 +146,7 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 
 	signal TFSM_FISType									: T_SATA_FISTYPE;
 	signal TFSM_TX_en										: STD_LOGIC;
+	signal TFSM_TX_ForceAck							: STD_LOGIC;
 	signal TFSM_TX_SOP									: STD_LOGIC;
 	signal TFSM_TX_EOP									: STD_LOGIC;
 	signal TFSM_RX_LastWord							: STD_LOGIC;
@@ -211,12 +216,14 @@ begin
 			DebugPortOut											=> TFSM_DebugPortOut,
 			
 			-- ATA
+      UpdateATAHostRegisters       			=> UpdateATAHostRegisters,
       CopyATADeviceRegisterStatus       => CopyATADeviceRegisterStatus,
-			ATAHostRegisters									=> ATAHostRegisters_i,
+			ATAHostRegisters									=> ATAHostRegisters_r,
 			ATADeviceRegisters								=> ATADeviceRegisters_i,
 			
 			TX_en															=> TFSM_TX_en,
-			TX_SOT														=> TX_SOT,
+			TX_ForceAck												=> TFSM_TX_ForceAck,
+			TX_Valid													=> TX_Valid,
 			TX_EOT														=> TX_EOT,
 			
 			RX_LastWord												=> TFSM_RX_LastWord,
@@ -242,48 +249,49 @@ begin
 	Status	<= Status_i;
 	Error		<= Error_i;
 
-	-- ==========================================================================================================================================================
+	TX_Ack								<= TC_TX_Ack or TFSM_TX_ForceAck; -- when editing also update DebugPort
+
+	-- ===========================================================================
 	-- ATA registers
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
-				ATAHostRegisters_d.Flag_C								<= '0';												-- set C flag => access Command register on device
-				ATAHostRegisters_d.Command							<= (OTHERS => '0');						-- Command register
-				ATAHostRegisters_d.Control							<= (OTHERS => '0');						-- Control register
-				ATAHostRegisters_d.Feature							<= (OTHERS => '0');						-- Feature register
-				ATAHostRegisters_d.LBlockAddress				<= (OTHERS => '0');						-- logical block address (LBA)
-				ATAHostRegisters_d.SectorCount					<= (OTHERS => '0');						-- 
+				ATAHostRegisters_r.Flag_C								<= '0';												-- set C flag => access Command register on device
+				ATAHostRegisters_r.Command							<= (OTHERS => '0');						-- Command register
+				ATAHostRegisters_r.Control							<= (OTHERS => '0');						-- Control register
+				ATAHostRegisters_r.Feature							<= (OTHERS => '0');						-- Feature register
+				ATAHostRegisters_r.LBlockAddress				<= (OTHERS => '0');						-- logical block address (LBA)
+				ATAHostRegisters_r.SectorCount					<= (OTHERS => '0');						-- 
 				
---				ATAHostRegisters_d											<= (Flag_C => '0', OTHERS => (OTHERS => '0'));
+--				ATAHostRegisters_r											<= (Flag_C => '0', OTHERS => (OTHERS => '0'));
 				
-				ATADeviceRegisters_d.Flags							<= (OTHERS => '0');						-- 
-				ATADeviceRegisters_d.Status							<= (OTHERS => '0');						-- 
-				ATADeviceRegisters_d.EndStatus					<= (OTHERS => '0');						-- 
-				ATADeviceRegisters_d.Error							<= (OTHERS => '0');						-- 
-				ATADeviceRegisters_d.LBlockAddress			<= (OTHERS => '0');						-- 
-				ATADeviceRegisters_d.SectorCount				<= (OTHERS => '0');						-- 
-				ATADeviceRegisters_d.TransferCount			<= (OTHERS => '0');						-- 
+				ATADeviceRegisters_r.Flags							<= (OTHERS => '0');						-- 
+				ATADeviceRegisters_r.Status							<= (OTHERS => '0');						-- 
+				ATADeviceRegisters_r.EndStatus					<= (OTHERS => '0');						-- 
+				ATADeviceRegisters_r.Error							<= (OTHERS => '0');						-- 
+				ATADeviceRegisters_r.LBlockAddress			<= (OTHERS => '0');						-- 
+				ATADeviceRegisters_r.SectorCount				<= (OTHERS => '0');						-- 
+				ATADeviceRegisters_r.TransferCount			<= (OTHERS => '0');						-- 
 			ELSE
 				IF (UpdateATAHostRegisters = '1') THEN
-					ATAHostRegisters_d										<= ATAHostRegisters;
+					ATAHostRegisters_r										<= ATAHostRegisters;
 				END IF;
 				
 				IF (UpdateATADeviceRegisters = '1') THEN
-					ATADeviceRegisters_d									<= FISD_ATADeviceRegisters;
+					ATADeviceRegisters_r									<= FISD_ATADeviceRegisters;
 				END IF;
 				
 				IF (CopyATADeviceRegisterStatus = '1') THEN
-					ATADeviceRegisters_d.Status						<= ATADeviceRegisters_d.EndStatus;
+					ATADeviceRegisters_r.Status						<= ATADeviceRegisters_r.EndStatus;
 				END IF;
 			END IF;
 		END IF;
 	END PROCESS;
 
 	-- assign internal signals
-	ATAHostRegisters_i		<= ATAHostRegisters_d;
-	ATADeviceRegisters_i	<= ATADeviceRegisters_d;
+	ATADeviceRegisters_i	<= ATADeviceRegisters_r;
 
 	-- assign output signals
 	ATADeviceRegisters	<= ATADeviceRegisters_i;
@@ -314,10 +322,7 @@ begin
 		TC_TX_SOP						<= TX_SOT OR InsertEOP_re_d2;
 		TC_TX_EOP						<= TX_EOT	OR InsertEOP_re_d;
 		TC_TX_Data					<= TX_Data;
-
-		TX_Ack							<= TC_TX_Ack;
 	END BLOCK;	-- TransferCutter
-
 
 	-- RX registers
 	-- ==========================================================================================================================================================
@@ -412,7 +417,7 @@ begin
 			-- DebugPort
 			DebugPortOut								=> FISE_DebugPortOut,
 			
-			ATARegisters								=> ATAHostRegisters_i,
+			ATARegisters								=> ATAHostRegisters_r,
 			
 			-- TransportLayer TX_FIFO interface
 			TX_Ack											=> FISE_TX_Ack,
@@ -436,7 +441,7 @@ begin
 			-- LinkLayer FS-FIFO interface
 			Link_TX_FS_Valid						=> Link_TX_FS_Valid,
 			Link_TX_FS_SendOK						=> Link_TX_FS_SendOK,
-			Link_TX_FS_Abort						=> Link_TX_FS_Abort,
+			Link_TX_FS_SyncEsc					=> Link_TX_FS_SyncEsc,
 			Link_TX_FS_Ack							=> FISE_Link_TX_FS_Ack
 		);
 
@@ -540,7 +545,7 @@ begin
 		DebugPortOut.FISD												<= FISD_DebugPortOut;
 		
 		DebugPortOut.UpdateATAHostRegisters			<= UpdateATAHostRegisters;
-		DebugPortOut.ATAHostRegisters						<= ATAHostRegisters_i;
+		DebugPortOut.ATAHostRegisters						<= ATAHostRegisters_r;
 		DebugPortOut.UpdateATADeviceRegisters		<= UpdateATADeviceRegisters;
 		DebugPortOut.ATADeviceRegisters					<= ATADeviceRegisters_i;
 		
@@ -548,7 +553,7 @@ begin
 		DebugPortOut.TX_Data										<= TX_Data;
 		DebugPortOut.TX_SOT											<= TX_SOT;
 		DebugPortOut.TX_EOT											<= TX_EOT;
-		DebugPortOut.TX_Ack											<= TC_TX_Ack;
+		DebugPortOut.TX_Ack											<= TC_TX_Ack or TFSM_TX_ForceAck;
 		
 		DebugPortOut.RX_Valid										<= RXReg_RX_Valid;
 		DebugPortOut.RX_Data										<= RXReg_RX_Data;
@@ -570,7 +575,7 @@ begin
 		DebugPortOut.Link_TX_Ack								<= Link_TX_Ack;
 		DebugPortOut.Link_TX_FS_Valid						<= Link_TX_FS_Valid;
 		DebugPortOut.Link_TX_FS_SendOK					<= Link_TX_FS_SendOK;
-		DebugPortOut.Link_TX_FS_Abort						<= Link_TX_FS_Abort;
+		DebugPortOut.Link_TX_FS_SyncEsc					<= Link_TX_FS_SyncEsc;
 		DebugPortOut.Link_TX_FS_Ack							<= FISE_Link_TX_FS_Ack;
 		
 		DebugPortOut.Link_RX_Valid							<= Link_RX_Valid;

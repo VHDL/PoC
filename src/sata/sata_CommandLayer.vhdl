@@ -24,6 +24,12 @@
 -- 	  SATA_TRANS_STATUS_RESET. After SATA_TRANS_STATUS_IDLE was signaled,
 -- 	  reset must be asserted before the clock might be instable again.
 --
+-- If initial or requested IDENTIFY DEVICE failed, then FSM stays in error state.
+-- Either *_ERROR_IDENTIFY_DEVICE_ERROR or *_ERROR_DEVICE_NOT_SUPPORTED are
+-- signaled. To leave this state, apply one of the following:
+-- - assert synchronous reset
+-- - issue *_CMD_IDENTIFY_DEVICE
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -108,7 +114,6 @@ entity sata_CommandLayer is
 		Trans_Error										: in	T_SATA_TRANS_ERROR;
 	
 		-- ATA registers
-		Trans_UpdateATAHostRegisters	: out	STD_LOGIC;
 		Trans_ATAHostRegisters				: out	T_SATA_ATA_HOST_REGISTERS;
 		Trans_ATADeviceRegisters			: in	T_SATA_ATA_DEVICE_REGISTERS;
 	
@@ -149,6 +154,8 @@ architecture rtl of sata_CommandLayer is
 	--signal CFSM_ATA_BlockCount_LB						: T_SLV_16;
 	
 	signal CFSM_TX_en												: STD_LOGIC;
+	SIGNAL CFSM_TX_ForceEOT									: STD_LOGIC;
+	SIGNAL CFSM_TX_FIFO_ForceGot						: STD_LOGIC;
 	
 	signal CFSM_RX_SOR											: STD_LOGIC;
 	signal CFSM_RX_EOR											: STD_LOGIC;
@@ -184,7 +191,6 @@ architecture rtl of sata_CommandLayer is
 	signal TC_TX_Data												: T_SLV_32;
 	signal TC_TX_SOT												: STD_LOGIC;
 	signal TC_TX_EOT												: STD_LOGIC;
-	signal TC_TX_LastWord										: STD_LOGIC;
 	signal TC_TX_InsertEOT									: STD_LOGIC;
 	
 	-- RX_FIFO
@@ -263,8 +269,14 @@ begin
 			
 			Address_LB										=> AdrCalc_Address_DevLB,
 			BlockCount_LB									=> AdrCalc_BlockCount_DevLB,
-			
+
+			TX_FIFO_Valid 								=> TX_FIFO_Valid,
+			TX_FIFO_EOR 									=> TX_FIFO_EOR,
+			TX_FIFO_ForceGot							=> CFSM_TX_FIFO_ForceGot,
+
+			Trans_TX_Ack 									=> Trans_TX_Ack,
 			TX_en													=> CFSM_TX_en,
+			TX_ForceEOT										=> CFSM_TX_ForceEOT,
 			
 			RX_SOR												=> CFSM_RX_SOR,
 			RX_EOR												=> CFSM_RX_EOR,
@@ -275,7 +287,6 @@ begin
 			Trans_Status									=> Trans_Status,
 			Trans_Error										=> Trans_Error,
 			
-			Trans_UpdateATAHostRegisters	=> Trans_UpdateATAHostRegisters,
 			Trans_ATAHostRegisters				=> Trans_ATAHostRegisters,
 			
 			Trans_RX_SOT									=> Trans_RX_SOT,
@@ -293,7 +304,7 @@ begin
 	DriveInformation				<= IDF_DriveInformation;
 
 	TX_FIFO_put																<= TX_Valid;
-	TX_FIFO_got																<= TC_TX_Ack;
+	TX_FIFO_got																<= TC_TX_Ack or CFSM_TX_FIFO_ForceGot;
 		
 	TX_FIFO_DataIn(TX_Data'range)							<= TX_Data;
 	TX_FIFO_DataIn(TX_Data'length	+ 0)				<= TX_SOR;
@@ -329,7 +340,6 @@ begin
 	-- ==========================================================================================================================================================
 	TransportCutter : block
 		signal TC_TX_DataFlow								: STD_LOGIC;
-		signal TC_TX_LastWord_r							: STD_LOGIC						:= '0';
 		
 		signal InsertEOT_d									: STD_LOGIC						:= '0';
 		signal InsertEOT_re									: STD_LOGIC;
@@ -386,26 +396,11 @@ begin
 
 		TC_TX_InsertEOT			<= IEOTC_uf;
 		
-		Trans_TX_Valid			<= TC_TX_Valid;
+		Trans_TX_Valid			<= TC_TX_Valid or CFSM_TX_ForceEOT;
 		Trans_TX_Data				<= TC_TX_Data;
 		Trans_TX_SOT				<= TC_TX_SOT;
-		Trans_TX_EOT				<= TC_TX_EOT;
+		Trans_TX_EOT				<= TC_TX_EOT   or CFSM_TX_ForceEOT;
 		
-		-- RS-FF for TC_TX_LastWord
-		-- FF.set = TX_EOT
-		-- FF.rst = TX_SOT
-		process(Clock)
-		begin
-			if rising_edge(Clock) then
-				if (TC_TX_EOT = '1') then
-					TC_TX_LastWord_r		<= '1';
-				elsif (TC_TX_SOT = '1') then
-					TC_TX_LastWord_r		<= '0';
-				end if;
-			end if;
-		end process;
-		
-		TC_TX_LastWord	<= TC_TX_EOT or TC_TX_LastWord_r;		-- LastWord in transfer
 	end block;	-- TransferCutter
 
 	-- CommandLayer RX_FIFO
@@ -576,6 +571,8 @@ begin
     DebugPortOut.Trans_RX_Ack   <= Trans_RX_Ack_i;
 
 		-- TX ----------------------------------------------------------------
+    DebugPortOut.CFSM_TX_ForceEOT	<= CFSM_TX_ForceEOT;
+		
     -- TX datapath to upper layer
 		DebugPortOut.TX_Valid 			<= TX_Valid;
     DebugPortOut.TX_Data  			<= TX_Data;
@@ -589,7 +586,6 @@ begin
 		DebugPortOut.TC_TX_SOT				<= TC_TX_SOT;
 		DebugPortOut.TC_TX_EOT				<= TC_TX_EOT;
 		DebugPortOut.TC_TX_Ack				<= TC_TX_Ack;	
-		DebugPortOut.TC_TX_LastWord		<= TC_TX_LastWord;
 		DebugPortOut.TC_TX_InsertEOT	<= TC_TX_InsertEOT;
 
 	end generate;

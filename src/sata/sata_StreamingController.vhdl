@@ -106,7 +106,7 @@ entity sata_StreamingController is
 		SATA_TX_FS_Ack						: out	STD_LOGIC;
 		SATA_TX_FS_Valid					: in	STD_LOGIC;
 		SATA_TX_FS_SendOK					: in	STD_LOGIC;
-		SATA_TX_FS_Abort					: in	STD_LOGIC;
+		SATA_TX_FS_SyncEsc				: IN	STD_LOGIC;
 		
 		-- RX port
 		SATA_RX_SOF								: in	STD_LOGIC;
@@ -142,13 +142,7 @@ architecture rtl of sata_StreamingController is
 	signal Cmd_Status												: T_SATA_CMD_STATUS;
 	signal Cmd_Error												: T_SATA_CMD_ERROR;
 	
-	signal Cmd_ATA_Command									: T_SATA_ATA_COMMAND;
-	signal Cmd_ATA_Address_LB								: T_SLV_48;
-	signal Cmd_ATA_BlockCount_LB						: T_SLV_16;
-
 	signal Cmd_DriveInformation							: T_SATA_DRIVE_INFORMATION;
-
-	signal Cmd_UpdateATAHostRegisters				: STD_LOGIC;
 	signal Cmd_ATAHostRegisters							: T_SATA_ATA_HOST_REGISTERS;
 
 	-- TransportLayer
@@ -265,7 +259,6 @@ begin
 			Trans_Error									=> Trans_Error,
 
 			-- ATARegister interface
-			Trans_UpdateATAHostRegisters	=> Cmd_UpdateATAHostRegisters,
 			Trans_ATAHostRegisters				=> Cmd_ATAHostRegisters,
 			Trans_ATAdeviceRegisters			=> Trans_ATAdeviceRegisters,
 			
@@ -369,7 +362,6 @@ begin
 			DebugPortOut								=> DebugPortOut.TransportLayer,
 		
 			-- ATA registers
-			UpdateATAHostRegisters			=> Cmd_UpdateATAHostRegisters,
 			ATAHostRegisters						=> Cmd_ATAHostRegisters,
 			ATADeviceRegisters					=> Trans_ATADeviceRegisters,
 		
@@ -400,7 +392,7 @@ begin
 				
 			Link_TX_FS_Ack							=> SATA_TX_FS_Ack,
 			Link_TX_FS_SendOK						=> SATA_TX_FS_SendOK,
-			Link_TX_FS_Abort						=> SATA_TX_FS_Abort,
+			Link_TX_FS_SyncEsc					=> SATA_TX_FS_SyncEsc,
 			Link_TX_FS_Valid						=> SATA_TX_FS_Valid,
 		
 			-- RX path
