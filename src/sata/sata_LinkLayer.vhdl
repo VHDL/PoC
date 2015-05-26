@@ -127,7 +127,7 @@ architecture rtl of sata_LinkLayer is
 	constant TX_FIFO_DEPTH							: POSITIVE				:= 32;
 
 	constant TX_SENDOK_BIT							: NATURAL					:= 0;
-	CONSTANT TX_SYNCESC_BIT							: NATURAL					:= 1;
+	constant TX_SYNCESC_BIT							: NATURAL					:= 1;
 	constant TX_FSFIFO_BITS							: POSITIVE				:= 2;
 	constant TX_FSFIFO_DEPTH						: POSITIVE				:= 4;
 	constant TX_FSFIFO_EMPTYSTATE_BITS	: POSITIVE				:= log2ceilnz(TX_FSFIFO_DEPTH);

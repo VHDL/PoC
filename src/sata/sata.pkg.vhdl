@@ -730,7 +730,7 @@ PACKAGE BODY sata IS
 			when SATA_PRIMITIVE_DIAL_TONE =>	return x"4A4A4A4A";					-- 											D10.2,	D10.2,	D10.2,	D10.2
 			when SATA_PRIMITIVE_ILLEGAL =>		return (others => 'X');			-- "ERROR"
 		end case;
-	end;
+	end function;
 	
 	function to_sata_primitive(Data : T_SLV_32; CharIsK : T_SLV_4; DetectDialTone : BOOLEAN := FALSE) return T_SATA_PRIMITIVE is
 	begin
@@ -756,9 +756,9 @@ PACKAGE BODY sata IS
 		return to_integer(unsigned(slv));
 	end function;
 
-	function to_slv(FIStype : T_SATA_FISTYPE) return STD_LOGIC_VECTOR is
+	function to_slv(FISType : T_SATA_FISTYPE) return STD_LOGIC_VECTOR is
 	begin
-		case FIStype is
+		case FISType is
 			when SATA_FISTYPE_REG_HOST_DEV		=> return	x"27";
 			when SATA_FISTYPE_REG_DEV_HOST		=> return	x"34";
 			when SATA_FISTYPE_SET_DEV_BITS		=> return	x"A1";
@@ -769,7 +769,7 @@ PACKAGE BODY sata IS
 			when SATA_FISTYPE_DATA						=> return	x"46";
 			when SATA_FISTYPE_UNKNOWN					=> return x"00";
 		end case;
-	end;
+	end function;
 
 	function to_slv(Command : T_SATA_ATA_COMMAND) return STD_LOGIC_VECTOR is
 	begin
@@ -781,31 +781,31 @@ PACKAGE BODY sata IS
 			when SATA_ATA_CMD_FLUSH_CACHE_EXT =>	return x"EA";
 			when others =>												return x"00";
 		end case;
-	end;
+	end function;
 
 	-- to_*
 	-- ===========================================================================
-	function to_sata_fistype(slv : T_SLV_8; valid : STD_LOGIC := '1') return T_SATA_FIStype is
+	function to_sata_fistype(slv : T_SLV_8; valid : STD_LOGIC := '1') return T_SATA_FISType is
 	begin
-		IF (valid = '1') THEN
-			FOR I IN T_SATA_FIStype LOOP
-				IF (slv = to_slv(I)) THEN
-					return I;
-				END IF;
-			END LOOP;
-		END IF;
+		if (valid = '1') then
+			for i in T_SATA_FISTYPE loop
+				if (slv = to_slv(i)) then
+					return i;
+				end if;
+			end loop;
+		end if;
 		return SATA_FISTYPE_UNKNOWN;
-	end;
+	end function;
 	
 	function to_sata_ata_command(slv : T_SLV_8) return T_SATA_ATA_COMMAND is
-	BEGIN
-		FOR I IN T_SATA_ATA_COMMAND LOOP
-			IF (slv = to_slv(I)) THEN
-				return I;
-			END IF;
-		END LOOP;
+	begin
+		for i in T_SATA_ATA_COMMAND loop
+			if (slv = to_slv(I)) then
+				return i;
+			end if;
+		end loop;
 		return SATA_ATA_CMD_NONE;
-	END;
+	end function;
 	
 	function to_sata_cmdcat(cmd : T_SATA_ATA_COMMAND) return T_SATA_COMMAND_CATEGORY is
 	begin
@@ -829,7 +829,7 @@ PACKAGE BODY sata IS
 			when SATA_ATA_CMD_UNKNOWN =>						return SATA_CMDCAT_UNKNOWN;
 			when others =>													return SATA_CMDCAT_UNKNOWN;
 		end case;
-	end;
+	end function;
 	
 	function is_lba48_command(cmd : T_SATA_ATA_COMMAND) return STD_LOGIC is
 	begin
@@ -853,7 +853,7 @@ PACKAGE BODY sata IS
 			when SATA_ATA_CMD_UNKNOWN =>					return '0';
 			when others =>												return '0';
 		end case;
-	end;
+	end function;
 	
 	function to_sata_ata_device_register_status(slv : T_SLV_8) return T_SATA_ATA_DEVICE_REGISTER_STATUS is
 		variable Result				: T_SATA_ATA_DEVICE_REGISTER_STATUS;
@@ -865,7 +865,7 @@ PACKAGE BODY sata IS
 		Result.Busy						:= slv(7);
 		
 		return Result;
-	end;
+	end function;
 	
 	function to_slv(reg : T_SATA_ATA_DEVICE_REGISTER_STATUS) return STD_LOGIC_VECTOR is
 		variable Result				: T_SLV_8		:= (others => '0');
@@ -877,7 +877,7 @@ PACKAGE BODY sata IS
 		Result(7)							:= reg.Busy;
 		
 		return Result;
-	end;
+	end function;
 	
 	function to_sata_ata_device_register_error(slv : T_SLV_8) return T_SATA_ATA_DEVICE_REGISTER_ERROR is
 		variable Result							: T_SATA_ATA_DEVICE_REGISTER_ERROR;
@@ -891,7 +891,7 @@ PACKAGE BODY sata IS
 		Result.InterfaceCRCError		:= slv(7);
 		
 		return Result;
-	end;
+	end function;
 	
 	function to_slv(reg	: T_SATA_ATA_DEVICE_REGISTER_ERROR) return STD_LOGIC_VECTOR is
 		variable Result							: T_SLV_8			:= (others => '0');
@@ -905,7 +905,7 @@ PACKAGE BODY sata IS
 		Result(7)										:= reg.InterfaceCRCError;
 		
 		return Result;
-	end;
+	end function;
 	
 	function to_sata_ata_device_flags(slv : T_SLV_8) return T_SATA_ATA_DEVICE_FLAGS is
 		variable Result							: T_SATA_ATA_DEVICE_FLAGS;
@@ -915,7 +915,7 @@ PACKAGE BODY sata IS
 		Result.C										:= slv(7);
 		
 		return Result;
-	end;
+	end function;
 	
 	function to_slv(reg	: T_SATA_ATA_DEVICE_FLAGS) return STD_LOGIC_VECTOR is
 		variable Result							: T_SLV_8			:= (others => '0');
@@ -925,6 +925,6 @@ PACKAGE BODY sata IS
 		Result(7)										:= reg.C;
 		
 		return Result;
-	end;
+	end function;
 
 end package body;

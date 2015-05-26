@@ -106,7 +106,7 @@ entity sata_StreamingController is
 		SATA_TX_FS_Ack						: out	STD_LOGIC;
 		SATA_TX_FS_Valid					: in	STD_LOGIC;
 		SATA_TX_FS_SendOK					: in	STD_LOGIC;
-		SATA_TX_FS_SyncEsc				: IN	STD_LOGIC;
+		SATA_TX_FS_SyncEsc				: in	STD_LOGIC;
 		
 		-- RX port
 		SATA_RX_SOF								: in	STD_LOGIC;
