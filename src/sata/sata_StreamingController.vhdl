@@ -59,7 +59,7 @@ entity sata_StreamingController is
 		ClockEnable								: in	STD_LOGIC;
 		Reset											: in	STD_LOGIC;
 
-		-- ATAStreamingController interface
+		-- StreamingController interface
 		-- ========================================================================
 		Command										: in	T_SATA_STREAMC_COMMAND;
 		Status										: out	T_SATA_STREAMC_STATUS;
@@ -94,6 +94,7 @@ entity sata_StreamingController is
 		SATA_ResetDone 						: in  STD_LOGIC;
 		SATA_Command							: out	T_SATA_SATACONTROLLER_COMMAND;
 		SATA_Status								: in	T_SATA_SATACONTROLLER_STATUS;
+		SATA_Error								: in	T_SATA_SATACONTROLLER_ERROR;
 	
 		-- TX port
 		SATA_TX_SOF								: out	STD_LOGIC;
@@ -121,6 +122,7 @@ entity sata_StreamingController is
 		SATA_RX_FS_SyncEsc				: in	STD_LOGIC
 	);
 end;
+
 
 architecture rtl of sata_StreamingController is
 	attribute KEEP													: BOOLEAN;
@@ -207,17 +209,23 @@ begin
 	-- assign status record
 	Status.CommandLayer				<= Cmd_Status;
 	Status.TransportLayer			<= Trans_Status;
+	Status.LinkLayer					<= SATA_Status.LinkLayer;
+	Status.PhysicalLayer			<= SATA_Status.PhysicalLayer;
+	Status.TransceiverLayer		<= SATA_Status.TransceiverLayer;
 	
 	-- assign error record
 	Error.Commandlayer				<= Cmd_Error;
 	Error.TransportLayer			<= Trans_Error;
+	Error.LinkLayer						<= SATA_Error.LinkLayer;
+	Error.PhysicalLayer				<= SATA_Error.PhysicalLayer;
+	Error.TransceiverLayer		<= SATA_Error.TransceiverLayer;
 	
 	-- CommandLayer
 	-- ===========================================================================
 	Cmd : entity PoC.sata_CommandLayer
 		generic map (
-			SIM_EXECUTE_IDENTIFY_DEVICE	=> SIM_EXECUTE_IDENTIFY_DEVICE,				-- required by CommandLayer: load device parameters
-			DEBUG												=> DEBUG,										-- generate ChipScope DBG_* signals
+			SIM_EXECUTE_IDENTIFY_DEVICE	=> SIM_EXECUTE_IDENTIFY_DEVICE,		-- required by CommandLayer: load device parameters
+			DEBUG												=> DEBUG,													-- generate ChipScope DBG_* signals
 			ENABLE_DEBUGPORT						=> ENABLE_DEBUGPORT,
 			LOGICAL_BLOCK_SIZE					=> LOGICAL_BLOCK_SIZE
 		)
@@ -336,7 +344,7 @@ begin
 			);
 
 		FIFO_DataIn 	<= (Cmd_TX_SOT & Cmd_TX_EOT & Cmd_TX_Data);
-		TX_Glue_Ack	 <= not FIFO_Full;
+		TX_Glue_Ack		<= not FIFO_Full;
 		TX_Glue_Data	<= FIFO_DataOut(31 downto 0);
 		TX_Glue_SOT		<= FIFO_DataOut(33);
 		TX_Glue_EOT		<= FIFO_DataOut(32);
@@ -388,7 +396,7 @@ begin
 			Link_TX_SOF									=> SATA_TX_SOF_i,
 			Link_TX_EOF									=> SATA_TX_EOF_i,
 			Link_TX_Valid								=> SATA_TX_Valid_i,
-			Link_TX_InsertEOF						=> SATA_TX_InsertEOF,															-- helper signal: insert EOF - max frame size reached
+			Link_TX_InsertEOF						=> SATA_TX_InsertEOF,				-- helper signal: insert EOF - max frame size reached
 				
 			Link_TX_FS_Ack							=> SATA_TX_FS_Ack,
 			Link_TX_FS_SendOK						=> SATA_TX_FS_SendOK,

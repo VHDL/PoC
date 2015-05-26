@@ -487,15 +487,21 @@ package sata is
 		SATA_STREAMC_CMD_ABORT
 	);
 
-	type T_SATA_STREAMC_STATUS IS RECORD
+	type T_SATA_STREAMC_STATUS is record
 		CommandLayer			: T_SATA_CMD_STATUS;
 		TransportLayer		: T_SATA_TRANS_STATUS;
-	END RECORD;
+		LinkLayer					: T_SATA_LINK_STATUS;
+		PhysicalLayer			: T_SATA_PHY_STATUS;
+		TransceiverLayer	: T_SATA_TRANSCEIVER_STATUS;
+	end record;
 	
-	type T_SATA_STREAMC_ERROR IS RECORD
+	type T_SATA_STREAMC_ERROR is record
 		CommandLayer			: T_SATA_CMD_ERROR;
 		TransportLayer		: T_SATA_TRANS_ERROR;
-	END RECORD;
+		LinkLayer					: T_SATA_LINK_ERROR;
+		PhysicalLayer			: T_SATA_PHY_ERROR;
+		TransceiverLayer	: T_SATA_TRANSCEIVER_ERROR;
+	end record;
 	
 	function to_sata_StreamC_Command(slv : STD_LOGIC_VECTOR) return T_SATA_STREAMC_COMMAND;
 
