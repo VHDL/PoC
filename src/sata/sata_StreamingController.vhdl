@@ -33,95 +33,99 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
-USE			PoC.sata.ALL;
-USE			PoC.satadbg.ALL;
+library PoC;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.physical.all;
+use			PoC.sata.all;
+use			PoC.satadbg.all;
 
 
-ENTITY sata_StreamingController IS
-	GENERIC (
-    SIM_WAIT_FOR_INITIAL_REGDH_FIS		: BOOLEAN                     := TRUE;      -- required by ATA/SATA standard
-		SIM_EXECUTE_IDENTIFY_DEVICE				: BOOLEAN											:= TRUE;			-- required by CommandLayer: load device parameters
-		DEBUG															: BOOLEAN											:= FALSE;			-- generate ChipScope DBG_* signals
-		ENABLE_DEBUGPORT									: BOOLEAN											:= FALSE;			-- 
-		LOGICAL_BLOCK_SIZE_ldB						: POSITIVE										:= 13					-- accessable logical block size: 8 kB (independant from device)
+entity sata_StreamingController is
+	generic (
+    SIM_WAIT_FOR_INITIAL_REGDH_FIS		: BOOLEAN						:= TRUE;      -- required by ATA/SATA standard
+		SIM_EXECUTE_IDENTIFY_DEVICE				: BOOLEAN						:= TRUE;			-- required by CommandLayer: load device parameters
+		DEBUG															: BOOLEAN						:= FALSE;			-- generate ChipScope DBG_* signals
+		ENABLE_DEBUGPORT									: BOOLEAN						:= FALSE;			-- 
+		LOGICAL_BLOCK_SIZE								: MEMORY						:= 8 KiB			-- accessable logical block size: 8 KiB (independant from device)
+																																				-- 8 KiB, maximum supported is 64 KiB, with 512 B device logical blocks
 	);
-	PORT (
-		Clock											: IN	STD_LOGIC;
-		ClockEnable								: IN	STD_LOGIC;
-		Reset											: IN	STD_LOGIC;
+	port (
+		Clock											: in	STD_LOGIC;
+		ClockEnable								: in	STD_LOGIC;
+		Reset											: in	STD_LOGIC;
 
-		-- ATAStreamingController interface
+		-- StreamingController interface
 		-- ========================================================================
-		Command										: IN	T_SATA_STREAMC_COMMAND;
-		Status										: OUT	T_SATA_STREAMC_STATUS;
-		Error											: OUT	T_SATA_STREAMC_ERROR;
+		Command										: in	T_SATA_STREAMC_COMMAND;
+		Status										: out	T_SATA_STREAMC_STATUS;
+		Error											: out	T_SATA_STREAMC_ERROR;
 
 		-- debug ports
-		DebugPortOut							: OUT	T_SATADBG_SATASC_OUT;
+		DebugPortOut							: out	T_SATADBG_SATASC_OUT;
 
 		-- for measurement purposes only
-		Config_BurstSize					: IN	T_SLV_16;
+		Config_BurstSize					: in	T_SLV_16;
 		
 		-- ATA Streaming interface
-		Address_AppLB							: IN	T_SLV_48;
-		BlockCount_AppLB					: IN	T_SLV_48;
+		Address_AppLB							: in	T_SLV_48;
+		BlockCount_AppLB					: in	T_SLV_48;
 		
 		-- TX path
-		TX_Valid									: IN	STD_LOGIC;
-		TX_Data										: IN	T_SLV_32;
-		TX_SOR										: IN	STD_LOGIC;
-		TX_EOR										: IN	STD_LOGIC;
-		TX_Ack										: OUT	STD_LOGIC;
+		TX_Valid									: in	STD_LOGIC;
+		TX_Data										: in	T_SLV_32;
+		TX_SOR										: in	STD_LOGIC;
+		TX_EOR										: in	STD_LOGIC;
+		TX_Ack										: out	STD_LOGIC;
 		
 		-- RX path
-		RX_Valid									: OUT	STD_LOGIC;
-		RX_Data										: OUT	T_SLV_32;
-		RX_SOR										: OUT	STD_LOGIC;
-		RX_EOR										: OUT	STD_LOGIC;
-		RX_Ack										: IN	STD_LOGIC;
+		RX_Valid									: out	STD_LOGIC;
+		RX_Data										: out	T_SLV_32;
+		RX_SOR										: out	STD_LOGIC;
+		RX_EOR										: out	STD_LOGIC;
+		RX_Ack										: in	STD_LOGIC;
 		
 		-- SATAController interface
 		-- ========================================================================
 		SATA_ResetDone 						: in  STD_LOGIC;
-		SATA_Status								: IN	T_SATA_SATACONTROLLER_STATUS;
+		SATA_Command							: out	T_SATA_SATACONTROLLER_COMMAND;
+		SATA_Status								: in	T_SATA_SATACONTROLLER_STATUS;
+		SATA_Error								: in	T_SATA_SATACONTROLLER_ERROR;
 	
 		-- TX port
-		SATA_TX_SOF								: OUT	STD_LOGIC;
-		SATA_TX_EOF								: OUT	STD_LOGIC;
-		SATA_TX_Valid							: OUT	STD_LOGIC;
-		SATA_TX_Data							: OUT	T_SLV_32;
-		SATA_TX_Ack								: IN	STD_LOGIC;
-		SATA_TX_InsertEOF					: IN	STD_LOGIC;															-- helper signal: insert EOF - max frame size reached
+		SATA_TX_SOF								: out	STD_LOGIC;
+		SATA_TX_EOF								: out	STD_LOGIC;
+		SATA_TX_Valid							: out	STD_LOGIC;
+		SATA_TX_Data							: out	T_SLV_32;
+		SATA_TX_Ack								: in	STD_LOGIC;
+		SATA_TX_InsertEOF					: in	STD_LOGIC;															-- helper signal: insert EOF - max frame size reached
 		
-		SATA_TX_FS_Ack						: OUT	STD_LOGIC;
-		SATA_TX_FS_Valid					: IN	STD_LOGIC;
-		SATA_TX_FS_SendOK					: IN	STD_LOGIC;
-		SATA_TX_FS_SyncEsc				: IN	STD_LOGIC;
+		SATA_TX_FS_Ack						: out	STD_LOGIC;
+		SATA_TX_FS_Valid					: in	STD_LOGIC;
+		SATA_TX_FS_SendOK					: in	STD_LOGIC;
+		SATA_TX_FS_SyncEsc				: in	STD_LOGIC;
 		
 		-- RX port
-		SATA_RX_SOF								: IN	STD_LOGIC;
-		SATA_RX_EOF								: IN	STD_LOGIC;
-		SATA_RX_Valid							: IN	STD_LOGIC;
-		SATA_RX_Data							: IN	T_SLV_32;
-		SATA_RX_Ack								: OUT	STD_LOGIC;
+		SATA_RX_SOF								: in	STD_LOGIC;
+		SATA_RX_EOF								: in	STD_LOGIC;
+		SATA_RX_Valid							: in	STD_LOGIC;
+		SATA_RX_Data							: in	T_SLV_32;
+		SATA_RX_Ack								: out	STD_LOGIC;
 		
-		SATA_RX_FS_Ack						: OUT	STD_LOGIC;
-		SATA_RX_FS_Valid					: IN	STD_LOGIC;
-		SATA_RX_FS_CRCOK					: IN	STD_LOGIC;
-		SATA_RX_FS_SyncEsc				: IN	STD_LOGIC
+		SATA_RX_FS_Ack						: out	STD_LOGIC;
+		SATA_RX_FS_Valid					: in	STD_LOGIC;
+		SATA_RX_FS_CRCOK					: in	STD_LOGIC;
+		SATA_RX_FS_SyncEsc				: in	STD_LOGIC
 	);
-END;
+end;
 
-ARCHITECTURE rtl OF sata_StreamingController IS
-	ATTRIBUTE KEEP													: BOOLEAN;
+
+architecture rtl of sata_StreamingController is
+	attribute KEEP													: BOOLEAN;
 
 	-- Common
 	-- ==========================================================================
@@ -129,59 +133,59 @@ ARCHITECTURE rtl OF sata_StreamingController IS
 	
 	-- ApplicationLayer
 	-- ==========================================================================
-	SIGNAL RX_Data_i												: T_SLV_32;
-	SIGNAL RX_SOR_i													: STD_LOGIC;
-	SIGNAL RX_EOR_i													: STD_LOGIC;
-	SIGNAL RX_Valid_i												: STD_LOGIC;
+	signal RX_Data_i												: T_SLV_32;
+	signal RX_SOR_i													: STD_LOGIC;
+	signal RX_EOR_i													: STD_LOGIC;
+	signal RX_Valid_i												: STD_LOGIC;
 	
 	-- CommandLayer
 	-- ==========================================================================
-	SIGNAL Cmd_Command											: T_SATA_CMD_COMMAND;
-	SIGNAL Cmd_Status												: T_SATA_CMD_STATUS;
-	SIGNAL Cmd_Error												: T_SATA_CMD_ERROR;
+	signal Cmd_Command											: T_SATA_CMD_COMMAND;
+	signal Cmd_Status												: T_SATA_CMD_STATUS;
+	signal Cmd_Error												: T_SATA_CMD_ERROR;
 	
-	SIGNAL Cmd_DriveInformation							: T_SATA_DRIVE_INFORMATION;
-	SIGNAL Cmd_ATAHostRegisters							: T_SATA_ATA_HOST_REGISTERS;
+	signal Cmd_DriveInformation							: T_SATA_DRIVE_INFORMATION;
+	signal Cmd_ATAHostRegisters							: T_SATA_ATA_HOST_REGISTERS;
 
 	-- TransportLayer
 	signal Trans_ResetDone									: STD_LOGIC;
-	SIGNAL Trans_Command										: T_SATA_TRANS_COMMAND;
-	SIGNAL Trans_Status											: T_SATA_TRANS_STATUS;
-	SIGNAL Trans_Error											:	T_SATA_TRANS_ERROR;
+	signal Trans_Command										: T_SATA_TRANS_COMMAND;
+	signal Trans_Status											: T_SATA_TRANS_STATUS;
+	signal Trans_Error											:	T_SATA_TRANS_ERROR;
 
-	SIGNAL Trans_ATADeviceRegisters					: T_SATA_ATA_DEVICE_REGISTERS;
+	signal Trans_ATADeviceRegisters					: T_SATA_ATA_DEVICE_REGISTERS;
 
-	SIGNAL Cmd_TX_Valid				: STD_LOGIC;
-	SIGNAL Cmd_TX_Data				: T_SLV_32;
-	SIGNAL Cmd_TX_SOT					: STD_LOGIC;
-	SIGNAL Cmd_TX_EOT					: STD_LOGIC;
-	SIGNAL Cmd_RX_Ack					: STD_LOGIC;
+	signal Cmd_TX_Valid				: STD_LOGIC;
+	signal Cmd_TX_Data				: T_SLV_32;
+	signal Cmd_TX_SOT					: STD_LOGIC;
+	signal Cmd_TX_EOT					: STD_LOGIC;
+	signal Cmd_RX_Ack					: STD_LOGIC;
 	
-	SIGNAL TX_Glue_Ack				: STD_LOGIC;
-	SIGNAL TX_Glue_Valid			: STD_LOGIC;
-	SIGNAL TX_Glue_Data				: T_SLV_32;
-	SIGNAL TX_Glue_SOT				: STD_LOGIC;
-	SIGNAL TX_Glue_EOT				: STD_LOGIC;
+	signal TX_Glue_Ack				: STD_LOGIC;
+	signal TX_Glue_Valid			: STD_LOGIC;
+	signal TX_Glue_Data				: T_SLV_32;
+	signal TX_Glue_SOT				: STD_LOGIC;
+	signal TX_Glue_EOT				: STD_LOGIC;
 	
-	SIGNAL RX_Glue_Valid			: STD_LOGIC;
-	SIGNAL RX_Glue_Data				: T_SLV_32;
-	SIGNAL RX_Glue_SOT				: STD_LOGIC;
-	SIGNAL RX_Glue_EOT				: STD_LOGIC;
-	SIGNAL RX_Glue_Ack					: STD_LOGIC;
+	signal RX_Glue_Valid			: STD_LOGIC;
+	signal RX_Glue_Data				: T_SLV_32;
+	signal RX_Glue_SOT				: STD_LOGIC;
+	signal RX_Glue_EOT				: STD_LOGIC;
+	signal RX_Glue_Ack					: STD_LOGIC;
 
-	SIGNAL Trans_RX_Valid			: STD_LOGIC;
-	SIGNAL Trans_RX_Data			: T_SLV_32;
-	SIGNAL Trans_RX_SOT				: STD_LOGIC;
-	SIGNAL Trans_RX_EOT				: STD_LOGIC;
-	SIGNAL Trans_TX_Ack				: STD_LOGIC;			
+	signal Trans_RX_Valid			: STD_LOGIC;
+	signal Trans_RX_Data			: T_SLV_32;
+	signal Trans_RX_SOT				: STD_LOGIC;
+	signal Trans_RX_EOT				: STD_LOGIC;
+	signal Trans_TX_Ack				: STD_LOGIC;			
 	
 	-- SATAController (LinkLayer)
-	SIGNAL SATA_TX_Data_i			: T_SLV_32;
-	SIGNAL SATA_TX_SOF_i			: STD_LOGIC;
-	SIGNAL SATA_TX_EOF_i			: STD_LOGIC;
-	SIGNAL SATA_TX_Valid_i		: STD_LOGIC;
+	signal SATA_TX_Data_i			: T_SLV_32;
+	signal SATA_TX_SOF_i			: STD_LOGIC;
+	signal SATA_TX_EOF_i			: STD_LOGIC;
+	signal SATA_TX_Valid_i		: STD_LOGIC;
 
-BEGIN
+begin
 	-- Reset sub-components until initial reset of SATAController has been
 	-- completed. Allow synchronous 'Reset' only when ClockEnable = '1'.
 	-- ===========================================================================
@@ -190,36 +194,42 @@ BEGIN
 	
 	-- rewrite StreamingController commands to ATA command layer commands
 	-- ===========================================================================
-	PROCESS(Command)
-	BEGIN
-		CASE Command IS
-			WHEN SATA_STREAMC_CMD_NONE =>					Cmd_Command	<= SATA_CMD_CMD_NONE;
-			WHEN SATA_STREAMC_CMD_RESET =>				Cmd_Command	<= SATA_CMD_CMD_RESET;
-			WHEN SATA_STREAMC_CMD_READ =>					Cmd_Command	<= SATA_CMD_CMD_READ;
-			WHEN SATA_STREAMC_CMD_WRITE =>				Cmd_Command	<= SATA_CMD_CMD_WRITE;
-			WHEN SATA_STREAMC_CMD_FLUSH_CACHE =>	Cmd_Command	<= SATA_CMD_CMD_FLUSH_CACHE;
-			WHEN OTHERS =>												Cmd_Command	<= SATA_CMD_CMD_NONE;
-		END CASE;
-	END PROCESS;
+	process(Command)
+	begin
+		case Command is
+			when SATA_STREAMC_CMD_NONE =>					Cmd_Command	<= SATA_CMD_CMD_NONE;
+			when SATA_STREAMC_CMD_RESET =>				Cmd_Command	<= SATA_CMD_CMD_RESET;
+			when SATA_STREAMC_CMD_READ =>					Cmd_Command	<= SATA_CMD_CMD_READ;
+			when SATA_STREAMC_CMD_WRITE =>				Cmd_Command	<= SATA_CMD_CMD_WRITE;
+			when SATA_STREAMC_CMD_FLUSH_CACHE =>	Cmd_Command	<= SATA_CMD_CMD_FLUSH_CACHE;
+			when others =>												Cmd_Command	<= SATA_CMD_CMD_NONE;
+		end case;
+	end process;
 
 	-- assign status record
 	Status.CommandLayer				<= Cmd_Status;
 	Status.TransportLayer			<= Trans_Status;
+	Status.LinkLayer					<= SATA_Status.LinkLayer;
+	Status.PhysicalLayer			<= SATA_Status.PhysicalLayer;
+	Status.TransceiverLayer		<= SATA_Status.TransceiverLayer;
 	
 	-- assign error record
 	Error.Commandlayer				<= Cmd_Error;
 	Error.TransportLayer			<= Trans_Error;
+	Error.LinkLayer						<= SATA_Error.LinkLayer;
+	Error.PhysicalLayer				<= SATA_Error.PhysicalLayer;
+	Error.TransceiverLayer		<= SATA_Error.TransceiverLayer;
 	
 	-- CommandLayer
 	-- ===========================================================================
-	Cmd : ENTITY PoC.sata_CommandLayer
-		GENERIC MAP (
-			SIM_EXECUTE_IDENTIFY_DEVICE	=> SIM_EXECUTE_IDENTIFY_DEVICE,				-- required by CommandLayer: load device parameters
-			DEBUG												=> DEBUG,										-- generate ChipScope DBG_* signals
+	Cmd : entity PoC.sata_CommandLayer
+		generic map (
+			SIM_EXECUTE_IDENTIFY_DEVICE	=> SIM_EXECUTE_IDENTIFY_DEVICE,		-- required by CommandLayer: load device parameters
+			DEBUG												=> DEBUG,													-- generate ChipScope DBG_* signals
 			ENABLE_DEBUGPORT						=> ENABLE_DEBUGPORT,
-			LOGICAL_BLOCK_SIZE_ldB			=> LOGICAL_BLOCK_SIZE_ldB
+			LOGICAL_BLOCK_SIZE					=> LOGICAL_BLOCK_SIZE
 		)
-		PORT MAP (
+		port map (
 			Clock												=> Clock,
 			Reset												=> MyReset,
 
@@ -280,17 +290,17 @@ BEGIN
 	RX_EOR		<= RX_EOR_i;
 	RX_Valid	<= RX_Valid_i;
 
-	RX_Glue : BLOCK IS
-		SIGNAL FIFO_Full		: STD_LOGIC;
-		SIGNAL FIFO_DataOut	: STD_LOGIC_VECTOR(33 DOWNTO 0);
-		SIGNAL FIFO_DataIn	: STD_LOGIC_VECTOR(33 DOWNTO 0);
+	RX_Glue : block is
+		signal FIFO_Full		: STD_LOGIC;
+		signal FIFO_DataIn	: STD_LOGIC_VECTOR(33 downto 0);
+		signal FIFO_DataOut	: STD_LOGIC_VECTOR(33 downto 0);
 		
-	BEGIN
-		RX_FIFO : ENTITY PoC.fifo_glue
-			GENERIC MAP ( 
-				D_BITS => 34
+	begin
+		RX_FIFO : entity PoC.fifo_glue
+			generic map ( 
+				D_BITS => FIFO_DataIn'length
 			)
-			PORT MAP (
+			port map (
 				clk => Clock,
 				rst => MyReset,
 				
@@ -308,19 +318,19 @@ BEGIN
 		RX_Glue_Data 			<= FIFO_DataOut(31 downto 0);
 		RX_Glue_SOT 			<= FIFO_DataOut(33);
 		RX_Glue_EOT 			<= FIFO_DataOut(32);
-	END BLOCK;
+	end block;
 
-	TX_Glue : BLOCK
-		SIGNAL FIFO_Full		: STD_LOGIC;
-		SIGNAL FIFO_DataOut	: STD_LOGIC_VECTOR(33 DOWNTO 0);
-		SIGNAL FIFO_DataIn	: STD_LOGIC_VECTOR(33 DOWNTO 0);
+	TX_Glue : block
+		signal FIFO_Full		: STD_LOGIC;
+		signal FIFO_DataIn	: STD_LOGIC_VECTOR(33 downto 0);
+		signal FIFO_DataOut	: STD_LOGIC_VECTOR(33 downto 0);
 		
-	BEGIN
-		TX_FIFO : ENTITY PoC.fifo_glue
-			GENERIC MAP ( 
-				D_BITS => 34
+	begin
+		TX_FIFO : entity PoC.fifo_glue
+			generic map ( 
+				D_BITS => FIFO_DataIn'length
 			)
-			PORT MAP (
+			port map (
 				clk => Clock,
 				rst => MyReset,
 				
@@ -334,21 +344,21 @@ BEGIN
 			);
 
 		FIFO_DataIn 	<= (Cmd_TX_SOT & Cmd_TX_EOT & Cmd_TX_Data);
-		TX_Glue_Ack	 <= not FIFO_Full;
+		TX_Glue_Ack		<= not FIFO_Full;
 		TX_Glue_Data	<= FIFO_DataOut(31 downto 0);
 		TX_Glue_SOT		<= FIFO_DataOut(33);
 		TX_Glue_EOT		<= FIFO_DataOut(32);
-	END BLOCK;
+	end block;
 
 -- TransportLayer
 	-- ==========================================================================================================================================================
-	Trans : ENTITY PoC.sata_TransportLayer
-    GENERIC MAP (
+	Trans : entity PoC.sata_TransportLayer
+    generic map (
 			DEBUG														=> DEBUG,
 			ENABLE_DEBUGPORT								=> ENABLE_DEBUGPORT,
       SIM_WAIT_FOR_INITIAL_REGDH_FIS  => SIM_WAIT_FOR_INITIAL_REGDH_FIS
     )
-		PORT MAP (
+		port map (
 			Clock												=> Clock,
 			Reset												=> MyReset,
 
@@ -386,7 +396,7 @@ BEGIN
 			Link_TX_SOF									=> SATA_TX_SOF_i,
 			Link_TX_EOF									=> SATA_TX_EOF_i,
 			Link_TX_Valid								=> SATA_TX_Valid_i,
-			Link_TX_InsertEOF						=> SATA_TX_InsertEOF,															-- helper signal: insert EOF - max frame size reached
+			Link_TX_InsertEOF						=> SATA_TX_InsertEOF,				-- helper signal: insert EOF - max frame size reached
 				
 			Link_TX_FS_Ack							=> SATA_TX_FS_Ack,
 			Link_TX_FS_SendOK						=> SATA_TX_FS_SendOK,
@@ -423,4 +433,4 @@ BEGIN
 		DebugPortOut.Transport_Status  <=	Trans_Status;
 		DebugPortOut.Transport_Error   <=	Trans_Error;
 	end generate;
-END;
+end;

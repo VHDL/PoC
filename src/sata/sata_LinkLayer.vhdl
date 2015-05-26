@@ -37,116 +37,118 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.strings.ALL;
-USE			PoC.debug.ALL;
-USE			PoC.components.ALL;
-USE			PoC.sata.ALL;
-USE			PoC.satadbg.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.strings.all;
+use			PoC.physical.all;
+use			PoC.debug.all;
+use			PoC.components.all;
+use			PoC.sata.all;
+use			PoC.satadbg.all;
 
 
-ENTITY sata_LinkLayer IS
-	GENERIC (
+entity sata_LinkLayer is
+	generic (
 		DEBUG												: BOOLEAN																:= FALSE;
 		ENABLE_DEBUGPORT						: BOOLEAN																:= FALSE;
 		CONTROLLER_TYPE							: T_SATA_DEVICE_TYPE										:= SATA_DEVICE_TYPE_HOST;
-		MAX_FRAME_SIZE_B						: POSITIVE															:= 8196;
-		AHEAD_CYCLES_FOR_INSERT_EOF	: NATURAL																:= 1;
-		RETRYBUFFER									: BOOLEAN																:= TRUE
+		MAX_FRAME_SIZE							: MEMORY																:= 8196 Byte;
+		AHEAD_CYCLES_FOR_INSERT_EOF	: NATURAL																:= 1
+--		RETRYBUFFER									: BOOLEAN																:= TRUE		-- it's recommended by spec
 	);
-	PORT (
-		Clock										: IN	STD_LOGIC;
-		ClockEnable							: IN	STD_LOGIC;
-		Reset										: IN	STD_LOGIC;
+	port (
+		Clock										: in	STD_LOGIC;
+		ClockEnable							: in	STD_LOGIC;
+		Reset										: in	STD_LOGIC;
 		
-		Command									: IN	T_SATA_LINK_COMMAND;
-		Status									: OUT	T_SATA_LINK_STATUS;
-		Error										: OUT	T_SATA_LINK_ERROR;
+		Command									: in	T_SATA_LINK_COMMAND;
+		Status									: out	T_SATA_LINK_STATUS;
+		Error										: out	T_SATA_LINK_ERROR;
 
 		-- Debug ports
-		DebugPortOut					 	: OUT T_SATADBG_LINK_OUT;
+		DebugPortOut					 	: out T_SATADBG_LINK_OUT;
 		
 		-- TX port
-		TX_SOF									: IN	STD_LOGIC;
-		TX_EOF									: IN	STD_LOGIC;
-		TX_Valid								: IN	STD_LOGIC;
-		TX_Data									: IN	T_SLV_32;
-		TX_Ack									: OUT	STD_LOGIC;
-		TX_InsertEOF						: OUT	STD_LOGIC;
+		TX_SOF									: in	STD_LOGIC;
+		TX_EOF									: in	STD_LOGIC;
+		TX_Valid								: in	STD_LOGIC;
+		TX_Data									: in	T_SLV_32;
+		TX_Ack									: out	STD_LOGIC;
+		TX_InsertEOF						: out	STD_LOGIC;
 		
-		TX_FS_Ack								: IN	STD_LOGIC;
+		TX_FS_Ack								: in	STD_LOGIC;
 		TX_FS_Valid							:	OUT	STD_LOGIC;
-		TX_FS_SendOK						: OUT	STD_LOGIC;
+		TX_FS_SendOK						: out	STD_LOGIC;
 		TX_FS_SyncEsc						: OUT	STD_LOGIC;
 		
 		-- RX port
-		RX_SOF									: OUT	STD_LOGIC;
-		RX_EOF									: OUT	STD_LOGIC;
-		RX_Valid								: OUT	STD_LOGIC;
-		RX_Data									: OUT	T_SLV_32;
-		RX_Ack									: IN	STD_LOGIC;
+		RX_SOF									: out	STD_LOGIC;
+		RX_EOF									: out	STD_LOGIC;
+		RX_Valid								: out	STD_LOGIC;
+		RX_Data									: out	T_SLV_32;
+		RX_Ack									: in	STD_LOGIC;
 		
-		RX_FS_Ack								: IN	STD_LOGIC;
+		RX_FS_Ack								: in	STD_LOGIC;
 		RX_FS_Valid							:	OUT	STD_LOGIC;
-		RX_FS_CRCOK							: OUT	STD_LOGIC;
-		RX_FS_SyncEsc						: OUT	STD_LOGIC;
+		RX_FS_CRCOK							: out	STD_LOGIC;
+		RX_FS_SyncEsc						: out	STD_LOGIC;
 
 		-- physical layer interface
 		Phy_ResetDone 					: in  STD_LOGIC;
-		Phy_Status							: IN	T_SATA_PHY_STATUS;
+		Phy_Status							: in	T_SATA_PHY_STATUS;
 		
-		Phy_RX_Data							: IN	T_SLV_32;
-		Phy_RX_CharIsK					: IN	T_SLV_4;
+		Phy_RX_Data							: in	T_SLV_32;
+		Phy_RX_CharIsK					: in	T_SLV_4;
 		
-		Phy_TX_Data							: OUT	T_SLV_32;
-		Phy_TX_CharIsK					: OUT	T_SLV_4
+		Phy_TX_Data							: out	T_SLV_32;
+		Phy_TX_CharIsK					: out	T_SLV_4
 
 	);
-END;
+end;
 
-ARCHITECTURE rtl OF sata_LinkLayer IS
-	ATTRIBUTE KEEP										: BOOLEAN;
+
+architecture rtl of sata_LinkLayer is
+	attribute KEEP										: BOOLEAN;
 -- ==================================================================
 -- LinkLayer configuration
 -- ==================================================================
 -- TX path																							
-	CONSTANT INSERT_ALIGN_INTERVAL			: POSITIVE				:= 256;
+	constant INSERT_ALIGN_INTERVAL			: POSITIVE				:= 256;
 
-	CONSTANT TX_SOF_BIT									: NATURAL					:= 32;
-	CONSTANT TX_EOF_BIT									: NATURAL					:= 33;
-	CONSTANT TX_FIFO_BITS								: POSITIVE				:= 34;
-	CONSTANT TX_FIFO_DEPTH							: POSITIVE				:= 32;
+	constant TX_SOF_BIT									: NATURAL					:= 32;
+	constant TX_EOF_BIT									: NATURAL					:= 33;
+	constant TX_FIFO_BITS								: POSITIVE				:= 34;
+	constant TX_FIFO_DEPTH							: POSITIVE				:= 32;
 
-	CONSTANT TX_SENDOK_BIT							: NATURAL					:= 0;
-	CONSTANT TX_SYNCESC_BIT							: NATURAL					:= 1;
-	CONSTANT TX_FSFIFO_BITS							: POSITIVE				:= 2;
-	CONSTANT TX_FSFIFO_DEPTH						: POSITIVE				:= 4;
-	CONSTANT TX_FSFIFO_EMPTYSTATE_BITS	: POSITIVE				:= log2ceilnz(TX_FSFIFO_DEPTH);
+	constant TX_SENDOK_BIT							: NATURAL					:= 0;
+	constant TX_SYNCESC_BIT							: NATURAL					:= 1;
+	constant TX_FSFIFO_BITS							: POSITIVE				:= 2;
+	constant TX_FSFIFO_DEPTH						: POSITIVE				:= 4;
+	constant TX_FSFIFO_EMPTYSTATE_BITS	: POSITIVE				:= log2ceilnz(TX_FSFIFO_DEPTH);
 	
 -- RX path
-	CONSTANT RX_SOF_BIT									: NATURAL					:= 32;
-	CONSTANT RX_EOF_BIT									: NATURAL					:= 33;
-	CONSTANT RX_FIFO_BITS								: POSITIVE				:= 34;
-	CONSTANT RX_FIFO_MIN_FREE_SPACE			: POSITIVE				:= 64;
-	CONSTANT RX_FIFO_DEPTH							: POSITIVE				:= ((MAX_FRAME_SIZE_B+3)/4 + RX_FIFO_MIN_FREE_SPACE);
-	CONSTANT RX_FIFO_EMPTYSTATE_BITS		: POSITIVE				:= log2ceilnz(RX_FIFO_DEPTH / RX_FIFO_MIN_FREE_SPACE);
+	constant RX_SOF_BIT									: NATURAL					:= 32;
+	constant RX_EOF_BIT									: NATURAL					:= 33;
+	constant RX_FIFO_BITS								: POSITIVE				:= 34;
+	constant RX_FIFO_MIN_FREE_SPACE			: POSITIVE				:= 64;	-- unit: SATA words
+	constant RX_FIFO_DEPTH							: POSITIVE				:= div_ceil(to_int(MAX_FRAME_SIZE, 1 Byte), 4) + RX_FIFO_MIN_FREE_SPACE;
+	constant RX_FIFO_EMPTYSTATE_BITS		: POSITIVE				:= log2ceilnz(RX_FIFO_DEPTH / RX_FIFO_MIN_FREE_SPACE);
 
-	CONSTANT RX_CRCOK_BIT								: NATURAL					:= 0;
-	CONSTANT RX_SYNCESC_BIT							: NATURAL					:= 1;
-	CONSTANT RX_FSFIFO_BITS							: NATURAL					:= 2;
-	CONSTANT RX_FSFIFO_DEPTH						: POSITIVE				:= 8;
-	CONSTANT RX_FSFIFO_EMPTYSTATE_BITS	: POSITIVE				:= log2ceilnz(RX_FSFIFO_DEPTH);
+	constant RX_CRCOK_BIT								: NATURAL					:= 0;
+	constant RX_SYNCESC_BIT							: NATURAL					:= 1;
+	constant RX_FSFIFO_BITS							: NATURAL					:= 2;
+	constant RX_FSFIFO_DEPTH						: POSITIVE				:= 8;
+	constant RX_FSFIFO_EMPTYSTATE_BITS	: POSITIVE				:= log2ceilnz(RX_FSFIFO_DEPTH);
 
 -- CRC
-	CONSTANT CRC32_POLYNOMIAL		: BIT_VECTOR(35 DOWNTO 0) := x"104C11DB7";
-	CONSTANT CRC32_INIT					: T_SLV_32								:= x"52325032";
+	constant CRC32_POLYNOMIAL		: BIT_VECTOR(35 DOWNTO 0) := x"104C11DB7";
+	constant CRC32_INIT					: T_SLV_32								:= x"52325032";
 
 -- ==================================================================
 -- Signals
@@ -410,48 +412,48 @@ begin
 	-- ==========================================================================	
 	-- TX path input pre-processing
 	-- ==========================================================================	
-	FrameCutter : BLOCK
-		SIGNAL FC_TX_DataFlow								: STD_LOGIC;
+	FrameCutter : block
+		signal FC_TX_DataFlow								: STD_LOGIC;
 		
-		SIGNAL IEOFC_Load										: STD_LOGIC;
-		SIGNAL IEOFC_inc										: STD_LOGIC;
-		SIGNAl IEOFC_uf											: STD_LOGIC;
-	BEGIN
-		FC_TX_DataFlow			<= TX_Valid AND NOT TX_FIFO_Full;
+		signal IEOFC_Load										: STD_LOGIC;
+		signal IEOFC_inc										: STD_LOGIC;
+		signal IEOFC_uf											: STD_LOGIC;
+	begin
+		FC_TX_DataFlow			<= TX_Valid and not TX_FIFO_Full;
 
 		IEOFC_Load					<= TX_SOF;
-		IEOFC_inc						<= FC_TX_DataFlow AND NOT IEOFC_uf;
+		IEOFC_inc						<= FC_TX_DataFlow and not IEOFC_uf;
 		
 		IEOFC : BLOCK	-- InsertEOFCounter
-			CONSTANT IEOF_COUNTER_START				: POSITIVE															:= (MAX_FRAME_SIZE_B / 4) - AHEAD_CYCLES_FOR_INSERT_EOF - 3;
-			CONSTANT IEOF_COUNTER_BITS				: POSITIVE															:= log2ceilnz(IEOF_COUNTER_START);
+			constant IEOF_COUNTER_START				: POSITIVE															:= (to_int(MAX_FRAME_SIZE, 1 Byte) / 4) - AHEAD_CYCLES_FOR_INSERT_EOF - 3;
+			constant IEOF_COUNTER_BITS				: POSITIVE															:= log2ceilnz(IEOF_COUNTER_START);
 			
-			SIGNAL Counter_s									: SIGNED(IEOF_COUNTER_BITS DOWNTO 0)		:= to_signed(IEOF_COUNTER_START, IEOF_COUNTER_BITS + 1);
-		BEGIN
-			PROCESS(Clock)
-			BEGIN
-				IF rising_edge(Clock) THEN
+			signal Counter_s									: SIGNED(IEOF_COUNTER_BITS downto 0)		:= to_signed(IEOF_COUNTER_START, IEOF_COUNTER_BITS + 1);
+		begin
+			process(Clock)
+			begin
+				if rising_edge(Clock) then
 					if ((MyReset = '1') or (IEOFC_Load = '1')) then
 						Counter_s			<=  to_signed(IEOF_COUNTER_START, IEOF_COUNTER_BITS + 1);
 					elsif (IEOFC_inc = '1') then
 						Counter_s			<= Counter_s - 1;
 					end if;
-				END IF;
-			END PROCESS;
+				end if;
+			end process;
 			
 			IEOFC_uf			<= Counter_s(Counter_s'high);
-		END BLOCK;	-- InsertEOFCounter
+		end block;	-- InsertEOFCounter
 
 		TX_InsertEOF_i		<= IEOFC_uf;
 		TX_InsertEOF 			<= TX_InsertEOF_i;
-	END BLOCK;	-- FrameCutter
+	end block;	-- FrameCutter
 	
 	-- ==========================================================================
 	-- fifo section
 	-- ================================================================
 	-- TX path
-	TX_FIFO : ENTITY PoC.fifo_cc_got
-		GENERIC MAP (
+	TX_FIFO : entity PoC.fifo_cc_got
+		generic map (
 			D_BITS					=> TX_FIFO_BITS,				-- data width
 			MIN_DEPTH				=> TX_FIFO_DEPTH,				-- minimum FIFO depth
 			ESTATE_WR_BITS	=> 0,										-- empty state bits
@@ -460,24 +462,24 @@ begin
 			STATE_REG				=> TRUE,								-- registered Full/Empty indicators
 			OUTPUT_REG			=> TRUE									 -- registered FIFO output
 		)
-		PORT MAP (
+		port map (
 			clk							=> Clock,
 			rst							=> TX_FIFO_rst,
 			-- Write Interface
 			put							=> TX_FIFO_put,
 			din							=> TX_FIFO_DataIn,
-			estate_wr				=> OPEN,
+			estate_wr				=> open,
 			full						=> TX_FIFO_Full,
 			-- Read Interface
 			got							=> TX_FIFO_got,
 			valid						=> TX_FIFO_Valid,
 			dout						=> TX_FIFO_DataOut,
-			fstate_rd				=> OPEN
+			fstate_rd				=> open
 		);
 	
 	-- TX frame status path
-	TX_FSFIFO : ENTITY PoC.fifo_cc_got
-		GENERIC MAP (
+	TX_FSFIFO : entity PoC.fifo_cc_got
+		generic map (
 			D_BITS					=> TX_FSFIFO_BITS,							-- data width
 			MIN_DEPTH				=> TX_FSFIFO_DEPTH,							-- minimum FIFO depth
 			ESTATE_WR_BITS	=> TX_FSFIFO_EMPTYSTATE_BITS,		-- empty state bits
@@ -486,7 +488,7 @@ begin
 			STATE_REG				=> TRUE,												-- registered Full/Empty indicators
 			OUTPUT_REG			=> FALSE	  										-- registered FIFO output
 		)
-		PORT MAP (
+		port map (
 			clk							=> Clock,
 			rst							=> TX_FSFIFO_rst,
 			
@@ -500,12 +502,12 @@ begin
 			got							=> TX_FSFIFO_got,
 			valid						=> TX_FSFIFO_Valid,
 			dout						=> TX_FSFIFO_DataOut,
-			fstate_rd				=> OPEN
+			fstate_rd				=> open
 		);
 	
 	-- RX path
-	RX_FIFO : ENTITY PoC.fifo_cc_got_tempput
-		GENERIC MAP (
+	RX_FIFO : entity PoC.fifo_cc_got_tempput
+		generic map (
 			D_BITS					=> RX_FIFO_BITS,								-- data width
 			MIN_DEPTH				=> RX_FIFO_DEPTH,								-- minimum FIFO depth
 			ESTATE_WR_BITS	=> RX_FIFO_EMPTYSTATE_BITS,			-- empty state bits
@@ -514,7 +516,7 @@ begin
 			STATE_REG				=> TRUE,												-- registered Full/Empty indicators
 			OUTPUT_REG			=> TRUE													-- registered FIFO output
 		)
-		PORT MAP (
+		port map (
 			clk							=> Clock,
 			rst							=> RX_FIFO_rst,
 			-- Write Interface
@@ -529,19 +531,19 @@ begin
 			got							=> RX_FIFO_got,
 			valid						=> RX_FIFO_Valid,
 			dout						=> RX_FIFO_DataOut,
-			fstate_rd				=> OPEN
+			fstate_rd				=> open
 		);
 	
 	RX_FIFO_SpaceAvailable <= to_sl(RX_FIFO_EmptyState /= (RX_FIFO_EmptyState'range => '0'));
 	
 	RX_DataReg_DataIn		<= DataUnscrambler_DataOut;
-	RX_DataReg_d				<= RX_DataReg_DataIn	WHEN (rising_edge(Clock) AND (RX_DataReg_shift = '1'));
-	RX_DataReg_d2				<= RX_DataReg_d				WHEN (rising_edge(Clock) AND (RX_DataReg_shift = '1'));
+	RX_DataReg_d				<= RX_DataReg_DataIn	when (rising_edge(Clock) and (RX_DataReg_shift = '1'));
+	RX_DataReg_d2				<= RX_DataReg_d				when (rising_edge(Clock) and (RX_DataReg_shift = '1'));
 	RX_DataReg_DataOut	<= RX_DataReg_d2;
 
 	-- RX frame status path
-	RX_FSFIFO : ENTITY PoC.fifo_cc_got
-		GENERIC MAP (
+	RX_FSFIFO : entity PoC.fifo_cc_got
+		generic map (
 			D_BITS					=> RX_FSFIFO_BITS,								-- data width
 			MIN_DEPTH				=> RX_FSFIFO_DEPTH,								-- minimum FIFO depth
 			ESTATE_WR_BITS	=> RX_FSFIFO_EMPTYSTATE_BITS,			-- empty state bits
@@ -550,7 +552,7 @@ begin
 			STATE_REG				=> TRUE,													-- registered Full/Empty indicators
 			OUTPUT_REG			=> FALSE													-- registered FIFO output
 		)
-		PORT MAP (
+		port map (
 			clk							=> Clock,
 			rst							=> RX_FSFIFO_rst,
 			
@@ -564,7 +566,7 @@ begin
 			got							=> RX_FSFIFO_got,
 			valid						=> RX_FSFIFO_Valid,
 			dout						=> RX_FSFIFO_DataOut,
-			fstate_rd				=> OPEN
+			fstate_rd				=> open
 		);
 
 	-- CRC section
@@ -572,12 +574,12 @@ begin
 	-- TX path
 	TX_CRC_DataIn			<= TX_FIFO_DataOut(TX_CRC_DataIn'range);
 
-	TX_CRC : ENTITY PoC.comm_crc
-		GENERIC MAP (
-			GEN							=> CRC32_POLYNOMIAL(32 DOWNTO 0),		-- Generator Polynom
+	TX_CRC : entity PoC.comm_crc
+		generic map (
+			GEN							=> CRC32_POLYNOMIAL(32 downto 0),		-- Generator Polynom
 			BITS						=> 32																-- Number of Bits to be processed in parallel
 		)
-		PORT MAP (
+		port map (
 			clk							=> Clock,														-- Clock
 			
 			set							=> TX_CRC_rst,											-- Parallel Preload of Remainder
@@ -586,19 +588,19 @@ begin
 			din							=> TX_CRC_DataIn,
 
 			rmd							=> TX_CRC_DataOut,									-- Remainder
-			zero						=> OPEN															-- Remainder is Zero
+			zero						=> open															-- Remainder is Zero
 		);
 
-	DataScrambler_DataIn <= TX_CRC_DataIn WHEN (CRCMux_ctrl = '0') ELSE TX_CRC_DataOut;
+	DataScrambler_DataIn <= mux(CRCMux_ctrl, TX_CRC_DataIn, TX_CRC_DataOut);
 	
 	
 	-- RX path
-	RX_CRC : ENTITY PoC.comm_crc
-		GENERIC MAP (
-			GEN							=> CRC32_POLYNOMIAL(32 DOWNTO 0),		-- Generator Polynom
+	RX_CRC : entity PoC.comm_crc
+		generic map (
+			GEN							=> CRC32_POLYNOMIAL(32 downto 0),		-- Generator Polynom
 			BITS						=> 32																-- Number of Bits to be processed in parallel
 		)
-		PORT MAP (
+		port map (
 			clk							=> Clock,														-- Clock
 			
 			set							=> RX_CRC_rst,											-- Parallel Preload of Remainder
@@ -607,7 +609,7 @@ begin
 			din							=> DataUnscrambler_DataOut,
 
 			rmd							=> RX_CRC_DataOut,									-- Remainder
-			zero						=> OPEN															-- Remainder is Zero
+			zero						=> open															-- Remainder is Zero
 		);
 	
 	RX_CRC_OK <= to_sl(RX_CRC_DataOut = DataUnscrambler_DataOut);
@@ -616,13 +618,13 @@ begin
 	-- scrambler section
 	-- ================================================================
 	-- TX path
-	DataScrambler : ENTITY PoC.sata_Scrambler
-		GENERIC MAP (
+	DataScrambler : entity PoC.sata_Scrambler
+		generic map (
 			POLYNOMIAL							=> x"1A011",					-- "1A011" = "1 1010 0000 0001 0001" = x^16 + x^15 + x^13 + x^4 + 1,
 			SEED										=> x"FFFF",
 			WIDTH										=> 32
 		)
-		PORT MAP (
+		port map (
 			Clock										=> Clock,
 			Enable									=> DataScrambler_en,
 			Reset										=> DataScrambler_rst,
@@ -634,13 +636,13 @@ begin
   --TODO Feature Request: To be implemented to reduce EMI.
 --  DummyScrambler_DataIn <= (others => '0');
 	
---	DummyScrambler : ENTITY PoC.sata_Scrambler
---		GENERIC MAP (
+--	DummyScrambler : entity PoC.sata_Scrambler
+--		generic map (
 --			POLYNOMIAL							=> x"1A011",
 --			SEED										=> x"FFFF",
 --			WIDTH										=> 32
 --		)
---		PORT MAP (
+--		port map (
 --			Clock										=> Clock,
 --			Enable									=> DummyScrambler_en,
 --			Reset										=> DummyScrambler_rst,
@@ -652,13 +654,13 @@ begin
 	PM_DataIn <= DataScrambler_DataOut;-- WHEN (ScramblerMux_ctrl = '0') ELSE DummyScrambler_DataOut;
 
 	-- RX path
-	DataUnscrambler : ENTITY PoC.sata_Scrambler
-		GENERIC MAP (
+	DataUnscrambler : entity PoC.sata_Scrambler
+		generic map (
 			POLYNOMIAL							=> x"1A011",
 			SEED										=> x"FFFF",
 			WIDTH										=> 32
 		)
-		PORT MAP (
+		port map (
 			Clock										=> Clock,
 			Enable									=> DataUnscrambler_en,
 			Reset										=> DataUnscrambler_rst,
@@ -672,20 +674,20 @@ begin
 	-- primitive section
 	-- ================================================================
 	-- TX path
-	PROCESS(TX_Primitive, PM_DataIn)
-	BEGIN
-		IF (TX_Primitive = SATA_PRIMITIVE_NONE) THEN		-- no primitive
-			PM_DataOut		<= PM_DataIn;										--	passthrough data word
+	process(TX_Primitive, PM_DataIn)
+	begin
+		if (TX_Primitive = SATA_PRIMITIVE_NONE) then		-- no primitive
+			PM_DataOut		<= PM_DataIn;										-- passthrough data word
 			PM_CharIsK		<= "0000";
-		ELSE																						-- Send Primitive
+		else																						-- Send Primitive
 			PM_DataOut		<= to_sata_word(TX_Primitive);	-- access ROM
 			PM_CharIsK		<= "0001";											-- mark primitive with K-symbols
-		END IF;
-	END PROCESS;
+		end if;
+	end process;
 	
 	-- RX path
-	PD : ENTITY PoC.sata_PrimitiveDetector
-		PORT MAP (
+	PD : entity PoC.sata_PrimitiveDetector
+		port map (
 			Clock									=> Clock,
 			
 			RX_DataIn							=> PD_DataIn,
@@ -694,7 +696,7 @@ begin
 			Primitive							=> RX_Primitive
 		);
 	
-	RX_Primitive_d	<= 	RX_Primitive WHEN rising_edge(Clock);
+	RX_Primitive_d	<= 	RX_Primitive when rising_edge(Clock);
 
 	-- ================================================================
 	-- physical layer interface
@@ -708,7 +710,7 @@ begin
 	PD_DataIn									<= Phy_RX_Data;
 	PD_CharIsK								<= Phy_RX_CharIsK;
 	
-	DataUnscrambler_DataIn		<= Phy_RX_Data WHEN rising_edge(Clock);
+	DataUnscrambler_DataIn		<= Phy_RX_Data when rising_edge(Clock);
 
 	-- ================================================================
 	-- debug ports
@@ -819,4 +821,4 @@ begin
 		DebugPortOut.TX_Phy_Data								<= PM_DataOut;
 		DebugPortOut.TX_Phy_CiK									<= PM_CharIsK;
 	end generate;
-END;
+end;
