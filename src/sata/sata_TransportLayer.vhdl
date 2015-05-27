@@ -100,7 +100,8 @@ entity sata_TransportLayer is
 		RX_Valid											: OUT	STD_LOGIC;
 	
 		-- SATAController Status
-		Phy_Status										: IN	T_SATA_PHY_STATUS;
+		SATA_Command									: out	T_SATA_SATACONTROLLER_COMMAND;
+		SATA_Status										: in	T_SATA_SATACONTROLLER_STATUS;
 		
 		-- TX path
 		Link_TX_Ack										: IN	STD_LOGIC;
@@ -231,7 +232,7 @@ begin
 			RX_EOT														=> TFSM_RX_EOT,
 			
 			-- SATAController Status
-			Phy_Status 												=> Phy_Status,
+			Phy_Status 												=> SATA_Status.PhysicalLayer,
 
 			-- FISDecoder interface
 			FISD_FISType											=> FISD_FISType,
@@ -249,7 +250,10 @@ begin
 	Status	<= Status_i;
 	Error		<= Error_i;
 
-	TX_Ack								<= TC_TX_Ack or TFSM_TX_ForceAck; -- when editing also update DebugPort
+	TX_Ack					<= TC_TX_Ack or TFSM_TX_ForceAck; -- when editing also update DebugPort
+
+	-- TODO: controlled by TFSM?
+	SATA_Command		<= SATA_SATACTRL_CMD_NONE;
 
 	-- ===========================================================================
 	-- ATA registers
@@ -428,7 +432,7 @@ begin
 			TX_InsertEOP								=> FISE_TX_InsertEOP,
 
 			-- SATAController Status
-			Phy_Status 									=> Phy_Status,
+			Phy_Status 									=> SATA_Status.PhysicalLayer,
 			
 			-- LinkLayer FIFO interface
 			Link_TX_Valid								=> FISE_Link_TX_Valid,
@@ -474,7 +478,7 @@ begin
 			RX_Ack											=> RXReg_Ack,
 			
 			-- SATAController Status
-			Phy_Status 									=> Phy_Status,
+			Phy_Status 									=> SATA_Status.PhysicalLayer,
 			
 			-- LinkLayer FIFO interface
 			Link_RX_Valid								=> Link_RX_Valid,

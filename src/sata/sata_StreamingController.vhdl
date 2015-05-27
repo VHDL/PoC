@@ -387,8 +387,9 @@ begin
 			RX_EOT											=> Trans_RX_EOT,
 			RX_Ack											=> RX_Glue_Ack,
 			
-			-- SATAController Status
-			Phy_Status									=> SATA_Status.PhysicalLayer,
+			-- SATAController interface
+			SATA_Command								=> SATA_Command,
+			SATA_Status									=> SATA_Status,
 			
 			-- TX path
 			Link_TX_Ack									=> SATA_TX_Ack,
@@ -425,12 +426,12 @@ begin
 	-- ===========================================================================
 	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
 	begin
-		DebugPortOut.Command_Command <= Cmd_Command;
-		DebugPortOut.Command_Status  <= Cmd_Status;
-		DebugPortOut.Command_Error   <= Cmd_Error;
+		DebugPortOut.Command_Command		<= Cmd_Command;
+		DebugPortOut.Command_Status			<= Cmd_Status;
+		DebugPortOut.Command_Error			<= Cmd_Error;
 
-		DebugPortOut.Transport_Command <= Trans_Command;
-		DebugPortOut.Transport_Status  <=	Trans_Status;
-		DebugPortOut.Transport_Error   <=	Trans_Error;
+		DebugPortOut.Transport_Command	<= Trans_Command;
+		DebugPortOut.Transport_Status		<=	Trans_Status;
+		DebugPortOut.Transport_Error		<=	Trans_Error;
 	end generate;
 end;
