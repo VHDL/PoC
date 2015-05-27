@@ -3,14 +3,14 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
 --									Steffen Koehler
 --
+-- Module: 					Old Device Detector for Transceivers
+--
 -- Description:
 -- ------------------------------------
---		TODO
+-- TO BE REMOVED.
 -- 
 -- License:
 -- =============================================================================

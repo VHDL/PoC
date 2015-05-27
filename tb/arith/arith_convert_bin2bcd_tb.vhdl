@@ -46,24 +46,24 @@ end;
 
 
 architecture test of arith_converter_bin2bcd_tb is
-	constant CLOCK_FREQ	: FREQ				:= 100 MHz;
+	constant CLOCK_FREQ		: FREQ				:= 100 MHz;
 
-	constant INPUT_1		: INTEGER			:= 113;
-	constant INPUT_2		: INTEGER			:= 231;
-	constant INPUT_3		: INTEGER			:= 85;
+	constant INPUT_1			: INTEGER			:= 38442113;
+	constant INPUT_2			: INTEGER			:= 78734531;
+	constant INPUT_3			: INTEGER			:= 14902385;
 	
-	constant CONV1_BITS		: POSITIVE		:= 8;
-	constant CONV1_DIGITS	: POSITIVE		:= 3;
-	constant CONV2_BITS		: POSITIVE		:= 8;
-	constant CONV2_DIGITS	: POSITIVE		:= 4;
+	constant CONV1_BITS		: POSITIVE		:= 30;
+	constant CONV1_DIGITS	: POSITIVE		:= 8;
+	constant CONV2_BITS		: POSITIVE		:= 27;
+	constant CONV2_DIGITS	: POSITIVE		:= 8;
 
 
-	signal SimStop			: std_logic 	:= '0';
+	signal SimStop				: std_logic 	:= '0';
 
-	signal Clock				: STD_LOGIC		:= '1';
-	signal Reset				: STD_LOGIC		:= '0';
+	signal Clock					: STD_LOGIC		:= '1';
+	signal Reset					: STD_LOGIC		:= '0';
 	
-	signal Start				: STD_LOGIC		:= '0';
+	signal Start					: STD_LOGIC		:= '0';
 	
 	signal Conv1_Binary			: STD_LOGIC_VECTOR(CONV1_BITS - 1 downto 0);
 	signal Conv1_BCDDigits	: T_BCD_VECTOR(CONV1_DIGITS - 1 DOWNTO 0);
@@ -97,7 +97,7 @@ begin
 		Start						<= '0';
 		wait until rising_edge(Clock);
 		
-		for i in 0 to (CONV1_BITS - 2) loop
+		for i in 0 to (CONV1_BITS - 1) loop
 			wait until rising_edge(Clock);
 		end loop;
 		
@@ -121,7 +121,7 @@ begin
 		Start						<= '0';
 		wait until rising_edge(Clock);
 		
-		for i in 0 to (CONV1_BITS - 2) loop
+		for i in 0 to (CONV1_BITS - 1) loop
 			wait until rising_edge(Clock);
 		end loop;
 		
@@ -136,9 +136,9 @@ begin
 
 	conv1 : entity PoC.arith_convert_bin2bcd
 		generic map (
-			IS_SIGNED			=> FALSE,
 			BITS					=> CONV1_BITS,
-			DIGITS				=> CONV1_DIGITS
+			DIGITS				=> CONV1_DIGITS,
+			RADIX					=> 8
 		)
 		port map (
 			Clock					=> Clock,
@@ -148,15 +148,16 @@ begin
 			Busy					=> open,
 			
 			Binary				=> Conv1_Binary,
+			IsSigned			=> '0',
 			BCDDigits			=> Conv1_BCDDigits,
 			Sign					=> Conv1_Sign
 		);
 
 	conv2 : entity PoC.arith_convert_bin2bcd
 		generic map (
-			IS_SIGNED			=> TRUE,
 			BITS					=> CONV2_BITS,
-			DIGITS				=> CONV2_DIGITS
+			DIGITS				=> CONV2_DIGITS,
+			RADIX					=> 2
 		)
 		port map (
 			Clock					=> Clock,
@@ -166,6 +167,7 @@ begin
 			Busy					=> open,
 			
 			Binary				=> Conv2_Binary,
+			IsSigned			=> '1',
 			BCDDigits			=> Conv2_BCDDigits,
 			Sign					=> Conv2_Sign
 		);

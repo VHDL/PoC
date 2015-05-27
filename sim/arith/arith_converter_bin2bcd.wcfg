@@ -3,7 +3,7 @@
    <wave_state>
    </wave_state>
    <db_ref_list>
-      <db_ref path="D:/git/SATAController/Projects/StreamDBTest_KC705_ISE/ise/arith_converter_bin2bcd_tb_isim_beh.wdb" id="1" type="auto">
+      <db_ref path="H:/VHDL/git/SATAController/Projects/PicoBlazeDMATest_KC705_ISE/ise/arith_converter_bin2bcd_tb_isim_beh.wdb" id="1" type="auto">
          <top_modules>
             <top_module name="arith_converter_bin2bcd_tb" />
             <top_module name="components" />
@@ -20,9 +20,8 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="19" />
+   <WVObjectSize size="17" />
    <wave_markers>
-      <marker time="130000000" label="" />
       <marker time="30000000" label="" />
    </wave_markers>
    <wvobject fp_name="/arith_converter_bin2bcd_tb/clock" type="logic" db_ref_id="1">
@@ -47,22 +46,59 @@
       <obj_property name="ElementShortName">start</obj_property>
       <obj_property name="ObjectShortName">start</obj_property>
    </wvobject>
-   <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/state" type="other" db_ref_id="1">
-      <obj_property name="ElementShortName">state</obj_property>
-      <obj_property name="ObjectShortName">state</obj_property>
-   </wvobject>
    <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/busy" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">busy</obj_property>
       <obj_property name="ObjectShortName">busy</obj_property>
    </wvobject>
    <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/binary" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">binary[7:0]</obj_property>
-      <obj_property name="ObjectShortName">binary[7:0]</obj_property>
+      <obj_property name="ElementShortName">binary[29:0]</obj_property>
+      <obj_property name="ObjectShortName">binary[29:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/bcddigits" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">bcddigits[2:0]</obj_property>
-      <obj_property name="ObjectShortName">bcddigits[2:0]</obj_property>
+      <obj_property name="ElementShortName">bcddigits[7:0]</obj_property>
+      <obj_property name="ObjectShortName">bcddigits[7:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/bcddigits[7]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[7]</obj_property>
+         <obj_property name="ObjectShortName">bcddigits[7]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/bcddigits[6]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[6]</obj_property>
+         <obj_property name="ObjectShortName">bcddigits[6]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/bcddigits[5]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[5]</obj_property>
+         <obj_property name="ObjectShortName">bcddigits[5]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/bcddigits[4]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[4]</obj_property>
+         <obj_property name="ObjectShortName">bcddigits[4]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/bcddigits[3]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[3]</obj_property>
+         <obj_property name="ObjectShortName">bcddigits[3]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/bcddigits[2]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[2]</obj_property>
+         <obj_property name="ObjectShortName">bcddigits[2]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/bcddigits[1]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[1]</obj_property>
+         <obj_property name="ObjectShortName">bcddigits[1]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/bcddigits[0]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[0]</obj_property>
+         <obj_property name="ObjectShortName">bcddigits[0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
    </wvobject>
    <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/sign" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">sign</obj_property>
@@ -71,42 +107,34 @@
    <wvobject fp_name="group294" type="group">
       <obj_property name="label">internal</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/delayshifter" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">delayshifter[10:0]</obj_property>
+         <obj_property name="ObjectShortName">delayshifter[10:0]</obj_property>
+      </wvobject>
       <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/binary_en" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">binary_en</obj_property>
          <obj_property name="ObjectShortName">binary_en</obj_property>
-      </wvobject>
-      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/binary_neg" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">binary_neg</obj_property>
-         <obj_property name="ObjectShortName">binary_neg</obj_property>
       </wvobject>
       <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/binary_rl" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">binary_rl</obj_property>
          <obj_property name="ObjectShortName">binary_rl</obj_property>
       </wvobject>
       <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/binary_d" type="array" db_ref_id="1">
-         <obj_property name="ElementShortName">binary_d[7:0]</obj_property>
-         <obj_property name="ObjectShortName">binary_d[7:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/sign_d" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">sign_d</obj_property>
-         <obj_property name="ObjectShortName">sign_d</obj_property>
+         <obj_property name="ElementShortName">binary_d[29:0]</obj_property>
+         <obj_property name="ObjectShortName">binary_d[29:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/digit_shift_en" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">digit_shift_en</obj_property>
          <obj_property name="ObjectShortName">digit_shift_en</obj_property>
       </wvobject>
       <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/digit_shift_in" type="array" db_ref_id="1">
-         <obj_property name="ElementShortName">digit_shift_in[3:0]</obj_property>
-         <obj_property name="ObjectShortName">digit_shift_in[3:0]</obj_property>
+         <obj_property name="ElementShortName">digit_shift_in[8:0]</obj_property>
+         <obj_property name="ObjectShortName">digit_shift_in[8:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/shiftcounter_rst" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">shiftcounter_rst</obj_property>
-         <obj_property name="ObjectShortName">shiftcounter_rst</obj_property>
-      </wvobject>
-      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/shiftcounter_s" type="array" db_ref_id="1">
-         <obj_property name="ElementShortName">shiftcounter_s[3:0]</obj_property>
-         <obj_property name="ObjectShortName">shiftcounter_s[3:0]</obj_property>
-         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv1/sign_d" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">sign_d</obj_property>
+         <obj_property name="ObjectShortName">sign_d</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="divider274" type="divider">
@@ -119,22 +147,59 @@
       <obj_property name="ElementShortName">start</obj_property>
       <obj_property name="ObjectShortName">start</obj_property>
    </wvobject>
-   <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/state" type="other" db_ref_id="1">
-      <obj_property name="ElementShortName">state</obj_property>
-      <obj_property name="ObjectShortName">state</obj_property>
-   </wvobject>
    <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/busy" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">busy</obj_property>
       <obj_property name="ObjectShortName">busy</obj_property>
    </wvobject>
    <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/binary" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">binary[7:0]</obj_property>
-      <obj_property name="ObjectShortName">binary[7:0]</obj_property>
+      <obj_property name="ElementShortName">binary[26:0]</obj_property>
+      <obj_property name="ObjectShortName">binary[26:0]</obj_property>
+      <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/bcddigits" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">bcddigits[3:0]</obj_property>
-      <obj_property name="ObjectShortName">bcddigits[3:0]</obj_property>
+      <obj_property name="ElementShortName">bcddigits[7:0]</obj_property>
+      <obj_property name="ObjectShortName">bcddigits[7:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/bcddigits[7]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[7]</obj_property>
+         <obj_property name="ObjectShortName">bcddigits[7]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/bcddigits[6]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[6]</obj_property>
+         <obj_property name="ObjectShortName">bcddigits[6]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/bcddigits[5]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[5]</obj_property>
+         <obj_property name="ObjectShortName">bcddigits[5]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/bcddigits[4]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[4]</obj_property>
+         <obj_property name="ObjectShortName">bcddigits[4]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/bcddigits[3]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[3]</obj_property>
+         <obj_property name="ObjectShortName">bcddigits[3]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/bcddigits[2]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[2]</obj_property>
+         <obj_property name="ObjectShortName">bcddigits[2]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/bcddigits[1]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[1]</obj_property>
+         <obj_property name="ObjectShortName">bcddigits[1]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/bcddigits[0]" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">[0]</obj_property>
+         <obj_property name="ObjectShortName">bcddigits[0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
    </wvobject>
    <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/sign" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">sign</obj_property>
@@ -143,42 +208,35 @@
    <wvobject fp_name="group293" type="group">
       <obj_property name="label">internal</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/delayshifter" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">delayshifter[27:0]</obj_property>
+         <obj_property name="ObjectShortName">delayshifter[27:0]</obj_property>
+      </wvobject>
       <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/binary_en" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">binary_en</obj_property>
          <obj_property name="ObjectShortName">binary_en</obj_property>
-      </wvobject>
-      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/binary_neg" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">binary_neg</obj_property>
-         <obj_property name="ObjectShortName">binary_neg</obj_property>
       </wvobject>
       <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/binary_rl" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">binary_rl</obj_property>
          <obj_property name="ObjectShortName">binary_rl</obj_property>
       </wvobject>
       <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/binary_d" type="array" db_ref_id="1">
-         <obj_property name="ElementShortName">binary_d[7:0]</obj_property>
-         <obj_property name="ObjectShortName">binary_d[7:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/sign_d" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">sign_d</obj_property>
-         <obj_property name="ObjectShortName">sign_d</obj_property>
+         <obj_property name="ElementShortName">binary_d[26:0]</obj_property>
+         <obj_property name="ObjectShortName">binary_d[26:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/digit_shift_en" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">digit_shift_en</obj_property>
          <obj_property name="ObjectShortName">digit_shift_en</obj_property>
       </wvobject>
       <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/digit_shift_in" type="array" db_ref_id="1">
-         <obj_property name="ElementShortName">digit_shift_in[4:0]</obj_property>
-         <obj_property name="ObjectShortName">digit_shift_in[4:0]</obj_property>
+         <obj_property name="ElementShortName">digit_shift_in[8:0]</obj_property>
+         <obj_property name="ObjectShortName">digit_shift_in[8:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
-      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/shiftcounter_rst" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">shiftcounter_rst</obj_property>
-         <obj_property name="ObjectShortName">shiftcounter_rst</obj_property>
-      </wvobject>
-      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/shiftcounter_s" type="array" db_ref_id="1">
-         <obj_property name="ElementShortName">shiftcounter_s[3:0]</obj_property>
-         <obj_property name="ObjectShortName">shiftcounter_s[3:0]</obj_property>
-         <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+      <wvobject fp_name="/arith_converter_bin2bcd_tb/conv2/sign_d" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">sign_d</obj_property>
+         <obj_property name="ObjectShortName">sign_d</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>

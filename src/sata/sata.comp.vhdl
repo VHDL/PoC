@@ -3,17 +3,23 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
+--
+-- Package:					SATA Components
 --
 -- Description:
 -- ------------------------------------
---		TODO
--- 
+-- For end users:
+-- Provides component declarations of the main components
+-- "sata_StreamingController" and "sata_SATAController".
+--
+-- For internal use:
+-- Provides component declarations of device-specific transceivers.
+--
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,6 +62,7 @@ package satacomp is
 		);
 		PORT (
 			Clock											: IN	STD_LOGIC;
+			ClockEnable								: IN	STD_LOGIC;
 			Reset											: IN	STD_LOGIC;
 			
 			-- ATAStreamingController interface
@@ -90,9 +97,10 @@ package satacomp is
 			
 			-- SATAController interface
 			-- ========================================================================
-			SATA_Command							: OUT	T_SATA_SATACONTROLLER_COMMAND;
+			SATA_ResetDone 						: in  STD_LOGIC;
+--			SATA_Command							: OUT	T_SATA_SATACONTROLLER_COMMAND;
 			SATA_Status								: IN	T_SATA_SATACONTROLLER_STATUS;
-			SATA_Error								: IN	T_SATA_SATACONTROLLER_ERROR;
+--			SATA_Error								: IN	T_SATA_SATACONTROLLER_ERROR;
 		
 			-- TX port
 			SATA_TX_SOF								: OUT	STD_LOGIC;
@@ -105,7 +113,7 @@ package satacomp is
 			SATA_TX_FS_Ack						: OUT	STD_LOGIC;
 			SATA_TX_FS_Valid					: IN	STD_LOGIC;
 			SATA_TX_FS_SendOK					: IN	STD_LOGIC;
-			SATA_TX_FS_Abort					: IN	STD_LOGIC;
+			SATA_TX_FS_SyncEsc				: IN	STD_LOGIC;
 			
 			-- RX port
 			SATA_RX_SOF								: IN	STD_LOGIC;
@@ -117,7 +125,7 @@ package satacomp is
 			SATA_RX_FS_Ack						: OUT	STD_LOGIC;
 			SATA_RX_FS_Valid					: IN	STD_LOGIC;
 			SATA_RX_FS_CRC_OK					: IN	STD_LOGIC;
-			SATA_RX_FS_Abort					: IN	STD_LOGIC
+			SATA_RX_FS_SyncEsc				: IN	STD_LOGIC
 		);
 	END COMPONENT;
 	
@@ -165,7 +173,7 @@ package satacomp is
 			TX_FS_Ack									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			TX_FS_Valid								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			TX_FS_SendOK							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_FS_Abort								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			TX_FS_SyncEsc							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- RX port
 			RX_SOF										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -177,7 +185,7 @@ package satacomp is
 			RX_FS_Ack									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			RX_FS_Valid								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			RX_FS_CRC_OK							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_FS_Abort								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_FS_SyncEsc							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			
 			-- vendor specific signals
 			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -312,6 +320,7 @@ package satacomp is
 			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
 
 			SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			SATA_Clock_Stable					: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 			RP_Reconfig								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			RP_SATAGeneration					: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
@@ -324,6 +333,7 @@ package satacomp is
 			OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 			OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
 			OOB_HandshakeComplete			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			OOB_AlignDetected    			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			
 			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 			TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
