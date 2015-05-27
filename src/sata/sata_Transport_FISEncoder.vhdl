@@ -4,12 +4,13 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
+--									Martin Zabel
 --
--- Package:					TODO
+-- Module:					FIS Encoder for SATA Transport Layer
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- See notes on module 'sata_TransportLayer'.
 -- 
 -- License:
 -- =============================================================================
@@ -67,7 +68,10 @@ entity sata_FISEncoder IS
 		TX_Valid										: in	STD_LOGIC;
 		TX_InsertEOP								: out	STD_LOGIC;
 		
-		-- SATAController interface (LinkLayer)
+		-- SATAController Status
+		Phy_Status										: IN	T_SATA_PHY_STATUS;
+		
+		-- LinkLayer FIFO interface
 		Link_TX_Ack									: in	STD_LOGIC;
 		Link_TX_Data								: out	T_SLV_32;
 		Link_TX_SOF									: out STD_LOGIC;
@@ -77,7 +81,7 @@ entity sata_FISEncoder IS
 		
 		Link_TX_FS_Ack							: out	STD_LOGIC;
 		Link_TX_FS_SendOK						: in	STD_LOGIC;
-		Link_TX_FS_Abort						: in	STD_LOGIC;
+		Link_TX_FS_SyncEsc					: in	STD_LOGIC;
 		Link_TX_FS_Valid						: in	STD_LOGIC
 	);
 end;
@@ -87,9 +91,9 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 	ATTRIBUTE FSM_ENCODING					: STRING;
 
 	TYPE T_STATE IS (
-		ST_IDLE,
+		ST_RESET, ST_IDLE,
 		ST_FIS_REG_HOST_DEV_WORD_0, ST_FIS_REG_HOST_DEV_WORD_1,	ST_FIS_REG_HOST_DEV_WORD_2,	ST_FIS_REG_HOST_DEV_WORD_3,	ST_FIS_REG_HOST_DEV_WORD_4,
-		ST_DATA_0, ST_DATA_N,
+		ST_DATA_0, ST_DATA_N, ST_DISCARD_FRAME,
 		ST_EVALUATE_FRAMESTATE
 	);
 	
@@ -122,9 +126,9 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 	-- Word 4
 --	ALIAS Alias_TransferCount							: T_SLV_16												IS Link_TX_Data(15 DOWNTO 0);				-- Transfer Count
 	
-	SIGNAL State													: T_STATE													:= ST_IDLE;
+	SIGNAL State													: T_STATE													:= ST_RESET;
 	SIGNAL NextState											: T_STATE;
-	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS getFSMEncoding_gray(DEBUG);
 	
 BEGIN
 
@@ -132,14 +136,14 @@ BEGIN
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
-				State			<= ST_IDLE;
+				State			<= ST_RESET;
 			ELSE
 				State			<= NextState;
 			END IF;
 		END IF;
 	END PROCESS;
 	
-	PROCESS(State, FISType, ATARegisters, TX_Valid, TX_Data, TX_SOP, TX_EOP, Link_TX_Ack, Link_TX_FS_Valid, Link_TX_FS_SendOK, Link_TX_FS_Abort, Link_TX_InsertEOF)
+	PROCESS(State, Phy_Status, FISType, ATARegisters, TX_Valid, TX_Data, TX_SOP, TX_EOP, Link_TX_Ack, Link_TX_FS_Valid, Link_TX_FS_SendOK, Link_TX_FS_SyncEsc, Link_TX_InsertEOF)
 	BEGIN
 		NextState										<= State;
 		
@@ -180,6 +184,18 @@ BEGIN
 		Alias_ControlReg						<= x"00";													-- Control register		
 
 		CASE State IS
+			when ST_RESET =>
+				-- Clock might be unstable is this state. In this case either
+				-- a) Reset is asserted because inital reset of the SATAController is
+				--    not finished yet.
+				-- b) Phy_Status is constant and not equal to SATA_PHY_STATUS_LINK_OK.
+				--    This may happen during reconfiguration due to speed negotiation.
+        Status										<= SATA_FISE_STATUS_RESET;
+        
+        if (Phy_Status = SATA_PHY_STATUS_COMMUNICATING) then
+					NextState <= ST_IDLE;
+        end if;
+				
 			WHEN ST_IDLE =>
 				Status										<= SATA_FISE_STATUS_IDLE;
 			
@@ -292,6 +308,12 @@ BEGIN
 							IF (TX_EOP = '1') THEN
 								NextState					<= ST_EVALUATE_FRAMESTATE;
 							END IF;
+						elsif (Link_TX_FS_Valid = '1') then
+							-- LinkLayer does not acknowledge,
+							-- check for SyncEscape by receiver.
+							if (Link_TX_FS_SyncEsc = '1') then
+								NextState 				<= ST_DISCARD_FRAME;
+							end if;
 						END IF;
 					ELSE
 						Status								<= SATA_FISE_STATUS_ERROR;
@@ -312,20 +334,38 @@ BEGIN
 						IF (TX_EOP = '1') THEN
 							NextState						<= ST_EVALUATE_FRAMESTATE;
 						END IF;
+					elsif (Link_TX_FS_Valid = '1') then
+						-- LinkLayer does not acknowledge,
+						-- check for SyncEscape by receiver.
+						if (Link_TX_FS_SyncEsc = '1') then
+							NextState 					<= ST_DISCARD_FRAME;
+						end if;
 					END IF;
 				END IF;
 
+			when ST_DISCARD_FRAME =>
+				TX_Ack 										<= '1';
+				if (TX_Valid = '1') then
+					if (TX_EOP = '1') then
+						NextState						<= ST_EVALUATE_FRAMESTATE;
+					end if;
+				end if;
+				
 			WHEN ST_EVALUATE_FRAMESTATE =>
 				IF (Link_TX_FS_Valid = '1') THEN
 					IF (Link_TX_FS_SendOK = '1') THEN
 						Link_TX_FS_Ack				<= '1';
 						Status								<= SATA_FISE_STATUS_SEND_OK;
-						
 						NextState							<= ST_IDLE;
-					ELSE
+					elsif (Link_TX_FS_SyncEsc = '1') THEN
+						-- SyncEscape requested by device
 						Link_TX_FS_Ack				<= '1';
 						Status								<= SATA_FISE_STATUS_ERROR;
-						
+						NextState							<= ST_IDLE;
+					ELSE
+						-- CRC error
+						Link_TX_FS_Ack				<= '1';
+						Status								<= SATA_FISE_STATUS_CRC_ERROR;
 						NextState							<= ST_IDLE;
 					end if;
 				end if;
@@ -344,7 +384,7 @@ BEGIN
 		
 	begin
 		genXilinx : if (VENDOR = VENDOR_XILINX) generate
-			function dbg_GenerateEncodings return string is
+			function dbg_GenerateStateEncodings return string is
 				variable  l : STD.TextIO.line;
 			begin
 				for i in T_STATE loop
@@ -354,7 +394,20 @@ BEGIN
 				return  l.all;
 			end function;
 			
-			constant dummy : boolean := dbg_ExportEncoding("Transport Layer - FIS-Encoder", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_TransLayer_FISE.tok");
+			function dbg_generateStatusEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_FISENCODER_STATUS loop
+					STD.TextIO.write(l, str_replace(T_SATA_FISENCODER_STATUS'image(i), "sata_fise_status_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			constant dummy : T_BOOLVEC := (
+				0 => dbg_ExportEncoding("Transport Layer FIS-Encoder - FSM", dbg_GenerateStateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_TransLayer_FISE.tok"),
+				1 => dbg_ExportEncoding("Transport Layer FIS-Encoder - Status", dbg_GenerateStatusEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Trans_FISE_Status.tok")
+			);
 		begin
 		end generate;
 		

@@ -31,8 +31,10 @@ entity ocram_sdp_tb is
 end ocram_sdp_tb;
 
 library poc;
-use poc.ocram.all;
+--use poc.ocram.all;
 use poc.simulation.all;
+
+use	std.TextIO.all;
 
 architecture tb of ocram_sdp_tb is
 
@@ -93,6 +95,7 @@ begin  -- tb
   -- waveform generation
   WaveGen_Proc: process
     variable pass : boolean;
+		variable l : line;
   begin
     pass := true;
     
@@ -176,7 +179,15 @@ begin  -- tb
     rce <= '0';
 
     clk_ena <= '0';
-    printSimulationResult(pass);
+    --printSimulationResult(pass);
+		write(l, string'("SIMULATION RESULT = "));
+		if pass then
+			write(l, string'("PASSED"));
+		else
+			write(l, string'("FAILED"));
+		end if;
+		writeline(output, l);
+
     wait;                               -- forever
   end process WaveGen_Proc;
 

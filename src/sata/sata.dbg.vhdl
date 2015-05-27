@@ -4,12 +4,13 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
 --
--- Package:					TODO
+-- Package:					SATA Debug Types and Functions
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- Declares types and function for debugging purpose.
 -- 
 -- License:
 -- =============================================================================
@@ -113,58 +114,50 @@ package satadbg is
 	type T_SATADBG_TRANSCEIVER_IN is record
 		ForceOOBCommand						: T_SATA_OOB;
 		ForceTXElectricalIdle			: STD_LOGIC;
-		ForceEnableHold						: STD_LOGIC;
-		ForceInvertHold						: STD_LOGIC;
-		
-		AlignDetected							: STD_LOGIC;
-		
+		InsertBitErrorTX 					: STD_LOGIC;
+		InsertBitErrorRX 					: STD_LOGIC;
 		DRP												: T_XIL_DRP_BUS_IN;
 		RX_Monitor_sel						: T_SLV_2;
 	end record;
+
+	constant C_SATADBG_TRANSCEIVER_IN_EMPTY : T_SATADBG_TRANSCEIVER_IN := (
+		ForceOOBCommand => SATA_OOB_NONE,
+		DRP							=> C_XIL_DRP_BUS_IN_EMPTY,
+		RX_Monitor_sel	=> "00",
+		others					=> '0');
 	
 	-- ===========================================================================
 	-- SATA Physical Layer Types
 	-- ===========================================================================
 	type T_SATADBG_PHYSICAL_OOBCONTROL_OUT is record
-		FSM												: STD_LOGIC_VECTOR(4 downto 0);
-		Retry											: STD_LOGIC;
+		FSM												: STD_LOGIC_VECTOR(3 downto 0);
 		Timeout										: STD_LOGIC;
+		DeviceOrHostDetected			: STD_LOGIC;
 		LinkOK										: STD_LOGIC;
 		LinkDead									: STD_LOGIC;
-		ReceivedReset							: STD_LOGIC;
 		OOB_TX_Command						: T_SATA_OOB;
 		OOB_TX_Complete						: STD_LOGIC;
 		OOB_RX_Received						: T_SATA_OOB;
 		OOB_HandshakeComplete			: STD_LOGIC;
-		
-		AlignDetected							: STD_LOGIC;
 	end record;
 	
-	type T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT is record
-		FSM												: STD_LOGIC_VECTOR(2 downto 0);
-		Status										: T_SATA_PHY_SPEED_STATUS;
+	type T_SATADBG_PHYSICAL_PFSM_OUT is record
+		FSM												: STD_LOGIC_VECTOR(3 downto 0);
+		Command 									: T_SATA_PHY_COMMAND;
+		Status										: T_SATA_PHY_STATUS;
+		Error 										: T_SATA_PHY_ERROR;
 		SATAGeneration						: T_SATA_GENERATION;
 		SATAGeneration_Reset			: STD_LOGIC;
 		SATAGeneration_Change			: STD_LOGIC;
 		SATAGeneration_Changed		: STD_LOGIC;
-		OOBC_Retry								: STD_LOGIC;
-		OOBC_Timeout							: STD_LOGIC;
+		OOBC_Reset 								: STD_LOGIC;
 		Trans_Reconfig						: STD_LOGIC;
-		Trans_ReconfigComplete		: STD_LOGIC;
 		Trans_ConfigReloaded			: STD_LOGIC;
 		GenerationChanges					: STD_LOGIC_VECTOR(7 downto 0);
 		TrysPerGeneration					: STD_LOGIC_VECTOR(7 downto 0);
 	end record;
 	
 	type T_SATADBG_PHYSICAL_OUT is record
-		-- phy layer fsm
-		FSM												: STD_LOGIC_VECTOR(2 downto 0);
-		PHY_Status								: T_SATA_PHY_STATUS;
-		
-		-- device detector
---		DD_NoDevice								: STD_LOGIC;
---		DD_NewDevice							: STD_LOGIC;
-
 		TX_Data										: T_SLV_32;
 		TX_CharIsK								: T_SLV_4;		
 		RX_Data										: T_SLV_32;
@@ -172,7 +165,7 @@ package satadbg is
 		RX_Valid									: STD_LOGIC;
 		
 		OOBControl								: T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
-		SpeedControl							: T_SATADBG_PHYSICAL_SPEEDCONTROL_OUT;
+		PFSM											: T_SATADBG_PHYSICAL_PFSM_OUT;
 	end record;
 	
 	
@@ -180,8 +173,7 @@ package satadbg is
 	-- SATA Link Layer Types
 	-- ===========================================================================
 	type T_SATADBG_LINK_LLFSM_OUT is record
-		TXFSM												: STD_LOGIC_VECTOR(3 downto 0);
-		RXFSM												: STD_LOGIC_VECTOR(4 downto 0);
+		FSM													: STD_LOGIC_VECTOR(4 downto 0);
 	end record;
 	
 	type T_SATADBG_LINK_OUT is record
@@ -202,12 +194,13 @@ package satadbg is
 		RX_CRC_rst									: STD_LOGIC;
 		RX_CRC_en										: STD_LOGIC;
 		-- RX: DataRegisters
-		RX_DataReg_en1							: STD_LOGIC;
-		RX_DataReg_en2							: STD_LOGIC;
+		RX_DataReg_shift						: STD_LOGIC;
 		-- RX: before RX_FIFO
 		RX_FIFO_SpaceAvailable			: STD_LOGIC;
 		RX_FIFO_rst									: STD_LOGIC;
 		RX_FIFO_put									: STD_LOGIC;
+		RX_FIFO_commit							: STD_LOGIC;
+		RX_FIFO_rollback						: STD_LOGIC;
 		RX_FSFIFO_rst								: STD_LOGIC;
 		RX_FSFIFO_put								: STD_LOGIC;
 		-- RX: after RX_FIFO
@@ -219,7 +212,7 @@ package satadbg is
 		RX_FS_Valid									: STD_LOGIC;
 		RX_FS_Ack										: STD_LOGIC;
 		RX_FS_CRCOK									: STD_LOGIC;
-		RX_FS_Abort									: STD_LOGIC;
+		RX_FS_SyncEsc								: STD_LOGIC;
 		--																													=> 125 bit
 		-- TX: from Link Layer
 		TX_Data											: T_SLV_32;
@@ -227,10 +220,11 @@ package satadbg is
 		TX_Ack											: STD_LOGIC;
 		TX_SOF											: STD_LOGIC;
 		TX_EOF											: STD_LOGIC;
+		TX_InsertEOF 								: STD_LOGIC;
 		TX_FS_Valid									: STD_LOGIC;
 		TX_FS_Ack										: STD_LOGIC;
 		TX_FS_SendOK								: STD_LOGIC;
-		TX_FS_Abort									: STD_LOGIC;
+		TX_FS_SyncEsc								: STD_LOGIC;
 		-- TX: TXFIFO
 		TX_FIFO_got									: STD_LOGIC;
 		TX_FSFIFO_got								: STD_LOGIC;
@@ -281,7 +275,7 @@ package satadbg is
 	-- ===========================================================================
 
   type T_SATADBG_CMD_CFSM_OUT is record
-    FSM          : std_logic_Vector(3 downto 0);
+    FSM          : std_logic_Vector(4 downto 0);
     Load         : std_logic;
     NextTransfer : std_logic;
     LastTransfer : std_logic;
@@ -299,7 +293,6 @@ package satadbg is
     IDF_Enable           : STD_LOGIC;
     IDF_Error            : STD_LOGIC;
     IDF_Finished         : STD_LOGIC;
-    IDF_CRC_OK           : STD_LOGIC;
     IDF_DriveInformation : T_SATA_DRIVE_INFORMATION;
     CFSM                 : T_SATADBG_CMD_CFSM_OUT;
     RX_Valid             : STD_LOGIC;
@@ -316,6 +309,18 @@ package satadbg is
     Trans_RX_SOT         : STD_LOGIC;
     Trans_RX_EOT         : STD_LOGIC;
     Trans_RX_Ack         : STD_LOGIC;
+    CFSM_TX_ForceEOT     : STD_LOGIC;
+    TX_Valid             : STD_LOGIC;
+    TX_Data              : T_SLV_32;
+    TX_SOR               : STD_LOGIC;
+    TX_EOR               : STD_LOGIC;
+    TX_Ack               : STD_LOGIC;
+    TC_TX_Valid          : STD_LOGIC;
+    TC_TX_Data           : T_SLV_32;
+    TC_TX_SOT            : STD_LOGIC;
+    TC_TX_EOT            : STD_LOGIC;
+    TC_TX_Ack            : STD_LOGIC;
+    TC_TX_InsertEOT 		 : STD_LOGIC;
 	end record;
 	
 
@@ -331,7 +336,7 @@ package satadbg is
 	end record;
 	
 	type T_SATADBG_TRANS_FISD_OUT is record
-		FSM													: STD_LOGIC_VECTOR(4 downto 0);				-- 5 bits
+		FSM													: STD_LOGIC_VECTOR(3 downto 0);				-- 4 bits
 	end record;
 	
 	type T_SATADBG_TRANS_OUT is record
@@ -355,10 +360,7 @@ package satadbg is
 		RX_Ack											: STD_LOGIC;
 		RX_SOT											: STD_LOGIC;
 		RX_EOT											: STD_LOGIC;
-		RX_Commit										: STD_LOGIC;
-		RX_Rollback									: STD_LOGIC;
-		
-		-- RXReg?
+		RX_LastWord									: STD_LOGIC;
 		
 		FISE_FISType								: T_SATA_FISTYPE;							-- 4 bit
 		FISE_Status									: T_SATA_FISENCODER_STATUS;		-- 3 bit
@@ -374,7 +376,7 @@ package satadbg is
 		Link_TX_FS_Valid						: STD_LOGIC;
 		Link_TX_FS_Ack							: STD_LOGIC;
 		Link_TX_FS_SendOK						: STD_LOGIC;
-		Link_TX_FS_Abort						: STD_LOGIC;
+		Link_TX_FS_SyncEsc					: STD_LOGIC;
 		
 		Link_RX_Data								: T_SLV_32;
 		Link_RX_Valid								: STD_LOGIC;
@@ -384,7 +386,7 @@ package satadbg is
 		Link_RX_FS_Valid						: STD_LOGIC;
 		Link_RX_FS_Ack							: STD_LOGIC;
 		Link_RX_FS_CRCOK						: STD_LOGIC;
-		Link_RX_FS_Abort						: STD_LOGIC;
+		Link_RX_FS_SyncEsc					: STD_LOGIC;
 	end record;
 	
 	
