@@ -70,6 +70,7 @@ entity sata_StreamingController is
 
 		-- for measurement purposes only
 		Config_BurstSize					: in	T_SLV_16;
+		DriveInformation					: out	T_SATA_DRIVE_INFORMATION;
 		
 		-- ATA Streaming interface
 		Address_AppLB							: in	T_SLV_48;
@@ -144,7 +145,7 @@ architecture rtl of sata_StreamingController is
 	signal Cmd_Status												: T_SATA_CMD_STATUS;
 	signal Cmd_Error												: T_SATA_CMD_ERROR;
 	
-	signal Cmd_DriveInformation							: T_SATA_DRIVE_INFORMATION;
+--	signal Cmd_DriveInformation							: T_SATA_DRIVE_INFORMATION;
 	signal Cmd_ATAHostRegisters							: T_SATA_ATA_HOST_REGISTERS;
 
 	-- TransportLayer
@@ -245,7 +246,7 @@ begin
 		
 			Address_AppLB								=> Address_AppLB,
 			BlockCount_AppLB						=> BlockCount_AppLB,
-			DriveInformation						=> Cmd_DriveInformation,
+			DriveInformation						=> DriveInformation,
 		
 			-- TX path
 			TX_Valid										=> TX_Valid,
