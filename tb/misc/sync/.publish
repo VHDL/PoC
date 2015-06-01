@@ -1,3 +1,6 @@
+# git files
+.gitignore
+
 # clock-domain-crossing circuits
 sync_Reset_tb.vhdl
 sync_Flag_tb.vhdl
