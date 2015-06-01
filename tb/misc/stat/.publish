@@ -2,5 +2,5 @@
 .gitignore
 
 # statistic modules
-stat_Minimum_tb.vhdl
-stat_Maximum_tb.vhdl
+stat_Minimum_tb.*
+stat_Maximum_tb.*
