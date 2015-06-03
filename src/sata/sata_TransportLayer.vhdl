@@ -26,10 +26,27 @@
 -- If these conditions are met, then Status will be constant and equal to
 -- SATA_TRANS_STATUS_RESET during an unstable clock, especially in case b).
 --
+--
+-- Configuration
+-- -------------
+-- REG_DEV_HOST_TIMEOUT: Maximum time to wait for a register transfer from
+--   device to host. For example, if the header of a Data FIS sended to the
+--   device gets corrupted (due to transmission errors), the device might not
+--   response with a Register FIS, especially, if it detects an unknown FIS instead
+--   of an CRC error.
+--
+-- DEV_DATA_READY_TIMEOUT: Maximum time to wait for data from the device.
+--   Actually, the time to wait for PIO setup FIS or Data FIS during reads.
+--
+-- DEV_RCV_DATA_TIMEOUT: Maximum time for the device to get ready for
+--   receiving data. Actually, the time to wait for DMA Activate FIS during writes.
+--
+--
 -- CSE Interface:
 -- --------------
 -- New commands are accepted when Status is *_STATUS_IDLE oder *_STATUS_TRANSFER_OK.
 -- ATAHostHostRegisters must be applied with command *_CMD_TRANSFER.
+--
 --
 -- License:
 -- =============================================================================
@@ -59,6 +76,7 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
 use 		PoC.components.all;
+use 		PoC.physical.all;
 use 		PoC.debug.all;
 use			PoC.sata.all;
 use			PoC.satadbg.all;
@@ -66,6 +84,9 @@ use			PoC.satadbg.all;
 
 entity sata_TransportLayer is
   generic (
+		REG_DEV_HOST_TIMEOUT 						: TIME 							:= 1 ms;
+		DEV_DATA_RDY_TIMEOUT 						: TIME 							:= 1 sec;
+		DEV_RCV_DATA_TIMEOUT 						: TIME 							:= 1 sec;
 		DEBUG														: BOOLEAN						:= FALSE;					-- generate ChipScope DBG_* signals
 		ENABLE_DEBUGPORT								: BOOLEAN						:= FALSE;
 		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: BOOLEAN						:= TRUE						-- required by ATA/SATA standard
@@ -200,6 +221,9 @@ begin
 	-- ================================================================
 	TFSM : ENTITY PoC.sata_TransportFSM
     GENERIC MAP (
+			REG_DEV_HOST_TIMEOUT 							=> REG_DEV_HOST_TIMEOUT,
+			DEV_DATA_RDY_TIMEOUT 							=> DEV_DATA_RDY_TIMEOUT,
+			DEV_RCV_DATA_TIMEOUT 							=> DEV_RCV_DATA_TIMEOUT,
 			DEBUG															=> DEBUG,
 			ENABLE_DEBUGPORT									=> ENABLE_DEBUGPORT,
       SIM_WAIT_FOR_INITIAL_REGDH_FIS    => SIM_WAIT_FOR_INITIAL_REGDH_FIS

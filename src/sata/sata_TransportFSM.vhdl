@@ -39,6 +39,7 @@ USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
+use 		PoC.physical.all;
 use			PoC.debug.all;
 USE			PoC.sata.ALL;
 use			PoC.satadbg.all;
@@ -46,6 +47,9 @@ use			PoC.satadbg.all;
 
 ENTITY sata_TransportFSM IS
   GENERIC (
+		REG_DEV_HOST_TIMEOUT 							: TIME 												:= 1 ms;
+		DEV_DATA_RDY_TIMEOUT 							: TIME 												:= 1 sec;
+		DEV_RCV_DATA_TIMEOUT 							: TIME 												:= 1 sec;
 		DEBUG															: BOOLEAN											:= FALSE;
 		ENABLE_DEBUGPORT									: BOOLEAN											:= FALSE;
     SIM_WAIT_FOR_INITIAL_REGDH_FIS    : BOOLEAN                     := TRUE -- required by ATA/SATA standard
@@ -135,6 +139,40 @@ ARCHITECTURE rtl OF sata_TransportFSM IS
 	SIGNAL ATA_Command_Category						: T_SATA_COMMAND_CATEGORY;
 	SIGNAL Error_nxt											: T_SATA_TRANS_ERROR;
 	signal Error_en 											: STD_LOGIC;
+	signal Error_r 												: T_SATA_TRANS_ERROR;
+
+	-- Used by timing counters.
+	constant CLOCK_GEN1_FREQ							: FREQ				:= 37.5 MHz;			-- SATAClock frequency in MHz for SATA generation 1
+	constant CLOCK_GEN2_FREQ							: FREQ				:= 75.0 MHz;			-- SATAClock frequency in MHz for SATA generation 2
+	constant CLOCK_GEN3_FREQ							: FREQ				:= 150.0 MHz;			-- SATAClock frequency in MHz for SATA generation 3
+
+
+	-- Timing Counter to check for timeouts of device responses.
+	constant REG_DEV_HOST_TIMEOUT_SLOT		: NATURAL			:= 0;
+	constant DEV_DATA_RDY_TIMEOUT_SLOT		: NATURAL			:= 8;
+	constant DEV_RCV_DATA_TIMEOUT_SLOT		: NATURAL			:= 4;
+
+	-- TODO select entry according to actual link speed (clock frequency)
+	constant TC_DEV_RESPONSE_TABLE				: T_NATVEC				:= (
+		(REG_DEV_HOST_TIMEOUT_SLOT+0) => TimingToCycles(REG_DEV_HOST_TIMEOUT,	CLOCK_GEN1_FREQ),				-- slot 0
+		(REG_DEV_HOST_TIMEOUT_SLOT+1) => TimingToCycles(REG_DEV_HOST_TIMEOUT,	CLOCK_GEN2_FREQ),				-- slot 1
+		(REG_DEV_HOST_TIMEOUT_SLOT+2) => TimingToCycles(REG_DEV_HOST_TIMEOUT,	CLOCK_GEN3_FREQ),				-- slot 2
+		(REG_DEV_HOST_TIMEOUT_SLOT+3) => TimingToCycles(REG_DEV_HOST_TIMEOUT,	CLOCK_GEN3_FREQ),				-- slot 3
+		(DEV_DATA_RDY_TIMEOUT_SLOT+0) => TimingToCycles(DEV_DATA_RDY_TIMEOUT,	CLOCK_GEN1_FREQ),				-- slot 4
+		(DEV_DATA_RDY_TIMEOUT_SLOT+1) => TimingToCycles(DEV_DATA_RDY_TIMEOUT,	CLOCK_GEN2_FREQ),				-- slot 5
+		(DEV_DATA_RDY_TIMEOUT_SLOT+2) => TimingToCycles(DEV_DATA_RDY_TIMEOUT,	CLOCK_GEN3_FREQ),				-- slot 6
+		(DEV_DATA_RDY_TIMEOUT_SLOT+3) => TimingToCycles(DEV_DATA_RDY_TIMEOUT,	CLOCK_GEN3_FREQ),				-- slot 7
+		(DEV_RCV_DATA_TIMEOUT_SLOT+0) => TimingToCycles(DEV_RCV_DATA_TIMEOUT,	CLOCK_GEN1_FREQ),				-- slot 8
+		(DEV_RCV_DATA_TIMEOUT_SLOT+1) => TimingToCycles(DEV_RCV_DATA_TIMEOUT,	CLOCK_GEN2_FREQ),				-- slot 9
+		(DEV_RCV_DATA_TIMEOUT_SLOT+2) => TimingToCycles(DEV_RCV_DATA_TIMEOUT,	CLOCK_GEN3_FREQ),				-- slot 10
+		(DEV_RCV_DATA_TIMEOUT_SLOT+3) => TimingToCycles(DEV_RCV_DATA_TIMEOUT,	CLOCK_GEN3_FREQ)				-- slot 11
+	);
+	
+	
+	signal TC_DevResponse_Enable	 : STD_LOGIC;
+	signal TC_DevResponse_Load		 : STD_LOGIC;
+	signal TC_DevResponse_Slot		 : NATURAL range 0 to (TC_DEV_RESPONSE_TABLE'length - 1);
+	signal TC_DevResponse_Timeout  : STD_LOGIC;
 	
 BEGIN
 
@@ -145,18 +183,21 @@ BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
 				State						<= ST_RESET;
-				Error 					<= SATA_TRANS_ERROR_NONE;
+				Error_r					<= SATA_TRANS_ERROR_NONE;
 			ELSE
 				State						<= NextState;
 				
 				if Error_en = '1' then
-					Error 				<= Error_nxt;
+					Error_r				<= Error_nxt;
 				end if;
 			END IF;
 		END IF;
 	END PROCESS;
+
+	Error <= Error_r;
 	
-	PROCESS(State, Command, ATA_Command_Category, ATADeviceRegisters, FISE_Status, FISD_Status, FISD_FISType, FISD_SOP, FISD_EOP, 
+	PROCESS(State, Command, ATA_Command_Category, ATADeviceRegisters, TC_DevResponse_Timeout, Error_r,
+					FISE_Status, FISD_Status, FISD_FISType, FISD_SOP, FISD_EOP, 
           Phy_Status, TX_Valid, TX_EOT)
 	BEGIN
 		NextState																<= State;
@@ -177,6 +218,10 @@ BEGIN
 		RX_LastWord															<= '0';
 		RX_SOT																	<= '0';
 		RX_EOT																	<= '0';
+
+		TC_DevResponse_Enable 									<= '0';
+		TC_DevResponse_Load	 										<= '0';
+		TC_DevResponse_Slot	 										<= 0;
 		
 		CASE State IS
       WHEN ST_RESET =>
@@ -736,6 +781,8 @@ BEGIN
 			WHEN ST_CMDCAT_DMAOUT_SEND_REGISTER_WAIT =>
 				IF (FISE_Status = SATA_FISE_STATUS_SEND_OK) THEN
 					NextState													<= ST_CMDCAT_DMAOUT_AWAIT_FIS;
+					TC_DevResponse_Load 							<= '1';
+					TC_DevResponse_Slot 							<= DEV_RCV_DATA_TIMEOUT_SLOT;
 				ELSIF (FISE_Status = SATA_FISE_STATUS_CRC_ERROR) THEN
 					-- Retry finally failed.
 					Error_en 													<= '1';
@@ -748,6 +795,8 @@ BEGIN
 				END IF;
 			
 			WHEN ST_CMDCAT_DMAOUT_AWAIT_FIS =>
+				-- Wait for response from device. Init TC_DevResponse before.
+				TC_DevResponse_Enable <= '1';
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVING) THEN
 					IF (FISD_FISType = SATA_FISTYPE_DMA_ACTIVATE) THEN
 						NextState												<= ST_CMDCAT_DMAOUT_RECEIVE_DMA_ACTIVATE;
@@ -766,6 +815,10 @@ BEGIN
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
 					NextState													<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER;
+				elsif (TC_DevResponse_Timeout = '1') then
+					Error_en 													<= '1';
+					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
+					NextState													<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER;
 				END IF;
 			
 			WHEN ST_CMDCAT_DMAOUT_RECEIVE_DMA_ACTIVATE =>
@@ -774,6 +827,8 @@ BEGIN
 					-- End of FIS and valid content.
 					FISE_FISType											<= SATA_FISTYPE_DATA;
 					NextState													<= ST_CMDCAT_DMAOUT_SEND_DATA;
+					TC_DevResponse_Load 							<= '1';
+					TC_DevResponse_Slot 							<= DEV_RCV_DATA_TIMEOUT_SLOT;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
@@ -781,17 +836,31 @@ BEGIN
 				END IF;
 			
 			WHEN ST_CMDCAT_DMAOUT_SEND_DATA =>
+				-- Sending data. Might timeout if Data FIS is not recognized by device
+				-- due to transmission error in FIS header. Init TC_DevResponse before.
 				TX_en																<= '1';
+				TC_DevResponse_Enable 							<= '1';
 			
 				IF (FISE_Status = SATA_FISE_STATUS_SEND_OK) THEN
+					-- DMA Active FIS (if more data is required) or Register Dev->Host FIS
+					-- (if transfer is complete) follows.
 					NextState													<= ST_CMDCAT_DMAOUT_AWAIT_FIS;
+					TC_DevResponse_Load 							<= '1';
+					TC_DevResponse_Slot 							<= DEV_RCV_DATA_TIMEOUT_SLOT; -- more data
 				ELSIF (FISE_Status = SATA_FISE_STATUS_CRC_ERROR) THEN
 					-- CRC error while sending data FIS. Must not be retried.
 					-- Wait for register dev->host FIS with valid CRC.
 					NextState 												<= ST_CMDCAT_DMAOUT_AWAIT_FIS;
+					TC_DevResponse_Load 							<= '1';
+					TC_DevResponse_Slot 							<= REG_DEV_HOST_TIMEOUT_SLOT;
 				ELSIF (FISE_Status = SATA_FISE_STATUS_ERROR) THEN
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_FISENCODER;
+					NextState													<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER;
+				elsif (TC_DevResponse_Timeout = '1') then
+					-- TODO (Minor): Cancel transport in FISEncoder (-> SyncEsc in LinkLayer).
+					Error_en 													<= '1';
+					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
 					NextState													<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER;
 				END IF;
 			
@@ -839,13 +908,28 @@ BEGIN
 				
 			WHEN ST_ERROR =>
 				Status			<= SATA_TRANS_STATUS_ERROR;
-				NextState		<= ST_IDLE;
+				if Error_r /= SATA_TRANS_ERROR_TIMEOUT then
+					NextState		<= ST_IDLE;
+				end if;
 				
 		END CASE;
 	END PROCESS;
 
+
+	-- Timing Counter to check for timeouts of device responses.
+	-- ===========================================================================
+	TimingCounter_DevResponse: entity work.io_TimingCounter
+		generic map (
+			TIMING_TABLE => TC_DEV_RESPONSE_TABLE)
+		port map (
+			Clock		=> Clock,
+			Enable	=> TC_DevResponse_Enable,
+			Load		=> TC_DevResponse_Load,
+			Slot		=> TC_DevResponse_Slot,
+			Timeout => TC_DevResponse_Timeout);
+	
 	-- debug ports
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
 		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
 		begin
