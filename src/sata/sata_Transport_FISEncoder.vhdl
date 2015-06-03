@@ -20,8 +20,6 @@
 -- *_SEND_OK:								FIS transmitted and acknowledged with R_OK  by other end.
 -- *_SEND_ERROR:						FIS transmitted and acknowledged with R_ERR by other end.
 -- *_SYNC_ESC:							Sending aborted by SYNC.
--- *_ERROR:									Generic error, e.g. SOP not set at first data word.
--- *_SENDING_DISCONTINUED:	TO BE IMPLEMENTED
 --
 -- License:
 -- =============================================================================
@@ -238,8 +236,12 @@ BEGIN
 						
 						Alias_FISType					<= to_slv(SATA_FISTYPE_DATA);
 					
-						NextState							<= ST_DATA_0;
-					
+						if (Link_TX_Ack = '1') then
+							NextState						<= ST_DATA_N;
+						else
+							NextState						<= ST_DATA_0;
+						end if;
+						
 					WHEN OTHERS =>
 						NULL;
 						
@@ -304,35 +306,15 @@ BEGIN
 				END IF;
 				
 			WHEN ST_DATA_0 =>
-				Link_TX_Data							<= TX_Data;
-
-				TX_Ack										<= Link_TX_Ack;
-				TX_InsertEOP							<= Link_TX_InsertEOF;
-				Link_TX_EOF								<= TX_EOP;
-				Link_TX_Valid							<= TX_Valid;
-				
-				IF (TX_Valid = '1') THEN
-					IF (TX_SOP = '1') THEN
-						IF (Link_TX_Ack = '1') THEN
-							-- SyncEsc handled later
-							NextState						<= ST_DATA_N;
+				-- Send Data FIS Header until Link_TX_Ack.
+				Link_TX_Valid					<= '1';
+				Link_TX_SOF						<= '1';
 						
-							IF (TX_EOP = '1') THEN
-								NextState					<= ST_EVALUATE_FRAMESTATE;
-							END IF;
-						elsif (Link_TX_FS_Valid = '1') and (Link_TX_FS_SyncEsc = '1') then
-							-- LinkLayer does not acknowledge,
-							-- check for SyncEscape by receiver.
-							NextState 					<= ST_ABORT_FRAME;
-						END IF;
-					ELSE
-						Status								<= SATA_FISE_STATUS_ERROR;
-						NextState							<= ST_IDLE;
-					END IF;
-				elsif (Link_TX_FS_Valid = '1') and (Link_TX_FS_SyncEsc = '1') then
-					-- Data not ready, check for SyncEscape by receiver.
-					NextState 							<= ST_ABORT_FRAME;
-				END IF;
+				Alias_FISType					<= to_slv(SATA_FISTYPE_DATA);
+
+				if (Link_TX_Ack = '1') then
+					NextState 					<= ST_DATA_N;
+				end if;
 
 			WHEN ST_DATA_N =>
 				Link_TX_Data							<= TX_Data;

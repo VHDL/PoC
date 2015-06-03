@@ -365,10 +365,6 @@ BEGIN
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_TRANSMIT_ERROR;
 					NextState													<= ST_ERROR;
-				ELSIF (FISE_Status = SATA_FISE_STATUS_ERROR) THEN
-					Error_en 													<= '1';
-					Error_nxt													<= SATA_TRANS_ERROR_FISENCODER;
-					NextState													<= ST_ERROR;
 				END IF;
 				
 			WHEN ST_CMDCAT_NODATA_AWAIT_FIS =>
@@ -418,10 +414,6 @@ BEGIN
 					-- Retry finally failed.
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_TRANSMIT_ERROR;
-					NextState													<= ST_ERROR;
-				ELSIF (FISE_Status = SATA_FISE_STATUS_ERROR) THEN
-					Error_en 													<= '1';
-					Error_nxt													<= SATA_TRANS_ERROR_FISENCODER;
 					NextState													<= ST_ERROR;
 				END IF;
 			
@@ -672,10 +664,6 @@ BEGIN
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_TRANSMIT_ERROR;
 					NextState													<= ST_ERROR;
-				ELSIF (FISE_Status = SATA_FISE_STATUS_ERROR) THEN
-					Error_en 													<= '1';
-					Error_nxt													<= SATA_TRANS_ERROR_FISENCODER;
-					NextState													<= ST_ERROR;
 				END IF;
 			
 			WHEN ST_CMDCAT_DMAIN_AWAIT_FIS_DATA =>
@@ -796,10 +784,6 @@ BEGIN
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_TRANSMIT_ERROR;
 					NextState													<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER;
-				ELSIF (FISE_Status = SATA_FISE_STATUS_ERROR) THEN
-					Error_en 													<= '1';
-					Error_nxt													<= SATA_TRANS_ERROR_FISENCODER;
-					NextState													<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER;
 				END IF;
 			
 			WHEN ST_CMDCAT_DMAOUT_AWAIT_FIS =>
@@ -867,10 +851,6 @@ BEGIN
 					NextState 												<= ST_CMDCAT_DMAOUT_AWAIT_FIS;
 					TC_DevResponse_Load 							<= '1';
 					TC_DevResponse_Slot 							<= TC_Slot(REG_DEV_HOST_TIMEOUT_SLOT, SATAGeneration);
-				ELSIF (FISE_Status = SATA_FISE_STATUS_ERROR) THEN
-					Error_en 													<= '1';
-					Error_nxt													<= SATA_TRANS_ERROR_FISENCODER;
-					NextState													<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER;
 				elsif (TC_DevResponse_Timeout = '1') then
 					-- TODO (Minor): Cancel transport in FISEncoder (-> SyncEsc in LinkLayer).
 					Error_en 													<= '1';
