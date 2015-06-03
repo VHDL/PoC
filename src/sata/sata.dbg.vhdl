@@ -243,6 +243,12 @@ package satadbg is
 		TX_Phy_CiK									: T_SLV_4;										-- 4 bit
 	end record;		--																							=> 120 bit
 	
+	type T_SATADBG_LINK_IN is record
+		InsertBitErrorHeaderTX			: STD_LOGIC;
+	end record;
+
+	constant C_SATADBG_LINK_IN_EMPTY : T_SATADBG_LINK_IN := (
+		others					=> '0');
 	
 	-- ===========================================================================
 	-- SATA Controller Types
@@ -266,6 +272,7 @@ package satadbg is
 	end record;
 	
 	type T_SATADBG_SATAC_IN is record
+		Link									: T_SATADBG_LINK_IN;
 		Transceiver						: T_SATADBG_TRANSCEIVER_IN;
 	end record;
 
@@ -440,6 +447,7 @@ package satadbg is
 	
 	type T_SATADBG_SATAS_IN is record
 		TransceiverLayer		: T_SATADBG_TRANSCEIVER_IN;
+		LinkLayer						: T_SATADBG_LINK_IN;
 	end record;
 	
 	type T_SATADBG_TRANSCEIVER_OUT_VECTOR		is array (NATURAL range <>)	of T_SATADBG_TRANSCEIVER_OUT;

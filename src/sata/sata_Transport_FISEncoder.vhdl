@@ -11,7 +11,16 @@
 -- Description:
 -- ------------------------------------
 -- See notes on module 'sata_TransportLayer'.
--- 
+--
+-- Status:
+-- -------
+-- *_RESET: 								Phy_Status not yet communicating.
+-- *_IDLE:									Ready to send new FIS.
+-- *_SENDING: 							Sending FIS.
+-- *_SEND_OK:								FIS transmitted and acknowledged with R_OK  by other end.
+-- *_SEND_ERROR:						FIS transmitted and acknowledged with R_ERR by other end.
+-- *_SYNC_ESC:							Sending aborted by SYNC.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -93,7 +102,7 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 	TYPE T_STATE IS (
 		ST_RESET, ST_IDLE,
 		ST_FIS_REG_HOST_DEV_WORD_0, ST_FIS_REG_HOST_DEV_WORD_1,	ST_FIS_REG_HOST_DEV_WORD_2,	ST_FIS_REG_HOST_DEV_WORD_3,	ST_FIS_REG_HOST_DEV_WORD_4,
-		ST_DATA_0, ST_DATA_N, ST_DISCARD_FRAME,
+		ST_DATA_0, ST_DATA_N, ST_ABORT_FRAME,
 		ST_EVALUATE_FRAMESTATE
 	);
 	
@@ -227,8 +236,12 @@ BEGIN
 						
 						Alias_FISType					<= to_slv(SATA_FISTYPE_DATA);
 					
-						NextState							<= ST_DATA_0;
-					
+						if (Link_TX_Ack = '1') then
+							NextState						<= ST_DATA_N;
+						else
+							NextState						<= ST_DATA_0;
+						end if;
+						
 					WHEN OTHERS =>
 						NULL;
 						
@@ -293,33 +306,15 @@ BEGIN
 				END IF;
 				
 			WHEN ST_DATA_0 =>
-				Link_TX_Data							<= TX_Data;
-
-				TX_Ack										<= Link_TX_Ack;
-				TX_InsertEOP							<= Link_TX_InsertEOF;
-				Link_TX_EOF								<= TX_EOP;
-				Link_TX_Valid							<= TX_Valid;
-				
-				IF (TX_Valid = '1') THEN
-					IF (TX_SOP = '1') THEN
-						IF (Link_TX_Ack = '1') THEN
-							NextState						<= ST_DATA_N;
+				-- Send Data FIS Header until Link_TX_Ack.
+				Link_TX_Valid					<= '1';
+				Link_TX_SOF						<= '1';
 						
-							IF (TX_EOP = '1') THEN
-								NextState					<= ST_EVALUATE_FRAMESTATE;
-							END IF;
-						elsif (Link_TX_FS_Valid = '1') then
-							-- LinkLayer does not acknowledge,
-							-- check for SyncEscape by receiver.
-							if (Link_TX_FS_SyncEsc = '1') then
-								NextState 				<= ST_DISCARD_FRAME;
-							end if;
-						END IF;
-					ELSE
-						Status								<= SATA_FISE_STATUS_ERROR;
-						NextState							<= ST_IDLE;
-					END IF;
-				END IF;
+				Alias_FISType					<= to_slv(SATA_FISTYPE_DATA);
+
+				if (Link_TX_Ack = '1') then
+					NextState 					<= ST_DATA_N;
+				end if;
 
 			WHEN ST_DATA_N =>
 				Link_TX_Data							<= TX_Data;
@@ -329,26 +324,22 @@ BEGIN
 				Link_TX_EOF								<= TX_EOP;
 				Link_TX_Valid							<= TX_Valid;
 				
-				IF (TX_Valid = '1') THEN
-					IF (Link_TX_Ack = '1') THEN
-						IF (TX_EOP = '1') THEN
-							NextState						<= ST_EVALUATE_FRAMESTATE;
-						END IF;
-					elsif (Link_TX_FS_Valid = '1') then
-						-- LinkLayer does not acknowledge,
-						-- check for SyncEscape by receiver.
-						if (Link_TX_FS_SyncEsc = '1') then
-							NextState 					<= ST_DISCARD_FRAME;
-						end if;
-					END IF;
-				END IF;
+				if (TX_Valid and Link_TX_Ack and TX_EOP) = '1' then
+					-- Frame transmission complete.
+					NextState 							<= ST_EVALUATE_FRAMESTATE;
+				elsif (Link_TX_FS_Valid and Link_TX_FS_SyncEsc) = '1' then
+					-- LinkLayer requests a SyncEsc.
+					NextState 							<= ST_ABORT_FRAME;
+				end if;
 
-			when ST_DISCARD_FRAME =>
-				TX_Ack 										<= '1';
-				if (TX_Valid = '1') then
-					if (TX_EOP = '1') then
-						NextState						<= ST_EVALUATE_FRAMESTATE;
-					end if;
+			when ST_ABORT_FRAME =>
+				-- Abort frame now. Remaining data is discarded by TransportFSM later.
+				Link_TX_EOF 							<= '1';
+				Link_TX_Valid 						<= '1';
+				
+				if (Link_TX_Ack = '1') then
+					-- accepted by LinkLayer
+					NextState						<= ST_EVALUATE_FRAMESTATE;
 				end if;
 				
 			WHEN ST_EVALUATE_FRAMESTATE =>
@@ -360,12 +351,12 @@ BEGIN
 					elsif (Link_TX_FS_SyncEsc = '1') THEN
 						-- SyncEscape requested by device
 						Link_TX_FS_Ack				<= '1';
-						Status								<= SATA_FISE_STATUS_ERROR;
+						Status								<= SATA_FISE_STATUS_SYNC_ESC;
 						NextState							<= ST_IDLE;
 					ELSE
-						-- CRC error
+						-- R_ERR signaled by other end
 						Link_TX_FS_Ack				<= '1';
-						Status								<= SATA_FISE_STATUS_CRC_ERROR;
+						Status								<= SATA_FISE_STATUS_SEND_ERROR;
 						NextState							<= ST_IDLE;
 					end if;
 				end if;

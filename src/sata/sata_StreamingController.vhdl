@@ -70,6 +70,7 @@ entity sata_StreamingController is
 
 		-- for measurement purposes only
 		Config_BurstSize					: in	T_SLV_16;
+		DriveInformation					: out	T_SATA_DRIVE_INFORMATION;
 		
 		-- ATA Streaming interface
 		Address_AppLB							: in	T_SLV_48;
@@ -95,7 +96,8 @@ entity sata_StreamingController is
 		SATA_Command							: out	T_SATA_SATACONTROLLER_COMMAND;
 		SATA_Status								: in	T_SATA_SATACONTROLLER_STATUS;
 		SATA_Error								: in	T_SATA_SATACONTROLLER_ERROR;
-	
+		SATA_SATAGeneration 			: in  T_SATA_GENERATION;
+		
 		-- TX port
 		SATA_TX_SOF								: out	STD_LOGIC;
 		SATA_TX_EOF								: out	STD_LOGIC;
@@ -144,7 +146,7 @@ architecture rtl of sata_StreamingController is
 	signal Cmd_Status												: T_SATA_CMD_STATUS;
 	signal Cmd_Error												: T_SATA_CMD_ERROR;
 	
-	signal Cmd_DriveInformation							: T_SATA_DRIVE_INFORMATION;
+--	signal Cmd_DriveInformation							: T_SATA_DRIVE_INFORMATION;
 	signal Cmd_ATAHostRegisters							: T_SATA_ATA_HOST_REGISTERS;
 
 	-- TransportLayer
@@ -245,7 +247,7 @@ begin
 		
 			Address_AppLB								=> Address_AppLB,
 			BlockCount_AppLB						=> BlockCount_AppLB,
-			DriveInformation						=> Cmd_DriveInformation,
+			DriveInformation						=> DriveInformation,
 		
 			-- TX path
 			TX_Valid										=> TX_Valid,
@@ -387,8 +389,10 @@ begin
 			RX_EOT											=> Trans_RX_EOT,
 			RX_Ack											=> RX_Glue_Ack,
 			
-			-- SATAController Status
-			Phy_Status									=> SATA_Status.PhysicalLayer,
+			-- SATAController interface
+			SATAGeneration 							=> SATA_SATAGeneration,
+			SATA_Command								=> SATA_Command,
+			SATA_Status									=> SATA_Status,
 			
 			-- TX path
 			Link_TX_Ack									=> SATA_TX_Ack,
@@ -425,12 +429,12 @@ begin
 	-- ===========================================================================
 	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
 	begin
-		DebugPortOut.Command_Command <= Cmd_Command;
-		DebugPortOut.Command_Status  <= Cmd_Status;
-		DebugPortOut.Command_Error   <= Cmd_Error;
+		DebugPortOut.Command_Command		<= Cmd_Command;
+		DebugPortOut.Command_Status			<= Cmd_Status;
+		DebugPortOut.Command_Error			<= Cmd_Error;
 
-		DebugPortOut.Transport_Command <= Trans_Command;
-		DebugPortOut.Transport_Status  <=	Trans_Status;
-		DebugPortOut.Transport_Error   <=	Trans_Error;
+		DebugPortOut.Transport_Command	<= Trans_Command;
+		DebugPortOut.Transport_Status		<=	Trans_Status;
+		DebugPortOut.Transport_Error		<=	Trans_Error;
 	end generate;
 end;

@@ -248,6 +248,7 @@ BEGIN
 		SIGNAL Phy_RX_CharIsK					: T_SLV_4;
 		
 		-- debug ports
+		SIGNAL Link_DebugPortIn				: T_SATADBG_LINK_IN;
 		SIGNAL Link_DebugPortOut			: T_SATADBG_LINK_OUT;
 		SIGNAL Phy_DebugPortOut				: T_SATADBG_PHYSICAL_OUT;
 		
@@ -345,6 +346,7 @@ BEGIN
 				Error										=> Link_Error,
 				
 				-- Debug ports
+				DebugPortIn						 	=> Link_DebugPortIn,
 				DebugPortOut					 	=> Link_DebugPortOut,
 				
 				-- TX port
@@ -459,6 +461,8 @@ BEGIN
 		-- =========================================================================
 		genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
 			-- Link Layer
+			Link_DebugPortIn											<= DebugPortIn(i).Link;
+			
 			DebugPortOut(i).Link									<= Link_DebugPortOut;				-- RX: 125 + TX: 120 bit
 			DebugPortOut(i).Link_Command					<= Link_Command;						-- 1 bit
 			DebugPortOut(i).Link_Status						<= Link_Status;							-- 3 bit
@@ -480,6 +484,7 @@ BEGIN
 
 		end generate;
 		genNoDebugPort : if not(ENABLE_DEBUGPORT = TRUE) generate
+			Link_DebugPortIn											<= C_SATADBG_LINK_IN_EMPTY;
 			Trans_DebugPortIn(i)									<= C_SATADBG_TRANSCEIVER_IN_EMPTY;
 		end generate;
 	end generate;

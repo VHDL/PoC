@@ -326,12 +326,11 @@ package sata is
 	
 	type T_SATA_TRANS_ERROR is (
 		SATA_TRANS_ERROR_NONE,
-		SATA_TRANS_ERROR_FISENCODER,
 		SATA_TRANS_ERROR_FISDECODER,
 		SATA_TRANS_ERROR_TRANSMIT_ERROR,
 		SATA_TRANS_ERROR_RECEIVE_ERROR,
 		SATA_TRANS_ERROR_DEVICE_ERROR,
-		SATA_TRANS_ERROR_INCOMPLETE,
+		SATA_TRANS_ERROR_TIMEOUT,
 		SATA_TRANS_ERROR_FSM												-- ILLEGAL_TRANSITION
 	);
 
@@ -366,10 +365,9 @@ package sata is
 		SATA_FISE_STATUS_RESET,
 		SATA_FISE_STATUS_IDLE,
 		SATA_FISE_STATUS_SENDING,
-		SATA_FISE_STATUS_SENDING_DISCONTINUED,
 		SATA_FISE_STATUS_SEND_OK,
-		SATA_FISE_STATUS_ERROR,
-		SATA_FISE_STATUS_CRC_ERROR
+		SATA_FISE_STATUS_SEND_ERROR,
+		SATA_FISE_STATUS_SYNC_ESC
 	);
 	
 	type T_SATA_FISDECODER_STATUS is (
@@ -521,9 +519,9 @@ package sata is
 	END RECORD;
 	
 	type T_SATA_SATA_CAPABILITY IS RECORD
-		SupportsNCQ								: STD_LOGIC;
 		SATAGenerationMin					: T_SATA_GENERATION;
 		SATAGenerationMax					: T_SATA_GENERATION;
+		SupportsNCQ								: STD_LOGIC;
 	END RECORD;
 	
 	type T_SATA_DRIVE_INFORMATION IS RECORD
@@ -545,15 +543,17 @@ package sata is
 	function to_slv(reg : T_SATA_ATA_DEVICE_FLAGS)						return STD_LOGIC_VECTOR;
 	function to_slv(reg : T_SATA_ATA_DEVICE_REGISTER_STATUS)	return STD_LOGIC_VECTOR;
 	function to_slv(reg	: T_SATA_ATA_DEVICE_REGISTER_ERROR)		return STD_LOGIC_VECTOR;
+	function to_slv(reg	: T_SATA_ATA_CAPABILITY)							return STD_LOGIC_VECTOR;
+	function to_slv(reg	: T_SATA_SATA_CAPABILITY)							return STD_LOGIC_VECTOR;
 	
 	function to_sata_generation(slv : STD_LOGIC_VECTOR)	return T_SATA_GENERATION;
-	FUNCTION to_sata_fistype(slv : T_SLV_8; valid : STD_LOGIC := '1') return T_SATA_FISTYPE;
-	FUNCTION to_sata_ata_command(slv : T_SLV_8) return T_SATA_ATA_COMMAND;
-	FUNCTION to_sata_cmdcat(cmd : T_SATA_ATA_COMMAND) return T_SATA_COMMAND_CATEGORY;
-	FUNCTION is_lba48_command(cmd : T_SATA_ATA_COMMAND) return STD_LOGIC;
-	FUNCTION to_sata_ata_device_flags(slv : T_SLV_8) return T_SATA_ATA_DEVICE_FLAGS;
-	FUNCTION to_sata_ata_device_register_status(slv : T_SLV_8) return T_SATA_ATA_DEVICE_REGISTER_STATUS;
-	FUNCTION to_sata_ata_device_register_error(slv : T_SLV_8) return T_SATA_ATA_DEVICE_REGISTER_ERROR;
+	function to_sata_fistype(slv : T_SLV_8; valid : STD_LOGIC := '1') return T_SATA_FISTYPE;
+	function to_sata_ata_command(slv : T_SLV_8) return T_SATA_ATA_COMMAND;
+	function to_sata_cmdcat(cmd : T_SATA_ATA_COMMAND) return T_SATA_COMMAND_CATEGORY;
+	function is_lba48_command(cmd : T_SATA_ATA_COMMAND) return STD_LOGIC;
+	function to_sata_ata_device_flags(slv : T_SLV_8) return T_SATA_ATA_DEVICE_FLAGS;
+	function to_sata_ata_device_register_status(slv : T_SLV_8) return T_SATA_ATA_DEVICE_REGISTER_STATUS;
+	function to_sata_ata_device_register_error(slv : T_SLV_8) return T_SATA_ATA_DEVICE_REGISTER_ERROR;
 
 END;
 
@@ -869,7 +869,6 @@ PACKAGE BODY sata IS
 		Result.DeviceFault		:= slv(5);
 		Result.DataReady			:= slv(6);
 		Result.Busy						:= slv(7);
-		
 		return Result;
 	end function;
 	
@@ -881,7 +880,6 @@ PACKAGE BODY sata IS
 		Result(5)							:= reg.DeviceFault;
 		Result(6)							:= reg.DataReady;
 		Result(7)							:= reg.Busy;
-		
 		return Result;
 	end function;
 	
@@ -895,7 +893,6 @@ PACKAGE BODY sata IS
 		Result.MediaChange					:= slv(5);
 		Result.UncorrectableError		:= slv(6);
 		Result.InterfaceCRCError		:= slv(7);
-		
 		return Result;
 	end function;
 	
@@ -909,7 +906,27 @@ PACKAGE BODY sata IS
 		Result(5)										:= reg.MediaChange;
 		Result(6)										:= reg.UncorrectableError;
 		Result(7)										:= reg.InterfaceCRCError;
-		
+		return Result;
+	end function;
+	
+	function to_slv(reg	: T_SATA_ATA_CAPABILITY) return STD_LOGIC_VECTOR is
+		variable Result							: T_SLV_8			:= (others => '0');
+	begin
+		Result(0)										:= reg.SupportsDMA;
+		Result(1)										:= reg.SupportsLBA;
+		Result(2)										:= reg.Supports48BitLBA;
+		Result(3)										:= reg.SupportsSMART;
+		Result(4)										:= reg.SupportsFLUSH_CACHE;
+		Result(5)										:= reg.SupportsFLUSH_CACHE_EXT;
+		return Result;
+	end function;
+	
+	function to_slv(reg	: T_SATA_SATA_CAPABILITY) return STD_LOGIC_VECTOR is
+		variable Result							: T_SLV_8			:= (others => '0');
+	begin
+		Result(1 downto 0)					:= to_slv(reg.SATAGenerationMin, 2);
+		Result(3 downto 2)					:= to_slv(reg.SATAGenerationMax, 2);
+		Result(4)										:= reg.SupportsNCQ;
 		return Result;
 	end function;
 	
@@ -919,7 +936,6 @@ PACKAGE BODY sata IS
 		Result.Direction						:= slv(5);
 		Result.Interrupt						:= slv(6);
 		Result.C										:= slv(7);
-		
 		return Result;
 	end function;
 	
@@ -929,8 +945,6 @@ PACKAGE BODY sata IS
 		Result(5)										:= reg.Direction;
 		Result(6)										:= reg.Interrupt;
 		Result(7)										:= reg.C;
-		
 		return Result;
 	end function;
-
 end package body;
