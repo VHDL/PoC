@@ -116,6 +116,7 @@ ARCHITECTURE rtl OF sata_CommandFSM IS
 		ST_WRITE_1_WAIT,	ST_WRITE_F_WAIT,	ST_WRITE_N_WAIT,	ST_WRITE_L_WAIT,
 		ST_WRITE_ABORT_TRANSFER, ST_WRITE_DISCARD_REQUEST, ST_WRITE_WAIT_IDLE,
 		ST_FLUSH_CACHE_WAIT,
+		ST_DEVICE_RESET_WAIT,
 		ST_ERROR
 	);
 	
@@ -241,9 +242,6 @@ BEGIN
 				CASE Command IS
 					WHEN SATA_CMD_CMD_NONE =>
 						NULL;
-						
-					WHEN SATA_CMD_CMD_RESET =>
-						NULL;
 					
 					WHEN SATA_CMD_CMD_IDENTIFY_DEVICE =>
 						-- TransportLayer
@@ -298,29 +296,35 @@ BEGIN
 							NextState															<= ST_WRITE_1_WAIT;
 						END IF;
 
-					WHEN SATA_CMD_CMD_FLUSH_CACHE =>
-						IF (IDF_DriveInformation.Valid = '0') THEN
-							Status																<= SATA_CMD_STATUS_INITIALIZING;
-						ELSE
-							Status																<= SATA_CMD_STATUS_EXECUTING;
-						END IF;
-						
+					when SATA_CMD_CMD_FLUSH_CACHE =>
 						-- TransportLayer
 						Trans_Command_i													<= SATA_TRANS_CMD_TRANSFER;
 						Trans_ATAHostRegisters.Flag_C						<= '1';
 						Trans_ATAHostRegisters.Command					<= to_slv(SATA_ATA_CMD_FLUSH_CACHE_EXT);	-- Command register
-						Trans_ATAHostRegisters.Control					<= (OTHERS => '0');												-- Control register
-						Trans_ATAHostRegisters.Feature					<= (OTHERS => '0');												-- Feature register
-						Trans_ATAHostRegisters.LBlockAddress		<= (OTHERS => '0');												-- logical block address (LBA)
-						Trans_ATAHostRegisters.SectorCount			<= (OTHERS => '0');												-- 
+						Trans_ATAHostRegisters.Control					<= (others => '0');												-- Control register
+						Trans_ATAHostRegisters.Feature					<= (others => '0');												-- Feature register
+						Trans_ATAHostRegisters.LBlockAddress		<= (others => '0');												-- logical block address (LBA)
+						Trans_ATAHostRegisters.SectorCount			<= (others => '0');												-- 
 			
 						NextState																<= ST_FLUSH_CACHE_WAIT;
 						
-					WHEN OTHERS =>
+					when SATA_CMD_CMD_DEVICE_RESET =>
+						-- TransportLayer
+						Trans_Command_i													<= SATA_TRANS_CMD_TRANSFER;
+						Trans_ATAHostRegisters.Flag_C						<= '1';
+						Trans_ATAHostRegisters.Command					<= to_slv(SATA_ATA_CMD_FLUSH_CACHE_EXT);	-- Command register
+						Trans_ATAHostRegisters.Control					<= (others => '0');												-- Control register
+						Trans_ATAHostRegisters.Feature					<= (others => '0');												-- Feature register
+						Trans_ATAHostRegisters.LBlockAddress		<= (others => '0');												-- logical block address (LBA)
+						Trans_ATAHostRegisters.SectorCount			<= (others => '0');												-- 
+			
+						NextState																<= ST_DEVICE_RESET_WAIT;
+						
+					when others =>
 						Error_nxt																<= SATA_CMD_ERROR_FSM;
 						NextState																<= ST_ERROR;
 
-				END CASE;
+				end case;
 			
 			WHEN ST_IDENTIFY_DEVICE_WAIT =>
 				IF (IDF_DriveInformation.Valid = '0') THEN
@@ -590,6 +594,18 @@ BEGIN
 			-- ATA command: ATA_CMD_CMD_FLUSH_CACHE
 			-- ============================================================
 			WHEN ST_FLUSH_CACHE_WAIT =>
+				Status																	<= SATA_CMD_STATUS_EXECUTING;
+				
+				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
+					NULL;
+				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
+					NextState															<= ST_IDLE;
+				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					NextState															<= ST_ERROR;
+				END IF;
+				
+			WHEN ST_DEVICE_RESET_WAIT =>
 				Status																	<= SATA_CMD_STATUS_EXECUTING;
 				
 				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
