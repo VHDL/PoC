@@ -5,7 +5,7 @@
 -------------------------------------------------------------------------------
 -- Authors:      Patrick Lehmann
 --
--- Description:  Testbench for stat_Maximum.
+-- Description:  Testbench for stat_Average.
 --
 -------------------------------------------------------------------------------
 -- Copyright 2007-2015 Technische Universität Dresden - Germany
@@ -33,11 +33,11 @@ use			poC.utils.all;
 use			poC.vectors.all;
 
 
-entity stat_Maximum_tb is
+entity stat_Average_tb is
 end entity;
 
 
-architecture tb of stat_Maximum_tb is
+architecture tb of stat_Average_tb is
 
   -- component generics
   constant VALUES : T_NATVEC := (
@@ -76,26 +76,25 @@ architecture tb of stat_Maximum_tb is
 	);
 
 	type T_RESULT is record
-		Maximum			: NATURAL;
+		Minimum			: NATURAL;
 		Count				: POSITIVE;
 	end record;
 	
 	type T_RESULT_VECTOR	is array(NATURAL range <>) of T_RESULT;
 	
 	constant RESULT				: T_RESULT_VECTOR		:= (
-		(Maximum => 249,	Count => 2),
-		(Maximum => 248,	Count => 1),
-		(Maximum => 247,	Count => 2),
-		(Maximum => 246,	Count => 1),
-		(Maximum => 244,	Count => 2),
-		(Maximum => 243,	Count => 3),
-		(Maximum => 242,	Count => 3),
-		(Maximum => 240,	Count => 2)
+		(Minimum => 3,	Count => 1),
+		(Minimum => 5,	Count => 3),
+		(Minimum => 7,	Count => 6),
+		(Minimum => 9,	Count => 1),
+		(Minimum => 10,	Count => 4),
+		(Minimum => 11,	Count => 2),
+		(Minimum => 12,	Count => 7),
+		(Minimum => 13,	Count => 3)
 	);
 	
-	constant DEPTH				: POSITIVE		:= RESULT'length;
 	constant DATA_BITS		: POSITIVE		:= 8;
-	constant COUNTER_BITS	: POSITIVE		:= 4;
+	constant COUNTER_BITS	: POSITIVE		:= 16;
 	
   -- component ports
   signal Clock		: STD_LOGIC		:= '1';
@@ -104,19 +103,16 @@ architecture tb of stat_Maximum_tb is
   signal Enable		: STD_LOGIC		:= '0';
   signal DataIn		: STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
 
-	signal Valids		: STD_LOGIC_VECTOR(DEPTH - 1 downto 0);
-	signal Maximums	: T_SLM(DEPTH - 1 downto 0, DATA_BITS - 1 downto 0);
-	signal Counts		: T_SLM(DEPTH - 1 downto 0, COUNTER_BITS - 1 downto 0);
-	
-	signal Maximums_slvv	: T_SLVV_8(DEPTH - 1 downto 0);
-	signal Counts_slvv		: T_SLVV_4(DEPTH - 1 downto 0);
+	signal Count		: STD_LOGIC_VECTOR(COUNTER_BITS - 1 downto 0);
+	signal Sum			: STD_LOGIC_VECTOR(COUNTER_BITS - 1 downto 0);
+	signal Average	: STD_LOGIC_VECTOR(COUNTER_BITS - 1 downto 0);
+	signal Valid		: STD_LOGIC;
 	
 begin
   
   -- component instantiation
-  DUT: entity PoC.stat_Maximum
+  DUT: entity PoC.stat_Average
     generic map (
-      DEPTH					=> DEPTH,
 			DATA_BITS			=> DATA_BITS,
 			COUNTER_BITS	=> COUNTER_BITS
     )
@@ -127,20 +123,18 @@ begin
 			Enable		=> Enable,
 			DataIn		=> DataIn,
 			
-			Valids		=> Valids,
-			Maximums	=> Maximums,
-			Counts		=> Counts
+			Count			=> Count,
+			Sum				=> Sum,
+			Average		=> Average,
+			Valid			=> Valid
     );
 
-	Maximums_slvv	<= to_slvv_8(Maximums);
-	Counts_slvv		<= to_slvv_4(Counts);
-		
 	process
 		procedure cycle is
 		begin
-			Clock	<= '1';
+			Clock	<= '0';
 			wait for 5 ns;
-			Clock <= '0';
+			Clock <= '1';
 			wait for 5 ns;
 		end cycle;
 
@@ -164,10 +158,10 @@ begin
 		cycle;
 		
 		-- test result after all cycles
-		good := (slv_and(Valids) = '1');
-		for i in RESULT'range loop
-			good	:= good and (RESULT(i).Maximum = unsigned(Maximums_slvv(i))) and (RESULT(i).Count = unsigned(Counts_slvv(i)));
-		end loop;
+--		good := (slv_and(Valids) = '1');
+--		for i in RESULT'range loop
+--			good	:= good and (RESULT(i).Minimum = unsigned(Minimums_slvv(i))) and (RESULT(i).Count = unsigned(Counts_slvv(i)));
+--		end loop;
 		
 		assert (good = TRUE)
 			report "Test failed."
