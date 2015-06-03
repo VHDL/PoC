@@ -10,7 +10,9 @@
 --
 -- Description:
 -- ------------------------------------
--- For input 'MyReset' see module 'sata_LinkLayer'.
+-- See notes on module 'sata_LinkLayer'.
+--
+-- For input 'MyReset' see assignment in module 'sata_LinkLayer'.
 -- 
 -- License:
 -- =============================================================================
@@ -154,6 +156,7 @@ ARCHITECTURE rtl OF sata_LinkLayerFSM IS
 		ST_TX_SEND_CRC,
 		ST_TX_SEND_EOF,
 		ST_TX_WAIT,
+		ST_TX_DISCARD_FRAME,
 
 		-- receiving
 		ST_RX_WAIT_FIFO,
@@ -416,10 +419,6 @@ BEGIN
 				IF (InsertALIGN = '1') THEN
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					
-					if (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) then
-						NextState									<= ST_TX_SEND_CRC;
-					end if;
-
 					-- Receiving HOLD and SYNC is handled after InsertAlign is low again.
 
 				ELSE	-- InsertALIGN
@@ -435,7 +434,7 @@ BEGIN
 								TX_Primitive					<= SATA_PRIMITIVE_SYNC;
 								TX_FSFIFO_put 				<= '1';
 								Trans_TXFS_SyncEsc		<= '1';
-								NextState 						<= ST_IDLE;
+								NextState 						<= ST_TX_DISCARD_FRAME;
 							else 																											-- send CRC
 								NextState							<= ST_TX_SEND_CRC;
 							end if;
@@ -446,8 +445,6 @@ BEGIN
 								TX_CRC_Valid					<= '0';
 								DataScrambler_en			<= '0';
 								NextState							<= ST_TX_RECEIVED_HOLD;
-							ELSIF (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) THEN				-- insert CRC32	after this data word
-								NextState							<= ST_TX_SEND_CRC;
 							elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then 					-- abort
 								-- SyncEscape by receiver.
 								TX_Primitive					<= SATA_PRIMITIVE_SYNC;
@@ -462,7 +459,7 @@ BEGIN
 							TX_Primitive						<= SATA_PRIMITIVE_SYNC;
 							TX_FSFIFO_put 					<= '1';
 							Trans_TXFS_SyncEsc			<= '1';
-							NextState 							<= ST_IDLE;
+							NextState 							<= ST_TX_DISCARD_FRAME;
 						else
 							TX_Primitive						<= SATA_PRIMITIVE_HOLD;
 							NextState								<= ST_TX_SEND_HOLD;
@@ -477,10 +474,6 @@ BEGIN
 				IF (InsertAlign = '1') THEN
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					
-					if (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) then
-						NextState									<= ST_TX_SEND_CRC;
-					end if;
-
 					-- Receiving HOLD and SYNC is handled after InsertAlign is low again.
 
 				ELSE	-- InsertAlign
@@ -496,7 +489,7 @@ BEGIN
 								TX_Primitive					<= SATA_PRIMITIVE_SYNC;
 								TX_FSFIFO_put 				<= '1';
 								Trans_TXFS_SyncEsc		<= '1';
-								NextState 						<= ST_IDLE;
+								NextState 						<= ST_TX_DISCARD_FRAME;
 							else
 								NextState							<= ST_TX_SEND_CRC;
 							END IF;
@@ -507,14 +500,12 @@ BEGIN
 								TX_CRC_Valid					<= '0';
 								DataScrambler_en			<= '0';
 								NextState							<= ST_TX_RECEIVED_HOLD;
-							ELSIF (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) THEN				-- insert CRC32	after this data word
-								NextState							<= ST_TX_SEND_CRC;
 							elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then 					-- abort
 								-- SyncEscape by receiver.
 								TX_Primitive					<= SATA_PRIMITIVE_SYNC;
 								TX_FSFIFO_put 				<= '1';
 								Trans_TXFS_SyncEsc		<= '1';
-								NextState 						<= ST_IDLE;
+								NextState 						<= ST_TX_DISCARD_FRAME;
 							END IF;
 						END IF;
 					ELSE																													-- empty FIFO => insert HOLD
@@ -523,10 +514,7 @@ BEGIN
 							TX_Primitive						<= SATA_PRIMITIVE_SYNC;
 							TX_FSFIFO_put 					<= '1';
 							Trans_TXFS_SyncEsc			<= '1';
-							NextState 							<= ST_IDLE;
-						elsif (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) then				-- insert CRC32	after HOLD
-							TX_Primitive						<= SATA_PRIMITIVE_HOLD;
-							NextState								<= ST_TX_SEND_CRC;
+							NextState 							<= ST_TX_DISCARD_FRAME;
 						else
 							TX_Primitive						<= SATA_PRIMITIVE_HOLD;
 						end if;
@@ -541,10 +529,6 @@ BEGIN
 				IF (InsertAlign = '1') THEN
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					
-					if (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) then
-						NextState									<= ST_TX_SEND_CRC;
-					end if;
-
 					-- Receiving HOLD and SYNC is handled after InsertAlign is low again.
 					
 				ELSE	-- InsertAlign
@@ -553,14 +537,12 @@ BEGIN
 					if ((RX_Primitive = SATA_PRIMITIVE_HOLD) or
 							(RX_Primitive = SATA_PRIMITIVE_ALIGN))	then
 						NULL;
-					elsif (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) then						-- insert CRC32	after HOLDA
-						NextState									<= ST_TX_SEND_CRC;
 					elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then 							-- abort
 						-- SyncEscape by receiver.
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
 						TX_FSFIFO_put 						<= '1';
 						Trans_TXFS_SyncEsc				<= '1';
-						NextState 								<= ST_IDLE;
+						NextState 								<= ST_TX_DISCARD_FRAME;
 					else 																													-- resume sending data
 						TX_Primitive							<= SATA_PRIMITIVE_NONE;
 						TX_FIFO_got								<= '1';
@@ -588,7 +570,7 @@ BEGIN
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
 						TX_FSFIFO_put 						<= '1';
 						Trans_TXFS_SyncEsc				<= '1';
-						NextState 								<= ST_IDLE;
+						NextState 								<= ST_IDLE;  -- EOF already seen.
 					else
 						TX_Primitive							<= SATA_PRIMITIVE_NONE;
 						CRCMux_ctrl								<= '1';
@@ -611,7 +593,7 @@ BEGIN
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
 						TX_FSFIFO_put 						<= '1';
 						Trans_TXFS_SyncEsc				<= '1';
-						NextState 								<= ST_IDLE;
+						NextState 								<= ST_IDLE;  -- EOF already seen.
 					else
 						TX_Primitive							<= SATA_PRIMITIVE_EOF;
 						NextState									<= ST_TX_WAIT;
@@ -643,10 +625,23 @@ BEGIN
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
 						TX_FSFIFO_put 						<= '1';
 						Trans_TXFS_SyncEsc				<= '1';
-						NextState 								<= ST_IDLE;
+						NextState 								<= ST_IDLE;  -- EOF already seen.
 					END IF;
 				END IF;
 
+			when ST_TX_DISCARD_FRAME =>
+				-- SyncEsc requested. Discard remaining frame.
+				if (InsertAlign = '1') then
+					TX_Primitive 								<= SATA_PRIMITIVE_ALIGN;
+				else
+					TX_Primitive									<= SATA_PRIMITIVE_SYNC;
+				end if;
+				
+				TX_FIFO_got										<= '1';
+				if (Trans_TX_EOF = '1') then																-- last payload word in frame
+					NextState 									<= ST_IDLE;
+				end if;
+				
 				-- ----------------------------------------------------------
 				-- receiving
 				-- ----------------------------------------------------------

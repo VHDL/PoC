@@ -104,7 +104,7 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 	TYPE T_STATE IS (
 		ST_RESET, ST_IDLE,
 		ST_FIS_REG_HOST_DEV_WORD_0, ST_FIS_REG_HOST_DEV_WORD_1,	ST_FIS_REG_HOST_DEV_WORD_2,	ST_FIS_REG_HOST_DEV_WORD_3,	ST_FIS_REG_HOST_DEV_WORD_4,
-		ST_DATA_0, ST_DATA_N, ST_DISCARD_FRAME,
+		ST_DATA_0, ST_DATA_N, ST_ABORT_FRAME,
 		ST_EVALUATE_FRAMESTATE
 	);
 	
@@ -314,22 +314,24 @@ BEGIN
 				IF (TX_Valid = '1') THEN
 					IF (TX_SOP = '1') THEN
 						IF (Link_TX_Ack = '1') THEN
+							-- SyncEsc handled later
 							NextState						<= ST_DATA_N;
 						
 							IF (TX_EOP = '1') THEN
 								NextState					<= ST_EVALUATE_FRAMESTATE;
 							END IF;
-						elsif (Link_TX_FS_Valid = '1') then
+						elsif (Link_TX_FS_Valid = '1') and (Link_TX_FS_SyncEsc = '1') then
 							-- LinkLayer does not acknowledge,
 							-- check for SyncEscape by receiver.
-							if (Link_TX_FS_SyncEsc = '1') then
-								NextState 				<= ST_DISCARD_FRAME;
-							end if;
+							NextState 					<= ST_ABORT_FRAME;
 						END IF;
 					ELSE
 						Status								<= SATA_FISE_STATUS_ERROR;
 						NextState							<= ST_IDLE;
 					END IF;
+				elsif (Link_TX_FS_Valid = '1') and (Link_TX_FS_SyncEsc = '1') then
+					-- Data not ready, check for SyncEscape by receiver.
+					NextState 							<= ST_ABORT_FRAME;
 				END IF;
 
 			WHEN ST_DATA_N =>
@@ -340,26 +342,22 @@ BEGIN
 				Link_TX_EOF								<= TX_EOP;
 				Link_TX_Valid							<= TX_Valid;
 				
-				IF (TX_Valid = '1') THEN
-					IF (Link_TX_Ack = '1') THEN
-						IF (TX_EOP = '1') THEN
-							NextState						<= ST_EVALUATE_FRAMESTATE;
-						END IF;
-					elsif (Link_TX_FS_Valid = '1') then
-						-- LinkLayer does not acknowledge,
-						-- check for SyncEscape by receiver.
-						if (Link_TX_FS_SyncEsc = '1') then
-							NextState 					<= ST_DISCARD_FRAME;
-						end if;
-					END IF;
-				END IF;
+				if (TX_Valid and Link_TX_Ack and TX_EOP) = '1' then
+					-- Frame transmission complete.
+					NextState 							<= ST_EVALUATE_FRAMESTATE;
+				elsif (Link_TX_FS_Valid and Link_TX_FS_SyncEsc) = '1' then
+					-- LinkLayer requests a SyncEsc.
+					NextState 							<= ST_ABORT_FRAME;
+				end if;
 
-			when ST_DISCARD_FRAME =>
-				TX_Ack 										<= '1';
-				if (TX_Valid = '1') then
-					if (TX_EOP = '1') then
-						NextState						<= ST_EVALUATE_FRAMESTATE;
-					end if;
+			when ST_ABORT_FRAME =>
+				-- Abort frame now. Remaining data is discarded by TransportFSM later.
+				Link_TX_EOF 							<= '1';
+				Link_TX_Valid 						<= '1';
+				
+				if (Link_TX_Ack = '1') then
+					-- accepted by LinkLayer
+					NextState						<= ST_EVALUATE_FRAMESTATE;
 				end if;
 				
 			WHEN ST_EVALUATE_FRAMESTATE =>

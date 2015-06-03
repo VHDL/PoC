@@ -84,7 +84,7 @@ use			PoC.satadbg.all;
 
 entity sata_TransportLayer is
   generic (
-		REG_DEV_HOST_TIMEOUT 						: TIME 							:= 10 ms;
+		REG_DEV_HOST_TIMEOUT 						: TIME 							:= 1 sec;
 		DEV_DATA_RDY_TIMEOUT 						: TIME 							:= 1 sec;
 		DEV_RCV_DATA_TIMEOUT 						: TIME 							:= 1 sec;
 		DEBUG														: BOOLEAN						:= FALSE;					-- generate ChipScope DBG_* signals
@@ -121,6 +121,7 @@ entity sata_TransportLayer is
 		RX_Valid											: OUT	STD_LOGIC;
 	
 		-- SATAController Status
+		SATAGeneration 								: in 	T_SATA_GENERATION;
 		SATA_Command									: out	T_SATA_SATACONTROLLER_COMMAND;
 		SATA_Status										: in	T_SATA_SATACONTROLLER_STATUS;
 		
@@ -257,6 +258,7 @@ begin
 			
 			-- SATAController Status
 			Phy_Status 												=> SATA_Status.PhysicalLayer,
+			SATAGeneration 										=> SATAGeneration,
 
 			-- FISDecoder interface
 			FISD_FISType											=> FISD_FISType,

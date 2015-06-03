@@ -96,7 +96,8 @@ entity sata_StreamingController is
 		SATA_Command							: out	T_SATA_SATACONTROLLER_COMMAND;
 		SATA_Status								: in	T_SATA_SATACONTROLLER_STATUS;
 		SATA_Error								: in	T_SATA_SATACONTROLLER_ERROR;
-	
+		SATA_SATAGeneration 			: in  T_SATA_GENERATION;
+		
 		-- TX port
 		SATA_TX_SOF								: out	STD_LOGIC;
 		SATA_TX_EOF								: out	STD_LOGIC;
@@ -389,6 +390,7 @@ begin
 			RX_Ack											=> RX_Glue_Ack,
 			
 			-- SATAController interface
+			SATAGeneration 							=> SATA_SATAGeneration,
 			SATA_Command								=> SATA_Command,
 			SATA_Status									=> SATA_Status,
 			
