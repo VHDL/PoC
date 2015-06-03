@@ -95,16 +95,16 @@ architecture tb of stat_Minimum_tb is
 	
 	constant DEPTH				: POSITIVE		:= RESULT'length;
 	constant DATA_BITS		: POSITIVE		:= 8;
-	constant COUNTER_BITS	: POSITIVE		:= 4;
+	constant COUNTER_BITS	: POSITIVE		:= 16;
 	
   -- component ports
-  signal Clock		: std_logic		:= '1';
-  signal Reset		: std_logic		:= '0';
+  signal Clock		: STD_LOGIC		:= '1';
+  signal Reset		: STD_LOGIC		:= '0';
 	
-  signal Enable		: std_logic		:= '0';
-  signal DataIn		: std_logic_vector(DATA_BITS - 1 downto 0);
+  signal Enable		: STD_LOGIC		:= '0';
+  signal DataIn		: STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
 
-	signal Valids		: std_logic_vector(DEPTH - 1 downto 0);
+	signal Valids		: STD_LOGIC_VECTOR(DEPTH - 1 downto 0);
 	signal Minimums	: T_SLM(DEPTH - 1 downto 0, DATA_BITS - 1 downto 0);
 	signal Counts		: T_SLM(DEPTH - 1 downto 0, COUNTER_BITS - 1 downto 0);
 	
