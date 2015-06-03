@@ -72,6 +72,7 @@ entity sata_LinkLayer is
 		Error										: out	T_SATA_LINK_ERROR;
 
 		-- Debug ports
+		DebugPortIn						 	: in  T_SATADBG_LINK_IN;
 		DebugPortOut					 	: out T_SATADBG_LINK_OUT;
 		
 		-- TX port
@@ -650,9 +651,20 @@ begin
 --			DataIn									=> DummyScrambler_DataIn,
 --			DataOut									=> DummyScrambler_DataOut
 --		);
-	
-	PM_DataIn <= DataScrambler_DataOut;-- WHEN (ScramblerMux_ctrl = '0') ELSE DummyScrambler_DataOut;
 
+	genBitError : if (ENABLE_DEBUGPORT = TRUE) generate
+		signal data : STD_LOGIC_VECTOR(31 downto 0);
+	begin
+		data <= DataScrambler_DataOut;-- WHEN (ScramblerMux_ctrl = '0') ELSE DummyScrambler_DataOut;
+		PM_DataIn(31 downto 1) 	<= data(31 downto 1);
+		PM_DataIn(0) 						<= mux(DebugPortIn.InsertBitErrorHeaderTX and Trans_TX_SOF, -- only for FIS Header
+																	 data(0), not data(0));
+	end generate;
+	
+	genNoBitError : if not(ENABLE_DEBUGPORT = TRUE) generate
+		PM_DataIn <= DataScrambler_DataOut;-- WHEN (ScramblerMux_ctrl = '0') ELSE DummyScrambler_DataOut;
+	end generate;
+	
 	-- RX path
 	DataUnscrambler : entity PoC.sata_Scrambler
 		generic map (
