@@ -47,7 +47,7 @@ use			PoC.satadbg.all;
 
 ENTITY sata_TransportFSM IS
   GENERIC (
-		REG_DEV_HOST_TIMEOUT 							: TIME 												:= 1 ms;
+		REG_DEV_HOST_TIMEOUT 							: TIME 												:= 10 ms;
 		DEV_DATA_RDY_TIMEOUT 							: TIME 												:= 1 sec;
 		DEV_RCV_DATA_TIMEOUT 							: TIME 												:= 1 sec;
 		DEBUG															: BOOLEAN											:= FALSE;
@@ -352,7 +352,7 @@ BEGIN
 			WHEN ST_CMDCAT_NODATA_SEND_REGISTER_WAIT =>
 				IF (FISE_Status = SATA_FISE_STATUS_SEND_OK) THEN
 					NextState													<= ST_CMDCAT_NODATA_AWAIT_FIS;
-				ELSIF (FISE_Status = SATA_FISE_STATUS_CRC_ERROR) THEN
+				ELSIF (FISE_Status = SATA_FISE_STATUS_SEND_ERROR) THEN
 					-- Retry finally failed.
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_TRANSMIT_ERROR;
@@ -406,7 +406,7 @@ BEGIN
 			WHEN ST_CMDCAT_PIOIN_SEND_REGISTER_WAIT =>
 				IF (FISE_Status = SATA_FISE_STATUS_SEND_OK) THEN
 					NextState													<= ST_CMDCAT_PIOIN_AWAIT_PIO_SETUP_F;
-				ELSIF (FISE_Status = SATA_FISE_STATUS_CRC_ERROR) THEN
+				ELSIF (FISE_Status = SATA_FISE_STATUS_SEND_ERROR) THEN
 					-- Retry finally failed.
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_TRANSMIT_ERROR;
@@ -659,7 +659,7 @@ BEGIN
 			WHEN ST_CMDCAT_DMAIN_SEND_REGISTER_WAIT =>
 				IF (FISE_Status = SATA_FISE_STATUS_SEND_OK) THEN
 					NextState													<= ST_CMDCAT_DMAIN_AWAIT_FIS_DATA;
-				ELSIF (FISE_Status = SATA_FISE_STATUS_CRC_ERROR) THEN
+				ELSIF (FISE_Status = SATA_FISE_STATUS_SEND_ERROR) THEN
 					-- Retry finally failed.
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_TRANSMIT_ERROR;
@@ -783,7 +783,7 @@ BEGIN
 					NextState													<= ST_CMDCAT_DMAOUT_AWAIT_FIS;
 					TC_DevResponse_Load 							<= '1';
 					TC_DevResponse_Slot 							<= DEV_RCV_DATA_TIMEOUT_SLOT;
-				ELSIF (FISE_Status = SATA_FISE_STATUS_CRC_ERROR) THEN
+				ELSIF (FISE_Status = SATA_FISE_STATUS_SEND_ERROR) THEN
 					-- Retry finally failed.
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_TRANSMIT_ERROR;
@@ -847,8 +847,14 @@ BEGIN
 					NextState													<= ST_CMDCAT_DMAOUT_AWAIT_FIS;
 					TC_DevResponse_Load 							<= '1';
 					TC_DevResponse_Slot 							<= DEV_RCV_DATA_TIMEOUT_SLOT; -- more data
-				ELSIF (FISE_Status = SATA_FISE_STATUS_CRC_ERROR) THEN
-					-- CRC error while sending data FIS. Must not be retried.
+				ELSIF (FISE_Status = SATA_FISE_STATUS_SEND_ERROR) THEN
+					-- R_ERR while sending data FIS. Must not be retried.
+					-- Wait for register dev->host FIS with valid CRC.
+					NextState 												<= ST_CMDCAT_DMAOUT_AWAIT_FIS;
+					TC_DevResponse_Load 							<= '1';
+					TC_DevResponse_Slot 							<= REG_DEV_HOST_TIMEOUT_SLOT;
+				elsif (FISE_Status = SATA_FISE_STATUS_SYNC_ESC) THEN
+					-- Sending data FIS aborted with SYNC. Must not be retried.
 					-- Wait for register dev->host FIS with valid CRC.
 					NextState 												<= ST_CMDCAT_DMAOUT_AWAIT_FIS;
 					TC_DevResponse_Load 							<= '1';

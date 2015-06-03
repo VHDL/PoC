@@ -84,7 +84,7 @@ use			PoC.satadbg.all;
 
 entity sata_TransportLayer is
   generic (
-		REG_DEV_HOST_TIMEOUT 						: TIME 							:= 1 ms;
+		REG_DEV_HOST_TIMEOUT 						: TIME 							:= 10 ms;
 		DEV_DATA_RDY_TIMEOUT 						: TIME 							:= 1 sec;
 		DEV_RCV_DATA_TIMEOUT 						: TIME 							:= 1 sec;
 		DEBUG														: BOOLEAN						:= FALSE;					-- generate ChipScope DBG_* signals

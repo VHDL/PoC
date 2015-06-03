@@ -11,7 +11,18 @@
 -- Description:
 -- ------------------------------------
 -- See notes on module 'sata_TransportLayer'.
--- 
+--
+-- Status:
+-- -------
+-- *_RESET: 								Phy_Status not yet communicating.
+-- *_IDLE:									Ready to send new FIS.
+-- *_SENDING: 							Sending FIS.
+-- *_SEND_OK:								FIS transmitted and acknowledged with R_OK  by other end.
+-- *_SEND_ERROR:						FIS transmitted and acknowledged with R_ERR by other end.
+-- *_SYNC_ESC:							Sending aborted by SYNC.
+-- *_ERROR:									Generic error, e.g. SOP not set at first data word.
+-- *_SENDING_DISCONTINUED:	TO BE IMPLEMENTED
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -360,12 +371,12 @@ BEGIN
 					elsif (Link_TX_FS_SyncEsc = '1') THEN
 						-- SyncEscape requested by device
 						Link_TX_FS_Ack				<= '1';
-						Status								<= SATA_FISE_STATUS_ERROR;
+						Status								<= SATA_FISE_STATUS_SYNC_ESC;
 						NextState							<= ST_IDLE;
 					ELSE
-						-- CRC error
+						-- R_ERR signaled by other end
 						Link_TX_FS_Ack				<= '1';
-						Status								<= SATA_FISE_STATUS_CRC_ERROR;
+						Status								<= SATA_FISE_STATUS_SEND_ERROR;
 						NextState							<= ST_IDLE;
 					end if;
 				end if;
