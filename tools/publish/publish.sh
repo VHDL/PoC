@@ -4,11 +4,11 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-#   Shell Script:  Publish selected parts of the PoC library to the
-#                  public GitHub repository.
+#	Shell Script:		Publish selected parts of the PoC library to the
+#									public GitHub repository.
 #
-#   Authors: Thomas B. Preußer
-#            Patrick Lehmann
+#	Authors:				Thomas B. Preußer
+#									Patrick Lehmann
 #
 # Description:
 # ------------------------------------
@@ -46,6 +46,51 @@ set -e
 # ----------------------
 debug=0
 dstSuffix=".export"
+ANSI_RED="\e[31m"
+ANSI_GREEN="\e[32m"
+ANSI_YELLOW="\e[33m"
+ANSI_CYAN="\e[36m"
+ANSI_RESET="\e[0m"
+
+COLORED_ERROR="$ANSI_RED[ERROR]$ANSI_RESET"
+COLORED_DONE="$ANSI_GREEN[DONE]$ANSI_RESET"
+
+while [[ $# > 0 ]]; do
+	key="$1"
+	case $key in
+		-p|--publish)
+		PUBLISH=TRUE
+		;;
+		-d|--debug)
+		DEBUG=TRUE
+		;;
+		-h|--help)
+		HELP=TRUE
+		;;
+		*)		# unknown option
+		UNKNOWN_OPTION=TRUE
+		;;
+	esac
+	shift # past argument or value
+done
+
+echo -e $ANSI_MAGENTA "PoC Library publish script" $ANSI_RESET
+echo -e $ANSI_MAGENTA "======================================" $ANSI_RESET
+
+if [ "$UNKNOWN_OPTION" == TRUE ]; then
+	echo -e $COLORED_ERROR "Unknown command line option." $ANSI_RESET
+	exit -1
+elif [ "$HELP" == "TRUE" ]; then
+	echo ""
+	echo "Usage:"
+	echo "  publish.sh [--publish]"
+	echo ""
+	echo "Options:"
+	echo "  -h --help           Print this help page"
+	echo "  -p --publish        Publish files"
+	echo ""
+	exit 0
+fi
 
 rsyncOptions=( \
     --archive \
@@ -72,11 +117,19 @@ src="$(basename $(pwd))"
 dst="${src}$dstSuffix"
 cd ..                        # parent of repo base
 
-# add dry-run option if debug is enabled
-if [ $debug -ne 0 ]; then
+# add dry-run option if publish is not set (default)
+if [ "$PUBLISH" != TRUE ]; then
+	echo -e $ANSI_YELLOW "Running in dry-run mode." $ANSI_RESET
+	echo -e $ANSI_YELLOW "Use './publish.sh --publish' to disable dry-run mode." $ANSI_RESET
   rsyncOptions+=(--dry-run)
-  echo "DEBUG: rsync ${rsyncOptions[@]} $src/ $dst/"
 fi
+
+# print rsync command if debug is enabled
+if [ "$DEBUG" == TRUE ]; then
+  echo -e $ANSI_CYAN "DEBUG:" $ANSI_RESET "rsync ${rsyncOptions[@]} $src/ $dst/"
+fi
+
+echo ""
 
 # Print destination info and perform the export
 ret=1
@@ -86,10 +139,10 @@ if [ -e "$dst" ]; then
 		rsync "${rsyncOptions[@]}" "$src/" "$dst/"
 		ret=$?
 	else
-		echo 1>&2 "Abort: no git repository found in existing destination $dst."
+		echo -e 1>&2 $COLORED_ERROR " No git repository found in existing destination $dst."
 	fi
 else
-  echo 1>&2 "Abort: public export repository does not exist in destination $dst."
+  echo -e 1>&2 $COLORED_ERROR " Public export repository does not exist in destination $dst."
 fi
 
 # Cleanup and exit
