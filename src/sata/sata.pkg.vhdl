@@ -346,7 +346,8 @@ package sata is
 		SATA_CMDCAT_SERVICE,
 		SATA_CMDCAT_DEVICE_RESET,
 		SATA_CMDCAT_DEVICE_DIAGNOSTICS,
-		SATA_CMDCAT_UNKNOWN
+		SATA_CMDCAT_UNKNOWN,
+		SATA_CMDCAT_CONTROL
 	);
 	
 	type T_SATA_FIStype is (
@@ -832,7 +833,7 @@ PACKAGE BODY sata IS
 			when SATA_ATA_CMD_DMA_WRITE_EXT =>			return SATA_CMDCAT_DMA_OUT;
 			
 			-- other enum members
-			when SATA_ATA_CMD_NONE =>								return SATA_CMDCAT_UNKNOWN;
+			when SATA_ATA_CMD_NONE =>								return SATA_CMDCAT_CONTROL;
 			when SATA_ATA_CMD_UNKNOWN =>						return SATA_CMDCAT_UNKNOWN;
 			when others =>													return SATA_CMDCAT_UNKNOWN;
 		end case;

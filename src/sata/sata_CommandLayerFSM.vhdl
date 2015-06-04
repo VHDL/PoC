@@ -311,9 +311,9 @@ BEGIN
 					when SATA_CMD_CMD_DEVICE_RESET =>
 						-- TransportLayer
 						Trans_Command_i													<= SATA_TRANS_CMD_TRANSFER;
-						Trans_ATAHostRegisters.Flag_C						<= '1';
-						Trans_ATAHostRegisters.Command					<= to_slv(SATA_ATA_CMD_DEVICE_RESET);			-- Command register
-						Trans_ATAHostRegisters.Control					<= (others => '0');												-- Control register
+						Trans_ATAHostRegisters.Flag_C						<= '0';
+						Trans_ATAHostRegisters.Command					<= to_slv(SATA_ATA_CMD_NONE);							-- Command register
+						Trans_ATAHostRegisters.Control					<= x"04";																	-- Control register
 						Trans_ATAHostRegisters.Feature					<= (others => '0');												-- Feature register
 						Trans_ATAHostRegisters.LBlockAddress		<= (others => '0');												-- logical block address (LBA)
 						Trans_ATAHostRegisters.SectorCount			<= (others => '0');												-- 

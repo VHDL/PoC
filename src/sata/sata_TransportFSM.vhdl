@@ -304,7 +304,8 @@ BEGIN
 
 			when ST_CHECK_ATA_HOST_REG =>
 				CASE ATA_Command_Category IS																			-- choose SATA FIS transfer sequence by ATA command category
-					WHEN SATA_CMDCAT_NON_DATA =>
+					WHEN SATA_CMDCAT_NON_DATA | SATA_CMDCAT_CONTROL =>
+						-- assumes, that FlagC bit is cleared for control FIS transfer
 						FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
 						NextState											<= ST_CMDCAT_NODATA_SEND_REGISTER_WAIT;
 						
@@ -902,9 +903,9 @@ BEGIN
 				
 			WHEN ST_ERROR =>
 				Status			<= SATA_TRANS_STATUS_ERROR;
-				if Error_r /= SATA_TRANS_ERROR_TIMEOUT then
+--				if Error_r /= SATA_TRANS_ERROR_TIMEOUT then
 					NextState		<= ST_IDLE;
-				end if;
+--				end if;
 				
 		END CASE;
 	END PROCESS;
