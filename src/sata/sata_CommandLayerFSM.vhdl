@@ -312,7 +312,7 @@ BEGIN
 						-- TransportLayer
 						Trans_Command_i													<= SATA_TRANS_CMD_TRANSFER;
 						Trans_ATAHostRegisters.Flag_C						<= '1';
-						Trans_ATAHostRegisters.Command					<= to_slv(SATA_ATA_CMD_FLUSH_CACHE_EXT);	-- Command register
+						Trans_ATAHostRegisters.Command					<= to_slv(SATA_ATA_CMD_DEVICE_RESET);			-- Command register
 						Trans_ATAHostRegisters.Control					<= (others => '0');												-- Control register
 						Trans_ATAHostRegisters.Feature					<= (others => '0');												-- Feature register
 						Trans_ATAHostRegisters.LBlockAddress		<= (others => '0');												-- logical block address (LBA)
