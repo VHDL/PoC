@@ -15,9 +15,9 @@
 #   Traverses the PoC file hierarchy and copies selected entries to an
 #   the export destination <repo root>/../poc.export/.
 #
-#   The files to be published are enumerated directly by .public files
-#   within the PoC file hierachy. Typically, these files should simply
-#   enlist each directory and each file to export. As the .public files
+#   The files to be published are enumerated directly by .publish files
+#   within the PoC file hierarchy. Typically, these files should simply
+#   enlist each directory and each file to export. As the .publish files
 #   are evaluated as per-directory filter rules by rsync, additional
 #   advanced features, such as exclude lines and wildcard matching, are
 #   available. Their use is discouraged to maintain simplicity.
@@ -82,7 +82,7 @@ fi
 ret=1
 if [ -e "$dst" ]; then
   if [ -d "$dst" ] &&	git -C "$dst" status >/dev/null 2>&1; then
-	  echo "Updating exisiting public export repository $dst ..."
+	  echo "Updating existing public export repository $dst ..."
 		rsync "${rsyncOptions[@]}" "$src/" "$dst/"
 		ret=$?
 	else
