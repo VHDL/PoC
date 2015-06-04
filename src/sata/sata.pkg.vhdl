@@ -262,12 +262,11 @@ package sata is
 	-- ===========================================================================
 	type T_SATA_CMD_COMMAND is (
 		SATA_CMD_CMD_NONE,
-		SATA_CMD_CMD_RESET,
 		SATA_CMD_CMD_READ,
 		SATA_CMD_CMD_WRITE,
 		SATA_CMD_CMD_FLUSH_CACHE,
 		SATA_CMD_CMD_IDENTIFY_DEVICE,
-		SATA_CMD_CMD_ABORT
+		SATA_CMD_CMD_DEVICE_RESET
 	);
 
 	type T_SATA_CMD_STATUS is (
@@ -296,6 +295,7 @@ package sata is
 		SATA_ATA_CMD_DMA_READ_EXT,
 		SATA_ATA_CMD_DMA_WRITE_EXT,
 		SATA_ATA_CMD_FLUSH_CACHE_EXT,
+		SATA_ATA_CMD_DEVICE_RESET,
 		SATA_ATA_CMD_UNKNOWN
 	);
 	
@@ -478,11 +478,10 @@ package sata is
 	-- TODO Feature Request: rename STREAMC to STREAMCONTROLLER
 	type T_SATA_STREAMC_COMMAND is (
 		SATA_STREAMC_CMD_NONE,
-		SATA_STREAMC_CMD_RESET,
 		SATA_STREAMC_CMD_READ,
 		SATA_STREAMC_CMD_WRITE,
 		SATA_STREAMC_CMD_FLUSH_CACHE,
-		SATA_STREAMC_CMD_ABORT
+		SATA_STREAMC_CMD_DEVICE_RESET
 	);
 
 	type T_SATA_STREAMC_STATUS is record
@@ -785,6 +784,7 @@ PACKAGE BODY sata IS
 			when SATA_ATA_CMD_DMA_READ_EXT =>			return x"25";
 			when SATA_ATA_CMD_DMA_WRITE_EXT =>		return x"35";
 			when SATA_ATA_CMD_FLUSH_CACHE_EXT =>	return x"EA";
+			when SATA_ATA_CMD_DEVICE_RESET =>			return x"08";
 			when others =>												return x"00";
 		end case;
 	end function;
@@ -818,6 +818,7 @@ PACKAGE BODY sata IS
 		case cmd is
 			-- non-data commands
 			when SATA_ATA_CMD_FLUSH_CACHE_EXT =>		return SATA_CMDCAT_NON_DATA;
+			when SATA_ATA_CMD_DEVICE_RESET =>				return SATA_CMDCAT_NON_DATA;
 			
 			-- PIO data-in commands
 			when SATA_ATA_CMD_IDENTIFY_DEVICE =>		return SATA_CMDCAT_PIO_IN;
@@ -842,6 +843,7 @@ PACKAGE BODY sata IS
 		case cmd is
 			-- non-data commands
 			when SATA_ATA_CMD_FLUSH_CACHE_EXT =>	return '0';
+			when SATA_ATA_CMD_DEVICE_RESET =>			return '0';
 			
 			-- PIO data-in commands
 			when SATA_ATA_CMD_IDENTIFY_DEVICE =>	return '0';

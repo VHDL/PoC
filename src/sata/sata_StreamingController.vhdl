@@ -200,10 +200,10 @@ begin
 	begin
 		case Command is
 			when SATA_STREAMC_CMD_NONE =>					Cmd_Command	<= SATA_CMD_CMD_NONE;
-			when SATA_STREAMC_CMD_RESET =>				Cmd_Command	<= SATA_CMD_CMD_RESET;
 			when SATA_STREAMC_CMD_READ =>					Cmd_Command	<= SATA_CMD_CMD_READ;
 			when SATA_STREAMC_CMD_WRITE =>				Cmd_Command	<= SATA_CMD_CMD_WRITE;
 			when SATA_STREAMC_CMD_FLUSH_CACHE =>	Cmd_Command	<= SATA_CMD_CMD_FLUSH_CACHE;
+			when SATA_STREAMC_CMD_DEVICE_RESET =>	Cmd_Command	<= SATA_CMD_CMD_DEVICE_RESET;
 			when others =>												Cmd_Command	<= SATA_CMD_CMD_NONE;
 		end case;
 	end process;
