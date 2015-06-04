@@ -191,7 +191,7 @@ architecture rtl of sata_LinkLayerFSM is
 	
 	signal TX_RetryCounter_rst					: STD_LOGIC;
 	signal TX_RetryCounter_inc					: STD_LOGIC;
-	signal TX_ShortFrame_RetryFailed		: STD_LOGIC;
+	signal TX_RetryFailed								: STD_LOGIC;
 
 	signal RX_IsSOF									: STD_LOGIC;
 	signal RX_IsEOF									: STD_LOGIC;
@@ -233,7 +233,7 @@ begin
 
 	process(State, Phy_Status, RX_Primitive, Trans_TX_SOF, Trans_TX_EOF, TX_FIFO_Valid,
 					RX_FIFO_Full, RX_FIFO_Overflow_r, RX_FIFO_SpaceAvailable, RX_FSFIFO_Full,
-					RX_DataReg_Valid2, RX_CRC_OKReg_r, InsertALIGN, TX_IsLongFrame, TX_ShortFrame_RetryFailed)
+					RX_DataReg_Valid2, RX_CRC_OKReg_r, InsertALIGN, TX_IsLongFrame, TX_RetryFailed)
 	begin
 		NextState											<= State;
 		Status 												<= SATA_LINK_STATUS_IDLE;
@@ -303,6 +303,7 @@ begin
 				TX_FSFIFO_rst									<= '1';
 				RX_FIFO_rst										<= '1';
 				RX_FSFIFO_rst									<= '1';
+				TX_RetryCounter_rst						<= '1';
 				NextState											<= ST_NO_COMMUNICATION;
 				
 				-- ----------------------------------------------------------
@@ -319,6 +320,9 @@ begin
 				Status												<= SATA_LINK_STATUS_ERROR;
 				Error 												<= SATA_LINK_ERROR_COMMUNICATION_ERROR;
 				TX_Primitive									<= SATA_PRIMITIVE_ALIGN;
+				TX_RetryCounter_rst						<= '1';
+				RX_FIFO_rollback							<= '1';
+				TX_FIFO_Commit								<= '1'; -- TODO: Discard?
 				NextState											<= ST_NO_COMMUNICATION;
 				
 				-- ----------------------------------------------------------
@@ -445,6 +449,7 @@ begin
 						TX_Primitive							<= SATA_PRIMITIVE_NONE;
 						TX_WordCounter_inc				<= '1';
 						TX_FIFO_got								<= '1';
+						TX_FIFO_Commit 						<= TX_IsLongFrame;
 						TX_CRC_Valid							<= '1';
 						DataScrambler_en					<= '1';
 						
@@ -463,6 +468,7 @@ begin
 								TX_Primitive					<= SATA_PRIMITIVE_HOLD_ACK;
 								TX_WordCounter_inc		<= '0';
 								TX_FIFO_got						<= '0';
+								TX_FIFO_Commit 				<= '0';
 								TX_CRC_Valid					<= '0';
 								DataScrambler_en			<= '0';
 								NextState							<= ST_TX_RECEIVED_HOLD;
@@ -471,7 +477,7 @@ begin
 								TX_Primitive					<= SATA_PRIMITIVE_SYNC;
 								TX_FSFIFO_put 				<= '1';
 								Trans_TXFS_SyncEsc		<= '1';
-								NextState 						<= ST_IDLE;
+								NextState 						<= ST_TX_DISCARD_FRAME;
 							end if;
 						end if;
 					else																													-- empty TX_FIFO => insert HOLD
@@ -502,6 +508,7 @@ begin
 						TX_Primitive							<= SATA_PRIMITIVE_NONE;
 						TX_WordCounter_inc				<= '1';
 						TX_FIFO_got								<= '1';
+						TX_FIFO_Commit 						<= TX_IsLongFrame;
 						TX_CRC_Valid							<= '1';
 						DataScrambler_en					<= '1';
 						
@@ -520,6 +527,7 @@ begin
 								TX_Primitive					<= SATA_PRIMITIVE_HOLD_ACK;
 								TX_WordCounter_inc		<= '0';
 								TX_FIFO_got						<= '0';
+								TX_FIFO_Commit 				<= '0';
 								TX_CRC_Valid					<= '0';
 								DataScrambler_en			<= '0';
 								NextState							<= ST_TX_RECEIVED_HOLD;
@@ -570,6 +578,7 @@ begin
 						TX_Primitive							<= SATA_PRIMITIVE_NONE;
 						TX_WordCounter_inc				<= '1';
 						TX_FIFO_got								<= '1';
+						TX_FIFO_Commit 						<= TX_IsLongFrame;
 						TX_CRC_Valid							<= '1';
 						DataScrambler_en					<= '1';
 						if (Trans_TX_EOF = '1') then																-- last payload word in frame
@@ -592,6 +601,8 @@ begin
 					if (RX_Primitive = SATA_PRIMITIVE_SYNC) then 									-- abort
 						-- SyncEscape by receiver.
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+						TX_RetryCounter_rst				<= '1';														-- frame finally failed -> reset counter
+						TX_FIFO_Commit						<= '1';														-- Commit data FIFO
 						TX_FSFIFO_put 						<= '1';
 						Trans_TXFS_SyncEsc				<= '1';
 						NextState 								<= ST_IDLE;  -- EOF already seen.
@@ -615,6 +626,8 @@ begin
 					if (RX_Primitive = SATA_PRIMITIVE_SYNC) then 									-- abort
 						-- SyncEscape by receiver.
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+						TX_RetryCounter_rst				<= '1';														-- frame finally failed -> reset counter
+						TX_FIFO_Commit						<= '1';														-- Commit data FIFO
 						TX_FSFIFO_put 						<= '1';
 						Trans_TXFS_SyncEsc				<= '1';
 						NextState 								<= ST_IDLE;  -- EOF already seen.
@@ -645,30 +658,22 @@ begin
 					elsif (RX_Primitive = SATA_PRIMITIVE_R_ERROR) then
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
 						
-						-- TODO: TO BE MOVED DOWNWARD
-						TX_FSFIFO_put							<= '1';										-- update frame state FIFO
-						
-						-- TODO: TO BE REMOVED
-						TX_FIFO_Commit						<= '1';										-- Commit data FIFO
-						NextState									<= ST_IDLE;
-						
---						if (TX_IsLongFrame = '0') then					-- retry
---							if (TX_ShortFrame_RetryFailed = '0')	-- try again
---								TX_RetryCounter_inc		<= '1';
---								TX_FIFO_Rollback			<= '1';
---								
---								NextState							<= ST_;
---							else																	-- beyond hope
---								
---								NextState							<= ST_;
---							end if;
---						else																		-- don't retry, it's to long
---							
---							NextState								<= ST_;						
---						end if;
+						if ((TX_IsLongFrame = '0') and 											-- retry short frame
+								(TX_RetryFailed = '0')) then										-- try again
+							TX_RetryCounter_inc			<= '1';
+							TX_FIFO_Rollback				<= '1';
+							NextState								<= ST_IDLE;
+						else																								-- don't retry (too long or	finally failed)
+							TX_RetryCounter_rst			<= '1';										-- frame finally failed -> reset counter
+							TX_FIFO_Commit					<= '1';										-- Commit data FIFO
+							TX_FSFIFO_put						<= '1';										-- update frame state FIFO
+							NextState								<= ST_IDLE;						
+						end if;
 					elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then 			-- abort
 						-- SyncEscape by receiver.
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+						TX_RetryCounter_rst				<= '1';										-- frame finally failed -> reset counter
+						TX_FIFO_Commit						<= '1';										-- Commit data FIFO
 						TX_FSFIFO_put 						<= '1';
 						Trans_TXFS_SyncEsc				<= '1';
 						NextState 								<= ST_IDLE;  -- EOF already seen.
@@ -683,7 +688,9 @@ begin
 					TX_Primitive								<= SATA_PRIMITIVE_SYNC;
 				end if;
 				
+				TX_RetryCounter_rst						<= '1';												-- frame finally failed -> reset counter
 				TX_FIFO_got										<= '1';
+				TX_FIFO_Commit 								<= '1';
 				if (Trans_TX_EOF = '1') then																-- last payload word in frame
 					NextState 									<= ST_IDLE;
 				end if;
@@ -1075,9 +1082,9 @@ begin
 		WordCounter_us							<= counter_inc(cnt => WordCounter_us, rst => TX_WordCounter_rst, en => WordCounter_inc, init => 0) when rising_edge(Clock);
 		TX_IsLongFrame							<= counter_eq(cnt => WordCounter_us, value => LONG_FRAME_WORDS);
 
-		RetryCounter_inc						<= TX_RetryCounter_inc and not TX_ShortFrame_RetryFailed;
+		RetryCounter_inc						<= TX_RetryCounter_inc and not TX_RetryFailed;
 		RetryCounter_us							<= counter_inc(cnt => RetryCounter_us, rst => TX_RetryCounter_rst, en => RetryCounter_inc, init => 0) when rising_edge(Clock);
-		TX_ShortFrame_RetryFailed		<= counter_eq(cnt => RetryCounter_us, value => SHORT_FRAME_RETRY_COUNT);
+		TX_RetryFailed							<= counter_eq(cnt => RetryCounter_us, value => SHORT_FRAME_RETRY_COUNT);
 	end block;
 
 -- ==================================================================
@@ -1146,6 +1153,8 @@ begin
 		begin
 		end generate;
 		
-		DebugPortOut.FSM					<= dbg_EncodeState(State);
+		DebugPortOut.FSM						<= dbg_EncodeState(State);
+		DebugPortOut.TX_IsLongFrame <= TX_IsLongFrame;
+		DebugPortOut.TX_RetryFailed <= TX_RetryFailed;
 	end generate;
 end;

@@ -129,8 +129,9 @@ architecture rtl of sata_TransceiverLayer is
 
 	constant C_DEVICE_INFO				: T_DEVICE_INFO		:= DEVICE_INFO;
 
-	signal TX_Data_i : T_SLVV_32(portS - 1 downto 0);
-	signal RX_Data_i : T_SLVV_32(portS - 1 downto 0);
+	signal TX_Data_i 		: T_SLVV_32(PORTS - 1 downto 0);
+	signal RX_Data_i 		: T_SLVV_32(PORTS - 1 downto 0);
+	signal RX_CharIsK_i : T_SLVV_4(PORTS - 1 downto 0);
 	
 begin
 	genreport : for i in 0 to portS - 1 generate
@@ -176,13 +177,16 @@ begin
 -- ==================================================================
 -- insert bit errors
 -- ==================================================================
+
+	RX_CharIsK <= RX_CharIsK_i;
 	
 	genBitError : if (ENABLE_DEBUGPORT = TRUE) generate
 		-- Insert BitErrors
 		genPort : for i in 0 to PORTS - 1 generate
 			TX_Data_i(i) <= mux(DebugPortIn(i).InsertBitErrorTX and not TX_CharIsK(i)(0), -- only for data
-											                                     TX_Data(i),   not TX_Data(i));
-			RX_Data  (i) <= mux(DebugPortIn(i).InsertBitErrorRX, RX_Data_i(i), not RX_Data_i(i));
+													TX_Data(i),   not TX_Data(i));
+			RX_Data  (i) <= mux(DebugPortIn(i).InsertBitErrorRX and not RX_CharIsK_i(i)(0), -- only for data
+													RX_Data_i(i), not RX_Data_i(i));
 		end generate;
 	end generate;
 
@@ -238,7 +242,7 @@ begin
 					TX_CharIsK								=> TX_CharIsK,
 					
 					RX_Data										=> RX_Data_i,
-					RX_CharIsK								=> RX_CharIsK,
+					RX_CharIsK								=> RX_CharIsK_i,
 					RX_Valid									=> RX_Valid,
 					
 					-- vendor specific signals
@@ -288,7 +292,7 @@ begin
 					TX_CharIsK								=> TX_CharIsK,
 					
 					RX_Data										=> RX_Data_i,
-					RX_CharIsK								=> RX_CharIsK,
+					RX_CharIsK								=> RX_CharIsK_i,
 					RX_Valid									=> RX_Valid,
 					
 					-- vendor specific signals
@@ -341,7 +345,7 @@ begin
 					TX_CharIsK								=> TX_CharIsK,
 					
 					RX_Data										=> RX_Data_i,
-					RX_CharIsK								=> RX_CharIsK,
+					RX_CharIsK								=> RX_CharIsK_i,
 					RX_Valid									=> RX_Valid,
 					
 					-- vendor specific signals
@@ -392,7 +396,7 @@ begin
 					TX_CharIsK								=> TX_CharIsK,
 					
 					RX_Data										=> RX_Data_i,
-					RX_CharIsK								=> RX_CharIsK,
+					RX_CharIsK								=> RX_CharIsK_i,
 					RX_Valid									=> RX_Valid,
 					
 					-- vendor specific signals
@@ -441,7 +445,7 @@ begin
 					TX_CharIsK								=> TX_CharIsK,
 					
 					RX_Data										=> RX_Data_i,
-					RX_CharIsK								=> RX_CharIsK,
+					RX_CharIsK								=> RX_CharIsK_i,
 					RX_Valid									=> RX_Valid,
 					
 					-- vendor specific signals

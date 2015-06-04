@@ -174,6 +174,9 @@ package satadbg is
 	-- ===========================================================================
 	type T_SATADBG_LINK_LLFSM_OUT is record
 		FSM													: STD_LOGIC_VECTOR(4 downto 0);
+		-- TX: Retry
+		TX_IsLongFrame							: STD_LOGIC;
+		TX_RetryFailed							: STD_LOGIC;
 	end record;
 	
 	type T_SATADBG_LINK_OUT is record
