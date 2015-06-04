@@ -151,11 +151,11 @@ architecture rtl of sata_LinkLayer is
 	constant RX_FSFIFO_EMPTYSTATE_BITS	: POSITIVE				:= log2ceilnz(RX_FSFIFO_DEPTH);
 
 -- CRC
-	constant CRC32_POLYNOMIAL		: BIT_VECTOR(35 DOWNTO 0) := x"104C11DB7";
+	constant CRC32_POLYNOMIAL		: BIT_VECTOR(35 downto 0) := x"104C11DB7";
 	constant CRC32_INIT					: T_SLV_32								:= x"52325032";
 
 -- ==================================================================
--- Signals
+-- signals
 -- ==================================================================
 	-- my reset
 	signal MyReset 											: STD_LOGIC;
@@ -164,112 +164,111 @@ architecture rtl of sata_LinkLayer is
 	signal TX_InsertEOF_i 							: STD_LOGIC;
 		
 	-- transport layer interface below FIFO
-	SIGNAL Trans_TX_SOF									: STD_LOGIC;
-	SIGNAL Trans_TX_EOF									: STD_LOGIC;
+	signal Trans_TX_SOF									: STD_LOGIC;
+	signal Trans_TX_EOF									: STD_LOGIC;
 
-	SIGNAL Trans_TXFS_SendOK						: STD_LOGIC;
-	SIGNAL Trans_TXFS_SyncEsc						: STD_LOGIC;
+	signal Trans_TXFS_SendOK						: STD_LOGIC;
+	signal Trans_TXFS_SyncEsc						: STD_LOGIC;
 
-	SIGNAL Trans_RX_SOF									: STD_LOGIC;
-	SIGNAL Trans_RX_EOF									: STD_LOGIC;
+	signal Trans_RX_SOF									: STD_LOGIC;
+	signal Trans_RX_EOF									: STD_LOGIC;
 
-	SIGNAL Trans_RXFS_CRCOK							: STD_LOGIC;
+	signal Trans_RXFS_CRCOK							: STD_LOGIC;
 	signal Trans_RXFS_SyncEsc						: STD_LOGIC;
 	
 	-- TX FSM section
-	SIGNAL CRCMux_ctrl									: STD_LOGIC;
---	SIGNAL ScramblerMux_ctrl						: STD_LOGIC;
-	
-	-- RX FSM section
-
+	signal CRCMux_ctrl									: STD_LOGIC;
+--	signal ScramblerMux_ctrl						: STD_LOGIC;
 	
 	-- FIFO section
-	SIGNAL TX_FIFO_rst								: STD_LOGIC;
-	SIGNAL TX_FIFO_put								: STD_LOGIC;
---	SIGNAL TX_FIFO_EmptyState					: UNSIGNED(1 DOWNTO 0);
-	SIGNAL TX_FIFO_Full								: STD_LOGIC;
-	SIGNAL TX_FIFO_got								: STD_LOGIC;
-	SIGNAL TX_FIFO_Valid							: STD_LOGIC;
-	SIGNAL TX_FIFO_DataIn							: STD_LOGIC_VECTOR(TX_FIFO_BITS - 1 DOWNTO 0);
-	SIGNAL TX_FIFO_DataOut						: STD_LOGIC_VECTOR(TX_FIFO_BITS - 1 DOWNTO 0);
+	signal TX_FIFO_rst								: STD_LOGIC;
+	signal TX_FIFO_put								: STD_LOGIC;
+--	signal TX_FIFO_EmptyState					: UNSIGNED(1 downto 0);
+	signal TX_FIFO_Full								: STD_LOGIC;
+	signal TX_FIFO_got								: STD_LOGIC;
+	signal TX_FIFO_Valid							: STD_LOGIC;
+	signal TX_FIFO_DataIn							: STD_LOGIC_VECTOR(TX_FIFO_BITS - 1 downto 0);
+	signal TX_FIFO_DataOut						: STD_LOGIC_VECTOR(TX_FIFO_BITS - 1 downto 0);
+	signal TX_FIFO_Commit							: STD_LOGIC;
+	signal TX_FIFO_Rollback						: STD_LOGIC;
 	
-	SIGNAL TX_FSFIFO_rst							: STD_LOGIC;
-	SIGNAL TX_FSFIFO_put							: STD_LOGIC;
-	SIGNAL TX_FSFIFO_EmptyState				: STD_LOGIC_VECTOR(TX_FSFIFO_EMPTYSTATE_BITS - 1 DOWNTO 0);
-	SIGNAL TX_FSFIFO_Full							: STD_LOGIC;
-	SIGNAL TX_FSFIFO_got							: STD_LOGIC;
-	SIGNAL TX_FSFIFO_Valid						: STD_LOGIC;
-	SIGNAL TX_FSFIFO_DataIn						: STD_LOGIC_VECTOR(TX_FSFIFO_BITS - 1 DOWNTO 0);
-	SIGNAL TX_FSFIFO_DataOut					: STD_LOGIC_VECTOR(TX_FSFIFO_BITS - 1 DOWNTO 0);
+	signal TX_FSFIFO_rst							: STD_LOGIC;
+	signal TX_FSFIFO_put							: STD_LOGIC;
+	signal TX_FSFIFO_EmptyState				: STD_LOGIC_VECTOR(TX_FSFIFO_EMPTYSTATE_BITS - 1 downto 0);
+	signal TX_FSFIFO_Full							: STD_LOGIC;
+	signal TX_FSFIFO_got							: STD_LOGIC;
+	signal TX_FSFIFO_Valid						: STD_LOGIC;
+	signal TX_FSFIFO_DataIn						: STD_LOGIC_VECTOR(TX_FSFIFO_BITS - 1 downto 0);
+	signal TX_FSFIFO_DataOut					: STD_LOGIC_VECTOR(TX_FSFIFO_BITS - 1 downto 0);
 	
-	SIGNAL RX_FIFO_rst								: STD_LOGIC;
-	SIGNAL RX_FIFO_put								: STD_LOGIC;
+	signal RX_FIFO_rst								: STD_LOGIC;
+	signal RX_FIFO_put								: STD_LOGIC;
 	signal RX_FIFO_commit							: STD_LOGIC;
 	signal RX_FIFO_rollback						: STD_LOGIC;
-	SIGNAL RX_FIFO_EmptyState					: STD_LOGIC_VECTOR(RX_FIFO_EMPTYSTATE_BITS - 1 DOWNTO 0);
-	SIGNAL RX_FIFO_SpaceAvailable			: STD_LOGIC;
-	SIGNAL RX_FIFO_Full								: STD_LOGIC;
-	SIGNAL RX_FIFO_got								: STD_LOGIC;
-	SIGNAL RX_FIFO_Valid							: STD_LOGIC;
-	SIGNAL RX_FIFO_DataIn							: STD_LOGIC_VECTOR(RX_FIFO_BITS - 1 DOWNTO 0);
-	SIGNAL RX_FIFO_DataOut						: STD_LOGIC_VECTOR(RX_FIFO_BITS - 1 DOWNTO 0);
+	signal RX_FIFO_EmptyState					: STD_LOGIC_VECTOR(RX_FIFO_EMPTYSTATE_BITS - 1 downto 0);
+	signal RX_FIFO_SpaceAvailable			: STD_LOGIC;
+	signal RX_FIFO_Full								: STD_LOGIC;
+	signal RX_FIFO_got								: STD_LOGIC;
+	signal RX_FIFO_Valid							: STD_LOGIC;
+	signal RX_FIFO_DataIn							: STD_LOGIC_VECTOR(RX_FIFO_BITS - 1 downto 0);
+	signal RX_FIFO_DataOut						: STD_LOGIC_VECTOR(RX_FIFO_BITS - 1 downto 0);
 
-	SIGNAL RX_FSFIFO_rst							: STD_LOGIC;
-	SIGNAL RX_FSFIFO_put							: STD_LOGIC;
-	SIGNAL RX_FSFIFO_EmptyState				: STD_LOGIC_VECTOR(RX_FSFIFO_EMPTYSTATE_BITS - 1 DOWNTO 0);
-	SIGNAL RX_FSFIFO_Full							: STD_LOGIC;
-	SIGNAL RX_FSFIFO_got							: STD_LOGIC;
-	SIGNAL RX_FSFIFO_Valid						: STD_LOGIC;
-	SIGNAL RX_FSFIFO_DataIn						: STD_LOGIC_VECTOR(RX_FSFIFO_BITS - 1 DOWNTO 0);
-	SIGNAL RX_FSFIFO_DataOut					: STD_LOGIC_VECTOR(RX_FSFIFO_BITS - 1 DOWNTO 0);
+	signal RX_FSFIFO_rst							: STD_LOGIC;
+	signal RX_FSFIFO_put							: STD_LOGIC;
+	signal RX_FSFIFO_EmptyState				: STD_LOGIC_VECTOR(RX_FSFIFO_EMPTYSTATE_BITS - 1 downto 0);
+	signal RX_FSFIFO_Full							: STD_LOGIC;
+	signal RX_FSFIFO_got							: STD_LOGIC;
+	signal RX_FSFIFO_Valid						: STD_LOGIC;
+	signal RX_FSFIFO_DataIn						: STD_LOGIC_VECTOR(RX_FSFIFO_BITS - 1 downto 0);
+	signal RX_FSFIFO_DataOut					: STD_LOGIC_VECTOR(RX_FSFIFO_BITS - 1 downto 0);
 
 	-- RX FIFO input/hold registers
-	SIGNAL RX_DataReg_shift						: STD_LOGIC;
-	SIGNAL RX_DataReg_DataIn					: T_SLV_32;
-	SIGNAL RX_DataReg_d								: T_SLV_32													:= (OTHERS => '0');
-	SIGNAL RX_DataReg_d2							: T_SLV_32													:= (OTHERS => '0');
-	SIGNAL RX_DataReg_DataOut					: T_SLV_32;
+	signal RX_DataReg_shift						: STD_LOGIC;
+	signal RX_DataReg_DataIn					: T_SLV_32;
+	signal RX_DataReg_d								: T_SLV_32													:= (OTHERS => '0');
+	signal RX_DataReg_d2							: T_SLV_32													:= (OTHERS => '0');
+	signal RX_DataReg_DataOut					: T_SLV_32;
 
 	-- CRC section
-	SIGNAL TX_CRC_rst									: STD_LOGIC;
-	SIGNAL TX_CRC_Valid								: STD_LOGIC;
-	SIGNAL TX_CRC_DataIn							: T_SLV_32;
-	SIGNAL TX_CRC_DataOut							: T_SLV_32;
+	signal TX_CRC_rst									: STD_LOGIC;
+	signal TX_CRC_Valid								: STD_LOGIC;
+	signal TX_CRC_DataIn							: T_SLV_32;
+	signal TX_CRC_DataOut							: T_SLV_32;
 
-	SIGNAL RX_CRC_rst									: STD_LOGIC;
-	SIGNAL RX_CRC_Valid								: STD_LOGIC;
-	SIGNAL RX_CRC_DataOut							: T_SLV_32;
+	signal RX_CRC_rst									: STD_LOGIC;
+	signal RX_CRC_Valid								: STD_LOGIC;
+	signal RX_CRC_DataOut							: T_SLV_32;
 
-	SIGNAL RX_CRC_OK									: STD_LOGIC;
+	signal RX_CRC_OK									: STD_LOGIC;
 	
 	-- scrambler section
-	SIGNAL DataScrambler_en						: STD_LOGIC;
-	SIGNAL DataScrambler_rst					: STD_LOGIC;
-	SIGNAL DataScrambler_DataIn				: T_SLV_32;
-	SIGNAL DataScrambler_DataOut			: T_SLV_32;
+	signal DataScrambler_en						: STD_LOGIC;
+	signal DataScrambler_rst					: STD_LOGIC;
+	signal DataScrambler_DataIn				: T_SLV_32;
+	signal DataScrambler_DataOut			: T_SLV_32;
 	
 	-- TODO Feature Request: To be implemeted to reduce EMI.
---	SIGNAL DummyScrambler_en					: STD_LOGIC;
---	SIGNAL DummyScrambler_rst					: STD_LOGIC;
---	SIGNAL DummyScrambler_DataIn			: T_SLV_32;
---	SIGNAL DummyScrambler_DataOut			: T_SLV_32;
+--	signal DummyScrambler_en					: STD_LOGIC;
+--	signal DummyScrambler_rst					: STD_LOGIC;
+--	signal DummyScrambler_DataIn			: T_SLV_32;
+--	signal DummyScrambler_DataOut			: T_SLV_32;
 	
-	SIGNAL DataUnscrambler_en					: STD_LOGIC;
-	SIGNAL DataUnscrambler_rst				: STD_LOGIC;
-	SIGNAL DataUnscrambler_DataIn			: T_SLV_32;
-	SIGNAL DataUnscrambler_DataOut		: T_SLV_32;
+	signal DataUnscrambler_en					: STD_LOGIC;
+	signal DataUnscrambler_rst				: STD_LOGIC;
+	signal DataUnscrambler_DataIn			: T_SLV_32;
+	signal DataUnscrambler_DataOut		: T_SLV_32;
 	
 
 	-- primitive section
-	SIGNAL PM_DataIn									: T_SLV_32;
-	SIGNAL PM_DataOut									: T_SLV_32;
-	SIGNAL PM_CharIsK									: T_SLV_4;
-	SIGNAL TX_Primitive								: T_SATA_PRIMITIVE;
+	signal PM_DataIn									: T_SLV_32;
+	signal PM_DataOut									: T_SLV_32;
+	signal PM_CharIsK									: T_SLV_4;
+	signal TX_Primitive								: T_SATA_PRIMITIVE;
 
-	SIGNAL PD_DataIn									: T_SLV_32;
-	SIGNAL PD_CharIsK									: T_SLV_4;
-	SIGNAL RX_Primitive								: T_SATA_PRIMITIVE;
-	SIGNAL RX_Primitive_d							: T_SATA_PRIMITIVE		:= SATA_PRIMITIVE_NONE;
+	signal PD_DataIn									: T_SLV_32;
+	signal PD_CharIsK									: T_SLV_4;
+	signal RX_Primitive								: T_SATA_PRIMITIVE;
+	signal RX_Primitive_d							: T_SATA_PRIMITIVE		:= SATA_PRIMITIVE_NONE;
 
 	-- signal hold_counter : UNSIGNED(31 downto 0) := (OTHERS => '0') ;
 	signal RX_Hold : STD_LOGIC;
@@ -286,14 +285,14 @@ begin
   -- ================================================================
 	-- link layer control FSM
 	-- ================================================================
-	LLFSM : ENTITY PoC.sata_LinkLayerFSM
-		GENERIC MAP (
+	LLFSM : entity PoC.sata_LinkLayerFSM
+		generic map (
 			DEBUG										=> DEBUG,
 			ENABLE_DEBUGPORT				=> ENABLE_DEBUGPORT,
 			CONTROLLER_TYPE					=> CONTROLLER_TYPE,
 			INSERT_ALIGN_INTERVAL		=> INSERT_ALIGN_INTERVAL
 		)
-		PORT MAP (
+		port map (
 			Clock										=> Clock,
 			MyReset									=> MyReset,
 
@@ -328,6 +327,8 @@ begin
 			TX_FIFO_rst							=> TX_FIFO_rst,
 			TX_FIFO_Valid						=> TX_FIFO_Valid,
 			TX_FIFO_got							=> TX_FIFO_got,
+			TX_FIFO_Commit					=> TX_FIFO_Commit,
+			TX_FIFO_Rollback				=> TX_FIFO_Rollback,
 
 			-- RX_FSFIFO interface
 			TX_FSFIFO_rst						=> TX_FSFIFO_rst,
@@ -381,7 +382,7 @@ begin
 	-- TX path
 	TX_FIFO_DataIn							<= TX_EOF & TX_SOF & TX_Data;
 	TX_FIFO_put									<= TX_Valid;
-	TX_Ack											<= NOT TX_FIFO_Full;
+	TX_Ack											<= not TX_FIFO_Full;
 	
 	Trans_TX_SOF								<= TX_FIFO_DataOut(TX_SOF_BIT);
 	Trans_TX_EOF								<= TX_FIFO_DataOut(TX_EOF_BIT);
@@ -456,7 +457,7 @@ begin
 	-- fifo section
 	-- ================================================================
 	-- TX path
-	TX_FIFO : entity PoC.fifo_cc_got
+	TX_FIFO : entity PoC.fifo_cc_got_tempgot
 		generic map (
 			D_BITS					=> TX_FIFO_BITS,				-- data width
 			MIN_DEPTH				=> TX_FIFO_DEPTH,				-- minimum FIFO depth
@@ -478,7 +479,10 @@ begin
 			got							=> TX_FIFO_got,
 			valid						=> TX_FIFO_Valid,
 			dout						=> TX_FIFO_DataOut,
-			fstate_rd				=> open
+			fstate_rd				=> open,
+			
+			commit					=> TX_FIFO_Commit,
+			rollback				=> TX_FIFO_Rollback
 		);
 	
 	-- TX frame status path
