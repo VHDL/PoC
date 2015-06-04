@@ -35,18 +35,28 @@
 --   response with a Register FIS, especially, if it detects an unknown FIS instead
 --   of an CRC error.
 --
--- DEV_DATA_READY_TIMEOUT: Maximum time to wait for data from the device.
---   Actually, the time to wait for PIO setup FIS or Data FIS during reads.
+-- DATA_DEV_HOST_TIMEOUT: Maximum time to wait for data transfer from device to host.
+--   Actually, the time to wait for:
+---  - receiving PIO setup FIS + Data FIS for PIO reads,
+---  - receiving Data FIS for DMA reads.
 --
--- DEV_RCV_DATA_TIMEOUT: Maximum time for the device to get ready for
---   receiving data. Actually, the time to wait for DMA Activate FIS during writes.
+-- DATA_HOST_DEV_TIMEOUT: Maximum time to wait for data transfer from host to device.
+--   Actually, the time to wait for:
+---  - receiving PIO setup FIS + sending Data FIS for PIO writes,
+--   - receiving DMA Activate FIS + sending DATA FIS for DMA writes.
 --
 --
 -- CSE Interface:
 -- --------------
--- New commands are accepted when Status is *_STATUS_IDLE oder *_STATUS_TRANSFER_OK.
+-- New commands are accepted when Status is *_STATUS_IDLE, *_STATUS_TRANSFER_OK
+-- or *_STATUS_TRANSFER_ERROR.
 -- ATAHostHostRegisters must be applied with command *_CMD_TRANSFER.
 --
+-- After issuing a command, status means:
+-- *_STATUS_TRANSFER_OK:    Transfer completed with no error.
+-- *_STATUS_TRANSFER_ERROR: Transfer completed with error bit in ATA register set.
+-- *_STATUS_ERROR: 					Fatal error occured. Synchronous reset of whole
+-- 													SATA stack must be applied.
 --
 -- License:
 -- =============================================================================
@@ -85,8 +95,8 @@ use			PoC.satadbg.all;
 entity sata_TransportLayer is
   generic (
 		REG_DEV_HOST_TIMEOUT 						: TIME 							:= 1 sec;
-		DEV_DATA_RDY_TIMEOUT 						: TIME 							:= 1 sec;
-		DEV_RCV_DATA_TIMEOUT 						: TIME 							:= 1 sec;
+		DATA_DEV_HOST_TIMEOUT 					: TIME 							:= 1 sec;
+		DATA_HOST_DEV_TIMEOUT 					: TIME 							:= 1 sec;
 		DEBUG														: BOOLEAN						:= FALSE;					-- generate ChipScope DBG_* signals
 		ENABLE_DEBUGPORT								: BOOLEAN						:= FALSE;
 		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: BOOLEAN						:= TRUE						-- required by ATA/SATA standard
@@ -223,8 +233,8 @@ begin
 	TFSM : ENTITY PoC.sata_TransportFSM
     GENERIC MAP (
 			REG_DEV_HOST_TIMEOUT 							=> REG_DEV_HOST_TIMEOUT,
-			DEV_DATA_RDY_TIMEOUT 							=> DEV_DATA_RDY_TIMEOUT,
-			DEV_RCV_DATA_TIMEOUT 							=> DEV_RCV_DATA_TIMEOUT,
+			DATA_DEV_HOST_TIMEOUT 						=> DATA_DEV_HOST_TIMEOUT,
+			DATA_HOST_DEV_TIMEOUT 						=> DATA_HOST_DEV_TIMEOUT,
 			DEBUG															=> DEBUG,
 			ENABLE_DEBUGPORT									=> ENABLE_DEBUGPORT,
       SIM_WAIT_FOR_INITIAL_REGDH_FIS    => SIM_WAIT_FOR_INITIAL_REGDH_FIS

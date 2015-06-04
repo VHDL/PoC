@@ -584,10 +584,15 @@ BEGIN
 				-- CommandLayer (ERROR) is faster in discarding data. Timing depends on
 				-- FIFO depth between both layers.
 				Status 																	<= SATA_CMD_STATUS_DISCARD_TXDATA;
-				if ((Trans_Status = SATA_TRANS_STATUS_ERROR) or
-						(Trans_Status = SATA_TRANS_STATUS_IDLE)) then
+				if (Trans_Status = SATA_TRANS_STATUS_ERROR) then
+					-- fatal error in Transport Layer
 					NextState 														<= ST_ERROR;
 					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+				elsif ((Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) or
+							 (Trans_Status = SATA_TRANS_STATUS_IDLE)) then
+					-- transport will be ready for new ATA command
+					NextState 														<= ST_ERROR;
+					Error_nxt															<= SATA_CMD_ERROR_REQUEST_INCOMPLETE;
 				end if;
 				
 			-- ============================================================
@@ -623,7 +628,12 @@ BEGIN
 			-- ============================================================
 			WHEN ST_ERROR =>
 				Status																	<= SATA_CMD_STATUS_ERROR;
-				if (IDF_DriveInformation.Valid = '1') then
+
+				if (Trans_Status = SATA_TRANS_STATUS_ERROR) then
+					-- fatal error not yet recovered, stay here
+					NULL;
+				elsif (IDF_DriveInformation.Valid = '1') then
+					-- ready for new command
 					NextState 														<= ST_IDLE;
 				elsif (Command = SATA_CMD_CMD_IDENTIFY_DEVICE) then
 					-- TransportLayer

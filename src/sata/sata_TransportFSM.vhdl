@@ -48,8 +48,8 @@ use			PoC.satadbg.all;
 ENTITY sata_TransportFSM IS
   GENERIC (
 		REG_DEV_HOST_TIMEOUT 							: TIME 												:= 1 sec;
-		DEV_DATA_RDY_TIMEOUT 							: TIME 												:= 1 sec;
-		DEV_RCV_DATA_TIMEOUT 							: TIME 												:= 1 sec;
+		DATA_DEV_HOST_TIMEOUT 						: TIME 												:= 1 sec;
+		DATA_HOST_DEV_TIMEOUT 						: TIME 												:= 1 sec;
 		DEBUG															: BOOLEAN											:= FALSE;
 		ENABLE_DEBUGPORT									: BOOLEAN											:= FALSE;
     SIM_WAIT_FOR_INITIAL_REGDH_FIS    : BOOLEAN                     := TRUE -- required by ATA/SATA standard
@@ -130,7 +130,8 @@ ARCHITECTURE rtl OF sata_TransportFSM IS
 			ST_CMDCAT_DMAOUT_RECEIVE_REGISTER,
 			ST_CMDCAT_DMAOUT_SEND_DATA,
 			ST_CMDCAT_DMAOUT_DISCARD_TRANSFER,
-			ST_TRANSFER_OK
+			ST_TRANSFER_OK,
+			ST_TRANSFER_ERROR
 	);
 	
 	SIGNAL State													: T_STATE													:= ST_RESET;
@@ -161,19 +162,19 @@ ARCHITECTURE rtl OF sata_TransportFSM IS
 
 	-- Timing Counter to check for timeouts of device responses.
 	constant REG_DEV_HOST_TIMEOUT_SLOT		: NATURAL			:= 0;
-	constant DEV_DATA_RDY_TIMEOUT_SLOT		: NATURAL			:= 3;
-	constant DEV_RCV_DATA_TIMEOUT_SLOT		: NATURAL			:= 6;
+	constant DATA_DEV_HOST_TIMEOUT_SLOT		: NATURAL			:= 3;
+	constant DATA_HOST_DEV_TIMEOUT_SLOT		: NATURAL			:= 6;
 
 	constant TC_DEV_RESPONSE_TABLE				: T_NATVEC				:= (
-		(REG_DEV_HOST_TIMEOUT_SLOT+0) => TimingToCycles(REG_DEV_HOST_TIMEOUT,	CLOCK_GEN1_FREQ),				-- slot 0
-		(REG_DEV_HOST_TIMEOUT_SLOT+1) => TimingToCycles(REG_DEV_HOST_TIMEOUT,	CLOCK_GEN2_FREQ),				-- slot 1
-		(REG_DEV_HOST_TIMEOUT_SLOT+2) => TimingToCycles(REG_DEV_HOST_TIMEOUT,	CLOCK_GEN3_FREQ),				-- slot 2
-		(DEV_DATA_RDY_TIMEOUT_SLOT+0) => TimingToCycles(DEV_DATA_RDY_TIMEOUT,	CLOCK_GEN1_FREQ),				-- slot 3
-		(DEV_DATA_RDY_TIMEOUT_SLOT+1) => TimingToCycles(DEV_DATA_RDY_TIMEOUT,	CLOCK_GEN2_FREQ),				-- slot 4
-		(DEV_DATA_RDY_TIMEOUT_SLOT+2) => TimingToCycles(DEV_DATA_RDY_TIMEOUT,	CLOCK_GEN3_FREQ),				-- slot 5
-		(DEV_RCV_DATA_TIMEOUT_SLOT+0) => TimingToCycles(DEV_RCV_DATA_TIMEOUT,	CLOCK_GEN1_FREQ),				-- slot 6
-		(DEV_RCV_DATA_TIMEOUT_SLOT+1) => TimingToCycles(DEV_RCV_DATA_TIMEOUT,	CLOCK_GEN2_FREQ),				-- slot 7
-		(DEV_RCV_DATA_TIMEOUT_SLOT+2) => TimingToCycles(DEV_RCV_DATA_TIMEOUT,	CLOCK_GEN3_FREQ)				-- slot 8
+		(REG_DEV_HOST_TIMEOUT_SLOT+0) 	=> TimingToCycles(REG_DEV_HOST_TIMEOUT,		CLOCK_GEN1_FREQ),			-- slot 0
+		(REG_DEV_HOST_TIMEOUT_SLOT+1) 	=> TimingToCycles(REG_DEV_HOST_TIMEOUT,		CLOCK_GEN2_FREQ),			-- slot 1
+		(REG_DEV_HOST_TIMEOUT_SLOT+2) 	=> TimingToCycles(REG_DEV_HOST_TIMEOUT, 	CLOCK_GEN3_FREQ),			-- slot 2
+		(DATA_DEV_HOST_TIMEOUT_SLOT+0) 	=> TimingToCycles(DATA_DEV_HOST_TIMEOUT,	CLOCK_GEN1_FREQ),			-- slot 3
+		(DATA_DEV_HOST_TIMEOUT_SLOT+1) 	=> TimingToCycles(DATA_DEV_HOST_TIMEOUT,	CLOCK_GEN2_FREQ),			-- slot 4
+		(DATA_DEV_HOST_TIMEOUT_SLOT+2) 	=> TimingToCycles(DATA_DEV_HOST_TIMEOUT,	CLOCK_GEN3_FREQ),			-- slot 5
+		(DATA_HOST_DEV_TIMEOUT_SLOT+0) 	=> TimingToCycles(DATA_HOST_DEV_TIMEOUT,	CLOCK_GEN1_FREQ),			-- slot 6
+		(DATA_HOST_DEV_TIMEOUT_SLOT+1) 	=> TimingToCycles(DATA_HOST_DEV_TIMEOUT,	CLOCK_GEN2_FREQ),			-- slot 7
+		(DATA_HOST_DEV_TIMEOUT_SLOT+2) 	=> TimingToCycles(DATA_HOST_DEV_TIMEOUT,	CLOCK_GEN3_FREQ)			-- slot 8
 	);
 	
 	
@@ -253,6 +254,8 @@ BEGIN
 			-- ============================================================
       WHEN ST_INIT_AWAIT_FIS =>
         -- await initial RegDH FIS
+        Status															<= SATA_TRANS_STATUS_INITIALIZING;
+				
  				IF (FISD_Status = SATA_FISD_STATUS_RECEIVING) THEN
 					IF (FISD_FISType = SATA_FISTYPE_REG_DEV_HOST) THEN
 						NextState											<= ST_INIT_RECEIVE_FIS;
@@ -273,6 +276,8 @@ BEGIN
      
       WHEN ST_INIT_RECEIVE_FIS =>
 				-- Register FIS with valid CRC received.
+        Status															<= SATA_TRANS_STATUS_INITIALIZING;
+				
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
 					-- register FIS with correct content, check ATADeviceRegisters
 					IF (ATADeviceRegisters.Status.Error = '1') THEN
@@ -779,7 +784,7 @@ BEGIN
 				IF (FISE_Status = SATA_FISE_STATUS_SEND_OK) THEN
 					NextState													<= ST_CMDCAT_DMAOUT_AWAIT_FIS;
 					TC_DevResponse_Load 							<= '1';
-					TC_DevResponse_Slot 							<= TC_Slot(DEV_RCV_DATA_TIMEOUT_SLOT, SATAGeneration);
+					TC_DevResponse_Slot 							<= TC_Slot(DATA_HOST_DEV_TIMEOUT_SLOT, SATAGeneration);
 				ELSIF (FISE_Status = SATA_FISE_STATUS_SEND_ERROR) THEN
 					-- Retry finally failed.
 					Error_en 													<= '1';
@@ -820,8 +825,7 @@ BEGIN
 					-- End of FIS and valid content.
 					FISE_FISType											<= SATA_FISTYPE_DATA;
 					NextState													<= ST_CMDCAT_DMAOUT_SEND_DATA;
-					TC_DevResponse_Load 							<= '1';
-					TC_DevResponse_Slot 							<= TC_Slot(DEV_RCV_DATA_TIMEOUT_SLOT, SATAGeneration);
+					-- Do not restart timer. Timeout includes DMA Activate + DATA FIS.
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
@@ -839,7 +843,7 @@ BEGIN
 					-- (if transfer is complete) follows.
 					NextState													<= ST_CMDCAT_DMAOUT_AWAIT_FIS;
 					TC_DevResponse_Load 							<= '1';
-					TC_DevResponse_Slot 							<= TC_Slot(DEV_RCV_DATA_TIMEOUT_SLOT, SATAGeneration); -- more data
+					TC_DevResponse_Slot 							<= TC_Slot(DATA_HOST_DEV_TIMEOUT_SLOT, SATAGeneration); -- more data
 				ELSIF (FISE_Status = SATA_FISE_STATUS_SEND_ERROR) THEN
 					-- R_ERR while sending data FIS. Must not be retried.
 					-- Wait for register dev->host FIS with valid CRC.
@@ -848,10 +852,12 @@ BEGIN
 					TC_DevResponse_Slot 							<= TC_Slot(REG_DEV_HOST_TIMEOUT_SLOT, SATAGeneration);
 				elsif (FISE_Status = SATA_FISE_STATUS_SYNC_ESC) THEN
 					-- Sending data FIS aborted with SYNC. Must not be retried.
-					-- Wait for register dev->host FIS with valid CRC.
-					NextState 												<= ST_CMDCAT_DMAOUT_AWAIT_FIS;
-					TC_DevResponse_Load 							<= '1';
-					TC_DevResponse_Slot 							<= TC_Slot(REG_DEV_HOST_TIMEOUT_SLOT, SATAGeneration);
+					-- We can wait for a register dev->host FIS, but the test device was
+					-- not ready for any other ATA command afterwards. Thus, go to
+					-- blocking error state.
+					Error_en 													<= '1';
+					Error_nxt													<= SATA_TRANS_ERROR_FSM;
+					NextState													<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER;
 				elsif (TC_DevResponse_Timeout = '1') then
 					-- TODO (Minor): Cancel transport in FISEncoder (-> SyncEsc in LinkLayer).
 					Error_en 													<= '1';
@@ -864,8 +870,7 @@ BEGIN
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
 					-- register FIS with correct content, check ATADeviceRegisters
 					IF (ATADeviceRegisters.Status.Error = '1') THEN
-						Error_en 												<= '1';
-						Error_nxt												<= SATA_TRANS_ERROR_DEVICE_ERROR;
+						-- do not set Error_r, just report STATUS_TRANSFER_ERROR below
 						NextState												<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER;
 					ELSE
 						NextState												<= ST_TRANSFER_OK;
@@ -884,7 +889,12 @@ BEGIN
 				TX_ForceAck 												<= '1';
 				
 				if (TX_Valid and TX_EOT) = '1' then
-					NextState 												<= ST_ERROR;
+					if (Error_r /= SATA_TRANS_ERROR_NONE) then
+						-- fatal error occured
+						NextState 											<= ST_ERROR;
+					else
+						NextState 											<= ST_TRANSFER_ERROR;
+					end if;
 				end if;
 				
 			-- ============================================================
@@ -901,11 +911,20 @@ BEGIN
 					NextState		<= ST_IDLE;
 				end if;
 				
-			WHEN ST_ERROR =>
-				Status			<= SATA_TRANS_STATUS_ERROR;
---				if Error_r /= SATA_TRANS_ERROR_TIMEOUT then
+			WHEN ST_TRANSFER_ERROR =>
+				-- assert(Error = ERROR_NONE)
+				Status			<= SATA_TRANS_STATUS_TRANSFER_OK;
+				
+				if (Command = SATA_TRANS_CMD_TRANSFER) then
+					UpdateATAHostRegisters 						<= '1';
+					NextState 												<= ST_CHECK_ATA_HOST_REG;
+				else
 					NextState		<= ST_IDLE;
---				end if;
+				end if;
+				
+			WHEN ST_ERROR =>
+				-- fatal error occured, stay here
+				Status			<= SATA_TRANS_STATUS_ERROR;
 				
 		END CASE;
 	END PROCESS;
