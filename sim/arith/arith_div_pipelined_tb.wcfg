@@ -1,0 +1,554 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="H:/VHDL/git/SATAController/Projects/PicoBlazeDMATest_KC705_ISE/ise/arith_div_pipelined_tb_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="arith_div_pipelined_tb" />
+            <top_module name="components" />
+            <top_module name="math_real" />
+            <top_module name="my_config" />
+            <top_module name="numeric_std" />
+            <top_module name="simulation" />
+            <top_module name="std_logic_1164" />
+            <top_module name="strings" />
+            <top_module name="textio" />
+            <top_module name="utils" />
+            <top_module name="vectors" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="15" />
+   <wave_markers>
+      <marker time="10375000000" label="" />
+   </wave_markers>
+   <wvobject fp_name="/arith_div_pipelined_tb/clock" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clock</obj_property>
+      <obj_property name="ObjectShortName">clock</obj_property>
+   </wvobject>
+   <wvobject fp_name="/arith_div_pipelined_tb/reset" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">reset</obj_property>
+      <obj_property name="ObjectShortName">reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/arith_div_pipelined_tb/div/enable" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">enable</obj_property>
+      <obj_property name="ObjectShortName">enable</obj_property>
+   </wvobject>
+   <wvobject fp_name="/arith_div_pipelined_tb/div/dividend" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">dividend[7:0]</obj_property>
+      <obj_property name="ObjectShortName">dividend[7:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/arith_div_pipelined_tb/div/divisor" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">divisor[3:0]</obj_property>
+      <obj_property name="ObjectShortName">divisor[3:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/arith_div_pipelined_tb/div/quotient" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">quotient[7:0]</obj_property>
+      <obj_property name="ObjectShortName">quotient[7:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/arith_div_pipelined_tb/div/valid" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">valid</obj_property>
+      <obj_property name="ObjectShortName">valid</obj_property>
+   </wvobject>
+   <wvobject fp_name="group340" type="group">
+      <obj_property name="label">Stage 7</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="divider257" type="divider">
+         <obj_property name="label">Stage 7</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="BkColor">128 128 255</obj_property>
+         <obj_property name="TextColor">230 230 230</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/enable" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">enable</obj_property>
+         <obj_property name="ObjectShortName">enable</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/dividend" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dividend[7:0]</obj_property>
+         <obj_property name="ObjectShortName">dividend[7:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/divisor" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">divisor[3:0]</obj_property>
+         <obj_property name="ObjectShortName">divisor[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/remainerin" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">remainerin[3:0]</obj_property>
+         <obj_property name="ObjectShortName">remainerin[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/window" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">window[4:0]</obj_property>
+         <obj_property name="ObjectShortName">window[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/result" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">result</obj_property>
+         <obj_property name="ObjectShortName">result</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/newremainer" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">newremainer[4:0]</obj_property>
+         <obj_property name="ObjectShortName">newremainer[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/newremainer_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">newremainer_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">newremainer_d[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/dividend_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dividend_d[6:0]</obj_property>
+         <obj_property name="ObjectShortName">dividend_d[6:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/divisor_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">divisor_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">divisor_d[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/quotient" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">quotient[7:0]</obj_property>
+         <obj_property name="ObjectShortName">quotient[7:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group341" type="group">
+      <obj_property name="label">Stage 6</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="divider269" type="divider">
+         <obj_property name="label">Stage 6</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="BkColor">128 128 255</obj_property>
+         <obj_property name="TextColor">230 230 230</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/enable" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">enable</obj_property>
+         <obj_property name="ObjectShortName">enable</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/dividend" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dividend[6:0]</obj_property>
+         <obj_property name="ObjectShortName">dividend[6:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/divisor" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">divisor[3:0]</obj_property>
+         <obj_property name="ObjectShortName">divisor[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/remainerin" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">remainerin[3:0]</obj_property>
+         <obj_property name="ObjectShortName">remainerin[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/window" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">window[4:0]</obj_property>
+         <obj_property name="ObjectShortName">window[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/newremainer" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">newremainer[4:0]</obj_property>
+         <obj_property name="ObjectShortName">newremainer[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/result" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">result</obj_property>
+         <obj_property name="ObjectShortName">result</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/newremainer_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">newremainer_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">newremainer_d[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/dividend_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dividend_d[5:0]</obj_property>
+         <obj_property name="ObjectShortName">dividend_d[5:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/divisor_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">divisor_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">divisor_d[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/quotient" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">quotient[6:0]</obj_property>
+         <obj_property name="ObjectShortName">quotient[6:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group342" type="group">
+      <obj_property name="label">Stage 5</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="divider290" type="divider">
+         <obj_property name="label">Stage 5</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="BkColor">128 128 255</obj_property>
+         <obj_property name="TextColor">230 230 230</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/enable" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">enable</obj_property>
+         <obj_property name="ObjectShortName">enable</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/dividend" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dividend[5:0]</obj_property>
+         <obj_property name="ObjectShortName">dividend[5:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/divisor" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">divisor[3:0]</obj_property>
+         <obj_property name="ObjectShortName">divisor[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/remainerin" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">remainerin[3:0]</obj_property>
+         <obj_property name="ObjectShortName">remainerin[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/window" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">window[4:0]</obj_property>
+         <obj_property name="ObjectShortName">window[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/result" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">result</obj_property>
+         <obj_property name="ObjectShortName">result</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/newremainer" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">newremainer[4:0]</obj_property>
+         <obj_property name="ObjectShortName">newremainer[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/newremainer_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">newremainer_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">newremainer_d[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/dividend_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dividend_d[4:0]</obj_property>
+         <obj_property name="ObjectShortName">dividend_d[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/divisor_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">divisor_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">divisor_d[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/quotient" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">quotient[5:0]</obj_property>
+         <obj_property name="ObjectShortName">quotient[5:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group343" type="group">
+      <obj_property name="label">Stage 4</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="divider291" type="divider">
+         <obj_property name="label">Stage 4</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="BkColor">128 128 255</obj_property>
+         <obj_property name="TextColor">230 230 230</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/enable" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">enable</obj_property>
+         <obj_property name="ObjectShortName">enable</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/dividend" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dividend[4:0]</obj_property>
+         <obj_property name="ObjectShortName">dividend[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/divisor" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">divisor[3:0]</obj_property>
+         <obj_property name="ObjectShortName">divisor[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/remainerin" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">remainerin[3:0]</obj_property>
+         <obj_property name="ObjectShortName">remainerin[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/window" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">window[4:0]</obj_property>
+         <obj_property name="ObjectShortName">window[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/result" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">result</obj_property>
+         <obj_property name="ObjectShortName">result</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/newremainer" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">newremainer[4:0]</obj_property>
+         <obj_property name="ObjectShortName">newremainer[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/newremainer_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">newremainer_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">newremainer_d[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/dividend_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dividend_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">dividend_d[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/divisor_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">divisor_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">divisor_d[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/quotient" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">quotient[4:0]</obj_property>
+         <obj_property name="ObjectShortName">quotient[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group344" type="group">
+      <obj_property name="label">Stage 3</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="divider292" type="divider">
+         <obj_property name="label">Stage 3</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="BkColor">128 128 255</obj_property>
+         <obj_property name="TextColor">230 230 230</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/enable" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">enable</obj_property>
+         <obj_property name="ObjectShortName">enable</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/dividend" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dividend[3:0]</obj_property>
+         <obj_property name="ObjectShortName">dividend[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/divisor" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">divisor[3:0]</obj_property>
+         <obj_property name="ObjectShortName">divisor[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/remainerin" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">remainerin[3:0]</obj_property>
+         <obj_property name="ObjectShortName">remainerin[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/window" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">window[4:0]</obj_property>
+         <obj_property name="ObjectShortName">window[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/result" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">result</obj_property>
+         <obj_property name="ObjectShortName">result</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/newremainer" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">newremainer[4:0]</obj_property>
+         <obj_property name="ObjectShortName">newremainer[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/newremainer_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">newremainer_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">newremainer_d[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/dividend_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dividend_d[2:0]</obj_property>
+         <obj_property name="ObjectShortName">dividend_d[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/divisor_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">divisor_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">divisor_d[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/quotient" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">quotient[3:0]</obj_property>
+         <obj_property name="ObjectShortName">quotient[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group345" type="group">
+      <obj_property name="label">Stage 2</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="divider293" type="divider">
+         <obj_property name="label">Stage 2</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="BkColor">128 128 255</obj_property>
+         <obj_property name="TextColor">230 230 230</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/enable" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">enable</obj_property>
+         <obj_property name="ObjectShortName">enable</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/dividend" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dividend[2:0]</obj_property>
+         <obj_property name="ObjectShortName">dividend[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/divisor" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">divisor[3:0]</obj_property>
+         <obj_property name="ObjectShortName">divisor[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/remainerin" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">remainerin[3:0]</obj_property>
+         <obj_property name="ObjectShortName">remainerin[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/window" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">window[4:0]</obj_property>
+         <obj_property name="ObjectShortName">window[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/result" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">result</obj_property>
+         <obj_property name="ObjectShortName">result</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/result_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">result_d[2:0]</obj_property>
+         <obj_property name="ObjectShortName">result_d[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/newremainer" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">newremainer[4:0]</obj_property>
+         <obj_property name="ObjectShortName">newremainer[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/newremainer_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">newremainer_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">newremainer_d[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/dividend_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dividend_d[1:0]</obj_property>
+         <obj_property name="ObjectShortName">dividend_d[1:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/divisor_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">divisor_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">divisor_d[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/quotient" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">quotient[2:0]</obj_property>
+         <obj_property name="ObjectShortName">quotient[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group346" type="group">
+      <obj_property name="label">Stage 1</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="divider294" type="divider">
+         <obj_property name="label">Stage 1</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="BkColor">128 128 255</obj_property>
+         <obj_property name="TextColor">230 230 230</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/enable" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">enable</obj_property>
+         <obj_property name="ObjectShortName">enable</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/dividend" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dividend[1:0]</obj_property>
+         <obj_property name="ObjectShortName">dividend[1:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/divisor" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">divisor[3:0]</obj_property>
+         <obj_property name="ObjectShortName">divisor[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/remainerin" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">remainerin[3:0]</obj_property>
+         <obj_property name="ObjectShortName">remainerin[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/window" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">window[4:0]</obj_property>
+         <obj_property name="ObjectShortName">window[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/result" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">result</obj_property>
+         <obj_property name="ObjectShortName">result</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/result_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">result_d[1:0]</obj_property>
+         <obj_property name="ObjectShortName">result_d[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/newremainer" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">newremainer[4:0]</obj_property>
+         <obj_property name="ObjectShortName">newremainer[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/newremainer_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">newremainer_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">newremainer_d[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/dividend_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dividend_d[0:0]</obj_property>
+         <obj_property name="ObjectShortName">dividend_d[0:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/divisor_d" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">divisor_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">divisor_d[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/quotient" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">quotient[1:0]</obj_property>
+         <obj_property name="ObjectShortName">quotient[1:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group347" type="group">
+      <obj_property name="label">Stage 0</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="divider325" type="divider">
+         <obj_property name="label">Stage 0</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="BkColor">128 128 255</obj_property>
+         <obj_property name="TextColor">230 230 230</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/enable" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">enable</obj_property>
+         <obj_property name="ObjectShortName">enable</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/dividend" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dividend[0:0]</obj_property>
+         <obj_property name="ObjectShortName">dividend[0:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/divisor" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">divisor[3:0]</obj_property>
+         <obj_property name="ObjectShortName">divisor[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/remainerin" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">remainerin[3:0]</obj_property>
+         <obj_property name="ObjectShortName">remainerin[3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/window" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">window[4:0]</obj_property>
+         <obj_property name="ObjectShortName">window[4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/result" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">result</obj_property>
+         <obj_property name="ObjectShortName">result</obj_property>
+      </wvobject>
+      <wvobject fp_name="/arith_div_pipelined_tb/div/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/genrecursive/elem/quotient" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">quotient[0:0]</obj_property>
+         <obj_property name="ObjectShortName">quotient[0:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+</wave_config>

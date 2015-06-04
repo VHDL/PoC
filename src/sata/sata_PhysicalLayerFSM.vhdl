@@ -303,9 +303,13 @@ BEGIN
 			end if;
 			
 			if ClockEnable = '1' then
-				-- only update if clock is enabled because the current value must mimic
-				-- the FPGA transceiver configuration which is not automatically reseted
-				SATAGeneration_cur	<= SATAGeneration_nxt;
+				-- Only update if clock is enabled because the current value must mimic
+				-- the FPGA transceiver configuration which is not automatically reseted.
+				-- Don't update register if speed negotiation is disabled because FPGA
+				-- will not be reprogrammed.
+				if ALLOW_SPEED_NEGOTIATION then
+					SATAGeneration_cur	<= SATAGeneration_nxt;
+				end if;
 			end if;
 		end if;
 	end process;

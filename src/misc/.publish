@@ -1,3 +1,6 @@
+# git files
+.gitignore
+
 # sub namespaces
 filter/
 sync/

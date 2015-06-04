@@ -18,7 +18,11 @@
 -- sending frames and RX_* path for receiving frames. Success or failure of a
 -- transmission is indicated via the frame state FIFOs TX_FS_* and RX_FS_* for
 -- each direction, respectivly.
--- 
+--
+-- As defined in Serial ATA Revision 3.0, section 9.4.4:
+-- - Receiving DMAT is handled as R_IP.
+-- - DMAT is not send.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -72,6 +76,7 @@ entity sata_LinkLayer is
 		Error										: out	T_SATA_LINK_ERROR;
 
 		-- Debug ports
+		DebugPortIn						 	: in  T_SATADBG_LINK_IN;
 		DebugPortOut					 	: out T_SATADBG_LINK_OUT;
 		
 		-- TX port
@@ -124,8 +129,7 @@ architecture rtl of sata_LinkLayer is
 	constant TX_SOF_BIT									: NATURAL					:= 32;
 	constant TX_EOF_BIT									: NATURAL					:= 33;
 	constant TX_FIFO_BITS								: POSITIVE				:= 34;
-	constant TX_FIFO_DEPTH							: POSITIVE				:= 32;
-
+	constant TX_FIFO_DEPTH							: POSITIVE				:= 16;  -- 16 = minimum, short FIFO required by SyncEsc in FISEncoder
 	constant TX_SENDOK_BIT							: NATURAL					:= 0;
 	constant TX_SYNCESC_BIT							: NATURAL					:= 1;
 	constant TX_FSFIFO_BITS							: POSITIVE				:= 2;
@@ -650,9 +654,20 @@ begin
 --			DataIn									=> DummyScrambler_DataIn,
 --			DataOut									=> DummyScrambler_DataOut
 --		);
-	
-	PM_DataIn <= DataScrambler_DataOut;-- WHEN (ScramblerMux_ctrl = '0') ELSE DummyScrambler_DataOut;
 
+	genBitError : if (ENABLE_DEBUGPORT = TRUE) generate
+		signal data : STD_LOGIC_VECTOR(31 downto 0);
+	begin
+		data <= DataScrambler_DataOut;-- WHEN (ScramblerMux_ctrl = '0') ELSE DummyScrambler_DataOut;
+		PM_DataIn(31 downto 1) 	<= data(31 downto 1);
+		PM_DataIn(0) 						<= mux(DebugPortIn.InsertBitErrorHeaderTX and Trans_TX_SOF, -- only for FIS Header
+																	 data(0), not data(0));
+	end generate;
+	
+	genNoBitError : if not(ENABLE_DEBUGPORT = TRUE) generate
+		PM_DataIn <= DataScrambler_DataOut;-- WHEN (ScramblerMux_ctrl = '0') ELSE DummyScrambler_DataOut;
+	end generate;
+	
 	-- RX path
 	DataUnscrambler : entity PoC.sata_Scrambler
 		generic map (
