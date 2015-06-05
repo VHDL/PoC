@@ -130,8 +130,6 @@ architecture rtl of sata_Transceiver_Series7_GTXE2 is
 --	constant C_DEVICE_INFO						: T_DEVICE_INFO		:= DEVICE_INFO;
 	
 	signal RefClockIn_150_MHz_BUFR		: STD_LOGIC;
-	signal DD_Clock										: STD_LOGIC;
-	signal OOB_Clock									: STD_LOGIC;
 	
 	function to_ClockDividerSelection(gen : T_SATA_GENERATION) return STD_LOGIC_VECTOR is
 	begin
@@ -152,14 +150,6 @@ begin
 --	assert (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2)	report "This is a GTXE2 wrapper component."																			severity FAILURE;
 --	assert (C_DEVICE_INFO.DEVICE = DEVICE_KINTEX7)							report "Device " & DEVICE_T'image(C_DEVICE_INFO.DEVICE) & " not yet supported."	severity FAILURE;
 	assert (PORTS <= 4)																					report "To many ports per transceiver."																					severity FAILURE;
-	
-	-- ==================================================================
-	-- ClockBuffers
-	-- ==================================================================
-	-- stable clock for device detection logics
-	DD_Clock					<= RefClockIn_150_MHz_BUFR;
-	OOB_Clock					<= '0';
-		
 	
 --	==================================================================
 -- data path buffers
@@ -263,13 +253,13 @@ begin
 		signal DRPSync_DataOut							: T_XIL_DRP_DATA;
 		
 		signal DRPMux_In_DataOut						: T_XIL_DRP_DATA_VECTOR(1 downto 0);
-		signal DRPMux_Out_DataOut						: T_XIL_DRP_DATA;
 		signal DRPMux_Ack										: STD_LOGIC_VECTOR(1 downto 0);
 		
 		signal GTX_DRP_Clock								: STD_LOGIC;
 		signal GTX_DRP_Enable								: STD_LOGIC;
 		signal GTX_DRP_ReadWrite						: STD_LOGIC;
 		signal GTX_DRP_Address							: T_XIL_DRP_ADDRESS;
+		signal GTX_DRP_DataIn								: T_XIL_DRP_DATA;
 		signal GTX_DRP_DataOut							: T_XIL_DRP_DATA;
 		signal GTX_DRP_Ack									: STD_LOGIC;
 		
@@ -625,8 +615,8 @@ begin
 --		GTX_DRP_Enable										<= '0';
 --		GTX_DRP_ReadWrite										<= '0';
 --		GTX_DRP_Address								<= "000000000";
---		GTX_DRP_DataOut								<= x"0000";
-		--	<float>										<= GTX_DRP_DataOutOut;
+--		GTX_DRP_DataIn								<= x"0000";
+		--	<float>										<= GTX_DRP_DataOut;
 		--	<float>										<= GTX_DRP_Ack;
 
 		process(SATA_Clock_i)
@@ -729,12 +719,12 @@ begin
 --				In_DataOut				=> DRPMux_In_DataOut,
 --				In_Ack						=> DRPMux_Ack,
 --				
---				Out_Enable				=> open,	--GTX_DRP_Enable,
---				Out_Address				=> open,	--GTX_DRP_Address,
---				Out_ReadWrite			=> open,	--GTX_DRP_ReadWrite,
+--				Out_Enable				=> GTX_DRP_Enable,
+--				Out_Address				=> GTX_DRP_Address,
+--				Out_ReadWrite			=> GTX_DRP_ReadWrite,
 --				Out_DataIn				=> GTX_DRP_DataOut,
---				Out_DataOut				=> open,	--DRPMux_Out_DataOut,
---				Out_Ack						=> '0'		--GTX_DRP_Ack	
+--				Out_DataOut				=> GTX_DRP_DataIn,
+--				Out_Ack						=> GTX_DRP_Ack	
 --			);
 		
 		-- ==================================================================
@@ -1236,7 +1226,7 @@ begin
 				DRPEN														=> GTX_DRP_Enable,								-- @DRP_Clock:	
 				DRPWE														=> GTX_DRP_ReadWrite,							-- @DRP_Clock:	
 				DRPADDR													=> GTX_DRP_Address(8 downto 0),		-- @DRP_Clock:	
-				DRPDI														=> DRPMux_Out_DataOut,						-- @DRP_Clock:	
+				DRPDI														=> GTX_DRP_DataIn,								-- @DRP_Clock:	
 				DRPDO														=> GTX_DRP_DataOut,								-- @DRP_Clock:	
 				DRPRDY													=> GTX_DRP_Ack,										-- @DRP_Clock:	
 				
@@ -1424,7 +1414,7 @@ begin
 				PMARSVDIN2											=> "00000",												-- @async:			
 				TSTIN														=> "11111111111111111111",				-- @async:			
 				TSTOUT													=> open,													-- @async:			
-				CLKRSVD(0)											=> OOB_Clock,											-- @clock:			alternative OOB clock; selectable by PCS_RSVD_ATTR(3) = '1'
+				CLKRSVD(0)											=> '0',														-- @clock:			alternative OOB clock; selectable by PCS_RSVD_ATTR(3) = '1'
 				CLKRSVD(3 downto 1)							=> "000",
 				SETERRSTATUS										=> '0',														-- @async:			reserved; RX 8B/10B decoder port
 				RXCDROVRDEN											=> '0',														-- @async:			reserved; CDR port
@@ -1482,8 +1472,8 @@ begin
 			GTX_DRP_Enable								<= '0';
 			GTX_DRP_ReadWrite							<= '0';
 			GTX_DRP_Address								<= (others => '0');
-			GTX_DRP_DataOut								<= x"0000";
-			--	<float>										<= GTX_DRP_DataOutOut;
+			GTX_DRP_DataIn								<= x"0000";
+			--	<float>										<= GTX_DRP_DataOut;
 			--	<float>										<= GTX_DRP_Ack;
 		end generate;
 		genCSP1 : if (ENABLE_DEBUGPORT = TRUE) generate
@@ -1527,7 +1517,7 @@ begin
 			GTX_DRP_Enable		<= DebugPortIn(I).DRP.Enable;
 			GTX_DRP_ReadWrite	<= DebugPortIn(I).DRP.ReadWrite;
 			GTX_DRP_Address		<= DebugPortIn(I).DRP.Address;
-			GTX_DRP_DataOut		<= DebugPortIn(I).DRP.Data;
+			GTX_DRP_DataIn		<= DebugPortIn(I).DRP.Data;
 			
 			DebugPortOut(I).PowerDown									<= PowerDown(i);
 			DebugPortOut(I).ClockNetwork_Reset				<= ClockNetwork_Reset(i);
@@ -1551,7 +1541,7 @@ begin
 			DebugPortOut(I).GTX_RX_ResetDone					<= GTX_RX_ResetDone;
 			DebugPortOut(I).FSM												<= '0' & to_slv(State);
 			
-			DebugPortOut(I).OOB_Clock									<= OOB_Clock;
+			DebugPortOut(I).OOB_Clock									<= '0';
 			DebugPortOut(I).RP_SATAGeneration					<= RP_SATAGeneration(I);
 			DebugPortOut(I).RP_Reconfig								<= RP_Reconfig(I);
 			DebugPortOut(I).RP_ReconfigComplete				<= RP_Reconfig_d;

@@ -12,6 +12,10 @@
 -- ------------------------------------
 -- See notes on module 'sata_TransportLayer'.
 -- 
+-- The Clock might be only unstable in the FSM state ST_RESET.
+-- During Power-up or a ClockNetwork_Reset this unit is hold in the
+-- reset state ST_RESET due to MyReset = '1'.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -55,7 +59,7 @@ ENTITY sata_TransportFSM IS
   );
 	PORT (
 		Clock															: IN	STD_LOGIC;
-		Reset															: IN	STD_LOGIC;
+		MyReset														: IN	STD_LOGIC;
 
 		-- TransportFSM interface
 		Command														: IN	T_SATA_TRANS_COMMAND;
@@ -91,9 +95,7 @@ ENTITY sata_TransportFSM IS
 		FISD_EOP													: IN	STD_LOGIC;
 		
 		FISE_FISType											: OUT	T_SATA_FISTYPE;
-		FISE_Status												: IN	T_SATA_FISENCODER_STATUS;
-		FISE_SOP													: OUT	STD_LOGIC;
-		FISE_EOP													: OUT	STD_LOGIC
+		FISE_Status												: IN	T_SATA_FISENCODER_STATUS
 	);
 END;
 
@@ -185,7 +187,7 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+			IF (MyReset = '1') THEN
 				State						<= ST_RESET;
 				Error_r					<= SATA_TRANS_ERROR_NONE;
 			ELSE
@@ -202,7 +204,7 @@ BEGIN
 	
 	PROCESS(State, Command, ATA_Command_Category, ATADeviceRegisters, TC_DevResponse_Timeout, Error_r,
 					FISE_Status, FISD_Status, FISD_FISType, FISD_SOP, FISD_EOP, 
-          Link_Status, TX_Valid, TX_EOT)
+          Link_Status, SATAGeneration, TX_Valid, TX_EOT)
 	BEGIN
 		NextState																<= State;
 		
@@ -216,8 +218,6 @@ BEGIN
 		TX_en																		<= '0';
 		TX_ForceAck															<= '0';
 		FISE_FISType														<= SATA_FISTYPE_UNKNOWN;
-		FISE_SOP																<= '0';
-		FISE_EOP																<= '0';
 		
 		RX_LastWord															<= '0';
 		RX_SOT																	<= '0';
@@ -230,13 +230,13 @@ BEGIN
 		CASE State IS
       WHEN ST_RESET =>
 				-- Clock might be unstable is this state. In this case either
-				-- a) Reset is asserted because inital reset of the SATAController is
+				-- a) MyReset is asserted because inital reset of the SATAController is
 				--    not finished yet.
-				-- b) Link_Status is constant and not equal to SATA_LINK_STATUS_NO_COMMUNICATION.
+				-- b) Link_Status is constant and not equal to SATA_LINK_STATUS_IDLE
 				--    This may happen during reconfiguration due to speed negotiation.
         Status															<= SATA_TRANS_STATUS_RESET;
         
-        if (Link_Status /= SATA_LINK_STATUS_NO_COMMUNICATION) then
+        if (Link_Status = SATA_LINK_STATUS_IDLE) then
           IF (SIM_WAIT_FOR_INITIAL_REGDH_FIS = TRUE) THEN
             NextState <= ST_INIT_AWAIT_FIS;
           ELSE

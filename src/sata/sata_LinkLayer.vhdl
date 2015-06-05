@@ -23,6 +23,8 @@
 -- - Receiving DMAT is handled as R_IP.
 -- - DMAT is not send.
 --
+-- Does not support dummy scrambling of TX primitives.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany

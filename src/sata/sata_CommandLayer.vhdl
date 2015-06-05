@@ -113,9 +113,9 @@ entity sata_CommandLayer is
 
 		-- TransportLayer interface
 		-- ========================================================================
-		Trans_Command									: out	T_SATA_TRANS_COMMAND;
-		Trans_Status									: in	T_SATA_TRANS_STATUS;
-		Trans_Error										: in	T_SATA_TRANS_ERROR;
+		SATAC_Command									: out	T_SATA_SATACONTROLLER_COMMAND;
+		SATAC_Status									: in	T_SATA_SATACONTROLLER_STATUS;
+		SATAC_Error										: in	T_SATA_SATACONTROLLER_ERROR;
 	
 		-- ATA registers
 		Trans_ATAHostRegisters				: out	T_SATA_ATA_HOST_REGISTERS;
@@ -142,9 +142,9 @@ architecture rtl of sata_CommandLayer is
 	attribute KEEP													: BOOLEAN;
 	attribute FSM_ENCODING									: STRING;
 
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	-- CommandLayer configurations
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	constant SHIFT_WIDTH										: POSITIVE								:= 8;						-- supports logical block sizes from 512 B to 4 KiB
 	constant AHEAD_CYCLES_FOR_INSERT_EOT		: NATURAL									:= 1;
 
@@ -287,9 +287,9 @@ begin
 			RX_ForcePut										=> CFSM_RX_ForcePut,
 			
 			-- TransportLayer interface
-			Trans_Command									=> Trans_Command,
-			Trans_Status									=> Trans_Status,
-			Trans_Error										=> Trans_Error,
+			SATAC_Command									=> SATAC_Command,
+			Trans_Status									=> SATAC_Status.TransportLayer,
+			Trans_Error										=> SATAC_Error.TransportLayer,
 			
 			Trans_ATAHostRegisters				=> Trans_ATAHostRegisters,
 			

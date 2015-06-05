@@ -14,7 +14,7 @@
 --
 -- Status:
 -- -------
--- *_RESET: 								Phy_Status not yet communicating.
+-- *_RESET: 								Link_Status is not yet IDLE.
 -- *_IDLE:									Ready to send new FIS.
 -- *_SENDING: 							Sending FIS.
 -- *_SEND_OK:								FIS transmitted and acknowledged with R_OK  by other end.
@@ -77,8 +77,8 @@ entity sata_FISEncoder IS
 		TX_Valid										: in	STD_LOGIC;
 		TX_InsertEOP								: out	STD_LOGIC;
 		
-		-- SATAController Status
-		Phy_Status										: IN	T_SATA_PHY_STATUS;
+		-- LinkLayer CSE
+		Link_Status									: IN	T_SATA_LINK_STATUS;
 		
 		-- LinkLayer FIFO interface
 		Link_TX_Ack									: in	STD_LOGIC;
@@ -152,7 +152,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	PROCESS(State, Phy_Status, FISType, ATARegisters, TX_Valid, TX_Data, TX_SOP, TX_EOP, Link_TX_Ack, Link_TX_FS_Valid, Link_TX_FS_SendOK, Link_TX_FS_SyncEsc, Link_TX_InsertEOF)
+	PROCESS(State, Link_Status, FISType, ATARegisters, TX_Valid, TX_Data, TX_SOP, TX_EOP, Link_TX_Ack, Link_TX_FS_Valid, Link_TX_FS_SendOK, Link_TX_FS_SyncEsc, Link_TX_InsertEOF)
 	BEGIN
 		NextState										<= State;
 		
@@ -197,11 +197,11 @@ BEGIN
 				-- Clock might be unstable is this state. In this case either
 				-- a) Reset is asserted because inital reset of the SATAController is
 				--    not finished yet.
-				-- b) Phy_Status is constant and not equal to SATA_PHY_STATUS_LINK_OK.
+				-- b) Link_Status is constant and not equal to SATA_LINK_STATUS_IDLE
 				--    This may happen during reconfiguration due to speed negotiation.
         Status										<= SATA_FISE_STATUS_RESET;
         
-        if (Phy_Status = SATA_PHY_STATUS_COMMUNICATING) then
+        if (Link_Status = SATA_LINK_STATUS_IDLE) then
 					NextState <= ST_IDLE;
         end if;
 				
