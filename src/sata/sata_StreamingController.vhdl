@@ -4,17 +4,27 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
---									Steffen Koehler
---									Martin Zabel
+-- 									Martin Zabel
 --
--- Module: 					ATA Streaming Controller (Command and Transport Layer)
+-- Module:					SATA Streaming Controller
 --
 -- Description:
 -- ------------------------------------
--- Combines ATA Command and SATA Transport Layer. Provides a simple interface
--- to stream data from the device to the host (read data) and vice versa (write
--- data).
--- 
+-- Executes ATA commands.
+--
+-- Automatically issues an "identify device" when the SATA Controller is
+-- idle after power-up or reset.
+--
+-- If initial or requested IDENTIFY DEVICE failed, then FSM stays in error state.
+-- Either *_ERROR_IDENTIFY_DEVICE_ERROR or *_ERROR_DEVICE_NOT_SUPPORTED are
+-- signaled. To leave this state, apply one of the following:
+-- - assert synchronous reset for whole SATA stack, or
+-- - issue *_CMD_IDENTIFY_DEVICE.
+--
+-- If the Transport Layer encounters a fatal error, then FSM stays in error
+-- state and *_ERROR_TRANSPORT_ERROR is signaled. To leave this state assert
+-- synchronous reset for whole SATA stack.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -38,204 +48,547 @@ use			IEEE.STD_LOGIC_1164.all;
 use			IEEE.NUMERIC_STD.all;
 
 library PoC;
+use 		PoC.config.all;
 use			PoC.utils.all;
 use			PoC.vectors.all;
+use			PoC.strings.all;
 use			PoC.physical.all;
+use			PoC.components.all;
+use 		PoC.debug.all;
 use			PoC.sata.all;
 use			PoC.satadbg.all;
 
 
 entity sata_StreamingController is
 	generic (
-		SIM_EXECUTE_IDENTIFY_DEVICE				: BOOLEAN						:= TRUE;			-- required by CommandLayer: load device parameters
-		DEBUG															: BOOLEAN						:= FALSE;			-- generate ChipScope DBG_* signals
-		ENABLE_DEBUGPORT									: BOOLEAN						:= FALSE;			-- 
-		LOGICAL_BLOCK_SIZE								: MEMORY						:= 8 KiB			-- accessable logical block size: 8 KiB (independant from device)
-																																				-- 8 KiB, maximum supported is 64 KiB, with 512 B device logical blocks
+		ENABLE_DEBUGPORT							: BOOLEAN									:= FALSE;			-- export internal signals to upper layers for debug purposes
+		DEBUG													: BOOLEAN									:= FALSE;
+		SIM_EXECUTE_IDENTIFY_DEVICE		: BOOLEAN									:= TRUE;			-- required by CommandLayer: load device parameters
+		LOGICAL_BLOCK_SIZE						: MEMORY 									:= 8 KiB			-- accessable logical block size: 8 KiB (independant from device)
+																																					-- 8 KiB, maximum supported is 64 KiB, with 512 B device logical blocks
 	);
 	port (
-		Clock											: in	STD_LOGIC;
-		ClockEnable								: in	STD_LOGIC;
-		Reset											: in	STD_LOGIC;
+		Clock													: in	STD_LOGIC;
+		ClockEnable										: in	STD_LOGIC;
+		Reset													: in	STD_LOGIC;
 
-		-- StreamingController interface
+		-- CommandLayer interface
 		-- ========================================================================
-		Command										: in	T_SATA_STREAMC_COMMAND;
-		Status										: out	T_SATA_STREAMC_STATUS;
-		Error											: out	T_SATA_STREAMC_ERROR;
+		Command												: in	T_SATA_STREAMINGCONTROLLER_COMMAND;
+		Status												: out	T_SATA_STREAMINGCONTROLLER_STATUS;
+		Error													: out	T_SATA_STREAMINGCONTROLLER_ERROR;
 
-		-- debug ports
-		DebugPortOut							: out	T_SATADBG_SATASC_OUT;
+		DebugPortOut									: out T_SATADBG_STREAMINGCONTROLLER_OUT;
 
 		-- for measurement purposes only
-		Config_BurstSize					: in	T_SLV_16;
-		DriveInformation					: out	T_SATA_DRIVE_INFORMATION;
+		Config_BurstSize							: in	T_SLV_16;
 		
-		-- ATA Streaming interface
-		Address_AppLB							: in	T_SLV_48;
-		BlockCount_AppLB					: in	T_SLV_48;
+		-- address interface (valid on Command /= *_NONE)
+		Address_AppLB									: in	T_SLV_48;
+		BlockCount_AppLB							: in	T_SLV_48;
 		
+		-- 
+		DriveInformation							: out T_SATA_DRIVE_INFORMATION;
+
 		-- TX path
-		TX_Valid									: in	STD_LOGIC;
-		TX_Data										: in	T_SLV_32;
-		TX_SOR										: in	STD_LOGIC;
-		TX_EOR										: in	STD_LOGIC;
-		TX_Ack										: out	STD_LOGIC;
-		
+		TX_Valid											: in	STD_LOGIC;
+		TX_Data												: in	T_SLV_32;
+		TX_SOR												: in	STD_LOGIC;
+		TX_EOR												: in	STD_LOGIC;
+		TX_Ack												: out	STD_LOGIC;
+
 		-- RX path
-		RX_Valid									: out	STD_LOGIC;
-		RX_Data										: out	T_SLV_32;
-		RX_SOR										: out	STD_LOGIC;
-		RX_EOR										: out	STD_LOGIC;
-		RX_Ack										: in	STD_LOGIC;
-		
-		-- SATAController interface
+		RX_Valid											: out	STD_LOGIC;
+		RX_Data												: out	T_SLV_32;
+		RX_SOR												: out	STD_LOGIC;
+		RX_EOR												: out	STD_LOGIC;
+		RX_Ack												: in	STD_LOGIC;
+
+		-- TransportLayer interface
 		-- ========================================================================
-		SATA_ResetDone 						: in 	STD_LOGIC;
-		SATA_Command							: out	T_SATA_SATACONTROLLER_COMMAND;
-		SATA_Status								: in	T_SATA_SATACONTROLLER_STATUS;
-		SATA_Error								: in	T_SATA_SATACONTROLLER_ERROR;
-		
+		SATAC_ResetDone 							: in  STD_LOGIC;
+		SATAC_Command									: out	T_SATA_SATACONTROLLER_COMMAND;
+		SATAC_Status									: in	T_SATA_SATACONTROLLER_STATUS;
+		SATAC_Error										: in	T_SATA_SATACONTROLLER_ERROR;
+	
 		-- ATA registers
-		SATA_ATAHostRegisters			: out	T_SATA_ATA_HOST_REGISTERS;
-		SATA_ATADeviceRegisters		: in	T_SATA_ATA_DEVICE_REGISTERS;
-		
-		-- TX port
-		SATA_TX_SOT								: out	STD_LOGIC;
-		SATA_TX_EOT								: out	STD_LOGIC;
-		SATA_TX_Valid							: out	STD_LOGIC;
-		SATA_TX_Data							: out	T_SLV_32;
-		SATA_TX_Ack								: in	STD_LOGIC;
-		
-		-- RX port
-		SATA_RX_SOT								: in	STD_LOGIC;
-		SATA_RX_EOT								: in	STD_LOGIC;
-		SATA_RX_Valid							: in	STD_LOGIC;
-		SATA_RX_Data							: in	T_SLV_32;
-		SATA_RX_Ack								: out	STD_LOGIC
+		SATAC_ATAHostRegisters				: out	T_SATA_ATA_HOST_REGISTERS;
+		SATAC_ATADeviceRegisters			: in	T_SATA_ATA_DEVICE_REGISTERS;
+	
+		-- TX path
+		SATAC_TX_Valid								: out	STD_LOGIC;
+		SATAC_TX_Data									: out	T_SLV_32;
+		SATAC_TX_SOT									: out	STD_LOGIC;
+		SATAC_TX_EOT									: out	STD_LOGIC;
+		SATAC_TX_Ack									: in	STD_LOGIC;
+
+		-- RX path
+		SATAC_RX_Valid								: in	STD_LOGIC;
+		SATAC_RX_Data									: in	T_SLV_32;
+		SATAC_RX_SOT									: in	STD_LOGIC;
+		SATAC_RX_EOT									: in	STD_LOGIC;
+		SATAC_RX_Ack									: out	STD_LOGIC
 	);
 end;
 
 
 architecture rtl of sata_StreamingController is
 	attribute KEEP													: BOOLEAN;
+	attribute FSM_ENCODING									: STRING;
 
-	-- Common
-	-- ==========================================================================
+	-- my reset
 	signal MyReset 													: STD_LOGIC;
 	
-	-- CommandLayer
+	-- ===========================================================================
+	-- CommandLayer configurations
+	-- ===========================================================================
+	constant SHIFT_WIDTH										: POSITIVE								:= 8;						-- supports logical block sizes from 512 B to 4 KiB
+	constant AHEAD_CYCLES_FOR_INSERT_EOT		: NATURAL									:= 1;
+
+	-- CommandFSM
 	-- ==========================================================================
-	signal Cmd_Command											: T_SATA_CMD_COMMAND;
-	signal Cmd_Status												: T_SATA_CMD_STATUS;
-	signal Cmd_Error												: T_SATA_CMD_ERROR;
+	signal Status_i													: T_SATA_STREAMINGCONTROLLER_STATUS;
+	signal Error_i													: T_SATA_STREAMINGCONTROLLER_ERROR;
+
+	signal SCFSM_TX_en											: STD_LOGIC;
+	SIGNAL SCFSM_TX_ForceEOT								: STD_LOGIC;
+	SIGNAL SCFSM_TX_FIFO_ForceGot						: STD_LOGIC;
+	
+	signal SCFSM_RX_SOR											: STD_LOGIC;
+	signal SCFSM_RX_EOR											: STD_LOGIC;
+	signal SCFSM_RX_ForcePut								: STD_LOGIC;
+
+	signal SCFSM_DebugPortOut								: T_SATADBG_STREAMINGCONTROLLER_SCFSM_OUT;
+
+	signal ATA_CommandCategory							: T_SATA_COMMAND_CATEGORY;
+	
+	-- AddressCalculation
+	-- ==========================================================================
+	signal AdrCalc_Address_DevLB						: T_SLV_48;
+	signal AdrCalc_BlockCount_DevLB					: T_SLV_48;
+
+	-- TX_FIFO
+	-- ==========================================================================
+	signal TX_FIFO_Full											: STD_LOGIC;
+	signal TX_FIFO_put											: STD_LOGIC;
+	signal TX_FIFO_got											: STD_LOGIC;
+	signal TX_FIFO_DataIn										: STD_LOGIC_VECTOR(33 downto 0);
+	signal TX_FIFO_DataOut									: STD_LOGIC_VECTOR(33 downto 0);
+	
+	-- TX path data interface after TX_FIFO
+	signal TX_FIFO_Data											: T_SLV_32;
+	signal TX_FIFO_SOR											: STD_LOGIC;
+	signal TX_FIFO_EOR											: STD_LOGIC;
+	signal TX_FIFO_Valid										: STD_LOGIC;		
+	
+	-- TX path
+	-- ==========================================================================
+	signal TC_TX_Ack												: STD_LOGIC;
+	signal TC_TX_Valid											: STD_LOGIC;
+	signal TC_TX_Data												: T_SLV_32;
+	signal TC_TX_SOT												: STD_LOGIC;
+	signal TC_TX_EOT												: STD_LOGIC;
+	signal TC_TX_InsertEOT									: STD_LOGIC;
+	
+	-- RX_FIFO
+	-- ==========================================================================
+	signal RX_FIFO_put											: STD_LOGIC;
+	signal RX_FIFO_got											: STD_LOGIC;
+	signal RX_FIFO_DataIn										: STD_LOGIC_VECTOR(33 downto 0);
+	signal RX_FIFO_DataOut									: STD_LOGIC_VECTOR(33 downto 0);
+	signal RX_FIFO_Valid										: STD_LOGIC;
+	signal RX_FIFO_Full											: STD_LOGIC;
+
+	-- IdentifyDeviceFilter
+	-- ==========================================================================
+	signal IDF_Reset												: STD_LOGIC;
+	signal IDF_Enable												: STD_LOGIC;
+	signal IDF_Error												: STD_LOGIC;
+	signal IDF_Finished											: STD_LOGIC;
+	
+	signal IDF_Valid												: STD_LOGIC;
+	signal IDF_Data													: T_SLV_32;
+	signal IDF_SOT													: STD_LOGIC;
+	signal IDF_EOT													: STD_LOGIC;
+	signal IDF_DriveInformation							: T_SATA_DRIVE_INFORMATION;
+
+	-- Internal version of output signals
+	-- ========================================================================
+	signal SATAC_RX_Ack_i : std_logic;
 	
 begin
 	-- Reset sub-components until initial reset of SATAController has been
 	-- completed. Allow synchronous 'Reset' only when ClockEnable = '1'.
 	-- ===========================================================================
-	MyReset <= (not SATA_ResetDone) or (Reset and ClockEnable);
+	MyReset <= (not SATAC_ResetDone) or (Reset and ClockEnable);
 
 	
-	-- rewrite StreamingController commands to ATA command layer commands
-	-- ===========================================================================
-	process(Command)
+	-- ================================================================
+	-- logical block address calculations
+	-- ================================================================
+	AdrCalc : block
+		signal Shift_us										: UNSIGNED(log2ceilnz(SHIFT_WIDTH) - 1 downto 0);
+		type T_SHIFTED										is array(NATURAL range <>) of T_SLV_48;
+		signal Address_AppLB_Shifted			: T_SHIFTED(SHIFT_WIDTH - 1 downto 0);
+		signal BlockCount_AppLB_Shifted		: T_SHIFTED(SHIFT_WIDTH - 1 downto 0);
 	begin
-		case Command is
-			when SATA_STREAMC_CMD_NONE =>					Cmd_Command	<= SATA_CMD_CMD_NONE;
-			when SATA_STREAMC_CMD_READ =>					Cmd_Command	<= SATA_CMD_CMD_READ;
-			when SATA_STREAMC_CMD_WRITE =>				Cmd_Command	<= SATA_CMD_CMD_WRITE;
-			when SATA_STREAMC_CMD_FLUSH_CACHE =>	Cmd_Command	<= SATA_CMD_CMD_FLUSH_CACHE;
-			when SATA_STREAMC_CMD_DEVICE_RESET =>	Cmd_Command	<= SATA_CMD_CMD_DEVICE_RESET;
-			when others =>												Cmd_Command	<= SATA_CMD_CMD_NONE;
-		end case;
-	end process;
+		Shift_us													<= to_unsigned(log2ceil(to_int(LOGICAL_BLOCK_SIZE, 1 Byte)) - to_integer(to_01(IDF_DriveInformation.LogicalBlockSize_ldB)), Shift_us'length);
 
-	-- assign status record
-	Status.CommandLayer				<= Cmd_Status;
-	Status.TransportLayer			<= SATA_Status.TransportLayer;
-	Status.LinkLayer					<= SATA_Status.LinkLayer;
-	Status.PhysicalLayer			<= SATA_Status.PhysicalLayer;
-	Status.TransceiverLayer		<= SATA_Status.TransceiverLayer;
+		Address_AppLB_Shifted(0)					<= Address_AppLB;
+		BlockCount_AppLB_Shifted(0)				<= BlockCount_AppLB;
+		
+		genShifted : for i in 1 to SHIFT_WIDTH - 1 generate
+			Address_AppLB_Shifted(i)				<= Address_AppLB(Address_AppLB'high - i downto 0)			& (i - 1 downto 0 => '0');
+			BlockCount_AppLB_Shifted(i)			<= BlockCount_AppLB(Address_AppLB'high - i downto 0)	& (i - 1 downto 0 => '0');
+		end generate;
+		
+		AdrCalc_Address_DevLB 						<= Address_AppLB_Shifted(to_index(Shift_us, Address_AppLB_Shifted'length));
+		AdrCalc_BlockCount_DevLB					<= BlockCount_AppLB_Shifted(to_index(Shift_us, BlockCount_AppLB_Shifted'length));
+	end block;
 	
-	-- assign error record
-	Error.Commandlayer				<= Cmd_Error;
-	Error.TransportLayer			<= SATA_Error.TransportLayer;
-	Error.LinkLayer						<= SATA_Error.LinkLayer;
-	Error.PhysicalLayer				<= SATA_Error.PhysicalLayer;
-	Error.TransceiverLayer		<= SATA_Error.TransceiverLayer;
-	
-	-- CommandLayer
-	-- ===========================================================================
-	Cmd : entity PoC.sata_CommandLayer
+
+	-- ================================================================
+	-- Streaming Controller FSM
+	-- ================================================================
+	SCFSM : entity PoC.sata_StreamingControllerFSM
 		generic map (
-			SIM_EXECUTE_IDENTIFY_DEVICE	=> SIM_EXECUTE_IDENTIFY_DEVICE,		-- required by CommandLayer: load device parameters
-			DEBUG												=> DEBUG,													-- generate ChipScope DBG_* signals
-			ENABLE_DEBUGPORT						=> ENABLE_DEBUGPORT,
-			LOGICAL_BLOCK_SIZE					=> LOGICAL_BLOCK_SIZE
+			ENABLE_DEBUGPORT 							=> ENABLE_DEBUGPORT,
+			SIM_EXECUTE_IDENTIFY_DEVICE		=> SIM_EXECUTE_IDENTIFY_DEVICE,
+			DEBUG													=> DEBUG					
 		)
 		port map (
-			Clock												=> Clock,
-			Reset												=> MyReset,
+			Clock													=> Clock,
+			MyReset												=> MyReset,
 
 			-- for measurement purposes only
-			Config_BurstSize						=> Config_BurstSize,
+			Config_BurstSize							=> Config_BurstSize,
+			
+			-- CommandLayer interface			
+			Command												=> Command,
+			Status												=> Status_i,
+			Error													=> Error_i,
 
-			-- CommandLayer interface
-			Command											=> Cmd_Command,
-			Status											=> Cmd_Status,
-			Error												=> Cmd_Error,
-		
-			DebugPortOut								=> DebugPortOut.Commandlayer,
-		
-			Address_AppLB								=> Address_AppLB,
-			BlockCount_AppLB						=> BlockCount_AppLB,
-			DriveInformation						=> DriveInformation,
-		
-			-- TX path
-			TX_Valid										=> TX_Valid,
-			TX_Data											=> TX_Data,
-			TX_SOR											=> TX_SOR,
-			TX_EOR											=> TX_EOR,
-			TX_Ack											=> TX_Ack,
-		
-			-- RX path
-			RX_Valid										=> RX_Valid,
-			RX_Data											=> RX_Data,
-			RX_SOR											=> RX_SOR,
-			RX_EOR											=> RX_EOR,
-			RX_Ack											=> RX_Ack,
+			DebugPortOut                  => SCFSM_DebugPortOut,
+			
+			Address_LB										=> AdrCalc_Address_DevLB,
+			BlockCount_LB									=> AdrCalc_BlockCount_DevLB,
+
+			TX_FIFO_Valid 								=> TX_FIFO_Valid,
+			TX_FIFO_EOR 									=> TX_FIFO_EOR,
+			TX_FIFO_ForceGot							=> SCFSM_TX_FIFO_ForceGot,
+
+			SATAC_TX_Ack 									=> SATAC_TX_Ack,
+			TX_en													=> SCFSM_TX_en,
+			TX_ForceEOT										=> SCFSM_TX_ForceEOT,
+			
+			RX_SOR												=> SCFSM_RX_SOR,
+			RX_EOR												=> SCFSM_RX_EOR,
+			RX_ForcePut										=> SCFSM_RX_ForcePut,
 			
 			-- TransportLayer interface
-			SATAC_Command								=> SATA_Command,
-			SATAC_Status								=> SATA_Status,
-			SATAC_Error									=> SATA_Error,
+			SATAC_Command									=> SATAC_Command,
+			Trans_Status									=> SATAC_Status.TransportLayer,
+			
+			SATAC_ATAHostRegisters				=> SATAC_ATAHostRegisters,
+			
+			SATAC_RX_SOT									=> SATAC_RX_SOT,
+			SATAC_RX_EOT									=> SATAC_RX_EOT,
+			
+			-- IdentifyDeviceFilter interface
+			IDF_Enable										=> IDF_Enable,
+			IDF_Error											=> IDF_Error,
+			IDF_DriveInformation					=> IDF_DriveInformation
+		);
 
-			-- ATARegister interface
-			Trans_ATAHostRegisters			=> SATA_ATAHostRegisters,
-			Trans_ATAdeviceRegisters		=> SATA_ATAdeviceRegisters,
+	-- assign output signals
+	Status									<= Status_i;
+	Error										<= Error_i;
+	DriveInformation				<= IDF_DriveInformation;
+
+	TX_FIFO_put																<= TX_Valid;
+	TX_FIFO_got																<= TC_TX_Ack or SCFSM_TX_FIFO_ForceGot;
+		
+	TX_FIFO_DataIn(TX_Data'range)							<= TX_Data;
+	TX_FIFO_DataIn(TX_Data'length	+ 0)				<= TX_SOR;
+	TX_FIFO_DataIn(TX_Data'length	+ 1)				<= TX_EOR;
+		
+	TX_FIFO_Data															<= TX_FIFO_DataOut(TX_FIFO_Data'range);
+	TX_FIFO_SOR																<= TX_FIFO_DataOut(TX_Data'length	+ 0);
+	TX_FIFO_EOR																<= TX_FIFO_DataOut(TX_Data'length	+ 1);
+		
+	-- Commandlayer TX_FIFO
+	TX_FIFO : entity PoC.fifo_glue
+		generic map (
+			D_BITS					=> TX_FIFO_DataIn'length
+		)
+		port map (
+			clk							=> Clock,
+			rst							=> MyReset,
 			
-			-- TX path
-			Trans_TX_Valid							=> SATA_TX_Valid,
-			Trans_TX_Data								=> SATA_TX_Data,
-			Trans_TX_SOT								=> SATA_TX_SOT,
-			Trans_TX_EOT								=> SATA_TX_EOT,
-			Trans_TX_Ack								=> SATA_TX_Ack,
+			-- write interface
+			put							=> TX_FIFO_put,
+			di							=> TX_FIFO_DataIn,
+			ful							=> TX_FIFO_Full,
+
+			-- read interface
+			got							=> TX_FIFO_got,
+			vld							=> TX_FIFO_Valid,
+			do							=> TX_FIFO_DataOut
+		);
+
+	TX_Ack					<= not TX_FIFO_Full;
+
+	-- TX TransportCutter
+	-- ===========================================================================
+	TransportCutter : block
+		signal TC_TX_DataFlow								: STD_LOGIC;
+		
+		signal InsertEOT_d									: STD_LOGIC						:= '0';
+		signal InsertEOT_re									: STD_LOGIC;
+		signal InsertEOT_re_d								: STD_LOGIC						:= '0';
+		signal InsertEOT_re_d2							: STD_LOGIC						:= '0';
+		
+		signal IEOTC_Load										: STD_LOGIC;
+		signal IEOTC_inc										: STD_LOGIC;
+		signal IEOTC_uf											: STD_LOGIC;
+	begin
+		-- enable TX data path
+		TC_TX_Valid					<= TX_FIFO_Valid		and SCFSM_TX_en;
+		TC_TX_Ack						<= SATAC_TX_Ack			and SCFSM_TX_en;
+
+		TC_TX_DataFlow			<= TC_TX_Valid			and TC_TX_Ack;
+
+		InsertEOT_d					<= ffdre(q => InsertEOT_d,     rst => MyReset, en => TC_TX_DataFlow, d => TC_TX_InsertEOT) 	when rising_edge(Clock);
+		InsertEOT_re				<= TC_TX_InsertEOT	and not InsertEOT_d;
+		InsertEOT_re_d			<= ffdre(q => InsertEOT_re_d,  rst => MyReset, en => TC_TX_DataFlow, d => InsertEOT_re) 		when rising_edge(Clock);
+		InsertEOT_re_d2			<= ffdre(q => InsertEOT_re_d2, rst => MyReset, en => TC_TX_DataFlow, d => InsertEOT_re_d) 	when rising_edge(Clock);
+
+		TC_TX_Data					<= TX_FIFO_Data;
+		TC_TX_SOT						<= TX_FIFO_SOR			or InsertEOT_re_d2;
+		TC_TX_EOT						<= TX_FIFO_EOR			or InsertEOT_re_d;
+
+		IEOTC_Load					<= TC_TX_SOT				and TC_TX_Valid;
+		IEOTC_inc						<= TC_TX_DataFlow		and not IEOTC_uf;
+		
+		IEOTC : block	-- InsertEOTCounter
+			constant MAX_BLOCKCOUNT						: POSITIVE															:= ite(SIMULATION, C_SIM_MAX_BLOCKCOUNT, C_SATA_ATA_MAX_BLOCKCOUNT);
+			constant MIN_TRANSFER_SIZE_ldB  	: POSITIVE															:= log2ceilnz(MAX_BLOCKCOUNT)+9;
+			constant MIN_TRANSFER_SIZE_B			: POSITIVE															:= 2**MIN_TRANSFER_SIZE_ldB;
+			constant MAX_TRANSFER_SIZE_ldB		: POSITIVE															:= MIN_TRANSFER_SIZE_ldB + (SHIFT_WIDTH - 1);
+			constant IEOT_COUNTER_START				: POSITIVE															:= (MIN_TRANSFER_SIZE_B / 4) - AHEAD_CYCLES_FOR_INSERT_EOT - 3;		-- FIXME: replace with dynamic calculation
+			constant IEOT_COUNTER_BITS				: POSITIVE															:= MAX_TRANSFER_SIZE_ldB - 2;
 			
-			-- RX path
-			Trans_RX_Valid							=> SATA_RX_Valid,
-			Trans_RX_Data								=> SATA_RX_Data,
-			Trans_RX_SOT								=> SATA_RX_SOT,
-			Trans_RX_EOT								=> SATA_RX_EOT,
-			Trans_RX_Ack								=> SATA_RX_Ack	
+			signal Counter_s									: SIGNED(IEOT_COUNTER_BITS downto 0)			:= to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);
+		begin
+			process(Clock)
+			begin
+				IF rising_edge(Clock) then
+					if ((MyReset = '1') or (IEOTC_Load = '1')) then
+						Counter_s				<=  to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);		-- FIXME: replace with dynamic calculation
+					else
+						if (IEOTC_inc = '1') then
+							Counter_s			<= Counter_s - 1;
+						end if;
+					end if;
+				end if;
+			end process;
+			
+			IEOTC_uf					<= Counter_s(Counter_s'high);
+		end block;	-- InsertEOTCounter
+
+		TC_TX_InsertEOT			<= IEOTC_uf;
+		
+		SATAC_TX_Valid			<= TC_TX_Valid or SCFSM_TX_ForceEOT;
+		SATAC_TX_Data				<= TC_TX_Data;
+		SATAC_TX_SOT				<= TC_TX_SOT;
+		SATAC_TX_EOT				<= TC_TX_EOT   or SCFSM_TX_ForceEOT;
+		
+	end block;	-- TransferCutter
+
+	-- CommandLayer RX_FIFO
+	RX_FIFO_put																<= (SATAC_RX_Valid and not IDF_Enable) or SCFSM_RX_ForcePut;
+	RX_FIFO_DataIn(SATAC_RX_Data'range)				<= SATAC_RX_Data;
+	RX_FIFO_DataIn(SATAC_RX_Data'length	+ 0)	<= SCFSM_RX_SOR;
+	RX_FIFO_DataIn(SATAC_RX_Data'length	+ 1)	<= SCFSM_RX_EOR;
+
+
+	RX_FIFO_got																<= RX_Ack;
+	RX_Data																		<= RX_FIFO_DataOut(RX_Data'range);
+	RX_SOR																		<= RX_FIFO_DataOut(RX_Data'length	+ 0);
+	RX_EOR																		<= RX_FIFO_DataOut(RX_Data'length	+ 1);
+	
+	RX_FIFO : entity PoC.fifo_glue
+		generic map (
+			D_BITS						=> RX_FIFO_DataIn'length
+		)
+		port map (
+			clk						=> Clock,
+			rst						=> MyReset,
+
+			-- write interface
+			put						=> RX_FIFO_put,
+			di						=> RX_FIFO_DataIn,
+			ful						=> RX_FIFO_Full,
+
+			-- read interface
+			got						=> RX_FIFO_got,
+			vld						=> RX_FIFO_Valid,
+			do						=> RX_FIFO_DataOut
 		);
 	
-	-- DebugPort
-	-- ===========================================================================
-	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
-	begin
-		DebugPortOut.Command_Command		<= Cmd_Command;
-		DebugPortOut.Command_Status			<= Cmd_Status;
-		DebugPortOut.Command_Error			<= Cmd_Error;
+	SATAC_RX_Ack_i	 	<= (not RX_FIFO_Full) when (IDF_Enable = '0') else '1';					-- RX_Ack	 multiplexer
+	SATAC_RX_Ack      <= SATAC_RX_Ack_i;
+	RX_Valid					<= RX_FIFO_Valid;
+
+	
+	-- ================================================================
+	-- LoopControl
+	-- ================================================================
+	-- tests
+	--		1. address <= max_drive_size
+	--		2. address + blockcount <= max_drive_size
+	-- calculatations
+	--	a) pre calculation
+	--		1. calculate loops an save value
+	--		2. calculate remainer and save calue
+	--		3. generate transfer
+	--	b) remainer based calculatation
+	--		1. calculate oustanding blocks
+	--		2. generate transfer
+	
+	-- ================================================================
+	-- IdentifyDeviceFilter
+	-- ================================================================
+	IDF_Reset		<= MyReset;
+	IDF_Valid		<= SATAC_RX_Valid;
+	IDF_Data		<= SATAC_RX_Data;
+	IDF_SOT			<= SATAC_RX_SOT;
+	IDF_EOT			<= SATAC_RX_EOT;
+	
+	IDF : entity PoC.sata_ATA_IdentifyDeviceFilter
+		generic map (
+			DEBUG										=> DEBUG					
+		)
+		port map (
+			Clock										=> Clock,
+			Reset										=> IDF_Reset,
+			
+			Enable									=> IDF_Enable,
+			Error										=> IDF_Error,
+			Finished								=> IDF_Finished,
+		
+			Valid										=> IDF_Valid,
+			Data										=> IDF_Data,
+			SOT											=> IDF_SOT,
+			EOT											=> IDF_EOT,
+			
+			DriveInformation				=> IDF_DriveInformation
+		);
+
+  -- debug ports
+  -- ===========================================================================
+  genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) generate
+  begin
+		genXilinx : if (VENDOR = VENDOR_XILINX) generate
+			function dbg_generateCommandEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_STREAMINGCONTROLLER_COMMAND loop
+					STD.TextIO.write(l, str_replace(T_SATA_STREAMINGCONTROLLER_COMMAND'image(i), "sata_streamctrl_cmd_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			function dbg_generateStatusEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_STREAMINGCONTROLLER_STATUS loop
+					STD.TextIO.write(l, str_replace(T_SATA_STREAMINGCONTROLLER_STATUS'image(i), "sata_streamctrl_status_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			function dbg_generateErrorEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_STREAMINGCONTROLLER_ERROR loop
+					STD.TextIO.write(l, str_replace(T_SATA_STREAMINGCONTROLLER_ERROR'image(i), "sata_streamctrl_error_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+		
+			constant dummy : T_BOOLVEC := (
+				0 => dbg_ExportEncoding("Command Layer - Command Enum",	dbg_generateCommandEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Cmd_Command.tok"),
+				1 => dbg_ExportEncoding("Command Layer - Status Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Cmd_Status.tok"),
+				2 => dbg_ExportEncoding("Command Layer - Error Enum",		dbg_generateErrorEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Cmd_Error.tok")
+			);
+		begin
+		end generate;
+	
+    DebugPortOut.Command         		 <= Command;
+    DebugPortOut.Status          		 <= Status_i;
+    DebugPortOut.Error           		 <= Error_i;
+
+    DebugPortOut.Address_AppLB    		<= Address_AppLB;
+    DebugPortOut.BlockCount_AppLB 		<= BlockCount_AppLB;
+    DebugPortOut.Address_DevLB    		<= AdrCalc_Address_DevLB;
+    DebugPortOut.BlockCount_DevLB 		<= AdrCalc_BlockCount_DevLB;
+
+    -- identify device filter
+    DebugPortOut.IDF_Reset            <= IDF_Reset;
+    DebugPortOut.IDF_Enable           <= IDF_Enable;
+    DebugPortOut.IDF_Error            <= IDF_Error;
+    DebugPortOut.IDF_Finished         <= IDF_Finished;
+    DebugPortOut.IDF_DriveInformation <= IDF_DriveInformation;
+
+    -- debug port of command fsm, for RX datapath see below
+    DebugPortOut.SCFSM <= SCFSM_DebugPortOut;
+
+		-- RX ----------------------------------------------------------------
+    -- RX datapath to upper layer
+    DebugPortOut.RX_Valid 			<= RX_FIFO_Valid;
+    DebugPortOut.RX_Data  			<= RX_FIFO_DataOut(RX_Data'range);
+    DebugPortOut.RX_SOR   			<= RX_FIFO_DataOut(RX_Data'length + 0);
+    DebugPortOut.RX_EOR   			<= RX_FIFO_DataOut(RX_Data'length + 1);
+    DebugPortOut.RX_Ack   			<= RX_Ack;
+
+		-- RX datapath between demultiplexer, RX_FIFO and CFSM
+    DebugPortOut.SCFSM_RX_Valid	<= RX_FIFO_put;
+    --see below DebugPortOut.SCFSM_RX_Data  <= SATAC_RX_Data;
+    DebugPortOut.SCFSM_RX_SOR		<= SCFSM_RX_SOR;
+    DebugPortOut.SCFSM_RX_EOR		<= SCFSM_RX_EOR;
+    DebugPortOut.SCFSM_RX_Ack		<= not RX_FIFO_FULL;
+		
+		-- RX datapath between demultiplexer and IDF
+		-- is same as input from transport layer
+
+		-- RX datapath from transport layer
+    DebugPortOut.SATAC_RX_Valid <= SATAC_RX_Valid;
+    DebugPortOut.SATAC_RX_Data  <= SATAC_RX_Data;
+    DebugPortOut.SATAC_RX_SOT   <= SATAC_RX_SOT;
+    DebugPortOut.SATAC_RX_EOT   <= SATAC_RX_EOT;
+    DebugPortOut.SATAC_RX_Ack   <= SATAC_RX_Ack_i;
+
+		-- TX ----------------------------------------------------------------
+    DebugPortOut.SCFSM_TX_ForceEOT	<= SCFSM_TX_ForceEOT;
+		
+    -- TX datapath to upper layer
+		DebugPortOut.TX_Valid 			<= TX_Valid;
+    DebugPortOut.TX_Data  			<= TX_Data;
+		DebugPortOut.TX_SOR 				<= TX_SOR;
+		DebugPortOut.TX_EOR 				<= TX_EOR;
+		DebugPortOut.TX_Ack 				<= not TX_FIFO_Full;
+
+		-- TX datapath of transport cutter
+		DebugPortOut.TC_TX_Valid			<= TC_TX_Valid;
+		DebugPortOut.TC_TX_Data				<= TC_TX_Data;
+		DebugPortOut.TC_TX_SOT				<= TC_TX_SOT;
+		DebugPortOut.TC_TX_EOT				<= TC_TX_EOT;
+		DebugPortOut.TC_TX_Ack				<= TC_TX_Ack;	
+		DebugPortOut.TC_TX_InsertEOT	<= TC_TX_InsertEOT;
+
 	end generate;
 end;
