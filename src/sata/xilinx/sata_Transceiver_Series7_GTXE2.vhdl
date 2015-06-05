@@ -382,7 +382,6 @@ begin
 		
 		signal Status_i											: T_SATA_TRANSCEIVER_STATUS;
 		signal Error_i											: T_SATA_TRANSCEIVER_ERROR;
-		signal Error_on_TX_RX								: STD_LOGIC; -- '1' if an RX or TX error is present
 		
 		-- keep internal clock nets, so timing constrains from UCF can find them
 		attribute KEEP of GTX_TX_RefClockOut	: signal is TRUE;
@@ -463,7 +462,7 @@ begin
 			end if;
 		end process;
 		
-		process(State, Command, Error_on_TX_RX, Reset,
+		process(State, Command, Reset,
 						OOB_HandshakeComplete, OOB_TX_Command,
 						SATA_Clock_Stable_i, GTX_TX_ResetDone, GTX_RX_ResetDone)
 		begin
@@ -550,11 +549,9 @@ begin
 						NextState			<= ST_READY;
 					end if;
 				
-					-- error handling
-					if (Error_on_TX_RX = '1') then
-						Status_i		<= SATA_TRANSCEIVER_STATUS_ERROR;
-					end if;
-				
+					-- Note: Do not signal TX / RX errors by STATUS_ERROR, because they
+					-- are only informative! Only common errors (e.g. due to reconfiguration)
+					-- are signaled this way.
 				
 				when ST_RECONFIGURATION =>
 					-- Assert Kill_SATA_Clock_Stable before ClkNet_Reset is asserted
@@ -566,31 +563,26 @@ begin
 		end process;
 
 		-- Encode RX/TX Errors
+		-- TODO: Also report via RX Datapath to LinkLayer (RX_DecErr)
 		process(SATA_Clock_i)
 		begin
 			if rising_edge(SATA_Clock_i) then
 				Error_i.TX			<= SATA_TRANSCEIVER_TX_ERROR_NONE;
 				Error_i.RX			<= SATA_TRANSCEIVER_RX_ERROR_NONE;
-				Error_on_TX_RX  <= '0';
 				
 				if (GTX_TX_BufferStatus(1)	= '1') then
 					Error_i.TX	<= SATA_TRANSCEIVER_TX_ERROR_BUFFER;
-					Error_on_TX_RX  <= '1';
 				end if;
 				
 				-- RX errors
 				if (GTX_RX_ByteIsAligned	= '0') then
 					Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_ALIGNEMENT;
-					Error_on_TX_RX  <= '1';
 				elsif (slv_or(GTX_RX_DisparityError)	= '1') then
 					Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_DISPARITY;
-					Error_on_TX_RX  <= '1';
 				elsif (slv_or(GTX_RX_NotInTableError)	= '1') then
 					Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_DECODER;
-					Error_on_TX_RX  <= '1';
 				elsif (GTX_RX_BufferStatus(2)	= '1') then
 					Error_i.RX	<= SATA_TRANSCEIVER_RX_ERROR_BUFFER;
-					Error_on_TX_RX  <= '1';
 				end if;
 			end if;
 		end process;

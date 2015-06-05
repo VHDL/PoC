@@ -925,7 +925,7 @@ BEGIN
 					-- not ready for any other ATA command afterwards. Thus, go to
 					-- blocking error state.
 					Error_en 													<= '1';
-					Error_nxt													<= SATA_TRANS_ERROR_FSM;
+					Error_nxt													<= SATA_TRANS_ERROR_TRANSMIT_ERROR;
 					NextState													<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER;
 				elsif (TC_DevResponse_Timeout = '1') then
 					-- TODO (Minor): Cancel transport in FISEncoder (-> SyncEsc in LinkLayer).
