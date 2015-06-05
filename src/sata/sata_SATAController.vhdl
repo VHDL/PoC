@@ -7,12 +7,12 @@
 --									Steffen Koehler
 --									Martin Zabel
 --
--- Module:					SATA Controller (Physical and Link Layer)
+-- Module:					SATA Controller (Physical, Link and Transport Layer)
 --
 -- Description:
 -- ------------------------------------
--- Provides a SATA link to transport ATA commands and data from host to device
--- and vice versa.
+-- Provides the SATA Transport Layer to transfer ATA commands and data from host to
+-- device and vice versa.
 --
 -- Reset Procedure:
 -- ----------------
@@ -41,7 +41,21 @@
 --
 -- Command:
 -- -------
--- Commands are only accepted when PHY_STATUS is COMMUNICATING or ERROR.
+-- Commands are only accepted when Status.TransportLayer is
+-- *_TRANS_STATUS_IDLE, *_TRANS_STATUS_TRANSFER_OK or
+-- *_TRANS_STATUS_TRANSFER_ERROR.
+--
+-- Command = *_SATACTRL_CMD_TRANSFER:
+--   Transfer and execute ATA command provided by input ATAHostRegisters.
+--   Completes with Status.TransportLayer:
+--   - *_TRANS_STATUS_TRANSFER_OK if successful. New commands can be applied
+--     	directly.
+--     
+--   - *_TRANS_STATUS_TRANSFER_ERROR if the device reports an error via the ATA
+--   		register block. New commands can be applied directly.
+
+--   - *_TRANS_STATUS_ERROR if a fatal error occurs. In this case at least a
+--   		synchronous reset must be applied.
 --
 -- License:
 -- =============================================================================
