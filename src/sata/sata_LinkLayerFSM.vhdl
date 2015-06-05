@@ -318,12 +318,22 @@ begin
 				-- ----------------------------------------------------------
 			when ST_NO_COMMUNICATION_ERROR =>
 				Status												<= SATA_LINK_STATUS_ERROR;
-				Error 												<= SATA_LINK_ERROR_COMMUNICATION_ERROR;
+				Error 												<= SATA_LINK_ERROR_PHY_ERROR;
 				TX_Primitive									<= SATA_PRIMITIVE_ALIGN;
-				TX_RetryCounter_rst						<= '1';
-				RX_FIFO_rollback							<= '1';
-				TX_FIFO_Commit								<= '1'; -- TODO: Discard?
-				NextState											<= ST_NO_COMMUNICATION;
+				-- A link error may occur if:
+				-- - the other end (e.g. device) requests a link reset via COMRESET
+				-- - or the other end was detached and a new device or host connected.
+				-- Notify above layers and stay here until the above layers acknowledge
+				-- this event e.g. via a command.
+				-- We might come from any state, so reinitialize to a known state in
+				-- agreement with above layer, e.g. clear FIFOs, reset RetryCounter and
+				-- so on.
+				-- TODO Feature Request: Re-initialize via Command.
+				
+				--TX_RetryCounter_rst						<= '1';
+				--RX_FIFO_rollback							<= '1';
+				--TX_FIFO_Commit								<= '1'; -- TODO: Discard?
+				NextState											<= ST_NO_COMMUNICATION_ERROR;
 				
 				-- ----------------------------------------------------------
 			when ST_IDLE =>
@@ -1014,14 +1024,9 @@ begin
 				end if;
 		end case;
 
-		-- Override NextState if PHY is not ready
-		if ((Phy_Status /= SATA_PHY_STATUS_COMMUNICATING) and not
-				((State = ST_RESET) or
-				 (State = ST_NO_COMMUNICATION) or
-				 (State = ST_NO_COMMUNICATION_ERROR)
-				 ))
-		then
-			NextState													<= ST_NO_COMMUNICATION_ERROR;
+		-- Override NextState if PHY reports an error
+		if (Phy_Status = SATA_PHY_STATUS_ERROR)	then
+			NextState												<= ST_NO_COMMUNICATION_ERROR;
 		end if;
 	end process;
 

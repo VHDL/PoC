@@ -63,6 +63,7 @@ package sata is
 	);
 	
 	-- transceiver status
+	-- Only common errors are signaled via STATUS_ERROR, not TX/RX encoder errors.
 	type T_SATA_TRANSCEIVER_STATUS is (
 		SATA_TRANSCEIVER_STATUS_INIT,
 		SATA_TRANSCEIVER_STATUS_RECONFIGURING,
@@ -174,7 +175,7 @@ package sata is
 	
 	type T_SATA_LINK_ERROR is (
 		SATA_LINK_ERROR_NONE,
-		SATA_LINK_ERROR_COMMUNICATION_ERROR
+		SATA_LINK_ERROR_PHY_ERROR
 	);
 	
 	type T_SATA_PRIMITIVE is (					-- Primitive Name				Byte 3,	Byte 2,	Byte 1,	Byte 0
@@ -332,6 +333,7 @@ package sata is
 		SATA_TRANS_ERROR_RECEIVE_ERROR,
 		SATA_TRANS_ERROR_DEVICE_ERROR,
 		SATA_TRANS_ERROR_TIMEOUT,
+		SATA_TRANS_ERROR_LINK_ERROR,
 		SATA_TRANS_ERROR_FSM												-- ILLEGAL_TRANSITION
 	);
 

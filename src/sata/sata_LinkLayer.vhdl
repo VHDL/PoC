@@ -770,7 +770,7 @@ begin
 			constant dummy : T_BOOLVEC := (
 				0 => dbg_ExportEncoding("Link Layer - Command Enum",	dbg_generateCommandEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Link_Command.tok"),
 				1 => dbg_ExportEncoding("Link Layer - Status Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Link_Status.tok"),
-				2 => dbg_ExportEncoding("Link Layer - Error Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Link_Error.tok")
+				2 => dbg_ExportEncoding("Link Layer - Error Enum",		dbg_generateErrorEncodings,		PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Link_Error.tok")
 			);
 		begin
 		end generate;

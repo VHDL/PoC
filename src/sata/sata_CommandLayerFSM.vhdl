@@ -325,7 +325,17 @@ BEGIN
 						NextState																<= ST_ERROR;
 
 				end case;
-			
+
+				-- A link error may occur at any time, e.g., if:
+				-- - the other end (e.g. device) requests a link reset via COMRESET
+				-- - or the other end was detached and a new device or host connected.
+				-- This event is signaled via a TRANSPORT_ERROR.
+				-- Transport Layer will ignore above assigned command.
+				if(Trans_Status = SATA_TRANS_STATUS_ERROR) then
+					Error_nxt																	<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					NextState 																<= ST_ERROR;
+				end if;
+				
 			WHEN ST_IDENTIFY_DEVICE_WAIT =>
 				IF (IDF_DriveInformation.Valid = '0') THEN
 					Status																		<= SATA_CMD_STATUS_INITIALIZING;
@@ -668,7 +678,9 @@ BEGIN
 				Status																	<= SATA_CMD_STATUS_ERROR;
 
 				if (Trans_Status = SATA_TRANS_STATUS_ERROR) then
-					-- fatal error not yet recovered, stay here
+					-- A fatal error occured. Notify above layers and stay here until the above layers
+					-- acknowledge this event, e.g. via a command.
+					-- TODO Feature Request: Re-initialize via Command.
 					NULL;
 				elsif (IDF_DriveInformation.Valid = '1') then
 					-- ready for new command

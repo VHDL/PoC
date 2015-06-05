@@ -81,7 +81,7 @@ ENTITY sata_TransportFSM IS
 		RX_EOT														: OUT	STD_LOGIC;
 		
 		-- SATAController Status
-		Phy_Status												: IN	T_SATA_PHY_STATUS;
+		Link_Status												: IN	T_SATA_LINK_STATUS;
 		SATAGeneration 										: in 	T_SATA_GENERATION;
 		
 		-- FIS-FSM interface
@@ -202,7 +202,7 @@ BEGIN
 	
 	PROCESS(State, Command, ATA_Command_Category, ATADeviceRegisters, TC_DevResponse_Timeout, Error_r,
 					FISE_Status, FISD_Status, FISD_FISType, FISD_SOP, FISD_EOP, 
-          Phy_Status, TX_Valid, TX_EOT)
+          Link_Status, TX_Valid, TX_EOT)
 	BEGIN
 		NextState																<= State;
 		
@@ -232,11 +232,11 @@ BEGIN
 				-- Clock might be unstable is this state. In this case either
 				-- a) Reset is asserted because inital reset of the SATAController is
 				--    not finished yet.
-				-- b) Phy_Status is constant and not equal to SATA_PHY_STATUS_LINK_OK.
+				-- b) Link_Status is constant and not equal to SATA_LINK_STATUS_NO_COMMUNICATION.
 				--    This may happen during reconfiguration due to speed negotiation.
         Status															<= SATA_TRANS_STATUS_RESET;
         
-        if (Phy_Status = SATA_PHY_STATUS_COMMUNICATING) then
+        if (Link_Status /= SATA_LINK_STATUS_NO_COMMUNICATION) then
           IF (SIM_WAIT_FOR_INITIAL_REGDH_FIS = TRUE) THEN
             NextState <= ST_INIT_AWAIT_FIS;
           ELSE
@@ -992,10 +992,29 @@ BEGIN
 				end if;
 				
 			WHEN ST_ERROR =>
-				-- fatal error occured, stay here
+				-- A fatal error occured. Notify above layers and stay here until the above layers
+				-- acknowledge this event, e.g. via a command.
+				-- We might come from any state, so reinitialize to a known state in
+				-- agreement with above layer, e.g. clear FIFOs, reset FISE and FISD and
+				-- so on.
+				-- TODO Feature Request: Re-initialize via Command.
 				Status			<= SATA_TRANS_STATUS_ERROR;
 				
 		END CASE;
+
+		-- ============================================================
+		-- Link Error
+		-- Override NextState if LinkLayer reports an error
+		-- A link error may occur if:
+		-- - the other end (e.g. device) requests a link reset via COMRESET
+		-- - or the other end was detached and a new device or host connected.
+		-- ============================================================
+		if (Link_Status = SATA_LINK_STATUS_ERROR)	then
+			NextState														<= ST_ERROR;
+			Error_en 														<= '1';
+			Error_nxt 													<= SATA_TRANS_ERROR_LINK_ERROR;
+		end if;
+
 	END PROCESS;
 
 

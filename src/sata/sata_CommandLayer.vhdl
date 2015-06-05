@@ -496,7 +496,7 @@ begin
 				variable  l : STD.TextIO.line;
 			begin
 				for i in T_SATA_CMD_COMMAND loop
-					STD.TextIO.write(l, str_replace(T_SATA_CMD_COMMAND'image(i), "sata_cmd_cmd", ""));
+					STD.TextIO.write(l, str_replace(T_SATA_CMD_COMMAND'image(i), "sata_cmd_cmd_", ""));
 					STD.TextIO.write(l, ';');
 				end loop;
 				return  l.all;

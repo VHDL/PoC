@@ -255,7 +255,7 @@ begin
 			RX_EOT														=> TFSM_RX_EOT,
 			
 			-- SATAController Status
-			Phy_Status 												=> SATA_Status.PhysicalLayer,
+			Link_Status 											=> SATA_Status.LinkLayer,
 			SATAGeneration 										=> SATAGeneration,
 
 			-- FISDecoder interface
