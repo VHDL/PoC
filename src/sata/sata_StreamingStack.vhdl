@@ -428,24 +428,24 @@ begin
 		signal TransILA_Trigger4_d		: STD_LOGIC_VECTOR(25 downto 0)		:= (others => '0');
 		signal TransILA_Trigger5_d		: STD_LOGIC_VECTOR(19 downto 0)		:= (others => '0');
 
-		signal CmdILA_Data						: STD_LOGIC_VECTOR(183 downto 0);
-		signal CmdILA_Trigger0				: STD_LOGIC_VECTOR(7 downto 0);
-		signal CmdILA_Trigger1				: STD_LOGIC_VECTOR(35 downto 0);
-		signal CmdILA_Trigger2				: STD_LOGIC_VECTOR(8 downto 0);
-		signal CmdILA_Trigger3				: STD_LOGIC_VECTOR(4 downto 0);
-		signal CmdILA_Trigger4				: STD_LOGIC_VECTOR(7 downto 0);
-		signal CmdILA_Trigger5				: STD_LOGIC_VECTOR(35 downto 0);
-		signal CmdILA_Trigger6				: STD_LOGIC_VECTOR(37 downto 0);
-		signal CmdILA_TriggerEvent		: STD_LOGIC;
+		signal StreamCtrl_Data						: STD_LOGIC_VECTOR(183 downto 0);
+		signal StreamCtrl_Trigger0				: STD_LOGIC_VECTOR(7 downto 0);
+		signal StreamCtrl_Trigger1				: STD_LOGIC_VECTOR(35 downto 0);
+		signal StreamCtrl_Trigger2				: STD_LOGIC_VECTOR(8 downto 0);
+		signal StreamCtrl_Trigger3				: STD_LOGIC_VECTOR(4 downto 0);
+		signal StreamCtrl_Trigger4				: STD_LOGIC_VECTOR(7 downto 0);
+		signal StreamCtrl_Trigger5				: STD_LOGIC_VECTOR(35 downto 0);
+		signal StreamCtrl_Trigger6				: STD_LOGIC_VECTOR(37 downto 0);
+		signal StreamCtrl_TriggerEvent		: STD_LOGIC;
 		
-		signal CmdILA_Data_d					: STD_LOGIC_VECTOR(183 downto 0)	:= (others => '0');
-		signal CmdILA_Trigger0_d			: STD_LOGIC_VECTOR(7 downto 0)		:= (others => '0');
-		signal CmdILA_Trigger1_d			: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
-		signal CmdILA_Trigger2_d			: STD_LOGIC_VECTOR(8 downto 0)		:= (others => '0');
-		signal CmdILA_Trigger3_d			: STD_LOGIC_VECTOR(4 downto 0)		:= (others => '0');
-		signal CmdILA_Trigger4_d			: STD_LOGIC_VECTOR(7 downto 0)		:= (others => '0');
-		signal CmdILA_Trigger5_d			: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
-		signal CmdILA_Trigger6_d			: STD_LOGIC_VECTOR(37 downto 0)		:= (others => '0');
+		signal StreamCtrl_Data_d					: STD_LOGIC_VECTOR(183 downto 0)	:= (others => '0');
+		signal StreamCtrl_Trigger0_d			: STD_LOGIC_VECTOR(7 downto 0)		:= (others => '0');
+		signal StreamCtrl_Trigger1_d			: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
+		signal StreamCtrl_Trigger2_d			: STD_LOGIC_VECTOR(8 downto 0)		:= (others => '0');
+		signal StreamCtrl_Trigger3_d			: STD_LOGIC_VECTOR(4 downto 0)		:= (others => '0');
+		signal StreamCtrl_Trigger4_d			: STD_LOGIC_VECTOR(7 downto 0)		:= (others => '0');
+		signal StreamCtrl_Trigger5_d			: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
+		signal StreamCtrl_Trigger6_d			: STD_LOGIC_VECTOR(37 downto 0)		:= (others => '0');
 
 		function dbg_EncodePrimitive(Data : T_SLV_32; CharIsK : T_SLV_4) return T_SLV_2 is
 		begin
@@ -569,7 +569,7 @@ begin
 		PhyILA_Trigger0(3)						<= SATAC_ResetDone; -- instead of PHY
 		PhyILA_Trigger0(4)						<= LinkILA_TriggerEvent;
 		PhyILA_Trigger0(5)						<= TransILA_TriggerEvent;
-		PhyILA_Trigger0(6)						<= CmdILA_TriggerEvent;
+		PhyILA_Trigger0(6)						<= StreamCtrl_TriggerEvent;
 		PhyILA_Trigger0(7)						<= DebugPortIn_TriggerEvent;
 		
 		PhyILA_Trigger1(31 downto 0)	<= SATAS_DebugPortOut.TransceiverLayer.TX_Data;
@@ -679,7 +679,7 @@ begin
 		LinkILA_Trigger0(3)							<= PhyILA_TriggerEvent;
 		LinkILA_Trigger0(4)							<= '0';	--LinkILA_TriggerEvent;
 		LinkILA_Trigger0(5)							<= TransILA_TriggerEvent;
-		LinkILA_Trigger0(6)							<= CmdILA_TriggerEvent;
+		LinkILA_Trigger0(6)							<= StreamCtrl_TriggerEvent;
 		LinkILA_Trigger0(7)							<= DebugPortIn_TriggerEvent;
 		
 		LinkILA_Trigger1(31 downto 0)		<= SATAS_DebugPortOut.LinkLayer.RX_Data;
@@ -776,7 +776,7 @@ begin
 		TransILA_Trigger0(3)						<= PhyILA_TriggerEvent;
 		TransILA_Trigger0(4)						<= LinkILA_TriggerEvent;
 		TransILA_Trigger0(5)						<= '0';	--TransILA_TriggerEvent;
-		TransILA_Trigger0(6)						<= CmdILA_TriggerEvent;
+		TransILA_Trigger0(6)						<= StreamCtrl_TriggerEvent;
 		TransILA_Trigger0(7)						<= DebugPortIn_TriggerEvent;
 
     TransILA_Trigger1(31 downto 0)	<= SATAS_DebugPortOut.TransportLayer.RX_Data;
@@ -822,101 +822,101 @@ begin
 		TransILA_Trigger5( 18) 					<= SATAS_DebugPortOut.TransportLayer.ATADeviceRegisters.Error.UncorrectableError;
 		TransILA_Trigger5( 19) 					<= SATAS_DebugPortOut.TransportLayer.ATADeviceRegisters.Error.InterfaceCRCError ;
 
-		CmdILA_Data(2 downto 0)				<= to_slv(SATAS_DebugPortOut.Streaming_Command);
-    CmdILA_Data(5 downto 3)				<= to_slv(SATAS_DebugPortOut.Streaming_Status);
-    CmdILA_Data(8 downto 6)				<= to_slv(SATAS_DebugPortOut.Streaming_Error);
+		StreamCtrl_Data(2 downto 0)				<= to_slv(SATAS_DebugPortOut.Streaming_Command);
+    StreamCtrl_Data(5 downto 3)				<= to_slv(SATAS_DebugPortOut.Streaming_Status);
+    StreamCtrl_Data(8 downto 6)				<= to_slv(SATAS_DebugPortOut.Streaming_Error);
 
-    CmdILA_Data(13 downto 9)			<= SATAS_DebugPortOut.StreamingController.SCFSM.FSM;
---    CmdILA_Data(13)								<= SATAS_DebugPortOut.StreamingController.SCFSM.Load;
-    CmdILA_Data(14)								<= SATAS_DebugPortOut.StreamingController.SCFSM.NextTransfer;
-    CmdILA_Data(15)								<= SATAS_DebugPortOut.StreamingController.SCFSM.LastTransfer;
+    StreamCtrl_Data(13 downto 9)			<= SATAS_DebugPortOut.StreamingController.SCFSM.FSM;
+--    StreamCtrl_Data(13)								<= SATAS_DebugPortOut.StreamingController.SCFSM.Load;
+    StreamCtrl_Data(14)								<= SATAS_DebugPortOut.StreamingController.SCFSM.NextTransfer;
+    StreamCtrl_Data(15)								<= SATAS_DebugPortOut.StreamingController.SCFSM.LastTransfer;
 		
---    CmdILA_Data(97 downto 95)			<= SATAS_DebugPortOut.StreamingController.Address_AppLB;
---    CmdILA_Data(97 downto 95)			<= SATAS_DebugPortOut.StreamingController.BlockCount_AppLB;
-    CmdILA_Data(47 downto 16)			<= SATAS_DebugPortOut.StreamingController.Address_DevLB(31 downto 0);				-- 32 bit
-    CmdILA_Data(63 downto 48)			<= SATAS_DebugPortOut.StreamingController.BlockCount_DevLB(15 downto 0);			-- 16 bit
+--    StreamCtrl_Data(97 downto 95)			<= SATAS_DebugPortOut.StreamingController.Address_AppLB;
+--    StreamCtrl_Data(97 downto 95)			<= SATAS_DebugPortOut.StreamingController.BlockCount_AppLB;
+    StreamCtrl_Data(47 downto 16)			<= SATAS_DebugPortOut.StreamingController.Address_DevLB(31 downto 0);				-- 32 bit
+    StreamCtrl_Data(63 downto 48)			<= SATAS_DebugPortOut.StreamingController.BlockCount_DevLB(15 downto 0);			-- 16 bit
     
     -- identify device filter
-    CmdILA_Data(64)								<= SATAS_DebugPortOut.StreamingController.IDF_Reset;
-    CmdILA_Data(65)								<= SATAS_DebugPortOut.StreamingController.IDF_Enable;
-    CmdILA_Data(66)								<= SATAS_DebugPortOut.StreamingController.IDF_Error;
-    CmdILA_Data(67)								<= SATAS_DebugPortOut.StreamingController.IDF_Finished;
-    CmdILA_Data(68)								<= '0';
-    CmdILA_Data(69)								<= SATAS_DebugPortOut.StreamingController.IDF_DriveInformation.Valid;
+    StreamCtrl_Data(64)								<= SATAS_DebugPortOut.StreamingController.IDF_Reset;
+    StreamCtrl_Data(65)								<= SATAS_DebugPortOut.StreamingController.IDF_Enable;
+    StreamCtrl_Data(66)								<= SATAS_DebugPortOut.StreamingController.IDF_Error;
+    StreamCtrl_Data(67)								<= SATAS_DebugPortOut.StreamingController.IDF_Finished;
+    StreamCtrl_Data(68)								<= '0';
+    StreamCtrl_Data(69)								<= SATAS_DebugPortOut.StreamingController.IDF_DriveInformation.Valid;
     
     -- RX datapath to upper layer
-    CmdILA_Data(70)								<= SATAS_DebugPortOut.StreamingController.RX_Valid;
-    CmdILA_Data(102 downto 71)		<= SATAS_DebugPortOut.StreamingController.RX_Data;
-    CmdILA_Data(103)							<= SATAS_DebugPortOut.StreamingController.RX_SOR;
-    CmdILA_Data(104)							<= SATAS_DebugPortOut.StreamingController.RX_EOR;
-    CmdILA_Data(105)							<= SATAS_DebugPortOut.StreamingController.RX_Ack;
+    StreamCtrl_Data(70)								<= SATAS_DebugPortOut.StreamingController.RX_Valid;
+    StreamCtrl_Data(102 downto 71)		<= SATAS_DebugPortOut.StreamingController.RX_Data;
+    StreamCtrl_Data(103)							<= SATAS_DebugPortOut.StreamingController.RX_SOR;
+    StreamCtrl_Data(104)							<= SATAS_DebugPortOut.StreamingController.RX_EOR;
+    StreamCtrl_Data(105)							<= SATAS_DebugPortOut.StreamingController.RX_Ack;
     
 		-- RX datapath between demultiplexer, RX_FIFO and SCFSM
-    CmdILA_Data(106)							<= SATAS_DebugPortOut.StreamingController.SCFSM_RX_Valid;
-    CmdILA_Data(107)							<= SATAS_DebugPortOut.StreamingController.SCFSM_RX_SOR;
-    CmdILA_Data(108)							<= SATAS_DebugPortOut.StreamingController.SCFSM_RX_EOR;
-    CmdILA_Data(109)							<= SATAS_DebugPortOut.StreamingController.SCFSM_RX_Ack;
+    StreamCtrl_Data(106)							<= SATAS_DebugPortOut.StreamingController.SCFSM_RX_Valid;
+    StreamCtrl_Data(107)							<= SATAS_DebugPortOut.StreamingController.SCFSM_RX_SOR;
+    StreamCtrl_Data(108)							<= SATAS_DebugPortOut.StreamingController.SCFSM_RX_EOR;
+    StreamCtrl_Data(109)							<= SATAS_DebugPortOut.StreamingController.SCFSM_RX_Ack;
 		
     -- TX datapath to upper layer
-    CmdILA_Data(110)							<= SATAS_DebugPortOut.StreamingController.TX_Valid;
-    CmdILA_Data(142 downto 111)		<= SATAS_DebugPortOut.StreamingController.TX_Data;
-    CmdILA_Data(143)							<= SATAS_DebugPortOut.StreamingController.TX_SOR;
-    CmdILA_Data(144)							<= SATAS_DebugPortOut.StreamingController.TX_EOR;
-    CmdILA_Data(145)							<= SATAS_DebugPortOut.StreamingController.TX_Ack;
+    StreamCtrl_Data(110)							<= SATAS_DebugPortOut.StreamingController.TX_Valid;
+    StreamCtrl_Data(142 downto 111)		<= SATAS_DebugPortOut.StreamingController.TX_Data;
+    StreamCtrl_Data(143)							<= SATAS_DebugPortOut.StreamingController.TX_SOR;
+    StreamCtrl_Data(144)							<= SATAS_DebugPortOut.StreamingController.TX_EOR;
+    StreamCtrl_Data(145)							<= SATAS_DebugPortOut.StreamingController.TX_Ack;
     
     -- TX datapath of transport cutter
-    CmdILA_Data(146)							<= SATAS_DebugPortOut.StreamingController.TC_TX_Valid;
-    CmdILA_Data(178 downto 147)		<= SATAS_DebugPortOut.StreamingController.TC_TX_Data;
-    CmdILA_Data(179)							<= SATAS_DebugPortOut.StreamingController.TC_TX_SOT;
-    CmdILA_Data(180)							<= SATAS_DebugPortOut.StreamingController.TC_TX_EOT;
-    CmdILA_Data(181)							<= SATAS_DebugPortOut.StreamingController.TC_TX_Ack;
-    CmdILA_Data(182)							<= SATAS_DebugPortOut.StreamingController.SCFSM_TX_ForceEOT;
-    CmdILA_Data(183)							<= SATAS_DebugPortOut.StreamingController.TC_TX_InsertEOT;
+    StreamCtrl_Data(146)							<= SATAS_DebugPortOut.StreamingController.TC_TX_Valid;
+    StreamCtrl_Data(178 downto 147)		<= SATAS_DebugPortOut.StreamingController.TC_TX_Data;
+    StreamCtrl_Data(179)							<= SATAS_DebugPortOut.StreamingController.TC_TX_SOT;
+    StreamCtrl_Data(180)							<= SATAS_DebugPortOut.StreamingController.TC_TX_EOT;
+    StreamCtrl_Data(181)							<= SATAS_DebugPortOut.StreamingController.TC_TX_Ack;
+    StreamCtrl_Data(182)							<= SATAS_DebugPortOut.StreamingController.SCFSM_TX_ForceEOT;
+    StreamCtrl_Data(183)							<= SATAS_DebugPortOut.StreamingController.TC_TX_InsertEOT;
 		
 		-- StreamingController Trigger
-		CmdILA_Trigger0(0)							<= '0';		-- clkdone
-		CmdILA_Trigger0(1)							<= '0';		-- rstdone
-		CmdILA_Trigger0(2)							<= TransceiverILA_TriggerEvent;
-		CmdILA_Trigger0(3)							<= PhyILA_TriggerEvent;
-		CmdILA_Trigger0(4)							<= LinkILA_TriggerEvent;
-		CmdILA_Trigger0(5)							<= TransILA_TriggerEvent;
-		CmdILA_Trigger0(6)							<= '0';	--CmdILA_TriggerEvent;
-		CmdILA_Trigger0(7)							<= DebugPortIn_TriggerEvent;
+		StreamCtrl_Trigger0(0)							<= '0';		-- clkdone
+		StreamCtrl_Trigger0(1)							<= '0';		-- rstdone
+		StreamCtrl_Trigger0(2)							<= TransceiverILA_TriggerEvent;
+		StreamCtrl_Trigger0(3)							<= PhyILA_TriggerEvent;
+		StreamCtrl_Trigger0(4)							<= LinkILA_TriggerEvent;
+		StreamCtrl_Trigger0(5)							<= TransILA_TriggerEvent;
+		StreamCtrl_Trigger0(6)							<= '0';	--StreamCtrl_TriggerEvent;
+		StreamCtrl_Trigger0(7)							<= DebugPortIn_TriggerEvent;
 		
-    CmdILA_Trigger1(31 downto 0)		<= SATAS_DebugPortOut.StreamingController.RX_Data;
-		CmdILA_Trigger1(32)							<= SATAS_DebugPortOut.StreamingController.RX_Valid;
-    CmdILA_Trigger1(33)							<= SATAS_DebugPortOut.StreamingController.RX_SOR;
-    CmdILA_Trigger1(34)							<= SATAS_DebugPortOut.StreamingController.RX_EOR;
-    CmdILA_Trigger1(35)							<= SATAS_DebugPortOut.StreamingController.RX_Ack;
+    StreamCtrl_Trigger1(31 downto 0)		<= SATAS_DebugPortOut.StreamingController.RX_Data;
+		StreamCtrl_Trigger1(32)							<= SATAS_DebugPortOut.StreamingController.RX_Valid;
+    StreamCtrl_Trigger1(33)							<= SATAS_DebugPortOut.StreamingController.RX_SOR;
+    StreamCtrl_Trigger1(34)							<= SATAS_DebugPortOut.StreamingController.RX_EOR;
+    StreamCtrl_Trigger1(35)							<= SATAS_DebugPortOut.StreamingController.RX_Ack;
 		
-		CmdILA_Trigger2(2 downto 0)			<= to_slv(SATAS_DebugPortOut.Streaming_Command);
-    CmdILA_Trigger2(5 downto 3)			<= to_slv(SATAS_DebugPortOut.Streaming_Status);
-    CmdILA_Trigger2(8 downto 6)			<= to_slv(SATAS_DebugPortOut.Streaming_Error);
+		StreamCtrl_Trigger2(2 downto 0)			<= to_slv(SATAS_DebugPortOut.Streaming_Command);
+    StreamCtrl_Trigger2(5 downto 3)			<= to_slv(SATAS_DebugPortOut.Streaming_Status);
+    StreamCtrl_Trigger2(8 downto 6)			<= to_slv(SATAS_DebugPortOut.Streaming_Error);
 
-		CmdILA_Trigger3(4 downto 0)			<= SATAS_DebugPortOut.StreamingController.SCFSM.FSM;
+		StreamCtrl_Trigger3(4 downto 0)			<= SATAS_DebugPortOut.StreamingController.SCFSM.FSM;
 		
-		CmdILA_Trigger4(0)							<= SATAS_DebugPortOut.StreamingController.SCFSM.Load;
-    CmdILA_Trigger4(1)							<= SATAS_DebugPortOut.StreamingController.SCFSM.NextTransfer;
-    CmdILA_Trigger4(2)							<= SATAS_DebugPortOut.StreamingController.SCFSM.LastTransfer;
-    CmdILA_Trigger4(3)							<= SATAS_DebugPortOut.StreamingController.IDF_Enable;
-    CmdILA_Trigger4(4)							<= SATAS_DebugPortOut.StreamingController.IDF_Error;
-    CmdILA_Trigger4(5)							<= SATAS_DebugPortOut.StreamingController.IDF_Finished;
-    CmdILA_Trigger4(6)							<= '0';
-    CmdILA_Trigger4(7)							<= SATAS_DebugPortOut.StreamingController.IDF_DriveInformation.Valid;
+		StreamCtrl_Trigger4(0)							<= SATAS_DebugPortOut.StreamingController.SCFSM.Load;
+    StreamCtrl_Trigger4(1)							<= SATAS_DebugPortOut.StreamingController.SCFSM.NextTransfer;
+    StreamCtrl_Trigger4(2)							<= SATAS_DebugPortOut.StreamingController.SCFSM.LastTransfer;
+    StreamCtrl_Trigger4(3)							<= SATAS_DebugPortOut.StreamingController.IDF_Enable;
+    StreamCtrl_Trigger4(4)							<= SATAS_DebugPortOut.StreamingController.IDF_Error;
+    StreamCtrl_Trigger4(5)							<= SATAS_DebugPortOut.StreamingController.IDF_Finished;
+    StreamCtrl_Trigger4(6)							<= '0';
+    StreamCtrl_Trigger4(7)							<= SATAS_DebugPortOut.StreamingController.IDF_DriveInformation.Valid;
 		
-    CmdILA_Trigger5(31 downto 0)		<= SATAS_DebugPortOut.StreamingController.TX_Data;
-		CmdILA_Trigger5(32)							<= SATAS_DebugPortOut.StreamingController.TX_Valid;
-    CmdILA_Trigger5(33)							<= SATAS_DebugPortOut.StreamingController.TX_SOR;
-    CmdILA_Trigger5(34)							<= SATAS_DebugPortOut.StreamingController.TX_EOR;
-    CmdILA_Trigger5(35)							<= SATAS_DebugPortOut.StreamingController.TX_Ack;
+    StreamCtrl_Trigger5(31 downto 0)		<= SATAS_DebugPortOut.StreamingController.TX_Data;
+		StreamCtrl_Trigger5(32)							<= SATAS_DebugPortOut.StreamingController.TX_Valid;
+    StreamCtrl_Trigger5(33)							<= SATAS_DebugPortOut.StreamingController.TX_SOR;
+    StreamCtrl_Trigger5(34)							<= SATAS_DebugPortOut.StreamingController.TX_EOR;
+    StreamCtrl_Trigger5(35)							<= SATAS_DebugPortOut.StreamingController.TX_Ack;
 		
-    CmdILA_Trigger6(31 downto 0)		<= SATAS_DebugPortOut.StreamingController.TC_TX_Data;
-		CmdILA_Trigger6(32)							<= SATAS_DebugPortOut.StreamingController.TC_TX_Valid;
-    CmdILA_Trigger6(33)							<= SATAS_DebugPortOut.StreamingController.TC_TX_SOT;
-    CmdILA_Trigger6(34)							<= SATAS_DebugPortOut.StreamingController.TC_TX_EOT;
-    CmdILA_Trigger6(35)							<= SATAS_DebugPortOut.StreamingController.TC_TX_Ack;
-    CmdILA_Trigger6(36)							<= SATAS_DebugPortOut.StreamingController.SCFSM_TX_ForceEOT;
-    CmdILA_Trigger6(37)							<= SATAS_DebugPortOut.StreamingController.TC_TX_InsertEOT;
+    StreamCtrl_Trigger6(31 downto 0)		<= SATAS_DebugPortOut.StreamingController.TC_TX_Data;
+		StreamCtrl_Trigger6(32)							<= SATAS_DebugPortOut.StreamingController.TC_TX_Valid;
+    StreamCtrl_Trigger6(33)							<= SATAS_DebugPortOut.StreamingController.TC_TX_SOT;
+    StreamCtrl_Trigger6(34)							<= SATAS_DebugPortOut.StreamingController.TC_TX_EOT;
+    StreamCtrl_Trigger6(35)							<= SATAS_DebugPortOut.StreamingController.TC_TX_Ack;
+    StreamCtrl_Trigger6(36)							<= SATAS_DebugPortOut.StreamingController.SCFSM_TX_ForceEOT;
+    StreamCtrl_Trigger6(37)							<= SATAS_DebugPortOut.StreamingController.TC_TX_InsertEOT;
 		
 		PhyILA_Data_d				<= PhyILA_Data			when rising_edge(SATAC_Clock);
 		PhyILA_Trigger0_d		<= PhyILA_Trigger0	when rising_edge(SATAC_Clock);
@@ -942,17 +942,17 @@ begin
 		TransILA_Trigger4_d	<= TransILA_Trigger4	when rising_edge(SATAC_Clock);
 		TransILA_Trigger5_d	<= TransILA_Trigger5	when rising_edge(SATAC_Clock);
 		
-		CmdILA_Data_d				<= CmdILA_Data			when rising_edge(SATAC_Clock);
-		CmdILA_Trigger0_d		<= CmdILA_Trigger0	when rising_edge(SATAC_Clock);
-		CmdILA_Trigger1_d		<= CmdILA_Trigger1	when rising_edge(SATAC_Clock);
-		CmdILA_Trigger2_d		<= CmdILA_Trigger2	when rising_edge(SATAC_Clock);
-		CmdILA_Trigger3_d		<= CmdILA_Trigger3	when rising_edge(SATAC_Clock);
-		CmdILA_Trigger4_d		<= CmdILA_Trigger4	when rising_edge(SATAC_Clock);
-		CmdILA_Trigger5_d		<= CmdILA_Trigger5	when rising_edge(SATAC_Clock);
-		CmdILA_Trigger6_d		<= CmdILA_Trigger6	when rising_edge(SATAC_Clock);
+		StreamCtrl_Data_d				<= StreamCtrl_Data			when rising_edge(SATAC_Clock);
+		StreamCtrl_Trigger0_d		<= StreamCtrl_Trigger0	when rising_edge(SATAC_Clock);
+		StreamCtrl_Trigger1_d		<= StreamCtrl_Trigger1	when rising_edge(SATAC_Clock);
+		StreamCtrl_Trigger2_d		<= StreamCtrl_Trigger2	when rising_edge(SATAC_Clock);
+		StreamCtrl_Trigger3_d		<= StreamCtrl_Trigger3	when rising_edge(SATAC_Clock);
+		StreamCtrl_Trigger4_d		<= StreamCtrl_Trigger4	when rising_edge(SATAC_Clock);
+		StreamCtrl_Trigger5_d		<= StreamCtrl_Trigger5	when rising_edge(SATAC_Clock);
+		StreamCtrl_Trigger6_d		<= StreamCtrl_Trigger6	when rising_edge(SATAC_Clock);
 
 		
-		TransceiverILA : ENTITY PoC.CSP_TransceiverLayer_ILA
+		TransceiverILA : ENTITY PoC.sata_TransceiverLayer_ILA
 			PORT MAP (
 				CONTROL		=> TransceiverLayer_ILA_ControlBus,
 				CLK				=> DebugClock,
@@ -960,7 +960,7 @@ begin
 				TRIG_OUT	=> TransceiverILA_TriggerEvent
 			);
 
-		PhyILA : ENTITY PoC.CSP_PhysicalLayer_ILA
+		PhyILA : ENTITY PoC.sata_PhysicalLayer_ILA
 			port map (
 				CONTROL		=> PhyLayer_ILA_ControlBus,
 				CLK				=> SATAC_Clock,
@@ -973,7 +973,7 @@ begin
 				TRIG_OUT	=> PhyILA_TriggerEvent
 			);
 
-		LinkILA : entity PoC.CSP_LinkLayer_ILA
+		LinkILA : entity PoC.sata_LinkLayer_ILA
 			port map (
 				CONTROL		=> LinkLayer_ILA_ControlBus,
 				CLK				=> SATAC_Clock,
@@ -988,7 +988,7 @@ begin
 				TRIG_OUT	=> LinkILA_TriggerEvent
 			);
 
-		TransILA : entity PoC.CSP_TransportLayer_ILA
+		TransILA : entity PoC.sata_TransportLayer_ILA
 			port map (
 				CONTROL		=> TransportLayer_ILA_ControlBus,
 				CLK				=> SATAC_Clock,
@@ -1002,19 +1002,19 @@ begin
 				TRIG_OUT	=> TransILA_TriggerEvent
 			);
 
-		CmdILA : entity PoC.CSP_CommandLayer_ILA
+		StreamCtrlILA : entity PoC.sata_StreamingController_ILA
 			port map (
 				CONTROL		=> CommandLayer_ILA_ControlBus,
 				CLK				=> SATAC_Clock,
-				DATA			=> CmdILA_Data_d,
-				TRIG0			=> CmdILA_Trigger0_d,
-				TRIG1			=> CmdILA_Trigger1_d,
-				TRIG2			=> CmdILA_Trigger2_d,
-				TRIG3			=> CmdILA_Trigger3_d,
-				TRIG4			=> CmdILA_Trigger4_d,
-				TRIG5			=> CmdILA_Trigger5_d,
-				TRIG6			=> CmdILA_Trigger6_d,
-				TRIG_OUT	=> CmdILA_TriggerEvent
+				DATA			=> StreamCtrl_Data_d,
+				TRIG0			=> StreamCtrl_Trigger0_d,
+				TRIG1			=> StreamCtrl_Trigger1_d,
+				TRIG2			=> StreamCtrl_Trigger2_d,
+				TRIG3			=> StreamCtrl_Trigger3_d,
+				TRIG4			=> StreamCtrl_Trigger4_d,
+				TRIG5			=> StreamCtrl_Trigger5_d,
+				TRIG6			=> StreamCtrl_Trigger6_d,
+				TRIG_OUT	=> StreamCtrl_TriggerEvent
 			);
 	end generate;
 	
