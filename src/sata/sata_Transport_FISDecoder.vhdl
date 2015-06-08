@@ -69,7 +69,7 @@ entity sata_FISDecoder is
 		RX_Ack												: in	STD_LOGIC;
 		
 		-- LinkLayer CSE
-		Link_Status										: IN	T_SATA_LINK_STATUS;
+		Link_Status										: in	T_SATA_LINK_STATUS;
 		
 		-- LinkLayer FIFO interface
 		Link_RX_Ack										: out	STD_LOGIC;
@@ -84,14 +84,15 @@ entity sata_FISDecoder is
 		Link_RX_FS_SyncEsc						: in	STD_LOGIC;
 		Link_RX_FS_Valid							: in	STD_LOGIC
 	);
-END;
+end entity;
 
-ARCHITECTURE rtl OF sata_FISDecoder IS
-	ATTRIBUTE KEEP									: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING					: STRING;
 
-	TYPE T_STATE IS (
-		ST_RESET, ST_IDLE,
+architecture rtl of sata_FISDecoder is
+	attribute KEEP									: BOOLEAN;
+	attribute FSM_ENCODING					: STRING;
+
+	type T_STATE is (
+		ST_RESET, ST_IDLE, ST_CHECK_FISTYPE,
 		ST_FIS_REG_DEV_HOST_WORD_1,	ST_FIS_REG_DEV_HOST_WORD_2,	ST_FIS_REG_DEV_HOST_WORD_3,	ST_FIS_REG_DEV_HOST_WORD_4,
 		ST_FIS_PIO_SETUP_WORD_1,		ST_FIS_PIO_SETUP_WORD_2,		ST_FIS_PIO_SETUP_WORD_3,		ST_FIS_PIO_SETUP_WORD_4,
 		ST_FIS_DATA_1,							ST_FIS_DATA_N,
@@ -99,84 +100,85 @@ ARCHITECTURE rtl OF sata_FISDecoder IS
 		ST_DISCARD_FRAME_1, ST_DISCARD_FRAME_N
 	);
 	
-	-- Alias-Definitions for FISType Register Transfer Device => Host (34h)
+	-- alias-Definitions for FISType Register Transfer Device => Host (34h)
 	-- ====================================================================================
 	-- Word 0
-	ALIAS Alias_FISType										: T_SLV_8													IS Link_RX_Data(7 DOWNTO 0);
-	ALIAS Alias_FlagReg										: T_SLV_8													IS Link_RX_Data(15 DOWNTO 8);				-- Flag bits
-	ALIAS Alias_StatusReg									: T_SLV_8													IS Link_RX_Data(23 DOWNTO 16);			-- Status register
-	ALIAS Alias_ErrorReg									: T_SLV_8													IS Link_RX_Data(31 DOWNTO 24);			-- Error register
+	alias Alias_FISType										: T_SLV_8													is Link_RX_Data(7 downto 0);
+	alias Alias_FlagReg										: T_SLV_8													is Link_RX_Data(15 downto 8);				-- Flag bits
+	alias Alias_StatusReg									: T_SLV_8													is Link_RX_Data(23 downto 16);			-- Status register
+	alias Alias_ErrorReg									: T_SLV_8													is Link_RX_Data(31 downto 24);			-- Error register
 	-- Word 1
-	ALIAS Alias_LBA0											: T_SLV_8													IS Link_RX_Data(7 DOWNTO 0);				-- Sector Number
-	ALIAS Alias_LBA16											: T_SLV_8													IS Link_RX_Data(15 DOWNTO 8);				-- Cylinder Low
-	ALIAS Alias_LBA32											: T_SLV_8													IS Link_RX_Data(23 DOWNTO 16);			-- Cylinder High
-	ALIAS Alias_Head											: T_SLV_4													IS Link_RX_Data(27 DOWNTO 24);			-- Head number
-	ALIAS Alias_Device										: STD_LOGIC_VECTOR(0 DOWNTO 0)		IS Link_RX_Data(28 DOWNTO 28);			-- Device number
+	alias Alias_LBA0											: T_SLV_8													is Link_RX_Data(7 downto 0);				-- Sector Number
+	alias Alias_LBA16											: T_SLV_8													is Link_RX_Data(15 downto 8);				-- Cylinder Low
+	alias Alias_LBA32											: T_SLV_8													is Link_RX_Data(23 downto 16);			-- Cylinder High
+	alias Alias_Head											: T_SLV_4													is Link_RX_Data(27 downto 24);			-- Head number
+	alias Alias_Device										: STD_LOGIC_VECTOR(0 downto 0)		is Link_RX_Data(28 downto 28);			-- Device number
 	
 	-- Word 2
-	ALIAS Alias_LBA8											: T_SLV_8													IS Link_RX_Data(7 DOWNTO 0);				-- Sector Number expanded
-	ALIAS Alias_LBA24											: T_SLV_8													IS Link_RX_Data(15 DOWNTO 8);				-- Cylinder Low expanded
-	ALIAS Alias_LBA40											: T_SLV_8													IS Link_RX_Data(23 DOWNTO 16);			-- Cylinder High expanded
+	alias Alias_LBA8											: T_SLV_8													is Link_RX_Data(7 downto 0);				-- Sector Number expanded
+	alias Alias_LBA24											: T_SLV_8													is Link_RX_Data(15 downto 8);				-- Cylinder Low expanded
+	alias Alias_LBA40											: T_SLV_8													is Link_RX_Data(23 downto 16);			-- Cylinder High expanded
 	
 	-- Word 3
-	ALIAS Alias_SecCount0									: T_SLV_8													IS Link_RX_Data(7 DOWNTO 0);				-- Sector Count
-	ALIAS Alias_SecCount8									: T_SLV_8													IS Link_RX_Data(15 DOWNTO 8);				-- Sector Count expanded
+	alias Alias_SecCount0									: T_SLV_8													is Link_RX_Data(7 downto 0);				-- Sector Count
+	alias Alias_SecCount8									: T_SLV_8													is Link_RX_Data(15 downto 8);				-- Sector Count expanded
 
 	-- Word 4
-	ALIAS Alias_TransferCount							: T_SLV_16												IS Link_RX_Data(15 DOWNTO 0);				-- Transfer Count
+	alias Alias_TransferCount							: T_SLV_16												is Link_RX_Data(15 downto 0);				-- Transfer Count
 	
-	-- Alias-Definitions for FISType PIO Setup (5Fh)
+	-- alias-Definitions for FISType PIO Setup (5Fh)
 	-- ====================================================================================
 	-- Word 3
-	ALIAS Alias_EndStatusReg							: T_SLV_8													IS Link_RX_Data(31 DOWNTO 24);			-- EndStatus Register
+	alias Alias_EndStatusReg							: T_SLV_8													is Link_RX_Data(31 downto 24);			-- EndStatus Register
 	
-	SIGNAL IsFISHeader										: STD_LOGIC;
-	SIGNAL FISType_i											: T_SATA_FISTYPE;
+	signal IsFISHeader										: STD_LOGIC;
 	
-	SIGNAL State													: T_STATE													:= ST_RESET;
-	SIGNAL NextState											: T_STATE;
-	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS getFSMEncoding_gray(DEBUG);
+	signal State													: T_STATE													:= ST_RESET;
+	signal NextState											: T_STATE;
+	attribute FSM_ENCODING	of State			: signal is getFSMEncoding_gray(DEBUG);
 	
-	SIGNAL FlagRegister										: T_SLV_8													:= (OTHERS => '0');
-	SIGNAL StatusRegister									: T_SLV_8													:= (OTHERS => '0');
-	SIGNAL EndStatusRegister							: T_SLV_8													:= (OTHERS => '0');
-	SIGNAL ErrorRegister									: T_SLV_8													:= (OTHERS => '0');
-	SIGNAL AddressRegister								: T_SLV_48												:= (OTHERS => '0');
-	SIGNAL SectorCountRegister						: T_SLV_16												:= (OTHERS => '0');
-	SIGNAL TransferCountRegister					: T_SLV_16												:= (OTHERS => '0');
+	signal FISTypeRegister								: T_SATA_FISTYPE									:= SATA_FISTYPE_UNKNOWN;
+	signal FlagRegister										: T_SLV_8													:= (others => '0');
+	signal StatusRegister									: T_SLV_8													:= (others => '0');
+	signal EndStatusRegister							: T_SLV_8													:= (others => '0');
+	signal ErrorRegister									: T_SLV_8													:= (others => '0');
+	signal AddressRegister								: T_SLV_48												:= (others => '0');
+	signal SectorCountRegister						: T_SLV_16												:= (others => '0');
+	signal TransferCountRegister					: T_SLV_16												:= (others => '0');
 
-	SIGNAL FlagRegister_en								: STD_LOGIC;	
-	SIGNAL StatusRegister_en							: STD_LOGIC;
-	SIGNAL EndStatusRegister_en						: STD_LOGIC;
-	SIGNAL ErrorRegister_en								: STD_LOGIC;
-	SIGNAL AddressRegister_en0						: STD_LOGIC;
-	SIGNAL AddressRegister_en8						: STD_LOGIC;
-	SIGNAL AddressRegister_en16						: STD_LOGIC;
-	SIGNAL AddressRegister_en24						: STD_LOGIC;
-	SIGNAL AddressRegister_en32						: STD_LOGIC;
-	SIGNAL AddressRegister_en40						: STD_LOGIC;
-	SIGNAL SectorCountRegister_en0				: STD_LOGIC;
-	SIGNAL SectorCountRegister_en8				: STD_LOGIC;
-	SIGNAL TransferCountRegister_en				: STD_LOGIC;
+	signal FISTypeRegister_rst						: STD_LOGIC;
+	signal FISTypeRegister_en							: STD_LOGIC;
+	signal FlagRegister_en								: STD_LOGIC;
+	signal StatusRegister_en							: STD_LOGIC;
+	signal EndStatusRegister_en						: STD_LOGIC;
+	signal ErrorRegister_en								: STD_LOGIC;
+	signal AddressRegister_en0						: STD_LOGIC;
+	signal AddressRegister_en8						: STD_LOGIC;
+	signal AddressRegister_en16						: STD_LOGIC;
+	signal AddressRegister_en24						: STD_LOGIC;
+	signal AddressRegister_en32						: STD_LOGIC;
+	signal AddressRegister_en40						: STD_LOGIC;
+	signal SectorCountRegister_en0				: STD_LOGIC;
+	signal SectorCountRegister_en8				: STD_LOGIC;
+	signal TransferCountRegister_en				: STD_LOGIC;
 	
-BEGIN
+begin
 
-	IsFISHeader		<= Link_RX_Valid AND Link_RX_SOF;
-	FISType_i			<= to_sata_fistype(Alias_FISType, Link_RX_Valid);
+	IsFISHeader		<= Link_RX_Valid and Link_RX_SOF;
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) then
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
 			if (Reset = '1') then
 				State			<= ST_RESET;
 			else
 				State			<= NextState;
 			end if;
 		end if;
-	END PROCESS;
+	end process;
 	
-	PROCESS(State, Link_Status, IsFISHeader, FISType_i, Link_RX_Valid, Link_RX_Data, Link_RX_SOF, Link_RX_EOF, Link_RX_FS_Valid, Link_RX_FS_CRCOK, Link_RX_FS_SyncEsc, RX_Ack	)
-	BEGIN
+	process(State, Link_Status, IsFISHeader, FISTypeRegister, Link_RX_Valid, Link_RX_Data, Link_RX_SOF, Link_RX_EOF, Link_RX_FS_Valid, Link_RX_FS_CRCOK, Link_RX_FS_SyncEsc, RX_Ack	)
+	begin
 		NextState										<= State;
 		
 		Status											<= SATA_FISD_STATUS_RECEIVING;
@@ -189,6 +191,8 @@ BEGIN
 		RX_EOP											<= '0';
 		RX_Valid										<= '0';
 		
+		FISTypeRegister_rst					<= '0';
+		FISTypeRegister_en					<= '0';
 		FlagRegister_en							<= '0';
 		StatusRegister_en						<= '0';
 		EndStatusRegister_en				<= '0';
@@ -205,7 +209,7 @@ BEGIN
 
 		UpdateATARegisters					<= '0';
 
-		CASE State IS
+		case State is
 			when ST_RESET =>
 				-- Clock might be unstable is this state. In this case either
 				-- a) Reset is asserted because inital reset of the SATAController is
@@ -213,7 +217,8 @@ BEGIN
 				-- b) Phy_Status is constant and not equal to SATA_LINK_STATUS_IDLE
 				--    This may happen during reconfiguration due to speed negotiation.
         Status													<= SATA_FISD_STATUS_RESET;
-        
+        FISTypeRegister_rst							<= '1';
+				
         if (Link_Status = SATA_LINK_STATUS_IDLE) then
 					NextState											<= ST_IDLE;
         end if;
@@ -225,64 +230,69 @@ BEGIN
 					-- wait for frame state
 					null;
 				elsif (Link_RX_FS_CRCOK = '1') then
-					if (IsFISHeader = '1' ) then
-						-- frame is OK and now processed
-						Status											<= SATA_FISD_STATUS_RECEIVING;
-						Link_RX_FS_Ack 							<= '1';
-						
-						if (FISType_i = SATA_FISTYPE_PIO_SETUP) then
-							Link_RX_Ack								<= '1';
-							
-							FlagRegister_en						<= '1';
-							StatusRegister_en					<= '1';
-							ErrorRegister_en					<= '1';
-							
-							if (Link_RX_EOF = '0') then
-								NextState 							<= ST_FIS_PIO_SETUP_WORD_1;
-							else
-								NextState								<= ST_STATUS_ERROR;
-							end if;
-						elsif (FISType_i = SATA_FISTYPE_REG_DEV_HOST) then
-							Link_RX_Ack								<= '1';
-							
-							FlagRegister_en						<= '1';
-							StatusRegister_en					<= '1';
-							ErrorRegister_en					<= '1';
-							
-							if (Link_RX_EOF = '0') then
-								NextState 							<= ST_FIS_REG_DEV_HOST_WORD_1;
-							else
-								NextState								<= ST_STATUS_ERROR;
-							end if;
-						elsif (FISType_i = SATA_FISTYPE_DMA_ACTIVATE) then
-							Link_RX_Ack								<= '1';
-							
-							if (Link_RX_EOF = '1') then
-								NextState 							<= ST_RECEIVE_OK;
-							else
-								NextState 							<= ST_DISCARD_FRAME_1;
-							end if;
-							
-						elsif (FISType_i = SATA_FISTYPE_DATA) then
-							Link_RX_Ack								<= '1';											-- skip header word
-							
-							if (Link_RX_EOF = '0') then
-								NextState 							<= ST_FIS_DATA_1;						-- goto DataFIS processing
-							else
-								NextState								<= ST_STATUS_ERROR;
-							end if;
-						else
-							NextState									<= ST_STATUS_ERROR;
-						end if;	-- FISType_i
-					end if;	-- IsHeader
+					-- frame is OK and now processed
+					FISTypeRegister_en						<= '1';
+					NextState											<= ST_CHECK_FISTYPE;
 				elsif (Link_RX_FS_SyncEsc = '1') then
 					Link_RX_FS_Ack 								<= '1';
-								NextState								<= ST_STATUS_ERROR;
+					NextState											<= ST_STATUS_ERROR;
 				else
 					Link_RX_FS_Ack 								<= '1';
 					NextState											<= ST_STATUS_CRC_ERROR;
---					Status 												<= SATA_FISD_STATUS_CRC_ERROR;
 				end if;
+
+			when ST_CHECK_FISTYPE =>
+				Status													<= SATA_FISD_STATUS_RECEIVING;
+				Link_RX_FS_Ack 									<= '1';
+				
+				if (IsFISHeader = '1' ) then
+					Link_RX_Ack										<= '1';
+					
+					if (FISTypeRegister = SATA_FISTYPE_PIO_SETUP) then
+						FlagRegister_en						<= '1';
+						StatusRegister_en					<= '1';
+						ErrorRegister_en					<= '1';
+						
+						if (Link_RX_EOF = '0') then
+							NextState 							<= ST_FIS_PIO_SETUP_WORD_1;
+						else
+							NextState								<= ST_STATUS_ERROR;
+						end if;
+						
+					elsif (FISTypeRegister = SATA_FISTYPE_REG_DEV_HOST) then
+						FlagRegister_en						<= '1';
+						StatusRegister_en					<= '1';
+						ErrorRegister_en					<= '1';
+						
+						if (Link_RX_EOF = '0') then
+							NextState 							<= ST_FIS_REG_DEV_HOST_WORD_1;
+						else
+							NextState								<= ST_STATUS_ERROR;
+						end if;
+						
+					elsif (FISTypeRegister = SATA_FISTYPE_DMA_ACTIVATE) then
+						if (Link_RX_EOF = '1') then
+							NextState 							<= ST_RECEIVE_OK;
+						else
+							NextState 							<= ST_DISCARD_FRAME_1;
+						end if;
+						
+					elsif (FISTypeRegister = SATA_FISTYPE_DATA) then
+						if (Link_RX_EOF = '0') then
+							NextState 							<= ST_FIS_DATA_1;						-- goto Data FIS processing
+						else
+							NextState								<= ST_STATUS_ERROR;
+						end if;
+					else
+						if (Link_RX_EOF = '0') then
+							NextState								<= ST_DISCARD_FRAME_1;
+						else
+							NextState								<= ST_STATUS_ERROR;
+						end if;
+					end if;	-- FISType_i
+				else
+					NextState										<= ST_DISCARD_FRAME_1;
+				end if;	-- IsHeader
 				 
 			-- ============================================================
 			-- register transfer: device => host
@@ -440,14 +450,17 @@ BEGIN
 		
 			when ST_RECEIVE_OK =>
 				Status													<= SATA_FISD_STATUS_RECEIVE_OK;
+				FISTypeRegister_rst							<= '1';
 				NextState												<= ST_IDLE;
 		
 			when ST_STATUS_ERROR =>
 				Status													<= SATA_FISD_STATUS_ERROR;
+				FISTypeRegister_rst							<= '1';
 				NextState												<= ST_IDLE;
 		
 			when ST_STATUS_CRC_ERROR =>
 				Status													<= SATA_FISD_STATUS_CRC_ERROR;
+				FISTypeRegister_rst							<= '1';
 				NextState												<= ST_IDLE;
 		
 		
@@ -459,6 +472,7 @@ BEGIN
 				Link_RX_Ack											<= '1';
 				
 				if ((Link_RX_Valid = '1') and (Link_RX_EOF = '1')) then
+					FISTypeRegister_rst						<= '1';
 					NextState 										<= ST_IDLE;
 				else
 					NextState											<= ST_DISCARD_FRAME_N;
@@ -469,6 +483,7 @@ BEGIN
 				Link_RX_Ack											<= '1';
 				
 				if ((Link_RX_Valid = '1') and (Link_RX_EOF = '1')) then
+					FISTypeRegister_rst						<= '1';
 					NextState 										<= ST_IDLE;
 				end if;
 			
@@ -482,16 +497,23 @@ BEGIN
 	BEGIN
 		IF rising_edge(Clock) then
 			if (Reset = '1') then
-				FlagRegister					<= (OTHERS => '0');
-				StatusRegister				<= (OTHERS => '0');
-				ErrorRegister					<= (OTHERS => '0');
-				AddressRegister				<= (OTHERS => '0');
-				SectorCountRegister		<= (OTHERS => '0');
-				TransferCountRegister	<= (OTHERS => '0');
+				FISTypeRegister				<= SATA_FISTYPE_UNKNOWN;
+				FlagRegister					<= (others => '0');
+				StatusRegister				<= (others => '0');
+				ErrorRegister					<= (others => '0');
+				AddressRegister				<= (others => '0');
+				SectorCountRegister		<= (others => '0');
+				TransferCountRegister	<= (others => '0');
 			else
+				if (FISTypeRegister_rst = '1') then
+					FISTypeRegister	<= SATA_FISTYPE_UNKNOWN;
+				elsif (FISTypeRegister_en = '1') then
+					FISTypeRegister	<= to_sata_fistype(Alias_FISType);
+				end if;
+			
 				-- FlagRegister
 				if (FlagRegister_en	= '1') then
-					FlagRegister	<= Alias_FlagReg;
+					FlagRegister		<= Alias_FlagReg;
 				end if;
 				
 				-- StatusRegister
@@ -511,36 +533,36 @@ BEGIN
 				
 				-- AddressRegister
 				if (AddressRegister_en0	= '1') then
-					AddressRegister(7 DOWNTO 0)	<= Alias_LBA0;
+					AddressRegister(7 downto 0)	<= Alias_LBA0;
 				end if;
 				
 				if (AddressRegister_en8	= '1') then
-					AddressRegister(15 DOWNTO 8)	<= Alias_LBA8;
+					AddressRegister(15 downto 8)	<= Alias_LBA8;
 				end if;
 				
 				if (AddressRegister_en16	= '1') then
-					AddressRegister(23 DOWNTO 16)	<= Alias_LBA16;
+					AddressRegister(23 downto 16)	<= Alias_LBA16;
 				end if;
 				
 				if (AddressRegister_en24	= '1') then
-					AddressRegister(31 DOWNTO 24)	<= Alias_LBA24;
+					AddressRegister(31 downto 24)	<= Alias_LBA24;
 				end if;
 				
 				if (AddressRegister_en32	= '1') then
-					AddressRegister(39 DOWNTO 32)	<= Alias_LBA32;
+					AddressRegister(39 downto 32)	<= Alias_LBA32;
 				end if;
 				
 				if (AddressRegister_en40	= '1') then
-					AddressRegister(47 DOWNTO 40)	<= Alias_LBA40;
+					AddressRegister(47 downto 40)	<= Alias_LBA40;
 				end if;
 				
 				-- SectorCountRegister
 				if (SectorCountRegister_en0	= '1') then
-					SectorCountRegister(7 DOWNTO 0)		<= Alias_SecCount0;
+					SectorCountRegister(7 downto 0)		<= Alias_SecCount0;
 				end if;
 				
 				if (SectorCountRegister_en8	= '1') then
-					SectorCountRegister(15 DOWNTO 8)	<= Alias_SecCount8;
+					SectorCountRegister(15 downto 8)	<= Alias_SecCount8;
 				end if;
 				
 				-- TransferCountRegister
@@ -551,7 +573,7 @@ BEGIN
 		end if;
 	end process;
 	
-	FISType															<= FISType_i;
+	FISType															<= FISTypeRegister;
 	
 	ATADeviceRegisters.Flags						<= to_sata_ata_device_flags(FlagRegister);
 	ATADeviceRegisters.Status						<= to_sata_ata_device_register_status(StatusRegister);
