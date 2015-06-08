@@ -321,7 +321,7 @@ package satadbg is
 	-- ===========================================================================
 	-- SATA Controller Types
 	-- ===========================================================================
-	type T_SATADBG_SATAC_OUT is record
+	type T_SATADBG_SATACONTROLLER_OUT is record
 		-- Transceiver Layer
 		TransceiverLayer			: T_SATADBG_TRANSCEIVER_OUT;
 		Transceiver_Command		: T_SATA_TRANSCEIVER_COMMAND;
@@ -344,63 +344,63 @@ package satadbg is
 		Transport_Error				: T_SATA_TRANS_ERROR;									-- 3 bit
 	end record;
 	
-	type T_SATADBG_SATAC_IN is record
-		LinkLayer							: T_SATADBG_LINK_IN;
+	type T_SATADBG_SATACONTROLLER_IN is record
 		TransceiverLayer			: T_SATADBG_TRANSCEIVER_IN;
+		LinkLayer							: T_SATADBG_LINK_IN;
 	end record;
 
 
 	-- ===========================================================================
-	-- SATA StreamingController Types
+	-- SATA StreamingLayer Types
 	-- ===========================================================================
 
-  type T_SATADBG_STREAMINGCONTROLLER_SCFSM_OUT is record
+  type T_SATADBG_STREAMING_SFSM_OUT is record
     FSM          : std_logic_Vector(4 downto 0);
     Load         : std_logic;
     NextTransfer : std_logic;
     LastTransfer : std_logic;
 	end record;
 	
-  type T_SATADBG_STREAMINGCONTROLLER_OUT is record
-    Command              : T_SATA_STREAMINGCONTROLLER_COMMAND;
-    Status               : T_SATA_STREAMINGCONTROLLER_STATUS;
-    Error                : T_SATA_STREAMINGCONTROLLER_ERROR;
-    Address_AppLB        : T_SLV_48;
-    BlockCount_AppLB     : T_SLV_48;
-    Address_DevLB        : T_SLV_48;
-    BlockCount_DevLB     : T_SLV_48;
-    IDF_Reset            : STD_LOGIC;
-    IDF_Enable           : STD_LOGIC;
-    IDF_Error            : STD_LOGIC;
-    IDF_Finished         : STD_LOGIC;
-    IDF_DriveInformation : T_SATA_DRIVE_INFORMATION;
-    SCFSM                : T_SATADBG_STREAMINGCONTROLLER_SCFSM_OUT;
-    RX_Valid             : STD_LOGIC;
-    RX_Data              : T_SLV_32;
-    RX_SOR               : STD_LOGIC;
-    RX_EOR               : STD_LOGIC;
-    RX_Ack               : STD_LOGIC;
-    SCFSM_RX_Valid       : STD_LOGIC;
-    SCFSM_RX_SOR         : STD_LOGIC;
-    SCFSM_RX_EOR         : STD_LOGIC;
-    SCFSM_RX_Ack         : STD_LOGIC;
-    SATAC_RX_Valid       : STD_LOGIC;
-    SATAC_RX_Data        : T_SLV_32;
-    SATAC_RX_SOT         : STD_LOGIC;
-    SATAC_RX_EOT         : STD_LOGIC;
-    SATAC_RX_Ack         : STD_LOGIC;
-    SCFSM_TX_ForceEOT    : STD_LOGIC;
-    TX_Valid             : STD_LOGIC;
-    TX_Data              : T_SLV_32;
-    TX_SOR               : STD_LOGIC;
-    TX_EOR               : STD_LOGIC;
-    TX_Ack               : STD_LOGIC;
-    TC_TX_Valid          : STD_LOGIC;
-    TC_TX_Data           : T_SLV_32;
-    TC_TX_SOT            : STD_LOGIC;
-    TC_TX_EOT            : STD_LOGIC;
-    TC_TX_Ack            : STD_LOGIC;
-    TC_TX_InsertEOT 		 : STD_LOGIC;
+  type T_SATADBG_STREAMING_OUT is record
+    Command             	: T_SATA_STREAMING_COMMAND;
+    Status              	: T_SATA_STREAMING_STATUS;
+    Error               	: T_SATA_STREAMING_ERROR;
+    Address_AppLB       	: T_SLV_48;
+    BlockCount_AppLB    	: T_SLV_48;
+    Address_DevLB       	: T_SLV_48;
+    BlockCount_DevLB    	: T_SLV_48;
+    IDF_Reset           	: STD_LOGIC;
+    IDF_Enable          	: STD_LOGIC;
+    IDF_Error           	: STD_LOGIC;
+    IDF_Finished        	: STD_LOGIC;
+    IDF_DriveInformation	: T_SATA_DRIVE_INFORMATION;
+    SFSM									: T_SATADBG_STREAMING_SFSM_OUT;
+    RX_Valid          		: STD_LOGIC;
+    RX_Data           		: T_SLV_32;
+    RX_SOR            		: STD_LOGIC;
+    RX_EOR            		: STD_LOGIC;
+    RX_Ack            		: STD_LOGIC;
+    SFSM_RX_Valid    			: STD_LOGIC;
+    SFSM_RX_SOR      			: STD_LOGIC;
+    SFSM_RX_EOR      			: STD_LOGIC;
+    SFSM_RX_Ack      			: STD_LOGIC;
+    Trans_RX_Valid    		: STD_LOGIC;
+    Trans_RX_Data     		: T_SLV_32;
+    Trans_RX_SOT      		: STD_LOGIC;
+    Trans_RX_EOT      		: STD_LOGIC;
+    Trans_RX_Ack      		: STD_LOGIC;
+    SFSM_TX_ForceEOT 			: STD_LOGIC;
+    TX_Valid          		: STD_LOGIC;
+    TX_Data           		: T_SLV_32;
+    TX_SOR            		: STD_LOGIC;
+    TX_EOR            		: STD_LOGIC;
+    TX_Ack            		: STD_LOGIC;
+    TC_TX_Valid       		: STD_LOGIC;
+    TC_TX_Data        		: T_SLV_32;
+    TC_TX_SOT         		: STD_LOGIC;
+    TC_TX_EOT         		: STD_LOGIC;
+    TC_TX_Ack         		: STD_LOGIC;
+    TC_TX_InsertEOT 			: STD_LOGIC;
 	end record;
 	
 	
@@ -429,10 +429,10 @@ package satadbg is
 		Transport_Status		: T_SATA_TRANS_STATUS;
 		Transport_Error			: T_SATA_TRANS_ERROR;
 		-- Streaming Controller
-		StreamingController	: T_SATADBG_STREAMINGCONTROLLER_OUT;
-		Streaming_Command		: T_SATA_STREAMINGCONTROLLER_COMMAND;
-		Streaming_Status		: T_SATA_STREAMINGCONTROLLER_STATUS;
-		Streaming_Error			: T_SATA_STREAMINGCONTROLLER_ERROR;
+		StreamingLayer			: T_SATADBG_STREAMING_OUT;
+		Streaming_Command		: T_SATA_STREAMING_COMMAND;
+		Streaming_Status		: T_SATA_STREAMING_STATUS;
+		Streaming_Error			: T_SATA_STREAMING_ERROR;
 	end record;
 	
 	type T_SATADBG_STREAMINGSTACK_IN is record
@@ -440,12 +440,12 @@ package satadbg is
 		LinkLayer						: T_SATADBG_LINK_IN;
 	end record;
 	
-	type T_SATADBG_TRANSCEIVER_OUT_VECTOR		is array (NATURAL range <>)	of T_SATADBG_TRANSCEIVER_OUT;
-	type T_SATADBG_TRANSCEIVER_IN_VECTOR		is array (NATURAL range <>)	of T_SATADBG_TRANSCEIVER_IN;
-	type T_SATADBG_PHYSICAL_OUT_VECTOR			is array (NATURAL range <>)	of T_SATADBG_PHYSICAL_OUT;
-	type T_SATADBG_LINK_OUT_VECTOR					is array (NATURAL range <>)	of T_SATADBG_LINK_OUT;
-	type T_SATADBG_SATAC_OUT_VECTOR					is array (NATURAL range <>)	of T_SATADBG_SATAC_OUT;
-	type T_SATADBG_SATAC_IN_VECTOR					is array (NATURAL range <>)	of T_SATADBG_SATAC_IN;
+	type T_SATADBG_TRANSCEIVER_OUT_VECTOR			is array (NATURAL range <>)	of T_SATADBG_TRANSCEIVER_OUT;
+	type T_SATADBG_TRANSCEIVER_IN_VECTOR			is array (NATURAL range <>)	of T_SATADBG_TRANSCEIVER_IN;
+	type T_SATADBG_PHYSICAL_OUT_VECTOR				is array (NATURAL range <>)	of T_SATADBG_PHYSICAL_OUT;
+	type T_SATADBG_LINK_OUT_VECTOR						is array (NATURAL range <>)	of T_SATADBG_LINK_OUT;
+	type T_SATADBG_SATACONTROLLER_OUT_VECTOR	is array (NATURAL range <>)	of T_SATADBG_SATACONTROLLER_OUT;
+	type T_SATADBG_SATACONTROLLER_IN_VECTOR		is array (NATURAL range <>)	of T_SATADBG_SATACONTROLLER_IN;
 	
 end;
 

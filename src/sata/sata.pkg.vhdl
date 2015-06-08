@@ -210,9 +210,10 @@ package sata is
 	type T_SATA_LINK_STATUS_VECTOR		is array (NATURAL range <>) of T_SATA_LINK_STATUS;
 	type T_SATA_LINK_ERROR_VECTOR			is array (NATURAL range <>) of T_SATA_LINK_ERROR;
 
-	function to_slv(Primitive : T_SATA_PRIMITIVE)				return STD_LOGIC_VECTOR;
-	function to_slv(Status : T_SATA_LINK_STATUS)				return STD_LOGIC_VECTOR;
-	function to_slv(Error : T_SATA_LINK_ERROR)					return STD_LOGIC_VECTOR;
+	function to_slv(Command : T_SATA_LINK_COMMAND)	return STD_LOGIC_VECTOR;
+	function to_slv(Primitive : T_SATA_PRIMITIVE)		return STD_LOGIC_VECTOR;
+	function to_slv(Status : T_SATA_LINK_STATUS)		return STD_LOGIC_VECTOR;
+	function to_slv(Error : T_SATA_LINK_ERROR)			return STD_LOGIC_VECTOR;
 	
 	function to_sata_word(Primitive : T_SATA_PRIMITIVE)	return T_SLV_32;
 	function to_sata_primitive(Data : T_SLV_32; CharIsK : T_SLV_4; DetectDialTone : BOOLEAN := FALSE)	return T_SATA_PRIMITIVE;
@@ -247,6 +248,12 @@ package sata is
 		SATA_TRANS_ERROR_FSM												-- ILLEGAL_TRANSITION
 	);
 
+	type T_SATA_TRANS_COMMAND_VECTOR	is array (NATURAL range <>) of  T_SATA_TRANS_COMMAND;
+	type T_SATA_TRANS_STATUS_VECTOR		is array (NATURAL range <>) of  T_SATA_TRANS_STATUS;
+	type T_SATA_TRANS_ERROR_VECTOR		is array (NATURAL range <>) of  T_SATA_TRANS_ERROR;
+
+	-- ATA Commands and Categories
+	-- ===========================================================================
 	type T_SATA_ATA_COMMAND is (
 		SATA_ATA_CMD_NONE,
 		SATA_ATA_CMD_IDENTIFY_DEVICE,
@@ -273,7 +280,9 @@ package sata is
 		SATA_CMDCAT_CONTROL
 	);
 	
-	type T_SATA_FIStype is (
+	-- FIS Types
+	-- ===========================================================================
+	type T_SATA_FISTYPE is (
 		SATA_FISTYPE_UNKNOWN,
 		SATA_FISTYPE_REG_HOST_DEV,
 		SATA_FISTYPE_REG_DEV_HOST,
@@ -305,30 +314,32 @@ package sata is
 		SATA_FISD_STATUS_CRC_ERROR
 	);
 	
-	type T_SATA_ATA_HOST_REGISTERS IS RECORD
+	-- ATA Registers
+	-- ===========================================================================
+	type T_SATA_ATA_HOST_REGISTERS is record
 		Flag_C						: STD_LOGIC;
 		Command						: T_SLV_8;
 		Control						: T_SLV_8;
 		Feature						: T_SLV_8;
 		LBlockAddress			: T_SLV_48;
 		SectorCount				: T_SLV_16;
-	END RECORD;
+	end record;
 	
-	type T_SATA_ATA_DEVICE_FLAGS IS RECORD
+	type T_SATA_ATA_DEVICE_FLAGS is record
 		Interrupt					: STD_LOGIC;
 		Direction					: STD_LOGIC;
 		C									: STD_LOGIC;
-	END RECORD;
+	end record;
 	
-	type T_SATA_ATA_DEVICE_REGISTER_STATUS IS RECORD
+	type T_SATA_ATA_DEVICE_REGISTER_STATUS is record
 		Error							: STD_LOGIC;
 		DataRequest				: STD_LOGIC;
 		DeviceFault				: STD_LOGIC;
 		DataReady					: STD_LOGIC;
 		Busy							: STD_LOGIC;
-	END RECORD;
+	end record;
 	
-	type T_SATA_ATA_DEVICE_REGISTER_ERROR IS RECORD
+	type T_SATA_ATA_DEVICE_REGISTER_ERROR is record
 		NoMediaPresent				: STD_LOGIC;
 		CommandAborted				: STD_LOGIC;
 		MediaChangeRequest		: STD_LOGIC;
@@ -336,9 +347,9 @@ package sata is
 		MediaChange						: STD_LOGIC;
 		UncorrectableError		: STD_LOGIC;
 		InterfaceCRCError			: STD_LOGIC;
-	END RECORD;
+	end record;
 	
-	type T_SATA_ATA_DEVICE_REGISTERS IS RECORD
+	type T_SATA_ATA_DEVICE_REGISTERS is record
 		Flags							: T_SATA_ATA_DEVICE_FLAGS;
 		Status						: T_SATA_ATA_DEVICE_REGISTER_STATUS;
 		EndStatus					: T_SATA_ATA_DEVICE_REGISTER_STATUS;
@@ -346,16 +357,16 @@ package sata is
 		LBlockAddress			: T_SLV_48;
 		SectorCount				: T_SLV_16;
 		TransferCount			: T_SLV_16;
-	END RECORD;
+	end record;
 	
-	type T_SATA_HOST_REGISTER_STATUS IS RECORD
+	type T_SATA_HOST_REGISTER_STATUS is record
 		Detect						: T_SLV_4;
 		Speed							: T_SLV_4;
 		PowerManagement		: T_SLV_4;
 		-- reserved				: T_SLV_20
-	END RECORD;
+	end record;
 
-	type T_SATA_HOST_REGISTER_ERROR IS RECORD
+	type T_SATA_HOST_REGISTER_ERROR is record
 		-- error field
 		DataIntegrityError						: STD_LOGIC;
 		LinkCommunicationError				: STD_LOGIC;
@@ -377,12 +388,12 @@ package sata is
 		FISUnrecognized								: STD_LOGIC;
 		Exchanged											: STD_LOGIC;
 		PortSelectorDetected					: STD_LOGIC;
-	END RECORD;
+	end record;
 	
-	type T_SATA_HOST_REGISTERS IS RECORD
+	type T_SATA_HOST_REGISTERS is record
 		Status				: T_SATA_HOST_REGISTER_STATUS;
 		Error					: T_SATA_HOST_REGISTER_ERROR;
-	END RECORD;
+	end record;
 
 	type T_SATA_ATA_HOST_REGISTERS_VECTOR			is array (NATURAL range <>) of  T_SATA_ATA_HOST_REGISTERS;
 	type T_SATA_ATA_DEVICE_REGISTERS_VECTOR		is array (NATURAL range <>) of  T_SATA_ATA_DEVICE_REGISTERS;
@@ -390,19 +401,19 @@ package sata is
 	constant C_SATA_ATA_MAX_BLOCKCOUNT			: POSITIVE				:= 2**16; 			--	= 32 MiB at 512 Bytes logical blocks
 	constant C_SIM_MAX_BLOCKCOUNT						: POSITIVE				:= 64; 					--	= 32 KiB at 512 Bytes logical blocks
 	
-	function to_sata_Trans_Command(slv : STD_LOGIC_VECTOR) return T_SATA_TRANS_COMMAND;
-	function to_sata_Trans_Status(slv : STD_LOGIC_VECTOR) return T_SATA_TRANS_STATUS;
+	function to_sata_Trans_Command(slv : STD_LOGIC_VECTOR)	return T_SATA_TRANS_COMMAND;
+	function to_sata_Trans_Status(slv : STD_LOGIC_VECTOR)		return T_SATA_TRANS_STATUS;
 
-	function to_slv(Command : T_SATA_TRANS_COMMAND)	return STD_LOGIC_VECTOR;
-	function to_slv(Status : T_SATA_TRANS_STATUS)		return STD_LOGIC_VECTOR;
-	function to_slv(Error : T_SATA_TRANS_ERROR)			return STD_LOGIC_VECTOR;
-	function to_slv(Status : T_SATA_FISENCODER_STATUS) return STD_LOGIC_VECTOR;
-	function to_slv(Status : T_SATA_FISDECODER_STATUS) return STD_LOGIC_VECTOR;
+	function to_slv(Command : T_SATA_TRANS_COMMAND)			return STD_LOGIC_VECTOR;
+	function to_slv(Status : T_SATA_TRANS_STATUS)				return STD_LOGIC_VECTOR;
+	function to_slv(Error : T_SATA_TRANS_ERROR)					return STD_LOGIC_VECTOR;
+	function to_slv(Status : T_SATA_FISENCODER_STATUS)	return STD_LOGIC_VECTOR;
+	function to_slv(Status : T_SATA_FISDECODER_STATUS)	return STD_LOGIC_VECTOR;
 	
 	-- ===========================================================================
 	-- Common SATA Types
 	-- ===========================================================================
-	type T_SATA_DEVICE_type is (
+	type T_SATA_DEVICE_TYPE is (
 		SATA_DEVICE_TYPE_HOST,
 		SATA_DEVICE_TYPE_DEVICE
 	);
@@ -413,81 +424,66 @@ package sata is
 	-- SATA Controller Types
 	-- ===========================================================================
 	-- Adapted version of topmost layer in module 'sata_SATAController'
-	type T_SATA_SATACONTROLLER_COMMAND is (
-		SATA_SATACTRL_CMD_NONE,
-		SATA_SATACTRL_CMD_TRANSFER
-	);
-
-	type T_SATA_SATACONTROLLER_STATUS IS RECORD
+	type T_SATA_SATACONTROLLER_STATUS is record
 		TransportLayer				: T_SATA_TRANS_STATUS;
 		LinkLayer							: T_SATA_LINK_STATUS;
 		PhysicalLayer					: T_SATA_PHY_STATUS;
 		TransceiverLayer			: T_SATA_TRANSCEIVER_STATUS;
-	END RECORD;
+	end record;
 	
-	type T_SATA_SATACONTROLLER_ERROR IS RECORD
+	type T_SATA_SATACONTROLLER_ERROR is record
 		TransportLayer				: T_SATA_TRANS_ERROR;
 		LinkLayer							: T_SATA_LINK_ERROR;
 		PhysicalLayer					: T_SATA_PHY_ERROR;
 		TransceiverLayer			: T_SATA_TRANSCEIVER_ERROR;
-	END RECORD;
+	end record;
 
-	
-	type T_SATA_SATACONTROLLER_COMMAND_VECTOR		is array (NATURAL range <>) of  T_SATA_SATACONTROLLER_COMMAND;
 	type T_SATA_SATACONTROLLER_STATUS_VECTOR		is array (NATURAL range <>) of  T_SATA_SATACONTROLLER_STATUS;
 	type T_SATA_SATACONTROLLER_ERROR_VECTOR			is array (NATURAL range <>) of  T_SATA_SATACONTROLLER_ERROR;
 
-	function to_sata_SATAController_Command(slv : STD_LOGIC_VECTOR) return T_SATA_SATACONTROLLER_COMMAND;
-
-	function to_slv(Command : T_SATA_SATACONTROLLER_COMMAND)	return STD_LOGIC_VECTOR;
-
 	-- ===========================================================================
-	-- ATA Commands
+	-- SATA StreamingLayer Types
 	-- ===========================================================================
-	
-	-- ===========================================================================
-	-- SATA StreamingController types
-	-- ===========================================================================
-	type T_SATA_STREAMINGCONTROLLER_COMMAND is (
-		SATA_STREAMCTRL_CMD_NONE,
-		SATA_STREAMCTRL_CMD_READ,
-		SATA_STREAMCTRL_CMD_WRITE,
-		SATA_STREAMCTRL_CMD_FLUSH_CACHE,
-		SATA_STREAMCTRL_CMD_IDENTIFY_DEVICE,
-		SATA_STREAMCTRL_CMD_DEVICE_RESET
+	type T_SATA_STREAMING_COMMAND is (
+		SATA_STREAM_CMD_NONE,
+		SATA_STREAM_CMD_READ,
+		SATA_STREAM_CMD_WRITE,
+		SATA_STREAM_CMD_FLUSH_CACHE,
+		SATA_STREAM_CMD_IDENTIFY_DEVICE,
+		SATA_STREAM_CMD_DEVICE_RESET
 	);
 
-	type T_SATA_STREAMINGCONTROLLER_STATUS is (
-		SATA_STREAMCTRL_STATUS_RESET,
-		SATA_STREAMCTRL_STATUS_INITIALIZING,
-		SATA_STREAMCTRL_STATUS_IDLE,
-		SATA_STREAMCTRL_STATUS_SENDING,
-		SATA_STREAMCTRL_STATUS_RECEIVING,
-		SATA_STREAMCTRL_STATUS_EXECUTING,
-		SATA_STREAMCTRL_STATUS_DISCARD_TXDATA,
-		SATA_STREAMCTRL_STATUS_ERROR
+	type T_SATA_STREAMING_STATUS is (
+		SATA_STREAM_STATUS_RESET,
+		SATA_STREAM_STATUS_INITIALIZING,
+		SATA_STREAM_STATUS_IDLE,
+		SATA_STREAM_STATUS_SENDING,
+		SATA_STREAM_STATUS_RECEIVING,
+		SATA_STREAM_STATUS_EXECUTING,
+		SATA_STREAM_STATUS_DISCARD_TXDATA,
+		SATA_STREAM_STATUS_ERROR
 	);
 	
-	type T_SATA_STREAMINGCONTROLLER_ERROR is (
-		SATA_STREAMCTRL_ERROR_NONE,
-		SATA_STREAMCTRL_ERROR_IDENTIFY_DEVICE_ERROR,
-		SATA_STREAMCTRL_ERROR_DEVICE_NOT_SUPPORTED,
-		SATA_STREAMCTRL_ERROR_TRANSPORT_ERROR,
-		SATA_STREAMCTRL_ERROR_ATA_ERROR,
-		SATA_STREAMCTRL_ERROR_FSM												-- ILLEGAL_TRANSITION
+	type T_SATA_STREAMING_ERROR is (
+		SATA_STREAM_ERROR_NONE,
+		SATA_STREAM_ERROR_IDENTIFY_DEVICE_ERROR,
+		SATA_STREAM_ERROR_DEVICE_NOT_SUPPORTED,
+		SATA_STREAM_ERROR_TRANSPORT_ERROR,
+		SATA_STREAM_ERROR_ATA_ERROR,
+		SATA_STREAM_ERROR_FSM												-- ILLEGAL_TRANSITION
 	);
 
-	function to_sata_StreamingController_Command(slv : STD_LOGIC_VECTOR) return T_SATA_STREAMINGCONTROLLER_COMMAND;
+	function to_sata_Streaming_Command(slv : STD_LOGIC_VECTOR) return T_SATA_STREAMING_COMMAND;
 
-	function to_slv(Command : T_SATA_STREAMINGCONTROLLER_COMMAND)	return STD_LOGIC_VECTOR;
-	function to_slv(Status  : T_SATA_STREAMINGCONTROLLER_STATUS)	return STD_LOGIC_VECTOR;
-	function to_slv(Error 	: T_SATA_STREAMINGCONTROLLER_ERROR)	return STD_LOGIC_VECTOR;
+	function to_slv(Command : T_SATA_STREAMING_COMMAND)	return STD_LOGIC_VECTOR;
+	function to_slv(Status  : T_SATA_STREAMING_STATUS)	return STD_LOGIC_VECTOR;
+	function to_slv(Error 	: T_SATA_STREAMING_ERROR)	return STD_LOGIC_VECTOR;
 
 	-- ===========================================================================
 	-- SATA Streaming Stack types
 	-- ===========================================================================
 	type T_SATA_STREAMINGSTACK_STATUS is record
-		StreamingController	: T_SATA_STREAMINGCONTROLLER_STATUS;
+		StreamingLayer			: T_SATA_STREAMING_STATUS;
 		TransportLayer			: T_SATA_TRANS_STATUS;
 		LinkLayer						: T_SATA_LINK_STATUS;
 		PhysicalLayer				: T_SATA_PHY_STATUS;
@@ -495,33 +491,33 @@ package sata is
 	end record;
 	
 	type T_SATA_STREAMINGSTACK_ERROR is record
-		StreamingController	: T_SATA_STREAMINGCONTROLLER_ERROR;
-		TransportLayer		: T_SATA_TRANS_ERROR;
-		LinkLayer					: T_SATA_LINK_ERROR;
-		PhysicalLayer			: T_SATA_PHY_ERROR;
-		TransceiverLayer	: T_SATA_TRANSCEIVER_ERROR;
+		StreamingLayer			: T_SATA_STREAMING_ERROR;
+		TransportLayer			: T_SATA_TRANS_ERROR;
+		LinkLayer						: T_SATA_LINK_ERROR;
+		PhysicalLayer				: T_SATA_PHY_ERROR;
+		TransceiverLayer		: T_SATA_TRANSCEIVER_ERROR;
 	end record;
 	
 
 	-- ===========================================================================
 	-- ATA Drive Information
 	-- ===========================================================================
-	type T_SATA_ATA_CAPABILITY IS RECORD
+	type T_SATA_ATA_CAPABILITY is record
 		SupportsDMA								: STD_LOGIC;
 		SupportsLBA								: STD_LOGIC;
 		Supports48BitLBA					: STD_LOGIC;
 		SupportsSMART							: STD_LOGIC;
 		SupportsFLUSH_CACHE				: STD_LOGIC;
 		SupportsFLUSH_CACHE_EXT		: STD_LOGIC;
-	END RECORD;
+	end record;
 	
-	type T_SATA_SATA_CAPABILITY IS RECORD
+	type T_SATA_SATA_CAPABILITY is record
 		SATAGenerationMin					: T_SATA_GENERATION;
 		SATAGenerationMax					: T_SATA_GENERATION;
 		SupportsNCQ								: STD_LOGIC;
-	END RECORD;
+	end record;
 	
-	type T_SATA_DRIVE_INFORMATION IS RECORD
+	type T_SATA_DRIVE_INFORMATION is record
 		DriveName									: T_RAWSTRING(0 TO 39);
 		DriveSize_LB							: UNSIGNED(63 DOWNTO 0); -- unit is Drive Logical Blocks (DevLB)
 		PhysicalBlockSize_ldB			: UNSIGNED(7 DOWNTO 0);  -- log_2(size_in_bytes)
@@ -530,7 +526,7 @@ package sata is
 		SATACapabilityFlags				: T_SATA_SATA_CAPABILITY;
 		
 		Valid											: STD_LOGIC;
-	END RECORD;
+	end record;
 	
 	
 	-- to_slv
@@ -558,15 +554,6 @@ PACKAGE BODY sata IS
 	-- ===========================================================================
 	-- to_sata_*_command
 	-- ===========================================================================
-	function to_sata_SATAController_Command(slv : STD_LOGIC_VECTOR) return T_SATA_SATACONTROLLER_COMMAND is
-	begin
-		if (to_integer(unsigned(slv)) <= T_SATA_SATACONTROLLER_COMMAND'pos(T_SATA_SATACONTROLLER_COMMAND'high)) then
-			return T_SATA_SATACONTROLLER_COMMAND'val(to_integer(unsigned(slv)));
-		else
-			return SATA_SATACTRL_CMD_NONE;
-		end if;
-	end function;
-
 	function to_sata_Trans_Command(slv : STD_LOGIC_VECTOR) return T_SATA_TRANS_COMMAND is
 	begin
 		if (to_integer(unsigned(slv)) <= T_SATA_TRANS_COMMAND'pos(T_SATA_TRANS_COMMAND'high)) then
@@ -585,12 +572,12 @@ PACKAGE BODY sata IS
 		end if;
 	end function;
 
-	function to_sata_StreamingController_Command(slv : STD_LOGIC_VECTOR) return T_SATA_STREAMINGCONTROLLER_COMMAND is
+	function to_sata_Streaming_Command(slv : STD_LOGIC_VECTOR) return T_SATA_STREAMING_COMMAND is
 	begin
-		if (to_integer(unsigned(slv)) <= T_SATA_STREAMINGCONTROLLER_COMMAND'pos(T_SATA_STREAMINGCONTROLLER_COMMAND'high)) then
-			return T_SATA_STREAMINGCONTROLLER_COMMAND'val(to_integer(unsigned(slv)));
+		if (to_integer(unsigned(slv)) <= T_SATA_STREAMING_COMMAND'pos(T_SATA_STREAMING_COMMAND'high)) then
+			return T_SATA_STREAMING_COMMAND'val(to_integer(unsigned(slv)));
 		else
-			return SATA_STREAMCTRL_CMD_NONE;
+			return SATA_STREAM_CMD_NONE;
 		end if;
 	end function;
 
@@ -608,19 +595,19 @@ PACKAGE BODY sata IS
 		return to_slv(T_SATA_PHY_COMMAND'pos(Command), log2ceilnz(T_SATA_PHY_COMMAND'pos(T_SATA_PHY_COMMAND'high) + 1));
 	end function;
 	
-	function to_slv(Command : T_SATA_SATACONTROLLER_COMMAND) return STD_LOGIC_VECTOR is
-	begin
-		return to_slv(T_SATA_SATACONTROLLER_COMMAND'pos(Command), log2ceilnz(T_SATA_SATACONTROLLER_COMMAND'pos(T_SATA_SATACONTROLLER_COMMAND'high) + 1));
-	end function;
-	
 	function to_slv(Command : T_SATA_TRANS_COMMAND) return STD_LOGIC_VECTOR is
 	begin
 		return to_slv(T_SATA_TRANS_COMMAND'pos(Command), log2ceilnz(T_SATA_TRANS_COMMAND'pos(T_SATA_TRANS_COMMAND'high) + 1));
 	end function;
-	
-	function to_slv(Command : T_SATA_STREAMINGCONTROLLER_COMMAND) return STD_LOGIC_VECTOR is
+
+	function to_slv(Command : T_SATA_LINK_COMMAND) return STD_LOGIC_VECTOR is
 	begin
-		return to_slv(T_SATA_STREAMINGCONTROLLER_COMMAND'pos(Command), log2ceilnz(T_SATA_STREAMINGCONTROLLER_COMMAND'pos(T_SATA_STREAMINGCONTROLLER_COMMAND'high) + 1));
+		return to_slv(T_SATA_LINK_COMMAND'pos(Command), log2ceilnz(T_SATA_LINK_COMMAND'pos(T_SATA_LINK_COMMAND'high) + 1));
+	end function;
+	
+	function to_slv(Command : T_SATA_STREAMING_COMMAND) return STD_LOGIC_VECTOR is
+	begin
+		return to_slv(T_SATA_STREAMING_COMMAND'pos(Command), log2ceilnz(T_SATA_STREAMING_COMMAND'pos(T_SATA_STREAMING_COMMAND'high) + 1));
 	end function;
 	
 	-- to_slv(Status : ***)
@@ -645,9 +632,9 @@ PACKAGE BODY sata IS
 		return to_slv(T_SATA_TRANS_STATUS'pos(Status), log2ceilnz(T_SATA_TRANS_STATUS'pos(T_SATA_TRANS_STATUS'high) + 1));
 	end function;
 	
-	function to_slv(Status : T_SATA_STREAMINGCONTROLLER_STATUS) return STD_LOGIC_VECTOR is
+	function to_slv(Status : T_SATA_STREAMING_STATUS) return STD_LOGIC_VECTOR is
 	begin
-		return to_slv(T_SATA_STREAMINGCONTROLLER_STATUS'pos(Status), log2ceilnz(T_SATA_STREAMINGCONTROLLER_STATUS'pos(T_SATA_STREAMINGCONTROLLER_STATUS'high) + 1));
+		return to_slv(T_SATA_STREAMING_STATUS'pos(Status), log2ceilnz(T_SATA_STREAMING_STATUS'pos(T_SATA_STREAMING_STATUS'high) + 1));
 	end function;
 
 	function to_slv(Status : T_SATA_FISENCODER_STATUS) return STD_LOGIC_VECTOR is
@@ -682,9 +669,9 @@ PACKAGE BODY sata IS
 		return to_slv(T_SATA_TRANS_ERROR'pos(Error), log2ceilnz(T_SATA_TRANS_ERROR'pos(T_SATA_TRANS_ERROR'high) + 1));
 	end function;
 
-	function to_slv(Error : T_SATA_STREAMINGCONTROLLER_ERROR) return STD_LOGIC_VECTOR is
+	function to_slv(Error : T_SATA_STREAMING_ERROR) return STD_LOGIC_VECTOR is
 	begin
-		return to_slv(T_SATA_STREAMINGCONTROLLER_ERROR'pos(Error), log2ceilnz(T_SATA_STREAMINGCONTROLLER_ERROR'pos(T_SATA_STREAMINGCONTROLLER_ERROR'high) + 1));
+		return to_slv(T_SATA_STREAMING_ERROR'pos(Error), log2ceilnz(T_SATA_STREAMING_ERROR'pos(T_SATA_STREAMING_ERROR'high) + 1));
 	end function;
 
 	-- to_slv(***)

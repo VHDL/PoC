@@ -40,7 +40,7 @@ SELECT ILA_(ChipScope_Pro_-_Integrated_Logic_Analyzer) family Xilinx,_Inc. 1.05.
 # END Select
 # BEGIN Parameters
 CSET check_bramcount=false
-CSET component_name=sata_StreamingController_ILA
+CSET component_name=sata_StreamingLayer_ILA
 CSET constraint_type=external
 CSET counter_width_1=8
 CSET counter_width_10=Disabled
