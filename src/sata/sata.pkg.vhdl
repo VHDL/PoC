@@ -518,7 +518,6 @@ package sata is
 	end record;
 	
 	type T_SATA_DRIVE_INFORMATION is record
-		DriveName									: T_RAWSTRING(0 TO 39);
 		DriveSize_LB							: UNSIGNED(63 DOWNTO 0); -- unit is Drive Logical Blocks (DevLB)
 		PhysicalBlockSize_ldB			: UNSIGNED(7 DOWNTO 0);  -- log_2(size_in_bytes)
 		LogicalBlockSize_ldB			: UNSIGNED(7 DOWNTO 0);  -- log_2(DevLB_size_in_bytes)
@@ -533,6 +532,7 @@ package sata is
 		Address										: STD_LOGIC_VECTOR(3 downto 0);
 		WriteEnable								: STD_LOGIC;
 		Data											: T_SLV_32;
+		Valid											: STD_LOGIC;
 	end record;
 	
 	-- to_slv

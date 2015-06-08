@@ -39,6 +39,7 @@ use			PoC.config.all;
 use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
+use			PoC.components.all;
 use			PoC.sata.all;
 
 
@@ -102,7 +103,7 @@ architecture rtl of sata_ATA_IdentifyDeviceFilter is
 	attribute FSM_ENCODING	OF State									: signal is getFSMEncoding_gray(DEBUG);
 	
 	signal WordAC_inc																	: STD_LOGIC;
-	signal WordAC_Load																: STD_LOGIC;
+	signal WordAC_rst																: STD_LOGIC;
 	signal WordAC_Address_us													: UNSIGNED(WORDAC_BITS - 1 downto 0);
 	signal WordAC_Finished														: STD_LOGIC;
 	
@@ -133,6 +134,7 @@ architecture rtl of sata_ATA_IdentifyDeviceFilter is
 	
 	signal DriveName_en																: STD_LOGIC;
 	signal DriveName_d																: T_SLV_16								:= (others => '0');
+	signal IDF_Valid_r																: STD_LOGIC								:= '0';
 	signal IDF_Address																: STD_LOGIC_VECTOR(IDF_Bus.Address'range);
 	signal IDF_WriteEnable														: STD_LOGIC;
 	signal IDF_Data																		: T_SLV_32;
@@ -157,7 +159,7 @@ begin
 		NextState										<= State;
 		
 		WordAC_inc									<= '0';
-		WordAC_Load									<= '0';
+		WordAC_rst									<= '0';
 		
 		Commit											<= '0';
 		Error												<= '0';
@@ -166,7 +168,7 @@ begin
 		case State is
 			when ST_IDLE =>
 				if (Enable = '1') then
-					WordAC_Load						<= '1';
+					WordAC_rst						<= '1';
 					
 					NextState							<= ST_READ_WORDS;
 				end if;
@@ -176,8 +178,6 @@ begin
 					NextState							<= ST_IDLE;
 				else
 					if (Valid = '1') then
-						-- if (SOT
-						
 						WordAC_inc					<= '1';
 						
 						if (EOT = '1') then
@@ -217,24 +217,12 @@ begin
 		end case;
 	end process;
 	
-	
-	blkWordAC : block
-		signal Counter_us				: UNSIGNED(WORDAC_BITS - 1 downto 0)					:= (others => '0');
+	blkWordAC : block	
+		signal Counter_us	: UNSIGNED(WORDAC_BITS - 1 downto 0)					:= (others => '0');
 	begin
-		process(Clock)
-		begin
-			IF rising_edge(Clock) then
-				if (WordAC_Load = '1') then
-					Counter_us				<= (others => '0');
-				elsif (WordAC_inc = '1') then
-					Counter_us			<= Counter_us + 1;
-				end if;
-			end if;
-		end process;
-
-		-- address output
+		Counter_us				<= counter_inc(cnt => Counter_us, rst => WordAC_rst, en => WordAC_inc) when rising_edge(Clock);
 		WordAC_Address_us	<= Counter_us;
-		WordAC_Finished		<= to_sl(Counter_us = (Counter_us'range => '1'));
+		WordAC_Finished		<= counter_eq(cnt => Counter_us, value => (2**WORDAC_BITS - 1));
 	end block;
 
 	
@@ -313,11 +301,6 @@ begin
 						if (Valid = '1') then
 							DriveName_en								<= '1';
 							IDF_WriteEnable							<= '1';
-							
-							DriveName(6)								<= Data(15 downto 8);
-							DriveName(7)								<= Data(7 downto 0);
-							DriveName(8)								<= Data(31 downto 24);
-							DriveName(9)								<= Data(23 downto 16);
 						end if;
 					
 					when 16 =>
@@ -326,11 +309,6 @@ begin
 						if (Valid = '1') then
 							DriveName_en								<= '1';
 							IDF_WriteEnable							<= '1';
-							
-							DriveName(10)								<= Data(15 downto 8);
-							DriveName(11)								<= Data(7 downto 0);
-							DriveName(12)								<= Data(31 downto 24);
-							DriveName(13)								<= Data(23 downto 16);
 						end if;
 					
 					when 17 =>
@@ -339,11 +317,6 @@ begin
 						if (Valid = '1') then
 							DriveName_en								<= '1';
 							IDF_WriteEnable							<= '1';
-							
-							DriveName(14)								<= Data(15 downto 8);
-							DriveName(15)								<= Data(7 downto 0);
-							DriveName(16)								<= Data(31 downto 24);
-							DriveName(17)								<= Data(23 downto 16);
 						end if;
 
 					when 18 =>
@@ -352,11 +325,6 @@ begin
 						if (Valid = '1') then
 							DriveName_en								<= '1';
 							IDF_WriteEnable							<= '1';
-							
-							DriveName(18)								<= Data(15 downto 8);
-							DriveName(19)								<= Data(7 downto 0);
-							DriveName(20)								<= Data(31 downto 24);
-							DriveName(21)								<= Data(23 downto 16);
 						end if;
 					
 					when 19 =>
@@ -365,11 +333,6 @@ begin
 						if (Valid = '1') then
 							DriveName_en								<= '1';
 							IDF_WriteEnable							<= '1';
-							
-							DriveName(22)								<= Data(15 downto 8);
-							DriveName(23)								<= Data(7 downto 0);
-							DriveName(24)								<= Data(31 downto 24);
-							DriveName(25)								<= Data(23 downto 16);
 						end if;
 						
 					when 20 =>
@@ -378,11 +341,6 @@ begin
 						if (Valid = '1') then
 							DriveName_en								<= '1';
 							IDF_WriteEnable							<= '1';
-							
-							DriveName(26)								<= Data(15 downto 8);
-							DriveName(27)								<= Data(7 downto 0);
-							DriveName(28)								<= Data(31 downto 24);
-							DriveName(29)								<= Data(23 downto 16);
 						end if;
 
 					when 21 =>
@@ -391,11 +349,6 @@ begin
 						if (Valid = '1') then
 							DriveName_en								<= '1';
 							IDF_WriteEnable							<= '1';
-							
-							DriveName(30)								<= Data(15 downto 8);
-							DriveName(31)								<= Data(7 downto 0);
-							DriveName(32)								<= Data(31 downto 24);
-							DriveName(33)								<= Data(23 downto 16);
 						end if;
 					
 					when 22 =>
@@ -404,11 +357,6 @@ begin
 						if (Valid = '1') then
 							DriveName_en								<= '1';
 							IDF_WriteEnable							<= '1';
-							
-							DriveName(34)								<= Data(15 downto 8);
-							DriveName(35)								<= Data(7 downto 0);
-							DriveName(36)								<= Data(31 downto 24);
-							DriveName(37)								<= Data(23 downto 16);
 						end if;
 						
 					when 23 =>
@@ -416,9 +364,6 @@ begin
 						
 						if (Valid = '1') then
 							IDF_WriteEnable							<= '1';
-							
-							DriveName(38)								<= Data(15 downto 8);
-							DriveName(39)								<= Data(7 downto 0);
 						end if;
 					
 					-- ATA word 49 - Capabilities
@@ -545,7 +490,6 @@ begin
 	SATACapabilities_i.SATAGenerationMin				<= SATAGenerationMin;
 	SATACapabilities_i.SATAGenerationMax				<= SATAGenerationMax;
 		
-	DriveInformation_i.DriveName								<= DriveName;
 	DriveInformation_i.DriveSize_LB							<= DriveSize_LB;
 	DriveInformation_i.PhysicalBlockSize_ldB		<= PhysicalBlockSize_ldB;
 	DriveInformation_i.LogicalBlockSize_ldB			<= LogicalBlockSize_ldB;
@@ -562,18 +506,20 @@ begin
 
 --	IDF_Data
 
+	IDF_Valid_r		<= ffrs(q => IDF_Valid_r, rst => Reset, set => Commit) when rising_edge(Clock);
+
 	IDF_Bus.Clock								<= Clock;
 	IDF_Bus.Address							<= IDF_Address;
 	IDF_Bus.WriteEnable					<= IDF_WriteEnable;
 	IDF_Bus.Data(15 downto 0)		<= DriveName_d;
-	IDF_Bus.Data(23 downto 16)	<= Data(31 downto 24);
-	IDF_Bus.Data(31 downto 24)	<= Data(23 downto 16);
+	IDF_Bus.Data(23 downto 16)	<= Data(15 downto 8);
+	IDF_Bus.Data(31 downto 24)	<= Data(7 downto 0);
+	IDF_Bus.Valid								<= IDF_Valid_r;
 
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
 			if (Reset = '1') then
-				DriveInformation.DriveName																			<= (others => x"00");
 				DriveInformation.DriveSize_LB																		<= (others => '0');
 				DriveInformation.PhysicalBlockSize_ldB													<= (others => '0');
 				DriveInformation.LogicalBlockSize_ldB														<= (others => '0');
@@ -592,7 +538,6 @@ begin
 				DriveInformation.Valid																					<= '0';
 			else
 				if (Commit = '1') then
-					DriveInformation.DriveName																		<= DriveInformation_i.DriveName;
 					DriveInformation.DriveSize_LB																	<= DriveInformation_i.DriveSize_LB;
 					DriveInformation.PhysicalBlockSize_ldB												<= DriveInformation_i.PhysicalBlockSize_ldB;
 					DriveInformation.LogicalBlockSize_ldB													<= DriveInformation_i.LogicalBlockSize_ldB;
