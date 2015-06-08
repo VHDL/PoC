@@ -231,8 +231,11 @@ begin
 					null;
 				elsif (Link_RX_FS_CRCOK = '1') then
 					-- frame is OK and now processed
-					FISTypeRegister_en						<= '1';
-					NextState											<= ST_CHECK_FISTYPE;
+					-- wait for data frame, it's slower than frame state
+					if (Link_RX_Valid = '1') then
+						FISTypeRegister_en						<= '1';
+						NextState											<= ST_CHECK_FISTYPE;
+					end if;
 				elsif (Link_RX_FS_SyncEsc = '1') then
 					Link_RX_FS_Ack 								<= '1';
 					NextState											<= ST_STATUS_ERROR;

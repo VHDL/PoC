@@ -88,6 +88,7 @@ entity sata_StreamingLayer is
 		
 		-- 
 		DriveInformation							: out T_SATA_DRIVE_INFORMATION;
+		IDF_Bus												: out	T_SATA_IDF_BUS;
 
 		-- TX path
 		TX_Valid											: in	STD_LOGIC;
@@ -481,7 +482,8 @@ begin
 			SOT											=> IDF_SOT,
 			EOT											=> IDF_EOT,
 			
-			DriveInformation				=> IDF_DriveInformation
+			DriveInformation				=> IDF_DriveInformation,
+			IDF_Bus									=> IDF_Bus
 		);
 
   -- debug ports

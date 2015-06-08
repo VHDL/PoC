@@ -76,6 +76,7 @@ entity sata_StreamingStack is
 		SATAGeneration							: out		T_SATA_GENERATION;
 		Config_BurstSize						: in		T_SLV_16;									-- for measurement purposes only
 		DriveInformation						: out		T_SATA_DRIVE_INFORMATION;
+		IDF_Bus											: out		T_SATA_IDF_BUS;
 		
 		-- ATA StreamingLayer interface
 		Command											: in		T_SATA_STREAMING_COMMAND;
@@ -234,6 +235,7 @@ begin
 			-- debug ports
 			DebugPortOut							=> SATASC_DebugPortOut,
 			DriveInformation					=> DriveInformation,
+			IDF_Bus										=> IDF_Bus,
 
 			-- TX path
 			TX_Valid									=> TX_Valid,

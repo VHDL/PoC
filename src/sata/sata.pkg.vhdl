@@ -528,6 +528,12 @@ package sata is
 		Valid											: STD_LOGIC;
 	end record;
 	
+	type T_SATA_IDF_BUS is record
+		Clock											: STD_LOGIC;
+		Address										: STD_LOGIC_VECTOR(3 downto 0);
+		WriteEnable								: STD_LOGIC;
+		Data											: T_SLV_32;
+	end record;
 	
 	-- to_slv
 	-- ===========================================================================
