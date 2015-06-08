@@ -16,37 +16,26 @@
 -- To initiate a new connection (later on), synchronously reset this layer and
 -- the underlying SATAController at the same time.
 --
--- Clock might be instable in two conditions:
--- a) Reset is asserted, e.g., wenn ResetDone of SATAController is not asserted
--- 	  yet.
--- b) After power-up or reset: Phy_Status is constant and not equal to
--- 	  SATA_PHY_STATUS_COMMUNICATING. After SATA_PHY_STATUS_COMMUNICATING was
--- 	  signaled, reset must be asserted before the clock might be instable again.
---
--- If these conditions are met, then Status will be constant and equal to
--- SATA_TRANS_STATUS_RESET during an unstable clock, especially in case b).
---
---
 -- Configuration
 -- -------------
--- REG_DEV_HOST_TIMEOUT: Maximum time to wait for a register transfer from
---   device to host. For example, if the header of a Data FIS sended to the
---   device gets corrupted (due to transmission errors), the device might not
---   response with a Register FIS, especially, if it detects an unknown FIS instead
---   of an CRC error.
+-- DATA_READ_TIMEOUT: Maximum time to wait for a data FIS and the final
+--   register FIS from the device during reads (PIO or DMA).
 --
--- DEV_DATA_READY_TIMEOUT: Maximum time to wait for data from the device.
---   Actually, the time to wait for PIO setup FIS or Data FIS during reads.
---
--- DEV_RCV_DATA_TIMEOUT: Maximum time for the device to get ready for
---   receiving data. Actually, the time to wait for DMA Activate FIS during writes.
---
+-- DATA_WRITE_TIMEOUT: Maximum time to wait until device is ready to receive
+--   data as well as maximum time to wait for final register FIS from device
+--   during writes (PIO or DMA).
 --
 -- CSE Interface:
 -- --------------
--- New commands are accepted when Status is *_STATUS_IDLE oder *_STATUS_TRANSFER_OK.
+-- New commands are accepted when Status is *_STATUS_IDLE, *_STATUS_TRANSFER_OK
+-- or *_STATUS_TRANSFER_ERROR.
 -- ATAHostHostRegisters must be applied with command *_CMD_TRANSFER.
 --
+-- After issuing a command, status means:
+-- *_STATUS_TRANSFER_OK:    Transfer completed with no error.
+-- *_STATUS_TRANSFER_ERROR: Transfer completed with error bit in ATA register set.
+-- *_STATUS_ERROR: 					Fatal error occured. Synchronous reset of whole
+-- 													SATA stack must be applied.
 --
 -- License:
 -- =============================================================================
@@ -84,15 +73,15 @@ use			PoC.satadbg.all;
 
 entity sata_TransportLayer is
   generic (
-		REG_DEV_HOST_TIMEOUT 						: TIME 							:= 1 sec;
-		DEV_DATA_RDY_TIMEOUT 						: TIME 							:= 1 sec;
-		DEV_RCV_DATA_TIMEOUT 						: TIME 							:= 1 sec;
+		DATA_READ_TIMEOUT 							: TIME 							:= 1 sec;
+		DATA_WRITE_TIMEOUT 							: TIME 							:= 1 sec;
 		DEBUG														: BOOLEAN						:= FALSE;					-- generate ChipScope DBG_* signals
 		ENABLE_DEBUGPORT								: BOOLEAN						:= FALSE;
 		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: BOOLEAN						:= TRUE						-- required by ATA/SATA standard
   );
 	port (
 		Clock														: IN	STD_LOGIC;
+		ClockEnable											: in	STD_LOGIC;
 		Reset														: IN	STD_LOGIC;
 
 		-- TransportLayer interface
@@ -121,9 +110,10 @@ entity sata_TransportLayer is
 		RX_Valid											: OUT	STD_LOGIC;
 	
 		-- SATAController Status
+		Link_ResetDone 								: in  STD_LOGIC;
+		Link_Command									: out	T_SATA_LINK_COMMAND;
+		Link_Status										: in	T_SATA_LINK_STATUS;
 		SATAGeneration 								: in 	T_SATA_GENERATION;
-		SATA_Command									: out	T_SATA_SATACONTROLLER_COMMAND;
-		SATA_Status										: in	T_SATA_SATACONTROLLER_STATUS;
 		
 		-- TX path
 		Link_TX_Ack										: IN	STD_LOGIC;
@@ -155,6 +145,10 @@ end;
 ARCHITECTURE rtl OF sata_TransportLayer IS
 	ATTRIBUTE KEEP											: BOOLEAN;
 
+	-- my reset
+	signal MyReset 											: STD_LOGIC;
+
+	-- ATA register
 	signal ATAHostRegisters_r						: T_SATA_ATA_HOST_REGISTERS;
 
 	signal UpdateATAHostRegisters				: STD_LOGIC;
@@ -170,8 +164,6 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 	signal TFSM_FISType									: T_SATA_FISTYPE;
 	signal TFSM_TX_en										: STD_LOGIC;
 	signal TFSM_TX_ForceAck							: STD_LOGIC;
-	signal TFSM_TX_SOP									: STD_LOGIC;
-	signal TFSM_TX_EOP									: STD_LOGIC;
 	signal TFSM_RX_LastWord							: STD_LOGIC;
 	signal TFSM_RX_SOT									: STD_LOGIC;
 	signal TFSM_RX_EOT									: STD_LOGIC;
@@ -217,21 +209,25 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 	signal FISD_DebugPortOut						: T_SATADBG_TRANS_FISD_OUT;
 	
 begin
+	-- Reset sub-components until initial reset of SATAController has been
+	-- completed. Allow synchronous 'Reset' only when ClockEnable = '1'.
+	-- ===========================================================================
+	MyReset <= (not Link_ResetDone) or (Reset and ClockEnable);
+	
 	-- ================================================================
 	-- TransportLayer FSM
 	-- ================================================================
 	TFSM : ENTITY PoC.sata_TransportFSM
     GENERIC MAP (
-			REG_DEV_HOST_TIMEOUT 							=> REG_DEV_HOST_TIMEOUT,
-			DEV_DATA_RDY_TIMEOUT 							=> DEV_DATA_RDY_TIMEOUT,
-			DEV_RCV_DATA_TIMEOUT 							=> DEV_RCV_DATA_TIMEOUT,
+			DATA_READ_TIMEOUT 								=> DATA_READ_TIMEOUT,
+			DATA_WRITE_TIMEOUT 								=> DATA_WRITE_TIMEOUT,
 			DEBUG															=> DEBUG,
 			ENABLE_DEBUGPORT									=> ENABLE_DEBUGPORT,
       SIM_WAIT_FOR_INITIAL_REGDH_FIS    => SIM_WAIT_FOR_INITIAL_REGDH_FIS
     )
 		PORT MAP (
 			Clock															=> Clock,
-			Reset															=> Reset,
+			MyReset														=> MyReset,
 
 			-- TransportLayer interface
 			Command														=> Command,
@@ -257,7 +253,7 @@ begin
 			RX_EOT														=> TFSM_RX_EOT,
 			
 			-- SATAController Status
-			Phy_Status 												=> SATA_Status.PhysicalLayer,
+			Link_Status 											=> Link_Status,
 			SATAGeneration 										=> SATAGeneration,
 
 			-- FISDecoder interface
@@ -268,9 +264,7 @@ begin
 			
 			-- FISEncoder interface
 			FISE_FISType											=> TFSM_FISType,
-			FISE_Status												=> FISE_Status,
-			FISE_SOP													=> TFSM_TX_SOP,
-			FISE_EOP													=> TFSM_TX_EOP
+			FISE_Status												=> FISE_Status
 		);
 
 	Status	<= Status_i;
@@ -279,7 +273,7 @@ begin
 	TX_Ack					<= TC_TX_Ack or TFSM_TX_ForceAck; -- when editing also update DebugPort
 
 	-- TODO: controlled by TFSM?
-	SATA_Command		<= SATA_SATACTRL_CMD_NONE;
+	Link_Command		<= SATA_LINK_CMD_NONE;
 
 	-- ===========================================================================
 	-- ATA registers
@@ -287,7 +281,7 @@ begin
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+			IF (MyReset = '1') THEN
 				ATAHostRegisters_r.Flag_C								<= '0';												-- set C flag => access Command register on device
 				ATAHostRegisters_r.Command							<= (OTHERS => '0');						-- Command register
 				ATAHostRegisters_r.Control							<= (OTHERS => '0');						-- Control register
@@ -344,10 +338,10 @@ begin
 
 		TC_TX_DataFlow			<= TC_TX_Valid		AND TC_TX_Ack;
 
-		InsertEOP_d					<= ffdre(q => InsertEOP_d,     rst => Reset, en => TC_TX_DataFlow, d => FISE_TX_InsertEOP) 	when rising_edge(Clock);
+		InsertEOP_d					<= ffdre(q => InsertEOP_d,     rst => MyReset, en => TC_TX_DataFlow, d => FISE_TX_InsertEOP) 	when rising_edge(Clock);
 		InsertEOP_re				<= FISE_TX_InsertEOP	AND NOT InsertEOP_d;
-		InsertEOP_re_d			<= ffdre(q => InsertEOP_re_d,  rst => Reset, en => TC_TX_DataFlow, d => InsertEOP_re  ) 		when rising_edge(Clock);
-		InsertEOP_re_d2			<= ffdre(q => InsertEOP_re_d2, rst => Reset, en => TC_TX_DataFlow, d => InsertEOP_re_d) 		when rising_edge(Clock);
+		InsertEOP_re_d			<= ffdre(q => InsertEOP_re_d,  rst => MyReset, en => TC_TX_DataFlow, d => InsertEOP_re  ) 		when rising_edge(Clock);
+		InsertEOP_re_d2			<= ffdre(q => InsertEOP_re_d2, rst => MyReset, en => TC_TX_DataFlow, d => InsertEOP_re_d) 		when rising_edge(Clock);
 
 		TC_TX_SOP						<= TX_SOT OR InsertEOP_re_d2;
 		TC_TX_EOP						<= TX_EOT	OR InsertEOP_re_d;
@@ -391,7 +385,7 @@ begin
 		PROCESS(Clock)
 		BEGIN
 			IF rising_edge(Clock) THEN
-				IF (Reset = '1') THEN
+				IF (MyReset = '1') THEN
 					RXReg_Data_d				<= (OTHERS => '0');
 					RXReg_mux_r					<= '0';
 					RXReg_EOT_r					<= '0';
@@ -438,7 +432,7 @@ begin
 		)
 		PORT MAP (
 			Clock												=> Clock,
-			Reset												=> Reset,
+			Reset												=> MyReset,
 
 			-- FISEncoder interface
 			Status											=> FISE_Status,
@@ -457,8 +451,8 @@ begin
 			TX_Valid										=> TC_TX_Valid,
 			TX_InsertEOP								=> FISE_TX_InsertEOP,
 
-			-- SATAController Status
-			Phy_Status 									=> SATA_Status.PhysicalLayer,
+			-- LinkLayer CSE
+			Link_Status 								=> Link_Status,
 			
 			-- LinkLayer FIFO interface
 			Link_TX_Valid								=> FISE_Link_TX_Valid,
@@ -485,7 +479,7 @@ begin
 		)
 		PORT MAP (
 			Clock												=> Clock,
-			Reset												=> Reset,
+			Reset												=> MyReset,
 			
 			Status											=> FISD_Status,
 			FISType											=> FISD_FISType,
@@ -504,7 +498,7 @@ begin
 			RX_Ack											=> RXReg_Ack,
 			
 			-- SATAController Status
-			Phy_Status 									=> SATA_Status.PhysicalLayer,
+			Link_Status 								=> Link_Status,
 			
 			-- LinkLayer FIFO interface
 			Link_RX_Valid								=> Link_RX_Valid,

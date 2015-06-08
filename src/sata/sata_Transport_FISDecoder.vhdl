@@ -68,8 +68,8 @@ entity sata_FISDecoder is
 		RX_EOP												: out	STD_LOGIC;
 		RX_Ack												: in	STD_LOGIC;
 		
-		-- SATAController Status
-		Phy_Status										: IN	T_SATA_PHY_STATUS;
+		-- LinkLayer CSE
+		Link_Status										: IN	T_SATA_LINK_STATUS;
 		
 		-- LinkLayer FIFO interface
 		Link_RX_Ack										: out	STD_LOGIC;
@@ -175,7 +175,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	PROCESS(State, Phy_Status, IsFISHeader, FISType_i, Link_RX_Valid, Link_RX_Data, Link_RX_SOF, Link_RX_EOF, Link_RX_FS_Valid, Link_RX_FS_CRCOK, Link_RX_FS_SyncEsc, RX_Ack	)
+	PROCESS(State, Link_Status, IsFISHeader, FISType_i, Link_RX_Valid, Link_RX_Data, Link_RX_SOF, Link_RX_EOF, Link_RX_FS_Valid, Link_RX_FS_CRCOK, Link_RX_FS_SyncEsc, RX_Ack	)
 	BEGIN
 		NextState										<= State;
 		
@@ -210,11 +210,11 @@ BEGIN
 				-- Clock might be unstable is this state. In this case either
 				-- a) Reset is asserted because inital reset of the SATAController is
 				--    not finished yet.
-				-- b) Phy_Status is constant and not equal to SATA_PHY_STATUS_LINK_OK.
+				-- b) Phy_Status is constant and not equal to SATA_LINK_STATUS_IDLE
 				--    This may happen during reconfiguration due to speed negotiation.
         Status													<= SATA_FISD_STATUS_RESET;
         
-        if (Phy_Status = SATA_PHY_STATUS_COMMUNICATING) then
+        if (Link_Status = SATA_LINK_STATUS_IDLE) then
 					NextState <= ST_IDLE;
         end if;
 				

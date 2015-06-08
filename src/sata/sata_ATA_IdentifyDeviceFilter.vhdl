@@ -5,12 +5,12 @@
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --
--- Module:					IDENTIFY DEVICE Response Handler for ATA Command Layer
+-- Module:					IDENTIFY DEVICE Response Handler
 --
 -- Description:
 -- ------------------------------------
 -- Extracts drive configuration from repsonse to ATA IDENTIFY command. For
--- example, delviers information about drive size and capability flags.
+-- example, delivers information about drive size and capability flags.
 -- 
 -- License:
 -- =============================================================================
@@ -42,7 +42,7 @@ USE			PoC.strings.ALL;
 USE			PoC.sata.ALL;
 
 
-ENTITY sata_IdentifyDeviceFilter IS
+ENTITY sata_ATA_IdentifyDeviceFilter IS
 	GENERIC (
 		DEBUG												: BOOLEAN						:= FALSE
 	);
@@ -63,7 +63,7 @@ ENTITY sata_IdentifyDeviceFilter IS
 	);
 END;
 
-ARCHITECTURE rtl OF sata_IdentifyDeviceFilter IS
+ARCHITECTURE rtl OF sata_ATA_IdentifyDeviceFilter IS
 	ATTRIBUTE KEEP									: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING					: STRING;
 
