@@ -95,8 +95,8 @@ ARCHITECTURE rtl OF sata_FISDecoder IS
 		ST_FIS_REG_DEV_HOST_WORD_1,	ST_FIS_REG_DEV_HOST_WORD_2,	ST_FIS_REG_DEV_HOST_WORD_3,	ST_FIS_REG_DEV_HOST_WORD_4,
 		ST_FIS_PIO_SETUP_WORD_1,		ST_FIS_PIO_SETUP_WORD_2,		ST_FIS_PIO_SETUP_WORD_3,		ST_FIS_PIO_SETUP_WORD_4,
 		ST_FIS_DATA_1,							ST_FIS_DATA_N,
-		ST_DELAY_TRANSFER_OK,
-		ST_DISCARD_FRAME
+		ST_RECEIVE_OK, ST_STATUS_ERROR, ST_STATUS_CRC_ERROR,
+		ST_DISCARD_FRAME_1, ST_DISCARD_FRAME_N
 	);
 	
 	-- Alias-Definitions for FISType Register Transfer Device => Host (34h)
@@ -166,13 +166,13 @@ BEGIN
 
 	PROCESS(Clock)
 	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+		IF rising_edge(Clock) then
+			if (Reset = '1') then
 				State			<= ST_RESET;
-			ELSE
+			else
 				State			<= NextState;
-			END IF;
-		END IF;
+			end if;
+		end if;
 	END PROCESS;
 	
 	PROCESS(State, Link_Status, IsFISHeader, FISType_i, Link_RX_Valid, Link_RX_Data, Link_RX_SOF, Link_RX_EOF, Link_RX_FS_Valid, Link_RX_FS_CRCOK, Link_RX_FS_SyncEsc, RX_Ack	)
@@ -215,84 +215,80 @@ BEGIN
         Status													<= SATA_FISD_STATUS_RESET;
         
         if (Link_Status = SATA_LINK_STATUS_IDLE) then
-					NextState <= ST_IDLE;
+					NextState											<= ST_IDLE;
         end if;
 				
-			WHEN ST_IDLE =>
+			when ST_IDLE =>
+				Status													<= SATA_FISD_STATUS_IDLE;
+				
 				if (Link_RX_FS_Valid = '0') then
 					-- wait for frame state
-					Status												<= SATA_FISD_STATUS_IDLE;
+					null;
 				elsif (Link_RX_FS_CRCOK = '1') then
-					IF (IsFISHeader = '1' ) THEN
+					if (IsFISHeader = '1' ) then
 						-- frame is OK and now processed
+						Status											<= SATA_FISD_STATUS_RECEIVING;
 						Link_RX_FS_Ack 							<= '1';
 						
-						IF (FISType_i = SATA_FISTYPE_PIO_SETUP) THEN
+						if (FISType_i = SATA_FISTYPE_PIO_SETUP) then
 							Link_RX_Ack								<= '1';
 							
 							FlagRegister_en						<= '1';
 							StatusRegister_en					<= '1';
 							ErrorRegister_en					<= '1';
 							
-							IF (Link_RX_EOF = '0') THEN
+							if (Link_RX_EOF = '0') then
 								NextState 							<= ST_FIS_PIO_SETUP_WORD_1;
-							ELSE
-								Status									<= SATA_FISD_STATUS_ERROR;
-								NextState 							<= ST_IDLE;
-							END IF;
-						ELSIF (FISType_i = SATA_FISTYPE_REG_DEV_HOST) THEN
+							else
+								NextState								<= ST_STATUS_ERROR;
+							end if;
+						elsif (FISType_i = SATA_FISTYPE_REG_DEV_HOST) then
 							Link_RX_Ack								<= '1';
 							
 							FlagRegister_en						<= '1';
 							StatusRegister_en					<= '1';
 							ErrorRegister_en					<= '1';
 							
-							IF (Link_RX_EOF = '0') THEN
+							if (Link_RX_EOF = '0') then
 								NextState 							<= ST_FIS_REG_DEV_HOST_WORD_1;
-							ELSE
-								Status									<= SATA_FISD_STATUS_ERROR;
-								NextState 							<= ST_IDLE;
-							END IF;
-						ELSIF (FISType_i = SATA_FISTYPE_DMA_ACTIVATE) THEN
+							else
+								NextState								<= ST_STATUS_ERROR;
+							end if;
+						elsif (FISType_i = SATA_FISTYPE_DMA_ACTIVATE) then
 							Link_RX_Ack								<= '1';
 							
-							IF (Link_RX_EOF = '1') THEN
-								NextState 							<= ST_DELAY_TRANSFER_OK;
-							ELSE
-								Status									<= SATA_FISD_STATUS_ERROR;
-								NextState 							<= ST_DISCARD_FRAME;
-							END IF;
+							if (Link_RX_EOF = '1') then
+								NextState 							<= ST_RECEIVE_OK;
+							else
+								NextState 							<= ST_DISCARD_FRAME_1;
+							end if;
 							
-						ELSIF (FISType_i = SATA_FISTYPE_DATA) THEN
+						elsif (FISType_i = SATA_FISTYPE_DATA) then
 							Link_RX_Ack								<= '1';											-- skip header word
 							
-							IF (Link_RX_EOF = '0') THEN
+							if (Link_RX_EOF = '0') then
 								NextState 							<= ST_FIS_DATA_1;						-- goto DataFIS processing
-							ELSE
-								Status									<= SATA_FISD_STATUS_ERROR;
-								NextState 							<= ST_IDLE;
-							END IF;
-						ELSE
-							Status										<= SATA_FISD_STATUS_ERROR;
-							NextState 								<= ST_IDLE;
-						END IF;	-- FISType_i
-					ELSE
-						-- wait for SOF, do not ack FS yet
-						Status											<= SATA_FISD_STATUS_IDLE;
-					END IF;	-- IsHeader
+							else
+								NextState								<= ST_STATUS_ERROR;
+							end if;
+						else
+							NextState									<= ST_STATUS_ERROR;
+						end if;	-- FISType_i
+					end if;	-- IsHeader
 				elsif (Link_RX_FS_SyncEsc = '1') then
 					Link_RX_FS_Ack 								<= '1';
-					Status 												<= SATA_FISD_STATUS_ERROR;
+								NextState								<= ST_STATUS_ERROR;
 				else
 					Link_RX_FS_Ack 								<= '1';
-					Status 												<= SATA_FISD_STATUS_CRC_ERROR;
+					NextState											<= ST_STATUS_CRC_ERROR;
+--					Status 												<= SATA_FISD_STATUS_CRC_ERROR;
 				end if;
 				 
 			-- ============================================================
 			-- register transfer: device => host
 			-- ============================================================
-			WHEN ST_FIS_REG_DEV_HOST_WORD_1 =>
-				IF (Link_RX_Valid = '1') THEN
+			when ST_FIS_REG_DEV_HOST_WORD_1 =>
+				if (Link_RX_Valid = '1') then
 					Link_RX_Ack										<= '1';
 					
 					AddressRegister_en0						<= '1';
@@ -300,63 +296,59 @@ BEGIN
 					AddressRegister_en32					<= '1';
 					-- DeviceNumber / Heads
 					
-					IF (Link_RX_EOF = '0') THEN
+					if (Link_RX_EOF = '0') then
 						NextState 									<= ST_FIS_REG_DEV_HOST_WORD_2;
-					ELSE
-						Status											<= SATA_FISD_STATUS_ERROR;
-						NextState 									<= ST_IDLE;
-					END IF;
-				END IF;
+					else
+						NextState										<= ST_STATUS_ERROR;
+					end if;
+				end if;
 		
-			WHEN ST_FIS_REG_DEV_HOST_WORD_2 =>
-				IF (Link_RX_Valid = '1') THEN
+			when ST_FIS_REG_DEV_HOST_WORD_2 =>
+				if (Link_RX_Valid = '1') then
 					Link_RX_Ack										<= '1';
 					
 					AddressRegister_en8						<= '1';
 					AddressRegister_en24					<= '1';
 					AddressRegister_en40					<= '1';
 					
-					IF (Link_RX_EOF = '0') THEN
+					if (Link_RX_EOF = '0') then
 						NextState 									<= ST_FIS_REG_DEV_HOST_WORD_3;
-					ELSE
-						Status											<= SATA_FISD_STATUS_ERROR;
-						NextState 									<= ST_IDLE;
-					END IF;
-				END IF;
+					else
+						NextState										<= ST_STATUS_ERROR;
+					end if;
+				end if;
 			
-			WHEN ST_FIS_REG_DEV_HOST_WORD_3 =>
-				IF (Link_RX_Valid = '1') THEN
+			when ST_FIS_REG_DEV_HOST_WORD_3 =>
+				if (Link_RX_Valid = '1') then
 					Link_RX_Ack										<= '1';
 					
 					SectorCountRegister_en0				<= '1';
 					SectorCountRegister_en8				<= '1';
 					
-					IF (Link_RX_EOF = '0') THEN
+					if (Link_RX_EOF = '0') then
 						NextState 									<= ST_FIS_REG_DEV_HOST_WORD_4;
-					ELSE
-						Status											<= SATA_FISD_STATUS_ERROR;
-						NextState 									<= ST_IDLE;
-					END IF;
-				END IF;
+					else
+						NextState										<= ST_STATUS_ERROR;
+					end if;
+				end if;
 			
-			WHEN ST_FIS_REG_DEV_HOST_WORD_4 =>
-				IF (Link_RX_Valid = '1') THEN
+			when ST_FIS_REG_DEV_HOST_WORD_4 =>
+				if (Link_RX_Valid = '1') then
 					Link_RX_Ack										<= '1';
 					
-					IF (Link_RX_EOF = '1') THEN
+					if (Link_RX_EOF = '1') then
 						UpdateATARegisters					<= '1';
-						NextState 									<= ST_DELAY_TRANSFER_OK;
-					ELSE
-						Status											<= SATA_FISD_STATUS_ERROR;
-						NextState 									<= ST_DISCARD_FRAME;
-					END IF;
-				END IF;
+						NextState 									<= ST_RECEIVE_OK;
+					else
+						NextState										<= ST_STATUS_ERROR;
+					end if;
+				end if;
 			
 			-- ============================================================
 			-- PIO Setup
 			-- ============================================================
-			WHEN ST_FIS_PIO_SETUP_WORD_1 =>
-				IF (Link_RX_Valid = '1') THEN
+			when ST_FIS_PIO_SETUP_WORD_1 =>
+				if (Link_RX_Valid = '1') then
 					Link_RX_Ack										<= '1';
 					
 					AddressRegister_en0						<= '1';
@@ -364,69 +356,61 @@ BEGIN
 					AddressRegister_en32					<= '1';
 					-- DeviceNumber / Heads
 					
-					IF (Link_RX_EOF = '0') THEN
+					if (Link_RX_EOF = '0') then
 						NextState 									<= ST_FIS_PIO_SETUP_WORD_2;
-					ELSE
-						Status											<= SATA_FISD_STATUS_ERROR;
-						NextState 									<= ST_IDLE;
-					END IF;
-				END IF;
+					else
+						NextState										<= ST_STATUS_ERROR;
+					end if;
+				end if;
 		
-			WHEN ST_FIS_PIO_SETUP_WORD_2 =>
-				IF (Link_RX_Valid = '1') THEN
+			when ST_FIS_PIO_SETUP_WORD_2 =>
+				if (Link_RX_Valid = '1') then
 					Link_RX_Ack										<= '1';
 					
 					AddressRegister_en8						<= '1';
 					AddressRegister_en24					<= '1';
 					AddressRegister_en40					<= '1';
 					
-					IF (Link_RX_EOF = '0') THEN
+					if (Link_RX_EOF = '0') then
 						NextState 									<= ST_FIS_PIO_SETUP_WORD_3;
-					ELSE
-						Status											<= SATA_FISD_STATUS_ERROR;
-						NextState 									<= ST_IDLE;
-					END IF;
-				END IF;
+					else
+						NextState										<= ST_STATUS_ERROR;
+					end if;
+				end if;
 			
-			WHEN ST_FIS_PIO_SETUP_WORD_3 =>
-				IF (Link_RX_Valid = '1') THEN
+			when ST_FIS_PIO_SETUP_WORD_3 =>
+				if (Link_RX_Valid = '1') then
 					Link_RX_Ack										<= '1';
 					
 					SectorCountRegister_en0				<= '1';
 					SectorCountRegister_en8				<= '1';
 					EndStatusRegister_en					<= '1';
 					
-					IF (Link_RX_EOF = '0') THEN
+					if (Link_RX_EOF = '0') then
 						NextState 									<= ST_FIS_PIO_SETUP_WORD_4;
-					ELSE
-						Status											<= SATA_FISD_STATUS_ERROR;
-						NextState 									<= ST_IDLE;
-					END IF;
-				END IF;
+					else
+						NextState										<= ST_STATUS_ERROR;
+					end if;
+				end if;
 			
-			WHEN ST_FIS_PIO_SETUP_WORD_4 =>
-				IF (Link_RX_Valid = '1') THEN
+			when ST_FIS_PIO_SETUP_WORD_4 =>
+				if (Link_RX_Valid = '1') then
 					Link_RX_Ack										<= '1';
 					
 					TransferCountRegister_en			<= '1';
 					
-					IF (Link_RX_EOF = '1') THEN
+					if (Link_RX_EOF = '1') then
 						UpdateATARegisters					<= '1';
-						NextState 									<= ST_DELAY_TRANSFER_OK;
-					ELSE
-						Status											<= SATA_FISD_STATUS_ERROR;
-						NextState 									<= ST_DISCARD_FRAME;
-					END IF;
-				END IF;
+						NextState 									<= ST_RECEIVE_OK;
+					else
+						NextState 									<= ST_DISCARD_FRAME_1;
+					end if;
+				end if;
 
-			WHEN ST_DELAY_TRANSFER_OK =>
-				Status													<= SATA_FISD_STATUS_RECEIVE_OK;
-				NextState												<= ST_IDLE;
-			
 			-- ============================================================
 			-- Data
 			-- ============================================================
-			WHEN ST_FIS_DATA_1 =>
+			when ST_FIS_DATA_1 =>
 				-- passthrought handshaking signals
 				RX_Valid												<= Link_RX_Valid;
 				Link_RX_Ack											<= RX_Ack;
@@ -434,112 +418,133 @@ BEGIN
 				RX_SOP													<= '1';
 
 				-- if streaming is possible => stream first Word; set SOP; goto DATA_N
-				IF ((Link_RX_Valid = '1') AND (RX_Ack = '1')) THEN
-					IF (Link_RX_EOF = '1') THEN
-						Status											<= SATA_FISD_STATUS_RECEIVE_OK;
-						NextState 									<= ST_IDLE;
-					ELSE	-- EOF
+				if ((Link_RX_Valid = '1') and (RX_Ack = '1')) then
+					if (Link_RX_EOF = '1') then
+						NextState 									<= ST_RECEIVE_OK;
+					else	-- EOF
 						NextState										<= ST_FIS_DATA_N;
-					END IF;
-				END IF;
+					end if;
+				end if;
 				
-			WHEN ST_FIS_DATA_N =>
+			when ST_FIS_DATA_N =>
 				RX_Valid												<= Link_RX_Valid;
 				Link_RX_Ack											<= RX_Ack;
         RX_EOP                          <= Link_RX_EOF;
         
 				-- if streaming is possible => stream first Word; set SOP; goto DATA_N
-				IF ((Link_RX_Valid = '1') AND (RX_Ack = '1')) THEN
-					IF (Link_RX_EOF = '1') THEN
-						Status											<= SATA_FISD_STATUS_RECEIVE_OK;
-						NextState 									<= ST_IDLE;
-					END IF;
-				END IF;
+				if ((Link_RX_Valid = '1') and (RX_Ack = '1')) then
+					if (Link_RX_EOF = '1') then
+						NextState 									<= ST_RECEIVE_OK;
+					end if;
+				end if;
+		
+			when ST_RECEIVE_OK =>
+				Status													<= SATA_FISD_STATUS_RECEIVE_OK;
+				NextState												<= ST_IDLE;
+		
+			when ST_STATUS_ERROR =>
+				Status													<= SATA_FISD_STATUS_ERROR;
+				NextState												<= ST_IDLE;
+		
+			when ST_STATUS_CRC_ERROR =>
+				Status													<= SATA_FISD_STATUS_CRC_ERROR;
+				NextState												<= ST_IDLE;
+		
 		
 			-- ============================================================
 			-- Discard remaining frame
 			-- ============================================================
-			WHEN ST_DISCARD_FRAME =>
+			when ST_DISCARD_FRAME_1 =>
+				Status													<= SATA_FISD_STATUS_ERROR;
+				Link_RX_Ack											<= '1';
+				
+				if ((Link_RX_Valid = '1') and (Link_RX_EOF = '1')) then
+					NextState 										<= ST_IDLE;
+				else
+					NextState											<= ST_DISCARD_FRAME_N;
+				end if;
+
+			when ST_DISCARD_FRAME_N =>
 				Status													<= SATA_FISD_STATUS_DISCARD_FRAME;
 				Link_RX_Ack											<= '1';
 				
-				IF ((Link_RX_Valid = '1') AND (Link_RX_EOF = '1')) THEN
+				if ((Link_RX_Valid = '1') and (Link_RX_EOF = '1')) then
 					NextState 										<= ST_IDLE;
-				END IF;
+				end if;
 			
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
 	-- ================================================================
 	-- ATA registers - temporary saved
 	-- ================================================================
 	PROCESS(Clock)
 	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+		IF rising_edge(Clock) then
+			if (Reset = '1') then
 				FlagRegister					<= (OTHERS => '0');
 				StatusRegister				<= (OTHERS => '0');
 				ErrorRegister					<= (OTHERS => '0');
 				AddressRegister				<= (OTHERS => '0');
 				SectorCountRegister		<= (OTHERS => '0');
 				TransferCountRegister	<= (OTHERS => '0');
-			ELSE
+			else
 				-- FlagRegister
-				IF (FlagRegister_en	= '1') THEN
+				if (FlagRegister_en	= '1') then
 					FlagRegister	<= Alias_FlagReg;
-				END IF;
+				end if;
 				
 				-- StatusRegister
-				IF (StatusRegister_en	= '1') THEN
+				if (StatusRegister_en	= '1') then
 					StatusRegister	<= Alias_StatusReg;
-				END IF;
+				end if;
 				
 				-- EndStatusRegister
-				IF (EndStatusRegister_en	= '1') THEN
+				if (EndStatusRegister_en	= '1') then
 					EndStatusRegister	<= Alias_EndStatusReg;
-				END IF;
+				end if;
 				
 				-- ErrorRegister
-				IF (ErrorRegister_en	= '1') THEN
+				if (ErrorRegister_en	= '1') then
 					ErrorRegister	<= Alias_ErrorReg;
-				END IF;
+				end if;
 				
 				-- AddressRegister
-				IF (AddressRegister_en0	= '1') THEN
+				if (AddressRegister_en0	= '1') then
 					AddressRegister(7 DOWNTO 0)	<= Alias_LBA0;
-				END IF;
+				end if;
 				
-				IF (AddressRegister_en8	= '1') THEN
+				if (AddressRegister_en8	= '1') then
 					AddressRegister(15 DOWNTO 8)	<= Alias_LBA8;
-				END IF;
+				end if;
 				
-				IF (AddressRegister_en16	= '1') THEN
+				if (AddressRegister_en16	= '1') then
 					AddressRegister(23 DOWNTO 16)	<= Alias_LBA16;
-				END IF;
+				end if;
 				
-				IF (AddressRegister_en24	= '1') THEN
+				if (AddressRegister_en24	= '1') then
 					AddressRegister(31 DOWNTO 24)	<= Alias_LBA24;
-				END IF;
+				end if;
 				
-				IF (AddressRegister_en32	= '1') THEN
+				if (AddressRegister_en32	= '1') then
 					AddressRegister(39 DOWNTO 32)	<= Alias_LBA32;
-				END IF;
+				end if;
 				
-				IF (AddressRegister_en40	= '1') THEN
+				if (AddressRegister_en40	= '1') then
 					AddressRegister(47 DOWNTO 40)	<= Alias_LBA40;
-				END IF;
+				end if;
 				
 				-- SectorCountRegister
-				IF (SectorCountRegister_en0	= '1') THEN
+				if (SectorCountRegister_en0	= '1') then
 					SectorCountRegister(7 DOWNTO 0)		<= Alias_SecCount0;
-				END IF;
+				end if;
 				
-				IF (SectorCountRegister_en8	= '1') THEN
+				if (SectorCountRegister_en8	= '1') then
 					SectorCountRegister(15 DOWNTO 8)	<= Alias_SecCount8;
-				END IF;
+				end if;
 				
 				-- TransferCountRegister
-				IF (TransferCountRegister_en	= '1') THEN
+				if (TransferCountRegister_en	= '1') then
 					TransferCountRegister				<= Alias_TransferCount;
 				end if;
 			end if;
@@ -554,7 +559,7 @@ BEGIN
 	ATADeviceRegisters.Error						<= to_sata_ata_device_register_error(ErrorRegister);
 	ATADeviceRegisters.LBlockAddress		<= AddressRegister;
 	ATADeviceRegisters.SectorCount			<= SectorCountRegister;
-	ATADeviceRegisters.TransferCount		<= TransferCountRegister WHEN (TransferCountRegister_en = '0') ELSE Alias_TransferCount;
+	ATADeviceRegisters.TransferCount		<= TransferCountRegister WHEN (TransferCountRegister_en = '0') else Alias_TransferCount;
 
 	-- debug ports
 	-- ==========================================================================================================================================================

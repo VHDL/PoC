@@ -128,6 +128,7 @@ architecture rtl of sata_StreamingStack is
 	-- ===========================================================================
 	constant PORTS											: POSITIVE							:= 1;
 	constant CONTROLLER_TYPE						: T_SATA_DEVICE_TYPE		:= SATA_DEVICE_TYPE_HOST;
+	constant ENABLE_TRANS_GLUE_FIFOS		: BOOLEAN								:= FALSE;
 	
 	-- ===========================================================================
 	-- signal declarations
@@ -283,7 +284,8 @@ begin
 			INITIAL_SATA_GENERATIONS(0)		=> INITIAL_SATA_GENERATION,
 			ALLOW_SPEED_NEGOTIATION(0)		=> ALLOW_SPEED_NEGOTIATION,
 			ALLOW_STANDARD_VIOLATION(0)		=> TRUE,
-			AHEAD_CYCLES_FOR_INSERT_EOF(0)=> 1	-- requirement from StreamingLayer
+			AHEAD_CYCLES_FOR_INSERT_EOF(0)=> 1,	-- requirement from StreamingLayer
+			ENABLE_GLUE_FIFOS(0)					=> ENABLE_TRANS_GLUE_FIFOS
 		)
 		port map (
 			ClockNetwork_Reset(0)					=> ClockNetwork_Reset,
@@ -717,8 +719,7 @@ begin
 		
 		TransILA_Data(4 downto 0)			<= SATAS_DebugPortOut.TransportLayer.TFSM.FSM;
 		TransILA_Data(8 downto 5)			<= SATAS_DebugPortOut.TransportLayer.FISE.FSM;
-		TransILA_Data(12 downto 9)		<= SATAS_DebugPortOut.TransportLayer.FISD.FSM;
-		TransILA_Data(13)							<= '0';
+		TransILA_Data(13 downto 9)		<= SATAS_DebugPortOut.TransportLayer.FISD.FSM;
 		
 		TransILA_Data(14)							<= SATAS_DebugPortOut.TransportLayer.UpdateATAHostRegisters;
 		TransILA_Data(15)							<= SATAS_DebugPortOut.TransportLayer.ATAHostRegisters.Flag_C;
@@ -787,8 +788,7 @@ begin
 
 		TransILA_Trigger2(4 downto 0)		<= SATAS_DebugPortOut.TransportLayer.TFSM.FSM;
 		TransILA_Trigger2(8 downto 5)		<= SATAS_DebugPortOut.TransportLayer.FISE.FSM;
-		TransILA_Trigger2(12 downto 9)	<= SATAS_DebugPortOut.TransportLayer.FISD.FSM;
-		TransILA_Trigger2(13)						<= '0';
+		TransILA_Trigger2(13 downto 9)	<= SATAS_DebugPortOut.TransportLayer.FISD.FSM;
 
 		TransILA_Trigger3(3 downto 0)		<= dbg_EncodeFISType(SATAS_DebugPortOut.TransportLayer.FISE_FISType);
 		TransILA_Trigger3(6 downto 4)		<= to_slv(SATAS_DebugPortOut.TransportLayer.FISE_Status);

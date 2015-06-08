@@ -108,8 +108,8 @@ ENTITY sata_SATAController IS
 		AHEAD_CYCLES_FOR_INSERT_EOF			: T_INTVEC										:= (0 => 1,											1 => 1);
 		MAX_FRAME_SIZE									: T_MEMVEC										:= (0 => C_SATA_MAX_FRAMESIZE,	1 => C_SATA_MAX_FRAMESIZE);
 		-- transport layer settings
-		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: BOOLEAN											:= TRUE;       -- required by ATA/SATA standard
-		ENABLE_GLUE_FIFOS								: BOOLEAN											:= FALSE
+		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: T_BOOLVEC										:= (0 => TRUE,									1 => TRUE);       -- required by ATA/SATA standard
+		ENABLE_GLUE_FIFOS								: T_BOOLVEC										:= (0 => FALSE,									1 => FALSE)
 	);
 	PORT (
 		ClockNetwork_Reset					: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @async:			asynchronous reset
@@ -303,7 +303,7 @@ BEGIN
 		Error(i).TransceiverLayer			<= Transceiver_Error(i);
 
 
-		genNoFIFO : if (ENABLE_GLUE_FIFOS = FALSE) generate
+		genNoFIFO : if (ENABLE_GLUE_FIFOS(i) = FALSE) generate
 		begin
 			TX_Glue_Valid	<= TX_Valid(i);
 			TX_Glue_Data	<= TX_Data(i);
@@ -317,7 +317,7 @@ BEGIN
 			RX_EOT(i) 		<= Transport_RX_EOT;
 			RX_Glue_Ack		<= RX_Ack(i);
 		end generate;
-		genFIFO : if (ENABLE_GLUE_FIFOS = TRUE) generate
+		genFIFO : if (ENABLE_GLUE_FIFOS(i) = TRUE) generate
 			signal FIFO_Reset		: STD_LOGIC;
 
 			signal TX_GlueFIFO_Full		: STD_LOGIC;
@@ -394,7 +394,7 @@ BEGIN
 			generic map (
 				DEBUG														=> DEBUG,
 				ENABLE_DEBUGPORT								=> ENABLE_DEBUGPORT,
-				SIM_WAIT_FOR_INITIAL_REGDH_FIS  => SIM_WAIT_FOR_INITIAL_REGDH_FIS
+				SIM_WAIT_FOR_INITIAL_REGDH_FIS  => SIM_WAIT_FOR_INITIAL_REGDH_FIS(i)
 			)
 			port map (
 				Clock												=> SATA_Clock_i(i),
