@@ -529,7 +529,7 @@ package sata is
 	
 	type T_SATA_IDF_BUS is record
 		Clock											: STD_LOGIC;
-		Address										: STD_LOGIC_VECTOR(3 downto 0);
+		Address										: STD_LOGIC_VECTOR(8 downto 2);
 		WriteEnable								: STD_LOGIC;
 		Data											: T_SLV_32;
 		Valid											: STD_LOGIC;

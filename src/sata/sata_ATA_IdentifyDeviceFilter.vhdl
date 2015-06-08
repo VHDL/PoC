@@ -268,206 +268,90 @@ begin
 		IF rising_edge(Clock) then
 			if (Reset = '1') then
 				ATAWord_117_IsValid_r							<= '0';
-			else
+			elsif (Valid = '1') then
 				case to_integer(WordAC_Address_us) is
-					-- ATA word 10 to 19 (20 bytes) - serial number (ASCII)
-					--when 5 =>
-					
-					-- ATA word 27 to 46 - model number (ASCII)
-					when 13 =>
-						if (Valid = '1') then
-							DriveName_en								<= '1';
-							
-							DriveName(0)								<= Data(31 downto 24);
-							DriveName(1)								<= Data(23 downto 16);
-						end if;
-					
-					when 14 =>
-						IDF_Address										<= to_slv(0, IDF_Address'length);
-					
-						if (Valid = '1') then
-							DriveName_en								<= '1';
-							IDF_WriteEnable							<= '1';
-							
-							DriveName(2)								<= Data(15 downto 8);
-							DriveName(3)								<= Data(7 downto 0);
-							DriveName(4)								<= Data(31 downto 24);
-							DriveName(5)								<= Data(23 downto 16);
-						end if;
-					
-					when 15 =>
-						IDF_Address										<= to_slv(1, IDF_Address'length);
-						
-						if (Valid = '1') then
-							DriveName_en								<= '1';
-							IDF_WriteEnable							<= '1';
-						end if;
-					
-					when 16 =>
-						IDF_Address										<= to_slv(2, IDF_Address'length);
-						
-						if (Valid = '1') then
-							DriveName_en								<= '1';
-							IDF_WriteEnable							<= '1';
-						end if;
-					
-					when 17 =>
-						IDF_Address										<= to_slv(3, IDF_Address'length);
-						
-						if (Valid = '1') then
-							DriveName_en								<= '1';
-							IDF_WriteEnable							<= '1';
-						end if;
-
-					when 18 =>
-						IDF_Address										<= to_slv(4, IDF_Address'length);
-						
-						if (Valid = '1') then
-							DriveName_en								<= '1';
-							IDF_WriteEnable							<= '1';
-						end if;
-					
-					when 19 =>
-						IDF_Address										<= to_slv(5, IDF_Address'length);
-						
-						if (Valid = '1') then
-							DriveName_en								<= '1';
-							IDF_WriteEnable							<= '1';
-						end if;
-						
-					when 20 =>
-						IDF_Address										<= to_slv(6, IDF_Address'length);
-						
-						if (Valid = '1') then
-							DriveName_en								<= '1';
-							IDF_WriteEnable							<= '1';
-						end if;
-
-					when 21 =>
-						IDF_Address										<= to_slv(7, IDF_Address'length);
-						
-						if (Valid = '1') then
-							DriveName_en								<= '1';
-							IDF_WriteEnable							<= '1';
-						end if;
-					
-					when 22 =>
-						IDF_Address										<= to_slv(8, IDF_Address'length);
-						
-						if (Valid = '1') then
-							DriveName_en								<= '1';
-							IDF_WriteEnable							<= '1';
-						end if;
-						
-					when 23 =>
-						IDF_Address										<= to_slv(9, IDF_Address'length);
-						
-						if (Valid = '1') then
-							IDF_WriteEnable							<= '1';
-						end if;
+					-- ATA word 10 to 19 (20 bytes)	- serial number (ASCII)
+					-- ATA word 27 to 46 (40 bytes)	- model number (ASCII)
 					
 					-- ATA word 49 - Capabilities
 					when 24 =>
-						if (Valid = '1') then
-							ATACapability_SupportsLBA		<= Data(25);
-							ATACapability_SupportsDMA		<= Data(24);
-						end if;
+						ATACapability_SupportsLBA		<= Data(25);
+						ATACapability_SupportsDMA		<= Data(24);
 					
 					-- ATA word 60 to 61 - total number of user addressable logical sectors
 					when 30 =>
-						if (Valid = '1') then
-							DriveSize_LB(31 downto 0)		<= unsigned(Data);
-						end if;
+						DriveSize_LB(31 downto 0)		<= unsigned(Data);
 					
 					-- ATA word 76 - Serial-ATA capabilities
 					when 38 =>
-						if (Valid = '1') then
-							SATAGenerationMin						<= calcSATAGenerationMin(Data(7 downto 1));
-							SATAGenerationMax						<= calcSATAGenerationMax(Data(7 downto 1));
-							-- Data(3)	- reserved for future SATA signalig speeds
-							-- Data(4)	- reserved for future SATA signalig speeds
-							-- Data(5)	- reserved for future SATA signalig speeds
-							-- Data(6)	- reserved for future SATA signalig speeds
-							-- Data(7)	- reserved for future SATA signalig speeds
-							SATACapability_SupportsNCQ	<= Data(8);
-						end if;
+						SATAGenerationMin						<= calcSATAGenerationMin(Data(7 downto 1));
+						SATAGenerationMax						<= calcSATAGenerationMax(Data(7 downto 1));
+						-- Data(3)	- reserved for future SATA signalig speeds
+						-- Data(4)	- reserved for future SATA signalig speeds
+						-- Data(5)	- reserved for future SATA signalig speeds
+						-- Data(6)	- reserved for future SATA signalig speeds
+						-- Data(7)	- reserved for future SATA signalig speeds
+						SATACapability_SupportsNCQ	<= Data(8);
 					
 					-- ATA word 82 to 83 - Command set supported
 					when 41 =>
-						if (Valid = '1') then
-							ATACapability_SupportsSMART							<= Data(0);
-							--ATACapability_SupportsDMA_QUEUED				<= Data(16);			-- READ/WRITE DMA QUEUED
-							ATACapability_Supports48BitLBA					<= Data(26);
-							ATACapability_SupportsFLUSH_CACHE				<= Data(28);
-							ATACapability_SupportsFLUSH_CACHE_EXT		<= Data(29);
-						end if;
+						ATACapability_SupportsSMART							<= Data(0);
+						--ATACapability_SupportsDMA_QUEUED				<= Data(16);			-- READ/WRITE DMA QUEUED
+						ATACapability_Supports48BitLBA					<= Data(26);
+						ATACapability_SupportsFLUSH_CACHE				<= Data(28);
+						ATACapability_SupportsFLUSH_CACHE_EXT		<= Data(29);
 
 					-- ATA word 86 - Command set/feature enabled/supported
-					
 					-- ATA word 88 - Ultra DMA modes
 					
 					-- ATA word 100 to 103 - total number of user addressable sectors for 48 Bit address feature set
 					when 50 =>
-						if (Valid = '1') then
-							if (ATACapability_Supports48BitLBA = '1') then
-								DriveSize_LB(31 downto 0)							<= unsigned(Data);
-							end if;
+						if (ATACapability_Supports48BitLBA = '1') then
+							DriveSize_LB(31 downto 0)							<= unsigned(Data);
 						end if;
 					
 					when 51 =>
-						if (Valid = '1') then
-							if (ATACapability_Supports48BitLBA = '1') then
-								DriveSize_LB(63 downto 32)						<= unsigned(Data);
-							end if;
+						if (ATACapability_Supports48BitLBA = '1') then
+							DriveSize_LB(63 downto 32)						<= unsigned(Data);
 						end if;
 					
 					-- ATA word 106 - physical sector size / logical sector size
 					when 53 =>
-						if (Valid = '1') then
-							if (Data(15 downto 14) = "01") then		
-								MultipleLogicalBlocksPerPhysicalBlock	<= Data(13);
-								LogicalBlocksPerPhysicalBlock_us			<= unsigned(Data(3 downto 0));
-							
-								if (Data(12) = '1') then
-									ATAWord_117_IsValid_r								<= '1';
-								else
-									ATAWord_117_IsValid_r								<= '0';
-								end if;
+						if (Data(15 downto 14) = "01") then		
+							MultipleLogicalBlocksPerPhysicalBlock	<= Data(13);
+							LogicalBlocksPerPhysicalBlock_us			<= unsigned(Data(3 downto 0));
+						
+							if (Data(12) = '1') then
+								ATAWord_117_IsValid_r								<= '1';
+							else
+								ATAWord_117_IsValid_r								<= '0';
 							end if;
 						end if;
 					
 					-- ATA word 117 to 118 - words per logical sector
 					when 58 =>
-						if (Valid = '1') then
-							if (ATAWord_117_IsValid_r = '1') then
-								FOR I IN 0 TO 15 LOOP
-									if (Data(I + 16) = '1') then
-										LogicalBlockSize_ldB								<= to_unsigned(I + 1, LogicalBlockSize_ldB'length);			-- ShiftLeft(1) -> Data holds sector count in 16-Bit words
-										EXIT;
-									end if;
-									
-									if (I = 15) then
-										LogicalBlockSize_ldB								<= to_unsigned(9, LogicalBlockSize_ldB'length);
-										EXIT;
-									end if;
-								END LOOP;
-							else
-								LogicalBlockSize_ldB										<= to_unsigned(9, LogicalBlockSize_ldB'length);
-							end if;
+						if (ATAWord_117_IsValid_r = '1') then
+							for i in 0 to 15 loop
+								if (Data(I + 16) = '1') then
+									LogicalBlockSize_ldB							<= to_unsigned(I + 1, LogicalBlockSize_ldB'length);			-- ShiftLeft(1) -> Data holds sector count in 16-Bit words
+									exit;
+								end if;
+								
+								if (I = 15) then
+									LogicalBlockSize_ldB							<= to_unsigned(9, LogicalBlockSize_ldB'length);
+									exit;
+								end if;
+							end loop;
+						else
+							LogicalBlockSize_ldB									<= to_unsigned(9, LogicalBlockSize_ldB'length);
 						end if;
 					
 					-- upper 16 Bit of words per logical sector are ignored
-	--				when 59 =>
-	--					if (Valid = '1') then
-	--						
-	--					end if;
 					
 					-- calculation step
 					when 60 =>
-						if (Valid = '1') then
-							if (MultipleLogicalBlocksPerPhysicalBlock = '1') then
-								PhysicalBlockSize_ldB									<= LogicalBlockSize_ldB - LogicalBlocksPerPhysicalBlock_us;
-							end if;
+						if (MultipleLogicalBlocksPerPhysicalBlock = '1') then
+							PhysicalBlockSize_ldB									<= LogicalBlockSize_ldB - LogicalBlocksPerPhysicalBlock_us;
 						end if;
 					
 					-- ATA word 255 - integrity word
@@ -479,6 +363,7 @@ begin
 		end if;
 	end process;
 	
+
 	ATACapabilities_i.SupportsDMA								<= ATACapability_SupportsDMA;
 	ATACapabilities_i.SupportsLBA								<= ATACapability_SupportsLBA;
 	ATACapabilities_i.Supports48BitLBA					<= ATACapability_Supports48BitLBA;
@@ -496,24 +381,12 @@ begin
 	DriveInformation_i.ATACapabilityFlags				<= ATACapabilities_i;
 	DriveInformation_i.SATACapabilityFlags			<= SATACapabilities_i;
 
-	process(Clock)
-	begin
-		if rising_edge(Clock) then
-			DriveName_d(7 downto 0)			<= Data(31 downto 24);
-			DriveName_d(15 downto 8)		<= Data(23 downto 16);
-		end if;
-	end process;
-
---	IDF_Data
-
 	IDF_Valid_r		<= ffrs(q => IDF_Valid_r, rst => Reset, set => Commit) when rising_edge(Clock);
 
 	IDF_Bus.Clock								<= Clock;
-	IDF_Bus.Address							<= IDF_Address;
-	IDF_Bus.WriteEnable					<= IDF_WriteEnable;
-	IDF_Bus.Data(15 downto 0)		<= DriveName_d;
-	IDF_Bus.Data(23 downto 16)	<= Data(15 downto 8);
-	IDF_Bus.Data(31 downto 24)	<= Data(7 downto 0);
+	IDF_Bus.Address							<= std_logic_vector(WordAC_Address_us);
+	IDF_Bus.WriteEnable					<= Valid;
+	IDF_Bus.Data								<= Data;
 	IDF_Bus.Valid								<= IDF_Valid_r;
 
 	process(Clock)
