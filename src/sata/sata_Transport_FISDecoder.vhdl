@@ -131,8 +131,6 @@ architecture rtl of sata_FISDecoder is
 	-- Word 3
 	alias Alias_EndStatusReg							: T_SLV_8													is Link_RX_Data(31 downto 24);			-- EndStatus Register
 	
-	signal IsFISHeader										: STD_LOGIC;
-	
 	signal State													: T_STATE													:= ST_RESET;
 	signal NextState											: T_STATE;
 	attribute FSM_ENCODING	of State			: signal is getFSMEncoding_gray(DEBUG);
@@ -164,8 +162,6 @@ architecture rtl of sata_FISDecoder is
 	
 begin
 
-	IsFISHeader		<= Link_RX_Valid and Link_RX_SOF;
-
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
@@ -177,7 +173,7 @@ begin
 		end if;
 	end process;
 	
-	process(State, Link_Status, IsFISHeader, FISTypeRegister, Link_RX_Valid, Link_RX_Data, Link_RX_SOF, Link_RX_EOF, Link_RX_FS_Valid, Link_RX_FS_CRCOK, Link_RX_FS_SyncEsc, RX_Ack	)
+	process(State, Link_Status, FISTypeRegister, Link_RX_Valid, Link_RX_Data, Link_RX_SOF, Link_RX_EOF, Link_RX_FS_Valid, Link_RX_FS_CRCOK, Link_RX_FS_SyncEsc, RX_Ack	)
 	begin
 		NextState										<= State;
 		
@@ -234,6 +230,7 @@ begin
 					-- wait for data frame, it's slower than frame state
 					if (Link_RX_Valid = '1') then
 						FISTypeRegister_en						<= '1';
+						Link_RX_FS_Ack 								<= '1';
 						NextState											<= ST_CHECK_FISTYPE;
 					end if;
 				elsif (Link_RX_FS_SyncEsc = '1') then
@@ -245,10 +242,10 @@ begin
 				end if;
 
 			when ST_CHECK_FISTYPE =>
+				-- assert(Link_RX_Valid = '1')
 				Status													<= SATA_FISD_STATUS_RECEIVING;
-				Link_RX_FS_Ack 									<= '1';
 				
-				if (IsFISHeader = '1' ) then
+				if (Link_RX_SOF = '1') then
 					Link_RX_Ack										<= '1';
 					
 					if (FISTypeRegister = SATA_FISTYPE_PIO_SETUP) then
@@ -293,9 +290,9 @@ begin
 							NextState								<= ST_STATUS_ERROR;
 						end if;
 					end if;	-- FISType_i
-				else
+				else	-- Link_RX_SOF
 					NextState										<= ST_DISCARD_FRAME_1;
-				end if;	-- IsHeader
+				end if;
 				 
 			-- ============================================================
 			-- register transfer: device => host
@@ -499,79 +496,69 @@ begin
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) then
-			if (Reset = '1') then
-				FISTypeRegister				<= SATA_FISTYPE_UNKNOWN;
-				FlagRegister					<= (others => '0');
-				StatusRegister				<= (others => '0');
-				ErrorRegister					<= (others => '0');
-				AddressRegister				<= (others => '0');
-				SectorCountRegister		<= (others => '0');
-				TransferCountRegister	<= (others => '0');
-			else
-				if (FISTypeRegister_rst = '1') then
-					FISTypeRegister	<= SATA_FISTYPE_UNKNOWN;
-				elsif (FISTypeRegister_en = '1') then
-					FISTypeRegister	<= to_sata_fistype(Alias_FISType);
-				end if;
+			if (FISTypeRegister_rst = '1') then
+				FISTypeRegister	<= SATA_FISTYPE_UNKNOWN;
+			elsif (FISTypeRegister_en = '1') then
+				FISTypeRegister	<= to_sata_fistype(Alias_FISType);
+			end if;
 			
-				-- FlagRegister
-				if (FlagRegister_en	= '1') then
-					FlagRegister		<= Alias_FlagReg;
-				end if;
-				
-				-- StatusRegister
-				if (StatusRegister_en	= '1') then
-					StatusRegister	<= Alias_StatusReg;
-				end if;
-				
-				-- EndStatusRegister
-				if (EndStatusRegister_en	= '1') then
-					EndStatusRegister	<= Alias_EndStatusReg;
-				end if;
-				
-				-- ErrorRegister
-				if (ErrorRegister_en	= '1') then
-					ErrorRegister	<= Alias_ErrorReg;
-				end if;
-				
-				-- AddressRegister
-				if (AddressRegister_en0	= '1') then
-					AddressRegister(7 downto 0)	<= Alias_LBA0;
-				end if;
-				
-				if (AddressRegister_en8	= '1') then
-					AddressRegister(15 downto 8)	<= Alias_LBA8;
-				end if;
-				
-				if (AddressRegister_en16	= '1') then
-					AddressRegister(23 downto 16)	<= Alias_LBA16;
-				end if;
-				
-				if (AddressRegister_en24	= '1') then
-					AddressRegister(31 downto 24)	<= Alias_LBA24;
-				end if;
-				
-				if (AddressRegister_en32	= '1') then
-					AddressRegister(39 downto 32)	<= Alias_LBA32;
-				end if;
-				
-				if (AddressRegister_en40	= '1') then
-					AddressRegister(47 downto 40)	<= Alias_LBA40;
-				end if;
-				
-				-- SectorCountRegister
-				if (SectorCountRegister_en0	= '1') then
-					SectorCountRegister(7 downto 0)		<= Alias_SecCount0;
-				end if;
-				
-				if (SectorCountRegister_en8	= '1') then
-					SectorCountRegister(15 downto 8)	<= Alias_SecCount8;
-				end if;
-				
-				-- TransferCountRegister
-				if (TransferCountRegister_en	= '1') then
-					TransferCountRegister				<= Alias_TransferCount;
-				end if;
+			-- FlagRegister
+			if (FlagRegister_en	= '1') then
+				FlagRegister		<= Alias_FlagReg;
+			end if;
+			
+			-- StatusRegister
+			if (StatusRegister_en	= '1') then
+				StatusRegister	<= Alias_StatusReg;
+			end if;
+			
+			-- EndStatusRegister
+			if (EndStatusRegister_en	= '1') then
+				EndStatusRegister	<= Alias_EndStatusReg;
+			end if;
+			
+			-- ErrorRegister
+			if (ErrorRegister_en	= '1') then
+				ErrorRegister	<= Alias_ErrorReg;
+			end if;
+			
+			-- AddressRegister
+			if (AddressRegister_en0	= '1') then
+				AddressRegister(7 downto 0)	<= Alias_LBA0;
+			end if;
+			
+			if (AddressRegister_en8	= '1') then
+				AddressRegister(15 downto 8)	<= Alias_LBA8;
+			end if;
+			
+			if (AddressRegister_en16	= '1') then
+				AddressRegister(23 downto 16)	<= Alias_LBA16;
+			end if;
+			
+			if (AddressRegister_en24	= '1') then
+				AddressRegister(31 downto 24)	<= Alias_LBA24;
+			end if;
+			
+			if (AddressRegister_en32	= '1') then
+				AddressRegister(39 downto 32)	<= Alias_LBA32;
+			end if;
+			
+			if (AddressRegister_en40	= '1') then
+				AddressRegister(47 downto 40)	<= Alias_LBA40;
+			end if;
+			
+			-- SectorCountRegister
+			if (SectorCountRegister_en0	= '1') then
+				SectorCountRegister(7 downto 0)		<= Alias_SecCount0;
+			end if;
+			
+			if (SectorCountRegister_en8	= '1') then
+				SectorCountRegister(15 downto 8)	<= Alias_SecCount8;
+			end if;
+			
+			-- TransferCountRegister
+			if (TransferCountRegister_en	= '1') then
+				TransferCountRegister				<= Alias_TransferCount;
 			end if;
 		end if;
 	end process;

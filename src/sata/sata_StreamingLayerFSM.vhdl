@@ -214,6 +214,9 @@ BEGIN
 					ELSE
 						NextState																<= ST_IDLE;
 					END IF;
+        elsif (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+					Error_nxt																	<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
+					NextState																	<= ST_ERROR;
         END IF;
 			
 			WHEN ST_INIT =>

@@ -43,6 +43,7 @@ USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
+use 	  PoC.components.ALL;
 use 		PoC.physical.all;
 use			PoC.debug.all;
 USE			PoC.sata.ALL;
@@ -51,8 +52,10 @@ use			PoC.satadbg.all;
 
 ENTITY sata_TransportFSM IS
   GENERIC (
-		DATA_READ_TIMEOUT 								: TIME 												:= 1 sec;
-		DATA_WRITE_TIMEOUT 								: TIME 												:= 1 sec;
+		DEV_INIT_TIMEOUT 									: TIME 												:= 500 ms;
+		NODATA_RETRY_TIMEOUT 							: TIME 												:=   1 ms;
+		DATA_READ_TIMEOUT 								: TIME 												:= 100 ms;
+		DATA_WRITE_TIMEOUT 								: TIME 												:= 100 ms;
 		DEBUG															: BOOLEAN											:= FALSE;
 		ENABLE_DEBUGPORT									: BOOLEAN											:= FALSE;
     SIM_WAIT_FOR_INITIAL_REGDH_FIS    : BOOLEAN                     := TRUE -- required by ATA/SATA standard
@@ -164,6 +167,8 @@ ARCHITECTURE rtl OF sata_TransportFSM IS
 	-- Timing Counter to check for timeouts of device responses.
 	constant DATA_READ_TIMEOUT_SLOT			: NATURAL			:= 0;
 	constant DATA_WRITE_TIMEOUT_SLOT		: NATURAL			:= 3;
+	constant DEV_INIT_TIMEOUT_SLOT			: NATURAL			:= 6;
+	constant NODATA_RETRY_TIMEOUT_SLOT	: NATURAL			:= 9;
 
 	constant TC_DEV_RESPONSE_TABLE				: T_NATVEC				:= (
 		(DATA_READ_TIMEOUT_SLOT+0) 		=> TimingToCycles(DATA_READ_TIMEOUT,		CLOCK_GEN1_FREQ),			-- slot 0
@@ -171,7 +176,13 @@ ARCHITECTURE rtl OF sata_TransportFSM IS
 		(DATA_READ_TIMEOUT_SLOT+2) 		=> TimingToCycles(DATA_READ_TIMEOUT,		CLOCK_GEN3_FREQ),			-- slot 2
 		(DATA_WRITE_TIMEOUT_SLOT+0) 	=> TimingToCycles(DATA_WRITE_TIMEOUT,		CLOCK_GEN1_FREQ),			-- slot 3
 		(DATA_WRITE_TIMEOUT_SLOT+1) 	=> TimingToCycles(DATA_WRITE_TIMEOUT,		CLOCK_GEN2_FREQ),			-- slot 4
-		(DATA_WRITE_TIMEOUT_SLOT+2) 	=> TimingToCycles(DATA_WRITE_TIMEOUT,		CLOCK_GEN3_FREQ)			-- slot 5
+		(DATA_WRITE_TIMEOUT_SLOT+2) 	=> TimingToCycles(DATA_WRITE_TIMEOUT,		CLOCK_GEN3_FREQ),			-- slot 5
+		(DEV_INIT_TIMEOUT_SLOT+0) 		=> TimingToCycles(DEV_INIT_TIMEOUT,			CLOCK_GEN1_FREQ),			-- slot 6
+		(DEV_INIT_TIMEOUT_SLOT+1) 		=> TimingToCycles(DEV_INIT_TIMEOUT,			CLOCK_GEN2_FREQ),			-- slot 7
+		(DEV_INIT_TIMEOUT_SLOT+2) 		=> TimingToCycles(DEV_INIT_TIMEOUT,			CLOCK_GEN3_FREQ),			-- slot 8
+		(NODATA_RETRY_TIMEOUT_SLOT+0) => TimingToCycles(NODATA_RETRY_TIMEOUT,	CLOCK_GEN1_FREQ),			-- slot 9
+		(NODATA_RETRY_TIMEOUT_SLOT+1) => TimingToCycles(NODATA_RETRY_TIMEOUT,	CLOCK_GEN2_FREQ),			-- slot 10
+		(NODATA_RETRY_TIMEOUT_SLOT+2) => TimingToCycles(NODATA_RETRY_TIMEOUT,	CLOCK_GEN3_FREQ)			-- slot 11
 	);
 	
 	
@@ -179,7 +190,12 @@ ARCHITECTURE rtl OF sata_TransportFSM IS
 	signal TC_DevResponse_Load		 : STD_LOGIC;
 	signal TC_DevResponse_Slot		 : NATURAL range 0 to (TC_DEV_RESPONSE_TABLE'length - 1);
 	signal TC_DevResponse_Timeout  : STD_LOGIC;
-	
+
+	-- Flag register, set if the response to an ATA command of category NO_DATA
+	-- had an CRC error.
+	signal NoData_ResponseCRCError_r   : std_Logic;
+	signal NoData_ResponseCRCError_rst : std_Logic;
+	signal NoData_ResponseCRCError_set : std_Logic;
 BEGIN
 
 	ATA_Command_Category	<= to_sata_cmdcat(to_sata_ata_command(ATAHostRegisters.Command));
@@ -197,12 +213,15 @@ BEGIN
 					Error_r				<= Error_nxt;
 				end if;
 			END IF;
+
+			NoData_ResponseCRCError_r <= ffrs(q => NoData_ResponseCRCError_r, rst => NoData_ResponseCRCError_rst, set => NoData_ResponseCRCError_set);
 		END IF;
 	END PROCESS;
 
 	Error <= Error_r;
 	
 	PROCESS(State, Command, ATA_Command_Category, ATADeviceRegisters, TC_DevResponse_Timeout, Error_r,
+					NoData_ResponseCRCError_r,
 					FISE_Status, FISD_Status, FISD_FISType, FISD_SOP, FISD_EOP, 
           Link_Status, SATAGeneration, TX_Valid, TX_EOT)
 	BEGIN
@@ -226,6 +245,8 @@ BEGIN
 		TC_DevResponse_Enable 									<= '0';
 		TC_DevResponse_Load	 										<= '0';
 		TC_DevResponse_Slot	 										<= 0;
+		NoData_ResponseCRCError_rst 						<= '0';
+		NoData_ResponseCRCError_set 						<= '0';
 		
 		CASE State IS
       WHEN ST_RESET =>
@@ -238,7 +259,9 @@ BEGIN
         
         if (Link_Status = SATA_LINK_STATUS_IDLE) then
           IF (SIM_WAIT_FOR_INITIAL_REGDH_FIS = TRUE) THEN
-            NextState <= ST_INIT_AWAIT_FIS;
+            NextState 										<= ST_INIT_AWAIT_FIS;
+						TC_DevResponse_Load 					<= '1';
+						TC_DevResponse_Slot 					<= TC_Slot(DEV_INIT_TIMEOUT_SLOT, SATAGeneration);
           ELSE
             NextState <= ST_IDLE;
           END IF;
@@ -248,8 +271,9 @@ BEGIN
 			-- Receive initial register FIS
 			-- ============================================================
       WHEN ST_INIT_AWAIT_FIS =>
-        -- await initial RegDH FIS
-        Status															<= SATA_TRANS_STATUS_INITIALIZING;
+        -- Await initial RegDH FIS. Init TC_DevResponse before.
+        Status														<= SATA_TRANS_STATUS_INITIALIZING;
+				TC_DevResponse_Enable 						<= '1';
 				
  				IF (FISD_Status = SATA_FISD_STATUS_RECEIVING) THEN
 					IF (FISD_FISType = SATA_FISTYPE_REG_DEV_HOST) THEN
@@ -267,6 +291,10 @@ BEGIN
 					Error_en 												<= '1';
 					Error_nxt												<= SATA_TRANS_ERROR_FISDECODER;
 					NextState												<= ST_ERROR;
+				elsif (TC_DevResponse_Timeout = '1') then
+					Error_en 													<= '1';
+					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
+					NextState													<= ST_ERROR;
 				END IF;
      
       WHEN ST_INIT_RECEIVE_FIS =>
@@ -308,6 +336,8 @@ BEGIN
 						-- assumes, that FlagC bit is cleared for control FIS transfer
 						FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
 						NextState											<= ST_CMDCAT_NODATA_SEND_REGISTER_WAIT;
+						TC_DevResponse_Load 					<= '1';
+						TC_DevResponse_Slot 					<= TC_Slot(NODATA_RETRY_TIMEOUT_SLOT, SATAGeneration);
 						
 					WHEN SATA_CMDCAT_PIO_IN =>
 						FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
@@ -367,16 +397,30 @@ BEGIN
 			-- ATA command category: NO-DATA
 			-- ============================================================
 			WHEN ST_CMDCAT_NODATA_SEND_REGISTER_WAIT =>
+				-- Try to send register to device. Init TC_DevResponse before.
+				TC_DevResponse_Enable <= '1';
+				
 				IF (FISE_Status = SATA_FISE_STATUS_SEND_OK) THEN
 					NextState													<= ST_CMDCAT_NODATA_AWAIT_FIS;
+					NoData_ResponseCRCError_rst 			<= '1'; -- reset flag
+					TC_DevResponse_Load 							<= '1'; -- preload timer
+					TC_DevResponse_Slot 							<= TC_Slot(NODATA_RETRY_TIMEOUT_SLOT, SATAGeneration);
 				ELSIF (FISE_Status = SATA_FISE_STATUS_SEND_ERROR) THEN
 					-- Retry finally failed.
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_TRANSMIT_ERROR;
 					NextState													<= ST_ERROR;
+				elsif (TC_DevResponse_Timeout = '1') then
+					Error_en 													<= '1';
+					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
+					NextState													<= ST_ERROR;
 				END IF;
 				
 			WHEN ST_CMDCAT_NODATA_AWAIT_FIS =>
+				-- Wait for response from device. Init TC_DevResponse before.
+				-- Timeout only if response was once corrupted.
+				TC_DevResponse_Enable <= NoData_ResponseCRCError_r;
+				
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVING) THEN
 					IF (FISD_FISType = SATA_FISTYPE_REG_DEV_HOST) THEN
 						NextState												<= ST_CMDCAT_NODATA_RECEIVE_REGISTER;
@@ -387,11 +431,16 @@ BEGIN
 					END IF;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_CRC_ERROR) THEN
 					-- Register FIS with CRC error received, will be
-					-- automatically retried by device. Wait for FIS with valid CRC. 
-					NULL;
+					-- automatically retried by device. Wait for FIS with valid CRC.
+					-- Timer has already been initialized.
+					NoData_ResponseCRCError_set 			<= '1'; -- set flag -> enables timer
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
+					NextState													<= ST_ERROR;
+				elsif (TC_DevResponse_Timeout = '1') then
+					Error_en 													<= '1';
+					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
 					NextState													<= ST_ERROR;
 				END IF;
 				
