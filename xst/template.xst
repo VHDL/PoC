@@ -3,7 +3,7 @@ run
 -ifn {prjFile}
 -use_new_parser {UseNewParser}
 -ifmt {InputFormat}
--ofn top
+-ofn {OutputName}
 -ofmt {OutputFormat}
 -p {Part}
 -top {TopModuleName}

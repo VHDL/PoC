@@ -41,7 +41,6 @@ use			PoC.vectors.all;
 use			PoC.strings.all;
 use			PoC.physical.all;
 use			PoC.components.all;
-use			PoC.lcd.all;
 use			PoC.sata.all;
 use			PoC.satadbg.all;
 use			PoC.sata_TransceiverTypes.all;
