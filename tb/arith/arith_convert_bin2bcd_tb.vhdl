@@ -41,11 +41,11 @@ use			PoC.physical.all;
 use			PoC.simulation.all;
 
 
-entity arith_converter_bin2bcd_tb is
+entity arith_convert_bin2bcd_tb is
 end;
 
 
-architecture test of arith_converter_bin2bcd_tb is
+architecture test of arith_convert_bin2bcd_tb is
 	constant CLOCK_FREQ		: FREQ				:= 100 MHz;
 
 	constant INPUT_1			: INTEGER			:= 38442113;
