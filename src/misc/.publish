@@ -3,6 +3,7 @@
 
 # sub namespaces
 filter/
+stat/
 sync/
 
 # 

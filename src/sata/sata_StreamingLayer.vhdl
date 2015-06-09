@@ -6,7 +6,7 @@
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Module:					SATA Streaming Controller
+-- Module:					SATA Streaming Layer
 --
 -- Description:
 -- ------------------------------------
@@ -59,14 +59,13 @@ use			PoC.sata.all;
 use			PoC.satadbg.all;
 
 
-entity sata_StreamingController is
+entity sata_StreamingLayer is
 	generic (
 		ENABLE_DEBUGPORT							: BOOLEAN									:= FALSE;			-- export internal signals to upper layers for debug purposes
 		DEBUG													: BOOLEAN									:= FALSE;
 		SIM_EXECUTE_IDENTIFY_DEVICE		: BOOLEAN									:= TRUE;			-- required by CommandLayer: load device parameters
 		LOGICAL_BLOCK_SIZE						: MEMORY 									:= 8 KiB			-- accessable logical block size: 8 KiB (independant from device)
-																																					-- 8 KiB, maximum supported is 64 KiB, with 512 B device logical blocks
-	);
+	);																																			-- 8 KiB, maximum supported is 64 KiB, with 512 B device logical blocks
 	port (
 		Clock													: in	STD_LOGIC;
 		ClockEnable										: in	STD_LOGIC;
@@ -74,11 +73,11 @@ entity sata_StreamingController is
 
 		-- CommandLayer interface
 		-- ========================================================================
-		Command												: in	T_SATA_STREAMINGCONTROLLER_COMMAND;
-		Status												: out	T_SATA_STREAMINGCONTROLLER_STATUS;
-		Error													: out	T_SATA_STREAMINGCONTROLLER_ERROR;
+		Command												: in	T_SATA_STREAMING_COMMAND;
+		Status												: out	T_SATA_STREAMING_STATUS;
+		Error													: out	T_SATA_STREAMING_ERROR;
 
-		DebugPortOut									: out T_SATADBG_STREAMINGCONTROLLER_OUT;
+		DebugPortOut									: out T_SATADBG_STREAMING_OUT;
 
 		-- for measurement purposes only
 		Config_BurstSize							: in	T_SLV_16;
@@ -89,6 +88,7 @@ entity sata_StreamingController is
 		
 		-- 
 		DriveInformation							: out T_SATA_DRIVE_INFORMATION;
+		IDF_Bus												: out	T_SATA_IDF_BUS;
 
 		-- TX path
 		TX_Valid											: in	STD_LOGIC;
@@ -106,33 +106,33 @@ entity sata_StreamingController is
 
 		-- TransportLayer interface
 		-- ========================================================================
-		SATAC_ResetDone 							: in  STD_LOGIC;
-		SATAC_Command									: out	T_SATA_SATACONTROLLER_COMMAND;
-		SATAC_Status									: in	T_SATA_SATACONTROLLER_STATUS;
-		SATAC_Error										: in	T_SATA_SATACONTROLLER_ERROR;
+		Trans_ResetDone 							: in  STD_LOGIC;
+		Trans_Command									: out	T_SATA_TRANS_COMMAND;
+		Trans_Status									: in	T_SATA_TRANS_STATUS;
+		Trans_Error										: in	T_SATA_TRANS_ERROR;
 	
 		-- ATA registers
-		SATAC_ATAHostRegisters				: out	T_SATA_ATA_HOST_REGISTERS;
-		SATAC_ATADeviceRegisters			: in	T_SATA_ATA_DEVICE_REGISTERS;
+		Trans_ATAHostRegisters				: out	T_SATA_ATA_HOST_REGISTERS;
+		Trans_ATADeviceRegisters			: in	T_SATA_ATA_DEVICE_REGISTERS;
 	
 		-- TX path
-		SATAC_TX_Valid								: out	STD_LOGIC;
-		SATAC_TX_Data									: out	T_SLV_32;
-		SATAC_TX_SOT									: out	STD_LOGIC;
-		SATAC_TX_EOT									: out	STD_LOGIC;
-		SATAC_TX_Ack									: in	STD_LOGIC;
+		Trans_TX_Valid								: out	STD_LOGIC;
+		Trans_TX_Data									: out	T_SLV_32;
+		Trans_TX_SOT									: out	STD_LOGIC;
+		Trans_TX_EOT									: out	STD_LOGIC;
+		Trans_TX_Ack									: in	STD_LOGIC;
 
 		-- RX path
-		SATAC_RX_Valid								: in	STD_LOGIC;
-		SATAC_RX_Data									: in	T_SLV_32;
-		SATAC_RX_SOT									: in	STD_LOGIC;
-		SATAC_RX_EOT									: in	STD_LOGIC;
-		SATAC_RX_Ack									: out	STD_LOGIC
+		Trans_RX_Valid								: in	STD_LOGIC;
+		Trans_RX_Data									: in	T_SLV_32;
+		Trans_RX_SOT									: in	STD_LOGIC;
+		Trans_RX_EOT									: in	STD_LOGIC;
+		Trans_RX_Ack									: out	STD_LOGIC
 	);
 end;
 
 
-architecture rtl of sata_StreamingController is
+architecture rtl of sata_StreamingLayer is
 	attribute KEEP													: BOOLEAN;
 	attribute FSM_ENCODING									: STRING;
 
@@ -147,18 +147,18 @@ architecture rtl of sata_StreamingController is
 
 	-- CommandFSM
 	-- ==========================================================================
-	signal Status_i													: T_SATA_STREAMINGCONTROLLER_STATUS;
-	signal Error_i													: T_SATA_STREAMINGCONTROLLER_ERROR;
+	signal Status_i													: T_SATA_STREAMING_STATUS;
+	signal Error_i													: T_SATA_STREAMING_ERROR;
 
-	signal SCFSM_TX_en											: STD_LOGIC;
-	SIGNAL SCFSM_TX_ForceEOT								: STD_LOGIC;
-	SIGNAL SCFSM_TX_FIFO_ForceGot						: STD_LOGIC;
+	signal SFSM_TX_en												: STD_LOGIC;
+	SIGNAL SFSM_TX_ForceEOT									: STD_LOGIC;
+	SIGNAL SFSM_TX_FIFO_ForceGot						: STD_LOGIC;
 	
-	signal SCFSM_RX_SOR											: STD_LOGIC;
-	signal SCFSM_RX_EOR											: STD_LOGIC;
-	signal SCFSM_RX_ForcePut								: STD_LOGIC;
+	signal SFSM_RX_SOR											: STD_LOGIC;
+	signal SFSM_RX_EOR											: STD_LOGIC;
+	signal SFSM_RX_ForcePut									: STD_LOGIC;
 
-	signal SCFSM_DebugPortOut								: T_SATADBG_STREAMINGCONTROLLER_SCFSM_OUT;
+	signal SFSM_DebugPortOut								: T_SATADBG_STREAMING_SFSM_OUT;
 
 	signal ATA_CommandCategory							: T_SATA_COMMAND_CATEGORY;
 	
@@ -214,13 +214,13 @@ architecture rtl of sata_StreamingController is
 
 	-- Internal version of output signals
 	-- ========================================================================
-	signal SATAC_RX_Ack_i : std_logic;
+	signal Trans_RX_Ack_i										: STD_LOGIC;
 	
 begin
 	-- Reset sub-components until initial reset of SATAController has been
 	-- completed. Allow synchronous 'Reset' only when ClockEnable = '1'.
 	-- ===========================================================================
-	MyReset <= (not SATAC_ResetDone) or (Reset and ClockEnable);
+	MyReset <= (not Trans_ResetDone) or (Reset and ClockEnable);
 
 	
 	-- ================================================================
@@ -250,7 +250,7 @@ begin
 	-- ================================================================
 	-- Streaming Controller FSM
 	-- ================================================================
-	SCFSM : entity PoC.sata_StreamingControllerFSM
+	SFSM : entity PoC.sata_StreamingLayerFSM
 		generic map (
 			ENABLE_DEBUGPORT 							=> ENABLE_DEBUGPORT,
 			SIM_EXECUTE_IDENTIFY_DEVICE		=> SIM_EXECUTE_IDENTIFY_DEVICE,
@@ -268,31 +268,31 @@ begin
 			Status												=> Status_i,
 			Error													=> Error_i,
 
-			DebugPortOut                  => SCFSM_DebugPortOut,
+			DebugPortOut                  => SFSM_DebugPortOut,
 			
 			Address_LB										=> AdrCalc_Address_DevLB,
 			BlockCount_LB									=> AdrCalc_BlockCount_DevLB,
 
 			TX_FIFO_Valid 								=> TX_FIFO_Valid,
 			TX_FIFO_EOR 									=> TX_FIFO_EOR,
-			TX_FIFO_ForceGot							=> SCFSM_TX_FIFO_ForceGot,
+			TX_FIFO_ForceGot							=> SFSM_TX_FIFO_ForceGot,
 
-			SATAC_TX_Ack 									=> SATAC_TX_Ack,
-			TX_en													=> SCFSM_TX_en,
-			TX_ForceEOT										=> SCFSM_TX_ForceEOT,
+			Trans_TX_Ack 									=> Trans_TX_Ack,
+			TX_en													=> SFSM_TX_en,
+			TX_ForceEOT										=> SFSM_TX_ForceEOT,
 			
-			RX_SOR												=> SCFSM_RX_SOR,
-			RX_EOR												=> SCFSM_RX_EOR,
-			RX_ForcePut										=> SCFSM_RX_ForcePut,
+			RX_SOR												=> SFSM_RX_SOR,
+			RX_EOR												=> SFSM_RX_EOR,
+			RX_ForcePut										=> SFSM_RX_ForcePut,
 			
 			-- TransportLayer interface
-			SATAC_Command									=> SATAC_Command,
-			Trans_Status									=> SATAC_Status.TransportLayer,
+			Trans_Command									=> Trans_Command,
+			Trans_Status									=> Trans_Status,
 			
-			SATAC_ATAHostRegisters				=> SATAC_ATAHostRegisters,
+			Trans_ATAHostRegisters				=> Trans_ATAHostRegisters,
 			
-			SATAC_RX_SOT									=> SATAC_RX_SOT,
-			SATAC_RX_EOT									=> SATAC_RX_EOT,
+			Trans_RX_SOT									=> Trans_RX_SOT,
+			Trans_RX_EOT									=> Trans_RX_EOT,
 			
 			-- IdentifyDeviceFilter interface
 			IDF_Enable										=> IDF_Enable,
@@ -306,7 +306,7 @@ begin
 	DriveInformation				<= IDF_DriveInformation;
 
 	TX_FIFO_put																<= TX_Valid;
-	TX_FIFO_got																<= TC_TX_Ack or SCFSM_TX_FIFO_ForceGot;
+	TX_FIFO_got																<= TC_TX_Ack or SFSM_TX_FIFO_ForceGot;
 		
 	TX_FIFO_DataIn(TX_Data'range)							<= TX_Data;
 	TX_FIFO_DataIn(TX_Data'length	+ 0)				<= TX_SOR;
@@ -353,8 +353,8 @@ begin
 		signal IEOTC_uf											: STD_LOGIC;
 	begin
 		-- enable TX data path
-		TC_TX_Valid					<= TX_FIFO_Valid		and SCFSM_TX_en;
-		TC_TX_Ack						<= SATAC_TX_Ack			and SCFSM_TX_en;
+		TC_TX_Valid					<= TX_FIFO_Valid		and SFSM_TX_en;
+		TC_TX_Ack						<= Trans_TX_Ack			and SFSM_TX_en;
 
 		TC_TX_DataFlow			<= TC_TX_Valid			and TC_TX_Ack;
 
@@ -398,18 +398,18 @@ begin
 
 		TC_TX_InsertEOT			<= IEOTC_uf;
 		
-		SATAC_TX_Valid			<= TC_TX_Valid or SCFSM_TX_ForceEOT;
-		SATAC_TX_Data				<= TC_TX_Data;
-		SATAC_TX_SOT				<= TC_TX_SOT;
-		SATAC_TX_EOT				<= TC_TX_EOT   or SCFSM_TX_ForceEOT;
+		Trans_TX_Valid			<= TC_TX_Valid or SFSM_TX_ForceEOT;
+		Trans_TX_Data				<= TC_TX_Data;
+		Trans_TX_SOT				<= TC_TX_SOT;
+		Trans_TX_EOT				<= TC_TX_EOT   or SFSM_TX_ForceEOT;
 		
 	end block;	-- TransferCutter
 
 	-- CommandLayer RX_FIFO
-	RX_FIFO_put																<= (SATAC_RX_Valid and not IDF_Enable) or SCFSM_RX_ForcePut;
-	RX_FIFO_DataIn(SATAC_RX_Data'range)				<= SATAC_RX_Data;
-	RX_FIFO_DataIn(SATAC_RX_Data'length	+ 0)	<= SCFSM_RX_SOR;
-	RX_FIFO_DataIn(SATAC_RX_Data'length	+ 1)	<= SCFSM_RX_EOR;
+	RX_FIFO_put																<= (Trans_RX_Valid and not IDF_Enable) or SFSM_RX_ForcePut;
+	RX_FIFO_DataIn(Trans_RX_Data'range)				<= Trans_RX_Data;
+	RX_FIFO_DataIn(Trans_RX_Data'length	+ 0)	<= SFSM_RX_SOR;
+	RX_FIFO_DataIn(Trans_RX_Data'length	+ 1)	<= SFSM_RX_EOR;
 
 
 	RX_FIFO_got																<= RX_Ack;
@@ -436,8 +436,8 @@ begin
 			do						=> RX_FIFO_DataOut
 		);
 	
-	SATAC_RX_Ack_i	 	<= (not RX_FIFO_Full) when (IDF_Enable = '0') else '1';					-- RX_Ack	 multiplexer
-	SATAC_RX_Ack      <= SATAC_RX_Ack_i;
+	Trans_RX_Ack_i	 	<= (not RX_FIFO_Full) when (IDF_Enable = '0') else '1';					-- RX_Ack	 multiplexer
+	Trans_RX_Ack      <= Trans_RX_Ack_i;
 	RX_Valid					<= RX_FIFO_Valid;
 
 	
@@ -460,10 +460,10 @@ begin
 	-- IdentifyDeviceFilter
 	-- ================================================================
 	IDF_Reset		<= MyReset;
-	IDF_Valid		<= SATAC_RX_Valid;
-	IDF_Data		<= SATAC_RX_Data;
-	IDF_SOT			<= SATAC_RX_SOT;
-	IDF_EOT			<= SATAC_RX_EOT;
+	IDF_Valid		<= Trans_RX_Valid;
+	IDF_Data		<= Trans_RX_Data;
+	IDF_SOT			<= Trans_RX_SOT;
+	IDF_EOT			<= Trans_RX_EOT;
 	
 	IDF : entity PoC.sata_ATA_IdentifyDeviceFilter
 		generic map (
@@ -482,7 +482,8 @@ begin
 			SOT											=> IDF_SOT,
 			EOT											=> IDF_EOT,
 			
-			DriveInformation				=> IDF_DriveInformation
+			DriveInformation				=> IDF_DriveInformation,
+			IDF_Bus									=> IDF_Bus
 		);
 
   -- debug ports
@@ -493,8 +494,8 @@ begin
 			function dbg_generateCommandEncodings return string is
 				variable  l : STD.TextIO.line;
 			begin
-				for i in T_SATA_STREAMINGCONTROLLER_COMMAND loop
-					STD.TextIO.write(l, str_replace(T_SATA_STREAMINGCONTROLLER_COMMAND'image(i), "sata_streamctrl_cmd_", ""));
+				for i in T_SATA_STREAMING_COMMAND loop
+					STD.TextIO.write(l, str_replace(T_SATA_STREAMING_COMMAND'image(i), "sata_stream_cmd_", ""));
 					STD.TextIO.write(l, ';');
 				end loop;
 				return  l.all;
@@ -503,8 +504,8 @@ begin
 			function dbg_generateStatusEncodings return string is
 				variable  l : STD.TextIO.line;
 			begin
-				for i in T_SATA_STREAMINGCONTROLLER_STATUS loop
-					STD.TextIO.write(l, str_replace(T_SATA_STREAMINGCONTROLLER_STATUS'image(i), "sata_streamctrl_status_", ""));
+				for i in T_SATA_STREAMING_STATUS loop
+					STD.TextIO.write(l, str_replace(T_SATA_STREAMING_STATUS'image(i), "sata_stream_status_", ""));
 					STD.TextIO.write(l, ';');
 				end loop;
 				return  l.all;
@@ -513,17 +514,17 @@ begin
 			function dbg_generateErrorEncodings return string is
 				variable  l : STD.TextIO.line;
 			begin
-				for i in T_SATA_STREAMINGCONTROLLER_ERROR loop
-					STD.TextIO.write(l, str_replace(T_SATA_STREAMINGCONTROLLER_ERROR'image(i), "sata_streamctrl_error_", ""));
+				for i in T_SATA_STREAMING_ERROR loop
+					STD.TextIO.write(l, str_replace(T_SATA_STREAMING_ERROR'image(i), "sata_stream_error_", ""));
 					STD.TextIO.write(l, ';');
 				end loop;
 				return  l.all;
 			end function;
 		
 			constant dummy : T_BOOLVEC := (
-				0 => dbg_ExportEncoding("Command Layer - Command Enum",	dbg_generateCommandEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Cmd_Command.tok"),
-				1 => dbg_ExportEncoding("Command Layer - Status Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Cmd_Status.tok"),
-				2 => dbg_ExportEncoding("Command Layer - Error Enum",		dbg_generateErrorEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Cmd_Error.tok")
+				0 => dbg_ExportEncoding("Streaming Layer - Command Enum",	dbg_generateCommandEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Stream_Command.tok"),
+				1 => dbg_ExportEncoding("Streaming Layer - Status Enum",	dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Stream_Status.tok"),
+				2 => dbg_ExportEncoding("Streaming Layer - Error Enum",		dbg_generateErrorEncodings,		PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Stream_Error.tok")
 			);
 		begin
 		end generate;
@@ -545,7 +546,7 @@ begin
     DebugPortOut.IDF_DriveInformation <= IDF_DriveInformation;
 
     -- debug port of command fsm, for RX datapath see below
-    DebugPortOut.SCFSM <= SCFSM_DebugPortOut;
+    DebugPortOut.SFSM <= SFSM_DebugPortOut;
 
 		-- RX ----------------------------------------------------------------
     -- RX datapath to upper layer
@@ -556,24 +557,24 @@ begin
     DebugPortOut.RX_Ack   			<= RX_Ack;
 
 		-- RX datapath between demultiplexer, RX_FIFO and CFSM
-    DebugPortOut.SCFSM_RX_Valid	<= RX_FIFO_put;
-    --see below DebugPortOut.SCFSM_RX_Data  <= SATAC_RX_Data;
-    DebugPortOut.SCFSM_RX_SOR		<= SCFSM_RX_SOR;
-    DebugPortOut.SCFSM_RX_EOR		<= SCFSM_RX_EOR;
-    DebugPortOut.SCFSM_RX_Ack		<= not RX_FIFO_FULL;
+    DebugPortOut.SFSM_RX_Valid	<= RX_FIFO_put;
+    --see below DebugPortOut.SFSM_RX_Data  <= Trans_RX_Data;
+    DebugPortOut.SFSM_RX_SOR		<= SFSM_RX_SOR;
+    DebugPortOut.SFSM_RX_EOR		<= SFSM_RX_EOR;
+    DebugPortOut.SFSM_RX_Ack		<= not RX_FIFO_FULL;
 		
 		-- RX datapath between demultiplexer and IDF
 		-- is same as input from transport layer
 
 		-- RX datapath from transport layer
-    DebugPortOut.SATAC_RX_Valid <= SATAC_RX_Valid;
-    DebugPortOut.SATAC_RX_Data  <= SATAC_RX_Data;
-    DebugPortOut.SATAC_RX_SOT   <= SATAC_RX_SOT;
-    DebugPortOut.SATAC_RX_EOT   <= SATAC_RX_EOT;
-    DebugPortOut.SATAC_RX_Ack   <= SATAC_RX_Ack_i;
+    DebugPortOut.Trans_RX_Valid <= Trans_RX_Valid;
+    DebugPortOut.Trans_RX_Data  <= Trans_RX_Data;
+    DebugPortOut.Trans_RX_SOT   <= Trans_RX_SOT;
+    DebugPortOut.Trans_RX_EOT   <= Trans_RX_EOT;
+    DebugPortOut.Trans_RX_Ack   <= Trans_RX_Ack_i;
 
 		-- TX ----------------------------------------------------------------
-    DebugPortOut.SCFSM_TX_ForceEOT	<= SCFSM_TX_ForceEOT;
+    DebugPortOut.SFSM_TX_ForceEOT	<= SFSM_TX_ForceEOT;
 		
     -- TX datapath to upper layer
 		DebugPortOut.TX_Valid 			<= TX_Valid;

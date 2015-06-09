@@ -30,44 +30,47 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.strings.ALL;
-USE			PoC.sata.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.strings.all;
+use			PoC.components.all;
+use			PoC.sata.all;
 
 
-ENTITY sata_ATA_IdentifyDeviceFilter IS
-	GENERIC (
+entity sata_ATA_IdentifyDeviceFilter is
+	generic (
 		DEBUG												: BOOLEAN						:= FALSE
 	);
-	PORT (
-		Clock												: IN	STD_LOGIC;
-		Reset												: IN	STD_LOGIC;
+	port (
+		Clock												: in	STD_LOGIC;
+		Reset												: in	STD_LOGIC;
 
-		Enable											: IN	STD_LOGIC;
-		Error												: OUT	STD_LOGIC;
-		Finished										: OUT	STD_LOGIC;
+		Enable											: in	STD_LOGIC;
+		Error												: out	STD_LOGIC;
+		Finished										: out	STD_LOGIC;
 		
-		Valid												: IN	STD_LOGIC;
-		Data												: IN	T_SLV_32;
-		SOT													: IN	STD_LOGIC;
-		EOT													: IN	STD_LOGIC;
+		Valid												: in	STD_LOGIC;
+		Data												: in	T_SLV_32;
+		SOT													: in	STD_LOGIC;
+		EOT													: in	STD_LOGIC;
 		
-		DriveInformation						: OUT	T_SATA_DRIVE_INFORMATION
+		DriveInformation						: out	T_SATA_DRIVE_INFORMATION;
+		
+		IDF_Bus											: out	T_SATA_IDF_BUS
 	);
-END;
+end;
 
-ARCHITECTURE rtl OF sata_ATA_IdentifyDeviceFilter IS
-	ATTRIBUTE KEEP									: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING					: STRING;
+architecture rtl of sata_ATA_IdentifyDeviceFilter is
+	attribute KEEP									: BOOLEAN;
+	attribute FSM_ENCODING					: STRING;
 
-	TYPE T_STATE IS (
+	type T_STATE is (
 		ST_IDLE,
 		ST_READ_WORDS,
 		ST_COMPLETE,
@@ -75,171 +78,165 @@ ARCHITECTURE rtl OF sata_ATA_IdentifyDeviceFilter IS
 		ST_ERROR
 	);
 	
-	FUNCTION calcSATAGenerationMin(SpeedBits : STD_LOGIC_VECTOR(6 DOWNTO 0)) RETURN T_SATA_GENERATION IS
-	BEGIN
-		IF (SpeedBits(0) = '1') THEN			RETURN SATA_GENERATION_1;
-		ELSIF (SpeedBits(1) = '1') THEN		RETURN SATA_GENERATION_2;
-		ELSIF (SpeedBits(2) = '1') THEN		RETURN SATA_GENERATION_3;
-		ELSE															RETURN SATA_GENERATION_1;
-		END IF;
-	END;
+	function calcSATAGenerationMin(SpeedBits : STD_LOGIC_VECTOR(6 downto 0)) return T_SATA_GENERATION is
+	begin
+		if (SpeedBits(0) = '1') then			return SATA_GENERATION_1;
+		elsif (SpeedBits(1) = '1') then		return SATA_GENERATION_2;
+		elsif (SpeedBits(2) = '1') then		return SATA_GENERATION_3;
+		else															return SATA_GENERATION_1;
+		end if;
+	end;
 	
-	FUNCTION calcSATAGenerationMax(SpeedBits : STD_LOGIC_VECTOR(6 DOWNTO 0)) RETURN T_SATA_GENERATION IS
-	BEGIN
-		IF (SpeedBits(2) = '1') THEN			RETURN SATA_GENERATION_3;
-		ELSIF (SpeedBits(1) = '1') THEN		RETURN SATA_GENERATION_2;
-		ELSIF (SpeedBits(0) = '1') THEN		RETURN SATA_GENERATION_1;
-		ELSE															RETURN SATA_GENERATION_1;
-		END IF;
-	END;
+	function calcSATAGenerationMax(SpeedBits : STD_LOGIC_VECTOR(6 downto 0)) return T_SATA_GENERATION is
+	begin
+		if (SpeedBits(2) = '1') then			return SATA_GENERATION_3;
+		elsif (SpeedBits(1) = '1') then		return SATA_GENERATION_2;
+		elsif (SpeedBits(0) = '1') then		return SATA_GENERATION_1;
+		else															return SATA_GENERATION_1;
+		end if;
+	end;
 	
-	CONSTANT WORDAC_BITS															: POSITIVE								:= log2ceilnz(128);			-- 512 Byte legacy block size => 128 * 32-bit words
+	constant WORDAC_BITS															: POSITIVE								:= log2ceilnz(128);			-- 512 Byte legacy block size => 128 * 32-bit words
 	
-	SIGNAL State																			: T_STATE									:= ST_IDLE;
-	SIGNAL NextState																	: T_STATE;
-	ATTRIBUTE FSM_ENCODING	OF State									: SIGNAL IS getFSMEncoding_gray(DEBUG);
+	signal State																			: T_STATE									:= ST_IDLE;
+	signal NextState																	: T_STATE;
+	attribute FSM_ENCODING	OF State									: signal is getFSMEncoding_gray(DEBUG);
 	
-	SIGNAL WordAC_inc																	: STD_LOGIC;
-	SIGNAL WordAC_Load																: STD_LOGIC;
-	SIGNAL WordAC_Address_us													: UNSIGNED(WORDAC_BITS - 1 DOWNTO 0);
-	SIGNAL WordAC_Finished														: STD_LOGIC;
+	signal WordAC_inc																	: STD_LOGIC;
+	signal WordAC_rst																: STD_LOGIC;
+	signal WordAC_Address_us													: UNSIGNED(WORDAC_BITS - 1 downto 0);
+	signal WordAC_Finished														: STD_LOGIC;
 	
-	SIGNAL ATAWord_117_IsValid_r											: STD_LOGIC								:= '0';
+	signal ATAWord_117_IsValid_r											: STD_LOGIC								:= '0';
 	
-	SIGNAL ATACapability_SupportsDMA									: STD_LOGIC								:= '0';	
-	SIGNAL ATACapability_SupportsLBA									: STD_LOGIC								:= '0';
-	SIGNAL ATACapability_Supports48BitLBA							: STD_LOGIC								:= '0';
-	SIGNAL ATACapability_SupportsSMART								: STD_LOGIC								:= '0';	
-	SIGNAL ATACapability_SupportsFLUSH_CACHE					: STD_LOGIC								:= '0';
-	SIGNAL ATACapability_SupportsFLUSH_CACHE_EXT			: STD_LOGIC								:= '0';
+	signal ATACapability_SupportsDMA									: STD_LOGIC								:= '0';	
+	signal ATACapability_SupportsLBA									: STD_LOGIC								:= '0';
+	signal ATACapability_Supports48BitLBA							: STD_LOGIC								:= '0';
+	signal ATACapability_SupportsSMART								: STD_LOGIC								:= '0';	
+	signal ATACapability_SupportsFLUSH_CACHE					: STD_LOGIC								:= '0';
+	signal ATACapability_SupportsFLUSH_CACHE_EXT			: STD_LOGIC								:= '0';
 	
-	SIGNAL SATACapability_SupportsNCQ									: STD_LOGIC								:= '0';
-	SIGNAL SATAGenerationMin													: T_SATA_GENERATION				:= SATA_GENERATION_1;
-	SIGNAL SATAGenerationMax													: T_SATA_GENERATION				:= SATA_GENERATION_1;
+	signal SATACapability_SupportsNCQ									: STD_LOGIC								:= '0';
+	signal SATAGenerationMin													: T_SATA_GENERATION				:= SATA_GENERATION_1;
+	signal SATAGenerationMax													: T_SATA_GENERATION				:= SATA_GENERATION_1;
 	
-	SIGNAL DriveName																	: T_RAWSTRING(0 TO 39)		:= (OTHERS => x"00");
-	SIGNAL DriveSize_LB																: UNSIGNED(63 DOWNTO 0)		:= (OTHERS => '0');
-	SIGNAL PhysicalBlockSize_ldB											: UNSIGNED(7 DOWNTO 0)		:= (OTHERS => '0');
-	SIGNAL LogicalBlockSize_ldB												: UNSIGNED(7 DOWNTO 0)		:= (OTHERS => '0');
+	signal DriveName																	: T_RAWSTRING(0 TO 39)		:= (others => x"00");
+	signal DriveSize_LB																: UNSIGNED(63 downto 0)		:= (others => '0');
+	signal PhysicalBlockSize_ldB											: UNSIGNED(7 downto 0)		:= (others => '0');
+	signal LogicalBlockSize_ldB												: UNSIGNED(7 downto 0)		:= (others => '0');
 	
-	SIGNAL MultipleLogicalBlocksPerPhysicalBlock			: STD_LOGIC								:= '0';
-	SIGNAL LogicalBlocksPerPhysicalBlock_us						: UNSIGNED(3 DOWNTO 0)		:= (OTHERS => '0');
+	signal MultipleLogicalBlocksPerPhysicalBlock			: STD_LOGIC								:= '0';
+	signal LogicalBlocksPerPhysicalBlock_us						: UNSIGNED(3 downto 0)		:= (others => '0');
 	
-	SIGNAL ATACapabilities_i													: T_SATA_ATA_CAPABILITY;
-	SIGNAL SATACapabilities_i													: T_SATA_SATA_CAPABILITY;
-	SIGNAL DriveInformation_i													: T_SATA_DRIVE_INFORMATION;
+	signal ATACapabilities_i													: T_SATA_ATA_CAPABILITY;
+	signal SATACapabilities_i													: T_SATA_SATA_CAPABILITY;
+	signal DriveInformation_i													: T_SATA_DRIVE_INFORMATION;
 	
-	SIGNAL Commit																			: STD_LOGIC;
-	SIGNAL ChecksumOK																	: STD_LOGIC;
-BEGIN
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	signal DriveName_en																: STD_LOGIC;
+	signal DriveName_d																: T_SLV_16								:= (others => '0');
+	signal IDF_Valid_r																: STD_LOGIC								:= '0';
+	signal IDF_Address																: STD_LOGIC_VECTOR(IDF_Bus.Address'range);
+	signal IDF_WriteEnable														: STD_LOGIC;
+	signal IDF_Data																		: T_SLV_32;
+	
+	signal Commit																			: STD_LOGIC;
+	signal ChecksumOK																	: STD_LOGIC;
+	
+begin
+	process(Clock)
+	begin
+		IF rising_edge(Clock) then
+			if (Reset = '1') then
 				State			<= ST_IDLE;
-			ELSE
+			else
 				State			<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 	
-	PROCESS(State, Enable, Valid, SOT, EOT, WordAC_Finished, ChecksumOK)
-	BEGIN
+	process(State, Enable, Valid, SOT, EOT, WordAC_Finished, ChecksumOK)
+	begin
 		NextState										<= State;
 		
 		WordAC_inc									<= '0';
-		WordAC_Load									<= '0';
+		WordAC_rst									<= '0';
 		
 		Commit											<= '0';
 		Error												<= '0';
 		Finished										<= '0';
 		
-		CASE State IS
-			WHEN ST_IDLE =>
-				IF (Enable = '1') THEN
-					WordAC_Load						<= '1';
+		case State is
+			when ST_IDLE =>
+				if (Enable = '1') then
+					WordAC_rst						<= '1';
 					
 					NextState							<= ST_READ_WORDS;
-				END IF;
+				end if;
 
-			WHEN ST_READ_WORDS =>
-				IF (Enable = '0') THEN
+			when ST_READ_WORDS =>
+				if (Enable = '0') then
 					NextState							<= ST_IDLE;
-				ELSE
-					IF (Valid = '1') THEN
-						-- IF (SOT
-						
+				else
+					if (Valid = '1') then
 						WordAC_inc					<= '1';
 						
-						IF (EOT = '1') THEN
-							IF (WordAC_Finished = '1') THEN
-								IF (ChecksumOK = '1') THEN
+						if (EOT = '1') then
+							if (WordAC_Finished = '1') then
+								if (ChecksumOK = '1') then
 									Commit				<= '1';
 									NextState			<= ST_FINISHED;
-								ELSE
+								else
 									NextState			<= ST_ERROR;
-								END IF;
-							ELSE																	-- only EOT => frame to short
+								end if;
+							else																	-- only EOT => frame to short
 								NextState				<= ST_ERROR;
-							END IF;
-						ELSE	-- EOT
-							IF (WordAC_Finished = '1') THEN				-- only Finished => frame to long
+							end if;
+						else	-- EOT
+							if (WordAC_Finished = '1') then				-- only Finished => frame to long
 								NextState				<= ST_ERROR;
-							END IF;
-						END IF;
-					END IF;
-				END IF;
+							end if;
+						end if;
+					end if;
+				end if;
 			
-			WHEN ST_COMPLETE =>
-				IF (ChecksumOK = '1') THEN
+			when ST_COMPLETE =>
+				if (ChecksumOK = '1') then
 					Commit								<= '1';
 					NextState							<= ST_FINISHED;
-				ELSE
+				else
 					NextState							<= ST_ERROR;
-				END IF;
+				end if;
 			
-			WHEN ST_FINISHED =>
+			when ST_FINISHED =>
 				Finished								<= '1';
 				NextState								<= ST_IDLE;
 				
-			WHEN ST_ERROR =>
+			when ST_ERROR =>
 				Error										<= '1';
 				
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 	
-	
-	blkWordAC : BLOCK
-		SIGNAL Counter_us				: UNSIGNED(WORDAC_BITS - 1 DOWNTO 0)					:= (OTHERS => '0');
-	BEGIN
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF (WordAC_Load = '1') THEN
-					Counter_us				<= (OTHERS => '0');
-				ELSIF (WordAC_inc = '1') THEN
-					Counter_us			<= Counter_us + 1;
-				END IF;
-			END IF;
-		END PROCESS;
-
-		-- address output
+	blkWordAC : block	
+		signal Counter_us	: UNSIGNED(WORDAC_BITS - 1 downto 0)					:= (others => '0');
+	begin
+		Counter_us				<= counter_inc(cnt => Counter_us, rst => WordAC_rst, en => WordAC_inc) when rising_edge(Clock);
 		WordAC_Address_us	<= Counter_us;
-		WordAC_Finished		<= to_sl(Counter_us = (Counter_us'range => '1'));
-	END BLOCK;
+		WordAC_Finished		<= counter_eq(cnt => Counter_us, value => (2**WORDAC_BITS - 1));
+	end block;
 
 	
 	-- checksum calculation
-	cs : BLOCK
-		SIGNAL byte0_us			: UNSIGNED(7 DOWNTO 0);
-		SIGNAL byte1_us			: UNSIGNED(15 DOWNTO 8);
-		SIGNAL byte2_us			: UNSIGNED(23 DOWNTO 16);
-		SIGNAL byte3_us			: UNSIGNED(31 DOWNTO 24);
+	cs : block
+		signal byte0_us			: UNSIGNED(7 downto 0);
+		signal byte1_us			: UNSIGNED(15 downto 8);
+		signal byte2_us			: UNSIGNED(23 downto 16);
+		signal byte3_us			: UNSIGNED(31 downto 24);
 		
-		SIGNAL Checksum_nx1	: UNSIGNED(7 DOWNTO 0);
-		SIGNAL Checksum_nx2	: UNSIGNED(7 DOWNTO 0);
-		SIGNAL Checksum_us	: UNSIGNED(7 DOWNTO 0)					:= (OTHERS => '0');
-	BEGIN
+		signal Checksum_nx1	: UNSIGNED(7 downto 0);
+		signal Checksum_nx2	: UNSIGNED(7 downto 0);
+		signal Checksum_us	: UNSIGNED(7 downto 0)					:= (others => '0');
+	begin
 		byte0_us		<= unsigned(Data(byte0_us'range));
 		byte1_us		<= unsigned(Data(byte1_us'range));
 		byte2_us		<= unsigned(Data(byte2_us'range));
@@ -248,234 +245,125 @@ BEGIN
 		Checksum_nx1	<= byte0_us + byte1_us + byte2_us + byte3_us;
 		Checksum_nx2	<= byte0_us + byte1_us + byte2_us + byte3_us + Checksum_us;
 	
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF (SOT = '1') THEN
-					Checksum_us			<= Checksum_nx1;
-				ELSE
-					IF (Valid = '1') THEN
-						Checksum_us		<= Checksum_nx2;
-					END IF;
-				END IF;
-			END IF;
-		END PROCESS;
+		process(Clock)
+		begin
+			IF rising_edge(Clock) then
+				if (SOT = '1') then
+					Checksum_us		<= Checksum_nx1;
+				elsif (Valid = '1') then
+					Checksum_us		<= Checksum_nx2;
+				end if;
+			end if;
+		end process;
 		
 		ChecksumOK						<= to_sl(Checksum_nx2 = 0);
-	END BLOCK;
+	end block;
 	
 	
 	-- ================================================================
 	-- defines several registers, which are enabled by WordAC and Valid
 	-- one ATA word has 16 Bits
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		IF rising_edge(Clock) then
+			if (Reset = '1') then
 				ATAWord_117_IsValid_r							<= '0';
-			ELSE
-				CASE to_integer(WordAC_Address_us) IS
-					-- ATA word 10 to 19 (20 bytes) - serial number (ASCII)
-					--WHEN 5 =>
-					
-					-- ATA word 27 to 46 - model number (ASCII)
-					WHEN 13 =>
-						IF (Valid = '1') THEN
-							DriveName(0)								<= Data(31 DOWNTO 24);
-							DriveName(1)								<= Data(23 DOWNTO 16);
-						END IF;
-					
-					WHEN 14 =>
-						IF (Valid = '1') THEN
-							DriveName(2)								<= Data(15 DOWNTO 8);
-							DriveName(3)								<= Data(7 DOWNTO 0);
-							DriveName(4)								<= Data(31 DOWNTO 24);
-							DriveName(5)								<= Data(23 DOWNTO 16);
-						END IF;
-					
-					WHEN 15 =>
-						IF (Valid = '1') THEN
-							DriveName(6)								<= Data(15 DOWNTO 8);
-							DriveName(7)								<= Data(7 DOWNTO 0);
-							DriveName(8)								<= Data(31 DOWNTO 24);
-							DriveName(9)								<= Data(23 DOWNTO 16);
-						END IF;
-					
-					WHEN 16 =>
-						IF (Valid = '1') THEN
-							DriveName(10)								<= Data(15 DOWNTO 8);
-							DriveName(11)								<= Data(7 DOWNTO 0);
-							DriveName(12)								<= Data(31 DOWNTO 24);
-							DriveName(13)								<= Data(23 DOWNTO 16);
-						END IF;
-					
-					WHEN 17 =>
-						IF (Valid = '1') THEN
-							DriveName(14)								<= Data(15 DOWNTO 8);
-							DriveName(15)								<= Data(7 DOWNTO 0);
-							DriveName(16)								<= Data(31 DOWNTO 24);
-							DriveName(17)								<= Data(23 DOWNTO 16);
-						END IF;
-
-					WHEN 18 =>
-						IF (Valid = '1') THEN
-							DriveName(18)								<= Data(15 DOWNTO 8);
-							DriveName(19)								<= Data(7 DOWNTO 0);
-							DriveName(20)								<= Data(31 DOWNTO 24);
-							DriveName(21)								<= Data(23 DOWNTO 16);
-						END IF;
-					
-					WHEN 19 =>
-						IF (Valid = '1') THEN
-							DriveName(22)								<= Data(15 DOWNTO 8);
-							DriveName(23)								<= Data(7 DOWNTO 0);
-							DriveName(24)								<= Data(31 DOWNTO 24);
-							DriveName(25)								<= Data(23 DOWNTO 16);
-						END IF;
-						
-					WHEN 20 =>
-						IF (Valid = '1') THEN
-							DriveName(26)								<= Data(15 DOWNTO 8);
-							DriveName(27)								<= Data(7 DOWNTO 0);
-							DriveName(28)								<= Data(31 DOWNTO 24);
-							DriveName(29)								<= Data(23 DOWNTO 16);
-						END IF;
-
-					WHEN 21 =>
-						IF (Valid = '1') THEN
-							DriveName(30)								<= Data(15 DOWNTO 8);
-							DriveName(31)								<= Data(7 DOWNTO 0);
-							DriveName(32)								<= Data(31 DOWNTO 24);
-							DriveName(33)								<= Data(23 DOWNTO 16);
-						END IF;
-					
-					WHEN 22 =>
-						IF (Valid = '1') THEN
-							DriveName(34)								<= Data(15 DOWNTO 8);
-							DriveName(35)								<= Data(7 DOWNTO 0);
-							DriveName(36)								<= Data(31 DOWNTO 24);
-							DriveName(37)								<= Data(23 DOWNTO 16);
-						END IF;
-						
-					WHEN 23 =>
-						IF (Valid = '1') THEN
-							DriveName(38)								<= Data(15 DOWNTO 8);
-							DriveName(39)								<= Data(7 DOWNTO 0);
-						END IF;
+			elsif (Valid = '1') then
+				case to_integer(WordAC_Address_us) is
+					-- ATA word 10 to 19 (20 bytes)	- serial number (ASCII)
+					-- ATA word 27 to 46 (40 bytes)	- model number (ASCII)
 					
 					-- ATA word 49 - Capabilities
-					WHEN 24 =>
-						IF (Valid = '1') THEN
-							ATACapability_SupportsLBA		<= Data(25);
-							ATACapability_SupportsDMA		<= Data(24);
-						END IF;
+					when 24 =>
+						ATACapability_SupportsLBA		<= Data(25);
+						ATACapability_SupportsDMA		<= Data(24);
 					
 					-- ATA word 60 to 61 - total number of user addressable logical sectors
-					WHEN 30 =>
-						IF (Valid = '1') THEN
-							DriveSize_LB(31 DOWNTO 0)		<= unsigned(Data);
-						END IF;
+					when 30 =>
+						DriveSize_LB(31 downto 0)		<= unsigned(Data);
 					
 					-- ATA word 76 - Serial-ATA capabilities
-					WHEN 38 =>
-						IF (Valid = '1') THEN
-							SATAGenerationMin						<= calcSATAGenerationMin(Data(7 DOWNTO 1));
-							SATAGenerationMax						<= calcSATAGenerationMax(Data(7 DOWNTO 1));
-							-- Data(3)	- reserved for future SATA signalig speeds
-							-- Data(4)	- reserved for future SATA signalig speeds
-							-- Data(5)	- reserved for future SATA signalig speeds
-							-- Data(6)	- reserved for future SATA signalig speeds
-							-- Data(7)	- reserved for future SATA signalig speeds
-							SATACapability_SupportsNCQ	<= Data(8);
-						END IF;
+					when 38 =>
+						SATAGenerationMin						<= calcSATAGenerationMin(Data(7 downto 1));
+						SATAGenerationMax						<= calcSATAGenerationMax(Data(7 downto 1));
+						-- Data(3)	- reserved for future SATA signalig speeds
+						-- Data(4)	- reserved for future SATA signalig speeds
+						-- Data(5)	- reserved for future SATA signalig speeds
+						-- Data(6)	- reserved for future SATA signalig speeds
+						-- Data(7)	- reserved for future SATA signalig speeds
+						SATACapability_SupportsNCQ	<= Data(8);
 					
 					-- ATA word 82 to 83 - Command set supported
-					WHEN 41 =>
-						IF (Valid = '1') THEN
-							ATACapability_SupportsSMART							<= Data(0);
-							--ATACapability_SupportsDMA_QUEUED				<= Data(16);			-- READ/WRITE DMA QUEUED
-							ATACapability_Supports48BitLBA					<= Data(26);
-							ATACapability_SupportsFLUSH_CACHE				<= Data(28);
-							ATACapability_SupportsFLUSH_CACHE_EXT		<= Data(29);
-						END IF;
+					when 41 =>
+						ATACapability_SupportsSMART							<= Data(0);
+						--ATACapability_SupportsDMA_QUEUED				<= Data(16);			-- READ/WRITE DMA QUEUED
+						ATACapability_Supports48BitLBA					<= Data(26);
+						ATACapability_SupportsFLUSH_CACHE				<= Data(28);
+						ATACapability_SupportsFLUSH_CACHE_EXT		<= Data(29);
 
 					-- ATA word 86 - Command set/feature enabled/supported
-					
 					-- ATA word 88 - Ultra DMA modes
 					
 					-- ATA word 100 to 103 - total number of user addressable sectors for 48 Bit address feature set
-					WHEN 50 =>
-						IF (Valid = '1') THEN
-							IF (ATACapability_Supports48BitLBA = '1') THEN
-								DriveSize_LB(31 DOWNTO 0)							<= unsigned(Data);
-							END IF;
-						END IF;
+					when 50 =>
+						if (ATACapability_Supports48BitLBA = '1') then
+							DriveSize_LB(31 downto 0)							<= unsigned(Data);
+						end if;
 					
-					WHEN 51 =>
-						IF (Valid = '1') THEN
-							IF (ATACapability_Supports48BitLBA = '1') THEN
-								DriveSize_LB(63 DOWNTO 32)						<= unsigned(Data);
-							END IF;
-						END IF;
+					when 51 =>
+						if (ATACapability_Supports48BitLBA = '1') then
+							DriveSize_LB(63 downto 32)						<= unsigned(Data);
+						end if;
 					
 					-- ATA word 106 - physical sector size / logical sector size
-					WHEN 53 =>
-						IF (Valid = '1') THEN
-							IF (Data(15 DOWNTO 14) = "01") THEN		
-								MultipleLogicalBlocksPerPhysicalBlock	<= Data(13);
-								LogicalBlocksPerPhysicalBlock_us			<= unsigned(Data(3 DOWNTO 0));
-							
-								IF (Data(12) = '1') THEN
-									ATAWord_117_IsValid_r								<= '1';
-								ELSE
-									ATAWord_117_IsValid_r								<= '0';
-								END IF;
-							END IF;
-						END IF;
+					when 53 =>
+						if (Data(15 downto 14) = "01") then		
+							MultipleLogicalBlocksPerPhysicalBlock	<= Data(13);
+							LogicalBlocksPerPhysicalBlock_us			<= unsigned(Data(3 downto 0));
+						
+							if (Data(12) = '1') then
+								ATAWord_117_IsValid_r								<= '1';
+							else
+								ATAWord_117_IsValid_r								<= '0';
+							end if;
+						end if;
 					
 					-- ATA word 117 to 118 - words per logical sector
-					WHEN 58 =>
-						IF (Valid = '1') THEN
-							IF (ATAWord_117_IsValid_r = '1') THEN
-								FOR I IN 0 TO 15 LOOP
-									IF (Data(I + 16) = '1') THEN
-										LogicalBlockSize_ldB								<= to_unsigned(I + 1, LogicalBlockSize_ldB'length);			-- ShiftLeft(1) -> Data holds sector count in 16-Bit words
-										EXIT;
-									END IF;
-									
-									IF (I = 15) THEN
-										LogicalBlockSize_ldB								<= to_unsigned(9, LogicalBlockSize_ldB'length);
-										EXIT;
-									END IF;
-								END LOOP;
-							ELSE
-								LogicalBlockSize_ldB										<= to_unsigned(9, LogicalBlockSize_ldB'length);
-							END IF;
-						END IF;
+					when 58 =>
+						if (ATAWord_117_IsValid_r = '1') then
+							for i in 0 to 15 loop
+								if (Data(I + 16) = '1') then
+									LogicalBlockSize_ldB							<= to_unsigned(I + 1, LogicalBlockSize_ldB'length);			-- ShiftLeft(1) -> Data holds sector count in 16-Bit words
+									exit;
+								end if;
+								
+								if (I = 15) then
+									LogicalBlockSize_ldB							<= to_unsigned(9, LogicalBlockSize_ldB'length);
+									exit;
+								end if;
+							end loop;
+						else
+							LogicalBlockSize_ldB									<= to_unsigned(9, LogicalBlockSize_ldB'length);
+						end if;
 					
 					-- upper 16 Bit of words per logical sector are ignored
-	--				WHEN 59 =>
-	--					IF (Valid = '1') THEN
-	--						
-	--					END IF;
 					
 					-- calculation step
-					WHEN 60 =>
-						IF (Valid = '1') THEN
-							IF (MultipleLogicalBlocksPerPhysicalBlock = '1') THEN
-								PhysicalBlockSize_ldB									<= LogicalBlockSize_ldB - LogicalBlocksPerPhysicalBlock_us;
-							END IF;
-						END IF;
+					when 60 =>
+						if (MultipleLogicalBlocksPerPhysicalBlock = '1') then
+							PhysicalBlockSize_ldB									<= LogicalBlockSize_ldB - LogicalBlocksPerPhysicalBlock_us;
+						end if;
 					
 					-- ATA word 255 - integrity word
-					WHEN OTHERS =>
-						NULL;
+					when others =>
+						null;
 						
-				END CASE;
-			END IF;
-		END IF;
-	END PROCESS;
+				end case;
+			end if;
+		end if;
+	end process;
 	
+
 	ATACapabilities_i.SupportsDMA								<= ATACapability_SupportsDMA;
 	ATACapabilities_i.SupportsLBA								<= ATACapability_SupportsLBA;
 	ATACapabilities_i.Supports48BitLBA					<= ATACapability_Supports48BitLBA;
@@ -487,22 +375,27 @@ BEGIN
 	SATACapabilities_i.SATAGenerationMin				<= SATAGenerationMin;
 	SATACapabilities_i.SATAGenerationMax				<= SATAGenerationMax;
 		
-	DriveInformation_i.DriveName								<= DriveName;
 	DriveInformation_i.DriveSize_LB							<= DriveSize_LB;
 	DriveInformation_i.PhysicalBlockSize_ldB		<= PhysicalBlockSize_ldB;
 	DriveInformation_i.LogicalBlockSize_ldB			<= LogicalBlockSize_ldB;
 	DriveInformation_i.ATACapabilityFlags				<= ATACapabilities_i;
 	DriveInformation_i.SATACapabilityFlags			<= SATACapabilities_i;
 
+	IDF_Valid_r		<= ffrs(q => IDF_Valid_r, rst => Reset, set => Commit) when rising_edge(Clock);
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
-				DriveInformation.DriveName																			<= (OTHERS => x"00");
-				DriveInformation.DriveSize_LB																		<= (OTHERS => '0');
-				DriveInformation.PhysicalBlockSize_ldB													<= (OTHERS => '0');
-				DriveInformation.LogicalBlockSize_ldB														<= (OTHERS => '0');
+	IDF_Bus.Clock								<= Clock;
+	IDF_Bus.Address							<= std_logic_vector(WordAC_Address_us);
+	IDF_Bus.WriteEnable					<= Valid;
+	IDF_Bus.Data								<= Data;
+	IDF_Bus.Valid								<= IDF_Valid_r;
+
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
+				DriveInformation.DriveSize_LB																		<= (others => '0');
+				DriveInformation.PhysicalBlockSize_ldB													<= (others => '0');
+				DriveInformation.LogicalBlockSize_ldB														<= (others => '0');
 				
 				DriveInformation.ATACapabilityFlags.SupportsDMA									<= '0';
 				DriveInformation.ATACapabilityFlags.SupportsLBA									<= '0';
@@ -516,9 +409,8 @@ BEGIN
 				DriveInformation.SATACapabilityFlags.SATAGenerationMax					<= SATA_GENERATION_1;
 				
 				DriveInformation.Valid																					<= '0';
-			ELSE
-				IF (Commit = '1') THEN
-					DriveInformation.DriveName																		<= DriveInformation_i.DriveName;
+			else
+				if (Commit = '1') then
 					DriveInformation.DriveSize_LB																	<= DriveInformation_i.DriveSize_LB;
 					DriveInformation.PhysicalBlockSize_ldB												<= DriveInformation_i.PhysicalBlockSize_ldB;
 					DriveInformation.LogicalBlockSize_ldB													<= DriveInformation_i.LogicalBlockSize_ldB;
@@ -535,9 +427,9 @@ BEGIN
 					DriveInformation.SATACapabilityFlags.SATAGenerationMax				<= DriveInformation_i.SATACapabilityFlags.SATAGenerationMax;
 					
 					DriveInformation.Valid																				<= '1';
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
-END;
+end;

@@ -2,8 +2,6 @@
 .gitignore
 
 # subnamespace
-lut/
-ocram/
 
 # --------------------------------------
-
+lut_Sine.*

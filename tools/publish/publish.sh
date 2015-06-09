@@ -7,7 +7,7 @@
 #	Shell Script:		Publish selected parts of the PoC library to the
 #									public GitHub repository.
 #
-#	Authors:				Thomas B. Preußer
+#	Authors:				Thomas B. Preusser
 #									Patrick Lehmann
 #
 # Description:
@@ -119,8 +119,6 @@ cd ..                        # parent of repo base
 
 # add dry-run option if publish is not set (default)
 if [ "$PUBLISH" != TRUE ]; then
-	echo -e $ANSI_YELLOW "Running in dry-run mode." $ANSI_RESET
-	echo -e $ANSI_YELLOW "Use './publish.sh --publish' to disable dry-run mode." $ANSI_RESET
   rsyncOptions+=(--dry-run)
 fi
 
@@ -143,6 +141,12 @@ if [ -e "$dst" ]; then
 	fi
 else
   echo -e 1>&2 $COLORED_ERROR " Public export repository does not exist in destination $dst."
+fi
+
+# add dry-run option if publish is not set (default)
+if [ "$PUBLISH" != TRUE ]; then
+	echo -e $ANSI_YELLOW "Running in dry-run mode." $ANSI_RESET
+	echo -e $ANSI_YELLOW "Use './publish.sh --publish' to disable dry-run mode." $ANSI_RESET
 fi
 
 # Cleanup and exit

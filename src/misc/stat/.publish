@@ -1,0 +1,7 @@
+# git files
+.gitignore
+
+# statistic modules
+stat_Minimum.vhdl
+stat_Maximum.vhdl
+#stat_Average.vhdl

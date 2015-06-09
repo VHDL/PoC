@@ -103,7 +103,8 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 		ST_RESET, ST_IDLE,
 		ST_FIS_REG_HOST_DEV_WORD_0, ST_FIS_REG_HOST_DEV_WORD_1,	ST_FIS_REG_HOST_DEV_WORD_2,	ST_FIS_REG_HOST_DEV_WORD_3,	ST_FIS_REG_HOST_DEV_WORD_4,
 		ST_DATA_0, ST_DATA_N, ST_ABORT_FRAME,
-		ST_EVALUATE_FRAMESTATE
+		ST_EVALUATE_FRAMESTATE,
+		ST_STATUS_SEND_OK, ST_STATUS_SEND_ERROR, ST_STATUS_SYNC_ESC
 	);
 	
 	-- Alias-Definitions for FISType Register Transfer Host => Device (27h)
@@ -143,10 +144,10 @@ BEGIN
 
 	PROCESS(Clock)
 	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+		IF rising_edge(Clock) then
+			if (Reset = '1') then
 				State			<= ST_RESET;
-			ELSE
+			else
 				State			<= NextState;
 			END IF;
 		END IF;
@@ -211,8 +212,6 @@ BEGIN
 				CASE FISType IS
 					WHEN SATA_FISTYPE_REG_HOST_DEV =>
 						-- send "Register-FIS - Host to Device"
-						Status								<= SATA_FISE_STATUS_SENDING;
-						
 						Link_TX_Valid					<= '1';
 						Link_TX_SOF						<= '1';
 						
@@ -221,15 +220,13 @@ BEGIN
 						Alias_CommandReg			<= ATARegisters.Command;
 						Alias_FeatureReg			<= x"00";
 
-						IF (Link_TX_Ack = '1') THEN							
+						if (Link_TX_Ack = '1') then							
 							NextState						<= ST_FIS_REG_HOST_DEV_WORD_1;
-						ELSE
+						else
 							NextState						<= ST_FIS_REG_HOST_DEV_WORD_0;
 						END IF;
 					
 					WHEN SATA_FISTYPE_DATA =>
-						Status								<= SATA_FISE_STATUS_SENDING;
-					
 						-- send "Data-FIS - Host to Device"
 						Link_TX_Valid					<= '1';
 						Link_TX_SOF						<= '1';
@@ -257,7 +254,7 @@ BEGIN
 				Alias_CommandReg					<= ATARegisters.Command;
 				Alias_FeatureReg					<= x"00";
 
-				IF (Link_TX_Ack = '1') THEN					
+				if (Link_TX_Ack = '1') then					
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_1;
 				END IF;
 
@@ -271,7 +268,7 @@ BEGIN
 				Alias_Device							<=  "0";																								-- Device number
 				Alias_FlagLBA48						<= is_LBA48_Command(to_sata_ata_command(ATARegisters.Command));	-- LBA-48 adressing mode
 
-				IF (Link_TX_Ack = '1') THEN					
+				if (Link_TX_Ack = '1') then					
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_2;
 				END IF;
 					
@@ -282,7 +279,7 @@ BEGIN
 				Alias_LBA32								<= ATARegisters.LBlockAddress(39 DOWNTO 32);
 				Alias_LBA40								<= ATARegisters.LBlockAddress(47 DOWNTO 40);
 
-				IF (Link_TX_Ack = '1') THEN					
+				if (Link_TX_Ack = '1') then					
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_3;
 				END IF;
 				
@@ -293,7 +290,7 @@ BEGIN
 				Alias_SecCount8						<= ATARegisters.SectorCount(15 DOWNTO 8);					-- Sector Count expanded
 				Alias_ControlReg					<= ATARegisters.Control;													-- Control register		
 
-				IF (Link_TX_Ack = '1') THEN					
+				if (Link_TX_Ack = '1') then					
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_4;
 				END IF;
 					
@@ -301,7 +298,7 @@ BEGIN
 				Link_TX_Valid							<= '1';
 				Link_TX_EOF								<= '1';
 
-				IF (Link_TX_Ack = '1') THEN
+				if (Link_TX_Ack = '1') then
 					NextState								<= ST_EVALUATE_FRAMESTATE;
 				END IF;
 				
@@ -342,24 +339,33 @@ BEGIN
 					NextState						<= ST_EVALUATE_FRAMESTATE;
 				end if;
 				
-			WHEN ST_EVALUATE_FRAMESTATE =>
-				IF (Link_TX_FS_Valid = '1') THEN
-					IF (Link_TX_FS_SendOK = '1') THEN
+			when ST_EVALUATE_FRAMESTATE =>
+				if (Link_TX_FS_Valid = '1') then
+					if (Link_TX_FS_SendOK = '1') then
 						Link_TX_FS_Ack				<= '1';
-						Status								<= SATA_FISE_STATUS_SEND_OK;
-						NextState							<= ST_IDLE;
-					elsif (Link_TX_FS_SyncEsc = '1') THEN
+						NextState							<= ST_STATUS_SEND_OK;
+					elsif (Link_TX_FS_SyncEsc = '1') then
 						-- SyncEscape requested by device
 						Link_TX_FS_Ack				<= '1';
-						Status								<= SATA_FISE_STATUS_SYNC_ESC;
-						NextState							<= ST_IDLE;
-					ELSE
+						NextState							<= ST_STATUS_SYNC_ESC;
+					else
 						-- R_ERR signaled by other end
 						Link_TX_FS_Ack				<= '1';
-						Status								<= SATA_FISE_STATUS_SEND_ERROR;
-						NextState							<= ST_IDLE;
+						NextState							<= ST_STATUS_SEND_ERROR;
 					end if;
 				end if;
+			
+			when ST_STATUS_SEND_OK =>
+				Status								<= SATA_FISE_STATUS_SEND_OK;
+				NextState							<= ST_IDLE;
+				
+			when ST_STATUS_SEND_ERROR =>
+				Status								<= SATA_FISE_STATUS_SEND_ERROR;
+				NextState							<= ST_IDLE;
+				
+			when ST_STATUS_SYNC_ESC =>
+				Status								<= SATA_FISE_STATUS_SYNC_ESC;
+				NextState							<= ST_IDLE;
 			
 		end case;
 	end process;
