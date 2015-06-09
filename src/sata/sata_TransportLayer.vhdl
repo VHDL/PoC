@@ -18,6 +18,22 @@
 --
 -- Configuration
 -- -------------
+-- DEV_INIT_TIMEOUT:  Maximum time to wait for the initial register FIS after
+--   the link has been established. During this period, the device boots its
+--   firmware and may execute a (short) self diagnostic.
+--
+-- NODATA_RETRY_TIMEOUT: For ATA commands of category NO-DATA:
+--   a) maximum time to transmit register FIS (ATA command) to the device,
+--      including necessary retries, as well as
+--   b) maximum time to wait for a correct register FIS (ATA command completion
+--      status) from the device after it was once corrupted  (e.g. CRC error).
+--
+--   Note: This timeout does not cover the execution time of the ATA command
+--   required by the device (time between a) and b) defined above). This is because
+--   the execution time highly depends on the ATA command and drive
+--   characteristics. A FLUSH CACHE might complete in some seconds, a (full)
+--   DRIVE DIAGNOSTICS may take several minutes.
+--
 -- DATA_READ_TIMEOUT: Maximum time to wait for a data FIS and the final
 --   register FIS from the device during reads (PIO or DMA).
 --
@@ -73,8 +89,10 @@ use			PoC.satadbg.all;
 
 entity sata_TransportLayer is
   generic (
-		DATA_READ_TIMEOUT 							: TIME 							:= 1 sec;
-		DATA_WRITE_TIMEOUT 							: TIME 							:= 1 sec;
+		DEV_INIT_TIMEOUT 								: TIME 							:= 500 ms;
+		NODATA_RETRY_TIMEOUT 						: TIME 							:=   1 ms;
+		DATA_READ_TIMEOUT 							: TIME 							:= 100 ms;
+		DATA_WRITE_TIMEOUT 							: TIME 							:= 100 ms;
 		DEBUG														: BOOLEAN						:= FALSE;					-- generate ChipScope DBG_* signals
 		ENABLE_DEBUGPORT								: BOOLEAN						:= FALSE;
 		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: BOOLEAN						:= TRUE						-- required by ATA/SATA standard
