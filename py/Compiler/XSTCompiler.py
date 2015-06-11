@@ -95,8 +95,9 @@ class Compiler(PoCCompiler):
 			
 		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.host.netListConfig['SPECIAL'] = {}
-		self.host.netListConfig['SPECIAL']['Device']		= deviceString
-		self.host.netListConfig['SPECIAL']['OutputDir']	= tempXstPath.as_posix()
+		self.host.netListConfig['SPECIAL']['Device'] =				deviceString
+		self.host.netListConfig['SPECIAL']['DeviceSeries'] =	device.series()
+		self.host.netListConfig['SPECIAL']['OutputDir']	=			tempXstPath.as_posix()
 		
 		# read copy tasks
 		# copyFileList = self.host.netListConfig[str(pocEntity)]['Copy']
@@ -128,94 +129,94 @@ class Compiler(PoCCompiler):
 		fileListFilePath =		self.host.directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['FileListFile']
 		xcfFilePath =					self.host.directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['XSTConstraintsFile']
 		filterFilePath =			self.host.directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['XSTFilterFile']
-		xstOptionsFilePath =	self.host.directories["XSTFiles"] / self.host.netListConfig[str(pocEntity)]['XSTOptionsFile']
-		xstTemplateFilePath =	self.host.directories["XSTFiles"] / "template.xst"
+		#xstOptionsFilePath =	self.host.directories["XSTFiles"] / self.host.netListConfig[str(pocEntity)]['XSTOptionsFile']
+		xstTemplateFilePath =	self.host.directories["XSTFiles"] / self.host.netListConfig[str(pocEntity)]['XSTOptionsFile']
 		xstFilePath =					tempXstPath / (topModuleName + ".xst")
 		prjFilePath =					tempXstPath / (topModuleName + ".prj")
 		reportFilePath =			tempXstPath / (topModuleName + ".log")
 
-		if (not xstOptionsFilePath.exists()):
-			# read/write XST options file
-			self.printDebug("Reading Xilinx Compiler Tool option file from '%s'" % str(xstTemplateFilePath))
-			with xstTemplateFilePath.open('r') as xstFileHandle:
-				xstFileContent = xstFileHandle.read()
-				
-			xstTemplateDictionary = {
-				'prjFile' :													str(prjFilePath),
-				'UseNewParser' :										self.host.netListConfig[str(pocEntity)]['XSTOption.UseNewParser'],
-				'InputFormat' :											self.host.netListConfig[str(pocEntity)]['XSTOption.InputFormat'],
-				'OutputFormat' :										self.host.netListConfig[str(pocEntity)]['XSTOption.OutputFormat'],
-				'OutputName' :											topModuleName,
-				'Part' :														str(device),
-				'TopModuleName' :										topModuleName,
-				'OptimizationMode' :								self.host.netListConfig[str(pocEntity)]['XSTOption.OptimizationMode'],
-				'OptimizationLevel' :								self.host.netListConfig[str(pocEntity)]['XSTOption.OptimizationLevel'],
-				'PowerReduction' :									self.host.netListConfig[str(pocEntity)]['XSTOption.PowerReduction'],
-				'IgnoreSynthesisConstraintsFile' :	self.host.netListConfig[str(pocEntity)]['XSTOption.IgnoreSynthesisConstraintsFile'],
-				'SynthesisConstraintsFile' :				str(xcfFilePath),
-				'KeepHierarchy' :										self.host.netListConfig[str(pocEntity)]['XSTOption.KeepHierarchy'],
-				'NetListHierarchy' :								self.host.netListConfig[str(pocEntity)]['XSTOption.NetListHierarchy'],
-				'GenerateRTLView' :									self.host.netListConfig[str(pocEntity)]['XSTOption.GenerateRTLView'],
-				'GlobalOptimization' :							self.host.netListConfig[str(pocEntity)]['XSTOption.Globaloptimization'],
-				'ReadCores' :												self.host.netListConfig[str(pocEntity)]['XSTOption.ReadCores'],
-				'SearchDirectories' :								'"%s"' % str(xstOutputPath),
-				'WriteTimingConstraints' :					self.host.netListConfig[str(pocEntity)]['XSTOption.WriteTimingConstraints'],
-				'CrossClockAnalysis' :							self.host.netListConfig[str(pocEntity)]['XSTOption.CrossClockAnalysis'],
-				'HierarchySeparator' :							self.host.netListConfig[str(pocEntity)]['XSTOption.HierarchySeparator'],
-				'BusDelimiter' :										self.host.netListConfig[str(pocEntity)]['XSTOption.BusDelimiter'],
-				'Case' :														self.host.netListConfig[str(pocEntity)]['XSTOption.Case'],
-				'SliceUtilizationRatio' :						self.host.netListConfig[str(pocEntity)]['XSTOption.SliceUtilizationRatio'],
-				'BRAMUtilizationRatio' :						self.host.netListConfig[str(pocEntity)]['XSTOption.BRAMUtilizationRatio'],
-				'DSPUtilizationRatio' :							self.host.netListConfig[str(pocEntity)]['XSTOption.DSPUtilizationRatio'],
-				'LUTCombining' :										self.host.netListConfig[str(pocEntity)]['XSTOption.LUTCombining'],
-				'ReduceControlSets' :								self.host.netListConfig[str(pocEntity)]['XSTOption.ReduceControlSets'],
-				'Verilog2001' :											self.host.netListConfig[str(pocEntity)]['XSTOption.Verilog2001'],
-				'FSMExtract' :											self.host.netListConfig[str(pocEntity)]['XSTOption.FSMExtract'],
-				'FSMEncoding' :											self.host.netListConfig[str(pocEntity)]['XSTOption.FSMEncoding'],
-				'FSMSafeImplementation' :						self.host.netListConfig[str(pocEntity)]['XSTOption.FSMSafeImplementation'],
-				'FSMStyle' :												self.host.netListConfig[str(pocEntity)]['XSTOption.FSMStyle'],
-				'RAMExtract' :											self.host.netListConfig[str(pocEntity)]['XSTOption.RAMExtract'],
-				'RAMStyle' :												self.host.netListConfig[str(pocEntity)]['XSTOption.RAMStyle'],
-				'ROMExtract' :											self.host.netListConfig[str(pocEntity)]['XSTOption.ROMExtract'],
-				'ROMStyle' :												self.host.netListConfig[str(pocEntity)]['XSTOption.ROMStyle'],
-				'MUXExtract' :											self.host.netListConfig[str(pocEntity)]['XSTOption.MUXExtract'],
-				'MUXStyle' :												self.host.netListConfig[str(pocEntity)]['XSTOption.MUXStyle'],
-				'DecoderExtract' :									self.host.netListConfig[str(pocEntity)]['XSTOption.DecoderExtract'],
-				'PriorityExtract' :									self.host.netListConfig[str(pocEntity)]['XSTOption.PriorityExtract'],
-				'ShRegExtract' :										self.host.netListConfig[str(pocEntity)]['XSTOption.ShRegExtract'],
-				'ShiftExtract' :										self.host.netListConfig[str(pocEntity)]['XSTOption.ShiftExtract'],
-				'XorCollapse' :											self.host.netListConfig[str(pocEntity)]['XSTOption.XorCollapse'],
-				'AutoBRAMPacking' :									self.host.netListConfig[str(pocEntity)]['XSTOption.AutoBRAMPacking'],
-				'ResourceSharing' :									self.host.netListConfig[str(pocEntity)]['XSTOption.ResourceSharing'],
-				'ASyncToSync' :											self.host.netListConfig[str(pocEntity)]['XSTOption.ASyncToSync'],
-				'UseDSP48' :												self.host.netListConfig[str(pocEntity)]['XSTOption.UseDSP48'],
-				'IOBuf' :														self.host.netListConfig[str(pocEntity)]['XSTOption.IOBuf'],
-				'MaxFanOut' :												self.host.netListConfig[str(pocEntity)]['XSTOption.MaxFanOut'],
-				'BufG' :														self.host.netListConfig[str(pocEntity)]['XSTOption.BufG'],
-				'RegisterDuplication' :							self.host.netListConfig[str(pocEntity)]['XSTOption.RegisterDuplication'],
-				'RegisterBalancing' :								self.host.netListConfig[str(pocEntity)]['XSTOption.RegisterBalancing'],
-				'SlicePacking' :										self.host.netListConfig[str(pocEntity)]['XSTOption.SlicePacking'],
-				'OptimizePrimitives' :							self.host.netListConfig[str(pocEntity)]['XSTOption.OptimizePrimitives'],
-				'UseClockEnable' :									self.host.netListConfig[str(pocEntity)]['XSTOption.UseClockEnable'],
-				'UseSyncSet' :											self.host.netListConfig[str(pocEntity)]['XSTOption.UseSyncSet'],
-				'UseSyncReset' :										self.host.netListConfig[str(pocEntity)]['XSTOption.UseSyncReset'],
-				'PackIORegistersIntoIOBs' :					self.host.netListConfig[str(pocEntity)]['XSTOption.PackIORegistersIntoIOBs'],
-				'EquivalentRegisterRemoval' :				self.host.netListConfig[str(pocEntity)]['XSTOption.EquivalentRegisterRemoval'],
-				'SliceUtilizationRatioMaxMargin' :	self.host.netListConfig[str(pocEntity)]['XSTOption.SliceUtilizationRatioMaxMargin']
-			}
+		#if (not xstOptionsFilePath.exists()):
+		# read/write XST options file
+		self.printDebug("Reading Xilinx Compiler Tool option file from '%s'" % str(xstTemplateFilePath))
+		with xstTemplateFilePath.open('r') as xstFileHandle:
+			xstFileContent = xstFileHandle.read()
 			
-			xstFileContent = xstFileContent.format(**xstTemplateDictionary)
-			
-			if (self.host.netListConfig.has_option(str(pocEntity), 'XSTOption.Generics')):
-				xstFileContent += "-generics { %s }" % self.host.netListConfig[str(pocEntity)]['XSTOption.Generics']
-	
-			self.printDebug("Writing Xilinx Compiler Tool option file to '%s'" % str(xstFilePath))
-			with xstFilePath.open('w') as xstFileHandle:
-				xstFileHandle.write(xstFileContent)
+		xstTemplateDictionary = {
+			'prjFile' :													str(prjFilePath),
+			'UseNewParser' :										self.host.netListConfig[str(pocEntity)]['XSTOption.UseNewParser'],
+			'InputFormat' :											self.host.netListConfig[str(pocEntity)]['XSTOption.InputFormat'],
+			'OutputFormat' :										self.host.netListConfig[str(pocEntity)]['XSTOption.OutputFormat'],
+			'OutputName' :											topModuleName,
+			'Part' :														str(device),
+			'TopModuleName' :										topModuleName,
+			'OptimizationMode' :								self.host.netListConfig[str(pocEntity)]['XSTOption.OptimizationMode'],
+			'OptimizationLevel' :								self.host.netListConfig[str(pocEntity)]['XSTOption.OptimizationLevel'],
+			'PowerReduction' :									self.host.netListConfig[str(pocEntity)]['XSTOption.PowerReduction'],
+			'IgnoreSynthesisConstraintsFile' :	self.host.netListConfig[str(pocEntity)]['XSTOption.IgnoreSynthesisConstraintsFile'],
+			'SynthesisConstraintsFile' :				str(xcfFilePath),
+			'KeepHierarchy' :										self.host.netListConfig[str(pocEntity)]['XSTOption.KeepHierarchy'],
+			'NetListHierarchy' :								self.host.netListConfig[str(pocEntity)]['XSTOption.NetListHierarchy'],
+			'GenerateRTLView' :									self.host.netListConfig[str(pocEntity)]['XSTOption.GenerateRTLView'],
+			'GlobalOptimization' :							self.host.netListConfig[str(pocEntity)]['XSTOption.Globaloptimization'],
+			'ReadCores' :												self.host.netListConfig[str(pocEntity)]['XSTOption.ReadCores'],
+			'SearchDirectories' :								'"%s"' % str(xstOutputPath),
+			'WriteTimingConstraints' :					self.host.netListConfig[str(pocEntity)]['XSTOption.WriteTimingConstraints'],
+			'CrossClockAnalysis' :							self.host.netListConfig[str(pocEntity)]['XSTOption.CrossClockAnalysis'],
+			'HierarchySeparator' :							self.host.netListConfig[str(pocEntity)]['XSTOption.HierarchySeparator'],
+			'BusDelimiter' :										self.host.netListConfig[str(pocEntity)]['XSTOption.BusDelimiter'],
+			'Case' :														self.host.netListConfig[str(pocEntity)]['XSTOption.Case'],
+			'SliceUtilizationRatio' :						self.host.netListConfig[str(pocEntity)]['XSTOption.SliceUtilizationRatio'],
+			'BRAMUtilizationRatio' :						self.host.netListConfig[str(pocEntity)]['XSTOption.BRAMUtilizationRatio'],
+			'DSPUtilizationRatio' :							self.host.netListConfig[str(pocEntity)]['XSTOption.DSPUtilizationRatio'],
+			'LUTCombining' :										self.host.netListConfig[str(pocEntity)]['XSTOption.LUTCombining'],
+			'ReduceControlSets' :								self.host.netListConfig[str(pocEntity)]['XSTOption.ReduceControlSets'],
+			'Verilog2001' :											self.host.netListConfig[str(pocEntity)]['XSTOption.Verilog2001'],
+			'FSMExtract' :											self.host.netListConfig[str(pocEntity)]['XSTOption.FSMExtract'],
+			'FSMEncoding' :											self.host.netListConfig[str(pocEntity)]['XSTOption.FSMEncoding'],
+			'FSMSafeImplementation' :						self.host.netListConfig[str(pocEntity)]['XSTOption.FSMSafeImplementation'],
+			'FSMStyle' :												self.host.netListConfig[str(pocEntity)]['XSTOption.FSMStyle'],
+			'RAMExtract' :											self.host.netListConfig[str(pocEntity)]['XSTOption.RAMExtract'],
+			'RAMStyle' :												self.host.netListConfig[str(pocEntity)]['XSTOption.RAMStyle'],
+			'ROMExtract' :											self.host.netListConfig[str(pocEntity)]['XSTOption.ROMExtract'],
+			'ROMStyle' :												self.host.netListConfig[str(pocEntity)]['XSTOption.ROMStyle'],
+			'MUXExtract' :											self.host.netListConfig[str(pocEntity)]['XSTOption.MUXExtract'],
+			'MUXStyle' :												self.host.netListConfig[str(pocEntity)]['XSTOption.MUXStyle'],
+			'DecoderExtract' :									self.host.netListConfig[str(pocEntity)]['XSTOption.DecoderExtract'],
+			'PriorityExtract' :									self.host.netListConfig[str(pocEntity)]['XSTOption.PriorityExtract'],
+			'ShRegExtract' :										self.host.netListConfig[str(pocEntity)]['XSTOption.ShRegExtract'],
+			'ShiftExtract' :										self.host.netListConfig[str(pocEntity)]['XSTOption.ShiftExtract'],
+			'XorCollapse' :											self.host.netListConfig[str(pocEntity)]['XSTOption.XorCollapse'],
+			'AutoBRAMPacking' :									self.host.netListConfig[str(pocEntity)]['XSTOption.AutoBRAMPacking'],
+			'ResourceSharing' :									self.host.netListConfig[str(pocEntity)]['XSTOption.ResourceSharing'],
+			'ASyncToSync' :											self.host.netListConfig[str(pocEntity)]['XSTOption.ASyncToSync'],
+			'UseDSP48' :												self.host.netListConfig[str(pocEntity)]['XSTOption.UseDSP48'],
+			'IOBuf' :														self.host.netListConfig[str(pocEntity)]['XSTOption.IOBuf'],
+			'MaxFanOut' :												self.host.netListConfig[str(pocEntity)]['XSTOption.MaxFanOut'],
+			'BufG' :														self.host.netListConfig[str(pocEntity)]['XSTOption.BufG'],
+			'RegisterDuplication' :							self.host.netListConfig[str(pocEntity)]['XSTOption.RegisterDuplication'],
+			'RegisterBalancing' :								self.host.netListConfig[str(pocEntity)]['XSTOption.RegisterBalancing'],
+			'SlicePacking' :										self.host.netListConfig[str(pocEntity)]['XSTOption.SlicePacking'],
+			'OptimizePrimitives' :							self.host.netListConfig[str(pocEntity)]['XSTOption.OptimizePrimitives'],
+			'UseClockEnable' :									self.host.netListConfig[str(pocEntity)]['XSTOption.UseClockEnable'],
+			'UseSyncSet' :											self.host.netListConfig[str(pocEntity)]['XSTOption.UseSyncSet'],
+			'UseSyncReset' :										self.host.netListConfig[str(pocEntity)]['XSTOption.UseSyncReset'],
+			'PackIORegistersIntoIOBs' :					self.host.netListConfig[str(pocEntity)]['XSTOption.PackIORegistersIntoIOBs'],
+			'EquivalentRegisterRemoval' :				self.host.netListConfig[str(pocEntity)]['XSTOption.EquivalentRegisterRemoval'],
+			'SliceUtilizationRatioMaxMargin' :	self.host.netListConfig[str(pocEntity)]['XSTOption.SliceUtilizationRatioMaxMargin']
+		}
 		
-		else:		# xstFilePath exists
-			self.printDebug("Copy XST options file from '%s' to '%s'" % (str(xstOptionsFilePath), str(xstFilePath)))
-			shutil.copy(str(xstOptionsFilePath), str(xstFilePath))
+		xstFileContent = xstFileContent.format(**xstTemplateDictionary)
+		
+		if (self.host.netListConfig.has_option(str(pocEntity), 'XSTOption.Generics')):
+			xstFileContent += "-generics { %s }" % self.host.netListConfig[str(pocEntity)]['XSTOption.Generics']
+
+		self.printDebug("Writing Xilinx Compiler Tool option file to '%s'" % str(xstFilePath))
+		with xstFilePath.open('w') as xstFileHandle:
+			xstFileHandle.write(xstFileContent)
+	
+#		else:		# xstFilePath exists
+#			self.printDebug("Copy XST options file from '%s' to '%s'" % (str(xstOptionsFilePath), str(xstFilePath)))
+#			shutil.copy(str(xstOptionsFilePath), str(xstFilePath))
 		
 		# parse project filelist
 		filesLineRegExpStr =	r"\s*(?P<Keyword>(vhdl(\-(87|93|02|08))?|xilinx))"		# Keywords: vhdl[-nn], xilinx
