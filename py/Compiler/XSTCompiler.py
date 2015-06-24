@@ -5,7 +5,7 @@
 # ==============================================================================
 # Authors:				 	Patrick Lehmann
 # 
-# Python Class:			TODO
+# Python Class:			This PoCXCOCompiler compiles xco IPCores to netlists
 # 
 # Description:
 # ------------------------------------
@@ -39,7 +39,7 @@ else:
 	from sys import exit
 
 	print("=" * 80)
-	print("{: ^80s}".format("The PoC Library - Python Module XSTCompiler"))
+	print("{: ^80s}".format("The PoC Library - Python Class Compiler(PoCCompiler)"))
 	print("=" * 80)
 	print()
 	print("This is no executable file!")
@@ -53,15 +53,18 @@ from Compiler.Exceptions import *
 
 class Compiler(PoCCompiler):
 
-	executables = {}
+	__executables = {}
 
 	def __init__(self, host, showLogs, showReport):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
-		self.__executables = {
-			'XST' :	("xst.exe"	if (host.platform == "Windows") else "xst")
-		}
-		
+		if (host.platform == "Windows"):
+			self.__executables['XST'] =	"xst.exe"
+		elif (host.platform == "Linux"):
+			self.__executables['XST'] =	"xst"
+		else:
+			raise PlatformNotSupportedException(self.platform)
+
 	def run(self, pocEntity, device):
 		import os
 		import re
@@ -77,36 +80,46 @@ class Compiler(PoCCompiler):
 		deviceSection = "Device." + deviceString
 		
 		# create temporary directory for XST if not existent
-		tempXSTPath = self.host.directories["XSTTemp"]
-		if not (tempXSTPath).exists():
-			self.printVerbose("Creating temporary directory for core generator files.")
-			self.printDebug("Temporary directors: %s" % str(tempXSTPath))
-			tempXSTPath.mkdir(parents=True)
+		tempXstPath = self.host.directories["XSTTemp"]
+		if not (tempXstPath).exists():
+			self.printVerbose("Creating temporary directory for XST files.")
+			self.printDebug("Temporary directors: %s" % str(tempXstPath))
+			tempXstPath.mkdir(parents=True)
 
-		# create output directory for XST if not existent
-		coreGenOutputPath = self.host.directories["PoCNetList"] / deviceString
-		if not (coreGenOutputPath).exists():
-			self.printVerbose("Creating temporary directory for core generator files.")
-			self.printDebug("Temporary directors: %s" % str(coreGenOutputPath))
-			coreGenOutputPath.mkdir(parents=True)
+		# create output directory for CoreGen if not existent
+		xstOutputPath = self.host.directories["PoCNetList"] / deviceString
+		if not (xstOutputPath).exists():
+			self.printVerbose("Creating temporary directory for XST files.")
+			self.printDebug("Temporary directors: %s" % str(xstOutputPath))
+			xstOutputPath.mkdir(parents=True)
 			
 		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.host.netListConfig['SPECIAL'] = {}
-		self.host.netListConfig['SPECIAL']['Device'] = deviceString
-		self.host.netListConfig['SPECIAL']['OutputDir'] = tempXSTPath.as_posix()
+		self.host.netListConfig['SPECIAL']['Device'] =				deviceString
+		self.host.netListConfig['SPECIAL']['DeviceSeries'] =	device.series()
+		self.host.netListConfig['SPECIAL']['OutputDir']	=			tempXstPath.as_posix()
 		
 		# read copy tasks
-#		copyFileList = self.host.netListConfig[str(pocEntity)]['Copy']
-#		self.printDebug("CopyTasks: \n  " + ("\n  ".join(copyFileList.split("\n"))))
-#		copyTasks = []
-#		for item in copyFileList.split("\n"):
-#			list1 = re.split("\s+->\s+", item)
-#			if (len(list1) != 2):				raise PoCCompiler.PoCCompilerException("Expected 2 arguments for every copy task!")
-#			
-#			copyTasks.append((Path(list1[0]), Path(list1[1])))
-		
-		# setup all needed paths to execute XST
+		# copyFileList = self.host.netListConfig[str(pocEntity)]['Copy']
+		# self.printDebug("CopyTasks: \n  " + ("\n  ".join(copyFileList.split("\n"))))
+		# copyTasks = []
+		# for item in copyFileList.split("\n"):
+		# 	list1 = re.split("\s+->\s+", item)
+		# 	if (len(list1) != 2): raise CompilerException("Expected 2 arguments for every copy task!")
+		# 	
+		# 	copyTasks.append((Path(list1[0]), Path(list1[1])))
+				
+		# setup all needed paths to execute coreGen
 		xstExecutablePath =		self.host.directories["ISEBinary"] / self.__executables['XST']
+		
+#		# read netlist settings from configuration file
+#		ipCoreName =					self.host.netListConfig[str(pocEntity)]['IPCoreName']
+#		xcoInputFilePath =		self.host.directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['XstFile']
+#		cgcTemplateFilePath =	self.host.directories["PoCNetList"] / "template.cgc"
+#		cgpFilePath =					xstGenPath / "coregen.cgp"
+#		cgcFilePath =					xstGenPath / "coregen.cgc"
+#		xcoFilePath =					xstGenPath / xcoInputFilePath.name
+
 		
 		# read netlist settings from configuration file
 		if (self.host.netListConfig[str(pocEntity)]['Type'] != "XilinxSynthesis"):
@@ -116,11 +129,13 @@ class Compiler(PoCCompiler):
 		fileListFilePath =		self.host.directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['FileListFile']
 		xcfFilePath =					self.host.directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['XSTConstraintsFile']
 		filterFilePath =			self.host.directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['XSTFilterFile']
-		xstTemplateFilePath =	self.host.directories["XSTFiles"] / "template.xst"
-		xstFilePath =					tempXSTPath / (topModuleName + ".xst")
-		prjFilePath =					tempXSTPath / (topModuleName + ".prj")
-		reportFilePath =			tempXSTPath / (topModuleName + ".log")
+		#xstOptionsFilePath =	self.host.directories["XSTFiles"] / self.host.netListConfig[str(pocEntity)]['XSTOptionsFile']
+		xstTemplateFilePath =	self.host.directories["XSTFiles"] / self.host.netListConfig[str(pocEntity)]['XSTOptionsFile']
+		xstFilePath =					tempXstPath / (topModuleName + ".xst")
+		prjFilePath =					tempXstPath / (topModuleName + ".prj")
+		reportFilePath =			tempXstPath / (topModuleName + ".log")
 
+		#if (not xstOptionsFilePath.exists()):
 		# read/write XST options file
 		self.printDebug("Reading Xilinx Compiler Tool option file from '%s'" % str(xstTemplateFilePath))
 		with xstTemplateFilePath.open('r') as xstFileHandle:
@@ -131,6 +146,7 @@ class Compiler(PoCCompiler):
 			'UseNewParser' :										self.host.netListConfig[str(pocEntity)]['XSTOption.UseNewParser'],
 			'InputFormat' :											self.host.netListConfig[str(pocEntity)]['XSTOption.InputFormat'],
 			'OutputFormat' :										self.host.netListConfig[str(pocEntity)]['XSTOption.OutputFormat'],
+			'OutputName' :											topModuleName,
 			'Part' :														str(device),
 			'TopModuleName' :										topModuleName,
 			'OptimizationMode' :								self.host.netListConfig[str(pocEntity)]['XSTOption.OptimizationMode'],
@@ -143,7 +159,7 @@ class Compiler(PoCCompiler):
 			'GenerateRTLView' :									self.host.netListConfig[str(pocEntity)]['XSTOption.GenerateRTLView'],
 			'GlobalOptimization' :							self.host.netListConfig[str(pocEntity)]['XSTOption.Globaloptimization'],
 			'ReadCores' :												self.host.netListConfig[str(pocEntity)]['XSTOption.ReadCores'],
-			'SearchDirectories' :								'"%s"' % str(coreGenOutputPath),
+			'SearchDirectories' :								'"%s"' % str(xstOutputPath),
 			'WriteTimingConstraints' :					self.host.netListConfig[str(pocEntity)]['XSTOption.WriteTimingConstraints'],
 			'CrossClockAnalysis' :							self.host.netListConfig[str(pocEntity)]['XSTOption.CrossClockAnalysis'],
 			'HierarchySeparator' :							self.host.netListConfig[str(pocEntity)]['XSTOption.HierarchySeparator'],
@@ -197,36 +213,45 @@ class Compiler(PoCCompiler):
 		self.printDebug("Writing Xilinx Compiler Tool option file to '%s'" % str(xstFilePath))
 		with xstFilePath.open('w') as xstFileHandle:
 			xstFileHandle.write(xstFileContent)
+	
+#		else:		# xstFilePath exists
+#			self.printDebug("Copy XST options file from '%s' to '%s'" % (str(xstOptionsFilePath), str(xstFilePath)))
+#			shutil.copy(str(xstOptionsFilePath), str(xstFilePath))
 		
 		# parse project filelist
-		regExpStr =	 r"\s*(?P<Keyword>(vhdl|xilinx))"				# Keywords: vhdl, xilinx
-		regExpStr += r"\s+(?P<VHDLLibrary>[_a-zA-Z0-9]+)"		#	VHDL library name
-		regExpStr += r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
-		regExp = re.compile(regExpStr)
+		filesLineRegExpStr =	r"\s*(?P<Keyword>(vhdl(\-(87|93|02|08))?|xilinx))"		# Keywords: vhdl[-nn], xilinx
+		filesLineRegExpStr += r"\s+(?P<VHDLLibrary>[_a-zA-Z0-9]+)"									#	VHDL library name
+		filesLineRegExpStr += r"\s+\"(?P<VHDLFile>.*?)\""														# VHDL filename without "-signs
+		filesLineRegExp = re.compile(filesLineRegExpStr)
 
 		self.printDebug("Reading filelist '%s'" % str(fileListFilePath))
 		xstProjectFileContent = ""
 		with fileListFilePath.open('r') as prjFileHandle:
 			for line in prjFileHandle:
-				regExpMatch = regExp.match(line)
+				filesLineRegExpMatch = filesLineRegExp.match(line)
 				
-				if (regExpMatch is not None):
-					if (regExpMatch.group('Keyword') == "vhdl"):
-						vhdlFilePath = self.host.directories["PoCRoot"] / regExpMatch.group('VHDLFile')
-					elif (regExpMatch.group('Keyword') == "xilinx"):
-						vhdlFilePath = self.host.directories["ISEInstallation"] / "ISE/vhdl/src" / regExpMatch.group('VHDLFile')
-					vhdlLibraryName = regExpMatch.group('VHDLLibrary')
+				if (filesLineRegExpMatch is not None):
+					if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
+						vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
+					elif (filesLineRegExpMatch.group('Keyword')[0:5] == "vhdl-"):
+						if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
+							vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
+					elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
+						vhdlFilePath = self.host.directories["ISEInstallation"] / "ISE/vhdl/src" / filesLineRegExpMatch.group('VHDLFile')
+					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
 					xstProjectFileContent += "vhdl %s \"%s\"\n" % (vhdlLibraryName, str(vhdlFilePath))
+					
+					if (not vhdlFilePath.exists()):
+						raise CompilerException("Can not find " + str(vhdlFilePath)) from FileNotFoundError(str(vhdlFilePath))
 		
-		# write XST project file
+		# write iSim project file
 		self.printDebug("Writing XST project file to '%s'" % str(prjFilePath))
 		with prjFilePath.open('w') as prjFileHandle:
 			prjFileHandle.write(xstProjectFileContent)
-		
-		
+
 		# change working directory to temporary XST path
-		self.printVerbose('    cd "%s"' % str(tempXSTPath))
-		os.chdir(str(tempXSTPath))
+		self.printVerbose('    cd "%s"' % str(tempXstPath))
+		os.chdir(str(tempXstPath))
 		
 		# running XST
 		# ==========================================================================
@@ -242,14 +267,20 @@ class Compiler(PoCCompiler):
 		self.printDebug("call xst: %s" % str(parameterList))
 		self.printVerbose('    %s -intstyle xflow -filter "%s" -ifn "%s" -ofn "%s"' % (str(xstExecutablePath), str(fileListFilePath), str(xstFilePath), str(reportFilePath)))
 		if (self.dryRun == False):
-			xstLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
-		
+			try:
+				xstLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
+			except subprocess.CalledProcessError as ex:
+				print("ERROR while executing XST")
+				print("Return Code: %i" % ex.returncode)
+				print("--------------------------------------------------------------------------------")
+				print(ex.output)
+			
 			if self.showLogs:
-				print("Compiler log (XST)")
+				print("XST log file:")
 				print("--------------------------------------------------------------------------------")
 				print(xstLog)
 				print()
-		
+			
 		print("return...")
 		return
 		

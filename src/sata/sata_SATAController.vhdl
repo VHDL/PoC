@@ -112,47 +112,47 @@ ENTITY sata_SATAController IS
 		ENABLE_GLUE_FIFOS								: T_BOOLVEC										:= (0 => FALSE,									1 => FALSE)
 	);
 	PORT (
-		ClockNetwork_Reset					: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @async:			asynchronous reset
-		ClockNetwork_ResetDone			: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @async:			all clocks are stable
-		PowerDown										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @async:			
-		Reset												: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @SATA_Clock:	synchronous reset, done in next cycle
-		ResetDone										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @SATA_Clock: layers have been resetted after powerup / hard reset
+		ClockNetwork_Reset					: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:			asynchronous reset
+		ClockNetwork_ResetDone			: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:			all clocks are stable
+		PowerDown										: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:			
+		Reset												: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @SATA_Clock:	synchronous reset, done in next cycle
+		ResetDone										: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @SATA_Clock: layers have been resetted after powerup / hard reset
 		
-		SATAGenerationMin						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);		-- 
-		SATAGenerationMax						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);		-- 
-		SATAGeneration          	  : OUT T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
+		SATAGenerationMin						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);		-- 
+		SATAGenerationMax						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);		-- 
+		SATAGeneration          	  : OUT T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
 		
-		SATA_Clock									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		SATA_Clock_Stable						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SATA_Clock									: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		SATA_Clock_Stable						: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		
-		Command											: IN	T_SATA_TRANS_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
-		Status											: OUT T_SATA_SATACONTROLLER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-		Error												: OUT	T_SATA_SATACONTROLLER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-		ATAHostRegisters						: in	T_SATA_ATA_HOST_REGISTERS_VECTOR(PORTS - 1 DOWNTO 0);
-		ATADeviceRegisters					: out	T_SATA_ATA_DEVICE_REGISTERS_VECTOR(PORTS - 1 DOWNTO 0);
+		Command											: IN	T_SATA_TRANS_COMMAND_VECTOR(PORTS - 1 downto 0);
+		Status											: OUT T_SATA_SATACONTROLLER_STATUS_VECTOR(PORTS - 1 downto 0);
+		Error												: OUT	T_SATA_SATACONTROLLER_ERROR_VECTOR(PORTS - 1 downto 0);
+		ATAHostRegisters						: in	T_SATA_ATA_HOST_REGISTERS_VECTOR(PORTS - 1 downto 0);
+		ATADeviceRegisters					: out	T_SATA_ATA_DEVICE_REGISTERS_VECTOR(PORTS - 1 downto 0);
 
 		-- Debug ports
-		DebugPortIn									: IN	T_SATADBG_SATACONTROLLER_IN_VECTOR(PORTS - 1 DOWNTO 0);
-		DebugPortOut								: OUT	T_SATADBG_SATACONTROLLER_OUT_VECTOR(PORTS - 1 DOWNTO 0);
+		DebugPortIn									: IN	T_SATADBG_SATACONTROLLER_IN_VECTOR(PORTS - 1 downto 0);
+		DebugPortOut								: OUT	T_SATADBG_SATACONTROLLER_OUT_VECTOR(PORTS - 1 downto 0);
     
 		-- TX port
-		TX_SOT											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_EOT											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_Valid										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		TX_Data											: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		TX_Ack											: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		TX_SOT											: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_EOT											: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_Valid										: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_Data											: IN	T_SLVV_32(PORTS - 1 downto 0);
+		TX_Ack											: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		
 		-- RX port
-		RX_SOT											: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RX_EOT											: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RX_Valid										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RX_Data											: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		RX_Ack											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_SOT											: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_EOT											: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_Valid										: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_Data											: OUT	T_SLVV_32(PORTS - 1 downto 0);
+		RX_Ack											: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		
 		-- vendor specific signals
 		VSS_Common_In								: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
-		VSS_Private_In							: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS - 1 DOWNTO 0);
-		VSS_Private_Out							: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0)
+		VSS_Private_In							: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS - 1 downto 0);
+		VSS_Private_Out							: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 	);
 END;
 
@@ -170,48 +170,48 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	CONSTANT MAX_FRAME_SIZE_I								: T_MEMVEC(0 TO PORTS - 1)									:= MAX_FRAME_SIZE(0 TO PORTS - 1);
 
 	-- Clocking & ResetDone, provided by transceiver layer
-	signal SATA_Clock_i									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	signal SATA_Clock_Stable_i					: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	signal SATA_Clock_i									: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal SATA_Clock_Stable_i					: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 	
 	-- physical layer <=> transceiver layer signals
-	signal Phy_RP_Reconfig										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	signal Phy_RP_SATAGeneration							: T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
-	signal Transceiver_RP_ConfigReloaded			: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	signal Phy_RP_Lock												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	signal Phy_RP_Reconfig										: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal Phy_RP_SATAGeneration							: T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
+	signal Transceiver_RP_ConfigReloaded			: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal Phy_RP_Lock												: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-	signal Transceiver_ResetDone							: STD_LOGIC_VECTOR(PORTS-1 DOWNTO 0);
-	signal Transceiver_Command								: T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
-	signal Transceiver_Status									: T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-	signal Transceiver_Error									: T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+	signal Transceiver_ResetDone							: STD_LOGIC_VECTOR(PORTS-1 downto 0);
+	signal Transceiver_Command								: T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
+	signal Transceiver_Status									: T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 downto 0);
+	signal Transceiver_Error									: T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 downto 0);
 
-	signal Phy_OOB_TX_Command									: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-	signal Transceiver_OOB_TX_Complete				: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);	
-	signal Transceiver_OOB_RX_Received				: T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-	signal Phy_OOB_HandshakeComplete					: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);	
-	signal Phy_OOB_AlignDetected    					: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);	
+	signal Phy_OOB_TX_Command									: T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
+	signal Transceiver_OOB_TX_Complete				: STD_LOGIC_VECTOR(PORTS - 1 downto 0);	
+	signal Transceiver_OOB_RX_Received				: T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
+	signal Phy_OOB_HandshakeComplete					: STD_LOGIC_VECTOR(PORTS - 1 downto 0);	
+	signal Phy_OOB_AlignDetected    					: STD_LOGIC_VECTOR(PORTS - 1 downto 0);	
 
-	signal Phy_TX_Data												: T_SLVV_32(PORTS - 1 DOWNTO 0);
-	signal Phy_TX_CharIsK											: T_SLVV_4(PORTS - 1 DOWNTO 0);
-	signal Transceiver_RX_Data								: T_SLVV_32(PORTS - 1 DOWNTO 0);
-	signal Transceiver_RX_CharIsK							: T_SLVV_4(PORTS - 1 DOWNTO 0);
-	signal Transceiver_RX_Valid								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	signal Phy_TX_Data												: T_SLVV_32(PORTS - 1 downto 0);
+	signal Phy_TX_CharIsK											: T_SLVV_4(PORTS - 1 downto 0);
+	signal Transceiver_RX_Data								: T_SLVV_32(PORTS - 1 downto 0);
+	signal Transceiver_RX_CharIsK							: T_SLVV_4(PORTS - 1 downto 0);
+	signal Transceiver_RX_Valid								: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-	signal Transceiver_DebugPortIn						: T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS - 1 DOWNTO 0);
-	signal Transceiver_DebugPortOut						: T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS - 1 DOWNTO 0);
+	signal Transceiver_DebugPortIn						: T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS - 1 downto 0);
+	signal Transceiver_DebugPortOut						: T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS - 1 downto 0);
 	
-	ATTRIBUTE KEEP OF SATA_Clock_i			: signal IS DEBUG;
+	attribute KEEP of SATA_Clock_i			: signal is DEBUG;
 
-BEGIN
-	genReport : FOR I IN 0 TO PORTS - 1 GENERATE
-		ASSERT FALSE REPORT "Port:    " & INTEGER'image(i)																											SEVERITY NOTE;
-		ASSERT FALSE REPORT "  ControllerType:         " & T_SATA_DEVICE_TYPE'image(CONTROLLER_TYPES_I(i))			SEVERITY NOTE;
-		ASSERT FALSE REPORT "  AllowSpeedNegotiation:  " & to_string(ALLOW_SPEED_NEGOTIATION_I(i))							SEVERITY NOTE;
-		ASSERT FALSE REPORT "  AllowStandardViolation: " & to_string(ALLOW_STANDARD_VIOLATION_I(i))							SEVERITY NOTE;
-		ASSERT FALSE REPORT "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS_I(i) + 1)	SEVERITY NOTE;
-	END GENERATE;
+begin
+	genReport : for i in 0 to PORTS - 1 generate
+		assert FALSE report "Port:    " & INTEGER'image(i)																											severity NOTE;
+		assert FALSE report "  ControllerType:         " & T_SATA_DEVICE_TYPE'image(CONTROLLER_TYPES_I(i))			severity NOTE;
+		assert FALSE report "  AllowSpeedNegotiation:  " & to_string(ALLOW_SPEED_NEGOTIATION_I(i))							severity NOTE;
+		assert FALSE report "  AllowStandardViolation: " & to_string(ALLOW_STANDARD_VIOLATION_I(i))							severity NOTE;
+		assert FALSE report "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS_I(i) + 1)	severity NOTE;
+	end generate;
 
 	-- generate layer moduls per port
-	gen1 : FOR I IN 0 TO PORTS - 1 GENERATE
+	gen1 : for i in 0 to PORTS - 1 generate
 		-- transport layer signals to/from upper
 		signal Transport_ResetDone 		: STD_LOGIC;
 		signal Transport_Command			: T_SATA_TRANS_COMMAND;

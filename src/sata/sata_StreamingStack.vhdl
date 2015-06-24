@@ -41,7 +41,6 @@ use			PoC.vectors.all;
 use			PoC.strings.all;
 use			PoC.physical.all;
 use			PoC.components.all;
-use			PoC.lcd.all;
 use			PoC.sata.all;
 use			PoC.satadbg.all;
 use			PoC.sata_TransceiverTypes.all;
@@ -188,7 +187,19 @@ architecture rtl of sata_StreamingStack is
 	signal SATAS_DebugPortOut		: T_SATADBG_STREAMINGSTACK_OUT;
 	
 begin
-
+	assert FALSE report "sata_StreamingStack configuration:"																					severity NOTE;
+	assert FALSE report "  Ports:                  " & INTEGER'image(PORTS)														severity NOTE;
+	assert FALSE report "  Debug:                  " & to_string(DEBUG)																severity NOTE;
+	assert FALSE report "  Enable ChipScope:       " & to_string(ENABLE_CHIPSCOPE)										severity NOTE;
+	assert FALSE report "  Enable DebugPort:       " & to_string(ENABLE_DEBUGPORT)										severity NOTE;
+	assert FALSE report "  ClockIn Frequency:      " & to_string(CLOCK_IN_FREQ, 3)										severity NOTE;
+	assert FALSE report "  SATA Frequency:         " & to_string(SATA_CLOCK_FREQ, 3)									severity NOTE;
+	assert FALSE report "  ControllerType:         " & T_SATA_DEVICE_TYPE'image(CONTROLLER_TYPE)			severity NOTE;
+	assert FALSE report "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATION + 1)	severity NOTE;
+	assert FALSE report "  AllowSpeedNegotiation:  " & to_string(ALLOW_SPEED_NEGOTIATION)							severity NOTE;
+	assert FALSE report "  LogicalBlockSize (App): " & to_string(LOGICAL_BLOCK_SIZE, 3)								severity NOTE;
+	assert FALSE report "  Enable TransGlueFIFOs:  " & to_string(ENABLE_TRANS_GLUE_FIFOS)							severity NOTE;
+	
 	-- Main interface outputs
 	-- ===========================================================================
 	SATA_Clock							<= SATAC_Clock;
