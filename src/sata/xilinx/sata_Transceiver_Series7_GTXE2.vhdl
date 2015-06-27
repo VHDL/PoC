@@ -65,7 +65,7 @@ entity sata_Transceiver_Series7_GTXE2 is
 	generic (
 		DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
-		CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
+		CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
 		PORTS											: POSITIVE										:= 2;																				-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)				-- intial SATA Generation
 	);
@@ -124,8 +124,8 @@ architecture rtl of sata_Transceiver_Series7_GTXE2 is
 	-- ===========================================================================
 	constant INITIAL_SATA_GENERATIONS_I	: T_SATA_GENERATION_VECTOR(0 to PORTS - 1)	:= INITIAL_SATA_GENERATIONS;
 	
-	constant NO_DEVICE_TIMEOUT				: TIME																			:= 50.0 ms;
-	constant NEW_DEVICE_TIMEOUT				: TIME																			:= 1.0 us;
+	constant NO_DEVICE_TIMEOUT				: TIME																			:= 50 ms;
+	constant NEW_DEVICE_TIMEOUT				: TIME																			:= 1 us;
 
 --	constant C_DEVICE_INFO						: T_DEVICE_INFO		:= DEVICE_INFO;
 	
@@ -304,9 +304,9 @@ begin
 		constant CLOCK_GEN3_FREQ						: FREQ						:= CLOCK_IN_FREQ / 1.0;
 		constant CLOCK_DD_FREQ							: FREQ						:= CLOCK_IN_FREQ / 1.0;
 		
-		constant COMRESET_TIMEOUT						: TIME						:= 2600.0 ns;
-		constant COMWAKE_TIMEOUT						: TIME						:= 1300.0 ns;
-		constant COMSAS_TIMEOUT							: TIME						:= 6450.0 ns;
+		constant COMRESET_TIMEOUT						: TIME						:= 2600 ns;
+		constant COMWAKE_TIMEOUT						: TIME						:= 1300 ns;
+		constant COMSAS_TIMEOUT							: TIME						:= 6450 ns;
 		
 		-- Timing table ID
 		constant TTID_COMRESET_TIMEOUT_GEN1	: NATURAL					:= 0;

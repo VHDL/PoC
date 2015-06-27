@@ -94,7 +94,7 @@ ENTITY sata_SATAController IS
 		DEBUG														: BOOLEAN											:= FALSE;
 		ENABLE_DEBUGPORT								: BOOLEAN											:= FALSE;
 		-- transceiver settings
-		CLOCK_IN_FREQ										: FREQ												:= 150.0 MHz;
+		CLOCK_IN_FREQ										: FREQ												:= 150 MHz;
 		PORTS														: POSITIVE										:= 2;	-- Port 0									Port 1
 		-- physical layer settings
 		CONTROLLER_TYPES								: T_SATA_DEVICE_TYPE_VECTOR		:= (0 => SATA_DEVICE_TYPE_HOST,	1 => SATA_DEVICE_TYPE_HOST);

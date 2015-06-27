@@ -71,7 +71,7 @@ entity sata_TransceiverLayer is
 	generic (
 		DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- export internal signals to upper layers for debug purposes
-		CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																							-- 150 MHz
+		CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																								-- 150 MHz
 		PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 => SATA_GENERATION_2,	1 => SATA_GENERATION_2)				-- intial SATA Generation
 	);

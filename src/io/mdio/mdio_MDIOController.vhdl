@@ -45,9 +45,9 @@ USE			PoC.net.ALL;
 ENTITY Eth_MDIOController IS
 	GENERIC (
 		DEBUG											: BOOLEAN							:= TRUE;
-		CLOCK_FREQ								: FREQ								:= 125.0 MHz;				-- 125 MHz
+		CLOCK_FREQ								: FREQ								:= 125 MHz;				-- 125 MHz
 --		PREAMBLE_SUPRESSION				: BOOLEAN							:= FALSE;					-- TODO: supported by Marvel 88E1111's, minimum preamble length = 1 bit
-		BAUDRATE									: BAUD								:= 1.0 MBd					-- 1.0 MBaud
+		BAUDRATE									: BAUD								:= 1 MBd					-- 1.0 MBaud
 	);
 	PORT (
 		Clock											: IN	STD_LOGIC;
