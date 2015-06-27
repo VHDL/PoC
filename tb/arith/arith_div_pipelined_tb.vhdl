@@ -45,7 +45,7 @@ end;
 
 
 architecture test OF arith_div_pipelined_tb IS
-	constant CLOCK_PERIOD_100MHZ			: TIME															:= 10.0 ns;
+	constant CLOCK_PERIOD_100MHZ			: TIME															:= 10 ns;
 
 	signal SimStop			: std_logic := '0';
 

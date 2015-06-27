@@ -17,7 +17,7 @@ USE			PoC.xil.ALL;
 ENTITY eth_Transceiver_Virtex5_GTP IS
 	GENERIC (
 		DEBUG											: BOOLEAN											:= FALSE;																	-- generate ChipScope debugging "pins"
-		CLOCK_IN_FREQ							: FREQ												:= 125.0 MHz;																	-- 150 MHz
+		CLOCK_IN_FREQ							: FREQ												:= 125 MHz;																-- 150 MHz
 		PORTS											: POSITIVE										:= 2																			-- Number of Ports per Transceiver
 	);
 	PORT (

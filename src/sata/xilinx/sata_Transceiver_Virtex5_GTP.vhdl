@@ -21,7 +21,7 @@ ENTITY sata_Transceiver_Virtex5_GTP IS
 	GENERIC (
 		DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
-		CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
+		CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
 		PORTS											: POSITIVE										:= 2;																				-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1	=> C_SATA_GENERATION_MAX)				-- intial SATA Generation
 	);
@@ -76,8 +76,8 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP IS
 -- ==================================================================
 -- SATATransceiver configuration
 -- ==================================================================
-	CONSTANT NO_DEVICE_TIMEOUT								: TIME						:= ite(SIMULATION, 20.0 us, 50.0 ms);	-- simulation: 20 us, synthesis: 50 ms
-	CONSTANT NEW_DEVICE_TIMEOUT								: TIME						:= ite(SIMULATION, 50.0 us, 1.0 sec);
+	CONSTANT NO_DEVICE_TIMEOUT								: TIME						:= ite(SIMULATION, 20 us, 50 ms);	-- simulation: 20 us, synthesis: 50 ms
+	CONSTANT NEW_DEVICE_TIMEOUT								: TIME						:= ite(SIMULATION, 50 us, 1 sec);
 
 	CONSTANT C_DEVICE_INFO										: T_DEVICE_INFO		:= DEVICE_INFO;
 

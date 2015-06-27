@@ -44,38 +44,38 @@ USE			PoC.physical.ALL;
 
 ENTITY sata_DeviceDetector IS
 	GENERIC (
-		DEBUG			: BOOLEAN	:= FALSE;
-		CLOCK_FREQ		: FREQ		:= 150.0 MHz;
-		NO_DEVICE_TIMEOUT	: TIME		:= 50.0 ms;
-		NEW_DEVICE_TIMEOUT	: TIME		:= 1000.0 us
+		DEBUG								: BOOLEAN	:= FALSE;
+		CLOCK_FREQ					: FREQ		:= 150 MHz;
+		NO_DEVICE_TIMEOUT		: TIME		:= 50 ms;
+		NEW_DEVICE_TIMEOUT	: TIME		:= 1 ms
 	);
 	PORT (
-		Clock		: IN STD_LOGIC;
+		Clock						: IN STD_LOGIC;
 		ElectricalIDLE	: IN STD_LOGIC;
-		RxComReset	: IN STD_LOGIC;
-		NoDevice	: OUT STD_LOGIC;
-		NewDevice	: OUT STD_LOGIC
+		RxComReset			: IN STD_LOGIC;
+		NoDevice				: OUT STD_LOGIC;
+		NewDevice				: OUT STD_LOGIC
 	);
 END;
 
 
 ARCHITECTURE rtl OF sata_DeviceDetector IS
-	ATTRIBUTE KEEP		: BOOLEAN;
+	ATTRIBUTE KEEP					: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING	: STRING;
 
 	-- Statemachine
 	TYPE T_State IS (ST_NORMAL_MODE, ST_NO_DEVICE, ST_OOB_RESET, ST_NEW_DEVICE);
 
-	SIGNAL State				: T_State	:= ST_NORMAL_MODE;
-	SIGNAL NextState			: T_State;
-	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	SIGNAL State										: T_State	:= ST_NORMAL_MODE;
+	SIGNAL NextState								: T_State;
+	ATTRIBUTE FSM_ENCODING OF State	: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	SIGNAL ElectricalIDLE_sync		: STD_LOGIC;
+	SIGNAL ElectricalIDLE_sync	: STD_LOGIC;
 	SIGNAL ElectricalIDLE_i			: STD_LOGIC_VECTOR(1 DOWNTO 0) := "00";
-	SIGNAL RxComReset_i			: STD_LOGIC_VECTOR(1 DOWNTO 0);
+	SIGNAL RxComReset_i					: STD_LOGIC_VECTOR(1 DOWNTO 0);
 
 	SIGNAL TC_load				: STD_LOGIC;
-	SIGNAL TC_en				: STD_LOGIC;
+	SIGNAL TC_en					: STD_LOGIC;
 	SIGNAL TC_timeout			: STD_LOGIC;
 	SIGNAL TD_load				: STD_LOGIC;
 	SIGNAL TD_timeout			: STD_LOGIC;

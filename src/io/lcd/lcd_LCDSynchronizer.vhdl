@@ -42,7 +42,7 @@ USE			PoC.lcd.ALL;
 
 ENTITY lcd_LCDSynchronizer IS
 	GENERIC (
-		CLOCK_FREQ					: FREQ		:= 100.0 MHz
+		CLOCK_FREQ					: FREQ		:= 100 MHz
 	);
 	PORT (
 		Clock								: IN	STD_LOGIC;

@@ -45,12 +45,12 @@ USE			PoC.net.ALL;
 ENTITY Eth_PHYController IS
 	GENERIC (
 		DEBUG											: BOOLEAN																	:= FALSE;																			-- 
-		CLOCK_FREQ								: FREQ																		:= 125.0 MHZ;																	-- 125 MHz
+		CLOCK_FREQ								: FREQ																		:= 125 MHZ;																		-- 125 MHz
 		PCSCORE										: T_NET_ETH_PCSCORE												:= NET_ETH_PCSCORE_GENERIC_GMII;							-- 
 		PHY_DEVICE								: T_NET_ETH_PHY_DEVICE										:= NET_ETH_PHY_DEVICE_MARVEL_88E1111;					-- 
 		PHY_DEVICE_ADDRESS				: T_NET_ETH_PHY_DEVICE_ADDRESS						:= x"00";																			-- 
 		PHY_MANAGEMENT_INTERFACE	: T_NET_ETH_PHY_MANAGEMENT_INTERFACE			:= NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO;			-- 
-		BAUDRATE									: BAUD																		:= 1.0 MBd																		-- 1.0 MBit/s
+		BAUDRATE									: BAUD																		:= 1 MBd																			-- 1.0 MBit/s
 	);
 	PORT (
 		Clock											: IN		STD_LOGIC;
