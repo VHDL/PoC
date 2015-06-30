@@ -127,9 +127,9 @@ package ocram is
       ram_d    : out std_logic_vector(D_BITS-1 downto 0);
       ram_q    : in  std_logic_vector(D_BITS-1 downto 0));
   end component;
-end ocram;
+end package;
 
 
 package body ocram is
 
-end ocram;
+end package body;
