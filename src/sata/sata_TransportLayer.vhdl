@@ -89,10 +89,10 @@ use			PoC.satadbg.all;
 
 entity sata_TransportLayer is
   generic (
-		DEV_INIT_TIMEOUT 								: TIME 							:= 500 ms;
-		NODATA_RETRY_TIMEOUT 						: TIME 							:=   1 ms;
-		DATA_READ_TIMEOUT 							: TIME 							:= 100 ms;
-		DATA_WRITE_TIMEOUT 							: TIME 							:= 100 ms;
+		DEV_INIT_TIMEOUT 								: TIME 							:= 1000 ms;
+		NODATA_RETRY_TIMEOUT 						: TIME 							:=    1 ms;
+		DATA_READ_TIMEOUT 							: TIME 							:= 1000 ms;
+		DATA_WRITE_TIMEOUT 							: TIME 							:= 1000 ms;
 		DEBUG														: BOOLEAN						:= FALSE;					-- generate ChipScope DBG_* signals
 		ENABLE_DEBUGPORT								: BOOLEAN						:= FALSE;
 		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: BOOLEAN						:= TRUE						-- required by ATA/SATA standard
