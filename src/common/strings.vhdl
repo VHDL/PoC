@@ -136,16 +136,16 @@ end package strings;
 package body strings is
 
 	-- 
-	FUNCTION to_IPStyle(str : STRING) RETURN T_IPSTYLE IS
-	BEGIN
-		FOR I IN T_IPSTYLE'pos(T_IPSTYLE'low) TO T_IPSTYLE'pos(T_IPSTYLE'high) LOOP
-			IF str_imatch(str, T_IPSTYLE'image(T_IPSTYLE'val(I))) THEN
-				RETURN T_IPSTYLE'val(I);
-			END IF;
-		END LOOP;
+	function to_IPStyle(str : STRING) return T_IPSTYLE is
+	begin
+		for i in T_IPSTYLE'pos(T_IPSTYLE'low) to T_IPSTYLE'pos(T_IPSTYLE'high) loop
+			if str_imatch(str, T_IPSTYLE'image(T_IPSTYLE'val(I))) then
+				return t_ipstyle'val(i);
+			end if;
+		end loop;
 		
-		REPORT "Unknown IPStyle: " & str SEVERITY FAILURE;
-	END FUNCTION;
+		report "Unknown IPStyle: " & str severity FAILURE;
+	end function;
 
 	-- to_char
 	-- ===========================================================================
