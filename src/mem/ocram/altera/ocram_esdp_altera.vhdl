@@ -73,6 +73,7 @@ architecture rtl of ocram_esdp_altera is
       indata_aclr_a             : STRING;
       indata_aclr_b             : STRING;
       indata_reg_b              : STRING;
+      init_file                 : STRING;
       intended_device_family    : STRING;
       lpm_type                  : STRING;
       numwords_a                : NATURAL;
@@ -125,6 +126,7 @@ begin  -- rtl
       indata_aclr_a => "NONE",
       indata_aclr_b => "NONE",
       indata_reg_b => "CLOCK1",
+		init_file => "UNUSED",
       intended_device_family => "Stratix",
       lpm_type => "altsyncram",
       numwords_a => DEPTH,
