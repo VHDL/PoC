@@ -58,36 +58,23 @@ entity ocram_sp is
 		D_BITS	´	: positive;
 		FILENAME	: STRING		:= ""
 	);
-  port (
-		clk : in  std_logic;
-		ce  : in  std_logic;
-		we  : in  std_logic;
-		a   : in  unsigned(A_BITS-1 downto 0);
-		d   : in  std_logic_vector(D_BITS-1 downto 0);
-		q   : out std_logic_vector(D_BITS-1 downto 0)
+	port (
+		clk : in	std_logic;
+		ce	: in	std_logic;
+		we	: in	std_logic;
+		a	 : in	unsigned(A_BITS-1 downto 0);
+		d	 : in	std_logic_vector(D_BITS-1 downto 0);
+		q	 : out std_logic_vector(D_BITS-1 downto 0)
 	);
 end entity;
 
 
 architecture rtl of ocram_sp is
-  component ocram_sp_altera
-    generic (
-      A_BITS : positive;
-      D_BITS : positive);
-    port (
-      clk : in  std_logic;
-      ce  : in  std_logic;
-      we  : in  std_logic;
-      a   : in  unsigned(A_BITS-1 downto 0);
-      d   : in  std_logic_vector(D_BITS-1 downto 0);
-      q   : out std_logic_vector(D_BITS-1 downto 0));
-  end component;
-
-  constant DEPTH : positive := 2**A_BITS;
+	constant DEPTH : positive := 2**A_BITS;
 
 begin
 
-  gInfer: if VENDOR = VENDOR_XILINX generate
+	gInfer: if VENDOR = VENDOR_XILINX generate
 		-- RAM can be inferred correctly
 		-- XST Advanced HDL Synthesis generates single-port memory as expected.
 		subtype word_t	is std_logic_vector(D_BITS - 1 downto 0);
@@ -138,7 +125,7 @@ begin
 				end if;
 			end process;
 
-			q <= ram(to_integer(a_reg));          -- gets new data
+			q <= ram(to_integer(a_reg));					-- gets new data
 		end generate;
 		genNoLoadFile : if (str_length(FileName) = 0) generate
 			signal ram								: ram_t;
@@ -161,29 +148,46 @@ begin
 				end if;
 			end process;
 
-			q <= ram(to_integer(a_reg));          -- gets new data
+			q <= ram(to_integer(a_reg));					-- gets new data
 		end generate;
-  end generate gInfer;
+	end generate gInfer;
 
-  gAltera: if VENDOR = VENDOR_ALTERA generate
-    -- Direct instantiation of altsyncram (including component
-    -- declaration above) is not sufficient for ModelSim.
-    -- That requires also usage of altera_mf library.
-    i: ocram_sp_altera
-      generic map (
-        A_BITS => A_BITS,
-        D_BITS => D_BITS)
-      port map (
-        clk => clk,
-        ce  => ce,
-        we  => we,
-        a   => a,
-        d   => d,
-        q   => q);
-    
-  end generate gAltera;
-  
-  assert VENDOR = VENDOR_XILINX or VENDOR = VENDOR_ALTERA
-    report "Device not yet supported."
-    severity failure;
+	gAltera: if VENDOR = VENDOR_ALTERA generate
+		component ocram_sp_altera
+			generic (
+				A_BITS		: positive;
+				D_BITS		: positive;
+				FILENAME	: STRING		:= ""
+			);
+			port (
+				clk : in	std_logic;
+				ce	: in	std_logic;
+				we	: in	std_logic;
+				a	 : in	unsigned(A_BITS-1 downto 0);
+				d	 : in	std_logic_vector(D_BITS-1 downto 0);
+				q	 : out std_logic_vector(D_BITS-1 downto 0));
+		end component;
+	begin
+		-- Direct instantiation of altsyncram (including component
+		-- declaration above) is not sufficient for ModelSim.
+		-- That requires also usage of altera_mf library.
+		i: ocram_sp_altera
+			generic map (
+				A_BITS		=> A_BITS,
+				D_BITS		=> D_BITS,
+				FILENAME	=> FILENAME
+			)
+			port map (
+				clk => clk,
+				ce	=> ce,
+				we	=> we,
+				a	 => a,
+				d	 => d,
+				q	 => q
+			);
+	end generate gAltera;
+	
+	assert VENDOR = VENDOR_XILINX or VENDOR = VENDOR_ALTERA
+		report "Device not yet supported."
+		severity failure;
 end rtl;

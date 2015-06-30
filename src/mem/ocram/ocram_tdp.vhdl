@@ -19,25 +19,25 @@
 -- Stratix/Cyclone and Spartan-3/Virtex-5, respectively, is as follows:
 --
 -- * Same-Port Read-During Write:
---   At rising edge of "clk1", data "d1" written to port 1 (ce1 and we1 = '1')
---   is directly passed to the output "q1". This is also known as write-first
---   mode or read-through write behavior. Same applies for port 2 (d2 -> q2).
+--	 At rising edge of "clk1", data "d1" written to port 1 (ce1 and we1 = '1')
+--	 is directly passed to the output "q1". This is also known as write-first
+--	 mode or read-through write behavior. Same applies for port 2 (d2 -> q2).
 --
 -- * Mixed-Port Read-During Write:
---   Here, the Altera M512/M4K TriMatrix memory (as found e.g. in Stratix
---   and Stratix II FPGAs) defines the minimum time after which the written data
---   at one port can be read-out at the other again. As stated in the Stratix
---   Handbook, Volume 2, page 2-13, data is actually written with the falling
---   (instead of the rising) edge of the clock into the memory array. The write
---   itself takes the write-cycle time which is less or equal to the minimum
---   clock-period time. After this, the data can be read-out at the other port.
---   Consequently, data "d1" written at the rising-edge of "clk1" at address
---   "a1" can be read-out at the 2nd port from the same address with the
---   2nd rising-edge of "clk2" following the falling-edge of "clk1".
---   If the rising-edge of "clk2" coincides with the falling-edge of "clk1"
---   (e.g. same clock signal), then it is counted as the 1st rising-edge of
---   "clk2" in this timing. Same applies analogous to data written at port 2
---   and read-out at port 1.
+--	 Here, the Altera M512/M4K TriMatrix memory (as found e.g. in Stratix
+--	 and Stratix II FPGAs) defines the minimum time after which the written data
+--	 at one port can be read-out at the other again. As stated in the Stratix
+--	 Handbook, Volume 2, page 2-13, data is actually written with the falling
+--	 (instead of the rising) edge of the clock into the memory array. The write
+--	 itself takes the write-cycle time which is less or equal to the minimum
+--	 clock-period time. After this, the data can be read-out at the other port.
+--	 Consequently, data "d1" written at the rising-edge of "clk1" at address
+--	 "a1" can be read-out at the 2nd port from the same address with the
+--	 2nd rising-edge of "clk2" following the falling-edge of "clk1".
+--	 If the rising-edge of "clk2" coincides with the falling-edge of "clk1"
+--	 (e.g. same clock signal), then it is counted as the 1st rising-edge of
+--	 "clk2" in this timing. Same applies analogous to data written at port 2
+--	 and read-out at port 1.
 --
 -- WARNING: The simulated behavior on RT-level is not correct.
 --
@@ -84,49 +84,30 @@ entity ocram_tdp is
 		FILENAME	: STRING		:= ""
 	);
 	port (
-		clk1 : in  std_logic;
-		clk2 : in  std_logic;
-		ce1  : in  std_logic;
-		ce2  : in  std_logic;
-		we1  : in  std_logic;
-		we2  : in  std_logic;
-		a1   : in  unsigned(A_BITS-1 downto 0);
-		a2   : in  unsigned(A_BITS-1 downto 0);
-		d1   : in  std_logic_vector(D_BITS-1 downto 0);
-		d2   : in  std_logic_vector(D_BITS-1 downto 0);
-		q1   : out std_logic_vector(D_BITS-1 downto 0);
-		q2   : out std_logic_vector(D_BITS-1 downto 0)
+		clk1 : in	std_logic;
+		clk2 : in	std_logic;
+		ce1	: in	std_logic;
+		ce2	: in	std_logic;
+		we1	: in	std_logic;
+		we2	: in	std_logic;
+		a1	 : in	unsigned(A_BITS-1 downto 0);
+		a2	 : in	unsigned(A_BITS-1 downto 0);
+		d1	 : in	std_logic_vector(D_BITS-1 downto 0);
+		d2	 : in	std_logic_vector(D_BITS-1 downto 0);
+		q1	 : out std_logic_vector(D_BITS-1 downto 0);
+		q2	 : out std_logic_vector(D_BITS-1 downto 0)
 	);
 end ocram_tdp;
 
 
 architecture rtl of ocram_tdp is
-  component ocram_tdp_altera
-    generic (
-      A_BITS : positive;
-      D_BITS : positive);
-    port (
-      clk1 : in  std_logic;
-      clk2 : in  std_logic;
-      ce1  : in  std_logic;
-      ce2  : in  std_logic;
-      we1  : in  std_logic;
-      we2  : in  std_logic;
-      a1   : in  unsigned(A_BITS-1 downto 0);
-      a2   : in  unsigned(A_BITS-1 downto 0);
-      d1   : in  std_logic_vector(D_BITS-1 downto 0);
-      d2   : in  std_logic_vector(D_BITS-1 downto 0);
-      q1   : out std_logic_vector(D_BITS-1 downto 0);
-      q2   : out std_logic_vector(D_BITS-1 downto 0));
-  end component;
-  
-  constant DEPTH : positive := 2**A_BITS;
+	constant DEPTH : positive := 2**A_BITS;
 
 begin
-  gXilinx: if DEVICE = DEVICE_SPARTAN6 or DEVICE = DEVICE_VIRTEX6 or
-    DEVICE=DEVICE_ARTIX7 or DEVICE=DEVICE_KINTEX7 or DEVICE=DEVICE_VIRTEX7
-  generate
-    -- RAM can be inferred correctly only for newer FPGAs!
+	gXilinx: if DEVICE = DEVICE_SPARTAN6 or DEVICE = DEVICE_VIRTEX6 or
+		DEVICE=DEVICE_ARTIX7 or DEVICE=DEVICE_KINTEX7 or DEVICE=DEVICE_VIRTEX7
+	generate
+		-- RAM can be inferred correctly only for newer FPGAs!
 		subtype word_t	is std_logic_vector(D_BITS - 1 downto 0);
 		type		ram_t		is array(0 to DEPTH - 1) of word_t;
 		
@@ -165,7 +146,7 @@ begin
 			
 		begin
 			process (clk1, clk2)
-			begin  -- process
+			begin	-- process
 				if rising_edge(clk1) then
 					if ce1 = '1' then
 						if we1 = '1' then
@@ -187,8 +168,8 @@ begin
 				end if;
 			end process;
 			
-			q1 <= ram(to_integer(a1_reg));    -- returns new data
-			q2 <= ram(to_integer(a2_reg));    -- returns new data
+			q1 <= ram(to_integer(a1_reg));		-- returns new data
+			q2 <= ram(to_integer(a2_reg));		-- returns new data
 		end generate;
 		genNoLoadFile : if (str_length(FileName) = 0) generate
 			signal ram								: ram_t;
@@ -199,7 +180,7 @@ begin
 			signal a2_reg : unsigned(A_BITS-1 downto 0);
 		begin
 			process (clk1, clk2)
-			begin  -- process
+			begin	-- process
 				if rising_edge(clk1) then
 					if ce1 = '1' then
 						if we1 = '1' then
@@ -221,38 +202,63 @@ begin
 				end if;
 			end process;
 			
-			q1 <= ram(to_integer(a1_reg));    -- returns new data
-			q2 <= ram(to_integer(a2_reg));    -- returns new data
+			q1 <= ram(to_integer(a1_reg));		-- returns new data
+			q2 <= ram(to_integer(a2_reg));		-- returns new data
 		end generate;
-  end generate gXilinx;
-  
-  gAltera: if VENDOR = VENDOR_ALTERA generate
-    -- Direct instantiation of altsyncram (including component
-    -- declaration above) is not sufficient for ModelSim.
-    -- That requires also usage of altera_mf library.
-    i: ocram_tdp_altera
-      generic map (
-        A_BITS => A_BITS,
-        D_BITS => D_BITS)
-      port map (
-        clk1 => clk1,
-        clk2 => clk2,
-        ce1  => ce1,
-        ce2  => ce2,
-        we1  => we1,
-        we2  => we2,
-        a1   => a1,
-        a2   => a2,
-        d1   => d1,
-        d2   => d2,
-        q1   => q1,
-        q2   => q2);
-    
-  end generate gAltera;
-  
-  assert VENDOR = VENDOR_ALTERA or
-    DEVICE = DEVICE_SPARTAN6 or DEVICE = DEVICE_VIRTEX6 or
-    DEVICE = DEVICE_ARTIX7 or DEVICE = DEVICE_KINTEX7 or DEVICE = DEVICE_VIRTEX7
-    report "Device not yet supported."
-    severity failure;
+	end generate gXilinx;
+	
+	gAltera: if VENDOR = VENDOR_ALTERA generate
+		component ocram_tdp_altera
+			generic (
+				A_BITS		: positive;
+				D_BITS		: positive;
+				FILENAME	: STRING		:= ""
+			);
+			port (
+				clk1 : in	std_logic;
+				clk2 : in	std_logic;
+				ce1	: in	std_logic;
+				ce2	: in	std_logic;
+				we1	: in	std_logic;
+				we2	: in	std_logic;
+				a1	 : in	unsigned(A_BITS-1 downto 0);
+				a2	 : in	unsigned(A_BITS-1 downto 0);
+				d1	 : in	std_logic_vector(D_BITS-1 downto 0);
+				d2	 : in	std_logic_vector(D_BITS-1 downto 0);
+				q1	 : out std_logic_vector(D_BITS-1 downto 0);
+				q2	 : out std_logic_vector(D_BITS-1 downto 0)
+			);
+		end component;
+	begin
+		-- Direct instantiation of altsyncram (including component
+		-- declaration above) is not sufficient for ModelSim.
+		-- That requires also usage of altera_mf library.
+		
+		i: ocram_tdp_altera
+			generic map (
+				A_BITS		=> A_BITS,
+				D_BITS		=> D_BITS,
+				FILENAME	=> FILENAME
+			)
+			port map (
+				clk1 => clk1,
+				clk2 => clk2,
+				ce1	=> ce1,
+				ce2	=> ce2,
+				we1	=> we1,
+				we2	=> we2,
+				a1	 => a1,
+				a2	 => a2,
+				d1	 => d1,
+				d2	 => d2,
+				q1	 => q1,
+				q2	 => q2
+			);
+	end generate gAltera;
+	
+	assert VENDOR = VENDOR_ALTERA or
+		DEVICE = DEVICE_SPARTAN6 or DEVICE = DEVICE_VIRTEX6 or
+		DEVICE = DEVICE_ARTIX7 or DEVICE = DEVICE_KINTEX7 or DEVICE = DEVICE_VIRTEX7
+		report "Device not yet supported."
+		severity failure;
 end rtl;

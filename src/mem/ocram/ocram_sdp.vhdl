@@ -70,40 +70,40 @@ use			PoC.strings.all;
 
 
 entity ocram_sdp is
-  generic (
-    A_BITS		: positive;
-    D_BITS		: positive;
+	generic (
+		A_BITS		: positive;
+		D_BITS		: positive;
 		FILENAME	: STRING		:= ""
-  );
-  port (
-    rclk : in  std_logic;                             -- read clock
-    rce  : in  std_logic;                             -- read clock-enable
-    wclk : in  std_logic;                             -- write clock
-    wce  : in  std_logic;                             -- write clock-enable
-    we   : in  std_logic;                             -- write enable
-    ra   : in  unsigned(A_BITS-1 downto 0);           -- read address
-    wa   : in  unsigned(A_BITS-1 downto 0);           -- write address
-    d    : in  std_logic_vector(D_BITS-1 downto 0);   -- data in
-    q    : out std_logic_vector(D_BITS-1 downto 0));  -- data out
+	);
+	port (
+		rclk : in	std_logic;														 -- read clock
+		rce	: in	std_logic;														 -- read clock-enable
+		wclk : in	std_logic;														 -- write clock
+		wce	: in	std_logic;														 -- write clock-enable
+		we	 : in	std_logic;														 -- write enable
+		ra	 : in	unsigned(A_BITS-1 downto 0);					 -- read address
+		wa	 : in	unsigned(A_BITS-1 downto 0);					 -- write address
+		d		: in	std_logic_vector(D_BITS-1 downto 0);	 -- data in
+		q		: out std_logic_vector(D_BITS-1 downto 0));	-- data out
 end entity;
 
 
 architecture rtl of ocram_sdp is
-  constant DEPTH : positive := 2**A_BITS;
-  
+	constant DEPTH : positive := 2**A_BITS;
+	
 begin
 
-  gInfer: if VENDOR = VENDOR_XILINX or VENDOR = VENDOR_ALTERA generate
-    -- RAM can be inferred correctly
-    -- Xilinx notes:
-    --   WRITE_MODE is set to WRITE_FIRST, but this also means that read data
-    --   is unknown on the opposite port. (As expected.)
-    -- Altera notes:
-    --   Setting attribute "ramstyle" to "no_rw_check" suppresses generation of
-    --   bypass logic, when 'clk1'='clk2' and 'ra' is feed from a register.
-    --   This is the expected behaviour.
-    --   With two different clocks, synthesis complains about an undefined
-    --   read-write behaviour, that can be ignored.
+	gInfer: if VENDOR = VENDOR_XILINX or VENDOR = VENDOR_ALTERA generate
+		-- RAM can be inferred correctly
+		-- Xilinx notes:
+		--	 WRITE_MODE is set to WRITE_FIRST, but this also means that read data
+		--	 is unknown on the opposite port. (As expected.)
+		-- Altera notes:
+		--	 Setting attribute "ramstyle" to "no_rw_check" suppresses generation of
+		--	 bypass logic, when 'clk1'='clk2' and 'ra' is feed from a register.
+		--	 This is the expected behaviour.
+		--	 With two different clocks, synthesis complains about an undefined
+		--	 read-write behaviour, that can be ignored.
 
 		subtype word_t	is std_logic_vector(D_BITS - 1 downto 0);
 		type		ram_t		is array(0 to DEPTH - 1) of word_t;
@@ -199,9 +199,9 @@ begin
 				end if;
 			end process;
 		end generate;
-  end generate gInfer;
-  
-  assert VENDOR = VENDOR_XILINX or VENDOR = VENDOR_ALTERA
-    report "Device not yet supported."
-    severity failure;
+	end generate gInfer;
+	
+	assert VENDOR = VENDOR_XILINX or VENDOR = VENDOR_ALTERA
+		report "Device not yet supported."
+		severity failure;
 end rtl;

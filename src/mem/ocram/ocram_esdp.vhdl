@@ -76,52 +76,35 @@ use			PoC.strings.all;
 
 
 entity ocram_esdp is
-  generic (
-    A_BITS		: positive;
-    D_BITS		: positive;
+	generic (
+		A_BITS		: positive;
+		D_BITS		: positive;
 		FILENAME	: STRING		:= ""
-  );
-  port (
-    clk1 : in  std_logic;
-    clk2 : in  std_logic;
-    ce1  : in  std_logic;
-    ce2  : in  std_logic;
-    we1  : in  std_logic;
-    a1   : in  unsigned(A_BITS-1 downto 0);
-    a2   : in  unsigned(A_BITS-1 downto 0);
-    d1   : in  std_logic_vector(D_BITS-1 downto 0);
-    q1   : out std_logic_vector(D_BITS-1 downto 0);
-    q2   : out std_logic_vector(D_BITS-1 downto 0)
-  );
+	);
+	port (
+		clk1 : in	std_logic;
+		clk2 : in	std_logic;
+		ce1	: in	std_logic;
+		ce2	: in	std_logic;
+		we1	: in	std_logic;
+		a1	 : in	unsigned(A_BITS-1 downto 0);
+		a2	 : in	unsigned(A_BITS-1 downto 0);
+		d1	 : in	std_logic_vector(D_BITS-1 downto 0);
+		q1	 : out std_logic_vector(D_BITS-1 downto 0);
+		q2	 : out std_logic_vector(D_BITS-1 downto 0)
+	);
 end ocram_esdp;
 
 
 architecture rtl of ocram_esdp is
-  component ocram_esdp_altera
-    generic (
-      A_BITS : positive;
-      D_BITS : positive);
-    port (
-      clk1 : in  std_logic;
-      clk2 : in  std_logic;
-      ce1  : in  std_logic;
-      ce2  : in  std_logic;
-      we1  : in  std_logic;
-      a1   : in  unsigned(A_BITS-1 downto 0);
-      a2   : in  unsigned(A_BITS-1 downto 0);
-      d1   : in  std_logic_vector(D_BITS-1 downto 0);
-      q1   : out std_logic_vector(D_BITS-1 downto 0);
-      q2   : out std_logic_vector(D_BITS-1 downto 0));
-  end component;
-  
-  constant DEPTH : positive := 2**A_BITS;
-  
+	constant DEPTH : positive := 2**A_BITS;
+	
 begin
-  gInfer: if VENDOR = VENDOR_XILINX generate
-    -- RAM can be inferred correctly
-    -- XST Advanced HDL Synthesis generates extended simple dual-port
-    -- memory as expected.
-		    -- RAM can be inferred correctly only for newer FPGAs!
+	gInfer: if VENDOR = VENDOR_XILINX generate
+		-- RAM can be inferred correctly
+		-- XST Advanced HDL Synthesis generates extended simple dual-port
+		-- memory as expected.
+				-- RAM can be inferred correctly only for newer FPGAs!
 		subtype word_t	is std_logic_vector(D_BITS - 1 downto 0);
 		type		ram_t		is array(0 to DEPTH - 1) of word_t;
 		
@@ -172,10 +155,10 @@ begin
 				end if;
 			end process;
 
-			q1 <= ram(to_integer(a1_reg));        -- gets new data
+			q1 <= ram(to_integer(a1_reg));				-- gets new data
 
 			process (clk2)
-			begin  -- process
+			begin	-- process
 				if rising_edge(clk2) then
 					if ce2 = '1' then
 						a2_reg <= a2;
@@ -185,7 +168,7 @@ begin
 			
 			-- read data is unknown, when reading at write address
 			q2 <= ram(to_integer(a2_reg));
-    end generate;
+		end generate;
 		genNoLoadFile : if (str_length(FileName) = 0) generate
 			signal ram								: ram_t;
 			attribute ramstyle				: string;
@@ -208,10 +191,10 @@ begin
 				end if;
 			end process;
 
-			q1 <= ram(to_integer(a1_reg));        -- gets new data
+			q1 <= ram(to_integer(a1_reg));				-- gets new data
 
 			process (clk2)
-			begin  -- process
+			begin	-- process
 				if rising_edge(clk2) then
 					if ce2 = '1' then
 						a2_reg <= a2;
@@ -221,32 +204,54 @@ begin
 			
 			-- read data is unknown, when reading at write address
 			q2 <= ram(to_integer(a2_reg));
-    end generate;
-  end generate gInfer;
+		end generate;
+	end generate gInfer;
 
-  gAltera: if VENDOR = VENDOR_ALTERA generate
-    -- Direct instantiation of altsyncram (including component
-    -- declaration above) is not sufficient for ModelSim.
-    -- That requires also usage of altera_mf library.
-    i: ocram_esdp_altera
-      generic map (
-        A_BITS => A_BITS,
-        D_BITS => D_BITS)
-      port map (
-        clk1 => clk1,
-        clk2 => clk2,
-        ce1  => ce1,
-        ce2  => ce2,
-        we1  => we1,
-        a1   => a1,
-        a2   => a2,
-        d1   => d1,
-        q1   => q1,
-        q2   => q2);
-    
-  end generate gAltera;
-  
-  assert VENDOR = VENDOR_XILINX or VENDOR = VENDOR_ALTERA
-    report "Device not yet supported."
-    severity failure;
+	gAltera: if VENDOR = VENDOR_ALTERA generate
+		component ocram_esdp_altera
+			generic (
+				A_BITS		: positive;
+				D_BITS		: positive;
+				FILENAME	: STRING		:= ""
+			);
+			port (
+				clk1 : in	std_logic;
+				clk2 : in	std_logic;
+				ce1	: in	std_logic;
+				ce2	: in	std_logic;
+				we1	: in	std_logic;
+				a1	 : in	unsigned(A_BITS-1 downto 0);
+				a2	 : in	unsigned(A_BITS-1 downto 0);
+				d1	 : in	std_logic_vector(D_BITS-1 downto 0);
+				q1	 : out std_logic_vector(D_BITS-1 downto 0);
+				q2	 : out std_logic_vector(D_BITS-1 downto 0)
+			);
+		end component;
+	begin
+		-- Direct instantiation of altsyncram (including component
+		-- declaration above) is not sufficient for ModelSim.
+		-- That requires also usage of altera_mf library.
+		i: ocram_esdp_altera
+			generic map (
+				A_BITS		=> A_BITS,
+				D_BITS		=> D_BITS
+				FILENAME	=> FILENAME
+			)
+			port map (
+				clk1 => clk1,
+				clk2 => clk2,
+				ce1	=> ce1,
+				ce2	=> ce2,
+				we1	=> we1,
+				a1	 => a1,
+				a2	 => a2,
+				d1	 => d1,
+				q1	 => q1,
+				q2	 => q2
+			);
+	end generate gAltera;
+	
+	assert VENDOR = VENDOR_XILINX or VENDOR = VENDOR_ALTERA
+		report "Device not yet supported."
+		severity failure;
 end rtl;
