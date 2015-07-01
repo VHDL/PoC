@@ -89,7 +89,9 @@ end entity;
 
 
 architecture rtl of ocram_sdp is
-	constant DEPTH : positive := 2**A_BITS;
+	attribute ramstyle	: string;
+
+	constant DEPTH			: positive := 2**A_BITS;
 	
 begin
 
@@ -135,7 +137,6 @@ begin
 			end function;
 
 			signal ram								: ram_t		:= ocram_ReadMemFile(FILENAME);
-			attribute ramstyle				: string;
 			attribute ramstyle of ram	: signal is "no_rw_check";
 			
 		begin
@@ -168,7 +169,6 @@ begin
 		end generate;
 		genNoLoadFile : if (str_length(FileName) = 0) generate
 			signal ram								: ram_t;
-			attribute ramstyle				: string;
 			attribute ramstyle of ram	: signal is "no_rw_check";
 			
 		begin

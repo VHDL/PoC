@@ -3,11 +3,11 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	True dual-port memory.
---
 -- Authors:				 	Martin Zabel
 --									Patrick Lehmann
 -- 
+-- Module:				 	True dual-port memory.
+--
 -- Description:
 -- ------------------------------------
 -- Inferring / instantiating true dual-port memory, with:
@@ -137,12 +137,9 @@ begin
 				return Result;
 			end function;
 
-			signal ram								: ram_t		:= ocram_ReadMemFile(FILENAME);
-			attribute ramstyle				: string;
-			attribute ramstyle of ram	: signal is "no_rw_check";
-			
-			signal a1_reg : unsigned(A_BITS-1 downto 0);
-			signal a2_reg : unsigned(A_BITS-1 downto 0);
+			signal ram			: ram_t		:= ocram_ReadMemFile(FILENAME);
+			signal a1_reg		: unsigned(A_BITS-1 downto 0);
+			signal a2_reg		: unsigned(A_BITS-1 downto 0);
 			
 		begin
 			process (clk1, clk2)
@@ -172,12 +169,9 @@ begin
 			q2 <= ram(to_integer(a2_reg));		-- returns new data
 		end generate;
 		genNoLoadFile : if (str_length(FileName) = 0) generate
-			signal ram								: ram_t;
-			attribute ramstyle				: string;
-			attribute ramstyle of ram	: signal is "no_rw_check";
-			
-			signal a1_reg : unsigned(A_BITS-1 downto 0);
-			signal a2_reg : unsigned(A_BITS-1 downto 0);
+			signal ram			: ram_t;
+			signal a1_reg		: unsigned(A_BITS-1 downto 0);
+			signal a2_reg		: unsigned(A_BITS-1 downto 0);
 		begin
 			process (clk1, clk2)
 			begin	-- process

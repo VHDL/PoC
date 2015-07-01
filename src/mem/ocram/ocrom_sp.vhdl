@@ -3,11 +3,11 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	Single-port memory.
---
 -- Authors:				 	Martin Zabel
 --									Patrick Lehmann
 -- 
+-- Module:				 	Single-port memory.
+--
 -- Description:
 -- ------------------------------------
 -- Inferring / instantiating single-port read-only memory
@@ -65,8 +65,6 @@ end entity;
 
 
 architecture rtl of ocrom_sp is
-	attribute ROM_STYLE		: STRING;
-
 	constant DEPTH				: positive := 2**A_BITS;
 
 begin
@@ -103,10 +101,8 @@ begin
 				return Result;
 			end function;
 
-			signal rom									: rom_t		:= ocram_ReadMemFile(FILENAME);
-			attribute ROM_STYLE of rom	: signal is "block";
-			
-			signal a_reg : unsigned(A_BITS-1 downto 0);
+			signal rom		: rom_t		:= ocram_ReadMemFile(FILENAME);
+			signal a_reg	: unsigned(A_BITS-1 downto 0);
 		begin
 			process (clk)
 			begin

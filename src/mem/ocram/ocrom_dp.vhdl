@@ -3,11 +3,11 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	True dual-port memory.
---
 -- Authors:				 	Martin Zabel
 --									Patrick Lehmann
 -- 
+-- Module:				 	True dual-port memory.
+--
 -- Description:
 -- ------------------------------------
 -- Inferring / instantiating dual-port read-only memory, with:
@@ -76,8 +76,6 @@ end entity;
 
 
 architecture rtl of ocrom_dp is
-	attribute ROM_STYLE		: STRING;
-
 	constant DEPTH				: positive := 2**A_BITS;
 
 begin
@@ -114,11 +112,9 @@ begin
 				return Result;
 			end function;
 
-			signal rom									: rom_t		:= ocrom_ReadMemFile(FILENAME);
-			attribute ROM_STYLE of rom	: signal is "block";
-			
-			signal a1_reg : unsigned(A_BITS-1 downto 0);
-			signal a2_reg : unsigned(A_BITS-1 downto 0);
+			signal rom			: rom_t			:= ocrom_ReadMemFile(FILENAME);
+			signal a1_reg		: unsigned(A_BITS-1 downto 0);
+			signal a2_reg		: unsigned(A_BITS-1 downto 0);
 			
 		begin
 			process (clk1, clk2)

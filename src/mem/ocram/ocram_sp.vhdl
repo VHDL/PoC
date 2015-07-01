@@ -3,11 +3,11 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	Single-port memory.
---
 -- Authors:				 	Martin Zabel
 --									Patrick Lehmann
 -- 
+-- Module:				 	Single-port memory.
+--
 -- Description:
 -- ------------------------------------
 -- Inferring / instantiating single-port RAM
@@ -70,7 +70,7 @@ end entity;
 
 
 architecture rtl of ocram_sp is
-	constant DEPTH : positive := 2**A_BITS;
+	constant DEPTH			: positive := 2**A_BITS;
 
 begin
 
@@ -106,11 +106,9 @@ begin
 				return Result;
 			end function;
 
-			signal ram								: ram_t		:= ocram_ReadMemFile(FILENAME);
-			attribute ramstyle				: string;
-			attribute ramstyle of ram	: signal is "no_rw_check";
+			signal ram		: ram_t		:= ocram_ReadMemFile(FILENAME);
+			signal a_reg	: unsigned(A_BITS-1 downto 0);
 			
-			signal a_reg : unsigned(A_BITS-1 downto 0);
 		begin
 			process (clk)
 			begin
@@ -128,11 +126,8 @@ begin
 			q <= ram(to_integer(a_reg));					-- gets new data
 		end generate;
 		genNoLoadFile : if (str_length(FileName) = 0) generate
-			signal ram								: ram_t;
-			attribute ramstyle				: string;
-			attribute ramstyle of ram	: signal is "no_rw_check";
-			
-			signal a_reg : unsigned(A_BITS-1 downto 0);
+			signal ram			: ram_t;
+			signal a_reg		: unsigned(A_BITS-1 downto 0);
 			
 		begin
 			process (clk)
