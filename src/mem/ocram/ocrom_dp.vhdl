@@ -6,19 +6,23 @@
 -- Authors:				 	Martin Zabel
 --									Patrick Lehmann
 -- 
--- Module:				 	Single-port memory.
+-- Module:				 	True dual-port memory.
 --
 -- Description:
 -- ------------------------------------
--- Inferring / instantiating single-port RAM
+-- Inferring / instantiating dual-port read-only memory, with:
 --
--- - single clock, clock enable
--- - 1 read/write port
+-- * dual clock, clock enable,
+-- * 2 read ports.
 -- 
--- Written data is passed through the memory and output again as read-data 'q'.
--- This is the normal behaviour of a single-port RAM and also known as
--- write-first mode or read-through-write behaviour.
--- 
+-- The generalized behavior across Altera and Xilinx FPGAs since
+-- Stratix/Cyclone and Spartan-3/Virtex-5, respectively, is as follows:
+--
+-- WARNING: The simulated behavior on RT-level is not correct.
+--
+-- TODO: add timing diagram
+-- TODO: implement correct behavior for RT-level simulation
+--
 -- License:
 -- ============================================================================
 -- Copyright 2008-2015 Technische Universitaet Dresden - Germany
@@ -46,48 +50,50 @@ use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
 use			IEEE.std_logic_textio.all;
 
-library	PoC;
+library PoC;
 use			PoC.config.all;
 use			PoC.utils.all;
 use			PoC.strings.all;
 
 
-entity ocram_sp is
+entity ocrom_dp is
 	generic (
 		A_BITS		: positive;
-		D_BITS	´	: positive;
+		D_BITS		: positive;
 		FILENAME	: STRING		:= ""
 	);
 	port (
-		clk : in	std_logic;
-		ce	: in	std_logic;
-		we	: in	std_logic;
-		a	 : in	unsigned(A_BITS-1 downto 0);
-		d	 : in	std_logic_vector(D_BITS-1 downto 0);
-		q	 : out std_logic_vector(D_BITS-1 downto 0)
+		clk1 : in	std_logic;
+		clk2 : in	std_logic;
+		ce1	: in	std_logic;
+		ce2	: in	std_logic;
+		a1	 : in	unsigned(A_BITS-1 downto 0);
+		a2	 : in	unsigned(A_BITS-1 downto 0);
+		q1	 : out std_logic_vector(D_BITS-1 downto 0);
+		q2	 : out std_logic_vector(D_BITS-1 downto 0)
 	);
 end entity;
 
 
-architecture rtl of ocram_sp is
-	constant DEPTH			: positive := 2**A_BITS;
+architecture rtl of ocrom_dp is
+	constant DEPTH				: positive := 2**A_BITS;
 
 begin
-
-	gInfer: if VENDOR = VENDOR_XILINX generate
-		-- RAM can be inferred correctly
-		-- XST Advanced HDL Synthesis generates single-port memory as expected.
+	gXilinx: if DEVICE = DEVICE_SPARTAN6 or DEVICE = DEVICE_VIRTEX6 or
+		DEVICE=DEVICE_ARTIX7 or DEVICE=DEVICE_KINTEX7 or DEVICE=DEVICE_VIRTEX7
+	generate
+		-- RAM can be inferred correctly only for newer FPGAs!
 		subtype word_t	is std_logic_vector(D_BITS - 1 downto 0);
-		type		ram_t		is array(0 to DEPTH - 1) of word_t;
+		type		rom_t		is array(0 to DEPTH - 1) of word_t;
 		
 	begin
 		genLoadFile : if (str_length(FileName) /= 0) generate
 			-- Read a *.mem or *.hex file
-			impure function ocram_ReadMemFile(FileName : STRING) return ram_t is
+			impure function ocrom_ReadMemFile(FileName : STRING) return rom_t is
 				file FileHandle				: TEXT open READ_MODE is FileName;
 				variable CurrentLine	: LINE;
 				variable TempWord			: STD_LOGIC_VECTOR((div_ceil(word_t'length, 4) * 4) - 1 downto 0);
-				variable Result				: ram_t		:= (others => (others => '0'));
+				variable Result				: rom_t		:= (others => (others => '0'));
 				
 			begin
 				-- discard the first line of a mem file
@@ -106,83 +112,86 @@ begin
 				return Result;
 			end function;
 
-			signal ram		: ram_t		:= ocram_ReadMemFile(FILENAME);
-			signal a_reg	: unsigned(A_BITS-1 downto 0);
+			signal rom			: rom_t			:= ocrom_ReadMemFile(FILENAME);
+			signal a1_reg		: unsigned(A_BITS-1 downto 0);
+			signal a2_reg		: unsigned(A_BITS-1 downto 0);
 			
 		begin
-			process (clk)
-			begin
-				if rising_edge(clk) then
-					if ce = '1' then
-						if we = '1' then
-							ram(to_integer(a)) <= d;
-						end if;
+			process (clk1, clk2)
+			begin	-- process
+				if rising_edge(clk1) then
+					if ce1 = '1' then
+						a1_reg <= a1;
+					end if;
+				end if;
 
-						a_reg <= a;
+				if rising_edge(clk2) then
+					if ce2 = '1' then
+						a2_reg <= a2;
 					end if;
 				end if;
 			end process;
-
-			q <= ram(to_integer(a_reg));					-- gets new data
+			
+			q1 <= rom(to_integer(a1_reg));		-- returns new data
+			q2 <= rom(to_integer(a2_reg));		-- returns new data
 		end generate;
 		genNoLoadFile : if (str_length(FileName) = 0) generate
-			signal ram			: ram_t;
-			signal a_reg		: unsigned(A_BITS-1 downto 0);
-			
-		begin
-			process (clk)
-			begin
-				if rising_edge(clk) then
-					if ce = '1' then
-						if we = '1' then
-							ram(to_integer(a)) <= d;
-						end if;
-
-						a_reg <= a;
-					end if;
-				end if;
-			end process;
-
-			q <= ram(to_integer(a_reg));					-- gets new data
+			assert FALSE "Do you really want to generate a block of zeros?" severity FAILURE;
 		end generate;
-	end generate gInfer;
-
+	end generate gXilinx;
+	
 	gAltera: if VENDOR = VENDOR_ALTERA generate
-		component ocram_sp_altera
+		component ocram_tdp_altera
 			generic (
 				A_BITS		: positive;
 				D_BITS		: positive;
 				FILENAME	: STRING		:= ""
 			);
 			port (
-				clk : in	std_logic;
-				ce	: in	std_logic;
-				we	: in	std_logic;
-				a	 : in	unsigned(A_BITS-1 downto 0);
-				d	 : in	std_logic_vector(D_BITS-1 downto 0);
-				q	 : out std_logic_vector(D_BITS-1 downto 0));
+				clk1 : in	std_logic;
+				clk2 : in	std_logic;
+				ce1	: in	std_logic;
+				ce2	: in	std_logic;
+				we1	: in	std_logic;
+				we2	: in	std_logic;
+				a1	 : in	unsigned(A_BITS-1 downto 0);
+				a2	 : in	unsigned(A_BITS-1 downto 0);
+				d1	 : in	std_logic_vector(D_BITS-1 downto 0);
+				d2	 : in	std_logic_vector(D_BITS-1 downto 0);
+				q1	 : out std_logic_vector(D_BITS-1 downto 0);
+				q2	 : out std_logic_vector(D_BITS-1 downto 0)
+			);
 		end component;
 	begin
 		-- Direct instantiation of altsyncram (including component
 		-- declaration above) is not sufficient for ModelSim.
 		-- That requires also usage of altera_mf library.
-		i: ocram_sp_altera
+		
+		i: ocram_tdp_altera
 			generic map (
 				A_BITS		=> A_BITS,
 				D_BITS		=> D_BITS,
 				FILENAME	=> FILENAME
 			)
 			port map (
-				clk => clk,
-				ce	=> ce,
-				we	=> we,
-				a	 => a,
-				d	 => d,
-				q	 => q
+				clk1 => clk1,
+				clk2 => clk2,
+				ce1	=> ce1,
+				ce2	=> ce2,
+				we1	=> '0',
+				we2	=> '0',
+				a1	 => a1,
+				a2	 => a2,
+				d1	 => (others => '0'),
+				d2	 => (others => '0'),
+				q1	 => q1,
+				q2	 => q2
 			);
 	end generate gAltera;
 	
-	assert VENDOR = VENDOR_XILINX or VENDOR = VENDOR_ALTERA
+	assert VENDOR = VENDOR_ALTERA or
+		DEVICE = DEVICE_SPARTAN6 or DEVICE = DEVICE_VIRTEX6 or
+		DEVICE = DEVICE_ARTIX7 or DEVICE = DEVICE_KINTEX7 or DEVICE = DEVICE_VIRTEX7
 		report "Device not yet supported."
 		severity failure;
 end rtl;
