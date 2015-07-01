@@ -38,7 +38,6 @@ use			IEEE.math_real.all;
 
 library	PoC;
 use			PoC.utils.all;
-use			PoC.config.all;
 
 
 package strings is
@@ -314,13 +313,13 @@ package body strings is
 		constant frac	: INTEGER		:= integer(floor(((value * s) - real(int)) * 10.0**precision));
 		constant res	: STRING		:= raw_format_nat_dec(int) & "." & raw_format_nat_dec(frac);
 	begin
---		if (POC_VERBOSE = TRUE) then
---			report "str_format:" & CR &
---						 "  value:" & REAL'image(value) & CR &
---						 "  int = " & INTEGER'image(int) & CR &
---						 "  frac = " & INTEGER'image(frac)
---			severity note;
---		end if;
+		if (POC_VERBOSE = TRUE) then
+			report "str_format:" & CR &
+						 "  value:" & REAL'image(value) & CR &
+						 "  int = " & INTEGER'image(int) & CR &
+						 "  frac = " & INTEGER'image(frac)
+			severity note;
+		end if;
 		return ite((s	< 0.0), "-" & res, res);
 	end function;
 	

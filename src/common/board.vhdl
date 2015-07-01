@@ -87,7 +87,6 @@ package board is
 	type T_BOARD_DESCRIPTION is record
 		FPGADevice	: T_BOARD_CONFIG_STRING;
 		Ethernet		: T_BOARD_ETHERNET_DESC;
-	
 	end record;
 
 	type T_BOARD_DESCRIPTION_VECTOR	is array (T_BOARD) of T_BOARD_DESCRIPTION;
@@ -108,8 +107,16 @@ package body board is
 	-- ModelSim requires that this functions is defined before it is used below.
 	-- ===========================================================================
 	function conf(str : string) return T_BOARD_CONFIG_STRING is
+		variable MaxLength	: NATURAL																		:= T_BOARD_CONFIG_STRING'length;
+		variable Result			: STRING(1 to T_BOARD_CONFIG_STRING'length)	:= (others => NUL);
 	begin
-		return resize(str, T_BOARD_CONFIG_STRING'length);
+		if (str'length < T_BOARD_CONFIG_STRING'length) then
+			MaxLength := str'length;
+		end if;
+		if (MaxLength > 0) then
+			Result(1 to MaxLength) := str(str'low to str'low + MaxLength - 1);
+		end if;
+		return Result;
 	end function;
 
 	-- board description
@@ -288,16 +295,16 @@ package body board is
 		)
 	);
 
-
 	-- public functions
 	-- ===========================================================================
 	-- TODO: comment
 	function MY_BOARD_STRUCT(BoardConfig : string := C_BOARD_STRING_EMPTY) return T_BOARD_DESCRIPTION is
-		constant MY_BRD : T_BOARD_CONFIG_STRING := ite((BoardConfig /= C_BOARD_STRING_EMPTY), conf(BoardConfig), conf(MY_BOARD));
+		constant MY_BRD			: T_BOARD_CONFIG_STRING := ite((BoardConfig /= C_BOARD_STRING_EMPTY), conf(BoardConfig), conf(MY_BOARD));
+		constant BOARD_NAME	: STRING								:= "BOARD_" & str_trim(MY_BRD);
   begin
-		report "PoC configuration: used board is '" & str_trim(MY_BRD) & "'" severity NOTE;
+--		report "PoC configuration: used board is '" & str_trim(MY_BRD) & "'" severity NOTE;
 		for i in T_BOARD loop
-			if str_imatch("BOARD_" & str_trim(MY_BRD), T_BOARD'image(i)) then
+			if str_imatch(BOARD_NAME, T_BOARD'image(i)) then
 				return  C_BOARD_DESCRIPTION_LIST(i);
 			end if;
 		end loop;
@@ -310,6 +317,7 @@ package body board is
 	function MY_DEVICE_STRING(BoardConfig : string := C_BOARD_STRING_EMPTY) return string is
 		constant BRD_STRUCT	: T_BOARD_DESCRIPTION := MY_BOARD_STRUCT(BoardConfig);
   begin
+--		report "PoC configuration: used FPGA is '" & str_trim(BRD_STRUCT.FPGADevice) & "'" severity NOTE;
 		return BRD_STRUCT.FPGADevice;
 	end function;
 end package body;

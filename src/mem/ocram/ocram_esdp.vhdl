@@ -234,7 +234,7 @@ begin
 		i: ocram_esdp_altera
 			generic map (
 				A_BITS		=> A_BITS,
-				D_BITS		=> D_BITS
+				D_BITS		=> D_BITS,
 				FILENAME	=> FILENAME
 			)
 			port map (

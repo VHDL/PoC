@@ -42,7 +42,6 @@ use			PoC.strings.all;
 
 package config is
 
-	constant POC_VERBOSE			: boolean	:= MY_VERBOSE;
 	constant PROJECT_DIR			: string	:= MY_PROJECT_DIR;
 	constant OPERATING_SYSTEM	: string	:= MY_OPERATING_SYSTEM;
 
