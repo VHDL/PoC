@@ -51,7 +51,7 @@ use			IEEE.numeric_std.all;
 entity uart_rx is
   generic (
     OUT_REGS : boolean
-	)
+	);
   port (
     clk       : in  std_logic;
     rst       : in  std_logic;
