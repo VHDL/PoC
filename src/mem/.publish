@@ -1,1 +1,6 @@
+# git files
+.gitignore
+
+# subnamespace
+lut/
 ocram/

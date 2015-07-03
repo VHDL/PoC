@@ -91,9 +91,7 @@ entity sata_PhysicalLayerFSM is
 
 		Trans_RP_Reconfig					: out	STD_LOGIC;
 		Trans_RP_SATAGeneration		: out	T_SATA_GENERATION;									-- 
-		Trans_RP_ConfigReloaded		: in	STD_LOGIC;
-		Trans_RP_Lock							: out	STD_LOGIC;
-		Trans_RP_Locked						: in	STD_LOGIC
+		Trans_RP_ConfigReloaded		: in	STD_LOGIC
 	);
 END;
 
@@ -234,7 +232,6 @@ ARCHITECTURE rtl OF sata_PhysicalLayerFSM is
 
 	signal OOBC_Reset_i 								: STD_LOGIC;
 	signal Trans_RP_Reconfig_i					: STD_LOGIC;
-	signal Trans_RP_Lock_i							: STD_LOGIC;
 	
 	-- Speed Negotiation specific
 	SIGNAL SATAGeneration_rst						: STD_LOGIC;
@@ -303,14 +300,22 @@ BEGIN
 			end if;
 			
 			if ClockEnable = '1' then
-				-- only update if clock is enabled because the current value must mimic
-				-- the FPGA transceiver configuration which is not automatically reseted
-				SATAGeneration_cur	<= SATAGeneration_nxt;
+				-- Only update if clock is enabled because the current value must mimic
+				-- the FPGA transceiver configuration which is not automatically reseted.
+				-- Don't update register if speed negotiation is disabled because FPGA
+				-- will not be reprogrammed.
+				if ALLOW_SPEED_NEGOTIATION then
+					SATAGeneration_cur	<= SATAGeneration_nxt;
+				end if;
 			end if;
 		end if;
 	end process;
-	
 
+	gNoSpeedNego: if not ALLOW_SPEED_NEGOTIATION generate
+		SATAGeneration_cur <= INITIAL_SATA_GENERATION;
+	end generate;
+
+	
 	process(State, Command,
 					OOBC_Timeout, OOBC_DeviceOrHostDetected, OOBC_LinkOK, OOBC_LinkDead, 
 					Trans_Status, Trans_RP_ConfigReloaded,
@@ -327,7 +332,6 @@ BEGIN
 		SATAGeneration_Change								<= '0';
 		OOBC_Reset_i 												<= '0';
 		Trans_RP_Reconfig_i									<= '0';
-		Trans_RP_Lock_i											<= '1';
 		
 		TryPerGeneration_Counter_rst				<= '0';
 		TryPerGeneration_Counter_en					<= '0';
@@ -531,7 +535,6 @@ BEGIN
 	Error							<= Error_r;
 	OOBC_Reset				<= OOBC_Reset_i;
 	Trans_RP_Reconfig	<= Trans_RP_Reconfig_i;
-	Trans_RP_Lock			<= '0';
 
 	-- ================================================================
 	-- try counters

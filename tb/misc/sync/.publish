@@ -1,6 +1,9 @@
+# git files
+.gitignore
+
 # clock-domain-crossing circuits
-sync_Reset_tb.vhdl
-sync_Flag_tb.vhdl
-sync_Strobe_tb.vhdl
-sync_Vector_tb.vhdl
-sync_Command_tb.vhdl
+sync_Reset_tb.*
+sync_Flag_tb.*
+sync_Strobe_tb.*
+sync_Vector_tb.*
+sync_Command_tb.*

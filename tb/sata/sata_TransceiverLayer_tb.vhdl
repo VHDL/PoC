@@ -56,7 +56,7 @@ architecture test of sata_TransceiverLayer_tb is
 
 	-- 
 	-- ===========================================================================
-	constant SATA_REFCLOCK_FREQ		: FREQ					:= 150.0 MHz;
+	constant SATA_REFCLOCK_FREQ		: FREQ					:= 150 MHz;
 	
 	signal SATA_RefClock					: STD_LOGIC			:= '1';
 

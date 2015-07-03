@@ -3,7 +3,7 @@ run
 -ifn {prjFile}
 -use_new_parser {UseNewParser}
 -ifmt {InputFormat}
--ofn top
+-ofn {OutputName}
 -ofmt {OutputFormat}
 -p {Part}
 -top {TopModuleName}
@@ -28,7 +28,6 @@ run
 -dsp_utilization_ratio {DSPUtilizationRatio}
 -lc {LUTCombining}
 -reduce_control_sets {ReduceControlSets}
--verilog2001 {Verilog2001}
 -fsm_extract {FSMExtract}
 -fsm_encoding {FSMEncoding}
 -safe_implementation {FSMSafeImplementation}
@@ -36,15 +35,9 @@ run
 -ram_extract {RAMExtract}
 -ram_style {RAMStyle}
 -rom_extract {ROMExtract}
--mux_style {MUXStyle}
--decoder_extract {DecoderExtract}
--priority_extract {PriorityExtract}
 -shreg_extract {ShRegExtract}
--shift_extract {ShiftExtract}
--xor_collapse {XorCollapse}
 -rom_style {ROMStyle}
 -auto_bram_packing {AutoBRAMPacking}
--mux_extract {MUXExtract}
 -resource_sharing {ResourceSharing}
 -async_to_sync {ASyncToSync}
 -use_dsp48 {UseDSP48}
@@ -53,7 +46,6 @@ run
 -bufg {BufG}
 -register_duplication {RegisterDuplication}
 -register_balancing {RegisterBalancing}
--slice_packing {SlicePacking}
 -optimize_primitives {OptimizePrimitives}
 -use_clock_enable {UseClockEnable}
 -use_sync_set {UseSyncSet}

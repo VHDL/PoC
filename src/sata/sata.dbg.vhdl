@@ -174,6 +174,9 @@ package satadbg is
 	-- ===========================================================================
 	type T_SATADBG_LINK_LLFSM_OUT is record
 		FSM													: STD_LOGIC_VECTOR(4 downto 0);
+		-- TX: Retry
+		TX_IsLongFrame							: STD_LOGIC;
+		TX_RetryFailed							: STD_LOGIC;
 	end record;
 	
 	type T_SATADBG_LINK_OUT is record
@@ -243,87 +246,13 @@ package satadbg is
 		TX_Phy_CiK									: T_SLV_4;										-- 4 bit
 	end record;		--																							=> 120 bit
 	
-	
-	-- ===========================================================================
-	-- SATA Controller Types
-	-- ===========================================================================
-	type T_SATADBG_SATAC_OUT is record
-		-- Transceiver Layer
-		Transceiver						: T_SATADBG_TRANSCEIVER_OUT;
-		Transceiver_Command		: T_SATA_TRANSCEIVER_COMMAND;
-		Transceiver_Status		: T_SATA_TRANSCEIVER_STATUS;
-		Transceiver_Error			: T_SATA_TRANSCEIVER_ERROR;
-		-- Physical Layer
-		Physical							: T_SATADBG_PHYSICAL_OUT;
-		Physical_Command			: T_SATA_PHY_COMMAND;
-		Physical_Status				: T_SATA_PHY_STATUS;									-- 3 bit
-		Physical_Error				: T_SATA_PHY_ERROR;
-		-- Link Layer
-		Link									: T_SATADBG_LINK_OUT;									-- RX: 125 + TX: 120 bit
-		Link_Command					: T_SATA_LINK_COMMAND;								-- 1 bit
-		Link_Status						: T_SATA_LINK_STATUS;									-- 3 bit
-		Link_Error						: T_SATA_LINK_ERROR;									-- 2 bit
-	end record;
-	
-	type T_SATADBG_SATAC_IN is record
-		Transceiver						: T_SATADBG_TRANSCEIVER_IN;
+	type T_SATADBG_LINK_IN is record
+		InsertBitErrorHeaderTX			: STD_LOGIC;
 	end record;
 
-
-	-- ===========================================================================
-	-- ATA Command Layer types
-	-- ===========================================================================
-
-  type T_SATADBG_CMD_CFSM_OUT is record
-    FSM          : std_logic_Vector(4 downto 0);
-    Load         : std_logic;
-    NextTransfer : std_logic;
-    LastTransfer : std_logic;
-	end record;
+	constant C_SATADBG_LINK_IN_EMPTY : T_SATADBG_LINK_IN := (
+		others					=> '0');
 	
-  type T_SATADBG_CMD_OUT is record
-    Command              : T_SATA_CMD_COMMAND;
-    Status               : T_SATA_CMD_STATUS;
-    Error                : T_SATA_CMD_ERROR;
-    Address_AppLB        : T_SLV_48;
-    BlockCount_AppLB     : T_SLV_48;
-    Address_DevLB        : T_SLV_48;
-    BlockCount_DevLB     : T_SLV_48;
-    IDF_Reset            : STD_LOGIC;
-    IDF_Enable           : STD_LOGIC;
-    IDF_Error            : STD_LOGIC;
-    IDF_Finished         : STD_LOGIC;
-    IDF_DriveInformation : T_SATA_DRIVE_INFORMATION;
-    CFSM                 : T_SATADBG_CMD_CFSM_OUT;
-    RX_Valid             : STD_LOGIC;
-    RX_Data              : T_SLV_32;
-    RX_SOR               : STD_LOGIC;
-    RX_EOR               : STD_LOGIC;
-    RX_Ack               : STD_LOGIC;
-    CFSM_RX_Valid        : STD_LOGIC;
-    CFSM_RX_SOR          : STD_LOGIC;
-    CFSM_RX_EOR          : STD_LOGIC;
-    CFSM_RX_Ack          : STD_LOGIC;
-    Trans_RX_Valid       : STD_LOGIC;
-    Trans_RX_Data        : T_SLV_32;
-    Trans_RX_SOT         : STD_LOGIC;
-    Trans_RX_EOT         : STD_LOGIC;
-    Trans_RX_Ack         : STD_LOGIC;
-    CFSM_TX_ForceEOT     : STD_LOGIC;
-    TX_Valid             : STD_LOGIC;
-    TX_Data              : T_SLV_32;
-    TX_SOR               : STD_LOGIC;
-    TX_EOR               : STD_LOGIC;
-    TX_Ack               : STD_LOGIC;
-    TC_TX_Valid          : STD_LOGIC;
-    TC_TX_Data           : T_SLV_32;
-    TC_TX_SOT            : STD_LOGIC;
-    TC_TX_EOT            : STD_LOGIC;
-    TC_TX_Ack            : STD_LOGIC;
-    TC_TX_InsertEOT 		 : STD_LOGIC;
-	end record;
-	
-
 	-- ===========================================================================
 	-- SATA Transport Layer Types
 	-- ===========================================================================
@@ -336,7 +265,7 @@ package satadbg is
 	end record;
 	
 	type T_SATADBG_TRANS_FISD_OUT is record
-		FSM													: STD_LOGIC_VECTOR(3 downto 0);				-- 4 bits
+		FSM													: STD_LOGIC_VECTOR(4 downto 0);				-- 5 bits
 	end record;
 	
 	type T_SATADBG_TRANS_OUT is record
@@ -389,27 +318,96 @@ package satadbg is
 		Link_RX_FS_SyncEsc					: STD_LOGIC;
 	end record;
 	
-	
 	-- ===========================================================================
-	-- SATA StreamingController Types
+	-- SATA Controller Types
 	-- ===========================================================================
-	type T_SATADBG_SATASC_OUT is record
+	type T_SATADBG_SATACONTROLLER_OUT is record
 		-- Transceiver Layer
-		TransportLayer			: T_SATADBG_TRANS_OUT;
-		Transport_Command		: T_SATA_TRANS_COMMAND;								-- 2 bit
-		Transport_Status		: T_SATA_TRANS_STATUS;								-- 3 bit
-		Transport_Error			: T_SATA_TRANS_ERROR;									-- 3 bit
+		TransceiverLayer			: T_SATADBG_TRANSCEIVER_OUT;
+		Transceiver_Command		: T_SATA_TRANSCEIVER_COMMAND;
+		Transceiver_Status		: T_SATA_TRANSCEIVER_STATUS;
+		Transceiver_Error			: T_SATA_TRANSCEIVER_ERROR;
 		-- Physical Layer
-		CommandLayer				: T_SATADBG_CMD_OUT;
-		Command_Command			: T_SATA_CMD_COMMAND;									-- 3 bit
-		Command_Status			: T_SATA_CMD_STATUS;									-- 3 bit
-		Command_Error				: T_SATA_CMD_ERROR;										-- 3 bit
+		PhysicalLayer					: T_SATADBG_PHYSICAL_OUT;
+		Physical_Command			: T_SATA_PHY_COMMAND;
+		Physical_Status				: T_SATA_PHY_STATUS;									-- 3 bit
+		Physical_Error				: T_SATA_PHY_ERROR;
+		-- Link Layer
+		LinkLayer							: T_SATADBG_LINK_OUT;									-- RX: 125 + TX: 120 bit
+		Link_Command					: T_SATA_LINK_COMMAND;								-- 1 bit
+		Link_Status						: T_SATA_LINK_STATUS;									-- 3 bit
+		Link_Error						: T_SATA_LINK_ERROR;									-- 2 bit
+		-- Transport Layer
+		TransportLayer				: T_SATADBG_TRANS_OUT;
+		Transport_Command			: T_SATA_TRANS_COMMAND;								-- 2 bit
+		Transport_Status			: T_SATA_TRANS_STATUS;								-- 3 bit
+		Transport_Error				: T_SATA_TRANS_ERROR;									-- 3 bit
 	end record;
 	
+	type T_SATADBG_SATACONTROLLER_IN is record
+		TransceiverLayer			: T_SATADBG_TRANSCEIVER_IN;
+		LinkLayer							: T_SATADBG_LINK_IN;
+	end record;
+
+
 	-- ===========================================================================
-	-- SATA StreamingController Types
+	-- SATA StreamingLayer Types
 	-- ===========================================================================
-	type T_SATADBG_SATAS_OUT is record
+
+  type T_SATADBG_STREAMING_SFSM_OUT is record
+    FSM          : std_logic_Vector(4 downto 0);
+    Load         : std_logic;
+    NextTransfer : std_logic;
+    LastTransfer : std_logic;
+	end record;
+	
+  type T_SATADBG_STREAMING_OUT is record
+    Command             	: T_SATA_STREAMING_COMMAND;
+    Status              	: T_SATA_STREAMING_STATUS;
+    Error               	: T_SATA_STREAMING_ERROR;
+    Address_AppLB       	: T_SLV_48;
+    BlockCount_AppLB    	: T_SLV_48;
+    Address_DevLB       	: T_SLV_48;
+    BlockCount_DevLB    	: T_SLV_48;
+    IDF_Reset           	: STD_LOGIC;
+    IDF_Enable          	: STD_LOGIC;
+    IDF_Error           	: STD_LOGIC;
+    IDF_Finished        	: STD_LOGIC;
+    IDF_DriveInformation	: T_SATA_DRIVE_INFORMATION;
+    SFSM									: T_SATADBG_STREAMING_SFSM_OUT;
+    RX_Valid          		: STD_LOGIC;
+    RX_Data           		: T_SLV_32;
+    RX_SOR            		: STD_LOGIC;
+    RX_EOR            		: STD_LOGIC;
+    RX_Ack            		: STD_LOGIC;
+    SFSM_RX_Valid    			: STD_LOGIC;
+    SFSM_RX_SOR      			: STD_LOGIC;
+    SFSM_RX_EOR      			: STD_LOGIC;
+    SFSM_RX_Ack      			: STD_LOGIC;
+    Trans_RX_Valid    		: STD_LOGIC;
+    Trans_RX_Data     		: T_SLV_32;
+    Trans_RX_SOT      		: STD_LOGIC;
+    Trans_RX_EOT      		: STD_LOGIC;
+    Trans_RX_Ack      		: STD_LOGIC;
+    SFSM_TX_ForceEOT 			: STD_LOGIC;
+    TX_Valid          		: STD_LOGIC;
+    TX_Data           		: T_SLV_32;
+    TX_SOR            		: STD_LOGIC;
+    TX_EOR            		: STD_LOGIC;
+    TX_Ack            		: STD_LOGIC;
+    TC_TX_Valid       		: STD_LOGIC;
+    TC_TX_Data        		: T_SLV_32;
+    TC_TX_SOT         		: STD_LOGIC;
+    TC_TX_EOT         		: STD_LOGIC;
+    TC_TX_Ack         		: STD_LOGIC;
+    TC_TX_InsertEOT 			: STD_LOGIC;
+	end record;
+	
+	
+	-- ===========================================================================
+	-- SATA Streaming Stack Types
+	-- ===========================================================================
+	type T_SATADBG_STREAMINGSTACK_OUT is record
 		-- Transceiver Layer
 		TransceiverLayer		: T_SATADBG_TRANSCEIVER_OUT;
 		Transceiver_Command	: T_SATA_TRANSCEIVER_COMMAND;
@@ -418,40 +416,36 @@ package satadbg is
 		-- Physical Layer
 		PhysicalLayer				: T_SATADBG_PHYSICAL_OUT;
 		Physical_Command		: T_SATA_PHY_COMMAND;
-		Physical_Status			: T_SATA_PHY_STATUS;									-- 3 bit
+		Physical_Status			: T_SATA_PHY_STATUS;	
 		Physical_Error			: T_SATA_PHY_ERROR;
 		-- Link Layer
-		LinkLayer						: T_SATADBG_LINK_OUT;									-- RX: 125 + TX: 120 bit
-		Link_Command				: T_SATA_LINK_COMMAND;								-- 1 bit
-		Link_Status					: T_SATA_LINK_STATUS;									-- 3 bit
-		Link_Error					: T_SATA_LINK_ERROR;									-- 2 bit
-	
-		-- Transceiver Layer
+		LinkLayer						: T_SATADBG_LINK_OUT;	
+		Link_Command				: T_SATA_LINK_COMMAND;
+		Link_Status					: T_SATA_LINK_STATUS;	
+		Link_Error					: T_SATA_LINK_ERROR;	
+		-- Transport Layer
 		TransportLayer			: T_SATADBG_TRANS_OUT;
-		Transport_Command		: T_SATA_TRANS_COMMAND;								-- 2 bit
-		Transport_Status		: T_SATA_TRANS_STATUS;								-- 3 bit
-		Transport_Error			: T_SATA_TRANS_ERROR;									-- 3 bit
-		-- Physical Layer
-		CommandLayer				: T_SATADBG_CMD_OUT;
-		Command_Command			: T_SATA_CMD_COMMAND;									-- 3 bit
-		Command_Status			: T_SATA_CMD_STATUS;									-- 3 bit
-		Command_Error				: T_SATA_CMD_ERROR;										-- 3 bit
+		Transport_Command		: T_SATA_TRANS_COMMAND;
+		Transport_Status		: T_SATA_TRANS_STATUS;
+		Transport_Error			: T_SATA_TRANS_ERROR;
+		-- Streaming Controller
+		StreamingLayer			: T_SATADBG_STREAMING_OUT;
+		Streaming_Command		: T_SATA_STREAMING_COMMAND;
+		Streaming_Status		: T_SATA_STREAMING_STATUS;
+		Streaming_Error			: T_SATA_STREAMING_ERROR;
 	end record;
 	
-	type T_SATADBG_SATAS_IN is record
+	type T_SATADBG_STREAMINGSTACK_IN is record
 		TransceiverLayer		: T_SATADBG_TRANSCEIVER_IN;
+		LinkLayer						: T_SATADBG_LINK_IN;
 	end record;
 	
-	type T_SATADBG_TRANSCEIVER_OUT_VECTOR		is array (NATURAL range <>)	of T_SATADBG_TRANSCEIVER_OUT;
-	type T_SATADBG_TRANSCEIVER_IN_VECTOR		is array (NATURAL range <>)	of T_SATADBG_TRANSCEIVER_IN;
-	type T_SATADBG_PHYSICAL_OUT_VECTOR			is array (NATURAL range <>)	of T_SATADBG_PHYSICAL_OUT;
-	type T_SATADBG_LINK_OUT_VECTOR					is array (NATURAL range <>)	of T_SATADBG_LINK_OUT;
-	type T_SATADBG_SATAC_OUT_VECTOR					is array (NATURAL range <>)	of T_SATADBG_SATAC_OUT;
-	type T_SATADBG_SATAC_IN_VECTOR					is array (NATURAL range <>)	of T_SATADBG_SATAC_IN;
-	
-	type T_SATADBG_TRANS_OUT_VECTOR					is array (NATURAL range <>)	of T_SATADBG_TRANS_OUT;
-	type T_SATADBG_CMD_OUT_VECTOR						is array (NATURAL range <>)	of T_SATADBG_CMD_OUT;
-	type T_SATADBG_SATASC_OUT_VECTOR				is array (NATURAL range <>)	of T_SATADBG_SATASC_OUT;
+	type T_SATADBG_TRANSCEIVER_OUT_VECTOR			is array (NATURAL range <>)	of T_SATADBG_TRANSCEIVER_OUT;
+	type T_SATADBG_TRANSCEIVER_IN_VECTOR			is array (NATURAL range <>)	of T_SATADBG_TRANSCEIVER_IN;
+	type T_SATADBG_PHYSICAL_OUT_VECTOR				is array (NATURAL range <>)	of T_SATADBG_PHYSICAL_OUT;
+	type T_SATADBG_LINK_OUT_VECTOR						is array (NATURAL range <>)	of T_SATADBG_LINK_OUT;
+	type T_SATADBG_SATACONTROLLER_OUT_VECTOR	is array (NATURAL range <>)	of T_SATADBG_SATACONTROLLER_OUT;
+	type T_SATADBG_SATACONTROLLER_IN_VECTOR		is array (NATURAL range <>)	of T_SATADBG_SATACONTROLLER_IN;
 	
 end;
 

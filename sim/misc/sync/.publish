@@ -1,3 +1,6 @@
+# git files
+.gitignore
+
 # clock-domain-crossing circuits
 sync_Reset_tb.wcfg
 sync_Flag_tb.wcfg

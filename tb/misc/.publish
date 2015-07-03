@@ -3,6 +3,8 @@
 
 # subnamespace
 filter/
+stat/
 sync/
 
 # --------------------------------------
+misc_bit_lz_tb.vhdl

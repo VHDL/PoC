@@ -6,11 +6,11 @@
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Module:					FSM for SATA Command Layer
+-- Module:					FSM for SATA Streaming Layer
 --
 -- Description:
 -- ------------------------------------
--- See notes on module 'sata_CommandLayer'.
+-- See notes on module 'sata_StreamingLayer'.
 --
 -- License:
 -- =============================================================================
@@ -44,7 +44,7 @@ USE			PoC.sata.ALL;
 use			PoC.satadbg.all;
 
 
-ENTITY sata_CommandFSM IS
+ENTITY sata_StreamingLayerFSM IS
 	GENERIC (
 		DEBUG															: BOOLEAN								:= FALSE;
 		ENABLE_DEBUGPORT									: BOOLEAN								:= FALSE;			-- export internal signals to upper layers for debug purposes
@@ -52,17 +52,17 @@ ENTITY sata_CommandFSM IS
 	);
 	PORT (
 		Clock															: IN	STD_LOGIC;
-		Reset															: IN	STD_LOGIC;
+		MyReset														: IN	STD_LOGIC;
 
 		-- for measurement purposes only
 		Config_BurstSize									: IN	T_SLV_16;
 
-		-- ATAStreamingController interface
-		Command														: IN	T_SATA_CMD_COMMAND;
-		Status														: OUT	T_SATA_CMD_STATUS;
-		Error															: OUT	T_SATA_CMD_ERROR;
+		-- StreamingLayer interface
+		Command														: IN	T_SATA_STREAMING_COMMAND;
+		Status														: OUT	T_SATA_STREAMING_STATUS;
+		Error															: OUT	T_SATA_STREAMING_ERROR;
 
-		DebugPortOut 											: out T_SATADBG_CMD_CFSM_OUT;
+		DebugPortOut 											: out T_SATADBG_STREAMING_SFSM_OUT;
 		
 		Address_LB												: IN	T_SLV_48;
 		BlockCount_LB											: IN	T_SLV_48;
@@ -79,10 +79,9 @@ ENTITY sata_CommandFSM IS
 		RX_EOR														: OUT	STD_LOGIC;
 		RX_ForcePut												: OUT	STD_LOGIC;
 
-		-- TransporTrans interface
+		-- SATA Controller interface
 		Trans_Command											: OUT	T_SATA_TRANS_COMMAND;
 		Trans_Status											: IN	T_SATA_TRANS_STATUS;
-		Trans_Error												: IN	T_SATA_TRANS_ERROR;
 		
 		Trans_ATAHostRegisters						: OUT T_SATA_ATA_HOST_REGISTERS;
 		
@@ -97,7 +96,7 @@ ENTITY sata_CommandFSM IS
 END;
 
 
-ARCHITECTURE rtl OF sata_CommandFSM IS
+ARCHITECTURE rtl OF sata_StreamingLayerFSM IS
 	ATTRIBUTE KEEP												: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING								: STRING;
 
@@ -116,6 +115,7 @@ ARCHITECTURE rtl OF sata_CommandFSM IS
 		ST_WRITE_1_WAIT,	ST_WRITE_F_WAIT,	ST_WRITE_N_WAIT,	ST_WRITE_L_WAIT,
 		ST_WRITE_ABORT_TRANSFER, ST_WRITE_DISCARD_REQUEST, ST_WRITE_WAIT_IDLE,
 		ST_FLUSH_CACHE_WAIT,
+		ST_DEVICE_RESET_WAIT,
 		ST_ERROR
 	);
 	
@@ -123,7 +123,7 @@ ARCHITECTURE rtl OF sata_CommandFSM IS
 	SIGNAL NextState											: T_STATE;
 	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS getFSMEncoding_gray(DEBUG);
 
-	signal Error_nxt 											: T_SATA_CMD_ERROR;
+	signal Error_nxt 											: T_SATA_STREAMING_ERROR;
 	
 	SIGNAL Trans_Command_i								: T_SATA_TRANS_COMMAND;
 	
@@ -154,17 +154,17 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+			IF (MyReset = '1') THEN
 				State						<= ST_RESET;
-				Error 					<= SATA_CMD_ERROR_NONE;
+				Error 					<= SATA_STREAM_ERROR_NONE;
 	
 			ELSE
 				State						<= NextState;
 				
 				if (State /= ST_ERROR) and (NextState = ST_ERROR) then
 					Error 				<= Error_nxt;
-				elsif (Command /= SATA_CMD_CMD_NONE) then
-					Error 				<= SATA_CMD_ERROR_NONE; -- clear when issuing new command
+				elsif (Command /= SATA_STREAM_CMD_NONE) then
+					Error 				<= SATA_STREAM_ERROR_NONE; -- clear when issuing new command
 				end if;
 			END IF;
 		END IF;
@@ -175,8 +175,8 @@ BEGIN
 	BEGIN
 		NextState																		<= State;
 		
-		Status																			<= SATA_CMD_STATUS_RESET; -- just in case
-		Error_nxt																		<= SATA_CMD_ERROR_NONE;
+		Status																			<= SATA_STREAM_STATUS_RESET; -- just in case
+		Error_nxt																		<= SATA_STREAM_ERROR_NONE;
 		
 		Load																				<= '0';
 		NextTransfer																<= '0';
@@ -202,11 +202,11 @@ BEGIN
 		CASE State IS
 			WHEN ST_RESET =>
 				-- Clock might be unstable is this state. In this case either
-				-- a) Reset is asserted because inital reset of the SATAController is
+				-- a) MyReset is asserted because inital reset of the SATAController is
 				--    not finished yet.
 				-- b) Trans_Status is constant and not equal to SATA_TRANS_STATUS_IDLE.
 				--    This may happen during reconfiguration due to speed negotiation.
-				Status																			<= SATA_CMD_STATUS_RESET;
+				Status																			<= SATA_STREAM_STATUS_RESET;
         
         IF (Trans_Status = SATA_TRANS_STATUS_IDLE) THEN
 					IF (SIM_EXECUTE_IDENTIFY_DEVICE = TRUE) THEN
@@ -214,11 +214,14 @@ BEGIN
 					ELSE
 						NextState																<= ST_IDLE;
 					END IF;
+        elsif (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+					Error_nxt																	<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
+					NextState																	<= ST_ERROR;
         END IF;
 			
 			WHEN ST_INIT =>
         -- assert Trans_Status = SATA_TRANS_STATUS_IDLE
-				Status																			<= SATA_CMD_STATUS_INITIALIZING;
+				Status																			<= SATA_STREAM_STATUS_INITIALIZING;
 						
 				-- TransportLayer
 				Trans_Command_i															<= SATA_TRANS_CMD_TRANSFER;
@@ -236,16 +239,13 @@ BEGIN
 			
 			WHEN ST_IDLE =>
         -- assert Trans_Status = SATA_TRANS_STATUS_IDLE
-				Status																			<= SATA_CMD_STATUS_IDLE;
+				Status																			<= SATA_STREAM_STATUS_IDLE;
 			
 				CASE Command IS
-					WHEN SATA_CMD_CMD_NONE =>
-						NULL;
-						
-					WHEN SATA_CMD_CMD_RESET =>
+					WHEN SATA_STREAM_CMD_NONE =>
 						NULL;
 					
-					WHEN SATA_CMD_CMD_IDENTIFY_DEVICE =>
+					WHEN SATA_STREAM_CMD_IDENTIFY_DEVICE =>
 						-- TransportLayer
 						Trans_Command_i													<= SATA_TRANS_CMD_TRANSFER;
 						Trans_ATAHostRegisters.Flag_C						<= '1';
@@ -260,7 +260,7 @@ BEGIN
 					
 						NextState																<= ST_IDENTIFY_DEVICE_WAIT;
 						
-					WHEN SATA_CMD_CMD_READ =>
+					WHEN SATA_STREAM_CMD_READ =>
 						-- TransferGenerator
 						Load																		<= '1';
 						
@@ -279,7 +279,7 @@ BEGIN
 							NextState															<= ST_READ_1_WAIT;
 						END IF;
 						
-					WHEN SATA_CMD_CMD_WRITE =>
+					WHEN SATA_STREAM_CMD_WRITE =>
 						-- TransferGenerator
 						Load																		<= '1';
 						
@@ -298,58 +298,77 @@ BEGIN
 							NextState															<= ST_WRITE_1_WAIT;
 						END IF;
 
-					WHEN SATA_CMD_CMD_FLUSH_CACHE =>
-						IF (IDF_DriveInformation.Valid = '0') THEN
-							Status																<= SATA_CMD_STATUS_INITIALIZING;
-						ELSE
-							Status																<= SATA_CMD_STATUS_EXECUTING;
-						END IF;
-						
+					when SATA_STREAM_CMD_FLUSH_CACHE =>
 						-- TransportLayer
 						Trans_Command_i													<= SATA_TRANS_CMD_TRANSFER;
 						Trans_ATAHostRegisters.Flag_C						<= '1';
 						Trans_ATAHostRegisters.Command					<= to_slv(SATA_ATA_CMD_FLUSH_CACHE_EXT);	-- Command register
-						Trans_ATAHostRegisters.Control					<= (OTHERS => '0');												-- Control register
-						Trans_ATAHostRegisters.Feature					<= (OTHERS => '0');												-- Feature register
-						Trans_ATAHostRegisters.LBlockAddress		<= (OTHERS => '0');												-- logical block address (LBA)
-						Trans_ATAHostRegisters.SectorCount			<= (OTHERS => '0');												-- 
+						Trans_ATAHostRegisters.Control					<= (others => '0');												-- Control register
+						Trans_ATAHostRegisters.Feature					<= (others => '0');												-- Feature register
+						Trans_ATAHostRegisters.LBlockAddress		<= (others => '0');												-- logical block address (LBA)
+						Trans_ATAHostRegisters.SectorCount			<= (others => '0');												-- 
 			
 						NextState																<= ST_FLUSH_CACHE_WAIT;
 						
-					WHEN OTHERS =>
-						Error_nxt																<= SATA_CMD_ERROR_FSM;
+					when SATA_STREAM_CMD_DEVICE_RESET =>
+						-- TransportLayer
+						Trans_Command_i													<= SATA_TRANS_CMD_TRANSFER;
+						Trans_ATAHostRegisters.Flag_C						<= '1';
+						Trans_ATAHostRegisters.Command					<= to_slv(SATA_ATA_CMD_DEVICE_RESET);			-- Command register
+						Trans_ATAHostRegisters.Control					<= (others => '0');												-- Control register
+						Trans_ATAHostRegisters.Feature					<= (others => '0');												-- Feature register
+						Trans_ATAHostRegisters.LBlockAddress		<= (others => '0');												-- logical block address (LBA)
+						Trans_ATAHostRegisters.SectorCount			<= (others => '0');												-- 
+			
+						NextState																<= ST_DEVICE_RESET_WAIT;
+						
+					when others =>
+						Error_nxt																<= SATA_STREAM_ERROR_FSM;
 						NextState																<= ST_ERROR;
 
-				END CASE;
-			
+				end case;
+
+				-- A link error may occur at any time, e.g., if:
+				-- - the other end (e.g. device) requests a link reset via COMRESET
+				-- - or the other end was detached and a new device or host connected.
+				-- This event is signaled via a TRANSPORT_ERROR.
+				-- Transport Layer will ignore above assigned command.
+				if(Trans_Status = SATA_TRANS_STATUS_ERROR) then
+					Error_nxt																	<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
+					NextState 																<= ST_ERROR;
+				end if;
+				
 			WHEN ST_IDENTIFY_DEVICE_WAIT =>
 				IF (IDF_DriveInformation.Valid = '0') THEN
-					Status																		<= SATA_CMD_STATUS_INITIALIZING;
+					Status																		<= SATA_STREAM_STATUS_INITIALIZING;
 				ELSE
-					Status																		<= SATA_CMD_STATUS_EXECUTING;
+					Status																		<= SATA_STREAM_STATUS_EXECUTING;
 				END IF;
 			
 				IDF_Enable																	<= '1';
 				
 				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
 					IF (IDF_Error = '1') THEN
-						Error_nxt																<= SATA_CMD_ERROR_IDENTIFY_DEVICE_ERROR;
+						Error_nxt																<= SATA_STREAM_ERROR_IDENTIFY_DEVICE_ERROR;
 						NextState																<= ST_ERROR;
 					END IF;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
 					IF (IDF_Error = '0') THEN
 						NextState																<= ST_IDENTIFY_DEVICE_CHECK;
 					ELSE
-						Error_nxt																<= SATA_CMD_ERROR_IDENTIFY_DEVICE_ERROR;
+						Error_nxt																<= SATA_STREAM_ERROR_IDENTIFY_DEVICE_ERROR;
 						NextState																<= ST_ERROR;
 					END IF;
+				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) THEN
+					Error_nxt																	<= SATA_STREAM_ERROR_ATA_ERROR;
+					NextState																	<= ST_ERROR;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Error_nxt																	<= SATA_CMD_ERROR_IDENTIFY_DEVICE_ERROR;
+					Error_nxt																	<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState																	<= ST_ERROR;
 				END IF;
 				
 			WHEN ST_IDENTIFY_DEVICE_CHECK =>
-				Status																			<= SATA_CMD_STATUS_INITIALIZING;
+				Status																			<= SATA_STREAM_STATUS_INITIALIZING;
 			
 				IF (IDF_DriveInformation.Valid = '1') THEN
 					IF ((IDF_DriveInformation.ATACapabilityFlags.SupportsDMA = '1') AND
@@ -359,12 +378,12 @@ BEGIN
 							(IDF_DriveInformation.ATACapabilityFlags.SupportsFLUSH_CACHE_EXT = '1')) THEN
 						NextState																<= ST_IDLE;
 					ELSE	-- device not supported
-						Error_nxt																<= SATA_CMD_ERROR_DEVICE_NOT_SUPPORTED;
+						Error_nxt																<= SATA_STREAM_ERROR_DEVICE_NOT_SUPPORTED;
 						NextState																<= ST_ERROR;
 					END IF;
 				ELSE
 					-- information are not valid
-					Error_nxt																	<= SATA_CMD_ERROR_IDENTIFY_DEVICE_ERROR;
+					Error_nxt																	<= SATA_STREAM_ERROR_IDENTIFY_DEVICE_ERROR;
 					NextState																	<= ST_ERROR;
 				END IF;
 				
@@ -372,7 +391,7 @@ BEGIN
 			-- ATA command: ATA_CMD_CMD_READ
 			-- ============================================================
 			WHEN ST_READ_1_WAIT =>
-				Status																	<= SATA_CMD_STATUS_RECEIVING;
+				Status																	<= SATA_STREAM_STATUS_RECEIVING;
 				
 				RX_SOR																	<= Trans_RX_SOT;
 				RX_EOR																	<= Trans_RX_EOT;
@@ -381,13 +400,20 @@ BEGIN
 					NULL;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
 					NextState															<= ST_IDLE;
+				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) THEN
+					RX_EOR 																<= '1';
+					RX_ForcePut 													<= '1';
+					Error_nxt															<= SATA_STREAM_ERROR_ATA_ERROR;
+					NextState															<= ST_ERROR;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					RX_EOR 																<= '1';
+					RX_ForcePut 													<= '1';
+					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 			
 			WHEN ST_READ_F_WAIT =>
-				Status																	<= SATA_CMD_STATUS_RECEIVING;
+				Status																	<= SATA_STREAM_STATUS_RECEIVING;
 				
 				RX_SOR																	<= Trans_RX_SOT;
 				
@@ -411,13 +437,20 @@ BEGIN
 					ELSE
 						NextState														<= ST_READ_L_WAIT;
 					END IF;
+				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) THEN
+					RX_EOR 																<= '1';
+					RX_ForcePut 													<= '1';
+					Error_nxt															<= SATA_STREAM_ERROR_ATA_ERROR;
+					NextState															<= ST_ERROR;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					RX_EOR 																<= '1';
+					RX_ForcePut 													<= '1';
+					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 			
 			WHEN ST_READ_N_WAIT =>
-				Status																	<= SATA_CMD_STATUS_RECEIVING;
+				Status																	<= SATA_STREAM_STATUS_RECEIVING;
 				
 				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
 					NULL;
@@ -439,15 +472,20 @@ BEGIN
 					ELSE
 						NextState														<= ST_READ_L_WAIT;
 					END IF;
+				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) THEN
+					RX_EOR 																<= '1';
+					RX_ForcePut 													<= '1';
+					Error_nxt															<= SATA_STREAM_ERROR_ATA_ERROR;
+					NextState															<= ST_ERROR;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
 					RX_EOR 																<= '1';
 					RX_ForcePut 													<= '1';
-					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 			
 			WHEN ST_READ_L_WAIT =>
-				Status																	<= SATA_CMD_STATUS_RECEIVING;
+				Status																	<= SATA_STREAM_STATUS_RECEIVING;
 				
 				RX_EOR																	<= Trans_RX_EOT;
 				
@@ -455,8 +493,15 @@ BEGIN
 					NULL;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
 					NextState															<= ST_IDLE;
+				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) THEN
+					RX_EOR 																<= '1';
+					RX_ForcePut 													<= '1';
+					Error_nxt															<= SATA_STREAM_ERROR_ATA_ERROR;
+					NextState															<= ST_ERROR;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					RX_EOR 																<= '1';
+					RX_ForcePut 													<= '1';
+					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 			
@@ -464,7 +509,7 @@ BEGIN
 			-- ATA command: ATA_CMD_CMD_WRITE
 			-- ============================================================
 			WHEN ST_WRITE_1_WAIT =>
-				Status																	<= SATA_CMD_STATUS_SENDING;
+				Status																	<= SATA_STREAM_STATUS_SENDING;
 				TX_en																		<= '1';
 				
 				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
@@ -474,12 +519,12 @@ BEGIN
 				elsif (Trans_Status = SATA_TRANS_STATUS_DISCARD_TXDATA) then
 					NextState 														<= ST_WRITE_ABORT_TRANSFER;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 				
 			WHEN ST_WRITE_F_WAIT =>
-				Status																	<= SATA_CMD_STATUS_SENDING;
+				Status																	<= SATA_STREAM_STATUS_SENDING;
 				TX_en																		<= '1';
 				
 				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
@@ -505,12 +550,12 @@ BEGIN
 				elsif (Trans_Status = SATA_TRANS_STATUS_DISCARD_TXDATA) then
 					NextState 														<= ST_WRITE_ABORT_TRANSFER;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 			
 			WHEN ST_WRITE_N_WAIT =>
-				Status																	<= SATA_CMD_STATUS_SENDING;
+				Status																	<= SATA_STREAM_STATUS_SENDING;
 				TX_en																		<= '1';
 				
 				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
@@ -536,12 +581,12 @@ BEGIN
 				elsif (Trans_Status = SATA_TRANS_STATUS_DISCARD_TXDATA) then
 					NextState 														<= ST_WRITE_ABORT_TRANSFER;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 			
 			WHEN ST_WRITE_L_WAIT =>
-				Status																	<= SATA_CMD_STATUS_SENDING;
+				Status																	<= SATA_STREAM_STATUS_SENDING;
 				TX_en																		<= '1';
 				
 				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
@@ -551,13 +596,13 @@ BEGIN
 				elsif (Trans_Status = SATA_TRANS_STATUS_DISCARD_TXDATA) then
 					NextState 														<= ST_WRITE_ABORT_TRANSFER;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 
 			when ST_WRITE_ABORT_TRANSFER =>
 					-- Close transfer for Transport Layer
-				Status 																	<= SATA_CMD_STATUS_DISCARD_TXDATA;
+				Status 																	<= SATA_STREAM_STATUS_DISCARD_TXDATA;
 				TX_ForceEOT															<= '1';
 				if (Trans_TX_Ack = '1') then
 					NextState															<= ST_WRITE_DISCARD_REQUEST;
@@ -567,7 +612,7 @@ BEGIN
 				-- Transfer for Transport Layer has been closed.
 				-- Signal DISCARD for Application Layer and wait until that layer
 				-- inserts TX_EOR.
-				Status 																	<= SATA_CMD_STATUS_DISCARD_TXDATA;
+				Status 																	<= SATA_STREAM_STATUS_DISCARD_TXDATA;
 				TX_FIFO_ForceGot 												<= '1';
 
 				if (TX_FIFO_Valid and TX_FIFO_EOR) = '1' then
@@ -579,25 +624,51 @@ BEGIN
 				-- Transport status depends on wether the TransportLayer (IDLE) or the
 				-- CommandLayer (ERROR) is faster in discarding data. Timing depends on
 				-- FIFO depth between both layers.
-				Status 																	<= SATA_CMD_STATUS_DISCARD_TXDATA;
-				if ((Trans_Status = SATA_TRANS_STATUS_ERROR) or
-						(Trans_Status = SATA_TRANS_STATUS_IDLE)) then
+				Status 																	<= SATA_STREAM_STATUS_DISCARD_TXDATA;
+				if (Trans_Status = SATA_TRANS_STATUS_ERROR) then
+					-- fatal error in Transport Layer
 					NextState 														<= ST_ERROR;
-					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
+				elsif ((Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) or
+							 (Trans_Status = SATA_TRANS_STATUS_IDLE)) then
+					-- transport will be ready for new ATA command
+					NextState 														<= ST_ERROR;
+					Error_nxt															<= SATA_STREAM_ERROR_ATA_ERROR;
 				end if;
 				
 			-- ============================================================
 			-- ATA command: ATA_CMD_CMD_FLUSH_CACHE
 			-- ============================================================
 			WHEN ST_FLUSH_CACHE_WAIT =>
-				Status																	<= SATA_CMD_STATUS_EXECUTING;
+				Status																	<= SATA_STREAM_STATUS_EXECUTING;
 				
 				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
 					NULL;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
 					NextState															<= ST_IDLE;
+				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) THEN
+					Error_nxt															<= SATA_STREAM_ERROR_ATA_ERROR;
+					NextState															<= ST_ERROR;
 				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
-					Error_nxt															<= SATA_CMD_ERROR_TRANSPORT_ERROR;
+					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
+					NextState															<= ST_ERROR;
+				END IF;
+				
+			-- ============================================================
+			-- ATA command: ATA_CMD_CMD_DEVICE_RESET
+			-- ============================================================
+			WHEN ST_DEVICE_RESET_WAIT =>
+				Status																	<= SATA_STREAM_STATUS_EXECUTING;
+				
+				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
+					NULL;
+				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
+					NextState															<= ST_IDLE;
+				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) THEN
+					Error_nxt															<= SATA_STREAM_ERROR_ATA_ERROR;
+					NextState															<= ST_ERROR;
+				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
 				END IF;
 
@@ -606,10 +677,17 @@ BEGIN
 			-- stay here if IDENTIFY DEVICE failed, previous error is hold
 			-- ============================================================
 			WHEN ST_ERROR =>
-				Status																	<= SATA_CMD_STATUS_ERROR;
-				if (IDF_DriveInformation.Valid = '1') then
+				Status																	<= SATA_STREAM_STATUS_ERROR;
+
+				if (Trans_Status = SATA_TRANS_STATUS_ERROR) then
+					-- A fatal error occured. Notify above layers and stay here until the above layers
+					-- acknowledge this event, e.g. via a command.
+					-- TODO Feature Request: Re-initialize via Command.
+					NULL;
+				elsif (IDF_DriveInformation.Valid = '1') then
+					-- ready for new command
 					NextState 														<= ST_IDLE;
-				elsif (Command = SATA_CMD_CMD_IDENTIFY_DEVICE) then
+				elsif (Command = SATA_STREAM_CMD_IDENTIFY_DEVICE) then
 					-- TransportLayer
 					Trans_Command_i												<= SATA_TRANS_CMD_TRANSFER;
 					Trans_ATAHostRegisters.Flag_C					<= '1';
@@ -667,7 +745,7 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+			IF (MyReset = '1') THEN
 				Address_LB_us_d						<= (OTHERS => '0');
 				BlockCount_LB_us_d				<= (OTHERS => '0');
 			ELSE
@@ -699,7 +777,7 @@ BEGIN
 				return  l.all;
 			end function;
 
-			constant dummy : boolean := dbg_ExportEncoding("Command Layer", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_CommandLayer.tok");
+			constant dummy : boolean := dbg_ExportEncoding("Streaming Layer", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_StreamingLayer.tok");
 		begin
 		end generate;
 		

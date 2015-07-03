@@ -1,13 +1,25 @@
-arith.pkg.vhdl
+# git files
+.gitignore
 
-# Logical
-arith_prefix_*.vhdl
-arith_same.vhdl
-arith_shifter_barrell.vhdl
+# subnamespace
+
+# --------------------------------------
+arith.pkg.vhdl
 
 # Counters
 arith_counter_gray.vhdl
 arith_counter_ring.vhdl
+
+# Converters
+arith_convert_bin2bcd_tb.vhdl
+
+# Logical
+arith_same.vhdl
+arith_shifter_barrell.vhdl
+
+# Prefix Modules
+arith_prefix_and.vhdl
+arith_prefix_or.vhdl
 
 # Arithmetic
 arith_div.vhdl

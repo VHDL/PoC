@@ -83,7 +83,7 @@ entity sata_PhysicalLayer is
 	generic (
 		DEBUG														: BOOLEAN													:= FALSE;
 		ENABLE_DEBUGPORT								: BOOLEAN													:= FALSE;
-		CLOCK_FREQ											: FREQ														:= 150.0 MHz;
+		CLOCK_FREQ											: FREQ														:= 150 MHz;
 		CONTROLLER_TYPE									: T_SATA_DEVICE_TYPE							:= SATA_DEVICE_TYPE_HOST;
 		ALLOW_SPEED_NEGOTIATION					: BOOLEAN													:= TRUE;
 		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= C_SATA_GENERATION_MAX;
@@ -123,8 +123,6 @@ entity sata_PhysicalLayer is
 		Trans_RP_Reconfig								: out	STD_LOGIC;
 		Trans_RP_SATAGeneration					: out	T_SATA_GENERATION;
 		Trans_RP_ConfigReloaded					: in	STD_LOGIC;
-		Trans_RP_Lock										: out	STD_LOGIC;
-		Trans_RP_Locked									: in	STD_LOGIC;
 
 		Trans_OOB_TX_Command						: out	T_SATA_OOB;
 		Trans_OOB_TX_Complete						: in	STD_LOGIC;
@@ -196,9 +194,7 @@ begin
 			Trans_Status     					=> Trans_Status,
 			Trans_RP_Reconfig					=> Trans_RP_Reconfig,
 			Trans_RP_SATAGeneration		=> Trans_RP_SATAGeneration_i,
-			Trans_RP_ConfigReloaded		=> Trans_RP_ConfigReloaded,
-			Trans_RP_Lock							=> Trans_RP_Lock,
-			Trans_RP_Locked						=> Trans_RP_Locked);
+			Trans_RP_ConfigReloaded		=> Trans_RP_ConfigReloaded);
 
 	-- TODO Feature Request: Replace Trans_RP_* signals by CSE interface
 	Trans_Command 					<= SATA_TRANSCEIVER_CMD_NONE;

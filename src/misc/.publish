@@ -1,6 +1,11 @@
+# git files
+.gitignore
+
 # sub namespaces
 filter/
+stat/
 sync/
 
 # 
+misc_bit_lz.vhdl
 misc_FrequencyMeasurement.vhdl

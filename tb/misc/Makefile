@@ -1,10 +1,11 @@
 DUT_PATH := ../../src/misc
-SRCS := ../../src/common/utils.vhdl \
-	$(DUT_PATH)/scaler.vhdl scaler_tb.vhdl
+SRCS := ../common/my_project.vhdl ../common/my_config_ML505.vhdl \
+        $(DUT_PATH)/../common/utils.vhdl \
+	$(DUT_PATH)/misc_bit_lz.vhdl misc_bit_lz_tb.vhdl
 
 .PHONY: clean
 
-all: scaler_tb
+all: misc_bit_lz_tb
 
 %_tb: poc-obj93.cf
 	ghdl -e --work=poc $@
