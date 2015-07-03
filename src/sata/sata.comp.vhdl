@@ -35,6 +35,7 @@
 -- limitations under the License.
 -- =============================================================================
 
+
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 use			IEEE.NUMERIC_STD.all;
@@ -129,7 +130,7 @@ package satacomp is
 			DEBUG														: BOOLEAN											:= FALSE;
 			ENABLE_DEBUGport								: BOOLEAN											:= FALSE;
 			-- transceiver settings
-			CLOCK_IN_FREQ										: FREQ												:= 150.0 MHz;
+			CLOCK_IN_FREQ										: FREQ												:= 150 MHz;
 			PORTS														: POSITIVE										:= 2;	-- port 0									port 1
 			-- physical layer settings
 			CONTROLLER_TYPES								: T_SATA_DEVICE_TYPE_VECTOR		:= (0 => SATA_DEVICE_TYPE_HOST,	1 => SATA_DEVICE_TYPE_HOST);
@@ -195,7 +196,7 @@ package satacomp is
 		generic (
 			DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 			ENABLE_DEBUGport					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
-			CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
+			CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																				-- Number of PORTS per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)				-- intial SATA Generation
 		);
@@ -246,7 +247,7 @@ package satacomp is
 		generic (
 			DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 			ENABLE_DEBUGport					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
-			CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
+			CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																				-- Number of PORTS per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)			-- intial SATA Generation
 		);
@@ -297,7 +298,7 @@ package satacomp is
 		generic (
 			DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 			ENABLE_DEBUGport					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
-			CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
+			CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																				-- Number of PORTS per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)			-- intial SATA Generation
 		);
@@ -348,7 +349,7 @@ package satacomp is
 	
 	component sata_Transceiver_Stratix2GX_GXB IS
 		generic (
-			CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
+			CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																																		-- Number of PORTS per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= T_SATA_GENERATION_VECTOR'(SATA_GENERATION_2, SATA_GENERATION_2)			-- intial SATA Generation
 		);
@@ -397,7 +398,7 @@ package satacomp is
 	
 	component sata_Transceiver_Stratix4GX_GXB IS
 		generic (
-			CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
+			CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																																		-- Number of PORTS per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= T_SATA_GENERATION_VECTOR'(SATA_GENERATION_2, SATA_GENERATION_2)			-- intial SATA Generation
 		);

@@ -41,8 +41,8 @@ use			PoC.physical.all;
 
 entity io_Debounce is
   generic (
-		CLOCK_FREQ							: FREQ				:= 100.0 MHz;
-		DEBOUNCE_TIME						: TIME				:= 5.0 ms;
+		CLOCK_FREQ							: FREQ				:= 100 MHz;
+		DEBOUNCE_TIME						: TIME				:= 5 ms;
 		BITS										: POSITIVE		:= 1;
 		ADD_INPUT_SYNCHRONIZER	: BOOLEAN			:= TRUE
 	);

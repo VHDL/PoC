@@ -52,12 +52,12 @@ use			PoC.simulation.all;
 architecture tb of physical_tb is
 	signal SimQuiet		: BOOLEAN		:= true;
 	
-	constant CLOCK_FREQ		: FREQ		:= 100.0 MHz;
+	constant CLOCK_FREQ		: FREQ		:= 100 MHz;
 	constant delay				: T_DELAY	:= 256.8 ns;
 	
 	constant cycles				: T_CYCLE	:= TimingToCycles(delay, clock_freq);
 	
-	constant Time1			: TIME			:= 10.0 ns;
+	constant Time1			: TIME			:= 10 ns;
 	constant Time2			: TIME			:= 0.5 us;
 	
 begin

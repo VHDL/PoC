@@ -43,7 +43,7 @@ end;
 
 
 architecture test of lut_Sine_tb is 
-	constant CLOCK_1_PERIOD		: TIME								:= 10.000 ns;
+	constant CLOCK_1_PERIOD		: TIME								:= 10 ns;
 	
 	signal Clock1							: STD_LOGIC						:= '1';
 	signal sim_Stop						: STD_LOGIC						:= '0';

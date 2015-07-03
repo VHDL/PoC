@@ -63,7 +63,7 @@ USE			PoC.xil.ALL;
 ENTITY sata_Transceiver_Series7_GTXE2_Configurator IS
 	GENERIC (
 		DEBUG											: BOOLEAN							:= FALSE;										-- 
-		DRPCLOCK_FREQ							: FREQ								:= 0.0 MHz;									-- 
+		DRPCLOCK_FREQ							: FREQ								:= 0 MHz;										-- 
 		INITIAL_SATA_GENERATION		: T_SATA_GENERATION		:= C_SATA_GENERATION_MAX		-- intial SATA Generation
 	);
 	PORT (

@@ -74,7 +74,7 @@ while [[ $# > 0 ]]; do
 	shift # past argument or value
 done
 
-echo -e $ANSI_MAGENTA "PoC Library publish script" $ANSI_RESET
+echo -e $ANSI_MAGENTA "The PoC Library publish script" $ANSI_RESET
 echo -e $ANSI_MAGENTA "======================================" $ANSI_RESET
 
 if [ "$UNKNOWN_OPTION" == TRUE ]; then

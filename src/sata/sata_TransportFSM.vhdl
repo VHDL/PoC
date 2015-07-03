@@ -148,9 +148,9 @@ ARCHITECTURE rtl OF sata_TransportFSM IS
 	signal Error_r 												: T_SATA_TRANS_ERROR;
 
 	-- Used by timing counters.
-	constant CLOCK_GEN1_FREQ							: FREQ				:= 37.5 MHz;			-- SATAClock frequency in MHz for SATA generation 1
-	constant CLOCK_GEN2_FREQ							: FREQ				:= 75.0 MHz;			-- SATAClock frequency in MHz for SATA generation 2
-	constant CLOCK_GEN3_FREQ							: FREQ				:= 150.0 MHz;			-- SATAClock frequency in MHz for SATA generation 3
+	constant CLOCK_GEN1_FREQ							: FREQ				:= 37500 kHz;		-- SATAClock frequency for SATA generation 1
+	constant CLOCK_GEN2_FREQ							: FREQ				:= 75 MHz;			-- SATAClock frequency for SATA generation 2
+	constant CLOCK_GEN3_FREQ							: FREQ				:= 150 MHz;			-- SATAClock frequency for SATA generation 3
 
 	function TC_Slot(Orig_Slot : natural; SATAGen : T_SATA_GENERATION) return natural is
 		variable result : natural;
