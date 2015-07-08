@@ -57,9 +57,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library poc;
-use poc.fifo.all;
-
 entity uart_sfc is
 
   generic (
@@ -71,8 +68,7 @@ entity uart_sfc is
     TF_MIN_DEPTH : positive;-- := 4;
     TF_CHECK     : boolean;--  := true;
     XOFF_TRIGGER : real;--     := 0.75;
-    XON_TRIGGER  : real;--     := 0.0625;
-    RX_OUT_REGS  : boolean--  := false
+    XON_TRIGGER  : real--      := 0.0625;
   );
 
   port (
@@ -95,50 +91,18 @@ entity uart_sfc is
     
     -- line
     rxd : in  std_logic;
-    txd : out std_logic);
+    txd : out std_logic
+  );
 
 end uart_sfc;
 
+
+library PoC;
+use PoC.fifo.all;
+use PoC.uart.all;
+
 architecture uart_sfc_impl of uart_sfc is
   
-  -----------------------------------------------------------------------------
-  -- component declarations
-  -----------------------------------------------------------------------------
-  
-  component uart_rx
-    generic (
-      OUT_REGS : boolean);
-    port (
-      clk       : in  std_logic;
-      rst       : in  std_logic;
-      bclk_x8_r : in  std_logic;
-      rxd       : in  std_logic;
-      dos       : out std_logic;
-      dout      : out std_logic_vector(7 downto 0));
-  end component;
-  
-  component uart_tx
-    port (
-      clk    : in  std_logic;
-      rst    : in  std_logic;
-      bclk_r : in  std_logic;
-      stb    : in  std_logic;
-      din    : in  std_logic_vector(7 downto 0);
-      rdy    : out std_logic;
-      txd    : out std_logic);
-  end component;
-
-  component uart_bclk
-    generic (
-      CLK_FREQ : positive;
-      BAUD     : positive);
-    port (
-      clk       : in  std_logic;
-      rst       : in  std_logic;
-      bclk_r    : out std_logic;
-      bclk_x8_r : out std_logic);
-  end component;
-
   -----------------------------------------------------------------------------
   -- constants
   -----------------------------------------------------------------------------
@@ -162,9 +126,9 @@ architecture uart_sfc_impl of uart_sfc is
   signal rx_dos  : std_logic;
   signal rx_dout : std_logic_vector(7 downto 0);
 
-  signal tx_stb : std_logic;
+  signal tx_put : std_logic;
   signal tx_din : std_logic_vector(7 downto 0);
-  signal tx_rdy : std_logic;
+  signal tx_ful : std_logic;
 
   signal tf_got   : std_logic;
   signal tf_valid : std_logic;
@@ -193,26 +157,26 @@ begin  -- uart_sfc_impl
   -- components instantiation
   -----------------------------------------------------------------------------
   
-  rx: uart_rx
-    generic map (
-      OUT_REGS => RX_OUT_REGS)
+  rx : uart_rx
     port map (
-        clk       => clk,
-        rst       => rst,
-        bclk_x8_r => bclk_x8_r,
-        rxd       => rxd,
-        dos       => rx_dos,
-        dout      => rx_dout);
+      clk     => clk,
+      rst     => rst,
+      bclk_x8 => bclk_x8_r,
+      rx      => rxd,
+      do      => rx_dout,
+      put     => rx_dos
+    );
 
-  tx: uart_tx
+  tx : uart_tx
     port map (
-        clk    => clk,
-        rst    => rst,
-        bclk_r => bclk_r,
-        stb    => tx_stb,
-        din    => tx_din,
-        rdy    => tx_rdy,
-        txd    => txd);
+      clk  => clk,
+      rst  => rst,
+      bclk => bclk_r,
+      tx   => txd,
+      di   => tx_din,
+      put  => tx_put,
+      ful  => tx_ful
+    );
 
   bclk: uart_bclk
     generic map (
@@ -264,11 +228,11 @@ begin  -- uart_sfc_impl
 
   -- send XOFF only once when fill state goes above trigger level
   send_xoff <= (not xoff_transmitted) when (rf_fs >= XOFF_TRIG) else '0';
-  set_xoff_transmitted <= tx_rdy      when (rf_fs >= XOFF_TRIG) else '0';
+  set_xoff_transmitted <= not tx_ful  when (rf_fs >= XOFF_TRIG) else '0';
 
   -- send XON only once when receive FIFO is almost empty
   send_xon <= xoff_transmitted   when (rf_fs = XON_TRIG) else '0';
-  clr_xoff_transmitted <= tx_rdy when (rf_fs = XON_TRIG) else '0';
+  clr_xoff_transmitted <= not tx_ful when (rf_fs = XON_TRIG) else '0';
 
   -- discard any user supplied XON/XOFF
   discard_user <= '1' when (tf_dout = XON) or (tf_dout = XOFF) else '0';
@@ -278,9 +242,9 @@ begin  -- uart_sfc_impl
             XON   when (send_xon  = '1') else
             tf_dout;
 
-  tx_stb <= send_xoff or send_xon or (tf_valid and (not discard_user));
+  tx_put <= send_xoff or send_xon or (tf_valid and (not discard_user));
   tf_got <= (send_xoff nor send_xon) and
-            tf_valid and tx_rdy;        -- always check tf_valid
+            tf_valid and not tx_ful;        -- always check tf_valid
 
   -- rx / rf control
   rf_put <= (not rf_full) and rx_dos;   -- always check rf_full

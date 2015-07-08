@@ -62,16 +62,22 @@ package uart is
     );
   end component;
 
-  component uart_tx
-    port (
-      clk    : in  std_logic;
-      rst    : in  std_logic;
-      bclk_r : in  std_logic;
-      stb    : in  std_logic;
-      din    : in  std_logic_vector(7 downto 0);
-      rdy    : out std_logic;
-      txd    : out std_logic);
-  end component;
+	component uart_tx is
+		port (
+			-- Global Control
+			clk : in std_logic;
+			rst : in std_logic;
+
+			-- Bit Clock and TX Line
+			bclk : in  std_logic;  -- bit clock, one strobe each bit length
+			tx   : out std_logic;
+
+			-- Byte Stream Input
+			di  : in  std_logic_vector(7 downto 0);
+			put : in  std_logic;
+			ful : out std_logic
+		);
+	end component;
 
   component uart_sfc
     generic (

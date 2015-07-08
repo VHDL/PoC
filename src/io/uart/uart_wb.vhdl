@@ -78,6 +78,10 @@ entity uart_wb is
 
 end uart_wb;
 
+
+library PoC;
+use PoC.uart.all;
+
 architecture rtl of uart_wb is
   component uart_fifo_wb
     port (
@@ -100,46 +104,13 @@ architecture rtl of uart_wb is
       tf_dout  : out std_logic_vector(7 downto 0));
   end component;
 
-  component uart_rx
-    generic (
-      OUT_REGS : boolean);
-    port (
-      clk       : in  std_logic;
-      rst       : in  std_logic;
-      bclk_x8_r : in  std_logic;
-      rxd       : in  std_logic;
-      dos       : out std_logic;
-      dout      : out std_logic_vector(7 downto 0));
-  end component;
-
-  component uart_tx
-    port (
-      clk    : in  std_logic;
-      rst    : in  std_logic;
-      bclk_r : in  std_logic;
-      stb    : in  std_logic;
-      din    : in  std_logic_vector(7 downto 0);
-      rdy    : out std_logic;
-      txd    : out std_logic);
-  end component;
-
-  component uart_bclk
-    generic (
-      CLK_FREQ : positive;
-      BAUD     : positive);
-    port (
-      clk       : in  std_logic;
-      rst       : in  std_logic;
-      bclk_r    : out std_logic;
-      bclk_x8_r : out std_logic);
-  end component;
-  
   signal rf_put   : std_logic;
   signal rf_din   : std_logic_vector(7 downto 0);
   signal rf_full  : std_logic;
   signal tf_got   : std_logic;
   signal tf_valid : std_logic;
   signal tf_dout  : std_logic_vector(7 downto 0);
+  signal tx_ful   : std_logic;
   
   signal bclk_r    : std_logic;
   signal bclk_x8_r : std_logic;
@@ -168,26 +139,27 @@ begin  -- rtl
       tf_valid => tf_valid,
       tf_dout  => tf_dout);
 
-  rx: uart_rx
-    generic map (
-      OUT_REGS => RX_OUT_REGS)
+  rx : uart_rx
     port map (
-      clk       => clk,
-      rst       => rst,
-      bclk_x8_r => bclk_x8_r,
-      rxd       => rxd,
-      dos       => rf_put,
-      dout      => rf_din);
+      clk     => clk,
+      rst     => rst,
+      bclk_x8 => bclk_x8_r,
+      rx      => rxd,
+      do      => rf_din,
+      put     => rf_put
+    );
 
-  tx: uart_tx
+  tx : uart_tx
     port map (
-      clk    => clk,
-      rst    => rst,
-      bclk_r => bclk_r,
-      stb    => tf_valid,
-      din    => tf_dout,
-      rdy    => tf_got,                 -- tf_got is checked inside fifo
-      txd    => txd);
+      clk  => clk,
+      rst  => rst,
+      bclk => bclk_r,
+      tx   => txd,
+      di   => tf_dout,
+      put  => tf_valid,
+      ful  => tx_ful
+    );
+  tf_got <= not tx_ful;                 -- tf_got is checked inside fifo
 
   bclk: uart_bclk
     generic map (
