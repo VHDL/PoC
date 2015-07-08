@@ -10,14 +10,11 @@
 --
 -- Description:
 -- ------------------------------------
--- Inferring / instantiating single-port RAM
+-- Inferring / instantiating single-port read-only memory
 --
 -- - single clock, clock enable
--- - 1 read/write port
+-- - 1 read port
 -- 
--- Written data is passed through the memory and output again as read-data 'q'.
--- This is the normal behaviour of a single-port RAM and also known as
--- write-first mode or read-through-write behaviour.
 -- 
 -- License:
 -- ============================================================================
@@ -52,25 +49,23 @@ use			PoC.utils.all;
 use			PoC.strings.all;
 
 
-entity ocram_sp is
+entity ocrom_sp is
 	generic (
 		A_BITS		: positive;
 		D_BITS		: positive;
 		FILENAME	: STRING		:= ""
 	);
 	port (
-		clk : in	std_logic;
+		clk	: in	std_logic;
 		ce	: in	std_logic;
-		we	: in	std_logic;
-		a	 : in	unsigned(A_BITS-1 downto 0);
-		d	 : in	std_logic_vector(D_BITS-1 downto 0);
-		q	 : out std_logic_vector(D_BITS-1 downto 0)
+		a		: in	unsigned(A_BITS-1 downto 0);
+		q		: out	std_logic_vector(D_BITS-1 downto 0)
 	);
 end entity;
 
 
-architecture rtl of ocram_sp is
-	constant DEPTH			: positive := 2**A_BITS;
+architecture rtl of ocrom_sp is
+	constant DEPTH				: positive := 2**A_BITS;
 
 begin
 
@@ -78,16 +73,16 @@ begin
 		-- RAM can be inferred correctly
 		-- XST Advanced HDL Synthesis generates single-port memory as expected.
 		subtype word_t	is std_logic_vector(D_BITS - 1 downto 0);
-		type		ram_t		is array(0 to DEPTH - 1) of word_t;
+		type		rom_t		is array(0 to DEPTH - 1) of word_t;
 		
 	begin
 		genLoadFile : if (str_length(FileName) /= 0) generate
 			-- Read a *.mem or *.hex file
-			impure function ocram_ReadMemFile(FileName : STRING) return ram_t is
+			impure function ocram_ReadMemFile(FileName : STRING) return rom_t is
 				file FileHandle				: TEXT open READ_MODE is FileName;
 				variable CurrentLine	: LINE;
 				variable TempWord			: STD_LOGIC_VECTOR((div_ceil(word_t'length, 4) * 4) - 1 downto 0);
-				variable Result				: ram_t		:= (others => (others => '0'));
+				variable Result				: rom_t		:= (others => (others => '0'));
 				
 			begin
 				-- discard the first line of a mem file
@@ -106,44 +101,22 @@ begin
 				return Result;
 			end function;
 
-			signal ram		: ram_t		:= ocram_ReadMemFile(FILENAME);
+			constant rom	: rom_t		:= ocram_ReadMemFile(FILENAME);
 			signal a_reg	: unsigned(A_BITS-1 downto 0);
-			
 		begin
 			process (clk)
 			begin
 				if rising_edge(clk) then
 					if ce = '1' then
-						if we = '1' then
-							ram(to_integer(a)) <= d;
-						end if;
-
 						a_reg <= a;
 					end if;
 				end if;
 			end process;
 
-			q <= ram(to_integer(a_reg));					-- gets new data
+			q <= rom(to_integer(a_reg));					-- gets new data
 		end generate;
 		genNoLoadFile : if (str_length(FileName) = 0) generate
-			signal ram			: ram_t;
-			signal a_reg		: unsigned(A_BITS-1 downto 0);
-			
-		begin
-			process (clk)
-			begin
-				if rising_edge(clk) then
-					if ce = '1' then
-						if we = '1' then
-							ram(to_integer(a)) <= d;
-						end if;
-
-						a_reg <= a;
-					end if;
-				end if;
-			end process;
-
-			q <= ram(to_integer(a_reg));					-- gets new data
+			assert FALSE report "Do you really want to generate a block of zeros?" severity FAILURE;
 		end generate;
 	end generate gInfer;
 
@@ -175,9 +148,9 @@ begin
 			port map (
 				clk => clk,
 				ce	=> ce,
-				we	=> we,
+				we	=> '0',
 				a	 => a,
-				d	 => d,
+				d	 => (others => '0'),
 				q	 => q
 			);
 	end generate gAltera;
