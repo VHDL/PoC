@@ -85,6 +85,6 @@ begin
       end if;
     end if;
   end process;
+	tx  <= Buf(0);
 	ful <= Cnt(Cnt'left);
-
 end;

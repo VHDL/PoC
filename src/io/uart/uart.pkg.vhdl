@@ -30,6 +30,9 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;               -- uart_sfc
 
+library PoC;
+use PoC.utils.all;
+
 package uart is
 
   component uart_bclk

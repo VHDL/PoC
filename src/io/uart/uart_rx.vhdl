@@ -58,7 +58,7 @@ architecture rtl of uart_rx is
 
   signal rxs : std_logic_vector(0 to SYNC_DEPTH) := (0      => 'Z', others => '1');
   signal Buf : std_logic_vector(9 downto 0)      := (0      => '0', others => '-');
-  signal Cnt : unsigned(3 downto 0)              := (others => '-');
+  signal Cnt : unsigned(4 downto 0)              := (others => '-');
   signal Vld : std_logic                         := '0';
 
 begin
@@ -91,17 +91,17 @@ begin
 					-- Idle
 					if rxs(SYNC_DEPTH) = '0' then
 						Buf <= (Buf'left => '0', others => '1');
-						Cnt <= (0 => '1', others => '0');
+						Cnt <= to_unsigned(5, Cnt'length);
 					else
 						Buf <= (0 => '0', others => '-');
 						Cnt <= (others => '-');
 					end if;
 				elsif bclk_x8 = '1' then
-					if Cnt(3) = '1' then
+					if Cnt(Cnt'left) = '1' then
 						Buf <= rxs(SYNC_DEPTH) & Buf(Buf'left downto 1);
 						Vld <= rxs(SYNC_DEPTH) and not Buf(1);
 					end if;
-					Cnt <= Cnt + (Cnt(3) & "001");
+					Cnt <= Cnt + (Cnt(4) & Cnt(4) & "001");
 				end if;
       end if;
     end if;
