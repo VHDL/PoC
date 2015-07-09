@@ -539,11 +539,11 @@ BEGIN
 	-- ================================================================
 	-- try counters
 	-- ================================================================
-	TryPerGeneration_Counter_us	<= counter_inc(TryPerGeneration_Counter_us, TryPerGeneration_Counter_rst, TryPerGeneration_Counter_en) WHEN rising_edge(Clock);		-- count attempts per generation
-	GenerationChange_Counter_us	<= counter_inc(GenerationChange_Counter_us, GenerationChange_Counter_rst, GenerationChange_Counter_en) WHEN rising_edge(Clock);		-- count generation changes
+	TryPerGeneration_Counter_us	<= upcounter_next(cnt => TryPerGeneration_Counter_us, rst => TryPerGeneration_Counter_rst, en => TryPerGeneration_Counter_en) WHEN rising_edge(Clock);		-- count attempts per generation
+	GenerationChange_Counter_us	<= upcounter_next(cnt => GenerationChange_Counter_us, rst => GenerationChange_Counter_rst, en => GenerationChange_Counter_en) WHEN rising_edge(Clock);		-- count generation changes
 	
-	TryPerGeneration_Counter_ov	<= counter_eq(TryPerGeneration_Counter_us, ATTEMPTS_PER_GENERATION - 1);
-	GenerationChange_Counter_ov	<= counter_eq(GenerationChange_Counter_us, GENERATION_CHANGE_COUNT);
+	TryPerGeneration_Counter_ov	<= upcounter_equal(TryPerGeneration_Counter_us, ATTEMPTS_PER_GENERATION - 1);
+	GenerationChange_Counter_ov	<= upcounter_equal(GenerationChange_Counter_us, GENERATION_CHANGE_COUNT);
 	
 		
 	-- debug port

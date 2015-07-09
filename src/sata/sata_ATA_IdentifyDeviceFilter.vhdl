@@ -220,9 +220,9 @@ begin
 	blkWordAC : block	
 		signal Counter_us	: UNSIGNED(WORDAC_BITS - 1 downto 0)					:= (others => '0');
 	begin
-		Counter_us				<= counter_inc(cnt => Counter_us, rst => WordAC_rst, en => WordAC_inc) when rising_edge(Clock);
+		Counter_us				<= upcounter_next(cnt => Counter_us, rst => WordAC_rst, en => WordAC_inc) when rising_edge(Clock);
 		WordAC_Address_us	<= Counter_us;
-		WordAC_Finished		<= counter_eq(cnt => Counter_us, value => (2**WORDAC_BITS - 1));
+		WordAC_Finished		<= upcounter_equal(cnt => Counter_us, value => (2**WORDAC_BITS - 1));
 	end block;
 
 	
