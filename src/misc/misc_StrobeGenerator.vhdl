@@ -50,17 +50,15 @@ entity misc_StrobeGenerator is
 end;
 
 
-architecture rtl of misc_StrobeLimiter is
+architecture rtl of misc_StrobeGenerator is
 	constant COUNTER_INIT_VALUE	: POSITIVE		:= STROBE_PERIOD_CYCLES - 2;
-	constant COUNTER_BITS				: NATURAL			:= log2ceilnz(COUNTER_INIT_VALUE);
+	constant COUNTER_BITS				: NATURAL			:= log2ceilnz(COUNTER_INIT_VALUE + 1);
                               
-	signal Counter_rst					: STD_LOGIC;
 	signal Counter_s						: SIGNED(COUNTER_BITS downto 0)		:= to_signed(ite(INITIAL_STROBE, -1, COUNTER_INIT_VALUE), COUNTER_BITS + 1);
 	signal Counter_neg					: STD_LOGIC;
 	
 begin
-	Counter_rst	<= Counter_neg;
-	Counter_s		<= counter_dec(Counter_s, Counter_rst, '1', COUNTER_INIT_VALUE) when rising_edge(Clock);
-	Counter_neg	<= Counter_s(Counter_s'high);	
-	O						<= Counter_neg
+	Counter_s		<= downcounter_next(cnt => Counter_s, rst => Counter_neg, en => '1', init => COUNTER_INIT_VALUE) when rising_edge(Clock);
+	Counter_neg	<= downcounter_neg(cnt => Counter_s);
+	O						<= Counter_neg;
 end;

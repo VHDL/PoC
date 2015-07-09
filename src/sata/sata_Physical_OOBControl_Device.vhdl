@@ -3,17 +3,21 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+--									Martin Zabel
+--
+-- Module:					OOB Sequencer for SATA Physical Layer - Device Side
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- Executes the COMRESET / COMINIT procedure.
+--
+-- If the clock is unstable, than Reset must be asserted.
+-- Automatically tries to establish a communication when Reset is deasserted.
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,7 +38,6 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
-USE			PoC.my_project.ALL;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
@@ -49,23 +52,21 @@ ENTITY sata_Physical_OOBControl_Device IS
 	GENERIC (
 		DEBUG											: BOOLEAN														:= FALSE;												-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: BOOLEAN														:= FALSE;												-- enables the assignment of signals to the debugport
-		CLOCK_FREQ								: FREQ															:= 150.0 MHz;										-- 
+		CLOCK_FREQ								: FREQ															:= 150 MHz;											-- 
 		ALLOW_STANDARD_VIOLATION	: BOOLEAN														:= FALSE;
 		OOB_TIMEOUT								: TIME															:= TIME'low
 	);
 	PORT (
 		Clock											: IN	STD_LOGIC;
-		ClockEnable								: IN	STD_LOGIC;
 		Reset											: IN	STD_LOGIC;
 		-- debug ports
 		DebugPortOut							: OUT	T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
 
-		Retry											: IN	STD_LOGIC;
 		Timeout										: OUT	STD_LOGIC;
 		SATAGeneration						: IN	T_SATA_GENERATION;
+		HostDetected							: OUT	STD_LOGIC;
 		LinkOK										: OUT	STD_LOGIC;
 		LinkDead									: OUT	STD_LOGIC;
-		ReceivedReset							: OUT	STD_LOGIC;
 		
 		OOB_TX_Command						: OUT	T_SATA_OOB;
 		OOB_TX_Complete						: IN	STD_LOGIC;
@@ -87,11 +88,11 @@ ARCHITECTURE rtl OF sata_Physical_OOBControl_Device IS
 	CONSTANT CLOCK_GEN2_FREQ							: FREQ				:= CLOCK_FREQ / 2.0;			-- SATAClock frequency in MHz for SATA generation 2
 	CONSTANT CLOCK_GEN3_FREQ							: FREQ				:= CLOCK_FREQ / 1.0;			-- SATAClock frequency in MHz for SATA generation 3
 
-	CONSTANT DEFAULT_OOB_TIMEOUT					: TIME				:= 880.0 us;
+	CONSTANT DEFAULT_OOB_TIMEOUT					: TIME				:= 880 us;
 	
 	CONSTANT OOB_TIMEOUT_I								: TIME				:= ite((OOB_TIMEOUT = TIME'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
-	CONSTANT COMRESET_TIMEOUT							: TIME				:= 450.0 ns;
-	CONSTANT COMWAKE_TIMEOUT							: TIME				:= 250.0 ns;
+	CONSTANT COMRESET_TIMEOUT							: TIME				:= 450 ns;
+	CONSTANT COMWAKE_TIMEOUT							: TIME				:= 250 ns;
 
 	CONSTANT TTID1_OOB_TIMEOUT_GEN1				: NATURAL			:= 0;
 	CONSTANT TTID1_OOB_TIMEOUT_GEN2				: NATURAL			:= 1;
@@ -130,7 +131,6 @@ ARCHITECTURE rtl OF sata_Physical_OOBControl_Device IS
 		ST_DEV_SEND_ALIGN,
 		ST_DEV_TIMEOUT,
 		ST_DEV_LINK_OK,
-		ST_DEV_LINK_BROKEN,
 		ST_DEV_LINK_DEAD
 	);
 
@@ -139,6 +139,7 @@ ARCHITECTURE rtl OF sata_Physical_OOBControl_Device IS
 	SIGNAL NextState									: T_STATE;
 	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS getFSMEncoding_gray(DEBUG);
 
+	SIGNAL HostDetected_i							: STD_LOGIC;
 	SIGNAL LinkOK_i										: STD_LOGIC;
 	SIGNAL LinkDead_i									: STD_LOGIC;
 	SIGNAL Timeout_i									: STD_LOGIC;
@@ -173,16 +174,16 @@ BEGIN
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+			if (Reset = '1') then
 				State			<= ST_DEV_RESET;
-			ELSIF (ClockEnable = '1') THEN
+			else
 				State			<= NextState;
-			END IF;
+			end if;
 		END IF;
 	END PROCESS;
 
 
-	PROCESS(State, SATAGeneration, Retry, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, TC1_Timeout, TC2_Timeout)
+	PROCESS(State, SATAGeneration, OOB_TX_Complete, OOB_RX_Received, RX_Valid, RX_Primitive, TC1_Timeout, TC2_Timeout)
 	BEGIN
 		NextState									<= State;
 		
@@ -198,10 +199,10 @@ BEGIN
 		TC2_Load									<= '0';
 		TC2_Slot									<= 0;
 	
+		HostDetected_i						<= '0';
 		LinkOK_i									<= '0';
 		LinkDead_i								<= '0';
 		Timeout_i									<= '0';
-		ReceivedReset_i						<= '0';
 		
 		OOB_TX_Command_i					<= SATA_OOB_NONE;
 		OOB_HandshakeComplete_i		<= '0';
@@ -216,35 +217,17 @@ BEGIN
 																																							 TTID1_OOB_TIMEOUT_GEN3)));
 			NextState										<= ST_DEV_TIMEOUT;
 			
-		-- treat COMRESET as communication reset
-		ELSIF ((OOB_RX_Received = SATA_OOB_COMRESET) AND
-					 ((State /= ST_DEV_WAIT_HOST_COMRESET) OR
-					  (State /= ST_DEV_WAIT_AFTER_HOST_COMRESET)))
-		THEN
-			ReceivedReset_i							<= '1';
-
-			TC1_Load										<= '1';
-			TC2_Load										<= '1';
-			TC1_Slot										<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
-																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
-																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
-																																								TTID1_OOB_TIMEOUT_GEN3)));
-			TC2_Slot										<= ite((SATAGeneration = SATA_GENERATION_1), TTID2_COMRESET_TIMEOUT_GEN1,
-																		 ite((SATAGeneration = SATA_GENERATION_2), TTID2_COMRESET_TIMEOUT_GEN2,
-																		 ite((SATAGeneration = SATA_GENERATION_3), TTID2_COMRESET_TIMEOUT_GEN3,
-																																								TTID2_COMRESET_TIMEOUT_GEN3)));
-			NextState										<= ST_DEV_WAIT_AFTER_HOST_COMRESET;
 		ELSE
 			CASE State IS
 				WHEN ST_DEV_RESET =>
-					IF (Retry = '1') THEN
+					-- Start automatically when Reset is deasserted.
 						TC1_Load							<= '1';
 						TC1_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
 																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
 																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
 																																								TTID1_OOB_TIMEOUT_GEN3)));
 						NextState							<= ST_DEV_WAIT_HOST_COMRESET;
-					END IF;
+
 
 				WHEN ST_DEV_WAIT_HOST_COMRESET =>
 					IF (OOB_RX_Received = SATA_OOB_COMRESET) THEN																										-- host comreset detected
@@ -259,9 +242,11 @@ BEGIN
 																		 ite((SATAGeneration = SATA_GENERATION_3), TTID2_COMRESET_TIMEOUT_GEN3,
 																																								TTID2_COMRESET_TIMEOUT_GEN3)));
 						NextState							<= ST_DEV_WAIT_AFTER_HOST_COMRESET;
+						HostDetected_i 				<= '1'; 
 					END IF;
 		
 				WHEN ST_DEV_WAIT_AFTER_HOST_COMRESET =>
+					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
 					TC1_en									<= '1';
 					TC2_en									<= '1';
 
@@ -278,8 +263,8 @@ BEGIN
 					END IF;
 
 				WHEN ST_DEV_SEND_COMINIT =>
-					TC1_en									<= '1';
 					TX_Primitive						<= SATA_PRIMITIVE_DIAL_TONE;	--SATA_PRIMITIVE_ALIGN;
+					TC1_en									<= '1';
 					
 					IF (OOB_TX_Complete = '1') THEN
 						NextState					<= ST_DEV_WAIT_HOST_COMWAKE;
@@ -342,59 +327,38 @@ BEGIN
 					
 					IF (OOB_RX_Received /= SATA_OOB_NONE) THEN
 						NextState							<= ST_DEV_LINK_DEAD;
-					ELSIF (RX_Valid = '0') THEN
-						NextState							<= ST_DEV_LINK_BROKEN;
-					END IF;
-				
-				WHEN ST_DEV_LINK_BROKEN =>
-					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
-					TC1_en									<= '0';
-					
-					IF (RX_Valid = '1') THEN
-						NextState							<= ST_DEV_LINK_OK;
-					END IF;
-				
-					IF (Retry = '1') THEN
-						TC1_Load							<= '1';
-						TC1_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
-																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
-																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
-																																							 TTID1_OOB_TIMEOUT_GEN3)));
-						NextState							<= ST_DEV_WAIT_HOST_COMRESET;
 					END IF;
 				
 				WHEN ST_DEV_LINK_DEAD =>
+					-- Reset must be asserted to leave this state.
 					LinkDead_i							<= '1';
 					
-					IF (Retry = '1') THEN
 						TC1_Load							<= '1';
 						TC1_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
 																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
 																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
 																																							 TTID1_OOB_TIMEOUT_GEN3)));
 						NextState							<= ST_DEV_WAIT_HOST_COMRESET;
-					END IF;
 				
 				WHEN ST_DEV_TIMEOUT =>
+					-- Reset must be asserted to leave this state.
 					Timeout_i								<= '1';
 				
-					IF (Retry = '1') THEN
 						TC1_Load							<= '1';
 						TC1_Slot							<= ite((SATAGeneration = SATA_GENERATION_1), TTID1_OOB_TIMEOUT_GEN1,
 																		 ite((SATAGeneration = SATA_GENERATION_2), TTID1_OOB_TIMEOUT_GEN2,
 																		 ite((SATAGeneration = SATA_GENERATION_3), TTID1_OOB_TIMEOUT_GEN3,
 																																							 TTID1_OOB_TIMEOUT_GEN3)));
 						NextState							<= ST_DEV_WAIT_HOST_COMRESET;
-					END IF;
 				
 			END CASE;
 		END IF;
 	END PROCESS;
 	
+	HostDetected						<= HostDetected_i;
 	LinkOK									<= LinkOK_i;
 	LinkDead								<= LinkDead_i;
 	Timeout									<= Timeout_i;
-	ReceivedReset						<= ReceivedReset_i;
 
 	OOB_TX_Command					<= OOB_TX_Command_i;
 	OOB_HandshakeComplete		<= OOB_HandshakeComplete_i;
@@ -444,14 +408,13 @@ BEGIN
 			return  l.all;
 		end function;
 		
-		CONSTANT test : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodings,  MY_PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Device.tok");
+		CONSTANT dummy : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Device.tok");
 	BEGIN
 		DebugPortOut.FSM												<= dbg_EncodeState(State);
-		DebugPortOut.Retry											<= Retry;
+		DebugPortOut.DeviceOrHostDetected				<= HostDetected_i;
 		DebugPortOut.Timeout										<= Timeout_i;
 		DebugPortOut.LinkOK											<= LinkOK_i;
 		DebugPortOut.LinkDead										<= LinkDead_i;
-		DebugPortOut.ReceivedReset							<= ReceivedReset_i;
 		
 		DebugPortOut.OOB_TX_Command							<= OOB_TX_Command_i;
 		DebugPortOut.OOB_TX_Complete						<= OOB_TX_Complete;

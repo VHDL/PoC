@@ -1,0 +1,7 @@
+NET "clk" TNM_NET = "clk";
+TIMESPEC "TS_clk" = PERIOD "clk" 20 ns HIGH 50 %;
+
+NET "clk"  LOC = "T9" | IOSTANDARD = LVCMOS33 ;
+NET "rst_in"  LOC = "L14" | IOSTANDARD = LVCMOS33 ;
+NET "rxd"  LOC = "T13" | IOSTANDARD = LVCMOS33 ;
+NET "txd"  LOC = "R13" | IOSTANDARD = LVCMOS33 ;

@@ -3,18 +3,18 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+--
+-- Module:					Synchronizes a reset signal across clock-domain boundaries
 --
 -- Description:
 -- ------------------------------------
---		This module synchronizes multiple flag bits from clock domain
---		'Clock1' to clock domain 'Clock'. The clock domain boundary crossing is
---		done by two synchronizer D-FFs. All bits are independent from each other.
+--		This module synchronizes one reset signal from clock-domain 'Clock1' to
+--		clock-domain 'Clock'. The clock-domain boundary crossing is done by two
+--		synchronizer D-FFs. All bits are independent from each other.
 -- 
 --		ATTENTION:
---			Only use this synchronizer for reset signals.
+--			Use this synchronizer only for reset signals.
 --
 --		CONSTRAINTS:
 --			General:
@@ -22,7 +22,7 @@
 --				timing ignore constraints to all '_async' signals.
 --			
 --			Xilinx:
---				In case of a xilinx device, this module will instantiate the optimized
+--				In case of a Xilinx device, this module will instantiate the optimized
 --				module xil_SyncReset. Please attend to the notes of xil_SyncReset.
 --		
 --			Altera sdc file:
@@ -30,7 +30,7 @@
 --			
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,77 +46,75 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library	IEEE;
+use			IEEE.STD_LOGIC_1164.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
+library	PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
 
 
-ENTITY sync_Reset IS
-  PORT (
-		Clock			: IN	STD_LOGIC;		-- <Clock>	output clock domain
-		Input			: IN	STD_LOGIC;		-- @async:	reset input
-		Output		: OUT STD_LOGIC			-- @Clock:	reset output
+entity sync_Reset is
+  port (
+		Clock			: in	STD_LOGIC;		-- <Clock>	output clock domain
+		Input			: in	STD_LOGIC;		-- @async:	reset input
+		Output		: out STD_LOGIC			-- @Clock:	reset output
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF sync_Reset IS
+architecture rtl of sync_Reset is
 
-BEGIN
-	genXilinx0 : IF (VENDOR /= VENDOR_XILINX) GENERATE
-		ATTRIBUTE ASYNC_REG						: STRING;
-		ATTRIBUTE SHREG_EXTRACT				: STRING;
+begin
+	genGeneric : if (VENDOR /= VENDOR_XILINX) generate
+		attribute ASYNC_REG										: STRING;
+		attribute SHREG_EXTRACT								: STRING;
 		
-		SIGNAL Data_async											: STD_LOGIC;
-		SIGNAL Data_meta											: STD_LOGIC		:= '0';
-		SIGNAL Data_sync											: STD_LOGIC		:= '0';
+		signal Data_async											: STD_LOGIC;
+		signal Data_meta											: STD_LOGIC		:= '0';
+		signal Data_sync											: STD_LOGIC		:= '0';
 		
 		-- Mark registers as asynchronous
-		ATTRIBUTE ASYNC_REG			OF Data_meta	: SIGNAL IS "TRUE";
-		ATTRIBUTE ASYNC_REG			OF Data_sync	: SIGNAL IS "TRUE";
+		attribute ASYNC_REG			of Data_meta	: signal is "TRUE";
+		attribute ASYNC_REG			of Data_sync	: signal is "TRUE";
 
 		-- Prevent XST from translating two FFs into SRL plus FF
-		ATTRIBUTE SHREG_EXTRACT OF Data_meta	: SIGNAL IS "NO";
-		ATTRIBUTE SHREG_EXTRACT OF Data_sync	: SIGNAL IS "NO";
+		attribute SHREG_EXTRACT of Data_meta	: signal is "NO";
+		attribute SHREG_EXTRACT of Data_sync	: signal is "NO";
 		
-	BEGIN
+	begin
 		Data_async	<= Input;
 	
-		PROCESS(Clock, Input)
-		BEGIN
-			IF (Data_async = '1') THEN
+		process(Clock, Input)
+		begin
+			if (Data_async = '1') then
 				Data_meta		<= '1';
 				Data_sync		<= '1';
-			ELSIF rising_edge(Clock) THEN
+			elsif rising_edge(Clock) then
 				Data_meta		<= '0';
 				Data_sync		<= Data_meta;
-			END IF;
-		END PROCESS;		
+			end if;
+		end process;		
 				
 		Output		<= Data_sync;
-	END GENERATE;
+	end generate;
 
-	genXilinx1 : IF (VENDOR = VENDOR_XILINX) GENERATE
-		-- locally component declaration removes the dependancy to 'PoC.xil.ALL'
-		COMPONENT xil_SyncReset IS
-			PORT (
-				Clock					: IN	STD_LOGIC;		-- Clock to be synchronized to
-				Input					: IN	STD_LOGIC;		-- Data to be synchronized
-				Output				: OUT	STD_LOGIC			-- synchronised data
+	genXilinx : if (VENDOR = VENDOR_XILINX) generate
+		-- locally component declaration removes the dependancy to 'PoC.xil.all'
+		component xil_SyncReset is
+			port (
+				Clock		: in	STD_LOGIC;	-- Clock to be synchronized to
+				Input		: in	STD_LOGIC;	-- high active asynchronous reset
+				Output	: out	STD_LOGIC		-- "Synchronised" reset signal
 			);
-		END COMPONENT;
-	BEGIN
+		end component;
+	begin
 		-- use dedicated and optimized 2 D-FF synchronizer for Xilinx FPGAs
 		sync : xil_SyncReset
-			PORT MAP (
+			port map (
 				Clock			=> Clock,
 				Input			=> Input,
 				Output		=> Output
 			);
-	END GENERATE;
-
-END;
+	end generate;
+end;

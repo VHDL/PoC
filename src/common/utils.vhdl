@@ -37,28 +37,30 @@ use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
 
 library	PoC;
+use			PoC.my_config.all;
 
 
 package utils is
   --+ Environment +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   -- Distinguishes Simulation from Synthesis
-	function SIMULATION return boolean;
+	constant SIMULATION					: BOOLEAN;				-- deferred constant declaration
+	constant POC_VERBOSE				: BOOLEAN		:= MY_VERBOSE;
 	
 	-- Type declarations
 	-- ==========================================================================
 	
   --+ Vectors of primitive standard types +++++++++++++++++++++++++++++++++++++
-	TYPE		T_BOOLVEC						IS ARRAY(NATURAL RANGE <>) OF BOOLEAN;
-	TYPE		T_INTVEC						IS ARRAY(NATURAL RANGE <>) OF INTEGER;
-	TYPE		T_NATVEC						IS ARRAY(NATURAL RANGE <>) OF NATURAL;
-	TYPE		T_POSVEC						IS ARRAY(NATURAL RANGE <>) OF POSITIVE;
-	TYPE		T_REALVEC						IS ARRAY(NATURAL RANGE <>) OF REAL;
+	type		T_BOOLVEC						is array(NATURAL range <>) of BOOLEAN;
+	type		T_INTVEC						is array(NATURAL range <>) of INTEGER;
+	type		T_NATVEC						is array(NATURAL range <>) of NATURAL;
+	type		T_POSVEC						is array(NATURAL range <>) of POSITIVE;
+	type		T_REALVEC						is array(NATURAL range <>) of REAL;
 	
 	--+ Integer subranges sometimes useful for speeding up simulation ++++++++++
-	SUBTYPE T_INT_8							IS INTEGER RANGE -128 TO 127;
-	SUBTYPE T_INT_16						IS INTEGER RANGE -32768 TO 32767;
-	SUBTYPE T_UINT_8						IS INTEGER RANGE 0 TO 255;
-	SUBTYPE T_UINT_16						IS INTEGER RANGE 0 TO 65535;
+	subtype T_INT_8							is INTEGER range -128 to 127;
+	subtype T_INT_16						is INTEGER range -32768 to 32767;
+	subtype T_UINT_8						is INTEGER range 0 to 255;
+	subtype T_UINT_16						is INTEGER range 0 to 65535;
 
 	--+ Enums ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	-- Intellectual Property (IP) type
@@ -71,11 +73,12 @@ package utils is
 	type T_BYTE_ORDER			is (LITTLE_ENDIAN, BIG_ENDIAN);
 	
 	-- rounding style
-	type T_ROUNDING_STYLE	is (ROUND_TO_NEAREST, ROUND_TO_ZERO, ROUND_TO_INF, ROUND_UP, ROUND_DOWN);
+	type T_ROUNDING_STYLE	is (ROUND_NONE, ROUND_TO_NEAREST, ROUND_TO_ZERO, ROUND_TO_INF, ROUND_UP, ROUND_DOWN);
 
-	subtype T_BCD					is UNSIGNED(3 downto 0);
-	type		T_BCD_VECTOR	is array (NATURAL range <>) of T_BCD;
+	type T_BCD				is array(3 downto 0) of std_logic;
+	type T_BCD_VECTOR	is array(NATURAL range <>) of T_BCD;
 	constant C_BCD_MINUS	: T_BCD		:= "1010";
+	constant C_BCD_OFF		: T_BCD		:= "1011";
 	
 	
 	-- Function declarations
@@ -108,6 +111,7 @@ package utils is
 	function ite(cond : BOOLEAN; value1 : REAL;	value2 : REAL) return REAL;
 	function ite(cond : BOOLEAN; value1 : STD_LOGIC; value2 : STD_LOGIC) return STD_LOGIC;
 	function ite(cond : BOOLEAN; value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;
+	function ite(cond : BOOLEAN; value1 : BIT_VECTOR; value2 : BIT_VECTOR) return BIT_VECTOR;
 	function ite(cond : BOOLEAN; value1 : UNSIGNED; value2 : UNSIGNED) return UNSIGNED;
 	function ite(cond : BOOLEAN; value1 : CHARACTER; value2 : CHARACTER) return CHARACTER;
 	function ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) return STRING;
@@ -153,10 +157,10 @@ package utils is
 	--+ Basic Vector Utilities +++++++++++++++++++++++++++++++++++++++++++++++++
 
   -- Aggregate Functions
-  FUNCTION slv_or  (vec : STD_LOGIC_VECTOR) RETURN STD_LOGIC;
-  FUNCTION slv_nor (vec : STD_LOGIC_VECTOR) RETURN STD_LOGIC;
-  FUNCTION slv_and (vec : STD_LOGIC_VECTOR) RETURN STD_LOGIC;
-  FUNCTION slv_nand(vec : STD_LOGIC_VECTOR) RETURN STD_LOGIC;
+  function slv_or  (vec : STD_LOGIC_VECTOR) return STD_LOGIC;
+  function slv_nor (vec : STD_LOGIC_VECTOR) return STD_LOGIC;
+  function slv_and (vec : STD_LOGIC_VECTOR) return STD_LOGIC;
+  function slv_nand(vec : STD_LOGIC_VECTOR) return STD_LOGIC;
   function slv_xor (vec : std_logic_vector) return std_logic;
 	-- NO slv_xnor! This operation would not be well-defined as
 	-- not xor(vec) /= vec_{n-1} xnor ... xnor vec_1 xnor vec_0 iff n is odd.
@@ -201,8 +205,7 @@ package utils is
   function lssb(arg : std_logic_vector) return std_logic_vector;
   function lssb(arg : bit_vector) return bit_vector;
 
-  -- Returns the position of the least-significant set bit assigning
-  -- the rightmost position an index of zero (0).
+  -- Returns the index of the least-significant set bit.
   --
   -- @synthesis supported
   --
@@ -247,7 +250,7 @@ package body utils is
 
 	-- Environment
 	-- ==========================================================================
-	function SIMULATION return boolean is
+	function is_simulation return boolean is
 		variable ret : boolean;
 	begin
 		ret := false;
@@ -256,6 +259,9 @@ package body utils is
 		--synthesis translate_on
 		return	ret;
 	end function;
+
+	-- deferred constant assignment
+	constant SIMULATION	: BOOLEAN		:= is_simulation;
 
 	-- Divisions: div_*
 	FUNCTION div_ceil(a : NATURAL; b : POSITIVE) RETURN NATURAL IS	-- calculates: ceil(a / b)
@@ -355,6 +361,15 @@ package body utils is
 	end function;
 
 	function ite(cond : BOOLEAN; value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+	
+	function ite(cond : BOOLEAN; value1 : BIT_VECTOR; value2 : BIT_VECTOR) return BIT_VECTOR is
 	begin
 		if cond then
 			return value1;
@@ -542,33 +557,33 @@ package body utils is
 
 	-- Vector aggregate functions: slv_*
 	-- ==========================================================================
-	FUNCTION slv_or(vec : STD_LOGIC_VECTOR) RETURN STD_LOGIC IS
-		VARIABLE Result : STD_LOGIC := '0';
-	BEGIN
-		FOR i IN vec'range LOOP
-			Result	:= Result OR vec(i);
-		END LOOP;
-		RETURN Result;
-	END FUNCTION;
+	function slv_or(vec : STD_LOGIC_VECTOR) return STD_LOGIC is
+		variable Result : STD_LOGIC := '0';
+	begin
+		for i in vec'range loop
+			Result	:= Result or vec(i);
+		end loop;
+		return Result;
+	end function;
 
-	FUNCTION slv_nor(vec : STD_LOGIC_VECTOR) RETURN STD_LOGIC IS
-	BEGIN
-		RETURN NOT slv_or(vec);
-	END FUNCTION;
+	function slv_nor(vec : STD_LOGIC_VECTOR) return STD_LOGIC is
+	begin
+		return not slv_or(vec);
+	end function;
 
-	FUNCTION slv_and(vec : STD_LOGIC_VECTOR) RETURN STD_LOGIC IS
-		VARIABLE Result : STD_LOGIC := '1';
-	BEGIN
-		FOR i IN vec'range LOOP
-			Result	:= Result AND vec(i);
-		END LOOP;
-		RETURN Result;
-	END FUNCTION;
+	function slv_and(vec : STD_LOGIC_VECTOR) return STD_LOGIC is
+		variable Result : STD_LOGIC := '1';
+	begin
+		for i in vec'range loop
+			Result	:= Result and vec(i);
+		end loop;
+		return Result;
+	end function;
 
-	FUNCTION slv_nand(vec : STD_LOGIC_VECTOR) RETURN STD_LOGIC IS
-	BEGIN
-		RETURN NOT slv_and(vec);
-	END FUNCTION;
+	function slv_nand(vec : STD_LOGIC_VECTOR) return STD_LOGIC is
+	begin
+		return not slv_and(vec);
+	end function;
 
 	function slv_xor(vec : std_logic_vector) return std_logic is
 		variable  res : std_logic;
@@ -582,25 +597,25 @@ package body utils is
 	
 	-- Convert to bit: to_sl
 	-- ==========================================================================
-	FUNCTION to_sl(Value : BOOLEAN) RETURN STD_LOGIC IS
-	BEGIN
-		RETURN ite(Value, '1', '0');
-	END FUNCTION;
+	function to_sl(Value : BOOLEAN) return STD_LOGIC is
+	begin
+		return ite(Value, '1', '0');
+	end function;
 
-	FUNCTION to_sl(Value : CHARACTER) RETURN STD_LOGIC IS
-	BEGIN
-		CASE Value IS
-			WHEN 'U' =>			RETURN 'U';
-			WHEN '0' =>			RETURN '0';
-			WHEN '1' =>			RETURN '1';
-			WHEN 'Z' =>			RETURN 'Z';
-			WHEN 'W' =>			RETURN 'W';
-			WHEN 'L' =>			RETURN 'L';
-			WHEN 'H' =>			RETURN 'H';
-			WHEN '-' =>			RETURN '-';
-			WHEN OTHERS =>	RETURN 'X';
-		END CASE;
-	END FUNCTION;
+	function to_sl(Value : CHARACTER) return STD_LOGIC is
+	begin
+		case Value is
+			when 'U' =>			return 'U';
+			when '0' =>			return '0';
+			when '1' =>			return '1';
+			when 'Z' =>			return 'Z';
+			when 'W' =>			return 'W';
+			when 'L' =>			return 'L';
+			when 'H' =>			return 'H';
+			when '-' =>			return '-';
+			when OTHERS =>	return 'X';
+		end case;
+	end function;
 
 	-- Convert to vector: to_slv
 	-- ==========================================================================
@@ -612,9 +627,9 @@ package body utils is
 		return  res;
 	END FUNCTION;
 
-	FUNCTION to_index(slv : UNSIGNED; max : NATURAL := 0) RETURN INTEGER IS
+	function to_index(slv : UNSIGNED; max : NATURAL := 0) return INTEGER is
 		variable  res : integer;
-	BEGIN
+	begin
 		if (slv'length = 0) then	return 0;	end if;
 	
 		res := to_integer(slv);
@@ -622,12 +637,12 @@ package body utils is
 			res := imin(res, max);
 		end if;
 		return  res;
-	END FUNCTION;
+	end function;
 
-	FUNCTION to_index(slv : STD_LOGIC_VECTOR; max : NATURAL := 0) RETURN INTEGER IS
-	BEGIN
-		RETURN to_index(unsigned(slv), max);
-	END FUNCTION;
+	function to_index(slv : STD_LOGIC_VECTOR; max : NATURAL := 0) return INTEGER is
+	begin
+		return to_index(unsigned(slv), max);
+	end function;
 	
   -- is_*
   -- ==========================================================================
@@ -741,7 +756,7 @@ package body utils is
 		variable result		: std_logic_vector(2**value'length - 1 downto 0);
 	begin
 		result	:= (others => '0');
-		result(2 ** to_integer(unsigned(value))) := '1';
+		result(to_index(value)) := '1';
 		return result;
 	end function;
 	

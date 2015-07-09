@@ -3,17 +3,18 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	Debounce module for BITS many unreliable input pins
+--
 -- Description:
 -- ------------------------------------
---		TODO
+--		This module debounces several input pins. Each wire (pin) is feed through
+--		a PoC.io.GlitchFilter. An optional two FF input synchronizes can be added.
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,63 +30,63 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.physical.ALL;
+library PoC;
+use			PoC.utils.all;
+use			PoC.physical.all;
 
 
-ENTITY io_Debounce IS
-  GENERIC (
-		CLOCK_FREQ							: FREQ				:= 100.0 MHz;
-		DEBOUNCE_TIME						: TIME				:= 5.0 ms;
+entity io_Debounce is
+  generic (
+		CLOCK_FREQ							: FREQ				:= 100 MHz;
+		DEBOUNCE_TIME						: TIME				:= 5 ms;
 		BITS										: POSITIVE		:= 1;
 		ADD_INPUT_SYNCHRONIZER	: BOOLEAN			:= TRUE
 	);
-  PORT (
-		Clock		: IN STD_LOGIC;
-		Input		: IN STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
-		Output	: OUT STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0)
+  port (
+		Clock		: in	STD_LOGIC;
+		Input		: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);
+		Output	: out	STD_LOGIC_VECTOR(BITS - 1 downto 0)
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF io_Debounce IS
-	SIGNAL Input_sync					: STD_LOGIC_VECTOR(Input'range);
+architecture rtl of io_Debounce is
+	signal Input_sync					: STD_LOGIC_VECTOR(Input'range);
 
-BEGIN
+begin
 	-- input synchronization
-	genSync0 : IF (ADD_INPUT_SYNCHRONIZER = FALSE) GENERATE
+	genNoSync : if (ADD_INPUT_SYNCHRONIZER = FALSE) generate
 		Input_sync	<= Input;
-	END GENERATE;	
-	genSync1 : IF (ADD_INPUT_SYNCHRONIZER = TRUE) GENERATE
-		sync : ENTITY PoC.sync_Flag
-			GENERIC MAP (
+	end generate;	
+	genSync : if (ADD_INPUT_SYNCHRONIZER = TRUE) generate
+		sync : entity PoC.sync_Flag
+			generic map (
 				BITS		=> BITS
 			)
-			PORT MAP (
+			port map (
 				Clock		=> Clock,				-- Clock to be synchronized to
 				Input		=> Input,				-- Data to be synchronized
 				Output	=> Input_sync		-- synchronised data
 			);
-	END GENERATE;
+	end generate;
 
 	-- glitch filter
-	genGF : FOR I IN 0 TO BITS - 1 GENERATE
-		CONSTANT SPIKE_SUPPRESSION_CYCLES		: NATURAL		:= TimingToCycles(DEBOUNCE_TIME, CLOCK_FREQ);
-	BEGIN
-		GF : ENTITY PoC.io_GlitchFilter
-			GENERIC MAP (
+	genGF : for i in 0 to BITS - 1 generate
+		constant SPIKE_SUPPRESSION_CYCLES		: NATURAL		:= TimingToCycles(DEBOUNCE_TIME, CLOCK_FREQ);
+	begin
+		GF : entity PoC.io_GlitchFilter
+			generic map (
 				HIGH_SPIKE_SUPPRESSION_CYCLES		=> SPIKE_SUPPRESSION_CYCLES,
 				LOW_SPIKE_SUPPRESSION_CYCLES		=> SPIKE_SUPPRESSION_CYCLES
 			)
-			PORT MAP (
+			port map (
 				Clock		=> Clock,
-				Input		=> Input_sync(I),
-				Output	=> Output(I)
+				Input		=> Input_sync(i),
+				Output	=> Output(i)
 			);
-	END GENERATE;
-END;
+	end generate;
+end;

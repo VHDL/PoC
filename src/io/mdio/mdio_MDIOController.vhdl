@@ -37,16 +37,17 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.io.ALL;
 USE			PoC.net.ALL;
 
 
 ENTITY Eth_MDIOController IS
 	GENERIC (
-		DEBUG						: BOOLEAN												:= TRUE;
-		CLOCK_FREQ_MHZ						: REAL													:= 125.0;										-- 125 MHz
---		PREAMBLE_SUPRESSION				: BOOLEAN												:= FALSE;										-- TODO: supported by Marvel 88E1111, minimum preamble length = 1 bit
-		BAUDRATE_BAUD							: REAL													:= 1.0 * 1000.0 * 1000.0		-- 1.0 MBit/s
+		DEBUG											: BOOLEAN							:= TRUE;
+		CLOCK_FREQ								: FREQ								:= 125 MHz;				-- 125 MHz
+--		PREAMBLE_SUPRESSION				: BOOLEAN							:= FALSE;					-- TODO: supported by Marvel 88E1111's, minimum preamble length = 1 bit
+		BAUDRATE									: BAUD								:= 1 MBd					-- 1.0 MBaud
 	);
 	PORT (
 		Clock											: IN	STD_LOGIC;
@@ -77,8 +78,6 @@ END;
 ARCHITECTURE rtl OF Eth_MDIOController IS
 	ATTRIBUTE KEEP											: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING							: STRING;
-
-	CONSTANT MD_CLOCK_FREQUENCY_KHZ			: REAL				:= Baud2kHz(BAUDRATE_BAUD);
 
 	TYPE T_STATE IS (
 		ST_IDLE,
@@ -136,9 +135,7 @@ ARCHITECTURE rtl OF Eth_MDIOController IS
 	
 BEGIN
 
-	ASSERT FALSE REPORT "BAUDRATE_BAUD =          " & REAL'image(BAUDRATE_BAUD)						& " Baud" SEVERITY NOTE;
-	ASSERT FALSE REPORT "MD_CLOCK_FREQUENCY_KHZ = " & REAL'image(MD_CLOCK_FREQUENCY_KHZ)	& " kHz" SEVERITY NOTE;
-
+	ASSERT FALSE REPORT "BAUDRATE: " & to_string(BAUDRATE) SEVERITY NOTE;
 
 
 	PROCESS(Clock)
@@ -763,12 +760,12 @@ BEGIN
 	-- Management Data Clock
 	-- ==========================================================================================================================================================
 	blkMDClock : BLOCK
-		CONSTANT CLOCKCOUNTER_MAX_FALLING_EDGE	: NATURAL		:= TimingToCycles_ns(Freq_kHz2Real_ns(MD_CLOCK_FREQUENCY_KHZ * 2.0), Freq_MHz2Real_ns(CLOCK_FREQ_MHZ));
-		CONSTANT CLOCKCOUNTER_MAX_RISING_EDGE		: NATURAL		:= TimingToCycles_ns(Freq_kHz2Real_ns(MD_CLOCK_FREQUENCY_KHZ * 2.0), Freq_MHz2Real_ns(CLOCK_FREQ_MHZ));
-		CONSTANT CLOCKCOUNTER_BW								: POSITIVE	:= log2ceilnz(CLOCKCOUNTER_MAX_RISING_EDGE + CLOCKCOUNTER_MAX_FALLING_EDGE);
+		CONSTANT CLOCKCOUNTER_MAX_FALLING_EDGE	: NATURAL		:= TimingToCycles(to_time(to_freq(BAUDRATE) / 2.0), CLOCK_FREQ);
+		CONSTANT CLOCKCOUNTER_MAX_RISING_EDGE		: NATURAL		:= TimingToCycles(to_time(to_freq(BAUDRATE) / 2.0), CLOCK_FREQ);
+		CONSTANT CLOCKCOUNTER_BITS							: POSITIVE	:= log2ceilnz(CLOCKCOUNTER_MAX_RISING_EDGE + CLOCKCOUNTER_MAX_FALLING_EDGE);
 	
 		SIGNAL ClockCounter_rst			: STD_LOGIC;
-		SIGNAL ClockCounter_us			: UNSIGNED(CLOCKCOUNTER_BW - 1 DOWNTO 0)		:= (OTHERS => '0');
+		SIGNAL ClockCounter_us			: UNSIGNED(CLOCKCOUNTER_BITS - 1 DOWNTO 0)	:= (OTHERS => '0');
 		
 		SIGNAL MD_Clock_i						: STD_LOGIC																	:= '0';
 		SIGNAL MD_Clock_r						: STD_LOGIC																	:= '0';
@@ -777,7 +774,7 @@ BEGIN
 	BEGIN
 		ASSERT FALSE REPORT "CLOCKCOUNTER_MAX_FALLING_EDGE: "	& INTEGER'image(CLOCKCOUNTER_MAX_FALLING_EDGE)	SEVERITY NOTE;
 		ASSERT FALSE REPORT "CLOCKCOUNTER_MAX_RISING_EDGE: "	& INTEGER'image(CLOCKCOUNTER_MAX_RISING_EDGE)		SEVERITY NOTE;
-		ASSERT FALSE REPORT "CLOCKCOUNTER_BW: "								& INTEGER'image(CLOCKCOUNTER_BW)								SEVERITY NOTE;
+		ASSERT FALSE REPORT "CLOCKCOUNTER_BITS: "							& INTEGER'image(CLOCKCOUNTER_BITS)							SEVERITY NOTE;
 	
 		PROCESS(Clock)
 		BEGIN

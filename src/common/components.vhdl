@@ -3,17 +3,18 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Package:				 	Common primitives described as a function
+--
 -- Description:
 -- ------------------------------------
---		TODO
+--		This packages describes common primtives like flip flops and multiplexers
+--		as a function to use them as one-liners.
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,9 +30,9 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
 library PoC;
 use			PoC.utils.all;
@@ -39,28 +40,30 @@ use			PoC.utils.all;
 
 PACKAGE components IS
 	-- FlipFlop functions
-	FUNCTION ffdre(q : STD_LOGIC; d : STD_LOGIC; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1') RETURN STD_LOGIC;												-- D-FlipFlop with reset and enable
-	FUNCTION ffdre(q : STD_LOGIC_VECTOR; d : STD_LOGIC_VECTOR; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1') RETURN STD_LOGIC_VECTOR;	-- D-FlipFlop with reset and enable
-	FUNCTION ffdse(q : STD_LOGIC; d : STD_LOGIC; set : STD_LOGIC := '0'; en : STD_LOGIC) RETURN STD_LOGIC;												-- D-FlipFlop with set and enable
-	FUNCTION fftre(q : STD_LOGIC; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1') RETURN STD_LOGIC;																			-- T-FlipFlop with reset and enable
-	FUNCTION ffrs(q : STD_LOGIC; rst : STD_LOGIC := '0'; set : STD_LOGIC := '0') RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant rst
-	FUNCTION ffsr(q : STD_LOGIC; rst : STD_LOGIC := '0'; set : STD_LOGIC := '0') RETURN STD_LOGIC;																			-- RS-FlipFlop with dominant set
+	function ffdre(q : STD_LOGIC; d : STD_LOGIC; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1') return STD_LOGIC;												-- D-FlipFlop with reset and enable
+	function ffdre(q : STD_LOGIC_VECTOR; d : STD_LOGIC_VECTOR; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1') return STD_LOGIC_VECTOR;	-- D-FlipFlop with reset and enable
+	function ffdse(q : STD_LOGIC; d : STD_LOGIC; set : STD_LOGIC := '0'; en : STD_LOGIC := '1') return STD_LOGIC;												-- D-FlipFlop with set and enable
+	function fftre(q : STD_LOGIC; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1') return STD_LOGIC;																			-- T-FlipFlop with reset and enable
+	function ffrs(q : STD_LOGIC; rst : STD_LOGIC := '0'; set : STD_LOGIC := '0') return STD_LOGIC;																			-- RS-FlipFlop with dominant rst
+	function ffsr(q : STD_LOGIC; rst : STD_LOGIC := '0'; set : STD_LOGIC := '0') return STD_LOGIC;																			-- RS-FlipFlop with dominant set
 
 	-- adder
 	function inc(value : STD_LOGIC_VECTOR;	increment : NATURAL := 1) return STD_LOGIC_VECTOR;
 	function inc(value : UNSIGNED;					increment : NATURAL := 1) return UNSIGNED;
 	function inc(value : SIGNED;						increment : NATURAL := 1) return SIGNED;
-	function dec(value : STD_LOGIC_VECTOR;	increment : NATURAL := 1) return STD_LOGIC_VECTOR;
-	function dec(value : UNSIGNED;					increment : NATURAL := 1) return UNSIGNED;
-	function dec(value : SIGNED;						increment : NATURAL := 1) return SIGNED;
+	function dec(value : STD_LOGIC_VECTOR;	decrement : NATURAL := 1) return STD_LOGIC_VECTOR;
+	function dec(value : UNSIGNED;					decrement : NATURAL := 1) return UNSIGNED;
+	function dec(value : SIGNED;						decrement : NATURAL := 1) return SIGNED;
 
 	-- negate
 	function neg(value : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;		-- calculate 2's complement
 	
 	-- counter
-	function counter_inc(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return UNSIGNED;
-	function counter_dec(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return SIGNED;
-	function counter_eq(cnt : UNSIGNED; value : NATURAL) return STD_LOGIC;
+	function upcounter_next(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return UNSIGNED;
+	function upcounter_equal(cnt : UNSIGNED; value : NATURAL) return STD_LOGIC;
+	function downcounter_next(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : INTEGER := 0) return SIGNED;
+	function downcounter_equal(cnt : SIGNED; value : INTEGER) return STD_LOGIC;
+	function downcounter_neg(cnt : SIGNED) return STD_LOGIC;
 
 	-- shift/rotate registers
 	function sr_left(q : STD_LOGIC_VECTOR; i : STD_LOGIC) return STD_LOGIC_VECTOR;
@@ -77,10 +80,10 @@ PACKAGE components IS
 	function mux(sel : STD_LOGIC; sl0		: STD_LOGIC;				sl1		: STD_LOGIC)				return STD_LOGIC;
 	function mux(sel : STD_LOGIC; slv0	: STD_LOGIC_VECTOR;	slv1	: STD_LOGIC_VECTOR)	return STD_LOGIC_VECTOR;
 	function mux(sel : STD_LOGIC; us0		: UNSIGNED;					us1		: UNSIGNED)					return UNSIGNED;
-END;
+end;
 
 
-PACKAGE BODY components IS
+package body components is
 	-- d-flipflop with reset and enable
 	function ffdre(q : STD_LOGIC; d : STD_LOGIC; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1') return STD_LOGIC is
 	begin
@@ -154,7 +157,7 @@ PACKAGE BODY components IS
 	end function;
 	
 	-- counter
-	function counter_inc(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return UNSIGNED is
+	function upcounter_next(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return UNSIGNED is
 	begin
 		if (rst = '1') then
 			return to_unsigned(init, cnt'length);
@@ -165,7 +168,13 @@ PACKAGE BODY components IS
 		end if;
 	end function;
 	
-	function counter_dec(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return SIGNED is
+	function upcounter_equal(cnt : UNSIGNED; value : NATURAL) return STD_LOGIC is
+	begin
+		-- optimized comparision for only up counting values
+		return to_sl((cnt and to_unsigned(value, cnt'length)) = value);
+	end function;
+	
+	function downcounter_next(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : INTEGER := 0) return SIGNED is
 	begin
 		if (rst = '1') then
 			return to_signed(init, cnt'length);
@@ -176,10 +185,16 @@ PACKAGE BODY components IS
 		end if;
 	end function;
 	
-	function counter_eq(cnt : UNSIGNED; value : NATURAL) return STD_LOGIC is
+	function downcounter_equal(cnt : SIGNED; value : INTEGER) return STD_LOGIC is
 	begin
-		return to_sl(cnt = to_unsigned(value, cnt'length));
+		-- optimized comparision for only down counting values
+		return to_sl((cnt nor to_signed(value, cnt'length)) /= value);
 	end function;
+
+	function downcounter_neg(cnt : SIGNED) return STD_LOGIC is
+	begin
+		return cnt(cnt'high);
+	end function;	
 	
 	-- shift/rotate registers
 	function sr_left(q : STD_LOGIC_VECTOR; i : std_logic) return STD_LOGIC_VECTOR is

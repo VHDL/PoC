@@ -1,0 +1,40 @@
+#% BEGIN-TEMPLATEFILE Board = "ZedBoard" %#
+#% BEGIN-TEMPLATE Miscellaneous %#
+## =============================================================================================================================================================
+## Xilinx User Constraint File (UCF)
+## =============================================================================================================================================================
+##	Board:					Xilinx - Zynq 7020 ZedBoard
+##	FPGA:						Xilinx Zynq 7000
+##		Device:				XC7Z020
+##		Package:			CLG484
+##		Speedgrade:		-1
+##	
+##	Notes:
+#$		Power Rail 4 driving VADJ_FPGA is defaulted to 2.5V (choices: 1.8V, 2.5V, 3.3V)
+##
+##
+## =============================================================================================================================================================
+## Miscellaneous
+## =============================================================================================================================================================
+CONFIG PART = XC7Z020-CLG484-1;
+#% END-TEMPLATE Miscellaneous %#
+
+#% BEGIN-TEMPLATE ClockSources %#
+## =============================================================================================================================================================
+## Clock Sources
+## =============================================================================================================================================================
+#% END-TEMPLATE ClockSources %#
+#% BEGIN-TEMPLATE ClockSource_SystemClock %#
+## System Clock
+## -----------------------------------------------------------------------------
+##		Bank:						13
+##			VCCO:					3.3V (VCC3V3)
+##		Location:				IC17 (Fox Electronics FXO-HC53 SERIES 767-100-136)
+##			Vendor:				Fox Electronics
+#$			Device:				
+#$			Frequency:		100 MHz, 50ppm
+NET "ZED_SystemClock_100MHz"						LOC = "Y9" | IOSTANDARD = LVCMOS33;			## {IN}		IC17.3
+NET "ZED_SystemClock_100MHz"						TNM_NET = "NET_SystemClock_100MHz";
+#% END-TEMPLATE ClockSource_SystemClock %#
+
+#% END-TEMPLATEFILE %#

@@ -1,3 +1,9 @@
 common/
 arith/
+bus/
 fifo/
+comm/
+io/
+mem/
+misc/
+xil/

@@ -1,11 +1,11 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
+-- Authors:					Patrick Lehmann
 --
--- Authors:				 	Patrick Lehmann
+-- Module:					TODO
 -- 
 -- Description:
 -- ------------------------------------
@@ -13,8 +13,13 @@
 --
 -- License:
 -- ============================================================================
+<<<<<<< Updated upstream
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
+=======
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--										Chair for VLSI-Design, Diagnostics and Architecture
+>>>>>>> Stashed changes
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -71,18 +76,68 @@ ARCHITECTURE rtl OF Eth_RSLayer_GMII_SGMII_Virtex5 IS
 
 BEGIN
 
+	
+
+	Trans : ENTITY PoC.eth_GMII_SGMII_PCS_Virtex5_transceiver_A
+		generic map (
+			SIM_GTPRESET_SPEEDUP => SIM_GTPRESET_SPEEDUP
+		)
+		port map (
+			refclkout						=> refclkout,
+			refclkin						=> userclk2,
+			gtpreset						=> gtpreset,
+
+			-- tranceiver 0
+			resetdone0					=> open,
+			enablealign0				=> enablealign0,
+			powerdown0					=> powerdown0,
+			loopback0						=> loopback,
+			rxchariscomma0			=> rxchariscomma0(0),
+			rxcharisk0					=> rxcharisk0(0),
+			rxclkcorcnt0				=> rxclkcorcnt0,
+			rxdata0							=> rxdata0,
+			rxdisperr0					=> rxdisperr0(0),
+			rxnotintable0				=> rxnotintable0(0),
+			rxrundisp0					=> rxrundisp0(0),
+			rxbuferr0						=> rxbufstatus0(1),
+			rxusrclk0						=> userclk2,
+			rxusrclk20					=> userclk2,
+			rxreset0						=> mgt_rx_reset0,
+			txchardispmode0			=> txchardispmode0,
+			txchardispval0			=> txchardispval0,
+			txcharisk0					=> txcharisk0,
+			txdata0							=> txdata0,
+			txbuferr0						=> txbuferr0,
+			txusrclk0						=> userclk2,
+			txusrclk20					=> userclk2,
+			txreset0						=> mgt_tx_reset0,
+
+
+			txn0								=> txn0,
+			txp0								=> txp0,
+			rxn0								=> rxn0,
+			rxp0								=> rxp0,
+
+			txn1								=> txn1,
+			txp1								=> txp1,
+			rxn1								=> rxn1,
+			rxp1								=> rxp1,
+
+			plllkdet						=> plllkdet,
+			clkin								=> clkin
+		);
 
 --	PCS : ENTITY work.Ethernet_Virtex5_SGMII_example_design
 --		PORT MAP (
 --			-- GMII Interface
 --			-----------------
---			sgmii_clk0           : out std_logic;                    -- Clock for client MAC (125Mhz, 12.5MHz or 1.25MHz).
---			gmii_txd0            : in std_logic_vector(7 downto 0);  -- Transmit data from client MAC.
---			gmii_tx_en0          : in std_logic;                     -- Transmit control signal from client MAC.
---			gmii_tx_er0          : in std_logic;                     -- Transmit control signal from client MAC.
---			gmii_rxd0            : out std_logic_vector(7 downto 0); -- Received Data to client MAC.
---			gmii_rx_dv0          : out std_logic;                    -- Received control signal to client MAC.
---			gmii_rx_er0          : out std_logic;                    -- Received control signal to client MAC.
+--			sgmii_clk0					: out std_logic;										-- Clock for client MAC (125Mhz, 12.5MHz or 1.25MHz).
+--			gmii_txd0						: in std_logic_vector(7 downto 0);	-- Transmit data from client MAC.
+--			gmii_tx_en0					: in std_logic;										-- Transmit control signal from client MAC.
+--			gmii_tx_er0					: in std_logic;										-- Transmit control signal from client MAC.
+--			gmii_rxd0						: out std_logic_vector(7 downto 0); -- Received Data to client MAC.
+--			gmii_rx_dv0					: out std_logic;										-- Received control signal to client MAC.
+--			gmii_rx_er0					: out std_logic;										-- Received control signal to client MAC.
 --
 --			-- Management: MDIO Interface
 --			-----------------------------
@@ -115,9 +170,9 @@ BEGIN
 --			--------------------------------------------------------------------------
 --			brefclk									=> PHY_Interface.
 --
---			txp0										=> PHY_Interface.                   -- Differential +ve of serial transmission from PMA to PMD.
---			txn0										=> PHY_Interface.                    -- Differential -ve of serial transmission from PMA to PMD.
---			rxp0										=> PHY_Interface.                     -- Differential +ve for serial reception from PMD to PMA.
---			rxn0										=> PHY_Interface.                   -- Differential -ve for serial reception from PMD to PMA.
+--			txp0										=> PHY_Interface.									-- Differential +ve of serial transmission from PMA to PMD.
+--			txn0										=> PHY_Interface.										-- Differential -ve of serial transmission from PMA to PMD.
+--			rxp0										=> PHY_Interface.										-- Differential +ve for serial reception from PMD to PMA.
+--			rxn0										=> PHY_Interface.									-- Differential -ve for serial reception from PMD to PMA.
 --		);
 END;

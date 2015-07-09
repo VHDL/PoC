@@ -1,0 +1,22 @@
+# Packages
+xil.pkg.vhdl
+
+# Cross Clock Modules
+xil_SyncBits.vhdl
+xil_SyncReset.vhdl
+
+# ChipScope
+xil_ChipScopeICON.vhdl
+xil_ChipScopeICON_*.xco
+
+# JTAG / Boundary Scan
+xil_BSCAN.vhdl
+
+# Reconfiguration / Dynamic Reconfiguration Port
+#xil_DRP_BusMux.vhdl
+#xil_DRP_BusSync.vhdl
+xil_Reconfigurator.vhdl
+
+# SystemMonitor
+xil_SystemMonitor_Series7.vhdl
+xil_SystemMonitor_Virtex6.vhdl

@@ -3,11 +3,12 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					VHDL package for component declarations, types and functions
---									assoziated to the PoC.arith namespace
---
 -- Authors:					Thomas B. Preusser
 --									Martin Zabel
+--									Patrick Lehmann
+--
+-- Package:					VHDL package for component declarations, types and functions
+--									associated to the PoC.arith namespace
 --
 -- Description:
 -- ------------------------------------
@@ -15,7 +16,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,14 +32,40 @@
 -- limitations under the License.
 -- =============================================================================
 
-library ieee;
-use			ieee.std_logic_1164.all;
-use			ieee.numeric_std.all;
+library IEEE;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
+
+library PoC;
+use 		PoC.utils.all;
 
 
 package arith is
 
-	component arith_counter_gray is
+	component arith_firstone is
+		generic (
+			N : positive                                -- Length of Token Chain
+		);
+		port (
+			tin  : in  std_logic := '1';                -- Enable:   Fed Token
+			rqst : in  std_logic_vector(N-1 downto 0);  -- Request:  Token Requests
+			grnt : out std_logic_vector(N-1 downto 0);  -- Grant:    Token Output
+			tout : out std_logic;                       -- Inactive: Unused Token
+			bin  : out std_logic_vector(log2ceil(N)-1 downto 0)  -- Binary Grant Index
+		);
+	end component;
+
+	component arith_counter_bcd is
+		generic (
+			DIGITS : positive);
+		port (
+			clk : in	std_logic;
+			rst : in	std_logic;
+			inc : in	std_logic;
+			val : out T_BCD_VECTOR(DIGITS-1 downto 0));
+	end component;
+	
+  component arith_counter_gray is
 		generic (
 			BITS : positive;			-- Bit width of the counter
 			INIT : natural := 0		-- Initial/reset counter value
@@ -52,7 +79,38 @@ package arith is
 			cry : out std_logic														-- Carry output
 		);
 	end component;
+	
+	component arith_div
+		generic (
+			N					: positive;
+			RAPOW			: positive;
+			REGISTERED : boolean);
+		port (
+			clk				: in	std_logic;
+			rst				: in	std_logic;
+			start			: in	std_logic;
+			rdy				: out std_logic;
+			arg1, arg2 : in	std_logic_vector(N-1 downto 0);
+			res				: out std_logic_vector(N-1 downto 0));
+	end component;
 
+	component arith_div_pipelined
+		generic (
+			DIVIDEND_BITS		: POSITIVE;
+			DIVISOR_BITS		: POSITIVE;
+			RADIX						: POSITIVE
+		);
+		port (
+			Clock					: in	STD_LOGIC;
+			Reset					: in	STD_LOGIC;
+			Enable				: in	STD_LOGIC;
+			Dividend			: in	STD_LOGIC_VECTOR(DIVIDEND_BITS - 1 downto 0);
+			Divisor				: in	STD_LOGIC_VECTOR(DIVISOR_BITS - 1 downto 0);
+			Quotient			: out	STD_LOGIC_VECTOR(DIVIDEND_BITS - 1 downto 0);
+			Valid					: out STD_LOGIC
+		);
+	end component;
+	
 	component arith_prng
 		generic (
 			BITS : positive;
@@ -87,20 +145,6 @@ package arith is
 			sqrt	: out std_logic_vector((N-1)/2 downto 0);
 			rdy	 : out std_logic);
 	end component;
-	
-	component arith_div
-		generic (
-			N					: positive;
-			RAPOW			: positive;
-			REGISTERED : boolean);
-		port (
-			clk				: in	std_logic;
-			rst				: in	std_logic;
-			start			: in	std_logic;
-			rdy				: out std_logic;
-			arg1, arg2 : in	std_logic_vector(N-1 downto 0);
-			res				: out std_logic_vector(N-1 downto 0));
-	end component;
 
   type tArch     is (AAM, CAI, CCA, PAI);
   type tBlocking is (DFLT, FIX, ASC, DESC);
@@ -110,9 +154,10 @@ package arith is
       N : positive;                    -- Operand Width
       K : positive;                    -- Block Count
 
-      ARCH     : tArch     := AAM;        -- Architecture
-      BLOCKING : tBlocking := DFLT;       -- Blocking Scheme
-      SKIPPING : tSkipping := CCC         -- Carry Skip Scheme
+      ARCH				: tArch     := AAM;		-- Architecture
+      BLOCKING		: tBlocking := DFLT;	-- Blocking Scheme
+      SKIPPING		: tSkipping := CCC;		-- Carry Skip Scheme
+			P_INCLUSIVE	: boolean := false		-- Use Inclusive Propagate, i.e. c^1
     );
     port (
       a, b : in std_logic_vector(N-1 downto 0);
@@ -121,9 +166,9 @@ package arith is
       s    : out std_logic_vector(N-1 downto 0);
       cout : out std_logic
     );
-  end component arith_addw;
+  end component;
 
-end arith;
+end package;
 
 package body arith is
-end arith;
+end package body;

@@ -3,15 +3,14 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Testbench:				Testbench for arith_prefix_or.
--- 
 -- Authors:					Thomas B. Preusser
+-- 
+-- Testbench:				Testbench for arith_prefix_or.
 -- 
 -- Description:
 -- ------------------------------------
---		Automated testbench for PoC.arith_prng
---		The Pseudo-Random Number Generator is instanziated for 8 bits. The
---		output sequence is compared to 256 precalculated values.
+--		Automated testbench for PoC.arith.prefix_or
+--		
 --
 -- License:
 -- =============================================================================

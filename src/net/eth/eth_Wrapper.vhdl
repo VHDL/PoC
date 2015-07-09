@@ -68,8 +68,8 @@ LIBRARY work;
 
 ENTITY Eth_Wrapper IS
 	GENERIC (
-		DEBUG						: BOOLEAN															:= FALSE;
-		CLOCKIN_FREQ					: FREQ																:= 125.0 MHz;																		-- 125 MHz
+		DEBUG											: BOOLEAN															:= FALSE;
+		CLOCKIN_FREQ							: FREQ																:= 125 MHz;																	-- 125 MHz
 		ETHERNET_IPSTYLE					: T_IPSTYLE														:= IPSTYLE_SOFT;														-- 
 		RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE					:= NET_ETH_RS_DATA_INTERFACE_GMII;					-- 
 		PHY_DEVICE								: T_NET_ETH_PHY_DEVICE								:= NET_ETH_PHY_DEVICE_MARVEL_88E1111;				-- 
@@ -136,8 +136,8 @@ BEGIN
 	BEGIN
 		Eth : Eth_Wrapper_Virtex5
 			GENERIC MAP (
-				DEBUG						=> DEBUG,
-				CLOCKIN_FREQ					=> CLOCKIN_FREQ,
+				DEBUG											=> DEBUG,
+				CLOCKIN_FREQ							=> CLOCKIN_FREQ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
 				PHY_DATA_INTERFACE				=> PHY_DATA_INTERFACE
@@ -177,8 +177,8 @@ BEGIN
 	BEGIN
 		Eth : Eth_Wrapper_Virtex6
 			GENERIC MAP (
-				DEBUG						=> DEBUG,
-				CLOCKIN_FREQ					=> CLOCKIN_FREQ,
+				DEBUG											=> DEBUG,
+				CLOCKIN_FREQ							=> CLOCKIN_FREQ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
 				PHY_DATA_INTERFACE				=> PHY_DATA_INTERFACE
@@ -220,7 +220,7 @@ BEGIN
 		Eth : Eth_Wrapper_Series7
 			GENERIC MAP (
 				DEBUG											=> DEBUG,
-				CLOCKIN_FREQ					=> CLOCKIN_FREQ,
+				CLOCKIN_FREQ							=> CLOCKIN_FREQ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
 				PHY_DATA_INTERFACE				=> PHY_DATA_INTERFACE
@@ -299,12 +299,12 @@ BEGIN
 		
 		PHYC : ENTITY PoC.Eth_PHYController
 			GENERIC MAP (
-				DEBUG									=> DEBUG,
-				CLOCK_FREQ									=> CLOCKIN_FREQ,
+				DEBUG														=> DEBUG,
+				CLOCK_FREQ											=> CLOCKIN_FREQ,
 				PHY_DEVICE											=> PHY_DEVICE,
 				PHY_DEVICE_ADDRESS							=> PHY_DEVICE_ADDRESS,
-				PHY_MANAGEMENT_INTERFACE				=> PHY_MANAGEMENT_INTERFACE,																				--			MDIO = 1 MBaud				IIC = 100 kBaud
-				BAUDRATE_BAUD										=> ite((PHY_MANAGEMENT_INTERFACE = NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO), 1.0 * 1000.0 * 1000.0, 100.0 * 1000.0)
+				PHY_MANAGEMENT_INTERFACE				=> PHY_MANAGEMENT_INTERFACE,																--			MDIO = 1 MBaud	IIC = 100 kBaud
+				BAUDRATE												=> ite((PHY_MANAGEMENT_INTERFACE = NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO), 1 MBd, 100 kBd)
 			)
 			PORT MAP (
 				Clock														=> TX_Clock,

@@ -1,56 +1,69 @@
---
--- Copyright (c) 2007
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
+-- ============================================================================
+-- Authors:				 	Martin Zabel
+-- 
+-- Module:				 	UART Receiver
 --
+-- Description:
+-- ------------------------------------
+--	TODO
+-- 
+--	old comments:
+--		Serial configuration: 8 data bits, 1 stop bit, no parity
+--		
+--		bclk_x8_r = bit clock (defined by BAUD rate) times 8
+--		dos       = data out strobe, signals that dout is valid, active high for one
+--		            cycle 
+--		dout      = data out = received byte
+--		
+--		OUT_REGS:
+--		If disabled, then dos is a combinatorial output. Further merging of logic is
+--		possible but timing constraints might fail. If enabled, 9 more registers are
+--		required. But now, dout toggles only after receiving of full byte.
+--
+--
+-- License:
+-- ============================================================================
+-- Copyright 2008-2015 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
 
---
--- Entity: uart_rx
--- Author(s): Martin Zabel
--- 
--- UART receiver
---
--- Serial configuration: 8 data bits, 1 stop bit, no parity
---
--- bclk_x8_r = bit clock (defined by BAUD rate) times 8
--- dos       = data out strobe, signals that dout is valid, active high for one
---             cycle 
--- dout      = data out = received byte
---
--- OUT_REGS:
--- If disabled, then dos is a combinatorial output. Further merging of logic is
--- possible but timing constraints might fail. If enabled, 9 more registers are
--- required. But now, dout toggles only after receiving of full byte.
---
--- Revision:    $Revision: 1.1 $
--- Last change: $Date: 2008-11-03 17:24:59 $
---
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+library	IEEE;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
+
 
 entity uart_rx is
-
   generic (
-    OUT_REGS : boolean);-- := false);
-  
+    OUT_REGS : boolean
+	);
   port (
     clk       : in  std_logic;
     rst       : in  std_logic;
     bclk_x8_r : in  std_logic;
     rxd       : in  std_logic;
     dos       : out std_logic;
-    dout      : out std_logic_vector(7 downto 0));
+    dout      : out std_logic_vector(7 downto 0)
+	);
+end entity;
 
-end uart_rx;
 
-architecture uart_rx_impl of uart_rx is
+architecture rtl of uart_rx is
 
   -------------------------------------------
   -- signals
@@ -74,7 +87,7 @@ architecture uart_rx_impl of uart_rx is
   signal shift_done     : std_logic;
   signal put_data       : std_logic;
 
-begin  -- uart_rx_impl
+begin
 
   rxd_falling    <= (not rxd_reg1) and rxd_reg2;
   bclk_rising    <= bclk_x8_r when bclk_cnt = (bclk_cnt'range => '1')
@@ -169,4 +182,4 @@ begin  -- uart_rx_impl
     dout <= sr;
   end generate gNoOutRegs;
   
-end uart_rx_impl;
+end;

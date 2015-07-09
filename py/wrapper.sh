@@ -4,11 +4,11 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-#	Bash Script:			Wrapper Script to execute a given python script
-# 
 #	Authors:				 	Patrick Lehmann
 #										Thomas B. Preusser
 #										Martin Zabel
+# 
+#	Bash Script:			Wrapper Script to execute a given python script
 # 
 # Description:
 # ------------------------------------
@@ -19,7 +19,7 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2014 Technische Universitaet Dresden - Germany
+# Copyright 2007-2015 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,7 +40,7 @@ PoC_ExitCode=0
 PoC_PythonScriptDir=py
 
 # define color escape codes
-RED='\e[0;31m'			# Yellow
+RED='\e[0;31m'			# Red
 YELLOW='\e[1;33m'		# Yellow
 NOCOLOR='\e[0m'			# No Color
 

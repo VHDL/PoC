@@ -1,0 +1,119 @@
+#####################################################
+### SPARTAN-3 STARTER KIT BOARD CONSTRAINTS FILE
+###
+### Taken from Xilinx User Guide.
+###
+### Changes by Martin Zabel:
+### - Adjusted signal names.
+### - Added timing constraints.
+#####################################################
+
+# === Common ===
+TIMEGRP RFFS = RISING FFS;
+TIMEGRP FFFS = FALLING FFS;
+
+# ==== Pushbuttons =====
+NET "rst_in"  LOC = "L14" | IOSTANDARD = LVCMOS33 ;
+
+# === Clock Inputs ===
+NET "clk_in"  LOC = "T9" | IOSTANDARD = LVCMOS33 ;
+
+NET "clk_in" TNM_NET = "clk_in";
+TIMESPEC "TS_clk" = PERIOD "clk_in" 20 ns HIGH 50 %;
+
+# === LEDs ===
+NET "led<0>"  LOC = "K12" | IOSTANDARD = LVCMOS33 ;
+NET "led<1>"  LOC = "P14" | IOSTANDARD = LVCMOS33 ;
+NET "led<2>"  LOC = "L12" | IOSTANDARD = LVCMOS33 ;
+NET "led<3>"  LOC = "N14" | IOSTANDARD = LVCMOS33 ;
+NET "led<4>"  LOC = "P13" | IOSTANDARD = LVCMOS33 ;
+NET "led<5>"  LOC = "N12" | IOSTANDARD = LVCMOS33 ;
+NET "led<6>"  LOC = "P12" | IOSTANDARD = LVCMOS33 ;
+NET "led<7>"  LOC = "P11" | IOSTANDARD = LVCMOS33 ;
+
+# === SRAM ===
+NET "sram_addr<0>"   LOC = "L5" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<10>"  LOC = "G5" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<11>"  LOC = "H3" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<12>"  LOC = "H4" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<13>"  LOC = "J4" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<14>"  LOC = "J3" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<15>"  LOC = "K3" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<16>"  LOC = "K5" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<17>"  LOC = "L3" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<1>"   LOC = "N3" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<2>"   LOC = "M4" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<3>"   LOC = "M3" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<4>"   LOC = "L4" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<5>"   LOC = "G4" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<6>"   LOC = "F3" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<7>"   LOC = "F4" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<8>"   LOC = "E3" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_addr<9>"   LOC = "E4" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_ce_n<0>"   LOC = "P7" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_ce_n<1>"   LOC = "N5" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<0>"   LOC = "N7" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<10>"  LOC = "F2" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<11>"  LOC = "H1" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<12>"  LOC = "J2" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<13>"  LOC = "L2" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<14>"  LOC = "P1" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<15>"  LOC = "R1" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<16>"  LOC = "P2" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<17>"  LOC = "N2" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<18>"  LOC = "M2" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<19>"  LOC = "K1" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<1>"   LOC = "T8" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<20>"  LOC = "J1" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<21>"  LOC = "G2" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<22>"  LOC = "E1" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<23>"  LOC = "D1" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<24>"  LOC = "D2" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<25>"  LOC = "E2" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<26>"  LOC = "G1" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<27>"  LOC = "F5" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<28>"  LOC = "C3" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<29>"  LOC = "K2" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<2>"   LOC = "R6" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<30>"  LOC = "M1" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<31>"  LOC = "N1" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<3>"   LOC = "T5" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<4>"   LOC = "R5" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<5>"   LOC = "C2" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<6>"   LOC = "C1" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<7>"   LOC = "B1" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<8>"   LOC = "D3" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_data<9>"   LOC = "P8" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_lb_n<0>"   LOC = "P6" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_lb_n<1>"   LOC = "P5" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_oe_n"      LOC = "K4" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_ub_n<0>"   LOC = "T4" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_ub_n<1>"   LOC = "R4" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+NET "sram_we_n"      LOC = "G3" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
+
+INST "sram_data[*]" TNM = "sram_data_pads";
+INST "sram_oe_n"    TNM = "sram_ctrl_pads";
+INST "sram_ce_n[*]" TNM = "sram_ctrl_pads";
+INST "sram_lb_n[*]" TNM = "sram_ctrl_pads";
+INST "sram_ub_n[*]" TNM = "sram_ctrl_pads";
+INST "sram_addr[*]" TNM = "sram_ctrl_pads";
+
+#
+# Setup if DCM is used.
+#
+TIMEGRP "sram_ctrl_pads" OFFSET = OUT 3 ns AFTER "clk_in"  ;
+TIMEGRP "sram_data_pads" OFFSET = IN  7 ns VALID 7 ns BEFORE "clk_in"  ;
+TIMEGRP "sram_data_pads" OFFSET = OUT 3 ns AFTER "clk_in"  ;
+
+NET "sram_we_n" OFFSET = OUT  3 ns AFTER "clk_in" TIMEGRP RFFS;
+NET "sram_we_n" OFFSET = OUT 13 ns AFTER "clk_in" TIMEGRP FFFS;
+
+#
+# Setup if DCM is not used.
+#
+#TIMEGRP "sram_ctrl_pads" OFFSET = OUT 5 ns AFTER "clk_in"  ;
+#TIMEGRP "sram_data_pads" OFFSET = IN  5 ns VALID 5 ns BEFORE "clk_in"  ;
+#TIMEGRP "sram_data_pads" OFFSET = OUT 5 ns AFTER "clk_in"  ;
+
+#NET "sram_we_n" OFFSET = OUT  5 ns AFTER "clk_in" TIMEGRP RFFS;
+#NET "sram_we_n" OFFSET = OUT 15 ns AFTER "clk_in" TIMEGRP FFFS;
