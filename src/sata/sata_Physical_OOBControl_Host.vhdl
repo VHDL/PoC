@@ -430,7 +430,7 @@ begin
 	OOB_TX_Command					<= OOB_TX_Command_i;
 	OOB_HandshakeComplete		<= OOB_HandshakeComplete_i when rising_edge(Clock);  	-- MUST BE driven by register
 	
-	AlignCounter_us <= counter_inc(cnt => AlignCounter_us, rst => AlignCounter_rst, en => AlignCounter_en) when rising_edge(Clock);
+	AlignCounter_us					<= upcounter_next(cnt => AlignCounter_us, rst => AlignCounter_rst, en => AlignCounter_en) when rising_edge(Clock);
 	
 	-- overall timeout counter
 	TC1 : entity PoC.io_TimingCounter
