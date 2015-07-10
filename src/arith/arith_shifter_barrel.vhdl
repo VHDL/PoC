@@ -42,7 +42,7 @@ library PoC;
 use			PoC.utils.all;
 
 
-entity arith_BarrelShifter is
+entity arith_shifter_barrel is
 	generic (
 		BITS				: POSITIVE		:= 32
 	);
@@ -57,7 +57,7 @@ entity arith_BarrelShifter is
 end;
 
 
-architecture rtl of arith_BarrelShifter is
+architecture rtl of arith_shifter_barrel is
 	constant STAGES		: POSITIVE		:= log2ceilnz(BITS);
 
 	subtype	T_INTERMEDIATE_RESULT is STD_LOGIC_VECTOR(BITS - 1 downto 0);
@@ -77,19 +77,19 @@ begin
 			else
 				if (ShiftRotate = '0') then
 					if (LeftRight = '0') then
-						IntermediateResults(i + 1) <= IntermediateResults(i)((BITS - i**2 - 1) downto 0) & ((i**2 - 1) downto 0 => '0');														-- SLA, SLL
+						IntermediateResults(i + 1) <= IntermediateResults(i)((BITS - 2**i - 1) downto 0) & ((2**i - 1) downto 0 => '0');														-- SLA, SLL
 					else
 						if (ArithmeticLogic = '0') then
-							IntermediateResults(i + 1) <= ((i**2 - 1) downto 0 => IntermediateResults(i)(BITS - 1)) & IntermediateResults(i)(BITS - 1 downto i**2);		-- SRA
+							IntermediateResults(i + 1) <= ((2**i - 1) downto 0 => IntermediateResults(i)(BITS - 1)) & IntermediateResults(i)(BITS - 1 downto 2**i);		-- SRA
 						else
-							IntermediateResults(i + 1) <= ((i**2 - 1) downto 0 => '0') & IntermediateResults(i)(BITS - 1 downto i**2);																-- SRL
+							IntermediateResults(i + 1) <= ((2**i - 1) downto 0 => '0') & IntermediateResults(i)(BITS - 1 downto 2**i);																-- SRL
 						end if;
 					end if;
 				else
 					if (LeftRight = '0') then
-						IntermediateResults(i + 1) <= IntermediateResults(i)((BITS - i**2 - 1) downto 0) & IntermediateResults(i)(BITS - 1 downto (BITS - i**2));		-- RL
+						IntermediateResults(i + 1) <= IntermediateResults(i)((BITS - 2**i - 1) downto 0) & IntermediateResults(i)(BITS - 1 downto (BITS - 2**i));		-- RL
 					else
-						IntermediateResults(i + 1) <= IntermediateResults(i)((i**2 - 1) downto 0) & IntermediateResults(i)(BITS - i**2 - 1 downto i**2);						-- RR
+						IntermediateResults(i + 1) <= IntermediateResults(i)((2**i - 1) downto 0) & IntermediateResults(i)(BITS - 1 downto 2**i);						-- RR
 					end if;
 				end if;
 			end if;
