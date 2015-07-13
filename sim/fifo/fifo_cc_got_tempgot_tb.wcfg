@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="./isim.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="board" />
+            <top_module name="config" />
+            <top_module name="fifo_cc_got_tempgot_tb" />
+            <top_module name="math_real" />
+            <top_module name="my_config" />
+            <top_module name="my_project" />
+            <top_module name="numeric_std" />
+            <top_module name="ocram" />
+            <top_module name="std_logic_1164" />
+            <top_module name="std_logic_textio" />
+            <top_module name="strings" />
+            <top_module name="textio" />
+            <top_module name="utils" />
+            <top_module name="vectors" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="3" />
+   <wvobject fp_name="/fifo_cc_got_tempgot_tb/rst" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">rst</obj_property>
+      <obj_property name="ObjectShortName">rst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/fifo_cc_got_tempgot_tb/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="group13" type="group">
+      <obj_property name="label">NO REGISTERS</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tempgot_tb/\gentests(0)\/DUT/put" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">put</obj_property>
+         <obj_property name="ObjectShortName">put</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tempgot_tb/\gentests(0)\/DUT/din" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">din[7:0]</obj_property>
+         <obj_property name="ObjectShortName">din[7:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tempgot_tb/\gentests(0)\/DUT/full" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">full</obj_property>
+         <obj_property name="ObjectShortName">full</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tempgot_tb/\gentests(0)\/DUT/estate_wr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">estate_wr[0:0]</obj_property>
+         <obj_property name="ObjectShortName">estate_wr[0:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tempgot_tb/\gentests(0)\/DUT/got" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">got</obj_property>
+         <obj_property name="ObjectShortName">got</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tempgot_tb/\gentests(0)\/DUT/dout" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dout[7:0]</obj_property>
+         <obj_property name="ObjectShortName">dout[7:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tempgot_tb/\gentests(0)\/DUT/valid" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">valid</obj_property>
+         <obj_property name="ObjectShortName">valid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tempgot_tb/\gentests(0)\/DUT/fstate_rd" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fstate_rd[0:0]</obj_property>
+         <obj_property name="ObjectShortName">fstate_rd[0:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tempgot_tb/\gentests(0)\/DUT/commit" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">commit</obj_property>
+         <obj_property name="ObjectShortName">commit</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tempgot_tb/\gentests(0)\/DUT/rollback" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">rollback</obj_property>
+         <obj_property name="ObjectShortName">rollback</obj_property>
+      </wvobject>
+   </wvobject>
+</wave_config>

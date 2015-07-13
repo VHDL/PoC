@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="./isim.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="board" />
+            <top_module name="config" />
+            <top_module name="fifo_ic_got_tb" />
+            <top_module name="math_real" />
+            <top_module name="my_config" />
+            <top_module name="my_project" />
+            <top_module name="numeric_std" />
+            <top_module name="ocram" />
+            <top_module name="std_logic_1164" />
+            <top_module name="std_logic_textio" />
+            <top_module name="strings" />
+            <top_module name="textio" />
+            <top_module name="utils" />
+            <top_module name="vectors" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="2" />
+   <wvobject fp_name="group13" type="group">
+      <obj_property name="label">FIFO 0-1</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo0_1/clk_wr" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">clk_wr</obj_property>
+         <obj_property name="ObjectShortName">clk_wr</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo0_1/rst_wr" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">rst_wr</obj_property>
+         <obj_property name="ObjectShortName">rst_wr</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo0_1/put" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">put</obj_property>
+         <obj_property name="ObjectShortName">put</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo0_1/din" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">din[8:0]</obj_property>
+         <obj_property name="ObjectShortName">din[8:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo0_1/full" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">full</obj_property>
+         <obj_property name="ObjectShortName">full</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo0_1/estate_wr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">estate_wr[2:0]</obj_property>
+         <obj_property name="ObjectShortName">estate_wr[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo0_1/clk_rd" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">clk_rd</obj_property>
+         <obj_property name="ObjectShortName">clk_rd</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo0_1/rst_rd" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">rst_rd</obj_property>
+         <obj_property name="ObjectShortName">rst_rd</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo0_1/got" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">got</obj_property>
+         <obj_property name="ObjectShortName">got</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo0_1/valid" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">valid</obj_property>
+         <obj_property name="ObjectShortName">valid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo0_1/dout" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dout[8:0]</obj_property>
+         <obj_property name="ObjectShortName">dout[8:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo0_1/fstate_rd" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fstate_rd[2:0]</obj_property>
+         <obj_property name="ObjectShortName">fstate_rd[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group26" type="group">
+      <obj_property name="label">FIFO 1-2</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo1_2/clk_wr" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">clk_wr</obj_property>
+         <obj_property name="ObjectShortName">clk_wr</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo1_2/rst_wr" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">rst_wr</obj_property>
+         <obj_property name="ObjectShortName">rst_wr</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo1_2/put" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">put</obj_property>
+         <obj_property name="ObjectShortName">put</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo1_2/din" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">din[8:0]</obj_property>
+         <obj_property name="ObjectShortName">din[8:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo1_2/full" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">full</obj_property>
+         <obj_property name="ObjectShortName">full</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo1_2/estate_wr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">estate_wr[2:0]</obj_property>
+         <obj_property name="ObjectShortName">estate_wr[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo1_2/clk_rd" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">clk_rd</obj_property>
+         <obj_property name="ObjectShortName">clk_rd</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo1_2/rst_rd" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">rst_rd</obj_property>
+         <obj_property name="ObjectShortName">rst_rd</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo1_2/got" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">got</obj_property>
+         <obj_property name="ObjectShortName">got</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo1_2/valid" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">valid</obj_property>
+         <obj_property name="ObjectShortName">valid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo1_2/dout" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">dout[8:0]</obj_property>
+         <obj_property name="ObjectShortName">dout[8:0]</obj_property>
+         <obj_property name="Radix">HEXRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_ic_got_tb/fifo1_2/fstate_rd" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fstate_rd[2:0]</obj_property>
+         <obj_property name="ObjectShortName">fstate_rd[2:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      </wvobject>
+   </wvobject>
+</wave_config>

@@ -30,7 +30,6 @@
 -- limitations under the License.
 -- ============================================================================
 
-
 entity fifo_cc_got_tb is
 end entity;
 
@@ -61,13 +60,9 @@ begin
   rst <= '1', '0' after 10 ns;
 
   genDUTs: for c in 0 to 7 generate
-
-    -- Local Configuration
-    constant CFG_CASE : std_logic_vector(2 downto 0) := std_logic_vector(to_unsigned(c, 3));
-
-    constant DATA_REG   : boolean := CFG_CASE(0) = '1';
-    constant STATE_REG  : boolean := CFG_CASE(1) = '1';
-    constant OUTPUT_REG : boolean := CFG_CASE(2) = '1';
+		constant DATA_REG   : boolean :=  c mod 2 > 0;
+		constant STATE_REG  : boolean :=  c mod 4 > 1;
+		constant OUTPUT_REG : boolean :=  c mod 8 > 3;
     
     -- Local Component Ports
     signal put				: std_logic;
