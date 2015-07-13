@@ -4,6 +4,7 @@
 -- 
 -- ============================================================================
 -- Authors:				 	Martin Zabel
+--									Patrick Lehmann
 -- 
 -- Module:				 	UART Receiver
 --
@@ -49,55 +50,53 @@ use			IEEE.numeric_std.all;
 
 
 entity uart_rx is
-  generic (
-    OUT_REGS : boolean
+	generic (
+		OUT_REGS : boolean
 	);
-  port (
-    clk       : in  std_logic;
-    rst       : in  std_logic;
-    bclk_x8_r : in  std_logic;
-    rxd       : in  std_logic;
-    dos       : out std_logic;
-    dout      : out std_logic_vector(7 downto 0)
+	port (
+		clk       : in  std_logic;
+		rst       : in  std_logic;
+		bclk_x8_r : in  std_logic;
+		rxd       : in  std_logic;
+		dos       : out std_logic;
+		dout      : out std_logic_vector(7 downto 0)
 	);
 end entity;
 
 
 architecture rtl of uart_rx is
+	type states is (IDLE, RDATA);
+	signal state			: states	:= IDLE;
+	signal next_state	: states;
 
-  -------------------------------------------
-  -- signals
+	-- registers
+	signal rxd_reg1			: std_logic											:= '1';
+	signal rxd_reg2			: std_logic											:= '1';
+	signal sr						: std_logic_vector(7 downto 0)	:= (others => '0');  -- data only
+	signal bclk_cnt			: unsigned(2 downto 0)					:= to_unsigned(4, 3);
+	signal shift_cnt		: unsigned(3 downto 0)					:= (others => '0');
 
-  type states is (IDLE, RDATA);
-  signal state : states;
-  signal next_state : states;
-
-  -- registers
-  signal rxd_reg1     : std_logic;
-  signal rxd_reg2     : std_logic;
-  signal sr           : std_logic_vector(7 downto 0);  -- data only
-  signal bclk_cnt     : unsigned(2 downto 0);
-  signal shift_cnt    : unsigned(3 downto 0);
-
-  -- control signals
-  signal rxd_falling    : std_logic;
-  signal bclk_rising    : std_logic;
-  signal start_bclk     : std_logic;
-  signal shift_sr       : std_logic;
-  signal shift_done     : std_logic;
-  signal put_data       : std_logic;
+	-- control signals
+	signal rxd_falling    : std_logic;
+	signal bclk_rising    : std_logic;
+	signal start_bclk     : std_logic;
+	signal shift_sr       : std_logic;
+	signal shift_done     : std_logic;
+	signal put_data       : std_logic;
 
 begin
 
   rxd_falling    <= (not rxd_reg1) and rxd_reg2;
-  bclk_rising    <= bclk_x8_r when bclk_cnt = (bclk_cnt'range => '1')
-                 else '0';
+  bclk_rising    <= bclk_x8_r when (comp_allone(bclk_cnt) = '1') else '0';
 
   -- shift_cnt count from 0 to 9 (1 start bit + 8 data bits)
-  shift_done <= '1' when (shift_cnt and to_unsigned(9, 4)) = 9 else '0';
+	shift_cnt		<= upcounter_next(cnt => shift_cnt, rst => start_bclk, en => shift_sr) when rising_edge(clk);
+  shift_done	<= upcounter_equal(cnt => shift_cnt, 9);
 
+	bclk_cnt		<= upcounter_next(cnt => bclk_cnt, rst => start_bclk, en => bclk_x8_r, init => 4) when rising_edge(clk);
+	
   process (state, rxd_falling, bclk_x8_r, bclk_rising, shift_done)
-  begin  -- process
+  begin
     next_state <= state;
     start_bclk <= '0';
     shift_sr   <= '0';
@@ -130,7 +129,7 @@ begin
   end process;
 
   process (clk)
-  begin  -- process
+  begin
     if rising_edge(clk) then
       if rst = '1' then
         state <= IDLE;
@@ -150,26 +149,13 @@ begin
         -- shift into MSB
         sr <= rxd_reg2 & sr(sr'left downto 1);
       end if;
-
-      if start_bclk = '1' then
-        bclk_cnt <= to_unsigned(4, bclk_cnt'length);
-      elsif bclk_x8_r = '1' then
-        -- automatically wraps
-        bclk_cnt <= bclk_cnt + 1;
-      end if;
-
-      if start_bclk = '1' then
-        shift_cnt <= (others => '0');
-      elsif shift_sr = '1' then
-        shift_cnt <= shift_cnt + 1;
-      end if;
     end if;
   end process;
 
   -- output
   gOutRegs: if OUT_REGS = true generate
     process (clk)
-    begin  -- process
+    begin
       if rising_edge(clk) then
         dos  <= put_data and rxd_reg2;  -- check stop bit
         dout <= sr;

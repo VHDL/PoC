@@ -100,44 +100,6 @@ entity uart_sfc is
 end uart_sfc;
 
 architecture uart_sfc_impl of uart_sfc is
-  
-  -----------------------------------------------------------------------------
-  -- component declarations
-  -----------------------------------------------------------------------------
-  
-  component uart_rx
-    generic (
-      OUT_REGS : boolean);
-    port (
-      clk       : in  std_logic;
-      rst       : in  std_logic;
-      bclk_x8_r : in  std_logic;
-      rxd       : in  std_logic;
-      dos       : out std_logic;
-      dout      : out std_logic_vector(7 downto 0));
-  end component;
-  
-  component uart_tx
-    port (
-      clk    : in  std_logic;
-      rst    : in  std_logic;
-      bclk_r : in  std_logic;
-      stb    : in  std_logic;
-      din    : in  std_logic_vector(7 downto 0);
-      rdy    : out std_logic;
-      txd    : out std_logic);
-  end component;
-
-  component uart_bclk
-    generic (
-      CLK_FREQ : positive;
-      BAUD     : positive);
-    port (
-      clk       : in  std_logic;
-      rst       : in  std_logic;
-      bclk_r    : out std_logic;
-      bclk_x8_r : out std_logic);
-  end component;
 
   -----------------------------------------------------------------------------
   -- constants
