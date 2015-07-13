@@ -59,9 +59,9 @@ PACKAGE components IS
 	function neg(value : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;		-- calculate 2's complement
 	
 	-- counter
-	function upcounter_next(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return UNSIGNED;
+	function upcounter_next(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC := '1'; init : NATURAL := 0) return UNSIGNED;
 	function upcounter_equal(cnt : UNSIGNED; value : NATURAL) return STD_LOGIC;
-	function downcounter_next(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : INTEGER := 0) return SIGNED;
+	function downcounter_next(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC := '1'; init : INTEGER := 0) return SIGNED;
 	function downcounter_equal(cnt : SIGNED; value : INTEGER) return STD_LOGIC;
 	function downcounter_neg(cnt : SIGNED) return STD_LOGIC;
 
@@ -163,7 +163,7 @@ package body components is
 	end function;
 	
 	-- counter
-	function upcounter_next(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return UNSIGNED is
+	function upcounter_next(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC := '1'; init : NATURAL := 0) return UNSIGNED is
 	begin
 		if (rst = '1') then
 			return to_unsigned(init, cnt'length);
@@ -180,7 +180,7 @@ package body components is
 		return to_sl((cnt and to_unsigned(value, cnt'length)) = value);
 	end function;
 	
-	function downcounter_next(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : INTEGER := 0) return SIGNED is
+	function downcounter_next(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC := '1'; init : INTEGER := 0) return SIGNED is
 	begin
 		if (rst = '1') then
 			return to_signed(init, cnt'length);

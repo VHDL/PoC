@@ -371,6 +371,7 @@ begin  -- rtl
     if rising_edge(clk) then
       if rst = '1' then
         rden_r <= '0';
+        rden1_r <= '0';
       else
         rden_r  <= rden_nxt;
         rden1_r <= rden_r;

@@ -15,7 +15,7 @@ arith_convert_bin2bcd_tb.vhdl
 
 # Logical
 arith_same.vhdl
-arith_shifter_barrell.vhdl
+arith_shifter_barrel.vhdl
 
 # Prefix Modules
 arith_prefix_and.vhdl

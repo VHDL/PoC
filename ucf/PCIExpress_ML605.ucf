@@ -1,0 +1,69 @@
+#% BEGIN-CONFIGUTATION											%#
+#% DEFINE Board = "ML605"										%#
+#% ## 																			%#
+#% ## load pin descriptions									%#
+#% INCLUDE-TEMPLATE Miscellaneous						%#
+#% INCLUDE-TEMPLATE ClockSource_SystemClock	%#
+#% INCLUDE-TEMPLATE GPIO_SpecialButtons			%#
+#% INCLUDE-TEMPLATE FanControl							%#
+#% INCLUDE-TEMPLATE USB_UART								%#
+#% ##INCLUDE-TEMPLATE FanControl						%#
+#% END-CONFIGUTATION												%#
+
+## =============================================================================================================================================================
+## Xilinx User Constraint File (UCF)
+## =============================================================================================================================================================
+##	Board:					Xilinx - Virtex 6 ML605
+##	FPGA:						Xilinx Virtex 6
+##		Device:				XC6VLX240T
+##		Package:			FF1156
+##		Speedgrade:		-1
+## =============================================================================================================================================================
+## Miscellaneous
+## =============================================================================================================================================================
+CONFIG PART = XC6VLX240T-FF1156-1;
+
+## =============================================================================================================================================================
+## Clock Sources
+## =============================================================================================================================================================
+## System Clock
+## =============================================================================
+##		Bank:						34
+##			VCCO:					2.5V (VCC2V5)
+##		Location:				U11 (SIT9102)
+##			Vendor:				SiTime
+##			Device:				SiT9102 - 1 to 220 MHz High Performance Oscillator
+##			Frequency:		200 MHz, 50ppm
+NET "ML605_SysClock_200MHz_n"						LOC = "H9";	## U11.5
+NET "ML605_SysClock_200MHz_p"						LOC = "J9";	## U11.4
+
+##
+## Special Buttons
+## =============================================================================
+##	Bank:						35
+##		VCCO:					1.5V (VCC2V5_FPGA)
+##	Location:				SW10
+## -----------------------------------------------------------------------------
+NET "ML605_GPIO_Button_CPU_Reset"				LOC = "H10"	| IOSTANDARD = LVCMOS15;			## high-active; breaker / normally closed
+##
+## Fan Control
+## =============================================================================
+##	Bank:						34
+##		VCCO:					2.5V (VCC2V5_FPGA)
+##	Location:				J59, Q24 (NDT3055L)
+## -----------------------------------------------------------------------------
+NET "ML605_FanControl_PWM"							LOC = "L10"	| IOSTANDARD = LVCMOS25;			## Q24.Gate; external 10k pullup resistor; Q24.Drain connects to J59.1 (GND)
+NET "ML605_FanControl_Tacho"						LOC = "M10"	| IOSTANDARD = LVCMOS25;			## J59.3; voltage limited by D16 (1N4148)
+##
+## USB UART
+## =============================================================================
+##	Bank:						24
+##		VCCO:					2.5V (VCC2V5_FPGA)
+##	Location:				U34
+##		Vendor:				Silicon Labs
+##		Device:				CP2103-GM
+##		Baud-Rate:		300 Bd - 1 MBd
+NET "ML605_USB_UART_TX"									LOC = "J24" | IOSTANDARD = LVCMOS25;			## U34.25	(out)
+NET "ML605_USB_UART_RX"									LOC = "J25" | IOSTANDARD = LVCMOS25;			## U34.24 (in)
+##NET "ML605_USB_UART_RTS_n"							LOC = "T23" | IOSTANDARD = LVCMOS25;			## U34.23	(out)
+##NET "ML605_USB_UART_CTS_n"							LOC = "T24" | IOSTANDARD = LVCMOS25;			## U34.22	(in)
