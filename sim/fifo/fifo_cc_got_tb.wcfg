@@ -49,18 +49,26 @@
          <obj_property name="ElementShortName">full</obj_property>
          <obj_property name="ObjectShortName">full</obj_property>
       </wvobject>
-      <wvobject fp_name="/fifo_cc_got_tb/\genduts(0)\/valid" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">valid</obj_property>
-         <obj_property name="ObjectShortName">valid</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(0)\/estate_wr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">estate_wr[1:0]</obj_property>
+         <obj_property name="ObjectShortName">estate_wr[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(0)\/got" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">got</obj_property>
+         <obj_property name="ObjectShortName">got</obj_property>
       </wvobject>
       <wvobject fp_name="/fifo_cc_got_tb/\genduts(0)\/dout" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">dout[7:0]</obj_property>
          <obj_property name="ObjectShortName">dout[7:0]</obj_property>
          <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
-      <wvobject fp_name="/fifo_cc_got_tb/\genduts(0)\/got" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">got</obj_property>
-         <obj_property name="ObjectShortName">got</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(0)\/valid" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">valid</obj_property>
+         <obj_property name="ObjectShortName">valid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(0)\/fstate_rd" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fstate_rd[1:0]</obj_property>
+         <obj_property name="ObjectShortName">fstate_rd[1:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group16" type="group">
@@ -79,18 +87,26 @@
          <obj_property name="ElementShortName">full</obj_property>
          <obj_property name="ObjectShortName">full</obj_property>
       </wvobject>
-      <wvobject fp_name="/fifo_cc_got_tb/\genduts(1)\/valid" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">valid</obj_property>
-         <obj_property name="ObjectShortName">valid</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(1)\/estate_wr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">estate_wr[1:0]</obj_property>
+         <obj_property name="ObjectShortName">estate_wr[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(1)\/got" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">got</obj_property>
+         <obj_property name="ObjectShortName">got</obj_property>
       </wvobject>
       <wvobject fp_name="/fifo_cc_got_tb/\genduts(1)\/dout" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">dout[7:0]</obj_property>
          <obj_property name="ObjectShortName">dout[7:0]</obj_property>
          <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
-      <wvobject fp_name="/fifo_cc_got_tb/\genduts(1)\/got" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">got</obj_property>
-         <obj_property name="ObjectShortName">got</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(1)\/valid" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">valid</obj_property>
+         <obj_property name="ObjectShortName">valid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(1)\/fstate_rd" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fstate_rd[1:0]</obj_property>
+         <obj_property name="ObjectShortName">fstate_rd[1:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group23" type="group">
@@ -109,18 +125,26 @@
          <obj_property name="ElementShortName">full</obj_property>
          <obj_property name="ObjectShortName">full</obj_property>
       </wvobject>
-      <wvobject fp_name="/fifo_cc_got_tb/\genduts(2)\/valid" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">valid</obj_property>
-         <obj_property name="ObjectShortName">valid</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(2)\/estate_wr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">estate_wr[1:0]</obj_property>
+         <obj_property name="ObjectShortName">estate_wr[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(2)\/got" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">got</obj_property>
+         <obj_property name="ObjectShortName">got</obj_property>
       </wvobject>
       <wvobject fp_name="/fifo_cc_got_tb/\genduts(2)\/dout" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">dout[7:0]</obj_property>
          <obj_property name="ObjectShortName">dout[7:0]</obj_property>
          <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
-      <wvobject fp_name="/fifo_cc_got_tb/\genduts(2)\/got" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">got</obj_property>
-         <obj_property name="ObjectShortName">got</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(2)\/valid" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">valid</obj_property>
+         <obj_property name="ObjectShortName">valid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(2)\/fstate_rd" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fstate_rd[1:0]</obj_property>
+         <obj_property name="ObjectShortName">fstate_rd[1:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group30" type="group">
@@ -139,18 +163,26 @@
          <obj_property name="ElementShortName">full</obj_property>
          <obj_property name="ObjectShortName">full</obj_property>
       </wvobject>
-      <wvobject fp_name="/fifo_cc_got_tb/\genduts(3)\/valid" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">valid</obj_property>
-         <obj_property name="ObjectShortName">valid</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(3)\/estate_wr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">estate_wr[1:0]</obj_property>
+         <obj_property name="ObjectShortName">estate_wr[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(3)\/got" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">got</obj_property>
+         <obj_property name="ObjectShortName">got</obj_property>
       </wvobject>
       <wvobject fp_name="/fifo_cc_got_tb/\genduts(3)\/dout" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">dout[7:0]</obj_property>
          <obj_property name="ObjectShortName">dout[7:0]</obj_property>
          <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
-      <wvobject fp_name="/fifo_cc_got_tb/\genduts(3)\/got" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">got</obj_property>
-         <obj_property name="ObjectShortName">got</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(3)\/valid" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">valid</obj_property>
+         <obj_property name="ObjectShortName">valid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(3)\/fstate_rd" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fstate_rd[1:0]</obj_property>
+         <obj_property name="ObjectShortName">fstate_rd[1:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group37" type="group">
@@ -169,18 +201,26 @@
          <obj_property name="ElementShortName">full</obj_property>
          <obj_property name="ObjectShortName">full</obj_property>
       </wvobject>
-      <wvobject fp_name="/fifo_cc_got_tb/\genduts(4)\/valid" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">valid</obj_property>
-         <obj_property name="ObjectShortName">valid</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(4)\/estate_wr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">estate_wr[1:0]</obj_property>
+         <obj_property name="ObjectShortName">estate_wr[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(4)\/got" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">got</obj_property>
+         <obj_property name="ObjectShortName">got</obj_property>
       </wvobject>
       <wvobject fp_name="/fifo_cc_got_tb/\genduts(4)\/dout" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">dout[7:0]</obj_property>
          <obj_property name="ObjectShortName">dout[7:0]</obj_property>
          <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
-      <wvobject fp_name="/fifo_cc_got_tb/\genduts(4)\/got" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">got</obj_property>
-         <obj_property name="ObjectShortName">got</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(4)\/valid" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">valid</obj_property>
+         <obj_property name="ObjectShortName">valid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(4)\/fstate_rd" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fstate_rd[1:0]</obj_property>
+         <obj_property name="ObjectShortName">fstate_rd[1:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group44" type="group">
@@ -199,18 +239,26 @@
          <obj_property name="ElementShortName">full</obj_property>
          <obj_property name="ObjectShortName">full</obj_property>
       </wvobject>
-      <wvobject fp_name="/fifo_cc_got_tb/\genduts(5)\/valid" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">valid</obj_property>
-         <obj_property name="ObjectShortName">valid</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(5)\/estate_wr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">estate_wr[1:0]</obj_property>
+         <obj_property name="ObjectShortName">estate_wr[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(5)\/got" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">got</obj_property>
+         <obj_property name="ObjectShortName">got</obj_property>
       </wvobject>
       <wvobject fp_name="/fifo_cc_got_tb/\genduts(5)\/dout" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">dout[7:0]</obj_property>
          <obj_property name="ObjectShortName">dout[7:0]</obj_property>
          <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
-      <wvobject fp_name="/fifo_cc_got_tb/\genduts(5)\/got" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">got</obj_property>
-         <obj_property name="ObjectShortName">got</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(5)\/valid" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">valid</obj_property>
+         <obj_property name="ObjectShortName">valid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(5)\/fstate_rd" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fstate_rd[1:0]</obj_property>
+         <obj_property name="ObjectShortName">fstate_rd[1:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group51" type="group">
@@ -229,18 +277,26 @@
          <obj_property name="ElementShortName">full</obj_property>
          <obj_property name="ObjectShortName">full</obj_property>
       </wvobject>
-      <wvobject fp_name="/fifo_cc_got_tb/\genduts(6)\/valid" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">valid</obj_property>
-         <obj_property name="ObjectShortName">valid</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(6)\/estate_wr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">estate_wr[1:0]</obj_property>
+         <obj_property name="ObjectShortName">estate_wr[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(6)\/got" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">got</obj_property>
+         <obj_property name="ObjectShortName">got</obj_property>
       </wvobject>
       <wvobject fp_name="/fifo_cc_got_tb/\genduts(6)\/dout" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">dout[7:0]</obj_property>
          <obj_property name="ObjectShortName">dout[7:0]</obj_property>
          <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
-      <wvobject fp_name="/fifo_cc_got_tb/\genduts(6)\/got" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">got</obj_property>
-         <obj_property name="ObjectShortName">got</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(6)\/valid" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">valid</obj_property>
+         <obj_property name="ObjectShortName">valid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(6)\/fstate_rd" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fstate_rd[1:0]</obj_property>
+         <obj_property name="ObjectShortName">fstate_rd[1:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group58" type="group">
@@ -259,18 +315,26 @@
          <obj_property name="ElementShortName">full</obj_property>
          <obj_property name="ObjectShortName">full</obj_property>
       </wvobject>
-      <wvobject fp_name="/fifo_cc_got_tb/\genduts(7)\/valid" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">valid</obj_property>
-         <obj_property name="ObjectShortName">valid</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(7)\/estate_wr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">estate_wr[1:0]</obj_property>
+         <obj_property name="ObjectShortName">estate_wr[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(7)\/got" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">got</obj_property>
+         <obj_property name="ObjectShortName">got</obj_property>
       </wvobject>
       <wvobject fp_name="/fifo_cc_got_tb/\genduts(7)\/dout" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">dout[7:0]</obj_property>
          <obj_property name="ObjectShortName">dout[7:0]</obj_property>
          <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
-      <wvobject fp_name="/fifo_cc_got_tb/\genduts(7)\/got" type="logic" db_ref_id="1">
-         <obj_property name="ElementShortName">got</obj_property>
-         <obj_property name="ObjectShortName">got</obj_property>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(7)\/valid" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">valid</obj_property>
+         <obj_property name="ObjectShortName">valid</obj_property>
+      </wvobject>
+      <wvobject fp_name="/fifo_cc_got_tb/\genduts(7)\/fstate_rd" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">fstate_rd[1:0]</obj_property>
+         <obj_property name="ObjectShortName">fstate_rd[1:0]</obj_property>
       </wvobject>
    </wvobject>
 </wave_config>

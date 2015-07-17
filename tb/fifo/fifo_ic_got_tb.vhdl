@@ -1,13 +1,43 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- =============================================================================
+-- Authors:					Thomas B. Preusser
+--
+-- Testbench:				Testbench for a FIFO with independent clocks
+-- 
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- =============================================================================
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
+
 entity fifo_ic_got_tb is
-end fifo_ic_got_tb;
+end entity;
 
-library IEEE;
-use IEEE.std_logic_1164.all;
+library	IEEE;
+use			IEEE.std_logic_1164.all;
 
-library poc;
-use poc.functions.all;
-use poc.fifo.all;
-use poc.comm.all;
+library	PoC;
+use			PoC.utils.all;
+
 
 architecture tb of fifo_ic_got_tb is
 
@@ -15,8 +45,8 @@ architecture tb of fifo_ic_got_tb is
   constant D_BITS         : positive := 9;
   constant MIN_DEPTH      : positive := 8;
   constant OUTPUT_REG     : boolean  := true;
-  constant ESTATE_WR_BITS : natural  := 3;
-  constant FSTATE_RD_BITS : natural  := 3;
+  constant ESTATE_WR_BITS : natural  := 2;
+  constant FSTATE_RD_BITS : natural  := 2;
 
   -- Sequence Generator
   constant GEN : bit_vector       := "100110001";
@@ -65,7 +95,7 @@ begin
 
   -----------------------------------------------------------------------------
   -- Initial Generator
-  gen0: comm_scramble
+  gen0 : entity PoC.comm_scramble
     generic map (
       GEN  => GEN,
       BITS => D_BITS
@@ -113,7 +143,7 @@ begin
 
   end process;
   
-  fifo0_1: fifo_ic_got
+  fifo0_1 : entity PoC.fifo_ic_got
     generic map (
       D_BITS         => D_BITS,
       MIN_DEPTH      => MIN_DEPTH,
@@ -139,7 +169,7 @@ begin
 
   -----------------------------------------------------------------------------
   -- Intermediate Checker
-  gen1: comm_scramble
+  gen1 : entity PoC.comm_scramble
     generic map (
       GEN  => GEN,
       BITS => D_BITS
@@ -167,7 +197,7 @@ begin
     end if;
   end process;
 
-  fifo1_2: fifo_ic_got
+  fifo1_2 : entity PoC.fifo_ic_got
     generic map (
       DATA_REG       => true,
       D_BITS         => D_BITS,
@@ -193,7 +223,7 @@ begin
 
   -----------------------------------------------------------------------------
   -- Final Checker
-  gen2: comm_scramble
+  gen2 : entity PoC.comm_scramble
     generic map (
       GEN  => GEN,
       BITS => D_BITS

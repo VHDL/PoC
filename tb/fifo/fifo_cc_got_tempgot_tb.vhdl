@@ -1,22 +1,52 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Authors:					Thomas B. Preusser
+--
+-- Testbench:				Testbench for a FIFO with Common Clock (cc) and Pipelined Interface
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+--		
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
+
 entity fifo_cc_got_tempgot_tb is
-end fifo_cc_got_tempgot_tb;
+end entity;
 
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+library	IEEE;
+use			IEEE.std_logic_1164.all;
 
-library poc;
-use poc.functions.all;
-use poc.fifo.fifo_cc_got_tempgot;
-use poc.comm.comm_scramble;
+library	PoC;
+use			PoC.utils.all;
+
 
 architecture tb of fifo_cc_got_tempgot_tb is
 
   -- component generics
   constant D_BITS         : positive := 8;
   constant MIN_DEPTH      : positive := 8;
-  constant ESTATE_WR_BITS : natural  := 0;
-  constant FSTATE_RD_BITS : natural  := 0;
+  constant ESTATE_WR_BITS : natural  := 2;
+  constant FSTATE_RD_BITS : natural  := 2;
 
   constant ISPEC : string := "C C Cccccpppp pppp c ccc pp         Cppppp ppp rp RpC";
   constant OSPEC : string := "ggg                      gggggggg  ggg G           G";
@@ -35,9 +65,9 @@ begin
   clk <= not clk after 5 ns when done /= (done'range => '1') else '0';
 
   genTests: for c in 0 to 7 generate
-    constant DATA_REG   : boolean :=  c mod 8 > 3;
-    constant STATE_REG  : boolean :=  c mod 4 > 1;
-    constant OUTPUT_REG : boolean :=  c mod 2 > 0;
+		constant DATA_REG   : boolean :=  c mod 2 > 0;
+		constant STATE_REG  : boolean :=  c mod 4 > 1;
+		constant OUTPUT_REG : boolean :=  c mod 8 > 3;
 
     signal put  : std_logic;
     signal putx : std_logic;
@@ -56,7 +86,7 @@ begin
   begin
 
     putx <= put and not ful;
-    geni: comm_scramble
+    geni : entity PoC.comm_scramble
       generic map (
         GEN  => GEN,
         BITS => D_BITS
@@ -114,7 +144,7 @@ begin
       wait;
     end process;
 
-    DUT: fifo_cc_got_tempgot
+    DUT : entity PoC.fifo_cc_got_tempgot
       generic map (
         D_BITS         => D_BITS,
         MIN_DEPTH      => MIN_DEPTH,
@@ -170,7 +200,7 @@ begin
     end process;
 
     gotx <= got and vld;
-    geno: comm_scramble
+    geno : entity PoC.comm_scramble
       generic map (
         GEN  => GEN,
         BITS => D_BITS
