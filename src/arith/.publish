@@ -11,7 +11,7 @@ arith_counter_gray.vhdl
 arith_counter_ring.vhdl
 
 # Converters
-arith_convert_bin2bcd_tb.vhdl
+arith_convert_bin2bcd.vhdl
 
 # Logical
 arith_same.vhdl
