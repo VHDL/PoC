@@ -1,1 +1,2 @@
-xil_Sync.ucf
+xil_SyncBits.ucf
+xil_SyncReset.ucf
