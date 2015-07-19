@@ -298,23 +298,24 @@ BEGIN
 			if Error_en = '1' then --only true if also clock is enabled
 				Error_r <= Error_nxt;
 			end if;
-			
-			if ClockEnable = '1' then
-				-- Only update if clock is enabled because the current value must mimic
-				-- the FPGA transceiver configuration which is not automatically reseted.
-				-- Don't update register if speed negotiation is disabled because FPGA
-				-- will not be reprogrammed.
-				if ALLOW_SPEED_NEGOTIATION then
-					SATAGeneration_cur	<= SATAGeneration_nxt;
-				end if;
-			end if;
 		end if;
 	end process;
 
-	gNoSpeedNego: if not ALLOW_SPEED_NEGOTIATION generate
+	genSpeedNego: if (ALLOW_SPEED_NEGOTIATION = TRUE) generate
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if (ClockEnable = '1') then
+					-- Only update if clock is enabled because the current value must mimic
+					-- the FPGA transceiver configuration which is not automatically reseted.
+					SATAGeneration_cur	<= SATAGeneration_nxt;
+				end if;
+			end if;
+		end process;
+	end generate;
+	genNoSpeedNego: if (ALLOW_SPEED_NEGOTIATION = FALSE) generate
 		SATAGeneration_cur <= INITIAL_SATA_GENERATION;
 	end generate;
-
 	
 	process(State, Command,
 					OOBC_Timeout, OOBC_DeviceOrHostDetected, OOBC_LinkOK, OOBC_LinkDead, 
