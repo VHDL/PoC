@@ -19,6 +19,8 @@ simulation.v08.vhdl
 
 # --------------------------------------
 # package / function tests
-#config_tb.*
+config_tb.*
 #physical_tb.*
-
+strings_tb.*
+#utils_tb.*
+#vectors_tb.*
