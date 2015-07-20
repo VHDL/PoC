@@ -3,14 +3,15 @@
 
 # subnamespace
 
-# PoC.config examples
-my_config.S3SK1000.vhdl
-my_config.ML505.vhdl
-my_config.ML605.vhdl
-my_config.KC705.vhdl
-my_config.VC707.vhdl
-my_config.S2GXAV.vhdl
-my_config.DE4.vhdl
+# PoC.my_config examples
+my_config_S3SK1000.vhdl
+my_config_Atlys.vhdl
+my_config_ML505.vhdl
+my_config_ML605.vhdl
+my_config_KC705.vhdl
+my_config_VC707.vhdl
+my_config_S2GXAV.vhdl
+my_config_DE4.vhdl
 # DON'T PUBLISH my_project.vhdl !
 
 # simulation packages
@@ -19,6 +20,8 @@ simulation.v08.vhdl
 
 # --------------------------------------
 # package / function tests
-#config_tb.*
+config_tb.*
 #physical_tb.*
-
+strings_tb.*
+#utils_tb.*
+#vectors_tb.*
