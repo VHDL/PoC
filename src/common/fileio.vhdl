@@ -16,12 +16,12 @@
 --	 Open problems:
 --     - verify that std.textio.write(text, string) is, indeed, specified and
 --              that it does *not* print a trailing \newline
---          -> would help to elimate line buffering in shared variables
+--          -> would help to eliminate line buffering in shared variables
 --     - move C_LINEBREAK to my_config to keep platform dependency out?
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --  					 				 Chair for VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");

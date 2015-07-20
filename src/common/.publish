@@ -1,8 +1,10 @@
 # Basics
+debug.vhdl
+fileio.vhdl
+physical.vhdl
+strings.vhdl
 utils.vhdl
 vectors.vhdl
-strings.vhdl
-physical.vhdl
 
 # Templates
 my_*.vhdl.template
