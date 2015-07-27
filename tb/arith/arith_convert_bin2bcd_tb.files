@@ -5,7 +5,7 @@
 # Note: all files are relative to PoC root directory
 #
 # board and device configuration
-vhdl		poc		"tb/common/my_config_ML505.vhdl"
+vhdl		poc		"tb/common/my_config_KC705.vhdl"
 vhdl		poc		"tb/common/my_project.vhdl"
 
 # PoC core packages

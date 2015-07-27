@@ -3,7 +3,7 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 --
 -- ============================================================================
--- Package:     IO-related functions.
+-- Package:     File I/O-related Functions.
 --
 -- Authors:			Patrick Lehmann
 --							Thomas B. Preusser
@@ -16,12 +16,12 @@
 --	 Open problems:
 --     - verify that std.textio.write(text, string) is, indeed, specified and
 --              that it does *not* print a trailing \newline
---          -> would help to elimate line buffering in shared variables
+--          -> would help to eliminate line buffering in shared variables
 --     - move C_LINEBREAK to my_config to keep platform dependency out?
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --  					 				 Chair for VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,25 +37,45 @@
 -- limitations under the License.
 -- =============================================================================
 
+use			STD.TextIO.all;
+
 library	PoC;
-use			PoC.config.OPERATING_SYSTEM;
-use			PoC.utils.all;
+use			PoC.my_project.all;
 
 
-package txtio is
-	-----------------------------------------------------------------------------
+package FileIO is
 	-- Constant declarations
-	constant C_LINEBREAK : STRING := ite(str_equal(OPERATING_SYSTEM, "WINDOWS"), (CR & LF), (1 => LF));
+	constant C_LINEBREAK : STRING;
 
+	-- =============================================================================
 	procedure stdout_write    (str : STRING);
 	procedure stdout_writeline(str : STRING := "");
-	procedure stderr_write    (str : STRING);
-	procedure stderr_writeline(str : STRING := "");
 
-end package txtio;
+end package;
 
-package body txtio is
+package body FileIO is
+	function ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) return STRING is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
 
+	function str_equal(str1 : STRING; str2 : STRING) return BOOLEAN is
+	begin
+		if str1'length /= str2'length then
+			return FALSE;
+		else
+			return (str1 = str2);
+		end if;
+	end function;
+	
+	-- =============================================================================
+	constant C_LINEBREAK : STRING := ite(str_equal(MY_OPERATING_SYSTEM, "WINDOWS"), (CR & LF), (1 => LF));
+
+	-- =============================================================================
 	shared variable stdout_line : line;
 	shared variable stderr_line : line;
 
@@ -67,18 +87,7 @@ package body txtio is
 	procedure stdout_writeline(str : STRING := "") is
 	begin
 		write(stdout_line, str);
-		writeline(stdout_line);
-	end procedure;
-	
-	procedure stderr_write(str : STRING) is
-	begin
-		write(stderr_line, str);
-	end procedure;
-	
-	procedure stderr_writeline(str : STRING := "") is
-	begin
-		write(stderr_line, str);
-		writeline(stderr_line);
+		writeline(output, stdout_line);
 	end procedure;
 	
 end package body;
