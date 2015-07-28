@@ -10,7 +10,7 @@
 --
 -- Description:
 -- ------------------------------------
---		See PoC.io.ddrio.out for interface description.
+--	See PoC.io.ddrio.out for interface description.
 --		
 -- License:
 -- ============================================================================
@@ -34,21 +34,20 @@ library	IEEE;
 use			IEEE.std_logic_1164.ALL;
 
 library	Altera_mf;
-use			Altera_mf.Altera_mf_Components.all;
+use			Altera_mf.Altera_MF_Components.all;
 
 
 entity ddrio_out_altera is
 	generic (
-		INIT_VALUE	: BIT				:= '1';
-		WIDTH				: positive
+		BITS								: POSITIVE
 	);
 	port (
-		clk		: in	std_logic;
-		ce		: in	std_logic;
-		dh		: in	std_logic_vector(WIDTH-1 downto 0);
-		dl		: in	std_logic_vector(WIDTH-1 downto 0);
-		oe		: in	std_logic;
-		q			: out	std_logic_vector(WIDTH-1 downto 0)
+		Clock					: in	STD_LOGIC;
+		ClockEnable		: in	STD_LOGIC;
+		OutputEnable	: in	STD_LOGIC;		
+		DataOut_high	: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);
+		DataOut_low		: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);
+		Pad						: out	STD_LOGIC_VECTOR(BITS - 1 downto 0)
 	);
 end entity;
 
@@ -56,17 +55,17 @@ end entity;
 architecture rtl of ddrio_out_altera is
 
 begin
-	ff : altddio_out
+	off : altddio_out
 		generic map (
-			width										=> WIDTH,
+			WIDTH										=> BITS,
 			INTENDED_DEVICE_FAMILY	=> "STRATIXII"		-- TODO: built device string from PoC.config information
 		)
 		port map (
-			datain_h	=> dh,
-			datain_l	=> dl,
-			oe				=> oe,
-			oe_out		=> open,
-			outclock	=> clk,
-			dataout		=> q
+			outclock		=> Clock,
+			outclocken	=> ClockEnable,
+			oe					=> OutputEnable,
+			datain_h		=> DataOut_high,
+			datain_l		=> DataOut_low,
+			dataout			=> Pad
 		);
 end architecture;

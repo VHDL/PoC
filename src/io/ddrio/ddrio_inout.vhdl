@@ -6,12 +6,12 @@
 -- Authors:					Martin Zabel
 --									Patrick Lehmann
 -- 
--- Module:					Chip-Specific DDR Input Registers
+-- Module:					Chip-Specific DDR Input and Output Registers
 --
 -- Description:
 -- ------------------------------------
---	Instantiates chip-specific DDR input registers.
---		
+--	Instantiates chip-specific DDR input and output registers.
+--	
 --	"OutputEnable" (Tri-State) is high-active. It is automatically inverted if
 --	necessary. If an output enable is not required, you may save some logic by
 --	setting NO_OUTPUT_ENABLE = true. However, "OutputEnable" must be set to '1'.
@@ -51,57 +51,69 @@ use			PoC.config.all;
 use			PoC.ddrio.all;
 
 
-entity ddrio_in is
+entity ddrio_out is
 	generic (
-		BITS						: POSITIVE;
-		INIT_VALUE_HIGH	: BIT_VECTOR	:= "1";
-		INIT_VALUE_LOW	: BIT_VECTOR	:= "1"
+		NO_OUTPUT_ENABLE		: BOOLEAN			:= false;
+		BITS								: POSITIVE;
+		INIT_VALUE_OUT			: BIT_VECTOR	:= "1";
+		INIT_VALUE_IN_HIGH	: BIT_VECTOR	:= "1";
+		INIT_VALUE_IN_LOW		: BIT_VECTOR	:= "1"
 	);
 	port (
 		Clock					: in		STD_LOGIC;
 		ClockEnable		: in		STD_LOGIC;
+		OutputEnable	: in		STD_LOGIC;		
+		DataOut_high	: in		STD_LOGIC_VECTOR(BITS - 1 downto 0);
+		DataOut_low		: in		STD_LOGIC_VECTOR(BITS - 1 downto 0);
 		DataIn_high		: out		STD_LOGIC_VECTOR(BITS - 1 downto 0);
 		DataIn_low		: out		STD_LOGIC_VECTOR(BITS - 1 downto 0);
 		Pad						: inout	STD_LOGIC_VECTOR(BITS - 1 downto 0)
-		);
+	);
 end entity;
 
 
-architecture rtl of ddrio_in is
+architecture rtl of ddrio_out is
   
 begin
-	assert (VENDOR = VENDOR_XILINX)-- or (VENDOR = VENDOR_ALTERA)
-		report "PoC.io.ddrio.in is not implemented for given DEVICE."
+	assert (VENDOR = VENDOR_XILINX) or (VENDOR = VENDOR_ALTERA)
+		report "PoC.io.ddrio.inout is not implemented for given DEVICE."
 		severity FAILURE;
 	
 	genXilinx : if (VENDOR = VENDOR_XILINX) generate
-		i : ddrio_in_xilinx
+		inst : ddrio_inout_xilinx
 			generic map (
-				BITS						=> BITS,
-				INIT_VALUE_HIGH	=> INIT_VALUE_IN_HIGH,
-				INIT_VALUE_LOW	=> INIT_VALUE_IN_LOW
+				NO_OUTPUT_ENABLE		=> NO_OUTPUT_ENABLE,
+				BITS								=> BITS,
+				INIT_VALUE_OUT			=> INIT_VALUE_OUT,
+				INIT_VALUE_IN_HIGH	=> INIT_VALUE_IN_HIGH,
+				INIT_VALUE_IN_LOW		=> INIT_VALUE_IN_LOW
 			)
 			port map (
-				Clock						=> Clock,
-				ClockEnable			=> ClockEnable,
-				DataIn_high			=> DataIn_high,
-				DataIn_low			=> DataIn_low,
-				Pad							=> Pad
+				Clock					=> Clock,
+				ClockEnable		=> ClockEnable,
+				OutputEnable	=> OutputEnable,
+				DataOut_high	=> DataOut_high,
+				DataOut_low		=> DataOut_low,
+				DataIn_high		=> DataIn_high,
+				DataIn_low		=> DataIn_low,
+				Pad						=> Pad
 			);
 	end generate;
 
---	genAltera : if (VENDOR = VENDOR_ALTERA) generate
---		i : ddrio_in_altera
---			generic map (
---				WIDTH => WIDTH
---			)
---			port map (
---				clk => clk,
---				ce  => ce,
---				dh  => dh,
---				dl  => dl,
---				oe  => oe,
---				q   => q
---			);
---	end generate;
+	genAltera : if (VENDOR = VENDOR_ALTERA) generate
+		inst : ddrio_inout_altera
+			generic map (
+				BITS								=> BITS
+			)
+			port map (
+				Clock					=> Clock,
+				ClockEnable		=> ClockEnable,
+				OutputEnable	=> OutputEnable,
+				DataOut_high	=> DataOut_high,
+				DataOut_low		=> DataOut_low,
+				DataIn_high		=> DataIn_high,
+				DataIn_low		=> DataIn_low,
+				Pad						=> Pad
+			);
+	end generate;
 end architecture;

@@ -6,11 +6,11 @@
 -- Authors:					Martin Zabel
 --									Patrick Lehmann
 -- 
--- Module:					Instantiates Chip-Specific DDR Input Registers for Xilinx FPGAs.
+-- Module:					Instantiates Chip-Specific DDR Input/Output Registers for Xilinx FPGAs.
 --
 -- Description:
 -- ------------------------------------
---	See PoC.io.ddrio.in for interface description.
+--	See PoC.io.ddrio.inout for interface description.
 --		
 -- License:
 -- ============================================================================
@@ -30,48 +30,51 @@
 -- limitations under the License.
 -- ============================================================================
 
+
 library IEEE;
 use			IEEE.std_logic_1164.ALL;
 
-library	UniSim;
-use			UniSim.vComponents.all;
+library	Altera_mf;
+use			Altera_mf.Altera_MF_Components.all;
 
 
-entity ddrio_in_xilinx is
+entity ddrio_inout_altera is
 	generic (
-		BITS						: POSITIVE;
-		INIT_VALUE_HIGH	: BIT_VECTOR	:= "1";
-		INIT_VALUE_LOW	: BIT_VECTOR	:= "1"
+		BITS								: POSITIVE
 	);
 	port (
-		Clock					: in	STD_LOGIC;
-		ClockEnable		: in	STD_LOGIC;
-		DataIn_high		: out	STD_LOGIC_VECTOR(BITS - 1 downto 0);
-		DataIn_low		: out	STD_LOGIC_VECTOR(BITS - 1 downto 0);
-		Pad						: in	STD_LOGIC_VECTOR(BITS - 1 downto 0)
+		Clock					: in		STD_LOGIC;
+		ClockEnable		: in		STD_LOGIC;
+		OutputEnable	: in		STD_LOGIC;		
+		DataOut_high	: in		STD_LOGIC_VECTOR(BITS - 1 downto 0);
+		DataOut_low		: in		STD_LOGIC_VECTOR(BITS - 1 downto 0);
+		DataIn_high		: out		STD_LOGIC_VECTOR(BITS - 1 downto 0);
+		DataIn_low		: out		STD_LOGIC_VECTOR(BITS - 1 downto 0);
+		Pad						: inout	STD_LOGIC_VECTOR(BITS - 1 downto 0)
 	);
 end entity;
 
 
-architecture rtl of ddrio_in_xilinx is
+architecture rtl of ddrio_inout_altera is
 
 begin
-	gen : for i in 0 to WIDTH - 1 generate
-		iff : IDDR
-			generic map(
-				DDR_CLK_EDGE	=> "SAME_EDGE",
-				INIT_Q1				=> INIT_VALUE_HIGH(i),
-				INIT_Q2				=> INIT_VALUE_LOW(i),
-				SRTYPE				=> "SYNC"
-			)
-			port map (
-				C		=> Clock,
-				CE	=> ClockEnable,
-				D		=> Pad(i),
-				Q1	=> DataIn_high(i),
-				Q2	=> DataIn_low(i),
-				R		=> '0',
-				S		=> '0'
-			);
-	end generate;
+	ioff : altddio_in
+		generic map (
+			WIDTH										=> BITS,
+			INTENDED_DEVICE_FAMILY	=> "STRATIXII"		-- TODO: built device string from PoC.config information
+		)
+		port map (
+			outclock		=> Clock,
+			outclocken	=> ClockEnable,
+			oe					=> OutputEnable,
+			datain_h		=> DataOut_high,
+			datain_l		=> DataOut_low,
+			
+			inclock			=> Clock,
+			inclocken		=> ClockEnable,
+			dataout_h		=> DataIn_high,
+			dataout_l		=> DataIn_low,
+
+			padio				=> Pad
+		);
 end architecture;

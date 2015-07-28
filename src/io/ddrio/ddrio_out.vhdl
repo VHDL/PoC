@@ -10,18 +10,19 @@
 --
 -- Description:
 -- ------------------------------------
---		Instantiates chip-specific DDR output registers.
+--	Instantiates chip-specific DDR output registers.
 --		
---		Output enable "oe" is high-active. It is automatically inverted if
---		necessary. If an output enable is not required, you may save some logic by
---		setting NO_OE = true. However, "oe" must be set to '1'.
---		
---		Both data "dh" and "dl" as well as "oe" are sampled with the
---		rising_edge(clk) from the on-chip logic. "dh" is brought out with this
---		rising edge. "dl" is brought out with the falling edge.
---		
---		"q" must be connected to a PAD because FPGAs only have these registers in
---		IOBs.
+--	"OutputEnable" (Tri-State) is high-active. It is automatically inverted if
+--	necessary. If an output enable is not required, you may save some logic by
+--	setting NO_OUTPUT_ENABLE = true. However, "OutputEnable" must be set to '1'.
+--	
+--	Both data "DataOut_high/low" as well as "OutputEnable" are sampled with
+--	the rising_edge(Clock) from the on-chip logic. "DataOut_high" is brought
+--	out with this rising edge. "DataOut_low" is brought out with the falling
+--	edge.
+--	
+--	"Pad" must be connected to a PAD because FPGAs only have these registers in
+--	IOBs.
 --
 -- License:
 -- ============================================================================
@@ -52,17 +53,17 @@ use			PoC.ddrio.all;
 
 entity ddrio_out is
 	generic (
-		NO_OE				: boolean		:= false;
-		INIT_VALUE	: BIT				:= '1';
-		WIDTH				: positive
+		NO_OUTPUT_ENABLE		: BOOLEAN			:= false;
+		BITS								: POSITIVE;
+		INIT_VALUE					: BIT_VECTOR	:= "1"
 	);
 	port (
-		clk		: in	std_logic;
-		ce		: in	std_logic;
-		dh		: in	std_logic_vector(WIDTH-1 downto 0);
-		dl		: in	std_logic_vector(WIDTH-1 downto 0);
-		oe		: in	std_logic;
-		q			: out	std_logic_vector(WIDTH-1 downto 0)
+		Clock					: in	STD_LOGIC;
+		ClockEnable		: in	STD_LOGIC;
+		OutputEnable	: in	STD_LOGIC;		
+		DataOut_high	: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);
+		DataOut_low		: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);
+		Pad						: out	STD_LOGIC_VECTOR(BITS - 1 downto 0)
 	);
 end entity;
 
@@ -71,38 +72,38 @@ architecture rtl of ddrio_out is
   
 begin
 	assert (VENDOR = VENDOR_XILINX) or (VENDOR = VENDOR_ALTERA)
-		report "ddrio_out not implemented for given DEVICE."
-		severity failure;
+		report "PoC.io.ddrio.out is not implemented for given DEVICE."
+		severity FAILURE;
 	
 	genXilinx : if (VENDOR = VENDOR_XILINX) generate
 		i : ddrio_out_xilinx
 			generic map (
-				NO_OE				=> NO_OE,
-				INIT_VALUE	=> INIT_VALUE,
-				WIDTH				=> WIDTH
+				NO_OUTPUT_ENABLE	=> NO_OUTPUT_ENABLE,
+				BITS							=> BITS,
+				INIT_VALUE				=> INIT_VALUE
 			)
 			port map (
-				clk => clk,
-				ce  => ce,
-				dh  => dh,
-				dl  => dl,
-				oe  => oe,
-				q   => q
+				Clock					=> Clock,
+				ClockEnable		=> ClockEnable,
+				OutputEnable	=> OutputEnable,
+				DataOut_high	=> DataOut_high,
+				DataOut_low		=> DataOut_low,
+				Pad						=> Pad
 			);
 	end generate;
 
 	genAltera : if (VENDOR = VENDOR_ALTERA) generate
 		i : ddrio_out_altera
 			generic map (
-				WIDTH => WIDTH
+				BITS					=> BITS
 			)
 			port map (
-				clk => clk,
-				ce  => ce,
-				dh  => dh,
-				dl  => dl,
-				oe  => oe,
-				q   => q
+				Clock					=> Clock,
+				ClockEnable		=> ClockEnable,
+				OutputEnable	=> OutputEnable,
+				DataOut_high	=> DataOut_high,
+				DataOut_low		=> DataOut_low,
+				Pad						=> Pad
 			);
 	end generate;
 end architecture;

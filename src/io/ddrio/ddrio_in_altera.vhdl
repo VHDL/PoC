@@ -6,7 +6,7 @@
 -- Authors:					Martin Zabel
 --									Patrick Lehmann
 -- 
--- Module:					Instantiates Chip-Specific DDR Input Registers for Xilinx FPGAs.
+-- Module:					Instantiates Chip-Specific DDR Input Registers for Altera FPGAs.
 --
 -- Description:
 -- ------------------------------------
@@ -33,8 +33,8 @@
 library IEEE;
 use			IEEE.std_logic_1164.ALL;
 
-library	UniSim;
-use			UniSim.vComponents.all;
+library	Altera_mf;
+use			Altera_mf.Altera_MF_Components.all;
 
 
 entity ddrio_in_xilinx is
@@ -56,22 +56,16 @@ end entity;
 architecture rtl of ddrio_in_xilinx is
 
 begin
-	gen : for i in 0 to WIDTH - 1 generate
-		iff : IDDR
-			generic map(
-				DDR_CLK_EDGE	=> "SAME_EDGE",
-				INIT_Q1				=> INIT_VALUE_HIGH(i),
-				INIT_Q2				=> INIT_VALUE_LOW(i),
-				SRTYPE				=> "SYNC"
-			)
-			port map (
-				C		=> Clock,
-				CE	=> ClockEnable,
-				D		=> Pad(i),
-				Q1	=> DataIn_high(i),
-				Q2	=> DataIn_low(i),
-				R		=> '0',
-				S		=> '0'
-			);
-	end generate;
+	iff : altddio_in
+		generic map (
+			WIDTH										=> BITS,
+			INTENDED_DEVICE_FAMILY	=> "STRATIXII"		-- TODO: built device string from PoC.config information
+		)
+		port map (
+			inclock			=> Clock,
+			inclocken		=> ClockEnable,
+			dataout_h		=> DataIn_high,
+			dataout_l		=> DataIn_low,
+			datain			=> Pad
+		);
 end architecture;
