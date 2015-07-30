@@ -1,4 +1,4 @@
-VGA modules overview
+## VGA modules overview
 
 VGA output could be devided into 4 steps:
 
