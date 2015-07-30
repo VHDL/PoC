@@ -6,15 +6,15 @@
 ## -----------------------------------------------------------------------------
 ##	Devices:					??
 ##		Location:				U15
-##			Vendor:				
+##			Vendor:				STMicroelectronics
 ##			Device:				M24C08
 ##			I²C-Address:	0x50
 ##		Location:				U8
-##			Vendor:				
+##			Vendor:				Integrated Device Technology
 ##			Device:				IDT5V9885
 ##			I²C-Address:	0x6A
 ##		Location:				U14
-##			Vendor:				
+##			Vendor:				Analog Devices
 ##			Device:				ADT7476
 ##			I²C-Address:	0x2C
 NET "ML505_IIC_SerialClock"						LOC = "F9";			## 2x external 10k pullup resistors
