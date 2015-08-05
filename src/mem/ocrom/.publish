@@ -1,0 +1,15 @@
+# git files
+.gitignore
+
+# Package
+ocrom.pkg.vhdl
+
+# Generic ROM modules
+ocrom_sp.vhdl
+ocrom_dp.vhdl
+
+# Altera specific
+altera/
+
+# Xilinx specific
+xilinx/

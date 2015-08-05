@@ -2,5 +2,9 @@
 .gitignore
 
 # subnamespace
+is61lv/
+is61nlp/
 lut/
 ocram/
+ocrom/
+sdram/
