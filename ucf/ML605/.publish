@@ -6,7 +6,7 @@ GPIO.Button.Cursor.ucf
 GPIO.Switch.ucf
 GPIO.LED.ucf
 GPIO.Rotary.ucf
-GPIO.FanControl.ucf
+FanControl.ucf
 Bus.LCDisplay.ucf
 Bus.IIC.ucf
 Bus.PMBus.ucf
@@ -14,6 +14,7 @@ EthernetPHY.ucf
 EthernetPHY.RGMII.ucf
 EthernetPHY.GMII.ucf
 EthernetPHY.SGMII.ucf
-Tranceiver.SFP.ucf
-Tranceiver.SMA.ucf
+Transceiver.SFP.ucf
+Transceiver.SMA.ucf
+Transceiver.SMA_RefClock.ucf
 USB_UART.ucf
