@@ -1,0 +1,7 @@
+sata_LinkLayer_ILA.xco
+sata_PhysicalLayer_ILA.xco
+sata_StreamingLayer_ILA.xco
+sata_TransceiverLayer_ILA.xco
+sata_TransceiverMonitor_ILA.xco
+sata_TransportLayer_ILA.xco
+

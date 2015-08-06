@@ -6,8 +6,8 @@
 ddrio/
 
 # low speed protocols
-#iic/
-#lcd/
+iic/
+lcd/
 #mdio/
 #ow/
 #ps2/

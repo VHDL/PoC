@@ -9,7 +9,6 @@ ocram_esdp.vhdl
 ocram_sdp.vhdl
 ocram_sp.vhdl
 ocram_tdp.vhdl
-ocram_wb.vhdl
 
 # Altera specific
 altera/
