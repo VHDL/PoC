@@ -20,5 +20,4 @@ sata_Transport_FISEncoder.vhdl
 sata_TransportFSM.vhdl
 sata_TransportLayer.vhdl
 xilinx/
-chipscope/
 
