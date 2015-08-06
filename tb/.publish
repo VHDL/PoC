@@ -13,6 +13,7 @@ arith/
 comm/
 common/
 io/
+fifo/
 mem/
 misc/
 #sata/

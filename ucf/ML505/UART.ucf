@@ -1,5 +1,3 @@
-#% BEGIN-TEMPLATEFILE Board = "ML505" %#
-#% BEGIN-TEMPLATE UART %#
 ## UART - Universal Asynchronous Receiver Transmitter
 ## =============================================================================
 ##	Bank:						4, 20
@@ -15,6 +13,3 @@ NET "ML505_UART2_TX"						LOC = "F10";		## {OUT}	U13.11	{IN}
 NET "ML505_UART2_RX"						LOC = "G10";		## {IN}		U13.12	{OUT}	
 NET "ML505_UART?_?X"						IOSTANDARD = LVCMOS33;
 NET "ML505_UART?_?X"						SLEW = FAST;
-#% BEGIN-TEMPLATE UART %#
-#% END-TEMPLATEFILE %#
-

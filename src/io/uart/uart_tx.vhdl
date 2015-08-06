@@ -4,6 +4,7 @@
 -- 
 -- ============================================================================
 -- Authors:				 	Martin Zabel
+--									Patrick Lehmann
 -- 
 -- Module:				 	UART Transmitter
 --
@@ -56,86 +57,81 @@ end entity;
 
 
 architecture rtl of uart_tx is
-  --------------------------------------------------------
-  -- signals
-  
-  type states is (IDLE, TDATA);
-  signal state      : states;
-  signal next_state : states;
+	type states is (IDLE, TDATA);
+	signal state      : states		:= IDLE;
+	signal next_state : states;
 
-  -- register
-  signal sr        : std_logic_vector(9 downto 1);
-  signal sr0       : std_logic;         -- current bit to transmit
-  signal shift_cnt : unsigned(3 downto 0);
+	-- register
+	signal sr					: std_logic_vector(9 downto 1)	:= (others => '0');
+	signal sr0				: std_logic											:= '1'; 			        -- current bit to transmit
+	signal shift_cnt	: unsigned(3 downto 0)					:= (others => '0');
+	signal shift_done	: STD_LOGIC;
 
-  -- control signals
-  signal start_tx       : std_logic;
-  signal shift_sr      : std_logic;
+	-- control signals
+	signal start_tx		: std_logic;
+	signal shift_sr		: std_logic;
 
-begin  -- uart_tx_impl
+begin
 
-  process (state, stb, bclk_r, shift_cnt)
-  begin  -- process
-    next_state <= state;
-    start_tx   <= '0';
-    shift_sr   <= '0';
+	process (state, stb, bclk_r, shift_done)
+	begin
+		next_state <= state;
+		start_tx   <= '0';
+		shift_sr   <= '0';
 
-    case state is
-      when IDLE =>
-        if stb = '1' then
-          -- start_tx triggers register initilization
-          start_tx   <= '1';
-          next_state <= TDATA;
-        end if;
+		case state is
+			when IDLE =>
+				if stb = '1' then
+					-- start_tx triggers register initialization
+					start_tx   <= '1';
+					next_state <= TDATA;
+				end if;
 
-      when TDATA =>
-        if bclk_r = '1' then
-          -- also shift stop bit into sr0!
-          shift_sr <= '1';
-          
-          if (shift_cnt and to_unsigned(9, 4)) = 9 then
-            -- condition is true at beginning of sending the stop-bit
-            -- synchronization to the bitclk ensures that stop-bit is
-            -- transmitted fully
-            next_state    <= IDLE;
-          end if;
-        end if;
-      when others => null;
-    end case;
-  end process;
+			when TDATA =>
+				if bclk_r = '1' then
+					-- also shift stop bit into sr0!
+					shift_sr <= '1';
+					
+					if (shift_done = '1') then
+						-- condition is true at beginning of sending the stop-bit
+						-- synchronization to the bitclk ensures that stop-bit is
+						-- transmitted fully
+						next_state    <= IDLE;
+					end if;
+				end if;
+			when others => null;
+		end case;
+	end process;
 
-  process (clk)
-  begin  -- process
-    if rising_edge(clk) then
-      if rst = '1' then
-        state <= IDLE;
-      else
-        state <= next_state;
-      end if;
-      
-      if start_tx = '1' then
-        -- data, start bit
-        sr <= din & '0';
-      elsif shift_sr = '1' then
-        sr <= '1' & sr(sr'left downto sr'right+1);
-      end if;
+	process (clk)
+	begin
+		if rising_edge(clk) then
+			if rst = '1' then
+				state <= IDLE;
+			else
+				state <= next_state;
+			end if;
+			
+			if start_tx = '1' then
+				-- data, start bit
+				sr <= din & '0';
+			elsif shift_sr = '1' then
+				sr <= '1' & sr(sr'left downto sr'right+1);
+			end if;
 
-      if rst = '1' then
-        sr0 <= '1';                     -- idle
-      elsif shift_sr = '1' then
-        sr0 <= sr(1);
-      end if;
+			if rst = '1' then
+				sr0 <= '1';                     -- idle
+			elsif shift_sr = '1' then
+				sr0 <= sr(1);
+			end if;
+		end if;
+	end process;
 
-      if start_tx = '1' then
-        shift_cnt <= (others => '0');
-      elsif shift_sr = '1' then
-        shift_cnt <= shift_cnt + 1;
-      end if;
-    end if;
-  end process;
-
-  -- outputs
-  txd <= sr0;
-  rdy <= '1' when state = IDLE else '0';
-  
+	shift_cnt		<= upcounter_next(cnt => shift_cnt, rst => start_tx, en => shift_sr) when rising_edge(clk);
+	shift_done	<= upcounter_equal(cnt => shift_cnt, 9);
+	
+	-- outputs
+	txd <= sr0;
+	rdy <= '1' when state = IDLE else '0';
+	
 end;

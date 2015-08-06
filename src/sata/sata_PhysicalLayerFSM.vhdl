@@ -298,23 +298,24 @@ BEGIN
 			if Error_en = '1' then --only true if also clock is enabled
 				Error_r <= Error_nxt;
 			end if;
-			
-			if ClockEnable = '1' then
-				-- Only update if clock is enabled because the current value must mimic
-				-- the FPGA transceiver configuration which is not automatically reseted.
-				-- Don't update register if speed negotiation is disabled because FPGA
-				-- will not be reprogrammed.
-				if ALLOW_SPEED_NEGOTIATION then
-					SATAGeneration_cur	<= SATAGeneration_nxt;
-				end if;
-			end if;
 		end if;
 	end process;
 
-	gNoSpeedNego: if not ALLOW_SPEED_NEGOTIATION generate
+	genSpeedNego: if (ALLOW_SPEED_NEGOTIATION = TRUE) generate
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if (ClockEnable = '1') then
+					-- Only update if clock is enabled because the current value must mimic
+					-- the FPGA transceiver configuration which is not automatically reseted.
+					SATAGeneration_cur	<= SATAGeneration_nxt;
+				end if;
+			end if;
+		end process;
+	end generate;
+	genNoSpeedNego: if (ALLOW_SPEED_NEGOTIATION = FALSE) generate
 		SATAGeneration_cur <= INITIAL_SATA_GENERATION;
 	end generate;
-
 	
 	process(State, Command,
 					OOBC_Timeout, OOBC_DeviceOrHostDetected, OOBC_LinkOK, OOBC_LinkDead, 
@@ -539,11 +540,11 @@ BEGIN
 	-- ================================================================
 	-- try counters
 	-- ================================================================
-	TryPerGeneration_Counter_us	<= counter_inc(TryPerGeneration_Counter_us, TryPerGeneration_Counter_rst, TryPerGeneration_Counter_en) WHEN rising_edge(Clock);		-- count attempts per generation
-	GenerationChange_Counter_us	<= counter_inc(GenerationChange_Counter_us, GenerationChange_Counter_rst, GenerationChange_Counter_en) WHEN rising_edge(Clock);		-- count generation changes
+	TryPerGeneration_Counter_us	<= upcounter_next(cnt => TryPerGeneration_Counter_us, rst => TryPerGeneration_Counter_rst, en => TryPerGeneration_Counter_en) WHEN rising_edge(Clock);		-- count attempts per generation
+	GenerationChange_Counter_us	<= upcounter_next(cnt => GenerationChange_Counter_us, rst => GenerationChange_Counter_rst, en => GenerationChange_Counter_en) WHEN rising_edge(Clock);		-- count generation changes
 	
-	TryPerGeneration_Counter_ov	<= counter_eq(TryPerGeneration_Counter_us, ATTEMPTS_PER_GENERATION - 1);
-	GenerationChange_Counter_ov	<= counter_eq(GenerationChange_Counter_us, GENERATION_CHANGE_COUNT);
+	TryPerGeneration_Counter_ov	<= upcounter_equal(TryPerGeneration_Counter_us, ATTEMPTS_PER_GENERATION - 1);
+	GenerationChange_Counter_ov	<= upcounter_equal(GenerationChange_Counter_us, GENERATION_CHANGE_COUNT);
 	
 		
 	-- debug port

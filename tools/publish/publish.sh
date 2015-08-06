@@ -4,7 +4,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-#	Shell Script:		Publish selected parts of the PoC library to the
+#	Shell Script:		Publish selected parts of the PoC-Library to the
 #									public GitHub repository.
 #
 #	Authors:				Thomas B. Preusser
@@ -74,7 +74,7 @@ while [[ $# > 0 ]]; do
 	shift # past argument or value
 done
 
-echo -e $ANSI_MAGENTA "The PoC Library publish script" $ANSI_RESET
+echo -e $ANSI_MAGENTA "The PoC-Library publish script" $ANSI_RESET
 echo -e $ANSI_MAGENTA "======================================" $ANSI_RESET
 
 if [ "$UNKNOWN_OPTION" == TRUE ]; then
