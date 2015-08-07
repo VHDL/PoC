@@ -14,8 +14,8 @@ GPIO.LED.ucf
 GPIO.LED.xdc
 GPIO.Rotary.ucf
 GPIO.Rotary.xdc
-GPIO.FanControl.ucf
-GPIO.FanControl.xdc
+FanControl.ucf
+FanControl.xdc
 Bus.LCDisplay.ucf
 Bus.IIC.ucf
 Bus.PMBus.ucf
@@ -23,7 +23,8 @@ EthernetPHY.ucf
 EthernetPHY.RGMII.ucf
 EthernetPHY.GMII.ucf
 EthernetPHY.SGMII.ucf
-Tranceiver.SFP.ucf
-Tranceiver.SMA.ucf
+Transceiver.SFP.ucf
+Transceiver.SMA.ucf
+Transceiver.SMA_RefClock.ucf
 USB_UART.ucf
 USB_UART.xdc
