@@ -9,11 +9,10 @@ ocram_esdp.vhdl
 ocram_sdp.vhdl
 ocram_sp.vhdl
 ocram_tdp.vhdl
-ocram_wb.vhdl
-
-# Generic ROM modules
-ocrom_sp.vhdl
-ocrom_dp.vhdl
 
 # Altera specific
 altera/
+
+# Xilinx specific
+xilinx/
+
