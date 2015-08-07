@@ -1080,16 +1080,16 @@ begin
 		
 	begin
 		InsertAlign_rst							<= InsertALIGN when rising_edge(Clock);		-- delay reload by one cycle -> asserts InsertALIGN for 2 cycles.
-		InsertAlign_Counter_us			<= counter_inc(cnt => InsertAlign_Counter_us, rst => InsertAlign_rst, en => not InsertALIGN, init => 0) when rising_edge(Clock);
-		InsertALIGN									<= counter_eq(cnt => InsertAlign_Counter_us, value => (INSERT_ALIGN_INTERVAL - 3));
+		InsertAlign_Counter_us			<= upcounter_next(cnt => InsertAlign_Counter_us, rst => InsertAlign_rst, en => not InsertALIGN) when rising_edge(Clock);
+		InsertALIGN									<= upcounter_equal(cnt => InsertAlign_Counter_us, value => (INSERT_ALIGN_INTERVAL - 3));
 
 		WordCounter_inc							<= TX_WordCounter_inc and not TX_IsLongFrame;
-		WordCounter_us							<= counter_inc(cnt => WordCounter_us, rst => TX_WordCounter_rst, en => WordCounter_inc, init => 0) when rising_edge(Clock);
-		TX_IsLongFrame							<= counter_eq(cnt => WordCounter_us, value => LONG_FRAME_WORDS);
+		WordCounter_us							<= upcounter_next(cnt => WordCounter_us, rst => TX_WordCounter_rst, en => WordCounter_inc) when rising_edge(Clock);
+		TX_IsLongFrame							<= upcounter_equal(cnt => WordCounter_us, value => LONG_FRAME_WORDS);
 
 		RetryCounter_inc						<= TX_RetryCounter_inc and not TX_RetryFailed;
-		RetryCounter_us							<= counter_inc(cnt => RetryCounter_us, rst => TX_RetryCounter_rst, en => RetryCounter_inc, init => 0) when rising_edge(Clock);
-		TX_RetryFailed							<= counter_eq(cnt => RetryCounter_us, value => SHORT_FRAME_RETRY_COUNT);
+		RetryCounter_us							<= upcounter_next(cnt => RetryCounter_us, rst => TX_RetryCounter_rst, en => RetryCounter_inc) when rising_edge(Clock);
+		TX_RetryFailed							<= upcounter_equal(cnt => RetryCounter_us, value => SHORT_FRAME_RETRY_COUNT);
 	end block;
 
 -- ==================================================================

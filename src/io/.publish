@@ -1,6 +1,13 @@
+# git files
+.gitignore
+.gitempty
+
+# device specific I/O abstraction
+ddrio/
+
 # low speed protocols
-#iic/
-#lcd/
+iic/
+lcd/
 #mdio/
 #ow/
 #ps2/
