@@ -48,6 +48,9 @@ library	IEEE;
 use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
 
+library PoC;
+use			PoC.components.all;
+
 
 entity uart_rx is
 	generic (
@@ -91,7 +94,7 @@ begin
 
   -- shift_cnt count from 0 to 9 (1 start bit + 8 data bits)
 	shift_cnt		<= upcounter_next(cnt => shift_cnt, rst => start_bclk, en => shift_sr) when rising_edge(clk);
-  shift_done	<= upcounter_equal(cnt => shift_cnt, 9);
+  shift_done	<= upcounter_equal(cnt => shift_cnt, value => 9);
 
 	bclk_cnt		<= upcounter_next(cnt => bclk_cnt, rst => start_bclk, en => bclk_x8_r, init => 4) when rising_edge(clk);
 	

@@ -1,0 +1,16 @@
+# git files
+.gitignore
+.gitempty
+
+# package
+uart.pkg.vhdl
+
+# bit clock generation
+uart_bclk.vhdl
+
+# transmitter and receiver
+uart_tx.vhdl
+uart_rx.vhdl
+
+# wrappers
+uart_fifo.vhdl
