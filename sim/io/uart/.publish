@@ -1,0 +1,10 @@
+# git files
+.gitignore
+.gitempty
+
+# Transmitter / Receiver
+uart_rx_tb.*
+#uart_tx_tb.*
+
+# Wrapper
+#uart_fifo_tb.*
