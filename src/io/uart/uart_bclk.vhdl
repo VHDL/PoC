@@ -4,6 +4,7 @@
 -- 
 -- ============================================================================
 -- Authors:				 	Martin Zabel
+--									Patrick Lehmann
 -- 
 -- Module:				 	UART bit clock / baud rate generator
 --
@@ -41,28 +42,33 @@ use			IEEE.numeric_std.all;
 
 library PoC;
 use			PoC.utils.all;
+use			PoC.physical.all;
+use			PoC.components.all;
 
 
 entity uart_bclk is
-  generic (
-    CLK_FREQ : positive;-- := 50000000;
-    BAUD     : positive-- := 115200
+	generic (
+		CLOCK_FREQ		: FREQ			:= 100 MHz;
+		BAUDRATE			: BAUD			:= 115200 Bd
 	);
-  port (
-    clk       : in  std_logic;
-    rst       : in  std_logic;
-    bclk_r    : out std_logic;
-    bclk_x8_r : out std_logic
+	port (
+		clk				: in	std_logic;
+		rst				: in	std_logic;
+		bclk_r		: out	std_logic;
+		bclk_x8_r	: out	std_logic
 	);
 end entity;
 
 
 architecture rtl of uart_bclk is
-  constant DIVIDER : positive := CLK_FREQ/(8*BAUD);
+	constant UART_OVERSAMPLING_RATE		: POSITIVE					:= 8;
+	constant TIME_UNIT_INTERVAL				: TIME							:= 1 sec / (to_real(BAUDRATE, 1 Bd) * real(UART_OVERSAMPLING_RATE));
+	constant BAUDRATE_COUNTER_MAX			: POSITIVE					:= TimingToCycles(TIME_UNIT_INTERVAL, CLOCK_FREQ);
+	constant BAUDRATE_COUNTER_BITS		: POSITIVE					:= log2ceilnz(BAUDRATE_COUNTER_MAX + 1);
 
-  -- register
-  signal x8_cnt : unsigned(log2ceil(DIVIDER)-1 downto 0);
-  signal x1_cnt : unsigned(2 downto 0);
+  -- registers
+  signal x8_cnt : unsigned(BAUDRATE_COUNTER_BITS - 1 downto 0)	:= (others => '0');
+  signal x1_cnt : unsigned(2 downto 0)													:= (others => '0');
 
   -- control signals
   signal x8_cnt_done : std_logic;
@@ -70,34 +76,16 @@ architecture rtl of uart_bclk is
 
 begin
 
-  x8_cnt_done <= '1' when (x8_cnt and to_unsigned(DIVIDER-1, x8_cnt'length)) = DIVIDER-1 else '0';
-  x1_cnt_done <= '1' when x1_cnt = (x1_cnt'range => '0') else '0';
+	x8_cnt			<= upcounter_next(cnt => x8_cnt, rst => (rst or x8_cnt_done)) when rising_edge(clk);
+  x8_cnt_done <= upcounter_equal(cnt => x8_cnt, value => BAUDRATE_COUNTER_MAX - 1);
+	
+	x1_cnt			<= upcounter_next(cnt => x1_cnt, rst => rst, en => x8_cnt_done) when rising_edge(clk);
+  x1_cnt_done <= comp_allzero(x1_cnt);
   
-  process (clk)
-  begin  -- process
-    if rising_edge(clk) then
-      if (rst or x8_cnt_done) = '1' then
-        x8_cnt <= (others => '0');
-      else
-        x8_cnt <= x8_cnt + 1;
-      end if;
-
-      if rst = '1' then
-        x1_cnt <= (others => '0');      -- only for simulation
-      elsif x8_cnt_done = '1' then
-        x1_cnt <= x1_cnt - 1;
-      end if;
-    end if;
-  end process;
-
   -- outputs
-  process (clk)
-  begin  -- process
-    if rising_edge(clk) then
-      -- only x8_cnt_done is pulsed for one clock cycle!
-      bclk_r    <= x1_cnt_done and x8_cnt_done;  -- important
-      bclk_x8_r <= x8_cnt_done;
-    end if;
-  end process;
+	-- ---------------------------------------------------------------------------
+	-- only x8_cnt_done is pulsed for one clock cycle!
+	bclk_r			<= (x1_cnt_done and x8_cnt_done)	when rising_edge(clk);
+	bclk_x8_r		<= x8_cnt_done										when rising_edge(clk);
   
 end;
