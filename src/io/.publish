@@ -11,7 +11,7 @@ lcd/
 #mdio/
 #ow/
 #ps2/
-#uart/
+uart/
 #vga/
 
 # devices

@@ -42,6 +42,7 @@ use			IEEE.numeric_std.all;
 
 library PoC;
 use			PoC.utils.all;
+use			PoC.physical.all;
 use			PoC.components.all;
 
 
