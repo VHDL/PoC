@@ -2,6 +2,7 @@
 .gitignore
 
 # subnamespace
+uart/
 
 # --------------------------------------
 #io_7SegmentMux_tb.*
