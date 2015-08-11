@@ -54,7 +54,7 @@ end;
 
 
 architecture rtl of io_FrequencyCounter is
-	constant TIMEBASECOUNTER_MAX				: POSITIVE																		:= TimingToCycles(TIMEBASE, CLOCK_FREQ);
+	constant TIMEBASECOUNTER_MAX				: POSITIVE																		:= 187500000;--TimingToCycles(TIMEBASE, CLOCK_FREQ);
 	constant TIMEBASECOUNTER_BITS				: POSITIVE																		:= log2ceilnz(TIMEBASECOUNTER_MAX);
 	constant REQUENCYCOUNTER_MAX				: POSITIVE																		:= 2**RESOLUTION;
 	constant FREQUENCYCOUNTER_BITS			: POSITIVE																		:= RESOLUTION;
