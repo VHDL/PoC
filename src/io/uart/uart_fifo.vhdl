@@ -1,4 +1,3 @@
--- Synchronized reset is used.
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
@@ -17,8 +16,8 @@
 -- 
 --	old comments:
 --		UART BAUD rate generator
---		bclk_r    = bit clock is rising
---		bclk_x8_r = bit clock times 8 is rising
+--		bclk	    = bit clock is rising
+--		bclk_x8		= bit clock times 8 is rising
 --
 --
 -- License:
@@ -44,87 +43,102 @@ library	IEEE;
 use			IEEE.std_logic_1164.all;
 
 library PoC;
+use			PoC.vectors.all;
 use			PoC.physical.all;
 use			PoC.components.all;
+use			PoC.uart.all;
 
 
 entity uart_fifo is
 	generic (
-		CLOCK_FREQ			: FREQ;
-		BAUDRATE				: BAUD;
-		TX_MIN_DEPTH		: POSITIVE;
-		RX_MIN_DEPTH		: POSITIVE;
-		RX_OUT_REGS			: BOOLEAN;
+		CLOCK_FREQ			: FREQ														:= 100 MHz;
+		BAUDRATE				: BAUD														:= 115200 Bd;
+		FLOWCONTROL			: T_IO_UART_FLOWCONTROL_KIND			:= UART_FLOWCONTROL_NONE;
+		TX_MIN_DEPTH		: POSITIVE												:= 16;
+		TX_ESTATE_BITS	: NATURAL													:= 1;
+		RX_MIN_DEPTH		: POSITIVE												:= 16;
+		RX_FSTATE_BITS	: NATURAL													:= 1;
+		RX_OUT_REGS			: BOOLEAN													:= FALSE;
 		
 		SWFC_XON_CHAR			: std_logic_vector(7 downto 0)	:= x"11";		-- ^Q
     SWFC_XON_TRIGGER	: real													:= 0.0625;
 		SWFC_XOFF_CHAR		: std_logic_vector(7 downto 0)	:= x"13";		-- ^S
 		SWFC_XOFF_TRIGGER	: real													:= 0.75
-
-		);
+	);
 	port (
-		clk						: in	std_logic;
-		rst						: in	std_logic;
+		Clock					: in	std_logic;
+		Reset					: in	std_logic;
 
 		-- FIFO interface
-		TX_Valid			: in	STD_LOGIC;
+		TX_put				: in	STD_LOGIC;
 		TX_Data				: in	STD_LOGIC_VECTOR(7 downto 0);
-		TX_got				: out	STD_LOGIC;
+		TX_Full				: out	STD_LOGIC;
+		TX_EmptyState	: out	STD_LOGIC_VECTOR(TX_ESTATE_BITS - 1 downto 0);
 		
 		RX_Valid			: out	STD_LOGIC;
 		RX_Data				: out	STD_LOGIC_VECTOR(7 downto 0);
 		RX_got				: in	STD_LOGIC;
-		RX_FillState	: out	STD_LOGIC_VECTOR(RX_FSTATE_BITS - 1 downto 0);
+		RX_FullState	: out	STD_LOGIC_VECTOR(RX_FSTATE_BITS - 1 downto 0);
 		RX_Overflow		: out	std_logic;
 		
 		-- External Pins
-		rxd						: in	std_logic;
-		txd						: out	std_logic
+		UART_RX				: in	std_logic;
+		UART_TX				: out	std_logic
 	);
 end entity;
 
 
 architecture rtl of uart_fifo is
-  signal rf_put			: std_logic;
-  signal rf_din			: std_logic_vector(7 downto 0);
-  signal rf_full		: std_logic;
-  signal tf_got			: std_logic;
-  signal tf_valid		: std_logic;
-  signal tf_dout		: std_logic_vector(7 downto 0);
-  
-  signal bclk_r			: std_logic;
-  signal bclk_x8_r	: std_logic;
 
-	constant RX_FSTATE_BITS		: POSITIVE;
+	signal FC_TX_Strobe		: STD_LOGIC;
+	signal FC_TX_Data			: T_SLV_8;
+	signal FC_TX_got			: STD_LOGIC;
+	signal FC_RX_put			: STD_LOGIC;
+	signal FC_RX_Data			: T_SLV_8;
 	
-  signal overflow_r					: std_logic					:= '0';
+	signal TXFIFO_Valid		: STD_LOGIC;
+	signal TXFIFO_Data		: T_SLV_8;
+
+	signal RXFIFO_Full		: STD_LOGIC;
+
+	signal TXUART_Ready		: STD_LOGIC;
+	signal RXUART_Strobe	: STD_LOGIC;
+	signal RXUART_Data		: T_SLV_8;
+
+	signal BitClock				: STD_LOGIC;
+	signal BitClock_x8		: STD_LOGIC;
   
 begin
+	assert FALSE report "uart_fifo: BAUDRATE=: " & to_string(BAUDRATE, 3)						severity NOTE;
+
 	-- ===========================================================================
 	-- Transmit and Receive FIFOs
 	-- ===========================================================================
-	tf : entity PoC.fifo_cc_got
+	TXFIFO : entity PoC.fifo_cc_got
 		generic map (
 			D_BITS         => 8,							-- Data Width
 			MIN_DEPTH      => TX_MIN_DEPTH,		-- Minimum FIFO Depth
 			DATA_REG       => TRUE,						-- Store Data Content in Registers
 			STATE_REG      => FALSE,					-- Registered Full/Empty Indicators
 			OUTPUT_REG     => FALSE,					-- Registered FIFO Output
-			ESTATE_WR_BITS => 0,							-- Empty State Bits
+			ESTATE_WR_BITS => TX_ESTATE_BITS,	-- Empty State Bits
 			FSTATE_RD_BITS => 0								-- Full State Bits
 		)
 		port map (
-			rst    => rst,
-			clk    => clk,
-			put    => tf_put,
-			din    => tf_din,
-			full   => tf_full,
-			got    => tf_got,
-			valid  => tf_valid,
-			dout   => tf_dout
+			rst  		  => Reset,
+			clk  		  => Clock,
+			put  		  => TX_put,
+			din  		  => TX_Data,
+			full 		  => TX_Full,
+			estate_wr	=> TX_EmptyState,
+			
+			valid 		=> TXFIFO_Valid,
+			dout  		=> TXFIFO_Data,
+			got   		=> FC_TX_got,
+			fstate_rd	=> open
 		);
 
-  rf : entity PoC.fifo_cc_got
+  RXFIFO : entity PoC.fifo_cc_got
 		generic map (
 			D_BITS         => 8,							-- Data Width
 			MIN_DEPTH      => RX_MIN_DEPTH,		-- Minimum FIFO Depth
@@ -135,31 +149,43 @@ begin
 			FSTATE_RD_BITS => RX_FSTATE_BITS	-- Full State Bits
 		)
 		port map (
-			rst    => rst,
-			clk    => clk,
-			put    => rf_put,
-			din    => rf_din,
-			full   => rf_full,
-			fstate => rf_fs,
-			got    => rf_got,
-			valid  => rf_valid,
-			dout   => rf_dout
+			rst  		  => Reset,
+			clk  		  => Clock,
+			put  		  => FC_RX_put,
+			din  		  => FC_RX_Data,
+			full 		  => RXFIFO_Full,
+			estate_wr	=> open,
+			
+			valid 		=> RX_Valid,
+			dout  		=> RX_Data,
+			got   		=> RX_got,
+			fstate_rd	=> RX_FullState
 		);
 
-	genNOFC : if (FLOWCONTROL = NO) generate
-	
+	genNOFC : if (FLOWCONTROL = UART_FLOWCONTROL_NONE) generate
+		signal Overflow_r					: std_logic					:= '0';
 	begin
 	
+		FC_TX_Strobe	<= TXFIFO_Valid and TXUART_Ready;
+		FC_TX_Data		<= TXFIFO_Data;
+		FC_TX_got			<= TXFIFO_Valid and TXUART_Ready;
+
+		FC_RX_put			<= RXUART_Strobe;
+		FC_RX_Data		<= RXUART_Data;	
+		
+		Overflow_r	<= ffrs(q => Overflow_r, rst => Reset, set => (RXUART_Strobe and RXFIFO_Full)) when rising_edge(Clock);
+		
+		RX_Overflow	<= Overflow_r;
 	end generate;
 	-- ===========================================================================
 	-- Software Flow Control
 	-- ===========================================================================
-	genSWFC : if (FLOWCONTROL = SW) generate
-	  constant XON  : std_logic_vector(7 downto 0) := x"11";  -- ^Q
-		constant XOFF : std_logic_vector(7 downto 0) := x"13";  -- ^S
+	genSWFC : if (FLOWCONTROL = UART_FLOWCONTROL_XON_XOFF) generate
+	  constant XON				: std_logic_vector(7 downto 0) := x"11";  -- ^Q
+		constant XOFF				: std_logic_vector(7 downto 0) := x"13";  -- ^S
 
-		constant XON_TRIG		: integer	:= integer(SWFC_XON_TRIGGER		* real(2**RF_FSTATE_BITS));
-		constant XOFF_TRIG	: integer	:= integer(SWFC_XOFF_TRIGGER	* real(2**RF_FSTATE_BITS));
+		constant XON_TRIG		: integer	:= integer(SWFC_XON_TRIGGER		* real(2**RX_FSTATE_BITS));
+		constant XOFF_TRIG	: integer	:= integer(SWFC_XOFF_TRIGGER	* real(2**RX_FSTATE_BITS));
 
 		signal send_xoff		: std_logic;
 		signal send_xon			: std_logic;
@@ -174,55 +200,63 @@ begin
 		signal xoff_transmitted			: std_logic;
 		
 	begin
-		-- send XOFF only once when fill state goes above trigger level
-		send_xoff <= (not xoff_transmitted) when (rf_fs >= XOFF_TRIG) else '0';
-		set_xoff_transmitted <= tx_rdy      when (rf_fs >= XOFF_TRIG) else '0';
-
-		-- send XON only once when receive FIFO is almost empty
-		send_xon <= xoff_transmitted   when (rf_fs = XON_TRIG) else '0';
-		clr_xoff_transmitted <= tx_rdy when (rf_fs = XON_TRIG) else '0';
-
-		-- discard any user supplied XON/XOFF
-		discard_user <= '1' when (tf_dout = SWFC_XON_CHAR) or (tf_dout = SWFC_XOFF_CHAR) else '0';
-
-		-- tx / tf control
-		tx_din <= SWFC_XOFF_CHAR  when (send_xoff = '1') else
-							SWFC_XON_CHAR   when (send_xon  = '1') else
-							tf_dout;
-
-		tx_stb <= send_xoff or send_xon or (tf_valid and (not discard_user));
-		tf_got <= (send_xoff nor send_xon) and
-							tf_valid and tx_rdy;        -- always check tf_valid
-
-		-- rx / rf control
-		rf_put <= (not rf_full) and rx_dos;   -- always check rf_full
-		rf_din <= rx_dout;
-
-		set_overflow <= rf_full and rx_dos;
-		
-		-- registers
-		process (clk)
-		begin  -- process
-			if rising_edge(clk) then
-				if (rst or set_xoff_transmitted) = '1' then
-					-- send a XON after reset
-					xoff_transmitted <= '1';
-				elsif clr_xoff_transmitted = '1' then
-					xoff_transmitted <= '0';
-				end if;
-
-				if rst = '1' then
-					overflow <= '0';
-				elsif set_overflow = '1' then
-					overflow <= '1';
-				end if;
-			end if;
-		end process;
+--		-- send XOFF only once when fill state goes above trigger level
+--		send_xoff <= (not xoff_transmitted) when (rf_fs >= XOFF_TRIG) else '0';
+--		set_xoff_transmitted <= tx_rdy      when (rf_fs >= XOFF_TRIG) else '0';
+--
+--		-- send XON only once when receive FIFO is almost empty
+--		send_xon <= xoff_transmitted   when (rf_fs = XON_TRIG) else '0';
+--		clr_xoff_transmitted <= tx_rdy when (rf_fs = XON_TRIG) else '0';
+--
+--		-- discard any user supplied XON/XOFF
+--		discard_user <= '1' when (tf_dout = SWFC_XON_CHAR) or (tf_dout = SWFC_XOFF_CHAR) else '0';
+--
+--		-- tx / tf control
+--		tx_din <= SWFC_XOFF_CHAR  when (send_xoff = '1') else
+--							SWFC_XON_CHAR   when (send_xon  = '1') else
+--							tf_dout;
+--
+--		tx_stb <= send_xoff or send_xon or (tf_valid and (not discard_user));
+--		tf_got <= (send_xoff nor send_xon) and
+--							tf_valid and tx_rdy;        -- always check tf_valid
+--
+--		-- rx / rf control
+--		rf_put <= (not rf_full) and rx_dos;   -- always check rf_full
+--		rf_din <= rx_dout;
+--
+--		set_overflow <= rf_full and rx_dos;
+--		
+--		-- registers
+--		process (Clock)
+--		begin  -- process
+--			if rising_edge(Clock) then
+--				if (rst or set_xoff_transmitted) = '1' then
+--					-- send a XON after reset
+--					xoff_transmitted <= '1';
+--				elsif clr_xoff_transmitted = '1' then
+--					xoff_transmitted <= '0';
+--				end if;
+--
+--				if rst = '1' then
+--					overflow <= '0';
+--				elsif set_overflow = '1' then
+--					overflow <= '1';
+--				end if;
+--			end if;
+--		end process;
 	end generate;
 	-- ===========================================================================
 	-- Hardware Flow Control
 	-- ===========================================================================
-	genHWFC : if (FLOWCONTROL = HW) generate
+	genHWFC1 : if (FLOWCONTROL = UART_FLOWCONTROL_RTS_CTS) generate
+	
+	begin
+	
+	end generate;
+	-- ===========================================================================
+	-- Hardware Flow Control
+	-- ===========================================================================
+	genHWFC2 : if (FLOWCONTROL = UART_FLOWCONTROL_RTR_CTS) generate
 	
 	begin
 	
@@ -237,36 +271,33 @@ begin
 			BAUDRATE		=> BAUDRATE
 		)
 		port map (
-			clk					=> clk,
-			rst					=> rst,
-			bclk_r			=> bclk_r,
-			bclk_x8_r		=> bclk_x8_r
+			clk					=> Clock,
+			rst					=> Reset,
+			bclk				=> BitClock,
+			bclk_x8			=> BitClock_x8
 		);
 	
-	tx : entity PoC.uart_tx
+	TX : entity PoC.uart_tx
 		port map (
-			clk			=> clk,
-			rst			=> rst,
-			bclk_r	=> bclk_r,
-			stb			=> tf_valid,
-			din			=> tf_dout,
-			rdy			=> tf_got,
-			txd			=> txd
+			clk			=> Clock,
+			rst			=> Reset,
+			bclk		=> BitClock,
+			stb			=> FC_TX_Strobe,
+			din			=> FC_TX_Data,
+			rdy			=> TXUART_Ready,
+			txd			=> UART_TX
 		);
 		
-	rx : entity PoC.uart_rx
+	RX : entity PoC.uart_rx
 		generic map (
 			OUT_REGS => RX_OUT_REGS
 		)
 		port map (
-			clk				=> clk,
-			rst				=> rst,
-			bclk_x8_r	=> bclk_x8_r,
-			rxd				=> rxd,
-			dos				=> rf_put,
-			dout			=> rf_din
+			clk			=> Clock,
+			rst			=> Reset,
+			bclk_x8	=> BitClock_x8,
+			dos			=> RXUART_Strobe,
+			dout		=> RXUART_Data,
+			rxd			=> UART_RX
 		);
-	
-	overflow_r	<= ffrs(q => overflow_r, rst => rst, set => (rf_put and rf_full) when rising_edge(clk);
-	RX_Overflow	<= overflow_r;
 end;

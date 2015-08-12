@@ -42,6 +42,7 @@ use			IEEE.numeric_std.all;
 
 library PoC;
 use			PoC.utils.all;
+use			PoC.physical.all;
 use			PoC.components.all;
 
 
@@ -53,8 +54,8 @@ entity uart_bclk is
 	port (
 		clk				: in	std_logic;
 		rst				: in	std_logic;
-		bclk_r		: out	std_logic;
-		bclk_x8_r	: out	std_logic
+		bclk			: out	std_logic;
+		bclk_x8		: out	std_logic
 	);
 end entity;
 
@@ -73,6 +74,8 @@ architecture rtl of uart_bclk is
   signal x8_cnt_done : std_logic;
   signal x1_cnt_done : std_logic;
 
+	signal bclk_r			: STD_LOGIC		:= '0';
+	signal bclk_x8_r	: STD_LOGIC		:= '0';
 begin
 
 	x8_cnt			<= upcounter_next(cnt => x8_cnt, rst => (rst or x8_cnt_done)) when rising_edge(clk);
@@ -87,4 +90,6 @@ begin
 	bclk_r			<= (x1_cnt_done and x8_cnt_done)	when rising_edge(clk);
 	bclk_x8_r		<= x8_cnt_done										when rising_edge(clk);
   
+	bclk				<= bclk_r;
+	bclk_x8			<= bclk_x8_r;
 end;
