@@ -74,8 +74,8 @@ architecture rtl of uart_bclk is
   signal x8_cnt_done : std_logic;
   signal x1_cnt_done : std_logic;
 
-	signal bclk_r			: STD_LOGIC;--	:= '0';
-	signal bclk_x8_r	: STD_LOGIC;--	:= '0';
+	signal bclk_r			: STD_LOGIC		:= '0';
+	signal bclk_x8_r	: STD_LOGIC		:= '0';
 begin
 
 	x8_cnt			<= upcounter_next(cnt => x8_cnt, rst => (rst or x8_cnt_done)) when rising_edge(clk);
