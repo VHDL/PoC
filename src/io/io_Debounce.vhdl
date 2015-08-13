@@ -63,7 +63,7 @@ begin
 		Input_sync	<= Input;
 	end generate;	
 	genSync : if (ADD_INPUT_SYNCHRONIZER = TRUE) generate
-		sync : entity PoC.sync_Flag
+		sync : entity PoC.sync_Bits
 			generic map (
 				BITS		=> BITS
 			)

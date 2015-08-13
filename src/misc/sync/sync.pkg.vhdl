@@ -107,6 +107,6 @@ package sync is
 end package;
 
 
-package body io is
+package body sync is
 
 end package body;

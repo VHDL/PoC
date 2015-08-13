@@ -745,7 +745,7 @@ begin
 --		GTX_RX_Status
 --		GTX_RX_ClockCorrectionStatus
 
-		sync1_RXUserClock : entity PoC.xil_SyncBits
+		sync1_RXUserClock : entity PoC.sync_Bits_Xilinx
 			generic map (
 				BITS			=> 2															-- number of BITS to synchronize
 			)
