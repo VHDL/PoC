@@ -74,7 +74,7 @@ architecture rtl of sync_Bits is
 	constant INIT_I		: STD_LOGIC_VECTOR		:= resize(descend(INIT), BITS);
 
 begin
-	genGeneric : if ((VENDOR /= VENDOR_ALTERA) or (VENDOR /= VENDOR_XILINX)) generate
+	genGeneric : if ((VENDOR /= VENDOR_ALTERA) and (VENDOR /= VENDOR_XILINX)) generate
 		attribute ASYNC_REG							: STRING;
 		attribute SHREG_EXTRACT					: STRING;
 		

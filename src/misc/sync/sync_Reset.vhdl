@@ -67,7 +67,7 @@ end entity;
 
 architecture rtl of sync_Reset is
 begin
-	genGeneric : if ((VENDOR /= VENDOR_ALTERA) or (VENDOR /= VENDOR_XILINX)) generate
+	genGeneric : if ((VENDOR /= VENDOR_ALTERA) and (VENDOR /= VENDOR_XILINX)) generate
 		attribute ASYNC_REG										: STRING;
 		attribute SHREG_EXTRACT								: STRING;
 		
