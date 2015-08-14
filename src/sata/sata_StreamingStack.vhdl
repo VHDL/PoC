@@ -53,8 +53,7 @@ entity sata_StreamingStack is
 		ENABLE_CHIPSCOPE						: BOOLEAN;
 		ENABLE_DEBUGPORT						: BOOLEAN;
 
-		CLOCK_IN_FREQ								: FREQ;
-		SATA_CLOCK_FREQ							: FREQ;
+		REFCLOCK_FREQ								: FREQ;
 		INITIAL_SATA_GENERATION			: T_SATA_GENERATION;
 		ALLOW_SPEED_NEGOTIATION			: BOOLEAN;
 		LOGICAL_BLOCK_SIZE					: MEMORY
@@ -192,8 +191,7 @@ begin
 	assert FALSE report "  Debug:                  " & to_string(DEBUG)																severity NOTE;
 	assert FALSE report "  Enable ChipScope:       " & to_string(ENABLE_CHIPSCOPE)										severity NOTE;
 	assert FALSE report "  Enable DebugPort:       " & to_string(ENABLE_DEBUGPORT)										severity NOTE;
-	assert FALSE report "  ClockIn Frequency:      " & to_string(CLOCK_IN_FREQ, 3)										severity NOTE;
-	assert FALSE report "  SATA Frequency:         " & to_string(SATA_CLOCK_FREQ, 3)									severity NOTE;
+	assert FALSE report "  ClockIn Frequency:      " & to_string(REFCLOCK_FREQ, 3)										severity NOTE;
 	assert FALSE report "  ControllerType:         " & T_SATA_DEVICE_TYPE'image(CONTROLLER_TYPE)			severity NOTE;
 	assert FALSE report "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATION + 1)	severity NOTE;
 	assert FALSE report "  AllowSpeedNegotiation:  " & to_string(ALLOW_SPEED_NEGOTIATION)							severity NOTE;
@@ -291,7 +289,7 @@ begin
 		generic map (
 			DEBUG													=> DEBUG,
 			ENABLE_DEBUGPORT							=> ENABLE_DEBUGPORT,
-			CLOCK_IN_FREQ									=> SATA_CLOCK_FREQ,
+			REFCLOCK_FREQ									=> REFCLOCK_FREQ,
 			PORTS													=> 1,
 			CONTROLLER_TYPES(0)						=> SATA_DEVICE_TYPE_HOST,
 			INITIAL_SATA_GENERATIONS(0)		=> INITIAL_SATA_GENERATION,
