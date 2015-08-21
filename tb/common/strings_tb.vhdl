@@ -57,6 +57,28 @@ begin
 		tbAssert((raw_format_slv_dec_result2 = "305419896"),						"raw_format_slv_dec(0x12345678)="	& raw_format_slv_dec_result2 &	"    Expected='305419896'");
 		tbAssert((raw_format_slv_dec_result3 = "11651590505119483816"),	"raw_format_slv_dec(0xA1b2c3d4e5f607a8)="	& raw_format_slv_dec_result3 &	"    Expected='11651590505119483816'");
 		
+		tbAssert((str_length("") = 0),																	"str_length('')=" & INTEGER'image(str_length("")) & "  Expected=0");
+		tbAssert((str_length((1 to 3 => C_POC_NUL)) = 0),								"str_length('\0\0\0')=" & INTEGER'image(str_length((1 to 3 => C_POC_NUL))) & "  Expected=0");
+		tbAssert((str_length("Hello") = 5),															"str_length('Hello')=" & INTEGER'image(str_length("Hello")) & "  Expected=5");
+		tbAssert((str_length("Hello" & (1 to 3 => C_POC_NUL)) = 5),			"str_length('Hello\0\0\0')=" & INTEGER'image(str_length("Hello" & (1 to 3 => C_POC_NUL))) & "  Expected=5");
+		
+		tbAssert((str_match("", "") = TRUE),																		"str_match('', '')=" & BOOLEAN'image(str_match("", "")) & "  Expected=TRUE");
+		tbAssert((str_match("", (1 to 3 => C_POC_NUL)) = TRUE),									"str_match('', '\0\0\0')=" & BOOLEAN'image(str_match("", (1 to 3 => C_POC_NUL))) & "  Expected=TRUE");
+		tbAssert((str_match("Hello", "hello") = FALSE),													"str_match('Hello', 'hello')=" & BOOLEAN'image(str_match("Hello", "hello")) & "  Expected=FALSE");
+		tbAssert((str_match("Hello", "Hello") = TRUE),													"str_match('Hello', 'Hello')=" & BOOLEAN'image(str_match("Hello", "Hello")) & "  Expected=TRUE");
+		tbAssert((str_match("Hello World", "Hello") = FALSE),										"str_match('Hello World', 'Hello')=" & BOOLEAN'image(str_match("Hello World", "Hello")) & "  Expected=FALSE");
+		tbAssert((str_match("Hello", "Hello World") = FALSE),										"str_match('Hello', 'Hello World')=" & BOOLEAN'image(str_match("Hello", "Hello World")) & "  Expected=FALSE");
+		tbAssert((str_match("Hello", "Hello" & (1 to 3 => C_POC_NUL)) = TRUE),	"str_match('Hello', 'Hello\0\0\0')=" & BOOLEAN'image(str_match("Hello", "Hello" & (1 to 3 => C_POC_NUL))) & "  Expected=TRUE");
+		
+		tbAssert((str_imatch("", "") = TRUE),																		"str_imatch('', '')=" & BOOLEAN'image(str_imatch("", "")) & "  Expected=TRUE");
+		tbAssert((str_imatch("", (1 to 3 => C_POC_NUL)) = TRUE),								"str_imatch('', '\0\0\0')=" & BOOLEAN'image(str_imatch("", (1 to 3 => C_POC_NUL))) & "  Expected=TRUE");
+		tbAssert((str_imatch("Hello", "hello") = TRUE),													"str_imatch('Hello', 'hello')=" & BOOLEAN'image(str_imatch("Hello", "hello")) & "  Expected=TRUE");
+		tbAssert((str_imatch("Hello", "Hello") = TRUE),													"str_imatch('Hello', 'Hello')=" & BOOLEAN'image(str_imatch("Hello", "Hello")) & "  Expected=TRUE");
+		tbAssert((str_imatch("Hello World", "Hello") = FALSE),									"str_imatch('Hello World', 'Hello')=" & BOOLEAN'image(str_imatch("Hello World", "Hello")) & "  Expected=FALSE");
+		tbAssert((str_imatch("Hello", "Hello World") = FALSE),									"str_imatch('Hello', 'Hello World')=" & BOOLEAN'image(str_imatch("Hello", "Hello World")) & "  Expected=FALSE");
+		tbAssert((str_imatch("Hello", "Hello" & (1 to 3 => C_POC_NUL)) = TRUE),	"str_imatch('Hello', 'Hello\0\0\0')=" & BOOLEAN'image(str_imatch("Hello", "Hello" & (1 to 3 => C_POC_NUL))) & "  Expected=TRUE");
+		
+		
 		-- simulation completed
 		
 		-- Report overall simulation result
