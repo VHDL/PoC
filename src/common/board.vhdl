@@ -36,9 +36,6 @@ use			IEEE.numeric_std.all;
 
 library	PoC;
 use			PoC.my_config.all;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.strings.all;
 
 
 package board is
@@ -47,7 +44,7 @@ package board is
 	subtype T_BOARD_STRING					is STRING(1 to 16);
 	subtype T_BOARD_CONFIG_STRING		is STRING(1 to 64);
 	
-	constant C_BOARD_STRING_EMPTY	: T_BOARD_STRING		:= (others => C_POC_NUL);
+	constant C_BOARD_STRING_EMPTY	: T_BOARD_STRING;
 	
 	type T_BOARD is (
 		BOARD_CUSTOM,
@@ -79,7 +76,7 @@ package board is
 		IPStyle										: T_BOARD_CONFIG_STRING;
 		RS_DataInterface					: T_BOARD_CONFIG_STRING;
 		PHY_Device								: T_BOARD_CONFIG_STRING;
-		PHY_DeviceAddress					: T_SLV_8;
+		PHY_DeviceAddress					: STD_LOGIC_VECTOR(7 downto 0);
 		PHY_DataInterface					: T_BOARD_CONFIG_STRING;
 		PHY_ManagementInterface		: T_BOARD_CONFIG_STRING;
 	end record;
@@ -102,19 +99,41 @@ end;
 
 
 package body board is
+	-- deferred constant
+	constant C_POC_NUL						: CHARACTER					:= '~';	--CHARACTER'val(255);
+	constant C_BOARD_STRING_EMPTY	: T_BOARD_STRING		:= (others => C_POC_NUL);
 
 	-- private functions required by board description
 	-- ModelSim requires that this functions is defined before it is used below.
 	-- ===========================================================================
-	function conf(str : string) return T_BOARD_CONFIG_STRING is
-		variable MaxLength	: NATURAL																		:= T_BOARD_CONFIG_STRING'length;
-		variable Result			: STRING(1 to T_BOARD_CONFIG_STRING'length)	:= (others => C_POC_NUL);
+	function ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) return STRING is
 	begin
-		if (str'length < T_BOARD_CONFIG_STRING'length) then
-			MaxLength := str'length;
+		if cond then
+			return value1;
+		else
+			return value2;
 		end if;
-		if (MaxLength > 0) then
-			Result(1 to MaxLength) := str(str'low to str'low + MaxLength - 1);
+	end function;
+	
+	function imin(arg1 : integer; arg2 : integer) return integer is
+	begin
+		if arg1 < arg2 then return arg1; end if;
+		return arg2;
+	end function;
+	
+	function imax(arg1 : integer; arg2 : integer) return integer is
+	begin
+		if arg1 > arg2 then return arg1; end if;
+		return arg2;
+	end function;
+	
+	function conf(str : string) return T_BOARD_CONFIG_STRING is
+		constant ConstNUL		: STRING(1 to 1)				:= (others => C_POC_NUL);
+		variable Result			: STRING(1 to T_BOARD_CONFIG_STRING'length);
+	begin
+		Result := (others => C_POC_NUL);
+		if (str'length > 0) then
+			Result(1 to imin(T_BOARD_CONFIG_STRING'length, imax(1, str'length))) := ite((str'length > 0), str(1 to imin(T_BOARD_CONFIG_STRING'length, str'length)), ConstNUL);
 		end if;
 		return Result;
 	end function;
@@ -295,7 +314,56 @@ package body board is
 		)
 	);
 
-	-- public functions
+	-- Private functions - part 2
+	-- ===========================================================================
+	function str_length(str : STRING) return NATURAL is
+	begin
+		for i in str'range loop
+			if (str(i) = C_POC_NUL) then
+				return i - str'low;
+			end if;
+		end loop;
+		return str'length;
+	end function;
+
+	function str_trim(str : STRING) return STRING is
+	begin
+		return str(str'low to str'low + str_length(str) - 1);
+	end function;
+
+	function str_imatch(str1 : STRING; str2 : STRING) return BOOLEAN is
+		constant len	: NATURAL 		:= imin(str1'length, str2'length);
+		variable chr1	: CHARACTER;
+		variable chr2	: CHARACTER;
+	begin
+		-- if both strings are empty
+		if ((str1'length = 0 ) and (str2'length = 0)) then		return TRUE;	end if;
+		-- compare char by char
+		for i in str1'low to str1'low + len - 1 loop
+			chr1	:= str1(i);
+			chr2	:= str2(str2'low + (i - str1'low ));
+			if (CHARACTER'pos('A') <= CHARACTER'pos(chr1)) and (CHARACTER'pos(chr1) <= CHARACTER'pos('Z')) then
+				chr1	:= CHARACTER'val(CHARACTER'pos(chr1) - CHARACTER'pos('A') + CHARACTER'pos('a'));
+			end if;
+			if (CHARACTER'pos('A') <= CHARACTER'pos(chr2)) and (CHARACTER'pos(chr2) <= CHARACTER'pos('Z')) then
+				chr2	:= CHARACTER'val(CHARACTER'pos(chr2) - CHARACTER'pos('A') + CHARACTER'pos('a'));
+			end if;
+			if (chr1 /= chr2) then
+				return FALSE;
+			elsif ((chr1 = C_POC_NUL) xor (chr2 = C_POC_NUL)) then
+				return FALSE;
+			elsif ((chr1 = C_POC_NUL) and (chr2 = C_POC_NUL)) then
+				return TRUE;
+			end if;
+		end loop;
+		-- check special cases, 
+		return (((str1'length = len) and (str2'length = len)) or									-- both strings are fully consumed and equal
+						((str1'length > len) and (str1(str1'low + len) = C_POC_NUL)) or		-- str1 is longer, but str_length equals len
+						((str2'length > len) and (str2(str2'low + len) = C_POC_NUL)));		-- str2 is longer, but str_length equals len
+	end function;
+
+
+	-- Public functions
 	-- ===========================================================================
 	-- TODO: comment
 	function MY_BOARD_STRUCT(BoardConfig : string := C_BOARD_STRING_EMPTY) return T_BOARD_DESCRIPTION is
