@@ -251,7 +251,7 @@ package utils is
 	-- Binary-Code to Gray-Code
 	function bin2gray(value : std_logic_vector) return std_logic_vector;
 	
-end package utils;
+end package;
 
 
 package body utils is
@@ -293,8 +293,9 @@ package body utils is
 	
 	-- round to previous power of 2
 	function floor_pow2(int : NATURAL) return NATURAL is
-		variable temp : UNSIGNED(30 downto 0)	:= to_unsigned(int, 31);
+		variable temp : UNSIGNED(30 downto 0);
 	begin
+		temp	:= to_unsigned(int, 31);
 		for i in temp'range loop
 			if (temp(i) = '1') then
 				return 2 ** i;
@@ -306,10 +307,12 @@ package body utils is
 	-- Logarithms: log*ceil*
 	-- ==========================================================================
 	function log2ceil(arg : positive) return natural is
-		variable tmp : positive		:= 1;
-		variable log : natural		:= 0;
+		variable tmp : positive;
+		variable log : natural;
 	begin
 		if arg = 1 then	return 0; end if;
+		tmp := 1;
+		log := 0;
 		while arg > tmp loop
 			tmp := tmp * 2;
 			log := log + 1;
@@ -323,10 +326,12 @@ package body utils is
 	end function;
 
 	function log10ceil(arg : positive) return natural is
-		variable tmp : positive		:= 1;
-		variable log : natural		:= 0;
+		variable tmp : positive;
+		variable log : natural;
 	begin
 		if arg = 1 then	return 0; end if;
+		tmp := 1;
+		log := 0;
 		while arg > tmp loop
 			tmp := tmp * 10;
 			log := log + 1;
@@ -428,8 +433,9 @@ package body utils is
 	end function;
 	
 	function imin(vec : T_INTVEC) return INTEGER is
-		variable Result		: INTEGER		:= INTEGER'high;
+		variable Result		: INTEGER;
 	begin
+		Result	:= INTEGER'high;
 		for i in vec'range loop
 			if (vec(I) < Result) then
 				Result	:= vec(I);
@@ -439,8 +445,9 @@ package body utils is
 	end function;
 	
 	function imin(vec : T_NATVEC) return NATURAL is
-		variable Result		: natural := NATURAL'high;
+		variable Result		: NATURAL;
 	begin
+		Result	:= NATURAL'high;
 		for i in vec'range loop
 			if (vec(I) < Result) then
 				Result	:= vec(I);
@@ -450,8 +457,9 @@ package body utils is
 	end function;
 	
 	function imin(vec : T_POSVEC) return POSITIVE is
-		variable Result		: positive := POSITIVE'high;
+		variable Result		: POSITIVE;
 	begin
+		Result	:= POSITIVE'high;
 		for i in vec'range loop
 			if (vec(I) < Result) then
 				Result	:= vec(I);
@@ -460,16 +468,17 @@ package body utils is
 		return Result;
 	end function;
 
-	function rmin(vec : T_REALVEC) return real is
-		variable  res : real := real'high;
+	function rmin(vec : T_REALVEC) return REAL is
+		variable  res : REAL;
 	begin
+		Result	:= REAL'high;
 		for i in vec'range loop
 			if vec(i) < res then
 				res := vec(i);
 			end if;
 		end loop;
 		return  res;
-	end rmin;
+	end function;
 
 	function imax(arg1 : integer; arg2 : integer) return integer is
 	begin
@@ -484,8 +493,9 @@ package body utils is
 	end function;
 	
 	function imax(vec : T_INTVEC) return INTEGER is
-		variable Result		: INTEGER		:= INTEGER'low;
+		variable Result		: INTEGER;
 	begin
+		Result		:= INTEGER'low;
 		for i in vec'range loop
 			if (vec(I) > Result) then
 				Result	:= vec(I);
@@ -495,8 +505,9 @@ package body utils is
 	end function;
 	
 	function imax(vec : T_NATVEC) return NATURAL is
-		variable Result		: natural := NATURAL'low;
+		variable Result		: NATURAL;
 	begin
+		Result		:= NATURAL'low;
 		for i in vec'range loop
 			if (vec(I) > Result) then
 				Result	:= vec(I);
@@ -506,8 +517,9 @@ package body utils is
 	end function;
 	
 	function imax(vec : T_POSVEC) return POSITIVE is
-		variable Result		: positive := POSITIVE'low;
+		variable Result		: POSITIVE;
 	begin
+		Result		:= POSITIVE'low;
 		for i in vec'range loop
 			if (vec(I) > Result) then
 				Result	:= vec(I);
@@ -516,20 +528,32 @@ package body utils is
 		return Result;
 	end function;
 
-	function rmax(vec : T_REALVEC) return real is
-		variable  res : real := real'low;
+	function rmax(vec : T_REALVEC) return REAL is
+		variable  res : REAL;
 	begin
+		Result		:= REAL'low;
 		for i in vec'range loop
 			if vec(i) > res then
 				res := vec(i);
 			end if;
 		end loop;
 		return  res;
-	end rmax;
+	end function;
 
-	function isum(vec : T_NATVEC) return NATURAL is
-		variable Result		: NATURAL		:= 0;
+	function isum(vec : T_INTVEC) return INTEGER is
+		variable  res : INTEGER;
 	begin
+		Result		:= 0;
+		for i in vec'range loop
+			res	:= res + vec(i);
+		end loop;
+		return  res;
+	end function;
+	
+	function isum(vec : T_NATVEC) return NATURAL is
+		variable Result		: NATURAL;
+	begin
+		Result		:= 0;
 		for i in vec'range loop
 			Result	:= Result + vec(I);
 		end loop;
@@ -537,37 +561,31 @@ package body utils is
 	end function;
 	
 	function isum(vec : T_POSVEC) return POSITIVE is
-		variable Result		: NATURAL	:= 0;
+		variable Result		: POSITIVE;
 	begin
+		Result		:= 0;
 		for i in vec'range loop
 			Result	:= Result + vec(I);
 		end loop;
 		return Result;
 	end function;
 
-	function isum(vec : T_INTVEC) return integer is
-		variable  res : integer := 0;
+	function rsum(vec : T_REALVEC) return REAL is
+		variable  res : REAL;
 	begin
+		Result		:= 0.0;
 		for i in vec'range loop
 			res	:= res + vec(i);
 		end loop;
 		return  res;
-	end isum;
-
-	function rsum(vec : T_REALVEC) return real is
-		variable  res : real := 0.0;
-	begin
-		for i in vec'range loop
-			res	:= res + vec(i);
-		end loop;
-		return  res;
-	end rsum;
+	end function;
 
 	-- Vector aggregate functions: slv_*
 	-- ==========================================================================
 	function slv_or(vec : STD_LOGIC_VECTOR) return STD_LOGIC is
-		variable Result : STD_LOGIC := '0';
+		variable Result : STD_LOGIC;
 	begin
+		Result		:= '0';
 		for i in vec'range loop
 			Result	:= Result or vec(i);
 		end loop;
@@ -580,8 +598,9 @@ package body utils is
 	end function;
 
 	function slv_and(vec : STD_LOGIC_VECTOR) return STD_LOGIC is
-		variable Result : STD_LOGIC := '1';
+		variable Result : STD_LOGIC;
 	begin
+		Result		:= '1';
 		for i in vec'range loop
 			Result	:= Result and vec(i);
 		end loop;
@@ -914,4 +933,4 @@ package body utils is
 		res := vec;
 		return  res;
 	end descend;
-end utils;
+end package body;
