@@ -37,11 +37,17 @@ use			IEEE.numeric_std.all;
 use			IEEE.math_real.all;
 
 library	PoC;
+use			PoC.my_config.all;
 use			PoC.utils.all;
 --use			PoC.FileIO.all;
 
 
 package strings is
+	-- default fill and string termination character for fixed size strings
+	-- ===========================================================================
+	constant C_POC_NUL			: CHARACTER		:= ite((SYNTHESIS_TOOL /= SYNTHESIS_TOOL_ALTERA_QUARTUS2), NUL, CHARACTER'val(255));
+
+
 	-- Type declarations
 	-- ===========================================================================
 	subtype T_RAWCHAR				is STD_LOGIC_VECTOR(7 downto 0);
@@ -109,7 +115,7 @@ package strings is
 	function to_RawString(str : string)		return T_RAWSTRING;
 	
 	-- resize
-	function resize(str : STRING; size : POSITIVE; FillChar : CHARACTER := NUL) return STRING;
+	function resize(str : STRING; size : POSITIVE; FillChar : CHARACTER := C_POC_NUL) return STRING;
 	function resize(rawstr : T_RAWSTRING; size : POSITIVE; FillChar : T_RAWCHAR := x"00") return T_RAWSTRING;
 
 	-- Character functions
@@ -593,17 +599,17 @@ package body strings is
 
 	-- resize
 	-- ===========================================================================
-	function resize(str : STRING; size : POSITIVE; FillChar : CHARACTER := NUL) return STRING is
-		constant MaxLength	: NATURAL								:= imin(size, str'length);
-		variable Result			: STRING(1 to size)			:= (others => FillChar);
+	function resize(str : STRING; size : POSITIVE; FillChar : CHARACTER := C_POC_NUL) return STRING is
+		constant ConstNUL		: STRING(1 to 1)				:= (others => C_POC_NUL);
+		variable Result			: STRING(1 to size);
 	begin
-		--report "resize: str='" & str & "' size=" & INTEGER'image(size) severity note;
-		if (MaxLength > 0) then
-			Result(1 to MaxLength) := str(str'low to str'low + MaxLength - 1);
+		Result := (others => FillChar);
+		if (str'length > 0) then
+			Result(1 to imin(size, imax(1, str'length))) := ite((str'length > 0), str(1 to imin(size, str'length)), ConstNUL);
 		end if;
 		return Result;
 	end function;
-
+	
 	function resize(rawstr : T_RAWSTRING; size : POSITIVE; FillChar : T_RAWCHAR := x"00") return T_RAWSTRING is
 		constant MaxLength	: POSITIVE																					:= imin(size, rawstr'length);
 		variable Result			: T_RAWSTRING(rawstr'low to rawstr'low + size - 1)	:= (others => FillChar);
@@ -637,7 +643,7 @@ package body strings is
 	function str_length(str : STRING) return NATURAL is
 	begin
 		for i in str'range loop
-			if (str(i) = NUL) then
+			if (str(i) = C_POC_NUL) then
 				return i - str'low;
 			end if;
 		end loop;
@@ -654,29 +660,37 @@ package body strings is
 	end function;
 
 	function str_match(str1 : STRING; str2 : STRING) return BOOLEAN is
-		constant len1 : NATURAL := str_length(str1);
+		constant len1	: NATURAL := str_length(str1);
+		constant len2	: NATURAL := str_length(str2);
+		constant len	: NATURAL := imin(len1, len2);
 	begin
-		if (len1 /= str_length(str2)) then
+		if (len1 /= len2) then
 			return FALSE;
+		elsif (len1 = 0) then
+			return TRUE;
 		else
-			return (resize(str1, len1) = resize(str2, len1));
+			return (str1(str1'low to (str1'low + len - 1)) = str2(str2'low to (str2'low + len - 1)));
 		end if;
 	end function;
 
 	function str_imatch(str1 : STRING; str2 : STRING) return BOOLEAN is
-		constant len1 : NATURAL := str_length(str1);
+		constant len1	: NATURAL := str_length(str1);
+		constant len2	: NATURAL := str_length(str2);
+		constant len	: NATURAL := imin(len1, len2);
 	begin
-		if (len1 /= str_length(str2)) then
+		if (len1 /= len2) then
 			return FALSE;
+		elsif (len1 = 0) then
+			return TRUE;
 		else
-			return (str_to_lower(resize(str1, len1)) = str_to_lower(resize(str2, len1)));
+			return (str_to_lower(str1(str1'low to (str1'low + len - 1))) = str_to_lower(str2(str2'low to (str2'low + len - 1))));
 		end if;
 	end function;
-
+	
 	function str_pos(str : STRING; chr : CHARACTER; start : NATURAL := 0) return INTEGER is
 	begin
 		for i in imax(str'low, start) to str'high loop
-			exit when (str(i) = NUL);
+			exit when (str(i) = C_POC_NUL);
 			if (str(i) = chr) then
 				return i;
 			end if;
@@ -687,7 +701,7 @@ package body strings is
 	function str_pos(str : STRING; search : STRING; start : NATURAL := 0) return INTEGER is
 	begin
 		for i in imax(str'low, start) to (str'high - search'length + 1) loop
-			exit when (str(i) = NUL);
+			exit when (str(i) = C_POC_NUL);
 			if (str(i to i + search'length - 1) = search) then
 				return i;
 			end if;
@@ -758,7 +772,7 @@ package body strings is
 	function str_trim(str : STRING) return STRING is
 	begin
 		for i in str'range loop
-			if (str(i) = NUL) then
+			if (str(i) = C_POC_NUL) then
 				return str(str'low to i - 1);
 			end if;
 		end loop;

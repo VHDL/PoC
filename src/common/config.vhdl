@@ -47,14 +47,23 @@ package config is
 
 	subtype T_DEVICE_STRING		is string(1 to 32);
 	
-	constant C_DEVICE_STRING_EMPTY	: T_DEVICE_STRING		:= (others => NUL);
+	constant C_DEVICE_STRING_EMPTY	: T_DEVICE_STRING		:= (others => C_POC_NUL);
 
+	-- Synthesis tool chain
+	-- ===========================================================================
+	type T_SYNTHESIS_TOOL is (
+		SYNTHESIS_TOOL_ALTERA_QUARTUS2,
+--		SYNTHESIS_TOOL_SYNOPSIS,
+		SYNTHESIS_TOOL_XILINX_XST,
+		SYNTHESIS_TOOL_XILINX_VIVADO
+	);
+	
 	-- FPGA / Chip vendor
 	-- ===========================================================================
 	type vendor_t is (
 		VENDOR_ALTERA,
+		VENDOR_LATTICE,
 		VENDOR_XILINX
---		VENDOR_LATTICE
 	);
 
 	-- Device
@@ -143,6 +152,7 @@ package config is
 	-- Functions extracting device and architecture properties from "MY_DEVICE"
 	-- which is declared in package "my_config".
 	-- ===========================================================================
+	function SYNTHESIS_TOOL(DeviceString : string := C_DEVICE_STRING_EMPTY)		return T_SYNTHESIS_TOOL;
 	function VENDOR(DeviceString : string := C_DEVICE_STRING_EMPTY)						return vendor_t;
 	function DEVICE(DeviceString : string := C_DEVICE_STRING_EMPTY)						return device_t;
 	function DEVICE_FAMILY(DeviceString : string := C_DEVICE_STRING_EMPTY)		return T_DEVICE_FAMILY;
@@ -207,6 +217,23 @@ package body config is
 		return to_natural_dec(str(low to high));			-- convert substring to a number
 	end function;
 
+	function SYNTHESIS_TOOL(DeviceString : string := C_DEVICE_STRING_EMPTY) return T_SYNTHESIS_TOOL is
+		constant VEN			: vendor_t				:= VENDOR(DeviceString);
+	begin
+		case VEN is
+			when VENDOR_ALTERA =>
+				return SYNTHESIS_TOOL_ALTERA_QUARTUS2;
+			when VENDOR_LATTICE =>
+				return SYNTHESIS_TOOL_SYNOPSIS;
+			when VENDOR_XILINX =>
+				if (1 fs /= 1 us) then
+					return SYNTHESIS_TOOL_XILINX_XST;
+				else
+					return SYNTHESIS_TOOL_XILINX_VIVADO;
+				end if;
+		end case;
+	end function;
+	
 	-- purpose: extract vendor from MY_DEVICE
 	function VENDOR(DeviceString : string := C_DEVICE_STRING_EMPTY) return vendor_t is
 		constant MY_DEV		: string(1 to 32)	:= getLocalDeviceString(DeviceString);
@@ -218,7 +245,7 @@ package body config is
 			when others	=> report "Unknown vendor in MY_DEVICE = '" & MY_DEV & "'" severity failure;
 										 -- return statement is explicitly missing otherwise XST won't stop
 		end case;
-	end VENDOR;
+	end function;
 
 	-- purpose: extract device from MY_DEVICE
 	function DEVICE(DeviceString : string := C_DEVICE_STRING_EMPTY) return device_t is
@@ -255,14 +282,14 @@ package body config is
 			when others => report "Unknown vendor in MY_DEVICE = " & MY_DEV & "." severity failure;
 										 -- return statement is explicitly missing otherwise XST won't stop
 		end case;
-	end DEVICE;
+	end function;
 
 	-- purpose: extract device from MY_DEVICE
 	function DEVICE_FAMILY(DeviceString : string := C_DEVICE_STRING_EMPTY) return T_DEVICE_FAMILY is
 		constant MY_DEV		: string(1 to 32)	:= getLocalDeviceString(DeviceString);
 		constant VEN			: vendor_t				:= VENDOR(DeviceString);
 		constant FAM_CHAR	: character				:= MY_DEV(4);
-	begin	-- DEVICE
+	begin
 		case VEN is
 			when VENDOR_ALTERA =>
 				case FAM_CHAR is
@@ -284,7 +311,7 @@ package body config is
 			when others => report "Unknown vendor in MY_DEVICE = '" & MY_DEV & "'" severity failure;
 										 -- return statement is explicitly missing otherwise XST won't stop
 		end case;
-	end DEVICE_FAMILY;
+	end function;
 
 	function DEVICE_SERIES(DeviceString : string := C_DEVICE_STRING_EMPTY) return natural is
 		constant MY_DEV	: string(1 to 32)	:= getLocalDeviceString(DeviceString);

@@ -47,7 +47,7 @@ package board is
 	subtype T_BOARD_STRING					is STRING(1 to 16);
 	subtype T_BOARD_CONFIG_STRING		is STRING(1 to 64);
 	
-	constant C_BOARD_STRING_EMPTY	: T_BOARD_STRING		:= (others => NUL);
+	constant C_BOARD_STRING_EMPTY	: T_BOARD_STRING		:= (others => C_POC_NUL);
 	
 	type T_BOARD is (
 		BOARD_CUSTOM,
@@ -108,7 +108,7 @@ package body board is
 	-- ===========================================================================
 	function conf(str : string) return T_BOARD_CONFIG_STRING is
 		variable MaxLength	: NATURAL																		:= T_BOARD_CONFIG_STRING'length;
-		variable Result			: STRING(1 to T_BOARD_CONFIG_STRING'length)	:= (others => NUL);
+		variable Result			: STRING(1 to T_BOARD_CONFIG_STRING'length)	:= (others => C_POC_NUL);
 	begin
 		if (str'length < T_BOARD_CONFIG_STRING'length) then
 			MaxLength := str'length;
