@@ -492,7 +492,7 @@ package body utils is
 			end if;
 		end loop;
 		return Result;
-	end return;
+	end function;
 	
 	function imax(vec : T_NATVEC) return NATURAL is
 		variable Result		: natural := NATURAL'low;
