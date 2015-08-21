@@ -47,7 +47,7 @@ package config is
 
 	subtype T_DEVICE_STRING		is string(1 to 32);
 	
-	constant C_DEVICE_STRING_EMPTY	: T_DEVICE_STRING		:= (others => NUL);
+	constant C_DEVICE_STRING_EMPTY	: T_DEVICE_STRING		:= (others => C_POC_NUL);
 
 	-- FPGA / Chip vendor
 	-- ===========================================================================
