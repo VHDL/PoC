@@ -2,6 +2,9 @@
 .gitignore
 .gitempty
 
+# Package
+sync.pkg.vhdl
+
 # Clock-Domain-Crossing (CDC) circuits
 sync_Bits.vhdl
 sync_Reset.vhdl
