@@ -43,9 +43,9 @@ use			PoC.utils.all;
 
 
 package strings is
-	-- 
+	-- default fill and string termination character for fixed size strings
 	-- ===========================================================================
-	constant C_POC_NUL			: CHARACTER		:= ite((MY_SYNTHESIZER /= "QUARTUS"), NUL, CHARACTER'val(255));
+	constant C_POC_NUL			: CHARACTER		:= ite((SYNTHESIS_TOOL /= SYNTHESIS_TOOL_ALTERA_QUARTUS2), NUL, CHARACTER'val(255));
 
 
 	-- Type declarations
