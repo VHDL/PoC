@@ -47,13 +47,13 @@ package config is
 
 	subtype T_DEVICE_STRING		is string(1 to 32);
 	
-	constant C_DEVICE_STRING_EMPTY	: T_DEVICE_STRING		:= (others => C_POC_NUL);
+	constant C_DEVICE_STRING_EMPTY	: T_DEVICE_STRING;
 
 	-- Synthesis tool chain
 	-- ===========================================================================
 	type T_SYNTHESIS_TOOL is (
 		SYNTHESIS_TOOL_ALTERA_QUARTUS2,
---		SYNTHESIS_TOOL_SYNOPSIS,
+		SYNTHESIS_TOOL_SYNOPSIS,
 		SYNTHESIS_TOOL_XILINX_XST,
 		SYNTHESIS_TOOL_XILINX_VIVADO
 	);
@@ -169,10 +169,14 @@ package config is
 
 	-- force FSM to predefined encoding in debug mode
 	function getFSMEncoding_gray(debug : BOOLEAN) return STRING;
-end config;
+end package;
 
 
 package body config is
+	-- deferred constant
+	constant C_POC_NUL							: CHARACTER					:= '~';	--CHARACTER'val(255);
+	constant C_DEVICE_STRING_EMPTY	: T_DEVICE_STRING		:= (others => C_POC_NUL);
+
 	function getLocalDeviceString(DeviceString : STRING) return STRING is
 		constant MY_DEVICE_STR	: STRING := MY_DEVICE_STRING;
 	begin
@@ -522,4 +526,4 @@ package body config is
 			end case;
 		end if;
 	end function;
-end config;
+end package body;
