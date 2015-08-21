@@ -42,13 +42,13 @@ use			PoC.physical.all;
 package sync is
 	component sync_Bits is
 		generic (
-			BITS								: POSITIVE						:= 1;										-- number of bit to be synchronized
-			INIT								: STD_LOGIC_VECTOR		:= x"00000000"
+			BITS					: POSITIVE						:= 1;									-- number of bit to be synchronized
+			INIT					: STD_LOGIC_VECTOR		:= x"00000000"				-- initialitation bits
 		);
 		port (
-			Clock								: in	STD_LOGIC;															-- <Clock>	output clock domain
-			Input								: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);		-- @async:	input bits
-			Output							: out STD_LOGIC_VECTOR(BITS - 1 downto 0)			-- @Clock:	output bits
+			Clock					: in	STD_LOGIC;														-- <Clock>	output clock domain
+			Input					: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);	-- @async:	input bits
+			Output				: out STD_LOGIC_VECTOR(BITS - 1 downto 0)		-- @Clock:	output bits
 		);
 	end component;
 
@@ -78,29 +78,25 @@ package sync is
 
 	component sync_Reset is
 		port (
-			Clock			: in	STD_LOGIC;		-- <Clock>	output clock domain
-			Input			: in	STD_LOGIC;		-- @async:	reset input
-			Output		: out STD_LOGIC			-- @Clock:	reset output
+			Clock			: in	STD_LOGIC;				-- <Clock>	output clock domain
+			Input			: in	STD_LOGIC;				-- @async:	reset input
+			Output		: out STD_LOGIC					-- @Clock:	reset output
 		);
 	end component;
 
 	component sync_Reset_Altera is
-		generic (
-			BITS					: POSITIVE						:= 1;									-- number of bit to be synchronized
-			INIT					: STD_LOGIC_VECTOR		:= x"00000000"				-- initialitation bits
-		);
 		port (
-			Clock					: in	STD_LOGIC;														-- Clock to be synchronized to
-			Input					: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);	-- Data to be synchronized
-			Output				: out	STD_LOGIC_VECTOR(BITS - 1 downto 0)		-- synchronised data
+			Clock					: in	STD_LOGIC;		-- Clock to be synchronized to
+			Input					: in	STD_LOGIC;		-- Data to be synchronized
+			Output				: out	STD_LOGIC			-- synchronised data
 		);
 	end component;
 
 	component sync_Reset_Xilinx is
 		port (
-			Clock				: in	STD_LOGIC;					-- Clock to be synchronized to
-			Input				: in	STD_LOGIC;					-- high active asynchronous reset
-			Output			: out	STD_LOGIC						-- "Synchronised" reset signal
+			Clock				: in	STD_LOGIC;			-- Clock to be synchronized to
+			Input				: in	STD_LOGIC;			-- high active asynchronous reset
+			Output			: out	STD_LOGIC				-- "Synchronised" reset signal
 		);
 	end component;
 
