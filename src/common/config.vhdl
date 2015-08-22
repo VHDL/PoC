@@ -37,11 +37,9 @@ use			PoC.my_config.all;
 use			PoC.my_project.all;
 use			PoC.board.all;
 use			PoC.utils.all;
-use			PoC.strings.all;
 
 
 package config is
-
 	constant PROJECT_DIR			: string	:= MY_PROJECT_DIR;
 	constant OPERATING_SYSTEM	: string	:= MY_OPERATING_SYSTEM;
 
@@ -173,34 +171,119 @@ end package;
 
 
 package body config is
+	-- default fill and string termination character for fixed size strings
+	-- ===========================================================================
+	constant C_POC_NUL			: CHARACTER		:= '~';	--ite((SYNTHESIS_TOOL /= SYNTHESIS_TOOL_ALTERA_QUARTUS2), NUL, '~');
+	
 	-- deferred constant
-	constant C_POC_NUL							: CHARACTER					:= '~';	--CHARACTER'val(255);
 	constant C_DEVICE_STRING_EMPTY	: T_DEVICE_STRING		:= (others => C_POC_NUL);
 
-	function getLocalDeviceString(DeviceString : STRING) return STRING is
-		constant MY_DEVICE_STR	: STRING := MY_DEVICE_STRING;
+	-- private functions required by board description
+	-- ModelSim requires that this functions is defined before it is used below.
+	-- ===========================================================================
+	-- chr_is* function
+	function chr_isDigit(chr : CHARACTER) return boolean is
 	begin
+		return ((CHARACTER'pos('0') <= CHARACTER'pos(chr)) and (CHARACTER'pos(chr) <= CHARACTER'pos('9')));
+	end function;
+
+	function chr_isAlpha(chr : character) return boolean is
+	begin
+		return (((CHARACTER'pos('a') <= CHARACTER'pos(chr)) and (CHARACTER'pos(chr) <= CHARACTER'pos('z'))) or
+						((CHARACTER'pos('A') <= CHARACTER'pos(chr)) and (CHARACTER'pos(chr) <= CHARACTER'pos('Z'))));
+	end function;
+
+	function str_length(str : STRING) return NATURAL is
+	begin
+		for i in str'range loop
+			if (str(i) = C_POC_NUL) then
+				return i - str'low;
+			end if;
+		end loop;
+		return str'length;
+	end function;
+
+	function str_trim(str : STRING) return STRING is
+	begin
+		return str(str'low to str'low + str_length(str) - 1);
+	end function;
+
+	function str_imatch(str1 : STRING; str2 : STRING) return BOOLEAN is
+		constant len	: NATURAL 		:= imin(str1'length, str2'length);
+		variable chr1	: CHARACTER;
+		variable chr2	: CHARACTER;
+	begin
+		-- if both strings are empty
+		if ((str1'length = 0 ) and (str2'length = 0)) then		return TRUE;	end if;
+		-- compare char by char
+		for i in str1'low to str1'low + len - 1 loop
+			chr1	:= str1(i);
+			chr2	:= str2(str2'low + (i - str1'low ));
+			if (CHARACTER'pos('A') <= CHARACTER'pos(chr1)) and (CHARACTER'pos(chr1) <= CHARACTER'pos('Z')) then
+				chr1	:= CHARACTER'val(CHARACTER'pos(chr1) - CHARACTER'pos('A') + CHARACTER'pos('a'));
+			end if;
+			if (CHARACTER'pos('A') <= CHARACTER'pos(chr2)) and (CHARACTER'pos(chr2) <= CHARACTER'pos('Z')) then
+				chr2	:= CHARACTER'val(CHARACTER'pos(chr2) - CHARACTER'pos('A') + CHARACTER'pos('a'));
+			end if;
+			if (chr1 /= chr2) then
+				return FALSE;
+			elsif ((chr1 = C_POC_NUL) xor (chr2 = C_POC_NUL)) then
+				return FALSE;
+			elsif ((chr1 = C_POC_NUL) and (chr2 = C_POC_NUL)) then
+				return TRUE;
+			end if;
+		end loop;
+		-- check special cases, 
+		return (((str1'length = len) and (str2'length = len)) or									-- both strings are fully consumed and equal
+						((str1'length > len) and (str1(str1'low + len) = C_POC_NUL)) or		-- str1 is longer, but str_length equals len
+						((str2'length > len) and (str2(str2'low + len) = C_POC_NUL)));		-- str2 is longer, but str_length equals len
+	end function;
+
+	function str_find(str : STRING; pattern : STRING; start : NATURAL := 0) return BOOLEAN is
+	begin
+		for i in imax(str'low, start) to (str'high - pattern'length + 1) loop
+			exit when (str(i) = C_POC_NUL);
+			if (str(i to i + pattern'length - 1) = pattern) then
+				return TRUE;
+			end if;
+		end loop;
+		return FALSE;
+	end function;
+
+
+	-- helper function to create configuration strings
+	-- ===========================================================================	
+	function getLocalDeviceString(DeviceString : STRING := C_DEVICE_STRING_EMPTY) return STRING is
+		constant ConstNUL				: STRING(1 to 1)				:= (others => C_POC_NUL);
+		constant MY_DEVICE_STR	: STRING								:= MY_DEVICE_STRING;
+		variable Result					: STRING(1 to T_DEVICE_STRING'length);
+	begin
+		Result := (others => C_POC_NUL);
+		-- report DeviceString for debugging
 		if (POC_VERBOSE = TRUE) then
 			report "getLocalDeviceString: DeviceString='" & str_trim(DeviceString) & "' MY_DEVICE='" & str_trim(MY_DEVICE) & "' MY_DEVICE_STR='" & str_trim(MY_DEVICE_STR) & "'"  severity NOTE;
 		end if;
 		-- if DeviceString is populated
 		if ((str_length(DeviceString) /= 0) and (str_imatch(DeviceString, "None") = FALSE)) then
-			return resize(DeviceString, T_DEVICE_STRING'length);
-			
+			Result(1 to imin(T_DEVICE_STRING'length, imax(1, DeviceString'length)))		:= ite((DeviceString'length > 0), DeviceString(1 to imin(T_DEVICE_STRING'length, DeviceString'length)), ConstNUL);
 		-- if MY_DEVICE is set, prefer it
-		elsif ((str_length(DeviceString) /= 0) and (str_imatch(MY_DEVICE, "None") = FALSE)) then
-			return resize(MY_DEVICE, T_DEVICE_STRING'length);
-			
+		elsif ((str_length(MY_DEVICE) /= 0) and (str_imatch(MY_DEVICE, "None") = FALSE)) then
+			Result(1 to imin(T_DEVICE_STRING'length, imax(1, MY_DEVICE'length)))			:= ite((MY_DEVICE'length > 0), MY_DEVICE(1 to imin(T_DEVICE_STRING'length, MY_DEVICE'length)), ConstNUL);
 		-- otherwise use MY_BOARD
 		else
-			return resize(MY_DEVICE_STR, T_DEVICE_STRING'length);
+			Result(1 to imin(T_DEVICE_STRING'length, imax(1, MY_DEVICE_STR'length)))	:= ite((MY_DEVICE_STR'length > 0), MY_DEVICE_STR(1 to imin(T_DEVICE_STRING'length, MY_DEVICE_STR'length)), ConstNUL);
 		end if;
+		return Result;
 	end function;
 
 	function extractFirstNumber(str : STRING) return NATURAL is
-		variable low			: integer					:= -1;
-		variable high			: integer					:= -1;
+		variable low			: integer;
+		variable high			: integer;
+		variable Result		: NATURAL;
+		variable Digit		: INTEGER;
 	begin
+		low			:= -1;
+		high		:= -1;
 		for i in str'low to str'high loop
 			if chr_isDigit(str(i)) then
 				low := i;
@@ -218,7 +301,16 @@ package body config is
 		end loop;
 		
 		if (high = -1) then		return 0; end if;
-		return to_natural_dec(str(low to high));			-- convert substring to a number
+		-- return INTEGER'value(str(low to high));			-- 'value(...) is not supported by Vivado Synth 2014.1
+		
+		-- convert substring to a number
+		for i in low to high loop
+			if (chr_isDigit(str(i)) = FALSE) then
+				return -1;
+			end if;
+			Result	:= (Result * 10) + (character'pos(str(i)) - character'pos('0'));
+		end loop;
+		return Result;
 	end function;
 
 	function SYNTHESIS_TOOL(DeviceString : string := C_DEVICE_STRING_EMPTY) return T_SYNTHESIS_TOOL is
@@ -363,43 +455,43 @@ package body config is
 			when DEVICE_SPARTAN3 => report "TODO: parse Spartan3 / Spartan3E / Spartan3AN device subtype." severity failure;
 
 			when DEVICE_SPARTAN6 =>
-				if		((DEV_SUB_STR = "LX") and (not	str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LX;
-				elsif	((DEV_SUB_STR = "LX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LXT;
+				if		((DEV_SUB_STR = "LX") and (not	str_find(MY_DEV(7 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_LX;
+				elsif	((DEV_SUB_STR = "LX") and (			str_find(MY_DEV(7 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_LXT;
 				else	report "Unknown Virtex-5 subtype: MY_DEVICE = '" & MY_DEV & "'" severity failure;
 				end if;
 			
 			when DEVICE_VIRTEX5 =>
-				if		((DEV_SUB_STR = "LX") and (not	str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LX;
-				elsif	((DEV_SUB_STR = "LX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LXT;
-				elsif	((DEV_SUB_STR = "SX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_SXT;
-				elsif	((DEV_SUB_STR = "TX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_TXT;
-				elsif	((DEV_SUB_STR = "FX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_FXT;
+				if		((DEV_SUB_STR = "LX") and (not	str_find(MY_DEV(7 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_LX;
+				elsif	((DEV_SUB_STR = "LX") and (			str_find(MY_DEV(7 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_LXT;
+				elsif	((DEV_SUB_STR = "SX") and (			str_find(MY_DEV(7 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_SXT;
+				elsif	((DEV_SUB_STR = "TX") and (			str_find(MY_DEV(7 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_TXT;
+				elsif	((DEV_SUB_STR = "FX") and (			str_find(MY_DEV(7 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_FXT;
 				else	report "Unknown Virtex-5 subtype: MY_DEVICE = '" & MY_DEV & "'" severity failure;
 				end if;
 
 			when DEVICE_VIRTEX6 =>
-				if		((DEV_SUB_STR = "LX") and (not	str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LX;
-				elsif	((DEV_SUB_STR = "LX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_LXT;
-				elsif	((DEV_SUB_STR = "SX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_SXT;
-				elsif	((DEV_SUB_STR = "CX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_CXT;
-				elsif	((DEV_SUB_STR = "HX") and (			str_find(MY_DEV(7 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_HXT;
+				if		((DEV_SUB_STR = "LX") and (not	str_find(MY_DEV(7 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_LX;
+				elsif	((DEV_SUB_STR = "LX") and (			str_find(MY_DEV(7 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_LXT;
+				elsif	((DEV_SUB_STR = "SX") and (			str_find(MY_DEV(7 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_SXT;
+				elsif	((DEV_SUB_STR = "CX") and (			str_find(MY_DEV(7 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_CXT;
+				elsif	((DEV_SUB_STR = "HX") and (			str_find(MY_DEV(7 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_HXT;
 				else	report "Unknown Virtex-6 subtype: MY_DEVICE = '" & MY_DEV & "'" severity failure;
 				end if;
 
 			when DEVICE_ARTIX7 =>
-				if		(													(			str_find(MY_DEV(5 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_T;
+				if		(													(			str_find(MY_DEV(5 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_T;
 				else	report "Unknown Artix-7 subtype: MY_DEVICE = '" & MY_DEV & "'" severity failure;
 				end if;
 				
 			when DEVICE_KINTEX7 =>
-				if		(													(			str_find(MY_DEV(5 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_T;
+				if		(													(			str_find(MY_DEV(5 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_T;
 				else	report "Unknown Kintex-7 subtype: MY_DEVICE = '" & MY_DEV & "'" severity failure;
 				end if;
 				
 			when DEVICE_VIRTEX7 =>
-				if		(														(		str_find(MY_DEV(5 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_T;
-				elsif	((DEV_SUB_STR(1) = 'X') and (		str_find(MY_DEV(6 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_XT;
-				elsif	((DEV_SUB_STR(1) = 'H') and (		str_find(MY_DEV(6 TO MY_DEV'high), 'T'))) then	return DEVICE_SUBTYPE_HT;
+				if		(														(		str_find(MY_DEV(5 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_T;
+				elsif	((DEV_SUB_STR(1) = 'X') and (		str_find(MY_DEV(6 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_XT;
+				elsif	((DEV_SUB_STR(1) = 'H') and (		str_find(MY_DEV(6 TO MY_DEV'high), "T"))) then	return DEVICE_SUBTYPE_HT;
 				else	report "Unknown Virtex-7 subtype: MY_DEVICE = '" & MY_DEV & "'" severity failure;
 				end if;
 

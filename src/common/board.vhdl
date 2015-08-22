@@ -44,12 +44,13 @@ package board is
 	subtype T_BOARD_STRING					is STRING(1 to 16);
 	subtype T_BOARD_CONFIG_STRING		is STRING(1 to 64);
 	
-	constant C_BOARD_STRING_EMPTY	: T_BOARD_STRING;
+	constant C_BOARD_STRING_EMPTY					: T_BOARD_STRING;
 	
 	type T_BOARD is (
 		BOARD_CUSTOM,
 		-- Spartan-3 boards
-		BOARD_S3SK200, BOARD_S3SK1000, BOARD_S3ESK500, BOARD_S3ESK1600,
+		BOARD_S3SK200,	BOARD_S3SK1000,
+		BOARD_S3ESK500,	BOARD_S3ESK1600,
 		-- Spartan-6 boards
 		BOARD_ATLYS,
 		-- Kintex-7 boards
@@ -81,9 +82,13 @@ package board is
 		PHY_ManagementInterface		: T_BOARD_CONFIG_STRING;
 	end record;
 
+	subtype T_BOARD_ETHERNET_DESC_INDEX		is NATURAL range 0 to 7;
+	type		T_BOARD_ETHERNET_DESC_VECTOR	is array(NATURAL range <>) of T_BOARD_ETHERNET_DESC;
+
 	type T_BOARD_DESCRIPTION is record
-		FPGADevice	: T_BOARD_CONFIG_STRING;
-		Ethernet		: T_BOARD_ETHERNET_DESC;
+		FPGADevice		: T_BOARD_CONFIG_STRING;
+		Ethernet			: T_BOARD_ETHERNET_DESC_VECTOR(T_BOARD_ETHERNET_DESC_INDEX);
+		EthernetCount	: T_BOARD_ETHERNET_DESC_INDEX;
 	end record;
 
 	type T_BOARD_DESCRIPTION_VECTOR	is array (T_BOARD) of T_BOARD_DESCRIPTION;
@@ -99,14 +104,10 @@ end;
 
 
 package body board is
-	-- deferred constant
-	constant C_POC_NUL						: CHARACTER					:= '~';	--CHARACTER'val(255);
-	constant C_BOARD_STRING_EMPTY	: T_BOARD_STRING		:= (others => C_POC_NUL);
-
 	-- private functions required by board description
 	-- ModelSim requires that this functions is defined before it is used below.
 	-- ===========================================================================
-	function ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) return STRING is
+	function ite(cond : BOOLEAN; value1 : CHARACTER; value2 : CHARACTER) return CHARACTER is
 	begin
 		if cond then
 			return value1;
@@ -115,21 +116,40 @@ package body board is
 		end if;
 	end function;
 	
-	function imin(arg1 : integer; arg2 : integer) return integer is
-	begin
-		if arg1 < arg2 then return arg1; end if;
-		return arg2;
-	end function;
+	-- default fill and string termination character for fixed size strings
+	-- ===========================================================================	
+	constant C_POC_NUL			: CHARACTER		:= '~';
+--	constant C_POC_NUL			: CHARACTER		:= ite((SYNTHESIS_TOOL /= SYNTHESIS_TOOL_ALTERA_QUARTUS2), NUL, '~');
+
+	-- deferred constant
+	-- ===========================================================================	
+	constant C_BOARD_STRING_EMPTY					: T_BOARD_STRING					:= (others => C_POC_NUL);
+	constant C_BOARD_CONFIG_STRING_EMPTY	: T_BOARD_CONFIG_STRING		:= (others => C_POC_NUL);
 	
-	function imax(arg1 : integer; arg2 : integer) return integer is
-	begin
-		if arg1 > arg2 then return arg1; end if;
-		return arg2;
-	end function;
+	constant C_BOARD_ETHERNET_DESC_EMPTY	: T_BOARD_ETHERNET_DESC		:= (
+		IPStyle										=> C_BOARD_CONFIG_STRING_EMPTY,
+		RS_DataInterface					=> C_BOARD_CONFIG_STRING_EMPTY,
+		PHY_Device								=> C_BOARD_CONFIG_STRING_EMPTY,
+		PHY_DeviceAddress					=> x"00",
+		PHY_DataInterface					=> C_BOARD_CONFIG_STRING_EMPTY,
+		PHY_ManagementInterface		=> C_BOARD_CONFIG_STRING_EMPTY
+	);
 	
+	-- helper function to create configuration strings
+	-- ===========================================================================
 	function conf(str : string) return T_BOARD_CONFIG_STRING is
 		constant ConstNUL		: STRING(1 to 1)				:= (others => C_POC_NUL);
 		variable Result			: STRING(1 to T_BOARD_CONFIG_STRING'length);
+		-- inlined function from PoC.utils, to break dependency
+		function ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) return STRING is begin
+			if cond then	return value1;	else	return value2;	end if;
+		end function;
+		function imin(arg1 : integer; arg2 : integer) return integer is begin
+			if arg1 < arg2 then return arg1;	else	return arg2;	end if;
+		end function;
+		function imax(arg1 : integer; arg2 : integer) return integer is begin
+			if arg1 > arg2 then return arg1;	else	return arg2;	end if;
+		end function;
 	begin
 		Result := (others => C_POC_NUL);
 		if (str'length > 0) then
@@ -138,179 +158,199 @@ package body board is
 		return Result;
 	end function;
 
+
 	-- board description
 	-- ===========================================================================
 	CONSTANT C_BOARD_DESCRIPTION_LIST		: T_BOARD_DESCRIPTION_VECTOR		:= (
 		-- Xilinx boards
 		-- =========================================================================
 		BOARD_S3SK200 => (
-			FPGADevice									=> conf("XC3S200FT256"),														-- XC2S200FT256
-			Ethernet => (
-				IPStyle										=> conf("IPSTYLE_SOFT"),
-				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
-				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
-				PHY_DeviceAddress					=> x"07",
-				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
-				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
-			)
+			FPGADevice										=> conf("XC3S200FT256"),														-- XC2S200FT256
+			Ethernet => (others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 0
 		),
-				BOARD_S3SK1000 => (
-			FPGADevice									=> conf("XC3S1000FT256"),														-- XC2S200FT256
-			Ethernet => (
-				IPStyle										=> conf("IPSTYLE_SOFT"),
-				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
-				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
-				PHY_DeviceAddress					=> x"07",
-				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
-				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
-			)
+		BOARD_S3SK1000 => (
+			FPGADevice										=> conf("XC3S1000FT256"),														-- XC2S200FT256
+			Ethernet => (others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 0
 		),
-				BOARD_S3ESK500 => (
-			FPGADevice									=> conf("XC3S500EFT256"),														-- XC2S200FT256
+		BOARD_S3ESK500 => (
+			FPGADevice										=> conf("XC3S500EFT256"),														-- XC2S200FT256
 			Ethernet => (
-				IPStyle										=> conf("IPSTYLE_SOFT"),
-				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
-				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
-				PHY_DeviceAddress					=> x"07",
-				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
-				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
-			)
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
 		),
 		BOARD_S3ESK1600 => (
-			FPGADevice									=> conf("XC3S1600EFT256"),													-- XC2S200FT256
+			FPGADevice										=> conf("XC3S1600EFT256"),													-- XC2S200FT256
 			Ethernet => (
-				IPStyle										=> conf("IPSTYLE_SOFT"),
-				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
-				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
-				PHY_DeviceAddress					=> x"07",
-				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
-				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
-			)
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
 		),
 		BOARD_ATLYS => (
-			FPGADevice									=> conf("XC6SLX45-3CSG324"),												-- XC6SLX45-3CSG324
+			FPGADevice										=> conf("XC6SLX45-3CSG324"),												-- XC6SLX45-3CSG324
 			Ethernet => (
-				IPStyle										=> conf("IPSTYLE_HARD"),
-				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
-				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
-				PHY_DeviceAddress					=> x"07",
-				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
-				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
-			)
+				0 => (
+					IPStyle										=> conf("IPSTYLE_HARD"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
 		),
 		BOARD_KC705 => (
-			FPGADevice									=> conf("XC7K325T-2FFG900C"),												-- XC7K325T-2FFG900C
+			FPGADevice										=> conf("XC7K325T-2FFG900C"),												-- XC7K325T-2FFG900C
 			Ethernet => (
-				IPStyle										=> conf("IPSTYLE_SOFT"),
-				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
-				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
-				PHY_DeviceAddress					=> x"07",
-				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
-				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
-			)
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
 		),
 		BOARD_ML505 => (
-			FPGADevice									=> conf("XC5VLX50T-1FF1136"),												-- XC5VLX50T-1FF1136
+			FPGADevice										=> conf("XC5VLX50T-1FF1136"),												-- XC5VLX50T-1FF1136
 			Ethernet => (
-				IPStyle										=> conf("IPSTYLE_HARD"),	--SOFT"),
-				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
-				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
-				PHY_DeviceAddress					=> x"07",
-				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
-				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
-			)
+				0 => (
+					IPStyle										=> conf("IPSTYLE_HARD"),	--SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
 		),
 		BOARD_ML605 => (
-			FPGADevice									=> conf("XC6VLX240T-1FF1156"),											-- XC6VLX240T-1FF1156
+			FPGADevice										=> conf("XC6VLX240T-1FF1156"),											-- XC6VLX240T-1FF1156
 			Ethernet => (
-				IPStyle										=> conf("IPSTYLE_SOFT"),	--HARD"),
-				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
-				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
-				PHY_DeviceAddress					=> x"07",
-				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
-				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
-			)
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),	--HARD"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
 		),
 		BOARD_VC707 => (
-			FPGADevice									=> conf("XC7VX485T-2FFG1761C"),											-- XC7VX485T-2FFG1761C
+			FPGADevice										=> conf("XC7VX485T-2FFG1761C"),											-- XC7VX485T-2FFG1761C
 			Ethernet => (
-				IPStyle										=> conf("IPSTYLE_SOFT"),
-				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
-				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
-				PHY_DeviceAddress					=> x"07",
-				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_SGMII"),
-				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
-			)
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_SGMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
 		),
 		BOARD_ZEDBOARD => (
-			FPGADevice									=> conf("XC7Z020-1CLG484"),													-- XC7Z020-1CLG484
+			FPGADevice										=> conf("XC7Z020-1CLG484"),													-- XC7Z020-1CLG484
 			Ethernet => (
-				IPStyle										=> conf("IPSTYLE_SOFT"),
-				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
-				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1518"),
-				PHY_DeviceAddress					=> x"07",
-				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_RGMII"),
-				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
-			)
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1518"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_RGMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
 		),
 		-- Altera boards
 		-- =========================================================================
 		BOARD_DE0 => (
-			FPGADevice									=> conf("EP3C16F484"),															-- EP3C16F484
-			Ethernet => (
-				IPStyle										=> conf("IPSTYLE_SOFT"),
-				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
-				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
-				PHY_DeviceAddress					=> x"07",
-				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
-				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
-			)
+			FPGADevice										=> conf("EP3C16F484"),															-- EP3C16F484
+			Ethernet => (others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 0
 		),
 		BOARD_S2GXAV => (
-			FPGADevice									=> conf("EP2SGX90FF1508C3"),												-- EP2SGX90FF1508C3
+			FPGADevice										=> conf("EP2SGX90FF1508C3"),												-- EP2SGX90FF1508C3
 			Ethernet => (
-				IPStyle										=> conf("IPSTYLE_SOFT"),
-				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
-				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
-				PHY_DeviceAddress					=> x"07",
-				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
-				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
-			)
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
 		),
 		BOARD_DE4 => (
-			FPGADevice									=> conf("EP4SGX230KF40C2"),													-- EP4SGX230KF40C2
+			FPGADevice										=> conf("EP4SGX230KF40C2"),													-- EP4SGX230KF40C2
 			Ethernet => (
-				IPStyle										=> conf("IPSTYLE_SOFT"),
-				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
-				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
-				PHY_DeviceAddress					=> x"07",
-				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
-				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
-			)
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"00",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				1 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"01",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				2 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"02",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				3 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"03",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 4
 		),
 		BOARD_DE5 => (
-			FPGADevice									=> conf("EP5SGXEA7N2F45C2"),												-- EP5SGXEA7N2F45C2
+			FPGADevice										=> conf("EP5SGXEA7N2F45C2"),												-- EP5SGXEA7N2F45C2
 			Ethernet => (
-				IPStyle										=> conf("IPSTYLE_SOFT"),
-				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
-				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
-				PHY_DeviceAddress					=> x"07",
-				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
-				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
-			)
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
 		),
 		
 		-- custom board / dummy entry
 		BOARD_CUSTOM => (
-			FPGADevice									=> conf("Device is unknown for a custom board"),
-			Ethernet => (
-				IPStyle										=> conf("IPSTYLE_SOFT"),
-				RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
-				PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
-				PHY_DeviceAddress					=> x"07",
-				PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
-				PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")
-			)
+			FPGADevice										=> conf("Device is unknown for a custom board"),
+			Ethernet => (others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 0
 		)
 	);
 
@@ -332,6 +372,11 @@ package body board is
 	end function;
 
 	function str_imatch(str1 : STRING; str2 : STRING) return BOOLEAN is
+		-- inlined function from PoC.utils, to break dependency
+		function imin(arg1 : integer; arg2 : integer) return integer is begin
+			if arg1 < arg2 then return arg1;	else	return arg2;	end if;
+		end function;
+		
 		constant len	: NATURAL 		:= imin(str1'length, str2'length);
 		variable chr1	: CHARACTER;
 		variable chr2	: CHARACTER;
@@ -367,6 +412,11 @@ package body board is
 	-- ===========================================================================
 	-- TODO: comment
 	function MY_BOARD_STRUCT(BoardConfig : string := C_BOARD_STRING_EMPTY) return T_BOARD_DESCRIPTION is
+		-- inlined function from PoC.utils, to break dependency
+		function ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) return STRING is begin
+			if cond then	return value1;	else	return value2;	end if;
+		end function;
+	
 		constant MY_BRD			: T_BOARD_CONFIG_STRING := ite((BoardConfig /= C_BOARD_STRING_EMPTY), conf(BoardConfig), conf(MY_BOARD));
 		constant BOARD_NAME	: STRING								:= "BOARD_" & str_trim(MY_BRD);
   begin

@@ -37,7 +37,7 @@ use			IEEE.numeric_std.all;
 use			IEEE.math_real.all;
 
 library	PoC;
---use			PoC.config.all;
+use			PoC.config.all;
 use			PoC.utils.all;
 --use			PoC.FileIO.all;
 
@@ -45,9 +45,11 @@ use			PoC.utils.all;
 package strings is
 	-- default fill and string termination character for fixed size strings
 	-- ===========================================================================
---	constant C_POC_NUL			: CHARACTER		:= ite((SYNTHESIS_TOOL /= SYNTHESIS_TOOL_ALTERA_QUARTUS2), NUL, CHARACTER'val(255));
-	constant C_POC_NUL			: CHARACTER		:= ite(FALSE, NUL, '~');	--CHARACTER'val(255));
-
+	constant C_POC_NUL			: CHARACTER		:= ite((SYNTHESIS_TOOL /= SYNTHESIS_TOOL_ALTERA_QUARTUS2), NUL, '~');
+	-- character 0 causes Quartus to crash, if uses to pad STRINGs
+	-- characters < 32 (control characters) are not supported in Quartus
+	-- characters > 127 are not supported in VHDL files (strict ASCII files)
+	-- character 255 craches ISE log window (created by 'CHARACTER'val(255)')
 
 	-- Type declarations
 	-- ===========================================================================
