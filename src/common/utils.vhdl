@@ -469,15 +469,15 @@ package body utils is
 	end function;
 
 	function rmin(vec : T_REALVEC) return REAL is
-		variable  res : REAL;
+		variable  Result : REAL;
 	begin
 		Result	:= REAL'high;
 		for i in vec'range loop
-			if vec(i) < res then
-				res := vec(i);
+			if vec(i) < Result then
+				Result := vec(i);
 			end if;
 		end loop;
-		return  res;
+		return  Result;
 	end function;
 
 	function imax(arg1 : integer; arg2 : integer) return integer is
@@ -529,25 +529,25 @@ package body utils is
 	end function;
 
 	function rmax(vec : T_REALVEC) return REAL is
-		variable  res : REAL;
+		variable  Result : REAL;
 	begin
 		Result		:= REAL'low;
 		for i in vec'range loop
-			if vec(i) > res then
-				res := vec(i);
+			if vec(i) > Result then
+				Result := vec(i);
 			end if;
 		end loop;
-		return  res;
+		return  Result;
 	end function;
 
 	function isum(vec : T_INTVEC) return INTEGER is
-		variable  res : INTEGER;
+		variable  Result : INTEGER;
 	begin
 		Result		:= 0;
 		for i in vec'range loop
-			res	:= res + vec(i);
+			Result	:= Result + vec(i);
 		end loop;
-		return  res;
+		return  Result;
 	end function;
 	
 	function isum(vec : T_NATVEC) return NATURAL is
@@ -571,13 +571,13 @@ package body utils is
 	end function;
 
 	function rsum(vec : T_REALVEC) return REAL is
-		variable  res : REAL;
+		variable  Result : REAL;
 	begin
 		Result		:= 0.0;
 		for i in vec'range loop
-			res	:= res + vec(i);
+			Result	:= Result + vec(i);
 		end loop;
-		return  res;
+		return  Result;
 	end function;
 
 	-- Vector aggregate functions: slv_*
