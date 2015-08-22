@@ -23,9 +23,12 @@ VC707/
 # Zynq-7000 boards
 #ZedBoard/
 
+# Stratix IV
+DE4/
+
 # module level constraints
+misc/
 net/
-xil/
 
 # 
 MetaStability.ucf
