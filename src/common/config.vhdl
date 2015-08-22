@@ -248,7 +248,7 @@ package body config is
 	
 	-- default fill and string termination character for fixed size strings
 	-- ===========================================================================	
-	constant C_POC_NUL			: CHARACTER		:= '~';
+	constant C_POC_NUL			: CHARACTER		:= '`';
 
 	-- deferred constant
 	-- ===========================================================================	

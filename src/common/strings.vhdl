@@ -45,7 +45,7 @@ use			PoC.utils.all;
 package strings is
 	-- default fill and string termination character for fixed size strings
 	-- ===========================================================================
-	constant C_POC_NUL			: CHARACTER		:= ite((SYNTHESIS_TOOL /= SYNTHESIS_TOOL_ALTERA_QUARTUS2), NUL, '~');
+	constant C_POC_NUL			: CHARACTER		:= ite((SYNTHESIS_TOOL /= SYNTHESIS_TOOL_ALTERA_QUARTUS2), NUL, '`');
 	-- character 0 causes Quartus to crash, if uses to pad STRINGs
 	-- characters < 32 (control characters) are not supported in Quartus
 	-- characters > 127 are not supported in VHDL files (strict ASCII files)
