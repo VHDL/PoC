@@ -32,10 +32,14 @@
 -- limitations under the License.
 -- ============================================================================
 
+library	IEEE;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
+
 library	PoC;
 use			PoC.my_config.all;
 use			PoC.my_project.all;
-use			PoC.board.all;
+--use			PoC.board.all;
 use			PoC.utils.all;
 
 
@@ -43,9 +47,24 @@ package config is
 	constant PROJECT_DIR			: string	:= MY_PROJECT_DIR;
 	constant OPERATING_SYSTEM	: string	:= MY_OPERATING_SYSTEM;
 
-	subtype T_DEVICE_STRING		is string(1 to 32);
+	-- TODO: 
+	-- ===========================================================================
+	subtype T_BOARD_STRING					is STRING(1 to 16);
+	subtype T_BOARD_CONFIG_STRING		is STRING(1 to 64);
+	subtype T_DEVICE_STRING					is STRING(1 to 32);
 	
-	constant C_DEVICE_STRING_EMPTY	: T_DEVICE_STRING;
+	constant C_BOARD_STRING_EMPTY					: T_BOARD_STRING;
+	constant C_BOARD_CONFIG_STRING_EMPTY	: T_BOARD_CONFIG_STRING;
+	constant C_DEVICE_STRING_EMPTY				: T_DEVICE_STRING;
+	
+	-- FPGA / Chip vendor
+	-- ===========================================================================
+	type T_VENDOR is (
+		VENDOR_ALTERA,
+		VENDOR_LATTICE,
+		VENDOR_XILINX
+	);
+	subtype vendor_t	is T_VENDOR;
 
 	-- Synthesis tool chain
 	-- ===========================================================================
@@ -56,17 +75,9 @@ package config is
 		SYNTHESIS_TOOL_XILINX_VIVADO
 	);
 	
-	-- FPGA / Chip vendor
-	-- ===========================================================================
-	type vendor_t is (
-		VENDOR_ALTERA,
-		VENDOR_LATTICE,
-		VENDOR_XILINX
-	);
-
 	-- Device
 	-- ===========================================================================
-	type device_t is (
+	type T_DEVICE is (
 		DEVICE_SPARTAN3, DEVICE_SPARTAN6,																		-- Xilinx.Spartan
 		DEVICE_ZYNQ7,																												-- Xilinx.Zynq
 		DEVICE_ARTIX7,																											-- Xilinx.Artix
@@ -76,6 +87,7 @@ package config is
 		DEVICE_CYCLONE1, DEVICE_CYCLONE2, DEVICE_CYCLONE3,									-- Altera.Cyclone
 		DEVICE_STRATIX1, DEVICE_STRATIX2, DEVICE_STRATIX4, DEVICE_STRATIX5	-- Altera.Stratix
 	);
+	subtype device_t	is T_DEVICE;
 
 	-- Device family
 	-- ===========================================================================
@@ -130,8 +142,8 @@ package config is
 	-- ===========================================================================
 	-- EXPERIMENTAL: applied consistent nameschema, prefixed members with 'Dev' -> subtype is a keyword
 	type T_DEVICE_INFO is record
-		Vendor						: vendor_t;
-		Device						: device_t;
+		Vendor						: T_VENDOR;
+		Device						: T_DEVICE;
 		DevFamily					: T_DEVICE_FAMILY;
 		DevNumber					: natural;
 		DevSubType				: T_DEVICE_SUBTYPE;
@@ -141,18 +153,73 @@ package config is
 		LUT_FanIn					: positive;
 	end record;
 
+	-- list of supported boards
+	type T_BOARD is (
+		BOARD_CUSTOM,
+		-- Spartan-3 boards
+		BOARD_S3SK200,	BOARD_S3SK1000,
+		BOARD_S3ESK500,	BOARD_S3ESK1600,
+		-- Spartan-6 boards
+		BOARD_ATLYS,
+		-- Kintex-7 boards
+		BOARD_KC705,
+		-- Virtex-5 boards
+		BOARD_ML505,
+		-- Virtex-6 boards
+		BOARD_ML605,
+		-- Virtex-7 boards
+		BOARD_VC707,
+		-- Zynq-7000 boards
+		BOARD_ZEDBOARD,
+		-- Cyclon III boards
+		BOARD_DE0,
+		-- Stratix II boards
+		BOARD_S2GXAV,
+		-- Stratix IV boards
+		BOARD_DE4,
+		-- Stratix V boards
+		BOARD_DE5
+	);
+	
+	-- Data structures to describe Ethernet
+	type T_BOARD_ETHERNET_DESC is record
+		IPStyle										: T_BOARD_CONFIG_STRING;
+		RS_DataInterface					: T_BOARD_CONFIG_STRING;
+		PHY_Device								: T_BOARD_CONFIG_STRING;
+		PHY_DeviceAddress					: STD_LOGIC_VECTOR(7 downto 0);
+		PHY_DataInterface					: T_BOARD_CONFIG_STRING;
+		PHY_ManagementInterface		: T_BOARD_CONFIG_STRING;
+	end record;
+
+	subtype T_BOARD_ETHERNET_DESC_INDEX		is NATURAL range 0 to 7;
+	type		T_BOARD_ETHERNET_DESC_VECTOR	is array(NATURAL range <>) of T_BOARD_ETHERNET_DESC;
+
+	-- Data structures to describe a board layout
+	type T_BOARD_DESCRIPTION is record
+		FPGADevice		: T_BOARD_CONFIG_STRING;
+		Ethernet			: T_BOARD_ETHERNET_DESC_VECTOR(T_BOARD_ETHERNET_DESC_INDEX);
+		EthernetCount	: T_BOARD_ETHERNET_DESC_INDEX;
+	end record;
+
+	type T_BOARD_DESCRIPTION_VECTOR	is array (T_BOARD) of T_BOARD_DESCRIPTION;
 
 	-- QUESTION: replace archprops with DEVICE_INFO ?
 	type archprops_t is record
 		LUT_K						: positive;	-- LUT Fanin
 	end record;
 
+	-- Functions extracting board and PCB properties from "MY_BOARD"
+	-- which is declared in package "my_config".
+	-- ===========================================================================
+	function MY_DEVICE_STRING(BoardConfig : STRING := C_BOARD_STRING_EMPTY) return STRING;
+	function MY_BOARD_STRUCT(BoardConfig : STRING := C_BOARD_STRING_EMPTY)	return T_BOARD_DESCRIPTION;
+	
 	-- Functions extracting device and architecture properties from "MY_DEVICE"
 	-- which is declared in package "my_config".
 	-- ===========================================================================
+	function VENDOR(DeviceString : string := C_DEVICE_STRING_EMPTY)						return T_VENDOR;
 	function SYNTHESIS_TOOL(DeviceString : string := C_DEVICE_STRING_EMPTY)		return T_SYNTHESIS_TOOL;
-	function VENDOR(DeviceString : string := C_DEVICE_STRING_EMPTY)						return vendor_t;
-	function DEVICE(DeviceString : string := C_DEVICE_STRING_EMPTY)						return device_t;
+	function DEVICE(DeviceString : string := C_DEVICE_STRING_EMPTY)						return T_DEVICE;
 	function DEVICE_FAMILY(DeviceString : string := C_DEVICE_STRING_EMPTY)		return T_DEVICE_FAMILY;
 	function DEVICE_NUMBER(DeviceString : string := C_DEVICE_STRING_EMPTY)		return natural;
 	function DEVICE_SUBTYPE(DeviceString : string := C_DEVICE_STRING_EMPTY)		return T_DEVICE_SUBTYPE;
@@ -171,16 +238,33 @@ end package;
 
 
 package body config is
-	-- default fill and string termination character for fixed size strings
-	-- ===========================================================================
-	constant C_POC_NUL			: CHARACTER		:= '~';	--ite((SYNTHESIS_TOOL /= SYNTHESIS_TOOL_ALTERA_QUARTUS2), NUL, '~');
-	
-	-- deferred constant
-	constant C_DEVICE_STRING_EMPTY	: T_DEVICE_STRING		:= (others => C_POC_NUL);
-
 	-- private functions required by board description
 	-- ModelSim requires that this functions is defined before it is used below.
 	-- ===========================================================================
+	function ite(cond : BOOLEAN; value1 : CHARACTER; value2 : CHARACTER) return CHARACTER is
+	begin
+		if cond then		return value1;	else	return value2;	end if;
+	end function;
+	
+	-- default fill and string termination character for fixed size strings
+	-- ===========================================================================	
+	constant C_POC_NUL			: CHARACTER		:= '~';
+
+	-- deferred constant
+	-- ===========================================================================	
+	constant C_BOARD_STRING_EMPTY					: T_BOARD_STRING					:= (others => C_POC_NUL);
+	constant C_BOARD_CONFIG_STRING_EMPTY	: T_BOARD_CONFIG_STRING		:= (others => C_POC_NUL);
+	constant C_DEVICE_STRING_EMPTY				: T_DEVICE_STRING					:= (others => C_POC_NUL);
+	
+	constant C_BOARD_ETHERNET_DESC_EMPTY	: T_BOARD_ETHERNET_DESC		:= (
+		IPStyle										=> C_BOARD_CONFIG_STRING_EMPTY,
+		RS_DataInterface					=> C_BOARD_CONFIG_STRING_EMPTY,
+		PHY_Device								=> C_BOARD_CONFIG_STRING_EMPTY,
+		PHY_DeviceAddress					=> x"00",
+		PHY_DataInterface					=> C_BOARD_CONFIG_STRING_EMPTY,
+		PHY_ManagementInterface		=> C_BOARD_CONFIG_STRING_EMPTY
+	);
+
 	-- chr_is* function
 	function chr_isDigit(chr : CHARACTER) return boolean is
 	begin
@@ -253,7 +337,7 @@ package body config is
 
 	-- helper function to create configuration strings
 	-- ===========================================================================	
-	function getLocalDeviceString(DeviceString : STRING := C_DEVICE_STRING_EMPTY) return STRING is
+	function getLocalDeviceString(DeviceString : STRING) return STRING is
 		constant ConstNUL				: STRING(1 to 1)				:= (others => C_POC_NUL);
 		constant MY_DEVICE_STR	: STRING								:= MY_DEVICE_STRING;
 		variable Result					: STRING(1 to T_DEVICE_STRING'length);
@@ -276,6 +360,29 @@ package body config is
 		return Result;
 	end function;
 
+	-- helper function to create configuration strings
+	-- ===========================================================================
+	function conf(str : string) return T_BOARD_CONFIG_STRING is
+		constant ConstNUL		: STRING(1 to 1)				:= (others => C_POC_NUL);
+		variable Result			: STRING(1 to T_BOARD_CONFIG_STRING'length);
+		-- inlined function from PoC.utils, to break dependency
+		function ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) return STRING is begin
+			if cond then	return value1;	else	return value2;	end if;
+		end function;
+		function imin(arg1 : integer; arg2 : integer) return integer is begin
+			if arg1 < arg2 then return arg1;	else	return arg2;	end if;
+		end function;
+		function imax(arg1 : integer; arg2 : integer) return integer is begin
+			if arg1 > arg2 then return arg1;	else	return arg2;	end if;
+		end function;
+	begin
+		Result := (others => C_POC_NUL);
+		if (str'length > 0) then
+			Result(1 to imin(T_BOARD_CONFIG_STRING'length, imax(1, str'length))) := ite((str'length > 0), str(1 to imin(T_BOARD_CONFIG_STRING'length, str'length)), ConstNUL);
+		end if;
+		return Result;
+	end function;
+	
 	function extractFirstNumber(str : STRING) return NATURAL is
 		variable low			: integer;
 		variable high			: integer;
@@ -313,8 +420,247 @@ package body config is
 		return Result;
 	end function;
 
+	-- board description
+	-- ===========================================================================
+	CONSTANT C_BOARD_DESCRIPTION_LIST		: T_BOARD_DESCRIPTION_VECTOR		:= (
+		-- Xilinx boards
+		-- =========================================================================
+		BOARD_S3SK200 => (
+			FPGADevice										=> conf("XC3S200FT256"),														-- XC2S200FT256
+			Ethernet => (others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 0
+		),
+		BOARD_S3SK1000 => (
+			FPGADevice										=> conf("XC3S1000FT256"),														-- XC2S200FT256
+			Ethernet => (others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 0
+		),
+		BOARD_S3ESK500 => (
+			FPGADevice										=> conf("XC3S500EFT256"),														-- XC2S200FT256
+			Ethernet => (
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
+		),
+		BOARD_S3ESK1600 => (
+			FPGADevice										=> conf("XC3S1600EFT256"),													-- XC2S200FT256
+			Ethernet => (
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
+		),
+		BOARD_ATLYS => (
+			FPGADevice										=> conf("XC6SLX45-3CSG324"),												-- XC6SLX45-3CSG324
+			Ethernet => (
+				0 => (
+					IPStyle										=> conf("IPSTYLE_HARD"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
+		),
+		BOARD_KC705 => (
+			FPGADevice										=> conf("XC7K325T-2FFG900C"),												-- XC7K325T-2FFG900C
+			Ethernet => (
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
+		),
+		BOARD_ML505 => (
+			FPGADevice										=> conf("XC5VLX50T-1FF1136"),												-- XC5VLX50T-1FF1136
+			Ethernet => (
+				0 => (
+					IPStyle										=> conf("IPSTYLE_HARD"),	--SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
+		),
+		BOARD_ML605 => (
+			FPGADevice										=> conf("XC6VLX240T-1FF1156"),											-- XC6VLX240T-1FF1156
+			Ethernet => (
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),	--HARD"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
+		),
+		BOARD_VC707 => (
+			FPGADevice										=> conf("XC7VX485T-2FFG1761C"),											-- XC7VX485T-2FFG1761C
+			Ethernet => (
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_SGMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
+		),
+		BOARD_ZEDBOARD => (
+			FPGADevice										=> conf("XC7Z020-1CLG484"),													-- XC7Z020-1CLG484
+			Ethernet => (
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1518"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_RGMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
+		),
+		-- Altera boards
+		-- =========================================================================
+		BOARD_DE0 => (
+			FPGADevice										=> conf("EP3C16F484"),															-- EP3C16F484
+			Ethernet => (others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 0
+		),
+		BOARD_S2GXAV => (
+			FPGADevice										=> conf("EP2SGX90FF1508C3"),												-- EP2SGX90FF1508C3
+			Ethernet => (
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
+		),
+		BOARD_DE4 => (
+			FPGADevice										=> conf("EP4SGX230KF40C2"),													-- EP4SGX230KF40C2
+			Ethernet => (
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"00",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				1 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"01",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				2 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"02",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				3 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"03",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 4
+		),
+		BOARD_DE5 => (
+			FPGADevice										=> conf("EP5SGXEA7N2F45C2"),												-- EP5SGXEA7N2F45C2
+			Ethernet => (
+				0 => (
+					IPStyle										=> conf("IPSTYLE_SOFT"),
+					RS_DataInterface					=> conf("NET_ETH_RS_DATA_INTERFACE_GMII"),
+					PHY_Device								=> conf("NET_ETH_PHY_DEVICE_MARVEL_88E1111"),
+					PHY_DeviceAddress					=> x"07",
+					PHY_DataInterface					=> conf("NET_ETH_PHY_DATA_INTERFACE_GMII"),
+					PHY_ManagementInterface		=> conf("NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO")),
+				others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 1
+		),
+		
+		-- custom board / dummy entry
+		BOARD_CUSTOM => (
+			FPGADevice										=> conf("Device is unknown for a custom board"),
+			Ethernet => (others => C_BOARD_ETHERNET_DESC_EMPTY),
+			EthernetCount => 0
+		)
+	);
+	
+	-- Public functions
+	-- ===========================================================================
+	-- TODO: comment
+	function MY_BOARD_STRUCT(BoardConfig : string := C_BOARD_STRING_EMPTY) return T_BOARD_DESCRIPTION is
+		-- inlined function from PoC.utils, to break dependency
+		function ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) return STRING is begin
+			if cond then	return value1;	else	return value2;	end if;
+		end function;
+	
+		constant MY_BRD			: T_BOARD_CONFIG_STRING := ite((BoardConfig /= C_BOARD_STRING_EMPTY), conf(BoardConfig), conf(MY_BOARD));
+		constant BOARD_NAME	: STRING								:= "BOARD_" & str_trim(MY_BRD);
+  begin
+--		report "PoC configuration: used board is '" & str_trim(MY_BRD) & "'" severity NOTE;
+		for i in T_BOARD loop
+			if str_imatch(BOARD_NAME, T_BOARD'image(i)) then
+				return  C_BOARD_DESCRIPTION_LIST(i);
+			end if;
+		end loop;
+
+		report "Unknown board name in MY_BOARD = " & MY_BRD & "." severity failure;
+		-- return statement is explicitly missing otherwise XST won't stop
+	end function;
+
+	-- TODO: comment
+	function MY_DEVICE_STRING(BoardConfig : string := C_BOARD_STRING_EMPTY) return string is
+		constant BRD_STRUCT	: T_BOARD_DESCRIPTION := MY_BOARD_STRUCT(BoardConfig);
+  begin
+--		report "PoC configuration: used FPGA is '" & str_trim(BRD_STRUCT.FPGADevice) & "'" severity NOTE;
+		return BRD_STRUCT.FPGADevice;
+	end function;
+	
+	-- purpose: extract vendor from MY_DEVICE
+	function VENDOR(DeviceString : string := C_DEVICE_STRING_EMPTY) return T_VENDOR is
+		constant MY_DEV		: string(1 to 32)	:= getLocalDeviceString(DeviceString);
+		constant VEN_STR	: string(1 to 2)  := MY_DEV(1 to 2);
+	begin
+		case VEN_STR is
+			when "XC"		=> return VENDOR_XILINX;
+			when "EP"		=> return VENDOR_ALTERA;
+			when others	=> report "Unknown vendor in MY_DEVICE = '" & MY_DEV & "'" severity failure;
+										 -- return statement is explicitly missing otherwise XST won't stop
+		end case;
+	end function;
+	
 	function SYNTHESIS_TOOL(DeviceString : string := C_DEVICE_STRING_EMPTY) return T_SYNTHESIS_TOOL is
-		constant VEN			: vendor_t				:= VENDOR(DeviceString);
+		constant VEN			: T_VENDOR				:= VENDOR(DeviceString);
 	begin
 		case VEN is
 			when VENDOR_ALTERA =>
@@ -329,24 +675,11 @@ package body config is
 				end if;
 		end case;
 	end function;
-	
-	-- purpose: extract vendor from MY_DEVICE
-	function VENDOR(DeviceString : string := C_DEVICE_STRING_EMPTY) return vendor_t is
-		constant MY_DEV		: string(1 to 32)	:= getLocalDeviceString(DeviceString);
-		constant VEN_STR	: string(1 to 2)  := MY_DEV(1 to 2);
-	begin
-		case VEN_STR is
-			when "XC"		=> return VENDOR_XILINX;
-			when "EP"		=> return VENDOR_ALTERA;
-			when others	=> report "Unknown vendor in MY_DEVICE = '" & MY_DEV & "'" severity failure;
-										 -- return statement is explicitly missing otherwise XST won't stop
-		end case;
-	end function;
 
 	-- purpose: extract device from MY_DEVICE
-	function DEVICE(DeviceString : string := C_DEVICE_STRING_EMPTY) return device_t is
+	function DEVICE(DeviceString : string := C_DEVICE_STRING_EMPTY) return T_DEVICE is
 		constant MY_DEV		: string(1 to 32)	:= getLocalDeviceString(DeviceString);
-		constant VEN			: vendor_t				:= VENDOR(DeviceString);
+		constant VEN			: T_VENDOR				:= VENDOR(DeviceString);
 		constant DEV_STR	: string(3 to  4)	:= MY_DEV(3 to 4);
 	begin
 		case VEN is
@@ -383,7 +716,7 @@ package body config is
 	-- purpose: extract device from MY_DEVICE
 	function DEVICE_FAMILY(DeviceString : string := C_DEVICE_STRING_EMPTY) return T_DEVICE_FAMILY is
 		constant MY_DEV		: string(1 to 32)	:= getLocalDeviceString(DeviceString);
-		constant VEN			: vendor_t				:= VENDOR(DeviceString);
+		constant VEN			: T_VENDOR				:= VENDOR(DeviceString);
 		constant FAM_CHAR	: character				:= MY_DEV(4);
 	begin
 		case VEN is
@@ -411,7 +744,7 @@ package body config is
 
 	function DEVICE_SERIES(DeviceString : string := C_DEVICE_STRING_EMPTY) return natural is
 		constant MY_DEV	: string(1 to 32)	:= getLocalDeviceString(DeviceString);
-		constant DEV		: device_t				:= DEVICE(DeviceString);
+		constant DEV		: T_DEVICE				:= DEVICE(DeviceString);
 	begin
 		case DEV is
 			when DEVICE_ARTIX7 | DEVICE_KINTEX7 | DEVICE_VIRTEX7 | DEVICE_ZYNQ7 =>	return 7;		-- all Xilinx ****7 devices share some common features: e.g. XADC
@@ -421,7 +754,7 @@ package body config is
 
 	function DEVICE_NUMBER(DeviceString : string := C_DEVICE_STRING_EMPTY) return natural is
 		constant MY_DEV		: string(1 to 32)	:= getLocalDeviceString(DeviceString);
-		constant VEN			: vendor_t				:= VENDOR(DeviceString);
+		constant VEN			: T_VENDOR				:= VENDOR(DeviceString);
 	begin
 		case VEN is
 			when VENDOR_ALTERA =>		return extractFirstNumber(MY_DEV(5 to MY_DEV'high));
@@ -433,7 +766,7 @@ package body config is
 	
 	function DEVICE_SUBTYPE(DeviceString : string := C_DEVICE_STRING_EMPTY) return t_device_subtype is
 		constant MY_DEV				: string(1 to 32)	:= getLocalDeviceString(DeviceString);
-		constant DEV					: device_t				:= DEVICE(MY_DEV);
+		constant DEV					: T_DEVICE				:= DEVICE(MY_DEV);
 		constant DEV_SUB_STR	: string(1 to 2)	:= MY_DEV(5 to 6);																-- work around for GHDL
 	begin
 		case DEV is
@@ -503,7 +836,7 @@ package body config is
 
 	function LUT_FANIN(DeviceString : string := C_DEVICE_STRING_EMPTY) return positive is
 		constant MY_DEV	: string(1 to 32)	:= getLocalDeviceString(DeviceString);
-		constant DEV		: device_t				:= DEVICE(DeviceString);
+		constant DEV		: T_DEVICE				:= DEVICE(DeviceString);
 	begin
 		case DEV is
 			when DEVICE_CYCLONE1 | DEVICE_CYCLONE2 | DEVICE_CYCLONE3 =>			return 4;
@@ -524,7 +857,7 @@ package body config is
 
 	function TRANSCEIVER_TYPE(DeviceString : string := C_DEVICE_STRING_EMPTY) return T_TRANSCEIVER is
 		constant MY_DEV		: string(1 to 32)		:= getLocalDeviceString(DeviceString);
-		constant DEV			: device_t					:= DEVICE(DeviceString);
+		constant DEV			: T_DEVICE					:= DEVICE(DeviceString);
 		constant DEV_NUM	: natural						:= DEVICE_NUMBER(DeviceString);
 		constant DEV_SUB	: t_device_subtype	:= DEVICE_SUBTYPE(DeviceString);
 	begin
