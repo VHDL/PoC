@@ -60,7 +60,7 @@ use			PoC.xil.all;
 
 entity io_FanControl is
 	generic (
-		CLOCK_FREQ							: FREQ
+		CLOCK_FREQ							: FREQ;
 		ADD_INPUT_SYNCHRONIZERS	: BOOLEAN			:= TRUE;
 		ENABLE_TACHO						: BOOLEAN			:= FALSE
 	);
@@ -71,7 +71,7 @@ entity io_FanControl is
 		Fan_PWM									: out	STD_LOGIC;
 		Fan_Tacho								: in	STD_LOGIC;
 		
-		TachoFrequency					: out STD_LOGIC_VECTOR(ite(ENABLE_TACHO, 16, 0) - 1 downto 0)
+		TachoFrequency					: out STD_LOGIC_VECTOR(ite(ENABLE_TACHO, 16, 1) - 1 downto 0)
 	);
 end;
 
@@ -223,7 +223,7 @@ begin
 	
 	-- tacho signal interpretation -> convert to RPM
 	-- ==========================================================================================================================================================
-	genTacho : if (ENABLE_TACHO = FALSE) generate
+	genNoTacho : if (ENABLE_TACHO = FALSE) generate
 		TachoFrequency		<= (TachoFrequency'range => '0');
 	end generate;
 	genTacho : if (ENABLE_TACHO = TRUE) generate
@@ -231,13 +231,13 @@ begin
 		signal Tacho_Freq					: STD_LOGIC_VECTOR(TACHO_RESOLUTION - 1 downto 0);
 	begin
 		-- Input Synchronization
-		genNoSync: if not ADD_INPUT_SYNCHRONIZERS generate
+		genNoSync: if (ADD_INPUT_SYNCHRONIZERS = FALSE) generate
 			Tacho_sync <= Fan_Tacho;
 		end generate;
-		genSync: if ADD_INPUT_SYNCHRONIZERS generate
+		genSync: if (ADD_INPUT_SYNCHRONIZERS = TRUE) generate
 			sync_i : entity PoC.sync_Bits
 				port map (
-					Clock  		=> clk,						-- Clock to be synchronized to
+					Clock  		=> Clock,					-- Clock to be synchronized to
 					Input(0)  => Fan_Tacho,			-- Data to be synchronized
 					Output(0) => Tacho_sync			-- synchronised data
 				);
