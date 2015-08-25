@@ -19,17 +19,13 @@ vhdl poc	"src/common/vectors.vhdl"						# PoC vector library
 vhdl poc	"src/common/physical.vhdl"					# PoC physical library
 vhdl poc	"tb/common/simulation.v93.vhdl"			# PoC simulation helper
 
-# PoC.xil
-vhdl PoC	"src/xil/xil_SyncBits.vhdl"					# 
-
 # PoC.misc.sync
-vhdl PoC	"src/misc/sync/sync_Flag.vhdl"			# 
+vhdl PoC	"src/misc/sync/sync_Bits.vhdl"				# 
+vhdl PoC	"src/misc/sync/sync_Bits_Xilinx.vhdl"	# 
 
 # PoC.io
-vhdl PoC	"src/io/io.pkg.vhdl"								# 
-vhdl PoC	"src/io/io_TimingCounter.vhdl"			# 
-vhdl PoC	"src/io/io_GlitchFilter.vhdl"				# 
-vhdl PoC	"src/io/io_Debounce.vhdl"						# Unit Under Test
+vhdl PoC	"src/io/io.pkg.vhdl"									#
+vhdl PoC	"src/io/io_Debounce.vhdl"							# Unit Under Test
 
 # Testbench file(s)
-vhdl work	"tb/io/io_Debounce_tb.vhdl"					# Testbench
+vhdl work	"tb/io/io_Debounce_tb.vhdl"						# Testbench

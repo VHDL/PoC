@@ -44,7 +44,5 @@ package my_config is
 	constant MY_VERBOSE	: boolean	:= FALSE;
 end package;
 
-
 package body my_config is
-
 end package body;
