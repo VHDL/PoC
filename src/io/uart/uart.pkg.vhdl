@@ -149,6 +149,35 @@ package uart is
     );
 	end component;
 
+	-- USB-UART
+	component ft245_uart is
+		generic (
+      CLK_FREQ : positive      
+		);
+		port (
+      -- common signals
+      clk         : in  std_logic;
+      reset       : in  std_logic;
+
+      -- send data
+      snd_ready   : out std_logic;
+      snd_strobe  : in  std_logic;
+      snd_data    : in  std_logic_vector(7 downto 0);
+
+      -- receive data
+      rec_strobe  : out std_logic;
+      rec_data    : out std_logic_vector(7 downto 0);
+
+      -- connection to ft245
+      ft245_data  : inout std_logic_vector (7 downto 0);
+      ft245_rdn   : out std_logic;
+      ft245_wrn   : out std_logic;
+      ft245_rxfn  : in std_logic;
+      ft245_txen  : in std_logic;
+      ft245_pwrenn : in std_logic
+		);
+	end component;
+
 end package;
 
 
