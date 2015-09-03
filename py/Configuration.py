@@ -841,7 +841,7 @@ def main():
 #		from colorama import Fore, Back, Style
 #		print(Fore.RED + "ERROR:" + Fore.RESET + " %s" % ex.message)
 #		if isinstance(ex.__cause__, FileNotFoundError):
-#			print(Fore.RED + "CAUSE:   FileNotFound: '%s'" % str(ex.__cause__))
+#			print(Fore.YELLOW + "  FileNotFound:" + Fore.RESET + " '%s'" % str(ex.__cause__))
 #		print()
 #		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 #		exit(1)

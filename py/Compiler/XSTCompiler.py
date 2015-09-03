@@ -227,17 +227,21 @@ class Compiler(PoCCompiler):
 				
 				if (filesLineRegExpMatch is not None):
 					if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
-						vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
+						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
+						vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
 					elif (filesLineRegExpMatch.group('Keyword')[0:5] == "vhdl-"):
 						if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
-							vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
+							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
+							vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
 					elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
-						vhdlFilePath = self.host.directories["ISEInstallation"] / "ISE/vhdl/src" / filesLineRegExpMatch.group('VHDLFile')
+						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
+						vhdlFilePath = self.host.directories["XilinxPrimitiveSource"] / vhdlFileName
+					
 					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
 					xstProjectFileContent += "vhdl %s \"%s\"\n" % (vhdlLibraryName, str(vhdlFilePath))
 					
 					if (not vhdlFilePath.exists()):
-						raise CompilerException("Can not find " + str(vhdlFilePath)) from FileNotFoundError(str(vhdlFilePath))
+						raise CompilerException("Can not add '" + vhdlFileName + "' to project file.") from FileNotFoundError(str(vhdlFilePath))
 		
 		# write iSim project file
 		self.printDebug("Writing XST project file to '%s'" % str(prjFilePath))
@@ -283,7 +287,7 @@ class Compiler(PoCCompiler):
 		self.printNonQuiet('  copy result files into output directory...')
 		for task in copyTasks:
 			(fromPath, toPath) = task
-			if not fromPath.exists():		raise CompilerException("File '%s' does not exist!" % str(fromPath))
+			if not fromPath.exists():		raise CompilerException("Can not copy '" + str(fromPath) + "' to destination.") from FileNotFoundError(str(fromPath))
 			#if not toPath.exists():			raise PoCCompiler.PoCCompilerException("File '%s' does not exist!" % str(toPath))
 		
 			self.printVerbose("  copying '%s'" % str(fromPath))

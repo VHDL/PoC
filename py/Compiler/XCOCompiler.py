@@ -210,7 +210,7 @@ class Compiler(PoCCompiler):
 		self.printNonQuiet('  copy result files into output directory...')
 		for task in copyTasks:
 			(fromPath, toPath) = task
-			if not fromPath.exists(): raise CompilerException("File '%s' does not exist!" % str(fromPath))
+			if not fromPath.exists(): raise CompilerException("Can not copy '" + str(fromPath) + "' to destination.") from FileNotFoundError(str(fromPath))
 			
 			toDirectoryPath = toPath.parent
 			if not toDirectoryPath.exists():
