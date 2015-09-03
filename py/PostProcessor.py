@@ -33,6 +33,7 @@
 
 from pathlib import Path
 
+from lib.Functions import Exit
 from Base.Exceptions import *
 from Base.PoCBase import CommandLineProgram
 from PoC.Entity import *
@@ -42,6 +43,8 @@ from Processor.Exceptions import *
 from Processor.XST import *
 
 class PostProcessor(CommandLineProgram):
+	headLine = "The PoC Library - PostProcessor Frontend"
+
 	#__netListConfigFileName = "configuration.ini"
 	dryRun = False
 	#netListConfig = None
@@ -312,58 +315,24 @@ def main():
 			argParser.print_help()
 		
 	except ProcessorException as ex:
-		print("ERROR: %s" % ex.message)
+		from colorama import Fore, Back, Style
+		print(Fore.RED + "ERROR:" + Fore.RESET + " %s" % ex.message)
+		if isinstance(ex.__cause__, FileNotFoundError):
+			print(Fore.YELLOW + "  FileNotFound:" + Fore.RESET + " '%s'" % str(ex.__cause__))
 		print()
-		return
-		
-#	except PoC.PoCEnvironmentException as ex:
-#		print("ERROR: %s" % ex.message)
-#		print()
-#		print("Please run this script with it's provided wrapper or manually load the required environment before executing this script.")
-#		return
-#	
-#	except PoC.PoCNotConfiguredException as ex:
-#		print("ERROR: %s" % ex.message)
-#		print()
-#		print("Please run 'poc.[sh/cmd] --configure' in PoC root directory.")
-#		return
-#	
-#	except PoC.PoCPlatformNotSupportedException as ex:
-#		print("ERROR: Unknown platform '%s'" % ex.message)
-#		print()
-#		return
-	
-	except Base.BaseException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		return
-	
-	except Base.NotImplementedException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		return
+		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+		exit(1)
 
-#	except Exception as ex:
-#		print("FATAL: %s" % ex.__str__())
-#		print()
-#		return
+	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)
+	except NotConfiguredException as ex:				Exit.printNotConfiguredException(ex)
+	except PlatformNotSupportedException as ex:	Exit.printPlatformNotSupportedException(ex)
+	except BaseException as ex:									Exit.printBaseException(ex)
+	except NotImplementedException as ex:				Exit.printNotImplementedException(ex)
+	except Exception as ex:											Exit.printException(ex)
 			
 # entry point
 if __name__ == "__main__":
-	from sys import version_info
-	
-	if (version_info<(3,4,0)):
-		print("ERROR: Used Python interpreter is to old: %s" % version_info)
-		print("Minimal required Python version is 3.4.0")
-		exit(1)
-		
+	Exit.versionCheck((3,4,0))
 	main()
 else:
-	from sys import exit
-	
-	print("=" * 80)
-	print("{: ^80s}".format("The PoC Library - PostProcessor Frontend"))
-	print("=" * 80)
-	print()
-	print("This is no library file!")
-	exit(1)
+	Exit.printThisIsNoLibraryFile(PostProcessor.headLine)
