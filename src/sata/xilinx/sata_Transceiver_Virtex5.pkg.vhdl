@@ -53,9 +53,4 @@ package sata_TransceiverTypes is
 	type T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR		is array(NATURAL range <>) of T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS;
 	type T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR	is array(NATURAL range <>) of T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS;
 	
-end;
-
-
-package body sata_TransceiverTypes is
-
-end package body;
+end package;

@@ -42,7 +42,7 @@ package cache is
 
 	function to_Cache_Result(CacheHit : STD_LOGIC; CacheMiss : STD_LOGIC) return T_CACHE_RESULT;
 	
-end package cache;
+end package;
 
 
 package body cache is
@@ -57,4 +57,5 @@ package body cache is
 			return CACHE_RESULT_NONE;
 		end if;
 	end function;
-end cache;
+	
+end package body;

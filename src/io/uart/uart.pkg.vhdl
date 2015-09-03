@@ -27,12 +27,13 @@
 -- limitations under the License.
 -- ===========================================================================
 
-library IEEE;
-use IEEE.std_logic_1164.all;
+library	IEEE;
+use			IEEE.std_logic_1164.all;
 
-library PoC;
-use PoC.utils.all;
-use PoC.physical.all;
+library	PoC;
+use			PoC.utils.all;
+use			PoC.physical.all;
+
 
 package uart is
 	type T_IO_UART_FLOWCONTROL_KIND is (

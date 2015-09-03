@@ -122,8 +122,4 @@ package sata_TransceiverTypes is
 	);
 	end component;
 	
-end sata_TransceiverTypes;
-
-
-package body sata_TransceiverTypes is
-end package body;
+end package;
