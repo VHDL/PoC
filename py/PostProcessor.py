@@ -293,10 +293,7 @@ def main():
 		args = argParser.parse_args()
 		
 	except Exception as ex:
-		print("FATAL: %s" % ex.__str__())
-		print()
-		return
-
+		Exit.printException(ex)
 		
 	try:
 		PP = PostProcessor(args.debug, args.verbose, args.quiet)

@@ -170,14 +170,7 @@ def main():
 		args = argParser.parse_args()
 		
 	except Exception as ex:
-		from traceback import print_tb
-		print("FATAL: %s" % ex.__str__())
-		print("-" * 80)
-		print_tb(ex.__traceback__)
-		print("-" * 80)
-		print()
-		return
-
+		Exit.printException(ex)
 		
 	try:
 		netList = NetList(args.debug, args.verbose, args.quiet)
