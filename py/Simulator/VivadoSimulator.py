@@ -88,6 +88,10 @@ class Simulator(PoCSimulator):
 		xelabExecutablePath =		self.host.directories["VivadoBinary"] / self.__executables['xElab']
 		xSimExecutablePath =		self.host.directories["VivadoBinary"] / self.__executables['xSim']
 		
+		if not self.host.tbConfig.has_section(str(pocEntity)):
+			from configparser import NoSectionError
+			raise SimulatorException("Testbench '" + str(pocEntity) + "' not found.") from NoSectionError(str(pocEntity))
+		
 		testbenchName =			self.host.tbConfig[str(pocEntity)]['TestbenchModule']
 		fileListFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
 		tclBatchFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['xSimBatchScript']

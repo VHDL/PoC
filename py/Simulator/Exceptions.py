@@ -37,7 +37,7 @@ if __name__ != "__main__":
 	pass
 else:
 	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Simulator.Exceptions"")
+	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Simulator.Exceptions")
 
 # load dependencies
 from Base.Exceptions import *

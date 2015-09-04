@@ -115,6 +115,9 @@ class Compiler(PoCCompiler):
 #		cgcFilePath =					xstGenPath / "coregen.cgc"
 #		xcoFilePath =					xstGenPath / xcoInputFilePath.name
 
+		if not self.host.netListConfig.has_section(str(pocEntity)):
+			from configparser import NoSectionError
+			raise CompilerException("IP-Core '" + str(pocEntity) + "' not found.") from NoSectionError(str(pocEntity))
 		
 		# read netlist settings from configuration file
 		if (self.host.netListConfig[str(pocEntity)]['Type'] != "XilinxSynthesis"):

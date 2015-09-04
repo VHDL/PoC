@@ -260,9 +260,13 @@ def main():
 	
 	except SimulatorException as ex:
 		from colorama import Fore, Back, Style
+		from configparser import Error
+		
 		print(Fore.RED + "ERROR:" + Fore.RESET + " %s" % ex.message)
 		if isinstance(ex.__cause__, FileNotFoundError):
 			print(Fore.YELLOW + "  FileNotFound:" + Fore.RESET + " '%s'" % str(ex.__cause__))
+		elif isinstance(ex.__cause__, Error):
+			print(Fore.YELLOW + "  configparser.Error:" + Fore.RESET + " %s" % str(ex.__cause__))
 		print()
 		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 		exit(1)

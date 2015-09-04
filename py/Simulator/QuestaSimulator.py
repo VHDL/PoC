@@ -90,6 +90,10 @@ class Simulator(PoCSimulator):
 		vSimExecutablePath =	self.host.directories["vSimBinary"] / self.__executables['vsim']
 #		gtkwExecutablePath =	self.host.directories["GTKWBinary"] / self.__executables['gtkwave']
 		
+		if not self.host.tbConfig.has_section(str(pocEntity)):
+			from configparser import NoSectionError
+			raise SimulatorException("Testbench '" + str(pocEntity) + "' not found.") from NoSectionError(str(pocEntity))
+		
 		testbenchName =				self.host.tbConfig[str(pocEntity)]['TestbenchModule']
 		fileListFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
 		tclBatchFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['vSimBatchScript']

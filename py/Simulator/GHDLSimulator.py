@@ -82,6 +82,10 @@ class Simulator(PoCSimulator):
 			self.printDebug("Temporary directors: %s" % str(tempGHDLPath))
 			tempGHDLPath.mkdir(parents=True)
 
+		if not self.host.tbConfig.has_section(str(pocEntity)):
+			from configparser import NoSectionError
+			raise SimulatorException("Testbench '" + str(pocEntity) + "' not found.") from NoSectionError(str(pocEntity))
+			
 		# setup all needed paths to execute fuse
 		ghdlExecutablePath =	self.host.directories["GHDLBinary"] / self.__executables['ghdl']
 		testbenchName =				self.host.tbConfig[str(pocEntity)]['TestbenchModule']

@@ -87,6 +87,10 @@ class Simulator(PoCSimulator):
 		#vhpcompExecutablePath =	self.host.directories["ISEBinary"] / self.__executables['vhpcomp']
 		fuseExecutablePath =		self.host.directories["ISEBinary"] / self.__executables['fuse']
 		
+		if not self.host.tbConfig.has_section(str(pocEntity)):
+			from configparser import NoSectionError
+			raise SimulatorException("Testbench '" + str(pocEntity) + "' not found.") from NoSectionError(str(pocEntity))
+		
 		testbenchName =			self.host.tbConfig[str(pocEntity)]['TestbenchModule']
 		fileListFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
 		tclBatchFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['iSimBatchScript']

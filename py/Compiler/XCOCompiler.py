@@ -93,6 +93,10 @@ class Compiler(PoCCompiler):
 		self.host.netListConfig['SPECIAL']['Device'] = deviceString
 		self.host.netListConfig['SPECIAL']['OutputDir'] = tempCoreGenPath.as_posix()
 		
+		if not self.host.netListConfig.has_section(str(pocEntity)):
+			from configparser import NoSectionError
+			raise CompilerException("IP-Core '" + str(pocEntity) + "' not found.") from NoSectionError(str(pocEntity))
+		
 		# read copy tasks
 		copyFileList = self.host.netListConfig[str(pocEntity)]['Copy']
 		self.printDebug("CopyTasks: \n  " + ("\n  ".join(copyFileList.split("\n"))))
