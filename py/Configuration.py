@@ -341,11 +341,11 @@ class Configuration(CommandLineProgram):
 			self.pocConfig['Xilinx-Vivado'] = {}
 		elif (isXilinxVivado in ['y', 'Y']):
 			xilinxDirectory =	input('Xilinx Installation Directory [C:\Xilinx]: ')
-			vivadoVersion =		input('Xilinx Vivado Version Number [2014.1]: ')
+			vivadoVersion =		input('Xilinx Vivado Version Number [2015.2]: ')
 			print()
 		
 			xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "C:\Xilinx"
-			vivadoVersion = vivadoVersion if vivadoVersion != "" else "2014.1"
+			vivadoVersion = vivadoVersion if vivadoVersion != "" else "2015.2"
 		
 			xilinxDirectoryPath = Path(xilinxDirectory)
 			vivadoDirectoryPath = xilinxDirectoryPath / "Vivado" / vivadoVersion
@@ -370,11 +370,11 @@ class Configuration(CommandLineProgram):
 			self.pocConfig['Xilinx-HardwareServer'] = {}
 		elif (isXilinxHardwareServer in ['y', 'Y']):
 			xilinxDirectory =	input('Xilinx Installation Directory [C:\Xilinx]: ')
-			hardwareServerVersion =		input('Xilinx HardwareServer Version Number [2014.1]: ')
+			hardwareServerVersion =		input('Xilinx HardwareServer Version Number [2015.2]: ')
 			print()
 		
 			xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "C:\Xilinx"
-			hardwareServerVersion = hardwareServerVersion if hardwareServerVersion != "" else "2014.1"
+			hardwareServerVersion = hardwareServerVersion if hardwareServerVersion != "" else "2015.2"
 		
 			xilinxDirectoryPath = Path(xilinxDirectory)
 			hardwareServerDirectoryPath = xilinxDirectoryPath / "HardwareServer" / hardwareServerVersion
