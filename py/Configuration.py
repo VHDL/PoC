@@ -40,7 +40,7 @@ from Base.PoCBase import CommandLineProgram
 from collections import OrderedDict
 
 class Configuration(CommandLineProgram):
-	headLine = "The PoC Library - Repository Service Tool"
+	headLine = "The PoC-Library - Repository Service Tool"
 	
 	__privateSections = ["PoC", "Xilinx", "Xilinx-ISE", "Xilinx-LabTools", "Xilinx-Vivado", "Xilinx-HardwareServer", "Altera-QuartusII", "Altera-ModelSim", "Questa-SIM", "GHDL", "GTKWave", "Solutions"]
 	
@@ -773,7 +773,7 @@ def main():
 		argParser = argparse.ArgumentParser(
 			formatter_class = argparse.RawDescriptionHelpFormatter,
 			description = textwrap.dedent('''\
-				This is the PoC Library Repository Service Tool.
+				This is the PoC-Library Repository Service Tool.
 				'''),
 			add_help=False)
 
@@ -800,35 +800,42 @@ def main():
 
 	# create class instance and start processing
 	try:
+		from colorama import Fore, Back, Style
+		
 		config = Configuration(args.debug, args.verbose, args.quiet)
 		
 		if (args.help == True):
+			print(Fore.MAGENTA + "=" * 80)
+			print("{: ^80s}".format(Configuration.headLine))
+			print("=" * 80)
+			print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+		
 			argParser.print_help()
 			return
 		elif args.configurePoC:
-			print("=" * 80)
+			print(Fore.MAGENTA + "=" * 80)
 			print("{: ^80s}".format(Configuration.headLine))
 			print("=" * 80)
-			print()
+			print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 		
 			#config.autoConfiguration()
 			config.manualConfiguration()
 			exit(0)
 			
 		elif args.newSolution:
-			print("=" * 80)
+			print(Fore.MAGENTA + "=" * 80)
 			print("{: ^80s}".format(Configuration.headLine))
 			print("=" * 80)
-			print()
+			print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 			
 			config.newSolution(args.newSolution)
 			exit(0)
 			
 		elif args.addSolution:
-			print("=" * 80)
+			print(Fore.MAGENTA + "=" * 80)
 			print("{: ^80s}".format(Configuration.headLine))
 			print("=" * 80)
-			print()
+			print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 			
 			config.addSolution(args.addSolution)
 			exit(0)
@@ -840,6 +847,11 @@ def main():
 			print(config.getVivadoSettingsFile())
 			exit(0)
 		else:
+			print(Fore.MAGENTA + "=" * 80)
+			print("{: ^80s}".format(Configuration.headLine))
+			print("=" * 80)
+			print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+		
 			argParser.print_help()
 			exit(0)
 	
@@ -848,7 +860,6 @@ def main():
 #		print(Fore.RED + "ERROR:" + Fore.RESET + " %s" % ex.message)
 #		if isinstance(ex.__cause__, FileNotFoundError):
 #			print(Fore.YELLOW + "  FileNotFound:" + Fore.RESET + " '%s'" % str(ex.__cause__))
-#		print()
 #		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 #		exit(1)
 		

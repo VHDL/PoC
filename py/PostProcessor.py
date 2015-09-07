@@ -43,7 +43,7 @@ from Processor.Exceptions import *
 from Processor.XST import *
 
 class PostProcessor(CommandLineProgram):
-	headLine = "The PoC Library - PostProcessor Frontend"
+	headLine = "The PoC-Library - PostProcessor Frontend"
 
 	#__netListConfigFileName = "configuration.ini"
 	dryRun = False
@@ -258,10 +258,13 @@ class ActiveProcessor(object):
 	
 # main program
 def main():
+	from colorama import Fore, Back, Style, init
+	init()
+
+	print(Fore.MAGENTA + "=" * 80)
+	print("{: ^80s}".format("The PoC-Library - PostProcessor Frontend"))
 	print("=" * 80)
-	print("{: ^80s}".format("The PoC Library - PostProcessor Frontend"))
-	print("=" * 80)
-	print()
+	print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 	
 	try:
 		import argparse
@@ -316,7 +319,6 @@ def main():
 		print(Fore.RED + "ERROR:" + Fore.RESET + " %s" % ex.message)
 		if isinstance(ex.__cause__, FileNotFoundError):
 			print(Fore.YELLOW + "  FileNotFound:" + Fore.RESET + " '%s'" % str(ex.__cause__))
-		print()
 		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 		exit(1)
 

@@ -43,7 +43,7 @@ from ConstraintGenerator.Exceptions import *
 class Constraint(CommandLineProgram):
 	__constraintConfigFileName = "configuration.ini"
 	
-	headLine = "PoC Library - Constraint Service Tool"
+	headLine = "The PoC-Library - Constraint Service Tool"
 	
 	dryRun = False
 	constraintConfig = None
@@ -83,10 +83,13 @@ class Constraint(CommandLineProgram):
 
 # main program
 def main():
-	print("=" * 80)
+	from colorama import Fore, Back, Style, init
+	init()
+
+	print(Fore.MAGENTA + "=" * 80)
 	print("{: ^80s}".format(PoCConstraint.headLine))
 	print("=" * 80)
-	print()
+	print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 	
 	try:
 		import argparse
