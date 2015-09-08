@@ -1,7 +1,8 @@
 This is a local copy of the Artistic License 2.0.  
 The original can be obtained here: [http://www.perlfoundation.org/artistic_license_2_0](http://www.perlfoundation.org/artistic_license_2_0)
 
-------------------------
+--------------------------------------------------------------------------------
+
 # Artistic License 2.0
 
 **Copyright © 2000-2006, The Perl Foundation.**
