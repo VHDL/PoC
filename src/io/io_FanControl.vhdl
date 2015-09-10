@@ -55,42 +55,40 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.physical.all;
 use			PoC.components.all;
---use			PoC.io.all;
 use			PoC.xil.all;
 
 
 entity io_FanControl is
 	generic (
-		CLOCK_FREQ							: FREQ
+		CLOCK_FREQ							: FREQ;
+		ADD_INPUT_SYNCHRONIZERS	: BOOLEAN			:= TRUE;
+		ENABLE_TACHO						: BOOLEAN			:= FALSE
 	);
 	port (
+		-- Global Control
 		Clock										: in	STD_LOGIC;
 		Reset										: in	STD_LOGIC;
-		
+
+		-- Fan Control derived from internal System Health Monitor
 		Fan_PWM									: out	STD_LOGIC;
-		Fan_Tacho								: in	STD_LOGIC;
-		
-		TachoFrequency					: out std_logic_vector(15 downto 0)
-	);
+
+    -- Decoding of Speed Sensor (Requires ENABLE_TACHO)
+    Fan_Tacho      : in  std_logic := 'X';
+    TachoFrequency : out std_logic_vector(15 downto 0)
+  );
 end;
 
 
 architecture rtl of io_FanControl is
 	constant TIME_STARTUP			: TIME																							:= 500 ms;		-- StartUp time
 	constant PWM_RESOLUTION		: POSITIVE																					:= 4;					-- 4 Bit resolution => 0 to 15 steps
-	constant PWM_FREQ					: FREQ																							:= 100 Hz;		-- 
+	constant PWM_FREQ					: FREQ																							:= 10 Hz;			-- 
 
 	constant TACHO_RESOLUTION	: POSITIVE																					:= 8;
 
 	signal PWM_PWMIn					: STD_LOGIC_VECTOR(PWM_RESOLUTION - 1 downto 0);
 	signal PWM_PWMOut					: STD_LOGIC																					:= '0';
 
-	signal TC_Timeout					: STD_LOGIC;
-	signal StartUp						: STD_LOGIC;
-	
-	signal Tacho_Freq					: STD_LOGIC_VECTOR(TACHO_RESOLUTION - 1 downto 0);
-	signal Tacho_Frequency		: STD_LOGIC_VECTOR(TACHO_RESOLUTION + 4 downto 0);
-	
 begin
 	-- System Monitor and temperature to PWM ratio calculation for Virtex6
 	-- ==========================================================================================================================================================
@@ -101,8 +99,10 @@ begin
 		signal UserTemperature_async	: STD_LOGIC;
 		signal UserTemperature_sync		: STD_LOGIC;
 		
+		signal TC_Timeout					: STD_LOGIC;
+		signal StartUp						: STD_LOGIC;
 	begin
-		genVirtex6 : if (DEVICE = DEVICE_VIRTEX6) generate
+		genML605 : if (BOARD = BOARD_ML605) generate
 			SystemMonitor : xil_SystemMonitor_Virtex6
 				port map (
 					Reset								=> Reset,										-- Reset signal for the System Monitor control logic
@@ -114,7 +114,7 @@ begin
 					VN									=> '0'
 				);
 		end generate;
-		genSeries7 : if (DEVICE_SERIES = 7) generate
+		genSeries7Board : if ((BOARD = BOARD_KC705) or (BOARD = BOARD_VC707)) generate
 			SystemMonitor : xil_SystemMonitor_Series7
 				port map (
 					Reset								=> Reset,										-- Reset signal for the System Monitor control logic
@@ -126,11 +126,10 @@ begin
 					VN									=> '0'
 				);
 		end generate;
-
-		sync : entity PoC.xil_SyncBits
+		
+		sync : entity PoC.sync_Bits
 			generic map (
-				BITS			=> 2,
-				INIT			=> "00"
+				BITS			=> 2
 			)
 			port map (
 				Clock				=> Clock,
@@ -140,6 +139,22 @@ begin
 				Output(1)		=> UserTemperature_sync
 			);
 
+		-- timer for warm-up control
+		-- ==========================================================================================================================================================
+		TC : entity PoC.io_TimingCounter
+			generic map (
+				TIMING_TABLE				=> (0 => TimingToCycles(TIME_STARTUP, CLOCK_FREQ))	-- timing table
+			)
+			port map (
+				Clock								=> Clock,				-- clock
+				Enable							=> StartUp,			-- enable counter
+				Load								=> '0',					-- load Timing Value from TIMING_TABLE selected by slot
+				Slot								=> 0,						-- 
+				Timeout							=> TC_Timeout		-- timing reached
+			);
+		
+		StartUp	<= not TC_Timeout;
+			
 		process(StartUp, UserTemperature_sync, OverTemperature_sync)
 		begin
 			if		(StartUp = '1') then								PWM_PWMIn <= to_slv(2**(PWM_RESOLUTION) - 1, PWM_RESOLUTION);			-- 100%; start up
@@ -150,21 +165,46 @@ begin
 		end process;
 	end generate;
 	
-	-- timer for warm-up control
-	-- ==========================================================================================================================================================
-	TC : entity PoC.io_TimingCounter
-		generic map (
-			TIMING_TABLE				=> (0 => 100000000)--TimingToCycles(TIME_STARTUP, CLOCK_FREQ))	-- timing table
-		)
-		port map (
-			Clock								=> Clock,																			-- clock
-			Enable							=> StartUp,																		-- enable counter
-			Load								=> '0',																				-- load Timing Value from TIMING_TABLE selected by slot
-			Slot								=> 0,																					-- 
-			Timeout							=> TC_Timeout																	-- timing reached
-		);
+	genAltera : if (VENDOR = VENDOR_ALTERA) generate
+--		signal OverTemperature_async	: STD_LOGIC;
+		signal OverTemperature_sync		: STD_LOGIC;
+		                                         
+--		signal UserTemperature_async	: STD_LOGIC;
+		signal UserTemperature_sync		: STD_LOGIC;
 		
-	StartUp	<= not TC_Timeout;
+		signal TC_Timeout					: STD_LOGIC;
+		signal StartUp						: STD_LOGIC;
+	begin
+		genDE4 : if (BOARD = BOARD_DE4) generate
+			OverTemperature_sync		<= '0';
+			UserTemperature_sync		<= '1';
+		end generate;
+		
+		-- timer for warm-up control
+		-- ==========================================================================================================================================================
+		TC : entity PoC.io_TimingCounter
+			generic map (
+				TIMING_TABLE				=> (0 => 100000000)--TimingToCycles(TIME_STARTUP, CLOCK_FREQ))	-- timing table
+			)
+			port map (
+				Clock								=> Clock,				-- clock
+				Enable							=> StartUp,			-- enable counter
+				Load								=> '0',					-- load Timing Value from TIMING_TABLE selected by slot
+				Slot								=> 0,						-- 
+				Timeout							=> TC_Timeout		-- timing reached
+			);
+		
+		StartUp	<= not TC_Timeout;
+		
+		process(StartUp, UserTemperature_sync, OverTemperature_sync)
+		begin
+			if		(StartUp = '1') then								PWM_PWMIn <= to_slv(2**(PWM_RESOLUTION) - 1, PWM_RESOLUTION);			-- 100%; start up
+			elsif (OverTemperature_sync = '1') then		PWM_PWMIn <= to_slv(2**(PWM_RESOLUTION) - 1, PWM_RESOLUTION);			-- 100%
+			elsif (UserTemperature_sync = '1') then		PWM_PWMIn <= to_slv(2**(PWM_RESOLUTION - 1), PWM_RESOLUTION);			-- 50%
+			else																			PWM_PWMIn <= to_slv(4, PWM_RESOLUTION);														-- 13%
+			end if;
+		end process;
+	end generate;
 	
 	-- PWM signal modulator
 	-- ==========================================================================================================================================================
@@ -181,23 +221,45 @@ begin
 			PWMOut							=> PWM_PWMOut
 		);
 
+	-- registered output
 	Fan_PWM 		<= PWM_PWMOut	when rising_edge(Clock);
 	
 	-- tacho signal interpretation -> convert to RPM
 	-- ==========================================================================================================================================================
-	Tacho : entity PoC.io_FrequencyCounter
-		generic map (
-			CLOCK_FREQ					=> CLOCK_FREQ,					--
-			TIMEBASE						=> (60 sec / 64),				-- ca. 1 second
-			RESOLUTION					=> 8										-- max. ca. 256 RPS -> max. ca. 16k RPM
-		)
-		port map (
-			Clock								=> Clock,
-			Reset								=> Reset,
-			FreqIn							=> Fan_Tacho,
-			FreqOut							=> Tacho_Freq
-		);
-	
-	-- multiply by 64; divide by 2 for RPMs (2 impulses per revolution) => append 5x '0'
-	TachoFrequency	<= resize(Tacho_Freq & "00000", TachoFrequency'length);		-- resizing to 16 bit
+	genNoTacho : if (ENABLE_TACHO = FALSE) generate
+		TachoFrequency <= (TachoFrequency'range => 'X');
+	end generate;
+	genTacho : if (ENABLE_TACHO = TRUE) generate
+		signal Tacho_sync					: STD_LOGIC;
+		signal Tacho_Freq					: STD_LOGIC_VECTOR(TACHO_RESOLUTION - 1 downto 0);
+	begin
+		-- Input Synchronization
+		genNoSync : if (ADD_INPUT_SYNCHRONIZERS = FALSE) generate
+			Tacho_sync <= Fan_Tacho;
+		end generate;
+		genSync : if (ADD_INPUT_SYNCHRONIZERS = TRUE) generate
+			sync_i : entity PoC.sync_Bits
+				port map (
+					Clock  		=> Clock,					-- Clock to be synchronized to
+					Input(0)  => Fan_Tacho,			-- Data to be synchronized
+					Output(0) => Tacho_sync			-- synchronised data
+				);
+		end generate;
+		
+		Tacho : entity PoC.io_FrequencyCounter
+			generic map (
+				CLOCK_FREQ					=> CLOCK_FREQ,					--
+				TIMEBASE						=> (60 sec / 64),				-- ca. 1 second
+				RESOLUTION					=> 8										-- max. ca. 256 RPS -> max. ca. 16k RPM
+			)
+			port map (
+				Clock								=> Clock,
+				Reset								=> Reset,
+				FreqIn							=> Tacho_sync,
+				FreqOut							=> Tacho_Freq
+			);
+		
+		-- multiply by 64; divide by 2 for RPMs (2 impulses per revolution) => append 5x '0'
+		TachoFrequency	<= resize(Tacho_Freq & "00000", TachoFrequency'length);		-- resizing to 16 bit
+	end generate;
 end;

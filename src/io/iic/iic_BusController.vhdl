@@ -324,7 +324,7 @@ BEGIN
 		SerialData_raw		<= SerialData_i;
 	END GENERATE;
 	genSync1 : IF (ADD_INPUT_SYNCHRONIZER = TRUE) GENERATE
-		sync : ENTITY PoC.sync_Flag
+		sync : ENTITY PoC.sync_Bits
 			GENERIC MAP (
 				BITS			=> 2
 			)

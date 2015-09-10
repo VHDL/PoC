@@ -94,7 +94,7 @@ ENTITY sata_SATAController IS
 		DEBUG														: BOOLEAN											:= FALSE;
 		ENABLE_DEBUGPORT								: BOOLEAN											:= FALSE;
 		-- transceiver settings
-		CLOCK_IN_FREQ										: FREQ												:= 150 MHz;
+		REFCLOCK_FREQ										: FREQ												:= 150 MHz;
 		PORTS														: POSITIVE										:= 2;	-- Port 0									Port 1
 		-- physical layer settings
 		CONTROLLER_TYPES								: T_SATA_DEVICE_TYPE_VECTOR		:= (0 => SATA_DEVICE_TYPE_HOST,	1 => SATA_DEVICE_TYPE_HOST);
@@ -536,7 +536,6 @@ begin
 			GENERIC MAP (
 				DEBUG													=> DEBUG,
 				ENABLE_DEBUGPORT							=> ENABLE_DEBUGPORT,
-				CLOCK_FREQ										=> CLOCK_IN_FREQ,
 				CONTROLLER_TYPE								=> CONTROLLER_TYPES_I(i),
 				ALLOW_SPEED_NEGOTIATION				=> ALLOW_SPEED_NEGOTIATION_I(i),
 				INITIAL_SATA_GENERATION				=> INITIAL_SATA_GENERATIONS_I(i),
@@ -640,7 +639,7 @@ begin
 		GENERIC MAP (
 			DEBUG											=> DEBUG,
 			ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
-			CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
+			REFCLOCK_FREQ							=> REFCLOCK_FREQ,
 			PORTS											=> PORTS,
 			INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS_I
 		)

@@ -65,7 +65,7 @@ entity sata_Transceiver_Series7_GTXE2 is
 	generic (
 		DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
-		CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
+		REFCLOCK_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
 		PORTS											: POSITIVE										:= 2;																				-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)				-- intial SATA Generation
 	);
@@ -299,10 +299,10 @@ begin
 		signal OOB_RX_Received_i						: T_SATA_OOB;
 		
 		-- timings
-		constant CLOCK_GEN1_FREQ						: FREQ						:= CLOCK_IN_FREQ / 4.0;
-		constant CLOCK_GEN2_FREQ						: FREQ						:= CLOCK_IN_FREQ / 2.0;
-		constant CLOCK_GEN3_FREQ						: FREQ						:= CLOCK_IN_FREQ / 1.0;
-		constant CLOCK_DD_FREQ							: FREQ						:= CLOCK_IN_FREQ / 1.0;
+		constant CLOCK_GEN1_FREQ						: FREQ						:= REFCLOCK_FREQ / 4.0;
+		constant CLOCK_GEN2_FREQ						: FREQ						:= REFCLOCK_FREQ / 2.0;
+		constant CLOCK_GEN3_FREQ						: FREQ						:= REFCLOCK_FREQ / 1.0;
+		constant CLOCK_DD_FREQ							: FREQ						:= REFCLOCK_FREQ / 1.0;
 		
 		constant COMRESET_TIMEOUT						: TIME						:= 2600 ns;
 		constant COMWAKE_TIMEOUT						: TIME						:= 1300 ns;
@@ -654,7 +654,7 @@ begin
 --		GTXConfig : ENTITY PoC.sata_Transceiver_Series7_GTXE2_Configurator
 --			GENERIC MAP (
 --				DEBUG											=> DEBUG,
---				DRPCLOCK_FREQ							=> CLOCK_IN_FREQ,
+--				DRPCLOCK_FREQ							=> REFCLOCK_FREQ,
 --				INITIAL_SATA_GENERATION		=> INITIAL_SATA_GENERATIONS(I)
 --			)
 --			PORT MAP (
@@ -745,7 +745,7 @@ begin
 --		GTX_RX_Status
 --		GTX_RX_ClockCorrectionStatus
 
-		sync1_RXUserClock : entity PoC.xil_SyncBits
+		sync1_RXUserClock : entity PoC.sync_Bits_Xilinx
 			generic map (
 				BITS			=> 2															-- number of BITS to synchronize
 			)

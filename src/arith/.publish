@@ -2,6 +2,7 @@
 .gitignore
 
 # subnamespace
+xilinx/
 
 # --------------------------------------
 arith.pkg.vhdl
@@ -22,6 +23,7 @@ arith_prefix_and.vhdl
 arith_prefix_or.vhdl
 
 # Arithmetic
+arith_addw.vhdl
 arith_div.vhdl
 arith_scaler.vhdl
 arith_sqrt.vhdl

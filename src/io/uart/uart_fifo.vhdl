@@ -51,19 +51,22 @@ use			PoC.uart.all;
 
 entity uart_fifo is
 	generic (
-		CLOCK_FREQ			: FREQ														:= 100 MHz;
-		BAUDRATE				: BAUD														:= 115200 Bd;
-		FLOWCONTROL			: T_IO_UART_FLOWCONTROL_KIND			:= UART_FLOWCONTROL_NONE;
-		TX_MIN_DEPTH		: POSITIVE												:= 16;
-		TX_ESTATE_BITS	: NATURAL													:= 1;
-		RX_MIN_DEPTH		: POSITIVE												:= 16;
-		RX_FSTATE_BITS	: NATURAL													:= 1;
-		RX_OUT_REGS			: BOOLEAN													:= FALSE;
-		
-		SWFC_XON_CHAR			: std_logic_vector(7 downto 0)	:= x"11";		-- ^Q
-    SWFC_XON_TRIGGER	: real													:= 0.0625;
-		SWFC_XOFF_CHAR		: std_logic_vector(7 downto 0)	:= x"13";		-- ^S
-		SWFC_XOFF_TRIGGER	: real													:= 0.75
+		-- Communication Parameters
+		CLOCK_FREQ  : FREQ;
+		BAUDRATE    : BAUD;
+
+		-- Buffer Dimensioning
+		TX_MIN_DEPTH   : positive := 16;
+		TX_ESTATE_BITS : natural  :=  0;
+		RX_MIN_DEPTH   : positive := 16;
+		RX_FSTATE_BITS : natural  :=  0;
+
+		-- Flow Control
+		FLOWCONTROL       : T_IO_UART_FLOWCONTROL_KIND   := UART_FLOWCONTROL_NONE;
+		SWFC_XON_CHAR     : std_logic_vector(7 downto 0) := x"11";  -- ^Q
+		SWFC_XON_TRIGGER  : real                         := 0.0625;
+		SWFC_XOFF_CHAR    : std_logic_vector(7 downto 0) := x"13";  -- ^S
+		SWFC_XOFF_TRIGGER : real                         := 0.75
 	);
 	port (
 		Clock					: in	std_logic;
@@ -81,9 +84,9 @@ entity uart_fifo is
 		RX_FullState	: out	STD_LOGIC_VECTOR(RX_FSTATE_BITS - 1 downto 0);
 		RX_Overflow		: out	std_logic;
 		
-		-- External Pins
-		UART_RX				: in	std_logic;
-		UART_TX				: out	std_logic
+		-- External pins
+		UART_TX				: out	std_logic;
+		UART_RX				: in	std_logic
 	);
 end entity;
 
@@ -101,13 +104,15 @@ architecture rtl of uart_fifo is
 
 	signal RXFIFO_Full		: STD_LOGIC;
 
-	signal TXUART_Ready		: STD_LOGIC;
+	signal TXUART_Full		: STD_LOGIC;
 	signal RXUART_Strobe	: STD_LOGIC;
 	signal RXUART_Data		: T_SLV_8;
 
 	signal BitClock				: STD_LOGIC;
 	signal BitClock_x8		: STD_LOGIC;
   
+	signal UART_RX_sync		: STD_LOGIC;
+	
 begin
 	assert FALSE report "uart_fifo: BAUDRATE=: " & to_string(BAUDRATE, 3)						severity NOTE;
 
@@ -166,9 +171,9 @@ begin
 		signal Overflow_r					: std_logic					:= '0';
 	begin
 	
-		FC_TX_Strobe	<= TXFIFO_Valid and TXUART_Ready;
+		FC_TX_Strobe	<= TXFIFO_Valid and not TXUART_Full;
 		FC_TX_Data		<= TXFIFO_Data;
-		FC_TX_got			<= TXFIFO_Valid and TXUART_Ready;
+		FC_TX_got			<= FC_TX_Strobe;
 
 		FC_RX_put			<= RXUART_Strobe;
 		FC_RX_Data		<= RXUART_Data;	
@@ -265,6 +270,20 @@ begin
 	-- ===========================================================================
 	-- BitClock, Transmitter, Receiver
 	-- ===========================================================================
+	genNoSync : if (ADD_INPUT_SYNCHRONIZERS = FALSE) generate
+		UART_RX_sync <= UART_RX;
+	end generate;
+	genSync: if (ADD_INPUT_SYNCHRONIZERS = TRUE) generate
+		sync_i : entity PoC.sync_Bits
+			port map (
+				Clock  		=> Clock,					-- Clock to be synchronized to
+				Input(0)  => UART_RX,				-- Data to be synchronized
+				Output(0) => UART_RX_sync		-- synchronised data
+			);
+	end generate;
+	-- ===========================================================================
+	-- BitClock, Transmitter, Receiver
+	-- ===========================================================================
 	bclk : entity PoC.uart_bclk
 		generic map (
 			CLOCK_FREQ	=> CLOCK_FREQ,
@@ -282,22 +301,20 @@ begin
 			clk			=> Clock,
 			rst			=> Reset,
 			bclk		=> BitClock,
-			stb			=> FC_TX_Strobe,
-			din			=> FC_TX_Data,
-			rdy			=> TXUART_Ready,
-			txd			=> UART_TX
+			tx			=> UART_TX
+			di			=> FC_TX_Data,
+			put			=> FC_TX_Strobe,
+			ful			=> TXUART_Full
 		);
 		
 	RX : entity PoC.uart_rx
-		generic map (
-			OUT_REGS => RX_OUT_REGS
-		)
 		port map (
 			clk			=> Clock,
 			rst			=> Reset,
 			bclk_x8	=> BitClock_x8,
-			dos			=> RXUART_Strobe,
-			dout		=> RXUART_Data,
-			rxd			=> UART_RX
+			rx			=> UART_RX_sync,
+			do  		=> RXUART_Data,
+			stb			=> RXUART_Strobe
 		);
-end;
+
+end architecture;

@@ -30,21 +30,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+#
 # entry point
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
 else:
-	from sys import exit
+	from lib.Functions import Exit
+	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.GHDLSimulator")
 
-	print("=" * 80)
-	print("{: ^80s}".format("The PoC Library - Python Module Simulator.GHDLSimulator"))
-	print("=" * 80)
-	print()
-	print("This is no executable file!")
-	exit(1)
-
+# load dependencies
 from pathlib import Path
 
 from Base.Exceptions import *
@@ -87,6 +82,10 @@ class Simulator(PoCSimulator):
 			self.printDebug("Temporary directors: %s" % str(tempGHDLPath))
 			tempGHDLPath.mkdir(parents=True)
 
+		if not self.host.tbConfig.has_section(str(pocEntity)):
+			from configparser import NoSectionError
+			raise SimulatorException("Testbench '" + str(pocEntity) + "' not found.") from NoSectionError(str(pocEntity))
+			
 		# setup all needed paths to execute fuse
 		ghdlExecutablePath =	self.host.directories["GHDLBinary"] / self.__executables['ghdl']
 		testbenchName =				self.host.tbConfig[str(pocEntity)]['TestbenchModule']
@@ -127,23 +126,24 @@ class Simulator(PoCSimulator):
 		
 				if (filesLineRegExpMatch is not None):
 					if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
-						vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
+						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
+						vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
 					elif (filesLineRegExpMatch.group('Keyword')[0:5] == "vhdl-"):
 						if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
-							vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
+							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
+							vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
 					elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
-						if not self.host.directories.__contains__("ISEInstallation"):
-							# check if ISE is configure
-							if (len(self.host.pocConfig.options("Xilinx-ISE")) == 0):
-								raise NotConfiguredException("This testbench requires some Xilinx Primitves. Please configure Xilinx ISE / Vivado")
-
-							self.host.directories["ISEInstallation"] = Path(self.host.pocConfig['Xilinx-ISE']['InstallationDirectory'])
+						# check if ISE or Vivado is configured
+						if not self.host.directories.__contains__("XilinxPrimitiveSource"):
+							raise NotConfiguredException("This testbench requires some Xilinx Primitves. Please configure Xilinx ISE or Vivado.")
 						
-						vhdlFilePath = self.host.directories["ISEInstallation"] / "ISE/vhdl/src" / filesLineRegExpMatch.group('VHDLFile')
+						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
+						vhdlFilePath = self.host.directories["XilinxPrimitiveSource"] / vhdlFileName
+					
 					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
 
 					if (not vhdlFilePath.exists()):
-						raise SimulatorException("Can not analyse " + str(vhdlFilePath)) from FileNotFoundError(str(vhdlFilePath))
+						raise SimulatorException("Can not analyse '" + vhdlFileName + "'.") from FileNotFoundError(str(vhdlFilePath))
 					
 					# assemble fuse command as list of parameters
 					parameterList = [

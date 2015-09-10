@@ -100,6 +100,7 @@ package physical is
 	function to_time(f : FREQ)	return TIME;
 	function to_freq(p : TIME)	return FREQ;
 	function to_freq(br : BAUD)	return FREQ;
+	function to_baud(str : STRING)	return BAUD;
 
 	-- if-then-else
 	function ite(cond : BOOLEAN; value1 : TIME;	value2 : TIME)			return TIME;
@@ -261,7 +262,9 @@ package body physical is
 --	else										 res := div(1 THz, f) * 1 ps;
 		end if;
 
-		assert not POC_VERBOSE report "to_time: f= " & to_string(f, 3) & "  return " & to_string(res, 3) severity note;
+		if (POC_VERBOSE = TRUE) then
+			report "to_time: f= " & to_string(f, 3) & "  return " & to_string(res, 3) severity note;
+		end if;
 		return res;
 	end function;
 
@@ -276,8 +279,9 @@ package body physical is
 		elsif (p < 1 sec) then res := div(1 ms, p) * 1  Hz;
 		else report "to_freq: input period exceeds output frequency scale." severity failure;
 		end if;
-
-		assert not POC_VERBOSE report "to_freq: p= " & to_string(p, 3) & "  return " & to_string(res, 3) severity note;
+		if (POC_VERBOSE = TRUE) then
+			report "to_freq: p= " & to_string(p, 3) & "  return " & to_string(res, 3) severity note;
+		end if;
 		return res;
 	end function;
 	
@@ -290,8 +294,72 @@ package body physical is
 		else											res := div(br, 1 GBd) * 1 GHz;
 		end if;
 
-		assert not POC_VERBOSE report "to_freq: br= " & to_string(br, 3) & "  return " & to_string(res, 3) severity note;
+		if (POC_VERBOSE = TRUE) then
+			report "to_freq: br= " & to_string(br, 3) & "  return " & to_string(res, 3) severity note;
+		end if;
 		return res;
+	end function;
+	
+	function to_baud(str : STRING) return BAUD is
+		variable pos		: INTEGER;
+		variable int		: NATURAL;
+		variable base		: POSITIVE;
+		variable frac		: NATURAL;
+		variable digits	: NATURAL;
+	begin
+		pos			:= str'low;
+		int			:= 0;
+		frac		:= 0;
+		digits	:= 0;
+		-- read integer part
+		for i in pos to str'high loop
+			if (chr_isDigit(str(i)) = TRUE) then		int := int * 10 + to_digit_dec(str(i));
+			elsif (str(i) = '.') then								pos	:= -i;	exit;
+			elsif (str(i) = ' ') then								pos	:= i;		exit;
+			else																		pos := 0;		exit;
+			end if;
+		end loop;
+		-- read fractional part
+		if ((pos < 0) and (-pos < str'high)) then
+			for i in -pos+1 to str'high loop
+				if ((frac = 0) and (str(i) = '0')) then	next;
+				elsif (chr_isDigit(str(i)) = TRUE) then	frac	:= frac * 10 + to_digit_dec(str(i));
+				elsif (str(i) = ' ') then								digits	:= i + pos - 1;	pos	:= i;	exit;
+				else																														pos	:= 0;	exit;
+				end if;
+			end loop;
+		end if;
+		-- abort if format is unknown
+		if (pos = 0) then report "to_baud: Unknown format" severity FAILURE;	end if;
+		-- parse unit
+		pos := pos + 1;
+		if ((pos + 1 = str'high) and (str(pos to pos + 1) = "Bd")) then
+																		return int * 1 Bd;
+		elsif (pos + 2 = str'high) then
+			if (str(pos to pos + 2) = "kBd") then
+				if (frac = 0) then					return (int * 1 kBd);
+				elsif (digits <= 3) then		return (int * 1 kBd) + (frac * 10**(3 - digits) * 1 Bd);
+				else												return (int * 1 kBd) + (frac / 10**(digits - 3) * 100 Bd);
+				end if;
+			elsif (str(pos to pos + 2) = "MBd") then
+				if (frac = 0) then					return (int * 1 kBd);
+				elsif (digits <= 3) then		return (int * 1 MBd) + (frac * 10**(3 - digits) * 1 kBd);
+				elsif (digits <= 6) then		return (int * 1 MBd) + (frac * 10**(6 - digits) * 1 Bd);
+				else												return (int * 1 MBd) + (frac / 10**(digits - 6) * 100000 Bd);
+				end if;
+			elsif (str(pos to pos + 2) = "GBd") then
+				if (frac = 0) then					return (int * 1 kBd);
+				elsif (digits <= 3) then		return (int * 1 GBd) + (frac * 10**(3 - digits) * 1 MBd);
+				elsif (digits <= 6) then		return (int * 1 GBd) + (frac * 10**(6 - digits) * 1 kBd);
+				elsif (digits <= 9) then		return (int * 1 GBd) + (frac * 10**(9 - digits) * 1 Bd);
+				else												return (int * 1 GBd) + (frac / 10**(digits - 9) * 100000000 Bd);
+				end if;
+			else
+				report "to_baud: Unknown unit." severity FAILURE;
+			end if;
+		else
+			report "to_baud: Unknown format" severity FAILURE;
+		end if;
 	end function;
 	
 	-- if-then-else
@@ -809,7 +877,7 @@ package body physical is
 		res_time	:= CyclesToDelay(res_nat, Clock_Period);
 		res_dev		:= (1.0 - div(res_time, Timing)) * 100.0;
 		
-		assert (not POC_VERBOSE)
+		if (POC_VERBOSE = TRUE) then
 			report "TimingToCycles: " & 	CR &
 						 "  Timing: " &					to_string(Timing, 3) & CR &
 						 "  Clock_Period: " &		to_string(Clock_Period, 3) & CR &
@@ -817,14 +885,16 @@ package body physical is
 						 "  res_real = " &			str_format(res_real, 3) & CR &
 						 "  => " &							INTEGER'image(res_nat)
 			severity note;
+		end if;
 			
---		assert (not C_PHYSICAL_REPORT_TIMING_DEVIATION)
+--		if (C_PHYSICAL_REPORT_TIMING_DEVIATION = TRUE) then
 --			report "TimingToCycles (timing deviation report): " & CR &
 --						 "  timing to achieve: " & to_string(Timing) & CR &
 --						 "  calculated cycles: " & INTEGER'image(res_nat) & " cy" & CR &
 --						 "  resulting timing:  " & to_string(res_time) & CR &
 --						 "  deviation:         " & to_string(Timing - res_time) & " (" & str_format(res_dev, 2) & "%)"
 --			severity note;
+--		end if;
 		
 		return res_nat;
 	end;
@@ -846,7 +916,7 @@ package body physical is
 	
 	-- convert and format physical types to STRING
 	function to_string(t : TIME; precision : NATURAL) return STRING is
-		variable unit		: STRING(1 to 3)	:= (others => NUL);
+		variable unit		: STRING(1 to 3)	:= (others => C_POC_NUL);
 		variable value	: REAL;
 	begin
 		if (t < 1 ps) then
@@ -873,7 +943,7 @@ package body physical is
 	end function;
 		
 	function to_string(f : FREQ; precision : NATURAL) return STRING is
-		variable unit		: STRING(1 to 3)	:= (others => NUL);
+		variable unit		: STRING(1 to 3)	:= (others => C_POC_NUL);
 		variable value	: REAL;
 	begin
 		if (f < 1 kHz) then
@@ -897,7 +967,7 @@ package body physical is
 	end function;
 		
 	function to_string(br : BAUD; precision : NATURAL) return STRING is
-		variable unit		: STRING(1 to 3)	:= (others => NUL);
+		variable unit		: STRING(1 to 3)	:= (others => C_POC_NUL);
 		variable value	: REAL;
 	begin
 		if (br < 1 kBd) then
@@ -918,7 +988,7 @@ package body physical is
 	end function;
 		
 	function to_string(mem : MEMORY; precision : NATURAL) return STRING is
-		variable unit		: STRING(1 to 3)	:= (others => NUL);
+		variable unit		: STRING(1 to 3)	:= (others => C_POC_NUL);
 		variable value	: REAL;
 	begin
 		if (mem < 1 KiB) then

@@ -83,7 +83,6 @@ entity sata_PhysicalLayer is
 	generic (
 		DEBUG														: BOOLEAN													:= FALSE;
 		ENABLE_DEBUGPORT								: BOOLEAN													:= FALSE;
-		CLOCK_FREQ											: FREQ														:= 150 MHz;
 		CONTROLLER_TYPE									: T_SATA_DEVICE_TYPE							:= SATA_DEVICE_TYPE_HOST;
 		ALLOW_SPEED_NEGOTIATION					: BOOLEAN													:= TRUE;
 		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= C_SATA_GENERATION_MAX;
@@ -207,7 +206,6 @@ begin
 			generic map (
 				DEBUG											=> DEBUG,
 				ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
-				CLOCK_FREQ								=> CLOCK_FREQ,
 				ALLOW_STANDARD_VIOLATION	=> ALLOW_STANDARD_VIOLATION,
 				OOB_TIMEOUT								=> OOB_TIMEOUT
 			)
@@ -239,7 +237,6 @@ begin
 			generic map (
 				DEBUG											=> DEBUG,
 				ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
-				CLOCK_FREQ								=> CLOCK_FREQ,
 				ALLOW_STANDARD_VIOLATION	=> ALLOW_STANDARD_VIOLATION,
 				OOB_TIMEOUT								=> OOB_TIMEOUT
 			)
