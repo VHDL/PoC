@@ -316,4 +316,5 @@ begin
 			do  		=> RXUART_Data,
 			stb			=> RXUART_Strobe
 		);
-end;
+
+end architecture;
