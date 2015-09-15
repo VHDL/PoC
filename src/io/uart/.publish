@@ -2,6 +2,9 @@
 .gitignore
 .gitempty
 
+# Documentation
+README.md
+
 # package
 uart.pkg.vhdl
 
