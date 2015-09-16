@@ -13,6 +13,7 @@ arith.pkg.vhdl
 # Counters
 arith_counter_gray.vhdl
 arith_counter_ring.vhdl
+arith_counter_free.vhdl
 
 # Converters
 arith_convert_bin2bcd.vhdl
