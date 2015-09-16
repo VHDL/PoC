@@ -3,8 +3,6 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 --
 -- ===========================================================================
--- Package:					Project specific configuration.
---
 -- Authors:         Thomas B. Preusser
 --                  Martin Zabel
 --                  Patrick Lehmann
@@ -43,11 +41,7 @@
 library PoC;
 
 package my_config is
-	-- The XUPV5 Board is an ML505 with a larger device:
-  constant MY_BOARD   : string := "ML505";
-  constant MY_DEVICE  : string := "XC5VLX110T";
-  constant MY_VERBOSE : boolean	:= true;
-end my_config;
-
-package body my_config is
+  constant MY_BOARD   : string  := "XUPV5";
+  constant MY_DEVICE  : string  := "None";
+  constant MY_VERBOSE : boolean	:= false;
 end my_config;

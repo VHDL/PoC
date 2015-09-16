@@ -3,8 +3,6 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 --
 -- ===========================================================================
--- Package:					Project specific configuration.
---
 -- Authors:         Thomas B. Preusser
 --                  Martin Zabel
 --                  Patrick Lehmann
@@ -46,7 +44,4 @@ package my_config is
   constant MY_BOARD   : string := "ML506";
   constant MY_DEVICE  : string := "None";
   constant MY_VERBOSE : boolean	:= false;
-end my_config;
-
-package body my_config is
 end my_config;
