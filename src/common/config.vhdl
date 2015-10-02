@@ -421,6 +421,7 @@ package config is
 	-- ===========================================================================
 	function BOARD(BoardConfig : string := C_BOARD_STRING_EMPTY)								return NATURAL;
 	function BOARD_INFO(BoardConfig : STRING := C_BOARD_STRING_EMPTY)						return T_BOARD_INFO;
+	function BOARD_NAME(BoardConfig : STRING := C_BOARD_STRING_EMPTY) 					return STRING;
 	function BOARD_DEVICE(BoardConfig : STRING := C_BOARD_STRING_EMPTY) 				return STRING;
 	function BOARD_UART_BAUDRATE(BoardConfig : STRING := C_BOARD_STRING_EMPTY)	return STRING;
 	
@@ -621,6 +622,13 @@ package body config is
 		constant BRD	: NATURAL := BOARD(BoardConfig);
   begin
 		return  C_BOARD_INFO_LIST(BRD);
+	end function;
+
+	-- TODO: comment
+	function BOARD_NAME(BoardConfig : STRING := C_BOARD_STRING_EMPTY) return STRING is
+		constant BRD	: NATURAL := BOARD(BoardConfig);
+  begin
+		return str_trim(C_BOARD_INFO_LIST(BRD).BoardName);
 	end function;
 
 	-- TODO: comment
