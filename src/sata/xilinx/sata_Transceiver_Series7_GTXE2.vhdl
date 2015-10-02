@@ -148,7 +148,7 @@ begin
 -- ==================================================================
 --	assert (C_DEVICE_INFO.VendOR = VendOR_XILINX)								report "This is a vendor dependent component. Vendor must be Xilinx!"						severity FAILURE;
 --	assert (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2)	report "This is a GTXE2 wrapper component."																			severity FAILURE;
---	assert (C_DEVICE_INFO.DEVICE = DEVICE_KINTEX7)							report "Device " & DEVICE_T'image(C_DEVICE_INFO.DEVICE) & " not yet supported."	severity FAILURE;
+--	assert (C_DEVICE_INFO.DEVICE = DEVICE_KINTEX7)							report "Device " & T_DEVICE'image(C_DEVICE_INFO.DEVICE) & " not yet supported."	severity FAILURE;
 	assert (PORTS <= 4)																					report "To many ports per transceiver."																					severity FAILURE;
 	
 --	==================================================================

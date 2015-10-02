@@ -37,7 +37,7 @@ use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
 
 library PoC;
-use PoC.utils.all;
+use			PoC.utils.all;
 
 package config_private is
 	-- TODO: 
@@ -76,7 +76,7 @@ package config_private is
 		EthernetCount	: T_BOARD_ETHERNET_DESC_INDEX;
 	end record;
 
-	type T_BOARD_INFO_VECTOR	is array (natural range<>) of T_BOARD_INFO;
+	type T_BOARD_INFO_VECTOR	is array (natural range <>) of T_BOARD_INFO;
 
 	constant C_POC_NUL										: CHARACTER;
 	constant C_BOARD_STRING_EMPTY					: T_BOARD_STRING;
@@ -85,23 +85,14 @@ package config_private is
 	CONSTANT C_BOARD_INFO_LIST						: T_BOARD_INFO_VECTOR;
 	
 	function conf(str : string) return T_BOARD_CONFIG_STRING;
-	
 end package;
 
+
 package body config_private is
-	constant C_POC_NUL			: CHARACTER		:= '~';
+	constant C_POC_NUL										: CHARACTER								:= '~';
 	constant C_BOARD_STRING_EMPTY					: T_BOARD_STRING					:= (others => C_POC_NUL);
 	constant C_BOARD_CONFIG_STRING_EMPTY	: T_BOARD_CONFIG_STRING		:= (others => C_POC_NUL);
 	constant C_DEVICE_STRING_EMPTY				: T_DEVICE_STRING					:= (others => C_POC_NUL);
-	
-	constant C_BOARD_ETHERNET_DESC_EMPTY	: T_BOARD_ETHERNET_DESC		:= (
-		IPStyle										=> C_BOARD_CONFIG_STRING_EMPTY,
-		RS_DataInterface					=> C_BOARD_CONFIG_STRING_EMPTY,
-		PHY_Device								=> C_BOARD_CONFIG_STRING_EMPTY,
-		PHY_DeviceAddress					=> x"00",
-		PHY_DataInterface					=> C_BOARD_CONFIG_STRING_EMPTY,
-		PHY_ManagementInterface		=> C_BOARD_CONFIG_STRING_EMPTY
-	);
 
 	function conf(str : string) return T_BOARD_CONFIG_STRING is
 		constant ConstNUL		: STRING(1 to 1)				:= (others => C_POC_NUL);
@@ -113,6 +104,15 @@ package body config_private is
 		end if;
 		return Result;
 	end function;
+	
+	constant C_BOARD_ETHERNET_DESC_EMPTY	: T_BOARD_ETHERNET_DESC		:= (
+		IPStyle										=> C_BOARD_CONFIG_STRING_EMPTY,
+		RS_DataInterface					=> C_BOARD_CONFIG_STRING_EMPTY,
+		PHY_Device								=> C_BOARD_CONFIG_STRING_EMPTY,
+		PHY_DeviceAddress					=> x"00",
+		PHY_DataInterface					=> C_BOARD_CONFIG_STRING_EMPTY,
+		PHY_ManagementInterface		=> C_BOARD_CONFIG_STRING_EMPTY
+	);
 	
 	-- predefined UART descriptions
 	function brd_CreateUART(IsDTE : BOOLEAN; FlowControl : STRING; BaudRate : STRING; BaudRate_Max : STRING := "") return T_BOARD_UART_DESC is
@@ -153,7 +153,7 @@ package body config_private is
 	constant C_BOARD_ETH_NONE		: T_BOARD_ETHERNET_DESC_VECTOR(T_BOARD_ETHERNET_DESC_INDEX)	:= (others => C_BOARD_ETH_EMPTY);
 
 
-	-- board description
+	-- Board Descriptions
 	-- ===========================================================================
 	CONSTANT C_BOARD_INFO_LIST		: T_BOARD_INFO_VECTOR		:= (
 		-- Xilinx boards
@@ -292,8 +292,7 @@ package body config_private is
 			Ethernet =>				C_BOARD_ETH_NONE,
 			EthernetCount =>	0
 		),
-		
-		-- custom board / dummy entry (MUST BE LAST ONE)
+		-- Custom Board (MUST BE LAST ONE)
 		-- =========================================================================
 		(
 			BoardName =>			conf("Custom"),
@@ -303,8 +302,8 @@ package body config_private is
 			EthernetCount => 0
 		)
 	);
-
 end package body;
+
 
 library	IEEE;
 use			IEEE.std_logic_1164.all;
@@ -313,8 +312,9 @@ use			IEEE.numeric_std.all;
 library	PoC;
 use			PoC.my_config.all;
 use			PoC.my_project.all;
-use			PoC.utils.all;
 use 		PoC.config_private.all;
+use			PoC.utils.all;
+
 
 package config is
 	constant PROJECT_DIR			: string	:= MY_PROJECT_DIR;
@@ -327,7 +327,6 @@ package config is
 		VENDOR_LATTICE,
 		VENDOR_XILINX
 	);
-	subtype vendor_t	is T_VENDOR;
 
 	-- List of known synthesis tool chains
 	-- ---------------------------------------------------------------------------
@@ -337,20 +336,6 @@ package config is
 		SYNTHESIS_TOOL_XILINX_XST,
 		SYNTHESIS_TOOL_XILINX_VIVADO
 	);
-	
-	-- List of known devices
-	-- ---------------------------------------------------------------------------
-	type T_DEVICE is (
-		DEVICE_SPARTAN3, DEVICE_SPARTAN6,																		-- Xilinx.Spartan
-		DEVICE_ZYNQ7,																												-- Xilinx.Zynq
-		DEVICE_ARTIX7,																											-- Xilinx.Artix
-		DEVICE_KINTEX7,																											-- Xilinx.Kintex
-		DEVICE_VIRTEX5,	DEVICE_VIRTEX6, DEVICE_VIRTEX7,											-- Xilinx.Virtex
-
-		DEVICE_CYCLONE1, DEVICE_CYCLONE2, DEVICE_CYCLONE3,									-- Altera.Cyclone
-		DEVICE_STRATIX1, DEVICE_STRATIX2, DEVICE_STRATIX4, DEVICE_STRATIX5	-- Altera.Stratix
-	);
-	subtype device_t	is T_DEVICE;
 
 	-- List of known device families
 	-- ---------------------------------------------------------------------------
@@ -361,9 +346,23 @@ package config is
 		DEVICE_FAMILY_ARTIX,
 		DEVICE_FAMILY_KINTEX,
 		DEVICE_FAMILY_VIRTEX,
-
+		-- Altera
 		DEVICE_FAMILY_CYCLONE,
 		DEVICE_FAMILY_STRATIX
+	);
+	
+	-- List of known devices
+	-- ---------------------------------------------------------------------------
+	type T_DEVICE is (
+		-- Xilinx
+		DEVICE_SPARTAN3, DEVICE_SPARTAN6,																		-- Xilinx.Spartan
+		DEVICE_ZYNQ7,																												-- Xilinx.Zynq
+		DEVICE_ARTIX7,																											-- Xilinx.Artix
+		DEVICE_KINTEX7,																											-- Xilinx.Kintex
+		DEVICE_VIRTEX5,	DEVICE_VIRTEX6, DEVICE_VIRTEX7,											-- Xilinx.Virtex
+		-- Altera
+		DEVICE_CYCLONE1, DEVICE_CYCLONE2, DEVICE_CYCLONE3,									-- Altera.Cyclone
+		DEVICE_STRATIX1, DEVICE_STRATIX2, DEVICE_STRATIX4, DEVICE_STRATIX5	-- Altera.Stratix
 	);
 
 	-- List of known device subtypes
@@ -392,15 +391,15 @@ package config is
 	-- List of known transceiver (sub-)types
 	-- ---------------------------------------------------------------------------
 	type T_TRANSCEIVER is (
+		TRANSCEIVER_NONE,
+		-- Xilinx transceivers
 		TRANSCEIVER_GTP_DUAL,	TRANSCEIVER_GTPE1, TRANSCEIVER_GTPE2,					-- Xilinx GTP transceivers
 		TRANSCEIVER_GTX,			TRANSCEIVER_GTXE1, TRANSCEIVER_GTXE2,					-- Xilinx GTX transceivers
 		TRANSCEIVER_GTH,			TRANSCEIVER_GTHE1, TRANSCEIVER_GTHE2,					-- Xilinx GTH transceivers
 		TRANSCEIVER_GTZ,																										-- Xilinx GTZ transceivers
 
 		-- TODO: add Altera transceivers
-		TRANSCEIVER_GXB,																										-- Altera GXB transceiver
-
-		TRANSCEIVER_NONE
+		TRANSCEIVER_GXB																											-- Altera GXB transceiver
 	);
 
 	-- Properties of an FPGA architecture
@@ -417,16 +416,12 @@ package config is
 		LUT_FanIn					: positive;
 	end record;
 
-	-- QUESTION: replace archprops with DEVICE_INFO ?
-	type archprops_t is record
-		LUT_K						: positive;	-- LUT Fanin
-	end record;
-
 	-- Functions extracting board and PCB properties from "MY_BOARD"
 	-- which is declared in package "my_config".
 	-- ===========================================================================
 	function BOARD(BoardConfig : string := C_BOARD_STRING_EMPTY)								return NATURAL;
 	function BOARD_INFO(BoardConfig : STRING := C_BOARD_STRING_EMPTY)						return T_BOARD_INFO;
+	function BOARD_NAME(BoardConfig : STRING := C_BOARD_STRING_EMPTY) 					return STRING;
 	function BOARD_DEVICE(BoardConfig : STRING := C_BOARD_STRING_EMPTY) 				return STRING;
 	function BOARD_UART_BAUDRATE(BoardConfig : STRING := C_BOARD_STRING_EMPTY)	return STRING;
 	
@@ -445,8 +440,6 @@ package config is
 	function LUT_FANIN(DeviceString : string := C_DEVICE_STRING_EMPTY)				return positive;
 
 	function DEVICE_INFO(DeviceString : string := C_DEVICE_STRING_EMPTY)			return T_DEVICE_INFO;
-
-	function ARCH_PROPS return archprops_t;
 
 	-- force FSM to predefined encoding in debug mode
 	function getFSMEncoding_gray(debug : BOOLEAN) return STRING;
@@ -629,6 +622,13 @@ package body config is
 		constant BRD	: NATURAL := BOARD(BoardConfig);
   begin
 		return  C_BOARD_INFO_LIST(BRD);
+	end function;
+
+	-- TODO: comment
+	function BOARD_NAME(BoardConfig : STRING := C_BOARD_STRING_EMPTY) return STRING is
+		constant BRD	: NATURAL := BOARD(BoardConfig);
+  begin
+		return str_trim(C_BOARD_INFO_LIST(BRD).BoardName);
 	end function;
 
 	-- TODO: comment
@@ -925,14 +925,6 @@ package body config is
 		Result.LUT_FanIn				:= LUT_FANIN(DeviceString);
 		
 		return Result;
-	end function;
-	
-	function ARCH_PROPS return archprops_t is
-		variable result : archprops_t;
-	begin
-		result.LUT_K					:= LUT_FANIN;
-
-		return	result;
 	end function;
 
 	-- force FSM to predefined encoding in debug mode
