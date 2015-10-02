@@ -31,31 +31,31 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
 
-entity ft245_uart is
+entity uart_ft245 is
    generic (
-      CLK_FREQ : positive      
+      CLK_FREQ : positive
    );
    port (
       -- common signals
-      clk         : in  std_logic;
-      reset       : in  std_logic;
+      clk : in std_logic;
+      rst : in std_logic;
 
       -- send data
-      snd_ready   : out std_logic;
-      snd_strobe  : in  std_logic;
-      snd_data    : in  std_logic_vector(7 downto 0);
+      snd_ready  : out std_logic;
+      snd_strobe : in  std_logic;
+      snd_data   : in  std_logic_vector(7 downto 0);
 
       -- receive data
-      rec_strobe  : out std_logic;
-      rec_data    : out std_logic_vector(7 downto 0);
+      rec_strobe : out std_logic;
+      rec_data   : out std_logic_vector(7 downto 0);
 
       -- connection to ft245
-      ft245_data  : inout std_logic_vector (7 downto 0);
-      ft245_rdn   : out std_logic;
-      ft245_wrn   : out std_logic;
-      ft245_rxfn  : in std_logic;
-      ft245_txen  : in std_logic;
-      ft245_pwrenn : in std_logic
+      ft245_data   : inout std_logic_vector(7 downto 0);
+      ft245_rdn    : out   std_logic;
+      ft245_wrn    : out   std_logic;
+      ft245_rxfn   : in    std_logic;
+      ft245_txen   : in    std_logic;
+      ft245_pwrenn : in    std_logic
    );
 end entity;
 
@@ -66,7 +66,7 @@ use IEEE.numeric_std.all;
 library PoC;
 use PoC.utils.all;
 
-architecture rtl of ft245_uart is
+architecture rtl of uart_ft245 is
 
    -- clock frequency (MHz)
    constant CLK_FREQ_MHZ : integer := CLK_FREQ / 1000000;
@@ -116,7 +116,7 @@ begin
    process(clk)
    begin
       if rising_edge(clk) then
-        if reset = '1' then
+        if rst = '1' then
           -- Neutral PowerUp / Reset
           ff_susp <= '1';
           ff_rxf  <= '1';
@@ -210,7 +210,7 @@ begin
       if rising_edge(clk) then
 
          -- control signals
-         if reset = '1' then
+         if rst = '1' then
             fsm_state   <= IDLE;
             reg_rd_b    <= '1';
             reg_wr_b    <= '1';
@@ -251,10 +251,10 @@ begin
 
    ft245_rdn <= reg_rd_b;
    ft245_wrn <= reg_wr_b;
-   
+
    rec_data   <= reg_data_rec;
    rec_strobe <= reg_ld_rec;
    snd_ready  <= ff_rxf and not ff_txe and not ff_susp
       when fsm_state = IDLE else '0';
 
-end architecture;
+end rtl;

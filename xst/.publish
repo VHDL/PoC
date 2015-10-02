@@ -5,6 +5,12 @@
 # Documentation
 README.md
 
+# XST specific files
+default.filter
+default.xcf
+Series-7.xst
+Spartan-3.xst
+
 # PoC subnamespaces
 common/
 arith/
