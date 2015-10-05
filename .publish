@@ -1,9 +1,10 @@
 # git files
 .gitignore
+.gitmodules
 
 # Common files
 LICENSE
-AUTHORS
+AUTHORS.md
 README.md
 
 # Configuration scripts
