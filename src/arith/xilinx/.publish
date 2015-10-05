@@ -9,4 +9,4 @@ README.md
 # --------------------------------------
 # Arithmetic
 arith_addw_xilinx.vhdl
-arith_inc_ovcy_xilinx
+arith_inc_ovcy_xilinx.vhdl
