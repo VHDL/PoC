@@ -3,7 +3,7 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Testbench:				Pseudo-Random Number Generator (PRNG).
+-- Testbench:				Debouncer.
 -- 
 -- Authors:					Patrick Lehmann
 -- 
@@ -14,7 +14,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,7 +56,7 @@ architecture test of io_Debounce_tb is
 	signal EventCounter			: NATURAL				:= 0;
 	
 	-- unit Under Test (UUT) configuration
-	constant DEBOUNCE_TIME	:	TIME					:= 50 ns;
+	constant BOUNCE_TIME		:	TIME					:= 50 ns;
 	
 	signal RawInput					: STD_LOGIC			:= '0';
 	signal deb_out					: STD_LOGIC;
@@ -119,13 +119,16 @@ begin
 	
 	uut : entity PoC.io_Debounce
 		generic map (
-			CLOCK_FREQ				=> CLOCK_FREQ,			-- 
-			DEBOUNCE_TIME			=> DEBOUNCE_TIME,		-- 
-			BITS							=> 1								-- 1 bit
+			CLOCK_FREQ							=> CLOCK_FREQ,
+			BOUNCE_TIME							=> BOUNCE_TIME,
+			BITS										=> 1,
+			ADD_INPUT_SYNCHRONIZERS	=> TRUE,
+			COMMON_LOCK							=> FALSE
 		)
 		port map (
-			Clock							=> Clock,
-			Input(0)					=> RawInput,
-			Output(0)					=> deb_out
+			Clock			=> Clock,
+			Reset			=> '0',
+			Input(0)	=> RawInput,
+			Output(0)	=> deb_out
 		);
 END;

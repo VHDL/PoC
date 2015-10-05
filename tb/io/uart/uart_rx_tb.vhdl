@@ -48,7 +48,7 @@ end entity;
 
 architecture tb of uart_rx_tb is
 	constant CLOCK_FREQ		: FREQ			:= 100 MHz;
-	constant BAUDRATE			: BAUD			:= 4.2 MBd;
+	constant BAUDRATE			: BAUD			:= 2.1 MBd;
 	
 	signal Clock					: STD_LOGIC;
 	signal Reset					: STD_LOGIC;
@@ -102,16 +102,13 @@ begin
 		);
 
 	RX : entity PoC.uart_rx
-		generic map (
-			OUT_REGS	=> FALSE
-		)
 		port map (
 			clk				=> Clock,
 			rst				=> Reset,
 			bclk_x8		=> BitClock_x8,
-			dos				=> RX_Strobe,
-			dout			=> RX_Data,
-			rxd				=> UART_RX
+			rx 				=> UART_RX,
+			do  			=> RX_Data,
+			stb				=> RX_Strobe
 		);
 
 	process

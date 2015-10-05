@@ -37,7 +37,7 @@ use			IEEE.numeric_std.all;
 use			IEEE.math_real.all;
 
 library	PoC;
---use			PoC.config.all;
+use			PoC.config.all;
 use			PoC.utils.all;
 --use			PoC.FileIO.all;
 
@@ -45,9 +45,11 @@ use			PoC.utils.all;
 package strings is
 	-- default fill and string termination character for fixed size strings
 	-- ===========================================================================
---	constant C_POC_NUL			: CHARACTER		:= ite((SYNTHESIS_TOOL /= SYNTHESIS_TOOL_ALTERA_QUARTUS2), NUL, CHARACTER'val(255));
-	constant C_POC_NUL			: CHARACTER		:= ite(FALSE, NUL, '~');	--CHARACTER'val(255));
-
+	constant C_POC_NUL			: CHARACTER		:= ite((SYNTHESIS_TOOL /= SYNTHESIS_TOOL_ALTERA_QUARTUS2), NUL, '`');
+	-- character 0 causes Quartus to crash, if uses to pad STRINGs
+	-- characters < 32 (control characters) are not supported in Quartus
+	-- characters > 127 are not supported in VHDL files (strict ASCII files)
+	-- character 255 craches ISE log window (created by 'CHARACTER'val(255)')
 
 	-- Type declarations
 	-- ===========================================================================
@@ -193,7 +195,7 @@ package body strings is
 		return CHARACTER'val(to_integer(unsigned(rawchar)));
 	end function;
 
-		-- chr_is* function
+	-- chr_is* function
 	function chr_isDigit(chr : character) return boolean is
 	begin
 		return (character'pos('0') <= character'pos(chr)) and (character'pos(chr) <= character'pos('9'));
@@ -239,7 +241,7 @@ package body strings is
 		return chr_isLowerAlpha(chr) or chr_isUpperAlpha(chr);
 	end function;
 	
-	-- str_format_* functions
+	-- raw_format_* functions
 	-- ===========================================================================
 	function raw_format_bool_bin(value : BOOLEAN) return STRING is
 	begin
@@ -372,19 +374,14 @@ package body strings is
 	-- str_format_* functions
 	-- ===========================================================================
 	function str_format(value : REAL; precision : NATURAL := 3) return STRING is
-		constant s		: REAL			:= sign(value);
-		constant int	: INTEGER		:= integer(floor(value * s));
-		constant frac	: INTEGER		:= integer(floor(((value * s) - real(int)) * 10.0**precision));
-		constant res	: STRING		:= raw_format_nat_dec(int) & "." & raw_format_nat_dec(frac);
+		constant s				: REAL		:= sign(value);
+		constant val			: REAL		:= value * s;
+		constant int			: INTEGER	:= integer(floor(val));
+		constant frac			: INTEGER	:= integer(round((val - real(int)) * 10.0**precision));
+		constant frac_str	: STRING	:= INTEGER'image(frac);
+		constant res			: STRING	:= INTEGER'image(int) & "." & (2 to (precision - frac_str'length + 1) => '0') & frac_str;
 	begin
-		if (POC_VERBOSE = TRUE) then
-			report "str_format:" & CR &
-						 "  value:" & REAL'image(value) & CR &
-						 "  int = " & INTEGER'image(int) & CR &
-						 "  frac = " & INTEGER'image(frac)
-			severity note;
-		end if;
-		return ite((s	< 0.0), "-" & res, res);
+		return ite ((s < 0.0), "-" & res, res);
 	end function;
 	
 	-- to_string
@@ -627,7 +624,7 @@ package body strings is
 		variable Result			: STRING(1 to size);
 	begin
 		Result := (others => FillChar);
-		if (str'length > 0) then
+		if (str'length > 0) then		-- workaround for Quartus II
 			Result(1 to imin(size, imax(1, str'length))) := ite((str'length > 0), str(1 to imin(size, str'length)), ConstNUL);
 		end if;
 		return Result;

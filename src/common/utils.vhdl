@@ -77,7 +77,7 @@ package utils is
 	type T_BYTE_ORDER			is (LITTLE_ENDIAN, BIG_ENDIAN);
 	
 	-- rounding style
-	type T_ROUNDING_STYLE	is (ROUND_NONE, ROUND_TO_NEAREST, ROUND_TO_ZERO, ROUND_TO_INF, ROUND_UP, ROUND_DOWN);
+	type T_ROUNDING_STYLE	is (ROUND_TO_NEAREST, ROUND_TO_ZERO, ROUND_TO_INF, ROUND_UP, ROUND_DOWN);
 
 	type T_BCD				is array(3 downto 0) of std_logic;
 	type T_BCD_VECTOR	is array(NATURAL range <>) of T_BCD;
@@ -111,6 +111,7 @@ package utils is
 	function log10ceilnz(arg	: POSITIVE)	return POSITIVE;
 	
 	--+ if-then-else (ite) +++++++++++++++++++++++++++++++++++++++++++++++++++++
+	function ite(cond : BOOLEAN; value1 : BOOLEAN; value2 : BOOLEAN) return BOOLEAN;
 	function ite(cond : BOOLEAN; value1 : INTEGER; value2 : INTEGER) return INTEGER;
 	function ite(cond : BOOLEAN; value1 : REAL;	value2 : REAL) return REAL;
 	function ite(cond : BOOLEAN; value1 : STD_LOGIC; value2 : STD_LOGIC) return STD_LOGIC;
@@ -138,7 +139,7 @@ package utils is
 	function rmax(vec : T_REALVEC) return real;	       							-- Calculates: max(vec) of real vector
 
 	function isum(vec : T_NATVEC) return NATURAL;										-- Calculates: sum(vec) for a natural vector
-	function isum(vec : T_POSVEC) return POSITIVE;									-- Calculates: sum(vec) for a positive vector
+	function isum(vec : T_POSVEC) return natural;									-- Calculates: sum(vec) for a positive vector
 	function isum(vec : T_INTVEC) return integer; 									-- Calculates: sum(vec) of integer vector
 	function rsum(vec : T_REALVEC) return real;	       							-- Calculates: sum(vec) of real vector
 
@@ -251,7 +252,7 @@ package utils is
 	-- Binary-Code to Gray-Code
 	function bin2gray(value : std_logic_vector) return std_logic_vector;
 	
-end package utils;
+end package;
 
 
 package body utils is
@@ -293,8 +294,9 @@ package body utils is
 	
 	-- round to previous power of 2
 	function floor_pow2(int : NATURAL) return NATURAL is
-		variable temp : UNSIGNED(30 downto 0)	:= to_unsigned(int, 31);
+		variable temp : UNSIGNED(30 downto 0);
 	begin
+		temp	:= to_unsigned(int, 31);
 		for i in temp'range loop
 			if (temp(i) = '1') then
 				return 2 ** i;
@@ -306,10 +308,12 @@ package body utils is
 	-- Logarithms: log*ceil*
 	-- ==========================================================================
 	function log2ceil(arg : positive) return natural is
-		variable tmp : positive		:= 1;
-		variable log : natural		:= 0;
+		variable tmp : positive;
+		variable log : natural;
 	begin
 		if arg = 1 then	return 0; end if;
+		tmp := 1;
+		log := 0;
 		while arg > tmp loop
 			tmp := tmp * 2;
 			log := log + 1;
@@ -323,10 +327,12 @@ package body utils is
 	end function;
 
 	function log10ceil(arg : positive) return natural is
-		variable tmp : positive		:= 1;
-		variable log : natural		:= 0;
+		variable tmp : positive;
+		variable log : natural;
 	begin
 		if arg = 1 then	return 0; end if;
+		tmp := 1;
+		log := 0;
 		while arg > tmp loop
 			tmp := tmp * 10;
 			log := log + 1;
@@ -341,6 +347,15 @@ package body utils is
 
 	-- if-then-else (ite)
 	-- ==========================================================================
+	function ite(cond : BOOLEAN; value1 : BOOLEAN; value2 : BOOLEAN) return BOOLEAN is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+	
 	function ite(cond : BOOLEAN; value1 : INTEGER; value2 : INTEGER) return INTEGER is
 	begin
 		if cond then
@@ -428,8 +443,9 @@ package body utils is
 	end function;
 	
 	function imin(vec : T_INTVEC) return INTEGER is
-		variable Result		: INTEGER		:= INTEGER'high;
+		variable Result		: INTEGER;
 	begin
+		Result	:= INTEGER'high;
 		for i in vec'range loop
 			if (vec(I) < Result) then
 				Result	:= vec(I);
@@ -439,8 +455,9 @@ package body utils is
 	end function;
 	
 	function imin(vec : T_NATVEC) return NATURAL is
-		variable Result		: natural := NATURAL'high;
+		variable Result		: NATURAL;
 	begin
+		Result	:= NATURAL'high;
 		for i in vec'range loop
 			if (vec(I) < Result) then
 				Result	:= vec(I);
@@ -450,8 +467,9 @@ package body utils is
 	end function;
 	
 	function imin(vec : T_POSVEC) return POSITIVE is
-		variable Result		: positive := POSITIVE'high;
+		variable Result		: POSITIVE;
 	begin
+		Result	:= POSITIVE'high;
 		for i in vec'range loop
 			if (vec(I) < Result) then
 				Result	:= vec(I);
@@ -460,16 +478,17 @@ package body utils is
 		return Result;
 	end function;
 
-	function rmin(vec : T_REALVEC) return real is
-		variable  res : real := real'high;
+	function rmin(vec : T_REALVEC) return REAL is
+		variable  Result : REAL;
 	begin
+		Result	:= REAL'high;
 		for i in vec'range loop
-			if vec(i) < res then
-				res := vec(i);
+			if vec(i) < Result then
+				Result := vec(i);
 			end if;
 		end loop;
-		return  res;
-	end rmin;
+		return  Result;
+	end function;
 
 	function imax(arg1 : integer; arg2 : integer) return integer is
 	begin
@@ -484,8 +503,9 @@ package body utils is
 	end function;
 	
 	function imax(vec : T_INTVEC) return INTEGER is
-		variable Result		: INTEGER		:= INTEGER'low;
+		variable Result		: INTEGER;
 	begin
+		Result		:= INTEGER'low;
 		for i in vec'range loop
 			if (vec(I) > Result) then
 				Result	:= vec(I);
@@ -495,8 +515,9 @@ package body utils is
 	end function;
 	
 	function imax(vec : T_NATVEC) return NATURAL is
-		variable Result		: natural := NATURAL'low;
+		variable Result		: NATURAL;
 	begin
+		Result		:= NATURAL'low;
 		for i in vec'range loop
 			if (vec(I) > Result) then
 				Result	:= vec(I);
@@ -506,8 +527,9 @@ package body utils is
 	end function;
 	
 	function imax(vec : T_POSVEC) return POSITIVE is
-		variable Result		: positive := POSITIVE'low;
+		variable Result		: POSITIVE;
 	begin
+		Result		:= POSITIVE'low;
 		for i in vec'range loop
 			if (vec(I) > Result) then
 				Result	:= vec(I);
@@ -516,58 +538,64 @@ package body utils is
 		return Result;
 	end function;
 
-	function rmax(vec : T_REALVEC) return real is
-		variable  res : real := real'low;
+	function rmax(vec : T_REALVEC) return REAL is
+		variable  Result : REAL;
 	begin
+		Result		:= REAL'low;
 		for i in vec'range loop
-			if vec(i) > res then
-				res := vec(i);
+			if vec(i) > Result then
+				Result := vec(i);
 			end if;
 		end loop;
-		return  res;
-	end rmax;
+		return  Result;
+	end function;
 
-	function isum(vec : T_NATVEC) return NATURAL is
-		variable Result		: NATURAL		:= 0;
+	function isum(vec : T_INTVEC) return INTEGER is
+		variable  Result : INTEGER;
 	begin
+		Result		:= 0;
+		for i in vec'range loop
+			Result	:= Result + vec(i);
+		end loop;
+		return  Result;
+	end function;
+	
+	function isum(vec : T_NATVEC) return NATURAL is
+		variable Result		: NATURAL;
+	begin
+		Result		:= 0;
 		for i in vec'range loop
 			Result	:= Result + vec(I);
 		end loop;
 		return Result;
 	end function;
 	
-	function isum(vec : T_POSVEC) return POSITIVE is
-		variable Result		: NATURAL	:= 0;
+	function isum(vec : T_POSVEC) return natural is
+		variable Result : natural;
 	begin
+		Result := 0;
 		for i in vec'range loop
-			Result	:= Result + vec(I);
+			Result := Result + vec(I);
 		end loop;
 		return Result;
 	end function;
 
-	function isum(vec : T_INTVEC) return integer is
-		variable  res : integer := 0;
+	function rsum(vec : T_REALVEC) return REAL is
+		variable  Result : REAL;
 	begin
+		Result		:= 0.0;
 		for i in vec'range loop
-			res	:= res + vec(i);
+			Result	:= Result + vec(i);
 		end loop;
-		return  res;
-	end isum;
-
-	function rsum(vec : T_REALVEC) return real is
-		variable  res : real := 0.0;
-	begin
-		for i in vec'range loop
-			res	:= res + vec(i);
-		end loop;
-		return  res;
-	end rsum;
+		return  Result;
+	end function;
 
 	-- Vector aggregate functions: slv_*
 	-- ==========================================================================
 	function slv_or(vec : STD_LOGIC_VECTOR) return STD_LOGIC is
-		variable Result : STD_LOGIC := '0';
+		variable Result : STD_LOGIC;
 	begin
+		Result		:= '0';
 		for i in vec'range loop
 			Result	:= Result or vec(i);
 		end loop;
@@ -580,8 +608,9 @@ package body utils is
 	end function;
 
 	function slv_and(vec : STD_LOGIC_VECTOR) return STD_LOGIC is
-		variable Result : STD_LOGIC := '1';
+		variable Result : STD_LOGIC;
 	begin
+		Result		:= '1';
 		for i in vec'range loop
 			Result	:= Result and vec(i);
 		end loop;
@@ -778,7 +807,7 @@ package body utils is
 		variable result		: std_logic_vector(2**value'length - 1 downto 0);
 	begin
 		result	:= (others => '0');
-		result(to_index(value)) := '1';
+		result(to_index(value, 0)) := '1';
 		return result;
 	end function;
 	
@@ -914,4 +943,4 @@ package body utils is
 		res := vec;
 		return  res;
 	end descend;
-end utils;
+end package body;

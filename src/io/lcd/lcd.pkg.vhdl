@@ -4,6 +4,7 @@
 -- 
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
+--									Thomas B. Preußer
 -- 
 -- Module:				 	TODO
 --
@@ -31,29 +32,27 @@
 
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
 
 library PoC;
 use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
+use			PoC.physical.all;
 
 
-PACKAGE lcd IS
-	SUBTYPE T_BCD						IS UNSIGNED(3 DOWNTO 0);
-	TYPE		T_BCD_VECTOR		IS ARRAY (NATURAL RANGE <>)	OF T_BCD;
+package lcd is
 	
 	-- define array indices
-	CONSTANT MAX_LCD_COLUMN_COUNT			: POSITIVE			:= 16;
-	CONSTANT MAX_LCD_ROW_COUNT				: POSITIVE			:= 2;
+	constant MAX_LCD_COLUMN_COUNT			: POSITIVE			:= 16;
+	constant MAX_LCD_ROW_COUNT				: POSITIVE			:= 2;
 	
-	CONSTANT T_LCD_COLUMN_INDEX_BW		: POSITIVE			:= log2ceilnz(MAX_LCD_COLUMN_COUNT);
-	CONSTANT T_LCD_ROW_INDEX_BW				: POSITIVE			:= log2ceilnz(MAX_LCD_ROW_COUNT);
+	constant T_LCD_COLUMN_INDEX_BW		: POSITIVE			:= log2ceilnz(MAX_LCD_COLUMN_COUNT);
+	constant T_LCD_ROW_INDEX_BW				: POSITIVE			:= log2ceilnz(MAX_LCD_ROW_COUNT);
 	
-	SUBTYPE T_LCD_COLUMN_INDEX				IS INTEGER RANGE 0 TO MAX_LCD_COLUMN_COUNT - 1;
-	SUBTYPE T_LCD_ROW_INDEX						IS INTEGER RANGE 0 TO MAX_LCD_ROW_COUNT - 1;
+	subtype T_LCD_COLUMN_INDEX				is INTEGER range 0 to MAX_LCD_COLUMN_COUNT - 1;
+	subtype T_LCD_ROW_INDEX						is INTEGER range 0 to MAX_LCD_ROW_COUNT - 1;
 
-	TYPE T_LCD_CHAR IS (
+	type T_LCD_CHAR is (
 		LCD_CHAR_SPACE,
 		LCD_CHAR_DASH, LCD_CHAR_ASSIGN, LCD_CHAR_DOT, LCD_CHAR_CDOT, LCD_CHAR_COLON, LCD_CHAR_ARROW_R, LCD_CHAR_ARROW_L,
 		LCD_CHAR_AT, LCD_CHAR_EXMARK, LCD_CHAR_QMARK, LCD_CHAR_SHARP,
@@ -68,24 +67,24 @@ PACKAGE lcd IS
 		LCD_LCHAR_u, LCD_LCHAR_v, LCD_LCHAR_w, LCD_LCHAR_x, LCD_LCHAR_y, LCD_LCHAR_z
 	);
 
-	TYPE T_LCD_CHAR_VECTOR	IS ARRAY(NATURAL RANGE <>)	OF T_LCD_CHAR;	
+	type T_LCD_CHAR_VECTOR	is array(NATURAL range <>)	of T_LCD_CHAR;	
 	
-	SUBTYPE T_LCD_ROW				IS T_RAWSTRING(0 TO MAX_LCD_COLUMN_COUNT - 1);						-- don't use "IS ARRAY (T_LCD_COLUMN_INDEX)" => expression is not sliceable
-	TYPE		T_LCD						IS ARRAY (T_LCD_ROW_INDEX)	OF T_LCD_ROW;
+	subtype T_LCD_ROW				is T_RAWSTRING(0 to MAX_LCD_COLUMN_COUNT - 1);						-- don't use "IS ARRAY (T_LCD_COLUMN_INDEX)" => expression is not sliceable
+	type		T_LCD						is array (T_LCD_ROW_INDEX)	of T_LCD_ROW;
 
 
-	TYPE T_LCD_CONTROLLER IS (
+	type T_LCD_CONTROLLER is (
 		LCD_CTRL_KS0066U,					-- Samsung KS0066U - Dot Matrix LCD Driver
 		LCD_CTRL_ST7066U					-- Sitromix ST7066U - Dot Matrix LCD Controller/Driver (compatible to KS0066U)
 	);
 	
-	TYPE T_LCD_BUSCTRL_COMMAND IS (
+	type T_LCD_BUSCTRL_COMMAND is (
 		LCD_BUSCTRL_CMD_NONE,
 		LCD_BUSCTRL_CMD_READ,
 		LCD_BUSCTRL_CMD_WRITE
 	);
 	
-	TYPE T_LCD_BUSCTRL_STATUS IS (
+	type T_LCD_BUSCTRL_STATUS is (
 		LCD_BUSCTRL_STATUS_IDLE,
 		LCD_BUSCTRL_STATUS_READING,
 		LCD_BUSCTRL_STATUS_READ_COMPLETE,
@@ -94,7 +93,7 @@ PACKAGE lcd IS
 		LCD_BUSCTRL_STATUS_ERROR
 	);
 
-	TYPE T_LCD_CTRL_COMMAND IS (
+	type T_LCD_CTRL_COMMAND is (
 		LCD_CTRL_CMD_NONE,
 		LCD_CTRL_CMD_INITIALIZE,
 		LCD_CTRL_CMD_CLEAR_DISPLAY,
@@ -103,7 +102,7 @@ PACKAGE lcd IS
 		LCD_CTRL_CMD_WRITE_CHAR
 	);
 
-	TYPE T_LCD_CTRL_STATUS IS (
+	type T_LCD_CTRL_STATUS is (
 		LCD_CTRL_STATUS_IDLE,
 		LCD_CTRL_STATUS_INITIALIZING,
 		LCD_CTRL_STATUS_INITIALIZE_COMPLETE,
@@ -116,62 +115,98 @@ PACKAGE lcd IS
 	
 	-- command bytes for a KS0066U LCD controller
 	-- ===========================================================================
-	CONSTANT KS0066U_REG_COMMAND							: STD_LOGIC	:= '0';
-	CONSTANT KS0066U_REG_DATA									: STD_LOGIC	:= '1';
+	constant KS0066U_REG_COMMAND							: STD_LOGIC	:= '0';
+	constant KS0066U_REG_DATA									: STD_LOGIC	:= '1';
 	
 	
 	-- command bytes for a KS0066U LCD controller
 	-- ===========================================================================
-	CONSTANT KS0066U_CMD_NONE									: T_SLV_8		:= x"00";			-- no command
-	CONSTANT KS0066U_CMD_DISPLAY_ON						: T_SLV_8		:= x"0C";			-- Display ON; cursor OFF; blink OFF
-	CONSTANT KS0066U_CMD_DISPLAY_CLEAR				: T_SLV_8		:= x"01";			-- 
-	CONSTANT KS0066U_CMD_RETURN_HOME					: T_SLV_8		:= x"02";			-- 
-	CONSTANT KS0066U_CMD_GO_HOME							: T_SLV_8		:= x"10";			-- 
-	CONSTANT KS0066U_CMD_SET_FUNCTION					: T_SLV_8		:= x"2C";			-- (4 Bit interface, 2-line, 5x8 dots)
-	CONSTANT KS0066U_CMD_ENTRY_MODE						: T_SLV_8		:= x"06";			-- entry mode: move: RIGHT; shift OFF
+	constant KS0066U_CMD_NONE									: T_SLV_8		:= x"00";			-- no command
+	constant KS0066U_CMD_DISPLAY_ON						: T_SLV_8		:= x"0C";			-- Display ON; cursor OFF; blink OFF
+	constant KS0066U_CMD_DISPLAY_CLEAR				: T_SLV_8		:= x"01";			-- 
+	constant KS0066U_CMD_return_HOME					: T_SLV_8		:= x"02";			-- 
+	constant KS0066U_CMD_GO_HOME							: T_SLV_8		:= x"10";			-- 
+	constant KS0066U_CMD_SET_FUNCTION					: T_SLV_8		:= x"2C";			-- (4 Bit interface, 2-line, 5x8 dots)
+	constant KS0066U_CMD_ENTRY_MODE						: T_SLV_8		:= x"06";			-- entry mode: move: RIGHT; shift OFF
 
+	component lcd_dotmatrix is
+		generic(
+			CLOCK_FREQ : freq;
+			DATA_WIDTH : positive;  				-- Width of data bus (4 or 8)
 
+			T_W        : time     :=  500 ns; -- Minimum width of E pulse
+			T_SU       : time     :=   60 ns; -- Minimum RS + R/W setup time
+			T_H        : time     :=   20 ns; -- Minimum RS + R/W hole time
+			T_C        : time     := 1000 ns; -- Minimum cycle time
 
+			B_RECOVER_TIME : time := 5 us  -- Recover time after cleared Busy flag
+		);
+		port(
+			-- Global Reset and Clock
+			clk, rst : in std_logic;
 
-	PROCEDURE LCDBufferProjection(SIGNAL buffer1 : IN T_LCD_CHAR_VECTOR; SIGNAL buffer2 : OUT T_LCD_CHAR_VECTOR);
+			skip_bf : in std_logic := '0';  		-- Skip test for cleared busy flag
 
-	FUNCTION Bin2BCD(Sum_In : T_BCD; C_In : STD_LOGIC) RETURN UNSIGNED;
+			-- Upper Layer Interface
+			rdy : out std_logic;  									 -- ready for command or data
+			stb : in  std_logic;  									 -- input strobe
+			cmd : in  std_logic;  									 -- command / no data selector
+			dat : in  std_logic_vector(7 downto 0);  -- command or data word
 
-	FUNCTION calc_length(slv_length : POSITIVE) RETURN POSITIVE;
+			-- LCD Connections
+			lcd_e     : out std_logic;  -- Enable
+			lcd_rs    : out std_logic;  -- Register Select
+			lcd_rw    : out std_logic;  -- Read /Write, Data Direction Selector
+			lcd_dat_i : in  std_logic_vector(DATA_WIDTH-1 downto 0);  -- Data Input
+			lcd_dat_o : out std_logic_vector(DATA_WIDTH-1 downto 0)  	-- Data Output
+		);
+	end component;
 
-	FUNCTION to_LCD_CHAR_VECTOR(slv : STD_LOGIC_VECTOR) RETURN T_LCD_CHAR_VECTOR;
-	FUNCTION to_LCD_CHAR_VECTOR(rawstr : T_RAWSTRING) RETURN T_LCD_CHAR_VECTOR;
-	FUNCTION to_LCD_CHAR_VECTOR(str : STRING) RETURN T_LCD_CHAR_VECTOR;
+  function lcd_functionset(datalength : positive; lines : positive; font : natural) return t_slv_8;
+  function lcd_displayctrl(turn_on : boolean; cursor : boolean; blink : boolean) return t_slv_8;
+  function lcd_entrymode(inc_ndec : boolean; shift : boolean) return t_slv_8;
+
+	procedure LCDBufferProjection(signal buffer1 : in T_LCD_CHAR_VECTOR; signal buffer2 : out T_LCD_CHAR_VECTOR);
+
+	function Bin2BCD(Sum_In : T_BCD; C_In : STD_LOGIC) return T_BCD;
+
+	function calc_length(slv_length : POSITIVE) return POSITIVE;
+
+	function to_LCD_CHAR_VECTOR(slv : STD_LOGIC_VECTOR) return T_LCD_CHAR_VECTOR;
+	function to_LCD_CHAR_VECTOR(rawstr : T_RAWSTRING) return T_LCD_CHAR_VECTOR;
+	function to_LCD_CHAR_VECTOR(str : STRING) return T_LCD_CHAR_VECTOR;
 	
-	FUNCTION to_LCD_CHAR(slv : T_SLV_4) RETURN T_LCD_CHAR;
-	FUNCTION to_LCD_CHAR2(rawchar : T_RAWCHAR) RETURN T_LCD_CHAR;
-	FUNCTION to_LCD_CHAR(char : CHARACTER) RETURN T_LCD_CHAR;
+	function to_LCD_CHAR(slv : T_SLV_4) return T_LCD_CHAR;
+	function to_LCD_CHAR2(rawchar : T_RAWCHAR) return T_LCD_CHAR;
+	function to_LCD_CHAR(char : CHARACTER) return T_LCD_CHAR;
 	
-	FUNCTION LCD_CHAR2Bin(char : T_LCD_CHAR) RETURN T_SLV_8;
+	function LCD_CHAR2Bin(char : T_LCD_CHAR) return T_SLV_8;
 	
-	FUNCTION lcd_go_home(row_us : UNSIGNED) RETURN T_SLV_8;
-	FUNCTION lcd_display_on(ShowCursor : BOOLEAN; Blink : BOOLEAN) RETURN T_SLV_8;
+	function lcd_go_home(row_us : std_logic_vector) return T_SLV_8;
+	function lcd_display_on(ShowCursor : BOOLEAN; Blink : BOOLEAN) return T_SLV_8;
 	
-	FUNCTION ite(cond : BOOLEAN; value1 : T_LCD_CHAR; value2 : T_LCD_CHAR) RETURN T_LCD_CHAR;
-	FUNCTION ite(cond : BOOLEAN; value1 : T_LCD_CHAR_VECTOR; value2 : T_LCD_CHAR_VECTOR) RETURN T_LCD_CHAR_VECTOR;
+	function ite(cond : BOOLEAN; value1 : T_LCD_CHAR; value2 : T_LCD_CHAR) return T_LCD_CHAR;
+	function ite(cond : BOOLEAN; value1 : T_LCD_CHAR_VECTOR; value2 : T_LCD_CHAR_VECTOR) return T_LCD_CHAR_VECTOR;
 
 END;
 
+library	IEEE;
+use			IEEE.numeric_std.all;
 
-PACKAGE BODY lcd IS
-	FUNCTION to_char(bcd : T_BCD) RETURN CHARACTER IS
+package body lcd is
+	FUNCTION to_char(bcd : T_BCD) return CHARACTER IS
 		VARIABLE temp		: T_UINT_8;
 	BEGIN
-		temp	:= to_integer(bcd);
-		RETURN ite((temp <= 9), CHARACTER'val(temp), '?');
+		temp := to_integer(unsigned(bcd));
+		return ite((temp <= 9), CHARACTER'val(temp), '?');
 	END;
 
-	FUNCTION calc_length(slv_length : POSITIVE) RETURN POSITIVE IS
+	FUNCTION calc_length(slv_length : POSITIVE) return POSITIVE IS
 	BEGIN
-		RETURN ((slv_length - 1) / 4) + 1;
+		return ((slv_length - 1) / 4) + 1;
 	END;
 
-	FUNCTION to_LCD_CHAR_VECTOR(slv : STD_LOGIC_VECTOR) RETURN T_LCD_CHAR_VECTOR IS
+	FUNCTION to_LCD_CHAR_VECTOR(slv : STD_LOGIC_VECTOR) return T_LCD_CHAR_VECTOR IS
 		CONSTANT Segments		: POSITIVE																	:= calc_length(slv'length);
 		
 		VARIABLE Result			: T_LCD_CHAR_VECTOR(0 TO Segments - 1)	:= (OTHERS => LCD_CHAR_0);
@@ -190,323 +225,346 @@ PACKAGE BODY lcd IS
 			Result(I)					:= to_LCD_CHAR(Slice);
 		END LOOP;
 	
-		RETURN Result;
+		return Result;
 	END;
 
-	FUNCTION to_LCD_CHAR_VECTOR(rawstr : T_RAWSTRING) RETURN T_LCD_CHAR_VECTOR IS
+	FUNCTION to_LCD_CHAR_VECTOR(rawstr : T_RAWSTRING) return T_LCD_CHAR_VECTOR IS
 		VARIABLE Result			: T_LCD_CHAR_VECTOR(0 TO rawstr'length - 1)	:= (OTHERS => LCD_CHAR_SPACE);
 	BEGIN
 		FOR I IN 0 TO rawstr'length - 1 LOOP
 			Result(I)					:= to_LCD_CHAR2(rawstr(I));
 		END LOOP;
 	
-		RETURN Result;
+		return Result;
 	END;
 
-	FUNCTION to_LCD_CHAR_VECTOR(str : STRING) RETURN T_LCD_CHAR_VECTOR IS
+	FUNCTION to_LCD_CHAR_VECTOR(str : STRING) return T_LCD_CHAR_VECTOR IS
 		VARIABLE Result			: T_LCD_CHAR_VECTOR(0 TO str'length - 1)	:= (OTHERS => LCD_CHAR_SPACE);
 	BEGIN
 		FOR I IN 1 TO str'length LOOP
 			Result(I - 1)			:= to_LCD_CHAR(str(I));
 		END LOOP;
 	
-		RETURN Result;
+		return Result;
 	END;
 
-	PROCEDURE LCDBufferProjection(SIGNAL buffer1 : IN T_LCD_CHAR_VECTOR; SIGNAL buffer2 : OUT T_LCD_CHAR_VECTOR) IS
-	BEGIN
-		FOR I IN buffer1'low TO buffer1'high LOOP
-			EXIT WHEN I > buffer2'high;
-			buffer2(I)	<= buffer1(I);
-		END LOOP;
-	END;
+	procedure LCDBufferProjection(signal buffer1 : in T_LCD_CHAR_VECTOR; signal buffer2 : out T_LCD_CHAR_VECTOR) is
+	begin
+		for i in buffer1'low to buffer1'high loop
+			exit when i > buffer2'high;
+			buffer2(i)	<= buffer1(i);
+		end loop;
+	end;
 
-	FUNCTION to_LCD_CHAR(slv : T_SLV_4) RETURN T_LCD_CHAR IS
-	BEGIN
-		CASE slv IS
-			WHEN x"0" =>		RETURN LCD_CHAR_0;
-			WHEN x"1" =>		RETURN LCD_CHAR_1;
-			WHEN x"2" =>		RETURN LCD_CHAR_2;
-			WHEN x"3" =>		RETURN LCD_CHAR_3;
-			WHEN x"4" =>		RETURN LCD_CHAR_4;
-			WHEN x"5" =>		RETURN LCD_CHAR_5;
-			WHEN x"6" =>		RETURN LCD_CHAR_6;
-			WHEN x"7" =>		RETURN LCD_CHAR_7;
-			WHEN x"8" =>		RETURN LCD_CHAR_8;
-			WHEN x"9" =>		RETURN LCD_CHAR_9;
-			WHEN x"A" =>		RETURN LCD_UCHAR_A;
-			WHEN x"B" =>		RETURN LCD_UCHAR_B;
-			WHEN x"C" =>		RETURN LCD_UCHAR_C;
-			WHEN x"D" =>		RETURN LCD_UCHAR_D;
-			WHEN x"E" =>		RETURN LCD_UCHAR_E;
-			WHEN x"F" =>		RETURN LCD_UCHAR_F;
-			WHEN OTHERS =>	RETURN LCD_UCHAR_X;
-		END CASE;
-	END;
+	function to_LCD_CHAR(slv : T_SLV_4) return T_LCD_CHAR is
+	begin
+		case slv is
+			when x"0" =>		return LCD_CHAR_0;
+			when x"1" =>		return LCD_CHAR_1;
+			when x"2" =>		return LCD_CHAR_2;
+			when x"3" =>		return LCD_CHAR_3;
+			when x"4" =>		return LCD_CHAR_4;
+			when x"5" =>		return LCD_CHAR_5;
+			when x"6" =>		return LCD_CHAR_6;
+			when x"7" =>		return LCD_CHAR_7;
+			when x"8" =>		return LCD_CHAR_8;
+			when x"9" =>		return LCD_CHAR_9;
+			when x"A" =>		return LCD_UCHAR_A;
+			when x"B" =>		return LCD_UCHAR_B;
+			when x"C" =>		return LCD_UCHAR_C;
+			when x"D" =>		return LCD_UCHAR_D;
+			when x"E" =>		return LCD_UCHAR_E;
+			when x"F" =>		return LCD_UCHAR_F;
+			when others =>	return LCD_UCHAR_X;
+		end case;
+	end;
 	
-	FUNCTION to_LCD_CHAR(char : CHARACTER) RETURN T_LCD_CHAR IS
-	BEGIN
-		CASE char IS
-			WHEN ' ' =>			RETURN LCD_CHAR_SPACE;
-			WHEN '-' =>			RETURN LCD_CHAR_DASH;
-			WHEN '=' =>			RETURN LCD_CHAR_ASSIGN;
-			WHEN '.' =>			RETURN LCD_CHAR_DOT;
-			WHEN ':' =>			RETURN LCD_CHAR_COLON;
-			WHEN '>' =>			RETURN LCD_CHAR_ARROW_R;
-			WHEN '<' =>			RETURN LCD_CHAR_ARROW_L;
-			WHEN '@' =>			RETURN LCD_CHAR_AT;
-			WHEN '!' =>			RETURN LCD_CHAR_EXMARK;
-			WHEN '?' =>			RETURN LCD_CHAR_QMARK;
-			WHEN '#' =>			RETURN LCD_CHAR_SHARP;
-			WHEN '~' =>			RETURN LCD_CHAR_CDOT;
+	function to_LCD_CHAR(char : CHARACTER) return T_LCD_CHAR is
+	begin
+		case char is
+			when ' ' =>			return LCD_CHAR_SPACE;
+			when '-' =>			return LCD_CHAR_DASH;
+			when '=' =>			return LCD_CHAR_ASSIGN;
+			when '.' =>			return LCD_CHAR_DOT;
+			when ':' =>			return LCD_CHAR_COLON;
+			when '>' =>			return LCD_CHAR_ARROW_R;
+			when '<' =>			return LCD_CHAR_ARROW_L;
+			when '@' =>			return LCD_CHAR_AT;
+			when '!' =>			return LCD_CHAR_EXMARK;
+			when '?' =>			return LCD_CHAR_QMARK;
+			when '#' =>			return LCD_CHAR_SHARP;
+			when '~' =>			return LCD_CHAR_CDOT;
 		
-			WHEN '0' =>			RETURN LCD_CHAR_0;
-			WHEN '1' =>			RETURN LCD_CHAR_1;
-			WHEN '2' =>			RETURN LCD_CHAR_2;
-			WHEN '3' =>			RETURN LCD_CHAR_3;
-			WHEN '4' =>			RETURN LCD_CHAR_4;
-			WHEN '5' =>			RETURN LCD_CHAR_5;
-			WHEN '6' =>			RETURN LCD_CHAR_6;
-			WHEN '7' =>			RETURN LCD_CHAR_7;
-			WHEN '8' =>			RETURN LCD_CHAR_8;
-			WHEN '9' =>			RETURN LCD_CHAR_9;
+			when '0' =>			return LCD_CHAR_0;
+			when '1' =>			return LCD_CHAR_1;
+			when '2' =>			return LCD_CHAR_2;
+			when '3' =>			return LCD_CHAR_3;
+			when '4' =>			return LCD_CHAR_4;
+			when '5' =>			return LCD_CHAR_5;
+			when '6' =>			return LCD_CHAR_6;
+			when '7' =>			return LCD_CHAR_7;
+			when '8' =>			return LCD_CHAR_8;
+			when '9' =>			return LCD_CHAR_9;
 			
-			WHEN 'A' =>			RETURN LCD_UCHAR_A;
-			WHEN 'B' =>			RETURN LCD_UCHAR_B;
-			WHEN 'C' =>			RETURN LCD_UCHAR_C;
-			WHEN 'D' =>			RETURN LCD_UCHAR_D;
-			WHEN 'E' =>			RETURN LCD_UCHAR_E;
-			WHEN 'F' =>			RETURN LCD_UCHAR_F;
-			WHEN 'G' =>			RETURN LCD_UCHAR_G;
-			WHEN 'H' =>			RETURN LCD_UCHAR_H;
-			WHEN 'I' =>			RETURN LCD_UCHAR_I;
-			WHEN 'J' =>			RETURN LCD_UCHAR_J;
-			WHEN 'K' =>			RETURN LCD_UCHAR_K;
-			WHEN 'L' =>			RETURN LCD_UCHAR_L;
-			WHEN 'M' =>			RETURN LCD_UCHAR_M;
-			WHEN 'N' =>			RETURN LCD_UCHAR_N;
-			WHEN 'O' =>			RETURN LCD_UCHAR_O;
-			WHEN 'P' =>			RETURN LCD_UCHAR_P;
-			WHEN 'Q' =>			RETURN LCD_UCHAR_Q;
-			WHEN 'R' =>			RETURN LCD_UCHAR_R;
-			WHEN 'S' =>			RETURN LCD_UCHAR_S;
-			WHEN 'T' =>			RETURN LCD_UCHAR_T;
-			WHEN 'U' =>			RETURN LCD_UCHAR_U;
-			WHEN 'V' =>			RETURN LCD_UCHAR_V;
-			WHEN 'W' =>			RETURN LCD_UCHAR_W;
-			WHEN 'X' =>			RETURN LCD_UCHAR_X;
-			WHEN 'Y' =>			RETURN LCD_UCHAR_Y;
-			WHEN 'Z' =>			RETURN LCD_UCHAR_Z;
+			when 'A' =>			return LCD_UCHAR_A;
+			when 'B' =>			return LCD_UCHAR_B;
+			when 'C' =>			return LCD_UCHAR_C;
+			when 'D' =>			return LCD_UCHAR_D;
+			when 'E' =>			return LCD_UCHAR_E;
+			when 'F' =>			return LCD_UCHAR_F;
+			when 'G' =>			return LCD_UCHAR_G;
+			when 'H' =>			return LCD_UCHAR_H;
+			when 'I' =>			return LCD_UCHAR_I;
+			when 'J' =>			return LCD_UCHAR_J;
+			when 'K' =>			return LCD_UCHAR_K;
+			when 'L' =>			return LCD_UCHAR_L;
+			when 'M' =>			return LCD_UCHAR_M;
+			when 'N' =>			return LCD_UCHAR_N;
+			when 'O' =>			return LCD_UCHAR_O;
+			when 'P' =>			return LCD_UCHAR_P;
+			when 'Q' =>			return LCD_UCHAR_Q;
+			when 'R' =>			return LCD_UCHAR_R;
+			when 'S' =>			return LCD_UCHAR_S;
+			when 'T' =>			return LCD_UCHAR_T;
+			when 'U' =>			return LCD_UCHAR_U;
+			when 'V' =>			return LCD_UCHAR_V;
+			when 'W' =>			return LCD_UCHAR_W;
+			when 'X' =>			return LCD_UCHAR_X;
+			when 'Y' =>			return LCD_UCHAR_Y;
+			when 'Z' =>			return LCD_UCHAR_Z;
 			
-			WHEN 'a' =>			RETURN LCD_LCHAR_a;
-			WHEN 'b' =>			RETURN LCD_LCHAR_b;
-			WHEN 'c' =>			RETURN LCD_LCHAR_c;
-			WHEN 'd' =>			RETURN LCD_LCHAR_d;
-			WHEN 'e' =>			RETURN LCD_LCHAR_e;
-			WHEN 'f' =>			RETURN LCD_LCHAR_f;
-			WHEN 'g' =>			RETURN LCD_LCHAR_g;
-			WHEN 'h' =>			RETURN LCD_LCHAR_h;
-			WHEN 'i' =>			RETURN LCD_LCHAR_i;
-			WHEN 'j' =>			RETURN LCD_LCHAR_j;
-			WHEN 'k' =>			RETURN LCD_LCHAR_k;
-			WHEN 'l' =>			RETURN LCD_LCHAR_l;
-			WHEN 'm' =>			RETURN LCD_LCHAR_m;
-			WHEN 'n' =>			RETURN LCD_LCHAR_n;
-			WHEN 'o' =>			RETURN LCD_LCHAR_o;
-			WHEN 'p' =>			RETURN LCD_LCHAR_p;
-			WHEN 'q' =>			RETURN LCD_LCHAR_q;
-			WHEN 'r' =>			RETURN LCD_LCHAR_r;
-			WHEN 's' =>			RETURN LCD_LCHAR_s;
-			WHEN 't' =>			RETURN LCD_LCHAR_t;
-			WHEN 'u' =>			RETURN LCD_LCHAR_u;
-			WHEN 'v' =>			RETURN LCD_LCHAR_v;
-			WHEN 'w' =>			RETURN LCD_LCHAR_w;
-			WHEN 'x' =>			RETURN LCD_LCHAR_x;
-			WHEN 'y' =>			RETURN LCD_LCHAR_y;
-			WHEN 'z' =>			RETURN LCD_LCHAR_z;
+			when 'a' =>			return LCD_LCHAR_a;
+			when 'b' =>			return LCD_LCHAR_b;
+			when 'c' =>			return LCD_LCHAR_c;
+			when 'd' =>			return LCD_LCHAR_d;
+			when 'e' =>			return LCD_LCHAR_e;
+			when 'f' =>			return LCD_LCHAR_f;
+			when 'g' =>			return LCD_LCHAR_g;
+			when 'h' =>			return LCD_LCHAR_h;
+			when 'i' =>			return LCD_LCHAR_i;
+			when 'j' =>			return LCD_LCHAR_j;
+			when 'k' =>			return LCD_LCHAR_k;
+			when 'l' =>			return LCD_LCHAR_l;
+			when 'm' =>			return LCD_LCHAR_m;
+			when 'n' =>			return LCD_LCHAR_n;
+			when 'o' =>			return LCD_LCHAR_o;
+			when 'p' =>			return LCD_LCHAR_p;
+			when 'q' =>			return LCD_LCHAR_q;
+			when 'r' =>			return LCD_LCHAR_r;
+			when 's' =>			return LCD_LCHAR_s;
+			when 't' =>			return LCD_LCHAR_t;
+			when 'u' =>			return LCD_LCHAR_u;
+			when 'v' =>			return LCD_LCHAR_v;
+			when 'w' =>			return LCD_LCHAR_w;
+			when 'x' =>			return LCD_LCHAR_x;
+			when 'y' =>			return LCD_LCHAR_y;
+			when 'z' =>			return LCD_LCHAR_z;
 			
-			WHEN OTHERS =>	RETURN LCD_CHAR_SPACE;
-		END CASE;
-	END;
+			when others =>	return LCD_CHAR_SPACE;
+		end case;
+	end;
 	
-	FUNCTION to_LCD_CHAR2(rawchar : T_RAWCHAR) RETURN T_LCD_CHAR IS
-	BEGIN
-		CASE rawchar IS
-			WHEN x"20" =>		RETURN LCD_CHAR_SPACE;
-			WHEN x"2D" =>		RETURN LCD_CHAR_DASH;
-			WHEN x"3D" =>		RETURN LCD_CHAR_ASSIGN;
-			WHEN x"2E" =>		RETURN LCD_CHAR_DOT;
-			WHEN x"3A" =>		RETURN LCD_CHAR_COLON;
-			WHEN x"3E" =>		RETURN LCD_CHAR_ARROW_R;
-			WHEN x"3C" =>		RETURN LCD_CHAR_ARROW_L;
-			WHEN x"40" =>		RETURN LCD_CHAR_AT;
-			WHEN x"21" =>		RETURN LCD_CHAR_EXMARK;
-			WHEN x"3F" =>		RETURN LCD_CHAR_QMARK;
-			WHEN x"23" =>		RETURN LCD_CHAR_SHARP;
-			WHEN x"7E" =>		RETURN LCD_CHAR_CDOT;
+	function to_LCD_CHAR2(rawchar : T_RAWCHAR) return T_LCD_CHAR is
+	begin
+		case rawchar is
+			when x"20" =>		return LCD_CHAR_SPACE;
+			when x"2D" =>		return LCD_CHAR_DASH;
+			when x"3D" =>		return LCD_CHAR_ASSIGN;
+			when x"2E" =>		return LCD_CHAR_DOT;
+			when x"3A" =>		return LCD_CHAR_COLON;
+			when x"3E" =>		return LCD_CHAR_ARROW_R;
+			when x"3C" =>		return LCD_CHAR_ARROW_L;
+			when x"40" =>		return LCD_CHAR_AT;
+			when x"21" =>		return LCD_CHAR_EXMARK;
+			when x"3F" =>		return LCD_CHAR_QMARK;
+			when x"23" =>		return LCD_CHAR_SHARP;
+			when x"7E" =>		return LCD_CHAR_CDOT;
 				
-			WHEN x"30" =>		RETURN LCD_CHAR_0;
-			WHEN x"31" =>		RETURN LCD_CHAR_1;
-			WHEN x"32" =>		RETURN LCD_CHAR_2;
-			WHEN x"33" =>		RETURN LCD_CHAR_3;
-			WHEN x"34" =>		RETURN LCD_CHAR_4;
-			WHEN x"35" =>		RETURN LCD_CHAR_5;
-			WHEN x"36" =>		RETURN LCD_CHAR_6;
-			WHEN x"37" =>		RETURN LCD_CHAR_7;
-			WHEN x"38" =>		RETURN LCD_CHAR_8;
-			WHEN x"39" =>		RETURN LCD_CHAR_9;
+			when x"30" =>		return LCD_CHAR_0;
+			when x"31" =>		return LCD_CHAR_1;
+			when x"32" =>		return LCD_CHAR_2;
+			when x"33" =>		return LCD_CHAR_3;
+			when x"34" =>		return LCD_CHAR_4;
+			when x"35" =>		return LCD_CHAR_5;
+			when x"36" =>		return LCD_CHAR_6;
+			when x"37" =>		return LCD_CHAR_7;
+			when x"38" =>		return LCD_CHAR_8;
+			when x"39" =>		return LCD_CHAR_9;
 			
-			WHEN x"41" =>		RETURN LCD_UCHAR_A;
-			WHEN x"42" =>		RETURN LCD_UCHAR_B;
-			WHEN x"43" =>		RETURN LCD_UCHAR_C;
-			WHEN x"44" =>		RETURN LCD_UCHAR_D;
-			WHEN x"45" =>		RETURN LCD_UCHAR_E;
-			WHEN x"46" =>		RETURN LCD_UCHAR_F;
-			WHEN x"47" =>		RETURN LCD_UCHAR_G;
-			WHEN x"48" =>		RETURN LCD_UCHAR_H;
-			WHEN x"49" =>		RETURN LCD_UCHAR_I;
-			WHEN x"4A" =>		RETURN LCD_UCHAR_J;
-			WHEN x"4B" =>		RETURN LCD_UCHAR_K;
-			WHEN x"4C" =>		RETURN LCD_UCHAR_L;
-			WHEN x"4D" =>		RETURN LCD_UCHAR_M;
-			WHEN x"4E" =>		RETURN LCD_UCHAR_N;
-			WHEN x"4F" =>		RETURN LCD_UCHAR_O;
-			WHEN x"50" =>		RETURN LCD_UCHAR_P;
-			WHEN x"51" =>		RETURN LCD_UCHAR_Q;
-			WHEN x"52" =>		RETURN LCD_UCHAR_R;
-			WHEN x"53" =>		RETURN LCD_UCHAR_S;
-			WHEN x"54" =>		RETURN LCD_UCHAR_T;
-			WHEN x"55" =>		RETURN LCD_UCHAR_U;
-			WHEN x"56" =>		RETURN LCD_UCHAR_V;
-			WHEN x"57" =>		RETURN LCD_UCHAR_W;
-			WHEN x"58" =>		RETURN LCD_UCHAR_X;
-			WHEN x"59" =>		RETURN LCD_UCHAR_Y;
-			WHEN x"5A" =>		RETURN LCD_UCHAR_Z;
+			when x"41" =>		return LCD_UCHAR_A;
+			when x"42" =>		return LCD_UCHAR_B;
+			when x"43" =>		return LCD_UCHAR_C;
+			when x"44" =>		return LCD_UCHAR_D;
+			when x"45" =>		return LCD_UCHAR_E;
+			when x"46" =>		return LCD_UCHAR_F;
+			when x"47" =>		return LCD_UCHAR_G;
+			when x"48" =>		return LCD_UCHAR_H;
+			when x"49" =>		return LCD_UCHAR_I;
+			when x"4A" =>		return LCD_UCHAR_J;
+			when x"4B" =>		return LCD_UCHAR_K;
+			when x"4C" =>		return LCD_UCHAR_L;
+			when x"4D" =>		return LCD_UCHAR_M;
+			when x"4E" =>		return LCD_UCHAR_N;
+			when x"4F" =>		return LCD_UCHAR_O;
+			when x"50" =>		return LCD_UCHAR_P;
+			when x"51" =>		return LCD_UCHAR_Q;
+			when x"52" =>		return LCD_UCHAR_R;
+			when x"53" =>		return LCD_UCHAR_S;
+			when x"54" =>		return LCD_UCHAR_T;
+			when x"55" =>		return LCD_UCHAR_U;
+			when x"56" =>		return LCD_UCHAR_V;
+			when x"57" =>		return LCD_UCHAR_W;
+			when x"58" =>		return LCD_UCHAR_X;
+			when x"59" =>		return LCD_UCHAR_Y;
+			when x"5A" =>		return LCD_UCHAR_Z;
 			
-			WHEN x"61" =>		RETURN LCD_LCHAR_a;
-			WHEN x"62" =>		RETURN LCD_LCHAR_b;
-			WHEN x"63" =>		RETURN LCD_LCHAR_c;
-			WHEN x"64" =>		RETURN LCD_LCHAR_d;
-			WHEN x"65" =>		RETURN LCD_LCHAR_e;
-			WHEN x"66" =>		RETURN LCD_LCHAR_f;
-			WHEN x"67" =>		RETURN LCD_LCHAR_g;
-			WHEN x"68" =>		RETURN LCD_LCHAR_h;
-			WHEN x"69" =>		RETURN LCD_LCHAR_i;
-			WHEN x"6A" =>		RETURN LCD_LCHAR_j;
-			WHEN x"6B" =>		RETURN LCD_LCHAR_k;
-			WHEN x"6C" =>		RETURN LCD_LCHAR_l;
-			WHEN x"6D" =>		RETURN LCD_LCHAR_m;
-			WHEN x"6E" =>		RETURN LCD_LCHAR_n;
-			WHEN x"6F" =>		RETURN LCD_LCHAR_o;
-			WHEN x"70" =>		RETURN LCD_LCHAR_p;
-			WHEN x"71" =>		RETURN LCD_LCHAR_q;
-			WHEN x"72" =>		RETURN LCD_LCHAR_r;
-			WHEN x"73" =>		RETURN LCD_LCHAR_s;
-			WHEN x"74" =>		RETURN LCD_LCHAR_t;
-			WHEN x"75" =>		RETURN LCD_LCHAR_u;
-			WHEN x"76" =>		RETURN LCD_LCHAR_v;
-			WHEN x"77" =>		RETURN LCD_LCHAR_w;
-			WHEN x"78" =>		RETURN LCD_LCHAR_x;
-			WHEN x"79" =>		RETURN LCD_LCHAR_y;
-			WHEN x"7A" =>		RETURN LCD_LCHAR_z;
+			when x"61" =>		return LCD_LCHAR_a;
+			when x"62" =>		return LCD_LCHAR_b;
+			when x"63" =>		return LCD_LCHAR_c;
+			when x"64" =>		return LCD_LCHAR_d;
+			when x"65" =>		return LCD_LCHAR_e;
+			when x"66" =>		return LCD_LCHAR_f;
+			when x"67" =>		return LCD_LCHAR_g;
+			when x"68" =>		return LCD_LCHAR_h;
+			when x"69" =>		return LCD_LCHAR_i;
+			when x"6A" =>		return LCD_LCHAR_j;
+			when x"6B" =>		return LCD_LCHAR_k;
+			when x"6C" =>		return LCD_LCHAR_l;
+			when x"6D" =>		return LCD_LCHAR_m;
+			when x"6E" =>		return LCD_LCHAR_n;
+			when x"6F" =>		return LCD_LCHAR_o;
+			when x"70" =>		return LCD_LCHAR_p;
+			when x"71" =>		return LCD_LCHAR_q;
+			when x"72" =>		return LCD_LCHAR_r;
+			when x"73" =>		return LCD_LCHAR_s;
+			when x"74" =>		return LCD_LCHAR_t;
+			when x"75" =>		return LCD_LCHAR_u;
+			when x"76" =>		return LCD_LCHAR_v;
+			when x"77" =>		return LCD_LCHAR_w;
+			when x"78" =>		return LCD_LCHAR_x;
+			when x"79" =>		return LCD_LCHAR_y;
+			when x"7A" =>		return LCD_LCHAR_z;
 			
-			WHEN OTHERS =>	RETURN LCD_CHAR_SPACE;
-		END CASE;
-	END;
+			when others =>	return LCD_CHAR_SPACE;
+		end case;
+	end;
 	
-	FUNCTION LCD_CHAR2Bin(char : T_LCD_CHAR) RETURN T_SLV_8 IS
-	BEGIN
-		CASE char IS
-			WHEN LCD_CHAR_SPACE =>		RETURN x"20";
-			WHEN LCD_CHAR_DASH =>			RETURN x"2D";
-			WHEN LCD_CHAR_ASSIGN =>		RETURN x"3D";
-			WHEN LCD_CHAR_DOT =>			RETURN x"2E";
-			WHEN LCD_CHAR_COLON =>		RETURN x"3A";
-			WHEN LCD_CHAR_ARROW_R =>	RETURN x"7E";
-			WHEN LCD_CHAR_ARROW_L =>	RETURN x"7F";
+	function LCD_CHAR2Bin(char : T_LCD_CHAR) return T_SLV_8 is
+	begin
+		case char is
+			when LCD_CHAR_SPACE =>		return x"20";
+			when LCD_CHAR_DASH =>			return x"2D";
+			when LCD_CHAR_ASSIGN =>		return x"3D";
+			when LCD_CHAR_DOT =>			return x"2E";
+			when LCD_CHAR_COLON =>		return x"3A";
+			when LCD_CHAR_ARROW_R =>	return x"7E";
+			when LCD_CHAR_ARROW_L =>	return x"7F";
 			
-			WHEN LCD_CHAR_AT =>				RETURN x"40";
-			WHEN LCD_CHAR_EXMARK =>		RETURN x"21";
-			WHEN LCD_CHAR_QMARK =>		RETURN x"3F";
-			WHEN LCD_CHAR_SHARP =>		RETURN x"23";
-			WHEN LCD_CHAR_CDOT =>			RETURN x"A5";
+			when LCD_CHAR_AT =>				return x"40";
+			when LCD_CHAR_EXMARK =>		return x"21";
+			when LCD_CHAR_QMARK =>		return x"3F";
+			when LCD_CHAR_SHARP =>		return x"23";
+			when LCD_CHAR_CDOT =>			return x"A5";
 
-			WHEN LCD_CHAR_0 =>		RETURN x"30";
-			WHEN LCD_CHAR_1 =>		RETURN x"31";
-			WHEN LCD_CHAR_2 =>		RETURN x"32";
-			WHEN LCD_CHAR_3 =>		RETURN x"33";
-			WHEN LCD_CHAR_4 =>		RETURN x"34";
-			WHEN LCD_CHAR_5 =>		RETURN x"35";
-			WHEN LCD_CHAR_6 =>		RETURN x"36";
-			WHEN LCD_CHAR_7 =>		RETURN x"37";
-			WHEN LCD_CHAR_8 =>		RETURN x"38";
-			WHEN LCD_CHAR_9 =>		RETURN x"39";
+			when LCD_CHAR_0 =>		return x"30";
+			when LCD_CHAR_1 =>		return x"31";
+			when LCD_CHAR_2 =>		return x"32";
+			when LCD_CHAR_3 =>		return x"33";
+			when LCD_CHAR_4 =>		return x"34";
+			when LCD_CHAR_5 =>		return x"35";
+			when LCD_CHAR_6 =>		return x"36";
+			when LCD_CHAR_7 =>		return x"37";
+			when LCD_CHAR_8 =>		return x"38";
+			when LCD_CHAR_9 =>		return x"39";
 			
-			WHEN LCD_UCHAR_A =>		RETURN x"41";
-			WHEN LCD_UCHAR_B =>		RETURN x"42";
-			WHEN LCD_UCHAR_C =>		RETURN x"43";
-			WHEN LCD_UCHAR_D =>		RETURN x"44";
-			WHEN LCD_UCHAR_E =>		RETURN x"45";
-			WHEN LCD_UCHAR_F =>		RETURN x"46";
-			WHEN LCD_UCHAR_G =>		RETURN x"47";
-			WHEN LCD_UCHAR_H =>		RETURN x"48";
-			WHEN LCD_UCHAR_I =>		RETURN x"49";
-			WHEN LCD_UCHAR_J =>		RETURN x"4A";
-			WHEN LCD_UCHAR_K =>		RETURN x"4B";
-			WHEN LCD_UCHAR_L =>		RETURN x"4C";
-			WHEN LCD_UCHAR_M =>		RETURN x"4D";
-			WHEN LCD_UCHAR_N =>		RETURN x"4E";
-			WHEN LCD_UCHAR_O =>		RETURN x"4F";
-			WHEN LCD_UCHAR_P =>		RETURN x"50";
-			WHEN LCD_UCHAR_Q =>		RETURN x"51";
-			WHEN LCD_UCHAR_R =>		RETURN x"52";
-			WHEN LCD_UCHAR_S =>		RETURN x"53";
-			WHEN LCD_UCHAR_T =>		RETURN x"54";
-			WHEN LCD_UCHAR_U =>		RETURN x"55";
-			WHEN LCD_UCHAR_V =>		RETURN x"56";
-			WHEN LCD_UCHAR_W =>		RETURN x"57";
-			WHEN LCD_UCHAR_X =>		RETURN x"58";
-			WHEN LCD_UCHAR_Y =>		RETURN x"59";
-			WHEN LCD_UCHAR_Z =>		RETURN x"5A";
+			when LCD_UCHAR_A =>		return x"41";
+			when LCD_UCHAR_B =>		return x"42";
+			when LCD_UCHAR_C =>		return x"43";
+			when LCD_UCHAR_D =>		return x"44";
+			when LCD_UCHAR_E =>		return x"45";
+			when LCD_UCHAR_F =>		return x"46";
+			when LCD_UCHAR_G =>		return x"47";
+			when LCD_UCHAR_H =>		return x"48";
+			when LCD_UCHAR_I =>		return x"49";
+			when LCD_UCHAR_J =>		return x"4A";
+			when LCD_UCHAR_K =>		return x"4B";
+			when LCD_UCHAR_L =>		return x"4C";
+			when LCD_UCHAR_M =>		return x"4D";
+			when LCD_UCHAR_N =>		return x"4E";
+			when LCD_UCHAR_O =>		return x"4F";
+			when LCD_UCHAR_P =>		return x"50";
+			when LCD_UCHAR_Q =>		return x"51";
+			when LCD_UCHAR_R =>		return x"52";
+			when LCD_UCHAR_S =>		return x"53";
+			when LCD_UCHAR_T =>		return x"54";
+			when LCD_UCHAR_U =>		return x"55";
+			when LCD_UCHAR_V =>		return x"56";
+			when LCD_UCHAR_W =>		return x"57";
+			when LCD_UCHAR_X =>		return x"58";
+			when LCD_UCHAR_Y =>		return x"59";
+			when LCD_UCHAR_Z =>		return x"5A";
 			
-			WHEN LCD_LCHAR_a =>		RETURN x"61";
-			WHEN LCD_LCHAR_b =>		RETURN x"62";
-			WHEN LCD_LCHAR_c =>		RETURN x"63";
-			WHEN LCD_LCHAR_d =>		RETURN x"64";
-			WHEN LCD_LCHAR_e =>		RETURN x"65";
-			WHEN LCD_LCHAR_f =>		RETURN x"66";
-			WHEN LCD_LCHAR_g =>		RETURN x"67";
-			WHEN LCD_LCHAR_h =>		RETURN x"68";
-			WHEN LCD_LCHAR_i =>		RETURN x"69";
-			WHEN LCD_LCHAR_j =>		RETURN x"6A";
-			WHEN LCD_LCHAR_k =>		RETURN x"6B";
-			WHEN LCD_LCHAR_l =>		RETURN x"6C";
-			WHEN LCD_LCHAR_m =>		RETURN x"6D";
-			WHEN LCD_LCHAR_n =>		RETURN x"6E";
-			WHEN LCD_LCHAR_o =>		RETURN x"6F";
-			WHEN LCD_LCHAR_p =>		RETURN x"70";
-			WHEN LCD_LCHAR_q =>		RETURN x"71";
-			WHEN LCD_LCHAR_r =>		RETURN x"72";
-			WHEN LCD_LCHAR_s =>		RETURN x"73";
-			WHEN LCD_LCHAR_t =>		RETURN x"74";
-			WHEN LCD_LCHAR_u =>		RETURN x"75";
-			WHEN LCD_LCHAR_v =>		RETURN x"76";
-			WHEN LCD_LCHAR_w =>		RETURN x"77";
-			WHEN LCD_LCHAR_x =>		RETURN x"78";
-			WHEN LCD_LCHAR_y =>		RETURN x"79";
-			WHEN LCD_LCHAR_z =>		RETURN x"7A";
+			when LCD_LCHAR_a =>		return x"61";
+			when LCD_LCHAR_b =>		return x"62";
+			when LCD_LCHAR_c =>		return x"63";
+			when LCD_LCHAR_d =>		return x"64";
+			when LCD_LCHAR_e =>		return x"65";
+			when LCD_LCHAR_f =>		return x"66";
+			when LCD_LCHAR_g =>		return x"67";
+			when LCD_LCHAR_h =>		return x"68";
+			when LCD_LCHAR_i =>		return x"69";
+			when LCD_LCHAR_j =>		return x"6A";
+			when LCD_LCHAR_k =>		return x"6B";
+			when LCD_LCHAR_l =>		return x"6C";
+			when LCD_LCHAR_m =>		return x"6D";
+			when LCD_LCHAR_n =>		return x"6E";
+			when LCD_LCHAR_o =>		return x"6F";
+			when LCD_LCHAR_p =>		return x"70";
+			when LCD_LCHAR_q =>		return x"71";
+			when LCD_LCHAR_r =>		return x"72";
+			when LCD_LCHAR_s =>		return x"73";
+			when LCD_LCHAR_t =>		return x"74";
+			when LCD_LCHAR_u =>		return x"75";
+			when LCD_LCHAR_v =>		return x"76";
+			when LCD_LCHAR_w =>		return x"77";
+			when LCD_LCHAR_x =>		return x"78";
+			when LCD_LCHAR_y =>		return x"79";
+			when LCD_LCHAR_z =>		return x"7A";
 			
-			WHEN OTHERS =>				RETURN x"FF";
-		END CASE;
-	END;
-	
-	FUNCTION lcd_go_home(row_us : UNSIGNED) RETURN T_SLV_8 IS
-		VARIABLE slv		: STD_LOGIC_VECTOR(row_us'range)		:= std_logic_vector(row_us);
+			when others =>				return x"FF";
+		end case;
+	end;
+
+  function lcd_functionset(datalength : positive; lines : positive; font : natural) return t_slv_8 is
+		variable dl : std_logic;
+  begin
+    assert datalength = 4 or datalength = 8 report "Invalid display data length." severity error;
+    case datalength is
+      when 4      => dl := '0';
+      when 8      => dl := '1';
+      when others => dl := 'X';
+    end case;
+		assert lines <= 2 report "Invalid display line number." severity error;
+		assert font <= 1 report "Invalid display font selection." severity error;
+    return "001" & dl & to_sl(lines = 2) & to_sl(font > 0) & "--";
+  end;
+
+  function lcd_displayctrl(turn_on : boolean; cursor : boolean; blink : boolean) return t_slv_8 is
+	begin
+		return "00001" & to_sl(turn_on) & to_sl(cursor) & to_sl(blink);
+	end;
+
+  function lcd_entrymode(inc_ndec : boolean; shift : boolean) return t_slv_8 is
+	begin
+		return "000001" & to_sl(inc_ndec) & to_sl(shift);
+	end;
+
+	FUNCTION lcd_go_home(row_us : std_logic_vector) return T_SLV_8 IS
 	BEGIN
-		RETURN '1' & slv(0) & "000000";
+		return '1' & row_us(0) & "000000";
 	END;
 
-	FUNCTION lcd_display_on(ShowCursor : BOOLEAN; Blink : BOOLEAN) RETURN T_SLV_8 IS
+	FUNCTION lcd_display_on(ShowCursor : BOOLEAN; Blink : BOOLEAN) return T_SLV_8 IS
 		VARIABLE Result	: T_SLV_8														:= x"00";
 	BEGIN
 		Result(3)		:= '1';
@@ -519,58 +577,58 @@ PACKAGE BODY lcd IS
 			Result(0)	:= '1';			-- blinking on/off bit
 		END IF;
 		
-		RETURN Result;
+		return Result;
 	END;
 
-	FUNCTION ite(cond : BOOLEAN; value1 : T_LCD_CHAR; value2 : T_LCD_CHAR) RETURN T_LCD_CHAR IS
-	BEGIN
-		IF (cond = TRUE) THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END;
+	function ite(cond : BOOLEAN; value1 : T_LCD_CHAR; value2 : T_LCD_CHAR) return T_LCD_CHAR is
+	begin
+		if (cond = TRUE) then
+			return value1;
+		else
+			return value2;
+		end if;
+	end;
 	
-	FUNCTION ite(cond : BOOLEAN; value1 : T_LCD_CHAR_VECTOR; value2 : T_LCD_CHAR_VECTOR) RETURN T_LCD_CHAR_VECTOR IS
-	BEGIN
-		IF (cond = TRUE) THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END;
+	function ite(cond : BOOLEAN; value1 : T_LCD_CHAR_VECTOR; value2 : T_LCD_CHAR_VECTOR) return T_LCD_CHAR_VECTOR is
+	begin
+		if (cond = TRUE) then
+			return value1;
+		else
+			return value2;
+		end if;
+	end;
 	
-	FUNCTION Bin2BCD(Sum_In : T_BCD; C_In : STD_LOGIC) RETURN UNSIGNED IS
-	BEGIN
-		IF C_In = '0' THEN
-			CASE Sum_In IS
-				WHEN x"0" =>		RETURN x"0";
-				WHEN x"1" =>		RETURN x"2";
-				WHEN x"2" =>		RETURN x"4";
-				WHEN x"3" =>		RETURN x"6";
-				WHEN x"4" =>		RETURN x"8";
-				WHEN x"5" =>		RETURN x"0";
-				WHEN x"6" =>		RETURN x"2";
-				WHEN x"7" =>		RETURN x"4";
-				WHEN x"8" =>		RETURN x"6";
-				WHEN x"9" =>		RETURN x"8";
-				WHEN OTHERS =>	RETURN x"0";
-			END CASE;
-		ELSE
-			CASE Sum_In IS
-				WHEN x"0" =>		RETURN x"1";
-				WHEN x"1" =>		RETURN x"3";
-				WHEN x"2" =>		RETURN x"5";
-				WHEN x"3" =>		RETURN x"7";
-				WHEN x"4" =>		RETURN x"9";
-				WHEN x"5" =>		RETURN x"1";
-				WHEN x"6" =>		RETURN x"3";
-				WHEN x"7" =>		RETURN x"5";
-				WHEN x"8" =>		RETURN x"7";
-				WHEN x"9" =>		RETURN x"9";
-				WHEN OTHERS =>	RETURN x"0";
-			END CASE;
-		END IF;
-	END;
+	function Bin2BCD(Sum_In : T_BCD; C_In : STD_LOGIC) return T_BCD is
+	begin
+		if C_In = '0' then
+			case Sum_In is
+				when x"0" =>		return x"0";
+				when x"1" =>		return x"2";
+				when x"2" =>		return x"4";
+				when x"3" =>		return x"6";
+				when x"4" =>		return x"8";
+				when x"5" =>		return x"0";
+				when x"6" =>		return x"2";
+				when x"7" =>		return x"4";
+				when x"8" =>		return x"6";
+				when x"9" =>		return x"8";
+				when others =>	return x"0";
+			end case;
+		else
+			case Sum_In is
+				when x"0" =>		return x"1";
+				when x"1" =>		return x"3";
+				when x"2" =>		return x"5";
+				when x"3" =>		return x"7";
+				when x"4" =>		return x"9";
+				when x"5" =>		return x"1";
+				when x"6" =>		return x"3";
+				when x"7" =>		return x"5";
+				when x"8" =>		return x"7";
+				when x"9" =>		return x"9";
+				when others =>	return x"0";
+			end case;
+		end if;
+	end;
 	
-END PACKAGE BODY;
+end package body;

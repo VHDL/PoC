@@ -1,61 +1,72 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- ===========================================================================
 --
--- Copyright (c) 2008
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- Authors:     Peter Reichel
+--              Jan Schirok
+--              Steffen Koehler
 --
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
+-- Module:      UART controller for FTDI FT245M UART-over-USB converter.
 --
+-- License:
+-- ===========================================================================
+-- Copyright 2008-2015 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--		http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ===========================================================================
 
---
--- Entity: ft245_uart
--- Author(s): Peter Reichel, Jan Schirok, Steffen Koehler
---
--- FTDI FT245M USB/serial converter chip interface
---
--- Revision:    $Revision: 1.6 $
--- Last change: $Date: 2009-02-19 16:02:29 $
---
 
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+library IEEE;
+use IEEE.std_logic_1164.all;
 
-library poc;
-use poc.functions.all;
-
-entity ft245_uart is
+entity uart_ft245 is
    generic (
-      CLK_FREQ : positive      
+      CLK_FREQ : positive
    );
    port (
       -- common signals
-      clk         : in  std_logic;
-      reset       : in  std_logic;
+      clk : in std_logic;
+      rst : in std_logic;
 
       -- send data
-      snd_ready   : out std_logic;
-      snd_strobe  : in  std_logic;
-      snd_data    : in  std_logic_vector(7 downto 0);
+      snd_ready  : out std_logic;
+      snd_strobe : in  std_logic;
+      snd_data   : in  std_logic_vector(7 downto 0);
 
       -- receive data
-      rec_strobe  : out std_logic;
-      rec_data    : out std_logic_vector(7 downto 0);
+      rec_strobe : out std_logic;
+      rec_data   : out std_logic_vector(7 downto 0);
 
       -- connection to ft245
-      ft245_data  : inout std_logic_vector (7 downto 0);
-      ft245_rdn   : out std_logic;
-      ft245_wrn   : out std_logic;
-      ft245_rxfn  : in std_logic;
-      ft245_txen  : in std_logic;
-      ft245_pwrenn : in std_logic
+      ft245_data   : inout std_logic_vector(7 downto 0);
+      ft245_rdn    : out   std_logic;
+      ft245_wrn    : out   std_logic;
+      ft245_rxfn   : in    std_logic;
+      ft245_txen   : in    std_logic;
+      ft245_pwrenn : in    std_logic
    );
 end entity;
 
-architecture rtl of ft245_uart is
+
+library IEEE;
+use IEEE.numeric_std.all;
+
+library PoC;
+use PoC.utils.all;
+
+architecture rtl of uart_ft245 is
 
    -- clock frequency (MHz)
    constant CLK_FREQ_MHZ : integer := CLK_FREQ / 1000000;
@@ -105,7 +116,7 @@ begin
    process(clk)
    begin
       if rising_edge(clk) then
-        if reset = '1' then
+        if rst = '1' then
           -- Neutral PowerUp / Reset
           ff_susp <= '1';
           ff_rxf  <= '1';
@@ -199,7 +210,7 @@ begin
       if rising_edge(clk) then
 
          -- control signals
-         if reset = '1' then
+         if rst = '1' then
             fsm_state   <= IDLE;
             reg_rd_b    <= '1';
             reg_wr_b    <= '1';
@@ -240,10 +251,10 @@ begin
 
    ft245_rdn <= reg_rd_b;
    ft245_wrn <= reg_wr_b;
-   
+
    rec_data   <= reg_data_rec;
    rec_strobe <= reg_ld_rec;
    snd_ready  <= ff_rxf and not ff_txe and not ff_susp
       when fsm_state = IDLE else '0';
 
-end architecture;
+end rtl;

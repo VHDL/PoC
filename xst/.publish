@@ -1,0 +1,23 @@
+# git files
+.gitignore
+.gitempty
+
+# Documentation
+README.md
+
+# XST specific files
+default.filter
+default.xcf
+Series-7.xst
+Spartan-3.xst
+
+# PoC subnamespaces
+common/
+arith/
+bus/
+fifo/
+comm/
+io/
+mem/
+misc/
+xil/

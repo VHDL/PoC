@@ -30,21 +30,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+#
 # entry point
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
 else:
-	from sys import exit
+	from lib.Functions import Exit
+	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.vSimSimulator")
 
-	print("=" * 80)
-	print("{: ^80s}".format("The PoC Library - Python Module Simulator.vSimSimulator"))
-	print("=" * 80)
-	print()
-	print("This is no executable file!")
-	exit(1)
-
+# load dependencies
 from pathlib import Path
 
 from Base.Exceptions import *
@@ -95,6 +90,10 @@ class Simulator(PoCSimulator):
 		vSimExecutablePath =	self.host.directories["vSimBinary"] / self.__executables['vsim']
 #		gtkwExecutablePath =	self.host.directories["GTKWBinary"] / self.__executables['gtkwave']
 		
+		if not self.host.tbConfig.has_section(str(pocEntity)):
+			from configparser import NoSectionError
+			raise SimulatorException("Testbench '" + str(pocEntity) + "' not found.") from NoSectionError(str(pocEntity))
+		
 		testbenchName =				self.host.tbConfig[str(pocEntity)]['TestbenchModule']
 		fileListFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
 		tclBatchFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['vSimBatchScript']
@@ -132,7 +131,7 @@ class Simulator(PoCSimulator):
 		# add empty line if logs are enabled
 		if self.showLogs:		print()
 		
-		vhdlLibraries = {}
+		vhdlLibraries = []
 		
 		with fileListFilePath.open('r') as fileFileHandle:
 			for line in fileFileHandle:
@@ -140,10 +139,12 @@ class Simulator(PoCSimulator):
 		
 				if (filesLineRegExpMatch is not None):
 					if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
-						vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
+						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
+						vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
 					elif (filesLineRegExpMatch.group('Keyword')[0:5] == "vhdl-"):
 						if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
-							vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
+							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
+							vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
 					elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
 						self.printVerbose("    skipped xilinx specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
 						
@@ -159,6 +160,8 @@ class Simulator(PoCSimulator):
 						
 						try:
 							vLibLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+							vhdlLibraries.append(vhdlLibraryName)
+
 						except subprocess.CalledProcessError as ex:
 								print("ERROR while executing vlib: %s" % str(vhdlFilePath))
 								print("Return Code: %i" % ex.returncode)
@@ -173,7 +176,7 @@ class Simulator(PoCSimulator):
 
 					# 
 					if (not vhdlFilePath.exists()):
-						raise SimulatorException("Can not compile " + str(vhdlFilePath)) from FileNotFoundError(str(vhdlFilePath))
+						raise SimulatorException("Can not compile '" + vhdlFileName + "'.") from FileNotFoundError(str(vhdlFilePath))
 					
 					if (self.__vhdlStandard == "87"):
 						vhdlStandard = "-87"

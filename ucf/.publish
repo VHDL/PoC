@@ -7,6 +7,8 @@ Atlys/
 
 # Virtex-5 boards
 ML505/
+ML506/
+XUPV5/
 
 # Virtex-6 boards
 ML605/
@@ -23,9 +25,12 @@ VC707/
 # Zynq-7000 boards
 #ZedBoard/
 
+# Stratix IV
+DE4/
+
 # module level constraints
+misc/
 net/
-xil/
 
 # 
 MetaStability.ucf

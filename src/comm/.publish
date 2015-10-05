@@ -1,3 +1,7 @@
+
+# Documentation
+README.md
+
 comm.pkg.vhdl
 comm_crc.vhdl
 comm_scramble.vhdl
