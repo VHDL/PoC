@@ -52,6 +52,7 @@ use			IEEE.STD_LOGIC_1164.all;
 library PoC;
 use			PoC.config.all;
 use			PoC.utils.all;
+use			PoC.strings.all;
 use			PoC.vectors.all;
 use			PoC.physical.all;
 use			PoC.components.all;
@@ -65,14 +66,17 @@ entity io_FanControl is
 		ENABLE_TACHO						: BOOLEAN			:= FALSE
 	);
 	port (
+		-- Global Control
 		Clock										: in	STD_LOGIC;
 		Reset										: in	STD_LOGIC;
-		
+
+		-- Fan Control derived from internal System Health Monitor
 		Fan_PWM									: out	STD_LOGIC;
-		Fan_Tacho								: in	STD_LOGIC;
-		
-		TachoFrequency					: out STD_LOGIC_VECTOR(ite(ENABLE_TACHO, 16, 1) - 1 downto 0)
-	);
+
+    -- Decoding of Speed Sensor (Requires ENABLE_TACHO)
+    Fan_Tacho      : in  std_logic := 'X';
+    TachoFrequency : out std_logic_vector(15 downto 0)
+  );
 end;
 
 
@@ -99,7 +103,7 @@ begin
 		signal TC_Timeout					: STD_LOGIC;
 		signal StartUp						: STD_LOGIC;
 	begin
-		genML605 : if (BOARD = BOARD_ML605) generate
+		genML605 : if (str_imatch(BOARD_NAME, "ML605") = TRUE) generate
 			SystemMonitor : xil_SystemMonitor_Virtex6
 				port map (
 					Reset								=> Reset,										-- Reset signal for the System Monitor control logic
@@ -111,7 +115,7 @@ begin
 					VN									=> '0'
 				);
 		end generate;
-		genSeries7Board : if ((BOARD = BOARD_KC705) or (BOARD = BOARD_VC707)) generate
+		genSeries7Board : if ((str_imatch(BOARD_NAME, "KC705") or str_imatch(BOARD_NAME, "VC707")) = TRUE) generate
 			SystemMonitor : xil_SystemMonitor_Series7
 				port map (
 					Reset								=> Reset,										-- Reset signal for the System Monitor control logic
@@ -172,7 +176,7 @@ begin
 		signal TC_Timeout					: STD_LOGIC;
 		signal StartUp						: STD_LOGIC;
 	begin
-		genDE4 : if (BOARD = BOARD_DE4) generate
+		genDE4 : if (str_imatch(BOARD_NAME, "DE4") = TRUE) generate
 			OverTemperature_sync		<= '0';
 			UserTemperature_sync		<= '1';
 		end generate;
@@ -224,7 +228,7 @@ begin
 	-- tacho signal interpretation -> convert to RPM
 	-- ==========================================================================================================================================================
 	genNoTacho : if (ENABLE_TACHO = FALSE) generate
-		TachoFrequency		<= (TachoFrequency'range => '0');
+		TachoFrequency <= (TachoFrequency'range => 'X');
 	end generate;
 	genTacho : if (ENABLE_TACHO = TRUE) generate
 		signal Tacho_sync					: STD_LOGIC;

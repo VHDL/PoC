@@ -1,3 +1,11 @@
+# git files
+.gitignore
+.gitempty
+
+# Documentation
+README.md
+
+# PoC subnamespaces
 common/
 arith/
 bus/

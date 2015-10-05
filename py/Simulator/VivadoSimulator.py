@@ -30,21 +30,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+#
 # entry point
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
 else:
-	from sys import exit
+	from lib.Functions import Exit
+	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.VivadoSimulator")
 
-	print("=" * 80)
-	print("{: ^80s}".format("The PoC Library - Python Module Simulator.VivadoSimulator"))
-	print("=" * 80)
-	print()
-	print("This is no executable file!")
-	exit(1)
-
+# load dependencies
 from pathlib import Path
 
 from Base.Exceptions import *
@@ -93,6 +88,10 @@ class Simulator(PoCSimulator):
 		xelabExecutablePath =		self.host.directories["VivadoBinary"] / self.__executables['xElab']
 		xSimExecutablePath =		self.host.directories["VivadoBinary"] / self.__executables['xSim']
 		
+		if not self.host.tbConfig.has_section(str(pocEntity)):
+			from configparser import NoSectionError
+			raise SimulatorException("Testbench '" + str(pocEntity) + "' not found.") from NoSectionError(str(pocEntity))
+		
 		testbenchName =			self.host.tbConfig[str(pocEntity)]['TestbenchModule']
 		fileListFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
 		tclBatchFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['xSimBatchScript']
@@ -127,20 +126,24 @@ class Simulator(PoCSimulator):
 		with fileListFilePath.open('r') as prjFileHandle:
 			for line in prjFileHandle:
 				filesLineRegExpMatch = filesLineRegExp.match(line)
-				
+				vhdlFileName = ""
 				if (filesLineRegExpMatch is not None):
 					if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
-						vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
+						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
+						vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
 					elif (filesLineRegExpMatch.group('Keyword')[0:5] == "vhdl-"):
 						if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
-							vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
+							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
+							vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
 					elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
-						vhdlFilePath = self.host.directories["VivadoInstallation"] / "data/vhdl/src" / filesLineRegExpMatch.group('VHDLFile')
+						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
+						vhdlFilePath = self.host.directories["XilinxPrimitiveSource"] / vhdlFileName
+					
 					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
 					xSimProjectFileContent += "vhdl %s \"%s\"\n" % (vhdlLibraryName, str(vhdlFilePath))
 					
 					if (not vhdlFilePath.exists()):
-						raise SimulatorException("Can not find " + str(vhdlFilePath)) from FileNotFoundError(str(vhdlFilePath))
+						raise SimulatorException("Can not add '" + vhdlFileName + "' to project file.") from FileNotFoundError(str(vhdlFilePath))
 		
 		# write xSim project file
 		self.printDebug("Writing xSim project file to '%s'" % str(prjFilePath))

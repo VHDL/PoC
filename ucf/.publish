@@ -7,6 +7,8 @@ Atlys/
 
 # Virtex-5 boards
 ML505/
+ML506/
+XUPV5/
 
 # Virtex-6 boards
 ML605/

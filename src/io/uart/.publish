@@ -2,6 +2,9 @@
 .gitignore
 .gitempty
 
+# Documentation
+README.md
+
 # package
 uart.pkg.vhdl
 
@@ -14,3 +17,6 @@ uart_rx.vhdl
 
 # wrappers
 uart_fifo.vhdl
+
+# adapters
+uart_ft245.vhdl

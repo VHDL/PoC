@@ -33,6 +33,7 @@
 
 from pathlib import Path
 
+from lib.Functions import Exit
 from Base.Exceptions import *
 from Base.PoCBase import CommandLineProgram
 from PoC.Entity import *
@@ -43,6 +44,8 @@ from Compiler.Exceptions import *
 
 class NetList(CommandLineProgram):
 	__netListConfigFileName = "configuration.ini"
+	
+	headLine = "The PoC-Library - NetList Service Tool"
 	
 	dryRun = False
 	netListConfig = None
@@ -87,6 +90,10 @@ class NetList(CommandLineProgram):
 		if (environ.get('XILINX') == None):	raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
 
 		if (boardString is not None):
+			if not self.netListConfig.has_option('BOARDS', boardString):
+				from configparser import NoOptionError
+				raise CompilerException("Board '" + boardString + "' not found.") from NoOptionError(boardString, 'BOARDS')
+		
 			device = Device(self.netListConfig['BOARDS'][boardString])
 		elif (deviceString is not None):
 			device = Device(deviceString)
@@ -113,6 +120,10 @@ class NetList(CommandLineProgram):
 			raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
 
 		if (boardString is not None):
+			if not self.netListConfig.has_option('BOARDS', boardString):
+				from configparser import NoOptionError
+				raise CompilerException("Board '" + boardString + "' not found.") from NoOptionError(boardString, 'BOARDS')
+				
 			device = Device(self.netListConfig['BOARDS'][boardString])
 		elif (deviceString is not None):
 			device = Device(deviceString)
@@ -127,10 +138,13 @@ class NetList(CommandLineProgram):
 
 # main program
 def main():
-	print("=" * 80)
+	from colorama import Fore, Back, Style, init
+	init()
+	
+	print(Fore.MAGENTA + "=" * 80)
 	print("{: ^80s}".format("The PoC Library - NetList Service Tool"))
 	print("=" * 80)
-	print()
+	print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 	
 	try:
 		import argparse
@@ -167,14 +181,7 @@ def main():
 		args = argParser.parse_args()
 		
 	except Exception as ex:
-		from traceback import print_tb
-		print("FATAL: %s" % ex.__str__())
-		print("-" * 80)
-		print_tb(ex.__traceback__)
-		print("-" * 80)
-		print()
-		return
-
+		Exit.printException(ex)
 		
 	try:
 		netList = NetList(args.debug, args.verbose, args.quiet)
@@ -191,62 +198,27 @@ def main():
 			argParser.print_help()
 		
 	except CompilerException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		return
+		from colorama import Fore, Back, Style
+		from configparser import Error
 		
-	except EnvironmentException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		print("Please run this script with it's provided wrapper or manually load the required environment before executing this script.")
-		return
-	
-	except NotConfiguredException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		print("Please run 'poc.[sh/cmd] --configure' in PoC root directory.")
-		return
-	
-	except PlatformNotSupportedException as ex:
-		print("ERROR: Unknown platform '%s'" % ex.message)
-		print()
-		return
-	
-	except BaseException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		return
-	
-	except NotImplementedException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		return
-
-	except Exception as ex:
-		from traceback import print_tb
-		print("FATAL: %s" % ex.__str__())
-		print("-" * 80)
-		print_tb(ex.__traceback__)
-		print("-" * 80)
-		print()
-		return
+		print(Fore.RED + "ERROR:" + Fore.RESET + " %s" % ex.message)
+		if isinstance(ex.__cause__, FileNotFoundError):
+			print(Fore.YELLOW + "  FileNotFound:" + Fore.RESET + " '%s'" % str(ex.__cause__))
+		elif isinstance(ex.__cause__, Error):
+			print(Fore.YELLOW + "  configparser.Error:" + Fore.RESET + " %s" % str(ex.__cause__))
+		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+		exit(1)
+		
+	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)
+	except NotConfiguredException as ex:				Exit.printNotConfiguredException(ex)
+	except PlatformNotSupportedException as ex:	Exit.printPlatformNotSupportedException(ex)
+	except BaseException as ex:									Exit.printBaseException(ex)
+	except NotImplementedException as ex:				Exit.printNotImplementedException(ex)
+	except Exception as ex:											Exit.printException(ex)
 			
 # entry point
 if __name__ == "__main__":
-	from sys import version_info
-	
-	if (version_info<(3,4,0)):
-		print("ERROR: Used Python interpreter is to old: %s" % version_info)
-		print("Minimal required Python version is 3.4.0")
-		exit(1)
-		
+	Exit.versionCheck((3,4,0))
 	main()
 else:
-	from sys import exit
-	
-	print("=" * 80)
-	print("{: ^80s}".format("The PoC Library - NetList Service Tool"))
-	print("=" * 80)
-	print()
-	print("This is no library file!")
-	exit(1)
+	Exit.printThisIsNoLibraryFile(Netlist.headLine)

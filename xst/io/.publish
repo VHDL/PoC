@@ -1,0 +1,24 @@
+# git files
+.gitignore
+.gitempty
+
+# Documentation
+README.md
+
+# device specific I/O abstraction
+ddrio/
+
+# low speed protocols
+iic/
+lcd/
+#mdio/
+#ow/
+#ps2/
+uart/
+#vga/
+
+# devices
+#device/
+
+# common files
+io_FanControl.files

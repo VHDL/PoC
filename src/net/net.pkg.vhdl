@@ -673,7 +673,7 @@ package net is
 	
 	constant C_NET_TCP_PORTNUMBER_LOOPBACK						: T_NET_TCP_PORT		:= x"FFFF";
 	
-end;
+end package;
 
 package body net is
 
