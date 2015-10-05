@@ -1,6 +1,6 @@
 # git files
 .gitignore
-.gitmodules
+#.gitmodules
 
 # Common files
 LICENSE
