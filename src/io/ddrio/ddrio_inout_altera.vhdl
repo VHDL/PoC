@@ -58,7 +58,7 @@ end entity;
 architecture rtl of ddrio_inout_altera is
 
 begin
-	ioff : altddio_in
+	ioff : altddio_bidir
 		generic map (
 			WIDTH										=> BITS,
 			INTENDED_DEVICE_FAMILY	=> "STRATIXII"		-- TODO: built device string from PoC.config information

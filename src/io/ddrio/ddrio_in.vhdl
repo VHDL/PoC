@@ -12,14 +12,18 @@
 -- ------------------------------------
 --	Instantiates chip-specific DDR input registers.
 --		
---	"OutputEnable" (Tri-State) is high-active. It is automatically inverted if
---	necessary. If an output enable is not required, you may save some logic by
---	setting NO_OUTPUT_ENABLE = true. However, "OutputEnable" must be set to '1'.
---	
---	Both data "DataOut_high/low" as well as "OutputEnable" are sampled with
---	the rising_edge(Clock) from the on-chip logic. "DataOut_high" is brought
---	out with this rising edge. "DataOut_low" is brought out with the falling
---	edge.
+--	Both data "DataIn_high/low" are synchronously outputted to the on-chip logic
+--  with the rising edge of "Clock". "DataIn_high" is the value at the "Pad" 
+--  sampled with the same rising edge. "DataIn_low" is the value sampled with 
+--  the falling edge directly before this rising edge. Thus sampling starts with 
+--  the falling edge of the clock as depicted in the following waveform.
+--               __      ____      ____      __
+--  Clock          |____|    |____|    |____|
+--  Pad          < 0 >< 1 >< 2 >< 3 >< 4 >< 5 >
+--  DataIn_low      ... >< 0      >< 2      ><
+--  DataIn_high     ... >< 1      >< 3      ><
+--
+--	< i > is the value of the i-th data bit on the line.
 --	
 --	"Pad" must be connected to a PAD because FPGAs only have these registers in
 --	IOBs.
@@ -70,7 +74,7 @@ end entity;
 architecture rtl of ddrio_in is
   
 begin
-	assert (VENDOR = VENDOR_XILINX)-- or (VENDOR = VENDOR_ALTERA)
+	assert (VENDOR = VENDOR_XILINX) or (VENDOR = VENDOR_ALTERA)
 		report "PoC.io.ddrio.in is not implemented for given DEVICE."
 		severity FAILURE;
 	
@@ -90,18 +94,19 @@ begin
 			);
 	end generate;
 
---	genAltera : if (VENDOR = VENDOR_ALTERA) generate
---		i : ddrio_in_altera
---			generic map (
---				WIDTH => WIDTH
---			)
---			port map (
---				clk => clk,
---				ce  => ce,
---				dh  => dh,
---				dl  => dl,
---				oe  => oe,
---				q   => q
---			);
---	end generate;
+	genAltera : if (VENDOR = VENDOR_ALTERA) generate
+		i : ddrio_in_altera
+			generic map (
+				BITS						=> BITS,
+				INIT_VALUE_HIGH	=> INIT_VALUE_IN_HIGH,
+				INIT_VALUE_LOW	=> INIT_VALUE_IN_LOW
+			)
+			port map (
+				Clock						=> Clock,
+				ClockEnable			=> ClockEnable,
+				DataIn_high			=> DataIn_high,
+				DataIn_low			=> DataIn_low,
+				Pad							=> Pad
+			);
+	end generate;
 end architecture;

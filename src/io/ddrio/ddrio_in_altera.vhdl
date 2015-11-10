@@ -37,7 +37,7 @@ library	Altera_mf;
 use			Altera_mf.Altera_MF_Components.all;
 
 
-entity ddrio_in_xilinx is
+entity ddrio_in_altera is
 	generic (
 		BITS						: POSITIVE;
 		INIT_VALUE_HIGH	: BIT_VECTOR	:= "1";
@@ -53,7 +53,7 @@ entity ddrio_in_xilinx is
 end entity;
 
 
-architecture rtl of ddrio_in_xilinx is
+architecture rtl of ddrio_in_altera is
 
 begin
 	iff : altddio_in
