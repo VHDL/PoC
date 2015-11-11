@@ -46,8 +46,8 @@ use			PoC.components.all;
 
 entity io_KeyPadScanner is
 	generic (
-		CLOCK_FREQ							: FREQ				: 100 MHz;
-		SCAN_FREQ								: FREQ				: 1 kHz;
+		CLOCK_FREQ							: FREQ				:= 100 MHz;
+		SCAN_FREQ								: FREQ				:= 1 kHz;
 		ROWS										: POSITIVE		:= 4;
 		COLUMNS									: POSITIVE		:= 4;
 		ADD_INPUT_SYNCHRONIZERS	: BOOLEAN			:= TRUE
@@ -56,10 +56,10 @@ entity io_KeyPadScanner is
 		Clock					: in	STD_LOGIC;
 		Reset					: in	STD_LOGIC;
 		-- Matrix interface
-		KeyPadMatrix	: out T_SLM(COLUMS - 1 downto 0, ROWS - 1 downto 0);
+		KeyPadMatrix	: out T_SLM(COLUMNS - 1 downto 0, ROWS - 1 downto 0);
 		-- KeyPad interface
-		Columns				: out	STD_LOGIC_VECTOR(COLUMNS - 1 downto 0);
-		Rows					: in	STD_LOGIC_VECTOR(ROWS - 1 downto 0)
+		ColumnVector	: out	STD_LOGIC_VECTOR(COLUMNS - 1 downto 0);
+		RowVector			: in	STD_LOGIC_VECTOR(ROWS - 1 downto 0)
 	);
 end entity;
 
@@ -85,8 +85,8 @@ begin
 
 	-- generate a column scan signal (one-hot encoded), based on a one-hot rotate register
 	ColumnSelect_en	<= ColumnTimer_rst;
-	ColumnSelect_d	<= rr_left(q => ColumnSelect_d, en => ColumnSelect_en) when rising_edge(Clock);
-	Columns					<= ColumnSelect_d;
+	ColumnSelect_d	<= rreg_left(q => ColumnSelect_d, en => ColumnSelect_en) when rising_edge(Clock);
+	ColumnVector		<= ColumnSelect_d;
 	
 	-- synchronize input signals
 	genSync : if (ADD_INPUT_SYNCHRONIZERS = TRUE) generate
@@ -96,28 +96,22 @@ begin
 			)
 			port map (
 				Clock		=> Clock,
-				Input		=> Rows,
+				Input		=> RowVector,
 				Output	=> Rows_sync
 			);
 	end generate;
 	genNoSync : if (ADD_INPUT_SYNCHRONIZERS = FALSE) generate
-		Rows_sync	<= Rows;
+		Rows_sync	<= RowVector;
 	end generate;
-	
-	process(Clock)
-	begin
-		if rising_edge(Clock) then
-			if (Reset = '1') then
-				KeyPadMatrix_r	<= (others => (others => '0'));
-			else
-				for i in 0 to COLUMNS - 1 loop
-					for j in 0 to ROWS - 1 loop
-						KeyPadMatrix_r(i, j)	<= ColumnSelect_d(i) and Rows_sync(j);
-					end loop;
-				end loop;
-			end if;
-		end if;
-	end process;
+
+	geni : for i in 0 to COLUMNS - 1 generate
+		genj : for j in 0 to ROWS - 1 generate
+			KeyPadMatrix_r(i, j)	<= ffsr(q => KeyPadMatrix_r(i, j),
+																		set => (ColumnSelect_d(i) and Rows_sync(j)),
+																		rst => (Reset or (ColumnSelect_d(i) and not Rows_sync(j))))
+																	when rising_edge(Clock);
+		end generate;
+	end generate;
 	
 	KeyPadMatrix	<= KeyPadMatrix_r;
 end architecture;
