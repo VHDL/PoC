@@ -1,88 +1,108 @@
---
--- Copyright (c) 2007
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
---
-
---
--- Entity: uart_bclk
--- Author(s): Martin Zabel
+-- ============================================================================
+-- Authors:				 	Martin Zabel
+--									Patrick Lehmann
 -- 
--- UART BAUD rate generator
--- bclk_r    = bit clock is rising
--- bclk_x8_r = bit clock times 8 is rising
+-- Module:				 	UART bit clock / baud rate generator
 --
--- Revision:    $Revision: 1.2 $
--- Last change: $Date: 2010-01-05 10:29:16 $
+-- Description:
+-- ------------------------------------
+--	TODO
+-- 
+--	old comments:
+--		UART BAUD rate generator
+--		bclk_r    = bit clock is rising
+--		bclk_x8_r = bit clock times 8 is rising
 --
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+--
+-- License:
+-- ============================================================================
+-- Copyright 2008-2015 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
 
-library poc;
-use poc.functions.all;
+library	IEEE;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
+
+library PoC;
+use			PoC.utils.all;
+use			PoC.strings.all;
+use			PoC.physical.all;
+use			PoC.components.all;
+use			PoC.uart.all;
+
 
 entity uart_bclk is
+	generic (
+		CLOCK_FREQ		: FREQ			:= 100 MHz;
+		BAUDRATE			: BAUD			:= 115200 Bd
+	);
+	port (
+		clk				: in	std_logic;
+		rst				: in	std_logic;
+		bclk			: out	std_logic;
+		bclk_x8		: out	std_logic
+	);
+end entity;
 
-  generic (
-    CLK_FREQ : positive;-- := 50000000;
-    BAUD     : positive);-- := 115200);
-  
-  port (
-    clk       : in  std_logic;
-    rst       : in  std_logic;
-    bclk_r    : out std_logic;
-    bclk_x8_r : out std_logic);
 
-end uart_bclk;
+architecture rtl of uart_bclk is
+	constant UART_OVERSAMPLING_RATE		: POSITIVE					:= 8;
+	constant TIME_UNIT_INTERVAL				: TIME							:= 1 sec / (to_real(BAUDRATE, 1 Bd) * real(UART_OVERSAMPLING_RATE));
+	constant BAUDRATE_COUNTER_MAX			: POSITIVE					:= TimingToCycles(TIME_UNIT_INTERVAL, CLOCK_FREQ);
+	constant BAUDRATE_COUNTER_BITS		: POSITIVE					:= log2ceilnz(BAUDRATE_COUNTER_MAX + 1);
 
-architecture uart_bclk_impl of uart_bclk is
-  constant DIVIDER : positive := CLK_FREQ/(8*BAUD);
-
-  -- register
-  signal x8_cnt : unsigned(log2ceil(DIVIDER)-1 downto 0);
-  signal x1_cnt : unsigned(2 downto 0);
+  -- registers
+  signal x8_cnt : unsigned(BAUDRATE_COUNTER_BITS - 1 downto 0)	:= (others => '0');
+  signal x1_cnt : unsigned(2 downto 0)													:= (others => '0');
 
   -- control signals
   signal x8_cnt_done : std_logic;
   signal x1_cnt_done : std_logic;
 
-begin  -- uart_bclk_impl
+	signal bclk_r			: STD_LOGIC		:= '0';
+	signal bclk_x8_r	: STD_LOGIC		:= '0';
+begin
+	assert FALSE		-- LF works in QuartusII
+		report "uart_bclk:" & LF &
+					 "  CLOCK_FREQ="		& to_string(CLOCK_FREQ, 3) & LF &
+					 "  BAUDRATE="			& to_string(BAUDRATE, 3) & LF &
+					 "  COUNTER_MAX="		& INTEGER'image(BAUDRATE_COUNTER_MAX) & LF &
+					 "  COUNTER_BITS="	& INTEGER'image(BAUDRATE_COUNTER_BITS)
+		severity NOTE;
+	
+	assert io_UART_IsTypicalBaudRate(BAUDRATE)
+		report "The baudrate " & to_string(BAUDRATE, 3) & " is not known to be a typical baudrate!"
+		severity WARNING;
 
-  x8_cnt_done <= '1' when (x8_cnt and to_unsigned(DIVIDER-1, x8_cnt'length)) = DIVIDER-1 else '0';
-  x1_cnt_done <= '1' when x1_cnt = (x1_cnt'range => '0') else '0';
+	x8_cnt			<= upcounter_next(cnt => x8_cnt, rst => (rst or x8_cnt_done)) when rising_edge(clk);
+  x8_cnt_done <= upcounter_equal(cnt => x8_cnt, value => BAUDRATE_COUNTER_MAX - 1);
+	
+	x1_cnt			<= upcounter_next(cnt => x1_cnt, rst => rst, en => x8_cnt_done) when rising_edge(clk);
+  x1_cnt_done <= comp_allzero(x1_cnt);
   
-  process (clk)
-  begin  -- process
-    if rising_edge(clk) then
-      if (rst or x8_cnt_done) = '1' then
-        x8_cnt <= (others => '0');
-      else
-        x8_cnt <= x8_cnt + 1;
-      end if;
-
-      if rst = '1' then
-        x1_cnt <= (others => '0');      -- only for simulation
-      elsif x8_cnt_done = '1' then
-        x1_cnt <= x1_cnt - 1;
-      end if;
-    end if;
-  end process;
-
   -- outputs
-  process (clk)
-  begin  -- process
-    if rising_edge(clk) then
-      -- only x8_cnt_done is pulsed for one clock cycle!
-      bclk_r    <= x1_cnt_done and x8_cnt_done;  -- important
-      bclk_x8_r <= x8_cnt_done;
-    end if;
-  end process;
+	-- ---------------------------------------------------------------------------
+	-- only x8_cnt_done is pulsed for one clock cycle!
+	bclk_r			<= (x1_cnt_done and x8_cnt_done)	when rising_edge(clk);
+	bclk_x8_r		<= x8_cnt_done										when rising_edge(clk);
   
-end uart_bclk_impl;
+	bclk				<= bclk_r;
+	bclk_x8			<= bclk_x8_r;
+end;

@@ -1,0 +1,10 @@
+# git files
+.gitignore
+
+# Documentation
+README.md
+
+# statistic modules
+stat_Minimum.vhdl
+stat_Maximum.vhdl
+#stat_Average.vhdl

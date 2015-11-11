@@ -4,13 +4,23 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
+--									Martin Zabel
 --
--- Package:					TODO
+-- Module:					FIS Encoder for SATA Transport Layer
 --
 -- Description:
 -- ------------------------------------
---		TODO
--- 
+-- See notes on module 'sata_TransportLayer'.
+--
+-- Status:
+-- -------
+-- *_RESET: 								Link_Status is not yet IDLE.
+-- *_IDLE:									Ready to send new FIS.
+-- *_SENDING: 							Sending FIS.
+-- *_SEND_OK:								FIS transmitted and acknowledged with R_OK  by other end.
+-- *_SEND_ERROR:						FIS transmitted and acknowledged with R_ERR by other end.
+-- *_SYNC_ESC:							Sending aborted by SYNC.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -67,7 +77,10 @@ entity sata_FISEncoder IS
 		TX_Valid										: in	STD_LOGIC;
 		TX_InsertEOP								: out	STD_LOGIC;
 		
-		-- SATAController interface (LinkLayer)
+		-- LinkLayer CSE
+		Link_Status									: IN	T_SATA_LINK_STATUS;
+		
+		-- LinkLayer FIFO interface
 		Link_TX_Ack									: in	STD_LOGIC;
 		Link_TX_Data								: out	T_SLV_32;
 		Link_TX_SOF									: out STD_LOGIC;
@@ -77,7 +90,7 @@ entity sata_FISEncoder IS
 		
 		Link_TX_FS_Ack							: out	STD_LOGIC;
 		Link_TX_FS_SendOK						: in	STD_LOGIC;
-		Link_TX_FS_Abort						: in	STD_LOGIC;
+		Link_TX_FS_SyncEsc					: in	STD_LOGIC;
 		Link_TX_FS_Valid						: in	STD_LOGIC
 	);
 end;
@@ -87,10 +100,11 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 	ATTRIBUTE FSM_ENCODING					: STRING;
 
 	TYPE T_STATE IS (
-		ST_IDLE,
+		ST_RESET, ST_IDLE,
 		ST_FIS_REG_HOST_DEV_WORD_0, ST_FIS_REG_HOST_DEV_WORD_1,	ST_FIS_REG_HOST_DEV_WORD_2,	ST_FIS_REG_HOST_DEV_WORD_3,	ST_FIS_REG_HOST_DEV_WORD_4,
-		ST_DATA_0, ST_DATA_N,
-		ST_EVALUATE_FRAMESTATE
+		ST_DATA_0, ST_DATA_N, ST_ABORT_FRAME,
+		ST_EVALUATE_FRAMESTATE,
+		ST_STATUS_SEND_OK, ST_STATUS_SEND_ERROR, ST_STATUS_SYNC_ESC
 	);
 	
 	-- Alias-Definitions for FISType Register Transfer Host => Device (27h)
@@ -122,24 +136,24 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 	-- Word 4
 --	ALIAS Alias_TransferCount							: T_SLV_16												IS Link_TX_Data(15 DOWNTO 0);				-- Transfer Count
 	
-	SIGNAL State													: T_STATE													:= ST_IDLE;
+	SIGNAL State													: T_STATE													:= ST_RESET;
 	SIGNAL NextState											: T_STATE;
-	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS getFSMEncoding_gray(DEBUG);
 	
 BEGIN
 
 	PROCESS(Clock)
 	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
-				State			<= ST_IDLE;
-			ELSE
+		IF rising_edge(Clock) then
+			if (Reset = '1') then
+				State			<= ST_RESET;
+			else
 				State			<= NextState;
 			END IF;
 		END IF;
 	END PROCESS;
 	
-	PROCESS(State, FISType, ATARegisters, TX_Valid, TX_Data, TX_SOP, TX_EOP, Link_TX_Ack, Link_TX_FS_Valid, Link_TX_FS_SendOK, Link_TX_FS_Abort, Link_TX_InsertEOF)
+	PROCESS(State, Link_Status, FISType, ATARegisters, TX_Valid, TX_Data, TX_SOP, TX_EOP, Link_TX_Ack, Link_TX_FS_Valid, Link_TX_FS_SendOK, Link_TX_FS_SyncEsc, Link_TX_InsertEOF)
 	BEGIN
 		NextState										<= State;
 		
@@ -180,14 +194,24 @@ BEGIN
 		Alias_ControlReg						<= x"00";													-- Control register		
 
 		CASE State IS
+			when ST_RESET =>
+				-- Clock might be unstable is this state. In this case either
+				-- a) Reset is asserted because inital reset of the SATAController is
+				--    not finished yet.
+				-- b) Link_Status is constant and not equal to SATA_LINK_STATUS_IDLE
+				--    This may happen during reconfiguration due to speed negotiation.
+        Status										<= SATA_FISE_STATUS_RESET;
+        
+        if (Link_Status = SATA_LINK_STATUS_IDLE) then
+					NextState <= ST_IDLE;
+        end if;
+				
 			WHEN ST_IDLE =>
 				Status										<= SATA_FISE_STATUS_IDLE;
 			
 				CASE FISType IS
 					WHEN SATA_FISTYPE_REG_HOST_DEV =>
 						-- send "Register-FIS - Host to Device"
-						Status								<= SATA_FISE_STATUS_SENDING;
-						
 						Link_TX_Valid					<= '1';
 						Link_TX_SOF						<= '1';
 						
@@ -196,23 +220,25 @@ BEGIN
 						Alias_CommandReg			<= ATARegisters.Command;
 						Alias_FeatureReg			<= x"00";
 
-						IF (Link_TX_Ack = '1') THEN							
+						if (Link_TX_Ack = '1') then							
 							NextState						<= ST_FIS_REG_HOST_DEV_WORD_1;
-						ELSE
+						else
 							NextState						<= ST_FIS_REG_HOST_DEV_WORD_0;
 						END IF;
 					
 					WHEN SATA_FISTYPE_DATA =>
-						Status								<= SATA_FISE_STATUS_SENDING;
-					
 						-- send "Data-FIS - Host to Device"
 						Link_TX_Valid					<= '1';
 						Link_TX_SOF						<= '1';
 						
 						Alias_FISType					<= to_slv(SATA_FISTYPE_DATA);
 					
-						NextState							<= ST_DATA_0;
-					
+						if (Link_TX_Ack = '1') then
+							NextState						<= ST_DATA_N;
+						else
+							NextState						<= ST_DATA_0;
+						end if;
+						
 					WHEN OTHERS =>
 						NULL;
 						
@@ -228,7 +254,7 @@ BEGIN
 				Alias_CommandReg					<= ATARegisters.Command;
 				Alias_FeatureReg					<= x"00";
 
-				IF (Link_TX_Ack = '1') THEN					
+				if (Link_TX_Ack = '1') then					
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_1;
 				END IF;
 
@@ -242,7 +268,7 @@ BEGIN
 				Alias_Device							<=  "0";																								-- Device number
 				Alias_FlagLBA48						<= is_LBA48_Command(to_sata_ata_command(ATARegisters.Command));	-- LBA-48 adressing mode
 
-				IF (Link_TX_Ack = '1') THEN					
+				if (Link_TX_Ack = '1') then					
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_2;
 				END IF;
 					
@@ -253,7 +279,7 @@ BEGIN
 				Alias_LBA32								<= ATARegisters.LBlockAddress(39 DOWNTO 32);
 				Alias_LBA40								<= ATARegisters.LBlockAddress(47 DOWNTO 40);
 
-				IF (Link_TX_Ack = '1') THEN					
+				if (Link_TX_Ack = '1') then					
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_3;
 				END IF;
 				
@@ -264,7 +290,7 @@ BEGIN
 				Alias_SecCount8						<= ATARegisters.SectorCount(15 DOWNTO 8);					-- Sector Count expanded
 				Alias_ControlReg					<= ATARegisters.Control;													-- Control register		
 
-				IF (Link_TX_Ack = '1') THEN					
+				if (Link_TX_Ack = '1') then					
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_4;
 				END IF;
 					
@@ -272,32 +298,20 @@ BEGIN
 				Link_TX_Valid							<= '1';
 				Link_TX_EOF								<= '1';
 
-				IF (Link_TX_Ack = '1') THEN
+				if (Link_TX_Ack = '1') then
 					NextState								<= ST_EVALUATE_FRAMESTATE;
 				END IF;
 				
 			WHEN ST_DATA_0 =>
-				Link_TX_Data							<= TX_Data;
-
-				TX_Ack										<= Link_TX_Ack;
-				TX_InsertEOP							<= Link_TX_InsertEOF;
-				Link_TX_EOF								<= TX_EOP;
-				Link_TX_Valid							<= TX_Valid;
-				
-				IF (TX_Valid = '1') THEN
-					IF (TX_SOP = '1') THEN
-						IF (Link_TX_Ack = '1') THEN
-							NextState						<= ST_DATA_N;
+				-- Send Data FIS Header until Link_TX_Ack.
+				Link_TX_Valid					<= '1';
+				Link_TX_SOF						<= '1';
 						
-							IF (TX_EOP = '1') THEN
-								NextState					<= ST_EVALUATE_FRAMESTATE;
-							END IF;
-						END IF;
-					ELSE
-						Status								<= SATA_FISE_STATUS_ERROR;
-						NextState							<= ST_IDLE;
-					END IF;
-				END IF;
+				Alias_FISType					<= to_slv(SATA_FISTYPE_DATA);
+
+				if (Link_TX_Ack = '1') then
+					NextState 					<= ST_DATA_N;
+				end if;
 
 			WHEN ST_DATA_N =>
 				Link_TX_Data							<= TX_Data;
@@ -307,28 +321,51 @@ BEGIN
 				Link_TX_EOF								<= TX_EOP;
 				Link_TX_Valid							<= TX_Valid;
 				
-				IF (TX_Valid = '1') THEN
-					IF (Link_TX_Ack = '1') THEN
-						IF (TX_EOP = '1') THEN
-							NextState						<= ST_EVALUATE_FRAMESTATE;
-						END IF;
-					END IF;
-				END IF;
+				if (TX_Valid and Link_TX_Ack and TX_EOP) = '1' then
+					-- Frame transmission complete.
+					NextState 							<= ST_EVALUATE_FRAMESTATE;
+				elsif (Link_TX_FS_Valid and Link_TX_FS_SyncEsc) = '1' then
+					-- LinkLayer requests a SyncEsc.
+					NextState 							<= ST_ABORT_FRAME;
+				end if;
 
-			WHEN ST_EVALUATE_FRAMESTATE =>
-				IF (Link_TX_FS_Valid = '1') THEN
-					IF (Link_TX_FS_SendOK = '1') THEN
+			when ST_ABORT_FRAME =>
+				-- Abort frame now. Remaining data is discarded by TransportFSM later.
+				Link_TX_EOF 							<= '1';
+				Link_TX_Valid 						<= '1';
+				
+				if (Link_TX_Ack = '1') then
+					-- accepted by LinkLayer
+					NextState						<= ST_EVALUATE_FRAMESTATE;
+				end if;
+				
+			when ST_EVALUATE_FRAMESTATE =>
+				if (Link_TX_FS_Valid = '1') then
+					if (Link_TX_FS_SendOK = '1') then
 						Link_TX_FS_Ack				<= '1';
-						Status								<= SATA_FISE_STATUS_SEND_OK;
-						
-						NextState							<= ST_IDLE;
-					ELSE
+						NextState							<= ST_STATUS_SEND_OK;
+					elsif (Link_TX_FS_SyncEsc = '1') then
+						-- SyncEscape requested by device
 						Link_TX_FS_Ack				<= '1';
-						Status								<= SATA_FISE_STATUS_ERROR;
-						
-						NextState							<= ST_IDLE;
+						NextState							<= ST_STATUS_SYNC_ESC;
+					else
+						-- R_ERR signaled by other end
+						Link_TX_FS_Ack				<= '1';
+						NextState							<= ST_STATUS_SEND_ERROR;
 					end if;
 				end if;
+			
+			when ST_STATUS_SEND_OK =>
+				Status								<= SATA_FISE_STATUS_SEND_OK;
+				NextState							<= ST_IDLE;
+				
+			when ST_STATUS_SEND_ERROR =>
+				Status								<= SATA_FISE_STATUS_SEND_ERROR;
+				NextState							<= ST_IDLE;
+				
+			when ST_STATUS_SYNC_ESC =>
+				Status								<= SATA_FISE_STATUS_SYNC_ESC;
+				NextState							<= ST_IDLE;
 			
 		end case;
 	end process;
@@ -344,7 +381,7 @@ BEGIN
 		
 	begin
 		genXilinx : if (VENDOR = VENDOR_XILINX) generate
-			function dbg_GenerateEncodings return string is
+			function dbg_GenerateStateEncodings return string is
 				variable  l : STD.TextIO.line;
 			begin
 				for i in T_STATE loop
@@ -354,7 +391,20 @@ BEGIN
 				return  l.all;
 			end function;
 			
-			constant dummy : boolean := dbg_ExportEncoding("Transport Layer - FIS-Encoder", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_TransLayer_FISE.tok");
+			function dbg_generateStatusEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_FISENCODER_STATUS loop
+					STD.TextIO.write(l, str_replace(T_SATA_FISENCODER_STATUS'image(i), "sata_fise_status_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+			
+			constant dummy : T_BOOLVEC := (
+				0 => dbg_ExportEncoding("Transport Layer FIS-Encoder - FSM", dbg_GenerateStateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_TransLayer_FISE.tok"),
+				1 => dbg_ExportEncoding("Transport Layer FIS-Encoder - Status", dbg_GenerateStatusEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Trans_FISE_Status.tok")
+			);
 		begin
 		end generate;
 		

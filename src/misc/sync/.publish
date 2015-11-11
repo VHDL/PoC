@@ -1,6 +1,24 @@
-# clock-domain-crossing circuits
+# git files
+.gitignore
+.gitempty
+
+# Documentation
+README.md
+
+# Package
+sync.pkg.vhdl
+
+# Clock-Domain-Crossing (CDC) circuits
+sync_Bits.vhdl
 sync_Reset.vhdl
-sync_Flag.vhdl
 sync_Strobe.vhdl
 sync_Vector.vhdl
 sync_Command.vhdl
+
+# Altera specific implementations
+sync_Bits_Altera.vhdl
+sync_Reset_Altera.vhdl
+
+# Xilinx specific implementations
+sync_Bits_Xilinx.vhdl
+sync_Reset_Xilinx.vhdl

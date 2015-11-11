@@ -1,9 +1,9 @@
+
+# Documentation
+README.md
+
 # Packages
 xil.pkg.vhdl
-
-# Cross Clock Modules
-xil_SyncBits.vhdl
-xil_SyncReset.vhdl
 
 # ChipScope
 xil_ChipScopeICON.vhdl

@@ -1,0 +1,2 @@
+The VHDL package trace_config is a global configuration file but
+project specific. A sample configuration can be found in tests/shap.

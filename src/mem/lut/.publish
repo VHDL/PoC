@@ -1,0 +1,10 @@
+# git files
+.gitignore
+
+# Documentation
+README.md
+
+# subnamespace
+
+# trigonometric functions
+lut_Sine.*

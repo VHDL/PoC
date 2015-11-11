@@ -1,13 +1,36 @@
 # Board specific pin constraints
-#ML505/
+# Spartan-3 boards
+#S3SK/
+
+# Spartan-6 boards
+Atlys/
+
+# Virtex-5 boards
+ML505/
+ML506/
+XUPV5/
+
+# Virtex-6 boards
 ML605/
+
+# Artix-7 boards
+#Nexys4/
+
+# Kintex-7 boards
 KC705/
+
+# Virtex-7 boards
 VC707/
+
+# Zynq-7000 boards
 #ZedBoard/
 
+# Stratix IV
+DE4/
+
 # module level constraints
+misc/
 net/
-xil/
 
 # 
 MetaStability.ucf

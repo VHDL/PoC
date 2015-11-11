@@ -63,9 +63,9 @@ USE			PoC.xil.ALL;
 ENTITY sata_Transceiver_Virtex5_GTP_Configurator IS
 	GENERIC (
 		DEBUG											: BOOLEAN											:= FALSE;																-- 
-		DRPCLOCK_FREQ							: FREQ												:= 0.0 MHz;																	-- 
+		DRPCLOCK_FREQ							: FREQ												:= 100 MHz;															-- 
 		PORTS											: POSITIVE										:= 1;																		-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1 => C_SATA_GENERATION_MAX)		-- intial SATA Generation
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1 => C_SATA_GENERATION_MAX)		-- initial SATA Generation
 	);
 	PORT (
 		DRP_Clock								: IN	STD_LOGIC;

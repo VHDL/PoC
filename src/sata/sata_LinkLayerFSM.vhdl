@@ -3,17 +3,20 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
+--
+-- Module:					FSM for SATA Link Layer
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- See notes on module 'sata_LinkLayer'.
+--
+-- For input 'MyReset' see assignment in module 'sata_LinkLayer'.
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,6 +41,7 @@ use			PoC.config.all;
 use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
+use			PoC.components.all;
 use			PoC.debug.all;
 use			PoC.sata.all;
 use			PoC.satadbg.all;
@@ -51,1820 +55,1111 @@ entity sata_LinkLayerFSM is
 		INSERT_ALIGN_INTERVAL		: POSITIVE															:= 256
 	);
 	port (
-		Clock										: IN	STD_LOGIC;
-		Reset										: IN	STD_LOGIC;
+		Clock										: in	STD_LOGIC;
+		MyReset									: in	STD_LOGIC;
 
-		Status									: OUT	T_SATA_LINK_STATUS;
-		Error										: OUT	T_SATA_LINK_ERROR;
-			-- normal vs. dma modus
-			-- bad transition ??
+		Status									: out	T_SATA_LINK_STATUS;
+		Error										: out	T_SATA_LINK_ERROR;
 			
 		-- DebugPort
 		DebugPortOut						: out	T_SATADBG_LINK_LLFSM_OUT;
 
 		-- transport layer interface
-		Trans_TX_SOF						: IN	STD_LOGIC;
-		Trans_TX_EOF						: IN	STD_LOGIC;
-		--TODO: Trans_TX_Abort					: IN	STD_LOGIC;
+		Trans_TX_SOF						: in	STD_LOGIC;
+		Trans_TX_EOF						: in	STD_LOGIC;
+		--TODO Feature Request: Trans_TX_Abort					: in	STD_LOGIC; -- SyncEscape from Transport Layer
 
-		Trans_TXFS_SendOK				: OUT	STD_LOGIC;
-		Trans_TXFS_Abort				: OUT	STD_LOGIC;
+		Trans_TXFS_SendOK				: out	STD_LOGIC;
+		Trans_TXFS_SyncEsc			: out	STD_LOGIC;
 
-		Trans_RX_SOF						: OUT	STD_LOGIC;
-		Trans_RX_EOF						: OUT	STD_LOGIC;
-		--TODO: Trans_RX_Abort					: IN	STD_LOGIC;
+		Trans_RX_SOF						: out	STD_LOGIC;
+		Trans_RX_EOF						: out	STD_LOGIC;
+		--TODO Feature Request: Trans_RX_Abort					: in	STD_LOGIC; -- SyncEscape from Transport Layer
 		
-		Trans_RXFS_CRCOK				: OUT	STD_LOGIC;
-		Trans_RXFS_Abort				: OUT	STD_LOGIC;
+		Trans_RXFS_CRCOK				: out	STD_LOGIC;
+		Trans_RXFS_SyncEsc			: out	STD_LOGIC;
 
 		-- physical layer interface
-		Phy_Ready								: IN	STD_LOGIC;
+		Phy_Status							: in	T_SATA_PHY_STATUS;
 		
-		TX_Primitive						: OUT	T_SATA_PRIMITIVE;
-		RX_Primitive						: IN	T_SATA_PRIMITIVE;
+		TX_Primitive						: out	T_SATA_PRIMITIVE;
+		RX_Primitive						: in	T_SATA_PRIMITIVE;
 
 		-- TX FIFO interface
-		TX_FIFO_rst							: OUT	STD_LOGIC;
-		TX_FIFO_Valid						: IN	STD_LOGIC;
-		TX_FIFO_got							: OUT	STD_LOGIC;
+		TX_FIFO_rst							: out	STD_LOGIC;
+		TX_FIFO_Valid						: in	STD_LOGIC;
+		TX_FIFO_got							: out	STD_LOGIC;
+		TX_FIFO_Commit					: out	STD_LOGIC;
+		TX_FIFO_Rollback				: out	STD_LOGIC;
 
 		-- RX_FSFIFO interface
-		TX_FSFIFO_rst						: OUT	STD_LOGIC;
-		TX_FSFIFO_put						: OUT	STD_LOGIC;
-		TX_FSFIFO_Full					: IN	STD_LOGIC;
+		TX_FSFIFO_rst						: out	STD_LOGIC;
+		TX_FSFIFO_put						: out	STD_LOGIC;
+		TX_FSFIFO_Full					: in	STD_LOGIC;
 
 		-- RX_FIFO interface
-		RX_FIFO_rst							: OUT	STD_LOGIC;
-		RX_FIFO_put							: OUT	STD_LOGIC;
-		RX_FIFO_Full						: IN	STD_LOGIC;
-		RX_FIFO_SpaceAvailable	: IN	STD_LOGIC;
+		RX_FIFO_rst							: out	STD_LOGIC;
+		RX_FIFO_put							: out	STD_LOGIC;
+		RX_FIFO_commit					: out	STD_LOGIC;
+		RX_FIFO_rollback				: out	STD_LOGIC;
+		RX_FIFO_Full						: in	STD_LOGIC;
+		RX_FIFO_SpaceAvailable	: in	STD_LOGIC;
 		
 		-- RX FIFO input/hold register interface
-		RX_DataReg_en1					: OUT	STD_LOGIC;
-		RX_DataReg_en2					: OUT	STD_LOGIC;
+		RX_DataReg_shift				: out	STD_LOGIC;
 
 		-- RX_FSFIFO interface
-		RX_FSFIFO_rst						: OUT	STD_LOGIC;
-		RX_FSFIFO_put						: OUT	STD_LOGIC;
-		RX_FSFIFO_Full					: IN	STD_LOGIC;
+		RX_FSFIFO_rst						: out	STD_LOGIC;
+		RX_FSFIFO_put						: out	STD_LOGIC;
+		RX_FSFIFO_Full					: in	STD_LOGIC;
 
 		-- RX_CRC interface
-		RX_CRC_rst							: OUT	STD_LOGIC;
-		RX_CRC_Valid						: OUT	STD_LOGIC;
-		RX_CRC_OK								: IN	STD_LOGIC;
+		RX_CRC_rst							: out	STD_LOGIC;
+		RX_CRC_Valid						: out	STD_LOGIC;
+		RX_CRC_OK								: in	STD_LOGIC;
 		
 		-- TX_CRC interface
-		TX_CRC_rst							: OUT	STD_LOGIC;
-		TX_CRC_Valid						: OUT	STD_LOGIC;
+		TX_CRC_rst							: out	STD_LOGIC;
+		TX_CRC_Valid						: out	STD_LOGIC;
 		
 		-- TX scrambler interface
-		DataScrambler_en				: OUT	STD_LOGIC;
-		DataScrambler_rst				: OUT	STD_LOGIC;
---		DummyScrambler_en				: OUT	STD_LOGIC;
---		DummyScrambler_rst			: OUT	STD_LOGIC;
+		DataScrambler_en				: out	STD_LOGIC;
+		DataScrambler_rst				: out	STD_LOGIC;
+--		DummyScrambler_en				: out	STD_LOGIC;
+--		DummyScrambler_rst			: out	STD_LOGIC;
 		
 		-- RX scrambler interface
-		DataUnscrambler_en			: OUT	STD_LOGIC;
-		DataUnscrambler_rst			: OUT	STD_LOGIC;
+		DataUnscrambler_en			: out	STD_LOGIC;
+		DataUnscrambler_rst			: out	STD_LOGIC;
 		
 		-- TX MUX interface
-		CRCMux_ctrl							: OUT	STD_LOGIC--;
---		ScramblerMux_ctrl				: OUT	STD_LOGIC
+		CRCMux_ctrl							: out	STD_LOGIC--;
+--		ScramblerMux_ctrl				: out	STD_LOGIC
 	);
-END;
+end;
 
-ARCHITECTURE rtl OF sata_LinkLayerFSM IS
-	ATTRIBUTE KEEP									: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING					: STRING;
-	ATTRIBUTE SYN_ENCODING					: STRING;				-- Altera: FSM_ENCODING
+architecture rtl of sata_LinkLayerFSM is
+	attribute KEEP									: BOOLEAN;
+	attribute FSM_ENCODING					: STRING;
+	attribute SYN_ENCODING					: STRING;				-- Altera: FSM_ENCODING
 	
-	TYPE T_TXFSM_STATE IS (
-		ST_TXFSM_IDLE,
-		ST_TXFSM_RESET,
-		ST_TXFSM_NO_COMMUNICATION,
-		ST_TXFSM_NO_COMMUNICATION_ERROR,
-		
-		ST_TXFSM_RECEIVING,
-		
-		ST_TXFSM_SEND_TX_RDY,
-		ST_TXFSM_SEND_DATA,
-		ST_TXFSM_SEND_HOLD,
-		ST_TXFSM_RECEIVED_HOLD,
-		ST_TXFSM_SEND_CRC,
-		ST_TXFSM_SEND_EOF,
-		ST_TXFSM_WAIT,
-
-		ST_TXFSM_FSM_ERROR
-	);
+	constant LONG_FRAME_WORDS					: POSITIVE		:= 8;
+	constant SHORT_FRAME_RETRY_COUNT	: POSITIVE		:= 16;
 	
-	TYPE T_RXFSM_STATE IS (
-		ST_RXFSM_IDLE,
-		ST_RXFSM_RESET,
-		ST_RXFSM_NO_COMMUNICATION,
-		ST_RXFSM_NO_COMMUNICATION_ERROR,
+	type T_STATE is (
+		ST_RESET,
+		ST_NO_COMMUNICATION,
+		ST_NO_COMMUNICATION_ERROR,
+		ST_IDLE,
+		ST_SYNC_ESCAPE,
 
-		ST_RXFSM_SENDING,
-		ST_RXFSM_SENDING2,
+		-- sending
+		ST_TX_SEND_TX_RDY,
+		ST_TX_SEND_DATA,
+		ST_TX_SEND_HOLD,
+		ST_TX_RECEIVED_HOLD,
+		ST_TX_SEND_CRC,
+		ST_TX_SEND_EOF,
+		ST_TX_WAIT,
+		ST_TX_DISCARD_FRAME,
 
-		ST_RXFSM_WAIT_FIFO,
-		ST_RXFSM_SEND_RX_RDY,
-		ST_RXFSM_RECEIVE_DATA,
-		ST_RXFSM_SEND_HOLD,
-		ST_RXFSM_RECEIVED_HOLD_ACK,
-		ST_RXFSM_RECEIVED_HOLD,
-		ST_RXFSM_SEND_R_OK,
-		ST_RXFSM_SEND_R_ERROR,
-		ST_RXFSM_RXFIFO_FULL,
-		ST_RXFSM_SEND_DMA_TERM,
-
-		ST_RXFSM_FSM_ERROR
+		-- receiving
+		ST_RX_WAIT_FIFO,
+		ST_RX_SEND_RX_RDY,
+		ST_RX_RECEIVE_DATA,
+		ST_RX_SEND_HOLD,
+		ST_RX_RECEIVED_HOLD,
+		ST_RX_RECEIVED_EOF,
+		ST_RX_SEND_R_OK,
+		ST_RX_SEND_R_ERROR
 	);
-	ATTRIBUTE SYN_ENCODING	OF T_TXFSM_STATE		: TYPE IS "gray";		-- altera state machine encoding
-	ATTRIBUTE SYN_ENCODING	OF T_RXFSM_STATE		: TYPE IS "gray";		-- altera state machine encoding
+	attribute SYN_ENCODING	of T_STATE		: type is "gray";		-- altera state machine encoding
 	
 	-- LinkLayer - Statemachines
-	SIGNAL TXFSM_State					: T_TXFSM_STATE																		:= ST_TXFSM_RESET;
-	SIGNAL TXFSM_NextState			: T_TXFSM_STATE;
+	signal State										: T_STATE																		:= ST_RESET;
+	signal NextState								: T_STATE;
 	
-	SIGNAL RXFSM_State					: T_RXFSM_STATE																		:= ST_RXFSM_RESET;
-	SIGNAL RXFSM_NextState			: T_RXFSM_STATE;
+	attribute FSM_ENCODING	of State		: signal is getFSMEncoding_gray(DEBUG);
+
+	constant INSERT_ALIGN_COUNTER_BITS	: POSITIVE															:= log2ceilnz(INSERT_ALIGN_INTERVAL);
+
+	signal InsertALIGN									: STD_LOGIC;
+
+	signal TX_WordCounter_rst						: STD_LOGIC;
+	signal TX_WordCounter_inc						: STD_LOGIC;
+	signal TX_IsLongFrame								: STD_LOGIC;
 	
-	ATTRIBUTE FSM_ENCODING	OF TXFSM_State		: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
-	ATTRIBUTE FSM_ENCODING	OF RXFSM_State		: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	signal TX_RetryCounter_rst					: STD_LOGIC;
+	signal TX_RetryCounter_inc					: STD_LOGIC;
+	signal TX_RetryFailed								: STD_LOGIC;
 
+	signal RX_IsSOF									: STD_LOGIC;
+	signal RX_IsEOF									: STD_LOGIC;
+	signal RX_IsData								: STD_LOGIC;
+	signal RX_IsData_d							: STD_LOGIC																	:= '0';
+	signal RX_IsData_re							: STD_LOGIC;
 
-	CONSTANT INSERT_ALIGN_COUNTER_BITS	: POSITIVE																:= log2ceilnz(INSERT_ALIGN_INTERVAL);
+	signal RX_SOF_r									: STD_LOGIC																	:= '0';
 
-	SIGNAL IAC_inc									: STD_LOGIC;
-	SIGNAL IAC_Load									: STD_LOGIC;
-	SIGNAL IAC_Finished							: STD_LOGIC;
-	SIGNAL IAC_Finished_d						: STD_LOGIC																	:= '0';
-	SIGNAL InsertALIGN							: STD_LOGIC;
+	signal RX_DataReg_Valid1				: STD_LOGIC																	:= '0';
+	signal RX_DataReg_Valid2				: STD_LOGIC																	:= '0';
 
-	SIGNAL TXFSM_IDLE								: STD_LOGIC;
-	SIGNAL TXFSM_Error							: STD_LOGIC;
-	SIGNAL TXFSM_Sending						: STD_LOGIC;
-	SIGNAL TXFSM_Primitive					: T_SATA_PRIMITIVE;
+	signal RX_FIFO_put_i 						: STD_LOGIC;
+	signal RX_FIFO_Overflow_r 			: STD_LOGIC 																:= '0';
 	
-	SIGNAL RXFSM_IDLE								: STD_LOGIC;
-	SIGNAL RXFSM_Error							: STD_LOGIC;
-	SIGNAL RXFSM_Receiving					: STD_LOGIC;
-	SIGNAL RXFSM_Primitive					: T_SATA_PRIMITIVE;
-
-	SIGNAL RXFSM_IsSOF							: STD_LOGIC;
-	SIGNAL RXFSM_IsEOF							: STD_LOGIC;
-	SIGNAL RXFSM_IsData							: STD_LOGIC;
-	SIGNAL RXFSM_IsData_d						: STD_LOGIC																	:= '0';
-	SIGNAL RXFSM_IsData_re					: STD_LOGIC;
-
-	SIGNAL RX_SOF_r									: STD_LOGIC																	:= '0';
-
-	SIGNAL RX_DataReg_en1_i					: STD_LOGIC;
-	SIGNAL RX_DataReg_en1_d					: STD_LOGIC																	:= '0';
-	SIGNAL RX_DataReg_Valid1				: STD_LOGIC																	:= '0';
+	signal RX_SOFReg_d1							: STD_LOGIC																	:= '0';
+	signal RX_SOFReg_d2							: STD_LOGIC																	:= '0';
 	
-	SIGNAL RX_DataReg_en2_i					: STD_LOGIC;
-	SIGNAL RX_DataReg_en2_d					: STD_LOGIC																	:= '0';
-	SIGNAL RX_DataReg_Valid2				: STD_LOGIC																	:= '0';
-
-	SIGNAL RX_SOFReg_d1							: STD_LOGIC																	:= '0';
-	SIGNAL RX_SOFReg_d2							: STD_LOGIC																	:= '0';
+	signal RX_CRC_OKReg_set					: STD_LOGIC;
+	signal RX_CRC_OKReg_rst					: STD_LOGIC;
+	signal RX_CRC_OKReg_r						: STD_LOGIC																	:= '0';
 	
-	SIGNAL RX_CRC_OKReg_set					: STD_LOGIC;
-	SIGNAL RX_CRC_OKReg_rst					: STD_LOGIC;
-	SIGNAL RX_CRC_OKReg_r						: STD_LOGIC																	:= '0';
-	
-BEGIN
+begin
 
 -- ==================================================================
--- LinkLayer - Status
+-- LinkLayer - Statemachine
 -- ==================================================================
-	Error	<= SATA_LINK_ERROR_LINK_RXFIFO_FULL WHEN RX_FIFO_Full = '1' ELSE SATA_LINK_ERROR_NONE;
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if MyReset = '1' then
+				State 	<= ST_RESET;
+			else
+				State 	<= NextState;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(Phy_Ready, TXFSM_Error, RXFSM_Error, TXFSM_IDLE, RXFSM_IDLE, TXFSM_Sending, RXFSM_Receiving)
-	BEGIN
-		Status			<= SATA_LINK_STATUS_COMMUNICATION_ERROR;
-		-- TODO:
-		-- evaluate FIFO fill grades
-		-- 	=> receive error
+
+	process(State, Phy_Status, RX_Primitive, Trans_TX_SOF, Trans_TX_EOF, TX_FIFO_Valid,
+					RX_FIFO_Full, RX_FIFO_Overflow_r, RX_FIFO_SpaceAvailable, RX_FSFIFO_Full,
+					RX_DataReg_Valid2, RX_CRC_OKReg_r, InsertALIGN, TX_IsLongFrame, TX_RetryFailed)
+	begin
+		NextState											<= State;
+		Status 												<= SATA_LINK_STATUS_IDLE;
+		Error 												<= SATA_LINK_ERROR_NONE;
 		
-		IF (Phy_Ready = '0') THEN
-			Status			<= SATA_LINK_STATUS_COMMUNICATION_ERROR;
-		ELSIF ((TXFSM_Error				OR	RXFSM_Error)			= '1') THEN				-- error
-			Status			<= SATA_LINK_STATUS_ERROR;
-		ELSIF ((TXFSM_IDLE				AND RXFSM_IDLE)				= '1')	THEN			-- idle
-			Status			<= SATA_LINK_STATUS_IDLE;
-		ELSIF ((TXFSM_Sending 		AND RXFSM_IDLE)				= '1') THEN				-- sending
-			Status			<= SATA_LINK_STATUS_SENDING;
-		ELSIF ((TXFSM_IDLE				AND RXFSM_Receiving)	= '1') THEN				-- receiving
-			Status			<= SATA_LINK_STATUS_RECEIVING;
-		ELSE
-			Status			<= SATA_LINK_STATUS_ERROR;
-		END IF;
-	END PROCESS;
-
--- ==================================================================
--- LinkLayer - TX Statemachine
--- ==================================================================
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF Reset = '1' THEN
-				TXFSM_State 	<= ST_TXFSM_RESET;
-			ELSE
-				TXFSM_State 	<= TXFSM_NextState;
-			END IF;
-		END IF;
-	END PROCESS;
-
-
-	PROCESS(TXFSM_State, Phy_Ready, RX_Primitive, Trans_TX_SOF, Trans_TX_EOF, TX_FIFO_Valid, InsertALIGN)
-	BEGIN
-		TXFSM_NextState								<= TXFSM_State;
-
-		-- internal state signals
-		TXFSM_IDLE										<= '0';
-		TXFSM_Error										<= '0';
-		TXFSM_Sending									<= '0';
-
 		-- primitive interface
-		TXFSM_Primitive								<= SATA_PRIMITIVE_NONE;
+		TX_Primitive									<= SATA_PRIMITIVE_NONE;
 
-		-- FIFO interface
+		-- TX FIFO interface
 		TX_FIFO_rst										<= '0';
 		TX_FIFO_got										<= '0';
+		TX_FIFO_Commit								<= '0';
+		TX_FIFO_Rollback							<= '0';
 		TX_FSFIFO_rst									<= '0';
 		TX_FSFIFO_put									<= '0';
 		
 		Trans_TXFS_SendOK							<= '0';
-		Trans_TXFS_Abort							<= '0';
+		Trans_TXFS_SyncEsc						<= '0';
 		
-		-- CRC interface
+		TX_WordCounter_rst						<= '0';
+		TX_WordCounter_inc						<= '0';
+		
+		TX_RetryCounter_rst						<= '0';
+		TX_RetryCounter_inc						<= '0';
+		
+		-- TX CRC interface
 		TX_CRC_rst										<= '0';
 		TX_CRC_Valid									<= '0';
 		
-		-- scrambler interface
+		-- TX scrambler interface
 		DataScrambler_en							<= '0';
 		DataScrambler_rst							<= '0';
 --		DummyScrambler_en							<= '0';
 --		DummyScrambler_rst						<= '0';
 		
-		-- MUX interface
+		-- TX MUX interface
 		CRCMux_ctrl										<= '0';
 --		ScramblerMux_ctrl							<= '0';
-		
-		-- handle PhyNotReady with highest priority
-		IF ((Phy_Ready = '0') AND NOT
-				((TXFSM_State = ST_TXFSM_RESET) OR
-				 (TXFSM_State = ST_TXFSM_NO_COMMUNICATION) OR
-				 (TXFSM_State = ST_TXFSM_NO_COMMUNICATION_ERROR)
-					)) THEN
-			TXFSM_Primitive										<= SATA_PRIMITIVE_ALIGN;
-			
-			TXFSM_NextState										<= ST_TXFSM_NO_COMMUNICATION_ERROR;
---		ELSIF (InsertALIGN = '1') THEN
---			TXFSM_Primitive										<= SATA_PRIMITIVE_ALIGN;
-		ELSE
-			CASE TXFSM_State IS
-				WHEN ST_TXFSM_RESET =>
-					TXFSM_Primitive								<= SATA_PRIMITIVE_ALIGN;
-					TX_FIFO_rst										<= '1';
-					TX_FSFIFO_rst									<= '1';
-					
-					TXFSM_NextState								<= ST_TXFSM_NO_COMMUNICATION;
-			
-				WHEN ST_TXFSM_NO_COMMUNICATION =>
-					TXFSM_Primitive								<= SATA_PRIMITIVE_ALIGN;
-					TXFSM_Error										<= '1';
-					
-					IF (Phy_Ready = '1') THEN
-						TXFSM_NextState							<= ST_TXFSM_IDLE;			-- ST_TXFSM_SEND_ALIGN;
-					END IF;
 
-				WHEN ST_TXFSM_NO_COMMUNICATION_ERROR =>
-					TXFSM_Primitive								<= SATA_PRIMITIVE_ALIGN;
-					TXFSM_Error										<= '1';
-					
-					TXFSM_NextState								<= ST_TXFSM_NO_COMMUNICATION;
-				
-				WHEN ST_TXFSM_IDLE =>
-					TXFSM_IDLE										<= '1';
-					
-					IF (InsertALIGN = '1') THEN
-						TXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
-					
-						IF (RX_Primitive = SATA_PRIMITIVE_TX_RDY) THEN												-- transmission attempt from other side => abort own transmission attempt => send RX_RDY
---							TXFSM_Primitive						<= SATA_PRIMITIVE_RX_RDY;
-							
-							TXFSM_NextState						<= ST_TXFSM_RECEIVING;
-						ELSIF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) OR
---									 (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) OR
-									 (RX_Primitive = SATA_PRIMITIVE_R_OK) OR
-									 (RX_Primitive = SATA_PRIMITIVE_R_ERROR) OR
-									 (RX_Primitive = SATA_PRIMITIVE_SYNC))
-						THEN																														-- normal response
-							IF ((Trans_TX_SOF = '1') AND (TX_FIFO_Valid = '1')) THEN			-- valid TX_SOF signal
---								TXFSM_Primitive					<= SATA_PRIMITIVE_TX_RDY;							-- start TX_RDY handshaking
-								TXFSM_IDLE							<= '0';
-								TXFSM_Sending						<= '1';
-							
-								TXFSM_NextState					<= ST_TXFSM_SEND_TX_RDY;
-							ELSE
-								NULL;
-							END IF;	
-						ELSE																														-- catch illegal transitions
-							TXFSM_IDLE								<= '0';
-							TXFSM_Error								<= '1';
-								
-							TXFSM_NextState						<= ST_TXFSM_FSM_ERROR;
-						END IF;
-					ELSE		-- InsertALIGN
-						TXFSM_Primitive							<= SATA_PRIMITIVE_SYNC;
-					
-						IF (RX_Primitive = SATA_PRIMITIVE_TX_RDY) THEN												-- transmission attempt from other side => abort own transmission attempt => send RX_RDY
-							TXFSM_Primitive						<= SATA_PRIMITIVE_RX_RDY;
-							
-							TXFSM_NextState						<= ST_TXFSM_RECEIVING;
-						ELSIF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) OR
---									 (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) OR
-									 (RX_Primitive = SATA_PRIMITIVE_R_OK) OR
-									 (RX_Primitive = SATA_PRIMITIVE_R_ERROR) OR
-									 (RX_Primitive = SATA_PRIMITIVE_SYNC))
-						THEN																														-- normal response
-							IF ((Trans_TX_SOF = '1') AND (TX_FIFO_Valid = '1')) THEN			-- valid TX_SOF signal
-								TXFSM_Primitive					<= SATA_PRIMITIVE_TX_RDY;							-- start TX_RDY handshaking
-								TXFSM_IDLE							<= '0';
-								TXFSM_Sending						<= '1';
-							
-								TXFSM_NextState					<= ST_TXFSM_SEND_TX_RDY;
-							ELSE
-								NULL;
-							END IF;	
-						ELSE																														-- catch illegal transitions
-							TXFSM_IDLE								<= '0';
-							TXFSM_Error								<= '1';
-								
-							TXFSM_NextState						<= ST_TXFSM_FSM_ERROR;
-						END IF;
-					END IF;
-
-				WHEN ST_TXFSM_RECEIVING =>
-					TXFSM_Primitive								<= SATA_PRIMITIVE_SYNC;	
-					TXFSM_IDLE										<= '1';
-					
-					IF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN												-- abort receiving, goto idle
-						TXFSM_NextState							<= ST_TXFSM_IDLE;
-					ELSIF (RX_Primitive = SATA_PRIMITIVE_ALIGN) THEN										-- ignore ALIGN primitives
-						NULL;
-					END IF;
-
-				-- ----------------------------------------------------------
-				-- sending
-				-- ----------------------------------------------------------
-				WHEN ST_TXFSM_SEND_TX_RDY =>
-					TXFSM_Sending									<= '1';
-					
-					IF (InsertALIGN = '1') THEN
-						TXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
-						
-						IF (RX_Primitive = SATA_PRIMITIVE_RX_RDY) THEN										-- other side is ready to receive
-							NULL;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_TX_RDY) THEN									-- transmission attempt from other side
-							IF (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_HOST) THEN								-- => abort own transmission attempt
-								TXFSM_IDLE								<= '1';															-- => start receiving
-								TXFSM_Sending							<= '0';
-
-								TXFSM_NextState						<= ST_TXFSM_RECEIVING;
-							ELSIF (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_DEVICE) THEN					-- => ignore transmission attempt
-								NULL;
-							END IF;
-						ELSIF ((RX_Primitive = SATA_PRIMITIVE_SYNC) OR										-- ignore SYNC primitives
-									 (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) OR								-- ignore WAIT_TERM primitives
-									 (RX_Primitive = SATA_PRIMITIVE_ALIGN)) THEN								-- filter ALIGN primitives
-							NULL;
-						ELSE																															-- catch illegal transitions
-							TXFSM_Error								<= '1';
-								
-							TXFSM_NextState						<= ST_TXFSM_FSM_ERROR;
-						END IF;
-					ELSE		-- InsertALIGN
-						TXFSM_Primitive							<= SATA_PRIMITIVE_TX_RDY;
-						
-						IF (RX_Primitive = SATA_PRIMITIVE_RX_RDY) THEN											-- other side is ready to receive
-							TXFSM_Primitive						<= SATA_PRIMITIVE_SOF;
-							
-							TX_CRC_rst								<= '1';
-							DataScrambler_rst					<= '1';
---							DummyScrambler_rst				<= '1';
-							
-							TXFSM_NextState						<= ST_TXFSM_SEND_DATA;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_TX_RDY) THEN									-- transmission attempt from other side
-							IF (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_HOST) THEN								-- => abort own transmission attempt
-								TXFSM_IDLE								<= '1';													-- => start receiving
-								TXFSM_Sending							<= '0';
-								TXFSM_Primitive						<= SATA_PRIMITIVE_RX_RDY;
-
-								TXFSM_NextState						<= ST_TXFSM_RECEIVING;
-							ELSIF (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_DEVICE) THEN					-- => ignore transmission attempt
-								NULL;
-							END IF;
-						ELSIF ((RX_Primitive = SATA_PRIMITIVE_SYNC) OR											-- ignore SYNC primitives
-									 (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) OR								-- ignore WAIT_TERM primitives
-									 (RX_Primitive = SATA_PRIMITIVE_ALIGN)) THEN									-- filter ALIGN primitives
-							NULL;
-						ELSE																													-- catch illegal transitions
-							TXFSM_Error								<= '1';
-								
-							TXFSM_NextState						<= ST_TXFSM_FSM_ERROR;
-						END IF;
-					END IF;
-					
-				WHEN ST_TXFSM_SEND_DATA =>
-					TXFSM_Sending									<= '1';
-
-					IF (InsertALIGN = '1') THEN
-						TXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
-						
-						IF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN
-							TXFSM_NextState						<= ST_TXFSM_IDLE;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) THEN
-							TXFSM_NextState						<= ST_TXFSM_SEND_CRC;
-						ELSIF ((RX_Primitive = SATA_PRIMITIVE_RX_RDY) OR
-									 (RX_Primitive = SATA_PRIMITIVE_R_IP) OR
-									 (RX_Primitive = SATA_PRIMITIVE_HOLD) OR
-									 (RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-									 (RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN																													-- ignore normal primitives
-							NULL;
-						ELSE
-							TXFSM_Error								<= '1';
-							
-							TXFSM_NextState						<= ST_TXFSM_FSM_ERROR;
-						END IF;
-					ELSE	-- InsertALIGN
-						-- TODO: add DMAT and SYNC edge
-					
-						IF (TX_FIFO_Valid = '1') THEN																	-- valid data in TX_FIFO
-							TXFSM_Primitive						<= SATA_PRIMITIVE_NONE;
-
-							TX_FIFO_got								<= '1';
-							TX_CRC_Valid							<= '1';
-							DataScrambler_en					<= '1';
-						
-							IF (Trans_TX_EOF = '1') THEN																-- last payload word in Frame
-								IF ((RX_Primitive = SATA_PRIMITIVE_R_IP) OR
-										(RX_Primitive = SATA_PRIMITIVE_RX_RDY) OR									-- accept overlapping RX_RDY primitives
-										(RX_Primitive = SATA_PRIMITIVE_HOLD) OR										-- send last payload word regardless of HOLD primitive
-										(RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-										(RX_Primitive = SATA_PRIMITIVE_DMA_TERM) OR								-- send last Word regardless of HOLD primitive
-										(RX_Primitive = SATA_PRIMITIVE_ALIGN))											-- ignore ALIGN
-								THEN																											-- normal responses => keep sending
-									TXFSM_NextState				<= ST_TXFSM_SEND_CRC;
-								ELSE
-									TXFSM_Error						<= '1';
-									
-									TXFSM_NextState				<= ST_TXFSM_FSM_ERROR;
-								END IF;
-							ELSE																												-- normal payload word
-								IF ((RX_Primitive = SATA_PRIMITIVE_R_IP) OR
-										(RX_Primitive = SATA_PRIMITIVE_RX_RDY) OR									-- 
-										(RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-										(RX_Primitive = SATA_PRIMITIVE_ALIGN))
-								THEN																											-- normal responses => keep sending
-									NULL;
-								ELSIF (RX_Primitive = SATA_PRIMITIVE_HOLD) THEN								-- hold on sending
-									TXFSM_Primitive				<= SATA_PRIMITIVE_HOLD_ACK;
-									
-									TX_FIFO_got						<= '0';
-									TX_CRC_Valid					<= '0';
-									DataScrambler_en			<= '0';
-									
-									TXFSM_NextState				<= ST_TXFSM_RECEIVED_HOLD;
-								ELSIF (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) THEN						-- insert CRC32 checksum
-									CRCMux_ctrl						<= '1';
-									DataScrambler_en			<= '1';
-					
-									TXFSM_NextState				<= ST_TXFSM_SEND_EOF;
-								END IF;
-							END IF;
-						ELSE																													-- empty TX_FIFO => insert HOLD
-							TXFSM_Primitive						<= SATA_PRIMITIVE_HOLD;
-						
-							TXFSM_NextState						<= ST_TXFSM_SEND_HOLD;
-						END IF;
-					END IF;
-					
-				WHEN ST_TXFSM_SEND_HOLD =>
-					TXFSM_Sending									<= '1';
-				
-					IF (InsertAlign = '1') THEN
-						TXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
-						
-						IF (TX_FIFO_Valid = '1') THEN
-							IF (Trans_TX_EOF = '1') THEN																-- last payload word in frame
-								IF ((RX_Primitive = SATA_PRIMITIVE_R_IP) OR
-										(RX_Primitive = SATA_PRIMITIVE_RX_RDY) OR									-- 
-										(RX_Primitive = SATA_PRIMITIVE_HOLD) OR										-- send last payload word regardless of HOLD primitive
-										(RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-										(RX_Primitive = SATA_PRIMITIVE_DMA_TERM) OR								-- send last Word regardless of HOLD primitive
-										(RX_Primitive = SATA_PRIMITIVE_ALIGN))											-- ignore ALIGN
-								THEN
-									TXFSM_NextState				<= ST_TXFSM_SEND_DATA;
-								ELSE
-									TXFSM_Error						<= '1';
-									
-									TXFSM_NextState				<= ST_TXFSM_FSM_ERROR;
-								END IF;
-							ELSE 																												-- normal payload word
-								IF ((RX_Primitive = SATA_PRIMITIVE_R_IP) OR
-										(RX_Primitive = SATA_PRIMITIVE_HOLD_ACK))
-								THEN
-									TXFSM_NextState				<= ST_TXFSM_SEND_DATA;
-								ELSIF (RX_Primitive = SATA_PRIMITIVE_HOLD) THEN
-									TXFSM_NextState				<= ST_TXFSM_RECEIVED_HOLD;
-								ELSIF (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) THEN						-- insert CRC32 checksum
-									TXFSM_NextState				<= ST_TXFSM_SEND_CRC;
-								END IF;
-							END IF;
-						END IF;
-					ELSE	-- InsertAlign
-						IF (TX_FIFO_Valid = '1') THEN
-							TXFSM_Primitive						<= SATA_PRIMITIVE_NONE;
-						
-							TX_FIFO_got								<= '1';
-							TX_CRC_Valid							<= '1';
-							DataScrambler_en					<= '1';
-						
-							IF (Trans_TX_EOF = '1') THEN																-- last payload word in frame
-								IF ((RX_Primitive = SATA_PRIMITIVE_R_IP) OR
-										(RX_Primitive = SATA_PRIMITIVE_RX_RDY) OR									-- 
-										(RX_Primitive = SATA_PRIMITIVE_HOLD) OR										-- send last payload word regardless of HOLD primitive
-										(RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-										(RX_Primitive = SATA_PRIMITIVE_DMA_TERM) OR								-- send last Word regardless of HOLD primitive
-										(RX_Primitive = SATA_PRIMITIVE_ALIGN))											-- ignore ALIGN
-								THEN
-									TXFSM_NextState				<= ST_TXFSM_SEND_CRC;
-								ELSE
-									TXFSM_Error						<= '1';
-									
-									TXFSM_NextState				<= ST_TXFSM_FSM_ERROR;
-								END IF;
-							ELSE 																												-- normal payload word
-								IF ((RX_Primitive = SATA_PRIMITIVE_R_IP) OR
-										(RX_Primitive = SATA_PRIMITIVE_HOLD_ACK))
-								THEN
-									TXFSM_NextState				<= ST_TXFSM_SEND_DATA;
-								ELSIF (RX_Primitive = SATA_PRIMITIVE_HOLD) THEN
-									TXFSM_Primitive				<= SATA_PRIMITIVE_HOLD_ACK;
-                  TX_FIFO_got								<= '0';
-                  TX_CRC_Valid							<= '0';
-                  DataScrambler_en					<= '0';
-								
-									TXFSM_NextState				<= ST_TXFSM_RECEIVED_HOLD;
-								ELSIF (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) THEN						-- insert CRC32 checksum
-									CRCMux_ctrl						<= '1';
-					
-									TXFSM_NextState				<= ST_TXFSM_SEND_EOF;
-								END IF;
-							END IF;
-						ELSE																													-- empty FIFO => insert HOLD
-							TXFSM_Primitive						<= SATA_PRIMITIVE_HOLD;
-						END IF;
-					END IF;
-				
-				WHEN ST_TXFSM_RECEIVED_HOLD =>
-					TXFSM_Sending									<= '1';
-					
-					IF (InsertAlign = '1') THEN
-						TXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
-						
-						IF ((RX_Primitive = SATA_PRIMITIVE_HOLD) OR
-                (RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-								(RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN																													-- keep waiting
-							NULL;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_R_IP) THEN										-- resume sending data
-							IF (TX_FIFO_Valid = '1') THEN
-								IF (Trans_TX_EOF = '1') THEN															-- last payload word in frame
-									TXFSM_NextState				<= ST_TXFSM_SEND_DATA;
-								ELSE
-									TXFSM_NextState				<= ST_TXFSM_SEND_DATA;
-								END IF;
-							ELSE
-								TXFSM_NextState					<= ST_TXFSM_SEND_HOLD;
-							END IF;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) THEN
-							TXFSM_NextState						<= ST_TXFSM_SEND_CRC;
-						ELSE
-							TXFSM_Error								<= '1';
-							
-							TXFSM_NextState						<= ST_TXFSM_FSM_ERROR;
-						END IF;
-					
-					ELSE	-- InsertAlign
-						TXFSM_Primitive							<= SATA_PRIMITIVE_HOLD_ACK;
-					
-						IF ((RX_Primitive = SATA_PRIMITIVE_HOLD) OR
-                (RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-								(RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN																													-- keep waiting
-							NULL;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_R_IP) THEN										-- resume sending data
-							IF (TX_FIFO_Valid = '1') THEN
-								TXFSM_Primitive						<= SATA_PRIMITIVE_NONE;
-							
-								TX_FIFO_got								<= '1';
-								TX_CRC_Valid							<= '1';
-								DataScrambler_en					<= '1';
-							
-								IF (Trans_TX_EOF = '1') THEN															-- last payload word in frame
-									TXFSM_NextState					<= ST_TXFSM_SEND_CRC;
-								ELSE
-									TXFSM_NextState					<= ST_TXFSM_SEND_DATA;
-								END IF;
-							ELSE
-								TXFSM_Primitive						<= SATA_PRIMITIVE_HOLD;
-							
-								TXFSM_NextState						<= ST_TXFSM_SEND_HOLD;
-							END IF;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_DMA_TERM) THEN
-							TXFSM_Primitive							<= SATA_PRIMITIVE_NONE;
-							CRCMux_ctrl									<= '1';
-							DataScrambler_en						<= '1';
-					
-							TXFSM_NextState							<= ST_TXFSM_SEND_EOF;
-						ELSE
-							TXFSM_Error									<= '1';
-							
-							TXFSM_NextState							<= ST_TXFSM_FSM_ERROR;
-						END IF;
-					END IF;
-				
-				WHEN ST_TXFSM_SEND_CRC =>
-					TXFSM_Sending									<= '1';
-					
-					IF (InsertAlign = '1') THEN
-						TXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
-					ELSE
-						TXFSM_Primitive							<= SATA_PRIMITIVE_NONE;
-					
-						CRCMux_ctrl									<= '1';
-						DataScrambler_en						<= '1';
-					
-						TXFSM_NextState							<= ST_TXFSM_SEND_EOF;
-					END IF;
-				
-				WHEN ST_TXFSM_SEND_EOF =>
-					TXFSM_Sending									<= '1';
-					
-					IF (InsertAlign = '1') THEN
-						TXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
-					ELSE
-						TXFSM_Primitive							<= SATA_PRIMITIVE_EOF;
-						TXFSM_Sending								<= '1';
-				
-						TXFSM_NextState							<= ST_TXFSM_WAIT;
-					END IF;
-
-				WHEN ST_TXFSM_WAIT =>
-					TXFSM_Sending									<= '1';
-					
-					IF (InsertAlign = '1') THEN
-						TXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
-					
-						IF ((RX_Primitive = SATA_PRIMITIVE_R_IP) OR
-								(RX_Primitive = SATA_PRIMITIVE_RX_RDY) OR									-- 
-								(RX_Primitive = SATA_PRIMITIVE_HOLD) OR
-								(RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-								(RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN
-							NULL;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_R_OK) THEN
-							TX_FSFIFO_put							<= '1';
-							Trans_TXFS_SendOK					<= '1';
-
-							TXFSM_NextState						<= ST_TXFSM_IDLE;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_R_ERROR) THEN
-							TX_FSFIFO_put							<= '1';
-							Trans_TXFS_Abort					<= '1';
-						
-							TXFSM_NextState						<= ST_TXFSM_IDLE;
-						ELSE
-							TXFSM_Error								<= '1';
-						
-							TXFSM_NextState						<= ST_TXFSM_FSM_ERROR;
-						END IF;
-					ELSE	-- InsertAlign
-						TXFSM_Primitive							<= SATA_PRIMITIVE_WAIT_TERM;
-					
-						IF ((RX_Primitive = SATA_PRIMITIVE_R_IP) OR
-								(RX_Primitive = SATA_PRIMITIVE_RX_RDY) OR									-- 
-								(RX_Primitive = SATA_PRIMITIVE_HOLD) OR
-								(RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-								(RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN
-							NULL;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_R_OK) THEN
-							TXFSM_Primitive							<= SATA_PRIMITIVE_SYNC;
-						
-							TX_FSFIFO_put								<= '1';
-							Trans_TXFS_SendOK						<= '1';
-						
-							TXFSM_NextState							<= ST_TXFSM_IDLE;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_R_ERROR) THEN
-							TXFSM_Primitive							<= SATA_PRIMITIVE_SYNC;
-
-							TX_FSFIFO_put								<= '1';
-							Trans_TXFS_Abort						<= '1';
-						
-							TXFSM_NextState							<= ST_TXFSM_IDLE;
-						ELSE
-							TXFSM_Error									<= '1';
-						
-							TXFSM_NextState							<= ST_TXFSM_FSM_ERROR;
-						END IF;
-					END IF;
-					
-				-- ----------------------------------------------------------
-				-- error handling
-				-- ----------------------------------------------------------
-				WHEN ST_TXFSM_FSM_ERROR =>
-					TXFSM_Primitive								<= SATA_PRIMITIVE_SYNC;
-					TXFSM_IDLE										<= '1';
-					TXFSM_Error										<= '0';		-- '1';
-					
-					TXFSM_NextState								<= ST_TXFSM_IDLE;
-
-			END CASE;
-		END IF;
-	END PROCESS;
-
--- ==================================================================
--- LinkLayer - RX Statemachine
--- ==================================================================
-	-- 
-	RXFSM_IsSOF 		<= to_sl(RX_Primitive = SATA_PRIMITIVE_SOF);
-	RXFSM_IsEOF 		<= to_sl(RX_Primitive = SATA_PRIMITIVE_EOF);
-
-	-- register for SOF
-	-- -----------------------------
-	-- update register if SOF is received, reset if DATA occurs
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (RXFSM_IsSOF = '1') THEN
-				RX_SOF_r		<= '1';
-			ELSIF (RXFSM_IsData = '1') THEN
-				RX_SOF_r		<= '0';
-			END IF;
-		END IF;
-	END PROCESS;
-
-	-- register for CRC_OK
-	-- -----------------------------
-	-- update register if data is received, reset if EOF occurs
-	RX_CRC_OKReg_set	<= RXFSM_IsData	AND RX_CRC_OK;
-	RX_CRC_OKReg_rst	<= RXFSM_IsEOF	OR (NOT RX_CRC_OK AND RXFSM_IsData);
-
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (RX_CRC_OKReg_set = '1') THEN
-				RX_CRC_OKReg_r			<= '1';
-			ELSIF (RX_CRC_OKReg_rst = '1') THEN
-				RX_CRC_OKReg_r			<= '0';
-			END IF;
-		END IF;
-	END PROCESS;
-	
---	RX_CRC_OKReg_r	<= RX_CRC_OK;
-	
-	-- Statemachine
-	-- -----------------------------
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF Reset = '1' THEN
-				RXFSM_State 	<= ST_RXFSM_RESET;
-			ELSE
-				RXFSM_State 	<= RXFSM_NextState;
-			END IF;
-		END IF;
-	END PROCESS;
-
-
-	PROCESS(RXFSM_State, Phy_Ready, Trans_TX_SOF, TX_FIFO_Valid, RX_Primitive, RX_FIFO_Full, RX_FIFO_SpaceAvailable, RX_FSFIFO_Full, RX_CRC_OKReg_r, InsertALIGN)
-	BEGIN
-		RXFSM_NextState								<= RXFSM_State;
-
-		-- internal state signals
-		RXFSM_IDLE										<= '0';
-		RXFSM_Error										<= '0';
-		RXFSM_Receiving								<= '0';
-
-		-- primitive interface
-		RXFSM_Primitive								<= SATA_PRIMITIVE_NONE;
-
-		-- FIFO interface
+		-- RX FIFO interface
 		RX_FIFO_rst										<= '0';
-		RXFSM_IsData									<= '0';
+		RX_FIFO_commit								<= '0';
+		RX_FIFO_rollback							<= '0';
+		RX_IsData											<= '0';
+		RX_IsSOF											<= '0';
+		RX_IsEOF											<= '0';
 		RX_FSFIFO_rst									<= '0';
 		RX_FSFIFO_put									<= '0';
 		
 		Trans_RXFS_CRCOK							<= '0';
-		Trans_RXFS_Abort							<= '0';
+		Trans_RXFS_SyncEsc						<= '0';
 		
-		-- CRC interface
+		-- RX CRC interface
 		RX_CRC_rst										<= '0';
 		RX_CRC_Valid									<= '0';
 		
-		-- scrambler interface
+		-- RX scrambler interface
 		DataUnscrambler_en						<= '0';
 		DataUnscrambler_rst						<= '0';
 		
-		-- handle PhyNotReady with highest priority
-		IF ((Phy_Ready = '0') AND NOT
-				((RXFSM_State = ST_RXFSM_RESET) OR
-				 (RXFSM_State = ST_RXFSM_NO_COMMUNICATION) OR
-				 (RXFSM_State = ST_RXFSM_NO_COMMUNICATION_ERROR)
-					)) THEN
-			RXFSM_Primitive										<= SATA_PRIMITIVE_ALIGN;
-			
-			RXFSM_NextState										<= ST_RXFSM_NO_COMMUNICATION_ERROR;
-		ELSE
-			CASE RXFSM_State IS
-				WHEN ST_RXFSM_RESET =>
-					RXFSM_Primitive								<= SATA_PRIMITIVE_ALIGN;
-					RX_FIFO_rst										<= '1';
-					RX_FSFIFO_rst									<= '1';
-					
-					RXFSM_NextState								<= ST_RXFSM_NO_COMMUNICATION;
-			
-				WHEN ST_RXFSM_NO_COMMUNICATION =>
-					RXFSM_Primitive								<= SATA_PRIMITIVE_ALIGN;
-					RXFSM_Error										<= '1';
-					
-					IF (Phy_Ready = '1') THEN
-						RXFSM_NextState							<= ST_RXFSM_IDLE;
-					END IF;
-
-				WHEN ST_RXFSM_NO_COMMUNICATION_ERROR =>
-					RXFSM_Primitive								<= SATA_PRIMITIVE_ALIGN;
-					RXFSM_Error										<= '1';
-					
-					RXFSM_NextState								<= ST_RXFSM_NO_COMMUNICATION;
+		case State is
+			-- ----------------------------------------------------------
+			when ST_RESET =>
+				Status												<= SATA_LINK_STATUS_NO_COMMUNICATION;
+				TX_Primitive									<= SATA_PRIMITIVE_ALIGN;
+				TX_FIFO_rst										<= '1';
+				TX_FSFIFO_rst									<= '1';
+				RX_FIFO_rst										<= '1';
+				RX_FSFIFO_rst									<= '1';
+				TX_RetryCounter_rst						<= '1';
+				NextState											<= ST_NO_COMMUNICATION;
 				
-				WHEN ST_RXFSM_IDLE =>
-					RXFSM_IDLE										<= '1';
+				-- ----------------------------------------------------------
+			when ST_NO_COMMUNICATION =>
+				Status												<= SATA_LINK_STATUS_NO_COMMUNICATION;
+				TX_Primitive									<= SATA_PRIMITIVE_ALIGN;
 				
-					IF (InsertALIGN = '1') THEN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
-					
-						IF (RX_Primitive = SATA_PRIMITIVE_TX_RDY) THEN											-- transmission attempt received => abort own transmission attempt => send RX_RDY
-							IF (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_HOST) THEN								-- 
-								RXFSM_IDLE							<= '0';														-- end IDLE mode
-								RXFSM_Receiving					<= '1';														-- start receiving
+				if (Phy_Status = SATA_PHY_STATUS_COMMUNICATING) then
+					NextState										<= ST_IDLE;
+				end if;
 
-								IF (RX_FIFO_SpaceAvailable = '1') THEN										-- RX FIFO has space => send RX_RDY
-									RXFSM_NextState				<= ST_RXFSM_SEND_RX_RDY;
-								ELSE																											-- RX FIFO has no space => wait for space
-									RXFSM_NextState				<= ST_RXFSM_WAIT_FIFO;
-								END IF;
-							ELSIF (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_DEVICE) THEN					-- => ignore transmission attempt
-								IF ((Trans_TX_SOF = '1') AND (TX_FIFO_Valid = '1')) THEN	-- start own transmission attempt?
-									RXFSM_NextState				<= ST_RXFSM_SENDING;							-- go to sending; TXFSM is working
-								ELSE
-									RXFSM_IDLE						<= '0';														-- end IDLE mode
-									RXFSM_Receiving				<= '1';														-- start receiving
-									
-									IF (RX_FIFO_SpaceAvailable = '1') THEN									-- RX FIFO has space => send RX_RDY
-										RXFSM_NextState			<= ST_RXFSM_SEND_RX_RDY;
-									ELSE																										-- RX FIFO has no space => wait for space
-										RXFSM_NextState			<= ST_RXFSM_WAIT_FIFO;
-									END IF;
-								END IF;
-							END IF;
-						ELSIF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) OR
-									 (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) OR
-									 (RX_Primitive = SATA_PRIMITIVE_R_OK) OR
-									 (RX_Primitive = SATA_PRIMITIVE_R_ERROR) OR
-									 (RX_Primitive = SATA_PRIMITIVE_SYNC))
-						THEN																													-- 
-							IF ((Trans_TX_SOF = '1') AND (TX_FIFO_Valid = '1')) THEN
-								RXFSM_NextState					<= ST_RXFSM_SENDING;							-- go to sending; TXFSM is working
-							ELSE
-								NULL;																											-- nothing to do
-							END IF;
-						ELSE
-							RXFSM_IDLE								<= '0';
-							RXFSM_Error								<= '1';
-								
-							RXFSM_NextState						<= ST_RXFSM_FSM_ERROR;
-						END IF;
-					ELSE	-- InsertALIGN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_SYNC;
+				-- ----------------------------------------------------------
+			when ST_NO_COMMUNICATION_ERROR =>
+				Status												<= SATA_LINK_STATUS_ERROR;
+				Error 												<= SATA_LINK_ERROR_PHY_ERROR;
+				TX_Primitive									<= SATA_PRIMITIVE_ALIGN;
+				-- A link error may occur if:
+				-- - the other end (e.g. device) requests a link reset via COMRESET
+				-- - or the other end was detached and a new device or host connected.
+				-- Notify above layers and stay here until the above layers acknowledge
+				-- this event e.g. via a command.
+				-- We might come from any state, so reinitialize to a known state in
+				-- agreement with above layer, e.g. clear FIFOs, reset RetryCounter and
+				-- so on.
+				-- TODO Feature Request: Re-initialize via Command.
+				
+				--TX_RetryCounter_rst						<= '1';
+				--RX_FIFO_rollback							<= '1';
+				--TX_FIFO_Commit								<= '1'; -- TODO: Discard?
+				NextState											<= ST_NO_COMMUNICATION_ERROR;
+				
+				-- ----------------------------------------------------------
+			when ST_IDLE =>
+				Status 												<= SATA_LINK_STATUS_IDLE;
+				
+				if (InsertALIGN = '1') then
+					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					
-						IF (RX_Primitive = SATA_PRIMITIVE_TX_RDY) THEN											-- transmission attempt received => abort own transmission attempt => send RX_RDY
-							IF (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_HOST) THEN								-- 
-								RXFSM_IDLE							<= '0';														-- end IDLE mode
-								RXFSM_Receiving					<= '1';														-- start receiving
+					-- All cases are handled after InsertAlign is '0' again.
 
-								IF (RX_FIFO_SpaceAvailable = '1') THEN										-- RX FIFO has space => send RX_RDY
-									RXFSM_Primitive				<= SATA_PRIMITIVE_RX_RDY;
-									RXFSM_NextState				<= ST_RXFSM_SEND_RX_RDY;
-								ELSE																											-- RX FIFO has no space => wait for space
-									RXFSM_Primitive				<= SATA_PRIMITIVE_SYNC;
-									RXFSM_NextState				<= ST_RXFSM_WAIT_FIFO;
-								END IF;
-							ELSIF (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_DEVICE) THEN					-- => ignore transmission attempt
-								IF ((Trans_TX_SOF = '1') AND (TX_FIFO_Valid = '1')) THEN	-- start own transmission attempt?
-									RXFSM_NextState				<= ST_RXFSM_SENDING;							-- go to sending; TXFSM is working
-								ELSE
-									RXFSM_IDLE						<= '0';														-- end IDLE mode
-									RXFSM_Receiving				<= '1';														-- start receiving
-								
-									IF (RX_FIFO_SpaceAvailable = '1') THEN									-- RX FIFO has space => send RX_RDY
-										RXFSM_Primitive			<= SATA_PRIMITIVE_RX_RDY;
-										RXFSM_NextState			<= ST_RXFSM_SEND_RX_RDY;
-									ELSE																										-- RX FIFO has no space => wait for space
-										RXFSM_Primitive			<= SATA_PRIMITIVE_SYNC;
-										RXFSM_NextState			<= ST_RXFSM_WAIT_FIFO;
-									END IF;
-								END IF;
-							END IF;
-						ELSIF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) OR
-									 (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) OR
-									 (RX_Primitive = SATA_PRIMITIVE_R_OK) OR
-									 (RX_Primitive = SATA_PRIMITIVE_R_ERROR) OR
-									 (RX_Primitive = SATA_PRIMITIVE_SYNC))
-						THEN																													-- 
-							IF ((Trans_TX_SOF = '1') AND (TX_FIFO_Valid = '1')) THEN
-								RXFSM_NextState					<= ST_RXFSM_SENDING;							-- go to sending; TXFSM is working
-							END IF;
-						ELSE
-							RXFSM_IDLE								<= '0';
-							RXFSM_Error								<= '1';
-								
-							RXFSM_NextState						<= ST_RXFSM_FSM_ERROR;
-						END IF;
-					END IF;
+				else	-- InsertALIGN
+					TX_Primitive								<= SATA_PRIMITIVE_SYNC;
+					
+					if (RX_Primitive = SATA_PRIMITIVE_TX_RDY) then								-- transmission attempt received
+						if (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_HOST) then						-- 
+							if (RX_FIFO_SpaceAvailable = '1') and (RX_FSFIFO_Full = '0') then		-- RX FIFOs have space => send RX_RDY
+								TX_Primitive					<= SATA_PRIMITIVE_RX_RDY;
+								NextState							<= ST_RX_SEND_RX_RDY;
+							else																											-- RX FIFO has no space => wait for space
+								TX_Primitive					<= SATA_PRIMITIVE_SYNC;
+								NextState							<= ST_RX_WAIT_FIFO;
+							end if;
+						elsif (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_DEVICE) then			--
+							if ((Trans_TX_SOF = '1') AND (TX_FIFO_Valid = '1')) then	-- start own transmission attempt?
+								TX_Primitive					<= SATA_PRIMITIVE_TX_RDY;
+								NextState							<= ST_TX_SEND_TX_RDY;
+							else
+								if (RX_FIFO_SpaceAvailable = '1') and (RX_FSFIFO_Full = '0') then	-- RX FIFOs have space => send RX_RDY
+									TX_Primitive				<= SATA_PRIMITIVE_RX_RDY;
+									NextState						<= ST_RX_SEND_RX_RDY;
+								else																										-- RX FIFO has no space => wait for space
+									TX_Primitive				<= SATA_PRIMITIVE_SYNC;
+									NextState						<= ST_RX_WAIT_FIFO;
+								end if;
+							end if;
+						end if;
+					else
+						if ((Trans_TX_SOF = '1') AND (TX_FIFO_Valid = '1')) then
+							TX_Primitive						<= SATA_PRIMITIVE_TX_RDY;
+							NextState								<= ST_TX_SEND_TX_RDY;
+						end if;
+					end if;
+				end if;
+				
+				-- ----------------------------------------------------------
+			when ST_SYNC_ESCAPE =>
+				Status 												<= SATA_LINK_STATUS_SYNC_ESCAPE;
+				
+				if (InsertALIGN = '1') then
+					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
+					
+					-- All cases are handled after InsertAlign is '0' again.
 
-				WHEN ST_RXFSM_SENDING =>
-					RXFSM_IDLE										<= '1';
+				else	-- InsertALIGN
+					TX_Primitive 								<= SATA_PRIMITIVE_SYNC;
 					
-					IF (InsertALIGN = '1') THEN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
+					if ((RX_Primitive = SATA_PRIMITIVE_TX_RDY) or
+							(RX_Primitive = SATA_PRIMITIVE_SYNC)) then
+						NextState <= ST_IDLE;
+					end if;
+				end if;
+				
+				-- ----------------------------------------------------------
+				-- sending
+				-- ----------------------------------------------------------
+			when ST_TX_SEND_TX_RDY =>
+				Status												<= SATA_LINK_STATUS_SENDING;
+				
+				if (InsertALIGN = '1') then
+					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					
-						IF (RX_Primitive = SATA_PRIMITIVE_TX_RDY) THEN
-							IF (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_HOST) THEN								-- transmission attempt received => abort own transmission attempt => send RX_RDY
-								RXFSM_IDLE								<= '0';														-- end IDLE mode
-								RXFSM_Receiving						<= '1';														-- start receiving
+					if (RX_Primitive = SATA_PRIMITIVE_RX_RDY) then										-- other side is ready to receive
+						null; -- just send align, transistion after InsertAlign = '0'
+					elsif (RX_Primitive = SATA_PRIMITIVE_TX_RDY) then									-- transmission attempt from other side
+						if (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_HOST) then								-- => abort own transmission attempt
+							if (RX_FIFO_SpaceAvailable = '1') then												-- RX FIFO has space => send RX_RDY
+								NextState							<= ST_RX_SEND_RX_RDY;
+							else																													-- RX FIFO has no space => wait for space
+								NextState							<= ST_RX_WAIT_FIFO;
+							end if;
+						elsif (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_DEVICE) then					-- => ignore transmission attempt
+							null;
+						end if;
+					end if;
+
+				else		-- InsertALIGN
+					TX_Primitive								<= SATA_PRIMITIVE_TX_RDY;
+					
+					if (RX_Primitive = SATA_PRIMITIVE_RX_RDY) then										-- other side is ready to receive
+						TX_Primitive							<= SATA_PRIMITIVE_SOF;
+						TX_WordCounter_rst				<= '1';
+						TX_CRC_rst								<= '1';
 						
-								IF (RX_FIFO_SpaceAvailable = '1') THEN											-- RX FIFO has space => send RX_RDY
-									RXFSM_NextState					<= ST_RXFSM_SEND_RX_RDY;
-								ELSE																												-- RX FIFO has no space => wait for space
-									RXFSM_NextState					<= ST_RXFSM_WAIT_FIFO;
-								END IF;
-							ELSIF (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_DEVICE) THEN	
-								NULL;
-							END IF;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_RX_RDY) THEN																													-- 
-							RXFSM_NextState							<= ST_RXFSM_SENDING2;
-						ELSIF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) OR
-									 (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) OR
-									 (RX_Primitive = SATA_PRIMITIVE_R_OK) OR
-									 (RX_Primitive = SATA_PRIMITIVE_R_ERROR) OR
-									 (RX_Primitive = SATA_PRIMITIVE_SYNC))
-						THEN																													-- 
-							NULL;																												-- nothing to do
-						ELSE
-							RXFSM_IDLE								<= '0';
-							RXFSM_Error								<= '1';
-								
-							RXFSM_NextState						<= ST_RXFSM_FSM_ERROR;
-						END IF;
-					ELSE	-- InsertALIGN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_SYNC;
+						DataScrambler_rst					<= '1';
+--							DummyScrambler_rst				<= '1';
+						NextState						<= ST_TX_SEND_DATA;
+					elsif (RX_Primitive = SATA_PRIMITIVE_TX_RDY) then									-- transmission attempt from other side
+						if (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_HOST) then								-- => abort own transmission attempt
+							if (RX_FIFO_SpaceAvailable = '1') then												-- RX FIFO has space => send RX_RDY
+								TX_Primitive						<= SATA_PRIMITIVE_RX_RDY;
+								NextState								<= ST_RX_SEND_RX_RDY;
+							else																													-- RX FIFO has no space => wait for space
+								TX_Primitive						<= SATA_PRIMITIVE_SYNC;
+								NextState								<= ST_RX_WAIT_FIFO;
+							end if;
+						elsif (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_DEVICE) then					-- => ignore transmission attempt
+							null;
+						end if;
+					end if;
+				end if;
+				
+				-- ----------------------------------------------------------
+			when ST_TX_SEND_DATA =>
+				Status												<= SATA_LINK_STATUS_SENDING;
+				
+				if (InsertALIGN = '1') then
+					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					
-						IF (RX_Primitive = SATA_PRIMITIVE_TX_RDY) THEN
-							IF (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_HOST) THEN								-- transmission attempt received => abort own transmission attempt => send RX_RDY
-								RXFSM_IDLE								<= '0';														-- end IDLE mode
-								RXFSM_Receiving						<= '1';														-- start receiving
-							
-								IF (RX_FIFO_SpaceAvailable = '1') THEN											-- RX FIFO has space => send RX_RDY
-									RXFSM_Primitive					<= SATA_PRIMITIVE_RX_RDY;
-									
-									RXFSM_NextState					<= ST_RXFSM_SEND_RX_RDY;
-								ELSE																												-- RX FIFO has no space => wait for space
-									RXFSM_Primitive					<= SATA_PRIMITIVE_SYNC;
-									
-									RXFSM_NextState					<= ST_RXFSM_WAIT_FIFO;
-								END IF;
-							ELSIF (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_DEVICE) THEN
-								NULL;
-							END IF;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_RX_RDY) THEN
-							RXFSM_NextState						<= ST_RXFSM_SENDING2;
-						ELSIF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) OR
-									 (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) OR
-									 (RX_Primitive = SATA_PRIMITIVE_R_OK) OR
-									 (RX_Primitive = SATA_PRIMITIVE_R_ERROR) OR
-									 (RX_Primitive = SATA_PRIMITIVE_SYNC))
-						THEN																													-- 
-							NULL;																											-- nothing to do
-						ELSE
-							RXFSM_IDLE								<= '0';
-							RXFSM_Error								<= '1';
-								
-							RXFSM_NextState						<= ST_RXFSM_FSM_ERROR;
-						END IF;
-					END IF;
-					
-				WHEN ST_RXFSM_SENDING2 =>
-					RXFSM_IDLE										<= '1';
-					
-					IF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN													-- abort receiving, goto idle
-						RXFSM_NextState							<= ST_RXFSM_IDLE;
-					ELSIF (RX_Primitive = SATA_PRIMITIVE_ALIGN) THEN											-- ignore ALIGN primitives
-						NULL;
-					ELSIF (RX_Primitive = SATA_PRIMITIVE_R_OK) THEN											-- receiving completed with OK
-						RXFSM_NextState							<= ST_RXFSM_IDLE;
-					ELSIF (RX_Primitive = SATA_PRIMITIVE_R_ERROR) THEN										-- receiving completed with ERROR
-						RXFSM_NextState							<= ST_RXFSM_IDLE;
-					END IF;
+					-- Receiving HOLD and SYNC is handled after InsertAlign is low again.
 
+				else	-- InsertALIGN
+					if (TX_FIFO_Valid = '1') then																	-- valid data in TX_FIFO
+						TX_Primitive							<= SATA_PRIMITIVE_NONE;
+						TX_WordCounter_inc				<= '1';
+						TX_FIFO_got								<= '1';
+						TX_FIFO_Commit 						<= TX_IsLongFrame;
+						TX_CRC_Valid							<= '1';
+						DataScrambler_en					<= '1';
+						
+						if (Trans_TX_EOF = '1') then																-- last payload word in Frame
+							if (RX_Primitive = SATA_PRIMITIVE_SYNC) then 							-- abort
+								-- SyncEscape by receiver.
+								TX_Primitive					<= SATA_PRIMITIVE_SYNC;
+								TX_FSFIFO_put 				<= '1';
+								Trans_TXFS_SyncEsc		<= '1';
+								NextState 						<= ST_TX_DISCARD_FRAME;
+							else 																											-- send CRC
+								NextState							<= ST_TX_SEND_CRC;
+							end if;
+						else																												-- normal payload word
+							if (RX_Primitive = SATA_PRIMITIVE_HOLD) then							-- hold on sending
+								TX_Primitive					<= SATA_PRIMITIVE_HOLD_ACK;
+								TX_WordCounter_inc		<= '0';
+								TX_FIFO_got						<= '0';
+								TX_FIFO_Commit 				<= '0';
+								TX_CRC_Valid					<= '0';
+								DataScrambler_en			<= '0';
+								NextState							<= ST_TX_RECEIVED_HOLD;
+							elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then 					-- abort
+								-- SyncEscape by receiver.
+								TX_Primitive					<= SATA_PRIMITIVE_SYNC;
+								TX_FSFIFO_put 				<= '1';
+								Trans_TXFS_SyncEsc		<= '1';
+								NextState 						<= ST_TX_DISCARD_FRAME;
+							end if;
+						end if;
+					else																													-- empty TX_FIFO => insert HOLD
+						if (RX_Primitive = SATA_PRIMITIVE_SYNC) then 								-- abort
+								-- SyncEscape by receiver.
+							TX_Primitive						<= SATA_PRIMITIVE_SYNC;
+							TX_FSFIFO_put 					<= '1';
+							Trans_TXFS_SyncEsc			<= '1';
+							NextState 							<= ST_TX_DISCARD_FRAME;
+						else
+							TX_Primitive						<= SATA_PRIMITIVE_HOLD;
+							NextState								<= ST_TX_SEND_HOLD;
+						end if;
+					end if;
+				end if;
+				
+				-- ----------------------------------------------------------
+			when ST_TX_SEND_HOLD =>
+				Status												<= SATA_LINK_STATUS_SENDING;
+				
+				if (InsertAlign = '1') then
+					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
+					
+					-- Receiving HOLD and SYNC is handled after InsertAlign is low again.
+
+				else	-- InsertAlign
+					if (TX_FIFO_Valid = '1') then
+						TX_Primitive							<= SATA_PRIMITIVE_NONE;
+						TX_WordCounter_inc				<= '1';
+						TX_FIFO_got								<= '1';
+						TX_FIFO_Commit 						<= TX_IsLongFrame;
+						TX_CRC_Valid							<= '1';
+						DataScrambler_en					<= '1';
+						
+						if (Trans_TX_EOF = '1') then																-- last payload word in frame
+							if (RX_Primitive = SATA_PRIMITIVE_SYNC) then 							-- abort
+								-- SyncEscape by receiver.
+								TX_Primitive					<= SATA_PRIMITIVE_SYNC;
+								TX_FSFIFO_put 				<= '1';
+								Trans_TXFS_SyncEsc		<= '1';
+								NextState 						<= ST_TX_DISCARD_FRAME;
+							else
+								NextState							<= ST_TX_SEND_CRC;
+							end if;
+						else 																												-- normal payload word
+							if (RX_Primitive = SATA_PRIMITIVE_HOLD) then
+								TX_Primitive					<= SATA_PRIMITIVE_HOLD_ACK;
+								TX_WordCounter_inc		<= '0';
+								TX_FIFO_got						<= '0';
+								TX_FIFO_Commit 				<= '0';
+								TX_CRC_Valid					<= '0';
+								DataScrambler_en			<= '0';
+								NextState							<= ST_TX_RECEIVED_HOLD;
+							elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then 					-- abort
+								-- SyncEscape by receiver.
+								TX_Primitive					<= SATA_PRIMITIVE_SYNC;
+								TX_FSFIFO_put 				<= '1';
+								Trans_TXFS_SyncEsc		<= '1';
+								NextState 						<= ST_TX_DISCARD_FRAME;
+							end if;
+						end if;
+					else																													-- empty FIFO => insert HOLD
+						if (RX_Primitive = SATA_PRIMITIVE_SYNC) then 								-- abort
+								-- SyncEscape by receiver.
+							TX_Primitive						<= SATA_PRIMITIVE_SYNC;
+							TX_FSFIFO_put 					<= '1';
+							Trans_TXFS_SyncEsc			<= '1';
+							NextState 							<= ST_TX_DISCARD_FRAME;
+						else
+							TX_Primitive						<= SATA_PRIMITIVE_HOLD;
+						end if;
+					end if;
+				end if;
+				
+				-- ----------------------------------------------------------
+			when ST_TX_RECEIVED_HOLD =>
+				-- assert(TX_Fifo_Valid = '1')
+				Status												<= SATA_LINK_STATUS_SENDING;
+				
+				if (InsertAlign = '1') then
+					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
+					
+					-- Receiving HOLD and SYNC is handled after InsertAlign is low again.
+					
+				else	-- InsertAlign
+					TX_Primitive								<= SATA_PRIMITIVE_HOLD_ACK;
+					
+					if ((RX_Primitive = SATA_PRIMITIVE_HOLD) or
+							(RX_Primitive = SATA_PRIMITIVE_ALIGN))	then
+						null;
+					elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then 							-- abort
+						-- SyncEscape by receiver.
+						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+						TX_FSFIFO_put 						<= '1';
+						Trans_TXFS_SyncEsc				<= '1';
+						NextState 								<= ST_TX_DISCARD_FRAME;
+					else 																													-- resume sending data
+						TX_Primitive							<= SATA_PRIMITIVE_NONE;
+						TX_WordCounter_inc				<= '1';
+						TX_FIFO_got								<= '1';
+						TX_FIFO_Commit 						<= TX_IsLongFrame;
+						TX_CRC_Valid							<= '1';
+						DataScrambler_en					<= '1';
+						if (Trans_TX_EOF = '1') then																-- last payload word in frame
+							NextState								<= ST_TX_SEND_CRC;
+						else
+							NextState								<= ST_TX_SEND_DATA;
+						end if;
+					end if;
+				end if;
+				
+				-- ----------------------------------------------------------
+			when ST_TX_SEND_CRC =>
+				Status												<= SATA_LINK_STATUS_SENDING;
+				
+				if (InsertAlign = '1') then
+					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
+					-- Receiving SYNC is handled after InsertAlign is low again.
+
+				else
+					if (RX_Primitive = SATA_PRIMITIVE_SYNC) then 									-- abort
+						-- SyncEscape by receiver.
+						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+						TX_RetryCounter_rst				<= '1';														-- frame finally failed -> reset counter
+						TX_FIFO_Commit						<= '1';														-- Commit data FIFO
+						TX_FSFIFO_put 						<= '1';
+						Trans_TXFS_SyncEsc				<= '1';
+						NextState 								<= ST_IDLE;  -- EOF already seen.
+					else
+						TX_Primitive							<= SATA_PRIMITIVE_NONE;
+						CRCMux_ctrl								<= '1';
+						DataScrambler_en					<= '1';
+						NextState									<= ST_TX_SEND_EOF;
+					end if;
+				end if;
+				
+				-- ----------------------------------------------------------
+			when ST_TX_SEND_EOF =>
+				Status												<= SATA_LINK_STATUS_SENDING;
+				
+				if (InsertAlign = '1') then
+					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
+					-- Receiving SYNC is handled after InsertAlign is low again.
+
+				else
+					if (RX_Primitive = SATA_PRIMITIVE_SYNC) then 									-- abort
+						-- SyncEscape by receiver.
+						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+						TX_RetryCounter_rst				<= '1';														-- frame finally failed -> reset counter
+						TX_FIFO_Commit						<= '1';														-- Commit data FIFO
+						TX_FSFIFO_put 						<= '1';
+						Trans_TXFS_SyncEsc				<= '1';
+						NextState 								<= ST_IDLE;  -- EOF already seen.
+					else
+						TX_Primitive							<= SATA_PRIMITIVE_EOF;
+						NextState									<= ST_TX_WAIT;
+					end if;
+				end if;
+
+				-- ----------------------------------------------------------
+			when ST_TX_WAIT =>
+				Status												<= SATA_LINK_STATUS_SENDING;
+				
+				if (InsertAlign = '1') then
+					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
+					-- Handle primitives after InsertAlign is low again.
+
+				else	-- InsertAlign
+					TX_Primitive								<= SATA_PRIMITIVE_WAIT_TERM;
+					
+					if (RX_Primitive = SATA_PRIMITIVE_R_OK) then
+						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+						TX_RetryCounter_rst				<= '1';										-- frame successfully delivered -> reset counter
+						TX_FIFO_Commit						<= '1';										-- Commit data FIFO
+						TX_FSFIFO_put							<= '1';										-- Update frame state FIFO
+						Trans_TXFS_SendOK					<= '1';										--   with SendOK
+						NextState									<= ST_IDLE;
+					elsif (RX_Primitive = SATA_PRIMITIVE_R_ERROR) then
+						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+						
+						if ((TX_IsLongFrame = '0') and 											-- retry short frame
+								(TX_RetryFailed = '0')) then										-- try again
+							TX_RetryCounter_inc			<= '1';
+							TX_FIFO_Rollback				<= '1';
+							NextState								<= ST_IDLE;
+						else																								-- don't retry (too long or	finally failed)
+							TX_RetryCounter_rst			<= '1';										-- frame finally failed -> reset counter
+							TX_FIFO_Commit					<= '1';										-- Commit data FIFO
+							TX_FSFIFO_put						<= '1';										-- update frame state FIFO
+							NextState								<= ST_IDLE;						
+						end if;
+					elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then 			-- abort
+						-- SyncEscape by receiver.
+						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+						TX_RetryCounter_rst				<= '1';										-- frame finally failed -> reset counter
+						TX_FIFO_Commit						<= '1';										-- Commit data FIFO
+						TX_FSFIFO_put 						<= '1';
+						Trans_TXFS_SyncEsc				<= '1';
+						NextState 								<= ST_IDLE;  -- EOF already seen.
+					end if;
+				end if;
+
+			when ST_TX_DISCARD_FRAME =>
+				-- SyncEsc requested. Discard remaining frame.
+				if (InsertAlign = '1') then
+					TX_Primitive 								<= SATA_PRIMITIVE_ALIGN;
+				else
+					TX_Primitive								<= SATA_PRIMITIVE_SYNC;
+				end if;
+				
+				TX_RetryCounter_rst						<= '1';												-- frame finally failed -> reset counter
+				TX_FIFO_got										<= '1';
+				TX_FIFO_Commit 								<= '1';
+				if (Trans_TX_EOF = '1') then																-- last payload word in frame
+					NextState 									<= ST_IDLE;
+				end if;
+				
 				-- ----------------------------------------------------------
 				-- receiving
 				-- ----------------------------------------------------------
-				WHEN ST_RXFSM_WAIT_FIFO =>
-					RXFSM_Receiving								<= '1';
-					
-					IF (InsertALIGN = '1') THEN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
-						
-						IF (RX_Primitive = SATA_PRIMITIVE_TX_RDY) THEN
-							IF (RX_FIFO_SpaceAvailable = '1') THEN
---								RXFSM_Primitive					<= SATA_PRIMITIVE_RX_RDY;
-							
-								RXFSM_NextState					<= ST_RXFSM_SEND_RX_RDY;
-							ELSE
-								NULL;
-							END IF;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_ALIGN) THEN
-							NULL;
-						ELSE
-							RXFSM_NextState						<= ST_RXFSM_IDLE;
-						END IF;				
-					ELSE		-- InsertALIGN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_SYNC;
-						
-						IF (RX_Primitive = SATA_PRIMITIVE_TX_RDY) THEN
-							IF (RX_FIFO_SpaceAvailable = '1') THEN
-								RXFSM_Primitive					<= SATA_PRIMITIVE_RX_RDY;
-							
-								RXFSM_NextState					<= ST_RXFSM_SEND_RX_RDY;
-							ELSE
-								NULL;
-							END IF;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_ALIGN) THEN
-							NULL;
-						ELSE
-							RXFSM_NextState						<= ST_RXFSM_IDLE;
-						END IF;				
-					END IF;
-					
-				WHEN ST_RXFSM_SEND_RX_RDY =>
-					RXFSM_Receiving								<= '1';
-
-					IF (InsertALIGN = '1') THEN
-						RXFSM_Primitive								<= SATA_PRIMITIVE_ALIGN;
-						
-						IF ((RX_Primitive = SATA_PRIMITIVE_TX_RDY) OR
-								(RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN
-							NULL;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_SOF) THEN
-							RX_CRC_rst									<= '1';
-							DataUnscrambler_rst					<= '1';
-						
-							RXFSM_NextState							<= ST_RXFSM_RECEIVE_DATA;
-						ELSE
-							RXFSM_NextState							<= ST_RXFSM_IDLE;
-						END IF;
-					ELSE		-- InsertALIGN
-						RXFSM_Primitive								<= SATA_PRIMITIVE_RX_RDY;
-						
-						IF ((RX_Primitive = SATA_PRIMITIVE_TX_RDY) OR
-								(RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN
-							NULL;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_SOF) THEN
-							RXFSM_Primitive							<= SATA_PRIMITIVE_R_IP;
-							
-							RX_CRC_rst									<= '1';
-							DataUnscrambler_rst					<= '1';
-						
-							RXFSM_NextState							<= ST_RXFSM_RECEIVE_DATA;
-						ELSE
-							RXFSM_NextState							<= ST_RXFSM_IDLE;
-						END IF;
-					END IF;
+			when ST_RX_WAIT_FIFO =>
+				Status												<= SATA_LINK_STATUS_RECEIVING;
 				
-				WHEN ST_RXFSM_RECEIVE_DATA =>
-					RXFSM_Receiving								<= '1';
+				if (InsertALIGN = '1') then
+					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
+					-- All cases are handled after InsertAlign is deasserted.
+					
+				else		-- InsertALIGN
+					TX_Primitive								<= SATA_PRIMITIVE_SYNC;
+					
+					if (RX_Primitive = SATA_PRIMITIVE_TX_RDY) then
+						if (RX_FIFO_SpaceAvailable = '1') and (RX_FSFIFO_Full = '0') then
+							TX_Primitive						<= SATA_PRIMITIVE_RX_RDY;
+							NextState								<= ST_RX_SEND_RX_RDY;
+						end if;
+					elsif (RX_Primitive = SATA_PRIMITIVE_ALIGN) then
+						null;
+					else 	-- may be caused by bit errors
+						-- no frame started yet
+						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+						NextState									<= ST_IDLE;
+					end if;				
+				end if;
+				
+				-- ----------------------------------------------------------
+			when ST_RX_SEND_RX_RDY =>
+				-- assert(RX_FIFO_SpaceAvailable = '1')
+				Status												<= SATA_LINK_STATUS_RECEIVING;
+				
+				if (InsertALIGN = '1') then
+					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
+					
+					if (RX_Primitive = SATA_PRIMITIVE_SOF) then
+						RX_IsSOF 									<= '1';
+						RX_CRC_rst								<= '1';
+						DataUnscrambler_rst				<= '1';
+						NextState									<= ST_RX_RECEIVE_DATA;
+					end if;
+					-- All other cases are handled after InsertAlign is deasserted.
 
-					IF (InsertALIGN = '1') THEN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
+				else		-- InsertALIGN
+					TX_Primitive								<= SATA_PRIMITIVE_RX_RDY;
+					
+					if ((RX_Primitive = SATA_PRIMITIVE_TX_RDY) or
+							(RX_Primitive = SATA_PRIMITIVE_ALIGN))
+					then
+						null;
+					elsif (RX_Primitive = SATA_PRIMITIVE_SOF) then
+						TX_Primitive							<= SATA_PRIMITIVE_R_IP;
+						RX_IsSOF 									<= '1';
+						RX_CRC_rst								<= '1';
+						DataUnscrambler_rst				<= '1';
+						NextState									<= ST_RX_RECEIVE_DATA;
+					else  																												-- abort
+						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+						NextState									<= ST_IDLE;
+					end if;
+				end if;
+				
+				-- ----------------------------------------------------------
+			when ST_RX_RECEIVE_DATA =>
+				Status												<= SATA_LINK_STATUS_RECEIVING;
+				
+				if (InsertALIGN = '1') then
+					TX_Primitive 								<= SATA_PRIMITIVE_ALIGN;
+					
+					if (RX_Primitive = SATA_PRIMITIVE_NONE) then 						-- data
+						RX_IsData									<= '1';
+						RX_CRC_Valid							<= '1';
+						DataUnscrambler_en				<= '1';
+						if (RX_FIFO_SpaceAvailable = '0') then
+							NextState								<= ST_RX_SEND_HOLD;
+						end if;
+					elsif (RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) then
+						null; -- stay here even Transport Layer requests abort in the future
+					elsif (RX_Primitive = SATA_PRIMITIVE_HOLD) then
+						NextState									<= ST_RX_RECEIVED_HOLD;
+					elsif (RX_Primitive = SATA_PRIMITIVE_EOF) then
+						RX_IsEOF 									<= '1';
+						NextState 								<= ST_RX_RECEIVED_EOF;
+					end if;
+					
+					-- WTRM and SYNC are handled after InsertAlign is low again.
 
-						RXFSM_IsData								<= '1';
+				else		-- InsertALIGN
+					TX_Primitive								<= SATA_PRIMITIVE_R_IP;
+					
+					if (RX_Primitive = SATA_PRIMITIVE_NONE) then 						-- data
+						RX_IsData										<= '1';
 						RX_CRC_Valid								<= '1';
 						DataUnscrambler_en					<= '1';
-						
-						IF (RX_Primitive = SATA_PRIMITIVE_HOLD) THEN
---							RXFSM_Primitive						<= SATA_PRIMITIVE_HOLD_ACK;
-							
-							RXFSM_IsData							<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-						
-							RXFSM_NextState						<= ST_RXFSM_RECEIVED_HOLD;
-						ELSIF ((RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-									 (RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN
-							RXFSM_IsData							<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-						
-							RXFSM_NextState						<= ST_RXFSM_RECEIVE_DATA;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
-							RXFSM_IsData							<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-
-							RX_FSFIFO_put							<= '1';
-
-							IF (RX_CRC_OKReg_r = '1') THEN
-								Trans_RXFS_CRCOK				<= '1';
-								RXFSM_NextState					<= ST_RXFSM_SEND_R_OK;
-							ELSE
-								RXFSM_NextState					<= ST_RXFSM_SEND_R_ERROR;
-							END IF;
-						
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) THEN
-							RX_FSFIFO_put							<= '1';
-							Trans_RXFS_Abort					<= '1';
-						
-							RXFSM_NextState						<= ST_RXFSM_IDLE;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_NONE) THEN
-							IF (RX_FIFO_SpaceAvailable = '1') THEN
-								NULL;
-							ELSE
-								RXFSM_NextState					<= ST_RXFSM_SEND_HOLD;
-							END IF;
-						ELSE
-							RXFSM_Error								<= '1';
-							RXFSM_NextState						<= ST_RXFSM_FSM_ERROR;
-						END IF;
-					ELSE		-- InsertALIGN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_R_IP;
-
-						RXFSM_IsData								<= '1';
-						RX_CRC_Valid								<= '1';
-						DataUnscrambler_en					<= '1';
-						
-						IF (RX_Primitive = SATA_PRIMITIVE_HOLD) THEN
-							RXFSM_Primitive						<= SATA_PRIMITIVE_HOLD_ACK;
-							
-							RXFSM_IsData							<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-						
-							RXFSM_NextState						<= ST_RXFSM_RECEIVED_HOLD;
-						ELSIF ((RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-									 (RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN
-							RXFSM_IsData							<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-						
-							RXFSM_NextState						<= ST_RXFSM_RECEIVE_DATA;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
-							RXFSM_IsData							<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-
-							RX_FSFIFO_put							<= '1';
-							
-							IF (RX_CRC_OKReg_r = '1') THEN
-								RXFSM_Primitive					<= SATA_PRIMITIVE_R_OK;
-								Trans_RXFS_CRCOK				<= '1';
-								
-								RXFSM_NextState					<= ST_RXFSM_SEND_R_OK;
-							ELSE
-								RXFSM_Primitive					<= SATA_PRIMITIVE_R_ERROR;
-								RXFSM_NextState					<= ST_RXFSM_SEND_R_ERROR;
-							END IF;
-							
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) THEN
-							RX_FSFIFO_put							<= '1';
-							Trans_RXFS_Abort					<= '1';
-						
-							RXFSM_NextState						<= ST_RXFSM_IDLE;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_NONE) THEN
-							IF (RX_FIFO_SpaceAvailable = '1') THEN
-								NULL;
-							ELSE
-								RXFSM_Primitive					<= SATA_PRIMITIVE_HOLD;
-								RXFSM_NextState					<= ST_RXFSM_SEND_HOLD;
-							END IF;
-						ELSE
-							RXFSM_Error								<= '1';
-							RXFSM_NextState						<= ST_RXFSM_FSM_ERROR;
-						END IF;
-					END IF;
+						if (RX_FIFO_SpaceAvailable = '0') then
+							TX_Primitive						<= SATA_PRIMITIVE_HOLD;
+							NextState								<= ST_RX_SEND_HOLD;
+						end if;
+					elsif (RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) then
+						null; -- stay here even Transport Layer requests abort in the future
+					elsif (RX_Primitive = SATA_PRIMITIVE_HOLD) then
+						TX_Primitive							<= SATA_PRIMITIVE_HOLD_ACK;
+						NextState									<= ST_RX_RECEIVED_HOLD;
+					elsif (RX_Primitive = SATA_PRIMITIVE_EOF) then
+						RX_IsEOF 									<= '1';
+						NextState 								<= ST_RX_RECEIVED_EOF;
+					elsif (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) then
+						-- In case of bit errors, the single EOF might be missed. After that
+						-- WTRM is received. signal as CRC error.
+						TX_Primitive							<= SATA_PRIMITIVE_R_ERROR;
+						RX_FIFO_rollback 					<= '1';
+						RX_FSFIFO_put							<= '1';
+						NextState									<= ST_RX_SEND_R_ERROR;
+					elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then
+						-- SyncEscape by sender.
+						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+						RX_FIFO_rollback 					<= '1';
+						RX_FSFIFO_put							<= '1';
+						Trans_RXFS_SyncEsc				<= '1';
+						NextState									<= ST_IDLE;
+					end if;
+				end if;
 				
-					-- RXFIFO error => override all bits
-					IF (RX_FIFO_Full = '1') THEN
-						RXFSM_Error									<= '1';
-						
-						RXFSM_IsData								<= '0';
-						RX_CRC_Valid								<= '0';
-						DataUnscrambler_en					<= '0';
-						
-						RX_FSFIFO_put								<= '1';
-						
-						IF (InsertALIGN = '1') THEN
-							RXFSM_Primitive						<= SATA_PRIMITIVE_ALIGN;
-							RXFSM_NextState						<= ST_RXFSM_SEND_DMA_TERM;
-						ELSE
-							RXFSM_Primitive						<= SATA_PRIMITIVE_DMA_TERM;
-							RXFSM_NextState						<= ST_RXFSM_RXFIFO_FULL;
-						END IF;
-					END IF;
+				-- ----------------------------------------------------------
+			when ST_RX_SEND_HOLD =>
+				Status												<= SATA_LINK_STATUS_RECEIVING;
 				
-				WHEN ST_RXFSM_SEND_HOLD =>
-					RXFSM_Receiving								<= '1';
-
-					IF (InsertALIGN = '1') THEN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
-						
-						RXFSM_IsData								<= '1';
-						RX_CRC_Valid								<= '1';
-						DataUnscrambler_en					<= '1';
-						
-						IF (RX_Primitive = SATA_PRIMITIVE_HOLD) THEN
-							RXFSM_IsData							<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-						
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) THEN
-							RXFSM_IsData							<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-						
-							RXFSM_NextState						<= ST_RXFSM_RECEIVED_HOLD_ACK;
-							
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_ALIGN) THEN
-							RXFSM_IsData							<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-							
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
-							RXFSM_IsData							<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-						
-							RX_FSFIFO_put							<= '1';
-						
-							IF (RX_CRC_OKReg_r = '1') THEN
-								Trans_RXFS_CRCOK				<= '1';
-								RXFSM_NextState					<= ST_RXFSM_SEND_R_OK;
-							ELSE
-								RXFSM_NextState					<= ST_RXFSM_SEND_R_ERROR;
-							END IF;
-						ELSE
-							IF (RX_FIFO_SpaceAvailable = '1') THEN
-								RXFSM_NextState					<= ST_RXFSM_RECEIVE_DATA;
-							ELSE
-								NULL;
-							END IF;
-						END IF;
-					ELSE		-- InsertALIGN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_HOLD;
-						
-						RXFSM_IsData								<= '1';
-						RX_CRC_Valid								<= '1';
-						DataUnscrambler_en					<= '1';
-						
-						IF (RX_Primitive = SATA_PRIMITIVE_HOLD) THEN
-							RXFSM_IsData							<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-						
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) THEN
-							RXFSM_IsData							<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-						
-							RXFSM_NextState						<= ST_RXFSM_RECEIVED_HOLD_ACK;
-							
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_ALIGN) THEN
-							RXFSM_IsData							<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-							
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
-							RXFSM_IsData							<= '0';
-							RX_CRC_Valid							<= '0';
-							DataUnscrambler_en				<= '0';
-						
-							RX_FSFIFO_put							<= '1';
-							
-							IF (RX_CRC_OKReg_r = '1') THEN
-								RXFSM_Primitive					<= SATA_PRIMITIVE_R_OK;
-								Trans_RXFS_CRCOK				<= '1';
-								RXFSM_NextState					<= ST_RXFSM_SEND_R_OK;
-							ELSE
-								RXFSM_Primitive					<= SATA_PRIMITIVE_R_ERROR;
-								RXFSM_NextState					<= ST_RXFSM_SEND_R_ERROR;
-							END IF;
-						ELSE
-							IF (RX_FIFO_SpaceAvailable = '1') THEN
-								RXFSM_NextState					<= ST_RXFSM_RECEIVE_DATA;
-							ELSE
-								NULL;
-							END IF;
-						END IF;
-					END IF;
-				
-					-- RXFIFO error => override all bits
-					IF (RX_FIFO_Full = '1') THEN
-						RXFSM_Receiving							<= '1';
-						RXFSM_Error									<= '1';
-						
-						RXFSM_IsData								<= '0';
-						RX_CRC_Valid								<= '0';
-						DataUnscrambler_en					<= '0';
-						
-						RX_FSFIFO_put								<= '1';
-						
-						IF (InsertALIGN = '1') THEN
-							RXFSM_Primitive						<= SATA_PRIMITIVE_ALIGN;
-							RXFSM_NextState						<= ST_RXFSM_SEND_DMA_TERM;
-						ELSE
-							RXFSM_Primitive						<= SATA_PRIMITIVE_DMA_TERM;
-							RXFSM_NextState						<= ST_RXFSM_RXFIFO_FULL;
-						END IF;
-					END IF;
-				
-				WHEN ST_RXFSM_RECEIVED_HOLD =>
-					RXFSM_Receiving								<= '1';
+				if (InsertALIGN = '1') then
+					TX_Primitive 								<= SATA_PRIMITIVE_ALIGN;
 					
-					IF (InsertALIGN = '1') THEN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
+					if (RX_Primitive = SATA_PRIMITIVE_NONE) then 						-- data
+						RX_IsData									<= '1';
+						RX_CRC_Valid							<= '1';
+						DataUnscrambler_en				<= '1';
+						if (RX_FIFO_SpaceAvailable = '1') then
+							NextState								<= ST_RX_RECEIVE_DATA;
+							-- FIFO overflow is handled later
+						end if;
+					elsif (RX_Primitive = SATA_PRIMITIVE_EOF) then
+						RX_IsEOF 									<= '1';
+						NextState 								<= ST_RX_RECEIVED_EOF;
+					end if;
+
+					-- All other primitives are handled after InsertAlign is low again.
+
+				else		-- InsertALIGN
+					TX_Primitive								<= SATA_PRIMITIVE_HOLD;
 					
-						IF ((RX_Primitive = SATA_PRIMITIVE_HOLD) OR
-								(RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN
-							NULL;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_NONE) THEN
-							RXFSM_IsData							<= '1';
-							RX_CRC_Valid							<= '1';
-							DataUnscrambler_en				<= '1';
-							
-							RXFSM_NextState						<= ST_RXFSM_RECEIVE_DATA;
-						ELSE
-							NULL;
-						END IF;
-					ELSE		-- InsertALIGN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_HOLD_ACK;
+					if (RX_Primitive = SATA_PRIMITIVE_NONE) then 						-- data
+						RX_IsData									<= '1';
+						RX_CRC_Valid							<= '1';
+						DataUnscrambler_en				<= '1';
+						if (RX_FIFO_SpaceAvailable = '1') then
+							TX_Primitive						<= SATA_PRIMITIVE_R_IP;
+							NextState								<= ST_RX_RECEIVE_DATA;
+						elsif (RX_FIFO_Full = '1') then
+							-- In case of bit errors, HOLDA / EOF might be missed and thus scrambled
+							-- dummy data is put into FIFO. Do a SyncEscape here, because
+							-- no FIFO space might get available.
+							TX_Primitive 						<= SATA_PRIMITIVE_SYNC;
+							RX_FIFO_rollback 				<= '1';
+							RX_FSFIFO_put						<= '1';
+							NextState 							<= ST_SYNC_ESCAPE;
+						end if;
+					elsif (RX_Primitive = SATA_PRIMITIVE_HOLD) then
+						-- yes, only when FIFO space available!
+						if (RX_FIFO_SpaceAvailable = '1') then
+							TX_Primitive						<= SATA_PRIMITIVE_HOLD_ACK;
+							NextState								<= ST_RX_RECEIVED_HOLD;
+						end if;
+					elsif (RX_Primitive = SATA_PRIMITIVE_EOF) then
+						RX_IsEOF 									<= '1';
+						NextState 								<= ST_RX_RECEIVED_EOF;
+					elsif (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) then
+						-- Extension to SATA specification:
+						-- In case of bit errors, the single EOF might be missed. After that
+						-- WTRM is received, but no FIFO space gets available.
+						TX_Primitive							<= SATA_PRIMITIVE_R_ERROR;
+						RX_FIFO_rollback 					<= '1';
+						RX_FSFIFO_put							<= '1';
+						NextState									<= ST_RX_SEND_R_ERROR;
+					elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then
+						-- SyncEscape by sender.
+						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+						RX_FIFO_rollback 					<= '1';
+						RX_FSFIFO_put							<= '1';
+						Trans_RXFS_SyncEsc				<= '1';
+						NextState									<= ST_IDLE;
+					else
+						if (RX_FIFO_SpaceAvailable = '1') then
+							TX_Primitive						<= SATA_PRIMITIVE_R_IP;
+							NextState								<= ST_RX_RECEIVE_DATA;
+						end if;
+					end if;
+				end if;
+				
+				-- ----------------------------------------------------------
+			when ST_RX_RECEIVED_HOLD =>
+				Status												<= SATA_LINK_STATUS_RECEIVING;
+				
+				if (InsertALIGN = '1') then
+					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					
-						IF ((RX_Primitive = SATA_PRIMITIVE_HOLD) OR
-								(RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN
-							NULL;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_NONE) THEN
-							RXFSM_Primitive						<= SATA_PRIMITIVE_R_IP;
-							
-							RXFSM_IsData							<= '1';
-							RX_CRC_Valid							<= '1';
-							DataUnscrambler_en				<= '1';
-							
-							RXFSM_NextState						<= ST_RXFSM_RECEIVE_DATA;
-						ELSE
-							NULL;
-						END IF;
-					END IF;
-				
-					-- RXFIFO error => override all bits
-					IF (RX_FIFO_Full = '1') THEN
-						RXFSM_Error									<= '1';
-						
-						RXFSM_IsData								<= '0';
-						RX_CRC_Valid								<= '0';
-						DataUnscrambler_en					<= '0';
-						
-						RX_FSFIFO_put								<= '1';
-						
-						IF (InsertALIGN = '1') THEN
-							RXFSM_Primitive						<= SATA_PRIMITIVE_ALIGN;
-							RXFSM_NextState						<= ST_RXFSM_SEND_DMA_TERM;
-						ELSE
-							RXFSM_Primitive						<= SATA_PRIMITIVE_DMA_TERM;
-							RXFSM_NextState						<= ST_RXFSM_RXFIFO_FULL;
-						END IF;
-					END IF;
-				
-				WHEN ST_RXFSM_RECEIVED_HOLD_ACK =>
-					RXFSM_Receiving								<= '1';
+					if (RX_Primitive = SATA_PRIMITIVE_NONE) then
+						RX_IsData									<= '1';
+						RX_CRC_Valid							<= '1';
+						DataUnscrambler_en				<= '1';
+						NextState									<= ST_RX_RECEIVE_DATA;
+					elsif (RX_Primitive = SATA_PRIMITIVE_EOF) then
+						RX_IsEOF 									<= '1';
+						NextState 								<= ST_RX_RECEIVED_EOF;
+					end if;
 					
-					IF (InsertALIGN = '1') THEN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
-						
-						IF ((RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-								(RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN
-							IF (RX_FIFO_SpaceAvailable = '1') THEN
-								RXFSM_NextState					<= ST_RXFSM_RECEIVE_DATA;
-							ELSE
-								NULL;
-							END IF;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN
-							-- TODO: SYNC edge
-							NULL;
-						END IF;
-					ELSE		-- InsertALIGN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_HOLD;
-						
-						IF ((RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-								(RX_Primitive = SATA_PRIMITIVE_ALIGN))
-						THEN
-							IF (RX_FIFO_SpaceAvailable = '1') THEN
-								RXFSM_Primitive					<= SATA_PRIMITIVE_R_IP;
-								RXFSM_NextState					<= ST_RXFSM_RECEIVE_DATA;
-							ELSE
-								NULL;
-							END IF;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN
-							-- TODO: SYNC edge
-							NULL;
-						END IF;
-					END IF;
+					-- All other primitives are handled after InsertAlign is low again.
+
+				else		-- InsertALIGN
+					TX_Primitive								<= SATA_PRIMITIVE_HOLD_ACK;
+					
+					if (RX_Primitive = SATA_PRIMITIVE_NONE) then 							-- data
+						TX_Primitive							<= SATA_PRIMITIVE_R_IP;
+						RX_IsData									<= '1';
+						RX_CRC_Valid							<= '1';
+						DataUnscrambler_en				<= '1';
+						NextState									<= ST_RX_RECEIVE_DATA;
+					elsif ((RX_Primitive = SATA_PRIMITIVE_HOLD) or
+								 (RX_Primitive = SATA_PRIMITIVE_ALIGN)) then
+						null;
+					elsif (RX_Primitive = SATA_PRIMITIVE_EOF) then
+						RX_IsEOF 									<= '1';
+						NextState 								<= ST_RX_RECEIVED_EOF;
+					elsif (RX_Primitive = SATA_PRIMITIVE_WAIT_TERM) then
+						-- Extension to SATA specification:
+						-- In case of bit errors, the single EOF might be missed. After that
+						-- WTRM is received. signal as CRC error here, instead of going
+						-- to ST_RX_RECEIVE_DATA first.
+						TX_Primitive							<= SATA_PRIMITIVE_R_ERROR;
+						RX_FIFO_rollback 					<= '1';
+						RX_FSFIFO_put							<= '1';
+						NextState									<= ST_RX_SEND_R_ERROR;
+					elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then
+						-- SyncEscape by sender.
+						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+						RX_FIFO_rollback 					<= '1';
+						RX_FSFIFO_put							<= '1';
+						Trans_RXFS_SyncEsc				<= '1';
+						NextState									<= ST_IDLE;
+					else -- all other primitives
+						TX_Primitive						<= SATA_PRIMITIVE_R_IP;
+						NextState								<= ST_RX_RECEIVE_DATA;
+					end if;
+				end if;
 				
-					-- RXFIFO error => override all bits
-					IF (RX_FIFO_Full = '1') THEN
-						RXFSM_Error									<= '1';
-						
-						RXFSM_IsData								<= '0';
-						RX_CRC_Valid								<= '0';
-						DataUnscrambler_en					<= '0';
-						
-						RX_FSFIFO_put								<= '1';
-						
-						IF (InsertALIGN = '1') THEN
-							RXFSM_Primitive						<= SATA_PRIMITIVE_ALIGN;
-							RXFSM_NextState						<= ST_RXFSM_SEND_DMA_TERM;
-						ELSE
-							RXFSM_Primitive						<= SATA_PRIMITIVE_DMA_TERM;
-							RXFSM_NextState						<= ST_RXFSM_RXFIFO_FULL;
-						END IF;
-					END IF;
+				-- ----------------------------------------------------------
+				-- Frame Received
+				-- ----------------------------------------------------------
+			when ST_RX_RECEIVED_EOF =>
+				Status												<= SATA_LINK_STATUS_RECEIVING;
+				
+				-- Last data word already inserted with EOF. Check error conditions.
+				-- RX_FSFIFO_Full is checked before receive begins.
+				if ((RX_CRC_OKReg_r = '0') or 			-- caused by bit errors
+						(RX_FIFO_Overflow_r = '1') or 	-- send HOLD failed
+						(RX_DataReg_Valid2 = '0')) 			-- frame too short	
+				then
+					if (InsertAlign = '1') then
+						TX_Primitive 							<= SATA_PRIMITIVE_ALIGN;
+					else
+						TX_Primitive 							<= SATA_PRIMITIVE_R_ERROR;
+					end if;
+					RX_FIFO_rollback 						<= '1';
+					RX_FSFIFO_put 							<= '1';
+					NextState 									<= ST_RX_SEND_R_ERROR;
+				else
+					if (InsertAlign = '1') then
+						TX_Primitive 							<= SATA_PRIMITIVE_ALIGN;
+					else
+						TX_Primitive 							<= SATA_PRIMITIVE_R_OK;
+					end if;
+					RX_FIFO_commit 							<= '1';
+					RX_FSFIFO_put 							<= '1';
+					Trans_RXFS_CRCOK 						<= '1';
+					NextState 									<= ST_RX_SEND_R_OK;
+				end if;
+				
+				-- ----------------------------------------------------------
+			when ST_RX_SEND_R_OK =>
+				Status												<= SATA_LINK_STATUS_RECEIVING;
+				
+				if (InsertALIGN = '1') then
+					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
+					-- All cases are handled after InsertAlign is deasserted
+
+				else	-- InsertAlign
+					TX_Primitive								<= SATA_PRIMITIVE_R_OK;
+					
+					if (RX_Primitive = SATA_PRIMITIVE_SYNC) then
+						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+						NextState									<= ST_IDLE;
+					end if;
+				end if;
+
+				-- ----------------------------------------------------------
+			when ST_RX_SEND_R_ERROR =>
+				Status												<= SATA_LINK_STATUS_RECEIVING;
+				
+				if (InsertALIGN = '1') then
+					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
+					-- All cases are handled after InsertAlign is deasserted
+
+				else	-- InsertAlign
+					TX_Primitive								<= SATA_PRIMITIVE_R_ERROR;
+					
+					if (RX_Primitive = SATA_PRIMITIVE_SYNC) then
+						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
+						NextState									<= ST_IDLE;
+					end if;
+				end if;
+		end case;
+
+		-- Override NextState if PHY reports an error
+		if (Phy_Status = SATA_PHY_STATUS_ERROR)	then
+			NextState												<= ST_NO_COMMUNICATION_ERROR;
+		end if;
+	end process;
 
 -- ==================================================================
--- ST_RXFSM_SEND_R_OK
+-- Flag registers
 -- ==================================================================
-				WHEN ST_RXFSM_SEND_R_OK =>
-					RXFSM_Receiving											<= '1';
-					
-					IF (InsertALIGN = '1') THEN
-						RXFSM_Primitive										<= SATA_PRIMITIVE_ALIGN;
-						
-						CASE RX_Primitive IS
-							WHEN SATA_PRIMITIVE_ALIGN =>					NULL;
-							WHEN SATA_PRIMITIVE_SYNC =>
-								RXFSM_IDLE										<= '1';
-								RXFSM_Receiving								<= '0';
-								RXFSM_NextState								<= ST_RXFSM_IDLE;
-							WHEN SATA_PRIMITIVE_SOF =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_EOF =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_HOLD =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_HOLD_ACK =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_CONT =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_OK =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_ERROR =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_IP =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_RX_RDY =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_TX_RDY =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_DMA_TERM =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_WAIT_TERM =>		NULL;
-							WHEN SATA_PRIMITIVE_PM_ACK =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_NACK =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_REQ_P =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_REQ_S =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_ILLEGAL =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_DIAL_TONE =>		RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_NONE =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-						END CASE;
-					ELSE	-- InsertAlign
-						RXFSM_Primitive										<= SATA_PRIMITIVE_R_OK;
-						
-						CASE RX_Primitive IS
-							WHEN SATA_PRIMITIVE_ALIGN =>					NULL;
-							WHEN SATA_PRIMITIVE_SYNC =>
-								RXFSM_IDLE										<= '1';
-								RXFSM_Receiving								<= '0';
-								RXFSM_NextState								<= ST_RXFSM_IDLE;
-							WHEN SATA_PRIMITIVE_SOF =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_EOF =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_HOLD =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_HOLD_ACK =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_CONT =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_OK =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_ERROR =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_IP =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_RX_RDY =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_TX_RDY =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_DMA_TERM =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_WAIT_TERM =>		NULL;
-							WHEN SATA_PRIMITIVE_PM_ACK =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_NACK =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_REQ_P =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_REQ_S =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_ILLEGAL =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_DIAL_TONE =>		RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_NONE =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-						END CASE;
-					END IF;
+	-- register for SOF
+	-- -----------------------------
+	-- update register if SOF is received, reset if DATA occurs
+	-- reset when back in IDLE to allow error processing
+	process(Clock)
+	begin
+		IF rising_edge(Clock) then
+			if (State = ST_IDLE) then
+				RX_SOF_r <= '0';
+			elsif (RX_IsSOF = '1') then
+				RX_SOF_r		<= '1';
+			elsif (RX_IsData = '1') then
+				RX_SOF_r		<= '0';
+			end if;
+		end if;
+	end process;
 
--- ==================================================================
--- ST_RXFSM_SEND_R_ERROR
--- ==================================================================
-				WHEN ST_RXFSM_SEND_R_ERROR =>
-					RXFSM_Receiving											<= '1';
-					
-					IF (InsertALIGN = '1') THEN
-						RXFSM_Primitive										<= SATA_PRIMITIVE_ALIGN;
-						
-						CASE RX_Primitive IS
-							WHEN SATA_PRIMITIVE_ALIGN =>					NULL;
-							WHEN SATA_PRIMITIVE_SYNC =>
-								RXFSM_IDLE										<= '1';
-								RXFSM_Receiving								<= '0';
-								RXFSM_NextState								<= ST_RXFSM_IDLE;
-							WHEN SATA_PRIMITIVE_SOF =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_EOF =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_HOLD =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_HOLD_ACK =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_CONT =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_OK =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_ERROR =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_IP =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_RX_RDY =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_TX_RDY =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_DMA_TERM =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_WAIT_TERM =>		NULL;
-							WHEN SATA_PRIMITIVE_PM_ACK =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_NACK =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_REQ_P =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_REQ_S =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_ILLEGAL =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_DIAL_TONE =>		RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_NONE =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-						END CASE;
-					ELSE	-- InsertAlign
-						RXFSM_Primitive										<= SATA_PRIMITIVE_R_ERROR;
-						
-						CASE RX_Primitive IS
-							WHEN SATA_PRIMITIVE_ALIGN =>					NULL;
-							WHEN SATA_PRIMITIVE_SYNC =>
-								RXFSM_IDLE										<= '1';
-								RXFSM_Receiving								<= '0';
-								RXFSM_NextState								<= ST_RXFSM_IDLE;
-							WHEN SATA_PRIMITIVE_SOF =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_EOF =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_HOLD =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_HOLD_ACK =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_CONT =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_OK =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_ERROR =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_R_IP =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_RX_RDY =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_TX_RDY =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_DMA_TERM =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_WAIT_TERM =>		NULL;
-							WHEN SATA_PRIMITIVE_PM_ACK =>				RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_NACK =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_REQ_P =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_PM_REQ_S =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_ILLEGAL =>			RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_DIAL_TONE =>		RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-							WHEN SATA_PRIMITIVE_NONE =>					RXFSM_Error		<= '1'; RXFSM_NextState		<= ST_RXFSM_FSM_ERROR;
-						END CASE;
-					END IF;
+	-- register for CRC_OK
+	-- -----------------------------
+	-- update register if data is received, reset if EOF occurs
+	RX_CRC_OKReg_set	<= RX_IsData	and RX_CRC_OK;
+	RX_CRC_OKReg_rst	<= to_sl(RX_Primitive = SATA_PRIMITIVE_SYNC) or (not RX_CRC_OK and RX_IsData);
 
-				WHEN ST_RXFSM_RXFIFO_FULL =>
-					RXFSM_Receiving								<= '1';
-					
-					IF (InsertALIGN = '1') THEN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
-						
-						IF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN
-							RXFSM_NextState						<= ST_RXFSM_IDLE;
-						ELSIF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) OR
-									 (RX_Primitive = SATA_PRIMITIVE_HOLD) OR
-									 (RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-									 (RX_Primitive = SATA_PRIMITIVE_NONE))
-						THEN
-							NULL;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
-							RX_FSFIFO_put							<= '1';
-							RXFSM_NextState						<= ST_RXFSM_SEND_R_ERROR;
-						ELSE
-							RXFSM_Error								<= '1';
-							RXFSM_NextState						<= ST_RXFSM_FSM_ERROR;
-						END IF;
-							
-					ELSE		-- InsertALIGN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_R_IP;
-						
-						IF (RX_Primitive = SATA_PRIMITIVE_SYNC) THEN
-							RXFSM_NextState						<= ST_RXFSM_IDLE;
-						ELSIF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) OR
-									 (RX_Primitive = SATA_PRIMITIVE_HOLD) OR
-									 (RX_Primitive = SATA_PRIMITIVE_HOLD_ACK) OR
-									 (RX_Primitive = SATA_PRIMITIVE_NONE))
-						THEN
-							NULL;
-						ELSIF (RX_Primitive = SATA_PRIMITIVE_EOF) THEN
-							RXFSM_Primitive						<= SATA_PRIMITIVE_R_ERROR;
-							RX_FSFIFO_put							<= '1';
-							RXFSM_NextState						<= ST_RXFSM_IDLE;
-						ELSE
-							RXFSM_Error								<= '1';
-							RXFSM_NextState						<= ST_RXFSM_FSM_ERROR;
-						END IF;
-					END IF;
-				
-				WHEN ST_RXFSM_SEND_DMA_TERM =>
-					RXFSM_Receiving								<= '1';
-					
-					IF (InsertALIGN = '1') THEN
-						RXFSM_Primitive							<= SATA_PRIMITIVE_ALIGN;
-					ELSE
-						RXFSM_Primitive							<= SATA_PRIMITIVE_DMA_TERM;
-						RX_FSFIFO_put								<= '1';
-						RXFSM_NextState							<= ST_RXFSM_RXFIFO_FULL;
-					END IF;
-				
-				WHEN ST_RXFSM_FSM_ERROR =>
-					RXFSM_Primitive								<= SATA_PRIMITIVE_SYNC;
-					RXFSM_IDLE										<= '1';
-					RXFSM_Error										<= '0';		-- '1';
-					
-					RXFSM_NextState								<= ST_RXFSM_IDLE;
-
-			END CASE;
-		END IF;
-	END PROCESS;
+	RX_CRC_OKReg_r 		<= ffsr(q => RX_CRC_OKReg_r, set => RX_CRC_OKReg_set, rst => RX_CRC_OKReg_rst) when rising_edge(Clock);
 	
--- PrimitiveFSMMux
-	TX_Primitive	<= TXFSM_Primitive WHEN (RXFSM_Receiving = '0') ELSE RXFSM_Primitive;
+	-- register for RX_FIFO overflow
+	-- -----------------------------
+	-- If other side continous sending data even if we send HOLD, then the
+	-- RX_FIFO might overflow.
+	-- Reset flag when back in IDLE to allow error processing.
+	RX_FIFO_Overflow_r <= ffrs(q => RX_FIFO_Overflow_r, rst => to_sl(State = ST_IDLE), set => RX_FIFO_put_i and RX_FIFO_Full) when rising_edge(Clock); 
 	
 -- ==================================================================
 -- insert align counter
 -- ==================================================================
-	IAC_inc							<= '1' AND NOT IAC_Finished;
-	IAC_Load						<= IAC_Finished_d;
-	
-	IAC : BLOCK
-		SIGNAL Counter_us				: UNSIGNED(INSERT_ALIGN_COUNTER_BITS - 1 DOWNTO 0)					:= (OTHERS => '0');
-	BEGIN
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF (IAC_Load = '1') THEN
-					Counter_us				<= to_unsigned(0, INSERT_ALIGN_COUNTER_BITS);
-				ELSE
-					IF (IAC_inc = '1') THEN
-						Counter_us			<= Counter_us + 1;
-					END IF;
-				END IF;
-			END IF;
-		END PROCESS;
+	blkCounters : block
+		signal InsertAlign_rst					: STD_LOGIC;
+		signal InsertAlign_Counter_us		: UNSIGNED(INSERT_ALIGN_COUNTER_BITS - 1 downto 0)		:= (others => '0');
 
-		IAC_Finished	<= to_sl(Counter_us = to_unsigned(INSERT_ALIGN_INTERVAL - 3,	INSERT_ALIGN_COUNTER_BITS));
-	END BLOCK;
-	
-	IAC_Finished_d	<= IAC_Finished WHEN rising_edge(Clock);
-	InsertALIGN			<= IAC_Finished; -- OR IAC_Finished_d;
+		signal WordCounter_inc					: STD_LOGIC;
+		signal WordCounter_us						: UNSIGNED(4 downto 0)																:= (others => '0');
+
+		signal RetryCounter_inc					: STD_LOGIC;
+		signal RetryCounter_us					: UNSIGNED(4 downto 0)																:= (others => '0');
+		
+	begin
+		InsertAlign_rst							<= InsertALIGN when rising_edge(Clock);		-- delay reload by one cycle -> asserts InsertALIGN for 2 cycles.
+		InsertAlign_Counter_us			<= upcounter_next(cnt => InsertAlign_Counter_us, rst => InsertAlign_rst, en => not InsertALIGN) when rising_edge(Clock);
+		InsertALIGN									<= upcounter_equal(cnt => InsertAlign_Counter_us, value => (INSERT_ALIGN_INTERVAL - 3));
+
+		WordCounter_inc							<= TX_WordCounter_inc and not TX_IsLongFrame;
+		WordCounter_us							<= upcounter_next(cnt => WordCounter_us, rst => TX_WordCounter_rst, en => WordCounter_inc) when rising_edge(Clock);
+		TX_IsLongFrame							<= upcounter_equal(cnt => WordCounter_us, value => LONG_FRAME_WORDS);
+
+		RetryCounter_inc						<= TX_RetryCounter_inc and not TX_RetryFailed;
+		RetryCounter_us							<= upcounter_next(cnt => RetryCounter_us, rst => TX_RetryCounter_rst, en => RetryCounter_inc) when rising_edge(Clock);
+		TX_RetryFailed							<= upcounter_equal(cnt => RetryCounter_us, value => SHORT_FRAME_RETRY_COUNT);
+	end block;
 
 -- ==================================================================
 -- delay for FIFO inputs
 -- ==================================================================
-	RXFSM_IsData_d		<= RXFSM_IsData WHEN rising_edge(Clock);
-	RXFSM_IsData_re		<= NOT RXFSM_IsData_d AND RXFSM_IsData;
+	RX_DataReg_shift <= RX_IsData;
+
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			-- reset when back in IDLE to allow error processing
+			if (State = ST_IDLE) then
+				RX_SOFReg_d1 			<= '0';
+				RX_SOFReg_d2 			<= '0';
+				RX_DataReg_Valid1	<= '0';
+				RX_DataReg_Valid2	<= '0';
+			elsif (RX_IsData = '1') then
+				RX_SOFReg_d1			<= RX_SOF_r;
+				RX_SOFReg_d2			<= RX_SOFReg_d1;
+				RX_DataReg_Valid1	<= '1';
+				RX_DataReg_Valid2	<= RX_DataReg_Valid1;
+			end if;
+		end if;
+	end process;
 	
-	RX_DataReg_en1_i	<= RXFSM_IsData;
-	RX_DataReg_en2_i	<= (RX_DataReg_en1_d AND RXFSM_IsData) OR (RXFSM_IsData_re AND NOT RX_SOF_r);
-
-	RX_DataReg_en1		<= RX_DataReg_en1_i;
-	RX_DataReg_en2		<= RX_DataReg_en2_i;
-
-	RX_DataReg_en1_d	<= RX_DataReg_en1_i WHEN rising_edge(Clock);
-	RX_DataReg_en2_d	<= RX_DataReg_en2_i WHEN rising_edge(Clock);
-
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (RX_DataReg_en1_i = '1') THEN
-				RX_SOFReg_d1		<= RX_SOF_r;
-			END IF;
-		END IF;
-	END PROCESS;
-
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (RX_DataReg_en2_i = '1') THEN
-				RX_SOFReg_d2		<= RX_SOFReg_d1;
-			END IF;
-		END IF;
-	END PROCESS;
-
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (RXFSM_IsSOF = '1') THEN
-				RX_DataReg_Valid1			<= '0';
-			ELSE
-				IF (RX_DataReg_en1_i = '1') THEN
-					RX_DataReg_Valid1		<= RXFSM_IsData;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
-	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (RXFSM_IsSOF = '1') THEN
-				RX_DataReg_Valid2			<= '0';
-			ELSE
-				IF (RX_DataReg_en2_i = '1') THEN
-					RX_DataReg_Valid2		<= RX_DataReg_Valid1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
-
-	RX_FIFO_put				<= ((RX_DataReg_en2_d AND RXFSM_IsData) OR (RXFSM_IsData_re AND NOT RX_SOF_r) OR RXFSM_IsEOF) AND RX_DataReg_Valid2;
+	RX_FIFO_put_i			<= (RX_IsData or RX_IsEOF) and RX_DataReg_Valid2;
+	RX_FIFO_put 			<= RX_FIFO_put_i;
 	
 	Trans_RX_SOF			<= RX_SOFReg_d2;
-	Trans_RX_EOF			<= RXFSM_IsEOF;
+	Trans_RX_EOF			<= RX_IsEOF;
 
 	-- debug port
 	-- ===========================================================================
 	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
-		function dbg_EncodeTXState(st : T_TXFSM_STATE) return STD_LOGIC_VECTOR is
+		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
 		begin
-			return to_slv(T_TXFSM_STATE'pos(st), log2ceilnz(T_TXFSM_STATE'pos(T_TXFSM_STATE'high) + 1));
-		end function;
-		
-		function dbg_EncodeRXState(st : T_RXFSM_STATE) return STD_LOGIC_VECTOR is
-		begin
-			return to_slv(T_RXFSM_STATE'pos(st), log2ceilnz(T_RXFSM_STATE'pos(T_RXFSM_STATE'high) + 1));
+			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;
 		
 	begin
 		genXilinx : if (VENDOR = VENDOR_XILINX) generate
-			function dbg_GenerateTXEncodings return string is
+			function dbg_GenerateStateEncodings return string is
 				variable  l : STD.TextIO.line;
 			begin
-				for i in T_TXFSM_STATE loop
-					STD.TextIO.write(l, str_replace(T_TXFSM_STATE'image(i), "st_txfsm_", ""));
-					STD.TextIO.write(l, ';');
-				end loop;
-				return  l.all;
-			end function;
-			
-			function dbg_GenerateRXEncodings return string is
-				variable  l : STD.TextIO.line;
-			begin
-				for i in T_RXFSM_STATE loop
-					STD.TextIO.write(l, str_replace(T_RXFSM_STATE'image(i), "st_rxfsm_", ""));
+				for i in T_STATE loop
+					STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_", ""));
 					STD.TextIO.write(l, ';');
 				end loop;
 				return  l.all;
 			end function;
 
+			function dbg_GeneratePrimitiveEncodings return string is
+				variable  l : STD.TextIO.line;
+			begin
+				for i in T_SATA_PRIMITIVE loop
+					STD.TextIO.write(l, str_replace(T_SATA_PRIMITIVE'image(i), "sata_primitive_", ""));
+					STD.TextIO.write(l, ';');
+				end loop;
+				return  l.all;
+			end function;
+		
 			constant dummy : T_BOOLVEC := (
-				0 => dbg_ExportEncoding("Link Layer", dbg_GenerateTXEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_LinkLayer_TX.tok"),
-				1 => dbg_ExportEncoding("Link Layer", dbg_GenerateRXEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_LinkLayer_RX.tok")
+				0 => dbg_ExportEncoding("Link Layer - FSM", 						dbg_GenerateStateEncodings,			PROJECT_DIR & "ChipScope/TokenFiles/FSM_LinkLayer.tok"),
+				1 => dbg_ExportEncoding("Link Layer - Primitive Enum",	dbg_GeneratePrimitiveEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Link_Primitive.tok")
 			);
 		begin
 		end generate;
 		
-		DebugPortOut.TXFSM					<= dbg_EncodeTXState(TXFSM_State);
-		DebugPortOut.RXFSM					<= dbg_EncodeRXState(RXFSM_State);
+		DebugPortOut.FSM						<= dbg_EncodeState(State);
+		DebugPortOut.TX_IsLongFrame <= TX_IsLongFrame;
+		DebugPortOut.TX_RetryFailed <= TX_RetryFailed;
 	end generate;
 end;

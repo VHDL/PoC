@@ -1,11 +1,21 @@
+# git files
+.gitignore
+
+# Documentation
+README.md
+
+# Package
 ocram.pkg.vhdl
 
-# Generic modules
+# Generic RAM modules
 ocram_esdp.vhdl
 ocram_sdp.vhdl
 ocram_sp.vhdl
 ocram_tdp.vhdl
-ocram_wb.vhdl
 
 # Altera specific
 altera/
+
+# Xilinx specific
+xilinx/
+

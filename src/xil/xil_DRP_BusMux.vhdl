@@ -176,7 +176,7 @@ begin
 	In_DataOut	<= (In_DataOut'range => Out_DataIn);
 	In_Ack			<= (In_Ack'range => FSM_Ack	) and Arb_Grant;
 	
-	LockCounter_us	<= counter_inc(cnt => LockCounter_us, rst => LockCounter_rst, en => '1') when rising_edge(Clock);
+	LockCounter_us	<= upcounter_next(cnt => LockCounter_us, rst => LockCounter_rst, en => '1') when rising_edge(Clock);
 	
 	Arb : entity PoC.bus_Arbiter
 		generic map (

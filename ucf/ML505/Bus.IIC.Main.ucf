@@ -1,0 +1,25 @@
+##
+## I2C-MainBus
+## =============================================================================
+##	Bank:							20
+##		VCCO:						3.3V (VCC3V3)
+## -----------------------------------------------------------------------------
+##	Devices:					??
+##		Location:				U15
+##			Vendor:				STMicroelectronics
+##			Device:				M24C08
+##			I²C-Address:	0x50
+##		Location:				U8
+##			Vendor:				Integrated Device Technology
+##			Device:				IDT5V9885
+##			I²C-Address:	0x6A
+##		Location:				U14
+##			Vendor:				Analog Devices
+##			Device:				ADT7476
+##			I²C-Address:	0x2C
+NET "ML505_IIC_Main_SerialClock"		LOC = "F9";			## 2x external 10k pullup resistors
+NET "ML505_IIC_Main_SerialData"			LOC = "F8";			## 2x external 10k pullup resistors
+NET "ML505_IIC_Main_*"							IOSTANDARD = LVCMOS33;
+
+## Ignore timings on async I/O pins
+NET "ML505_IIC_Main_*"							TIG;

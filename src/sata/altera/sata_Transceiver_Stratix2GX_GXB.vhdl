@@ -16,22 +16,23 @@ USE		PoC.strings.ALL;
 USE		PoC.physical.ALL;
 USE		PoC.sata_TransceiverTypes.ALL;
 
+
 entity sata_Transceiver_Stratix2GX_GXB is
 	generic (
-		CLOCK_IN_FREQ			: FREQ		:= 150.0 MHz;
-		PORTS				: POSITIVE	:= 2;			-- Number of Ports per Transceiver
-		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR := (0 => C_SATA_GENERATION_MAX, 1 => C_SATA_GENERATION_MAX)	-- intial SATA Generation
+		CLOCK_IN_FREQ							: FREQ											:= 150 MHz;
+		PORTS											: POSITIVE									:= 2;			-- Number of Ports per Transceiver
+		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR	:= (0 => C_SATA_GENERATION_MAX, 1 => C_SATA_GENERATION_MAX)	-- intial SATA Generation
 	);
 	port (
-		ClockNetwork_Reset	: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		ClockNetwork_Reset			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		ClockNetwork_ResetDone	: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		Reset			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		Reset										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		ResetDone								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 		PowerDown		: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		Command			: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
 		Status			: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-		Error			: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+		Error				: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
 	
 		-- debug ports
 --		DebugPortIn		: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
@@ -68,8 +69,8 @@ end;
 
 ARCHITECTURE rtl OF sata_Transceiver_Stratix2GX_GXB IS
 
-	CONSTANT NO_DEVICE_TIMEOUT		: TIME	:= 50.0 ms;		-- simulation: 20 us, synthesis: 50 ms
-	CONSTANT NEW_DEVICE_TIMEOUT		: TIME	:= 1000.0 ms;		--
+	CONSTANT NO_DEVICE_TIMEOUT		: TIME	:= 50 ms;			-- simulation: 20 us, synthesis: 50 ms
+	CONSTANT NEW_DEVICE_TIMEOUT		: TIME	:= 1000 ms;		--
 
 	CONSTANT C_DEVICE_INFO			: T_DEVICE_INFO		:= DEVICE_INFO;
 

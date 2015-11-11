@@ -1,0 +1,22 @@
+# git files
+.gitignore
+.gitempty
+
+# wrapper scripts
+testbench.sh
+testbench.ps1
+
+# Configuration files
+configuration.ini
+
+# PoC subnamespaces
+arith/
+comm/
+common/
+io/
+fifo/
+mem/
+misc/
+#sata/
+xil/
+# DON'T PUBLISH xilinx/ !

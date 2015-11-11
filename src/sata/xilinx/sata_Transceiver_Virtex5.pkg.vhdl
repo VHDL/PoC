@@ -23,7 +23,7 @@
 --		http://www.apache.org/licenses/LICENSE-2.0
 -- 
 -- Unless required by applicable law or agreed to in writing, software
--- distributed under the License is distributed on an "AS is" BASIS,
+-- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS of ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
@@ -53,9 +53,4 @@ package sata_TransceiverTypes is
 	type T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR		is array(NATURAL range <>) of T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS;
 	type T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR	is array(NATURAL range <>) of T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS;
 	
-end;
-
-
-package body sata_TransceiverTypes is
-
-end package body;
+end package;

@@ -3,17 +3,23 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
+--
+-- Package:					SATA components
 --
 -- Description:
 -- ------------------------------------
---		TODO
--- 
+-- For end users:
+-- Provides component declarations of the main components
+-- "sata_StreamingLayer" and "sata_SATAController".
+--
+-- For internal use:
+-- Provides component declarations of device-specific transceivers.
+--
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,6 +34,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- =============================================================================
+
 
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
@@ -45,400 +52,401 @@ use			PoC.sata_transceivertypes.all;
 
 package satacomp is
 	-- ===========================================================================
-	-- Component Declarations
+	-- component Declarations
 	-- ===========================================================================
-	COMPONENT sata_StreamingController IS
-		GENERIC (
-			SIM_WAIT_FOR_INITIAL_REGDH_FIS		: BOOLEAN                     := TRUE;      -- required by ATA/SATA standard
-			SIM_EXECUTE_IDENTIFY_DEVICE				: BOOLEAN											:= TRUE;			-- required by CommandLayer: load device parameters
-			DEBUG															: BOOLEAN											:= FALSE;			-- generate ChipScope DBG_* signals
-			LOGICAL_BLOCK_SIZE_ldB						: POSITIVE										:= 13					-- accessable logical block size: 8 kB (independant from device)
-		);
-		PORT (
-			Clock											: IN	STD_LOGIC;
-			Reset											: IN	STD_LOGIC;
-			
-			-- ATAStreamingController interface
-			-- ========================================================================
-			Command										: IN	T_SATA_STREAMC_COMMAND;
-			Status										: OUT	T_SATA_STREAMC_STATUS;
-			Error											: OUT	T_SATA_STREAMC_ERROR;
+	component sata_StreamingLayer IS
+		generic (
+			ENABLE_DEBUGport							: BOOLEAN									:= FALSE;			-- export internal signals to upper layers for debug purposes
+			DEBUG													: BOOLEAN									:= FALSE;
+			SIM_EXECUTE_IDENTIFY_DEVICE		: BOOLEAN									:= TRUE;			-- required by CommandLayer: load device parameters
+			LOGICAL_BLOCK_SIZE						: MEMORY 									:= 8 KiB			-- accessable logical block size: 8 KiB (independant from device)
+		);																																			-- 8 KiB, maximum supported is 64 KiB, with 512 B device logical blocks
+		port (
+			Clock													: in	STD_LOGIC;
+			ClockEnable										: in	STD_LOGIC;
+			Reset													: in	STD_LOGIC;
 
-			-- debug ports
---			DebugPort									: OUT	T_DBG_SATA_STREAMC_OUT;
+			-- CommandLayer interface
+			-- ========================================================================
+			Command												: in	T_SATA_STREAMING_COMMAND;
+			Status												: out	T_SATA_STREAMING_STATUS;
+			Error													: out	T_SATA_STREAMING_ERROR;
+
+			DebugportOut									: out T_SATADBG_STREAMING_OUT;
 
 			-- for measurement purposes only
-			Config_BurstSize					: IN	T_SLV_16;
+			Config_BurstSize							: in	T_SLV_16;
 			
-			-- ATA Streaming interface
-			Address_AppLB							: IN	T_SLV_48;
-			BlockCount_AppLB					: IN	T_SLV_48;
+			-- address interface (valid on Command /= *_NONE)
+			Address_AppLB									: in	T_SLV_48;
+			BlockCount_AppLB							: in	T_SLV_48;
+			
+			-- 
+			DriveInformation							: out T_SATA_DRIVE_INFORMATION;
+
+			-- TX path
+			TX_Valid											: in	STD_LOGIC;
+			TX_Data												: in	T_SLV_32;
+			TX_SOR												: in	STD_LOGIC;
+			TX_EOR												: in	STD_LOGIC;
+			TX_Ack												: out	STD_LOGIC;
+
+			-- RX path
+			RX_Valid											: out	STD_LOGIC;
+			RX_Data												: out	T_SLV_32;
+			RX_SOR												: out	STD_LOGIC;
+			RX_EOR												: out	STD_LOGIC;
+			RX_Ack												: in	STD_LOGIC;
+
+			-- TransportLayer interface
+			-- ========================================================================
+			SATAC_ResetDone 							: in  STD_LOGIC;
+			SATAC_Command									: out	T_SATA_TRANS_COMMAND;
+			SATAC_Status									: in	T_SATA_SATACONTROLLER_STATUS;
+			SATAC_Error										: in	T_SATA_SATACONTROLLER_ERROR;
+			
+			-- ATA registers
+			SATAC_ATAHostRegisters				: out	T_SATA_ATA_HOST_REGISTERS;
+			SATAC_ATADeviceRegisters			: in	T_SATA_ATA_DEVICE_REGISTERS;
 			
 			-- TX path
-			TX_Valid									: IN	STD_LOGIC;
-			TX_Data										: IN	T_SLV_32;
-			TX_SOR										: IN	STD_LOGIC;
-			TX_EOR										: IN	STD_LOGIC;
-			TX_Ack										: OUT	STD_LOGIC;
-			
+			SATAC_TX_Valid								: out	STD_LOGIC;
+			SATAC_TX_Data									: out	T_SLV_32;
+			SATAC_TX_SOT									: out	STD_LOGIC;
+			SATAC_TX_EOT									: out	STD_LOGIC;
+			SATAC_TX_Ack									: in	STD_LOGIC;
+
 			-- RX path
-			RX_Valid									: OUT	STD_LOGIC;
-			RX_Data										: OUT	T_SLV_32;
-			RX_SOR										: OUT	STD_LOGIC;
-			RX_EOR										: OUT	STD_LOGIC;
-			RX_Ack										: IN	STD_LOGIC;
-			
-			-- SATAController interface
-			-- ========================================================================
-			SATA_Command							: OUT	T_SATA_SATACONTROLLER_COMMAND;
-			SATA_Status								: IN	T_SATA_SATACONTROLLER_STATUS;
-			SATA_Error								: IN	T_SATA_SATACONTROLLER_ERROR;
-		
-			-- TX port
-			SATA_TX_SOF								: OUT	STD_LOGIC;
-			SATA_TX_EOF								: OUT	STD_LOGIC;
-			SATA_TX_Valid							: OUT	STD_LOGIC;
-			SATA_TX_Data							: OUT	T_SLV_32;
-			SATA_TX_Ack								: IN	STD_LOGIC;
-			SATA_TX_InsertEOF					: IN	STD_LOGIC;															-- helper signal: insert EOF - max frame size reached
-			
-			SATA_TX_FS_Ack						: OUT	STD_LOGIC;
-			SATA_TX_FS_Valid					: IN	STD_LOGIC;
-			SATA_TX_FS_SendOK					: IN	STD_LOGIC;
-			SATA_TX_FS_Abort					: IN	STD_LOGIC;
-			
-			-- RX port
-			SATA_RX_SOF								: IN	STD_LOGIC;
-			SATA_RX_EOF								: IN	STD_LOGIC;
-			SATA_RX_Valid							: IN	STD_LOGIC;
-			SATA_RX_Data							: IN	T_SLV_32;
-			SATA_RX_Ack								: OUT	STD_LOGIC;
-			
-			SATA_RX_FS_Ack						: OUT	STD_LOGIC;
-			SATA_RX_FS_Valid					: IN	STD_LOGIC;
-			SATA_RX_FS_CRC_OK					: IN	STD_LOGIC;
-			SATA_RX_FS_Abort					: IN	STD_LOGIC
+			SATAC_RX_Valid								: in	STD_LOGIC;
+			SATAC_RX_Data									: in	T_SLV_32;
+			SATAC_RX_SOT									: in	STD_LOGIC;
+			SATAC_RX_EOT									: in	STD_LOGIC;
+			SATAC_RX_Ack									: out	STD_LOGIC
 		);
-	END COMPONENT;
+	end component;
 	
-	COMPONENT sata_SATAController IS
-		GENERIC (
-			DEBUG												: BOOLEAN														:= TRUE;
-			CLOCK_IN_FREQ								: FREQ															:= 150.0 MHz;
-			PORTS												: POSITIVE													:= 1;												-- Port 0									Port 1
-			CONTROLLER_TYPES						: T_SATA_DEVICE_TYPE_VECTOR					:= T_SATA_DEVICE_TYPE_VECTOR'(0 => SATA_DEVICE_TYPE_HOST,	1 => SATA_DEVICE_TYPE_DEVICE);
-			INITIAL_SATA_GENERATIONS		: T_SATA_GENERATION_VECTOR					:= T_SATA_GENERATION_VECTOR'(	0 => SATA_GENERATION_1,			1 => SATA_GENERATION_1);
-			ALLOW_SPEED_NEGOTIATION			: T_BOOLVEC													:= T_BOOLVEC'(								0 => TRUE,							1 => TRUE);
-			ALLOW_STANDARD_VIOLATION		: T_BOOLVEC													:= T_BOOLVEC'(								0 => TRUE,							1 => TRUE);
-			ALLOW_AUTO_RECONNECT				: T_BOOLVEC													:= T_BOOLVEC'(								0 => TRUE,							1 => TRUE);
-			OOB_TIMEOUT									: T_TIMEVEC													:= T_TIMEVEC'(								0 => TIME'low,					1 => TIME'low);
-			GENERATION_CHANGE_COUNT			: T_INTVEC													:= T_INTVEC'(									0 => 8,									1 => 8);
-			TRYS_PER_GENERATION					: T_INTVEC													:= T_INTVEC'(									0 => 5,									1 => 3);
-			AHEAD_CYCLES_FOR_INSERT_EOF	: T_INTVEC													:= T_INTVEC'(									0 => 1,									1 => 1);
-			MAX_FRAME_SIZE_B						: T_INTVEC													:= T_INTVEC'(									0 => 4 * (2048 + 1),		1 => 4 * (2048 + 1))
+	component sata_SATAController IS
+		generic (
+			DEBUG														: BOOLEAN											:= FALSE;
+			ENABLE_DEBUGport								: BOOLEAN											:= FALSE;
+			-- transceiver settings
+			REFCLOCK_FREQ										: FREQ												:= 150 MHz;
+			PORTS														: POSITIVE										:= 2;	-- port 0									port 1
+			-- physical layer settings
+			CONTROLLER_TYPES								: T_SATA_DEVICE_TYPE_VECTOR		:= (0 => SATA_DEVICE_TYPE_HOST,	1 => SATA_DEVICE_TYPE_HOST);
+			INITIAL_SATA_GENERATIONS				: T_SATA_GENERATION_VECTOR		:= (0 => C_SATA_GENERATION_MAX,	1 => C_SATA_GENERATION_MAX);
+			ALLOW_SPEED_NEGOTIATION					: T_BOOLVEC										:= (0 => TRUE,									1 => TRUE);
+			ALLOW_STANDARD_VIOLATION				: T_BOOLVEC										:= (0 => TRUE,									1 => TRUE);
+			OOB_TIMEOUT											: T_TIMEVEC										:= (0 => TIME'low,							1 => TIME'low);
+			GENERATION_CHANGE_COUNT					: T_INTVEC										:= (0 => 8,											1 => 8);
+			ATTEMPTS_PER_GENERATION					: T_INTVEC										:= (0 => 5,											1 => 3);
+			-- linklayer settings
+			AHEAD_CYCLES_FOR_INSERT_EOF			: T_INTVEC										:= (0 => 1,											1 => 1);
+			MAX_FRAME_SIZE									: T_MEMVEC										:= (0 => C_SATA_MAX_FRAMESIZE,	1 => C_SATA_MAX_FRAMESIZE);
+			-- transport layer settings
+			SIM_WAIT_FOR_INITIAL_REGDH_FIS	: BOOLEAN											:= TRUE;       -- required by ATA/SATA standard
+			ENABLE_GLUE_FIFOS								: BOOLEAN											:= FALSE
 		);
-		PORT (
-			ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @SATA_Clock: initialisation done
-			ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @async: reset all / hard reset
-			ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @async: all clocks are stable
+		port (
+			ClockNetwork_Reset					: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:			asynchronous reset
+			ClockNetwork_ResetDone			: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:			all clocks are stable
+			PowerDown										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:			
+			Reset												: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @SATA_Clock:	synchronous reset, done in next cycle
+			ResetDone										: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @SATA_Clock: layers have been resetted after powerup / hard reset
 			
-			SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			SATA_Reset								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);						-- @SATA_Clock: clock is stable
+			SATAGenerationMin						: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);		-- 
+			SATAGenerationMax						: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);		-- 
+			SATAGeneration          	  : out T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
 			
-			-- Debug ports
-			DebugPortIn								: IN	T_SATADBG_SATAC_IN_VECTOR(PORTS - 1 DOWNTO 0);
-			DebugPortOut							: OUT	T_SATADBG_SATAC_OUT_VECTOR(PORTS - 1 DOWNTO 0);
+			SATA_Clock									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			SATA_Clock_Stable						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			
-			Command										: IN	T_SATA_SATACONTROLLER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
-			Status										: OUT T_SATA_SATACONTROLLER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			Error											: OUT	T_SATA_SATACONTROLLER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-			SATAGeneration            : OUT T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
+			Command											: in	T_SATA_TRANS_COMMAND_VECTOR(PORTS - 1 downto 0);
+			Status											: out T_SATA_SATACONTROLLER_STATUS_VECTOR(PORTS - 1 downto 0);
+			Error												: out	T_SATA_SATACONTROLLER_ERROR_VECTOR(PORTS - 1 downto 0);
+			ATAHostRegisters						: in	T_SATA_ATA_HOST_REGISTERS_VECTOR(PORTS - 1 downto 0);
+			ATADeviceRegisters					: out	T_SATA_ATA_DEVICE_REGISTERS_VECTOR(PORTS - 1 downto 0);
+
+			-- Debug PORTS
+			DebugportIn									: in	T_SATADBG_SATACONTROLLER_IN_VECTOR(PORTS - 1 downto 0);
+			DebugportOut								: out	T_SATADBG_SATACONTROLLER_OUT_VECTOR(PORTS - 1 downto 0);
 			
 			-- TX port
-			TX_SOF										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_EOF										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_Valid									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-			TX_Ack										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_InsertEOF							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			
-			TX_FS_Ack									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_FS_Valid								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_FS_SendOK							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			TX_FS_Abort								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			TX_SOT											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			TX_EOT											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			TX_Valid										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			TX_Data											: in	T_SLVV_32(PORTS - 1 downto 0);
+			TX_Ack											: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			
 			-- RX port
-			RX_SOF										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_EOF										: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_Valid									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
-			RX_Ack										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			
-			RX_FS_Ack									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_FS_Valid								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_FS_CRC_OK							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RX_FS_Abort								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_SOT											: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RX_EOT											: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RX_Valid										: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RX_Data											: out	T_SLVV_32(PORTS - 1 downto 0);
+			RX_Ack											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			
 			-- vendor specific signals
-			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
-			VSS_Private_In						: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0);
-			VSS_Private_Out						: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0)
+			VSS_Common_In								: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
+			VSS_Private_In							: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS - 1 downto 0);
+			VSS_Private_Out							: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 		);
-	END COMPONENT;
+	end component;
 
-	COMPONENT sata_Transceiver_Virtex5_GTP IS
-		GENERIC (
+	component sata_Transceiver_Virtex5_GTP IS
+		generic (
 			DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
-			ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
-			CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
-			PORTS											: POSITIVE										:= 2;																				-- Number of Ports per Transceiver
+			ENABLE_DEBUGport					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
+			CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
+			PORTS											: POSITIVE										:= 2;																				-- Number of PORTS per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)				-- intial SATA Generation
 		);
-		PORT (
-			Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		port (
+			Reset											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			ResetDone									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			ClockNetwork_Reset				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			ClockNetwork_ResetDone		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-			PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
-			Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+			PowerDown									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			Command										: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
+			Status										: out	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 downto 0);
+			Error											: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 downto 0);
 
-			-- debug ports
-			DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
-			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
+			-- debug PORTS
+			DebugportIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
+			DebugportOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
-			SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			SATA_Clock								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-			RP_Reconfig								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_SATAGeneration					: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_ReconfigComplete				: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_ConfigReloaded					: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_Lock										:	IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_Locked									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RP_Reconfig								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_SATAGeneration					: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
+			RP_ReconfigComplete				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_ConfigReloaded					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_Lock										:	IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_Locked									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-			OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-			OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-			OOB_HandshakeComplete			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			OOB_TX_Command						: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
+			OOB_TX_Complete						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);		
+			OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			
-			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-			TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
+			TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
+			TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
 
-			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
-			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Data										: out	T_SLVV_32(PORTS - 1 downto 0);
+			RX_CharIsK								: out	T_SLVV_4(PORTS - 1 downto 0);
+			RX_Valid									: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			
 			-- vendor specific signals
-			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
-			VSS_Private_In						: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0);
-			VSS_Private_Out						: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0)
+			VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
+			VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);
+			VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 		);
-	END COMPONENT;
+	end component;
 
-	COMPONENT sata_Transceiver_Virtex6_GTXE1 IS
-		GENERIC (
+	component sata_Transceiver_Virtex6_GTXE1 IS
+		generic (
 			DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
-			ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
-			CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
-			PORTS											: POSITIVE										:= 2;																				-- Number of Ports per Transceiver
+			ENABLE_DEBUGport					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
+			CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
+			PORTS											: POSITIVE										:= 2;																				-- Number of PORTS per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)			-- intial SATA Generation
 		);
-		PORT (
-			Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		port (
+			Reset											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			ResetDone									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			ClockNetwork_Reset				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			ClockNetwork_ResetDone		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-			PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
-			Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+			PowerDown									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			Command										: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
+			Status										: out	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 downto 0);
+			Error											: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 downto 0);
 
-			-- debug ports
-			DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
-			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
+			-- debug PORTS
+			DebugportIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
+			DebugportOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
-			SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			SATA_Clock								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-			RP_Reconfig								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_SATAGeneration					: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_ReconfigComplete				: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_ConfigReloaded					: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_Lock										:	IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_Locked									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RP_Reconfig								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_SATAGeneration					: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
+			RP_ReconfigComplete				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_ConfigReloaded					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_Lock										:	IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_Locked									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-			OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-			OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-			OOB_HandshakeComplete			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			OOB_TX_Command						: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
+			OOB_TX_Complete						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);		
+			OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			
-			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-			TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
+			TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
+			TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
 
-			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
-			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Data										: out	T_SLVV_32(PORTS - 1 downto 0);
+			RX_CharIsK								: out	T_SLVV_4(PORTS - 1 downto 0);
+			RX_Valid									: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			
 			-- vendor specific signals
-			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
-			VSS_Private_In						: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0);
-			VSS_Private_Out						: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0)
+			VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
+			VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);
+			VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 		);
-	END COMPONENT;
+	end component;
 	
-	COMPONENT sata_Transceiver_Series7_GTXE2 IS
-		GENERIC (
+	component sata_Transceiver_Series7_GTXE2 IS
+		generic (
 			DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
-			ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
-			CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
-			PORTS											: POSITIVE										:= 2;																				-- Number of Ports per Transceiver
+			ENABLE_DEBUGport					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
+			REFCLOCK_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
+			PORTS											: POSITIVE										:= 2;																				-- Number of PORTS per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)			-- intial SATA Generation
 		);
-		PORT (
-			Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		port (
+			Reset											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			ResetDone									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			ClockNetwork_Reset				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			ClockNetwork_ResetDone		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-			PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
-			Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+			PowerDown									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			Command										: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
+			Status										: out	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 downto 0);
+			Error											: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 downto 0);
 
-			-- debug ports
-			DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
-			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
+			-- debug PORTS
+			DebugportIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
+			DebugportOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
-			SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			SATA_Clock								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			SATA_Clock_Stable					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-			RP_Reconfig								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_SATAGeneration					: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_ReconfigComplete				: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_ConfigReloaded					: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_Lock										:	IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_Locked									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RP_Reconfig								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_SATAGeneration					: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
+			RP_ReconfigComplete				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_ConfigReloaded					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_Lock										:	IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_Locked									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-			OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-			OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-			OOB_HandshakeComplete			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			OOB_TX_Command						: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
+			OOB_TX_Complete						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);		
+			OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			OOB_AlignDetected    			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			
-			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-			TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
+			TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
+			TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
 
-			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
-			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Data										: out	T_SLVV_32(PORTS - 1 downto 0);
+			RX_CharIsK								: out	T_SLVV_4(PORTS - 1 downto 0);
+			RX_Valid									: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			
 			-- vendor specific signals
-			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
-			VSS_Private_In						: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0);
-			VSS_Private_Out						: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0)
+			VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
+			VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);
+			VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 		);
-	END COMPONENT;
+	end component;
 	
-	COMPONENT sata_Transceiver_Stratix2GX_GXB IS
-		GENERIC (
-			CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
-			PORTS											: POSITIVE										:= 2;																																		-- Number of Ports per Transceiver
+	component sata_Transceiver_Stratix2GX_GXB IS
+		generic (
+			CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
+			PORTS											: POSITIVE										:= 2;																																		-- Number of PORTS per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= T_SATA_GENERATION_VECTOR'(SATA_GENERATION_2, SATA_GENERATION_2)			-- intial SATA Generation
 		);
-		PORT (
-			Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		port (
+			Reset											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			ResetDone									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			ClockNetwork_Reset				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			ClockNetwork_ResetDone		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-			PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
-			Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+			PowerDown									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			Command										: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
+			Status										: out	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 downto 0);
+			Error											: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 downto 0);
 
-			-- debug ports
---			DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
---			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
+			-- debug PORTS
+--			DebugportIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
+--			DebugportOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
-			SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			SATA_Clock								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-			RP_Reconfig								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_SATAGeneration					: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_ReconfigComplete				: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_ConfigReloaded					: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_Lock										:	IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_Locked									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RP_Reconfig								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_SATAGeneration					: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
+			RP_ReconfigComplete				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_ConfigReloaded					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_Lock										:	IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_Locked									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-			OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-			OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-			OOB_HandshakeComplete			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			OOB_TX_Command						: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
+			OOB_TX_Complete						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);		
+			OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			
-			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-			TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
+			TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
+			TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
 
-			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
-			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Data										: out	T_SLVV_32(PORTS - 1 downto 0);
+			RX_CharIsK								: out	T_SLVV_4(PORTS - 1 downto 0);
+			RX_Valid									: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			
 			-- vendor specific signals
-			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
-			VSS_Private_In						: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0);
-			VSS_Private_Out						: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0)
+			VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
+			VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);
+			VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 		);
-	END COMPONENT;
+	end component;
 	
-	COMPONENT sata_Transceiver_Stratix4GX_GXB IS
-		GENERIC (
-			CLOCK_IN_FREQ							: FREQ												:= 150.0 MHz;																-- 150 MHz
-			PORTS											: POSITIVE										:= 2;																																		-- Number of Ports per Transceiver
+	component sata_Transceiver_Stratix4GX_GXB IS
+		generic (
+			CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
+			PORTS											: POSITIVE										:= 2;																																		-- Number of PORTS per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= T_SATA_GENERATION_VECTOR'(SATA_GENERATION_2, SATA_GENERATION_2)			-- intial SATA Generation
 		);
-		PORT (
-			Reset											: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			ResetDone									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			ClockNetwork_Reset				: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			ClockNetwork_ResetDone		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		port (
+			Reset											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			ResetDone									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			ClockNetwork_Reset				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			ClockNetwork_ResetDone		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-			PowerDown									: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			Command										: IN	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 DOWNTO 0);
-			Status										: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-			Error											: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+			PowerDown									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			Command										: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
+			Status										: out	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 downto 0);
+			Error											: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 downto 0);
 
-			-- debug ports
---			DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
---			DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
+			-- debug PORTS
+--			DebugportIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
+--			DebugportOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
-			SATA_Clock								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			SATA_Clock								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-			RP_Reconfig								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_SATAGeneration					: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_ReconfigComplete				: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_ConfigReloaded					: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_Lock										:	IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			RP_Locked									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RP_Reconfig								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_SATAGeneration					: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
+			RP_ReconfigComplete				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_ConfigReloaded					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_Lock										:	IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			RP_Locked									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-			OOB_TX_Command						: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-			OOB_TX_Complete						: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-			OOB_RX_Received						: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);		
-			OOB_HandshakeComplete			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			OOB_TX_Command						: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
+			OOB_TX_Complete						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);		
+			OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			
-			TX_Data										: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-			TX_CharIsK								: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
+			TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
+			TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
 
-			RX_Data										: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
-			RX_CharIsK								: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-			RX_Valid									: OUT STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+			RX_Data										: out	T_SLVV_32(PORTS - 1 downto 0);
+			RX_CharIsK								: out	T_SLVV_4(PORTS - 1 downto 0);
+			RX_Valid									: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			
 			-- vendor specific signals
-			VSS_Common_In							: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
-			VSS_Private_In						: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0);
-			VSS_Private_Out						: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 DOWNTO 0)
+			VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
+			VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);
+			VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 		);
-	END COMPONENT;
+	end component;
 
-END;
+end;
 
-PACKAGE BODY satacomp IS
+package body satacomp is
 
-END PACKAGE BODY;
+end package body;

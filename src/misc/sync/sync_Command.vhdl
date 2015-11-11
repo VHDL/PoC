@@ -127,17 +127,17 @@ begin
 	syncClk2_In		<= T2;
 	syncClk1_In		<= D3;
 	
-	IsCommand_Clk1	<= '1' when (Input /= INIT_I) else '0';		-- input command detection
-	Changed_Clk1		<= not D0 and IsCommand_Clk1;							-- input rising edge detection
-	Changed_Clk2		<= syncClk2_Out xor D3;										-- level change detection; restore strobe signal from flag
-	Busy_i					<= T2 xor syncClk1_Out;										-- calculate busy signal
+	IsCommand_Clk1	<= to_sl(Input /= INIT_I);			-- input command detection
+	Changed_Clk1		<= not D0 and IsCommand_Clk1;		-- input rising edge detection
+	Changed_Clk2		<= syncClk2_Out xor D3;					-- level change detection; restore strobe signal from flag
+	Busy_i					<= T2 xor syncClk1_Out;					-- calculate busy signal
 	
 	-- output signals
 	Output				<= D5;
 	Busy					<= Busy_i;
 	Changed				<= D4;
 		
-	syncClk2 : entity PoC.sync_Flag
+	syncClk2 : entity PoC.sync_Bits
 		generic map (
 			BITS				=> 1							-- number of bit to be synchronized
 		)
@@ -147,7 +147,7 @@ begin
 			Output(0)		=> syncClk2_Out		-- @Clock:	output bits
 		);
 	
-	syncClk1 : entity PoC.sync_Flag
+	syncClk1 : entity PoC.sync_Bits
 		generic map (
 			BITS				=> 1							-- number of bit to be synchronized
 		)

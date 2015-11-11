@@ -33,23 +33,26 @@
 
 from pathlib import Path
 
-import PoC
-import PoCSimulator
-import PoCISESimulator
-import PoCVivadoSimulator
-import PoCQuestaSimulator
-import PoCGHDLSimulator
+from lib.Functions import Exit
+from Base.Exceptions import *
+from Base.PoCBase import CommandLineProgram
+from PoC.Entity import *
+from Simulator import *
+from Simulator.Exceptions import *
 
-
-class PoCTestbench(PoC.PoCBase):
+class Testbench(CommandLineProgram):
+	headLine = "The PoC-Library - Testbench Service Tool"
+	
+	# configuration files
 	__tbConfigFileName = "configuration.ini"
+	
+	# configuration
 	tbConfig = None
 	
 	def __init__(self, debug, verbose, quiet):
 		super(self.__class__, self).__init__(debug, verbose, quiet)
 
-		if not ((self.platform == "Windows") or (self.platform == "Linux")):
-			raise PoC.PoCPlatformNotSupportedException(self.platform)
+		if not ((self.platform == "Windows") or (self.platform == "Linux")):	raise PlatformNotSupportedException(self.platform)
 		
 		self.readTestbenchConfiguration()
 		
@@ -58,19 +61,22 @@ class PoCTestbench(PoC.PoCBase):
 	def readTestbenchConfiguration(self):
 		from configparser import ConfigParser, ExtendedInterpolation
 	
-		self.files["PoCTBConfig"] = self.directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['TestbenchFiles'] / self.__tbConfigFileName
-		tbConfigFilePath = self.files["PoCTBConfig"]
+		tbConfigFilePath = self.directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['TestbenchFiles'] / self.__tbConfigFileName
+		self.files["PoCTBConfig"] = tbConfigFilePath
 		
 		self.printDebug("Reading testbench configuration from '%s'" % str(tbConfigFilePath))
-		if not tbConfigFilePath.exists():
-			raise PoC.PoCNotConfiguredException("PoC testbench configuration file does not exist. (%s)" % str(tbConfigFilePath))
+		if not tbConfigFilePath.exists():	raise NotConfiguredException("PoC testbench configuration file does not exist. (%s)" % str(tbConfigFilePath))
 			
 		self.tbConfig = ConfigParser(interpolation=ExtendedInterpolation())
 		self.tbConfig.optionxform = str
-		self.tbConfig.read([str(self.files["PoCPrivateConfig"]), str(self.files["PoCPublicConfig"]), str(tbConfigFilePath)])
+		self.tbConfig.read([
+			str(self.files["PoCPrivateConfig"]),
+			str(self.files["PoCPublicConfig"]),
+			str(self.files["PoCTBConfig"])
+		])
 	
 	def listSimulations(self, module):
-		entityToList = PoC.PoCEntity(self, module)
+		entityToList = Entity(self, module)
 		
 		print(str(entityToList))
 		
@@ -87,86 +93,92 @@ class PoCTestbench(PoC.PoCBase):
 		return("return ...")
 		return
 	
-	def isimSimulation(self, module, showLogs, showReport):
+	def iSimSimulation(self, module, showLogs, showReport, guiMode):
 		# check if ISE is configure
-		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):
-			raise PoCNotConfiguredException("Xilinx ISE is not configured on this system.")
+		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
 		
 		# prepare some paths
-		self.directories["ISEInstallation"] = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
-		self.directories["ISEBinary"] =				Path(self.pocConfig['Xilinx-ISE']['BinaryDirectory'])
+		self.directories["ISEInstallation"] = 			Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
+		self.directories["ISEBinary"] =							Path(self.pocConfig['Xilinx-ISE']['BinaryDirectory'])
+		self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory']) / "ISE/vhdl/src"
 		
 		# check if the appropriate environment is loaded
 		from os import environ
-		if (environ.get('XILINX') == None):
-			raise PoC.PoCEnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
+		if (environ.get('XILINX') == None):		raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
 
-		entityToSimulate = PoC.PoCEntity(self, module)
+		entityToSimulate = Entity(self, module)
 
-		simulator = PoCISESimulator.PoCISESimulator(self, showLogs, showReport)
+		simulator = ISESimulator.Simulator(self, showLogs, showReport, guiMode)
 		simulator.run(entityToSimulate)
 
-	def xsimSimulation(self, module, showLogs, showReport):
+	def xSimSimulation(self, module, showLogs, showReport, guiMode):
 		# check if ISE is configure
-		if (len(self.pocConfig.options("Xilinx-Vivado")) == 0):
-			raise PoCNotConfiguredException("Xilinx Vivado is not configured on this system.")
+		if (len(self.pocConfig.options("Xilinx-Vivado")) == 0):	raise NotConfiguredException("Xilinx Vivado is not configured on this system.")
 
-		entityToSimulate = PoC.PoCEntity(self, module)
+		# prepare some paths
+		self.directories["VivadoInstallation"] =		Path(self.pocConfig['Xilinx-Vivado']['InstallationDirectory'])
+		self.directories["VivadoBinary"] =					Path(self.pocConfig['Xilinx-Vivado']['BinaryDirectory'])
+		self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx-Vivado']['InstallationDirectory']) / "data/vhdl/src"
+		
+		entityToSimulate = Entity(self, module)
 
-		simulator = PoCVivadoSimulator.PoCVivadoSimulator(self, showLogs, showReport)
+		simulator = VivadoSimulator.Simulator(self, showLogs, showReport, guiMode)
 		simulator.run(entityToSimulate)
 
-	def vsimSimulation(self, module, showLogs, showReport):
+	def vSimSimulation(self, module, showLogs, showReport, vhdlStandard, guiMode):
 		# check if ISE is configure
-		if (len(self.pocConfig.options("Questa")) == 0):
-			raise PoCNotConfiguredException("Mentor Graphics Questa is not configured on this system.")
+		if (len(self.pocConfig.options("Questa-SIM")) != 0):
+			# prepare some paths
+			self.directories["vSimInstallation"] =	Path(self.pocConfig['Questa-SIM']['InstallationDirectory'])
+			self.directories["vSimBinary"] =				Path(self.pocConfig['Questa-SIM']['BinaryDirectory'])
+		
+		elif (len(self.pocConfig.options("Altera-ModelSim")) != 0):
+			# prepare some paths
+			self.directories["vSimInstallation"] =	Path(self.pocConfig['Altera-ModelSim']['InstallationDirectory'])
+			self.directories["vSimBinary"] =				Path(self.pocConfig['Altera-ModelSim']['BinaryDirectory'])
+				
+		else:
+			raise NotConfiguredException("Neither Mentor Graphics Questa-SIM nor ModelSim are configured on this system.")
 
-		entityToSimulate = PoC.PoCEntity(self, module)
+		entityToSimulate = Entity(self, module)
 
-		simulator = PoCQuestaSimulator.PoCQuestaSimulator(self, showLogs, showReport)
+		simulator = QuestaSimulator.Simulator(self, showLogs, showReport, vhdlStandard, guiMode)
 		simulator.run(entityToSimulate)
 		
-	def ghdlSimulation(self, module, showLogs, showReport):
+	def ghdlSimulation(self, module, showLogs, showReport, vhdlStandard, guiMode):
 		# check if GHDL is configure
-		if (len(self.pocConfig.options("GHDL")) == 0):
-			raise PoCNotConfiguredException("GHDL is not configured on this system.")
+		if (len(self.pocConfig.options("GHDL")) == 0):		raise NotConfiguredException("GHDL is not configured on this system.")
 		
 		# prepare some paths
 		self.directories["GHDLInstallation"] =	Path(self.pocConfig['GHDL']['InstallationDirectory'])
 		self.directories["GHDLBinary"] =				Path(self.pocConfig['GHDL']['BinaryDirectory'])
 		
-		entityToSimulate = PoC.PoCEntity(self, module)
-
-		simulator = PoCGHDLSimulator.PoCGHDLSimulator(self, showLogs, showReport)
-		simulator.run(entityToSimulate)
-
-	def xsimSimulation(self, module, showLogs, showReport):
-		# check if ISE is configure
-		if (len(self.pocConfig.options("Xilinx-Vivado")) == 0):
-			raise PoCNotConfiguredException("Xilinx Vivado is not configured on this system.")
-
-		entityToSimulate = PoC.PoCEntity(self, module)
-
-		simulator = PoCVivadoSimulator.PoCVivadoSimulator(self, showLogs, showReport)
-		simulator.run(entityToSimulate)
-	
-	
-		# check if ISE is configure
-		if (len(self.pocConfig.options("GHDL")) == 0):
-			raise PoCNotConfiguredException("GHDL is not configured on this system.")
-
-		entityToSimulate = PoC.PoCEntity(self, module)
-
-		simulator = PoCGHDLSimulator.PoCGHDLSimulator(self, showLogs, showReport)
-		simulator.run(entityToSimulate)
+		if (len(self.pocConfig.options("Xilinx-ISE")) != 0):
+			self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])			/ "ISE/vhdl/src"
+		elif (len(self.pocConfig.options("Xilinx-Vivado")) != 0):
+			self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx-Vivado']['InstallationDirectory'])	/ "data/vhdl/src"
 		
+		if (len(self.pocConfig.options("GTKWave")) != 0):		
+			self.directories["GTKWInstallation"] =	Path(self.pocConfig['GTKWave']['InstallationDirectory'])
+			self.directories["GTKWBinary"] =				Path(self.pocConfig['GTKWave']['BinaryDirectory'])
+		elif guiMode:
+			raise NotConfiguredException("No GHDL compatible waveform viewer is configured on this system.")
+		
+		entityToSimulate = Entity(self, module)
+
+		simulator = GHDLSimulator.Simulator(self, showLogs, showReport, vhdlStandard, guiMode)
+		simulator.run(entityToSimulate)
+
 
 # main program
 def main():
-	print("========================================================================")
-	print("                  PoC Library - Testbench Service Tool                  ")
-	print("========================================================================")
-	print()
+	from colorama import Fore, Back, Style, init
+	init()
+
+	print(Fore.MAGENTA + "=" * 80)
+	print("{: ^80s}".format(Testbench.headLine))
+	print("=" * 80)
+	print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 	
 	try:
 		import argparse
@@ -196,96 +208,78 @@ def main():
 		group21.add_argument('--xsim',	metavar="<Entity>",	dest="xsim",				help='use Xilinx Vivado Simulator (xsim)')
 		group21.add_argument('--vsim',	metavar="<Entity>",	dest="vsim",				help='use Mentor Graphics Simulator (vsim)')
 		group21.add_argument('--ghdl',	metavar="<Entity>",	dest="ghdl",				help='use GHDL Simulator (ghdl)')
+		group3 = argParser.add_argument_group('Options')
+		group3.add_argument('--std',	metavar="<version>",	dest="std",					help='set VHDL standard [87,93,02,08]; default=93')
+#		group3.add_argument('-i', '--interactive',					dest="interactive",	help='start simulation in interactive mode',	action='store_const', const=True, default=False)
+		group3.add_argument('-g', '--gui',									dest="gui",					help='start simulation in gui mode',					action='store_const', const=True, default=False)
 
 		# parse command line options
 		args = argParser.parse_args()
 
 	except Exception as ex:
-		from traceback import print_tb
-		print("FATAL: %s" % ex.__str__())
-		print("-" * 80)
-		print_tb(ex.__traceback__)
-		print("-" * 80)
-		print()
-		return
+		Exit.printException(ex)
 
 	# create class instance and start processing
 	try:
-		test = PoCTestbench(args.debug, args.verbose, args.quiet)
+		test = Testbench(args.debug, args.verbose, args.quiet)
 		
 		if (args.help == True):
 			argParser.print_help()
+			print()
 			return
 		elif (args.list is not None):
 			test.listSimulations(args.list)
 		elif (args.isim is not None):
-			test.isimSimulation(args.isim, args.showLog, args.showReport)
+			iSimGUIMode =			args.gui
+			
+			test.iSimSimulation(args.isim, args.showLog, args.showReport, iSimGUIMode)
 		elif (args.xsim is not None):
-			test.xsimSimulation(args.xsim, args.showLog, args.showReport)
+			xSimGUIMode =			args.gui
+			
+			test.xSimSimulation(args.xsim, args.showLog, args.showReport, xSimGUIMode)
 		elif (args.vsim is not None):
-			test.vsimSimulation(args.vsim, args.showLog, args.showReport)
+			if ((args.std is not None) and (args.std in ["87","93","02","08"])):
+				vhdlStandard =	args.std
+			else:
+				vhdlStandard =	"93"
+			
+			vSimGUIMode =			args.gui
+			
+			test.vSimSimulation(args.vsim, args.showLog, args.showReport, vhdlStandard, vSimGUIMode)
 		elif (args.ghdl is not None):
-			test.ghdlSimulation(args.ghdl, args.showLog, args.showReport)
+			if ((args.std is not None) and (args.std in ["87","93","02","08"])):
+				vhdlStandard =	args.std
+			else:
+				vhdlStandard =	"93"
+			
+			ghdlGUIMode =			args.gui
+			
+			test.ghdlSimulation(args.ghdl, args.showLog, args.showReport, vhdlStandard, ghdlGUIMode)
 		else:
 			argParser.print_help()
 	
-	except PoCSimulator.PoCSimulatorException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		return
+	except SimulatorException as ex:
+		from colorama import Fore, Back, Style
+		from configparser import Error
 		
-	except PoC.PoCEnvironmentException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		print("Please run this script with it's provided wrapper or manually load the required environment before executing this script.")
-		return
-	
-	except PoC.PoCNotConfiguredException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		print("Please run 'poc.[sh/cmd] --configure' in PoC root directory.")
-		return
-	
-	except PoC.PoCPlatformNotSupportedException as ex:
-		print("ERROR: Unknown platform '%s'" % ex.message)
-		print()
-		return
-	
-	except PoC.PoCException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		return
-	
-	except PoC.NotImplementedException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		return
+		print(Fore.RED + "ERROR:" + Fore.RESET + " %s" % ex.message)
+		if isinstance(ex.__cause__, FileNotFoundError):
+			print(Fore.YELLOW + "  FileNotFound:" + Fore.RESET + " '%s'" % str(ex.__cause__))
+		elif isinstance(ex.__cause__, Error):
+			print(Fore.YELLOW + "  configparser.Error:" + Fore.RESET + " %s" % str(ex.__cause__))
+		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+		exit(1)
 
-	except Exception as ex:
-		from traceback import print_tb
-		print("FATAL: %s" % ex.__str__())
-		print("-" * 80)
-		print_tb(ex.__traceback__)
-		print("-" * 80)
-		print()
-		return
-	
+	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)
+	except NotConfiguredException as ex:				Exit.printNotConfiguredException(ex)
+	except PlatformNotSupportedException as ex:	Exit.printPlatformNotSupportedException(ex)
+	except BaseException as ex:									Exit.printBaseException(ex)
+	except NotImplementedException as ex:				Exit.printNotImplementedException(ex)
+	except Exception as ex:											Exit.printException(ex)
+			
 # entry point
 if __name__ == "__main__":
-	from sys import version_info
-	
-	if (version_info<(3,4,0)):
-		print("ERROR: Used Python interpreter is to old: %s" % version_info)
-		print("Minimal required Python version is 3.4.0")
-		exit(1)
-			
+	Exit.versionCheck((3,4,0))
 	main()
 else:
-	from sys import exit
-	
-	print("=" * 80)
-	print("{: ^80s}".format("PoC Library - Testbench Service Tool"))
-	print("=" * 80)
-	print()
-	print("This is no library file!")
-	exit(1)
+	Exit.printThisIsNoLibraryFile(Testbench.headLine)

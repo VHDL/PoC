@@ -1,137 +1,194 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 --
--- Copyright (c) 2008
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
--- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
+-- ===========================================================================
+-- Package:        UART (RS232) Components for PoC.io.uart
 --
+-- Authors:        Martin Zabel
+--                 Thomas B. Preusser
+--		   					 Patrick Lehmann
+--
+-- License:
+-- ===========================================================================
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+--                     Chair for VLSI-Design, Diagnostics and Architecture
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--              http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ===========================================================================
 
---
--- Package: uart
--- Author(s): Martin Zabel
--- 
--- Component declarations for UART components
---
--- Revision:    $Revision: 1.3 $
--- Last change: $Date: 2013-06-14 08:58:29 $
---
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+library	IEEE;
+use			IEEE.std_logic_1164.all;
 
-library poc;
-use poc.functions.all;
+library	PoC;
+use			PoC.utils.all;
+use			PoC.physical.all;
+
 
 package uart is
+	type T_IO_UART_FLOWCONTROL_KIND is (
+		UART_FLOWCONTROL_NONE,
+		UART_FLOWCONTROL_XON_XOFF,
+		UART_FLOWCONTROL_RTS_CTS,
+		UART_FLOWCONTROL_RTR_CTS
+	);
+	
+	constant C_IO_UART_TYPICAL_BAUDRATES : T_BAUDVEC := (
+		 0 =>		 300 Bd,	 1 =>		 600 Bd,	 2 =>		1200 Bd,	 3 =>		1800 Bd,	 4 =>		2400 Bd,
+		 5 =>		4000 Bd,	 6 =>		4800 Bd,	 7 =>		7200 Bd,	 8 =>		9600 Bd,	 9 =>	 14400 Bd,
+		10 =>	 16000 Bd,	11 =>	 19200 Bd,	12 =>	 28800 Bd,	13 =>	 38400 BD,	14 =>	 51200 Bd,
+		15 =>	 56000 Bd,	16 =>	 57600 Bd,	17 =>	 64000 Bd,	18 =>	 76800 Bd,	19 =>	115200 Bd,
+		20 =>	128000 Bd,	21 =>	153600 Bd,	22 =>	230400 Bd,	23 =>	250000 Bd,	24 =>	256000 BD,
+		25 =>	460800 Bd,	26 =>	500000 Bd,	27 =>	576000 Bd,	28 =>	921600 Bd
+	);
+	
+	function io_UART_IsTypicalBaudRate(br : BAUD) return BOOLEAN;
 
+  -- Bit Clock Generator: 8 Ticks per Bit
   component uart_bclk
     generic (
       CLK_FREQ : positive;
-      BAUD     : positive);
+      BAUDRATE : positive
+    );
     port (
-      clk       : in  std_logic;
-      rst       : in  std_logic;
-      bclk_r    : out std_logic;
-      bclk_x8_r : out std_logic);
+      clk     : in  std_logic;
+      rst     : in  std_logic;
+      bclk    : out std_logic;
+      bclk_x8 : out std_logic
+    );
   end component;
 
-  component uart_rx
+  -- Receiver
+  component uart_rx is
     generic (
-      OUT_REGS : boolean);
+      SYNC_DEPTH : natural := 2  -- use zero for already clock-synchronous rx
+    );
     port (
-      clk       : in  std_logic;
-      rst       : in  std_logic;
-      bclk_x8_r : in  std_logic;
-      rxd       : in  std_logic;
-      dos       : out std_logic;
-      dout      : out std_logic_vector(7 downto 0));
+      -- Global Control
+      clk : in std_logic;
+      rst : in std_logic;
+
+      -- Bit Clock and RX Line
+      bclk_x8 : in std_logic;  	-- bit clock, eight strobes per bit length
+      rx      : in std_logic;
+
+      -- Byte Stream Output
+      do  : out std_logic_vector(7 downto 0);
+      stb : out std_logic
+    );
   end component;
 
-  component uart_tx
-    port (
-      clk    : in  std_logic;
-      rst    : in  std_logic;
-      bclk_r : in  std_logic;
-      stb    : in  std_logic;
-      din    : in  std_logic_vector(7 downto 0);
-      rdy    : out std_logic;
-      txd    : out std_logic);
-  end component;
+  -- Transmitter
+	component uart_tx is
+		port (
+			-- Global Control
+			clk : in std_logic;
+			rst : in std_logic;
 
-  component uart_sfc
+			-- Bit Clock and TX Line
+			bclk : in  std_logic;  -- bit clock, one strobe each bit length
+			tx   : out std_logic;
+
+			-- Byte Stream Input
+			di  : in  std_logic_vector(7 downto 0);
+			put : in  std_logic;
+			ful : out std_logic
+		);
+	end component;
+
+  -- Wrappers
+  -- ===========================================================================
+  -- UART with FIFOs and optional flow control
+  component uart_fifo is
     generic (
-      CLK_FREQ       : positive;
-      BAUD           : positive;
-      RF_MIN_DEPTH   : positive;
-      RF_OUTPUT_REG  : boolean := true;
-      TF_MIN_DEPTH   : positive;
-      XOFF_TRIG      : natural;
-      XON_TRIG       : natural;
-      RX_OUT_REGS    : boolean);
-    port (
-      clk       : in  std_logic;
-      rst       : in  std_logic;
-      tf_put    : in  std_logic;
-      tf_din    : in  std_logic_vector(7 downto 0);
-      tf_full   : out std_logic;
-      rf_got    : in  std_logic;
-      rf_valid  : out std_logic;
-      rf_dout   : out std_logic_vector(7 downto 0);
-      rf_count  : out unsigned(log2ceil(RF_MIN_DEPTH) downto 0);
-      overflow  : out std_logic;
-      rxd       : in  std_logic;
-      txd       : out std_logic);
-  end component;
+      -- Communication Parameters
+      CLOCK_FREQ  : FREQ;
+      BAUDRATE    : BAUD;
 
-  component uart_sfc_wb
-    generic (
-      CLK_FREQ    : positive;
-      BAUD        : positive;
-      RX_OUT_REGS : boolean);
-    port (
-      clk      : in  std_logic;
-      rst      : in  std_logic;
-      wb_adr_i : in  std_logic_vector(1 downto 0);
-      wb_cyc_i : in  std_logic;
-      wb_dat_i : in  std_logic_vector(7 downto 0);
-      wb_stb_i : in  std_logic;
-      wb_we_i  : in  std_logic;
-      wb_ack_o : out std_logic;
-      wb_dat_o : out std_logic_vector(31 downto 0);
-      wb_err_o : out std_logic;
-      wb_rty_o : out std_logic;
-      overflow : out std_logic;
-      rxd      : in  std_logic;
-      txd      : out std_logic);
-  end component;
+			-- Buffer Dimensioning
+      TX_MIN_DEPTH   : positive := 16;
+      TX_ESTATE_BITS : natural  :=  0;
+      RX_MIN_DEPTH   : positive := 16;
+      RX_FSTATE_BITS : natural  :=  0;
 
-  component uart_wb
-    generic (
-      CLK_FREQ    : positive;
-      BAUD        : positive;
-      RX_OUT_REGS : boolean);
+      -- Flow Control
+      FLOWCONTROL       : T_IO_UART_FLOWCONTROL_KIND   := UART_FLOWCONTROL_NONE;
+      SWFC_XON_CHAR     : std_logic_vector(7 downto 0) := x"11";  -- ^Q
+      SWFC_XON_TRIGGER  : real                         := 0.0625;
+      SWFC_XOFF_CHAR    : std_logic_vector(7 downto 0) := x"13";  -- ^S
+      SWFC_XOFF_TRIGGER : real                         := 0.75
+    );
     port (
-      clk      : in  std_logic;
-      rst      : in  std_logic;
-      wb_adr_i : in  std_logic_vector(1 downto 0);
-      wb_cyc_i : in  std_logic;
-      wb_dat_i : in  std_logic_vector(7 downto 0);
-      wb_stb_i : in  std_logic;
-      wb_we_i  : in  std_logic;
-      wb_ack_o : out std_logic;
-      wb_dat_o : out std_logic_vector(31 downto 0);
-      wb_err_o : out std_logic;
-      wb_rty_o : out std_logic;
-      overflow : out std_logic;
-      rxd      : in  std_logic;
-      txd      : out std_logic);
-  end component;
-  
-end uart;
+      Clock : in std_logic;
+      Reset : in std_logic;
+
+      -- FIFO interface
+      TX_put        : in  STD_LOGIC;
+      TX_Data       : in  STD_LOGIC_VECTOR(7 downto 0);
+      TX_Full       : out STD_LOGIC;
+      TX_EmptyState : out STD_LOGIC_VECTOR(TX_ESTATE_BITS - 1 downto 0);
+
+      RX_Valid     : out STD_LOGIC;
+      RX_Data      : out STD_LOGIC_VECTOR(7 downto 0);
+      RX_got       : in  STD_LOGIC;
+      RX_FullState : out STD_LOGIC_VECTOR(RX_FSTATE_BITS - 1 downto 0);
+      RX_Overflow  : out std_logic;
+
+      -- External Pins
+      UART_RX : in  std_logic;
+      UART_TX : out std_logic
+    );
+	end component;
+
+	-- USB-UART
+	component ft245_uart is
+		generic (
+      CLK_FREQ : positive      
+		);
+		port (
+      -- common signals
+      clk         : in  std_logic;
+      reset       : in  std_logic;
+
+      -- send data
+      snd_ready   : out std_logic;
+      snd_strobe  : in  std_logic;
+      snd_data    : in  std_logic_vector(7 downto 0);
+
+      -- receive data
+      rec_strobe  : out std_logic;
+      rec_data    : out std_logic_vector(7 downto 0);
+
+      -- connection to ft245
+      ft245_data  : inout std_logic_vector (7 downto 0);
+      ft245_rdn   : out std_logic;
+      ft245_wrn   : out std_logic;
+      ft245_rxfn  : in std_logic;
+      ft245_txen  : in std_logic;
+      ft245_pwrenn : in std_logic
+		);
+	end component;
+
+end package;
+
 
 package body uart is
-end uart;
+	function io_UART_IsTypicalBaudRate(br : BAUD) return BOOLEAN is
+	begin
+		for i in C_IO_UART_TYPICAL_BAUDRATES'range loop
+			next when (br /= C_IO_UART_TYPICAL_BAUDRATES(i));
+			return TRUE;
+		end loop;
+		return FALSE;
+	end function;
+end package body;

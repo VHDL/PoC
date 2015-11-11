@@ -37,12 +37,9 @@ library PoC;
 
 package my_config is
   -- Change these lines to setup configuration.
-  constant MY_BOARD		: string := "VC707";		-- VC707 - Xilinx Virtex 7 reference design board: XC7V485T
-  constant MY_DEVICE	: string := "None";			-- infer from MY_BOARD
-	constant MY_VERBOSE	: boolean	:= true;
-end;
-
-
-package body my_config is
-
-end;
+  constant MY_BOARD		: string	:= "VC707";		-- VC707 - Xilinx Virtex 7 reference design board: XC7V485T
+  constant MY_DEVICE	: string	:= "None";		-- infer from MY_BOARD
+		
+	-- For internal use only
+	constant MY_VERBOSE	: boolean	:= FALSE;
+end package;

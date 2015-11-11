@@ -32,18 +32,19 @@
 # ==============================================================================
 
 from pathlib import Path
-import configparser
-import enum
-import os
-import re
 
-import Base
-from Processor							import Processor, ProcessorException
-from WarningExtractor				import WarningExtractor
-from ErrorExtractor					import ErrorExtractor
-from FSMTokenFileExtractor	import FSMTokenFileExtractor
+from lib.Functions import Exit
+from Base.Exceptions import *
+from Base.PoCBase import CommandLineProgram
+from PoC.Entity import *
+from PoC.Config import *
+from Processor import *
+from Processor.Exceptions import *
+from Processor.XST import *
 
-class PostProcessor(Base.Base):
+class PostProcessor(CommandLineProgram):
+	headLine = "The PoC-Library - PostProcessor Frontend"
+
 	#__netListConfigFileName = "configuration.ini"
 	dryRun = False
 	#netListConfig = None
@@ -51,10 +52,12 @@ class PostProcessor(Base.Base):
 	processors = []
 	
 	def __init__(self, debug, verbose, quiet):
+		from configparser import ConfigParser, ExtendedInterpolation
+		
 		super(self.__class__, self).__init__(debug, verbose, quiet)
 
 		if not ((self.platform == "Windows") or (self.platform == "Linux")):
-			raise Base.PlatformNotSupportedException(self.platform)
+			raise PlatformNotSupportedException(self.platform)
 		
 		# hard coded
 		projectName = "StreamDBTest_ML505"
@@ -69,10 +72,10 @@ class PostProcessor(Base.Base):
 		
 		if not projectConfigurationFilePath.exists():
 			raise NotConfiguredException("Project configuration file does not exist. (%s)" % str(projectConfigurationFilePath))
-		if not xstReportFilePath.exists():							raise Exception("Synthesis report file does not exist. (%s)" % str(xstReportFilePath))
+		if not xstReportFilePath.exists():							raise Exception("Compiler report file does not exist. (%s)" % str(xstReportFilePath))
 
 		self.printDebug("Reading project configuration from '%s'" % str(projectConfigurationFilePath))		
-		self.projectConfig = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+		self.projectConfig = ConfigParser(interpolation=ExtendedInterpolation())
 		self.projectConfig.optionxform = str
 		self.projectConfig.read([str(self.Files["Configuration"]), str(projectConfigurationFilePath)])
 	
@@ -133,6 +136,8 @@ class PostProcessor(Base.Base):
 				self.analyzeFSMEncodings(value)
 
 	def analyzeWarnings(self, warnings):
+		import re
+		
 		regExpString = r"(?P<Process>\w+)\((?P<WarningID>\d+)\)"
 		regExp = re.compile(regExpString)
 	
@@ -162,6 +167,8 @@ class PostProcessor(Base.Base):
 			
 				
 	def analyzeFSMEncodings(self, stateMachines):
+		import re
+		
 		print("FSMs found: (%i)" % len(stateMachines))
 		
 		for fsm in stateMachines:
@@ -200,11 +207,13 @@ class PostProcessor(Base.Base):
 				tokenFileHandle.write(tokenFileContent)
 		
 	def compileRegExp(self):
+		import re
+		
 		for processor in self.processors:
 			processor['RegExp'] = re.compile(processor['RegExpString'])
 					
 	def enableFSMTokenFileExtraction(self):
-		ext = FSMTokenFileExtractor
+		ext = XSTFSMTokenFileExtractor.Extractor
 		self.processors.append({
 			'Name' :					ext.__name__,
 			'RegExpString' :	ext.getInitializationRegExpString(),
@@ -213,7 +222,7 @@ class PostProcessor(Base.Base):
 		})
 	
 	def enableErrorExtraction(self):
-		ext = ErrorExtractor
+		ext = XSTErrorExtractor.Extractor
 		self.processors.append({
 			'Name' :					ext.__name__,
 			'RegExpString' :	ext.getInitializationRegExpString(),
@@ -222,7 +231,7 @@ class PostProcessor(Base.Base):
 		})
 	
 	def enableWarningExtraction(self):
-		ext = WarningExtractor
+		ext = XSTWarningExtractor.Extractor
 		self.processors.append({
 			'Name' :					ext.__name__,
 			'RegExpString' :	ext.getInitializationRegExpString(),
@@ -249,10 +258,13 @@ class ActiveProcessor(object):
 	
 # main program
 def main():
-	print("========================================================================")
-	print("                  SATAController - Post-Processing Tool                 ")
-	print("========================================================================")
-	print()
+	from colorama import Fore, Back, Style, init
+	init()
+
+	print(Fore.MAGENTA + "=" * 80)
+	print("{: ^80s}".format("The PoC-Library - PostProcessor Frontend"))
+	print("=" * 80)
+	print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 	
 	try:
 		import argparse
@@ -284,10 +296,7 @@ def main():
 		args = argParser.parse_args()
 		
 	except Exception as ex:
-		print("FATAL: %s" % ex.__str__())
-		print()
-		return
-
+		Exit.printException(ex)
 		
 	try:
 		PP = PostProcessor(args.debug, args.verbose, args.quiet)
@@ -306,58 +315,23 @@ def main():
 			argParser.print_help()
 		
 	except ProcessorException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		return
-		
-#	except PoC.PoCEnvironmentException as ex:
-#		print("ERROR: %s" % ex.message)
-#		print()
-#		print("Please run this script with it's provided wrapper or manually load the required environment before executing this script.")
-#		return
-#	
-#	except PoC.PoCNotConfiguredException as ex:
-#		print("ERROR: %s" % ex.message)
-#		print()
-#		print("Please run 'poc.[sh/cmd] --configure' in PoC root directory.")
-#		return
-#	
-#	except PoC.PoCPlatformNotSupportedException as ex:
-#		print("ERROR: Unknown platform '%s'" % ex.message)
-#		print()
-#		return
-	
-	except Base.BaseException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		return
-	
-	except Base.NotImplementedException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		return
+		from colorama import Fore, Back, Style
+		print(Fore.RED + "ERROR:" + Fore.RESET + " %s" % ex.message)
+		if isinstance(ex.__cause__, FileNotFoundError):
+			print(Fore.YELLOW + "  FileNotFound:" + Fore.RESET + " '%s'" % str(ex.__cause__))
+		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+		exit(1)
 
-#	except Exception as ex:
-#		print("FATAL: %s" % ex.__str__())
-#		print()
-#		return
+	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)
+	except NotConfiguredException as ex:				Exit.printNotConfiguredException(ex)
+	except PlatformNotSupportedException as ex:	Exit.printPlatformNotSupportedException(ex)
+	except BaseException as ex:									Exit.printBaseException(ex)
+	except NotImplementedException as ex:				Exit.printNotImplementedException(ex)
+	except Exception as ex:											Exit.printException(ex)
 			
 # entry point
 if __name__ == "__main__":
-	from sys import version_info
-	
-	if (version_info<(3,4,0)):
-		print("ERROR: Used Python interpreter is to old: %s" % version_info)
-		print("Minimal required Python version is 3.4.0")
-		exit(1)
-		
+	Exit.versionCheck((3,4,0))
 	main()
 else:
-	from sys import exit
-	
-	print("========================================================================")
-	print("                  SATAController - Post-Processing Tool                 ")
-	print("========================================================================")
-	print()
-	print("This is no library file!")
-	exit(1)
+	Exit.printThisIsNoLibraryFile(PostProcessor.headLine)

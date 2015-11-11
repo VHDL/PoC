@@ -1,0 +1,76 @@
+<!--
+   Copyright (c) 2007
+   Technische Universitaet Dresden, Dresden, Germany
+   Faculty of Computer Science
+   Institute for Computer Engineering
+   Chair for VLSI-Design, Diagnostics and Architecture
+   
+   Authors: Thomas B. Preusser, Martin Zabel
+   
+   For internal educational use only.
+   The distribution of source code or generated files
+   is prohibited.
+-->
+
+<project name="Trace-Tools" basedir="." default="run-HelloTrace">
+
+  <!-- primary configuration -->
+  <property name="build.dir"   value="build"/>
+
+  <!-- secondary configuration -->
+  <property name="src.dir"     value="."/>
+  <property name="classes.dir" value="${build.dir}/classes"/>
+  <property name="jar.dir"     value="${build.dir}/jar"/>
+
+  <!-- targets -->
+  <target name="clean">
+    <delete dir="${build.dir}"/>
+  </target>
+
+  <target name="compile">
+    <mkdir dir="${classes.dir}"/>
+    <!-- As the javac task has only a week dependency check and also
+	 the depend task has limitations, we use a dependset to remove
+	 all class files if a source file changes. -->
+    <dependset>
+      <srcfileset dir="${src.dir}" includes="**/*.java" />
+      <targetfileset dir="${classes.dir}" includes="**/*.class" />
+    </dependset>
+    <javac srcdir="${src.dir}" destdir="${classes.dir}" 
+	   debug="true" debuglevel="lines,source,vars">
+    </javac>
+  </target>
+
+  <!-- Trace targets -->
+  <target name="TraceEth" depends="compile">
+    <exec executable="make">
+      <arg value="-C"/>
+      <arg value="ite/traceEth"/>
+    </exec>
+    <mkdir dir="${jar.dir}"/>
+    <jar destfile="${jar.dir}/TraceEth.jar" 
+	 basedir="${classes.dir}">
+      <manifest>
+        <attribute name="Main-Class" value="ite.traceEth.TraceEth"/>
+      </manifest>
+    </jar>
+    <echo message="Run the following as root:"/>
+    <echo message="  java -jar build/jar/TraceEth.jar $(pwd)/ite/traceEth/libTraceEth.so"/>
+  </target>
+    
+  <target name="HelloTrace" depends="compile">
+    <mkdir dir="${jar.dir}"/>
+    <jar destfile="${jar.dir}/HelloTrace.jar" 
+	 basedir="${classes.dir}">
+      <manifest>
+        <attribute name="Main-Class" value="ite.trace.HelloTrace"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="run-HelloTrace" depends="HelloTrace">
+    <java fork="true" jar="${jar.dir}/HelloTrace.jar" />
+  </target>
+
+</project>
+

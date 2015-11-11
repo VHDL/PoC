@@ -1,0 +1,11 @@
+Bus.IIC.EEPROM.sdc
+Bus.SMBus.sdc
+Clock.SystemClock.sdc
+FanControl.sdc
+GPIO.Button.sdc
+GPIO.Button.Special.sdc
+GPIO.DipSwitch.sdc
+GPIO.LED.sdc
+GPIO.Seg7.sdc
+GPIO.SlideSwitch.sdc
+UART.sdc

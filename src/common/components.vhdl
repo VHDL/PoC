@@ -9,7 +9,7 @@
 --
 -- Description:
 -- ------------------------------------
---		This packages describes common primtives like flip flops and multiplexers
+--		This packages describes common primitives like flip flops and multiplexers
 --		as a function to use them as one-liners.
 --
 -- License:
@@ -59,9 +59,11 @@ PACKAGE components IS
 	function neg(value : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;		-- calculate 2's complement
 	
 	-- counter
-	function counter_inc(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return UNSIGNED;
-	function counter_dec(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return SIGNED;
-	function counter_eq(cnt : UNSIGNED; value : NATURAL) return STD_LOGIC;
+	function upcounter_next(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC := '1'; init : NATURAL := 0) return UNSIGNED;
+	function upcounter_equal(cnt : UNSIGNED; value : NATURAL) return STD_LOGIC;
+	function downcounter_next(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC := '1'; init : INTEGER := 0) return SIGNED;
+	function downcounter_equal(cnt : SIGNED; value : INTEGER) return STD_LOGIC;
+	function downcounter_neg(cnt : SIGNED) return STD_LOGIC;
 
 	-- shift/rotate registers
 	function sr_left(q : STD_LOGIC_VECTOR; i : STD_LOGIC) return STD_LOGIC_VECTOR;
@@ -73,11 +75,18 @@ PACKAGE components IS
 	function comp(value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;
 	function comp(value1 : UNSIGNED; value2 : UNSIGNED) return UNSIGNED;
 	function comp(value1 : SIGNED; value2 : SIGNED) return SIGNED;
+	function comp_allzero(value	: STD_LOGIC_VECTOR)	return STD_LOGIC;
+	function comp_allzero(value	: UNSIGNED)					return STD_LOGIC;
+	function comp_allzero(value	: SIGNED)						return STD_LOGIC;
+	function comp_allone(value	: STD_LOGIC_VECTOR)	return STD_LOGIC;
+	function comp_allone(value	: UNSIGNED)					return STD_LOGIC;
+	function comp_allone(value	: SIGNED)						return STD_LOGIC;
 	
 	-- multiplexing
 	function mux(sel : STD_LOGIC; sl0		: STD_LOGIC;				sl1		: STD_LOGIC)				return STD_LOGIC;
 	function mux(sel : STD_LOGIC; slv0	: STD_LOGIC_VECTOR;	slv1	: STD_LOGIC_VECTOR)	return STD_LOGIC_VECTOR;
 	function mux(sel : STD_LOGIC; us0		: UNSIGNED;					us1		: UNSIGNED)					return UNSIGNED;
+	function mux(sel : STD_LOGIC; s0		: SIGNED;						s1		: SIGNED)						return SIGNED;
 end;
 
 
@@ -155,7 +164,7 @@ package body components is
 	end function;
 	
 	-- counter
-	function counter_inc(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return UNSIGNED is
+	function upcounter_next(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC := '1'; init : NATURAL := 0) return UNSIGNED is
 	begin
 		if (rst = '1') then
 			return to_unsigned(init, cnt'length);
@@ -166,7 +175,13 @@ package body components is
 		end if;
 	end function;
 	
-	function counter_dec(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC; init : NATURAL := 0) return SIGNED is
+	function upcounter_equal(cnt : UNSIGNED; value : NATURAL) return STD_LOGIC is
+	begin
+		-- optimized comparison for only up counting values
+		return to_sl((cnt and to_unsigned(value, cnt'length)) = value);
+	end function;
+	
+	function downcounter_next(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC := '1'; init : INTEGER := 0) return SIGNED is
 	begin
 		if (rst = '1') then
 			return to_signed(init, cnt'length);
@@ -177,10 +192,16 @@ package body components is
 		end if;
 	end function;
 	
-	function counter_eq(cnt : UNSIGNED; value : NATURAL) return STD_LOGIC is
+	function downcounter_equal(cnt : SIGNED; value : INTEGER) return STD_LOGIC is
 	begin
-		return to_sl(cnt = to_unsigned(value, cnt'length));
+		-- optimized comparison for only down counting values
+		return to_sl((cnt nor to_signed(value, cnt'length)) /= value);
 	end function;
+
+	function downcounter_neg(cnt : SIGNED) return STD_LOGIC is
+	begin
+		return cnt(cnt'high);
+	end function;	
 	
 	-- shift/rotate registers
 	function sr_left(q : STD_LOGIC_VECTOR; i : std_logic) return STD_LOGIC_VECTOR is
@@ -207,6 +228,12 @@ package body components is
 	-- return value 1- => value1 < value2 (difference is negative)
 	-- return value 00 => value1 = value2 (difference is zero)
 	-- return value -1 => value1 > value2 (difference is positive)
+	function comp(value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
+	begin
+		report "Comparing two STD_LOGIC_VECTORs - implicit conversion to UNSIGNED" severity WARNING;
+		return std_logic_vector(comp(unsigned(value1), unsigned(value2)));
+	end function;
+
 	function comp(value1 : UNSIGNED; value2 : UNSIGNED) return UNSIGNED is
 	begin
 		if (value1 < value2) then
@@ -216,12 +243,6 @@ package body components is
 		else
 			return "01";
 		end if;
-	end function;
-
-	function comp(value1 : STD_LOGIC_VECTOR; value2 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
-	begin
-		report "Comparing two STD_LOGIC_VECTORs - implicit conversion to UNSIGNED" severity WARNING;
-		return std_logic_vector(comp(unsigned(value1), unsigned(value2)));
 	end function;
 
 	function comp(value1 : SIGNED; value2 : SIGNED) return SIGNED is
@@ -235,6 +256,37 @@ package body components is
 		end if;
 	end function;
 	
+	function comp_allzero(value	: STD_LOGIC_VECTOR) return STD_LOGIC is
+	begin
+		return comp_allzero(unsigned(value));
+	end function;
+	
+	function comp_allzero(value	: UNSIGNED) return STD_LOGIC is
+	begin
+		return to_sl(value = (value'range => '0'));
+	end function;
+	
+	function comp_allzero(value	: SIGNED) return STD_LOGIC is
+	begin
+		return to_sl(value = (value'range => '0'));
+	end function;
+	
+	function comp_allone(value	: STD_LOGIC_VECTOR) return STD_LOGIC is
+	begin
+		return comp_allone(unsigned(value));
+	end function;
+	
+	function comp_allone(value	: UNSIGNED) return STD_LOGIC is
+	begin
+		return to_sl(value = (value'range => '1'));
+	end function;
+	
+	function comp_allone(value	: SIGNED) return STD_LOGIC is
+	begin
+		return to_sl(value = (value'range => '1'));
+	end function;
+	
+	
 	-- multiplexing
 	function mux(sel : STD_LOGIC; sl0 : STD_LOGIC; sl1 : STD_LOGIC) return STD_LOGIC is
 	begin
@@ -243,11 +295,16 @@ package body components is
 	
 	function mux(sel : STD_LOGIC; slv0 : STD_LOGIC_VECTOR; slv1 : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
 	begin
-		return (slv0 and not (slv0'range => sel)) or (slv1 and (slv0'range => sel));
+		return (slv0 and not (slv0'range => sel)) or (slv1 and (slv1'range => sel));
 	end function;
 
 	function mux(sel : STD_LOGIC; us0 : UNSIGNED; us1 : UNSIGNED) return UNSIGNED is
 	begin
-		return (us0 and not (us0'range => sel)) or (us1 and (us0'range => sel));
+		return (us0 and not (us0'range => sel)) or (us1 and (us1'range => sel));
 	end function;
-END PACKAGE BODY;
+	
+	function mux(sel : STD_LOGIC; s0 : SIGNED; s1 : SIGNED) return SIGNED is
+	begin
+		return (s0 and not (s0'range => sel)) or (s1 and (s1'range => sel));
+	end function;
+end package body;

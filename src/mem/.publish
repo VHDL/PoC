@@ -1,1 +1,13 @@
+# git files
+.gitignore
+
+# Documentation
+README.md
+
+# subnamespace
+is61lv/
+is61nlp/
+lut/
 ocram/
+ocrom/
+sdram/

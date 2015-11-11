@@ -39,10 +39,7 @@ package my_config is
   -- Change these lines to setup configuration.
   constant MY_BOARD		: string	:= "S2GXAV";		-- Stratix II GX Audio Video Development Kit
   constant MY_DEVICE	: string	:= "None";			-- infer from MY_BOARD
- 	constant MY_VERBOSE	: boolean	:= true;
-end;
-
-
-package body my_config is
-
-end;
+		
+	-- For internal use only
+ 	constant MY_VERBOSE	: boolean	:= FALSE;
+end package;

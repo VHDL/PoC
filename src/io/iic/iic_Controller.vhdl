@@ -48,7 +48,7 @@ USE			PoC.io.ALL;
 ENTITY iic_IICController IS
 	GENERIC (
 		DEBUG													: BOOLEAN												:= FALSE;
-		CLOCK_FREQ										: FREQ													:= 100.0 MHz;
+		CLOCK_FREQ										: FREQ													:= 100 MHz;
 		IIC_BUSMODE										: T_IO_IIC_BUSMODE							:= IO_IIC_BUSMODE_STANDARDMODE;
 		IIC_ADDRESS										: STD_LOGIC_VECTOR							:= (7 DOWNTO 1 => '0') & '-';
 		ADDRESS_BITS									: POSITIVE											:= 7;

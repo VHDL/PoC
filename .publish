@@ -1,19 +1,22 @@
+# git files
+.gitignore
+#.gitmodules
+
+# Common files
+LICENSE
+AUTHORS.md
+README.md
+
+# Configuration scripts
+poc.sh
+poc.ps1
+
 # folders
 netlist/
 py/
+sim/
 src/
 tb/
 tools/
 ucf/
-
-# 
-.gitignore
-
-# files
-LICENSE
-AUTHORS
-README.md
-
-# 
-poc.sh
-poc.ps1
+xst/

@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -29,61 +29,61 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY UNISIM;
-USE			UNISIM.VCOMPONENTS.ALL;
+library UNISIM;
+use			UNISIM.VCOMPONENTS.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
 
 
-ENTITY eth_RSLayer_GMII_GMII_Xilinx IS
-	PORT (
-		Reset_async								: IN	STD_LOGIC;																	-- @async: 
+entity eth_RSLayer_GMII_GMII_Xilinx is
+	port (
+		Reset_async								: in		STD_LOGIC;			-- @async: 
 		
 		-- RS-GMII interface
-		RS_TX_Clock								: IN	STD_LOGIC;
-		RS_TX_Valid								: IN	STD_LOGIC;
-		RS_TX_Data								: IN	T_SLV_8;
-		RS_TX_Error								: IN	STD_LOGIC;
+		RS_TX_Clock								: in		STD_LOGIC;
+		RS_TX_Valid								: in		STD_LOGIC;
+		RS_TX_Data								: in		T_SLV_8;
+		RS_TX_Error								: in		STD_LOGIC;
 		
-		RS_RX_Clock								: IN	STD_LOGIC;
-		RS_RX_Valid								: OUT	STD_LOGIC;
-		RS_RX_Data								: OUT	T_SLV_8;
-		RS_RX_Error								: OUT	STD_LOGIC;
+		RS_RX_Clock								: in		STD_LOGIC;
+		RS_RX_Valid								: out		STD_LOGIC;
+		RS_RX_Data								: out		T_SLV_8;
+		RS_RX_Error								: out		STD_LOGIC;
 
 		-- PHY-GMII interface		
-		PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_GMII
+		PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_GMII
 	);
-END;
+end;
 
 -- Note:
 -- ============================================================================================================================================================
 -- use IDELAY instances on GMII_RX_Clock to move the clock into alignment with the data (GMII_RX_Data[7:0])
 
-ARCHITECTURE rtl OF eth_RSLayer_GMII_GMII_Xilinx IS
-	ATTRIBUTE KEEP												: BOOLEAN;
+architecture rtl of eth_RSLayer_GMII_GMII_Xilinx is
+	attribute KEEP												: BOOLEAN;
 	
-	SIGNAL IODelay_RX_Clock								: STD_LOGIC;
-	ATTRIBUTE KEEP OF IODelay_RX_Clock		: SIGNAL IS TRUE;
+	signal IODelay_RX_Clock								: STD_LOGIC;
+	attribute KEEP OF IODelay_RX_Clock		: signal is TRUE;
 	
-	SIGNAL IDelay_Data										: T_SLV_8;
-	SIGNAL IDelay_Valid										: STD_LOGIC;
-	SIGNAL IDelay_Error										: STD_LOGIC;
-BEGIN
+	signal IDelay_Data										: T_SLV_8;
+	signal IDelay_Valid										: STD_LOGIC;
+	signal IDelay_Error										: STD_LOGIC;
+begin
 	-- Transmitter Clock
 	-- ==========================================================================================================================================================
 	-- Instantiate a DDR output register.  This is a good way to drive
 	-- GMII_TX_Clock since the clock-to-PAD delay will be the same as that for
 	-- data driven from IOB Ouput flip-flops eg GMII_TX_Data[7:0].
   TX_Clock_ODDR : ODDR
-		PORT MAP (
+		port map (
 			Q		=> PHY_Interface.TX_Clock,
 			C		=> RS_TX_Clock,
 			CE	=> '1',
@@ -98,13 +98,13 @@ BEGIN
 	-- please modify the value of the IOBDELAYs according to your design.
 	-- for more information on IDELAYCTRL and IODELAY, please refer to the Virtex-5 User Guide.
 	IODly_RX_Clock : IODELAY
-		GENERIC MAP (
+		generic map (
 			IDELAY_TYPE			=> "FIXED",
 			IDELAY_VALUE		=> 0,
 			DELAY_SRC				=> "I",
 			SIGNAL_PATTERN	=> "CLOCK"
 		)
-		PORT MAP (
+		port map (
 			IDATAIN					=> PHY_Interface.RX_Clock,
 			ODATAIN					=> '0',
 			DATAOUT					=> IODelay_RX_Clock,
@@ -117,74 +117,74 @@ BEGIN
 		);
 		
 	BUFG_RX_Clock : BUFG
-		PORT MAP (
+		port map (
 			I								=> IODelay_RX_Clock,
 			O								=> PHY_Interface.RX_RefClock
 		);
 	
 	-- Output Logic : Drive TX signals through IOBs onto PHY-GMII interface	
 	-- ==========================================================================================================================================================
-	PROCESS(RS_TX_Clock, Reset_async)
-  BEGIN
-		IF (Reset_async = '1') THEN
-			PHY_Interface.TX_Data				<= (OTHERS => '0');
+	process(RS_TX_Clock, Reset_async)
+  begin
+		if (Reset_async = '1') THEN
+			PHY_Interface.TX_Data				<= (others => '0');
 			PHY_Interface.TX_Valid			<= '0';
 			PHY_Interface.TX_Error			<= '0';
-		ELSE
-			IF rising_edge(RS_TX_Clock) THEN
+		else
+			if rising_edge(RS_TX_Clock) then
 				PHY_Interface.TX_Data			<= RS_TX_Data;
 				PHY_Interface.TX_Valid		<= RS_TX_Valid;
 				PHY_Interface.TX_Error		<= RS_TX_Error;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 	
 	-- Input Logic : Receive RX signals through IDELAYs and IOBs from PHY-GMII interface	
 	-- ==========================================================================================================================================================
-	blkIDelay : BLOCK
-		CONSTANT RX_VALID_BIT		: NATURAL													:= 8;
-		CONSTANT RX_ERROR_BIT		: NATURAL													:= 9;
+	blkIDelay : block
+		constant RX_VALID_BIT		: NATURAL													:= 8;
+		constant RX_ERROR_BIT		: NATURAL													:= 9;
 	
-		SIGNAL IDelay_DataIn		: STD_LOGIC_VECTOR(9 DOWNTO 0);
-		SIGNAL IDelay_DataOut		: STD_LOGIC_VECTOR(9 DOWNTO 0);
-	BEGIN
+		signal IDelay_DataIn		: STD_LOGIC_VECTOR(9 downto 0);
+		signal IDelay_DataOut		: STD_LOGIC_VECTOR(9 downto 0);
+	begin
 		IDelay_DataIn(PHY_Interface.RX_Data'range)	<= PHY_Interface.RX_Data;
 		IDelay_DataIn(RX_VALID_BIT)									<= PHY_Interface.RX_Valid;
 		IDelay_DataIn(RX_ERROR_BIT)									<= PHY_Interface.RX_Error;
 	
-		genIDelay : FOR I IN IDelay_DataIn'reverse_range GENERATE
+		genIDelay : for i in IDelay_DataIn'reverse_range generate
 			dly : IDELAY
-				GENERIC MAP (
+				generic map (
 					IOBDELAY_TYPE		=> "FIXED",
 					IOBDELAY_VALUE	=> 0
 				)
-				PORT MAP (
-					I								=> IDelay_DataIn(I),
-					O								=> IDelay_DataOut(I),
+				port map (
+					I								=> IDelay_DataIn(i),
+					O								=> IDelay_DataOut(i),
 					C								=> '0',
 					CE							=> '0',
 					INC							=> '0',
 					RST							=> '0'
 				);
-		END GENERATE;
+		end generate;
 		
 		IDelay_Data				<= IDelay_DataOut(IDelay_Data'range);
 		IDelay_Valid			<= IDelay_DataOut(RX_VALID_BIT);
 		IDelay_Error			<= IDelay_DataOut(RX_ERROR_BIT);
-	END BLOCK;
+	end block;
 
-	PROCESS(RS_RX_Clock, Reset_async)
-	BEGIN
-		IF (Reset_async = '1') THEN
-			RS_RX_Data			<= (OTHERS => '0');
+	process(RS_RX_Clock, Reset_async)
+	begin
+		if (Reset_async = '1') then
+			RS_RX_Data			<= (others => '0');
 			RS_RX_Valid			<= '0';
 			RS_RX_Error			<= '0';
-		ELSE
-			IF rising_edge(RS_RX_Clock) THEN
+		else
+			if rising_edge(rs_rx_clock) then
 				RS_RX_Data		<= IDelay_Data;
 				RS_RX_Valid		<= IDelay_Valid;
 				RS_RX_Error		<= IDelay_Error;
-			END IF;
-		END IF;
-	END PROCESS;
-END;
+			end if;
+		end if;
+	end process;
+end;

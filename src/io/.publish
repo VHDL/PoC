@@ -1,10 +1,21 @@
+# git files
+.gitignore
+.gitempty
+
+# Documentation
+README.md
+
+# device specific I/O abstraction
+ddrio/
+
 # low speed protocols
-#iic/
-#lcd/
+iic/
+lcd/
 #mdio/
 #ow/
+pmod/
 #ps2/
-#uart/
+uart/
 #vga/
 
 # devices
@@ -18,5 +29,6 @@ io_Debounce.vhdl
 io_FanControl.vhdl
 io_FrequencyCounter.vhdl
 io_GlitchFilter.vhdl
+#io_KeyPadScanner.vhdl
 io_PulseWidthModulation.vhdl
 io_TimingCounter.vhdl
