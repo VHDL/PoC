@@ -15,7 +15,7 @@
 --	Both data "DataIn_high/low" are synchronously outputted to the on-chip logic
 --  with the rising edge of "Clock". "DataIn_high" is the value at the "Pad" 
 --  sampled with the same rising edge. "DataIn_low" is the value sampled with 
---  the falling edge directly before this rising edge. Thus sampling starts with 
+--  the falling edge directly before this rising edge. Thus sampling starts with
 --  the falling edge of the clock as depicted in the following waveform.
 --               __      ____      ____      __
 --  Clock          |____|    |____|    |____|
@@ -25,6 +25,9 @@
 --
 --	< i > is the value of the i-th data bit on the line.
 --	
+--  After power-up, the output ports "DataIn_high" and "DataIn_low" both equal
+--  INIT_VALUE.
+--
 --	"Pad" must be connected to a PAD because FPGAs only have these registers in
 --	IOBs.
 --
@@ -57,16 +60,15 @@ use			PoC.ddrio.all;
 
 entity ddrio_in is
 	generic (
-		BITS						: POSITIVE;
-		INIT_VALUE_HIGH	: BIT_VECTOR	:= "1";
-		INIT_VALUE_LOW	: BIT_VECTOR	:= "1"
+		BITS					: POSITIVE;
+		INIT_VALUE		: BIT_VECTOR	:= x"FFFFFFFF"
 	);
 	port (
 		Clock					: in		STD_LOGIC;
 		ClockEnable		: in		STD_LOGIC;
 		DataIn_high		: out		STD_LOGIC_VECTOR(BITS - 1 downto 0);
 		DataIn_low		: out		STD_LOGIC_VECTOR(BITS - 1 downto 0);
-		Pad						: inout	STD_LOGIC_VECTOR(BITS - 1 downto 0)
+		Pad						: in		STD_LOGIC_VECTOR(BITS - 1 downto 0)
 		);
 end entity;
 
@@ -81,32 +83,30 @@ begin
 	genXilinx : if (VENDOR = VENDOR_XILINX) generate
 		i : ddrio_in_xilinx
 			generic map (
-				BITS						=> BITS,
-				INIT_VALUE_HIGH	=> INIT_VALUE_IN_HIGH,
-				INIT_VALUE_LOW	=> INIT_VALUE_IN_LOW
+				BITS				=> BITS,
+				INIT_VALUE	=> INIT_VALUE
 			)
 			port map (
-				Clock						=> Clock,
-				ClockEnable			=> ClockEnable,
-				DataIn_high			=> DataIn_high,
-				DataIn_low			=> DataIn_low,
-				Pad							=> Pad
+				Clock				=> Clock,
+				ClockEnable	=> ClockEnable,
+				DataIn_high	=> DataIn_high,
+				DataIn_low	=> DataIn_low,
+				Pad					=> Pad
 			);
 	end generate;
 
 	genAltera : if (VENDOR = VENDOR_ALTERA) generate
 		i : ddrio_in_altera
 			generic map (
-				BITS						=> BITS,
-				INIT_VALUE_HIGH	=> INIT_VALUE_IN_HIGH,
-				INIT_VALUE_LOW	=> INIT_VALUE_IN_LOW
+				BITS				=> BITS,
+				INIT_VALUE	=> INIT_VALUE
 			)
 			port map (
-				Clock						=> Clock,
-				ClockEnable			=> ClockEnable,
-				DataIn_high			=> DataIn_high,
-				DataIn_low			=> DataIn_low,
-				Pad							=> Pad
+				Clock				=> Clock,
+				ClockEnable	=> ClockEnable,
+				DataIn_high	=> DataIn_high,
+				DataIn_low	=> DataIn_low,
+				Pad					=> Pad
 			);
 	end generate;
 end architecture;
