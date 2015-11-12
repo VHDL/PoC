@@ -36,18 +36,17 @@ use			IEEE.std_logic_1164.ALL;
 
 
 package ddrio is
-  component ddrio_in is
+	component ddrio_in is
 		generic (
-			INIT_VALUES	: BIT_VECTOR		:= ('1', '1');
-			WIDTH				: positive
+			BITS					: POSITIVE;
+			INIT_VALUE		: BIT_VECTOR	:= x"FFFFFFFF"
 		);
 		port (
-			clk		: in	std_logic;
-			ce		: in	std_logic;
-			i			: in	std_logic_vector(WIDTH-1 downto 0);
-			dh		: out	std_logic_vector(WIDTH-1 downto 0);
-			dl		: out	std_logic_vector(WIDTH-1 downto 0)
-		);
+			Clock				: in		STD_LOGIC;
+			ClockEnable : in		STD_LOGIC;
+			DataIn_high : out		STD_LOGIC_VECTOR(BITS - 1 downto 0);
+			DataIn_low	: out		STD_LOGIC_VECTOR(BITS - 1 downto 0);
+			Pad					: in 		STD_LOGIC_VECTOR(BITS - 1 downto 0));
 	end component;
 
 	component ddrio_out is
@@ -66,20 +65,32 @@ package ddrio is
 		);
 	end component;
 	
-	component ddrio_in_xilinx is
+	component ddrio_in_altera is
 		generic (
-			INIT_VALUES	: BIT_VECTOR			:= ('1', '1');
-			WIDTH				: positive
+			BITS					: POSITIVE;
+			INIT_VALUE		: BIT_VECTOR	:= x"FFFFFFFF"
 		);
 		port (
-			clk		: in	std_logic;
-			ce		: in	std_logic;
-			i			: in	std_logic_vector(WIDTH-1 downto 0);
-			dh		: out	std_logic_vector(WIDTH-1 downto 0);
-			dl		: out	std_logic_vector(WIDTH-1 downto 0)
-		);
+			Clock				: in		STD_LOGIC;
+			ClockEnable : in		STD_LOGIC;
+			DataIn_high : out		STD_LOGIC_VECTOR(BITS - 1 downto 0);
+			DataIn_low	: out		STD_LOGIC_VECTOR(BITS - 1 downto 0);
+			Pad					: in 		STD_LOGIC_VECTOR(BITS - 1 downto 0));
 	end component;
-	
+
+	component ddrio_in_xilinx is
+		generic (
+			BITS					: POSITIVE;
+			INIT_VALUE		: BIT_VECTOR	:= x"FFFFFFFF"
+		);
+		port (
+			Clock				: in		STD_LOGIC;
+			ClockEnable : in		STD_LOGIC;
+			DataIn_high : out		STD_LOGIC_VECTOR(BITS - 1 downto 0);
+			DataIn_low	: out		STD_LOGIC_VECTOR(BITS - 1 downto 0);
+			Pad					: in 		STD_LOGIC_VECTOR(BITS - 1 downto 0));
+	end component;
+
 	component ddrio_out_altera is
 		generic (
 			NO_OUTPUT_ENABLE		: BOOLEAN			:= false;

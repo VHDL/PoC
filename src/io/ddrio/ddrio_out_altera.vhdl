@@ -38,7 +38,6 @@ use			Altera_mf.Altera_MF_Components.all;
 
 library poc;
 use poc.utils.all;
-use poc.components.all;
 
 entity ddrio_out_altera is
 	generic (
@@ -88,44 +87,3 @@ begin
 	end generate;
 				
 end architecture;
-
---architecture rtl of ddrio_out_altera is
---begin
---	-- One instantiation for each output pin is required to support different
---	-- initialization values. A seperate output enable FF is used to power-up
---	-- output as "disabled". Otherwise, power-up mode would depend on generic
---	-- POWER_UP_HIGH.
---	gen : for i in 0 to BITS - 1 generate
---		signal o : std_logic;
---	begin
---		off : altddio_out
---			generic map (
---				POWER_UP_HIGH	=> ite(INIT_VALUE(i) = '1', "ON", "OFF"),
---				WIDTH					=> 1
---			)
---			port map (
---				outclock		=> Clock,
---				outclocken	=> ClockEnable,
---				datain_h(0)	=> DataOut_high(i),
---				datain_l(0)	=> DataOut_low(i),
---				dataout(0)	=> o
---			);
-		
---		genOE : if not NO_OUTPUT_ENABLE generate
---			signal oe_n : std_logic;
---			signal t    : std_logic := '1'; -- output disabled after power-up
---		 begin
---			oe_n <= not OutputEnable;
-
---			-- tri-state control FF
---			t <= ffdre(q => t, d => oe_n, en => ClockEnable) when rising_edge(Clock);
-
---			Pad(i) <= o when t = '0' else 'Z';  -- 't' is low-active!
---		end generate genOE;
-
---		genNoOE : if NO_OUTPUT_ENABLE generate
---			Pad(i) <= o;
---		end generate genNoOE;
---	end generate;
-				
---end architecture;
