@@ -50,19 +50,19 @@ package ddrio is
 		);
 	end component;
 
-  component ddrio_out is
+	component ddrio_out is
 		generic (
-			NO_OE				: boolean		:= false;
-			INIT_VALUE	: BIT				:= '1';
-			WIDTH				: positive
+			NO_OUTPUT_ENABLE		: BOOLEAN			:= false;
+			BITS								: POSITIVE;
+			INIT_VALUE					: BIT_VECTOR	:= x"FFFFFFFF"
 		);
 		port (
-			clk		: in	std_logic;
-			ce		: in	std_logic;
-			dh		: in	std_logic_vector(WIDTH-1 downto 0);
-			dl		: in	std_logic_vector(WIDTH-1 downto 0);
-			oe		: in	std_logic;
-			q			: out	std_logic_vector(WIDTH-1 downto 0)
+			Clock				 : in	 STD_LOGIC;
+			ClockEnable	 : in	 STD_LOGIC;
+			OutputEnable : in	 STD_LOGIC;
+			DataOut_high : in	 STD_LOGIC_VECTOR(BITS - 1 downto 0);
+			DataOut_low	 : in	 STD_LOGIC_VECTOR(BITS - 1 downto 0);
+			Pad					 : out STD_LOGIC_VECTOR(BITS - 1 downto 0)
 		);
 	end component;
 	
@@ -80,34 +80,36 @@ package ddrio is
 		);
 	end component;
 	
-	component ddrio_out_xilinx is
+	component ddrio_out_altera is
 		generic (
-			NO_OE				: boolean		:= false;
-			INIT_VALUE	: BIT				:= '1';
-			WIDTH				: positive
+			NO_OUTPUT_ENABLE		: BOOLEAN			:= false;
+			BITS								: POSITIVE;
+			INIT_VALUE					: BIT_VECTOR	:= x"FFFFFFFF"
 		);
 		port (
-			clk		: in	std_logic;
-			ce		: in	std_logic;
-			dh		: in	std_logic_vector(WIDTH-1 downto 0);
-			dl		: in	std_logic_vector(WIDTH-1 downto 0);
-			oe		: in	std_logic;
-			q			: out	std_logic_vector(WIDTH-1 downto 0)
+			Clock				 : in	 STD_LOGIC;
+			ClockEnable	 : in	 STD_LOGIC;
+			OutputEnable : in	 STD_LOGIC;
+			DataOut_high : in	 STD_LOGIC_VECTOR(BITS - 1 downto 0);
+			DataOut_low	 : in	 STD_LOGIC_VECTOR(BITS - 1 downto 0);
+			Pad					 : out STD_LOGIC_VECTOR(BITS - 1 downto 0)
 		);
 	end component;
 	
-	component ddrio_out_altera is
+	component ddrio_out_xilinx is
 		generic (
-			INIT_VALUE	: BIT				:= '1';
-			WIDTH				: positive
+			NO_OUTPUT_ENABLE		: BOOLEAN			:= false;
+			BITS								: POSITIVE;
+			INIT_VALUE					: BIT_VECTOR	:= x"FFFFFFFF"
 		);
 		port (
-			clk		: in	std_logic;
-			ce		: in	std_logic;
-			dh		: in	std_logic_vector(WIDTH-1 downto 0);
-			dl		: in	std_logic_vector(WIDTH-1 downto 0);
-			oe		: in	std_logic;
-			q			: out	std_logic_vector(WIDTH-1 downto 0)
+			Clock				 : in	 STD_LOGIC;
+			ClockEnable	 : in	 STD_LOGIC;
+			OutputEnable : in	 STD_LOGIC;
+			DataOut_high : in	 STD_LOGIC_VECTOR(BITS - 1 downto 0);
+			DataOut_low	 : in	 STD_LOGIC_VECTOR(BITS - 1 downto 0);
+			Pad					 : out STD_LOGIC_VECTOR(BITS - 1 downto 0)
 		);
 	end component;
+	
 end package;

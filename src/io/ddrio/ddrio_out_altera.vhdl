@@ -36,10 +36,15 @@ use			IEEE.std_logic_1164.ALL;
 library	Altera_mf;
 use			Altera_mf.Altera_MF_Components.all;
 
+library poc;
+use poc.utils.all;
+use poc.components.all;
 
 entity ddrio_out_altera is
 	generic (
-		BITS								: POSITIVE
+		NO_OUTPUT_ENABLE		: BOOLEAN			:= false;
+		BITS								: POSITIVE;
+		INIT_VALUE					: BIT_VECTOR	:= x"FFFFFFFF"
 	);
 	port (
 		Clock					: in	STD_LOGIC;
@@ -53,19 +58,74 @@ end entity;
 
 
 architecture rtl of ddrio_out_altera is
-
+	signal oe : std_logic;
 begin
-	off : altddio_out
-		generic map (
-			WIDTH										=> BITS,
-			INTENDED_DEVICE_FAMILY	=> "STRATIXII"		-- TODO: built device string from PoC.config information
-		)
-		port map (
-			outclock		=> Clock,
-			outclocken	=> ClockEnable,
-			oe					=> OutputEnable,
-			datain_h		=> DataOut_high,
-			datain_l		=> DataOut_low,
-			dataout			=> Pad
-		);
+	-- The real output enable;
+	oe <= '1' when NO_OUTPUT_ENABLE else OutputEnable;
+	
+	-- One instantiation for each output pin is required to support different
+	-- initialization values. Note, that POWER_UP_HIGH controls both output data
+	-- and output enable registers. INIT_VALUE is only relevant if
+	-- NO_OUTPUT_ENABLE = true.
+	gen : for i in 0 to BITS - 1 generate
+	begin
+		off : altddio_out
+			generic map (
+				OE_REG 				=> ite(NO_OUTPUT_ENABLE, "UNREGISTERED", "REGISTERED"),
+				POWER_UP_HIGH	=> ite(NO_OUTPUT_ENABLE,
+														 ite(INIT_VALUE(i) = '1', "ON", "OFF"),
+														 "OFF"),
+				WIDTH					=> 1
+			)
+			port map (
+				outclock		=> Clock,
+				outclocken	=> ClockEnable,
+				oe					=> oe,
+				datain_h(0)	=> DataOut_high(i),
+				datain_l(0)	=> DataOut_low(i),
+				dataout(0)	=> Pad(i)
+			);
+	end generate;
+				
 end architecture;
+
+--architecture rtl of ddrio_out_altera is
+--begin
+--	-- One instantiation for each output pin is required to support different
+--	-- initialization values. A seperate output enable FF is used to power-up
+--	-- output as "disabled". Otherwise, power-up mode would depend on generic
+--	-- POWER_UP_HIGH.
+--	gen : for i in 0 to BITS - 1 generate
+--		signal o : std_logic;
+--	begin
+--		off : altddio_out
+--			generic map (
+--				POWER_UP_HIGH	=> ite(INIT_VALUE(i) = '1', "ON", "OFF"),
+--				WIDTH					=> 1
+--			)
+--			port map (
+--				outclock		=> Clock,
+--				outclocken	=> ClockEnable,
+--				datain_h(0)	=> DataOut_high(i),
+--				datain_l(0)	=> DataOut_low(i),
+--				dataout(0)	=> o
+--			);
+		
+--		genOE : if not NO_OUTPUT_ENABLE generate
+--			signal oe_n : std_logic;
+--			signal t    : std_logic := '1'; -- output disabled after power-up
+--		 begin
+--			oe_n <= not OutputEnable;
+
+--			-- tri-state control FF
+--			t <= ffdre(q => t, d => oe_n, en => ClockEnable) when rising_edge(Clock);
+
+--			Pad(i) <= o when t = '0' else 'Z';  -- 't' is low-active!
+--		end generate genOE;
+
+--		genNoOE : if NO_OUTPUT_ENABLE generate
+--			Pad(i) <= o;
+--		end generate genNoOE;
+--	end generate;
+				
+--end architecture;
