@@ -5,7 +5,7 @@
 -- ============================================================================
 -- Authors:					Martin Zabel
 -- 
--- Testbench:					for component ddrio_out
+-- Testbench:					for component ddrio_in
 --
 -- Description:
 -- ------------------------------------
@@ -106,6 +106,7 @@ begin  -- architecture sim
 		wait;
   end process WaveGen_Proc;
 
+	-- checkout output while reading from PAD
 	WaveCheck_Proc: process
     variable ii : std_logic_vector(3 downto 0);
 	begin
