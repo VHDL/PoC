@@ -14,10 +14,10 @@ NET "ZC706_SFP_TX_Disable"		LOC = "AA18" | IOSTANDARD = LVCMOS25; ## ; low-activ
 ##
 ## --------------------------
 ## SFP+ LVDS signal-pairs
-NET "ZC706_SFP_TX_n"					LOC = "W4";													## {OUT}	
-NET "ZC706_SFP_TX_p"					LOC = "W3";													## {OUT}	
-NET "ZC706_SFP_RX_n"					LOC = "Y6";													## {IN}		
-NET "ZC706_SFP_RX_p"					LOC = "Y5";													## {IN}		
+NET "ZC706_SFP_TX_p"					LOC = "W4";													## {OUT}	
+NET "ZC706_SFP_TX_n"					LOC = "W3";													## {OUT}	
+NET "ZC706_SFP_RX_p"					LOC = "Y6";													## {IN}		
+NET "ZC706_SFP_RX_n"					LOC = "Y5";													## {IN}		
 
 # Ignore timings on async I/O pins
 NET "ZC706_SFP_TX_Disable"		TIG;
