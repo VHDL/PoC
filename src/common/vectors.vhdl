@@ -114,6 +114,7 @@ package vectors is
 
 	-- Convert to vector: to_slv
 	function to_slv(slvv : T_SLVV_8)							return STD_LOGIC_VECTOR;								-- convert vector-vector to flatten vector
+	function to_slv(slm : T_SLM)									return STD_LOGIC_VECTOR;								-- convert matrix to flatten vector
 	
 	-- Convert flat vector to avector-vector: to_slvv_*
 	function to_slvv_4(slv : STD_LOGIC_VECTOR)		return T_SLVV_4;												-- 
@@ -138,16 +139,17 @@ package vectors is
 	function to_slvv_512(slm : T_SLM)	return T_SLVV_512;																	-- 
 	
 	-- Convert vector-vector to matrix: to_slm
-	function to_slm(slvv : T_SLVV_4) return T_SLM;																				-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_8) return T_SLM;																				-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_12) return T_SLM;																				-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_16) return T_SLM;																				-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_32) return T_SLM;																				-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_48) return T_SLM;																				-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_64) return T_SLM;																				-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_128) return T_SLM;																			-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_256) return T_SLM;																			-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_512) return T_SLM;																			-- create matrix from vector-vector
+	function to_slm(slv : STD_LOGIC_VECTOR; ROWS : POSITIVE; COLS : POSITIVE) return T_SLM;	-- create matrix from vector
+	function to_slm(slvv : T_SLVV_4) return T_SLM;																					-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_8) return T_SLM;																					-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_12) return T_SLM;																					-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_16) return T_SLM;																					-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_32) return T_SLM;																					-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_48) return T_SLM;																					-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_64) return T_SLM;																					-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_128) return T_SLM;																				-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_256) return T_SLM;																				-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_512) return T_SLM;																				-- create matrix from vector-vector
 
 	-- Change vector direction
 	function dir(slvv : T_SLVV_8)			return T_SLVV_8;
@@ -303,6 +305,19 @@ package body vectors is
 		end loop;
 		return slv;
 	end function;
+	
+	-- convert matrix to flatten vector
+	function to_slv(slm : T_SLM) return STD_LOGIC_VECTOR is
+		variable slv			: STD_LOGIC_VECTOR((slm'length(1) * slm'length(2)) - 1 downto 0);
+	begin
+		for i in slm'range(1) loop
+			for j in slm'high(2) downto slm'low(2) loop				-- Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); tested with ISE/iSIM 14.2
+				slv((i * slm'length(2)) + j)		:= slm(i, j);
+			end loop;
+		end loop;
+		return slv;
+	end function;
+	
 	
 	-- Convert flat vector to a vector-vector: to_slvv_*
 	-- ==========================================================================
@@ -526,6 +541,18 @@ package body vectors is
 	
 	-- Convert vector-vector to matrix: to_slm
 	-- ==========================================================================
+	-- create matrix from vector
+	function to_slm(slv : STD_LOGIC_VECTOR; ROWS : POSITIVE; COLS : POSITIVE) return T_SLM is
+		variable slm		: T_SLM(ROWS - 1 downto 0, COLS - 1 downto 0);
+	begin
+		for i in 0 to ROWS - 1 loop
+			for j in 0 to COLS - 1 loop
+				slm(i, j)	:= slv((i * COLS) + j);
+			end loop;
+		end loop;
+		return slm;
+	end function;
+	
 	-- create matrix from vector-vector
 	function to_slm(slvv : T_SLVV_4) return T_SLM is
 		variable slm		: T_SLM(slvv'range, 3 downto 0);

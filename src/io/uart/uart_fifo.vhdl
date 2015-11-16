@@ -87,7 +87,9 @@ entity uart_fifo is
 		
 		-- External pins
 		UART_TX				: out	std_logic;
-		UART_RX				: in	std_logic
+		UART_RX				: in	std_logic;
+		UART_RTS			: out	STD_LOGIC;
+		UART_CTS			: in	STD_LOGIC
 	);
 end entity;
 

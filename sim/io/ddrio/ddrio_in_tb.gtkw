@@ -1,0 +1,26 @@
+[*]
+[*] GTKWave Analyzer v3.3.66 (w)1999-2015 BSI
+[*] Sun Nov 15 19:31:58 2015
+[*]
+[dumpfile] "D:\git\PoC\temp\ghdl\ddrio_in_tb.vcd"
+[dumpfile_mtime] "Sun Nov 15 19:29:49 2015"
+[dumpfile_size] 6570
+[savefile] "D:\git\PoC\sim\io\ddrio\ddrio_in_tb.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*-25.902695 1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 197
+[signals_width] 158
+[sst_expanded] 1
+[sst_vpaned_height] 153
+@28
+clock
+clockenable
+datain_high[1:0]
+datain_low[1:0]
+pad[1:0]
+@29
+stopped
+[pattern_trace] 1
+[pattern_trace] 0
