@@ -8,7 +8,7 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 
 
-entity sortnet_OddEven_Transposition is
+entity sortnet_OddEvenSort is
 	generic (
 		INPUTS								: POSITIVE	:= 64;
 		KEY_BITS							: POSITIVE	:= 32;
@@ -26,7 +26,7 @@ entity sortnet_OddEven_Transposition is
 end entity;
 
 
-architecture rtl of sortnet_OddEven_Transposition is
+architecture rtl of sortnet_OddEvenSort is
 	constant C_VERBOSE	: BOOLEAN	:= FALSE;
 
 	constant STAGES			: POSITIVE		:= INPUTS;
