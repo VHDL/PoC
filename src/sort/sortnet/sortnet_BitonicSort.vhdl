@@ -53,7 +53,7 @@ end entity;
 
 
 architecture rtl of sortnet_BitonicSort is
-	constant HALF_INPUTS			: POSITIVE		:= INPUTS / 2;
+	constant HALF_INPUTS			: NATURAL		:= INPUTS / 2;
 
 	signal DataInputMatrix1		: T_SLM(HALF_INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
 	signal DataInputMatrix2		: T_SLM(HALF_INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
@@ -64,10 +64,10 @@ architecture rtl of sortnet_BitonicSort is
 	signal DataOutputMatrix3	: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
 	
 begin
-	DataInputMatrix1	<= slm_slice_rows(DataInputs, HALF_INPUTS - 1, 0);
-	DataInputMatrix2	<= slm_slice_rows(DataInputs, INPUTS - 1, HALF_INPUTS);
-	
 	genMergers : if (INPUTS > 1) generate
+		DataInputMatrix1	<= slm_slice_rows(DataInputs, HALF_INPUTS - 1, 0);
+		DataInputMatrix2	<= slm_slice_rows(DataInputs, INPUTS - 1, HALF_INPUTS);
+		
 		sort1 : entity PoC.sortnet_BitonicSort
 			generic map (
 				INPUTS			=> HALF_INPUTS,
@@ -123,7 +123,7 @@ end architecture;
 
 
 architecture rtl of sortnet_BitonicMerge is
-	constant HALF_INPUTS	: POSITIVE		:= INPUTS / 2;
+	constant HALF_INPUTS	: NATURAL		:= INPUTS / 2;
 
 	subtype T_DATA				is STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
 	type T_DATA_VECTOR		is array(NATURAL range <>) of T_DATA;

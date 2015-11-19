@@ -189,7 +189,7 @@ end architecture;
 
 
 architecture rtl of sortnet_OddEvenMergeSort_Sort is
-	constant HALF_INPUTS			: POSITIVE		:= INPUTS / 2;
+	constant HALF_INPUTS			: NATURAL		:= INPUTS / 2;
 
 	signal DataInputMatrix1		: T_SLM(HALF_INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
 	signal DataInputMatrix2		: T_SLM(HALF_INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);

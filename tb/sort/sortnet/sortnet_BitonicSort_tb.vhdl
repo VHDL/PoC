@@ -70,8 +70,8 @@ architecture tb of sortnet_BitonicSort_tb is
 	constant CLOCK_PERIOD			: TIME				:= 10 ns;
 	signal Clock							: STD_LOGIC		:= '1';
 	
-	signal KeyInputVector			: T_KEY_VECTOR(INPUTS - 1 downto 0);
-	signal DataInputVector		: T_DATA_VECTOR(INPUTS - 1 downto 0);
+	signal KeyInputVector			: T_KEY_VECTOR(INPUTS - 1 downto 0)			:= (others => (others => '0'));
+	signal DataInputVector		: T_DATA_VECTOR(INPUTS - 1 downto 0)		:= (others => (others => '0'));
 	
 	signal DataInputMatrix		: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
 	signal DataOutputMatrix		: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
@@ -88,12 +88,16 @@ begin
 	begin
 		wait until rising_edge(Clock);
 		
-		for i in 0 to 9 loop
+		for i in 0 to 63 loop
 			wait until rising_edge(Clock);
 		
 			for j in 0 to INPUTS - 1 loop
 				KeyInputVector(j)	<= std_logic_vector(unsigned(KeyInputVector(j)) + i + j);
 			end loop;
+		end loop;
+		
+		for i in 0 to 7 loop
+			wait until rising_edge(Clock);
 		end loop;
 		
 		StopSimulation		<= '1';
