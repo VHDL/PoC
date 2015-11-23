@@ -4,6 +4,20 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 
+# OSVVM
+vhdl-08	osvvm	"lib/osvvm/NamePkg.vhd"									# OSVVM 
+vhdl-08	osvvm	"lib/osvvm/OsvvmGlobalPkg.vhd"					# OSVVM 
+vhdl-08	osvvm	"lib/osvvm/TextUtilPkg.vhd"							# OSVVM 
+vhdl-08	osvvm	"lib/osvvm/TranscriptPkg.vhd"						# OSVVM 
+vhdl-08	osvvm	"lib/osvvm/AlertLogPkg.vhd"							# OSVVM 
+vhdl-08	osvvm	"lib/osvvm/MemoryPkg.vhd"								# OSVVM 
+vhdl-08	osvvm	"lib/osvvm/MessagePkg.vhd"							# OSVVM 
+vhdl-08	osvvm	"lib/osvvm/SortListPkg_int.vhd"					# OSVVM 
+vhdl-08	osvvm	"lib/osvvm/RandomBasePkg.vhd"						# OSVVM 
+vhdl-08	osvvm	"lib/osvvm/RandomPkg.vhd"								# OSVVM 
+vhdl-08	osvvm	"lib/osvvm/CoveragePkg.vhd"							# OSVVM 
+vhdl-08	osvvm	"lib/osvvm/OsvvmContext.vhd"						# OSVVM 
+
 # board and device configuration
 vhdl		poc		"tb/common/my_config_ML505.vhdl"
 vhdl		poc		"tb/common/my_project.vhdl"
@@ -21,7 +35,9 @@ vhdl-08	poc		"tb/common/simulation.v08.vhdl"					# PoC simulation helper
 # PoC.sort
 
 # PoC.sort.sortnet
-vhdl		poc		"src/sort/sortnet/sortnet_BitonicSort.vhdl"		# UUT (Unit Under Test)
+vhdl		poc		"src/sort/sortnet/sortnet_BitonicSort_Merge.vhdl"	# 
+vhdl		poc		"src/sort/sortnet/sortnet_BitonicSort_Sort.vhdl"	# 
+vhdl		poc		"src/sort/sortnet/sortnet_BitonicSort.vhdl"				# UUT (Unit Under Test)
 
 # Testbench file(s)
 vhdl		test	"tb/sort/sortnet/sortnet_BitonicSort_tb.vhdl"		# Testbench

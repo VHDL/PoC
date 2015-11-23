@@ -70,8 +70,8 @@ architecture tb of sortnet_BitonicSort_tb is
 	constant CLOCK_PERIOD			: TIME				:= 10 ns;
 	signal Clock							: STD_LOGIC		:= '1';
 	
-	signal KeyInputVector			: T_KEY_VECTOR(INPUTS - 1 downto 0)			:= (others => (others => '0'));
-	signal DataInputVector		: T_DATA_VECTOR(INPUTS - 1 downto 0)		:= (others => (others => '0'));
+	signal KeyInputVector			: T_KEY_VECTOR(INPUTS - 1 downto 0)		:= (others => (others => '0'));
+	signal DataInputVector		: T_DATA_VECTOR(INPUTS - 1 downto 0)	:= (others => (others => '0'));
 	
 	signal DataInputMatrix		: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
 	signal DataOutputMatrix		: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
@@ -110,8 +110,7 @@ begin
 		generic map (
 			INPUTS			=> INPUTS,
 			KEY_BITS		=> KEY_BITS,
-			DATA_BITS		=> DATA_BITS,
-			INVERSE			=> FALSE
+			DATA_BITS		=> DATA_BITS
 		)
 		port map (
 			Clock				=> Clock,

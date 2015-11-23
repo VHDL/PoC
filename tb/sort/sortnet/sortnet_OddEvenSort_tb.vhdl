@@ -7,6 +7,9 @@ library PoC;
 use			PoC.utils.all;
 use			PoC.vectors.all;
 
+-- library OSVVM;
+-- use			OSVVM.RandomPkg.all;
+
 
 entity sortnet_OddEvenSort_tb is
 end entity;
@@ -20,7 +23,7 @@ architecture tb of sortnet_OddEvenSort_tb is
 	subtype T_KEY					is STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
 	subtype T_DATA				is STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
 	
-	type T_KEY_VECTOR			is array(NATURAL range <>) of T_KEY;
+	type T_KEY_VECTOR			is array(NATURAL range <>) of T_DATA;
 	type T_DATA_VECTOR		is array(NATURAL range <>) of T_DATA;
 
 	function to_kv(slm : T_SLM) return T_KEY_VECTOR is
@@ -48,7 +51,6 @@ architecture tb of sortnet_OddEvenSort_tb is
 	function to_slm(kv : T_KEY_VECTOR) return T_SLM is
 		variable Result	: T_SLM(kv'range, T_KEY'range);
 	begin
-		report "kv'length: " & INTEGER'image(kv'length) & "  T_KEY'length: " & INTEGER'image(T_KEY'length) severity NOTE;
 		for i in kv'range loop
 			for j in T_KEY'range loop
 				Result(i, j)	:= kv(i)(j);
@@ -86,13 +88,17 @@ begin
 	Clock	<= Clock xnor StopSimulation after CLOCK_PERIOD;
 
 	process
+		-- variable RandomVar : RandomPType;								-- protected type from RandomPkg
 	begin
+		-- RandomVar.InitSeed(RandomVar'instance_name);		-- Generate initial seeds
+		
 		wait until rising_edge(Clock);
 		
 		for i in 0 to 63 loop
 			wait until rising_edge(Clock);
 		
 			for j in 0 to INPUTS - 1 loop
+				-- KeyInputVector(j)	<= to_slv(RandomVar.RandInt(0, 255), KEY_BITS);
 				KeyInputVector(j)	<= std_logic_vector(unsigned(KeyInputVector(j)) + i + j);
 			end loop;
 		end loop;
@@ -126,10 +132,20 @@ begin
 	KeyOutputVector	<= to_kv(DataOutputMatrix);
 	
 	process
+		variable	Check		: BOOLEAN;
 	begin
-	
+		for i in 0 to 5 loop
+			wait until rising_edge(Clock);
+		end loop;
 		
-	
-	wait;
+		for i in 0 to 63 loop
+			Check		:= TRUE;
+			for j in 0 to INPUTS - 2 loop
+				Check	:= Check and (KeyOutputVector(j) <= KeyOutputVector(j + 1));
+			end loop;
+			assert Check report "ERROR: " severity ERROR;
+		end loop;
+		
+		wait;
 	end process;
 end architecture;

@@ -145,10 +145,14 @@ class Simulator(PoCSimulator):
 						if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
 							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
 							vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
+						else:
+							continue
 					elif (filesLineRegExpMatch.group('Keyword') == "altera"):
 						self.printVerbose("    skipped Altera specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
 					elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
 						self.printVerbose("    skipped Xilinx specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
+					else:
+						raise SimulatorException("Unknown keyword in *files file.")
 						
 					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
 					

@@ -6,15 +6,17 @@ use			IEEE.NUMERIC_STD.all;
 library PoC;
 use			PoC.utils.all;
 use			PoC.vectors.all;
+use			PoC.components.all;
 
 
 entity sortnet_OddEvenSort is
 	generic (
-		INPUTS								: POSITIVE	:= 64;
-		KEY_BITS							: POSITIVE	:= 32;
-		DATA_BITS							: NATURAL		:= 1;
+		INPUTS								: POSITIVE	:= 8;
+		KEY_BITS							: POSITIVE	:= 16;
+		DATA_BITS							: NATURAL		:= 16;
 		PIPELINE_STAGE_AFTER	: NATURAL		:= 2;
-		ADD_OUTPUT_REGISTERS	: BOOLEAN		:= TRUE
+		ADD_OUTPUT_REGISTERS	: BOOLEAN		:= TRUE;
+		INVERSE								: BOOLEAN		:= FALSE
 	);
 	port (
 		Clock				: in	STD_LOGIC;
@@ -90,17 +92,20 @@ begin
 		
 		genEven : if (stage mod 2 = 0) generate
 			genEvenSwitch : for i in 0 to (INPUTS / 2) - 1 generate
-				sw : entity PoC.sortnet_Switch
-					generic map (
-						KEY_BITS		=> KEY_BITS,
-						DATA_BITS		=> DATA_BITS
-					)
-					port map (
-						DataIn0		=> DataInputMatrix(stage, 2 * i),
-						DataIn1		=> DataInputMatrix(stage, 2 * i + 1),
-						DataOut0	=> DataOutputMatrix(stage, 2 * i),
-						DataOut1	=> DataOutputMatrix(stage, 2 * i + 1)
-					);
+				signal DataIn0		: STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
+				signal DataIn1		: STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
+			
+				signal Greater		: STD_LOGIC;
+				signal Switch			: STD_LOGIC;
+			begin
+				DataIn0		<= DataInputMatrix(stage, 2 * i);
+				DataIn1		<= DataInputMatrix(stage, 2 * i + 1);
+			
+				Greater		<= to_sl(unsigned(DataIn0(KEY_BITS - 1 downto 0)) > unsigned(DataIn1(KEY_BITS - 1 downto 0)));
+				Switch		<= Greater xor to_sl(INVERSE);
+				
+				DataOutputMatrix(stage, 2 * i)			<= mux(Switch, DataIn0, DataIn1);
+				DataOutputMatrix(stage, 2 * i + 1)	<= mux(Switch, DataIn1, DataIn0);
 			end generate;
 		end generate;
 		genOdd : if (stage mod 2 = 1) generate
@@ -108,17 +113,20 @@ begin
 			DataOutputMatrix(stage, INPUTS - 1)	<= DataInputMatrix(stage, INPUTS - 1);
 			
 			genOddSwitch : for i in 0 to ((INPUTS - 1) / 2) - 1 generate
-				sw : entity PoC.sortnet_Switch
-					generic map (
-						KEY_BITS		=> KEY_BITS,
-						DATA_BITS		=> DATA_BITS
-					)
-					port map (
-						DataIn0		=> DataInputMatrix(stage, 2 * i + 1),
-						DataIn1		=> DataInputMatrix(stage, 2 * i + 2),
-						DataOut0	=> DataOutputMatrix(stage, 2 * i + 1),
-						DataOut1	=> DataOutputMatrix(stage, 2 * i + 2)
-					);
+				signal DataIn0		: STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
+				signal DataIn1		: STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
+			
+				signal Greater		: STD_LOGIC;
+				signal Switch			: STD_LOGIC;
+			begin
+				DataIn0		<= DataInputMatrix(stage, 2 * i + 1);
+				DataIn1		<= DataInputMatrix(stage, 2 * i + 2);
+			
+				Greater		<= to_sl(unsigned(DataIn0(KEY_BITS - 1 downto 0)) > unsigned(DataIn1(KEY_BITS - 1 downto 0)));
+				Switch		<= Greater xor to_sl(INVERSE);
+				
+				DataOutputMatrix(stage, 2 * i + 1)	<= mux(Switch, DataIn0, DataIn1);
+				DataOutputMatrix(stage, 2 * i + 2)	<= mux(Switch, DataIn1, DataIn0);
 			end generate;
 		end generate;
 	end generate;

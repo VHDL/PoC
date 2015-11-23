@@ -132,6 +132,8 @@ class Simulator(PoCSimulator):
 						if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
 							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
 							vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
+						else:
+							continue
 					elif (filesLineRegExpMatch.group('Keyword') == "altera"):
 						# check if Quartus is configured
 						if not self.host.directories.__contains__("AlteraPrimitiveSource"):
@@ -146,6 +148,8 @@ class Simulator(PoCSimulator):
 						
 						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
 						vhdlFilePath = self.host.directories["XilinxPrimitiveSource"] / vhdlFileName
+					else:
+						raise SimulatorException("Unknown keyword in *files file.")
 					
 					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
 
@@ -161,8 +165,8 @@ class Simulator(PoCSimulator):
 					parameterList = [
 						str(ghdlExecutablePath),
 						'-a', '-fexplicit', '-frelaxed-rules', '--warn-binding', '--no-vital-checks', '--mb-comments', '--syn-binding',
-						'-P.', '-PAltera','-PXilinx',
-						('--ieee=%s' % self.__ieeeFlavor),
+						'-P.', '-Paltera', '-Pxilinx', '-Posvvm', '-Pvuint',
+						# ('--ieee=%s' % self.__ieeeFlavor),
 						('--std=%s' % self.__vhdlStandard),
 						('--work=%s' % vhdlLibraryName),
 						str(vhdlFilePath)
@@ -198,7 +202,7 @@ class Simulator(PoCSimulator):
 			parameterList = [
 				str(ghdlExecutablePath),
 				'-r', '--syn-binding',
-				'-P.',  '-PAltera','-PXilinx',
+				'-P.', '-Paltera', '-Pxilinx', '-Posvvm', '-Pvuint',
 				('--std=%s' % self.__vhdlStandard),
 				'--work=test',
 				testbenchName
@@ -238,7 +242,7 @@ class Simulator(PoCSimulator):
 			parameterList = [
 				str(ghdlExecutablePath),
 				'-e', '--syn-binding',
-				'-P.',  '-PAltera','-PXilinx',
+				'-P.', '-Paltera', '-Pxilinx', '-Posvvm', '-Pvuint',
 				('--std=%s' % self.__vhdlStandard),
 				'--work=test',
 				testbenchName

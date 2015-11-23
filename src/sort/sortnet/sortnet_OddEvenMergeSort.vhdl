@@ -10,9 +10,9 @@ use			PoC.vectors.all;
 
 entity sortnet_OddEvenMergeSort is
 	generic (
-		INPUTS								: POSITIVE	:= 32;
-		KEY_BITS							: POSITIVE	:= 32;
-		DATA_BITS							: NATURAL		:= 32;
+		INPUTS								: POSITIVE	:= 8;
+		KEY_BITS							: POSITIVE	:= 16;
+		DATA_BITS							: NATURAL		:= 16;
 		PIPELINE_STAGE_AFTER	: NATURAL		:= 2;
 		ADD_OUTPUT_REGISTERS	: BOOLEAN		:= TRUE
 	);
@@ -37,9 +37,9 @@ use			PoC.vectors.all;
 
 entity sortnet_OddEvenMergeSort_Sort is
 	generic (
-		INPUTS								: POSITIVE	:= 64;
-		KEY_BITS							: POSITIVE	:= 32;
-		DATA_BITS							: NATURAL		:= 32
+		INPUTS								: POSITIVE	:= 8;
+		KEY_BITS							: POSITIVE	:= 16;
+		DATA_BITS							: NATURAL		:= 16
 	);
 	port (
 		Clock				: in	STD_LOGIC;
@@ -62,9 +62,9 @@ use			PoC.vectors.all;
 
 entity sortnet_OddEvenMergeSort_Merge is
 	generic (
-		INPUTS								: POSITIVE	:= 64;
-		KEY_BITS							: POSITIVE	:= 32;
-		DATA_BITS							: NATURAL		:= 1;
+		INPUTS								: POSITIVE	:= 8;
+		KEY_BITS							: POSITIVE	:= 16;
+		DATA_BITS							: NATURAL		:= 16;
 		PIPELINE_STAGE_AFTER	: NATURAL		:= 2;
 		ADD_OUTPUT_REGISTERS	: BOOLEAN		:= TRUE
 	);
@@ -200,10 +200,10 @@ architecture rtl of sortnet_OddEvenMergeSort_Sort is
 	signal DataOutputMatrix3	: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
 	
 begin
-	DataInputMatrix1	<= slm_slice_rows(DataInputs, HALF_INPUTS - 1, 0);
-	DataInputMatrix2	<= slm_slice_rows(DataInputs, INPUTS - 1, HALF_INPUTS);
-	
 	genMergers : if (INPUTS > 1) generate
+		DataInputMatrix1	<= slm_slice_rows(DataInputs, HALF_INPUTS - 1, 0);
+		DataInputMatrix2	<= slm_slice_rows(DataInputs, INPUTS - 1, HALF_INPUTS);
+		
 		sort1 : entity PoC.sortnet_OddEvenMergeSort_Sort
 			generic map (
 				INPUTS			=> HALF_INPUTS,
