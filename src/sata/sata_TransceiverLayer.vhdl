@@ -142,18 +142,20 @@ begin
 -- ==================================================================
 -- assert statements
 -- ==================================================================
-	assert ((C_DEVICE_INFO.VENDOR = VENDOR_XILINX) or 
-					(C_DEVICE_INFO.VENDOR = VENDOR_ALTERA))
+	assert ((C_DEVICE_INFO.VENDOR = VENDOR_ALTERA) or
+					(C_DEVICE_INFO.VENDOR = VENDOR_XILINX)) 
 		report "Vendor not yet supported."
 		severity FAILURE;
 		
-	assert ((C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_VIRTEX) or 
+	assert ((C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_ZYNQ) or
 					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_KINTEX) or
+					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_VIRTEX) or 
 					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_STRATIX))
 		report "Device family not yet supported."
 		severity FAILURE;
 		
 	assert ((C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX5) or
+					(C_DEVICE_INFO.DEVICE = DEVICE_ZYNQ7) or
 					(C_DEVICE_INFO.DEVICE = DEVICE_KINTEX7) or
 					(C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX7) or
 					(C_DEVICE_INFO.DEVICE = DEVICE_STRATIX2) or

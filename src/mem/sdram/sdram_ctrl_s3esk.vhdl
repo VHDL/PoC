@@ -1,22 +1,24 @@
---
--- Copyright (c) 2008
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
---
-
---
--- Entity: mt46v_ctrl_s3esk
--- Author(s): Martin Zabel
+-- ============================================================================
+-- Authors:					Martin Zabel
 -- 
--- Controller for Micron DDR-SDRAM "MT46V*" for Spartan-3E Starter Kit Board.
+-- Module:					Controller for Micron DDR-SDRAM on Spartan-3E Starter Kit Board.
 --
--- For configuration, see mt46v_ctrl_fsm.
+-- Description:
+-- ------------------------------------
+-- Controller for Micron DDR-SDRAM on Spartan-3E Starter Kit Board.
+-- SDRAM Device: MT46V32M16-6T
+--
+-- CLK_PERIOD = clock period in nano seconds. All SDRAM timings are
+-- calculated for the device stated above.
+--
+-- CL = cas latency, choose according to clock frequency.
+-- BL = burst length.
+--
+-- Tested with: CLK_PERIOD = 10.0, CL=2, BL=2.
 --
 -- Command, address and write data is sampled with clk.
 --
@@ -27,9 +29,24 @@
 --
 -- Synchronous resets are used.
 --
--- Revision:    $Revision: 1.2 $
--- Last change: $Date: 2009-02-19 16:02:29 $
---
+-- License:
+-- ============================================================================
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
+
 -------------------------------------------------------------------------------
 -- Naming Conventions:
 -- (Based on: Keating and Bricaud: "Reuse Methodology Manual")
@@ -53,22 +70,15 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
-entity mt46v_ctrl_s3esk is
+library poc;
+
+entity sdram_ctrl_s3esk is
 
   generic (
-    CLK_FREQ_MHZ : positive                     := 100;
-    CL           : positive                     := 2;
-    BL           : positive                     := 2;
-    MR_CL        : std_logic_vector(2 downto 0) := "010";
-    MR_BL        : std_logic_vector(2 downto 0) := "001";
-    T_MRD        : integer                      := 2;
-    T_RAS        : integer                      := 5;
-    T_RCD        : integer                      := 2;
-    T_RFC        : integer                      := 8;
-    T_RP         : integer                      := 2;
-    T_WR         : integer                      := 2;
-    T_WTR        : integer                      := 1);
+    CLK_PERIOD : real;
+    BL          : positive);
 
   port (
     clk        : in    std_logic;
@@ -87,7 +97,7 @@ entity mt46v_ctrl_s3esk is
     user_cmd_valid   : in  std_logic;
     user_wdata_valid : in  std_logic;
     user_write       : in  std_logic;
-    user_addr        : in  unsigned(24 downto 0);
+    user_addr        : in  std_logic_vector(24 downto 0);
     user_wdata       : in  std_logic_vector(31 downto 0);
     user_got_cmd     : out std_logic;
     user_got_wdata   : out std_logic;
@@ -107,90 +117,32 @@ entity mt46v_ctrl_s3esk is
     sd_udqs    : out   std_logic;
     sd_dq      : inout std_logic_vector(15 downto 0));
 
-end mt46v_ctrl_s3esk;
+end sdram_ctrl_s3esk;
 
-architecture rtl of mt46v_ctrl_s3esk is
-  component mt46v_ctrl_fsm
-    generic (
-      A_BITS       : positive;
-      D_BITS       : positive;
-      CLK_FREQ_MHZ : positive;
-      CL           : positive;
-      BL           : positive;
-      MR_CL        : std_logic_vector(2 downto 0);
-      MR_BL        : std_logic_vector(2 downto 0);
-      T_MRD        : integer;
-      T_RAS        : integer;
-      T_RCD        : integer;
-      T_RFC        : integer;
-      T_RP         : integer;
-      T_WR         : integer;
-      T_WTR        : integer);
-    port (
-      clk              : in  std_logic;
-      rst              : in  std_logic;
-      user_cmd_valid   : in  std_logic;
-      user_wdata_valid : in  std_logic;
-      user_write       : in  std_logic;
-      user_addr        : in  unsigned(A_BITS-1 downto 0);
-      user_got_cmd     : out std_logic;
-      user_got_wdata   : out std_logic;
-      sd_cke_nxt       : out std_logic;
-      sd_cs_nxt        : out std_logic;
-      sd_ras_nxt       : out std_logic;
-      sd_cas_nxt       : out std_logic;
-      sd_we_nxt        : out std_logic;
-      sd_a_nxt         : out std_logic_vector(12 downto 0);
-      sd_ba_nxt        : out std_logic_vector(1 downto 0);
-      rden_nxt         : out std_logic;
-      wren_nxt         : out std_logic);
-  end component;
-
-  component mt46v_ctrl_phy_s3esk
-    port (
-      clk        : in    std_logic;
-      clk_n      : in    std_logic;
-      clk90      : in    std_logic;
-      clk90_n    : in    std_logic;
-      rst        : in    std_logic;
-      rst90      : in    std_logic;
-      rst180     : in    std_logic;
-      rst270     : in    std_logic;
-      clk_fb90   : in    std_logic;
-      clk_fb90_n : in    std_logic;
-      rst_fb90   : in    std_logic;
-      rst_fb270  : in    std_logic;
-      sd_cke_nxt : in    std_logic;
-      sd_cs_nxt  : in    std_logic;
-      sd_ras_nxt : in    std_logic;
-      sd_cas_nxt : in    std_logic;
-      sd_we_nxt  : in    std_logic;
-      sd_ba_nxt  : in    std_logic_vector(1 downto 0);
-      sd_a_nxt   : in    std_logic_vector(12 downto 0);
-      wren_nxt   : in    std_logic;
-      wdata_nxt  : in    std_logic_vector(31 downto 0);
-      rden_nxt   : in    std_logic;
-      rdata      : out   std_logic_vector(31 downto 0);
-      rstb       : out   std_logic;
-      sd_ck_p    : out   std_logic;
-      sd_ck_n    : out   std_logic;
-      sd_cke     : out   std_logic;
-      sd_cs      : out   std_logic;
-      sd_ras     : out   std_logic;
-      sd_cas     : out   std_logic;
-      sd_we      : out   std_logic;
-      sd_ba      : out   std_logic_vector(1 downto 0);
-      sd_a       : out   std_logic_vector(12 downto 0);
-      sd_ldqs    : out   std_logic;
-      sd_udqs    : out   std_logic;
-      sd_dq      : inout std_logic_vector(15 downto 0));
-  end component;
+architecture rtl of sdram_ctrl_s3esk is
 
   --
   -- Configuration
   --
   constant A_BITS : positive := 25;     -- 32M
   constant D_BITS : positive := 16;     -- x16
+  constant R_BITS : positive := 13;     -- 8192 rows
+  constant C_BITS : positive := 10;     -- 1024 columns
+  constant B_BITS : positive := 2;      -- 4 banks
+  constant CL     : positive := 2;      -- CAS latency (req. by PHY)
+  
+  -- Divide timings from datasheet by clock period.
+  -- SDRAM device: MT46V32M16-6T
+  constant T_MRD     : integer := integer(ceil(12.0/CLK_PERIOD));
+  constant T_RAS     : integer := integer(ceil(42.0/CLK_PERIOD));
+  constant T_RCD     : integer := integer(ceil(15.0/CLK_PERIOD));
+  constant T_RFC     : integer := integer(ceil(72.0/CLK_PERIOD));
+  constant T_RP      : integer := integer(ceil(15.0/CLK_PERIOD));
+  constant T_WR      : integer := integer(ceil(15.0/CLK_PERIOD));
+  constant T_WTR     : integer := 1;
+  constant T_REFI    : integer := integer(ceil((7800.0)/CLK_PERIOD))-50;
+  constant INIT_WAIT : integer := integer(ceil(200000.0/  -- 200 us
+                                               (real(T_REFI)*CLK_PERIOD)));
 
   --
   -- Signals
@@ -207,22 +159,25 @@ architecture rtl of mt46v_ctrl_s3esk is
 
 begin  -- rtl
 
-  fsm: mt46v_ctrl_fsm
+  fsm: entity poc.sdram_ctrl_fsm
     generic map (
+      SDRAM_TYPE   => 1,                -- DDR-SDRAM
       A_BITS       => A_BITS,
       D_BITS       => D_BITS,
-      CLK_FREQ_MHZ => CLK_FREQ_MHZ,
+      R_BITS       => R_BITS,
+      C_BITS       => C_BITS,
+      B_BITS       => B_BITS,
       CL           => CL,
       BL           => BL,
-      MR_CL        => MR_CL,
-      MR_BL        => MR_BL,
       T_MRD        => T_MRD,
       T_RAS        => T_RAS,
       T_RCD        => T_RCD,
       T_RFC        => T_RFC,
       T_RP         => T_RP,
       T_WR         => T_WR,
-      T_WTR        => T_WTR)
+      T_WTR        => T_WTR,
+      T_REFI       => T_REFI,
+      INIT_WAIT    => INIT_WAIT)
     port map (
       clk              => clk,
       rst              => rst,
@@ -242,7 +197,7 @@ begin  -- rtl
       rden_nxt         => rden_nxt,
       wren_nxt         => wren_nxt);
 
-  phy: mt46v_ctrl_phy_s3esk
+  phy: entity poc.sdram_ctrl_phy_s3esk
     port map (
       clk        => clk,
       clk_n      => clk_n,

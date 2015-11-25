@@ -13,6 +13,7 @@ iic/
 lcd/
 #mdio/
 #ow/
+pmod/
 #ps2/
 uart/
 #vga/
@@ -28,5 +29,6 @@ io_Debounce.vhdl
 io_FanControl.vhdl
 io_FrequencyCounter.vhdl
 io_GlitchFilter.vhdl
+#io_KeyPadScanner.vhdl
 io_PulseWidthModulation.vhdl
 io_TimingCounter.vhdl

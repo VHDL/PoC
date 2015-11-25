@@ -1,20 +1,15 @@
---
--- Copyright (c) 2008
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
---
-
---
--- Entity: mt46v_ctrl_phy_s3esk
--- Author(s): Martin Zabel
+-- ============================================================================
+-- Authors:					Martin Zabel
 -- 
--- Physical layer part of DDR-SDRAM-Controller.
+-- Module:					Physical layer of SDRAM-Controller for Spartan-3E Starter Kit
+--
+-- Description:
+-- ------------------------------------
+-- Physical layer used by module 'sdram_ctrl_s3esk'
 --
 -- Instantiates input and output buffer components and adjusts timing for
 -- the Spartan-3E Starter Kit Board.
@@ -63,9 +58,24 @@
 --
 -- Synchronous resets are used. Reset must be hold for at least two cycles.
 --
--- Revision:    $Revision: 1.1 $
--- Last change: $Date: 2008-12-19 15:50:52 $
---
+-- License:
+-- ============================================================================
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
+
 -------------------------------------------------------------------------------
 -- Naming Conventions:
 -- (Based on: Keating and Bricaud: "Reuse Methodology Manual")
@@ -92,7 +102,7 @@ use ieee.std_logic_1164.ALL;
 library unisim;
 use unisim.VComponents.all;
 
-entity mt46v_ctrl_phy_s3esk is
+entity sdram_ctrl_phy_s3esk is
   port (
     clk     : in std_logic;
     clk_n   : in std_logic;
@@ -136,9 +146,9 @@ entity mt46v_ctrl_phy_s3esk is
     sd_udqs : out   std_logic;
     sd_dq   : inout std_logic_vector(15 downto 0));
 
-end mt46v_ctrl_phy_s3esk;
+end sdram_ctrl_phy_s3esk;
 
-architecture rtl of mt46v_ctrl_phy_s3esk is
+architecture rtl of sdram_ctrl_phy_s3esk is
   -- memory command: domain clk
   signal sd_cke_r : std_logic := '0';
   signal sd_cs_r  : std_logic := '1';

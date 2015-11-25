@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="./isim.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="config" />
+            <top_module name="config_private" />
+            <top_module name="ddrio" />
+            <top_module name="ddrio_in_tb" />
+            <top_module name="my_config" />
+            <top_module name="my_project" />
+            <top_module name="numeric_std" />
+            <top_module name="std_logic_1164" />
+            <top_module name="textio" />
+            <top_module name="utils" />
+            <top_module name="vcomponents" />
+            <top_module name="vital_primitives" />
+            <top_module name="vital_timing" />
+            <top_module name="vpkg" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="5" />
+   <wvobject fp_name="/ddrio_in_tb/clock" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clock</obj_property>
+      <obj_property name="ObjectShortName">clock</obj_property>
+   </wvobject>
+   <wvobject fp_name="/ddrio_in_tb/clockenable" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clockenable</obj_property>
+      <obj_property name="ObjectShortName">clockenable</obj_property>
+   </wvobject>
+   <wvobject fp_name="/ddrio_in_tb/datain_high" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">datain_high[1:0]</obj_property>
+      <obj_property name="ObjectShortName">datain_high[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/ddrio_in_tb/datain_low" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">datain_low[1:0]</obj_property>
+      <obj_property name="ObjectShortName">datain_low[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/ddrio_in_tb/pad" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">pad[1:0]</obj_property>
+      <obj_property name="ObjectShortName">pad[1:0]</obj_property>
+   </wvobject>
+</wave_config>
