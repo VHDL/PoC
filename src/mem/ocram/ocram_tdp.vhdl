@@ -104,10 +104,8 @@ architecture rtl of ocram_tdp is
 	constant DEPTH : positive := 2**A_BITS;
 
 begin
-	gXilinx: if DEVICE = DEVICE_SPARTAN6 or DEVICE = DEVICE_VIRTEX6 or
-		DEVICE=DEVICE_ARTIX7 or DEVICE=DEVICE_KINTEX7 or DEVICE=DEVICE_VIRTEX7
-	generate
-		-- RAM can be inferred correctly only for newer FPGAs!
+	gXilinx: if VENDOR = VENDOR_XILINX generate
+		-- RAM can be inferred correctly only if '-use_new_parser yes' is enabled in XST options
 		subtype word_t	is std_logic_vector(D_BITS - 1 downto 0);
 		type		ram_t		is array(0 to DEPTH - 1) of word_t;
 		
