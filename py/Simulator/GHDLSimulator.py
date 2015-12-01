@@ -152,6 +152,8 @@ class Simulator(PoCSimulator):
 						
 						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
 						vhdlFilePath = self.host.directories["XilinxPrimitiveSource"] / vhdlFileName
+					else:
+						raise SimulatorException("Unknown keyword in *files file.")
 					
 					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
 

@@ -1,33 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
--- =============================================================================
--- Authors:					Patrick Lehmann
---
--- Testbench:				Sorting Network: Bitonic-Sort
---
--- Description:
--- ------------------------------------
---	TODO
---
--- License:
--- =============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
---										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
--- Licensed under the Apache License, Version 2.0 (the "License");
--- you may not use this file except in compliance with the License.
--- You may obtain a copy of the License at
--- 
---		http://www.apache.org/licenses/LICENSE-2.0
--- 
--- Unless required by applicable law or agreed to in writing, software
--- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
--- See the License for the specific language governing permissions and
--- limitations under the License.
--- =============================================================================
 
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
@@ -38,11 +8,11 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 
 
-entity sortnet_BitonicSort_tb is
+entity sortnet_BitonicSort2_tb is
 end entity;
 
 
-architecture tb of sortnet_BitonicSort_tb is
+architecture tb of sortnet_BitonicSort2_tb is
 	constant INPUTS				: POSITIVE	:= 8;
 	constant KEY_BITS			: POSITIVE	:= 8;
 	constant DATA_BITS		: POSITIVE	:= 8;
@@ -100,8 +70,8 @@ architecture tb of sortnet_BitonicSort_tb is
 	constant CLOCK_PERIOD			: TIME				:= 10 ns;
 	signal Clock							: STD_LOGIC		:= '1';
 	
-	signal KeyInputVector			: T_KEY_VECTOR(INPUTS - 1 downto 0)		:= (others => (others => '0'));
-	signal DataInputVector		: T_DATA_VECTOR(INPUTS - 1 downto 0)	:= (others => (others => '0'));
+	signal KeyInputVector			: T_KEY_VECTOR(INPUTS - 1 downto 0)			:= (others => (others => '0'));
+	signal DataInputVector		: T_DATA_VECTOR(INPUTS - 1 downto 0)		:= (others => (others => '0'));
 	
 	signal DataInputMatrix		: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
 	signal DataOutputMatrix		: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
@@ -136,18 +106,19 @@ begin
 	
 	DataInputMatrix		<= to_slm(KeyInputVector);
 
-	sort : entity PoC.sortnet_BitonicSort
+	sort : entity PoC.sortnet_BitonicSort2
 		generic map (
 			INPUTS			=> INPUTS,
 			KEY_BITS		=> KEY_BITS,
-			DATA_BITS		=> DATA_BITS
+			DATA_BITS		=> DATA_BITS	--,
+--			INVERSE			=> FALSE
 		)
 		port map (
 			Clock				=> Clock,
 			Reset				=> '0',
 			
-			DataInputs	=> DataInputMatrix,
-			DataOutputs	=> DataOutputMatrix
+			DataIn			=> DataInputMatrix,
+			DataOut			=> DataOutputMatrix
 		);
 	
 	KeyOutputVector	<= to_kv(DataOutputMatrix);
