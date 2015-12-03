@@ -59,7 +59,7 @@ end entity;
 
 architecture rtl of sortnet_BitonicSort2 is
 	constant BLOCKS					: POSITIVE				:= log2ceil(INPUTS);
-	constant STAGES					: POSITIVE				:= triangularNumber(INPUTS);
+	constant STAGES					: POSITIVE				:= triangularNumber(BLOCKS);
 	constant COMPARATORS		: POSITIVE				:= STAGES * (INPUTS / 2);
 	
 	subtype T_DATA					is STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
@@ -67,13 +67,14 @@ architecture rtl of sortnet_BitonicSort2 is
 	type		T_STAGE_VECTOR	is array(NATURAL range <>) of T_INPUT_VECTOR(INPUTS - 1 downto 0);
 
 	signal DataMatrix			: T_STAGE_VECTOR(STAGES downto 0);
-	signal DataOut_i			: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
+	signal DataOut_i			: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0)	:= (others => (others => 'Z'));
 	
 begin
 	genInputs : for i in 0 to INPUTS - 1 generate
 		DataMatrix(0)(i)	<= get_row(DataIn, i);
 	end generate;
 	genBlocks : for b in 0 to BLOCKS - 1 generate
+		constant START_DISTANCE		: POSITIVE	:= 2**b;
 	begin
 		genStage : for s in 0 to b generate
 			constant STAGE_INDEX		: NATURAL		:= triangularNumber(b) + s;
@@ -81,8 +82,7 @@ begin
 			constant GROUPS					: POSITIVE	:= INPUTS / (DISTANCE * 2);
 		begin
 			genGroups : for g in 0 to GROUPS - 1 generate
-				constant INV					: UNSIGNED(0 downto 0)	:= to_unsigned(g, 1);
-				constant INVERSE			: STD_LOGIC							:= INV(0);
+				constant INVERSE			: STD_LOGIC	:= to_sl(g / (2 ** s) mod 2 = 1);
 			begin
 				genLoop : for l in 0 to DISTANCE - 1 generate
 					constant SRC0			: NATURAL		:= g * (DISTANCE * 2) + l;
@@ -100,11 +100,11 @@ begin
 					NewData0		<= mux(Switch, DataMatrix(STAGE_INDEX)(SRC0), DataMatrix(STAGE_INDEX)(SRC1));
 					NewData1		<= mux(Switch, DataMatrix(STAGE_INDEX)(SRC1), DataMatrix(STAGE_INDEX)(SRC0));
 	
-					genNoReg : if (STAGE_INDEX mod PIPELINE_STAGE_AFTER /= 0) generate
+					genNoReg : if ((PIPELINE_STAGE_AFTER = 0) or (STAGE_INDEX mod PIPELINE_STAGE_AFTER /= 0)) generate
 						DataMatrix(STAGE_INDEX + 1)(SRC0)		<= NewData0;
 						DataMatrix(STAGE_INDEX + 1)(SRC1)		<= NewData1;
 					end generate;
-					genReg : if (STAGE_INDEX mod PIPELINE_STAGE_AFTER = 0) generate
+					genReg : if ((PIPELINE_STAGE_AFTER /= 0) and (STAGE_INDEX mod PIPELINE_STAGE_AFTER = 0)) generate
 						DataMatrix(STAGE_INDEX + 1)(SRC0)		<= NewData0	when rising_edge(Clock);
 						DataMatrix(STAGE_INDEX + 1)(SRC1)		<= NewData1	when rising_edge(Clock);
 					end generate;
@@ -113,9 +113,9 @@ begin
 		end generate;
 	end generate;
 	genOutputs : for i in 0 to INPUTS - 1 generate
-		assign_row(DataOut_i, DataMatrix(STAGES)(i), i);
+		genLoop : for j in 0 to DATA_BITS - 1 generate
+			DataOut(i, j)		<= DataMatrix(STAGES)(i)(j);
+		end generate;
 	end generate;
-	
-	DataOut	<= DataOut_i;
 end architecture;
 	
