@@ -37,8 +37,8 @@ library PoC;
 use			PoC.utils.all;
 use			PoC.vectors.all;
 
--- library OSVVM;
--- use			OSVVM.RandomPkg.all;
+library OSVVM;
+use			OSVVM.RandomPkg.all;
 
 
 entity sortnet_OddEvenSort_tb is
@@ -118,9 +118,9 @@ begin
 	Clock	<= Clock xnor StopSimulation after CLOCK_PERIOD;
 
 	process
-		-- variable RandomVar : RandomPType;								-- protected type from RandomPkg
+		variable RandomVar : RandomPType;								-- protected type from RandomPkg
 	begin
-		-- RandomVar.InitSeed(RandomVar'instance_name);		-- Generate initial seeds
+		RandomVar.InitSeed(RandomVar'instance_name);		-- Generate initial seeds
 		
 		wait until rising_edge(Clock);
 		
@@ -128,8 +128,8 @@ begin
 			wait until rising_edge(Clock);
 		
 			for j in 0 to INPUTS - 1 loop
-				-- KeyInputVector(j)	<= to_slv(RandomVar.RandInt(0, 255), KEY_BITS);
-				KeyInputVector(j)	<= std_logic_vector(unsigned(KeyInputVector(j)) + i + j);
+				KeyInputVector(j)	<= to_slv(RandomVar.RandInt(0, 255), KEY_BITS);
+				-- KeyInputVector(j)	<= std_logic_vector(unsigned(KeyInputVector(j)) + i + j);
 			end loop;
 		end loop;
 		
