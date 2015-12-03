@@ -16,8 +16,10 @@ vSim.default.wdo
 arith/
 comm/
 common/
+fifo/
 io/
 mem/
 misc/
-#sata/
+# DON'T PUBLISH sata/ !
+sort/
 xil/

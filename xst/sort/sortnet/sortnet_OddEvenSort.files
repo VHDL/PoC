@@ -18,4 +18,4 @@ vhdl		poc		"src/common/components.vhdl"						# PoC components
 # PoC.sort
 
 # PoC.sort.sortnet
-vhdl		poc		"src/sort/sortnet/sortnet_OddEvenSort.vhdl"			# TOP (TOP-level entity)
+vhdl		poc		"src/sort/sortnet/sortnet_OddEvenSort.vhdl"		# TOP (TOP-level entity)

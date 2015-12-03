@@ -1,0 +1,10 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# 
+sortnet_BitonicSort.vhdl
+sortnet_OddEvenSort.vhdl
+#sortnet_OddEvenMergeSort.vhdl
