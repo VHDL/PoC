@@ -1,5 +1,4 @@
 # git files
-.gitignore
 .gitempty
 
 # Documentation
@@ -12,12 +11,14 @@ Series-7.xst
 Spartan-3.xst
 
 # PoC subnamespaces
-common/
 arith/
 bus/
-fifo/
 comm/
+common/
+fifo/
 io/
 mem/
 misc/
+# DON'T PUBLISH sata/ !
+sort/
 xil/
