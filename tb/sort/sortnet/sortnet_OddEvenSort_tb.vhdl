@@ -47,9 +47,9 @@ end entity;
 
 
 architecture tb of sortnet_OddEvenSort_tb is
-	constant INPUTS									: POSITIVE	:= 64;
-	constant KEY_BITS								: POSITIVE	:= 16;
-	constant DATA_BITS							: POSITIVE	:= 16;
+	constant INPUTS									: POSITIVE	:= 8;
+	constant KEY_BITS								: POSITIVE	:= 8;
+	constant DATA_BITS							: POSITIVE	:= 8;
 	constant PIPELINE_STAGE_AFTER		: NATURAL		:= 2;
 
 	constant LOOP_COUNT							: POSITIVE	:= 1024;
