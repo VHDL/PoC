@@ -3,6 +3,7 @@
 
 # subnamespace
 filter/
+gearbox/
 stat/
 sync/
 

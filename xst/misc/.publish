@@ -1,0 +1,10 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# sub namespaces
+gearbox/
+
+# 

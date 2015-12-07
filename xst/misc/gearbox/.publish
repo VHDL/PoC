@@ -1,0 +1,10 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# 
+#gearbox_down_cc.files
+gearbox_down_dc.files
+gearbox_up_dc.files
