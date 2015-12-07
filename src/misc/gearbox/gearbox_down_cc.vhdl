@@ -64,11 +64,6 @@ architecture rtl of gearbox_down_cc is
 	constant INPUT_CHUNKS			: POSITIVE		:= INPUT_BITS / BITS_PER_CHUNK;
 	constant OUTPUT_CHUNKS		: POSITIVE		:= OUTPUT_BITS / BITS_PER_CHUNK;
 	
-	function registered(signal Clock : STD_LOGIC; constant IsRegistered : BOOLEAN) return BOOLEAN is
-	begin
-		return ite(IsRegistered, rising_edge(Clock), TRUE);
-	end function;
-	
 	subtype T_CHUNK			is STD_LOGIC_VECTOR(BITS_PER_CHUNK - 1 downto 0);
 	type T_CHUNK_VECTOR	is array(NATURAL range <>) of T_CHUNK;
 	

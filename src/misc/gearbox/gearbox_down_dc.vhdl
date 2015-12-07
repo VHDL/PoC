@@ -10,10 +10,10 @@
 -- Description:
 -- ------------------------------------
 --	This module provides a downscaling gearbox with a dependent clock (dc)
---	interface. It perfoems a 'word' to 'byte' splitting. Input "I" is of clock
---	domain "Clock1"; output "O" is of clock domain "Clock2". Optional output
---	registers can be added by enabling (ADD_OUTPUT_REGISTERS = TRUE). In case of
---	up scaling, input "Align" is required to mark byte 0 in the word.
+--	interface. It perfoems a 'word' to 'byte' splitting. The default order is
+--	LITTLE_ENDIAN (starting at byte(0)). Input "In_Data" is of clock domain
+--	"Clock1"; output "Out_Data" is of clock domain "Clock2". Optional input and
+--	output registers can be added by enabling (ADD_***PUT_REGISTERS = TRUE).
 --
 -- Assertions:
 -- ===========
@@ -50,9 +50,10 @@ use			PoC.components.all;
 
 entity gearbox_down_dc is
   generic (
-		INPUT_BITS						: POSITIVE				:= 32;													-- input bit width
-		OUTPUT_BITS						: POSITIVE				:= 8;														-- output bit width
-		ADD_INPUT_REGISTER		: BOOLEAN					:= FALSE;												-- add input register @Clock1
+		INPUT_BITS						: POSITIVE				:= 32;													-- input bits ('words')
+		OUTPUT_BITS						: POSITIVE				:= 8;														-- output bits ('byte')
+		OUTPUT_ORDER					: T_BIT_ORDER			:= LSB_FIRST;										-- LSB_FIRST: start at byte(0), MSB_FIRST: start at byte(n-1)
+		ADD_INPUT_REGISTERS		: BOOLEAN					:= FALSE;												-- add input register @Clock1
 	  ADD_OUTPUT_REGISTERS	: BOOLEAN					:= FALSE												-- add output register @Clock2
 	);
   port (
@@ -65,8 +66,8 @@ end entity;
 
 
 architecture rtl OF gearbox_down_dc is
-	constant BITS_RATIO		: REAL			:= real(OUTPUT_BITS) / real(INPUT_BITS);
-	constant COUNTER_BITS : POSITIVE	:= log2ceil(integer(BITS_RATIO));
+	constant BIT_RATIO		: REAL			:= real(INPUT_BITS) / real(OUTPUT_BITS);
+	constant COUNTER_BITS : POSITIVE	:= log2ceil(integer(BIT_RATIO));
 
 	TYPE T_MUX_INPUT IS ARRAY (NATURAL RANGE <>) OF STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0);
 
@@ -74,7 +75,9 @@ architecture rtl OF gearbox_down_dc is
 	signal WordBoundary_d		: STD_LOGIC		:= '0';
 	signal Align						: STD_LOGIC;
 
-	signal In_Data_d				: STD_LOGIC_VECTOR(INPUT_BITS - 1 downto 0)		:= (others => '0');
+	signal Data_d						: STD_LOGIC_VECTOR(INPUT_BITS - 1 downto 0)		:= (others => '0');
+	signal DataIn						: STD_LOGIC_VECTOR(INPUT_BITS - 1 downto 0);
+	signal DataOut_d				: STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0)	:= (others => '0');
 	signal MuxInput					: T_MUX_INPUT(2**COUNTER_BITS - 1 downto 0);
 	signal MuxOutput				: STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0);
 	signal MuxCounter_us		: UNSIGNED(COUNTER_BITS - 1 downto 0)					:= (others => '0');
@@ -82,11 +85,14 @@ architecture rtl OF gearbox_down_dc is
 	
 begin
 	-- input register @Clock1
-	In_Data_d	<= In_Data when rising_edge(Clock1);
+	Data_d	<= In_Data when registered(Clock1, ADD_INPUT_REGISTERS);
+
+	-- switch byte order if neccessary
+	DataIn	<= ite((OUTPUT_ORDER = LSB_FIRST), Data_d, swap(Data_d, OUTPUT_BITS));
 	
 	-- selection multiplexer
 	genMuxInput : for j in 0 to (2 ** COUNTER_BITS) - 1 generate
-		MuxInput(j)	<= In_Data_d(((j + 1) * OUTPUT_BITS) - 1 downto (j * OUTPUT_BITS));
+		MuxInput(j)	<= DataIn(((j + 1) * OUTPUT_BITS) - 1 downto (j * OUTPUT_BITS));
 	end generate;
 	
 	-- multiplexer control @Clock2
@@ -100,10 +106,6 @@ begin
 	Align						<= WordBoundary xor WordBoundary_d;
 		
 	-- add output register @Clock2
-	genReg : if (ADD_OUTPUT_REGISTERS = TRUE) generate
-		Out_Data <= MuxOutput when rising_edge(Clock2);
-	end generate;
-	genNoReg : if (ADD_OUTPUT_REGISTERS = FALSE) generate
-		Out_Data <= MuxOutput;
-	end generate;
+	DataOut_d		<= MuxOutput when registered(Clock2, ADD_OUTPUT_REGISTERS);
+	Out_Data	<= DataOut_d;
 end architecture;

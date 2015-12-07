@@ -10,10 +10,11 @@
 -- Description:
 -- ------------------------------------
 --	This module provides a upscaling gearbox with a dependent clock (dc)
---	interface. It perfoems a 'byte' to 'word' collection. Input "I" is of clock
---	domain "Clock1"; output "O" is of clock domain "Clock2". Optional output
---	registers can be added by enabling (ADD_OUTPUT_REGISTERS = TRUE). In case of
---	up scaling, input "Align" is required to mark byte 0 in the word.
+--	interface. It perfoems a 'byte' to 'word' collection. The default order is
+--	LITTLE_ENDIAN (starting at byte(0)). Input "In_Data" is of clock domain
+--	"Clock1"; output "Out_Data" is of clock domain "Clock2". The "In_Align"
+--	is required to mark the starting byte in the word. An optional input
+--	register can be added by enabling (ADD_INPUT_REGISTERS = TRUE).
 --
 -- Assertions:
 -- ===========
@@ -51,14 +52,14 @@ use			PoC.components.all;
 entity gearbox_up_dc is
   generic (
 		INPUT_BITS						: POSITIVE				:= 8;														-- input bit width
+		INPUT_ORDER						: T_BIT_ORDER			:= LSB_FIRST;										-- LSB_FIRST: start at byte(0), MSB_FIRST: start at byte(n-1)
 		OUTPUT_BITS						: POSITIVE				:= 32;													-- output bit width
-		ADD_INPUT_REGISTER		: BOOLEAN					:= FALSE;												-- add input register @Clock1
-	  ADD_OUTPUT_REGISTERS	: BOOLEAN					:= FALSE												-- add output register @Clock2
+		ADD_INPUT_REGISTERS		: BOOLEAN					:= FALSE												-- add input register @Clock1
 	);
   port (
 	  Clock1								: in	STD_LOGIC;																	-- input clock domain
 		Clock2								: in	STD_LOGIC;																	-- output clock domain
-		Align									: in	STD_LOGIC;																	-- align word (one cycle high impulse)
+		In_Align							: in	STD_LOGIC;																	-- align word (one cycle high impulse)
 		In_Data								: in	STD_LOGIC_VECTOR(INPUT_BITS - 1 downto 0);	-- input word
 		Out_Data							: out STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0);	-- output word
 		Out_Valid							: out	STD_LOGIC																		-- output is valid
@@ -67,51 +68,85 @@ end entity;
 
 
 architecture rtl OF gearbox_up_dc is
-	constant BITS_RATIO		: REAL			:= real(INPUT_BITS) / real(OUTPUT_BITS);
-	constant COUNTER_BITS : POSITIVE	:= log2ceil(integer(BITS_RATIO));
+	constant BIT_RATIO				: REAL			:= real(OUTPUT_BITS) / real(INPUT_BITS);
+	
+	constant INPUT_CHUNKS			: POSITIVE	:= integer(BIT_RATIO);
+	constant BITS_PER_CHUNK		: POSITIVE	:= INPUT_BITS;
+	
+	constant COUNTER_MAX			: POSITIVE	:= INPUT_CHUNKS - 1;
+	constant COUNTER_BITS 		: POSITIVE	:= log2ceil(COUNTER_MAX + 1);
+	
+	subtype T_CHUNK			is STD_LOGIC_VECTOR(BITS_PER_CHUNK - 1 downto 0);
+	type T_CHUNK_VECTOR	is array(NATURAL range <>) of T_CHUNK;
 
-	signal Counter_us			: UNSIGNED(COUNTER_BITS - 1 downto 0)						:= (others => '0');
-	signal Select_us			: UNSIGNED(COUNTER_BITS - 1 downto 0);
-	signal In_Data_d			:	STD_LOGIC_VECTOR(OUTPUT_BITS - INPUT_BITS - 1 downto 0);
-	signal Collected			: STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0);
-	signal Collected_d		: STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0);
+	-- convert chunk-vector to flatten vector
+	function to_slv(slvv : T_CHUNK_VECTOR) return STD_LOGIC_VECTOR is
+		variable slv			: STD_LOGIC_VECTOR((slvv'length * BITS_PER_CHUNK) - 1 downto 0);
+	begin
+		for i in slvv'range loop
+			slv(((i + 1) * BITS_PER_CHUNK) - 1 downto i * BITS_PER_CHUNK)		:= slvv(i);
+		end loop;
+		return slv;
+	end function;
+	
+	signal Counter_us					: UNSIGNED(COUNTER_BITS - 1 downto 0)					:= (others => '0');
+	signal Select_us					: UNSIGNED(COUNTER_BITS - 1 downto 0);
+
+	signal In_Data_d					: STD_LOGIC_VECTOR(INPUT_BITS - 1 downto 0)		:= (others => '0');
+	signal Data_d							: T_CHUNK_VECTOR(INPUT_CHUNKS - 2 downto 0)		:= (others => (others => '0'));
+	signal Collected					: STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0);
+	signal Collected_swapped	: STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0);
+	signal Collected_en				: STD_LOGIC;
+	signal Collected_d				: STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0)	:= (others => '0');
+	signal DataOut_d					: STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0)	:= (others => '0');
+	
+	signal Valid_r						: STD_LOGIC																		:= '0';
+	signal Valid_d						: STD_LOGIC																		:= '0';
 begin
+	-- input register @Clock1
+	In_Data_d	<= In_Data when registered(Clock1, ADD_INPUT_REGISTERS);
+
 	-- byte alignment counter @Clock1
-	Counter_us	<= upcounter_next(cnt => Counter_us, rst => Align, INIT => 1) when rising_edge(Clock1);
-	Select_us		<= mux(Align, Counter_us, (Counter_us'range => '0'));
+	process(Clock1)
+	begin
+		if rising_edge(Clock1) then
+			if (In_Align = '1') then
+				Counter_us		<= to_unsigned(1, Counter_us'length);
+				Valid_r				<= '0';
+			elsif (upcounter_equal(cnt => Counter_us, value => COUNTER_MAX) = '1') then
+				Counter_us		<= to_unsigned(0, Counter_us'length);
+				Valid_r				<= '1';
+			else
+				Counter_us		<= Counter_us + 1;
+			end if;
+		end if;
+	end process;
+	
+	Select_us		<= mux(In_Align, Counter_us, (Counter_us'range => '0'));
 
 	-- delay registers @Clock1
 	process(Clock1)
 	begin
 		if rising_edge(Clock1) then
-			for j in 2**COUNTER_BITS - 2 downto 0 loop
-				if j = to_integer(Select_us) then					-- d-FF enable
-					for k in INPUT_BITS - 1 downto 0 loop
-						In_Data_d((j * INPUT_BITS) + k) <= In_Data(k);
-					end loop;
+			for j in 0 to INPUT_CHUNKS - 2 loop
+				if (j = to_index(Select_us, COUNTER_MAX)) then					-- D-FF enable
+					Data_d(j)		<= In_Data_d;
 				end if;
 			end loop;
 		end if;
 	end process;
 	
-	-- collect signals
-	Collected <= In_Data & In_Data_d;
+	-- compose output word
+	Collected					<= In_Data_d & to_slv(Data_d);
+	Collected_swapped	<= ite((INPUT_ORDER = LSB_FIRST), Collected, swap(Collected, INPUT_BITS));
 	
 	-- register collected signals again @Clock1
-	process(Clock1)
-	begin
-		if rising_edge(Clock1) then
-			if (to_integer(Select_us) = (2**COUNTER_BITS - 1)) then
-				Collected_d <= Collected;
-			end if;
-		end if;
-	end process;
+	Collected_en	<= upcounter_equal(cnt => Select_us, value => COUNTER_MAX);
+	Collected_d		<= ffdre(q => Collected_d, d => Collected_swapped, en => Collected_en) when rising_edge(Clock1);
 	
 	-- add output register @Clock2
-	genReg : if (ADD_OUTPUT_REGISTERS = TRUE) generate
-		Out_Data <= Collected_d when rising_edge(Clock2);
-	end generate;
-	genNoReg : if (ADD_OUTPUT_REGISTERS = FALSE) generate
-		Out_Data <= Collected_d;
-	end generate;
+	DataOut_d	<= Collected_d	when rising_edge(Clock2);
+	Out_Data	<= DataOut_d;
+	Valid_d		<= Valid_r			when rising_edge(Clock2);
+	Out_Valid	<= Valid_d;
 end architecture;
