@@ -8,7 +8,7 @@ README.md
 sortnet/
 
 # 
-#sort_ExpireList.vhdl
-#sort_InsertSort.vhdl
-#sort_LeastFrequentlyUsed.vhdl
-#sort_LeastRecentlyUsed.vhdl
+#sort_ExpireList.files
+#sort_InsertSort.files
+#sort_LeastFrequentlyUsed.files
+#sort_LeastRecentlyUsed.files

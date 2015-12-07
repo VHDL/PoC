@@ -5,6 +5,6 @@
 README.md
 
 # 
-sortnet_BitonicSort.vhdl
-sortnet_OddEvenSort.vhdl
-#sortnet_OddEvenMergeSort.vhdl
+sortnet_BitonicSort.files
+sortnet_OddEvenSort.files
+#sortnet_OddEvenMergeSort.files

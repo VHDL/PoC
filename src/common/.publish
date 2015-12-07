@@ -3,8 +3,10 @@
 README.md
 
 # Basics
+common.vhdl
 debug.vhdl
 fileio.vhdl
+math.vhdl
 physical.vhdl
 strings.vhdl
 utils.vhdl
