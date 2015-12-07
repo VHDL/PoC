@@ -6,12 +6,18 @@
 README.md
 
 # PoC subnamespaces
-common/
+#alt/
 arith/
 bus/
-fifo/
+#cache/
 comm/
+common/
+fifo/
 io/
 mem/
 misc/
+#net/
+# DON'T PUBLISH sata/ !
+sort/
+#trace/
 xil/

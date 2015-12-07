@@ -104,8 +104,13 @@ package vectors is
 
 	-- Matrix to matrix conversion: slm_slice*
 	function slm_slice(slm : T_SLM; RowIndex : NATURAL; ColIndex : NATURAL; Height : NATURAL; Width : NATURAL) return T_SLM;						-- get submatrix in boundingbox RowIndex,ColIndex,Height,Width
+	function slm_slice_rows(slm : T_SLM; High : NATURAL; Low : NATURAL) return T_SLM;																										-- get submatrix / all rows in RowIndex range high:low
 	function slm_slice_cols(slm : T_SLM; High : NATURAL; Low : NATURAL) return T_SLM;																										-- get submatrix / all columns in ColIndex range high:low
 
+	-- Matrix concatenation: slm_merge_*
+	function slm_merge_rows(slm1 : T_SLM; slm2 : T_SLM) return T_SLM;
+	function slm_merge_cols(slm1 : T_SLM; slm2 : T_SLM) return T_SLM;
+	
 	-- Matrix to vector conversion: get_*
 	function get_col(slm : T_SLM; ColIndex : NATURAL) return STD_LOGIC_VECTOR;																	-- get a matrix column
 	function get_row(slm : T_SLM; RowIndex : NATURAL)	return STD_LOGIC_VECTOR;																	-- get a matrix row
@@ -245,17 +250,64 @@ package body vectors is
 		return Result;
 	end function;
 
-	function slm_slice_cols(slm : T_SLM; High : NATURAL; Low : NATURAL) return T_SLM is
-		variable Result		: T_SLM(slm'range(1), High - Low downto 0)		:= (others => (others => '0'));
+	function slm_slice_rows(slm : T_SLM; High : NATURAL; Low : NATURAL) return T_SLM is
+		variable Result		: T_SLM(High - Low downto 0, slm'length(2) - 1 downto 0)		:= (others => (others => '0'));
 	begin
-		for i in slm'range(1) loop
+		for i in 0 to High - Low loop
+			for j in 0 to slm'length(2) - 1 loop
+				Result(i, j)		:= slm(Low + i, slm'low(2) + j);
+			end loop;
+		end loop;
+		return Result;
+	end function;
+	
+	function slm_slice_cols(slm : T_SLM; High : NATURAL; Low : NATURAL) return T_SLM is
+		variable Result		: T_SLM(slm'length(1) - 1 downto 0, High - Low downto 0)		:= (others => (others => '0'));
+	begin
+		for i in 0 to slm'length(1) - 1 loop
 			for j in 0 to High - Low loop
-				Result(i, j)		:= slm(i, low + j);
+				Result(i, j)		:= slm(slm'low(1) + i, Low + j);
 			end loop;
 		end loop;
 		return Result;
 	end function;
 
+	-- Matrix concatenation: slm_merge_*
+	function slm_merge_rows(slm1 : T_SLM; slm2 : T_SLM) return T_SLM is
+		constant ROWS			: POSITIVE		:= slm1'length(1) + slm2'length(1);
+		constant COLUMNS	: POSITIVE		:= slm1'length(2);
+		variable slm			: T_SLM(ROWS - 1 downto 0, COLUMNS - 1 downto 0);
+	begin
+		for i in slm1'range(1) loop
+			for j in slm1'low(2) to slm1'high(2) loop
+				slm(i, j)		:= slm1(i, j);
+			end loop;
+		end loop;
+		for i in slm2'range(1) loop
+			for j in slm2'low(2) to slm2'high(2) loop
+				slm(slm1'length(1) + i, j)		:= slm2(i, j);
+			end loop;
+		end loop;
+		return slm;
+	end function;
+	
+	function slm_merge_cols(slm1 : T_SLM; slm2 : T_SLM) return T_SLM is
+		constant ROWS			: POSITIVE		:= slm1'length(1);
+		constant COLUMNS	: POSITIVE		:= slm1'length(2) + slm2'length(2);
+		variable slm			: T_SLM(ROWS - 1 downto 0, COLUMNS - 1 downto 0);
+	begin
+		for i in slm1'range(1) loop
+			for j in slm1'low(2) to slm1'high(2) loop
+				slm(i, j)		:= slm1(i, j);
+			end loop;
+			for j in slm2'low(2) to slm2'high(2) loop
+				slm(i, slm1'length(2) + j)		:= slm2(i, j);
+			end loop;
+		end loop;
+		return slm;
+	end function;
+	
+	
 	-- Matrix to vector conversion: get_*
 	-- ==========================================================================
 	-- get a matrix column

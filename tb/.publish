@@ -1,5 +1,4 @@
 # git files
-.gitignore
 .gitempty
 
 # wrapper scripts
@@ -11,12 +10,14 @@ configuration.ini
 
 # PoC subnamespaces
 arith/
+bus/
 comm/
 common/
-io/
 fifo/
+io/
 mem/
 misc/
-#sata/
+# DON'T PUBLISH sata/ !
+sort/
 xil/
 # DON'T PUBLISH xilinx/ !

@@ -1,0 +1,22 @@
+## =============================================================================================================================================================
+## General Purpose I/O
+## =============================================================================================================================================================
+##
+## PMOD - Port 1
+## -----------------------------------------------------------------------------
+##	Bank:						??
+##		VCCO:					3.3 (VCC3V3)
+##	Location:				JB
+## -----------------------------------------------------------------------------
+NET "Atlys_PMOD_Port1<0>"						LOC = "T3";			## {INOUT}	JA.1;		Bank ??;		VCCO=VCC3V3
+NET "Atlys_PMOD_Port1<1>"						LOC = "R3";			## {INOUT}	JA.2;		Bank ??;		VCCO=VCC3V3
+NET "Atlys_PMOD_Port1<2>"						LOC = "P6";			## {INOUT}	JA.3;		Bank ??;		VCCO=VCC3V3
+NET "Atlys_PMOD_Port1<3>"						LOC = "N5";			## {INOUT}	JA.4;		Bank ??;		VCCO=VCC3V3
+NET "Atlys_PMOD_Port1<4>"						LOC = "V9";			## {INOUT}	JA.7;		Bank ??;		VCCO=VCC3V3
+NET "Atlys_PMOD_Port1<5>"						LOC = "T9";			## {INOUT}	JA.8;		Bank ??;		VCCO=VCC3V3
+NET "Atlys_PMOD_Port1<6>"						LOC = "V4";			## {INOUT}	JA.9;		Bank ??;		VCCO=VCC3V3
+NET "Atlys_PMOD_Port1<7>"						LOC = "T4";			## {INOUT}	JA.10;	Bank ??;		VCCO=VCC3V3
+NET "Atlys_PMOD_Port1<?>"						IOSTANDARD = LVCMOS33;
+
+## Ignore timings on async I/O pins
+NET "Atlys_PMOD_Port1<?>"						TIG;
