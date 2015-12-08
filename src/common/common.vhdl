@@ -34,6 +34,7 @@ context Common is
 	use PoC.config.all;
 	use PoC.debug.all;
 	use PoC.fileio.all;
+	use PoC.math.all;
 	use PoC.physical.all;
 	use PoC.strings.all;
 	use PoC.utils.all;

@@ -4,9 +4,5 @@
 # Documentation
 README.md
 
-# subnamespace
-stream/
-wb/
-
 # --------------------------------------
-bus_Arbiter.vhdl
+
