@@ -1,5 +1,4 @@
 # git files
-.gitignore
 .gitempty
 
 # Documentation
@@ -16,7 +15,7 @@ fifo/
 io/
 mem/
 misc/
-#net/
+net/
 # DON'T PUBLISH sata/ !
 sort/
 #trace/

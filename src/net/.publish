@@ -4,9 +4,17 @@
 # Documentation
 README.md
 
-# subnamespace
-stream/
-wb/
+# PoC subnamespaces
+arp/
+eth/
+icmpv4/
+icmpv6/
+ipv4/
+ipv6/
+mac/
+ndp/
+stack/
+udp/
 
 # --------------------------------------
-bus_Arbiter.vhdl
+
