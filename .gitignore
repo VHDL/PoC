@@ -34,6 +34,12 @@ __pycache__
 !/other/quartus/**/*.qsf
 !/other/quartus/**/*.vhdl
 
+#ignore Vivado files
+/other/vivado/*/*.cache
+/other/vivado/*/*.hw
+/other/vivado/*/*.runs
+/other/vivado/*/*.sim
+
 # general whitelist
 !.publish
 !.git*
