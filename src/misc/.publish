@@ -6,6 +6,7 @@ README.md
 
 # sub namespaces
 filter/
+gearbox/
 stat/
 sync/
 

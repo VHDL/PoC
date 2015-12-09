@@ -1,0 +1,20 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# PoC subnamespaces
+arp/
+eth/
+icmpv4/
+icmpv6/
+ipv4/
+ipv6/
+mac/
+ndp/
+stack/
+udp/
+
+# --------------------------------------
+
