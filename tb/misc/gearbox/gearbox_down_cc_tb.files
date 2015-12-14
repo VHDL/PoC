@@ -33,10 +33,10 @@ vhdl		poc		"src/common/components.vhdl"						# PoC components
 vhdl-93	poc		"tb/common/simulation.v93.vhdl"					# PoC simulation helper
 vhdl-08	poc		"tb/common/simulation.v08.vhdl"					# PoC simulation helper
 
-# PoC.sort
+# PoC.misc
 
-# PoC.sort.sortnet
-vhdl		poc		"src/sort/sortnet/sortnet_BitonicSort.vhdl"			# UUT (Unit Under Test)
+# PoC.misc.gearbox
+vhdl		poc		"src/misc/gearbox/gearbox_down_cc.vhdl"			# UUT (Unit Under Test)
 
 # Testbench file(s)
-vhdl		test	"tb/sort/sortnet/sortnet_BitonicSort_tb.vhdl"		# Testbench
+vhdl		test	"tb/misc/gearbox/gearbox_down_cc_tb.vhdl"		# Testbench

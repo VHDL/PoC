@@ -1,0 +1,79 @@
+[*]
+[*] GTKWave Analyzer v3.3.66 (w)1999-2015 BSI
+[*] Tue Dec 08 21:35:36 2015
+[*]
+[dumpfile] "D:\git\PoC\temp\ghdl\sort_LeastRecentlyUsed_tb.vcd"
+[dumpfile_mtime] "Tue Dec 08 21:35:23 2015"
+[dumpfile_size] 20041
+[savefile] "D:\git\PoC\sim\sort\sort_LeastRecentlyUsed_tb.gtkw"
+[timestart] 0
+[size] 1920 996
+[pos] -1 -1
+*-26.562975 6900000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] sort.
+[treeopen] sort.down.B1.
+[treeopen] sort.down.B1.B1.
+[treeopen] sort.down.B1.B1.B1.
+[sst_width] 197
+[signals_width] 200
+[sst_expanded] 1
+[sst_vpaned_height] 292
+@28
+stopsimulation
+clock
+@200
+-Inputs
+@28
+insert
+invalidate
+@25
+keyin[2:0]
+@200
+-Outputs
+@28
+valid
+@24
+lru_element[2:0]
+@200
+-Internal
+@24
+sort.(7).element_d[2:0]
+sort.(6).element_d[2:0]
+sort.(5).element_d[2:0]
+sort.(4).element_d[2:0]
+sort.(3).element_d[2:0]
+sort.(2).element_d[2:0]
+sort.(1).element_d[2:0]
+sort.(0).element_d[2:0]
+@800022
+sort.unequal[8:0]
+@28
+(0)sort.unequal[8:0]
+(1)sort.unequal[8:0]
+(2)sort.unequal[8:0]
+(3)sort.unequal[8:0]
+(4)sort.unequal[8:0]
+(5)sort.unequal[8:0]
+(6)sort.unequal[8:0]
+(7)sort.unequal[8:0]
+(8)sort.unequal[8:0]
+@1001200
+-group_end
+@800022
+sort.movesdown[8:0]
+@28
+(0)sort.movesdown[8:0]
+(1)sort.movesdown[8:0]
+(2)sort.movesdown[8:0]
+(3)sort.movesdown[8:0]
+(4)sort.movesdown[8:0]
+(5)sort.movesdown[8:0]
+(6)sort.movesdown[8:0]
+(7)sort.movesdown[8:0]
+(8)sort.movesdown[8:0]
+@1001200
+-group_end
+@22
+sort.movesup[8:0]
+[pattern_trace] 1
+[pattern_trace] 0

@@ -1,0 +1,57 @@
+[*]
+[*] GTKWave Analyzer v3.3.66 (w)1999-2015 BSI
+[*] Fri Dec 11 16:11:22 2015
+[*]
+[dumpfile] "D:\git\PoC\temp\ghdl\gearbox_down_cc_tb.vcd"
+[dumpfile_mtime] "Fri Dec 11 16:09:47 2015"
+[dumpfile_size] 6537
+[savefile] "D:\git\PoC\sim\misc\gearbox\gearbox_down_cc_tb.gtkw"
+[timestart] 0
+[size] 1920 996
+[pos] -84 -9
+*-24.801884 34000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] gear.
+[treeopen] gear.(0).
+[treeopen] gear.(1).
+[sst_width] 197
+[signals_width] 209
+[sst_expanded] 1
+[sst_vpaned_height] 292
+@28
+stopsimulation
+clock
+@200
+-Inputs
+@28
+busy
+@22
+datain[19:0]
+@28
+validin
+@200
+-Outputs
+@800022
+dataout[7:0]
+@28
+(0)dataout[7:0]
+(1)dataout[7:0]
+(2)dataout[7:0]
+(3)dataout[7:0]
+(4)dataout[7:0]
+(5)dataout[7:0]
+(6)dataout[7:0]
+(7)dataout[7:0]
+@1001200
+-group_end
+@28
+validout
+@200
+-Internal
+@28
+gear.muxselect_en
+@25
+gear.muxselect_us[2:0]
+@28
+gear.muxselect_ov
+[pattern_trace] 1
+[pattern_trace] 0
