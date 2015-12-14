@@ -13,13 +13,13 @@ library OSVVM;
 use			OSVVM.RandomPkg.all;
 
 
-entity gearbox_down_cc_tb is
+entity gearbox_up_cc_tb is
 end entity;
 
 
-architecture tb of gearbox_down_cc_tb is
-	constant INPUT_BITS						: POSITIVE		:= 36;
-	constant OUTPUT_BITS					: POSITIVE		:= 8;
+architecture tb of gearbox_up_cc_tb is
+	constant INPUT_BITS						: POSITIVE		:= 8;
+	constant OUTPUT_BITS					: POSITIVE		:= 20;
 	constant OUTPUT_ORDER					: T_BIT_ORDER	:= MSB_FIRST;
 	constant ADD_INPUT_REGISTERS	: BOOLEAN			:= TRUE;
 	constant ADD_OUTPUT_REGISTERS	: BOOLEAN			:= FALSE;
@@ -73,7 +73,7 @@ begin
 		RandomVar.InitSeed(RandomVar'instance_name);		-- Generate initial seeds
 
 		SyncIn		<= '0';
-		DataIn		<= x"0A1B2CDEF";
+		DataIn		<= x"AB";	--0A1B2CDE";	--(others => 'U');
 		ValidIn		<= '0';
 		wait until falling_edge(Clock);
 		
@@ -122,7 +122,7 @@ begin
 		wait;
 	end process;
 	
-	gear : entity PoC.gearbox_down_cc
+	gear : entity PoC.gearbox_up_cc
 		generic map (
 			INPUT_BITS						=> INPUT_BITS,
 			OUTPUT_BITS						=> OUTPUT_BITS,

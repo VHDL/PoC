@@ -5,12 +5,12 @@
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
 -- 
--- Module:				 	A downscaling gearbox module with a common clock (cc) interface.
+-- Module:				 	A upscaling gearbox module with a commonc clock (cc) interface.
 --
 -- Description:
 -- ------------------------------------
 --	This module provides a downscaling gearbox with a common clock (cc)
---	interface. It perfoems a 'word' to 'byte' splitting. The default order is
+--	interface. It perfoems a 'byte' to 'word' collection. The default order is
 --	LITTLE_ENDIAN (starting at byte(0)). Input "In_Data" and output "Out_Data"
 --	are of the same clock domain "Clock". Optional input and output registers
 --	can be added by enabling (ADD_***PUT_REGISTERS = TRUE).
@@ -44,10 +44,10 @@ use			PoC.vectors.all;
 use			PoC.components.all;
 
 
-entity gearbox_down_cc is
+entity gearbox_up_cc is
 	generic (
-		INPUT_BITS						: POSITIVE	:= 32;
-		OUTPUT_BITS						: POSITIVE	:= 24;
+		INPUT_BITS						: POSITIVE	:= 24;
+		OUTPUT_BITS						: POSITIVE	:= 32;
 		ADD_INPUT_REGISTERS		: BOOLEAN		:= FALSE;
 		ADD_OUTPUT_REGISTERS	: BOOLEAN		:= FALSE
 	);
@@ -64,7 +64,7 @@ entity gearbox_down_cc is
 end entity;
 
 
-architecture rtl of gearbox_down_cc is
+architecture rtl of gearbox_up_cc is
 	constant BITS_PER_CHUNK		: POSITIVE		:= greatestCommonDivisor(INPUT_BITS, OUTPUT_BITS);
 	constant INPUT_CHUNKS			: POSITIVE		:= INPUT_BITS / BITS_PER_CHUNK;
 	constant OUTPUT_CHUNKS		: POSITIVE		:= OUTPUT_BITS / BITS_PER_CHUNK;
@@ -150,7 +150,7 @@ architecture rtl of gearbox_down_cc is
 	signal ValidOut						: STD_LOGIC																				:= '0';
 
 begin
-	assert (INPUT_BITS > OUTPUT_BITS) report "OUTPUT_BITS must be less than INPUT_BITS, otherwise it's no down-sizing gearbox." severity FAILURE;
+	assert (INPUT_BITS < OUTPUT_BITS) report "OUTPUT_BITS must be less than INPUT_BITS, otherwise it's no down-sizing gearbox." severity FAILURE;
 
 	DataIn	<= In_Data	when registered(Clock, ADD_INPUT_REGISTERS);
 	ValidIn	<= In_Valid	when registered(Clock, ADD_INPUT_REGISTERS);
