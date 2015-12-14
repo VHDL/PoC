@@ -29,7 +29,7 @@ KC705/
 VC707/
 
 # Zynq-7000 boards
-#ZedBoard/
+ZedBoard/
 ZC706/
 
 # Stratix IV
