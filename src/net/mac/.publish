@@ -4,5 +4,12 @@
 # Documentation
 README.md
 
-# --------------------------------------
-
+# Entities
+mac_TX_DestMAC_Prepender.vhdl
+mac_TX_SrcMAC_Prepender.vhdl
+mac_Type_Prepender.vhdl
+mac_RX_DestMAC_Switch.vhdl
+mac_RX_SrcMAC_Filter.vhdl
+mac_RX_Type_Switch.vhdl
+mac_FrameLoopback.vhdl
+mac_Wrapper.vhdl

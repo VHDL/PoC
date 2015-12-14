@@ -1,22 +1,21 @@
 # git files
-.gitignore
 .gitempty
 
 # Documentation
 README.md
 
-# package
+# Package
 uart.pkg.vhdl
 
-# bit clock generation
+# Bit clock generation
 uart_bclk.vhdl
 
-# transmitter and receiver
+# Transmitter and receiver
 uart_tx.vhdl
 uart_rx.vhdl
 
-# wrappers
+# Wrappers
 uart_fifo.vhdl
 
-# adapters
+# Adapters
 uart_ft245.vhdl

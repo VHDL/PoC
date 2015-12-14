@@ -3,7 +3,7 @@
 The namespace `PoC.cache` offers different cache implementations.
 
 
-## Package(s)
+## Package
 
 The package [`cache`][cache.pkg] holds all component declarations for this namespace.
 
@@ -11,6 +11,7 @@ The package [`cache`][cache.pkg] holds all component declarations for this names
 library PoC;
 use     PoC.cache.all;
 ```
+
 
 ## Entities
 

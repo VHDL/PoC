@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -29,67 +29,64 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
 
-ENTITY FrameLoopback IS
-	GENERIC (
+entity FrameLoopback is
+	generic (
 		DATA_BW										: POSITIVE				:= 8;
 		META_BW										: NATURAL					:= 0
 	);
-	PORT (
-		Clock											: IN	STD_LOGIC;
-		Reset											: IN	STD_LOGIC;
+	port (
+		Clock											: in	STD_LOGIC;
+		Reset											: in	STD_LOGIC;
 		
-		In_Valid									: IN	STD_LOGIC;
-		In_Data										: IN	STD_LOGIC_VECTOR(DATA_BW - 1 DOWNTO 0);
-		In_Meta										: IN	STD_LOGIC_VECTOR(META_BW - 1 DOWNTO 0);
-		In_SOF										: IN	STD_LOGIC;
-		In_EOF										: IN	STD_LOGIC;
-		In_Ack										: OUT	STD_LOGIC;
+		In_Valid									: in	STD_LOGIC;
+		In_Data										: in	STD_LOGIC_VECTOR(DATA_BW - 1 downto 0);
+		In_Meta										: in	STD_LOGIC_VECTOR(META_BW - 1 downto 0);
+		In_SOF										: in	STD_LOGIC;
+		In_EOF										: in	STD_LOGIC;
+		In_Ack										: out	STD_LOGIC;
 		
 
-		Out_Valid									: OUT	STD_LOGIC;
-		Out_Data									: OUT	STD_LOGIC_VECTOR(DATA_BW - 1 DOWNTO 0);
-		Out_Meta									: OUT	STD_LOGIC_VECTOR(META_BW - 1 DOWNTO 0);
-		Out_SOF										: OUT	STD_LOGIC;
-		Out_EOF										: OUT	STD_LOGIC;
-		Out_Ack										: IN	STD_LOGIC
+		Out_Valid									: out	STD_LOGIC;
+		Out_Data									: out	STD_LOGIC_VECTOR(DATA_BW - 1 downto 0);
+		Out_Meta									: out	STD_LOGIC_VECTOR(META_BW - 1 downto 0);
+		Out_SOF										: out	STD_LOGIC;
+		Out_EOF										: out	STD_LOGIC;
+		Out_Ack										: in	STD_LOGIC
 	);
-END;
+end entity;
 
-ARCHITECTURE rtl OF FrameLoopback IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
+
+architecture rtl of FrameLoopback is
+	constant META_STREAMID_SRC							: NATURAL																						:= 0;
+	constant META_STREAMID_DEST							: NATURAL																						:= 1;
+	constant META_STREAMID_type							: NATURAL																						:= 2;
+	constant META_STREAMS										: POSITIVE																					:= 3;		-- Source, Destination, Type
+
+	signal Meta_rst													: STD_LOGIC;
+	signal Meta_nxt													: STD_LOGIC_VECTOR(META_STREAMS - 1 downto 0);
+
+	signal Pipe_DataOut											: T_SLV_8;
+	signal Pipe_MetaIn											: T_SLM(META_STREAMS - 1 downto 0, 31 downto 0)			:= (others => (others => 'Z'));
+	signal Pipe_MetaOut											: T_SLM(META_STREAMS - 1 downto 0, 31 downto 0);
+	signal Pipe_Meta_rst										: STD_LOGIC;
+	signal Pipe_Meta_nxt										: STD_LOGIC_VECTOR(META_STREAMS - 1 downto 0);
 	
-	CONSTANT META_STREAMID_SRC							: NATURAL																						:= 0;
-	CONSTANT META_STREAMID_DEST							: NATURAL																						:= 1;
-	CONSTANT META_STREAMID_TYPE							: NATURAL																						:= 2;
-	CONSTANT META_STREAMS										: POSITIVE																					:= 3;		-- Source, Destination, Type
-
-	SIGNAL Meta_rst													: STD_LOGIC;
-	SIGNAL Meta_nxt													: STD_LOGIC_VECTOR(META_STREAMS - 1 DOWNTO 0);
-
-	SIGNAL Pipe_DataOut											: T_SLV_8;
-	SIGNAL Pipe_MetaIn											: T_SLM(META_STREAMS - 1 DOWNTO 0, 31 DOWNTO 0)			:= (OTHERS => (OTHERS => 'Z'));
-	SIGNAL Pipe_MetaOut											: T_SLM(META_STREAMS - 1 DOWNTO 0, 31 DOWNTO 0);
-	SIGNAL Pipe_Meta_rst										: STD_LOGIC;
-	SIGNAL Pipe_Meta_nxt										: STD_LOGIC_VECTOR(META_STREAMS - 1 DOWNTO 0);
-	
-	SIGNAL Pipe_Meta_SrcMACAddress_Data			: STD_LOGIC_VECTOR(TX_Funnel_SrcIPv6Address_Data'range);
-	SIGNAL Pipe_Meta_DestMACAddress_Data		: STD_LOGIC_VECTOR(TX_Funnel_DestIPv6Address_Data'range);
-	SIGNAL Pipe_Meta_EthType								: STD_LOGIC_VECTOR(TX_Funnel_Payload_Type'range);
+	signal Pipe_Meta_SrcMACAddress_Data			: STD_LOGIC_VECTOR(TX_Funnel_SrcIPv6Address_Data'range);
+	signal Pipe_Meta_DestMACAddress_Data		: STD_LOGIC_VECTOR(TX_Funnel_DestIPv6Address_Data'range);
+	signal Pipe_Meta_EthType								: STD_LOGIC_VECTOR(TX_Funnel_Payload_Type'range);
 
 	
-BEGIN
+begin
 	assign_row(Pipe_MetaIn, TX_Meta_SrcIPv6Address_Data(I),		META_STREAMID_SRC,	0, '0');
 	assign_row(Pipe_MetaIn, TX_Meta_DestIPv6Address_Data(I),	META_STREAMID_DEST, 0, '0');
 	assign_row(Pipe_MetaIn, TX_Meta_Length(I),								META_STREAMID_LEN);
@@ -98,15 +95,15 @@ BEGIN
 	TX_Meta_SrcIPv6Address_nxt(I)		<= Meta_nxt(META_STREAMID_SRC);
 	TX_Meta_DestIPv6Address_nxt(I)	<= Meta_nxt(META_STREAMID_DEST);
 
-	Pipe : ENTITY L_Global.LocalLink_PipelineStage
-		GENERIC MAP (
+	Pipe : entity PoC.stream_Buffer
+		generic map (
 			FRAMES												=> 2,
 			DATA_BITS											=> 8,
 			DATA_FIFO_DEPTH								=> 16,
 			META_BITS											=> (META_STREAMID_SRC => 8,		META_STREAMID_DEST => 8,	META_STREAMID_LEN => 16),
 			META_FIFO_DEPTH								=> (META_STREAMID_SRC => 16,	META_STREAMID_DEST => 16,	META_STREAMID_LEN => 1)
 		)
-		PORT MAP (
+		port map (
 			Clock													=> Clock,
 			Reset													=> Reset,
 			
@@ -143,9 +140,10 @@ BEGIN
 	Funnel_MetaIn(Pipe_Meta_SrcIPv6Address_Data'range)		<= Pipe_Meta_SrcIPv6Address_Data;
 	Funnel_MetaIn(Pipe_Meta_DestIPv6Address_Data'range)		<= Pipe_Meta_DestIPv6Address_Data;
 	Funnel_MetaIn(Pipe_Meta_Length'range)									<= Pipe_Meta_Length;
-	Funnel_MetaIn(Pipe_Meta_Payload_Type'range)						<= PACKET_TYPES(I);
+	Funnel_MetaIn(Pipe_Meta_Payload_Type'range)						<= PACKET_typeS(I);
 	
 	-- assign vectors to matrix
 	assign_row(Funnel_In_Data, Pipe_DataOut, I);
 	assign_row(Funnel_In_Meta, Funnel_MetaIn, I);
-END ARCHITECTURE;
+	
+end architecture;

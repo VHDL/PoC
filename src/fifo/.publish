@@ -1,7 +1,10 @@
+# git files
+.gitignore
 
 # Documentation
 README.md
 
+# Package
 fifo.pkg.vhdl
 
 # Basic FIFOs

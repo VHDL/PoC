@@ -1,5 +1,5 @@
 # git files
-.gitignore
+.gitempty
 
 # Documentation
 README.md
@@ -10,4 +10,3 @@ sdram_ctrl_fsm.vhdl
 sdram_ctrl_phy_de0.vhdl
 sdram_ctrl_phy_s3esk.vhdl
 sdram_ctrl_s3esk.vhdl
-
