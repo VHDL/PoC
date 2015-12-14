@@ -1,3 +1,3 @@
-# Namespace `PoC.io.vga`
+# Namespace `PoC.io.ps2`
 
 *No files published, yet.*
