@@ -1,12 +1,12 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
+-- Authors:				 	Patrick Lehmann
+--
 -- Module:				 	TODO
 --
--- Authors:				 	Patrick Lehmann
--- 
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -15,13 +15,13 @@
 -- ============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,54 +29,54 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
 
 
-ENTITY UDP_TX IS
-	GENERIC (
-		DEBUG												: BOOLEAN									:= FALSE;
-		IP_VERSION									: POSITIVE								:= 6
+entity udp_TX IS
+	generic (
+		DEBUG												: BOOLEAN						:= FALSE;
+		IP_VERSION									: POSITIVE					:= 6
 	);
-	PORT (
-		Clock												: IN	STD_LOGIC;									-- 
-		Reset												: IN	STD_LOGIC;									-- 
+	port (
+		Clock												: in	STD_LOGIC;									--
+		Reset												: in	STD_LOGIC;									--
 		-- IN port
-		In_Valid										: IN	STD_LOGIC;
-		In_Data											: IN	T_SLV_8;
-		In_SOF											: IN	STD_LOGIC;
-		In_EOF											: IN	STD_LOGIC;
-		In_Ack											: OUT	STD_LOGIC;
-		In_Meta_rst									: OUT	STD_LOGIC;
-		In_Meta_SrcIPAddress_nxt		: OUT	STD_LOGIC;
-		In_Meta_SrcIPAddress_Data		: IN	T_SLV_8;
-		In_Meta_DestIPAddress_nxt		: OUT	STD_LOGIC;
-		In_Meta_DestIPAddress_Data	: IN	T_SLV_8;
-		In_Meta_SrcPort							: IN	T_SLV_16;
-		In_Meta_DestPort						: IN	T_SLV_16;
-		In_Meta_Length							: IN	T_SLV_16;
-		In_Meta_Checksum						: IN	T_SLV_16;
+		In_Valid										: in	STD_LOGIC;
+		In_Data											: in	T_SLV_8;
+		In_SOF											: in	STD_LOGIC;
+		In_EOF											: in	STD_LOGIC;
+		In_Ack											: out	STD_LOGIC;
+		In_Meta_rst									: out	STD_LOGIC;
+		In_Meta_SrcIPAddress_nxt		: out	STD_LOGIC;
+		In_Meta_SrcIPAddress_Data		: in	T_SLV_8;
+		In_Meta_DestIPAddress_nxt		: out	STD_LOGIC;
+		In_Meta_DestIPAddress_Data	: in	T_SLV_8;
+		In_Meta_SrcPort							: in	T_SLV_16;
+		In_Meta_DestPort						: in	T_SLV_16;
+		In_Meta_Length							: in	T_SLV_16;
+		In_Meta_Checksum						: in	T_SLV_16;
 		-- OUT port
-		Out_Valid										: OUT	STD_LOGIC;
-		Out_Data										: OUT	T_SLV_8;
-		Out_SOF											: OUT	STD_LOGIC;
-		Out_EOF											: OUT	STD_LOGIC;
-		Out_Ack											: IN	STD_LOGIC;
-		Out_Meta_rst								: IN	STD_LOGIC;
-		Out_Meta_SrcIPAddress_nxt		: IN	STD_LOGIC;
-		Out_Meta_SrcIPAddress_Data	: OUT	T_SLV_8;
-		Out_Meta_DestIPAddress_nxt	: IN	STD_LOGIC;
-		Out_Meta_DestIPAddress_Data	: OUT	T_SLV_8;
-		Out_Meta_Length							: OUT	T_SLV_16
+		Out_Valid										: out	STD_LOGIC;
+		Out_Data										: out	T_SLV_8;
+		Out_SOF											: out	STD_LOGIC;
+		Out_EOF											: out	STD_LOGIC;
+		Out_Ack											: in	STD_LOGIC;
+		Out_Meta_rst								: in	STD_LOGIC;
+		Out_Meta_SrcIPAddress_nxt		: in	STD_LOGIC;
+		Out_Meta_SrcIPAddress_Data	: out	T_SLV_8;
+		Out_Meta_DestIPAddress_nxt	: in	STD_LOGIC;
+		Out_Meta_DestIPAddress_Data	: out	T_SLV_8;
+		Out_Meta_Length							: out	T_SLV_16
 	);
-END;
+end entity;
 
 -- Endianess: big-endian
 -- Alignment: 1 byte
@@ -98,7 +98,7 @@ END;
 
 
 -- UDP pseudo header for IPv4
--- 
+--
 --								Byte 0													Byte 1														Byte 2													Byte 3
 --	+================================+================================+================================+================================+
 --	| SourceAddress 							 																																																			|
@@ -118,7 +118,7 @@ END;
 
 
 -- UDP pseudo header for IPv6
--- 
+--
 --								Byte 0													Byte 1														Byte 2													Byte 3
 --	+================================+================================+================================+================================+
 --	| SourceAddress 							 																																																			|
@@ -142,11 +142,10 @@ END;
 --	|																																																																		|
 --	+================================+================================+================================+================================+
 
-ARCHITECTURE rtl OF UDP_TX IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
-	
-	TYPE T_STATE		IS (
+architecture rtl of udp_TX is
+	attribute FSM_ENCODING						: STRING;
+
+	type T_STATE is (
 		ST_IDLE,
 			ST_CHECKSUMV4_IPV4_ADDRESSES,
 				ST_CHECKSUMV4_LENGTH_UDP_TYPE_0,	ST_CHECKSUMV4_LENGTH_UDP_TYPE_1,
@@ -166,56 +165,56 @@ ARCHITECTURE rtl OF UDP_TX IS
 		ST_ERROR
 	);
 
-	SIGNAL State											: T_STATE											:= ST_IDLE;
-	SIGNAL NextState									: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	signal State											: T_STATE											:= ST_IDLE;
+	signal NextState									: T_STATE;
+	attribute FSM_ENCODING of State		: signal IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	SIGNAL In_Ack_i									: STD_LOGIC;
+	signal In_Ack_i										: STD_LOGIC;
 
-	SIGNAL UpperLayerPacketLength			: STD_LOGIC_VECTOR(15 DOWNTO 0);
-	
-	SIGNAL IPSeqCounter_rst						: STD_LOGIC;
-	SIGNAL IPSeqCounter_en						: STD_LOGIC;
-	SIGNAL IPSeqCounter_us						: UNSIGNED(3 DOWNTO 0)																	:= (OTHERS => '0');
-	
-	SIGNAL Checksum_rst								: STD_LOGIC;
-	SIGNAL Checksum_en								: STD_LOGIC;
-	SIGNAL Checksum_Addend0_us				: UNSIGNED(T_SLV_8'range);
-	SIGNAL Checksum_Addend1_us				: UNSIGNED(T_SLV_8'range);
-	SIGNAL Checksum0_nxt0_us					: UNSIGNED(T_SLV_8'high + 1 DOWNTO 0);
-	SIGNAL Checksum0_nxt1_us					: UNSIGNED(T_SLV_8'high + 1 DOWNTO 0);
-	SIGNAL Checksum0_d_us							: UNSIGNED(T_SLV_8'high DOWNTO 0)												:= (OTHERS => '0');
-	SIGNAL Checksum0_cy								: UNSIGNED(T_SLV_2'range);
-	SIGNAL Checksum1_nxt_us						: UNSIGNED(T_SLV_8'range);
-	SIGNAL Checksum1_d_us							: UNSIGNED(T_SLV_8'range)																:= (OTHERS => '0');
-	SIGNAL Checksum0_cy0							: STD_LOGIC;
-	SIGNAL Checksum0_cy0_d						: STD_LOGIC																							:= '0';
-	SIGNAL Checksum0_cy1							: STD_LOGIC;
-	SIGNAL Checksum0_cy1_d						: STD_LOGIC																							:= '0';
+	signal UpperLayerPacketLength			: STD_LOGIC_VECTOR(15 downto 0);
 
-	SIGNAL Checksum_i									: T_SLV_16;
-	SIGNAL Checksum										: T_SLV_16;
-	SIGNAL Checksum_mux_rst						: STD_LOGIC;
-	SIGNAL Checksum_mux_set						: STD_LOGIC;
-	SIGNAL Checksum_mux_r							: STD_LOGIC																							:= '0';
+	signal IPSeqCounter_rst						: STD_LOGIC;
+	signal IPSeqCounter_en						: STD_LOGIC;
+	signal IPSeqCounter_us						: UNSIGNED(3 downto 0)									:= (others => '0');
 
-BEGIN
-	ASSERT ((IP_VERSION = 6) OR (IP_VERSION = 4)) REPORT "Internet Protocol Version not supported." SEVERITY ERROR;
+	signal Checksum_rst								: STD_LOGIC;
+	signal Checksum_en								: STD_LOGIC;
+	signal Checksum_Addend0_us				: UNSIGNED(T_SLV_8'range);
+	signal Checksum_Addend1_us				: UNSIGNED(T_SLV_8'range);
+	signal Checksum0_nxt0_us					: UNSIGNED(T_SLV_8'high + 1 downto 0);
+	signal Checksum0_nxt1_us					: UNSIGNED(T_SLV_8'high + 1 downto 0);
+	signal Checksum0_d_us							: UNSIGNED(T_SLV_8'high downto 0)				:= (others => '0');
+	signal Checksum0_cy								: UNSIGNED(T_SLV_2'range);
+	signal Checksum1_nxt_us						: UNSIGNED(T_SLV_8'range);
+	signal Checksum1_d_us							: UNSIGNED(T_SLV_8'range)								:= (others => '0');
+	signal Checksum0_cy0							: STD_LOGIC;
+	signal Checksum0_cy0_d						: STD_LOGIC															:= '0';
+	signal Checksum0_cy1							: STD_LOGIC;
+	signal Checksum0_cy1_d						: STD_LOGIC															:= '0';
+
+	signal Checksum_i									: T_SLV_16;
+	signal Checksum										: T_SLV_16;
+	signal Checksum_mux_rst						: STD_LOGIC;
+	signal Checksum_mux_set						: STD_LOGIC;
+	signal Checksum_mux_r							: STD_LOGIC															:= '0';
+
+begin
+	assert ((IP_VERSION = 6) OR (IP_VERSION = 4)) report "Internet Protocol Version not supported." severity ERROR;
 
 	UpperLayerPacketLength		<= std_logic_vector(unsigned(In_Meta_Length) + 8);
-	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
-				State			<= ST_IDLE;
-			ELSE
-				State			<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
 
-	PROCESS(State,
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
+				State			<= ST_IDLE;
+			else
+				State			<= NextState;
+			end if;
+		end if;
+	end process;
+
+	process(State,
 					In_Valid, In_SOF, In_EOF, In_Data,
 					Out_Ack, Out_Meta_rst,
 					Out_Meta_SrcIPAddress_nxt,	In_Meta_SrcIPAddress_Data,
@@ -223,16 +222,16 @@ BEGIN
 					In_Meta_SrcPort, In_Meta_DestPort, In_Meta_Checksum,
 					IPSeqCounter_us, Checksum0_cy, Checksum,
 					UpperLayerPacketLength)
-	BEGIN
+	begin
 		NextState										<= State;
-		
-		In_Ack_i									<= '0';
-		
+
+		In_Ack_i										<= '0';
+
 		Out_Valid										<= '0';
 		Out_Data										<= In_Data;
 		Out_SOF											<= '0';
 		Out_EOF											<= '0';
-		
+
 		In_Meta_rst									<= '0';
 		In_Meta_SrcIPAddress_nxt		<= Out_Meta_SrcIPAddress_nxt;
 		In_Meta_DestIPAddress_nxt		<= Out_Meta_DestIPAddress_nxt;
@@ -242,319 +241,316 @@ BEGIN
 
 		IPSeqCounter_rst						<= '0';
 		IPSeqCounter_en							<= '0';
-	
+
 		Checksum_rst								<= '0';
 		Checksum_en									<= '0';
-		Checksum_Addend0_us					<= (OTHERS => '0');
-		Checksum_Addend1_us					<= (OTHERS => '0');
+		Checksum_Addend0_us					<= (others => '0');
+		Checksum_Addend1_us					<= (others => '0');
 		Checksum_mux_rst						<= '0';
 		Checksum_mux_set						<= '0';
 
-		CASE State IS
-			WHEN ST_IDLE =>
+		case State is
+			when ST_IDLE =>
 				In_Meta_rst							<= '1';
-		
+
 				IPSeqCounter_rst				<= '1';
 				Checksum_rst						<= '1';
 
-				IF ((In_Valid AND In_SOF) = '1') THEN
-					IF (IP_VERSION = 4) THEN
-						NextState			<= ST_CHECKSUMV4_IPV4_ADDRESSES;
-					ELSIF (IP_VERSION = 6) THEN
-						NextState			<= ST_CHECKSUMV6_IPV6_ADDRESSES;
-					ELSE
-						NextState			<= ST_ERROR;
-					END IF;
-				END IF;
-			
+				if ((In_Valid AND In_SOF) = '1') then
+					if (IP_VERSION = 4) then
+						NextState						<= ST_CHECKSUMV4_IPV4_ADDRESSES;
+					elsif (IP_VERSION = 6) then
+						NextState						<= ST_CHECKSUMV6_IPV6_ADDRESSES;
+					else
+						NextState						<= ST_ERROR;
+					end if;
+				end if;
+
 			-- calculate checksum for IPv4 pseudo header
 			-- ----------------------------------------------------------------------
-			WHEN ST_CHECKSUMV4_IPV4_ADDRESSES =>
+			when ST_CHECKSUMV4_IPV4_ADDRESSES =>
 				In_Meta_SrcIPAddress_nxt	<= '1';
 				In_Meta_DestIPAddress_nxt	<= '1';
-				
+
 				IPSeqCounter_en						<= '1';
 				Checksum_en								<= '1';
 				Checksum_Addend0_us				<= unsigned(In_Meta_SrcIPAddress_Data);
 				Checksum_Addend1_us				<= unsigned(In_Meta_DestIPAddress_Data);
-				
-				IF (IPSeqCounter_us = 3) THEN
+
+				if (IPSeqCounter_us = 3) then
 					NextState								<= ST_CHECKSUMV4_LENGTH_UDP_TYPE_0;
-				END IF;
-			
-			WHEN ST_CHECKSUMV4_LENGTH_UDP_TYPE_0 =>
+				end if;
+
+			when ST_CHECKSUMV4_LENGTH_UDP_TYPE_0 =>
 				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(15 DOWNTO 8));
-				Checksum_Addend1_us				<= (OTHERS => '0');
-				
+				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(15 downto 8));
+				Checksum_Addend1_us				<= (others => '0');
+
 				NextState									<= ST_CHECKSUMV4_LENGTH_UDP_TYPE_1;
 
-			WHEN ST_CHECKSUMV4_LENGTH_UDP_TYPE_1 =>
+			when ST_CHECKSUMV4_LENGTH_UDP_TYPE_1 =>
 				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(7 DOWNTO 0));
+				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(7 downto 0));
 				Checksum_Addend1_us				<= unsigned(C_NET_IP_PROTOCOL_UDP);
-			
+
 				NextState									<= ST_CHECKSUMV4_PORT_NUMBER_0;
 
-			WHEN ST_CHECKSUMV4_PORT_NUMBER_0 =>
+			when ST_CHECKSUMV4_PORT_NUMBER_0 =>
 				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(In_Meta_SrcPort(15 DOWNTO 8));
-				Checksum_Addend1_us				<= unsigned(In_Meta_DestPort(15 DOWNTO 8));
-			
+				Checksum_Addend0_us				<= unsigned(In_Meta_SrcPort(15 downto 8));
+				Checksum_Addend1_us				<= unsigned(In_Meta_DestPort(15 downto 8));
+
 				NextState									<= ST_CHECKSUMV4_PORT_NUMBER_1;
 
-			WHEN ST_CHECKSUMV4_PORT_NUMBER_1 =>
+			when ST_CHECKSUMV4_PORT_NUMBER_1 =>
 				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(In_Meta_SrcPort(7 DOWNTO 0));
-				Checksum_Addend1_us				<= unsigned(In_Meta_DestPort(7 DOWNTO 0));
-				
+				Checksum_Addend0_us				<= unsigned(In_Meta_SrcPort(7 downto 0));
+				Checksum_Addend1_us				<= unsigned(In_Meta_DestPort(7 downto 0));
+
 				NextState									<= ST_CHECKSUMV4_CHECKSUM_LENGTH_0;
-			
-			WHEN ST_CHECKSUMV4_CHECKSUM_LENGTH_0 =>
+
+			when ST_CHECKSUMV4_CHECKSUM_LENGTH_0 =>
 				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(15 DOWNTO 8));
-				Checksum_Addend1_us				<= unsigned(In_Meta_Checksum(15 DOWNTO 8));
-				
+				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(15 downto 8));
+				Checksum_Addend1_us				<= unsigned(In_Meta_Checksum(15 downto 8));
+
 				NextState									<= ST_CHECKSUMV4_CHECKSUM_LENGTH_1;
 
-			WHEN ST_CHECKSUMV4_CHECKSUM_LENGTH_1 =>
+			when ST_CHECKSUMV4_CHECKSUM_LENGTH_1 =>
 				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(7 DOWNTO 0));
-				Checksum_Addend1_us				<= unsigned(In_Meta_Checksum(7 DOWNTO 0));
-			
-				IF (Checksum0_cy = "00") THEN
+				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(7 downto 0));
+				Checksum_Addend1_us				<= unsigned(In_Meta_Checksum(7 downto 0));
+
+				if (Checksum0_cy = "00") then
 					NextState								<= ST_SEND_SOURCE_PORT_0;
-				ELSE
+				else
 					NextState								<= ST_CARRY_0;
-				END IF;
-			
+				end if;
+
 			-- calculate checksum for IPv6 pseudo header
 			-- ----------------------------------------------------------------------
-			WHEN ST_CHECKSUMV6_IPV6_ADDRESSES =>
+			when ST_CHECKSUMV6_IPV6_ADDRESSES =>
 				In_Meta_SrcIPAddress_nxt	<= '1';
 				In_Meta_DestIPAddress_nxt	<= '1';
-				
+
 				IPSeqCounter_en						<= '1';
 				Checksum_en								<= '1';
 				Checksum_Addend0_us				<= unsigned(In_Meta_SrcIPAddress_Data);
 				Checksum_Addend1_us				<= unsigned(In_Meta_DestIPAddress_Data);
-				
-				IF (IPSeqCounter_us = 15) THEN
+
+				if (IPSeqCounter_us = 15) then
 					NextState								<= ST_CHECKSUMV6_LENGTH_UDP_TYPE_0;
-				END IF;
-			
-			WHEN ST_CHECKSUMV6_LENGTH_UDP_TYPE_0 =>
+				end if;
+
+			when ST_CHECKSUMV6_LENGTH_UDP_TYPE_0 =>
 				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(15 DOWNTO 8));
-				Checksum_Addend1_us				<= (OTHERS => '0');
-				
+				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(15 downto 8));
+				Checksum_Addend1_us				<= (others => '0');
+
 				NextState									<= ST_CHECKSUMV6_LENGTH_UDP_TYPE_1;
 
-			WHEN ST_CHECKSUMV6_LENGTH_UDP_TYPE_1 =>
+			when ST_CHECKSUMV6_LENGTH_UDP_TYPE_1 =>
 				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(7 DOWNTO 0));
+				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(7 downto 0));
 				Checksum_Addend1_us				<= unsigned(C_NET_IP_PROTOCOL_UDP);
-			
+
 				NextState									<= ST_CHECKSUMV6_PORT_NUMBER_0;
 
-			WHEN ST_CHECKSUMV6_PORT_NUMBER_0 =>
+			when ST_CHECKSUMV6_PORT_NUMBER_0 =>
 				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(In_Meta_SrcPort(15 DOWNTO 8));
-				Checksum_Addend1_us				<= unsigned(In_Meta_DestPort(15 DOWNTO 8));
-			
+				Checksum_Addend0_us				<= unsigned(In_Meta_SrcPort(15 downto 8));
+				Checksum_Addend1_us				<= unsigned(In_Meta_DestPort(15 downto 8));
+
 				NextState									<= ST_CHECKSUMV6_PORT_NUMBER_1;
 
-			WHEN ST_CHECKSUMV6_PORT_NUMBER_1 =>
+			when ST_CHECKSUMV6_PORT_NUMBER_1 =>
 				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(In_Meta_SrcPort(7 DOWNTO 0));
-				Checksum_Addend1_us				<= unsigned(In_Meta_DestPort(7 DOWNTO 0));
-				
+				Checksum_Addend0_us				<= unsigned(In_Meta_SrcPort(7 downto 0));
+				Checksum_Addend1_us				<= unsigned(In_Meta_DestPort(7 downto 0));
+
 				NextState									<= ST_CHECKSUMV6_CHECKSUM_LENGTH_0;
-			
-			WHEN ST_CHECKSUMV6_CHECKSUM_LENGTH_0 =>
+
+			when ST_CHECKSUMV6_CHECKSUM_LENGTH_0 =>
 				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(15 DOWNTO 8));
-				Checksum_Addend1_us				<= unsigned(In_Meta_Checksum(15 DOWNTO 8));
-				
+				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(15 downto 8));
+				Checksum_Addend1_us				<= unsigned(In_Meta_Checksum(15 downto 8));
+
 				NextState									<= ST_CHECKSUMV6_CHECKSUM_LENGTH_1;
 
-			WHEN ST_CHECKSUMV6_CHECKSUM_LENGTH_1 =>
+			when ST_CHECKSUMV6_CHECKSUM_LENGTH_1 =>
 				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(7 DOWNTO 0));
-				Checksum_Addend1_us				<= unsigned(In_Meta_Checksum(7 DOWNTO 0));
-			
-				IF (Checksum0_cy = "00") THEN
+				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(7 downto 0));
+				Checksum_Addend1_us				<= unsigned(In_Meta_Checksum(7 downto 0));
+
+				if (Checksum0_cy = "00") then
 					NextState								<= ST_SEND_SOURCE_PORT_0;
-				ELSE
+				else
 					NextState								<= ST_CARRY_0;
-				END IF;
-			
+				end if;
+
 			-- circulate carry bit
 			-- ----------------------------------------------------------------------
-			WHEN ST_CARRY_0 =>
+			when ST_CARRY_0 =>
 				In_Meta_rst								<= Out_Meta_rst;
-				
+
 				Checksum_en								<= '1';
 				Checksum_mux_set					<= '1';
-				
-				IF (Checksum0_cy = "00") THEN
+
+				if (Checksum0_cy = "00") then
 					NextState								<= ST_SEND_SOURCE_PORT_0;
-				ELSE
+				else
 					NextState								<= ST_CARRY_1;
-				END IF;
-			
-			WHEN ST_CARRY_1 =>
+				end if;
+
+			when ST_CARRY_1 =>
 				In_Meta_rst								<= Out_Meta_rst;
-			
+
 				Checksum_en								<= '1';
 				Checksum_mux_rst					<= '1';
-				
+
 				NextState									<= ST_SEND_SOURCE_PORT_0;
-			
+
 			-- assamble header
 			-- ----------------------------------------------------------------------
-			WHEN ST_SEND_SOURCE_PORT_0 =>
+			when ST_SEND_SOURCE_PORT_0 =>
 				Out_Valid									<= '1';
-				Out_Data									<= In_Meta_SrcPort(15 DOWNTO 8);
+				Out_Data									<= In_Meta_SrcPort(15 downto 8);
 				Out_SOF										<= '1';
-				
+
 				In_Meta_rst								<= Out_Meta_rst;
-				
-				IF (Out_Ack	 = '1') THEN
+
+				if (Out_Ack	 = '1') then
 					NextState								<= ST_SEND_SOURCE_PORT_1;
-				END IF;				
-			
-			WHEN ST_SEND_SOURCE_PORT_1 =>
-				Out_Valid					<= '1';
-				Out_Data					<= In_Meta_SrcPort(7 DOWNTO 0);
-			
-				IF (Out_Ack	 = '1') THEN
-					NextState				<= ST_SEND_DEST_PORT_0;
-				END IF;
-				
-			WHEN ST_SEND_DEST_PORT_0 =>
-				Out_Valid					<= '1';
-				Out_Data					<= In_Meta_DestPort(15 DOWNTO 8);
-			
-				IF (Out_Ack	 = '1') THEN
-					NextState				<= ST_SEND_DEST_PORT_1;
-				END IF;
-			
-			WHEN ST_SEND_DEST_PORT_1 =>
-				Out_Valid					<= '1';
-				Out_Data					<= In_Meta_DestPort(7 DOWNTO 0);
-			
-				IF (Out_Ack	 = '1') THEN
-					NextState				<= ST_SEND_LENGTH_0;
-				END IF;
-			
-			WHEN ST_SEND_LENGTH_0 =>
-				Out_Valid					<= '1';
-				Out_Data					<= UpperLayerPacketLength(15 DOWNTO 8);
-			
-				IF (Out_Ack	 = '1') THEN
-					NextState				<= ST_SEND_LENGTH_1;
-				END IF;
-				
-			WHEN ST_SEND_LENGTH_1 =>
-				Out_Valid					<= '1';
-				Out_Data					<= UpperLayerPacketLength(7 DOWNTO 0);
-			
-				IF (Out_Ack	 = '1') THEN
-					NextState				<= ST_SEND_CHECKSUM_0;
-				END IF;
-				
-			WHEN ST_SEND_CHECKSUM_0 =>
-				Out_Valid					<= '1';
-				Out_Data					<= Checksum(15 DOWNTO 8);
-			
-				IF (Out_Ack	 = '1') THEN
-					NextState				<= ST_SEND_CHECKSUM_1;
-				END IF;
+				end if;
 
-			WHEN ST_SEND_CHECKSUM_1 =>
-				Out_Valid					<= '1';
-				Out_Data					<= Checksum(7 DOWNTO 0);
-			
-				IF (Out_Ack	 = '1') THEN
-					NextState				<= ST_SEND_DATA;
-				END IF;
+			when ST_SEND_SOURCE_PORT_1 =>
+				Out_Valid									<= '1';
+				Out_Data									<= In_Meta_SrcPort(7 downto 0);
 
-			WHEN ST_SEND_DATA =>
-				Out_Valid					<= In_Valid;
-				Out_Data					<= In_Data;
-				Out_EOF						<= In_EOF;
-				In_Ack_i				<= Out_Ack;
+				if (Out_Ack	 = '1') then
+					NextState								<= ST_SEND_DEST_PORT_0;
+				end if;
+
+			when ST_SEND_DEST_PORT_0 =>
+				Out_Valid									<= '1';
+				Out_Data									<= In_Meta_DestPort(15 downto 8);
+
+				if (Out_Ack	 = '1') then
+					NextState								<= ST_SEND_DEST_PORT_1;
+				end if;
+
+			when ST_SEND_DEST_PORT_1 =>
+				Out_Valid									<= '1';
+				Out_Data									<= In_Meta_DestPort(7 downto 0);
+
+				if (Out_Ack	 = '1') then
+					NextState								<= ST_SEND_LENGTH_0;
+				end if;
+
+			when ST_SEND_LENGTH_0 =>
+				Out_Valid									<= '1';
+				Out_Data									<= UpperLayerPacketLength(15 downto 8);
+
+				if (Out_Ack	 = '1') then
+					NextState								<= ST_SEND_LENGTH_1;
+				end if;
+
+			when ST_SEND_LENGTH_1 =>
+				Out_Valid									<= '1';
+				Out_Data									<= UpperLayerPacketLength(7 downto 0);
+
+				if (Out_Ack	 = '1') then
+					NextState								<= ST_SEND_CHECKSUM_0;
+				end if;
+
+			when ST_SEND_CHECKSUM_0 =>
+				Out_Valid									<= '1';
+				Out_Data									<= Checksum(15 downto 8);
+
+				if (Out_Ack	 = '1') then
+					NextState								<= ST_SEND_CHECKSUM_1;
+				end if;
+
+			when ST_SEND_CHECKSUM_1 =>
+				Out_Valid									<= '1';
+				Out_Data									<= Checksum(7 downto 0);
+
+				if (Out_Ack	 = '1') then
+					NextState								<= ST_SEND_DATA;
+				end if;
+
+			when ST_SEND_DATA =>
+				Out_Valid									<= In_Valid;
+				Out_Data									<= In_Data;
+				Out_EOF										<= In_EOF;
+				In_Ack_i									<= Out_Ack;
+
+				if ((In_EOF AND Out_Ack) = '1') then
+					NextState								<= ST_IDLE;
+				end if;
+
+			when ST_ERROR =>
+				null;
 				
-				IF ((In_EOF AND Out_Ack) = '1') THEN
-					NextState				<= ST_IDLE;
-				END IF;
-			
-			WHEN ST_ERROR =>
-				NULL;
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
 	-- IPSeqCounter
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR IPSeqCounter_rst) = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset OR IPSeqCounter_rst) = '1') then
 				IPSeqCounter_us			<= to_unsigned(0, IPSeqCounter_us'length);
-			ELSE
-				IF (IPSeqCounter_en = '1') THEN
-					IPSeqCounter_us			<= IPSeqCounter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+			elsif (IPSeqCounter_en = '1') then
+				IPSeqCounter_us			<= IPSeqCounter_us + 1;
+			end if;
+		end if;
+	end process;
 
 	Checksum0_nxt0_us		<= ("0" & Checksum1_d_us)
 													+ ("0" & Checksum_Addend0_us)
 													+ ((Checksum_Addend0_us'range => '0') & Checksum0_cy0_d);
-	Checksum0_nxt1_us		<= ("0" & Checksum0_nxt0_us(Checksum0_nxt0_us'high - 1 DOWNTO 0))
+	Checksum0_nxt1_us		<= ("0" & Checksum0_nxt0_us(Checksum0_nxt0_us'high - 1 downto 0))
 													+ ("0" & Checksum_Addend1_us)
 													+ ((Checksum_Addend1_us'range => '0') & Checksum0_cy1_d);
 	Checksum1_nxt_us		<= Checksum0_d_us(Checksum1_d_us'range);
-	
+
 	Checksum0_cy0				<= Checksum0_nxt0_us(Checksum0_nxt0_us'high);
 	Checksum0_cy1				<= Checksum0_nxt1_us(Checksum0_nxt1_us'high);
 	Checksum0_cy				<= Checksum0_cy1 & Checksum0_cy0;
 
-					
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Checksum_rst = '1') THEN
-				Checksum0_d_us			<= (OTHERS => '0');
-				Checksum1_d_us			<= (OTHERS => '0');
-			ELSE
-				IF (Checksum_en = '1') THEN
-					Checksum0_d_us		<= Checksum0_nxt1_us(Checksum0_nxt1_us'high - 1 DOWNTO 0);
-					Checksum1_d_us		<= Checksum1_nxt_us;
-					
-					Checksum0_cy0_d		<= Checksum0_cy0;
-					Checksum0_cy1_d		<= Checksum0_cy1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
 
-	Checksum_i		<= not (std_logic_vector(Checksum0_nxt1_us(Checksum0_nxt1_us'high - 1 DOWNTO 0)) & std_logic_vector(Checksum1_nxt_us));
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Checksum_rst = '1') then
+				Checksum0_d_us		<= (others => '0');
+				Checksum1_d_us		<= (others => '0');
+			elsif (Checksum_en = '1') then
+				Checksum0_d_us		<= Checksum0_nxt1_us(Checksum0_nxt1_us'high - 1 downto 0);
+				Checksum1_d_us		<= Checksum1_nxt_us;
+
+				Checksum0_cy0_d		<= Checksum0_cy0;
+				Checksum0_cy1_d		<= Checksum0_cy1;
+			end if;
+		end if;
+	end process;
+
+	Checksum_i		<= not (std_logic_vector(Checksum0_nxt1_us(Checksum0_nxt1_us'high - 1 downto 0)) & std_logic_vector(Checksum1_nxt_us));
 	Checksum			<= ite((Checksum_mux_r = '0'), Checksum_i, swap(Checksum_i, 8));
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR Checksum_mux_rst) = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset OR Checksum_mux_rst) = '1') then
 				Checksum_mux_r		<= '0';
-			ELSIF (Checksum_mux_set = '1') THEN
+			elsif (Checksum_mux_set = '1') then
 				Checksum_mux_r		<= '1';
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
 	In_Ack						<= In_Ack_i;
 	Out_Meta_Length		<= UpperLayerPacketLength;
 
-END;
+end architecture;
