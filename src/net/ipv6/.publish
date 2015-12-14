@@ -4,5 +4,8 @@
 # Documentation
 README.md
 
-# --------------------------------------
-
+# Entities
+ipv6_TX.vhdl
+ipv6_RX.vhdl
+ipv6_FrameLoopback.vhdl
+ipv6_Wrapper.vhdl

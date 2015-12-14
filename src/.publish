@@ -5,10 +5,10 @@
 README.md
 
 # PoC subnamespaces
-#alt/
+alt/
 arith/
 bus/
-#cache/
+cache/
 comm/
 common/
 fifo/

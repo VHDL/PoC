@@ -4,9 +4,4 @@
 # Documentation
 README.md
 
-# PoC subnamespaces
-stream/
-wb/
-
 # Entities
-bus_Arbiter.vhdl
