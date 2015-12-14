@@ -1,0 +1,23 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+Default.ucf
+Clock.SystemClock.ucf
+Clock.SystemClock.xdc
+GPIO.Button.Cursor.ucf
+GPIO.Button.Cursor.xdc
+GPIO.Switch.ucf
+GPIO.Switch.xdc
+GPIO.LED.ucf
+GPIO.LED.xdc
+PMOD.PortA.ucf
+PMOD.PortA.xdc
+PMOD.PortB.ucf
+PMOD.PortB.xdc
+PMOD.PortC.ucf
+PMOD.PortC.xdc
+PMOD.PortD.ucf
+PMOD.PortD.xdc
