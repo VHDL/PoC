@@ -1,60 +1,89 @@
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Authors:				 	Patrick Lehmann
+-- 
+-- Module:				 	TODO
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
 
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
 
-ENTITY ICMPv6_Wrapper IS
-	PORT (
-		Clock															: IN	STD_LOGIC;
-		Reset															: IN	STD_LOGIC;
+entity icmpv6_Wrapper is
+	port (
+		Clock															: in	STD_LOGIC;
+		Reset															: in	STD_LOGIC;
 		
-		IP_TX_Valid												: OUT	STD_LOGIC;
-		IP_TX_Data												: OUT	T_SLV_8;
-		IP_TX_SOF													: OUT	STD_LOGIC;
-		IP_TX_EOF													: OUT	STD_LOGIC;
-		IP_TX_Ack													: IN	STD_LOGIC;
-		IP_TX_Meta_rst										: IN	STD_LOGIC;
-		IP_TX_Meta_DestIPv6Address_nxt		: IN	STD_LOGIC;
-		IP_TX_Meta_DestIPv6Address_Data		: OUT	T_SLV_8;
+		IP_TX_Valid												: out	STD_LOGIC;
+		IP_TX_Data												: out	T_SLV_8;
+		IP_TX_SOF													: out	STD_LOGIC;
+		IP_TX_EOF													: out	STD_LOGIC;
+		IP_TX_Ack													: in	STD_LOGIC;
+		IP_TX_Meta_rst										: in	STD_LOGIC;
+		IP_TX_Meta_DestIPv6Address_nxt		: in	STD_LOGIC;
+		IP_TX_Meta_DestIPv6Address_Data		: out	T_SLV_8;
 		
-		IP_RX_Valid												: IN	STD_LOGIC;
-		IP_RX_Data												: IN	T_SLV_8;
-		IP_RX_SOF													: IN	STD_LOGIC;
-		IP_RX_EOF													: IN	STD_LOGIC;
-		IP_RX_Ack													: OUT	STD_LOGIC--;
+		IP_RX_Valid												: in	STD_LOGIC;
+		IP_RX_Data												: in	T_SLV_8;
+		IP_RX_SOF													: in	STD_LOGIC;
+		IP_RX_EOF													: in	STD_LOGIC;
+		IP_RX_Ack													: out	STD_LOGIC--;
 		
---		Command										: IN	T_ETHERNET_ICMPV6_COMMAND;
---		Status										: OUT	T_ETHERNET_ICMPV6_STATUS
+--		Command										: in	T_ETHERNET_ICMPV6_COMMAND;
+--		Status										: out	T_ETHERNET_ICMPV6_STATUS
 		
 		
 	);
-END;
+end entity;
 
-ARCHITECTURE rtl OF ICMPv6_Wrapper IS
-	SIGNAL RX_Received_EchoRequest			: STD_LOGIC;
+
+architecture rtl of icmpv6_Wrapper is
+	signal RX_Received_EchoRequest			: STD_LOGIC;
 	
-BEGIN
+begin
 
 	IP_RX_Ack													<= '1';
 	
 	IP_TX_Valid												<= '0';
-	IP_TX_Data												<= (OTHERS => '0');
+	IP_TX_Data												<= (others => '0');
 	IP_TX_SOF													<= '0';
 	IP_TX_EOF													<= '0';
-	IP_TX_Meta_DestIPv6Address_Data		<= (OTHERS => '0');
+	IP_TX_Meta_DestIPv6Address_Data		<= (others => '0');
 
 
---	ICMPv6_loop : ENTITY L_Ethernet.FrameLoopback
---		GENERIC MAP (
+--	ICMPv6_loop : entity PoC.FrameLoopback
+--		generic MAP (
 --			DATA_BW										=> 8,
 --			META_BW										=> 0
 --		)
@@ -64,7 +93,7 @@ BEGIN
 --		
 --			In_Valid							=> IP_RX_Valid,
 --			In_Data								=> IP_RX_Data,
---			In_Meta								=> (OTHERS => '0'),
+--			In_Meta								=> (others => '0'),
 --			In_SOF								=> IP_RX_SOF,
 --			In_EOF								=> IP_RX_EOF,
 --			In_Ack								=> IP_RX_Ack,
@@ -80,7 +109,7 @@ BEGIN
 -- ============================================================================================================================================================
 -- RX Path
 -- ============================================================================================================================================================
---	RX : ENTITY L_Ethernet.ICMPv6_RX
+--	RX : entity PoC.icmpv6_RX
 --		PORT MAP (
 --			Clock										=> Clock,	
 --			Reset										=> Reset,
@@ -97,7 +126,7 @@ BEGIN
 -- ============================================================================================================================================================
 -- TX Path
 -- ============================================================================================================================================================
---	TX : ENTITY L_Ethernet.ICMPv6_TX
+--	TX : entity PoC.icmpv6_TX
 --		PORT MAP (
 --			Clock										=> Clock,	
 --			Reset										=> Reset,
@@ -110,4 +139,4 @@ BEGIN
 --			
 --			Send_EchoResponse				=> RX_Received_EchoRequest
 --    );
-END ARCHITECTURE;
+end architecture;
