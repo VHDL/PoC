@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -29,79 +29,58 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
 
 
-ENTITY ARP_BroadCast_Requester IS
-	GENERIC (
+entity arp_BroadCast_Requester is
+	generic (
 		ALLOWED_PROTOCOL_IPV4					: BOOLEAN												:= TRUE;
 		ALLOWED_PROTOCOL_IPV6					: BOOLEAN												:= FALSE
 	);
-	PORT (
-		Clock													: IN	STD_LOGIC;																	-- 
-		Reset													: IN	STD_LOGIC;																	-- 
+	port (
+		Clock													: in	STD_LOGIC;																	-- 
+		Reset													: in	STD_LOGIC;																	-- 
 
-		SendRequest										: IN	STD_LOGIC;
-		Complete											: OUT	STD_LOGIC;
+		SendRequest										: in	STD_LOGIC;
+		Complete											: out	STD_LOGIC;
 		
-		Address_rst										: OUT	STD_LOGIC;
-		SenderMACAddress_nxt					: OUT	STD_LOGIC;
-		SenderMACAddress_Data					: IN	T_SLV_8;
-		SenderIPv4Address_nxt					: OUT	STD_LOGIC;
-		SenderIPv4Address_Data				: IN	T_SLV_8;
-		TargetMACAddress_nxt					: OUT	STD_LOGIC;
-		TargetMACAddress_Data					: IN	T_SLV_8;
-		TargetIPv4Address_nxt					: OUT	STD_LOGIC;
-		TargetIPv4Address_Data				: IN	T_SLV_8;
+		Address_rst										: out	STD_LOGIC;
+		SenderMACAddress_nxt					: out	STD_LOGIC;
+		SenderMACAddress_Data					: in	T_SLV_8;
+		SenderIPv4Address_nxt					: out	STD_LOGIC;
+		SenderIPv4Address_Data				: in	T_SLV_8;
+		TargetMACAddress_nxt					: out	STD_LOGIC;
+		TargetMACAddress_Data					: in	T_SLV_8;
+		TargetIPv4Address_nxt					: out	STD_LOGIC;
+		TargetIPv4Address_Data				: in	T_SLV_8;
 		
-		TX_Valid											: OUT	STD_LOGIC;
-		TX_Data												: OUT	T_SLV_8;
-		TX_SOF												: OUT	STD_LOGIC;
-		TX_EOF												: OUT	STD_LOGIC;
-		TX_Ack												: IN	STD_LOGIC;
-		TX_Meta_DestMACAddress_rst		: IN	STD_LOGIC;
-		TX_Meta_DestMACAddress_nxt		: IN	STD_LOGIC;
-		TX_Meta_DestMACAddress_Data		: OUT	T_SLV_8
+		TX_Valid											: out	STD_LOGIC;
+		TX_Data												: out	T_SLV_8;
+		TX_SOF												: out	STD_LOGIC;
+		TX_EOF												: out	STD_LOGIC;
+		TX_Ack												: in	STD_LOGIC;
+		TX_Meta_DestMACAddress_rst		: in	STD_LOGIC;
+		TX_Meta_DestMACAddress_nxt		: in	STD_LOGIC;
+		TX_Meta_DestMACAddress_Data		: out	T_SLV_8
 	);
-END;
-
--- Endianess: big-endian
--- Alignment: 1 byte
---
---								Byte 0													Byte 1														Byte 2													Byte 3
---	+--------------------------------+--------------------------------+--------------------------------+--------------------------------+
---	| HardwareType (Ethernet = 0x0001)																| ProtocolType (IPv4 = 0x0800; IPv6 = 0x86DD)											|
---	+--------------------------------+--------------------------------+--------------------------------+--------------------------------+
---	| Hardware_Length (= 0x06)			 | Protocol_Length (= 0x04; 0x10) | Operation (Request = 0x0001)																		|
---	+--------------------------------+--------------------------------+--------------------------------+--------------------------------+
---	| SenderMACAddress																																																									|
---	+                                +                                +--------------------------------+--------------------------------+
---	|																																	| SenderIPAddress																									|
---	+--------------------------------+--------------------------------+--------------------------------+--------------------------------+
---	|																																	| TargetMACAddress (= 00:00:00:00:00:00)													|
---	+--------------------------------+--------------------------------+                                +                                +
---	|																																																																		|
---	+--------------------------------+--------------------------------+--------------------------------+--------------------------------+
---	| TargetIPAddress																																																										|
---	+--------------------------------+--------------------------------+--------------------------------+--------------------------------+
+end entity;
 
 
-ARCHITECTURE rtl OF ARP_BroadCast_Requester IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
+architecture rtl of arp_BroadCast_Requester is
+	attribute FSM_ENCODING						: STRING;
 	
-	TYPE T_STATE		IS (
+	type T_STATE		is (
 		ST_IDLE,
-			ST_SEND_HARDWARE_TYPE_0,	ST_SEND_HARDWARE_TYPE_1,
-			ST_SEND_PROTOCOL_TYPE_0,	ST_SEND_PROTOCOL_TYPE_1,
+			ST_SEND_HARDWARE_type_0,	ST_SEND_HARDWARE_type_1,
+			ST_SEND_PROTOCOL_type_0,	ST_SEND_PROTOCOL_type_1,
 			ST_SEND_HARDWARE_ADDRESS_LENGTH, ST_SEND_PROTOCOL_ADDRESS_LENGTH,
 			ST_SEND_OPERATION_0,			ST_SEND_OPERATION_1,
 			ST_SEND_SENDER_MAC,				ST_SEND_SENDER_IP,
@@ -109,51 +88,51 @@ ARCHITECTURE rtl OF ARP_BroadCast_Requester IS
 		ST_COMPLETE
 	);
 
-	SIGNAL State													: T_STATE																												:= ST_IDLE;
-	SIGNAL NextState											: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State				: SIGNAL IS "gray";
+	signal State													: T_STATE																												:= ST_IDLE;
+	signal NextState											: T_STATE;
+	attribute FSM_ENCODING of State				: signal is "gray";
 
-	CONSTANT HARDWARE_ADDRESS_LENGTH			: POSITIVE																											:= 6;			-- MAC -> 6 bytes
-	CONSTANT PROTOCOL_IPV4_ADDRESS_LENGTH	: POSITIVE																											:= 4;			-- IPv4 -> 4 bytes
-	CONSTANT PROTOCOL_IPV6_ADDRESS_LENGTH	: POSITIVE																											:= 16;		-- IPv6 -> 16 bytes
-	CONSTANT PROTOCOL_ADDRESS_LENGTH			: POSITIVE																											:= ite((ALLOWED_PROTOCOL_IPV6 = FALSE), PROTOCOL_IPV4_ADDRESS_LENGTH, PROTOCOL_IPV6_ADDRESS_LENGTH);		-- IPv4 -> 4 bytes; IPv6 -> 16 bytes
+	constant HARDWARE_ADDRESS_LENGTH			: POSITIVE																											:= 6;			-- MAC -> 6 bytes
+	constant PROTOCOL_IPV4_ADDRESS_LENGTH	: POSITIVE																											:= 4;			-- IPv4 -> 4 bytes
+	constant PROTOCOL_IPV6_ADDRESS_LENGTH	: POSITIVE																											:= 16;		-- IPv6 -> 16 bytes
+	constant PROTOCOL_ADDRESS_LENGTH			: POSITIVE																											:= ite((ALLOWED_PROTOCOL_IPV6 = FALSE), PROTOCOL_IPV4_ADDRESS_LENGTH, PROTOCOL_IPV6_ADDRESS_LENGTH);		-- IPv4 -> 4 bytes; IPv6 -> 16 bytes
 
-	SIGNAL IsIPv4_l												: STD_LOGIC																											:= '1';
-	SIGNAL IsIPv6_l												: STD_LOGIC																											:= '0';
+	signal IsIPv4_l												: STD_LOGIC																											:= '1';
+	signal IsIPv6_l												: STD_LOGIC																											:= '0';
 
-	CONSTANT READER_COUNTER_BITS					: POSITIVE																											:= log2ceilnz(imax(HARDWARE_ADDRESS_LENGTH, PROTOCOL_ADDRESS_LENGTH));
-	SIGNAL Reader_Counter_rst							: STD_LOGIC;
-	SIGNAL Reader_Counter_en							: STD_LOGIC;
-	SIGNAL Reader_Counter_us							: UNSIGNED(READER_COUNTER_BITS - 1 DOWNTO 0)										:= (OTHERS => '0');
+	constant READER_COUNTER_BITS					: POSITIVE																											:= log2ceilnz(imax(HARDWARE_ADDRESS_LENGTH, PROTOCOL_ADDRESS_LENGTH));
+	signal Reader_Counter_rst							: STD_LOGIC;
+	signal Reader_Counter_en							: STD_LOGIC;
+	signal Reader_Counter_us							: UNSIGNED(READER_COUNTER_BITS - 1 downto 0)										:= (others => '0');
 
-BEGIN
+begin
 	IsIPv4_l		<= '1';
 	IsIPv6_l		<= '0';
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				State			<= ST_IDLE;
-			ELSE
+			else
 				State			<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State,
+	process(State,
 					SendRequest,
 					IsIPv4_l, IsIPv6_l,
 					TX_Ack, TX_Meta_DestMACAddress_rst, TX_Meta_DestMACAddress_nxt,
 					SenderMACAddress_Data, SenderIPv4Address_Data, TargetMACAddress_Data, TargetIPv4Address_Data,
 					Reader_Counter_us)
-	BEGIN
+	begin
 		NextState											<= State;
 		
 		Complete											<= '0';
 
 		TX_Valid											<= '0';
-		TX_Data												<= (OTHERS => '0');
+		TX_Data												<= (others => '0');
 		TX_SOF												<= '0';
 		TX_EOF												<= '0';
 		TX_Meta_DestMACAddress_Data		<= x"FF";
@@ -167,14 +146,14 @@ BEGIN
 		Reader_Counter_rst						<= '0';
 		Reader_Counter_en							<= '0';
 
-		CASE State IS
-			WHEN ST_IDLE =>
-				IF (SendRequest = '1') THEN
+		case State is
+			when ST_IDLE =>
+				if (SendRequest = '1') then
 					Address_rst							<= '1';
-					NextState								<= ST_SEND_HARDWARE_TYPE_0;
-				END IF;
+					NextState								<= ST_SEND_HARDWARE_type_0;
+				end if;
 			
-			WHEN ST_SEND_HARDWARE_TYPE_0 =>
+			when ST_SEND_HARDWARE_type_0 =>
 				TX_Valid									<= '1';
 				TX_Data										<= x"00";
 				TX_SOF										<= '1';
@@ -182,165 +161,163 @@ BEGIN
 --				Address_rst								<= TX_Meta_DestMACAddress_rst;
 --				TargetMACAddress_nxt			<= TX_Meta_DestMACAddress_nxt;
 			
-				IF (TX_Ack	 = '1') THEN
-					NextState								<= ST_SEND_HARDWARE_TYPE_1;
-				END IF;
+				if (TX_Ack	 = '1') then
+					NextState								<= ST_SEND_HARDWARE_type_1;
+				end if;
 
-			WHEN ST_SEND_HARDWARE_TYPE_1 =>
+			when ST_SEND_HARDWARE_type_1 =>
 				TX_Valid									<= '1';
 				TX_Data										<= x"01";
 			
-				IF (TX_Ack	 = '1') THEN
-					NextState								<= ST_SEND_PROTOCOL_TYPE_0;
-				END IF;
+				if (TX_Ack	 = '1') then
+					NextState								<= ST_SEND_PROTOCOL_type_0;
+				end if;
 
-			WHEN ST_SEND_PROTOCOL_TYPE_0 =>
+			when ST_SEND_PROTOCOL_type_0 =>
 				TX_Valid									<= '1';
 				
-				IF (IsIPv4_l = '1') THEN
+				if (IsIPv4_l = '1') then
 					TX_Data									<= x"08";
-				ELSIF (IsIPv6_l = '1') THEN
+				elsif (IsIPv6_l = '1') then
 					TX_Data									<= x"86";
-				END IF;
+				end if;
 			
-				IF (TX_Ack	 = '1') THEN
-					NextState								<= ST_SEND_PROTOCOL_TYPE_1;
-				END IF;
+				if (TX_Ack	 = '1') then
+					NextState								<= ST_SEND_PROTOCOL_type_1;
+				end if;
 
-			WHEN ST_SEND_PROTOCOL_TYPE_1 =>
+			when ST_SEND_PROTOCOL_type_1 =>
 				TX_Valid									<= '1';
 				
-				IF (IsIPv4_l = '1') THEN
+				if (IsIPv4_l = '1') then
 					TX_Data									<= x"00";
-				ELSIF (IsIPv6_l = '1') THEN
+				elsif (IsIPv6_l = '1') then
 					TX_Data									<= x"DD";
-				END IF;
+				end if;
 			
-				IF (TX_Ack	 = '1') THEN
+				if (TX_Ack	 = '1') then
 					NextState								<= ST_SEND_HARDWARE_ADDRESS_LENGTH;
-				END IF;
+				end if;
 
-			WHEN ST_SEND_HARDWARE_ADDRESS_LENGTH =>
+			when ST_SEND_HARDWARE_ADDRESS_LENGTH =>
 				TX_Valid									<= '1';
 				TX_Data										<= x"06";
 			
-				IF (TX_Ack	 = '1') THEN
+				if (TX_Ack	 = '1') then
 					NextState								<= ST_SEND_PROTOCOL_ADDRESS_LENGTH;
-				END IF;
+				end if;
 
-			WHEN ST_SEND_PROTOCOL_ADDRESS_LENGTH =>
+			when ST_SEND_PROTOCOL_ADDRESS_LENGTH =>
 				TX_Valid									<= '1';
 				
-				IF (IsIPv4_l = '1') THEN
+				if (IsIPv4_l = '1') then
 					TX_Data									<= x"04";
-				ELSIF (IsIPv6_l = '1') THEN
+				elsif (IsIPv6_l = '1') then
 					TX_Data									<= x"10";
-				END IF;
+				end if;
 				
-				IF (TX_Ack	 = '1') THEN
+				if (TX_Ack	 = '1') then
 					NextState								<= ST_SEND_OPERATION_0;
-				END IF;
+				end if;
 
-			WHEN ST_SEND_OPERATION_0 =>
+			when ST_SEND_OPERATION_0 =>
 				TX_Valid									<= '1';
 				TX_Data										<= x"00";
 			
-				IF (TX_Ack	 = '1') THEN
+				if (TX_Ack	 = '1') then
 					NextState								<= ST_SEND_OPERATION_1;
-				END IF;
+				end if;
 
-			WHEN ST_SEND_OPERATION_1 =>
+			when ST_SEND_OPERATION_1 =>
 				TX_Valid									<= '1';
 				TX_Data										<= x"01";
 				
 				Address_rst								<= '1';
 			
-				IF (TX_Ack	 = '1') THEN
+				if (TX_Ack	 = '1') then
 					NextState								<= ST_SEND_SENDER_MAC;
-				END IF;
+				end if;
 
-			WHEN ST_SEND_SENDER_MAC =>
+			when ST_SEND_SENDER_MAC =>
 				TX_Valid									<= '1';
 				TX_Data										<= SenderMACAddress_Data;
 			
-				IF (TX_Ack	 = '1') THEN
+				if (TX_Ack	 = '1') then
 					SenderMACAddress_nxt		<= '1';
 					Reader_Counter_en				<= '1';
 					
-					IF (Reader_Counter_us = (HARDWARE_ADDRESS_LENGTH - 1)) THEN
+					if (Reader_Counter_us = (HARDWARE_ADDRESS_LENGTH - 1)) then
 						Reader_Counter_rst		<= '1';	
 						NextState							<= ST_SEND_SENDER_IP;
-					END IF;
-				END IF;
+					end if;
+				end if;
 				
-			WHEN ST_SEND_SENDER_IP =>
+			when ST_SEND_SENDER_IP =>
 				TX_Valid									<= '1';
 				TX_Data										<= SenderIPv4Address_Data;
 			
-				IF (TX_Ack	 = '1') THEN
+				if (TX_Ack	 = '1') then
 					SenderIPv4Address_nxt		<= '1';
 					Reader_Counter_en				<= '1';
 					
-					IF ((IsIPv4_l = '1') AND (Reader_Counter_us = (PROTOCOL_IPV4_ADDRESS_LENGTH - 1))) THEN
+					if ((IsIPv4_l = '1') AND (Reader_Counter_us = (PROTOCOL_IPV4_ADDRESS_LENGTH - 1))) then
 						Reader_Counter_rst		<= '1';	
 						NextState							<= ST_SEND_TARGET_MAC;
-					ELSIF ((IsIPv6_l = '1') AND (Reader_Counter_us = (PROTOCOL_IPV6_ADDRESS_LENGTH - 1))) THEN
+					elsif ((IsIPv6_l = '1') AND (Reader_Counter_us = (PROTOCOL_IPV6_ADDRESS_LENGTH - 1))) then
 						Reader_Counter_rst		<= '1';	
 						NextState							<= ST_SEND_TARGET_MAC;
-					END IF;
-				END IF;
+					end if;
+				end if;
 				
-			WHEN ST_SEND_TARGET_MAC =>
+			when ST_SEND_TARGET_MAC =>
 				TX_Valid									<= '1';
 				TX_Data										<= TargetMACAddress_Data;
 			
-				IF (TX_Ack	 = '1') THEN
+				if (TX_Ack	 = '1') then
 					TargetMACAddress_nxt		<= '1';
 					Reader_Counter_en				<= '1';
 					
-					IF (Reader_Counter_us = (HARDWARE_ADDRESS_LENGTH - 1)) THEN
+					if (Reader_Counter_us = (HARDWARE_ADDRESS_LENGTH - 1)) then
 						Reader_Counter_rst		<= '1';	
 						NextState							<= ST_SEND_TARGET_IP;
-					END IF;
-				END IF;
+					end if;
+				end if;
 				
-			WHEN ST_SEND_TARGET_IP =>
+			when ST_SEND_TARGET_IP =>
 				TX_Valid									<= '1';
 				TX_Data										<= TargetIPv4Address_Data;
 			
-				IF (TX_Ack	 = '1') THEN
+				if (TX_Ack	 = '1') then
 					TargetIPv4Address_nxt	<= '1';
 					Reader_Counter_en				<= '1';
 					
-					IF ((IsIPv4_l = '1') AND (Reader_Counter_us = (PROTOCOL_IPV4_ADDRESS_LENGTH - 1))) THEN
+					if ((IsIPv4_l = '1') AND (Reader_Counter_us = (PROTOCOL_IPV4_ADDRESS_LENGTH - 1))) then
 						TX_EOF								<= '1';
 						Reader_Counter_rst		<= '1';	
 						NextState							<= ST_COMPLETE;
-					ELSIF ((IsIPv6_l = '1') AND (Reader_Counter_us = (PROTOCOL_IPV6_ADDRESS_LENGTH - 1))) THEN
+					elsif ((IsIPv6_l = '1') AND (Reader_Counter_us = (PROTOCOL_IPV6_ADDRESS_LENGTH - 1))) then
 						TX_EOF								<= '1';
 						Reader_Counter_rst		<= '1';	
 						NextState							<= ST_COMPLETE;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_COMPLETE =>
+			when ST_COMPLETE =>
 				Complete									<= '1';
 				NextState									<= ST_IDLE;
 
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 	
 	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR Reader_Counter_rst) = '1') THEN
-				Reader_Counter_us					<= (OTHERS => '0');
-			ELSE
-				IF (Reader_Counter_en = '1') THEN
-					Reader_Counter_us				<= Reader_Counter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
-END;
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset OR Reader_Counter_rst) = '1') then
+				Reader_Counter_us					<= (others => '0');
+			elsif (Reader_Counter_en = '1') then
+				Reader_Counter_us					<= Reader_Counter_us + 1;
+			end if;
+		end if;
+	end process;
+end architecture;
