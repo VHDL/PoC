@@ -202,7 +202,7 @@ begin
 				In_Meta_rst										<= NDP_NextHop_IPv6Address_rst;
 				In_Meta_DestIPv6Address_nxt		<= NDP_NextHop_IPv6Address_nxt;
 				
-				if ((In_Valid AND In_SOF) = '1') then
+				if ((In_Valid and In_SOF) = '1') then
 					NextState										<= ST_NDP_QUERY;
 				end if;
 			
@@ -344,7 +344,7 @@ begin
 				Out_EOF													<= In_EOF;
 				In_Ack_i											<= Out_Ack;
 				
-				if ((In_EOF AND Out_Ack) = '1') then
+				if ((In_EOF and Out_Ack) = '1') then
 					In_Meta_rst										<= '1';
 					NextState											<= ST_IDLE;
 				end if;
@@ -364,7 +364,7 @@ begin
 			if ((Reset OR IPv6SeqCounter_rst) = '1') then
 				IPv6SeqCounter_us			<= (others => '0');
 			elsif (IPv6SeqCounter_en = '1') then
-				IPv6SeqCounter_us		<= IPv6SeqCounter_us + 1;
+				IPv6SeqCounter_us			<= IPv6SeqCounter_us + 1;
 			end if;
 		end if;
 	end process;
