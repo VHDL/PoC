@@ -63,7 +63,7 @@ package vga is
 		VGA_MODE_2560X1600,	VGA_MODE_WQXGA,
 		-- 5:3
 		VGA_MODE_800X480,		VGA_MODE_WVGA,
-		VGA_MODE_1280X768,	VGA_MODE_WXGA,
+		VGA_MODE_1280X768,	VGA_MODE_WXVGA,
 		-- 16:9
 		VGA_MODE_854X480,		VGA_MODE_FWVGA,
 		VGA_MODE_1280X720,	VGA_MODE_HD720,
@@ -86,7 +86,9 @@ package vga is
 		hs_pol		: std_logic;					-- hsync polarity
 		vs_pol		: std_logic;					-- vsync_polarity
   end record;
-
+	
+	function io_vga_GetParameters(Mode : T_IO_VGA_MODE; CVT : BOOLEAN) return T_VGA_PARAMETERS;
+	
   -- Control signals which must be passed from the timing module through
   -- the data processing pipeline to the physical layer controller.
   type T_IO_VGA_PHY_CTRL is record
@@ -197,7 +199,7 @@ package body vga is
 				res.vs_pol		:= '0';									-- negative
 			
 			when others =>
-				report "MODE " & integer'image(MODE) & " is not supported!"
+				report "MODE " & T_IO_VGA_MODE'image(MODE) & " is not supported!"
 					severity failure;
 					
 		end case;

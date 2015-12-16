@@ -52,9 +52,9 @@ end entity;
 
 
 architecture rtl of PulseTrain is 
-	signal State			: STD_LOGIC																							:= '0';
-	signal Counter_us	: UNSIGNED(log2ceilnz(PULSE_TRAIN'length) - 1 downto 0)	:= (others => '0');
-
+	signal State								: STD_LOGIC																							:= '0';
+	signal Counter_us						: UNSIGNED(log2ceilnz(PULSE_TRAIN'length) - 1 downto 0)	:= (others => '0');
+	signal SequenceCompleted_i	: STD_LOGIC;
 begin
 	-- state control is done by a basic RS-FF
   process(Clock) is

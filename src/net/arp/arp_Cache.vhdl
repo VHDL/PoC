@@ -3,17 +3,17 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,164 +29,164 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.cache.ALL;
-USE			PoC.io.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.physical.all;
+use			PoC.cache.all;
+use			PoC.net.all;
 
 
-ENTITY ARP_Cache IS
-	GENERIC (
-		CLOCK_FREQ_MHZ						: REAL																	:= 125.0;					-- 125 MHz
+entity arp_Cache is
+	generic (
+		CLOCK_FREQ								: FREQ																	:= 125 MHz;
 		REPLACEMENT_POLICY				: STRING																:= "LRU";
 		TAG_BYTE_ORDER						: T_BYTE_ORDER													:= BIG_ENDIAN;
 		DATA_BYTE_ORDER						: T_BYTE_ORDER													:= BIG_ENDIAN;
 		INITIAL_CACHE_CONTENT			: T_NET_ARP_ARPCACHE_VECTOR
 	);
-	PORT (
-		Clock											: IN	STD_LOGIC;																	-- 
-		Reset											: IN	STD_LOGIC;																	-- 
+	port (
+		Clock											: in	STD_LOGIC;																	-- 
+		Reset											: in	STD_LOGIC;																	-- 
 
-		Command										: IN	T_NET_ARP_ARPCACHE_COMMAND;
-		Status										: OUT	T_NET_ARP_ARPCACHE_STATUS;
-		NewIPv4Address_rst				: OUT	STD_LOGIC;
-		NewIPv4Address_nxt				: OUT	STD_LOGIC;
-		NewIPv4Address_Data				: IN	T_SLV_8;
-		NewMACAddress_rst					: OUT	STD_LOGIC;
-		NewMACAddress_nxt					: OUT	STD_LOGIC;
-		NewMACAddress_Data				: IN	T_SLV_8;
+		Command										: in	T_NET_ARP_ARPCACHE_COMMAND;
+		Status										: out	T_NET_ARP_ARPCACHE_STATUS;
+		NewIPv4Address_rst				: out	STD_LOGIC;
+		NewIPv4Address_nxt				: out	STD_LOGIC;
+		NewIPv4Address_Data				: in	T_SLV_8;
+		NewMACAddress_rst					: out	STD_LOGIC;
+		NewMACAddress_nxt					: out	STD_LOGIC;
+		NewMACAddress_Data				: in	T_SLV_8;
 		
-		Lookup										: IN	STD_LOGIC;
-		IPv4Address_rst						: OUT	STD_LOGIC;
-		IPv4Address_nxt						: OUT	STD_LOGIC;
-		IPv4Address_Data					: IN	T_SLV_8;
+		Lookup										: in	STD_LOGIC;
+		IPv4Address_rst						: out	STD_LOGIC;
+		IPv4Address_nxt						: out	STD_LOGIC;
+		IPv4Address_Data					: in	T_SLV_8;
 		
-		CacheResult								: OUT	T_CACHE_RESULT;
-		MACAddress_rst						: IN	STD_LOGIC;
-		MACAddress_nxt						: IN	STD_LOGIC;
-		MACAddress_Data						: OUT	T_SLV_8
+		CacheResult								: out	T_CACHE_RESULT;
+		MACAddress_rst						: in	STD_LOGIC;
+		MACAddress_nxt						: in	STD_LOGIC;
+		MACAddress_Data						: out	T_SLV_8
 	);
-END;
+end entity;
 
-ARCHITECTURE rtl OF ARP_Cache IS
-ATTRIBUTE KEEP										: BOOLEAN;
 
-	CONSTANT CACHE_LINES							: POSITIVE	:= 8;
-	CONSTANT TAG_BITS									: POSITIVE	:= 32;		-- IPv4 address
-	CONSTANT DATA_BITS								:	POSITIVE	:= 48;		-- MAC address
-	CONSTANT TAGCHUNK_BITS						: POSITIVE	:= 8;
-	CONSTANT DATACHUNK_BITS						: POSITIVE	:= 8;
+architecture rtl of arp_Cache is
+	constant CACHE_LINES							: POSITIVE	:= 8;
+	constant TAG_BITS									: POSITIVE	:= 32;		-- IPv4 address
+	constant DATA_BITS								:	POSITIVE	:= 48;		-- MAC address
+	constant TAGCHUNK_BITS						: POSITIVE	:= 8;
+	constant DATACHUNK_BITS						: POSITIVE	:= 8;
 	
-	CONSTANT DATACHUNKS								: POSITIVE	:= div_ceil(DATA_BITS, DATACHUNK_BITS);
-	CONSTANT DATACHUNK_INDEX_BITS			: POSITIVE	:= log2ceilnz(DATACHUNKS);
-	CONSTANT CACHEMEMORY_INDEX_BITS		: POSITIVE	:= log2ceilnz(CACHE_LINES);
+	constant DATACHUNKS								: POSITIVE	:= div_ceil(DATA_BITS, DATACHUNK_BITS);
+	constant DATACHUNK_INDEX_BITS			: POSITIVE	:= log2ceilnz(DATACHUNKS);
+	constant CACHEMEMORY_INDEX_BITS		: POSITIVE	:= log2ceilnz(CACHE_LINES);
 	
-	FUNCTION to_TagData(CacheContent : T_NET_ARP_ARPCACHE_VECTOR) RETURN T_SLM IS
---		VARIABLE slvv		: T_SLVV_32(CACHE_LINES - 1 DOWNTO 0)	:= (OTHERS => (OTHERS => '0'));
-		VARIABLE slvv		: T_SLVV_32(CacheContent'high DOWNTO CacheContent'low)	:= (OTHERS => (OTHERS => '0'));
-	BEGIN
-		FOR I IN CacheContent'range LOOP
+	function to_TagData(CacheContent : T_NET_ARP_ARPCACHE_VECTOR) return T_SLM is
+--		variable slvv		: T_SLVV_32(CACHE_LINES - 1 downto 0)	:= (others => (others => '0'));
+		variable slvv		: T_SLVV_32(CacheContent'high downto CacheContent'low)	:= (others => (others => '0'));
+	begin
+		for i in CacheContent'range loop
 			slvv(I)	:= to_slv(CacheContent(I).Tag);
-		END LOOP;
-		RETURN to_slm(slvv);
-	END FUNCTION;
+		end loop;
+		return to_slm(slvv);
+	end function;
 	
-	FUNCTION to_CacheData_slvv_48(CacheContent : T_NET_ARP_ARPCACHE_VECTOR) RETURN T_SLVV_48 IS
-		VARIABLE slvv		: T_SLVV_48(CACHE_LINES - 1 DOWNTO 0)	:= (OTHERS => (OTHERS => '0'));
-	BEGIN
-		FOR I IN CacheContent'range LOOP
+	function to_CacheData_slvv_48(CacheContent : T_NET_ARP_ARPCACHE_VECTOR) return T_SLVV_48 is
+		variable slvv		: T_SLVV_48(CACHE_LINES - 1 downto 0)	:= (others => (others => '0'));
+	begin
+		for i in CacheContent'range loop
 			slvv(I)	:= to_slv(CacheContent(I).MAC);
-		END LOOP;
-		RETURN slvv;
-	END FUNCTION;
+		end loop;
+		return slvv;
+	end function;
 	
-	FUNCTION to_CacheMemory(CacheContent : T_NET_ARP_ARPCACHE_VECTOR) RETURN T_SLVV_8 IS
-		CONSTANT BYTES_PER_LINE	: POSITIVE																				:= 6;
-		CONSTANT slvv						: T_SLVV_48(CACHE_LINES - 1 DOWNTO 0)							:= to_CacheData_slvv_48(CacheContent);
-		VARIABLE result					: T_SLVV_8((CACHE_LINES * BYTES_PER_LINE) - 1 DOWNTO 0);
-	BEGIN
-		FOR I IN slvv'range LOOP
-			FOR J IN 0 TO BYTES_PER_LINE - 1 LOOP
-				result((I * BYTES_PER_LINE) + J)	:= slvv(I)((J * 8) + 7 DOWNTO J * 8);
-			END LOOP;
-		END LOOP;
-		RETURN result;
-	END FUNCTION;
+	function to_CacheMemory(CacheContent : T_NET_ARP_ARPCACHE_VECTOR) return T_SLVV_8 is
+		constant BYTES_PER_LINE	: POSITIVE																				:= 6;
+		constant slvv						: T_SLVV_48(CACHE_LINES - 1 downto 0)							:= to_CacheData_slvv_48(CacheContent);
+		variable result					: T_SLVV_8((CACHE_LINES * BYTES_PER_LINE) - 1 downto 0);
+	begin
+		for i in slvv'range loop
+			for j in 0 to BYTES_PER_LINE - 1 loop
+				result((I * BYTES_PER_LINE) + J)	:= slvv(I)((J * 8) + 7 downto J * 8);
+			end loop;
+		end loop;
+		return result;
+	end function;
 	
-	CONSTANT INITIAL_TAGS					: T_SLM			:= to_TagData(INITIAL_CACHE_CONTENT);
-	CONSTANT INITIAL_DATALINES		: T_SLVV_8	:= to_CacheMemory(INITIAL_CACHE_CONTENT);
+	constant INITIAL_TAGS					: T_SLM			:= to_TagData(INITIAL_CACHE_CONTENT);
+	constant INITIAL_DATALINES		: T_SLVV_8	:= to_CacheMemory(INITIAL_CACHE_CONTENT);
 	
 	
-	SIGNAL ReadWrite							: STD_LOGIC;
+	signal ReadWrite							: STD_LOGIC;
 	
-	TYPE T_FSMREPLACE_STATE IS (ST_IDLE, ST_REPLACE);
+	type T_FSMREPLACE_STATE is (ST_IDLE, ST_REPLACE);
 	
-	SIGNAL FSMReplace_State				: T_FSMREPLACE_STATE						:= ST_IDLE;
-	SIGNAL FSMReplace_NextState		: T_FSMREPLACE_STATE;
+	signal FSMReplace_State				: T_FSMREPLACE_STATE						:= ST_IDLE;
+	signal FSMReplace_NextState		: T_FSMREPLACE_STATE;
 	
-	SIGNAL Insert									: STD_LOGIC;
+	signal Insert									: STD_LOGIC;
 		
-	SIGNAL TU_NewTag_rst					: STD_LOGIC;
-	SIGNAL TU_NewTag_nxt					: STD_LOGIC;
-	SIGNAL NewTag_Data						: T_SLV_8;
+	signal TU_NewTag_rst					: STD_LOGIC;
+	signal TU_NewTag_nxt					: STD_LOGIC;
+	signal NewTag_Data						: T_SLV_8;
 	
-	SIGNAL NewCacheLine_Data			: T_SLV_8;
+	signal NewCacheLine_Data			: T_SLV_8;
 		
-	SIGNAL TU_Tag_rst							: STD_LOGIC;
-	SIGNAL TU_Tag_nxt							: STD_LOGIC;
-	SIGNAL TU_Tag_Data						: T_SLV_8;
-	SIGNAL CacheHit								: STD_LOGIC;
-	SIGNAL CacheMiss							: STD_LOGIC;
+	signal TU_Tag_rst							: STD_LOGIC;
+	signal TU_Tag_nxt							: STD_LOGIC;
+	signal TU_Tag_Data						: T_SLV_8;
+	signal CacheHit								: STD_LOGIC;
+	signal CacheMiss							: STD_LOGIC;
 	
-	SIGNAL TU_Index								: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
-	SIGNAL TU_Index_d							: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
---	SIGNAL TU_Index_us						: UNSIGNED(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
+	signal TU_Index								: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 downto 0);
+	signal TU_Index_d							: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 downto 0);
+--	signal TU_Index_us						: UNSIGNED(CACHEMEMORY_INDEX_BITS - 1 downto 0);
 	
-	SIGNAL TU_NewIndex						: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
-	SIGNAL TU_Replaced						: STD_LOGIC;
+	signal TU_NewIndex						: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 downto 0);
+	signal TU_Replaced						: STD_LOGIC;
 	
-	SIGNAL TU_TagHit							: STD_LOGIC;
-	SIGNAL TU_TagMiss							: STD_LOGIC;
+	signal TU_TagHit							: STD_LOGIC;
+	signal TU_TagMiss							: STD_LOGIC;
 
-	CONSTANT TICKCOUNTER_RES_MS		: REAL																																			:= 10.0;
-	CONSTANT TICKCOUNTER_MAX			: POSITIVE																																	:= TimingToCycles_ms(TICKCOUNTER_RES_MS, Freq_MHz2Real_ns(CLOCK_FREQ_MHZ));
-	CONSTANT TICKCOUNTER_BITS			: POSITIVE																																	:= log2ceilnz(TICKCOUNTER_MAX);
+	constant TICKCOUNTER_RES			: TIME																																			:= 10 ms;
+	constant TICKCOUNTER_MAX			: POSITIVE																																	:= TimingToCycles(TICKCOUNTER_RES, CLOCK_FREQ);
+	constant TICKCOUNTER_BITS			: POSITIVE																																	:= log2ceilnz(TICKCOUNTER_MAX);
 	
-	SIGNAL TickCounter_s					: SIGNED(TICKCOUNTER_BITS DOWNTO 0)																					:= to_signed(TICKCOUNTER_MAX, TICKCOUNTER_BITS + 1);
-	SIGNAL Tick										: STD_LOGIC;
+	signal TickCounter_s					: SIGNED(TICKCOUNTER_BITS downto 0)																					:= to_signed(TICKCOUNTER_MAX, TICKCOUNTER_BITS + 1);
+	signal Tick										: STD_LOGIC;
 
-	SIGNAL Exp_Expired						: STD_LOGIC;
-	SIGNAL Exp_KeyOut							: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
+	signal Exp_Expired						: STD_LOGIC;
+	signal Exp_KeyOut							: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 downto 0);
 
-	SIGNAL DataChunkIndex_us					: UNSIGNED((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 DOWNTO 0)		:= (OTHERS => '0');
-	SIGNAL DataChunkIndex_l_us				: UNSIGNED((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 DOWNTO 0)		:= (OTHERS => '0');
-	SIGNAL NewDataChunkIndex_en				: STD_LOGIC;
-	SIGNAL NewDataChunkIndex_us				: UNSIGNED((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 DOWNTO 0)		:= (OTHERS => '0');
-	SIGNAL NewDataChunkIndex_max_us		: UNSIGNED((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 DOWNTO 0)		:= (OTHERS => '0');
-	SIGNAL CacheMemory_we							: STD_LOGIC;
-	SIGNAL CacheMemory								: T_SLVV_8((CACHE_LINES * T_NET_MAC_ADDRESS'length) - 1 DOWNTO 0)						:= INITIAL_DATALINES;
-	SIGNAL Memory_ReadWrite						: STD_LOGIC;
+	signal DataChunkIndex_us					: UNSIGNED((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0)		:= (others => '0');
+	signal DataChunkIndex_l_us				: UNSIGNED((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0)		:= (others => '0');
+	signal NewDataChunkIndex_en				: STD_LOGIC;
+	signal NewDataChunkIndex_us				: UNSIGNED((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0)		:= (others => '0');
+	signal NewDataChunkIndex_max_us		: UNSIGNED((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0)		:= (others => '0');
+	signal CacheMemory_we							: STD_LOGIC;
+	signal CacheMemory								: T_SLVV_8((CACHE_LINES * T_NET_MAC_ADDRESS'length) - 1 downto 0)						:= INITIAL_DATALINES;
+	signal Memory_ReadWrite						: STD_LOGIC;
 	
-BEGIN
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+begin
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				FSMReplace_State			<= ST_IDLE;
-			ELSE
+			else
 				FSMReplace_State			<= FSMReplace_NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(FSMReplace_State, Command, TU_Replaced, TU_NewTag_rst, TU_NewTag_nxt, NewDataChunkIndex_us, NewDataChunkIndex_max_us)
-	BEGIN
+	process(FSMReplace_State, Command, TU_Replaced, TU_NewTag_rst, TU_NewTag_nxt, NewDataChunkIndex_us, NewDataChunkIndex_max_us)
+	begin
 		FSMReplace_NextState							<= FSMReplace_State;
 		
 		Status														<= NET_ARP_ARPCACHE_STATUS_IDLE;
@@ -201,15 +201,15 @@ BEGIN
 		
 		Insert														<= '0';
 	
-		CASE FSMReplace_State IS
-			WHEN ST_IDLE =>
+		case FSMReplace_State IS
+			when ST_IDLE =>
 				NewMACAddress_rst							<= '1';
 			
-				CASE Command IS
-					WHEN NET_ARP_ARPCACHE_CMD_NONE =>
-						NULL;
+				case Command IS
+					when NET_ARP_ARPCACHE_CMD_NONE =>
+						null;
 						
-					WHEN NET_ARP_ARPCACHE_CMD_ADD =>
+					when NET_ARP_ARPCACHE_CMD_ADD =>
 						Status										<= NET_ARP_ARPCACHE_STATUS_UPDATING;
 					
 						Insert										<= '1';
@@ -220,24 +220,24 @@ BEGIN
 						
 						FSMReplace_NextState			<= ST_REPLACE;
 						
-					WHEN OTHERS =>
-						NULL;
-				END CASE;
+					when others =>
+						null;
+				end case;
 			
-			WHEN ST_REPLACE =>
+			when ST_REPLACE =>
 				Status												<= NET_ARP_ARPCACHE_STATUS_UPDATING;
 			
 				CacheMemory_we								<= '1';
 				NewMACAddress_nxt							<= '1';
 				NewDataChunkIndex_en					<= '1';
 				
-				IF (NewDataChunkIndex_us = NewDataChunkIndex_max_us) THEN
+				if (NewDataChunkIndex_us = NewDataChunkIndex_max_us) then
 					Status											<= NET_ARP_ARPCACHE_STATUS_UPDATE_COMPLETE;
 					FSMReplace_NextState				<= ST_IDLE;
-				END IF;
+				end if;
 				
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
 	ReadWrite						<= '0';
 	NewTag_Data					<= NewIPv4Address_Data;
@@ -250,9 +250,9 @@ BEGIN
 	CacheResult					<= to_cache_result(CacheHit, CacheMiss);
 
 	-- Cache TagUnit
---	TU : ENTITY L_Global.Cache_TagUnit_seq
-	TU : ENTITY PoC.Cache_TagUnit_seq
-		GENERIC MAP (
+--	TU : entity L_Global.Cache_TagUnit_seq
+	TU : entity PoC.Cache_TagUnit_seq
+		generic map (
 			REPLACEMENT_POLICY				=> REPLACEMENT_POLICY,
 			CACHE_LINES								=> CACHE_LINES,
 			ASSOCIATIVITY							=> CACHE_LINES,
@@ -261,14 +261,14 @@ BEGIN
 			TAG_BYTE_ORDER						=> TAG_BYTE_ORDER,
 			INITIAL_TAGS							=> INITIAL_TAGS
 		)
-		PORT MAP (
+		port map (
 			Clock											=> Clock,
 			Reset											=> Reset,
 			
 			Replace										=> Insert,
 			Replaced									=> TU_Replaced,
 			Replace_NewTag_rst				=> TU_NewTag_rst,
-			Replace_NewTag_rev				=> OPEN,
+			Replace_NewTag_rev				=> open,
 			Replace_NewTag_nxt				=> TU_NewTag_nxt,
 			Replace_NewTag_Data				=> NewTag_Data,
 			Replace_NewIndex					=> TU_NewIndex,
@@ -277,7 +277,7 @@ BEGIN
 			Request_ReadWrite					=> '0',
 			Request_Invalidate				=> '0',--Invalidate,
 			Request_Tag_rst						=> TU_Tag_rst,
-			Request_Tag_rev						=> OPEN,
+			Request_Tag_rev						=> open,
 			Request_Tag_nxt						=> TU_Tag_nxt,
 			Request_Tag_Data					=> TU_Tag_Data,
 			Request_Index							=> TU_Index,
@@ -286,28 +286,28 @@ BEGIN
 		);
 
 	-- expiration time tick generator
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Tick = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Tick = '1') then
 				TickCounter_s		<= to_signed(TICKCOUNTER_MAX, TickCounter_s'length);
-			ELSE
+			else
 				TickCounter_s	<= TickCounter_s - 1;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 	
 	Tick			<= TickCounter_s(TickCounter_s'high);
 
---	Exp : ENTITY L_Global.list_expire
-	Exp : ENTITY PoC.list_expire
-		GENERIC MAP (
+--	Exp : entity L_Global.list_expire
+	Exp : entity PoC.list_expire
+		generic map (
 			CLOCK_CYCLE_TICKS				=> 65536,
 			EXPIRATION_TIME_TICKS		=> 8192,
 			ELEMENTS								=> CACHE_LINES,
 			KEY_BITS								=> CACHEMEMORY_INDEX_BITS
 		)
-		PORT MAP (
+		port map (
 			Clock										=> Clock,
 			Reset										=> Reset,
 			
@@ -323,71 +323,69 @@ BEGIN
 	
 	
 	-- latch TU_Index on TagHit
---	TU_Index_us		<= unsigned(TU_Index) WHEN rising_edge(Clock) AND (TU_TagHit = '1');
+--	TU_Index_us		<= unsigned(TU_Index) when rising_edge(Clock) AND (TU_TagHit = '1');
 
 	-- NewDataChunkIndex counter
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (NewDataChunkIndex_en = '0') THEN
-				IF (DATA_BYTE_ORDER = LITTLE_ENDIAN) THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (NewDataChunkIndex_en = '0') then
+				if (DATA_BYTE_ORDER = LITTLE_ENDIAN) then
 					NewDataChunkIndex_us			<= resize(unsigned(TU_NewIndex) * 6, NewDataChunkIndex_us'length);
 					NewDataChunkIndex_max_us	<= resize(unsigned(TU_NewIndex) * 6, NewDataChunkIndex_us'length) + to_unsigned((DATACHUNKS - 1), NewDataChunkIndex_us'length);
-				ELSE
+				else
 					NewDataChunkIndex_us			<= resize(unsigned(TU_NewIndex) * 6, NewDataChunkIndex_us'length) + to_unsigned((DATACHUNKS - 1), NewDataChunkIndex_us'length);
 					NewDataChunkIndex_max_us	<= resize(unsigned(TU_NewIndex) * 6, NewDataChunkIndex_us'length);
-				END IF;
-			ELSE
-				IF (DATA_BYTE_ORDER = LITTLE_ENDIAN) THEN
+				end if;
+			else
+				if (DATA_BYTE_ORDER = LITTLE_ENDIAN) then
 					NewDataChunkIndex_us	<= NewDataChunkIndex_us + 1;
-				ELSE
+				else
 					NewDataChunkIndex_us	<= NewDataChunkIndex_us - 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 	
 	-- DataChunkIndex counter
-	PROCESS(Clock, TU_Index)
-		VARIABLE temp		: UNSIGNED(DataChunkIndex_us'range);
-	BEGIN
-		IF (DATA_BYTE_ORDER = LITTLE_ENDIAN) THEN
+	process(Clock, TU_Index)
+		variable temp		: UNSIGNED(DataChunkIndex_us'range);
+	begin
+		if (DATA_BYTE_ORDER = LITTLE_ENDIAN) then
 			temp	:= resize(unsigned(TU_Index) * 6, DataChunkIndex_us'length);
-		ELSE
+		else
 			temp	:= resize(unsigned(TU_Index) * 6, DataChunkIndex_us'length) + to_unsigned((DATACHUNKS - 1), DataChunkIndex_us'length);
-		END IF;
+		end if;
 	
-		IF rising_edge(Clock) THEN
-			IF (TU_TagHit = '1') THEN
+		if rising_edge(Clock) then
+			if (TU_TagHit = '1') then
 				DataChunkIndex_us				<= temp;
 				DataChunkIndex_l_us			<= temp;
-			ELSIF (MACAddress_rst = '1') THEN
+			elsif (MACAddress_rst = '1') then
 				DataChunkIndex_us				<= DataChunkIndex_l_us;
-			ELSE
-				IF (MACAddress_nxt = '1') THEN
-					IF (DATA_BYTE_ORDER = LITTLE_ENDIAN) THEN
-						DataChunkIndex_us		<= DataChunkIndex_us + 1;
-					ELSE
-						DataChunkIndex_us		<= DataChunkIndex_us - 1;
-					END IF;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+			elsif (MACAddress_nxt = '1') then
+				if (DATA_BYTE_ORDER = LITTLE_ENDIAN) then
+					DataChunkIndex_us			<= DataChunkIndex_us + 1;
+				else
+					DataChunkIndex_us			<= DataChunkIndex_us - 1;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	-- Cache Memory - port 1
 	Memory_ReadWrite	<= ReadWrite;
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (CacheMemory_we = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (CacheMemory_we = '1') then
 				CacheMemory(to_integer(NewDataChunkIndex_us))	<= NewCacheLine_Data;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
 	CacheHit					<= TU_TagHit;
 	CacheMiss					<= TU_TagMiss;
 	MACAddress_Data		<= CacheMemory(to_index(DataChunkIndex_us, CacheMemory'high));
-END ARCHITECTURE;
+end architecture;

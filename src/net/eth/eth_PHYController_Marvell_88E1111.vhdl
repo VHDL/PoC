@@ -45,8 +45,8 @@ USE			PoC.net.ALL;
 ENTITY Eth_PHYController_Marvell_88E1111 IS
 	GENERIC (
 		DEBUG											: BOOLEAN													:= FALSE;
-		CLOCK_FREQ								: FREQ														:= 125 MHz;						-- 125 MHz
-		PHY_DEVICE_ADDRESS				: T_NET_ETH_PHY_DEVICE_ADDRESS		:= "XXXXX"
+		CLOCK_FREQ								: FREQ														:= 125 MHz;
+		PHY_DEVICE_ADDRESS				: T_NET_ETH_PHY_DEVICE_ADDRESS		:= "XXXXXXXX"
 	);
 	PORT (
 		Clock											: IN	STD_LOGIC;
