@@ -23,6 +23,17 @@ __pycache__
 /py/config.private.ini
 /tb/common/my_project.vhdl
 
+# ignore external tool files: ActiveHDL, QuestaSim
+/prj/ActiveHDL/*.*
+/prj/ActiveHDL/**/*.*
+
+/prj/QuestaSim/*
+/prj/QuestaSim/*.*
+/prj/QuestaSim/**/*.*
+!/prj/QuestaSim/PoC.mpf
+!/prj/QuestaSim/PoC.cr.mti
+
+
 # ignore Quartus files
 /other/quartus/**/*.*
 /other/quartus/**/db/

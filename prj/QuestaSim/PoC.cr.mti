@@ -1,0 +1,2646 @@
+D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_6.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_6.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:39 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_6.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity xil_ChipScopeICON_6
+-- Compiling architecture xil_ChipScopeICON_6_a of xil_ChipScopeICON_6
+End time: 17:00:39 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/fifo/fifo_cc_got_tempgot.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/fifo/fifo_cc_got_tempgot.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:31 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/fifo/fifo_cc_got_tempgot.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package ocram
+-- Compiling entity fifo_cc_got_tempgot
+-- Compiling architecture rtl of fifo_cc_got_tempgot
+End time: 17:00:31 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/gearbox/gearbox_up_dc.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/gearbox/gearbox_up_dc.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:32 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/gearbox/gearbox_up_dc.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package components
+-- Compiling entity gearbox_up_dc
+-- Compiling architecture rtl of gearbox_up_dc
+End time: 17:00:32 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/cache/cache_tagunit_par.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/cache/cache_tagunit_par.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:34 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/cache/cache_tagunit_par.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity cache_tagunit_par
+-- Compiling architecture rtl of cache_tagunit_par
+-- Loading entity cache_replacement_policy
+End time: 17:00:34 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/fifo/fifo_shift.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/fifo/fifo_shift.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:29 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/fifo/fifo_shift.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity fifo_shift
+-- Compiling architecture rtl of fifo_shift
+End time: 17:00:30 on Dec 16,2015, Elapsed time: 0:00:01
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/bus/wb/wb_fifo_adapter.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/wb/wb_fifo_adapter.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:29 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/wb/wb_fifo_adapter.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity wb_fifo_adapter
+-- Compiling architecture rtl of wb_fifo_adapter
+End time: 17:00:29 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/xil/xil_SystemMonitor_Series7.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/xil/xil_SystemMonitor_Series7.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:35 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/xil/xil_SystemMonitor_Series7.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package VCOMPONENTS
+-- Compiling entity xil_SystemMonitor_Series7
+-- Compiling architecture xilinx of xil_SystemMonitor_Series7
+End time: 17:00:36 on Dec 16,2015, Elapsed time: 0:00:01
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/gearbox/gearbox_down_dc.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/gearbox/gearbox_down_dc.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:32 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/gearbox/gearbox_down_dc.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package components
+-- Compiling entity gearbox_down_dc
+-- Compiling architecture rtl of gearbox_down_dc
+End time: 17:00:32 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/stat/stat_Maximum.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/stat/stat_Maximum.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:34 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/stat/stat_Maximum.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity stat_Maximum
+-- Compiling architecture rtl of stat_Maximum
+** Warning: D:/git/PoC/src/misc/stat/stat_Maximum.vhdl(94): (vcom-1073) Non-locally static choice (association #1, choice #1) is allowed only if it is the only choice of the only association.
+
+End time: 17:00:34 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 1
+
+} {} {}} D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_11.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_11.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:38 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_11.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity xil_ChipScopeICON_11
+-- Compiling architecture xil_ChipScopeICON_11_a of xil_ChipScopeICON_11
+End time: 17:00:38 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/arith/arith_sqrt.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_sqrt.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:27 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_sqrt.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity arith_sqrt
+-- Compiling architecture rtl of arith_sqrt
+End time: 17:00:27 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/arith/arith_scaler.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_scaler.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:29 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_scaler.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity arith_scaler
+-- Compiling architecture rtl of arith_scaler
+** Warning: D:/git/PoC/src/arith/arith_scaler.vhdl(192): (vcom-1074) Non-locally static OTHERS choice is allowed only if it is the only choice of the only association.
+
+** Warning: D:/git/PoC/src/arith/arith_scaler.vhdl(201): (vcom-1074) Non-locally static OTHERS choice is allowed only if it is the only choice of the only association.
+
+End time: 17:00:29 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 2
+
+} {} {}} D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_3.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_3.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:39 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_3.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity xil_ChipScopeICON_3
+-- Compiling architecture xil_ChipScopeICON_3_a of xil_ChipScopeICON_3
+End time: 17:00:39 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/xil/xil.pkg.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/xil/xil.pkg.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:32 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/xil/xil.pkg.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Compiling package xil
+End time: 17:00:33 on Dec 16,2015, Elapsed time: 0:00:01
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/sync/sync_Reset_Xilinx.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Reset_Xilinx.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:36 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Reset_Xilinx.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package VCOMPONENTS
+-- Compiling entity sync_Reset_Xilinx
+-- Compiling architecture rtl of sync_Reset_Xilinx
+End time: 17:00:36 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/arith/arith_shifter_barrel.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_shifter_barrel.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:29 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_shifter_barrel.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity arith_shifter_barrel
+-- Compiling architecture rtl of arith_shifter_barrel
+End time: 17:00:29 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/cache/cache_tagunit_seq.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/cache/cache_tagunit_seq.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:35 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/cache/cache_tagunit_seq.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity cache_tagunit_seq
+** Warning: D:/git/PoC/src/cache/cache_tagunit_seq.vhdl(52): (vcom-1514) Range choice direction (downto) does not determine aggregate index range direction (to).
+
+** Warning: D:/git/PoC/src/cache/cache_tagunit_seq.vhdl(52): (vcom-1514) Range choice direction (downto) does not determine aggregate index range direction (to).
+
+-- Compiling architecture rtl of cache_tagunit_seq
+-- Loading entity cache_replacement_policy
+End time: 17:00:35 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 2
+
+} {} {}} D:/git/PoC/src/net/net_FrameChecksum.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/net/net_FrameChecksum.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:33 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/net/net_FrameChecksum.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity net_FrameChecksum
+-- Compiling architecture rtl of net_FrameChecksum
+-- Loading package ocram
+-- Loading entity fifo_cc_got
+-- Loading entity fifo_cc_got_tempgot
+** Warning: D:/git/PoC/src/net/net_FrameChecksum.vhdl(294): (vcom-1514) Range choice direction (downto) does not determine aggregate index range direction (to).
+
+End time: 17:00:33 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 1
+
+} {} {}} D:/git/PoC/src/bus/wb/wb_ocram.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/wb/wb_ocram.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:28 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/wb/wb_ocram.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity ocram_wb
+-- Compiling architecture rtl of ocram_wb
+End time: 17:00:28 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/misc_StrobeLimiter.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_StrobeLimiter.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:30 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_StrobeLimiter.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity misc_StrobeLimiter
+-- Compiling architecture rtl of misc_StrobeLimiter
+End time: 17:00:30 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/arith/arith_prefix_or.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_prefix_or.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:35 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_prefix_or.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Compiling entity arith_prefix_or
+-- Compiling architecture rtl of arith_prefix_or
+End time: 17:00:35 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/misc_Delay.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_Delay.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:34 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_Delay.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity misc_Delay
+-- Compiling architecture rtl of misc_Delay
+End time: 17:00:34 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/arith/arith_prefix_and.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_prefix_and.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:35 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_prefix_and.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Compiling entity arith_prefix_and
+-- Compiling architecture rtl of arith_prefix_and
+End time: 17:00:35 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/misc_FrequencyMeasurement.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_FrequencyMeasurement.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:34 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_FrequencyMeasurement.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Loading package physical
+-- Loading package components
+-- Compiling entity misc_FrequencyMeasurement
+-- Compiling architecture rtl of misc_FrequencyMeasurement
+-- Loading entity sync_Strobe
+End time: 17:00:34 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/filter/filter_or.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/filter/filter_or.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:30 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/filter/filter_or.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity filter_or
+-- Compiling architecture rtl of filter_or
+End time: 17:00:30 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/xil/xil_BSCAN.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/xil/xil_BSCAN.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:35 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/xil/xil_BSCAN.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package VCOMPONENTS
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Compiling entity xil_BSCAN
+-- Compiling architecture rtl of xil_BSCAN
+End time: 17:00:35 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/arith/arith.pkg.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith.pkg.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:29 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith.pkg.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling package arith
+End time: 17:00:29 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/bus/stream/stream.pkg.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/stream/stream.pkg.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:33 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/stream/stream.pkg.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Compiling package stream
+-- Compiling package body stream
+-- Loading package stream
+** Warning: D:/git/PoC/src/bus/stream/stream.pkg.vhdl(458): (vcom-1514) Range choice direction (downto) does not determine aggregate index range direction (to).
+
+End time: 17:00:33 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 1
+
+} {} {}} D:/git/PoC/src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl {0 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:43 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity sortnet_OddEvenMergeSort
+-- Compiling entity sortnet_OddEvenMergeSort_Sort
+-- Compiling entity sortnet_OddEvenMergeSort_Merge
+-- Compiling architecture rtl of sortnet_OddEvenMergeSort
+-- Loading package components
+-- Loading entity sortnet_Switch
+-- Compiling architecture rtl of sortnet_OddEvenMergeSort_Sort
+** Error: (vcom-11) Could not find work.sortnet_bitonicmerge.
+
+** Error (suppressible): D:/git/PoC/src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl(266): (vcom-1195) Cannot find expanded name "poc.sortnet_BitonicMerge".
+
+** Error: D:/git/PoC/src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl(266): Unknown expanded name.
+** Error: D:/git/PoC/src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl(286): VHDL Compiler exiting
+End time: 17:00:43 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 4, Warnings: 0
+
+} {24.0 25.0 28.0 30.0} {}} D:/git/PoC/src/misc/sync/sync_Command.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Command.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:34 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Command.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity sync_Command
+-- Compiling architecture rtl of sync_Command
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package physical
+-- Loading package sync
+-- Loading entity sync_Bits
+End time: 17:00:34 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/sync/sync_Strobe.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Strobe.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:34 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Strobe.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity sync_Strobe
+-- Compiling architecture rtl of sync_Strobe
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package physical
+-- Loading package sync
+-- Loading entity sync_Bits
+End time: 17:00:34 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/bus/stream/stream_DeMux.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/stream/stream_DeMux.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:33 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/stream/stream_DeMux.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity stream_DeMux
+-- Compiling architecture rtl of stream_DeMux
+End time: 17:00:33 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/gearbox/gearbox_up_cc.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/gearbox/gearbox_up_cc.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:34 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/gearbox/gearbox_up_cc.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package math
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Loading package components
+-- Compiling entity gearbox_up_cc
+-- Compiling architecture rtl of gearbox_up_cc
+End time: 17:00:34 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/sort/sortnet/sortnet_BitonicSort.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/sort/sortnet/sortnet_BitonicSort.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:34 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/sort/sortnet/sortnet_BitonicSort.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package math
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Loading package components
+-- Compiling entity sortnet_BitonicSort
+-- Compiling architecture rtl of sortnet_BitonicSort
+End time: 17:00:34 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/sync/sync.pkg.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync.pkg.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:34 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync.pkg.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package physical
+-- Compiling package sync
+End time: 17:00:34 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/mem/sdram/sdram_ctrl_fsm.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/sdram/sdram_ctrl_fsm.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:30 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/sdram/sdram_ctrl_fsm.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity sdram_ctrl_fsm
+-- Compiling architecture rtl of sdram_ctrl_fsm
+End time: 17:00:30 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/sort/sortnet/sortnet_Switch.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/sort/sortnet/sortnet_Switch.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:32 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/sort/sortnet/sortnet_Switch.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package components
+-- Compiling entity sortnet_Switch
+-- Compiling architecture rtl of sortnet_Switch
+End time: 17:00:32 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/misc_PulseTrain.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_PulseTrain.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:30 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_PulseTrain.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity PulseTrain
+-- Compiling architecture rtl of PulseTrain
+End time: 17:00:30 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/bus/wb/wb_uart_wrapper.vhdl {0 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/wb/wb_uart_wrapper.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:42 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/wb/wb_uart_wrapper.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity uart_wb
+** Error: D:/git/PoC/src/bus/wb/wb_uart_wrapper.vhdl(28): (vcom-1136) Unknown identifier "FREQ".
+
+** Error: D:/git/PoC/src/bus/wb/wb_uart_wrapper.vhdl(29): (vcom-1136) Unknown identifier "BAUD".
+
+** Error: D:/git/PoC/src/bus/wb/wb_uart_wrapper.vhdl(55): VHDL Compiler exiting
+End time: 17:00:42 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 3, Warnings: 0
+
+} {9.0 10.0 11.0 12.0 13.0 14.0} {}} D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_8.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_8.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:38 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_8.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity xil_ChipScopeICON_8
+-- Compiling architecture xil_ChipScopeICON_8_a of xil_ChipScopeICON_8
+End time: 17:00:38 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/common/components.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/components.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:31 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/components.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling package components
+-- Compiling package body components
+-- Loading package components
+End time: 17:00:31 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/gearbox/gearbox_down_cc.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/gearbox/gearbox_down_cc.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:34 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/gearbox/gearbox_down_cc.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package math
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Loading package components
+-- Compiling entity gearbox_down_cc
+-- Compiling architecture rtl of gearbox_down_cc
+End time: 17:00:34 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/sync/sync_Reset.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Reset.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:34 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Reset.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package physical
+-- Loading package sync
+-- Compiling entity sync_Reset
+-- Compiling architecture rtl of sync_Reset
+End time: 17:00:34 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/sync/sync_Reset_Altera.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Reset_Altera.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:28 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Reset_Altera.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity sync_Reset_Altera
+-- Compiling architecture rtl of sync_Reset_Altera
+End time: 17:00:28 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/common/config.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/config.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:31 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/config.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling package config_private
+-- Compiling package body config_private
+-- Loading package config_private
+-- Loading package my_project
+-- Loading package config_private
+-- Compiling package config
+-- Compiling package body config
+-- Loading package config
+** Warning: D:/git/PoC/src/common/config.vhdl(664): Function 'VENDOR' may complete without a RETURN at line 661.
+** Warning: D:/git/PoC/src/common/config.vhdl(718): Function 'DEVICE' may complete without a RETURN at line 699.
+** Warning: D:/git/PoC/src/common/config.vhdl(718): Function 'DEVICE' may complete without a RETURN at line 712.
+** Warning: D:/git/PoC/src/common/config.vhdl(718): Function 'DEVICE' may complete without a RETURN at line 715.
+** Warning: D:/git/PoC/src/common/config.vhdl(747): Function 'DEVICE_FAMILY' may complete without a RETURN at line 731.
+** Warning: D:/git/PoC/src/common/config.vhdl(747): Function 'DEVICE_FAMILY' may complete without a RETURN at line 741.
+** Warning: D:/git/PoC/src/common/config.vhdl(747): Function 'DEVICE_FAMILY' may complete without a RETURN at line 744.
+** Warning: D:/git/PoC/src/common/config.vhdl(769): Function 'DEVICE_NUMBER' may complete without a RETURN at line 766.
+** Warning: D:/git/PoC/src/common/config.vhdl(842): Function 'DEVICE_SUBTYPE' may complete without a RETURN at line 782.
+** Warning: D:/git/PoC/src/common/config.vhdl(842): Function 'DEVICE_SUBTYPE' may complete without a RETURN at line 789.
+** Warning: D:/git/PoC/src/common/config.vhdl(842): Function 'DEVICE_SUBTYPE' may complete without a RETURN at line 792.
+** Warning: D:/git/PoC/src/common/config.vhdl(842): Function 'DEVICE_SUBTYPE' may complete without a RETURN at line 797.
+** Warning: D:/git/PoC/src/common/config.vhdl(842): Function 'DEVICE_SUBTYPE' may complete without a RETURN at line 806.
+** Warning: D:/git/PoC/src/common/config.vhdl(842): Function 'DEVICE_SUBTYPE' may complete without a RETURN at line 815.
+** Warning: D:/git/PoC/src/common/config.vhdl(842): Function 'DEVICE_SUBTYPE' may complete without a RETURN at line 820.
+** Warning: D:/git/PoC/src/common/config.vhdl(842): Function 'DEVICE_SUBTYPE' may complete without a RETURN at line 825.
+** Warning: D:/git/PoC/src/common/config.vhdl(842): Function 'DEVICE_SUBTYPE' may complete without a RETURN at line 832.
+** Warning: D:/git/PoC/src/common/config.vhdl(842): Function 'DEVICE_SUBTYPE' may complete without a RETURN at line 838.
+** Warning: D:/git/PoC/src/common/config.vhdl(863): Function 'LUT_FANIN' may complete without a RETURN at line 860.
+** Warning: D:/git/PoC/src/common/config.vhdl(927): Function 'TRANSCEIVER_TYPE' may complete without a RETURN at line 880.
+** Warning: D:/git/PoC/src/common/config.vhdl(927): Function 'TRANSCEIVER_TYPE' may complete without a RETURN at line 890.
+** Warning: D:/git/PoC/src/common/config.vhdl(927): Function 'TRANSCEIVER_TYPE' may complete without a RETURN at line 899.
+** Warning: D:/git/PoC/src/common/config.vhdl(927): Function 'TRANSCEIVER_TYPE' may complete without a RETURN at line 912.
+** Warning: D:/git/PoC/src/common/config.vhdl(927): Function 'TRANSCEIVER_TYPE' may complete without a RETURN at line 924.
+** Warning: D:/git/PoC/src/common/config.vhdl(958): Function 'getFSMEncoding_gray' may complete without a RETURN at line 954.
+End time: 17:00:31 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 25
+
+} {} {}} D:/git/PoC/src/mem/ocrom/ocrom_sp.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/ocrom/ocrom_sp.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:32 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/ocrom/ocrom_sp.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package std_logic_textio
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Compiling entity ocrom_sp
+-- Compiling architecture rtl of ocrom_sp
+End time: 17:00:32 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/cache/cache.pkg.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/cache/cache.pkg.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:28 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/cache/cache.pkg.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling package cache
+-- Compiling package body cache
+-- Loading package cache
+End time: 17:00:28 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/xil/xil_ChipScopeICON.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/xil/xil_ChipScopeICON.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:36 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/xil/xil_ChipScopeICON.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Loading package xil
+-- Compiling entity xil_ChipScopeICON
+-- Compiling architecture rtl of xil_ChipScopeICON
+-- Loading entity xil_ChipScopeICON_1
+-- Loading entity xil_ChipScopeICON_2
+-- Loading entity xil_ChipScopeICON_3
+-- Loading entity xil_ChipScopeICON_4
+-- Loading entity xil_ChipScopeICON_5
+-- Loading entity xil_ChipScopeICON_6
+-- Loading entity xil_ChipScopeICON_7
+-- Loading entity xil_ChipScopeICON_8
+-- Loading entity xil_ChipScopeICON_9
+-- Loading entity xil_ChipScopeICON_10
+-- Loading entity xil_ChipScopeICON_11
+-- Loading entity xil_ChipScopeICON_12
+-- Loading entity xil_ChipScopeICON_13
+-- Loading entity xil_ChipScopeICON_14
+-- Loading entity xil_ChipScopeICON_15
+End time: 17:00:37 on Dec 16,2015, Elapsed time: 0:00:01
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/arith/arith_counter_gray.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_counter_gray.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:27 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_counter_gray.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity arith_counter_gray
+-- Compiling architecture rtl of arith_counter_gray
+End time: 17:00:27 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/bus/stream/stream_Mux.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/stream/stream_Mux.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:33 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/stream/stream_Mux.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity stream_Mux
+-- Compiling architecture rtl of stream_Mux
+End time: 17:00:34 on Dec 16,2015, Elapsed time: 0:00:01
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/arith/arith_div.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_div.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:29 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_div.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity arith_div
+-- Compiling architecture div_npr of arith_div
+End time: 17:00:29 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_13.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_13.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:38 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_13.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity xil_ChipScopeICON_13
+-- Compiling architecture xil_ChipScopeICON_13_a of xil_ChipScopeICON_13
+End time: 17:00:38 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/common/strings.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/strings.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:31 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/strings.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package MATH_REAL
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Compiling package strings
+-- Compiling package body strings
+-- Loading package strings
+** Warning: D:/git/PoC/src/common/strings.vhdl(166): Function 'to_IPStyle' may complete without a RETURN at line 165.
+** Warning: D:/git/PoC/src/common/strings.vhdl(526): Function 'to_digit' may complete without a RETURN at line 523.
+** Warning: D:/git/PoC/src/common/strings.vhdl(602): Function 'to_natural' may complete without a RETURN at line 600.
+End time: 17:00:31 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 3
+
+} {} {}} D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_5.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_5.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:39 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_5.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity xil_ChipScopeICON_5
+-- Compiling architecture xil_ChipScopeICON_5_a of xil_ChipScopeICON_5
+End time: 17:00:39 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/fifo/fifo_ic_got.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/fifo/fifo_ic_got.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:30 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/fifo/fifo_ic_got.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package ocram
+-- Compiling entity fifo_ic_got
+-- Compiling architecture rtl of fifo_ic_got
+End time: 17:00:30 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/arith/arith_same.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_same.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:31 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_same.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package arith
+-- Compiling entity arith_same
+-- Compiling architecture rtl of arith_same
+End time: 17:00:31 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/misc_StrobeGenerator.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_StrobeGenerator.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:32 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_StrobeGenerator.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package components
+-- Compiling entity misc_StrobeGenerator
+-- Compiling architecture rtl of misc_StrobeGenerator
+End time: 17:00:32 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/misc_WordAligner.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_WordAligner.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:30 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_WordAligner.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity WordAligner
+-- Compiling architecture rtl of WordAligner
+End time: 17:00:30 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/mem/ocram/ocram_esdp.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/ocram/ocram_esdp.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:32 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/ocram/ocram_esdp.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package std_logic_textio
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Compiling entity ocram_esdp
+-- Compiling architecture rtl of ocram_esdp
+End time: 17:00:32 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/net/net.pkg.vhdl {0 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/net/net.pkg.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:42 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/net/net.pkg.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+** Error: (vcom-11) Could not find work.io.
+
+** Error (suppressible): D:/git/PoC/src/net/net.pkg.vhdl(40): (vcom-1195) Cannot find expanded name "poc.io".
+
+** Error: D:/git/PoC/src/net/net.pkg.vhdl(40): Unknown expanded name.
+** Error: D:/git/PoC/src/net/net.pkg.vhdl(43): VHDL Compiler exiting
+End time: 17:00:42 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 4, Warnings: 0
+
+} {17.0 18.0 21.0 23.0} {}} D:/git/PoC/src/common/physical.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/physical.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:32 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/physical.vhdl 
+-- Loading package STANDARD
+-- Loading package MATH_REAL
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Compiling package physical
+-- Compiling package body physical
+-- Loading package physical
+** Warning: D:/git/PoC/src/common/physical.vhdl(363): Function 'to_baud' may complete without a RETURN at line 358.
+** Warning: D:/git/PoC/src/common/physical.vhdl(363): Function 'to_baud' may complete without a RETURN at line 361.
+** Warning: D:/git/PoC/src/common/physical.vhdl(779): Function 'to_real' may complete without a RETURN at line 777.
+** Warning: D:/git/PoC/src/common/physical.vhdl(790): Function 'to_real' may complete without a RETURN at line 788.
+** Warning: D:/git/PoC/src/common/physical.vhdl(800): Function 'to_real' may complete without a RETURN at line 798.
+** Warning: D:/git/PoC/src/common/physical.vhdl(811): Function 'to_real' may complete without a RETURN at line 809.
+** Warning: D:/git/PoC/src/common/physical.vhdl(824): Function 'to_int' may complete without a RETURN at line 823.
+** Warning: D:/git/PoC/src/common/physical.vhdl(835): Function 'to_int' may complete without a RETURN at line 834.
+** Warning: D:/git/PoC/src/common/physical.vhdl(846): Function 'to_int' may complete without a RETURN at line 845.
+** Warning: D:/git/PoC/src/common/physical.vhdl(857): Function 'to_int' may complete without a RETURN at line 856.
+End time: 17:00:32 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 10
+
+} {} {}} D:/git/PoC/src/arith/arith_addw.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_addw.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:29 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_addw.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package arith
+-- Compiling entity arith_addw
+-- Compiling architecture rtl of arith_addw
+End time: 17:00:29 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/sync/sync_Vector.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Vector.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:35 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Vector.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity sync_Vector
+-- Compiling architecture rtl of sync_Vector
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package physical
+-- Loading package sync
+-- Loading entity sync_Bits
+End time: 17:00:35 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/comm/comm_crc.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/comm/comm_crc.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:29 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/comm/comm_crc.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity comm_crc
+-- Compiling architecture rtl of comm_crc
+End time: 17:00:29 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_10.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_10.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:38 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_10.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity xil_ChipScopeICON_10
+-- Compiling architecture xil_ChipScopeICON_10_a of xil_ChipScopeICON_10
+End time: 17:00:38 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/comm/comm.pkg.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/comm/comm.pkg.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:28 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/comm/comm.pkg.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling package comm
+End time: 17:00:28 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/sort/sort_ExpireList.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/sort/sort_ExpireList.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:32 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/sort/sort_ExpireList.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity list_expire
+-- Compiling architecture rtl of list_expire
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package ocram
+-- Loading entity fifo_cc_got
+End time: 17:00:32 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/misc.pkg.vhdl {0 {vcom -work PoC -2008 -explicit -vopt -stats=none D:/git/PoC/src/misc/misc.pkg.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+-- Loading package STANDARD
+** Error (suppressible): D:/git/PoC/src/misc/misc.pkg.vhdl(18): (vcom-1491) Empty source files.
+
+
+} {} {}} D:/git/PoC/src/mem/sdram/sdram_ctrl_phy_s3esk.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/sdram/sdram_ctrl_phy_s3esk.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:36 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/sdram/sdram_ctrl_phy_s3esk.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package VCOMPONENTS
+-- Compiling entity sdram_ctrl_phy_s3esk
+-- Compiling architecture rtl of sdram_ctrl_phy_s3esk
+End time: 17:00:36 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_2.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_2.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:38 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_2.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity xil_ChipScopeICON_2
+-- Compiling architecture xil_ChipScopeICON_2_a of xil_ChipScopeICON_2
+End time: 17:00:39 on Dec 16,2015, Elapsed time: 0:00:01
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/common/fileio.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/fileio.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:29 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/fileio.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package my_project
+-- Compiling package FileIO
+-- Compiling package body FileIO
+-- Loading package FileIO
+** Warning: D:/git/PoC/src/common/fileio.vhdl(79): (vcom-1236) Shared variables must be of a protected type.
+
+** Warning: D:/git/PoC/src/common/fileio.vhdl(80): (vcom-1236) Shared variables must be of a protected type.
+
+End time: 17:00:29 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 2
+
+} {} {}} D:/git/PoC/src/bus/stream/stream_Source.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/stream/stream_Source.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:35 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/stream/stream_Source.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Loading package stream
+-- Compiling entity stream_Source
+-- Compiling architecture rtl of stream_Source
+End time: 17:00:35 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/filter/filter_and.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/filter/filter_and.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:30 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/filter/filter_and.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity filter_and
+-- Compiling architecture rtl of filter_and
+End time: 17:00:31 on Dec 16,2015, Elapsed time: 0:00:01
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/cache/cache_par.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/cache/cache_par.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:35 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/cache/cache_par.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity cache_par
+-- Compiling architecture rtl of cache_par
+-- Loading entity cache_tagunit_par
+End time: 17:00:35 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/xil/xil_Reconfigurator.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/xil/xil_Reconfigurator.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:33 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/xil/xil_Reconfigurator.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package vectors
+-- Loading package physical
+-- Loading package xil
+-- Compiling entity xil_Reconfigurator
+** Warning: D:/git/PoC/src/xil/xil_Reconfigurator.vhdl(55): (vcom-1514) Range choice direction (downto) does not determine aggregate index range direction (to).
+
+-- Compiling architecture rtl of xil_Reconfigurator
+End time: 17:00:33 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 1
+
+} {} {}} D:/git/PoC/src/bus/stream/stream_Mirror.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/stream/stream_Mirror.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:33 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/stream/stream_Mirror.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity stream_Mirror
+-- Compiling architecture rtl of stream_Mirror
+-- Loading entity fifo_glue
+End time: 17:00:33 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/xil/xil_DRP_BusSync.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/xil/xil_DRP_BusSync.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:33 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/xil/xil_DRP_BusSync.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package components
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package vectors
+-- Loading package xil
+-- Compiling entity xil_DRP_BusSync
+-- Compiling architecture rtl of xil_DRP_BusSync
+-- Loading entity sync_Strobe
+End time: 17:00:33 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/cache/cache_replacement_policy.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/cache/cache_replacement_policy.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:36 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/cache/cache_replacement_policy.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity cache_replacement_policy
+-- Compiling architecture rtl of cache_replacement_policy
+-- Loading package components
+-- Loading entity sort_LeastRecentlyUsed
+End time: 17:00:36 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/arith/arith_prng.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_prng.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:29 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_prng.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity arith_prng
+-- Compiling architecture rtl of arith_prng
+End time: 17:00:29 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/arith/arith_counter_free.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_counter_free.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:29 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_counter_free.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity arith_counter_free
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling architecture rtl of arith_counter_free
+End time: 17:00:29 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/comm/comm_scramble.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/comm/comm_scramble.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:27 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/comm/comm_scramble.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity comm_scramble
+-- Compiling architecture rtl of comm_scramble
+** Warning: D:/git/PoC/src/comm/comm_scramble.vhdl(72): Function 'normalize' may complete without a RETURN at line 70.
+End time: 17:00:28 on Dec 16,2015, Elapsed time: 0:00:01
+Errors: 0, Warnings: 1
+
+} {} {}} D:/git/PoC/src/mem/sdram/sdram_ctrl_phy_de0.vhdl {0 {vcom -work PoC -2008 -explicit -vopt -stats=none D:/git/PoC/src/mem/sdram/sdram_ctrl_phy_de0.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package altera_mf_components
+-- Compiling entity sdram_ctrl_phy_de0
+-- Compiling architecture rtl of sdram_ctrl_phy_de0
+** Error (suppressible): D:/git/PoC/src/mem/sdram/sdram_ctrl_phy_de0.vhdl(141): (vcom-1141) Identifier "altiobuf_out" does not identify a component declaration.
+
+** Error: D:/git/PoC/src/mem/sdram/sdram_ctrl_phy_de0.vhdl(244): VHDL Compiler exiting
+
+} {11.0 12.0} {}} D:/git/PoC/tb/common/simulation.v08.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/tb/common/simulation.v08.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:35 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/tb/common/simulation.v08.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Loading package physical
+-- Compiling package simulation
+-- Compiling package body simulation
+-- Loading package simulation
+End time: 17:00:35 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/mem/sdram/sdram_ctrl_s3esk.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/sdram/sdram_ctrl_s3esk.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:36 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/sdram/sdram_ctrl_s3esk.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package MATH_REAL
+-- Compiling entity sdram_ctrl_s3esk
+-- Compiling architecture rtl of sdram_ctrl_s3esk
+-- Loading package my_config
+-- Loading package utils
+-- Loading entity sdram_ctrl_fsm
+-- Loading package VCOMPONENTS
+-- Loading entity sdram_ctrl_phy_s3esk
+End time: 17:00:36 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/common/utils.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/utils.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:29 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/utils.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Compiling package utils
+-- Compiling package body utils
+-- Loading package utils
+End time: 17:00:29 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/common/common.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/common.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:27 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/common.vhdl 
+-- Loading package STANDARD
+-- Compiling context declaration Common
+End time: 17:00:27 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/tb/common/my_project.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/tb/common/my_project.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:28 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/tb/common/my_project.vhdl 
+-- Loading package STANDARD
+-- Compiling package my_project
+End time: 17:00:28 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/fifo/fifo_cc_got_tempput.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/fifo/fifo_cc_got_tempput.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:31 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/fifo/fifo_cc_got_tempput.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package ocram
+-- Compiling entity fifo_cc_got_tempput
+-- Compiling architecture rtl of fifo_cc_got_tempput
+End time: 17:00:32 on Dec 16,2015, Elapsed time: 0:00:01
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/fifo/fifo_glue.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/fifo/fifo_glue.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:28 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/fifo/fifo_glue.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity fifo_glue
+-- Compiling architecture rtl of fifo_glue
+End time: 17:00:28 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/bus/bus_Arbiter.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/bus_Arbiter.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:29 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/bus_Arbiter.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity bus_Arbiter
+-- Compiling architecture rtl of bus_Arbiter
+End time: 17:00:29 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_15.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_15.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:38 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_15.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity xil_ChipScopeICON_15
+-- Compiling architecture xil_ChipScopeICON_15_a of xil_ChipScopeICON_15
+End time: 17:00:38 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/xil/xil_SystemMonitor_Virtex6.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/xil/xil_SystemMonitor_Virtex6.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:35 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/xil/xil_SystemMonitor_Virtex6.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package VCOMPONENTS
+-- Compiling entity xil_SystemMonitor_Virtex6
+-- Compiling architecture xilinx of xil_SystemMonitor_Virtex6
+End time: 17:00:35 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_7.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_7.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:39 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_7.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity xil_ChipScopeICON_7
+-- Compiling architecture xil_ChipScopeICON_7_a of xil_ChipScopeICON_7
+End time: 17:00:39 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/arith/arith_bcdcollect.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_bcdcollect.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:29 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_bcdcollect.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity arith_bcdcollect
+-- Loading package MATH_REAL
+-- Compiling architecture rtl of arith_bcdcollect
+End time: 17:00:29 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/common/sim_value_change_dump.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/sim_value_change_dump.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:31 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/sim_value_change_dump.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package std_logic_textio
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling package sim_value_change_dump
+-- Compiling package body sim_value_change_dump
+-- Loading package sim_value_change_dump
+End time: 17:00:31 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/arith/arith_muls_wide.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_muls_wide.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:27 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_muls_wide.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity arith_muls_wide
+-- Compiling architecture rtl of arith_muls_wide
+End time: 17:00:27 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/fifo/fifo.pkg.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/fifo/fifo.pkg.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:30 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/fifo/fifo.pkg.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling package fifo
+End time: 17:00:30 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/mem/sdram/sdram_ctrl_de0.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/sdram/sdram_ctrl_de0.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:40 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/sdram/sdram_ctrl_de0.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package MATH_REAL
+-- Compiling entity sdram_ctrl_de0
+-- Compiling architecture rtl of sdram_ctrl_de0
+-- Loading package my_config
+-- Loading package utils
+-- Loading entity sdram_ctrl_fsm
+-- Loading package altera_mf_components
+-- Loading entity sdram_ctrl_phy_de0
+End time: 17:00:40 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/sort/sortnet/sortnet_OddEvenSort.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/sort/sortnet/sortnet_OddEvenSort.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:34 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/sort/sortnet/sortnet_OddEvenSort.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Loading package components
+-- Compiling entity sortnet_OddEvenSort
+-- Compiling architecture rtl of sortnet_OddEvenSort
+End time: 17:00:34 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/mem/ocram/ocram_tdp.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/ocram/ocram_tdp.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:32 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/ocram/ocram_tdp.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package std_logic_textio
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Compiling entity ocram_tdp
+-- Compiling architecture rtl of ocram_tdp
+End time: 17:00:32 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/sync/sync_Bits_Xilinx.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Bits_Xilinx.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:36 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Bits_Xilinx.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity sync_Bits_Xilinx
+-- Compiling entity sync_Bit_Xilinx
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling architecture rtl of sync_Bits_Xilinx
+-- Loading package VCOMPONENTS
+-- Compiling architecture rtl of sync_Bit_Xilinx
+End time: 17:00:36 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/arith/arith_firstone.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_firstone.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:31 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_firstone.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity arith_firstone
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Compiling architecture rtl of arith_firstone
+End time: 17:00:31 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_12.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_12.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:38 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_12.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity xil_ChipScopeICON_12
+-- Compiling architecture xil_ChipScopeICON_12_a of xil_ChipScopeICON_12
+End time: 17:00:38 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/bus/stream/stream_FrameGenerator.vhdl {0 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/stream/stream_FrameGenerator.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:42 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/stream/stream_FrameGenerator.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity stream_FrameGenerator
+** Error: D:/git/PoC/src/bus/stream/stream_FrameGenerator.vhdl(47): (vcom-1136) Unknown identifier "T_FRAMEGEN_APPEND".
+
+** Error: D:/git/PoC/src/bus/stream/stream_FrameGenerator.vhdl(47): (vcom-1136) Unknown identifier "FRAMEGEN_APP_NONE".
+
+** Error: D:/git/PoC/src/bus/stream/stream_FrameGenerator.vhdl(48): (vcom-1136) Unknown identifier "T_FRAMEGEN_FRAMEGROUP_VECTOR_8".
+
+** Error: D:/git/PoC/src/bus/stream/stream_FrameGenerator.vhdl(48): (vcom-1136) Unknown identifier "C_FRAMEGEN_FRAMEGROUP_EMPTY".
+
+** Error: D:/git/PoC/src/bus/stream/stream_FrameGenerator.vhdl(55): (vcom-1136) Unknown identifier "T_FRAMEGEN_COMMAND".
+
+** Error: D:/git/PoC/src/bus/stream/stream_FrameGenerator.vhdl(56): (vcom-1136) Unknown identifier "T_FRAMEGEN_STATUS".
+
+** Error: D:/git/PoC/src/bus/stream/stream_FrameGenerator.vhdl(72): VHDL Compiler exiting
+End time: 17:00:43 on Dec 16,2015, Elapsed time: 0:00:01
+Errors: 7, Warnings: 0
+
+} {18.0 19.0 20.0 21.0 22.0 23.0 24.0 25.0 26.0 27.0 28.0 29.0 30.0 31.0} {}} D:/git/PoC/src/bus/stream/stream_Buffer.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/stream/stream_Buffer.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:33 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/stream/stream_Buffer.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity stream_Buffer
+-- Compiling architecture rtl of stream_Buffer
+-- Loading package ocram
+-- Loading entity fifo_cc_got
+-- Loading entity fifo_cc_got_tempgot
+End time: 17:00:33 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_4.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_4.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:39 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_4.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity xil_ChipScopeICON_4
+-- Compiling architecture xil_ChipScopeICON_4_a of xil_ChipScopeICON_4
+End time: 17:00:39 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/net/net_FrameLoopback.vhdl {0 {vcom -work PoC -2008 -explicit -vopt -stats=none D:/git/PoC/src/net/net_FrameLoopback.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity FrameLoopback
+-- Compiling architecture rtl of FrameLoopback
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(84): (vcom-1136) Unknown identifier "TX_Funnel_SrcIPv6Address_Data".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(84): Prefix of attribute "range" must be appropriate for an array object or must denote an array subtype.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(84): Attribute "range" returns type (error); expecting type std.STANDARD.NATURAL.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(85): (vcom-1136) Unknown identifier "TX_Funnel_DestIPv6Address_Data".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(85): Prefix of attribute "range" must be appropriate for an array object or must denote an array subtype.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(85): Attribute "range" returns type (error); expecting type std.STANDARD.NATURAL.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(86): (vcom-1136) Unknown identifier "TX_Funnel_Payload_Type".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(86): Prefix of attribute "range" must be appropriate for an array object or must denote an array subtype.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(86): Attribute "range" returns type (error); expecting type std.STANDARD.NATURAL.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(90): (vcom-1136) Unknown identifier "TX_Meta_SrcIPv6Address_Data".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(91): (vcom-1136) Unknown identifier "TX_Meta_DestIPv6Address_Data".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(92): (vcom-1136) Unknown identifier "TX_Meta_Length".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(92): (vcom-1136) Unknown identifier "META_STREAMID_LEN".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(94): Illegal target for signal assignment.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(94): (vcom-1136) Unknown identifier "TX_Meta_rst".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(95): Illegal target for signal assignment.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(95): (vcom-1136) Unknown identifier "TX_Meta_SrcIPv6Address_nxt".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(96): Illegal target for signal assignment.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(96): (vcom-1136) Unknown identifier "TX_Meta_DestIPv6Address_nxt".
+
+-- Loading entity stream_Buffer
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(103): (vcom-1136) Unknown identifier "META_STREAMID_LEN".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(104): (vcom-1136) Unknown identifier "META_STREAMID_LEN".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(110): (vcom-1136) Unknown identifier "TX_Valid".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(111): (vcom-1136) Unknown identifier "TX_Data".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(112): (vcom-1136) Unknown identifier "TX_SOF".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(113): (vcom-1136) Unknown identifier "TX_EOF".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(114): (vcom-1136) Unknown identifier "TX_Ack".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(119): (vcom-1136) Unknown identifier "Funnel_In_Valid".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(121): (vcom-1136) Unknown identifier "Funnel_In_SOF".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(122): (vcom-1136) Unknown identifier "Funnel_In_EOF".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(123): (vcom-1136) Unknown identifier "Funnel_In_Ack".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(110): Indexed name is type (error); expecting type ieee.std_logic_1164.STD_LOGIC.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(111): Indexed name is type (error); expecting type ieee.std_logic_1164.STD_LOGIC_VECTOR.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(112): Indexed name is type (error); expecting type ieee.std_logic_1164.STD_LOGIC.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(113): Indexed name is type (error); expecting type ieee.std_logic_1164.STD_LOGIC.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(114): (vcom-1454) Formal "In_Ack" of mode OUT cannot be associated with an expression.
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(117): Signal "Pipe_MetaIn" is type sub-array #1 of poc.vectors.T_SLM; expecting type ieee.std_logic_1164.STD_LOGIC_VECTOR.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(119): (vcom-1454) Formal "Out_Valid" of mode OUT cannot be associated with an expression.
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(121): (vcom-1454) Formal "Out_SOF" of mode OUT cannot be associated with an expression.
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(122): (vcom-1454) Formal "Out_EOF" of mode OUT cannot be associated with an expression.
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(123): Indexed name is type (error); expecting type ieee.std_logic_1164.STD_LOGIC.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(126): Signal "Pipe_MetaOut" is type sub-array #1 of poc.vectors.T_SLM; expecting type ieee.std_logic_1164.STD_LOGIC_VECTOR.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(130): Illegal target for signal assignment.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(130): (vcom-1136) Unknown identifier "Pipe_Meta_SrcIPv6Address_Data".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(131): Illegal target for signal assignment.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(131): (vcom-1136) Unknown identifier "Pipe_Meta_DestIPv6Address_Data".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(132): Illegal target for signal assignment.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(132): (vcom-1136) Unknown identifier "Pipe_Meta_Length".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(134): (vcom-1136) Unknown identifier "Funnel_In_Meta_rev".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(135): (vcom-1136) Unknown identifier "Funnel_In_Meta_rev".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(136): (vcom-1136) Unknown identifier "Funnel_In_Meta_rev".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(137): (vcom-1136) Unknown identifier "META_STREAMID_LEN".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(140): (vcom-1136) Unknown identifier "Pipe_Meta_SrcIPv6Address_Data".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(140): Prefix of attribute "range" must be appropriate for an array object or must denote an array subtype.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(140): Illegal target for signal assignment.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(140): (vcom-1136) Unknown identifier "Funnel_MetaIn".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(141): (vcom-1136) Unknown identifier "Pipe_Meta_DestIPv6Address_Data".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(141): Prefix of attribute "range" must be appropriate for an array object or must denote an array subtype.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(141): Illegal target for signal assignment.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(141): (vcom-1136) Unknown identifier "Funnel_MetaIn".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(142): (vcom-1136) Unknown identifier "Pipe_Meta_Length".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(142): Prefix of attribute "range" must be appropriate for an array object or must denote an array subtype.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(142): Illegal target for signal assignment.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(142): (vcom-1136) Unknown identifier "Funnel_MetaIn".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(143): (vcom-1136) Unknown identifier "Pipe_Meta_Payload_Type".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(143): Prefix of attribute "range" must be appropriate for an array object or must denote an array subtype.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(143): Illegal target for signal assignment.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(143): (vcom-1136) Unknown identifier "Funnel_MetaIn".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(146): (vcom-1136) Unknown identifier "Funnel_In_Data".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(146): (vcom-1136) Unknown identifier "I".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(147): (vcom-1136) Unknown identifier "Funnel_In_Meta".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(147): (vcom-1136) Unknown identifier "Funnel_MetaIn".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(147): (vcom-1136) Unknown identifier "I".
+
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(117): Array dimensionality of expected is 1; array dimensionality of actual is 2.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(126): Array dimensionality of expected is 1; array dimensionality of actual is 2.
+** Error: D:/git/PoC/src/net/net_FrameLoopback.vhdl(149): VHDL Compiler exiting
+
+} {17.0 18.0 19.0 22.0 23.0 26.0 27.0 30.0 31.0 32.0 33.0 34.0 35.0 36.0 37.0 39.0 40.0 42.0 43.0 45.0 47.0 48.0 49.0 50.0 51.0 52.0 53.0 54.0 55.0 56.0 57.0 58.0 59.0 60.0 61.0 62.0 63.0 64.0 65.0 66.0 67.0 68.0 69.0 74.0 75.0 77.0 78.0 79.0 80.0 81.0 82.0 86.0 87.0 89.0 90.0 92.0 93.0 94.0 95.0 96.0 97.0 98.0 99.0 100.0 101.0 102.0 103.0 106.0 107.0 108.0 109.0 112.0 113.0 114.0 115.0 118.0 119.0 120.0 121.0 124.0 125.0 126.0 127.0 128.0 129.0 130.0 131.0 132.0 133.0 134.0 135.0 138.0} {}} D:/git/PoC/src/net/net.comp.vhdl {0 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/net/net.comp.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:42 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/net/net.comp.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package vectors
+-- Loading package physical
+** Error: (vcom-11) Could not find work.io.
+
+** Error (suppressible): D:/git/PoC/src/net/net.comp.vhdl(41): (vcom-1195) Cannot find expanded name "poc.io".
+
+** Error: D:/git/PoC/src/net/net.comp.vhdl(41): Unknown expanded name.
+** Error: (vcom-11) Could not find work.net.
+
+** Error (suppressible): D:/git/PoC/src/net/net.comp.vhdl(42): (vcom-1195) Cannot find expanded name "poc.net".
+
+** Error: D:/git/PoC/src/net/net.comp.vhdl(42): Unknown expanded name.
+** Error: D:/git/PoC/src/net/net.comp.vhdl(45): VHDL Compiler exiting
+End time: 17:00:42 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 7, Warnings: 0
+
+} {18.0 19.0 22.0 24.0 27.0 29.0} {}} D:/git/PoC/src/bus/stream/stream_Sink.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/stream/stream_Sink.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:34 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/stream/stream_Sink.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Loading package stream
+-- Compiling entity stream_Sink
+-- Compiling architecture rtl of stream_Sink
+End time: 17:00:34 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/sync/sync_Bits.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Bits.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:34 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Bits.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package physical
+-- Loading package sync
+-- Compiling entity sync_Bits
+-- Compiling architecture rtl of sync_Bits
+End time: 17:00:34 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/fifo/fifo_cc_got.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/fifo/fifo_cc_got.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:31 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/fifo/fifo_cc_got.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package ocram
+-- Compiling entity fifo_cc_got
+-- Compiling architecture rtl of fifo_cc_got
+End time: 17:00:31 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/stat/stat_Minimum.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/stat/stat_Minimum.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:34 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/stat/stat_Minimum.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity stat_Minimum
+-- Compiling architecture rtl of stat_Minimum
+** Warning: D:/git/PoC/src/misc/stat/stat_Minimum.vhdl(94): (vcom-1073) Non-locally static choice (association #1, choice #1) is allowed only if it is the only choice of the only association.
+
+End time: 17:00:34 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 1
+
+} {} {}} D:/git/PoC/src/fifo/fifo_dc_got_sm.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/fifo/fifo_dc_got_sm.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:30 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/fifo/fifo_dc_got_sm.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity fifo_dc_got_sm
+-- Compiling architecture rtl of fifo_dc_got_sm
+End time: 17:00:30 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/misc_BitwidthConverter.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_BitwidthConverter.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:30 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_BitwidthConverter.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity misc_BitwidthConverter
+-- Compiling architecture rtl of misc_BitwidthConverter
+End time: 17:00:30 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/filter/filter_mean.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/filter/filter_mean.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:31 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/filter/filter_mean.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity filter_mean
+-- Compiling architecture rtl of filter_mean
+End time: 17:00:31 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/sort/sort_LeastRecentlyUsed.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/sort/sort_LeastRecentlyUsed.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:36 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/sort/sort_LeastRecentlyUsed.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package vectors
+-- Loading package components
+-- Compiling entity sort_LeastRecentlyUsed
+-- Compiling architecture rtl of sort_LeastRecentlyUsed
+End time: 17:00:36 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_1.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_1.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:38 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_1.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity xil_ChipScopeICON_1
+-- Compiling architecture xil_ChipScopeICON_1_a of xil_ChipScopeICON_1
+End time: 17:00:38 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/mem/ocram/ocram_sdp.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/ocram/ocram_sdp.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:32 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/ocram/ocram_sdp.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package std_logic_textio
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Compiling entity ocram_sdp
+-- Compiling architecture rtl of ocram_sdp
+End time: 17:00:32 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/mem/ocrom/ocrom_dp.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/ocrom/ocrom_dp.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:32 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/ocrom/ocrom_dp.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package std_logic_textio
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Compiling entity ocrom_dp
+-- Compiling architecture rtl of ocrom_dp
+End time: 17:00:32 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/net/net_FramePerformanceCounter.vhdl {0 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/net/net_FramePerformanceCounter.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:42 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/net/net_FramePerformanceCounter.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+** Error: D:/git/PoC/src/net/net_FramePerformanceCounter.vhdl(9): Library l_global not found.
+** Error: D:/git/PoC/src/net/net_FramePerformanceCounter.vhdl(10): (vcom-1136) Unknown identifier "L_Global".
+
+** Error: D:/git/PoC/src/net/net_FramePerformanceCounter.vhdl(12): Library l_io not found.
+** Error: D:/git/PoC/src/net/net_FramePerformanceCounter.vhdl(13): (vcom-1136) Unknown identifier "L_IO".
+
+** Error: D:/git/PoC/src/net/net_FramePerformanceCounter.vhdl(15): VHDL Compiler exiting
+End time: 17:00:42 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 5, Warnings: 0
+
+} {14.0 16.0 17.0 19.0 20.0 21.0} {}} D:/git/PoC/src/arith/arith_convert_bin2bcd.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_convert_bin2bcd.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:31 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_convert_bin2bcd.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package components
+-- Compiling entity arith_convert_bin2bcd
+-- Compiling architecture rtl of arith_convert_bin2bcd
+End time: 17:00:31 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/misc_bit_lz.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_bit_lz.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:28 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_bit_lz.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity misc_bit_lz
+-- Loading package NUMERIC_STD
+-- Compiling architecture rtl of misc_bit_lz
+End time: 17:00:28 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/mem/ocram/ocram_sp.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/ocram/ocram_sp.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:32 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/ocram/ocram_sp.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package std_logic_textio
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Compiling entity ocram_sp
+-- Compiling architecture rtl of ocram_sp
+End time: 17:00:32 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/sort/sort_InsertSort.vhdl {0 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/sort/sort_InsertSort.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:43 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/sort/sort_InsertSort.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity list_lru_systolic
+-- Compiling architecture rtl of list_lru_systolic
+** Error: D:/git/PoC/src/sort/sort_InsertSort.vhdl(93): (vcom-1136) Unknown identifier "INITIAL_KEYS".
+
+** Error: D:/git/PoC/src/sort/sort_InsertSort.vhdl(94): (vcom-1136) Unknown identifier "INITIAL_VALIDS".
+
+** Error: D:/git/PoC/src/sort/sort_InsertSort.vhdl(168): Illegal target for signal assignment.
+** Error: D:/git/PoC/src/sort/sort_InsertSort.vhdl(168): (vcom-1136) Unknown identifier "DBG_Keys".
+
+** Error: D:/git/PoC/src/sort/sort_InsertSort.vhdl(173): (vcom-1136) Unknown identifier "KeyIn".
+
+** Error: D:/git/PoC/src/sort/sort_InsertSort.vhdl(174): (vcom-1136) Unknown identifier "Invalidate".
+
+** Error: D:/git/PoC/src/sort/sort_InsertSort.vhdl(175): (vcom-1136) Unknown identifier "KeyIn".
+
+** Error: D:/git/PoC/src/sort/sort_InsertSort.vhdl(178): Illegal target for signal assignment.
+** Error: D:/git/PoC/src/sort/sort_InsertSort.vhdl(178): (vcom-1136) Unknown identifier "LRU_Key".
+
+** Error: D:/git/PoC/src/sort/sort_InsertSort.vhdl(180): VHDL Compiler exiting
+End time: 17:00:43 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 10, Warnings: 0
+
+} {19.0 20.0 21.0 22.0 23.0 25.0 26.0 27.0 28.0 29.0 30.0 31.0 32.0 34.0 35.0 36.0} {}} D:/git/PoC/src/misc/stat/stat_Average.vhdl {0 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/stat/stat_Average.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:43 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/stat/stat_Average.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Loading package vectors
+-- Compiling entity stat_Average
+-- Compiling architecture rtl of stat_Average
+** Error: (vcom-11) Could not find work.arith_div_pipelined.
+
+** Error (suppressible): D:/git/PoC/src/misc/stat/stat_Average.vhdl(102): (vcom-1195) Cannot find expanded name "poc.arith_div_pipelined".
+
+** Error: D:/git/PoC/src/misc/stat/stat_Average.vhdl(102): Unknown expanded name.
+** Error: D:/git/PoC/src/misc/stat/stat_Average.vhdl(128): VHDL Compiler exiting
+End time: 17:00:43 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 4, Warnings: 0
+
+} {19.0 20.0 23.0 25.0} {}} D:/git/PoC/src/mem/ocrom/ocrom.pkg.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/ocrom/ocrom.pkg.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:28 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/ocrom/ocrom.pkg.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling package ocram
+End time: 17:00:28 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/sync/sync_Bits_Altera.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Bits_Altera.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:28 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/sync/sync_Bits_Altera.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity sync_Bits_Altera
+-- Compiling architecture rtl of sync_Bits_Altera
+End time: 17:00:28 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/arith/arith_counter_ring.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_counter_ring.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:29 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_counter_ring.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity arith_counter_ring
+-- Compiling architecture rtl of arith_counter_ring
+End time: 17:00:29 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/arith/arith_counter_bcd.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_counter_bcd.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:29 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/arith/arith_counter_bcd.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity arith_counter_bcd
+-- Compiling architecture rtl of arith_counter_bcd
+End time: 17:00:29 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/common/vectors.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/vectors.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:32 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/vectors.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Loading package MATH_REAL
+-- Loading package my_project
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Compiling package vectors
+-- Compiling package body vectors
+-- Loading package vectors
+End time: 17:00:32 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_9.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_9.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:38 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_9.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity xil_ChipScopeICON_9
+-- Compiling architecture xil_ChipScopeICON_9_a of xil_ChipScopeICON_9
+End time: 17:00:38 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/common/debug.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/debug.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:32 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/debug.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package MATH_REAL
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package strings
+-- Compiling package debug
+-- Compiling package body debug
+-- Loading package debug
+End time: 17:00:32 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/sort/sort_LeastFrequentlyUsed.vhdl {0 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/sort/sort_LeastFrequentlyUsed.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:43 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/sort/sort_LeastFrequentlyUsed.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity sort_LeastFrequentlyUsed
+** Error: D:/git/PoC/src/sort/sort_LeastFrequentlyUsed.vhdl(18): near "Access": (vcom-1576) expecting IDENTIFIER.
+
+End time: 17:00:43 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 1, Warnings: 0
+
+} {10.0 11.0} {}} D:/git/PoC/src/mem/ocram/ocram.pkg.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/ocram/ocram.pkg.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:28 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/mem/ocram/ocram.pkg.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling package ocram
+End time: 17:00:28 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/misc/misc_Sequencer.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_Sequencer.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:30 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/misc/misc_Sequencer.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling entity misc_Sequencer
+-- Compiling architecture rtl of misc_Sequencer
+End time: 17:00:30 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/xil/xil_DRP_BusMux.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/xil/xil_DRP_BusMux.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:33 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/xil/xil_DRP_BusMux.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package my_project
+-- Loading package utils
+-- Loading package config_private
+-- Loading package config
+-- Loading package components
+-- Loading package MATH_REAL
+-- Loading package strings
+-- Loading package vectors
+-- Loading package xil
+-- Compiling entity xil_DRP_BusMux
+-- Compiling architecture rtl of xil_DRP_BusMux
+-- Loading entity bus_Arbiter
+End time: 17:00:33 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/tb/common/my_config_KC705.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/tb/common/my_config_KC705.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:28 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/tb/common/my_config_KC705.vhdl 
+-- Loading package STANDARD
+-- Compiling package my_config
+End time: 17:00:28 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/common/math.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/math.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:31 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/common/math.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package my_config
+-- Loading package utils
+-- Compiling package math
+-- Compiling package body math
+-- Loading package math
+End time: 17:00:31 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/src/bus/wb/wb.pkg.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/wb/wb.pkg.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:28 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/src/bus/wb/wb.pkg.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling package wb
+End time: 17:00:28 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}} D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_14.vhdl {1 {vcom -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_14.vhdl
+QuestaSim-64 vcom 10.4c Compiler 2015.07 Jul 20 2015
+Start time: 17:00:38 on Dec 16,2015
+vcom -reportprogress 300 -work PoC -2008 -explicit -vopt D:/git/PoC/netlist/XC7K325T-2FFG900/xil/xil_ChipScopeICON_14.vhdl 
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Compiling entity xil_ChipScopeICON_14
+-- Compiling architecture xil_ChipScopeICON_14_a of xil_ChipScopeICON_14
+End time: 17:00:38 on Dec 16,2015, Elapsed time: 0:00:00
+Errors: 0, Warnings: 0
+
+} {} {}}
