@@ -41,7 +41,7 @@ USE			PoC.io.ALL;
 USE			PoC.net.ALL;
 
 
-ENTITY mdio_MDIO_IIC_Adapter IS
+ENTITY mdio_IIC_Adapter IS
 	GENERIC (
 		DEBUG													: BOOLEAN												:= TRUE
 	);
@@ -82,7 +82,7 @@ END ENTITY;
 -- TODOs
 --	add Status := IO_MDIO_MDIOC_STATUS_ADDRESS_ERROR if IICC.Status = ACK_ERROR
 
-ARCHITECTURE rtl OF mdio_MDIO_IIC_Adapter IS
+ARCHITECTURE rtl OF mdio_IIC_Adapter IS
 	ATTRIBUTE KEEP										: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING						: STRING;
 	
@@ -243,7 +243,7 @@ BEGIN
 					WHEN OTHERS =>													NextState		<= ST_ERROR;
 				END CASE;
 
-			WHEN ST_READ_BYTES_COMPLETE =>
+			WHEN ST_READ_WAIT_FOR_COMPLETION =>
 				Status										<= IO_MDIO_MDIOC_STATUS_READING;
 				IICC_Request							<= '1';
 
@@ -265,7 +265,7 @@ BEGIN
 				NextState									<= ST_IDLE;
 			
 			-- ======================================================================================================================================================
-			WHEN ST_Write_REQUEST_BUS =>
+			WHEN ST_WRITE_REQUEST_BUS =>
 				IICC_Request							<= '1';
 				
 				IF (IICC_Grant = '1') THEN
