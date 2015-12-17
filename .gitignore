@@ -24,8 +24,11 @@ __pycache__
 /tb/common/my_project.vhdl
 
 # ignore external tool files: ActiveHDL, QuestaSim
+/prj/ActiveHDL/*
 /prj/ActiveHDL/*.*
 /prj/ActiveHDL/**/*.*
+!/prj/ActiveHDL/PoC.adf
+!/prj/ActiveHDL/PoC.wsp
 
 /prj/QuestaSim/*
 /prj/QuestaSim/*.*
