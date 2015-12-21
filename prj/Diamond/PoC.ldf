@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BaliProject version="3.2" title="PoC" device="LFE5U-45F-6BG381C" default_implementation="impl1">
+    <Options/>
+    <Implementation title="impl1" dir="impl1" description="impl1" synthesis="lse" default_strategy="Strategy1">
+        <Options HDL_PARAM="A_BITS=10;D_BITS=32" def_top="PoC.ocram_test" lib="PoC" top="PoC.ocram_test"/>
+        <Source name="../../src/common/physical.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/strings.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/utils.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/vectors.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/components.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/config.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/debug.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/fileio.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/math.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../tb/common/my_project.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../tb/common/my_config_ECP5Versa.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/mem.pkg.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram.pkg.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram_esdp.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram_sdp.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram_sp.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram_tdp.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="impl1/ocram_test.vhdl" type="VHDL" type_short="VHDL">
+            <Options top_module="PoC.ocram_test"/>
+        </Source>
+        <Source name="PoC.lpf" type="Logic Preference" type_short="LPF">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Strategy name="Strategy1" file="PoC1.sty"/>
+</BaliProject>
