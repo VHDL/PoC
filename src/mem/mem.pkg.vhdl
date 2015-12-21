@@ -38,7 +38,6 @@ use			STD.TextIO.all;
 
 library	IEEE;
 use			IEEE.std_logic_1164.all;
-use			IEEE.std_logic_textio.all;
 use			IEEE.numeric_std.all;
 
 library PoC;
@@ -76,13 +75,40 @@ end package;
 package body mem is
 	function mem_FileExtension(Filename : STRING) return STRING is
 	begin
-		for i in Filename'high to Filename'low loop
+		for i in Filename'high downto Filename'low loop
 			if (Filename(i) = '.') then
 				return str_toLower(FileName(i + 1 to FileName'high));
 			end if;
 		end loop;
 		return "";
 	end function;
+	
+	procedure ReadHex(L : inout LINE; Value : out STD_LOGIC_VECTOR; Good : out BOOLEAN) is
+		variable ok					: BOOLEAN;
+		variable Char				: CHARACTER;
+		variable Digit			: T_DIGIT_HEX;
+		constant DigitCount	: POSITIVE			:= div_ceil(Value'length, 4);
+		variable slv				: STD_LOGIC_VECTOR((DigitCount * 4) - 1 downto 0);
+		variable swapped		: STD_LOGIC_VECTOR((DigitCount * 4) - 1 downto 0);
+	begin
+		Good		:= TRUE;
+		for i in 0 to DigitCount - 1 loop
+			read(L, Char, ok);
+			if (ok = FALSE) then
+				swapped	:= swap(slv, 4);
+				Value		:= swapped(Value'length - 1 downto 0);
+				return;
+			end if;
+			Digit := to_digit_hex(Char);
+			if (Digit = -1) then
+				good := FALSE;
+				return;
+			end if;
+			slv(i * 4 + 3 downto i * 4)	:= to_slv(Digit, 4);
+		end loop;
+		swapped	:= swap(slv, 4);
+		Value		:= swapped(Value'length - 1 downto 0);
+	end procedure; 
 	
 	-- Reads a memory file and returns a 2D std_logic matrix
 	impure function mem_ReadMemoryFile(
@@ -94,6 +120,7 @@ package body mem is
 	) return T_SLM is
 		file FileHandle				: TEXT open READ_MODE is FileName;
 		variable CurrentLine	: LINE;
+		variable Good					: BOOLEAN;
 		variable TempWord			: STD_LOGIC_VECTOR((div_ceil(BitsPerMemoryLine, 4) * 4) - 1 downto 0);
 		variable Result				: T_SLM(MemoryLines - 1 downto 0, BitsPerMemoryLine - 1 downto 0);
 	begin
@@ -109,7 +136,11 @@ package body mem is
 
 			readline(FileHandle, CurrentLine);
 --			report CurrentLine.all severity NOTE;
-			hread(CurrentLine, TempWord);
+			ReadHex(CurrentLine, TempWord, Good);
+			if (Good = FALSE) then
+				report "Error while reading memory file '" & FileName & "'." severity FAILURE;
+				return Result;
+			end if;
 			for j in 0 to BitsPerMemoryLine - 1 loop
 				Result(i, j) := TempWord(j);
 			end loop;

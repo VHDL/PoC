@@ -79,16 +79,16 @@ begin
 		type		ram_t		is array(0 to DEPTH - 1) of word_t;
 		
 		-- Compute the initialization of a RAM array, if specified, from the passed file.
-		impure function ocram_InitMemory(FileName : string) return ram_t is
+		impure function ocram_InitMemory(FilePath : string) return ram_t is
 			variable Memory		: T_SLM(DEPTH - 1 downto 0, word_t'range);
 			variable res			: ram_t;
 		begin
-			if (str_length(FILENAME) = 0) then
+			if (str_length(FilePath) = 0) then
 				Memory	:= (others => (others => ite(SIMULATION, 'U', '0')));
-			elsif (mem_FileExtension(FileName) = "mem") then
-				Memory	:= mem_ReadMemoryFile(FileName, DEPTH, word_t'length, MEM_FILEFORMAT_XILINX_MEM, MEM_CONTENT_HEX);
+			elsif (mem_FileExtension(FilePath) = "mem") then
+				Memory	:= mem_ReadMemoryFile(FilePath, DEPTH, word_t'length, MEM_FILEFORMAT_XILINX_MEM, MEM_CONTENT_HEX);
 			else
-				Memory	:= mem_ReadMemoryFile(FileName, DEPTH, word_t'length, MEM_FILEFORMAT_INTEL_HEX, MEM_CONTENT_HEX);
+				Memory	:= mem_ReadMemoryFile(FilePath, DEPTH, word_t'length, MEM_FILEFORMAT_INTEL_HEX, MEM_CONTENT_HEX);
 			end if;
 
 			for i in Memory'range(1) loop
