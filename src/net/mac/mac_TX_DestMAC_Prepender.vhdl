@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -29,48 +29,47 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
 
 
-ENTITY MAC_TX_DestMAC_Prepender IS
-	GENERIC (
+entity mac_TX_DestMAC_Prepender is
+	generic (
 		DEBUG													: BOOLEAN													:= FALSE
 	);
-	PORT (
-		Clock													: IN	STD_LOGIC;
-		Reset													: IN	STD_LOGIC;
+	port (
+		Clock													: in	STD_LOGIC;
+		Reset													: in	STD_LOGIC;
 		
-		In_Valid											: IN	STD_LOGIC;
-		In_Data												: IN	T_SLV_8;
-		In_SOF												: IN	STD_LOGIC;
-		In_EOF												: IN	STD_LOGIC;
-		In_Ack												: OUT	STD_LOGIC;
-		In_Meta_rst										: OUT	STD_LOGIC;
-		In_Meta_DestMACAddress_nxt		: OUT	STD_LOGIC;
-		In_Meta_DestMACAddress_Data		: IN	T_SLV_8;
+		In_Valid											: in	STD_LOGIC;
+		In_Data												: in	T_SLV_8;
+		In_SOF												: in	STD_LOGIC;
+		In_EOF												: in	STD_LOGIC;
+		In_Ack												: out	STD_LOGIC;
+		In_Meta_rst										: out	STD_LOGIC;
+		In_Meta_DestMACAddress_nxt		: out	STD_LOGIC;
+		In_Meta_DestMACAddress_Data		: in	T_SLV_8;
 		
-		Out_Valid											: OUT	STD_LOGIC;
-		Out_Data											: OUT	T_SLV_8;
-		Out_SOF												: OUT	STD_LOGIC;
-		Out_EOF												: OUT	STD_LOGIC;
-		Out_Ack												: IN	STD_LOGIC
+		Out_Valid											: out	STD_LOGIC;
+		Out_Data											: out	T_SLV_8;
+		Out_SOF												: out	STD_LOGIC;
+		Out_EOF												: out	STD_LOGIC;
+		Out_Ack												: in	STD_LOGIC
 	);
-END;
+end entity;
 
 
-ARCHITECTURE rtl OF MAC_TX_DestMAC_Prepender IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
+architecture rtl of mac_TX_DestMAC_Prepender is
+	attribute FSM_ENCODING					: STRING;
 	
-	TYPE T_STATE		IS (
+	type T_STATE is (
 		ST_IDLE,
 			ST_PREPEND_DEST_MAC_1,
 			ST_PREPEND_DEST_MAC_2,
@@ -80,33 +79,33 @@ ARCHITECTURE rtl OF MAC_TX_DestMAC_Prepender IS
 			ST_PAYLOAD
 	);
 
-	SIGNAL State										: T_STATE																						:= ST_IDLE;
-	SIGNAL NextState								: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State	: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	signal State										: T_STATE							:= ST_IDLE;
+	signal NextState								: T_STATE;
+	attribute FSM_ENCODING of State	: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	SIGNAL Is_DataFlow							: STD_LOGIC;
-	SIGNAL Is_SOF										: STD_LOGIC;
-	SIGNAL Is_EOF										: STD_LOGIC;
+	signal Is_DataFlow							: STD_LOGIC;
+	signal Is_SOF										: STD_LOGIC;
+	signal Is_EOF										: STD_LOGIC;
 	
-BEGIN
+begin
 
-	Is_DataFlow		<= In_Valid AND Out_Ack;
-	Is_SOF				<= In_Valid AND In_SOF;
-	Is_EOF				<= In_Valid AND In_EOF;
+	Is_DataFlow		<= In_Valid and Out_Ack;
+	Is_SOF				<= In_Valid and In_SOF;
+	Is_EOF				<= In_Valid and In_EOF;
 	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				State			<= ST_IDLE;
-			ELSE
+			else
 				State			<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State, In_Valid, In_Data, In_EOF, Is_DataFlow, Is_SOF, Is_EOF, Out_Ack, In_Meta_DestMACAddress_Data)
-	BEGIN
+	process(State, In_Valid, In_Data, In_EOF, Is_DataFlow, Is_SOF, Is_EOF, Out_Ack, In_Meta_DestMACAddress_Data)
+	begin
 		NextState										<= State;
 		
 		Out_Valid										<= '0';
@@ -119,84 +118,84 @@ BEGIN
 --		In_Meta_DestMACAddress_rev	<= '1';					-- read destination MAC address in Big-Endian order
 		In_Meta_DestMACAddress_nxt	<= '0';
 	
-		CASE State IS
-			WHEN ST_IDLE =>
+		case State is
+			when ST_IDLE =>
 				In_Meta_rst											<= '1';
 				Out_Data												<= In_Meta_DestMACAddress_Data;
 					
-				IF (Is_SOF = '1') THEN
+				if (Is_SOF = '1') then
 					In_Meta_rst										<= '0';
 					In_Meta_DestMACAddress_nxt		<= Out_Ack;
 				
 					Out_Valid											<= '1';
 					Out_SOF												<= '1';
 					
-					IF (Out_Ack	 = '1') THEN
+					if (Out_Ack	 = '1') then
 						NextState										<= ST_PREPEND_DEST_MAC_1;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_PREPEND_DEST_MAC_1 =>
+			when ST_PREPEND_DEST_MAC_1 =>
 				In_Meta_DestMACAddress_nxt			<= Out_Ack;
 				
 				Out_Valid												<= '1';
 				Out_Data												<= In_Meta_DestMACAddress_Data;
 					
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState											<= ST_PREPEND_DEST_MAC_2;
-				END IF;
+				end if;
 
-			WHEN ST_PREPEND_DEST_MAC_2 =>
+			when ST_PREPEND_DEST_MAC_2 =>
 				In_Meta_DestMACAddress_nxt			<= Out_Ack;
 				
 				Out_Valid												<= '1';
 				Out_Data												<= In_Meta_DestMACAddress_Data;
 					
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState											<= ST_PREPEND_DEST_MAC_3;
-				END IF;
+				end if;
 				
-			WHEN ST_PREPEND_DEST_MAC_3 =>
+			when ST_PREPEND_DEST_MAC_3 =>
 				In_Meta_DestMACAddress_nxt			<= Out_Ack;
 				
 				Out_Valid												<= '1';
 				Out_Data												<= In_Meta_DestMACAddress_Data;
 					
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState											<= ST_PREPEND_DEST_MAC_4;
-				END IF;
+				end if;
 				
-			WHEN ST_PREPEND_DEST_MAC_4 =>
+			when ST_PREPEND_DEST_MAC_4 =>
 				In_Meta_DestMACAddress_nxt			<= Out_Ack;
 				
 				Out_Valid												<= '1';
 				Out_Data												<= In_Meta_DestMACAddress_Data;
 					
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState											<= ST_PREPEND_DEST_MAC_5;
-				END IF;
+				end if;
 				
-			WHEN ST_PREPEND_DEST_MAC_5 =>
+			when ST_PREPEND_DEST_MAC_5 =>
 				In_Meta_DestMACAddress_nxt			<= Out_Ack;
 				
 				Out_Valid												<= '1';
 				Out_Data												<= In_Meta_DestMACAddress_Data;
 					
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState											<= ST_PAYLOAD;
-				END IF;
+				end if;
 			
-			WHEN ST_PAYLOAD =>
+			when ST_PAYLOAD =>
 				In_Ack													<= Out_Ack;
 				
 				Out_Valid												<= In_Valid;
 				Out_EOF													<= In_EOF;
 
-				IF ((Is_DataFlow AND Is_EOF) = '1') THEN
+				if ((Is_DataFlow and Is_EOF) = '1') then
 					NextState											<= ST_IDLE;
-				END IF;
+				end if;
 			
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
-END ARCHITECTURE;
+end architecture;

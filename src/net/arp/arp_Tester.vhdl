@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -29,51 +29,50 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;	
+use			PoC.physical.all;
+use			PoC.net.all;
 
---LIBRARY L_IO;
---USE			L_IO.IOTypes.ALL;
 
-
-ENTITY ARP_Tester IS
-	GENERIC (
-		CLOCK_FREQ_MHZ							: REAL																	:= 125.0;					-- 125 MHz
-		ARP_LOOKUP_INTERVAL_MS			: REAL																	:= 100.0					-- 100 ms
+entity arp_Tester is
+	generic (
+		CLOCK_FREQ									: FREQ																	:= 125 MHz;
+		ARP_LOOKUP_INTERVAL					: TIME																	:= 100 ms
 	);
-	PORT (
-		Clock												: IN	STD_LOGIC;																	-- 
-		Reset												: IN	STD_LOGIC;																	-- 
+	port (
+		Clock												: in	STD_LOGIC;																	-- 
+		Reset												: in	STD_LOGIC;																	-- 
 
-		Command											: IN	T_NET_ARP_TESTER_COMMAND;
-		Status											: OUT	T_NET_ARP_TESTER_STATUS;
+		Command											: in	T_NET_ARP_TESTER_COMMAND;
+		Status											: out	T_NET_ARP_TESTER_STATUS;
 		
-		IPCache_Lookup							: OUT	STD_LOGIC;
-		IPCache_IPv4Address_rst			: IN	STD_LOGIC;
-		IPCache_IPv4Address_nxt			: IN	STD_LOGIC;
-		IPCache_IPv4Address_Data		: OUT	T_SLV_8;
+		IPCache_Lookup							: out	STD_LOGIC;
+		IPCache_IPv4Address_rst			: in	STD_LOGIC;
+		IPCache_IPv4Address_nxt			: in	STD_LOGIC;
+		IPCache_IPv4Address_Data		: out	T_SLV_8;
 		
-		IPCache_Valid								: IN	STD_LOGIC;
-		IPCache_MACAddress_rst			: OUT	STD_LOGIC;
-		IPCache_MACAddress_nxt			: OUT	STD_LOGIC;
-		IPCache_MACAddress_Data			: IN	T_SLV_8
+		IPCache_Valid								: in	STD_LOGIC;
+		IPCache_MACAddress_rst			: out	STD_LOGIC;
+		IPCache_MACAddress_nxt			: out	STD_LOGIC;
+		IPCache_MACAddress_Data			: in	T_SLV_8
 	);
-END;
+end entity;
 
 
-ARCHITECTURE rtl OF ARP_Tester IS
-	ATTRIBUTE KEEP													: BOOLEAN;
+architecture rtl of arp_Tester is
+	attribute KEEP													: BOOLEAN;
 	
-	SIGNAL Tick															: STD_LOGIC;
-	ATTRIBUTE KEEP OF Tick									: SIGNAL IS TRUE;
+	signal Tick															: STD_LOGIC;
+	attribute KEEP of Tick									: signal is TRUE;
 	
-	CONSTANT LOOKUP_ADDRESSES								: T_NET_IPV4_ADDRESS_VECTOR														:= (
+	constant LOOKUP_ADDRESSES								: T_NET_IPV4_ADDRESS_VECTOR														:= (
 		0 =>			to_net_ipv4_address("192.168.99.1"),
 		1 =>			to_net_ipv4_address("192.168.99.2"),
 		2 =>			to_net_ipv4_address("192.168.99.3"),
@@ -92,46 +91,46 @@ ARCHITECTURE rtl OF ARP_Tester IS
 		15 =>			to_net_ipv4_address("192.168.99.1")
 	);
 	
-	SUBTYPE T_BYTE_INDEX										 IS NATURAL RANGE 0 TO 3;
+	subtype T_BYTE_INDEX										 is NATURAL range 0 to 3;
 	
-	TYPE T_STATE IS (
+	type T_STATE IS (
 		ST_IDLE,
 		ST_IPCACHE_LOOKUP_WAIT,
 		ST_IPCACHE_READ
 	);
 	
-	SIGNAL State														: T_STATE																								:= ST_IDLE;
-	SIGNAL NextState												: T_STATE;
+	signal State														: T_STATE																								:= ST_IDLE;
+	signal NextState												: T_STATE;
 	
-	SIGNAL IPv4Address_we										: STD_LOGIC;
-	SIGNAL IPv4Address_sel									: T_BYTE_INDEX;
-	SIGNAL IPv4Address_d										: T_NET_IPV4_ADDRESS																		:= to_net_ipv4_address("192.168.99.1");
+	signal IPv4Address_we										: STD_LOGIC;
+	signal IPv4Address_sel									: T_BYTE_INDEX;
+	signal IPv4Address_d										: T_NET_IPV4_ADDRESS																		:= to_net_ipv4_address("192.168.99.1");
 	
-	ATTRIBUTE KEEP OF IPCache_MACAddress_Data	: SIGNAL IS TRUE;
+	attribute KEEP of IPCache_MACAddress_Data	: signal IS TRUE;
 	
 	SIGNAl Reader_Counter_en								: STD_LOGIC;
-	SIGNAl Reader_Counter_us								: UNSIGNED(log2ceilnz(T_BYTE_INDEX'high) - 1 DOWNTO 0)	:= (OTHERS => '0');
+	SIGNAl Reader_Counter_us								: UNSIGNED(log2ceilnz(T_BYTE_INDEX'high) - 1 downto 0)	:= (others => '0');
 	
 	SIGNAl Lookup_Counter_en								: STD_LOGIC;
-	SIGNAl Lookup_Counter_us								: UNSIGNED(3 DOWNTO 0)																	:= (OTHERS => '0');
+	SIGNAl Lookup_Counter_us								: UNSIGNED(3 downto 0)																	:= (others => '0');
 
-BEGIN
-	ASSERT FALSE REPORT "TICKCOUNTER_MAX: " & INTEGER'image(TimingToCycles_ms(ARP_LOOKUP_INTERVAL_MS, Freq_MHz2Real_ns(CLOCK_FREQ_MHZ))) & "    ARP_LOOKUP_INTERVAL_MS: " & REAL'image(ARP_LOOKUP_INTERVAL_MS) & " ms" SEVERITY NOTE;
+begin
+--	assert FALSE report "TICKCOUNTER_MAX: " & INTEGER'image(TimingToCycles(ARP_LOOKUP_INTERVAL, CLOCK_FREQ)) & "    ARP_LOOKUP_INTERVAL: " & REAL'image(ARP_LOOKUP_INTERVAL_MS) & " ms" severity NOTE;
 
 		-- ARP_TestFSM
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				State		<= ST_IDLE;
-			ELSE
+			else
 				State		<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 	
-	PROCESS(State, Tick, IPCache_Valid, Reader_Counter_us)
-	BEGIN
+	process(State, Tick, IPCache_Valid, Reader_Counter_us)
+	begin
 		NextState											<= State;
 		
 		Status												<= NET_ARP_TESTER_STATUS_IDLE;
@@ -145,83 +144,81 @@ BEGIN
 --		IPv4Address_sel								<= 0;
 		Lookup_Counter_en							<= '0';
 		
-		CASE State IS 
-			WHEN ST_IDLE =>
-				IF (Tick = '1') THEN
+		case State is 
+			when ST_IDLE =>
+				if (Tick = '1') then
 					IPCache_Lookup					<= '1';
 					NextState								<= ST_IPCACHE_LOOKUP_WAIT;
-				END IF;
+				end if;
 				
-			WHEN ST_IPCACHE_LOOKUP_WAIT =>
+			when ST_IPCACHE_LOOKUP_WAIT =>
 				Status										<= NET_ARP_TESTER_STATUS_TESTING;
 				
 				IPCache_MACAddress_rst		<= '1';
 			
-				IF (IPCache_Valid = '1') THEN
+				if (IPCache_Valid = '1') then
 					IPCache_MACAddress_rst	<= '0';
 					IPCache_MACAddress_nxt	<= '1';
 				
 					Reader_Counter_en				<= '1';
 					NextState								<= ST_IPCACHE_READ;
-				END IF;
+				end if;
 				
-			WHEN ST_IPCACHE_READ =>
+			when ST_IPCACHE_READ =>
 				Status										<= NET_ARP_TESTER_STATUS_TESTING;
 				Reader_Counter_en					<= '1';
 				IPCache_MACAddress_nxt		<= '1';
 				
-				IF (Reader_Counter_us = 3) THEN
+				if (Reader_Counter_us = 3) then
 					Status									<= NET_ARP_TESTER_STATUS_TEST_COMPLETE;
 --					IPv4Address_we					<= '1';
 					Lookup_Counter_en				<= '1';
 					NextState								<= ST_IDLE;
-				END IF;
+				end if;
 				
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reader_Counter_en = '0') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reader_Counter_en = '0') then
 				Reader_Counter_us		<= to_unsigned(0, Reader_Counter_us'length);
-			ELSE
+			else
 				Reader_Counter_us		<= Reader_Counter_us + 1;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				Lookup_Counter_us		<= to_unsigned(0, Lookup_Counter_us'length);
-			ELSE
-				IF (Lookup_Counter_en = '1') THEN
-					Lookup_Counter_us		<= Lookup_Counter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+			elsif (Lookup_Counter_en = '1') then
+				Lookup_Counter_us		<= Lookup_Counter_us + 1;
+			end if;
+		end if;
+	end process;
 	
---	PROCESS(Clock)
---	BEGIN
---		IF rising_edge(Clock) THEN
---			IF (IPv4Address_we = '1') THEN
+--	process(Clock)
+--	begin
+--		if rising_edge(Clock) then
+--			if (IPv4Address_we = '1') then
 --				IPv4Address_d(IPv4Address_sel)		<= IPCache_MACAddress_Data;
---			END IF;
---		END IF;
---	END PROCESS;
+--			end if;
+--		end if;
+--	end process;
 	
 	IPv4Address_d			<= LOOKUP_ADDRESSES(to_integer(Lookup_Counter_us));
 	
-	IPv4AddressSeq : ENTITY PoC.misc_Sequencer
-		GENERIC MAP (
+	IPv4AddressSeq : entity PoC.misc_Sequencer
+		generic map (
 			INPUT_BITS						=> 32,
 			OUTPUT_BITS						=> 8,
 			REGISTERED						=> FALSE
 		)
-		PORT MAP (
+		port map (
 			Clock									=> Clock,
 			Reset									=> Reset,
 			
@@ -233,22 +230,22 @@ BEGIN
 		);
 	
 	-- lookup interval tick generator
-	PROCESS(Clock)
-		CONSTANT TICKCOUNTER_RES_MS							: REAL																								:= ARP_LOOKUP_INTERVAL_MS;
-		CONSTANT TICKCOUNTER_MAX								: POSITIVE																						:= TimingToCycles_ms(TICKCOUNTER_RES_MS, Freq_MHz2Real_ns(CLOCK_FREQ_MHZ));
-		CONSTANT TICKCOUNTER_BITS								: POSITIVE																						:= log2ceilnz(TICKCOUNTER_MAX);
+	process(Clock)
+		constant TICKCOUNTER_RES								: TIME																								:= ARP_LOOKUP_INTERVAL;
+		constant TICKCOUNTER_MAX								: POSITIVE																						:= TimingToCycles(TICKCOUNTER_RES, CLOCK_FREQ);
+		constant TICKCOUNTER_BITS								: POSITIVE																						:= log2ceilnz(TICKCOUNTER_MAX);
 	
-		VARIABLE TickCounter_s									: SIGNED(TICKCOUNTER_BITS DOWNTO 0)										:= to_signed(TICKCOUNTER_MAX, TICKCOUNTER_BITS + 1);
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Tick = '1') THEN
+		variable TickCounter_s									: SIGNED(TICKCOUNTER_BITS downto 0)										:= to_signed(TICKCOUNTER_MAX, TICKCOUNTER_BITS + 1);
+	begin
+		if rising_edge(Clock) then
+			if (Tick = '1') then
 				TickCounter_s		:= to_signed(TICKCOUNTER_MAX, TickCounter_s'length);
-			ELSE
+			else
 				TickCounter_s		:= TickCounter_s - 1;
-			END IF;
-		END IF;
+			end if;
+		end if;
 		
 		Tick			<= TickCounter_s(TickCounter_s'high);
-	END PROCESS;
+	end process;
 
-END ARCHITECTURE;
+end architecture;

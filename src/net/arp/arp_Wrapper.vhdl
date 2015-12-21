@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -29,86 +29,86 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.io.ALL;
-USE			PoC.net.ALL;
-USE			PoC.cache.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.physical.all;
+use			PoC.cache.all;
+use			PoC.net.all;
 
 
-ENTITY ARP_Wrapper IS
-	GENERIC (
-		CLOCK_FREQ_MHZ											: REAL																	:= 125.0;					-- 125 MHz
+entity arp_Wrapper is
+	generic (
+		CLOCK_FREQ													: FREQ																	:= 125 MHz;
 		INTERFACE_MACADDRESS								: T_NET_MAC_ADDRESS											:= C_NET_MAC_ADDRESS_EMPTY;
 		INITIAL_IPV4ADDRESSES								: T_NET_IPV4_ADDRESS_VECTOR							:= (0 => C_NET_IPV4_ADDRESS_EMPTY);
 		INITIAL_ARPCACHE_CONTENT						: T_NET_ARP_ARPCACHE_VECTOR							:= (0 => (Tag => C_NET_IPV4_ADDRESS_EMPTY, MAC => C_NET_MAC_ADDRESS_EMPTY));
-		APR_REQUEST_TIMEOUT_MS							: REAL																	:= 100.0
+		APR_REQUEST_TIMEOUT									: TIME																	:= 100 ms
 	);
-	PORT (
-		Clock																: IN	STD_LOGIC;
-		Reset																: IN	STD_LOGIC;
+	port (
+		Clock																: in	STD_LOGIC;
+		Reset																: in	STD_LOGIC;
 		
-		IPPool_Announce											: IN	STD_LOGIC;
-		IPPool_Announced										: OUT	STD_LOGIC;
+		IPPool_Announce											: in	STD_LOGIC;
+		IPPool_Announced										: out	STD_LOGIC;
 		
-		IPCache_Lookup											: IN	STD_LOGIC;
-		IPCache_IPv4Address_rst							: OUT	STD_LOGIC;
-		IPCache_IPv4Address_nxt							: OUT	STD_LOGIC;
-		IPCache_IPv4Address_Data						: IN	T_SLV_8;
+		IPCache_Lookup											: in	STD_LOGIC;
+		IPCache_IPv4Address_rst							: out	STD_LOGIC;
+		IPCache_IPv4Address_nxt							: out	STD_LOGIC;
+		IPCache_IPv4Address_Data						: in	T_SLV_8;
 		
-		IPCache_Valid												: OUT	STD_LOGIC;
-		IPCache_MACAddress_rst							: IN	STD_LOGIC;
-		IPCache_MACAddress_nxt							: IN	STD_LOGIC;
-		IPCache_MACAddress_Data							: OUT	T_SLV_8;
+		IPCache_Valid												: out	STD_LOGIC;
+		IPCache_MACAddress_rst							: in	STD_LOGIC;
+		IPCache_MACAddress_nxt							: in	STD_LOGIC;
+		IPCache_MACAddress_Data							: out	T_SLV_8;
 		
-		Eth_UC_TX_Valid											: OUT	STD_LOGIC;
-		Eth_UC_TX_Data											: OUT	T_SLV_8;
-		Eth_UC_TX_SOF												: OUT	STD_LOGIC;
-		Eth_UC_TX_EOF												: OUT	STD_LOGIC;
-		Eth_UC_TX_Ack												: IN	STD_LOGIC;
-		Eth_UC_TX_Meta_rst									: IN	STD_LOGIC;
-		Eth_UC_TX_Meta_DestMACAddress_nxt		: IN	STD_LOGIC;
-		Eth_UC_TX_Meta_DestMACAddress_Data	: OUT	T_SLV_8;
+		Eth_UC_TX_Valid											: out	STD_LOGIC;
+		Eth_UC_TX_Data											: out	T_SLV_8;
+		Eth_UC_TX_SOF												: out	STD_LOGIC;
+		Eth_UC_TX_EOF												: out	STD_LOGIC;
+		Eth_UC_TX_Ack												: in	STD_LOGIC;
+		Eth_UC_TX_Meta_rst									: in	STD_LOGIC;
+		Eth_UC_TX_Meta_DestMACAddress_nxt		: in	STD_LOGIC;
+		Eth_UC_TX_Meta_DestMACAddress_Data	: out	T_SLV_8;
 		
-		Eth_UC_RX_Valid											: IN	STD_LOGIC;
-		Eth_UC_RX_Data											: IN	T_SLV_8;
-		Eth_UC_RX_SOF												: IN	STD_LOGIC;
-		Eth_UC_RX_EOF												: IN	STD_LOGIC;
-		Eth_UC_RX_Ack												: OUT	STD_LOGIC;
-		Eth_UC_RX_Meta_rst									: OUT	STD_LOGIC;
-		Eth_UC_RX_Meta_SrcMACAddress_nxt		: OUT	STD_LOGIC;
-		Eth_UC_RX_Meta_SrcMACAddress_Data		: IN	T_SLV_8;
-		Eth_UC_RX_Meta_DestMACAddress_nxt		: OUT	STD_LOGIC;
-		Eth_UC_RX_Meta_DestMACAddress_Data	: IN	T_SLV_8;
+		Eth_UC_RX_Valid											: in	STD_LOGIC;
+		Eth_UC_RX_Data											: in	T_SLV_8;
+		Eth_UC_RX_SOF												: in	STD_LOGIC;
+		Eth_UC_RX_EOF												: in	STD_LOGIC;
+		Eth_UC_RX_Ack												: out	STD_LOGIC;
+		Eth_UC_RX_Meta_rst									: out	STD_LOGIC;
+		Eth_UC_RX_Meta_SrcMACAddress_nxt		: out	STD_LOGIC;
+		Eth_UC_RX_Meta_SrcMACAddress_Data		: in	T_SLV_8;
+		Eth_UC_RX_Meta_DestMACAddress_nxt		: out	STD_LOGIC;
+		Eth_UC_RX_Meta_DestMACAddress_Data	: in	T_SLV_8;
 		
-		Eth_BC_RX_Valid											: IN	STD_LOGIC;
-		Eth_BC_RX_Data											: IN	T_SLV_8;
-		Eth_BC_RX_SOF												: IN	STD_LOGIC;
-		Eth_BC_RX_EOF												: IN	STD_LOGIC;
-		Eth_BC_RX_Ack												: OUT	STD_LOGIC;
-		Eth_BC_RX_Meta_rst									: OUT	STD_LOGIC;
-		Eth_BC_RX_Meta_SrcMACAddress_nxt		: OUT	STD_LOGIC;
-		Eth_BC_RX_Meta_SrcMACAddress_Data		: IN	T_SLV_8;
-		Eth_BC_RX_Meta_DestMACAddress_nxt		: OUT	STD_LOGIC;
-		Eth_BC_RX_Meta_DestMACAddress_Data	: IN	T_SLV_8
+		Eth_BC_RX_Valid											: in	STD_LOGIC;
+		Eth_BC_RX_Data											: in	T_SLV_8;
+		Eth_BC_RX_SOF												: in	STD_LOGIC;
+		Eth_BC_RX_EOF												: in	STD_LOGIC;
+		Eth_BC_RX_Ack												: out	STD_LOGIC;
+		Eth_BC_RX_Meta_rst									: out	STD_LOGIC;
+		Eth_BC_RX_Meta_SrcMACAddress_nxt		: out	STD_LOGIC;
+		Eth_BC_RX_Meta_SrcMACAddress_Data		: in	T_SLV_8;
+		Eth_BC_RX_Meta_DestMACAddress_nxt		: out	STD_LOGIC;
+		Eth_BC_RX_Meta_DestMACAddress_Data	: in	T_SLV_8
 	);
-END;
+end entity;
 
 
-ARCHITECTURE rtl OF ARP_Wrapper IS
-	SIGNAL ARPCache_Command												: T_NET_ARP_ARPCACHE_COMMAND;
-	SIGNAL IPPool_Command													: T_NET_ARP_IPPOOL_COMMAND;
+architecture rtl of arp_Wrapper is
+	signal ARPCache_Command												: T_NET_ARP_ARPCACHE_COMMAND;
+	signal IPPool_Command													: T_NET_ARP_IPPOOL_COMMAND;
 	
-	SIGNAL IPPool_Announce_l											: STD_LOGIC							:= '0';
-	SIGNAL IPPool_Announced_i											: STD_LOGIC;
+	signal IPPool_Announce_l											: STD_LOGIC							:= '0';
+	signal IPPool_Announced_i											: STD_LOGIC;
 	
-	TYPE T_FSMPOOL_STATE IS (
+	type T_FSMPOOL_STATE IS (
 		ST_IDLE,
 		ST_IPPOOL_WAIT,
 		ST_SEND_RESPONSE,
@@ -116,67 +116,67 @@ ARCHITECTURE rtl OF ARP_Wrapper IS
 		ST_ERROR
 	);
 	
-	SIGNAL FSMPool_State													: T_FSMPOOL_STATE				:= ST_IDLE;
-	SIGNAL FSMPool_NextState											: T_FSMPOOL_STATE;
+	signal FSMPool_State													: T_FSMPOOL_STATE				:= ST_IDLE;
+	signal FSMPool_NextState											: T_FSMPOOL_STATE;
 	
-	SIGNAL FSMPool_MACSeq1_SenderMACAddress_rst		: STD_LOGIC;
-	SIGNAL FSMPool_MACSeq1_SenderMACAddress_nxt		: STD_LOGIC;
+	signal FSMPool_MACSeq1_SenderMACAddress_rst		: STD_LOGIC;
+	signal FSMPool_MACSeq1_SenderMACAddress_nxt		: STD_LOGIC;
 	
-	SIGNAL FSMPool_BCRcv_Clear										: STD_LOGIC;
-	SIGNAL FSMPool_BCRcv_Address_rst							: STD_LOGIC;
-	SIGNAL FSMPool_BCRcv_SenderMACAddress_nxt			: STD_LOGIC;
-	SIGNAL FSMPool_BCRcv_SenderIPv4Address_nxt		: STD_LOGIC;
-	SIGNAL FSMPool_BCRcv_TargetIPv4Address_nxt		: STD_LOGIC;
+	signal FSMPool_BCRcv_Clear										: STD_LOGIC;
+	signal FSMPool_BCRcv_Address_rst							: STD_LOGIC;
+	signal FSMPool_BCRcv_SenderMACAddress_nxt			: STD_LOGIC;
+	signal FSMPool_BCRcv_SenderIPv4Address_nxt		: STD_LOGIC;
+	signal FSMPool_BCRcv_TargetIPv4Address_nxt		: STD_LOGIC;
 	
-	SIGNAL FSMPool_Command												: T_NET_ARP_IPPOOL_COMMAND;
-	SIGNAL FSMPool_NewIPv4Address_Data						: T_NET_IPV4_ADDRESS;
-	SIGNAL FSMPool_NewMACAddress_Data							: T_NET_MAC_ADDRESS;
-	SIGNAL FSMPool_IPPool_Lookup									: STD_LOGIC;
-	SIGNAL FSMPool_IPPool_IPv4Address_Data				: T_SLV_8;
+	signal FSMPool_Command												: T_NET_ARP_IPPOOL_COMMAND;
+	signal FSMPool_NewIPv4Address_Data						: T_NET_IPV4_ADDRESS;
+	signal FSMPool_NewMACAddress_Data							: T_NET_MAC_ADDRESS;
+	signal FSMPool_IPPool_Lookup									: STD_LOGIC;
+	signal FSMPool_IPPool_IPv4Address_Data				: T_SLV_8;
 	
-	SIGNAL FSMPool_UCRsp_SendResponse							: STD_LOGIC;
-	SIGNAL FSMPool_UCRsp_SenderMACAddress_Data		: T_SLV_8;
-	SIGNAL FSMPool_UCRsp_SenderIPv4Address_Data		: T_SLV_8;
-	SIGNAL FSMPool_UCRsp_TargetMACAddress_Data		: T_SLV_8;
-	SIGNAL FSMPool_UCRsp_TargetIPv4Address_Data		: T_SLV_8;
+	signal FSMPool_UCRsp_SendResponse							: STD_LOGIC;
+	signal FSMPool_UCRsp_SenderMACAddress_Data		: T_SLV_8;
+	signal FSMPool_UCRsp_SenderIPv4Address_Data		: T_SLV_8;
+	signal FSMPool_UCRsp_TargetMACAddress_Data		: T_SLV_8;
+	signal FSMPool_UCRsp_TargetIPv4Address_Data		: T_SLV_8;
 	
 	-- Sender MACAddress sequencer
-	SIGNAL MACSeq1_SenderMACAddress_Data					: T_SLV_8;
+	signal MACSeq1_SenderMACAddress_Data					: T_SLV_8;
 	
 	-- broadcast receiver
-	SIGNAL BCRcv_Error														: STD_LOGIC;
+	signal BCRcv_Error														: STD_LOGIC;
 	
-	SIGNAL BCRcv_RequestReceived									: STD_LOGIC;
-	SIGNAL BCRcv_SenderMACAddress_Data						: T_SLV_8;
-	SIGNAL BCRcv_SenderIPv4Address_Data						: T_SLV_8;
-	SIGNAL BCRcv_TargetIPv4Address_Data						: T_SLV_8;
+	signal BCRcv_RequestReceived									: STD_LOGIC;
+	signal BCRcv_SenderMACAddress_Data						: T_SLV_8;
+	signal BCRcv_SenderIPv4Address_Data						: T_SLV_8;
+	signal BCRcv_TargetIPv4Address_Data						: T_SLV_8;
 	
 	-- ippool
-	SIGNAL IPPool_Insert													: STD_LOGIC;
-	SIGNAL IPPool_UCRsp_SendResponse							: STD_LOGIC;
-	SIGNAL IPPool_IPv4Address_rst									: STD_LOGIC;
-	SIGNAL IPPool_IPv4Address_nxt									: STD_LOGIC;
-	SIGNAL IPPool_PoolResult											: T_CACHE_RESULT;
+	signal IPPool_Insert													: STD_LOGIC;
+	signal IPPool_UCRsp_SendResponse							: STD_LOGIC;
+	signal IPPool_IPv4Address_rst									: STD_LOGIC;
+	signal IPPool_IPv4Address_nxt									: STD_LOGIC;
+	signal IPPool_PoolResult											: T_CACHE_RESULT;
 	
 	-- unicast responder
-	SIGNAL UCRsp_Complete													: STD_LOGIC;
+	signal UCRsp_Complete													: STD_LOGIC;
 	
-	SIGNAL UCRsp_Address_rst											: STD_LOGIC;
-	SIGNAL UCRsp_SenderMACAddress_nxt							: STD_LOGIC;
-	SIGNAL UCRsp_SenderIPv4Address_nxt						: STD_LOGIC;
-	SIGNAL UCRsp_TargetMACAddress_nxt							: STD_LOGIC;
-	SIGNAL UCRsp_TargetIPv4Address_nxt						: STD_LOGIC;
+	signal UCRsp_Address_rst											: STD_LOGIC;
+	signal UCRsp_SenderMACAddress_nxt							: STD_LOGIC;
+	signal UCRsp_SenderIPv4Address_nxt						: STD_LOGIC;
+	signal UCRsp_TargetMACAddress_nxt							: STD_LOGIC;
+	signal UCRsp_TargetIPv4Address_nxt						: STD_LOGIC;
 	
-	SIGNAL UCRsp_TX_Valid													: STD_LOGIC;
-	SIGNAL UCRsp_TX_Data													: T_SLV_8;
-	SIGNAL UCRsp_TX_SOF														: STD_LOGIC;
-	SIGNAL UCRsp_TX_EOF														: STD_LOGIC;
-	SIGNAL UCRsp_TX_Ack														: STD_LOGIC;
-	SIGNAL UCRsp_TX_Meta_DestMACAddress_rst				: STD_LOGIC;
-	SIGNAL UCRsp_TX_Meta_DestMACAddress_nxt				: STD_LOGIC;
-	SIGNAL UCRsp_TX_Meta_DestMACAddress_Data			: T_SLV_8;
+	signal UCRsp_TX_Valid													: STD_LOGIC;
+	signal UCRsp_TX_Data													: T_SLV_8;
+	signal UCRsp_TX_SOF														: STD_LOGIC;
+	signal UCRsp_TX_EOF														: STD_LOGIC;
+	signal UCRsp_TX_Ack														: STD_LOGIC;
+	signal UCRsp_TX_Meta_DestMACAddress_rst				: STD_LOGIC;
+	signal UCRsp_TX_Meta_DestMACAddress_nxt				: STD_LOGIC;
+	signal UCRsp_TX_Meta_DestMACAddress_Data			: T_SLV_8;
 	
-	TYPE T_FSMCACHE_STATE IS (
+	type T_FSMCACHE_STATE IS (
 		ST_IDLE,
 			ST_CACHE, ST_CACHE_WAIT, ST_READ_CACHE,
 			ST_SEND_BROADCAST_REQUEST, ST_SEND_BROADCAST_REQUEST_WAIT, ST_WAIT_FOR_UNICAST_RESPONSE,
@@ -184,86 +184,86 @@ ARCHITECTURE rtl OF ARP_Wrapper IS
 		ST_ERROR
 	);
 	
-	SIGNAL FSMCache_State													: T_FSMCACHE_STATE								:= ST_IDLE;
-	SIGNAL FSMCache_NextState											: T_FSMCACHE_STATE;
+	signal FSMCache_State													: T_FSMCACHE_STATE								:= ST_IDLE;
+	signal FSMCache_NextState											: T_FSMCACHE_STATE;
 	
-	SIGNAL FSMCache_ARPCache_Command							: T_NET_ARP_ARPCACHE_COMMAND;
-	SIGNAL FSMCache_ARPCache_NewIPv4Address_Data	: T_SLV_8;
-	SIGNAL FSMCache_ARPCache_NewMACAddress_Data		: T_SLV_8;
+	signal FSMCache_ARPCache_Command							: T_NET_ARP_ARPCACHE_COMMAND;
+	signal FSMCache_ARPCache_NewIPv4Address_Data	: T_SLV_8;
+	signal FSMCache_ARPCache_NewMACAddress_Data		: T_SLV_8;
 
-	SIGNAL FSMCache_MACSeq2_SenderMACAddress_rst	: STD_LOGIC;
-	SIGNAL FSMCache_MACSeq2_SenderMACAddress_nxt	: STD_LOGIC;
-	SIGNAL FSMCache_IPSeq2_SenderIPv4Address_rst	: STD_LOGIC;
-	SIGNAL FSMCache_IPSeq2_SenderIPv4Address_nxt	: STD_LOGIC;
+	signal FSMCache_MACSeq2_SenderMACAddress_rst	: STD_LOGIC;
+	signal FSMCache_MACSeq2_SenderMACAddress_nxt	: STD_LOGIC;
+	signal FSMCache_IPSeq2_SenderIPv4Address_rst	: STD_LOGIC;
+	signal FSMCache_IPSeq2_SenderIPv4Address_nxt	: STD_LOGIC;
 
-	SIGNAL FSMCache_UCRcv_Clear										: STD_LOGIC;
-	SIGNAL FSMCache_UCRcv_Address_rst							: STD_LOGIC;
-	SIGNAL FSMCache_UCRcv_SenderMACAddress_nxt		: STD_LOGIC;
-	SIGNAL FSMCache_UCRcv_SenderIPv4Address_nxt		: STD_LOGIC;
-	SIGNAL FSMCache_UCRcv_TargetMACAddress_nxt		: STD_LOGIC;
-	SIGNAL FSMCache_UCRcv_TargetIPv4Address_nxt		: STD_LOGIC;
+	signal FSMCache_UCRcv_Clear										: STD_LOGIC;
+	signal FSMCache_UCRcv_Address_rst							: STD_LOGIC;
+	signal FSMCache_UCRcv_SenderMACAddress_nxt		: STD_LOGIC;
+	signal FSMCache_UCRcv_SenderIPv4Address_nxt		: STD_LOGIC;
+	signal FSMCache_UCRcv_TargetMACAddress_nxt		: STD_LOGIC;
+	signal FSMCache_UCRcv_TargetIPv4Address_nxt		: STD_LOGIC;
 	
-	SIGNAL FSMCache_ARPCache_Lookup								: STD_LOGIC;
-	SIGNAL FSMCache_ARPCache_IPv4Address_Data			: T_SLV_8;
-	SIGNAL FSMCache_ARPCache_MACAddress_rst				: STD_LOGIC;
-	SIGNAL FSMCache_ARPCache_MACAddress_nxt				: STD_LOGIC;
+	signal FSMCache_ARPCache_Lookup								: STD_LOGIC;
+	signal FSMCache_ARPCache_IPv4Address_Data			: T_SLV_8;
+	signal FSMCache_ARPCache_MACAddress_rst				: STD_LOGIC;
+	signal FSMCache_ARPCache_MACAddress_nxt				: STD_LOGIC;
 
-	SIGNAL FSMCache_BCReq_SendRequest							: STD_LOGIC;
-	SIGNAL FSMCache_BCReq_SenderMACAddress_Data		: T_SLV_8;
-	SIGNAL FSMCache_BCReq_SenderIPv4Address_Data	: T_SLV_8;
-	SIGNAL FSMCache_BCReq_TargetMACAddress_Data		: T_SLV_8;
-	SIGNAL FSMCache_BCReq_TargetIPv4Address_Data	: T_SLV_8;
+	signal FSMCache_BCReq_SendRequest							: STD_LOGIC;
+	signal FSMCache_BCReq_SenderMACAddress_Data		: T_SLV_8;
+	signal FSMCache_BCReq_SenderIPv4Address_Data	: T_SLV_8;
+	signal FSMCache_BCReq_TargetMACAddress_Data		: T_SLV_8;
+	signal FSMCache_BCReq_TargetIPv4Address_Data	: T_SLV_8;
 
 	-- Sender ***Address sequencer
-	SIGNAL MACSeq2_SenderMACAddress_Data					: T_SLV_8;
-	SIGNAL IPSeq2_SenderIPv4Address_Data					: T_SLV_8;
+	signal MACSeq2_SenderMACAddress_Data					: T_SLV_8;
+	signal IPSeq2_SenderIPv4Address_Data					: T_SLV_8;
 
 	-- ARP request timeout counter
-	CONSTANT ARPREQ_TIMEOUTCOUNTER_MAX						: POSITIVE																						:= TimingToCycles_ms(APR_REQUEST_TIMEOUT_MS, Freq_MHz2Real_ns(CLOCK_FREQ_MHZ));
-	CONSTANT ARPREQ_TIMEOUTCOUNTER_BITS						: POSITIVE																						:= log2ceilnz(ARPREQ_TIMEOUTCOUNTER_MAX);
+	constant ARPREQ_TIMEOUTCOUNTER_MAX						: POSITIVE																						:= TimingToCycles(APR_REQUEST_TIMEOUT, CLOCK_FREQ);
+	constant ARPREQ_TIMEOUTCOUNTER_BITS						: POSITIVE																						:= log2ceilnz(ARPREQ_TIMEOUTCOUNTER_MAX);
 	
-	SIGNAL FSMCache_ARPReq_TimeoutCounter_rst			: STD_LOGIC;
-	SIGNAL ARPReq_TimeoutCounter_s								: SIGNED(ARPREQ_TIMEOUTCOUNTER_BITS DOWNTO 0)					:= to_signed(ARPREQ_TIMEOUTCOUNTER_MAX, ARPREQ_TIMEOUTCOUNTER_BITS + 1);
-	SIGNAL ARPReq_Timeout													: STD_LOGIC;
+	signal FSMCache_ARPReq_TimeoutCounter_rst			: STD_LOGIC;
+	signal ARPReq_TimeoutCounter_s								: SIGNED(ARPREQ_TIMEOUTCOUNTER_BITS downto 0)					:= to_signed(ARPREQ_TIMEOUTCOUNTER_MAX, ARPREQ_TIMEOUTCOUNTER_BITS + 1);
+	signal ARPReq_Timeout													: STD_LOGIC;
 	
 	-- unicast receiver
-	SIGNAL UCRcv_Error														: STD_LOGIC;
-	SIGNAL UCRcv_ResponseReceived									: STD_LOGIC;
-	SIGNAL UCRcv_SenderMACAddress_Data						: T_SLV_8;
-	SIGNAL UCRcv_SenderIPv4Address_Data						: T_SLV_8;
-	SIGNAL UCRcv_TargetMACAddress_Data						: T_SLV_8;
-	SIGNAL UCRcv_TargetIPv4Address_Data						: T_SLV_8;
+	signal UCRcv_Error														: STD_LOGIC;
+	signal UCRcv_ResponseReceived									: STD_LOGIC;
+	signal UCRcv_SenderMACAddress_Data						: T_SLV_8;
+	signal UCRcv_SenderIPv4Address_Data						: T_SLV_8;
+	signal UCRcv_TargetMACAddress_Data						: T_SLV_8;
+	signal UCRcv_TargetIPv4Address_Data						: T_SLV_8;
 	
 	-- arp cache
-	SIGNAL ARPCache_Status												: T_NET_ARP_ARPCACHE_STATUS;
-	SIGNAL ARPCache_NewMACAddress_nxt							: STD_LOGIC;
-	SIGNAL ARPCache_NewIPv4Address_nxt						: STD_LOGIC;
-	SIGNAL ARPCache_CacheResult										: T_CACHE_RESULT;
-	SIGNAL ARPCache_IPv4Address_rst								: STD_LOGIC;
-	SIGNAL ARPCache_IPv4Address_nxt								: STD_LOGIC;
-	SIGNAL ARPCache_MACAddress_Data								: T_SLV_8;
+	signal ARPCache_Status												: T_NET_ARP_ARPCACHE_STATUS;
+	signal ARPCache_NewMACAddress_nxt							: STD_LOGIC;
+	signal ARPCache_NewIPv4Address_nxt						: STD_LOGIC;
+	signal ARPCache_CacheResult										: T_CACHE_RESULT;
+	signal ARPCache_IPv4Address_rst								: STD_LOGIC;
+	signal ARPCache_IPv4Address_nxt								: STD_LOGIC;
+	signal ARPCache_MACAddress_Data								: T_SLV_8;
 	
 	-- broadcast requester
-	SIGNAL BCReq_Complete													: STD_LOGIC;
+	signal BCReq_Complete													: STD_LOGIC;
 	
-	SIGNAL BCReq_Address_rst											: STD_LOGIC;
-	SIGNAL BCReq_SenderMACAddress_nxt							: STD_LOGIC;
-	SIGNAL BCReq_SenderIPv4Address_nxt						: STD_LOGIC;
-	SIGNAL BCReq_TargetMACAddress_nxt							: STD_LOGIC;
-	SIGNAL BCReq_TargetIPv4Address_nxt						: STD_LOGIC;
+	signal BCReq_Address_rst											: STD_LOGIC;
+	signal BCReq_SenderMACAddress_nxt							: STD_LOGIC;
+	signal BCReq_SenderIPv4Address_nxt						: STD_LOGIC;
+	signal BCReq_TargetMACAddress_nxt							: STD_LOGIC;
+	signal BCReq_TargetIPv4Address_nxt						: STD_LOGIC;
 	
-	SIGNAL BCReq_TX_Valid													: STD_LOGIC;
-	SIGNAL BCReq_TX_Data													: T_SLV_8;
-	SIGNAL BCReq_TX_SOF														: STD_LOGIC;
-	SIGNAL BCReq_TX_EOF														: STD_LOGIC;
-	SIGNAL BCReq_TX_Ack														: STD_LOGIC;
-	SIGNAL BCReq_TX_Meta_DestMACAddress_rst				: STD_LOGIC;
-	SIGNAL BCReq_TX_Meta_DestMACAddress_nxt				: STD_LOGIC;
-	SIGNAL BCReq_TX_Meta_DestMACAddress_Data			: T_SLV_8;
+	signal BCReq_TX_Valid													: STD_LOGIC;
+	signal BCReq_TX_Data													: T_SLV_8;
+	signal BCReq_TX_SOF														: STD_LOGIC;
+	signal BCReq_TX_EOF														: STD_LOGIC;
+	signal BCReq_TX_Ack														: STD_LOGIC;
+	signal BCReq_TX_Meta_DestMACAddress_rst				: STD_LOGIC;
+	signal BCReq_TX_Meta_DestMACAddress_nxt				: STD_LOGIC;
+	signal BCReq_TX_Meta_DestMACAddress_Data			: T_SLV_8;
 	
-BEGIN
+begin
 	-- latched inputs (high-active)
-	IPPool_Announce_l	<= ((IPPool_Announce OR IPPool_Announce_l) AND NOT IPPool_Announced_i) WHEN rising_edge(Clock);
+	IPPool_Announce_l	<= ((IPPool_Announce OR IPPool_Announce_l) and NOT IPPool_Announced_i) when rising_edge(Clock);
 	IPPool_Announced	<= IPPool_Announced_i;
 	
 	-- FIXME: assign correct value
@@ -272,13 +272,13 @@ BEGIN
 -- ============================================================================================================================================================
 -- Responder Path
 -- ============================================================================================================================================================
-	MACSeq1 : ENTITY PoC.misc_Sequencer
-		GENERIC MAP (
+	MACSeq1 : entity PoC.misc_Sequencer
+		generic map (
 			INPUT_BITS						=> 48,
 			OUTPUT_BITS						=> 8,
 			REGISTERED						=> FALSE
 		)
-		PORT MAP (
+		port map (
 			Clock									=> Clock,
 			Reset									=> Reset,
 			
@@ -289,27 +289,27 @@ BEGIN
 			Output								=> MACSeq1_SenderMACAddress_Data
 		);
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				FSMPool_State		<= ST_IDLE;
-			ELSE
+			else
 				FSMPool_State		<= FSMPool_NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
 	-- sequencer
 	--INTERFACE_MACAddress_Data
 
-	PROCESS(FSMPool_State,
+	process(FSMPool_State,
 					IPPool_Announce_l,
 					MACSeq1_SenderMACAddress_Data,
 					BCRcv_RequestReceived, BCRcv_Error, BCRcv_SenderMACAddress_Data, BCRcv_SenderIPv4Address_Data, BCRcv_TargetIPv4Address_Data,
 					IPPool_PoolResult, IPPool_IPv4Address_nxt,
 					UCRsp_Address_rst, UCRsp_SenderMACAddress_nxt, UCRsp_SenderIPv4Address_nxt, UCRsp_TargetMACAddress_nxt, UCRsp_TargetIPv4Address_nxt, UCRsp_Complete)
-	BEGIN
+	begin
 		FSMPool_NextState											<= FSMPool_State;
 	
 --		FSMPool_Command						<= NET_ARP_CACHE_CMD_NONE;
@@ -336,65 +336,65 @@ BEGIN
 		FSMPool_UCRsp_TargetMACAddress_Data		<= BCRcv_SenderMACAddress_Data;
 		FSMPool_UCRsp_TargetIPv4Address_Data	<= BCRcv_SenderIPv4Address_Data;
 	
-		CASE FSMPool_State IS
-			WHEN ST_IDLE =>
-				IF (BCRcv_RequestReceived = '1') THEN
+		case FSMPool_State IS
+			when ST_IDLE =>
+				if (BCRcv_RequestReceived = '1') then
 					FSMPool_IPPool_Lookup									<= '1';
 					FSMPool_BCRcv_TargetIPv4Address_nxt		<= IPPool_IPv4Address_nxt;
 				
 					FSMPool_NextState											<= ST_IPPOOL_WAIT;
-				ELSIF (IPPool_Announce_l = '1') THEN
+				elsif (IPPool_Announce_l = '1') then
 --					FSMPool_UCRsp_SendResponse						<= '1';
 					
 --					FSMPool_NextState											<= ST_SEND_ANNOUNCE;
-				END IF;
+				end if;
 				
-			WHEN ST_IPPOOL_WAIT =>
+			when ST_IPPOOL_WAIT =>
 				FSMPool_BCRcv_TargetIPv4Address_nxt			<= IPPool_IPv4Address_nxt;
 			
-				IF (IPPool_PoolResult = CACHE_RESULT_HIT) THEN
+				if (IPPool_PoolResult = CACHE_RESULT_HIT) then
 					FSMPool_BCRcv_Address_rst							<= '1';
 					FSMPool_MACSeq1_SenderMACAddress_rst	<= '1';
 					FSMPool_UCRsp_SendResponse						<= '1';
 					
 					FSMPool_NextState											<= ST_SEND_RESPONSE;
-				ELSIF (IPPool_PoolResult = CACHE_RESULT_MISS) THEN
+				elsif (IPPool_PoolResult = CACHE_RESULT_MISS) then
 					FSMPool_BCRcv_Clear										<= '1';
 					FSMPool_NextState											<= ST_IDLE;
-				END IF;
+				end if;
 	
-			WHEN ST_SEND_RESPONSE =>
+			when ST_SEND_RESPONSE =>
 				FSMPool_BCRcv_Address_rst								<= UCRsp_Address_rst;
 				FSMPool_BCRcv_SenderMACAddress_nxt			<= UCRsp_TargetMACAddress_nxt;
 				FSMPool_BCRcv_SenderIPv4Address_nxt			<= UCRsp_TargetIPv4Address_nxt;
 				FSMPool_MACSeq1_SenderMACAddress_nxt		<= UCRsp_SenderMACAddress_nxt;
 				FSMPool_BCRcv_TargetIPv4Address_nxt			<= UCRsp_SenderIPv4Address_nxt;
 			
-				IF (UCRsp_Complete = '1') THEN
+				if (UCRsp_Complete = '1') then
 					FSMPool_BCRcv_Clear							<= '1';
 					FSMPool_NextState								<= ST_IDLE;
-				END IF;
+				end if;
 	
-			WHEN ST_SEND_ANNOUNCE =>
-				IF (UCRsp_Complete = '1') THEN
+			when ST_SEND_ANNOUNCE =>
+				if (UCRsp_Complete = '1') then
 					IPPool_Announced_i							<= '1';
 					FSMPool_BCRcv_Clear							<= '1';
 					
 					FSMPool_NextState								<= ST_IDLE;
-				END IF;
+				end if;
 				
-			WHEN ST_ERROR =>
-				NULL;
+			when ST_ERROR =>
+				null;
 				
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
-	BCRcv : ENTITY PoC.ARP_BroadCast_Receiver
-		GENERIC MAP (
+	BCRcv : entity PoC.arp_BroadCast_Receiver
+		generic map (
 			ALLOWED_PROTOCOL_IPV4					=> TRUE,
 			ALLOWED_PROTOCOL_IPV6					=> FALSE
 		)
-		PORT MAP (
+		port map (
 			Clock													=> Clock,
 			Reset													=> Reset,
 			
@@ -422,18 +422,18 @@ BEGIN
 			TargetIPAddress_Data					=> BCRcv_TargetIPv4Address_Data
 		);
 
-	IPPool : ENTITY PoC.ARP_IPPool
-		GENERIC MAP (
+	IPPool : entity PoC.arp_IPPool
+		generic map (
 			IPPOOL_SIZE										=> 8,
 			INITIAL_IPV4ADDRESSES					=> INITIAL_IPV4ADDRESSES
 		)
-		PORT MAP (
+		port map (
 			Clock													=> Clock,
 			Reset													=> Reset,
 
 --			Command												=> IPPool_Command,
---			IPv4Address_Data							=> (OTHERS => '0'),
---			MACAddress_Data								=> (OTHERS => '0'),
+--			IPv4Address_Data							=> (others => '0'),
+--			MACAddress_Data								=> (others => '0'),
 			
 			Lookup												=> FSMPool_IPPool_Lookup,
 			IPv4Address_rst								=> IPPool_IPv4Address_rst,
@@ -443,11 +443,11 @@ BEGIN
 			PoolResult										=> IPPool_PoolResult
 		);
 
-	UCRsp : ENTITY PoC.ARP_UniCast_Responder
---		GENERIC MAP (
+	UCRsp : entity PoC.arp_UniCast_Responder
+--		generic map (
 --			
 --		)
-		PORT MAP (
+		port map (
 			Clock													=> Clock,
 			Reset													=> Reset,
 							
@@ -476,13 +476,13 @@ BEGIN
 -- ============================================================================================================================================================
 -- ARPCache Path
 -- ============================================================================================================================================================
-	MACSeq2 : ENTITY PoC.misc_Sequencer
-		GENERIC MAP (
+	MACSeq2 : entity PoC.misc_Sequencer
+		generic map (
 			INPUT_BITS						=> 48,
 			OUTPUT_BITS						=> 8,
 			REGISTERED						=> FALSE
 		)
-		PORT MAP (
+		port map (
 			Clock									=> Clock,
 			Reset									=> Reset,
 			
@@ -493,13 +493,13 @@ BEGIN
 			Output								=> MACSeq2_SenderMACAddress_Data
 		);
 		
-	IPSeq2 : ENTITY PoC.misc_Sequencer
-		GENERIC MAP (
+	IPSeq2 : entity PoC.misc_Sequencer
+		generic map (
 			INPUT_BITS						=> 32,
 			OUTPUT_BITS						=> 8,
 			REGISTERED						=> FALSE
 		)
-		PORT MAP (
+		port map (
 			Clock									=> Clock,
 			Reset									=> Reset,
 			
@@ -510,24 +510,24 @@ BEGIN
 			Output								=> IPSeq2_SenderIPv4Address_Data
 		);
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				FSMCache_State		<= ST_IDLE;
-			ELSE
+			else
 				FSMCache_State		<= FSMCache_NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(FSMCache_State,
+	process(FSMCache_State,
 					IPCache_Lookup, IPCache_IPv4Address_Data,	IPCache_MACAddress_rst, IPCache_MACAddress_nxt,
 					MACSeq2_SenderMACAddress_Data, IPSeq2_SenderIPv4Address_Data, ARPReq_Timeout,
 					UCRcv_Error, UCRcv_ResponseReceived, UCRcv_SenderIPv4Address_Data, UCRcv_SenderMACAddress_Data, UCRcv_TargetIPv4Address_Data, UCRcv_TargetMACAddress_Data,
 					ARPCache_Status, ARPCache_CacheResult, ARPCache_IPv4Address_rst, ARPCache_IPv4Address_nxt, ARPCache_MACAddress_Data, ARPCache_NewMACAddress_nxt, ARPCache_NewIPv4Address_nxt,
 					BCReq_Address_rst, BCReq_SenderMACAddress_nxt, BCReq_SenderIPv4Address_nxt, BCReq_TargetMACAddress_nxt, BCReq_TargetIPv4Address_nxt, BCReq_Complete)
-	BEGIN
+	begin
 		FSMCache_NextState													<= FSMCache_State;
 		
 		IPCache_IPv4Address_rst											<= '0';
@@ -565,47 +565,47 @@ BEGIN
 		FSMCache_UCRcv_TargetMACAddress_nxt					<= '0';		-- default assignment for unsed metadata TargetMACAddress
 		FSMCache_UCRcv_TargetIPv4Address_nxt				<= '0';		-- default assignment for unsed metadata TargetIPv4Address
 	
-		CASE FSMCache_State IS
-			WHEN ST_IDLE =>
+		case FSMCache_State IS
+			when ST_IDLE =>
 				IPCache_IPv4Address_rst									<= '1';
 				
-				IF (IPCache_Lookup = '1') THEN
+				if (IPCache_Lookup = '1') then
 					FSMCache_NextState										<= ST_CACHE;
-				END IF;
+				end if;
 
-			WHEN ST_CACHE =>
+			when ST_CACHE =>
 				FSMCache_ARPCache_Lookup								<= '1';
 				IPCache_IPv4Address_rst									<= ARPCache_IPv4Address_rst;
 				IPCache_IPv4Address_nxt									<= ARPCache_IPv4Address_nxt;
 				
-				IF (ARPCache_CacheResult = CACHE_RESULT_MISS) THEN
+				if (ARPCache_CacheResult = CACHE_RESULT_MISS) then
 					FSMCache_NextState										<= ST_SEND_BROADCAST_REQUEST;
-				ELSE
+				else
 					FSMCache_NextState										<= ST_CACHE_WAIT;
-				END IF;
+				end if;
 
-			WHEN ST_CACHE_WAIT =>
+			when ST_CACHE_WAIT =>
 				IPCache_IPv4Address_rst									<= ARPCache_IPv4Address_rst;
 				IPCache_IPv4Address_nxt									<= ARPCache_IPv4Address_nxt;
 			
-				IF (ARPCache_CacheResult = CACHE_RESULT_HIT) THEN
+				if (ARPCache_CacheResult = CACHE_RESULT_HIT) then
 					FSMCache_NextState										<= ST_READ_CACHE;
-				ELSIF (ARPCache_CacheResult = CACHE_RESULT_MISS) THEN
+				elsif (ARPCache_CacheResult = CACHE_RESULT_MISS) then
 					FSMCache_NextState										<= ST_SEND_BROADCAST_REQUEST;
-				END IF;
+				end if;
 			
-			WHEN ST_READ_CACHE =>
+			when ST_READ_CACHE =>
 				IPCache_IPv4Address_rst									<= '1';
 				IPCache_Valid														<= '1';
 				
 				FSMCache_ARPCache_MACAddress_rst				<= IPCache_MACAddress_rst;
 				FSMCache_ARPCache_MACAddress_nxt				<= IPCache_MACAddress_nxt;
 				
-				IF (IPCache_Lookup = '1') THEN
+				if (IPCache_Lookup = '1') then
 					FSMCache_NextState										<= ST_CACHE;
-				END IF;
+				end if;
 			
-			WHEN ST_SEND_BROADCAST_REQUEST =>
+			when ST_SEND_BROADCAST_REQUEST =>
 				FSMCache_MACSeq2_SenderMACAddress_rst		<= '1';
 				FSMCache_IPSeq2_SenderIPv4Address_rst		<= '1';
 				FSMCache_BCReq_SendRequest							<= '1';
@@ -615,7 +615,7 @@ BEGIN
 				
 				FSMCache_NextState											<= ST_SEND_BROADCAST_REQUEST_WAIT;
 			
-			WHEN ST_SEND_BROADCAST_REQUEST_WAIT =>
+			when ST_SEND_BROADCAST_REQUEST_WAIT =>
 				FSMCache_MACSeq2_SenderMACAddress_rst		<= BCReq_Address_rst;
 				FSMCache_MACSeq2_SenderMACAddress_nxt		<= BCReq_SenderMACAddress_nxt;
 				FSMCache_IPSeq2_SenderIPv4Address_rst		<= BCReq_Address_rst;
@@ -624,69 +624,69 @@ BEGIN
 				IPCache_IPv4Address_rst									<= BCReq_Address_rst;
 				IPCache_IPv4Address_nxt									<= BCReq_TargetIPv4Address_nxt;	
 
-				IF (BCReq_Complete = '1') THEN
+				if (BCReq_Complete = '1') then
 					FSMCache_NextState										<= ST_WAIT_FOR_UNICAST_RESPONSE;
-				END IF;
+				end if;
 		
-			WHEN ST_WAIT_FOR_UNICAST_RESPONSE =>
+			when ST_WAIT_FOR_UNICAST_RESPONSE =>
 				FSMCache_UCRcv_Clear										<= '0';
 				FSMCache_ARPReq_TimeoutCounter_rst			<= '0';
 				-- TODO: check received ARP packet data with ethernet metadata
 				
-				IF (UCRcv_Error = '1') THEN
+				if (UCRcv_Error = '1') then
 					-- FIXME: error handling
 					FSMCache_NextState										<= ST_ERROR;
-				ELSIF (UCRcv_ResponseReceived = '1') THEN
+				elsif (UCRcv_ResponseReceived = '1') then
 					FSMCache_ARPCache_Command							<= NET_ARP_ARPCACHE_CMD_ADD;
 					FSMCache_UCRcv_SenderMACAddress_nxt		<= ARPCache_NewMACAddress_nxt;
 					FSMCache_UCRcv_SenderIPv4Address_nxt	<= ARPCache_NewIPv4Address_nxt;
 					
 					FSMCache_NextState										<= ST_UPDATE_CACHE;
-				ELSIF (ARPReq_Timeout = '1') THEN
+				elsif (ARPReq_Timeout = '1') then
 					-- FIXME: error handling
 --					FSMCache_NextState										<= ST_ERROR;
 					FSMCache_NextState										<= ST_SEND_BROADCAST_REQUEST;
-				END IF;
+				end if;
 				
-			WHEN ST_UPDATE_CACHE =>
+			when ST_UPDATE_CACHE =>
 				FSMCache_UCRcv_Clear										<= '0';
 				FSMCache_UCRcv_SenderMACAddress_nxt			<= ARPCache_NewMACAddress_nxt;
 				FSMCache_UCRcv_SenderIPv4Address_nxt		<= ARPCache_NewIPv4Address_nxt;
 				
-				IF (ARPCache_Status = NET_ARP_ARPCACHE_STATUS_UPDATE_COMPLETE) THEN
+				if (ARPCache_Status = NET_ARP_ARPCACHE_STATUS_UPDATE_COMPLETE) then
 					FSMCache_UCRcv_Clear									<= '1';
 					IPCache_IPv4Address_rst								<= '1';
 									
 					FSMCache_NextState										<= ST_CACHE;
-				END IF;
+				end if;
 			
-			WHEN ST_ERROR =>
+			when ST_ERROR =>
 				-- FIXME: error handling
 				FSMCache_NextState											<= ST_IDLE;
 				
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
 	-- ARP request expiration timer
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (FSMCache_ARPReq_TimeoutCounter_rst = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (FSMCache_ARPReq_TimeoutCounter_rst = '1') then
 				ARPReq_TimeoutCounter_s		<= to_signed(ARPREQ_TIMEOUTCOUNTER_MAX, ARPReq_TimeoutCounter_s'length);
-			ELSE
+			else
 				ARPReq_TimeoutCounter_s		<= ARPReq_TimeoutCounter_s - 1;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 	
 	ARPReq_Timeout			<= ARPReq_TimeoutCounter_s(ARPReq_TimeoutCounter_s'high);
 
-	UCRcv : ENTITY PoC.ARP_UniCast_Receiver
-		GENERIC MAP (
+	UCRcv : entity PoC.arp_UniCast_Receiver
+		generic map (
 			ALLOWED_PROTOCOL_IPV4					=> TRUE,
 			ALLOWED_PROTOCOL_IPV6					=> FALSE
 		)
-		PORT MAP (
+		port map (
 			Clock													=> Clock,
 			Reset													=> Reset,
 			
@@ -716,15 +716,15 @@ BEGIN
 			TargetMACAddress_Data					=> UCRcv_TargetMACAddress_Data
 		);
 
-	ARPCache : ENTITY PoC.ARP_Cache
-		GENERIC MAP (
-			CLOCK_FREQ_MHZ							=> CLOCK_FREQ_MHZ,
+	ARPCache : entity PoC.arp_Cache
+		generic map (
+			CLOCK_FREQ									=> CLOCK_FREQ,
 			REPLACEMENT_POLICY					=> "LRU",
 			TAG_BYTE_ORDER							=> BIG_ENDIAN,
 			DATA_BYTE_ORDER							=> BIG_ENDIAN,
 			INITIAL_CACHE_CONTENT				=> INITIAL_ARPCACHE_CONTENT
 		)
-		PORT MAP (
+		port map (
 			Clock												=> Clock,
 			Reset												=> Reset,
 
@@ -746,11 +746,11 @@ BEGIN
 			MACAddress_Data							=> ARPCache_MACAddress_Data
 		);
 
-	BCReq : ENTITY PoC.ARP_BroadCast_Requester
---		GENERIC MAP (
+	BCReq : entity PoC.arp_BroadCast_Requester
+--		generic map (
 --			
 --		)
-		PORT MAP (
+		port map (
 			Clock													=> Clock,
 			Reset													=> Reset,
 
@@ -776,84 +776,84 @@ BEGIN
 			TX_Meta_DestMACAddress_Data		=> BCReq_TX_Meta_DestMACAddress_Data
 		);
 
-	blkLLMux : BLOCK
-		CONSTANT LLMUX_PORT_BCREQ		: NATURAL					:= 0;
-		CONSTANT LLMUX_PORT_UCRSP		: NATURAL					:= 1;
-		CONSTANT LLMUX_PORTS				: POSITIVE				:= 2;
+	blkStmMux : block
+		constant LLMUX_PORT_BCREQ		: NATURAL					:= 0;
+		constant LLMUX_PORT_UCRSP		: NATURAL					:= 1;
+		constant LLMUX_PORTS				: POSITIVE				:= 2;
 		
-		CONSTANT META_RST_BIT				: NATURAL					:= 0;
-		CONSTANT META_DEST_NXT_BIT	: NATURAL					:= 1;
+		constant META_RST_BIT				: NATURAL					:= 0;
+		constant META_DEST_NXT_BIT	: NATURAL					:= 1;
 	
-		CONSTANT META_BITS					: POSITIVE				:= 8;
-		CONSTANT META_REV_BITS			: POSITIVE				:= 2;
+		constant META_BITS					: POSITIVE				:= 8;
+		constant META_REV_BITS			: POSITIVE				:= 2;
 	
 		
-		SIGNAL Temp_Meta						: T_SLVV_48(LLMUX_PORTS - 1 DOWNTO 0);
-		SIGNAL Temp_Meta2						: T_SLV_48;
+		signal Temp_Meta						: T_SLVV_48(LLMUX_PORTS - 1 downto 0);
+		signal Temp_Meta2						: T_SLV_48;
 		
-		SIGNAL LLMux_In_Valid				: STD_LOGIC_VECTOR(LLMUX_PORTS - 1 DOWNTO 0);
-		SIGNAL LLMux_In_Data				: T_SLM(LLMUX_PORTS - 1 DOWNTO 0, T_SLV_8'range)								:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
-		SIGNAL LLMux_In_Meta				: T_SLM(LLMUX_PORTS - 1 DOWNTO 0, META_BITS - 1 DOWNTO 0)				:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
-		SIGNAL LLMux_In_Meta_rev		: T_SLM(LLMUX_PORTS - 1 DOWNTO 0, META_REV_BITS - 1 DOWNTO 0)		:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
-		SIGNAL LLMux_In_SOF					: STD_LOGIC_VECTOR(LLMUX_PORTS - 1 DOWNTO 0);
-		SIGNAL LLMux_In_EOF					: STD_LOGIC_VECTOR(LLMUX_PORTS - 1 DOWNTO 0);
-		SIGNAL LLMux_In_Ack					: STD_LOGIC_VECTOR(LLMUX_PORTS - 1 DOWNTO 0);
+		signal StmMux_In_Valid			: STD_LOGIC_VECTOR(LLMUX_PORTS - 1 downto 0);
+		signal StmMux_In_Data				: T_SLM(LLMUX_PORTS - 1 downto 0, T_SLV_8'range)								:= (others => (others => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
+		signal StmMux_In_Meta				: T_SLM(LLMUX_PORTS - 1 downto 0, META_BITS - 1 downto 0)				:= (others => (others => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
+		signal StmMux_In_Meta_rev		: T_SLM(LLMUX_PORTS - 1 downto 0, META_REV_BITS - 1 downto 0)		:= (others => (others => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
+		signal StmMux_In_SOF				: STD_LOGIC_VECTOR(LLMUX_PORTS - 1 downto 0);
+		signal StmMux_In_EOF				: STD_LOGIC_VECTOR(LLMUX_PORTS - 1 downto 0);
+		signal StmMux_In_Ack				: STD_LOGIC_VECTOR(LLMUX_PORTS - 1 downto 0);
 		
-		SIGNAL LLMux_Out_Meta				: STD_LOGIC_VECTOR(META_BITS - 1 DOWNTO 0);
-		SIGNAL LLMux_Out_Meta_rev		: STD_LOGIC_VECTOR(META_REV_BITS - 1 DOWNTO 0);
+		signal StmMux_Out_Meta			: STD_LOGIC_VECTOR(META_BITS - 1 downto 0);
+		signal StmMux_Out_Meta_rev	: STD_LOGIC_VECTOR(META_REV_BITS - 1 downto 0);
 		
-	BEGIN
+	begin
 	
-		-- LLMux Port 0 - broadcast requester
-		LLMux_In_Valid(LLMUX_PORT_BCREQ)				<= BCReq_TX_Valid;
-		assign_row(LLMux_In_Data, BCReq_TX_Data,	LLMUX_PORT_BCREQ);
-		LLMux_In_SOF(LLMUX_PORT_BCREQ)					<= BCReq_TX_SOF;
-		LLMux_In_EOF(LLMUX_PORT_BCREQ)					<= BCReq_TX_EOF;
-		BCReq_TX_Ack														<= LLMux_In_Ack	(LLMUX_PORT_BCREQ);
-		assign_row(LLMux_In_Meta, BCReq_TX_Meta_DestMACAddress_Data, LLMUX_PORT_BCREQ);
-		BCReq_TX_Meta_DestMACAddress_rst				<= LLMux_In_Meta_rev(LLMUX_PORT_BCREQ, META_RST_BIT);
-		BCReq_TX_Meta_DestMACAddress_nxt				<= LLMux_In_Meta_rev(LLMUX_PORT_BCREQ, META_DEST_NXT_BIT);
+		-- StmMux Port 0 - broadcast requester
+		StmMux_In_Valid(LLMUX_PORT_BCREQ)				<= BCReq_TX_Valid;
+		assign_row(StmMux_In_Data, BCReq_TX_Data,	LLMUX_PORT_BCREQ);
+		StmMux_In_SOF(LLMUX_PORT_BCREQ)					<= BCReq_TX_SOF;
+		StmMux_In_EOF(LLMUX_PORT_BCREQ)					<= BCReq_TX_EOF;
+		BCReq_TX_Ack														<= StmMux_In_Ack	(LLMUX_PORT_BCREQ);
+		assign_row(StmMux_In_Meta, BCReq_TX_Meta_DestMACAddress_Data, LLMUX_PORT_BCREQ);
+		BCReq_TX_Meta_DestMACAddress_rst				<= StmMux_In_Meta_rev(LLMUX_PORT_BCREQ, META_RST_BIT);
+		BCReq_TX_Meta_DestMACAddress_nxt				<= StmMux_In_Meta_rev(LLMUX_PORT_BCREQ, META_DEST_NXT_BIT);
 		
-		-- LLMux Port 1 - unicast responder
-		LLMux_In_Valid(LLMUX_PORT_UCRSP)				<= UCRsp_TX_Valid;
-		assign_row(LLMux_In_Data, UCRsp_TX_Data,	LLMUX_PORT_UCRSP);
-		LLMux_In_SOF(LLMUX_PORT_UCRSP)					<= UCRsp_TX_SOF;
-		LLMux_In_EOF(LLMUX_PORT_UCRSP)					<= UCRsp_TX_EOF;
-		UCRsp_TX_Ack														<= LLMux_In_Ack	(LLMUX_PORT_UCRSP);
-		UCRsp_TX_Meta_DestMACAddress_rst				<= LLMux_In_Meta_rev(LLMUX_PORT_UCRSP, META_RST_BIT);
-		UCRsp_TX_Meta_DestMACAddress_nxt				<= LLMux_In_Meta_rev(LLMUX_PORT_UCRSP, META_DEST_NXT_BIT);
-		assign_row(LLMux_In_Meta, UCRsp_TX_Meta_DestMACAddress_Data, LLMUX_PORT_UCRSP);
+		-- StmMux Port 1 - unicast responder
+		StmMux_In_Valid(LLMUX_PORT_UCRSP)				<= UCRsp_TX_Valid;
+		assign_row(StmMux_In_Data, UCRsp_TX_Data,	LLMUX_PORT_UCRSP);
+		StmMux_In_SOF(LLMUX_PORT_UCRSP)					<= UCRsp_TX_SOF;
+		StmMux_In_EOF(LLMUX_PORT_UCRSP)					<= UCRsp_TX_EOF;
+		UCRsp_TX_Ack														<= StmMux_In_Ack	(LLMUX_PORT_UCRSP);
+		UCRsp_TX_Meta_DestMACAddress_rst				<= StmMux_In_Meta_rev(LLMUX_PORT_UCRSP, META_RST_BIT);
+		UCRsp_TX_Meta_DestMACAddress_nxt				<= StmMux_In_Meta_rev(LLMUX_PORT_UCRSP, META_DEST_NXT_BIT);
+		assign_row(StmMux_In_Meta, UCRsp_TX_Meta_DestMACAddress_Data, LLMUX_PORT_UCRSP);
 
-		LLMux : ENTITY PoC.stream_Mux
-			GENERIC MAP (
+		StmMux : entity PoC.stream_Mux
+			generic map (
 				PORTS									=> LLMUX_PORTS,
 				DATA_BITS							=> Eth_UC_TX_Data'length,
 				META_BITS							=> META_BITS,
 				META_REV_BITS					=> META_REV_BITS
 			)
-			PORT MAP (
+			port map (
 				Clock									=> Clock,
 				Reset									=> Reset,
 				
-				In_Valid							=> LLMux_In_Valid,
-				In_Data								=> LLMux_In_Data,
-				In_Meta								=> LLMux_In_Meta,
-				In_Meta_rev						=> LLMux_In_Meta_rev,
-				In_SOF								=> LLMux_In_SOF,
-				In_EOF								=> LLMux_In_EOF,
-				In_Ack								=> LLMux_In_Ack,
+				In_Valid							=> StmMux_In_Valid,
+				In_Data								=> StmMux_In_Data,
+				In_Meta								=> StmMux_In_Meta,
+				In_Meta_rev						=> StmMux_In_Meta_rev,
+				In_SOF								=> StmMux_In_SOF,
+				In_EOF								=> StmMux_In_EOF,
+				In_Ack								=> StmMux_In_Ack,
 				
 				Out_Valid							=> Eth_UC_TX_Valid,
 				Out_Data							=> Eth_UC_TX_Data,
-				Out_Meta							=> LLMux_Out_Meta,
-				Out_Meta_rev					=> LLMux_Out_Meta_rev,
+				Out_Meta							=> StmMux_Out_Meta,
+				Out_Meta_rev					=> StmMux_Out_Meta_rev,
 				Out_SOF								=> Eth_UC_TX_SOF,
 				Out_EOF								=> Eth_UC_TX_EOF,
 				Out_Ack								=> Eth_UC_TX_Ack	
 			);
 	
-		LLMux_Out_Meta_rev(META_RST_BIT)				<= Eth_UC_TX_Meta_rst;
-		LLMux_Out_Meta_rev(META_DEST_NXT_BIT)		<= Eth_UC_TX_Meta_DestMACAddress_nxt;
-		Eth_UC_TX_Meta_DestMACAddress_Data			<= LLMux_Out_Meta(Eth_UC_TX_Meta_DestMACAddress_Data'range);
-	END BLOCK;
-END ARCHITECTURE;
+		StmMux_Out_Meta_rev(META_RST_BIT)				<= Eth_UC_TX_Meta_rst;
+		StmMux_Out_Meta_rev(META_DEST_NXT_BIT)	<= Eth_UC_TX_Meta_DestMACAddress_nxt;
+		Eth_UC_TX_Meta_DestMACAddress_Data			<= StmMux_Out_Meta(Eth_UC_TX_Meta_DestMACAddress_Data'range);
+	end block;
+end architecture;

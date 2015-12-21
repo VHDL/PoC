@@ -4,10 +4,10 @@
 # Documentation
 README.md
 
-# subnamespace
+# PoC subnamespaces
 xilinx/
 
-# --------------------------------------
+# Package
 arith.pkg.vhdl
 
 # Counters

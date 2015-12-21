@@ -92,6 +92,12 @@ class Simulator(PoCSimulator):
 		fileListFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
 		vcdFilePath =					tempGHDLPath / (testbenchName + ".vcd")
 		
+		if (self.__vhdlStandard == "93"):
+			self.__vhdlStandard = "93c"
+			self.__ieeeFlavor = "synopsys"
+		elif (self.__vhdlStandard == "08"):
+			self.__ieeeFlavor = "standard"
+		
 		if (self.verbose):
 			print("  Commands to be run:")
 			print("  1. Change working directory to temporary directory")
@@ -129,9 +135,11 @@ class Simulator(PoCSimulator):
 						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
 						vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
 					elif (filesLineRegExpMatch.group('Keyword')[0:5] == "vhdl-"):
-						if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
+						if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard[:2]):
 							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
 							vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
+						else:
+							continue
 					elif (filesLineRegExpMatch.group('Keyword') == "altera"):
 						# check if Quartus is configured
 						if not self.host.directories.__contains__("AlteraPrimitiveSource"):
@@ -146,22 +154,19 @@ class Simulator(PoCSimulator):
 						
 						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
 						vhdlFilePath = self.host.directories["XilinxPrimitiveSource"] / vhdlFileName
+					else:
+						raise SimulatorException("Unknown keyword in *files file.")
 					
 					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
 
 					if (not vhdlFilePath.exists()):
 						raise SimulatorException("Can not analyse '" + vhdlFileName + "'.") from FileNotFoundError(str(vhdlFilePath))
 					
-					if (self.__vhdlStandard == "93"):
-						self.__vhdlStandard = "93c"
-					
-					self.__ieeeFlavor = "synopsys"
-					
 					# assemble fuse command as list of parameters
 					parameterList = [
 						str(ghdlExecutablePath),
 						'-a', '-fexplicit', '-frelaxed-rules', '--warn-binding', '--no-vital-checks', '--mb-comments', '--syn-binding',
-						'-P.', '-PAltera','-PXilinx',
+						#'-P.', '-PAltera','-PXilinx',
 						('--ieee=%s' % self.__ieeeFlavor),
 						('--std=%s' % self.__vhdlStandard),
 						('--work=%s' % vhdlLibraryName),
@@ -198,7 +203,7 @@ class Simulator(PoCSimulator):
 			parameterList = [
 				str(ghdlExecutablePath),
 				'-r', '--syn-binding',
-				'-P.',  '-PAltera','-PXilinx',
+				#'-P.',  '-PAltera','-PXilinx',
 				('--std=%s' % self.__vhdlStandard),
 				'--work=test',
 				testbenchName
@@ -238,7 +243,8 @@ class Simulator(PoCSimulator):
 			parameterList = [
 				str(ghdlExecutablePath),
 				'-e', '--syn-binding',
-				'-P.',  '-PAltera','-PXilinx',
+				#'-P.',  '-PAltera','-PXilinx',
+				('--ieee=%s' % self.__ieeeFlavor),
 				('--std=%s' % self.__vhdlStandard),
 				'--work=test',
 				testbenchName

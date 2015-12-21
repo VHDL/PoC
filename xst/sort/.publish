@@ -1,0 +1,14 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# sub namespaces
+sortnet/
+
+# 
+#sort_ExpireList.files
+#sort_InsertSort.files
+#sort_LeastFrequentlyUsed.files
+#sort_LeastRecentlyUsed.files

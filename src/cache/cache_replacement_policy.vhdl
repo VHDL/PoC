@@ -200,11 +200,12 @@ BEGIN
 		ReplaceIndex		<= LRU_Key;
 			
 --		LRU : ENTITY L_Global.list_lru_systolic
-		LRU : ENTITY PoC.list_lru_systolic
+		LRU : ENTITY PoC.sort_LeastRecentlyUsed
 			GENERIC MAP (
 				ELEMENTS								=> CACHE_LINES,
 				KEY_BITS								=> KEY_BITS,
-				INITIAL_KEYS						=> INITIAL_KEYS,
+				DATA_BITS								=> KEY_BITS,
+				INITIAL_ELEMENTS				=> INITIAL_KEYS,
 				INITIAL_VALIDS					=> INITIAL_VALIDS
 			)
 			PORT MAP (
@@ -216,7 +217,7 @@ BEGIN
 				KeyIn										=> KeyIn,
 				
 				Valid										=> LRU_Valid,
-				LRU_Key									=> LRU_Key
+				LRU_Element							=> LRU_Key
 			);
 	END GENERATE;
 END ARCHITECTURE;

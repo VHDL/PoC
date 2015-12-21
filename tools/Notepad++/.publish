@@ -1,2 +1,8 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
 # Syntax highlighting
 Syntax Highlighting - Xilinx UCF.xml

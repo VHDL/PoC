@@ -1,3 +1,9 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
 # scripts to customize git
 git-alias.setup.sh
 git-alias.setup.ps1

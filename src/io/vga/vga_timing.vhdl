@@ -140,7 +140,7 @@ begin
 		xvalid_nxt		 <= '0';
 		
 		-- end of current line
-		if xcount = params.htotal_e then
+		if xcount = PARAMETERS.htotal_e then
 			ctrl_inc_y <= '1';
 			ctrl_rst_x <= '1';
 		else
@@ -148,17 +148,17 @@ begin
 		end if;
 		
 		-- end of current screen
-		if xcount = params.htotal_e and ycount = params.vtotal_e then
+		if xcount = PARAMETERS.htotal_e and ycount = PARAMETERS.vtotal_e then
 			ctrl_rst_y <= '1';
 		end if;
 			
 		-- yvalid
-		if (ycount >= 0 and ycount < params.vaddr) then
+		if (ycount >= 0 and ycount < PARAMETERS.vaddr) then
 			yvalid_nxt <= '1';
 		end if;
 			
 		-- xvalid
-		if (xcount >= 0 and xcount < params.haddr) then
+		if (xcount >= 0 and xcount < PARAMETERS.haddr) then
 			xvalid_nxt <= '1';
 		end if;
 	end process;
@@ -184,17 +184,17 @@ begin
 			ypos				 <= ycount;
 			
 			-- hsync
-			if xcount >= params.hsync_b and xcount <= params.hsync_e then
-				phy_ctrl.hsync <= params.hs_pol;
+			if xcount >= PARAMETERS.hsync_b and xcount <= PARAMETERS.hsync_e then
+				phy_ctrl.hsync <= PARAMETERS.hs_pol;
 			else
-				phy_ctrl.hsync <= not params.hs_pol;
+				phy_ctrl.hsync <= not PARAMETERS.hs_pol;
 			end if;
 			
 			-- vsync
-			if ycount >= params.vsync_b and ycount <= params.vsync_e then
-				phy_ctrl.vsync <= params.vs_pol;
+			if ycount >= PARAMETERS.vsync_b and ycount <= PARAMETERS.vsync_e then
+				phy_ctrl.vsync <= PARAMETERS.vs_pol;
 			else
-				phy_ctrl.vsync <= not params.vs_pol;
+				phy_ctrl.vsync <= not PARAMETERS.vs_pol;
 			end if;
 		end if;
 	end process;

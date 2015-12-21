@@ -1,213 +1,121 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Authors:				 	Patrick Lehmann
+-- 
+-- Module:				 	Sorting network: bitonic sort
+--
+-- Description:
+-- ------------------------------------
+--		This sorting network uses the 'bitonic sort' algorithm.
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
 
 library PoC;
 use			PoC.utils.all;
-use			PoC.vectors.all;
-
-
-entity sortnet_BitonicSort is
-	generic (
-		INPUTS			: POSITIVE	:= 8;
-		KEY_BITS		: POSITIVE	:= 32;
-		DATA_BITS		: POSITIVE	:= 8;
-		INVERSE			: BOOLEAN		:= FALSE
-	);
-	port (
-		Clock				: in	STD_LOGIC;
-		Reset				: in	STD_LOGIC;
-		
-		DataInputs	: in	T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
-		DataOutputs	: out	T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0)
-	);
-end entity;
-
-
-library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
-
-library PoC;
-use			PoC.utils.all;
+use			PoC.math.all;
 use			PoC.vectors.all;
 use			PoC.components.all;
 
 
-entity sortnet_BitonicMerge is
+entity sortnet_BitonicSort is
 	generic (
-		INPUTS			: POSITIVE	:= 8;
-		KEY_BITS		: POSITIVE	:= 32;
-		DATA_BITS		: POSITIVE	:= 8;
-		INVERSE			: BOOLEAN		:= FALSE
+		INPUTS								: POSITIVE	:= 8;
+		KEY_BITS							: POSITIVE	:= 32;
+		DATA_BITS							: POSITIVE	:= 8;
+		PIPELINE_STAGE_AFTER	: NATURAL		:= 2
 	);
 	port (
 		Clock				: in	STD_LOGIC;
 		Reset				: in	STD_LOGIC;
 		
-		DataInputs	: in	T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
-		DataOutputs	: out	T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0)
+		DataIn			: in	T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
+		DataOut			: out	T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0)
 	);
 end entity;
 
 
 architecture rtl of sortnet_BitonicSort is
-	constant HALF_INPUTS			: NATURAL		:= INPUTS / 2;
-
-	signal DataInputMatrix1		: T_SLM(HALF_INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
-	signal DataInputMatrix2		: T_SLM(HALF_INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
-	signal DataOutputMatrix1	: T_SLM(HALF_INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
-	signal DataOutputMatrix2	: T_SLM(HALF_INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
+	constant BLOCKS					: POSITIVE				:= log2ceil(INPUTS);
+	constant STAGES					: POSITIVE				:= triangularNumber(BLOCKS);
+	constant COMPARATORS		: POSITIVE				:= STAGES * (INPUTS / 2);
 	
-	signal DataInputMatrix3		: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
-	signal DataOutputMatrix3	: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
+	subtype T_DATA					is STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
+	type		T_INPUT_VECTOR	is array(NATURAL range <>) of T_DATA;
+	type		T_STAGE_VECTOR	is array(NATURAL range <>) of T_INPUT_VECTOR(INPUTS - 1 downto 0);
+
+	signal DataMatrix			: T_STAGE_VECTOR(STAGES downto 0);
+	signal DataOut_i			: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0)	:= (others => (others => 'Z'));
 	
 begin
-	genMergers : if (INPUTS > 1) generate
-		DataInputMatrix1	<= slm_slice_rows(DataInputs, HALF_INPUTS - 1, 0);
-		DataInputMatrix2	<= slm_slice_rows(DataInputs, INPUTS - 1, HALF_INPUTS);
-		
-		sort1 : entity PoC.sortnet_BitonicSort
-			generic map (
-				INPUTS			=> HALF_INPUTS,
-				KEY_BITS		=> KEY_BITS,
-				DATA_BITS		=> DATA_BITS,
-				INVERSE			=> FALSE
-			)
-			port map (
-				Clock				=> Clock,
-				Reset				=> Reset,
-				
-				DataInputs	=> DataInputMatrix1,
-				DataOutputs	=> DataOutputMatrix1
-			);
-		sort2 : entity PoC.sortnet_BitonicSort
-			generic map (
-				INPUTS			=> INPUTS - HALF_INPUTS,
-				KEY_BITS		=> KEY_BITS,
-				DATA_BITS		=> DATA_BITS,
-				INVERSE			=> TRUE
-			)
-			port map (
-				Clock				=> Clock,
-				Reset				=> Reset,
-				
-				DataInputs	=> DataInputMatrix2,
-				DataOutputs	=> DataOutputMatrix2
-			);
-		
-		DataInputMatrix3	<= slm_merge_rows(DataInputMatrix1, DataInputMatrix2);
-		
-		merge : entity PoC.sortnet_BitonicMerge
-			generic map (
-				INPUTS			=> INPUTS,
-				KEY_BITS		=> KEY_BITS,
-				DATA_BITS		=> DATA_BITS,
-				INVERSE			=> INVERSE
-			)
-			port map (
-				Clock				=> Clock,
-				Reset				=> Reset,
-				
-				DataInputs	=> DataInputMatrix3,
-				DataOutputs	=> DataOutputMatrix3
-			);
-		
-		DataOutputs		<= DataOutputMatrix3;
+	genInputs : for i in 0 to INPUTS - 1 generate
+		DataMatrix(0)(i)	<= get_row(DataIn, i);
 	end generate;
-	genPassThrough : if (INPUTS = 1) generate
-		DataOutputs		<= DataInputs;
-	end generate;
-end architecture;
-
-
-architecture rtl of sortnet_BitonicMerge is
-	constant HALF_INPUTS	: NATURAL		:= INPUTS / 2;
-
-	subtype T_DATA				is STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
-	type T_DATA_VECTOR		is array(NATURAL range <>) of T_DATA;
-
-	function to_dv(slm : T_SLM) return T_DATA_VECTOR is
-		variable Result	: T_DATA_VECTOR(slm'range(1));
+	genBlocks : for b in 0 to BLOCKS - 1 generate
+		constant START_DISTANCE		: POSITIVE	:= 2**b;
 	begin
-		for i in slm'high(1) downto slm'low(1) loop
-			for j in slm'high(2) downto slm'low(2) loop
-				Result(i)(j)	:= slm(i, j);
-			end loop;
-		end loop;
-		return Result;
-	end function;
-	
-	function to_slm(dv : T_DATA_VECTOR) return T_SLM is
-		variable Result	: T_SLM(dv'range, T_DATA'range);
-	begin
-		for i in dv'range loop
-			for j in T_DATA'range loop
-				Result(i, j)	:= dv(i)(j);
-			end loop;
-		end loop;
-		return Result;
-	end function;
-	
-	signal DataInputVector		: T_DATA_VECTOR(INPUTS - 1 downto 0);
-	signal IntermediateVector	: T_DATA_VECTOR(INPUTS - 1 downto 0);
-	
-	signal DataInputMatrix1		: T_SLM(HALF_INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
-	signal DataInputMatrix2		: T_SLM(HALF_INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
-	signal DataOutputMatrix1	: T_SLM(HALF_INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
-	signal DataOutputMatrix2	: T_SLM(HALF_INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
-	signal DataOutputVector		: T_DATA_VECTOR(INPUTS - 1 downto 0);
-	
-begin
-	genMergers : if (INPUTS > 1) generate
-		DataInputVector		<= to_dv(DataInputs);
-	
-		genSwitches : for i in 0 to HALF_INPUTS - 1 generate
-			signal Smaller		: STD_LOGIC;
-			signal Switch			: STD_LOGIC;
+		genStage : for s in 0 to b generate
+			constant STAGE_INDEX		: NATURAL		:= triangularNumber(b) + s;
+			constant DISTANCE				: POSITIVE	:= 2**(b - s);
+			constant GROUPS					: POSITIVE	:= INPUTS / (DISTANCE * 2);
 		begin
-			Smaller <= to_sl(DataInputVector(i)(KEY_BITS - 1 downto 0) < DataInputVector(i + HALF_INPUTS)(KEY_BITS - 1 downto 0));
-			Switch	<= Smaller xnor to_sl(INVERSE);
-			IntermediateVector(i)								<= mux(Switch, DataInputVector(i),							DataInputVector(i + HALF_INPUTS));
-			IntermediateVector(i + HALF_INPUTS)	<= mux(Switch, DataInputVector(i + HALF_INPUTS),	DataInputVector(i));
+			genGroups : for g in 0 to GROUPS - 1 generate
+				constant INVERSE			: STD_LOGIC	:= to_sl(g / (2 ** s) mod 2 = 1);
+			begin
+				genLoop : for l in 0 to DISTANCE - 1 generate
+					constant SRC0			: NATURAL		:= g * (DISTANCE * 2) + l;
+					constant SRC1			: NATURAL		:= SRC0 + DISTANCE;
+					
+					signal Greater		: STD_LOGIC;
+					signal Switch			: STD_LOGIC;
+					signal NewData0		: T_DATA;
+					signal NewData1		: T_DATA;
+					
+				begin
+					Greater		<= to_sl(unsigned(DataMatrix(STAGE_INDEX)(SRC0)(KEY_BITS - 1 downto 0)) > unsigned(DataMatrix(STAGE_INDEX)(SRC1)(KEY_BITS - 1 downto 0)));
+					Switch		<= Greater xor INVERSE;
+	
+					NewData0		<= mux(Switch, DataMatrix(STAGE_INDEX)(SRC0), DataMatrix(STAGE_INDEX)(SRC1));
+					NewData1		<= mux(Switch, DataMatrix(STAGE_INDEX)(SRC1), DataMatrix(STAGE_INDEX)(SRC0));
+	
+					genNoReg : if ((PIPELINE_STAGE_AFTER = 0) or (STAGE_INDEX mod PIPELINE_STAGE_AFTER /= 0)) generate
+						DataMatrix(STAGE_INDEX + 1)(SRC0)		<= NewData0;
+						DataMatrix(STAGE_INDEX + 1)(SRC1)		<= NewData1;
+					end generate;
+					genReg : if ((PIPELINE_STAGE_AFTER /= 0) and (STAGE_INDEX mod PIPELINE_STAGE_AFTER = 0)) generate
+						DataMatrix(STAGE_INDEX + 1)(SRC0)		<= NewData0	when rising_edge(Clock);
+						DataMatrix(STAGE_INDEX + 1)(SRC1)		<= NewData1	when rising_edge(Clock);
+					end generate;
+				end generate;
+			end generate;
 		end generate;
-		
-		DataInputMatrix1	<= to_slm(IntermediateVector(HALF_INPUTS - 1 downto 0));
-		DataInputMatrix2	<= to_slm(IntermediateVector(INPUTS - 1 downto HALF_INPUTS));
-		
-		merge1 : entity PoC.sortnet_BitonicMerge
-			generic map (
-				INPUTS			=> HALF_INPUTS,
-				KEY_BITS		=> KEY_BITS,
-				DATA_BITS		=> DATA_BITS,
-				INVERSE			=> INVERSE
-			)
-			port map (
-				Clock				=> Clock,
-				Reset				=> Reset,
-				
-				DataInputs	=> DataInputMatrix1,
-				DataOutputs	=> DataOutputMatrix1
-			);
-		merge2 : entity PoC.sortnet_BitonicMerge
-			generic map (
-				INPUTS			=> INPUTS - HALF_INPUTS,
-				KEY_BITS		=> KEY_BITS,
-				DATA_BITS		=> DATA_BITS,
-				INVERSE			=> INVERSE
-			)
-			port map (
-				Clock				=> Clock,
-				Reset				=> Reset,
-				
-				DataInputs	=> DataInputMatrix2,
-				DataOutputs	=> DataOutputMatrix2
-			);
-		
-		DataOutputs		<= slm_merge_rows(DataOutputMatrix1, DataOutputMatrix2);
 	end generate;
-	genPassThrough : if (INPUTS = 1) generate
-		DataOutputs	<= DataInputs;
+	genOutputs : for i in 0 to INPUTS - 1 generate
+		genLoop : for j in 0 to DATA_BITS - 1 generate
+			DataOut(i, j)		<= DataMatrix(STAGES)(i)(j);
+		end generate;
 	end generate;
 end architecture;
+	

@@ -1,9 +1,12 @@
+# git files
+.gitempty
 
 # Documentation
 README.md
 
-# include subnamespaces
+# PoC subnamespaces
 stream/
-#wb/
+wb/
 
+# Entities
 bus_Arbiter.vhdl

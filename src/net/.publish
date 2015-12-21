@@ -1,0 +1,25 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# PoC subnamespaces
+arp/
+eth/
+icmpv4/
+icmpv6/
+ipv4/
+ipv6/
+mac/
+ndp/
+stack/
+udp/
+
+# Package
+net.pkg.vhdl
+
+# Entities
+net_FrameChecksum.vhdl
+net_FrameLoopback.vhdl
+
