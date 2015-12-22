@@ -3,18 +3,18 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Package:					TODO
---
 -- Authors:					Patrick Lehmann
+--
+-- Entity:					TODO
 --
 -- Description:
 -- ------------------------------------
 --		This module generates pulse trains. This module was written as a answer for
---		a stackoverflow question: http://stackoverflow.com/questions/25783320
+--		a StackOverflow question: http://stackoverflow.com/questions/25783320
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,9 +36,10 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.utils.ALL;
+USE			PoC.components.ALL;
 
 
-entity PulseTrain is
+entity misc_PulseTrain is
 	generic (
 		PULSE_TRAIN				: STD_LOGIC_VECTOR
 	);
@@ -51,36 +52,18 @@ entity PulseTrain is
 end entity; 
 
 
-architecture rtl of PulseTrain is 
-	signal State								: STD_LOGIC																							:= '0';
+architecture rtl of misc_PulseTrain is 
+	signal IsIdle_r							: STD_LOGIC																							:= '0';
 	signal Counter_us						: UNSIGNED(log2ceilnz(PULSE_TRAIN'length) - 1 downto 0)	:= (others => '0');
 	signal SequenceCompleted_i	: STD_LOGIC;
 begin
 	-- state control is done by a basic RS-FF
-  process(Clock) is
-	begin 
-		if rising_edge(Clock) then
-			if (StartSequence = '1') then
-				State		<= '1';
-			elsif (SequenceCompleted_i = '1') then
-				State		<= '0';
-			end if;
-		end if;
-	end process;
+	IsIdle_r		<= ffrs(q => IsIdle_r, rst => Counter_ov, set => StartSequence)	when rising_edge(Clock);
+
+	-- counter
+	Counter_us	<= upcounter_next(cnt => Counter_us, rst => not IsIdle_r)				when rising_edge(Clock);
+	Counter_ov	<= upcounter_equal(cnt => Counter_us, Value => (PULSE_TRAIN'length - 1));
 	
-	SequenceCompleted_i		<= to_sl(Counter_us = (PULSE_TRAIN'length - 1));
-	SequenceCompleted			<= SequenceCompleted_i;
-	
-	process(Clock)
-	begin
-		if rising_edge(Clock) then
-			if (State = '0') then
-				Counter_us	<= (others => '0');
-			else
-				Counter_us	<= Counter_us + 1;
-			end if;
-		end if;
-	end process;
-	
-	Output	<= PULSE_TRAIN(to_index(Counter_us));
-end;
+	Output						<= PULSE_TRAIN(to_index(Counter_us));
+	SequenceCompleted	<= Counter_ov;
+end architecture;
