@@ -36,6 +36,7 @@ __pycache__
 !/prj/Diamond/**/*.lpf
 !/prj/Diamond/*.ldf
 !/prj/Diamond/*.sty
+!/prj/Diamond/*.vhdl
 
 /prj/QuestaSim/*
 /prj/QuestaSim/*.*
