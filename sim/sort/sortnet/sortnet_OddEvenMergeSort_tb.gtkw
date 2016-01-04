@@ -1,0 +1,68 @@
+[*]
+[*] GTKWave Analyzer v3.3.61 (w)1999-2014 BSI
+[*] Thu Dec 31 01:29:23 2015
+[*]
+[dumpfile] "H:\Austausch\PoC\temp\ghdl\sortnet_OddEvenMergeSort_tb.vcd"
+[dumpfile_mtime] "Thu Dec 31 01:27:32 2015"
+[dumpfile_size] 16403498
+[savefile] "H:\Austausch\PoC\sim\sort\sortnet\sortnet_OddEvenMergeSort_tb.gtkw"
+[timestart] 41400000
+[size] 1676 997
+[pos] -1 -1
+*-24.937172 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] sort.
+[treeopen] sort.(0).(0).
+[treeopen] sort.(0).(0).(0).
+[treeopen] sort.(0).(0).(0).(0).
+[treeopen] sort.(0).(1).
+[treeopen] sort.(0).(1).(0).
+[treeopen] sort.(0).(1).(0).(0).
+[treeopen] sort.(0).(2).(0).
+[treeopen] sort.(0).(2).(0).(0).
+[treeopen] sort.(0).(3).
+[treeopen] sort.(0).(3).(0).
+[treeopen] sort.(0).(3).(0).(0).
+[treeopen] sort.(1).(0).
+[treeopen] sort.(1).(0).(0).
+[treeopen] sort.(1).(0).(0).(0).
+[treeopen] sort.(1).(0).(1).
+[treeopen] sort.(1).(0).(1).(0).
+[treeopen] sort.(1).(1).
+[treeopen] sort.(1).(1).(0).
+[treeopen] sort.(1).(1).(0).(0).
+[treeopen] sort.(1).(1).(1).
+[treeopen] sort.(1).(1).(1).(0).
+[treeopen] sort.(2).(0).
+[treeopen] sort.(2).(0).(0).
+[treeopen] sort.(2).(0).(0).(0).
+[treeopen] sort.(2).(0).(1).
+[treeopen] sort.(2).(0).(1).(0).
+[treeopen] sort.(2).(0).(2).
+[treeopen] sort.(2).(0).(2).(0).
+[treeopen] sort.(2).(0).(2).(2).
+[sst_width] 197
+[signals_width] 142
+[sst_expanded] 1
+[sst_vpaned_height] 293
+@28
+stopsimulation
+clock
+@22
+blkgtkw.input_0[31:0]
+blkgtkw.input_1[31:0]
+blkgtkw.input_2[31:0]
+blkgtkw.input_3[31:0]
+blkgtkw.input_4[31:0]
+blkgtkw.input_5[31:0]
+blkgtkw.input_6[31:0]
+blkgtkw.input_7[31:0]
+blkgtkw.output_0[31:0]
+blkgtkw.output_1[31:0]
+blkgtkw.output_2[31:0]
+blkgtkw.output_3[31:0]
+blkgtkw.output_4[31:0]
+blkgtkw.output_5[31:0]
+blkgtkw.output_6[31:0]
+blkgtkw.output_7[31:0]
+[pattern_trace] 1
+[pattern_trace] 0

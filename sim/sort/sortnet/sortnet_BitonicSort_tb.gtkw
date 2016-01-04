@@ -1,0 +1,40 @@
+[*]
+[*] GTKWave Analyzer v3.3.61 (w)1999-2014 BSI
+[*] Thu Dec 31 01:19:04 2015
+[*]
+[dumpfile] "H:\Austausch\PoC\temp\ghdl\sortnet_BitonicSort_tb.vcd"
+[dumpfile_mtime] "Thu Dec 31 01:16:22 2015"
+[dumpfile_size] 20097230
+[savefile] "H:\Austausch\PoC\sim\sort\sortnet\sortnet_BitonicSort_tb.gtkw"
+[timestart] 0
+[size] 1676 997
+[pos] -1 -1
+*-25.052132 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] sort.
+[sst_width] 197
+[signals_width] 142
+[sst_expanded] 1
+[sst_vpaned_height] 293
+@28
+stopsimulation
+clock
+@22
+blkgtkw.input_0[31:0]
+blkgtkw.input_1[31:0]
+blkgtkw.input_2[31:0]
+blkgtkw.input_3[31:0]
+blkgtkw.input_4[31:0]
+blkgtkw.input_5[31:0]
+blkgtkw.input_6[31:0]
+blkgtkw.input_7[31:0]
+blkgtkw.output_0[31:0]
+blkgtkw.output_1[31:0]
+blkgtkw.output_2[31:0]
+blkgtkw.output_3[31:0]
+blkgtkw.output_4[31:0]
+blkgtkw.output_5[31:0]
+blkgtkw.output_6[31:0]
+@23
+blkgtkw.output_7[31:0]
+[pattern_trace] 1
+[pattern_trace] 0

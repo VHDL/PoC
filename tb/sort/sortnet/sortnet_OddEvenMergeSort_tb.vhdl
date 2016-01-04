@@ -13,7 +13,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,6 +36,10 @@ use			IEEE.NUMERIC_STD.all;
 library PoC;
 use			PoC.utils.all;
 use			PoC.vectors.all;
+use			PoC.simulation.ALL;
+
+library OSVVM;
+use			OSVVM.RandomPkg.all;
 
 
 entity sortnet_OddEvenMergeSort_tb is
@@ -43,9 +47,15 @@ end entity;
 
 
 architecture tb of sortnet_OddEvenMergeSort_tb is
-	constant INPUTS				: POSITIVE	:= 8;
-	constant KEY_BITS			: POSITIVE	:= 8;
-	constant DATA_BITS		: POSITIVE	:= 8;
+	constant INPUTS									: POSITIVE	:= 32;
+	constant KEY_BITS								: POSITIVE	:= 32;
+	constant DATA_BITS							: POSITIVE	:= 32;
+	constant PIPELINE_STAGE_AFTER		: NATURAL		:= 2;
+
+	constant LOOP_COUNT							: POSITIVE	:= 1024;
+	
+	constant STAGES									: POSITIVE	:= INPUTS;
+	constant DELAY									: NATURAL		:= STAGES / PIPELINE_STAGE_AFTER;
 
 	subtype T_KEY					is STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
 	subtype T_DATA				is STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
@@ -100,8 +110,8 @@ architecture tb of sortnet_OddEvenMergeSort_tb is
 	constant CLOCK_PERIOD			: TIME				:= 10 ns;
 	signal Clock							: STD_LOGIC		:= '1';
 	
-	signal KeyInputVector			: T_KEY_VECTOR(INPUTS - 1 downto 0);
-	signal DataInputVector		: T_DATA_VECTOR(INPUTS - 1 downto 0);
+	signal KeyInputVector			: T_KEY_VECTOR(INPUTS - 1 downto 0)		:= (others => (others => '0'));
+	signal DataInputVector		: T_DATA_VECTOR(INPUTS - 1 downto 0)	:= (others => (others => '0'));
 	
 	signal DataInputMatrix		: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
 	signal DataOutputMatrix		: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
@@ -115,15 +125,21 @@ begin
 	Clock	<= Clock xnor StopSimulation after CLOCK_PERIOD;
 
 	process
+		variable RandomVar : RandomPType;								-- protected type from RandomPkg
 	begin
+		RandomVar.InitSeed(RandomVar'instance_name);		-- Generate initial seeds
+		
 		wait until rising_edge(Clock);
 		
-		for i in 0 to 9 loop
+		for i in 0 to LOOP_COUNT - 1 loop
 			wait until rising_edge(Clock);
-		
 			for j in 0 to INPUTS - 1 loop
-				KeyInputVector(j)	<= std_logic_vector(unsigned(KeyInputVector(j)) + i + j);
+				KeyInputVector(j)	<= RandomVar.RandSlv(KEY_BITS);
 			end loop;
+		end loop;
+		
+		for i in 0 to DELAY + 7 loop
+			wait until rising_edge(Clock);
 		end loop;
 		
 		StopSimulation		<= '1';
@@ -151,10 +167,64 @@ begin
 	KeyOutputVector	<= to_kv(DataOutputMatrix);
 	
 	process
+		variable	Check		: BOOLEAN;
 	begin
+		report "Delay=" & INTEGER'image(DELAY) severity NOTE;
 	
+		for i in 0 to DELAY - 1 loop
+			wait until rising_edge(Clock);
+		end loop;
 		
-	
-	wait;
+		for i in 0 to LOOP_COUNT - 1 loop
+			wait until rising_edge(Clock);
+			Check		:= TRUE;
+			for j in 0 to INPUTS - 2 loop
+				Check	:= Check and (KeyOutputVector(j) <= KeyOutputVector(j + 1));
+			end loop;
+			tbAssert(Check, "Result is not monotonic.");
+		end loop;
+
+		-- Report overall result
+		tbPrintResult;
+
+    wait;  -- forever
 	end process;
+	
+	blkGTKW : block
+		signal INPUT_0		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal INPUT_1		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal INPUT_2		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal INPUT_3		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal INPUT_4		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal INPUT_5		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal INPUT_6		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal INPUT_7		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		
+		signal OUTPUT_0		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal OUTPUT_1		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal OUTPUT_2		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal OUTPUT_3		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal OUTPUT_4		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal OUTPUT_5		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal OUTPUT_6		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal OUTPUT_7		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+	begin
+		INPUT_0		<= KeyInputVector(0);
+		INPUT_1		<= KeyInputVector(1);
+		INPUT_2		<= KeyInputVector(2);
+		INPUT_3		<= KeyInputVector(3);
+		INPUT_4		<= KeyInputVector(4);
+		INPUT_5		<= KeyInputVector(5);
+		INPUT_6		<= KeyInputVector(6);
+		INPUT_7		<= KeyInputVector(7);
+		
+		OUTPUT_0	<= KeyOutputVector(0);
+		OUTPUT_1	<= KeyOutputVector(1);
+		OUTPUT_2	<= KeyOutputVector(2);
+		OUTPUT_3	<= KeyOutputVector(3);
+		OUTPUT_4	<= KeyOutputVector(4);
+		OUTPUT_5	<= KeyOutputVector(5);
+		OUTPUT_6	<= KeyOutputVector(6);
+		OUTPUT_7	<= KeyOutputVector(7);
+	end block;
 end architecture;

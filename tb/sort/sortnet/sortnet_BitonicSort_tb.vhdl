@@ -18,9 +18,9 @@ end entity;
 
 
 architecture tb of sortnet_BitonicSort_tb is
-	constant INPUTS									: POSITIVE	:= 4;
-	constant KEY_BITS								: POSITIVE	:= 8;
-	constant DATA_BITS							: POSITIVE	:= 8;
+	constant INPUTS									: POSITIVE	:= 32;
+	constant KEY_BITS								: POSITIVE	:= 32;
+	constant DATA_BITS							: POSITIVE	:= 32;
 	constant PIPELINE_STAGE_AFTER		: NATURAL		:= 2;
 
 	constant LOOP_COUNT							: POSITIVE	:= 1024;
@@ -105,7 +105,7 @@ begin
 		for i in 0 to LOOP_COUNT - 1 loop
 			wait until rising_edge(Clock);
 			for j in 0 to INPUTS - 1 loop
-				KeyInputVector(j)	<= to_slv(RandomVar.RandInt(0, 255), KEY_BITS);
+				KeyInputVector(j)	<= RandomVar.RandSlv(KEY_BITS);
 			end loop;
 		end loop;
 		
@@ -130,8 +130,8 @@ begin
 			Clock				=> Clock,
 			Reset				=> '0',
 			
-			DataIn			=> DataInputMatrix,
-			DataOut			=> DataOutputMatrix
+			DataInputs	=> DataInputMatrix,
+			DataOutputs	=> DataOutputMatrix
 		);
 	
 	KeyOutputVector	<= to_kv(DataOutputMatrix);
@@ -161,4 +161,42 @@ begin
 
     wait;  -- forever
 	end process;
+	
+	blkGTKW : block
+		signal INPUT_0		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal INPUT_1		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal INPUT_2		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal INPUT_3		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal INPUT_4		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal INPUT_5		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal INPUT_6		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal INPUT_7		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		
+		signal OUTPUT_0		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal OUTPUT_1		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal OUTPUT_2		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal OUTPUT_3		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal OUTPUT_4		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal OUTPUT_5		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal OUTPUT_6		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		signal OUTPUT_7		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+	begin
+		INPUT_0		<= KeyInputVector(0);
+		INPUT_1		<= KeyInputVector(1);
+		INPUT_2		<= KeyInputVector(2);
+		INPUT_3		<= KeyInputVector(3);
+		INPUT_4		<= KeyInputVector(4);
+		INPUT_5		<= KeyInputVector(5);
+		INPUT_6		<= KeyInputVector(6);
+		INPUT_7		<= KeyInputVector(7);
+		
+		OUTPUT_0	<= KeyOutputVector(0);
+		OUTPUT_1	<= KeyOutputVector(1);
+		OUTPUT_2	<= KeyOutputVector(2);
+		OUTPUT_3	<= KeyOutputVector(3);
+		OUTPUT_4	<= KeyOutputVector(4);
+		OUTPUT_5	<= KeyOutputVector(5);
+		OUTPUT_6	<= KeyOutputVector(6);
+		OUTPUT_7	<= KeyOutputVector(7);
+	end block;
 end architecture;
