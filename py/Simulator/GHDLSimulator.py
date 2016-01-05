@@ -505,6 +505,8 @@ class Simulator(PoCSimulator):
 				print("-" * 80)
 				print(ex.output)
 				print("-" * 80)
+				
+				return
 			
 			
 			
