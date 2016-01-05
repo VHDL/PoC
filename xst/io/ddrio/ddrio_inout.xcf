@@ -1,0 +1,7 @@
+
+NET "ClockIn"													TNM_NET = "NET_NetlistGenerator_ClockIn";
+TIMESPEC "TS_NetlistGenerator_ClockIn" = PERIOD "NET_NetlistGenerator_ClockIn"	200 MHz	HIGH 50 %;		## 200 MHz oscillator (50%/50% duty-cycle)
+
+NET "ClockOut"													TNM_NET = "NET_NetlistGenerator_ClockOut";
+TIMESPEC "TS_NetlistGenerator_ClockOut" = PERIOD "NET_NetlistGenerator_ClockOut"	200 MHz	HIGH 50 %;		## 200 MHz oscillator (50%/50% duty-cycle)
+

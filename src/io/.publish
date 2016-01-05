@@ -1,29 +1,38 @@
 # git files
-.gitignore
 .gitempty
 
-# device specific I/O abstraction
+# Documentation
+README.md
+
+# PoC subnamespaces
+# --------------------------------------
+# FPGA device specific I/O abstraction
 ddrio/
 
 # low speed protocols
 iic/
 lcd/
-#mdio/
-#ow/
-#ps2/
+mdio/
+ow/
+pmod/
+ps2/
 uart/
-#vga/
+vga/
 
 # devices
 #device/
 
-# common files
+# Package
 io.pkg.vhdl
+
+# Entities
+# --------------------------------------
 io_7SegmentMux_BCD.vhdl
 io_7SegmentMux_HEX.vhdl
 io_Debounce.vhdl
 io_FanControl.vhdl
 io_FrequencyCounter.vhdl
 io_GlitchFilter.vhdl
+#io_KeyPadScanner.vhdl
 io_PulseWidthModulation.vhdl
 io_TimingCounter.vhdl

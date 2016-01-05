@@ -229,18 +229,18 @@ package net is
 	-- ==========================================================================================================================================================
 	-- types
 	type T_NET_MAC_ADDRESS								is array (5 downto 0)				of T_SLV_8;
-	type T_NET_MAC_ETHERNETtype						is array (1 downto 0)				of T_SLV_8;
+	type T_NET_MAC_ETHERNETTYPE						is array (1 downto 0)				of T_SLV_8;
 
 	-- arrays
 	type T_NET_MAC_ADDRESS_VECTOR					is array (NATURAL range <>) of T_NET_MAC_ADDRESS;
 	type T_NET_MAC_ETHERNETTYPE_VECTOR		is array (NATURAL range <>)	of T_NET_MAC_ETHERNETTYPE;
 	
 	-- predefined constants
-	constant C_NET_MAC_ADDRESS_EMPTY				: T_NET_MAC_ADDRESS				:= (others => (others => '0'));
-	constant C_NET_MAC_ADDRESS_BROADCAST		: T_NET_MAC_ADDRESS				:= (others => (others => '1'));
-	constant C_NET_MAC_MASK_EMPTY						: T_NET_MAC_ADDRESS				:= (others => (others => '0'));
-	constant C_NET_MAC_MASK_DEFAULT					: T_NET_MAC_ADDRESS				:= (others => (others => '1'));
-	constant C_NET_MAC_ETHERNETTYPE_EMPTY		: T_NET_MAC_ETHERNETtype	:= (others => (others => '0'));
+	constant C_NET_MAC_ADDRESS_EMPTY			: T_NET_MAC_ADDRESS					:= (others => (others => '0'));
+	constant C_NET_MAC_ADDRESS_BROADCAST	: T_NET_MAC_ADDRESS					:= (others => (others => '1'));
+	constant C_NET_MAC_MASK_EMPTY					: T_NET_MAC_ADDRESS					:= (others => (others => '0'));
+	constant C_NET_MAC_MASK_DEFAULT				: T_NET_MAC_ADDRESS					:= (others => (others => '1'));
+	constant C_NET_MAC_ETHERNETTYPE_EMPTY	: T_NET_MAC_ETHERNETTYPE		:= (others => (others => '0'));
 
 	-- type conversion functions
 	function to_net_mac_address(slv : T_SLV_48)						return T_NET_MAC_ADDRESS;
@@ -320,8 +320,8 @@ package net is
 	type		T_NET_IPV4_TYPE_OF_SERVICE_VECTOR			is array (NATURAL range <>) of T_NET_IPV4_TYPE_OF_SERVICE;
 	
 	-- predefined constants
-	constant C_NET_IPV4_ADDRESS_EMPTY							: T_NET_IPV4_ADDRESS					:= (others => (others => '0'));
-	constant C_NET_IPV4_PROTOCOL_EMPTY						: T_NET_IPV4_PROTOCOL					:= (others => '0');
+	constant C_NET_IPV4_ADDRESS_EMPTY							: T_NET_IPV4_ADDRESS				:= (others => (others => '0'));
+	constant C_NET_IPV4_PROTOCOL_EMPTY						: T_NET_IPV4_PROTOCOL				:= (others => '0');
 
 	constant C_NET_IPV4_TOS_PRECEDENCE_ROUTINE								: T_NET_IPV4_TOS_PRECEDENCE			:= "000";
 	constant C_NET_IPV4_TOS_PRECEDENCE_PRIORITY								: T_NET_IPV4_TOS_PRECEDENCE			:= "001";
@@ -541,22 +541,22 @@ package net is
 	-- Ethernet: known Ethernet Types
 	-- ==========================================================================================================================================================
 	--	add user defined ethernet types here:
-	constant C_NET_MAC_ETHERNETTYPE_SSFC						: T_NET_MAC_ETHERNETtype		:= to_net_mac_ethernettype(x"A987");		-- Andreas Hoeer - SFC Protocol - simple version (length-field, type-field)
-	constant C_NET_MAC_ETHERNETTYPE_SWAP						: T_NET_MAC_ETHERNETtype		:= to_net_mac_ethernettype(x"FFFE");		-- Xilinx Ethernet Frame Swap Module
-	constant C_NET_MAC_ETHERNETTYPE_LOOPBACK				: T_NET_MAC_ETHERNETtype		:= to_net_mac_ethernettype(x"FFFF");		-- Frame loopback module
+	constant C_NET_MAC_ETHERNETTYPE_SSFC						: T_NET_MAC_ETHERNETTYPE		:= to_net_mac_ethernettype(x"A987");		-- Andreas Hoeer - SFC Protocol - simple version (length-field, type-field)
+	constant C_NET_MAC_ETHERNETTYPE_SWAP						: T_NET_MAC_ETHERNETTYPE		:= to_net_mac_ethernettype(x"FFFE");		-- Xilinx Ethernet Frame Swap Module
+	constant C_NET_MAC_ETHERNETTYPE_LOOPBACK				: T_NET_MAC_ETHERNETTYPE		:= to_net_mac_ethernettype(x"FFFF");		-- Frame loopback module
 
 -- Ethernet Types, see:			http://en.wikipedia.org/wiki/EtherType
 -- for complete liste see:	http://standards.ieee.org/develop/regauth/ethertype/eth.txt
 -- see also:								http://www.iana.org/assignments/ieee-802-numbers/ieee-802-numbers.xml
-	constant C_NET_MAC_ETHERNETTYPE_IPV4						: T_NET_MAC_ETHERNETtype		:= to_net_mac_ethernettype(x"0800");		-- Internet Protocol, Version 4 (IPv4)
-	constant C_NET_MAC_ETHERNETTYPE_ARP							: T_NET_MAC_ETHERNETtype		:= to_net_mac_ethernettype(x"0806");		-- Address Resolution Protocol (ARP)
-	constant C_NET_MAC_ETHERNETTYPE_WOL							: T_NET_MAC_ETHERNETtype		:= to_net_mac_ethernettype(x"0842");		-- Wake-on-LAN Magic Packet, as used by ether-wake and Sleep Proxy Service
-	constant C_NET_MAC_ETHERNETTYPE_VLAN						: T_NET_MAC_ETHERNETtype		:= to_net_mac_ethernettype(x"8100");		-- VLAN-tagged frame (IEEE 802.1Q) & Shortest Path Bridging IEEE 802.1aq[3]
-	constant C_NET_MAC_ETHERNETTYPE_SNMP						: T_NET_MAC_ETHERNETtype		:= to_net_mac_ethernettype(x"814C");		-- Simple Network Management Protocol (SNMP)[4]
-	constant C_NET_MAC_ETHERNETTYPE_IPV6						: T_NET_MAC_ETHERNETtype		:= to_net_mac_ethernettype(x"86DD");		-- Internet Protocol, Version 6 (IPv6)
-	constant C_NET_MAC_ETHERNETTYPE_MACCONTROL			: T_NET_MAC_ETHERNETtype		:= to_net_mac_ethernettype(x"8808");		-- MAC Control
-	constant C_NET_MAC_ETHERNETTYPE_JUMBOFRAMES			: T_NET_MAC_ETHERNETtype		:= to_net_mac_ethernettype(x"8870");		-- Jumbo Frames
-	constant C_NET_MAC_ETHERNETTYPE_QINQ						: T_NET_MAC_ETHERNETtype		:= to_net_mac_ethernettype(x"9100");		-- Q-in-Q
+	constant C_NET_MAC_ETHERNETTYPE_IPV4						: T_NET_MAC_ETHERNETTYPE		:= to_net_mac_ethernettype(x"0800");		-- Internet Protocol, Version 4 (IPv4)
+	constant C_NET_MAC_ETHERNETTYPE_ARP							: T_NET_MAC_ETHERNETTYPE		:= to_net_mac_ethernettype(x"0806");		-- Address Resolution Protocol (ARP)
+	constant C_NET_MAC_ETHERNETTYPE_WOL							: T_NET_MAC_ETHERNETTYPE		:= to_net_mac_ethernettype(x"0842");		-- Wake-on-LAN Magic Packet, as used by ether-wake and Sleep Proxy Service
+	constant C_NET_MAC_ETHERNETTYPE_VLAN						: T_NET_MAC_ETHERNETTYPE		:= to_net_mac_ethernettype(x"8100");		-- VLAN-tagged frame (IEEE 802.1Q) & Shortest Path Bridging IEEE 802.1aq[3]
+	constant C_NET_MAC_ETHERNETTYPE_SNMP						: T_NET_MAC_ETHERNETTYPE		:= to_net_mac_ethernettype(x"814C");		-- Simple Network Management Protocol (SNMP)[4]
+	constant C_NET_MAC_ETHERNETTYPE_IPV6						: T_NET_MAC_ETHERNETTYPE		:= to_net_mac_ethernettype(x"86DD");		-- Internet Protocol, Version 6 (IPv6)
+	constant C_NET_MAC_ETHERNETTYPE_MACCONTROL			: T_NET_MAC_ETHERNETTYPE		:= to_net_mac_ethernettype(x"8808");		-- MAC Control
+	constant C_NET_MAC_ETHERNETTYPE_JUMBOFRAMES			: T_NET_MAC_ETHERNETTYPE		:= to_net_mac_ethernettype(x"8870");		-- Jumbo Frames
+	constant C_NET_MAC_ETHERNETTYPE_QINQ						: T_NET_MAC_ETHERNETTYPE		:= to_net_mac_ethernettype(x"9100");		-- Q-in-Q
 
 	-- ==========================================================================================================================================================
 	-- Internet Layer: known Upper-Layer Protocols for Internet Protocol
@@ -675,6 +675,7 @@ package net is
 	
 end package;
 
+
 package body net is
 
 	function to_net_eth_RSDataInterface(str : STRING) return T_NET_ETH_RS_DATA_INTERFACE is
@@ -770,7 +771,7 @@ package body net is
 				Segments(SegmentPointer)(CharPointer)	:= input(I);
 --				report "    copy to seg=" & INTEGER'image(SegmentPointer) & "  pos=" & INTEGER'image(CharPointer) severity NOTE;
 				CharPointer					:= Charpointer - 1;
-			ELSif ((input(I) = ':') OR (input(I) = '-')) then
+			elsif ((input(I) = ':') OR (input(I) = '-')) then
 				SegmentPointer		:= SegmentPointer + 1;
 				CharPointer				:= 2;
 			else
@@ -793,7 +794,7 @@ package body net is
 		return MAC;
 	end function;
 
-	function to_net_mac_ethernettype(slv : T_SLV_16) return T_NET_MAC_ETHERNETtype is
+	function to_net_mac_ethernettype(slv : T_SLV_16) return T_NET_MAC_ETHERNETTYPE is
 		variable Ethtype					: T_NET_MAC_ETHERNETTYPE;
 	begin
 		for i in 0 to 1 loop
@@ -850,22 +851,22 @@ package body net is
 	function to_string(Ethtype : T_NET_MAC_ETHERNETTYPE) return STRING is
 	begin
 		-- TODO: replace this case-statement by substring(image(EthType), 10,0)
-		CASE to_slv(EthType) is
-			WHEN to_slv(C_NET_MAC_ETHERNETTYPE_EMPTY) =>				return "Empty";
-			WHEN to_slv(C_NET_MAC_ETHERNETTYPE_ARP) =>					return "ARP";
-			WHEN to_slv(C_NET_MAC_ETHERNETTYPE_IPV4) =>					return "IPv4";
-			WHEN to_slv(C_NET_MAC_ETHERNETTYPE_IPV6) =>					return "IPv6";
-			WHEN to_slv(C_NET_MAC_ETHERNETTYPE_JUMBOFRAMES) =>	return "Jumbo";
-			WHEN to_slv(C_NET_MAC_ETHERNETTYPE_MACCONTROL) =>		return "MACControl";
-			WHEN to_slv(C_NET_MAC_ETHERNETTYPE_QINQ) =>					return "QinQ";
-			WHEN to_slv(C_NET_MAC_ETHERNETTYPE_SNMP) =>					return "SNMP";
-			WHEN to_slv(C_NET_MAC_ETHERNETTYPE_VLAN) =>					return "VLAN";
-			WHEN to_slv(C_NET_MAC_ETHERNETTYPE_WOL) =>					return "WOL";
+		case to_slv(EthType) is
+			when to_slv(C_NET_MAC_ETHERNETTYPE_EMPTY) =>				return "Empty";
+			when to_slv(C_NET_MAC_ETHERNETTYPE_ARP) =>					return "ARP";
+			when to_slv(C_NET_MAC_ETHERNETTYPE_IPV4) =>					return "IPv4";
+			when to_slv(C_NET_MAC_ETHERNETTYPE_IPV6) =>					return "IPv6";
+			when to_slv(C_NET_MAC_ETHERNETTYPE_JUMBOFRAMES) =>	return "Jumbo";
+			when to_slv(C_NET_MAC_ETHERNETTYPE_MACCONTROL) =>		return "MACControl";
+			when to_slv(C_NET_MAC_ETHERNETTYPE_QINQ) =>					return "QinQ";
+			when to_slv(C_NET_MAC_ETHERNETTYPE_SNMP) =>					return "SNMP";
+			when to_slv(C_NET_MAC_ETHERNETTYPE_VLAN) =>					return "VLAN";
+			when to_slv(C_NET_MAC_ETHERNETTYPE_WOL) =>					return "WOL";
 			
-			WHEN to_slv(C_NET_MAC_ETHERNETTYPE_SWAP) =>					return "Swap";
-			WHEN to_slv(C_NET_MAC_ETHERNETTYPE_LOOPBACK) =>			return "LoopBack";
-			WHEN others =>																			return "0x" & to_string(to_slv(EthType), 'h');
-		END CASE;
+			when to_slv(C_NET_MAC_ETHERNETTYPE_SWAP) =>					return "Swap";
+			when to_slv(C_NET_MAC_ETHERNETTYPE_LOOPBACK) =>			return "LoopBack";
+			when others =>																			return "0x" & to_string(to_slv(EthType), 'h');
+		end case;
 	end function;
 
 	-- ==========================================================================================================================================================
@@ -896,7 +897,7 @@ package body net is
 				Segments(SegmentPointer)(CharPointer)	:= input(I);
 --				report "    copy to seg=" & INTEGER'image(SegmentPointer) & "  pos=" & INTEGER'image(CharPointer) severity NOTE;
 				CharPointer					:= Charpointer - 1;
-			ELSif (input(I) = '.') then
+			elsif (input(I) = '.') then
 				SegmentPointer		:= SegmentPointer + 1;
 				CharPointer				:= 3;
 			else
@@ -1019,7 +1020,7 @@ package body net is
 --				report "    copy to seg=" & INTEGER'image(SegmentPointer) & "  pos=" & INTEGER'image(CharPointer) severity NOTE;
 				CharPointer					:= Charpointer - 1;
 				DelimiterPointer		:= 0;
-			ELSif (input(I) = ':') then
+			elsif (input(I) = ':') then
 				if (DelimiterPointer = 0) then
 					SegmentPointer		:= SegmentPointer + 1;
 					CharPointer				:= 4;

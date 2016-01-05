@@ -120,7 +120,7 @@ class Simulator(PoCSimulator):
 		os.chdir(str(tempvSimPath))
 
 		# parse project filelist
-		filesLineRegExpStr =	r"\s*(?P<Keyword>(vhdl(\-(87|93|02|08))?|xilinx))"				# Keywords: vhdl[-nn], xilinx
+		filesLineRegExpStr =	r"\s*(?P<Keyword>(vhdl(\-(87|93|02|08))?|altera|xilinx))"				# Keywords: vhdl[-nn], altera, xilinx
 		filesLineRegExpStr +=	r"\s+(?P<VHDLLibrary>[_a-zA-Z0-9]+)"		#	VHDL library name
 		filesLineRegExpStr +=	r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
 		filesLineRegExp = re.compile(filesLineRegExpStr)
@@ -131,7 +131,7 @@ class Simulator(PoCSimulator):
 		# add empty line if logs are enabled
 		if self.showLogs:		print()
 		
-		vhdlLibraries = {}
+		vhdlLibraries = []
 		
 		with fileListFilePath.open('r') as fileFileHandle:
 			for line in fileFileHandle:
@@ -145,8 +145,20 @@ class Simulator(PoCSimulator):
 						if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
 							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
 							vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
+						else:
+							continue
+					elif (filesLineRegExpMatch.group('Keyword') == "altera"):
+						self.printVerbose("    skipped Altera specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
 					elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
-						self.printVerbose("    skipped xilinx specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
+#						self.printVerbose("    skipped Xilinx specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
+						# check if ISE or Vivado is configured
+						if not self.host.directories.__contains__("XilinxPrimitiveSource"):
+							raise NotConfiguredException("This testbench requires some Xilinx Primitves. Please configure Xilinx ISE or Vivado.")
+						
+						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
+						vhdlFilePath = self.host.directories["XilinxPrimitiveSource"] / vhdlFileName
+					else:
+						raise SimulatorException("Unknown keyword in *files file.")
 						
 					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
 					
@@ -160,6 +172,8 @@ class Simulator(PoCSimulator):
 						
 						try:
 							vLibLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+							vhdlLibraries.append(vhdlLibraryName)
+
 						except subprocess.CalledProcessError as ex:
 								print("ERROR while executing vlib: %s" % str(vhdlFilePath))
 								print("Return Code: %i" % ex.returncode)

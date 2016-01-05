@@ -1,5 +1,8 @@
 # git files
-.gitignore
+.gitempty
+
+# Documentation
+README.md
 
 # Package
 ocram.pkg.vhdl
@@ -15,4 +18,3 @@ altera/
 
 # Xilinx specific
 xilinx/
-

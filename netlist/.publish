@@ -1,11 +1,17 @@
-# 
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# Wrapper scripts
 netlist.ps1
 netlist.sh
 
-# 
+# Netlist configurations
 configuration.ini
 
-# 
+# Templates
 template.cgc
 
 # created folders - don't publish them

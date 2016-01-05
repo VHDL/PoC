@@ -1,23 +1,31 @@
 # The PoC-Library
 
-PoC - "Pile of Cores" provides implementations for often required hardware
-functions such as FIFOs, RAM wrapper, and ALUs. The hardware modules are
-typically provided as VHDL or Verilog source code, so it can be easily re-used
-in a variety of hardware designs.
+This library is published and maintained by **Chair for VLSI Design, Diagnostics and Architecture** - 
+Faculty of Computer Science, Technische Universität Dresden, Germany  
+**http://vlsi-eda.inf.tu-dresden.de**
+
+![Logo: Technische Universität Dresden](https://github.com/VLSI-EDA/PoC/wiki/images/logo_tud.gif)
 
 Table of Content:
 --------------------------------------------------------------------------------
  1. [Overview](#1-overview)
  2. [Download](#2-download)
  3. [Requirements](#3-requirements)
- 4. [Configure PoC on a Local System](#4-configure-poc-on-a-local-system)
- 5. [Integrating PoC into projects](#5-integrating-poc-into-projects)
- 6. [Using PoC](#6-using-poc)
- 7. [Updating PoC](#7-updating-poc)
+ 4. [Dependencies](#4-dependencies)
+ 5. [Configure PoC on a Local System](#5-configure-poc-on-a-local-system-stand-alone)
+ 6. [Integrating PoC into projects](#6-integrating-poc-into-projects)
+ 7. [Using PoC](#7-using-poc)
+ 8. [Updating PoC](#8-updating-poc)
+ 9. [References](#9-references)
 
 --------------------------------------------------------------------------------
 
 ## 1 Overview
+
+PoC - "Pile of Cores" provides implementations for often required hardware
+functions such as FIFOs, RAM wrapper, and ALUs. The hardware modules are
+typically provided as VHDL or Verilog source code, so it can be easily re-used
+in a variety of hardware designs.
 
 TODO TODO TODO
 
@@ -102,8 +110,20 @@ or Bash scripts, to hide some platform specifics of Windows or Linux. See the
  [execpol]: https://technet.microsoft.com/en-us/library/hh849812.aspx
  [pscx]:    http://pscx.codeplex.com/
 
+## 4 Dependencies
 
-## 4 Configure PoC on a Local System (Stand Alone)
+**The PoC-Library** depends on:
+
+ - [**OS-VVM**][osvvm] - Open Source VHDL Verification Methodology.
+ - [**VUnit**][vunit] - Unit testing framework for VHDL.
+
+Both dependencies are available as GitHub repositories and are linked to
+PoC as git submodules into the [`lib\`][lib] directory.
+
+ [osvvm]:	http://osvvm.org/
+ [vunit]:	https://github.com/LarsAsplund/vunit
+
+## 5 Configure PoC on a Local System (Stand Alone)
 
 To explore PoC's full potential, it's required to configure some paths and
 synthesis or simulation tool chains. The following commands start a guided
@@ -125,7 +145,7 @@ cd <PoCRoot>
 .\poc.ps1 --configure
 ```
 
-## 5 Integrating PoC into Projects
+## 6 Integrating PoC into Projects
 
 **The PoC-Library** is meant to be integrated into HDL projects. Therefore it's
 recommended to create a library folder and add the PoC-Library as a git submodule.
@@ -134,7 +154,7 @@ to setup paths and tool chains. The following command line instructions show a
 short example on how to integrate PoC. A detailed list of steps can be found on the
 [Integration][wiki:integration] wiki page.
 
-#### 5.1 Adding the Library as a git submodule
+#### 6.1 Adding the Library as a git submodule
 
 The following command line instructions will create the folder `lib\PoC\` and clone
 the PoC-Library as a git [submodule][git_submod] into that folder.
@@ -152,7 +172,7 @@ git commit -m "Added new git submodule PoC in 'lib\PoC' (PoC-Library)."
 
  [git_submod]: http://git-scm.com/book/en/v2/Git-Tools-Submodules
 
-#### 5.2 Configuring PoC on a Local System
+#### 6.2 Configuring PoC on a Local System
 
 ```PowerShell
 cd <ProjectRoot>
@@ -160,7 +180,7 @@ cd lib\PoC\
 .\poc.ps1 --configure
 ```
 
-#### 5.3 Creating PoC's my_config and my_project Files
+#### 6.3 Creating PoC's my_config and my_project Files
 
 **The PoC-Library** needs two VHDL files for it's configuration. These files are used to
 determine the most suitable implementation depending on the provided platform information.
@@ -187,7 +207,7 @@ constant MY_PROJECT_DIR      : string := "CHANGE THIS"; -- e.g. d:/vhdl/myprojec
 constant MY_OPERATING_SYSTEM : string := "CHANGE THIS"; -- e.g. WINDOWS, LINUX
 ```
 
-#### 5.4 Compile shipped Xilinx IP cores (*.xco files) to Netlists
+#### 6.4 Compile shipped Xilinx IP cores (*.xco files) to Netlists
 
 **The PoC-Library** is shipped with some pre-configured IP cores from Xilinx. These
 IP cores are shipped as \*.xco files and need to be compiled to netlists (\*.ngc
@@ -203,28 +223,80 @@ cd <PoCRoot>/netlist
 .\netlist.ps1 --coregen PoC.xil.ChipScopeICON_1 --board KC705
 ```
 
-## 6 Using PoC
+## 7 Using PoC
 
-TODO TODO TODO
+**The PoC-Library** is structured into several sub-folders naming the purpose of
+the folder like [`src`][src] for sources files or [`tb`][tb] for testbench files.
+The structure within these folders is always the same and based on PoC's
+sub-namespace tree.
 
-#### 6.1 Standalone
+**Main directory overview:**
 
-#### 6.2 In Altera Quartus II
+ -  [`lib`][lib] - Embedded or linked external libraries.
+ -  [`netlist`][netlist] - Configuration files and output directory for
+    pre-configured netlist synthesis results from vendor IP cores or from complex PoC controllers.
+ -  [`py`][py] - Supporting Python scripts.
+ -  [`sim`][sim] - Pre-configured waveform views for selected testbenches.
+ -  [`src`][src] - PoC's source files grouped into sub-folders according to the [sub-namespace tree][wiki:subnamespacetree].
+ -  [`tb`][tb] - Testbench files.
+ -  [`temp`][temp] - A created temporary directors for various tools used by PoC's Python scripts.
+ -  [`tools`][tools] - Settings/highlighting files and helpers for supported tools.
+ -  [`ucf`][ucf] - Pre-configured constraint files (\*.ucf, \*.xdc, \*.sdc) for supported FPGA boards.
+ -  [`xst`][xst] - Configuration files to synthesize PoC modules with Xilinx XST into a netlist.
 
-#### 6.3 In GHDL
 
-#### 6.4 In ModelSim/QuestaSim
+#### 7.1 Standalone
 
-#### 6.4 In Xilinx ISE (XST and iSim)
+#### 7.2 In Altera Quartus II
 
-#### 6.5 In Xilinx Vivado (Synth and xSim)
+#### 7.3 In GHDL
 
-## 7 Updating PoC
+#### 7.4 In ModelSim/QuestaSim
+
+#### 7.5 In Xilinx ISE (XST and iSim)
+
+#### 7.6 In Xilinx Vivado (Synth and xSim)
+
+## 8 Updating PoC
 
 
- [wiki:download]:		https://github.com/VLSI-EDA/PoC/wiki/Download
- [wiki:requirements]:	https://github.com/VLSI-EDA/PoC/wiki/Requirements
+## 9 References
+
+ -  [PoC-Examples][poc_ex]:  
+    A list of examples and reference implementations for the PoC-Library
+ -  [The Q27 Project][q27]:  
+    27-Queens Puzzle: Massively Parellel Enumeration and Solution Counting
+ -  [PicoBlaze-Library][pb_lib]:  
+    The PicoBlaze-Library offers several PicoBlaze devices and code routines
+    to extend a common PicoBlaze environment to a little System on a Chip (SoC
+		or SoFPGA).
+ -  [PicoBlaze-Examples][pb_ex]:  
+    A SoFPGA reference implementation, based on the PoC-Library and the
+		PicoBlaze-Library.
+
+ [poc_ex]:  https://github.com/VLSI-EDA/PoC-Examples
+ [q27]:			https://github.com/preusser/q27
+ [pb_lib]:  https://github.com/Paebbels/PicoBlaze-Library
+ [pb_ex]:		https://github.com/Paebbels/PicoBlaze-Examples
+ 
+ 
+If you are using the PoC-Library, please let us know. We are grateful for
+your project's reference.
+
+ [lib]:					lib
+ [netlist]:			netlist
+ [py]:					py
+ [sim]:					sim
+ [src]:					src
+ [tb]:					tb
+ [temp]:				temp
+ [tools]:				tools
+ [ucf]:					ucf
+ [xst]:					xst
+
+ [wiki:download]:				https://github.com/VLSI-EDA/PoC/wiki/Download
+ [wiki:requirements]:		https://github.com/VLSI-EDA/PoC/wiki/Requirements
  [wiki:configuration]:	https://github.com/VLSI-EDA/PoC/wiki/Configuration
- [wiki:integration]:	https://github.com/VLSI-EDA/PoC/wiki/Integration
+ [wiki:integration]:		https://github.com/VLSI-EDA/PoC/wiki/Integration
 
-
+ [wiki:subnamespacetree]:	https://github.com/VLSI-EDA/PoC/wiki/SubnamespaceTree

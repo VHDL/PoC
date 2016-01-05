@@ -1,0 +1,28 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# PoC subnamespaces
+# DON'T PUBLISH alt/ !
+arith/
+bus/
+cache/
+comm/
+common/
+fifo/
+io/
+mem/
+misc/
+net/
+# DON'T PUBLISH sata/ !
+sort/
+xil/
+
+# XST specific files
+default.filter
+empty.xcf
+default.xcf
+Series-7.xst
+Spartan-3.xst

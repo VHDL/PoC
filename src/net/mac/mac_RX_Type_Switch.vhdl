@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -29,60 +29,59 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
 
 
-ENTITY MAC_RX_Type_Switch IS
-	GENERIC (
+entity mac_RX_Type_Switch is
+	generic (
 		DEBUG													: BOOLEAN													:= FALSE;
 		ETHERNET_TYPES								: T_NET_MAC_ETHERNETTYPE_VECTOR		:= (0 => C_NET_MAC_ETHERNETTYPE_EMPTY)
 	);
-	PORT (
-		Clock													: IN	STD_LOGIC;
-		Reset													: IN	STD_LOGIC;
+	port (
+		Clock													: in	STD_LOGIC;
+		Reset													: in	STD_LOGIC;
 		
-		In_Valid											: IN	STD_LOGIC;
-		In_Data												: IN	T_SLV_8;
-		In_SOF												: IN	STD_LOGIC;
-		In_EOF												: IN	STD_LOGIC;
-		In_Ack												: OUT	STD_LOGIC;
-		In_Meta_rst										: OUT	STD_LOGIC;
-		In_Meta_SrcMACAddress_nxt			: OUT	STD_LOGIC;
-		In_Meta_SrcMACAddress_Data		: IN	T_SLV_8;
-		In_Meta_DestMACAddress_nxt		: OUT	STD_LOGIC;
-		In_Meta_DestMACAddress_Data		: IN	T_SLV_8;
+		In_Valid											: in	STD_LOGIC;
+		In_Data												: in	T_SLV_8;
+		In_SOF												: in	STD_LOGIC;
+		In_EOF												: in	STD_LOGIC;
+		In_Ack												: out	STD_LOGIC;
+		In_Meta_rst										: out	STD_LOGIC;
+		In_Meta_SrcMACAddress_nxt			: out	STD_LOGIC;
+		In_Meta_SrcMACAddress_Data		: in	T_SLV_8;
+		In_Meta_DestMACAddress_nxt		: out	STD_LOGIC;
+		In_Meta_DestMACAddress_Data		: in	T_SLV_8;
 
-		Out_Valid											: OUT	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 DOWNTO 0);
-		Out_Data											: OUT	T_SLVV_8(ETHERNET_TYPES'length - 1 DOWNTO 0);
-		Out_SOF												: OUT	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 DOWNTO 0);
-		Out_EOF												: OUT	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 DOWNTO 0);
-		Out_Ack												: IN	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 DOWNTO 0);
-		Out_Meta_rst									: IN	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 DOWNTO 0);
-		Out_Meta_SrcMACAddress_nxt		: IN	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 DOWNTO 0);
-		Out_Meta_SrcMACAddress_Data		: OUT	T_SLVV_8(ETHERNET_TYPES'length - 1 DOWNTO 0);
-		Out_Meta_DestMACAddress_nxt		: IN	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 DOWNTO 0);
-		Out_Meta_DestMACAddress_Data	: OUT	T_SLVV_8(ETHERNET_TYPES'length - 1 DOWNTO 0);
-		Out_Meta_EthType							: OUT	T_NET_MAC_ETHERNETTYPE_VECTOR(ETHERNET_TYPES'length - 1 DOWNTO 0)
+		Out_Valid											: out	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 downto 0);
+		Out_Data											: out	T_SLVV_8(ETHERNET_TYPES'length - 1 downto 0);
+		Out_SOF												: out	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 downto 0);
+		Out_EOF												: out	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 downto 0);
+		Out_Ack												: in	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 downto 0);
+		Out_Meta_rst									: in	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 downto 0);
+		Out_Meta_SrcMACAddress_nxt		: in	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 downto 0);
+		Out_Meta_SrcMACAddress_Data		: out	T_SLVV_8(ETHERNET_TYPES'length - 1 downto 0);
+		Out_Meta_DestMACAddress_nxt		: in	STD_LOGIC_VECTOR(ETHERNET_TYPES'length - 1 downto 0);
+		Out_Meta_DestMACAddress_Data	: out	T_SLVV_8(ETHERNET_TYPES'length - 1 downto 0);
+		Out_Meta_EthType							: out	T_NET_MAC_ETHERNETTYPE_VECTOR(ETHERNET_TYPES'length - 1 downto 0)
 	);
-END;
+end entity;
 
 
-ARCHITECTURE rtl OF MAC_RX_Type_Switch IS
-	ATTRIBUTE KEEP									: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING					: STRING;
+architecture rtl of mac_RX_Type_Switch is
+	attribute FSM_ENCODING					: STRING;
 	
-	CONSTANT PORTS									: POSITIVE																			:= ETHERNET_TYPES'length;
-	CONSTANT ETHERNET_TYPES_I				: T_NET_MAC_ETHERNETTYPE_VECTOR(0 TO PORTS - 1)	:= ETHERNET_TYPES;
+	constant PORTS									: POSITIVE																			:= ETHERNET_TYPES'length;
+	constant ETHERNET_TYPES_I				: T_NET_MAC_ETHERNETTYPE_VECTOR(0 to PORTS - 1)	:= ETHERNET_TYPES;
 
-	TYPE T_STATE		IS (
+	type T_STATE is (
 		ST_IDLE,
 			ST_TYPE_1,
 			ST_PAYLOAD_1,
@@ -90,55 +89,55 @@ ARCHITECTURE rtl OF MAC_RX_Type_Switch IS
 		ST_DISCARD_FRAME
 	);
 
-	SUBTYPE T_ETHERNETTYPE_BYTEINDEX			IS NATURAL RANGE 0 TO 1;
+	subtype T_ETHERNETTYPE_BYTEINDEX	 is NATURAL range 0 to 1;
 	
-	SIGNAL State													: T_STATE																	:= ST_IDLE;
-	SIGNAL NextState											: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State				: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	signal State													: T_STATE																	:= ST_IDLE;
+	signal NextState											: T_STATE;
+	attribute FSM_ENCODING of State				: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	SIGNAL In_Ack_i												: STD_LOGIC;
-	SIGNAL Is_DataFlow										: STD_LOGIC;
-	SIGNAL Is_SOF													: STD_LOGIC;
-	SIGNAL Is_EOF													: STD_LOGIC;
+	signal In_Ack_i												: STD_LOGIC;
+	signal Is_DataFlow										: STD_LOGIC;
+	signal Is_SOF													: STD_LOGIC;
+	signal Is_EOF													: STD_LOGIC;
 	
-	SIGNAL New_Valid_i										: STD_LOGIC;
-	SIGNAL New_SOF_i											: STD_LOGIC;
-	SIGNAL Out_Ack_i											: STD_LOGIC;
+	signal New_Valid_i										: STD_LOGIC;
+	signal New_SOF_i											: STD_LOGIC;
+	signal Out_Ack_i											: STD_LOGIC;
 	
-	SIGNAL EthernetType_CompareIndex			: T_ETHERNETTYPE_BYTEINDEX;
+	signal EthernetType_CompareIndex			: T_ETHERNETTYPE_BYTEINDEX;
 	
-	SIGNAL CompareRegister_rst						: STD_LOGIC;
-	SIGNAL CompareRegister_init						: STD_LOGIC;
-	SIGNAL CompareRegister_clear					: STD_LOGIC;
-	SIGNAL CompareRegister_en							: STD_LOGIC;
-	SIGNAL CompareRegister_d							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0)		:= (OTHERS => '1');
-	SIGNAL NoHits													: STD_LOGIC;
+	signal CompareRegister_rst						: STD_LOGIC;
+	signal CompareRegister_init						: STD_LOGIC;
+	signal CompareRegister_clear					: STD_LOGIC;
+	signal CompareRegister_en							: STD_LOGIC;
+	signal CompareRegister_d							: STD_LOGIC_VECTOR(PORTS - 1 downto 0)		:= (others => '1');
+	signal NoHits													: STD_LOGIC;
 	
-	SIGNAL EthernetType_rst								: STD_LOGIC;
-	SIGNAL EthernetType_en								: STD_LOGIC;
-	SIGNAL EthernetType_sel								: T_ETHERNETTYPE_BYTEINDEX;
-	SIGNAL EthernetType_d									: T_NET_MAC_ETHERNETTYPE									:= C_NET_MAC_ETHERNETTYPE_EMPTY;
+	signal EthernetType_rst								: STD_LOGIC;
+	signal EthernetType_en								: STD_LOGIC;
+	signal EthernetType_sel								: T_ETHERNETTYPE_BYTEINDEX;
+	signal EthernetType_d									: T_NET_MAC_ETHERNETTYPE									:= C_NET_MAC_ETHERNETTYPE_EMPTY;
 	
-BEGIN
+begin
 
 	In_Ack				<= In_Ack_i;
-	Is_DataFlow		<= In_Valid AND In_Ack_i;
-	Is_SOF				<= In_Valid AND In_SOF;
-	Is_EOF				<= In_Valid AND In_EOF;
+	Is_DataFlow		<= In_Valid and In_Ack_i;
+	Is_SOF				<= In_Valid and In_SOF;
+	Is_EOF				<= In_Valid and In_EOF;
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				State		<= ST_IDLE;
-			ELSE
+			else
 				State		<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State, Is_DataFlow, Is_SOF, Is_EOF, In_Valid, NoHits, Out_Ack_i)
-	BEGIN
+	process(State, Is_DataFlow, Is_SOF, Is_EOF, In_Valid, NoHits, Out_Ack_i)
+	begin
 		NextState												<= State;
 
 		In_Ack_i												<= '0';
@@ -156,137 +155,134 @@ BEGIN
 		EthernetType_en									<= '0';
 		EthernetType_sel								<= 1;
 
-		CASE State IS
-			WHEN ST_IDLE =>
+		case State is
+			when ST_IDLE =>
 				EthernetType_rst						<= '1';
 				EthernetType_en							<= '0';
 			
-				IF (Is_SOF = '1') THEN
+				if (Is_SOF = '1') then
 					EthernetType_rst					<= '0';
 					EthernetType_en						<= '1';
 					In_Ack_i									<= '1';
 				
-					IF (Is_EOF = '0') THEN
+					if (Is_EOF = '0') then
 						NextState								<= ST_TYPE_1;
-					ELSE
+					else
 						NextState								<= ST_IDLE;
-					END IF;
-				END IF;
+					end if;
+				end if;
 			
-			WHEN ST_TYPE_1 =>
+			when ST_TYPE_1 =>
 				EthernetType_CompareIndex		<= 0;
 				EthernetType_en							<= In_Valid;
 				EthernetType_sel						<= 0;
 				CompareRegister_en					<= In_Valid;
 			
-				IF (In_Valid = '1') THEN
+				if (In_Valid = '1') then
 					In_Ack_i									<= '1';
 				
-					IF (Is_EOF = '0') THEN
+					if (Is_EOF = '0') then
 						NextState								<= ST_PAYLOAD_1;
-					ELSE
+					else
 						NextState								<= ST_IDLE;
-					END IF;
-				END IF;
+					end if;
+				end if;
 			
-			WHEN ST_PAYLOAD_1 =>
-				IF (NoHits = '1') THEN
-					IF (Is_EOF = '0') THEN
+			when ST_PAYLOAD_1 =>
+				if (NoHits = '1') then
+					if (Is_EOF = '0') then
 						In_Ack_i								<= '1';
 						NextState								<= ST_DISCARD_FRAME;
-					ELSE
+					else
 						NextState								<= ST_IDLE;
-					END IF;
-				ELSE
+					end if;
+				else
 					In_Ack_i									<= Out_Ack_i;
 					New_Valid_i								<= In_Valid;
 					New_SOF_i									<= '1';
 				
-					IF (IS_DataFlow = '1') THEN
-						IF (Is_EOF = '0') THEN
+					if (IS_DataFlow = '1') then
+						if (Is_EOF = '0') then
 							NextState							<= ST_PAYLOAD_N;
-						ELSE
+						else
 							NextState							<= ST_IDLE;
-						END IF;
-					END IF;
-				END IF;
+						end if;
+					end if;
+				end if;
 				
-			WHEN ST_PAYLOAD_N =>
+			when ST_PAYLOAD_N =>
 				In_Ack_i										<= Out_Ack_i;
 				New_Valid_i									<= In_Valid;
 			
-				IF ((IS_DataFlow AND Is_EOF) = '1') THEN
+				if ((IS_DataFlow and Is_EOF) = '1') then
 					NextState									<= ST_IDLE;
-				END IF;
+				end if;
 				
-			WHEN ST_DISCARD_FRAME =>
+			when ST_DISCARD_FRAME =>
 				In_Ack_i										<= '1';
 			
-				IF ((IS_DataFlow AND Is_EOF) = '1') THEN
+				if ((IS_DataFlow and Is_EOF) = '1') then
 					NextState									<= ST_IDLE;
-				END IF;
+				end if;
 				
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
 	
-	gen0 : FOR I IN 0 TO PORTS - 1 GENERATE
-		SIGNAL Hit								: STD_LOGIC;
-	BEGIN
+	gen0 : for i in 0 to PORTS - 1 generate
+		signal Hit								: STD_LOGIC;
+	begin
 		Hit <= to_sl(In_Data = ETHERNET_TYPES_I(I)(EthernetType_CompareIndex));
 		
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF ((Reset OR CompareRegister_rst) = '1') THEN
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if ((Reset OR CompareRegister_rst) = '1') then
 					CompareRegister_d(I)				<= '0';
-				ELSE
-					IF (CompareRegister_init	= '1') THEN
-						CompareRegister_d(I)			<= Hit;
-					ELSIF (CompareRegister_clear	= '1') THEN
-						CompareRegister_d(I)			<= '0';
-					ELSIF (CompareRegister_en  = '1') THEN
-						CompareRegister_d(I)			<= CompareRegister_d(I) AND Hit;
-					END IF;
-				END IF;
-			END IF;
-		END PROCESS;
-	END GENERATE;
+				elsif (CompareRegister_init	= '1') then
+					CompareRegister_d(I)			<= Hit;
+				elsif (CompareRegister_clear	= '1') then
+					CompareRegister_d(I)			<= '0';
+				elsif (CompareRegister_en  = '1') then
+					CompareRegister_d(I)			<= CompareRegister_d(I) and Hit;
+				end if;
+			end if;
+		end process;
+	end generate;
 
 	NoHits									<= slv_nor(CompareRegister_d);
 
---	PROCESS(Clock)
---	BEGIN
---		IF rising_edge(Clock) THEN
---			IF ((Reset OR EthernetType_rst) = '1') THEN
+--	process(Clock)
+--	begin
+--		if rising_edge(Clock) then
+--			if ((Reset OR EthernetType_rst) = '1') then
 --				EthernetType_d		<= C_NET_MAC_ETHERNETTYPE_EMPTY;
---			ELSE
---				IF (EthernetType_en = '1') THEN
---					EthernetType_d(EthernetType_sel) 	<= In_Data;
---				END IF;
---			END IF;
---		END IF;
---	END PROCESS;
+--			elsif (EthernetType_en = '1') then
+--				EthernetType_d(EthernetType_sel) 	<= In_Data;
+--			end if;
+--		end if;
+--	end process;
 
-	Out_Valid											<= (Out_Valid'range => New_Valid_i) AND CompareRegister_d;
+	Out_Valid											<= (Out_Valid'range => New_Valid_i) and CompareRegister_d;
 	Out_Data											<= (Out_Data'range	=> In_Data);
 	Out_SOF												<= (Out_SOF'range		=> New_SOF_i);
 	Out_EOF												<= (Out_EOF'range		=> In_EOF);
-	Out_Ack_i											<= slv_or(Out_Ack	 AND CompareRegister_d);
+	Out_Ack_i											<= slv_or(Out_Ack	 and CompareRegister_d);
 
 	-- Meta: rst
-	In_Meta_rst										<= slv_or(Out_Meta_rst AND CompareRegister_d);
+	In_Meta_rst										<= slv_or(Out_Meta_rst and CompareRegister_d);
 
 	-- Meta: DestMACAddress
-	In_Meta_DestMACAddress_nxt		<= slv_or(Out_Meta_DestMACAddress_nxt AND CompareRegister_d);
+	In_Meta_DestMACAddress_nxt		<= slv_or(Out_Meta_DestMACAddress_nxt and CompareRegister_d);
 	Out_Meta_DestMACAddress_Data	<= (Out_Data'range	=> In_Meta_DestMACAddress_Data);
 	
 	-- Meta: SrcMACAddress
-	In_Meta_SrcMACAddress_nxt			<= slv_or(Out_Meta_SrcMACAddress_nxt AND CompareRegister_d);
+	In_Meta_SrcMACAddress_nxt			<= slv_or(Out_Meta_SrcMACAddress_nxt and CompareRegister_d);
 	Out_Meta_SrcMACAddress_Data		<= (Out_Data'range	=> In_Meta_SrcMACAddress_Data);
 	
 	-- Meta: EthType
-	genEthType : FOR I IN ETHERNET_TYPES_I'range GENERATE
+	genEthType : for i in ETHERNET_TYPES_I'range generate
 		Out_Meta_EthType(I)					<= ETHERNET_TYPES_I(I);		--(Out_Data'range	=> EthernetType_d);			-- after exact match, the register value must be the same as in the array => use const arry values => better optimization
-	END GENERATE;
-END ARCHITECTURE;
+	end generate;
+	
+end architecture;
