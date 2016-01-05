@@ -5,7 +5,7 @@
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --
--- Module:					Sorting Network: Data structure transformation
+-- Module:					Sorting Network: Streaming MergeSort
 --
 -- Description:
 -- ------------------------------------

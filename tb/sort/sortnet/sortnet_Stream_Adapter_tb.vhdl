@@ -5,7 +5,7 @@
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --
--- Testbench:				Sorting Network: Odd-Even-Sort (Transposition)
+-- Testbench:				Sorting Network: Stream_Adapter
 --
 -- Description:
 -- ------------------------------------
