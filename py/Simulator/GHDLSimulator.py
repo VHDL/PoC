@@ -15,7 +15,7 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2015 Technische Universitaet Dresden - Germany
+# Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -174,13 +174,13 @@ class Simulator(PoCSimulator):
 				if (filesLineRegExpMatch is not None):
 					if (filesLineRegExpMatch.group('Directive') is not None):
 						if (filesLineRegExpMatch.group('DirInclude') is not None):
-							print("@include found: '{0}'".format(filesLineRegExpMatch.group('IncludeFile')))
+							includeFile = filesLineRegExpMatch.group('IncludeFile')
+							self.printVerbose("    referencing another file: {0}".format(includeFile))
 						elif (filesLineRegExpMatch.group('DirLibrary') is not None):
-							print("@library '{0}' found at: '{1}'".format(filesLineRegExpMatch.group('LibraryName'), filesLineRegExpMatch.group('LibraryPath')))
-							
 							externalLibraryName = filesLineRegExpMatch.group('LibraryName')
 							externalLibraryPath = filesLineRegExpMatch.group('LibraryPath')
 							
+							self.printVerbose("    referencing precompiled VHDL library: {0}".format(externalLibraryName))
 							externalLibraries.append(externalLibraryPath)
 						else:
 							raise SimulatorException("Unknown directive in *.files file.")
@@ -282,8 +282,13 @@ class Simulator(PoCSimulator):
 				'-r',
 				'--syn-binding',
 				'-fpsl',
-				'-v',
-				'-P.',  '-PAltera','-PXilinx',
+				'-v'
+			]
+			
+			for path in externalLibraries:
+				parameterList.append("-P{0}".format(path))
+			
+			parameterList += [
 				('--std=%s' % self.__vhdlStandard),
 				'--work=test',
 				testbenchName
@@ -338,8 +343,13 @@ class Simulator(PoCSimulator):
 			parameterList = [
 				str(ghdlExecutablePath),
 				'-e', '--syn-binding',
-				'-P.',  '-PAltera','-PXilinx',
-				'-fpsl',
+				'-fpsl'
+			]
+			
+			for path in externalLibraries:
+				parameterList.append("-P{0}".format(path))
+			
+			parameterList += [
 				('--ieee=%s' % self.__ieeeFlavor),
 				('--std=%s' % self.__vhdlStandard),
 				'--work=test',
