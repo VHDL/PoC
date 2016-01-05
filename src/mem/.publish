@@ -11,3 +11,5 @@ lut/
 ocram/
 ocrom/
 sdram/
+
+mem.pkg.vhdl
