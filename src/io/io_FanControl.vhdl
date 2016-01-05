@@ -144,7 +144,7 @@ begin
 		-- ==========================================================================================================================================================
 		TC : entity PoC.io_TimingCounter
 			generic map (
-				TIMING_TABLE				=> (0 => TimingToCycles(TIME_STARTUP, CLOCK_FREQ))	-- timing table
+				TIMING_TABLE				=> (0 => 100000000)--TimingToCycles(TIME_STARTUP, CLOCK_FREQ))	-- timing table
 			)
 			port map (
 				Clock								=> Clock,				-- clock
@@ -185,7 +185,7 @@ begin
 		-- ==========================================================================================================================================================
 		TC : entity PoC.io_TimingCounter
 			generic map (
-				TIMING_TABLE				=> (0 => 100000000)--TimingToCycles(TIME_STARTUP, CLOCK_FREQ))	-- timing table
+				TIMING_TABLE				=> (0 => TimingToCycles(TIME_STARTUP, CLOCK_FREQ))	-- timing table
 			)
 			port map (
 				Clock								=> Clock,				-- clock
