@@ -23,6 +23,15 @@ __pycache__
 /py/config.private.ini
 /tb/common/my_project.vhdl
 
+# ignore Xilinx ISE files
+/other/ise/**/*.*
+/other/ise/**/ise
+!/other/ise/**/*.xise
+!/other/ise/**/*.xpr
+!/other/ise/**/iseconfig/filter.filter
+!/other/ise/**/*.qpf
+!/other/ise/**/*.qsf
+
 # ignore Quartus files
 /other/quartus/**/*.*
 /other/quartus/**/db/
@@ -35,10 +44,11 @@ __pycache__
 !/other/quartus/**/*.vhdl
 
 #ignore Vivado files
-/other/vivado/*/*.cache
-/other/vivado/*/*.hw
-/other/vivado/*/*.runs
-/other/vivado/*/*.sim
+/other/vivado/**/*.cache
+/other/vivado/**/*.hw
+/other/vivado/**/*.runs
+/other/vivado/**/*.sim
+/other/vivado/**/*.ip_user_files
 
 # general whitelist
 !.publish

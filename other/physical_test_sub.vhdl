@@ -6,7 +6,7 @@
 -- Authors:					Martin Zabel
 --                  Patrick Lehmann
 -- 
--- Module:					Sub-module for Vivado synthesis check.
+-- Module:					Sub-module for physical_test.
 --
 -- 
 -- Description:
@@ -36,16 +36,15 @@ use ieee.std_logic_1164.all;
 
 library poc;
 use poc.physical.all;
+use poc.utils.all;
 
-entity shift_reg is
+entity physical_test_sub is
   
   generic (
-    STAGES	 : integer;
     CLOCK_FREQ   : freq;
     DELAY_TIME   : time;
     CLOCK_PERIOD : time;
-    RES_REAL     : real;
-    RES_NAT      : natural;
+    STEPS				 : integer;
     TIME_1_FS    : time;
     TIME_1_PS    : time;
     TIME_1_NS    : time;
@@ -60,23 +59,29 @@ entity shift_reg is
     d	: in  std_logic;
     q	: out std_logic);
 
-end entity shift_reg;
+end entity physical_test_sub;
 
-architecture rtl of shift_reg is
+architecture rtl of physical_test_sub is
 
 begin  -- architecture rtl
 
-	g0: if STAGES = 0 generate
+	g0: if STEPS = 0 generate
 		q <= d;
 	end generate g0;
 
-	g1: if STAGES > 0 generate
-		signal reg : std_logic_vector(STAGES downto 1);
-	begin
-		reg <= reg(STAGES-1 downto 1) & d when rising_edge(clk);
-		q   <= reg(STAGES);
-	end generate g1;
-  
+  g1: if STEPS = 1 generate
+    q <= d when rising_edge(clk);
+  end generate g1;
 
+  g2: if STEPS > 1 generate
+    signal reg : std_logic_vector(imax(STEPS,2)-1 downto 0);
+  begin
+    reg <= reg(reg'left-1 downto 0) & d when rising_edge(clk);
+    q	<= reg(reg'left);
+  end generate g2;
 
+	gError: if TIME_1_HR < 0 sec generate
+		-- The expression is true on Vivado, thus provoke an error.
+		q <= '1';
+	end generate gError;
 end architecture rtl;

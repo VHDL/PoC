@@ -222,16 +222,31 @@ package body physical is
 	-- ===========================================================================
 	function div(a : TIME; b : TIME) return REAL is
 		constant MTRIS	: TIME		:= MinimalTimeResolutionInSimulation;
+		variable a_real : real;
+		variable b_real : real;
 	begin
-		if	(a < 1 us) then
-			return real(a / MTRIS) / real(b / MTRIS);
-		elsif (a < 1 ms) then
-			return real(a / (1000 * MTRIS)) / real(b / MTRIS) * 1000.0;
-		elsif (a < 1 sec) then
-			return real(a / (1000000 * MTRIS)) / real(b / MTRIS) * 1000000.0;
+		-- Quartus-II work-around
+	  if    a < 1 us  then
+			a_real  := real(a / MTRIS);
+		elsif a < 1 ms  then
+			a_real  := real(a / (1000 * MTRIS)) * 1000.0;
+		elsif a < 1 sec then
+			a_real  := real(a / (1000000 * MTRIS)) * 1000000.0;
 		else
-			return real(a / (1000000000 * MTRIS)) / real(b / MTRIS) * 1000000000.0;
+			a_real  := real(a / (1000000000 * MTRIS)) * 1000000000.0;
 		end if;
+
+	  if    b < 1 us  then
+			b_real  := real(b / MTRIS);
+		elsif b < 1 ms  then
+			b_real  := real(b / (1000 * MTRIS)) * 1000.0;
+		elsif b < 1 sec then
+			b_real  := real(b / (1000000 * MTRIS)) * 1000000.0;
+		else
+			b_real  := real(b / (1000000000 * MTRIS)) * 1000000000.0;
+		end if;
+
+		return a_real / b_real;
 	end function;
 	
 	function div(a : FREQ; b : FREQ) return REAL is
@@ -254,14 +269,7 @@ package body physical is
 	function to_time(f : FREQ) return TIME is
 		variable res : TIME;
 	begin
-		if		(f < 1 kHz) then res := div(1  Hz, f) * 1 sec;
-		elsif (f < 1 MHz) then res := div(1 kHz, f) * 1 ms;
-		elsif (f < 1 GHz) then res := div(1 MHz, f) * 1 us;
---	elsif (f < 1 THz) then res := div(1 GHz, f) * 1 ns;
-		else										 res := div(1 GHz, f) * 1 ns;
---	else										 res := div(1 THz, f) * 1 ps;
-		end if;
-
+		res := div(1000 MHz, f) * 1 ns;
 		if (POC_VERBOSE = TRUE) then
 			report "to_time: f= " & to_string(f, 3) & "  return " & to_string(res, 3) severity note;
 		end if;
@@ -271,12 +279,7 @@ package body physical is
 	function to_freq(p : TIME) return FREQ is
 		variable res : FREQ;
 	begin
---	if		(p < 1 ps)	then res := div(1 fs, p) * 1 THz;
-		if		(p < 1 ns)	then res := div(1 ps, p) * 1 GHz;
---	elsif (p < 1 ns)	then res := div(1 ps, p) * 1 GHz;
-		elsif (p < 1 us)	then res := div(1 ns, p) * 1 MHz;
-		elsif (p < 1 ms)	then res := div(1 us, p) * 1 kHz;
-		elsif (p < 1 sec) then res := div(1 ms, p) * 1  Hz;
+		if (p <= 1 sec) then res := div(1 sec, p) * 1  Hz;
 		else report "to_freq: input period exceeds output frequency scale." severity failure;
 		end if;
 		if (POC_VERBOSE = TRUE) then
@@ -288,12 +291,7 @@ package body physical is
 	function to_freq(br : BAUD) return FREQ is
 		variable res : FREQ;
 	begin
-		if		(br < 1 kBd) then res := div(br, 1 Bd)	* 1  Hz;
-		elsif	(br < 1 MBd) then res := div(br, 1 kBd) * 1 kHz;
-		elsif	(br < 1 GBd) then res := div(br, 1 MBd) * 1 MHz;
-		else											res := div(br, 1 GBd) * 1 GHz;
-		end if;
-
+		res := (br / 1 Bd)	* 1  Hz;
 		if (POC_VERBOSE = TRUE) then
 			report "to_freq: br= " & to_string(br, 3) & "  return " & to_string(res, 3) severity note;
 		end if;
