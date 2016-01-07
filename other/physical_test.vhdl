@@ -103,7 +103,9 @@ architecture rtl of physical_test is
 	  report "to_time(   2 MHz) = " & TIME'image(to_time(   2 MHz)) severity note;
 	  report "to_time(1000 MHz) = " & TIME'image(to_time(1000 MHz)) severity note;
 	  report "to_time(2000 MHz) = " & TIME'image(to_time(2000 MHz)) severity note;
-		return true;
+		report "2.5 * 2   us = " & TIME'image(2.5 * 2   us) severity note;
+	  report "2   * 2.5 us = " & TIME'image(2   * 2.5 us) severity note;
+	return true;
 	end f;
 	
 	constant C : boolean := f;
@@ -111,12 +113,14 @@ architecture rtl of physical_test is
 	constant STEPS 				: natural := TimingToCycles(DELAY_TIME, CLOCK_FREQ);
 	constant CLOCK_PERIOD : time		:= to_time(CLOCK_FREQ);
 
+	constant r : real := 2.5;
 begin  -- architecture rtl
 
   sub: entity work.physical_test_sub
     generic map (
       CLOCK_FREQ   => CLOCK_FREQ,
       DELAY_TIME   => DELAY_TIME,
+      DELAY_TIME2  => r * DELAY_TIME,
       CLOCK_PERIOD => CLOCK_PERIOD,
       STEPS 	  	 => STEPS,
       TIME_1_FS	   => TIME_1_FS,

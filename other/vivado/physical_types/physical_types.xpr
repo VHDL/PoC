@@ -35,14 +35,14 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../../../src/common/utils.vhdl">
+      <File Path="$PPRDIR/my_project.vhdl">
         <FileInfo>
           <Attr Name="Library" Val="poc"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/my_project.vhdl">
+      <File Path="$PPRDIR/../../../src/common/utils.vhdl">
         <FileInfo>
           <Attr Name="Library" Val="poc"/>
           <Attr Name="UsedIn" Val="synthesis"/>
