@@ -100,6 +100,8 @@ rsyncOptions=( \
     '--filter=:en+ .publish' \
     '--filter=- *' \
     '--filter=P .git' \
+    '--filter=P .gitmodules' \
+    '--filter=P lib/*' \
     --delete --delete-excluded --prune-empty-dirs \
     --stats)
 

@@ -1,0 +1,80 @@
+[Project]
+Current Flow=Generic
+VCS=0
+version=3
+Current Config=compile
+
+[Configurations]
+compile=PoC
+
+[Library]
+PoC=.\PoC\PoC.lib
+
+[Settings]
+AccessRead=0
+AccessReadWrite=0
+AccessACCB=0
+AccessACCR=0
+AccessReadWriteSLP=0
+AccessReadTopLevel=1
+DisableC=1
+ENABLE_ADV_DATAFLOW=0
+FLOW_TYPE=HDL
+LANGUAGE=VHDL
+REFRESH_FLOW=1
+FLOWTOOLS=NONE
+FAMILY=Xilinx14x KINTEX7
+fileopenfolder=D:\git\PoC\tb\common
+
+[LocalVerilogSets]
+EnableSLP=1
+EnableDebug=0
+
+[LocalVhdlSets]
+CompileWithDebug=0
+
+[$LibMap$]
+PoC=.
+Active_lib=KINTEX7
+xilinxun=KINTEX7
+UnlinkedDesignLibrary=KINTEX7
+DESIGNS=KINTEX7
+
+[Files]
+/..\..\..\src\common\common.vhdl=-1
+/..\..\..\tb\common\my_config_KC705.vhdl=-1
+/..\..\..\tb\common\my_project.vhdl=-1
+/..\..\..\src\common\utils.vhdl=-1
+/..\..\..\src\common\config.vhdl=-1
+/..\..\..\src\common\strings.vhdl=-1
+/..\..\..\src\common\vectors.vhdl=-1
+/..\..\..\src\common\physical.vhdl=-1
+/..\..\..\src\common\sim_value_change_dump.vhdl=-1
+/..\..\..\tb\common\simulation.v08.vhdl=-1
+/..\..\..\src\common\debug.vhdl=-1
+/..\..\..\src\common\math.vhdl=-1
+/..\..\..\src\common\fileio.vhdl=-1
+/..\..\..\src\common\components.vhdl=-1
+
+[Files.Data]
+.\..\..\src\common\common.vhdl=VHDL Source Code
+.\..\..\tb\common\my_config_KC705.vhdl=VHDL Source Code
+.\..\..\tb\common\my_project.vhdl=VHDL Source Code
+.\..\..\src\common\utils.vhdl=VHDL Source Code
+.\..\..\src\common\config.vhdl=VHDL Source Code
+.\..\..\src\common\strings.vhdl=VHDL Source Code
+.\..\..\src\common\vectors.vhdl=VHDL Source Code
+.\..\..\src\common\physical.vhdl=VHDL Source Code
+.\..\..\src\common\sim_value_change_dump.vhdl=VHDL Source Code
+.\..\..\tb\common\simulation.v08.vhdl=VHDL Source Code
+.\..\..\src\common\debug.vhdl=VHDL Source Code
+.\..\..\src\common\math.vhdl=VHDL Source Code
+.\..\..\src\common\fileio.vhdl=VHDL Source Code
+.\..\..\src\common\components.vhdl=VHDL Source Code
+
+[SpecTracer]
+WindowVisible=0
+[HierarchyViewer]
+HierarchyInformation=
+ShowHide=ShowTopLevel
+Selected=

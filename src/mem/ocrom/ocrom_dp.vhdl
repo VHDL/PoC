@@ -54,6 +54,8 @@ library PoC;
 use			PoC.config.all;
 use			PoC.utils.all;
 use			PoC.strings.all;
+use			PoC.vectors.all;
+use			PoC.mem.all;
 
 
 entity ocrom_dp is
@@ -79,66 +81,60 @@ architecture rtl of ocrom_dp is
 	constant DEPTH				: positive := 2**A_BITS;
 
 begin
-	gXilinx: if DEVICE = DEVICE_SPARTAN6 or DEVICE = DEVICE_VIRTEX6 or
-		DEVICE=DEVICE_ARTIX7 or DEVICE=DEVICE_KINTEX7 or DEVICE=DEVICE_VIRTEX7
-	generate
+	assert (str_length(FileName) /= 0) report "Do you really want to generate a block of zeros?" severity FAILURE;
+
+	gInfer: if VENDOR = VENDOR_XILINX generate
 		-- RAM can be inferred correctly only for newer FPGAs!
 		subtype word_t	is std_logic_vector(D_BITS - 1 downto 0);
 		type		rom_t		is array(0 to DEPTH - 1) of word_t;
 		
-	begin
-		genLoadFile : if (str_length(FileName) /= 0) generate
-			-- Read a *.mem or *.hex file
-			impure function ocrom_ReadMemFile(FileName : STRING) return rom_t is
-				file FileHandle				: TEXT open READ_MODE is FileName;
-				variable CurrentLine	: LINE;
-				variable TempWord			: STD_LOGIC_VECTOR((div_ceil(word_t'length, 4) * 4) - 1 downto 0);
-				variable Result				: rom_t		:= (others => (others => '0'));
-				
-			begin
-				-- discard the first line of a mem file
-				if (str_toLower(FileName(FileName'length - 3 to FileName'length)) = ".mem") then
-					readline(FileHandle, CurrentLine);
-				end if;
-
-				for i in 0 to DEPTH - 1 loop
-					exit when endfile(FileHandle);
-
-					readline(FileHandle, CurrentLine);
-					hread(CurrentLine, TempWord);
-					Result(i)		:= resize(TempWord, word_t'length);
-				end loop;
-
-				return Result;
-			end function;
-
-			constant rom		: rom_t			:= ocrom_ReadMemFile(FILENAME);
-			signal a1_reg		: unsigned(A_BITS-1 downto 0);
-			signal a2_reg		: unsigned(A_BITS-1 downto 0);
-			
+		-- Compute the initialization of a RAM array, if specified, from the passed file.
+		impure function ocrom_InitMemory(FilePath : string) return ram_t is
+			variable Memory		: T_SLM(DEPTH - 1 downto 0, word_t'range);
+			variable res			: ram_t;
 		begin
-			process (clk1, clk2)
-			begin	-- process
-				if rising_edge(clk1) then
-					if ce1 = '1' then
-						a1_reg <= a1;
-					end if;
-				end if;
+			if (str_length(FilePath) = 0) then
+				Memory	:= (others => (others => ite(SIMULATION, 'U', '0')));
+			elsif (mem_FileExtension(FilePath) = "mem") then
+				Memory	:= mem_ReadMemoryFile(FilePath, DEPTH, word_t'length, MEM_FILEFORMAT_XILINX_MEM, MEM_CONTENT_HEX);
+			else
+				Memory	:= mem_ReadMemoryFile(FilePath, DEPTH, word_t'length, MEM_FILEFORMAT_INTEL_HEX, MEM_CONTENT_HEX);
+			end if;
 
-				if rising_edge(clk2) then
-					if ce2 = '1' then
-						a2_reg <= a2;
-					end if;
+			for i in Memory'range(1) loop
+				for j in word_t'range loop
+					res(i)(j)		:= Memory(i, j);
+				end loop;
+			end loop;
+			return  res;
+		end function;
+
+		constant rom		: rom_t			:= ocrom_InitMemory(FILENAME);
+		signal a1_reg		: unsigned(A_BITS-1 downto 0);
+		signal a2_reg		: unsigned(A_BITS-1 downto 0);
+		
+	begin
+		process(clk1)
+		begin
+			if rising_edge(clk1) then
+				if ce1 = '1' then
+					a1_reg <= a1;
 				end if;
-			end process;
-			
-			q1 <= rom(to_integer(a1_reg));		-- returns new data
-			q2 <= rom(to_integer(a2_reg));		-- returns new data
-		end generate;
-		genNoLoadFile : if (str_length(FileName) = 0) generate
-			assert FALSE report "Do you really want to generate a block of zeros?" severity FAILURE;
-		end generate;
-	end generate gXilinx;
+			end if;
+		end process;
+
+		process(clk2)
+		begin
+			if rising_edge(clk2) then
+				if ce2 = '1' then
+					a2_reg <= a2;
+				end if;
+			end if;
+		end process;
+		
+		q1 <= rom(to_integer(a1_reg));		-- returns new data
+		q2 <= rom(to_integer(a2_reg));		-- returns new data
+	end generate gInfer;
 	
 	gAltera: if VENDOR = VENDOR_ALTERA generate
 		component ocram_tdp_altera
@@ -189,9 +185,7 @@ begin
 			);
 	end generate gAltera;
 	
-	assert VENDOR = VENDOR_ALTERA or
-		DEVICE = DEVICE_SPARTAN6 or DEVICE = DEVICE_VIRTEX6 or
-		DEVICE = DEVICE_ARTIX7 or DEVICE = DEVICE_KINTEX7 or DEVICE = DEVICE_VIRTEX7
-		report "Device not yet supported."
+	assert VENDOR = VENDOR_ALTERA or VENDOR = VENDOR_XILINX
+		report "Vendor not yet supported."
 		severity failure;
 end rtl;

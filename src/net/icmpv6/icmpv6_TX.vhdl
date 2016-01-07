@@ -1,39 +1,66 @@
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Authors:				 	Patrick Lehmann
+-- 
+-- Module:				 	TODO
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
 
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
 
-
-ENTITY ICMPv6_TX IS
-	PORT (
-		Clock											: IN	STD_LOGIC;																	-- 
-		Reset											: IN	STD_LOGIC;																	-- 
+entity icmpv6_TX is
+	port (
+		Clock											: in	STD_LOGIC;																	-- 
+		Reset											: in	STD_LOGIC;																	-- 
 		
-		TX_Valid									: OUT	STD_LOGIC;
-		TX_Data										: OUT	T_SLV_8;
-		TX_SOF										: OUT	STD_LOGIC;
-		TX_EOF										: OUT	STD_LOGIC;
-		TX_Ack										: IN	STD_LOGIC;
+		TX_Valid									: out	STD_LOGIC;
+		TX_Data										: out	T_SLV_8;
+		TX_SOF										: out	STD_LOGIC;
+		TX_EOF										: out	STD_LOGIC;
+		TX_Ack										: in	STD_LOGIC;
 		
-		Send_EchoResponse					: IN	STD_LOGIC;
+		Send_EchoResponse					: in	STD_LOGIC;
 		Send_Complete							: OUT STD_LOGIC
 	);
-END;
+end entity;
 
-ARCHITECTURE rtl OF ICMPv6_TX IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
+
+architecture rtl of icmpv6_TX is
+	attribute FSM_ENCODING						: STRING;
 	
-	TYPE T_STATE		IS (
+	type T_STATE		is (
 		ST_IDLE,
 			ST_SEND_ECHOREQUEST_TYPE,
 				ST_SEND_ECHOREQUEST_CODEFIELD,
@@ -47,71 +74,71 @@ ARCHITECTURE rtl OF ICMPv6_TX IS
 		ST_COMPLETE
 	);
 
-	SIGNAL State											: T_STATE											:= ST_IDLE;
-	SIGNAL NextState									: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS "gray";		--"speed1";
+	signal State											: T_STATE											:= ST_IDLE;
+	signal NextState									: T_STATE;
+	attribute FSM_ENCODING of State		: signal is "gray";		--"speed1";
 
-BEGIN
+begin
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				State			<= ST_IDLE;
-			ELSE
+			else
 				State			<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State, Send_EchoResponse, TX_Ack)
-	BEGIN
+	process(State, Send_EchoResponse, TX_Ack)
+	begin
 		NextState							<= State;
 		
 		TX_Valid							<= '1';
-		TX_Data								<= (OTHERS => '0');
+		TX_Data								<= (others => '0');
 		TX_SOF								<= '0';
 		TX_EOF								<= '0';
 
-		CASE State IS
-			WHEN ST_IDLE =>
+		case State is
+			when ST_IDLE =>
 				TX_Valid					<= '0';
 
-				IF (Send_EchoResponse = '1') THEN
+				if (Send_EchoResponse = '1') then
 					NextState				<= ST_SEND_ECHOREQUEST_TYPE;
-				END IF;
+				end if;
 			
-			WHEN ST_SEND_ECHOREQUEST_TYPE =>
-				NULL;
+			when ST_SEND_ECHOREQUEST_TYPE =>
+				null;
 			
-			WHEN ST_SEND_ECHOREQUEST_CODEFIELD =>
-				NULL;
+			when ST_SEND_ECHOREQUEST_CODEFIELD =>
+				null;
 			
-			WHEN ST_SEND_ECHOREQUEST_CHECKSUM_0 =>
-				NULL;
+			when ST_SEND_ECHOREQUEST_CHECKSUM_0 =>
+				null;
 			
-			WHEN ST_SEND_ECHOREQUEST_CHECKSUM_1 =>
-				NULL;
+			when ST_SEND_ECHOREQUEST_CHECKSUM_1 =>
+				null;
 			
-			WHEN ST_SEND_ECHOREQUEST_IDENTIFIER_0 =>
-				NULL;
+			when ST_SEND_ECHOREQUEST_IDENTIFIER_0 =>
+				null;
 			
-			WHEN ST_SEND_ECHOREQUEST_IDENTIFIER_1 =>
-				NULL;
+			when ST_SEND_ECHOREQUEST_IDENTIFIER_1 =>
+				null;
 			
-			WHEN ST_SEND_ECHOREQUEST_SEQUENCENUMBER_0 =>
-				NULL;
+			when ST_SEND_ECHOREQUEST_SEQUENCENUMBER_0 =>
+				null;
 			
-			WHEN ST_SEND_ECHOREQUEST_SEQUENCENUMBER_1 =>
-				NULL;
+			when ST_SEND_ECHOREQUEST_SEQUENCENUMBER_1 =>
+				null;
 			
-			WHEN ST_SEND_DATA =>
-				NULL;
+			when ST_SEND_DATA =>
+				null;
 			
-			WHEN ST_COMPLETE =>
-				NULL;
+			when ST_COMPLETE =>
+				null;
 			
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
-END;
+end architecture;
