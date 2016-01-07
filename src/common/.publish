@@ -1,9 +1,13 @@
+# git files
+.gitempty
 
 # Documentation
 README.md
 
-# Basics
+# Context
 common.vhdl
+
+# Packages
 debug.vhdl
 fileio.vhdl
 math.vhdl
@@ -12,11 +16,11 @@ strings.vhdl
 utils.vhdl
 vectors.vhdl
 
-# Templates
-my_*.vhdl.template
-
 # Configuration
 config.vhdl
 
 # Common primitives described as a function
 components.vhdl
+
+# Templates
+my_*.vhdl.template

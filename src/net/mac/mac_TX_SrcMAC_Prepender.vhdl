@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -29,59 +29,59 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
 
 
-ENTITY MAC_TX_SrcMAC_Prepender IS
-	GENERIC (
+entity mac_TX_SrcMAC_Prepender is
+	generic (
 		DEBUG													: BOOLEAN													:= FALSE;
 		MAC_ADDRESSES									: T_NET_MAC_ADDRESS_VECTOR				:= (0 => C_NET_MAC_ADDRESS_EMPTY)
 	);
-	PORT (
-		Clock													: IN	STD_LOGIC;
-		Reset													: IN	STD_LOGIC;
+	port (
+		Clock													: in	STD_LOGIC;
+		Reset													: in	STD_LOGIC;
 		-- IN Port
-		In_Valid											: IN	STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 DOWNTO 0);
-		In_Data												: IN	T_SLVV_8(MAC_ADDRESSES'length - 1 DOWNTO 0);
-		In_SOF												: IN	STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 DOWNTO 0);
-		In_EOF												: IN	STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 DOWNTO 0);
-		In_Ack												: OUT	STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 DOWNTO 0);
-		In_Meta_rst										: OUT STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 DOWNTO 0);
-		In_Meta_DestMACAddress_nxt		: OUT STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 DOWNTO 0);
-		In_Meta_DestMACAddress_Data		: IN	T_SLVV_8(MAC_ADDRESSES'length - 1 DOWNTO 0);
+		In_Valid											: in	STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 downto 0);
+		In_Data												: in	T_SLVV_8(MAC_ADDRESSES'length - 1 downto 0);
+		In_SOF												: in	STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 downto 0);
+		In_EOF												: in	STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 downto 0);
+		In_Ack												: out	STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 downto 0);
+		In_Meta_rst										: OUT STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 downto 0);
+		In_Meta_DestMACAddress_nxt		: OUT STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 downto 0);
+		In_Meta_DestMACAddress_Data		: in	T_SLVV_8(MAC_ADDRESSES'length - 1 downto 0);
 		-- OUT Port
-		Out_Valid											: OUT	STD_LOGIC;
-		Out_Data											: OUT	T_SLV_8;
-		Out_SOF												: OUT	STD_LOGIC;
-		Out_EOF												: OUT	STD_LOGIC;
-		Out_Ack												: IN	STD_LOGIC;
-		Out_Meta_rst									: IN	STD_LOGIC;
-		Out_Meta_DestMACAddress_nxt		: IN	STD_LOGIC;
-		Out_Meta_DestMACAddress_Data	: OUT	T_SLV_8
+		Out_Valid											: out	STD_LOGIC;
+		Out_Data											: out	T_SLV_8;
+		Out_SOF												: out	STD_LOGIC;
+		Out_EOF												: out	STD_LOGIC;
+		Out_Ack												: in	STD_LOGIC;
+		Out_Meta_rst									: in	STD_LOGIC;
+		Out_Meta_DestMACAddress_nxt		: in	STD_LOGIC;
+		Out_Meta_DestMACAddress_Data	: out	T_SLV_8
 	);
-END;
+end entity;
 
-ARCHITECTURE rtl OF MAC_TX_SrcMAC_Prepender IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
+
+architecture rtl of mac_TX_SrcMAC_Prepender is
+	attribute FSM_ENCODING					: STRING;
 	
-	CONSTANT PORTS										: POSITIVE																		:= MAC_ADDRESSES'length;
+	constant PORTS									: POSITIVE				:= MAC_ADDRESSES'length;
 
-	CONSTANT META_RST_BIT							: NATURAL																			:= 0;
-	CONSTANT META_DEST_NXT_BIT				: NATURAL																			:= 1;
+	constant META_RST_BIT						: NATURAL					:= 0;
+	constant META_DEST_NXT_BIT			: NATURAL					:= 1;
 	
-	CONSTANT META_BITS								: POSITIVE																		:= 56;
-	CONSTANT META_REV_BITS						: POSITIVE																		:= 2;
+	constant META_BITS							: POSITIVE				:= 56;
+	constant META_REV_BITS					: POSITIVE				:= 2;
 
-	TYPE T_STATE		IS (
+	type T_STATE is (
 		ST_IDLE,
 			ST_PREPEND_SRC_MAC_1,
 			ST_PREPEND_SRC_MAC_2,
@@ -91,31 +91,31 @@ ARCHITECTURE rtl OF MAC_TX_SrcMAC_Prepender IS
 			ST_PAYLOAD
 	);
 
-	SIGNAL State										: T_STATE																									:= ST_IDLE;
-	SIGNAL NextState								: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State	: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	signal State										: T_STATE																									:= ST_IDLE;
+	signal NextState								: T_STATE;
+	attribute FSM_ENCODING of State	: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 	
-	SIGNAL LLMux_In_Valid						: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL LLMux_In_Data						: T_SLM(PORTS - 1 DOWNTO 0, T_SLV_8'range)								:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
-	SIGNAL LLMux_In_Meta						: T_SLM(PORTS - 1 DOWNTO 0, META_BITS - 1 DOWNTO 0)				:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
-	SIGNAL LLMux_In_Meta_rev				: T_SLM(PORTS - 1 DOWNTO 0, META_REV_BITS - 1 DOWNTO 0)		:= (OTHERS => (OTHERS => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
-	SIGNAL LLMux_In_SOF							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL LLMux_In_EOF							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL LLMux_In_Ack							: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	signal LLMux_In_Valid						: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal LLMux_In_Data						: T_SLM(PORTS - 1 downto 0, T_SLV_8'range)								:= (others => (others => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
+	signal LLMux_In_Meta						: T_SLM(PORTS - 1 downto 0, META_BITS - 1 downto 0)				:= (others => (others => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
+	signal LLMux_In_Meta_rev				: T_SLM(PORTS - 1 downto 0, META_REV_BITS - 1 downto 0)		:= (others => (others => 'Z'));		-- necessary default assignment 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
+	signal LLMux_In_SOF							: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal LLMux_In_EOF							: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal LLMux_In_Ack							: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-	SIGNAL LLMux_Out_Valid					: STD_LOGIC;
-	SIGNAL LLMux_Out_Data						: T_SLV_8;
-	SIGNAL LLMux_Out_Meta						: STD_LOGIC_VECTOR(META_BITS - 1 DOWNTO 0);
-	SIGNAL LLMux_Out_Meta_rev				: STD_LOGIC_VECTOR(META_REV_BITS - 1 DOWNTO 0);
-	SIGNAL LLMux_Out_SOF						: STD_LOGIC;
-	SIGNAL LLMux_Out_EOF						: STD_LOGIC;
-	SIGNAL LLMux_Out_Ack						: STD_LOGIC;
+	signal LLMux_Out_Valid					: STD_LOGIC;
+	signal LLMux_Out_Data						: T_SLV_8;
+	signal LLMux_Out_Meta						: STD_LOGIC_VECTOR(META_BITS - 1 downto 0);
+	signal LLMux_Out_Meta_rev				: STD_LOGIC_VECTOR(META_REV_BITS - 1 downto 0);
+	signal LLMux_Out_SOF						: STD_LOGIC;
+	signal LLMux_Out_EOF						: STD_LOGIC;
+	signal LLMux_Out_Ack						: STD_LOGIC;
 
-	SIGNAL Is_DataFlow							: STD_LOGIC;
-	SIGNAL Is_SOF										: STD_LOGIC;
-	SIGNAL Is_EOF										: STD_LOGIC;
+	signal Is_DataFlow							: STD_LOGIC;
+	signal Is_SOF										: STD_LOGIC;
+	signal Is_EOF										: STD_LOGIC;
 	
-BEGIN
+begin
 
 	LLMux_In_Valid		<= In_Valid;
 	LLMux_In_Data			<= to_slm(In_Data);
@@ -123,26 +123,26 @@ BEGIN
 	LLMux_In_EOF			<= In_EOF;
 	In_Ack						<= LLMux_In_Ack;
 	
-	genLLMuxIn : FOR I IN 0 TO PORTS - 1 GENERATE
-		SIGNAL Meta		: STD_LOGIC_VECTOR(META_BITS - 1 DOWNTO 0);
-	BEGIN
-		Meta(55 DOWNTO 48)	<= In_Meta_DestMACAddress_Data(I);
-		Meta(47 DOWNTO 0)		<= to_slv(MAC_ADDRESSES(I));
+	genLLMuxIn : for i in 0 to PORTS - 1 generate
+		signal Meta		: STD_LOGIC_VECTOR(META_BITS - 1 downto 0);
+	begin
+		Meta(55 downto 48)	<= In_Meta_DestMACAddress_Data(I);
+		Meta(47 downto 0)		<= to_slv(MAC_ADDRESSES(I));
 		
 		assign_row(LLMux_In_Meta, Meta, I);
-	END GENERATE;
+	end generate;
 	
 	In_Meta_rst									<= get_col(LLMux_In_Meta_rev, META_RST_BIT);
 	In_Meta_DestMACAddress_nxt	<= get_col(LLMux_In_Meta_rev, META_DEST_NXT_BIT);
 	
-	LLMux : ENTITY PoC.stream_Mux
-		GENERIC MAP (
+	LLMux : entity PoC.stream_Mux
+		generic map (
 			PORTS									=> PORTS,
 			DATA_BITS							=> LLMux_Out_Data'length,
 			META_BITS							=> LLMux_Out_Meta'length,
 			META_REV_BITS					=> LLMux_Out_Meta_rev'length
 		)
-		PORT MAP (
+		port map(
 			Clock									=> Clock,
 			Reset									=> Reset,
 			
@@ -166,25 +166,25 @@ BEGIN
 	LLMux_Out_Meta_rev(META_RST_BIT)				<= Out_Meta_rst;
 	LLMux_Out_Meta_rev(META_DEST_NXT_BIT)		<= Out_Meta_DestMACAddress_nxt;
 
-	Out_Meta_DestMACAddress_Data						<= LLMux_Out_Meta(55 DOWNTO 48);
+	Out_Meta_DestMACAddress_Data						<= LLMux_Out_Meta(55 downto 48);
 	
-	Is_DataFlow		<= LLMux_Out_Valid AND Out_Ack;
-	Is_SOF				<= LLMux_Out_Valid AND LLMux_Out_SOF;
-	Is_EOF				<= LLMux_Out_Valid AND LLMux_Out_EOF;
+	Is_DataFlow		<= LLMux_Out_Valid and Out_Ack;
+	Is_SOF				<= LLMux_Out_Valid and LLMux_Out_SOF;
+	Is_EOF				<= LLMux_Out_Valid and LLMux_Out_EOF;
 	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				State			<= ST_IDLE;
-			ELSE
+			else
 				State			<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State, LLMux_Out_Valid, LLMux_Out_Data, LLMux_Out_Meta, LLMux_Out_EOF, Is_DataFlow, Is_SOF, Is_EOF, Out_Ack)
-	BEGIN
+	process(State, LLMux_Out_Valid, LLMux_Out_Data, LLMux_Out_Meta, LLMux_Out_EOF, Is_DataFlow, Is_SOF, Is_EOF, Out_Ack)
+	begin
 		NextState							<= State;
 		
 		Out_Valid							<= '0';
@@ -194,68 +194,68 @@ BEGIN
 
 		LLMux_Out_Ack				<= '0';
 	
-		CASE State IS
-			WHEN ST_IDLE =>
-				IF (Is_SOF = '1') THEN
+		case State is
+			when ST_IDLE =>
+				if (Is_SOF = '1') then
 					Out_Valid				<= '1';
 					Out_SOF					<= '1';
-					Out_Data				<= LLMux_Out_Meta((5 * 8) + 7 DOWNTO (5 * 8));
+					Out_Data				<= LLMux_Out_Meta((5 * 8) + 7 downto (5 * 8));
 					
-					IF (Out_Ack	 = '1') THEN
+					if (Out_Ack	 = '1') then
 						NextState			<= ST_PREPEND_SRC_MAC_1;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_PREPEND_SRC_MAC_1 =>
+			when ST_PREPEND_SRC_MAC_1 =>
 				Out_Valid					<= '1';
-				Out_Data					<= LLMux_Out_Meta((4 * 8) + 7 DOWNTO (4 * 8));
+				Out_Data					<= LLMux_Out_Meta((4 * 8) + 7 downto (4 * 8));
 					
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState				<= ST_PREPEND_SRC_MAC_2;
-				END IF;
+				end if;
 
-			WHEN ST_PREPEND_SRC_MAC_2 =>
+			when ST_PREPEND_SRC_MAC_2 =>
 				Out_Valid					<= '1';
-				Out_Data					<= LLMux_Out_Meta((3 * 8) + 7 DOWNTO (3 * 8));
+				Out_Data					<= LLMux_Out_Meta((3 * 8) + 7 downto (3 * 8));
 					
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState				<= ST_PREPEND_SRC_MAC_3;
-				END IF;
+				end if;
 				
-						WHEN ST_PREPEND_SRC_MAC_3 =>
+						when ST_PREPEND_SRC_MAC_3 =>
 				Out_Valid					<= '1';
-				Out_Data					<= LLMux_Out_Meta((2 * 8) + 7 DOWNTO (2 * 8));
+				Out_Data					<= LLMux_Out_Meta((2 * 8) + 7 downto (2 * 8));
 					
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState				<= ST_PREPEND_SRC_MAC_4;
-				END IF;
+				end if;
 				
-						WHEN ST_PREPEND_SRC_MAC_4 =>
+						when ST_PREPEND_SRC_MAC_4 =>
 				Out_Valid					<= '1';
-				Out_Data					<= LLMux_Out_Meta((1 * 8) + 7 DOWNTO (1 * 8));
+				Out_Data					<= LLMux_Out_Meta((1 * 8) + 7 downto (1 * 8));
 					
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState				<= ST_PREPEND_SRC_MAC_5;
-				END IF;
+				end if;
 
-			WHEN ST_PREPEND_SRC_MAC_5 =>
+			when ST_PREPEND_SRC_MAC_5 =>
 				Out_Valid					<= '1';
-				Out_Data					<= LLMux_Out_Meta((0 * 8) + 7 DOWNTO (0 * 8));
+				Out_Data					<= LLMux_Out_Meta((0 * 8) + 7 downto (0 * 8));
 					
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState				<= ST_PAYLOAD;
-				END IF;
+				end if;
 			
-			WHEN ST_PAYLOAD =>
+			when ST_PAYLOAD =>
 				Out_Valid					<= LLMux_Out_Valid;
 				Out_EOF						<= LLMux_Out_EOF;
 				LLMux_Out_Ack		<= Out_Ack;
 
-				IF ((Is_DataFlow AND Is_EOF) = '1') THEN
+				if ((Is_DataFlow and Is_EOF) = '1') then
 					NextState			<= ST_IDLE;
-				END IF;
+				end if;
 			
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
-END ARCHITECTURE;
+end architecture;

@@ -1,3 +1,9 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
 # Board specific pin constraints
 # Spartan-3 boards
 #S3SK/
@@ -23,7 +29,7 @@ KC705/
 VC707/
 
 # Zynq-7000 boards
-#ZedBoard/
+ZedBoard/
 ZC706/
 
 # Stratix IV

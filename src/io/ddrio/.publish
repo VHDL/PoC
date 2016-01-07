@@ -1,11 +1,10 @@
 # git files
-.gitignore
 .gitempty
 
 # Documentation
 README.md
 
-# package
+# Package
 ddrio.pkg.vhdl
 
 # DDR Input

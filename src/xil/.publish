@@ -1,8 +1,10 @@
+# git files
+.gitempty
 
 # Documentation
 README.md
 
-# Packages
+# Package
 xil.pkg.vhdl
 
 # ChipScope

@@ -51,5 +51,6 @@ __pycache__
 /other/vivado/**/*.ip_user_files
 
 # general whitelist
-!.publish
 !.git*
+!.publish
+!.README.md

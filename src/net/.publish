@@ -16,5 +16,10 @@ ndp/
 stack/
 udp/
 
-# --------------------------------------
+# Package
+net.pkg.vhdl
+
+# Entities
+net_FrameChecksum.vhdl
+net_FrameLoopback.vhdl
 
