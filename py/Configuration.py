@@ -16,7 +16,7 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2015 Technische Universitaet Dresden - Germany
+# Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #                     Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -545,6 +545,7 @@ class Configuration(CommandLineProgram):
 			self.pocConfig['GHDL']['Version'] = ghdlVersion
 			self.pocConfig['GHDL']['InstallationDirectory'] = ghdlDirectoryPath.as_posix()
 			self.pocConfig['GHDL']['BinaryDirectory'] = '${InstallationDirectory}/bin'
+			self.pocConfig['GHDL']['Backend'] = 'mcode'
 		else:
 			raise BaseException("unknown option")
 	
@@ -794,6 +795,7 @@ class Configuration(CommandLineProgram):
 			self.pocConfig['GHDL']['Version'] = ghdlVersion
 			self.pocConfig['GHDL']['InstallationDirectory'] = ghdlDirectoryPath.as_posix()
 			self.pocConfig['GHDL']['BinaryDirectory'] = '${InstallationDirectory}'
+			self.pocConfig['GHDL']['Backend'] = 'llvm'
 		else:
 			raise BaseException("unknown option")
 

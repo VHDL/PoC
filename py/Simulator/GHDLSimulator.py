@@ -58,6 +58,9 @@ class Simulator(PoCSimulator):
 		self.__vhdlStandard =	vhdlStandard
 		self.__guiMode =			guiMode
 
+		self.__initExecutables()
+	
+	def __initExecutables(self):
 		if (host.platform == "Windows"):
 			self.__executables['ghdl'] =		"ghdl.exe"
 			self.__executables['gtkwave'] =	"gtkwave.exe"
@@ -66,7 +69,7 @@ class Simulator(PoCSimulator):
 			self.__executables['gtkwave'] =	"gtkwave"
 		else:
 			raise PlatformNotSupportedException(self.platform)
-		
+	
 	def run(self, pocEntity):
 		import os
 		import re
