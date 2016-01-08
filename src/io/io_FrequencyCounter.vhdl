@@ -41,7 +41,7 @@ use			PoC.physical.all;
 entity io_FrequencyCounter is
 	generic (
 		CLOCK_FREQ								: FREQ									:= 100 MHz;
-		TIMEBASE									: TIME									:= 1 sec;
+		TIMEBASE									: T_TIME								:= 1.0;
 		RESOLUTION								: POSITIVE							:= 8
 	);
 	port (
@@ -54,7 +54,7 @@ end;
 
 
 architecture rtl of io_FrequencyCounter is
-	constant TIMEBASECOUNTER_MAX				: POSITIVE																		:= 187500000;--TimingToCycles(TIMEBASE, CLOCK_FREQ);
+	constant TIMEBASECOUNTER_MAX				: POSITIVE																		:= TimingToCycles(TIMEBASE, CLOCK_FREQ);
 	constant TIMEBASECOUNTER_BITS				: POSITIVE																		:= log2ceilnz(TIMEBASECOUNTER_MAX);
 	constant REQUENCYCOUNTER_MAX				: POSITIVE																		:= 2**RESOLUTION;
 	constant FREQUENCYCOUNTER_BITS			: POSITIVE																		:= RESOLUTION;

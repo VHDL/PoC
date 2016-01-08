@@ -57,7 +57,7 @@ end;
 architecture rtl of io_PulseWidthModulation is
 	constant PWM_STEPS									: POSITIVE																			:= 2**PWM_RESOLUTION;
 	constant PWM_STEP_FREQ							: FREQ																					:= PWM_FREQ * real(PWM_STEPS - 1);
-	constant PWM_FREQUENCYCOUNTER_MAX		: POSITIVE																			:= 1333333;--TimingToCycles(to_time(PWM_STEP_FREQ), CLOCK_FREQ);
+	constant PWM_FREQUENCYCOUNTER_MAX		: POSITIVE																			:= TimingToCycles(to_time(PWM_STEP_FREQ), CLOCK_FREQ);
 	constant PWM_FREQUENCYCOUNTER_BITS	: POSITIVE																			:= log2ceilnz(PWM_FREQUENCYCOUNTER_MAX);
 	
 	signal PWM_FrequencyCounter_us			: UNSIGNED(PWM_FREQUENCYCOUNTER_BITS downto 0)	:= (others => '0');
