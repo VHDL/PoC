@@ -75,14 +75,14 @@ package physical is
 		Hz;
 		kHz = 1000 Hz;
 		MHz = 1000 kHz;
-		GHz = 1000 MHz; -- suffix not supported because Vivado maps 1 GHz to 1 Hz
+--		GHz = 1000 MHz; -- suffix not supported because Vivado maps 1 GHz to 1 Hz
 	end units;
 
 	type BAUD is range 0 to INTEGER'high units
 		Bd;
 		kBd = 1000 Bd;
 		MBd = 1000 kBd;
-		GBd = 1000 MBd; -- suffix not supported because Vivado maps 1 GBd to 1 Bd
+--		GBd = 1000 MBd; -- suffix not supported because Vivado maps 1 GBd to 1 Bd
 	end units;
 
 	type MEMORY is range 0 to INTEGER'high units
@@ -750,7 +750,7 @@ package body physical is
 		if		(scale = 1	Hz) then	return div(f, 1	 Hz);
 		elsif	(scale = 1 kHz) then	return div(f, 1 kHz);
 		elsif	(scale = 1 MHz) then	return div(f, 1 MHz);
-		elsif	(scale = 1000 MHz) then	return div(f, 1 GHz);
+		elsif	(scale = 1000 MHz) then	return div(f, 1000 MHz);
 		else	report "to_real: scale must have a value of '1 <unit>'" severity failure;
 		end if;
 	end;
