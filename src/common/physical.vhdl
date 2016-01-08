@@ -280,12 +280,7 @@ package body physical is
 	function to_freq(br : BAUD) return FREQ is
 		variable res : FREQ;
 	begin
-		if		(br < 1 kBd) then res := div(br, 1 Bd)	* 1  Hz;
-		elsif	(br < 1 MBd) then res := div(br, 1 kBd) * 1 kHz;
-		elsif	(br < 1 GBd) then res := div(br, 1 MBd) * 1 MHz;
-		else											res := div(br, 1 GBd) * 1 GHz;
-		end if;
-
+		res := (br / 1 Bd)	* 1  Hz;
 		if (POC_VERBOSE = TRUE) then
 			report "to_freq: br= " & to_string(br, 3) & "  return " & to_string(res, 3) severity note;
 		end if;
