@@ -61,10 +61,10 @@ class Simulator(PoCSimulator):
 		self.__initExecutables()
 	
 	def __initExecutables(self):
-		if (host.platform == "Windows"):
+		if (self.host.platform == "Windows"):
 			self.__executables['ghdl'] =		"ghdl.exe"
 			self.__executables['gtkwave'] =	"gtkwave.exe"
-		elif (host.platform == "Linux"):
+		elif (self.host.platform == "Linux"):
 			self.__executables['ghdl'] =		"ghdl"
 			self.__executables['gtkwave'] =	"gtkwave"
 		else:
