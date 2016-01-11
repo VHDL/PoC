@@ -42,31 +42,21 @@ use poc.config.all;
 entity physical_test is
   
   generic (
-    CLOCK_FREQ  : freq := 100 MHz;
-    DELAY_TIME  : time := 870 ns;
-    TIME_1_FS   : time := 1 fs;
-    TIME_1_PS   : time := 1 ps;
-    TIME_1_NS   : time := 1 ns;
-    TIME_1_US   : time := 1 us;
-    TIME_1_MS   : time := 1 ms;
-    TIME_1_S    : time := 1 sec;
-    TIME_1_MIN  : time := 60 sec;-- "1 min" does not work in Quartus-II
-    TIME_1_HR   : time := 1 hr);
+		ENABLE_SUB_TEST  : boolean := false;
+		ENABLE_TIME_TEST : boolean := true);
 
-  port (
-    clk : in  std_logic;
-    d	: in  std_logic;
-    q	: out std_logic);
+	port (
+		clk		: in	std_logic;
+		d			: in	std_logic;
+		q			: out std_logic;
+		x			: in	std_logic;
+		yTime : out std_logic);
 
 end entity;
 
 architecture rtl of physical_test is
 	function f return boolean is
 	begin
-		report "  TIME'high = " & TIME'image(TIME'high) severity note;
-		report "  TIME'low  = " & TIME'image(TIME'low ) severity note;
-		report "  FREQ'high = " & FREQ'image(FREQ'high) severity note;
-		report "  FREQ'low  = " & FREQ'image(FREQ'low ) severity note;
 	  report "to_freq( 500 ps ) = " & FREQ'image(to_freq( 500 ps )) severity note;
 	  report "to_freq(   1 ns ) = " & FREQ'image(to_freq(   1 ns )) severity note;
 	  report "to_freq(   5 ns ) = " & FREQ'image(to_freq(   5 ns )) severity note;
@@ -110,30 +100,29 @@ architecture rtl of physical_test is
 	
 	constant C : boolean := f;
   
-	constant STEPS 				: natural := TimingToCycles(DELAY_TIME, CLOCK_FREQ);
-	constant CLOCK_PERIOD : time		:= to_time(CLOCK_FREQ);
+--	constant STEPS 				: natural := TimingToCycles(DELAY_TIME, CLOCK_FREQ);
+--	constant CLOCK_PERIOD : time		:= to_time(CLOCK_FREQ);
 
-	constant r : real := 2.5;
 begin  -- architecture rtl
 
-  sub: entity work.physical_test_sub
-    generic map (
-      CLOCK_FREQ   => CLOCK_FREQ,
-      DELAY_TIME   => DELAY_TIME,
-      DELAY_TIME2  => r * DELAY_TIME,
-      CLOCK_PERIOD => CLOCK_PERIOD,
-      STEPS 	  	 => STEPS,
-      TIME_1_FS	   => TIME_1_FS,
-      TIME_1_PS	   => TIME_1_PS,
-      TIME_1_NS	   => TIME_1_NS,
-      TIME_1_US	   => TIME_1_US,
-      TIME_1_MS	   => TIME_1_MS,
-      TIME_1_S	   => TIME_1_S,
-      TIME_1_MIN   => TIME_1_MIN,
-      TIME_1_HR	   => TIME_1_HR)
-    port map (
-      clk => clk,
-      d	  => d,
-      q	  => q);
-  
+	gEnableSub: if ENABLE_SUB_TEST generate
+		sub: entity work.physical_test_sub
+			generic map (
+				CLOCK_FREQ   => 100 MHz,
+				DELAY_TIME   => 870 ns,
+				CLOCK_PERIOD => to_time(100 MHz),
+				STEPS 	  	 => TimingToCycles(870 ns, 100 MHz),
+				EXPECT_STEPS => 87)
+			port map (
+				clk => clk,
+				d	  => d,
+				q	  => q);
+	end generate;
+	
+	gEnableTime: if ENABLE_TIME_TEST generate
+		test_time: entity work.physical_test_time
+			port map (
+				x => x,
+				y => yTime);
+	end generate;
 end architecture rtl;
