@@ -49,18 +49,17 @@ use poc.physical.all;
 entity physical_test_time is
   
 	generic (
-		STRICT 				 : boolean := false;
 		CONST_1_FS		 : time := 1 fs;
 		CONST_1_PS		 : time := 1 ps;
-		CONST_1p001_PS : time := 1.001 ps;
+		CONST_1p125_PS : time := 1.125 ps;
 		CONST_1_NS		 : time := 1 ns;
-		CONST_1p001_NS : time := 1.001 ns;
+		CONST_1p125_NS : time := 1.125 ns;
 		CONST_1_US		 : time := 1 us;
-		CONST_1p001_US : time := 1.001 us;
+		CONST_1p125_US : time := 1.125 us;
 		CONST_1_MS		 : time := 1 ms;
-		CONST_1p001_MS : time := 1.001 ms;
+		CONST_1p125_MS : time := 1.125 ms;
 		CONST_1_SEC		 : time := 1 sec;
-		CONST_1p001_SEC: time := 1.001 sec;
+		CONST_1p125_SEC: time := 1.125 sec;
 		CONST_1_MIN		 : time := 60 sec;		-- Quartus does not support "1 min"
 		CONST_1_HR		 : time := 1 hr;
 		CVT_NAT_1_FS	 : time := fs2Time(1);
@@ -74,7 +73,7 @@ entity physical_test_time is
 		CVT_REAL_1p5_US	 : time := us2Time(1.5);
 		CVT_REAL_1p5_MS	 : time := ms2Time(1.5);
 		CVT_REAL_1p5_SEC : time := sec2Time(1.5);
-		SOME_TIMES : T_TIMEVEC := (1 fs, 1 ps, 1 ns, 1 us)
+		SOME_TIMES : T_TIMEVEC := (1 us, 234 ns, 567 ps, 890 fs)
 	);
 
   port (
@@ -88,15 +87,15 @@ architecture rtl of physical_test_time is
 	begin
 		report "CONST_1_FS        = " & TIME'image(CONST_1_FS      ) severity note;
 		report "CONST_1_PS        = " & TIME'image(CONST_1_PS      ) severity note;
-		report "CONST_1p001_PS    = " & TIME'image(CONST_1p001_PS  ) severity note;
+		report "CONST_1p125_PS    = " & TIME'image(CONST_1p125_PS  ) severity note;
 		report "CONST_1_NS        = " & TIME'image(CONST_1_NS      ) severity note;
-		report "CONST_1p001_NS    = " & TIME'image(CONST_1p001_NS  ) severity note;
+		report "CONST_1p125_NS    = " & TIME'image(CONST_1p125_NS  ) severity note;
 		report "CONST_1_US        = " & TIME'image(CONST_1_US      ) severity note;
-		report "CONST_1p001_US    = " & TIME'image(CONST_1p001_US  ) severity note;
+		report "CONST_1p125_US    = " & TIME'image(CONST_1p125_US  ) severity note;
 		report "CONST_1_MS        = " & TIME'image(CONST_1_MS      ) severity note;
-		report "CONST_1p001_MS    = " & TIME'image(CONST_1p001_MS  ) severity note;
+		report "CONST_1p125_MS    = " & TIME'image(CONST_1p125_MS  ) severity note;
 		report "CONST_1_SEC       = " & TIME'image(CONST_1_SEC     ) severity note;
-		report "CONST_1p001_SEC   = " & TIME'image(CONST_1p001_SEC ) severity note;
+		report "CONST_1p125_SEC   = " & TIME'image(CONST_1p125_SEC ) severity note;
 		report "CONST_1_MIN       = " & TIME'image(CONST_1_MIN     ) severity note;
 		report "CONST_1_HR        = " & TIME'image(CONST_1_HR      ) severity note;
 		report "CVT_NAT_1_FS      = " & TIME'image(CVT_NAT_1_FS    ) severity note;
@@ -135,7 +134,7 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 	
-	checkConst1p001ps: if CONST_1p001_PS <= 0 sec or (STRICT and CONST_1p001_PS /= 1001 fs) or CONST_1p001_PS < 1000 fs or CONST_1p001_PS > 1002 fs generate
+	checkConst1p125ps: if CONST_1p125_PS <= 0 sec or CONST_1p125_PS /= 1125 fs generate
 		y <= '1';
 	end generate;
 	
@@ -143,7 +142,7 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 	
-	checkConst1p001ns: if CONST_1p001_NS <= 0 sec or (STRICT and CONST_1p001_NS /= 1001 ps) or CONST_1p001_NS < 1000 ps or CONST_1p001_NS > 1002 ps generate
+	checkConst1p125ns: if CONST_1p125_NS <= 0 sec or CONST_1p125_NS /= 1125 ps generate
 		y <= '1';
 	end generate;
 	
@@ -151,7 +150,7 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 	
-	checkConst1p001us: if CONST_1p001_US <= 0 sec or (STRICT and CONST_1p001_US /= 1001 ns) or CONST_1p001_US < 1000 ns or CONST_1p001_US > 1002 ns generate
+	checkConst1p125us: if CONST_1p125_US <= 0 sec or CONST_1p125_US /= 1125 ns generate
 		y <= '1';
 	end generate;
 	
@@ -159,7 +158,7 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 	
-	checkConst1p001ms: if CONST_1p001_MS <= 0 sec or (STRICT and CONST_1p001_MS /= 1001 us) or CONST_1p001_MS < 1000 us or CONST_1p001_MS > 1002 us generate
+	checkConst1p125ms: if CONST_1p125_MS <= 0 sec or CONST_1p125_MS /= 1125 us generate
 		y <= '1';
 	end generate;
 	
@@ -167,7 +166,7 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 	
-	checkConst1p001sec: if CONST_1p001_SEC <= 0 sec or (STRICT and CONST_1p001_SEC /= 1001 ms) or CONST_1p001_SEC < 1000 ms or CONST_1p001_SEC > 1002 ms generate
+	checkConst1p125sec: if CONST_1p125_SEC <= 0 sec or CONST_1p125_SEC /= 1125 ms generate
 		y <= '1';
 	end generate;
 	
@@ -227,11 +226,11 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 
-	checkMin: if min(SOME_TIMES) /= 1 fs generate
+	checkMin: if min(SOME_TIMES) /= 890 fs generate
 		y <= '1';
 	end generate;
 
-	checkSum: if sum(SOME_TIMES) /= 1001001001 fs generate
+	checkSum: if sum(SOME_TIMES) /= 1234567890 fs generate
 		y <= '1';
 	end generate;
 end architecture rtl;
