@@ -37,18 +37,18 @@ use ieee.math_real.all;
 
 library poc;
 use poc.physical.all;
-use poc.config.all;
+use poc.utils.all;
 
 entity physical_test is
   
   generic (
-		ENABLE_SUB_TEST  : boolean := false;
+		ENABLE_SUB_TEST  : boolean := true;
 		ENABLE_TIME_TEST : boolean := true);
 
 	port (
 		clk		: in	std_logic;
 		d			: in	std_logic;
-		q			: out std_logic;
+		q			: out std_logic_vector(2 downto 0);
 		x			: in	std_logic;
 		yTime : out std_logic);
 
@@ -106,17 +106,39 @@ architecture rtl of physical_test is
 begin  -- architecture rtl
 
 	gEnableSub: if ENABLE_SUB_TEST generate
-		sub: entity work.physical_test_sub
+		sub0: entity work.physical_test_sub
 			generic map (
 				CLOCK_FREQ   => 100 MHz,
-				DELAY_TIME   => 870 ns,
+				DELAY_TIME   => 865 ns,
 				CLOCK_PERIOD => to_time(100 MHz),
-				STEPS 	  	 => TimingToCycles(870 ns, 100 MHz),
+				STEPS 	  	 => TimingToCycles(865 ns, 100 MHz),
 				EXPECT_STEPS => 87)
 			port map (
 				clk => clk,
 				d	  => d,
-				q	  => q);
+				q	  => q(0));
+		sub1: entity work.physical_test_sub
+			generic map (
+				CLOCK_FREQ   => 100 MHz,
+				DELAY_TIME   => 865 ns,
+				CLOCK_PERIOD => to_time(100 MHz),
+				STEPS 	  	 => TimingToCycles(865 ns, 100 MHz, ROUND_DOWN),
+				EXPECT_STEPS => 86)
+			port map (
+				clk => clk,
+				d	  => d,
+				q	  => q(1));
+		sub2: entity work.physical_test_sub
+			generic map (
+				CLOCK_FREQ   => 100 MHz,
+				DELAY_TIME   => 865 ns,
+				CLOCK_PERIOD => to_time(100 MHz),
+				STEPS 	  	 => TimingToCycles(865 ns, 100 MHz, ROUND_TO_NEAREST),
+				EXPECT_STEPS => 87)
+			port map (
+				clk => clk,
+				d	  => d,
+				q	  => q(2));
 	end generate;
 	
 	gEnableTime: if ENABLE_TIME_TEST generate

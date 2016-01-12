@@ -60,19 +60,30 @@ entity physical_test_time is
 		CONST_1p125_MS : time := 1.125 ms;
 		CONST_1_SEC		 : time := 1 sec;
 		CONST_1p125_SEC: time := 1.125 sec;
-		CONST_1_MIN		 : time := 60 sec;		-- Quartus does not support "1 min"
+		CONST_1_MIN		 : time := 1 min;
 		CONST_1_HR		 : time := 1 hr;
-		CVT_NAT_1_FS	 : time := fs2Time(1);
-		CVT_NAT_1_PS	 : time := ps2Time(1);
-		CVT_NAT_1_NS	 : time := ns2Time(1);
-		CVT_NAT_1_US	 : time := us2Time(1);
-		CVT_NAT_1_MS	 : time := ms2Time(1);
-		CVT_NAT_1_SEC	 : time := sec2Time(1);
+		CVT_INT_1_FS	 : time := fs2Time(1);
+		CVT_INT_1_PS	 : time := ps2Time(1);
+		CVT_INT_1_NS	 : time := ns2Time(1);
+		CVT_INT_1_US	 : time := us2Time(1);
+		CVT_INT_1_MS	 : time := ms2Time(1);
+		CVT_INT_1_SEC	 : time := sec2Time(1);
+  	CVT_1_FS_INT   : integer := to_int(1 fs, 1 fs);
+  	CVT_1_PS_INT   : integer := to_int(1 ps, 1 ps);
+  	CVT_1_NS_INT   : integer := to_int(1 ns, 1 ns);
+  	CVT_1_US_INT   : integer := to_int(1 us, 1 us);
+  	CVT_1_MS_INT   : integer := to_int(1 ms, 1 ms);
+  	CVT_1_SEC_INT  : integer := to_int(1 sec, 1 sec);
 		CVT_REAL_1p5_PS	 : time := ps2Time(1.5);
 		CVT_REAL_1p5_NS	 : time := ns2Time(1.5);
 		CVT_REAL_1p5_US	 : time := us2Time(1.5);
 		CVT_REAL_1p5_MS	 : time := ms2Time(1.5);
 		CVT_REAL_1p5_SEC : time := sec2Time(1.5);
+		CVT_1p5_PS_REAL  : real := to_real(1.5 ps, 1 ps);
+		CVT_1p5_NS_REAL  : real := to_real(1.5 ns, 1 ns);
+		CVT_1p5_US_REAL  : real := to_real(1.5 us, 1 us);
+		CVT_1p5_MS_REAL  : real := to_real(1.5 ms, 1 ms);
+		CVT_1p5_SEC_REAL : real := to_real(1.5 sec, 1 sec);
 		SOME_TIMES : T_TIMEVEC := (1 us, 234 ns, 567 ps, 890 fs)
 	);
 
@@ -98,17 +109,28 @@ architecture rtl of physical_test_time is
 		report "CONST_1p125_SEC   = " & TIME'image(CONST_1p125_SEC ) severity note;
 		report "CONST_1_MIN       = " & TIME'image(CONST_1_MIN     ) severity note;
 		report "CONST_1_HR        = " & TIME'image(CONST_1_HR      ) severity note;
-		report "CVT_NAT_1_FS      = " & TIME'image(CVT_NAT_1_FS    ) severity note;
-		report "CVT_NAT_1_PS      = " & TIME'image(CVT_NAT_1_PS    ) severity note;
-		report "CVT_NAT_1_NS      = " & TIME'image(CVT_NAT_1_NS    ) severity note;
-		report "CVT_NAT_1_US      = " & TIME'image(CVT_NAT_1_US    ) severity note;
-		report "CVT_NAT_1_MS      = " & TIME'image(CVT_NAT_1_MS    ) severity note;
-		report "CVT_NAT_1_SEC     = " & TIME'image(CVT_NAT_1_SEC   ) severity note;
+		report "CVT_INT_1_FS      = " & TIME'image(CVT_INT_1_FS    ) severity note;
+		report "CVT_INT_1_PS      = " & TIME'image(CVT_INT_1_PS    ) severity note;
+		report "CVT_INT_1_NS      = " & TIME'image(CVT_INT_1_NS    ) severity note;
+		report "CVT_INT_1_US      = " & TIME'image(CVT_INT_1_US    ) severity note;
+		report "CVT_INT_1_MS      = " & TIME'image(CVT_INT_1_MS    ) severity note;
+		report "CVT_INT_1_SEC     = " & TIME'image(CVT_INT_1_SEC   ) severity note;
+		report "CVT_1_FS_INT      = " & INTEGER'image(CVT_1_FS_INT ) severity note;
+		report "CVT_1_PS_INT      = " & INTEGER'image(CVT_1_PS_INT ) severity note;
+		report "CVT_1_NS_INT      = " & INTEGER'image(CVT_1_NS_INT ) severity note;
+		report "CVT_1_US_INT      = " & INTEGER'image(CVT_1_US_INT ) severity note;
+		report "CVT_1_MS_INT      = " & INTEGER'image(CVT_1_MS_INT ) severity note;
+		report "CVT_1_SEC_INT     = " & INTEGER'image(CVT_1_SEC_INT) severity note;
 		report "CVT_REAL_1p5_PS   = " & TIME'image(CVT_REAL_1p5_PS ) severity note;
 		report "CVT_REAL_1p5_NS   = " & TIME'image(CVT_REAL_1p5_NS ) severity note;
 		report "CVT_REAL_1p5_US   = " & TIME'image(CVT_REAL_1p5_US ) severity note;
 		report "CVT_REAL_1p5_MS   = " & TIME'image(CVT_REAL_1p5_MS ) severity note;
 		report "CVT_REAL_1p5_SEC  = " & TIME'image(CVT_REAL_1p5_SEC) severity note;
+		report "CVT_1p5_PS_REAL   = " & REAL'image(CVT_1p5_PS_REAL ) severity note;
+		report "CVT_1p5_NS_REAL   = " & REAL'image(CVT_1p5_NS_REAL ) severity note;
+		report "CVT_1p5_US_REAL   = " & REAL'image(CVT_1p5_US_REAL ) severity note;
+		report "CVT_1p5_MS_REAL   = " & REAL'image(CVT_1p5_MS_REAL ) severity note;
+		report "CVT_1p5_SEC_REAL  = " & REAL'image(CVT_1p5_SEC_REAL) severity note;
 		report "tmax(SOME_TIMES)  = " & TIME'image(tmax(SOME_TIMES)) severity note;
 		report "tmin(SOME_TIMES)  = " & TIME'image(tmin(SOME_TIMES)) severity note;
 		report "tsum(SOME_TIMES)  = " & TIME'image(tsum(SOME_TIMES)) severity note;
@@ -123,6 +145,7 @@ begin  -- architecture rtl
 	y <= x; -- just assigning '0' leads only to a critical warning instead of an
 					-- error in Vivado.
 
+	-----------------------------------------------------------------------------
 	-- The check for values below zero capture overflows.
 	checkConst1fs: if CONST_1_FS <= 0 sec generate
 		y <= '1';
@@ -176,30 +199,60 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 
-	checkCvtNat1fs: if CVT_NAT_1_FS /= 1 fs generate
+	
+	-----------------------------------------------------------------------------
+	checkCvtInt1fs: if CVT_INT_1_FS /= 1 fs generate
 		y <= '1';
 	end generate;
 
-	checkCvtNat1ps: if CVT_NAT_1_PS /= 1 ps generate
+	checkCvtInt1ps: if CVT_INT_1_PS /= 1 ps generate
 		y <= '1';
 	end generate;
 
-	checkCvtNat1ns: if CVT_NAT_1_NS /= 1 ns generate
+	checkCvtInt1ns: if CVT_INT_1_NS /= 1 ns generate
 		y <= '1';
 	end generate;
 
-	checkCvtNat1us: if CVT_NAT_1_US /= 1 us generate
+	checkCvtInt1us: if CVT_INT_1_US /= 1 us generate
 		y <= '1';
 	end generate;
 
-	checkCvtNat1ms: if CVT_NAT_1_MS /= 1 ms generate
+	checkCvtInt1ms: if CVT_INT_1_MS /= 1 ms generate
 		y <= '1';
 	end generate;
 
-	checkCvtNat1sec: if CVT_NAT_1_SEC /= 1 sec generate
+	checkCvtInt1sec: if CVT_INT_1_SEC /= 1 sec generate
 		y <= '1';
 	end generate;
 
+
+	-----------------------------------------------------------------------------
+	checkCvt1fsInt: if CVT_1_FS_INT /= 1 generate
+		y <= '1';
+	end generate;
+
+	checkCvt1psInt: if CVT_1_PS_INT /= 1 generate
+		y <= '1';
+	end generate;
+
+	checkCvt1nsInt: if CVT_1_NS_INT /= 1 generate
+		y <= '1';
+	end generate;
+
+	checkCvt1usInt: if CVT_1_US_INT /= 1 generate
+		y <= '1';
+	end generate;
+
+	checkCvt1msInt: if CVT_1_MS_INT /= 1 generate
+		y <= '1';
+	end generate;
+
+	checkCvt1secInt: if CVT_1_SEC_INT /= 1 generate
+		y <= '1';
+	end generate;
+
+
+	-----------------------------------------------------------------------------
 	checkCvtReal1p5ps: if CVT_REAL_1p5_PS /= 1.5 ps generate
 		y <= '1';
 	end generate;
@@ -220,6 +273,30 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 
+	
+	-----------------------------------------------------------------------------
+	checkCvt1p5psReal: if CVT_1p5_PS_REAL /= 1.5 generate
+		y <= '1';
+	end generate;
+
+	checkCvt1p5nsReal: if CVT_1p5_NS_REAL /= 1.5 generate
+		y <= '1';
+	end generate;
+
+	checkCvt1p5usReal: if CVT_1p5_US_REAL /= 1.5 generate
+		y <= '1';
+	end generate;
+
+	checkCvt1p5msReal: if CVT_1p5_MS_REAL /= 1.5 generate
+		y <= '1';
+	end generate;
+
+	checkCvt1p5secReal: if CVT_1p5_SEC_REAL /= 1.5 generate
+		y <= '1';
+	end generate;
+
+	
+	-----------------------------------------------------------------------------
 	checkMax: if tmax(SOME_TIMES) /= 1 us generate
 		y <= '1';
 	end generate;
