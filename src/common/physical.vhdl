@@ -69,7 +69,6 @@ package physical is
 		kHz = 1000 Hz;
 		MHz = 1000 kHz;
 		GHz = 1000 MHz;
---	THz = 1000 GHz;
 	end units;
 
 	type BAUD is range 0 to INTEGER'high units
@@ -84,16 +83,15 @@ package physical is
 		KiB = 1024 Byte;
 		MiB = 1024 KiB;
 		GiB = 1024 MiB;
---	TiB = 1024 GiB;
 	end units;
 	
-	--
+	-- vector data types
 	type		T_TIMEVEC						is array(NATURAL range <>) of TIME;
 	type		T_FREQVEC						is array(NATURAL range <>) of FREQ;
 	type		T_BAUDVEC						is array(NATURAL range <>) of BAUD;
 	type		T_MEMVEC						is array(NATURAL range <>) of MEMORY;
 	
-	-- TODO
+	-- if true: TimingToCycles reports difference between expected and actual result
 	constant C_PHYSICAL_REPORT_TIMING_DEVIATION		: BOOLEAN		:= TRUE;
 	
 	-- conversion functions
@@ -109,40 +107,39 @@ package physical is
 	function ite(cond : BOOLEAN; value1 : MEMORY;	value2 : MEMORY)	return MEMORY;
 	
 	-- min/ max for 2 arguments
-	function min(arg1 : TIME; arg2 : TIME) return TIME;						-- Calculates: min(arg1, arg2) for times
-	function min(arg1 : FREQ; arg2 : FREQ) return FREQ;						-- Calculates: min(arg1, arg2) for frequencies
-	function min(arg1 : BAUD; arg2 : BAUD) return BAUD;						-- Calculates: min(arg1, arg2) for symbols per second
-	function min(arg1 : MEMORY; arg2 : MEMORY) return MEMORY;			-- Calculates: min(arg1, arg2) for memory
+	function tmin(arg1 : TIME; arg2 : TIME) return TIME;						-- Calculates: min(arg1, arg2) for times
+	function fmin(arg1 : FREQ; arg2 : FREQ) return FREQ;						-- Calculates: min(arg1, arg2) for frequencies
+	function bmin(arg1 : BAUD; arg2 : BAUD) return BAUD;						-- Calculates: min(arg1, arg2) for symbols per second
+	function mmin(arg1 : MEMORY; arg2 : MEMORY) return MEMORY;			-- Calculates: min(arg1, arg2) for memory
 	
-	function max(arg1 : TIME; arg2 : TIME) return TIME;						-- Calculates: max(arg1, arg2) for times
-	function max(arg1 : FREQ; arg2 : FREQ) return FREQ;						-- Calculates: max(arg1, arg2) for frequencies
-	function max(arg1 : BAUD; arg2 : BAUD) return BAUD;						-- Calculates: max(arg1, arg2) for symbols per second
-	function max(arg1 : MEMORY; arg2 : MEMORY) return MEMORY;			-- Calculates: max(arg1, arg2) for memory
+	function tmax(arg1 : TIME; arg2 : TIME) return TIME;						-- Calculates: max(arg1, arg2) for times
+	function fmax(arg1 : FREQ; arg2 : FREQ) return FREQ;						-- Calculates: max(arg1, arg2) for frequencies
+	function bmax(arg1 : BAUD; arg2 : BAUD) return BAUD;						-- Calculates: max(arg1, arg2) for symbols per second
+	function mmax(arg1 : MEMORY; arg2 : MEMORY) return MEMORY;			-- Calculates: max(arg1, arg2) for memory
 	
 	-- min/max/sum as vector aggregation
-	function min(vec : T_TIMEVEC)	return TIME;										-- Calculates: min(vec) for a time vector
-	function min(vec : T_FREQVEC)	return FREQ;										-- Calculates: min(vec) for a frequency vector
-	function min(vec : T_BAUDVEC)	return BAUD;										-- Calculates: min(vec) for a baud vector
-	function min(vec : T_MEMVEC)	return MEMORY;									-- Calculates: min(vec) for a memory vector
+	function tmin(vec : T_TIMEVEC)	return TIME;										-- Calculates: min(vec) for a time vector
+	function fmin(vec : T_FREQVEC)	return FREQ;										-- Calculates: min(vec) for a frequency vector
+	function bmin(vec : T_BAUDVEC)	return BAUD;										-- Calculates: min(vec) for a baud vector
+	function mmin(vec : T_MEMVEC)	return MEMORY;									-- Calculates: min(vec) for a memory vector
 	
-	function max(vec : T_TIMEVEC)	return TIME;										-- Calculates: max(vec) for a time vector
-	function max(vec : T_FREQVEC)	return FREQ;										-- Calculates: max(vec) for a frequency vector
-	function max(vec : T_BAUDVEC)	return BAUD;										-- Calculates: max(vec) for a baud vector
-	function max(vec : T_MEMVEC)	return MEMORY;									-- Calculates: max(vec) for a memory vector
+	function tmax(vec : T_TIMEVEC)	return TIME;										-- Calculates: max(vec) for a time vector
+	function fmax(vec : T_FREQVEC)	return FREQ;										-- Calculates: max(vec) for a frequency vector
+	function bmax(vec : T_BAUDVEC)	return BAUD;										-- Calculates: max(vec) for a baud vector
+	function mmax(vec : T_MEMVEC)	return MEMORY;									-- Calculates: max(vec) for a memory vector
 	
-	-- QUESTION: some sum functions are not meaningful -> orthogonal function/type system
-	function sum(vec : T_TIMEVEC)	return TIME;										-- Calculates: sum(vec) for a time vector
-	function sum(vec : T_FREQVEC)	return FREQ;										-- Calculates: sum(vec) for a frequency vector
-	function sum(vec : T_BAUDVEC)	return BAUD;										-- Calculates: sum(vec) for a baud vector
-	function sum(vec : T_MEMVEC)	return MEMORY;									-- Calculates: sum(vec) for a memory vector
+	function tsum(vec : T_TIMEVEC)	return TIME;										-- Calculates: sum(vec) for a time vector
+	function fsum(vec : T_FREQVEC)	return FREQ;										-- Calculates: sum(vec) for a frequency vector
+	function bsum(vec : T_BAUDVEC)	return BAUD;										-- Calculates: sum(vec) for a baud vector
+	function msum(vec : T_MEMVEC)	return MEMORY;									-- Calculates: sum(vec) for a memory vector
 	
 	-- convert standard types (NATURAL, REAL) to time (TIME)
-	function fs2Time(t_fs : NATURAL)		return TIME;
-	function ps2Time(t_ps : NATURAL)		return TIME;
-	function ns2Time(t_ns : NATURAL)		return TIME;
-	function us2Time(t_us : NATURAL)		return TIME;
-	function ms2Time(t_ms : NATURAL)		return TIME;
-	function sec2Time(t_sec : NATURAL)	return TIME;
+	function fs2Time(t_fs : INTEGER)		return TIME;
+	function ps2Time(t_ps : INTEGER)		return TIME;
+	function ns2Time(t_ns : INTEGER)		return TIME;
+	function us2Time(t_us : INTEGER)		return TIME;
+	function ms2Time(t_ms : INTEGER)		return TIME;
+	function sec2Time(t_sec : INTEGER)	return TIME;
 	
 	function fs2Time(t_fs : REAL)				return TIME;
 	function ps2Time(t_ps : REAL)				return TIME;
@@ -156,26 +153,22 @@ package physical is
 	function kHz2Time(f_kHz : NATURAL)	return TIME;
 	function MHz2Time(f_MHz : NATURAL)	return TIME;
 	function GHz2Time(f_GHz : NATURAL)	return TIME;
---	function THz2Time(f_THz : NATURAL)	return TIME;
 
 	function Hz2Time(f_Hz : REAL)				return TIME;
 	function kHz2Time(f_kHz : REAL) 		return TIME;
 	function MHz2Time(f_MHz : REAL) 		return TIME;
 	function GHz2Time(f_GHz : REAL) 		return TIME;
---	function THz2Time(f_THz : REAL) 		return TIME;
 	
 	-- convert standard types (NATURAL, REAL) to frequency (FREQ)
 	function Hz2Freq(f_Hz : NATURAL)		return FREQ;
 	function kHz2Freq(f_kHz : NATURAL)	return FREQ;
 	function MHz2Freq(f_MHz : NATURAL)	return FREQ;
 	function GHz2Freq(f_GHz : NATURAL)	return FREQ;
---	function THz2Freq(f_THz : NATURAL)	return FREQ;
 	
 	function Hz2Freq(f_Hz : REAL)				return FREQ;
 	function kHz2Freq(f_kHz : REAL)			return FREQ;
 	function MHz2Freq(f_MHz : REAL)			return FREQ;
 	function GHz2Freq(f_GHz : REAL)			return FREQ;
---	function THz2Freq(f_THz : REAL)			return FREQ;
 	
 	-- convert physical types to standard type (REAL)
 	function to_real(t : TIME;			scale : TIME)		return REAL;
@@ -401,56 +394,56 @@ package body physical is
 	-- min/ max for 2 arguments
 	-- ===========================================================================
 	-- Calculates: min(arg1, arg2) for times
-	function min(arg1 : TIME; arg2 : TIME) return TIME is
+	function tmin(arg1 : TIME; arg2 : TIME) return TIME is
 	begin
 		if (arg1 < arg2) then return arg1; end if;
 		return arg2;
 	end function;
 	
 	-- Calculates: min(arg1, arg2) for frequencies
-	function min(arg1 : FREQ; arg2 : FREQ) return FREQ is
+	function fmin(arg1 : FREQ; arg2 : FREQ) return FREQ is
 	begin
 		if (arg1 < arg2) then return arg1; end if;
 		return arg2;
 	end function;
 	
 	-- Calculates: min(arg1, arg2) for symbols per second
-	function min(arg1 : BAUD; arg2 : BAUD) return BAUD is
+	function bmin(arg1 : BAUD; arg2 : BAUD) return BAUD is
 	begin
 		if (arg1 < arg2) then return arg1; end if;
 		return arg2;
 	end function;
 	
 	-- Calculates: min(arg1, arg2) for memory
-	function min(arg1 : MEMORY; arg2 : MEMORY) return MEMORY is
+	function mmin(arg1 : MEMORY; arg2 : MEMORY) return MEMORY is
 	begin
 		if (arg1 < arg2) then return arg1; end if;
 		return arg2;
 	end function;
 	
 	-- Calculates: max(arg1, arg2) for times
-	function max(arg1 : TIME; arg2 : TIME) return TIME is
+	function tmax(arg1 : TIME; arg2 : TIME) return TIME is
 	begin
 		if (arg1 > arg2) then return arg1; end if;
 		return arg2;
 	end function;
 
 	-- Calculates: max(arg1, arg2) for frequencies
-	function max(arg1 : FREQ; arg2 : FREQ) return FREQ is
+	function fmax(arg1 : FREQ; arg2 : FREQ) return FREQ is
 	begin
 		if (arg1 > arg2) then return arg1; end if;
 		return arg2;
 	end function;
 
 	-- Calculates: max(arg1, arg2) for symbols per second
-	function max(arg1 : BAUD; arg2 : BAUD) return BAUD is
+	function bmax(arg1 : BAUD; arg2 : BAUD) return BAUD is
 	begin
 		if (arg1 > arg2) then return arg1; end if;
 		return arg2;
 	end function;
 
 	-- Calculates: max(arg1, arg2) for memory
-	function max(arg1 : MEMORY; arg2 : MEMORY) return MEMORY is
+	function mmax(arg1 : MEMORY; arg2 : MEMORY) return MEMORY is
 	begin
 		if (arg1 > arg2) then return arg1; end if;
 		return arg2;
@@ -459,7 +452,7 @@ package body physical is
 	-- min/max/sum as vector aggregation
 	-- ===========================================================================
 	-- Calculates: min(vec) for a time vector
-	function min(vec : T_TIMEVEC)	return TIME is
+	function tmin(vec : T_TIMEVEC)	return TIME is
 		variable  res : TIME := TIME'high;
 	begin
 		for i in vec'range loop
@@ -471,11 +464,11 @@ package body physical is
 	end;
 	
 	-- Calculates: min(vec) for a frequency vector
-	function min(vec : T_FREQVEC)	return FREQ is
+	function fmin(vec : T_FREQVEC)	return FREQ is
 		variable  res : FREQ := FREQ'high;
 	begin
 		for i in vec'range loop
-			if (vec(i) < res) then
+			if (integer(FREQ'pos(vec(i))) < integer(FREQ'pos(res))) then -- Quartus workaround
 				res := vec(i);
 			end if;
 		end loop;
@@ -483,11 +476,11 @@ package body physical is
 	end;
 	
 	-- Calculates: min(vec) for a baud vector
-	function min(vec : T_BAUDVEC)	return BAUD is
+	function bmin(vec : T_BAUDVEC)	return BAUD is
 		variable  res : BAUD := BAUD'high;
 	begin
 		for i in vec'range loop
-			if (vec(i) < res) then
+			if (integer(BAUD'pos(vec(i))) < integer(BAUD'pos(res))) then -- Quartus workaround
 				res := vec(i);
 			end if;
 		end loop;
@@ -495,11 +488,11 @@ package body physical is
 	end;
 	
 	-- Calculates: min(vec) for a memory vector
-	function min(vec : T_MEMVEC)	return MEMORY is
+	function mmin(vec : T_MEMVEC)	return MEMORY is
 		variable  res : MEMORY := MEMORY'high;
 	begin
 		for i in vec'range loop
-			if (vec(i) < res) then
+			if (integer(MEMORY'pos(vec(i))) < integer(MEMORY'pos(res))) then -- Quartus workaround
 				res := vec(i);
 			end if;
 		end loop;
@@ -507,7 +500,7 @@ package body physical is
 	end;
 	
 	-- Calculates: max(vec) for a time vector
-	function max(vec : T_TIMEVEC)	return TIME is
+	function tmax(vec : T_TIMEVEC)	return TIME is
 		variable  res : TIME := TIME'low;
 	begin
 		for i in vec'range loop
@@ -519,11 +512,11 @@ package body physical is
 	end;
 	
 	-- Calculates: max(vec) for a frequency vector
-	function max(vec : T_FREQVEC)	return FREQ is
+	function fmax(vec : T_FREQVEC)	return FREQ is
 		variable  res : FREQ := FREQ'low;
 	begin
 		for i in vec'range loop
-			if (vec(i) > res) then
+			if (integer(FREQ'pos(vec(i))) > integer(FREQ'pos(res))) then -- Quartus workaround
 				res := vec(i);
 			end if;
 		end loop;
@@ -531,11 +524,11 @@ package body physical is
 	end;
 	
 	-- Calculates: max(vec) for a baud vector
-	function max(vec : T_BAUDVEC)	return BAUD is
+	function bmax(vec : T_BAUDVEC)	return BAUD is
 		variable  res : BAUD := BAUD'low;
 	begin
 		for i in vec'range loop
-			if (vec(i) > res) then
+			if (integer(BAUD'pos(vec(i))) > integer(BAUD'pos(res))) then -- Quartus workaround
 				res := vec(i);
 			end if;
 		end loop;
@@ -543,11 +536,11 @@ package body physical is
 	end;
 	
 	-- Calculates: max(vec) for a memory vector
-	function max(vec : T_MEMVEC)	return MEMORY is
+	function mmax(vec : T_MEMVEC)	return MEMORY is
 		variable  res : MEMORY := MEMORY'low;
 	begin
 		for i in vec'range loop
-			if (vec(i) > res) then
+			if (integer(MEMORY'pos(vec(i))) > integer(MEMORY'pos(res))) then -- Quartus workaround
 				res := vec(i);
 			end if;
 		end loop;
@@ -555,7 +548,7 @@ package body physical is
 	end;
 	
 	-- Calculates: sum(vec) for a time vector
-	function sum(vec : T_TIMEVEC)	return TIME is
+	function tsum(vec : T_TIMEVEC)	return TIME is
 		variable  res : TIME := 0 fs;
 	begin
 		for i in vec'range loop
@@ -565,7 +558,7 @@ package body physical is
 	end;
 	
 	-- Calculates: sum(vec) for a frequency vector
-	function sum(vec : T_FREQVEC)	return FREQ is
+	function fsum(vec : T_FREQVEC)	return FREQ is
 		variable  res : FREQ := 0 Hz;
 	begin
 		for i in vec'range loop
@@ -575,7 +568,7 @@ package body physical is
 	end;
 	
 	-- Calculates: sum(vec) for a baud vector
-	function sum(vec : T_BAUDVEC)	return BAUD is
+	function bsum(vec : T_BAUDVEC)	return BAUD is
 		variable  res : BAUD := 0 Bd;
 	begin
 		for i in vec'range loop
@@ -585,7 +578,7 @@ package body physical is
 	end;
 	
 	-- Calculates: sum(vec) for a memory vector
-	function sum(vec : T_MEMVEC)	return MEMORY is
+	function msum(vec : T_MEMVEC)	return MEMORY is
 		variable  res : MEMORY := 0 Byte;
 	begin
 		for i in vec'range loop
@@ -596,32 +589,32 @@ package body physical is
 	
 	-- convert standard types (NATURAL, REAL) to time (TIME)
 	-- ===========================================================================
-	function fs2Time(t_fs : NATURAL) return TIME is
+	function fs2Time(t_fs : INTEGER) return TIME is
 	begin
 		return t_fs * 1 fs;
 	end function;
 	
-	function ps2Time(t_ps : NATURAL) return TIME is
+	function ps2Time(t_ps : INTEGER) return TIME is
 	begin
 		return t_ps * 1 ps;
 	end function;
 	
-	function ns2Time(t_ns : NATURAL) return TIME is
+	function ns2Time(t_ns : INTEGER) return TIME is
 	begin
 		return t_ns * 1 ns;
 	end function;
 	
-	function us2Time(t_us : NATURAL) return TIME is
+	function us2Time(t_us : INTEGER) return TIME is
 	begin
 		return t_us * 1 us;
 	end function;
 	
-	function ms2Time(t_ms : NATURAL) return TIME is
+	function ms2Time(t_ms : INTEGER) return TIME is
 	begin
 		return t_ms * 1 ms;
 	end function;
 	
-	function sec2Time(t_sec : NATURAL) return TIME is
+	function sec2Time(t_sec : INTEGER) return TIME is
 	begin
 		return t_sec * 1 sec;
 	end function;
@@ -679,12 +672,6 @@ package body physical is
 		return 1 ns / f_GHz;
 	end function;
 	
---	function THz2Time(f_THz : NATURAL) return TIME is
---	begin
---		return 1 ps / f_THz;
---	end function;
-
-	
 	function Hz2Time(f_Hz : REAL) return TIME is
 	begin
 		return 1 sec / f_Hz;
@@ -704,11 +691,6 @@ package body physical is
 	begin
 		return 1 ns / f_GHz;
 	end function;
-	
---	function THz2Time(f_THz : REAL) return TIME is
---	begin
---		return 1 ps / f_THz;
---	end function;
 	
 	-- convert standard types (NATURAL, REAL) to frequency (FREQ)
 	-- ===========================================================================
@@ -732,11 +714,6 @@ package body physical is
 		return f_GHz * 1 GHz;
 	end function;
 	
---	function THz2Freq(f_THz : NATURAL) return FREQ is
---	begin
---		return f_THz * 1 THz;
---	end function;
-	
 	function Hz2Freq(f_Hz : REAL) return FREQ is
 	begin
 		return f_Hz * 1 Hz;
@@ -756,11 +733,6 @@ package body physical is
 	begin
 		return f_GHz * 1 GHz;
 	end function;
-	
---	function THz2Freq(f_THz : REAL )return FREQ is
---	begin
---		return f_THz * 1 THz;
---	end function;
 	
 	-- convert physical types to standard type (REAL)
 	-- ===========================================================================
@@ -803,7 +775,6 @@ package body physical is
 		elsif	(scale = 1 KiB)		then	return div(mem, 1 KiB);
 		elsif	(scale = 1 MiB)		then	return div(mem, 1 MiB);
 		elsif	(scale = 1 GiB)		then	return div(mem, 1 GiB);
---	elsif	(scale = 1 TiB)		then	return div(mem, 1 TiB);
 		else	report "to_real: scale must have a value of '1 <unit>'" severity failure;
 		end if;
 	end;
@@ -873,7 +844,7 @@ package body physical is
 			when others =>	report "RoundingStyle '" & T_ROUNDING_STYLE'image(RoundingStyle) & "' not supported." severity failure;
 		end case;
 		res_time	:= CyclesToDelay(res_nat, Clock_Period);
-		res_dev		:= (1.0 - div(res_time, Timing)) * 100.0;
+		res_dev		:= (div(res_time, Timing) - 1.0) * 100.0;
 		
 		if (POC_VERBOSE = TRUE) then
 			report "TimingToCycles: " & 	CR &
@@ -885,14 +856,14 @@ package body physical is
 			severity note;
 		end if;
 			
---		if (C_PHYSICAL_REPORT_TIMING_DEVIATION = TRUE) then
---			report "TimingToCycles (timing deviation report): " & CR &
---						 "  timing to achieve: " & to_string(Timing) & CR &
---						 "  calculated cycles: " & INTEGER'image(res_nat) & " cy" & CR &
---						 "  resulting timing:  " & to_string(res_time) & CR &
---						 "  deviation:         " & to_string(Timing - res_time) & " (" & str_format(res_dev, 2) & "%)"
---			severity note;
---		end if;
+		if (C_PHYSICAL_REPORT_TIMING_DEVIATION = TRUE) then
+			report "TimingToCycles (timing deviation report): " & CR &
+						 "  timing to achieve: " & to_string(Timing, 3) & CR &
+						 "  calculated cycles: " & INTEGER'image(res_nat) & " cy" & CR &
+						 "  resulting timing:  " & to_string(res_time, 3) & CR &
+						 "  deviation:         " & to_string(res_time - Timing, 3) & " (" & str_format(res_dev, 2) & "%)"
+			severity note;
+		end if;
 		
 		return res_nat;
 	end;
@@ -914,30 +885,33 @@ package body physical is
 	
 	-- convert and format physical types to STRING
 	function to_string(t : TIME; precision : NATURAL) return STRING is
+		variable tt     : TIME;
 		variable unit		: STRING(1 to 3)	:= (others => C_POC_NUL);
 		variable value	: REAL;
 	begin
-		if (t < 1 ps) then
+		tt := abs t;
+		if (tt < 1 ps) then
 			unit(1 to 2)	:= "fs";
-			value					:= to_real(t, 1 fs);
-		elsif (t < 1 ns) then
+			value					:= to_real(tt, 1 fs);
+		elsif (tt < 1 ns) then
 			unit(1 to 2)	:= "ps";
-			value					:= to_real(t, 1 ps);
-		elsif (t < 1 us) then
+			value					:= to_real(tt, 1 ps);
+		elsif (tt < 1 us) then
 			unit(1 to 2)	:= "ns";
-			value					:= to_real(t, 1 ns);
-		elsif (t < 1 ms) then
+			value					:= to_real(tt, 1 ns);
+		elsif (tt < 1 ms) then
 			unit(1 to 2)	:= "us";
-			value					:= to_real(t, 1 us);
-		elsif (t < 1 sec) then
+			value					:= to_real(tt, 1 us);
+		elsif (tt < 1 sec) then
 			unit(1 to 2)	:= "ms";
-			value					:= to_real(t, 1 ms);
+			value					:= to_real(tt, 1 ms);
 		else
 			unit					:= "sec";
-			value					:= to_real(t, 1 sec);
+			value					:= to_real(tt, 1 sec);
 		end if;
 
-		return str_format(value, precision) & " " & str_trim(unit);
+		return ite(t >= 0 fs, str_format(value, precision) & " " & str_trim(unit),
+							      '-' & str_format(value, precision) & " " & str_trim(unit));
 	end function;
 		
 	function to_string(f : FREQ; precision : NATURAL) return STRING is
@@ -953,12 +927,9 @@ package body physical is
 		elsif (f < 1 GHz) then
 			unit					:= "MHz";
 			value					:= to_real(f, 1 MHz);
-		else	--if (f < 1 THz) then
+		else
 			unit					:= "GHz";
 			value					:= to_real(f, 1 GHz);
---	else
---		unit					:= "THz";
---		value					:= to_real(f, 1 THz);
 		end if;
 
 		return str_format(value, precision) & " " & str_trim(unit);
@@ -998,12 +969,9 @@ package body physical is
 		elsif (mem < 1 GiB) then
 			unit					:= "MiB";
 			value					:= to_real(mem, 1 MiB);
-		else	--if (mem < 1 TiB) then
+		else
 			unit					:= "GiB";
 			value					:= to_real(mem, 1 GiB);
---	else
---		unit					:= "TiB";
---		value					:= to_real(mem, 1 TiB);
 		end if;
 
 		return str_format(value, precision) & " " & str_trim(unit);

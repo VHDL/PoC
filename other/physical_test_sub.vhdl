@@ -11,7 +11,15 @@
 -- 
 -- Description:
 -- ------------------------------------
---		TODO
+-- Synthesis reports a multiple driver error/critical warning when the test
+-- below fails. 
+--
+-- The values to check are defined via generics to allow debugging within Vivado
+-- because Vivado does not support the `report` statement during synthesis.
+-- Instead, it prints the assigned values in the synthesis report.
+-- But, ISE does not print them in the synthesis report by default, thus a
+-- `report` statement is required.
+-- Quartus, reports them both ways.
 --
 -- License:
 -- ============================================================================
@@ -41,57 +49,45 @@ use poc.utils.all;
 entity physical_test_sub is
   
   generic (
-    CLOCK_FREQ   : freq;
-    DELAY_TIME   : time;
-    DELAY_TIME2  : time;
-    CLOCK_PERIOD : time;
-    STEPS				 : integer;
-    TIME_1_FS    : time;
-    TIME_1_PS    : time;
-    TIME_1_NS    : time;
-    TIME_1_US    : time;
-    TIME_1_MS    : time;
-    TIME_1_S     : time;
-    TIME_1_MIN   : time;
-    TIME_1_HR    : time);
+    CLOCK_FREQ   	: freq;
+    DELAY_TIME   	: time;
+    CLOCK_PERIOD 	: time;
+    STEPS				 	: integer;
+    EXPECT_STEPS 	: integer);
 
-  port (
-    clk : in  std_logic;
-    d	: in  std_logic;
-    q	: out std_logic);
+	port (
+		clk : in	std_logic;
+		d		: in	std_logic;
+		q		: out std_logic);
 
 end entity physical_test_sub;
 
 architecture rtl of physical_test_sub is
 	function f return boolean is
 	begin
-		report "DELAY_TIME    = " & TIME'image(DELAY_TIME  ) severity note;
-		report "DELAY_TIME2   = " & TIME'image(DELAY_TIME2 ) severity note;
-		report "CLOCK_PERIOD  = " & TIME'image(CLOCK_PERIOD) severity note;
+		report "CLOCK_FREQ   = " & FREQ'image(CLOCK_FREQ  ) severity note;
+		report "DELAY_TIME   = " & TIME'image(DELAY_TIME  ) severity note;
+		report "CLOCK_PERIOD = " & TIME'image(CLOCK_PERIOD) severity note;
+		report "STEPS        = " & integer'image(STEPS       ) severity note;
+		report "EXPECT_STEPS = " & integer'image(EXPECT_STEPS) severity note;
 	return true;
 	end f;
 	
 	constant C : boolean := f;
 
+	-- prevent of generating to much flip-flops
+	signal reg : std_logic_vector(imin(1000, STEPS)-1 downto 0);
+	
 begin  -- architecture rtl
 
-	g0: if STEPS = 0 generate
+	reg <= reg(reg'left-1 downto 0) & d when rising_edge(clk);
+
+	-- This should be the only one assignment of output q.
+	q	<= reg(reg'left);
+
+	gError: if STEPS /= EXPECT_STEPS generate
+		-- Several variants have been tried, but Vivado issues only a critical
+		-- warning instead of an error.
 		q <= d;
-	end generate g0;
-
-  g1: if STEPS = 1 generate
-    q <= d when rising_edge(clk);
-  end generate g1;
-
-  g2: if STEPS > 1 generate
-    signal reg : std_logic_vector(imax(STEPS,2)-1 downto 0);
-  begin
-    reg <= reg(reg'left-1 downto 0) & d when rising_edge(clk);
-    q	<= reg(reg'left);
-  end generate g2;
-
-	gError: if TIME_1_HR < 0 sec generate
-		-- The expression is true on Vivado, thus provoke an error.
-		q <= '1';
-	end generate gError;
+	end generate;
 end architecture rtl;
