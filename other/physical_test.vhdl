@@ -42,70 +42,23 @@ use poc.utils.all;
 entity physical_test is
   
 	generic (
-		ENABLE_TIME_TEST	 : boolean := true;
-		ENABLE_FREQ_TEST	 : boolean := true;
-		ENABLE_BAUD_TEST	 : boolean := true;
-		ENABLE_MEMORY_TEST : boolean := true;
-		ENABLE_SUB_TEST		 : boolean := true);
+		ENABLE_TIME_TEST			: boolean := true;
+		ENABLE_FREQ_TEST			: boolean := true;
+		ENABLE_BAUD_TEST			: boolean := true;
+		ENABLE_MEMORY_TEST		: boolean := true;
+		ENABLE_FREQ2TIME_TEST : boolean := true;
+		ENABLE_SUB_TEST				: boolean := true);
 
 	port (
 		clk		: in	std_logic;
 		d			: in	std_logic;
 		q			: out std_logic_vector(2 downto 0);
 		x			: in	std_logic;
-		y     : out std_logic_vector(3 downto 0));
+		y     : out std_logic_vector(4 downto 0));
 
 end entity;
 
 architecture rtl of physical_test is
-	function f return boolean is
-	begin
-	  report "to_freq( 500 ps ) = " & FREQ'image(to_freq( 500 ps )) severity note;
-	  report "to_freq(   1 ns ) = " & FREQ'image(to_freq(   1 ns )) severity note;
-	  report "to_freq(   5 ns ) = " & FREQ'image(to_freq(   5 ns )) severity note;
-	  report "to_freq(  10 ns ) = " & FREQ'image(to_freq(  10 ns )) severity note;
-	  report "to_freq(  50 ns ) = " & FREQ'image(to_freq(  50 ns )) severity note;
-	  report "to_freq( 100 ns ) = " & FREQ'image(to_freq( 100 ns )) severity note;
-	  report "to_freq( 500 ns ) = " & FREQ'image(to_freq( 500 ns )) severity note;
-	  report "to_freq(   1 us ) = " & FREQ'image(to_freq(   1 us )) severity note;
-	  report "to_freq(   5 us ) = " & FREQ'image(to_freq(   5 us )) severity note;
-	  report "to_freq(  10 us ) = " & FREQ'image(to_freq(  10 us )) severity note;
-	  report "to_freq(  50 us ) = " & FREQ'image(to_freq(  50 us )) severity note;
-	  report "to_freq( 100 us ) = " & FREQ'image(to_freq( 100 us )) severity note;
-	  report "to_freq( 500 us ) = " & FREQ'image(to_freq( 500 us )) severity note;
-	  report "to_freq(   1 ms ) = " & FREQ'image(to_freq(   1 ms )) severity note;
-	  report "to_freq(   5 ms ) = " & FREQ'image(to_freq(   5 ms )) severity note;
-	  report "to_freq(  10 ms ) = " & FREQ'image(to_freq(  10 ms )) severity note;
-	  report "to_freq(  50 ms ) = " & FREQ'image(to_freq(  50 ms )) severity note;
-	  report "to_freq( 100 ms ) = " & FREQ'image(to_freq( 100 ms )) severity note;
-	  report "to_freq( 500 ms ) = " & FREQ'image(to_freq( 500 ms )) severity note;
-	  report "to_freq(   1 sec) = " & FREQ'image(to_freq(   1 sec)) severity note;
-	  report "to_freq(   1  Bd) = " & FREQ'image(to_freq(   1 Bd )) severity note;
-	  report "to_freq(   2  Bd) = " & FREQ'image(to_freq(   2 Bd )) severity note;
-	  report "to_freq(   1 kBd) = " & FREQ'image(to_freq(   1 kBd)) severity note;
-	  report "to_freq(   2 kBd) = " & FREQ'image(to_freq(   2 kBd)) severity note;
-	  report "to_freq(   1 MBd) = " & FREQ'image(to_freq(   1 MBd)) severity note;
-	  report "to_freq(   2 MBd) = " & FREQ'image(to_freq(   2 MBd)) severity note;
-	  report "to_freq(1000 MBd) = " & FREQ'image(to_freq(1000 MBd)) severity note;
-	  report "to_freq(2000 MBd) = " & FREQ'image(to_freq(2000 MBd)) severity note;
-	  report "to_time(   1  Hz) = " & TIME'image(to_time(   1 Hz )) severity note;
-	  report "to_time(   2  Hz) = " & TIME'image(to_time(   2 Hz )) severity note;
-	  report "to_time(   1 kHz) = " & TIME'image(to_time(   1 kHz)) severity note;
-	  report "to_time(   2 kHz) = " & TIME'image(to_time(   2 kHz)) severity note;
-	  report "to_time(   1 MHz) = " & TIME'image(to_time(   1 MHz)) severity note;
-	  report "to_time(   2 MHz) = " & TIME'image(to_time(   2 MHz)) severity note;
-	  report "to_time(1000 MHz) = " & TIME'image(to_time(1000 MHz)) severity note;
-	  report "to_time(2000 MHz) = " & TIME'image(to_time(2000 MHz)) severity note;
-		report "2.5 * 2   us = " & TIME'image(2.5 * 2   us) severity note;
-	  report "2   * 2.5 us = " & TIME'image(2   * 2.5 us) severity note;
-	return true;
-	end f;
-	
-	constant C : boolean := f;
-  
---	constant STEPS 				: natural := TimingToCycles(DELAY_TIME, CLOCK_FREQ);
---	constant CLOCK_PERIOD : time		:= to_time(CLOCK_FREQ);
-
 begin  -- architecture rtl
 
 	gEnableTime: if ENABLE_TIME_TEST generate
@@ -134,6 +87,13 @@ begin  -- architecture rtl
 			port map (
 				x => x,
 				y => y(3));
+	end generate;
+	
+	gEnableFreq2time: if ENABLE_FREQ2TIME_TEST generate
+		test_freq2time: entity work.physical_test_freq2time
+			port map (
+				x => x,
+				y => y(4));
 	end generate;
 	
 	gEnableSub: if ENABLE_SUB_TEST generate
