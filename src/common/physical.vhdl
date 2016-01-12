@@ -468,7 +468,7 @@ package body physical is
 		variable  res : FREQ := FREQ'high;
 	begin
 		for i in vec'range loop
-			if (vec(i) < res) then
+			if (integer(FREQ'pos(vec(i))) < integer(FREQ'pos(res))) then -- Quartus workaround
 				res := vec(i);
 			end if;
 		end loop;
@@ -480,7 +480,7 @@ package body physical is
 		variable  res : BAUD := BAUD'high;
 	begin
 		for i in vec'range loop
-			if (vec(i) < res) then
+			if (integer(BAUD'pos(vec(i))) < integer(BAUD'pos(res))) then -- Quartus workaround
 				res := vec(i);
 			end if;
 		end loop;
@@ -492,7 +492,7 @@ package body physical is
 		variable  res : MEMORY := MEMORY'high;
 	begin
 		for i in vec'range loop
-			if (vec(i) < res) then
+			if (integer(MEMORY'pos(vec(i))) < integer(MEMORY'pos(res))) then -- Quartus workaround
 				res := vec(i);
 			end if;
 		end loop;
@@ -516,7 +516,7 @@ package body physical is
 		variable  res : FREQ := FREQ'low;
 	begin
 		for i in vec'range loop
-			if (vec(i) > res) then
+			if (integer(FREQ'pos(vec(i))) > integer(FREQ'pos(res))) then -- Quartus workaround
 				res := vec(i);
 			end if;
 		end loop;
@@ -528,7 +528,7 @@ package body physical is
 		variable  res : BAUD := BAUD'low;
 	begin
 		for i in vec'range loop
-			if (vec(i) > res) then
+			if (integer(BAUD'pos(vec(i))) > integer(BAUD'pos(res))) then -- Quartus workaround
 				res := vec(i);
 			end if;
 		end loop;
@@ -540,7 +540,7 @@ package body physical is
 		variable  res : MEMORY := MEMORY'low;
 	begin
 		for i in vec'range loop
-			if (vec(i) > res) then
+			if (integer(MEMORY'pos(vec(i))) > integer(MEMORY'pos(res))) then -- Quartus workaround
 				res := vec(i);
 			end if;
 		end loop;

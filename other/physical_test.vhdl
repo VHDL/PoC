@@ -41,16 +41,19 @@ use poc.utils.all;
 
 entity physical_test is
   
-  generic (
-		ENABLE_SUB_TEST  : boolean := true;
-		ENABLE_TIME_TEST : boolean := true);
+	generic (
+		ENABLE_TIME_TEST	 : boolean := true;
+		ENABLE_FREQ_TEST	 : boolean := true;
+		ENABLE_BAUD_TEST	 : boolean := true;
+		ENABLE_MEMORY_TEST : boolean := true;
+		ENABLE_SUB_TEST		 : boolean := true);
 
 	port (
 		clk		: in	std_logic;
 		d			: in	std_logic;
 		q			: out std_logic_vector(2 downto 0);
 		x			: in	std_logic;
-		yTime : out std_logic);
+		y     : out std_logic_vector(3 downto 0));
 
 end entity;
 
@@ -105,6 +108,34 @@ architecture rtl of physical_test is
 
 begin  -- architecture rtl
 
+	gEnableTime: if ENABLE_TIME_TEST generate
+		test_time: entity work.physical_test_time
+			port map (
+				x => x,
+				y => y(0));
+	end generate;
+	
+	gEnableFreq: if ENABLE_FREQ_TEST generate
+		test_freq: entity work.physical_test_freq
+			port map (
+				x => x,
+				y => y(1));
+	end generate;
+	
+	gEnableBaud: if ENABLE_BAUD_TEST generate
+		test_baud: entity work.physical_test_baud
+			port map (
+				x => x,
+				y => y(2));
+	end generate;
+	
+	gEnableMemory: if ENABLE_MEMORY_TEST generate
+		test_memory: entity work.physical_test_memory
+			port map (
+				x => x,
+				y => y(3));
+	end generate;
+	
 	gEnableSub: if ENABLE_SUB_TEST generate
 		sub0: entity work.physical_test_sub
 			generic map (
@@ -139,12 +170,5 @@ begin  -- architecture rtl
 				clk => clk,
 				d	  => d,
 				q	  => q(2));
-	end generate;
-	
-	gEnableTime: if ENABLE_TIME_TEST generate
-		test_time: entity work.physical_test_time
-			port map (
-				x => x,
-				y => yTime);
 	end generate;
 end architecture rtl;
