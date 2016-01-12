@@ -51,19 +51,19 @@ entity physical_test_baud is
 	generic (
 		CONST_1_BD			 : baud			 := 1 Bd;
 		CONST_1_KBD			 : baud			 := 1 kBd;
-		CONST_1p125_KBD	 : baud			 := 1.125 kBd;
+		CONST_1p125_KBD	 : baud			 := 1125 Bd;
 		CONST_1_MBD			 : baud			 := 1 MBd;
-		CONST_1p125_MBD	 : baud			 := 1.125 MBd;
-		CONST_1_GBD			 : baud			 := 1 GBd;
-		CONST_1p125_GBD	 : baud			 := 1.125 GBd;
+		CONST_1p125_MBD	 : baud			 := 1125 kBd;
+		CONST_1_GBD			 : baud			 := 1000 MBd;
+		CONST_1p125_GBD	 : baud			 := 1125 MBd;
 		CVT_1_BD_INT		 : integer	 := to_int(1 Bd, 1 Bd);
 		CVT_1_KBD_INT		 : integer	 := to_int(1 kBd, 1 kBd);
 		CVT_1_MBD_INT		 : integer	 := to_int(1 MBd, 1 MBd);
-		CVT_1_GBD_INT		 : integer	 := to_int(1 GBd, 1 GBd);
-		CVT_1p5_KBD_REAL : real			 := to_real(1.5 kBd, 1 kBd);
-		CVT_1p5_MBD_REAL : real			 := to_real(1.5 MBd, 1 MBd);
-		CVT_1p5_GBD_REAL : real			 := to_real(1.5 GBd, 1 GBd);
-		SOME_BAUDS			 : T_BAUDVEC := (1 GBd, 234 MBd, 567 kBd, 890 Bd)
+		CVT_1_GBD_INT		 : integer	 := to_int(1000 MBd, 1000 MBd);
+		CVT_1p5_KBD_REAL : real			 := to_real(1500 Bd, 1 kBd);
+		CVT_1p5_MBD_REAL : real			 := to_real(1500 kBd, 1 MBd);
+		CVT_1p5_GBD_REAL : real			 := to_real(1500 MBd, 1000 MBd);
+		SOME_BAUDS			 : T_BAUDVEC := (1000 MBd, 234 MBd, 567 kBd, 890 Bd)
 	);
 
   port (
@@ -167,7 +167,7 @@ begin  -- architecture rtl
 
 	
 	-----------------------------------------------------------------------------
-	checkMax: if bmax(SOME_BAUDS) /= 1 GBd generate
+	checkMax: if bmax(SOME_BAUDS) /= 1000 MBd generate
 		y <= '1';
 	end generate;
 

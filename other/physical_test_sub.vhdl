@@ -50,8 +50,8 @@ entity physical_test_sub is
   
   generic (
     CLOCK_FREQ   	: freq;
-    DELAY_TIME   	: time;
-    CLOCK_PERIOD 	: time;
+    DELAY_TIME   	: t_time;
+    CLOCK_PERIOD 	: t_time;
     STEPS				 	: integer;
     EXPECT_STEPS 	: integer);
 
@@ -66,8 +66,8 @@ architecture rtl of physical_test_sub is
 	function f return boolean is
 	begin
 		report "CLOCK_FREQ   = " & FREQ'image(CLOCK_FREQ  ) severity note;
-		report "DELAY_TIME   = " & TIME'image(DELAY_TIME  ) severity note;
-		report "CLOCK_PERIOD = " & TIME'image(CLOCK_PERIOD) severity note;
+		report "DELAY_TIME   = " & T_TIME'image(DELAY_TIME  ) severity note;
+		report "CLOCK_PERIOD = " & T_TIME'image(CLOCK_PERIOD) severity note;
 		report "STEPS        = " & integer'image(STEPS       ) severity note;
 		report "EXPECT_STEPS = " & integer'image(EXPECT_STEPS) severity note;
 	return true;

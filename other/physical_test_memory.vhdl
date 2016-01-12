@@ -51,19 +51,19 @@ entity physical_test_memory is
 	generic (
 		CONST_1_BYTE		 : memory		:= 1 Byte;
 		CONST_1_KIB			 : memory		:= 1 KiB;
-		CONST_1p125_KIB	 : memory		:= 1.125 KiB;
+		CONST_1p125_KIB	 : memory		:= 1152 Byte;
 		CONST_1_MIB			 : memory		:= 1 MiB;
-		CONST_1p125_MIB	 : memory		:= 1.125 MiB;
-		CONST_1_GIB			 : memory		:= 1 GiB;
-		CONST_1p125_GIB	 : memory		:= 1.125 GiB;
+		CONST_1p125_MIB	 : memory		:= 1152 kiB;
+		CONST_1_GIB			 : memory		:= 1024 MiB;
+		CONST_1p125_GIB	 : memory		:= 1152 MiB;
 		CVT_1_BYTE_INT	 : integer	:= to_int(1 Byte, 1 Byte);
 		CVT_1_KIB_INT		 : integer	:= to_int(1 KiB, 1 KiB);
 		CVT_1_MIB_INT		 : integer	:= to_int(1 MiB, 1 MiB);
-		CVT_1_GIB_INT		 : integer	:= to_int(1 GiB, 1 GiB);
-		CVT_1p5_KIB_REAL : real			:= to_real(1.5 KiB, 1 KiB);
-		CVT_1p5_MIB_REAL : real			:= to_real(1.5 MiB, 1 MiB);
-		CVT_1p5_GIB_REAL : real			:= to_real(1.5 GiB, 1 GiB);
-		SOME_MEMORYS		 : T_MEMVEC := (1 GiB, 234 MiB, 567 KiB, 890 Byte)
+		CVT_1_GIB_INT		 : integer	:= to_int(1024 MiB, 1024 MiB);
+		CVT_1p5_KIB_REAL : real			:= to_real(1536 Byte, 1 KiB);
+		CVT_1p5_MIB_REAL : real			:= to_real(1536 kiB, 1 MiB);
+		CVT_1p5_GIB_REAL : real			:= to_real(1536 MiB, 1024 MiB);
+		SOME_MEMORYS		 : T_MEMVEC := (1024 MiB, 234 MiB, 567 KiB, 890 Byte)
 	);
 
   port (
@@ -167,7 +167,7 @@ begin  -- architecture rtl
 
 	
 	-----------------------------------------------------------------------------
-	checkMax: if mmax(SOME_MEMORYS) /= 1 GiB generate
+	checkMax: if mmax(SOME_MEMORYS) /= 1024 MiB generate
 		y <= '1';
 	end generate;
 

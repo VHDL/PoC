@@ -50,34 +50,34 @@ use poc.physical.all;
 entity physical_test_freq2time is
   
 	generic (
-		CVT_LIT_1_Hz		 : time := to_time(1 Hz);
-		CVT_LIT_2_Hz		 : time := to_time(2 Hz);
-		CVT_LIT_1_kHz		 : time := to_time(1 kHz);
-		CVT_LIT_2_kHz		 : time := to_time(2 kHz);
-		CVT_LIT_1_MHz		 : time := to_time(1 MHz);
-		CVT_LIT_2_MHz		 : time := to_time(2 MHz);
-		CVT_LIT_1_GHz		 : time := to_time(1 GHz);
-		CVT_LIT_2_GHz		 : time := to_time(2 GHz);
-		CVT_INT_1_Hz		 : time := Hz2Time(1);
-		CVT_INT_2_Hz		 : time := Hz2Time(2);
-		CVT_INT_1_kHz		 : time := kHz2Time(1);
-		CVT_INT_2_kHz		 : time := kHz2Time(2);
-		CVT_INT_1_MHz		 : time := MHz2Time(1);
-		CVT_INT_2_MHz		 : time := MHz2Time(2);
-		CVT_INT_1_GHz		 : time := GHz2Time(1);
-		CVT_INT_2_GHz		 : time := GHz2Time(2);
-		CVT_REAL_1p25_Hz	 : time := Hz2Time(1.25);
-		CVT_REAL_1p25_kHz : time := kHz2Time(1.25);
-		CVT_REAL_1p25_MHz : time := MHz2Time(1.25);
-		CVT_REAL_1p25_GHz : time := GHz2Time(1.25);
-		CVT_LIT_500_PS	 : freq := to_freq(500 ps);
-		CVT_LIT_1_NS		 : freq := to_freq(1 ns);
-		CVT_LIT_500_NS	 : freq := to_freq(500 ns);
-		CVT_LIT_1_US		 : freq := to_freq(1 us);
-		CVT_LIT_500_US	 : freq := to_freq(500 us);
-		CVT_LIT_1_MS		 : freq := to_freq(1 ms);
-		CVT_LIT_500_MS	 : freq := to_freq(500 ms);
-		CVT_LIT_1_SEC		 : freq := to_freq(1 sec)
+		CVT_LIT_1_Hz		 : t_time := to_time(1 Hz);
+		CVT_LIT_2_Hz		 : t_time := to_time(2 Hz);
+		CVT_LIT_1_kHz		 : t_time := to_time(1 kHz);
+		CVT_LIT_2_kHz		 : t_time := to_time(2 kHz);
+		CVT_LIT_1_MHz		 : t_time := to_time(1 MHz);
+		CVT_LIT_2_MHz		 : t_time := to_time(2 MHz);
+		CVT_LIT_1_GHz		 : t_time := to_time(1000 MHz);
+		CVT_LIT_2_GHz		 : t_time := to_time(2000 MHz);
+		CVT_INT_1_Hz		 : t_time := Hz2Time(1);
+		CVT_INT_2_Hz		 : t_time := Hz2Time(2);
+		CVT_INT_1_kHz		 : t_time := kHz2Time(1);
+		CVT_INT_2_kHz		 : t_time := kHz2Time(2);
+		CVT_INT_1_MHz		 : t_time := MHz2Time(1);
+		CVT_INT_2_MHz		 : t_time := MHz2Time(2);
+		CVT_INT_1_GHz		 : t_time := GHz2Time(1);
+		CVT_INT_2_GHz		 : t_time := GHz2Time(2);
+		CVT_REAL_1p25_Hz	 : t_time := Hz2Time(1.25);
+		CVT_REAL_1p25_kHz : t_time := kHz2Time(1.25);
+		CVT_REAL_1p25_MHz : t_time := MHz2Time(1.25);
+		CVT_REAL_1p25_GHz : t_time := GHz2Time(1.25);
+		CVT_LIT_500_PS	 : freq := to_freq(500.0e-12);
+		CVT_LIT_1_NS		 : freq := to_freq(1.0e-9);
+		CVT_LIT_500_NS	 : freq := to_freq(500.0e-9);
+		CVT_LIT_1_US		 : freq := to_freq(1.0e-6);
+		CVT_LIT_500_US	 : freq := to_freq(500.0e-6);
+		CVT_LIT_1_MS		 : freq := to_freq(1.0e-3);
+		CVT_LIT_500_MS	 : freq := to_freq(500.0e-3);
+		CVT_LIT_1_SEC		 : freq := to_freq(1.0)
 	);
 
   port (
@@ -89,26 +89,26 @@ end entity physical_test_freq2time;
 architecture rtl of physical_test_freq2time is
 	function f return boolean is
 	begin
-		report "CVT_LIT_1_Hz      = " & time'image(CVT_LIT_1_Hz     ) severity note;
-		report "CVT_LIT_2_Hz      = " & time'image(CVT_LIT_2_Hz     ) severity note;
-		report "CVT_LIT_1_kHz     = " & time'image(CVT_LIT_1_kHz    ) severity note;
-		report "CVT_LIT_2_kHz     = " & time'image(CVT_LIT_2_kHz    ) severity note;
-		report "CVT_LIT_1_MHz     = " & time'image(CVT_LIT_1_MHz    ) severity note;
-		report "CVT_LIT_2_MHz     = " & time'image(CVT_LIT_2_MHz    ) severity note;
-		report "CVT_LIT_1_GHz     = " & time'image(CVT_LIT_1_GHz    ) severity note;
-		report "CVT_LIT_2_GHz     = " & time'image(CVT_LIT_2_GHz    ) severity note;
-		report "CVT_INT_1_Hz      = " & time'image(CVT_INT_1_Hz     ) severity note;
-		report "CVT_INT_2_Hz      = " & time'image(CVT_INT_2_Hz     ) severity note;
-		report "CVT_INT_1_kHz     = " & time'image(CVT_INT_1_kHz    ) severity note;
-		report "CVT_INT_2_kHz     = " & time'image(CVT_INT_2_kHz    ) severity note;
-		report "CVT_INT_1_MHz     = " & time'image(CVT_INT_1_MHz    ) severity note;
-		report "CVT_INT_2_MHz     = " & time'image(CVT_INT_2_MHz    ) severity note;
-		report "CVT_INT_1_GHz     = " & time'image(CVT_INT_1_GHz    ) severity note;
-		report "CVT_INT_2_GHz     = " & time'image(CVT_INT_2_GHz    ) severity note;
-		report "CVT_REAL_1p25_Hz  = " & time'image(CVT_REAL_1p25_Hz ) severity note;
-		report "CVT_REAL_1p25_kHz = " & time'image(CVT_REAL_1p25_kHz) severity note;
-		report "CVT_REAL_1p25_MHz = " & time'image(CVT_REAL_1p25_MHz) severity note;
-		report "CVT_REAL_1p25_GHz = " & time'image(CVT_REAL_1p25_GHz) severity note;
+		report "CVT_LIT_1_Hz      = " & t_time'image(CVT_LIT_1_Hz     ) severity note;
+		report "CVT_LIT_2_Hz      = " & t_time'image(CVT_LIT_2_Hz     ) severity note;
+		report "CVT_LIT_1_kHz     = " & t_time'image(CVT_LIT_1_kHz    ) severity note;
+		report "CVT_LIT_2_kHz     = " & t_time'image(CVT_LIT_2_kHz    ) severity note;
+		report "CVT_LIT_1_MHz     = " & t_time'image(CVT_LIT_1_MHz    ) severity note;
+		report "CVT_LIT_2_MHz     = " & t_time'image(CVT_LIT_2_MHz    ) severity note;
+		report "CVT_LIT_1_GHz     = " & t_time'image(CVT_LIT_1_GHz    ) severity note;
+		report "CVT_LIT_2_GHz     = " & t_time'image(CVT_LIT_2_GHz    ) severity note;
+		report "CVT_INT_1_Hz      = " & t_time'image(CVT_INT_1_Hz     ) severity note;
+		report "CVT_INT_2_Hz      = " & t_time'image(CVT_INT_2_Hz     ) severity note;
+		report "CVT_INT_1_kHz     = " & t_time'image(CVT_INT_1_kHz    ) severity note;
+		report "CVT_INT_2_kHz     = " & t_time'image(CVT_INT_2_kHz    ) severity note;
+		report "CVT_INT_1_MHz     = " & t_time'image(CVT_INT_1_MHz    ) severity note;
+		report "CVT_INT_2_MHz     = " & t_time'image(CVT_INT_2_MHz    ) severity note;
+		report "CVT_INT_1_GHz     = " & t_time'image(CVT_INT_1_GHz    ) severity note;
+		report "CVT_INT_2_GHz     = " & t_time'image(CVT_INT_2_GHz    ) severity note;
+		report "CVT_REAL_1p25_Hz  = " & t_time'image(CVT_REAL_1p25_Hz ) severity note;
+		report "CVT_REAL_1p25_kHz = " & t_time'image(CVT_REAL_1p25_kHz) severity note;
+		report "CVT_REAL_1p25_MHz = " & t_time'image(CVT_REAL_1p25_MHz) severity note;
+		report "CVT_REAL_1p25_GHz = " & t_time'image(CVT_REAL_1p25_GHz) severity note;
 		report "CVT_LIT_500_PS    = " & freq'image(CVT_LIT_500_PS   ) severity note;
 		report "CVT_LIT_1_NS      = " & freq'image(CVT_LIT_1_NS     ) severity note;
 		report "CVT_LIT_500_NS    = " & freq'image(CVT_LIT_500_NS   ) severity note;
@@ -129,97 +129,97 @@ begin  -- architecture rtl
 					-- error in Vivado.
 
 	-----------------------------------------------------------------------------
-	checkCvtLit1Hz: if CVT_LIT_1_HZ /= 1 sec generate
+	checkCvtLit1Hz: if CVT_LIT_1_HZ /= 1.0 generate
 		y <= '1';
 	end generate;
 
-	checkCvtLit2Hz: if CVT_LIT_2_HZ /= 500 ms generate
+	checkCvtLit2Hz: if CVT_LIT_2_HZ /= 500.0e-3 generate
 		y <= '1';
 	end generate;
 
-	checkCvtLit1kHz: if CVT_LIT_1_KHZ /= 1 ms generate
+	checkCvtLit1kHz: if CVT_LIT_1_KHZ /= 1.0e-3 generate
 		y <= '1';
 	end generate;
 
-	checkCvtLit2kHz: if CVT_LIT_2_KHZ /= 500 us generate
+	checkCvtLit2kHz: if CVT_LIT_2_KHZ /= 500.0e-6 generate
 		y <= '1';
 	end generate;
 
-	checkCvtLit1MHz: if CVT_LIT_1_MHZ /= 1 us generate
+	checkCvtLit1MHz: if CVT_LIT_1_MHZ /= 1.0e-6 generate
 		y <= '1';
 	end generate;
 
-	checkCvtLit2MHz: if CVT_LIT_2_MHZ /= 500 ns generate
+	checkCvtLit2MHz: if CVT_LIT_2_MHZ /= 500.0e-9 generate
 		y <= '1';
 	end generate;
 
-	checkCvtLit1GHz: if CVT_LIT_1_GHZ /= 1 ns generate
+	checkCvtLit1GHz: if CVT_LIT_1_GHZ /= 1.0e-9 generate
 		y <= '1';
 	end generate;
 
-	checkCvtLit2GHz: if CVT_LIT_2_GHZ /= 500 ps generate
-		y <= '1';
-	end generate;
-
-
-	-----------------------------------------------------------------------------
-	checkCvtInt1Hz: if CVT_INT_1_HZ /= 1 sec generate
-		y <= '1';
-	end generate;
-
-	checkCvtInt2Hz: if CVT_INT_2_HZ /= 500 ms generate
-		y <= '1';
-	end generate;
-
-	checkCvtInt1kHz: if CVT_INT_1_KHZ /= 1 ms generate
-		y <= '1';
-	end generate;
-
-	checkCvtInt2kHz: if CVT_INT_2_KHZ /= 500 us generate
-		y <= '1';
-	end generate;
-
-	checkCvtInt1MHz: if CVT_INT_1_MHZ /= 1 us generate
-		y <= '1';
-	end generate;
-
-	checkCvtInt2MHz: if CVT_INT_2_MHZ /= 500 ns generate
-		y <= '1';
-	end generate;
-
-	checkCvtInt1GHz: if CVT_INT_1_GHZ /= 1 ns generate
-		y <= '1';
-	end generate;
-
-	checkCvtInt2GHz: if CVT_INT_2_GHZ /= 500 ps generate
+	checkCvtLit2GHz: if CVT_LIT_2_GHZ /= 500.0e-12 generate
 		y <= '1';
 	end generate;
 
 
 	-----------------------------------------------------------------------------
-	checkCvtReal1p25Hz: if CVT_REAL_1p25_HZ /= 800 ms generate
+	checkCvtInt1Hz: if CVT_INT_1_HZ /= 1.0 generate
 		y <= '1';
 	end generate;
 
-	checkCvtReal1p25kHz: if CVT_REAL_1p25_KHZ /= 800 us generate
+	checkCvtInt2Hz: if CVT_INT_2_HZ /= 500.0e-3 generate
 		y <= '1';
 	end generate;
 
-	checkCvtReal1p25MHz: if CVT_REAL_1p25_MHZ /= 800 ns generate
+	checkCvtInt1kHz: if CVT_INT_1_KHZ /= 1.0e-3 generate
 		y <= '1';
 	end generate;
 
-	checkCvtReal1p25GHz: if CVT_REAL_1p25_GHZ /= 800 ps generate
+	checkCvtInt2kHz: if CVT_INT_2_KHZ /= 500.0e-6 generate
+		y <= '1';
+	end generate;
+
+	checkCvtInt1MHz: if CVT_INT_1_MHZ /= 1.0e-6 generate
+		y <= '1';
+	end generate;
+
+	checkCvtInt2MHz: if CVT_INT_2_MHZ /= 500.0e-9 generate
+		y <= '1';
+	end generate;
+
+	checkCvtInt1GHz: if CVT_INT_1_GHZ /= 1.0e-9 generate
+		y <= '1';
+	end generate;
+
+	checkCvtInt2GHz: if CVT_INT_2_GHZ /= 500.0e-12 generate
 		y <= '1';
 	end generate;
 
 
 	-----------------------------------------------------------------------------
-	checkCvtLit500ps: if CVT_LIT_500_PS /= 2 GHz generate
+	checkCvtReal1p25Hz: if CVT_REAL_1p25_HZ /= 800.0e-3 generate
 		y <= '1';
 	end generate;
 
-	checkCvtLit1ns: if CVT_LIT_1_NS /= 1 GHz generate
+	checkCvtReal1p25kHz: if CVT_REAL_1p25_KHZ /= 800.0e-6 generate
+		y <= '1';
+	end generate;
+
+	checkCvtReal1p25MHz: if CVT_REAL_1p25_MHZ /= 800.0e-9 generate
+		y <= '1';
+	end generate;
+
+	checkCvtReal1p25GHz: if CVT_REAL_1p25_GHZ /= 800.0e-12 generate
+		y <= '1';
+	end generate;
+
+
+	-----------------------------------------------------------------------------
+	checkCvtLit500ps: if CVT_LIT_500_PS /= 2000 MHz generate
+		y <= '1';
+	end generate;
+
+	checkCvtLit1ns: if CVT_LIT_1_NS /= 1000 MHz generate
 		y <= '1';
 	end generate;
 

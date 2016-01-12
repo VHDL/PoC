@@ -51,11 +51,11 @@ entity physical_test_freq is
 	generic (
 		CONST_1_HZ			 : freq			 := 1 Hz;
 		CONST_1_KHZ			 : freq			 := 1 kHz;
-		CONST_1p125_KHZ	 : freq			 := 1.125 kHz;
+		CONST_1p125_KHZ	 : freq			 := 1125 Hz;
 		CONST_1_MHZ			 : freq			 := 1 MHz;
-		CONST_1p125_MHZ	 : freq			 := 1.125 MHz;
-		CONST_1_GHZ			 : freq			 := 1 GHz;
-		CONST_1p125_GHZ	 : freq			 := 1.125 GHz;
+		CONST_1p125_MHZ	 : freq			 := 1125 kHz;
+		CONST_1_GHZ			 : freq			 := 1000 MHz;
+		CONST_1p125_GHZ	 : freq			 := 1125 MHz;
 		CVT_INT_1_HZ		 : freq			 := Hz2Freq(1);
 		CVT_INT_1_KHZ		 : freq			 := kHz2Freq(1);
 		CVT_INT_1_MHZ		 : freq			 := MHz2Freq(1);
@@ -63,14 +63,14 @@ entity physical_test_freq is
 		CVT_1_HZ_INT		 : integer	 := to_int(1 Hz, 1 Hz);
 		CVT_1_KHZ_INT		 : integer	 := to_int(1 kHz, 1 kHz);
 		CVT_1_MHZ_INT		 : integer	 := to_int(1 MHz, 1 MHz);
-		CVT_1_GHZ_INT		 : integer	 := to_int(1 GHz, 1 GHz);
+		CVT_1_GHZ_INT		 : integer	 := to_int(1000 MHz, 1000 MHz);
 		CVT_REAL_1p5_KHZ : freq			 := kHz2Freq(1.5);
 		CVT_REAL_1p5_MHZ : freq			 := MHz2Freq(1.5);
 		CVT_REAL_1p5_GHZ : freq			 := GHz2Freq(1.5);
-		CVT_1p5_KHZ_REAL : real			 := to_real(1.5 kHz, 1 kHz);
-		CVT_1p5_MHZ_REAL : real			 := to_real(1.5 MHz, 1 MHz);
-		CVT_1p5_GHZ_REAL : real			 := to_real(1.5 GHz, 1 GHz);
-		SOME_FREQS			 : T_FREQVEC := (1 GHz, 234 MHz, 567 kHz, 890 Hz)
+		CVT_1p5_KHZ_REAL : real			 := to_real(1500 Hz, 1 kHz);
+		CVT_1p5_MHZ_REAL : real			 := to_real(1500 kHz, 1 MHz);
+		CVT_1p5_GHZ_REAL : real			 := to_real(1500 MHz, 1000 MHz);
+		SOME_FREQS			 : T_FREQVEC := (1000 MHz, 234 MHz, 567 kHz, 890 Hz)
 	);
 
   port (
@@ -161,7 +161,7 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 
-	checkCvtInt1GHz: if CVT_INT_1_GHZ /= 1 GHz generate
+	checkCvtInt1GHz: if CVT_INT_1_GHZ /= 1000 MHz generate
 		y <= '1';
 	end generate;
 
@@ -185,15 +185,15 @@ begin  -- architecture rtl
 
 
 	-----------------------------------------------------------------------------
-	checkCvtReal1p5kHz: if CVT_REAL_1p5_KHZ /= 1.5 kHz generate
+	checkCvtReal1p5kHz: if CVT_REAL_1p5_KHZ /= 1500 Hz generate
 		y <= '1';
 	end generate;
 
-	checkCvtReal1p5MHz: if CVT_REAL_1p5_MHZ /= 1.5 MHz generate
+	checkCvtReal1p5MHz: if CVT_REAL_1p5_MHZ /= 1500 kHz generate
 		y <= '1';
 	end generate;
 
-	checkCvtReal1p5GHz: if CVT_REAL_1p5_GHZ /= 1.5 GHz generate
+	checkCvtReal1p5GHz: if CVT_REAL_1p5_GHZ /= 1500 MHz generate
 		y <= '1';
 	end generate;
 
@@ -213,7 +213,7 @@ begin  -- architecture rtl
 
 	
 	-----------------------------------------------------------------------------
-	checkMax: if fmax(SOME_FREQS) /= 1 GHz generate
+	checkMax: if fmax(SOME_FREQS) /= 1000 MHz generate
 		y <= '1';
 	end generate;
 

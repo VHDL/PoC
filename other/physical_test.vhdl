@@ -100,9 +100,9 @@ begin  -- architecture rtl
 		sub0: entity work.physical_test_sub
 			generic map (
 				CLOCK_FREQ   => 100 MHz,
-				DELAY_TIME   => 865 ns,
+				DELAY_TIME   => 865.0e-9,
 				CLOCK_PERIOD => to_time(100 MHz),
-				STEPS 	  	 => TimingToCycles(865 ns, 100 MHz),
+				STEPS 	  	 => TimingToCycles(865.0e-9, 100 MHz),
 				EXPECT_STEPS => 87)
 			port map (
 				clk => clk,
@@ -111,9 +111,9 @@ begin  -- architecture rtl
 		sub1: entity work.physical_test_sub
 			generic map (
 				CLOCK_FREQ   => 100 MHz,
-				DELAY_TIME   => 865 ns,
+				DELAY_TIME   => 865.0e-9,
 				CLOCK_PERIOD => to_time(100 MHz),
-				STEPS 	  	 => TimingToCycles(865 ns, 100 MHz, ROUND_DOWN),
+				STEPS 	  	 => TimingToCycles(865.0e-9, 100 MHz, ROUND_DOWN),
 				EXPECT_STEPS => 86)
 			port map (
 				clk => clk,
@@ -122,9 +122,9 @@ begin  -- architecture rtl
 		sub2: entity work.physical_test_sub
 			generic map (
 				CLOCK_FREQ   => 100 MHz,
-				DELAY_TIME   => 865 ns,
+				DELAY_TIME   => 865.0e-9,
 				CLOCK_PERIOD => to_time(100 MHz),
-				STEPS 	  	 => TimingToCycles(865 ns, 100 MHz, ROUND_TO_NEAREST),
+				STEPS 	  	 => TimingToCycles(865.0e-9, 100 MHz, ROUND_TO_NEAREST),
 				EXPECT_STEPS => 87)
 			port map (
 				clk => clk,

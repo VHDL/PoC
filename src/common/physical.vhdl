@@ -99,7 +99,7 @@ package physical is
 	type		T_MEMVEC						is array(NATURAL range <>) of MEMORY;
 	
 	-- if true: TimingToCycles reports difference between expected and actual result
-	constant C_PHYSICAL_REPORT_TIMING_DEVIATION		: BOOLEAN		:= TRUE;
+	constant C_PHYSICAL_REPORT_TIMING_DEVIATION		: BOOLEAN		:= FALSE;--TRUE;
 	
 	-- conversion functions
 	function to_time(f : FREQ)	return T_TIME;
@@ -670,22 +670,22 @@ package body physical is
 	
 	function Hz2Time(f_Hz : REAL) return T_TIME is
 	begin
-		return to_time(Hz2Freq(f_Hz));
+		return 1.0 / f_Hz;
 	end function;
 	
 	function kHz2Time(f_kHz : REAL) return T_TIME is
 	begin
-		return to_time(kHz2Freq(f_kHz));
+		return 1.0e-3 / f_kHz;
 	end function;
 	
 	function MHz2Time(f_MHz : REAL) return T_TIME is
 	begin
-		return to_time(MHz2Freq(f_MHz));
+		return 1.0e-6 / f_MHz;
 	end function;
 	
 	function GHz2Time(f_GHz : REAL) return T_TIME is
 	begin
-		return to_time(GHz2Freq(f_GHz));
+		return 1.0e-9 / f_GHz;
 	end function;
 	
 	-- convert standard types (NATURAL, REAL) to frequency (FREQ)
@@ -769,7 +769,7 @@ package body physical is
 		if		(scale = 1 Byte)	then	return div(mem, 1	Byte);
 		elsif	(scale = 1 KiB)		then	return div(mem, 1 KiB);
 		elsif	(scale = 1 MiB)		then	return div(mem, 1 MiB);
-		elsif	(scale = 1000 MiB) then	return div(mem, 1000 MiB);
+		elsif	(scale = 1024 MiB) then	return div(mem, 1024 MiB);
 		else	report "to_real: scale must have a value of '1 <unit>'" severity failure;
 		end if;
 	end;
@@ -967,12 +967,12 @@ package body physical is
 		elsif (mem < 1 MiB) then
 			unit					:= "KiB";
 			value					:= to_real(mem, 1 KiB);
-		elsif (mem < 1000 MiB) then
+		elsif (mem < 1024 MiB) then
 			unit					:= "MiB";
 			value					:= to_real(mem, 1 MiB);
 		else
 			unit					:= "GiB";
-			value					:= to_real(mem, 1000 MiB);
+			value					:= to_real(mem, 1024 MiB);
 		end if;
 
 		return str_format(value, precision) & " " & str_trim(unit);
