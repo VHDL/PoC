@@ -109,11 +109,9 @@ architecture rtl of physical_test_time is
 		report "CVT_REAL_1p5_US   = " & TIME'image(CVT_REAL_1p5_US ) severity note;
 		report "CVT_REAL_1p5_MS   = " & TIME'image(CVT_REAL_1p5_MS ) severity note;
 		report "CVT_REAL_1p5_SEC  = " & TIME'image(CVT_REAL_1p5_SEC) severity note;
-		report "MAX(SOME_TIMES)   = " & TIME'image(MAX(SOME_TIMES) ) severity note;
-		report "MIN(SOME_TIMES)   = " & TIME'image(MIN(SOME_TIMES) ) severity note;
-		report "SUM(SOME_TIMES)   = " & TIME'image(SUM(SOME_TIMES) ) severity note;
-
-		report "TIME'val(integer(real(TIME'pos(1 ps)) * 1.001)) = " & TIME'image(TIME'val(integer(real(TIME'pos(1 ps)) * 1.001))) severity note;
+		report "tmax(SOME_TIMES)  = " & TIME'image(tmax(SOME_TIMES)) severity note;
+		report "tmin(SOME_TIMES)  = " & TIME'image(tmin(SOME_TIMES)) severity note;
+		report "tsum(SOME_TIMES)  = " & TIME'image(tsum(SOME_TIMES)) severity note;
 	return true;
 	end f;
 	
@@ -222,15 +220,15 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 
-	checkMax: if max(SOME_TIMES) /= 1 us generate
+	checkMax: if tmax(SOME_TIMES) /= 1 us generate
 		y <= '1';
 	end generate;
 
-	checkMin: if min(SOME_TIMES) /= 890 fs generate
+	checkMin: if tmin(SOME_TIMES) /= 890 fs generate
 		y <= '1';
 	end generate;
 
-	checkSum: if sum(SOME_TIMES) /= 1234567890 fs generate
+	checkSum: if tsum(SOME_TIMES) /= 1234567890 fs generate
 		y <= '1';
 	end generate;
 end architecture rtl;

@@ -109,32 +109,32 @@ package physical is
 	function ite(cond : BOOLEAN; value1 : MEMORY;	value2 : MEMORY)	return MEMORY;
 	
 	-- min/ max for 2 arguments
-	function min(arg1 : TIME; arg2 : TIME) return TIME;						-- Calculates: min(arg1, arg2) for times
-	function min(arg1 : FREQ; arg2 : FREQ) return FREQ;						-- Calculates: min(arg1, arg2) for frequencies
-	function min(arg1 : BAUD; arg2 : BAUD) return BAUD;						-- Calculates: min(arg1, arg2) for symbols per second
-	function min(arg1 : MEMORY; arg2 : MEMORY) return MEMORY;			-- Calculates: min(arg1, arg2) for memory
+	function tmin(arg1 : TIME; arg2 : TIME) return TIME;						-- Calculates: min(arg1, arg2) for times
+	function fmin(arg1 : FREQ; arg2 : FREQ) return FREQ;						-- Calculates: min(arg1, arg2) for frequencies
+	function bmin(arg1 : BAUD; arg2 : BAUD) return BAUD;						-- Calculates: min(arg1, arg2) for symbols per second
+	function mmin(arg1 : MEMORY; arg2 : MEMORY) return MEMORY;			-- Calculates: min(arg1, arg2) for memory
 	
-	function max(arg1 : TIME; arg2 : TIME) return TIME;						-- Calculates: max(arg1, arg2) for times
-	function max(arg1 : FREQ; arg2 : FREQ) return FREQ;						-- Calculates: max(arg1, arg2) for frequencies
-	function max(arg1 : BAUD; arg2 : BAUD) return BAUD;						-- Calculates: max(arg1, arg2) for symbols per second
-	function max(arg1 : MEMORY; arg2 : MEMORY) return MEMORY;			-- Calculates: max(arg1, arg2) for memory
+	function tmax(arg1 : TIME; arg2 : TIME) return TIME;						-- Calculates: max(arg1, arg2) for times
+	function fmax(arg1 : FREQ; arg2 : FREQ) return FREQ;						-- Calculates: max(arg1, arg2) for frequencies
+	function bmax(arg1 : BAUD; arg2 : BAUD) return BAUD;						-- Calculates: max(arg1, arg2) for symbols per second
+	function mmax(arg1 : MEMORY; arg2 : MEMORY) return MEMORY;			-- Calculates: max(arg1, arg2) for memory
 	
 	-- min/max/sum as vector aggregation
-	function min(vec : T_TIMEVEC)	return TIME;										-- Calculates: min(vec) for a time vector
-	function min(vec : T_FREQVEC)	return FREQ;										-- Calculates: min(vec) for a frequency vector
-	function min(vec : T_BAUDVEC)	return BAUD;										-- Calculates: min(vec) for a baud vector
-	function min(vec : T_MEMVEC)	return MEMORY;									-- Calculates: min(vec) for a memory vector
+	function tmin(vec : T_TIMEVEC)	return TIME;										-- Calculates: min(vec) for a time vector
+	function fmin(vec : T_FREQVEC)	return FREQ;										-- Calculates: min(vec) for a frequency vector
+	function bmin(vec : T_BAUDVEC)	return BAUD;										-- Calculates: min(vec) for a baud vector
+	function mmin(vec : T_MEMVEC)	return MEMORY;									-- Calculates: min(vec) for a memory vector
 	
-	function max(vec : T_TIMEVEC)	return TIME;										-- Calculates: max(vec) for a time vector
-	function max(vec : T_FREQVEC)	return FREQ;										-- Calculates: max(vec) for a frequency vector
-	function max(vec : T_BAUDVEC)	return BAUD;										-- Calculates: max(vec) for a baud vector
-	function max(vec : T_MEMVEC)	return MEMORY;									-- Calculates: max(vec) for a memory vector
+	function tmax(vec : T_TIMEVEC)	return TIME;										-- Calculates: max(vec) for a time vector
+	function fmax(vec : T_FREQVEC)	return FREQ;										-- Calculates: max(vec) for a frequency vector
+	function bmax(vec : T_BAUDVEC)	return BAUD;										-- Calculates: max(vec) for a baud vector
+	function mmax(vec : T_MEMVEC)	return MEMORY;									-- Calculates: max(vec) for a memory vector
 	
 	-- QUESTION: some sum functions are not meaningful -> orthogonal function/type system
-	function sum(vec : T_TIMEVEC)	return TIME;										-- Calculates: sum(vec) for a time vector
-	function sum(vec : T_FREQVEC)	return FREQ;										-- Calculates: sum(vec) for a frequency vector
-	function sum(vec : T_BAUDVEC)	return BAUD;										-- Calculates: sum(vec) for a baud vector
-	function sum(vec : T_MEMVEC)	return MEMORY;									-- Calculates: sum(vec) for a memory vector
+	function tsum(vec : T_TIMEVEC)	return TIME;										-- Calculates: sum(vec) for a time vector
+	function fsum(vec : T_FREQVEC)	return FREQ;										-- Calculates: sum(vec) for a frequency vector
+	function bsum(vec : T_BAUDVEC)	return BAUD;										-- Calculates: sum(vec) for a baud vector
+	function msum(vec : T_MEMVEC)	return MEMORY;									-- Calculates: sum(vec) for a memory vector
 	
 	-- convert standard types (NATURAL, REAL) to time (TIME)
 	function fs2Time(t_fs : NATURAL)		return TIME;
@@ -401,56 +401,56 @@ package body physical is
 	-- min/ max for 2 arguments
 	-- ===========================================================================
 	-- Calculates: min(arg1, arg2) for times
-	function min(arg1 : TIME; arg2 : TIME) return TIME is
+	function tmin(arg1 : TIME; arg2 : TIME) return TIME is
 	begin
 		if (arg1 < arg2) then return arg1; end if;
 		return arg2;
 	end function;
 	
 	-- Calculates: min(arg1, arg2) for frequencies
-	function min(arg1 : FREQ; arg2 : FREQ) return FREQ is
+	function fmin(arg1 : FREQ; arg2 : FREQ) return FREQ is
 	begin
 		if (arg1 < arg2) then return arg1; end if;
 		return arg2;
 	end function;
 	
 	-- Calculates: min(arg1, arg2) for symbols per second
-	function min(arg1 : BAUD; arg2 : BAUD) return BAUD is
+	function bmin(arg1 : BAUD; arg2 : BAUD) return BAUD is
 	begin
 		if (arg1 < arg2) then return arg1; end if;
 		return arg2;
 	end function;
 	
 	-- Calculates: min(arg1, arg2) for memory
-	function min(arg1 : MEMORY; arg2 : MEMORY) return MEMORY is
+	function mmin(arg1 : MEMORY; arg2 : MEMORY) return MEMORY is
 	begin
 		if (arg1 < arg2) then return arg1; end if;
 		return arg2;
 	end function;
 	
 	-- Calculates: max(arg1, arg2) for times
-	function max(arg1 : TIME; arg2 : TIME) return TIME is
+	function tmax(arg1 : TIME; arg2 : TIME) return TIME is
 	begin
 		if (arg1 > arg2) then return arg1; end if;
 		return arg2;
 	end function;
 
 	-- Calculates: max(arg1, arg2) for frequencies
-	function max(arg1 : FREQ; arg2 : FREQ) return FREQ is
+	function fmax(arg1 : FREQ; arg2 : FREQ) return FREQ is
 	begin
 		if (arg1 > arg2) then return arg1; end if;
 		return arg2;
 	end function;
 
 	-- Calculates: max(arg1, arg2) for symbols per second
-	function max(arg1 : BAUD; arg2 : BAUD) return BAUD is
+	function bmax(arg1 : BAUD; arg2 : BAUD) return BAUD is
 	begin
 		if (arg1 > arg2) then return arg1; end if;
 		return arg2;
 	end function;
 
 	-- Calculates: max(arg1, arg2) for memory
-	function max(arg1 : MEMORY; arg2 : MEMORY) return MEMORY is
+	function mmax(arg1 : MEMORY; arg2 : MEMORY) return MEMORY is
 	begin
 		if (arg1 > arg2) then return arg1; end if;
 		return arg2;
@@ -459,7 +459,7 @@ package body physical is
 	-- min/max/sum as vector aggregation
 	-- ===========================================================================
 	-- Calculates: min(vec) for a time vector
-	function min(vec : T_TIMEVEC)	return TIME is
+	function tmin(vec : T_TIMEVEC)	return TIME is
 		variable  res : TIME := TIME'high;
 	begin
 		for i in vec'range loop
@@ -471,7 +471,7 @@ package body physical is
 	end;
 	
 	-- Calculates: min(vec) for a frequency vector
-	function min(vec : T_FREQVEC)	return FREQ is
+	function fmin(vec : T_FREQVEC)	return FREQ is
 		variable  res : FREQ := FREQ'high;
 	begin
 		for i in vec'range loop
@@ -483,7 +483,7 @@ package body physical is
 	end;
 	
 	-- Calculates: min(vec) for a baud vector
-	function min(vec : T_BAUDVEC)	return BAUD is
+	function bmin(vec : T_BAUDVEC)	return BAUD is
 		variable  res : BAUD := BAUD'high;
 	begin
 		for i in vec'range loop
@@ -495,7 +495,7 @@ package body physical is
 	end;
 	
 	-- Calculates: min(vec) for a memory vector
-	function min(vec : T_MEMVEC)	return MEMORY is
+	function mmin(vec : T_MEMVEC)	return MEMORY is
 		variable  res : MEMORY := MEMORY'high;
 	begin
 		for i in vec'range loop
@@ -507,7 +507,7 @@ package body physical is
 	end;
 	
 	-- Calculates: max(vec) for a time vector
-	function max(vec : T_TIMEVEC)	return TIME is
+	function tmax(vec : T_TIMEVEC)	return TIME is
 		variable  res : TIME := TIME'low;
 	begin
 		for i in vec'range loop
@@ -519,7 +519,7 @@ package body physical is
 	end;
 	
 	-- Calculates: max(vec) for a frequency vector
-	function max(vec : T_FREQVEC)	return FREQ is
+	function fmax(vec : T_FREQVEC)	return FREQ is
 		variable  res : FREQ := FREQ'low;
 	begin
 		for i in vec'range loop
@@ -531,7 +531,7 @@ package body physical is
 	end;
 	
 	-- Calculates: max(vec) for a baud vector
-	function max(vec : T_BAUDVEC)	return BAUD is
+	function bmax(vec : T_BAUDVEC)	return BAUD is
 		variable  res : BAUD := BAUD'low;
 	begin
 		for i in vec'range loop
@@ -543,7 +543,7 @@ package body physical is
 	end;
 	
 	-- Calculates: max(vec) for a memory vector
-	function max(vec : T_MEMVEC)	return MEMORY is
+	function mmax(vec : T_MEMVEC)	return MEMORY is
 		variable  res : MEMORY := MEMORY'low;
 	begin
 		for i in vec'range loop
@@ -555,7 +555,7 @@ package body physical is
 	end;
 	
 	-- Calculates: sum(vec) for a time vector
-	function sum(vec : T_TIMEVEC)	return TIME is
+	function tsum(vec : T_TIMEVEC)	return TIME is
 		variable  res : TIME := 0 fs;
 	begin
 		for i in vec'range loop
@@ -565,7 +565,7 @@ package body physical is
 	end;
 	
 	-- Calculates: sum(vec) for a frequency vector
-	function sum(vec : T_FREQVEC)	return FREQ is
+	function fsum(vec : T_FREQVEC)	return FREQ is
 		variable  res : FREQ := 0 Hz;
 	begin
 		for i in vec'range loop
@@ -575,7 +575,7 @@ package body physical is
 	end;
 	
 	-- Calculates: sum(vec) for a baud vector
-	function sum(vec : T_BAUDVEC)	return BAUD is
+	function bsum(vec : T_BAUDVEC)	return BAUD is
 		variable  res : BAUD := 0 Bd;
 	begin
 		for i in vec'range loop
@@ -585,7 +585,7 @@ package body physical is
 	end;
 	
 	-- Calculates: sum(vec) for a memory vector
-	function sum(vec : T_MEMVEC)	return MEMORY is
+	function msum(vec : T_MEMVEC)	return MEMORY is
 		variable  res : MEMORY := 0 Byte;
 	begin
 		for i in vec'range loop
