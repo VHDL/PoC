@@ -4,6 +4,7 @@
 -- 
 -- ============================================================================
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
 -- 
 -- Package:					This VHDL package declares new physical types and their
 --									conversion functions.
