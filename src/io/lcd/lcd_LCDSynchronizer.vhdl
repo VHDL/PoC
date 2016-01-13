@@ -123,7 +123,7 @@ BEGIN
 	END PROCESS;
 	
 	
-	PROCESS(State, LCDI_Ready, Synchronize, Char, RowAC_Address_us, ColAC_Finished, RowAC_Finished)
+	PROCESS(State, LCDI_Ready, Synchronize, Char, RowAC_Address, ColAC_Finished, RowAC_Finished)
 	BEGIN
 		NextState					<= State;
 		
@@ -207,7 +207,7 @@ BEGIN
 			WHEN ST_GO_HOME =>
 				LCDI_Strobe			<= '1';
 				LCDI_Address		<= '0';
-				LCDI_Data				<= lcd_go_home(RowAC_Address_us);
+				LCDI_Data				<= lcd_go_home(RowAC_Address);
 				
 				NextState				<= ST_GO_HOME_WAIT;
 			
