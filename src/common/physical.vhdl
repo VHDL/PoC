@@ -29,16 +29,12 @@
 --				- Quartus II 13.1
 --				- QuestaSim 10.0d
 --				- GHDL 0.31
+-- 				- Xilinx Vivado	Synthesis 2015.4 and Xilinx Vivado Simulator (xSim) 2015.4
 --
---			Tool chains with known issues:
---				- Xilinx Vivado	Synthesis 2014.4
---
---			Untested tool chains
---				- Xilinx Vivado Simulator (xSim) 2014.4
 --		
 -- License:
 -- ============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -69,7 +65,7 @@ package physical is
 	-- broken. The internal representation has only 32 instead of 64-bit. And
 	-- Vivado maps 1 us to 1 fs, 1 ms to 1 ps and so on (factor 10e9).
 	-- Thus, define a new type based to be used for PoC functions.
-	subtype T_TIME is real range 0.0 to real'high;
+	subtype T_TIME is real range real'low to real'high;
 	
 	type FREQ is range 0 to INTEGER'high units
 		Hz;
@@ -99,7 +95,7 @@ package physical is
 	type		T_MEMVEC						is array(NATURAL range <>) of MEMORY;
 	
 	-- if true: TimingToCycles reports difference between expected and actual result
-	constant C_PHYSICAL_REPORT_TIMING_DEVIATION		: BOOLEAN		:= FALSE;--TRUE;
+	constant C_PHYSICAL_REPORT_TIMING_DEVIATION		: BOOLEAN		:= TRUE;
 	
 	-- conversion functions
 	function to_time(f : FREQ)	return T_TIME;
@@ -262,11 +258,9 @@ package body physical is
 	function to_freq(p : T_TIME) return FREQ is
 		variable res : FREQ;
 	begin
-		if SYNTHESIS_TOOL = SYNTHESIS_TOOL_XILINX_VIVADO then --Vivado does not itself complain about divide by zero
-			if p <= 0.0 then -- yes, can be negative in Vivado!
-				report "to_freq: Invalid p=" & T_TIME'image(p) severity failure;
-				return 0 Hz;
-			end if;
+		if p <= 0.0 then
+			report "to_freq: Invalid p=" & T_TIME'image(p) severity failure;
+			return 0 Hz;
 		end if;
 		if (p >= 500.0e-12) then	res := integer(1.0 / p) * 1 Hz;
 		else report "to_freq: input period exceeds output frequency scale." severity failure;
