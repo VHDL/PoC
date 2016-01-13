@@ -39,7 +39,7 @@ USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.physical.ALL;
 USE			PoC.io.ALL;
-USE			PoC.net.ALL;
+--USE			PoC.net.ALL;
 
 
 ENTITY mdio_MDIOController IS

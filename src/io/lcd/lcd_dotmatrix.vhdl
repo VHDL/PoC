@@ -39,12 +39,12 @@ entity lcd_dotmatrix is
     CLOCK_FREQ : freq;
     DATA_WIDTH : positive;  				-- Width of data bus (4 or 8)
 
-    T_W        : time     :=  500 ns; -- Minimum width of E pulse
-    T_SU       : time     :=   60 ns; -- Minimum RS + R/W setup time
-    T_H        : time     :=   20 ns; -- Minimum RS + R/W hole time
-    T_C        : time     := 1000 ns; -- Minimum cycle time
+    T_W        : t_time     :=  500.0e-9; -- Minimum width of E pulse
+    T_SU       : t_time     :=   60.0e-9; -- Minimum RS + R/W setup time
+    T_H        : t_time     :=   20.0e-9; -- Minimum RS + R/W hole time
+    T_C        : t_time     := 1000.0e-9; -- Minimum cycle time
 
-    B_RECOVER_TIME : time := 5 us  -- Recover time after cleared Busy flag
+    B_RECOVER_TIME : t_time := 5.0e-6  -- Recover time after cleared Busy flag
   );
   port(
     -- Global Reset and Clock

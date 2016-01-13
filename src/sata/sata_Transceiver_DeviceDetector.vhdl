@@ -46,8 +46,8 @@ ENTITY sata_DeviceDetector IS
 	GENERIC (
 		DEBUG								: BOOLEAN	:= FALSE;
 		CLOCK_FREQ					: FREQ		:= 150 MHz;
-		NO_DEVICE_TIMEOUT		: TIME		:= 50 ms;
-		NEW_DEVICE_TIMEOUT	: TIME		:= 1 ms
+		NO_DEVICE_TIMEOUT		: T_TIME	:= 50.0e-3;
+		NEW_DEVICE_TIMEOUT	: T_TIME	:= 1.0e-3
 	);
 	PORT (
 		Clock						: IN STD_LOGIC;

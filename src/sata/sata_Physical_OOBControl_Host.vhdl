@@ -56,7 +56,7 @@ entity sata_Physical_OOBControl_Host is
 		DEBUG											: BOOLEAN														:= FALSE;												-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: BOOLEAN														:= FALSE;												-- enables the assignment of signals to the debugport
 		ALLOW_STANDARD_VIOLATION	: BOOLEAN														:= FALSE;
-		OOB_TIMEOUT								: TIME															:= TIME'low
+		OOB_TIMEOUT								: T_TIME														:= T_TIME'low
 	);
 	port (
 		Clock											: in	STD_LOGIC;
@@ -91,12 +91,12 @@ architecture rtl of sata_Physical_OOBControl_Host is
 	constant CLOCK_GEN2_FREQ							: FREQ				:= 75 MHz;			-- SATAClock frequency for SATA generation 2
 	constant CLOCK_GEN3_FREQ							: FREQ				:= 150 MHz;			-- SATAClock frequency for SATA generation 3
 
-	constant DEFAULT_OOB_TIMEOUT					: TIME				:= 880 us;
+	constant DEFAULT_OOB_TIMEOUT					: T_TIME			:= 880.0e-6;
 	constant CONSECUTIVE_ALIGN_MIN				: POSITIVE		:= 63;
 	
-	constant OOB_TIMEOUT_I								: TIME				:= ite((OOB_TIMEOUT = TIME'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
-	constant COMRESET_TIMEOUT							: TIME				:= 450 ns;
-	constant COMWAKE_TIMEOUT							: TIME				:= 250 ns;
+	constant OOB_TIMEOUT_I								: T_TIME				:= ite((OOB_TIMEOUT = TIME'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
+	constant COMRESET_TIMEOUT							: T_TIME			:= 450.0e-9;
+	constant COMWAKE_TIMEOUT							: T_TIME			:= 250.0e-9;
 
 	constant TTID1_OOB_TIMEOUT_GEN1				: NATURAL			:= 0;
 	constant TTID1_OOB_TIMEOUT_GEN2				: NATURAL			:= 1;

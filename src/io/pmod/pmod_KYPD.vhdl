@@ -48,7 +48,7 @@ entity pmod_KYPD is
 	generic (
 		CLOCK_FREQ		: FREQ				:= 100 MHz;
 		SCAN_FREQ			: FREQ				:= 1 kHz;
-		BOUNCE_TIME		: TIME				:= 10 ms
+		BOUNCE_TIME		: T_TIME			:= 10.0e-3
 	);
 	port (
 		Clock					: in	STD_LOGIC;

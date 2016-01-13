@@ -98,13 +98,14 @@ package physical is
 	constant C_PHYSICAL_REPORT_TIMING_DEVIATION		: BOOLEAN		:= TRUE;
 	
 	-- conversion functions
+	function to_time(f : FREQ)	return TIME; -- can be used by testbenches without restrictions
 	function to_time(f : FREQ)	return T_TIME;
 	function to_freq(p : T_TIME)	return FREQ;
 	function to_freq(br : BAUD)	return FREQ;
 	function to_baud(str : STRING)	return BAUD;
 
 	-- if-then-else
-	function ite(cond : BOOLEAN; value1 : T_TIME;	value2 : T_TIME)	return T_TIME;
+--	function ite(cond : BOOLEAN; value1 : T_TIME;	value2 : T_TIME)	return T_TIME; --	include package PoC.utils instead.
 	function ite(cond : BOOLEAN; value1 : FREQ;	value2 : FREQ)			return FREQ;
 	function ite(cond : BOOLEAN; value1 : BAUD;	value2 : BAUD)			return BAUD;
 	function ite(cond : BOOLEAN; value1 : MEMORY;	value2 : MEMORY)	return MEMORY;
@@ -175,6 +176,7 @@ package physical is
 	function GHz2Freq(f_GHz : REAL)			return FREQ;
 	
 	-- convert physical types to standard type (REAL)
+	function to_real(t : TIME;			scale : TIME)		return REAL;
 	function to_real(t : T_TIME;		scale : T_TIME)	return REAL;
 	function to_real(f : FREQ;			scale : FREQ)		return REAL;
 	function to_real(br : BAUD;			scale : BAUD)		return REAL;
@@ -194,6 +196,7 @@ package physical is
 	function CyclesToDelay(Cycles : NATURAL; Clock_Frequency	: FREQ) return T_TIME;
 	
 	-- convert and format physical types to STRING
+	function to_string(t : TIME; precision : NATURAL)			return STRING;
 	function to_string(t : T_TIME; precision : NATURAL)		return STRING;
 	function to_string(f : FREQ; precision : NATURAL)			return STRING;
 	function to_string(br : BAUD; precision : NATURAL)		return STRING;
@@ -217,6 +220,35 @@ package body physical is
 
 	-- real division for physical types
 	-- ===========================================================================
+	function div(a : TIME; b : TIME) return REAL is
+		constant MTRIS	: TIME		:= MinimalTimeResolutionInSimulation;
+		variable a_real : real;
+		variable b_real : real;
+	begin
+		-- Quartus-II work-around
+	  if    a < 1 us  then
+			a_real  := real(a / MTRIS);
+		elsif a < 1 ms  then
+			a_real  := real(a / (1000 * MTRIS)) * 1000.0;
+		elsif a < 1 sec then
+			a_real  := real(a / (1000000 * MTRIS)) * 1000000.0;
+		else
+			a_real  := real(a / (1000000000 * MTRIS)) * 1000000000.0;
+		end if;
+
+	  if    b < 1 us  then
+			b_real  := real(b / MTRIS);
+		elsif b < 1 ms  then
+			b_real  := real(b / (1000 * MTRIS)) * 1000.0;
+		elsif b < 1 sec then
+			b_real  := real(b / (1000000 * MTRIS)) * 1000000.0;
+		else
+			b_real  := real(b / (1000000000 * MTRIS)) * 1000000000.0;
+		end if;
+
+		return a_real / b_real;
+	end function;
+	
 	function div(a : T_TIME; b : T_TIME) return REAL is
 	begin
 		return a / b;
@@ -239,6 +271,16 @@ package body physical is
 
 	-- conversion functions
 	-- ===========================================================================
+	function to_time(f : FREQ) return TIME is -- can be used by testbenches without restrictions
+		variable res : TIME;
+	begin
+		res := div(1000 MHz, f) * 1 ns;
+		if (POC_VERBOSE = TRUE) then
+			report "to_time: f= " & to_string(f, 3) & "  return " & to_string(res, 3) severity note;
+		end if;
+		return res;
+	end function;
+
 	function to_time(f : FREQ) return T_TIME is
 		variable res : T_TIME;
 	begin
@@ -345,14 +387,15 @@ package body physical is
 	
 	-- if-then-else
 	-- ===========================================================================
-	function ite(cond : BOOLEAN; value1 : T_TIME;	value2 : T_TIME) return T_TIME is
-	begin
-		if cond then
-			return value1;
-		else
-			return value2;
-		end if;
-	end function;
+	--	include package PoC.utils instead.
+	--function ite(cond : BOOLEAN; value1 : T_TIME;	value2 : T_TIME) return T_TIME is
+	--begin
+	--	if cond then
+	--		return value1;
+	--	else
+	--		return value2;
+	--	end if;
+	--end function;
 	
 	function ite(cond : BOOLEAN; value1 : FREQ;	value2 : FREQ) return FREQ is
 	begin
@@ -727,6 +770,18 @@ package body physical is
 	
 	-- convert physical types to standard type (REAL)
 	-- ===========================================================================
+	function to_real(t : TIME; scale : TIME) return REAL is
+	begin
+		if		(scale = 1	fs) then	return div(t, 1	 fs);
+		elsif	(scale = 1	ps) then	return div(t, 1	 ps);
+		elsif	(scale = 1	ns) then	return div(t, 1	 ns);
+		elsif	(scale = 1	us) then	return div(t, 1	 us);
+		elsif	(scale = 1	ms) then	return div(t, 1	 ms);
+		elsif	(scale = 1 sec) then	return div(t, 1 sec);
+		else	report "to_real: scale must have a value of '1 <unit>'" severity failure;
+		end if;
+	end;
+
 	function to_real(t : T_TIME; scale : T_TIME) return REAL is
 	begin
 		if SYNTHESIS_TOOL = SYNTHESIS_TOOL_XILINX_VIVADO then --Vivado does not itself complain about divide by zero
@@ -879,6 +934,36 @@ package body physical is
 	end function;
 	
 	-- convert and format physical types to STRING
+	function to_string(t : TIME; precision : NATURAL) return STRING is
+		variable tt     : TIME;
+		variable unit		: STRING(1 to 3)	:= (others => C_POC_NUL);
+		variable value	: REAL;
+	begin
+		tt := abs t;
+		if (tt < 1 ps) then
+			unit(1 to 2)	:= "fs";
+			value					:= to_real(tt, 1 fs);
+		elsif (tt < 1 ns) then
+			unit(1 to 2)	:= "ps";
+			value					:= to_real(tt, 1 ps);
+		elsif (tt < 1 us) then
+			unit(1 to 2)	:= "ns";
+			value					:= to_real(tt, 1 ns);
+		elsif (tt < 1 ms) then
+			unit(1 to 2)	:= "us";
+			value					:= to_real(tt, 1 us);
+		elsif (tt < 1 sec) then
+			unit(1 to 2)	:= "ms";
+			value					:= to_real(tt, 1 ms);
+		else
+			unit					:= "sec";
+			value					:= to_real(tt, 1 sec);
+		end if;
+
+		return ite(t >= 0 fs, str_format(value, precision) & " " & str_trim(unit),
+							      '-' & str_format(value, precision) & " " & str_trim(unit));
+	end function;
+		
 	function to_string(t : T_TIME; precision : NATURAL) return STRING is
 		variable tt     : T_TIME;
 		variable unit		: STRING(1 to 3)	:= (others => C_POC_NUL);

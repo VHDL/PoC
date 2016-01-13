@@ -124,8 +124,8 @@ architecture rtl of sata_Transceiver_Series7_GTXE2 is
 	-- ===========================================================================
 	constant INITIAL_SATA_GENERATIONS_I	: T_SATA_GENERATION_VECTOR(0 to PORTS - 1)	:= INITIAL_SATA_GENERATIONS;
 	
-	constant NO_DEVICE_TIMEOUT				: TIME																			:= 50 ms;
-	constant NEW_DEVICE_TIMEOUT				: TIME																			:= 1 us;
+	constant NO_DEVICE_TIMEOUT					: T_TIME																		:= 50.0e-3;
+	constant NEW_DEVICE_TIMEOUT					: T_TIME																		:= 1.0e-6;
 
 --	constant C_DEVICE_INFO						: T_DEVICE_INFO		:= DEVICE_INFO;
 	
@@ -304,9 +304,9 @@ begin
 		constant CLOCK_GEN3_FREQ						: FREQ						:= REFCLOCK_FREQ / 1.0;
 		constant CLOCK_DD_FREQ							: FREQ						:= REFCLOCK_FREQ / 1.0;
 		
-		constant COMRESET_TIMEOUT						: TIME						:= 2600 ns;
-		constant COMWAKE_TIMEOUT						: TIME						:= 1300 ns;
-		constant COMSAS_TIMEOUT							: TIME						:= 6450 ns;
+		constant COMRESET_TIMEOUT						: T_TIME					:= 2600.0e-9;
+		constant COMWAKE_TIMEOUT						: T_TIME					:= 1300.0e-9;
+		constant COMSAS_TIMEOUT							: T_TIME					:= 6450.0e-9;
 		
 		-- Timing table ID
 		constant TTID_COMRESET_TIMEOUT_GEN1	: NATURAL					:= 0;

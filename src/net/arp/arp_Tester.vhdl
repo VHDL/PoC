@@ -44,7 +44,7 @@ use			PoC.net.all;
 entity arp_Tester is
 	generic (
 		CLOCK_FREQ									: FREQ																	:= 125 MHz;
-		ARP_LOOKUP_INTERVAL					: TIME																	:= 100 ms
+		ARP_LOOKUP_INTERVAL					: T_TIME																:= 100.0e-3
 	);
 	port (
 		Clock												: in	STD_LOGIC;																	-- 
@@ -231,7 +231,7 @@ begin
 	
 	-- lookup interval tick generator
 	process(Clock)
-		constant TICKCOUNTER_RES								: TIME																								:= ARP_LOOKUP_INTERVAL;
+		constant TICKCOUNTER_RES								: T_TIME																							:= ARP_LOOKUP_INTERVAL;
 		constant TICKCOUNTER_MAX								: POSITIVE																						:= TimingToCycles(TICKCOUNTER_RES, CLOCK_FREQ);
 		constant TICKCOUNTER_BITS								: POSITIVE																						:= log2ceilnz(TICKCOUNTER_MAX);
 	

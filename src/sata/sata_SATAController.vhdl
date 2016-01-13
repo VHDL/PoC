@@ -101,7 +101,7 @@ ENTITY sata_SATAController IS
 		INITIAL_SATA_GENERATIONS				: T_SATA_GENERATION_VECTOR		:= (0 => C_SATA_GENERATION_MAX,	1 => C_SATA_GENERATION_MAX);
 		ALLOW_SPEED_NEGOTIATION					: T_BOOLVEC										:= (0 => TRUE,									1 => TRUE);
 		ALLOW_STANDARD_VIOLATION				: T_BOOLVEC										:= (0 => TRUE,									1 => TRUE);
-		OOB_TIMEOUT											: T_TIMEVEC										:= (0 => TIME'low,							1 => TIME'low);
+		OOB_TIMEOUT											: T_TIMEVEC										:= (0 => T_TIME'low,						1 => T_TIME'low);
 		GENERATION_CHANGE_COUNT					: T_INTVEC										:= (0 => 8,											1 => 8);
 		ATTEMPTS_PER_GENERATION					: T_INTVEC										:= (0 => 5,											1 => 3);
 		-- linklayer settings

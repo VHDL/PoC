@@ -69,8 +69,8 @@ end;
 
 ARCHITECTURE rtl OF sata_Transceiver_Stratix2GX_GXB IS
 
-	CONSTANT NO_DEVICE_TIMEOUT		: TIME	:= 50 ms;			-- simulation: 20 us, synthesis: 50 ms
-	CONSTANT NEW_DEVICE_TIMEOUT		: TIME	:= 1000 ms;		--
+	CONSTANT NO_DEVICE_TIMEOUT	: T_TIME					:= 50.0e-3;			-- simulation: 20 us, synthesis: 50 ms
+	CONSTANT NEW_DEVICE_TIMEOUT	: T_TIME					:= 1000.0e-3;		--
 
 	CONSTANT C_DEVICE_INFO			: T_DEVICE_INFO		:= DEVICE_INFO;
 
