@@ -60,11 +60,13 @@ ENTITY lcd_LCDSynchronizer IS
 		LCD_rw							: OUT	STD_LOGIC;
 		LCD_rs							: OUT	STD_LOGIC;								-- LCD Register Select
 		LCD_Data_o					: OUT	T_SLV_4;
-    LCD_Data_t    			: OUT T_SLV_4;
     LCD_Data_i    			: IN  T_SLV_4
 	);
 END;
 
+
+library PoC;
+use PoC.lcd.all;
 
 ARCHITECTURE rtl OF lcd_LCDSynchronizer IS
 	ATTRIBUTE KEEP		: STRING;
@@ -300,16 +302,20 @@ BEGIN
 	Column	<= to_integer(ColAC_Address_us);
 	Row			<= to_integer(RowAC_Address_us);
 
-	LCDInterface : ENTITY PoC.lcd4
-		PORT MAP (
+	LCDInterface : lcd_dotmatrix
+    generic map (
+      CLOCK_FREQ => CLOCK_FREQ,
+      DATA_WIDTH => 4
+		)
+		port map (
 			-- Global Reset and Clock
 			clk					=> Clock,
 			rst					=> Reset,
 
 			-- Upper Layer Interface
 			stb      		=> LCDI_Strobe,
-			addr     		=> LCDI_Address,
-			din      		=> LCDI_Data,
+		  cmd     		=> LCDI_Address,
+			dat      		=> LCDI_Data,
 			rdy      		=> LCDI_Ready,
 			
 			-- LCD Connections
@@ -317,9 +323,6 @@ BEGIN
 			lcd_rs  		=> LCD_rs,
 			lcd_rw  		=> LCD_rw,
 			lcd_dat_o 	=> LCD_Data_o,
-			lcd_dat_t 	=> LCD_Data_tt,
 			lcd_dat_i	  => LCD_Data_i
 		);
-	
-	LCD_Data_t	<= (OTHERS => LCD_Data_tt);
 END;
