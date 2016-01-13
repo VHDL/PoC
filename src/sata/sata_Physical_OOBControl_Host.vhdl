@@ -94,7 +94,7 @@ architecture rtl of sata_Physical_OOBControl_Host is
 	constant DEFAULT_OOB_TIMEOUT					: T_TIME			:= 880.0e-6;
 	constant CONSECUTIVE_ALIGN_MIN				: POSITIVE		:= 63;
 	
-	constant OOB_TIMEOUT_I								: T_TIME				:= ite((OOB_TIMEOUT = TIME'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
+	constant OOB_TIMEOUT_I								: T_TIME				:= ite((OOB_TIMEOUT = T_TIME'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
 	constant COMRESET_TIMEOUT							: T_TIME			:= 450.0e-9;
 	constant COMWAKE_TIMEOUT							: T_TIME			:= 250.0e-9;
 
