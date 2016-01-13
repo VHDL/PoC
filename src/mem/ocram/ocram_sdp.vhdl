@@ -112,8 +112,12 @@ begin
 		impure function ocram_InitMemory(FilePath : string) return ram_t is
 			variable Memory		: T_SLM(DEPTH - 1 downto 0, word_t'range);
 			variable res			: ram_t;
+			variable res_zero : ram_t := (others => (others => '0'));
 		begin
 			if (str_length(FilePath) = 0) then
+				if not SIMULATION then
+					return res_zero; -- shortcut required by Vivado
+				end if;
 				Memory	:= (others => (others => ite(SIMULATION, 'U', '0')));
 			elsif (mem_FileExtension(FilePath) = "mem") then
 				Memory	:= mem_ReadMemoryFile(FilePath, DEPTH, word_t'length, MEM_FILEFORMAT_XILINX_MEM, MEM_CONTENT_HEX);
