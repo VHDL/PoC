@@ -1,0 +1,104 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- =============================================================================
+-- Authors:					Patrick Lehmann
+--
+-- Module:					Synchronizes a flag signal across clock-domain boundaries
+--
+-- Description:
+-- ------------------------------------
+--		This module synchronizes multiple flag bits from clock-domain 'Clock1' to
+--		clock-domain 'Clock'. The clock-domain boundary crossing is done by two
+--		synchronizer D-FFs. All bits are independent from each other. If a known
+--		vendor like Altera or Xilinx are recognized, a vendor specific
+--		implementation is choosen.
+--		
+--		ATTENTION:
+--			Use this synchronizer only for long time stable signals (flags).
+--
+--		CONSTRAINTS:
+--			General:
+--				Please add constraints for meta stability to all '_meta' signals and
+--				timing ignore constraints to all '_async' signals.
+--			
+--			Xilinx:
+--				In case of a Xilinx device, this module will instantiate the optimized
+--				module PoC.xil.SyncBits. Please attend to the notes of xil_SyncBits.vhdl.
+--		
+--			Altera sdc file:
+--				TODO
+-- 
+-- License:
+-- =============================================================================
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
+
+library	IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+
+library	PoC;
+use			PoC.sync.all;
+
+entity sync_Vector_test is
+
+	generic (
+		MASTER_BITS : POSITIVE				 := 8;
+		SLAVE_BITS	: NATURAL					 := 0;
+		INIT				: STD_LOGIC_VECTOR := "00000000");
+
+	port (
+		Clock1	: in	STD_LOGIC;
+		Clock2	: in	STD_LOGIC;
+		Input		: in	STD_LOGIC_VECTOR((MASTER_BITS + SLAVE_BITS) - 1 downto 0);
+		Output	: out STD_LOGIC_VECTOR((MASTER_BITS + SLAVE_BITS) - 1 downto 0);
+		Busy		: out STD_LOGIC;
+		Changed : out STD_LOGIC);
+
+end entity sync_Vector_test;
+
+architecture rtl of sync_Vector_test is
+	signal Input_r1  : STD_LOGIC_VECTOR(MASTER_BITS + SLAVE_BITS - 1 downto 0);
+	signal Input_r2  : STD_LOGIC_VECTOR(MASTER_BITS + SLAVE_BITS - 1 downto 0);
+	signal Input_r3  : STD_LOGIC_VECTOR(MASTER_BITS + SLAVE_BITS - 1 downto 0);
+	signal Output_r1 : STD_LOGIC_VECTOR(MASTER_BITS + SLAVE_BITS - 1 downto 0);
+	signal Output_r2 : STD_LOGIC_VECTOR(MASTER_BITS + SLAVE_BITS - 1 downto 0);
+	signal Output_r3 : STD_LOGIC_VECTOR(MASTER_BITS + SLAVE_BITS - 1 downto 0);
+begin  -- architecture rtl
+
+	Input_r1 <= Input    when rising_edge(Clock1);
+	Input_r2 <= Input_r1 when rising_edge(Clock1);
+	Input_r3 <= Input_r2 when rising_edge(Clock1);
+
+	test_1: entity poc.sync_Vector
+		generic map (
+			MASTER_BITS => MASTER_BITS,
+			SLAVE_BITS	=> SLAVE_BITS,
+			INIT				=> INIT)
+		port map (
+			Clock1	=> Clock1,
+			Clock2	=> Clock2,
+			Input		=> Input_r3,
+			Output	=> Output_r1,
+			Busy		=> open,
+			Changed => open);
+
+	Output_r2 <= Output_r1 when rising_edge(Clock2);
+	Output_r3 <= Output_r2 when rising_edge(Clock2);
+	Output    <= Output_r3 when rising_edge(Clock2);
+	
+end architecture rtl;
