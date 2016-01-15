@@ -338,7 +338,7 @@ class Simulator(PoCSimulator):
 		# run GHDL simulation on Linux
 		elif (self.host.platform == "Linux"):
 			# preparing some variables for Linux
-			exeFilePath =		tempGHDLPath / testbenchName
+			exeFilePath =		tempGHDLPath / testbenchName.lower()
 		
 			# run elaboration
 			self.printNonQuiet("  running elaboration...")
