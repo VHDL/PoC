@@ -228,6 +228,7 @@ begin
 		generic map (
 			INPUT_BITS						=> GEARBOX_BITS,
 			OUTPUT_BITS						=> STREAM_DATA_BITS,
+			META_BITS							=> STREAM_META_BITS,
 			ADD_INPUT_REGISTERS		=> TRUE,
 			ADD_OUTPUT_REGISTERS	=> FALSE
 		)
@@ -235,11 +236,13 @@ begin
 			Clock				=> Clock,
 			
 			In_Sync			=> sort_Valid,
-			In_Data			=> sort_Data,
 			In_Valid		=> sort_Valid,
+			In_Data			=> sort_Data,
+			In_Meta			=> sort_Meta,
 			In_Next			=> geardown_nxt,
 			Out_Sync		=> open,
+			Out_Valid		=> Out_Valid,
 			Out_Data		=> Out_Data,
-			Out_Valid		=> Out_Valid
+			Out_Meta		=> Out_Meta
 		);
 end architecture;
