@@ -36,6 +36,7 @@ ZC706/
 DE4/
 
 # module level constraints
+fifo/
 misc/
 net/
 
