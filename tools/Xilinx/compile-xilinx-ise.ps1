@@ -66,11 +66,20 @@ Write-Host "--------------------------------------------------------------------
 # Output directory
 $Command = "$PoC_RootDir\poc.ps1 --poc-installdir"
 $DestDir = Invoke-Expression $Command
+if (($LastExitCode -ne 0) -or ($DestDir -eq ""))
+{	Write-Host "ERROR: No PoC installation found." -ForegroundColor Red
+	exit 1
+}
 $DestDir += "\temp\QuestaSim"
 
 # Path to the simulators bin directory
 $Command = "$PoC_RootDir\poc.ps1 --modelsim-installdir"
 $SimulatorDir = Invoke-Expression $Command
+if (($LastExitCode -ne 0) -or ($SimulatorDir -eq ""))
+{	Write-Host "ERROR: No QuestaSim installation found." -ForegroundColor Red
+	Write-Host "Run '.\poc.ps1 --configure' to configure your Mentor QuestaSim installation." -ForegroundColor Red
+	exit 1
+}
 $SimulatorDir += "\win64"
 
 $Command = $env:XILINX + "\bin\nt64\compxlib.exe -s $Simulator -l $Language -dir $DestDir -p $SimulatorDir -arch $TargetArchitecture -lib unisim -lib simprim -lib xilinxcorelib -intstyle ise"

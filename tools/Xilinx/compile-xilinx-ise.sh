@@ -45,7 +45,7 @@ NOCOLOR='\e[0m'			# No Color
 if [ -z "$XILINX" ]; then
 	PoC_ISE_SettingsFile=$($poc_sh --ise-settingsfile)
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${RED}No Xilinx ISE installation found.${NOCOLOR}"
+		echo 1>&2 -e "${RED}ERROR: No Xilinx ISE installation found.${NOCOLOR}"
 		echo 1>&2 -e "${RED}Run 'PoC.py --configure' to configure your Xilinx ISE installation.${NOCOLOR}"
 		exit 1
 	fi
@@ -59,12 +59,12 @@ fi
 # Setup command to execute
 DestDir=$($poc_sh --poc-installdir 2>/dev/null)/temp/QuestaSim	# Output directory
 if [ $? -ne 0 ]; then
-	echo "Cannot get PoC installation dir."
+	echo "${RED}ERROR: Cannot get PoC installation dir.${NOCOLOR}"
 	exit;
 fi 
 SimulatorDir=$($poc_sh --modelsim-installdir 2>/dev/null)/bin	# Path to the simulators bin directory
 if [ $? -ne 0 ]; then
-	echo "Cannot get ModelSim installation dir."
+	echo "${RED}ERROR: Cannot get ModelSim installation dir.${NOCOLOR}"
 	exit;
 fi 
 
