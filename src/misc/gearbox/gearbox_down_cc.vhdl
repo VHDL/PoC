@@ -48,6 +48,7 @@ entity gearbox_down_cc is
 	generic (
 		INPUT_BITS						: POSITIVE	:= 32;
 		OUTPUT_BITS						: POSITIVE	:= 24;
+		META_BITS							: NATURAL		:= 0;
 		ADD_INPUT_REGISTERS		: BOOLEAN		:= FALSE;
 		ADD_OUTPUT_REGISTERS	: BOOLEAN		:= FALSE
 	);
@@ -55,16 +56,24 @@ entity gearbox_down_cc is
 		Clock				: in	STD_LOGIC;
 		
 		In_Sync			: in	STD_LOGIC;
+		In_Valid		: in	STD_LOGIC;
 		In_Next			: out	STD_LOGIC;
 		In_Data			: in	STD_LOGIC_VECTOR(INPUT_BITS - 1 downto 0);
-		In_Valid		: in	STD_LOGIC;
+		In_Meta			: in	STD_LOGIC_VECTOR(META_BITS - 1 downto 0);
+		
+		Out_Sync		: out	STD_LOGIC;
+		Out_Valid		: out	STD_LOGIC;
 		Out_Data		: out	STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0);
-		Out_Valid		: out	STD_LOGIC
+		Out_Meta		: out	STD_LOGIC_VECTOR(META_BITS - 1 downto 0);
+		Out_First		: out	STD_LOGIC;
+		Out_Last		: out	STD_LOGIC
 	);
 end entity;
 
 
 architecture rtl of gearbox_down_cc is
+	constant C_VERBOSE				: BOOLEAN			:= POC_VERBOSE;
+
 	constant BITS_PER_CHUNK		: POSITIVE		:= greatestCommonDivisor(INPUT_BITS, OUTPUT_BITS);
 	constant INPUT_CHUNKS			: POSITIVE		:= INPUT_BITS / BITS_PER_CHUNK;
 	constant OUTPUT_CHUNKS		: POSITIVE		:= OUTPUT_BITS / BITS_PER_CHUNK;
@@ -73,42 +82,51 @@ architecture rtl of gearbox_down_cc is
 	type T_CHUNK_VECTOR			is array(NATURAL range <>) of T_CHUNK;
 	
 	subtype T_MUX_INDEX			is INTEGER range 0 to INPUT_CHUNKS - 1;
-	type T_MUX_INPUT_LIST		is array(NATURAL range <>) of T_MUX_INDEX;
+	type T_MUX_INPUT is record
+		Index			: T_MUX_INDEX;
+		UseBuffer	: BOOLEAN;
+	end record;
+	
+	type T_MUX_INPUT_LIST		is array(NATURAL range <>) of T_MUX_INPUT;
 	type T_MUX_INPUT_STRUCT is record
 		List		: T_MUX_INPUT_LIST(0 to OUTPUT_CHUNKS - 1);
-		Nxt			: STD_LOGIC;
 		Reg_en	: STD_LOGIC;
+		Nxt			: STD_LOGIC;
+		First		: STD_LOGIC;
+		Last		: STD_LOGIC;
 	end record;
 	type T_MUX_DESCRIPTIONS		is array(NATURAL range <>) of T_MUX_INPUT_STRUCT;
 	
-	function geMuxDescription return T_MUX_DESCRIPTIONS is
-		variable C		: T_MUX_DESCRIPTIONS(T_MUX_INDEX);
-		variable k		: T_MUX_INDEX;
+	function genMuxDescription return T_MUX_DESCRIPTIONS is
+		variable DESC				: T_MUX_DESCRIPTIONS(0 to INPUT_CHUNKS - 1);
+		variable UseBuffer	: BOOLEAN;
+		variable k					: T_MUX_INDEX;
 	begin
+		if (not C_VERBOSE) then		report "genMuxDescription: IC=" & INTEGER'image(INPUT_CHUNKS) severity NOTE;		end if;
+		
 		k := INPUT_CHUNKS - 1;
-		for i in C'range loop
-			C(i).Reg_en			:= '0';
+		for i in 0 to INPUT_CHUNKS - 1 loop
+			if (not C_VERBOSE) then		report "  i: " & INTEGER'image(i) & "  List:" severity NOTE;		end if;
+			UseBuffer					:= TRUE;
 			for j in 0 to OUTPUT_CHUNKS - 1 loop
-				k							:= (k + 1) mod INPUT_CHUNKS;
-				C(i).List(j)	:= k;
-				C(i).Reg_en		:= C(i).Reg_en	or	to_sl(k = 0);
+				k													:= (k + 1) mod INPUT_CHUNKS;
+				UseBuffer									:= UseBuffer and (k /= 0);
+				DESC(i).List(j).Index			:= k;
+				DESC(i).List(j).UseBuffer	:= UseBuffer;
+				
+				if (not C_VERBOSE) then		report "    j= " & INTEGER'image(j) & "  k=" & INTEGER'image(DESC(i).List(j).Index) severity NOTE;		end if;
 			end loop;
-			C(i).Nxt				:= to_sl(k + OUTPUT_CHUNKS >= INPUT_CHUNKS);
+			DESC(i).Reg_en		:= to_sl(not UseBuffer);
+			DESC(i).Nxt				:= to_sl(k + OUTPUT_CHUNKS >= INPUT_CHUNKS);
+			DESC(i).First			:= to_sl(i = 0);
+			DESC(i).Last			:= to_sl(i = INPUT_CHUNKS - 1);
+			
+			if (not C_VERBOSE) then		report "    en=" & STD_LOGIC'image(DESC(i).Reg_en) & "  nxt=" & STD_LOGIC'image(DESC(i).Nxt) severity NOTE;		end if;
 		end loop;
-		return C;
+		return DESC;
 	end function;
 	
-	function isZeroLine(C : T_MUX_DESCRIPTIONS; i : T_MUX_INDEX; j : T_MUX_INDEX) return BOOLEAN is
-	begin
-		for k in (j + 1) to OUTPUT_CHUNKS - 1 loop
-			if (C(i).List(k) = 0) then
-				return TRUE;
-			end if;
-		end loop;
-		return FALSE;
-	end function;
-	
-	constant MUX_INPUT_TRANSLATION		: T_MUX_DESCRIPTIONS		:= geMuxDescription;
+	constant MUX_INPUT_TRANSLATION		: T_MUX_DESCRIPTIONS		:= genMuxDescription;
 	
 	-- create vector-vector from vector (4 bit)
 	function to_chunkv(slv : STD_LOGIC_VECTOR) return T_CHUNK_VECTOR is
@@ -133,44 +151,73 @@ architecture rtl of gearbox_down_cc is
 		return slv;
 	end function;
 	
-	signal DataIn							:	STD_LOGIC_VECTOR(INPUT_BITS - 1 downto 0)				:= (others => '0');
-	signal ValidIn						: STD_LOGIC																				:= '0';
+	signal In_Sync_d					: STD_LOGIC																					:= '0';
+	signal In_Data_d					:	STD_LOGIC_VECTOR(INPUT_BITS - 1 downto 0)					:= (others => '0');
+	signal In_Meta_d					:	STD_LOGIC_VECTOR(META_BITS - 1 downto 0)					:= (others => '0');
+	signal In_Valid_d					: STD_LOGIC																					:= '0';
 	
+	signal MuxSelect_rst			: STD_LOGIC;
 	signal MuxSelect_en				: STD_LOGIC;
 	signal MuxSelect_us				: UNSIGNED(log2ceilnz(INPUT_CHUNKS) - 1 downto 0)	:= (others => '0');
 	signal MuxSelect_ov				: STD_LOGIC;
+	
 	signal Nxt								: STD_LOGIC;
+	signal AutoIncrement			: STD_LOGIC;
 	
 	signal GearBoxInput				: T_CHUNK_VECTOR(INPUT_CHUNKS - 1 downto 0);
 	signal GearBoxBuffer_en		: STD_LOGIC;
-	signal GearBoxBuffer			: T_CHUNK_VECTOR(INPUT_CHUNKS - 1 downto INPUT_CHUNKS - OUTPUT_CHUNKS + 1)	:= (others => (others => '0'));
+	signal GearBoxBuffer			: T_CHUNK_VECTOR(INPUT_CHUNKS - 1 downto 1)				:= (others => (others => '0'));
 	signal GearBoxOutput			: T_CHUNK_VECTOR(OUTPUT_CHUNKS - 1 downto 0);
 	
-	signal DataOut						:	STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0)			:= (others => '0');
-	signal ValidOut						: STD_LOGIC																				:= '0';
+	signal SyncOut						: STD_LOGIC;
+	signal ValidOut						: STD_LOGIC;
+	signal DataOut						:	STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0);
+	signal MetaOut						:	STD_LOGIC_VECTOR(META_BITS - 1 downto 0);
+	signal FirstOut						: STD_LOGIC;
+	signal LastOut						: STD_LOGIC;
 
-begin
-	assert (INPUT_BITS > OUTPUT_BITS) report "OUTPUT_BITS must be less than INPUT_BITS, otherwise it's no down-sizing gearbox." severity FAILURE;
-
-	DataIn	<= In_Data	when registered(Clock, ADD_INPUT_REGISTERS);
-	ValidIn	<= In_Valid	when registered(Clock, ADD_INPUT_REGISTERS);
+	signal Out_Sync_d					: STD_LOGIC																					:= '0';
+	signal Out_Valid_d				: STD_LOGIC																					:= '0';
+	signal Out_Data_d					:	STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0)				:= (others => '0');
+	signal Out_Meta_d					:	STD_LOGIC_VECTOR(META_BITS - 1 downto 0)					:= (others => '0');
+	signal Out_First_d				: STD_LOGIC																					:= '0';
+	signal Out_Last_d					: STD_LOGIC																					:= '0';
 	
-	GearBoxInput			<= to_chunkv(DataIn(INPUT_BITS - 1 downto 0));
-	GearBoxBuffer_en	<= MUX_INPUT_TRANSLATION(to_index(MuxSelect_us, INPUT_CHUNKS)).Reg_en and ValidIn;
+begin
+	assert (not C_VERBOSE)
+		report "gearbox_down_cc:" & CR &
+					 "  INPUT_BITS=" & INTEGER'image(INPUT_BITS) &
+					 "  OUTPUT_BITS=" & INTEGER'image(OUTPUT_BITS) &
+					 "  INPUT_CHUNKS=" & INTEGER'image(INPUT_CHUNKS) &
+					 "  OUTPUT_CHUNKS=" & INTEGER'image(OUTPUT_CHUNKS) &
+					 "  BITS_PER_CHUNK=" & INTEGER'image(BITS_PER_CHUNK)
+		severity NOTE;
+	assert (INPUT_BITS > OUTPUT_BITS)	report "OUTPUT_BITS must be less than INPUT_BITS, otherwise it's no down-sizing gearbox." severity FAILURE;
+
+	In_Sync_d		<= In_Sync;--	when registered(Clock, ADD_INPUT_REGISTERS);
+	In_Valid_d	<= In_Valid	when registered(Clock, ADD_INPUT_REGISTERS);
+	In_Data_d		<= In_Data	when registered(Clock, ADD_INPUT_REGISTERS);
+	In_Meta_d		<= In_Meta	when registered(Clock, ADD_INPUT_REGISTERS);
+	
+	GearBoxInput			<= to_chunkv(In_Data_d(INPUT_BITS - 1 downto 0));
+	GearBoxBuffer_en	<= MUX_INPUT_TRANSLATION(to_index(MuxSelect_us, INPUT_CHUNKS)).Reg_en and In_Valid_d;
 	
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
 			if (GearBoxBuffer_en = '1') then
-				GearBoxBuffer		<= to_chunkv(DataIn(INPUT_BITS - 1 downto ((INPUT_CHUNKS - OUTPUT_CHUNKS + 1) * BITS_PER_CHUNK)));
+				GearBoxBuffer		<= to_chunkv(In_Data_d(INPUT_BITS - 1 downto BITS_PER_CHUNK));
 			end if;
 		end if;
 	end process;
 	
-	MuxSelect_en		<= ValidIn or MuxSelect_ov;
-	MuxSelect_us		<= upcounter_next(cnt => MuxSelect_us, rst => (In_Sync or MuxSelect_ov), en => MuxSelect_en) when rising_edge(Clock);
+	MuxSelect_rst		<= In_Sync_d or MuxSelect_ov;
+	MuxSelect_en		<= In_Valid_d or MuxSelect_ov or AutoIncrement;
+	MuxSelect_us		<= upcounter_next(cnt => MuxSelect_us, rst => MuxSelect_rst, en => MuxSelect_en) when rising_edge(Clock);
 	MuxSelect_ov		<= upcounter_equal(cnt => MuxSelect_us, value => (INPUT_CHUNKS - 1));
+
 	Nxt							<= MUX_INPUT_TRANSLATION(to_index(MuxSelect_us, INPUT_CHUNKS)).Nxt;
+	AutoIncrement		<= not Nxt;
 	
 	In_Next					<= Nxt;
 	
@@ -179,28 +226,42 @@ begin
 		signal MuxInput		: T_CHUNK_VECTOR(INPUT_CHUNKS - 1 downto 0);
 	begin
 		genMuxInputs : for i in 0 to INPUT_CHUNKS - 1 generate
-			assert FALSE
+			assert (not C_VERBOSE)
 				report "i= " & INTEGER'image(i) & " " &
 							 "j= " & INTEGER'image(j) & " " &
-							 "-> idx= " & INTEGER'image(MUX_INPUT_TRANSLATION(i).List(j)) & " " &
-							 "-> useReg= " & BOOLEAN'image(isZeroLine(MUX_INPUT_TRANSLATION, i, j)) & " " &
+							 "-> idx= " & INTEGER'image(MUX_INPUT_TRANSLATION(i).List(j).Index) & " " &
+							 "-> useBuffer= " & BOOLEAN'image(MUX_INPUT_TRANSLATION(i).List(j).UseBuffer) & " " &
 							 "-> Nxt= " & STD_LOGIC'image(MUX_INPUT_TRANSLATION(i).Nxt)
 				severity NOTE;
 			
-			connectToInput : if (isZeroLine(MUX_INPUT_TRANSLATION, i, j) = FALSE) generate
-				MuxInput(i)	<= GearBoxInput(MUX_INPUT_TRANSLATION(i).List(j));
+			connectToInput : if (MUX_INPUT_TRANSLATION(i).List(j).UseBuffer = FALSE) generate
+				MuxInput(i)	<= GearBoxInput(MUX_INPUT_TRANSLATION(i).List(j).Index);
 			end generate;
-			connectToBuffer : if (isZeroLine(MUX_INPUT_TRANSLATION, i, j) = TRUE) generate
-				MuxInput(i)	<= GearBoxBuffer(MUX_INPUT_TRANSLATION(i).List(j));
+			connectToBuffer : if (MUX_INPUT_TRANSLATION(i).List(j).UseBuffer = TRUE) generate
+				MuxInput(i)	<= GearBoxBuffer(MUX_INPUT_TRANSLATION(i).List(j).Index);
 			end generate;
 		end generate;
 		
 		GearBoxOutput(j)	<= MuxInput(to_index(MuxSelect_us, INPUT_CHUNKS));
 	end generate;
 
-	DataOut		<= to_slv(GearBoxOutput);
-	ValidOut	<= ValidIn;
+	SyncOut			<= MuxSelect_ov;
+	ValidOut		<= In_Valid_d or MuxSelect_ov or AutoIncrement;
+	DataOut			<= to_slv(GearBoxOutput);
+	FirstOut		<= MUX_INPUT_TRANSLATION(to_index(MuxSelect_us, INPUT_CHUNKS)).First;
+	LastOut			<= MUX_INPUT_TRANSLATION(to_index(MuxSelect_us, INPUT_CHUNKS)).Last;
 	
-	Out_Data	<= DataOut	when registered(Clock, ADD_OUTPUT_REGISTERS);
-	Out_Valid	<= ValidOut	when registered(Clock, ADD_OUTPUT_REGISTERS);
+	Out_Sync_d	<= SyncOut	when registered(Clock, ADD_OUTPUT_REGISTERS);
+	Out_Valid_d	<= ValidOut	when registered(Clock, ADD_OUTPUT_REGISTERS);
+	Out_Data_d	<= DataOut	when registered(Clock, ADD_OUTPUT_REGISTERS);
+	Out_Meta_d	<= MetaOut	when registered(Clock, ADD_OUTPUT_REGISTERS);
+	Out_First_d	<= FirstOut	when registered(Clock, ADD_OUTPUT_REGISTERS);
+	Out_Last_d	<= LastOut	when registered(Clock, ADD_OUTPUT_REGISTERS);
+	
+	Out_Sync		<= Out_Sync_d;
+	Out_Valid		<= Out_Valid_d;
+	Out_Data		<= Out_Data_d;
+	Out_Meta		<= Out_Meta_d;
+	Out_First		<= Out_First_d;
+	Out_Last		<= Out_Last_d;
 end architecture;

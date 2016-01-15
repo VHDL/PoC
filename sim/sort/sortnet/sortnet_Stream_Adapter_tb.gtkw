@@ -1,0 +1,79 @@
+[*]
+[*] GTKWave Analyzer v3.3.61 (w)1999-2014 BSI
+[*] Fri Jan 01 19:40:17 2016
+[*]
+[dumpfile] "H:\Austausch\PoC\temp\ghdl\sortnet_Stream_Adapter_tb.vcd"
+[dumpfile_mtime] "Fri Jan 01 19:37:50 2016"
+[dumpfile_size] 158912
+[savefile] "H:\Austausch\PoC\sim\sort\sortnet\sortnet_Stream_Adapter_tb.gtkw"
+[timestart] 0
+[size] 1676 997
+[pos] -1 -1
+*-26.446751 172800000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] sort.
+[treeopen] sort.B1.
+[treeopen] sort.B1.sort.(0).B1.
+[treeopen] sort.B1.sort.(1).
+[treeopen] sort.B1.sort.(2).
+[treeopen] sort.gearup.
+[sst_width] 197
+[signals_width] 466
+[sst_expanded] 1
+[sst_vpaned_height] 293
+@28
+stopsimulation
+clock
+@200
+-Generator
+@28
+generator_valid
+@22
+generator_data[15:0]
+@200
+-GearBox
+@28
+sort.iskey
+@24
+sort.tagcounter[1:0]
+@28
+sort.in_valid
+sort.metain[2:0]
+@22
+sort.in_data[15:0]
+@28
+sort.gearup_valid
+@22
+sort.gearup_data[127:0]
+@200
+-SortNet
+@28
+sort.B1.sort.inverse
+sort.B1.sort.in_valid
+@29
+sort.B1.sort.in_iskey
+@22
+sort.sort_data[127:0]
+@28
+sort.B1.sort.in_meta[1:0]
+sort.B1.sort.out_valid
+sort.B1.sort.out_iskey
+sort.B1.sort.out_meta[1:0]
+@200
+-GearBox
+@28
+sort.out_valid
+@22
+sort.out_data[15:0]
+@28
+sort.out_ack
+@200
+-Tester
+@28
+tester_ack
+@200
+-Internal
+@28
+sort.B1.sort.in_iskey
+sort.B1.sort.out_iskey
+[pattern_trace] 1
+[pattern_trace] 0
