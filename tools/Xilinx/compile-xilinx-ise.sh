@@ -4,16 +4,14 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-#	Bash Script:			Wrapper Script to execute <PoC-Root>/py/Testbench.py
+#	Authors:				 	Martin Zabel
 # 
-#	Authors:				 	Patrick Lehmann
+#	Bash Script:			Compile Xilinx's simulation libraries
 # 
 # Description:
 # ------------------------------------
-#	This is a bash wrapper script (executable) which:
-#		- saves the current working directory as an environment variable
-#		- delegates the call to <PoC-Root>/py/wrapper.sh
-#		-
+#	This is a bash script compiles Xilinx's simulation libraries into a local
+#	directory.
 #
 # License:
 # ==============================================================================
@@ -61,13 +59,13 @@ fi
 # Setup command to execute
 DestDir=$($poc_sh --poc-installdir 2>/dev/null)/temp/QuestaSim	# Output directory
 if [ $? -ne 0 ]; then
-   echo "Cannot get PoC installation dir."
-   exit;
+	echo "Cannot get PoC installation dir."
+	exit;
 fi 
 SimulatorDir=$($poc_sh --modelsim-installdir 2>/dev/null)/bin	# Path to the simulators bin directory
 if [ $? -ne 0 ]; then
-   echo "Cannot get ModelSim installation dir."
-   exit;
+	echo "Cannot get ModelSim installation dir."
+	exit;
 fi 
 
 # Execute command
