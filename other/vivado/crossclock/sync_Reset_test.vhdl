@@ -28,52 +28,66 @@
 -- limitations under the License.
 -- =============================================================================
 
-library	IEEE;
-use			IEEE.STD_LOGIC_1164.all;
+library	ieee;
+use			ieee.std_logic_1164.all;
+use     ieee.numeric_std.all;
 
 library	PoC;
 use			PoC.sync.all;
 
-entity sync_Bits_test is
+entity sync_Reset_test is
+	generic (
+		EXTERNAL_RESET : boolean := true);
+	port (
+		Clock1	: in	STD_LOGIC;
+		Clock2	: in	STD_LOGIC;
+		Input		: in	STD_LOGIC;
+		Output	: out STD_LOGIC_VECTOR(63 downto 0);
+		Busy		: out STD_LOGIC;
+		Changed : out STD_LOGIC);
 
-  generic (
-    BITS : POSITIVE	    := 1;
-    INIT : STD_LOGIC_VECTOR := "0");
+end entity sync_Reset_test;
 
-  port (
-    Clock1 : in	 STD_LOGIC;
-    Clock2 : in	 STD_LOGIC;
-    Input  : in	 STD_LOGIC_VECTOR(BITS - 1 downto 0);
-    Output : out STD_LOGIC_VECTOR(BITS - 1 downto 0));
+architecture rtl of sync_Reset_test is
+	signal Input_r3  : STD_LOGIC;
 
-end entity sync_Bits_test;
-
-architecture rtl of sync_Bits_test is
-	signal Input_r1  : STD_LOGIC_VECTOR(BITS - 1 downto 0);
-	signal Input_r2  : STD_LOGIC_VECTOR(BITS - 1 downto 0);
-	signal Input_r3  : STD_LOGIC_VECTOR(BITS - 1 downto 0);
-	signal Output_r1 : STD_LOGIC_VECTOR(BITS - 1 downto 0);
-	signal Output_r2 : STD_LOGIC_VECTOR(BITS - 1 downto 0);
-	signal Output_r3 : STD_LOGIC_VECTOR(BITS - 1 downto 0);
+	signal Reset2  : std_logic;
+	signal Counter : unsigned(Output'range);
+	
 begin  -- architecture rtl
 
-	Input_r1 <= Input    when rising_edge(Clock1);
-	Input_r2 <= Input_r1 when rising_edge(Clock1);
-	Input_r3 <= Input_r2 when rising_edge(Clock1);
+	gExtern: if EXTERNAL_RESET generate
+		Input_r3 <= Input;
+	end generate gExtern;
 	
-	test_1: entity poc.sync_Bits
-		generic map (
-			BITS => BITS,
-			INIT => INIT)
+	gIntern: if not EXTERNAL_RESET generate
+		signal Input_r1  : STD_LOGIC;
+		signal Input_r2  : STD_LOGIC;
+	begin
+		-- Trigger the reset input by another clock domain instead of an external
+		-- button. 
+		Input_r1 <= Input    when rising_edge(Clock1);
+		Input_r2 <= Input_r1 when rising_edge(Clock1);
+		Input_r3 <= Input_r2 when rising_edge(Clock1);
+	end generate gIntern;
+
+	-- Reset Synchronizer
+	reset_sync: entity poc.sync_Reset
 		port map (
 			Clock	 => Clock2,
 			Input	 => Input_r3,
-			Output => Output_r1);
+			Output => Reset2);
 
-	Output_r2 <= Output_r1 when rising_edge(Clock2);
-	Output_r3 <= Output_r2 when rising_edge(Clock2);
-	Output    <= Output_r3 when rising_edge(Clock2);
-	-- just to test a missing constraint
---	Output    <= Output_r3 or Input_r3 when rising_edge(Clock2);
+	-- example logic with an asynchronous reset
+	process(Clock2, Reset2)
+	begin
+		if Reset2 = '1' then
+			Counter <= (others => '0');
+		elsif rising_edge(Clock2) then
+			Counter <= Counter + 1;
+		end if;
+	end process;
+
+	Output <= std_logic_vector(Counter);
 	
 end architecture rtl;
