@@ -59,6 +59,7 @@ set_global_assignment -name EDA_TEST_BENCH_FILE ocram_esdp_test_tb.vhdl -section
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
 
+set_global_assignment -name VHDL_FILE ../../../src/mem/mem.pkg.vhdl -library poc
 set_global_assignment -name VHDL_FILE my_project.vhdl
 set_global_assignment -name VHDL_FILE ../../../src/mem/ocram/altera/ocram_esdp_altera.vhdl -library poc
 set_global_assignment -name VHDL_FILE my_config.vhdl -library poc

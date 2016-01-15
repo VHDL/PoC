@@ -18,12 +18,14 @@ FanControl.ucf
 FanControl.xdc
 Bus.LCDisplay.ucf
 Bus.IIC.ucf
+Bus.IIC.xdc
 Bus.PMBus.ucf
 EthernetPHY.ucf
 EthernetPHY.RGMII.ucf
 EthernetPHY.GMII.ucf
 EthernetPHY.SGMII.ucf
 Transceiver.SFP.ucf
+Transceiver.SFP.xdc
 Transceiver.SMA.ucf
 Transceiver.SMA_RefClock.ucf
 USB_UART.ucf
