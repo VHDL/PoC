@@ -40,7 +40,7 @@ entity fifo_ic_got_test is
 	generic (
 		D_BITS				 : positive := 8;
 		MIN_DEPTH			 : positive := 16;
-		DATA_REG			 : boolean := true;
+		DATA_REG			 : boolean := false;
 		OUTPUT_REG		 : boolean := true);
 
 	port (
