@@ -23,6 +23,7 @@ set_property PACKAGE_PIN	AC18				[get_ports ZC706_PMOD_Port1[6]]
 ## {INOUT}	Bank9		J58.8
 set_property PACKAGE_PIN	AC19				[get_ports ZC706_PMOD_Port1[7]]
 # set I/O standard
-set_property IOSTANDARD		LVCMOS25	[get_ports -regexp {ZC706_GPIO_LED\[\d\]}]
+set_property IOSTANDARD		LVCMOS25	[get_ports -regexp {ZC706_PMOD_Port1\[\d\]}]
 # Ignore timings on async I/O pins
-set_false_path									-to [get_ports -regexp {ZC706_GPIO_LED\[\d\]}]
+set_false_path									-to [get_ports -regexp {ZC706_PMOD_Port1\[\d\]}]
+set_false_path								-from [get_ports -regexp {ZC706_PMOD_Port1\[\d\]}]
