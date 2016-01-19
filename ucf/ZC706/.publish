@@ -14,4 +14,8 @@ GPIO.LED.xdc
 FanControl.ucf
 FanControl.xdc
 Bus.IIC.ucf
+Bus.IIC.xdc
 Transceiver.SFP.ucf
+Transceiver.SFP.xdc
+PMOD.Port1.ucf
+PMOD.Port1.xdc
