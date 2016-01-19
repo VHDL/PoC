@@ -47,6 +47,7 @@ class Configuration(CommandLineProgram):
 		"Aldec", "Aldec.ActiveHDL", "Aldec.RivieraPRO",
 		"Altera", "Altera.QuartusII", "Altera.ModelSim",
 		"GHDL", "GTKWave",
+		"Lattice", "Lattice.Diamond", "Lattice.ActiveHDL", "Lattice.Symplify",
 		"Mentor", "Mentor.QuestaSIM",
 		"Xilinx", "Xilinx.ISE", "Xilinx.LabTools", "Xilinx.Vivado", "Xilinx.HardwareServer",
 		"Solutions"
@@ -76,6 +77,10 @@ class Configuration(CommandLineProgram):
 			self.pocConfig['Altera'] =								OrderedDict()
 			self.pocConfig['Altera.QuartusII'] =			OrderedDict()
 			self.pocConfig['Altera.ModelSim'] =				OrderedDict()
+			self.pocConfig['Lattice'] =								OrderedDict()
+			self.pocConfig['Lattice.Diamond'] =				OrderedDict()
+			self.pocConfig['Lattice.ActiveHDL'] =			OrderedDict()
+			self.pocConfig['Lattice.Symplify'] =			OrderedDict()
 			self.pocConfig['GHDL'] =									OrderedDict()
 			self.pocConfig['GTKWave'] =								OrderedDict()
 			self.pocConfig['Mentor'] =								OrderedDict()
@@ -540,6 +545,7 @@ class Configuration(CommandLineProgram):
 			self.pocConfig['GHDL']['Version'] = ghdlVersion
 			self.pocConfig['GHDL']['InstallationDirectory'] = ghdlDirectoryPath.as_posix()
 			self.pocConfig['GHDL']['BinaryDirectory'] = '${InstallationDirectory}/bin'
+			self.pocConfig['GHDL']['Backend'] = 'mcode'
 		else:
 			raise BaseException("unknown option")
 	
@@ -789,6 +795,7 @@ class Configuration(CommandLineProgram):
 			self.pocConfig['GHDL']['Version'] = ghdlVersion
 			self.pocConfig['GHDL']['InstallationDirectory'] = ghdlDirectoryPath.as_posix()
 			self.pocConfig['GHDL']['BinaryDirectory'] = '${InstallationDirectory}'
+			self.pocConfig['GHDL']['Backend'] = 'llvm'
 		else:
 			raise BaseException("unknown option")
 

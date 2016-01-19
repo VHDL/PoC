@@ -11,5 +11,8 @@ git/
 #emacs/
 Notepad++/
 
+# compile scripts for vendor libraries
+Xilinx/
+
 # the publish scripts
 #publish/

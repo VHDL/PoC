@@ -2,7 +2,7 @@
 <BaliProject version="3.2" title="PoC" device="LFE5U-45F-6BG381C" default_implementation="impl1">
     <Options/>
     <Implementation title="impl1" dir="impl1" description="impl1" synthesis="lse" default_strategy="Strategy1">
-        <Options def_top="PoC.sync_Reset" lib="PoC" top="PoC.Dummy"/>
+        <Options def_top="PoC.uart_ft245" lib="PoC" top="PoC.Dummy"/>
         <Source name="../../src/common/physical.vhdl" type="VHDL" type_short="VHDL">
             <Options lib="PoC"/>
         </Source>
@@ -160,6 +160,24 @@
             <Options/>
         </Source>
         <Source name="../../src/misc/sync/sync_Strobe.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/uart/uart.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/uart/uart_bclk.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/uart/uart_fifo.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/uart/uart_ft245.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/uart/uart_rx.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/uart/uart_tx.vhdl" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="PoC.lpf" type="Logic Preference" type_short="LPF">

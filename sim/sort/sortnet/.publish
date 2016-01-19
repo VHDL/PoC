@@ -7,4 +7,6 @@ README.md
 # 
 sortnet_BitonicSort_tb.*
 sortnet_OddEvenSort_tb.*
-#sortnet_OddEvenMergeSort_tb.*
+sortnet_OddEvenMergeSort_tb.*
+sortnet_Stream_Adapter_tb.*
+sortnet_Stream_Adapter2_tb.*
