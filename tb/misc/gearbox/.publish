@@ -5,6 +5,7 @@
 README.md
 
 # 
-#gearbox_down_cc_tb.*
+gearbox_down_cc_tb.*
 gearbox_down_dc_tb.*
+gearbox_up_cc_tb.*
 gearbox_up_dc_tb.*
