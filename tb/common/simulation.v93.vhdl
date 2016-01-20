@@ -298,8 +298,13 @@ package body simulation is
 	end procedure;
 	
 	function simGenerateWaveform_Reset(constant Pause : TIME := 0 ns; ResetPulse : TIME := 10 ns) return T_TIMEVEC is
+		variable p  : TIME;
+		variable rp : TIME;
 	begin
-		return (0 => Pause, 1 => ResetPulse);
+		-- Workaround for ModelSim
+		p  := Pause;
+		rp := ResetPulse;
+		return (0 => p, 1 => rp);
 	end function;
 	
 	-- checksum functions
