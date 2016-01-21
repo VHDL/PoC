@@ -101,11 +101,10 @@ begin
 			val			=> PRNG_Value				-- the pseudo-random number
 		);
 
-	procTester : process
-		variable simProcessID	: T_SIM_PROCESS_ID;			-- from Simulation
+	procChecker : process
+		-- from Simulation
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Checker for " & INTEGER'image(BITS) & " bits");	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
 	begin
-		simProcessID := simRegisterProcess("Generator");	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
-		
 		Test_got						<= '0';
 		
 		wait until falling_edge(Reset);
