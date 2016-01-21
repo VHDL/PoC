@@ -116,6 +116,11 @@ package body simulation is
 		deactivateProcess(ProcID);
 	end procedure;
 	
+	procedure simWriteMessage(Message : in STRING := "") is
+	begin
+		writeMessage(Message);
+	end procedure;
+	
 	procedure simFail(Message : in string := "") is
 	begin
 		fail(Message);

@@ -40,11 +40,14 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
 use			PoC.physical.all;
+-- simulation only packages
+use			PoC.sim_global.all;
+use			PoC.sim_types.all;
 use			PoC.simulation.all;
 
 
 entity arith_prng_tb is
-end;
+end entity;
 
 
 architecture test of arith_prng_tb is
@@ -74,9 +77,9 @@ architecture test of arith_prng_tb is
 	signal Test_got			: STD_LOGIC;
 	signal PRNG_Value		: T_SLV_8;
 	
-BEGIN
+begin
 	-- initialize global simulation status
-	globalSimulationStatus.initialize;
+	simInitialize;
 	
 	-- generate global testbench clock
 	simGenerateClock(Clock, CLOCK_FREQ);
@@ -97,7 +100,7 @@ BEGIN
 	procTester : process
 		variable simProcessID	: T_SIM_PROCESS_ID;			-- from Simulation
 	begin
-		simProcessID := globalSimulationStatus.registerProcess("Generator");	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
+		simProcessID := simRegisterProcess("Generator");	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
 		
 		Test_got						<= '0';
 		
@@ -108,7 +111,7 @@ BEGIN
 			Test_got			<= '1';
 			
 			wait until rising_edge(Clock);
-			globalSimulationStatus.assertion((PRNG_Value = COMPARE_LIST_8_BITS(I)),
+			simAssertion((PRNG_Value = COMPARE_LIST_8_BITS(I)),
 				str_ralign(INTEGER'image(I), log10ceil(COMPARE_LIST_8_BITS'high)) &
 				": Value=" &		raw_format_slv_hex(PRNG_Value) &
 				" Expected=" &	raw_format_slv_hex(COMPARE_LIST_8_BITS(I))
@@ -121,9 +124,9 @@ BEGIN
 		end loop;
 		
 		-- This process is finished
-		globalSimulationStatus.deactivateProcess(simProcessID);
+		simDeactivateProcess(simProcessID);
 		-- Report overall result
-		globalSimulationStatus.finalize;
+		simFinalize;
 		wait;  -- forever
 	end process;
 end architecture;
