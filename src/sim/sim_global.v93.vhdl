@@ -46,7 +46,7 @@ package sim_global is
 	shared variable globalSim_FailedAssertCount		: NATURAL		:= 0;
 		
 	-- Clock Management
-	shared variable globalSim_MainClockEnable			: BOOLEAN		:= FALSE;
+	shared variable globalSim_MainClockEnable			: BOOLEAN		:= TRUE;
 		
 	-- Process Management
 	shared variable globalSim_ProcessCount				: NATURAL																	:= 0;

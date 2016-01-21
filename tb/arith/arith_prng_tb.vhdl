@@ -72,10 +72,14 @@ architecture test of arith_prng_tb is
 		x"9A", x"34", x"69", x"D3", x"A7", x"4F", x"9E", x"3C", x"78", x"F0", x"E0", x"C1", x"82", x"04", x"09", x"12"
 	);
 
+	constant BITS				: POSITIVE				:= 8;
+	
+	constant simTestID	: T_SIM_TEST_ID		:= simCreateTest("Test setup for BITS=" & INTEGER'image(BITS));
+	
 	signal Clock				: STD_LOGIC;
 	signal Reset				: STD_LOGIC;
 	signal Test_got			: STD_LOGIC;
-	signal PRNG_Value		: T_SLV_8;
+	signal PRNG_Value		: STD_LOGIC_VECTOR(BITS - 1 downto 0);
 	
 begin
 	-- initialize global simulation status

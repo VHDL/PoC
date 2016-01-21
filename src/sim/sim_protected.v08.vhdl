@@ -88,7 +88,7 @@ package body sim_protected is
 		variable FailedAssertCount	: NATURAL		:= 0;
 		
 		-- Clock Management
-		variable MainClockEnable		: BOOLEAN		:= FALSE;
+		variable MainClockEnable		: BOOLEAN		:= TRUE;
 		
 		-- Process Management
 		variable ProcessCount				: NATURAL																	:= 0;
@@ -103,7 +103,6 @@ package body sim_protected is
 		procedure initialize is
 		begin
 			IsInitialized			:= TRUE;
-			MainClockEnable		:= TRUE;
 		end procedure;
 		
 		procedure finalize is

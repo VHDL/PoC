@@ -50,6 +50,7 @@ package simulation is
 	procedure				simInitialize;
 	procedure				simFinalize;
 	
+	impure function simCreateTest(Name : STRING) return T_SIM_TEST_ID;
 	impure function	simRegisterProcess(Name : STRING) return T_SIM_PROCESS_ID;
 	procedure				simDeactivateProcess(ProcID : T_SIM_PROCESS_ID);
 	
@@ -105,6 +106,11 @@ package body simulation is
 	begin
 		globalSimulationStatus.finalize;
 	end procedure;
+	
+	impure function simCreateTest(Name : STRING) return T_SIM_TEST_ID is
+	begin
+		return globalSimulationStatus.createTest(Name);
+	end function;
 	
 	impure function simRegisterProcess(Name : STRING) return T_SIM_PROCESS_ID is
 	begin
@@ -255,7 +261,16 @@ package body simulation is
 	end procedure;
 	
 	function simGenerateWaveform_Reset(constant Pause : TIME := 0 ns; ResetPulse : TIME := 10 ns) return T_TIMEVEC is
+		variable p  : TIME;
+		variable rp : TIME;
 	begin
-		return (0 => Pause, 1 => ResetPulse);
+		-- WORKAROUND: for QuestaSim/ModelSim
+		--	Version:	10.4c
+		--	Issue:
+		--		return (0 => Pause, 1 => ResetPulse); always evaluates to (0 ns, 10 ns),
+		--		regardless of the passed function parameters
+		p  := Pause;
+		rp := ResetPulse;
+		return (0 => p, 1 => rp);
 	end function;
 end package body;

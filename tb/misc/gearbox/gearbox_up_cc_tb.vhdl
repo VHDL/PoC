@@ -38,7 +38,10 @@ use			PoC.math.all;
 use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.physical.all;
-use			PoC.simulation.ALL;
+-- simulation only packages
+use			PoC.sim_global.all;
+use			PoC.sim_types.all;
+use			PoC.simulation.all;
 
 library OSVVM;
 use			OSVVM.RandomPkg.all;
@@ -65,7 +68,7 @@ architecture tb of gearbox_up_cc_tb is
 
 begin
 	-- initialize global simulation status
-	globalSimulationStatus.initialize;
+	simInitialize;
 	
 	simGenerateClock(Clock, CLOCK_FREQ);
 	
@@ -123,7 +126,7 @@ begin
 				return to_slv(Temp);
 			end function;
 		begin
-			simProcessID := globalSimulationStatus.registerProcess("Generator " & INTEGER'image(i) & " for " & INTEGER'image(INPUT_BITS) & "->" & INTEGER'image(OUTPUT_BITS));	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
+			simProcessID := simRegisterProcess("Generator " & INTEGER'image(i) & " for " & INTEGER'image(INPUT_BITS) & "->" & INTEGER'image(OUTPUT_BITS));	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
 		
 			RandomVar.InitSeed(RandomVar'instance_name);		-- Generate initial seeds
 
@@ -166,7 +169,7 @@ begin
 			ValidIn		<= '0';
 			
 			-- This process is finished
-			globalSimulationStatus.deactivateProcess(simProcessID);
+			simDeactivateProcess(simProcessID);
 			wait;		-- forever
 		end process;
 		
@@ -199,18 +202,18 @@ begin
 			variable simProcessID	: T_SIM_PROCESS_ID;
 			variable Check				: BOOLEAN;
 		begin
-			simProcessID := globalSimulationStatus.registerProcess("Tester " & INTEGER'image(i) & " for " & INTEGER'image(INPUT_BITS) & "->" & INTEGER'image(OUTPUT_BITS));
+			simProcessID := simRegisterProcess("Tester " & INTEGER'image(i) & " for " & INTEGER'image(INPUT_BITS) & "->" & INTEGER'image(OUTPUT_BITS));
 		
 			Check		:= TRUE;
 			
 			for i in 0 to LOOP_COUNT - 1 loop
 				wait until rising_edge(Clock);
-				-- globalSimulationStatus.assertion(Check, "TODO: ");
+				-- simAssertion(Check, "TODO: ");
 			end loop;
 			
 			for i in 0 to LOOP_COUNT - 1 loop
 				wait until rising_edge(Clock);
-				-- globalSimulationStatus.assertion(Check, "TODO: ");
+				-- simAssertion(Check, "TODO: ");
 			end loop;
 		
 			for i in 0 to DELAY - 1 loop
@@ -218,7 +221,7 @@ begin
 			end loop;
 			
 			-- This process is finished
-			globalSimulationStatus.deactivateProcess(simProcessID);
+			simDeactivateProcess(simProcessID);
 			-- Report overall result
 			globalSimulationStatus.finalize;
 			wait;		-- forever

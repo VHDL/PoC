@@ -78,7 +78,6 @@ package body sim_unprotected is
 	procedure initialize is
 	begin
 		globalSim_IsInitialized			:= TRUE;
-		globalSim_MainClockEnable		:= TRUE;
 	end procedure;
 	
 	procedure finalize is
