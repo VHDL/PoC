@@ -45,9 +45,9 @@ use			PoC.vectors.all;
 package sim_types is
   -- Simulation Task and Status Management
 	-- ===========================================================================
-	subtype T_SIM_PROCESS_ID				is NATURAL range 0 to 31;
-	subtype T_SIM_PROCESS_NAME			is STRING(1 to 32);
-	subtype T_SIM_PROCESS_INSTNAME	is STRING(1 to 128);
+	subtype T_SIM_PROCESS_ID				is NATURAL range 0 to 1023;
+	subtype T_SIM_PROCESS_NAME			is STRING(1 to 64);
+	subtype T_SIM_PROCESS_INSTNAME	is STRING(1 to 256);
 	
 	type T_SIM_PROCESS_STATUS is (
 		SIM_PROCESS_STATUS_ACTIVE,
@@ -62,8 +62,8 @@ package sim_types is
 	end record;
 	type T_SIM_PROCESS_VECTOR is array(NATURAL range <>) of T_SIM_PROCESS;
 	
-	subtype T_SIM_TEST_ID		is NATURAL range 0 to 31;
-	subtype T_SIM_TEST_NAME	is STRING(1 to 32);
+	subtype T_SIM_TEST_ID		is NATURAL range 0 to 1023;
+	subtype T_SIM_TEST_NAME	is STRING(1 to 256);
 	
 	type T_SIM_TEST_STATUS is (
 		SIM_TEST_STATUS_ACTIVE,

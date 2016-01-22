@@ -151,6 +151,8 @@ package strings is
 	function str_ltrim(str : STRING; char : CHARACTER := ' ')	return STRING;
 	function str_rtrim(str : STRING; char : CHARACTER := ' ')	return STRING;
 	function str_trim(str : STRING)														return STRING;
+	function str_calign(str : STRING; length : NATURAL; FillChar : CHARACTER := ' ') return STRING;
+	function str_lalign(str : STRING; length : NATURAL; FillChar : CHARACTER := ' ') return STRING;
 	function str_ralign(str : STRING; length : NATURAL; FillChar : CHARACTER := ' ') return STRING;
 	function str_toLower(str : STRING)												return STRING;
 	function str_toUpper(str : STRING)												return STRING;
@@ -888,11 +890,28 @@ package body strings is
 		return str(str'low to str'low + str_length(str) - 1);
 	end function;
 	
+	function str_calign(str : STRING; length : NATURAL; FillChar : CHARACTER := ' ') return STRING is
+		constant Start		: POSITIVE	:= (length - str'length) / 2;
+		variable Result		: STRING(1 to length);
+	begin
+		Result		:= (others => FillChar);
+		Result(Start to (Start + str'length))	:= str;
+		return Result;
+	end function;
+	
+	function str_lalign(str : STRING; length : NATURAL; FillChar : CHARACTER := ' ') return STRING is
+		variable Result		: STRING(1 to length);
+	begin
+		Result		:= (others => FillChar);
+		Result(1 to str'length)	:= str;
+		return Result;
+	end function;
+	
 	function str_ralign(str : STRING; length : NATURAL; FillChar : CHARACTER := ' ') return STRING is
 		variable Result		: STRING(1 to length);
 	begin
 		Result		:= (others => FillChar);
-		Result(length - str'length + 1 to length)	:= str;
+		Result((length - str'length + 1) to length)	:= str;
 		return Result;
 	end function;
 	
