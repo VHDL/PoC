@@ -399,7 +399,6 @@ package sata is
 	type T_SATA_ATA_DEVICE_REGISTERS_VECTOR		is array (NATURAL range <>) of  T_SATA_ATA_DEVICE_REGISTERS;
 	
 	constant C_SATA_ATA_MAX_BLOCKCOUNT			: POSITIVE				:= 2**16; 			--	= 32 MiB at 512 Bytes logical blocks
-	constant C_SIM_MAX_BLOCKCOUNT						: POSITIVE				:= 64; 					--	= 32 KiB at 512 Bytes logical blocks
 	
 	function to_sata_Trans_Command(slv : STD_LOGIC_VECTOR)	return T_SATA_TRANS_COMMAND;
 	function to_sata_Trans_Status(slv : STD_LOGIC_VECTOR)		return T_SATA_TRANS_STATUS;
