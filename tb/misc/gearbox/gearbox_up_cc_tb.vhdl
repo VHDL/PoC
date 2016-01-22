@@ -106,7 +106,7 @@ begin
 		signal FirstOut								: STD_LOGIC;
 		signal LastOut								: STD_LOGIC;
 		
-		constant simTestID : T_SIM_TEST_ID		:= globalSimulationStatus.createTest("Test setup for " & INTEGER'image(INPUT_BITS) & "->" & INTEGER'image(OUTPUT_BITS));
+		constant simTestID : T_SIM_TEST_ID		:= simCreateTest("Test setup for " & INTEGER'image(INPUT_BITS) & "->" & INTEGER'image(OUTPUT_BITS));
 		
 	begin
 		procGenerator : process
@@ -218,7 +218,7 @@ begin
 			-- This process is finished
 			simDeactivateProcess(simProcessID);
 			-- Report overall result
-			globalSimulationStatus.finalize;
+			simFinalize;
 			wait;		-- forever
 		end process;
 	end generate;
