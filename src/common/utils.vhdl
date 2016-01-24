@@ -35,6 +35,7 @@ library	IEEE;
 
 use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
+use			IEEE.math_real.all;
 
 library	PoC;
 use			PoC.my_config.all;
@@ -123,7 +124,8 @@ package utils is
 
   --+ Max / Min / Sum ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	function imin(arg1 : integer; arg2 : integer) return integer;		-- Calculates: min(arg1, arg2) for integers
-	function rmin(arg1 : real; arg2 : real) return real;						-- Calculates: min(arg1, arg2) for reals
+	alias rmin is IEEE.math_real.realmin[real, real return real];
+	-- function rmin(arg1 : real; arg2 : real) return real;						-- Calculates: min(arg1, arg2) for reals
 	
 	function imin(vec : T_INTVEC) return INTEGER;										-- Calculates: min(vec) for a integer vector
 	function imin(vec : T_NATVEC) return NATURAL;										-- Calculates: min(vec) for a natural vector
@@ -131,7 +133,8 @@ package utils is
 	function rmin(vec : T_REALVEC) return real;	       							-- Calculates: min(vec) of real vector
 
 	function imax(arg1 : integer; arg2 : integer) return integer;		-- Calculates: max(arg1, arg2) for integers
-	function rmax(arg1 : real; arg2 : real) return real;						-- Calculates: max(arg1, arg2) for reals
+	alias rmax is IEEE.math_real.realmax[real, real return real];
+	-- function rmax(arg1 : real; arg2 : real) return real;						-- Calculates: max(arg1, arg2) for reals
 	
 	function imax(vec : T_INTVEC) return INTEGER;										-- Calculates: max(vec) for a integer vector
 	function imax(vec : T_NATVEC) return NATURAL;										-- Calculates: max(vec) for a natural vector
@@ -182,6 +185,11 @@ package utils is
 	function reverse(vec : bit_vector) return bit_vector;
 	function reverse(vec : unsigned) return unsigned;
 	
+	-- scale a value into a range [Minimum, Maximum]
+	function scale(Value : INTEGER;	Minimum : INTEGER;	Maximum : INTEGER; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST)	return INTEGER;
+	function scale(Value : REAL;		Minimum : INTEGER;	Maximum : INTEGER; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST)	return INTEGER;
+	function scale(Value : REAL;		Minimum : REAL;			Maximum : REAL)																														return REAL;
+
   -- Resizes the vector to the specified length. The adjustment is make on
   -- on the 'high end of the vector. The 'low index remains as in the argument.
   -- If the result vector is larger, the extension uses the provided fill value
@@ -436,11 +444,11 @@ package body utils is
 		return arg2;
 	end function;
 
-	function rmin(arg1 : real; arg2 : real) return real is
-	begin
-		if arg1 < arg2 then return arg1; end if;
-		return arg2;
-	end function;
+	-- function rmin(arg1 : real; arg2 : real) return real is
+	-- begin
+		-- if arg1 < arg2 then return arg1; end if;
+		-- return arg2;
+	-- end function;
 	
 	function imin(vec : T_INTVEC) return INTEGER is
 		variable Result		: INTEGER;
@@ -496,11 +504,11 @@ package body utils is
 		return arg2;
 	end function;
 
-	function rmax(arg1 : real; arg2 : real) return real is
-	begin
-		if arg1 > arg2 then return arg1; end if;
-		return arg2;
-	end function;
+	-- function rmax(arg1 : real; arg2 : real) return real is
+	-- begin
+		-- if arg1 > arg2 then return arg1; end if;
+		-- return arg2;
+	-- end function;
 	
 	function imax(vec : T_INTVEC) return INTEGER is
 		variable Result		: INTEGER;
@@ -875,6 +883,39 @@ package body utils is
     slv := to_stdlogicvector(arg);
 		return  mssb_idx(slv);
 	end mssb_idx;
+
+	-- scale a value into a given range
+	function scale(Value : INTEGER; Minimum : INTEGER; Maximum : INTEGER; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return INTEGER is
+	begin
+		return scale(real(Value), Minimum, Maximum, RoundingStyle);
+	end function;
+
+	function scale(Value : REAL; Minimum : INTEGER; Maximum : INTEGER; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return INTEGER is
+		variable Result	: REAL;
+	begin
+		if (Maximum < Minimum) then
+			return INTEGER'low;
+		else
+			Result	:= real(Value) * ((real(Maximum) + 0.5) - (real(Minimum) - 0.5)) + (real(Minimum) - 0.5);
+			case RoundingStyle is
+				when ROUND_TO_NEAREST =>	return integer(round(Result));
+				when ROUND_TO_ZERO =>			report "scale: unsupported RoundingStyle." severity FAILURE;
+				when ROUND_TO_INF =>			report "scale: unsupported RoundingStyle." severity FAILURE;
+				when ROUND_UP =>					return integer(ceil(Result));
+				when ROUND_DOWN =>				return integer(floor(Result));
+				when others =>						report "scale: unsupported RoundingStyle." severity FAILURE;
+			end case;
+		end if;
+	end function;
+
+	function scale(Value : REAL; Minimum : REAL; Maximum : REAL) return REAL is
+	begin
+		if (Maximum < Minimum) then
+			return REAL'low;
+		else
+			return Value * (Maximum - Minimum) + Minimum;
+		end if;
+	end function;
 
 	function resize(vec : bit_vector; length : natural; fill : bit := '0') return bit_vector is
     constant  high2b : natural := vec'low+length-1;

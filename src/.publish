@@ -17,6 +17,7 @@ mem/
 misc/
 net/
 # DON'T PUBLISH sata/ !
+sim/
 sort/
 #trace/
 xil/

@@ -12,9 +12,14 @@
 --		This packages describes common primitives like flip flops and multiplexers
 --		as a function to use them as one-liners.
 --
+--	ATTENSION:
+--		The parameter 'constant INIT' of some functions is actually the reset
+--		value, not the initial value after device programming (e.g. for FPGAs),
+--		this value MUST be set via signal declaration!
+--	
 -- License:
 -- ============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,9 +72,9 @@ PACKAGE components IS
 	function neg(value : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR;		-- calculate 2's complement
 	
 	-- counter
-	function upcounter_next(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC := '1'; constant INIT : NATURAL := 0) return UNSIGNED;
+	function upcounter_next(cnt : UNSIGNED; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1'; constant INIT : NATURAL := 0) return UNSIGNED;
 	function upcounter_equal(cnt : UNSIGNED; value : NATURAL) return STD_LOGIC;
-	function downcounter_next(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC := '1'; constant INIT : INTEGER := 0) return SIGNED;
+	function downcounter_next(cnt : SIGNED; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1'; constant INIT : INTEGER := 0) return SIGNED;
 	function downcounter_equal(cnt : SIGNED; value : INTEGER) return STD_LOGIC;
 	function downcounter_neg(cnt : SIGNED) return STD_LOGIC;
 
@@ -222,7 +227,7 @@ package body components is
 	-- Counters
 	-- ===========================================================================
 	-- up-counter
-	function upcounter_next(cnt : UNSIGNED; rst : STD_LOGIC; en : STD_LOGIC := '1'; constant INIT : NATURAL := 0) return UNSIGNED is
+	function upcounter_next(cnt : UNSIGNED; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1'; constant INIT : NATURAL := 0) return UNSIGNED is
 	begin
 		if (rst = '1') then
 			return to_unsigned(init, cnt'length);
@@ -240,7 +245,7 @@ package body components is
 	end function;
 	
 	-- down-counter
-	function downcounter_next(cnt : SIGNED; rst : STD_LOGIC; en : STD_LOGIC := '1'; constant INIT : INTEGER := 0) return SIGNED is
+	function downcounter_next(cnt : SIGNED; rst : STD_LOGIC := '0'; en : STD_LOGIC := '1'; constant INIT : INTEGER := 0) return SIGNED is
 	begin
 		if (rst = '1') then
 			return to_signed(init, cnt'length);

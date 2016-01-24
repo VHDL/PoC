@@ -79,7 +79,25 @@ package sim_types is
 	
 	-- clock generation
 	-- ===========================================================================
-	subtype T_DUTYCYCLE is REAL range 0.0 to 1.0;
+	-- type T_PERCENT is INTEGER'range units
+	type T_PERCENT is range INTEGER'low to INTEGER'high units
+		ppb;
+		ppm			= 1000 ppb;
+		permil	= 1000 ppm;
+		percent	= 10 permil;
+		one			= 100 percent;
+	end units;
+	subtype T_WANDER		is T_PERCENT range -1 one to 1 one;
+	subtype T_DUTYCYCLE	is T_PERCENT range	0 ppb to 1 one;
+	
+	type T_DEGREE is range INTEGER'low to INTEGER'high units
+		second;
+		minute	= 60 second;
+		deg			= 60 minute;
+	end units;
+	subtype T_PHASE is T_DEGREE range	-360 deg to 360 deg;
+	
+	function ite(cond : BOOLEAN; value1 : T_DEGREE; value2 : T_DEGREE) return T_DEGREE;
 	
 	-- waveform generation
 	-- ===========================================================================
@@ -127,3 +145,15 @@ package sim_types is
 	type T_SIM_WAVEFORM_SLV_64	is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_64;
 	
 end package;
+
+
+package body sim_types is
+	function ite(cond : BOOLEAN; value1 : T_DEGREE; value2 : T_DEGREE) return T_DEGREE is
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
+end package body;

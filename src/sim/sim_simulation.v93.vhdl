@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Testbench:				Simulation constants, functions and utilities.
--- 
 -- Authors:					Patrick Lehmann
 --									Thomas B. Preusser
+-- 
+-- Package:					Simulation constants, functions and utilities.
 -- 
 -- Description:
 -- ------------------------------------
@@ -31,11 +31,13 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
+use			IEEE.math_real.all;
 
 library PoC;
--- use			PoC.utils.all;
-use			PoC.strings.all;
+use			PoC.utils.all;
+-- use			PoC.strings.all;
 use			PoC.vectors.all;
 use			PoC.physical.all;
 
@@ -58,20 +60,35 @@ package simulation is
 	
 	procedure				simWriteMessage(Message : in STRING := "");
 	
-	-- The testbench is marked as failed. If a message is provided, it is
-	-- reported as an error.
-	procedure simFail(Message : in string := "");
+  -- The testbench is marked as failed. If a message is provided, it is
+  -- reported as an error.
+  procedure simFail(Message : in STRING := "");
 
-	-- If the passed condition has evaluated false, the testbench is marked
-	-- as failed. In this case, the optional message will be reported as an
-	-- error if one was provided.
-	procedure simAssertion(cond : in boolean; Message : in string := "");
+  -- If the passed condition has evaluated false, the testbench is marked
+  -- as failed. In this case, the optional message will be reported as an
+  -- error if one was provided.
+	procedure simAssertion(cond : in BOOLEAN; Message : in STRING := "");
+
+	-- Random Numbers
+	-- ===========================================================================
+	type T_SIM_SEED is record
+		Seed1	: INTEGER;
+		Seed2	: INTEGER;
+	end record;
+
+	procedure initializeSeed(Seed : inout T_SIM_SEED);
+	procedure getUniformDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; Minimum : REAL; Maximum : REAL);
+	procedure getNormalDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; StandardDeviation : REAL := 1.0; Mean : REAL := 0.0);
 
 	-- clock generation
 	-- ===========================================================================
-	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Frequency : in FREQ; constant DutyCycle : T_DutyCycle := 0.5);
-	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Period : in TIME; constant DutyCycle : T_DutyCycle := 0.5);
+	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Frequency : in FREQ; constant Phase : in T_PHASE := 0 deg; constant DutyCycle : in T_DUTYCYCLE := 50 percent; constant Wander : in T_WANDER := 0 permil);
+	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Period : in TIME; constant Phase : in T_PHASE := 0 deg; constant DutyCycle : in T_DUTYCYCLE := 50 percent; constant Wander : in T_WANDER := 0 permil);
+	procedure simWaitUntilRisingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE);
+	procedure simWaitUntilFallingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE);
 	
+	procedure simGenerateClock2(signal Clock : out STD_LOGIC; signal Debug : out INTEGER; constant Period : in TIME);
+
 	-- waveform generation
 	-- ===========================================================================
 	procedure simGenerateWaveform(signal Wave : out BOOLEAN;		Waveform: T_TIMEVEC;							InitialValue : BOOLEAN);
@@ -86,6 +103,7 @@ package simulation is
 	
 	function simGenerateWaveform_Reset(constant Pause : TIME := 0 ns; ResetPulse : TIME := 10 ns) return T_TIMEVEC;
 	
+
 	-- TODO: integrate VCD simulation functions and procedures from sim_value_change_dump.vhdl here
 	
 	-- checksum functions
@@ -95,8 +113,9 @@ end package;
 
 
 package body simulation is
-	-- TODO: undocumented
+	-- legacy procedures
 	-- ===========================================================================
+	-- TODO: undocumented group
 	procedure simInitialize is
 	begin
 		initialize;
@@ -122,59 +141,168 @@ package body simulation is
 		deactivateProcess(ProcID);
 	end procedure;
 	
+	impure function simIsStopped return BOOLEAN is
+	begin
+		return isStopped;
+	end function;
+
+	-- TODO: undocumented group
 	procedure simWriteMessage(Message : in STRING := "") is
 	begin
 		writeMessage(Message);
 	end procedure;
 	
-	procedure simFail(Message : in string := "") is
-	begin
+  procedure simFail(Message : in STRING := "") is
+  begin
 		fail(Message);
-	end procedure;
+  end procedure;
 
-	procedure simAssertion(cond : in boolean; Message : in string := "") is
+	procedure simAssertion(cond : in BOOLEAN; Message : in STRING := "") is
 	begin
 		assertion(cond, Message);
 	end procedure;
 
-	-- clock generation
-	procedure simStop is
+
+	-- ===========================================================================
+	-- Random Numbers
+	-- ===========================================================================
+	procedure initializeSeed(Seed : inout T_SIM_SEED) is
 	begin
-		stopAllClocks;
+		Seed.Seed1	:= 5;
+		Seed.Seed2	:= 3423;
 	end procedure;
-	
-	impure function simIsStopped return BOOLEAN is
+
+	procedure getUniformDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; Minimum : REAL; Maximum : REAL) is
+		variable rand : REAL;
 	begin
-		return isStopped;
-	end function;
-	
-	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Frequency : in FREQ; constant DutyCycle : T_DutyCycle := 0.5) is
+		if (Maximum < Minimum) then			report "getUniformDistibutedRandomValue: Maximum must be greater than Minimum."	severity FAILURE;		end if;
+		ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand);
+		Value := scale(rand, Minimum, Maximum);
+	end procedure ;
+
+	procedure getNormalDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; StandardDeviation : REAL := 1.0; Mean : REAL := 0.0) is
+		variable rand1 : REAL;
+		variable rand2 : REAL;
+	begin
+		if StandardDeviation < 0.0 then	report "getNormalDistibutedRandomValue: Standard deviation must be >= 0.0"			severity FAILURE;		end if;
+		-- Box Muller transformation
+		ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand1);
+		ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand2);
+		--													standard normal distribution: mean 0, variance 1
+		Value := StandardDeviation * (sqrt(-2.0 * log(rand1)) * cos(MATH_2_PI * rand2)) + Mean;
+	end procedure;
+
+	-- clock generation
+	-- ===========================================================================
+	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Frequency : in FREQ; constant Phase : in T_PHASE := 0 deg; constant DutyCycle : in T_DutyCycle := 50 percent; constant Wander : in T_WANDER := 0 permil) is
 		constant Period : TIME := to_time(Frequency);
 	begin
-		simGenerateClock(Clock, Period, DutyCycle);
+		simGenerateClock(Clock, Period, Phase, DutyCycle, Wander);
 	end procedure;
 	
-	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Period : in TIME; constant DutyCycle : T_DutyCycle := 0.5) is
-		constant TIME_HIGH	: TIME := Period * DutyCycle;
-		constant TIME_LOW		: TIME := Period - TIME_HIGH;
+	procedure simGenerateClock(
+		signal	 Clock			: out	STD_LOGIC;
+		constant Period			: in	TIME;
+		constant Phase			: in	T_PHASE			:=	0 deg;
+		constant DutyCycle	: in	T_DutyCycle	:= 50 percent;
+		constant Wander			: in	T_WANDER		:=	0 permil
+	) is
+		constant NormalizedPhase		: T_PHASE		:= ite((Phase >= 0 deg), Phase, Phase + 360 deg);						-- move Phase into the range of 0° to 360°
+		constant PhaseAsFactor			: REAL			:= real(NormalizedPhase / 1 second) / 1296000.0;						-- 1,296,000 = 3,600 seconds * 360 degree per cycle
+		constant WanderAsFactor			: REAL			:= real(Wander / 1 ppb) / 1.0e9;
+		constant DutyCycleAsFactor	: REAL			:= real(DutyCycle / 1 permil) / 1000.0;
+		constant Delay							: TIME			:= Period * PhaseAsFactor;
+		constant TimeHigh						: TIME			:= Period * DutyCycleAsFactor + (Period * (WanderAsFactor / 2.0));	-- add 50% wander to the high level
+		constant TimeLow						: TIME			:= Period - TimeHigh + (Period * WanderAsFactor);						-- and 50% to the low level
+		constant ClockAfterRun_cy		: POSITIVE	:= 1;
 	begin
-		Clock		<= '0';
-		while (not isStopped) loop
-			wait for TIME_LOW;
-			Clock		<= '1';
-			wait for TIME_HIGH;
+		report "simGenerateClock: (Instance: '" & Clock'instance_name & "')" & CR &
+			"Period: "						& TIME'image(Period) & CR &
+			"Phase: "							& T_PHASE'image(Phase) & CR &
+			"DutyCycle: "					& T_DUTYCYCLE'image(DutyCycle) & CR &
+			"PhaseAsFactor: "			& REAL'image(PhaseAsFactor) & CR &
+			"WanderAsFactor: "		& REAL'image(WanderAsFactor) & CR &
+			"DutyCycleAsFactor: "	& REAL'image(DutyCycleAsFactor) & CR &
+			"Delay: "							& TIME'image(Delay) & CR &
+			"TimeHigh: "					& TIME'image(TimeHigh) & CR &
+			"TimeLow: "						& TIME'image(TimeLow)
+			severity NOTE;
+			
+		if (Delay = 0 ns) then
+			null;
+		elsif (Delay <= TimeLow) then
 			Clock		<= '0';
+			wait for Delay;
+		else
+			Clock		<= '1';
+			wait for Delay - TimeLow;
+			Clock		<= '0';
+			wait for TimeLow;
+		end if;
+		Clock		<= '1';
+		while (not isStopped) loop
+			wait for TimeHigh;
+			Clock		<= '0';
+			wait for TimeLow;
+			Clock		<= '1';
+		end loop;
+		-- create N more cycles to allow other processes to recognize the stop condition (clock after run)
+		for i in 1 to ClockAfterRun_cy loop
+			wait for TimeHigh;
+			Clock		<= '0';
+			wait for TimeLow;
+			Clock		<= '1';
+		end loop;
+		Clock		<= '0';
+	end procedure;
+	
+	procedure simGenerateClock2(signal Clock : out STD_LOGIC; signal Debug : out INTEGER; constant Period : in TIME) is
+		constant TimeHigh					: TIME			:= Period * 0.5;
+		constant TimeLow					: TIME			:= Period - TimeHigh;
+		variable Seed							: T_SIM_SEED;
+		variable rand							: REAL;
+	begin
+		Clock		<= '1';
+		initializeSeed(Seed);
+
+		while (not isStopped) loop
+			getUniformDistibutedRandomValue(Seed, rand, -256.0, 255.0);
+			Debug		<= integer(rand + 256.0);
+			-- getNormalDistibutedRandomValue(Seed, rand, 0.2, 0.0);			-- seed, random value, StandardDeviation := 1.0 (sigma), Mean := 0.0 micro
+			-- Debug		<= integer(rand * 256.0 + 256.0);
+			wait for TimeHigh;
+			Clock		<= '0';
+			wait for TimeLow;
+			Clock		<= '1';
+		end loop;
+		Clock		<= '0';
+	end procedure;
+
+	procedure simWaitUntilRisingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE) is
+	begin
+		for i in 1 to Times loop
+			wait until rising_edge(Clock);
+			exit when isStopped;
+		end loop;
+	end procedure;
+	
+	procedure simWaitUntilFallingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE) is
+	begin
+		for i in 1 to Times loop
+			wait until falling_edge(Clock);
+			exit when isStopped;
 		end loop;
 	end procedure;
 	
 	-- waveform generation
+	-- ===========================================================================
 	procedure simGenerateWaveform(signal Wave : out BOOLEAN; Waveform : T_TIMEVEC; InitialValue : BOOLEAN) is
 		variable State : BOOLEAN := InitialValue;
 	begin
 		Wave <= State;
 		for i in Waveform'range loop
 			wait for Waveform(i);
-			State := not State;
+			State		:= not State;
 			Wave		<= State;
 			exit when isStopped;
 		end loop;
@@ -186,7 +314,7 @@ package body simulation is
 		Wave <= State;
 		for i in Waveform'range loop
 			wait for Waveform(i);
-			State := not State;
+			State		:= not State;
 			Wave		<= State;
 			exit when isStopped;
 		end loop;
