@@ -1,0 +1,14 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# Simulation helper packages
+sim_types.pkg.vhdl
+sim_global.pkg.v93.vhdl
+sim_global.pkg.v08.vhdl
+sim_unprotected.pkg.v93.vhdl
+sim_protected.pkg.v08.vhdl
+sim_simulation.pkg.v93.vhdl
+sim_simulation.pkg.v08.vhdl
