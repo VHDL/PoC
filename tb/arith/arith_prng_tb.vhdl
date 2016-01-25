@@ -40,11 +40,14 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
 use			PoC.physical.all;
+-- simulation only packages
+use			PoC.sim_global.all;
+use			PoC.sim_types.all;
 use			PoC.simulation.all;
 
 
 entity arith_prng_tb is
-end;
+end entity;
 
 
 architecture test of arith_prng_tb is
@@ -69,14 +72,18 @@ architecture test of arith_prng_tb is
 		x"9A", x"34", x"69", x"D3", x"A7", x"4F", x"9E", x"3C", x"78", x"F0", x"E0", x"C1", x"82", x"04", x"09", x"12"
 	);
 
+	constant BITS				: POSITIVE				:= 8;
+	
+	constant simTestID	: T_SIM_TEST_ID		:= simCreateTest("Test setup for BITS=" & INTEGER'image(BITS));
+	
 	signal Clock				: STD_LOGIC;
 	signal Reset				: STD_LOGIC;
 	signal Test_got			: STD_LOGIC;
-	signal PRNG_Value		: T_SLV_8;
+	signal PRNG_Value		: STD_LOGIC_VECTOR(BITS - 1 downto 0);
 	
-BEGIN
+begin
 	-- initialize global simulation status
-	globalSimulationStatus.initialize;
+	simInitialize;
 	
 	-- generate global testbench clock
 	simGenerateClock(Clock, CLOCK_FREQ);
@@ -94,11 +101,10 @@ BEGIN
 			val			=> PRNG_Value				-- the pseudo-random number
 		);
 
-	procTester : process
-		variable simProcessID	: T_SIM_PROCESS_ID;			-- from Simulation
+	procChecker : process
+		-- from Simulation
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Checker for " & INTEGER'image(BITS) & " bits");	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
 	begin
-		simProcessID := globalSimulationStatus.registerProcess("Generator");	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
-		
 		Test_got						<= '0';
 		
 		wait until falling_edge(Reset);
@@ -108,7 +114,7 @@ BEGIN
 			Test_got			<= '1';
 			
 			wait until rising_edge(Clock);
-			globalSimulationStatus.assertion((PRNG_Value = COMPARE_LIST_8_BITS(I)),
+			simAssertion((PRNG_Value = COMPARE_LIST_8_BITS(I)),
 				str_ralign(INTEGER'image(I), log10ceil(COMPARE_LIST_8_BITS'high)) &
 				": Value=" &		raw_format_slv_hex(PRNG_Value) &
 				" Expected=" &	raw_format_slv_hex(COMPARE_LIST_8_BITS(I))
@@ -121,9 +127,9 @@ BEGIN
 		end loop;
 		
 		-- This process is finished
-		globalSimulationStatus.deactivateProcess(simProcessID);
+		simDeactivateProcess(simProcessID);
 		-- Report overall result
-		globalSimulationStatus.finalize;
+		simFinalize;
 		wait;  -- forever
 	end process;
 end architecture;

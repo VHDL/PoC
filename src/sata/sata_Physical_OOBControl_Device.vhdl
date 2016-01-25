@@ -311,11 +311,13 @@ BEGIN
 				WHEN ST_DEV_OOB_HANDSHAKE_COMPLETE =>
 					OOB_HandshakeComplete_i	<= '1';
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
+					TC1_en 									<= '1';
 					NextState								<= ST_DEV_SEND_ALIGN;
 					
 				WHEN ST_DEV_SEND_ALIGN =>
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
-				
+					TC1_en 									<= '1';
+					
 					IF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) AND (RX_Valid = '1')) THEN												-- ALIGN detected
 						NextState							<= ST_DEV_LINK_OK;
 					END IF;
