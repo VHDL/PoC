@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Testbench:				Simulation constants, functions and utilities.
--- 
 -- Authors:					Patrick Lehmann
 --									Thomas B. Preusser
+-- 
+-- Package:					Simulation constants, functions and utilities.
 -- 
 -- Description:
 -- ------------------------------------
@@ -14,7 +14,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,99 +34,52 @@ library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 
 library PoC;
+-- use			PoC.utils.all;
+-- use			PoC.strings.all;
 use			PoC.vectors.all;
-use			PoC.strings.all;
 use			PoC.physical.all;
+
+use			PoC.sim_global.all;
+use			PoC.sim_types.all;
+use			PoC.sim_protected.all;
 
 
 package simulation is
-	-- mimic definition of VHDL-2008
-	type TIME_VECTOR is array(natural range<>) of TIME;
-	
-	-- predefined constants to ease testvector concatenation
-	constant U8								: T_SLV_8							:= (others => 'U');
-	constant U16							: T_SLV_16						:= (others => 'U');
-	constant U24							: T_SLV_24						:= (others => 'U');
-	constant U32							: T_SLV_32						:= (others => 'U');
-
-	constant D8								: T_SLV_8							:= (others => '-');
-	constant D16							: T_SLV_16						:= (others => '-');
-	constant D24							: T_SLV_24						:= (others => '-');
-	constant D32							: T_SLV_32						:= (others => '-');
-
-	-- Testbench Status Management
+	-- Legacy interface for pre VHDL-2002
 	-- ===========================================================================
-	-- The testbench is marked as failed. If a message is provided, it is
-	-- reported as an error.
-	procedure tbFail(msg : in string := "");
+	procedure				simInitialize;
+	procedure				simFinalize;
+	
+	impure function simCreateTest(Name : STRING) return T_SIM_TEST_ID;
+	impure function	simRegisterProcess(Name : STRING) return T_SIM_PROCESS_ID;
+	procedure				simDeactivateProcess(ProcID : T_SIM_PROCESS_ID);
+	
+	impure function	simIsStopped return BOOLEAN;
+	
+	procedure				simWriteMessage(Message : in STRING := "");
+	
+  -- The testbench is marked as failed. If a message is provided, it is
+  -- reported as an error.
+  procedure simFail(Message : in STRING := "");
 
-	-- If the passed condition has evaluated false, the testbench is marked
-	-- as failed. In this case, the optional message will be reported as an
-	-- error if one was provided.
-	procedure tbAssert(cond : in boolean; msg : in string := "");
+  -- If the passed condition has evaluated false, the testbench is marked
+  -- as failed. In this case, the optional message will be reported as an
+  -- error if one was provided.
+	procedure simAssertion(cond : in BOOLEAN; Message : in STRING := "");
 
-	-- Prints out the overall testbench result as defined by the automated
-	-- testbench process. Unless tbFail() or tbAssert() with a false condition
-	-- have been called before, a successful completion will be reported, a
-	-- failure otherwise.
-	procedure tbPrintResult;
 
 	-- clock generation
 	-- ===========================================================================
-	subtype T_DutyCycle is REAL range 0.0 to 1.0;
+	-- procedure simStopAll;
+	-- impure function simIsStopped return BOOLEAN;
 	
-	procedure simStop;
-	impure function simIsStopped return BOOLEAN;
 	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Frequency : in FREQ; constant DutyCycle : T_DutyCycle := 0.5);
 	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Period : in TIME; constant DutyCycle : T_DutyCycle := 0.5);
 	
 	-- waveform generation
 	-- ===========================================================================
-	type T_SIM_WAVEFORM_TUPLE_SL is record
-		Delay		: TIME;
-		Value		: STD_LOGIC;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_8 is record
-		Delay		: TIME;
-		Value		: T_SLV_8;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_16 is record
-		Delay		: TIME;
-		Value		: T_SLV_16;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_24 is record
-		Delay		: TIME;
-		Value		: T_SLV_24;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_32 is record
-		Delay		: TIME;
-		Value		: T_SLV_32;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_48 is record
-		Delay		: TIME;
-		Value		: T_SLV_48;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_64 is record
-		Delay		: TIME;
-		Value		: T_SLV_64;
-	end record;
-	
-	type T_SIM_WAVEFORM_SL			is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SL;
-	type T_SIM_WAVEFORM_SLV_8		is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_8;
-	type T_SIM_WAVEFORM_SLV_16	is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_16;
-	type T_SIM_WAVEFORM_SLV_24	is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_24;
-	type T_SIM_WAVEFORM_SLV_32	is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_32;
-	type T_SIM_WAVEFORM_SLV_48	is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_48;
-	type T_SIM_WAVEFORM_SLV_64	is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_64;
-	
-	procedure simGenerateWaveform(signal Wave : out BOOLEAN;		Waveform: TIME_VECTOR;						InitialValue : BOOLEAN);
-	procedure simGenerateWaveform(signal Wave : out STD_LOGIC;	Waveform: TIME_VECTOR;						InitialValue : STD_LOGIC := '0');
+	procedure simGenerateWaveform(signal Wave : out BOOLEAN;		Waveform: TIME_VECTOR;							InitialValue : BOOLEAN);
+	procedure simGenerateWaveform(signal Wave : out STD_LOGIC;	Waveform: TIME_VECTOR;							InitialValue : STD_LOGIC := '0');
 	procedure simGenerateWaveform(signal Wave : out STD_LOGIC;	Waveform: T_SIM_WAVEFORM_SL;			InitialValue : STD_LOGIC := '0');
 	procedure simGenerateWaveform(signal Wave : out T_SLV_8;		Waveform: T_SIM_WAVEFORM_SLV_8;		InitialValue : T_SLV_8);
 	procedure simGenerateWaveform(signal Wave : out T_SLV_16;		Waveform: T_SIM_WAVEFORM_SLV_16;	InitialValue : T_SLV_16);
@@ -137,76 +90,73 @@ package simulation is
 	
 	function simGenerateWaveform_Reset(constant Pause : TIME := 0 ns; ResetPulse : TIME := 10 ns) return TIME_VECTOR;
 	
-	-- TODO: integrate VCD simulation functions and procedures from sim_value_change_dump.vhdl here
-	
-	-- checksum functions
-	-- ===========================================================================
-	-- TODO: move checksum functions here
-end;
+end package;
 
-
-use	std.TextIO.all;
 
 package body simulation is
-
-	-- Testbench Status Management
+	-- legacy procedures
 	-- ===========================================================================
-	-- Internal state variable to log a failure condition for final reporting.
-	-- Once de-asserted, this variable will never return to a value of true.
-	shared variable pass					: boolean		:= true;
-	shared variable simStopped		: BOOLEAN		:= FALSE;
-
-	procedure tbFail(msg : in string := "") is
+	-- TODO: undocumented group
+	procedure simInitialize is
 	begin
-		if (str_length(msg) > 0) then
-			report str_trim(msg) severity error;
-		end if;
-		pass := false;
-	end;
-
-	procedure tbAssert(cond : in boolean; msg : in string := "") is
-	begin
-		if not cond then
-			tbFail(msg);
-		end if;
-	end;
-
-	procedure tbPrintResult is
-		variable l : line;
-	begin
-		write(l, string'("SIMULATION RESULT = "));
-		if pass then
-			write(l, string'("PASSED"));
-		else
-			write(l, string'("FAILED"));
-		end if;
-		writeline(output, l);
+		globalSimulationStatus.initialize;
 	end procedure;
-
-	-- clock generation
-	procedure simStop is
+	
+	procedure simFinalize is
 	begin
-		simStopped	:= TRUE;
+		globalSimulationStatus.finalize;
+	end procedure;
+	
+	impure function simCreateTest(Name : STRING) return T_SIM_TEST_ID is
+	begin
+		return globalSimulationStatus.createTest(Name);
+	end function;
+	
+	impure function simRegisterProcess(Name : STRING) return T_SIM_PROCESS_ID is
+	begin
+		return globalSimulationStatus.registerProcess(Name);
+	end function;
+		
+	procedure simDeactivateProcess(ProcID : T_SIM_PROCESS_ID) is
+	begin
+		globalSimulationStatus.deactivateProcess(ProcID);
 	end procedure;
 	
 	impure function simIsStopped return BOOLEAN is
 	begin
-		return simStopped;
+		return globalSimulationStatus.isStopped;
 	end function;
+
+	-- TODO: undocumented group
+	procedure simWriteMessage(Message : in STRING := "") is
+	begin
+		globalSimulationStatus.writeMessage(Message);
+	end procedure;
 	
-	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Frequency : in FREQ; constant DutyCycle : T_DutyCycle := 0.5) is
+  procedure simFail(Message : in STRING := "") is
+  begin
+		globalSimulationStatus.fail(Message);
+  end;
+
+  procedure simAssertion(cond : in BOOLEAN; Message : in STRING := "") is
+	begin
+		globalSimulationStatus.assertion(cond, Message);
+	end;
+
+	-- clock generation
+	-- ===========================================================================
+	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Frequency : in FREQ; constant DutyCycle : T_DUTYCYCLE := 0.5) is
 		constant Period : TIME := to_time(Frequency);
 	begin
 		simGenerateClock(Clock, Period, DutyCycle);
 	end procedure;
 	
-	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Period : in TIME; constant DutyCycle : T_DutyCycle := 0.5) is
+	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Period : in TIME; constant DutyCycle : T_DUTYCYCLE := 0.5) is
 		constant TIME_HIGH	: TIME := Period * DutyCycle;
 		constant TIME_LOW		: TIME := Period - TIME_HIGH;
 	begin
 		Clock		<= '0';
-
-		while (not simStopped) loop
+		while (globalSimulationStatus.isStopped = FALSE) loop
 			wait for TIME_LOW;
 			Clock		<= '1';
 			wait for TIME_HIGH;
@@ -215,14 +165,16 @@ package body simulation is
 	end procedure;
 	
 	-- waveform generation
+	-- ===========================================================================
 	procedure simGenerateWaveform(signal Wave : out BOOLEAN; Waveform : TIME_VECTOR; InitialValue : BOOLEAN) is
 		variable State : BOOLEAN := InitialValue;
 	begin
 		Wave <= State;
 		for i in Waveform'range loop
 			wait for Waveform(i);
-			State := not State;
+			State		:= not State;
 			Wave		<= State;
+			exit when globalSimulationStatus.isStopped;
 		end loop;
 	end procedure;
 	
@@ -232,8 +184,9 @@ package body simulation is
 		Wave <= State;
 		for i in Waveform'range loop
 			wait for Waveform(i);
-			State := not State;
+			State		:= not State;
 			Wave		<= State;
+			exit when globalSimulationStatus.isStopped;
 		end loop;
 	end procedure;
 
@@ -243,6 +196,7 @@ package body simulation is
 		for i in Waveform'range loop
 			wait for Waveform(i).Delay;
 			Wave		<= Waveform(i).Value;
+			exit when globalSimulationStatus.isStopped;
 		end loop;
 	end procedure;
 	
@@ -252,6 +206,7 @@ package body simulation is
 		for i in Waveform'range loop
 			wait for Waveform(i).Delay;
 			Wave		<= Waveform(i).Value;
+			exit when globalSimulationStatus.isStopped;
 		end loop;
 	end procedure;
 	
@@ -261,6 +216,7 @@ package body simulation is
 		for i in Waveform'range loop
 			wait for Waveform(i).Delay;
 			Wave		<= Waveform(i).Value;
+			exit when globalSimulationStatus.isStopped;
 		end loop;
 	end procedure;
 	
@@ -270,6 +226,7 @@ package body simulation is
 		for i in Waveform'range loop
 			wait for Waveform(i).Delay;
 			Wave		<= Waveform(i).Value;
+			exit when globalSimulationStatus.isStopped;
 		end loop;
 	end procedure;
 	
@@ -279,6 +236,7 @@ package body simulation is
 		for i in Waveform'range loop
 			wait for Waveform(i).Delay;
 			Wave		<= Waveform(i).Value;
+			exit when globalSimulationStatus.isStopped;
 		end loop;
 	end procedure;
 	
@@ -288,6 +246,7 @@ package body simulation is
 		for i in Waveform'range loop
 			wait for Waveform(i).Delay;
 			Wave		<= Waveform(i).Value;
+			exit when globalSimulationStatus.isStopped;
 		end loop;
 	end procedure;
 	
@@ -297,15 +256,21 @@ package body simulation is
 		for i in Waveform'range loop
 			wait for Waveform(i).Delay;
 			Wave		<= Waveform(i).Value;
+			exit when globalSimulationStatus.isStopped;
 		end loop;
 	end procedure;
 	
 	function simGenerateWaveform_Reset(constant Pause : TIME := 0 ns; ResetPulse : TIME := 10 ns) return TIME_VECTOR is
+		variable p  : TIME;
+		variable rp : TIME;
 	begin
-		return (0 => Pause, 1 => ResetPulse);
+		-- WORKAROUND: for QuestaSim/ModelSim
+		--	Version:	10.4c
+		--	Issue:
+		--		return (0 => Pause, 1 => ResetPulse); always evaluates to (0 ns, 10 ns),
+		--		regardless of the passed function parameters
+		p  := Pause;
+		rp := ResetPulse;
+		return (0 => p, 1 => rp);
 	end function;
-	
-	-- checksum functions
-	-- ===========================================================================
-	-- TODO: move checksum functions here
 end package body;

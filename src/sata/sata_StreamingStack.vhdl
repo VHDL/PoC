@@ -497,7 +497,7 @@ begin
 	begin
 		DebugPortIn_TriggerEvent <= DebugPortIn.TransceiverLayer.InsertBitErrorTX or DebugPortIn.TransceiverLayer.InsertBitErrorRX or DebugPortIn.LinkLayer.InsertBitErrorHeaderTX;
 		
-		clocktest <= fftre(q => clocktest, rst => '0', en => '1') WHEN rising_edge(SATAC_Clock);
+		clocktest <= fftre(q => clocktest, t => '1') when rising_edge(SATAC_Clock);
 		
 		TransceiverILA_Trigger0(0)						<=				SATAS_DebugPortOut.TransceiverLayer.PowerDown;
 		TransceiverILA_Trigger0(1)						<=				SATAS_DebugPortOut.TransceiverLayer.ClockNetwork_Reset;

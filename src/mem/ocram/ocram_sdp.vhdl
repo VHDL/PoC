@@ -165,8 +165,9 @@ begin
 					--synthesis translate_off
 					if Is_X(std_logic_vector(ra)) then
 						q <= (others => 'X');
-					elsif ra = wa then
-						-- read data unknown when reading at write address
+					elsif (ra = wa) and (wce = '1') and (we = '1') and rising_edge(wclk) then
+						-- read data unknown when reading at write address,
+						-- and both clock-edges are at almost the same time
 						q <= (others => 'X');
 						report "ocram_sdp: Reading from address just writing: Unknown result."
 							severity warning;
