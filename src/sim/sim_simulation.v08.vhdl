@@ -316,16 +316,29 @@ package body simulation is
 		constant JitterPeakPeak				: REAL			:= 0.1;		-- UI
 		constant JitterAsFactor				: REAL			:= JitterPeakPeak / 4.0;	-- Maximum jitter per edge
 		constant JitterDistribution		: T_JITTER_DISTRIBUTION	:= (
-			0 => (StandardDeviation => 0.2, Mean => -0.4),
+			-- 0 => (StandardDeviation => 0.2, Mean => -0.4),
+			-- 1 => (StandardDeviation => 0.2, Mean =>  0.4)
+			
+			-- 0 => (StandardDeviation => 0.2, Mean => -0.4),
 			-- 1 => (StandardDeviation => 0.3, Mean => -0.1),
 			-- 2 => (StandardDeviation => 0.5, Mean =>  0.0),
 			-- 3 => (StandardDeviation => 0.3, Mean =>  0.1),
-			1 => (StandardDeviation => 0.2, Mean =>  0.4)
+			-- 4 => (StandardDeviation => 0.2, Mean =>  0.4)
+			
+			0 => (StandardDeviation => 0.15,	Mean => -0.6),
+			1 => (StandardDeviation => 0.2,		Mean => -0.3),
+			2 => (StandardDeviation => 0.25,	Mean => -0.2),
+			3 => (StandardDeviation => 0.3,		Mean =>  0.0),
+			4 => (StandardDeviation => 0.25,	Mean =>  0.2),
+			5 => (StandardDeviation => 0.2,		Mean =>  0.3),
+			6 => (StandardDeviation => 0.15,	Mean =>  0.6)
 		);
 		variable Seed									: T_SIM_SEED;
 		variable rand									: REAL;
 		variable Jitter								: REAL;
 		variable Index								: NATURAL;
+		
+		constant ClockAfterRun_cy			: POSITIVE	:= 5;
 	begin
 		Clock		<= '1';
 		initializeSeed(Seed);
@@ -344,10 +357,13 @@ package body simulation is
 			wait for TimeLow + (Period * Jitter);
 			Clock		<= '1';
 		end loop;
-		wait for TimeHigh;
-		Clock		<= '0';
-		wait for TimeLow;
-		Clock		<= '1';
+		-- create N more cycles to allow other processes to recognize the stop condition (clock after run)
+		for i in 1 to ClockAfterRun_cy loop
+			wait for TimeHigh;
+			Clock		<= '0';
+			wait for TimeLow;
+			Clock		<= '1';
+		end loop;
 		Clock		<= '0';
 	end procedure;
 
