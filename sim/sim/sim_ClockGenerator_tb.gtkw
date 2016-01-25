@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.61 (w)1999-2014 BSI
-[*] Sun Jan 24 01:33:07 2016
+[*] Sun Jan 24 23:09:46 2016
 [*]
 [dumpfile] "H:\Austausch\PoC\temp\ghdl\sim_ClockGenerator_tb.ghw"
-[dumpfile_mtime] "Sun Jan 24 01:31:39 2016"
-[dumpfile_size] 49529
+[dumpfile_mtime] "Sun Jan 24 23:08:38 2016"
+[dumpfile_size] 4634245
 [savefile] "H:\Austausch\PoC\sim\sim\sim_ClockGenerator_tb.gtkw"
-[timestart] 0
+[timestart] 197690000000
 [size] 1676 997
 [pos] -1 -1
-*-28.534584 870000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-28.783264 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.sim_clockgenerator_tb.
 [sst_width] 197
@@ -18,6 +18,8 @@
 [sst_vpaned_height] 293
 @28
 top.sim_clockgenerator_tb.clock
+@29
+top.sim_clockgenerator_tb.debug_clockison
 @c00200
 -Phase shifted clocks
 @28
@@ -79,7 +81,8 @@ top.sim_clockgenerator_tb.clock_41
 @28
 top.sim_clockgenerator_tb.reset_1
 top.sim_clockgenerator_tb.reset_2
-@8421
+top.sim_clockgenerator_tb.clock_50
+@8420
 #{top.sim_clockgenerator_tb.debug2[15:0]} top.sim_clockgenerator_tb.debug2[15] top.sim_clockgenerator_tb.debug2[14] top.sim_clockgenerator_tb.debug2[13] top.sim_clockgenerator_tb.debug2[12] top.sim_clockgenerator_tb.debug2[11] top.sim_clockgenerator_tb.debug2[10] top.sim_clockgenerator_tb.debug2[9] top.sim_clockgenerator_tb.debug2[8] top.sim_clockgenerator_tb.debug2[7] top.sim_clockgenerator_tb.debug2[6] top.sim_clockgenerator_tb.debug2[5] top.sim_clockgenerator_tb.debug2[4] top.sim_clockgenerator_tb.debug2[3] top.sim_clockgenerator_tb.debug2[2] top.sim_clockgenerator_tb.debug2[1] top.sim_clockgenerator_tb.debug2[0]
 @20000
 -

@@ -251,17 +251,17 @@ package body simulation is
 		constant TimeLow						: TIME			:= Period - TimeHigh + (Period * WanderAsFactor);						-- and 50% to the low level
 		constant ClockAfterRun_cy		: POSITIVE	:= 1;
 	begin
-		report "simGenerateClock: (Instance: '" & Clock'instance_name & "')" & CR &
-			"Period: "						& TIME'image(Period) & CR &
-			"Phase: "							& T_PHASE'image(Phase) & CR &
-			"DutyCycle: "					& T_DUTYCYCLE'image(DutyCycle) & CR &
-			"PhaseAsFactor: "			& REAL'image(PhaseAsFactor) & CR &
-			"WanderAsFactor: "		& REAL'image(WanderAsFactor) & CR &
-			"DutyCycleAsFactor: "	& REAL'image(DutyCycleAsFactor) & CR &
-			"Delay: "							& TIME'image(Delay) & CR &
-			"TimeHigh: "					& TIME'image(TimeHigh) & CR &
-			"TimeLow: "						& TIME'image(TimeLow)
-			severity NOTE;
+		-- report "simGenerateClock: (Instance: '" & Clock'instance_name & "')" & CR &
+			-- "Period: "						& TIME'image(Period) & CR &
+			-- "Phase: "							& T_PHASE'image(Phase) & CR &
+			-- "DutyCycle: "					& T_DUTYCYCLE'image(DutyCycle) & CR &
+			-- "PhaseAsFactor: "			& REAL'image(PhaseAsFactor) & CR &
+			-- "WanderAsFactor: "		& REAL'image(WanderAsFactor) & CR &
+			-- "DutyCycleAsFactor: "	& REAL'image(DutyCycleAsFactor) & CR &
+			-- "Delay: "							& TIME'image(Delay) & CR &
+			-- "TimeHigh: "					& TIME'image(TimeHigh) & CR &
+			-- "TimeLow: "						& TIME'image(TimeLow)
+			-- severity NOTE;
 			
 		if (Delay = 0 ns) then
 			null;

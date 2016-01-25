@@ -105,9 +105,11 @@ architecture test of sim_ClockGenerator_tb is
 	
 	signal Clock_50							: STD_LOGIC;
 	signal Mean_Clock_50				: SIGNED(15 downto 0);
-	signal Debug1								: INTEGER;
+	signal Debug_Jitter								: REAL;
 	signal Debug2								: SIGNED(15 downto 0);
 
+	signal Debug_ClockIsOn			: STD_LOGIC		:= '1';
+	
 	signal Reset_1							: STD_LOGIC;
 	signal Reset_2							: STD_LOGIC;
 	
@@ -118,37 +120,37 @@ begin
 	simGenerateClock(Clock, CLOCK_FREQ / 2);
 	
 	-- generate global testbench clock
-	simGenerateClock(Clock_01, CLOCK_FREQ,	 0 deg);
-	simGenerateClock(Clock_02, CLOCK_FREQ,  90 deg);
-	simGenerateClock(Clock_03, CLOCK_FREQ, 180 deg);
-	simGenerateClock(Clock_04, CLOCK_FREQ, 270 deg);
-	simGenerateClock(Clock_05, CLOCK_FREQ, 360 deg);
-	simGenerateClock(Clock_06, CLOCK_FREQ, -90 deg);
+	simGenerateClock(Clock_01, CLOCK_FREQ, Phase =>   0 deg);
+	simGenerateClock(Clock_02, CLOCK_FREQ, Phase =>  90 deg);
+	simGenerateClock(Clock_03, CLOCK_FREQ, Phase => 180 deg);
+	simGenerateClock(Clock_04, CLOCK_FREQ, Phase => 270 deg);
+	simGenerateClock(Clock_05, CLOCK_FREQ, Phase => 360 deg);
+	simGenerateClock(Clock_06, CLOCK_FREQ, Phase => -90 deg);
 	
-	simGenerateClock(Clock_10, CLOCK_FREQ, NO_CLOCK_PHASE, 0.0);
-	simGenerateClock(Clock_11, CLOCK_FREQ, NO_CLOCK_PHASE, 0.1);
-	simGenerateClock(Clock_12, CLOCK_FREQ, NO_CLOCK_PHASE, 0.2);
-	simGenerateClock(Clock_13, CLOCK_FREQ, NO_CLOCK_PHASE, 0.3);
-	simGenerateClock(Clock_14, CLOCK_FREQ, NO_CLOCK_PHASE, 0.4);
-	simGenerateClock(Clock_15, CLOCK_FREQ, NO_CLOCK_PHASE, 0.5);
-	simGenerateClock(Clock_16, CLOCK_FREQ, NO_CLOCK_PHASE, 0.6);
-	simGenerateClock(Clock_17, CLOCK_FREQ, NO_CLOCK_PHASE, 0.7);
-	simGenerateClock(Clock_18, CLOCK_FREQ, NO_CLOCK_PHASE, 0.8);
-	simGenerateClock(Clock_19, CLOCK_FREQ, NO_CLOCK_PHASE, 0.9);
+	simGenerateClock(Clock_10, CLOCK_FREQ, DutyCycle =>	 0 percent);
+	simGenerateClock(Clock_11, CLOCK_FREQ, DutyCycle => 10 percent);
+	simGenerateClock(Clock_12, CLOCK_FREQ, DutyCycle => 20 percent);
+	simGenerateClock(Clock_13, CLOCK_FREQ, DutyCycle => 30 percent);
+	simGenerateClock(Clock_14, CLOCK_FREQ, DutyCycle => 40 percent);
+	simGenerateClock(Clock_15, CLOCK_FREQ, DutyCycle => 50 percent);
+	simGenerateClock(Clock_16, CLOCK_FREQ, DutyCycle => 60 percent);
+	simGenerateClock(Clock_17, CLOCK_FREQ, DutyCycle => 70 percent);
+	simGenerateClock(Clock_18, CLOCK_FREQ, DutyCycle => 80 percent);
+	simGenerateClock(Clock_19, CLOCK_FREQ, DutyCycle => 90 percent);
 	
-	simGenerateClock(Clock_21, CLOCK_FREQ,	 0 deg, 0.25);
-	simGenerateClock(Clock_22, CLOCK_FREQ,  90 deg, 0.25);
-	simGenerateClock(Clock_23, CLOCK_FREQ, 180 deg, 0.25);
-	simGenerateClock(Clock_24, CLOCK_FREQ, 270 deg, 0.25);
-	simGenerateClock(Clock_25, CLOCK_FREQ, 360 deg, 0.25);
+	simGenerateClock(Clock_21, CLOCK_FREQ, Phase =>   0 deg, DutyCycle => 25 percent);
+	simGenerateClock(Clock_22, CLOCK_FREQ, Phase =>  90 deg, DutyCycle => 25 percent);
+	simGenerateClock(Clock_23, CLOCK_FREQ, Phase => 180 deg, DutyCycle => 25 percent);
+	simGenerateClock(Clock_24, CLOCK_FREQ, Phase => 270 deg, DutyCycle => 25 percent);
+	simGenerateClock(Clock_25, CLOCK_FREQ, Phase => 360 deg, DutyCycle => 25 percent);
 	
-	simGenerateClock(Clock_31, CLOCK_FREQ,	 0 deg, 0.75);
-	simGenerateClock(Clock_32, CLOCK_FREQ,  90 deg, 0.75);
-	simGenerateClock(Clock_33, CLOCK_FREQ, 180 deg, 0.75);
-	simGenerateClock(Clock_34, CLOCK_FREQ, 270 deg, 0.75);
-	simGenerateClock(Clock_35, CLOCK_FREQ, 360 deg, 0.75);
+	simGenerateClock(Clock_31, CLOCK_FREQ, Phase =>   0 deg, DutyCycle => 75 percent);
+	simGenerateClock(Clock_32, CLOCK_FREQ, Phase =>  90 deg, DutyCycle => 75 percent);
+	simGenerateClock(Clock_33, CLOCK_FREQ, Phase => 180 deg, DutyCycle => 75 percent);
+	simGenerateClock(Clock_34, CLOCK_FREQ, Phase => 270 deg, DutyCycle => 75 percent);
+	simGenerateClock(Clock_35, CLOCK_FREQ, Phase => 360 deg, DutyCycle => 75 percent);
 
-	simGenerateClock(Clock_40, CLOCK_FREQ, Wander =>	0 percent);
+	simGenerateClock(Clock_40, CLOCK_FREQ, Wander =>	0 permil);
 	simGenerateClock(Clock_41, CLOCK_FREQ, Wander =>	5 permil);		-- clock drift of 0.5% (5 permil)	 => shift by 1 UI every 200 cycles
 	simGenerateClock(Clock_42, CLOCK_FREQ, Wander => 10 permil);		-- clock drift of 1.0% (10 permil) => shift by 1 UI every 100 cycles
 
@@ -180,9 +182,8 @@ begin
 		end loop;
 	end process;
 
-	simGenerateClock2(Clock_50, Debug1, to_time(CLOCK_FREQ));
+	simGenerateClock2(Clock_50, Debug_Jitter, to_time(CLOCK_FREQ));
 
-	Debug2	<= to_signed(Debug1, Debug2'length);
 
 	process
 		variable Sum					: INTEGER;
@@ -191,35 +192,43 @@ begin
 		variable RandPointer	: NATURAL;
 		variable RandBuffer		: T_INTVEC(0 to 31);
 
+		constant BIN_SIZE			: POSITIVE		:= 1000;
+		constant BIN_SIZE_2		: REAL				:= real(BIN_SIZE) / 2.0;
 		variable CovBin1			: CovPType;
 	begin
-		CovBin1.AddBins(GenBin(0, 512));
+		CovBin1.AddBins(GenBin(0, BIN_SIZE));
 
 		Sum							:= 0;
 		Count						:= 0;
+		Debug2					<= (others => '0');
 		Mean_Clock_50		<= (others => '0');
 		RandPointer			:= 0;
-		RandBuffer			:= (others => 256);
+		RandBuffer			:= (others => (BIN_SIZE / 2));
 
 		wait until rising_edge(Clock_50);
 		while (not simIsStopped) loop
 			wait until rising_edge(Clock_50);
+			-- subtract old random value from mean aggregator
 			Sum												:= Sum - RandBuffer(RandPointer);
-
-			Rand											:= Debug1;-- + 256;
-			CovBin1.ICover(Rand);
-
+			-- convert new random value to integer
+			Rand											:= integer(Debug_Jitter * BIN_SIZE_2 + BIN_SIZE_2);	-- scale and move into positive range
+			-- store random value in buffer
 			RandBuffer(RandPointer)		:= Rand;
 			RandPointer								:= (RandPointer + 1) mod RandBuffer'length;
-
+			-- log random value
+			CovBin1.ICover(Rand);
+			Debug2										<= to_signed(Rand, Debug2'length);
+			
 			Sum							:= Sum + Rand;
 			Count						:= Count + 1;
-			Mean_Clock_50		<= to_signed((Sum / imax(RandBuffer'length, Count + 1)), Mean_Clock_50'length);
+			Mean_Clock_50		<= to_signed((Sum / imin(RandBuffer'length, Count + 1)), Mean_Clock_50'length);
+			
 		end loop;
 
-		CovBin1.WriteBin("sim_ClockGenerator_tb.osvvm.log");
+		CovBin1.WriteBin("sim_ClockGenerator_tb.osvvm.csv", WRITE_MODE);
 	end process;
 	
+	Debug_ClockIsOn <= not to_sl(simIsStopped) when rising_edge(Clock);
 
 
 	simGenerateWaveform(Reset_1, simGenerateWaveform_Reset(Pause => 10 ns, ResetPulse => 10 ns));

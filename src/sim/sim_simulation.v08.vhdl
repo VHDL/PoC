@@ -90,7 +90,7 @@ package simulation is
 	procedure simWaitUntilRisingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE);
 	procedure simWaitUntilFallingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE);
 	
-	procedure simGenerateClock2(signal Clock : out STD_LOGIC; signal Debug : out INTEGER; constant Period : in TIME);
+	procedure simGenerateClock2(signal Clock : out STD_LOGIC; signal Debug : out REAL; constant Period : in TIME);
 
 	-- waveform generation
 	-- ===========================================================================
@@ -262,19 +262,19 @@ package body simulation is
 		constant Delay							: TIME			:= Period * PhaseAsFactor;
 		constant TimeHigh						: TIME			:= Period * DutyCycleAsFactor + (Period * (WanderAsFactor / 2.0));	-- add 50% wander to the high level
 		constant TimeLow						: TIME			:= Period - TimeHigh + (Period * WanderAsFactor);						-- and 50% to the low level
-		constant ClockAfterRun_cy		: POSITIVE	:= 1;
+		constant ClockAfterRun_cy		: POSITIVE	:= 5;
 	begin
-		report "simGenerateClock: (Instance: '" & Clock'instance_name & "')" & CR &
-			"Period: "						& TIME'image(Period) & CR &
-			"Phase: "							& T_PHASE'image(Phase) & CR &
-			"DutyCycle: "					& T_DUTYCYCLE'image(DutyCycle) & CR &
-			"PhaseAsFactor: "			& REAL'image(PhaseAsFactor) & CR &
-			"WanderAsFactor: "		& REAL'image(WanderAsFactor) & CR &
-			"DutyCycleAsFactor: "	& REAL'image(DutyCycleAsFactor) & CR &
-			"Delay: "							& TIME'image(Delay) & CR &
-			"TimeHigh: "					& TIME'image(TimeHigh) & CR &
-			"TimeLow: "						& TIME'image(TimeLow)
-			severity NOTE;
+		-- report "simGenerateClock: (Instance: '" & Clock'instance_name & "')" & CR &
+			-- "Period: "						& TIME'image(Period) & CR &
+			-- "Phase: "							& T_PHASE'image(Phase) & CR &
+			-- "DutyCycle: "					& T_DUTYCYCLE'image(DutyCycle) & CR &
+			-- "PhaseAsFactor: "			& REAL'image(PhaseAsFactor) & CR &
+			-- "WanderAsFactor: "		& REAL'image(WanderAsFactor) & CR &
+			-- "DutyCycleAsFactor: "	& REAL'image(DutyCycleAsFactor) & CR &
+			-- "Delay: "							& TIME'image(Delay) & CR &
+			-- "TimeHigh: "					& TIME'image(TimeHigh) & CR &
+			-- "TimeLow: "						& TIME'image(TimeLow)
+			-- severity NOTE;
 	
 		if (Delay = 0 ns) then
 			null;
@@ -310,29 +310,33 @@ package body simulation is
 	end record;
 	type T_JITTER_DISTRIBUTION is array (NATURAL range <>) of T_SIM_NORMAL_DIST_PARAMETER;
 	
-	procedure simGenerateClock2(signal Clock : out STD_LOGIC; signal Debug : out INTEGER; constant Period : in TIME) is
+	procedure simGenerateClock2(signal Clock : out STD_LOGIC; signal Debug : out REAL; constant Period : in TIME) is
 		constant TimeHigh							: TIME			:= Period * 0.5;
 		constant TimeLow							: TIME			:= Period - TimeHigh;
 		constant JitterPeakPeak				: REAL			:= 0.1;		-- UI
 		constant JitterAsFactor				: REAL			:= JitterPeakPeak / 4.0;	-- Maximum jitter per edge
-		constant JitterDistribution		: T_JITTER_DISTRIBUTION	:= (0 => (0.6, 0.0));	--((0.2, -0.3), (0.3, -0.1), (0.5, 0.0), (0.3, 0.1), (0.2, 0.3));
+		constant JitterDistribution		: T_JITTER_DISTRIBUTION	:= (
+			0 => (StandardDeviation => 0.2, Mean => -0.4),
+			-- 1 => (StandardDeviation => 0.3, Mean => -0.1),
+			-- 2 => (StandardDeviation => 0.5, Mean =>  0.0),
+			-- 3 => (StandardDeviation => 0.3, Mean =>  0.1),
+			1 => (StandardDeviation => 0.2, Mean =>  0.4)
+		);
 		variable Seed									: T_SIM_SEED;
 		variable rand									: REAL;
-		variable sum									: REAL;
 		variable Jitter								: REAL;
+		variable Index								: NATURAL;
 	begin
 		Clock		<= '1';
 		initializeSeed(Seed);
 
 		while (not globalSimulationStatus.isStopped) loop
-			sum	:= 0.0;
-			for i in JitterDistribution'range loop
-				getNormalDistibutedRandomValue(Seed, rand, JitterDistribution(i).StandardDeviation, JitterDistribution(i).Mean, -1.0, 1.0);
-				sum	:= sum + rand;
-			end loop;
-			Debug		<= integer(sum * 1000.0);
+			ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand);
+			Index		:= scale(rand, 0, JitterDistribution'length * 10) mod JitterDistribution'length;
+			getNormalDistibutedRandomValue(Seed, rand, JitterDistribution(Index).StandardDeviation, JitterDistribution(Index).Mean, -1.0, 1.0);
 			
-			Jitter := JitterAsFactor * sum;
+			Jitter := JitterAsFactor * rand;
+			Debug		<= rand;
 			
 			-- Debug		<= integer(rand * 256.0 + 256.0);
 			wait for TimeHigh + (Period * Jitter);
@@ -340,6 +344,10 @@ package body simulation is
 			wait for TimeLow + (Period * Jitter);
 			Clock		<= '1';
 		end loop;
+		wait for TimeHigh;
+		Clock		<= '0';
+		wait for TimeLow;
+		Clock		<= '1';
 		Clock		<= '0';
 	end procedure;
 
