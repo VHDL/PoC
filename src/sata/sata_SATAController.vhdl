@@ -460,8 +460,8 @@ begin
 
 
 		
-		-- The CSE interface of the Linklayer is ready, when the CSE interface
-		-- of the PHY is ready.
+		-- The CSE interface of the TransportLayer is ready, when the CSE interface
+		-- of the LinkLayer is ready.
 		Transport_ResetDone <= Link_ResetDone;
 
 		-- =========================================================================
