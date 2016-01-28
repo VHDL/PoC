@@ -686,7 +686,7 @@ PACKAGE BODY sata IS
 		return to_slv(T_SATA_PRIMITIVE'pos(Primitive), log2ceilnz(T_SATA_PRIMITIVE'pos(T_SATA_PRIMITIVE'high) + 1));
 	end function;
 	
-	function to_sata_word(Primitive : T_SATA_PRIMITIVE) return T_SLV_32 is	--																							K symbol
+	function to_sata_word(Primitive : T_SATA_PRIMITIVE) return T_SLV_32 is	--																				K symbol
 	begin																															-- primitive name				Byte 3	Byte 2	Byte 1	Byte 0
 		case Primitive is																								-- =======================================================
 			when SATA_PRIMITIVE_NONE =>				return x"00000000";					-- no primitive					
