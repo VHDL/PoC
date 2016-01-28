@@ -135,7 +135,7 @@ package body sim_unprotected is
 		end loop;
 		write(LineBuffer,		(CR & STRING'("========================================")));
 		if (globalSim_AssertCount = 0) then
-			write(LineBuffer, (CR & STRING'("SIMULATION RESULT = NOT IMPLEMENTED")));
+			write(LineBuffer, (CR & STRING'("SIMULATION RESULT = NO ASSERTS")));
 		elsif (globalSim_Passed = TRUE) then
 			write(LineBuffer, (CR & STRING'("SIMULATION RESULT = PASSED")));
 		else

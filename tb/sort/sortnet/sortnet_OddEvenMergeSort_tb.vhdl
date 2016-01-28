@@ -39,7 +39,10 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
 use			PoC.physical.all;
-use			PoC.simulation.ALL;
+-- simulation only packages
+use			PoC.sim_global.all;
+use			PoC.sim_types.all;
+use			PoC.simulation.all;
 
 library OSVVM;
 use			OSVVM.RandomPkg.all;
@@ -109,13 +112,13 @@ architecture tb of sortnet_OddEvenMergeSort_tb is
 	
 begin
 	-- initialize global simulation status
-	globalSimulationStatus.initialize;
+	simInitialize;
 	
-	globalSimulationStatus.writeMessage("SETTINGS");
-	globalSimulationStatus.writeMessage("  INPUTS:    " & INTEGER'image(INPUTS));
-	globalSimulationStatus.writeMessage("  KEY_BITS:  " & INTEGER'image(KEY_BITS));
-	globalSimulationStatus.writeMessage("  DATA_BITS: " & INTEGER'image(DATA_BITS));
-	globalSimulationStatus.writeMessage("  REG AFTER: " & INTEGER'image(PIPELINE_STAGE_AFTER));
+	simWriteMessage("SETTINGS");
+	simWriteMessage("  INPUTS:    " & INTEGER'image(INPUTS));
+	simWriteMessage("  KEY_BITS:  " & INTEGER'image(KEY_BITS));
+	simWriteMessage("  DATA_BITS: " & INTEGER'image(DATA_BITS));
+	simWriteMessage("  REG AFTER: " & INTEGER'image(PIPELINE_STAGE_AFTER));
 	
 	simGenerateClock(Clock, CLOCK_FREQ);
 
@@ -128,7 +131,7 @@ begin
 		variable TagInput		: STD_LOGIC_VECTOR(TAG_BITS - 1 downto 0);
 		
 	begin
-		simProcessID := globalSimulationStatus.registerProcess("Generator");	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
+		simProcessID := simRegisterProcess("Generator");	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
 		
 		RandomVar.InitSeed(RandomVar'instance_name);		-- Generate initial seeds
 		
@@ -156,7 +159,7 @@ begin
 		wait until rising_edge(Clock);
 		
 		-- This process is finished
-		globalSimulationStatus.deactivateProcess(simProcessID);
+		simDeactivateProcess(simProcessID);
 		wait;		-- forever
 	end process;
 	
@@ -193,7 +196,7 @@ begin
 		variable CurValue			: UNSIGNED(KEY_BITS - 1 downto 0);
 		variable LastValue		: UNSIGNED(KEY_BITS - 1 downto 0);
 	begin
-		simProcessID := globalSimulationStatus.registerProcess("Tester");
+		simProcessID := simRegisterProcess("Tester");
 		
 		wait until rising_edge(sort_Valid);
 		
@@ -207,7 +210,7 @@ begin
 				Check			:= Check and (LastValue <= CurValue);
 				LastValue	:= CurValue;
 			end loop;
-			globalSimulationStatus.assertion(Check, "Result is not monotonic." & raw_format_slv_hex(std_logic_vector(LastValue)));
+			simAssertion(Check, "Result is not monotonic." & raw_format_slv_hex(std_logic_vector(LastValue)));
 		end loop;
 
 		for i in 0 to 15 loop
@@ -215,9 +218,9 @@ begin
 		end loop;
 		
 		-- This process is finished
-		globalSimulationStatus.deactivateProcess(simProcessID);
+		simDeactivateProcess(simProcessID);
 		-- Report overall result
-		globalSimulationStatus.finalize;
+		simFinalize;
 		wait;  -- forever
 	end process;
 end architecture;
