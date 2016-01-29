@@ -160,6 +160,9 @@ begin
 
   blkRead : block
 
+    -- Init Delay to allow writer to invalidate memory contents
+    signal InitDelay : unsigned(1 downto 0) := (others => '0');
+
     -- Output Pointer for Reading
     signal OP    : unsigned(A_BITS-1 downto 0) := (others => '0');
     signal OPnxt : unsigned(A_BITS-1 downto 0);
@@ -172,9 +175,13 @@ begin
     begin
       if rising_edge(clk_rd) then
         if rst_rd = '1' then
-          OP     <= (others => '0');
-          OPgray <= (others => '0');
+					InitDelay <= (others => '0');
+          OP				<= (others => '0');
+          OPgray		<= (others => '0');
         else
+					if InitDelay(InitDelay'left) = '0' then
+						InitDelay <= InitDelay + 1;
+					end if;
           OP     <= OPnxt;
           OPgray <= bin2gray(std_logic_vector(OP));
         end if;
@@ -182,7 +189,7 @@ begin
     end process;
     OPnxt <= OP+1 when vldi = '1' and got = '1' else OP;
     ra    <= OPnxt(AN-1 downto 0);
-    vldi  <= '1'  when unsigned(do(DN-1 downto D_BITS)) = OP(A_BITS-1 downto AN) else
+    vldi  <= InitDelay(InitDelay'left) when unsigned(do(DN-1 downto D_BITS)) = OP(A_BITS-1 downto AN) else
              '0';
 
 		-- Module Outputs
