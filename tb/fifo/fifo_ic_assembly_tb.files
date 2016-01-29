@@ -23,5 +23,13 @@ vhdl		poc		"src/mem/ocram/ocram_sdp.vhdl"			# Simple-Dual-Port
 # PoC.fifo
 vhdl		poc		"src/fifo/fifo_ic_assembly.vhdl"					# Unit Under Test
 
+vhdl		poc		"src/sim/sim_types.vhdl"						# PoC simulation helper
+vhdl-93	poc		"src/sim/sim_global.v93.vhdl"				# PoC simulation helper
+vhdl-93	poc		"src/sim/sim_unprotected.v93.vhdl"	# PoC simulation helper
+vhdl-93	poc		"src/sim/sim_simulation.v93.vhdl"		# PoC simulation helper
+vhdl-08	poc		"src/sim/sim_protected.v08.vhdl"		# PoC simulation helper
+vhdl-08	poc		"src/sim/sim_global.v08.vhdl"				# PoC simulation helper
+vhdl-08	poc		"src/sim/sim_simulation.v08.vhdl"		# PoC simulation helper
+
 # Testbench file(s)
 vhdl		test	"tb/fifo/fifo_ic_assembly_tb.vhdl"				# Testbench

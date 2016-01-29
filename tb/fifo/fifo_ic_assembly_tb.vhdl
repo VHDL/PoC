@@ -35,6 +35,9 @@ use IEEE.numeric_std.all;
 
 library PoC;
 use PoC.utils.all;
+use PoC.sim_global.all;
+use PoC.sim_types.all;
+use PoC.simulation.all;
 
 architecture tb of fifo_ic_assembly_tb is
 
@@ -122,14 +125,14 @@ begin
     got <= '1';
     for i in 0 to SEQ'length*16-1 loop
       wait until rising_edge(clk) and vld = '1';
-      assert dout = std_logic_vector(to_unsigned(i, dout'length))
-        report "Unexpected output: "&integer'image(to_integer(unsigned(dout)))&
-               " instead of "&integer'image(i mod 2**dout'length)
-        severity error;
+      simAssertion(dout = std_logic_vector(to_unsigned(i, dout'length)),
+									 "Unexpected output: "&integer'image(to_integer(unsigned(dout)))&
+									 " instead of "&integer'image(i mod 2**dout'length));
     end loop;
     got <= '0';
 
     done <= '1';
+    simFinalize;
     wait; -- forever
   end process;
 
