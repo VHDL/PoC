@@ -41,7 +41,7 @@
 -- ===========================================================================
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
+use	IEEE.std_logic_1164.all;
 
 entity fifo_ic_assembly is
   generic (
@@ -54,14 +54,19 @@ entity fifo_ic_assembly is
     clk_wr : in std_logic;
     rst_wr : in std_logic;
 
+		-- Only write addresses in the range [base, base+2**(A_BITS-G_BITS)) are
+		-- acceptable. This is equivalent to the test
+		--   tmp(A_BITS-1 downto A_BITS-G_BITS) = 0 where tmp = addr - base.
+		-- Writes performed outside the allowable range will assert the failure
+		-- indicator, which will stick until the next reset.
+		-- No write is to be performed before base turns zero (0) for the first
+		-- time.
+		base   : out std_logic_vector(A_BITS-1 downto 0);
+		failed : out std_logic;
+
     addr : in  std_logic_vector(A_BITS-1 downto 0);
-    ful  : out std_logic;
     din  : in  std_logic_vector(D_BITS-1 downto 0);
     put  : in  std_logic;
-
-		---------------------------------------------------------------------------
-		-- TODO: Capacity Reporting!
-		---------------------------------------------------------------------------
 
     -- Read Interface
     clk_rd : in std_logic;
@@ -71,14 +76,15 @@ entity fifo_ic_assembly is
     vld  : out std_logic;
     got  : in  std_logic
   );
-end fifo_ic_got;
+end fifo_ic_assembly;
 
 
 library IEEE;
-use			IEEE.numeric_std.all;
+use	IEEE.numeric_std.all;
 
 library	PoC;
-use			PoC.ocram.all;
+use PoC.utils.all;
+use PoC.ocram.all;
 
 architecture rtl of fifo_ic_assembly is
 
@@ -99,39 +105,65 @@ architecture rtl of fifo_ic_assembly is
 	signal ra : unsigned(AN-1 downto 0);
 	signal do : std_logic_vector(DN-1 downto 0);
 
+	-- Cross-clock
+	signal OPgray : std_logic_vector(A_BITS-1 downto 0) := (others => '0');
+
 begin
 
   -----------------------------------------------------------------------------
   -- Write clock domain
-	blkWrite: block is
-		signal InitCnt : unsigned(AN downto 0) := (others => '0');
-	begin
-		process(clk_wr)
-		begin
-			if rising_edge(clk_wr) then
-				if rst_wr = '1' then
-					InitCnt <= (others => '0');
-				elsif InitCnt(InitCnt'left) = '0' then
-					InitCnt <= InitCnt + 1;
-				end if;
-			end if;
-		end process;
-		wa <= InitCnt(AN-1 downto 0) when InitCnt(InitCnt'left) = '0' else
-					unsigned(addr(AN-1 downto 0));
-		di <= (1 to G_BITS => '1') & (1 to D_BITS => '-') when InitCnt(InitCnt'left) = '0' else
-					addr(A_BITS-1 downto AN) & din;
-		we <= put or not InitCnt(InitCnt'left);
+  blkWrite : block
+    signal InitCnt : unsigned(AN downto 0)               := (others => '0');
+    signal OPmeta  : std_logic_vector(A_BITS-1 downto 0) := (others => '0');
+    signal OPsync  : std_logic_vector(A_BITS-1 downto 0) := (others => '0');
+    signal OPbin   : std_logic_vector(A_BITS-1 downto 0) := '1' & (A_BITS-2 downto 0 => '0');
+    signal Fail    : std_logic                           := '0';
+  begin
+    process(clk_wr)
+			variable tmp : unsigned(A_BITS-1 downto 0);
+    begin
+      if rising_edge(clk_wr) then
+        if rst_wr = '1' then
+          InitCnt <= (others => '0');
+          OPmeta  <= (others => '0');
+          OPsync  <= (others => '0');
+          OPbin   <= '1' & (A_BITS-2 downto 0 => '0');
+          Fail    <= '0';
+        else
+          OPmeta  <= OPgray;
+          OPsync  <= OPmeta;
 
-		-- Module Outputs
-		ful <= not InitCnt(InitCnt'left);
-	end block blkWrite;
+					if InitCnt(InitCnt'left) = '0' then
+						InitCnt <= InitCnt + 1;
+					else
+						OPbin   <= gray2bin(OPsync);
+					end if;
 
-  blkRead : block is
+					tmp := unsigned(addr) - unsigned(OPbin);
+					if put = '1' and tmp(A_BITS-1 downto AN) /= 0 then
+						Fail <= '1';
+					end if;
+        end if;
+      end if;
+    end process;
+    wa <= InitCnt(AN-1 downto 0) when InitCnt(InitCnt'left) = '0' else
+          unsigned(addr(AN-1 downto 0));
+    di <= (1 to G_BITS => '1') & (1 to D_BITS => '-') when InitCnt(InitCnt'left) = '0' else
+          addr(A_BITS-1 downto AN) & din;
+    we <= put;
 
-		-- Output Pointer for Reading
-    signal OP : unsigned(A_BITS-1 downto 0)         := (others => '0');
-		-- Expected Generation to check for continuity
-    signal EG : std_logic_vector(G_BITS-1 downto 0) := (others => '1');
+    -- Module Outputs
+    base   <= OPbin;
+    failed <= Fail;
+
+  end block blkWrite;
+
+  blkRead : block
+
+    -- Output Pointer for Reading
+    signal OP    : unsigned(A_BITS-1 downto 0) := (others => '0');
+    signal OPnxt : unsigned(A_BITS-1 downto 0);
+
 		-- Internal check result
 		signal vldi : std_logic;
 
@@ -140,19 +172,21 @@ begin
     begin
       if rising_edge(clk_rd) then
         if rst_rd = '1' then
-          OP <= (others => '0');
-          EG <= (others => '1');
-        elsif vldi = '1' and got = '1' then
-          OP <= OP + 1;
-          EG <= std_logic_vector(OP(A_BITS-1 downto AN));
+          OP     <= (others => '0');
+          OPgray <= (others => '0');
+        else
+          OP     <= OPnxt;
+          OPgray <= bin2gray(std_logic_vector(OP));
         end if;
       end if;
     end process;
-    ra   <= OP(AN-1 downto 0);
-    vldi <= '1' when do(DN-1 downto D_BITS) = EG else '0';
+    OPnxt <= OP+1 when vldi = '1' and got = '1' else OP;
+    ra    <= OPnxt(AN-1 downto 0);
+    vldi  <= '1'  when unsigned(do(DN-1 downto D_BITS)) = OP(A_BITS-1 downto AN) else
+             '0';
 
 		-- Module Outputs
-		dout <= do;
+		dout <= do(D_BITS-1 downto 0);
     vld  <= vldi;
 
   end block blkRead;
