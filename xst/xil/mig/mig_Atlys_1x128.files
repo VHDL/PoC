@@ -1,0 +1,9 @@
+vhdl		poc		"netlist/XC6SLX45-3CSG324/xil/mig/iodrp_controller.vhd"
+vhdl		poc		"netlist/XC6SLX45-3CSG324/xil/mig/iodrp_mcb_controller.vhd"
+vhdl		poc		"netlist/XC6SLX45-3CSG324/xil/mig/mcb_raw_wrapper.vhd"
+vhdl		poc		"netlist/XC6SLX45-3CSG324/xil/mig/mcb_soft_calibration_top.vhd"
+vhdl		poc		"netlist/XC6SLX45-3CSG324/xil/mig/mcb_soft_calibration.vhd"
+vhdl		poc		"netlist/XC6SLX45-3CSG324/xil/mig/memc3_infrastructure.vhd"
+vhdl		poc		"netlist/XC6SLX45-3CSG324/xil/mig/memc3_wrapper.vhd"
+vhdl		poc		"netlist/XC6SLX45-3CSG324/xil/mig/mig_Atlys_1x128.vhd"
+
