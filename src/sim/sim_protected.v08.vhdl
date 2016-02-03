@@ -141,7 +141,12 @@ package body sim_protected is
 		
 	  procedure writeReport is
 		  variable LineBuffer : LINE;
+			variable Dummy			: T_SIM_TEST_ID;
 	  begin
+			if (TestCount = 0) then
+				Dummy := createTest("Default");
+			end if;
+		
 		  write(LineBuffer,		(CR & STRING'("========================================")));
 		  write(LineBuffer,		(CR & STRING'("POC TESTBENCH REPORT")));
 		  write(LineBuffer,		(CR & STRING'("========================================")));
@@ -154,9 +159,9 @@ package body sim_protected is
 					write(LineBuffer,	(CR & STRING'("    ") & str_trim(Processes(i).Name)));
 				end if;
 			end loop;
-			write(LineBuffer,		(CR & STRING'("Tests        ") & INTEGER'image(TestCount)));
+			write(LineBuffer,		(CR & STRING'("Tests        ") & INTEGER'image(imax(1, TestCount))));
 			for i in 0 to TestCount - 1 loop
-				write(LineBuffer,	(CR & STRING'("  ") & str_ralign(INTEGER'image(i), log10ceil(T_SIM_TEST_ID'high)) & ": " & str_trim(Tests(i).Name)));
+				write(LineBuffer,	(CR & STRING'("  ") & str_ralign(INTEGER'image(i), log10ceilnz(TestCount)) & ": " & str_trim(Tests(i).Name)));
 			end loop;
 		  write(LineBuffer,		(CR & STRING'("========================================")));
 			if (AssertCount = 0) then

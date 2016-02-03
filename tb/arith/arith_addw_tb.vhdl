@@ -106,7 +106,7 @@ begin
   -- Stimuli
   procChecker : process
 		-- from Simulation
-		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Combined Generator and Checker");	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Combined Generator and Checker");
 		
   begin
     for i in natural range 0 to 2**N-1 loop
