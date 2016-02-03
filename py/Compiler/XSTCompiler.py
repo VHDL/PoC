@@ -143,7 +143,7 @@ class Compiler(PoCCompiler):
 			self.printDebug("ReplacementTasks: \n  " + ("\n  ".join(replaceFileList.split("\n"))))
 
 			replaceRegExpStr =	r"^\s*(?P<Filename>.*?)\s+:"			# Filename
-			replaceRegExpStr += r"(?P<Options>[im]{0,2}):\s+"			#	RegExp options
+			replaceRegExpStr += r"(?P<Options>[dim]{0,3}):\s+"			#	RegExp options
 			replaceRegExpStr += r"\"(?P<Search>.*?)\"\s+->\s+"		#	Search regexp
 			replaceRegExpStr += r"\"(?P<Replace>.*?)\"$"					# Replace regexp
 			replaceRegExp = re.compile(replaceRegExpStr)
@@ -341,17 +341,18 @@ class Compiler(PoCCompiler):
 		if (self.dryRun == False):
 			try:
 				xstLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
+				if self.showLogs:
+					print("XST log file:")
+					print("--------------------------------------------------------------------------------")
+					print(xstLog)
+					print()
+			
 			except subprocess.CalledProcessError as ex:
 				print("ERROR while executing XST")
 				print("Return Code: %i" % ex.returncode)
 				print("--------------------------------------------------------------------------------")
 				print(ex.output)
-			
-			if self.showLogs:
-				print("XST log file:")
-				print("--------------------------------------------------------------------------------")
-				print(xstLog)
-				print()
+				return
 			
 		# copy resulting files into PoC's netlist directory
 		self.printNonQuiet('  copy result files into output directory...')

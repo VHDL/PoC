@@ -146,7 +146,7 @@ class Compiler(PoCCompiler):
 			self.printDebug("ReplacementTasks: \n  " + ("\n  ".join(replaceFileList.split("\n"))))
 
 			replaceRegExpStr =	r"^\s*(?P<Filename>.*?)\s+:"			# Filename
-			replaceRegExpStr += r"(?P<Options>[im]{0,2}):\s+"			#	RegExp options
+			replaceRegExpStr += r"(?P<Options>[dim]{0,3}):\s+"			#	RegExp options
 			replaceRegExpStr += r"\"(?P<Search>.*?)\"\s+->\s+"		#	Search regexp
 			replaceRegExpStr += r"\"(?P<Replace>.*?)\"$"					# Replace regexp
 			replaceRegExp = re.compile(replaceRegExpStr)
