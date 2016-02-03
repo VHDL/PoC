@@ -801,13 +801,15 @@ package body utils is
 
 	-- Gray-Code to Binary-Code
 	function gray2bin(gray_val : std_logic_vector) return std_logic_vector is
+		variable tmp : std_logic_vector(gray_val'length downto 0);
 		variable res : std_logic_vector(gray_val'range);
-	begin	-- gray2bin
-		res(res'left) := gray_val(gray_val'left);
-		for i in res'left-1 downto res'right loop
-			res(i) := res(i+1) xor gray_val(i);
-		end loop;
-		return res;
+	begin
+		tmp := '0' & gray_val;
+    for i in tmp'left-1 downto 0 loop
+      tmp(i) := tmp(i+1) xor tmp(i);
+    end loop;
+    res := tmp(tmp'left-1 downto 0);
+		return  res;
 	end gray2bin;
 	
 	-- Binary-Code to One-Hot-Code
@@ -821,14 +823,13 @@ package body utils is
 	
 	-- Binary-Code to Gray-Code
 	function bin2gray(value : std_logic_vector) return std_logic_vector is
-		variable result		: std_logic_vector(value'range);
+		variable tmp : std_logic_vector(value'length downto 0);
+		variable res : std_logic_vector(value'range);
 	begin
-		result(result'left)	:= value(value'left);
-		for i in (result'left - 1) downto result'right loop
-			result(i) := value(i) xor value(i + 1);
-		end loop;
-		return result;
-	end function;
+		tmp := ('0' & value) xor (value & '0');
+		res := tmp(value'length downto 1);
+		return  res;
+	end bin2gray;
 
 	-- bit searching / bit indices
 	-- ==========================================================================
