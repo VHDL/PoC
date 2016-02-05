@@ -28,6 +28,7 @@ vhdl-93	poc		"src/sim/sim_simulation.v93.vhdl"		# PoC simulation helper
 vhdl-08	poc		"src/sim/sim_protected.v08.vhdl"		# PoC simulation helper
 vhdl-08	poc		"src/sim/sim_global.v08.vhdl"				# PoC simulation helper
 vhdl-08	poc		"src/sim/sim_simulation.v08.vhdl"		# PoC simulation helper
+vhdl		poc		"src/sim/sim_waveform.vhdl"					# PoC simulation helper
 
 # PoC.arith
 vhdl		poc		"src/arith/arith.pkg.vhdl"					# Package

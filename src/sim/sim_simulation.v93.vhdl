@@ -53,10 +53,13 @@ package simulation is
 	procedure				simFinalize;
 	
 	impure function simCreateTest(Name : STRING) return T_SIM_TEST_ID;
-	impure function	simRegisterProcess(Name : STRING) return T_SIM_PROCESS_ID;
+	procedure				simFinalizeTest(constant TestID : T_SIM_TEST_ID);
+	impure function simRegisterProcess(constant TestID : T_SIM_TEST_ID; Name : STRING; constant IsLowPriority : BOOLEAN := FALSE) return T_SIM_PROCESS_ID;
+	impure function simRegisterProcess(Name : STRING; constant IsLowPriority : BOOLEAN := FALSE) return T_SIM_PROCESS_ID;
 	procedure				simDeactivateProcess(ProcID : T_SIM_PROCESS_ID);
 	
-	impure function	simIsStopped return BOOLEAN;
+	impure function	simIsStopped(constant TestID : T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) return BOOLEAN;
+	impure function	simIsAllFinalized return BOOLEAN;
 	
 	procedure				simWriteMessage(Message : in STRING := "");
 	
@@ -84,26 +87,26 @@ package simulation is
 
 	-- clock generation
 	-- ===========================================================================
-	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Frequency : in FREQ; constant Phase : in T_PHASE := 0 deg; constant DutyCycle : in T_DUTYCYCLE := 50 percent; constant Wander : in T_WANDER := 0 permil);
-	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Period : in TIME; constant Phase : in T_PHASE := 0 deg; constant DutyCycle : in T_DUTYCYCLE := 50 percent; constant Wander : in T_WANDER := 0 permil);
-	procedure simWaitUntilRisingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE);
-	procedure simWaitUntilFallingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE);
+	-- procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Frequency : in FREQ; constant Phase : in T_PHASE := 0 deg; constant DutyCycle : in T_DUTYCYCLE := 50 percent; constant Wander : in T_WANDER := 0 permil);
+	-- procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Period : in TIME; constant Phase : in T_PHASE := 0 deg; constant DutyCycle : in T_DUTYCYCLE := 50 percent; constant Wander : in T_WANDER := 0 permil);
+	-- procedure simWaitUntilRisingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE);
+	-- procedure simWaitUntilFallingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE);
 	
-	procedure simGenerateClock2(signal Clock : out STD_LOGIC; signal Debug : out INTEGER; constant Period : in TIME);
+	-- procedure simGenerateClock2(signal Clock : out STD_LOGIC; signal Debug : out INTEGER; constant Period : in TIME);
 
 	-- waveform generation
 	-- ===========================================================================
-	procedure simGenerateWaveform(signal Wave : out BOOLEAN;		Waveform: T_TIMEVEC;							InitialValue : BOOLEAN);
-	procedure simGenerateWaveform(signal Wave : out STD_LOGIC;	Waveform: T_TIMEVEC;							InitialValue : STD_LOGIC := '0');
-	procedure simGenerateWaveform(signal Wave : out STD_LOGIC;	Waveform: T_SIM_WAVEFORM_SL;			InitialValue : STD_LOGIC := '0');
-	procedure simGenerateWaveform(signal Wave : out T_SLV_8;		Waveform: T_SIM_WAVEFORM_SLV_8;		InitialValue : T_SLV_8);
-	procedure simGenerateWaveform(signal Wave : out T_SLV_16;		Waveform: T_SIM_WAVEFORM_SLV_16;	InitialValue : T_SLV_16);
-	procedure simGenerateWaveform(signal Wave : out T_SLV_24;		Waveform: T_SIM_WAVEFORM_SLV_24;	InitialValue : T_SLV_24);
-	procedure simGenerateWaveform(signal Wave : out T_SLV_32;		Waveform: T_SIM_WAVEFORM_SLV_32;	InitialValue : T_SLV_32);
-	procedure simGenerateWaveform(signal Wave : out T_SLV_48;		Waveform: T_SIM_WAVEFORM_SLV_48;	InitialValue : T_SLV_48);
-	procedure simGenerateWaveform(signal Wave : out T_SLV_64;		Waveform: T_SIM_WAVEFORM_SLV_64;	InitialValue : T_SLV_64);
+	-- procedure simGenerateWaveform(signal Wave : out BOOLEAN;		Waveform: T_TIMEVEC;							InitialValue : BOOLEAN);
+	-- procedure simGenerateWaveform(signal Wave : out STD_LOGIC;	Waveform: T_TIMEVEC;							InitialValue : STD_LOGIC := '0');
+	-- procedure simGenerateWaveform(signal Wave : out STD_LOGIC;	Waveform: T_SIM_WAVEFORM_SL;			InitialValue : STD_LOGIC := '0');
+	-- procedure simGenerateWaveform(signal Wave : out T_SLV_8;		Waveform: T_SIM_WAVEFORM_SLV_8;		InitialValue : T_SLV_8);
+	-- procedure simGenerateWaveform(signal Wave : out T_SLV_16;		Waveform: T_SIM_WAVEFORM_SLV_16;	InitialValue : T_SLV_16);
+	-- procedure simGenerateWaveform(signal Wave : out T_SLV_24;		Waveform: T_SIM_WAVEFORM_SLV_24;	InitialValue : T_SLV_24);
+	-- procedure simGenerateWaveform(signal Wave : out T_SLV_32;		Waveform: T_SIM_WAVEFORM_SLV_32;	InitialValue : T_SLV_32);
+	-- procedure simGenerateWaveform(signal Wave : out T_SLV_48;		Waveform: T_SIM_WAVEFORM_SLV_48;	InitialValue : T_SLV_48);
+	-- procedure simGenerateWaveform(signal Wave : out T_SLV_64;		Waveform: T_SIM_WAVEFORM_SLV_64;	InitialValue : T_SLV_64);
 	
-	function simGenerateWaveform_Reset(constant Pause : TIME := 0 ns; ResetPulse : TIME := 10 ns) return T_TIMEVEC;
+	-- function simGenerateWaveform_Reset(constant Pause : TIME := 0 ns; ResetPulse : TIME := 10 ns) return T_TIMEVEC;
 	
 
 	-- TODO: integrate VCD simulation functions and procedures from sim_value_change_dump.vhdl here
@@ -133,9 +136,19 @@ package body simulation is
 		return createTest(Name);
 	end function;
 	
-	impure function simRegisterProcess(Name : STRING) return T_SIM_PROCESS_ID is
+	procedure simFinalizeTest(constant TestID : T_SIM_TEST_ID) is
 	begin
-		return registerProcess(Name);
+		finalizeTest(TestID);
+	end procedure;
+	
+	impure function simRegisterProcess(Name : STRING; constant IsLowPriority : BOOLEAN := FALSE) return T_SIM_PROCESS_ID is
+	begin
+		return registerProcess(Name, IsLowPriority);
+	end function;
+	
+	impure function simRegisterProcess(constant TestID : T_SIM_TEST_ID; Name : STRING; constant IsLowPriority : BOOLEAN := FALSE) return T_SIM_PROCESS_ID is
+	begin
+		return registerProcess(TestID, Name, IsLowPriority);
 	end function;
 		
 	procedure simDeactivateProcess(ProcID : T_SIM_PROCESS_ID) is
@@ -143,9 +156,14 @@ package body simulation is
 		deactivateProcess(ProcID);
 	end procedure;
 	
-	impure function simIsStopped return BOOLEAN is
+	impure function simIsStopped(constant TestID : T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) return BOOLEAN is
 	begin
-		return isStopped;
+		return isStopped(TestID);
+	end function;
+	
+	impure function simIsAllFinalized return BOOLEAN is
+	begin
+		return isAllFinalized;
 	end function;
 
 	-- TODO: undocumented group
@@ -229,215 +247,215 @@ package body simulation is
 
 	-- clock generation
 	-- ===========================================================================
-	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Frequency : in FREQ; constant Phase : in T_PHASE := 0 deg; constant DutyCycle : in T_DutyCycle := 50 percent; constant Wander : in T_WANDER := 0 permil) is
-		constant Period : TIME := to_time(Frequency);
-	begin
-		simGenerateClock(Clock, Period, Phase, DutyCycle, Wander);
-	end procedure;
+	-- procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Frequency : in FREQ; constant Phase : in T_PHASE := 0 deg; constant DutyCycle : in T_DutyCycle := 50 percent; constant Wander : in T_WANDER := 0 permil) is
+		-- constant Period : TIME := to_time(Frequency);
+	-- begin
+		-- simGenerateClock(Clock, Period, Phase, DutyCycle, Wander);
+	-- end procedure;
 	
-	procedure simGenerateClock(
-		signal	 Clock			: out	STD_LOGIC;
-		constant Period			: in	TIME;
-		constant Phase			: in	T_PHASE			:=	0 deg;
-		constant DutyCycle	: in	T_DutyCycle	:= 50 percent;
-		constant Wander			: in	T_WANDER		:=	0 permil
-	) is
-		constant NormalizedPhase		: T_PHASE		:= ite((Phase >= 0 deg), Phase, Phase + 360 deg);						-- move Phase into the range of 0° to 360°
-		constant PhaseAsFactor			: REAL			:= real(NormalizedPhase / 1 second) / 1296000.0;						-- 1,296,000 = 3,600 seconds * 360 degree per cycle
-		constant WanderAsFactor			: REAL			:= real(Wander / 1 ppb) / 1.0e9;
-		constant DutyCycleAsFactor	: REAL			:= real(DutyCycle / 1 permil) / 1000.0;
-		constant Delay							: TIME			:= Period * PhaseAsFactor;
-		constant TimeHigh						: TIME			:= Period * DutyCycleAsFactor + (Period * (WanderAsFactor / 2.0));	-- add 50% wander to the high level
-		constant TimeLow						: TIME			:= Period - TimeHigh + (Period * WanderAsFactor);						-- and 50% to the low level
-		constant ClockAfterRun_cy		: POSITIVE	:= 1;
-	begin
-		-- report "simGenerateClock: (Instance: '" & Clock'instance_name & "')" & CR &
-			-- "Period: "						& TIME'image(Period) & CR &
-			-- "Phase: "							& T_PHASE'image(Phase) & CR &
-			-- "DutyCycle: "					& T_DUTYCYCLE'image(DutyCycle) & CR &
-			-- "PhaseAsFactor: "			& REAL'image(PhaseAsFactor) & CR &
-			-- "WanderAsFactor: "		& REAL'image(WanderAsFactor) & CR &
-			-- "DutyCycleAsFactor: "	& REAL'image(DutyCycleAsFactor) & CR &
-			-- "Delay: "							& TIME'image(Delay) & CR &
-			-- "TimeHigh: "					& TIME'image(TimeHigh) & CR &
-			-- "TimeLow: "						& TIME'image(TimeLow)
-			-- severity NOTE;
+	-- procedure simGenerateClock(
+		-- signal	 Clock			: out	STD_LOGIC;
+		-- constant Period			: in	TIME;
+		-- constant Phase			: in	T_PHASE			:=	0 deg;
+		-- constant DutyCycle	: in	T_DutyCycle	:= 50 percent;
+		-- constant Wander			: in	T_WANDER		:=	0 permil
+	-- ) is
+		-- constant NormalizedPhase		: T_PHASE		:= ite((Phase >= 0 deg), Phase, Phase + 360 deg);						-- move Phase into the range of 0° to 360°
+		-- constant PhaseAsFactor			: REAL			:= real(NormalizedPhase / 1 second) / 1296000.0;						-- 1,296,000 = 3,600 seconds * 360 degree per cycle
+		-- constant WanderAsFactor			: REAL			:= real(Wander / 1 ppb) / 1.0e9;
+		-- constant DutyCycleAsFactor	: REAL			:= real(DutyCycle / 1 permil) / 1000.0;
+		-- constant Delay							: TIME			:= Period * PhaseAsFactor;
+		-- constant TimeHigh						: TIME			:= Period * DutyCycleAsFactor + (Period * (WanderAsFactor / 2.0));	-- add 50% wander to the high level
+		-- constant TimeLow						: TIME			:= Period - TimeHigh + (Period * WanderAsFactor);						-- and 50% to the low level
+		-- constant ClockAfterRun_cy		: POSITIVE	:= 1;
+	-- begin
+		-- -- report "simGenerateClock: (Instance: '" & Clock'instance_name & "')" & CR &
+			-- -- "Period: "						& TIME'image(Period) & CR &
+			-- -- "Phase: "							& T_PHASE'image(Phase) & CR &
+			-- -- "DutyCycle: "					& T_DUTYCYCLE'image(DutyCycle) & CR &
+			-- -- "PhaseAsFactor: "			& REAL'image(PhaseAsFactor) & CR &
+			-- -- "WanderAsFactor: "		& REAL'image(WanderAsFactor) & CR &
+			-- -- "DutyCycleAsFactor: "	& REAL'image(DutyCycleAsFactor) & CR &
+			-- -- "Delay: "							& TIME'image(Delay) & CR &
+			-- -- "TimeHigh: "					& TIME'image(TimeHigh) & CR &
+			-- -- "TimeLow: "						& TIME'image(TimeLow)
+			-- -- severity NOTE;
 			
-		if (Delay = 0 ns) then
-			null;
-		elsif (Delay <= TimeLow) then
-			Clock		<= '0';
-			wait for Delay;
-		else
-			Clock		<= '1';
-			wait for Delay - TimeLow;
-			Clock		<= '0';
-			wait for TimeLow;
-		end if;
-		Clock		<= '1';
-		while (not isStopped) loop
-			wait for TimeHigh;
-			Clock		<= '0';
-			wait for TimeLow;
-			Clock		<= '1';
-		end loop;
-		-- create N more cycles to allow other processes to recognize the stop condition (clock after run)
-		for i in 1 to ClockAfterRun_cy loop
-			wait for TimeHigh;
-			Clock		<= '0';
-			wait for TimeLow;
-			Clock		<= '1';
-		end loop;
-		Clock		<= '0';
-	end procedure;
+		-- if (Delay = 0 ns) then
+			-- null;
+		-- elsif (Delay <= TimeLow) then
+			-- Clock		<= '0';
+			-- wait for Delay;
+		-- else
+			-- Clock		<= '1';
+			-- wait for Delay - TimeLow;
+			-- Clock		<= '0';
+			-- wait for TimeLow;
+		-- end if;
+		-- Clock		<= '1';
+		-- while (not isStopped) loop
+			-- wait for TimeHigh;
+			-- Clock		<= '0';
+			-- wait for TimeLow;
+			-- Clock		<= '1';
+		-- end loop;
+		-- -- create N more cycles to allow other processes to recognize the stop condition (clock after run)
+		-- for i in 1 to ClockAfterRun_cy loop
+			-- wait for TimeHigh;
+			-- Clock		<= '0';
+			-- wait for TimeLow;
+			-- Clock		<= '1';
+		-- end loop;
+		-- Clock		<= '0';
+	-- end procedure;
 	
-	procedure simGenerateClock2(signal Clock : out STD_LOGIC; signal Debug : out INTEGER; constant Period : in TIME) is
-		constant TimeHigh					: TIME			:= Period * 0.5;
-		constant TimeLow					: TIME			:= Period - TimeHigh;
-		variable Seed							: T_SIM_SEED;
-		variable rand							: REAL;
-	begin
-		Clock		<= '1';
-		initializeSeed(Seed);
+	-- procedure simGenerateClock2(signal Clock : out STD_LOGIC; signal Debug : out INTEGER; constant Period : in TIME) is
+		-- constant TimeHigh					: TIME			:= Period * 0.5;
+		-- constant TimeLow					: TIME			:= Period - TimeHigh;
+		-- variable Seed							: T_SIM_SEED;
+		-- variable rand							: REAL;
+	-- begin
+		-- Clock		<= '1';
+		-- initializeSeed(Seed);
 
-		while (not isStopped) loop
-			getUniformDistibutedRandomValue(Seed, rand, -256.0, 255.0);
-			Debug		<= integer(rand + 256.0);
-			-- getNormalDistibutedRandomValue(Seed, rand, 0.2, 0.0);			-- seed, random value, StandardDeviation := 1.0 (sigma), Mean := 0.0 micro
-			-- Debug		<= integer(rand * 256.0 + 256.0);
-			wait for TimeHigh;
-			Clock		<= '0';
-			wait for TimeLow;
-			Clock		<= '1';
-		end loop;
-		Clock		<= '0';
-	end procedure;
+		-- while (not isStopped) loop
+			-- getUniformDistibutedRandomValue(Seed, rand, -256.0, 255.0);
+			-- Debug		<= integer(rand + 256.0);
+			-- -- getNormalDistibutedRandomValue(Seed, rand, 0.2, 0.0);			-- seed, random value, StandardDeviation := 1.0 (sigma), Mean := 0.0 micro
+			-- -- Debug		<= integer(rand * 256.0 + 256.0);
+			-- wait for TimeHigh;
+			-- Clock		<= '0';
+			-- wait for TimeLow;
+			-- Clock		<= '1';
+		-- end loop;
+		-- Clock		<= '0';
+	-- end procedure;
 
-	procedure simWaitUntilRisingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE) is
-	begin
-		for i in 1 to Times loop
-			wait until rising_edge(Clock);
-			exit when isStopped;
-		end loop;
-	end procedure;
+	-- procedure simWaitUntilRisingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE) is
+	-- begin
+		-- for i in 1 to Times loop
+			-- wait until rising_edge(Clock);
+			-- exit when isStopped;
+		-- end loop;
+	-- end procedure;
 	
-	procedure simWaitUntilFallingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE) is
-	begin
-		for i in 1 to Times loop
-			wait until falling_edge(Clock);
-			exit when isStopped;
-		end loop;
-	end procedure;
+	-- procedure simWaitUntilFallingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE) is
+	-- begin
+		-- for i in 1 to Times loop
+			-- wait until falling_edge(Clock);
+			-- exit when isStopped;
+		-- end loop;
+	-- end procedure;
 	
 	-- waveform generation
 	-- ===========================================================================
-	procedure simGenerateWaveform(signal Wave : out BOOLEAN; Waveform : T_TIMEVEC; InitialValue : BOOLEAN) is
-		variable State : BOOLEAN := InitialValue;
-	begin
-		Wave <= State;
-		for i in Waveform'range loop
-			wait for Waveform(i);
-			State		:= not State;
-			Wave		<= State;
-			exit when isStopped;
-		end loop;
-	end procedure;
+	-- procedure simGenerateWaveform(signal Wave : out BOOLEAN; Waveform : T_TIMEVEC; InitialValue : BOOLEAN) is
+		-- variable State : BOOLEAN := InitialValue;
+	-- begin
+		-- Wave <= State;
+		-- for i in Waveform'range loop
+			-- wait for Waveform(i);
+			-- State		:= not State;
+			-- Wave		<= State;
+			-- exit when isStopped;
+		-- end loop;
+	-- end procedure;
 	
-	procedure simGenerateWaveform(signal Wave : out STD_LOGIC; Waveform: T_TIMEVEC; InitialValue : STD_LOGIC := '0') is
-		variable State : STD_LOGIC := InitialValue;
-	begin
-		Wave <= State;
-		for i in Waveform'range loop
-			wait for Waveform(i);
-			State		:= not State;
-			Wave		<= State;
-			exit when isStopped;
-		end loop;
-	end procedure;
+	-- procedure simGenerateWaveform(signal Wave : out STD_LOGIC; Waveform: T_TIMEVEC; InitialValue : STD_LOGIC := '0') is
+		-- variable State : STD_LOGIC := InitialValue;
+	-- begin
+		-- Wave <= State;
+		-- for i in Waveform'range loop
+			-- wait for Waveform(i);
+			-- State		:= not State;
+			-- Wave		<= State;
+			-- exit when isStopped;
+		-- end loop;
+	-- end procedure;
 
-	procedure simGenerateWaveform(signal Wave : out STD_LOGIC; Waveform: T_SIM_WAVEFORM_SL; InitialValue : STD_LOGIC := '0') is
-	begin
-		Wave <= InitialValue;
-		for i in Waveform'range loop
-			wait for Waveform(i).Delay;
-			Wave		<= Waveform(i).Value;
-			exit when isStopped;
-		end loop;
-	end procedure;
+	-- procedure simGenerateWaveform(signal Wave : out STD_LOGIC; Waveform: T_SIM_WAVEFORM_SL; InitialValue : STD_LOGIC := '0') is
+	-- begin
+		-- Wave <= InitialValue;
+		-- for i in Waveform'range loop
+			-- wait for Waveform(i).Delay;
+			-- Wave		<= Waveform(i).Value;
+			-- exit when isStopped;
+		-- end loop;
+	-- end procedure;
 	
-	procedure simGenerateWaveform(signal Wave : out T_SLV_8; Waveform: T_SIM_WAVEFORM_SLV_8; InitialValue : T_SLV_8) is
-	begin
-		Wave <= InitialValue;
-		for i in Waveform'range loop
-			wait for Waveform(i).Delay;
-			Wave		<= Waveform(i).Value;
-			exit when isStopped;
-		end loop;
-	end procedure;
+	-- procedure simGenerateWaveform(signal Wave : out T_SLV_8; Waveform: T_SIM_WAVEFORM_SLV_8; InitialValue : T_SLV_8) is
+	-- begin
+		-- Wave <= InitialValue;
+		-- for i in Waveform'range loop
+			-- wait for Waveform(i).Delay;
+			-- Wave		<= Waveform(i).Value;
+			-- exit when isStopped;
+		-- end loop;
+	-- end procedure;
 	
-	procedure simGenerateWaveform(signal Wave : out T_SLV_16; Waveform: T_SIM_WAVEFORM_SLV_16; InitialValue : T_SLV_16) is
-	begin
-		Wave <= InitialValue;
-		for i in Waveform'range loop
-			wait for Waveform(i).Delay;
-			Wave		<= Waveform(i).Value;
-			exit when isStopped;
-		end loop;
-	end procedure;
+	-- procedure simGenerateWaveform(signal Wave : out T_SLV_16; Waveform: T_SIM_WAVEFORM_SLV_16; InitialValue : T_SLV_16) is
+	-- begin
+		-- Wave <= InitialValue;
+		-- for i in Waveform'range loop
+			-- wait for Waveform(i).Delay;
+			-- Wave		<= Waveform(i).Value;
+			-- exit when isStopped;
+		-- end loop;
+	-- end procedure;
 	
-	procedure simGenerateWaveform(signal Wave : out T_SLV_24; Waveform: T_SIM_WAVEFORM_SLV_24; InitialValue : T_SLV_24) is
-	begin
-		Wave <= InitialValue;
-		for i in Waveform'range loop
-			wait for Waveform(i).Delay;
-			Wave		<= Waveform(i).Value;
-			exit when isStopped;
-		end loop;
-	end procedure;
+	-- procedure simGenerateWaveform(signal Wave : out T_SLV_24; Waveform: T_SIM_WAVEFORM_SLV_24; InitialValue : T_SLV_24) is
+	-- begin
+		-- Wave <= InitialValue;
+		-- for i in Waveform'range loop
+			-- wait for Waveform(i).Delay;
+			-- Wave		<= Waveform(i).Value;
+			-- exit when isStopped;
+		-- end loop;
+	-- end procedure;
 	
-	procedure simGenerateWaveform(signal Wave : out T_SLV_32; Waveform: T_SIM_WAVEFORM_SLV_32; InitialValue : T_SLV_32) is
-	begin
-		Wave <= InitialValue;
-		for i in Waveform'range loop
-			wait for Waveform(i).Delay;
-			Wave		<= Waveform(i).Value;
-			exit when isStopped;
-		end loop;
-	end procedure;
+	-- procedure simGenerateWaveform(signal Wave : out T_SLV_32; Waveform: T_SIM_WAVEFORM_SLV_32; InitialValue : T_SLV_32) is
+	-- begin
+		-- Wave <= InitialValue;
+		-- for i in Waveform'range loop
+			-- wait for Waveform(i).Delay;
+			-- Wave		<= Waveform(i).Value;
+			-- exit when isStopped;
+		-- end loop;
+	-- end procedure;
 	
-	procedure simGenerateWaveform(signal Wave : out T_SLV_48; Waveform: T_SIM_WAVEFORM_SLV_48; InitialValue : T_SLV_48) is
-	begin
-		Wave <= InitialValue;
-		for i in Waveform'range loop
-			wait for Waveform(i).Delay;
-			Wave		<= Waveform(i).Value;
-			exit when isStopped;
-		end loop;
-	end procedure;
+	-- procedure simGenerateWaveform(signal Wave : out T_SLV_48; Waveform: T_SIM_WAVEFORM_SLV_48; InitialValue : T_SLV_48) is
+	-- begin
+		-- Wave <= InitialValue;
+		-- for i in Waveform'range loop
+			-- wait for Waveform(i).Delay;
+			-- Wave		<= Waveform(i).Value;
+			-- exit when isStopped;
+		-- end loop;
+	-- end procedure;
 	
-	procedure simGenerateWaveform(signal Wave : out T_SLV_64; Waveform: T_SIM_WAVEFORM_SLV_64; InitialValue : T_SLV_64) is
-	begin
-		Wave <= InitialValue;
-		for i in Waveform'range loop
-			wait for Waveform(i).Delay;
-			Wave		<= Waveform(i).Value;
-			exit when isStopped;
-		end loop;
-	end procedure;
+	-- procedure simGenerateWaveform(signal Wave : out T_SLV_64; Waveform: T_SIM_WAVEFORM_SLV_64; InitialValue : T_SLV_64) is
+	-- begin
+		-- Wave <= InitialValue;
+		-- for i in Waveform'range loop
+			-- wait for Waveform(i).Delay;
+			-- Wave		<= Waveform(i).Value;
+			-- exit when isStopped;
+		-- end loop;
+	-- end procedure;
 	
-	function simGenerateWaveform_Reset(constant Pause : TIME := 0 ns; ResetPulse : TIME := 10 ns) return T_TIMEVEC is
-		variable p  : TIME;
-		variable rp : TIME;
-	begin
-		-- WORKAROUND: for QuestaSim/ModelSim
-		--	Version:	10.4c
-		--	Issue:
-		--		return (0 => Pause, 1 => ResetPulse); always evaluates to (0 ns, 10 ns),
-		--		regardless of the passed function parameters
-		p  := Pause;
-		rp := ResetPulse;
-		return (0 => p, 1 => rp);
-	end function;
+	-- function simGenerateWaveform_Reset(constant Pause : TIME := 0 ns; ResetPulse : TIME := 10 ns) return T_TIMEVEC is
+		-- variable p  : TIME;
+		-- variable rp : TIME;
+	-- begin
+		-- -- WORKAROUND: for QuestaSim/ModelSim
+		-- --	Version:	10.4c
+		-- --	Issue:
+		-- --		return (0 => Pause, 1 => ResetPulse); always evaluates to (0 ns, 10 ns),
+		-- --		regardless of the passed function parameters
+		-- p  := Pause;
+		-- rp := ResetPulse;
+		-- return (0 => p, 1 => rp);
+	-- end function;
 	
 	-- checksum functions
 	-- ===========================================================================

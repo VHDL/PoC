@@ -41,9 +41,9 @@ use			PoC.vectors.all;
 use			PoC.strings.all;
 use			PoC.physical.all;
 -- simulation only packages
-use			PoC.sim_global.all;
 use			PoC.sim_types.all;
 use			PoC.simulation.all;
+use			PoC.waveform.all;
 
 
 entity arith_prng_tb is

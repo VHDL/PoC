@@ -70,7 +70,9 @@ package sim_protected is
 		-- Run Management
 		procedure				stopAllProcesses(TestID : T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID);
 		procedure				stopAllClocks(TestID : T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID);
+		
 		impure function	isStopped(TestID : T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) return BOOLEAN;
+		impure function isAllFinalized return BOOLEAN;
 	end protected;
 end package;
 
@@ -90,8 +92,8 @@ package body sim_protected is
 		variable FailedAssertCount	: NATURAL																	:= 0;
 		
 		-- Clock Management
-		variable MainProcessEnable	: T_BOOLVEC(T_SIM_TEST_ID)								:= (others => TRUE);
-		variable MainClockEnable		: T_BOOLVEC(T_SIM_TEST_ID)								:= (others => TRUE);
+		variable MainProcessEnables	: T_BOOLVEC(T_SIM_TEST_ID)								:= (others => TRUE);
+		variable MainClockEnables		: T_BOOLVEC(T_SIM_TEST_ID)								:= (others => TRUE);
 		
 		-- Process Management
 		variable ProcessCount				: NATURAL																	:= 0;
@@ -180,7 +182,7 @@ package body sim_protected is
 		end procedure;
 		
 		impure function createTest(Name : STRING) return T_SIM_TEST_ID is
-			variable Test			: T_SIM_TEST;
+			variable Test						: T_SIM_TEST;
 		begin
 			Test.ID									:= TestCount;
 			Test.Name								:= resize(Name, T_SIM_TEST_NAME'length);
@@ -214,7 +216,6 @@ package body sim_protected is
 			end if;
 		end procedure;
 		
-		-- impure function registerProcess(Name : STRING; InstanceName : STRING) return T_SIM_PROCESS_ID is
 		impure function registerProcess(Name : STRING; IsLowPriority : BOOLEAN := FALSE) return T_SIM_PROCESS_ID is
 		begin
 			return registerProcess(C_SIM_DEFAULT_TEST_ID, Name, IsLowPriority);
@@ -272,11 +273,11 @@ package body sim_protected is
 		begin
 			if (TestID = C_SIM_DEFAULT_TEST_ID) then
 				for i in 0 to TestCount - 1 loop
-					MainProcessEnable(i)		:= FALSE;
+					MainProcessEnables(i)		:= FALSE;
 				end loop;
 				stopAllClocks(TestID);
 			elsif (TestID < TestCount) then
-				MainProcessEnable(TestID)	:= FALSE;
+				MainProcessEnables(TestID)	:= FALSE;
 				stopAllClocks(TestID);
 			else
 				report "TestID (" & T_SIM_TEST_ID'image(TestID) & ") is unknown." severity FAILURE;
@@ -287,10 +288,10 @@ package body sim_protected is
 		begin
 			if (TestID = C_SIM_DEFAULT_TEST_ID) then
 				for i in 0 to TestCount - 1 loop
-					MainClockEnable(i)			:= FALSE;
+					MainClockEnables(i)			:= FALSE;
 				end loop;
 			elsif (TestID < TestCount) then
-				MainClockEnable(TestID)		:= FALSE;
+				MainClockEnables(TestID)		:= FALSE;
 			else
 				report "TestID (" & T_SIM_TEST_ID'image(TestID) & ") is unknown." severity FAILURE;
 			end if;
@@ -298,7 +299,7 @@ package body sim_protected is
 		
 		impure function isStopped(TestID : T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) return BOOLEAN is
 		begin
-			return not MainClockEnable(TestID);
+			return not MainClockEnables(TestID);
 		end function;
 		
 		impure function isAllFinalized return BOOLEAN is
