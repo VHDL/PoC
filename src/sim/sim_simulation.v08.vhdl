@@ -52,11 +52,13 @@ package simulation is
 	procedure				simInitialize;
 	procedure				simFinalize;
 	
-	impure function simCreateTest(Name : STRING) return T_SIM_TEST_ID;
+	impure function	simCreateTest(Name : STRING) return T_SIM_TEST_ID;
+	procedure				simFinalizeTest(constant TestID : T_SIM_TEST_ID);
 	impure function	simRegisterProcess(Name : STRING) return T_SIM_PROCESS_ID;
+	impure function	simRegisterProcess(constant TestID : T_SIM_TEST_ID; Name : STRING) return T_SIM_PROCESS_ID;
 	procedure				simDeactivateProcess(ProcID : T_SIM_PROCESS_ID);
 	
-	impure function	simIsStopped return BOOLEAN;
+	impure function	simIsStopped(constant TestID : T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) return BOOLEAN;
 	
 	procedure				simWriteMessage(Message : in STRING := "");
 	
@@ -85,8 +87,36 @@ package simulation is
 
 	-- clock generation
 	-- ===========================================================================
-	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Frequency : in FREQ; constant Phase : in T_PHASE := 0 deg; constant DutyCycle : in T_DutyCycle := 50 percent; constant Wander : in T_WANDER := 0 permil);
-	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Period : in TIME; constant Phase : in T_PHASE := 0 deg; constant DutyCycle : in T_DutyCycle := 50 percent; constant Wander : in T_WANDER := 0 permil);
+	procedure simGenerateClock(
+		signal	 Clock			: out	STD_LOGIC;
+		constant Frequency	: in	FREQ;
+		constant Phase			: in	T_PHASE			:=	0 deg;
+		constant DutyCycle	: in	T_DUTYCYCLE	:= 50 percent;
+		constant Wander			: in	T_WANDER		:=	0 permil
+	);
+	procedure simGenerateClock(
+		constant TestID			: in	T_SIM_TEST_ID;
+		signal	 Clock			: out	STD_LOGIC;
+		constant Frequency	: in	FREQ;
+		constant Phase			: in	T_PHASE			:=	0 deg;
+		constant DutyCycle	: in	T_DUTYCYCLE	:= 50 percent;
+		constant Wander			: in	T_WANDER		:=	0 permil
+	);
+	procedure simGenerateClock(
+		signal	 Clock			: out	STD_LOGIC;
+		constant Period			: in	TIME;
+		constant Phase			: in	T_PHASE			:=	0 deg;
+		constant DutyCycle	: in	T_DUTYCYCLE	:= 50 percent;
+		constant Wander			: in	T_WANDER		:=	0 permil
+	);
+	procedure simGenerateClock(
+		constant TestID			: in	T_SIM_TEST_ID;
+		signal	 Clock			: out	STD_LOGIC;
+		constant Period			: in	TIME;
+		constant Phase			: in	T_PHASE			:=	0 deg;
+		constant DutyCycle	: in	T_DUTYCYCLE	:= 50 percent;
+		constant Wander			: in	T_WANDER		:=	0 permil
+	);
 	procedure simWaitUntilRisingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE);
 	procedure simWaitUntilFallingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE);
 	
@@ -94,8 +124,28 @@ package simulation is
 
 	-- waveform generation
 	-- ===========================================================================
-	procedure simGenerateWaveform(signal Wave : out BOOLEAN;		Waveform: T_TIMEVEC;							InitialValue : BOOLEAN);
-	procedure simGenerateWaveform(signal Wave : out STD_LOGIC;	Waveform: T_TIMEVEC;							InitialValue : STD_LOGIC := '0');
+	procedure simGenerateWaveform(
+		signal	 Wave					: out	BOOLEAN;
+		constant Waveform			: in	T_TIMEVEC;
+		constant InitialValue	: in	BOOLEAN					:= FALSE
+	);
+	procedure simGenerateWaveform(
+		constant TestID				: in	T_SIM_TEST_ID;
+		signal	 Wave					: out	BOOLEAN;
+		constant Waveform			: in	T_TIMEVEC;
+		constant InitialValue	: in	BOOLEAN					:= FALSE
+	);
+	procedure simGenerateWaveform(
+		signal	 Wave					: out	STD_LOGIC;
+		constant Waveform			: in	T_TIMEVEC;
+		constant InitialValue	: in	STD_LOGIC				:= '0'
+	);
+	procedure simGenerateWaveform(
+		constant TestID				: in	T_SIM_TEST_ID;
+		signal	 Wave					: out	STD_LOGIC;
+		constant Waveform			: in	T_TIMEVEC;
+		constant InitialValue	: in	STD_LOGIC				:= '0'
+	);
 	procedure simGenerateWaveform(signal Wave : out STD_LOGIC;	Waveform: T_SIM_WAVEFORM_SL;			InitialValue : STD_LOGIC := '0');
 	procedure simGenerateWaveform(signal Wave : out T_SLV_8;		Waveform: T_SIM_WAVEFORM_SLV_8;		InitialValue : T_SLV_8);
 	procedure simGenerateWaveform(signal Wave : out T_SLV_16;		Waveform: T_SIM_WAVEFORM_SLV_16;	InitialValue : T_SLV_16);
@@ -134,9 +184,19 @@ package body simulation is
 		return globalSimulationStatus.createTest(Name);
 	end function;
 	
+	procedure simFinalizeTest(constant TestID : T_SIM_TEST_ID) is
+	begin
+		globalSimulationStatus.finalizeTest(TestID);
+	end procedure;
+	
 	impure function simRegisterProcess(Name : STRING) return T_SIM_PROCESS_ID is
 	begin
 		return globalSimulationStatus.registerProcess(Name);
+	end function;
+	
+	impure function simRegisterProcess(constant TestID : T_SIM_TEST_ID; Name : STRING) return T_SIM_PROCESS_ID is
+	begin
+		return globalSimulationStatus.registerProcess(TestID, Name);
 	end function;
 		
 	procedure simDeactivateProcess(ProcID : T_SIM_PROCESS_ID) is
@@ -144,9 +204,9 @@ package body simulation is
 		globalSimulationStatus.deactivateProcess(ProcID);
 	end procedure;
 	
-	impure function simIsStopped return BOOLEAN is
+	impure function simIsStopped(constant TestID : T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) return BOOLEAN is
 	begin
-		return globalSimulationStatus.isStopped;
+		return globalSimulationStatus.isStopped(TestID);
 	end function;
 
 	-- TODO: undocumented group
@@ -242,13 +302,44 @@ package body simulation is
 	
 	-- clock generation
 	-- ===========================================================================
-	procedure simGenerateClock(signal Clock : out STD_LOGIC; constant Frequency : in FREQ; constant Phase : in T_PHASE := 0 deg; constant DutyCycle : in T_DUTYCYCLE := 50 percent; constant Wander : in T_WANDER := 0 permil) is
+	procedure simGenerateClock(
+		signal	 Clock			: out	STD_LOGIC;
+		constant Frequency	: in	FREQ;
+		constant Phase			: in	T_PHASE			:=	0 deg;
+		constant DutyCycle	: in	T_DUTYCYCLE	:= 50 percent;
+		constant Wander			: in	T_WANDER		:=	0 permil
+	) is
 		constant Period : TIME := to_time(Frequency);
 	begin
-		simGenerateClock(Clock, Period, Phase, DutyCycle, Wander);
+		simGenerateClock(C_SIM_DEFAULT_TEST_ID, Clock, Period, Phase, DutyCycle, Wander);
 	end procedure;
 	
 	procedure simGenerateClock(
+		constant TestID			: in	T_SIM_TEST_ID;
+		signal	 Clock			: out	STD_LOGIC;
+		constant Frequency	: in	FREQ;
+		constant Phase			: in	T_PHASE			:=	0 deg;
+		constant DutyCycle	: in	T_DUTYCYCLE	:= 50 percent;
+		constant Wander			: in	T_WANDER		:=	0 permil
+	) is
+		constant Period : TIME := to_time(Frequency);
+	begin
+		simGenerateClock(TestID, Clock, Period, Phase, DutyCycle, Wander);
+	end procedure;
+	
+	procedure simGenerateClock(
+		signal	 Clock			: out	STD_LOGIC;
+		constant Period			: in	TIME;
+		constant Phase			: in	T_PHASE			:=	0 deg;
+		constant DutyCycle	: in	T_DUTYCYCLE	:= 50 percent;
+		constant Wander			: in	T_WANDER		:=	0 permil
+	) is
+	begin
+		simGenerateClock(C_SIM_DEFAULT_TEST_ID, Clock, Period, Phase, DutyCycle, Wander);
+	end procedure;
+	
+	procedure simGenerateClock(
+		constant TestID			: in	T_SIM_TEST_ID;
 		signal	 Clock			: out	STD_LOGIC;
 		constant Period			: in	TIME;
 		constant Phase			: in	T_PHASE			:=	0 deg;
@@ -263,6 +354,8 @@ package body simulation is
 		constant TimeHigh						: TIME			:= Period * DutyCycleAsFactor + (Period * (WanderAsFactor / 2.0));	-- add 50% wander to the high level
 		constant TimeLow						: TIME			:= Period - TimeHigh + (Period * WanderAsFactor);						-- and 50% to the low level
 		constant ClockAfterRun_cy		: POSITIVE	:= 5;
+		
+		constant PROCESS_ID					: T_SIM_PROCESS_ID	:= globalSimulationStatus.registerProcess(TestID, "simGenerateClock", IsLowPriority => TRUE);
 	begin
 		-- report "simGenerateClock: (Instance: '" & Clock'instance_name & "')" & CR &
 			-- "Period: "						& TIME'image(Period) & CR &
@@ -294,6 +387,7 @@ package body simulation is
 			wait for TimeLow;
 			Clock		<= '1';
 		end loop;
+		globalSimulationStatus.deactivateProcess(PROCESS_ID);
 		-- create N more cycles to allow other processes to recognize the stop condition (clock after run)
 		for i in 1 to ClockAfterRun_cy loop
 			wait for TimeHigh;
@@ -385,8 +479,23 @@ package body simulation is
 	
 	-- waveform generation
 	-- ===========================================================================
-	procedure simGenerateWaveform(signal Wave : out BOOLEAN; Waveform : T_TIMEVEC; InitialValue : BOOLEAN) is
-		variable State : BOOLEAN := InitialValue;
+	procedure simGenerateWaveform(
+		signal	 Wave					: out	BOOLEAN;
+		constant Waveform			: in	T_TIMEVEC;
+		constant InitialValue	: in	BOOLEAN					:= FALSE
+	) is
+	begin
+		simGenerateWaveform(C_SIM_DEFAULT_TEST_ID, Wave, Waveform, InitialValue);
+	end procedure;
+	
+	procedure simGenerateWaveform(
+		constant TestID				: in	T_SIM_TEST_ID;
+		signal	 Wave					: out	BOOLEAN;
+		constant Waveform			: in	T_TIMEVEC;
+		constant InitialValue	: in	BOOLEAN					:= FALSE
+	) is
+		constant PROCESS_ID	: T_SIM_PROCESS_ID			:= globalSimulationStatus.registerProcess(TestID, "simGenerateWaveform");
+		variable State			: BOOLEAN								:= InitialValue;
 	begin
 		Wave <= State;
 		for i in Waveform'range loop
@@ -395,9 +504,25 @@ package body simulation is
 			Wave		<= State;
 			exit when globalSimulationStatus.isStopped;
 		end loop;
+		globalSimulationStatus.deactivateProcess(PROCESS_ID);
 	end procedure;
 	
-	procedure simGenerateWaveform(signal Wave : out STD_LOGIC; Waveform: T_TIMEVEC; InitialValue : STD_LOGIC := '0') is
+	procedure simGenerateWaveform(
+		signal	 Wave					: out	STD_LOGIC;
+		constant Waveform			: in	T_TIMEVEC;
+		constant InitialValue	: in	STD_LOGIC				:= '0'
+	) is
+	begin
+		simGenerateWaveform(C_SIM_DEFAULT_TEST_ID, Wave, Waveform, InitialValue);
+	end procedure;
+	
+	procedure simGenerateWaveform(
+		constant TestID				: in	T_SIM_TEST_ID;
+		signal	 Wave					: out	STD_LOGIC;
+		constant Waveform			: in	T_TIMEVEC;
+		constant InitialValue	: in	STD_LOGIC				:= '0'
+	) is
+		constant PROCESS_ID	: T_SIM_PROCESS_ID			:= globalSimulationStatus.registerProcess(TestID, "simGenerateWaveform");
 		variable State : STD_LOGIC := InitialValue;
 	begin
 		Wave <= State;
@@ -407,6 +532,7 @@ package body simulation is
 			Wave		<= State;
 			exit when globalSimulationStatus.isStopped;
 		end loop;
+		globalSimulationStatus.deactivateProcess(PROCESS_ID);
 	end procedure;
 
 	procedure simGenerateWaveform(signal Wave : out STD_LOGIC; Waveform: T_SIM_WAVEFORM_SL; InitialValue : STD_LOGIC := '0') is

@@ -45,37 +45,43 @@ use			PoC.vectors.all;
 package sim_types is
   -- Simulation Task and Status Management
 	-- ===========================================================================
+	subtype T_SIM_TEST_ID						is NATURAL range 0 to 1023;
+	subtype T_SIM_TEST_NAME					is STRING(1 to 256);
 	subtype T_SIM_PROCESS_ID				is NATURAL range 0 to 1023;
 	subtype T_SIM_PROCESS_NAME			is STRING(1 to 64);
 	subtype T_SIM_PROCESS_INSTNAME	is STRING(1 to 256);
-	
-	type T_SIM_PROCESS_STATUS is (
-		SIM_PROCESS_STATUS_ACTIVE,
-		SIM_PROCESS_STATUS_ENDED
-	);
-	
-	type T_SIM_PROCESS is record
-		ID						: T_SIM_PROCESS_ID;
-		Name					: T_SIM_PROCESS_NAME;
-		InstanceName	: T_SIM_PROCESS_INSTNAME;
-		Status				: T_SIM_PROCESS_STATUS;
-	end record;
-	type T_SIM_PROCESS_VECTOR is array(NATURAL range <>) of T_SIM_PROCESS;
-	
-	subtype T_SIM_TEST_ID		is NATURAL range 0 to 1023;
-	subtype T_SIM_TEST_NAME	is STRING(1 to 256);
+	type		T_SIM_PROCESS_ID_VECTOR	is array(NATURAL range <>) of T_SIM_PROCESS_ID;
 	
 	type T_SIM_TEST_STATUS is (
 		SIM_TEST_STATUS_ACTIVE,
 		SIM_TEST_STATUS_ENDED
 	);
 	
+	type T_SIM_PROCESS_STATUS is (
+		SIM_PROCESS_STATUS_ACTIVE,
+		SIM_PROCESS_STATUS_ENDED
+	);
+	
 	type T_SIM_TEST is record
-		ID			: T_SIM_TEST_ID;
-		Name		: T_SIM_TEST_NAME;
-		Status	: T_SIM_TEST_STATUS;
+		ID									: T_SIM_TEST_ID;
+		Name								: T_SIM_TEST_NAME;
+		Status							: T_SIM_TEST_STATUS;
+		ProcessIDs					: T_SIM_PROCESS_ID_VECTOR(0 to 127);
+		ProcessCount				: T_SIM_PROCESS_ID;
+		ActiveProcessCount	: T_SIM_PROCESS_ID;
 	end record;
 	type T_SIM_TEST_VECTOR	is array(NATURAL range <>) of T_SIM_TEST;
+	
+	type T_SIM_PROCESS is record
+		ID						: T_SIM_PROCESS_ID;
+		TestID				: T_SIM_TEST_ID;
+		Name					: T_SIM_PROCESS_NAME;
+		Status				: T_SIM_PROCESS_STATUS;
+		IsLowPriority	: BOOLEAN;
+	end record;
+	type T_SIM_PROCESS_VECTOR is array(NATURAL range <>) of T_SIM_PROCESS;
+	
+	constant C_SIM_DEFAULT_TEST_ID	: T_SIM_TEST_ID		:= 0;
 	
 	-- clock generation
 	-- ===========================================================================

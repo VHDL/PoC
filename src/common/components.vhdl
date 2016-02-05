@@ -210,12 +210,12 @@ package body components is
 	
 	function dec(value : UNSIGNED; constant decrement : NATURAL := 1) return UNSIGNED is
 	begin
-		return value + decrement;
+		return value - decrement;
 	end function;
-
+	
 	function dec(value : SIGNED; constant decrement : NATURAL := 1) return SIGNED is
 	begin
-		return value + decrement;
+		return value - decrement;
 	end function;
 	
 	-- negate

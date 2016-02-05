@@ -84,10 +84,9 @@ architecture test of arith_prng_tb is
 begin
 	-- initialize global simulation status
 	simInitialize;
-	
-	-- generate global testbench clock
-	simGenerateClock(Clock, CLOCK_FREQ);
-	simGenerateWaveform(Reset, simGenerateWaveform_Reset(Pause => 10 ns, ResetPulse => 10 ns));
+	-- generate global testbench clock and reset
+	simGenerateClock(simTestID,			Clock, CLOCK_FREQ);
+	simGenerateWaveform(simTestID,	Reset, simGenerateWaveform_Reset(Pause => 10 ns, ResetPulse => 10 ns));
 
 	prng : entity PoC.arith_prng
 		generic map (
@@ -102,8 +101,7 @@ begin
 		);
 
 	procChecker : process
-		-- from Simulation
-		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Checker for " & INTEGER'image(BITS) & " bits");	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Checker for " & INTEGER'image(BITS) & " bits");
 	begin
 		Test_got						<= '0';
 		
@@ -122,14 +120,10 @@ begin
 		end loop;
 		
 		Test_got				<= '0';
-		for i in 0 to 3 loop
-			wait until rising_edge(Clock);
-		end loop;
+		simWaitUntilRisingEdge(Clock, 4);
 		
 		-- This process is finished
 		simDeactivateProcess(simProcessID);
-		-- Report overall result
-		simFinalize;
 		wait;  -- forever
 	end process;
 end architecture;

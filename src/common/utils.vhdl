@@ -15,7 +15,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -121,7 +121,11 @@ package utils is
 	function ite(cond : BOOLEAN; value1 : UNSIGNED; value2 : UNSIGNED) return UNSIGNED;
 	function ite(cond : BOOLEAN; value1 : CHARACTER; value2 : CHARACTER) return CHARACTER;
 	function ite(cond : BOOLEAN; value1 : STRING; value2 : STRING) return STRING;
-
+	
+	-- conditional increment / decrement
+	function inc(cond : BOOLEAN; value : INTEGER; increment : INTEGER := 1) return INTEGER;
+	function dec(cond : BOOLEAN; value : INTEGER; decrement : INTEGER := 1) return INTEGER;
+	
   --+ Max / Min / Sum ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	function imin(arg1 : integer; arg2 : integer) return integer;		-- Calculates: min(arg1, arg2) for integers
 	alias rmin is IEEE.math_real.realmin[real, real return real];
@@ -436,8 +440,28 @@ package body utils is
 		end if;
 	end function;
 	
+	-- conditional increment / decrement
+	-- ===========================================================================
+	function inc(cond : BOOLEAN; value : INTEGER; increment : INTEGER := 1) return INTEGER is
+	begin
+		if cond then
+			return value + increment;
+		else
+			return value;
+		end if;
+	end function;
+	
+	function dec(cond : BOOLEAN; value : INTEGER; decrement : INTEGER := 1) return INTEGER is
+	begin
+		if cond then
+			return value - decrement;
+		else
+			return value;
+		end if;
+	end function;
+	
 	-- *min / *max / *sum
-	-- ==========================================================================
+	-- ===========================================================================
 	function imin(arg1 : integer; arg2 : integer) return integer is
 	begin
 		if arg1 < arg2 then return arg1; end if;
