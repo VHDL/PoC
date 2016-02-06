@@ -50,7 +50,7 @@ entity arith_prng_tb is
 end entity;
 
 
-architecture test of arith_prng_tb is
+architecture tb of arith_prng_tb is
 	constant CLOCK_FREQ							: FREQ					:= 100 MHz;
 
 	constant COMPARE_LIST_8_BITS		: T_SLVV_8			:= (
@@ -73,7 +73,6 @@ architecture test of arith_prng_tb is
 	);
 
 	constant BITS				: POSITIVE				:= 8;
-	
 	constant simTestID	: T_SIM_TEST_ID		:= simCreateTest("Test setup for BITS=" & INTEGER'image(BITS));
 	
 	signal Clock				: STD_LOGIC;
@@ -88,7 +87,7 @@ begin
 	simGenerateClock(simTestID,			Clock, CLOCK_FREQ);
 	simGenerateWaveform(simTestID,	Reset, simGenerateWaveform_Reset(Pause => 10 ns, ResetPulse => 10 ns));
 
-	prng : entity PoC.arith_prng
+	UUT : entity PoC.arith_prng
 		generic map (
 			BITS		=> 8,
 			SEED		=> x"12"

@@ -3,13 +3,13 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # ==============================================================================
 # Note: all files are relative to PoC root directory
+#
+# Load external vendor libraries
+@library unisim "xilinx"													# Xilinx ISE primitives
 
 # board and device configuration
 vhdl		poc		"tb/common/my_config_ML505.vhdl"
 vhdl		poc		"tb/common/my_project.vhdl"
-
-# Xilinx Primitives
-xilinx	unisim	"unisims/primitive/MUXCY.vhd"
 
 # PoC core packages
 vhdl		poc		"src/common/utils.vhdl"							# PoC utility collection
@@ -25,6 +25,7 @@ vhdl-93	poc		"src/sim/sim_simulation.v93.vhdl"		# PoC simulation helper
 vhdl-08	poc		"src/sim/sim_protected.v08.vhdl"		# PoC simulation helper
 vhdl-08	poc		"src/sim/sim_global.v08.vhdl"				# PoC simulation helper
 vhdl-08	poc		"src/sim/sim_simulation.v08.vhdl"		# PoC simulation helper
+vhdl		poc		"src/sim/sim_waveform.vhdl"					# PoC simulation helper
 
 # PoC.arith
 vhdl		poc		"src/arith/arith.pkg.vhdl"					# Package
