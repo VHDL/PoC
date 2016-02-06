@@ -1,0 +1,9 @@
+
+# PoC core packages
+vhdl		poc		"src/common/utils.vhdl"							# PoC utility collection
+vhdl		poc		"src/common/config.vhdl"						# PoC device configuration mechanism
+vhdl		poc		"src/common/math.vhdl"							# PoC math extension package
+vhdl		poc		"src/common/strings.vhdl"						# PoC string package
+vhdl		poc		"src/common/vectors.vhdl"						# PoC vector package
+vhdl		poc		"src/common/physical.vhdl"					# PoC physical types package
+vhdl		poc		"src/common/components.vhdl"				# PoC components package
