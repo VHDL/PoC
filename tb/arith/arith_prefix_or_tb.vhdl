@@ -76,6 +76,7 @@ begin
   procChecker : process
 		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess(simTestID, "Checker for " & INTEGER'image(BITS) & " bits");
 	begin
+		x		<= (others => '0');
 		wait until rising_edge(Clock);
 		
 		-- Exhaustive Testing
