@@ -41,24 +41,11 @@ use			PoC.vectors.all;
 use			PoC.physical.all;
 
 use			PoC.sim_types.all;
+use			PoC.sim_random.all;
 use			PoC.simulation.all;
 
 
 package waveform is
-	-- Random Numbers
-	-- ===========================================================================
-	-- type T_SIM_SEED is record
-		-- Seed1	: INTEGER;
-		-- Seed2	: INTEGER;
-	-- end record;
-
-	-- procedure initializeSeed(Seed : inout T_SIM_SEED);
-	-- procedure getUniformDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; Minimum : in REAL; Maximum : in REAL);
-	-- procedure getNormalDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; StandardDeviation : in REAL := 1.0; Mean : in REAL := 0.0);
-	-- procedure getNormalDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; StandardDeviation : in REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL);
-	-- procedure getPoissonDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; Mean : in REAL);
-	-- procedure getPoissonDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL);
-
 	-- clock generation
 	-- ===========================================================================
 	procedure simGenerateClock(
@@ -95,7 +82,7 @@ package waveform is
 	procedure simWaitUntilRisingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE);
 	procedure simWaitUntilFallingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE);
 	
-	-- procedure simGenerateClock2(signal Clock : out STD_LOGIC; signal Debug : out REAL; constant Period : in TIME);
+	procedure simGenerateClock2(signal Clock : out STD_LOGIC; signal Debug : out REAL; constant Period : in TIME);
 
 	-- waveform generation
 	-- ===========================================================================
@@ -201,90 +188,11 @@ package waveform is
 	
 	function simGenerateWaveform_Reset(constant Pause : TIME := 0 ns; ResetPulse : TIME := 10 ns) return T_TIMEVEC;
 	
-
 	-- TODO: integrate VCD simulation functions and procedures from sim_value_change_dump.vhdl here
-	
-	-- checksum functions
-	-- ===========================================================================
-	-- TODO: move checksum functions here
-end package;
+	end package;
 
 
 package body waveform is
-	-- ===========================================================================
-	-- Random Numbers
-	-- ===========================================================================
-	-- procedure initializeSeed(Seed : inout T_SIM_SEED) is
-	-- begin
-		-- Seed.Seed1	:= 5;
-		-- Seed.Seed2	:= 3423;
-	-- end procedure;
-
-	-- procedure getUniformDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; Minimum : in REAL; Maximum : in REAL) is
-		-- variable rand : REAL;
-	-- begin
-		-- if (Maximum < Minimum) then			report "getUniformDistibutedRandomValue: Maximum must be greater than Minimum."	severity FAILURE;		end if;
-		-- ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand);
-		-- Value := scale(rand, Minimum, Maximum);
-	-- end procedure ;
-
-	-- procedure getNormalDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; StandardDeviation : in REAL := 1.0; Mean : in REAL := 0.0) is
-		-- variable rand1 : REAL;
-		-- variable rand2 : REAL;
-	-- begin
-		-- if StandardDeviation < 0.0 then	report "getNormalDistibutedRandomValue: Standard deviation must be >= 0.0"			severity FAILURE;		end if;
-		-- -- Box Muller transformation
-		-- ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand1);
-		-- ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand2);
-															-- -- standard normal distribution: mean 0, variance 1
-		-- Value := StandardDeviation * (sqrt(-2.0 * log(rand1)) * cos(MATH_2_PI * rand2)) + Mean;
-	-- end procedure;
-
-	-- procedure getNormalDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; StandardDeviation : in REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL) is
-		-- variable rand		: REAL;
-	-- begin
-		-- if (Maximum < Minimum) then			report "getNormalDistibutedRandomValue: Maximum must be greater than Minimum."	severity FAILURE;		end if;
-		-- if StandardDeviation < 0.0 then	report "getNormalDistibutedRandomValue: Standard deviation must be >= 0.0"			severity FAILURE;		end if;
-		-- while (TRUE) loop
-			-- getNormalDistibutedRandomValue(Seed, rand, StandardDeviation, Mean);
-			-- exit when ((Minimum <= rand) and (rand <= Maximum));
-		-- end loop;
-		-- Value := rand;
-	-- end procedure;
-	
-	-- procedure getPoissonDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; Mean : in REAL) is
-		-- variable Product	: Real;
-		-- variable Bound		: Real;
-		-- variable rand			: Real;
-		-- variable Result		: Real;
-	-- begin
-		-- Product	:= 1.0;
-		-- Result	:= 0.0;
-		-- Bound		:= exp(-1.0 * Mean);
-		-- if ((Mean <= 0.0) or (Bound <= 0.0)) then
-			-- report "getPoissonDistibutedRandomValue: Mean must be greater than 0.0." severity FAILURE;
-			-- return;
-		-- end if;
-		
-		-- while (Product >= Bound) loop
-			-- ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand);
-			-- Product		:= Product * rand;
-			-- Result		:= Result + 1.0;
-		-- end loop;
-		-- Value	:= Result;
-	-- end procedure;
-	
-	-- procedure getPoissonDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL) is
-		-- variable rand		: REAL;
-	-- begin
-		-- if (Maximum < Minimum) then			report "getPoissonDistibutedRandomValue: Maximum must be greater than Minimum."	severity FAILURE;		end if;
-		-- while (TRUE) loop
-			-- getPoissonDistibutedRandomValue(Seed, rand, Mean);
-			-- exit when ((Minimum <= rand) and (rand <= Maximum));
-		-- end loop;
-		-- Value := rand;
-	-- end procedure;
-	
 	-- clock generation
 	-- ===========================================================================
 	procedure simGenerateClock(
@@ -389,62 +297,62 @@ package body waveform is
 	end record;
 	type T_JITTER_DISTRIBUTION is array (NATURAL range <>) of T_SIM_NORMAL_DIST_PARAMETER;
 	
-	-- procedure simGenerateClock2(signal Clock : out STD_LOGIC; signal Debug : out REAL; constant Period : in TIME) is
-		-- constant TimeHigh							: TIME			:= Period * 0.5;
-		-- constant TimeLow							: TIME			:= Period - TimeHigh;
-		-- constant JitterPeakPeak				: REAL			:= 0.1;		-- UI
-		-- constant JitterAsFactor				: REAL			:= JitterPeakPeak / 4.0;	-- Maximum jitter per edge
-		-- constant JitterDistribution		: T_JITTER_DISTRIBUTION	:= (
-			-- -- 0 => (StandardDeviation => 0.2, Mean => -0.4),
-			-- -- 1 => (StandardDeviation => 0.2, Mean =>  0.4)
+	procedure simGenerateClock2(signal Clock : out STD_LOGIC; signal Debug : out REAL; constant Period : in TIME) is
+		constant TimeHigh							: TIME			:= Period * 0.5;
+		constant TimeLow							: TIME			:= Period - TimeHigh;
+		constant JitterPeakPeak				: REAL			:= 0.1;		-- UI
+		constant JitterAsFactor				: REAL			:= JitterPeakPeak / 4.0;	-- Maximum jitter per edge
+		constant JitterDistribution		: T_JITTER_DISTRIBUTION	:= (
+			-- 0 => (StandardDeviation => 0.2, Mean => -0.4),
+			-- 1 => (StandardDeviation => 0.2, Mean =>  0.4)
 			
-			-- -- 0 => (StandardDeviation => 0.2, Mean => -0.4),
-			-- -- 1 => (StandardDeviation => 0.3, Mean => -0.1),
-			-- -- 2 => (StandardDeviation => 0.5, Mean =>  0.0),
-			-- -- 3 => (StandardDeviation => 0.3, Mean =>  0.1),
-			-- -- 4 => (StandardDeviation => 0.2, Mean =>  0.4)
+			-- 0 => (StandardDeviation => 0.2, Mean => -0.4),
+			-- 1 => (StandardDeviation => 0.3, Mean => -0.1),
+			-- 2 => (StandardDeviation => 0.5, Mean =>  0.0),
+			-- 3 => (StandardDeviation => 0.3, Mean =>  0.1),
+			-- 4 => (StandardDeviation => 0.2, Mean =>  0.4)
 			
-			-- 0 => (StandardDeviation => 0.15,	Mean => -0.6),
-			-- 1 => (StandardDeviation => 0.2,		Mean => -0.3),
-			-- 2 => (StandardDeviation => 0.25,	Mean => -0.2),
-			-- 3 => (StandardDeviation => 0.3,		Mean =>  0.0),
-			-- 4 => (StandardDeviation => 0.25,	Mean =>  0.2),
-			-- 5 => (StandardDeviation => 0.2,		Mean =>  0.3),
-			-- 6 => (StandardDeviation => 0.15,	Mean =>  0.6)
-		-- );
-		-- variable Seed									: T_SIM_SEED;
-		-- variable rand									: REAL;
-		-- variable Jitter								: REAL;
-		-- variable Index								: NATURAL;
+			0 => (StandardDeviation => 0.15,	Mean => -0.6),
+			1 => (StandardDeviation => 0.2,		Mean => -0.3),
+			2 => (StandardDeviation => 0.25,	Mean => -0.2),
+			3 => (StandardDeviation => 0.3,		Mean =>  0.0),
+			4 => (StandardDeviation => 0.25,	Mean =>  0.2),
+			5 => (StandardDeviation => 0.2,		Mean =>  0.3),
+			6 => (StandardDeviation => 0.15,	Mean =>  0.6)
+		);
+		variable Seed									: T_SIM_SEED;
+		variable rand									: REAL;
+		variable Jitter								: REAL;
+		variable Index								: NATURAL;
 		
-		-- constant ClockAfterRun_cy			: POSITIVE	:= 5;
-	-- begin
-		-- Clock		<= '1';
-		-- initializeSeed(Seed);
+		constant ClockAfterRun_cy			: POSITIVE	:= 5;
+	begin
+		Clock		<= '1';
+		initializeSeed(Seed);
 
-		-- while (not globalSimulationStatus.isStopped) loop
-			-- ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand);
-			-- Index		:= scale(rand, 0, JitterDistribution'length * 10) mod JitterDistribution'length;
-			-- getNormalDistibutedRandomValue(Seed, rand, JitterDistribution(Index).StandardDeviation, JitterDistribution(Index).Mean, -1.0, 1.0);
+		while (not simIsStopped) loop
+			ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand);
+			Index		:= scale(rand, 0, JitterDistribution'length * 10) mod JitterDistribution'length;
+			getNormalDistibutedRandomValue(Seed, rand, JitterDistribution(Index).StandardDeviation, JitterDistribution(Index).Mean, -1.0, 1.0);
 			
-			-- Jitter := JitterAsFactor * rand;
-			-- Debug		<= rand;
+			Jitter := JitterAsFactor * rand;
+			Debug		<= rand;
 			
-			-- -- Debug		<= integer(rand * 256.0 + 256.0);
-			-- wait for TimeHigh + (Period * Jitter);
-			-- Clock		<= '0';
-			-- wait for TimeLow + (Period * Jitter);
-			-- Clock		<= '1';
-		-- end loop;
-		-- -- create N more cycles to allow other processes to recognize the stop condition (clock after run)
-		-- for i in 1 to ClockAfterRun_cy loop
-			-- wait for TimeHigh;
-			-- Clock		<= '0';
-			-- wait for TimeLow;
-			-- Clock		<= '1';
-		-- end loop;
-		-- Clock		<= '0';
-	-- end procedure;
+			-- Debug		<= integer(rand * 256.0 + 256.0);
+			wait for TimeHigh + (Period * Jitter);
+			Clock		<= '0';
+			wait for TimeLow + (Period * Jitter);
+			Clock		<= '1';
+		end loop;
+		-- create N more cycles to allow other processes to recognize the stop condition (clock after run)
+		for i in 1 to ClockAfterRun_cy loop
+			wait for TimeHigh;
+			Clock		<= '0';
+			wait for TimeLow;
+			Clock		<= '1';
+		end loop;
+		Clock		<= '0';
+	end procedure;
 
 	procedure simWaitUntilRisingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE) is
 	begin
@@ -717,8 +625,4 @@ package body waveform is
 		rp := ResetPulse;
 		return (0 => p, 1 => rp);
 	end function;
-
-	-- checksum functions
-	-- ===========================================================================
-	-- TODO: move checksum functions here
 end package body;
