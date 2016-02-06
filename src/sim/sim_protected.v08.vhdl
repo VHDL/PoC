@@ -49,7 +49,7 @@ package sim_protected is
 	-- ===========================================================================
 	type T_SIM_STATUS is protected
 		-- Initializer and Finalizer
-		procedure				initialize;
+		procedure				initialize(MaxAssertFailures : NATURAL := NATURAL'high; MaxSimulationRuntime : TIME := TIME'high);
 		procedure				finalize;
 		
 		-- Assertions
@@ -85,6 +85,9 @@ package body sim_protected is
 		variable IsInitialized			: BOOLEAN																	:= FALSE;
 		variable IsFinalized				: BOOLEAN																	:= FALSE;
 		
+		variable Max_AssertFailures			: NATURAL															:= NATURAL'high;
+		variable Max_SimulationRuntime	: TIME																:= TIME'high;
+		
     -- Internal state variable to log a failure condition for final reporting.
     -- Once de-asserted, this variable will never return to a value of true.
 		variable Passed							: BOOLEAN 																:= TRUE;
@@ -106,11 +109,13 @@ package body sim_protected is
 		variable Tests							: T_SIM_TEST_VECTOR(T_SIM_TEST_ID);
 		
 		-- Initializer
-		procedure initialize is
+		procedure initialize(MaxAssertFailures : NATURAL := NATURAL'high; MaxSimulationRuntime : TIME := TIME'high) is
 			variable DefaultTestID : T_SIM_TEST_ID;
 		begin
 			-- DefaultTestID			:= createTest("Default");
-			IsInitialized			:= TRUE;
+			Max_AssertFailures		:= MaxAssertFailures;
+			Max_SimulationRuntime	:= MaxSimulationRuntime;
+			IsInitialized					:= TRUE;
 		end procedure;
 		
 		procedure finalize is
@@ -125,30 +130,6 @@ package body sim_protected is
 			end if;
 		end procedure;
 		
-	  procedure fail(Message : STRING := "") is
-		begin
-	  	if (Message'length > 0) then
-		  	report Message severity ERROR;
-		  end if;
-		  Passed := FALSE;
-		end procedure;
-
-	  procedure assertion(condition : BOOLEAN; Message : STRING := "") is
-  	begin
-			AssertCount := AssertCount + 1;
-		  if (condition = FALSE) then
-		    fail(Message);
-				FailedAssertCount := FailedAssertCount + 1;
-		  end if;
-	  end procedure;
-
-		procedure writeMessage(Message : STRING) is
-		  variable LineBuffer : LINE;
-	  begin
-		  write(LineBuffer, Message);
-		  writeline(output, LineBuffer);
-		end procedure;
-		
 	  procedure writeReport is
 		  variable LineBuffer : LINE;
 	  begin
@@ -156,7 +137,7 @@ package body sim_protected is
 		  write(LineBuffer,		(CR & STRING'("POC TESTBENCH REPORT")));
 		  write(LineBuffer,		(CR & STRING'("========================================")));
 			write(LineBuffer,		(CR & STRING'("Assertions   ") & INTEGER'image(AssertCount)));
-			write(LineBuffer,		(CR & STRING'("  failed     ") & INTEGER'image(FailedAssertCount)));
+			write(LineBuffer,		(CR & STRING'("  failed     ") & INTEGER'image(FailedAssertCount) & ite((FailedAssertCount >= Max_AssertFailures), " Too many failed asserts!", "")));
 			write(LineBuffer,		(CR & STRING'("Processes    ") & INTEGER'image(ProcessCount)));
 			write(LineBuffer,		(CR & STRING'("  active     ") & INTEGER'image(ActiveProcessCount)));
 			-- report killed processes
@@ -178,6 +159,33 @@ package body sim_protected is
 		  	write(LineBuffer, (CR & STRING'("SIMULATION RESULT = FAILED")));
 		  end if;
 		  write(LineBuffer,		(CR & STRING'("========================================")));
+		  writeline(output, LineBuffer);
+		end procedure;
+
+	  procedure assertion(condition : BOOLEAN; Message : STRING := "") is
+  	begin
+			AssertCount := AssertCount + 1;
+		  if (condition = FALSE) then
+		    fail(Message);
+				FailedAssertCount := FailedAssertCount + 1;
+				if (FailedAssertCount >= Max_AssertFailures) then
+					stopAllProcesses;
+				end if;
+		  end if;
+	  end procedure;
+		
+	  procedure fail(Message : STRING := "") is
+		begin
+	  	if (Message'length > 0) then
+		  	report Message severity ERROR;
+		  end if;
+		  Passed := FALSE;
+		end procedure;
+
+		procedure writeMessage(Message : STRING) is
+		  variable LineBuffer : LINE;
+	  begin
+		  write(LineBuffer, Message);
 		  writeline(output, LineBuffer);
 		end procedure;
 		

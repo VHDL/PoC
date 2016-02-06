@@ -708,7 +708,7 @@ package body waveform is
 		variable p  : TIME;
 		variable rp : TIME;
 	begin
-		-- WORKAROUND: for QuestaSim/ModelSim
+		-- WORKAROUND: for Mentor QuestaSim/ModelSim
 		--	Version:	10.4c
 		--	Issue:
 		--		return (0 => Pause, 1 => ResetPulse); always evaluates to (0 ns, 10 ns),

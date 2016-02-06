@@ -48,7 +48,7 @@ package sim_unprotected is
   -- Simulation Task and Status Management
 	-- ===========================================================================
 	-- Initializer and Finalizer
-	procedure				initialize;
+	procedure				initialize(MaxAssertFailures : NATURAL := NATURAL'high; MaxSimulationRuntime : TIME := TIME'high);
 	procedure				finalize;
 	
 	-- Assertions
@@ -79,9 +79,11 @@ end package;
 package body sim_unprotected is
 	-- Simulation process and Status Management
 	-- ===========================================================================
-	procedure initialize is
+	procedure initialize(MaxAssertFailures : NATURAL := NATURAL'high; MaxSimulationRuntime : TIME := TIME'high) is
 	begin
-		globalSim_IsInitialized			:= TRUE;
+		globalSim_MaxAssertFailures			:= MaxAssertFailures;
+		globalSim_MaxSimulationRuntime	:= MaxSimulationRuntime;
+		globalSim_IsInitialized					:= TRUE;
 	end procedure;
 	
 	procedure finalize is
@@ -94,30 +96,6 @@ package body sim_unprotected is
 			writeReport;
 			globalSim_IsFinalized		:= TRUE;
 		end if;
-	end procedure;
-
-	procedure fail(Message : STRING := "") is
-	begin
-		if (Message'length > 0) then
-			report Message severity ERROR;
-		end if;
-		globalSim_Passed := FALSE;
-	end procedure;
-
-	procedure assertion(condition : BOOLEAN; Message : STRING := "") is
-	begin
-		globalSim_AssertCount := globalSim_AssertCount + 1;
-		if (condition = FALSE) then
-			fail(Message);
-			globalSim_FailedAssertCount := globalSim_FailedAssertCount + 1;
-		end if;
-	end procedure;
-
-	procedure writeMessage(Message : STRING) is
-		variable LineBuffer : LINE;
-	begin
-		write(LineBuffer, Message);
-		writeline(output, LineBuffer);
 	end procedure;
 	
 	procedure writeReport is
@@ -132,7 +110,7 @@ package body sim_unprotected is
 		write(LineBuffer,		(CR & STRING'("POC TESTBENCH REPORT")));
 		write(LineBuffer,		(CR & STRING'("========================================")));
 		write(LineBuffer,		(CR & STRING'("Assertions   ") & INTEGER'image(globalSim_AssertCount)));
-		write(LineBuffer,		(CR & STRING'("  failed     ") & INTEGER'image(globalSim_FailedAssertCount)));
+		write(LineBuffer,		(CR & STRING'("  failed     ") & INTEGER'image(globalSim_FailedAssertCount) & ite((globalSim_FailedAssertCount >= globalSim_MaxAssertFailures), " Too many failed asserts!", "")));
 		write(LineBuffer,		(CR & STRING'("Processes    ") & INTEGER'image(globalSim_ProcessCount)));
 		write(LineBuffer,		(CR & STRING'("  active     ") & INTEGER'image(globalSim_ActiveProcessCount)));
 		-- report killed processes
@@ -154,6 +132,33 @@ package body sim_unprotected is
 			write(LineBuffer, (CR & STRING'("SIMULATION RESULT = FAILED")));
 		end if;
 		write(LineBuffer,		(CR & STRING'("========================================")));
+		writeline(output, LineBuffer);
+	end procedure;
+
+	procedure assertion(condition : BOOLEAN; Message : STRING := "") is
+	begin
+		globalSim_AssertCount := globalSim_AssertCount + 1;
+		if (condition = FALSE) then
+			fail(Message);
+			globalSim_FailedAssertCount := globalSim_FailedAssertCount + 1;
+			if (globalSim_FailedAssertCount >= globalSim_MaxAssertFailures) then
+				stopAllProcesses;
+			end if;
+		end if;
+	end procedure;
+
+	procedure fail(Message : STRING := "") is
+	begin
+		if (Message'length > 0) then
+			report Message severity ERROR;
+		end if;
+		globalSim_Passed := FALSE;
+	end procedure;
+
+	procedure writeMessage(Message : STRING) is
+		variable LineBuffer : LINE;
+	begin
+		write(LineBuffer, Message);
 		writeline(output, LineBuffer);
 	end procedure;
 	
