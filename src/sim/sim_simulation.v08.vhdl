@@ -49,6 +49,24 @@ use			PoC.sim_protected.all;
 package simulation is
 	-- Legacy interface for pre VHDL-2002
 	-- ===========================================================================
+	-- prepared aliases, if GHDL gets the aliases fixed. Reported on 08.02.2015 as Issue #38
+	alias simmInitialize					is globalSimulationStatus.initialize[NATURAL, TIME];
+	alias simmFinalize						is globalSimulationStatus.finalize[];
+	
+	alias simmCreateTest					is globalSimulationStatus.createTest[STRING return T_SIM_TEST_ID];
+	alias simmFinalizeTest				is globalSimulationStatus.finalizeTest[T_SIM_TEST_ID];
+	alias simmRegisterProcess		is globalSimulationStatus.registerProcess[T_SIM_TEST_ID, STRING, BOOLEAN return T_SIM_PROCESS_ID];
+	alias simmRegisterProcess		is globalSimulationStatus.registerProcess[STRING, BOOLEAN return T_SIM_PROCESS_ID];
+	alias simmDeactivateProcess	is globalSimulationStatus.deactivateProcess[T_SIM_PROCESS_ID];
+
+	alias simmIsStopped					is globalSimulationStatus.isStopped[T_SIM_TEST_ID return BOOLEAN];
+	alias simmIsFinalized				is globalSimulationStatus.isFinalized[T_SIM_TEST_ID return BOOLEAN];
+	alias simmIsAllFinalized			is globalSimulationStatus.isAllFinalized [return BOOLEAN];
+
+	alias simmAssertion					is globalSimulationStatus.assertion[BOOLEAN, STRING];
+  alias simmFail								is globalSimulationStatus.fail[STRING];
+	alias simmWriteMessage				is globalSimulationStatus.writeMessage[STRING];
+	
 	procedure				simInitialize(MaxAssertFailures : NATURAL := NATURAL'high; MaxSimulationRuntime : TIME := TIME'high);
 	procedure				simFinalize;
 	
@@ -62,16 +80,9 @@ package simulation is
 	impure function simIsFinalized(constant TestID	: T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) return BOOLEAN;
 	impure function	simIsAllFinalized return BOOLEAN;
 	
+	procedure				simAssertion(cond : in BOOLEAN; Message : in STRING := "");
+  procedure				simFail(Message : in STRING := "");
 	procedure				simWriteMessage(Message : in STRING := "");
-	
-  -- The testbench is marked as failed. If a message is provided, it is
-  -- reported as an error.
-  procedure simFail(Message : in STRING := "");
-
-  -- If the passed condition has evaluated false, the testbench is marked
-  -- as failed. In this case, the optional message will be reported as an
-  -- error if one was provided.
-	procedure simAssertion(cond : in BOOLEAN; Message : in STRING := "");
 
 	-- TODO: integrate VCD simulation functions and procedures from sim_value_change_dump.vhdl here
 	
