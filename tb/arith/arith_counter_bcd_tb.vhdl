@@ -71,7 +71,7 @@ begin
 		-- simGenerateWaveform(simTestID,	Reset, simGenerateWaveform_Reset(Pause => 10 ns, ResetPulse => 10 ns));
 		
 		procGenerator : process
-			constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Generator for " & INTEGER'image(DIGITS) & " digits");
+			constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess(simTestID, "Generator for " & INTEGER'image(DIGITS) & " digits");
 		begin
 			Reset		<= '0';
 			inc			<= '0';
@@ -124,7 +124,7 @@ begin
 			);
 
 		procChecker : process
-			constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Checker for " & INTEGER'image(DIGITS) & " digits");
+			constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess(simTestID, "Checker for " & INTEGER'image(DIGITS) & " digits");
 			variable Expected			: T_BCD_VECTOR(DIGITS - 1 downto 0);
 		begin
 			wait until rising_edge(Clock);
@@ -154,7 +154,6 @@ begin
 
 			-- This process is finished
 			simDeactivateProcess(simProcessID);
-			simFinalizeTest(simTestID);
 			wait;  -- forever
 		end process;
 	end generate;
