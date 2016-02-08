@@ -43,9 +43,12 @@ use			PoC.vectors.all;
 
 
 package sim_types is
+	constant C_SIM_VERBOSE					: BOOLEAN		:= FALSE;		-- POC_VERBOSE
   -- Simulation Task and Status Management
 	-- ===========================================================================
-	subtype T_SIM_TEST_ID						is NATURAL range 0 to 1023;
+	type		T_SIM_BOOLVEC						is array(INTEGER range <>) of BOOLEAN;
+	
+	subtype T_SIM_TEST_ID						is INTEGER range -1 to 1023;
 	subtype T_SIM_TEST_NAME					is STRING(1 to 256);
 	subtype T_SIM_PROCESS_ID				is NATURAL range 0 to 1023;
 	subtype T_SIM_PROCESS_NAME			is STRING(1 to 64);
@@ -53,6 +56,7 @@ package sim_types is
 	type		T_SIM_PROCESS_ID_VECTOR	is array(NATURAL range <>) of T_SIM_PROCESS_ID;
 	
 	type T_SIM_TEST_STATUS is (
+		SIM_TEST_STATUS_CREATED,
 		SIM_TEST_STATUS_ACTIVE,
 		SIM_TEST_STATUS_ENDED
 	);
@@ -66,11 +70,11 @@ package sim_types is
 		ID									: T_SIM_TEST_ID;
 		Name								: T_SIM_TEST_NAME;
 		Status							: T_SIM_TEST_STATUS;
-		ProcessIDs					: T_SIM_PROCESS_ID_VECTOR(0 to 127);
+		ProcessIDs					: T_SIM_PROCESS_ID_VECTOR(T_SIM_PROCESS_ID);
 		ProcessCount				: T_SIM_PROCESS_ID;
 		ActiveProcessCount	: T_SIM_PROCESS_ID;
 	end record;
-	type T_SIM_TEST_VECTOR	is array(NATURAL range <>) of T_SIM_TEST;
+	type T_SIM_TEST_VECTOR	is array(INTEGER range <>) of T_SIM_TEST;
 	
 	type T_SIM_PROCESS is record
 		ID						: T_SIM_PROCESS_ID;
@@ -81,7 +85,8 @@ package sim_types is
 	end record;
 	type T_SIM_PROCESS_VECTOR is array(NATURAL range <>) of T_SIM_PROCESS;
 	
-	constant C_SIM_DEFAULT_TEST_ID	: T_SIM_TEST_ID		:= 0;
+	constant C_SIM_DEFAULT_TEST_ID		: T_SIM_TEST_ID		:= -1;
+	constant C_SIM_DEFAULT_TEST_NAME	: STRING					:= "Default test";
 	
 	-- clock generation
 	-- ===========================================================================

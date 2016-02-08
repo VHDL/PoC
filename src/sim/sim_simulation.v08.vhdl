@@ -58,7 +58,8 @@ package simulation is
 	impure function	simRegisterProcess(constant TestID : T_SIM_TEST_ID; Name : STRING; constant IsLowPriority : BOOLEAN := FALSE) return T_SIM_PROCESS_ID;
 	procedure				simDeactivateProcess(ProcID : T_SIM_PROCESS_ID);
 	
-	impure function	simIsStopped(constant TestID : T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) return BOOLEAN;
+	impure function	simIsStopped(constant TestID		: T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) return BOOLEAN;
+	impure function simIsFinalized(constant TestID	: T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) return BOOLEAN;
 	impure function	simIsAllFinalized return BOOLEAN;
 	
 	procedure				simWriteMessage(Message : in STRING := "");
@@ -122,6 +123,11 @@ package body simulation is
 	impure function simIsStopped(constant TestID : T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) return BOOLEAN is
 	begin
 		return globalSimulationStatus.isStopped(TestID);
+	end function;
+	
+	impure function simIsFinalized(constant TestID : T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) return BOOLEAN is
+	begin
+		return globalSimulationStatus.isFinalized(TestID);
 	end function;
 	
 	impure function simIsAllFinalized return BOOLEAN is

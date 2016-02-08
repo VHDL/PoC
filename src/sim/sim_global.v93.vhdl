@@ -37,8 +37,8 @@ use			PoC.sim_types.all;
 package sim_global is
 	-- The default global status objects.
 	-- ===========================================================================
-	shared variable globalSim_IsInitialized					: BOOLEAN																	:= FALSE;
-	shared variable globalSim_IsFinalized						: BOOLEAN																	:= FALSE;
+	shared variable globalSim_StateIsInitialized		: BOOLEAN																	:= FALSE;
+	shared variable globalSim_StateIsFinalized			: BOOLEAN																	:= FALSE;
 		
 	shared variable globalSim_MaxAssertFailures			: NATURAL																	:= NATURAL'high;
 	shared variable globalSim_MaxSimulationRuntime	: TIME																		:= TIME'high;
@@ -50,8 +50,8 @@ package sim_global is
 	shared variable globalSim_FailedAssertCount			: NATURAL																	:= 0;
 		
 	-- Clock Management
-	shared variable globalSim_MainprocessEnables		: T_BOOLVEC(T_SIM_TEST_ID)								:= (others => TRUE);
-	shared variable globalSim_MainClockEnables			: T_BOOLVEC(T_SIM_TEST_ID)								:= (others => TRUE);
+	shared variable globalSim_MainprocessEnables		: T_SIM_BOOLVEC(T_SIM_TEST_ID)						:= (others => TRUE);
+	shared variable globalSim_MainClockEnables			: T_SIM_BOOLVEC(T_SIM_TEST_ID)						:= (others => TRUE);
 		
 	-- Process Management
 	shared variable globalSim_ProcessCount					: NATURAL																	:= 0;

@@ -100,7 +100,7 @@ begin
 		);
 
 	procChecker : process
-		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Checker for " & INTEGER'image(BITS) & " bits");
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess(simTestID, "Checker for " & INTEGER'image(BITS) & " bits");
 	begin
 		Test_got						<= '0';
 		

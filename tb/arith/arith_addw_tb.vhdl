@@ -143,6 +143,7 @@ begin
 		
     -- This process is finished
 		simDeactivateProcess(simProcessID);
+		simFinalize;		-- this finalizes all tests
 		wait;  -- forever
   end process;
 

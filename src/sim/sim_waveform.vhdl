@@ -80,9 +80,11 @@ package waveform is
 	);
 	
 	procedure simWaitUntilRisingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE);
+	procedure simWaitUntilRisingEdge(constant TestID : in T_SIM_TEST_ID; signal Clock : in STD_LOGIC; constant Times : in POSITIVE);
 	procedure simWaitUntilFallingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE);
+	procedure simWaitUntilFallingEdge(constant TestID : in T_SIM_TEST_ID; signal Clock : in STD_LOGIC; constant Times : in POSITIVE);
 	
-	procedure simGenerateClock2(signal Clock : out STD_LOGIC; signal Debug : out REAL; constant Period : in TIME);
+	procedure simGenerateClock2(constant TestID : in T_SIM_TEST_ID; signal Clock : out STD_LOGIC; signal Debug : out REAL; constant Period : in TIME);
 
 	-- waveform generation
 	-- ===========================================================================
@@ -274,7 +276,7 @@ package body waveform is
 			wait for TimeLow;
 		end if;
 		Clock		<= '1';
-		while (not simIsStopped) loop
+		while (not simIsStopped(TestID)) loop
 			wait for TimeHigh;
 			Clock		<= '0';
 			wait for TimeLow;
@@ -297,7 +299,12 @@ package body waveform is
 	end record;
 	type T_JITTER_DISTRIBUTION is array (NATURAL range <>) of T_SIM_NORMAL_DIST_PARAMETER;
 	
-	procedure simGenerateClock2(signal Clock : out STD_LOGIC; signal Debug : out REAL; constant Period : in TIME) is
+	procedure simGenerateClock2(
+		constant	TestID	: in	T_SIM_TEST_ID;
+		signal		Clock		: out	STD_LOGIC;
+		signal		Debug		: out	REAL;
+		constant	Period	: in	TIME
+	) is
 		constant TimeHigh							: TIME			:= Period * 0.5;
 		constant TimeLow							: TIME			:= Period - TimeHigh;
 		constant JitterPeakPeak				: REAL			:= 0.1;		-- UI
@@ -330,7 +337,7 @@ package body waveform is
 		Clock		<= '1';
 		initializeSeed(Seed);
 
-		while (not simIsStopped) loop
+		while (not simIsStopped(TestID)) loop
 			ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand);
 			Index		:= scale(rand, 0, JitterDistribution'length * 10) mod JitterDistribution'length;
 			getNormalDistibutedRandomValue(Seed, rand, JitterDistribution(Index).StandardDeviation, JitterDistribution(Index).Mean, -1.0, 1.0);
@@ -356,17 +363,27 @@ package body waveform is
 
 	procedure simWaitUntilRisingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE) is
 	begin
+		simWaitUntilRisingEdge(C_SIM_DEFAULT_TEST_ID, Clock, Times);
+	end procedure;
+	
+	procedure simWaitUntilRisingEdge(constant	TestID : in T_SIM_TEST_ID; signal Clock : in STD_LOGIC; constant Times : in POSITIVE) is
+	begin
 		for i in 1 to Times loop
 			wait until rising_edge(Clock);
-			exit when simIsStopped;
+			exit when simIsStopped(TestID);
 		end loop;
 	end procedure;
 	
 	procedure simWaitUntilFallingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE) is
 	begin
+		simWaitUntilFallingEdge(C_SIM_DEFAULT_TEST_ID, Clock, Times);
+	end procedure;
+	
+	procedure simWaitUntilFallingEdge(constant	TestID : in T_SIM_TEST_ID; signal Clock : in STD_LOGIC; constant Times : in POSITIVE) is
+	begin
 		for i in 1 to Times loop
 			wait until falling_edge(Clock);
-			exit when simIsStopped;
+			exit when simIsStopped(TestID);
 		end loop;
 	end procedure;
 	
