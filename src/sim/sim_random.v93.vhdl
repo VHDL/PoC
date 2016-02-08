@@ -39,100 +39,58 @@ use			PoC.utils.all;
 -- use			PoC.strings.all;
 use			PoC.vectors.all;
 -- use			PoC.physical.all;
+use			PoC.sim_types.all;
 
 
 package sim_random is
 	-- Random Numbers
 	-- ===========================================================================
-	type T_SIM_SEED is record
-		Seed1	: INTEGER;
-		Seed2	: INTEGER;
-	end record;
+	alias T_SIM_SEED is T_SIM_RAND_SEED;
 
-	procedure initializeSeed(Seed : inout T_SIM_SEED);
+	shared variable SeedValue		: T_SIM_SEED;
 	
-	procedure getUniformDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; Minimum : REAL; Maximum : REAL);
+	-- procedural interface
+	procedure randomInitializeSeed;
 	
-	procedure getNormalDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; StandardDeviation : REAL := 1.0; Mean : REAL := 0.0);
-	procedure getNormalDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; StandardDeviation : in REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL);
+	procedure randomUniformDistibutedValue(Value : out REAL; Minimum : in REAL; Maximum : in REAL);
 	
-	procedure getPoissonDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; Mean : in REAL);
-	procedure getPoissonDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL);
+	procedure randomNormalDistibutedValue(Value : out REAL; StandardDeviation : in REAL := 1.0; Mean : in REAL := 0.0);
+	procedure randomNormalDistibutedValue(Value : out REAL; StandardDeviation : in REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL);
+	
+	procedure randomPoissonDistibutedValue(Value : out REAL; Mean : in REAL);
+	procedure randomPoissonDistibutedValue(Value : out REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL);
+	
 end package;
 
 
 package body sim_random is
-	-- ===========================================================================
-	-- Random Numbers
-	-- ===========================================================================
-	procedure initializeSeed(Seed : inout T_SIM_SEED) is
+	procedure randomInitializeSeed is
 	begin
-		Seed.Seed1	:= 5;
-		Seed.Seed2	:= 3423;
+		randInitializeSeed(SeedValue);
 	end procedure;
 
-	procedure getUniformDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; Minimum : REAL; Maximum : REAL) is
-		variable rand : REAL;
+	procedure randomUniformDistibutedValue(Value : out REAL; Minimum : in REAL; Maximum : in REAL) is
 	begin
-		if (Maximum < Minimum) then			report "getUniformDistibutedRandomValue: Maximum must be greater than Minimum."	severity FAILURE;		end if;
-		ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand);
-		Value := scale(rand, Minimum, Maximum);
+		randUniformDistibutedValue(SeedValue, Value, Minimum, Maximum);
 	end procedure ;
 
-	procedure getNormalDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; StandardDeviation : REAL := 1.0; Mean : REAL := 0.0) is
-		variable rand1 : REAL;
-		variable rand2 : REAL;
+	procedure randomNormalDistibutedValue(Value : out REAL; StandardDeviation : in REAL := 1.0; Mean : in REAL := 0.0) is
 	begin
-		if StandardDeviation < 0.0 then	report "getNormalDistibutedRandomValue: Standard deviation must be >= 0.0"			severity FAILURE;		end if;
-		-- Box Muller transformation
-		ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand1);
-		ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand2);
-		--													standard normal distribution: mean 0, variance 1
-		Value := StandardDeviation * (sqrt(-2.0 * log(rand1)) * cos(MATH_2_PI * rand2)) + Mean;
+		randNormalDistibutedValue(SeedValue, Value, StandardDeviation, Mean);
+	end procedure;
+
+	procedure randomNormalDistibutedValue(Value : out REAL; StandardDeviation : in REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL) is
+	begin
+		randNormalDistibutedValue(SeedValue, Value, StandardDeviation, Mean, Minimum, Maximum);
 	end procedure;
 	
-	procedure getNormalDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; StandardDeviation : in REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL) is
-		variable rand		: REAL;
+	procedure randomPoissonDistibutedValue(Value : out REAL; Mean : in REAL) is
 	begin
-		if (Maximum < Minimum) then			report "getNormalDistibutedRandomValue: Maximum must be greater than Minimum."	severity FAILURE;		end if;
-		if StandardDeviation < 0.0 then	report "getNormalDistibutedRandomValue: Standard deviation must be >= 0.0"			severity FAILURE;		end if;
-		while (TRUE) loop
-			getNormalDistibutedRandomValue(Seed, rand, StandardDeviation, Mean);
-			exit when ((Minimum <= rand) and (rand <= Maximum));
-		end loop;
-		Value := rand;
+		randPoissonDistibutedValue(SeedValue, Value, Mean);
 	end procedure;
 	
-	procedure getPoissonDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; Mean : in REAL) is
-		variable Product	: Real;
-		variable Bound		: Real;
-		variable rand			: Real;
-		variable Result		: Real;
+	procedure randomPoissonDistibutedValue(Value : out REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL) is
 	begin
-		Product	:= 1.0;
-		Result	:= 0.0;
-		Bound		:= exp(-1.0 * Mean);
-		if ((Mean <= 0.0) or (Bound <= 0.0)) then
-			report "getPoissonDistibutedRandomValue: Mean must be greater than 0.0." severity FAILURE;
-			return;
-		end if;
-		
-		while (Product >= Bound) loop
-			ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand);
-			Product		:= Product * rand;
-			Result		:= Result + 1.0;
-		end loop;
-		Value	:= Result;
-	end procedure;
-	
-	procedure getPoissonDistibutedRandomValue(Seed : inout T_SIM_SEED; Value : inout REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL) is
-		variable rand		: REAL;
-	begin
-		if (Maximum < Minimum) then			report "getPoissonDistibutedRandomValue: Maximum must be greater than Minimum."	severity FAILURE;		end if;
-		while (TRUE) loop
-			getPoissonDistibutedRandomValue(Seed, rand, Mean);
-			exit when ((Minimum <= rand) and (rand <= Maximum));
-		end loop;
-		Value := rand;
+		randPoissonDistibutedValue(SeedValue, Value, Mean, Minimum, Maximum);
 	end procedure;
 end package body;

@@ -41,7 +41,7 @@ use			PoC.vectors.all;
 use			PoC.physical.all;
 
 use			PoC.sim_types.all;
-use			PoC.sim_random.all;
+-- use			PoC.sim_random.all;
 use			PoC.simulation.all;
 
 
@@ -327,7 +327,7 @@ package body waveform is
 			5 => (StandardDeviation => 0.2,		Mean =>  0.3),
 			6 => (StandardDeviation => 0.15,	Mean =>  0.6)
 		);
-		variable Seed									: T_SIM_SEED;
+		variable Seed									: T_SIM_RAND_SEED;
 		variable rand									: REAL;
 		variable Jitter								: REAL;
 		variable Index								: NATURAL;
@@ -335,12 +335,12 @@ package body waveform is
 		constant ClockAfterRun_cy			: POSITIVE	:= 5;
 	begin
 		Clock		<= '1';
-		initializeSeed(Seed);
+		randInitializeSeed(Seed);
 
 		while (not simIsStopped(TestID)) loop
 			ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand);
 			Index		:= scale(rand, 0, JitterDistribution'length * 10) mod JitterDistribution'length;
-			getNormalDistibutedRandomValue(Seed, rand, JitterDistribution(Index).StandardDeviation, JitterDistribution(Index).Mean, -1.0, 1.0);
+			randNormalDistibutedValue(Seed, rand, JitterDistribution(Index).StandardDeviation, JitterDistribution(Index).Mean, -1.0, 1.0);
 			
 			Jitter := JitterAsFactor * rand;
 			Debug		<= rand;
