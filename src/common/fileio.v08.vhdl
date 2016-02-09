@@ -53,6 +53,7 @@ package FileIO is
 		
 		procedure Print(str : STRING);
 		procedure PrintLine(str : STRING := "");
+		procedure Flush;
 		-- procedure WriteLine(LineBuffer : inout LINE);
 	end protected;
 
@@ -63,6 +64,7 @@ package FileIO is
 		
 		procedure Print(str : STRING);
 		procedure PrintLine(str : STRING := "");
+		procedure Flush;
 		-- procedure WriteLine(LineBuffer : inout LINE);
 	end protected;
 	
@@ -120,6 +122,11 @@ package body FileIO is
 			write(LineBuffer, str);
 			WriteLine(LineBuffer);
 		end procedure;
+		
+		procedure Flush is
+		begin
+			WriteLine(LineBuffer);
+		end procedure;
 	end protected body;
 	
 	type T_FILE is protected body
@@ -158,6 +165,11 @@ package body FileIO is
 		procedure PrintLine(str : STRING := "") is
 		begin
 			write(LineBuffer, str);
+			WriteLine(LineBuffer);
+		end procedure;
+		
+		procedure Flush is
+		begin
 			WriteLine(LineBuffer);
 		end procedure;
 	end protected body;
