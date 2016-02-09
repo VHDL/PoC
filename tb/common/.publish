@@ -1,7 +1,8 @@
 # git files
-.gitignore
+.gitempty
 
-# subnamespace
+# Documentation
+README.md
 
 # PoC.my_config examples
 my_config_Atlys.vhdl
@@ -16,9 +17,6 @@ my_config_VC707.vhdl
 my_config_XUPV5.vhdl
 # DON'T PUBLISH my_project.vhdl !
 
-# simulation packages
-simulation.v93.vhdl
-simulation.v08.vhdl
 
 # --------------------------------------
 # package / function tests
