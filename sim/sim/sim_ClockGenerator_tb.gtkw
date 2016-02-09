@@ -1,0 +1,105 @@
+[*]
+[*] GTKWave Analyzer v3.3.61 (w)1999-2014 BSI
+[*] Mon Jan 25 04:29:39 2016
+[*]
+[dumpfile] "H:\Austausch\PoC\temp\ghdl\sim_ClockGenerator_tb.ghw"
+[dumpfile_mtime] "Mon Jan 25 04:27:38 2016"
+[dumpfile_size] 5908202
+[savefile] "H:\Austausch\PoC\sim\sim\sim_ClockGenerator_tb.gtkw"
+[timestart] 0
+[size] 1676 997
+[pos] -1 -1
+*-35.227234 34900000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.sim_clockgenerator_tb.
+[sst_width] 197
+[signals_width] 432
+[sst_expanded] 1
+[sst_vpaned_height] 293
+@28
+top.sim_clockgenerator_tb.clock
+top.sim_clockgenerator_tb.clockisactive
+@c00200
+-Phase shifted clocks
+@28
+top.sim_clockgenerator_tb.clock_01
+top.sim_clockgenerator_tb.clock_02
+top.sim_clockgenerator_tb.clock_03
+top.sim_clockgenerator_tb.clock_04
+top.sim_clockgenerator_tb.clock_05
+top.sim_clockgenerator_tb.clock_06
+@1401200
+-Phase shifted clocks
+@c00200
+-Clock with changed duty-cycle
+@28
+top.sim_clockgenerator_tb.clock_10
+top.sim_clockgenerator_tb.clock_11
+top.sim_clockgenerator_tb.clock_12
+top.sim_clockgenerator_tb.clock_13
+top.sim_clockgenerator_tb.clock_14
+top.sim_clockgenerator_tb.clock_15
+top.sim_clockgenerator_tb.clock_16
+top.sim_clockgenerator_tb.clock_17
+top.sim_clockgenerator_tb.clock_18
+top.sim_clockgenerator_tb.clock_19
+@1401200
+-Clock with changed duty-cycle
+@c00200
+-Phase shifted clock; duty-cycle: 25/75
+@28
+top.sim_clockgenerator_tb.clock_21
+top.sim_clockgenerator_tb.clock_22
+top.sim_clockgenerator_tb.clock_23
+top.sim_clockgenerator_tb.clock_24
+top.sim_clockgenerator_tb.clock_25
+@1401200
+-Phase shifted clock; duty-cycle: 25/75
+@800200
+-Clocks with drift
+@28
+top.sim_clockgenerator_tb.clock_40
+top.sim_clockgenerator_tb.clock_41
+@22
+#{top.sim_clockgenerator_tb.counter_clock_40_us[15:0]} top.sim_clockgenerator_tb.counter_clock_40_us[15] top.sim_clockgenerator_tb.counter_clock_40_us[14] top.sim_clockgenerator_tb.counter_clock_40_us[13] top.sim_clockgenerator_tb.counter_clock_40_us[12] top.sim_clockgenerator_tb.counter_clock_40_us[11] top.sim_clockgenerator_tb.counter_clock_40_us[10] top.sim_clockgenerator_tb.counter_clock_40_us[9] top.sim_clockgenerator_tb.counter_clock_40_us[8] top.sim_clockgenerator_tb.counter_clock_40_us[7] top.sim_clockgenerator_tb.counter_clock_40_us[6] top.sim_clockgenerator_tb.counter_clock_40_us[5] top.sim_clockgenerator_tb.counter_clock_40_us[4] top.sim_clockgenerator_tb.counter_clock_40_us[3] top.sim_clockgenerator_tb.counter_clock_40_us[2] top.sim_clockgenerator_tb.counter_clock_40_us[1] top.sim_clockgenerator_tb.counter_clock_40_us[0]
+#{top.sim_clockgenerator_tb.counter_clock_41_us[15:0]} top.sim_clockgenerator_tb.counter_clock_41_us[15] top.sim_clockgenerator_tb.counter_clock_41_us[14] top.sim_clockgenerator_tb.counter_clock_41_us[13] top.sim_clockgenerator_tb.counter_clock_41_us[12] top.sim_clockgenerator_tb.counter_clock_41_us[11] top.sim_clockgenerator_tb.counter_clock_41_us[10] top.sim_clockgenerator_tb.counter_clock_41_us[9] top.sim_clockgenerator_tb.counter_clock_41_us[8] top.sim_clockgenerator_tb.counter_clock_41_us[7] top.sim_clockgenerator_tb.counter_clock_41_us[6] top.sim_clockgenerator_tb.counter_clock_41_us[5] top.sim_clockgenerator_tb.counter_clock_41_us[4] top.sim_clockgenerator_tb.counter_clock_41_us[3] top.sim_clockgenerator_tb.counter_clock_41_us[2] top.sim_clockgenerator_tb.counter_clock_41_us[1] top.sim_clockgenerator_tb.counter_clock_41_us[0]
+#{top.sim_clockgenerator_tb.counter_clock_42_us[15:0]} top.sim_clockgenerator_tb.counter_clock_42_us[15] top.sim_clockgenerator_tb.counter_clock_42_us[14] top.sim_clockgenerator_tb.counter_clock_42_us[13] top.sim_clockgenerator_tb.counter_clock_42_us[12] top.sim_clockgenerator_tb.counter_clock_42_us[11] top.sim_clockgenerator_tb.counter_clock_42_us[10] top.sim_clockgenerator_tb.counter_clock_42_us[9] top.sim_clockgenerator_tb.counter_clock_42_us[8] top.sim_clockgenerator_tb.counter_clock_42_us[7] top.sim_clockgenerator_tb.counter_clock_42_us[6] top.sim_clockgenerator_tb.counter_clock_42_us[5] top.sim_clockgenerator_tb.counter_clock_42_us[4] top.sim_clockgenerator_tb.counter_clock_42_us[3] top.sim_clockgenerator_tb.counter_clock_42_us[2] top.sim_clockgenerator_tb.counter_clock_42_us[1] top.sim_clockgenerator_tb.counter_clock_42_us[0]
+@8028
+#{top.sim_clockgenerator_tb.counter_41_cmp[1:0]} top.sim_clockgenerator_tb.counter_41_cmp[1] top.sim_clockgenerator_tb.counter_41_cmp[0]
+#{top.sim_clockgenerator_tb.counter_42_cmp[1:0]} top.sim_clockgenerator_tb.counter_42_cmp[1] top.sim_clockgenerator_tb.counter_42_cmp[0]
+@8420
+#{top.sim_clockgenerator_tb.drift_clock_41[15:0]} top.sim_clockgenerator_tb.drift_clock_41[15] top.sim_clockgenerator_tb.drift_clock_41[14] top.sim_clockgenerator_tb.drift_clock_41[13] top.sim_clockgenerator_tb.drift_clock_41[12] top.sim_clockgenerator_tb.drift_clock_41[11] top.sim_clockgenerator_tb.drift_clock_41[10] top.sim_clockgenerator_tb.drift_clock_41[9] top.sim_clockgenerator_tb.drift_clock_41[8] top.sim_clockgenerator_tb.drift_clock_41[7] top.sim_clockgenerator_tb.drift_clock_41[6] top.sim_clockgenerator_tb.drift_clock_41[5] top.sim_clockgenerator_tb.drift_clock_41[4] top.sim_clockgenerator_tb.drift_clock_41[3] top.sim_clockgenerator_tb.drift_clock_41[2] top.sim_clockgenerator_tb.drift_clock_41[1] top.sim_clockgenerator_tb.drift_clock_41[0]
+@20000
+-
+@8022
+#{top.sim_clockgenerator_tb.drift_clock_42[15:0]} top.sim_clockgenerator_tb.drift_clock_42[15] top.sim_clockgenerator_tb.drift_clock_42[14] top.sim_clockgenerator_tb.drift_clock_42[13] top.sim_clockgenerator_tb.drift_clock_42[12] top.sim_clockgenerator_tb.drift_clock_42[11] top.sim_clockgenerator_tb.drift_clock_42[10] top.sim_clockgenerator_tb.drift_clock_42[9] top.sim_clockgenerator_tb.drift_clock_42[8] top.sim_clockgenerator_tb.drift_clock_42[7] top.sim_clockgenerator_tb.drift_clock_42[6] top.sim_clockgenerator_tb.drift_clock_42[5] top.sim_clockgenerator_tb.drift_clock_42[4] top.sim_clockgenerator_tb.drift_clock_42[3] top.sim_clockgenerator_tb.drift_clock_42[2] top.sim_clockgenerator_tb.drift_clock_42[1] top.sim_clockgenerator_tb.drift_clock_42[0]
+@20000
+-
+@1000200
+-group_end
+@28
+top.sim_clockgenerator_tb.reset_1
+top.sim_clockgenerator_tb.reset_2
+top.sim_clockgenerator_tb.clock_50
+@8420
+#{top.sim_clockgenerator_tb.debug2[15:0]} top.sim_clockgenerator_tb.debug2[15] top.sim_clockgenerator_tb.debug2[14] top.sim_clockgenerator_tb.debug2[13] top.sim_clockgenerator_tb.debug2[12] top.sim_clockgenerator_tb.debug2[11] top.sim_clockgenerator_tb.debug2[10] top.sim_clockgenerator_tb.debug2[9] top.sim_clockgenerator_tb.debug2[8] top.sim_clockgenerator_tb.debug2[7] top.sim_clockgenerator_tb.debug2[6] top.sim_clockgenerator_tb.debug2[5] top.sim_clockgenerator_tb.debug2[4] top.sim_clockgenerator_tb.debug2[3] top.sim_clockgenerator_tb.debug2[2] top.sim_clockgenerator_tb.debug2[1] top.sim_clockgenerator_tb.debug2[0]
+@20000
+-
+-
+-
+-
+@28
+top.sim_clockgenerator_tb.clock_50
+top.sim_clockgenerator_tb.clock_51
+@8420
+#{top.sim_clockgenerator_tb.drift_clock_51[31:0]} top.sim_clockgenerator_tb.drift_clock_51[31] top.sim_clockgenerator_tb.drift_clock_51[30] top.sim_clockgenerator_tb.drift_clock_51[29] top.sim_clockgenerator_tb.drift_clock_51[28] top.sim_clockgenerator_tb.drift_clock_51[27] top.sim_clockgenerator_tb.drift_clock_51[26] top.sim_clockgenerator_tb.drift_clock_51[25] top.sim_clockgenerator_tb.drift_clock_51[24] top.sim_clockgenerator_tb.drift_clock_51[23] top.sim_clockgenerator_tb.drift_clock_51[22] top.sim_clockgenerator_tb.drift_clock_51[21] top.sim_clockgenerator_tb.drift_clock_51[20] top.sim_clockgenerator_tb.drift_clock_51[19] top.sim_clockgenerator_tb.drift_clock_51[18] top.sim_clockgenerator_tb.drift_clock_51[17] top.sim_clockgenerator_tb.drift_clock_51[16] top.sim_clockgenerator_tb.drift_clock_51[15] top.sim_clockgenerator_tb.drift_clock_51[14] top.sim_clockgenerator_tb.drift_clock_51[13] top.sim_clockgenerator_tb.drift_clock_51[12] top.sim_clockgenerator_tb.drift_clock_51[11] top.sim_clockgenerator_tb.drift_clock_51[10] top.sim_clockgenerator_tb.drift_clock_51[9] top.sim_clockgenerator_tb.drift_clock_51[8] top.sim_clockgenerator_tb.drift_clock_51[7] top.sim_clockgenerator_tb.drift_clock_51[6] top.sim_clockgenerator_tb.drift_clock_51[5] top.sim_clockgenerator_tb.drift_clock_51[4] top.sim_clockgenerator_tb.drift_clock_51[3] top.sim_clockgenerator_tb.drift_clock_51[2] top.sim_clockgenerator_tb.drift_clock_51[1] top.sim_clockgenerator_tb.drift_clock_51[0]
+@20000
+-
+-
+-
+@22
+#{top.sim_clockgenerator_tb.counter_clock_51_us[31:0]} top.sim_clockgenerator_tb.counter_clock_51_us[31] top.sim_clockgenerator_tb.counter_clock_51_us[30] top.sim_clockgenerator_tb.counter_clock_51_us[29] top.sim_clockgenerator_tb.counter_clock_51_us[28] top.sim_clockgenerator_tb.counter_clock_51_us[27] top.sim_clockgenerator_tb.counter_clock_51_us[26] top.sim_clockgenerator_tb.counter_clock_51_us[25] top.sim_clockgenerator_tb.counter_clock_51_us[24] top.sim_clockgenerator_tb.counter_clock_51_us[23] top.sim_clockgenerator_tb.counter_clock_51_us[22] top.sim_clockgenerator_tb.counter_clock_51_us[21] top.sim_clockgenerator_tb.counter_clock_51_us[20] top.sim_clockgenerator_tb.counter_clock_51_us[19] top.sim_clockgenerator_tb.counter_clock_51_us[18] top.sim_clockgenerator_tb.counter_clock_51_us[17] top.sim_clockgenerator_tb.counter_clock_51_us[16] top.sim_clockgenerator_tb.counter_clock_51_us[15] top.sim_clockgenerator_tb.counter_clock_51_us[14] top.sim_clockgenerator_tb.counter_clock_51_us[13] top.sim_clockgenerator_tb.counter_clock_51_us[12] top.sim_clockgenerator_tb.counter_clock_51_us[11] top.sim_clockgenerator_tb.counter_clock_51_us[10] top.sim_clockgenerator_tb.counter_clock_51_us[9] top.sim_clockgenerator_tb.counter_clock_51_us[8] top.sim_clockgenerator_tb.counter_clock_51_us[7] top.sim_clockgenerator_tb.counter_clock_51_us[6] top.sim_clockgenerator_tb.counter_clock_51_us[5] top.sim_clockgenerator_tb.counter_clock_51_us[4] top.sim_clockgenerator_tb.counter_clock_51_us[3] top.sim_clockgenerator_tb.counter_clock_51_us[2] top.sim_clockgenerator_tb.counter_clock_51_us[1] top.sim_clockgenerator_tb.counter_clock_51_us[0]
+@23
+#{top.sim_clockgenerator_tb.counter_clock_50_us[31:0]} top.sim_clockgenerator_tb.counter_clock_50_us[31] top.sim_clockgenerator_tb.counter_clock_50_us[30] top.sim_clockgenerator_tb.counter_clock_50_us[29] top.sim_clockgenerator_tb.counter_clock_50_us[28] top.sim_clockgenerator_tb.counter_clock_50_us[27] top.sim_clockgenerator_tb.counter_clock_50_us[26] top.sim_clockgenerator_tb.counter_clock_50_us[25] top.sim_clockgenerator_tb.counter_clock_50_us[24] top.sim_clockgenerator_tb.counter_clock_50_us[23] top.sim_clockgenerator_tb.counter_clock_50_us[22] top.sim_clockgenerator_tb.counter_clock_50_us[21] top.sim_clockgenerator_tb.counter_clock_50_us[20] top.sim_clockgenerator_tb.counter_clock_50_us[19] top.sim_clockgenerator_tb.counter_clock_50_us[18] top.sim_clockgenerator_tb.counter_clock_50_us[17] top.sim_clockgenerator_tb.counter_clock_50_us[16] top.sim_clockgenerator_tb.counter_clock_50_us[15] top.sim_clockgenerator_tb.counter_clock_50_us[14] top.sim_clockgenerator_tb.counter_clock_50_us[13] top.sim_clockgenerator_tb.counter_clock_50_us[12] top.sim_clockgenerator_tb.counter_clock_50_us[11] top.sim_clockgenerator_tb.counter_clock_50_us[10] top.sim_clockgenerator_tb.counter_clock_50_us[9] top.sim_clockgenerator_tb.counter_clock_50_us[8] top.sim_clockgenerator_tb.counter_clock_50_us[7] top.sim_clockgenerator_tb.counter_clock_50_us[6] top.sim_clockgenerator_tb.counter_clock_50_us[5] top.sim_clockgenerator_tb.counter_clock_50_us[4] top.sim_clockgenerator_tb.counter_clock_50_us[3] top.sim_clockgenerator_tb.counter_clock_50_us[2] top.sim_clockgenerator_tb.counter_clock_50_us[1] top.sim_clockgenerator_tb.counter_clock_50_us[0]
+[pattern_trace] 1
+[pattern_trace] 0

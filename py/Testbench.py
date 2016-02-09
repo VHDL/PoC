@@ -33,6 +33,7 @@
 
 from pathlib import Path
 
+from lib.Functions import Exit
 from Base.Exceptions import *
 from Base.PoCBase import CommandLineProgram
 from PoC.Entity import *
@@ -40,6 +41,8 @@ from Simulator import *
 from Simulator.Exceptions import *
 
 class Testbench(CommandLineProgram):
+	headLine = "The PoC-Library - Testbench Service Tool"
+	
 	# configuration files
 	__tbConfigFileName = "configuration.ini"
 	
@@ -92,11 +95,12 @@ class Testbench(CommandLineProgram):
 	
 	def iSimSimulation(self, module, showLogs, showReport, guiMode):
 		# check if ISE is configure
-		if (len(self.pocConfig.options("Xilinx-ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
+		if (len(self.pocConfig.options("Xilinx.ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
 		
 		# prepare some paths
-		self.directories["ISEInstallation"] = Path(self.pocConfig['Xilinx-ISE']['InstallationDirectory'])
-		self.directories["ISEBinary"] =				Path(self.pocConfig['Xilinx-ISE']['BinaryDirectory'])
+		self.directories["ISEInstallation"] = 			Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])
+		self.directories["ISEBinary"] =							Path(self.pocConfig['Xilinx.ISE']['BinaryDirectory'])
+		self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory']) / "ISE/vhdl/src"
 		
 		# check if the appropriate environment is loaded
 		from os import environ
@@ -104,45 +108,75 @@ class Testbench(CommandLineProgram):
 
 		entityToSimulate = Entity(self, module)
 
-
 		simulator = ISESimulator.Simulator(self, showLogs, showReport, guiMode)
 		simulator.run(entityToSimulate)
 
 	def xSimSimulation(self, module, showLogs, showReport, guiMode):
 		# check if ISE is configure
-		if (len(self.pocConfig.options("Xilinx-Vivado")) == 0):	raise NotConfiguredException("Xilinx Vivado is not configured on this system.")
+		if (len(self.pocConfig.options("Xilinx.Vivado")) == 0):	raise NotConfiguredException("Xilinx Vivado is not configured on this system.")
 
 		# prepare some paths
-		self.directories["VivadoInstallation"] =	Path(self.pocConfig['Xilinx-Vivado']['InstallationDirectory'])
-		self.directories["VivadoBinary"] =				Path(self.pocConfig['Xilinx-Vivado']['BinaryDirectory'])
-
+		self.directories["VivadoInstallation"] =		Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])
+		self.directories["VivadoBinary"] =					Path(self.pocConfig['Xilinx.Vivado']['BinaryDirectory'])
+		self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory']) / "data/vhdl/src"
+		
 		entityToSimulate = Entity(self, module)
 
 		simulator = VivadoSimulator.Simulator(self, showLogs, showReport, guiMode)
 		simulator.run(entityToSimulate)
 
 	def vSimSimulation(self, module, showLogs, showReport, vhdlStandard, guiMode):
-		# check if ISE is configure
-		if (len(self.pocConfig.options("Questa-SIM")) != 0):
+		# check if QuestaSim is configure
+		if (len(self.pocConfig.options("Mentor.QuestaSim")) != 0):
 			# prepare some paths
-			self.directories["vSimInstallation"] =	Path(self.pocConfig['Questa-SIM']['InstallationDirectory'])
-			self.directories["vSimBinary"] =				Path(self.pocConfig['Questa-SIM']['BinaryDirectory'])
-		
-		elif (len(self.pocConfig.options("Altera-ModelSim")) != 0):
+			self.directories["vSimInstallation"] =	Path(self.pocConfig['Mentor.QuestaSim']['InstallationDirectory'])
+			self.directories["vSimBinary"] =				Path(self.pocConfig['Mentor.QuestaSim']['BinaryDirectory'])
+		elif (len(self.pocConfig.options("Altera.ModelSim")) != 0):
 			# prepare some paths
-			self.directories["vSimInstallation"] =	Path(self.pocConfig['Altera-ModelSim']['InstallationDirectory'])
-			self.directories["vSimBinary"] =				Path(self.pocConfig['Altera-ModelSim']['BinaryDirectory'])
-				
+			self.directories["vSimInstallation"] =	Path(self.pocConfig['Altera.ModelSim']['InstallationDirectory'])
+			self.directories["vSimBinary"] =				Path(self.pocConfig['Altera.ModelSim']['BinaryDirectory'])
 		else:
-			raise NotConfiguredException("Neither Mentor Graphics Questa-SIM nor ModelSim are configured on this system.")
+			raise NotConfiguredException("Neither Mentor Graphics QuestaSim nor ModelSim are configured on this system.")
 
-		if (len(self.pocConfig.options("GTKWave")) != 0):		
-			self.directories["GTKWInstallation"] =	Path(self.pocConfig['GTKWave']['InstallationDirectory'])
-			self.directories["GTKWBinary"] =				Path(self.pocConfig['GTKWave']['BinaryDirectory'])
-
+		# prepare vendor library path for Altera
+		if (len(self.pocConfig.options("Altera.QuartusII")) != 0):
+			self.directories["AlteraPrimitiveSource"] =	Path(self.pocConfig['Altera.QuartusII']['InstallationDirectory'])	/ "eda/sim_lib"
+		# prepare vendor library path for Xilinx
+		if (len(self.pocConfig.options("Xilinx.ISE")) != 0):
+			self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])				/ "ISE/vhdl/src"
+		elif (len(self.pocConfig.options("Xilinx.Vivado")) != 0):
+			self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])		/ "data/vhdl/src"
+		
 		entityToSimulate = Entity(self, module)
 
 		simulator = QuestaSimulator.Simulator(self, showLogs, showReport, vhdlStandard, guiMode)
+		simulator.run(entityToSimulate)
+		
+	def aSimSimulation(self, module, showLogs, showReport, vhdlStandard, guiMode):
+		# check if Aldec is configure
+		if (len(self.pocConfig.options("Aldec.ActiveHDL")) != 0):
+			# prepare some paths
+			self.directories["aSimInstallation"] =	Path(self.pocConfig['Aldec.ActiveHDL']['InstallationDirectory'])
+			self.directories["aSimBinary"] =				Path(self.pocConfig['Aldec.ActiveHDL']['BinaryDirectory'])
+		elif (len(self.pocConfig.options("Aldec.RivieraPRO")) != 0):
+			# prepare some paths
+			self.directories["aSimInstallation"] =	Path(self.pocConfig['Aldec.RivieraPRO']['InstallationDirectory'])
+			self.directories["aSimBinary"] =				Path(self.pocConfig['Aldec.RivieraPRO']['BinaryDirectory'])
+		else:
+			raise NotConfiguredException("Neither Aldec's Active-HDL nor Riviera PRO are configured on this system.")
+
+		# prepare vendor library path for Altera
+		if (len(self.pocConfig.options("Altera.QuartusII")) != 0):
+			self.directories["AlteraPrimitiveSource"] =	Path(self.pocConfig['Altera.QuartusII']['InstallationDirectory'])	/ "eda/sim_lib"
+		# prepare vendor library path for Xilinx
+		if (len(self.pocConfig.options("Xilinx.ISE")) != 0):
+			self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])				/ "ISE/vhdl/src"
+		elif (len(self.pocConfig.options("Xilinx.Vivado")) != 0):
+			self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])		/ "data/vhdl/src"
+		
+		entityToSimulate = Entity(self, module)
+
+		simulator = AldecSimulator.Simulator(self, showLogs, showReport, vhdlStandard, guiMode)
 		simulator.run(entityToSimulate)
 		
 	def ghdlSimulation(self, module, showLogs, showReport, vhdlStandard, guiMode):
@@ -153,9 +187,21 @@ class Testbench(CommandLineProgram):
 		self.directories["GHDLInstallation"] =	Path(self.pocConfig['GHDL']['InstallationDirectory'])
 		self.directories["GHDLBinary"] =				Path(self.pocConfig['GHDL']['BinaryDirectory'])
 		
+		# prepare vendor library path for Altera
+		if (len(self.pocConfig.options("Altera.QuartusII")) != 0):
+			self.directories["AlteraPrimitiveSource"] =	Path(self.pocConfig['Altera.QuartusII']['InstallationDirectory'])	/ "eda/sim_lib"
+		# prepare vendor library path for Xilinx
+		if (len(self.pocConfig.options("Xilinx.ISE")) != 0):
+			self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])				/ "ISE/vhdl/src"
+		elif (len(self.pocConfig.options("Xilinx.Vivado")) != 0):
+			self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])		/ "data/vhdl/src"
+		
+		# prepare paths for GTKWave, if configured
 		if (len(self.pocConfig.options("GTKWave")) != 0):		
 			self.directories["GTKWInstallation"] =	Path(self.pocConfig['GTKWave']['InstallationDirectory'])
 			self.directories["GTKWBinary"] =				Path(self.pocConfig['GTKWave']['BinaryDirectory'])
+		elif guiMode:
+			raise NotConfiguredException("No GHDL compatible waveform viewer is configured on this system.")
 		
 		entityToSimulate = Entity(self, module)
 
@@ -165,10 +211,13 @@ class Testbench(CommandLineProgram):
 
 # main program
 def main():
+	from colorama import Fore, Back, Style, init
+	init()
+
+	print(Fore.MAGENTA + "=" * 80)
+	print("{: ^80s}".format(Testbench.headLine))
 	print("=" * 80)
-	print("{: ^80s}".format("The PoC Library - Testbench Service Tool"))
-	print("=" * 80)
-	print()
+	print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 	
 	try:
 		import argparse
@@ -178,7 +227,7 @@ def main():
 		argParser = argparse.ArgumentParser(
 			formatter_class = argparse.RawDescriptionHelpFormatter,
 			description = textwrap.dedent('''\
-				This is the PoC Library Testbench Service Tool.
+				This is the PoC-Library Testbench Service Tool.
 				'''),
 			add_help=False)
 
@@ -196,6 +245,7 @@ def main():
 		group21.add_argument('--list',	metavar="<Entity>",	dest="list",				help='list available testbenches')
 		group21.add_argument('--isim',	metavar="<Entity>",	dest="isim",				help='use Xilinx ISE Simulator (isim)')
 		group21.add_argument('--xsim',	metavar="<Entity>",	dest="xsim",				help='use Xilinx Vivado Simulator (xsim)')
+		group21.add_argument('--asim',	metavar="<Entity>",	dest="asim",				help='use Aldec Simulator (asim)')
 		group21.add_argument('--vsim',	metavar="<Entity>",	dest="vsim",				help='use Mentor Graphics Simulator (vsim)')
 		group21.add_argument('--ghdl',	metavar="<Entity>",	dest="ghdl",				help='use GHDL Simulator (ghdl)')
 		group3 = argParser.add_argument_group('Options')
@@ -207,13 +257,7 @@ def main():
 		args = argParser.parse_args()
 
 	except Exception as ex:
-		from traceback import print_tb
-		print("FATAL: %s" % ex.__str__())
-		print("-" * 80)
-		print_tb(ex.__traceback__)
-		print("-" * 80)
-		print()
-		return
+		Exit.printException(ex)
 
 	# create class instance and start processing
 	try:
@@ -226,91 +270,65 @@ def main():
 		elif (args.list is not None):
 			test.listSimulations(args.list)
 		elif (args.isim is not None):
-			iSimGUIMode =					args.gui
+			iSimGUIMode =			args.gui
 			
 			test.iSimSimulation(args.isim, args.showLog, args.showReport, iSimGUIMode)
 		elif (args.xsim is not None):
-			xSimGUIMode =					args.gui
+			xSimGUIMode =			args.gui
 			
 			test.xSimSimulation(args.xsim, args.showLog, args.showReport, xSimGUIMode)
 		elif (args.vsim is not None):
 			if ((args.std is not None) and (args.std in ["87","93","02","08"])):
-				vhdlStandard = args.std
+				vhdlStandard =	args.std
 			else:
-				vhdlStandard = "93"
+				vhdlStandard =	"93"
 			
-			vSimGUIMode =					args.gui
+			vSimGUIMode =			args.gui
 			
 			test.vSimSimulation(args.vsim, args.showLog, args.showReport, vhdlStandard, vSimGUIMode)
+		elif (args.asim is not None):
+			if ((args.std is not None) and (args.std in ["87","93","02","08"])):
+				vhdlStandard =	args.std
+			else:
+				vhdlStandard =	"93"
+			
+			aSimGUIMode =			args.gui
+			
+			test.aSimSimulation(args.asim, args.showLog, args.showReport, vhdlStandard, aSimGUIMode)
 		elif (args.ghdl is not None):
 			if ((args.std is not None) and (args.std in ["87","93","02","08"])):
-				vhdlStandard = args.std
+				vhdlStandard =	args.std
 			else:
-				vhdlStandard = "93"
+				vhdlStandard =	"93"
 			
-			ghdlGUIMode =					args.gui
+			ghdlGUIMode =			args.gui
 			
 			test.ghdlSimulation(args.ghdl, args.showLog, args.showReport, vhdlStandard, ghdlGUIMode)
 		else:
 			argParser.print_help()
 	
 	except SimulatorException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		return
+		from colorama import Fore, Back, Style
+		from configparser import Error
 		
-	except EnvironmentException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		print("Please run this script with it's provided wrapper or manually load the required environment before executing this script.")
-		return
-	
-	except NotConfiguredException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		print("Please run 'poc.[sh/cmd] --configure' in PoC root directory.")
-		return
-	
-	except PlatformNotSupportedException as ex:
-		print("ERROR: Unknown platform '%s'" % ex.message)
-		print()
-		return
-	
-	except BaseException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		return
-	
-	except NotImplementedException as ex:
-		print("ERROR: %s" % ex.message)
-		print()
-		return
+		print(Fore.RED + "ERROR:" + Fore.RESET + " %s" % ex.message)
+		if isinstance(ex.__cause__, FileNotFoundError):
+			print(Fore.YELLOW + "  FileNotFound:" + Fore.RESET + " '%s'" % str(ex.__cause__))
+		elif isinstance(ex.__cause__, Error):
+			print(Fore.YELLOW + "  configparser.Error:" + Fore.RESET + " %s" % str(ex.__cause__))
+		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+		exit(1)
 
-	except Exception as ex:
-		from traceback import print_tb
-		print("FATAL: %s" % ex.__str__())
-		print("-" * 80)
-		print_tb(ex.__traceback__)
-		print("-" * 80)
-		print()
-		return
-	
+	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)
+	except NotConfiguredException as ex:				Exit.printNotConfiguredException(ex)
+	except PlatformNotSupportedException as ex:	Exit.printPlatformNotSupportedException(ex)
+	except BaseException as ex:									Exit.printBaseException(ex)
+	except NotImplementedException as ex:				Exit.printNotImplementedException(ex)
+	except Exception as ex:											Exit.printException(ex)
+			
 # entry point
 if __name__ == "__main__":
-	from sys import version_info
-	
-	if (version_info<(3,4,0)):
-		print("ERROR: Used Python interpreter is to old: %s" % version_info)
-		print("Minimal required Python version is 3.4.0")
-		exit(1)
-			
+	Exit.versionCheck((3,4,0))
 	main()
 else:
-	from sys import exit
-	
-	print("=" * 80)
-	print("{: ^80s}".format("The PoC Library - Testbench Service Tool"))
-	print("=" * 80)
-	print()
-	print("This is no library file!")
-	exit(1)
+	Exit.printThisIsNoLibraryFile(Testbench.headLine)

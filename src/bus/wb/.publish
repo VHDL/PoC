@@ -1,1 +1,9 @@
-# empty
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+#wb_fifo_adapter.vhdl
+#wb_ocram.vhdl
+#wb_uart_wrapper.vhdl

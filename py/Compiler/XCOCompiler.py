@@ -30,21 +30,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+#
 # entry point
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
 else:
-	from sys import exit
+	from lib.Functions import Exit
+	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Class Compiler(PoCCompiler)")
 
-	print("=" * 80)
-	print("{: ^80s}".format("The PoC Library - Python Class Compiler(PoCCompiler)"))
-	print("=" * 80)
-	print()
-	print("This is no executable file!")
-	exit(1)
-
+# load dependencies
 from pathlib import Path
 
 from Base.Exceptions import *
@@ -83,14 +78,14 @@ class Compiler(PoCCompiler):
 		tempCoreGenPath = self.host.directories["CoreGenTemp"]
 		if not (tempCoreGenPath).exists():
 			self.printVerbose("    Creating temporary directory for core generator files.")
-			self.printDebug("    Temporary directory: %s" % str(tempCoreGenPath))
+			self.printDebug("    Temporary directory: {0}.".format(tempCoreGenPath))
 			tempCoreGenPath.mkdir(parents=True)
 
 		# create output directory for CoreGen if not existent
 		coreGenOutputPath = self.host.directories["PoCNetList"] / deviceString
 		if not (coreGenOutputPath).exists():
 			self.printVerbose("    Creating output directory for core generator files.")
-			self.printDebug("    Output directory: %s" % str(coreGenOutputPath))
+			self.printDebug("    Output directory: {0}.".format(coreGenOutputPath))
 			coreGenOutputPath.mkdir(parents=True)
 			
 		# add the key Device to section SPECIAL at runtime to change interpolation results
@@ -98,15 +93,89 @@ class Compiler(PoCCompiler):
 		self.host.netListConfig['SPECIAL']['Device'] = deviceString
 		self.host.netListConfig['SPECIAL']['OutputDir'] = tempCoreGenPath.as_posix()
 		
-		# read copy tasks
-		copyFileList = self.host.netListConfig[str(pocEntity)]['Copy']
-		self.printDebug("CopyTasks: \n  " + ("\n  ".join(copyFileList.split("\n"))))
-		copyTasks = []
-		for item in copyFileList.split("\n"):
-			list1 = re.split("\s+->\s+", item)
-			if (len(list1) != 2): raise CompilerException("Expected 2 arguments for every copy task!")
+		if not self.host.netListConfig.has_section(str(pocEntity)):
+			from configparser import NoSectionError
+			raise CompilerException("IP-Core '{0}' not found.".format(str(pocEntity))) from NoSectionError(str(pocEntity))
+		
+		# read pre-copy tasks
+		preCopyTasks = []
+		preCopyFileList = self.host.netListConfig[str(pocEntity)]['PreCopy']
+		if (len(preCopyFileList) != 0):
+			self.printDebug("PreCopyTasks: \n  " + ("\n  ".join(preCopyFileList.split("\n"))))
 			
-			copyTasks.append((Path(list1[0]), Path(list1[1])))
+			preCopyRegExpStr	 = r"^\s*(?P<SourceFilename>.*?)"			# Source filename
+			preCopyRegExpStr += r"\s->\s"													#	Delimiter signs
+			preCopyRegExpStr += r"(?P<DestFilename>.*?)$"					#	Destination filename
+			preCopyRegExp = re.compile(preCopyRegExpStr)
+			
+			for item in preCopyFileList.split("\n"):
+				preCopyRegExpMatch = preCopyRegExp.match(item)
+				if (preCopyRegExpMatch is not None):
+					preCopyTasks.append((
+						Path(preCopyRegExpMatch.group('SourceFilename')),
+						Path(preCopyRegExpMatch.group('DestFilename'))
+					))
+				else:
+					raise CompilerException("Error in pre-copy rule '{0}'".format(item))
+		
+		# read (post) copy tasks
+		copyTasks = []
+		copyFileList = self.host.netListConfig[str(pocEntity)]['Copy']
+		if (len(copyFileList) != 0):
+			self.printDebug("CopyTasks: \n  " + ("\n  ".join(copyFileList.split("\n"))))
+			
+			copyRegExpStr	 = r"^\s*(?P<SourceFilename>.*?)"			# Source filename
+			copyRegExpStr += r"\s->\s"													#	Delimiter signs
+			copyRegExpStr += r"(?P<DestFilename>.*?)$"					#	Destination filename
+			copyRegExp = re.compile(copyRegExpStr)
+			
+			for item in copyFileList.split("\n"):
+				copyRegExpMatch = copyRegExp.match(item)
+				if (copyRegExpMatch is not None):
+					copyTasks.append((
+						Path(copyRegExpMatch.group('SourceFilename')),
+						Path(copyRegExpMatch.group('DestFilename'))
+					))
+				else:
+					raise CompilerException("Error in copy rule '{0}'".format(item))
+		
+		# read replacement tasks
+		replaceTasks = []
+		replaceFileList = self.host.netListConfig[str(pocEntity)]['Replace']
+		if (len(replaceFileList) != 0):
+			self.printDebug("ReplacementTasks: \n  " + ("\n  ".join(replaceFileList.split("\n"))))
+
+			replaceRegExpStr =	r"^\s*(?P<Filename>.*?)\s+:"			# Filename
+			replaceRegExpStr += r"(?P<Options>[dim]{0,3}):\s+"			#	RegExp options
+			replaceRegExpStr += r"\"(?P<Search>.*?)\"\s+->\s+"		#	Search regexp
+			replaceRegExpStr += r"\"(?P<Replace>.*?)\"$"					# Replace regexp
+			replaceRegExp = re.compile(replaceRegExpStr)
+
+			for item in replaceFileList.split("\n"):
+				replaceRegExpMatch = replaceRegExp.match(item)
+				
+				if (replaceRegExpMatch is not None):
+					replaceTasks.append((
+						Path(replaceRegExpMatch.group('Filename')),
+						replaceRegExpMatch.group('Options'),
+						replaceRegExpMatch.group('Search'),
+						replaceRegExpMatch.group('Replace')
+					))
+				else:
+					raise CompilerException("Error in replace rule '{0}'.".format(item))
+		
+		# run pre-copy tasks
+		self.printNonQuiet('  copy further input files into output directory...')
+		for task in preCopyTasks:
+			(fromPath, toPath) = task
+			if not fromPath.exists(): raise CompilerException("Can not pre-copy '{0}' to destination.".format(str(fromPath))) from FileNotFoundError(str(fromPath))
+			
+			toDirectoryPath = toPath.parent
+			if not toDirectoryPath.exists():
+				toDirectoryPath.mkdir(parents=True)
+		
+			self.printVerbose("  pre-copying '{0}'.".format(fromPath))
+			shutil.copy(str(fromPath), str(toPath))
 		
 		# setup all needed paths to execute coreGen
 		coreGenExecutablePath =		self.host.directories["ISEBinary"] / self.__executables['CoreGen']
@@ -119,7 +188,6 @@ class Compiler(PoCCompiler):
 		cgcFilePath =					tempCoreGenPath / "coregen.cgc"
 		xcoFilePath =					tempCoreGenPath / xcoInputFilePath.name
 
-
 		# report the next steps in execution
 #		if (self.getVerbose()):
 #			print("  Commands to be run:")
@@ -131,6 +199,10 @@ class Compiler(PoCCompiler):
 #			print("  6. Copy resulting files into output directory.")
 #			print("  ----------------------------------------")
 		
+		if (self.host.platform == "Windows"):
+			WorkingDirectory = ".\\temp\\"
+		else:
+			WorkingDirectory = "./temp/"
 		
 		# write CoreGenerator project file
 		cgProjectFileContent = textwrap.dedent('''\
@@ -139,55 +211,55 @@ class Compiler(PoCCompiler):
 			SET busformat = BusFormatAngleBracketNotRipped
 			SET createndf = false
 			SET designentry = VHDL
-			SET device = %s
-			SET devicefamily = %s
+			SET device = {Device}
+			SET devicefamily = {DeviceFamily}
 			SET flowvendor = Other
 			SET formalverification = false
 			SET foundationsym = false
 			SET implementationfiletype = Ngc
-			SET package = %s
+			SET package = {Package}
 			SET removerpms = false
 			SET simulationfiles = Behavioral
-			SET speedgrade = %i
+			SET speedgrade = {SpeedGrade}
 			SET verilogsim = false
 			SET vhdlsim = true
-			SET workingdirectory = %s
-			''' % (
-				device.shortName(),
-				(str(device.family) + str(device.generation)),
-				(str(device.package) + str(device.pinCount)),
-				device.speedGrade,
-				(".\\temp\\" if self.host.platform == "Windows" else "./temp/")
+			SET workingdirectory = {WorkingDirectory}
+			'''.format(
+				Device=device.shortName(),
+				DeviceFamily=device.familyName(),
+				Package=(str(device.package) + str(device.pinCount)),
+				SpeedGrade=device.speedGrade,
+				WorkingDirectory=WorkingDirectory
 			))
 
-		self.printDebug("Writing CoreGen project file to '%s'" % str(cgpFilePath))
+		self.printDebug("Writing CoreGen project file to '{0}'.".format(cgpFilePath))
 		with cgpFilePath.open('w') as cgpFileHandle:
 			cgpFileHandle.write(cgProjectFileContent)
 
 		# write CoreGenerator content? file
-		self.printDebug("Reading CoreGen content file to '%s'" % str(cgcTemplateFilePath))
+		self.printDebug("Reading CoreGen content file to '{0}'.".format(cgcTemplateFilePath))
 		with cgcTemplateFilePath.open('r') as cgcFileHandle:
 			cgContentFileContent = cgcFileHandle.read()
 			
-		cgContentFileContent = cgContentFileContent.format(**{
-			'name' : "lcd_ChipScopeVIO",
-			'device' : device.shortName(),
-			'devicefamily' : (str(device.family) + str(device.generation)),
-			'package' : (str(device.package) + str(device.pinCount)),
-			'speedgrade' : device.speedGrade,
-		})
+		cgContentFileContent = cgContentFileContent.format(
+			name="lcd_ChipScopeVIO",
+			device=device.shortName(),
+			devicefamily=device.familyName(),
+			package=(str(device.package) + str(device.pinCount)),
+			speedgrade=device.speedGrade
+		)
 
-		self.printDebug("Writing CoreGen content file to '%s'" % str(cgcFilePath))
+		self.printDebug("Writing CoreGen content file to '{0}'.".format(cgcFilePath))
 		with cgcFilePath.open('w') as cgcFileHandle:
 			cgcFileHandle.write(cgContentFileContent)
 		
 		# copy xco file into temporary directory
-		self.printDebug("Copy CoreGen xco file to '%s'" % str(xcoFilePath))
-		self.printVerbose('    cp "%s" "%s"' % (str(xcoInputFilePath), str(tempCoreGenPath)))
+		self.printDebug("Copy CoreGen xco file to '{0}'.".format(xcoFilePath))
+		self.printVerbose("    cp {0} {1}".format(str(xcoInputFilePath), str(tempCoreGenPath)))
 		shutil.copy(str(xcoInputFilePath), str(xcoFilePath), follow_symlinks=True)
 		
 		# change working directory to temporary CoreGen path
-		self.printVerbose('    cd "%s"' % str(tempCoreGenPath))
+		self.printVerbose('    cd {0}'.format(str(tempCoreGenPath)))
 		os.chdir(str(tempCoreGenPath))
 		
 		# running CoreGen
@@ -200,8 +272,8 @@ class Compiler(PoCCompiler):
 			'-b', str(xcoFilePath),
 			'-p', '.'
 		]
-		self.printDebug("call coreGen: %s" % str(parameterList))
-		self.printVerbose('    %s -r -b "%s" -p .' % (str(coreGenExecutablePath), str(xcoFilePath)))
+		self.printDebug("call coreGen: {0}.".format(parameterList))
+		self.printVerbose('    {0} -r -b "{1}" -p .'.format(str(coreGenExecutablePath), str(xcoFilePath)))
 		if (self.dryRun == False):
 			coreGenLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
 		
@@ -215,12 +287,38 @@ class Compiler(PoCCompiler):
 		self.printNonQuiet('  copy result files into output directory...')
 		for task in copyTasks:
 			(fromPath, toPath) = task
-			if not fromPath.exists(): raise CompilerException("File '%s' does not exist!" % str(fromPath))
+			if not fromPath.exists(): raise CompilerException("Can not copy '{0}' to destination.".format(str(fromPath))) from FileNotFoundError(str(fromPath))
 			
 			toDirectoryPath = toPath.parent
 			if not toDirectoryPath.exists():
 				toDirectoryPath.mkdir(parents=True)
 		
-			self.printVerbose("  copying '%s'" % str(fromPath))
+			self.printVerbose("  copying '{0}'.".format(fromPath))
 			shutil.copy(str(fromPath), str(toPath))
+		
+		# replace in resulting files
+		self.printNonQuiet('  replace in result files...')
+		for task in replaceTasks:
+			(fromPath, options, search, replace) = task
+			if not fromPath.exists(): raise CompilerException("Can not replace in file '{0}' to destination.".format(str(fromPath))) from FileNotFoundError(str(fromPath))
+			
+			self.printVerbose("  replace in file '{0}': search for '{1}' -> replace by '{2}'.".format(str(fromPath), search, replace))
+			
+			regExpFlags	 = 0
+			if ('i' in options):
+				regExpFlags |= re.IGNORECASE
+			if ('m' in options):
+				regExpFlags |= re.MULTILINE
+			if ('d' in options):
+				regExpFlags |= re.DOTALL
+			
+			regExp = re.compile(search, regExpFlags)
+			
+			with fromPath.open('r') as fileHandle:
+				FileContent = fileHandle.read()
+			
+			NewContent = re.sub(regExp, replace, FileContent)
+			
+			with fromPath.open('w') as fileHandle:
+				fileHandle.write(NewContent)
 		

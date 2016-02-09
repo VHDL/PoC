@@ -71,7 +71,7 @@ entity sata_TransceiverLayer is
 	generic (
 		DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- export internal signals to upper layers for debug purposes
-		CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																								-- 150 MHz
+		REFCLOCK_FREQ							: FREQ												:= 150 MHz;																								-- 150 MHz
 		PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 => SATA_GENERATION_2,	1 => SATA_GENERATION_2)				-- intial SATA Generation
 	);
@@ -142,18 +142,20 @@ begin
 -- ==================================================================
 -- assert statements
 -- ==================================================================
-	assert ((C_DEVICE_INFO.VENDOR = VENDOR_XILINX) or 
-					(C_DEVICE_INFO.VENDOR = VENDOR_ALTERA))
+	assert ((C_DEVICE_INFO.VENDOR = VENDOR_ALTERA) or
+					(C_DEVICE_INFO.VENDOR = VENDOR_XILINX)) 
 		report "Vendor not yet supported."
 		severity FAILURE;
 		
-	assert ((C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_VIRTEX) or 
+	assert ((C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_ZYNQ) or
 					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_KINTEX) or
+					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_VIRTEX) or 
 					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_STRATIX))
 		report "Device family not yet supported."
 		severity FAILURE;
 		
 	assert ((C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX5) or
+					(C_DEVICE_INFO.DEVICE = DEVICE_ZYNQ7) or
 					(C_DEVICE_INFO.DEVICE = DEVICE_KINTEX7) or
 					(C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX7) or
 					(C_DEVICE_INFO.DEVICE = DEVICE_STRATIX2) or
@@ -206,7 +208,7 @@ begin
 			Trans : sata_Transceiver_Virtex5_GTP
 				generic map (
 					DEBUG											=> DEBUG,
-					CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
+					CLOCK_IN_FREQ							=> REFCLOCK_FREQ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
@@ -256,7 +258,7 @@ begin
 			Trans : sata_Transceiver_Virtex6_GTXE1
 				generic map (
 					DEBUG											=> DEBUG,
-					CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
+					CLOCK_IN_FREQ							=> REFCLOCK_FREQ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
@@ -307,7 +309,7 @@ begin
 				generic map (
 					DEBUG											=> DEBUG,
 					ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
-					CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
+					REFCLOCK_FREQ							=> REFCLOCK_FREQ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
@@ -360,7 +362,7 @@ begin
 		genS2GX_GXB : if ((C_DEVICE_INFO.DEVICE = DEVICE_STRATIX2) and (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB)) generate
 			Trans : sata_Transceiver_Stratix2GX_GXB
 				generic map (
-					CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
+					CLOCK_IN_FREQ							=> REFCLOCK_FREQ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
@@ -409,7 +411,7 @@ begin
 		genS4GX_GXB : if ((C_DEVICE_INFO.DEVICE = DEVICE_STRATIX4) and (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB)) generate
 			Trans : sata_Transceiver_Stratix4GX_GXB
 				generic map (
-					CLOCK_IN_FREQ							=> CLOCK_IN_FREQ,
+					CLOCK_IN_FREQ							=> REFCLOCK_FREQ,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)

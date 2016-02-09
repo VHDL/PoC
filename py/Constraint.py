@@ -33,17 +33,17 @@
 
 from pathlib import Path
 
-import PoC
-from libFunctions import Exit
-import PoCConstraintGenerator
-import PoCUCFGenerator
-import PoCXDCGenerator
+from lib.Functions import Exit
+from Base.Exceptions import *
+from Base.PoCBase import CommandLineProgram
+from ConstraintGenerator import *
+from ConstraintGenerator.Exceptions import *
 
 
-class PoCConstraint(PoC.PoCBase):
+class Constraint(CommandLineProgram):
 	__constraintConfigFileName = "configuration.ini"
 	
-	headLine = "PoC Library - Constraint Service Tool"
+	headLine = "The PoC-Library - Constraint Service Tool"
 	
 	dryRun = False
 	constraintConfig = None
@@ -83,10 +83,13 @@ class PoCConstraint(PoC.PoCBase):
 
 # main program
 def main():
-	print("=" * 80)
+	from colorama import Fore, Back, Style, init
+	init()
+
+	print(Fore.MAGENTA + "=" * 80)
 	print("{: ^80s}".format(PoCConstraint.headLine))
 	print("=" * 80)
-	print()
+	print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 	
 	try:
 		import argparse
@@ -131,17 +134,17 @@ def main():
 			argParser.print_help()
 		
 	except PoCCompiler.PoCCompilerException as ex:			Exit.printPoCException(ex)
-	except PoC.PoCEnvironmentException as ex:						Exit.printPoCEnvironmentException(ex)
-	except PoC.PoCNotConfiguredException as ex:					Exit.printPoCNotConfiguredException(ex)
-	except PoC.PoCPlatformNotSupportedException as ex:	Exit.printPoCPlatformNotSupportedException(ex)
-	except PoC.PoCException as ex:											Exit.printPoCException(ex)
-	except PoC.NotImplementedException as ex:						Exit.printNotImplementedException(ex)
-	except Exception as ex:															Exit.printException(ex)
-			
+	
+	except PoC.EnvironmentException as ex:					Exit.printEnvironmentException(ex)
+	except PoC.NotConfiguredException as ex:				Exit.printNotConfiguredException(ex)
+	except PoC.PlatformNotSupportedException as ex:	Exit.printPlatformNotSupportedException(ex)
+	except PoC.BaseException as ex:									Exit.printBaseException(ex)
+	except PoC.NotImplementedException as ex:				Exit.printNotImplementedException(ex)
+	except Exception as ex:													Exit.printException(ex)
+
 # entry point
 if __name__ == "__main__":
-	Exit.VersionCheck((3,4,0))
+	Exit.versionCheck((3,4,0))
 	main()
 else:
-	Exit.ThisIsNoLibraryFile(PoCTool_HeadLine)
-	
+	Exit.printThisIsNoLibraryFile(Constraint.headLine)

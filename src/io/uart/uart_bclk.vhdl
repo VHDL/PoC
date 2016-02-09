@@ -42,8 +42,10 @@ use			IEEE.numeric_std.all;
 
 library PoC;
 use			PoC.utils.all;
+use			PoC.strings.all;
 use			PoC.physical.all;
 use			PoC.components.all;
+use			PoC.uart.all;
 
 
 entity uart_bclk is
@@ -74,7 +76,20 @@ architecture rtl of uart_bclk is
   signal x8_cnt_done : std_logic;
   signal x1_cnt_done : std_logic;
 
+	signal bclk_r			: STD_LOGIC		:= '0';
+	signal bclk_x8_r	: STD_LOGIC		:= '0';
 begin
+	assert FALSE		-- LF works in QuartusII
+		report "uart_bclk:" & LF &
+					 "  CLOCK_FREQ="		& to_string(CLOCK_FREQ, 3) & LF &
+					 "  BAUDRATE="			& to_string(BAUDRATE, 3) & LF &
+					 "  COUNTER_MAX="		& INTEGER'image(BAUDRATE_COUNTER_MAX) & LF &
+					 "  COUNTER_BITS="	& INTEGER'image(BAUDRATE_COUNTER_BITS)
+		severity NOTE;
+	
+	assert io_UART_IsTypicalBaudRate(BAUDRATE)
+		report "The baudrate " & to_string(BAUDRATE, 3) & " is not known to be a typical baudrate!"
+		severity WARNING;
 
 	x8_cnt			<= upcounter_next(cnt => x8_cnt, rst => (rst or x8_cnt_done)) when rising_edge(clk);
   x8_cnt_done <= upcounter_equal(cnt => x8_cnt, value => BAUDRATE_COUNTER_MAX - 1);
@@ -85,7 +100,9 @@ begin
   -- outputs
 	-- ---------------------------------------------------------------------------
 	-- only x8_cnt_done is pulsed for one clock cycle!
-	bclk			<= (x1_cnt_done and x8_cnt_done)	when rising_edge(clk);
-	bclk_x8		<= x8_cnt_done										when rising_edge(clk);
+	bclk_r			<= (x1_cnt_done and x8_cnt_done)	when rising_edge(clk);
+	bclk_x8_r		<= x8_cnt_done										when rising_edge(clk);
   
+	bclk				<= bclk_r;
+	bclk_x8			<= bclk_x8_r;
 end;

@@ -1,9 +1,11 @@
-# Packages
-xil.pkg.vhdl
+# git files
+.gitempty
 
-# Cross Clock Modules
-xil_SyncBits.vhdl
-xil_SyncReset.vhdl
+# Documentation
+README.md
+
+# Package
+xil.pkg.vhdl
 
 # ChipScope
 xil_ChipScopeICON.vhdl

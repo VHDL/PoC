@@ -1,113 +1,97 @@
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
-
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
-
-
-ENTITY IPv6_RX IS
-	GENERIC (
-		DEBUG									: BOOLEAN													:= FALSE
-	);
-	PORT (
-		Clock														: IN	STD_LOGIC;																	-- 
-		Reset														: IN	STD_LOGIC;																	-- 
-		-- STATUS port
-		Error														: OUT	STD_LOGIC;
-		-- IN port
-		In_Valid												: IN	STD_LOGIC;
-		In_Data													: IN	T_SLV_8;
-		In_SOF													: IN	STD_LOGIC;
-		In_EOF													: IN	STD_LOGIC;
-		In_Ack													: OUT	STD_LOGIC;
-		In_Meta_rst											: OUT	STD_LOGIC;
-		In_Meta_SrcMACAddress_nxt				: OUT	STD_LOGIC;
-		In_Meta_SrcMACAddress_Data			: IN	T_SLV_8;
-		In_Meta_DestMACAddress_nxt			: OUT	STD_LOGIC;
-		In_Meta_DestMACAddress_Data			: IN	T_SLV_8;
-		In_Meta_EthType									: IN	T_SLV_16;
-		-- OUT port
-		Out_Valid												: OUT	STD_LOGIC;
-		Out_Data												: OUT	T_SLV_8;
-		Out_SOF													: OUT	STD_LOGIC;
-		Out_EOF													: OUT	STD_LOGIC;
-		Out_Ack													: IN	STD_LOGIC;
-		Out_Meta_rst										: IN	STD_LOGIC;
-		Out_Meta_SrcMACAddress_nxt			: IN	STD_LOGIC;
-		Out_Meta_SrcMACAddress_Data			: OUT	T_SLV_8;
-		Out_Meta_DestMACAddress_nxt			: IN	STD_LOGIC;
-		Out_Meta_DestMACAddress_Data		: OUT	T_SLV_8;
-		Out_Meta_EthType								: OUT	T_SLV_16;
-		Out_Meta_SrcIPv6Address_nxt			: IN	STD_LOGIC;
-		Out_Meta_SrcIPv6Address_Data		: OUT	T_SLV_8;
-		Out_Meta_DestIPv6Address_nxt		: IN	STD_LOGIC;
-		Out_Meta_DestIPv6Address_Data		: OUT	T_SLV_8;
-		Out_Meta_TrafficClass						: OUT	T_SLV_8;
-		Out_Meta_FlowLabel							: OUT	T_SLV_24;	--STD_LOGIC_VECTOR(19 DOWNTO 0);
-		Out_Meta_Length									: OUT	T_SLV_16;
-		Out_Meta_NextHeader							: OUT	T_SLV_8
-	);
-END;
-
--- Endianess: big-endian
--- Alignment: 8 byte
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- 
+-- ============================================================================
+-- Authors:				 	Patrick Lehmann
+-- 
+-- Module:				 	TODO
 --
---								Byte 0													Byte 1														Byte 2													Byte 3
---	+----------------+---------------+----------------+---------------+--------------------------------+--------------------------------+
---	| IPVers. (0x06) | TrafficClass 							 		| FlowLabel																																				|
---	+----------------+---------------+----------------+---------------+--------------------------------+--------------------------------+
---	| PayloadLength																										| NextHeader										 | HopLimit												|
---	+--------------------------------+--------------------------------+--------------------------------+--------------------------------+
---	| SourceAddress																																																											|
---	+                                +                                +                                +                                +
---	|																																																																		|
---	+                                +                                +                                +                                +
---	|																																																																		|
---	+                                +                                +                                +                                +
---	|																																																																		|
---	+--------------------------------+--------------------------------+--------------------------------+--------------------------------+
---	| DestinationAddress																																																								|
---	+                                +                                +                                +                                +
---	|																																																																		|
---	+                                +                                +                                +                                +
---	|																																																																		|
---	+                                +                                +                                +                                +
---	|																																																																		|
---	+--------------------------------+--------------------------------+--------------------------------+--------------------------------+
---	| ExtensionHeader(s)																																																								|
---	~                                ~                                ~                                ~                                ~
---	|																																																																		|
---	~                                ~                                ~                                ~                                ~
---	|																																																																		|
---	~                                ~                                ~                                ~                                ~
---	|																																																																		|
---	+--------------------------------+--------------------------------+--------------------------------+--------------------------------+
---	| Payload																																																														|
---	~                                ~                                ~                                ~                                ~
---	|																																																																		|
---	~                                ~                                ~                                ~                                ~
---	|																																																																		|
---	~                                ~                                ~                                ~                                ~
---	|																																																																		|
---	+--------------------------------+--------------------------------+--------------------------------+--------------------------------+
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
+
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
+
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
 
 
-ARCHITECTURE rtl OF IPv6_RX IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
+entity ipv6_RX is
+	generic (
+		DEBUG														: BOOLEAN							:= FALSE
+	);
+	port (
+		Clock														: in	STD_LOGIC;									-- 
+		Reset														: in	STD_LOGIC;									-- 
+		-- STATUS port
+		Error														: out	STD_LOGIC;
+		-- IN port
+		In_Valid												: in	STD_LOGIC;
+		In_Data													: in	T_SLV_8;
+		In_SOF													: in	STD_LOGIC;
+		In_EOF													: in	STD_LOGIC;
+		In_Ack													: out	STD_LOGIC;
+		In_Meta_rst											: out	STD_LOGIC;
+		In_Meta_SrcMACAddress_nxt				: out	STD_LOGIC;
+		In_Meta_SrcMACAddress_Data			: in	T_SLV_8;
+		In_Meta_DestMACAddress_nxt			: out	STD_LOGIC;
+		In_Meta_DestMACAddress_Data			: in	T_SLV_8;
+		In_Meta_EthType									: in	T_SLV_16;
+		-- OUT port
+		Out_Valid												: out	STD_LOGIC;
+		Out_Data												: out	T_SLV_8;
+		Out_SOF													: out	STD_LOGIC;
+		Out_EOF													: out	STD_LOGIC;
+		Out_Ack													: in	STD_LOGIC;
+		Out_Meta_rst										: in	STD_LOGIC;
+		Out_Meta_SrcMACAddress_nxt			: in	STD_LOGIC;
+		Out_Meta_SrcMACAddress_Data			: out	T_SLV_8;
+		Out_Meta_DestMACAddress_nxt			: in	STD_LOGIC;
+		Out_Meta_DestMACAddress_Data		: out	T_SLV_8;
+		Out_Meta_EthType								: out	T_SLV_16;
+		Out_Meta_SrcIPv6Address_nxt			: in	STD_LOGIC;
+		Out_Meta_SrcIPv6Address_Data		: out	T_SLV_8;
+		Out_Meta_DestIPv6Address_nxt		: in	STD_LOGIC;
+		Out_Meta_DestIPv6Address_Data		: out	T_SLV_8;
+		Out_Meta_TrafficClass						: out	T_SLV_8;
+		Out_Meta_FlowLabel							: out	T_SLV_24;	--STD_LOGIC_VECTOR(19 downto 0);
+		Out_Meta_Length									: out	T_SLV_16;
+		Out_Meta_NextHeader							: out	T_SLV_8
+	);
+end entity;
+
+
+architecture rtl of ipv6_RX is
+	attribute FSM_ENCODING						: STRING;
 	
-	SUBTYPE T_BYTEINDEX								IS NATURAL RANGE 0 TO 1;
-	SUBTYPE T_IPV6_BYTEINDEX	 				IS NATURAL RANGE 0 TO 15;
+	subtype T_BYTEINDEX								is NATURAL range 0 to 1;
+	subtype T_IPV6_BYTEINDEX	 				is NATURAL range 0 to 15;
 	
-	TYPE T_STATE		IS (
+	type T_STATE is (
 		ST_IDLE,
 			ST_RECEIVE_TRAFFIC_CLASS,
 			ST_RECEIVE_FLOW_LABEL_1,	ST_RECEIVE_FLOW_LABEL_2,
@@ -121,85 +105,85 @@ ARCHITECTURE rtl OF IPv6_RX IS
 		ST_ERROR
 	);
 
-	SIGNAL State													: T_STATE											:= ST_IDLE;
-	SIGNAL NextState											: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State				: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	signal State													: T_STATE											:= ST_IDLE;
+	signal NextState											: T_STATE;
+	attribute FSM_ENCODING of State				: signal IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	SIGNAL In_Ack_i											: STD_LOGIC;
-	SIGNAL Is_DataFlow										: STD_LOGIC;
-	SIGNAL Is_SOF													: STD_LOGIC;
-	SIGNAL Is_EOF													: STD_LOGIC;
+	signal In_Ack_i												: STD_LOGIC;
+	signal Is_DataFlow										: STD_LOGIC;
+	signal Is_SOF													: STD_LOGIC;
+	signal Is_EOF													: STD_LOGIC;
 
-	SIGNAL Out_Valid_i										: STD_LOGIC;
-	SIGNAL Out_SOF_i											: STD_LOGIC;
-	SIGNAL Out_EOF_i											: STD_LOGIC;
+	signal Out_Valid_i										: STD_LOGIC;
+	signal Out_SOF_i											: STD_LOGIC;
+	signal Out_EOF_i											: STD_LOGIC;
 
-	SUBTYPE T_IP_BYTEINDEX								IS NATURAL RANGE 0 TO 15;
-	SIGNAL IP_ByteIndex										: T_IP_BYTEINDEX;
+	subtype T_IP_BYTEINDEX								is NATURAL range 0 to 15;
+	signal IP_ByteIndex										: T_IP_BYTEINDEX;
 
-	SIGNAL Register_rst										: STD_LOGIC;
+	signal Register_rst										: STD_LOGIC;
 	
 	-- IPv6 basic header fields
-	SIGNAL TrafficClass_en0								: STD_LOGIC;
-	SIGNAL TrafficClass_en1								: STD_LOGIC;
-	SIGNAL FlowLabel_en0									: STD_LOGIC;
-	SIGNAL FlowLabel_en1									: STD_LOGIC;
-	SIGNAL FlowLabel_en2									: STD_LOGIC;
-	SIGNAL Length_en0											: STD_LOGIC;
-	SIGNAL Length_en1											: STD_LOGIC;
-	SIGNAL NextHeader_en									: STD_LOGIC;
-	SIGNAL HopLimit_en										: STD_LOGIC;
-	SIGNAL SourceIPv6Address_en						: STD_LOGIC;
-	SIGNAL DestIPv6Address_en							: STD_LOGIC;
+	signal TrafficClass_en0								: STD_LOGIC;
+	signal TrafficClass_en1								: STD_LOGIC;
+	signal FlowLabel_en0									: STD_LOGIC;
+	signal FlowLabel_en1									: STD_LOGIC;
+	signal FlowLabel_en2									: STD_LOGIC;
+	signal Length_en0											: STD_LOGIC;
+	signal Length_en1											: STD_LOGIC;
+	signal NextHeader_en									: STD_LOGIC;
+	signal HopLimit_en										: STD_LOGIC;
+	signal SourceIPv6Address_en						: STD_LOGIC;
+	signal DestIPv6Address_en							: STD_LOGIC;
 	
-	SIGNAL TrafficClass_d									: T_SLV_8													:= (OTHERS => '0');
-	SIGNAL FlowLabel_d										: STD_LOGIC_VECTOR(19 DOWNTO 0)		:= (OTHERS => '0');
-	SIGNAL Length_d												: T_SLV_16												:= (OTHERS => '0');
-	SIGNAL NextHeader_d										: T_SLV_8													:= (OTHERS => '0');
-	SIGNAL HopLimit_d											: T_SLV_8													:= (OTHERS => '0');
-	SIGNAL SourceIPv6Address_d						: T_NET_IPV6_ADDRESS							:= (OTHERS => (OTHERS => '0'));
-	SIGNAL DestIPv6Address_d							: T_NET_IPV6_ADDRESS							:= (OTHERS => (OTHERS => '0'));
+	signal TrafficClass_d									: T_SLV_8													:= (others => '0');
+	signal FlowLabel_d										: STD_LOGIC_VECTOR(19 downto 0)		:= (others => '0');
+	signal Length_d												: T_SLV_16												:= (others => '0');
+	signal NextHeader_d										: T_SLV_8													:= (others => '0');
+	signal HopLimit_d											: T_SLV_8													:= (others => '0');
+	signal SourceIPv6Address_d						: T_NET_IPV6_ADDRESS							:= (others => (others => '0'));
+	signal DestIPv6Address_d							: T_NET_IPV6_ADDRESS							:= (others => (others => '0'));
 
-	CONSTANT IPV6_ADDRESS_LENGTH					: POSITIVE												:= 16;			-- IPv6 -> 16 bytes
-	CONSTANT IPV6_ADDRESS_READER_BITS			: POSITIVE												:= log2ceilnz(IPV6_ADDRESS_LENGTH);
+	constant IPV6_ADDRESS_LENGTH					: POSITIVE												:= 16;			-- IPv6 -> 16 bytes
+	constant IPV6_ADDRESS_READER_BITS			: POSITIVE												:= log2ceilnz(IPV6_ADDRESS_LENGTH);
 
-	SIGNAL IPv6SeqCounter_rst							: STD_LOGIC;
-	SIGNAL IPv6SeqCounter_en							: STD_LOGIC;
-	SIGNAL IPv6SeqCounter_us							: UNSIGNED(IPV6_ADDRESS_READER_BITS - 1 DOWNTO 0)		:= to_unsigned(IPV6_ADDRESS_LENGTH - 1, IPV6_ADDRESS_READER_BITS);
+	signal IPv6SeqCounter_rst							: STD_LOGIC;
+	signal IPv6SeqCounter_en							: STD_LOGIC;
+	signal IPv6SeqCounter_us							: UNSIGNED(IPV6_ADDRESS_READER_BITS - 1 downto 0)		:= to_unsigned(IPV6_ADDRESS_LENGTH - 1, IPV6_ADDRESS_READER_BITS);
 
-	SIGNAL SrcIPv6Address_Reader_rst			: STD_LOGIC;
-	SIGNAL SrcIPv6Address_Reader_en				: STD_LOGIC;
-	SIGNAL SrcIPv6Address_Reader_us				: UNSIGNED(IPV6_ADDRESS_READER_BITS - 1 DOWNTO 0)		:= to_unsigned(IPV6_ADDRESS_LENGTH - 1, IPV6_ADDRESS_READER_BITS);
-	SIGNAL DestIPv6Address_Reader_rst			: STD_LOGIC;
-	SIGNAL DestIPv6Address_Reader_en			: STD_LOGIC;
-	SIGNAL DestIPv6Address_Reader_us			: UNSIGNED(IPV6_ADDRESS_READER_BITS - 1 DOWNTO 0)		:= to_unsigned(IPV6_ADDRESS_LENGTH - 1, IPV6_ADDRESS_READER_BITS);
+	signal SrcIPv6Address_Reader_rst			: STD_LOGIC;
+	signal SrcIPv6Address_Reader_en				: STD_LOGIC;
+	signal SrcIPv6Address_Reader_us				: UNSIGNED(IPV6_ADDRESS_READER_BITS - 1 downto 0)		:= to_unsigned(IPV6_ADDRESS_LENGTH - 1, IPV6_ADDRESS_READER_BITS);
+	signal DestIPv6Address_Reader_rst			: STD_LOGIC;
+	signal DestIPv6Address_Reader_en			: STD_LOGIC;
+	signal DestIPv6Address_Reader_us			: UNSIGNED(IPV6_ADDRESS_READER_BITS - 1 downto 0)		:= to_unsigned(IPV6_ADDRESS_LENGTH - 1, IPV6_ADDRESS_READER_BITS);
 
 	-- ExtensionHeader: Fragmentation
---	SIGNAL FragmentOffset_en0							: STD_LOGIC;
---	SIGNAL FragmentOffset_en1							: STD_LOGIC;
+--	signal FragmentOffset_en0							: STD_LOGIC;
+--	signal FragmentOffset_en1							: STD_LOGIC;
 	
---	SIGNAL FragmentOffset_d								: STD_LOGIC_VECTOR(12 DOWNTO 0)		:= (OTHERS => '0');
+--	signal FragmentOffset_d								: STD_LOGIC_VECTOR(12 downto 0)		:= (others => '0');
 	
-BEGIN
+begin
 
 	In_Ack				<= In_Ack_i;
-	Is_DataFlow		<= In_Valid AND In_Ack_i;
-	Is_SOF				<= In_Valid AND In_SOF;
-	Is_EOF				<= In_Valid AND In_EOF;
+	Is_DataFlow		<= In_Valid and In_Ack_i;
+	Is_SOF				<= In_Valid and In_SOF;
+	Is_EOF				<= In_Valid and In_EOF;
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				State			<= ST_IDLE;
-			ELSE
+			else
 				State			<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State, Is_DataFlow, Is_SOF, Is_EOF, In_Valid, In_Data, In_EOF, Out_Ack, IPv6SeqCounter_us)
-	BEGIN
+	process(State, Is_DataFlow, Is_SOF, Is_EOF, In_Valid, In_Data, In_EOF, Out_Ack, IPv6SeqCounter_us)
+	begin
 		NextState									<= State;
 
 		Error											<= '0';
@@ -230,272 +214,272 @@ BEGIN
 --		FragmentOffset_en0				<= '0';
 --		FragmentOffset_en1				<= '0';
 
-		CASE State IS
-			WHEN ST_IDLE =>
-				IF (Is_SOF = '1') THEN
-					In_Ack_i						<= '1';
+		case State is
+			when ST_IDLE =>
+				if (Is_SOF = '1') then
+					In_Ack_i								<= '1';
 				
-					IF (Is_EOF = '0') THEN
-						IF (In_Data(3 DOWNTO 0) = x"6") THEN
-							TrafficClass_en0	<= '1';
-							NextState					<= ST_RECEIVE_TRAFFIC_CLASS;
-						ELSE
-							NextState					<= ST_DISCARD_FRAME;
-						END IF;
-					ELSE  -- EOF
-						NextState						<= ST_ERROR;
-					END IF;
-				END IF;
+					if (Is_EOF = '0') then
+						if (In_Data(3 downto 0) = x"6") then
+							TrafficClass_en0		<= '1';
+							NextState						<= ST_RECEIVE_TRAFFIC_CLASS;
+						else
+							NextState						<= ST_DISCARD_FRAME;
+						end if;
+					else  -- EOF
+						NextState							<= ST_ERROR;
+					end if;
+				end if;
 			
-			WHEN ST_RECEIVE_TRAFFIC_CLASS =>
-				IF (In_Valid = '1') THEN
-					In_Ack_i							<= '1';
+			when ST_RECEIVE_TRAFFIC_CLASS =>
+				if (In_Valid = '1') then
+					In_Ack_i								<= '1';
 					
-					IF (Is_EOF = '0') THEN
+					if (Is_EOF = '0') then
 						TrafficClass_en1			<= '1';
 						FlowLabel_en0					<= '1';
 						NextState							<= ST_RECEIVE_FLOW_LABEL_1;
-					ELSE
+					else
 						NextState							<= ST_ERROR;
-					END IF;
-				END IF;
+					end if;
+				end if;
 				
-			WHEN ST_RECEIVE_FLOW_LABEL_1 =>
-				IF (In_Valid = '1') THEN
-					In_Ack_i							<= '1';
+			when ST_RECEIVE_FLOW_LABEL_1 =>
+				if (In_Valid = '1') then
+					In_Ack_i								<= '1';
 					
-					IF (Is_EOF = '0') THEN
+					if (Is_EOF = '0') then
 						FlowLabel_en1					<= '1';
 						NextState							<= ST_RECEIVE_FLOW_LABEL_2;
-					ELSE
+					else
 						NextState							<= ST_ERROR;
-					END IF;
-				END IF;
+					end if;
+				end if;
 				
-			WHEN ST_RECEIVE_FLOW_LABEL_2 =>
-				IF (In_Valid = '1') THEN
-					In_Ack_i							<= '1';
+			when ST_RECEIVE_FLOW_LABEL_2 =>
+				if (In_Valid = '1') then
+					In_Ack_i								<= '1';
 					
-					IF (Is_EOF = '0') THEN
+					if (Is_EOF = '0') then
 						FlowLabel_en2					<= '1';
 						NextState							<= ST_RECEIVE_LENGTH_0;
-					ELSE
+					else
 						NextState							<= ST_ERROR;
-					END IF;
-				END IF;
+					end if;
+				end if;
 				
-			WHEN ST_RECEIVE_LENGTH_0 =>
-				IF (In_Valid = '1') THEN
-					In_Ack_i							<= '1';
+			when ST_RECEIVE_LENGTH_0 =>
+				if (In_Valid = '1') then
+					In_Ack_i								<= '1';
 					
-					IF (Is_EOF = '0') THEN
+					if (Is_EOF = '0') then
 						Length_en0						<= '1';
 						NextState							<= ST_RECEIVE_LENGTH_1;
-					ELSE
+					else
 						NextState							<= ST_ERROR;
-					END IF;
-				END IF;
+					end if;
+				end if;
 				
-			WHEN ST_RECEIVE_LENGTH_1 =>
-				IF (In_Valid = '1') THEN
-					In_Ack_i							<= '1';
+			when ST_RECEIVE_LENGTH_1 =>
+				if (In_Valid = '1') then
+					In_Ack_i								<= '1';
 					
-					IF (Is_EOF = '0') THEN
+					if (Is_EOF = '0') then
 						Length_en1						<= '1';
 						NextState							<= ST_RECEIVE_NEXT_HEADER;
-					ELSE
+					else
 						NextState							<= ST_ERROR;
-					END IF;
-				END IF;
+					end if;
+				end if;
 				
-			WHEN ST_RECEIVE_NEXT_HEADER =>
-				IF (In_Valid = '1') THEN
-					In_Ack_i							<= '1';
+			when ST_RECEIVE_NEXT_HEADER =>
+				if (In_Valid = '1') then
+					In_Ack_i								<= '1';
 					
-					IF (Is_EOF = '0') THEN
+					if (Is_EOF = '0') then
 						NextHeader_en					<= '1';
 						NextState							<= ST_RECEIVE_HOP_LIMIT;
-					ELSE
+					else
 						NextState							<= ST_ERROR;
-					END IF;
-				END IF;
+					end if;
+				end if;
 				
-			WHEN ST_RECEIVE_HOP_LIMIT =>
+			when ST_RECEIVE_HOP_LIMIT =>
 				IPv6SeqCounter_rst				<= '1';
 				
-				IF (In_Valid = '1') THEN
-					In_Ack_i							<= '1';
+				if (In_Valid = '1') then
+					In_Ack_i								<= '1';
 					
-					IF (Is_EOF = '0') THEN
+					if (Is_EOF = '0') then
 						HopLimit_en						<= '1';
 						NextState							<= ST_RECEIVE_SOURCE_ADDRESS;
-					ELSE
+					else
 						NextState							<= ST_ERROR;
-					END IF;
-				END IF;
+					end if;
+				end if;
 				
-			WHEN ST_RECEIVE_SOURCE_ADDRESS =>
-				IF (In_Valid = '1') THEN
-					In_Ack_i							<= '1';
+			when ST_RECEIVE_SOURCE_ADDRESS =>
+				if (In_Valid = '1') then
+					In_Ack_i								<= '1';
 					
 					SourceIPv6Address_en		<= '1';
 					IPv6SeqCounter_en				<= '1';
 					
-					IF (Is_EOF = '0') THEN
-						IF (IPv6SeqCounter_us = 0) THEN
+					if (Is_EOF = '0') then
+						if (IPv6SeqCounter_us = 0) then
 							IPv6SeqCounter_rst	<= '1';
 							NextState						<= ST_RECEIVE_DESTINATION_ADDRESS;
-						END IF;
-					ELSE
+						end if;
+					else
 						NextState							<= ST_ERROR;
-					END IF;
-				END IF;
+					end if;
+				end if;
 			
-			WHEN ST_RECEIVE_DESTINATION_ADDRESS =>
-				IF (In_Valid = '1') THEN
-					In_Ack_i							<= '1';
+			when ST_RECEIVE_DESTINATION_ADDRESS =>
+				if (In_Valid = '1') then
+					In_Ack_i								<= '1';
 					
 					DestIPv6Address_en			<= '1';
 					IPv6SeqCounter_en				<= '1';
 					
-					IF (Is_EOF = '0') THEN
-						IF (IPv6SeqCounter_us = 0) THEN
+					if (Is_EOF = '0') then
+						if (IPv6SeqCounter_us = 0) then
 							IPv6SeqCounter_rst	<= '1';
 							NextState						<= ST_RECEIVE_DATA_1;
-						END IF;
-					ELSE
+						end if;
+					else
 						NextState							<= ST_ERROR;
-					END IF;
-				END IF;
+					end if;
+				end if;
 				
-			WHEN ST_RECEIVE_DATA_1 =>
-				In_Ack_i								<= Out_Ack;
+			when ST_RECEIVE_DATA_1 =>
+				In_Ack_i									<= Out_Ack;
 				Out_Valid_i								<= In_Valid;
 				Out_SOF_i									<= '1';
 				Out_EOF_i									<= In_EOF;
 			
-				IF (Is_DataFlow = '1') THEN
-					IF (Is_EOF = '0') THEN
+				if (Is_DataFlow = '1') then
+					if (Is_EOF = '0') then
 						NextState							<= ST_RECEIVE_DATA_N;
-					ELSE
+					else
 						NextState							<= ST_IDLE;
-					END IF;
-				END IF;
+					end if;
+				end if;
 			
-			WHEN ST_RECEIVE_DATA_N =>
-				In_Ack_i								<= Out_Ack;
+			when ST_RECEIVE_DATA_N =>
+				In_Ack_i									<= Out_Ack;
 				Out_Valid_i								<= In_Valid;
 				Out_EOF_i									<= In_EOF;
 				
-				IF (Is_EOF = '1') THEN
+				if (Is_EOF = '1') then
 					NextState								<= ST_IDLE;
-				END IF;
+				end if;
 				
-			WHEN ST_DISCARD_FRAME =>
-				In_Ack_i								<= '1';
+			when ST_DISCARD_FRAME =>
+				In_Ack_i									<= '1';
 				
-				IF (Is_EOF = '1') THEN
+				if (Is_EOF = '1') then
 					NextState								<= ST_ERROR;
-				END IF;
+				end if;
 			
-			WHEN ST_ERROR =>
+			when ST_ERROR =>
 				Error											<= '1';
 				NextState									<= ST_IDLE;
 			
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 	
 	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR Register_rst) = '1') THEN
-				TrafficClass_d						<= (OTHERS => '0');
-				FlowLabel_d								<= (OTHERS => '0');
-				Length_d									<= (OTHERS => '0');
-				NextHeader_d							<= (OTHERS => '0');
-				HopLimit_d								<= (OTHERS => '0');
-			ELSE
-				IF (TrafficClass_en0 = '1') THEN
-					TrafficClass_d(7 DOWNTO 4)									<= In_Data(7 DOWNTO 4);
-				END IF;
-				IF (TrafficClass_en1 = '1') THEN
-					TrafficClass_d(3 DOWNTO 0)									<= In_Data(3 DOWNTO 0);
-				END IF;
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset OR Register_rst) = '1') then
+				TrafficClass_d						<= (others => '0');
+				FlowLabel_d								<= (others => '0');
+				Length_d									<= (others => '0');
+				NextHeader_d							<= (others => '0');
+				HopLimit_d								<= (others => '0');
+			else
+				if (TrafficClass_en0 = '1') then
+					TrafficClass_d(7 downto 4)			<= In_Data(7 downto 4);
+				end if;
+				if (TrafficClass_en1 = '1') then
+					TrafficClass_d(3 downto 0)			<= In_Data(3 downto 0);
+				end if;
 				
-				IF (FlowLabel_en0 = '1') THEN
-					FlowLabel_d(19 DOWNTO 16)										<= In_Data(7 DOWNTO 4);
-				END IF;
-				IF (FlowLabel_en1 = '1') THEN
-					FlowLabel_d(15 DOWNTO 8)										<= In_Data;
-				END IF;
-				IF (FlowLabel_en2 = '1') THEN
-					FlowLabel_d(7 DOWNTO 0)											<= In_Data;
-				END IF;
+				if (FlowLabel_en0 = '1') then
+					FlowLabel_d(19 downto 16)				<= In_Data(7 downto 4);
+				end if;
+				if (FlowLabel_en1 = '1') then
+					FlowLabel_d(15 downto 8)				<= In_Data;
+				end if;
+				if (FlowLabel_en2 = '1') then
+					FlowLabel_d(7 downto 0)					<= In_Data;
+				end if;
 				
-				IF (Length_en0 = '1') THEN
-					Length_d(15 DOWNTO 8)												<= In_Data;
-				END IF;
-				IF (Length_en1 = '1') THEN
-					Length_d(7 DOWNTO 0)												<= In_Data;
-				END IF;
+				if (Length_en0 = '1') then
+					Length_d(15 downto 8)						<= In_Data;
+				end if;
+				if (Length_en1 = '1') then
+					Length_d(7 downto 0)						<= In_Data;
+				end if;
 				
-				IF (NextHeader_en = '1') THEN
-					NextHeader_d																<= In_Data;
-				END IF;
+				if (NextHeader_en = '1') then
+					NextHeader_d										<= In_Data;
+				end if;
 				
-				IF (HopLimit_en = '1') THEN
-					HopLimit_d																	<= In_Data;
-				END IF;
+				if (HopLimit_en = '1') then
+					HopLimit_d											<= In_Data;
+				end if;
 
-				IF (SourceIPv6Address_en = '1') THEN
+				if (SourceIPv6Address_en = '1') then
 					SourceIPv6Address_d(to_integer(IPv6SeqCounter_us))	<= In_Data;
-				END IF;
+				end if;
 				
-				IF (DestIPv6Address_en = '1') THEN
+				if (DestIPv6Address_en = '1') then
 					DestIPv6Address_d(to_integer(IPv6SeqCounter_us))		<= In_Data;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR IPv6SeqCounter_rst) = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset OR IPv6SeqCounter_rst) = '1') then
 				IPv6SeqCounter_us			<= to_unsigned(IPV6_ADDRESS_LENGTH - 1, IPV6_ADDRESS_READER_BITS);
-			ELSIF (IPv6SeqCounter_en = '1') THEN
+			elsif (IPv6SeqCounter_en = '1') then
 				IPv6SeqCounter_us			<= IPv6SeqCounter_us - 1;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 	
 	SrcIPv6Address_Reader_rst		<= Out_Meta_rst;
 	SrcIPv6Address_Reader_en		<= Out_Meta_SrcIPv6Address_nxt;
 	DestIPv6Address_Reader_rst	<= Out_Meta_rst;
 	DestIPv6Address_Reader_en		<= Out_Meta_DestIPv6Address_nxt;
 	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR SrcIPv6Address_Reader_rst) = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset OR SrcIPv6Address_Reader_rst) = '1') then
 				SrcIPv6Address_Reader_us		<= to_unsigned(IPV6_ADDRESS_LENGTH - 1, IPV6_ADDRESS_READER_BITS);
-			ELSIF (SrcIPv6Address_Reader_en = '1') THEN
+			elsif (SrcIPv6Address_Reader_en = '1') then
 				SrcIPv6Address_Reader_us		<= SrcIPv6Address_Reader_us - 1;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR DestIPv6Address_Reader_rst) = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset OR DestIPv6Address_Reader_rst) = '1') then
 				DestIPv6Address_Reader_us		<= to_unsigned(IPV6_ADDRESS_LENGTH - 1, IPV6_ADDRESS_READER_BITS);
-			ELSIF (DestIPv6Address_Reader_en = '1') THEN
+			elsif (DestIPv6Address_Reader_en = '1') then
 				DestIPv6Address_Reader_us		<= DestIPv6Address_Reader_us - 1;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 	
 	In_Meta_rst												<= 'X';		-- FIXME: 
 	In_Meta_SrcMACAddress_nxt					<= Out_Meta_SrcMACAddress_nxt;
@@ -515,4 +499,4 @@ BEGIN
 	Out_Meta_Length										<= Length_d;
 	Out_Meta_NextHeader								<= NextHeader_d;
 	
-END;
+end architecture;

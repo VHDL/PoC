@@ -42,7 +42,7 @@ USE			PoC.io.ALL;
 USE			PoC.net.ALL;
 
 
-ENTITY Eth_MDIOController IS
+ENTITY mdio_MDIOController IS
 	GENERIC (
 		DEBUG											: BOOLEAN							:= TRUE;
 		CLOCK_FREQ								: FREQ								:= 125 MHz;				-- 125 MHz
@@ -75,7 +75,7 @@ END;
 
 -- TODO: preamble suppression, e.g. Marvel E1111 requires only 1 idle-bit between operations
 
-ARCHITECTURE rtl OF Eth_MDIOController IS
+ARCHITECTURE rtl OF mdio_MDIOController IS
 	ATTRIBUTE KEEP											: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING							: STRING;
 
@@ -135,7 +135,7 @@ ARCHITECTURE rtl OF Eth_MDIOController IS
 	
 BEGIN
 
-	ASSERT FALSE REPORT "BAUDRATE: " & to_string(BAUDRATE) SEVERITY NOTE;
+--	ASSERT FALSE REPORT "BAUDRATE: " & to_string(BAUDRATE) SEVERITY NOTE;
 
 
 	PROCESS(Clock)

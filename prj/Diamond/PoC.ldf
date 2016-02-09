@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BaliProject version="3.2" title="PoC" device="LFE5U-45F-6BG381C" default_implementation="impl1">
+    <Options/>
+    <Implementation title="impl1" dir="impl1" description="impl1" synthesis="lse" default_strategy="Strategy1">
+        <Options def_top="PoC.uart_ft245" lib="PoC" top="PoC.Dummy"/>
+        <Source name="../../src/common/physical.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/strings.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/utils.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/vectors.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/components.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/config.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/debug.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/fileio.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/math.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../tb/common/my_project.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../tb/common/my_config_ECP5Versa.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/mem.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram_esdp.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram_sdp.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram_sp.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram_tdp.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="impl1/ocram_test.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options/>
+        </Source>
+        <Source name="assert_test.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/io.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/io_7SegmentMux_BCD.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/io_7SegmentMux_HEX.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/io_Debounce.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/io_FrequencyCounter.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/io_GlitchFilter.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/io_KeyPadScanner.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/io_PulseWidthModulation.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/io_TimingCounter.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/io_FanControl.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/xil/xil.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/fifo/fifo.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/fifo/fifo_cc_got.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/fifo/fifo_cc_got_tempgot.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/fifo/fifo_cc_got_tempput.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/fifo/fifo_dc_got_sm.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options/>
+        </Source>
+        <Source name="../../src/fifo/fifo_glue.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/fifo/fifo_ic_got.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/fifo/fifo_shift.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="PoC.vhdl" type="VHDL" type_short="VHDL">
+            <Options top_module="PoC.Dummy"/>
+        </Source>
+        <Source name="../../src/misc/misc.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/misc/misc_Delay.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/misc/misc_FrequencyMeasurement.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/misc/misc_PulseTrain.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/misc/misc_Sequencer.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/misc/misc_StrobeGenerator.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/misc/misc_StrobeLimiter.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/misc/misc_WordAligner.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/misc/sync/sync_Vector.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/misc/sync/sync.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/misc/sync/sync_Bits.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/misc/sync/sync_Command.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/misc/sync/sync_Reset.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/misc/sync/sync_Strobe.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/uart/uart.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/uart/uart_bclk.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/uart/uart_fifo.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/uart/uart_ft245.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/uart/uart_rx.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../src/io/uart/uart_tx.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="PoC.lpf" type="Logic Preference" type_short="LPF">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Strategy name="Strategy1" file="PoC1.sty"/>
+</BaliProject>

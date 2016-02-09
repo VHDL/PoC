@@ -32,7 +32,7 @@ ARCHITECTURE rtl OF WordAligner IS
 	SIGNAL I_d						: STD_LOGIC_VECTOR(I'high DOWNTO WORD_BITS)		:= (OTHERS => '0');
 	
 	SIGNAL O_i						: STD_LOGIC_VECTOR(I'range);
-	SIGNAL Align_d				: STD_LOGIC_VECTOR(Align'range)								:= "01";
+	SIGNAL Align_d				: STD_LOGIC_VECTOR(Align'range)								:= (0 => '1', others => '0');
 	SIGNAL Align_i				: STD_LOGIC_VECTOR(Align'range);
 	SIGNAL Hold						: STD_LOGIC;
 	SIGNAL Changed				: STD_LOGIC;

@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -29,74 +29,73 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
 
 
-ENTITY ICMPv4_Wrapper IS
-	GENERIC (
+entity icmpv4_Wrapper is
+	generic (
 		DEBUG																: BOOLEAN								:= FALSE;
 		SOURCE_IPV4ADDRESS									: T_NET_IPV4_ADDRESS		:= C_NET_IPV4_ADDRESS_EMPTY
 	);
-	PORT (
-		Clock																: IN	STD_LOGIC;
-		Reset																: IN	STD_LOGIC;
+	port (
+		Clock																: in	STD_LOGIC;
+		Reset																: in	STD_LOGIC;
 		-- CSE interface
-		Command															: IN	T_NET_ICMPV4_COMMAND;
-		Status															: OUT	T_NET_ICMPV4_STATUS;
-		Error																: OUT	T_NET_ICMPV4_ERROR;
+		Command															: in	T_NET_ICMPV4_COMMand;
+		Status															: out	T_NET_ICMPV4_STATUS;
+		Error																: out	T_NET_ICMPV4_ERROR;
 		-- Echo-Request destination address
-		IPv4Address_rst											: OUT	STD_LOGIC;
-		IPv4Address_nxt											: OUT	STD_LOGIC;
-		IPv4Address_Data										: IN	T_SLV_8;
+		IPv4Address_rst											: out	STD_LOGIC;
+		IPv4Address_nxt											: out	STD_LOGIC;
+		IPv4Address_Data										: in	T_SLV_8;
 		-- to IPv4 layer
-		IP_TX_Valid													: OUT	STD_LOGIC;
-		IP_TX_Data													: OUT	T_SLV_8;
-		IP_TX_SOF														: OUT	STD_LOGIC;
-		IP_TX_EOF														: OUT	STD_LOGIC;
-		IP_TX_Ack														: IN	STD_LOGIC;
-		IP_TX_Meta_rst											: IN	STD_LOGIC;
-		IP_TX_Meta_SrcIPv4Address_nxt				: IN	STD_LOGIC;
-		IP_TX_Meta_SrcIPv4Address_Data			: OUT	T_SLV_8;
-		IP_TX_Meta_DestIPv4Address_nxt			: IN	STD_LOGIC;
-		IP_TX_Meta_DestIPv4Address_Data			: OUT	T_SLV_8;
-		IP_TX_Meta_Length										: OUT	T_SLV_16;
+		IP_TX_Valid													: out	STD_LOGIC;
+		IP_TX_Data													: out	T_SLV_8;
+		IP_TX_SOF														: out	STD_LOGIC;
+		IP_TX_EOF														: out	STD_LOGIC;
+		IP_TX_Ack														: in	STD_LOGIC;
+		IP_TX_Meta_rst											: in	STD_LOGIC;
+		IP_TX_Meta_SrcIPv4Address_nxt				: in	STD_LOGIC;
+		IP_TX_Meta_SrcIPv4Address_Data			: out	T_SLV_8;
+		IP_TX_Meta_DestIPv4Address_nxt			: in	STD_LOGIC;
+		IP_TX_Meta_DestIPv4Address_Data			: out	T_SLV_8;
+		IP_TX_Meta_Length										: out	T_SLV_16;
 		-- from IPv4 layer
-		IP_RX_Valid													: IN	STD_LOGIC;
-		IP_RX_Data													: IN	T_SLV_8;
-		IP_RX_SOF														: IN	STD_LOGIC;
-		IP_RX_EOF														: IN	STD_LOGIC;
-		IP_RX_Ack														: OUT	STD_LOGIC;
-		IP_RX_Meta_rst											: OUT	STD_LOGIC;
-		IP_RX_Meta_SrcMACAddress_nxt				: OUT	STD_LOGIC;
-		IP_RX_Meta_SrcMACAddress_Data				: IN	T_SLV_8;
-		IP_RX_Meta_DestMACAddress_nxt				: OUT	STD_LOGIC;
-		IP_RX_Meta_DestMACAddress_Data			: IN	T_SLV_8;
---		IP_RX_Meta_EthType									: IN	T_SLV_16;
-		IP_RX_Meta_SrcIPv4Address_nxt				: OUT	STD_LOGIC;
-		IP_RX_Meta_SrcIPv4Address_Data			: IN	T_SLV_8;
-		IP_RX_Meta_DestIPv4Address_nxt			: OUT	STD_LOGIC;
-		IP_RX_Meta_DestIPv4Address_Data			: IN	T_SLV_8;
---		IP_RX_Meta_TrafficClass							: IN	T_SLV_8;
---		IP_RX_Meta_FlowLabel								: IN	T_SLV_24;
-		IP_RX_Meta_Length										: IN	T_SLV_16
---		IP_RX_Meta_Protocol									: IN	T_SLV_8
+		IP_RX_Valid													: in	STD_LOGIC;
+		IP_RX_Data													: in	T_SLV_8;
+		IP_RX_SOF														: in	STD_LOGIC;
+		IP_RX_EOF														: in	STD_LOGIC;
+		IP_RX_Ack														: out	STD_LOGIC;
+		IP_RX_Meta_rst											: out	STD_LOGIC;
+		IP_RX_Meta_SrcMACAddress_nxt				: out	STD_LOGIC;
+		IP_RX_Meta_SrcMACAddress_Data				: in	T_SLV_8;
+		IP_RX_Meta_DestMACAddress_nxt				: out	STD_LOGIC;
+		IP_RX_Meta_DestMACAddress_Data			: in	T_SLV_8;
+--		IP_RX_Meta_EthType									: in	T_SLV_16;
+		IP_RX_Meta_SrcIPv4Address_nxt				: out	STD_LOGIC;
+		IP_RX_Meta_SrcIPv4Address_Data			: in	T_SLV_8;
+		IP_RX_Meta_DestIPv4Address_nxt			: out	STD_LOGIC;
+		IP_RX_Meta_DestIPv4Address_Data			: in	T_SLV_8;
+--		IP_RX_Meta_TrafficClass							: in	T_SLV_8;
+--		IP_RX_Meta_FlowLabel								: in	T_SLV_24;
+		IP_RX_Meta_Length										: in	T_SLV_16
+--		IP_RX_Meta_Protocol									: in	T_SLV_8
 	);
-END;
+end entity;
 
 
-ARCHITECTURE rtl OF ICMPv4_Wrapper IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
+architecture rtl of icmpv4_Wrapper is
+	attribute FSM_ENCODING						: STRING;
 	
-	TYPE T_STATE		IS (
+	type T_STATE		is (
 		ST_IDLE,
 			ST_SEND_ECHO_REQUEST,
 				ST_SEND_ECHO_REQUEST_WAIT,
@@ -108,68 +107,68 @@ ARCHITECTURE rtl OF ICMPv4_Wrapper IS
 		ST_ERROR
 	);
 
-	SIGNAL FSM_State										: T_STATE											:= ST_IDLE;
-	SIGNAL FSM_NextState								: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF FSM_State	: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	signal FSM_State										: T_STATE											:= ST_IDLE;
+	signal FSM_NextState								: T_STATE;
+	attribute FSM_ENCODING of FSM_State	: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 	
-	SIGNAL FSM_TX_Command								: T_NET_ICMPV4_TX_COMMAND;
-	SIGNAL TX_Status										: T_NET_ICMPV4_TX_STATUS;
-	SIGNAL TX_Error											: T_NET_ICMPV4_TX_ERROR;
+	signal FSM_TX_Command								: T_NET_ICMPV4_TX_COMMand;
+	signal TX_Status										: T_NET_ICMPV4_TX_STATUS;
+	signal TX_Error											: T_NET_ICMPV4_TX_ERROR;
 
-	SIGNAL FSM_RX_Command								: T_NET_ICMPV4_RX_COMMAND;
-	SIGNAL RX_Status										: T_NET_ICMPV4_RX_STATUS;
-	SIGNAL RX_Error											: T_NET_ICMPV4_RX_ERROR;
+	signal FSM_RX_Command								: T_NET_ICMPV4_RX_COMMand;
+	signal RX_Status										: T_NET_ICMPV4_RX_STATUS;
+	signal RX_Error											: T_NET_ICMPV4_RX_ERROR;
 	
-	SIGNAL TX_Meta_rst									: STD_LOGIC;
-	SIGNAL TX_Meta_IPv4Address_nxt			: STD_LOGIC;
-	SIGNAL FSM_TX_Meta_IPv4Address_Data	: T_SLV_8;
-	SIGNAL FSM_TX_Meta_Type							: T_SLV_8;
-	SIGNAL FSM_TX_Meta_Code							: T_SLV_8;
-	SIGNAL FSM_TX_Meta_Identification		: T_SLV_16;
-	SIGNAL FSM_TX_Meta_SequenceNumber		: T_SLV_16;
-	SIGNAL TX_Meta_Payload_nxt					: STD_LOGIC;
-	SIGNAL FSM_TX_Meta_Payload_last			: STD_LOGIC;
-	SIGNAL FSM_TX_Meta_Payload_Data			: T_SLV_8;
+	signal TX_Meta_rst									: STD_LOGIC;
+	signal TX_Meta_IPv4Address_nxt			: STD_LOGIC;
+	signal FSM_TX_Meta_IPv4Address_Data	: T_SLV_8;
+	signal FSM_TX_Meta_Type							: T_SLV_8;
+	signal FSM_TX_Meta_Code							: T_SLV_8;
+	signal FSM_TX_Meta_Identification		: T_SLV_16;
+	signal FSM_TX_Meta_SequenceNumber		: T_SLV_16;
+	signal TX_Meta_Payload_nxt					: STD_LOGIC;
+	signal FSM_TX_Meta_Payload_last			: STD_LOGIC;
+	signal FSM_TX_Meta_Payload_Data			: T_SLV_8;
 	
-	SIGNAL RX_Meta_rst											: STD_LOGIC;
-	SIGNAL FSM_RX_Meta_rst									: STD_LOGIC;
-	SIGNAL FSM_RX_Meta_SrcMACAddress_nxt		: STD_LOGIC;
-	SIGNAL RX_Meta_SrcMACAddress_Data				: T_SLV_8;
-	SIGNAL FSM_RX_Meta_DestMACAddress_nxt		: STD_LOGIC;
-	SIGNAL RX_Meta_DestMACAddress_Data			: T_SLV_8;
-	SIGNAL FSM_RX_Meta_SrcIPv4Address_nxt		: STD_LOGIC;
-	SIGNAL RX_Meta_SrcIPv4Address_Data			: T_SLV_8;
-	SIGNAL FSM_RX_Meta_DestIPv4Address_nxt	: STD_LOGIC;
-	SIGNAL RX_Meta_DestIPv4Address_Data			: T_SLV_8;
-	SIGNAL RX_Meta_Length										: T_SLV_16;
-	SIGNAL RX_Meta_Type											: T_SLV_8;
-	SIGNAL RX_Meta_Code											: T_SLV_8;
-	SIGNAL RX_Meta_Identification						: T_SLV_16;
-	SIGNAL RX_Meta_SequenceNumber						: T_SLV_16;
-	SIGNAL FSM_RX_Meta_Payload_nxt					: STD_LOGIC;
-	SIGNAL RX_Meta_Payload_last							: STD_LOGIC;
-	SIGNAL RX_Meta_Payload_Data							: T_SLV_8;
+	signal RX_Meta_rst											: STD_LOGIC;
+	signal FSM_RX_Meta_rst									: STD_LOGIC;
+	signal FSM_RX_Meta_SrcMACAddress_nxt		: STD_LOGIC;
+	signal RX_Meta_SrcMACAddress_Data				: T_SLV_8;
+	signal FSM_RX_Meta_DestMACAddress_nxt		: STD_LOGIC;
+	signal RX_Meta_DestMACAddress_Data			: T_SLV_8;
+	signal FSM_RX_Meta_SrcIPv4Address_nxt		: STD_LOGIC;
+	signal RX_Meta_SrcIPv4Address_Data			: T_SLV_8;
+	signal FSM_RX_Meta_DestIPv4Address_nxt	: STD_LOGIC;
+	signal RX_Meta_DestIPv4Address_Data			: T_SLV_8;
+	signal RX_Meta_Length										: T_SLV_16;
+	signal RX_Meta_Type											: T_SLV_8;
+	signal RX_Meta_Code											: T_SLV_8;
+	signal RX_Meta_Identification						: T_SLV_16;
+	signal RX_Meta_SequenceNumber						: T_SLV_16;
+	signal FSM_RX_Meta_Payload_nxt					: STD_LOGIC;
+	signal RX_Meta_Payload_last							: STD_LOGIC;
+	signal RX_Meta_Payload_Data							: T_SLV_8;
 	
-BEGIN
+begin
 -- ============================================================================================================================================================
 -- ICMPv4 FSM
 -- ============================================================================================================================================================
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				FSM_State			<= ST_IDLE;
-			ELSE
+			else
 				FSM_State			<= FSM_NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(FSM_State,
+	process(FSM_State,
 					Command,
 					TX_Status, TX_Error, TX_Meta_Payload_nxt,
 					RX_Status, RX_Error, RX_Meta_Identification, RX_Meta_SequenceNumber, RX_Meta_Payload_Data, RX_Meta_Payload_last)
-	BEGIN
+	begin
 		FSM_NextState											<= FSM_State;
 		
 		Status														<= NET_ICMPV4_STATUS_IDLE;
@@ -178,7 +177,7 @@ BEGIN
 		FSM_TX_Command										<= NET_ICMPV4_TX_CMD_NONE;
 		FSM_RX_Command										<= NET_ICMPV4_RX_CMD_NONE;
 		
-		FSM_TX_Meta_Type									<= C_NET_ICMPV4_TYPE_EMPTY;
+		FSM_TX_Meta_Type									<= C_NET_ICMPV4_type_EMPTY;
 		FSM_TX_Meta_Code									<= C_NET_ICMPV4_CODE_EMPTY;
 		FSM_TX_Meta_Identification				<= x"0000";
 		FSM_TX_Meta_SequenceNumber				<= x"0000";
@@ -192,79 +191,79 @@ BEGIN
 		FSM_RX_Meta_DestIPv4Address_nxt		<= '0';
 		FSM_RX_Meta_Payload_nxt						<= '0';
 		
-		CASE FSM_State IS
-			WHEN ST_IDLE =>
-				CASE Command IS
-					WHEN NET_ICMPV4_CMD_NONE =>													NULL;
-					WHEN NET_ICMPV4_CMD_ECHO_REQUEST =>									FSM_NextState		<= ST_SEND_ECHO_REQUEST;
-					WHEN OTHERS =>																			FSM_NextState		<= ST_ERROR;
-				END CASE;
+		case FSM_State IS
+			when ST_IDLE =>
+				case Command IS
+					when NET_ICMPV4_CMD_NONE =>													null;
+					when NET_ICMPV4_CMD_ECHO_REQUEST =>									FSM_NextState		<= ST_SEND_ECHO_REQUEST;
+					when others =>																			FSM_NextState		<= ST_ERROR;
+				end case;
 				
-				CASE RX_Status IS
-					WHEN NET_ICMPV4_RX_STATUS_IDLE =>										NULL;
-					WHEN NET_ICMPV4_RX_STATUS_RECEIVED_ECHO_REQUEST =>	FSM_NextState		<= ST_SEND_ECHO_REPLY;
-					WHEN OTHERS =>																			FSM_NextState		<= ST_ERROR;
-				END CASE;
+				case RX_Status IS
+					when NET_ICMPV4_RX_STATUS_IDLE =>										null;
+					when NET_ICMPV4_RX_STATUS_RECEIVED_ECHO_REQUEST =>	FSM_NextState		<= ST_SEND_ECHO_REPLY;
+					when others =>																			FSM_NextState		<= ST_ERROR;
+				end case;
 			
 			-- ======================================================================
-			WHEN ST_SEND_ECHO_REQUEST =>
+			when ST_SEND_ECHO_REQUEST =>
 				FSM_TX_Command								<= NET_ICMPV4_TX_CMD_ECHO_REQUEST;
 
 				IPv4Address_rst								<= TX_Meta_rst;
 				IPv4Address_nxt								<= TX_Meta_IPv4Address_nxt;
 				
 				FSM_TX_Meta_IPv4Address_Data	<= IPv4Address_Data;
-				FSM_TX_Meta_Type							<= C_NET_ICMPV4_TYPE_ECHO_REQUEST;
+				FSM_TX_Meta_Type							<= C_NET_ICMPV4_type_ECHO_REQUEST;
 				FSM_TX_Meta_Code							<= C_NET_ICMPV4_CODE_ECHO_REQUEST;
 				FSM_TX_Meta_Identification		<= x"C0FE";
 				FSM_TX_Meta_SequenceNumber		<= x"BEAF";
 				
 				FSM_NextState									<= ST_SEND_ECHO_REQUEST_WAIT;
 			
-			WHEN ST_SEND_ECHO_REQUEST_WAIT =>
+			when ST_SEND_ECHO_REQUEST_WAIT =>
 				IPv4Address_rst								<= TX_Meta_rst;
 				IPv4Address_nxt								<= TX_Meta_IPv4Address_nxt;
 				
 				FSM_TX_Meta_IPv4Address_Data	<= IPv4Address_Data;
-				FSM_TX_Meta_Type							<= C_NET_ICMPV4_TYPE_ECHO_REQUEST;
+				FSM_TX_Meta_Type							<= C_NET_ICMPV4_type_ECHO_REQUEST;
 				FSM_TX_Meta_Code							<= C_NET_ICMPV4_CODE_ECHO_REQUEST;
 				FSM_TX_Meta_Identification		<= x"C0FE";
 				FSM_TX_Meta_SequenceNumber		<= x"BEAF";
 			
-				CASE TX_Status IS
-					WHEN NET_ICMPV4_TX_STATUS_IDLE =>										NULL;
-					WHEN NET_ICMPV4_TX_STATUS_SENDING =>								NULL;
-					WHEN NET_ICMPV4_TX_STATUS_SEND_COMPLETE =>					FSM_NextState		<= ST_WAIT_FOR_ECHO_REPLY;
-					WHEN NET_ICMPV4_TX_STATUS_ERROR =>									FSM_NextState		<= ST_ERROR;
-					WHEN OTHERS =>																			FSM_NextState		<= ST_ERROR;
-				END CASE;
+				case TX_Status IS
+					when NET_ICMPV4_TX_STATUS_IDLE =>										null;
+					when NET_ICMPV4_TX_STATUS_SENDING =>								null;
+					when NET_ICMPV4_TX_STATUS_SEND_COMPLETE =>					FSM_NextState		<= ST_WAIT_FOR_ECHO_REPLY;
+					when NET_ICMPV4_TX_STATUS_ERROR =>									FSM_NextState		<= ST_ERROR;
+					when others =>																			FSM_NextState		<= ST_ERROR;
+				end case;
 
-			WHEN ST_WAIT_FOR_ECHO_REPLY =>
-				CASE RX_Status IS
-					WHEN NET_ICMPV4_RX_STATUS_IDLE =>										NULL;
-					WHEN NET_ICMPV4_RX_STATUS_RECEIVING =>							NULL;
-					WHEN NET_ICMPV4_RX_STATUS_RECEIVED_ECHO_REPLY =>		FSM_NextState		<= ST_EVAL_ECHO_REPLY;
-					WHEN NET_ICMPV4_RX_STATUS_ERROR =>									FSM_NextState		<= ST_ERROR;
-					WHEN OTHERS =>																			FSM_NextState		<= ST_ERROR;
-				END CASE;
+			when ST_WAIT_FOR_ECHO_REPLY =>
+				case RX_Status IS
+					when NET_ICMPV4_RX_STATUS_IDLE =>										null;
+					when NET_ICMPV4_RX_STATUS_RECEIVING =>							null;
+					when NET_ICMPV4_RX_STATUS_RECEIVED_ECHO_REPLY =>		FSM_NextState		<= ST_EVAL_ECHO_REPLY;
+					when NET_ICMPV4_RX_STATUS_ERROR =>									FSM_NextState		<= ST_ERROR;
+					when others =>																			FSM_NextState		<= ST_ERROR;
+				end case;
 
-			WHEN ST_EVAL_ECHO_REPLY =>
+			when ST_EVAL_ECHO_REPLY =>
 			
-				IF (TRUE) THEN
+				if (TRUE) then
 					FSM_NextState								<= ST_IDLE;
-				ELSE
+				else
 					FSM_NextState								<= ST_ERROR;
-				END IF;
+				end if;
 
 			-- ======================================================================
-			WHEN ST_SEND_ECHO_REPLY =>
+			when ST_SEND_ECHO_REPLY =>
 				FSM_TX_Command								<= NET_ICMPV4_TX_CMD_ECHO_REPLY;
 
 				FSM_RX_Meta_rst									<= TX_Meta_rst;
 				FSM_RX_Meta_SrcIPv4Address_nxt	<= TX_Meta_IPv4Address_nxt;
 				
 				FSM_TX_Meta_IPv4Address_Data		<= RX_Meta_SrcIPv4Address_Data;
-				FSM_TX_Meta_Type								<= C_NET_ICMPV4_TYPE_ECHO_REPLY;
+				FSM_TX_Meta_Type								<= C_NET_ICMPV4_type_ECHO_REPLY;
 				FSM_TX_Meta_Code								<= C_NET_ICMPV4_CODE_ECHO_REPLY;
 				FSM_TX_Meta_Identification			<= RX_Meta_Identification;
 				FSM_TX_Meta_SequenceNumber			<= RX_Meta_SequenceNumber;
@@ -272,25 +271,25 @@ BEGIN
 				
 				FSM_NextState										<= ST_SEND_ECHO_REPLY;
 
-			WHEN ST_SEND_ECHO_REPLY_WAIT =>
+			when ST_SEND_ECHO_REPLY_WAIT =>
 				FSM_RX_Meta_rst									<= TX_Meta_rst;
 				FSM_RX_Meta_SrcIPv4Address_nxt	<= TX_Meta_IPv4Address_nxt;
 				
 				FSM_TX_Meta_IPv4Address_Data		<= RX_Meta_SrcIPv4Address_Data;
-				FSM_TX_Meta_Type								<= C_NET_ICMPV4_TYPE_ECHO_REPLY;
+				FSM_TX_Meta_Type								<= C_NET_ICMPV4_type_ECHO_REPLY;
 				FSM_TX_Meta_Code								<= C_NET_ICMPV4_CODE_ECHO_REPLY;
 				FSM_TX_Meta_Identification			<= RX_Meta_Identification;
 				FSM_TX_Meta_SequenceNumber			<= RX_Meta_SequenceNumber;
 				
-				CASE TX_Status IS
-					WHEN NET_ICMPV4_TX_STATUS_IDLE =>						NULL;
-					WHEN NET_ICMPV4_TX_STATUS_SENDING =>				NULL;
-					WHEN NET_ICMPV4_TX_STATUS_SEND_COMPLETE =>	FSM_NextState		<= ST_SEND_ECHO_REPLY_FINISHED;
-					WHEN NET_ICMPV4_TX_STATUS_ERROR =>					FSM_NextState		<= ST_ERROR;
-					WHEN OTHERS =>															FSM_NextState		<= ST_ERROR;
-				END CASE;
+				case TX_Status IS
+					when NET_ICMPV4_TX_STATUS_IDLE =>						null;
+					when NET_ICMPV4_TX_STATUS_SENDING =>				null;
+					when NET_ICMPV4_TX_STATUS_SEND_COMPLETE =>	FSM_NextState		<= ST_SEND_ECHO_REPLY_FINISHED;
+					when NET_ICMPV4_TX_STATUS_ERROR =>					FSM_NextState		<= ST_ERROR;
+					when others =>															FSM_NextState		<= ST_ERROR;
+				end case;
 			
-			WHEN ST_SEND_ECHO_REPLY_FINISHED =>
+			when ST_SEND_ECHO_REPLY_FINISHED =>
 				Status												<= NET_ICMPV4_STATUS_IDLE;
 				
 				FSM_RX_Command								<= NET_ICMPV4_RX_CMD_CLEAR;
@@ -298,23 +297,23 @@ BEGIN
 				FSM_NextState									<= ST_IDLE;
 			
 			-- ======================================================================
-			WHEN ST_ERROR =>
+			when ST_ERROR =>
 				Status												<= NET_ICMPV4_STATUS_ERROR;
 				Error													<= NET_ICMPV4_ERROR_FSM;
 				FSM_NextState									<= ST_IDLE;
 			
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
 -- ============================================================================================================================================================
 -- TX Path
 -- ============================================================================================================================================================
-	TX : ENTITY PoC.ICMPv4_TX
-		GENERIC MAP (
+	TX : entity PoC.icmpv4_TX
+		generic map (
 			DEBUG								=> DEBUG,
 			SOURCE_IPV4ADDRESS						=> SOURCE_IPV4ADDRESS
 		)
-		PORT MAP (
+		port map (
 			Clock													=> Clock,	
 			Reset													=> Reset,
 			
@@ -349,11 +348,11 @@ BEGIN
 -- ============================================================================================================================================================
 -- RX Path
 -- ============================================================================================================================================================
-	RX : ENTITY PoC.ICMPv4_RX
-		GENERIC MAP (
+	RX : entity PoC.icmpv4_RX
+		generic map (
 			DEBUG								=> DEBUG
 		)
-		PORT MAP (
+		port map (
 			Clock													=> Clock,	
 			Reset													=> Reset,
 			
@@ -395,4 +394,4 @@ BEGIN
 			Out_Meta_Payload_last					=> RX_Meta_Payload_last,
 			Out_Meta_Payload_Data					=> RX_Meta_Payload_Data
 		);
-END ARCHITECTURE;
+end architecture;

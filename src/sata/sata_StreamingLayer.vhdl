@@ -371,8 +371,7 @@ begin
 		IEOTC_inc						<= TC_TX_DataFlow		and not IEOTC_uf;
 		
 		IEOTC : block	-- InsertEOTCounter
-			constant MAX_BLOCKCOUNT						: POSITIVE															:= ite(SIMULATION, C_SIM_MAX_BLOCKCOUNT, C_SATA_ATA_MAX_BLOCKCOUNT);
-			constant MIN_TRANSFER_SIZE_ldB  	: POSITIVE															:= log2ceilnz(MAX_BLOCKCOUNT)+9;
+			constant MIN_TRANSFER_SIZE_ldB  	: POSITIVE															:= log2ceilnz(C_SATA_ATA_MAX_BLOCKCOUNT)+9;
 			constant MIN_TRANSFER_SIZE_B			: POSITIVE															:= 2**MIN_TRANSFER_SIZE_ldB;
 			constant MAX_TRANSFER_SIZE_ldB		: POSITIVE															:= MIN_TRANSFER_SIZE_ldB + (SHIFT_WIDTH - 1);
 			constant IEOT_COUNTER_START				: POSITIVE															:= (MIN_TRANSFER_SIZE_B / 4) - AHEAD_CYCLES_FOR_INSERT_EOT - 3;		-- FIXME: replace with dynamic calculation

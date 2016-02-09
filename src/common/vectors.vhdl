@@ -104,8 +104,13 @@ package vectors is
 
 	-- Matrix to matrix conversion: slm_slice*
 	function slm_slice(slm : T_SLM; RowIndex : NATURAL; ColIndex : NATURAL; Height : NATURAL; Width : NATURAL) return T_SLM;						-- get submatrix in boundingbox RowIndex,ColIndex,Height,Width
+	function slm_slice_rows(slm : T_SLM; High : NATURAL; Low : NATURAL) return T_SLM;																										-- get submatrix / all rows in RowIndex range high:low
 	function slm_slice_cols(slm : T_SLM; High : NATURAL; Low : NATURAL) return T_SLM;																										-- get submatrix / all columns in ColIndex range high:low
 
+	-- Matrix concatenation: slm_merge_*
+	function slm_merge_rows(slm1 : T_SLM; slm2 : T_SLM) return T_SLM;
+	function slm_merge_cols(slm1 : T_SLM; slm2 : T_SLM) return T_SLM;
+	
 	-- Matrix to vector conversion: get_*
 	function get_col(slm : T_SLM; ColIndex : NATURAL) return STD_LOGIC_VECTOR;																	-- get a matrix column
 	function get_row(slm : T_SLM; RowIndex : NATURAL)	return STD_LOGIC_VECTOR;																	-- get a matrix row
@@ -113,7 +118,16 @@ package vectors is
 	function get_row(slm : T_SLM; RowIndex : NATURAL; High : NATURAL; Low : NATURAL) return STD_LOGIC_VECTOR;		-- get a sub vector of a matrix row at high:low
 
 	-- Convert to vector: to_slv
-	function to_slv(slvv : T_SLVV_8)							return STD_LOGIC_VECTOR;								-- convert vector-vector to flatten vector
+	function to_slv(slvv : T_SLVV_2)							return STD_LOGIC_VECTOR;								-- convert vector-vector to flatten vector
+	function to_slv(slvv : T_SLVV_4)							return STD_LOGIC_VECTOR;								-- ...
+	function to_slv(slvv : T_SLVV_8)							return STD_LOGIC_VECTOR;								-- ...
+	function to_slv(slvv : T_SLVV_12)							return STD_LOGIC_VECTOR;								-- ...
+	function to_slv(slvv : T_SLVV_16)							return STD_LOGIC_VECTOR;								-- ...
+	function to_slv(slvv : T_SLVV_24)							return STD_LOGIC_VECTOR;								-- ...
+	function to_slv(slvv : T_SLVV_32)							return STD_LOGIC_VECTOR;								-- ...
+	function to_slv(slvv : T_SLVV_64)							return STD_LOGIC_VECTOR;								-- ...
+	function to_slv(slvv : T_SLVV_128)						return STD_LOGIC_VECTOR;								-- ...
+	function to_slv(slm : T_SLM)									return STD_LOGIC_VECTOR;								-- convert matrix to flatten vector
 	
 	-- Convert flat vector to avector-vector: to_slvv_*
 	function to_slvv_4(slv : STD_LOGIC_VECTOR)		return T_SLVV_4;												-- 
@@ -138,16 +152,17 @@ package vectors is
 	function to_slvv_512(slm : T_SLM)	return T_SLVV_512;																	-- 
 	
 	-- Convert vector-vector to matrix: to_slm
-	function to_slm(slvv : T_SLVV_4) return T_SLM;																				-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_8) return T_SLM;																				-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_12) return T_SLM;																				-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_16) return T_SLM;																				-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_32) return T_SLM;																				-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_48) return T_SLM;																				-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_64) return T_SLM;																				-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_128) return T_SLM;																			-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_256) return T_SLM;																			-- create matrix from vector-vector
-	function to_slm(slvv : T_SLVV_512) return T_SLM;																			-- create matrix from vector-vector
+	function to_slm(slv : STD_LOGIC_VECTOR; ROWS : POSITIVE; COLS : POSITIVE) return T_SLM;	-- create matrix from vector
+	function to_slm(slvv : T_SLVV_4) return T_SLM;																					-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_8) return T_SLM;																					-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_12) return T_SLM;																					-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_16) return T_SLM;																					-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_32) return T_SLM;																					-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_48) return T_SLM;																					-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_64) return T_SLM;																					-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_128) return T_SLM;																				-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_256) return T_SLM;																				-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV_512) return T_SLM;																				-- create matrix from vector-vector
 
 	-- Change vector direction
 	function dir(slvv : T_SLVV_8)			return T_SLVV_8;
@@ -168,6 +183,7 @@ package vectors is
 
 	-- to_string
 	function to_string(slvv : T_SLVV_8; sep : CHARACTER := ':') return STRING;
+	function to_string(slm : T_SLM; groups : POSITIVE := 4; format : CHARACTER := 'b') return STRING;
 end package vectors;
 
 
@@ -243,17 +259,64 @@ package body vectors is
 		return Result;
 	end function;
 
-	function slm_slice_cols(slm : T_SLM; High : NATURAL; Low : NATURAL) return T_SLM is
-		variable Result		: T_SLM(slm'range(1), High - Low downto 0)		:= (others => (others => '0'));
+	function slm_slice_rows(slm : T_SLM; High : NATURAL; Low : NATURAL) return T_SLM is
+		variable Result		: T_SLM(High - Low downto 0, slm'length(2) - 1 downto 0)		:= (others => (others => '0'));
 	begin
-		for i in slm'range(1) loop
+		for i in 0 to High - Low loop
+			for j in 0 to slm'length(2) - 1 loop
+				Result(i, j)		:= slm(Low + i, slm'low(2) + j);
+			end loop;
+		end loop;
+		return Result;
+	end function;
+	
+	function slm_slice_cols(slm : T_SLM; High : NATURAL; Low : NATURAL) return T_SLM is
+		variable Result		: T_SLM(slm'length(1) - 1 downto 0, High - Low downto 0)		:= (others => (others => '0'));
+	begin
+		for i in 0 to slm'length(1) - 1 loop
 			for j in 0 to High - Low loop
-				Result(i, j)		:= slm(i, low + j);
+				Result(i, j)		:= slm(slm'low(1) + i, Low + j);
 			end loop;
 		end loop;
 		return Result;
 	end function;
 
+	-- Matrix concatenation: slm_merge_*
+	function slm_merge_rows(slm1 : T_SLM; slm2 : T_SLM) return T_SLM is
+		constant ROWS			: POSITIVE		:= slm1'length(1) + slm2'length(1);
+		constant COLUMNS	: POSITIVE		:= slm1'length(2);
+		variable slm			: T_SLM(ROWS - 1 downto 0, COLUMNS - 1 downto 0);
+	begin
+		for i in slm1'range(1) loop
+			for j in slm1'low(2) to slm1'high(2) loop
+				slm(i, j)		:= slm1(i, j);
+			end loop;
+		end loop;
+		for i in slm2'range(1) loop
+			for j in slm2'low(2) to slm2'high(2) loop
+				slm(slm1'length(1) + i, j)		:= slm2(i, j);
+			end loop;
+		end loop;
+		return slm;
+	end function;
+	
+	function slm_merge_cols(slm1 : T_SLM; slm2 : T_SLM) return T_SLM is
+		constant ROWS			: POSITIVE		:= slm1'length(1);
+		constant COLUMNS	: POSITIVE		:= slm1'length(2) + slm2'length(2);
+		variable slm			: T_SLM(ROWS - 1 downto 0, COLUMNS - 1 downto 0);
+	begin
+		for i in slm1'range(1) loop
+			for j in slm1'low(2) to slm1'high(2) loop
+				slm(i, j)		:= slm1(i, j);
+			end loop;
+			for j in slm2'low(2) to slm2'high(2) loop
+				slm(i, slm1'length(2) + j)		:= slm2(i, j);
+			end loop;
+		end loop;
+		return slm;
+	end function;
+	
+	
 	-- Matrix to vector conversion: get_*
 	-- ==========================================================================
 	-- get a matrix column
@@ -295,6 +358,24 @@ package body vectors is
 	-- Convert to vector: to_slv
 	-- ==========================================================================
 	-- convert vector-vector to flatten vector
+	function to_slv(slvv : T_SLVV_2) return STD_LOGIC_VECTOR is
+		variable slv			: STD_LOGIC_VECTOR((slvv'length * 2) - 1 downto 0);
+	begin
+		for i in slvv'range loop
+			slv((i * 2) + 1 downto (i * 2))		:= slvv(i);
+		end loop;
+		return slv;
+	end function;
+	
+	function to_slv(slvv : T_SLVV_4) return STD_LOGIC_VECTOR is
+		variable slv			: STD_LOGIC_VECTOR((slvv'length * 4) - 1 downto 0);
+	begin
+		for i in slvv'range loop
+			slv((i * 4) + 3 downto (i * 4))		:= slvv(i);
+		end loop;
+		return slv;
+	end function;
+	
 	function to_slv(slvv : T_SLVV_8) return STD_LOGIC_VECTOR is
 		variable slv			: STD_LOGIC_VECTOR((slvv'length * 8) - 1 downto 0);
 	begin
@@ -303,6 +384,73 @@ package body vectors is
 		end loop;
 		return slv;
 	end function;
+	
+	function to_slv(slvv : T_SLVV_12) return STD_LOGIC_VECTOR is
+		variable slv			: STD_LOGIC_VECTOR((slvv'length * 12) - 1 downto 0);
+	begin
+		for i in slvv'range loop
+			slv((i * 12) + 11 downto (i * 12))		:= slvv(i);
+		end loop;
+		return slv;
+	end function;
+	
+	function to_slv(slvv : T_SLVV_16) return STD_LOGIC_VECTOR is
+		variable slv			: STD_LOGIC_VECTOR((slvv'length * 16) - 1 downto 0);
+	begin
+		for i in slvv'range loop
+			slv((i * 16) + 15 downto (i * 16))		:= slvv(i);
+		end loop;
+		return slv;
+	end function;
+	
+	function to_slv(slvv : T_SLVV_24) return STD_LOGIC_VECTOR is
+		variable slv			: STD_LOGIC_VECTOR((slvv'length * 24) - 1 downto 0);
+	begin
+		for i in slvv'range loop
+			slv((i * 24) + 23 downto (i * 24))		:= slvv(i);
+		end loop;
+		return slv;
+	end function;
+	
+	function to_slv(slvv : T_SLVV_32) return STD_LOGIC_VECTOR is
+		variable slv			: STD_LOGIC_VECTOR((slvv'length * 32) - 1 downto 0);
+	begin
+		for i in slvv'range loop
+			slv((i * 32) + 31 downto (i * 32))		:= slvv(i);
+		end loop;
+		return slv;
+	end function;
+	
+	function to_slv(slvv : T_SLVV_64) return STD_LOGIC_VECTOR is
+		variable slv			: STD_LOGIC_VECTOR((slvv'length * 64) - 1 downto 0);
+	begin
+		for i in slvv'range loop
+			slv((i * 64) + 63 downto (i * 64))		:= slvv(i);
+		end loop;
+		return slv;
+	end function;
+	
+	function to_slv(slvv : T_SLVV_128) return STD_LOGIC_VECTOR is
+		variable slv			: STD_LOGIC_VECTOR((slvv'length * 128) - 1 downto 0);
+	begin
+		for i in slvv'range loop
+			slv((i * 128) + 127 downto (i * 128))		:= slvv(i);
+		end loop;
+		return slv;
+	end function;
+	
+	-- convert matrix to flatten vector
+	function to_slv(slm : T_SLM) return STD_LOGIC_VECTOR is
+		variable slv			: STD_LOGIC_VECTOR((slm'length(1) * slm'length(2)) - 1 downto 0);
+	begin
+		for i in slm'range(1) loop
+			for j in slm'high(2) downto slm'low(2) loop				-- Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); tested with ISE/iSIM 14.2
+				slv((i * slm'length(2)) + j)		:= slm(i, j);
+			end loop;
+		end loop;
+		return slv;
+	end function;
+	
 	
 	-- Convert flat vector to a vector-vector: to_slvv_*
 	-- ==========================================================================
@@ -526,6 +674,18 @@ package body vectors is
 	
 	-- Convert vector-vector to matrix: to_slm
 	-- ==========================================================================
+	-- create matrix from vector
+	function to_slm(slv : STD_LOGIC_VECTOR; ROWS : POSITIVE; COLS : POSITIVE) return T_SLM is
+		variable slm		: T_SLM(ROWS - 1 downto 0, COLS - 1 downto 0);
+	begin
+		for i in 0 to ROWS - 1 loop
+			for j in 0 to COLS - 1 loop
+				slm(i, j)	:= slv((i * COLS) + j);
+			end loop;
+		end loop;
+		return slm;
+	end function;
+	
 	-- create matrix from vector-vector
 	function to_slm(slvv : T_SLVV_4) return T_SLM is
 		variable slm		: T_SLM(slvv'range, 3 downto 0);
@@ -751,14 +911,50 @@ package body vectors is
 	end function;
 	
 	function to_string(slvv : T_SLVV_8; sep : CHARACTER := ':') return STRING is
-		constant hex_len			: POSITIVE								:= ite((sep = NUL), (slvv'length * 2), (slvv'length * 3) - 1);
+		constant hex_len			: POSITIVE								:= ite((sep = C_POC_NUL), (slvv'length * 2), (slvv'length * 3) - 1);
 		variable Result				: STRING(1 to hex_len)		:= (others => sep);
 		variable pos					: POSITIVE								:= 1;
 	begin
 		for i in slvv'range loop
 			Result(pos to pos + 1)	:= to_string(slvv(i), 'h');
-			pos											:= pos + ite((sep = NUL), 2, 3);
+			pos											:= pos + ite((sep = C_POC_NUL), 2, 3);
 		end loop;
 		return Result;
+	end function;
+	
+	function to_string_bin(slm : T_SLM; groups : POSITIVE := 4; format : CHARACTER := 'h') return STRING is
+		variable PerLineOverheader	: POSITIVE	:= div_ceil(slm'length(2), groups);
+		variable Result							: STRING(1 to (slm'length(1) * (slm'length(2) + PerLineOverheader)) + 10);
+		variable Writer							: POSITIVE;
+		variable GroupCounter				: NATURAL;
+	begin
+		Result				:= (others => C_POC_NUL);
+		Result(1)			:= LF;
+		Writer				:= 2;
+		GroupCounter	:= 0;
+		for i in slm'low(1) to slm'high(1) loop
+			for j in slm'high(2) downto slm'low(2) loop
+				Result(Writer)		:= to_char(slm(i, j));
+				Writer						:= Writer + 1;
+				GroupCounter			:= GroupCounter + 1;
+				if (GroupCounter = groups) then
+					Result(Writer)	:= ' ';
+					Writer					:= Writer + 1;
+					GroupCounter		:= 0;
+				end if;
+			end loop;
+			Result(Writer - 1)	:= LF;
+			GroupCounter				:= 0;
+		end loop;
+		return str_trim(Result);
+	end function;
+	
+	function to_string(slm : T_SLM; groups : POSITIVE := 4; format : CHARACTER := 'b') return STRING is
+	begin
+		if (format = 'b') then
+			return to_string_bin(slm, groups);
+		else
+			return "Format not supported.";
+		end if;
 	end function;
 end package body;

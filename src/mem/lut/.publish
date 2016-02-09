@@ -1,7 +1,10 @@
 # git files
-.gitignore
+.gitempty
 
-# subnamespace
+# Documentation
+README.md
 
-# trigonometric functions
-lut_Sine.*
+# Package
+
+# Trigonometric functions
+lut_Sine.vhdl

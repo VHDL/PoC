@@ -30,21 +30,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+#
 # entry point
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
 else:
-	from sys import exit
+	from lib.Functions import Exit
+	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.vSimSimulator")
 
-	print("=" * 80)
-	print("{: ^80s}".format("The PoC Library - Python Module Simulator.vSimSimulator"))
-	print("=" * 80)
-	print()
-	print("This is no executable file!")
-	exit(1)
-
+# load dependencies
 from pathlib import Path
 
 from Base.Exceptions import *
@@ -95,6 +90,10 @@ class Simulator(PoCSimulator):
 		vSimExecutablePath =	self.host.directories["vSimBinary"] / self.__executables['vsim']
 #		gtkwExecutablePath =	self.host.directories["GTKWBinary"] / self.__executables['gtkwave']
 		
+		if not self.host.tbConfig.has_section(str(pocEntity)):
+			from configparser import NoSectionError
+			raise SimulatorException("Testbench '" + str(pocEntity) + "' not found.") from NoSectionError(str(pocEntity))
+		
 		testbenchName =				self.host.tbConfig[str(pocEntity)]['TestbenchModule']
 		fileListFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
 		tclBatchFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['vSimBatchScript']
@@ -104,26 +103,54 @@ class Simulator(PoCSimulator):
 #		vcdFilePath =					tempvSimPath / (testbenchName + ".vcd")
 #		gtkwSaveFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['gtkwaveSaveFile']
 		
-		if (self.verbose):
-			print("  Commands to be run:")
-			print("  1. Change working directory to temporary directory")
-			print("  2. Parse filelist file.")
-			print("    a) For every file: Add the VHDL file to vSim's compile cache.")
-			if (self.host.platform == "Windows"):
-				print("  3. Compile and run simulation")
-			elif (self.host.platform == "Linux"):
-				print("  3. Compile simulation")
-				print("  4. Run simulation")
-			print("  ----------------------------------------")
+		# if (self.verbose):
+			# print("  Commands to be run:")
+			# print("  1. Change working directory to temporary directory")
+			# print("  2. Parse filelist file.")
+			# print("    a) For every file: Add the VHDL file to vSim's compile cache.")
+			# if (self.host.platform == "Windows"):
+				# print("  3. Compile and run simulation")
+			# elif (self.host.platform == "Linux"):
+				# print("  3. Compile simulation")
+				# print("  4. Run simulation")
+			# print("  ----------------------------------------")
 		
 		# change working directory to temporary iSim path
 		self.printVerbose('  cd "%s"' % str(tempvSimPath))
 		os.chdir(str(tempvSimPath))
 
 		# parse project filelist
-		filesLineRegExpStr =	r"\s*(?P<Keyword>(vhdl(\-(87|93|02|08))?|xilinx))"				# Keywords: vhdl[-nn], xilinx
-		filesLineRegExpStr +=	r"\s+(?P<VHDLLibrary>[_a-zA-Z0-9]+)"		#	VHDL library name
-		filesLineRegExpStr +=	r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
+		filesLineRegExpStr =	r"^"																						#	start of line
+		filesLineRegExpStr =	r"(?:"																					#	open line type: empty, directive, keyword
+		filesLineRegExpStr +=		r"(?P<EmptyLine>)|"														#		empty line
+		filesLineRegExpStr +=		r"(?P<Directive>"															#		open directives:
+		filesLineRegExpStr +=			r"(?P<DirInclude>@include)|"								#			 @include
+		filesLineRegExpStr +=			r"(?P<DirLibrary>@library)"									#			 @library
+		filesLineRegExpStr +=		r")|"																					#		close directives
+		filesLineRegExpStr +=		r"(?P<Keyword>"																#		open keywords:
+		filesLineRegExpStr +=			r"(?P<KwAltera>altera)|"										#			altera
+		filesLineRegExpStr +=			r"(?P<KwXilinx>xilinx)|"										#			xilinx
+		filesLineRegExpStr +=			r"(?P<KwVHDL>vhdl"													#			vhdl[-nn]
+		filesLineRegExpStr +=				r"(?:-(?P<VHDLStandard>87|93|02|08))?)"		#				VHDL Standard Year: [-nn]
+		filesLineRegExpStr +=		r")"																					#		close keywords
+		filesLineRegExpStr +=	r")"																						#	close line type
+		filesLineRegExpStr +=	r"(?(Directive)\s+(?:"													#	open directive parameters
+		filesLineRegExpStr +=		r"(?(DirInclude)"															#		open @include directive
+		filesLineRegExpStr +=			r"\"(?P<IncludeFile>.*?\.files)\""					#			*.files filename without enclosing "-signs
+		filesLineRegExpStr +=		r")|"																					#		close @include directive
+		filesLineRegExpStr +=		r"(?(DirLibrary)"															#		open @include directive
+		filesLineRegExpStr +=			r"(?P<LibraryName>[_a-zA-Z0-9]+)"						#			VHDL library name
+		filesLineRegExpStr +=			r"\s+"																			#			delimiter
+		filesLineRegExpStr +=			r"\"(?P<LibraryPath>.*?)\""									#			VHDL library path without enclosing "-signs
+		filesLineRegExpStr +=		r")"																					#		close @library directive
+		filesLineRegExpStr +=	r"))"																						#	close directive parameters
+		filesLineRegExpStr +=	r"(?(Keyword)\s+(?:"														#	open keyword parameters
+		filesLineRegExpStr +=		r"(?P<VHDLLibrary>[_a-zA-Z0-9]+)"							#		VHDL library name
+		filesLineRegExpStr +=		r"\s+"																				#		delimiter
+		filesLineRegExpStr +=		r"\"(?P<VHDLFile>.*?\.vhdl?)\""								#		*.vhdl? filename without enclosing "-signs
+		filesLineRegExpStr +=	r"))"																						#	close keyword parameters
+		filesLineRegExpStr +=	r"\s*(?P<Comment>#.*)?"													#	optional comment until line end
+		filesLineRegExpStr +=	r"$"																						#	end of line
 		filesLineRegExp = re.compile(filesLineRegExpStr)
 
 		self.printDebug("Reading filelist '%s'" % str(fileListFilePath))
@@ -132,85 +159,124 @@ class Simulator(PoCSimulator):
 		# add empty line if logs are enabled
 		if self.showLogs:		print()
 		
-		vhdlLibraries = {}
+		vhdlLibraries = []
+		externalLibraries = []
 		
 		with fileListFilePath.open('r') as fileFileHandle:
 			for line in fileFileHandle:
 				filesLineRegExpMatch = filesLineRegExp.match(line)
 		
 				if (filesLineRegExpMatch is not None):
-					if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
-						vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
-					elif (filesLineRegExpMatch.group('Keyword')[0:5] == "vhdl-"):
-						if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
-							vhdlFilePath = self.host.directories["PoCRoot"] / filesLineRegExpMatch.group('VHDLFile')
-					elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
-						self.printVerbose("    skipped xilinx specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
+					if (filesLineRegExpMatch.group('Directive') is not None):
+						if (filesLineRegExpMatch.group('DirInclude') is not None):
+							includeFile = filesLineRegExpMatch.group('IncludeFile')
+							self.printVerbose("    referencing another file: {0}".format(includeFile))
+						elif (filesLineRegExpMatch.group('DirLibrary') is not None):
+							externalLibraryName = filesLineRegExpMatch.group('LibraryName')
+							externalLibraryPath = filesLineRegExpMatch.group('LibraryPath')
+							
+							self.printVerbose("    referencing precompiled VHDL library: {0}".format(externalLibraryName))
+							externalLibraries.append(externalLibraryPath)
+						else:
+							raise SimulatorException("Unknown directive in *.files file.")
 						
-					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
-					
-					if (not vhdlLibraries.__contains__(vhdlLibraryName)):
-						# assemble vlib command as list of parameters
-						parameterList = [str(vLibExecutablePath), vhdlLibraryName]
+						continue
+						
+					elif (filesLineRegExpMatch.group('Keyword') is not None):
+						if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
+							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
+							vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
+						elif (filesLineRegExpMatch.group('Keyword')[0:5] == "vhdl-"):
+							if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
+								vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
+								vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
+							else:
+								continue
+						elif (filesLineRegExpMatch.group('Keyword') == "altera"):
+							self.printVerbose("    skipped Altera specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
+						elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
+	#						self.printVerbose("    skipped Xilinx specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
+							# check if ISE or Vivado is configured
+							if not self.host.directories.__contains__("XilinxPrimitiveSource"):
+								raise NotConfiguredException("This testbench requires some Xilinx Primitves. Please configure Xilinx ISE or Vivado.")
+							
+							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
+							vhdlFilePath = self.host.directories["XilinxPrimitiveSource"] / vhdlFileName
+						else:
+							raise SimulatorException("Unknown keyword in *files file.")
+							
+						vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
+						
+						if (not vhdlLibraries.__contains__(vhdlLibraryName)):
+							# assemble vlib command as list of parameters
+							parameterList = [str(vLibExecutablePath), vhdlLibraryName]
+							command = " ".join(parameterList)
+							
+							self.printDebug("call vlib: %s" % str(parameterList))
+							self.printVerbose("    command: %s" % command)
+							
+							try:
+								vLibLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+								vhdlLibraries.append(vhdlLibraryName)
+
+							except subprocess.CalledProcessError as ex:
+								print("ERROR while executing vlib: %s" % str(vhdlFilePath))
+								print("Return Code: %i" % ex.returncode)
+								print("-" * 80)
+								print(ex.output)
+								print("-" * 80)
+								
+								return
+		
+							if self.showLogs:
+								if (vLibLog != ""):
+									print("vlib messages for : %s" % str(vhdlFilePath))
+									print("--------------------------------------------------------------------------------")
+									print(vLibLog)
+
+						# 
+						if (not vhdlFilePath.exists()):
+							raise SimulatorException("Can not compile '" + vhdlFileName + "'.") from FileNotFoundError(str(vhdlFilePath))
+						
+						if (self.__vhdlStandard == "87"):
+							vhdlStandard = "-87"
+						elif (self.__vhdlStandard == "93"):
+							vhdlStandard = "-93"
+						elif (self.__vhdlStandard == "02"):
+							vhdlStandard = "-2002"
+						elif (self.__vhdlStandard == "08"):
+							vhdlStandard = "-2008"
+						
+						# assemble vcom command as list of parameters
+						parameterList = [
+							str(vComExecutablePath),
+							'-rangecheck',
+							'-l', 'vcom.log',
+							vhdlStandard,
+							'-work', vhdlLibraryName,
+							str(vhdlFilePath)
+						]
 						command = " ".join(parameterList)
 						
-						self.printDebug("call vlib: %s" % str(parameterList))
+						self.printDebug("call vcom: %s" % str(parameterList))
 						self.printVerbose("    command: %s" % command)
 						
 						try:
-							vLibLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+							vComLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 						except subprocess.CalledProcessError as ex:
-								print("ERROR while executing vlib: %s" % str(vhdlFilePath))
-								print("Return Code: %i" % ex.returncode)
-								print("--------------------------------------------------------------------------------")
-								print(ex.output)
-	
-						if self.showLogs:
-							if (vLibLog != ""):
-								print("vlib messages for : %s" % str(vhdlFilePath))
-								print("--------------------------------------------------------------------------------")
-								print(vLibLog)
-
-					# 
-					if (not vhdlFilePath.exists()):
-						raise SimulatorException("Can not compile " + str(vhdlFilePath)) from FileNotFoundError(str(vhdlFilePath))
-					
-					if (self.__vhdlStandard == "87"):
-						vhdlStandard = "-87"
-					elif (self.__vhdlStandard == "93"):
-						vhdlStandard = "-93"
-					elif (self.__vhdlStandard == "02"):
-						vhdlStandard = "-2002"
-					elif (self.__vhdlStandard == "08"):
-						vhdlStandard = "-2008"
-					
-					# assemble vcom command as list of parameters
-					parameterList = [
-						str(vComExecutablePath),
-						'-rangecheck',
-						'-l', 'vcom.log',
-						vhdlStandard,
-						'-work', vhdlLibraryName,
-						str(vhdlFilePath)
-					]
-					command = " ".join(parameterList)
-					
-					self.printDebug("call vcom: %s" % str(parameterList))
-					self.printVerbose("    command: %s" % command)
-					
-					try:
-						vComLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
-					except subprocess.CalledProcessError as ex:
 							print("ERROR while executing vcom: %s" % str(vhdlFilePath))
 							print("Return Code: %i" % ex.returncode)
-							print("--------------------------------------------------------------------------------")
+							print("-" * 80)
 							print(ex.output)
+							print("-" * 80)
+							
+							return
 
-					if self.showLogs:
-						if (vComLog != ""):
-							print("vcom messages for : %s" % str(vhdlFilePath))
-							print("--------------------------------------------------------------------------------")
-							print(vComLog)
+						if self.showLogs:
+							if (vComLog != ""):
+								print("vcom messages for : %s" % str(vhdlFilePath))
+								print("--------------------------------------------------------------------------------")
+								print(vComLog)
 
 		
 		# running simulation
@@ -255,8 +321,11 @@ class Simulator(PoCSimulator):
 		except subprocess.CalledProcessError as ex:
 			print("ERROR while executing vsim command: %s" % command)
 			print("Return Code: %i" % ex.returncode)
-			print("--------------------------------------------------------------------------------")
+			print("-" * 80)
 			print(ex.output)
+			print("-" * 80)
+			
+			return
 #		
 		if self.showLogs:
 			if (simulatorLog != ""):

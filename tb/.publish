@@ -1,5 +1,8 @@
 # git files
-.gitignore
+.gitempty
+
+# Documentation
+README.md
 
 # wrapper scripts
 testbench.sh
@@ -10,12 +13,14 @@ configuration.ini
 
 # PoC subnamespaces
 arith/
+bus/
 comm/
 common/
-io/
 fifo/
+io/
 mem/
 misc/
-#sata/
+# DON'T PUBLISH sata/ !
+sort/
 xil/
 # DON'T PUBLISH xilinx/ !

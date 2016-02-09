@@ -1,0 +1,6 @@
+sync_Bits_Xilinx.ucf
+sync_Bits_Xilinx.xdc
+sync_Reset_Xilinx.ucf
+sync_Reset_Xilinx.xdc
+sync_Vector.xdc
+sync_Command.xdc

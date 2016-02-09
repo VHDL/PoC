@@ -1,9 +1,11 @@
 # git files
 .gitignore
+.gitempty
+#.gitmodules
 
-# Common files
+# Documentation files
+AUTHORS.md
 LICENSE
-AUTHORS
 README.md
 
 # Configuration scripts
@@ -11,10 +13,14 @@ poc.sh
 poc.ps1
 
 # folders
+lib/
 netlist/
+# DON'T PUBLISH other/ !!!
 py/
 sim/
 src/
 tb/
+temp/
 tools/
 ucf/
+xst/

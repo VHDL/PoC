@@ -48,8 +48,5 @@ package SATATransceiverTypes is
 	end record;
 	
 	type T_SATA_TRANSCEIVER_PRIVATE_SIGNALS_VECTOR is array(NATURAL range <>) of T_SATA_TRANSCEIVER_PRIVATE_SIGNALS;
-end SATATransceiverTypes;
-
-package body SATATransceiverTypes is
-
-end package body;
+	
+end package;

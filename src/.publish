@@ -1,9 +1,23 @@
-common/
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# PoC subnamespaces
+alt/
 arith/
 bus/
-fifo/
+cache/
 comm/
+common/
+fifo/
 io/
 mem/
 misc/
+net/
+# DON'T PUBLISH sata/ !
+sim/
+sort/
+#trace/
 xil/

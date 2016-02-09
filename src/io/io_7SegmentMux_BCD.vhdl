@@ -78,8 +78,8 @@ begin
 		);
 	
 	-- 
-	DigitCounter_rst	<= counter_eq(DigitCounter_us, DIGITS - 1) and DigitCounter_en;
-	DigitCounter_us		<= counter_inc(DigitCounter_us, DigitCounter_rst, DigitCounter_en) when rising_edge(Clock);
+	DigitCounter_rst	<= upcounter_equal(DigitCounter_us, DIGITS - 1) and DigitCounter_en;
+	DigitCounter_us		<= upcounter_next(DigitCounter_us, DigitCounter_rst, DigitCounter_en) when rising_edge(Clock);
 	DigitControl			<= resize(bin2onehot(std_logic_vector(DigitCounter_us)), DigitControl'length);
 
 	process(BCDDigits, BCDDots, DigitCounter_us)
@@ -90,7 +90,7 @@ begin
 		BCDDot		:= BCDDots(to_index(DigitCounter_us, BCDDigits'length));
 	
 		if (BCDDigit < C_BCD_MINUS) then
-			SegmentControl	<= io_7SegmentDisplayEncoding(BCDDigit, BCDDot);
+			SegmentControl	<= io_7SegmentDisplayEncoding(BCDDigit, BCDDot, WITH_DOT => TRUE);
 		elsif (BCDDigit = C_BCD_MINUS) then
 			SegmentControl	<= BCDDot & "1000000";
 		else
