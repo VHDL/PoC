@@ -29,6 +29,9 @@
 -- limitations under the License.
 -- =============================================================================
 
+library IEEE;
+use			IEEE.math_real.all;
+
 library	PoC;
 -- use			PoC.my_project.all;
 -- use			PoC.utils.all;
@@ -46,6 +49,7 @@ package ProtectedTypes is
 	
 	-- protected INTEGER implementation
 	-- ===========================================================================
+	-- TODO: Mult, Div, Pow, Mod, Rem
 	type P_INTEGER is protected
 		procedure				Clear;
 		procedure				Set(Value : INTEGER);
@@ -58,6 +62,7 @@ package ProtectedTypes is
 	
 	-- protected NATURAL implementation
 	-- ===========================================================================
+	-- TODO: Mult, Div, Pow, Mod, Rem
 	type P_NATURAL is protected
 		procedure				Clear;
 		procedure				Set(Value : NATURAL);
@@ -70,6 +75,7 @@ package ProtectedTypes is
 	
 	-- protected POSITIVE implementation
 	-- ===========================================================================
+	-- TODO: Mult, Div, Pow, Mod, Rem
 	type P_POSITIVE is protected
 		procedure				Clear;
 		procedure				Set(Value : POSITIVE);
@@ -78,6 +84,19 @@ package ProtectedTypes is
 		impure function Add(Value : POSITIVE) return POSITIVE;
 		procedure				Sub(Value : POSITIVE);
 		impure function Sub(Value : POSITIVE) return POSITIVE;
+	end protected;
+	
+	-- protected REAL implementation
+	-- ===========================================================================
+	-- TODO: Round, Mult, Div, Pow, Mod
+	type P_REAL is protected
+		procedure				Clear;
+		procedure				Set(Value : REAL);
+		impure function	Get return REAL;
+		procedure				Add(Value : REAL);
+		impure function Add(Value : REAL) return REAL;
+		procedure				Sub(Value : REAL);
+		impure function Sub(Value : REAL) return REAL;
 	end protected;
 end package;
 
@@ -233,6 +252,49 @@ package body ProtectedTypes is
 		end procedure;
 		
 		impure function Sub(Value : POSITIVE) return POSITIVE is
+		begin
+			Sub(Value);
+			return InnerValue;
+		end function;
+	end protected body;
+	
+	-- protected REAL implementation
+	-- ===========================================================================
+	type P_REAL is protected body
+		variable InnerValue		: REAL		:= 0.0;
+		
+		procedure Clear is
+		begin
+			InnerValue	:= 0.0;
+		end procedure;
+		
+		procedure Set(Value : REAL) is
+		begin
+			InnerValue	:= Value;
+		end procedure;
+		
+		impure function Get return REAL is
+		begin
+			return InnerValue;
+		end function;
+		
+		procedure Add(Value : REAL) is
+		begin
+			InnerValue	:= InnerValue + Value;
+		end procedure;
+		
+		impure function Add(Value : REAL) return REAL is
+		begin
+			Add(Value);
+			return InnerValue;
+		end function;
+		
+		procedure Sub(Value : REAL) is
+		begin
+			InnerValue	:= InnerValue - Value;
+		end procedure;
+		
+		impure function Sub(Value : REAL) return REAL is
 		begin
 			Sub(Value);
 			return InnerValue;
