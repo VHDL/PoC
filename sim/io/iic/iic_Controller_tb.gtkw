@@ -1,32 +1,32 @@
 [*]
 [*] GTKWave Analyzer v3.3.69 (w)1999-2016 BSI
-[*] Tue Feb 09 11:01:26 2016
+[*] Tue Feb 09 18:01:59 2016
 [*]
 [dumpfile] "H:\Austausch\PoC\temp\ghdl\iiC_Controller_tb.ghw"
-[dumpfile_mtime] "Tue Feb 09 10:59:35 2016"
-[dumpfile_size] 17963
+[dumpfile_mtime] "Tue Feb 09 17:57:18 2016"
+[dumpfile_size] 10916870
 [savefile] "H:\Austausch\PoC\sim\io\iic\iiC_Controller_tb.gtkw"
-[timestart] 0
+[timestart] 19773000000
 [size] 1676 997
 [pos] -1 -1
-*-25.682823 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-25.682135 19885500000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.iic_controller_tb.
+[treeopen] top.iic_controller_tb.uut.
 [sst_width] 197
-[signals_width] 182
+[signals_width] 424
 [sst_expanded] 1
 [sst_vpaned_height] 293
 @28
 top.iic_controller_tb.clock
 top.iic_controller_tb.reset
-@200
--Request Interface
-@28
-top.iic_controller_tb.master_request
-top.iic_controller_tb.master_grant
+@800200
+-Controller
 @200
 -CSE Interface
 @28
+top.iic_controller_tb.master_request
+top.iic_controller_tb.master_grant
 top.iic_controller_tb.master_command
 top.iic_controller_tb.master_status
 top.iic_controller_tb.master_error
@@ -36,8 +36,9 @@ top.iic_controller_tb.master_error
 -Write Port
 @28
 top.iic_controller_tb.master_wp_valid
+@29
 top.iic_controller_tb.master_wp_last
-@23
+@22
 #{top.iic_controller_tb.master_wp_data[7:0]} top.iic_controller_tb.master_wp_data[7] top.iic_controller_tb.master_wp_data[6] top.iic_controller_tb.master_wp_data[5] top.iic_controller_tb.master_wp_data[4] top.iic_controller_tb.master_wp_data[3] top.iic_controller_tb.master_wp_data[2] top.iic_controller_tb.master_wp_data[1] top.iic_controller_tb.master_wp_data[0]
 @28
 top.iic_controller_tb.master_wp_ack
@@ -51,13 +52,42 @@ top.iic_controller_tb.master_rp_last
 @28
 top.iic_controller_tb.master_rp_ack
 @200
+-Internal
+@28
+top.iic_controller_tb.uut.state
+@1000200
+-Controller
+@800200
 -Serial Bus
 @28
-top.iic_controller_tb.serialdata_t
-top.iic_controller_tb.serialdata_o
-top.iic_controller_tb.serialdata_i
-top.iic_controller_tb.serialclock_t
-top.iic_controller_tb.serialclock_o
-top.iic_controller_tb.serialclock_i
+top.iic_controller_tb.master_serialclock_t
+top.iic_controller_tb.slave1_serialclock_t
+top.iic_controller_tb.blkserialclock.serialclock_wire
+top.iic_controller_tb.master_serialclock_i
+top.iic_controller_tb.slave1_serialclock_i
+@200
+-Serial Data
+@28
+top.iic_controller_tb.master_serialdata_t
+top.iic_controller_tb.slave1_serialdata_t
+top.iic_controller_tb.blkserialdata.serialdata_wire
+top.iic_controller_tb.master_serialdata_i
+top.iic_controller_tb.slave1_serialdata_i
+@1000200
+-Serial Bus
+@800200
+-BusController
+@28
+top.iic_controller_tb.uut.iicbc_request
+top.iic_controller_tb.uut.iicbc_grant
+top.iic_controller_tb.uut.iicbc_command
+top.iic_controller_tb.uut.iicbc_status
+@200
+-Internal
+@28
+top.iic_controller_tb.uut.iicbc.state
+top.iic_controller_tb.uut.iicbc.status_d
+@1000200
+-BusController
 [pattern_trace] 1
 [pattern_trace] 0
