@@ -1,0 +1,63 @@
+[*]
+[*] GTKWave Analyzer v3.3.69 (w)1999-2016 BSI
+[*] Tue Feb 09 11:01:26 2016
+[*]
+[dumpfile] "H:\Austausch\PoC\temp\ghdl\iiC_Controller_tb.ghw"
+[dumpfile_mtime] "Tue Feb 09 10:59:35 2016"
+[dumpfile_size] 17963
+[savefile] "H:\Austausch\PoC\sim\io\iic\iiC_Controller_tb.gtkw"
+[timestart] 0
+[size] 1676 997
+[pos] -1 -1
+*-25.682823 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.iic_controller_tb.
+[sst_width] 197
+[signals_width] 182
+[sst_expanded] 1
+[sst_vpaned_height] 293
+@28
+top.iic_controller_tb.clock
+top.iic_controller_tb.reset
+@200
+-Request Interface
+@28
+top.iic_controller_tb.master_request
+top.iic_controller_tb.master_grant
+@200
+-CSE Interface
+@28
+top.iic_controller_tb.master_command
+top.iic_controller_tb.master_status
+top.iic_controller_tb.master_error
+@22
+#{top.iic_controller_tb.master_address[6:0]} top.iic_controller_tb.master_address[6] top.iic_controller_tb.master_address[5] top.iic_controller_tb.master_address[4] top.iic_controller_tb.master_address[3] top.iic_controller_tb.master_address[2] top.iic_controller_tb.master_address[1] top.iic_controller_tb.master_address[0]
+@200
+-Write Port
+@28
+top.iic_controller_tb.master_wp_valid
+top.iic_controller_tb.master_wp_last
+@23
+#{top.iic_controller_tb.master_wp_data[7:0]} top.iic_controller_tb.master_wp_data[7] top.iic_controller_tb.master_wp_data[6] top.iic_controller_tb.master_wp_data[5] top.iic_controller_tb.master_wp_data[4] top.iic_controller_tb.master_wp_data[3] top.iic_controller_tb.master_wp_data[2] top.iic_controller_tb.master_wp_data[1] top.iic_controller_tb.master_wp_data[0]
+@28
+top.iic_controller_tb.master_wp_ack
+@200
+-Read Port
+@28
+top.iic_controller_tb.master_rp_valid
+top.iic_controller_tb.master_rp_last
+@22
+#{top.iic_controller_tb.master_rp_data[7:0]} top.iic_controller_tb.master_rp_data[7] top.iic_controller_tb.master_rp_data[6] top.iic_controller_tb.master_rp_data[5] top.iic_controller_tb.master_rp_data[4] top.iic_controller_tb.master_rp_data[3] top.iic_controller_tb.master_rp_data[2] top.iic_controller_tb.master_rp_data[1] top.iic_controller_tb.master_rp_data[0]
+@28
+top.iic_controller_tb.master_rp_ack
+@200
+-Serial Bus
+@28
+top.iic_controller_tb.serialdata_t
+top.iic_controller_tb.serialdata_o
+top.iic_controller_tb.serialdata_i
+top.iic_controller_tb.serialclock_t
+top.iic_controller_tb.serialclock_o
+top.iic_controller_tb.serialclock_i
+[pattern_trace] 1
+[pattern_trace] 0
