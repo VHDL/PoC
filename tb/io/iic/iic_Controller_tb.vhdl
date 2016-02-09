@@ -91,7 +91,7 @@ begin
 		generic map (
 			DEBUG													=> FALSE,
 			CLOCK_FREQ										=> CLOCK_FREQ,
-			IIC_BUSMODE										=> IO_IIC_BUSMODE_STANDARDMODE,
+			IIC_BUSMODE										=> IO_IIC_BUSMODE_FASTMODEPLUS,	--IO_IIC_BUSMODE_STANDARDMODE,
 			IIC_ADDRESS										=> (7 downto 1 => '0') & '-',
 			ADDRESS_BITS									=> ADDRESS_BITS,
 			DATA_BITS											=> DATA_BITS,
@@ -127,16 +127,52 @@ begin
 			SerialData_o									=> SerialData_o,
 			SerialData_t									=> SerialData_t
 		);
-
+	
+	blkSerialClock : block
+		signal SerialClock	: STD_LOGIC;
+	begin
+		-- pullup resistor
+		SerialClock		<= 'H';
+		SerialClock		<= SerialClock_o when (SerialClock_t = '0') else 'Z';
+		SerialClock_i	<= SerialClock;
+	end block;
+	
+	blkSerialData : block
+		signal SerialData	: STD_LOGIC;
+	begin
+		-- pullup resistor
+		SerialData		<= 'H';
+		SerialData		<= SerialData_o when (SerialData_t = '0') else 'Z';
+		SerialData_i	<= SerialData;
+	end block;
+	
 	procChecker : process
 		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Checker");
 	begin
+		Master_Request		<= '0';
+		Master_Command		<= IO_IIC_CMD_NONE;
+		Master_Address		<= (others => '0');
+		Master_WP_Valid		<= '0';
+		Master_WP_Data		<= (others => '0');
+		Master_WP_Last		<= '0';
+		Master_RP_Ack			<= '0';
+		wait until rising_edge(Clock);
 		
-		wait for 10 us;
+		Master_Request		<= '1';
+		wait until (Master_Grant	= '1') and rising_edge(Clock);
+		simAssertion((Master_Status = IO_IIC_STATUS_IDLE), "Master is not idle.");
+		simAssertion((Master_Error = IO_IIC_ERROR_NONE), "Master claims an error");
+		
+		Master_Command		<= IO_IIC_CMD_QUICKCOMMAND_WRITE;
+		
+		
+		wait for 100 us;
 		
 		-- This process is finished
 		simDeactivateProcess(simProcessID);
 		wait;  -- forever
 	end process;
+	
+	
 	
 end architecture;

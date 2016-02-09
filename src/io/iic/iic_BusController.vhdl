@@ -245,12 +245,19 @@ architecture rtl of iic_BusController is
 	-- Bus TimingCounter (BusTC)
 	subtype T_BUSTC_SLOT_INDEX								is INTEGER range 0 to TIMING_TABLE'length - 1;
 	
-	constant SMBUS_COMPLIANCE									: BOOLEAN				:= (IIC_BUSMODE = IO_IIC_BUSMODE_SMBUS);
-	
 	signal BusTC_en														: STD_LOGIC;
 	signal BusTC_Load													: STD_LOGIC;
 	signal BusTC_Slot													: T_BUSTC_SLOT_INDEX;
 	signal BusTC_Timeout											: STD_LOGIC;
+	
+	constant SMBUS_COMPLIANCE									: BOOLEAN				:= (IIC_BUSMODE = IO_IIC_BUSMODE_SMBUS);
+	
+	type T_BUS_STATE is (
+		ST_BUS_IDLE,				-- allow start condition
+		ST_BUS_NOT_FREE,		-- wait until free => and start
+		ST_BUS_SLAVE,				-- receive
+		ST_BUS_MASTER				-- low, high, restart, stop, receive
+	);
 	
 	type T_STATE is (
 		ST_RESET,
@@ -290,6 +297,8 @@ architecture rtl of iic_BusController is
 		ST_ERROR,
 			ST_BUS_ERROR
 	);
+	signal Bus_State										: T_BUS_STATE								:= ST_BUS_NOT_FREE;
+	signal Bus_NextState								: T_BUS_STATE;
 	
 	signal State												: T_STATE										:= ST_RESET;
 	signal NextState										: T_STATE;
@@ -308,11 +317,13 @@ architecture rtl of iic_BusController is
 	signal SerialClockIn								: STD_LOGIC;
 	signal SerialClock_o_r							: STD_LOGIC									:= '0';
 	signal SerialClock_t_r							: STD_LOGIC									:= '1';
+	signal SerialClock_t_d							: STD_LOGIC									:= '1';
 
 	signal SerialData_raw								: STD_LOGIC;
 	signal SerialDataIn									: STD_LOGIC;
 	signal SerialData_o_r								: STD_LOGIC									:= '0';
 	signal SerialData_t_r								: STD_LOGIC									:= '1';
+	signal SerialData_t_d								: STD_LOGIC									:= '1';
 
 	attribute KEEP of SerialClockIn			: signal is TRUE;
 	attribute KEEP of SerialDataIn			: signal is TRUE;
@@ -339,10 +350,12 @@ begin
 
 	-- Output D-FFs
 	SerialClock_o			<= '0';
-	SerialClock_t			<= SerialClock_t_r		when rising_edge(Clock);
+	SerialClock_t_d		<= SerialClock_t_r		when rising_edge(Clock);
+	SerialClock_t			<= SerialClock_t_d;
 	
 	SerialData_o			<= '0';
-	SerialData_t			<= SerialData_t_r			when rising_edge(Clock);
+	SerialData_t_d		<= SerialData_t_r			when rising_edge(Clock);
+	SerialData_t			<= SerialData_t_d;
 
 	genSpikeSupp0 : if (TIME_SPIKE_SUPPRESSION <= to_time(CLOCK_FREQ)) generate
 		SerialClockIn	<= SerialClock_raw;
@@ -378,9 +391,13 @@ begin
 	begin
 		if rising_edge(Clock) then
 			if (Reset = '1') then
-				State			<= ST_RESET;
+				State				<= ST_RESET;
+				Status_d		<= IO_IICBUS_STATUS_ERROR;
 			else
-				State			<= NextState;
+				State				<= NextState;
+				if (Status_en = '1') then
+					Status_d	<= Status_nxt;
+				end if;
 			end if;
 		end if;
 	end process;
@@ -443,7 +460,8 @@ begin
 				end case;
 			
 			when ST_SEND_START_WAIT_BUS_FREE =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				BusTC_en							<= '1';
 				
 				if (BusTC_Timeout = '1') then
@@ -451,7 +469,8 @@ begin
 				end if;
 			
 			when ST_SEND_START =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				SerialData_t_r_rst		<= '1';													-- disable data-tristate => data = 0
 				BusTC_Load						<= '1';													-- load timing counter
 				BusTC_Slot						<= TTID_HOLD_CLOCK_AFTER_START;
@@ -459,7 +478,8 @@ begin
 				NextState							<= ST_SEND_START_WAIT_HOLD_CLOCK_AFTER_START;
 			
 			when ST_SEND_START_WAIT_HOLD_CLOCK_AFTER_START =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				BusTC_en							<= '1';
 				
 				if (BusTC_Timeout = '1') then
@@ -469,7 +489,8 @@ begin
 				end if;
 			
 			when ST_SEND_RESTART_PULLDOWN_CLOCK =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				SerialClock_t_r_rst		<= '1';													-- disable clock-tristate => clock = 0
 				SerialData_t_r_set		<= '1';													-- enable data-tristate => data = 1
 				
@@ -479,7 +500,8 @@ begin
 				NextState							<= ST_SEND_RESTART_PULLDOWN_CLOCK_WAIT;
 			
 			when ST_SEND_RESTART_PULLDOWN_CLOCK_WAIT =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				BusTC_en							<= '1';
 				
 				if (BusTC_Timeout = '1') then
@@ -487,7 +509,8 @@ begin
 				end if;
 			
 			when ST_SEND_RESTART_RELEASE_CLOCK =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				SerialClock_t_r_set		<= '1';													-- enable clock-tristate => clock = 1
 				
 				if (SerialClockIn = '1') then
@@ -495,7 +518,8 @@ begin
 				end if;
 			
 			when ST_SEND_RESTART_CLOCK_RELEASED =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 			
 				BusTC_Load						<= '1';													-- load timing counter
 				BusTC_Slot						<= TTID_SETUP_REPEAT_START;
@@ -503,7 +527,8 @@ begin
 				NextState							<= ST_SEND_RESTART_CLOCK_HIGH_WAIT;
 				
 			when ST_SEND_RESTART_CLOCK_HIGH_WAIT =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				BusTC_en							<= '1';
 				
 				if (BusTC_Timeout = '1') then
@@ -511,7 +536,8 @@ begin
 				end if;
 			
 			when ST_SEND_RESTART_PULLDOWN_DATA =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				SerialData_t_r_rst		<= '1';													-- disable data-tristate => data = 0
 				
 				BusTC_Load						<= '1';													-- load timing counter
@@ -520,7 +546,8 @@ begin
 				NextState							<= ST_SEND_RESTART_WAIT_HOLD_CLOCK_AFTER_RESTART;
 			
 			when ST_SEND_RESTART_WAIT_HOLD_CLOCK_AFTER_RESTART =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				BusTC_en							<= '1';
 				
 				if (BusTC_Timeout = '1') then
@@ -530,7 +557,8 @@ begin
 				end if;
 			
 			when ST_SEND_STOP_PULLDOWN_CLOCK =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				SerialClock_t_r_rst		<= '1';													-- disable clock-tristate => clock = 0
 				SerialData_t_r_rst		<= '1';													-- disable data-tristate => data = 0
 				
@@ -540,7 +568,8 @@ begin
 				NextState							<= ST_SEND_STOP_PULLDOWN_CLOCK_WAIT;
 			
 			when ST_SEND_STOP_PULLDOWN_CLOCK_WAIT =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				BusTC_en							<= '1';
 				
 				if (BusTC_Timeout = '1') then
@@ -548,7 +577,8 @@ begin
 				end if;
 			
 			when ST_SEND_STOP_RELEASE_CLOCK =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				SerialClock_t_r_set		<= '1';													-- enable clock-tristate => clock = 1
 				
 				if (SerialClockIn = '1') then
@@ -556,7 +586,8 @@ begin
 				end if;
 			
 			when ST_SEND_STOP_CLOCK_RELEASED =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 			
 				BusTC_Load						<= '1';													-- load timing counter
 				BusTC_Slot						<= TTID_SETUP_STOP;
@@ -564,7 +595,8 @@ begin
 				NextState							<= ST_SEND_STOP_CLOCK_HIGH_WAIT;
 				
 			when ST_SEND_STOP_CLOCK_HIGH_WAIT =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				BusTC_en							<= '1';
 				
 				if (BusTC_Timeout = '1') then
@@ -572,7 +604,8 @@ begin
 				end if;
 			
 			when ST_SEND_STOP_RELEASE_DATA =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				SerialData_t_r_set		<= '1';													-- enable data-tristate => data = 1
 				
 				BusTC_Load						<= '1';													-- load timing counter
@@ -581,7 +614,8 @@ begin
 				NextState							<= ST_SEND_COMPLETE;
 			
 			when ST_SEND_HIGH_PULLDOWN_CLOCK =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				SerialClock_t_r_rst		<= '1';													-- disable clock-tristate => clock = 0
 				SerialData_t_r_set		<= '1';													-- enable data-tristate => data = 1
 				
@@ -591,7 +625,8 @@ begin
 				NextState							<= ST_SEND_HIGH_PULLDOWN_CLOCK_WAIT;
 			
 			when ST_SEND_HIGH_PULLDOWN_CLOCK_WAIT =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				BusTC_en							<= '1';
 				
 				if (BusTC_Timeout = '1') then
@@ -599,7 +634,8 @@ begin
 				end if;
 			
 			when ST_SEND_HIGH_RELEASE_CLOCK =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				SerialClock_t_r_set		<= '1';													-- enable clock-tristate => clock = 1
 				
 				if (SerialClockIn = '1') then
@@ -607,7 +643,8 @@ begin
 				end if;
 			
 			when ST_SEND_HIGH_CLOCK_RELEASED =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 			
 				BusTC_Load						<= '1';													-- load timing counter
 				BusTC_Slot						<= TTID_CLOCK_HIGH;
@@ -615,7 +652,8 @@ begin
 				NextState							<= ST_SEND_HIGH_CLOCK_HIGH_WAIT;
 				
 			when ST_SEND_HIGH_CLOCK_HIGH_WAIT =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				BusTC_en							<= '1';
 				
 				if (BusTC_Timeout = '1') then
@@ -623,7 +661,8 @@ begin
 				end if;
 			
 			when ST_SEND_HIGH_READBACK_DATA =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				
 				if (SerialDataIn = '1') then
 					NextState						<= ST_SEND_COMPLETE;
@@ -632,7 +671,8 @@ begin
 				end if;
 			
 			when ST_SEND_LOW_PULLDOWN_CLOCK =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				SerialClock_t_r_rst		<= '1';													-- disable clock-tristate => clock = 0
 				SerialData_t_r_rst		<= '1';													-- disable data-tristate => data = 0
 				
@@ -642,7 +682,8 @@ begin
 				NextState							<= ST_SEND_LOW_PULLDOWN_CLOCK_WAIT;
 			
 			when ST_SEND_LOW_PULLDOWN_CLOCK_WAIT =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				BusTC_en							<= '1';
 				
 				if (BusTC_Timeout = '1') then
@@ -650,7 +691,8 @@ begin
 				end if;
 			
 			when ST_SEND_LOW_RELEASE_CLOCK =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				SerialClock_t_r_set		<= '1';													-- enable clock-tristate => clock = 1
 				
 				if (SerialClockIn = '1') then
@@ -658,7 +700,8 @@ begin
 				end if;
 			
 			when ST_SEND_LOW_CLOCK_RELEASED =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 			
 				BusTC_Load						<= '1';													-- load timing counter
 				BusTC_Slot						<= TTID_CLOCK_HIGH;
@@ -666,7 +709,8 @@ begin
 				NextState							<= ST_SEND_LOW_CLOCK_HIGH_WAIT;
 				
 			when ST_SEND_LOW_CLOCK_HIGH_WAIT =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				BusTC_en							<= '1';
 				
 				if (BusTC_Timeout = '1') then
@@ -674,7 +718,8 @@ begin
 				end if;
 			
 			when ST_SEND_LOW_READBACK_DATA =>
-				Status								<= IO_IICBUS_STATUS_SendING;
+				Grant									<= '1';
+				Status								<= IO_IICBUS_STATUS_SENDING;
 				
 				if (SerialDataIn = '0') then
 					NextState						<= ST_SEND_COMPLETE;
@@ -683,12 +728,14 @@ begin
 				end if;
 			
 			when ST_SEND_COMPLETE =>
+				Grant									<= '1';
 				Status								<= IO_IICBUS_STATUS_SEND_COMPLETE;
 				BusTC_en							<= '1';
 				
 				NextState							<= ST_IDLE;
 			
 			when ST_RECEIVE_0 =>
+				Grant									<= '1';
 				Status								<= IO_IICBUS_STATUS_RECEIVING;
 				SerialClock_t_r_rst		<= '1';													-- disable clock-tristate => clock = 0
 				SerialData_t_r_set		<= '1';													-- enable data-tristate => data = Z
@@ -699,6 +746,7 @@ begin
 				NextState							<= ST_RECEIVE_1;
 				
 			when ST_RECEIVE_1 =>
+				Grant									<= '1';
 				Status								<= IO_IICBUS_STATUS_RECEIVING;
 				BusTC_en							<= '1';
 				
@@ -707,6 +755,7 @@ begin
 				end if;
 			
 			when ST_RECEIVE_2 =>
+				Grant									<= '1';
 				Status								<= IO_IICBUS_STATUS_RECEIVING;
 				Status_en							<= '1';
 				
@@ -726,6 +775,7 @@ begin
 				NextState							<= ST_RECEIVE_3;
 			
 			when ST_RECEIVE_3 =>
+				Grant									<= '1';
 				Status								<= IO_IICBUS_STATUS_RECEIVING;
 				BusTC_en							<= '1';
 				
@@ -734,6 +784,7 @@ begin
 				end if;
 			
 			when ST_RECEIVE_COMPLETE =>
+				Grant									<= '1';
 				Status								<= Status_d;
 				NextState							<= ST_IDLE;
 			
@@ -755,19 +806,6 @@ begin
 	SerialClock_t_r		<= ffrs(q => SerialClock_t_r,	rst => SerialClock_t_r_rst,	set => (Reset OR SerialClock_t_r_set))	when rising_edge(Clock);
 	SerialData_t_r		<= ffrs(q => SerialData_t_r,	rst => SerialData_t_r_rst,	set => (Reset OR SerialData_t_r_set))	when rising_edge(Clock);
 
-	
-	process(Clock)
-	begin
-		if rising_edge(Clock) then
-			if (Reset = '1') then
-				Status_d			<= IO_IICBUS_STATUS_ERROR;
-			else
-				if (Status_en = '1') then
-					Status_d		<= Status_nxt;
-				end if;
-			end if;
-		end if;
-	end process;
 	
 	BusTC : entity PoC.io_TimingCounter
 		generic map (
