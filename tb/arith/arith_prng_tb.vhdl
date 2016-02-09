@@ -72,8 +72,9 @@ architecture tb of arith_prng_tb is
 		x"9A", x"34", x"69", x"D3", x"A7", x"4F", x"9E", x"3C", x"78", x"F0", x"E0", x"C1", x"82", x"04", x"09", x"12"
 	);
 
-	constant BITS				: POSITIVE				:= 8;
-	constant simTestID	: T_SIM_TEST_ID		:= simCreateTest("Test setup for BITS=" & INTEGER'image(BITS));
+	constant BITS				: POSITIVE					:= 8;
+	constant SEED				: STD_LOGIC_VECTOR	:= x"12";
+	constant simTestID	: T_SIM_TEST_ID			:= simCreateTest("Test setup for BITS=" & INTEGER'image(BITS) & "; SEED=0x" & raw_format_slv_hex(SEED));
 	
 	signal Clock				: STD_LOGIC;
 	signal Reset				: STD_LOGIC;
@@ -90,7 +91,7 @@ begin
 	UUT : entity PoC.arith_prng
 		generic map (
 			BITS		=> 8,
-			SEED		=> x"12"
+			SEED		=> SEED
 		)
 		port map (
 			clk			=> Clock,						
@@ -111,10 +112,10 @@ begin
 			Test_got			<= '1';
 			
 			wait until rising_edge(Clock);
-			simAssertion((PRNG_Value = COMPARE_LIST_8_BITS(I)),
-				str_ralign(INTEGER'image(I), log10ceil(COMPARE_LIST_8_BITS'high)) &
+			simAssertion((PRNG_Value = COMPARE_LIST_8_BITS(i)),
+				str_ralign(INTEGER'image(i), log10ceil(COMPARE_LIST_8_BITS'high)) &
 				": Value=" &		raw_format_slv_hex(PRNG_Value) &
-				" Expected=" &	raw_format_slv_hex(COMPARE_LIST_8_BITS(I))
+				" Expected=" &	raw_format_slv_hex(COMPARE_LIST_8_BITS(i))
 			);
 		end loop;
 		

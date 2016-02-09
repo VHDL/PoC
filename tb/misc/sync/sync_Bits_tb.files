@@ -5,7 +5,7 @@
 # Note: all files are relative to PoC root directory
 #
 # Load external vendor libraries
-@library unisim "xilinx"													# Xilinx ISE primitives
+@library unisim "xilinx"															# Xilinx ISE primitives
 
 # board and device configuration
 vhdl		poc		"tb/common/my_config_ML505.vhdl"
