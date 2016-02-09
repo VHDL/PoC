@@ -62,16 +62,19 @@ package sim_protected is
 		impure function	registerProcess(Name : STRING; IsLowPriority : BOOLEAN := FALSE) return T_SIM_PROCESS_ID;
 		impure function registerProcess(TestID : T_SIM_TEST_ID; Name : STRING; IsLowPriority : BOOLEAN := FALSE) return T_SIM_PROCESS_ID;
 		procedure				deactivateProcess(procID : T_SIM_PROCESS_ID);
+		procedure				stopAllProcesses;
+		procedure				stopProcesses(TestID	: T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID);
 		
 		-- Test Management
 		procedure				createDefaultTest;
 		impure function	createTest(Name : STRING) return T_SIM_TEST_ID;
 		procedure				activateDefaultTest;
+		impure function	finalizeDefaultTest return BOOLEAN;
 		procedure				finalizeTest(TestID : T_SIM_TEST_ID);
 		
 		-- Run Management
-		procedure				stopAllProcesses(TestID	: T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID);
-		procedure				stopAllClocks(TestID		: T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID);
+		procedure				stopAllClocks;
+		procedure				stopClocks(TestID		: T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID);
 		
 		impure function	isStopped(TestID		: T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) return BOOLEAN;
 		impure function	isFinalized(TestID	: T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) return BOOLEAN;
@@ -116,22 +119,35 @@ package body sim_protected is
 		variable Tests									: T_SIM_TEST_VECTOR(T_SIM_TEST_ID);
 		
 		-- Initializer
-		procedure initialize(MaxAssertFailures : NATURAL := NATURAL'high; MaxSimulationRuntime : TIME := TIME'high) is
+		procedure init is
 		begin
 			if (State.IsInitialized = FALSE) then
-				if C_SIM_VERBOSE then		report "initialize:" severity NOTE;			end if;
+				if C_SIM_VERBOSE then		report "init:" severity NOTE;			end if;
 				State.IsInitialized		:= TRUE;
 				createDefaultTest;
-				Max_AssertFailures		:= MaxAssertFailures;
-				Max_SimulationRuntime	:= MaxSimulationRuntime;
 			end if;
 		end procedure;
 		
+		procedure initialize(MaxAssertFailures : NATURAL := NATURAL'high; MaxSimulationRuntime : TIME := TIME'high) is
+		begin
+			if C_SIM_VERBOSE then		report "initialize:" severity NOTE;			end if;
+			init;
+			Max_AssertFailures		:= MaxAssertFailures;
+			Max_SimulationRuntime	:= MaxSimulationRuntime;
+			-- if (MaxSimulationRuntime /= TIME'high) then
+				-- wait until (State.IsFinalized = TRUE) for MaxSimulationRuntime;
+				-- report "initialize: TIMEOUT" severity ERROR;
+				-- finalize;
+			-- end if;
+		end procedure;
+		
 		procedure finalize is
+			variable Dummy	: BOOLEAN;
 		begin
 			if (State.IsFinalized = FALSE) then
 				if C_SIM_VERBOSE then		report "finalize: " severity NOTE;		end if;
 				State.IsFinalized		:= TRUE;
+				Dummy		:= finalizeDefaultTest;
 				for i in 0 to TestCount - 1 loop
 					finalizeTest(i);
 				end loop;
@@ -151,7 +167,12 @@ package body sim_protected is
 		procedure writeReport_TestReport(Prefix : STRING := "") is
 		  variable LineBuffer : LINE;
 	  begin
-			write(LineBuffer,					 Prefix & "Tests          " & INTEGER'image(imax(1, TestCount)));
+			if (Tests(C_SIM_DEFAULT_TEST_ID).Status /= SIM_TEST_STATUS_CREATED) then
+				write(LineBuffer,				 Prefix & "Tests          " & INTEGER'image(TestCount + 1));
+				write(LineBuffer,		CR & Prefix & " " & str_ralign("-1", log10ceilnz(TestCount + 1) + 1) & ": " & C_SIM_DEFAULT_TEST_NAME);
+			else
+				write(LineBuffer,				 Prefix & "Tests          " & INTEGER'image(TestCount));
+			end if;
 			for i in 0 to TestCount - 1 loop
 				write(LineBuffer,		CR & Prefix & "  " & str_ralign(INTEGER'image(i), log10ceilnz(TestCount)) & ": " & str_trim(Tests(i).Name));
 			end loop;
@@ -174,9 +195,16 @@ package body sim_protected is
 			-- report killed processes
 			for i in 0 to ProcessCount - 1 loop
 				if ((Processes(i).Status = SIM_PROCESS_STATUS_ACTIVE) and (Processes(i).IsLowPriority = FALSE)) then
-					write(LineBuffer,	CR & Prefix & "    " & str_trim(Processes(i).Name));
+					write(LineBuffer,	CR & Prefix & "    " & str_ralign(INTEGER'image(i), log10ceilnz(ProcessCount)) & ": " & str_trim(Processes(i).Name));
 				end if;
 			end loop;
+		  writeline(output, LineBuffer);
+		end procedure;
+		
+		procedure writeReport_RuntimeReport(Prefix : STRING := "") is
+		  variable LineBuffer : LINE;
+	  begin
+			write(LineBuffer,					 Prefix & "Runtime      " & to_string(now, 1));
 		  writeline(output, LineBuffer);
 		end procedure;
 		
@@ -201,6 +229,7 @@ package body sim_protected is
 		  writeline(output, LineBuffer);
 			writeReport_AssertReport("  ");
 			writeReport_ProcessReport("  ");
+			writeReport_RuntimeReport("  ");
 			writeReport_SimulationResult;
 		end procedure;
 
@@ -235,7 +264,7 @@ package body sim_protected is
 			variable Test							: T_SIM_TEST;
 		begin
 			if (State.IsInitialized = FALSE) then
-				initialize;
+				init;
 			end if;
 			if C_SIM_VERBOSE then		report "createDefaultTest(" & C_SIM_DEFAULT_TEST_NAME & "):" severity NOTE;		end if;
 			Test.ID										:= C_SIM_DEFAULT_TEST_ID;
@@ -252,7 +281,7 @@ package body sim_protected is
 			variable Test						: T_SIM_TEST;
 		begin
 			if (State.IsInitialized = FALSE) then
-				initialize;
+				init;
 			end if;
 			if C_SIM_VERBOSE then		report "createTest(" & Name & "): => " & T_SIM_TEST_ID'image(TestCount) severity NOTE;		end if;
 			Test.ID									:= TestCount;
@@ -278,41 +307,34 @@ package body sim_protected is
 		end procedure;
 		
 		impure function finalizeDefaultTest return BOOLEAN is
-			variable Result		: BOOLEAN;
 		begin
-			Result	:= FALSE;
-			if (ActiveTestCount = 1) then
-				if C_SIM_VERBOSE then		report "finalizeDefaultTest: " severity NOTE;		end if;
-				if (Tests(C_SIM_DEFAULT_TEST_ID).Status = SIM_TEST_STATUS_CREATED) then
-					Result						:= TRUE;
-				elsif (Tests(C_SIM_DEFAULT_TEST_ID).Status = SIM_TEST_STATUS_ACTIVE) then
-					if (Tests(C_SIM_DEFAULT_TEST_ID).ActiveProcessCount = 0) then
-						ActiveTestCount	:= ActiveTestCount - 1;
-						Result					:= TRUE;
-					end if;
-				end if;
-			end if;
-			if (Result = TRUE) then
+			if (Tests(C_SIM_DEFAULT_TEST_ID).Status = SIM_TEST_STATUS_CREATED) then
+				if C_SIM_VERBOSE then		report "finalizeDefaultTest: inactive" severity NOTE;		end if;
 				Tests(C_SIM_DEFAULT_TEST_ID).Status	:= SIM_TEST_STATUS_ENDED;
-				stopAllProcesses(C_SIM_DEFAULT_TEST_ID);
+				stopProcesses(C_SIM_DEFAULT_TEST_ID);
+				return TRUE;
+			elsif (Tests(C_SIM_DEFAULT_TEST_ID).Status = SIM_TEST_STATUS_ACTIVE) then
+				if C_SIM_VERBOSE then		report "finalizeDefaultTest: active" severity NOTE;		end if;
+				Tests(C_SIM_DEFAULT_TEST_ID).Status	:= SIM_TEST_STATUS_ENDED;
+				ActiveTestCount											:= ActiveTestCount - 1;
+				stopProcesses(C_SIM_DEFAULT_TEST_ID);
 				if (ActiveTestCount = 0) then
 					finalize;
 				end if;
+				return TRUE;
 			end if;
-			return Result;
+			return FALSE;
 		end function;
 		
 		procedure finalizeTest(TestID : T_SIM_TEST_ID) is
 			variable Dummy	: BOOLEAN;
 		begin
-			if (TestID = C_SIM_DEFAULT_TEST_ID) then
-				Dummy := finalizeDefaultTest;
-			elsif (TestID < TestCount) then
-				if (Tests(TestID).Status = SIM_TEST_STATUS_ACTIVE) then
-					if C_SIM_VERBOSE then		report "finalizeTest(TestID=" & T_SIM_TEST_ID'image(TestID) & "): " & str_trim(Tests(TestID).Name) severity NOTE;		end if;
-					Tests(TestID).Status		:= SIM_TEST_STATUS_ENDED;
-					ActiveTestCount					:= ActiveTestCount - 1;
-					stopAllProcesses(TestID);
+			if (TestID < TestCount) then
+				if (Tests(TestID).Status /= SIM_TEST_STATUS_ENDED) then
+					if C_SIM_VERBOSE then		report "finalizeTest(TestID=" & T_SIM_TEST_ID'image(TestID) & "): " severity NOTE;		end if;
+					Tests(TestID).Status	:= SIM_TEST_STATUS_ENDED;
+					ActiveTestCount				:= ActiveTestCount - 1;
+					stopProcesses(TestID);
 					
 					if (ActiveTestCount = 0) then
 						finalize;
@@ -337,7 +359,7 @@ package body sim_protected is
 			variable TestProcID			: T_SIM_TEST_ID;
 		begin
 			if (State.IsInitialized = FALSE) then
-				initialize;
+				init;
 			end if;
 			if (TestID = C_SIM_DEFAULT_TEST_ID) then
 				activateDefaultTest;
@@ -378,7 +400,6 @@ package body sim_protected is
 					ActiveProcessCount								:= dec(not Processes(ProcID).IsLowPriority, ActiveProcessCount);
 					Tests(TestID).ActiveProcessCount	:= dec(not Processes(ProcID).IsLowPriority, Tests(TestID).ActiveProcessCount);
 					if (Tests(TestID).ActiveProcessCount = 0) then
-						-- stopAllProcesses(TestID);
 						finalizeTest(TestID);
 					end if;
 				end if;
@@ -387,30 +408,37 @@ package body sim_protected is
 			end if;
 		end procedure;
 		
-		procedure stopAllProcesses(TestID : T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) is
+		procedure stopAllProcesses is
 		begin
-			if C_SIM_VERBOSE then		report "stopAllProcesses(TestID=" & T_SIM_TEST_ID'image(TestID) & "):" severity NOTE;		end if;
-			if (TestID = C_SIM_DEFAULT_TEST_ID) then
-				for i in C_SIM_DEFAULT_TEST_ID to TestCount - 1 loop
-					MainProcessEnables(i)			:= FALSE;
-				end loop;
-				stopAllClocks(TestID);
-			elsif (TestID < TestCount) then
+			if C_SIM_VERBOSE then		report "stopAllProcesses:" severity NOTE;		end if;
+			for i in C_SIM_DEFAULT_TEST_ID to TestCount - 1 loop
+				stopProcesses(i);
+			end loop;
+		end procedure;
+		
+		procedure stopProcesses(TestID : T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) is
+		begin
+			if (TestID < TestCount) then
+				if C_SIM_VERBOSE then		report "stopProcesses(TestID=" & T_SIM_TEST_ID'image(TestID) & "): Name=" & str_trim(Tests(TestID).Name) severity NOTE;		end if;
 				MainProcessEnables(TestID)	:= FALSE;
-				stopAllClocks(TestID);
+				stopClocks(TestID);
 			else
 				report "TestID (" & T_SIM_TEST_ID'image(TestID) & ") is unknown." severity FAILURE;
 			end if;
 		end procedure;
 		
-		procedure stopAllClocks(TestID : T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) is
+		procedure stopAllClocks is
 		begin
-			if C_SIM_VERBOSE then		report "stopAllClocks(TestID=" & T_SIM_TEST_ID'image(TestID) & "):" severity NOTE;		end if;
-			if (TestID = C_SIM_DEFAULT_TEST_ID) then
-				for i in C_SIM_DEFAULT_TEST_ID to TestCount - 1 loop
-					MainClockEnables(i)				:= FALSE;
-				end loop;
-			elsif (TestID < TestCount) then
+			if C_SIM_VERBOSE then		report "stopAllClocks:" severity NOTE;		end if;
+			for i in C_SIM_DEFAULT_TEST_ID to TestCount - 1 loop
+				stopClocks(i);
+			end loop;
+		end procedure;
+		
+		procedure stopClocks(TestID : T_SIM_TEST_ID := C_SIM_DEFAULT_TEST_ID) is
+		begin
+			if (TestID < TestCount) then
+				if C_SIM_VERBOSE then		report "stopClocks(TestID=" & T_SIM_TEST_ID'image(TestID) & "): Name=" & str_trim(Tests(TestID).Name) severity NOTE;		end if;
 				MainClockEnables(TestID)		:= FALSE;
 			else
 				report "TestID (" & T_SIM_TEST_ID'image(TestID) & ") is unknown." severity FAILURE;

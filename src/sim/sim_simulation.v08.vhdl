@@ -99,6 +99,12 @@ package body simulation is
 	procedure simInitialize(MaxAssertFailures : NATURAL := NATURAL'high; MaxSimulationRuntime : TIME := TIME'high) is
 	begin
 		globalSimulationStatus.initialize(MaxAssertFailures, MaxSimulationRuntime);
+		if C_SIM_VERBOSE then		report "simInitialize:" severity NOTE;			end if;
+		if (MaxSimulationRuntime /= TIME'high) then
+			wait for MaxSimulationRuntime;
+			report "simInitialize: TIMEOUT" severity ERROR;
+			globalSimulationStatus.finalize;
+		end if;
 	end procedure;
 	
 	procedure simFinalize is

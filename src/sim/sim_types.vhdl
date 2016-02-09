@@ -43,7 +43,7 @@ use			PoC.vectors.all;
 
 
 package sim_types is
-	constant C_SIM_VERBOSE					: BOOLEAN		:= FALSE;		-- POC_VERBOSE
+	constant C_SIM_VERBOSE					: BOOLEAN		:= TRUE;		-- POC_VERBOSE
 
 	-- ===========================================================================
   -- Simulation Task and Status Management

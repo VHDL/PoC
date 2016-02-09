@@ -42,7 +42,8 @@ use			PoC.sim_unprotected.all;
 package simulation is
 	-- Testbench Status Management
 	-- ===========================================================================
-	alias simInitialize					is work.sim_unprotected.initialize[NATURAL, TIME];
+	-- alias simInitialize					is work.sim_unprotected.initialize[NATURAL, TIME];
+	procedure simInitialize(MaxAssertFailures : NATURAL := NATURAL'high; MaxSimulationRuntime : TIME := TIME'high);
 	alias simFinalize						is work.sim_unprotected.finalize[];
 	
 	alias simCreateTest					is work.sim_unprotected.createTest[STRING return T_SIM_TEST_ID];
@@ -63,3 +64,16 @@ package simulation is
 	-- ===========================================================================
 	-- TODO: move checksum functions here
 end package;
+
+package body simulation is
+	procedure simInitialize(MaxAssertFailures : NATURAL := NATURAL'high; MaxSimulationRuntime : TIME := TIME'high) is
+	begin
+		work.sim_unprotected.initialize(MaxAssertFailures, MaxSimulationRuntime);
+		if C_SIM_VERBOSE then		report "simInitialize:" severity NOTE;			end if;
+		if (MaxSimulationRuntime /= TIME'high) then
+			wait for MaxSimulationRuntime;
+			report "simInitialize: TIMEOUT" severity ERROR;
+			work.sim_unprotected.finalize;
+		end if;
+	end procedure;
+end package body;
