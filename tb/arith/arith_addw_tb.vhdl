@@ -38,9 +38,9 @@ use			PoC.strings.all;
 use			PoC.physical.all;
 use			PoC.arith.all;
 -- simulation only packages
-use			PoC.sim_global.all;
 use			PoC.sim_types.all;
 use			PoC.simulation.all;
+use			PoC.waveform.all;
 
 
 entity arith_addw_tb is
@@ -71,7 +71,6 @@ architecture tb of arith_addw_tb is
 begin
 	-- initialize global simulation status
 	simInitialize;
-	
 	-- generate global testbench clock
 	simGenerateClock(Clock, CLOCK_FREQ);
 
@@ -106,8 +105,7 @@ begin
   -- Stimuli
   procChecker : process
 		-- from Simulation
-		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Combined Generator and Checker");	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
-		
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Combined Generator and Checker");
   begin
     for i in natural range 0 to 2**N-1 loop
       a <= std_logic_vector(to_unsigned(i, N));
@@ -145,8 +143,7 @@ begin
 		
     -- This process is finished
 		simDeactivateProcess(simProcessID);
-		-- Report overall result
-		simFinalize;
+		simFinalize;		-- this finalizes all tests
 		wait;  -- forever
   end process;
 

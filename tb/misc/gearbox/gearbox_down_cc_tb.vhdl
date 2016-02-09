@@ -39,9 +39,9 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.physical.all;
 -- simulation only packages
-use			PoC.sim_global.all;
 use			PoC.sim_types.all;
 use			PoC.simulation.all;
+use			PoC.waveform.all;
 
 library OSVVM;
 use			OSVVM.RandomPkg.all;
@@ -112,7 +112,7 @@ begin
 	begin
 		procGenerator : process
 			-- from Simulation
-			constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Generator " & INTEGER'image(i) & " for " & INTEGER'image(INPUT_BITS) & "->" & INTEGER'image(OUTPUT_BITS));	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
+			constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess(simTestID, "Generator " & INTEGER'image(i) & " for " & INTEGER'image(INPUT_BITS) & "->" & INTEGER'image(OUTPUT_BITS));	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
 			-- protected type from RandomPkg
 			variable RandomVar		: RandomPType;
 		
@@ -197,7 +197,7 @@ begin
 			);
 		
 		procChecker : process
-			constant simProcessID	: T_SIM_PROCESS_ID	:= simRegisterProcess("Checker " & INTEGER'image(i) & " for " & INTEGER'image(INPUT_BITS) & "->" & INTEGER'image(OUTPUT_BITS));
+			constant simProcessID	: T_SIM_PROCESS_ID	:= simRegisterProcess(simTestID, "Checker " & INTEGER'image(i) & " for " & INTEGER'image(INPUT_BITS) & "->" & INTEGER'image(OUTPUT_BITS));
 			variable Check				: BOOLEAN;
 		begin
 			Check		:= TRUE;
@@ -218,8 +218,6 @@ begin
 			
 			-- This process is finished
 			simDeactivateProcess(simProcessID);
-			-- Report overall result
-			simFinalize;
 			wait;		-- forever
 		end process;
 	end generate;

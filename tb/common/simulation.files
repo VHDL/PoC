@@ -1,0 +1,13 @@
+
+# simulation types
+vhdl    poc   "src/sim/sim_types.vhdl"
+if ( VHDLVersion <= 93 ) then
+	vhdl	poc		"src/sim/sim_global.v93.vhdl"				# global variables
+	vhdl	poc		"src/sim/sim_unprotected.v93.vhdl"	# simulation helpers
+	vhdl	poc		"src/sim/sim_simulation.v93.vhdl"		# VHDL language version wrapper
+elseif (VHDLVersion >= 2008) then
+	vhdl	poc		"src/sim/sim_protected.v08.vhdl"		# simulation helpers
+	vhdl	poc		"src/sim/sim_global.v08.vhdl"				# global variables
+	vhdl	poc		"src/sim/sim_simulation.v08.vhdl"		# VHDL language version wrapper
+end if
+vhdl    poc   "src/sim/sim_waveform.vhdl"

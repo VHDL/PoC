@@ -19,6 +19,8 @@ sort/
 xil/
 
 # TCL batch files for varous simulators
+aSim.batch.tcl
+aSim.gui.tcl
 iSim.batch.tcl
 iSim.gui.tcl
 xSim.batch.tcl

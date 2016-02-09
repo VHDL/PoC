@@ -1,7 +1,8 @@
 # git files
-.gitignore
+.gitempty
 
-# subnamespace
+# Documentation
+README.md
 
 # --------------------------------------
 fifo_cc_got_tb.vhdl

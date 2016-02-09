@@ -8,7 +8,7 @@
 -- Description:  Testbench for arith_scaler.
 --
 -------------------------------------------------------------------------------
--- Copyright 2007-2015 Technische Universität Dresden - Germany
+-- Copyright 2007-2016 Technische Universität Dresden - Germany
 --                     Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,6 +30,10 @@ use			IEEE.numeric_std.all;
 
 library	PoC;
 use			PoC.utils.all;
+-- simulation only packages
+use			PoC.sim_global.all;
+use			PoC.sim_types.all;
+use			PoC.simulation.all;
 
 
 entity arith_scaler_tb is
@@ -115,9 +119,11 @@ begin
       end loop;
     end loop;
 
-    report "Test complete.";
-    wait;
-
+    -- This process is finished
+		simDeactivateProcess(simProcessID);
+		-- Report overall result
+		globalSimulationStatus.finalize;
+		wait;  -- forever
   end process;
 
-end;
+end architecture;

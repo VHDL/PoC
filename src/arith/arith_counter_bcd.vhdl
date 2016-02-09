@@ -3,24 +3,28 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	BCD counter.
---
 -- Authors:				 	Martin Zabel
 --									Thomas B. Preusser
 -- 
+-- Module:				 	BCD counter.
+--
 -- Description:
 -- ------------------------------------
--- Counter with output in binary coded decimal (BCD).
--- The number of BCD digits is configurable.
+--	Counter with output in binary coded decimal (BCD).
+--	The number of BCD digits is configurable.
+--	
+--	All control signals (reset 'rst', increment 'inc') are high-active and
+--	synchronous to clock 'clk'.
+--	The output 'val' is the current counter state. Groups of 4 bit represent one
+--	BCD digit. The lowest significant digit is specified by val(3 downto 0).
 --
--- All control signals (reset 'rst', increment 'inc') are high-active and
--- synchronous to clock 'clk'.
--- The output 'val' is the current counter state. Groups of 4 bit represent one
--- BCD digit. The lowest significant digit is specified by val(3 downto 0).
--- 
+-- TODO:
+--	- implement a 'dec' input for decrementing
+--	- implement a 'load' input to load a value
+--
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,11 +40,13 @@
 -- limitations under the License.
 -- ============================================================================
 
-library	ieee;
-use			ieee.std_logic_1164.all;
+library	IEEE;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
 
-library poc;
-use poc.utils.all;
+library PoC;
+use			PoC.utils.all;
+
 
 entity arith_counter_bcd is
 	generic (
@@ -52,11 +58,8 @@ entity arith_counter_bcd is
 		inc : in	std_logic;												-- Increment
 		val : out T_BCD_VECTOR(DIGITS-1 downto 0) 	-- Value output
 	);
-end arith_counter_bcd;
+end entity;
 
-
-library	IEEE;
-use IEEE.numeric_std.all;
 
 architecture rtl of arith_counter_bcd is
   -- c(i) = carry-in of stage 'i'
@@ -68,7 +71,7 @@ begin
 
 	-- Generate for each BCD stage
 	gDigit : for i in 0 to DIGITS-1 generate
-		signal cnt_r : t_BCD := x"0";	 -- Counter Digit of this Stage
+		signal cnt_r : T_BCD := x"0";	 -- Counter Digit of this Stage
 	begin
 		p(i) <= cnt_r(3) and cnt_r(0); -- Local Overflow at digit 9
 		process(clk)
@@ -80,7 +83,7 @@ begin
 					if p(i) = '1' then -- our counter reached last digit
 						cnt_r <= x"0";
 					else
-						cnt_r <= t_BCD(unsigned(cnt_r) + 1);
+						cnt_r <= T_BCD(unsigned(cnt_r) + 1);
 					end if;
 				end if;
 			end if;
@@ -89,4 +92,4 @@ begin
 		-- Digit Output
 		val(i) <= cnt_r;
 	end generate gDigit;
-end rtl;
+end architecture;

@@ -5,7 +5,7 @@
 -- ============================================================================
 -- Authors:					Martin Zabel
 -- 
--- Testbench:					for component ddrio_out
+-- Testbench:				for component ddrio_out
 --
 -- Description:
 -- ------------------------------------
@@ -13,7 +13,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,58 +29,64 @@
 -- limitations under the License.
 -- ============================================================================
 
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+library	ieee;
+use			ieee.std_logic_1164.all;
+use			ieee.numeric_std.all;
 
 library poc;
+use			PoC.physical.all;
+-- simulation only packages
+use			PoC.sim_types.all;
+use			PoC.simulation.all;
+use			PoC.waveform.all;
 
--------------------------------------------------------------------------------
 
 entity ddrio_out_tb is
+end entity;
 
-end entity ddrio_out_tb;
-
--------------------------------------------------------------------------------
 
 architecture sim of ddrio_out_tb is
-
+	constant CLOCK_FREQ	: FREQ					:= 100 MHz;
+	
   -- component generics
-  constant NO_OUTPUT_ENABLE : BOOLEAN	 		:= false;
-  constant BITS		    			: POSITIVE   	:= 2;
-  constant INIT_VALUE	    	: BIT_VECTOR(1 downto 0) := "10";
+  constant NO_OUTPUT_ENABLE	: BOOLEAN	 		:= false;
+  constant BITS							: POSITIVE   	:= 2;
+  constant INIT_VALUE				: BIT_VECTOR(1 downto 0) := "10";
 
   -- component ports
-  signal Clock	      : STD_LOGIC := '1';
-  signal ClockEnable  : STD_LOGIC := '0';
-  signal OutputEnable : STD_LOGIC := '0';
-  signal DataOut_high : STD_LOGIC_VECTOR(BITS - 1 downto 0);
-  signal DataOut_low  : STD_LOGIC_VECTOR(BITS - 1 downto 0);
-  signal Pad	      : STD_LOGIC_VECTOR(BITS - 1 downto 0);
+  signal Clock				: STD_LOGIC := '1';
+  signal ClockEnable	: STD_LOGIC := '0';
+  signal OutputEnable	: STD_LOGIC := '0';
+  signal DataOut_high	: STD_LOGIC_VECTOR(BITS - 1 downto 0);
+  signal DataOut_low	: STD_LOGIC_VECTOR(BITS - 1 downto 0);
+  signal Pad					: STD_LOGIC_VECTOR(BITS - 1 downto 0);
 
-  signal STOPPED : boolean := false;
-  
-begin  -- architecture sim
+begin
+	-- initialize global simulation status
+	simInitialize;
+	-- generate global testbench clock
+	simGenerateClock(Clock, CLOCK_FREQ);
 
   -- component instantiation
   DUT: entity poc.ddrio_out
     generic map (
-      NO_OUTPUT_ENABLE => NO_OUTPUT_ENABLE,
-      BITS	       => BITS,
-      INIT_VALUE       => INIT_VALUE)
+      NO_OUTPUT_ENABLE	=> NO_OUTPUT_ENABLE,
+      BITS							=> BITS,
+      INIT_VALUE				=> INIT_VALUE
+		)
     port map (
-      Clock	   => Clock,
-      ClockEnable  => ClockEnable,
-      OutputEnable => OutputEnable,
-      DataOut_high => DataOut_high,
-      DataOut_low  => DataOut_low,
-      Pad	   => Pad);
+      Clock							=> Clock,
+      ClockEnable				=> ClockEnable,
+      OutputEnable			=> OutputEnable,
+      DataOut_high			=> DataOut_high,
+      DataOut_low				=> DataOut_low,
+      Pad								=> Pad
+		);
 
-  -- clock generation
-  Clock <= not Clock after 5 ns when not STOPPED;
 
   -- waveform generation
   WaveGen_Proc: process
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Generator");
     variable ii : std_logic_vector(3 downto 0);
   begin
     -- simulate waiting for clock enable
@@ -110,8 +116,9 @@ begin  -- architecture sim
     OutputEnable <= '0';
     wait until rising_edge(Clock);
 
-    STOPPED <= true;
-    wait;
+    -- This process is finished
+		simDeactivateProcess(simProcessID);
+		wait;  -- forever
   end process WaveGen_Proc;
 
-end architecture sim;
+end architecture;
