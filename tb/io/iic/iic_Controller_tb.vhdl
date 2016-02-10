@@ -76,14 +76,25 @@ architecture tb of iic_Controller_tb is
 	signal Master_RP_Ack				: STD_LOGIC;
 	
 	-- tristate interface: STD_LOGIC;
-	signal SerialClock_i				: STD_LOGIC;
-	signal SerialClock_o				: STD_LOGIC;
-	signal SerialClock_t				: STD_LOGIC;
-	signal SerialData_i					: STD_LOGIC;
-	signal SerialData_o					: STD_LOGIC;
-	signal SerialData_t					: STD_LOGIC;
+	signal Master_SerialClock_i	: STD_LOGIC;
+	signal Master_SerialClock_o	: STD_LOGIC;
+	signal Master_SerialClock_t	: STD_LOGIC;
+	signal Master_SerialData_i	: STD_LOGIC;
+	signal Master_SerialData_o	: STD_LOGIC;
+	signal Master_SerialData_t	: STD_LOGIC;
+	
+	signal Slave1_SerialClock_i	: STD_LOGIC;
+	signal Slave1_SerialClock_o	: STD_LOGIC;
+	signal Slave1_SerialClock_t	: STD_LOGIC;
+	signal Slave1_SerialData_i	: STD_LOGIC;
+	signal Slave1_SerialData_o	: STD_LOGIC;
+	signal Slave1_SerialData_t	: STD_LOGIC;
 	
 begin
+	-- initialize global simulation status
+	-- simInitialize;
+	simInitialize(MaxSimulationRuntime => 200 us);
+	-- generate global testbench clock and reset
 	simGenerateClock(Clock, CLOCK_FREQ);
 	simGenerateWaveform(Reset, simGenerateWaveform_Reset(Pause => 50 ns));
 	
@@ -91,7 +102,7 @@ begin
 		generic map (
 			DEBUG													=> FALSE,
 			CLOCK_FREQ										=> CLOCK_FREQ,
-			IIC_BUSMODE										=> IO_IIC_BUSMODE_STANDARDMODE,
+			IIC_BUSMODE										=> IO_IIC_BUSMODE_FASTMODEPLUS,	--IO_IIC_BUSMODE_STANDARDMODE,
 			IIC_ADDRESS										=> (7 downto 1 => '0') & '-',
 			ADDRESS_BITS									=> ADDRESS_BITS,
 			DATA_BITS											=> DATA_BITS,
@@ -120,23 +131,236 @@ begin
 			Master_RP_Ack									=> Master_RP_Ack,
 			
 			-- tristate interface
-			SerialClock_i									=> SerialClock_i,
-			SerialClock_o									=> SerialClock_o,
-			SerialClock_t									=> SerialClock_t,
-			SerialData_i									=> SerialData_i,
-			SerialData_o									=> SerialData_o,
-			SerialData_t									=> SerialData_t
+			SerialClock_i									=> Master_SerialClock_i,
+			SerialClock_o									=> Master_SerialClock_o,
+			SerialClock_t									=> Master_SerialClock_t,
+			SerialData_i									=> Master_SerialData_i,
+			SerialData_o									=> Master_SerialData_o,
+			SerialData_t									=> Master_SerialData_t
 		);
-
-	procChecker : process
-		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Checker");
+	
+	blkSerialClock : block
+		signal SerialClock_Wire	: STD_LOGIC;
+		signal Master_Wire			: STD_LOGIC		:= 'Z';
+		signal Slave1_Wire			: STD_LOGIC		:= 'Z';
 	begin
+		-- pullup resistor
+		SerialClock_Wire			<= 'H';
 		
-		wait for 10 us;
+		Master_Wire						<= 'L', '0' after 20 ns		when (Master_SerialClock_t = '0') else 'Z' after 100 ns;
+		Slave1_Wire						<= 'L', '0' after 30 ns		when (Slave1_SerialClock_t = '0') else 'Z' after 200 ns;
+		SerialClock_Wire			<= Master_Wire;
+		SerialClock_Wire			<= Slave1_Wire;
+		
+		-- readers
+		Master_SerialClock_i	<= to_X01(SerialClock_Wire) after 40 ns;
+		Slave1_SerialClock_i	<= to_X01(SerialClock_Wire) after 50 ns;
+	end block;
+	
+	blkSerialData : block
+		signal SerialData_Wire	: STD_LOGIC;
+		signal Master_Wire			: STD_LOGIC		:= 'Z';
+		signal Slave1_Wire			: STD_LOGIC		:= 'Z';
+	begin
+		-- pullup resistor
+		SerialData_Wire				<= 'H';
+		
+		-- drivers
+		Master_Wire						<= 'L', '0' after 20 ns		when (Master_SerialData_t = '0') else 'Z' after 100 ns;
+		Slave1_Wire						<= 'L', '0' after 30 ns		when (Slave1_SerialData_t = '0') else 'Z' after 200 ns;
+		SerialData_Wire				<= Master_Wire;
+		SerialData_Wire				<= Slave1_Wire;
+		
+		-- readers
+		Master_SerialData_i		<= to_X01(SerialData_Wire) after 40 ns;
+		Slave1_SerialData_i		<= to_X01(SerialData_Wire) after 50 ns;
+	end block;
+	
+	procMaster : process
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Master Port");
+	begin
+		Master_Request		<= '0';
+		Master_Command		<= IO_IIC_CMD_NONE;
+		Master_Address		<= (others => '0');
+		Master_WP_Valid		<= '0';
+		Master_WP_Data		<= (others => '0');
+		Master_WP_Last		<= '0';
+		Master_RP_Ack			<= '0';
+		wait until rising_edge(Clock);
+		
+		-- Execute Quick Command Write
+		Master_Request		<= '1';
+		wait until (Master_Grant	= '1') and rising_edge(Clock);
+		simAssertion((Master_Status = IO_IIC_STATUS_IDLE), "Master is not idle.");
+		simAssertion((Master_Error = IO_IIC_ERROR_NONE), "Master claims an error");
+		
+		Master_Command		<= IO_IIC_CMD_QUICKCOMMAND_WRITE;
+		Master_Address		<= "0101011";
+		wait until rising_edge(Clock);
+		Master_Command		<= IO_IIC_CMD_NONE;
+		Master_Address		<= (others => '0');
+		simAssertion((Master_Status	= IO_IIC_STATUS_EXECUTING), "Master should execute the command");
+		
+		wait until (Master_Status	/= IO_IIC_STATUS_EXECUTING) and rising_edge(Clock);
+		simAssertion((Master_Status	= IO_IIC_STATUS_EXECUTE_OK), "Master should execute the command");
+		Master_Request		<= '0';
+		wait until rising_edge(Clock);
+		
+		-- Execute Quick Command Read
+		Master_Request		<= '1';
+		wait until (Master_Grant	= '1') and rising_edge(Clock);
+		simAssertion((Master_Status = IO_IIC_STATUS_IDLE), "Master is not idle.");
+		simAssertion((Master_Error = IO_IIC_ERROR_NONE), "Master claims an error");
+		
+		Master_Command		<= IO_IIC_CMD_QUICKCOMMAND_READ;
+		Master_Address		<= "0101011";
+		wait until rising_edge(Clock);
+		Master_Command		<= IO_IIC_CMD_NONE;
+		Master_Address		<= (others => '0');
+		simAssertion((Master_Status	= IO_IIC_STATUS_EXECUTING), "Master should execute the command");
+		
+		wait until (Master_Status	/= IO_IIC_STATUS_EXECUTING) and rising_edge(Clock);
+		simAssertion((Master_Status	= IO_IIC_STATUS_EXECUTE_OK), "Master should execute the command");
+		Master_Request		<= '0';
+		wait until rising_edge(Clock);
+		
+		-- Send Bytes
+		Master_Request		<= '1';
+		wait until (Master_Grant	= '1') and rising_edge(Clock);
+		simAssertion((Master_Status = IO_IIC_STATUS_IDLE), "Master is not idle.");
+		simAssertion((Master_Error = IO_IIC_ERROR_NONE), "Master claims an error");
+		
+		Master_Command		<= IO_IIC_CMD_SEND_BYTES;
+		Master_Address		<= "0100011";
+		Master_WP_Data		<= x"DE";
+		wait until rising_edge(Clock);
+		Master_Command		<= IO_IIC_CMD_NONE;
+		Master_Address		<= (others => '0');
+		simAssertion((Master_Status	= IO_IIC_STATUS_SENDING), "Master should execute the command");
+		
+		-- Master_WP_Valid		<= '1';
+		Master_WP_Data		<= x"AD";
+		wait until (Master_WP_Ack = '1') and rising_edge(Clock);
+		-- Master_WP_Valid		<= '1';
+		Master_WP_Data		<= x"BE";
+		wait until (Master_WP_Ack = '1') and rising_edge(Clock);
+		-- Master_WP_Valid		<= '1';
+		Master_WP_Data		<= x"EF";
+		Master_WP_Last		<= '1';
+		wait until (Master_WP_Ack = '1') and rising_edge(Clock);
+		-- Master_WP_Valid		<= '0';
+		Master_WP_Data		<= x"00";
+		Master_WP_Last		<= '0';
+		
+		
+		-- wait until (Master_Status	/= IO_IIC_STATUS_SENDING) and rising_edge(Clock);
+		-- simAssertion((Master_Status	= IO_IIC_STATUS_EXECUTE_OK), "Master should execute the command");
+		-- Master_Request		<= '0';
+		-- wait until rising_edge(Clock);
+		
+		wait for 100 us;
 		
 		-- This process is finished
 		simDeactivateProcess(simProcessID);
 		wait;  -- forever
 	end process;
 	
+	procAck : process
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Acknolegements");
+	begin
+		Slave1_SerialClock_o		<= '0';
+		Slave1_SerialClock_t		<= '1';
+		Slave1_SerialData_o			<= '0';
+		Slave1_SerialData_t			<= '1';
+		
+		-- ack impulse -> Quick Command Write
+		for i in 1 to 9 loop
+			wait until falling_edge(Slave1_SerialClock_i);
+		end loop;
+		
+		wait for 100 ns;
+		Slave1_SerialData_t			<= '0';
+		wait until rising_edge(Slave1_SerialClock_i);
+		wait for 50 ns;
+		Slave1_SerialData_t			<= '1';
+		wait until rising_edge(Slave1_SerialClock_i);
+		
+		-- ack impulse -> Quick Command Read
+		for i in 1 to 9 loop
+			wait until falling_edge(Slave1_SerialClock_i);
+		end loop;
+		
+		wait for 100 ns;
+		Slave1_SerialData_t			<= '0';
+		wait until rising_edge(Slave1_SerialClock_i);
+		wait for 50 ns;
+		Slave1_SerialData_t			<= '1';
+		wait until rising_edge(Slave1_SerialClock_i);
+		
+		-- ack impulse -> Send Bytes
+		-- Address ACK
+		for i in 1 to 9 loop
+			wait until falling_edge(Slave1_SerialClock_i);
+		end loop;
+		
+		wait for 100 ns;
+		Slave1_SerialData_t			<= '0';
+		wait until rising_edge(Slave1_SerialClock_i);
+		wait for 50 ns;
+		Slave1_SerialData_t			<= '1';
+		
+		-- Data 0 ACK
+		for i in 1 to 9 loop
+			wait until falling_edge(Slave1_SerialClock_i);
+		end loop;
+		
+		wait for 100 ns;
+		Slave1_SerialData_t			<= '0';
+		wait until rising_edge(Slave1_SerialClock_i);
+		wait for 50 ns;
+		Slave1_SerialData_t			<= '1';
+		
+		-- Data 1 ACK
+		for i in 1 to 9 loop
+			wait until falling_edge(Slave1_SerialClock_i);
+		end loop;
+		
+		wait for 100 ns;
+		Slave1_SerialData_t			<= '0';
+		wait until rising_edge(Slave1_SerialClock_i);
+		wait for 50 ns;
+		Slave1_SerialData_t			<= '1';
+		
+		-- Data 2 ACK
+		for i in 1 to 9 loop
+			wait until falling_edge(Slave1_SerialClock_i);
+		end loop;
+		
+		wait for 100 ns;
+		Slave1_SerialData_t			<= '0';
+		wait until rising_edge(Slave1_SerialClock_i);
+		wait for 50 ns;
+		Slave1_SerialData_t			<= '1';
+		
+		-- Data 3 ACK
+		for i in 1 to 9 loop
+			wait until falling_edge(Slave1_SerialClock_i);
+		end loop;
+		
+		wait for 100 ns;
+		Slave1_SerialData_t			<= '0';
+		wait until rising_edge(Slave1_SerialClock_i);
+		wait for 50 ns;
+		Slave1_SerialData_t			<= '1';
+		wait until rising_edge(Slave1_SerialClock_i);
+		
+		
+		-- disable this slave
+		Slave1_SerialClock_t		<= '1';
+		Slave1_SerialData_t			<= '1';
+		
+		-- This process is finished
+		simDeactivateProcess(simProcessID);
+		wait;  -- forever
+	end process;
 end architecture;
