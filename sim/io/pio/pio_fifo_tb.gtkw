@@ -1,0 +1,63 @@
+[*]
+[*] GTKWave Analyzer v3.3.69 (w)1999-2016 BSI
+[*] Wed Feb 10 02:54:46 2016
+[*]
+[dumpfile] "H:\Austausch\PoC\temp\ghdl\pio_fifo_tb.ghw"
+[dumpfile_mtime] "Wed Feb 10 02:53:18 2016"
+[dumpfile_size] 172820
+[savefile] "H:\Austausch\PoC\sim\io\pio\pio_fifo_tb.gtkw"
+[timestart] 0
+[size] 1676 997
+[pos] -1 -1
+*-29.551735 1160000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.pio_fifo_tb.
+[sst_width] 197
+[signals_width] 199
+[sst_expanded] 1
+[sst_vpaned_height] 293
+@800200
+-Sender
+@28
+top.pio_fifo_tb.clock_1
+top.pio_fifo_tb.reset_1
+top.pio_fifo_tb.put
+@24
+#{top.pio_fifo_tb.datain[7:0]} top.pio_fifo_tb.datain[7] top.pio_fifo_tb.datain[6] top.pio_fifo_tb.datain[5] top.pio_fifo_tb.datain[4] top.pio_fifo_tb.datain[3] top.pio_fifo_tb.datain[2] top.pio_fifo_tb.datain[1] top.pio_fifo_tb.datain[0]
+@28
+top.pio_fifo_tb.full
+@1000200
+-Sender
+@28
+top.pio_fifo_tb.wire_clock
+@c00022
+#{top.pio_fifo_tb.wire_data12[8:0]} top.pio_fifo_tb.wire_data12[8] top.pio_fifo_tb.wire_data12[7] top.pio_fifo_tb.wire_data12[6] top.pio_fifo_tb.wire_data12[5] top.pio_fifo_tb.wire_data12[4] top.pio_fifo_tb.wire_data12[3] top.pio_fifo_tb.wire_data12[2] top.pio_fifo_tb.wire_data12[1] top.pio_fifo_tb.wire_data12[0]
+@28
+top.pio_fifo_tb.wire_data12[8]
+top.pio_fifo_tb.wire_data12[7]
+top.pio_fifo_tb.wire_data12[6]
+top.pio_fifo_tb.wire_data12[5]
+top.pio_fifo_tb.wire_data12[4]
+top.pio_fifo_tb.wire_data12[3]
+top.pio_fifo_tb.wire_data12[2]
+top.pio_fifo_tb.wire_data12[1]
+top.pio_fifo_tb.wire_data12[0]
+@1401200
+-group_end
+@28
+top.pio_fifo_tb.wire_data21[0]
+@800200
+-Receiver
+@29
+top.pio_fifo_tb.clock_2
+@28
+top.pio_fifo_tb.reset_2
+top.pio_fifo_tb.got
+@24
+#{top.pio_fifo_tb.dataout[7:0]} top.pio_fifo_tb.dataout[7] top.pio_fifo_tb.dataout[6] top.pio_fifo_tb.dataout[5] top.pio_fifo_tb.dataout[4] top.pio_fifo_tb.dataout[3] top.pio_fifo_tb.dataout[2] top.pio_fifo_tb.dataout[1] top.pio_fifo_tb.dataout[0]
+@28
+top.pio_fifo_tb.valid
+@1000200
+-Receiver
+[pattern_trace] 1
+[pattern_trace] 0
