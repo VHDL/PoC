@@ -34,12 +34,16 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 library PoC;
-use PoC.utils.all;
-use PoC.sim_global.all;
-use PoC.sim_types.all;
-use PoC.simulation.all;
+use			PoC.utils.all;
+use			PoC.physical.all;
+-- simulation only packages
+use			PoC.sim_types.all;
+use			PoC.simulation.all;
+use			PoC.waveform.all;
+
 
 architecture tb of fifo_ic_assembly_tb is
+	constant CLOCK_FREQ							: FREQ					:= 100 MHz;
 
   -- component generics
   constant D_BITS : positive := 8;
@@ -61,9 +65,13 @@ architecture tb of fifo_ic_assembly_tb is
   signal vld    : std_logic;
   signal got    : std_logic;
 
-  signal done : std_logic := '0';
-
 begin
+	-- initialize global simulation status
+	simInitialize;
+	-- generate global testbench clock and reset
+	simGenerateClock(clk, 		CLOCK_FREQ);
+	-- simGenerateWaveform(rst,	simGenerateWaveform_Reset(Pause => 10 ns, ResetPulse => 10 ns));
+	rst		<= '0';
 
   DUT: entity PoC.fifo_ic_assembly
     generic map (
@@ -86,21 +94,10 @@ begin
       got    => got
     );
 
-  -- Clock
-  process
-  begin
-    clk <= '0';
-    wait for 5 ns;
-    clk <= '1';
-    wait for 5 ns;
-    if done = '1' then
-      wait;
-    end if;
-  end process;
-  rst <= '0';
+	-- Writer
+	procWriter : process
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Writer");
 
-  -- Writer
-  process
     variable t : integer;
   begin
     put <= '0';
@@ -116,11 +113,14 @@ begin
     end loop;
     put <= '0';
 
-    wait; -- forever
+   -- This process is finished
+		simDeactivateProcess(simProcessID);
+		wait;  -- forever
   end process;
 
   -- Reading Checker
-  process
+	procReader : process
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Reader");
   begin
     got <= '1';
     for i in 0 to SEQ'length*16-1 loop
@@ -131,9 +131,9 @@ begin
     end loop;
     got <= '0';
 
-    done <= '1';
-    simFinalize;
-    wait; -- forever
+    -- This process is finished
+		simDeactivateProcess(simProcessID);
+		wait;  -- forever
   end process;
 
 end tb;
