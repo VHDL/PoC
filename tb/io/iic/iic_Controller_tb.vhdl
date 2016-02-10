@@ -5,7 +5,7 @@
 -- ============================================================================
 -- Authors:					Patrick Lehmann
 -- 
--- Testbench:				For PoC.io.iic.IICController
+-- Testbench:				For PoC.io.iic.Controller
 --
 -- Description:
 -- ------------------------------------
