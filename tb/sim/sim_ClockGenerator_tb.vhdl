@@ -46,9 +46,9 @@ use			PoC.strings.all;
 use			PoC.physical.all;
 use			PoC.components.all;
 -- simulation only packages
-use			PoC.sim_global.all;
 use			PoC.sim_types.all;
 use			PoC.simulation.all;
+use			PoC.waveform.all;
 
 
 entity sim_ClockGenerator_tb is
@@ -232,7 +232,7 @@ begin
 
 	
 	simGenerateClock(Clock_50, CLOCK_FREQ);
-	simGenerateClock2(Clock_51, Debug_Jitter, to_time(CLOCK_FREQ));
+	simGenerateClock2(-1, Clock_51, Debug_Jitter, to_time(CLOCK_FREQ));
 
 	Counter_Clock_50_us		<= upcounter_next(cnt => Counter_Clock_50_us) when rising_edge(Clock_50);
 	Counter_Clock_51_us		<= upcounter_next(cnt => Counter_Clock_51_us) when rising_edge(Clock_51);

@@ -43,7 +43,7 @@ library PoC;
 use			PoC.utils.all;
 
 
-PACKAGE components IS
+package components is
 	-- implement an optional register stage
 	function registered(signal Clock : STD_LOGIC; constant IsRegistered : BOOLEAN) return BOOLEAN;
 
@@ -101,7 +101,7 @@ PACKAGE components IS
 	function mux(sel : STD_LOGIC; slv0	: STD_LOGIC_VECTOR;	slv1	: STD_LOGIC_VECTOR)	return STD_LOGIC_VECTOR;
 	function mux(sel : STD_LOGIC; us0		: UNSIGNED;					us1		: UNSIGNED)					return UNSIGNED;
 	function mux(sel : STD_LOGIC; s0		: SIGNED;						s1		: SIGNED)						return SIGNED;
-end;
+end package;
 
 
 package body components is
@@ -210,12 +210,12 @@ package body components is
 	
 	function dec(value : UNSIGNED; constant decrement : NATURAL := 1) return UNSIGNED is
 	begin
-		return value + decrement;
+		return value - decrement;
 	end function;
-
+	
 	function dec(value : SIGNED; constant decrement : NATURAL := 1) return SIGNED is
 	begin
-		return value + decrement;
+		return value - decrement;
 	end function;
 	
 	-- negate

@@ -12,3 +12,4 @@ sim_unprotected.pkg.v93.vhdl
 sim_protected.pkg.v08.vhdl
 sim_simulation.pkg.v93.vhdl
 sim_simulation.pkg.v08.vhdl
+sim_waveform.vhdl

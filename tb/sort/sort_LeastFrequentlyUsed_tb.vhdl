@@ -7,7 +7,10 @@ library PoC;
 use			PoC.math.all;
 use			PoC.utils.all;
 use			PoC.vectors.all;
-use			PoC.simulation.ALL;
+-- simulation only packages
+use			PoC.sim_global.all;
+use			PoC.sim_types.all;
+use			PoC.simulation.all;
 
 library OSVVM;
 use			OSVVM.RandomPkg.all;
@@ -151,14 +154,13 @@ begin
 			for j in 0 to INPUTS - 2 loop
 				Check	:= Check and (KeyOutputVector(j) <= KeyOutputVector(j + 1));
 			end loop;
-			tbAssert(Check, "Result is not monotonic.");
+			simAssertion(Check, "Result is not monotonic.");
 		end loop;
 
-		report "Patrick" severity Note;
-		
+		-- This process is finished
+		simDeactivateProcess(simProcessID);
 		-- Report overall result
-		tbPrintResult;
-
-    wait;  -- forever
+		globalSimulationStatus.finalize;
+		wait;  -- forever
 	end process;
 end architecture;

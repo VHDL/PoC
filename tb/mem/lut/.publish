@@ -1,7 +1,8 @@
 # git files
-.gitignore
+.gitempty
 
-# subnamespace
+# Documentation
+README.md
 
 # --------------------------------------
 lut_Sine_tb.*
