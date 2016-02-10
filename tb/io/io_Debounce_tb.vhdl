@@ -3,9 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Testbench:				Debouncer.
--- 
 -- Authors:					Patrick Lehmann
+-- 
+-- Testbench:				Debouncer.
 -- 
 -- Description:
 -- ------------------------------------
@@ -14,7 +14,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,14 +39,17 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
 use			PoC.physical.all;
+-- simulation only packages
+use			PoC.sim_types.all;
 use			PoC.simulation.all;
+use			PoC.waveform.all;
 
 
 entity io_Debounce_tb is
-end;
+end entity;
 
 
-architecture test of io_Debounce_tb is 
+architecture tb of io_Debounce_tb is 
 	constant CLOCK_FREQ			: FREQ					:= 100 MHz;
 
 	-- simulation signals
@@ -62,11 +65,14 @@ architecture test of io_Debounce_tb is
 	signal deb_out					: STD_LOGIC;
 
 begin
+	-- initialize global simulation status
+	simInitialize;
+	-- generate global testbench clock
+	simGenerateClock(Clock, CLOCK_FREQ);
 
-	-- common clock generation
-	Clock <= Clock xnor SimStop after (to_time(CLOCK_FREQ) / 2.0);
 	
-	process
+	procGenerator : process
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Generator");
 	begin
 		wait for 5 ns;
 	
@@ -101,12 +107,11 @@ begin
 		RawInput	<= '0';
 		
 		-- final assertion
-		tbAssert((EventCounter = 4), "Events counted=" & INTEGER'image(EventCounter) &	" Expected=4");
+		simAssertion((EventCounter = 4), "Events counted=" & INTEGER'image(EventCounter) &	" Expected=4");
 		
-		-- Report overall simulation result
-		tbPrintResult;
-		SimStop	<= '1';
-		wait;
+		-- This process is finished
+		simDeactivateProcess(simProcessID);
+		wait;  -- forever
 	end process;
 
 	process(deb_out)
@@ -117,7 +122,7 @@ begin
 		end if;
 	end process;
 	
-	uut : entity PoC.io_Debounce
+	UUT : entity PoC.io_Debounce
 		generic map (
 			CLOCK_FREQ							=> CLOCK_FREQ,
 			BOUNCE_TIME							=> BOUNCE_TIME,
@@ -131,4 +136,4 @@ begin
 			Input(0)	=> RawInput,
 			Output(0)	=> deb_out
 		);
-END;
+end architecture;
