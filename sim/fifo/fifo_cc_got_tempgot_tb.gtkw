@@ -1,0 +1,23 @@
+[*]
+[*] GTKWave Analyzer v3.3.69 (w)1999-2016 BSI
+[*] Wed Feb 10 10:02:32 2016
+[*]
+[dumpfile] "H:\Austausch\PoC\temp\ghdl\fifo_cc_got_tempgot_tb.ghw"
+[dumpfile_mtime] "Wed Feb 10 10:01:58 2016"
+[dumpfile_size] 15296
+[savefile] "H:\Austausch\PoC\sim\fifo\fifo_cc_got_tempgot_tb.gtkw"
+[timestart] 0
+[size] 1680 997
+[pos] -165 -165
+*-27.223328 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.fifo_cc_got_tempgot_tb.
+[sst_width] 197
+[signals_width] 78
+[sst_expanded] 1
+[sst_vpaned_height] 293
+@28
+top.fifo_cc_got_tempgot_tb.clk
+top.fifo_cc_got_tempgot_tb.rst
+[pattern_trace] 1
+[pattern_trace] 0

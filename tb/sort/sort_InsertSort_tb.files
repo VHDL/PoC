@@ -3,20 +3,10 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # ==============================================================================
 # Note: all files are relative to PoC root directory
-
-# OSVVM
-vhdl-08	osvvm	"lib/osvvm/NamePkg.vhd"									# OSVVM 
-vhdl-08	osvvm	"lib/osvvm/OsvvmGlobalPkg.vhd"					# OSVVM 
-vhdl-08	osvvm	"lib/osvvm/TextUtilPkg.vhd"							# OSVVM 
-vhdl-08	osvvm	"lib/osvvm/TranscriptPkg.vhd"						# OSVVM 
-vhdl-08	osvvm	"lib/osvvm/AlertLogPkg.vhd"							# OSVVM 
-vhdl-08	osvvm	"lib/osvvm/MemoryPkg.vhd"								# OSVVM 
-vhdl-08	osvvm	"lib/osvvm/MessagePkg.vhd"							# OSVVM 
-vhdl-08	osvvm	"lib/osvvm/SortListPkg_int.vhd"					# OSVVM 
-vhdl-08	osvvm	"lib/osvvm/RandomBasePkg.vhd"						# OSVVM 
-vhdl-08	osvvm	"lib/osvvm/RandomPkg.vhd"								# OSVVM 
-vhdl-08	osvvm	"lib/osvvm/CoveragePkg.vhd"							# OSVVM 
-vhdl-08	osvvm	"lib/osvvm/OsvvmContext.vhd"						# OSVVM 
+#
+# Load external vendor libraries
+@library unisim	"xilinx"															# Xilinx ISE primitives
+@library osvvm	"osvvm"																# 
 
 # board and device configuration
 vhdl		poc		"tb/common/my_config_KC705.vhdl"
@@ -32,15 +22,18 @@ vhdl		poc		"src/common/physical.vhdl"							# PoC physical types package
 vhdl		poc		"src/common/components.vhdl"						# PoC components
 
 vhdl		poc		"src/sim/sim_types.vhdl"								# PoC simulation helper
+vhdl-93	poc		"src/sim/sim_random.v93.vhdl"						# PoC simulation helper
 vhdl-93	poc		"src/sim/sim_global.v93.vhdl"						# PoC simulation helper
 vhdl-93	poc		"src/sim/sim_unprotected.v93.vhdl"			# PoC simulation helper
 vhdl-93	poc		"src/sim/sim_simulation.v93.vhdl"				# PoC simulation helper
+vhdl-08	poc		"src/sim/sim_random.v08.vhdl"						# PoC simulation helper
 vhdl-08	poc		"src/sim/sim_protected.v08.vhdl"				# PoC simulation helper
 vhdl-08	poc		"src/sim/sim_global.v08.vhdl"						# PoC simulation helper
 vhdl-08	poc		"src/sim/sim_simulation.v08.vhdl"				# PoC simulation helper
+vhdl		poc		"src/sim/sim_waveform.vhdl"							# PoC simulation helper
 
 # PoC.sort
-vhdl		poc		"src/sort/sort/sort_InsertSort.vhdl"		# UUT (Unit Under Test)
+vhdl		poc		"src/sort/sort_InsertSort.vhdl"					# UUT (Unit Under Test)
 
 # Testbench file(s)
-vhdl		test	"tb/sort/sort/sort_InsertSort_tb.vhdl"	# Testbench
+vhdl		test	"tb/sort/sort_InsertSort_tb.vhdl"				# Testbench

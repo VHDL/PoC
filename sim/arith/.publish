@@ -1,11 +1,14 @@
 # git files
-.gitignore
+.gitempty
+
+# Documentation
+README.md
 
 # subnamespace
 
 # --------------------------------------
 # Adder
-#arith_addw_tb.*
+arith_addw_tb.*
 
 # Counters
 #arith_counter_bcd_tb.*
