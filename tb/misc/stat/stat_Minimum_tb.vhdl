@@ -101,7 +101,7 @@ architecture tb of stat_Minimum_tb is
 	
 	constant DEPTH				: POSITIVE				:= RESULT'length;
 	constant DATA_BITS		: POSITIVE				:= 8;
-	constant COUNTER_BITS	: POSITIVE				:= 16;
+	constant COUNTER_BITS	: POSITIVE				:= 4;
 	constant simTestID		: T_SIM_TEST_ID		:= simCreateTest("Test setup for DEPTH=" & INTEGER'image(DEPTH));
 	
   -- component ports

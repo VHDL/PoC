@@ -1,0 +1,34 @@
+[*]
+[*] GTKWave Analyzer v3.3.69 (w)1999-2016 BSI
+[*] Wed Feb 10 22:52:19 2016
+[*]
+[dumpfile] "H:\Austausch\PoC\temp\ghdl\stat_Average_tb.ghw"
+[dumpfile_mtime] "Wed Feb 10 22:50:20 2016"
+[dumpfile_size] 103657
+[savefile] "H:\Austausch\PoC\sim\misc\stat\stat_Average_tb.gtkw"
+[timestart] 0
+[size] 1680 997
+[pos] -87 -87
+*-26.626780 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.stat_average_tb.
+[sst_width] 197
+[signals_width] 134
+[sst_expanded] 1
+[sst_vpaned_height] 293
+@28
+top.stat_average_tb.clock
+top.stat_average_tb.reset
+top.stat_average_tb.enable
+@22
+#{top.stat_average_tb.datain[7:0]} top.stat_average_tb.datain[7] top.stat_average_tb.datain[6] top.stat_average_tb.datain[5] top.stat_average_tb.datain[4] top.stat_average_tb.datain[3] top.stat_average_tb.datain[2] top.stat_average_tb.datain[1] top.stat_average_tb.datain[0]
+@28
+top.stat_average_tb.valid
+@22
+#{top.stat_average_tb.count[15:0]} top.stat_average_tb.count[15] top.stat_average_tb.count[14] top.stat_average_tb.count[13] top.stat_average_tb.count[12] top.stat_average_tb.count[11] top.stat_average_tb.count[10] top.stat_average_tb.count[9] top.stat_average_tb.count[8] top.stat_average_tb.count[7] top.stat_average_tb.count[6] top.stat_average_tb.count[5] top.stat_average_tb.count[4] top.stat_average_tb.count[3] top.stat_average_tb.count[2] top.stat_average_tb.count[1] top.stat_average_tb.count[0]
+@23
+#{top.stat_average_tb.sum[15:0]} top.stat_average_tb.sum[15] top.stat_average_tb.sum[14] top.stat_average_tb.sum[13] top.stat_average_tb.sum[12] top.stat_average_tb.sum[11] top.stat_average_tb.sum[10] top.stat_average_tb.sum[9] top.stat_average_tb.sum[8] top.stat_average_tb.sum[7] top.stat_average_tb.sum[6] top.stat_average_tb.sum[5] top.stat_average_tb.sum[4] top.stat_average_tb.sum[3] top.stat_average_tb.sum[2] top.stat_average_tb.sum[1] top.stat_average_tb.sum[0]
+@22
+#{top.stat_average_tb.average[15:0]} top.stat_average_tb.average[15] top.stat_average_tb.average[14] top.stat_average_tb.average[13] top.stat_average_tb.average[12] top.stat_average_tb.average[11] top.stat_average_tb.average[10] top.stat_average_tb.average[9] top.stat_average_tb.average[8] top.stat_average_tb.average[7] top.stat_average_tb.average[6] top.stat_average_tb.average[5] top.stat_average_tb.average[4] top.stat_average_tb.average[3] top.stat_average_tb.average[2] top.stat_average_tb.average[1] top.stat_average_tb.average[0]
+[pattern_trace] 1
+[pattern_trace] 0

@@ -101,7 +101,7 @@ architecture tb of stat_Average_tb is
 	
 	constant DATA_BITS		: POSITIVE				:= 8;
 	constant COUNTER_BITS	: POSITIVE				:= 16;
-	constant simTestID		: T_SIM_TEST_ID		:= simCreateTest("Test setup for DEPTH=" & INTEGER'image(DEPTH));
+	constant simTestID		: T_SIM_TEST_ID		:= simCreateTest("Test setup for ???");
 
   -- component ports
   signal Clock		: STD_LOGIC		:= '1';
