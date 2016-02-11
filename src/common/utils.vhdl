@@ -262,9 +262,9 @@ package utils is
   -- One-Hot-Code to Binary-Code.
 	--  If a non-negative value empty_val is specified, its unsigned
 	--  representation will be returned upon an all-zero input. As a consequence
-	--  of specifying this value, no simulation errors will be raised upon empty
+	--  of specifying this value, no simulation warnings will be issued upon empty
 	--  inputs. Alleged 1-hot-encoded inputs with more than one bit asserted
-	--  will always raise a simulation error.
+	--  will always raise a simulation warning.
 	function onehot2bin(onehot : std_logic_vector; empty_val : integer := -1) return unsigned;
 
   -- Converts Gray-Code into Binary-Code.
@@ -892,7 +892,8 @@ package body utils is
 
 			if SIMULATION and chk /= 1 and (chk > 1 or empty_val < 0) then
 				report "Broken 1-Hot-Code with "&integer'image(chk)&" bits set."
-					severity error;
+					severity warning;
+				res := (others => 'X'); -- computed result is implementation-dependant
 			end if;
 		end if;
 		return	res;
