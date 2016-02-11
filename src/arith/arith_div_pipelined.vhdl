@@ -129,6 +129,26 @@ end architecture;
 
 
 architecture rtl of arith_div_element is
+	component arith_div_element is
+		generic (
+			DIVIDEND_BITS		: POSITIVE;
+			DIVISOR_BITS		: POSITIVE;
+			QUOTIENT_BITS		: POSITIVE;
+			RADIX						: POSITIVE
+		);
+		port (
+			Clock					: in	STD_LOGIC;
+			Reset					: in	STD_LOGIC;
+			Enable				: in	STD_LOGIC;
+			Dividend			: in	UNSIGNED(DIVIDEND_BITS - 1 downto 0);
+			Divisor				: in	UNSIGNED(DIVISOR_BITS - 1 downto 0);
+			RemainerIn		: in	UNSIGNED(DIVISOR_BITS - 1 downto 0);
+			
+			Quotient			: out	UNSIGNED(DIVIDEND_BITS - 1 downto 0);
+			Valid					: out	STD_LOGIC
+		);
+	end component;
+
 	signal Window		: UNSIGNED(RemainerIn'length downto 0);
 	signal Result		: STD_LOGIC;
 
@@ -162,7 +182,11 @@ begin
 			Divisor_d			<= Divisor																					when rising_edge(Clock);
 		end generate;
 	
-		elem : entity PoC.arith_div_element
+		-- WORKAROUND: for GHDL
+		--	Version:	0.34
+		--	Issue:		recursive entity instantiation is not yet supported.
+		--	Solution:	use component based instantiation
+		elem : arith_div_element		-- entity PoC.arith_div_element
 			generic map (
 				DIVIDEND_BITS		=> DIVIDEND_BITS - 1,
 				DIVISOR_BITS		=> DIVISOR_BITS,
