@@ -105,7 +105,7 @@ begin
 	process(Clock)
 		variable TagHit_idx 			: NATURAL;
 	begin
-		TagHit_idx			:= to_index(onehot2bin(TagHit));
+		TagHit_idx			:= to_index(onehot2bin(TagHit, 0));
 	
 		if rising_edge(Clock) then
 			if (Reset = '1') then
