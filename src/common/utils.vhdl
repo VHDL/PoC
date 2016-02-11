@@ -260,7 +260,12 @@ package utils is
 	--+ Encodings ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   -- One-Hot-Code to Binary-Code.
-	function onehot2bin(onehot : std_logic_vector) return unsigned;
+	--  If a non-negative value empty_val is specified, its unsigned
+	--  representation will be returned upon an all-zero input. As a consequence
+	--  of specifying this value, no simulation warnings will be issued upon empty
+	--  inputs. Alleged 1-hot-encoded inputs with more than one bit asserted
+	--  will always raise a simulation warning.
+	function onehot2bin(onehot : std_logic_vector; empty_val : integer := -1) return unsigned;
 
   -- Converts Gray-Code into Binary-Code.
   --
@@ -868,21 +873,28 @@ package body utils is
 	-- binary encoding conversion functions
 	-- ==========================================================================
 	-- One-Hot-Code to Binary-Code
-  function onehot2bin(onehot : std_logic_vector) return unsigned is
-		variable res : unsigned(log2ceilnz(onehot'high+1)-1 downto 0);
+  function onehot2bin(onehot : std_logic_vector; empty_val : integer := -1) return unsigned is
+		variable res : unsigned(log2ceilnz(imax(onehot'high, empty_val)+1)-1 downto 0);
 		variable chk : natural;
 	begin
-		res := (others => '0');
-		chk := 0;
-		for i in onehot'range loop
-			if onehot(i) = '1' then
-				res := res or to_unsigned(i, res'length);
-				chk := chk + 1;
+		-- Note: empty_val = 0 takes the regular path to reduce on synthesized hardware
+		if empty_val > 0 and onehot = (onehot'range => '0') then
+			res := to_unsigned(empty_val, res'length);
+		else
+			res := (others => '0');
+			chk := 0;
+			for i in onehot'range loop
+				if onehot(i) = '1' then
+					res := res or to_unsigned(i, res'length);
+					chk := chk + 1;
+				end if;
+			end loop;
+
+			if SIMULATION and chk /= 1 and (chk > 1 or empty_val < 0) then
+				report "Broken 1-Hot-Code with "&integer'image(chk)&" bits set."
+					severity warning;
+				res := (others => 'X'); -- computed result is implementation-dependant
 			end if;
-		end loop;
-		if SIMULATION and chk /= 1 then
-			report "Broken 1-Hot-Code with "&integer'image(chk)&" bits set."
-				severity error;
 		end if;
 		return	res;
 	end function;
