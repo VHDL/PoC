@@ -18,3 +18,6 @@ fifo_ic_got.vhdl
 # Transactional FIFOs
 fifo_cc_got_tempgot.vhdl
 fifo_cc_got_tempput.vhdl
+
+# Special-purpose FIFOs
+fifo_ic_assembly.vhdl
