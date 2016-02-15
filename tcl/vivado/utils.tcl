@@ -33,7 +33,7 @@
 # this procedure assigns the first N pins to the respective bus ports.
 proc assign_bus_pins {bus pins} {
   for {set i 0} {$i < [llength $pins]} {incr i} {
-    set PORT [get_ports "$bus[$i]"]
+    set PORT [get_ports -quiet "$bus[$i]"]
     if { [llength $PORT] == 0 } { break }
     set_property PACKAGE_PIN [lindex $pins $i] $PORT
   }
