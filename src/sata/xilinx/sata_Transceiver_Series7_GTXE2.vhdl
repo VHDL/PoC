@@ -876,7 +876,7 @@ begin
 		-- ==================================================================
 		-- GTXE2_CHANNEL instance for Port I
 		-- ==================================================================
-		GTX : entity UniSim.GTXE2_CHANNEL
+		GTX : GTXE2_CHANNEL
 			generic map (
 				-- Simulation-Only attributes
 				SIM_RECEIVER_DETECT_PASS								=> "TRUE",

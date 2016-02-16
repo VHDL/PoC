@@ -1,14 +1,39 @@
--- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- ============================================================================================================================================================
--- Description:			Implementation of a Non-Performing restoring divider with a configurable radix.
---									For detailed documentation see below.
--- 
+-- =============================================================================
 -- Authors:					Thomas B. Preusser
--- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Module:					Multi-cycle Non-Performing Restoring Divider
+-- 
+-- Description:
+-- ------------------------------------
+--	Implementation of a Non-Performing restoring divider with a configurable radix.
+--	Multi-Cycle division controlled by 'start' / 'rdy'. A new division can be
+--	started, if 'rdy' = '1'. The result is available if 'rdy' is '1' again.
+--	
+--	Note that the registered version is no slower than the unregistered one
+--	as the conversion to a negative result is performed on-the-fly. It is,
+--	however, somewhat more expensive as illustrated below.
+--
+--	Synthesis Costs of the differing feasible configurations:
+--		Baseline values of Radix-2 unregistered configuration per 2009-12-08.
+--		XST: Optimization Goal AREA
+--
+--		+--------------------+------+------+------+
+--		| Registered \ Radix |   2  |    4 |    8 |
+--		+--------------------+------+------+------+
+--		| no      Flip Flops |  134 |   -2 |   -2 |
+--		|               LUT4 |  244 |  +95 | +189 |
+--		+--------------------+-------------+------+
+--		| yes     Flip Flops |  +30 |  +26 |  +24 |
+--		|               LUT4 |   +1 |  +97 | +189 |
+--		+--------------------+-------------+------+
+-- 
+-- =============================================================================
+-- Copyright 2007-2016 Technische Universität Dresden - Germany,
+--										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -21,7 +46,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================================================================================================
+-- =============================================================================
 
 library	ieee;
 use			ieee.std_logic_1164.all;
@@ -52,33 +77,6 @@ entity arith_div is
 		res				: out std_logic_vector(N-1 downto 0)
 	);
 end arith_div;
-
--------------------------------------------------------------------------------
--- Implementation of a Non-Performing Restoring Divider
---
--- Multi-Cycle division controlled by 'start' / 'rdy'. A new division can be
--- started, if 'rdy' = '1'. The result is available if 'rdy' is '1' again.
---
--- Note that the registered version is no slower than the unregistered one
--- as the conversion to a negative result is performed on-the-fly. It is,
--- however, somewhat more expensive as illustrated below.
---
--- Synthesis Costs of the differing feasible configurations:
---
---	 Baseline values of Radix-2 unregistered configuration per 2009-12-08.
---	 XST: Optimization Goal AREA
---
---				Radix	 2			 4			 8
---	 Registered
---
---		no				 134		 -2			-2			 Flip Flops
---							 244		+95		+189			 LUT4
---
---		yes				+30		+26		 +24			 Flip Flops
---								+1		+97		+189			 LUT4
---
--- 
--------------------------------------------------------------------------------
 
 
 architecture div_npr of arith_div is

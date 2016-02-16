@@ -4,9 +4,6 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
-# Load external vendor libraries
-@library osvvm "osvvm"																# Open Source VHDL Verification Methodology (OS-VVM)
-
 # board and device configuration
 vhdl		poc		"tb/common/my_config_KC705.vhdl"
 vhdl		poc		"tb/common/my_project.vhdl"
@@ -35,4 +32,4 @@ vhdl-08	poc		"src/sim/sim_simulation.v08.vhdl"				# PoC simulation helper
 vhdl		poc		"src/sim/sim_waveform.vhdl"							# PoC simulation helper
 
 # Testbench file(s)
-vhdl		test	"tb/sim/sim_ClockGenerator_tb.vhdl"			# Testbench
+vhdl		test	"tb/sim/sim_Waveform_tb.vhdl"						# Testbench
