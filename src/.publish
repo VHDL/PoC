@@ -11,6 +11,7 @@ bus/
 cache/
 comm/
 common/
+dstruct/
 fifo/
 io/
 mem/
