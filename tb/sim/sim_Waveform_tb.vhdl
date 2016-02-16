@@ -77,19 +77,7 @@ architecture tb of sim_Waveform_tb is
 	signal Bus_02								: T_SLV_8;
 	
 
-	function "<" (Wave : T_TIMEVEC; Offset : TIME) return T_TIMEVEC is
-		variable Result		: T_TIMEVEC(Wave'range);
-		variable TimePos	: TIME;
-	begin
-		TimePos := 0 fs;
-		for i in Wave'range loop
-			TimePos	:= TimePos + Wave(i);
-			if (TimePos > Offset) then
-				return (TimePos - Offset) & Wave(i + 1 to Wave'high);
-			end if;
-		end loop;
-		return (0 => 0 fs);
-	end function;
+
 	
 	constant IMPULSE_1		: T_TIMEVEC		:= simGenerateWaveform_Reset(Pause => 10 ns);
 	constant WAVE_1				: T_TIMEVEC		:= (20 ns, 5 ns, 5 ns, 5 ns, 5 ns, 10 ns, 5 ns, 5 ns, 10 ns, 20 ns);

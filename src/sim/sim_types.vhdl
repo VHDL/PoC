@@ -153,51 +153,6 @@ package sim_types is
 	
 	function ite(cond : BOOLEAN; value1 : T_DEGREE; value2 : T_DEGREE) return T_DEGREE;
 	
-	-- waveform generation
-	-- ===========================================================================
-	type T_SIM_WAVEFORM_TUPLE_SL is record
-		Delay		: TIME;
-		Value		: STD_LOGIC;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_8 is record
-		Delay		: TIME;
-		Value		: T_SLV_8;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_16 is record
-		Delay		: TIME;
-		Value		: T_SLV_16;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_24 is record
-		Delay		: TIME;
-		Value		: T_SLV_24;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_32 is record
-		Delay		: TIME;
-		Value		: T_SLV_32;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_48 is record
-		Delay		: TIME;
-		Value		: T_SLV_48;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_64 is record
-		Delay		: TIME;
-		Value		: T_SLV_64;
-	end record;
-	
-	type T_SIM_WAVEFORM_SL			is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SL;
-	type T_SIM_WAVEFORM_SLV_8		is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_8;
-	type T_SIM_WAVEFORM_SLV_16	is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_16;
-	type T_SIM_WAVEFORM_SLV_24	is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_24;
-	type T_SIM_WAVEFORM_SLV_32	is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_32;
-	type T_SIM_WAVEFORM_SLV_48	is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_48;
-	type T_SIM_WAVEFORM_SLV_64	is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_64;
-	
 end package;
 
 
