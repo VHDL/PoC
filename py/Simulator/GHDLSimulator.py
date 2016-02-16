@@ -41,6 +41,8 @@ else:
 
 # load dependencies
 from pathlib import Path
+import fileinput
+from os import linesep
 
 from Base.Exceptions import *
 from Simulator.Base import PoCSimulator 
@@ -463,7 +465,7 @@ class Simulator(PoCSimulator):
 					print("Testbench '{0}': FAILED".format(testbenchName))
 					
 			except SimulatorException as ex:
-				raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED|NOT IMPLEMENTED]' not found in simulator output.") from ex
+				raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED|NO ASSERTS]' not found in simulator output.") from ex
 		
 		else:	# guiMode
 			# run GTKWave GUI
@@ -501,7 +503,13 @@ class Simulator(PoCSimulator):
 						print("-" * 80)
 						print(gtkwLog)
 						print("-" * 80)
-				
+
+				if gtkwSaveFilePath.exists():
+					for line in fileinput.input(str(gtkwSaveFilePath), inplace = 1):
+						if line.startswith(('[dumpfile', '[savefile')):
+							continue
+						print(line.rstrip(os.linesep))
+
 			except subprocess.CalledProcessError as ex:
 				print("ERROR while executing GTKWave command: %s" % command)
 				print("Return Code: %i" % ex.returncode)
@@ -510,16 +518,3 @@ class Simulator(PoCSimulator):
 				print("-" * 80)
 				
 				return
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			

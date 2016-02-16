@@ -4,7 +4,10 @@ __init__.py
 # Modules
 Base.py
 Exceptions.py
+
+# Simulators
+AldecSimulator.py
 ISESimulator.py
-VivadoSimulator.py
-QuestaSimulator.py
 GHDLSimulator.py
+QuestaSimulator.py
+VivadoSimulator.py

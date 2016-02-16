@@ -100,8 +100,6 @@ ARCHITECTURE rtl OF sata_StreamingLayerFSM IS
 	ATTRIBUTE KEEP												: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING								: STRING;
 
-	CONSTANT MAX_BLOCKCOUNT								: POSITIVE												:= ite(SIMULATION, C_SIM_MAX_BLOCKCOUNT, C_SATA_ATA_MAX_BLOCKCOUNT);
-
 	-- 1 => single transfer
 	-- F => first transfer
 	-- N => next transfer
@@ -727,10 +725,10 @@ BEGIN
 		ATA_Address_LB_us			<= Address_LB_us_d_nx;
 		
 		IF (LastTransfer = '0') THEN
-			IF (MAX_BLOCKCOUNT = unsigned(Config_BurstSize)) THEN
-				ATA_BlockCount_LB_us												<= (OTHERS => '0');
+			IF (C_SATA_ATA_MAX_BLOCKCOUNT = unsigned(Config_BurstSize)) THEN
+				ATA_BlockCount_LB_us												<= (OTHERS => '0');	-- => ATA_MAX_BLOCKCOUNT is encoded as 0x0000000000
 			ELSE
-				ATA_BlockCount_LB_us												<= unsigned(Config_BurstSize);													-- => ATA_MAX_BLOCKCOUNT is encoded as 0x0000000000
+				ATA_BlockCount_LB_us												<= unsigned(Config_BurstSize);
 			END IF;
 		ELSE
 			ATA_BlockCount_LB_us													<= BlockCount_LB_us_d_nx(ATA_BlockCount_LB_us'range);		--
@@ -740,7 +738,7 @@ BEGIN
 	ATA_Address_LB				<= std_logic_vector(ATA_Address_LB_us);
 	ATA_BlockCount_LB			<= std_logic_vector(ATA_BlockCount_LB_us);
 	
-	BurstCount_us					<= ite((Config_BurstSize = (Config_BurstSize'range => '0')), to_unsigned(MAX_BLOCKCOUNT, BurstCount_us'length), unsigned('0' & Config_BurstSize));
+	BurstCount_us					<= ite((Config_BurstSize = (Config_BurstSize'range => '0')), to_unsigned(C_SATA_ATA_MAX_BLOCKCOUNT, BurstCount_us'length), unsigned('0' & Config_BurstSize));
 	
 	PROCESS(Clock)
 	BEGIN

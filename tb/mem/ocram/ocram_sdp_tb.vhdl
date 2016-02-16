@@ -1,65 +1,57 @@
---
--- Copyright (c) 2008
--- Technische Universitaet Dresden, Dresden, Germany
--- Faculty of Computer Science
--- Institute for Computer Engineering
--- Chair for VLSI-Design, Diagnostics and Architecture
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
--- For internal educational use only.
--- The distribution of source code or generated files
--- is prohibited.
+-- =============================================================================
+-- Authors:					Martin Zabel
+-- 
+-- Testbench:				On-Chip-RAM: Simple-Dual-Port (SDP).
+-- 
+-- Description:
+-- ------------------------------------
+--		Automated testbench for PoC.mem.ocram.sdp
 --
+-- License:
+-- =============================================================================
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+-- 
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+-- 
+--		http://www.apache.org/licenses/LICENSE-2.0
+-- 
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
 
---
--- Entity: ocram_sdp_tb
--- Author(s): Martin Zabel
--- 
--- Testbench for ocram_sdp
---
--- When simulating a netlist:
--- a) Setup constants for component generics to the values used for synthesis.
--- b) Comment out the generics in the component declaration.
---
--- Revision:    $Revision: 1.3 $
--- Last change: $Date: 2008-12-11 18:52:22 $
---
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+library	IEEE;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
+
+library PoC;
+use			PoC.utils.all;
+use			PoC.physical.all;
+-- simulation only packages
+use			PoC.sim_types.all;
+use			PoC.simulation.all;
+use			PoC.waveform.all;
+
 
 entity ocram_sdp_tb is
-end ocram_sdp_tb;
-
-library poc;
---use poc.ocram.all;
-use poc.simulation.all;
-
-use	std.TextIO.all;
+end entity;
 
 architecture tb of ocram_sdp_tb is
+	constant CLOCK_FREQ							: FREQ					:= 100 MHz;
 
   -- component generics
   -- Set to values used for synthesis when simulating a netlist.
   constant A_BITS : positive := 10;
   constant D_BITS : positive := 32;
-
-  component ocram_sdp
--- Comment out when simulating a netlist. Default values are applied here, so
--- that this is the only location which must be commented out.
-  generic (
-      A_BITS : positive := A_BITS;
-      D_BITS : positive := D_BITS);
-    port (
-      rclk : in  std_logic;
-      rce  : in  std_logic;
-      wclk : in  std_logic;
-      wce  : in  std_logic;
-      we   : in  std_logic;
-      ra   : in  unsigned(A_BITS-1 downto 0);
-      wa   : in  unsigned(A_BITS-1 downto 0);
-      d    : in  std_logic_vector(D_BITS-1 downto 0);
-      q    : out std_logic_vector(D_BITS-1 downto 0));
-  end component;
 
   -- component ports
   signal rce  : std_logic;
@@ -71,41 +63,43 @@ architecture tb of ocram_sdp_tb is
   signal q    : std_logic_vector(D_BITS-1 downto 0);
 
   -- clock
-  signal clk : std_logic := '1';
-  signal clk_ena : std_logic := '1';
+  signal clk			: std_logic;
   
-begin  -- tb
+begin
+	-- initialize global simulation status
+	simInitialize;
+	-- generate global testbench clock
+	simGenerateClock(clk, CLOCK_FREQ);
 
-  -- component instantiation
-  UUT: ocram_sdp
-    port map (
-      rclk => clk,
-      rce  => rce,
-      wclk => clk,
-      wce  => wce,
-      we   => we,
-      ra   => ra,
-      wa   => wa,
-      d    => d,
-      q    => q);
-
-  -- clock generation
-  clk <= not clk after 5 ns when clk_ena = '1' else '0';
+	-- component instantiation
+	UUT: entity PoC.ocram_sdp
+		generic map(
+			A_BITS	=> A_BITS,
+			D_BITS	=> D_BITS
+		)
+		port map (
+			rclk	=> clk,
+			rce		=> rce,
+			wclk	=> clk,
+			wce		=> wce,
+			we		=> we,
+			ra		=> ra,
+			wa		=> wa,
+			d			=> d,
+			q			=> q
+		);
 
   -- waveform generation
   WaveGen_Proc: process
-    variable pass : boolean;
-		variable l : line;
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Stimuli process");
   begin
-    pass := true;
-    
     -- insert signal assignments here
     ra  <= (others => '0');
     wa  <= (others => '0');
     rce <= '0';
     wce <= '0';
     we  <= '0';
-    wait for 100 ns;
+    simWaitUntilRisingEdge(clk, 2);
     
     wait until falling_edge(clk);
     
@@ -119,10 +113,7 @@ begin  -- tb
     wce <= '1';
     rce <= '1';                         -- normal read after write
     wait until falling_edge(clk);
-    if q /= x"11111111" then
-      pass := false;
-      report "wrong read data1" severity error;
-    end if;
+		simAssertion((q = x"11111111"), "Wrong read data1");
     
     d   <= x"22222222";
     we  <= '1';
@@ -134,29 +125,20 @@ begin  -- tb
     wce <= '1';
     rce <= '1';                         -- read again
     wait until falling_edge(clk);
-    if q /= x"22222222" then
-      pass := false;
-      report "wrong read data2" severity error;
-    end if;
+		simAssertion((q = x"22222222"), "Wrong read data1");
     
     d   <= x"33333333";
     we  <= '1';                         -- write new value
     wce <= '1';
     rce <= '0';                         -- no read
     wait until falling_edge(clk);
-    if q /= x"22222222" then
-      pass := false;
-      report "wrong read data3" severity error;
-    end if;
+		simAssertion((q = x"22222222"), "Wrong read data1");
 
     we  <= '0';                         -- no write
     wce <= '1';
     rce <= '0';                         -- no read
     wait until falling_edge(clk);
-    if q /= x"22222222" then
-      pass := false;
-      report "wrong read data4" severity error;
-    end if;
+		simAssertion((q = x"22222222"), "Wrong read data1");
 
     d   <= x"44444444";
     we  <= '1';
@@ -169,26 +151,14 @@ begin  -- tb
     wce <= '0';                         -- write clock disabled
     rce <= '1';                         -- should be normal read
     wait until falling_edge(clk);
-    if q /= x"44444444" then
-      pass := false;
-      report "wrong read data5" severity error;
-    end if;
+		simAssertion((q = x"44444444"), "Wrong read data1");
 
     we  <= '0';
     wce <= '0';
     rce <= '0';
 
-    clk_ena <= '0';
-    --printSimulationResult(pass);
-		write(l, string'("SIMULATION RESULT = "));
-		if pass then
-			write(l, string'("PASSED"));
-		else
-			write(l, string'("FAILED"));
-		end if;
-		writeline(output, l);
-
-    wait;                               -- forever
+    -- This process is finished
+		simDeactivateProcess(simProcessID);
+		wait;  -- forever
   end process WaveGen_Proc;
-
-end tb;
+end architecture;

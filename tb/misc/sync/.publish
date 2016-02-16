@@ -1,9 +1,12 @@
 # git files
-.gitignore
+.gitempty
+
+# Documentation
+README.md
 
 # clock-domain-crossing circuits
 sync_Reset_tb.*
-sync_Flag_tb.*
+sync_Bits_tb.*
 sync_Strobe_tb.*
 sync_Vector_tb.*
 sync_Command_tb.*
