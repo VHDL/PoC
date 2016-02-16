@@ -188,6 +188,14 @@ package waveform is
 		constant InitialValue	: in	T_SLV_64				:= (others => '0')
 	);
 	
+	function "*" (Wave : T_TIMEVEC; Times : NATURAL) return T_TIMEVEC;
+	function ">" (Wave : T_TIMEVEC; Offset : TIME) return T_TIMEVEC;
+	
+	function "*" (Wave : T_SIM_WAVEFORM_SLV_8; Times : NATURAL) return T_SIM_WAVEFORM_SLV_8;
+	function ">" (Wave : T_SIM_WAVEFORM_SLV_8; Offset : TIME) return T_SIM_WAVEFORM_SLV_8;
+	
+	function to_waveform(slvv : T_SLVV_8; Delay : TIME) return T_SIM_WAVEFORM_SLV_8;
+	
 	function simGenerateWaveform_Reset(constant Pause : TIME := 0 ns; ResetPulse : TIME := 10 ns) return T_TIMEVEC;
 	
 	-- TODO: integrate VCD simulation functions and procedures from sim_value_change_dump.vhdl here
@@ -361,6 +369,7 @@ package body waveform is
 		Clock		<= '0';
 	end procedure;
 
+	
 	procedure simWaitUntilRisingEdge(signal Clock : in STD_LOGIC; constant Times : in POSITIVE) is
 	begin
 		simWaitUntilRisingEdge(C_SIM_DEFAULT_TEST_ID, Clock, Times);
@@ -629,6 +638,49 @@ package body waveform is
 		simDeactivateProcess(PROCESS_ID);
 	end procedure;
 	
+	-- Waveform arithmetic
+	function "*" (Wave : T_TIMEVEC; Times : NATURAL) return T_TIMEVEC is
+		variable Result		: T_TIMEVEC(0 to Wave'length * Times - 1);
+	begin
+		for i in 0 to Times - 1 loop
+			Result(i * Wave'length to (i + 1) * Wave'length - 1) := Wave;
+		end loop;
+		return Result;
+	end function;
+	
+	function ">" (Wave : T_TIMEVEC; Offset : TIME) return T_TIMEVEC is
+	begin
+		return (Wave(Wave'low) + Offset) & Wave(Wave'low + 1 to Wave'high);
+	end function;
+	
+	function "*" (Wave : T_SIM_WAVEFORM_SLV_8; Times : NATURAL) return T_SIM_WAVEFORM_SLV_8 is
+		variable Result		: T_SIM_WAVEFORM_SLV_8(0 to Wave'length * Times - 1);
+	begin
+		for i in 0 to Times - 1 loop
+			Result(i * Wave'length to (i + 1) * Wave'length - 1) := Wave;
+		end loop;
+		return Result;
+	end function;
+	
+	function ">" (Wave : T_SIM_WAVEFORM_SLV_8; Offset : TIME) return T_SIM_WAVEFORM_SLV_8 is
+	begin
+		return T_SIM_WAVEFORM_TUPLE_SLV_8'(
+			Delay => Wave(Wave'low).Delay + Offset,
+			Value => Wave(Wave'low).Value
+		) & Wave(Wave'low + 1 to Wave'high);
+	end function;
+	
+	function to_waveform(slvv : T_SLVV_8; Delay : TIME) return T_SIM_WAVEFORM_SLV_8 is
+		variable Result		: T_SIM_WAVEFORM_SLV_8(0 to slvv'length - 1);
+	begin
+		for i in 0 to slvv'length - 1 loop
+			Result(i).Delay		:= Delay;
+			Result(i).Value		:= slvv(i);
+		end loop;
+		return Result;
+	end function;
+	
+	-- predefined common waveforms
 	function simGenerateWaveform_Reset(constant Pause : TIME := 0 ns; ResetPulse : TIME := 10 ns) return T_TIMEVEC is
 		variable p  : TIME;
 		variable rp : TIME;

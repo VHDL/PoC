@@ -5,13 +5,11 @@
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 
--- Testbench:				Pseudo-Random Number Generator (PRNG).
+-- Testbench:				for clock generation in testbenches.
 -- 
 -- Description:
 -- ------------------------------------
---		Automated testbench for PoC.arith_prng
---		The Pseudo-Random Number Generator is instantiated for 8 bits. The
---		output sequence is compared to 256 pre calculated values.
+--	TODO
 --
 -- License:
 -- =============================================================================
@@ -55,7 +53,7 @@ entity sim_ClockGenerator_tb is
 end entity;
 
 
-architecture test of sim_ClockGenerator_tb is
+architecture tb of sim_ClockGenerator_tb is
 	constant CLOCK_FREQ					: FREQ						:= 100 MHz;
 	constant NO_CLOCK_PHASE			: T_PHASE					:= 0 deg;
 
