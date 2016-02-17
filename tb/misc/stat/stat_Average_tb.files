@@ -29,7 +29,7 @@ vhdl		poc		"src/sim/sim_waveform.vhdl"							# PoC simulation helper
 
 # PoC.arith
 vhdl		poc		"src/arith/arith.pkg.vhdl"							# PoC.arith package
-vhdl		poc		"src/arith/arith_div_pipelined.vhdl"		# pipelined division
+vhdl		poc		"src/arith/arith_div.vhdl"							# pipelined division
 
 # PoC.misc.stat
 vhdl		poc		"src/misc/stat/stat_Average.vhdl"				# Unit Under Test

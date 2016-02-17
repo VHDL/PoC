@@ -112,23 +112,6 @@ package arith is
 		);
 	end component;
 
-	component arith_div_pipelined
-		generic (
-			DIVIDEND_BITS		: POSITIVE;
-			DIVISOR_BITS		: POSITIVE;
-			RADIX						: POSITIVE
-		);
-		port (
-			Clock						: in	STD_LOGIC;
-			Reset						: in	STD_LOGIC;
-			Enable					: in	STD_LOGIC;
-			Dividend				: in	STD_LOGIC_VECTOR(DIVIDEND_BITS - 1 downto 0);
-			Divisor					: in	STD_LOGIC_VECTOR(DIVISOR_BITS - 1 downto 0);
-			Quotient				: out	STD_LOGIC_VECTOR(DIVIDEND_BITS - 1 downto 0);
-			Valid						: out STD_LOGIC
-		);
-	end component;
-	
 	component arith_prng
 		generic (
 			BITS		: positive;
@@ -213,3 +196,10 @@ package arith is
 		);
 	end component;
 end package;
+
+package body arith is
+  function arith_div_latency(a_bits, rapow : positive) return positive is
+	begin
+		return (a_bits+rapow-1)/rapow;
+	end;
+end package body arith;
