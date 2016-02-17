@@ -5,13 +5,11 @@
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 
--- Testbench:				Pseudo-Random Number Generator (PRNG).
+-- Testbench:				for clock generation in testbenches.
 -- 
 -- Description:
 -- ------------------------------------
---		Automated testbench for PoC.arith_prng
---		The Pseudo-Random Number Generator is instantiated for 8 bits. The
---		output sequence is compared to 256 pre calculated values.
+--	TODO
 --
 -- License:
 -- =============================================================================
@@ -46,16 +44,16 @@ use			PoC.strings.all;
 use			PoC.physical.all;
 use			PoC.components.all;
 -- simulation only packages
-use			PoC.sim_global.all;
 use			PoC.sim_types.all;
 use			PoC.simulation.all;
+use			PoC.waveform.all;
 
 
 entity sim_ClockGenerator_tb is
 end entity;
 
 
-architecture test of sim_ClockGenerator_tb is
+architecture tb of sim_ClockGenerator_tb is
 	constant CLOCK_FREQ					: FREQ						:= 100 MHz;
 	constant NO_CLOCK_PHASE			: T_PHASE					:= 0 deg;
 
@@ -232,7 +230,7 @@ begin
 
 	
 	simGenerateClock(Clock_50, CLOCK_FREQ);
-	simGenerateClock2(Clock_51, Debug_Jitter, to_time(CLOCK_FREQ));
+	simGenerateClock2(-1, Clock_51, Debug_Jitter, to_time(CLOCK_FREQ));
 
 	Counter_Clock_50_us		<= upcounter_next(cnt => Counter_Clock_50_us) when rising_edge(Clock_50);
 	Counter_Clock_51_us		<= upcounter_next(cnt => Counter_Clock_51_us) when rising_edge(Clock_51);

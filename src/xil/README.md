@@ -3,6 +3,9 @@
 The namespace `PoC.xil` offers Xilinx specific implementations and abstractions
 for various devices families.
 
+## Subnamespace
+
+  - [`mig`][xil.mig] Xilinx specific pre-configured memory controllers from Xilinx Memory Interface Generator (MIG).
 
 ## Package
 
@@ -46,10 +49,11 @@ use     PoC.xil.all;
  -  [`xil_SystemMonitor_Series7`][xil_SystemMonitor_Series7] - abstracts the
     7-Series XADC primitive to measure the FPGA's temperature.
 
- [xil.pkg]:										xil.pkg.vhdl
+ [xil.mig]:							mig
+ [xil.pkg]:							xil.pkg.vhdl
 
- [xil_BSCAN]:									xil_BSCAN.vhdl
- [xil_ChipScopeICON]:					xil_ChipScopeICON.vhdl
+ [xil_BSCAN]:						xil_BSCAN.vhdl
+ [xil_ChipScopeICON]:				xil_ChipScopeICON.vhdl
  [xil_ChipScopeICON_1]:				xil_ChipScopeICON_1.vhdl
  [xil_ChipScopeICON_2]:				xil_ChipScopeICON_2.vhdl
  [xil_ChipScopeICON_3]:				xil_ChipScopeICON_3.vhdl

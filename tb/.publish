@@ -16,6 +16,7 @@ arith/
 bus/
 comm/
 common/
+dstruct/
 fifo/
 io/
 mem/

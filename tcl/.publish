@@ -1,0 +1,10 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# Tools
+vivado/
+
+# Platforms

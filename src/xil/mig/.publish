@@ -1,0 +1,9 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# for Spartan-6 boards
+#mig_Atlys_1x128.prj
+#mig_Atlys_1x128.xco

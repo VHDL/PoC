@@ -1508,8 +1508,8 @@ begin
 			end function;
 
 			constant dummy : T_BOOLVEC := (
-				0 => dbg_ExportEncoding("Transceiver (7-Series, GTXE2)",		dbg_GenerateStateEncodings,		PROJECT_DIR & "ChipScope/TokenFiles/FSM_Transceiver_Series7_GTXE2.tok"),
-				1 => dbg_ExportEncoding("Transceiver Layer - Status Enum",	dbg_GenerateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Transceiver_Status.tok")
+				0 => dbg_ExportEncoding("Transceiver (7-Series, GTXE2)",		dbg_GenerateStateEncodings,		ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "FSM_Transceiver_Series7_GTXE2.tok"),
+				1 => dbg_ExportEncoding("Transceiver Layer - Status Enum",	dbg_GenerateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Status.tok")
 			);
 			
 		begin

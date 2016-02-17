@@ -1,0 +1,29 @@
+[*]
+[*] GTKWave Analyzer v3.3.69 (w)1999-2016 BSI
+[*] Wed Feb 10 22:03:22 2016
+[*]
+[dumpfile] "H:\Austausch\PoC\temp\ghdl\arith_div_pipelined_tb.ghw"
+[dumpfile_mtime] "Wed Feb 10 22:01:09 2016"
+[dumpfile_size] 803600
+[savefile] "H:\Austausch\PoC\sim\arith\arith_div_pipelined_tb.gtkw"
+[timestart] 0
+[size] 1680 997
+[pos] -217 -217
+*-28.472866 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.arith_div_pipelined_tb.
+[sst_width] 197
+[signals_width] 134
+[sst_expanded] 1
+[sst_vpaned_height] 293
+@28
+top.arith_div_pipelined_tb.clock
+top.arith_div_pipelined_tb.reset
+top.arith_div_pipelined_tb.enable
+@22
+#{top.arith_div_pipelined_tb.dividend[7:0]} top.arith_div_pipelined_tb.dividend[7] top.arith_div_pipelined_tb.dividend[6] top.arith_div_pipelined_tb.dividend[5] top.arith_div_pipelined_tb.dividend[4] top.arith_div_pipelined_tb.dividend[3] top.arith_div_pipelined_tb.dividend[2] top.arith_div_pipelined_tb.dividend[1] top.arith_div_pipelined_tb.dividend[0]
+#{top.arith_div_pipelined_tb.divisor[3:0]} top.arith_div_pipelined_tb.divisor[3] top.arith_div_pipelined_tb.divisor[2] top.arith_div_pipelined_tb.divisor[1] top.arith_div_pipelined_tb.divisor[0]
+@29
+top.arith_div_pipelined_tb.uut.valid
+[pattern_trace] 1
+[pattern_trace] 0

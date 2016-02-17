@@ -447,9 +447,4 @@ package satadbg is
 	type T_SATADBG_SATACONTROLLER_OUT_VECTOR	is array (NATURAL range <>)	of T_SATADBG_SATACONTROLLER_OUT;
 	type T_SATADBG_SATACONTROLLER_IN_VECTOR		is array (NATURAL range <>)	of T_SATADBG_SATACONTROLLER_IN;
 	
-end;
-
-package body satadbg is
-
-
-end package body;
+end package;
