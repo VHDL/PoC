@@ -64,13 +64,13 @@ architecture tb of arith_div_tb is
 	subtype tD is std_logic_vector(D_BITS-1 downto 0);
 	type tD_vector is array(positive range<>) of tD;
 
-	signal start : std_logic;
-	signal rdy : std_logic_vector(1 to MAX_POW);
-	signal A : tA;
-	signal D : tD;
-	signal Q : tA_vector(1 to MAX_POW);
-	signal R : tD_vector(1 to MAX_POW);
-	signal Z : std_logic_vector(1 to MAX_POW);
+  signal start : std_logic;
+  signal ready : std_logic_vector(1 to 2*MAX_POW);
+  signal A     : tA;
+  signal D     : tD;
+  signal Q     : tA_vector(1 to 2*MAX_POW);
+  signal R     : tD_vector(1 to 2*MAX_POW);
+  signal Z     : std_logic_vector(1 to 2*MAX_POW);
 
 begin
 
@@ -79,7 +79,7 @@ begin
 	simGenerateClock(clk, CLOCK_FREQ);
 
   genDUTs : for i in 1 to MAX_POW generate
-    DUT : entity PoC.arith_div
+    DUT_SEQU : entity PoC.arith_div
       generic map (
         A_BITS             => A_BITS,
         D_BITS             => D_BITS,
@@ -91,13 +91,35 @@ begin
         rst => rst,
 
         start => start,
-        rdy   => rdy(i),
+        ready => ready(i),
 
         A => A,
         D => D,
         Q => Q(i),
         R => R(i),
         Z => Z(i)
+      );
+
+    DUT_PIPE : entity PoC.arith_div
+      generic map (
+        A_BITS             => A_BITS,
+        D_BITS             => D_BITS,
+        DETECT_DIV_BY_ZERO => true,
+        RAPOW              => i,
+        PIPELINED          => true
+      )
+      port map (
+        clk => clk,
+        rst => rst,
+
+        start => start,
+        ready => ready(MAX_POW+i),
+
+        A => A,
+        D => D,
+        Q => Q(MAX_POW+i),
+        R => R(MAX_POW+i),
+        Z => Z(MAX_POW+i)
       );
 	end generate;
 
@@ -112,6 +134,12 @@ begin
 		end;
 
     procedure test(aval, dval : in integer) is
+			variable QQ : tA_vector(1 to 2*MAX_POW);
+			variable RR : tD_vector(1 to 2*MAX_POW);
+			variable ZZ : std_logic_vector(1 to 2*MAX_POW);
+
+			type boolean_vector is array(positive range<>) of boolean;
+			variable done : boolean_vector(1 to 2*MAX_POW);
 		begin
 			-- Start
 			start <= '1';
@@ -119,17 +147,29 @@ begin
 			D     <= std_logic_vector(to_unsigned(dval, D'length));
 			cycle;
 
-			start <= '0';
-			A     <= (others => '-');
-			D     <= (others => '-');
-			if rdy /= (rdy'range => '1') then wait until rdy = (rdy'range => '1'); end if;
+      start <= '0';
+      A     <= (others => '-');
+      D     <= (others => '-');
+      done  := (others => false);
+      loop
+				for i in done'range loop
+					if ready(i) = '1' and not done(i) then
+						QQ(i)   := Q(i);
+						RR(i)   := R(i);
+						ZZ(i)   := Z(i);
+						done(i) := true;
+					end if;
+				end loop;
+        exit when done = (done'range => true);
+        cycle;
+      end loop;
 
-			for i in 1 to MAX_POW loop
-				simAssertion(((dval = 0) and (Z(i) = '1')) or
-										 ((dval /= 0) and (Z(i) = '0') and
-										  (to_integer(unsigned(Q(i)))*dval + to_integer(unsigned(R(i))) = aval)),
+			for i in done'range loop
+				simAssertion(((dval = 0) and (ZZ(i) = '1')) or
+										 ((dval /= 0) and (ZZ(i) = '0') and
+										  (to_integer(unsigned(QQ(i)))*dval + to_integer(unsigned(RR(i))) = aval)),
 										 "RAPOW="&integer'image(i)&" failed: "&integer'image(aval)&"/"&integer'image(dval)&" /= "&
-								     integer'image(to_integer(unsigned(Q(i))))&" R "&integer'image(to_integer(unsigned(R(i)))));
+								     integer'image(to_integer(unsigned(QQ(i))))&" R "&integer'image(to_integer(unsigned(RR(i)))));
 			end loop;
 		end;
   begin
@@ -148,7 +188,7 @@ begin
     test(2**A_BITS-1, 2**D_BITS-1);
 
     -- Run Random Tests
-    for i in 0 to 23 loop
+    for i in 0 to 1023 loop
       test(randomUniformDistibutedValue(0, 2**A_BITS-1), randomUniformDistibutedValue(0, 2**D_BITS-1));
     end loop;
 
