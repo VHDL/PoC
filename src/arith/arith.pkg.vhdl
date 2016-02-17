@@ -81,16 +81,27 @@ package arith is
 	
 	component arith_div
 		generic (
-			N						: positive;
-			RAPOW				: positive;
-			REGISTERED	: boolean);
+			A_BITS             : positive;  		-- Dividend Width
+			D_BITS             : positive;  		-- Divisor Width
+			DETECT_DIV_BY_ZERO : boolean;  			-- Detect Division by Zero
+			RAPOW              : positive := 1  -- Power of Compute Radix (2**RAPOW)
+		);
 		port (
-			clk					: in	std_logic;
-			rst					: in	std_logic;
-			start				: in	std_logic;
-			rdy					: out std_logic;
-			arg1, arg2	: in	std_logic_vector(N-1 downto 0);
-			res					: out std_logic_vector(N-1 downto 0));
+			-- Global Reset/Clock
+			clk : in std_logic;
+			rst : in std_logic;
+
+			-- Ready / Start
+			start : in  std_logic;
+			rdy   : out std_logic;
+
+			-- Arguments / Result (2's complement)
+			A : in  std_logic_vector(A_BITS-1 downto 0);  -- Dividend
+			D : in  std_logic_vector(D_BITS-1 downto 0);  -- Divisor
+			Q : out std_logic_vector(A_BITS-1 downto 0);  -- Quotient
+			R : out std_logic_vector(D_BITS-1 downto 0);  -- Remainder
+			Z : out std_logic  -- Division by Zero
+		);
 	end component;
 
 	component arith_div_pipelined
