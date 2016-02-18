@@ -3,9 +3,9 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Python Module:		TODO
-# 
 # Authors:				 	Patrick Lehmann
+# 
+# Python Module:		TODO
 # 
 # Description:
 # ------------------------------------

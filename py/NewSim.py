@@ -3,17 +3,25 @@ from Base.PoCConfig		import *
 from Base.Project			import FileTypes
 from Base.PoCProject	import *
 
-pocProject = PoCProject("sim_ClockGenerator_tb")
-pocProject.SetRootDirectory(r"H:\Austausch\PoC")
+# PoCRoot =		r"H:\Austausch\PoC"
+PoCRoot =		r"D:\git\PoC"
+InputFile =	PoCRoot + r"\tb\sim\sim_ClockGenerator_tb.files"
 
+
+# create a project
+pocProject = PoCProject("sim_ClockGenerator_tb")
+pocProject.SetRootDirectory(PoCRoot)
+
+# configure the project
 board = Board("KC705")
 pocProject.SetBoard(board)
 
-fileListFile = FileListFile(r"H:\Austausch\PoC\tb\sim\sim_ClockGenerator_tb.files")
+# add a *.files file
+fileListFile = FileListFile(InputFile)
 pocProject.AddFile(fileListFile)
 
-fileListFile.Parse()
-fileListFile.CopyFilesToFileSet()
+#fileListFile.Parse()
+#fileListFile.CopyFilesToFileSet()
 
 print("=" * 160)
 # for vhdlFile in pocProject.GetFiles(fileType=FileTypes.VHDLSourceFile):
