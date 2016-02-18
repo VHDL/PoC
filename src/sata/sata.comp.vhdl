@@ -445,8 +445,4 @@ package satacomp is
 		);
 	end component;
 
-end;
-
-package body satacomp is
-
-end package body;
+end package;

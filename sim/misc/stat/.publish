@@ -1,6 +1,10 @@
 # git files
-.gitignore
+.gitempty
+
+# Documentation
+README.md
 
 # statistic modules
-stat_Minimum_tb.wcfg
-stat_Maximum_tb.wcfg
+stat_Minimum_tb.*
+stat_Maximum_tb.*
+#stat_Average_tb.*

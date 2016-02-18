@@ -41,16 +41,16 @@ use			PoC.vectors.all;
 use			PoC.strings.all;
 use			PoC.physical.all;
 -- simulation only packages
-use			PoC.sim_global.all;
 use			PoC.sim_types.all;
 use			PoC.simulation.all;
+use			PoC.waveform.all;
 
 
 entity arith_prng_tb is
 end entity;
 
 
-architecture test of arith_prng_tb is
+architecture tb of arith_prng_tb is
 	constant CLOCK_FREQ							: FREQ					:= 100 MHz;
 
 	constant COMPARE_LIST_8_BITS		: T_SLVV_8			:= (
@@ -72,9 +72,9 @@ architecture test of arith_prng_tb is
 		x"9A", x"34", x"69", x"D3", x"A7", x"4F", x"9E", x"3C", x"78", x"F0", x"E0", x"C1", x"82", x"04", x"09", x"12"
 	);
 
-	constant BITS				: POSITIVE				:= 8;
-	
-	constant simTestID	: T_SIM_TEST_ID		:= simCreateTest("Test setup for BITS=" & INTEGER'image(BITS));
+	constant BITS				: POSITIVE					:= 8;
+	constant SEED				: STD_LOGIC_VECTOR	:= x"12";
+	constant simTestID	: T_SIM_TEST_ID			:= simCreateTest("Test setup for BITS=" & INTEGER'image(BITS) & "; SEED=0x" & raw_format_slv_hex(SEED));
 	
 	signal Clock				: STD_LOGIC;
 	signal Reset				: STD_LOGIC;
@@ -84,15 +84,14 @@ architecture test of arith_prng_tb is
 begin
 	-- initialize global simulation status
 	simInitialize;
-	
-	-- generate global testbench clock
-	simGenerateClock(Clock, CLOCK_FREQ);
-	simGenerateWaveform(Reset, simGenerateWaveform_Reset(Pause => 15 ns, ResetPulse => 10 ns));
+	-- generate global testbench clock and reset
+	simGenerateClock(simTestID,			Clock, CLOCK_FREQ);
+	simGenerateWaveform(simTestID,	Reset, simGenerateWaveform_Reset(Pause => 10 ns, ResetPulse => 10 ns));
 
-	prng : entity PoC.arith_prng
+	UUT : entity PoC.arith_prng
 		generic map (
 			BITS		=> 8,
-			SEED		=> x"12"
+			SEED		=> SEED
 		)
 		port map (
 			clk			=> Clock,						
@@ -102,8 +101,7 @@ begin
 		);
 
 	procChecker : process
-		-- from Simulation
-		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Checker for " & INTEGER'image(BITS) & " bits");	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess(simTestID, "Checker for " & INTEGER'image(BITS) & " bits");
 	begin
 		Test_got						<= '0';
 		
@@ -114,22 +112,18 @@ begin
 			Test_got			<= '1';
 			
 			wait until rising_edge(Clock);
-			simAssertion((PRNG_Value = COMPARE_LIST_8_BITS(I)),
-				str_ralign(INTEGER'image(I), log10ceil(COMPARE_LIST_8_BITS'high)) &
+			simAssertion((PRNG_Value = COMPARE_LIST_8_BITS(i)),
+				str_ralign(INTEGER'image(i), log10ceil(COMPARE_LIST_8_BITS'high)) &
 				": Value=" &		raw_format_slv_hex(PRNG_Value) &
-				" Expected=" &	raw_format_slv_hex(COMPARE_LIST_8_BITS(I))
+				" Expected=" &	raw_format_slv_hex(COMPARE_LIST_8_BITS(i))
 			);
 		end loop;
 		
 		Test_got				<= '0';
-		for i in 0 to 3 loop
-			wait until rising_edge(Clock);
-		end loop;
+		simWaitUntilRisingEdge(Clock, 4);
 		
 		-- This process is finished
 		simDeactivateProcess(simProcessID);
-		-- Report overall result
-		simFinalize;
 		wait;  -- forever
 	end process;
 end architecture;

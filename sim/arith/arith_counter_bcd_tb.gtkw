@@ -1,0 +1,50 @@
+[*]
+[*] GTKWave Analyzer v3.3.61 (w)1999-2014 BSI
+[*] Sat Feb 06 00:49:03 2016
+[*]
+[dumpfile] "H:\Austausch\PoC\temp\ghdl\arith_counter_bcd_tb.ghw"
+[dumpfile_mtime] "Sat Feb 06 00:44:49 2016"
+[dumpfile_size] 539229
+[savefile] "H:\Austausch\PoC\sim\arith\arith_counter_bcd_tb.gtkw"
+[timestart] 0
+[size] 1680 997
+[pos] -35 -35
+*-34.899445 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.arith_counter_bcd_tb.
+[treeopen] top.arith_counter_bcd_tb.[0].value.
+[treeopen] top.arith_counter_bcd_tb.[1].
+[treeopen] top.arith_counter_bcd_tb.[1].value.
+[sst_width] 197
+[signals_width] 182
+[sst_expanded] 1
+[sst_vpaned_height] 293
+@28
+top.arith_counter_bcd_tb.clock
+@800200
+-Test 0 - DIGITS=3
+@28
+top.arith_counter_bcd_tb[0].reset
+top.arith_counter_bcd_tb[0].inc
+@22
+#{top.arith_counter_bcd_tb[0].value[2][3:0]} top.arith_counter_bcd_tb[0].value[2][3] top.arith_counter_bcd_tb[0].value[2][2] top.arith_counter_bcd_tb[0].value[2][1] top.arith_counter_bcd_tb[0].value[2][0]
+@23
+#{top.arith_counter_bcd_tb[0].value[1][3:0]} top.arith_counter_bcd_tb[0].value[1][3] top.arith_counter_bcd_tb[0].value[1][2] top.arith_counter_bcd_tb[0].value[1][1] top.arith_counter_bcd_tb[0].value[1][0]
+@22
+#{top.arith_counter_bcd_tb[0].value[0][3:0]} top.arith_counter_bcd_tb[0].value[0][3] top.arith_counter_bcd_tb[0].value[0][2] top.arith_counter_bcd_tb[0].value[0][1] top.arith_counter_bcd_tb[0].value[0][0]
+@1000200
+-Test 0 - DIGITS=3
+@800200
+-Test 1 - DIGITS=4
+@28
+top.arith_counter_bcd_tb[1].reset
+top.arith_counter_bcd_tb[1].inc
+@22
+#{top.arith_counter_bcd_tb[1].value[3][3:0]} top.arith_counter_bcd_tb[1].value[3][3] top.arith_counter_bcd_tb[1].value[3][2] top.arith_counter_bcd_tb[1].value[3][1] top.arith_counter_bcd_tb[1].value[3][0]
+#{top.arith_counter_bcd_tb[1].value[2][3:0]} top.arith_counter_bcd_tb[1].value[2][3] top.arith_counter_bcd_tb[1].value[2][2] top.arith_counter_bcd_tb[1].value[2][1] top.arith_counter_bcd_tb[1].value[2][0]
+#{top.arith_counter_bcd_tb[1].value[1][3:0]} top.arith_counter_bcd_tb[1].value[1][3] top.arith_counter_bcd_tb[1].value[1][2] top.arith_counter_bcd_tb[1].value[1][1] top.arith_counter_bcd_tb[1].value[1][0]
+#{top.arith_counter_bcd_tb[1].value[0][3:0]} top.arith_counter_bcd_tb[1].value[0][3] top.arith_counter_bcd_tb[1].value[0][2] top.arith_counter_bcd_tb[1].value[0][1] top.arith_counter_bcd_tb[1].value[0][0]
+@1000200
+-Test 1 - DIGITS=4
+[pattern_trace] 1
+[pattern_trace] 0

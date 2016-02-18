@@ -1,0 +1,41 @@
+[*]
+[*] GTKWave Analyzer v3.3.69 (w)1999-2016 BSI
+[*] Tue Feb 16 02:39:41 2016
+[*]
+[dumpfile] "H:\Austausch\PoC\temp\ghdl\sim_Waveform_tb.ghw"
+[dumpfile_mtime] "Tue Feb 16 02:27:38 2016"
+[dumpfile_size] 2105
+[savefile] "H:\Austausch\PoC\sim\sim\sim_Waveform_tb.gtkw"
+[timestart] 0
+[size] 1676 997
+[pos] -1 -1
+*-26.066666 110000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.sim_waveform_tb.
+[sst_width] 197
+[signals_width] 118
+[sst_expanded] 1
+[sst_vpaned_height] 293
+@28
+top.sim_waveform_tb.clock
+top.sim_waveform_tb.reset_1
+top.sim_waveform_tb.reset_2
+top.sim_waveform_tb.reset_3
+top.sim_waveform_tb.impulse_01
+top.sim_waveform_tb.impulse_02
+top.sim_waveform_tb.impulse_03
+top.sim_waveform_tb.wave_01
+top.sim_waveform_tb.wave_02
+[color] 1
+top.sim_waveform_tb.wave_03
+[color] 1
+top.sim_waveform_tb.wave_04
+top.sim_waveform_tb.wave_05
+top.sim_waveform_tb.wave_06
+@29
+top.sim_waveform_tb.wave_11
+@22
+#{top.sim_waveform_tb.bus_01[7:0]} top.sim_waveform_tb.bus_01[7] top.sim_waveform_tb.bus_01[6] top.sim_waveform_tb.bus_01[5] top.sim_waveform_tb.bus_01[4] top.sim_waveform_tb.bus_01[3] top.sim_waveform_tb.bus_01[2] top.sim_waveform_tb.bus_01[1] top.sim_waveform_tb.bus_01[0]
+#{top.sim_waveform_tb.bus_02[7:0]} top.sim_waveform_tb.bus_02[7] top.sim_waveform_tb.bus_02[6] top.sim_waveform_tb.bus_02[5] top.sim_waveform_tb.bus_02[4] top.sim_waveform_tb.bus_02[3] top.sim_waveform_tb.bus_02[2] top.sim_waveform_tb.bus_02[1] top.sim_waveform_tb.bus_02[0]
+[pattern_trace] 1
+[pattern_trace] 0

@@ -90,8 +90,8 @@ entity sata_TransceiverLayer is
 		Error											: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(portS - 1 downto 0);
 
 		-- debug ports
-		DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
-		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
+		DebugPortIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
+		DebugPortOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
 		SATA_Clock								: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
 		SATA_Clock_Stable					: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
@@ -100,7 +100,7 @@ entity sata_TransceiverLayer is
 		RP_SATAGeneration					: in	T_SATA_GENERATION_VECTOR(portS - 1 downto 0);
 		RP_ReconfigComplete				: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
 		RP_ConfigReloaded					: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
-		RP_Lock										:	IN	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		RP_Lock										:	in	STD_LOGIC_VECTOR(portS - 1 downto 0);
 		RP_Locked									: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
 
 		OOB_TX_Command						: in	T_SATA_OOB_VECTOR(portS - 1 downto 0);
@@ -515,11 +515,11 @@ begin
 		end function;
 
 		constant dummy : T_BOOLVEC := (
-			0 => dbg_ExportEncoding("Transceiver Layer - Command Enum",				dbg_generateCommandEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Transceiver_Command.tok"),
-			1 => dbg_ExportEncoding("Transceiver Layer - Status Enum",				dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Transceiver_Status.tok"),
-			2 => dbg_ExportEncoding("Transceiver Layer - Common Error Enum",	dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Transceiver_Error_Common.tok"),
-			3 => dbg_ExportEncoding("Transceiver Layer - TX Error Enum",			dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Transceiver_Error_TX.tok"),
-			4 => dbg_ExportEncoding("Transceiver Layer - RX Error Enum",			dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Transceiver_Error_RX.tok")
+			0 => dbg_ExportEncoding("Transceiver Layer - Command Enum",				dbg_generateCommandEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Command.tok"),
+			1 => dbg_ExportEncoding("Transceiver Layer - Status Enum",				dbg_generateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Status.tok"),
+			2 => dbg_ExportEncoding("Transceiver Layer - Common Error Enum",	dbg_generateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Error_Common.tok"),
+			3 => dbg_ExportEncoding("Transceiver Layer - TX Error Enum",			dbg_generateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Error_TX.tok"),
+			4 => dbg_ExportEncoding("Transceiver Layer - RX Error Enum",			dbg_generateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Error_RX.tok")
 		);
 	begin
 	end generate;
