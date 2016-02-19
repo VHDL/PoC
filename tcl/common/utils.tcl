@@ -32,10 +32,17 @@
 # configuration packaged.
 # Note: This implementation will fail on string values containing
 #       semicolons (;).
-proc get_config_value {name config_vhdl} {
+proc get_config_values {config_vhdl names} {
+	# Read config file into string
   set fd [open $config_vhdl r]
   set data [list [read $fd]]
   close $fd
-  if { [regexp -nocase [string tolower "constant\\s*$name\\s*:\\s*\\w+\\s*:=\\s*(\[^;]+?)\\s*;"] $data all val] } { return $val }
-  return {}
+
+	# Build list of values assigned to passed configuration variable names
+	set vals {}
+	foreach name $names {
+		if { [regexp -nocase [string tolower "constant\\s*$name\\s*:\\s*\\w+\\s*:=\\s*(\[^;]+?)\\s*;"] $data all val] == 0 }  { set val {} }
+		lappend vals $val
+	}
+	return $vals
 }
