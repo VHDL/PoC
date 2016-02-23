@@ -124,8 +124,8 @@ begin
 		);
 	
 	blkWire : block
-		constant DELAYS12		: T_TIMEVEC		:= (UUT1_DataOut'range => 4 ns);
-		constant DELAYS21		: T_TIMEVEC		:= (UUT2_DataOut'range => 5 ns);
+		constant DELAYS12		: TIME_VECTOR		:= (UUT1_DataOut'range => 4 ns);
+		constant DELAYS21		: TIME_VECTOR		:= (UUT2_DataOut'range => 5 ns);
 	begin
 		Wire_Clock	<= UUT1_Clock'delayed(4 ns);
 		genWires12 : for i in UUT1_DataOut'range generate

@@ -4,6 +4,7 @@
 -- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
 -- 
 -- Package:					Simulation constants, functions and utilities.
 -- 
@@ -90,24 +91,24 @@ package waveform is
 	-- ===========================================================================
 	procedure simGenerateWaveform(
 		signal	 Wave					: out	BOOLEAN;
-		constant Waveform			: in	T_TIMEVEC;
+		constant Waveform			: in	TIME_VECTOR;
 		constant InitialValue	: in	BOOLEAN					:= FALSE
 	);
 	procedure simGenerateWaveform(
 		constant TestID				: in	T_SIM_TEST_ID;
 		signal	 Wave					: out	BOOLEAN;
-		constant Waveform			: in	T_TIMEVEC;
+		constant Waveform			: in	TIME_VECTOR;
 		constant InitialValue	: in	BOOLEAN					:= FALSE
 	);
 	procedure simGenerateWaveform(
 		signal	 Wave					: out	STD_LOGIC;
-		constant Waveform			: in	T_TIMEVEC;
+		constant Waveform			: in	TIME_VECTOR;
 		constant InitialValue	: in	STD_LOGIC				:= '0'
 	);
 	procedure simGenerateWaveform(
 		constant TestID				: in	T_SIM_TEST_ID;
 		signal	 Wave					: out	STD_LOGIC;
-		constant Waveform			: in	T_TIMEVEC;
+		constant Waveform			: in	TIME_VECTOR;
 		constant InitialValue	: in	STD_LOGIC				:= '0'
 	);
 	procedure simGenerateWaveform(
@@ -188,7 +189,7 @@ package waveform is
 		constant InitialValue	: in	T_SLV_64				:= (others => '0')
 	);
 	
-	function simGenerateWaveform_Reset(constant Pause : TIME := 0 ns; ResetPulse : TIME := 10 ns) return T_TIMEVEC;
+	function simGenerateWaveform_Reset(constant Pause : TIME := 0 ns; ResetPulse : TIME := 10 ns) return TIME_VECTOR;
 	
 	-- TODO: integrate VCD simulation functions and procedures from sim_value_change_dump.vhdl here
 	end package;
@@ -391,7 +392,7 @@ package body waveform is
 	-- ===========================================================================
 	procedure simGenerateWaveform(
 		signal	 Wave					: out	BOOLEAN;
-		constant Waveform			: in	T_TIMEVEC;
+		constant Waveform			: in	TIME_VECTOR;
 		constant InitialValue	: in	BOOLEAN					:= FALSE
 	) is
 	begin
@@ -401,7 +402,7 @@ package body waveform is
 	procedure simGenerateWaveform(
 		constant TestID				: in	T_SIM_TEST_ID;
 		signal	 Wave					: out	BOOLEAN;
-		constant Waveform			: in	T_TIMEVEC;
+		constant Waveform			: in	TIME_VECTOR;
 		constant InitialValue	: in	BOOLEAN					:= FALSE
 	) is
 		constant PROCESS_ID	: T_SIM_PROCESS_ID			:= simRegisterProcess(TestID, "simGenerateWaveform");
@@ -420,7 +421,7 @@ package body waveform is
 	
 	procedure simGenerateWaveform(
 		signal	 Wave					: out	STD_LOGIC;
-		constant Waveform			: in	T_TIMEVEC;
+		constant Waveform			: in	TIME_VECTOR;
 		constant InitialValue	: in	STD_LOGIC				:= '0'
 	) is
 	begin
@@ -430,7 +431,7 @@ package body waveform is
 	procedure simGenerateWaveform(
 		constant TestID				: in	T_SIM_TEST_ID;
 		signal	 Wave					: out	STD_LOGIC;
-		constant Waveform			: in	T_TIMEVEC;
+		constant Waveform			: in	TIME_VECTOR;
 		constant InitialValue	: in	STD_LOGIC				:= '0'
 	) is
 		constant PROCESS_ID	: T_SIM_PROCESS_ID			:= simRegisterProcess(TestID, "simGenerateWaveform");
@@ -629,7 +630,7 @@ package body waveform is
 		simDeactivateProcess(PROCESS_ID);
 	end procedure;
 	
-	function simGenerateWaveform_Reset(constant Pause : TIME := 0 ns; ResetPulse : TIME := 10 ns) return T_TIMEVEC is
+	function simGenerateWaveform_Reset(constant Pause : TIME := 0 ns; ResetPulse : TIME := 10 ns) return TIME_VECTOR is
 		variable p  : TIME;
 		variable rp : TIME;
 	begin
