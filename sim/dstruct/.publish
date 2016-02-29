@@ -1,2 +1,9 @@
-dstruct_deque_tb.gtkw
-dstruct_stack_tb.gtkw
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# --------------------------------------
+dstruct_deque_tb.*
+dstruct_stack_tb.*

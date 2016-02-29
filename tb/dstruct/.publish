@@ -1,5 +1,8 @@
+# git files
+.gitempty
+
+# Documentation
 README.md
-dstruct_deque_tb.vhdl
-dstruct_deque_tb.files
-dstruct_stack_tb.vhdl
-dstruct_stack_tb.files
+
+dstruct_deque_tb.*
+dstruct_stack_tb.*
