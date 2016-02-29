@@ -28,21 +28,26 @@
 # limitations under the License.
 # ============================================================================
 
-# Extracts a the value of the named constant typically from a VHDL
-# configuration packaged.
-# Note: This implementation will fail on string values containing
-#       semicolons (;).
-proc get_config_values {config_vhdl names} {
+# Extracts a the values of the named constants from a VHDL configuration
+# packaged and associates them with a variable of the same name within the
+# calling scope.
+#
+# Note: This implementation will fail on string values containing ';'.
+proc read_vhdl_config {config_vhdl names} {
 	# Read config file into string
   set fd [open $config_vhdl r]
   set data [list [read $fd]]
   close $fd
 
 	# Build list of values assigned to passed configuration variable names
-	set vals {}
 	foreach name $names {
-		if { [regexp -nocase [string tolower "constant\\s*$name\\s*:\\s*\\w+\\s*:=\\s*(\[^;]+?)\\s*;"] $data all val] == 0 }  { set val {} }
-		lappend vals $val
+		if { [regexp -nocase [string tolower "constant\\s*$name\\s*:\\s*\\w+\\s*:=\\s*(\[^;]+?)\\s*;"] $data all val] } {
+			uplevel set $name "{$val}"
+		}
 	}
-	return $vals
+}
+
+# Strips the specified unit string from the passed value.
+proc strip_unit {val unit} {
+  return [lindex [regexp -inline "(.*)\\s+$unit" $val] 1]
 }
