@@ -41,7 +41,7 @@ USE			PoC.vectors.ALL;
 --		par = parallel
 --		seq = sequential
 
-ENTITY cache_tagunit_seq IS
+ENTITY cache_TagUnit_seq IS
 	GENERIC (
 		REPLACEMENT_POLICY				: STRING													:= "LRU";
 		CACHE_LINES								: POSITIVE												:= 32;
@@ -77,7 +77,7 @@ ENTITY cache_tagunit_seq IS
 END;
 
 
-ARCHITECTURE rtl OF cache_tagunit_seq IS
+ARCHITECTURE rtl OF cache_TagUnit_seq IS
 	ATTRIBUTE KEEP							: BOOLEAN;
 
 	CONSTANT SETS								: POSITIVE				:= CACHE_LINES / ASSOCIATIVITY;
@@ -121,8 +121,8 @@ BEGIN
 			RETURN result;
 		END FUNCTION;
 		
-		SIGNAL Replace_State						: T_Replace_STATE																				:= ST_IDLE;
-		SIGNAL Replace_NextState				: T_Replace_STATE;
+		SIGNAL Replace_State						: T_REPLACE_STATE																				:= ST_IDLE;
+		SIGNAL Replace_NextState				: T_REPLACE_STATE;
 		SIGNAL Request_State						: T_REQUEST_STATE																				:= ST_IDLE;
 		SIGNAL Request_NextState				: T_REQUEST_STATE;
 		

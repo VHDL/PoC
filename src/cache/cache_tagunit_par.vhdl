@@ -41,7 +41,7 @@ USE			PoC.vectors.ALL;
 --		par = parallel
 --		seq = sequential
 
-ENTITY cache_tagunit_par IS
+ENTITY cache_TagUnit_par IS
 	GENERIC (
 		REPLACEMENT_POLICY				: STRING													:= "LRU";
 		CACHE_LINES								: POSITIVE												:= 32;
@@ -70,7 +70,7 @@ ENTITY cache_tagunit_par IS
 	);
 END;
 
-ARCHITECTURE rtl OF cache_tagunit_par IS
+ARCHITECTURE rtl OF cache_TagUnit_par IS
 	ATTRIBUTE KEEP										: BOOLEAN;
 
 	CONSTANT SETS											: POSITIVE				:= CACHE_LINES / ASSOCIATIVITY;

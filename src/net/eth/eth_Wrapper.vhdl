@@ -134,7 +134,7 @@ BEGIN
 	genVirtex5 : IF (DEVICE = DEVICE_VIRTEX5) GENERATE
 	
 	BEGIN
-		Eth : Eth_Wrapper_Virtex5
+		Eth : eth_Wrapper_Virtex5
 			GENERIC MAP (
 				DEBUG											=> DEBUG,
 				CLOCKIN_FREQ							=> CLOCKIN_FREQ,
@@ -175,7 +175,7 @@ BEGIN
 	genVirtex6 : IF (DEVICE = DEVICE_VIRTEX6) GENERATE
 	
 	BEGIN
-		Eth : Eth_Wrapper_Virtex6
+		Eth : eth_Wrapper_Virtex6
 			GENERIC MAP (
 				DEBUG											=> DEBUG,
 				CLOCKIN_FREQ							=> CLOCKIN_FREQ,
@@ -217,7 +217,7 @@ BEGIN
 	genSeries7 : IF (DEVICE = DEVICE_VIRTEX7) GENERATE
 	
 	BEGIN
-		Eth : Eth_Wrapper_Series7
+		Eth : eth_Wrapper_Series7
 			GENERIC MAP (
 				DEBUG											=> DEBUG,
 				CLOCKIN_FREQ							=> CLOCKIN_FREQ,

@@ -83,7 +83,7 @@ ARCHITECTURE rtl OF sata_DeviceDetector IS
 BEGIN
 
 	-- synchronize ElectricalIDLE to working clock domain
-	sync1_DDClock : ENTITY PoC.sync_Flag
+	sync1_DDClock : ENTITY PoC.sync_Bits
 	PORT MAP (
 		Clock		=> Clock,		-- Clock to be synchronized to
 		Input(0)	=> ElectricalIDLE,	-- Data to be synchronized

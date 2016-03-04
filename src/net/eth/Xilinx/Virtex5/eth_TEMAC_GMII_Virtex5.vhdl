@@ -130,8 +130,8 @@ begin
 		-- ==========================================================================================================================================================
 		-- ASSERT statements
 		-- ==========================================================================================================================================================
-		assert ((TX_FIFO_DEPTHS(i) * 1 B) >= ite(TX_ENABLE_UNDERRUN_PROTECTION(i),	ite(SUPPORT_JUMBO_FRAMES(i), 10 KiB, 1522 B), 0 B))	report "TX-FIFO is to small" severity ERROR;
-		assert ((RX_FIFO_DEPTHS(i) * 1 B) >=																				ite(SUPPORT_JUMBO_FRAMES(i), 10 KiB, 1522 B))				report "RX-FIFO is to small" severity ERROR;
+		assert ((TX_FIFO_DEPTHS(i) * 1 B) >= ite(TX_ENABLE_UNDERRUN_PROTECTION(i),	ite(SUPPORT_JUMBO_FRAMES(i), 10 KiB, 1522 Byte), 0 Byte))	report "TX-FIFO is to small" severity ERROR;
+		assert ((RX_FIFO_DEPTHS(i) * 1 B) >=																				ite(SUPPORT_JUMBO_FRAMES(i), 10 KiB, 1522 Byte))					report "RX-FIFO is to small" severity ERROR;
 
 		-- ==========================================================================================================================================================
 		-- TX path

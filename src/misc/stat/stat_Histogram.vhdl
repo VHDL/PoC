@@ -59,8 +59,8 @@ architecture rtl of stat_Histogram is
 	type T_HISTOGRAM_MEMORY		is array(NATURAL range <>) of UNSIGNED(COUNTER_BITS downto 0);
 
 	-- create matrix from vector-vector
-	function to_slm(usv : T_HISTOGRAM_MEMORY) return t_slm is
-		variable slm		: t_slm(usv'range, COUNTER_BITS - 1 downto 0);
+	function to_slm(usv : T_HISTOGRAM_MEMORY) return T_SLM is
+		variable slm		: T_SLM(usv'range, COUNTER_BITS - 1 downto 0);
 	begin
 		for i in usv'range loop
 			if (usv(i)(COUNTER_BITS) = '0') then

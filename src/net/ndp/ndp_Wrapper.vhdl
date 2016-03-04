@@ -6,9 +6,9 @@ LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+use			PoC.cache.all;
+USE			PoC.net.ALL;
 
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
 
 ENTITY NDP_Wrapper IS
 	GENERIC (
@@ -85,7 +85,7 @@ ARCHITECTURE rtl OF NDP_Wrapper IS
 	SIGNAL PList_MACAddress													: T_NET_MAC_ADDRESS;
 BEGIN
 
-	FSMQuery : ENTITY L_Ethernet.NDP_FSMQuery
+	FSMQuery : ENTITY PoC.ndp_FSMQuery
 		PORT MAP (
 			Clock															=> Clock,
 			Reset															=> Reset,
@@ -123,7 +123,7 @@ BEGIN
 			NCache_Reachability								=> NCache_Reachability
 		);
 
-	IPPool : ENTITY L_Ethernet.NDP_IPPool
+	IPPool : ENTITY PoC.ndp_IPPool
 		GENERIC MAP (
 			IPPOOL_SIZE												=> 8,
 			INITIAL_IPV6ADDRESSES							=> INITIAL_IPV6ADDRESSES
@@ -148,7 +148,7 @@ BEGIN
 	-- ==========================================================================================================================================================
 	-- DestinationCache
 	-- ==========================================================================================================================================================
-	DCache : ENTITY L_Ethernet.NDP_DestinationCache
+	DCache : ENTITY PoC.ndp_DestinationCache
 		GENERIC MAP (
 			CLOCK_FREQ_MHZ						=> CLOCK_FREQ_MHZ,
 			REPLACEMENT_POLICY				=> "LRU",
@@ -175,7 +175,7 @@ BEGIN
 	-- ==========================================================================================================================================================
 	-- NeighborCache
 	-- ==========================================================================================================================================================
-	NCache : ENTITY L_Ethernet.NDP_NeighborCache
+	NCache : ENTITY PoC.ndp_NeighborCache
 		GENERIC MAP (
 			REPLACEMENT_POLICY				=> "LRU",
 			TAG_BYTE_ORDER						=> LITTLE_ENDIAN,
@@ -205,7 +205,7 @@ BEGIN
 	FSMPrefix_Lookup				<= '0';--NextHop_Query;
 	FSMPrefix_IPv6Address		<= (OTHERS => (OTHERS => '0'));--NextHop_IPv6Address;
 
-	PList : ENTITY L_Ethernet.NDP_PrefixList
+	PList : ENTITY PoC.ndp_PrefixList
 		PORT MAP (
 			Clock											=> Clock,
 			Reset											=> Reset,

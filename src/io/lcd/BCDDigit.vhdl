@@ -43,7 +43,7 @@ BEGIN
 							Carray(J + 1) := ite((BCDSum(J) > 4), '1', '0');
 						END LOOP;
 							
-						C_Out(I)				<= Carray(Radix);
+						C_Out(I)				<= Carray(RADIX);
 					END LOOP;
 					
 					FOR I IN 0 TO RADIX - 1 LOOP
