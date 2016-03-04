@@ -38,14 +38,15 @@ USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.physical.ALL;
-USE			PoC.io.ALL;
+USE			PoC.io.ALL;				-- TODO: move MDIO types and constants to a MDIO package
+USE			PoC.iic.ALL;
 USE			PoC.net.ALL;
 
 
 ENTITY Eth_PHYController IS
 	GENERIC (
 		DEBUG											: BOOLEAN																	:= FALSE;																			-- 
-		CLOCK_FREQ								: FREQ																		:= 125 MHZ;																		-- 125 MHz
+		CLOCK_FREQ								: FREQ																		:= 125 MHz;																		-- 125 MHz
 		PCSCORE										: T_NET_ETH_PCSCORE												:= NET_ETH_PCSCORE_GENERIC_GMII;							-- 
 		PHY_DEVICE								: T_NET_ETH_PHY_DEVICE										:= NET_ETH_PHY_DEVICE_MARVEL_88E1111;					-- 
 		PHY_DEVICE_ADDRESS				: T_NET_ETH_PHY_DEVICE_ADDRESS						:= x"00";																			-- 
@@ -169,7 +170,7 @@ BEGIN
 		SIGNAL IICC_RP_Last							: STD_LOGIC;
 		
 	BEGIN
-		Adapter : ENTITY PoC.mdio_MDIO_IIC_Adapter
+		Adapter : ENTITY PoC.mdio_IIC_Adapter
 			GENERIC MAP (
 				DEBUG											=> DEBUG
 			)
@@ -206,7 +207,7 @@ BEGIN
 				IICC_RP_Ack								=> Adapter_IICC_RP_Ack
 			);
 		
-		IICC : ENTITY PoC.iic_IICController
+		IICC : ENTITY PoC.iic_Controller
 			GENERIC MAP (
 				DEBUG											=> DEBUG,
 				ALLOW_MEALY_TRANSITION		=> FALSE,

@@ -260,7 +260,12 @@ package utils is
 	--+ Encodings ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   -- One-Hot-Code to Binary-Code.
-	function onehot2bin(onehot : std_logic_vector) return unsigned;
+	--  If a non-negative value empty_val is specified, its unsigned
+	--  representation will be returned upon an all-zero input. As a consequence
+	--  of specifying this value, no simulation warnings will be issued upon empty
+	--  inputs. Alleged 1-hot-encoded inputs with more than one bit asserted
+	--  will always raise a simulation warning.
+	function onehot2bin(onehot : std_logic_vector; empty_val : integer := -1) return unsigned;
 
   -- Converts Gray-Code into Binary-Code.
   --
@@ -501,8 +506,8 @@ package body utils is
 	begin
 		Result	:= INTEGER'high;
 		for i in vec'range loop
-			if (vec(I) < Result) then
-				Result	:= vec(I);
+			if (vec(i) < Result) then
+				Result	:= vec(i);
 			end if;
 		end loop;
 		return Result;
@@ -513,8 +518,8 @@ package body utils is
 	begin
 		Result	:= NATURAL'high;
 		for i in vec'range loop
-			if (vec(I) < Result) then
-				Result	:= vec(I);
+			if (vec(i) < Result) then
+				Result	:= vec(i);
 			end if;
 		end loop;
 		return Result;
@@ -525,8 +530,8 @@ package body utils is
 	begin
 		Result	:= POSITIVE'high;
 		for i in vec'range loop
-			if (vec(I) < Result) then
-				Result	:= vec(I);
+			if (vec(i) < Result) then
+				Result	:= vec(i);
 			end if;
 		end loop;
 		return Result;
@@ -561,8 +566,8 @@ package body utils is
 	begin
 		Result		:= INTEGER'low;
 		for i in vec'range loop
-			if (vec(I) > Result) then
-				Result	:= vec(I);
+			if (vec(i) > Result) then
+				Result	:= vec(i);
 			end if;
 		end loop;
 		return Result;
@@ -573,8 +578,8 @@ package body utils is
 	begin
 		Result		:= NATURAL'low;
 		for i in vec'range loop
-			if (vec(I) > Result) then
-				Result	:= vec(I);
+			if (vec(i) > Result) then
+				Result	:= vec(i);
 			end if;
 		end loop;
 		return Result;
@@ -585,8 +590,8 @@ package body utils is
 	begin
 		Result		:= POSITIVE'low;
 		for i in vec'range loop
-			if (vec(I) > Result) then
-				Result	:= vec(I);
+			if (vec(i) > Result) then
+				Result	:= vec(i);
 			end if;
 		end loop;
 		return Result;
@@ -619,7 +624,7 @@ package body utils is
 	begin
 		Result		:= 0;
 		for i in vec'range loop
-			Result	:= Result + vec(I);
+			Result	:= Result + vec(i);
 		end loop;
 		return Result;
 	end function;
@@ -629,7 +634,7 @@ package body utils is
 	begin
 		Result := 0;
 		for i in vec'range loop
-			Result := Result + vec(I);
+			Result := Result + vec(i);
 		end loop;
 		return Result;
 	end function;
@@ -836,10 +841,10 @@ package body utils is
 		variable Result : STD_LOGIC_VECTOR(slv'length - 1 DOWNTO 0);
 	begin
 		for i in 0 TO SegmentCount - 1 loop
-			FromH		:= ((I + 1) * Size) - 1;
-			FromL		:= I * Size;
-			ToH			:= ((SegmentCount - I) * Size) - 1;
-			ToL			:= (SegmentCount - I - 1) * Size;
+			FromH		:= ((i + 1) * Size) - 1;
+			FromL		:= i * Size;
+			ToH			:= ((SegmentCount - i) * Size) - 1;
+			ToL			:= (SegmentCount - i - 1) * Size;
 			Result(ToH DOWNTO ToL)	:= slv(FromH DOWNTO FromL);
 		end loop;
 		return Result;
@@ -868,21 +873,28 @@ package body utils is
 	-- binary encoding conversion functions
 	-- ==========================================================================
 	-- One-Hot-Code to Binary-Code
-  function onehot2bin(onehot : std_logic_vector) return unsigned is
-		variable res : unsigned(log2ceilnz(onehot'high+1)-1 downto 0);
+  function onehot2bin(onehot : std_logic_vector; empty_val : integer := -1) return unsigned is
+		variable res : unsigned(log2ceilnz(imax(onehot'high, empty_val)+1)-1 downto 0);
 		variable chk : natural;
 	begin
-		res := (others => '0');
-		chk := 0;
-		for i in onehot'range loop
-			if onehot(i) = '1' then
-				res := res or to_unsigned(i, res'length);
-				chk := chk + 1;
+		-- Note: empty_val = 0 takes the regular path to reduce on synthesized hardware
+		if empty_val > 0 and onehot = (onehot'range => '0') then
+			res := to_unsigned(empty_val, res'length);
+		else
+			res := (others => '0');
+			chk := 0;
+			for i in onehot'range loop
+				if onehot(i) = '1' then
+					res := res or to_unsigned(i, res'length);
+					chk := chk + 1;
+				end if;
+			end loop;
+
+			if SIMULATION and chk /= 1 and (chk > 1 or empty_val < 0) then
+				report "Broken 1-Hot-Code with "&integer'image(chk)&" bits set."
+					severity warning;
+				res := (others => 'X'); -- computed result is implementation-dependant
 			end if;
-		end loop;
-		if SIMULATION and chk /= 1 then
-			report "Broken 1-Hot-Code with "&integer'image(chk)&" bits set."
-				severity error;
 		end if;
 		return	res;
 	end function;

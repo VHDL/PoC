@@ -35,4 +35,4 @@ vhdl-08	poc		"src/sim/sim_simulation.v08.vhdl"				# PoC simulation helper
 vhdl		poc		"src/sim/sim_waveform.vhdl"							# PoC simulation helper
 
 # Testbench file(s)
-vhdl		test	"tb/sim/sim_ClockGenerator_tb.vhdl"	# Testbench
+vhdl		test	"tb/sim/sim_ClockGenerator_tb.vhdl"			# Testbench

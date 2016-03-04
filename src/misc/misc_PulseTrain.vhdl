@@ -56,14 +56,14 @@ architecture rtl of misc_PulseTrain is
 	signal IsIdle_r							: STD_LOGIC																							:= '0';
 	signal Counter_us						: UNSIGNED(log2ceilnz(PULSE_TRAIN'length) - 1 downto 0)	:= (others => '0');
 	signal Counter_ov						: STD_LOGIC;
-	signal SequenceCompleted_i	: STD_LOGIC;
+	
 begin
 	-- state control is done by a basic RS-FF
 	IsIdle_r		<= ffrs(q => IsIdle_r, rst => Counter_ov, set => StartSequence)	when rising_edge(Clock);
 
 	-- counter
 	Counter_us	<= upcounter_next(cnt => Counter_us, rst => not IsIdle_r)				when rising_edge(Clock);
-	Counter_ov	<= upcounter_equal(cnt => Counter_us, Value => (PULSE_TRAIN'length - 1));
+	Counter_ov	<= upcounter_equal(cnt => Counter_us, value => (PULSE_TRAIN'length - 1));
 	
 	Output						<= PULSE_TRAIN(to_index(Counter_us));
 	SequenceCompleted	<= Counter_ov;

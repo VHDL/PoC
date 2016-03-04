@@ -63,8 +63,8 @@ architecture rtl of stat_Maximum is
 	type T_COUNTER_MEMORY		is array(NATURAL range <>) of UNSIGNED(COUNTER_BITS - 1 downto 0);
 
 	-- create matrix from vector-vector
-	function to_slm(usv : T_TAG_MEMORY) return t_slm is
-		variable slm		: t_slm(usv'range, DATA_BITS - 1 downto 0);
+	function to_slm(usv : T_TAG_MEMORY) return T_SLM is
+		variable slm		: T_SLM(usv'range, DATA_BITS - 1 downto 0);
 	begin
 		for i in usv'range loop
 			for j in DATA_BITS - 1 downto 0 loop
@@ -74,8 +74,8 @@ architecture rtl of stat_Maximum is
 		return slm;
 	end function;
 	
-	function to_slm(usv : T_COUNTER_MEMORY) return t_slm is
-		variable slm		: t_slm(usv'range, COUNTER_BITS - 1 downto 0);
+	function to_slm(usv : T_COUNTER_MEMORY) return T_SLM is
+		variable slm		: T_SLM(usv'range, COUNTER_BITS - 1 downto 0);
 	begin
 		for i in usv'range loop
 			for j in COUNTER_BITS - 1 downto 0 loop
@@ -103,13 +103,9 @@ begin
 	end generate;
 
 	process(Clock)
-		variable NewMaximum_nxt		: STD_LOGIC_VECTOR(DEPTH - 1 downto 0);
-		variable NewMaximum_idx 	: NATURAL;
 		variable TagHit_idx 			: NATURAL;
 	begin
-		NewMaximum_nxt	:= MaximumIndex(MaximumIndex'high - 1 downto 0) & MaximumIndex(MaximumIndex'high);	
-		NewMaximum_idx	:= to_index(onehot2bin(NewMaximum_nxt));
-		TagHit_idx			:= to_index(onehot2bin(TagHit));
+		TagHit_idx			:= to_index(onehot2bin(TagHit, 0));
 	
 		if rising_edge(Clock) then
 			if (Reset = '1') then
