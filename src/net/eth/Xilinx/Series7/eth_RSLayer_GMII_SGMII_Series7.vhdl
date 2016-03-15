@@ -8,13 +8,9 @@ USE			UNISIM.VCOMPONENTS.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
-USE			L_Ethernet.EthComp.Ethernet_PCS_IPCore_Virtex7;
+USE			PoC.vectors.ALL;
+USE			PoC.net.ALL;
+USE			PoC.net_comp.all;
 
 ENTITY eth_RSLayer_GMII_SGMII_Series7 IS
 	GENERIC (
@@ -36,8 +32,8 @@ ENTITY eth_RSLayer_GMII_SGMII_Series7 IS
 		RS_RX_Error								: OUT		STD_LOGIC;
 		
 		-- PHY-SGMII interface
-		PHY_Interface							: INOUT	T_ETHERNET_PHY_INTERFACE_SGMII;
-		PHY_Management						: INOUT	T_ETHERNET_PHY_INTERFACE_MDIO
+		PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_SGMII;
+		PHY_Management						: INOUT	T_NET_ETH_PHY_INTERFACE_MDIO
 	);
 END;
 
@@ -150,7 +146,7 @@ BEGIN
 	PHY_Interface.SGMII_TXRefClock_Out	<= Clock_125_MHz;
 	PHY_Interface.SGMII_RXRefClock_Out	<= Clock_125_MHz;			-- FIXME: this seams not to be correct !!!
 
-	PHY_Management.Clock_t		<= '0';
+	PHY_Management.Clock_ts.t		<= '0';
 
 
 	genPCSIPCore : IF (TRUE) GENERATE
@@ -257,10 +253,10 @@ BEGIN
 				gmii_isolate         => OPEN,														-- Tristate control to electrically isolate GMII
 				
 				phyad                => PCSCORE_MDIO_ADDRESS,
-				mdc                  => PHY_Management.Clock_i,					-- PHY_Management Data Clock
-				mdio_in              => PHY_Management.Data_i,					-- PHY_Management Data In
-				mdio_out             => PHY_Management.Data_o,					-- PHY_Management Data Out
-				mdio_tri             => PHY_Management.Data_t,					-- PHY_Management Data Tristate
+				mdc                  => PHY_Management.Clock_ts.i,					-- PHY_Management Data Clock
+				mdio_in              => PHY_Management.Data_ts.i,					-- PHY_Management Data In
+				mdio_out             => PHY_Management.Data_ts.o,					-- PHY_Management Data Out
+				mdio_tri             => PHY_Management.Data_ts.t,					-- PHY_Management Data Tristate
 				
 				configuration_vector => PCSCORE_CONFIGURATION_VECTOR,
 				configuration_valid  => to_sl(PCSCORE_CONFIGURATION),

@@ -70,7 +70,7 @@ architecture tb of sata_TransceiverLayer_tb is
  
 	signal PowerDown						: STD_LOGIC;
 	signal TX_Data							: T_SLV_32;
-	signal TX_CharISK						: T_SLV_4;
+	signal TX_CharIsK						: T_SLV_4;
  
 	signal SATA_Common_In				: T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
 	signal SATA_Private_In			: T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS;
