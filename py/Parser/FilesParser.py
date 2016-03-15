@@ -102,9 +102,6 @@ class FilesParserMixIn:
 		self._document = Document.parse(self._content, printChar=not True)
 		print(Fore.LIGHTBLACK_EX + str(self._document) + Fore.RESET)
 		
-	def _SetVariables(self, variables):
-		pass
-	
 	def _Resolve(self, statements=None):
 		print("Resolving {0}".format(str(self._file)))
 		if (statements is None):
@@ -155,7 +152,7 @@ class FilesParserMixIn:
 	
 	def _Evaluate(self, expr):
 		if isinstance(expr, Identifier):
-			return 2008#"Xilinx"
+			return self._variables[expr.Name]
 		elif isinstance(expr, StringLiteral):
 			return expr.Value
 		elif isinstance(expr, IntegerLiteral):

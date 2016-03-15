@@ -65,6 +65,46 @@ class FileTypes(Enum):
 	def __str__(self):
 		return self.name
 
+@unique
+class Environment(Enum):
+	Any =					0
+	Simulation =	1
+	Synthesis =		2
+	
+@unique
+class ToolChain(Enum):
+	Any =								 0
+	Aldec_ActiveHDL =		10
+	Altera_QuartusII =	20
+	Altera_ModelSim =		21
+	Lattice_LSE =				30
+	GHDL_GTKWave =			40
+	Mentor_QuestaSim =	50
+	Xilinx_ISE =				60
+	Xilinx_PlanAhead =	61
+	Xilinx_Vivado =			62
+	
+@unique
+class Tool(Enum):
+	Any =								 0
+	Aldec_ActiveHDL =		10
+	Altera_QuartusII =	20
+	Altera_ModelSim =		21
+	Lattice_LSE =				30
+	GHDL =							40
+	Mentor_QuestaSim =	50
+	Xilinx_XST =				60
+	Xilinx_CoreGen =		61
+	Xilinx_Synth =			62
+
+@unique
+class VHDLVersion(Enum):
+	Any =								 0
+	VHDL87 =						87
+	VHDL93 =						93
+	VHDL02 =						2002
+	VHDL08 =						2008
+	
 class Project():
 	def __init__(self, name):
 		print("Project.__init__: name={0}".format(name))
@@ -75,6 +115,10 @@ class Project():
 		
 		self._board =						None
 		self._device =					None
+		self._environment =			Environment.Any
+		self._toolChain =				ToolChain.Any
+		self._tool =						Tool.Any
+		self._vhdlVersion =			VHDLVersion.Any
 		
 		self.CreateFileSet("default", setDefault=True)
 	
@@ -82,14 +126,70 @@ class Project():
 	def Name(self):
 		return self._name
 	
-	def SetRootDirectory(self, rootDirectory):
-		if isinstance(rootDirectory, str):
-			rootDirectory = Path(rootDirectory)
-		self._rootDirectory = rootDirectory
-	
 	@property
 	def RootDirectory(self):
 		return self._rootDirectory
+	
+	@RootDirectory.setter
+	def RootDirectory(self, value):
+		if isinstance(value, str):	value = Path(value)
+		self._rootDirectory = value
+	
+	@property
+	def Board(self):
+		return self._board
+	
+	@Board.setter
+	def Board(self, value):
+		if isinstance(value, str):
+			value = Board(value)
+		elif (not isinstance(value, Board)):						raise ValueError("Parameter 'board' is not of type Board.")
+		self._board =		value
+		self._device =	value.Device
+	
+	@property
+	def Device(self):
+		return self._device
+	
+	@Device.setter
+	def Device(self, value):
+		if isinstance(value, (str, Device)):
+			board = Board("custom", value)
+		else:																						raise ValueError("Parameter 'device' is not of type str or Device.")
+		self._board =		board
+		self._device =	board.Device
+	
+	@property
+	def Environment(self):
+		return self._environment
+	
+	@Environment.setter
+	def Environment(self, value):
+		self._environment = value
+	
+	@property
+	def ToolChain(self):
+		return self._toolChain
+	
+	@ToolChain.setter
+	def ToolChain(self, value):
+		self._toolChain = value
+	
+	@property
+	def Tool(self):
+		return self._tool
+	
+	@Tool.setter
+	def Tool(self, value):
+		self._tool = value
+	
+	@property
+	def VHDLVersion(self):
+		return self._vhdlVersion
+	
+	@VHDLVersion.setter
+	def VHDLVersion(self, value):
+		self._vhdlVersion = value
 	
 	def CreateFileSet(self, name, setDefault=True):
 		fs =											FileSet(name, project=self)
@@ -120,86 +220,58 @@ class Project():
 	@DefaultFileSet.setter
 	def DefaultFileSet(self, value):
 		if isinstance(value, str):
-			if (value not in self._fileSets.keys()):
-				raise BaseException("Fileset '{0}' is not in this project.".format(value))
+			if (value not in self._fileSets.keys()):			raise BaseException("Fileset '{0}' is not in this project.".format(value))
 			self._defaultFileSet = self._fileSets[value]
 		elif isinstance(value, FileSet):
-			if (value not in self.FileSets):
-				raise BaseException("Fileset '{0}' is not associated to this project.".format(value))
+			if (value not in self.FileSets):							raise BaseException("Fileset '{0}' is not associated to this project.".format(value))
 			self._defaultFileSet = value
-		else:
-			raise ValueError("Unsupported parameter type for 'value'.")
+		else:																						raise ValueError("Unsupported parameter type for 'value'.")
 	
 	def AddFile(self, file, fileSet = None):
 		# print("Project.AddFile: file={0}".format(file))
-		if not isinstance(file, File):
-			raise ValueError("Parameter 'file' is not of type Base.Project.File.")
+		if (not isinstance(file, File)):								raise ValueError("Parameter 'file' is not of type Base.Project.File.")
 		if (fileSet is None):
-			if (self._defaultFileSet is not None):
-				fileSet = self._defaultFileSet
-			else:
-				raise BaseException("Neither the parameter 'file' set nor a default file set is given.")
-		else:
-			if isinstance(fileSet, str):
-				fileSet = self._fileSets[fileSet]
-			elif isinstance(fileSet, FileSet):
-				if (fileSet not in self.FileSets):
-					raise BaseException("Fileset '{0}' is not associated to this project.".format(value))
-			else:
-				raise ValueError("Unsupported parameter type for 'fileSet'.")
+			if (self._defaultFileSet is None):						raise BaseException("Neither the parameter 'file' set nor a default file set is given.")
+			fileSet = self._defaultFileSet
+		elif isinstance(fileSet, str):
+			fileSet = self._fileSets[fileSet]
+		elif isinstance(fileSet, FileSet):
+			if (fileSet not in self.FileSets):						raise BaseException("Fileset '{0}' is not associated to this project.".format(value))
+		else:																						raise ValueError("Unsupported parameter type for 'fileSet'.")
 		fileSet.AddFile(file)
+		return file
 		
 	def AddSourceFile(self, file, fileSet = None):
 		# print("Project.AddSourceFile: file={0}".format(file))
-		if not isinstance(file, SourceFile):
-			raise ValueError("Parameter 'file' is not of type Base.Project.SourceFile.")
+		if (not isinstance(file, SourceFile)):					raise ValueError("Parameter 'file' is not of type Base.Project.SourceFile.")
 		if (fileSet is None):
-			if (self._defaultFileSet is not None):
-				fileSet = self._defaultFileSet
-			else:
-				raise BaseException("Neither the parameter 'file' set nor a default file set is given.")
-		else:
-			if isinstance(fileSet, str):
-				fileSet = self._fileSets[fileSet]
-			elif isinstance(fileSet, FileSet):
-				if (fileSet not in self.FileSets):
-					raise BaseException("Fileset '{0}' is not associated to this project.".format(value))
-			else:
-				raise ValueError("Unsupported parameter type for 'fileSet'.")
-		fileSet.AddSourceFile(file)
-	
-	def GetFiles(self, fileType = FileTypes.Any, fileSet=None):
-		if (fileSet is None):
-			if (self._defaultFileSet is None):	raise BaseException("Neither the parameter 'fileSet' set nor a default file set is given.")
+			if (self._defaultFileSet is None):						raise BaseException("Neither the parameter 'file' set nor a default file set is given.")
 			fileSet = self._defaultFileSet
-			
+		elif isinstance(fileSet, str):
+			fileSet = self._fileSets[fileSet]
+		elif isinstance(fileSet, FileSet):
+			if (fileSet not in self.FileSets):						raise BaseException("Fileset '{0}' is not associated to this project.".format(value))
+		else:																						raise ValueError("Unsupported parameter type for 'fileSet'.")
+		fileSet.AddSourceFile(file)
+		return file
+	
+	@property
+	def Files(self, fileType = FileTypes.Any, fileSet=None):
+		if (fileSet is None):
+			if (self._defaultFileSet is None):						raise BaseException("Neither the parameter 'fileSet' set nor a default file set is given.")
+			fileSet = self._defaultFileSet
 		for file in fileSet.Files:
 			if (file.FileType == fileType):
 				yield file
-	
-	def SetBoard(self, board):
-		if isinstance(board, str):
-			board = Board(str)
-		elif (not isinstance(board, Board)):
-			raise ValueError("Parameter 'board' is not of type Board.")
-		self._board =		board
-		self._device =	board.Device
-	
-	def SetDevice(self, device):
-		if isinstance(device, (str, Device)):
-			board = Board("custom", device)
-		else:
-			raise ValueError("Parameter 'device' is not of type str or Device.")
-		self._board =		board
-		self._device =	board.Device
 	
 	def _GetVariables(self):
 		result = {
 			"ProjectName" :			self._name,
 			"RootDirectory" :		str(self._rootDirectory),
-			"Environment" :			"Simulation",
-			"ToolChain" :				"GHDL_GTKWave",
-			"Tool" :						"GHDL"
+			"Environment" :			self._environment,
+			"ToolChain" :				self._toolChain,
+			"Tool" :						self._tool,
+			"VHDL" :						self._vhdlVersion.value
 		}
 		return merge(result, self._board._GetVariables(), self._device._GetVariables())
 	
@@ -234,8 +306,7 @@ class FileSet:
 	
 	@Project.setter
 	def Project(self, value):
-		if not isinstance(value, Project):
-			raise ValueError("Parameter 'value' is not of type Base.Project.Project.")
+		if not isinstance(value, Project):							raise ValueError("Parameter 'value' is not of type Base.Project.Project.")
 		self._project = value
 	
 	@property
@@ -252,8 +323,7 @@ class FileSet:
 		elif isinstance(file, SourceFile):
 			self.AddSourceFile(file)
 			return
-		elif (not isinstance(file, File)):
-			raise ValueError("Unsupported parameter type for 'file'.")
+		elif (not isinstance(file, File)):							raise ValueError("Unsupported parameter type for 'file'.")
 		file.FileSet = self
 		file.Project = self._project
 		self._files.append(file)
@@ -265,8 +335,7 @@ class FileSet:
 			file = SourceFile(file, project=self._project, fileSet=self)
 		elif isinstance(file, Path):
 			file = SourceFile(file, project=self._project, fileSet=self)
-		elif (not isinstance(file, SourceFile)):
-			raise ValueError("Unsupported parameter type for 'file'.")
+		elif (not isinstance(file, SourceFile)):				raise ValueError("Unsupported parameter type for 'file'.")
 		file.FileSet = self
 		file.Project = self._project
 		self._files.append(file)
@@ -291,8 +360,7 @@ class File():
 	
 	@Project.setter
 	def Project(self, value):
-		if not isinstance(value, Project):
-			raise ValueError("Parameter 'value' is not of type Base.Project.Project.")
+		if not isinstance(value, Project):							raise ValueError("Parameter 'value' is not of type Base.Project.Project.")
 		# print("File.Project(setter): value={0}".format(value))
 		self._project = value
 	
@@ -302,8 +370,7 @@ class File():
 	
 	@FileSet.setter
 	def FileSet(self, value):
-		if (value is None):
-			raise ValueError("'value' is None")
+		if (value is None):															raise ValueError("'value' is None")
 		# print("File.FileSet(setter): value={0}".format(value))
 		self._fileSet =	value
 		self._project =	value.Project
@@ -321,8 +388,7 @@ class File():
 		return self._file
 	
 	def Open(self):
-		if (not self._file.exists()):
-			raise FileNotFoundError("File '{0}' not found.".format(str(self._file)))
+		if (not self._file.exists()):										raise FileNotFoundError("File '{0}' not found.".format(str(self._file)))
 		try:
 			self._handle = self._file.open('r')
 		except Exception as ex:
@@ -368,19 +434,14 @@ class FileListFile(File, FilesParserMixIn):
 	
 	def Parse(self):
 		print("FileListFile.Parse:")
-		if (self._fileSet is None):
-			raise BaseException("File '{0}' is not associated to a fileset.".format(str(self._file)))
-		if (self._project is None):
-			raise BaseException("File '{0}' is not associated to a project.".format(str(self._file)))
-		if (self._project.RootDirectory is None):
-			raise BaseException("No RootDirectory configured for this project.")
+		if (self._fileSet is None):											raise BaseException("File '{0}' is not associated to a fileset.".format(str(self._file)))
+		if (self._project is None):											raise BaseException("File '{0}' is not associated to a project.".format(str(self._file)))
+		if (self._project.RootDirectory is None):				raise BaseException("No RootDirectory configured for this project.")
 			
 		# prepare FilesParserMixIn environment
 		self._rootDirectory = self.Project.RootDirectory
+		self._variables =			self.Project._GetVariables()
 		self._Parse()
-		
-		vars = self._project._GetVariables()
-		self._SetVariables(vars)
 		self._Resolve()
 	
 	def CopyFilesToFileSet(self):
