@@ -5,34 +5,14 @@
 # Note: all files are relative to PoC root directory
 #
 # Load external vendor libraries
-@library osvvm "osvvm"																# Open Source VHDL Verification Methodology (OS-VVM)
+include				"lib/osvvm.files"												# Open Source VHDL Verification Methodology (OS-VVM)
 
 # board and device configuration
 vhdl		poc		"tb/common/my_config_KC705.vhdl"
 vhdl		poc		"tb/common/my_project.vhdl"
 
-#include "tb/common/common.files"
-#include "tb/common/simulation.files"
-
-# PoC core packages
-vhdl		poc		"src/common/utils.vhdl"									# PoC utility collection
-vhdl		poc		"src/common/config.vhdl"								# PoC device configuration mechanism
-vhdl		poc		"src/common/math.vhdl"									# PoC math extension package
-vhdl		poc		"src/common/strings.vhdl"								# PoC string package
-vhdl		poc		"src/common/vectors.vhdl"								# PoC vector package
-vhdl		poc		"src/common/physical.vhdl"							# PoC physical types package
-vhdl		poc		"src/common/components.vhdl"						# PoC components package
-
-vhdl		poc		"src/sim/sim_types.vhdl"								# PoC simulation helper
-vhdl-93	poc		"src/sim/sim_random.v93.vhdl"						# PoC simulation helper
-vhdl-93	poc		"src/sim/sim_global.v93.vhdl"						# PoC simulation helper
-vhdl-93	poc		"src/sim/sim_unprotected.v93.vhdl"			# PoC simulation helper
-vhdl-93	poc		"src/sim/sim_simulation.v93.vhdl"				# PoC simulation helper
-vhdl-08	poc		"src/sim/sim_random.v08.vhdl"						# PoC simulation helper
-vhdl-08	poc		"src/sim/sim_protected.v08.vhdl"				# PoC simulation helper
-vhdl-08	poc		"src/sim/sim_global.v08.vhdl"						# PoC simulation helper
-vhdl-08	poc		"src/sim/sim_simulation.v08.vhdl"				# PoC simulation helper
-vhdl		poc		"src/sim/sim_waveform.vhdl"							# PoC simulation helper
+include "src/common/common.files"
+include "src/sim/sim.files"
 
 # Testbench file(s)
 vhdl		test	"tb/sim/sim_ClockGenerator_tb.vhdl"			# Testbench

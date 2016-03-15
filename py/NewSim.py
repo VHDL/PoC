@@ -20,8 +20,8 @@ pocProject.SetBoard(board)
 fileListFile = FileListFile(InputFile)
 pocProject.AddFile(fileListFile)
 
-#fileListFile.Parse()
-#fileListFile.CopyFilesToFileSet()
+fileListFile.Parse()
+fileListFile.CopyFilesToFileSet()
 
 print("=" * 160)
 # for vhdlFile in pocProject.GetFiles(fileType=FileTypes.VHDLSourceFile):
