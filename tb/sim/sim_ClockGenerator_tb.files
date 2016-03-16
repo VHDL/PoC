@@ -5,11 +5,11 @@
 # Note: all files are relative to PoC root directory
 #
 # Load external vendor libraries
-include				"lib/osvvm.files"												# Open Source VHDL Verification Methodology (OS-VVM)
+include				"lib/osvvm.files"														# Open Source VHDL Verification Methodology (OS-VVM)
 
-include				"tb/common/my_config.files"							# board and device configuration
-include				"src/common/common.files"								# load common packages
-include				"src/sim/sim.files"											# load simulation helper packages
+include				"tb/common/my_config.files"									# board and device configuration
+include				"src/common/common.files"										# load common packages
+include				"src/sim/sim.files"													# load simulation helper packages
 
 # Testbench file(s)
-vhdl		test	"tb/sim/sim_ClockGenerator_tb.vhdl"			# Testbench
+vhdl		test	"tb/sim/sim_ClockGenerator_tb.vhdl"					# Testbench

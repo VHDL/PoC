@@ -277,9 +277,9 @@ class Project():
 		result = {
 			"ProjectName" :			self._name,
 			"RootDirectory" :		str(self._rootDirectory),
-			"Environment" :			self._environment,
-			"ToolChain" :				self._toolChain,
-			"Tool" :						self._tool,
+			"Environment" :			self._environment.name,
+			"ToolChain" :				self._toolChain.name,
+			"Tool" :						self._tool.name,
 			"VHDL" :						self._vhdlVersion.value
 		}
 		return merge(result, self._board._GetVariables(), self._device._GetVariables())
