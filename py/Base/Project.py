@@ -87,15 +87,17 @@ class ToolChain(Enum):
 @unique
 class Tool(Enum):
 	Any =								 0
-	Aldec_ActiveHDL =		10
+	Aldec_aSim =				10
 	Altera_QuartusII =	20
-	Altera_ModelSim =		21
 	Lattice_LSE =				30
 	GHDL =							40
-	Mentor_QuestaSim =	50
+	GTKwave =						41
+	Mentor_vSim =				50
 	Xilinx_XST =				60
 	Xilinx_CoreGen =		61
 	Xilinx_Synth =			62
+	Xilinx_iSim =				70
+	Xilinx_xSim =				71
 
 @unique
 class VHDLVersion(Enum):
@@ -105,9 +107,16 @@ class VHDLVersion(Enum):
 	VHDL02 =						2002
 	VHDL08 =						2008
 	
+	@classmethod
+	def parse(cls, value):
+		for member in cls:
+			if (member.value == value):
+				return member
+		raise ValueError("'{0}' is not a member of {1}.".format(str(value), cls.__name__))
+	
 class Project():
 	def __init__(self, name):
-		print("Project.__init__: name={0}".format(name))
+		# print("Project.__init__: name={0}".format(name))
 		self._name =						name
 		self._rootDirectory =		None
 		self._fileSets =				{}
@@ -255,11 +264,11 @@ class Project():
 		fileSet.AddSourceFile(file)
 		return file
 	
-	@property
-	def Files(self, fileType = FileTypes.Any, fileSet=None):
+	def Files(self, fileType=FileTypes.Any, fileSet=None):
 		if (fileSet is None):
 			if (self._defaultFileSet is None):						raise BaseException("Neither the parameter 'fileSet' set nor a default file set is given.")
 			fileSet = self._defaultFileSet
+		print("init Project.Files generator")
 		for file in fileSet.Files:
 			if (file.FileType == fileType):
 				yield file
@@ -291,7 +300,7 @@ class Project():
 
 class FileSet:
 	def __init__(self, name, project = None):
-		print("FileSet.__init__: name={0}  project={0}".format(name, project))
+		# print("FileSet.__init__: name={0}  project={0}".format(name, project))
 		self._name =		name
 		self._project =	project
 		self._files =		[]
@@ -433,7 +442,7 @@ class FileListFile(File, FilesParserMixIn):
 		return FileTypes.FileListFile
 	
 	def Parse(self):
-		print("FileListFile.Parse:")
+		# print("FileListFile.Parse:")
 		if (self._fileSet is None):											raise BaseException("File '{0}' is not associated to a fileset.".format(str(self._file)))
 		if (self._project is None):											raise BaseException("File '{0}' is not associated to a project.".format(str(self._file)))
 		if (self._project.RootDirectory is None):				raise BaseException("No RootDirectory configured for this project.")

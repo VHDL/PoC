@@ -100,10 +100,10 @@ class FilesParserMixIn:
 	def _Parse(self):
 		self._ReadContent()
 		self._document = Document.parse(self._content, printChar=not True)
-		print(Fore.LIGHTBLACK_EX + str(self._document) + Fore.RESET)
+		# print(Fore.LIGHTBLACK_EX + str(self._document) + Fore.RESET)
 		
 	def _Resolve(self, statements=None):
-		print("Resolving {0}".format(str(self._file)))
+		# print("Resolving {0}".format(str(self._file)))
 		if (statements is None):
 			statements = self._document.Statements
 		
@@ -133,26 +133,25 @@ class FilesParserMixIn:
 				vhdlLibRef =	VHDLLibraryReference(stmt.Library, lib)
 				self._libraries.append(vhdlLibRef)
 			elif isinstance(stmt, IfElseIfElseStatement):
-				print("resolving if ...")
 				exprValue = self._Evaluate(stmt._ifStatement._expression)
 				if (exprValue == True):
 					self._Resolve(stmt._ifStatement.Statements)
 				elif (stmt._elseIfStatements is not None):
 					for elseif in stmt._elseIfStatements:
-						print("resolving elseif ...")
 						exprValue = self._Evaluate(elseif._expression)
 						if (exprValue == True):
 							self._Resolve(elseif.Statements)
 							break
 				if ((exprValue == False) and (stmt._elseStatement is not None)):
-					print("else ...")
 					self._Resolve(stmt._elseStatement.Statements)
 			elif isinstance(stmt, ReportStatement):
 				print("WARNING: {0}".format(stmt.Message))
 	
 	def _Evaluate(self, expr):
 		if isinstance(expr, Identifier):
-			return self._variables[expr.Name]
+			try:
+				return self._variables[expr.Name]
+			except KeyError as ex:												raise ParserException("Identifier '{0}' not found.".format(expr.Name)) from ex
 		elif isinstance(expr, StringLiteral):
 			return expr.Value
 		elif isinstance(expr, IntegerLiteral):

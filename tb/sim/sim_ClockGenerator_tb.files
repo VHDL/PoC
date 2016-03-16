@@ -7,12 +7,9 @@
 # Load external vendor libraries
 include				"lib/osvvm.files"												# Open Source VHDL Verification Methodology (OS-VVM)
 
-# board and device configuration
-vhdl		poc		"tb/common/my_config_KC705.vhdl"
-vhdl		poc		"tb/common/my_project.vhdl"
-
-include "src/common/common.files"
-include "src/sim/sim.files"
+include				"tb/common/my_config.files"							# board and device configuration
+include				"src/common/common.files"								# load common packages
+include				"src/sim/sim.files"											# load simulation helper packages
 
 # Testbench file(s)
 vhdl		test	"tb/sim/sim_ClockGenerator_tb.vhdl"			# Testbench

@@ -43,13 +43,17 @@ else:
 from pathlib import Path
 import fileinput
 from os import linesep
+import subprocess
 
-from Base.Exceptions import *
-from Simulator.Base import PoCSimulator 
-from Simulator.Exceptions import * 
+from Base.Exceptions				import *
+from Base.PoCConfig					import *
+from Base.Project						import FileTypes
+from Base.PoCProject				import *
+from Simulator.Base					import PoCSimulator 
+from Simulator.Exceptions		import * 
+
 
 class Simulator(PoCSimulator):
-
 	__executables =		{}
 	__vhdlStandard =	"93"
 	__guiMode =				False
@@ -130,150 +134,52 @@ class Simulator(PoCSimulator):
 		self.printVerbose('  cd "%s"' % str(tempGHDLPath))
 		os.chdir(str(tempGHDLPath))
 
-		# parse project filelist
-		filesLineRegExpStr =	r"^"																						#	start of line
-		filesLineRegExpStr =	r"(?:"																					#	open line type: empty, directive, keyword
-		filesLineRegExpStr +=		r"(?P<EmptyLine>)|"														#		empty line
-		filesLineRegExpStr +=		r"(?P<Directive>"															#		open directives:
-		filesLineRegExpStr +=			r"(?P<DirInclude>@include)|"								#			 @include
-		filesLineRegExpStr +=			r"(?P<DirLibrary>@library)"									#			 @library
-		filesLineRegExpStr +=		r")|"																					#		close directives
-		filesLineRegExpStr +=		r"(?P<Keyword>"																#		open keywords:
-		filesLineRegExpStr +=			r"(?P<KwAltera>altera)|"										#			altera
-		filesLineRegExpStr +=			r"(?P<KwXilinx>xilinx)|"										#			xilinx
-		filesLineRegExpStr +=			r"(?P<KwVHDL>vhdl"													#			vhdl[-nn]
-		filesLineRegExpStr +=				r"(?:-(?P<VHDLStandard>87|93|02|08))?)"		#				VHDL Standard Year: [-nn]
-		filesLineRegExpStr +=		r")"																					#		close keywords
-		filesLineRegExpStr +=	r")"																						#	close line type
-		filesLineRegExpStr +=	r"(?(Directive)\s+(?:"													#	open directive parameters
-		filesLineRegExpStr +=		r"(?(DirInclude)"															#		open @include directive
-		filesLineRegExpStr +=			r"\"(?P<IncludeFile>.*?\.files)\""					#			*.files filename without enclosing "-signs
-		filesLineRegExpStr +=		r")|"																					#		close @include directive
-		filesLineRegExpStr +=		r"(?(DirLibrary)"															#		open @include directive
-		filesLineRegExpStr +=			r"(?P<LibraryName>[_a-zA-Z0-9]+)"						#			VHDL library name
-		filesLineRegExpStr +=			r"\s+"																			#			delimiter
-		filesLineRegExpStr +=			r"\"(?P<LibraryPath>.*?)\""									#			VHDL library path without enclosing "-signs
-		filesLineRegExpStr +=		r")"																					#		close @library directive
-		filesLineRegExpStr +=	r"))"																						#	close directive parameters
-		filesLineRegExpStr +=	r"(?(Keyword)\s+(?:"														#	open keyword parameters
-		filesLineRegExpStr +=		r"(?P<VHDLLibrary>[_a-zA-Z0-9]+)"							#		VHDL library name
-		filesLineRegExpStr +=		r"\s+"																				#		delimiter
-		filesLineRegExpStr +=		r"\"(?P<VHDLFile>.*?\.vhdl?)\""								#		*.vhdl? filename without enclosing "-signs
-		filesLineRegExpStr +=	r"))"																						#	close keyword parameters
-		filesLineRegExpStr +=	r"\s*(?P<Comment>#.*)?"													#	optional comment until line end
-		filesLineRegExpStr +=	r"$"																						#	end of line
-		filesLineRegExp = re.compile(filesLineRegExpStr)
-
 		self.printDebug("Reading filelist '%s'" % str(fileListFilePath))
 		self.printNonQuiet("  running analysis for every vhdl file...")
 		
 		# add empty line if logs are enabled
 		if self.showLogs:		print()
-		
-		externalLibraries = []
-		
-		with fileListFilePath.open('r') as fileFileHandle:
-			for line in fileFileHandle:
-				filesLineRegExpMatch = filesLineRegExp.match(line)
-		
-				if (filesLineRegExpMatch is not None):
-					if (filesLineRegExpMatch.group('Directive') is not None):
-						if (filesLineRegExpMatch.group('DirInclude') is not None):
-							includeFile = filesLineRegExpMatch.group('IncludeFile')
-							self.printVerbose("    referencing another file: {0}".format(includeFile))
-						elif (filesLineRegExpMatch.group('DirLibrary') is not None):
-							externalLibraryName = filesLineRegExpMatch.group('LibraryName')
-							externalLibraryPath = filesLineRegExpMatch.group('LibraryPath')
-							
-							self.printVerbose("    referencing precompiled VHDL library: {0}".format(externalLibraryName))
-							externalLibraries.append(externalLibraryPath)
-						else:
-							raise SimulatorException("Unknown directive in *.files file.")
-						
-						continue
-						
-					elif (filesLineRegExpMatch.group('Keyword') is not None):
-						if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
-							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-							vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
-						elif (filesLineRegExpMatch.group('Keyword')[0:5] == "vhdl-"):
-							if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard[:2]):
-								vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-								vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
-							else:
-								continue
-						elif (filesLineRegExpMatch.group('Keyword') == "altera"):
-							# check if Quartus is configured
-							if not self.host.directories.__contains__("AlteraPrimitiveSource"):
-								raise NotConfiguredException("This testbench requires some Altera Primitves. Please configure Altera Quartus II.")
-						
-							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-							vhdlFilePath = self.host.directories["AlteraPrimitiveSource"] / vhdlFileName
-						elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
-							# check if ISE or Vivado is configured
-							if not self.host.directories.__contains__("XilinxPrimitiveSource"):
-								raise NotConfiguredException("This testbench requires some Xilinx Primitves. Please configure Xilinx ISE or Vivado.")
-							
-							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-							vhdlFilePath = self.host.directories["XilinxPrimitiveSource"] / vhdlFileName
-						else:
-							raise SimulatorException("Unknown keyword in *.files file.")
-					elif (filesLineRegExpMatch.group('EmptyLine') is not None):
-						continue
-					else:
-						raise SimulatorException("Unknown line in *.files file.")
-					
-					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
 
-					if (not vhdlFilePath.exists()):
-						raise SimulatorException("Can not analyse '" + vhdlFileName + "'.") from FileNotFoundError(str(vhdlFilePath))
-					
-					# assemble fuse command as list of parameters
-					parameterList = [
-						str(ghdlExecutablePath),
-						'-a',
-						'-fexplicit', '-frelaxed-rules', '--warn-binding', '--no-vital-checks', '--mb-comments', '--syn-binding',
-						'-fpsl',
-						'-v'
-					]
-					
-					for path in externalLibraries:
-						parameterList.append("-P{0}".format(path))
-					
-					parameterList += [
-						('--ieee=%s' % self.__ieeeFlavor),
-						('--std=%s' % self.__vhdlStandard),
-						('--work=%s' % vhdlLibraryName),
-						str(vhdlFilePath)
-					]
-					command = " ".join(parameterList)
-					
-					self.printDebug("call ghdl: %s" % str(parameterList))
-					self.printVerbose("    command: %s" % command)
-					
-					try:
-						ghdlLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+		# create a project
+		pocProject =								PoCProject(testbenchName)
+		# configure the project
+		pocProject.RootDirectory =	self.host.directories["PoCRoot"]
+		pocProject.Board =					"KC705"
+		pocProject.Environment =		Environment.Simulation
+		pocProject.ToolChain =			ToolChain.GHDL_GTKWave
+		pocProject.Tool =						Tool.GHDL
+		if (self.__vhdlStandard == "87"):			pocProject.VHDLVersion =		VHDLVersion.VHDL87
+		elif (self.__vhdlStandard == "93"):		pocProject.VHDLVersion =		VHDLVersion.VHDL93
+		elif (self.__vhdlStandard == "93c"):	pocProject.VHDLVersion =		VHDLVersion.VHDL93
+		elif (self.__vhdlStandard == "02"):		pocProject.VHDLVersion =		VHDLVersion.VHDL02
+		elif (self.__vhdlStandard == "08"):		pocProject.VHDLVersion =		VHDLVersion.VHDL08
 
-						if self.showLogs:
-							if (ghdlLog != ""):
-								print("ghdl messages for : %s" % str(vhdlFilePath))
-								print("-" * 80)
-								print(ghdlLog)
-								print("-" * 80)
-						
-					except subprocess.CalledProcessError as ex:
-						print("ERROR while executing ghdl: %s" % str(vhdlFilePath))
-						print("Return Code: %i" % ex.returncode)
-						print("-" * 80)
-						print(ex.output)
-						print("-" * 80)
-						
-						return
-						
-				else:
-					raise SimulatorException("Error in *.files file.")
-
+		# add a *.files file
+		fileListFile = pocProject.AddFile(FileListFile(fileListFilePath))
+		fileListFile.Parse()
+		fileListFile.CopyFilesToFileSet()
+		print("=" * 160)
+		print(pocProject.pprint())
+		print("=" * 160)
 		
+		externalLibraries = ["osvvm"]
+		
+		ghdl = GHDLAnalyze(ghdlExecutablePath)
+		for extLibrary in externalLibraries:
+			ghdl.AddLibraryReference(extLibrary)#.Path)
+		ghdl.IEEEFlavor =		self.__ieeeFlavor
+		ghdl.VHDLStandard =	self.__vhdlStandard
+		
+		for file in pocProject.Files(fileType=FileTypes.VHDLSourceFile):
+			if (not file.FilePath.exists()):		raise SimulatorException("Can not analyse '" + vhdlFileName + "'.") from FileNotFoundError(str(file))
+		
+			vhdlLibraryName = "poc"
+			
+			ghdl.VHDLLibrary =	vhdlLibraryName
+			ghdl.Analyze(file.FilePath)
+
+		print("return ......................")
+		return
 		# running simulation
 		# ==========================================================================
 		simulatorLog = ""
@@ -518,3 +424,263 @@ class Simulator(PoCSimulator):
 				print("-" * 80)
 				
 				return
+
+class Executable:
+	def __init__(self, executablePath, defaultParameters=[]):
+		if isinstance(executablePath, str):
+			executablePath = Path(executablePath)
+		elif (not isinstance(executablePath, Path)):		raise ValueError("Parameter 'executablePath' is not of type str or Path.")
+		
+		# prepend the executable
+		defaultParameters.insert(0, str(executablePath))
+		
+		self._logger =						None
+		self._executablePath =		executablePath
+		self._defaultParameters =	defaultParameters
+	
+	@property
+	def Path(self):
+		return self._executablePath
+	
+	@property
+	def DefaultParameters(self):
+		return self._defaultParameters
+	
+	@DefaultParameters.setter
+	def DefaultParameters(self, value):
+		self._defaultParameters = value
+	
+	def StartProcess(self, parameterList):
+		return subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+	
+	def _LogError(self, message):
+		if self._logger is not None:
+			print("ERROR:" + message)
+	
+	def _LogWarning(self, message):
+		if self._logger is not None:
+			print("WARNING:" + message)
+	
+	def _LogInfo(self, message):
+		if self._logger is not None:
+			print("INFO:" + message)
+	
+	def _LogNormal(self, message):
+		if self._logger is not None:
+			print(message)
+	
+	def _LogVerbose(self, message):
+		if self._logger is not None:
+			print("VERBOSE:" + message)
+	
+	def _LogDebug(self, message):
+		if self._logger is not None:
+			print("DEBUG:" + message)
+			
+class GHDLExecutable(Executable):
+	def __init__(self, executablePath, defaultParameters=[]):
+		super().__init__(executablePath, defaultParameters)
+			
+		self._flagExplicit =			False
+		self._flagRelaxedRules =	False
+		self._warnBinding =				False
+		self._noVitalChecks =			False
+		self._multiByteComments =	False
+		self._synBinding =				False
+		self._flagPSL =						False
+		self._verbose =						False
+		self._ieeeFlavor =				None
+		self._vhdlStandard =			None
+		self._vhdlLibrary =				None
+		
+	@property
+	def FlagExplicit(self):
+		return self._flagExplicit
+	@FlagExplicit.setter
+	def FlagExplicit(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._flagExplicit != value):
+			self._flagExplicit = value
+			if value:			self._defaultParameters.append("-fexplicit")
+			else:					self._defaultParameters.remove("-fexplicit")
+		
+	@property
+	def FlagRelaxedRules(self):
+		return self._flagRelaxedRules
+	@FlagRelaxedRules.setter
+	def FlagRelaxedRules(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._flagRelaxedRules != value):
+			self._flagRelaxedRules = value
+			if value:			self._defaultParameters.append("-frelaxed-rules")
+			else:					self._defaultParameters.remove("-frelaxed-rules")
+		
+	@property
+	def WarnBinding(self):
+		return self._warnBinding
+	@WarnBinding.setter
+	def WarnBinding(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._warnBinding != value):
+			self._warnBinding = value
+			if value:			self._defaultParameters.append("--warn-binding")
+			else:					self._defaultParameters.remove("--warn-binding")
+		
+	@property
+	def NoVitalChecks(self):
+		return self._noVitalChecks
+	@NoVitalChecks.setter
+	def NoVitalChecks(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._noVitalChecks != value):
+			self._noVitalChecks = value
+			if value:			self._defaultParameters.append("--no-vital-checks")
+			else:					self._defaultParameters.remove("--no-vital-checks")
+		
+	@property
+	def MultiByteComments(self):
+		return self._multiByteComments
+	@MultiByteComments.setter
+	def MultiByteComments(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._multiByteComments != value):
+			self._multiByteComments = value
+			if value:			self._defaultParameters.append("--mb-comments")
+			else:					self._defaultParameters.remove("--mb-comments")
+		
+	@property
+	def SynBinding(self):
+		return self._synBinding
+	@SynBinding.setter
+	def SynBinding(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._synBinding != value):
+			self._synBinding = value
+			if value:			self._defaultParameters.append("--syn-binding")
+			else:					self._defaultParameters.remove("--syn-binding")
+		
+	@property
+	def FlagPSL(self):
+		return self._flagPSL
+	@FlagPSL.setter
+	def FlagPSL(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._flagPSL != value):
+			self._flagPSL = value
+			if value:			self._defaultParameters.append("-fpsl")
+			else:					self._defaultParameters.remove("-fpsl")
+		
+	@property
+	def Verbose(self):
+		return self._verbose
+	@Verbose.setter
+	def Verbose(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._verbose != value):
+			self._verbose = value
+			if value:			self._defaultParameters.append("-v")
+			else:					self._defaultParameters.remove("-v")
+	
+	@property
+	def IEEEFlavor(self):
+		return self._ieeeFlavor
+	@IEEEFlavor.setter
+	def IEEEFlavor(self, value):
+		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
+		if (self._ieeeFlavor is None):
+			self._defaultParameters.append("--ieee={0}".format(value))
+			self._ieeeFlavor = value
+		elif (self._ieeeFlavor != value):
+			self._defaultParameters.remove("--ieee={0}".format(self._ieeeFlavor))
+			self._defaultParameters.append("--ieee={0}".format(value))
+			self._ieeeFlavor = value
+		
+	@property
+	def VHDLStandard(self):
+		return self._vhdlStandard
+	@VHDLStandard.setter
+	def VHDLStandard(self, value):
+		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
+		if (self._vhdlStandard is None):
+			self._defaultParameters.append("--std={0}".format(value))
+			self._vhdlStandard = value
+		elif (self._vhdlStandard != value):
+			self._defaultParameters.remove("--std={0}".format(self._vhdlStandard))
+			self._defaultParameters.append("--std={0}".format(value))
+			self._vhdlStandard = value
+	
+	@property
+	def VHDLLibrary(self):
+		return self._vhdlLibrary
+	@VHDLLibrary.setter
+	def VHDLLibrary(self, value):
+		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
+		if (self._vhdlLibrary is None):
+			self._defaultParameters.append("--work={0}".format(value))
+			self._vhdlLibrary = value
+		elif (self._vhdlLibrary != value):
+			self._defaultParameters.remove("--work={0}".format(self._vhdlLibrary))
+			self._defaultParameters.append("--work={0}".format(value))
+			self._vhdlLibrary = value
+	
+	def AddLibraryReference(self, path):
+		if isinstance(path, Path):		path = str(path)
+		self._defaultParameters.append("-P{0}".format(path))
+	
+class GHDLAnalyze(GHDLExecutable):
+	def __init__(self, executablePath):
+		super().__init__(executablePath, ["-a"])
+
+		self.FlagExplicit =				True
+		self.FlagRelaxedRules =		True
+		self.WarnBinding =				True
+		self.NoVitalChecks =			True
+		self.MultiByteComments =	True
+		self.SynBinding =					True
+		self.FlagPSL =						True
+		self.Verbose =						True
+	
+	def Analyze(self, filePath):
+		parameterList = self._defaultParameters.copy()
+		if isinstance(filePath, str):
+			parameterList.append(filePath)
+		elif isinstance(filePath, Path):
+			parameterList.append(str(filePath))
+		elif isinstance(filePath, (tuple, list)):
+			for item in filePath:
+				if isinstance(item, str):
+					parameterList.append(item)
+				elif isinstance(item, Path):
+					parameterList.append(str(item))
+				else:																				raise ValueError("Parameter 'filePath' is iterable, but contains not supported types.")
+		else:																						raise ValueError("Parameter 'filePath' has a not supported type.")
+			
+		self._LogDebug("call ghdl: {0}".format(str(parameterList)))
+		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		
+		try:
+			ghdlLog = self.StartProcess(parameterList)
+
+			# if self.showLogs:
+			if (ghdlLog != ""):
+				print("ghdl messages for : {0}".format(str(filePath)))
+				print("-" * 80)
+				print(ghdlLog)
+				print("-" * 80)
+		except subprocess.CalledProcessError as ex:
+			print("ERROR while executing ghdl: {0}".format(str(filePath)))
+			print("Return Code: {0}".format(ex.returncode))
+			print("-" * 80)
+			print(ex.output)
+			print("-" * 80)
+	
+class GHDLElaborate(GHDLExecutable):
+	def __init__(self, executablePath):
+		super().__init__(executablePath, ["-a"])
+	
+class GHDLRun(GHDLExecutable):
+	def __init__(self, executablePath):
+		super().__init__(executablePath, ["-r"])
+
+
+
