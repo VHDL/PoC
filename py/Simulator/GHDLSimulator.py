@@ -164,7 +164,7 @@ class Simulator(PoCSimulator):
 		
 		externalLibraries = ["osvvm"]
 		
-		ghdl = GHDLAnalyze(ghdlExecutablePath)
+		ghdl = GHDLAnalyze(self.host.platform, ghdlExecutablePath)
 		for extLibrary in externalLibraries:
 			ghdl.AddLibraryReference(extLibrary)#.Path)
 		ghdl.IEEEFlavor =		self.__ieeeFlavor
@@ -178,73 +178,48 @@ class Simulator(PoCSimulator):
 			ghdl.VHDLLibrary =	vhdlLibraryName
 			ghdl.Analyze(file.FilePath)
 
-		print("return ......................")
-		return
 		# running simulation
 		# ==========================================================================
 		simulatorLog = ""
 		
-		# run GHDL simulation on Windows
-		if (self.host.platform == "Windows"):
-			self.printNonQuiet("  running simulation...")
+		# # run GHDL simulation on Windows
+		# if (self.host.platform == "Windows"):
+		self.printNonQuiet("  elaborate simulation...")
+		ghdl = GHDLElaborate(self.host.platform, ghdlExecutablePath)
+		ghdl.Elaborate()
 		
-			parameterList = [
-				str(ghdlExecutablePath),
-				'-r',
-				'--syn-binding',
-				'-fpsl',
-				'-v'
-			]
-			
-			for path in externalLibraries:
-				parameterList.append("-P{0}".format(path))
-			
-			parameterList += [
-				('--std=%s' % self.__vhdlStandard),
-				'--work=test',
-				testbenchName
-			]
-
-			# append RUNOPTS
-			parameterList += [('--ieee-asserts={0}'.format("disable-at-0"))]		# enable, disable, disable-at-0
-			
-			# set dump format to save simulation results to *.vcd file
-			if (self.__guiMode):
-				if (waveformFileFormat == "vcd"):
-					parameterList += [("--vcd={0}".format(str(waveformFilePath)))]
-				elif (waveformFileFormat == "vcdgz"):
-					parameterList += [("--vcdgz={0}".format(str(waveformFilePath)))]
-				elif (waveformFileFormat == "fst"):
-					parameterList += [("--fst={0}".format(str(waveformFilePath)))]
-				elif (waveformFileFormat == "ghw"):
-					parameterList += [("--wave={0}".format(str(waveformFilePath)))]
-			
-			command = " ".join(parameterList)
+		self.printNonQuiet("  running simulation...")
 		
-			self.printDebug("call ghdl: %s" % str(parameterList))
-			self.printVerbose("    command: %s" % command)
-			
-			try:
-				simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
-				# 
-				if self.showLogs:
-					if (simulatorLog != ""):
-						print("ghdl messages for : %s" % str(vhdlFilePath))
-						print("-" * 80)
-						print(simulatorLog)
-						print("-" * 80)
+		# create a GHDL object and configure it
+		ghdl = GHDLRun(self.host.platform, ghdlExecutablePath)
+		ghdl.VHDLStandard =	self.__vhdlStandard
+		ghdl.VHDLLibrary =	vhdlLibraryName
+		
+		# reference external libraries
+		for extLibrary in externalLibraries:
+			ghdl.AddLibraryReference(extLibrary)#.Path)
+		
+		# configure RUNOPTS
+		runOptions = []
+		runOptions += [('--ieee-asserts={0}'.format("disable-at-0"))]		# enable, disable, disable-at-0
+		# set dump format to save simulation results to *.vcd file
+		if (self.__guiMode):
+			if (waveformFileFormat == "vcd"):
+				runOptions += [("--vcd={0}".format(str(waveformFilePath)))]
+			elif (waveformFileFormat == "vcdgz"):
+				runOptions += [("--vcdgz={0}".format(str(waveformFilePath)))]
+			elif (waveformFileFormat == "fst"):
+				runOptions += [("--fst={0}".format(str(waveformFilePath)))]
+			elif (waveformFileFormat == "ghw"):
+				runOptions += [("--wave={0}".format(str(waveformFilePath)))]
+		
+		ghdl.Run(testbenchName, runOptions)
 				
-			except subprocess.CalledProcessError as ex:
-				print("ERROR while executing ghdl command: %s" % command)
-				print("Return Code: %i" % ex.returncode)
-				print("-" * 80)
-				print(ex.output)
-				print("-" * 80)
-				
-				return
+		print("return ......................")
+		return
 
 		# run GHDL simulation on Linux
-		elif (self.host.platform == "Linux"):
+		if (self.host.platform == "Linux"):
 			# preparing some variables for Linux
 			exeFilePath =		tempGHDLPath / testbenchName.lower()
 		
@@ -426,10 +401,14 @@ class Simulator(PoCSimulator):
 				return
 
 class Executable:
-	def __init__(self, executablePath, defaultParameters=[]):
+	def __init__(self, platform, executablePath, defaultParameters=[]):
+		self._platform = platform
+		
 		if isinstance(executablePath, str):
 			executablePath = Path(executablePath)
 		elif (not isinstance(executablePath, Path)):		raise ValueError("Parameter 'executablePath' is not of type str or Path.")
+		
+		self._executableName = ""
 		
 		# prepend the executable
 		defaultParameters.insert(0, str(executablePath))
@@ -451,6 +430,7 @@ class Executable:
 		self._defaultParameters = value
 	
 	def StartProcess(self, parameterList):
+		print("Command: " + (" ".join(parameterList)))
 		return subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 	
 	def _LogError(self, message):
@@ -478,9 +458,16 @@ class Executable:
 			print("DEBUG:" + message)
 			
 class GHDLExecutable(Executable):
-	def __init__(self, executablePath, defaultParameters=[]):
-		super().__init__(executablePath, defaultParameters)
-			
+	def __init__(self, platform, executablePath, defaultParameters=[]):
+		super().__init__(platform, executablePath, defaultParameters)
+		
+		if (self._platform == "Windows"):
+			self._executableName =	"ghdl.exe"
+			self._backend =					"mcode"
+		elif (self._platform == "Linux"):
+			self._executableName =	"ghdl"
+			self._backend =					"llvm"
+		
 		self._flagExplicit =			False
 		self._flagRelaxedRules =	False
 		self._warnBinding =				False
@@ -492,7 +479,7 @@ class GHDLExecutable(Executable):
 		self._ieeeFlavor =				None
 		self._vhdlStandard =			None
 		self._vhdlLibrary =				None
-		
+	
 	@property
 	def FlagExplicit(self):
 		return self._flagExplicit
@@ -628,8 +615,8 @@ class GHDLExecutable(Executable):
 		self._defaultParameters.append("-P{0}".format(path))
 	
 class GHDLAnalyze(GHDLExecutable):
-	def __init__(self, executablePath):
-		super().__init__(executablePath, ["-a"])
+	def __init__(self, platform, executablePath):
+		super().__init__(platform, executablePath, ["-a"])
 
 		self.FlagExplicit =				True
 		self.FlagRelaxedRules =		True
@@ -639,6 +626,7 @@ class GHDLAnalyze(GHDLExecutable):
 		self.SynBinding =					True
 		self.FlagPSL =						True
 		self.Verbose =						True
+	
 	
 	def Analyze(self, filePath):
 		parameterList = self._defaultParameters.copy()
@@ -675,12 +663,64 @@ class GHDLAnalyze(GHDLExecutable):
 			print("-" * 80)
 	
 class GHDLElaborate(GHDLExecutable):
-	def __init__(self, executablePath):
-		super().__init__(executablePath, ["-a"])
+	def __init__(self, platform, executablePath):
+		super().__init__(platform, executablePath, ["-e"])
+	
+	def Elaborate(self):
+		if (self._backend == "mcode"):		return
+		
+		parameterList = self._defaultParameters.copy()
+			
+		self._LogDebug("call ghdl: {0}".format(str(parameterList)))
+		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		
+		try:
+			ghdlLog = self.StartProcess(parameterList)
+
+			# if self.showLogs:
+			if (ghdlLog != ""):
+				print("ghdl messages for : {0}".format("?????"))	#str(filePath)))
+				print("-" * 80)
+				print(ghdlLog)
+				print("-" * 80)
+		except subprocess.CalledProcessError as ex:
+			print("ERROR while executing ghdl: {0}".format("?????"))	#str(filePath)))
+			print("Return Code: {0}".format(ex.returncode))
+			print("-" * 80)
+			print(ex.output)
+			print("-" * 80)
 	
 class GHDLRun(GHDLExecutable):
-	def __init__(self, executablePath):
-		super().__init__(executablePath, ["-r"])
+	def __init__(self, platform, executablePath):
+		super().__init__(platform, executablePath, ["-r"])
 
+	def Run(self, testbenchName, runOptions):
+	
+	
+		self.SynBinding =					True
+		self.FlagPSL =						True
+		self.Verbose =						True
+		
+		parameterList =		self._defaultParameters.copy()
+		parameterList.append(testbenchName)
+		parameterList +=	runOptions
+			
+		self._LogDebug("call ghdl: {0}".format(str(parameterList)))
+		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		
+		try:
+			ghdlLog = self.StartProcess(parameterList)
 
+			# if self.showLogs:
+			if (ghdlLog != ""):
+				print("ghdl messages for : {0}".format("?????"))	#str(filePath)))
+				print("-" * 80)
+				print(ghdlLog)
+				print("-" * 80)
+		except subprocess.CalledProcessError as ex:
+			print("ERROR while executing ghdl: {0}".format("?????"))	#str(filePath)))
+			print("Return Code: {0}".format(ex.returncode))
+			print("-" * 80)
+			print(ex.output)
+			print("-" * 80)
 
