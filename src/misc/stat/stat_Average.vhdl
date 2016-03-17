@@ -103,7 +103,6 @@ begin
     generic map (
       A_BITS             => COUNTER_BITS,
       D_BITS             => COUNTER_BITS,
-      DETECT_DIV_BY_ZERO => false,
       PIPELINED          => true
     )
     port map (

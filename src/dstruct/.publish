@@ -1,4 +1,10 @@
+# git files
+.gitempty
+
+# Documentation
 README.md
+
+# --------------------------------------
 dstruct.pkg.vhdl
 dstruct_stack.vhdl
 dstruct_deque.vhdl

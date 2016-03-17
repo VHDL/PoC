@@ -7,8 +7,9 @@ README.md
 # subnamespace
 
 # --------------------------------------
-# Adder
+# Arithmetic
 arith_addw_tb.*
+arith_div_tb.*
 
 # Counters
 arith_counter_bcd_tb.*

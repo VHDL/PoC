@@ -2,14 +2,13 @@
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # ============================================================================
-# Authors:					Thomas B. Preusser
+# Tcl Include: Vivado Workflow Utility Procedures
 #
-# Tcl Include:			Vivado Workflow Utility Procedures
+# Authors:   Thomas B. Preusser
 #
 # Description
 # -----------
-# This is a collection of Tcl procedures that aim at easing the scripted
-# Vivado workflow.
+# This is a collection of generic utility Tcl procedures.
 #
 # License:
 # ============================================================================
@@ -29,12 +28,26 @@
 # limitations under the License.
 # ============================================================================
 
-# Called with the name of a bus[0 to N-1] and a list of package pins,
-# this procedure assigns the first N pins to the respective bus ports.
-proc assign_bus_pins {bus pins} {
-  for {set i 0} {$i < [llength $pins]} {incr i} {
-    set PORT [get_ports -quiet "$bus[$i]"]
-    if { [llength $PORT] == 0 } { break }
-    set_property PACKAGE_PIN [lindex $pins $i] $PORT
-  }
+# Extracts a the values of the named constants from a VHDL configuration
+# packaged and associates them with a variable of the same name within the
+# calling scope.
+#
+# Note: This implementation will fail on string values containing ';'.
+proc read_vhdl_config {config_vhdl names} {
+	# Read config file into string
+  set fd [open $config_vhdl r]
+  set data [list [read $fd]]
+  close $fd
+
+	# Build list of values assigned to passed configuration variable names
+	foreach name $names {
+		if { [regexp -nocase [string tolower "constant\\s*$name\\s*:\\s*\\w+\\s*:=\\s*(\[^;]+?)\\s*;"] $data all val] } {
+			uplevel set $name "{$val}"
+		}
+	}
+}
+
+# Strips the specified unit string from the passed value.
+proc strip_unit {val unit} {
+  return [lindex [regexp -inline "(.*)\\s+$unit" $val] 1]
 }
