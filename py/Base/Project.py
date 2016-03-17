@@ -117,17 +117,18 @@ class VHDLVersion(Enum):
 class Project():
 	def __init__(self, name):
 		# print("Project.__init__: name={0}".format(name))
-		self._name =						name
-		self._rootDirectory =		None
-		self._fileSets =				{}
-		self._defaultFileSet =	None
+		self._name =									name
+		self._rootDirectory =					None
+		self._fileSets =							{}
+		self._defaultFileSet =				None
+		self._externalVHDLLibraries = []
 		
-		self._board =						None
-		self._device =					None
-		self._environment =			Environment.Any
-		self._toolChain =				ToolChain.Any
-		self._tool =						Tool.Any
-		self._vhdlVersion =			VHDLVersion.Any
+		self._board =									None
+		self._device =								None
+		self._environment =						Environment.Any
+		self._toolChain =							ToolChain.Any
+		self._tool =									Tool.Any
+		self._vhdlVersion =						VHDLVersion.Any
 		
 		self.CreateFileSet("default", setDefault=True)
 	
@@ -235,7 +236,7 @@ class Project():
 			if (value not in self.FileSets):							raise BaseException("Fileset '{0}' is not associated to this project.".format(value))
 			self._defaultFileSet = value
 		else:																						raise ValueError("Unsupported parameter type for 'value'.")
-	
+		
 	def AddFile(self, file, fileSet = None):
 		# print("Project.AddFile: file={0}".format(file))
 		if (not isinstance(file, File)):								raise ValueError("Parameter 'file' is not of type Base.Project.File.")
@@ -273,6 +274,13 @@ class Project():
 			if (file.FileType == fileType):
 				yield file
 	
+	@property
+	def ExternalVHDLLibraries(self):
+		return self._externalVHDLLibraries
+
+	def AddExternalVHDLLibraries(self, library):
+		self._externalVHDLLibraries.append(library)
+	
 	def _GetVariables(self):
 		result = {
 			"ProjectName" :			self._name,
@@ -293,6 +301,9 @@ class Project():
 			buffer += "  FileSet: {0}\n".format(fileSet.Name)
 			for file in fileSet.Files:
 				buffer += "    {0}\n".format(file.FileName)
+		buffer += "  Libraries:\n"
+		for lib in self._externalVHDLLibraries:
+			buffer += "    {0} -> {1}\n".format(lib, "")
 		return buffer
 	
 	def __str__(self):
@@ -456,7 +467,11 @@ class FileListFile(File, FilesParserMixIn):
 	def CopyFilesToFileSet(self):
 		for file in self._files:
 			self._fileSet.AddFile(file)
-		
+
+	def CopyExternalLibraries(self):
+		for lib in self._libraries:
+			self._project.AddExternalVHDLLibraries(lib)
+			
 	def __str__(self):
 		return "FileList file: '{0}".format(str(self._file))
 		

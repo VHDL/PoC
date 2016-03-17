@@ -7,7 +7,7 @@
 if (Tool = "GHDL") then
 	library unisim "temp/ghdl/xilinx-ise"
 elseif (Tool = "Xilinx_iSim") then
-	# implecitely referenced; nothing to reference
+	# implicitly referenced; nothing to reference
 elseif (Tool = "Mentor_vSim") then
 	library unisim "temp/vSim/xilinx-ise"
 else

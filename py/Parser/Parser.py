@@ -35,6 +35,7 @@ DEBUG2 =	False#True
 
 from enum			import Enum, unique		# EnumMeta
 from colorama	import Fore
+from pathlib	import Path
 
 class ParserException(Exception):
 	pass
@@ -470,6 +471,64 @@ class IntegerLiteral(Literal):
 	def __str__(self):
 		return str(self._value)
 		
+class ExistsExpression(Expression):
+	def __init__(self, directoryname):
+		super().__init__()
+		self._path = Path(directoryname)
+
+	@property
+	def Path(self):
+		return self._path
+
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init ExistsExpressionParser")
+		
+		# match for EXISTS keyword
+		token = yield
+		if DEBUG2: print("ExistsExpressionParser: token={0} expected '('".format(token))
+		# if (not isinstance(token, StringToken)):			raise MismatchingParserResult()
+		# if (token.Value != "exists"):									raise MismatchingParserResult()
+		
+		if (not isinstance(token, CharacterToken)):			raise MismatchingParserResult()
+		if (token.Value != "?"):												raise MismatchingParserResult()
+		
+		# match for opening (
+		token = yield
+		if DEBUG2: print("ExistsExpressionParser: token={0} expected '('".format(token))
+		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
+		if (token.Value != "("):											raise MismatchingParserResult()
+		# match for optional whitespace
+		token = yield
+		if DEBUG2: print("ExistsExpressionParser: token={0}".format(token))
+		if isinstance(token, SpaceToken):						token = yield
+		# match for delimiter sign: "
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("ExistsExpressionParser: Expected double quote sign before VHDL filename.")
+		if (token.Value.lower() != "\""):						raise MismatchingParserResult("ExistsExpressionParser: Expected double quote sign before VHDL filename.")
+		# match for string: path
+		path = ""
+		while True:
+			token = yield
+			if isinstance(token, CharacterToken):
+				if (token.Value == "\""):
+					break
+			path += token.Value
+		# match for optional whitespace
+		token = yield
+		if DEBUG2: print("ExistsExpressionParser: token={0}".format(token))
+		if isinstance(token, SpaceToken):						token = yield
+		# match for delimiter sign: \n
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("ExistsExpressionParser: Expected end of line or comment")
+		if (token.Value != ")"):										raise MismatchingParserResult("ExistsExpressionParser: Expected end of line or comment")
+		
+		# construct result
+		result = cls(path)
+		if DEBUG: print("ExistsExpressionParser: matched {0}".format(result))
+		raise MatchingParserResult(result)
+		
+	def __str__(self):
+		return "exists(\"{0}\")".format(str(self._path))
+		
 class UnaryExpression(Expression):
 	def __init__(self, child):
 		super().__init__()
@@ -478,6 +537,45 @@ class UnaryExpression(Expression):
 	@property
 	def Child(self):
 		return self._child
+
+class NotExpression(UnaryExpression):
+	def __init__(self, child):
+		super().__init__(child)
+
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init NotExpressionParser")
+		
+		# match for "!"
+		token = yield
+		if DEBUG2: print("NotExpressionParser: token={0} expected '('".format(token))
+		if (not isinstance(token, StringToken)):			raise MismatchingParserResult()
+		if (token.Value != "not"):										raise MismatchingParserResult()
+		
+		# match for optional whitespace
+		token = yield
+		if DEBUG2: print("NotExpressionParser: token={0}".format(token))
+		if isinstance(token, SpaceToken):							token = yield
+		
+		# match for sub expression
+		# ==========================================================================
+		parser = Expressions.GetParser()
+		parser.send(None)
+		try:
+			while True:
+				parser.send(token)
+				token = yield
+		except MatchingParserResult as ex:
+			if DEBUG2: print("NotExpressionParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
+			child = ex.value
+			
+		# construct result
+		result = cls(child)
+		if DEBUG: print("NotExpressionParser: matched {0}".format(result))
+		raise MatchingParserResult(result)
+		
+	def __str__(self):
+		return "not {0}".format(self._child.__str__())
 
 class BinaryExpression(Expression):
 	def __init__(self, leftChild, rightChild):
@@ -1097,6 +1195,8 @@ class XorExpression(LogicalExpression):
 Expressions.AddChoice(Identifier)
 Expressions.AddChoice(StringLiteral)
 Expressions.AddChoice(IntegerLiteral)
+Expressions.AddChoice(NotExpression)
+Expressions.AddChoice(ExistsExpression)
 Expressions.AddChoice(AndExpression)
 Expressions.AddChoice(OrExpression)
 Expressions.AddChoice(XorExpression)

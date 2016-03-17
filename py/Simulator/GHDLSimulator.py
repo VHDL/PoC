@@ -158,15 +158,14 @@ class Simulator(PoCSimulator):
 		fileListFile = pocProject.AddFile(FileListFile(fileListFilePath))
 		fileListFile.Parse()
 		fileListFile.CopyFilesToFileSet()
+		fileListFile.CopyExternalLibraries()
 		print("=" * 160)
 		print(pocProject.pprint())
 		print("=" * 160)
 		
-		externalLibraries = ["osvvm"]
-		
 		ghdl = GHDLAnalyze(self.host.platform, ghdlExecutablePath)
-		for extLibrary in externalLibraries:
-			ghdl.AddLibraryReference(extLibrary)#.Path)
+		for extLibrary in pocProject.ExternalVHDLLibraries:
+			ghdl.AddLibraryReference(extLibrary.Path)
 		ghdl.IEEEFlavor =		self.__ieeeFlavor
 		ghdl.VHDLStandard =	self.__vhdlStandard
 		
@@ -196,8 +195,8 @@ class Simulator(PoCSimulator):
 		ghdl.VHDLLibrary =	vhdlLibraryName
 		
 		# reference external libraries
-		for extLibrary in externalLibraries:
-			ghdl.AddLibraryReference(extLibrary)#.Path)
+		for extLibrary in pocProject.ExternalVHDLLibraries:
+			ghdl.AddLibraryReference(extLibrary.Path)
 		
 		# configure RUNOPTS
 		runOptions = []

@@ -126,6 +126,8 @@ class FilesParserMixIn:
 				self._includes.append(includeFile)
 				for srcFile in includeFile.Files():
 					self._files.append(srcFile)
+				for lib in includeFile.Libraries():
+					self._libraries.append(lib)
 				
 				# load, parse, add
 			elif isinstance(stmt, LibraryStatement):
@@ -156,6 +158,11 @@ class FilesParserMixIn:
 			return expr.Value
 		elif isinstance(expr, IntegerLiteral):
 			return expr.Value
+		elif isinstance(expr, NotExpression):
+			return not self._Evaluate(expr.Child)
+		elif isinstance(expr, ExistsExpression):
+			print("eval path: %s" % expr.Path)
+			return (self._rootDirectory / expr.Path).exists()
 		elif isinstance(expr, AndExpression):
 			return self._Evaluate(expr.LeftChild) and self._Evaluate(expr.RightChild)
 		elif isinstance(expr, OrExpression):
