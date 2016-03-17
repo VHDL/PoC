@@ -109,16 +109,16 @@ class FilesParserMixIn:
 		
 		for stmt in statements:
 			if isinstance(stmt, VHDLStatement):
-				file =						self._rootDirectory / stmt.Filename
-				vhdlSrcFile =			self._classVHDLSourceFile(file)		# stmt.Library, 
+				file =						self._rootDirectory / stmt.FileName
+				vhdlSrcFile =			self._classVHDLSourceFile(file, stmt.LibraryName)		# stmt.Library, 
 				self._files.append(vhdlSrcFile)
 			elif isinstance(stmt, VerilogStatement):
-				file =						self._rootDirectory / stmt.Filename
+				file =						self._rootDirectory / stmt.FileName
 				verilogSrcFile =	self._classVerilogSourceFile(file)
 				self._files.append(verilogSrcFile)
 			elif isinstance(stmt, IncludeStatement):
 				# add the include file to the fileset
-				file =						self._rootDirectory / stmt.Filename
+				file =						self._rootDirectory / stmt.FileName
 				includeFile =			self._classFileListFile(file)
 				self._fileSet.AddFile(includeFile)
 				includeFile.Parse()
@@ -131,7 +131,7 @@ class FilesParserMixIn:
 				
 				# load, parse, add
 			elif isinstance(stmt, LibraryStatement):
-				lib =					self._rootDirectory / stmt.Foldername
+				lib =					self._rootDirectory / stmt.DirectoryName
 				vhdlLibRef =	VHDLLibraryReference(stmt.Library, lib)
 				self._libraries.append(vhdlLibRef)
 			elif isinstance(stmt, IfElseIfElseStatement):
@@ -161,7 +161,6 @@ class FilesParserMixIn:
 		elif isinstance(expr, NotExpression):
 			return not self._Evaluate(expr.Child)
 		elif isinstance(expr, ExistsExpression):
-			print("eval path: %s" % expr.Path)
 			return (self._rootDirectory / expr.Path).exists()
 		elif isinstance(expr, AndExpression):
 			return self._Evaluate(expr.LeftChild) and self._Evaluate(expr.RightChild)

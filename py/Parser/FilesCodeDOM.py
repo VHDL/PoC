@@ -125,19 +125,19 @@ class BlockedStatement(Statement):
 # File Reference Statements
 # ==============================================================================
 class VHDLStatement(Statement):
-	def __init__(self, library, filename, commentText):
+	def __init__(self, libraryName, fileName, commentText):
 		super().__init__()
-		self._library =			library
-		self._filename =		filename
+		self._libraryName =	libraryName
+		self._fileName =		fileName
 		self._commentText =	commentText
 	
 	@property
-	def Library(self):
-		return self._library
+	def LibraryName(self):
+		return self._libraryName
 		
 	@property
-	def Filename(self):
-		return self._filename
+	def FileName(self):
+		return self._fileName
 	
 	@classmethod
 	def GetParser(cls):
@@ -166,19 +166,19 @@ class VHDLStatement(Statement):
 			else:
 				break
 		# match for whitespace
-		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("VHDLParser: Expected whitespace before VHDL filename.")
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("VHDLParser: Expected whitespace before VHDL fileName.")
 		# match for delimiter sign: "
 		token = yield
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("VHDLParser: Expected double quote sign before VHDL filename.")
-		if (token.Value.lower() != "\""):						raise MismatchingParserResult("VHDLParser: Expected double quote sign before VHDL filename.")
-		# match for string: filename
-		filename = ""
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("VHDLParser: Expected double quote sign before VHDL fileName.")
+		if (token.Value.lower() != "\""):						raise MismatchingParserResult("VHDLParser: Expected double quote sign before VHDL fileName.")
+		# match for string: fileName
+		fileName = ""
 		while True:
 			token = yield
 			if isinstance(token, CharacterToken):
 				if (token.Value == "\""):
 					break
-			filename += token.Value
+			fileName += token.Value
 		# match for optional whitespace
 		token = yield
 		if DEBUG2: print("VHDLParser: token={0}".format(token))
@@ -199,25 +199,25 @@ class VHDLStatement(Statement):
 			raise MismatchingParserResult("VHDLParser: Expected end of line or comment")
 		
 		# construct result
-		result = cls(library, filename, commentText)
+		result = cls(library, fileName, commentText)
 		if DEBUG: print("VHDLParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
 	
 	def __str__(self, indent=0):
 		if (self._commentText != ""):
-			return "{0}VHDL {1} \"{2}\" # {3}".format(("  " * indent), self._library, self._filename, self._commentText)
+			return "{0}VHDL {1} \"{2}\" # {3}".format(("  " * indent), self._library, self._fileName, self._commentText)
 		else:
-			return "{0}VHDL {1} \"{2}\"".format(("  " * indent), self._library, self._filename)
+			return "{0}VHDL {1} \"{2}\"".format(("  " * indent), self._library, self._fileName)
 	
 class VerilogStatement(Statement):
-	def __init__(self, filename, commentText):
+	def __init__(self, fileName, commentText):
 		super().__init__()
-		self._filename =		filename
+		self._fileName =		fileName
 		self._commentText =	commentText
 	
 	@property
-	def Filename(self):
-		return self._filename
+	def FileName(self):
+		return self._fileName
 	
 	@classmethod
 	def GetParser(cls):
@@ -234,21 +234,21 @@ class VerilogStatement(Statement):
 		
 		# match for whitespace
 		token = yield
-		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("VerilogParser: Expected whitespace before Verilog filename.")
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("VerilogParser: Expected whitespace before Verilog fileName.")
 		
 		# match for delimiter sign: "
 		token = yield
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("VerilogParser: Expected double quote sign before Verilog filename.")
-		if (token.Value.lower() != "\""):						raise MismatchingParserResult("VerilogParser: Expected double quote sign before Verilog filename.")
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("VerilogParser: Expected double quote sign before Verilog fileName.")
+		if (token.Value.lower() != "\""):						raise MismatchingParserResult("VerilogParser: Expected double quote sign before Verilog fileName.")
 		
-		# match for string: filename
-		filename = ""
+		# match for string: fileName
+		fileName = ""
 		while True:
 			token = yield
 			if isinstance(token, CharacterToken):
 				if (token.Value == "\""):
 					break
-			filename += token.Value
+			fileName += token.Value
 		# match for optional whitespace
 		token = yield
 		if DEBUG2: print("VerilogParser: token={0}".format(token))
@@ -269,13 +269,13 @@ class VerilogStatement(Statement):
 			raise MismatchingParserResult("VerilogParser: Expected end of line or comment")
 		
 		# construct result
-		result = cls(filename, commentText)
+		result = cls(fileName, commentText)
 		if DEBUG: print("VerilogParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
 		
 	def __str__(self, indent=0):
 		_indent = "  " * indent
-		return "{0}Verilog \"{1}\"".format(_indent, self._filename)
+		return "{0}Verilog \"{1}\"".format(_indent, self._fileName)
 		
 class ReportStatement(Statement):
 	def __init__(self, message, commentText):
@@ -346,10 +346,10 @@ class ReportStatement(Statement):
 		return "{0}report \"{1}\"".format(_indent, self._message)
 
 class LibraryStatement(Statement):
-	def __init__(self, library, foldername, commentText):
+	def __init__(self, library, directoryName, commentText):
 		super().__init__()
 		self._library =			library
-		self._foldername =	foldername
+		self._directoryName =	directoryName
 		self._commentText =	commentText
 	
 	@property
@@ -357,8 +357,8 @@ class LibraryStatement(Statement):
 		return self._library
 		
 	@property
-	def Foldername(self):
-		return self._foldername
+	def DirectoryName(self):
+		return self._directoryName
 	
 	@classmethod
 	def GetParser(cls):
@@ -398,22 +398,22 @@ class LibraryStatement(Statement):
 		
 		# match for whitespace
 		if DEBUG2: print("LibraryParser: token={0} expected WHITESPACE".format(repr(token)))
-		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("LibraryParser: Expected whitespace before LIBRARY foldername.")
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("LibraryParser: Expected whitespace before LIBRARY directoryName.")
 		
 		# match for delimiter sign: "
 		token = yield
 		if DEBUG2: print("LibraryParser: token={0} expected double quote".format(repr(token)))
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("LibraryParser: Expected double quote sign before LIBRARY foldername.")
-		if (token.Value.lower() != "\""):						raise MismatchingParserResult("LibraryParser: Expected double quote sign before LIBRARY foldername.")
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("LibraryParser: Expected double quote sign before LIBRARY directoryName.")
+		if (token.Value.lower() != "\""):						raise MismatchingParserResult("LibraryParser: Expected double quote sign before LIBRARY directoryName.")
 		
-		# match for string: foldername
-		foldername = ""
+		# match for string: directoryName
+		directoryName = ""
 		while True:
 			token = yield
 			if isinstance(token, CharacterToken):
 				if (token.Value == "\""):
 					break
-			foldername += token.Value
+			directoryName += token.Value
 		# match for optional whitespace
 		token = yield
 		if DEBUG2: print("VerilogParser: token={0}".format(token))
@@ -434,23 +434,23 @@ class LibraryStatement(Statement):
 			raise MismatchingParserResult("VerilogParser: Expected end of line or comment")
 		
 		# construct result
-		result = cls(library, foldername, commentText)
+		result = cls(library, directoryName, commentText)
 		if DEBUG: print("LibraryParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
 	
 	def __str__(self, indent=0):
 		_indent = "  " * indent
-		return "{0}Library {1} \"{2}\"".format(_indent, self._library, self._foldername)
+		return "{0}Library {1} \"{2}\"".format(_indent, self._library, self._directoryName)
 		
 class IncludeStatement(Statement):
-	def __init__(self, filename, commentText):
+	def __init__(self, fileName, commentText):
 		super().__init__()
-		self._filename =		filename
+		self._fileName =		fileName
 		self._commentText =	commentText
 		
 	@property
-	def Filename(self):
-		return self._filename
+	def FileName(self):
+		return self._fileName
 	
 	@classmethod
 	def GetParser(cls):
@@ -468,22 +468,22 @@ class IncludeStatement(Statement):
 		# match for whitespace
 		token = yield
 		if DEBUG2: print("IncludeParser: token={0} expected WHITESPACE".format(repr(token)))
-		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("IncludeParser: Expected whitespace before INCLUDE filename.")
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("IncludeParser: Expected whitespace before INCLUDE fileName.")
 		
 		# match for delimiter sign: "
 		token = yield
 		if DEBUG2: print("IncludeParser: token={0} expected double quote".format(repr(token)))
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("IncludeParser: Expected double quote sign before include filename.")
-		if (token.Value.lower() != "\""):						raise MismatchingParserResult("IncludeParser: Expected double quote sign before include filename.")
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("IncludeParser: Expected double quote sign before include fileName.")
+		if (token.Value.lower() != "\""):						raise MismatchingParserResult("IncludeParser: Expected double quote sign before include fileName.")
 		
-		# match for string: filename
-		filename = ""
+		# match for string: fileName
+		fileName = ""
 		while True:
 			token = yield
 			if isinstance(token, CharacterToken):
 				if (token.Value == "\""):
 					break
-			filename += token.Value
+			fileName += token.Value
 		# match for optional whitespace
 		token = yield
 		if DEBUG2: print("VerilogParser: token={0}".format(token))
@@ -504,13 +504,13 @@ class IncludeStatement(Statement):
 			raise MismatchingParserResult("VerilogParser: Expected end of line or comment")
 		
 		# construct result
-		result = cls(filename, commentText)
+		result = cls(fileName, commentText)
 		if DEBUG: print("IncludeParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
 	
 	def __str__(self, indent=0):
 		_indent = "  " * indent
-		return "{0}Include \"{1}\"".format(_indent, self._filename)
+		return "{0}Include \"{1}\"".format(_indent, self._fileName)
 
 # ==============================================================================
 # Conditional Statements

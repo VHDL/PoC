@@ -503,8 +503,8 @@ class ExistsExpression(Expression):
 		if DEBUG2: print("ExistsExpressionParser: token={0}".format(token))
 		if isinstance(token, SpaceToken):						token = yield
 		# match for delimiter sign: "
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("ExistsExpressionParser: Expected double quote sign before VHDL filename.")
-		if (token.Value.lower() != "\""):						raise MismatchingParserResult("ExistsExpressionParser: Expected double quote sign before VHDL filename.")
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("ExistsExpressionParser: Expected double quote sign before VHDL fileName.")
+		if (token.Value.lower() != "\""):						raise MismatchingParserResult("ExistsExpressionParser: Expected double quote sign before VHDL fileName.")
 		# match for string: path
 		path = ""
 		while True:

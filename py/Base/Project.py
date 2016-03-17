@@ -269,7 +269,7 @@ class Project():
 		if (fileSet is None):
 			if (self._defaultFileSet is None):						raise BaseException("Neither the parameter 'fileSet' set nor a default file set is given.")
 			fileSet = self._defaultFileSet
-		print("init Project.Files generator")
+		# print("init Project.Files generator")
 		for file in fileSet.Files:
 			if (file.FileType == fileType):
 				yield file
@@ -404,7 +404,7 @@ class File():
 		return str(self._file)
 	
 	@property
-	def FilePath(self):
+	def Path(self):
 		return self._file
 	
 	def Open(self):
@@ -502,14 +502,20 @@ class HDLFileMixIn():
 		pass
 
 class VHDLSourceFile(SourceFile, HDLFileMixIn, VHDLParserMixIn):
-	def __init__(self, file, project = None, fileSet = None):
+	def __init__(self, file, vhdlLibraryName, project = None, fileSet = None):
 		SourceFile.__init__(self, file, project=project, fileSet=fileSet)
 		HDLFileMixIn.__init__(self)
 		VHDLParserMixIn.__init__(self)
+		
+		self._vhdlLibraryName = vhdlLibraryName
 	
 	@property
 	def FileType(self):
 		return FileTypes.VHDLSourceFile
+	
+	@property
+	def VHDLLibraryName(self):
+		return self._vhdlLibraryName
 	
 	def Parse(self):
 		self._Parse()
