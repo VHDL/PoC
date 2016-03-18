@@ -57,6 +57,9 @@ from Base.PoCProject				import *
 from Simulator.Base					import PoCSimulator 
 from Simulator.Exceptions		import * 
 
+# TODO: extract to higher/outer module
+_VHDLTestbenchLibraryName = "test"
+
 @unique
 class Severity(Enum):
 	Fatal =			30
@@ -314,7 +317,9 @@ class Simulator(PoCSimulator, ILogable):
 		
 		# create a GHDLElaborate instance
 		ghdl = self._ghdl.GetGHDLElaborate()
-		ghdl.Elaborate()
+		ghdl.VHDLVersion =	self._vhdlversion
+		ghdl.VHDLLibrary = _VHDLTestbenchLibraryName
+		ghdl.Elaborate("arith_prng_tb")
 	
 	
 	def _RunSimulation(self, testbenchName):
@@ -323,7 +328,7 @@ class Simulator(PoCSimulator, ILogable):
 		# create a GHDLRun instance
 		ghdl = self._ghdl.GetGHDLRun()
 		ghdl.VHDLVersion =	self._vhdlversion
-		ghdl.VHDLLibrary =	self._VHDLTestbenchLibraryName
+		ghdl.VHDLLibrary =	_VHDLTestbenchLibraryName
 			
 		# add external library references
 		for extLibrary in self._pocProject.ExternalVHDLLibraries:
@@ -823,58 +828,77 @@ class GHDLAnalyze(GHDLExecutable):
 			
 		self._LogDebug("call ghdl: {0}".format(str(parameterList)))
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+#		print("    call ghdl: {0}".format(str(parameterList)))
+#		print("      command: {0}".format(" ".join(parameterList)))
 		
+		_indent = "    "
 		try:
 			ghdlLog = self.StartProcess(parameterList)
-
+			
+			log = ""
+			for line in ghdlLog.split("\n")[:-1]:
+				if ("ghdl1" not in line):
+					log += _indent + line + "\n"
+			
 			# if self.showLogs:
-			if (ghdlLog != ""):
-				print("ghdl messages for : {0}".format(str(filePath)))
-				print("-" * 80)
-				print(ghdlLog)
-				print("-" * 80)
+			if (log != ""):
+				print(_indent + "ghdl messages for : {0}".format(str(filePath)))
+				print(_indent + "-" * 80)
+				print(log[:-1])
+				print(_indent + "-" * 80)
 		except subprocess.CalledProcessError as ex:
-			print("ERROR while executing ghdl: {0}".format(str(filePath)))
-			print("Return Code: {0}".format(ex.returncode))
-			print("-" * 80)
-			print(ex.output)
-			print("-" * 80)
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing ghdl: {0}".format(str(filePath)))
+			print(_indent + "Return Code: {0}".format(ex.returncode))
+			print(_indent + "-" * 80)
+			for line in ex.output.split("\n"):
+				print(_indent + line)
+			print(_indent + "-" * 80)
 	
 class GHDLElaborate(GHDLExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, backend):
 		super().__init__(platform, binaryDirectoryPath, version, backend, ["-e"])
 	
-	def Elaborate(self):
+	def Elaborate(self, topLevel, topLevelArchitecture=None):
 		if (self._backend == "mcode"):		return
 		
 		parameterList = self._defaultParameters.copy()
-			
+		parameterList.append(topLevel)
+		if (topLevelArchitecture is not None):
+			parameterList.append(topLevelArchitecture)
+		
 		self._LogDebug("call ghdl: {0}".format(str(parameterList)))
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+#		print("    call ghdl: {0}".format(str(parameterList)))
+#		print("      command: {0}".format(" ".join(parameterList)))
 		
+		_indent = "    "
 		try:
 			ghdlLog = self.StartProcess(parameterList)
-
+			
+			log = ""
+			for line in ghdlLog.split("\n")[:-1]:
+				if ("ghdl1" not in line):
+					log += _indent + line + "\n"
+			
 			# if self.showLogs:
-			if (ghdlLog != ""):
-				print("ghdl messages for : {0}".format("?????"))	#str(filePath)))
-				print("-" * 80)
-				print(ghdlLog)
-				print("-" * 80)
+			if (log != ""):
+				print(_indent + "ghdl elaboration messages for '{0}.{1}'".format(self.VHDLLibrary, topLevel))
+				print(_indent + "-" * 80)
+				print(log[:-1])
+				print(_indent + "-" * 80)
 		except subprocess.CalledProcessError as ex:
-			print("ERROR while executing ghdl: {0}".format("?????"))	#str(filePath)))
-			print("Return Code: {0}".format(ex.returncode))
-			print("-" * 80)
-			print(ex.output)
-			print("-" * 80)
-	
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while elaborating '{0}.{1}'".format(self.VHDLLibrary, topLevel))
+			print(_indent + "Return Code: {0}".format(ex.returncode))
+			print(_indent + "-" * 80)
+			for line in ex.output.split("\n"):
+				print(_indent + line)
+			print(_indent + "-" * 80)
+
 class GHDLRun(GHDLExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, backend):
 		super().__init__(platform, binaryDirectoryPath, version, backend, ["-r"])
-
+	
 	def Run(self, testbenchName, runOptions):
-	
-	
 		self.SynBinding =					True
 		self.FlagPSL =						True
 		self.Verbose =						True
@@ -886,21 +910,28 @@ class GHDLRun(GHDLExecutable):
 		self._LogDebug("call ghdl: {0}".format(str(parameterList)))
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
+		_indent = "    "
 		try:
 			ghdlLog = self.StartProcess(parameterList)
-
+			
+			log = ""
+			for line in ghdlLog.split("\n")[:-1]:
+				if (testbenchName not in line):
+					log += _indent + line + "\n"
+			
 			# if self.showLogs:
-			if (ghdlLog != ""):
-				print("ghdl messages for : {0}".format("?????"))	#str(filePath)))
-				print("-" * 80)
-				print(ghdlLog)
-				print("-" * 80)
+			if (log != ""):
+				print(_indent + "ghdl run messages for '{0}.{1}'".format(self.VHDLLibrary, testbenchName))
+				print(_indent + "-" * 80)
+				print(log[:-1])
+				print(_indent + "-" * 80)
 		except subprocess.CalledProcessError as ex:
-			print("ERROR while executing ghdl: {0}".format("?????"))	#str(filePath)))
-			print("Return Code: {0}".format(ex.returncode))
-			print("-" * 80)
-			print(ex.output)
-			print("-" * 80)
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while simulating '{0}.{1}'".format(self.VHDLLibrary, testbenchName))
+			print(_indent + "Return Code: {0}".format(ex.returncode))
+			print(_indent + "-" * 80)
+			for line in ex.output.split("\n"):
+				print(_indent + line)
+			print(_indent + "-" * 80)
 
 class GTKWave(Executable):
 	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[]):
@@ -959,19 +990,25 @@ class GTKWave(Executable):
 		self._LogDebug("call gtkwave: {0}".format(str(self._defaultParameters)))
 		self._LogVerbose("    command: {0}".format(" ".join(self._defaultParameters)))
 		
+		_indent = "    "
 		try:
 			gtkwLog = self.StartProcess(self._defaultParameters)
-
+			
+			log = ""
+			for line in gtkwLog.split("\n"):
+				if (("ghdl1" not in line) and (line != "")):
+					log += _indent + line + "\n"
+			
 			# if self.showLogs:
-			if (gtkwLog != ""):
-				print("GTKwave messages for : {0}".format(str(dumpFile)))
-				print("-" * 80)
-				print(gtkwLog)
-				print("-" * 80)
+			if (log != ""):
+				print(_indent + "GTKWave messages for : {0}".format(str(dumpFile)))
+				print(_indent + "-" * 80)
+				print(log)
+				print(_indent + "-" * 80)
 		except subprocess.CalledProcessError as ex:
-			print("ERROR while executing ghdl: {0}".format(str(dumpFile)))
-			print("Return Code: {0}".format(ex.returncode))
-			print("-" * 80)
-			print(ex.output)
-			print("-" * 80)
-	
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing GTKWave: {0}".format(str(dumpFile)))
+			print(_indent + "Return Code: {0}".format(ex.returncode))
+			print(_indent + "-" * 80)
+			for line in ex.output.split("\n"):
+				print(_indent + line)
+			print(_indent + "-" * 80)
