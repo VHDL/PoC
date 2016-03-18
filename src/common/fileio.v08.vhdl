@@ -110,11 +110,13 @@ package body FileIO is
 		end function;
 		
 		procedure OpenFile(Status : out FILE_OPEN_STATUS; FileName : STRING; OpenKind : T_LOGFILE_OPEN_KIND := WRITE_MODE) is
+			variable Status_i : FILE_OPEN_STATUS;
 		begin
 			if (Local_IsOpen = FALSE) then
-				file_open(Status, Global_LogFile, FileName, OpenKind);
-				Local_IsOpen		:= (Status = OPEN_OK);
+				file_open(Status_i, Global_LogFile, FileName, OpenKind);
+				Local_IsOpen		:= (Status_i = OPEN_OK);
 				Local_FileName	:= resize(FileName, Local_FileName'length);
+				Status 					:= Status_i;
 			else
 				report "Global log file '" & str_trim(Local_FileName) & "' is already open." severity ERROR;
 			end if;
@@ -186,11 +188,13 @@ package body FileIO is
 		end function;
 		
 		procedure OpenFile(Status : out FILE_OPEN_STATUS; FileName : STRING; OpenKind : FILE_OPEN_KIND := WRITE_MODE) is
+			variable Status_i : FILE_OPEN_STATUS;
 		begin
 			if (Local_IsOpen = FALSE) then
-				file_open(Status, LocalFile, FileName, OpenKind);
-				Local_IsOpen		:= (Status = OPEN_OK);
+				file_open(Status_i, LocalFile, FileName, OpenKind);
+				Local_IsOpen		:= (Status_i = OPEN_OK);
 				Local_FileName	:= resize(FileName, Local_FileName'length);
+				Status 					:= Status_i;
 			else
 				report "File '" & str_trim(Local_FileName) & "' is already open." severity ERROR;
 			end if;
