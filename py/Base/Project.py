@@ -292,18 +292,19 @@ class Project():
 		}
 		return merge(result, self._board._GetVariables(), self._device._GetVariables())
 	
-	def pprint(self):
-		buffer =	"Project: {0}\n".format(self.Name)
-		buffer +=	"  Settings:\n"
-		buffer +=	"    Board: {0}\n".format(self._board.Name)
-		buffer +=	"    Device: {0}\n".format(self._device.Name)
+	def pprint(self, indent=0):
+		_indent = "  " * indent
+		buffer =	_indent + "Project: {0}\n".format(self.Name)
+		buffer +=	_indent + "o-Settings:\n"
+		buffer +=	_indent + "|   Board: {0}\n".format(self._board.Name)
+		buffer +=	_indent + "|   Device: {0}\n".format(self._device.Name)
 		for fileSet in self.FileSets:
-			buffer += "  FileSet: {0}\n".format(fileSet.Name)
+			buffer += _indent + "o-FileSet: {0}\n".format(fileSet.Name)
 			for file in fileSet.Files:
-				buffer += "    {0}\n".format(file.FileName)
-		buffer += "  Libraries:\n"
+				buffer += _indent + "|   {0}\n".format(file.FileName)
+		buffer += _indent + "o-Libraries:\n"
 		for lib in self._externalVHDLLibraries:
-			buffer += "    {0} -> {1}\n".format(lib, "")
+			buffer += _indent + "|   {0} -> {1}\n".format(lib, "")
 		return buffer
 	
 	def __str__(self):

@@ -190,361 +190,390 @@ class ILogable:
 
 
 class Simulator(PoCSimulator, ILogable):
-	__vhdlStandard =							"93"
-	__guiMode =										False
 	_VHDLTestbenchLibraryName =		"test"
+	_guiMode =										False
 
-	def __init__(self, host, showLogs, showReport, vhdlStandard, guiMode, logger=None):
+	def __init__(self, host, showLogs, showReport, guiMode, logger=None):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 		ILogable.__init__(self, logger)
 
-		self.__vhdlStandard =	vhdlStandard
-		self.__guiMode =			guiMode
+		self._guiMode =				guiMode
+		self._tempPath =			None
 
-	def run(self, pocEntity):
-		testbenchFQN = str(pocEntity)
-		
-		self._LogQuiet("Testbench: {0}{1}{2}".format(Foreground.YELLOW, testbenchFQN, Foreground.RESET))
+		self._PrepareSimulationEnvironment()
+		self._PrepareSimulator()
+
+	@property
+	def TemporaryPath(self):
+		return self._tempPath
+
+	def _PrepareSimulationEnvironment(self):
 		self._LogNormal("  preparing simulation environment...")
 		
 		# create temporary directory for ghdl if not existent
-		tempGHDLPath = self.host.directories["GHDLTemp"]
-		if (not (tempGHDLPath).exists()):
+		self._tempPath = self.host.directories["GHDLTemp"]
+		if (not (self._tempPath).exists()):
 			self._LogVerbose("    Creating temporary directory for simulator files.")
-			self._LogDebug("     Temporary directors: {0}".format(str(tempGHDLPath)))
-			tempGHDLPath.mkdir(parents=True)
+			self._LogDebug("     Temporary directors: {0}".format(str(self._tempPath)))
+			self._tempPath.mkdir(parents=True)
+			
+		# change working directory to temporary iSim path
+		self._LogVerbose("    cd \"{0}\"".format(str(self._tempPath)))
+		os.chdir(str(self._tempPath))
+
+	def _PrepareSimulator(self):
+		ghdlBinaryPath =	self.host.directories["GHDLBinary"]
+		ghdlVersion =			self.host.pocConfig['GHDL']['Version']
+		ghdlBackend =			self.host.pocConfig['GHDL']['Backend']
 		
-		# check testbench database for the given testbench
-		if (not self.host.tbConfig.has_section(testbenchFQN)):
-			raise SimulatorException("Testbench '{0}' not found.".format(testbenchFQN)) from NoSectionError(testbenchFQN)
+		self._ghdl =			GHDLExecutable(self.host.platform, ghdlBinaryPath, ghdlVersion, ghdlBackend)
+
+	def Run(self, pocEntity, vhdlVersion="93c", boardName=None, deviceName=None):
+		self._pocEntity =			pocEntity
+		self._testbenchFQN =	str(pocEntity)
+		self._vhdlversion =		vhdlVersion
+
+		# check testbench database for the given testbench		
+		self._LogQuiet("Testbench: {0}{1}{2}".format(Foreground.YELLOW, self._testbenchFQN, Foreground.RESET))
+		if (not self.host.tbConfig.has_section(self._testbenchFQN)):
+			raise SimulatorException("Testbench '{0}' not found.".format(self._testbenchFQN)) from NoSectionError(self._testbenchFQN)
 			
 		# setup all needed paths to execute fuse
-		ghdlBinaryPath =			self.host.directories["GHDLBinary"]
-		testbenchName =				self.host.tbConfig[testbenchFQN]['TestbenchModule']
-		waveformFileFormat =	self.host.tbConfig[testbenchFQN]['ghdlWaveformFileFormat']
-		fileListFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[testbenchFQN]['fileListFile']
-		
-		if (waveformFileFormat == "vcd"):			waveformFilePath =	tempGHDLPath / (testbenchName + ".vcd")
-		elif (waveformFileFormat == "vcdgz"):	waveformFilePath =	tempGHDLPath / (testbenchName + ".vcd.gz")
-		elif (waveformFileFormat == "fst"):		waveformFilePath =	tempGHDLPath / (testbenchName + ".fst")
-		elif (waveformFileFormat == "ghw"):		waveformFilePath =	tempGHDLPath / (testbenchName + ".ghw")
-		else:																						raise SimulatorException("Unknown waveform file format for GHDL.")
-		
-		ghdlVersion = self.host.pocConfig['GHDL']['Version']
-		ghdlBackend = self.host.pocConfig['GHDL']['Backend']
-		
-		if (self.__vhdlStandard == "93"):
-			self.__vhdlStandard = "93c"
-			self.__ieeeFlavor = "synopsys"
-		elif (self.__vhdlStandard == "08"):
-			self.__ieeeFlavor = "standard"
-		
-		# if (self.verbose):
-			# print("  Commands to be run:")
-			# print("  1. Change working directory to temporary directory")
-			# print("  2. Parse filelist file.")
-			# print("    a) For every file: Add the VHDL file to GHDL's compile cache.")
-			# if (self.host.platform == "Windows"):
-				# print("  3. Compile and run simulation")
-			# elif (self.host.platform == "Linux"):
-				# print("  3. Compile simulation")
-				# print("  4. Run simulation")
-			# print("  ----------------------------------------")
-		
-		# change working directory to temporary iSim path
-		self._LogVerbose("    cd \"{0}\"".format(str(tempGHDLPath)))
-		os.chdir(str(tempGHDLPath))
+		testbenchName =				self.host.tbConfig[self._testbenchFQN]['TestbenchModule']
+		fileListFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[self._testbenchFQN]['fileListFile']
 
-		self._LogDebug("    Reading filelist '{0}'".format(str(fileListFilePath)))
-		self._LogNormal("  running analysis for every vhdl file...")
+		self._CreatePoCProject(testbenchName, boardName, deviceName)
+		self._AddFileListFile(fileListFilePath)
 		
-		# add empty line if logs are enabled
-		if self.showLogs:		self._LogQuiet()
-
+		if (self._ghdl.Backend == "gcc"):
+			self._RunAnalysis()
+			self._RunElaboration()
+			self._RunSimulation(testbenchName)
+		elif (self._ghdl.Backend == "llvm"):
+			self._RunAnalysis()
+			self._RunElaboration()
+			self._RunSimulation(testbenchName)
+		elif (self._ghdl.Backend == "mcode"):
+			self._RunAnalysis()
+			self._RunSimulation(testbenchName)
+	
+	def _CreatePoCProject(self, testbenchName, boardName=None, deviceName=None):
 		# create a PoCProject and read all needed files
-		pocProject =								PoCProject(testbenchName)
+		self._LogDebug("    Create a PoC project '{0}'".format(str(testbenchName)))
+		pocProject =									PoCProject(testbenchName)
+		
 		# configure the project
-		pocProject.RootDirectory =	self.host.directories["PoCRoot"]
-		pocProject.Board =					"KC705"
-		pocProject.Environment =		Environment.Simulation
-		pocProject.ToolChain =			ToolChain.GHDL_GTKWave
-		pocProject.Tool =						Tool.GHDL
-		if (self.__vhdlStandard == "87"):			pocProject.VHDLVersion =		VHDLVersion.VHDL87
-		elif (self.__vhdlStandard == "93"):		pocProject.VHDLVersion =		VHDLVersion.VHDL93
-		elif (self.__vhdlStandard == "93c"):	pocProject.VHDLVersion =		VHDLVersion.VHDL93
-		elif (self.__vhdlStandard == "02"):		pocProject.VHDLVersion =		VHDLVersion.VHDL02
-		elif (self.__vhdlStandard == "08"):		pocProject.VHDLVersion =		VHDLVersion.VHDL08
-
+		pocProject.RootDirectory =		self.host.directories["PoCRoot"]
+		pocProject.Environment =			Environment.Simulation
+		pocProject.ToolChain =				ToolChain.GHDL_GTKWave
+		pocProject.Tool =							Tool.GHDL
+		
+		if (deviceName is None):			pocProject.Board =					boardName
+		else:													pocProject.Device =					deviceName
+		
+		if (self._vhdlversion == "87"):			pocProject.VHDLVersion =		VHDLVersion.VHDL87
+		elif (self._vhdlversion == "93"):		pocProject.VHDLVersion =		VHDLVersion.VHDL93
+		elif (self._vhdlversion == "93c"):	pocProject.VHDLVersion =		VHDLVersion.VHDL93
+		elif (self._vhdlversion == "02"):		pocProject.VHDLVersion =		VHDLVersion.VHDL02
+		elif (self._vhdlversion == "08"):		pocProject.VHDLVersion =		VHDLVersion.VHDL08
+		
+		self._pocProject = pocProject
+		
+	def _AddFileListFile(self, fileListFilePath):
+		self._LogDebug("    Reading filelist '{0}'".format(str(fileListFilePath)))
 		# add the *.files file, parse and evaluate it
-		fileListFile = pocProject.AddFile(FileListFile(fileListFilePath))
+		fileListFile = self._pocProject.AddFile(FileListFile(fileListFilePath))
 		fileListFile.Parse()
 		fileListFile.CopyFilesToFileSet()
 		fileListFile.CopyExternalLibraries()
+		self._LogDebug(self._pocProject.pprint(2))
 		self._LogDebug("=" * 160)
-		self._LogDebug(pocProject.pprint())
-		self._LogDebug("=" * 160)
+		
+	def _RunAnalysis(self):
+		self._LogNormal("  running analysis for every vhdl file...")
 		
 		# create a GHDLAnalyzer instance
-		ghdl = GHDLExecutable(self.host.platform, ghdlBinaryPath, ghdlVersion, ghdlBackend)
-		ghdlA = ghdl.GetGHDLAnalyze()
-		for extLibrary in pocProject.ExternalVHDLLibraries:
-			ghdlA.AddLibraryReference(extLibrary.Path)
-		ghdlA.IEEEFlavor =		self.__ieeeFlavor
-		ghdlA.VHDLStandard =	self.__vhdlStandard
+		ghdl = self._ghdl.GetGHDLAnalyze()
+		ghdl.VHDLVersion =	self._vhdlversion
+		
+		# add external library references
+		for extLibrary in self._pocProject.ExternalVHDLLibraries:
+			ghdl.AddLibraryReference(extLibrary.Path)
 		
 		# run GHDL analysis for each VHDL file
-		for file in pocProject.Files(fileType=FileTypes.VHDLSourceFile):
-			if (not file.Path.exists()):									raise SimulatorException("Can not analyse '{0}'.".format(vhdlFileName)) from FileNotFoundError(str(file))
+		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
+			if (not file.Path.exists()):									raise SimulatorException("Can not analyse '{0}'.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
 			
-			ghdlA.VHDLLibrary =	file.VHDLLibraryName
-			ghdlA.Analyze(file.Path)
+			ghdl.VHDLLibrary =	file.VHDLLibraryName
+			ghdl.Analyze(file.Path)
 
-		# running simulation
-		# ==========================================================================
-		#
-		if (ghdlBackend == "mcode"):
-		# self._LogNormal("  elaborate simulation...")
-		# ghdlE = ghdl.GetGHDLElaborate()
-		# ghdlE.Elaborate()
+	# running simulation
+	# ==========================================================================
+	def _RunElaboration(self):
+		self._LogNormal("  elaborate simulation...")
 		
-			self._LogNormal("  running simulation...")
-			
-			# create a GHDL object and configure it
-			ghdlR = ghdl.GetGHDLRun()
-			ghdlR.VHDLStandard =	self.__vhdlStandard
-			ghdlR.VHDLLibrary =		self._VHDLTestbenchLibraryName
-			
-			# reference external libraries
-			for extLibrary in pocProject.ExternalVHDLLibraries:
-				ghdlR.AddLibraryReference(extLibrary.Path)
-			
-			# configure RUNOPTS
-			runOptions = []
-			runOptions.append('--ieee-asserts={0}'.format("disable-at-0"))		# enable, disable, disable-at-0
-			# set dump format to save simulation results to *.vcd file
-			if (self.__guiMode):
-				if (waveformFileFormat == "vcd"):				runOptions.append("--vcd={0}".format(str(waveformFilePath)))
-				elif (waveformFileFormat == "vcdgz"):		runOptions.append("--vcdgz={0}".format(str(waveformFilePath)))
-				elif (waveformFileFormat == "fst"):			runOptions.append("--fst={0}".format(str(waveformFilePath)))
-				elif (waveformFileFormat == "ghw"):			runOptions.append("--wave={0}".format(str(waveformFilePath)))
-			
-			ghdlR.Run(testbenchName, runOptions)
-		elif (ghdlBackend in ["gcc", "llvm"]):
-			self._LogNormal("  elaborate simulation...")
-			ghdlE = ghdl.GetGHDLElaborate()
-			ghdlE.Elaborate()
-		
-			self._LogNormal("  running simulation...")
-			
-			# create a GHDL object and configure it
-			ghdlR = ghdl.GetGHDLRun()
-			ghdlR.VHDLStandard =	self.__vhdlStandard
-			ghdlR.VHDLLibrary =		self._VHDLTestbenchLibraryName
-			
-			# reference external libraries
-			for extLibrary in pocProject.ExternalVHDLLibraries:
-				ghdlR.AddLibraryReference(extLibrary.Path)
-			
-			# configure RUNOPTS
-			runOptions = []
-			runOptions.append('--ieee-asserts={0}'.format("disable-at-0"))		# enable, disable, disable-at-0
-			# set dump format to save simulation results to *.vcd file
-			if (self.__guiMode):
-				if (waveformFileFormat == "vcd"):				runOptions.append("--vcd={0}".format(str(waveformFilePath)))
-				elif (waveformFileFormat == "vcdgz"):		runOptions.append("--vcdgz={0}".format(str(waveformFilePath)))
-				elif (waveformFileFormat == "fst"):			runOptions.append("--fst={0}".format(str(waveformFilePath)))
-				elif (waveformFileFormat == "ghw"):			runOptions.append("--wave={0}".format(str(waveformFilePath)))
-			
-			ghdlR.Run(testbenchName, runOptions)
-		
-				
-		print("return ......................")
-		return
-
-	def View(self):
-		
-		
-		# run GHDL simulation on Linux
-		if (self.host.platform == "Linux"):
-			# preparing some variables for Linux
-			exeFilePath =		tempGHDLPath / testbenchName.lower()
-		
-			# run elaboration
-			self.printNonQuiet("  running elaboration...")
-		
-			parameterList = [
-				str(ghdlExecutablePath),
-				'-e', '--syn-binding',
-				'-fpsl'
-			]
-			
-			for path in externalLibraries:
-				parameterList.append("-P{0}".format(path))
-			
-			parameterList += [
-				('--ieee=%s' % self.__ieeeFlavor),
-				('--std=%s' % self.__vhdlStandard),
-				'--work=test',
-				testbenchName
-			]
-
-			command = " ".join(parameterList)
-		
-			self.printDebug("call ghdl: %s" % str(parameterList))
-			self.printVerbose("    command: %s" % command)
-			try:
-				elaborateLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
-				# 
-				if self.showLogs:
-					if (elaborateLog != ""):
-						print("ghdl elaborate messages:")
-						print("-" * 80)
-						print(elaborateLog)
-						print("-" * 80)
-				
-			except subprocess.CalledProcessError as ex:
-				print("ERROR while executing ghdl command: %s" % command)
-				print("Return Code: %i" % ex.returncode)
-				print("-" * 80)
-				print(ex.output)
-				print("-" * 80)
-				
-				return
-
-			# search log for fatal warnings
-			analyzeErrors = []
-			elaborateLogRegExpStr =	r"(?P<VHDLFile>.*?):(?P<LineNumber>\d+):\d+:warning: component instance \"(?P<ComponentName>[a-z]+)\" is not bound"
-			elaborateLogRegExp = re.compile(elaborateLogRegExpStr)
-
-			for logLine in elaborateLog.splitlines():
-				print("line: " + logLine)
-				elaborateLogRegExpMatch = elaborateLogRegExp.match(logLine)
-				if (elaborateLogRegExpMatch is not None):
-					analyzeErrors.append({
-						'Type' : "Unbound Component",
-						'File' : elaborateLogRegExpMatch.group('VHDLFile'),
-						'Line' : elaborateLogRegExpMatch.group('LineNumber'),
-						'Component' : elaborateLogRegExpMatch.group('ComponentName')
-					})
-		
-			if (len(analyzeErrors) != 0):
-				print("  ERROR list:")
-				for err in analyzeErrors:
-					print("    %s: '%s' in file '%s' at line %s" % (err['Type'], err['Component'], err['File'], err['Line']))
-			
-				raise SimulatorException("Errors while GHDL analysis phase.")
-
+		# create a GHDLElaborate instance
+		ghdl = self._ghdl.GetGHDLElaborate()
+		ghdl.Elaborate()
 	
-			# run simulation
-			self.printNonQuiet("  running simulation...")
-		
-			parameterList = [str(exeFilePath)]
+	
+	def _RunSimulation(self, testbenchName):
+		self._LogNormal("  running simulation...")
 			
-			# append RUNOPTS
-			parameterList += [('--ieee-asserts={0}'.format("disable-at-0"))]		# enable, disable, disable-at-0
+		# create a GHDLRun instance
+		ghdl = self._ghdl.GetGHDLRun()
+		ghdl.VHDLVersion =	self._vhdlversion
+		ghdl.VHDLLibrary =	self._VHDLTestbenchLibraryName
 			
-			# set dump format to save simulation results to *.vcd file
-			if (self.__guiMode):
-				if (waveformFileFormat == "vcd"):
-					parameterList += [("--vcd={0}".format(str(waveformFilePath)))]
-				elif (waveformFileFormat == "vcdgz"):
-					parameterList += [("--vcdgz={0}".format(str(waveformFilePath)))]
-				elif (waveformFileFormat == "fst"):
-					parameterList += [("--fst={0}".format(str(waveformFilePath)))]
-				elif (waveformFileFormat == "ghw"):
-					parameterList += [("--wave={0}".format(str(waveformFilePath)))]
-				
-			command = " ".join(parameterList)
-		
-			self.printDebug("call ghdl: %s" % str(parameterList))
-			self.printVerbose("    command: %s" % command)
-			try:
-				simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
-				
-				# 
-				if self.showLogs:
-					if (simulatorLog != ""):
-						print("ghdl messages for : %s" % str(vhdlFilePath))
-						print("-" * 80)
-						print(simulatorLog)
-						print("-" * 80)
-				
-			except subprocess.CalledProcessError as ex:
-				print("ERROR while executing ghdl command: %s" % command)
-				print("Return Code: %i" % ex.returncode)
-				print("-" * 80)
-				print(ex.output)
-				print("-" * 80)
-				
-				return
-
-		print()
-		
-		if (not self.__guiMode):
-			try:
-				result = self.checkSimulatorOutput(simulatorLog)
-				
-				if (result is None):
-					print("Testbench '{0}': NO ASSERTS PERFORMED".format(testbenchName))
-				elif (result == True):
-					print("Testbench '{0}': PASSED".format(testbenchName))
-				else:
-					print("Testbench '{0}': FAILED".format(testbenchName))
+		# add external library references
+		for extLibrary in self._pocProject.ExternalVHDLLibraries:
+			ghdl.AddLibraryReference(extLibrary.Path)
+			
+		# configure RUNOPTS
+		runOptions = []
+		runOptions.append('--ieee-asserts={0}'.format("disable-at-0"))		# enable, disable, disable-at-0
+		# set dump format to save simulation results to *.vcd file
+		if (self._guiMode):
+			waveformFileFormat =	self.host.tbConfig[self._testbenchFQN]['ghdlWaveformFileFormat']
 					
-			except SimulatorException as ex:
-				raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED|NO ASSERTS]' not found in simulator output.") from ex
+			if (waveformFileFormat == "vcd"):
+				waveformFilePath = self._tempPath / (testbenchName + ".vcd")
+				runOptions.append("--vcd={0}".format(str(waveformFilePath)))
+			elif (waveformFileFormat == "vcdgz"):
+				waveformFilePath = self._tempPath / (testbenchName + ".vcd.gz")
+				runOptions.append("--vcdgz={0}".format(str(waveformFilePath)))
+			elif (waveformFileFormat == "fst"):
+				waveformFilePath = self._tempPath / (testbenchName + ".fst")
+				runOptions.append("--fst={0}".format(str(waveformFilePath)))
+			elif (waveformFileFormat == "ghw"):
+				waveformFilePath = self._tempPath / (testbenchName + ".ghw")
+				runOptions.append("--wave={0}".format(str(waveformFilePath)))
+			else:																						raise SimulatorException("Unknown waveform file format for GHDL.")
 		
-		else:	# guiMode
-			# run GTKWave GUI
-			self.printNonQuiet("  launching GTKWave...")
+		ghdl.Run(testbenchName, runOptions)
+		
+	def _ExecuteSimulation(self):
+		pass
+
+	def View(self, pocEntity):
+		self.printNonQuiet("  launching GTKWave...")
+		
+		testbenchName =				self.host.tbConfig[self._testbenchFQN]['TestbenchModule']
+		waveformFileFormat =	self.host.tbConfig[self._testbenchFQN]['ghdlWaveformFileFormat']
+					
+		if (waveformFileFormat == "vcd"):
+			waveformFilePath = self._tempPath / (testbenchName + ".vcd")
+		elif (waveformFileFormat == "vcdgz"):
+			waveformFilePath = self._tempPath / (testbenchName + ".vcd.gz")
+		elif (waveformFileFormat == "fst"):
+			waveformFilePath = self._tempPath / (testbenchName + ".fst")
+		elif (waveformFileFormat == "ghw"):
+			waveformFilePath = self._tempPath / (testbenchName + ".ghw")
+		else:																						raise SimulatorException("Unknown waveform file format for GHDL.")
+		
+		if (not waveformFilePath.exists()):							raise SimulatorException("Waveform file not found.") from FileNotFoundError(str(waveformFilePath))
 			
-			if (not waveformFilePath.exists()):
-				raise SimulatorException("Waveform file not found.") from FileNotFoundError(str(waveformFilePath))
-
-			gtkwExecutablePath =	self.host.directories["GTKWBinary"] / self.__executables['gtkwave']
-			gtkwSaveFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[testbenchFQN]['gtkwSaveFile']
 		
-			parameterList = [
-				str(gtkwExecutablePath),
-				("--dump={0}".format(str(waveformFilePath)))
-			]
-
-			# if GTKWave savefile exists, load it's settings
-			if gtkwSaveFilePath.exists():
-				self.printDebug("Found waveform save file: '%s'" % str(gtkwSaveFilePath))
-				parameterList += ['--save', str(gtkwSaveFilePath)]
-			else:
-				self.printDebug("Didn't find waveform save file: '%s'." % str(gtkwSaveFilePath))
-			
-			command = " ".join(parameterList)
+		gtkwBinaryPath =		self.host.directories["GTKWBinary"]
+		gtkwVersion =				self.host.pocConfig['GTKWave']['Version']
+		gtkw = GTKWave(self.host.platform, gtkwBinaryPath, gtkwVersion)
 		
-			self.printDebug("call GTKWave: %s" % str(parameterList))
-			self.printVerbose("    command: %s" % command)
-			try:
-				gtkwLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
-				
-				# 
-				if self.showLogs:
-					if (gtkwLog != ""):
-						print("GTKWave messages:")
-						print("-" * 80)
-						print(gtkwLog)
-						print("-" * 80)
-
-				if gtkwSaveFilePath.exists():
-					for line in fileinput.input(str(gtkwSaveFilePath), inplace = 1):
-						if line.startswith(('[dumpfile', '[savefile')):
-							continue
-						print(line.rstrip(os.linesep))
-
-			except subprocess.CalledProcessError as ex:
-				print("ERROR while executing GTKWave command: %s" % command)
-				print("Return Code: %i" % ex.returncode)
-				print("-" * 80)
-				print(ex.output)
-				print("-" * 80)
-				
-				return
+		gtkwSaveFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[self._testbenchFQN]['gtkwSaveFile']
+		
+		# if GTKWave savefile exists, load it's settings
+		if gtkwSaveFilePath.exists():
+			self.printDebug("Found waveform save file: '{0}'".format(str(gtkwSaveFilePath)))
+			gtkw.SaveFile = str(gtkwSaveFilePath)
+		else:
+			self.printDebug("Didn't find waveform save file: '{0}'".format(str(gtkwSaveFilePath)))
+		
+		# run GTKWave GUI
+		gtkw.View(waveformFilePath)
+		
+		
+		
+# 		
+# 		# run GHDL simulation on Linux
+# 		if (self.host.platform == "Linux"):
+# 			# preparing some variables for Linux
+# 			exeFilePath =		tempGHDLPath / testbenchName.lower()
+# 		
+# 			# run elaboration
+# 			self.printNonQuiet("  running elaboration...")
+# 		
+# 			parameterList = [
+# 				str(ghdlExecutablePath),
+# 				'-e', '--syn-binding',
+# 				'-fpsl'
+# 			]
+# 			
+# 			for path in externalLibraries:
+# 				parameterList.append("-P{0}".format(path))
+# 			
+# 			parameterList += [
+# 				('--ieee=%s' % self.__ieeeFlavor),
+# 				('--std=%s' % self.__vhdlStandard),
+# 				'--work=test',
+# 				testbenchName
+# 			]
+# 
+# 			command = " ".join(parameterList)
+# 		
+# 			self.printDebug("call ghdl: %s" % str(parameterList))
+# 			self.printVerbose("    command: %s" % command)
+# 			try:
+# 				elaborateLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+# 				# 
+# 				if self.showLogs:
+# 					if (elaborateLog != ""):
+# 						print("ghdl elaborate messages:")
+# 						print("-" * 80)
+# 						print(elaborateLog)
+# 						print("-" * 80)
+# 				
+# 			except subprocess.CalledProcessError as ex:
+# 				print("ERROR while executing ghdl command: %s" % command)
+# 				print("Return Code: %i" % ex.returncode)
+# 				print("-" * 80)
+# 				print(ex.output)
+# 				print("-" * 80)
+# 				
+# 				return
+# 
+# 			# search log for fatal warnings
+# 			analyzeErrors = []
+# 			elaborateLogRegExpStr =	r"(?P<VHDLFile>.*?):(?P<LineNumber>\d+):\d+:warning: component instance \"(?P<ComponentName>[a-z]+)\" is not bound"
+# 			elaborateLogRegExp = re.compile(elaborateLogRegExpStr)
+# 
+# 			for logLine in elaborateLog.splitlines():
+# 				print("line: " + logLine)
+# 				elaborateLogRegExpMatch = elaborateLogRegExp.match(logLine)
+# 				if (elaborateLogRegExpMatch is not None):
+# 					analyzeErrors.append({
+# 						'Type' : "Unbound Component",
+# 						'File' : elaborateLogRegExpMatch.group('VHDLFile'),
+# 						'Line' : elaborateLogRegExpMatch.group('LineNumber'),
+# 						'Component' : elaborateLogRegExpMatch.group('ComponentName')
+# 					})
+# 		
+# 			if (len(analyzeErrors) != 0):
+# 				print("  ERROR list:")
+# 				for err in analyzeErrors:
+# 					print("    %s: '%s' in file '%s' at line %s" % (err['Type'], err['Component'], err['File'], err['Line']))
+# 			
+# 				raise SimulatorException("Errors while GHDL analysis phase.")
+# 
+# 	
+# 			# run simulation
+# 			self.printNonQuiet("  running simulation...")
+# 		
+# 			parameterList = [str(exeFilePath)]
+# 			
+# 			# append RUNOPTS
+# 			parameterList += [('--ieee-asserts={0}'.format("disable-at-0"))]		# enable, disable, disable-at-0
+# 			
+# 			# set dump format to save simulation results to *.vcd file
+# 			if (self.__guiMode):
+# 				if (waveformFileFormat == "vcd"):
+# 					parameterList += [("--vcd={0}".format(str(waveformFilePath)))]
+# 				elif (waveformFileFormat == "vcdgz"):
+# 					parameterList += [("--vcdgz={0}".format(str(waveformFilePath)))]
+# 				elif (waveformFileFormat == "fst"):
+# 					parameterList += [("--fst={0}".format(str(waveformFilePath)))]
+# 				elif (waveformFileFormat == "ghw"):
+# 					parameterList += [("--wave={0}".format(str(waveformFilePath)))]
+# 				
+# 			command = " ".join(parameterList)
+# 		
+# 			self.printDebug("call ghdl: %s" % str(parameterList))
+# 			self.printVerbose("    command: %s" % command)
+# 			try:
+# 				simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+# 				
+# 				# 
+# 				if self.showLogs:
+# 					if (simulatorLog != ""):
+# 						print("ghdl messages for : %s" % str(vhdlFilePath))
+# 						print("-" * 80)
+# 						print(simulatorLog)
+# 						print("-" * 80)
+# 				
+# 			except subprocess.CalledProcessError as ex:
+# 				print("ERROR while executing ghdl command: %s" % command)
+# 				print("Return Code: %i" % ex.returncode)
+# 				print("-" * 80)
+# 				print(ex.output)
+# 				print("-" * 80)
+# 				
+# 				return
+# 
+# 		print()
+# 		
+# 		if (not self.__guiMode):
+# 			try:
+# 				result = self.checkSimulatorOutput(simulatorLog)
+# 				
+# 				if (result is None):
+# 					print("Testbench '{0}': NO ASSERTS PERFORMED".format(testbenchName))
+# 				elif (result == True):
+# 					print("Testbench '{0}': PASSED".format(testbenchName))
+# 				else:
+# 					print("Testbench '{0}': FAILED".format(testbenchName))
+# 					
+# 			except SimulatorException as ex:
+# 				raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED|NO ASSERTS]' not found in simulator output.") from ex
+# 		
+# 		else:	# guiMode
+# 			# run GTKWave GUI
+# 			self.printNonQuiet("  launching GTKWave...")
+# 			
+# 			if (not waveformFilePath.exists()):
+# 				raise SimulatorException("Waveform file not found.") from FileNotFoundError(str(waveformFilePath))
+# 
+# 			gtkwExecutablePath =	self.host.directories["GTKWBinary"] / self.__executables['gtkwave']
+# 			gtkwSaveFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[testbenchFQN]['gtkwSaveFile']
+# 		
+# 			parameterList = [
+# 				str(gtkwExecutablePath),
+# 				("--dump={0}".format(str(waveformFilePath)))
+# 			]
+# 
+# 			# if GTKWave savefile exists, load it's settings
+# 			if gtkwSaveFilePath.exists():
+# 				self.printDebug("Found waveform save file: '%s'" % str(gtkwSaveFilePath))
+# 				parameterList += ['--save', str(gtkwSaveFilePath)]
+# 			else:
+# 				self.printDebug("Didn't find waveform save file: '%s'." % str(gtkwSaveFilePath))
+# 			
+# 			command = " ".join(parameterList)
+# 		
+# 			self.printDebug("call GTKWave: %s" % str(parameterList))
+# 			self.printVerbose("    command: %s" % command)
+# 			try:
+# 				gtkwLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
+# 				
+# 				# 
+# 				if self.showLogs:
+# 					if (gtkwLog != ""):
+# 						print("GTKWave messages:")
+# 						print("-" * 80)
+# 						print(gtkwLog)
+# 						print("-" * 80)
+# 
+# 				if gtkwSaveFilePath.exists():
+# 					for line in fileinput.input(str(gtkwSaveFilePath), inplace = 1):
+# 						if line.startswith(('[dumpfile', '[savefile')):
+# 							continue
+# 						print(line.rstrip(os.linesep))
+# 
+# 			except subprocess.CalledProcessError as ex:
+# 				print("ERROR while executing GTKWave command: %s" % command)
+# 				print("Return Code: %i" % ex.returncode)
+# 				print("-" * 80)
+# 				print(ex.output)
+# 				print("-" * 80)
+# 				
+# 				return
 
 class Executable(ILogable):
 	def __init__(self, platform, executablePath, defaultParameters=[], logger=None):
@@ -602,8 +631,20 @@ class GHDLExecutable(Executable):
 		self._flagPSL =						False
 		self._verbose =						False
 		self._ieeeFlavor =				None
-		self._vhdlStandard =			None
+		self._vhdlVersion =				None
 		self._vhdlLibrary =				None
+	
+	@property
+	def BinaryDirectoryPath(self):
+		return self._binaryDirectoryPath
+	
+	@property
+	def Backend(self):
+		return self._backend
+
+	@property
+	def Version(self):
+		return self._version
 	
 	@property
 	def FlagExplicit(self):
@@ -708,18 +749,25 @@ class GHDLExecutable(Executable):
 			self._ieeeFlavor = value
 		
 	@property
-	def VHDLStandard(self):
-		return self._vhdlStandard
-	@VHDLStandard.setter
-	def VHDLStandard(self, value):
+	def VHDLVersion(self):
+		return self._vhdlVersion
+	@VHDLVersion.setter
+	def VHDLVersion(self, value):
 		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		if (self._vhdlStandard is None):
+		
+		if (value == "93"):
+			value =  "93c"
+			self.IEEEFlavor = "synopsys"
+		elif (value == "08"):
+			self.IEEEFlavor = "standard"
+		
+		if (self._vhdlVersion is None):
 			self._defaultParameters.append("--std={0}".format(value))
-			self._vhdlStandard = value
-		elif (self._vhdlStandard != value):
-			self._defaultParameters.remove("--std={0}".format(self._vhdlStandard))
+			self._vhdlVersion = value
+		elif (self._vhdlVersion != value):
+			self._defaultParameters.remove("--std={0}".format(self._vhdlVersion))
 			self._defaultParameters.append("--std={0}".format(value))
-			self._vhdlStandard = value
+			self._vhdlVersion = value
 	
 	@property
 	def VHDLLibrary(self):
@@ -854,3 +902,76 @@ class GHDLRun(GHDLExecutable):
 			print(ex.output)
 			print("-" * 80)
 
+class GTKWave(Executable):
+	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[]):
+		if (platform == "Windows"):			executablePath = binaryDirectoryPath/ "gtkwave.exe"
+		elif (platform == "Linux"):			executablePath = binaryDirectoryPath/ "gtkwave"
+		else:																						raise PlatformNotSupportedException(self._platform)
+		super().__init__(platform, executablePath, defaultParameters)
+		
+		self._binaryDirectoryPath =	binaryDirectoryPath
+		self._version =			version
+		
+		self._dumpFile =		None
+		self._saveFile =		None
+	
+	@property
+	def BinaryDirectoryPath(self):
+		return self._binaryDirectoryPath
+	
+	@property
+	def Version(self):
+		return self._version
+	
+	@property
+	def DumpFile(self):
+		return self._dumpFile
+	@DumpFile.setter
+	def DumpFile(self, value):
+		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
+		if (self._dumpFile is None):
+			self._defaultParameters.append("--dump={0}".format(value))
+			self._dumpFile = value
+		elif (self._dumpFile != value):
+			self._defaultParameters.remove("--dump={0}".format(self._dumpFile))
+			self._defaultParameters.append("--dump={0}".format(value))
+			self._dumpFile = value
+		
+	@property
+	def SaveFile(self):
+		return self._saveFile
+	@SaveFile.setter
+	def SaveFile(self, value):
+		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
+		if (self._saveFile is None):
+			self._defaultParameters.append("--save={0}".format(value))
+			self._saveFile = value
+		elif (self._saveFile != value):
+			self._defaultParameters.remove("--save={0}".format(self._saveFile))
+			self._defaultParameters.append("--save={0}".format(value))
+			self._saveFile = value
+		
+	def View(self, dumpFile):
+		if isinstance(dumpFile, str):			self.DumpFile = dumpFile
+		elif isinstance(dumpFile, Path):	self.DumpFile = str(dumpFile)
+		else:																						raise ValueError("Parameter 'dumpFile' has an unsupported type.")
+		
+		self._LogDebug("call gtkwave: {0}".format(str(self._defaultParameters)))
+		self._LogVerbose("    command: {0}".format(" ".join(self._defaultParameters)))
+		
+		try:
+			gtkwLog = self.StartProcess(self._defaultParameters)
+
+			# if self.showLogs:
+			if (gtkwLog != ""):
+				print("GTKwave messages for : {0}".format(str(dumpFile)))
+				print("-" * 80)
+				print(gtkwLog)
+				print("-" * 80)
+		except subprocess.CalledProcessError as ex:
+			print("ERROR while executing ghdl: {0}".format(str(dumpFile)))
+			print("Return Code: {0}".format(ex.returncode))
+			print("-" * 80)
+			print(ex.output)
+			print("-" * 80)
+	

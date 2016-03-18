@@ -197,8 +197,11 @@ class Testbench(CommandLineProgram):
 		entityToSimulate = Entity(self, module)
 
 		logger = GHDLSimulator.Logger(self, GHDLSimulator.Severity.All, printToStdOut=True)
-		simulator = GHDLSimulator.Simulator(self, showLogs, showReport, vhdlStandard, guiMode, logger=logger)
-		simulator.run(entityToSimulate)
+		simulator = GHDLSimulator.Simulator(self, showLogs, showReport, guiMode, logger=logger)
+		simulator.Run(entityToSimulate, vhdlStandard, "KC705")
+		
+		if (guiMode == True):
+			simulator.View(entityToSimulate)
 
 # main program
 def main():
