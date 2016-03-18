@@ -470,8 +470,11 @@ class IntegerLiteral(Literal):
 		
 	def __str__(self):
 		return str(self._value)
-		
-class ExistsExpression(Expression):
+
+class Function(Expression):
+	pass
+
+class ExistsFunction(Function):
 	def __init__(self, directoryname):
 		super().__init__()
 		self._path = Path(directoryname)
@@ -482,11 +485,11 @@ class ExistsExpression(Expression):
 
 	@classmethod
 	def GetParser(cls):
-		if DEBUG: print("init ExistsExpressionParser")
+		if DEBUG: print("init ExistsFunctionParser")
 		
 		# match for EXISTS keyword
 		token = yield
-		if DEBUG2: print("ExistsExpressionParser: token={0} expected '('".format(token))
+		if DEBUG2: print("ExistsFunctionParser: token={0} expected '('".format(token))
 		# if (not isinstance(token, StringToken)):			raise MismatchingParserResult()
 		# if (token.Value != "exists"):									raise MismatchingParserResult()
 		
@@ -495,16 +498,16 @@ class ExistsExpression(Expression):
 		
 		# match for opening (
 		token = yield
-		if DEBUG2: print("ExistsExpressionParser: token={0} expected '('".format(token))
+		if DEBUG2: print("ExistsFunctionParser: token={0} expected '('".format(token))
 		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
 		if (token.Value != "("):											raise MismatchingParserResult()
 		# match for optional whitespace
 		token = yield
-		if DEBUG2: print("ExistsExpressionParser: token={0}".format(token))
+		if DEBUG2: print("ExistsFunctionParser: token={0}".format(token))
 		if isinstance(token, SpaceToken):						token = yield
 		# match for delimiter sign: "
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("ExistsExpressionParser: Expected double quote sign before VHDL fileName.")
-		if (token.Value.lower() != "\""):						raise MismatchingParserResult("ExistsExpressionParser: Expected double quote sign before VHDL fileName.")
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("ExistsFunctionParser: Expected double quote sign before VHDL fileName.")
+		if (token.Value.lower() != "\""):						raise MismatchingParserResult("ExistsFunctionParser: Expected double quote sign before VHDL fileName.")
 		# match for string: path
 		path = ""
 		while True:
@@ -515,15 +518,15 @@ class ExistsExpression(Expression):
 			path += token.Value
 		# match for optional whitespace
 		token = yield
-		if DEBUG2: print("ExistsExpressionParser: token={0}".format(token))
+		if DEBUG2: print("ExistsFunctionParser: token={0}".format(token))
 		if isinstance(token, SpaceToken):						token = yield
 		# match for delimiter sign: \n
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("ExistsExpressionParser: Expected end of line or comment")
-		if (token.Value != ")"):										raise MismatchingParserResult("ExistsExpressionParser: Expected end of line or comment")
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("ExistsFunctionParser: Expected end of line or comment")
+		if (token.Value != ")"):										raise MismatchingParserResult("ExistsFunctionParser: Expected end of line or comment")
 		
 		# construct result
 		result = cls(path)
-		if DEBUG: print("ExistsExpressionParser: matched {0}".format(result))
+		if DEBUG: print("ExistsFunctionParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
 		
 	def __str__(self):
@@ -564,15 +567,14 @@ class ListConstructorExpression(Expression):
 		return self._list
 	
 	def AddElement(self, element):
-		if DEBUG2: pass
-		print("ListConstructorExpression: adding element {0}".format(element))
+		if DEBUG2: print("ListConstructorExpression: adding element {0}".format(element))
 		self._list.append(element)
 
 	@classmethod
 	def GetParser(cls):
 		if DEBUG: print("init ListConstructorExpressionParser")
 		
-		# match for EXISTS keyword
+		# match for sign "["
 		token = yield
 		if DEBUG2: print("ListConstructorExpressionParser: token={0} expected '('".format(token))
 		if (not isinstance(token, CharacterToken)):			raise MismatchingParserResult()
@@ -591,7 +593,6 @@ class ListConstructorExpression(Expression):
 				parser.send(token)
 				token = yield
 		except MatchingParserResult as ex:
-			print(ex.value)
 			result.AddElement(ex.value)
 		
 		parser = cls.GetRepeatParser(result.AddElement, ListElement.GetParser)
@@ -601,7 +602,7 @@ class ListConstructorExpression(Expression):
 			while True:
 				token = yield
 				parser.send(token)
-		except MismatchingParserResult as ex:
+		except MatchingParserResult as ex:
 			pass
 		
 		# match for optional whitespace
@@ -613,12 +614,15 @@ class ListConstructorExpression(Expression):
 		if (token.Value != "]"):										raise MismatchingParserResult("ListConstructorExpressionParser: Expected end of line or comment")
 		
 		# construct result
-		if DEBUG: pass
-		print("ListConstructorExpressionParser: matched {0}".format(result))
+		if DEBUG: print("ListConstructorExpressionParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
 		
 	def __str__(self):
-		return "[{0}]".format(", ".join(self._list))
+		buffer = "[{0}".format(self._list[0])
+		for item in self._list[1:]:
+			buffer += ", {0}".format(item)
+		buffer += "]"
+		return buffer
 		
 class UnaryExpression(Expression):
 	def __init__(self, child):
@@ -1330,8 +1334,7 @@ class InExpression(LogicalExpression):
 				token = yield
 				parser.send(token)
 		except MatchingParserResult as ex:
-			if DEBUG2: pass
-			print("InExpressionParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
+			if DEBUG2: print("InExpressionParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
 			rightChild = ex.value
 		
 		# match for optional whitespace
@@ -1353,7 +1356,7 @@ Expressions.AddChoice(Identifier)
 Expressions.AddChoice(StringLiteral)
 Expressions.AddChoice(IntegerLiteral)
 Expressions.AddChoice(NotExpression)
-Expressions.AddChoice(ExistsExpression)
+Expressions.AddChoice(ExistsFunction)
 Expressions.AddChoice(AndExpression)
 Expressions.AddChoice(OrExpression)
 Expressions.AddChoice(XorExpression)

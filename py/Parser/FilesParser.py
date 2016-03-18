@@ -158,10 +158,14 @@ class FilesParserMixIn:
 			return expr.Value
 		elif isinstance(expr, IntegerLiteral):
 			return expr.Value
+		elif isinstance(expr, ExistsFunction):
+			return (self._rootDirectory / expr.Path).exists()
+		elif isinstance(expr, ListConstructorExpression):
+			return [self._Evaluate(item) for item in expr.List]
 		elif isinstance(expr, NotExpression):
 			return not self._Evaluate(expr.Child)
-		elif isinstance(expr, ExistsExpression):
-			return (self._rootDirectory / expr.Path).exists()
+		elif isinstance(expr, InExpression):
+			return self._Evaluate(expr.LeftChild) in self._Evaluate(expr.RightChild)
 		elif isinstance(expr, AndExpression):
 			return self._Evaluate(expr.LeftChild) and self._Evaluate(expr.RightChild)
 		elif isinstance(expr, OrExpression):
@@ -182,6 +186,7 @@ class FilesParserMixIn:
 			return self._Evaluate(expr.LeftChild) > self._Evaluate(expr.RightChild)
 		elif isinstance(expr, GreaterThanEqualExpression):
 			return self._Evaluate(expr.LeftChild) >= self._Evaluate(expr.RightChild)
+		else:																						raise ParserException("Unsupported expression type '{0}'".format(type(expr)))
 
 	def Files(self):
 		return self._files
