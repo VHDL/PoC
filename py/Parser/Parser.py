@@ -529,6 +529,97 @@ class ExistsExpression(Expression):
 	def __str__(self):
 		return "exists(\"{0}\")".format(str(self._path))
 		
+class ListElement(Expression):
+	def __init__(self):
+		super().__init__()
+
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init ListElementParser")
+		
+		# match for EXISTS keyword
+		token = yield
+		if DEBUG2: print("ListElementParser: token={0} expected '('".format(token))
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
+		if (token.Value != ","):										raise MismatchingParserResult()
+		# match for optional whitespace
+		token = yield
+		if DEBUG2: print("ListElementParser: token={0}".format(token))
+		if isinstance(token, SpaceToken):						token = yield
+		
+		parser = Expressions.GetParser()
+		parser.send(None)
+		
+		while True:
+			parser.send(token)
+			token = yield
+		
+class ListConstructorExpression(Expression):
+	def __init__(self):
+		super().__init__()
+		self._list = []
+
+	@property
+	def List(self):
+		return self._list
+	
+	def AddElement(self, element):
+		if DEBUG2: pass
+		print("ListConstructorExpression: adding element {0}".format(element))
+		self._list.append(element)
+
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init ListConstructorExpressionParser")
+		
+		# match for EXISTS keyword
+		token = yield
+		if DEBUG2: print("ListConstructorExpressionParser: token={0} expected '('".format(token))
+		if (not isinstance(token, CharacterToken)):			raise MismatchingParserResult()
+		if (token.Value != "["):												raise MismatchingParserResult()
+		# match for optional whitespace
+		token = yield
+		if DEBUG2: print("ListConstructorExpressionParser: token={0}".format(token))
+		if isinstance(token, SpaceToken):						token = yield
+		
+		result = cls()
+		parser = Expressions.GetParser()
+		parser.send(None)
+		
+		try:
+			while True:
+				parser.send(token)
+				token = yield
+		except MatchingParserResult as ex:
+			print(ex.value)
+			result.AddElement(ex.value)
+		
+		parser = cls.GetRepeatParser(result.AddElement, ListElement.GetParser)
+		parser.send(None)
+		
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MismatchingParserResult as ex:
+			pass
+		
+		# match for optional whitespace
+		# token = yield
+		if DEBUG2: print("ListConstructorExpressionParser: token={0}".format(token))
+		if isinstance(token, SpaceToken):						token = yield
+		# match for delimiter sign: \n
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("ListConstructorExpressionParser: Expected end of line or comment")
+		if (token.Value != "]"):										raise MismatchingParserResult("ListConstructorExpressionParser: Expected end of line or comment")
+		
+		# construct result
+		if DEBUG: pass
+		print("ListConstructorExpressionParser: matched {0}".format(result))
+		raise MatchingParserResult(result)
+		
+	def __str__(self):
+		return "[{0}]".format(", ".join(self._list))
+		
 class UnaryExpression(Expression):
 	def __init__(self, child):
 		super().__init__()
@@ -549,8 +640,10 @@ class NotExpression(UnaryExpression):
 		# match for "!"
 		token = yield
 		if DEBUG2: print("NotExpressionParser: token={0} expected '('".format(token))
-		if (not isinstance(token, StringToken)):			raise MismatchingParserResult()
-		if (token.Value != "not"):										raise MismatchingParserResult()
+		# if (not isinstance(token, StringToken)):			raise MismatchingParserResult()
+		# if (token.Value != "not"):										raise MismatchingParserResult()
+		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
+		if (token.Value != "!"):											raise MismatchingParserResult()
 		
 		# match for optional whitespace
 		token = yield
@@ -1191,6 +1284,70 @@ class XorExpression(LogicalExpression):
 		
 	def __str__(self):
 		return "({0} xor {1})".format(self._leftChild.__str__(), self._rightChild.__str__())
+		
+class InExpression(LogicalExpression):
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init InExpressionParser")
+		
+		# match for opening (
+		token = yield
+		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
+		if (token.Value != "("):											raise MismatchingParserResult()
+		# match for optional whitespace
+		token = yield
+		if isinstance(token, SpaceToken):							token = yield
+		
+		# match for sub expression
+		# ==========================================================================
+		parser = Expressions.GetParser()
+		parser.send(None)
+		try:
+			while True:
+				parser.send(token)
+				token = yield
+		except MatchingParserResult as ex:
+			if DEBUG2: print("InExpressionParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
+			leftChild = ex.value
+		
+		# match for whitespace
+		token = yield
+		if (not isinstance(token, SpaceToken)):				raise MismatchingParserResult()
+		# match for IN keyword
+		token = yield
+		if (not isinstance(token, StringToken)):			raise MismatchingParserResult()
+		if (token.Value.lower() != "in"):						raise MismatchingParserResult()
+		# match for whitespace
+		token = yield
+		if (not isinstance(token, SpaceToken)):				raise MismatchingParserResult()
+		
+		# match for sub expression
+		# ==========================================================================
+		parser = ListConstructorExpression.GetParser()
+		parser.send(None)
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			if DEBUG2: pass
+			print("InExpressionParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
+			rightChild = ex.value
+		
+		# match for optional whitespace
+		token = yield
+		if isinstance(token, SpaceToken):							token = yield
+		# match for closing )
+		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
+		if (token.Value != ")"):											raise MismatchingParserResult()
+		
+		# construct result
+		result = cls(leftChild, rightChild)
+		if DEBUG: print("InExpressionParser: matched {0}".format(result))
+		raise MatchingParserResult(result)
+		
+	def __str__(self):
+		return "({0} in {1})".format(self._leftChild.__str__(), self._rightChild.__str__())
 
 Expressions.AddChoice(Identifier)
 Expressions.AddChoice(StringLiteral)
@@ -1206,6 +1363,7 @@ Expressions.AddChoice(LessThanExpression)
 Expressions.AddChoice(LessThanEqualExpression)
 Expressions.AddChoice(GreaterThanExpression)
 Expressions.AddChoice(GreaterThanEqualExpression)
+Expressions.AddChoice(InExpression)
 
 class Statement(CodeDOMObject):
 	pass

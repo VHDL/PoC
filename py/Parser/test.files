@@ -1,0 +1,4 @@
+
+if !(Vendor in ["Xilinx", "Altera", "Lattice"]) then
+	report "Unsupported vendor"
+end if

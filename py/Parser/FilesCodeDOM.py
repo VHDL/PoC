@@ -205,9 +205,9 @@ class VHDLStatement(Statement):
 	
 	def __str__(self, indent=0):
 		if (self._commentText != ""):
-			return "{0}VHDL {1} \"{2}\" # {3}".format(("  " * indent), self._library, self._fileName, self._commentText)
+			return "{0}VHDL {1} \"{2}\" # {3}".format(("  " * indent), self._libraryName, self._fileName, self._commentText)
 		else:
-			return "{0}VHDL {1} \"{2}\"".format(("  " * indent), self._library, self._fileName)
+			return "{0}VHDL {1} \"{2}\"".format(("  " * indent), self._libraryName, self._fileName)
 	
 class VerilogStatement(Statement):
 	def __init__(self, fileName, commentText):
