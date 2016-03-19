@@ -6,15 +6,17 @@
 #
 # PoC simulation packages
 vhdl		poc		"src/sim/sim_types.vhdl"								# PoC simulation helper
-if (VHDLVersion < 2002) then
+if (VHDL < 2002) then
 	vhdl	poc		"src/sim/sim_random.v93.vhdl"						# PoC simulation helper
 	vhdl	poc		"src/sim/sim_global.v93.vhdl"						# PoC simulation helper
 	vhdl	poc		"src/sim/sim_unprotected.v93.vhdl"			# PoC simulation helper
 	vhdl	poc		"src/sim/sim_simulation.v93.vhdl"				# PoC simulation helper
-elsefif (VHDLVersion >= 2002) then
+elseif (VHDL >= 2002) then
 	vhdl	poc		"src/sim/sim_random.v08.vhdl"						# PoC simulation helper
 	vhdl	poc		"src/sim/sim_protected.v08.vhdl"				# PoC simulation helper
 	vhdl	poc		"src/sim/sim_global.v08.vhdl"						# PoC simulation helper
 	vhdl	poc		"src/sim/sim_simulation.v08.vhdl"				# PoC simulation helper
+else
+	report "VHDL version not supported."
 end if
 vhdl		poc		"src/sim/sim_waveform.vhdl"							# PoC simulation helper
