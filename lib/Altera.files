@@ -4,10 +4,14 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
-if (Tool = "GHDL") then
-	library unisim "temp/ghdl/altera"
-elseif (Tool = "Mentor_vSim") then
-	library unisim "temp/vSim/altera"
+if (VHDL <= 2002) then
+	report "Altera primitives don't support VHDL-200x."
 else
-	report "Tool not supported"
+	if ((Tool = "GHDL") and ?("temp/precompiled/ghdl/altera")) then
+		library altera_mf "temp/precompiled/ghdl/altera"
+	elseif ((Tool = "Mentor_vSim") and ?("temp/precompiled/vsim/altera")) then
+		library altera_mf "temp/precompiled/vsim/altera"
+	else
+		report "Add Altera primitive list here..."
+	end if
 end if

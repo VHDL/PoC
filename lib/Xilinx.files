@@ -4,12 +4,12 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
-if (Tool = "GHDL") then
-	library unisim "temp/ghdl/xilinx-ise"
-elseif (Tool = "Xilinx_iSim") then
+if ((Tool = "GHDL") and ?("temp/precompiled/ghdl/xilinx")) then
+	library unisim "temp/precompiled/ghdl/xilinx"
+elseif ((Tool = "Mentor_vSim") and ?("temp/precompiled/vsim/xilinx")) then
+	library unisim "temp/precompiled/vsim/xilinx"
+elseif (Tool in ["Xilinx_iSim", "Xilinx_xSim"]) then
 	# implicitly referenced; nothing to reference
-elseif (Tool = "Mentor_vSim") then
-	library unisim "temp/vSim/xilinx-ise"
 else
-	report "Tool not supported"
+	report "Add Xilinx primitive list here..."
 end if
