@@ -7,6 +7,7 @@
 # Load external vendor libraries
 include				"lib/osvvm.files"														# Open Source VHDL Verification Methodology (OS-VVM)
 
+# Common PoC packages for configuration, synthesis and simulation
 include				"tb/common/my_config.files"									# board and device configuration
 include				"src/common/common.files"										# load common packages
 include				"src/sim/sim.files"													# load simulation helper packages

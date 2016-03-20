@@ -100,7 +100,7 @@ class FilesParserMixIn:
 	def _Parse(self):
 		self._ReadContent()
 		self._document = Document.parse(self._content, printChar=not True)
-# 		print(Fore.LIGHTBLACK_EX + str(self._document) + Fore.RESET)
+		# print(Fore.LIGHTBLACK_EX + str(self._document) + Fore.RESET)
 		
 	def _Resolve(self, statements=None):
 		# print("Resolving {0}".format(str(self._file)))
