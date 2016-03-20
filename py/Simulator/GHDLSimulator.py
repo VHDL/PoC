@@ -308,7 +308,7 @@ class Simulator(PoCSimulator):
 				gtkwHandle.write(buffer)
 # 		
 # 		# run GHDL simulation on Linux
-# 		if (self.Host.platform == "Linux"):
+# 		if (self.Host.Platform == "Linux"):
 # 			# preparing some variables for Linux
 # 			exeFilePath =		tempGHDLPath / testbenchName.lower()
 # 		
@@ -444,8 +444,8 @@ class Simulator(PoCSimulator):
 # 			if (not waveformFilePath.exists()):
 # 				raise SimulatorException("Waveform file not found.") from FileNotFoundError(str(waveformFilePath))
 # 
-# 			gtkwExecutablePath =	self.Host.directories["GTKWBinary"] / self.__executables['gtkwave']
-# 			gtkwSaveFilePath =		self.Host.directories["PoCRoot"] / self.Host.tbConfig[testbenchFQN]['gtkwSaveFile']
+# 			gtkwExecutablePath =	self.Host.Directories["GTKWBinary"] / self.__executables['gtkwave']
+# 			gtkwSaveFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[testbenchFQN]['gtkwSaveFile']
 # 		
 # 			parameterList = [
 # 				str(gtkwExecutablePath),

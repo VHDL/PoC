@@ -48,9 +48,6 @@ from Simulator.Base import PoCSimulator
 from Simulator.Exceptions import * 
 
 class Simulator(PoCSimulator):
-
-	__executables =		{}
-	__vhdlStandard =	"93"
 	__guiMode =				False
 
 	def __init__(self, host, showLogs, showReport, vhdlStandard, guiMode):
@@ -59,8 +56,8 @@ class Simulator(PoCSimulator):
 		self.__vhdlStandard =	vhdlStandard
 		self.__guiMode =			guiMode
 
+		self._LogNormal("preparing simulation environment...")
 		self._PrepareSimulationEnvironment()
-		self._PrepareSimulator()
 
 	@property
 	def TemporaryPath(self):
@@ -70,21 +67,16 @@ class Simulator(PoCSimulator):
 		self._LogNormal("  preparing simulation environment...")
 		
 		# create temporary directory for ghdl if not existent
-		self._tempPath = self.Host.directories["aSimTemp"]
+		self._tempPath = self.Host.Directories["aSimTemp"]
 		if (not (self._tempPath).exists()):
-			self._LogVerbose("    Creating temporary directory for simulator files.")
-			self._LogDebug("     Temporary directors: {0}".format(str(self._tempPath)))
+			self._LogVerbose("  Creating temporary directory for simulator files.")
+			self._LogDebug("    Temporary directors: {0}".format(str(self._tempPath)))
 			self._tempPath.mkdir(parents=True)
 			
 		# change working directory to temporary iSim path
-		self._LogVerbose("    cd \"{0}\"".format(str(self._tempPath)))
+		self._LogVerbose("  Changing working directory to temporary directory.")
+		self._LogDebug("    cd \"{0}\"".format(str(self._tempPath)))
 		chdir(str(self._tempPath))
-
-	def _PrepareSimulator(self):
-		aSimBinaryPath =	self.Host.directories["aSimBinary"]
-		aSimVersion =			self.Host.pocConfig['GHDL']['Version']
-		
-		# self._aSim =			ASimExecutable(self.Host.platform, aSimBinaryPath, aSimVersion)
 
 		# if (self._host.platform == "Windows"):
 			# self.__executables['alib'] =		"vlib.exe"
@@ -94,51 +86,64 @@ class Simulator(PoCSimulator):
 			# self.__executables['alib'] =		"vlib"
 			# self.__executables['acom'] =		"vcom"
 			# self.__executables['asim'] =		"vsim"
-		# else:
-			# raise PlatformNotSupportedException(self.platform)
-		
-	def run(self, pocEntity):
-		import os
-		import re
-		import subprocess
-	
-		self.printNonQuiet(str(pocEntity))
-		self.printNonQuiet("  preparing simulation environment...")
 
-		# create temporary directory for aSim if not existent
-		tempaSimPath = self.Host.directories["aSimTemp"]
-		if not (tempaSimPath).exists():
-			self.printVerbose("Creating temporary directory for simulator files.")
-			self.printDebug("Temporary directors: %s" % str(tempaSimPath))
-			tempaSimPath.mkdir(parents=True)
+	def PrepareSimulator(self, binaryPath, version):
+		# create the GHDL executable factory
+		self._LogVerbose("  Preparing GHDL simulator.")
+		self._questa =		AldecSimulatorExecutable(self.Host.Platform, binaryPath, version)
+
+	def RunAll(self, pocEntities, **kwargs):
+		for pocEntity in pocEntities:
+			self.Run(pocEntity, **kwargs)
+		
+	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93c", vhdlGenerics=None):
+		self._pocEntity =			pocEntity
+		self._testbenchFQN =	str(pocEntity)
+		self._vhdlversion =		vhdlVersion
+		self._vhdlGenerics =	vhdlGenerics
+
+		# check testbench database for the given testbench		
+		self._LogQuiet("Testbench: {0}{1}{2}".format(Foreground.YELLOW, self._testbenchFQN, Foreground.RESET))
+		if (not self.Host.tbConfig.has_section(self._testbenchFQN)):
+			raise SimulatorException("Testbench '{0}' not found.".format(self._testbenchFQN)) from NoSectionError(self._testbenchFQN)
+			
+		# setup all needed paths to execute fuse
+		testbenchName =				self.Host.tbConfig[self._testbenchFQN]['TestbenchModule']
+		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['fileListFile']
+
+		self._CreatePoCProject(testbenchName, boardName, deviceName)
+		self._AddFileListFile(fileListFilePath)
+		
+		
+		
 
 		# setup all needed paths to execute fuse
-		aLibExecutablePath =	self.Host.directories["aSimBinary"] / self.__executables['alib']
-		aComExecutablePath =	self.Host.directories["aSimBinary"] / self.__executables['acom']
-		aSimExecutablePath =	self.Host.directories["aSimBinary"] / self.__executables['asim']
-#		gtkwExecutablePath =	self.Host.directories["GTKWBinary"] / self.__executables['gtkwave']
+		aLibExecutablePath =	self.Host.Directories["aSimBinary"] / self.__executables['alib']
+		aComExecutablePath =	self.Host.Directories["aSimBinary"] / self.__executables['acom']
+		aSimExecutablePath =	self.Host.Directories["aSimBinary"] / self.__executables['asim']
+#		gtkwExecutablePath =	self.Host.Directories["GTKWBinary"] / self.__executables['gtkwave']
 		
 		if not self.Host.tbConfig.has_section(str(pocEntity)):
 			from configparser import NoSectionError
 			raise SimulatorException("Testbench '" + str(pocEntity) + "' not found.") from NoSectionError(str(pocEntity))
 		
 		testbenchName =				self.Host.tbConfig[str(pocEntity)]['TestbenchModule']
-		fileListFilePath =		self.Host.directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['fileListFile']
-		tclBatchFilePath =		self.Host.directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['aSimBatchScript']
-		tclGUIFilePath =			self.Host.directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['aSimGUIScript']
-		tclWaveFilePath =			self.Host.directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['aSimWaveScript']
+		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['fileListFile']
+		tclBatchFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['aSimBatchScript']
+		tclGUIFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['aSimGUIScript']
+		tclWaveFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['aSimWaveScript']
 		
 #		vcdFilePath =					tempvSimPath / (testbenchName + ".vcd")
-#		gtkwSaveFilePath =		self.Host.directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['gtkwaveSaveFile']
+#		gtkwSaveFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['gtkwaveSaveFile']
 		
 		if (self.verbose):
 			print("  Commands to be run:")
 			print("  1. Change working directory to temporary directory")
 			print("  2. Parse filelist file.")
 			print("    a) For every file: Add the VHDL file to aSim's compile cache.")
-			if (self.Host.platform == "Windows"):
+			if (self.Host.Platform == "Windows"):
 				print("  3. Compile and run simulation")
-			elif (self.Host.platform == "Linux"):
+			elif (self.Host.Platform == "Linux"):
 				print("  3. Compile simulation")
 				print("  4. Run simulation")
 			print("  ----------------------------------------")
@@ -168,11 +173,11 @@ class Simulator(PoCSimulator):
 				if (filesLineRegExpMatch is not None):
 					if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
 						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-						vhdlFilePath = self.Host.directories["PoCRoot"] / vhdlFileName
+						vhdlFilePath = self.Host.Directories["PoCRoot"] / vhdlFileName
 					elif (filesLineRegExpMatch.group('Keyword')[0:5] == "vhdl-"):
 						if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
 							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-							vhdlFilePath = self.Host.directories["PoCRoot"] / vhdlFileName
+							vhdlFilePath = self.Host.Directories["PoCRoot"] / vhdlFileName
 						else:
 							continue
 					elif (filesLineRegExpMatch.group('Keyword') == "altera"):
@@ -180,11 +185,11 @@ class Simulator(PoCSimulator):
 					elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
 #						self.printVerbose("    skipped Xilinx specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
 						# check if ISE or Vivado is configured
-						if not self.Host.directories.__contains__("XilinxPrimitiveSource"):
+						if not self.Host.Directories.__contains__("XilinxPrimitiveSource"):
 							raise NotConfiguredException("This testbench requires some Xilinx Primitves. Please configure Xilinx ISE or Vivado.")
 						
 						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-						vhdlFilePath = self.Host.directories["XilinxPrimitiveSource"] / vhdlFileName
+						vhdlFilePath = self.Host.Directories["XilinxPrimitiveSource"] / vhdlFileName
 					else:
 						raise SimulatorException("Unknown keyword in *files file.")
 						

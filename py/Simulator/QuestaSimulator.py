@@ -53,47 +53,49 @@ from Simulator.Exceptions		import *
 from Simulator.Base					import PoCSimulator, Executable, VHDLTestbenchLibraryName
 
 class Simulator(PoCSimulator):
-
-	__executables =		{}
-	__vhdlStandard =	"93"
 	__guiMode =				False
 
-	def __init__(self, host, showLogs, showReport, guiMode, logger=None):
-		super(self.__class__, self).__init__(host, showLogs, showReport, logger)
+	def __init__(self, host, showLogs, showReport, guiMode):
+		super(self.__class__, self).__init__(host, showLogs, showReport)
 
 		self.__guiMode =			guiMode
 
+		self._LogNormal("preparing simulation environment...")
 		self._PrepareSimulationEnvironment()
-		self._PrepareSimulator()
-
-	def _PrepareSimulationEnvironment(self):
-		self._LogNormal("  preparing simulation environment...")
-		
-		# create temporary directory for ghdl if not existent
-		self._tempPath = self.Host.directories["vSimTemp"]
-		if (not (self._tempPath).exists()):
-			self._LogVerbose("    Creating temporary directory for simulator files.")
-			self._LogDebug("     Temporary directors: {0}".format(str(self._tempPath)))
-			self._tempPath.mkdir(parents=True)
-			
-		# change working directory to temporary iSim path
-		self._LogVerbose("    cd \"{0}\"".format(str(self._tempPath)))
-		chdir(str(self._tempPath))
-
-	def _PrepareSimulator(self):
-		vSimBinaryPath =	self.Host.directories["vSimBinary"]
-		vSimVersion =			self.Host.pocConfig['Mentor.QuestaSim']['Version']
-		
-		self._questa =		QuestaSimulatorExecutable(self.Host.platform, vSimBinaryPath, vSimVersion, logger=self._logger)
 
 	@property
 	def TemporaryPath(self):
 		return self._tempPath
 
-	def Run(self, pocEntity, vhdlVersion="93", boardName=None, deviceName=None):
+	def _PrepareSimulationEnvironment(self):
+		self._LogNormal("  preparing simulation environment...")
+		
+		# create temporary directory for ghdl if not existent
+		self._tempPath = self.Host.Directories["vSimTemp"]
+		if (not (self._tempPath).exists()):
+			self._LogVerbose("  Creating temporary directory for simulator files.")
+			self._LogDebug("    Temporary directors: {0}".format(str(self._tempPath)))
+			self._tempPath.mkdir(parents=True)
+			
+		# change working directory to temporary iSim path
+		self._LogVerbose("  Changing working directory to temporary directory.")
+		self._LogDebug("    cd \"{0}\"".format(str(self._tempPath)))
+		chdir(str(self._tempPath))
+
+	def PrepareSimulator(self, binaryPath, version):
+		# create the GHDL executable factory
+		self._LogVerbose("  Preparing GHDL simulator.")
+		self._questa =		QuestaSimulatorExecutable(self.Host.Platform, binaryPath, version)
+
+	def RunAll(self, pocEntities, **kwargs):
+		for pocEntity in pocEntities:
+			self.Run(pocEntity, **kwargs)
+		
+	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93c", vhdlGenerics=None):
 		self._pocEntity =			pocEntity
 		self._testbenchFQN =	str(pocEntity)
 		self._vhdlversion =		vhdlVersion
+		self._vhdlGenerics =	vhdlGenerics
 
 		# check testbench database for the given testbench		
 		self._LogQuiet("Testbench: {0}{1}{2}".format(Foreground.YELLOW, self._testbenchFQN, Foreground.RESET))
@@ -102,7 +104,7 @@ class Simulator(PoCSimulator):
 			
 		# setup all needed paths to execute fuse
 		testbenchName =				self.Host.tbConfig[self._testbenchFQN]['TestbenchModule']
-		fileListFilePath =		self.Host.directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['fileListFile']
+		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['fileListFile']
 
 		self._CreatePoCProject(testbenchName, boardName, deviceName)
 		self._AddFileListFile(fileListFilePath)
@@ -120,7 +122,7 @@ class Simulator(PoCSimulator):
 		pocProject =									PoCProject(testbenchName)
 		
 		# configure the project
-		pocProject.RootDirectory =		self.Host.directories["PoCRoot"]
+		pocProject.RootDirectory =		self.Host.Directories["PoCRoot"]
 		pocProject.Environment =			Environment.Simulation
 		pocProject.ToolChain =				ToolChain.GHDL_GTKWave
 		pocProject.Tool =							Tool.GHDL
@@ -171,7 +173,7 @@ class Simulator(PoCSimulator):
 	def _RunSimulation(self, testbenchName):
 		self._LogNormal("  running simulation...")
 		
-		tclBatchFilePath =		self.Host.directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['vSimBatchScript']
+		tclBatchFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['vSimBatchScript']
 		
 		# create a QuestaSimulator instance
 		vsim = self._questa.GetSimulator()
@@ -185,8 +187,8 @@ class Simulator(PoCSimulator):
 	def _RunSimulationWithGUI(self, testbenchName):
 		self._LogNormal("  running simulation...")
 	
-		tclGUIFilePath =			self.Host.directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['vSimGUIScript']
-		tclWaveFilePath =			self.Host.directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['vSimWaveScript']
+		tclGUIFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['vSimGUIScript']
+		tclWaveFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['vSimWaveScript']
 		
 		# create a QuestaSimulator instance
 		vsim = self._questa.GetSimulator()
@@ -340,8 +342,12 @@ class QuestaSimulator(Executable, QuestaSimulatorExecutable):
 		else:																						raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, executablePath, defaultParameters)
 
-		self._verbose =						False
-		self._optimize =					False
+		self._verbose =						None
+		self._optimize =					None
+		self._comanndLineMode =		None
+		self._timeResolution =		None
+		self._batchCommand =			None
+		self._topLevel =					None
 	
 	@property
 	def Verbose(self):
@@ -364,6 +370,43 @@ class QuestaSimulator(Executable, QuestaSimulatorExecutable):
 			self._optimize = value
 			if value:			self._defaultParameters.append("-vopt")
 			else:					self._defaultParameters.remove("-vopt")
+	
+	@property
+	def TimeResolution(self):
+		return self._timeResolution
+	@TimeResolution.setter
+	def TimeResolution(self, value):
+		if (not isinstance(value, str)):																raise ValueError("Parameter 'value' is not of type str.")
+		if (not ["fs", "ps", "us", "ms", "sec", "min", "hr"] in value): raise ValueError("Parameter 'value' must contain a time unit.")
+		if (self._timeResolution is None):
+	
+	@property
+	def ComanndLineMode(self):
+		return self._comanndLineMode
+	@ComanndLineMode.setter
+	def ComanndLineMode(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._comanndLineMode != value):
+			self._comanndLineMode = value
+			if value:			self._defaultParameters.append("-c")
+			else:					self._defaultParameters.remove("-c")
+	
+	@property
+	def BatchCommand(self):
+		return self._batchCommand
+	@BatchCommand.setter
+	def BatchCommand(self, value):
+		if (not isinstance(value, str)):																raise ValueError("Parameter 'value' is not of type str.")
+		self._defaultParameters.append("-do")
+		self._defaultParameters.append(value)
+	
+	@property
+	def TopLevel(self):
+		return self._topLevel
+	@TopLevel.setter
+	def TopLevel(self, value):
+		if (not isinstance(value, str)):																raise ValueError("Parameter 'value' is not of type str.")
+		self._defaultParameters.append(value)
 	
 	def Simulate(self):
 		parameterList = self._defaultParameters.copy()

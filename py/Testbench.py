@@ -31,7 +31,8 @@
 # limitations under the License.
 # ==============================================================================
 
-from pathlib import Path
+from pathlib							import Path
+from os										import environ
 
 from lib.Functions				import Exit
 from Base.Exceptions			import *
@@ -100,33 +101,48 @@ class Testbench(CommandLineProgram):
 		
 		return("return ...")
 		return
-		
-	def aSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode):
-		# check if Aldec is configure
-		if (len(self.pocConfig.options("Aldec.ActiveHDL")) != 0):
-			# prepare some paths
-			self.Directories["aSimInstallation"] =	Path(self.pocConfig['Aldec.ActiveHDL']['InstallationDirectory'])
-			self.Directories["aSimBinary"] =				Path(self.pocConfig['Aldec.ActiveHDL']['BinaryDirectory'])
-		elif (len(self.pocConfig.options("Aldec.RivieraPRO")) != 0):
-			# prepare some paths
-			self.Directories["aSimInstallation"] =	Path(self.pocConfig['Aldec.RivieraPRO']['InstallationDirectory'])
-			self.Directories["aSimBinary"] =				Path(self.pocConfig['Aldec.RivieraPRO']['BinaryDirectory'])
-		else:
-			raise NotConfiguredException("Neither Aldec's Active-HDL nor Riviera PRO are configured on this system.")
-
-		self.Directories["aSimTemp"] =			self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['AldecSimulatorFiles']
-		
-		
+	
+	def __PrepareVendorLibraryPaths(self):
 		# prepare vendor library path for Altera
 		if (len(self.pocConfig.options("Altera.QuartusII")) != 0):	self.Directories["AlteraPrimitiveSource"] =	Path(self.pocConfig['Altera.QuartusII']['InstallationDirectory'])	/ "eda/sim_lib"
 		# prepare vendor library path for Xilinx
 		if (len(self.pocConfig.options("Xilinx.ISE")) != 0):				self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])				/ "ISE/vhdl/src"
 		elif (len(self.pocConfig.options("Xilinx.Vivado")) != 0):		self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])		/ "data/vhdl/src"
-		
-		entityToSimulate = Entity(self, module)
+	
+	def aSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode):
+		# check if Aldec tools are configure
+		if (len(self.pocConfig.options("Aldec.ActiveHDL")) != 0):
+			# prepare some paths
+			self.Directories["aSimInstallation"] =	Path(self.pocConfig['Aldec.ActiveHDL']['InstallationDirectory'])
+			self.Directories["aSimBinary"] =				Path(self.pocConfig['Aldec.ActiveHDL']['BinaryDirectory'])
+			aSimVersion =														self.pocConfig['Aldec.ActiveHDL']['Version']
+		elif (len(self.pocConfig.options("Lattice.ActiveHDL")) != 0):
+			# prepare some paths
+			self.Directories["aSimInstallation"] =	Path(self.pocConfig['Lattice.ActiveHDL']['InstallationDirectory'])
+			self.Directories["aSimBinary"] =				Path(self.pocConfig['Lattice.ActiveHDL']['BinaryDirectory'])
+			aSimVersion =														self.pocConfig['Lattice.ActiveHDL']['Version']
+		elif (len(self.pocConfig.options("Aldec.RivieraPRO")) != 0):
+			# prepare some paths
+			self.Directories["aSimInstallation"] =	Path(self.pocConfig['Aldec.RivieraPRO']['InstallationDirectory'])
+			self.Directories["aSimBinary"] =				Path(self.pocConfig['Aldec.RivieraPRO']['BinaryDirectory'])
+			aSimVersion =														self.pocConfig['Aldec.RivieraPRO']['Version']
+		else:
+			raise NotConfiguredException("Neither Aldec's Active-HDL nor Riviera PRO nor Active-HDL Lattice Edition are configured on this system.")
 
-		simulator = AldecSimulator.Simulator(self, showLogs, showReport, vhdlVersion, guiMode)
-		simulator.run(entityToSimulate)
+		# prepare paths to vendor simulation libraries
+		self.__PrepareVendorLibraryPaths()
+		
+		self.Directories["aSimTemp"] =			self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['AldecSimulatorFiles']
+		
+		# create a simulator instance
+		simulator = AldecSimulator.Simulator(self, showLogs, showReport, guiMode)
+		# prepare the simulator
+		aSimBinaryPath =	self.Directories["aSimBinary"]
+		simulator.PrepareSimulator(aSimBinaryPath, aSimVersion)
+		
+		# run a testbench
+		entityToSimulate = Entity(self, module)
+		simulator.Run(entityToSimulate, boardName="KC705", deviceName=None, vhdlVersion=vhdlVersion, vhdlGenerics=None)
 		
 	def ghdlSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode):
 		# check if GHDL is configure
@@ -137,24 +153,20 @@ class Testbench(CommandLineProgram):
 		self.Directories["GHDLPrecompiled"] =		self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['PrecompiledFiles'] / self.pocConfig['PoC.DirectoryNames']['GHDLSimulatorFiles']
 		self.Directories["GHDLInstallation"] =	Path(self.pocConfig['GHDL']['InstallationDirectory'])
 		self.Directories["GHDLBinary"] =				Path(self.pocConfig['GHDL']['BinaryDirectory'])
-		
-		# prepare vendor library path for Altera
-		if (len(self.pocConfig.options("Altera.QuartusII")) != 0):	self.Directories["AlteraPrimitiveSource"] =	Path(self.pocConfig['Altera.QuartusII']['InstallationDirectory'])	/ "eda/sim_lib"
-		# prepare vendor library path for Xilinx
-		if (len(self.pocConfig.options("Xilinx.ISE")) != 0):				self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])				/ "ISE/vhdl/src"
-		elif (len(self.pocConfig.options("Xilinx.Vivado")) != 0):		self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])		/ "data/vhdl/src"
-		
-		entityToSimulate = Entity(self, module)
+		ghdlVersion =														self.pocConfig['GHDL']['Version']
+		ghdlBackend =														self.pocConfig['GHDL']['Backend']
+
+		# prepare paths to vendor simulation libraries
+		self.__PrepareVendorLibraryPaths()
 
 		# create a GHDLSimulator instance
 		simulator = GHDLSimulator.Simulator(self, showLogs, showReport, guiMode)
 		# prepare the simulator
 		ghdlBinaryPath =	self.Directories["GHDLBinary"]
-		ghdlVersion =			self.pocConfig['GHDL']['Version']
-		ghdlBackend =			self.pocConfig['GHDL']['Backend']
 		simulator.PrepareSimulator(ghdlBinaryPath, ghdlVersion, ghdlBackend)
 		
 		# run a testbench
+		entityToSimulate = Entity(self, module)
 		simulator.Run(entityToSimulate, boardName="KC705", deviceName=None, vhdlVersion=vhdlVersion, vhdlGenerics=None)
 		
 		if (guiMode == True):
@@ -171,6 +183,7 @@ class Testbench(CommandLineProgram):
 	def iSimSimulation(self, module, showLogs, showReport, guiMode):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx.ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
+		if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
 		
 		# prepare some paths
 		self.Directories["iSimFiles"] =							self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['ISESimulatorFiles']
@@ -179,15 +192,17 @@ class Testbench(CommandLineProgram):
 		self.Directories["ISEInstallation"] = 			Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])
 		self.Directories["ISEBinary"] =							Path(self.pocConfig['Xilinx.ISE']['BinaryDirectory'])
 		self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory']) / "ISE/vhdl/src"
+		iSimVersion =																self.pocConfig['Xilinx.ISE']['Version']
 		
-		# check if the appropriate environment is loaded
-		from os import environ
-		if (environ.get('XILINX') == None):		raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
-
-		entityToSimulate = Entity(self, module)
-
+		# create a ISESimulator instance
 		simulator = ISESimulator.Simulator(self, showLogs, showReport, guiMode)
-		simulator.run(entityToSimulate)
+		# prepare the simulator
+		iSimBinaryPath =	self.Directories["iSimBinary"]
+		simulator.PrepareSimulator(iSimBinaryPath, iSimVersion)
+		
+		# run a testbench
+		entityToSimulate = Entity(self, module)
+		simulator.Run(entityToSimulate, boardName="KC705", deviceName=None, vhdlVersion=vhdlVersion, vhdlGenerics=None)
 
 	def vSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode):
 		# check if QuestaSim is configure
@@ -195,26 +210,25 @@ class Testbench(CommandLineProgram):
 			# prepare some paths
 			self.Directories["vSimInstallation"] =	Path(self.pocConfig['Mentor.QuestaSim']['InstallationDirectory'])
 			self.Directories["vSimBinary"] =				Path(self.pocConfig['Mentor.QuestaSim']['BinaryDirectory'])
+			vSimVersion =														self.pocConfig['Mentor.QuestaSim']['Version']
 		elif (len(self.pocConfig.options("Altera.ModelSim")) != 0):
 			# prepare some paths
 			self.Directories["vSimInstallation"] =	Path(self.pocConfig['Altera.ModelSim']['InstallationDirectory'])
 			self.Directories["vSimBinary"] =				Path(self.pocConfig['Altera.ModelSim']['BinaryDirectory'])
-		else:
-			raise NotConfiguredException("Neither Mentor Graphics QuestaSim nor ModelSim are configured on this system.")
+			vSimVersion =														self.pocConfig['Altera.QuestaSim']['Version']
+		else:																						raise NotConfiguredException("Neither Mentor Graphics QuestaSim nor ModelSim Altera-Edition are configured on this system.")
 
 		self.Directories["vSimTemp"] =			self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['ModelSimSimulatorFiles']
-
-		# prepare vendor library path for Altera
-		if (len(self.pocConfig.options("Altera.QuartusII")) != 0):	self.Directories["AlteraPrimitiveSource"] =	Path(self.pocConfig['Altera.QuartusII']['InstallationDirectory'])	/ "eda/sim_lib"
-		# prepare vendor library path for Xilinx
-		if (len(self.pocConfig.options("Xilinx.ISE")) != 0):				self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])				/ "ISE/vhdl/src"
-		elif (len(self.pocConfig.options("Xilinx.Vivado")) != 0):		self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])		/ "data/vhdl/src"
 		
+		# create a QuestaSimulator instance
+		simulator = QuestaSimulator.Simulator(self, showLogs, showReport, guiMode)
+		# prepare the simulator
+		vSimBinaryPath =	self.Directories["vSimBinary"]
+		simulator.PrepareSimulator(vSimBinaryPath, vSimVersion)
+		
+		# run a testbench
 		entityToSimulate = Entity(self, module)
-
-		logger = Logger(self, Severity.All, printToStdOut=True)
-		simulator = QuestaSimulator.Simulator(self, showLogs, showReport, guiMode, logger=logger)
-		simulator.Run(entityToSimulate, vhdlVersion, "KC705")
+		simulator.Run(entityToSimulate, boardName="KC705", deviceName=None, vhdlVersion=vhdlVersion, vhdlGenerics=None)
 
 	def xSimSimulation(self, module, showLogs, showReport, guiMode):
 		# check if ISE is configure
@@ -225,10 +239,16 @@ class Testbench(CommandLineProgram):
 		self.Directories["VivadoInstallation"] =		Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])
 		self.Directories["VivadoBinary"] =					Path(self.pocConfig['Xilinx.Vivado']['BinaryDirectory'])
 		self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory']) / "data/vhdl/src"
+		xSimVersion =																self.pocConfig['Xilinx.Vivado']['Version']
 		
+		# create a VivadoSimulator instance
+		simulator = VivadoSimulator.Simulator(self, guiMode)
+		# prepare the simulator
+		xSimBinaryPath =	self.Directories["GHDLBinary"]
+		simulator.PrepareSimulator(xSimBinaryPath, xSimVersion)
+		
+		# run a testbench
 		entityToSimulate = Entity(self, module)
-
-		simulator = VivadoSimulator.Simulator(self, showLogs, showReport, guiMode)
 		simulator.run(entityToSimulate)
 
 # main program
