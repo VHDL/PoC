@@ -11,7 +11,7 @@ include				"src/sim/sim.files"													# load simulation helper packages
 
 # PoC.arith
 vhdl		poc		"src/arith/arith.pkg.vhdl"									# Package
-vhdl		poc		"src/arith/arith_div_pipelined.vhdl"				# Unit Under Test
+vhdl		poc		"src/arith/arith_div.vhdl"									# Unit Under Test
 
 # Testbench file(s)
-vhdl		test	"tb/arith/arith_div_pipelined_tb.vhdl"			# Testbench
+vhdl		test	"tb/arith/arith_div_tb.vhdl"								# Testbench
