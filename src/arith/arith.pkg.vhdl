@@ -194,6 +194,26 @@ package arith is
 		);
 	end component;
 	
+	component arith_prefix_and_xilinx is
+		generic (
+			N : positive
+		);
+		port (
+			x : in	std_logic_vector(N-1 downto 0);
+			y : out std_logic_vector(N-1 downto 0)
+		);
+	end component;
+	
+	component arith_prefix_or_xilinx is
+		generic (
+			N : positive
+		);
+		port (
+			x : in	std_logic_vector(N-1 downto 0);
+			y : out std_logic_vector(N-1 downto 0)
+		);
+	end component;
+	
 	component arith_inc_ovcy_xilinx is
 		generic (
 			N		: positive												 		-- Bit Width
