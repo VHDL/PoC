@@ -183,6 +183,17 @@ package arith is
 		);
 	end component;
 	
+	component arith_carrychain_inc_xilinx is
+		generic (
+			BITS			: POSITIVE
+		);
+		port (
+			X		: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);
+			CIn	: in	STD_LOGIC															:= '1';
+			Y		: out	STD_LOGIC_VECTOR(BITS - 1 downto 0)
+		);
+	end component;
+	
 	component arith_inc_ovcy_xilinx is
 		generic (
 			N		: positive												 		-- Bit Width
