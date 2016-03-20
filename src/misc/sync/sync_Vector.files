@@ -6,4 +6,4 @@
 #
 # PoC.misc.sync
 include				"src/misc/sync/sync_Bits.files"							# Generic 2-FF synchronizer
-vhdl 		poc		"src/misc/sync/sync_Strobe.vhdl"						# 
+vhdl 		poc		"src/misc/sync/sync_Vector.vhdl"						# 
