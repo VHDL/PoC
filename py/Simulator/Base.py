@@ -40,94 +40,104 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Simulator.Base")
 
 # load dependencies
-from Base.Exceptions import *
-from Simulator.Exceptions import *
+from enum										import Enum, unique
+from colorama								import Fore as Foreground
+from pathlib								import Path
+from subprocess							import check_output	as Subprocess_Run
+from subprocess							import STDOUT				as Subprocess_StdOut
 
-class PoCSimulator(object):
-	__host =				None
-	
-	__debug =				False
-	__verbose =			False
-	__quiet =				False
-	__showLogs =		False
-	__showReport =	False
+from Base.Exceptions				import *
+from Base.Logging						import ILogable
+from Simulator.Exceptions		import *
 
+# TODO: extract to higher/outer module
+VHDLTestbenchLibraryName = "test"
+
+@unique
+class SimulationResult(Enum):
+	Failed =		0
+	NoAsserts =	1
+	Passed =		2
+
+class PoCSimulator(ILogable):
 	def __init__(self, host, showLogs, showReport):
+		if isinstance(host, ILogable):
+			ILogable.__init__(self, host.Logger)
+		else:
+			ILogable.__init__(self, None)
+
 		self.__host =				host
-		self.__debug =			host.debug
-		self.__verbose =		host.verbose
-		self.__quiet =			host.quiet
 		self.__showLogs =		showLogs
 		self.__showReport =	showReport
 
 	# class properties
 	# ============================================================================
 	@property
-	def debug(self):			return self.__debug
-	
+	def Host(self):				return self.__host
 	@property
-	def verbose(self):		return self.__verbose
-	
+	def ShowLogs(self):		return self.__showLogs
 	@property
-	def quiet(self):			return self.__quiet	
+	def ShowReport(self):	return self.__showReport
 
-	@property
-	def host(self):				return self.__host
-	
-	@property
-	def showLogs(self):		return self.__showLogs
-	
-	@property
-	def showReport(self):	return self.__showReport
-
-	# print messages
-	# ============================================================================
-	def printDebug(self, message):
-		if (self.debug):
-			print("DEBUG: " + message)
-	
-	def printVerbose(self, message):
-		if (self.verbose):
-			print(message)
-	
-	def printNonQuiet(self, message):
-		if (not self.quiet):
-			print(message)
-
-	def checkSimulatorOutput(self, simulatorOutput):
+	def CheckSimulatorOutput(self, simulatorOutput):
 		matchPos = simulatorOutput.find("SIMULATION RESULT = ")
 		if (matchPos >= 0):
-			if (simulatorOutput[matchPos + 20 : matchPos + 26] == "PASSED"):
-				return True
-			elif (simulatorOutput[matchPos + 20: matchPos + 26] == "FAILED"):
-				return False
-			elif (simulatorOutput[matchPos + 20: matchPos + 30] == "NO ASSERTS"):
-				return None
-			else:
-				raise SimulatorException()
-		else:
-			raise SimulatorException()
+			if (simulatorOutput[matchPos + 20 : matchPos + 26] == "PASSED"):			return SimulationResult.Passed
+			elif (simulatorOutput[matchPos + 20: matchPos + 26] == "FAILED"):			return SimulationResult.Failed
+			elif (simulatorOutput[matchPos + 20: matchPos + 30] == "NO ASSERTS"):	return SimulationResult.NoAsserts
+		raise SimulatorException("String 'SIMULATION RESULT ...' not found in simulator output.")
 
-
-class PoCSimulatorTestbench(object):
-	pocEntity = None
-	testbenchName = ""
-	simulationResult = False
-	
-	def __init__(self, pocEntity, testbenchName):
-		self.pocEntity = pocEntity
-		self.testbenchName = testbenchName
-
-class PoCSimulatorTestbenchGroup(object):
-	pocEntity = None
-	members = {}
-	
-	def __init__(self, pocEntity):
-		self.pocEntity = pocEntity
-	
-	def add(self, pocEntity, testbench):
-		self.members[str(pocEntity)] = testbench
+class Executable(ILogable):
+	def __init__(self, platform, executablePath, defaultParameters=[], logger=None):
+		ILogable.__init__(self, logger)
 		
-	def __getitem__(self, key):
-		return self.members[key]
+		self._platform = platform
+		
+		if isinstance(executablePath, str):							executablePath = Path(executablePath)
+		elif (not isinstance(executablePath, Path)):		raise ValueError("Parameter 'executablePath' is not of type str or Path.")
+		# if (not executablePath.exists()):								raise SimulatorException("Executable '{0}' can not be found.".format(str(executablePath))) from FileNotFoundError(str(executablePath))
+		
+		# prepend the executable
+		defaultParameters.insert(0, str(executablePath))
+		
+		self._executablePath =		executablePath
+		self._defaultParameters =	defaultParameters
+	
+	@property
+	def Path(self):
+		return self._executablePath
+	
+	@property
+	def DefaultParameters(self):
+		return self._defaultParameters
+	
+	@DefaultParameters.setter
+	def DefaultParameters(self, value):
+		self._defaultParameters = value
+	
+	def StartProcess(self, parameterList):
+		# return "blubs"
+		return Subprocess_Run(parameterList, stderr=Subprocess_StdOut, shell=False, universal_newlines=True)
+
+# class PoCSimulatorTestbench(object):
+	# pocEntity = None
+	# testbenchName = ""
+	# simulationResult = False
+	
+	# def __init__(self, pocEntity, testbenchName):
+		# self.pocEntity = pocEntity
+		# self.testbenchName = testbenchName
+
+# class PoCSimulatorTestbenchGroup(object):
+	# pocEntity = None
+	# members = {}
+	
+	# def __init__(self, pocEntity):
+		# self.pocEntity = pocEntity
+	
+	# def add(self, pocEntity, testbench):
+		# self.members[str(pocEntity)] = testbench
+		
+	# def __getitem__(self, key):
+		# return self.members[key]
 	

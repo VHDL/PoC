@@ -33,12 +33,13 @@
 
 from pathlib import Path
 
-from lib.Functions import Exit
-from Base.Exceptions import *
-from Base.PoCBase import CommandLineProgram
-from PoC.Entity import *
-from Simulator import *
-from Simulator.Exceptions import *
+from lib.Functions				import Exit
+from Base.Exceptions			import *
+from Base.Logging					import Logger, Severity
+from Base.PoCBase					import CommandLineProgram
+from PoC.Entity						import *
+from Simulator						import *
+from Simulator.Exceptions	import *
 
 class Testbench(CommandLineProgram):
 	headLine = "The PoC-Library - Testbench Service Tool"
@@ -46,33 +47,40 @@ class Testbench(CommandLineProgram):
 	# configuration files
 	__tbConfigFileName = "configuration.ini"
 	
-	# configuration
-	tbConfig = None
-	
 	def __init__(self, debug, verbose, quiet):
-		super(self.__class__, self).__init__(debug, verbose, quiet)
-
-		if not ((self.platform == "Windows") or (self.platform == "Linux")):	raise PlatformNotSupportedException(self.platform)
+		if quiet:			severity = Severity.Quiet
+		elif debug:		severity = Severity.Debug
+		elif verbose:	severity = Severity.Verbose
+		else:					severity = Severity.Normal
 		
-		self.readTestbenchConfiguration()
+		logger =			Logger(self, severity, printToStdOut=True)
+		super(self.__class__, self).__init__(logger=logger)
+
+		if		(self.Platform == "Windows"):	pass
+		elif	(self.Platform == "Linux"):		pass
+		else:																						raise PlatformNotSupportedException(self.platform)
+		
+		self._config =			None
+		self.__ReadTestbenchConfiguration()
+	
 		
 	# read Testbench configuration
 	# ==========================================================================
-	def readTestbenchConfiguration(self):
+	def __ReadTestbenchConfiguration(self):
 		from configparser import ConfigParser, ExtendedInterpolation
 	
-		tbConfigFilePath = self.directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['TestbenchFiles'] / self.__tbConfigFileName
-		self.files["PoCTBConfig"] = tbConfigFilePath
+		tbConfigFilePath = self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['TestbenchFiles'] / self.__tbConfigFileName
+		self.Files["PoCTBConfig"] = tbConfigFilePath
 		
-		self.printDebug("Reading testbench configuration from '%s'" % str(tbConfigFilePath))
-		if not tbConfigFilePath.exists():	raise NotConfiguredException("PoC testbench configuration file does not exist. (%s)" % str(tbConfigFilePath))
+		self._LogDebug("Reading testbench configuration from '{0}'".format(str(tbConfigFilePath)))
+		if not tbConfigFilePath.exists():								raise NotConfiguredException("PoC testbench configuration file does not exist. ({0})".format(str(tbConfigFilePath)))
 			
 		self.tbConfig = ConfigParser(interpolation=ExtendedInterpolation())
 		self.tbConfig.optionxform = str
 		self.tbConfig.read([
-			str(self.files["PoCPrivateConfig"]),
-			str(self.files["PoCPublicConfig"]),
-			str(self.files["PoCTBConfig"])
+			str(self.Files["PoCPrivateConfig"]),
+			str(self.Files["PoCPublicConfig"]),
+			str(self.Files["PoCTBConfig"])
 		])
 	
 	def listSimulations(self, module):
@@ -92,15 +100,85 @@ class Testbench(CommandLineProgram):
 		
 		return("return ...")
 		return
+		
+	def aSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode):
+		# check if Aldec is configure
+		if (len(self.pocConfig.options("Aldec.ActiveHDL")) != 0):
+			# prepare some paths
+			self.Directories["aSimInstallation"] =	Path(self.pocConfig['Aldec.ActiveHDL']['InstallationDirectory'])
+			self.Directories["aSimBinary"] =				Path(self.pocConfig['Aldec.ActiveHDL']['BinaryDirectory'])
+		elif (len(self.pocConfig.options("Aldec.RivieraPRO")) != 0):
+			# prepare some paths
+			self.Directories["aSimInstallation"] =	Path(self.pocConfig['Aldec.RivieraPRO']['InstallationDirectory'])
+			self.Directories["aSimBinary"] =				Path(self.pocConfig['Aldec.RivieraPRO']['BinaryDirectory'])
+		else:
+			raise NotConfiguredException("Neither Aldec's Active-HDL nor Riviera PRO are configured on this system.")
+
+		self.Directories["aSimTemp"] =			self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['AldecSimulatorFiles']
+		
+		
+		# prepare vendor library path for Altera
+		if (len(self.pocConfig.options("Altera.QuartusII")) != 0):	self.Directories["AlteraPrimitiveSource"] =	Path(self.pocConfig['Altera.QuartusII']['InstallationDirectory'])	/ "eda/sim_lib"
+		# prepare vendor library path for Xilinx
+		if (len(self.pocConfig.options("Xilinx.ISE")) != 0):				self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])				/ "ISE/vhdl/src"
+		elif (len(self.pocConfig.options("Xilinx.Vivado")) != 0):		self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])		/ "data/vhdl/src"
+		
+		entityToSimulate = Entity(self, module)
+
+		simulator = AldecSimulator.Simulator(self, showLogs, showReport, vhdlVersion, guiMode)
+		simulator.run(entityToSimulate)
+		
+	def ghdlSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode):
+		# check if GHDL is configure
+		if (len(self.pocConfig.options("GHDL")) == 0):	raise NotConfiguredException("GHDL is not configured on this system.")
+		
+		# prepare some paths
+		self.Directories["GHDLTemp"] =					self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['GHDLSimulatorFiles']
+		self.Directories["GHDLPrecompiled"] =		self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['PrecompiledFiles'] / self.pocConfig['PoC.DirectoryNames']['GHDLSimulatorFiles']
+		self.Directories["GHDLInstallation"] =	Path(self.pocConfig['GHDL']['InstallationDirectory'])
+		self.Directories["GHDLBinary"] =				Path(self.pocConfig['GHDL']['BinaryDirectory'])
+		
+		# prepare vendor library path for Altera
+		if (len(self.pocConfig.options("Altera.QuartusII")) != 0):	self.Directories["AlteraPrimitiveSource"] =	Path(self.pocConfig['Altera.QuartusII']['InstallationDirectory'])	/ "eda/sim_lib"
+		# prepare vendor library path for Xilinx
+		if (len(self.pocConfig.options("Xilinx.ISE")) != 0):				self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])				/ "ISE/vhdl/src"
+		elif (len(self.pocConfig.options("Xilinx.Vivado")) != 0):		self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])		/ "data/vhdl/src"
+		
+		entityToSimulate = Entity(self, module)
+
+		# create a GHDLSimulator instance
+		simulator = GHDLSimulator.Simulator(self, showLogs, showReport, guiMode)
+		# prepare the simulator
+		ghdlBinaryPath =	self.Directories["GHDLBinary"]
+		ghdlVersion =			self.pocConfig['GHDL']['Version']
+		ghdlBackend =			self.pocConfig['GHDL']['Backend']
+		simulator.PrepareSimulator(ghdlBinaryPath, ghdlVersion, ghdlBackend)
+		
+		# run a testbench
+		simulator.Run(entityToSimulate, boardName="KC705", deviceName=None, vhdlVersion=vhdlVersion, vhdlGenerics=None)
+		
+		if (guiMode == True):
+			# prepare paths for GTKWave, if configured
+			if (len(self.pocConfig.options("GTKWave")) != 0):		
+				self.Directories["GTKWInstallation"] =	Path(self.pocConfig['GTKWave']['InstallationDirectory'])
+				self.Directories["GTKWBinary"] =				Path(self.pocConfig['GTKWave']['BinaryDirectory'])
+			else:
+				raise NotConfiguredException("No GHDL compatible waveform viewer is configured on this system.")
+			
+			viewer = simulator.GetViewer()
+			viewer.View(entityToSimulate)
 	
 	def iSimSimulation(self, module, showLogs, showReport, guiMode):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx.ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
 		
 		# prepare some paths
-		self.directories["ISEInstallation"] = 			Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])
-		self.directories["ISEBinary"] =							Path(self.pocConfig['Xilinx.ISE']['BinaryDirectory'])
-		self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory']) / "ISE/vhdl/src"
+		self.Directories["iSimFiles"] =							self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['ISESimulatorFiles']
+		self.Directories["iSimTemp"] =							self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['ISESimulatorFiles']
+		
+		self.Directories["ISEInstallation"] = 			Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])
+		self.Directories["ISEBinary"] =							Path(self.pocConfig['Xilinx.ISE']['BinaryDirectory'])
+		self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory']) / "ISE/vhdl/src"
 		
 		# check if the appropriate environment is loaded
 		from os import environ
@@ -111,97 +189,47 @@ class Testbench(CommandLineProgram):
 		simulator = ISESimulator.Simulator(self, showLogs, showReport, guiMode)
 		simulator.run(entityToSimulate)
 
+	def vSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode):
+		# check if QuestaSim is configure
+		if (len(self.pocConfig.options("Mentor.QuestaSim")) != 0):
+			# prepare some paths
+			self.Directories["vSimInstallation"] =	Path(self.pocConfig['Mentor.QuestaSim']['InstallationDirectory'])
+			self.Directories["vSimBinary"] =				Path(self.pocConfig['Mentor.QuestaSim']['BinaryDirectory'])
+		elif (len(self.pocConfig.options("Altera.ModelSim")) != 0):
+			# prepare some paths
+			self.Directories["vSimInstallation"] =	Path(self.pocConfig['Altera.ModelSim']['InstallationDirectory'])
+			self.Directories["vSimBinary"] =				Path(self.pocConfig['Altera.ModelSim']['BinaryDirectory'])
+		else:
+			raise NotConfiguredException("Neither Mentor Graphics QuestaSim nor ModelSim are configured on this system.")
+
+		self.Directories["vSimTemp"] =			self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['ModelSimSimulatorFiles']
+
+		# prepare vendor library path for Altera
+		if (len(self.pocConfig.options("Altera.QuartusII")) != 0):	self.Directories["AlteraPrimitiveSource"] =	Path(self.pocConfig['Altera.QuartusII']['InstallationDirectory'])	/ "eda/sim_lib"
+		# prepare vendor library path for Xilinx
+		if (len(self.pocConfig.options("Xilinx.ISE")) != 0):				self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])				/ "ISE/vhdl/src"
+		elif (len(self.pocConfig.options("Xilinx.Vivado")) != 0):		self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])		/ "data/vhdl/src"
+		
+		entityToSimulate = Entity(self, module)
+
+		logger = Logger(self, Severity.All, printToStdOut=True)
+		simulator = QuestaSimulator.Simulator(self, showLogs, showReport, guiMode, logger=logger)
+		simulator.Run(entityToSimulate, vhdlVersion, "KC705")
+
 	def xSimSimulation(self, module, showLogs, showReport, guiMode):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx.Vivado")) == 0):	raise NotConfiguredException("Xilinx Vivado is not configured on this system.")
 
 		# prepare some paths
-		self.directories["VivadoInstallation"] =		Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])
-		self.directories["VivadoBinary"] =					Path(self.pocConfig['Xilinx.Vivado']['BinaryDirectory'])
-		self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory']) / "data/vhdl/src"
+		self.Directories["xSimTemp"] =							self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['VivadoSimulatorFiles']
+		self.Directories["VivadoInstallation"] =		Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])
+		self.Directories["VivadoBinary"] =					Path(self.pocConfig['Xilinx.Vivado']['BinaryDirectory'])
+		self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory']) / "data/vhdl/src"
 		
 		entityToSimulate = Entity(self, module)
 
 		simulator = VivadoSimulator.Simulator(self, showLogs, showReport, guiMode)
 		simulator.run(entityToSimulate)
-
-	def vSimSimulation(self, module, showLogs, showReport, vhdlStandard, guiMode):
-		# check if QuestaSim is configure
-		if (len(self.pocConfig.options("Mentor.QuestaSim")) != 0):
-			# prepare some paths
-			self.directories["vSimInstallation"] =	Path(self.pocConfig['Mentor.QuestaSim']['InstallationDirectory'])
-			self.directories["vSimBinary"] =				Path(self.pocConfig['Mentor.QuestaSim']['BinaryDirectory'])
-		elif (len(self.pocConfig.options("Altera.ModelSim")) != 0):
-			# prepare some paths
-			self.directories["vSimInstallation"] =	Path(self.pocConfig['Altera.ModelSim']['InstallationDirectory'])
-			self.directories["vSimBinary"] =				Path(self.pocConfig['Altera.ModelSim']['BinaryDirectory'])
-		else:
-			raise NotConfiguredException("Neither Mentor Graphics QuestaSim nor ModelSim are configured on this system.")
-
-		# prepare vendor library path for Altera
-		if (len(self.pocConfig.options("Altera.QuartusII")) != 0):	self.directories["AlteraPrimitiveSource"] =	Path(self.pocConfig['Altera.QuartusII']['InstallationDirectory'])	/ "eda/sim_lib"
-		# prepare vendor library path for Xilinx
-		if (len(self.pocConfig.options("Xilinx.ISE")) != 0):				self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])				/ "ISE/vhdl/src"
-		elif (len(self.pocConfig.options("Xilinx.Vivado")) != 0):		self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])		/ "data/vhdl/src"
-		
-		entityToSimulate = Entity(self, module)
-
-		simulator = QuestaSimulator.Simulator(self, showLogs, showReport, vhdlStandard, guiMode)
-		simulator.run(entityToSimulate)
-		
-	def aSimSimulation(self, module, showLogs, showReport, vhdlStandard, guiMode):
-		# check if Aldec is configure
-		if (len(self.pocConfig.options("Aldec.ActiveHDL")) != 0):
-			# prepare some paths
-			self.directories["aSimInstallation"] =	Path(self.pocConfig['Aldec.ActiveHDL']['InstallationDirectory'])
-			self.directories["aSimBinary"] =				Path(self.pocConfig['Aldec.ActiveHDL']['BinaryDirectory'])
-		elif (len(self.pocConfig.options("Aldec.RivieraPRO")) != 0):
-			# prepare some paths
-			self.directories["aSimInstallation"] =	Path(self.pocConfig['Aldec.RivieraPRO']['InstallationDirectory'])
-			self.directories["aSimBinary"] =				Path(self.pocConfig['Aldec.RivieraPRO']['BinaryDirectory'])
-		else:
-			raise NotConfiguredException("Neither Aldec's Active-HDL nor Riviera PRO are configured on this system.")
-
-		# prepare vendor library path for Altera
-		if (len(self.pocConfig.options("Altera.QuartusII")) != 0):	self.directories["AlteraPrimitiveSource"] =	Path(self.pocConfig['Altera.QuartusII']['InstallationDirectory'])	/ "eda/sim_lib"
-		# prepare vendor library path for Xilinx
-		if (len(self.pocConfig.options("Xilinx.ISE")) != 0):				self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])				/ "ISE/vhdl/src"
-		elif (len(self.pocConfig.options("Xilinx.Vivado")) != 0):		self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])		/ "data/vhdl/src"
-		
-		entityToSimulate = Entity(self, module)
-
-		simulator = AldecSimulator.Simulator(self, showLogs, showReport, vhdlStandard, guiMode)
-		simulator.run(entityToSimulate)
-		
-	def ghdlSimulation(self, module, showLogs, showReport, vhdlStandard, guiMode):
-		# check if GHDL is configure
-		if (len(self.pocConfig.options("GHDL")) == 0):	raise NotConfiguredException("GHDL is not configured on this system.")
-		
-		# prepare some paths
-		self.directories["GHDLInstallation"] =	Path(self.pocConfig['GHDL']['InstallationDirectory'])
-		self.directories["GHDLBinary"] =				Path(self.pocConfig['GHDL']['BinaryDirectory'])
-		
-		# prepare vendor library path for Altera
-		if (len(self.pocConfig.options("Altera.QuartusII")) != 0):	self.directories["AlteraPrimitiveSource"] =	Path(self.pocConfig['Altera.QuartusII']['InstallationDirectory'])	/ "eda/sim_lib"
-		# prepare vendor library path for Xilinx
-		if (len(self.pocConfig.options("Xilinx.ISE")) != 0):				self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])				/ "ISE/vhdl/src"
-		elif (len(self.pocConfig.options("Xilinx.Vivado")) != 0):		self.directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])		/ "data/vhdl/src"
-		
-		# prepare paths for GTKWave, if configured
-		if (len(self.pocConfig.options("GTKWave")) != 0):		
-			self.directories["GTKWInstallation"] =	Path(self.pocConfig['GTKWave']['InstallationDirectory'])
-			self.directories["GTKWBinary"] =				Path(self.pocConfig['GTKWave']['BinaryDirectory'])
-		elif guiMode:
-			raise NotConfiguredException("No GHDL compatible waveform viewer is configured on this system.")
-		
-		entityToSimulate = Entity(self, module)
-
-		logger = GHDLSimulator.Logger(self, GHDLSimulator.Severity.All, printToStdOut=True)
-		simulator = GHDLSimulator.Simulator(self, showLogs, showReport, guiMode, logger=logger)
-		simulator.Run(entityToSimulate, vhdlStandard, "KC705")
-		
-		if (guiMode == True):
-			simulator.View(entityToSimulate)
 
 # main program
 def main():
@@ -274,31 +302,31 @@ def main():
 			test.xSimSimulation(args.xsim, args.showLog, args.showReport, xSimGUIMode)
 		elif (args.vsim is not None):
 			if ((args.std is not None) and (args.std in ["87","93","02","08"])):
-				vhdlStandard =	args.std
+				vhdlVersion =	args.std
 			else:
-				vhdlStandard =	"93"
+				vhdlVersion =	"93"
 			
 			vSimGUIMode =			args.gui
 			
-			test.vSimSimulation(args.vsim, args.showLog, args.showReport, vhdlStandard, vSimGUIMode)
+			test.vSimSimulation(args.vsim, args.showLog, args.showReport, vhdlVersion, vSimGUIMode)
 		elif (args.asim is not None):
 			if ((args.std is not None) and (args.std in ["87","93","02","08"])):
-				vhdlStandard =	args.std
+				vhdlVersion =	args.std
 			else:
-				vhdlStandard =	"93"
+				vhdlVersion =	"93"
 			
 			aSimGUIMode =			args.gui
 			
-			test.aSimSimulation(args.asim, args.showLog, args.showReport, vhdlStandard, aSimGUIMode)
+			test.aSimSimulation(args.asim, args.showLog, args.showReport, vhdlVersion, aSimGUIMode)
 		elif (args.ghdl is not None):
 			if ((args.std is not None) and (args.std in ["87","93","02","08"])):
-				vhdlStandard =	args.std
+				vhdlVersion =	args.std
 			else:
-				vhdlStandard =	"93"
+				vhdlVersion =	"93"
 			
 			ghdlGUIMode =			args.gui
 			
-			test.ghdlSimulation(args.ghdl, args.showLog, args.showReport, vhdlStandard, ghdlGUIMode)
+			test.ghdlSimulation(args.ghdl, args.showLog, args.showReport, vhdlVersion, ghdlGUIMode)
 		else:
 			argParser.print_help()
 	

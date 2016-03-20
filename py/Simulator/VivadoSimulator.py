@@ -15,7 +15,7 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2015 Technische Universitaet Dresden - Germany
+# Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,6 +41,7 @@ else:
 
 # load dependencies
 from pathlib import Path
+from os											import chdir
 
 from Base.Exceptions import *
 from Simulator.Base import PoCSimulator 
@@ -58,14 +59,41 @@ class Simulator(PoCSimulator):
 
 		self.__guiMode =					guiMode
 
-		if (host.platform == "Windows"):
-			self.__executables['xElab'] =		"xelab.bat"
-			self.__executables['xSim'] =		"xsim.bat"
-		elif (host.platform == "Linux"):
-			self.__executables['xElab'] =		"xelab"
-			self.__executables['xSim'] =		"xsim"
-		else:
-			raise PlatformNotSupportedException(self.platform)
+		self._PrepareSimulationEnvironment()
+		self._PrepareSimulator()
+
+	@property
+	def TemporaryPath(self):
+		return self._tempPath
+
+	def _PrepareSimulationEnvironment(self):
+		self._LogNormal("  preparing simulation environment...")
+		
+		# create temporary directory for ghdl if not existent
+		self._tempPath = self.Host.directories["xSimTemp"]
+		if (not (self._tempPath).exists()):
+			self._LogVerbose("    Creating temporary directory for simulator files.")
+			self._LogDebug("     Temporary directors: {0}".format(str(self._tempPath)))
+			self._tempPath.mkdir(parents=True)
+			
+		# change working directory to temporary iSim path
+		self._LogVerbose("    cd \"{0}\"".format(str(self._tempPath)))
+		chdir(str(self._tempPath))
+
+	def _PrepareSimulator(self):
+		xSimBinaryPath =	self.Host.directories["xSimBinary"]
+		xSimVersion =			self.Host.pocConfig['xSim']['Version']
+		
+		# self._xSim =			VivadoSimulatorExecutable(self.Host.platform, xSimBinary, xSimVersion)
+
+		# if (self._host.platform == "Windows"):
+			# self.__executables['xElab'] =		"xelab.bat"
+			# self.__executables['xSim'] =		"xsim.bat"
+		# elif (self._host.platform == "Linux"):
+			# self.__executables['xElab'] =		"xelab"
+			# self.__executables['xSim'] =		"xsim"
+		# else:
+			# raise PlatformNotSupportedException(self.platform)
 		
 	def run(self, pocEntity):
 		import os
@@ -77,26 +105,26 @@ class Simulator(PoCSimulator):
 		
 		
 		# create temporary directory for xSim if not existent
-		tempXSimPath = self.host.directories["xSimTemp"]
+		tempXSimPath = self.Host.directories["xSimTemp"]
 		if not (tempXSimPath).exists():
 			self.printVerbose("Creating temporary directory for simulator files.")
 			self.printDebug("Temporary directors: %s" % str(tempXSimPath))
 			tempXSimPath.mkdir(parents=True)
 
 		# setup all needed paths to execute elab
-		#vhpcompExecutablePath =	self.host.directories["VivadoBinary"] / self.__executables['vhpcomp']
-		xelabExecutablePath =		self.host.directories["VivadoBinary"] / self.__executables['xElab']
-		xSimExecutablePath =		self.host.directories["VivadoBinary"] / self.__executables['xSim']
+		#vhpcompExecutablePath =	self.Host.directories["VivadoBinary"] / self.__executables['vhpcomp']
+		xelabExecutablePath =		self.Host.directories["VivadoBinary"] / self.__executables['xElab']
+		xSimExecutablePath =		self.Host.directories["VivadoBinary"] / self.__executables['xSim']
 		
-		if not self.host.tbConfig.has_section(str(pocEntity)):
+		if not self.Host.tbConfig.has_section(str(pocEntity)):
 			from configparser import NoSectionError
 			raise SimulatorException("Testbench '" + str(pocEntity) + "' not found.") from NoSectionError(str(pocEntity))
 		
-		testbenchName =			self.host.tbConfig[str(pocEntity)]['TestbenchModule']
-		fileListFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
-		tclBatchFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['xSimBatchScript']
-		tclGUIFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['xSimGUIScript']
-		wcfgFilePath =			self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['xSimWaveformConfigFile']
+		testbenchName =			self.Host.tbConfig[str(pocEntity)]['TestbenchModule']
+		fileListFilePath =	self.Host.directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['fileListFile']
+		tclBatchFilePath =	self.Host.directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['xSimBatchScript']
+		tclGUIFilePath =		self.Host.directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['xSimGUIScript']
+		wcfgFilePath =			self.Host.directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['xSimWaveformConfigFile']
 		prjFilePath =				tempXSimPath / (testbenchName + ".prj")
 		xelabLogFilePath =	tempXSimPath / (testbenchName + ".xelab.log")
 		xSimLogFilePath =		tempXSimPath / (testbenchName + ".xsim.log")
@@ -175,21 +203,21 @@ class Simulator(PoCSimulator):
 					elif (filesLineRegExpMatch.group('Keyword') is not None):
 						if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
 							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-							vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
+							vhdlFilePath = self.Host.directories["PoCRoot"] / vhdlFileName
 						elif (filesLineRegExpMatch.group('Keyword')[0:5] == "vhdl-"):
 							if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
 								vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-								vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
+								vhdlFilePath = self.Host.directories["PoCRoot"] / vhdlFileName
 							else:
 								continue
 						elif (filesLineRegExpMatch.group('Keyword') == "altera"):
 							self.printVerbose("    skipped Altera specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
 							# vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-							# vhdlFilePath = self.host.directories["XilinxPrimitiveSource"] / vhdlFileName
+							# vhdlFilePath = self.Host.directories["XilinxPrimitiveSource"] / vhdlFileName
 						elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
 							self.printVerbose("    skipped Xilinx specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
 							# vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-							# vhdlFilePath = self.host.directories["XilinxPrimitiveSource"] / vhdlFileName
+							# vhdlFilePath = self.Host.directories["XilinxPrimitiveSource"] / vhdlFileName
 						else:
 							raise SimulatorException("Unknown keyword in *files file.")
 					

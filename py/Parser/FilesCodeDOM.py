@@ -276,6 +276,96 @@ class VerilogStatement(Statement):
 	def __str__(self, indent=0):
 		_indent = "  " * indent
 		return "{0}Verilog \"{1}\"".format(_indent, self._fileName)
+	
+class CocotbStatement(Statement):
+	def __init__(self, fileName, moduleName, commentText):
+		super().__init__()
+		self._fileName =		fileName
+		self._moduleName =	moduleName
+		self._commentText =	commentText
+	
+	@property
+	def FileName(self):
+		return self._fileName
+		
+	@property
+	def ModuleName(self):
+		return self._moduleName
+	
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init CocotbParser")
+	
+		# match for optional whitespace
+		token = yield
+		if isinstance(token, SpaceToken):						token = yield
+	
+		# match for keyword: COCOTB
+		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("CocotbParser: Expected COCOTB keyword.")
+		if (token.Value.lower() != "cocotb"):				raise MismatchingParserResult("CocotbParser: Expected COCOTB keyword.")
+		
+		print("found cocotb")
+		
+		# match for whitespace
+		token = yield
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("CocotbParser: Expected whitespace before Verilog fileName.")
+		
+		# match for delimiter sign: "
+		token = yield
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("CocotbParser: Expected double quote sign before Verilog fileName.")
+		if (token.Value.lower() != "\""):						raise MismatchingParserResult("CocotbParser: Expected double quote sign before Verilog fileName.")
+		
+		# match for string: fileName
+		fileName = ""
+		while True:
+			token = yield
+			if isinstance(token, CharacterToken):
+				if (token.Value == "\""):
+					break
+			fileName += token.Value
+		# match for whitespace
+		token = yield
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("CocotbParser: Expected whitespace before CoCoTB module name.")
+		# match for module name
+		moduleName = ""
+		while True:
+			token = yield
+			if isinstance(token, StringToken):				moduleName += token.Value
+			elif isinstance(token, NumberToken):			moduleName += token.Value
+			elif isinstance(token, CharacterToken):
+				if (token.Value == "_"):
+					moduleName += token.Value
+				else:
+					break
+			else:
+				break
+		
+		# match for optional whitespace
+		if isinstance(token, SpaceToken):						token = yield
+		# match for delimiter sign: \n
+		commentText = ""
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("CocotbParser: Expected end of line or comment")
+		if (token.Value == "\n"):
+			pass
+		elif (token.Value == "#"):
+			# match for any until line end
+			while True:
+				token = yield
+				if isinstance(token, CharacterToken):
+					if (token.Value == "\n"): break
+				commentText += token.Value
+		else:
+			raise MismatchingParserResult("CocotbParser: Expected end of line or comment")
+		
+		# construct result
+		result = cls(fileName, moduleName, commentText)
+		if DEBUG: pass
+		print("CocotbParser: matched {0}".format(result))
+		raise MatchingParserResult(result)
+		
+	def __str__(self, indent=0):
+		_indent = "  " * indent
+		return "{0}CoCoTB \"{1}\"::{2}".format(_indent, self._fileName, self._moduleName)
 		
 class ReportStatement(Statement):
 	def __init__(self, message, commentText):
@@ -916,6 +1006,7 @@ BlockedStatement.AddChoice(IncludeStatement)
 BlockedStatement.AddChoice(LibraryStatement)
 BlockedStatement.AddChoice(VHDLStatement)
 BlockedStatement.AddChoice(VerilogStatement)
+BlockedStatement.AddChoice(CocotbStatement)
 BlockedStatement.AddChoice(ReportStatement)
 BlockedStatement.AddChoice(IfElseIfElseStatement)
 BlockedStatement.AddChoice(CommentLine)

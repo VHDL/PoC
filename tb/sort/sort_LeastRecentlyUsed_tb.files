@@ -16,4 +16,8 @@ include				"src/sim/sim.files"													# load simulation helper packages
 include				"src/sort/sort_LeastRecentlyUsed.files"			# UUT (Unit Under Test)
 
 # Testbench file(s)
-vhdl		test	"tb/sort/sort_LeastRecentlyUsed_tb.vhdl"		# Testbench
+if (0 <= 1) then
+	cocotb			"tb/sort/sort_LeastRecentlyUsed_cocotb.py"
+else
+	vhdl		test	"tb/sort/sort_LeastRecentlyUsed_tb.vhdl"		# Testbench
+end if

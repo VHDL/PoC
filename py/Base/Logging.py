@@ -1,0 +1,178 @@
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# vim: tabstop=2:shiftwidth=2:noexpandtab
+# kate: tab-width 2; replace-tabs off; indent-width 2;
+# 
+# ==============================================================================
+# Python Class:			TODO
+# 
+# Authors:				 	Patrick Lehmann
+# 
+# Description:
+# ------------------------------------
+#		TODO:
+#		- 
+#		- 
+#
+# License:
+# ==============================================================================
+# Copyright 2007-2016 Technische Universitaet Dresden - Germany
+#											Chair for VLSI-Design, Diagnostics and Architecture
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#		http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+#
+# entry point
+if __name__ != "__main__":
+	# place library initialization code here
+	pass
+else:
+	from lib.Functions import Exit
+	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Base.PoCBase")
+
+from colorama								import Fore as Foreground
+from enum										import Enum, unique
+	
+@unique
+class Severity(Enum):
+	Fatal =			30
+	Error =			20
+	Warning =		15
+	Info =			10
+	Quiet =			 5
+	Normal =		 4
+	Verbose =		 2
+	Debug =			 1
+	All =				 0
+	
+	def __eq__(self, other):		return self.value ==	other.value
+	def __ne__(self, other):		return self.value !=	other.value
+	def __lt__(self, other):		return self.value <		other.value
+	def __le__(self, other):		return self.value <=	other.value
+	def __gt__(self, other):		return self.value >		other.value
+	def __ge__(self, other):		return self.value >=	other.value
+	
+
+class LogEntry:
+	def __init__(self, severity, message):
+		self._severity =	severity
+		self._message =		message
+	
+	@property
+	def Severity(self):
+		return self._severity
+	
+	@property
+	def Message(self):
+		return self._message
+	
+	def __str__(self):
+		if (self._severity is Severity.Fatal):			return "FATAL: " +		self._message
+		elif (self._severity is Severity.Error):		return "ERROR: " +		self._message
+		elif (self._severity is Severity.Warning):	return "WARNING: " +	self._message
+		elif (self._severity is Severity.Info):			return "INFO: " +			self._message
+		elif (self._severity is Severity.Quiet):		return 								self._message
+		elif (self._severity is Severity.Normal):		return 								self._message
+		elif (self._severity is Severity.Verbose):	return "VERBOSE: " +	self._message
+		elif (self._severity is Severity.Debug):		return "DEBUG: " +		self._message
+
+class Logger:
+	def __init__(self, host, logLevel, printToStdOut=True):
+		self._host =					host
+		self._logLevel =			logLevel
+		self._printToStdOut =	printToStdOut
+		self._entries =				[]
+	
+	@property
+	def LogLevel(self):
+		return self._logLevel
+	@LogLevel.setter
+	def LogLevel(self, value):
+		self._logLevel = value
+	
+	def Write(self, entry):
+		if (entry.Severity >= self._logLevel):
+			self._entries.append(entry)
+			if self._printToStdOut:
+				if (entry.Severity is Severity.Fatal):			print("{0}{1}{2}".format(Foreground.RED, entry.Message, Foreground.RESET))
+				elif (entry.Severity is Severity.Error):		print("{0}{1}{2}".format(Foreground.LIGHTRED_EX, entry.Message, Foreground.RESET))
+				elif (entry.Severity is Severity.Warning):	print("{0}{1}{2}".format(Foreground.LIGHTYELLOW_EX, entry.Message, Foreground.RESET))
+				elif (entry.Severity is Severity.Info):			print("{0}{1}{2}".format(Foreground.CYAN, entry.Message, Foreground.RESET))
+				elif (entry.Severity is Severity.Quiet):		print(entry.Message + "......")
+				elif (entry.Severity is Severity.Normal):		print(entry.Message)
+				elif (entry.Severity is Severity.Verbose):	print("{0}{1}{2}".format(Foreground.WHITE, entry.Message, Foreground.RESET))
+				elif (entry.Severity is Severity.Debug):		print("{0}{1}{2}".format(Foreground.LIGHTBLACK_EX, entry.Message, Foreground.RESET))
+	
+	def WriteFatal(self, message):
+		self.Write(LogEntry(Severity.Fatal, message))
+	
+	def WriteError(self, message):
+		self.Write(LogEntry(Severity.Error, message))
+	
+	def WriteWarning(self, message):
+		self.Write(LogEntry(Severity.Warning, message))
+	
+	def WriteInfo(self, message):
+		self.Write(LogEntry(Severity.Info, message))
+	
+	def WriteQuiet(self, message):
+		self.Write(LogEntry(Severity.Quiet, message))
+	
+	def WriteNormal(self, message):
+		self.Write(LogEntry(Severity.Normal, message))
+	
+	def WriteVerbose(self, message):
+		self.Write(LogEntry(Severity.Verbose, message))
+	
+	def WriteDebug(self, message):
+		self.Write(LogEntry(Severity.Debug, message))
+	
+		
+class ILogable:
+	def __init__(self, logger=None):
+		self.__logger = logger
+
+	@property
+	def Logger(self):
+		return self.__logger
+		
+	def _LogFatal(self, message):
+		if self.__logger is not None:
+			self.__logger.WriteFatal(message)
+
+	def _LogError(self, message):
+		if self.__logger is not None:
+			self.__logger.WriteError(message)
+	
+	def _LogWarning(self, message):
+		if self.__logger is not None:
+			self.__logger.WriteWarning(message)
+	
+	def _LogInfo(self, message):
+		if self.__logger is not None:
+			self.__logger.WriteInfo(message)
+	
+	def _LogQuiet(self, message):
+		if self.__logger is not None:
+			self.__logger.WriteQuiet(message)
+	
+	def _LogNormal(self, message):
+		if self.__logger is not None:
+			self.__logger.WriteNormal(message)
+	
+	def _LogVerbose(self, message):
+		if self.__logger is not None:
+			self.__logger.WriteVerbose(message)
+	
+	def _LogDebug(self, message):
+		if self.__logger is not None:
+			self.__logger.WriteDebug(message)

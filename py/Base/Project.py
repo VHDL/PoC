@@ -121,6 +121,7 @@ class Project():
 		self._rootDirectory =					None
 		self._fileSets =							{}
 		self._defaultFileSet =				None
+		self._vhdlLibraries =					{}
 		self._externalVHDLLibraries = []
 		
 		self._board =									None
@@ -274,6 +275,20 @@ class Project():
 			if (file.FileType == fileType):
 				yield file
 	
+	def _ResolveVHDLLibraries(self):
+		for file in self.Files(fileType=FileTypes.VHDLSourceFile):
+			libraryName = file.VHDLLibraryName.lower()
+			if libraryName not in self._vhdlLibraries:
+				self._vhdlLibraries[libraryName] = library =	VHDLLibrary(libraryName)
+			else:
+				library = self._vhdlLibraries[libraryName]
+			library.AddFile(file)
+			file.VHDLLibrary = library
+	
+	@property
+	def VHDLLibraries(self):
+		return self._vhdlLibraries.values()
+	
 	@property
 	def ExternalVHDLLibraries(self):
 		return self._externalVHDLLibraries
@@ -296,15 +311,20 @@ class Project():
 		_indent = "  " * indent
 		buffer =	_indent + "Project: {0}\n".format(self.Name)
 		buffer +=	_indent + "o-Settings:\n"
-		buffer +=	_indent + "|   Board: {0}\n".format(self._board.Name)
-		buffer +=	_indent + "|   Device: {0}\n".format(self._device.Name)
+		buffer +=	_indent + "| o-Board: {0}\n".format(self._board.Name)
+		buffer +=	_indent + "| o-Device: {0}\n".format(self._device.Name)
 		for fileSet in self.FileSets:
 			buffer += _indent + "o-FileSet: {0}\n".format(fileSet.Name)
 			for file in fileSet.Files:
-				buffer += _indent + "|   {0}\n".format(file.FileName)
-		buffer += _indent + "o-Libraries:\n"
+				buffer += _indent + "| o-{0}\n".format(file.FileName)
+		buffer += _indent + "o-VHDL Libraries:\n"
+		for lib in self.VHDLLibraries:
+			buffer += _indent + "| o-{0}\n".format(lib.Name)
+			for file in lib.Files:
+				buffer += _indent + "| | o-{0}\n".format(file.Path)
+		buffer += _indent + "o-External VHDL libraries:\n"
 		for lib in self._externalVHDLLibraries:
-			buffer += _indent + "|   {0} -> {1}\n".format(lib, "")
+			buffer += _indent + "| o-{0} -> {1}\n".format(lib.Name, lib.Path)
 		return buffer
 	
 	def __str__(self):
@@ -364,6 +384,37 @@ class FileSet:
 	def __str__(self):
 		return self._name
 
+class VHDLLibrary:
+	def __init__(self, name, project = None):
+		self._name =		name
+		self._project =	project
+		self._files =		[]
+	
+	@property
+	def Name(self):
+		return self._name
+	
+	@property
+	def Project(self):
+		return self._project
+	
+	@Project.setter
+	def Project(self, value):
+		if not isinstance(value, Project):							raise ValueError("Parameter 'value' is not of type Base.Project.Project.")
+		self._project = value
+	
+	@property
+	def Files(self):
+		return self._files
+	
+	def AddFile(self, file):
+		if (not isinstance(file, VHDLSourceFile)):			raise ValueError("Unsupported parameter type for 'file'.")
+		file.VHDLLibrary = self
+		self._files.append(file)
+		
+	def __str__(self):
+		return self._name
+		
 class File():
 	def __init__(self, file, project = None, fileSet = None):
 		self._handle =	None
