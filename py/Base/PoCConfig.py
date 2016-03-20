@@ -215,7 +215,7 @@ class Packages(Enum):
 	RF =			33
 	
 	def __str__(self):
-		if (self == Packages.Unknown):
+		if (self is Packages.Unknown):
 			return "??"
 		else:
 			return self.name
@@ -243,15 +243,15 @@ class Device:
 		
 		# vendor = Xilinx
 		if (deviceString[0:2].lower() == "xc"):		# xc - Xilinx Commercial
-			self.vendor =			Vendors.Xilinx
-			self.generation = int(deviceString[2:3])
+			self.__vendor =			Vendors.Xilinx
+			self.__generation = int(deviceString[2:3])
 
 			temp = deviceString[3:4].lower()
-			if	 (temp == Families.Artix.Token):		self.family = Families.Artix
-			elif (temp == Families.Kintex.Token):		self.family = Families.Kintex
-			elif (temp == Families.Spartan.Token):	self.family = Families.Spartan
-			elif (temp == Families.Virtex.Token):		self.family = Families.Virtex
-			elif (temp == Families.Zynq.Token):			self.family = Families.Zynq
+			if	 (temp == Families.Artix.Token):		self.__family = Families.Artix
+			elif (temp == Families.Kintex.Token):		self.__family = Families.Kintex
+			elif (temp == Families.Spartan.Token):	self.__family = Families.Spartan
+			elif (temp == Families.Virtex.Token):		self.__family = Families.Virtex
+			elif (temp == Families.Zynq.Token):			self.__family = Families.Zynq
 			else: raise Exception("Unknown device family.")
 
 			deviceRegExpStr =  r"(?P<st1>[a-z]{0,2})"				# device subtype - part 1
@@ -271,14 +271,14 @@ class Device:
 				# print("SubType: %s" % subtype)
 				
 				if (subtype != ""):
-					self.subtype =	SubTypes[subtype.upper()]
+					self.__subtype =	SubTypes[subtype.upper()]
 				else:
-					self.subtype =	SubTypes.NoSubType
+					self.__subtype =	SubTypes.NoSubType
 				
-				self.number =			int(deviceRegExpMatch.group('no'))
-				self.speedGrade =	int(deviceRegExpMatch.group('sg'))
-				self.package =		Packages[package.upper()]
-				self.pinCount =		int(deviceRegExpMatch.group('pins'))
+				self.__number =			int(deviceRegExpMatch.group('no'))
+				self.__speedGrade =	int(deviceRegExpMatch.group('sg'))
+				self.__package =		Packages[package.upper()]
+				self.__pinCount =		int(deviceRegExpMatch.group('pins'))
 			else:
 				raise BaseException("RegExp mismatch.")
 		
@@ -286,12 +286,12 @@ class Device:
 		
 		# vendor = Altera
 		if (deviceString[0:2].lower() == "ep"):
-			self.vendor =			Vendors.Altera
-			self.generation = int(deviceString[2:3])
+			self.__vendor =			Vendors.Altera
+			self.__generation = int(deviceString[2:3])
 
 			temp = deviceString[3:4].lower()
-			if	 (temp == Families.Cyclon.Token):		self.family = Families.Cyclon
-			elif (temp == Families.Stratix.Token):	self.family = Families.Stratix
+			if	 (temp == Families.Cyclon.Token):		self.__family = Families.Cyclon
+			elif (temp == Families.Stratix.Token):	self.__family = Families.Stratix
 
 #			deviceRegExpStr =  r"(?P<st1>[cfhlstx]{0,2})"			# device subtype - part 1
 #			deviceRegExpStr += r"(?P<no>\d{1,4})"							# device number
@@ -341,35 +341,35 @@ class Device:
 	# @CachedReadOnlyProperty
 	@property
 	def ShortName(self):
-		if (self.vendor == Vendors.Xilinx):
-			subtype = self.subtype.Groups
+		if (self.__vendor is Vendors.Xilinx):
+			subtype = self.__subtype.Groups
 			return "xc%i%s%s%s%s" % (
-				self.generation,
-				self.family.Token,
+				self.__generation,
+				self.__family.Token,
 				subtype[0],
-				"{num:03d}".format(num=self.number),
+				"{num:03d}".format(num=self.__number),
 				subtype[1]
 			)
-		elif (self.vendor == Vendors.Altera):
+		elif (self.__vendor is Vendors.Altera):
 			raise NotImplementedException("Device.ShortName() not implemented for vendor Altera")
 			return "ep...."
 	
 	# @CachedReadOnlyProperty
 	@property
 	def FullName(self):
-		if (self.vendor == Vendors.Xilinx):
-			subtype = self.subtype.Groups
+		if (self.__vendor is Vendors.Xilinx):
+			subtype = self.__subtype.Groups
 			return "xc%i%s%s%s%s%i%s%i" % (
-				self.generation,
-				self.family.Token,
+				self.__generation,
+				self.__family.Token,
 				subtype[0],
-				"{num:03d}".format(num=self.number),
+				"{num:03d}".format(num=self.__number),
 				subtype[1],
-				self.speedGrade,
-				str(self.package),
-				self.pinCount
+				self.__speedGrade,
+				str(self.__package),
+				self.__pinCount
 			)
-		elif (self.vendor == Vendors.Altera):
+		elif (self.__vendor is Vendors.Altera):
 			raise NotImplementedException("Device.FullName() not implemented for vendor Altera")
 			return "ep...."
 	
@@ -380,19 +380,19 @@ class Device:
 	# @CachedReadOnlyProperty
 	@property
 	def FamilyName(self):
-		if (self.family == Families.Zynq):
-			return str(self.family)
+		if (self.__family is Families.Zynq):
+			return str(self.__family)
 		else:
-			return str(self.family) + str(self.generation)
+			return str(self.__family) + str(self.__generation)
 	
 	# @CachedReadOnlyProperty
 	@property
 	def Series(self):
-		if (self.generation == 7):
-			if self.family in [Families.Artix, Families.Kintex, Families.Virtex, Families.Zynq]:
+		if (self.__generation == 7):
+			if self.__family in [Families.Artix, Families.Kintex, Families.Virtex, Families.Zynq]:
 				return "Series-7"
 		else:
-			return "{0}-{1}".format(str(self.family), self.generation)
+			return "{0}-{1}".format(str(self.__family), self.__generation)
 	
 	def _GetVariables(self):
 		result = {
