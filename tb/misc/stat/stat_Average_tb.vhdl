@@ -93,16 +93,16 @@ architecture tb of stat_Average_tb is
 	
 	type T_RESULT_VECTOR	is array(NATURAL range <>) of T_RESULT;
 	
-	constant RESULT				: T_RESULT_VECTOR		:= (
-		(Minimum => 3,	Count => 1),
-		(Minimum => 5,	Count => 3),
-		(Minimum => 7,	Count => 6),
-		(Minimum => 9,	Count => 1),
-		(Minimum => 10,	Count => 4),
-		(Minimum => 11,	Count => 2),
-		(Minimum => 12,	Count => 7),
-		(Minimum => 13,	Count => 3)
-	);
+	-- constant RESULT				: T_RESULT_VECTOR		:= (
+		-- (Minimum => 3,	Count => 1),
+		-- (Minimum => 5,	Count => 3),
+		-- (Minimum => 7,	Count => 6),
+		-- (Minimum => 9,	Count => 1),
+		-- (Minimum => 10,	Count => 4),
+		-- (Minimum => 11,	Count => 2),
+		-- (Minimum => 12,	Count => 7),
+		-- (Minimum => 13,	Count => 3)
+	-- );
 	
 	constant DATA_BITS		: POSITIVE				:= 8;
 	constant COUNTER_BITS	: POSITIVE				:= 16;
@@ -161,12 +161,12 @@ begin
 		end loop;
 
 		-- test result after all cycles
-		good	:= TRUE;
+		-- good	:= TRUE;
 --		good := (slv_and(Valids) = '1');
 --		for i in RESULT'range loop
 --			good	:= good and (RESULT(i).Minimum = unsigned(Minimums_slvv(i))) and (RESULT(i).Count = unsigned(Counts_slvv(i)));
 --		end loop;
-		simAssertion(good, "Test failed.");
+		-- simAssertion(good, "Test failed.");
 
 		-- This process is finished
 		simDeactivateProcess(simProcessID);
