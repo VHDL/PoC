@@ -7,6 +7,7 @@
 # PoC.arith
 vhdl    poc   "src/arith/arith.pkg.vhdl"														# Arithmetic package
 if (DeviceVendor = "Xilinx") then
-	vhdl   poc   "src/arith/xilinx/arith_carrychain_inc_xilinx.vhdl"	# Xilinx specific carry-chain abstraction
+	include			"lib/Xilinx.files"																		# 
+	vhdl   poc  "src/arith/xilinx/arith_carrychain_inc_xilinx.vhdl"		# Xilinx specific carry-chain abstraction
 end if
 vhdl    poc   "src/arith/arith_carrychain_inc.vhdl"									# Carry-chain abstraction for increment by one operations
