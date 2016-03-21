@@ -39,6 +39,7 @@ from Base.Exceptions			import *
 from Base.Logging					import Logger, Severity
 from Base.PoCBase					import CommandLineProgram
 from PoC.Entity						import *
+from Parser.Parser				import ParserException
 from Simulator						import *
 from Simulator.Exceptions	import *
 
@@ -59,7 +60,7 @@ class Testbench(CommandLineProgram):
 
 		if		(self.Platform == "Windows"):	pass
 		elif	(self.Platform == "Linux"):		pass
-		else:																						raise PlatformNotSupportedException(self.platform)
+		else:																						raise PlatformNotSupportedException(self.Platform)
 		
 		self._config =			None
 		self.__ReadTestbenchConfiguration()
@@ -109,7 +110,7 @@ class Testbench(CommandLineProgram):
 		if (len(self.pocConfig.options("Xilinx.ISE")) != 0):				self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])				/ "ISE/vhdl/src"
 		elif (len(self.pocConfig.options("Xilinx.Vivado")) != 0):		self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])		/ "data/vhdl/src"
 	
-	def aSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode):
+	def aSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode, deviceString, boardString):
 		# check if Aldec tools are configure
 		if (len(self.pocConfig.options("Aldec.ActiveHDL")) != 0):
 			# prepare some paths
@@ -142,9 +143,19 @@ class Testbench(CommandLineProgram):
 		
 		# run a testbench
 		entityToSimulate = Entity(self, module)
-		simulator.Run(entityToSimulate, boardName="KC705", deviceName=None, vhdlVersion=vhdlVersion, vhdlGenerics=None)
+		if (boardString is not None):
+			boardName =		boardString
+			deviceName =	None
+		elif (deviceString is not None):
+			boardName =		"Custom"
+			deviceName =	deviceString
+		else:
+			boardName =		"Custom"
+			deviceName =	"Unknown"
 		
-	def ghdlSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode):
+		simulator.Run(entityToSimulate, boardName=boardName, deviceName=deviceName, vhdlVersion=vhdlVersion, vhdlGenerics=None)
+		
+	def ghdlSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode, deviceString, boardString):
 		# check if GHDL is configure
 		if (len(self.pocConfig.options("GHDL")) == 0):	raise NotConfiguredException("GHDL is not configured on this system.")
 		
@@ -167,7 +178,17 @@ class Testbench(CommandLineProgram):
 		
 		# run a testbench
 		entityToSimulate = Entity(self, module)
-		simulator.Run(entityToSimulate, boardName="KC705", deviceName=None, vhdlVersion=vhdlVersion, vhdlGenerics=None)
+		if (boardString is not None):
+			boardName =		boardString
+			deviceName =	None
+		elif (deviceString is not None):
+			boardName =		"Custom"
+			deviceName =	deviceString
+		else:
+			boardName =		"Custom"
+			deviceName =	"Unknown"
+		
+		simulator.Run(entityToSimulate, boardName=boardName, deviceName=deviceName, vhdlVersion=vhdlVersion, vhdlGenerics=None)
 		
 		if (guiMode == True):
 			# prepare paths for GTKWave, if configured
@@ -180,7 +201,7 @@ class Testbench(CommandLineProgram):
 			viewer = simulator.GetViewer()
 			viewer.View(entityToSimulate)
 	
-	def iSimSimulation(self, module, showLogs, showReport, guiMode):
+	def iSimSimulation(self, module, showLogs, showReport, guiMode, deviceString, boardString):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx.ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
 		if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
@@ -192,19 +213,29 @@ class Testbench(CommandLineProgram):
 		self.Directories["ISEInstallation"] = 			Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])
 		self.Directories["ISEBinary"] =							Path(self.pocConfig['Xilinx.ISE']['BinaryDirectory'])
 		self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory']) / "ISE/vhdl/src"
-		iSimVersion =																self.pocConfig['Xilinx.ISE']['Version']
+		iseVersion =																self.pocConfig['Xilinx.ISE']['Version']
 		
 		# create a ISESimulator instance
 		simulator = ISESimulator.Simulator(self, showLogs, showReport, guiMode)
 		# prepare the simulator
-		iSimBinaryPath =	self.Directories["iSimBinary"]
-		simulator.PrepareSimulator(iSimBinaryPath, iSimVersion)
+		iseBinaryPath =	self.Directories["ISEBinary"]
+		simulator.PrepareSimulator(iseBinaryPath, iseVersion)
 		
 		# run a testbench
 		entityToSimulate = Entity(self, module)
-		simulator.Run(entityToSimulate, boardName="KC705", deviceName=None, vhdlVersion=vhdlVersion, vhdlGenerics=None)
+		if (boardString is not None):
+			boardName =		boardString
+			deviceName =	None
+		elif (deviceString is not None):
+			boardName =		"Custom"
+			deviceName =	deviceString
+		else:
+			boardName =		"Custom"
+			deviceName =	"Unknown"
+		
+		simulator.Run(entityToSimulate, boardName=boardName, deviceName=deviceName, vhdlGenerics=None)
 
-	def vSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode):
+	def vSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode, deviceString, boardString):
 		# check if QuestaSim is configure
 		if (len(self.pocConfig.options("Mentor.QuestaSim")) != 0):
 			# prepare some paths
@@ -228,9 +259,19 @@ class Testbench(CommandLineProgram):
 		
 		# run a testbench
 		entityToSimulate = Entity(self, module)
-		simulator.Run(entityToSimulate, boardName="KC705", deviceName=None, vhdlVersion=vhdlVersion, vhdlGenerics=None)
+		if (boardString is not None):
+			boardName =		boardString
+			deviceName =	None
+		elif (deviceString is not None):
+			boardName =		"Custom"
+			deviceName =	deviceString
+		else:
+			boardName =		"Custom"
+			deviceName =	"Unknown"
+		
+		simulator.Run(entityToSimulate, boardName=boardName, deviceName=deviceName, vhdlVersion=vhdlVersion, vhdlGenerics=None)
 
-	def xSimSimulation(self, module, showLogs, showReport, guiMode):
+	def xSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode, deviceString, boardString):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx.Vivado")) == 0):	raise NotConfiguredException("Xilinx Vivado is not configured on this system.")
 
@@ -239,17 +280,27 @@ class Testbench(CommandLineProgram):
 		self.Directories["VivadoInstallation"] =		Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])
 		self.Directories["VivadoBinary"] =					Path(self.pocConfig['Xilinx.Vivado']['BinaryDirectory'])
 		self.Directories["XilinxPrimitiveSource"] =	Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory']) / "data/vhdl/src"
-		xSimVersion =																self.pocConfig['Xilinx.Vivado']['Version']
+		vivadoVersion =															self.pocConfig['Xilinx.Vivado']['Version']
 		
 		# create a VivadoSimulator instance
-		simulator = VivadoSimulator.Simulator(self, guiMode)
+		simulator = VivadoSimulator.Simulator(self, showLogs, showReport, guiMode)
 		# prepare the simulator
-		xSimBinaryPath =	self.Directories["GHDLBinary"]
-		simulator.PrepareSimulator(xSimBinaryPath, xSimVersion)
+		vivadoBinaryPath =	self.Directories["VivadoBinary"]
+		simulator.PrepareSimulator(vivadoBinaryPath, vivadoVersion)
 		
 		# run a testbench
 		entityToSimulate = Entity(self, module)
-		simulator.run(entityToSimulate)
+		if (boardString is not None):
+			boardName =		boardString
+			deviceName =	None
+		elif (deviceString is not None):
+			boardName =		"Custom"
+			deviceName =	deviceString
+		else:
+			boardName =		"Custom"
+			deviceName =	"Unknown"
+		
+		simulator.Run(entityToSimulate, boardName=boardName, deviceName=deviceName, vhdlVersion=vhdlVersion, vhdlGenerics=None)
 
 # main program
 def main():
@@ -285,16 +336,21 @@ def main():
 		group2 = argParser.add_argument_group('Commands')
 		group21 = group2.add_mutually_exclusive_group(required=True)
 		group21.add_argument('-h', '--help',								dest="help",				help='show this help message and exit',		action='store_const', const=True, default=False)
-		group21.add_argument('--list',	metavar="<Entity>",	dest="list",				help='list available testbenches')
-		group21.add_argument('--isim',	metavar="<Entity>",	dest="isim",				help='use Xilinx ISE Simulator (isim)')
-		group21.add_argument('--xsim',	metavar="<Entity>",	dest="xsim",				help='use Xilinx Vivado Simulator (xsim)')
-		group21.add_argument('--asim',	metavar="<Entity>",	dest="asim",				help='use Aldec Simulator (asim)')
-		group21.add_argument('--vsim',	metavar="<Entity>",	dest="vsim",				help='use Mentor Graphics Simulator (vsim)')
-		group21.add_argument('--ghdl',	metavar="<Entity>",	dest="ghdl",				help='use GHDL Simulator (ghdl)')
-		group3 = argParser.add_argument_group('Options')
-		group3.add_argument('--std',	metavar="<version>",	dest="std",					help='set VHDL standard [87,93,02,08]; default=93')
-#		group3.add_argument('-i', '--interactive',					dest="interactive",	help='start simulation in interactive mode',	action='store_const', const=True, default=False)
-		group3.add_argument('-g', '--gui',									dest="gui",					help='start simulation in gui mode',					action='store_const', const=True, default=False)
+		group211 = group21.add_mutually_exclusive_group()
+		group211.add_argument('--list',	metavar="<Entity>",	dest="list",				help='list available testbenches')
+		group211.add_argument('--asim',	metavar="<Entity>",	dest="asim",				help='use Aldec Simulator (asim)')
+		group211.add_argument('--ghdl',	metavar="<Entity>",	dest="ghdl",				help='use GHDL Simulator (ghdl)')
+		group211.add_argument('--vsim',	metavar="<Entity>",	dest="vsim",				help='use Mentor Graphics Simulator (vsim)')
+		group211.add_argument('--isim',	metavar="<Entity>",	dest="isim",				help='use Xilinx ISE Simulator (isim)')
+		group211.add_argument('--xsim',	metavar="<Entity>",	dest="xsim",				help='use Xilinx Vivado Simulator (xsim)')
+		group3 = group211.add_argument_group('Specify target platform')
+		group31 = group3.add_mutually_exclusive_group()
+		group31.add_argument('--device',				metavar="<Device>",	dest="device",			help='target device (e.g. XC5VLX50T-1FF1136)')
+		group31.add_argument('--board',					metavar="<Board>",	dest="board",				help='target board to infere the device (e.g. ML505)')
+		group4 = argParser.add_argument_group('Options')
+		group4.add_argument('--std',	metavar="<version>",	dest="std",					help='set VHDL standard [87,93,02,08]; default=93')
+#		group4.add_argument('-i', '--interactive',					dest="interactive",	help='start simulation in interactive mode',	action='store_const', const=True, default=False)
+		group4.add_argument('-g', '--gui',									dest="gui",					help='start simulation in gui mode',					action='store_const', const=True, default=False)
 
 		# parse command line options
 		args = argParser.parse_args()
@@ -312,41 +368,45 @@ def main():
 			return
 		elif (args.list is not None):
 			test.listSimulations(args.list)
-		elif (args.isim is not None):
-			iSimGUIMode =			args.gui
-			
-			test.iSimSimulation(args.isim, args.showLog, args.showReport, iSimGUIMode)
-		elif (args.xsim is not None):
-			xSimGUIMode =			args.gui
-			
-			test.xSimSimulation(args.xsim, args.showLog, args.showReport, xSimGUIMode)
-		elif (args.vsim is not None):
-			if ((args.std is not None) and (args.std in ["87","93","02","08"])):
-				vhdlVersion =	args.std
-			else:
-				vhdlVersion =	"93"
-			
-			vSimGUIMode =			args.gui
-			
-			test.vSimSimulation(args.vsim, args.showLog, args.showReport, vhdlVersion, vSimGUIMode)
 		elif (args.asim is not None):
-			if ((args.std is not None) and (args.std in ["87","93","02","08"])):
+			if ((args.std is not None) and (args.std in ["87", "93", "02", "08"])):
 				vhdlVersion =	args.std
 			else:
 				vhdlVersion =	"93"
 			
 			aSimGUIMode =			args.gui
 			
-			test.aSimSimulation(args.asim, args.showLog, args.showReport, vhdlVersion, aSimGUIMode)
+			test.aSimSimulation(args.asim, args.showLog, args.showReport, vhdlVersion, aSimGUIMode, deviceString=args.device, boardString=args.board)
 		elif (args.ghdl is not None):
-			if ((args.std is not None) and (args.std in ["87","93","02","08"])):
+			if ((args.std is not None) and (args.std in ["87", "93", "02", "08"])):
 				vhdlVersion =	args.std
 			else:
 				vhdlVersion =	"93"
 			
 			ghdlGUIMode =			args.gui
 			
-			test.ghdlSimulation(args.ghdl, args.showLog, args.showReport, vhdlVersion, ghdlGUIMode)
+			test.ghdlSimulation(args.ghdl, args.showLog, args.showReport, vhdlVersion, ghdlGUIMode, deviceString=args.device, boardString=args.board)
+		elif (args.isim is not None):
+			iSimGUIMode =			args.gui
+			
+			test.iSimSimulation(args.isim, args.showLog, args.showReport, iSimGUIMode, deviceString=args.device, boardString=args.board)
+		elif (args.vsim is not None):
+			if ((args.std is not None) and (args.std in ["87", "93", "02", "08"])):
+				vhdlVersion =	args.std
+			else:
+				vhdlVersion =	"93"
+			
+			vSimGUIMode =			args.gui
+			
+			test.vSimSimulation(args.vsim, args.showLog, args.showReport, vhdlVersion, vSimGUIMode, deviceString=args.device, boardString=args.board)
+		elif (args.xsim is not None):
+			if ((args.std is not None) and (args.std in ["93", "08"])):
+				vhdlVersion =	args.std
+			else:
+				vhdlVersion =	"93"
+			xSimGUIMode =			args.gui
+			
+			test.xSimSimulation(args.xsim, args.showLog, args.showReport, vhdlVersion, xSimGUIMode, deviceString=args.device, boardString=args.board)
 		else:
 			argParser.print_help()
 	
@@ -356,9 +416,13 @@ def main():
 		
 		print(Fore.RED + "ERROR:" + Fore.RESET + " %s" % ex.message)
 		if isinstance(ex.__cause__, FileNotFoundError):
-			print(Fore.YELLOW + "  FileNotFound:" + Fore.RESET + " '%s'" % str(ex.__cause__))
+			print("{0}  FileNotFound:{1} '{2}'".format(Fore.LIGHTYELLOW_EX, Fore.RESET, str(ex.__cause__)))
+		elif isinstance(ex.__cause__, ParserException):
+			print("{0}  ParserException:{1} {2}".format(Fore.LIGHTYELLOW_EX, Fore.RESET, str(ex.__cause__)))
+			if (ex.__cause__.__cause__ is not None):
+				print("{0}    {1}:{2} {3}".format(Fore.LIGHTYELLOW_EX, ex.__cause__.__cause__.__class__.__name__, Fore.RESET, str(ex.__cause__.__cause__)))
 		elif isinstance(ex.__cause__, Error):
-			print(Fore.YELLOW + "  configparser.Error:" + Fore.RESET + " %s" % str(ex.__cause__))
+			print("{0}  configparser.Error:{1} '{2}'".format(Fore.LIGHTYELLOW_EX, Fore.RESET, str(ex.__cause__)))
 		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 		exit(1)
 

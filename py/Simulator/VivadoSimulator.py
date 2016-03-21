@@ -117,7 +117,7 @@ class Simulator(PoCSimulator):
 		self._CreatePoCProject(testbenchName, boardName, deviceName)
 		self._AddFileListFile(fileListFilePath)
 		
-		self._RunCompile(testbenchName)
+		# self._RunCompile(testbenchName)
 		self._RunLink(testbenchName)
 		self._RunSimulation(testbenchName)
 		
@@ -162,7 +162,7 @@ class Simulator(PoCSimulator):
 			raise SimulatorException("Found critical warnings while parsing '{0}'".format(str(fileListFilePath)))
 		
 	def _RunCompile(self, testbenchName):
-		self._LogNormal("  compiling every VHDL file...")
+		self._LogNormal("  compiling source files...")
 		
 		# create one VHDL line for each VHDL file
 		xSimProjectFileContent = ""
@@ -180,49 +180,78 @@ class Simulator(PoCSimulator):
 		xvhcomp = self._vivado.GetVHDLCompiler()
 		xvhcomp.Compile(str(prjFilePath))
 		
-		
-		
-		
-		
-		# tclBatchFilePath =	self.Host.Directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['xSimBatchScript']
-		# tclGUIFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['xSimGUIScript']
-		# wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['xSimWaveformConfigFile']
-		# xelabLogFilePath =	tempXSimPath / (testbenchName + ".xelab.log")
-		# xSimLogFilePath =		tempXSimPath / (testbenchName + ".xsim.log")
-		# snapshotName =			testbenchName
-
-
-
-
-		# running elab
-		# ==========================================================================
+	def _RunLink(self, testbenchName):
 		self._LogNormal("  running xelab...")
-		# assemble xelab command as list of parameters
+		
+		xelabLogFilePath =	self._tempPath / (testbenchName + ".xelab.log")
+	
+		# create one VHDL line for each VHDL file
+		xSimProjectFileContent = ""
+		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
+			if (not file.Path.exists()):									raise SimulatorException("Can not add '{0}' to xSim project file.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
+			xSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
+						
+		# write xSim project file
+		prjFilePath = self._tempPath / (testbenchName + ".prj")
+		self._LogDebug("Writing xSim project file to '{0}'".format(str(prjFilePath)))
+		with prjFilePath.open('w') as prjFileHandle:
+			prjFileHandle.write(xSimProjectFileContent)
+	
+		# create a VivadoLinker instance
+		xelab = self._vivado.GetLinker()
+		# xelab.Project =					str(prjFilePath)
+		# xelab.LogFile =					str(xelabLogFilePath)
+		# xelab.TimeResolution =	"1fs"
+		# xelab.RangeCheck =			True
+		# xelab.MultiThreading =	4
+		# xelab.Optimization =		2
+		# xelab.Debug =						"typical"
+		# xelab.SnapShot =				testbenchName
+		
+		# if (self.verbose):
+			# xelab.Verbose =					0
+		
+		# xelab.TopLevel =				"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
+		
 		parameterList = [
-			str(xelabExecutablePath),
 			'--prj',	str(prjFilePath),
 			'--log',	str(xelabLogFilePath),
 			'--timeprecision_vhdl', '1fs',			# set minimum time precision to 1 fs
 			'--mt', '4',												# enable multithread support
 			'--O2',
 			'--debug', 'typical',
-			'--snapshot',	snapshotName,
+			'--snapshot',	testbenchName,
 			'--rangecheck'
 		]
 		
 		# append debug options
-		if (self.verbose):
-			parameterList += [
-				'--verbose', '0']
+		# if (self.verbose):
+			# parameterList += [
+				# '--verbose', '0']
 
 		# append testbench name
 		parameterList += [('test.%s' % testbenchName)]
-		
-		
-		# running simulation
+		xelab.Link(parameterList)
+	
+	def _RunSimulation(self, testbenchName):
 		self._LogNormal("  running simulation...")
+		
+		xSimLogFilePath =		self._tempPath / (testbenchName + ".xSim.log")
+		tclBatchFilePath =	self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['iSimBatchScript']
+		tclGUIFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['iSimGUIScript']
+		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['iSimWaveformConfigFile']
+
+		# create a VivadoSimulator instance
+		xSim = self._vivado.GetSimulator()
+		# iSim.LogFile =				str(iSimLogFilePath)
+		# iSim.TimeResolution = "1fs"
+		# iSim.MultiThreading =	4
+		# iSim.RangeCheck =			True
+		# iSim.TopLevel =				"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
+		# iSim.Project =				str(prjFilePath)
+		# iSim.Executable =			str(exeFilePath)
+		
 		parameterList = [
-			str(xSimExecutablePath),
 			'--log', str(xSimLogFilePath)
 		]
 		
@@ -233,28 +262,32 @@ class Simulator(PoCSimulator):
 				'-tclbatch', str(tclGUIFilePath),
 				'-gui'
 			]
-			# if waveform configuration file exists, load it's settings
-			if wcfgFilePath.exists():
-				parameterList += ['--view', str(wcfgFilePath)]
 		
-		# append testbench name
-		parameterList += [
-			snapshotName
-		]
+		# if GTKWave savefile exists, load it's settings
+		if wcfgFilePath.exists():
+			self._LogDebug("    Found waveform config file: '{0}'".format(str(wcfgFilePath)))
+			# gtkw.WaveformFile = str(wcfgFilePath)
+			parameterList += ['-view', str(wcfgFilePath)]
+		else:
+			self._LogDebug("    Didn't find waveform config file: '{0}'".format(str(wcfgFilePath)))
 		
-	
-		print()
-		if (not self.__guiMode):
-			try:
-				result = self.checkSimulatorOutput(simulatorLog)
+		parameterList += [testbenchName]
+		
+		xSim.Simulate(parameterList)
+		
+		# print()
+		# if (not self.__guiMode):
+			# try:
+				# result = self.checkSimulatorOutput(simulatorLog)
 				
-				if (result == True):
-					print("Testbench '%s': PASSED" % testbenchName)
-				else:
-					print("Testbench '%s': FAILED" % testbenchName)
+				# if (result == True):
+					# print("Testbench '%s': PASSED" % testbenchName)
+				# else:
+					# print("Testbench '%s': FAILED" % testbenchName)
 					
-			except SimulatorException as ex:
-				raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
+			# except SimulatorException as ex:
+				# raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
+	
 		
 class VivadoSimulatorExecutable:
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
@@ -265,7 +298,10 @@ class VivadoSimulatorExecutable:
 	
 	def GetVHDLCompiler(self):
 		return VivadoVHDLCompiler(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
-		
+	
+	def GetLinker(self):
+		return VivadoLinker(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
+	
 	def GetSimulator(self):
 		return VivadoSimulator(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
 		
@@ -273,8 +309,8 @@ class VivadoVHDLCompiler(Executable, VivadoSimulatorExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
 		VivadoSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 		
-		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "xelab.bat"
-		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "xelab"
+		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "xvhcomp.bat"
+		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "xvhcomp"
 		else:																						raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, executablePath, defaultParameters, logger=logger)
 
@@ -365,6 +401,84 @@ class VivadoVHDLCompiler(Executable, VivadoSimulatorExecutable):
 			for line in ex.output.split("\n"):
 				print(_indent + line)
 			print(_indent + "-" * 80)
+		
+class VivadoLinker(Executable, VivadoSimulatorExecutable):
+	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
+		VivadoSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
+		
+		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "xelab.bat"
+		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "xelab"
+		else:																						raise PlatformNotSupportedException(self._platform)
+		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+
+		self._verbose =						False
+		self._rangecheck =				False
+		self._vhdlVersion =				None
+		self._vhdlLibrary =				None
+	
+	@property
+	def Verbose(self):
+		return self._verbose
+	@Verbose.setter
+	def Verbose(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._verbose != value):
+			self._verbose = value
+			if value:			self._defaultParameters.append("-v")
+			else:					self._defaultParameters.remove("-v")
+	
+	@property
+	def VHDLLibrary(self):
+		return self._vhdlLibrary
+	@VHDLLibrary.setter
+	def VHDLLibrary(self, value):
+		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
+		if (self._vhdlLibrary is None):
+			self._defaultParameters.append("--work={0}".format(value))
+			self._vhdlLibrary = value
+		elif (self._vhdlLibrary != value):
+			self._defaultParameters.remove("--work={0}".format(self._vhdlLibrary))
+			self._defaultParameters.append("--work={0}".format(value))
+			self._vhdlLibrary = value
+	
+	@property
+	def RangeCheck(self):
+		return self._rangecheck
+	@RangeCheck.setter
+	def RangeCheck(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._rangecheck != value):
+			self._rangecheck = value
+			if value:			self._defaultParameters.append("-rangecheck")
+			else:					self._defaultParameters.remove("-rangecheck")
+	
+	def Link(self, paramList):
+		parameterList = self._defaultParameters.copy()
+		parameterList += paramList
+		
+		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		
+		_indent = "    "
+		try:
+			fuseLog = self.StartProcess(parameterList)
+			
+			log = ""
+			for line in fuseLog.split("\n")[:-1]:
+					log += _indent + line + "\n"
+			
+			# if self.showLogs:
+			if (log != ""):
+				print(_indent + "xelab messages for : {0}".format(str(filePath)))
+				print(_indent + "-" * 80)
+				print(log[:-1])
+				print(_indent + "-" * 80)
+		except CalledProcessError as ex:
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing xelab: {0}".format(str(filePath)))
+			print(_indent + "Return Code: {0}".format(ex.returncode))
+			print(_indent + "-" * 80)
+			for line in ex.output.split("\n"):
+				print(_indent + line)
+			print(_indent + "-" * 80)
 
 class VivadoSimulator(Executable, VivadoSimulatorExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
@@ -444,27 +558,29 @@ class VivadoSimulator(Executable, VivadoSimulatorExecutable):
 		if (not isinstance(value, str)):																raise ValueError("Parameter 'value' is not of type str.")
 		self._defaultParameters.append(value)
 	
-	def Simulate(self):
+	def Simulate(self, paramList):
 		parameterList = self._defaultParameters.copy()
+		
+		parameterList += paramList
 		
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
 		try:
-			vsimLog = self.StartProcess(parameterList)
+			xSimLog = self.StartProcess(parameterList)
 			
 			log = ""
-			for line in vsimLog.split("\n")[:-1]:
+			for line in xSimLog.split("\n")[:-1]:
 					log += _indent + line + "\n"
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "vsim messages for : {0}".format(str(filePath)))
+				print(_indent + "xsim messages for : {0}".format(str(filePath)))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vsim: {0}".format(str(filePath)))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing xsim: {0}".format(str(filePath)))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
