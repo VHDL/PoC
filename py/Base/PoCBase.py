@@ -53,6 +53,7 @@ class CommandLineProgram(ILogable):
 	__scriptDirectoryName = 			"py"
 	__pocPrivateConfigFileName =	"config.private.ini"
 	__pocPublicConfigFileName =		"config.public.ini"
+	__pocBoardConfigFileName =		"config.boards.ini"
 
 	# private fields
 	__platform = platform_system()			# load platform information (Windows, Linux, ...)
@@ -75,6 +76,7 @@ class CommandLineProgram(ILogable):
 		self.Directories['ScriptRoot'] =	Path(environ.get('PoCRootDirectory'))
 		self.Files['PoCPrivateConfig'] =	self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPrivateConfigFileName
 		self.Files['PoCPublicConfig'] =		self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPublicConfigFileName
+		self.Files['PoCBoardConfig'] =		self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocBoardConfigFileName
 		
 		self.__ReadPoCConfiguration()
 
@@ -92,16 +94,19 @@ class CommandLineProgram(ILogable):
 	def __ReadPoCConfiguration(self):
 		pocPrivateConfigFilePath =	self.Files['PoCPrivateConfig']
 		pocPublicConfigFilePath =		self.Files['PoCPublicConfig']
+		pocBoardConfigFilePath =		self.Files['PoCBoardConfig']
 		
-		self._LogDebug("Reading PoC configuration from '{0}' and '{0}'".format(str(pocPrivateConfigFilePath), str(pocPublicConfigFilePath)))
-		if not pocPrivateConfigFilePath.exists():		raise NotConfiguredException("Private PoC configuration file '{0}' does not exist.".format(str(pocPrivateConfigFilePath)))	from FileNotFoundError(str(pocPrivateConfigFilePath))
-		if not pocPublicConfigFilePath.exists():		raise NotConfiguredException("Public PoC configuration file '{0}' does not exist.".format(str(pocPublicConfigFilePath)))		from FileNotFoundError(str(pocPublicConfigFilePath))
+		self._LogDebug("Reading PoC configuration from\n  '{0}'\n  '{1}\n  '{2}'".format(str(pocPrivateConfigFilePath), str(pocPublicConfigFilePath), str(pocBoardConfigFilePath)))
+		if not pocPrivateConfigFilePath.exists():		raise NotConfiguredException("PoC's private configuration file '{0}' does not exist.".format(str(pocPrivateConfigFilePath)))	from FileNotFoundError(str(pocPrivateConfigFilePath))
+		if not pocPublicConfigFilePath.exists():		raise NotConfiguredException("PoC' public configuration file '{0}' does not exist.".format(str(pocPublicConfigFilePath)))			from FileNotFoundError(str(pocPublicConfigFilePath))
+		if not pocBoardConfigFilePath.exists():			raise NotConfiguredException("PoC's board configuration file '{0}' does not exist.".format(str(pocBoardConfigFilePath)))			from FileNotFoundError(str(pocBoardConfigFilePath))
 		
 		self.pocConfig = ConfigParser(interpolation=ExtendedInterpolation())
 		self.pocConfig.optionxform = str
 		self.pocConfig.read([
-			str(self.Files['PoCPrivateConfig']),
-			str(self.Files['PoCPublicConfig'])
+			str(pocPrivateConfigFilePath),
+			str(pocPublicConfigFilePath),
+			str(pocBoardConfigFilePath)
 		])
 		
 		# parsing values into class fields

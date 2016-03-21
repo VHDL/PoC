@@ -53,6 +53,7 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
+from Parser.Parser					import ParserException
 from Simulator.Exceptions		import * 
 from Simulator.Base					import PoCSimulator, Executable, VHDLTestbenchLibraryName
 
@@ -149,13 +150,20 @@ class Simulator(PoCSimulator):
 	def _AddFileListFile(self, fileListFilePath):
 		self._LogDebug("    Reading filelist '{0}'".format(str(fileListFilePath)))
 		# add the *.files file, parse and evaluate it
-		fileListFile = self._pocProject.AddFile(FileListFile(fileListFilePath))
-		fileListFile.Parse()
-		fileListFile.CopyFilesToFileSet()
-		fileListFile.CopyExternalLibraries()
-		self._pocProject._ResolveVHDLLibraries()
+		try:
+			fileListFile = self._pocProject.AddFile(FileListFile(fileListFilePath))
+			fileListFile.Parse()
+			fileListFile.CopyFilesToFileSet()
+			fileListFile.CopyExternalLibraries()
+			self._pocProject._ResolveVHDLLibraries()
+		except ParserException as ex:										raise SimulatorException("Error while parsing '{0}'.".format(str(fileListFilePath))) from ex
+		
 		self._LogDebug(self._pocProject.pprint(2))
 		self._LogDebug("=" * 160)
+		if (len(fileListFile.Warnings) > 0):
+			for warn in fileListFile.Warnings:
+				self._LogWarning(warn)
+			raise SimulatorException("Found critical warnings while parsing '{0}'".format(str(fileListFilePath)))
 		
 	def _RunAnalysis(self):
 		self._LogNormal("  running analysis for every vhdl file...")
@@ -721,7 +729,7 @@ class GHDLAnalyze(GHDLExecutable):
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
-		except subprocess.CalledProcessError as ex:
+		except CalledProcessError as ex:
 			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing ghdl: {0}".format(str(filePath)))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)

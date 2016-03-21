@@ -197,10 +197,10 @@ class Simulator(PoCSimulator):
 		vsim.Title =					testbenchName
 	
 		if (tclWaveFilePath.exists()):
-			self.printDebug("Found waveform script: '{0}'".format(str(tclWaveFilePath)))
+			self._LogDebug("Found waveform script: '{0}'".format(str(tclWaveFilePath)))
 			vsim.BatchCommand =	"do {0}; do {0}".format(str(tclWaveFilePath), str(tclGUIFilePath))
 		else:
-			self.printDebug("Didn't find waveform script: '{0}'. Loading default commands.".format(str(tclWaveFilePath)))
+			self._LogDebug("Didn't find waveform script: '{0}'. Loading default commands.".format(str(tclWaveFilePath)))
 			vsim.BatchCommand =	"add wave *; do {0}".format(str(tclGUIFilePath))
 
 		vsim.TopLevel =		"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
@@ -376,10 +376,13 @@ class QuestaSimulator(Executable, QuestaSimulatorExecutable):
 		return self._timeResolution
 	@TimeResolution.setter
 	def TimeResolution(self, value):
-		if (not isinstance(value, str)):																raise ValueError("Parameter 'value' is not of type str.")
-		if (not ["fs", "ps", "us", "ms", "sec", "min", "hr"] in value): raise ValueError("Parameter 'value' must contain a time unit.")
+		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
+		units = ("fs", "ps", "us", "ms", "sec", "min", "hr")
+		if (not value.endswith(units)):									raise ValueError("Parameter 'value' must contain a time unit.")
 		if (self._timeResolution is None):
-	
+			self._defaultParameters.append("-t")
+			self._defaultParameters.append(value)
+			
 	@property
 	def ComanndLineMode(self):
 		return self._comanndLineMode

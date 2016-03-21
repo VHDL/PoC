@@ -72,5 +72,11 @@ elseif (BoardName = "VC707") then
 
 # other boards
 else
-	report "Board not supported."
+	if (DeviceVendor = "Altera") then
+		vhdl	poc	"tb/common/my_config_DE4.vhdl"
+	elseif (DeviceVendor = "Xilinx") then
+		vhdl	poc	"tb/common/my_config_KC705.vhdl"
+	else
+		report "Board not supported. No generic my_config.vhdl found."
+	end if
 end if
