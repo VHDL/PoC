@@ -114,31 +114,32 @@ class Testbench(CommandLineProgram):
 		# check if Aldec tools are configure
 		if (len(self.pocConfig.options("Aldec.ActiveHDL")) != 0):
 			# prepare some paths
-			self.Directories["aSimInstallation"] =	Path(self.pocConfig['Aldec.ActiveHDL']['InstallationDirectory'])
-			self.Directories["aSimBinary"] =				Path(self.pocConfig['Aldec.ActiveHDL']['BinaryDirectory'])
-			aSimVersion =														self.pocConfig['Aldec.ActiveHDL']['Version']
+			self.Directories["ActiveHDLInstallation"] =	Path(self.pocConfig['Aldec.ActiveHDL']['InstallationDirectory'])
+			self.Directories["ActiveHDLBinary"] =				Path(self.pocConfig['Aldec.ActiveHDL']['BinaryDirectory'])
+			aSimVersion =																self.pocConfig['Aldec.ActiveHDL']['Version']
 		elif (len(self.pocConfig.options("Lattice.ActiveHDL")) != 0):
 			# prepare some paths
-			self.Directories["aSimInstallation"] =	Path(self.pocConfig['Lattice.ActiveHDL']['InstallationDirectory'])
-			self.Directories["aSimBinary"] =				Path(self.pocConfig['Lattice.ActiveHDL']['BinaryDirectory'])
-			aSimVersion =														self.pocConfig['Lattice.ActiveHDL']['Version']
-		elif (len(self.pocConfig.options("Aldec.RivieraPRO")) != 0):
-			# prepare some paths
-			self.Directories["aSimInstallation"] =	Path(self.pocConfig['Aldec.RivieraPRO']['InstallationDirectory'])
-			self.Directories["aSimBinary"] =				Path(self.pocConfig['Aldec.RivieraPRO']['BinaryDirectory'])
-			aSimVersion =														self.pocConfig['Aldec.RivieraPRO']['Version']
+			self.Directories["ActiveHDLInstallation"] =	Path(self.pocConfig['Lattice.ActiveHDL']['InstallationDirectory'])
+			self.Directories["ActiveHDLBinary"] =				Path(self.pocConfig['Lattice.ActiveHDL']['BinaryDirectory'])
+			aSimVersion =																self.pocConfig['Lattice.ActiveHDL']['Version']
+		# elif (len(self.pocConfig.options("Aldec.RivieraPRO")) != 0):
+			# # prepare some paths
+			# self.Directories["ActiveHDLInstallation"] =	Path(self.pocConfig['Aldec.RivieraPRO']['InstallationDirectory'])
+			# self.Directories["ActiveHDLBinary"] =				Path(self.pocConfig['Aldec.RivieraPRO']['BinaryDirectory'])
+			# aSimVersion =																self.pocConfig['Aldec.RivieraPRO']['Version']
 		else:
-			raise NotConfiguredException("Neither Aldec's Active-HDL nor Riviera PRO nor Active-HDL Lattice Edition are configured on this system.")
+			# raise NotConfiguredException("Neither Aldec's Active-HDL nor Riviera PRO nor Active-HDL Lattice Edition are configured on this system.")
+			raise NotConfiguredException("Neither Aldec's Active-HDL nor Active-HDL Lattice Edition are configured on this system.")
 
 		# prepare paths to vendor simulation libraries
 		self.__PrepareVendorLibraryPaths()
 		
-		self.Directories["aSimTemp"] =			self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['AldecSimulatorFiles']
+		self.Directories["ActiveHDLTemp"] =			self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['ActiveHDLSimulatorFiles']
 		
 		# create a simulator instance
-		simulator = AldecSimulator.Simulator(self, showLogs, showReport, guiMode)
+		simulator = ActiveHDLSimulator.Simulator(self, showLogs, showReport, guiMode)
 		# prepare the simulator
-		aSimBinaryPath =	self.Directories["aSimBinary"]
+		aSimBinaryPath =	self.Directories["ActiveHDLBinary"]
 		simulator.PrepareSimulator(aSimBinaryPath, aSimVersion)
 		
 		# run a testbench

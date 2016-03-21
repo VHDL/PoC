@@ -35,7 +35,7 @@ if __name__ != "__main__":
 	pass
 else:
 	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.vSimSimulator")
+	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.ActiveHDLSimulator")
 
 # load dependencies
 from pathlib								import Path
@@ -70,7 +70,7 @@ class Simulator(PoCSimulator):
 		self._LogNormal("  preparing simulation environment...")
 		
 		# create temporary directory for ghdl if not existent
-		self._tempPath = self.Host.Directories["vSimTemp"]
+		self._tempPath = self.Host.Directories["ActiveHDLTemp"]
 		if (not (self._tempPath).exists()):
 			self._LogVerbose("  Creating temporary directory for simulator files.")
 			self._LogDebug("    Temporary directors: {0}".format(str(self._tempPath)))
@@ -83,8 +83,8 @@ class Simulator(PoCSimulator):
 
 	def PrepareSimulator(self, binaryPath, version):
 		# create the GHDL executable factory
-		self._LogVerbose("  Preparing Mentor simulator.")
-		self._questa =		QuestaSimulatorExecutable(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._LogVerbose("  Preparing Active-HDL simulator.")
+		self._activeHDL =		ActiveHDLSimulatorExecutable(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, pocEntities, **kwargs):
 		for pocEntity in pocEntities:
@@ -151,60 +151,60 @@ class Simulator(PoCSimulator):
 	def _RunCompile(self):
 		self._LogNormal("  running VHDL compiler for every vhdl file...")
 		
-		# create a QuestaVHDLCompiler instance
-		vlib = self._questa.GetVHDLLibraryTool()
+		# create a ActiveHDLVHDLCompiler instance
+		vlib = self._activeHDL.GetVHDLLibraryTool()
 		
 		for lib in self._pocProject.VHDLLibraries:
 			vlib.CreateLibrary(lib.Name)
 					
-		# create a QuestaVHDLCompiler instance
-		vcom = self._questa.GetVHDLCompiler()
-		vcom.VHDLVersion =	self._vhdlversion
-		vcom.RangeCheck =		True
+		# create a ActiveHDLVHDLCompiler instance
+		acom = self._activeHDL.GetVHDLCompiler()
+		acom.VHDLVersion =	self._vhdlversion
+		acom.RangeCheck =		True
 		
 		# run vcom compiler for each VHDL file
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
 			if (not file.Path.exists()):									raise SimulatorException("Can not analyse '{0}'.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
 			
-			vcom.VHDLLibrary =	file.VHDLLibraryName
+			acom.VHDLLibrary =	file.VHDLLibraryName
 			# set a per file log-file with '-l', 'vcom.log',
-			vcom.Compile(str(file.Path))
+			acom.Compile(str(file.Path))
 	
 	def _RunSimulation(self, testbenchName):
 		self._LogNormal("  running simulation...")
 		
-		tclBatchFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['vSimBatchScript']
+		tclBatchFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['aSimBatchScript']
 		
-		# create a QuestaSimulator instance
-		vsim = self._questa.GetSimulator()
-		vsim.Optimization =			True
-		vsim.TimeResolution =		"1fs"
-		vsim.ComanndLineMode =	True
-		vsim.BatchCommand =			"do {0}".format(str(tclBatchFilePath))
-		vsim.TopLevel =					"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
-		vsim.Simulate()
+		# create a ActiveHDLSimulator instance
+		aSim = self._activeHDL.GetSimulator()
+		# aSim.Optimization =			True
+		# aSim.TimeResolution =		"1fs"
+		# aSim.ComanndLineMode =	True
+		# aSim.BatchCommand =			"do {0}".format(str(tclBatchFilePath))
+		aSim.TopLevel =					"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
+		aSim.Simulate()
 		
 	def _RunSimulationWithGUI(self, testbenchName):
 		self._LogNormal("  running simulation...")
 	
-		tclGUIFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['vSimGUIScript']
-		tclWaveFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['vSimWaveScript']
+		tclGUIFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['aSimGUIScript']
+		tclWaveFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['aSimWaveScript']
 		
-		# create a QuestaSimulator instance
-		vsim = self._questa.GetSimulator()
-		vsim.Optimization =		True
-		vsim.TimeResolution =	"1fs"
-		vsim.Title =					testbenchName
+		# create a ActiveHDLSimulator instance
+		aSim = self._activeHDL.GetSimulator()
+		aSim.Optimization =		True
+		aSim.TimeResolution =	"1fs"
+		aSim.Title =					testbenchName
 	
 		if (tclWaveFilePath.exists()):
 			self._LogDebug("Found waveform script: '{0}'".format(str(tclWaveFilePath)))
-			vsim.BatchCommand =	"do {0}; do {0}".format(str(tclWaveFilePath), str(tclGUIFilePath))
+			aSim.BatchCommand =	"do {0}; do {0}".format(str(tclWaveFilePath), str(tclGUIFilePath))
 		else:
 			self._LogDebug("Didn't find waveform script: '{0}'. Loading default commands.".format(str(tclWaveFilePath)))
-			vsim.BatchCommand =	"add wave *; do {0}".format(str(tclGUIFilePath))
+			aSim.BatchCommand =	"add wave *; do {0}".format(str(tclGUIFilePath))
 
-		vsim.TopLevel =		"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
-		vsim.Simulate()
+		aSim.TopLevel =		"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
+		aSim.Simulate()
 
 		# if (not self.__guiMode):
 			# try:
@@ -218,7 +218,7 @@ class Simulator(PoCSimulator):
 			# except SimulatorException as ex:
 				# raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
 		
-class QuestaSimulatorExecutable:
+class ActiveHDLSimulatorExecutable:
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		self._platform =						platform
 		self._binaryDirectoryPath =	binaryDirectoryPath
@@ -226,17 +226,17 @@ class QuestaSimulatorExecutable:
 		self.__logger =							logger
 	
 	def GetVHDLCompiler(self):
-		return QuestaVHDLCompiler(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
+		return ActiveHDLVHDLCompiler(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
 		
 	def GetSimulator(self):
-		return QuestaSimulator(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
+		return ActiveHDLSimulator(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
 		
 	def GetVHDLLibraryTool(self):
-		return QuestaVHDLLibraryTool(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
+		return ActiveHDLVHDLLibraryTool(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
 
-class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
+class ActiveHDLVHDLCompiler(Executable, ActiveHDLSimulatorExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
-		QuestaSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
+		ActiveHDLSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 		
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vcom.exe"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vcom"
@@ -244,9 +244,17 @@ class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
 		super().__init__(platform, executablePath, defaultParameters, logger=logger)
 
 		self._verbose =						False
-		self._rangecheck =				False
+		self._rangecheck =				True
 		self._vhdlVersion =				None
 		self._vhdlLibrary =				None
+	
+	# -reorder                      enables automatic file ordering
+  # -O[0 | 1 | 2 | 3]             set optimization level
+	# -93                                conform to VHDL 1076-1993
+  # -2002                              conform to VHDL 1076-2002 (default)
+  # -2008                              conform to VHDL 1076-2008
+	# -relax                             allow 32-bit integer literals
+  # -incr                              switching compiler to fast incremental mode
 	
 	@property
 	def Verbose(self):
@@ -285,11 +293,12 @@ class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
 	def VHDLLibrary(self, value):
 		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
 		if (self._vhdlLibrary is None):
-			self._defaultParameters.append("--work={0}".format(value))
+			self._defaultParameters.append("-work")
+			self._defaultParameters.append(value)
 			self._vhdlLibrary = value
 		elif (self._vhdlLibrary != value):
-			self._defaultParameters.remove("--work={0}".format(self._vhdlLibrary))
-			self._defaultParameters.append("--work={0}".format(value))
+			i = self._defaultParameters.index(self._vhdlLibrary)
+			self._defaultParameters[i] = value
 			self._vhdlLibrary = value
 	
 	@property
@@ -300,8 +309,8 @@ class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
 		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
 		if (self._rangecheck != value):
 			self._rangecheck = value
-			if value:			self._defaultParameters.append("-rangecheck")
-			else:					self._defaultParameters.remove("-rangecheck")
+			if value:			self._defaultParameters.remove("--norangecheck")
+			else:					self._defaultParameters.append("--norangecheck")
 	
 	def Compile(self, vhdlFile):
 		parameterList = self._defaultParameters.copy()
@@ -319,21 +328,21 @@ class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "vlib messages for : {0}".format(str(filePath)))
+				print(_indent + "vlib messages for : {0}".format(str(vhdlFile)))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format(str(filePath)))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format(str(vhdlFile)))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
 				print(_indent + line)
 			print(_indent + "-" * 80)
 
-class QuestaSimulator(Executable, QuestaSimulatorExecutable):
+class ActiveHDLSimulator(Executable, ActiveHDLSimulatorExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
-		QuestaSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
+		ActiveHDLSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 		
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vsim.exe"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vsim"
@@ -416,29 +425,29 @@ class QuestaSimulator(Executable, QuestaSimulatorExecutable):
 		
 		_indent = "    "
 		try:
-			vsimLog = self.StartProcess(parameterList)
+			aSimLog = self.StartProcess(parameterList)
 			
 			log = ""
-			for line in vsimLog.split("\n")[:-1]:
+			for line in aSimLog.split("\n")[:-1]:
 					log += _indent + line + "\n"
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "vsim messages for : {0}".format(str(filePath)))
+				print(_indent + "aSim messages for : {0}".format(str(filePath)))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vsim: {0}".format(str(filePath)))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing aSim: {0}".format(str(filePath)))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
 				print(_indent + line)
 			print(_indent + "-" * 80)
 
-class QuestaVHDLLibraryTool(Executable, QuestaSimulatorExecutable):
+class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLSimulatorExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
-		QuestaSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
+		ActiveHDLSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 		
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vlib.exe"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vlib"
@@ -486,3 +495,55 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimulatorExecutable):
 				print(_indent + line)
 			print(_indent + "-" * 80)
 	
+
+		# if (self._host.platform == "Windows"):
+			# self.__executables['alib'] =		"vlib.exe"
+			# self.__executables['acom'] =		"vcom.exe"
+			# self.__executables['asim'] =		"aSim.exe"
+		# elif (self._host.platform == "Linux"):
+			# self.__executables['alib'] =		"vlib"
+			# self.__executables['acom'] =		"vcom"
+			# self.__executables['asim'] =		"aSim"
+
+		# # setup all needed paths to execute fuse
+		# aLibExecutablePath =	self.Host.Directories["aSimBinary"] / self.__executables['alib']
+		# aComExecutablePath =	self.Host.Directories["aSimBinary"] / self.__executables['acom']
+		# aSimExecutablePath =	self.Host.Directories["aSimBinary"] / self.__executables['asim']
+					
+					# # assemble acom command as list of parameters
+					# parameterList = [
+						# str(aComExecutablePath),
+						# '-O3',
+						# '-relax',
+						# '-l', 'acom.log',
+						# vhdlStandard,
+						# '-work', vhdlLibraryName,
+						# str(vhdlFilePath)
+					# ]
+		# parameterList = [
+			# str(aSimExecutablePath)#,
+			# # '-vopt',
+			# # '-t', '1fs',
+		# ]
+
+		# # append RUNOPTS to save simulation results to *.vcd file
+		# if (self.__guiMode):
+			# parameterList += ['-title', testbenchName]
+			
+			# if (tclWaveFilePath.exists()):
+				# self._LogDebug("Found waveform script: '%s'" % str(tclWaveFilePath))
+				# parameterList += ['-do', ('do {%s}; do {%s}' % (str(tclWaveFilePath), str(tclGUIFilePath)))]
+			# else:
+				# self._LogDebug("Didn't find waveform script: '%s'. Loading default commands." % str(tclWaveFilePath))
+				# parameterList += ['-do', ('add wave *; do {%s}' % str(tclGUIFilePath))]
+		# else:
+			# parameterList += [
+				# '-c',
+				# '-do', str(tclBatchFilePath)
+			# ]
+		
+		# # append testbench name
+		# parameterList += [
+			# '-work test', testbenchName
+		# ]
+		
