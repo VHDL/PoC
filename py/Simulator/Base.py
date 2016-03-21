@@ -116,8 +116,8 @@ class Executable(ILogable):
 		self._defaultParameters = value
 	
 	def StartProcess(self, parameterList):
-		# return "blubs"
-		return Subprocess_Run(parameterList, stderr=Subprocess_StdOut, shell=False, universal_newlines=True)
+		return "blubs"
+		# return Subprocess_Run(parameterList, stderr=Subprocess_StdOut, shell=False, universal_newlines=True)
 
 # class PoCSimulatorTestbench(object):
 	# pocEntity = None

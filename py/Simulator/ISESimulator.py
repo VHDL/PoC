@@ -42,10 +42,15 @@ else:
 # load dependencies
 from pathlib import Path
 from os											import chdir
+from configparser						import NoSectionError
+from colorama								import Fore as Foreground
 
-from Base.Exceptions import *
-from Simulator.Base import PoCSimulator 
-from Simulator.Exceptions import *
+from Base.Exceptions				import *
+from Base.PoCConfig					import *
+from Base.Project						import FileTypes
+from Base.PoCProject				import *
+from Simulator.Exceptions		import *
+from Simulator.Base					import PoCSimulator, Executable, VHDLTestbenchLibraryName
 
 
 class Simulator(PoCSimulator):
@@ -88,7 +93,7 @@ class Simulator(PoCSimulator):
 	def PrepareSimulator(self, binaryPath, version):
 		# create the GHDL executable factory
 		self._LogVerbose("  Preparing GHDL simulator.")
-		self._questa =		ISESimulatorExecutable(self.Host.Platform, binaryPath, version)
+		self._ise = ISESimulatorExecutable(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, pocEntities, **kwargs):
 		for pocEntity in pocEntities:
@@ -112,140 +117,97 @@ class Simulator(PoCSimulator):
 		self._CreatePoCProject(testbenchName, boardName, deviceName)
 		self._AddFileListFile(fileListFilePath)
 		
+		# self._RunCompile(testbenchName)
+		self._RunLink(testbenchName)
+		self._RunSimulation(testbenchName)
 		
+	def _CreatePoCProject(self, testbenchName, boardName=None, deviceName=None):
+		# create a PoCProject and read all needed files
+		self._LogDebug("    Create a PoC project '{0}'".format(str(testbenchName)))
+		pocProject =									PoCProject(testbenchName)
 		
+		# configure the project
+		pocProject.RootDirectory =		self.Host.Directories["PoCRoot"]
+		pocProject.Environment =			Environment.Simulation
+		pocProject.ToolChain =				ToolChain.GHDL_GTKWave
+		pocProject.Tool =							Tool.GHDL
 		
+		if (deviceName is None):			pocProject.Board =					boardName
+		else:													pocProject.Device =					deviceName
 		
+		if (self._vhdlversion == "87"):			pocProject.VHDLVersion =		VHDLVersion.VHDL87
+		elif (self._vhdlversion == "93"):		pocProject.VHDLVersion =		VHDLVersion.VHDL93
+		elif (self._vhdlversion == "93c"):	pocProject.VHDLVersion =		VHDLVersion.VHDL93
+		elif (self._vhdlversion == "02"):		pocProject.VHDLVersion =		VHDLVersion.VHDL02
+		elif (self._vhdlversion == "08"):		pocProject.VHDLVersion =		VHDLVersion.VHDL08
 		
+		self._pocProject = pocProject
 		
+	def _AddFileListFile(self, fileListFilePath):
+		self._LogDebug("    Reading filelist '{0}'".format(str(fileListFilePath)))
+		# add the *.files file, parse and evaluate it
+		try:
+			fileListFile = self._pocProject.AddFile(FileListFile(fileListFilePath))
+			fileListFile.Parse()
+			fileListFile.CopyFilesToFileSet()
+			fileListFile.CopyExternalLibraries()
+			self._pocProject._ResolveVHDLLibraries()
+		except ParserException as ex:										raise SimulatorException("Error while parsing '{0}'.".format(str(fileListFilePath))) from ex
 		
-
-		# setup all needed paths to execute fuse
-		#vhpcompExecutablePath =	self.Host.Directories["ISEBinary"] / self.__executables['vhpcomp']
-		fuseExecutablePath =		self.Host.Directories["ISEBinary"] / self.__executables['fuse']
+		self._LogDebug(self._pocProject.pprint(2))
+		self._LogDebug("=" * 160)
+		if (len(fileListFile.Warnings) > 0):
+			for warn in fileListFile.Warnings:
+				self._LogWarning(warn)
+			raise SimulatorException("Found critical warnings while parsing '{0}'".format(str(fileListFilePath)))
 		
-		if not self.Host.tbConfig.has_section(str(pocEntity)):
-			from configparser import NoSectionError
-			raise SimulatorException("Testbench '" + str(pocEntity) + "' not found.") from NoSectionError(str(pocEntity))
+	def _RunCompile(self, testbenchName):
+		self._LogNormal("  compiling source files...")
 		
-		testbenchName =			self.Host.tbConfig[str(pocEntity)]['TestbenchModule']
-		fileListFilePath =	self.Host.Directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['fileListFile']
-		tclBatchFilePath =	self.Host.Directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['iSimBatchScript']
-		tclGUIFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['iSimGUIScript']
-		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[str(pocEntity)]['iSimWaveformConfigFile']
-		prjFilePath =				tempISimPath / (testbenchName + ".prj")
-		exeFilePath =				tempISimPath / (testbenchName + ".exe")
-		iSimLogFilePath =		tempISimPath / (testbenchName + ".isim.log")
-
-		# report the next steps in execution
-#		if (self.getVerbose()):
-#			print("  Commands to be run:")
-#			print("  1. Change working directory to temporary directory.")
-#			print("  2. Parse filelist and write iSim project file.")
-#			print("  3. Compile and Link source files to an executable simulation file.")
-#			print("  4. Simulate in tcl batch mode.")
-#			print("  ----------------------------------------")
-		
-		# change working directory to temporary iSim path
-		self.printVerbose('  cd "%s"' % str(tempISimPath))
-		os.chdir(str(tempISimPath))
-
-		# parse project filelist
-		filesLineRegExpStr =	r"^"																						#	start of line
-		filesLineRegExpStr =	r"(?:"																					#	open line type: empty, directive, keyword
-		filesLineRegExpStr +=		r"(?P<EmptyLine>)|"														#		empty line
-		filesLineRegExpStr +=		r"(?P<Directive>"															#		open directives:
-		filesLineRegExpStr +=			r"(?P<DirInclude>@include)|"								#			 @include
-		filesLineRegExpStr +=			r"(?P<DirLibrary>@library)"									#			 @library
-		filesLineRegExpStr +=		r")|"																					#		close directives
-		filesLineRegExpStr +=		r"(?P<Keyword>"																#		open keywords:
-		filesLineRegExpStr +=			r"(?P<KwAltera>altera)|"										#			altera
-		filesLineRegExpStr +=			r"(?P<KwXilinx>xilinx)|"										#			xilinx
-		filesLineRegExpStr +=			r"(?P<KwVHDL>vhdl"													#			vhdl[-nn]
-		filesLineRegExpStr +=				r"(?:-(?P<VHDLStandard>87|93|02|08))?)"		#				VHDL Standard Year: [-nn]
-		filesLineRegExpStr +=		r")"																					#		close keywords
-		filesLineRegExpStr +=	r")"																						#	close line type
-		filesLineRegExpStr +=	r"(?(Directive)\s+(?:"													#	open directive parameters
-		filesLineRegExpStr +=		r"(?(DirInclude)"															#		open @include directive
-		filesLineRegExpStr +=			r"\"(?P<IncludeFile>.*?\.files)\""					#			*.files filename without enclosing "-signs
-		filesLineRegExpStr +=		r")|"																					#		close @include directive
-		filesLineRegExpStr +=		r"(?(DirLibrary)"															#		open @include directive
-		filesLineRegExpStr +=			r"(?P<LibraryName>[_a-zA-Z0-9]+)"						#			VHDL library name
-		filesLineRegExpStr +=			r"\s+"																			#			delimiter
-		filesLineRegExpStr +=			r"\"(?P<LibraryPath>.*?)\""									#			VHDL library path without enclosing "-signs
-		filesLineRegExpStr +=		r")"																					#		close @library directive
-		filesLineRegExpStr +=	r"))"																						#	close directive parameters
-		filesLineRegExpStr +=	r"(?(Keyword)\s+(?:"														#	open keyword parameters
-		filesLineRegExpStr +=		r"(?P<VHDLLibrary>[_a-zA-Z0-9]+)"							#		VHDL library name
-		filesLineRegExpStr +=		r"\s+"																				#		delimiter
-		filesLineRegExpStr +=		r"\"(?P<VHDLFile>.*?\.vhdl?)\""								#		*.vhdl? filename without enclosing "-signs
-		filesLineRegExpStr +=	r"))"																						#	close keyword parameters
-		filesLineRegExpStr +=	r"\s*(?P<Comment>#.*)?"													#	optional comment until line end
-		filesLineRegExpStr +=	r"$"																						#	end of line
-		filesLineRegExp = re.compile(filesLineRegExpStr)
-
-		self.printDebug("Reading filelist '%s'" % str(fileListFilePath))
-		iSimProjectFileContent = ""
-		externalLibraries = []
-		with fileListFilePath.open('r') as prjFileHandle:
-			for line in prjFileHandle:
-				filesLineRegExpMatch = filesLineRegExp.match(line)
-		
-				if (filesLineRegExpMatch is not None):
-					if (filesLineRegExpMatch.group('Directive') is not None):
-						if (filesLineRegExpMatch.group('DirInclude') is not None):
-							includeFile = filesLineRegExpMatch.group('IncludeFile')
-							self.printVerbose("    referencing another file: {0}".format(includeFile))
-						elif (filesLineRegExpMatch.group('DirLibrary') is not None):
-							externalLibraryName = filesLineRegExpMatch.group('LibraryName')
-							externalLibraryPath = filesLineRegExpMatch.group('LibraryPath')
-							
-							self.printVerbose("    referencing precompiled VHDL library: {0}".format(externalLibraryName))
-							externalLibraries.append(externalLibraryPath)
-						else:
-							raise SimulatorException("Unknown directive in *.files file.")
+		# create one VHDL line for each VHDL file
+		xSimProjectFileContent = ""
+		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
+			if (not file.Path.exists()):									raise SimulatorException("Can not add '{0}' to xSim project file.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
+			xSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
 						
-						continue
-						
-					elif (filesLineRegExpMatch.group('Keyword') is not None):
-						if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
-							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-							vhdlFilePath = self.Host.Directories["PoCRoot"] / vhdlFileName
-						elif (filesLineRegExpMatch.group('Keyword')[0:5] == "vhdl-"):
-							if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
-								vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-								vhdlFilePath = self.Host.Directories["PoCRoot"] / vhdlFileName
-							else:
-								continue
-						elif (filesLineRegExpMatch.group('Keyword') == "altera"):#
-							self.printVerbose("    skipped Altera specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
-							# vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-							# vhdlFilePath = self.Host.Directories["XilinxPrimitiveSource"] / vhdlFileName
-						elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
-							self.printVerbose("    skipped Xilinx specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
-							# vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-							# vhdlFilePath = self.Host.Directories["XilinxPrimitiveSource"] / vhdlFileName
-						else:
-							raise SimulatorException("Unknown keyword in *files file.")
-							
-						vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
-						iSimProjectFileContent += "vhdl %s \"%s\"\n" % (vhdlLibraryName, str(vhdlFilePath))
-						
-						if (not vhdlFilePath.exists()):
-							raise SimulatorException("Can not add '" + vhdlFileName + "' to project file.") from FileNotFoundError(str(vhdlFilePath))
-		
-		# write iSim project file
-		self.printDebug("Writing iSim project file to '%s'" % str(prjFilePath))
+		# write xSim project file
+		prjFilePath = self._tempPath / (testbenchName + ".prj")
+		self._LogDebug("Writing xSim project file to '{0}'".format(str(prjFilePath)))
 		with prjFilePath.open('w') as prjFileHandle:
-			prjFileHandle.write(iSimProjectFileContent)
-
-
-		# running fuse
-		# ==========================================================================
-		self.printNonQuiet("  running fuse...")
-		# assemble fuse command as list of parameters
+			prjFileHandle.write(xSimProjectFileContent)
+		
+		# create a VivadoVHDLCompiler instance
+		vhcomp = self._ise.GetVHDLCompiler()
+		vhcomp.Compile(str(prjFilePath))
+		
+	def _RunLink(self, testbenchName):
+		self._LogNormal("  running fuse...")
+		
+		exeFilePath =				self._tempPath / (testbenchName + ".exe")
+	
+		# create one VHDL line for each VHDL file
+		xSimProjectFileContent = ""
+		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
+			if (not file.Path.exists()):									raise SimulatorException("Can not add '{0}' to xSim project file.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
+			xSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
+						
+		# write xSim project file
+		prjFilePath = self._tempPath / (testbenchName + ".prj")
+		self._LogDebug("Writing xSim project file to '{0}'".format(str(prjFilePath)))
+		with prjFilePath.open('w') as prjFileHandle:
+			prjFileHandle.write(xSimProjectFileContent)
+	
+		# create a ISELinker instance
+		fuse = self._ise.GetLinker()
+		# fuse.Incremental =		True
+		# fuse.TimeResolution = "1fs"
+		# fuse.MultiThreading =	4
+		# fuse.RangeCheck =			True
+		# fuse.TopLevel =				"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
+		# fuse.Project =				str(prjFilePath)
+		# fuse.Executable =			str(exeFilePath)
+		
 		parameterList = [
-			str(fuseExecutablePath),
 			('test.%s' % testbenchName),
 			'--incremental',
 			'--timeprecision_vhdl', '1fs',			# set minimum time precision to 1 fs
@@ -254,32 +216,28 @@ class Simulator(PoCSimulator):
 			'--prj',	str(prjFilePath),
 			'-o',			str(exeFilePath)
 		]
-		command = " ".join(parameterList)
+		fuse.Link(parameterList)
+	
+	def _RunSimulation(self, testbenchName):
+		self._LogNormal("  running simulation...")
 		
-		self.printDebug("call fuse: %s" % str(parameterList))
-		self.printVerbose("    command: %s" % command)
+		iSimLogFilePath =		self._tempPath / (testbenchName + ".iSim.log")
+		exeFilePath =				self._tempPath / (testbenchName + ".exe")
+		tclBatchFilePath =	self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['iSimBatchScript']
+		tclGUIFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['iSimGUIScript']
+		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['iSimWaveformConfigFile']
+
+		# create a ISESimulator instance
+		iSim = self._ise.GetSimulator()
+		# iSim.LogFile =				str(iSimLogFilePath)
+		# iSim.TimeResolution = "1fs"
+		# iSim.MultiThreading =	4
+		# iSim.RangeCheck =			True
+		# iSim.TopLevel =				"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
+		# iSim.Project =				str(prjFilePath)
+		# iSim.Executable =			str(exeFilePath)
 		
-		try:
-			linkerLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
-		except subprocess.CalledProcessError as ex:
-			print("ERROR while executing fuse: %s" % str(vhdlFilePath))
-			print("Return Code: %i" % ex.returncode)
-			print("-" * 80)
-			print(ex.output)
-			print("-" * 80)
-			
-			return
-		
-		if self.showLogs:
-			print("fuse log (fuse)")
-			print("--------------------------------------------------------------------------------")
-			print(linkerLog)
-			print()
-		
-		# running simulation
-		self.printNonQuiet("  running simulation...")
 		parameterList = [
-			str(exeFilePath),
 			'-log', str(iSimLogFilePath)
 		]
 		
@@ -290,45 +248,304 @@ class Simulator(PoCSimulator):
 				'-tclbatch', str(tclGUIFilePath),
 				'-gui'
 			]
-			
-			self.printDebug("waveform config file: %s" % str(wcfgFilePath))
-			
-			# if waveform configuration file exists, load it's settings
-			if wcfgFilePath.exists():
-				parameterList += ['-view', str(wcfgFilePath)]
 		
-		command = " ".join(parameterList)
+		# if GTKWave savefile exists, load it's settings
+		if wcfgFilePath.exists():
+			self._LogDebug("    Found waveform config file: '{0}'".format(str(wcfgFilePath)))
+			# gtkw.WaveformFile = str(wcfgFilePath)
+			parameterList += ['-view', str(wcfgFilePath)]
+		else:
+			self._LogDebug("    Didn't find waveform config file: '{0}'".format(str(wcfgFilePath)))
 		
-		self.printDebug("call simulation: %s" % str(parameterList))
-		self.printVerbose("    command: %s" % command)
+		iSim.Simulate(parameterList)
 		
-		try:
-			simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
-		except subprocess.CalledProcessError as ex:
-			print("ERROR while executing iSim: %s" % str(vhdlFilePath))
-			print("Return Code: %i" % ex.returncode)
-			print("-" * 80)
-			print(ex.output)
-			print("-" * 80)
-			
-			return
-		
-		if self.showLogs:
-			print("simulator log")
-			print("--------------------------------------------------------------------------------")
-			print(simulatorLog)
-			print("--------------------------------------------------------------------------------")		
-	
-		print()
-		if (not self.__guiMode):
-			try:
-				result = self.checkSimulatorOutput(simulatorLog)
+		# print()
+		# if (not self.__guiMode):
+			# try:
+				# result = self.checkSimulatorOutput(simulatorLog)
 				
-				if (result == True):
-					print("Testbench '%s': PASSED" % testbenchName)
-				else:
-					print("Testbench '%s': FAILED" % testbenchName)
+				# if (result == True):
+					# print("Testbench '%s': PASSED" % testbenchName)
+				# else:
+					# print("Testbench '%s': FAILED" % testbenchName)
 					
-			except SimulatorException as ex:
-				raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
+			# except SimulatorException as ex:
+				# raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
 	
+class ISESimulatorExecutable:
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
+		self._platform =						platform
+		self._binaryDirectoryPath =	binaryDirectoryPath
+		self._version =							version
+		self.__logger =							logger
+	
+	def GetVHDLCompiler(self):
+		return ISEVHDLCompiler(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
+	
+	def GetLinker(self):
+		return ISELinker(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
+	
+	def GetSimulator(self):
+		return ISESimulator(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
+		
+class ISEVHDLCompiler(Executable, ISESimulatorExecutable):
+	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
+		ISESimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
+		
+		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vhcomp.exe"
+		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vhcomp"
+		else:																						raise PlatformNotSupportedException(self._platform)
+		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+
+		self._verbose =						False
+		self._rangecheck =				False
+		self._vhdlVersion =				None
+		self._vhdlLibrary =				None
+	
+	@property
+	def Verbose(self):
+		return self._verbose
+	@Verbose.setter
+	def Verbose(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._verbose != value):
+			self._verbose = value
+			if value:			self._defaultParameters.append("-v")
+			else:					self._defaultParameters.remove("-v")
+	
+	@property
+	def VHDLLibrary(self):
+		return self._vhdlLibrary
+	@VHDLLibrary.setter
+	def VHDLLibrary(self, value):
+		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
+		if (self._vhdlLibrary is None):
+			self._defaultParameters.append("--work={0}".format(value))
+			self._vhdlLibrary = value
+		elif (self._vhdlLibrary != value):
+			self._defaultParameters.remove("--work={0}".format(self._vhdlLibrary))
+			self._defaultParameters.append("--work={0}".format(value))
+			self._vhdlLibrary = value
+	
+	@property
+	def RangeCheck(self):
+		return self._rangecheck
+	@RangeCheck.setter
+	def RangeCheck(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._rangecheck != value):
+			self._rangecheck = value
+			if value:			self._defaultParameters.append("-rangecheck")
+			else:					self._defaultParameters.remove("-rangecheck")
+	
+	def Compile(self, vhdlFile):
+		parameterList = self._defaultParameters.copy()
+		parameterList.append(vhdlFile)
+		
+		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		
+		_indent = "    "
+		try:
+			vhcompLog = self.StartProcess(parameterList)
+			
+			log = ""
+			for line in vhcompLog.split("\n")[:-1]:
+					log += _indent + line + "\n"
+			
+			# if self.showLogs:
+			if (log != ""):
+				print(_indent + "vlib messages for : {0}".format(str(filePath)))
+				print(_indent + "-" * 80)
+				print(log[:-1])
+				print(_indent + "-" * 80)
+		except CalledProcessError as ex:
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format(str(filePath)))
+			print(_indent + "Return Code: {0}".format(ex.returncode))
+			print(_indent + "-" * 80)
+			for line in ex.output.split("\n"):
+				print(_indent + line)
+			print(_indent + "-" * 80)
+		
+class ISELinker(Executable, ISESimulatorExecutable):
+	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
+		ISESimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
+		
+		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "fuse.exe"
+		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "fuse"
+		else:																						raise PlatformNotSupportedException(self._platform)
+		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+
+		self._verbose =						False
+		self._rangecheck =				False
+		self._vhdlVersion =				None
+		self._vhdlLibrary =				None
+	
+	@property
+	def Verbose(self):
+		return self._verbose
+	@Verbose.setter
+	def Verbose(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._verbose != value):
+			self._verbose = value
+			if value:			self._defaultParameters.append("-v")
+			else:					self._defaultParameters.remove("-v")
+	
+	@property
+	def VHDLLibrary(self):
+		return self._vhdlLibrary
+	@VHDLLibrary.setter
+	def VHDLLibrary(self, value):
+		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
+		if (self._vhdlLibrary is None):
+			self._defaultParameters.append("--work={0}".format(value))
+			self._vhdlLibrary = value
+		elif (self._vhdlLibrary != value):
+			self._defaultParameters.remove("--work={0}".format(self._vhdlLibrary))
+			self._defaultParameters.append("--work={0}".format(value))
+			self._vhdlLibrary = value
+	
+	@property
+	def RangeCheck(self):
+		return self._rangecheck
+	@RangeCheck.setter
+	def RangeCheck(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._rangecheck != value):
+			self._rangecheck = value
+			if value:			self._defaultParameters.append("-rangecheck")
+			else:					self._defaultParameters.remove("-rangecheck")
+	
+	def Link(self, paramList):
+		parameterList = self._defaultParameters.copy()
+		parameterList += paramList
+		
+		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		
+		_indent = "    "
+		try:
+			fuseLog = self.StartProcess(parameterList)
+			
+			log = ""
+			for line in fuseLog.split("\n")[:-1]:
+					log += _indent + line + "\n"
+			
+			# if self.showLogs:
+			if (log != ""):
+				print(_indent + "vlib messages for : {0}".format(str(filePath)))
+				print(_indent + "-" * 80)
+				print(log[:-1])
+				print(_indent + "-" * 80)
+		except CalledProcessError as ex:
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format(str(filePath)))
+			print(_indent + "Return Code: {0}".format(ex.returncode))
+			print(_indent + "-" * 80)
+			for line in ex.output.split("\n"):
+				print(_indent + line)
+			print(_indent + "-" * 80)
+
+class ISESimulator(Executable, ISESimulatorExecutable):
+	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
+		ISESimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
+		
+		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "isim.exe"
+		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "isim"
+		else:																						raise PlatformNotSupportedException(self._platform)
+		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+
+		self._verbose =						None
+		self._optimize =					None
+		self._comanndLineMode =		None
+		self._timeResolution =		None
+		self._batchCommand =			None
+		self._topLevel =					None
+	
+	@property
+	def Verbose(self):
+		return self._verbose
+	@Verbose.setter
+	def Verbose(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._verbose != value):
+			self._verbose = value
+			if value:			self._defaultParameters.append("-v")
+			else:					self._defaultParameters.remove("-v")
+	
+	@property
+	def Optimization(self):
+		return self._optimize
+	@Optimization.setter
+	def Optimization(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._optimize != value):
+			self._optimize = value
+			if value:			self._defaultParameters.append("-vopt")
+			else:					self._defaultParameters.remove("-vopt")
+	
+	@property
+	def TimeResolution(self):
+		return self._timeResolution
+	@TimeResolution.setter
+	def TimeResolution(self, value):
+		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
+		units = ("fs", "ps", "us", "ms", "sec", "min", "hr")
+		if (not value.endswith(units)):									raise ValueError("Parameter 'value' must contain a time unit.")
+		if (self._timeResolution is None):
+			self._defaultParameters.append("-t")
+			self._defaultParameters.append(value)
+			
+	@property
+	def ComanndLineMode(self):
+		return self._comanndLineMode
+	@ComanndLineMode.setter
+	def ComanndLineMode(self, value):
+		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
+		if (self._comanndLineMode != value):
+			self._comanndLineMode = value
+			if value:			self._defaultParameters.append("-c")
+			else:					self._defaultParameters.remove("-c")
+	
+	@property
+	def BatchCommand(self):
+		return self._batchCommand
+	@BatchCommand.setter
+	def BatchCommand(self, value):
+		if (not isinstance(value, str)):																raise ValueError("Parameter 'value' is not of type str.")
+		self._defaultParameters.append("-do")
+		self._defaultParameters.append(value)
+	
+	@property
+	def TopLevel(self):
+		return self._topLevel
+	@TopLevel.setter
+	def TopLevel(self, value):
+		if (not isinstance(value, str)):																raise ValueError("Parameter 'value' is not of type str.")
+		self._defaultParameters.append(value)
+	
+	def Simulate(self, paramList):
+		parameterList = self._defaultParameters.copy()
+		parameterList += paramList
+		
+		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		
+		_indent = "    "
+		try:
+			isimLog = self.StartProcess(parameterList)
+			
+			log = ""
+			for line in isimLog.split("\n")[:-1]:
+					log += _indent + line + "\n"
+			
+			# if self.showLogs:
+			if (log != ""):
+				print(_indent + "vsim messages for : {0}".format(str(filePath)))
+				print(_indent + "-" * 80)
+				print(log[:-1])
+				print(_indent + "-" * 80)
+		except CalledProcessError as ex:
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vsim: {0}".format(str(filePath)))
+			print(_indent + "Return Code: {0}".format(ex.returncode))
+			print(_indent + "-" * 80)
+			for line in ex.output.split("\n"):
+				print(_indent + line)
+			print(_indent + "-" * 80)

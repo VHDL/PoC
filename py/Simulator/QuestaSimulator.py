@@ -10,8 +10,6 @@
 # Description:
 # ------------------------------------
 #		TODO:
-#		- 
-#		- 
 #
 # License:
 # ==============================================================================
@@ -40,8 +38,9 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.vSimSimulator")
 
 # load dependencies
-from pathlib import Path
+from pathlib								import Path
 from os											import chdir
+from configparser						import NoSectionError
 from colorama								import Fore as Foreground
 from subprocess							import CalledProcessError
 
@@ -84,8 +83,8 @@ class Simulator(PoCSimulator):
 
 	def PrepareSimulator(self, binaryPath, version):
 		# create the GHDL executable factory
-		self._LogVerbose("  Preparing GHDL simulator.")
-		self._questa =		QuestaSimulatorExecutable(self.Host.Platform, binaryPath, version)
+		self._LogVerbose("  Preparing Mentor simulator.")
+		self._questa =		QuestaSimulatorExecutable(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, pocEntities, **kwargs):
 		for pocEntity in pocEntities:
@@ -110,6 +109,7 @@ class Simulator(PoCSimulator):
 		self._AddFileListFile(fileListFilePath)
 		
 		self._RunCompile()
+		# self._RunOptimize()
 		
 		if (not self.__guiMode):
 			self._RunSimulation(testbenchName)
@@ -223,16 +223,16 @@ class QuestaSimulatorExecutable:
 		self._platform =						platform
 		self._binaryDirectoryPath =	binaryDirectoryPath
 		self._version =							version
-		self._logger =							logger
+		self.__logger =							logger
 	
 	def GetVHDLCompiler(self):
-		return QuestaVHDLCompiler(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+		return QuestaVHDLCompiler(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
 		
 	def GetSimulator(self):
-		return QuestaSimulator(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+		return QuestaSimulator(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
 		
 	def GetVHDLLibraryTool(self):
-		return QuestaVHDLLibraryTool(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+		return QuestaVHDLLibraryTool(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
 
 class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
@@ -241,7 +241,7 @@ class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vcom.exe"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vcom"
 		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters)
+		super().__init__(platform, executablePath, defaultParameters, logger=logger)
 
 		self._verbose =						False
 		self._rangecheck =				False
@@ -307,9 +307,7 @@ class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
 		parameterList = self._defaultParameters.copy()
 		parameterList.append(vhdlFile)
 		
-		self._LogDebug("call ghdl: {0}".format(str(parameterList)))
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		print("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
 		try:
@@ -340,7 +338,7 @@ class QuestaSimulator(Executable, QuestaSimulatorExecutable):
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vsim.exe"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vsim"
 		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters)
+		super().__init__(platform, executablePath, defaultParameters, logger=logger)
 
 		self._verbose =						None
 		self._optimize =					None
@@ -414,9 +412,7 @@ class QuestaSimulator(Executable, QuestaSimulatorExecutable):
 	def Simulate(self):
 		parameterList = self._defaultParameters.copy()
 		
-		self._LogDebug("call ghdl: {0}".format(str(parameterList)))
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		print("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
 		try:
@@ -447,7 +443,7 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimulatorExecutable):
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vlib.exe"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vlib"
 		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters)
+		super().__init__(platform, executablePath, defaultParameters, logger=logger)
 
 		self._verbose =						False
 	
@@ -466,9 +462,7 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimulatorExecutable):
 		parameterList = self._defaultParameters.copy()
 		parameterList.append(vhdlLibraryName)
 		
-		self._LogDebug("call ghdl: {0}".format(str(parameterList)))
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		print("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
 		try:

@@ -40,12 +40,18 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.aSimSimulator")
 
 # load dependencies
-from pathlib import Path
+from pathlib								import Path
 from os											import chdir
+from configparser						import NoSectionError
+from colorama								import Fore as Foreground
 
-from Base.Exceptions import *
-from Simulator.Base import PoCSimulator 
-from Simulator.Exceptions import * 
+from Base.Exceptions				import *
+from Base.PoCConfig					import *
+from Base.Project						import FileTypes
+from Base.PoCProject				import *
+from Simulator.Exceptions		import *
+from Simulator.Base					import PoCSimulator, Executable, VHDLTestbenchLibraryName 
+
 
 class Simulator(PoCSimulator):
 	__guiMode =				False
@@ -90,7 +96,7 @@ class Simulator(PoCSimulator):
 	def PrepareSimulator(self, binaryPath, version):
 		# create the GHDL executable factory
 		self._LogVerbose("  Preparing GHDL simulator.")
-		self._questa =		AldecSimulatorExecutable(self.Host.Platform, binaryPath, version)
+		self._aSim =		AldecSimulatorExecutable(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, pocEntities, **kwargs):
 		for pocEntity in pocEntities:
@@ -149,7 +155,7 @@ class Simulator(PoCSimulator):
 			print("  ----------------------------------------")
 		
 		# change working directory to temporary iSim path
-		self.printVerbose('  cd "%s"' % str(tempaSimPath))
+		self._LogVerbose('  cd "%s"' % str(tempaSimPath))
 		os.chdir(str(tempaSimPath))
 
 		# parse project filelist
@@ -158,8 +164,8 @@ class Simulator(PoCSimulator):
 		filesLineRegExpStr +=	r"\s+\"(?P<VHDLFile>.*?)\""						# VHDL filename without "-signs
 		filesLineRegExp = re.compile(filesLineRegExpStr)
 
-		self.printDebug("Reading filelist '%s'" % str(fileListFilePath))
-		self.printNonQuiet("  running analysis for every vhdl file...")
+		self._LogDebug("Reading filelist '%s'" % str(fileListFilePath))
+		self._LogNormal("  running analysis for every vhdl file...")
 		
 		# add empty line if logs are enabled
 		if self.showLogs:		print()
@@ -181,9 +187,9 @@ class Simulator(PoCSimulator):
 						else:
 							continue
 					elif (filesLineRegExpMatch.group('Keyword') == "altera"):
-						self.printVerbose("    skipped Altera specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
+						self._LogVerbose("    skipped Altera specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
 					elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
-#						self.printVerbose("    skipped Xilinx specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
+#						self._LogVerbose("    skipped Xilinx specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
 						# check if ISE or Vivado is configured
 						if not self.Host.Directories.__contains__("XilinxPrimitiveSource"):
 							raise NotConfiguredException("This testbench requires some Xilinx Primitves. Please configure Xilinx ISE or Vivado.")
@@ -200,8 +206,8 @@ class Simulator(PoCSimulator):
 						parameterList = [str(aLibExecutablePath), vhdlLibraryName]
 						command = " ".join(parameterList)
 						
-						self.printDebug("call alib: %s" % str(parameterList))
-						self.printVerbose("    command: %s" % command)
+						self._LogDebug("call alib: %s" % str(parameterList))
+						self._LogVerbose("    command: %s" % command)
 						
 						try:
 							aLibLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
@@ -244,8 +250,8 @@ class Simulator(PoCSimulator):
 					]
 					command = " ".join(parameterList)
 					
-					self.printDebug("call acom: %s" % str(parameterList))
-					self.printVerbose("    command: %s" % command)
+					self._LogDebug("call acom: %s" % str(parameterList))
+					self._LogVerbose("    command: %s" % command)
 					
 					try:
 						aComLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
@@ -267,7 +273,7 @@ class Simulator(PoCSimulator):
 		simulatorLog = ""
 		
 		# run aSim simulation on Windows
-		self.printNonQuiet("  running simulation...")
+		self._LogNormal("  running simulation...")
 	
 		parameterList = [
 			str(aSimExecutablePath)#,
@@ -280,10 +286,10 @@ class Simulator(PoCSimulator):
 			parameterList += ['-title', testbenchName]
 			
 			if (tclWaveFilePath.exists()):
-				self.printDebug("Found waveform script: '%s'" % str(tclWaveFilePath))
+				self._LogDebug("Found waveform script: '%s'" % str(tclWaveFilePath))
 				parameterList += ['-do', ('do {%s}; do {%s}' % (str(tclWaveFilePath), str(tclGUIFilePath)))]
 			else:
-				self.printDebug("Didn't find waveform script: '%s'. Loading default commands." % str(tclWaveFilePath))
+				self._LogDebug("Didn't find waveform script: '%s'. Loading default commands." % str(tclWaveFilePath))
 				parameterList += ['-do', ('add wave *; do {%s}' % str(tclGUIFilePath))]
 		else:
 			parameterList += [
@@ -298,8 +304,8 @@ class Simulator(PoCSimulator):
 		
 		command = " ".join(parameterList)
 	
-		self.printDebug("call asim: %s" % str(parameterList))
-		self.printVerbose("    command: %s" % command)
+		self._LogDebug("call asim: %s" % str(parameterList))
+		self._LogVerbose("    command: %s" % command)
 		
 		try:
 			simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
@@ -331,7 +337,7 @@ class Simulator(PoCSimulator):
 		
 # 		else:	# guiMode
 # 			# run GTKWave GUI
-# 			self.printNonQuiet("  launching GTKWave...")
+# 			self._LogNormal("  launching GTKWave...")
 # 		
 # 			parameterList = [
 # 				str(gtkwExecutablePath),
@@ -344,8 +350,8 @@ class Simulator(PoCSimulator):
 # 				
 # 			command = " ".join(parameterList)
 # 		
-# 			self.printDebug("call GTKWave: %s" % str(parameterList))
-# 			self.printVerbose("    command: %s" % command)
+# 			self._LogDebug("call GTKWave: %s" % str(parameterList))
+# 			self._LogVerbose("    command: %s" % command)
 # 			try:
 # 				gtkwLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 # 			except subprocess.CalledProcessError as ex:

@@ -54,7 +54,7 @@ from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
 from Parser.Parser					import ParserException
-from Simulator.Exceptions		import * 
+from Simulator.Exceptions		import *
 from Simulator.Base					import PoCSimulator, Executable, VHDLTestbenchLibraryName
 
 class Simulator(PoCSimulator):
@@ -321,7 +321,7 @@ class Simulator(PoCSimulator):
 # 			exeFilePath =		tempGHDLPath / testbenchName.lower()
 # 		
 # 			# run elaboration
-# 			self.printNonQuiet("  running elaboration...")
+# 			self._LogNormal("  running elaboration...")
 # 		
 # 			parameterList = [
 # 				str(ghdlExecutablePath),
@@ -341,8 +341,8 @@ class Simulator(PoCSimulator):
 # 
 # 			command = " ".join(parameterList)
 # 		
-# 			self.printDebug("call ghdl: %s" % str(parameterList))
-# 			self.printVerbose("    command: %s" % command)
+# 			self._LogDebug("call ghdl: %s" % str(parameterList))
+# 			self._LogVerbose("    command: %s" % command)
 # 			try:
 # 				elaborateLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 # 				# 
@@ -387,7 +387,7 @@ class Simulator(PoCSimulator):
 # 
 # 	
 # 			# run simulation
-# 			self.printNonQuiet("  running simulation...")
+# 			self._LogNormal("  running simulation...")
 # 		
 # 			parameterList = [str(exeFilePath)]
 # 			
@@ -407,8 +407,8 @@ class Simulator(PoCSimulator):
 # 				
 # 			command = " ".join(parameterList)
 # 		
-# 			self.printDebug("call ghdl: %s" % str(parameterList))
-# 			self.printVerbose("    command: %s" % command)
+# 			self._LogDebug("call ghdl: %s" % str(parameterList))
+# 			self._LogVerbose("    command: %s" % command)
 # 			try:
 # 				simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 # 				
@@ -447,7 +447,7 @@ class Simulator(PoCSimulator):
 # 		
 # 		else:	# guiMode
 # 			# run GTKWave GUI
-# 			self.printNonQuiet("  launching GTKWave...")
+# 			self._LogNormal("  launching GTKWave...")
 # 			
 # 			if (not waveformFilePath.exists()):
 # 				raise SimulatorException("Waveform file not found.") from FileNotFoundError(str(waveformFilePath))
@@ -462,15 +462,15 @@ class Simulator(PoCSimulator):
 # 
 # 			# if GTKWave savefile exists, load it's settings
 # 			if gtkwSaveFilePath.exists():
-# 				self.printDebug("Found waveform save file: '%s'" % str(gtkwSaveFilePath))
+# 				self._LogDebug("Found waveform save file: '%s'" % str(gtkwSaveFilePath))
 # 				parameterList += ['--save', str(gtkwSaveFilePath)]
 # 			else:
-# 				self.printDebug("Didn't find waveform save file: '%s'." % str(gtkwSaveFilePath))
+# 				self._LogDebug("Didn't find waveform save file: '%s'." % str(gtkwSaveFilePath))
 # 			
 # 			command = " ".join(parameterList)
 # 		
-# 			self.printDebug("call GTKWave: %s" % str(parameterList))
-# 			self.printVerbose("    command: %s" % command)
+# 			self._LogDebug("call GTKWave: %s" % str(parameterList))
+# 			self._LogVerbose("    command: %s" % command)
 # 			try:
 # 				gtkwLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
 # 				
