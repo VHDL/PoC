@@ -181,8 +181,11 @@ class Simulator(PoCSimulator):
 		# aSim.TimeResolution =		"1fs"
 		# aSim.ComanndLineMode =	True
 		# aSim.BatchCommand =			"do {0}".format(str(tclBatchFilePath))
-		aSim.TopLevel =					"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
-		aSim.Simulate()
+		# aSim.TopLevel =					"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
+		
+		parameter = "asim -lib {0} {1}\nrun -all\nbye".format(VHDLTestbenchLibraryName, testbenchName)
+		
+		aSim.Simulate(parameter)
 		
 	def _RunSimulationWithGUI(self, testbenchName):
 		self._LogNormal("  running simulation...")
@@ -344,8 +347,8 @@ class ActiveHDLSimulator(Executable, ActiveHDLSimulatorExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
 		ActiveHDLSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 		
-		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vsim.exe"
-		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vsim"
+		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vsimsa.bat"
+		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vsimsa"
 		else:																						raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, executablePath, defaultParameters, logger=logger)
 
@@ -418,8 +421,10 @@ class ActiveHDLSimulator(Executable, ActiveHDLSimulatorExecutable):
 		if (not isinstance(value, str)):																raise ValueError("Parameter 'value' is not of type str.")
 		self._defaultParameters.append(value)
 	
-	def Simulate(self):
+	def Simulate(self, parameter):
 		parameterList = self._defaultParameters.copy()
+		
+		parameterList.append(parameter)
 		
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
@@ -433,12 +438,12 @@ class ActiveHDLSimulator(Executable, ActiveHDLSimulatorExecutable):
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "aSim messages for : {0}".format(str(filePath)))
+				print(_indent + "vsimsa messages for : {0}".format(str(parameterList)))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing aSim: {0}".format(str(filePath)))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vsimsa: {0}".format(str(parameterList)))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
