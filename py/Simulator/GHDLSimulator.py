@@ -52,7 +52,7 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, LongFlagArgument, ValuedFlagArgument, TupleArgument, PathArgument
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, LongFlagArgument, ValuedFlagArgument, TupleArgument, PathArgument, StringArgument
 from Parser.Parser					import ParserException
 from Simulator.Exceptions		import *
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
@@ -221,35 +221,53 @@ class Simulator(PoCSimulator):
 			
 		# create a GHDLRun instance
 		ghdl = self._ghdl.GetGHDLRun()
-		ghdl.VHDLVersion =	self._vhdlVersion
-		ghdl.VHDLLibrary =	VHDLTestbenchLibraryName
+		ghdl.Parameters[ghdl.FlagVerbose] =						True
+		ghdl.Parameters[ghdl.FlagExplicit] =					True
+		ghdl.Parameters[ghdl.FlagRelaxedRules] =			True
+		ghdl.Parameters[ghdl.FlagWarnBinding] =				True
+		ghdl.Parameters[ghdl.FlagNoVitalChecks] =			True
+		ghdl.Parameters[ghdl.FlagMultiByteComments] =	True
+		ghdl.Parameters[ghdl.FlagSynBinding] =				True
+		ghdl.Parameters[ghdl.FlagPSL] =								True
+		ghdl.Parameters[ghdl.SwitchVHDLLibrary] =			VHDLTestbenchLibraryName
+		ghdl.Parameters[ghdl.ArgTopLevel] =						testbenchName
+
+		if (self._vhdlVersion == VHDLVersion.VHDL87):
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"87"
+			ghdl.Parameters[ghdl.SwitchIEEEFlavor] =		"synopsys"
+		elif (self._vhdlVersion == VHDLVersion.VHDL93):
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"93"
+			ghdl.Parameters[ghdl.SwitchIEEEFlavor] =		"synopsys"
+		elif (self._vhdlVersion == VHDLVersion.VHDL02):
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"02"
+		elif (self._vhdlVersion == VHDLVersion.VHDL08):
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"08"
+		else:																					raise SimulatorException("VHDL version is not supported.")
 
 		# add external library references
 		for extLibrary in self._pocProject.ExternalVHDLLibraries:
 			ghdl.AddLibraryReference(extLibrary.Path)
-			
+
 		# configure RUNOPTS
-		runOptions = []
-		runOptions.append('--ieee-asserts={0}'.format("disable-at-0"))		# enable, disable, disable-at-0
+		ghdl.RunOptions[ghdl.SwitchIEEEAsserts] = "disable-at-0"		# enable, disable, disable-at-0
 		# set dump format to save simulation results to *.vcd file
 		if (self._guiMode):
 			waveformFileFormat =	self.Host.tbConfig[self._testbenchFQN]['ghdlWaveformFileFormat']
-					
 			if (waveformFileFormat == "vcd"):
 				waveformFilePath = self._tempPath / (testbenchName + ".vcd")
-				runOptions.append("--vcd={0}".format(str(waveformFilePath)))
+				ghdl.RunOptions[ghdl.SwitchVCDWaveform] =		waveformFilePath
 			elif (waveformFileFormat == "vcdgz"):
 				waveformFilePath = self._tempPath / (testbenchName + ".vcd.gz")
-				runOptions.append("--vcdgz={0}".format(str(waveformFilePath)))
+				ghdl.RunOptions[ghdl.SwitchVCDGZWaveform] =	waveformFilePath
 			elif (waveformFileFormat == "fst"):
 				waveformFilePath = self._tempPath / (testbenchName + ".fst")
-				runOptions.append("--fst={0}".format(str(waveformFilePath)))
+				ghdl.RunOptions[ghdl.SwitchFSTWaveform] =		waveformFilePath
 			elif (waveformFileFormat == "ghw"):
 				waveformFilePath = self._tempPath / (testbenchName + ".ghw")
-				runOptions.append("--wave={0}".format(str(waveformFilePath)))
+				ghdl.RunOptions[ghdl.SwitchGHDLWaveform] =	waveformFilePath
 			else:																						raise SimulatorException("Unknown waveform file format for GHDL.")
 		
-		ghdl.Run(testbenchName, runOptions)
+		ghdl.Run()
 		
 	def _ExecuteSimulation(self, testbenchName):
 		self._LogNormal("  launching simulation...")
@@ -359,30 +377,7 @@ class Simulator(PoCSimulator):
 # 				'--work=test',
 # 				testbenchName
 # 			]
-# 
-# 			command = " ".join(parameterList)
-# 		
-# 			self._LogDebug("call ghdl: %s" % str(parameterList))
-# 			self._LogVerbose("    command: %s" % command)
-# 			try:
-# 				elaborateLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
-# 				# 
-# 				if self.showLogs:
-# 					if (elaborateLog != ""):
-# 						print("ghdl elaborate messages:")
-# 						print("-" * 80)
-# 						print(elaborateLog)
-# 						print("-" * 80)
-# 				
-# 			except subprocess.CalledProcessError as ex:
-# 				print("ERROR while executing ghdl command: %s" % command)
-# 				print("Return Code: %i" % ex.returncode)
-# 				print("-" * 80)
-# 				print(ex.output)
-# 				print("-" * 80)
-# 				
-# 				return
-# 
+
 # 			# search log for fatal warnings
 # 			analyzeErrors = []
 # 			elaborateLogRegExpStr =	r"(?P<VHDLFile>.*?):(?P<LineNumber>\d+):\d+:warning: component instance \"(?P<ComponentName>[a-z]+)\" is not bound"
@@ -405,64 +400,7 @@ class Simulator(PoCSimulator):
 # 					print("    %s: '%s' in file '%s' at line %s" % (err['Type'], err['Component'], err['File'], err['Line']))
 # 			
 # 				raise SimulatorException("Errors while GHDL analysis phase.")
-# 
-# 	
-# 			# run simulation
-# 			self._LogNormal("  running simulation...")
-# 		
-# 			parameterList = [str(exeFilePath)]
-# 			
-# 			# append RUNOPTS
-# 			parameterList += [('--ieee-asserts={0}'.format("disable-at-0"))]		# enable, disable, disable-at-0
-# 			
-# 			# set dump format to save simulation results to *.vcd file
-# 			if (self.__guiMode):
-# 				if (waveformFileFormat == "vcd"):
-# 					parameterList += [("--vcd={0}".format(str(waveformFilePath)))]
-# 				elif (waveformFileFormat == "vcdgz"):
-# 					parameterList += [("--vcdgz={0}".format(str(waveformFilePath)))]
-# 				elif (waveformFileFormat == "fst"):
-# 					parameterList += [("--fst={0}".format(str(waveformFilePath)))]
-# 				elif (waveformFileFormat == "ghw"):
-# 					parameterList += [("--wave={0}".format(str(waveformFilePath)))]
-# 				
-# 			command = " ".join(parameterList)
-# 		
-# 			self._LogDebug("call ghdl: %s" % str(parameterList))
-# 			self._LogVerbose("    command: %s" % command)
-# 			try:
-# 				simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
-# 				
-# 				# 
-# 				if self.showLogs:
-# 					if (simulatorLog != ""):
-# 						print("ghdl messages for : %s" % str(vhdlFilePath))
-# 						print("-" * 80)
-# 						print(simulatorLog)
-# 						print("-" * 80)
-# 				
-# 			except subprocess.CalledProcessError as ex:
-# 				print("ERROR while executing ghdl command: %s" % command)
-# 				print("Return Code: %i" % ex.returncode)
-# 				print("-" * 80)
-# 				print(ex.output)
-# 				print("-" * 80)
-# 				
-# 				return
-# 
-# 		print()
-# 		
-# 		if (not self.__guiMode):
-# 			try:
-# 				result = self.checkSimulatorOutput(simulatorLog)
-# 				
-# 				if (result is None):
-# 					print("Testbench '{0}': NO ASSERTS PERFORMED".format(testbenchName))
-# 				elif (result == True):
-# 					print("Testbench '{0}': PASSED".format(testbenchName))
-# 				else:
-# 					print("Testbench '{0}': FAILED".format(testbenchName))
-# 					
+#
 # 			except SimulatorException as ex:
 # 				raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED|NO ASSERTS]' not found in simulator output.") from ex
 # 		
@@ -487,36 +425,13 @@ class Simulator(PoCSimulator):
 # 				parameterList += ['--save', str(gtkwSaveFilePath)]
 # 			else:
 # 				self._LogDebug("Didn't find waveform save file: '%s'." % str(gtkwSaveFilePath))
-# 			
-# 			command = " ".join(parameterList)
-# 		
-# 			self._LogDebug("call GTKWave: %s" % str(parameterList))
-# 			self._LogVerbose("    command: %s" % command)
-# 			try:
-# 				gtkwLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, shell=False, universal_newlines=True)
-# 				
-# 				# 
-# 				if self.showLogs:
-# 					if (gtkwLog != ""):
-# 						print("GTKWave messages:")
-# 						print("-" * 80)
-# 						print(gtkwLog)
-# 						print("-" * 80)
-# 
+#
 # 				if gtkwSaveFilePath.exists():
 # 					for line in fileinput.input(str(gtkwSaveFilePath), inplace = 1):
 # 						if line.startswith(('[dumpfile', '[savefile')):
 # 							continue
 # 						print(line.rstrip(os.linesep))
-# 
-# 			except subprocess.CalledProcessError as ex:
-# 				print("ERROR while executing GTKWave command: %s" % command)
-# 				print("Return Code: %i" % ex.returncode)
-# 				print("-" * 80)
-# 				print(ex.output)
-# 				print("-" * 80)
-# 				
-# 				return
+#
 
 class GHDLExecutable(Executable):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, defaultParameters=[], logger=None):
@@ -599,6 +514,9 @@ class GHDLExecutable(Executable):
 	class ArgSourceFile(metaclass=PathArgument):
 		pass
 
+	class ArgTopLevel(metaclass=StringArgument):
+		pass
+
 	Parameters = CommandLineArgumentList(
 		Executable,
 		CmdAnalyze,
@@ -615,7 +533,8 @@ class GHDLExecutable(Executable):
 		SwitchIEEEFlavor,
 		SwitchVHDLVersion,
 		SwitchVHDLLibrary,
-		ArgSourceFile
+		ArgSourceFile,
+		ArgTopLevel
 	)
 
 	class SwitchIEEEAsserts(metaclass=ValuedFlagArgument):
@@ -656,7 +575,7 @@ class GHDLExecutable(Executable):
 	def AddLibraryReference(self, path):
 		if isinstance(path, Path):		path = str(path)
 		self._defaultParameters.append("-P{0}".format(path))
-	
+
 	def GetGHDLAnalyze(self):
 		ghdl = GHDLAnalyze(self._platform, self._binaryDirectoryPath, self._version, self._backend, logger=self.Logger)
 		ghdl.Parameters[ghdl.CmdAnalyze] = True
@@ -669,7 +588,10 @@ class GHDLExecutable(Executable):
 	
 	def GetGHDLRun(self):
 		ghdl = GHDLRun(self._platform, self._binaryDirectoryPath, self._version, self._backend, logger=self.Logger)
-		ghdl.Parameters[ghdl.CmdRun] = True
+		for param in ghdl.Parameters:
+			if (param is not ghdl.Executable):
+				ghdl.Parameters[param] = None
+		ghdl.Parameters[ghdl.CmdRun] =			True
 		return ghdl
 
 class GHDLAnalyze(GHDLExecutable):
@@ -750,15 +672,10 @@ class GHDLRun(GHDLExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, binaryDirectoryPath, version, backend, defaultParameters=["-r"], logger=logger)
 	
-	def Run(self, testbenchName, runOptions):
-		self.SynBinding =					True
-		self.FlagPSL =						True
-		self.Verbose =						True
-		
-		parameterList =		self._defaultParameters.copy()
-		parameterList.append(testbenchName)
-		parameterList +=	runOptions
-			
+	def Run(self):
+		parameterList = self.Parameters.ToArgumentList()
+		parameterList += self.RunOptions.ToArgumentList()
+
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
@@ -767,7 +684,7 @@ class GHDLRun(GHDLExecutable):
 			
 			log = ""
 			for line in ghdlLog.split("\n")[:-1]:
-				if (testbenchName not in line):
+				# if (testbenchName not in line):
 					log += _indent + line + "\n"
 			
 			# if self.showLogs:
