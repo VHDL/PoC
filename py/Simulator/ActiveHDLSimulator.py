@@ -48,7 +48,7 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, FlagArgument, StringArgument, TupleArgument, PathArgument
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, ValuedFlagArgument, TupleArgument, PathArgument
 from Simulator.Exceptions		import * 
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
 
@@ -164,7 +164,7 @@ class Simulator(PoCSimulator):
 		# create a ActiveHDLVHDLCompiler instance
 		acom = self._activeHDL.GetVHDLCompiler()
 		# acom.Parameters[acom.FlagVerbose] =				True
-		# acom.Parameters[acom.FlagNoRangeChacke] =	False
+		# acom.Parameters[acom.FlagNoRangeCheck] =	False
 		acom.Parameters[acom.SwitchVHDLVersion] =	self._vhdlversion
 
 		# run acom compile for each VHDL file
@@ -256,11 +256,11 @@ class ActiveHDLVHDLCompiler(Executable, ActiveHDLSimulatorExecutable):
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
 
-	class FlagNoRangeCheck(metaclass=FlagArgument):
+	class FlagNoRangeCheck(metaclass=ShortFlagArgument):
 		_name =		"--norangecheck"
 		_value =	None
 
-	class SwitchVHDLVersion(metaclass=StringArgument):
+	class SwitchVHDLVersion(metaclass=ValuedFlagArgument):
 		_name =		"-"
 		_value =	None
 
@@ -333,15 +333,15 @@ class ActiveHDLSimulator(Executable, ActiveHDLSimulatorExecutable):
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
 
-	class FlagVerbose(metaclass=FlagArgument):
+	class FlagVerbose(metaclass=ShortFlagArgument):
 		_name =		"-v"
 		_value =	None
 
-	class FlagOptimization(metaclass=FlagArgument):
+	class FlagOptimization(metaclass=ShortFlagArgument):
 		_name =		"-vopt"
 		_value =	None
 
-	class FlagCommandLineMode(metaclass=FlagArgument):
+	class FlagCommandLineMode(metaclass=ShortFlagArgument):
 		_name =		"-c"
 		_value =	None
 
@@ -353,7 +353,7 @@ class ActiveHDLSimulator(Executable, ActiveHDLSimulatorExecutable):
 		_name =		"-do"
 		_value =	None
 
-	class SwitchTopLevel(metaclass=StringArgument):
+	class SwitchTopLevel(metaclass=ValuedFlagArgument):
 		_name =		""
 		_value =	None
 
@@ -414,7 +414,7 @@ class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLSimulatorExecutable):
 	# 	_name =		"-v"
 	# 	_value =	None
 
-	class SwitchLibraryName(metaclass=StringArgument):
+	class SwitchLibraryName(metaclass=ValuedFlagArgument):
 		_name =		""
 		_value =	None
 

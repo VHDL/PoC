@@ -99,21 +99,59 @@ class Tool(Enum):
 	Xilinx_iSim =				70
 	Xilinx_xSim =				71
 
-@unique
 class VHDLVersion(Enum):
 	Any =								 0
-	VHDL87 =						87
-	VHDL93 =						93
-	VHDL02 =						2002
-	VHDL08 =						2008
-	
+	VHDL87 =					1987
+	VHDL93 =					1993
+	VHDL02 =					2002
+	VHDL08 =					2008
+	VHDL1987 =				1987
+	VHDL1993 =				1993
+	VHDL2002 =				2002
+	VHDL2008 =				2008
+
 	@classmethod
 	def parse(cls, value):
-		for member in cls:
-			if (member.value == value):
-				return member
+		if isinstance(value, int):
+			if (value == 87):			return cls.VHDL87
+			elif (value == 93):		return cls.VHDL93
+			elif (value == 2):		return cls.VHDL02
+			elif (value == 8):		return cls.VHDL08
+			elif (value == 1987):	return cls.VHDL87
+			elif (value == 1993):	return cls.VHDL93
+			elif (value == 2002):	return cls.VHDL02
+			elif (value == 2008):	return cls.VHDL08
+		elif isinstance(value, str):
+			if (value == "87"):			return cls.VHDL87
+			elif (value == "93"):		return cls.VHDL93
+			elif (value == "02"):		return cls.VHDL02
+			elif (value == "08"):		return cls.VHDL08
+			elif (value == "1987"):	return cls.VHDL87
+			elif (value == "1993"):	return cls.VHDL93
+			elif (value == "2002"):	return cls.VHDL02
+			elif (value == "2008"):	return cls.VHDL08
 		raise ValueError("'{0}' is not a member of {1}.".format(str(value), cls.__name__))
-	
+
+	def __lt__(self, other):		return self.value < other.value
+	def __le__(self, other):		return self.value <= other.value
+	def __gt__(self, other):		return self.value > other.value
+	def __ge__(self, other):		return self.value >= other.value
+	def __ne__(self, other):		return self.value != other.value
+	def __eq__(self, other):
+		if ((self is VHDLVersion.Any) or (other is VHDLVersion.Any)):
+			return True
+		else:
+			return self.value == other.value
+
+	def __str__(self):
+		return "VHDL'" + self.__repr__()
+
+	def __repr__(self):
+		if (self == VHDLVersion.VHDL87):		return "87"
+		elif (self == VHDLVersion.VHDL93):	return "93"
+		elif (self == VHDLVersion.VHDL02):	return "02"
+		elif (self == VHDLVersion.VHDL08):	return "08"
+
 class Project():
 	def __init__(self, name):
 		# print("Project.__init__: name={0}".format(name))

@@ -50,7 +50,7 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, FlagArgument, StringArgument, TupleArgument, PathArgument
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, ValuedFlagArgument, TupleArgument, PathArgument
 from Simulator.Exceptions		import *
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
 
@@ -321,11 +321,11 @@ class ISELinker(Executable, ISESimulatorExecutable):
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
 
-	class FlagIncremental(metaclass=FlagArgument):
+	class FlagIncremental(metaclass=ShortFlagArgument):
 		_name =		"--incremental"
 		_value =	None
 
-	class FlagRangeCheck(metaclass=FlagArgument):
+	class FlagRangeCheck(metaclass=ShortFlagArgument):
 		_name =		"--rangecheck"
 		_value =	None
 
@@ -404,7 +404,7 @@ class ISESimulator(Executable, ISESimulatorExecutable):
 		_name =		"-log"
 		_value =	None
 
-	class FlagGuiMode(metaclass=FlagArgument):
+	class FlagGuiMode(metaclass=ShortFlagArgument):
 		_name =		"-gui"
 		_value =	None
 

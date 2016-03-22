@@ -52,7 +52,7 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, FlagArgument, StringArgument, TupleArgument, PathArgument
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, LongFlagArgument, ValuedFlagArgument, TupleArgument, PathArgument
 from Parser.Parser					import ParserException
 from Simulator.Exceptions		import *
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
@@ -98,8 +98,8 @@ class Simulator(PoCSimulator):
 		
 	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93c", vhdlGenerics=None):
 		self._pocEntity =			pocEntity
-		self._testbenchFQN =	str(pocEntity)
-		self._vhdlversion =		vhdlVersion
+		self._testbenchFQN =	str(pocEntity)										# TODO: implement FQN method on PoCEntity
+		self._vhdlVersion =		VHDLVersion.parse(vhdlVersion)		# TODO: move conversion one level up
 		self._vhdlGenerics =	vhdlGenerics
 
 		# check testbench database for the given testbench		
@@ -136,16 +136,11 @@ class Simulator(PoCSimulator):
 		pocProject.Environment =			Environment.Simulation
 		pocProject.ToolChain =				ToolChain.GHDL_GTKWave
 		pocProject.Tool =							Tool.GHDL
-		
+		pocProject.VHDLVersion = self._vhdlVersion
+
 		if (deviceName is None):			pocProject.Board =					boardName
 		else:													pocProject.Device =					deviceName
-		
-		if (self._vhdlversion == "87"):			pocProject.VHDLVersion =		VHDLVersion.VHDL87
-		elif (self._vhdlversion == "93"):		pocProject.VHDLVersion =		VHDLVersion.VHDL93
-		elif (self._vhdlversion == "93c"):	pocProject.VHDLVersion =		VHDLVersion.VHDL93
-		elif (self._vhdlversion == "02"):		pocProject.VHDLVersion =		VHDLVersion.VHDL02
-		elif (self._vhdlversion == "08"):		pocProject.VHDLVersion =		VHDLVersion.VHDL08
-		
+
 		self._pocProject = pocProject
 		
 	def _AddFileListFile(self, fileListFilePath):
@@ -171,8 +166,27 @@ class Simulator(PoCSimulator):
 		
 		# create a GHDLAnalyzer instance
 		ghdl = self._ghdl.GetGHDLAnalyze()
-		ghdl.VHDLVersion =	self._vhdlversion
-		
+		ghdl.Parameters[ghdl.FlagVerbose] =						True
+		ghdl.Parameters[ghdl.FlagExplicit] =					True
+		ghdl.Parameters[ghdl.FlagRelaxedRules] =			True
+		ghdl.Parameters[ghdl.FlagWarnBinding] =				True
+		ghdl.Parameters[ghdl.FlagNoVitalChecks] =			True
+		ghdl.Parameters[ghdl.FlagMultiByteComments] =	True
+		ghdl.Parameters[ghdl.FlagSynBinding] =				True
+		ghdl.Parameters[ghdl.FlagPSL] =								True
+
+		if (self._vhdlVersion == VHDLVersion.VHDL87):
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"87"
+			ghdl.Parameters[ghdl.SwitchIEEEFlavor] =		"synopsys"
+		elif (self._vhdlVersion == VHDLVersion.VHDL93):
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"93"
+			ghdl.Parameters[ghdl.SwitchIEEEFlavor] =		"synopsys"
+		elif (self._vhdlVersion == VHDLVersion.VHDL02):
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"02"
+		elif (self._vhdlVersion == VHDLVersion.VHDL08):
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"08"
+		else:																					raise SimulatorException("VHDL version is not supported.")
+
 		# add external library references
 		for extLibrary in self._pocProject.ExternalVHDLLibraries:
 			ghdl.AddLibraryReference(extLibrary.Path)
@@ -180,9 +194,10 @@ class Simulator(PoCSimulator):
 		# run GHDL analysis for each VHDL file
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
 			if (not file.Path.exists()):									raise SimulatorException("Can not analyse '{0}'.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
-			
-			ghdl.VHDLLibrary =	file.VHDLLibraryName
-			ghdl.Analyze(file.Path)
+
+			ghdl.Parameters[ghdl.SwitchVHDLLibrary] =			file.VHDLLibraryName
+			ghdl.Parameters[ghdl.ArgSourceFile] =					file.Path
+			ghdl.Analyze()
 
 	# running simulation
 	# ==========================================================================
@@ -191,8 +206,13 @@ class Simulator(PoCSimulator):
 		
 		# create a GHDLElaborate instance
 		ghdl = self._ghdl.GetGHDLElaborate()
-		ghdl.VHDLVersion =	self._vhdlversion
+		ghdl.VHDLVersion =	self._vhdlVersion
 		ghdl.VHDLLibrary =	VHDLTestbenchLibraryName
+
+#		parameterList.append(topLevel)
+#		if (topLevelArchitecture is not None):
+#			parameterList.append(topLevelArchitecture)
+
 		ghdl.Elaborate("arith_prng_tb")
 	
 	
@@ -201,9 +221,9 @@ class Simulator(PoCSimulator):
 			
 		# create a GHDLRun instance
 		ghdl = self._ghdl.GetGHDLRun()
-		ghdl.VHDLVersion =	self._vhdlversion
+		ghdl.VHDLVersion =	self._vhdlVersion
 		ghdl.VHDLLibrary =	VHDLTestbenchLibraryName
-			
+
 		# add external library references
 		for extLibrary in self._pocProject.ExternalVHDLLibraries:
 			ghdl.AddLibraryReference(extLibrary.Path)
@@ -236,7 +256,7 @@ class Simulator(PoCSimulator):
 			
 		# create a GHDLRun instance
 		ghdl = self._ghdl.GetGHDLRun()
-		ghdl.VHDLVersion =	self._vhdlversion
+		ghdl.VHDLVersion =	self._vhdlVersion
 		ghdl.VHDLLibrary =	VHDLTestbenchLibraryName
 		
 		# configure RUNOPTS
@@ -504,6 +524,8 @@ class GHDLExecutable(Executable):
 		elif (platform == "Linux"):			executablePath = binaryDirectoryPath/ "ghdl"
 		else:																						raise PlatformNotSupportedException(platform)
 		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+
+		self.Parameters[self.Executable] = executablePath
 		
 		if (platform == "Windows"):
 			if (backend not in ["mcode"]):								raise SimulatorException("GHDL for Windows does not support backend '{0}'.".format(backend))
@@ -514,18 +536,6 @@ class GHDLExecutable(Executable):
 		self._backend =							backend
 		self._version =							version
 		
-		self._flagExplicit =			False
-		self._flagRelaxedRules =	False
-		self._warnBinding =				False
-		self._noVitalChecks =			False
-		self._multiByteComments =	False
-		self._synBinding =				False
-		self._flagPSL =						False
-		self._verbose =						False
-		self._ieeeFlavor =				None
-		self._vhdlVersion =				None
-		self._vhdlLibrary =				None
-	
 	@property
 	def BinaryDirectoryPath(self):
 		return self._binaryDirectoryPath
@@ -537,52 +547,63 @@ class GHDLExecutable(Executable):
 	@property
 	def Version(self):
 		return self._version
+
+	class Executable(metaclass=ExecutableArgument):
+		pass
+
+	class CmdAnalyze(metaclass=ShortFlagArgument):
+		_name =		"a"
+
+	class CmdElaborate(metaclass=ShortFlagArgument):
+		_name =		"e"
+
+	class CmdRun(metaclass=ShortFlagArgument):
+		_name =		"r"
+
+	class FlagVerbose(metaclass=ShortFlagArgument):
+		_name =		"v"
+
+	class FlagExplicit(metaclass=ShortFlagArgument):
+		_name =		"fexplicit"
+
+	class FlagRelaxedRules(metaclass=ShortFlagArgument):
+		_name =		"frelaxed-rules"
+
+	class FlagWarnBinding(metaclass=LongFlagArgument):
+		_name =		"warn-binding"
+
+	class FlagNoVitalChecks(metaclass=LongFlagArgument):
+		_name =		"no-vital-checks"
+
+	class FlagMultiByteComments(metaclass=LongFlagArgument):
+		_name =		"mb-comments"
+
+	class FlagSynBinding(metaclass=LongFlagArgument):
+		_name =		"syn-binding"
+
+	class FlagPSL(metaclass=ShortFlagArgument):
+		_name =		"fpsl"
+
+	class SwitchIEEEFlavor(metaclass=ValuedFlagArgument):
+		_pattern =	"--{0}={1}"
+		_name =			"ieee"
+
+	class SwitchVHDLVersion(metaclass=ValuedFlagArgument):
+		_pattern =	"--{0}={1}"
+		_name =			"std"
 	
-	class FlagVerbose(metaclass=FlagArgument):
-		_name =		"-v"
-		_value =	None
-	
-	class FlagExplicit(metaclass=FlagArgument):
-		_name =		"-fexplicit"
-		_value =	None
-	
-	class FlagRelaxedRules(metaclass=FlagArgument):
-		_name =		"-frelaxed-rules"
-		_value =	None
-	
-	class FlagWarnBinding(metaclass=FlagArgument):
-		_name =		"--warn-binding"
-		_value =	None
-	
-	class FlagNoVitalChecks(metaclass=FlagArgument):
-		_name =		"--no-vital-checks"
-		_value =	None
-	
-	class FlagMultiByteComments(metaclass=FlagArgument):
-		_name =		"--mb-comments"
-		_value =	None
-	
-	class FlagSynBinding(metaclass=FlagArgument):
-		_name =		"--syn-binding"
-		_value =	None
-	
-	class FlagPSL(metaclass=FlagArgument):
-		_name =		"-fpsl"
-		_value =	None
-	
-	class SwitchIEEEFlavor(metaclass=StringArgument):
-		_name =		"--ieee="
-		_value =	None
-	
-	class SwitchVHDLVersion(metaclass=StringArgument):
-		_name =		"--std="
-		_value =	None
-	
-	class SwitchVHDLLibrary(metaclass=StringArgument):
-		_name =		"--work="
-		_value =	None
+	class SwitchVHDLLibrary(metaclass=ValuedFlagArgument):
+		_pattern =	"--{0}={1}"
+		_name =			"work"
+
+	class ArgSourceFile(metaclass=PathArgument):
+		pass
 
 	Parameters = CommandLineArgumentList(
+		Executable,
+		CmdAnalyze,
+		CmdElaborate,
+		CmdRun,
 		FlagVerbose,
 		FlagExplicit,
 		FlagRelaxedRules,
@@ -593,29 +614,30 @@ class GHDLExecutable(Executable):
 		FlagPSL,
 		SwitchIEEEFlavor,
 		SwitchVHDLVersion,
-		SwitchVHDLLibrary																
+		SwitchVHDLLibrary,
+		ArgSourceFile
 	)
 
-	class SwitchIEEEAsserts(metaclass=StringArgument):
-		_name =		"--ieee-asserts="
-		_value =	None
-	
-	class SwitchVCDWaveform(metaclass=StringArgument):
-		_name =		"--vcd="
-		_value =	None
-	
-	class SwitchVCDGZWaveform(metaclass=StringArgument):
-		_name =		"--vcdgz="
-		_value =	None
-	
-	class SwitchFastWaveform(metaclass=StringArgument):
-		_name =		"--fst="
-		_value =	None
-	
-	class SwitchGHDLWaveform(metaclass=StringArgument):
-		_name =		"--wave="
-		_value =	None
-	
+	class SwitchIEEEAsserts(metaclass=ValuedFlagArgument):
+		_pattern =	"--{0}={1}"
+		_name =			"ieee-asserts"
+
+	class SwitchVCDWaveform(metaclass=ValuedFlagArgument):
+		_pattern =	"--{0}={1}"
+		_name =			"vcd"
+
+	class SwitchVCDGZWaveform(metaclass=ValuedFlagArgument):
+		_pattern =	"--{0}={1}"
+		_name =			"vcdgz"
+
+	class SwitchFastWaveform(metaclass=ValuedFlagArgument):
+		_pattern =	"--{0}={1}"
+		_name =			"fst"
+
+	class SwitchGHDLWaveform(metaclass=ValuedFlagArgument):
+		_pattern =	"--{0}={1}"
+		_name =			"wave"
+
 	RunOptions = CommandLineArgumentList(
 		SwitchIEEEAsserts,
 		SwitchVCDWaveform,
@@ -636,38 +658,35 @@ class GHDLExecutable(Executable):
 		self._defaultParameters.append("-P{0}".format(path))
 	
 	def GetGHDLAnalyze(self):
-		return GHDLAnalyze(self._platform, self._binaryDirectoryPath, self._version, self._backend, logger=self.Logger)
-	
+		ghdl = GHDLAnalyze(self._platform, self._binaryDirectoryPath, self._version, self._backend, logger=self.Logger)
+		ghdl.Parameters[ghdl.CmdAnalyze] = True
+		return ghdl
+
 	def GetGHDLElaborate(self):
-		return GHDLElaborate(self._platform, self._binaryDirectoryPath, self._version, self._backend, logger=self.Logger)
+		ghdl = GHDLElaborate(self._platform, self._binaryDirectoryPath, self._version, self._backend, logger=self.Logger)
+		ghdl.Parameters[ghdl.CmdElaborate] = True
+		return ghdl
 	
 	def GetGHDLRun(self):
-		return GHDLRun(self._platform, self._binaryDirectoryPath, self._version, self._backend, logger=self.Logger)
-	
+		ghdl = GHDLRun(self._platform, self._binaryDirectoryPath, self._version, self._backend, logger=self.Logger)
+		ghdl.Parameters[ghdl.CmdRun] = True
+		return ghdl
+
 class GHDLAnalyze(GHDLExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
 
-		self.Parameters[self.FlagExplicit] =					True
-		self.Parameters[self.FlagRelaxedRules] =			True
-		self.Parameters[self.FlagWarnBinding] =				True
-		self.Parameters[self.FlagNoVitalChecks] =			True
-		self.Parameters[self.FlagMultiByteComments] =	True
-		self.Parameters[self.FlagPSL] =								True
-		self.Parameters[self.FlagVerbose] =						True
+		#self.Parameters[self.FlagExplicit] =					True
+		#self.Parameters[self.FlagRelaxedRules] =			True
+		#self.Parameters[self.FlagWarnBinding] =				True
+		#self.Parameters[self.FlagNoVitalChecks] =			True
+		#self.Parameters[self.FlagMultiByteComments] =	True
+		#self.Parameters[self.FlagPSL] =								True
+		#self.Parameters[self.FlagVerbose] =						True
 	
-	def Analyze(self, filePath):
+	def Analyze(self):
 		parameterList = self.Parameters.ToArgumentList()
-		parameterList.insert(1, "-a")
-		if isinstance(filePath, str):			parameterList.append(filePath)
-		elif isinstance(filePath, Path):	parameterList.append(str(filePath))
-		elif isinstance(filePath, (tuple, list)):
-			for item in filePath:
-				if isinstance(item, str):			parameterList.append(item)
-				elif isinstance(item, Path):	parameterList.append(str(item))
-				else:																				raise ValueError("Parameter 'filePath' is iterable, but contains an unsupported types.")
-		else:																						raise ValueError("Parameter 'filePath' has an unsupported type.")
-			
+
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
@@ -681,12 +700,12 @@ class GHDLAnalyze(GHDLExecutable):
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "ghdl messages for : {0}".format(str(filePath)))
+				print(_indent + "ghdl messages for : {0}".format("??????"))#str(filePath)))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing ghdl: {0}".format(str(filePath)))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing ghdl: {0}".format("??????"))#str(filePath)))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
@@ -697,14 +716,11 @@ class GHDLElaborate(GHDLExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, binaryDirectoryPath, version, backend, defaultParameters=["-e"], logger=logger)
 	
-	def Elaborate(self, topLevel, topLevelArchitecture=None):
+	def Elaborate(self):
 		if (self._backend == "mcode"):		return
 		
-		parameterList = self._defaultParameters.copy()
-		parameterList.append(topLevel)
-		if (topLevelArchitecture is not None):
-			parameterList.append(topLevelArchitecture)
-		
+		parameterList = self.Parameters.ToArgumentList()
+
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
@@ -718,12 +734,12 @@ class GHDLElaborate(GHDLExecutable):
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "ghdl elaboration messages for '{0}.{1}'".format(self.VHDLLibrary, topLevel))
+				print(_indent + "ghdl elaboration messages for '{0}.{1}'".format("??????"))#self.VHDLLibrary, topLevel))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while elaborating '{0}.{1}'".format(self.VHDLLibrary, topLevel))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while elaborating '{0}.{1}'".format("??????"))#self.VHDLLibrary, topLevel))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
@@ -756,12 +772,12 @@ class GHDLRun(GHDLExecutable):
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "ghdl run messages for '{0}.{1}'".format(self.VHDLLibrary, testbenchName))
+				print(_indent + "ghdl run messages for '{0}.{1}'".format("??????", "??????"))#self.VHDLLibrary, testbenchName))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while simulating '{0}.{1}'".format(self.VHDLLibrary, testbenchName))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while simulating '{0}.{1}'".format("??????", "??????"))#self.VHDLLibrary, testbenchName))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):

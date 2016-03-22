@@ -48,7 +48,7 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, FlagArgument, StringArgument, TupleArgument, PathArgument
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, ValuedFlagArgument, TupleArgument, PathArgument, StringArgument
 from Simulator.Exceptions		import * 
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
 
@@ -94,8 +94,8 @@ class Simulator(PoCSimulator):
 		
 	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93c", vhdlGenerics=None):
 		self._pocEntity =			pocEntity
-		self._testbenchFQN =	str(pocEntity)
-		self._vhdlversion =		vhdlVersion
+		self._testbenchFQN =	str(pocEntity)										# TODO: implement FQN method on PoCEntity
+		self._vhdlVersion =		VHDLVersion.parse(vhdlVersion)		# TODO: move conversion one level up
 		self._vhdlGenerics =	vhdlGenerics
 
 		# check testbench database for the given testbench		
@@ -113,7 +113,7 @@ class Simulator(PoCSimulator):
 		self._RunCompile()
 		# self._RunOptimize()
 		
-		if (not self.__guiMode):
+		if (not self._guiMode):
 			self._RunSimulation(testbenchName)
 		else:
 			self._RunSimulationWithGUI(testbenchName)
@@ -128,15 +128,11 @@ class Simulator(PoCSimulator):
 		pocProject.Environment =			Environment.Simulation
 		pocProject.ToolChain =				ToolChain.GHDL_GTKWave
 		pocProject.Tool =							Tool.GHDL
-		
+		pocProject.VHDLVersion =			self._vhdlVersion
+
 		if (deviceName is None):			pocProject.Board =					boardName
 		else:													pocProject.Device =					deviceName
-		
-		if (self._vhdlversion == "87"):			pocProject.VHDLVersion =		VHDLVersion.VHDL87
-		elif (self._vhdlversion == "93"):		pocProject.VHDLVersion =		VHDLVersion.VHDL93
-		elif (self._vhdlversion == "02"):		pocProject.VHDLVersion =		VHDLVersion.VHDL02
-		elif (self._vhdlversion == "08"):		pocProject.VHDLVersion =		VHDLVersion.VHDL08
-		
+
 		self._pocProject = pocProject
 		
 	def _AddFileListFile(self, fileListFilePath):
@@ -155,26 +151,35 @@ class Simulator(PoCSimulator):
 
 		# create a QuestaVHDLCompiler instance
 		vlib = self._questa.GetVHDLLibraryTool()
-		vlib.Parameters[vlib.FlagVerbose] = True
-
 		for lib in self._pocProject.VHDLLibraries:
-			vlib.Parameters[vlib.SwitchVHDLLibrary] = lib.Name
+			vlib.Parameters[vlib.SwitchLibraryName] = lib.Name
 			vlib.CreateLibrary()
 
 		# create a QuestaVHDLCompiler instance
 		vcom = self._questa.GetVHDLCompiler()
-		vcom.Parameters[vcom.SwitchVHDLversion] =	self._vhdlversion
-		vcom.Parameters[vcom.FlagVerbose] =				True
-		vcom.Parameters[vcom.RangeCheck] =				True
-		#acom.RangeCheck =		True
+		vcom.Parameters[vcom.FlagQuietMode] =					True
+		vcom.Parameters[vcom.FlagExplicit] =					True
+		vcom.Parameters[vcom.FlagRangeCheck] =				True
+
+		if (self._vhdlVersion == VHDLVersion.VHDL87):		vcom.Parameters[vcom.SwitchVHDLVersion] =		"87"
+		elif (self._vhdlVersion == VHDLVersion.VHDL93):	vcom.Parameters[vcom.SwitchVHDLVersion] =		"93"
+		elif (self._vhdlVersion == VHDLVersion.VHDL02):	vcom.Parameters[vcom.SwitchVHDLVersion] =		"2002"
+		elif (self._vhdlVersion == VHDLVersion.VHDL08):	vcom.Parameters[vcom.SwitchVHDLVersion] =		"2008"
+		else:																					raise SimulatorException("VHDL version is not supported.")
 
 		# run vcom compile for each VHDL file
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
-			if (not file.Path.exists()):									raise SimulatorException("Can not analyse '{0}'.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
+			if (not file.Path.exists()):								raise SimulatorException("Can not analyse '{0}'.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
+
+			vcomLogFile = self._tempPath / (file.Path.stem + ".vcom.log")
 			vcom.Parameters[vcom.SwitchVHDLLibrary] =	file.VHDLLibraryName
+			vcom.Parameters[vcom.ArgLogFile] =				vcomLogFile
 			vcom.Parameters[vcom.ArgSourceFile] =			file.Path
-			# set a per file log-file with '-l', 'vcom.log',
 			vcom.Compile()
+
+			# delete empty log files
+			if (vcomLogFile.stat().st_size == 0):
+				vcomLogFile.unlink()
 
 	def _RunSimulation(self, testbenchName):
 		self._LogNormal("  running simulation...")
@@ -186,7 +191,7 @@ class Simulator(PoCSimulator):
 		vsim.Parameters[vsim.FlagOptimization] =			True
 		vsim.Parameters[vsim.SwitchTimeResolution] =	"1fs"
 		vsim.Parameters[vsim.FlagCommandLineMode] =		True
-		vsim.Parameters[vsim.SwitchBatchCommand] =		"do {0}".format(str(tclBatchFilePath))
+		vsim.Parameters[vsim.SwitchBatchCommand] =		"do {0}".format(tclBatchFilePath.as_posix())
 		vsim.Parameters[vsim.SwitchTopLevel] =				"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
 		vsim.Simulate()
 		
@@ -200,15 +205,16 @@ class Simulator(PoCSimulator):
 		vsim = self._questa.GetSimulator()
 		vsim.Parameters[vsim.FlagOptimization] =			True
 		vsim.Parameters[vsim.SwitchTimeResolution] =	"1fs"
-		vsim.Parameters[vsim.SwitchTitke] =						testbenchName
+		# vsim.Parameters[vsim.FlagCommandLineMode] =		True
 		vsim.Parameters[vsim.SwitchTopLevel] =				"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
+		# vsim.Parameters[vsim.SwitchTitle] =						testbenchName
 
 		if (tclWaveFilePath.exists()):
 			self._LogDebug("Found waveform script: '{0}'".format(str(tclWaveFilePath)))
-			vsim.Parameters[vsim.SwitchBatchCommand] =	"do {0}; do {0}".format(str(tclWaveFilePath), str(tclGUIFilePath))
+			vsim.Parameters[vsim.SwitchBatchCommand] =	"do {0}; do {1}".format(tclWaveFilePath.as_posix(), tclGUIFilePath.as_posix())
 		else:
 			self._LogDebug("Didn't find waveform script: '{0}'. Loading default commands.".format(str(tclWaveFilePath)))
-			vsim.Parameters[vsim.SwitchBatchCommand] =	"add wave *; do {0}".format(str(tclGUIFilePath))
+			vsim.Parameters[vsim.SwitchBatchCommand] =	"add wave *; do {0}".format(tclGUIFilePath.as_posix())
 
 		vsim.Simulate()
 
@@ -254,20 +260,36 @@ class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
 
-	class FlagVerbose(metaclass=FlagArgument):
-		_name =		"-v"
+	class FlagTime(metaclass=ShortFlagArgument):
+		_name =		"time"					# Print the compilation wall clock time
 		_value =	None
-	
-	class FlagRangeCheck(metaclass=FlagArgument):
-		_name =		"-fexplicit"
+
+	class FlagExplicit(metaclass=ShortFlagArgument):
+		_name =		"explicit"
 		_value =	None
-	
+
+	class FlagQuietMode(metaclass=ShortFlagArgument):
+		_name =		"quiet"					# Do not report 'Loading...' messages"
+		_value =	None
+
+	class SwitchModelSimIniFile(metaclass=ValuedFlagArgument):
+		_name =		"modelsimini "
+		_value =	None
+
+	class FlagRangeCheck(metaclass=ShortFlagArgument):
+		_name =		"rangecheck"
+		_value =	None
+
 	class SwitchVHDLVersion(metaclass=StringArgument):
-		_name =		"-"
+		_pattern =	"-{0}"
+		_value =		None
+
+	class ArgLogFile(metaclass=TupleArgument):
+		_name =		"l"			# what's the difference to -logfile ?
 		_value =	None
-	
+
 	class SwitchVHDLLibrary(metaclass=TupleArgument):
-		_name =		"-work"
+		_name =		"work"
 		_value =	None
 
 	class ArgSourceFile(metaclass=PathArgument):
@@ -275,21 +297,19 @@ class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
 
 	Parameters = CommandLineArgumentList(
 		Executable,
-		FlagVerbose,
+		FlagTime,
+		FlagExplicit,
+		FlagQuietMode,
+		SwitchModelSimIniFile,
 		FlagRangeCheck,
 		SwitchVHDLVersion,
+		ArgLogFile,
 		SwitchVHDLLibrary,
 		ArgSourceFile
 	)
-	
-# 		if (value == "87"):										self._defaultParameters.append("-87")
-# 		elif (value == "93"):									self._defaultParameters.append("-93")
-# 		elif (value == "02"):									self._defaultParameters.append("-2002")
-# 		elif (value == "08"):									self._defaultParameters.append("-2008")
-	
-	def Compile(self, vhdlFile):
-		parameterList = self._defaultParameters.copy()
-		parameterList.append(vhdlFile)
+
+	def Compile(self):
+		parameterList = self.Parameters.ToArgumentList()
 		
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
@@ -303,12 +323,12 @@ class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "vlib messages for : {0}".format(str(vhdlFile)))
+				print(_indent + "vlib messages for : {0}".format("????"))#str(vhdlFile)))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format(str(vhdlFile)))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format("????"))#str(vhdlFile)))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
@@ -329,45 +349,66 @@ class QuestaSimulator(Executable, QuestaSimulatorExecutable):
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
 
-	class FlagVerbose(metaclass=FlagArgument):
-		_name =		"-v"
+	class FlagQuietMode(metaclass=ShortFlagArgument):
+		_name =		"quiet"					# Do not report 'Loading...' messages"
 		_value =	None
 
-	class FlagOptimization(metaclass=FlagArgument):
-		_name =		"-vopt"
-		_value =	None
-
-	class FlagCommandLineMode(metaclass=FlagArgument):
-		_name =		"-c"
-		_value =	None
-
-	class SwitchTimeResolution(metaclass=TupleArgument):
-		_name =		"-t"
+	class FlagBatchMode(metaclass=ShortFlagArgument):
+		_name =		"batch"
 		_value =	None
 
 	class SwitchBatchCommand(metaclass=TupleArgument):
-		_name =		"-do"
+		_name =		"do"
 		_value =	None
 
+	class FlagCommandLineMode(metaclass=ShortFlagArgument):
+		_name =		"c"
+		_value =	None
+
+	class SwitchModelSimIniFile(metaclass=ValuedFlagArgument):
+		_name =		"modelsimini "
+		_value =	None
+
+	class FlagOptimization(metaclass=ShortFlagArgument):
+		_name =		"vopt"
+		_value =	None
+
+	class SwitchTimeResolution(metaclass=TupleArgument):
+		_name =		"t"			# -t [1|10|100]fs|ps|ns|us|ms|sec  Time resolution limit
+		_value =	None
+
+	class ArgLogFile(metaclass=TupleArgument):
+		_name =		"l"			# what's the difference to -logfile ?
+		_value =	None
+
+	class ArgVHDLLibraryName(metaclass=TupleArgument):
+		_name =		"lib"
+		_value =	None
+
+	class ArgOnFinishMode(metaclass=TupleArgument):
+		_name =		"onfinish"
+		_value =	None				# Customize the kernel shutdown behavior at the end of simulation; Valid modes: ask, stop, exit, final (Default: ask)
+
 	class SwitchTopLevel(metaclass=StringArgument):
-		_name =		""
 		_value =	None
 
 	Parameters = CommandLineArgumentList(
 		Executable,
-		FlagVerbose,
-		FlagOptimization,
-		FlagCommandLineMode,
-		SwitchTimeResolution,
+		FlagQuietMode,
+		FlagBatchMode,
 		SwitchBatchCommand,
+		FlagCommandLineMode,
+		SwitchModelSimIniFile,
+		FlagOptimization,
+		ArgLogFile,
+		ArgVHDLLibraryName,
+		SwitchTimeResolution,
+		ArgOnFinishMode,
 		SwitchTopLevel
 	)
 
-	# units = ("fs", "ps", "us", "ms", "sec", "min", "hr")
-
-
-	def Simulate(self, testbenchName):
-		parameterList = self._defaultParameters.copy()
+	def Simulate(self):
+		parameterList = self.Parameters.ToArgumentList()
 		
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
@@ -381,12 +422,12 @@ class QuestaSimulator(Executable, QuestaSimulatorExecutable):
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "vsim messages for : {0}".format(testbenchName))
+				print(_indent + "vsim messages for : {0}".format("????"))#testbenchName))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vsim: {0}".format(testbenchName))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vsim: {0}".format("????"))#testbenchName))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
@@ -404,26 +445,16 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimulatorExecutable):
 
 		self.Parameters[self.Executable] = executablePath
 
-	class Executable(metaclass=ExecutableArgument):
-		_value =	None
-
-	class FlagVerbose(metaclass=FlagArgument):
-		_name =		"-v"
-		_value =	None
-
-	class SwitchLibraryName(metaclass=StringArgument):
-		_name =		""
-		_value =	None
+	class Executable(metaclass=ExecutableArgument):			pass
+	class SwitchLibraryName(metaclass=StringArgument):	pass
 
 	Parameters = CommandLineArgumentList(
 		Executable,
-		FlagVerbose,
 		SwitchLibraryName
 	)
 	
-	def CreateLibrary(self, vhdlLibraryName):
-		parameterList = self._defaultParameters.copy()
-		parameterList.append(vhdlLibraryName)
+	def CreateLibrary(self):
+		parameterList = self.Parameters.ToArgumentList()
 		
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
@@ -437,12 +468,12 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimulatorExecutable):
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "vlib messages for : {0}".format(vhdlLibraryName))
+				print(_indent + "vlib messages for : {0}".format("????"))#vhdlLibraryName))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format(vhdlLibraryName))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format("????"))#vhdlLibraryName))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
