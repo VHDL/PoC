@@ -48,8 +48,9 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, FlagArgument, StringArgument, TupleArgument, PathArgument
 from Simulator.Exceptions		import * 
-from Simulator.Base					import PoCSimulator, Executable, VHDLTestbenchLibraryName
+from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
 
 class Simulator(PoCSimulator):
 	__guiMode =				False
@@ -57,7 +58,8 @@ class Simulator(PoCSimulator):
 	def __init__(self, host, showLogs, showReport, guiMode):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
-		self.__guiMode =			guiMode
+		self._guiMode =				guiMode
+		self._activeHDL =			None
 
 		self._LogNormal("preparing simulation environment...")
 		self._PrepareSimulationEnvironment()
@@ -152,23 +154,26 @@ class Simulator(PoCSimulator):
 		self._LogNormal("  running VHDL compiler for every vhdl file...")
 		
 		# create a ActiveHDLVHDLCompiler instance
-		vlib = self._activeHDL.GetVHDLLibraryTool()
+		alib = self._activeHDL.GetVHDLLibraryTool()
+		# alib.Parameters[alib.FlagVerbose] = True
 		
 		for lib in self._pocProject.VHDLLibraries:
-			vlib.CreateLibrary(lib.Name)
-					
+			alib.Parameters[alib.SwitchLibraryName] = lib.Name
+			alib.CreateLibrary()
+
 		# create a ActiveHDLVHDLCompiler instance
 		acom = self._activeHDL.GetVHDLCompiler()
-		acom.VHDLVersion =	self._vhdlversion
-		acom.RangeCheck =		True
-		
-		# run vcom compiler for each VHDL file
+		# acom.Parameters[acom.FlagVerbose] =				True
+		# acom.Parameters[acom.FlagNoRangeChacke] =	False
+		acom.Parameters[acom.SwitchVHDLVersion] =	self._vhdlversion
+
+		# run acom compile for each VHDL file
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
 			if (not file.Path.exists()):									raise SimulatorException("Can not analyse '{0}'.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
-			
-			acom.VHDLLibrary =	file.VHDLLibraryName
+			acom.Parameters[acom.SwitchVHDLLibrary] =	file.VHDLLibraryName
+			acom.Parameters[acom.ArgSourceFile] =			file.Path
 			# set a per file log-file with '-l', 'vcom.log',
-			acom.Compile(str(file.Path))
+			acom.Compile()
 	
 	def _RunSimulation(self, testbenchName):
 		self._LogNormal("  running simulation...")
@@ -246,10 +251,33 @@ class ActiveHDLVHDLCompiler(Executable, ActiveHDLSimulatorExecutable):
 		else:																						raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, executablePath, defaultParameters, logger=logger)
 
-		self._verbose =						False
-		self._rangecheck =				True
-		self._vhdlVersion =				None
-		self._vhdlLibrary =				None
+		self.Parameters[self.Executable] = executablePath
+
+	class Executable(metaclass=ExecutableArgument):
+		_value =	None
+
+	class FlagNoRangeCheck(metaclass=FlagArgument):
+		_name =		"--norangecheck"
+		_value =	None
+
+	class SwitchVHDLVersion(metaclass=StringArgument):
+		_name =		"-"
+		_value =	None
+
+	class SwitchVHDLLibrary(metaclass=TupleArgument):
+		_name =		"-work"
+		_value =	None
+
+	class ArgSourceFile(metaclass=PathArgument):
+		_value =	None
+
+	Parameters = CommandLineArgumentList(
+		Executable,
+		FlagNoRangeCheck,
+		SwitchVHDLVersion,
+		SwitchVHDLLibrary,
+		ArgSourceFile
+	)
 	
 	# -reorder                      enables automatic file ordering
   # -O[0 | 1 | 2 | 3]             set optimization level
@@ -259,84 +287,32 @@ class ActiveHDLVHDLCompiler(Executable, ActiveHDLSimulatorExecutable):
 	# -relax                             allow 32-bit integer literals
   # -incr                              switching compiler to fast incremental mode
 	
-	@property
-	def Verbose(self):
-		return self._verbose
-	@Verbose.setter
-	def Verbose(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._verbose != value):
-			self._verbose = value
-			if value:			self._defaultParameters.append("-v")
-			else:					self._defaultParameters.remove("-v")
-	
-	@property
-	def VHDLVersion(self):
-		return self._vhdlVersion
-	@VHDLVersion.setter
-	def VHDLVersion(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		elif ((self._vhdlVersion is not None) and (self._vhdlVersion != value)):
-			if (self._vhdlVersion == "87"):			self._defaultParameters.remove("-87")
-			elif (self._vhdlVersion == "93"):		self._defaultParameters.remove("-93")
-			elif (self._vhdlVersion == "02"):		self._defaultParameters.remove("-2002")
-			elif (self._vhdlVersion == "08"):		self._defaultParameters.remove("-2008")
-		
-		if (value == "87"):										self._defaultParameters.append("-87")
-		elif (value == "93"):									self._defaultParameters.append("-93")
-		elif (value == "02"):									self._defaultParameters.append("-2002")
-		elif (value == "08"):									self._defaultParameters.append("-2008")
-		else:																					raise SimulatorException("Parameter 'value' has an unsupported value.")
-		self._vhdlVersion = value
-	
-	@property
-	def VHDLLibrary(self):
-		return self._vhdlLibrary
-	@VHDLLibrary.setter
-	def VHDLLibrary(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		if (self._vhdlLibrary is None):
-			self._defaultParameters.append("-work")
-			self._defaultParameters.append(value)
-			self._vhdlLibrary = value
-		elif (self._vhdlLibrary != value):
-			i = self._defaultParameters.index(self._vhdlLibrary)
-			self._defaultParameters[i] = value
-			self._vhdlLibrary = value
-	
-	@property
-	def RangeCheck(self):
-		return self._rangecheck
-	@RangeCheck.setter
-	def RangeCheck(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._rangecheck != value):
-			self._rangecheck = value
-			if value:			self._defaultParameters.remove("--norangecheck")
-			else:					self._defaultParameters.append("--norangecheck")
-	
-	def Compile(self, vhdlFile):
-		parameterList = self._defaultParameters.copy()
-		parameterList.append(vhdlFile)
+#		if (value == "87"):										self._defaultParameters.append("-87")
+#		elif (value == "93"):									self._defaultParameters.append("-93")
+#		elif (value == "02"):									self._defaultParameters.append("-2002")
+#		elif (value == "08"):									self._defaultParameters.append("-2008")
+
+	def Compile(self):
+		parameterList = self.Parameters.ToArgumentList()
 		
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
 		try:
-			vcomLog = self.StartProcess(parameterList)
+			acomLog = self.StartProcess(parameterList)
 			
 			log = ""
-			for line in vcomLog.split("\n")[:-1]:
+			for line in acomLog.split("\n")[:-1]:
 					log += _indent + line + "\n"
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "vlib messages for : {0}".format(str(vhdlFile)))
+				print(_indent + "acom messages for : {0}".format("??????"))#str(vhdlFile)))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format(str(vhdlFile)))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing acom: {0}".format("??????"))#str(vhdlFile)))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
@@ -352,80 +328,50 @@ class ActiveHDLSimulator(Executable, ActiveHDLSimulatorExecutable):
 		else:																						raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, executablePath, defaultParameters, logger=logger)
 
-		self._verbose =						None
-		self._optimize =					None
-		self._comanndLineMode =		None
-		self._timeResolution =		None
-		self._batchCommand =			None
-		self._topLevel =					None
-	
-	@property
-	def Verbose(self):
-		return self._verbose
-	@Verbose.setter
-	def Verbose(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._verbose != value):
-			self._verbose = value
-			if value:			self._defaultParameters.append("-v")
-			else:					self._defaultParameters.remove("-v")
-	
-	@property
-	def Optimization(self):
-		return self._optimize
-	@Optimization.setter
-	def Optimization(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._optimize != value):
-			self._optimize = value
-			if value:			self._defaultParameters.append("-vopt")
-			else:					self._defaultParameters.remove("-vopt")
-	
-	@property
-	def TimeResolution(self):
-		return self._timeResolution
-	@TimeResolution.setter
-	def TimeResolution(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		units = ("fs", "ps", "us", "ms", "sec", "min", "hr")
-		if (not value.endswith(units)):									raise ValueError("Parameter 'value' must contain a time unit.")
-		if (self._timeResolution is None):
-			self._defaultParameters.append("-t")
-			self._defaultParameters.append(value)
-			
-	@property
-	def ComanndLineMode(self):
-		return self._comanndLineMode
-	@ComanndLineMode.setter
-	def ComanndLineMode(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._comanndLineMode != value):
-			self._comanndLineMode = value
-			if value:			self._defaultParameters.append("-c")
-			else:					self._defaultParameters.remove("-c")
-	
-	@property
-	def BatchCommand(self):
-		return self._batchCommand
-	@BatchCommand.setter
-	def BatchCommand(self, value):
-		if (not isinstance(value, str)):																raise ValueError("Parameter 'value' is not of type str.")
-		self._defaultParameters.append("-do")
-		self._defaultParameters.append(value)
-	
-	@property
-	def TopLevel(self):
-		return self._topLevel
-	@TopLevel.setter
-	def TopLevel(self, value):
-		if (not isinstance(value, str)):																raise ValueError("Parameter 'value' is not of type str.")
-		self._defaultParameters.append(value)
-	
-	def Simulate(self, parameter):
-		parameterList = self._defaultParameters.copy()
-		
-		parameterList.append(parameter)
-		
+		self.Parameters[self.Executable] = executablePath
+
+	class Executable(metaclass=ExecutableArgument):
+		_value =	None
+
+	class FlagVerbose(metaclass=FlagArgument):
+		_name =		"-v"
+		_value =	None
+
+	class FlagOptimization(metaclass=FlagArgument):
+		_name =		"-vopt"
+		_value =	None
+
+	class FlagCommandLineMode(metaclass=FlagArgument):
+		_name =		"-c"
+		_value =	None
+
+	class SwitchTimeResolution(metaclass=TupleArgument):
+		_name =		"-t"
+		_value =	None
+
+	class SwitchBatchCommand(metaclass=TupleArgument):
+		_name =		"-do"
+		_value =	None
+
+	class SwitchTopLevel(metaclass=StringArgument):
+		_name =		""
+		_value =	None
+
+	Parameters = CommandLineArgumentList(
+		Executable,
+		FlagVerbose,
+		FlagOptimization,
+		FlagCommandLineMode,
+		SwitchTimeResolution,
+		SwitchBatchCommand,
+		SwitchTopLevel
+	)
+
+	# units = ("fs", "ps", "us", "ms", "sec", "min", "hr")
+
+	def Simulate(self):
+		parameterList = self.Parameters.ToArgumentList()
+
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
@@ -459,62 +405,52 @@ class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLSimulatorExecutable):
 		else:																						raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, executablePath, defaultParameters, logger=logger)
 
-		self._verbose =						False
+		self.Parameters[self.Executable] = executablePath
+
+	class Executable(metaclass=ExecutableArgument):
+		_value =	None
+
+	# class FlagVerbose(metaclass=FlagArgument):
+	# 	_name =		"-v"
+	# 	_value =	None
+
+	class SwitchLibraryName(metaclass=StringArgument):
+		_name =		""
+		_value =	None
+
+	Parameters = CommandLineArgumentList(
+		Executable,
+		# FlagVerbose,
+		SwitchLibraryName
+	)
 	
-	@property
-	def Verbose(self):
-		return self._verbose
-	@Verbose.setter
-	def Verbose(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._verbose != value):
-			self._verbose = value
-			if value:			self._defaultParameters.append("-v")
-			else:					self._defaultParameters.remove("-v")
-	
-	def CreateLibrary(self, vhdlLibraryName):
-		parameterList = self._defaultParameters.copy()
-		parameterList.append(vhdlLibraryName)
-		
+	def CreateLibrary(self):
+		parameterList = self.Parameters.ToArgumentList()
+
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
 		try:
-			vlibLog = self.StartProcess(parameterList)
+			alibLog = self.StartProcess(parameterList)
 			
 			log = ""
-			for line in vlibLog.split("\n")[:-1]:
+			for line in alibLog.split("\n")[:-1]:
 					log += _indent + line + "\n"
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "vlib messages for : {0}".format(vhdlLibraryName))
+				print(_indent + "vlib messages for : {0}".format("??????"))#vhdlLibraryName))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format(vhdlLibraryName))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format("??????"))#vhdlLibraryName))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
 				print(_indent + line)
 			print(_indent + "-" * 80)
 	
-
-		# if (self._host.platform == "Windows"):
-			# self.__executables['alib'] =		"vlib.exe"
-			# self.__executables['acom'] =		"vcom.exe"
-			# self.__executables['asim'] =		"aSim.exe"
-		# elif (self._host.platform == "Linux"):
-			# self.__executables['alib'] =		"vlib"
-			# self.__executables['acom'] =		"vcom"
-			# self.__executables['asim'] =		"aSim"
-
-		# # setup all needed paths to execute fuse
-		# aLibExecutablePath =	self.Host.Directories["aSimBinary"] / self.__executables['alib']
-		# aComExecutablePath =	self.Host.Directories["aSimBinary"] / self.__executables['acom']
-		# aSimExecutablePath =	self.Host.Directories["aSimBinary"] / self.__executables['asim']
-					
 					# # assemble acom command as list of parameters
 					# parameterList = [
 						# str(aComExecutablePath),
@@ -531,24 +467,5 @@ class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLSimulatorExecutable):
 			# # '-t', '1fs',
 		# ]
 
-		# # append RUNOPTS to save simulation results to *.vcd file
-		# if (self.__guiMode):
-			# parameterList += ['-title', testbenchName]
-			
-			# if (tclWaveFilePath.exists()):
-				# self._LogDebug("Found waveform script: '%s'" % str(tclWaveFilePath))
-				# parameterList += ['-do', ('do {%s}; do {%s}' % (str(tclWaveFilePath), str(tclGUIFilePath)))]
-			# else:
-				# self._LogDebug("Didn't find waveform script: '%s'. Loading default commands." % str(tclWaveFilePath))
-				# parameterList += ['-do', ('add wave *; do {%s}' % str(tclGUIFilePath))]
-		# else:
-			# parameterList += [
-				# '-c',
-				# '-do', str(tclBatchFilePath)
-			# ]
-		
-		# # append testbench name
-		# parameterList += [
-			# '-work test', testbenchName
-		# ]
+
 		

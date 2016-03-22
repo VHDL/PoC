@@ -44,13 +44,15 @@ from pathlib import Path
 from os											import chdir
 from configparser						import NoSectionError
 from colorama								import Fore as Foreground
+from subprocess							import CalledProcessError
 
 from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, FlagArgument, StringArgument, TupleArgument, PathArgument
 from Simulator.Exceptions		import *
-from Simulator.Base					import PoCSimulator, Executable, VHDLTestbenchLibraryName 
+from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName 
 
 
 class Simulator(PoCSimulator):
@@ -59,7 +61,8 @@ class Simulator(PoCSimulator):
 	def __init__(self, host, showLogs, showReport, guiMode):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
-		self.__guiMode =					guiMode
+		self._guiMode =				guiMode
+		self._vivado =				None
 
 		self._LogNormal("preparing simulation environment...")
 		self._PrepareSimulationEnvironment()
@@ -199,40 +202,21 @@ class Simulator(PoCSimulator):
 	
 		# create a VivadoLinker instance
 		xelab = self._vivado.GetLinker()
-		# xelab.Project =					str(prjFilePath)
-		# xelab.LogFile =					str(xelabLogFilePath)
-		# xelab.TimeResolution =	"1fs"
-		# xelab.RangeCheck =			True
-		# xelab.MultiThreading =	4
-		# xelab.Optimization =		2
-		# xelab.Debug =						"typical"
-		# xelab.SnapShot =				testbenchName
-		
-		# if (self.verbose):
-			# xelab.Verbose =					0
-		
-		# xelab.TopLevel =				"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
-		
-		parameterList = [
-			'--prj',	str(prjFilePath),
-			'--log',	str(xelabLogFilePath),
-			'--timeprecision_vhdl', '1fs',			# set minimum time precision to 1 fs
-			'--mt', '4',												# enable multithread support
-			'--O2',
-			'--debug', 'typical',
-			'--snapshot',	testbenchName,
-			'--rangecheck'
-		]
-		
-		# append debug options
-		# if (self.verbose):
-			# parameterList += [
-				# '--verbose', '0']
+		xelab.Parameters[xelab.SwitchTimeResolution] =	"1fs"	# set minimum time precision to 1 fs
+		xelab.Parameters[xelab.SwitchMultiThreading] =	"4"		# enable multithreading support
+		xelab.Parameters[xelab.FlagRangeCheck] =				True
 
-		# append testbench name
-		parameterList += [('test.%s' % testbenchName)]
-		xelab.Link(parameterList)
-	
+		xelab.Parameters[xelab.SwitchOptimization] =		"2"
+		xelab.Parameters[xelab.SwitchDebug] =						"typical"
+		xelab.Parameters[xelab.SwitchSnapshot] =				testbenchName
+
+		# if (self.verbose):
+		xelab.Parameters[xelab.SwitchVerbose] =					"0"
+		xelab.Parameters[xelab.SwitchProjectFile] =			str(prjFilePath)
+		xelab.Parameters[xelab.SwitchLogFile] =					str(xelabLogFilePath)
+		xelab.Parameters[xelab.ArgTopLevel] =						"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
+		xelab.Link()
+
 	def _RunSimulation(self, testbenchName):
 		self._LogNormal("  running simulation...")
 		
@@ -243,38 +227,23 @@ class Simulator(PoCSimulator):
 
 		# create a VivadoSimulator instance
 		xSim = self._vivado.GetSimulator()
-		# iSim.LogFile =				str(iSimLogFilePath)
-		# iSim.TimeResolution = "1fs"
-		# iSim.MultiThreading =	4
-		# iSim.RangeCheck =			True
-		# iSim.TopLevel =				"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
-		# iSim.Project =				str(prjFilePath)
-		# iSim.Executable =			str(exeFilePath)
-		
-		parameterList = [
-			'--log', str(xSimLogFilePath)
-		]
-		
-		if (not self.__guiMode):
-			parameterList += ['-tclbatch', str(tclBatchFilePath)]
+		xSim.Parameters[xSim.SwitchLogFile] =					str(xSimLogFilePath)
+
+		if (not self._guiMode):
+			xSim.Parameters[xSim.SwitchTclBatchFile] =	str(tclBatchFilePath)
 		else:
-			parameterList += [
-				'-tclbatch', str(tclGUIFilePath),
-				'-gui'
-			]
-		
-		# if GTKWave savefile exists, load it's settings
-		if wcfgFilePath.exists():
-			self._LogDebug("    Found waveform config file: '{0}'".format(str(wcfgFilePath)))
-			# gtkw.WaveformFile = str(wcfgFilePath)
-			parameterList += ['-view', str(wcfgFilePath)]
-		else:
-			self._LogDebug("    Didn't find waveform config file: '{0}'".format(str(wcfgFilePath)))
-		
-		parameterList += [testbenchName]
-		
-		xSim.Simulate(parameterList)
-		
+			xSim.Parameters[xSim.SwitchTclBatchFile] =	str(tclGUIFilePath)
+			xSim.Parameters[xSim.FlagGuiMode] =					True
+
+			# if xSim save file exists, load it's settings
+			if wcfgFilePath.exists():
+				self._LogDebug("    Found waveform config file: '{0}'".format(str(wcfgFilePath)))
+				xSim.Parameters[xSim.SwitchWaveformFile] =	str(wcfgFilePath)
+			else:
+				self._LogDebug("    Didn't find waveform config file: '{0}'".format(str(wcfgFilePath)))
+
+		xSim.Simulate()
+
 		# print()
 		# if (not self.__guiMode):
 			# try:
@@ -314,65 +283,7 @@ class VivadoVHDLCompiler(Executable, VivadoSimulatorExecutable):
 		else:																						raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, executablePath, defaultParameters, logger=logger)
 
-		self._verbose =						False
-		self._rangecheck =				False
-		self._vhdlVersion =				None
-		self._vhdlLibrary =				None
-	
-	@property
-	def Verbose(self):
-		return self._verbose
-	@Verbose.setter
-	def Verbose(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._verbose != value):
-			self._verbose = value
-			if value:			self._defaultParameters.append("-v")
-			else:					self._defaultParameters.remove("-v")
-	
-	@property
-	def VHDLVersion(self):
-		return self._vhdlVersion
-	@VHDLVersion.setter
-	def VHDLVersion(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		elif ((self._vhdlVersion is not None) and (self._vhdlVersion != value)):
-			if (self._vhdlVersion == "87"):			self._defaultParameters.remove("-87")
-			elif (self._vhdlVersion == "93"):		self._defaultParameters.remove("-93")
-			elif (self._vhdlVersion == "02"):		self._defaultParameters.remove("-2002")
-			elif (self._vhdlVersion == "08"):		self._defaultParameters.remove("-2008")
-		
-		if (value == "87"):										self._defaultParameters.append("-87")
-		elif (value == "93"):									self._defaultParameters.append("-93")
-		elif (value == "02"):									self._defaultParameters.append("-2002")
-		elif (value == "08"):									self._defaultParameters.append("-2008")
-		else:																					raise SimulatorException("Parameter 'value' has an unsupported value.")
-		self._vhdlVersion = value
-	
-	@property
-	def VHDLLibrary(self):
-		return self._vhdlLibrary
-	@VHDLLibrary.setter
-	def VHDLLibrary(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		if (self._vhdlLibrary is None):
-			self._defaultParameters.append("--work={0}".format(value))
-			self._vhdlLibrary = value
-		elif (self._vhdlLibrary != value):
-			self._defaultParameters.remove("--work={0}".format(self._vhdlLibrary))
-			self._defaultParameters.append("--work={0}".format(value))
-			self._vhdlLibrary = value
-	
-	@property
-	def RangeCheck(self):
-		return self._rangecheck
-	@RangeCheck.setter
-	def RangeCheck(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._rangecheck != value):
-			self._rangecheck = value
-			if value:			self._defaultParameters.append("-rangecheck")
-			else:					self._defaultParameters.remove("-rangecheck")
+
 	
 	def Compile(self, vhdlFile):
 		parameterList = self._defaultParameters.copy()
@@ -390,12 +301,12 @@ class VivadoVHDLCompiler(Executable, VivadoSimulatorExecutable):
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "vlib messages for : {0}".format(str(filePath)))
+				print(_indent + "vlib messages for : {0}".format(str(vhdlFile)))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format(str(filePath)))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format(str(vhdlFile)))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
@@ -411,50 +322,66 @@ class VivadoLinker(Executable, VivadoSimulatorExecutable):
 		else:																						raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, executablePath, defaultParameters, logger=logger)
 
-		self._verbose =						False
-		self._rangecheck =				False
-		self._vhdlVersion =				None
-		self._vhdlLibrary =				None
-	
-	@property
-	def Verbose(self):
-		return self._verbose
-	@Verbose.setter
-	def Verbose(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._verbose != value):
-			self._verbose = value
-			if value:			self._defaultParameters.append("-v")
-			else:					self._defaultParameters.remove("-v")
-	
-	@property
-	def VHDLLibrary(self):
-		return self._vhdlLibrary
-	@VHDLLibrary.setter
-	def VHDLLibrary(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		if (self._vhdlLibrary is None):
-			self._defaultParameters.append("--work={0}".format(value))
-			self._vhdlLibrary = value
-		elif (self._vhdlLibrary != value):
-			self._defaultParameters.remove("--work={0}".format(self._vhdlLibrary))
-			self._defaultParameters.append("--work={0}".format(value))
-			self._vhdlLibrary = value
-	
-	@property
-	def RangeCheck(self):
-		return self._rangecheck
-	@RangeCheck.setter
-	def RangeCheck(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._rangecheck != value):
-			self._rangecheck = value
-			if value:			self._defaultParameters.append("-rangecheck")
-			else:					self._defaultParameters.remove("-rangecheck")
-	
-	def Link(self, paramList):
-		parameterList = self._defaultParameters.copy()
-		parameterList += paramList
+		self.Parameters[self.Executable] = executablePath
+
+	class Executable(metaclass=ExecutableArgument):
+		_value =	None
+
+	class FlagRangeCheck(metaclass=FlagArgument):
+		_name =		"--rangecheck"
+		_value =	None
+
+	class SwitchMultiThreading(metaclass=TupleArgument):
+		_name =		"--mt"
+		_value =	None
+
+	class SwitchVerbose(metaclass=TupleArgument):
+		_name =		"--verbose"
+		_value =	None
+
+	class SwitchDebug(metaclass=TupleArgument):
+		_name =		"--debug"
+		_value =	None
+
+	class SwitchOptimization(metaclass=StringArgument):
+		_name =		"-O"
+		_value =	None
+
+	class SwitchTimeResolution(metaclass=TupleArgument):
+		_name =		"--timeprecision_vhdl"
+		_value =	None
+
+	class SwitchProjectFile(metaclass=TupleArgument):
+		_name =		"--prj"
+		_value =	None
+
+	class SwitchLogFile(metaclass=TupleArgument):
+		_name =		"--log"
+		_value =	None
+
+	class SwitchSnapshot(metaclass=TupleArgument):
+		_name =		""
+		_value =	None
+
+	class ArgTopLevel(metaclass=PathArgument):
+		_value =	None
+
+	Parameters = CommandLineArgumentList(
+		Executable,
+		FlagRangeCheck,
+		SwitchMultiThreading,
+		SwitchTimeResolution,
+		SwitchVerbose,
+		SwitchDebug,
+		SwitchOptimization,
+		SwitchProjectFile,
+		SwitchLogFile,
+		SwitchSnapshot,
+		ArgTopLevel
+	)
+
+	def Link(self):
+		parameterList = self.Parameters.ToArgumentList()
 		
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
@@ -468,12 +395,12 @@ class VivadoLinker(Executable, VivadoSimulatorExecutable):
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "xelab messages for : {0}".format(str(filePath)))
+				print(_indent + "xelab messages for : {0}".format("????"))#str(filePath)))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing xelab: {0}".format(str(filePath)))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing xelab: {0}".format("????"))#str(filePath)))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
@@ -489,80 +416,38 @@ class VivadoSimulator(Executable, VivadoSimulatorExecutable):
 		else:																						raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, executablePath, defaultParameters, logger=logger)
 
-		self._verbose =						None
-		self._optimize =					None
-		self._comanndLineMode =		None
-		self._timeResolution =		None
-		self._batchCommand =			None
-		self._topLevel =					None
-	
-	@property
-	def Verbose(self):
-		return self._verbose
-	@Verbose.setter
-	def Verbose(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._verbose != value):
-			self._verbose = value
-			if value:			self._defaultParameters.append("-v")
-			else:					self._defaultParameters.remove("-v")
-	
-	@property
-	def Optimization(self):
-		return self._optimize
-	@Optimization.setter
-	def Optimization(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._optimize != value):
-			self._optimize = value
-			if value:			self._defaultParameters.append("-vopt")
-			else:					self._defaultParameters.remove("-vopt")
-	
-	@property
-	def TimeResolution(self):
-		return self._timeResolution
-	@TimeResolution.setter
-	def TimeResolution(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		units = ("fs", "ps", "us", "ms", "sec", "min", "hr")
-		if (not value.endswith(units)):									raise ValueError("Parameter 'value' must contain a time unit.")
-		if (self._timeResolution is None):
-			self._defaultParameters.append("-t")
-			self._defaultParameters.append(value)
-			
-	@property
-	def ComanndLineMode(self):
-		return self._comanndLineMode
-	@ComanndLineMode.setter
-	def ComanndLineMode(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._comanndLineMode != value):
-			self._comanndLineMode = value
-			if value:			self._defaultParameters.append("-c")
-			else:					self._defaultParameters.remove("-c")
-	
-	@property
-	def BatchCommand(self):
-		return self._batchCommand
-	@BatchCommand.setter
-	def BatchCommand(self, value):
-		if (not isinstance(value, str)):																raise ValueError("Parameter 'value' is not of type str.")
-		self._defaultParameters.append("-do")
-		self._defaultParameters.append(value)
-	
-	@property
-	def TopLevel(self):
-		return self._topLevel
-	@TopLevel.setter
-	def TopLevel(self, value):
-		if (not isinstance(value, str)):																raise ValueError("Parameter 'value' is not of type str.")
-		self._defaultParameters.append(value)
-	
-	def Simulate(self, paramList):
-		parameterList = self._defaultParameters.copy()
-		
-		parameterList += paramList
-		
+		self.Parameters[self.Executable] = executablePath
+
+	class Executable(metaclass=ExecutableArgument):
+		_value =	None
+
+	class SwitchLogFile(metaclass=TupleArgument):
+		_name =		"-log"
+		_value =	None
+
+	class FlagGuiMode(metaclass=FlagArgument):
+		_name =		"-gui"
+		_value =	None
+
+	class SwitchTclBatchFile(metaclass=TupleArgument):
+		_name =		"-tclbatch"
+		_value =	None
+
+	class SwitchWaveformFile(metaclass=TupleArgument):
+		_name =		"-view"
+		_value =	None
+
+	Parameters = CommandLineArgumentList(
+		Executable,
+		SwitchLogFile,
+		FlagGuiMode,
+		SwitchTclBatchFile,
+		SwitchWaveformFile
+	)
+
+	def Simulate(self):
+		parameterList = self.Parameters.ToArgumentList()
+
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
@@ -575,12 +460,12 @@ class VivadoSimulator(Executable, VivadoSimulatorExecutable):
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "xsim messages for : {0}".format(str(filePath)))
+				print(_indent + "xsim messages for : {0}".format("????"))#str("????"))#filePath)))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing xsim: {0}".format(str(filePath)))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing xsim: {0}".format("????"))#str(filePath)))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):

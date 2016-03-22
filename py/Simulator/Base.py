@@ -32,32 +32,30 @@
 # ==============================================================================
 #
 # entry point
+from lib.Functions import Exit
 if __name__ != "__main__":
-	# place library initialization code here
 	pass
+	# place library initialization code here
 else:
-	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Simulator.Base")
 
 # load dependencies
-from enum										import Enum, unique
-from colorama								import Fore as Foreground
-from pathlib								import Path
-from subprocess							import check_output	as Subprocess_Run
-from subprocess							import STDOUT				as Subprocess_StdOut
+from enum import Enum, unique
 
-from Base.Exceptions				import *
-from Base.Logging						import ILogable
-from Simulator.Exceptions		import *
+from Base.Exceptions import *
+from Base.Logging import ILogable
+from Simulator.Exceptions import *
 
-# TODO: extract to higher/outer module
+
 VHDLTestbenchLibraryName = "test"
+
 
 @unique
 class SimulationResult(Enum):
-	Failed =		0
-	NoAsserts =	1
-	Passed =		2
+	Failed = 0
+	NoAsserts = 1
+	Passed = 2
+
 
 class PoCSimulator(ILogable):
 	def __init__(self, host, showLogs, showReport):
@@ -66,78 +64,53 @@ class PoCSimulator(ILogable):
 		else:
 			ILogable.__init__(self, None)
 
-		self.__host =				host
-		self.__showLogs =		showLogs
-		self.__showReport =	showReport
+		self.__host = host
+		self.__showLogs = showLogs
+		self.__showReport = showReport
 
 	# class properties
 	# ============================================================================
 	@property
-	def Host(self):				return self.__host
+	def Host(self):
+		return self.__host
+
 	@property
-	def ShowLogs(self):		return self.__showLogs
+	def ShowLogs(self):
+		return self.__showLogs
+
 	@property
-	def ShowReport(self):	return self.__showReport
+	def ShowReport(self):
+		return self.__showReport
 
 	def CheckSimulatorOutput(self, simulatorOutput):
 		matchPos = simulatorOutput.find("SIMULATION RESULT = ")
 		if (matchPos >= 0):
-			if (simulatorOutput[matchPos + 20 : matchPos + 26] == "PASSED"):			return SimulationResult.Passed
-			elif (simulatorOutput[matchPos + 20: matchPos + 26] == "FAILED"):			return SimulationResult.Failed
-			elif (simulatorOutput[matchPos + 20: matchPos + 30] == "NO ASSERTS"):	return SimulationResult.NoAsserts
+			if (simulatorOutput[matchPos + 20: matchPos + 26] == "PASSED"):
+				return SimulationResult.Passed
+			elif (simulatorOutput[matchPos + 20: matchPos + 26] == "FAILED"):
+				return SimulationResult.Failed
+			elif (simulatorOutput[matchPos + 20: matchPos + 30] == "NO ASSERTS"):
+				return SimulationResult.NoAsserts
 		raise SimulatorException("String 'SIMULATION RESULT ...' not found in simulator output.")
 
-class Executable(ILogable):
-	def __init__(self, platform, executablePath, defaultParameters=[], logger=None):
-		ILogable.__init__(self, logger)
-		
-		self._platform = platform
-		
-		if isinstance(executablePath, str):							executablePath = Path(executablePath)
-		elif (not isinstance(executablePath, Path)):		raise ValueError("Parameter 'executablePath' is not of type str or Path.")
-		# if (not executablePath.exists()):								raise SimulatorException("Executable '{0}' can not be found.".format(str(executablePath))) from FileNotFoundError(str(executablePath))
-		
-		# prepend the executable
-		defaultParameters.insert(0, str(executablePath))
-		
-		self._executablePath =		executablePath
-		self._defaultParameters =	defaultParameters
-	
-	@property
-	def Path(self):
-		return self._executablePath
-	
-	@property
-	def DefaultParameters(self):
-		return self._defaultParameters
-	
-	@DefaultParameters.setter
-	def DefaultParameters(self, value):
-		self._defaultParameters = value
-	
-	def StartProcess(self, parameterList):
-		# return "blubs"
-		return Subprocess_Run(parameterList, stderr=Subprocess_StdOut, shell=False, universal_newlines=True)
-
-# class PoCSimulatorTestbench(object):
+	# class PoCSimulatorTestbench(object):
 	# pocEntity = None
 	# testbenchName = ""
 	# simulationResult = False
 	
 	# def __init__(self, pocEntity, testbenchName):
-		# self.pocEntity = pocEntity
-		# self.testbenchName = testbenchName
+	# self.pocEntity = pocEntity
+	# self.testbenchName = testbenchName
 
-# class PoCSimulatorTestbenchGroup(object):
+	# class PoCSimulatorTestbenchGroup(object):
 	# pocEntity = None
 	# members = {}
 	
 	# def __init__(self, pocEntity):
-		# self.pocEntity = pocEntity
+	# self.pocEntity = pocEntity
 	
 	# def add(self, pocEntity, testbench):
-		# self.members[str(pocEntity)] = testbench
-		
+	# self.members[str(pocEntity)] = testbench
+
 	# def __getitem__(self, key):
-		# return self.members[key]
-	
+	# return self.members[key]

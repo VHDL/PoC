@@ -48,8 +48,9 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, FlagArgument, StringArgument, TupleArgument, PathArgument
 from Simulator.Exceptions		import * 
-from Simulator.Base					import PoCSimulator, Executable, VHDLTestbenchLibraryName
+from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
 
 class Simulator(PoCSimulator):
 	__guiMode =				False
@@ -57,7 +58,8 @@ class Simulator(PoCSimulator):
 	def __init__(self, host, showLogs, showReport, guiMode):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
-		self.__guiMode =			guiMode
+		self._guiMode =				guiMode
+		self._questa =				None
 
 		self._LogNormal("preparing simulation environment...")
 		self._PrepareSimulationEnvironment()
@@ -150,26 +152,30 @@ class Simulator(PoCSimulator):
 		
 	def _RunCompile(self):
 		self._LogNormal("  running VHDL compiler for every vhdl file...")
-		
+
 		# create a QuestaVHDLCompiler instance
 		vlib = self._questa.GetVHDLLibraryTool()
-		
+		vlib.Parameters[vlib.FlagVerbose] = True
+
 		for lib in self._pocProject.VHDLLibraries:
-			vlib.CreateLibrary(lib.Name)
-					
+			vlib.Parameters[vlib.SwitchVHDLLibrary] = lib.Name
+			vlib.CreateLibrary()
+
 		# create a QuestaVHDLCompiler instance
 		vcom = self._questa.GetVHDLCompiler()
-		vcom.VHDLVersion =	self._vhdlversion
-		vcom.RangeCheck =		True
-		
-		# run vcom compiler for each VHDL file
+		vcom.Parameters[vcom.SwitchVHDLversion] =	self._vhdlversion
+		vcom.Parameters[vcom.FlagVerbose] =				True
+		vcom.Parameters[vcom.RangeCheck] =				True
+		#acom.RangeCheck =		True
+
+		# run vcom compile for each VHDL file
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
 			if (not file.Path.exists()):									raise SimulatorException("Can not analyse '{0}'.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
-			
-			vcom.VHDLLibrary =	file.VHDLLibraryName
+			vcom.Parameters[vcom.SwitchVHDLLibrary] =	file.VHDLLibraryName
+			vcom.Parameters[vcom.ArgSourceFile] =			file.Path
 			# set a per file log-file with '-l', 'vcom.log',
-			vcom.Compile(str(file.Path))
-	
+			vcom.Compile()
+
 	def _RunSimulation(self, testbenchName):
 		self._LogNormal("  running simulation...")
 		
@@ -177,11 +183,11 @@ class Simulator(PoCSimulator):
 		
 		# create a QuestaSimulator instance
 		vsim = self._questa.GetSimulator()
-		vsim.Optimization =			True
-		vsim.TimeResolution =		"1fs"
-		vsim.ComanndLineMode =	True
-		vsim.BatchCommand =			"do {0}".format(str(tclBatchFilePath))
-		vsim.TopLevel =					"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
+		vsim.Parameters[vsim.FlagOptimization] =			True
+		vsim.Parameters[vsim.SwitchTimeResolution] =	"1fs"
+		vsim.Parameters[vsim.FlagCommandLineMode] =		True
+		vsim.Parameters[vsim.SwitchBatchCommand] =		"do {0}".format(str(tclBatchFilePath))
+		vsim.Parameters[vsim.SwitchTopLevel] =				"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
 		vsim.Simulate()
 		
 	def _RunSimulationWithGUI(self, testbenchName):
@@ -189,21 +195,21 @@ class Simulator(PoCSimulator):
 	
 		tclGUIFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['vSimGUIScript']
 		tclWaveFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['vSimWaveScript']
-		
+
 		# create a QuestaSimulator instance
 		vsim = self._questa.GetSimulator()
-		vsim.Optimization =		True
-		vsim.TimeResolution =	"1fs"
-		vsim.Title =					testbenchName
-	
+		vsim.Parameters[vsim.FlagOptimization] =			True
+		vsim.Parameters[vsim.SwitchTimeResolution] =	"1fs"
+		vsim.Parameters[vsim.SwitchTitke] =						testbenchName
+		vsim.Parameters[vsim.SwitchTopLevel] =				"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
+
 		if (tclWaveFilePath.exists()):
 			self._LogDebug("Found waveform script: '{0}'".format(str(tclWaveFilePath)))
-			vsim.BatchCommand =	"do {0}; do {0}".format(str(tclWaveFilePath), str(tclGUIFilePath))
+			vsim.Parameters[vsim.SwitchBatchCommand] =	"do {0}; do {0}".format(str(tclWaveFilePath), str(tclGUIFilePath))
 		else:
 			self._LogDebug("Didn't find waveform script: '{0}'. Loading default commands.".format(str(tclWaveFilePath)))
-			vsim.BatchCommand =	"add wave *; do {0}".format(str(tclGUIFilePath))
+			vsim.Parameters[vsim.SwitchBatchCommand] =	"add wave *; do {0}".format(str(tclGUIFilePath))
 
-		vsim.TopLevel =		"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
 		vsim.Simulate()
 
 		# if (not self.__guiMode):
@@ -243,65 +249,43 @@ class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
 		else:																						raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, executablePath, defaultParameters, logger=logger)
 
-		self._verbose =						False
-		self._rangecheck =				False
-		self._vhdlVersion =				None
-		self._vhdlLibrary =				None
+		self.Parameters[self.Executable] = executablePath
+
+	class Executable(metaclass=ExecutableArgument):
+		_value =	None
+
+	class FlagVerbose(metaclass=FlagArgument):
+		_name =		"-v"
+		_value =	None
 	
-	@property
-	def Verbose(self):
-		return self._verbose
-	@Verbose.setter
-	def Verbose(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._verbose != value):
-			self._verbose = value
-			if value:			self._defaultParameters.append("-v")
-			else:					self._defaultParameters.remove("-v")
+	class FlagRangeCheck(metaclass=FlagArgument):
+		_name =		"-fexplicit"
+		_value =	None
 	
-	@property
-	def VHDLVersion(self):
-		return self._vhdlVersion
-	@VHDLVersion.setter
-	def VHDLVersion(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		elif ((self._vhdlVersion is not None) and (self._vhdlVersion != value)):
-			if (self._vhdlVersion == "87"):			self._defaultParameters.remove("-87")
-			elif (self._vhdlVersion == "93"):		self._defaultParameters.remove("-93")
-			elif (self._vhdlVersion == "02"):		self._defaultParameters.remove("-2002")
-			elif (self._vhdlVersion == "08"):		self._defaultParameters.remove("-2008")
-		
-		if (value == "87"):										self._defaultParameters.append("-87")
-		elif (value == "93"):									self._defaultParameters.append("-93")
-		elif (value == "02"):									self._defaultParameters.append("-2002")
-		elif (value == "08"):									self._defaultParameters.append("-2008")
-		else:																					raise SimulatorException("Parameter 'value' has an unsupported value.")
-		self._vhdlVersion = value
+	class SwitchVHDLVersion(metaclass=StringArgument):
+		_name =		"-"
+		_value =	None
 	
-	@property
-	def VHDLLibrary(self):
-		return self._vhdlLibrary
-	@VHDLLibrary.setter
-	def VHDLLibrary(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		if (self._vhdlLibrary is None):
-			self._defaultParameters.append("--work={0}".format(value))
-			self._vhdlLibrary = value
-		elif (self._vhdlLibrary != value):
-			self._defaultParameters.remove("--work={0}".format(self._vhdlLibrary))
-			self._defaultParameters.append("--work={0}".format(value))
-			self._vhdlLibrary = value
+	class SwitchVHDLLibrary(metaclass=TupleArgument):
+		_name =		"-work"
+		_value =	None
+
+	class ArgSourceFile(metaclass=PathArgument):
+		_value =	None
+
+	Parameters = CommandLineArgumentList(
+		Executable,
+		FlagVerbose,
+		FlagRangeCheck,
+		SwitchVHDLVersion,
+		SwitchVHDLLibrary,
+		ArgSourceFile
+	)
 	
-	@property
-	def RangeCheck(self):
-		return self._rangecheck
-	@RangeCheck.setter
-	def RangeCheck(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._rangecheck != value):
-			self._rangecheck = value
-			if value:			self._defaultParameters.append("-rangecheck")
-			else:					self._defaultParameters.remove("-rangecheck")
+# 		if (value == "87"):										self._defaultParameters.append("-87")
+# 		elif (value == "93"):									self._defaultParameters.append("-93")
+# 		elif (value == "02"):									self._defaultParameters.append("-2002")
+# 		elif (value == "08"):									self._defaultParameters.append("-2008")
 	
 	def Compile(self, vhdlFile):
 		parameterList = self._defaultParameters.copy()
@@ -319,12 +303,12 @@ class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "vlib messages for : {0}".format(str(filePath)))
+				print(_indent + "vlib messages for : {0}".format(str(vhdlFile)))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format(str(filePath)))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format(str(vhdlFile)))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
@@ -340,76 +324,49 @@ class QuestaSimulator(Executable, QuestaSimulatorExecutable):
 		else:																						raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, executablePath, defaultParameters, logger=logger)
 
-		self._verbose =						None
-		self._optimize =					None
-		self._comanndLineMode =		None
-		self._timeResolution =		None
-		self._batchCommand =			None
-		self._topLevel =					None
-	
-	@property
-	def Verbose(self):
-		return self._verbose
-	@Verbose.setter
-	def Verbose(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._verbose != value):
-			self._verbose = value
-			if value:			self._defaultParameters.append("-v")
-			else:					self._defaultParameters.remove("-v")
-	
-	@property
-	def Optimization(self):
-		return self._optimize
-	@Optimization.setter
-	def Optimization(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._optimize != value):
-			self._optimize = value
-			if value:			self._defaultParameters.append("-vopt")
-			else:					self._defaultParameters.remove("-vopt")
-	
-	@property
-	def TimeResolution(self):
-		return self._timeResolution
-	@TimeResolution.setter
-	def TimeResolution(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		units = ("fs", "ps", "us", "ms", "sec", "min", "hr")
-		if (not value.endswith(units)):									raise ValueError("Parameter 'value' must contain a time unit.")
-		if (self._timeResolution is None):
-			self._defaultParameters.append("-t")
-			self._defaultParameters.append(value)
-			
-	@property
-	def ComanndLineMode(self):
-		return self._comanndLineMode
-	@ComanndLineMode.setter
-	def ComanndLineMode(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._comanndLineMode != value):
-			self._comanndLineMode = value
-			if value:			self._defaultParameters.append("-c")
-			else:					self._defaultParameters.remove("-c")
-	
-	@property
-	def BatchCommand(self):
-		return self._batchCommand
-	@BatchCommand.setter
-	def BatchCommand(self, value):
-		if (not isinstance(value, str)):																raise ValueError("Parameter 'value' is not of type str.")
-		self._defaultParameters.append("-do")
-		self._defaultParameters.append(value)
-	
-	@property
-	def TopLevel(self):
-		return self._topLevel
-	@TopLevel.setter
-	def TopLevel(self, value):
-		if (not isinstance(value, str)):																raise ValueError("Parameter 'value' is not of type str.")
-		self._defaultParameters.append(value)
-	
-	def Simulate(self):
+		self.Parameters[self.Executable] = executablePath
+
+	class Executable(metaclass=ExecutableArgument):
+		_value =	None
+
+	class FlagVerbose(metaclass=FlagArgument):
+		_name =		"-v"
+		_value =	None
+
+	class FlagOptimization(metaclass=FlagArgument):
+		_name =		"-vopt"
+		_value =	None
+
+	class FlagCommandLineMode(metaclass=FlagArgument):
+		_name =		"-c"
+		_value =	None
+
+	class SwitchTimeResolution(metaclass=TupleArgument):
+		_name =		"-t"
+		_value =	None
+
+	class SwitchBatchCommand(metaclass=TupleArgument):
+		_name =		"-do"
+		_value =	None
+
+	class SwitchTopLevel(metaclass=StringArgument):
+		_name =		""
+		_value =	None
+
+	Parameters = CommandLineArgumentList(
+		Executable,
+		FlagVerbose,
+		FlagOptimization,
+		FlagCommandLineMode,
+		SwitchTimeResolution,
+		SwitchBatchCommand,
+		SwitchTopLevel
+	)
+
+	# units = ("fs", "ps", "us", "ms", "sec", "min", "hr")
+
+
+	def Simulate(self, testbenchName):
 		parameterList = self._defaultParameters.copy()
 		
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
@@ -424,12 +381,12 @@ class QuestaSimulator(Executable, QuestaSimulatorExecutable):
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "vsim messages for : {0}".format(str(filePath)))
+				print(_indent + "vsim messages for : {0}".format(testbenchName))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vsim: {0}".format(str(filePath)))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vsim: {0}".format(testbenchName))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
@@ -445,18 +402,24 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimulatorExecutable):
 		else:																						raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, executablePath, defaultParameters, logger=logger)
 
-		self._verbose =						False
-	
-	@property
-	def Verbose(self):
-		return self._verbose
-	@Verbose.setter
-	def Verbose(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._verbose != value):
-			self._verbose = value
-			if value:			self._defaultParameters.append("-v")
-			else:					self._defaultParameters.remove("-v")
+		self.Parameters[self.Executable] = executablePath
+
+	class Executable(metaclass=ExecutableArgument):
+		_value =	None
+
+	class FlagVerbose(metaclass=FlagArgument):
+		_name =		"-v"
+		_value =	None
+
+	class SwitchLibraryName(metaclass=StringArgument):
+		_name =		""
+		_value =	None
+
+	Parameters = CommandLineArgumentList(
+		Executable,
+		FlagVerbose,
+		SwitchLibraryName
+	)
 	
 	def CreateLibrary(self, vhdlLibraryName):
 		parameterList = self._defaultParameters.copy()

@@ -32,6 +32,7 @@
 # ==============================================================================
 #
 # entry point
+from symbol import parameters
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -41,21 +42,20 @@ else:
 
 # load dependencies
 from pathlib								import Path
-from os											import linesep
 from configparser						import NoSectionError
 from colorama								import Fore as Foreground
 from os											import chdir
 import re								# used for output filtering
-import fileinput
 from subprocess							import CalledProcessError
 
 from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, FlagArgument, StringArgument, TupleArgument, PathArgument
 from Parser.Parser					import ParserException
 from Simulator.Exceptions		import *
-from Simulator.Base					import PoCSimulator, Executable, VHDLTestbenchLibraryName
+from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
 
 class Simulator(PoCSimulator):
 	_guiMode =										False
@@ -65,6 +65,7 @@ class Simulator(PoCSimulator):
 
 		self._guiMode =				guiMode
 		self._tempPath =			None
+		self._ghdl =					None
 
 		self._LogNormal("preparing simulation environment...")
 		self._PrepareSimulationEnvironment()
@@ -74,7 +75,7 @@ class Simulator(PoCSimulator):
 		return self._tempPath
 
 	def _PrepareSimulationEnvironment(self):
-		# create temporary directory for ghdl if not existent
+		# create temporary directory for GHDL if not existent
 		self._tempPath = self.Host.Directories["GHDLTemp"]
 		if (not (self._tempPath).exists()):
 			self._LogVerbose("  Creating temporary directory for simulator files.")
@@ -537,142 +538,98 @@ class GHDLExecutable(Executable):
 	def Version(self):
 		return self._version
 	
-	@property
-	def FlagExplicit(self):
-		return self._flagExplicit
-	@FlagExplicit.setter
-	def FlagExplicit(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._flagExplicit != value):
-			self._flagExplicit = value
-			if value:			self._defaultParameters.append("-fexplicit")
-			else:					self._defaultParameters.remove("-fexplicit")
-		
-	@property
-	def FlagRelaxedRules(self):
-		return self._flagRelaxedRules
-	@FlagRelaxedRules.setter
-	def FlagRelaxedRules(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._flagRelaxedRules != value):
-			self._flagRelaxedRules = value
-			if value:			self._defaultParameters.append("-frelaxed-rules")
-			else:					self._defaultParameters.remove("-frelaxed-rules")
-		
-	@property
-	def WarnBinding(self):
-		return self._warnBinding
-	@WarnBinding.setter
-	def WarnBinding(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._warnBinding != value):
-			self._warnBinding = value
-			if value:			self._defaultParameters.append("--warn-binding")
-			else:					self._defaultParameters.remove("--warn-binding")
-		
-	@property
-	def NoVitalChecks(self):
-		return self._noVitalChecks
-	@NoVitalChecks.setter
-	def NoVitalChecks(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._noVitalChecks != value):
-			self._noVitalChecks = value
-			if value:			self._defaultParameters.append("--no-vital-checks")
-			else:					self._defaultParameters.remove("--no-vital-checks")
-		
-	@property
-	def MultiByteComments(self):
-		return self._multiByteComments
-	@MultiByteComments.setter
-	def MultiByteComments(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._multiByteComments != value):
-			self._multiByteComments = value
-			if value:			self._defaultParameters.append("--mb-comments")
-			else:					self._defaultParameters.remove("--mb-comments")
-		
-	@property
-	def SynBinding(self):
-		return self._synBinding
-	@SynBinding.setter
-	def SynBinding(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._synBinding != value):
-			self._synBinding = value
-			if value:			self._defaultParameters.append("--syn-binding")
-			else:					self._defaultParameters.remove("--syn-binding")
-		
-	@property
-	def FlagPSL(self):
-		return self._flagPSL
-	@FlagPSL.setter
-	def FlagPSL(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._flagPSL != value):
-			self._flagPSL = value
-			if value:			self._defaultParameters.append("-fpsl")
-			else:					self._defaultParameters.remove("-fpsl")
-		
-	@property
-	def Verbose(self):
-		return self._verbose
-	@Verbose.setter
-	def Verbose(self, value):
-		if (not isinstance(value, bool)):								raise ValueError("Parameter 'value' is not of type bool.")
-		if (self._verbose != value):
-			self._verbose = value
-			if value:			self._defaultParameters.append("-v")
-			else:					self._defaultParameters.remove("-v")
+	class FlagVerbose(metaclass=FlagArgument):
+		_name =		"-v"
+		_value =	None
 	
-	@property
-	def IEEEFlavor(self):
-		return self._ieeeFlavor
-	@IEEEFlavor.setter
-	def IEEEFlavor(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		if (self._ieeeFlavor is None):
-			self._defaultParameters.append("--ieee={0}".format(value))
-			self._ieeeFlavor = value
-		elif (self._ieeeFlavor != value):
-			self._defaultParameters.remove("--ieee={0}".format(self._ieeeFlavor))
-			self._defaultParameters.append("--ieee={0}".format(value))
-			self._ieeeFlavor = value
-		
-	@property
-	def VHDLVersion(self):
-		return self._vhdlVersion
-	@VHDLVersion.setter
-	def VHDLVersion(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		
-		if (value == "93"):
-			value =  "93c"
-			self.IEEEFlavor = "synopsys"
-		elif (value == "08"):
-			self.IEEEFlavor = "standard"
-		
-		if (self._vhdlVersion is None):
-			self._defaultParameters.append("--std={0}".format(value))
-			self._vhdlVersion = value
-		elif (self._vhdlVersion != value):
-			self._defaultParameters.remove("--std={0}".format(self._vhdlVersion))
-			self._defaultParameters.append("--std={0}".format(value))
-			self._vhdlVersion = value
+	class FlagExplicit(metaclass=FlagArgument):
+		_name =		"-fexplicit"
+		_value =	None
 	
-	@property
-	def VHDLLibrary(self):
-		return self._vhdlLibrary
-	@VHDLLibrary.setter
-	def VHDLLibrary(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		if (self._vhdlLibrary is None):
-			self._defaultParameters.append("--work={0}".format(value))
-			self._vhdlLibrary = value
-		elif (self._vhdlLibrary != value):
-			self._defaultParameters.remove("--work={0}".format(self._vhdlLibrary))
-			self._defaultParameters.append("--work={0}".format(value))
-			self._vhdlLibrary = value
+	class FlagRelaxedRules(metaclass=FlagArgument):
+		_name =		"-frelaxed-rules"
+		_value =	None
+	
+	class FlagWarnBinding(metaclass=FlagArgument):
+		_name =		"--warn-binding"
+		_value =	None
+	
+	class FlagNoVitalChecks(metaclass=FlagArgument):
+		_name =		"--no-vital-checks"
+		_value =	None
+	
+	class FlagMultiByteComments(metaclass=FlagArgument):
+		_name =		"--mb-comments"
+		_value =	None
+	
+	class FlagSynBinding(metaclass=FlagArgument):
+		_name =		"--syn-binding"
+		_value =	None
+	
+	class FlagPSL(metaclass=FlagArgument):
+		_name =		"-fpsl"
+		_value =	None
+	
+	class SwitchIEEEFlavor(metaclass=StringArgument):
+		_name =		"--ieee="
+		_value =	None
+	
+	class SwitchVHDLVersion(metaclass=StringArgument):
+		_name =		"--std="
+		_value =	None
+	
+	class SwitchVHDLLibrary(metaclass=StringArgument):
+		_name =		"--work="
+		_value =	None
+
+	Parameters = CommandLineArgumentList(
+		FlagVerbose,
+		FlagExplicit,
+		FlagRelaxedRules,
+		FlagWarnBinding,
+		FlagNoVitalChecks,
+		FlagMultiByteComments,
+		FlagSynBinding,
+		FlagPSL,
+		SwitchIEEEFlavor,
+		SwitchVHDLVersion,
+		SwitchVHDLLibrary																
+	)
+
+	class SwitchIEEEAsserts(metaclass=StringArgument):
+		_name =		"--ieee-asserts="
+		_value =	None
+	
+	class SwitchVCDWaveform(metaclass=StringArgument):
+		_name =		"--vcd="
+		_value =	None
+	
+	class SwitchVCDGZWaveform(metaclass=StringArgument):
+		_name =		"--vcdgz="
+		_value =	None
+	
+	class SwitchFastWaveform(metaclass=StringArgument):
+		_name =		"--fst="
+		_value =	None
+	
+	class SwitchGHDLWaveform(metaclass=StringArgument):
+		_name =		"--wave="
+		_value =	None
+	
+	RunOptions = CommandLineArgumentList(
+		SwitchIEEEAsserts,
+		SwitchVCDWaveform,
+		SwitchVCDGZWaveform,
+		SwitchFastWaveform,
+		SwitchGHDLWaveform
+	)
+	
+# 		if (value == "93"):
+# 			value =  "93c"
+# 			self.IEEEFlavor = "synopsys"
+# 		elif (value == "08"):
+# 			self.IEEEFlavor = "standard"
+		
 	
 	def AddLibraryReference(self, path):
 		if isinstance(path, Path):		path = str(path)
@@ -689,20 +646,19 @@ class GHDLExecutable(Executable):
 	
 class GHDLAnalyze(GHDLExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
-		super().__init__(platform, binaryDirectoryPath, version, backend, defaultParameters=["-a"], logger=logger)
+		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
 
-		self.FlagExplicit =				True
-		self.FlagRelaxedRules =		True
-		self.WarnBinding =				True
-		self.NoVitalChecks =			True
-		self.MultiByteComments =	True
-		self.SynBinding =					True
-		self.FlagPSL =						True
-		self.Verbose =						True
-	
+		self.Parameters[self.FlagExplicit] =					True
+		self.Parameters[self.FlagRelaxedRules] =			True
+		self.Parameters[self.FlagWarnBinding] =				True
+		self.Parameters[self.FlagNoVitalChecks] =			True
+		self.Parameters[self.FlagMultiByteComments] =	True
+		self.Parameters[self.FlagPSL] =								True
+		self.Parameters[self.FlagVerbose] =						True
 	
 	def Analyze(self, filePath):
-		parameterList = self._defaultParameters.copy()
+		parameterList = self.Parameters.ToArgumentList()
+		parameterList.insert(1, "-a")
 		if isinstance(filePath, str):			parameterList.append(filePath)
 		elif isinstance(filePath, Path):	parameterList.append(str(filePath))
 		elif isinstance(filePath, (tuple, list)):
