@@ -50,7 +50,7 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, ValuedFlagArgument, TupleArgument, PathArgument
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, ValuedFlagArgument, TupleArgument, PathArgument, StringArgument
 from Simulator.Exceptions		import *
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName 
 
@@ -102,10 +102,10 @@ class Simulator(PoCSimulator):
 		for pocEntity in pocEntities:
 			self.Run(pocEntity, **kwargs)
 		
-	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93c", vhdlGenerics=None):
+	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93", vhdlGenerics=None):
 		self._pocEntity =			pocEntity
-		self._testbenchFQN =	str(pocEntity)
-		self._vhdlversion =		vhdlVersion
+		self._testbenchFQN =	str(pocEntity)										# TODO: implement FQN method on PoCEntity
+		self._vhdlVersion =		VHDLVersion.parse(vhdlVersion)		# TODO: move conversion one level up
 		self._vhdlGenerics =	vhdlGenerics
 
 		# check testbench database for the given testbench		
@@ -134,17 +134,12 @@ class Simulator(PoCSimulator):
 		pocProject.Environment =			Environment.Simulation
 		pocProject.ToolChain =				ToolChain.GHDL_GTKWave
 		pocProject.Tool =							Tool.GHDL
-		
+		pocProject.VHDLVersion =			self._vhdlVersion
+
 		if (deviceName is None):			pocProject.Board =					boardName
 		else:													pocProject.Device =					deviceName
-		
-		if (self._vhdlversion == "87"):			pocProject.VHDLVersion =		VHDLVersion.VHDL87
-		elif (self._vhdlversion == "93"):		pocProject.VHDLVersion =		VHDLVersion.VHDL93
-		elif (self._vhdlversion == "93c"):	pocProject.VHDLVersion =		VHDLVersion.VHDL93
-		elif (self._vhdlversion == "02"):		pocProject.VHDLVersion =		VHDLVersion.VHDL02
-		elif (self._vhdlversion == "08"):		pocProject.VHDLVersion =		VHDLVersion.VHDL08
-		
-		self._pocProject = pocProject
+
+		self._pocProject =				pocProject
 		
 	def _AddFileListFile(self, fileListFilePath):
 		self._LogDebug("    Reading filelist '{0}'".format(str(fileListFilePath)))
@@ -192,8 +187,11 @@ class Simulator(PoCSimulator):
 		xSimProjectFileContent = ""
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
 			if (not file.Path.exists()):									raise SimulatorException("Can not add '{0}' to xSim project file.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
-			xSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
-						
+			if (self._vhdlVersion == VHDLVersion.VHDL2008):
+				xSimProjectFileContent += "vhdl2008 {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
+			else:
+				xSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
+
 		# write xSim project file
 		prjFilePath = self._tempPath / (testbenchName + ".prj")
 		self._LogDebug("Writing xSim project file to '{0}'".format(str(prjFilePath)))
@@ -203,15 +201,18 @@ class Simulator(PoCSimulator):
 		# create a VivadoLinker instance
 		xelab = self._vivado.GetLinker()
 		xelab.Parameters[xelab.SwitchTimeResolution] =	"1fs"	# set minimum time precision to 1 fs
-		xelab.Parameters[xelab.SwitchMultiThreading] =	"4"		# enable multithreading support
+		xelab.Parameters[xelab.SwitchMultiThreading] =	"off"	#"4"		# enable multithreading support
 		xelab.Parameters[xelab.FlagRangeCheck] =				True
 
-		xelab.Parameters[xelab.SwitchOptimization] =		"2"
+		# xelab.Parameters[xelab.SwitchOptimization] =		"2"
 		xelab.Parameters[xelab.SwitchDebug] =						"typical"
 		xelab.Parameters[xelab.SwitchSnapshot] =				testbenchName
 
+		# if (self._vhdlVersion == VHDLVersion.VHDL2008):
+		# 	xelab.Parameters[xelab.SwitchVHDL2008] =			True
+
 		# if (self.verbose):
-		xelab.Parameters[xelab.SwitchVerbose] =					"0"
+		xelab.Parameters[xelab.SwitchVerbose] =					"1"	#"0"
 		xelab.Parameters[xelab.SwitchProjectFile] =			str(prjFilePath)
 		xelab.Parameters[xelab.SwitchLogFile] =					str(xelabLogFilePath)
 		xelab.Parameters[xelab.ArgTopLevel] =						"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
@@ -328,39 +329,42 @@ class VivadoLinker(Executable, VivadoSimulatorExecutable):
 		_value =	None
 
 	class FlagRangeCheck(metaclass=ShortFlagArgument):
-		_name =		"--rangecheck"
+		_name =		"rangecheck"
 		_value =	None
 
 	class SwitchMultiThreading(metaclass=TupleArgument):
-		_name =		"--mt"
+		_name =		"mt"
 		_value =	None
 
 	class SwitchVerbose(metaclass=TupleArgument):
-		_name =		"--verbose"
+		_name =		"verbose"
 		_value =	None
 
 	class SwitchDebug(metaclass=TupleArgument):
-		_name =		"--debug"
+		_name =		"debug"
 		_value =	None
 
+	# class SwitchVHDL2008(metaclass=ShortFlagArgument):
+	# 	_name =		"vhdl2008"
+	# 	_value =	None
+
 	class SwitchOptimization(metaclass=ValuedFlagArgument):
-		_name =		"-O"
+		_name =		"O"
 		_value =	None
 
 	class SwitchTimeResolution(metaclass=TupleArgument):
-		_name =		"--timeprecision_vhdl"
+		_name =		"timeprecision_vhdl"
 		_value =	None
 
 	class SwitchProjectFile(metaclass=TupleArgument):
-		_name =		"--prj"
+		_name =		"prj"
 		_value =	None
 
 	class SwitchLogFile(metaclass=TupleArgument):
-		_name =		"--log"
+		_name =		"log"
 		_value =	None
 
-	class SwitchSnapshot(metaclass=TupleArgument):
-		_name =		""
+	class SwitchSnapshot(metaclass=StringArgument):
 		_value =	None
 
 	class ArgTopLevel(metaclass=PathArgument):
@@ -373,6 +377,7 @@ class VivadoLinker(Executable, VivadoSimulatorExecutable):
 		SwitchTimeResolution,
 		SwitchVerbose,
 		SwitchDebug,
+		# SwitchVHDL2008,
 		SwitchOptimization,
 		SwitchProjectFile,
 		SwitchLogFile,

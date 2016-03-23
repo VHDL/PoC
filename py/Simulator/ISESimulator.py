@@ -102,10 +102,10 @@ class Simulator(PoCSimulator):
 		for pocEntity in pocEntities:
 			self.Run(pocEntity, **kwargs)
 
-	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93c", vhdlGenerics=None):
+	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93", vhdlGenerics=None):
 		self._pocEntity =			pocEntity
-		self._testbenchFQN =	str(pocEntity)
-		self._vhdlversion =		vhdlVersion
+		self._testbenchFQN =	str(pocEntity)										# TODO: implement FQN method on PoCEntity
+		self._vhdlVersion =		VHDLVersion.parse(vhdlVersion)		# TODO: move conversion one level up
 		self._vhdlGenerics =	vhdlGenerics
 
 		# check testbench database for the given testbench		
@@ -134,15 +134,10 @@ class Simulator(PoCSimulator):
 		pocProject.Environment =			Environment.Simulation
 		pocProject.ToolChain =				ToolChain.GHDL_GTKWave
 		pocProject.Tool =							Tool.GHDL
-		
+		pocProject.VHDLVersion =			self._vhdlVersion
+
 		if (deviceName is None):			pocProject.Board =					boardName
 		else:													pocProject.Device =					deviceName
-		
-		if (self._vhdlversion == "87"):			pocProject.VHDLVersion =		VHDLVersion.VHDL87
-		elif (self._vhdlversion == "93"):		pocProject.VHDLVersion =		VHDLVersion.VHDL93
-		elif (self._vhdlversion == "93c"):	pocProject.VHDLVersion =		VHDLVersion.VHDL93
-		elif (self._vhdlversion == "02"):		pocProject.VHDLVersion =		VHDLVersion.VHDL02
-		elif (self._vhdlversion == "08"):		pocProject.VHDLVersion =		VHDLVersion.VHDL08
 		
 		self._pocProject = pocProject
 
@@ -322,27 +317,29 @@ class ISELinker(Executable, ISESimulatorExecutable):
 		_value =	None
 
 	class FlagIncremental(metaclass=ShortFlagArgument):
-		_name =		"--incremental"
+		_name =		"incremental"
 		_value =	None
 
+	# FlagIncremental = ShortFlagArgument(_name="incremntal")
+
 	class FlagRangeCheck(metaclass=ShortFlagArgument):
-		_name =		"--rangecheck"
+		_name =		"rangecheck"
 		_value =	None
 
 	class SwitchMultiThreading(metaclass=TupleArgument):
-		_name =		"--mt"
+		_name =		"mt"
 		_value =	None
 
 	class SwitchTimeResolution(metaclass=TupleArgument):
-		_name =		"--timeprecision_vhdl"
+		_name =		"timeprecision_vhdl"
 		_value =	None
 
 	class SwitchProjectFile(metaclass=TupleArgument):
-		_name =		"--prj"
+		_name =		"prj"
 		_value =	None
 
 	class SwitchOutputFile(metaclass=TupleArgument):
-		_name =		"-o"
+		_name =		"o"
 		_value =	None
 
 	class ArgTopLevel(metaclass=PathArgument):

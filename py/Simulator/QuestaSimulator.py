@@ -92,7 +92,7 @@ class Simulator(PoCSimulator):
 		for pocEntity in pocEntities:
 			self.Run(pocEntity, **kwargs)
 		
-	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93c", vhdlGenerics=None):
+	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93", vhdlGenerics=None):
 		self._pocEntity =			pocEntity
 		self._testbenchFQN =	str(pocEntity)										# TODO: implement FQN method on PoCEntity
 		self._vhdlVersion =		VHDLVersion.parse(vhdlVersion)		# TODO: move conversion one level up

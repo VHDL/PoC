@@ -48,7 +48,7 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, ValuedFlagArgument, TupleArgument, PathArgument
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, LongFlagArgument, ValuedFlagArgument, TupleArgument, PathArgument, StringArgument
 from Simulator.Exceptions		import * 
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
 
@@ -92,10 +92,10 @@ class Simulator(PoCSimulator):
 		for pocEntity in pocEntities:
 			self.Run(pocEntity, **kwargs)
 		
-	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93c", vhdlGenerics=None):
+	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93", vhdlGenerics=None):
 		self._pocEntity =			pocEntity
-		self._testbenchFQN =	str(pocEntity)
-		self._vhdlversion =		vhdlVersion
+		self._testbenchFQN =	str(pocEntity)										# TODO: implement FQN method on PoCEntity
+		self._vhdlVersion =		VHDLVersion.parse(vhdlVersion)		# TODO: move conversion one level up
 		self._vhdlGenerics =	vhdlGenerics
 
 		# check testbench database for the given testbench		
@@ -103,7 +103,7 @@ class Simulator(PoCSimulator):
 		if (not self.Host.tbConfig.has_section(self._testbenchFQN)):
 			raise SimulatorException("Testbench '{0}' not found.".format(self._testbenchFQN)) from NoSectionError(self._testbenchFQN)
 			
-		# setup all needed paths to execute fuse
+		# setup all needed variables and paths
 		testbenchName =				self.Host.tbConfig[self._testbenchFQN]['TestbenchModule']
 		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['fileListFile']
 
@@ -113,10 +113,11 @@ class Simulator(PoCSimulator):
 		self._RunCompile()
 		# self._RunOptimize()
 		
-		if (not self.__guiMode):
+		if (not self._guiMode):
 			self._RunSimulation(testbenchName)
 		else:
-			self._RunSimulationWithGUI(testbenchName)
+			raise SimulatorException("GUI mode is not supported for Active-HDL.")
+			# self._RunSimulationWithGUI(testbenchName)
 		
 	def _CreatePoCProject(self, testbenchName, boardName=None, deviceName=None):
 		# create a PoCProject and read all needed files
@@ -128,14 +129,10 @@ class Simulator(PoCSimulator):
 		pocProject.Environment =			Environment.Simulation
 		pocProject.ToolChain =				ToolChain.GHDL_GTKWave
 		pocProject.Tool =							Tool.GHDL
+		pocProject.VHDLVersion =			self._vhdlVersion
 		
 		if (deviceName is None):			pocProject.Board =					boardName
 		else:													pocProject.Device =					deviceName
-		
-		if (self._vhdlversion == "87"):			pocProject.VHDLVersion =		VHDLVersion.VHDL87
-		elif (self._vhdlversion == "93"):		pocProject.VHDLVersion =		VHDLVersion.VHDL93
-		elif (self._vhdlversion == "02"):		pocProject.VHDLVersion =		VHDLVersion.VHDL02
-		elif (self._vhdlversion == "08"):		pocProject.VHDLVersion =		VHDLVersion.VHDL08
 		
 		self._pocProject = pocProject
 		
@@ -155,17 +152,17 @@ class Simulator(PoCSimulator):
 		
 		# create a ActiveHDLVHDLCompiler instance
 		alib = self._activeHDL.GetVHDLLibraryTool()
-		# alib.Parameters[alib.FlagVerbose] = True
-		
+
 		for lib in self._pocProject.VHDLLibraries:
 			alib.Parameters[alib.SwitchLibraryName] = lib.Name
 			alib.CreateLibrary()
 
 		# create a ActiveHDLVHDLCompiler instance
 		acom = self._activeHDL.GetVHDLCompiler()
-		# acom.Parameters[acom.FlagVerbose] =				True
-		# acom.Parameters[acom.FlagNoRangeCheck] =	False
-		acom.Parameters[acom.SwitchVHDLVersion] =	self._vhdlversion
+		if (self._vhdlVersion == VHDLVersion.VHDL87):			acom.Parameters[acom.SwitchVHDLVersion] =	"87"
+		elif (self._vhdlVersion == VHDLVersion.VHDL93):		acom.Parameters[acom.SwitchVHDLVersion] =	"93"
+		elif (self._vhdlVersion == VHDLVersion.VHDL02):		acom.Parameters[acom.SwitchVHDLVersion] =	"2002"
+		elif (self._vhdlVersion == VHDLVersion.VHDL08):		acom.Parameters[acom.SwitchVHDLVersion] =	"2008"
 
 		# run acom compile for each VHDL file
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
@@ -256,16 +253,17 @@ class ActiveHDLVHDLCompiler(Executable, ActiveHDLSimulatorExecutable):
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
 
-	class FlagNoRangeCheck(metaclass=ShortFlagArgument):
-		_name =		"--norangecheck"
+	class FlagNoRangeCheck(metaclass=LongFlagArgument):
+		_name =		"norangecheck"
 		_value =	None
 
 	class SwitchVHDLVersion(metaclass=ValuedFlagArgument):
-		_name =		"-"
-		_value =	None
+		_pattern =	"-{1}"
+		_name =			""
+		_value =		None
 
 	class SwitchVHDLLibrary(metaclass=TupleArgument):
-		_name =		"-work"
+		_name =		"work"
 		_value =	None
 
 	class ArgSourceFile(metaclass=PathArgument):
@@ -286,11 +284,7 @@ class ActiveHDLVHDLCompiler(Executable, ActiveHDLSimulatorExecutable):
   # -2008                              conform to VHDL 1076-2008
 	# -relax                             allow 32-bit integer literals
   # -incr                              switching compiler to fast incremental mode
-	
-#		if (value == "87"):										self._defaultParameters.append("-87")
-#		elif (value == "93"):									self._defaultParameters.append("-93")
-#		elif (value == "02"):									self._defaultParameters.append("-2002")
-#		elif (value == "08"):									self._defaultParameters.append("-2008")
+
 
 	def Compile(self):
 		parameterList = self.Parameters.ToArgumentList()
@@ -334,23 +328,23 @@ class ActiveHDLSimulator(Executable, ActiveHDLSimulatorExecutable):
 		_value =	None
 
 	class FlagVerbose(metaclass=ShortFlagArgument):
-		_name =		"-v"
+		_name =		"v"
 		_value =	None
 
 	class FlagOptimization(metaclass=ShortFlagArgument):
-		_name =		"-vopt"
+		_name =		"vopt"
 		_value =	None
 
 	class FlagCommandLineMode(metaclass=ShortFlagArgument):
-		_name =		"-c"
+		_name =		"c"
 		_value =	None
 
 	class SwitchTimeResolution(metaclass=TupleArgument):
-		_name =		"-t"
+		_name =		"t"
 		_value =	None
 
 	class SwitchBatchCommand(metaclass=TupleArgument):
-		_name =		"-do"
+		_name =		"do"
 		_value =	None
 
 	class SwitchTopLevel(metaclass=ValuedFlagArgument):
@@ -414,8 +408,7 @@ class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLSimulatorExecutable):
 	# 	_name =		"-v"
 	# 	_value =	None
 
-	class SwitchLibraryName(metaclass=ValuedFlagArgument):
-		_name =		""
+	class SwitchLibraryName(metaclass=StringArgument):
 		_value =	None
 
 	Parameters = CommandLineArgumentList(

@@ -136,7 +136,7 @@ class Simulator(PoCSimulator):
 		pocProject.Environment =			Environment.Simulation
 		pocProject.ToolChain =				ToolChain.GHDL_GTKWave
 		pocProject.Tool =							Tool.GHDL
-		pocProject.VHDLVersion = self._vhdlVersion
+		pocProject.VHDLVersion =			self._vhdlVersion
 
 		if (deviceName is None):			pocProject.Board =					boardName
 		else:													pocProject.Device =					deviceName
