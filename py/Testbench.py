@@ -31,8 +31,13 @@
 # limitations under the License.
 # ==============================================================================
 
+from argparse							import ArgumentParser, RawDescriptionHelpFormatter
+import textwrap
+from colorama							import Fore as Foreground
+from colorama							import init as colorama_init
 from pathlib							import Path
 from os										import environ
+from configparser					import Error as ConfigParser_Error
 
 from lib.Functions				import Exit
 from Base.Exceptions			import *
@@ -94,7 +99,6 @@ class Testbench(CommandLineProgram):
 		print()
 		print(self.tbConfig.options("PoC"))
 		print()
-		
 		
 		for sec in self.tbConfig.sections():
 			if (sec[:4] == "PoC."):
@@ -205,6 +209,7 @@ class Testbench(CommandLineProgram):
 	def iSimSimulation(self, module, showLogs, showReport, guiMode, deviceString, boardString):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx.ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
+		# check if the appropriate environment is loaded
 		if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
 		
 		# prepare some paths
@@ -275,6 +280,8 @@ class Testbench(CommandLineProgram):
 	def xSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode, deviceString, boardString):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx.Vivado")) == 0):	raise NotConfiguredException("Xilinx Vivado is not configured on this system.")
+		# check if the appropriate environment is loaded
+		# if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
 
 		# prepare some paths
 		self.Directories["xSimTemp"] =							self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['VivadoSimulatorFiles']
@@ -305,22 +312,18 @@ class Testbench(CommandLineProgram):
 
 # main program
 def main():
-	from colorama import Fore, Back, Style, init
-	init()
+	colorama_init()
 
-	# print(Fore.MAGENTA + "=" * 80)
-	print(Fore.LIGHTMAGENTA_EX + "=" * 80)
+	# print(Foreground.MAGENTA + "=" * 80)
+	print(Foreground.LIGHTMAGENTA_EX + "=" * 80)
 	print("{: ^80s}".format(Testbench.headLine))
 	print("=" * 80)
-	print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+	print(Foreground.RESET)
 	
 	try:
-		import argparse
-		import textwrap
-		
 		# create a commandline argument parser
-		argParser = argparse.ArgumentParser(
-			formatter_class = argparse.RawDescriptionHelpFormatter,
+		argParser = ArgumentParser(
+			formatter_class = RawDescriptionHelpFormatter,
 			description = textwrap.dedent('''\
 				This is the PoC-Library Testbench Service Tool.
 				'''),
@@ -412,19 +415,16 @@ def main():
 			argParser.print_help()
 	
 	except SimulatorException as ex:
-		from colorama import Fore, Back, Style
-		from configparser import Error
-		
-		print(Fore.RED + "ERROR:" + Fore.RESET + " %s" % ex.message)
+		print(Foreground.RED + "ERROR:" + Foreground.RESET + " {0}".format(ex.message))
 		if isinstance(ex.__cause__, FileNotFoundError):
-			print("{0}  FileNotFound:{1} '{2}'".format(Fore.LIGHTYELLOW_EX, Fore.RESET, str(ex.__cause__)))
+			print("{0}  FileNotFound:{1} '{2}'".format(Foreground.LIGHTYELLOW_EX, Foreground.RESET, str(ex.__cause__)))
 		elif isinstance(ex.__cause__, ParserException):
-			print("{0}  ParserException:{1} {2}".format(Fore.LIGHTYELLOW_EX, Fore.RESET, str(ex.__cause__)))
+			print("{0}  ParserException:{1} {2}".format(Foreground.LIGHTYELLOW_EX, Foreground.RESET, str(ex.__cause__)))
 			if (ex.__cause__.__cause__ is not None):
-				print("{0}    {1}:{2} {3}".format(Fore.LIGHTYELLOW_EX, ex.__cause__.__cause__.__class__.__name__, Fore.RESET, str(ex.__cause__.__cause__)))
-		elif isinstance(ex.__cause__, Error):
-			print("{0}  configparser.Error:{1} '{2}'".format(Fore.LIGHTYELLOW_EX, Fore.RESET, str(ex.__cause__)))
-		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+				print("{0}    {1}:{2} {3}".format(Foreground.LIGHTYELLOW_EX, ex.__cause__.__cause__.__class__.__name__, Foreground.RESET, str(ex.__cause__.__cause__)))
+		elif isinstance(ex.__cause__, ConfigParser_Error):
+			print("{0}  configparser.Error:{1} '{2}'".format(Foreground.LIGHTYELLOW_EX, Foreground.RESET, str(ex.__cause__)))
+		print(Foreground.RESET + Back.RESET + Style.RESET_ALL)
 		exit(1)
 
 	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)
