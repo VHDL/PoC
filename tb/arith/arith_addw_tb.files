@@ -20,3 +20,7 @@ vhdl		poc		"src/arith/arith_addw.vhdl"									# DUT
 
 # Testbench file(s)
 vhdl		test	"tb/arith/arith_addw_tb.vhdl"								# Testbench
+
+if (Tool = "Xilinx_iSim") then
+	report "This testbench does not support Xilinx ISE Simulator."
+end if

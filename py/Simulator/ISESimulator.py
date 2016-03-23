@@ -341,7 +341,7 @@ class ISELinker(Executable, ISESimulatorExecutables):
 		SwitchOutputFile,
 		ArgTopLevel
 	)
-
+	
 	def Link(self):
 		parameterList = self.Parameters.ToArgumentList()
 
