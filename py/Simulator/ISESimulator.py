@@ -96,7 +96,7 @@ class Simulator(PoCSimulator):
 	def PrepareSimulator(self, binaryPath, version):
 		# create the GHDL executable factory
 		self._LogVerbose("  Preparing GHDL simulator.")
-		self._ise = ISESimulatorExecutable(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._ise = ISESimulatorExecutables(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, pocEntities, **kwargs):
 		for pocEntity in pocEntities:
@@ -132,8 +132,8 @@ class Simulator(PoCSimulator):
 		# configure the project
 		pocProject.RootDirectory =		self.Host.Directories["PoCRoot"]
 		pocProject.Environment =			Environment.Simulation
-		pocProject.ToolChain =				ToolChain.GHDL_GTKWave
-		pocProject.Tool =							Tool.GHDL
+		pocProject.ToolChain =				ToolChain.Xilinx_ISE
+		pocProject.Tool =							Tool.Xilinx_iSim
 		pocProject.VHDLVersion =			self._vhdlVersion
 
 		if (deviceName is None):			pocProject.Board =					boardName
@@ -216,7 +216,7 @@ class Simulator(PoCSimulator):
 		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['iSimWaveformConfigFile']
 
 		# create a ISESimulator instance
-		iSim = self._ise.GetSimulator()
+		iSim = ISESimulatorExecutable(exeFilePath, logger=self.Logger)
 		iSim.Parameters[iSim.SwitchLogFile] =					str(iSimLogFilePath)
 
 		if (not self._guiMode):
@@ -247,7 +247,7 @@ class Simulator(PoCSimulator):
 			# except SimulatorException as ex:
 				# raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
 	
-class ISESimulatorExecutable:
+class ISESimulatorExecutables:
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		self._platform =						platform
 		self._binaryDirectoryPath =	binaryDirectoryPath
@@ -255,95 +255,81 @@ class ISESimulatorExecutable:
 		self.__logger =							logger
 	
 	def GetVHDLCompiler(self):
-		return ISEVHDLCompiler(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
+		raise NotImplementedException()
+		# return ISEVHDLCompiler(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
 	
 	def GetLinker(self):
 		return ISELinker(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
 	
-	def GetSimulator(self):
-		return ISESimulator(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
+# class ISEVHDLCompiler(Executable, ISESimulatorExecutable):
+# 	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
+# 		ISESimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
+#
+# 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vhcomp.exe"
+# 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vhcomp"
+# 		else:																						raise PlatformNotSupportedException(self._platform)
+# 		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+#
+# 	def Compile(self, vhdlFile):
+# 		parameterList = self.Parameters.ToArgumentList()
+#
+# 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+#
+# 		_indent = "    "
+# 		try:
+# 			vhcompLog = self.StartProcess(parameterList)
+#
+# 			log = ""
+# 			for line in vhcompLog.split("\n")[:-1]:
+# 					log += _indent + line + "\n"
+#
+# 			# if self.showLogs:
+# 			if (log != ""):
+# 				print(_indent + "vlib messages for : {0}".format(str(vhdlFile)))
+# 				print(_indent + "-" * 80)
+# 				print(log[:-1])
+# 				print(_indent + "-" * 80)
+# 		except CalledProcessError as ex:
+# 			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format(str(vhdlFile)))
+# 			print(_indent + "Return Code: {0}".format(ex.returncode))
+# 			print(_indent + "-" * 80)
+# 			for line in ex.output.split("\n"):
+# 				print(_indent + line)
+# 			print(_indent + "-" * 80)
 		
-class ISEVHDLCompiler(Executable, ISESimulatorExecutable):
+class ISELinker(Executable, ISESimulatorExecutables):
 	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
-		ISESimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-		
-		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vhcomp.exe"
-		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vhcomp"
+		if (platform == "Windows"):		executablePath = binaryDirectoryPath / "fuse.exe"
+		elif (platform == "Linux"):		executablePath = binaryDirectoryPath / "fuse"
 		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters, logger=logger)
-
-
-	
-	def Compile(self, vhdlFile):
-		parameterList = self._defaultParameters.copy()
-		parameterList.append(vhdlFile)
-		
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		
-		_indent = "    "
-		try:
-			vhcompLog = self.StartProcess(parameterList)
-			
-			log = ""
-			for line in vhcompLog.split("\n")[:-1]:
-					log += _indent + line + "\n"
-			
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "vlib messages for : {0}".format(str(vhdlFile)))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format(str(vhdlFile)))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
-				print(_indent + line)
-			print(_indent + "-" * 80)
-		
-class ISELinker(Executable, ISESimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
-		ISESimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-		
-		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "fuse.exe"
-		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "fuse"
-		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+		Executable.__init__(self, platform, executablePath, defaultParameters, logger=logger)
+		ISESimulatorExecutables.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
-	class Executable(metaclass=ExecutableArgument):
-		_value =	None
+	class Executable(metaclass=ExecutableArgument):						pass
 
 	class FlagIncremental(metaclass=ShortFlagArgument):
 		_name =		"incremental"
-		_value =	None
 
 	# FlagIncremental = ShortFlagArgument(_name="incremntal")
 
 	class FlagRangeCheck(metaclass=ShortFlagArgument):
 		_name =		"rangecheck"
-		_value =	None
 
 	class SwitchMultiThreading(metaclass=TupleArgument):
 		_name =		"mt"
-		_value =	None
 
 	class SwitchTimeResolution(metaclass=TupleArgument):
 		_name =		"timeprecision_vhdl"
-		_value =	None
 
 	class SwitchProjectFile(metaclass=TupleArgument):
 		_name =		"prj"
-		_value =	None
 
 	class SwitchOutputFile(metaclass=TupleArgument):
 		_name =		"o"
-		_value =	None
 
-	class ArgTopLevel(metaclass=PathArgument):
-		_value =	None
+	class ArgTopLevel(metaclass=PathArgument):					pass
 
 	Parameters = CommandLineArgumentList(
 		Executable,
@@ -383,35 +369,25 @@ class ISELinker(Executable, ISESimulatorExecutable):
 				print(_indent + line)
 			print(_indent + "-" * 80)
 
-class ISESimulator(Executable, ISESimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
-		ISESimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-		
-		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "isim.exe"
-		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "isim"
-		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+class ISESimulatorExecutable(Executable):
+	def __init__(self, executablePath, logger=None):
+		super().__init__("", executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
-	class Executable(metaclass=ExecutableArgument):
-		_value =	None
+	class Executable(metaclass=ExecutableArgument):			pass
 
 	class SwitchLogFile(metaclass=TupleArgument):
-		_name =		"-log"
-		_value =	None
+		_name =		"log"
 
 	class FlagGuiMode(metaclass=ShortFlagArgument):
-		_name =		"-gui"
-		_value =	None
+		_name =		"gui"
 
 	class SwitchTclBatchFile(metaclass=TupleArgument):
-		_name =		"-tclbatch"
-		_value =	None
+		_name =		"tclbatch"
 
 	class SwitchWaveformFile(metaclass=TupleArgument):
-		_name =		"-view"
-		_value =	None
+		_name =		"view"
 
 	Parameters = CommandLineArgumentList(
 		Executable,

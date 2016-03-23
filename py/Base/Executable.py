@@ -235,7 +235,7 @@ class CommandLineArgumentList(list):
 
 class Executable(ILogable):
 	def __init__(self, platform, executablePath, defaultParameters=[], logger=None):
-		ILogable.__init__(self, logger)
+		super().__init__(logger)
 		
 		self._platform = platform
 		

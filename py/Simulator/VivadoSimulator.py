@@ -132,8 +132,8 @@ class Simulator(PoCSimulator):
 		# configure the project
 		pocProject.RootDirectory =		self.Host.Directories["PoCRoot"]
 		pocProject.Environment =			Environment.Simulation
-		pocProject.ToolChain =				ToolChain.GHDL_GTKWave
-		pocProject.Tool =							Tool.GHDL
+		pocProject.ToolChain =				ToolChain.Xilinx_Vivado
+		pocProject.Tool =							Tool.Xilinx_xSim
 		pocProject.VHDLVersion =			self._vhdlVersion
 
 		if (deviceName is None):			pocProject.Board =					boardName

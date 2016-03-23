@@ -14,4 +14,8 @@ vhdl		poc		"src/arith/arith.pkg.vhdl"									# Package
 vhdl		poc		"src/arith/arith_prng.vhdl"									# Unit Under Test
 
 # Testbench file(s)
-vhdl		test	"tb/arith/arith_prng_tb.vhdl"								# Testbench
+if (Tool = "Xilinx_iSim") then
+	vhdl	test	"tb/arith/arith_prng_tb.iSim.vhdl"					# Testbench
+else
+	vhdl	test	"tb/arith/arith_prng_tb.vhdl"								# Testbench
+end if
