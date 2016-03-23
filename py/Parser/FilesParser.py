@@ -96,11 +96,12 @@ class FilesParserMixIn:
 		self._files =					[]
 		self._includes =			[]
 		self._libraries =			[]
+		self._warnings =			[]
 		
 	def _Parse(self):
 		self._ReadContent()
 		self._document = Document.parse(self._content, printChar=not True)
-# 		print(Fore.LIGHTBLACK_EX + str(self._document) + Fore.RESET)
+		# print(Fore.LIGHTBLACK_EX + str(self._document) + Fore.RESET)
 		
 	def _Resolve(self, statements=None):
 		# print("Resolving {0}".format(str(self._file)))
@@ -124,10 +125,12 @@ class FilesParserMixIn:
 				includeFile.Parse()
 				
 				self._includes.append(includeFile)
-				for srcFile in includeFile.Files():
+				for srcFile in includeFile.Files:
 					self._files.append(srcFile)
-				for lib in includeFile.Libraries():
+				for lib in includeFile.Libraries:
 					self._libraries.append(lib)
+				for warn in includeFile.Warnings:
+					self._warnings.append(warn)
 				
 				# load, parse, add
 			elif isinstance(stmt, LibraryStatement):
@@ -147,7 +150,7 @@ class FilesParserMixIn:
 				if ((exprValue == False) and (stmt._elseStatement is not None)):
 					self._Resolve(stmt._elseStatement.Statements)
 			elif isinstance(stmt, ReportStatement):
-				print("WARNING: {0}".format(stmt.Message))
+				self._warnings.append("WARNING: {0}".format(stmt.Message))
 	
 	def _Evaluate(self, expr):
 		if isinstance(expr, Identifier):
@@ -188,17 +191,14 @@ class FilesParserMixIn:
 			return self._Evaluate(expr.LeftChild) >= self._Evaluate(expr.RightChild)
 		else:																						raise ParserException("Unsupported expression type '{0}'".format(type(expr)))
 
-	def Files(self):
-		return self._files
-		
-	def Includes(self):
-		return self._includes
-		
-	def Libraries(self):
-		return self._libraries
+	@property
+	def Files(self):			return self._files
+	@property
+	def Includes(self):		return self._includes
+	@property	
+	def Libraries(self):	return self._libraries
+	@property
+	def Warnings(self):		return self._warnings
 
-	def __str__(self):
-		return "FILES file: '{0}'".format(str(self._file))
-	
-	def __repr__(self):
-		return self.__str__()
+	def __str__(self):		return "FILES file: '{0}'".format(str(self._file))
+	def __repr__(self):		return self.__str__()

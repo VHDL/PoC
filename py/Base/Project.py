@@ -99,21 +99,59 @@ class Tool(Enum):
 	Xilinx_iSim =				70
 	Xilinx_xSim =				71
 
-@unique
 class VHDLVersion(Enum):
 	Any =								 0
-	VHDL87 =						87
-	VHDL93 =						93
-	VHDL02 =						2002
-	VHDL08 =						2008
-	
+	VHDL87 =					1987
+	VHDL93 =					1993
+	VHDL02 =					2002
+	VHDL08 =					2008
+	VHDL1987 =				1987
+	VHDL1993 =				1993
+	VHDL2002 =				2002
+	VHDL2008 =				2008
+
 	@classmethod
 	def parse(cls, value):
-		for member in cls:
-			if (member.value == value):
-				return member
+		if isinstance(value, int):
+			if (value == 87):			return cls.VHDL87
+			elif (value == 93):		return cls.VHDL93
+			elif (value == 2):		return cls.VHDL02
+			elif (value == 8):		return cls.VHDL08
+			elif (value == 1987):	return cls.VHDL87
+			elif (value == 1993):	return cls.VHDL93
+			elif (value == 2002):	return cls.VHDL02
+			elif (value == 2008):	return cls.VHDL08
+		elif isinstance(value, str):
+			if (value == "87"):			return cls.VHDL87
+			elif (value == "93"):		return cls.VHDL93
+			elif (value == "02"):		return cls.VHDL02
+			elif (value == "08"):		return cls.VHDL08
+			elif (value == "1987"):	return cls.VHDL87
+			elif (value == "1993"):	return cls.VHDL93
+			elif (value == "2002"):	return cls.VHDL02
+			elif (value == "2008"):	return cls.VHDL08
 		raise ValueError("'{0}' is not a member of {1}.".format(str(value), cls.__name__))
-	
+
+	def __lt__(self, other):		return self.value < other.value
+	def __le__(self, other):		return self.value <= other.value
+	def __gt__(self, other):		return self.value > other.value
+	def __ge__(self, other):		return self.value >= other.value
+	def __ne__(self, other):		return self.value != other.value
+	def __eq__(self, other):
+		if ((self is VHDLVersion.Any) or (other is VHDLVersion.Any)):
+			return True
+		else:
+			return self.value == other.value
+
+	def __str__(self):
+		return "VHDL'" + self.__repr__()
+
+	def __repr__(self):
+		if (self == VHDLVersion.VHDL87):		return "87"
+		elif (self == VHDLVersion.VHDL93):	return "93"
+		elif (self == VHDLVersion.VHDL02):	return "02"
+		elif (self == VHDLVersion.VHDL08):	return "08"
+
 class Project():
 	def __init__(self, name):
 		# print("Project.__init__: name={0}".format(name))
@@ -121,6 +159,7 @@ class Project():
 		self._rootDirectory =					None
 		self._fileSets =							{}
 		self._defaultFileSet =				None
+		self._vhdlLibraries =					{}
 		self._externalVHDLLibraries = []
 		
 		self._board =									None
@@ -274,6 +313,20 @@ class Project():
 			if (file.FileType == fileType):
 				yield file
 	
+	def _ResolveVHDLLibraries(self):
+		for file in self.Files(fileType=FileTypes.VHDLSourceFile):
+			libraryName = file.VHDLLibraryName.lower()
+			if libraryName not in self._vhdlLibraries:
+				self._vhdlLibraries[libraryName] = library =	VHDLLibrary(libraryName)
+			else:
+				library = self._vhdlLibraries[libraryName]
+			library.AddFile(file)
+			file.VHDLLibrary = library
+	
+	@property
+	def VHDLLibraries(self):
+		return self._vhdlLibraries.values()
+	
 	@property
 	def ExternalVHDLLibraries(self):
 		return self._externalVHDLLibraries
@@ -296,15 +349,20 @@ class Project():
 		_indent = "  " * indent
 		buffer =	_indent + "Project: {0}\n".format(self.Name)
 		buffer +=	_indent + "o-Settings:\n"
-		buffer +=	_indent + "|   Board: {0}\n".format(self._board.Name)
-		buffer +=	_indent + "|   Device: {0}\n".format(self._device.Name)
+		buffer +=	_indent + "| o-Board: {0}\n".format(self._board.Name)
+		buffer +=	_indent + "| o-Device: {0}\n".format(self._device.Name)
 		for fileSet in self.FileSets:
 			buffer += _indent + "o-FileSet: {0}\n".format(fileSet.Name)
 			for file in fileSet.Files:
-				buffer += _indent + "|   {0}\n".format(file.FileName)
-		buffer += _indent + "o-Libraries:\n"
+				buffer += _indent + "| o-{0}\n".format(file.FileName)
+		buffer += _indent + "o-VHDL Libraries:\n"
+		for lib in self.VHDLLibraries:
+			buffer += _indent + "| o-{0}\n".format(lib.Name)
+			for file in lib.Files:
+				buffer += _indent + "| | o-{0}\n".format(file.Path)
+		buffer += _indent + "o-External VHDL libraries:\n"
 		for lib in self._externalVHDLLibraries:
-			buffer += _indent + "|   {0} -> {1}\n".format(lib, "")
+			buffer += _indent + "| o-{0} -> {1}\n".format(lib.Name, lib.Path)
 		return buffer
 	
 	def __str__(self):
@@ -364,6 +422,37 @@ class FileSet:
 	def __str__(self):
 		return self._name
 
+class VHDLLibrary:
+	def __init__(self, name, project = None):
+		self._name =		name
+		self._project =	project
+		self._files =		[]
+	
+	@property
+	def Name(self):
+		return self._name
+	
+	@property
+	def Project(self):
+		return self._project
+	
+	@Project.setter
+	def Project(self, value):
+		if not isinstance(value, Project):							raise ValueError("Parameter 'value' is not of type Base.Project.Project.")
+		self._project = value
+	
+	@property
+	def Files(self):
+		return self._files
+	
+	def AddFile(self, file):
+		if (not isinstance(file, VHDLSourceFile)):			raise ValueError("Unsupported parameter type for 'file'.")
+		file.VHDLLibrary = self
+		self._files.append(file)
+		
+	def __str__(self):
+		return self._name
+		
 class File():
 	def __init__(self, file, project = None, fileSet = None):
 		self._handle =	None

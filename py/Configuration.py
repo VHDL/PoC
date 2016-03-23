@@ -32,12 +32,15 @@
 # limitations under the License.
 # ==============================================================================
 
-from pathlib import Path
+from pathlib					import Path
+from configparser			import ConfigParser, ExtendedInterpolation
 
-from lib.Functions import Exit
-from Base.Exceptions import *
-from Base.PoCBase import CommandLineProgram
-from collections import OrderedDict
+from lib.Functions		import Exit
+from Base.Exceptions	import *
+from Base.Logging			import Logger, Severity
+from Base.PoCBase			import CommandLineProgram
+from collections			import OrderedDict
+
 
 class Configuration(CommandLineProgram):
 	headLine = "The PoC-Library - Repository Service Tool"
@@ -55,15 +58,21 @@ class Configuration(CommandLineProgram):
 	__privatePoCOptions = ["Version", "InstallationDirectory"]
 	
 	def __init__(self, debug, verbose, quiet):
+		if quiet:			severity = Severity.Quiet
+		elif debug:		severity = Severity.Debug
+		elif verbose:	severity = Severity.Verbose
+		else:					severity = Severity.Normal
+		
+		logger =			Logger(self, severity, printToStdOut=True)
 		try:
-			super(self.__class__, self).__init__(debug, verbose, quiet)
+			super(self.__class__, self).__init__(logger=logger)
 
-			if not ((self.platform == "Windows") or (self.platform == "Linux")):	raise PlatformNotSupportedException(self.platform)
-				
+			if		(self.Platform == "Windows"):	pass
+			elif	(self.Platform == "Linux"):		pass
+			else:																						raise PlatformNotSupportedException(self.Platform)
+		
 		except NotConfiguredException as ex:
-			from configparser import ConfigParser, ExtendedInterpolation
-			
-			self.printVerbose("Configuration file does not exists; creating a new one")
+			self._LogVerbose("Configuration file does not exists; creating a new one")
 			
 			self.pocConfig = ConfigParser(interpolation=ExtendedInterpolation())
 			self.pocConfig.optionxform = str
@@ -96,19 +105,19 @@ class Configuration(CommandLineProgram):
 			with self.files['PoCPrivateConfig'].open('w') as configFileHandle:
 				self.pocConfig.write(configFileHandle)
 			
-			self.printDebug("New configuration file created: %s" % self.files['PoCPrivateConfig'])
+			self._LogDebug("New configuration file created: %s" % self.files['PoCPrivateConfig'])
 			
 			# re-read configuration
-			self.readPoCConfiguration()
+			self.__ReadPoCConfiguration()
 	
 	def autoConfiguration(self):
 		raise NotImplementedException("No automatic configuration available!")
 	
 	def manualConfiguration(self):
-		self.printConfigurationHelp()
+		self._LogConfigurationHelp()
 		
 		# configure Windows
-		if (self.platform == 'Windows'):
+		if (self.Platform == 'Windows'):
 			# configure QuartusII on Windows
 			next = False
 			while (next == False):
@@ -198,7 +207,7 @@ class Configuration(CommandLineProgram):
 					raise
 				
 		# configure Linux
-		elif (self.platform == 'Linux'):
+		elif (self.Platform == 'Linux'):
 			# configure QuartusII on Linux
 			next = False
 			while (next == False):
@@ -287,7 +296,7 @@ class Configuration(CommandLineProgram):
 				except Exception as ex:
 					raise
 		else:
-			raise PlatformNotSupportedException(self.platform)
+			raise PlatformNotSupportedException(self.Platform)
 	
 		# write configuration
 		self.writePoCConfiguration()
@@ -295,7 +304,7 @@ class Configuration(CommandLineProgram):
 		self.readPoCConfiguration()
 	
 	def printConfigurationHelp(self):
-		self.printVerbose("starting manual configuration...")
+		self._LogVerbose("starting manual configuration...")
 		print('Explanation of abbreviations:')
 		print('  y - yes')
 		print('  n - no')
@@ -916,15 +925,15 @@ class Configuration(CommandLineProgram):
 		if (len(self.pocConfig.options("Xilinx.ISE")) != 0):
 			iseInstallationDirectoryPath = Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])
 			
-			if		(self.platform == "Windows"):		return (str(iseInstallationDirectoryPath / "settings64.bat"))
-			elif	(self.platform == "Linux"):			return (str(iseInstallationDirectoryPath / "settings64.sh"))
-			else:	raise PlatformNotSupportedException(self.platform)
+			if		(self.Platform == "Windows"):		return (str(iseInstallationDirectoryPath / "settings64.bat"))
+			elif	(self.Platform == "Linux"):			return (str(iseInstallationDirectoryPath / "settings64.sh"))
+			else:	raise PlatformNotSupportedException(self.Platform)
 		elif (len(self.pocConfig.options("Xilinx.LabTools")) != 0):
 			labToolsInstallationDirectoryPath = Path(self.pocConfig['Xilinx.LabTools']['InstallationDirectory'])
 			
-			if		(self.platform == "Windows"):		return (str(labToolsInstallationDirectoryPath / "settings64.bat"))
-			elif	(self.platform == "Linux"):			return (str(labToolsInstallationDirectoryPath / "settings64.sh"))
-			else:	raise PlatformNotSupportedException(self.platform)
+			if		(self.Platform == "Windows"):		return (str(labToolsInstallationDirectoryPath / "settings64.bat"))
+			elif	(self.Platform == "Linux"):			return (str(labToolsInstallationDirectoryPath / "settings64.sh"))
+			else:	raise PlatformNotSupportedException(self.Platform)
 		else:
 			raise NotConfiguredException("ERROR: Xilinx ISE or Xilinx LabTools is not configured on this system.")
 			
@@ -932,15 +941,15 @@ class Configuration(CommandLineProgram):
 		if (len(self.pocConfig.options("Xilinx.Vivado")) != 0):
 			vivadoInstallationDirectoryPath = Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])
 			
-			if		(self.platform == "Windows"):		return (str(vivadoInstallationDirectoryPath / "settings64.bat"))
-			elif	(self.platform == "Linux"):			return (str(vivadoInstallationDirectoryPath / "settings64.sh"))
-			else:	raise PlatformNotSupportedException(self.platform)
+			if		(self.Platform == "Windows"):		return (str(vivadoInstallationDirectoryPath / "settings64.bat"))
+			elif	(self.Platform == "Linux"):			return (str(vivadoInstallationDirectoryPath / "settings64.sh"))
+			else:	raise PlatformNotSupportedException(self.Platform)
 		elif (len(self.pocConfig.options("Xilinx.HardwareServer")) != 0):
 			hardwareServerInstallationDirectoryPath = Path(self.pocConfig['Xilinx.HardwareServer']['InstallationDirectory'])
 			
-			if		(self.platform == "Windows"):		return (str(hardwareServerInstallationDirectoryPath / "settings64.bat"))
-			elif	(self.platform == "Linux"):			return (str(hardwareServerInstallationDirectoryPath / "settings64.sh"))
-			else:	raise PlatformNotSupportedException(self.platform)
+			if		(self.Platform == "Windows"):		return (str(hardwareServerInstallationDirectoryPath / "settings64.bat"))
+			elif	(self.Platform == "Linux"):			return (str(hardwareServerInstallationDirectoryPath / "settings64.sh"))
+			else:	raise PlatformNotSupportedException(self.Platform)
 		else:
 			raise NotConfiguredException("ERROR: Xilinx Vivado or Xilinx HardwareServer is not configured on this system.")
 	

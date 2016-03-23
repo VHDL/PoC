@@ -32,102 +32,85 @@
 # ==============================================================================
 #
 # entry point
+from lib.Functions import Exit
 if __name__ != "__main__":
-	# place library initialization code here
 	pass
+	# place library initialization code here
 else:
-	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Simulator.Base")
 
 # load dependencies
+from enum import Enum, unique
+
 from Base.Exceptions import *
+from Base.Logging import ILogable
 from Simulator.Exceptions import *
 
-class PoCSimulator(object):
-	__host =				None
-	
-	__debug =				False
-	__verbose =			False
-	__quiet =				False
-	__showLogs =		False
-	__showReport =	False
 
+VHDLTestbenchLibraryName = "test"
+
+
+@unique
+class SimulationResult(Enum):
+	Failed = 0
+	NoAsserts = 1
+	Passed = 2
+
+
+class PoCSimulator(ILogable):
 	def __init__(self, host, showLogs, showReport):
-		self.__host =				host
-		self.__debug =			host.debug
-		self.__verbose =		host.verbose
-		self.__quiet =			host.quiet
-		self.__showLogs =		showLogs
-		self.__showReport =	showReport
+		if isinstance(host, ILogable):
+			ILogable.__init__(self, host.Logger)
+		else:
+			ILogable.__init__(self, None)
+
+		self.__host = host
+		self.__showLogs = showLogs
+		self.__showReport = showReport
 
 	# class properties
 	# ============================================================================
 	@property
-	def debug(self):			return self.__debug
-	
-	@property
-	def verbose(self):		return self.__verbose
-	
-	@property
-	def quiet(self):			return self.__quiet	
+	def Host(self):
+		return self.__host
 
 	@property
-	def host(self):				return self.__host
-	
-	@property
-	def showLogs(self):		return self.__showLogs
-	
-	@property
-	def showReport(self):	return self.__showReport
+	def ShowLogs(self):
+		return self.__showLogs
 
-	# print messages
-	# ============================================================================
-	def printDebug(self, message):
-		if (self.debug):
-			print("DEBUG: " + message)
-	
-	def printVerbose(self, message):
-		if (self.verbose):
-			print(message)
-	
-	def printNonQuiet(self, message):
-		if (not self.quiet):
-			print(message)
+	@property
+	def ShowReport(self):
+		return self.__showReport
 
-	def checkSimulatorOutput(self, simulatorOutput):
+	def CheckSimulatorOutput(self, simulatorOutput):
 		matchPos = simulatorOutput.find("SIMULATION RESULT = ")
 		if (matchPos >= 0):
-			if (simulatorOutput[matchPos + 20 : matchPos + 26] == "PASSED"):
-				return True
+			if (simulatorOutput[matchPos + 20: matchPos + 26] == "PASSED"):
+				return SimulationResult.Passed
 			elif (simulatorOutput[matchPos + 20: matchPos + 26] == "FAILED"):
-				return False
+				return SimulationResult.Failed
 			elif (simulatorOutput[matchPos + 20: matchPos + 30] == "NO ASSERTS"):
-				return None
-			else:
-				raise SimulatorException()
-		else:
-			raise SimulatorException()
+				return SimulationResult.NoAsserts
+		raise SimulatorException("String 'SIMULATION RESULT ...' not found in simulator output.")
 
+	# class PoCSimulatorTestbench(object):
+	# pocEntity = None
+	# testbenchName = ""
+	# simulationResult = False
+	
+	# def __init__(self, pocEntity, testbenchName):
+	# self.pocEntity = pocEntity
+	# self.testbenchName = testbenchName
 
-class PoCSimulatorTestbench(object):
-	pocEntity = None
-	testbenchName = ""
-	simulationResult = False
+	# class PoCSimulatorTestbenchGroup(object):
+	# pocEntity = None
+	# members = {}
 	
-	def __init__(self, pocEntity, testbenchName):
-		self.pocEntity = pocEntity
-		self.testbenchName = testbenchName
+	# def __init__(self, pocEntity):
+	# self.pocEntity = pocEntity
+	
+	# def add(self, pocEntity, testbench):
+	# self.members[str(pocEntity)] = testbench
 
-class PoCSimulatorTestbenchGroup(object):
-	pocEntity = None
-	members = {}
-	
-	def __init__(self, pocEntity):
-		self.pocEntity = pocEntity
-	
-	def add(self, pocEntity, testbench):
-		self.members[str(pocEntity)] = testbench
-		
-	def __getitem__(self, key):
-		return self.members[key]
-	
+	# def __getitem__(self, key):
+	# return self.members[key]

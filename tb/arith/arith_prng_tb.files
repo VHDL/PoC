@@ -4,9 +4,7 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
-# Load external vendor libraries
-include				"lib/osvvm.files"														# Open Source VHDL Verification Methodology (OS-VVM)
-
+# Common PoC packages for configuration, synthesis and simulation
 include				"tb/common/my_config.files"									# board and device configuration
 include				"src/common/common.files"										# load common packages
 include				"src/sim/sim.files"													# load simulation helper packages
@@ -16,4 +14,8 @@ vhdl		poc		"src/arith/arith.pkg.vhdl"									# Package
 vhdl		poc		"src/arith/arith_prng.vhdl"									# Unit Under Test
 
 # Testbench file(s)
-vhdl		test	"tb/arith/arith_prng_tb.vhdl"								# Testbench
+if (Tool = "Xilinx_iSim") then
+	vhdl	test	"tb/arith/arith_prng_tb.iSim.vhdl"					# Testbench
+else
+	vhdl	test	"tb/arith/arith_prng_tb.vhdl"								# Testbench
+end if

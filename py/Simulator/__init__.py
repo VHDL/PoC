@@ -39,8 +39,9 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Repository Service Tool")
 
 # load dependencies
-import Simulator.ISESimulator
-import Simulator.VivadoSimulator
-import Simulator.QuestaSimulator
-import Simulator.AldecSimulator
+import Simulator.ActiveHDLSimulator
 import Simulator.GHDLSimulator
+import Simulator.ISESimulator
+import Simulator.QuestaSimulator
+# import Simulator.RiveraProSimulator
+import Simulator.VivadoSimulator
