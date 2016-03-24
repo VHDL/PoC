@@ -48,7 +48,7 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, ValuedFlagArgument, TupleArgument, PathArgument, StringArgument
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
 from Simulator.Exceptions		import * 
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
 
@@ -272,7 +272,7 @@ class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
 		_name =		"quiet"					# Do not report 'Loading...' messages"
 		_value =	None
 
-	class SwitchModelSimIniFile(metaclass=ValuedFlagArgument):
+	class SwitchModelSimIniFile(metaclass=ShortValuedFlagArgument):
 		_name =		"modelsimini "
 		_value =	None
 
@@ -284,11 +284,11 @@ class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
 		_pattern =	"-{0}"
 		_value =		None
 
-	class ArgLogFile(metaclass=TupleArgument):
+	class ArgLogFile(metaclass=ShortTupleArgument):
 		_name =		"l"			# what's the difference to -logfile ?
 		_value =	None
 
-	class SwitchVHDLLibrary(metaclass=TupleArgument):
+	class SwitchVHDLLibrary(metaclass=ShortTupleArgument):
 		_name =		"work"
 		_value =	None
 
@@ -357,7 +357,7 @@ class QuestaSimulator(Executable, QuestaSimulatorExecutable):
 		_name =		"batch"
 		_value =	None
 
-	class SwitchBatchCommand(metaclass=TupleArgument):
+	class SwitchBatchCommand(metaclass=ShortTupleArgument):
 		_name =		"do"
 		_value =	None
 
@@ -365,7 +365,7 @@ class QuestaSimulator(Executable, QuestaSimulatorExecutable):
 		_name =		"c"
 		_value =	None
 
-	class SwitchModelSimIniFile(metaclass=ValuedFlagArgument):
+	class SwitchModelSimIniFile(metaclass=ShortValuedFlagArgument):
 		_name =		"modelsimini "
 		_value =	None
 
@@ -373,19 +373,19 @@ class QuestaSimulator(Executable, QuestaSimulatorExecutable):
 		_name =		"vopt"
 		_value =	None
 
-	class SwitchTimeResolution(metaclass=TupleArgument):
+	class SwitchTimeResolution(metaclass=ShortTupleArgument):
 		_name =		"t"			# -t [1|10|100]fs|ps|ns|us|ms|sec  Time resolution limit
 		_value =	None
 
-	class ArgLogFile(metaclass=TupleArgument):
+	class ArgLogFile(metaclass=ShortTupleArgument):
 		_name =		"l"			# what's the difference to -logfile ?
 		_value =	None
 
-	class ArgVHDLLibraryName(metaclass=TupleArgument):
+	class ArgVHDLLibraryName(metaclass=ShortTupleArgument):
 		_name =		"lib"
 		_value =	None
 
-	class ArgOnFinishMode(metaclass=TupleArgument):
+	class ArgOnFinishMode(metaclass=ShortTupleArgument):
 		_name =		"onfinish"
 		_value =	None				# Customize the kernel shutdown behavior at the end of simulation; Valid modes: ask, stop, exit, final (Default: ask)
 

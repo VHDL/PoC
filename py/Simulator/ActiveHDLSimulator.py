@@ -48,7 +48,7 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, LongFlagArgument, ValuedFlagArgument, TupleArgument, PathArgument, StringArgument
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
 from Simulator.Exceptions		import * 
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
 
@@ -257,12 +257,12 @@ class ActiveHDLVHDLCompiler(Executable, ActiveHDLSimulatorExecutable):
 		_name =		"norangecheck"
 		_value =	None
 
-	class SwitchVHDLVersion(metaclass=ValuedFlagArgument):
+	class SwitchVHDLVersion(metaclass=ShortValuedFlagArgument):
 		_pattern =	"-{1}"
 		_name =			""
 		_value =		None
 
-	class SwitchVHDLLibrary(metaclass=TupleArgument):
+	class SwitchVHDLLibrary(metaclass=ShortTupleArgument):
 		_name =		"work"
 		_value =	None
 
@@ -339,15 +339,15 @@ class ActiveHDLSimulator(Executable, ActiveHDLSimulatorExecutable):
 		_name =		"c"
 		_value =	None
 
-	class SwitchTimeResolution(metaclass=TupleArgument):
+	class SwitchTimeResolution(metaclass=ShortTupleArgument):
 		_name =		"t"
 		_value =	None
 
-	class SwitchBatchCommand(metaclass=TupleArgument):
+	class SwitchBatchCommand(metaclass=ShortTupleArgument):
 		_name =		"do"
 		_value =	None
 
-	class SwitchTopLevel(metaclass=ValuedFlagArgument):
+	class SwitchTopLevel(metaclass=ShortValuedFlagArgument):
 		_name =		""
 		_value =	None
 

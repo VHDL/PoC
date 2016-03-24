@@ -50,7 +50,7 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, ValuedFlagArgument, TupleArgument, PathArgument, StringArgument
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
 from Simulator.Exceptions		import *
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName 
 
@@ -332,15 +332,15 @@ class VivadoLinker(Executable, VivadoSimulatorExecutable):
 		_name =		"rangecheck"
 		_value =	None
 
-	class SwitchMultiThreading(metaclass=TupleArgument):
+	class SwitchMultiThreading(metaclass=ShortTupleArgument):
 		_name =		"mt"
 		_value =	None
 
-	class SwitchVerbose(metaclass=TupleArgument):
+	class SwitchVerbose(metaclass=ShortTupleArgument):
 		_name =		"verbose"
 		_value =	None
 
-	class SwitchDebug(metaclass=TupleArgument):
+	class SwitchDebug(metaclass=ShortTupleArgument):
 		_name =		"debug"
 		_value =	None
 
@@ -348,19 +348,19 @@ class VivadoLinker(Executable, VivadoSimulatorExecutable):
 	# 	_name =		"vhdl2008"
 	# 	_value =	None
 
-	class SwitchOptimization(metaclass=ValuedFlagArgument):
+	class SwitchOptimization(metaclass=ShortValuedFlagArgument):
 		_name =		"O"
 		_value =	None
 
-	class SwitchTimeResolution(metaclass=TupleArgument):
+	class SwitchTimeResolution(metaclass=ShortTupleArgument):
 		_name =		"timeprecision_vhdl"
 		_value =	None
 
-	class SwitchProjectFile(metaclass=TupleArgument):
+	class SwitchProjectFile(metaclass=ShortTupleArgument):
 		_name =		"prj"
 		_value =	None
 
-	class SwitchLogFile(metaclass=TupleArgument):
+	class SwitchLogFile(metaclass=ShortTupleArgument):
 		_name =		"log"
 		_value =	None
 
@@ -426,7 +426,7 @@ class VivadoSimulator(Executable, VivadoSimulatorExecutable):
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
 
-	class SwitchLogFile(metaclass=TupleArgument):
+	class SwitchLogFile(metaclass=ShortTupleArgument):
 		_name =		"-log"
 		_value =	None
 
@@ -434,11 +434,11 @@ class VivadoSimulator(Executable, VivadoSimulatorExecutable):
 		_name =		"-gui"
 		_value =	None
 
-	class SwitchTclBatchFile(metaclass=TupleArgument):
+	class SwitchTclBatchFile(metaclass=ShortTupleArgument):
 		_name =		"-tclbatch"
 		_value =	None
 
-	class SwitchWaveformFile(metaclass=TupleArgument):
+	class SwitchWaveformFile(metaclass=ShortTupleArgument):
 		_name =		"-view"
 		_value =	None
 

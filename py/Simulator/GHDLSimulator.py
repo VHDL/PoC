@@ -52,7 +52,7 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, LongFlagArgument, ValuedFlagArgument, TupleArgument, PathArgument, StringArgument
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
 from Parser.Parser					import ParserException
 from Simulator.Exceptions		import *
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
@@ -499,15 +499,15 @@ class GHDLExecutable(Executable):
 	class FlagPSL(metaclass=ShortFlagArgument):
 		_name =		"fpsl"
 
-	class SwitchIEEEFlavor(metaclass=ValuedFlagArgument):
+	class SwitchIEEEFlavor(metaclass=ShortValuedFlagArgument):
 		_pattern =	"--{0}={1}"
 		_name =			"ieee"
 
-	class SwitchVHDLVersion(metaclass=ValuedFlagArgument):
+	class SwitchVHDLVersion(metaclass=ShortValuedFlagArgument):
 		_pattern =	"--{0}={1}"
 		_name =			"std"
 	
-	class SwitchVHDLLibrary(metaclass=ValuedFlagArgument):
+	class SwitchVHDLLibrary(metaclass=ShortValuedFlagArgument):
 		_pattern =	"--{0}={1}"
 		_name =			"work"
 
@@ -537,23 +537,23 @@ class GHDLExecutable(Executable):
 		ArgTopLevel
 	)
 
-	class SwitchIEEEAsserts(metaclass=ValuedFlagArgument):
+	class SwitchIEEEAsserts(metaclass=ShortValuedFlagArgument):
 		_pattern =	"--{0}={1}"
 		_name =			"ieee-asserts"
 
-	class SwitchVCDWaveform(metaclass=ValuedFlagArgument):
+	class SwitchVCDWaveform(metaclass=ShortValuedFlagArgument):
 		_pattern =	"--{0}={1}"
 		_name =			"vcd"
 
-	class SwitchVCDGZWaveform(metaclass=ValuedFlagArgument):
+	class SwitchVCDGZWaveform(metaclass=ShortValuedFlagArgument):
 		_pattern =	"--{0}={1}"
 		_name =			"vcdgz"
 
-	class SwitchFastWaveform(metaclass=ValuedFlagArgument):
+	class SwitchFastWaveform(metaclass=ShortValuedFlagArgument):
 		_pattern =	"--{0}={1}"
 		_name =			"fst"
 
-	class SwitchGHDLWaveform(metaclass=ValuedFlagArgument):
+	class SwitchGHDLWaveform(metaclass=ShortValuedFlagArgument):
 		_pattern =	"--{0}={1}"
 		_name =			"wave"
 
