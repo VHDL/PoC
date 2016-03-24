@@ -15,7 +15,7 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2015 Technische Universitaet Dresden - Germany
+# Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,46 +41,31 @@ else:
 
 # load dependencies
 from Base.Exceptions import *
+from Base.Logging import ILogable
 from Compiler.Exceptions import *
 
-class PoCCompiler(object):
-	# private fields
-	__host =				None
-	__debug =				False
-	__verbose =			False
-	__quiet =				False
-	__showLogs =		False
-	__showReport =	False
-	__dryRun =			False
-
+class PoCCompiler(ILogable):
 	def __init__(self, host, showLogs, showReport):
+		if isinstance(host, ILogable):
+			ILogable.__init__(self, host.Logger)
+		else:
+			ILogable.__init__(self, None)
+
 		self.__host =				host
-		
-		self.__debug =			host.debug
-		self.__verbose =		host.verbose
-		self.__quiet =			host.quiet
 		self.__showLogs =		showLogs
 		self.__showReport =	showReport
+		self.__dryRun =			False
 
 	# class properties
 	# ============================================================================
 	@property
-	def host(self):				return self.__host
+	def Host(self):				return self.__host
 	
 	@property
-	def debug(self):			return self.__debug
+	def ShowLogs(self):		return self.__showLogs
 	
 	@property
-	def verbose(self):		return self.__verbose
-	
-	@property
-	def quiet(self):			return self.__quiet
-	
-	@property
-	def showLogs(self):		return self.__showLogs
-	
-	@property
-	def showReport(self):	return self.__showReport
+	def ShowReport(self):	return self.__showReport
 	
 	# print messages
 	# ============================================================================

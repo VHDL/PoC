@@ -64,9 +64,9 @@ class PoCSimulator(ILogable):
 		else:
 			ILogable.__init__(self, None)
 
-		self.__host = host
-		self.__showLogs = showLogs
-		self.__showReport = showReport
+		self.__host =				host
+		self.__showLogs =		showLogs
+		self.__showReport =	showReport
 
 	# class properties
 	# ============================================================================

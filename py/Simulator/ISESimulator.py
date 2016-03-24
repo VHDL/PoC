@@ -50,7 +50,7 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
 from Simulator.Exceptions		import *
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
 
@@ -329,7 +329,7 @@ class ISELinker(Executable, ISESimulatorExecutables):
 	class SwitchOutputFile(metaclass=ShortTupleArgument):
 		_name =		"o"
 
-	class ArgTopLevel(metaclass=PathArgument):					pass
+	class ArgTopLevel(metaclass=StringArgument):					pass
 
 	Parameters = CommandLineArgumentList(
 		Executable,

@@ -15,7 +15,7 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2015 Technische Universitaet Dresden - Germany
+# Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -72,14 +72,14 @@ class Compiler(PoCCompiler):
 		tempXstPath = self.Host.directories["XSTTemp"]
 		if not (tempXstPath).exists():
 			self._LogVerbose("Creating temporary directory for XST files.")
-			self._LogDebug("Temporary directors: {0}".format(str(tempXstPath))
+			self._LogDebug("Temporary directors: {0}".format(str(tempXstPath)))
 			tempXstPath.mkdir(parents=True)
 
 		# create output directory for CoreGen if not existent
 		xstOutputPath = self.Host.directories["PoCNetList"] / deviceString
 		if not (xstOutputPath).exists():
 			self._LogVerbose("Creating temporary directory for XST files.")
-			self._LogDebug("Temporary directors: {0}".format(str(xstOutputPath))
+			self._LogDebug("Temporary directors: {0}".format(str(xstOutputPath)))
 			xstOutputPath.mkdir(parents=True)
 			
 		# add the key Device to section SPECIAL at runtime to change interpolation results
@@ -199,7 +199,7 @@ class Compiler(PoCCompiler):
 
 		#if (not xstOptionsFilePath.exists()):
 		# read/write XST options file
-		self._LogDebug("Reading Xilinx Compiler Tool option file from '{0}'".format(str(xstTemplateFilePath))
+		self._LogDebug("Reading Xilinx Compiler Tool option file from '{0}'".format(str(xstTemplateFilePath)))
 		with xstTemplateFilePath.open('r') as xstFileHandle:
 			xstFileContent = xstFileHandle.read()
 			
@@ -270,9 +270,9 @@ class Compiler(PoCCompiler):
 		xstFileContent = xstFileContent.format(**xstTemplateDictionary)
 		
 		if (self.Host.netListConfig.has_option(str(pocEntity), 'XSTOption.Generics')):
-			xstFileContent += "-generics { {0} }".format(self.Host.netListConfig[str(pocEntity)]['XSTOption.Generics']
+			xstFileContent += "-generics { {0} }".format(self.Host.netListConfig[str(pocEntity)]['XSTOption.Generics'])
 
-		self._LogDebug("Writing Xilinx Compiler Tool option file to '{0}'".format(str(xstFilePath))
+		self._LogDebug("Writing Xilinx Compiler Tool option file to '{0}'".format(str(xstFilePath)))
 		with xstFilePath.open('w') as xstFileHandle:
 			xstFileHandle.write(xstFileContent)
 	
@@ -286,7 +286,7 @@ class Compiler(PoCCompiler):
 		filesLineRegExpStr += r"\s+\"(?P<VHDLFile>.*?)\""														# VHDL filename without "-signs
 		filesLineRegExp = re.compile(filesLineRegExpStr)
 
-		self._LogDebug("Reading filelist '{0}'".format(str(fileListFilePath))
+		self._LogDebug("Reading filelist '{0}'".format(str(fileListFilePath)))
 		xstProjectFileContent = ""
 		with fileListFilePath.open('r') as prjFileHandle:
 			for line in prjFileHandle:
@@ -310,13 +310,13 @@ class Compiler(PoCCompiler):
 						vhdlFilePath = self.Host.directories["XilinxPrimitiveSource"] / vhdlFileName
 					
 					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
-					xstProjectFileContent += "{0} {0} \"{0}\"\n".format((xstKeyWord, vhdlLibraryName, str(vhdlFilePath))
+					xstProjectFileContent += "{0} {0} \"{0}\"\n".format((xstKeyWord, vhdlLibraryName, str(vhdlFilePath)))
 					
 					if (not vhdlFilePath.exists()):
 						raise CompilerException("Can not add '" + vhdlFileName + "' to project file.") from FileNotFoundError(str(vhdlFilePath))
 		
 		# write iSim project file
-		self._LogDebug("Writing XST project file to '{0}'".format(str(prjFilePath))
+		self._LogDebug("Writing XST project file to '{0}'".format(str(prjFilePath)))
 		with prjFilePath.open('w') as prjFileHandle:
 			prjFileHandle.write(xstProjectFileContent)
 
@@ -335,8 +335,8 @@ class Compiler(PoCCompiler):
 			'-ifn', str(xstFilePath),
 			'-ofn', str(reportFilePath)
 		]
-		self._LogDebug("call xst: {0}".format(str(parameterList))
-		self._LogVerbose('    {0} -intstyle xflow -filter "{0}" -ifn "{0}" -ofn "{0}"' % (str(xstExecutablePath), str(fileListFilePath), str(xstFilePath), str(reportFilePath)))
+		self._LogDebug("call xst: {0}".format(str(parameterList)))
+		self._LogVerbose("    {0} -intstyle xflow -filter \"{0}\" -ifn \"{0}\" -ofn \"{0}\"".format(str(xstExecutablePath), str(fileListFilePath), str(xstFilePath), str(reportFilePath)))
 		if (self.dryRun == False):
 			try:
 				xstLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
@@ -348,7 +348,7 @@ class Compiler(PoCCompiler):
 			
 			except subprocess.CalledProcessError as ex:
 				print("ERROR while executing XST")
-				print("Return Code: %i".format(ex.returncode)
+				print("Return Code: {0}".format(ex.returncode))
 				print("--------------------------------------------------------------------------------")
 				print(ex.output)
 				return

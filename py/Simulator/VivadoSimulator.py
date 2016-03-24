@@ -367,7 +367,7 @@ class VivadoLinker(Executable, VivadoSimulatorExecutable):
 	class SwitchSnapshot(metaclass=StringArgument):
 		_value =	None
 
-	class ArgTopLevel(metaclass=PathArgument):
+	class ArgTopLevel(metaclass=StringArgument):
 		_value =	None
 
 	Parameters = CommandLineArgumentList(

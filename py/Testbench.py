@@ -61,13 +61,13 @@ class Testbench(CommandLineProgram):
 		else:					severity = Severity.Normal
 		
 		logger =			Logger(self, severity, printToStdOut=True)
-		super(self.__class__, self).__init__(logger=logger)
+		super().__init__(logger=logger)
 
 		if		(self.Platform == "Windows"):	pass
 		elif	(self.Platform == "Linux"):		pass
 		else:																						raise PlatformNotSupportedException(self.Platform)
 		
-		self._config =			None
+		# self._config =			None
 		self.__ReadTestbenchConfiguration()
 	
 		

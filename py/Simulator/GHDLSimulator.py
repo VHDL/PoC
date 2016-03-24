@@ -67,7 +67,6 @@ class Simulator(PoCSimulator):
 		self._tempPath =			None
 		self._ghdl =					None
 
-		self._LogNormal("preparing simulation environment...")
 		self._PrepareSimulationEnvironment()
 
 	@property
@@ -75,6 +74,7 @@ class Simulator(PoCSimulator):
 		return self._tempPath
 
 	def _PrepareSimulationEnvironment(self):
+		self._LogNormal("preparing simulation environment...")
 		# create temporary directory for GHDL if not existent
 		self._tempPath = self.Host.Directories["GHDLTemp"]
 		if (not (self._tempPath).exists()):

@@ -15,7 +15,7 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2015 Technische Universitaet Dresden - Germany
+# Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #                     Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,6 +42,7 @@ from configparser					import Error as ConfigParser_Error
 
 from lib.Functions				import Exit
 from Base.Exceptions			import *
+from Base.Logging					import Logger, Severity
 from Base.PoCBase					import CommandLineProgram
 from PoC.Entity						import *
 from PoC.Config						import *
@@ -56,17 +57,26 @@ class Netlist(CommandLineProgram):
 	dryRun =									False
 	
 	def __init__(self, debug, verbose, quiet):
-		super(self.__class__, self).__init__(debug, verbose, quiet)
+		if quiet:				severity = Severity.Quiet
+		elif debug:			severity = Severity.Debug
+		elif verbose:		severity = Severity.Verbose
+		else:						severity = Severity.Normal
 
-		if not ((self.Platform == "Windows") or (self.Platform == "Linux")):	raise PlatformNotSupportedException(self.Platform)
-		
-		self.__ReadNetListConfiguration()
+		logger = Logger(self, severity, printToStdOut=True)
+		super().__init__(logger=logger)
+
+		if (self.Platform == "Windows"):	pass
+		elif (self.Platform == "Linux"):	pass
+		else:															raise PlatformNotSupportedException(self.Platform)
+
+		# self._config = None
+		self.__ReadNetlistConfiguration()
 		
 	# read NetList configuration
 	# ==========================================================================
-	def __ReadNetListConfiguration(self):
-		self.files["PoCNLConfig"] = self.Directories["PoCNetList"] / self.__netListConfigFileName
-		netListConfigFilePath	= self.files["PoCNLConfig"]
+	def __ReadNetlistConfiguration(self):
+		self.Files["PoCNLConfig"] = self.Directories["PoCNetList"] / self.__netListConfigFileName
+		netListConfigFilePath	= self.Files["PoCNLConfig"]
 		
 		self._LogDebug("Reading NetList configuration from '{0}'".format(str(netListConfigFilePath)))
 		if not netListConfigFilePath.exists():	raise NotConfiguredException("PoC netlist configuration file does not exist. ({0})".format(str(netListConfigFilePath)))
@@ -74,9 +84,9 @@ class Netlist(CommandLineProgram):
 		self.netListConfig = ConfigParser(interpolation=ExtendedInterpolation())
 		self.netListConfig.optionxform = str
 		self.netListConfig.read([
-			str(self.files['PoCPrivateConfig']),
-			str(self.files['PoCPublicConfig']),
-			str(self.files["PoCNLConfig"])
+			str(self.Files['PoCPrivateConfig']),
+			str(self.Files['PoCPublicConfig']),
+			str(self.Files["PoCNLConfig"])
 		])
 
 	def CoreGenCompilation(self, entity, showLogs, showReport, deviceString=None, boardString=None):
@@ -92,10 +102,16 @@ class Netlist(CommandLineProgram):
 		iseVersion =													self.pocConfig['Xilinx.ISE']['Version']
 
 		if (boardString is not None):
-			if not self.netListConfig.has_option('BOARDS', boardString):
-				raise CompilerException("Board '" + boardString + "' not found.") from NoOptionError(boardString, 'BOARDS')
-		
-			device = Device(self.netListConfig['BOARDS'][boardString])
+			boardString = boardString.lower()
+			boardSection = None
+			for option in self.pocConfig['BOARDS']:
+				if (option.lower() == boardString):
+					boardSection = self.pocConfig['BOARDS'][option]
+			if (boardSection is None):
+				raise CompilerException("Unknown board '" + boardString + "'.") from NoOptionError(boardString, 'BOARDS')
+
+			deviceString =	self.pocConfig[boardSection]['FPGA']
+			device =				Device(deviceString)
 		elif (deviceString is not None):
 			device = Device(deviceString)
 		else: raise BaseException("No board or device given.")
@@ -104,7 +120,7 @@ class Netlist(CommandLineProgram):
 
 		compiler = XCOCompiler.Compiler(self, showLogs, showReport)
 		compiler.dryRun = self.dryRun
-		compiler.run(entityToCompile, device)
+		compiler.Run(entityToCompile, device)
 		
 	def XstCompilation(self, entity, showLogs, showReport, deviceString=None, boardString=None):
 		# check if ISE is configure
@@ -132,7 +148,7 @@ class Netlist(CommandLineProgram):
 
 		compiler = XSTCompiler.Compiler(self, showLogs, showReport)
 		compiler.dryRun = self.dryRun
-		compiler.run(entityToCompile, device)
+		compiler.Run(entityToCompile, device)
 
 
 # main program
@@ -187,19 +203,19 @@ def main():
 			argParser.print_help()
 			return
 		elif (args.coreGen is not None):
-			netList.coreGenCompilation(args.coreGen, args.showLog, args.showReport, deviceString=args.device, boardString=args.board)
+			netList.CoreGenCompilation(args.coreGen, args.showLog, args.showReport, deviceString=args.device, boardString=args.board)
 		elif (args.xst is not None):
-			netList.xstCompilation(args.xst, args.showLog, args.showReport, deviceString=args.device, boardString=args.board)
+			netList.XstCompilation(args.xst, args.showLog, args.showReport, deviceString=args.device, boardString=args.board)
 		else:
 			argParser.print_help()
 		
 	except CompilerException as ex:
-		print(Foreground.RED + "ERROR:" + Foreground.RESET + " {0}".format(ex.message)
+		print(Foreground.RED + "ERROR:" + Foreground.RESET + " {0}".format(ex.message))
 		if isinstance(ex.__cause__, FileNotFoundError):
-			print(Foreground.YELLOW + "  FileNotFound:" + Foreground.RESET + " '{0}'".format(str(ex.__cause__))
+			print(Foreground.YELLOW + "  FileNotFound:" + Foreground.RESET + " '{0}'".format(str(ex.__cause__)))
 		elif isinstance(ex.__cause__, ConfigParser_Error):
-			print(Foreground.YELLOW + "  configparser.Error:" + Foreground.RESET + " {0}".format(str(ex.__cause__))
-		print(Foreground.RESET + Back.RESET + Style.RESET_ALL)
+			print(Foreground.YELLOW + "  configparser.Error:" + Foreground.RESET + " {0}".format(str(ex.__cause__)))
+		print(Foreground.RESET)
 		exit(1)
 		
 	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)
