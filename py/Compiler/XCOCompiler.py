@@ -45,17 +45,16 @@ from configparser						import NoSectionError
 from colorama								import Fore as Foreground
 from os											import chdir
 import re								# used for output filtering
-import textwrap
+from textwrap								import dedent
 from subprocess							import CalledProcessError
-import re
 import shutil
-from os										import environ
-from configparser					import NoOptionError, NoSectionError, ConfigParser, ExtendedInterpolation
+from os											import environ
+from configparser						import NoOptionError, NoSectionError, ConfigParser, ExtendedInterpolation
 
-from Base.Exceptions import *
-from Base.Executable			import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
-from Compiler.Base				import PoCCompiler
-from Compiler.Exceptions	import *
+from Base.Exceptions				import *
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
+from Compiler.Base					import PoCCompiler
+from Compiler.Exceptions		import *
 
 
 class Compiler(PoCCompiler):
@@ -112,7 +111,7 @@ class Compiler(PoCCompiler):
 			self._LogDebug("    Output directory: {0}.".format(str(self._outputPath)))
 			self._outputPath.mkdir(parents=True)
 
-		# self._RunPrepareCompile()
+		self._RunPrepareCompile()
 		self._RunPreCopy()
 		self._RunCompile()
 		self._RunPostCopy()
@@ -127,8 +126,8 @@ class Compiler(PoCCompiler):
 		self._LogNormal("  preparing compiler environment for IP-core '????' ...")
 
 		# add the key Device to section SPECIAL at runtime to change interpolation results
-		self.Host.netListConfig['SPECIAL'] = {}
-		self.Host.netListConfig['SPECIAL']['Device'] =		deviceString
+		self.Host.netListConfig['SPECIAL'] =							{}
+		self.Host.netListConfig['SPECIAL']['Device'] =		str(self._device)
 		self.Host.netListConfig['SPECIAL']['OutputDir'] =	self._tempPath.as_posix()
 
 	def _RunPreCopy(self):
@@ -181,7 +180,7 @@ class Compiler(PoCCompiler):
 			WorkingDirectory = "./temp/"
 
 		# write CoreGenerator project file
-		cgProjectFileContent = textwrap.dedent('''\
+		cgProjectFileContent = dedent('''\
 			SET addpads = false
 			SET asysymbol = false
 			SET busformat = BusFormatAngleBracketNotRipped

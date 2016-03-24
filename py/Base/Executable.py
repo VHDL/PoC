@@ -50,6 +50,12 @@ from subprocess							import STDOUT				as Subprocess_StdOut
 from Base.Exceptions				import *
 from Base.Logging						import ILogable
 
+
+class ExecutableException(BaseException):
+	def __init__(self, message=""):
+		super().__init__(message)
+		self.message = message
+
 class CommandLineArgument(type):
 	_value = None
 	
