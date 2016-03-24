@@ -1,53 +1,6 @@
-# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
-# vim: tabstop=2:shiftwidth=2:noexpandtab
-# kate: tab-width 2; replace-tabs off; indent-width 2;
-# 
-# ==============================================================================
-# Authors:				 	Patrick Lehmann
-# 
-# Python Class:			TODO
-# 
-# Description:
-# ------------------------------------
-#		TODO:
-#		- 
-#		- 
-#
-# License:
-# ==============================================================================
-# Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
-# 
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-# 
-#		http://www.apache.org/licenses/LICENSE-2.0
-# 
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-#
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Base.Executable")
 
-# load dependencies
-from enum										import Enum, unique
-from colorama								import Fore as Foreground
-from pathlib								import Path
-from subprocess							import check_output	as Subprocess_Run
-from subprocess							import STDOUT				as Subprocess_StdOut
-
-from Base.Exceptions				import *
-from Base.Logging						import ILogable
+from copy			import copy
+from pathlib	import Path
 
 class CommandLineArgument(type):
 	_value = None
@@ -195,12 +148,12 @@ class ValuedFlagArgument(CommandLineArgument):
 		else:
 			try:												self._value = str(value)
 			except Exception as ex:			raise ValueError("Parameter 'value' cannot be converted to type str.") from ex
-	
+
 	def __str__(self):
 		if (self._value is None):			return ""
 		elif self._value:							return self._pattern.format(self._name, self._value)
 		else:													return ""
-	
+
 	def AsArgument(self):
 		if (self._value is None):			return None
 		elif self._value:							return self._pattern.format(self._name, self._value)
@@ -224,12 +177,12 @@ class TupleArgument(CommandLineArgument):
 		else:
 			try:												self._value = str(value)
 			except TypeError as ex:			raise ValueError("Parameter 'value' cannot be converted to type str.") from ex
-	
+
 	def __str__(self):
 		if (self._value is None):			return ""
 		elif self._value:							return self._switchPattern.format(self._name) + " " + self._valuePattern.format(self._value)
 		else:													return ""
-	
+
 	def AsArgument(self):
 		if (self._value is None):			return None
 		elif self._value:							return [self._switchPattern.format(self._name), self._valuePattern.format(self._value)]
@@ -247,11 +200,11 @@ class CommandLineArgumentList(list):
 	def __getitem__(self, key):
 		i = self.index(key)
 		return super().__getitem__(i).Value
-	
+
 	def __setitem__(self, key, value):
 		i = self.index(key)
 		super().__getitem__(i).Value = value
-	
+
 	def __delitem__(self, key):
 		i = self.index(key)
 		super().__getitem__(i).Value = None
@@ -266,57 +219,89 @@ class CommandLineArgumentList(list):
 			else:												raise TypeError()
 		return result
 
-class Executable(ILogable):
-	def __init__(self, platform, executablePath, defaultParameters=[], logger=None):
-		super().__init__(logger)
-		
-		self._platform = platform
-		
-		if isinstance(executablePath, str):							executablePath = Path(executablePath)
-		elif (not isinstance(executablePath, Path)):		raise ValueError("Parameter 'executablePath' is not of type str or Path.")
-		if (not executablePath.exists()):								raise Exception("Executable '{0}' can not be found.".format(str(executablePath))) from FileNotFoundError(str(executablePath))
-		
-		# prepend the executable
-		defaultParameters.insert(0, str(executablePath))
-		
-		self._executablePath =		executablePath
-		self._defaultParameters =	defaultParameters
-	
-	@property
-	def Path(self):
-		return self._executablePath
-	
-	@property
-	def DefaultParameters(self):
-		return self._defaultParameters
-	
-	@DefaultParameters.setter
-	def DefaultParameters(self, value):
-		self._defaultParameters = value
-	
-	def StartProcess(self, parameterList):
-		# return "blubs"
-		return Subprocess_Run(parameterList, stderr=Subprocess_StdOut, shell=False, universal_newlines=True)
 
-# class PoCSimulatorTestbench(object):
-	# pocEntity = None
-	# testbenchName = ""
-	# simulationResult = False
+class Class0:
+	def __init__(self, exe=None):
+		self.Parameters[self.Executable] = exe
 	
-	# def __init__(self, pocEntity, testbenchName):
-		# self.pocEntity = pocEntity
-		# self.testbenchName = testbenchName
+	class Executable(metaclass=ExecutableArgument):		pass
+	class Flag1(metaclass=ShortFlagArgument):					_name = "flag1"
+	class Flag2(metaclass=ShortFlagArgument):					_name = "flag2"
+	class Flag3(metaclass=ShortFlagArgument):					_name = "flag3"
+	
+	Flag4 = ShortFlagArgument("Flag4", (), {"_name" : "flag4"})
+	
+	Parameters = CommandLineArgumentList(
+		Executable,
+		Flag1,
+		Flag2,
+		Flag3
+	)
 
-# class PoCSimulatorTestbenchGroup(object):
-	# pocEntity = None
-	# members = {}
+class Meta(type):
+	def __new__(mcls, name, bases, members):
+		for n in members :
+			m = members[n]
+			if isinstance(m, CommandLineArgumentList) :
+				newMembers =	members.copy()
+				# print("copy arg classes ...")
+				for i,P in enumerate(bases[0].Parameters):
+					# print("  copy " + P.__name__)
+					p = copy(P)
+					newMembers[P.__name__] =	p
+					m.insert(i, p)
+
+		return super(Meta, mcls).__new__(mcls, name, bases, newMembers)
+
+	# def __init__(mcls, name, bases, members):
+		# print("init: \n  " + "\n  ".join([(key + " -> " + str(members[key])) for key in members]))
 	
-	# def __init__(self, pocEntity):
-		# self.pocEntity = pocEntity
+class Class1(Class0, metaclass=Meta):
+	def __init__(self, exe=None):
+		# print(type(self.Parameters))
+		self.Parameters[self.Executable] = exe
+
+	class Flag5(metaclass=ShortFlagArgument):					_name = "verbose"
+	class Flag6(metaclass=ShortFlagArgument):					_name = "foo"
 	
-	# def add(self, pocEntity, testbench):
-		# self.members[str(pocEntity)] = testbench
-		
-	# def __getitem__(self, key):
-		# return self.members[key]
+	Parameters = CommandLineArgumentList(
+		Flag5,
+		Flag6
+	)
+
+class Class2(Class0, metaclass=Meta):
+	def __init__(self, exe=None):
+		self.Parameters[self.Executable] = exe
 	
+	class Flag5(metaclass=ShortFlagArgument):					_name = "debug"
+	class Flag6(metaclass=ShortFlagArgument):					_name = "bar"
+	
+	Parameters = CommandLineArgumentList(
+		Flag5,
+		Flag6
+	)
+
+c0 = Class1("fuse.exe")
+c0.Parameters[c0.Executable] =	"xsim.exe"
+
+
+
+c1 = Class1("asim.exe")
+c1.Parameters[c1.Flag1] =			True
+c1.Parameters[c1.Flag5] =			True
+
+print()
+print(c0.Parameters.ToArgumentList())
+print(c1.Parameters.ToArgumentList())
+
+c2 = Class2("vsim.exe")
+# c2.Parameters[t.Executable] =	"vsim.exe"
+c2.Parameters[c2.Flag3] =			True
+c2.Parameters[c2.Flag6] =			True
+
+
+print()
+print(c0.Parameters.ToArgumentList())
+print(c1.Parameters.ToArgumentList())
+print(c2.Parameters.ToArgumentList())
+
