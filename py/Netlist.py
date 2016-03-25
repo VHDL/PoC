@@ -134,16 +134,23 @@ class Netlist(CommandLineProgram):
 		self.Directories["ISEInstallation"] = Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])
 		self.Directories["ISEBinary"] =				Path(self.pocConfig['Xilinx.ISE']['BinaryDirectory'])
 		iseVersion =													self.pocConfig['Xilinx.ISE']['Version']
-	
-		if (boardString is not None):
-			if not self.netListConfig.has_option('BOARDS', boardString):
-				raise CompilerException("Board '" + boardString + "' not found.") from NoOptionError(boardString, 'BOARDS')
-				
-			device = Device(self.netListConfig['BOARDS'][boardString])
-		elif (deviceString is not None):
+
+		if (boardString is not None) :
+			boardString = boardString.lower()
+			boardSection = None
+			for option in self.pocConfig['BOARDS'] :
+				if (option.lower() == boardString) :
+					boardSection = self.pocConfig['BOARDS'][option]
+			if (boardSection is None) :
+				raise CompilerException("Unknown board '" + boardString + "'.") from NoOptionError(boardString, 'BOARDS')
+
+			deviceString = self.pocConfig[boardSection]['FPGA']
 			device = Device(deviceString)
-		else: raise BaseException("No board or device given.")
-		
+		elif (deviceString is not None) :
+			device = Device(deviceString)
+		else :
+			raise BaseException("No board or device given.")
+
 		entityToCompile = Entity(self, entity)
 
 		compiler = XSTCompiler.Compiler(self, showLogs, showReport)

@@ -41,16 +41,13 @@ else:
 
 # load dependencies
 from pathlib								import Path
-from configparser						import NoSectionError
 from colorama								import Fore as Foreground
-from os											import chdir
+from os											import chdir, environ
 import re								# used for output filtering
 from textwrap								import dedent
 from subprocess							import CalledProcessError
 import shutil
-from os											import environ
 from configparser						import NoOptionError, NoSectionError, ConfigParser, ExtendedInterpolation
-
 from Base.Exceptions				import *
 from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
 from Compiler.Base					import PoCCompiler
@@ -116,11 +113,6 @@ class Compiler(PoCCompiler):
 		self._RunCompile()
 		self._RunPostCopy()
 		self._RunPostReplace()
-
-
-		# FlagRegenerate,
-		# SwitchProjectFile,
-		# SwitchBatchFile
 
 	def _RunPrepareCompile(self):
 		self._LogNormal("  preparing compiler environment for IP-core '????' ...")

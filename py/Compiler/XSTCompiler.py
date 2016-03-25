@@ -40,28 +40,36 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Compiler.XSTCompiler")
 
 # load dependencies
-# import re
-# import shutil
-# import textwrap
-from pathlib							import Path
-from os										import environ
-from configparser					import NoOptionError, ConfigParser, ExtendedInterpolation
+from pathlib								import Path
+from configparser						import NoSectionError
+from colorama								import Fore as Foreground
+from os											import chdir
+import re								# used for output filtering
+from textwrap								import dedent
+from subprocess							import CalledProcessError
+import shutil
+from os											import environ
+from configparser						import NoOptionError, NoSectionError, ConfigParser, ExtendedInterpolation
 
-from Base.Exceptions import *
-from Compiler.Base import PoCCompiler 
-from Compiler.Exceptions import *
+from Base.Exceptions				import *
+from Base.Project						import FileTypes
+from Base.PoCProject				import *
+from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
+from Compiler.Base					import PoCCompiler
+from Compiler.Exceptions		import *
 
 
 class Compiler(PoCCompiler):
 	def __init__(self, host, showLogs, showReport):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
-	def RunAll(self, pocEntities, **kwargs):
-		for pocEntity in pocEntities:
-			self.Run(pocEntity, **kwargs)
 
-	def Run(self, pocEntity, device):
-		self._LogNormal(str(pocEntity))
+	def oldRun(self, pocEntity, device):
+		self._pocEntity =	pocEntity
+		self._ipcoreFQN =	str(pocEntity)
+
+		
+		self._LogNormal(self._ipcoreFQN)
 		self._LogNormal("  preparing compiler environment...")
 
 		# TODO: improve / resolve board to device
@@ -69,28 +77,28 @@ class Compiler(PoCCompiler):
 		deviceSection = "Device." + deviceString
 		
 		# create temporary directory for XST if not existent
-		tempXstPath = self.Host.directories["XSTTemp"]
-		if not (tempXstPath).exists():
+		self._tempPath = self.Host.Directories["XSTTemp"]
+		if not (self._tempPath).exists():
 			self._LogVerbose("Creating temporary directory for XST files.")
-			self._LogDebug("Temporary directors: {0}".format(str(tempXstPath)))
-			tempXstPath.mkdir(parents=True)
+			self._LogDebug("Temporary directors: {0}".format(str(self._tempPath)))
+			self._tempPath.mkdir(parents=True)
 
 		# create output directory for CoreGen if not existent
-		xstOutputPath = self.Host.directories["PoCNetList"] / deviceString
-		if not (xstOutputPath).exists():
+		self._outputPath = self.Host.Directories["PoCNetList"] / deviceString
+		if not (self._outputPath).exists():
 			self._LogVerbose("Creating temporary directory for XST files.")
-			self._LogDebug("Temporary directors: {0}".format(str(xstOutputPath)))
-			xstOutputPath.mkdir(parents=True)
+			self._LogDebug("Temporary directors: {0}".format(str(self._outputPath)))
+			self._outputPath.mkdir(parents=True)
 			
 		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.Host.netListConfig['SPECIAL'] = {}
 		self.Host.netListConfig['SPECIAL']['Device'] =				deviceString
 		self.Host.netListConfig['SPECIAL']['DeviceSeries'] =	device.series()
-		self.Host.netListConfig['SPECIAL']['OutputDir']	=			tempXstPath.as_posix()
+		self.Host.netListConfig['SPECIAL']['OutputDir']	=			self._tempPath.as_posix()
 		
 		# read pre-copy tasks
 		preCopyTasks = []
-		preCopyFileList = self.Host.netListConfig[str(pocEntity)]['PreCopy']
+		preCopyFileList = self.Host.netListConfig[self._ipcoreFQN]['PreCopy']
 		if (len(preCopyFileList) != 0):
 			self._LogDebug("PreCopyTasks: \n  " + ("\n  ".join(preCopyFileList.split("\n"))))
 			
@@ -111,7 +119,7 @@ class Compiler(PoCCompiler):
 		
 		# read (post) copy tasks
 		copyTasks = []
-		copyFileList = self.Host.netListConfig[str(pocEntity)]['Copy']
+		copyFileList = self.Host.netListConfig[self._ipcoreFQN]['Copy']
 		if (len(copyFileList) != 0):
 			self._LogDebug("CopyTasks: \n  " + ("\n  ".join(copyFileList.split("\n"))))
 			
@@ -132,7 +140,7 @@ class Compiler(PoCCompiler):
 		
 		# read replacement tasks
 		replaceTasks = []
-		replaceFileList = self.Host.netListConfig[str(pocEntity)]['Replace']
+		replaceFileList = self.Host.netListConfig[self._ipcoreFQN]['Replace']
 		if (len(replaceFileList) != 0):
 			self._LogDebug("ReplacementTasks: \n  " + ("\n  ".join(replaceFileList.split("\n"))))
 
@@ -169,33 +177,24 @@ class Compiler(PoCCompiler):
 			shutil.copy(str(fromPath), str(toPath))
 		
 		# setup all needed paths to execute coreGen
-		xstExecutablePath =		self.Host.directories["ISEBinary"] / self.__executables['XST']
+		xstExecutablePath =		self.Host.Directories["ISEBinary"] / self.__executables['XST']
 		
-#		# read netlist settings from configuration file
-#		ipCoreName =					self.Host.netListConfig[str(pocEntity)]['IPCoreName']
-#		xcoInputFilePath =		self.Host.directories["PoCRoot"] / self.Host.netListConfig[str(pocEntity)]['XstFile']
-#		cgcTemplateFilePath =	self.Host.directories["PoCNetList"] / "template.cgc"
-#		cgpFilePath =					xstGenPath / "coregen.cgp"
-#		cgcFilePath =					xstGenPath / "coregen.cgc"
-#		xcoFilePath =					xstGenPath / xcoInputFilePath.name
-
-		if not self.Host.netListConfig.has_section(str(pocEntity)):
-			from configparser import NoSectionError
-			raise CompilerException("IP-Core '" + str(pocEntity) + "' not found.") from NoSectionError(str(pocEntity))
+		if not self.Host.netListConfig.has_section(self._ipcoreFQN):
+			raise CompilerException("IP-Core '" + self._ipcoreFQN + "' not found.") from NoSectionError(self._ipcoreFQN)
 		
 		# read netlist settings from configuration file
-		if (self.Host.netListConfig[str(pocEntity)]['Type'] != "XilinxSynthesis"):
+		if (self.Host.netListConfig[self._ipcoreFQN]['Type'] != "XilinxSynthesis"):
 			raise CompilerException("This entity is not configured for XST compilation.")
 		
-		topModuleName =				self.Host.netListConfig[str(pocEntity)]['TopModule']
-		fileListFilePath =		self.Host.directories["PoCRoot"] / self.Host.netListConfig[str(pocEntity)]['FileListFile']
-		xcfFilePath =					self.Host.directories["PoCRoot"] / self.Host.netListConfig[str(pocEntity)]['XSTConstraintsFile']
-		filterFilePath =			self.Host.directories["PoCRoot"] / self.Host.netListConfig[str(pocEntity)]['XSTFilterFile']
-		#xstOptionsFilePath =	self.Host.directories["XSTFiles"] / self.Host.netListConfig[str(pocEntity)]['XSTOptionsFile']
-		xstTemplateFilePath =	self.Host.directories["XSTFiles"] / self.Host.netListConfig[str(pocEntity)]['XSTOptionsFile']
-		xstFilePath =					tempXstPath / (topModuleName + ".xst")
-		prjFilePath =					tempXstPath / (topModuleName + ".prj")
-		reportFilePath =			tempXstPath / (topModuleName + ".log")
+		topModuleName =				self.Host.netListConfig[self._ipcoreFQN]['TopModule']
+		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.netListConfig[self._ipcoreFQN]['FileListFile']
+		xcfFilePath =					self.Host.Directories["PoCRoot"] / self.Host.netListConfig[self._ipcoreFQN]['XSTConstraintsFile']
+		filterFilePath =			self.Host.Directories["PoCRoot"] / self.Host.netListConfig[self._ipcoreFQN]['XSTFilterFile']
+		#xstOptionsFilePath =	self.Host.Directories["XSTFiles"] / self.Host.netListConfig[self._ipcoreFQN]['XSTOptionsFile']
+		xstTemplateFilePath =	self.Host.Directories["XSTFiles"] / self.Host.netListConfig[self._ipcoreFQN]['XSTOptionsFile']
+		xstFilePath =					self._tempPath / (topModuleName + ".xst")
+		prjFilePath =					self._tempPath / (topModuleName + ".prj")
+		reportFilePath =			self._tempPath / (topModuleName + ".log")
 
 		#if (not xstOptionsFilePath.exists()):
 		# read/write XST options file
@@ -205,124 +204,86 @@ class Compiler(PoCCompiler):
 			
 		xstTemplateDictionary = {
 			'prjFile' :													str(prjFilePath),
-			'UseNewParser' :										self.Host.netListConfig[str(pocEntity)]['XSTOption.UseNewParser'],
-			'InputFormat' :											self.Host.netListConfig[str(pocEntity)]['XSTOption.InputFormat'],
-			'OutputFormat' :										self.Host.netListConfig[str(pocEntity)]['XSTOption.OutputFormat'],
+			'UseNewParser' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.UseNewParser'],
+			'InputFormat' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.InputFormat'],
+			'OutputFormat' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.OutputFormat'],
 			'OutputName' :											topModuleName,
 			'Part' :														str(device),
 			'TopModuleName' :										topModuleName,
-			'OptimizationMode' :								self.Host.netListConfig[str(pocEntity)]['XSTOption.OptimizationMode'],
-			'OptimizationLevel' :								self.Host.netListConfig[str(pocEntity)]['XSTOption.OptimizationLevel'],
-			'PowerReduction' :									self.Host.netListConfig[str(pocEntity)]['XSTOption.PowerReduction'],
-			'IgnoreSynthesisConstraintsFile' :	self.Host.netListConfig[str(pocEntity)]['XSTOption.IgnoreSynthesisConstraintsFile'],
+			'OptimizationMode' :								self.Host.netListConfig[self._ipcoreFQN]['XSTOption.OptimizationMode'],
+			'OptimizationLevel' :								self.Host.netListConfig[self._ipcoreFQN]['XSTOption.OptimizationLevel'],
+			'PowerReduction' :									self.Host.netListConfig[self._ipcoreFQN]['XSTOption.PowerReduction'],
+			'IgnoreSynthesisConstraintsFile' :	self.Host.netListConfig[self._ipcoreFQN]['XSTOption.IgnoreSynthesisConstraintsFile'],
 			'SynthesisConstraintsFile' :				str(xcfFilePath),
-			'KeepHierarchy' :										self.Host.netListConfig[str(pocEntity)]['XSTOption.KeepHierarchy'],
-			'NetListHierarchy' :								self.Host.netListConfig[str(pocEntity)]['XSTOption.NetListHierarchy'],
-			'GenerateRTLView' :									self.Host.netListConfig[str(pocEntity)]['XSTOption.GenerateRTLView'],
-			'GlobalOptimization' :							self.Host.netListConfig[str(pocEntity)]['XSTOption.Globaloptimization'],
-			'ReadCores' :												self.Host.netListConfig[str(pocEntity)]['XSTOption.ReadCores'],
-			'SearchDirectories' :								'"{0}"' % str(xstOutputPath),
-			'WriteTimingConstraints' :					self.Host.netListConfig[str(pocEntity)]['XSTOption.WriteTimingConstraints'],
-			'CrossClockAnalysis' :							self.Host.netListConfig[str(pocEntity)]['XSTOption.CrossClockAnalysis'],
-			'HierarchySeparator' :							self.Host.netListConfig[str(pocEntity)]['XSTOption.HierarchySeparator'],
-			'BusDelimiter' :										self.Host.netListConfig[str(pocEntity)]['XSTOption.BusDelimiter'],
-			'Case' :														self.Host.netListConfig[str(pocEntity)]['XSTOption.Case'],
-			'SliceUtilizationRatio' :						self.Host.netListConfig[str(pocEntity)]['XSTOption.SliceUtilizationRatio'],
-			'BRAMUtilizationRatio' :						self.Host.netListConfig[str(pocEntity)]['XSTOption.BRAMUtilizationRatio'],
-			'DSPUtilizationRatio' :							self.Host.netListConfig[str(pocEntity)]['XSTOption.DSPUtilizationRatio'],
-			'LUTCombining' :										self.Host.netListConfig[str(pocEntity)]['XSTOption.LUTCombining'],
-			'ReduceControlSets' :								self.Host.netListConfig[str(pocEntity)]['XSTOption.ReduceControlSets'],
-			'Verilog2001' :											self.Host.netListConfig[str(pocEntity)]['XSTOption.Verilog2001'],
-			'FSMExtract' :											self.Host.netListConfig[str(pocEntity)]['XSTOption.FSMExtract'],
-			'FSMEncoding' :											self.Host.netListConfig[str(pocEntity)]['XSTOption.FSMEncoding'],
-			'FSMSafeImplementation' :						self.Host.netListConfig[str(pocEntity)]['XSTOption.FSMSafeImplementation'],
-			'FSMStyle' :												self.Host.netListConfig[str(pocEntity)]['XSTOption.FSMStyle'],
-			'RAMExtract' :											self.Host.netListConfig[str(pocEntity)]['XSTOption.RAMExtract'],
-			'RAMStyle' :												self.Host.netListConfig[str(pocEntity)]['XSTOption.RAMStyle'],
-			'ROMExtract' :											self.Host.netListConfig[str(pocEntity)]['XSTOption.ROMExtract'],
-			'ROMStyle' :												self.Host.netListConfig[str(pocEntity)]['XSTOption.ROMStyle'],
-			'MUXExtract' :											self.Host.netListConfig[str(pocEntity)]['XSTOption.MUXExtract'],
-			'MUXStyle' :												self.Host.netListConfig[str(pocEntity)]['XSTOption.MUXStyle'],
-			'DecoderExtract' :									self.Host.netListConfig[str(pocEntity)]['XSTOption.DecoderExtract'],
-			'PriorityExtract' :									self.Host.netListConfig[str(pocEntity)]['XSTOption.PriorityExtract'],
-			'ShRegExtract' :										self.Host.netListConfig[str(pocEntity)]['XSTOption.ShRegExtract'],
-			'ShiftExtract' :										self.Host.netListConfig[str(pocEntity)]['XSTOption.ShiftExtract'],
-			'XorCollapse' :											self.Host.netListConfig[str(pocEntity)]['XSTOption.XorCollapse'],
-			'AutoBRAMPacking' :									self.Host.netListConfig[str(pocEntity)]['XSTOption.AutoBRAMPacking'],
-			'ResourceSharing' :									self.Host.netListConfig[str(pocEntity)]['XSTOption.ResourceSharing'],
-			'ASyncToSync' :											self.Host.netListConfig[str(pocEntity)]['XSTOption.ASyncToSync'],
-			'UseDSP48' :												self.Host.netListConfig[str(pocEntity)]['XSTOption.UseDSP48'],
-			'IOBuf' :														self.Host.netListConfig[str(pocEntity)]['XSTOption.IOBuf'],
-			'MaxFanOut' :												self.Host.netListConfig[str(pocEntity)]['XSTOption.MaxFanOut'],
-			'BufG' :														self.Host.netListConfig[str(pocEntity)]['XSTOption.BufG'],
-			'RegisterDuplication' :							self.Host.netListConfig[str(pocEntity)]['XSTOption.RegisterDuplication'],
-			'RegisterBalancing' :								self.Host.netListConfig[str(pocEntity)]['XSTOption.RegisterBalancing'],
-			'SlicePacking' :										self.Host.netListConfig[str(pocEntity)]['XSTOption.SlicePacking'],
-			'OptimizePrimitives' :							self.Host.netListConfig[str(pocEntity)]['XSTOption.OptimizePrimitives'],
-			'UseClockEnable' :									self.Host.netListConfig[str(pocEntity)]['XSTOption.UseClockEnable'],
-			'UseSyncSet' :											self.Host.netListConfig[str(pocEntity)]['XSTOption.UseSyncSet'],
-			'UseSyncReset' :										self.Host.netListConfig[str(pocEntity)]['XSTOption.UseSyncReset'],
-			'PackIORegistersIntoIOBs' :					self.Host.netListConfig[str(pocEntity)]['XSTOption.PackIORegistersIntoIOBs'],
-			'EquivalentRegisterRemoval' :				self.Host.netListConfig[str(pocEntity)]['XSTOption.EquivalentRegisterRemoval'],
-			'SliceUtilizationRatioMaxMargin' :	self.Host.netListConfig[str(pocEntity)]['XSTOption.SliceUtilizationRatioMaxMargin']
+			'KeepHierarchy' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.KeepHierarchy'],
+			'NetListHierarchy' :								self.Host.netListConfig[self._ipcoreFQN]['XSTOption.NetListHierarchy'],
+			'GenerateRTLView' :									self.Host.netListConfig[self._ipcoreFQN]['XSTOption.GenerateRTLView'],
+			'GlobalOptimization' :							self.Host.netListConfig[self._ipcoreFQN]['XSTOption.Globaloptimization'],
+			'ReadCores' :												self.Host.netListConfig[self._ipcoreFQN]['XSTOption.ReadCores'],
+			'SearchDirectories' :								'"{0}"' % str(self._outputPath),
+			'WriteTimingConstraints' :					self.Host.netListConfig[self._ipcoreFQN]['XSTOption.WriteTimingConstraints'],
+			'CrossClockAnalysis' :							self.Host.netListConfig[self._ipcoreFQN]['XSTOption.CrossClockAnalysis'],
+			'HierarchySeparator' :							self.Host.netListConfig[self._ipcoreFQN]['XSTOption.HierarchySeparator'],
+			'BusDelimiter' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.BusDelimiter'],
+			'Case' :														self.Host.netListConfig[self._ipcoreFQN]['XSTOption.Case'],
+			'SliceUtilizationRatio' :						self.Host.netListConfig[self._ipcoreFQN]['XSTOption.SliceUtilizationRatio'],
+			'BRAMUtilizationRatio' :						self.Host.netListConfig[self._ipcoreFQN]['XSTOption.BRAMUtilizationRatio'],
+			'DSPUtilizationRatio' :							self.Host.netListConfig[self._ipcoreFQN]['XSTOption.DSPUtilizationRatio'],
+			'LUTCombining' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.LUTCombining'],
+			'ReduceControlSets' :								self.Host.netListConfig[self._ipcoreFQN]['XSTOption.ReduceControlSets'],
+			'Verilog2001' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.Verilog2001'],
+			'FSMExtract' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.FSMExtract'],
+			'FSMEncoding' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.FSMEncoding'],
+			'FSMSafeImplementation' :						self.Host.netListConfig[self._ipcoreFQN]['XSTOption.FSMSafeImplementation'],
+			'FSMStyle' :												self.Host.netListConfig[self._ipcoreFQN]['XSTOption.FSMStyle'],
+			'RAMExtract' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.RAMExtract'],
+			'RAMStyle' :												self.Host.netListConfig[self._ipcoreFQN]['XSTOption.RAMStyle'],
+			'ROMExtract' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.ROMExtract'],
+			'ROMStyle' :												self.Host.netListConfig[self._ipcoreFQN]['XSTOption.ROMStyle'],
+			'MUXExtract' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.MUXExtract'],
+			'MUXStyle' :												self.Host.netListConfig[self._ipcoreFQN]['XSTOption.MUXStyle'],
+			'DecoderExtract' :									self.Host.netListConfig[self._ipcoreFQN]['XSTOption.DecoderExtract'],
+			'PriorityExtract' :									self.Host.netListConfig[self._ipcoreFQN]['XSTOption.PriorityExtract'],
+			'ShRegExtract' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.ShRegExtract'],
+			'ShiftExtract' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.ShiftExtract'],
+			'XorCollapse' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.XorCollapse'],
+			'AutoBRAMPacking' :									self.Host.netListConfig[self._ipcoreFQN]['XSTOption.AutoBRAMPacking'],
+			'ResourceSharing' :									self.Host.netListConfig[self._ipcoreFQN]['XSTOption.ResourceSharing'],
+			'ASyncToSync' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.ASyncToSync'],
+			'UseDSP48' :												self.Host.netListConfig[self._ipcoreFQN]['XSTOption.UseDSP48'],
+			'IOBuf' :														self.Host.netListConfig[self._ipcoreFQN]['XSTOption.IOBuf'],
+			'MaxFanOut' :												self.Host.netListConfig[self._ipcoreFQN]['XSTOption.MaxFanOut'],
+			'BufG' :														self.Host.netListConfig[self._ipcoreFQN]['XSTOption.BufG'],
+			'RegisterDuplication' :							self.Host.netListConfig[self._ipcoreFQN]['XSTOption.RegisterDuplication'],
+			'RegisterBalancing' :								self.Host.netListConfig[self._ipcoreFQN]['XSTOption.RegisterBalancing'],
+			'SlicePacking' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.SlicePacking'],
+			'OptimizePrimitives' :							self.Host.netListConfig[self._ipcoreFQN]['XSTOption.OptimizePrimitives'],
+			'UseClockEnable' :									self.Host.netListConfig[self._ipcoreFQN]['XSTOption.UseClockEnable'],
+			'UseSyncSet' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.UseSyncSet'],
+			'UseSyncReset' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.UseSyncReset'],
+			'PackIORegistersIntoIOBs' :					self.Host.netListConfig[self._ipcoreFQN]['XSTOption.PackIORegistersIntoIOBs'],
+			'EquivalentRegisterRemoval' :				self.Host.netListConfig[self._ipcoreFQN]['XSTOption.EquivalentRegisterRemoval'],
+			'SliceUtilizationRatioMaxMargin' :	self.Host.netListConfig[self._ipcoreFQN]['XSTOption.SliceUtilizationRatioMaxMargin']
 		}
 		
 		xstFileContent = xstFileContent.format(**xstTemplateDictionary)
 		
-		if (self.Host.netListConfig.has_option(str(pocEntity), 'XSTOption.Generics')):
-			xstFileContent += "-generics { {0} }".format(self.Host.netListConfig[str(pocEntity)]['XSTOption.Generics'])
+		if (self.Host.netListConfig.has_option(self._ipcoreFQN, 'XSTOption.Generics')):
+			xstFileContent += "-generics { {0} }".format(self.Host.netListConfig[self._ipcoreFQN]['XSTOption.Generics'])
 
 		self._LogDebug("Writing Xilinx Compiler Tool option file to '{0}'".format(str(xstFilePath)))
 		with xstFilePath.open('w') as xstFileHandle:
 			xstFileHandle.write(xstFileContent)
 	
-#		else:		# xstFilePath exists
-#			self._LogDebug("Copy XST options file from '{0}' to '{0}'".format((str(xstOptionsFilePath), str(xstFilePath)))
-#			shutil.copy(str(xstOptionsFilePath), str(xstFilePath))
-		
-		# parse project filelist
-		filesLineRegExpStr =	r"\s*(?P<Keyword>(vhdl(\-(87|93|02|08))?|verilog|xilinx))"		# Keywords: vhdl[-nn], verilog, xilinx
-		filesLineRegExpStr += r"\s+(?P<VHDLLibrary>[_a-zA-Z0-9]+)"									#	VHDL library name
-		filesLineRegExpStr += r"\s+\"(?P<VHDLFile>.*?)\""														# VHDL filename without "-signs
-		filesLineRegExp = re.compile(filesLineRegExpStr)
-
-		self._LogDebug("Reading filelist '{0}'".format(str(fileListFilePath)))
-		xstProjectFileContent = ""
-		with fileListFilePath.open('r') as prjFileHandle:
-			for line in prjFileHandle:
-				filesLineRegExpMatch = filesLineRegExp.match(line)
-				xstKeyWord = "vhdl"
-				
-				if (filesLineRegExpMatch is not None):
-					if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
-						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-						vhdlFilePath = self.Host.directories["PoCRoot"] / vhdlFileName
-					elif (filesLineRegExpMatch.group('Keyword')[0:5] == "vhdl-"):
-						if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
-							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-							vhdlFilePath = self.Host.directories["PoCRoot"] / vhdlFileName
-					elif (filesLineRegExpMatch.group('Keyword') == "verilog"):
-						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-						vhdlFilePath = self.Host.directories["PoCRoot"] / vhdlFileName
-						xstKeyWord = "verilog"
-					elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
-						vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-						vhdlFilePath = self.Host.directories["XilinxPrimitiveSource"] / vhdlFileName
-					
-					vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
-					xstProjectFileContent += "{0} {0} \"{0}\"\n".format((xstKeyWord, vhdlLibraryName, str(vhdlFilePath)))
-					
-					if (not vhdlFilePath.exists()):
-						raise CompilerException("Can not add '" + vhdlFileName + "' to project file.") from FileNotFoundError(str(vhdlFilePath))
-		
-		# write iSim project file
+		# TODO: parse project filelist
+		# TODO: write iSim project file
 		self._LogDebug("Writing XST project file to '{0}'".format(str(prjFilePath)))
 		with prjFilePath.open('w') as prjFileHandle:
 			prjFileHandle.write(xstProjectFileContent)
 
 		# change working directory to temporary XST path
-		self._LogVerbose('    cd "{0}"' % str(tempXstPath))
-		os.chdir(str(tempXstPath))
+		self._LogVerbose('    cd "{0}"' % str(self._tempPath))
+		os.chdir(str(self._tempPath))
 		
 		# running XST
 		# ==========================================================================
@@ -335,78 +296,24 @@ class Compiler(PoCCompiler):
 			'-ifn', str(xstFilePath),
 			'-ofn', str(reportFilePath)
 		]
-		self._LogDebug("call xst: {0}".format(str(parameterList)))
-		self._LogVerbose("    {0} -intstyle xflow -filter \"{0}\" -ifn \"{0}\" -ofn \"{0}\"".format(str(xstExecutablePath), str(fileListFilePath), str(xstFilePath), str(reportFilePath)))
-		if (self.dryRun == False):
-			try:
-				xstLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
-				if self.showLogs:
-					print("XST log file:")
-					print("--------------------------------------------------------------------------------")
-					print(xstLog)
-					print()
-			
-			except subprocess.CalledProcessError as ex:
-				print("ERROR while executing XST")
-				print("Return Code: {0}".format(ex.returncode))
-				print("--------------------------------------------------------------------------------")
-				print(ex.output)
-				return
-			
-		# copy resulting files into PoC's netlist directory
-		self._LogNormal('  copy result files into output directory...')
-		for task in copyTasks:
-			(fromPath, toPath) = task
-			if not fromPath.exists(): raise CompilerException("Can not copy '{0}' to destination.".format(str(fromPath))) from FileNotFoundError(str(fromPath))
-			
-			toDirectoryPath = toPath.parent
-			if not toDirectoryPath.exists():
-				toDirectoryPath.mkdir(parents=True)
-		
-			self._LogVerbose("  copying '{0}'.".format(fromPath))
-			shutil.copy(str(fromPath), str(toPath))
-		
-		# replace in resulting files
-		self._LogNormal('  replace in result files...')
-		for task in replaceTasks:
-			(fromPath, options, search, replace) = task
-			if not fromPath.exists(): raise CompilerException("Can not replace in file '{0}' to destination.".format(str(fromPath))) from FileNotFoundError(str(fromPath))
-			
-			self._LogVerbose("  replace in file '{0}': search for '{1}' -> replace by '{2}'.".format(str(fromPath), search, replace))
-			
-			regExpFlags	 = 0
-			if ('i' in options):
-				regExpFlags |= re.IGNORECASE
-			if ('m' in options):
-				regExpFlags |= re.MULTILINE
-			if ('d' in options):
-				regExpFlags |= re.DOTALL
-			
-			regExp = re.compile(search, regExpFlags)
-			
-			with fromPath.open('r') as fileHandle:
-				FileContent = fileHandle.read()
-			
-			NewContent = re.sub(regExp, replace, FileContent)
-			
-			with fromPath.open('w') as fileHandle:
-				fileHandle.write(NewContent)
-	
+		# TODO: copy resulting files into PoC's netlist directory
+		# TODO: replace in resulting files
+
 	@property
 	def TemporaryPath(self):
 		return self._tempPath
 	
 	@property
-	def outputPath(self):
+	def OutputPath(self):
 		return self._outputPath
 
 	def _PrepareCompilerEnvironment(self):
 		self._LogNormal("  preparing compiler environment...")
 		
 		# create temporary directory for ghdl if not existent
-		self._tempPath = self.Host.Directories["ActiveHDLTemp"]
+		self._tempPath = self.Host.Directories["XstTemp"]
 		if (not (self._tempPath).exists()):
-			self._LogVerbose("  Creating temporary directory for simulator files.")
+			self._LogVerbose("  Creating temporary directory for compiler files.")
 			self._LogDebug("    Temporary directors: {0}".format(str(self._tempPath)))
 			self._tempPath.mkdir(parents=True)
 			
@@ -415,29 +322,55 @@ class Compiler(PoCCompiler):
 		self._LogDebug("    cd \"{0}\"".format(str(self._tempPath)))
 		chdir(str(self._tempPath))
 
-	def PrepareSimulator(self, binaryPath, version):
+	def RunAll(self, pocEntities, device, **kwargs) :
+		for pocEntity in pocEntities :
+			self.Run(pocEntity, device, **kwargs)
+
+	def Run(self, pocEntity, device) :
+		self._pocEntity =		pocEntity
+		self._ipcoreFQN =		str(pocEntity)  # TODO: implement FQN method on PoCEntity
+		self._device =			device
+
+		# check testbench database for the given testbench
+		self._LogQuiet("IP-core: {0}{1}{2}".format(Foreground.YELLOW, self._ipcoreFQN, Foreground.RESET))
+		if (not self.Host.netListConfig.has_section(self._ipcoreFQN)) :
+			raise CompilerException("IP-core '{0}' not found.".format(self._ipcoreFQN)) from NoSectionError(
+				self._ipcoreFQN)
+
+		self._LogNormal(self._ipcoreFQN)
+
+		# create output directory for CoreGen if not existent
+		self._outputPath = self.Host.Directories["PoCNetList"] / str(device)
+		if not (self._outputPath).exists() :
+			self._LogVerbose("  Creating output directory for core generator files.")
+			self._LogDebug("    Output directory: {0}.".format(str(self._outputPath)))
+			self._outputPath.mkdir(parents=True)
+
+		self._CreatePoCProject()
+		self._AddFileListFile("ipcore.files") # FIXME:
+
+		self._RunPrepareCompile()
+		self._RunPreCopy()
+		self._RunCompile()
+		self._RunPostCopy()
+		self._RunPostReplace()
+
+	def PrepareCompiler(self, binaryPath, version):
 		# create the GHDL executable factory
-		self._LogVerbose("  Preparing Active-HDL simulator.")
-		self._activeHDL =		ActiveHDLSimulatorExecutable(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._LogVerbose("  Preparing Xilinx Synthesis Tool (XST).")
+		self._xst =		XstCompilerExecutable(self.Host.Platform, binaryPath, version, logger=self.Logger)
 	
-	def _CreatePoCProject(self, testbenchName, boardName=None, deviceName=None):
+	def _CreatePoCProject(self):
 		# create a PoCProject and read all needed files
-		self._LogDebug("    Create a PoC project '{0}'".format(str(testbenchName)))
-		pocProject =									PoCProject(testbenchName)
+		self._LogDebug("    Create a PoC project '{0}'".format(self._ipcoreFQN))
+		pocProject =									PoCProject(self._ipcoreFQN)
 		
 		# configure the project
 		pocProject.RootDirectory =		self.Host.Directories["PoCRoot"]
-		pocProject.Environment =			Environment.Simulation
-		pocProject.ToolChain =				ToolChain.GHDL_GTKWave
-		pocProject.Tool =							Tool.GHDL
-		
-		if (deviceName is None):			pocProject.Board =					boardName
-		else:													pocProject.Device =					deviceName
-		
-		if (self._vhdlversion == "87"):			pocProject.VHDLVersion =		VHDLVersion.VHDL87
-		elif (self._vhdlversion == "93"):		pocProject.VHDLVersion =		VHDLVersion.VHDL93
-		elif (self._vhdlversion == "02"):		pocProject.VHDLVersion =		VHDLVersion.VHDL02
-		elif (self._vhdlversion == "08"):		pocProject.VHDLVersion =		VHDLVersion.VHDL08
+		pocProject.Environment =			Environment.Synthesis
+		pocProject.ToolChain =				ToolChain.Xilinx_ISE
+		pocProject.Tool =							Tool.Xilinx_XST
+		pocProject.Device =						self._device
 		
 		self._pocProject = pocProject
 		
@@ -451,4 +384,81 @@ class Compiler(PoCCompiler):
 		self._pocProject.ExtractVHDLLibrariesFromVHDLSourceFiles()
 		self._LogDebug(self._pocProject.pprint(2))
 		self._LogDebug("=" * 160)
-		
+
+	def _RunPrepareCompile(self):
+		pass
+
+	def _RunPreCopy(self):
+		pass
+
+	def _RunCompile(self):
+		xst = ISEXstCompiler(self.Host.Platform, "bin", "14.7", logger=self.Logger)
+		xst.Parameters[xst.SwitchIniStyle] =		"xflow"
+		xst.Parameters[xst.SwitchXstFile] =			"ipcore.xst"
+		xst.Parameters[xst.SwitchReportFile] =	"ipcore.xst.report"
+		xst.Compile()
+
+	def _RunPostCopy(self):
+		pass
+
+	def _RunPostReplace(self) :
+		pass
+
+
+
+class ISEXstCompiler(Executable) :
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None) :
+		if (platform == "Windows") :			executablePath = binaryDirectoryPath / "xst.exe"
+		elif (platform == "Linux") :			executablePath = binaryDirectoryPath / "xst"
+		else :														raise PlatformNotSupportedException(platform)
+		Executable.__init__(self, platform, executablePath, logger=logger)
+
+		self.Parameters[self.Executable] = executablePath
+
+	class Executable(metaclass=ExecutableArgument) :
+		pass
+
+	class SwitchIniStyle(metaclass=ShortTupleArgument):
+		_name = "intstyle"
+
+	class SwitchXstFile(metaclass=ShortFlagArgument) :
+		_name = "ifn"
+
+	class SwitchReportFile(metaclass=ShortTupleArgument) :
+		_name = "ofn"
+
+	Parameters = CommandLineArgumentList(
+			Executable,
+			SwitchIniStyle,
+			SwitchXstFile,
+			SwitchReportFile
+	)
+
+	def Compile(self) :
+		parameterList = self.Parameters.ToArgumentList()
+
+		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+
+		_indent = "    "
+		try :
+			fuseLog = self.StartProcess(parameterList)
+
+			log = ""
+			for line in fuseLog.split("\n")[:-1] :
+				log += _indent + line + "\n"
+
+			# if self.showLogs:
+			if (log != "") :
+				print(_indent + "fuse messages for : {0}".format("????"))  # str(filePath)))
+				print(_indent + "-" * 80)
+				print(log[:-1])
+				print(_indent + "-" * 80)
+		except CalledProcessError as ex :
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing fuse: {0}".format(
+					"????"))  # str(filePath)))
+			print(_indent + "Return Code: {0}".format(ex.returncode))
+			print(_indent + "-" * 80)
+			for line in ex.output.split("\n") :
+				print(_indent + line)
+			print(_indent + "-" * 80)
+
