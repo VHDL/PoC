@@ -3,9 +3,13 @@
   <component name="ChangeListManager">
     <list default="true" id="b1217729-6dda-4bce-a9eb-baa5346607ac" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../lib/osvvm" afterPath="$PROJECT_DIR$/../lib/osvvm" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Base/Executable.py" afterPath="$PROJECT_DIR$/Base/Executable.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Base/Project.py" afterPath="$PROJECT_DIR$/Base/Project.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Compiler/XSTCompiler.py" afterPath="$PROJECT_DIR$/Compiler/XSTCompiler.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/ActiveHDLSimulator.py" afterPath="$PROJECT_DIR$/Simulator/ActiveHDLSimulator.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/GHDLSimulator.py" afterPath="$PROJECT_DIR$/Simulator/GHDLSimulator.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/ISESimulator.py" afterPath="$PROJECT_DIR$/Simulator/ISESimulator.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/QuestaSimulator.py" afterPath="$PROJECT_DIR$/Simulator/QuestaSimulator.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/VivadoSimulator.py" afterPath="$PROJECT_DIR$/Simulator/VivadoSimulator.py" />
     </list>
     <ignored path="py.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -32,18 +36,8 @@
             <state relative-caret-position="0">
               <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
               <folding>
-                <element signature="e#1352#1422#0" expanded="true" />
+                <marker date="1459439200487" expanded="true" signature="0:55" placeholder="..." />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Base.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Simulator/Base.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="765">
-              <caret line="45" column="0" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="33" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -51,10 +45,10 @@
       <file leaf-file-name="QuestaSimulator.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Simulator/QuestaSimulator.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4828">
-              <caret line="296" column="0" selection-start-line="296" selection-start-column="0" selection-end-line="297" selection-end-column="39" />
+            <state relative-caret-position="4862">
+              <caret line="298" column="0" selection-start-line="298" selection-start-column="0" selection-end-line="298" selection-end-column="0" />
               <folding>
-                <element signature="e#1457#1488#0" expanded="true" />
+                <marker date="1459445434866" expanded="true" signature="0:55" placeholder="..." />
               </folding>
             </state>
           </provider>
@@ -63,8 +57,18 @@
       <file leaf-file-name="GHDLSimulator.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Simulator/GHDLSimulator.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="112" column="0" selection-start-line="112" selection-start-column="0" selection-end-line="112" selection-end-column="0" />
+            <state relative-caret-position="206">
+              <caret line="612" column="24" selection-start-line="612" selection-start-column="24" selection-end-line="612" selection-end-column="24" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Project.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Base/Project.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="733">
+              <caret line="323" column="22" selection-start-line="323" selection-start-column="11" selection-end-line="323" selection-end-column="22" />
               <folding />
             </state>
           </provider>
@@ -86,7 +90,7 @@
             <state relative-caret-position="0">
               <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
               <folding>
-                <element signature="e#1471#1495#0" expanded="true" />
+                <marker date="1459445434798" expanded="true" signature="0:55" placeholder="..." />
               </folding>
             </state>
           </provider>
@@ -167,8 +171,8 @@
   <component name="ProjectFrameBounds">
     <option name="x" value="-8" />
     <option name="y" value="-8" />
-    <option name="width" value="1296" />
-    <option name="height" value="754" />
+    <option name="width" value="1936" />
+    <option name="height" value="1034" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -474,13 +478,13 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1296" height="754" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1034" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1836248" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" x="-348" y="1" width="346" height="1018" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.12170706" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" x="-348" y="1" width="346" height="1018" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32890365" sideWeight="0.49758744" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3292683" sideWeight="0.50632244" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3279743" sideWeight="0.49367756" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22616407" sideWeight="0.49367756" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32890365" sideWeight="0.49276236" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32890365" sideWeight="0.49758744" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.1564805" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" x="-817" y="1" width="468" height="1019" />
@@ -519,7 +523,7 @@
         <state relative-caret-position="4828">
           <caret line="296" column="0" selection-start-line="296" selection-start-column="0" selection-end-line="297" selection-end-column="39" />
           <folding>
-            <element signature="e#1457#1488#0" expanded="true" />
+            <marker date="1459445434866" expanded="true" signature="0:55" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -545,7 +549,7 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#1471#1495#0" expanded="true" />
+            <marker date="1459445434798" expanded="true" signature="0:55" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -600,6 +604,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2210">
           <caret line="130" column="32" selection-start-line="130" selection-start-column="32" selection-end-line="130" selection-end-column="32" />
+          <folding>
+            <element signature="e#1462#1493#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -608,7 +615,7 @@
         <state relative-caret-position="2193">
           <caret line="129" column="32" selection-start-line="129" selection-start-column="32" selection-end-line="129" selection-end-column="32" />
           <folding>
-            <element signature="e#1457#1488#0" expanded="true" />
+            <marker date="1459445434866" expanded="true" signature="0:55" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -626,7 +633,7 @@
         <state relative-caret-position="2295">
           <caret line="135" column="32" selection-start-line="135" selection-start-column="32" selection-end-line="135" selection-end-column="32" />
           <folding>
-            <element signature="e#1471#1495#0" expanded="true" />
+            <marker date="1459445434798" expanded="true" signature="0:55" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -663,6 +670,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2006">
           <caret line="130" column="49" selection-start-line="130" selection-start-column="48" selection-end-line="130" selection-end-column="48" />
+          <folding>
+            <element signature="e#1462#1493#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -671,7 +681,7 @@
         <state relative-caret-position="1989">
           <caret line="129" column="50" selection-start-line="129" selection-start-column="48" selection-end-line="129" selection-end-column="48" />
           <folding>
-            <element signature="e#1457#1488#0" expanded="true" />
+            <marker date="1459445434866" expanded="true" signature="0:55" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -689,7 +699,7 @@
         <state relative-caret-position="2091">
           <caret line="135" column="50" selection-start-line="135" selection-start-column="48" selection-end-line="135" selection-end-column="48" />
           <folding>
-            <element signature="e#1471#1495#0" expanded="true" />
+            <marker date="1459445434798" expanded="true" signature="0:55" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -725,7 +735,7 @@
         <state relative-caret-position="1989">
           <caret line="129" column="50" selection-start-line="129" selection-start-column="50" selection-end-line="129" selection-end-column="50" />
           <folding>
-            <element signature="e#1457#1488#0" expanded="true" />
+            <marker date="1459445434866" expanded="true" signature="0:55" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -761,7 +771,7 @@
         <state relative-caret-position="1989">
           <caret line="129" column="59" selection-start-line="129" selection-start-column="59" selection-end-line="129" selection-end-column="59" />
           <folding>
-            <element signature="e#1471#1495#0" expanded="true" />
+            <marker date="1459445434798" expanded="true" signature="0:55" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -770,6 +780,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2006">
           <caret line="130" column="49" selection-start-line="130" selection-start-column="49" selection-end-line="130" selection-end-column="49" />
+          <folding>
+            <element signature="e#1462#1493#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -790,14 +803,6 @@
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/.PyCharm50/system/python_stubs/-1911679379/builtins.py" />
-    <entry file="file://$PROJECT_DIR$/Base/Project.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="399">
-          <caret line="605" column="11" selection-start-line="605" selection-start-column="11" selection-end-line="605" selection-end-column="11" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/.PyCharm2016.1/system/python_stubs/-1911679379/builtins.py" />
     <entry file="file://$PROJECT_DIR$/Base/Logging.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -828,6 +833,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="289">
           <caret line="17" column="21" selection-start-line="17" selection-start-column="21" selection-end-line="17" selection-end-column="21" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -842,6 +848,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#1462#1493#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -866,17 +875,17 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#1352#1422#0" expanded="true" />
+            <marker date="1459439200487" expanded="true" signature="0:55" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Simulator/QuestaSimulator.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4828">
-          <caret line="296" column="0" selection-start-line="296" selection-start-column="0" selection-end-line="297" selection-end-column="39" />
+        <state relative-caret-position="4862">
+          <caret line="298" column="0" selection-start-line="298" selection-start-column="0" selection-end-line="298" selection-end-column="0" />
           <folding>
-            <element signature="e#1457#1488#0" expanded="true" />
+            <marker date="1459445434866" expanded="true" signature="0:55" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -894,7 +903,7 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#1471#1495#0" expanded="true" />
+            <marker date="1459445434798" expanded="true" signature="0:55" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -929,10 +938,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Base/Project.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="733">
+          <caret line="323" column="22" selection-start-line="323" selection-start-column="11" selection-end-line="323" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Simulator/GHDLSimulator.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="112" column="0" selection-start-line="112" selection-start-column="0" selection-end-line="112" selection-end-column="0" />
+        <state relative-caret-position="206">
+          <caret line="612" column="24" selection-start-line="612" selection-start-column="24" selection-end-line="612" selection-end-column="24" />
           <folding />
         </state>
       </provider>

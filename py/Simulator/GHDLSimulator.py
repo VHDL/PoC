@@ -151,7 +151,7 @@ class Simulator(PoCSimulator):
 			fileListFile.Parse()
 			fileListFile.CopyFilesToFileSet()
 			fileListFile.CopyExternalLibraries()
-			self._pocProject._ResolveVHDLLibraries()
+			self._pocProject.ExtractVHDLLibrariesFromVHDLSourceFiles()
 		except ParserException as ex:										raise SimulatorException("Error while parsing '{0}'.".format(str(fileListFilePath))) from ex
 		
 		self._LogDebug(self._pocProject.pprint(2))
@@ -607,14 +607,6 @@ class GHDLAnalyze(GHDLExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
 
-		#self.Parameters[self.FlagExplicit] =					True
-		#self.Parameters[self.FlagRelaxedRules] =			True
-		#self.Parameters[self.FlagWarnBinding] =				True
-		#self.Parameters[self.FlagNoVitalChecks] =			True
-		#self.Parameters[self.FlagMultiByteComments] =	True
-		#self.Parameters[self.FlagPSL] =								True
-		#self.Parameters[self.FlagVerbose] =						True
-	
 	def Analyze(self):
 		parameterList = self.Parameters.ToArgumentList()
 

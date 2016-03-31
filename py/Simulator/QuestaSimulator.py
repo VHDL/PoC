@@ -142,7 +142,7 @@ class Simulator(PoCSimulator):
 		fileListFile.Parse()
 		fileListFile.CopyFilesToFileSet()
 		fileListFile.CopyExternalLibraries()
-		self._pocProject._ResolveVHDLLibraries()
+		self._pocProject.ExtractVHDLLibrariesFromVHDLSourceFiles()
 		self._LogDebug(self._pocProject.pprint(2))
 		self._LogDebug("=" * 160)
 		

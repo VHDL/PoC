@@ -151,7 +151,7 @@ class Simulator(PoCSimulator):
 			fileListFile.Parse()
 			fileListFile.CopyFilesToFileSet()
 			fileListFile.CopyExternalLibraries()
-			self._pocProject._ResolveVHDLLibraries()
+			self._pocProject.ExtractVHDLLibrariesFromVHDLSourceFiles()
 		except ParserException as ex:										raise SimulatorException("Error while parsing '{0}'.".format(str(fileListFilePath))) from ex
 		
 		self._LogDebug(self._pocProject.pprint(2))
