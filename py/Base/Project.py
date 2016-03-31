@@ -597,7 +597,7 @@ class VHDLSourceFile(SourceFile, HDLFileMixIn, VHDLParserMixIn):
 		HDLFileMixIn.__init__(self)
 		VHDLParserMixIn.__init__(self)
 		
-		self._vhdlLibraryName = vhdlLibraryName
+		self._vhdlLibraryName = vhdlLibraryName.lower()
 	
 	@property
 	def FileType(self):

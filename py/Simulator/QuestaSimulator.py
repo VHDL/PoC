@@ -1,4 +1,4 @@
-# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
@@ -189,6 +189,7 @@ class Simulator(PoCSimulator):
 		# create a QuestaSimulator instance
 		vsim = self._questa.GetSimulator()
 		vsim.Parameters[vsim.FlagOptimization] =			True
+		vsim.Parameters[vsim.FlagReportAsError] =			"3473"
 		vsim.Parameters[vsim.SwitchTimeResolution] =	"1fs"
 		vsim.Parameters[vsim.FlagCommandLineMode] =		True
 		vsim.Parameters[vsim.SwitchBatchCommand] =		"do {0}".format(tclBatchFilePath.as_posix())
@@ -204,6 +205,7 @@ class Simulator(PoCSimulator):
 		# create a QuestaSimulator instance
 		vsim = self._questa.GetSimulator()
 		vsim.Parameters[vsim.FlagOptimization] =			True
+		vsim.Parameters[vsim.FlagReportAsError] =			"3473"
 		vsim.Parameters[vsim.SwitchTimeResolution] =	"1fs"
 		# vsim.Parameters[vsim.FlagCommandLineMode] =		True
 		vsim.Parameters[vsim.SwitchTopLevel] =				"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
@@ -323,12 +325,12 @@ class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
 			
 			# if self.showLogs:
 			if (log != ""):
-				print(_indent + "vlib messages for : {0}".format("????"))#str(vhdlFile)))
+				print(_indent + "vcom messages for : {0}".format("????"))#str(vhdlFile)))
 				print(_indent + "-" * 80)
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format("????"))#str(vhdlFile)))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vcom: {0}".format("????"))#str(vhdlFile)))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
@@ -373,6 +375,10 @@ class QuestaSimulator(Executable, QuestaSimulatorExecutable):
 		_name =		"vopt"
 		_value =	None
 
+	class FlagReportAsError(metaclass=ShortTupleArgument):
+		_name =		"error"
+		_value =	None
+
 	class SwitchTimeResolution(metaclass=ShortTupleArgument):
 		_name =		"t"			# -t [1|10|100]fs|ps|ns|us|ms|sec  Time resolution limit
 		_value =	None
@@ -400,6 +406,7 @@ class QuestaSimulator(Executable, QuestaSimulatorExecutable):
 		FlagCommandLineMode,
 		SwitchModelSimIniFile,
 		FlagOptimization,
+		FlagReportAsError,
 		ArgLogFile,
 		ArgVHDLLibraryName,
 		SwitchTimeResolution,
@@ -479,4 +486,3 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimulatorExecutable):
 			for line in ex.output.split("\n"):
 				print(_indent + line)
 			print(_indent + "-" * 80)
-	

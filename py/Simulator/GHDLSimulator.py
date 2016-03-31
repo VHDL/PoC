@@ -1,4 +1,4 @@
-# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
@@ -116,11 +116,11 @@ class Simulator(PoCSimulator):
 		
 		if (self._ghdl.Backend == "gcc"):
 			self._RunAnalysis()
-			self._RunElaboration()
+			self._RunElaboration(testbenchName)
 			self._RunSimulation(testbenchName)
 		elif (self._ghdl.Backend == "llvm"):
 			self._RunAnalysis()
-			self._RunElaboration()
+			self._RunElaboration(testbenchName)
 			self._RunSimulation(testbenchName)
 		elif (self._ghdl.Backend == "mcode"):
 			self._RunAnalysis()
@@ -179,7 +179,7 @@ class Simulator(PoCSimulator):
 			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"87"
 			ghdl.Parameters[ghdl.SwitchIEEEFlavor] =		"synopsys"
 		elif (self._vhdlVersion == VHDLVersion.VHDL93):
-			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"93"
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"93c"
 			ghdl.Parameters[ghdl.SwitchIEEEFlavor] =		"synopsys"
 		elif (self._vhdlVersion == VHDLVersion.VHDL02):
 			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"02"
@@ -200,23 +200,30 @@ class Simulator(PoCSimulator):
 
 	# running simulation
 	# ==========================================================================
-	def _RunElaboration(self):
+	def _RunElaboration(self, testbenchName):
 		self._LogNormal("  elaborate simulation...")
 		
 		# create a GHDLElaborate instance
 		ghdl = self._ghdl.GetGHDLElaborate()
-		ghdl.VHDLVersion =	self._vhdlVersion
-		ghdl.VHDLLibrary =	VHDLTestbenchLibraryName
+		ghdl.Parameters[ghdl.SwitchVHDLLibrary] =			VHDLTestbenchLibraryName
+		ghdl.Parameters[ghdl.ArgTopLevel] =						testbenchName
 
 		# add external library references
 		ghdl.Parameters[ghdl.ArgListLibraryReferences] = [str(extLibrary.Path) for extLibrary in self._pocProject.ExternalVHDLLibraries]
 
-
-#		parameterList.append(topLevel)
-#		if (topLevelArchitecture is not None):
-#			parameterList.append(topLevelArchitecture)
-
-		ghdl.Elaborate("arith_prng_tb")
+		if (self._vhdlVersion == VHDLVersion.VHDL87):
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"87"
+			ghdl.Parameters[ghdl.SwitchIEEEFlavor] =		"synopsys"
+		elif (self._vhdlVersion == VHDLVersion.VHDL93):
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"93c"
+			ghdl.Parameters[ghdl.SwitchIEEEFlavor] =		"synopsys"
+		elif (self._vhdlVersion == VHDLVersion.VHDL02):
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"02"
+		elif (self._vhdlVersion == VHDLVersion.VHDL08):
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"08"
+		else:																					raise SimulatorException("VHDL version is not supported.")
+		
+		ghdl.Elaborate()
 	
 	
 	def _RunSimulation(self, testbenchName):
@@ -239,7 +246,7 @@ class Simulator(PoCSimulator):
 			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"87"
 			ghdl.Parameters[ghdl.SwitchIEEEFlavor] =		"synopsys"
 		elif (self._vhdlVersion == VHDLVersion.VHDL93):
-			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"93"
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"93c"
 			ghdl.Parameters[ghdl.SwitchIEEEFlavor] =		"synopsys"
 		elif (self._vhdlVersion == VHDLVersion.VHDL02):
 			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"02"
@@ -572,19 +579,19 @@ class GHDLExecutable(Executable):
 		SwitchGHDLWaveform
 	)
 	
-# 		if (value == "93"):
-# 			value =  "93c"
-# 			self.IEEEFlavor = "synopsys"
-# 		elif (value == "08"):
-# 			self.IEEEFlavor = "standard"
-
 	def GetGHDLAnalyze(self):
 		ghdl = GHDLAnalyze(self._platform, self._binaryDirectoryPath, self._version, self._backend, logger=self.Logger)
+		for param in ghdl.Parameters:
+			if (param is not ghdl.Executable):
+				ghdl.Parameters[param] = None
 		ghdl.Parameters[ghdl.CmdAnalyze] = True
 		return ghdl
 
 	def GetGHDLElaborate(self):
 		ghdl = GHDLElaborate(self._platform, self._binaryDirectoryPath, self._version, self._backend, logger=self.Logger)
+		for param in ghdl.Parameters:
+			if (param is not ghdl.Executable):
+				ghdl.Parameters[param] = None
 		ghdl.Parameters[ghdl.CmdElaborate] = True
 		return ghdl
 	
@@ -638,7 +645,7 @@ class GHDLAnalyze(GHDLExecutable):
 	
 class GHDLElaborate(GHDLExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
-		super().__init__(platform, binaryDirectoryPath, version, backend, defaultParameters=["-e"], logger=logger)
+		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
 	
 	def Elaborate(self):
 		if (self._backend == "mcode"):		return
@@ -663,7 +670,7 @@ class GHDLElaborate(GHDLExecutable):
 				print(log[:-1])
 				print(_indent + "-" * 80)
 		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while elaborating '{0}.{1}'".format("??????"))#self.VHDLLibrary, topLevel))
+			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while elaborating '{0}.{1}'".format("??????", "??????"))#self.VHDLLibrary, topLevel))
 			print(_indent + "Return Code: {0}".format(ex.returncode))
 			print(_indent + "-" * 80)
 			for line in ex.output.split("\n"):
@@ -672,7 +679,7 @@ class GHDLElaborate(GHDLExecutable):
 
 class GHDLRun(GHDLExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
-		super().__init__(platform, binaryDirectoryPath, version, backend, defaultParameters=["-r"], logger=logger)
+		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
 	
 	def Run(self):
 		parameterList = self.Parameters.ToArgumentList()

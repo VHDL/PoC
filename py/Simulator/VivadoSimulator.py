@@ -1,4 +1,4 @@
-# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
@@ -52,8 +52,10 @@ from Base.Project						import FileTypes
 from Base.PoCProject				import *
 from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
 from Simulator.Exceptions		import *
-from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName 
+from Simulator.Base					import PoCSimulator#, VHDLTestbenchLibraryName 
 
+# Workaround for Vivado 2015.4
+VHDLTestbenchLibraryName = "work"
 
 class Simulator(PoCSimulator):
 	__guiMode =					False
@@ -81,7 +83,7 @@ class Simulator(PoCSimulator):
 			self._LogDebug("    Temporary directors: {0}".format(str(self._tempPath)))
 			self._tempPath.mkdir(parents=True)
 			
-		# change working directory to temporary iSim path
+		# change working directory to temporary xSim path
 		self._LogVerbose("  Changing working directory to temporary directory.")
 		self._LogDebug("    cd \"{0}\"".format(str(self._tempPath)))
 		chdir(str(self._tempPath))
@@ -185,12 +187,21 @@ class Simulator(PoCSimulator):
 	
 		# create one VHDL line for each VHDL file
 		xSimProjectFileContent = ""
-		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
+		vhdlFiles = [item for item in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile)]
+		for file in vhdlFiles[:-1]:
 			if (not file.Path.exists()):									raise SimulatorException("Can not add '{0}' to xSim project file.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
 			if (self._vhdlVersion == VHDLVersion.VHDL2008):
 				xSimProjectFileContent += "vhdl2008 {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
 			else:
 				xSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
+
+		# Workaround for Vivado 2015.4: last VHDL file is testbench, rewrite library name
+		file = vhdlFiles[-1]
+		if (not file.Path.exists()):									raise SimulatorException("Can not add '{0}' to xSim project file.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
+		if (self._vhdlVersion == VHDLVersion.VHDL2008):
+			xSimProjectFileContent += "vhdl2008 {0} \"{1}\"\n".format(VHDLTestbenchLibraryName, str(file.Path))
+		else:
+			xSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(VHDLTestbenchLibraryName, str(file.Path))
 
 		# write xSim project file
 		prjFilePath = self._tempPath / (testbenchName + ".prj")
@@ -222,9 +233,9 @@ class Simulator(PoCSimulator):
 		self._LogNormal("  running simulation...")
 		
 		xSimLogFilePath =		self._tempPath / (testbenchName + ".xSim.log")
-		tclBatchFilePath =	self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['iSimBatchScript']
-		tclGUIFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['iSimGUIScript']
-		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['iSimWaveformConfigFile']
+		tclBatchFilePath =	self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['xSimBatchScript']
+		tclGUIFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['xSimGUIScript']
+		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['xSimWaveformConfigFile']
 
 		# create a VivadoSimulator instance
 		xSim = self._vivado.GetSimulator()
@@ -243,6 +254,7 @@ class Simulator(PoCSimulator):
 			else:
 				self._LogDebug("    Didn't find waveform config file: '{0}'".format(str(wcfgFilePath)))
 
+		xSim.Parameters[xSim.SwitchSnapshot] = "{0}.{1}#{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
 		xSim.Simulate()
 
 		# print()
@@ -442,12 +454,16 @@ class VivadoSimulator(Executable, VivadoSimulatorExecutable):
 		_name =		"-view"
 		_value =	None
 
+	class SwitchSnapshot(metaclass=StringArgument):
+		_value =	None
+
 	Parameters = CommandLineArgumentList(
 		Executable,
 		SwitchLogFile,
 		FlagGuiMode,
 		SwitchTclBatchFile,
-		SwitchWaveformFile
+		SwitchWaveformFile,
+		SwitchSnapshot
 	)
 
 	def Simulate(self):

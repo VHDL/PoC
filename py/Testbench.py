@@ -1,4 +1,4 @@
-# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
@@ -424,7 +424,7 @@ def main():
 				print("{0}    {1}:{2} {3}".format(Foreground.LIGHTYELLOW_EX, ex.__cause__.__cause__.__class__.__name__, Foreground.RESET, str(ex.__cause__.__cause__)))
 		elif isinstance(ex.__cause__, ConfigParser_Error):
 			print("{0}  configparser.Error:{1} '{2}'".format(Foreground.LIGHTYELLOW_EX, Foreground.RESET, str(ex.__cause__)))
-		print(Foreground.RESET + Back.RESET + Style.RESET_ALL)
+		print(Foreground.RESET)
 		exit(1)
 
 	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)
