@@ -209,6 +209,32 @@ class ValuedFlagArgument(CommandLineArgument):
 class ShortValuedFlagArgument(ValuedFlagArgument):	_pattern = "-{0}={1}"
 class LongValuedFlagArgument(ValuedFlagArgument):		_pattern = "--{0}={1}"
 
+class ValuedFlagListArgument(CommandLineArgument):
+	_pattern = "{0}={1}"
+
+	@property
+	def Value(self):
+		return self._value
+
+	@Value.setter
+	def Value(self, value):
+		if (value is None):										self._value = None
+		elif isinstance(value, (tuple,list)):	self._value = value
+		else:																	raise ValueError("Parameter 'value' is not of type tuple or list.") from ex
+
+	def __str__(self):
+		if (self._value is None):			return ""
+		elif (len(self._value) > 0):	return " ".join([self._pattern.format(self._name, item) for item in self._value])
+		else:													return ""
+
+	def AsArgument(self):
+		if (self._value is None):			return None
+		elif (len(self._value) > 0):	return [self._pattern.format(self._name, item) for item in self._value]
+		else:													return None
+
+class ShortValuedFlagListArgument(ValuedFlagListArgument):	_pattern = "-{0}={1}"
+class LongValuedFlagListArgument(ValuedFlagListArgument):		_pattern = "--{0}={1}"
+
 class TupleArgument(CommandLineArgument):
 	_switchPattern =	"{0}"
 	_valuePattern =		"{0}"

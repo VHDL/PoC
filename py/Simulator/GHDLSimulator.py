@@ -52,7 +52,7 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
+from Base.Executable				import *
 from Parser.Parser					import ParserException
 from Simulator.Exceptions		import *
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
@@ -188,8 +188,7 @@ class Simulator(PoCSimulator):
 		else:																					raise SimulatorException("VHDL version is not supported.")
 
 		# add external library references
-		for extLibrary in self._pocProject.ExternalVHDLLibraries:
-			ghdl.AddLibraryReference(extLibrary.Path)
+		ghdl.Parameters[ghdl.ArgListLibraryReferences] = [str(extLibrary.Path) for extLibrary in self._pocProject.ExternalVHDLLibraries]
 		
 		# run GHDL analysis for each VHDL file
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
@@ -208,6 +207,10 @@ class Simulator(PoCSimulator):
 		ghdl = self._ghdl.GetGHDLElaborate()
 		ghdl.VHDLVersion =	self._vhdlVersion
 		ghdl.VHDLLibrary =	VHDLTestbenchLibraryName
+
+		# add external library references
+		ghdl.Parameters[ghdl.ArgListLibraryReferences] = [str(extLibrary.Path) for extLibrary in self._pocProject.ExternalVHDLLibraries]
+
 
 #		parameterList.append(topLevel)
 #		if (topLevelArchitecture is not None):
@@ -245,8 +248,7 @@ class Simulator(PoCSimulator):
 		else:																					raise SimulatorException("VHDL version is not supported.")
 
 		# add external library references
-		for extLibrary in self._pocProject.ExternalVHDLLibraries:
-			ghdl.AddLibraryReference(extLibrary.Path)
+		ghdl.Parameters[ghdl.ArgListLibraryReferences] = [str(extLibrary.Path) for extLibrary in self._pocProject.ExternalVHDLLibraries]
 
 		# configure RUNOPTS
 		ghdl.RunOptions[ghdl.SwitchIEEEAsserts] = "disable-at-0"		# enable, disable, disable-at-0
@@ -511,6 +513,10 @@ class GHDLExecutable(Executable):
 		_pattern =	"--{0}={1}"
 		_name =			"work"
 
+	class ArgListLibraryReferences(metaclass=ValuedFlagListArgument):
+		_pattern =	"-{0}{1}"
+		_name =			"P"
+
 	class ArgSourceFile(metaclass=PathArgument):
 		pass
 
@@ -533,6 +539,7 @@ class GHDLExecutable(Executable):
 		SwitchIEEEFlavor,
 		SwitchVHDLVersion,
 		SwitchVHDLLibrary,
+		ArgListLibraryReferences,
 		ArgSourceFile,
 		ArgTopLevel
 	)
@@ -570,11 +577,6 @@ class GHDLExecutable(Executable):
 # 			self.IEEEFlavor = "synopsys"
 # 		elif (value == "08"):
 # 			self.IEEEFlavor = "standard"
-		
-	
-	def AddLibraryReference(self, path):
-		if isinstance(path, Path):		path = str(path)
-		self._defaultParameters.append("-P{0}".format(path))
 
 	def GetGHDLAnalyze(self):
 		ghdl = GHDLAnalyze(self._platform, self._binaryDirectoryPath, self._version, self._backend, logger=self.Logger)
