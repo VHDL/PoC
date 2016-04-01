@@ -98,7 +98,7 @@ class Compiler(PoCCompiler):
 		
 		# read pre-copy tasks
 		preCopyTasks = []
-		preCopyFileList = self.Host.netListConfig[self._ipcoreFQN]['PreCopy']
+		preCopyFileList = self.Host.netListConfig[self._ipcoreFQN]['PreCopy.Rule']
 		if (len(preCopyFileList) != 0):
 			self._LogDebug("PreCopyTasks: \n  " + ("\n  ".join(preCopyFileList.split("\n"))))
 			

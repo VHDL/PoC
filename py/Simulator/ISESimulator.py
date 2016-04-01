@@ -275,27 +275,16 @@ class ISESimulatorExecutables:
 #
 # 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 #
-# 		_indent = "    "
-# 		try:
-# 			vhcompLog = self.StartProcess(parameterList)
-#
-# 			log = ""
-# 			for line in vhcompLog.split("\n")[:-1]:
-# 					log += _indent + line + "\n"
-#
-# 			# if self.showLogs:
-# 			if (log != ""):
-# 				print(_indent + "vlib messages for : {0}".format(str(vhdlFile)))
-# 				print(_indent + "-" * 80)
-# 				print(log[:-1])
-# 				print(_indent + "-" * 80)
-# 		except CalledProcessError as ex:
-# 			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format(str(vhdlFile)))
-# 			print(_indent + "Return Code: {0}".format(ex.returncode))
-# 			print(_indent + "-" * 80)
-# 			for line in ex.output.split("\n"):
-# 				print(_indent + line)
-# 			print(_indent + "-" * 80)
+		# _indent = "    "
+		# print(_indent + "vhcomp messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		# print(_indent + "-" * 80)
+		# try :
+		# 	self.StartProcess(parameterList)
+		# 	for line in self.GetReader() :
+		# 		print(_indent + line)
+		# except Exception as ex :
+		# 	raise ex  # SimulatorException() from ex
+		# print(_indent + "-" * 80)
 		
 class ISELinker(Executable, ISESimulatorExecutables):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
@@ -348,13 +337,15 @@ class ISELinker(Executable, ISESimulatorExecutables):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
 		_indent = "    "
+		print(_indent + "fuse messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
 			for line in self.GetReader():
 				print(_indent + line)
-
 		except Exception as ex:
 			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
 
 
 class ISESimulatorExecutable(Executable):
@@ -391,13 +382,15 @@ class ISESimulatorExecutable(Executable):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
 		_indent = "    "
+		print(_indent + "isim messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
 			for line in self.GetReader():
 				print(_indent + line)
-
 		except Exception as ex:
 			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
 
 		#
 		# _indent = "    "

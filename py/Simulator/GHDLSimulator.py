@@ -573,26 +573,6 @@ class GHDLAnalyze(GHDLExecutable):
 			raise ex  # SimulatorException() from ex
 		print(_indent + "-" * 80)
 
-		# try:
-		#
-		# 	log = ""
-		# 	for line in ghdlLog.split("\n")[:-1]:
-		# 		if ("ghdl1" not in line):
-		# 			log += _indent + line + "\n"
-		#
-		# 	# if self.showLogs:
-		# 	if (log != ""):
-		# 		print(_indent + "ghdl messages for : {0}".format("??????"))#str(filePath)))
-		# 		print(_indent + "-" * 80)
-		# 		print(log[:-1])
-		# 		print(_indent + "-" * 80)
-		# except CalledProcessError as ex:
-		# 	print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing ghdl: {0}".format("??????"))#str(filePath)))
-		# 	print(_indent + "Return Code: {0}".format(ex.returncode))
-		# 	print(_indent + "-" * 80)
-		# 	for line in ex.output.split("\n"):
-		# 		print(_indent + line)
-		# 	print(_indent + "-" * 80)
 	
 class GHDLElaborate(GHDLExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):

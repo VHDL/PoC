@@ -48,7 +48,7 @@ from Base.Exceptions				import *
 from Base.PoCConfig					import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
+from Base.Executable				import *
 from Simulator.Exceptions		import * 
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
 
@@ -240,13 +240,13 @@ class ActiveHDLSimulatorExecutable:
 		return ActiveHDLVHDLLibraryTool(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
 
 class ActiveHDLVHDLCompiler(Executable, ActiveHDLSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		ActiveHDLSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 		
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vcom.exe"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vcom"
 		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+		super().__init__(platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -292,35 +292,24 @@ class ActiveHDLVHDLCompiler(Executable, ActiveHDLSimulatorExecutable):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
+		print(_indent + "acom messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
-			acomLog = self.StartProcess(parameterList)
-			
-			log = ""
-			for line in acomLog.split("\n")[:-1]:
-					log += _indent + line + "\n"
-			
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "acom messages for : {0}".format("??????"))#str(vhdlFile)))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing acom: {0}".format("??????"))#str(vhdlFile)))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
+			self.StartProcess(parameterList)
+			for line in self.GetReader():
 				print(_indent + line)
-			print(_indent + "-" * 80)
+		except Exception as ex:
+			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
 
 class ActiveHDLSimulator(Executable, ActiveHDLSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		ActiveHDLSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 		
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vsimsa.bat"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vsimsa"
 		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+		super().__init__(platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -369,35 +358,24 @@ class ActiveHDLSimulator(Executable, ActiveHDLSimulatorExecutable):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
+		print(_indent + "vsimsa messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
-			aSimLog = self.StartProcess(parameterList)
-			
-			log = ""
-			for line in aSimLog.split("\n")[:-1]:
-					log += _indent + line + "\n"
-			
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "vsimsa messages for : {0}".format(str(parameterList)))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vsimsa: {0}".format(str(parameterList)))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
+			self.StartProcess(parameterList)
+			for line in self.GetReader():
 				print(_indent + line)
-			print(_indent + "-" * 80)
+		except Exception as ex:
+			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
 
 class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		ActiveHDLSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 		
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vlib.exe"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vlib"
 		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+		super().__init__(platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -423,26 +401,15 @@ class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLSimulatorExecutable):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
+		print(_indent + "alib messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
-			alibLog = self.StartProcess(parameterList)
-			
-			log = ""
-			for line in alibLog.split("\n")[:-1]:
-					log += _indent + line + "\n"
-			
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "vlib messages for : {0}".format("??????"))#vhdlLibraryName))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format("??????"))#vhdlLibraryName))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
+			self.StartProcess(parameterList)
+			for line in self.GetReader():
 				print(_indent + line)
-			print(_indent + "-" * 80)
+		except Exception as ex:
+			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
 	
 					# # assemble acom command as list of parameters
 					# parameterList = [
@@ -461,4 +428,3 @@ class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLSimulatorExecutable):
 		# ]
 
 
-		

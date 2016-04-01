@@ -125,7 +125,7 @@ class Compiler(PoCCompiler):
 	def _RunPreCopy(self):
 		# read pre-copy tasks
 		preCopyTasks = []
-		preCopyFileList = self.Host.netListConfig[self._netlistFQN]['PreCopy']
+		preCopyFileList = self.Host.netListConfig[self._netlistFQN]['PreCopy.Rule']
 		if (len(preCopyFileList) != 0):
 			self._LogDebug("PreCopyTasks: \n  " + ("\n  ".join(preCopyFileList.split("\n"))))
 
@@ -243,7 +243,7 @@ class Compiler(PoCCompiler):
 	def _RunPostCopy(self):
 		# read (post) copy tasks
 		copyTasks = []
-		copyFileList = self.Host.netListConfig[self._netlistFQN]['Copy']
+		copyFileList = self.Host.netListConfig[self._netlistFQN]['PostCopy.Rule']
 		if (len(copyFileList) != 0):
 			self._LogDebug("CopyTasks: \n  " + ("\n  ".join(copyFileList.split("\n"))))
 
@@ -279,7 +279,7 @@ class Compiler(PoCCompiler):
 	def _RunPostReplace(self):
 		# read replacement tasks
 		replaceTasks = []
-		replaceFileList = self.Host.netListConfig[self._netlistFQN]['Replace']
+		replaceFileList = self.Host.netListConfig[self._netlistFQN]['PostReplace.Rule']
 		if (len(replaceFileList) != 0):
 			self._LogDebug("ReplacementTasks: \n  " + ("\n  ".join(replaceFileList.split("\n"))))
 

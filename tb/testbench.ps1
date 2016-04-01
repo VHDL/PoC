@@ -34,7 +34,7 @@
 
 # configure wrapper here
 $PyWrapper_PoShScriptDir =	"py"
-$PyWrapper_Script =					"Testbench.py"
+$PyWrapper_Script =					"PoC.py"
 $PyWrapper_MinVersion =			"3.4.0"
 
 # save parameters and current working directory

@@ -292,19 +292,20 @@ class VivadoVHDLCompiler(Executable, VivadoSimulatorExecutable):
 
 	
 	def Compile(self, vhdlFile):
-		parameterList = self._defaultParameters.copy()
-		parameterList.append(vhdlFile)
+		parameterList = self.Parameters.ToArgumentList()
 		
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
+		print(_indent + "xvhcomp messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
 			for line in self.GetReader():
 				print(_indent + line)
-
 		except Exception as ex:
 			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
 
 		
 class VivadoLinker(Executable, VivadoSimulatorExecutable):
@@ -384,13 +385,15 @@ class VivadoLinker(Executable, VivadoSimulatorExecutable):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
+		print(_indent + "xelab messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
 			for line in self.GetReader():
 				print(_indent + line)
-
 		except Exception as ex:
 			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
 
 
 class VivadoSimulator(Executable, VivadoSimulatorExecutable):
@@ -441,10 +444,12 @@ class VivadoSimulator(Executable, VivadoSimulatorExecutable):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
+		print(_indent + "xsim messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
 			for line in self.GetReader():
 				print(_indent + line)
-
 		except Exception as ex:
 			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
