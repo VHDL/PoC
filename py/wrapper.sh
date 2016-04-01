@@ -8,18 +8,17 @@
 #										Thomas B. Preusser
 #										Martin Zabel
 # 
-#	Bash Script:			Wrapper Script to execute a given python script
+#	Bash Script:			Wrapper Script to execute a given Python script
 # 
 # Description:
 # ------------------------------------
 #	This is a bash script (callable) which:
-#		- 
-#		- 
-#		-
+#		- checks for a minimum installed Python version
+#		- loads vendor environments before executing the Python programs
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2015 Technische Universitaet Dresden - Germany
+# Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,8 +43,34 @@ RED='\e[0;31m'			# Red
 YELLOW='\e[1;33m'		# Yellow
 NOCOLOR='\e[0m'			# No Color
 
-
 PoC_WorkingDir=$(pwd)
+
+# set default values
+PyWrapper_Debug=0
+PyWrapper_LoadEnv_Aldec_ActiveHDL=0
+# PyWrapper_LoadEnv_Aldec_RevieraPRO=0
+# PyWrapper_LoadEnv_Altera_QuartusII=0
+# PyWrapper_LoadEnv_Altera_ModelSim=0
+PyWrapper_LoadEnv_GHDL_GTKWave=0
+# PyWrapper_LoadEnv_Lattice_Diamond=0
+# PyWrapper_LoadEnv_Lattice_ActiveHDL=0
+PyWrapper_LoadEnv_Mentor_QuestaSim=0
+PyWrapper_LoadEnv_Xilinx_ISE=0
+PyWrapper_LoadEnv_Xilinx_Vivado=0
+
+# search for special parameters
+# TODO: restrict to first n=2? parameters
+for param in "$PyWrapper_Paramters"; do
+	if [ "$param" = "-D" ]; then PyWrapper_Debug=1; fi
+	if [ "$param" = "asim" ];			then PyWrapper_LoadEnv_Aldec_ActiveHDL=1; fi
+	if [ "$param" = "ghdl" ];			then PyWrapper_LoadEnv_GHDL_GTKWave=1; fi
+	if [ "$param" = "isim" ];			then PyWrapper_LoadEnv_Xilinx_ISE=1; fi
+	if [ "$param" = "xsim" ];			then PyWrapper_LoadEnv_Xilinx_Vivado=1; fi
+	if [ "$param" = "vsim" ];			then PyWrapper_LoadEnv_Mentor_QuestaSim=1; fi
+	
+	if [ "$param" = "coregen" ];	then PyWrapper_LoadEnv_Xilinx_ISE=1; fi
+	if [ "$param" = "xst" ];			then PyWrapper_LoadEnv_Xilinx_ISE=1; fi
+done
 
 # publish PoC directories as environment variables
 export PoCScriptDirectory=$PyWrapper_ScriptDir
@@ -63,20 +88,20 @@ if [ $PyWrapper_Debug -eq 1 ]; then
 	echo -e "${YELLOW}  Filename:      $PyWrapper_Script${NOCOLOR}"
 	echo -e "${YELLOW}  Parameters:    $PyWrapper_Paramters${NOCOLOR}"
 	echo -e "${YELLOW}Load Environment:${NOCOLOR}"
-	echo -e "${YELLOW}  Xilinx ISE:    $PyWrapper_LoadEnv_ISE${NOCOLOR}"
-	echo -e "${YELLOW}  Xilinx VIVADO: $PyWrapper_LoadEnv_Vivado${NOCOLOR}"
+	echo -e "${YELLOW}  Xilinx ISE:    $PyWrapper_LoadEnv_Xilinx_ISE${NOCOLOR}"
+	echo -e "${YELLOW}  Xilinx VIVADO: $PyWrapper_LoadEnv_Xilinx_Vivado${NOCOLOR}"
 	echo
 fi
 
 # find suitable python version or abort execution
-Python_VersionTest='import sys; sys.exit(not (0x03040000 < sys.hexversion < 0x04000000))'
+Python_VersionTest='import sys; sys.exit(not (0x03050000 < sys.hexversion < 0x04000000))'
 python -c $Python_VersionTest 2>/dev/null
 if [ $? -eq 0 ]; then
 	Python_Interpreter=$(which python 2>/dev/null)
 	if [ $PyWrapper_Debug -eq 1 ]; then echo -e "${YELLOW}PythonInterpreter: use standard interpreter: '$Python_Interpreter'${NOCOLOR}"; fi
 else
 	# standard python interpreter is not suitable, try to find a suitable version manually
-	for pyVersion in 3.9 3.8 3.7 3.6 3.5 3.4; do
+	for pyVersion in 3.9 3.8 3.7 3.6 3.5; do
 		Python_Interpreter=$(which python$pyVersion 2>/dev/null)
 		# if ExitCode = 0 => version found
 		if [ $? -eq 0 ]; then
@@ -96,7 +121,7 @@ fi
 
 # load Xilinx ISE environment
 if [ $PoC_ExitCode -eq 0 ]; then
-	if [ $PyWrapper_LoadEnv_ISE -eq 1 ]; then
+	if [ $PyWrapper_LoadEnv_Xilinx_ISE -eq 1 ]; then
 		# if $XILINX environment variable is not set
 		if [ -z "$XILINX" ]; then
 			command="$Python_Interpreter $PoC_RootDir_AbsPath/py/Configuration.py --ise-settingsfile"
@@ -125,7 +150,7 @@ fi
 
 # load Xilinx Vivado environment
 if [ $PoC_ExitCode -eq 0 ]; then
-	if [ $PyWrapper_LoadEnv_Vivado -eq 1 ]; then
+	if [ $PyWrapper_LoadEnv_Xilinx_Vivado -eq 1 ]; then
 		# if $XILINX environment variable is not set
 		if [ -z "$XILINX" ]; then
 			command="$Python_Interpreter $PoC_RootDir_AbsPath/py/Configuration.py --vivado-settingsfile"
