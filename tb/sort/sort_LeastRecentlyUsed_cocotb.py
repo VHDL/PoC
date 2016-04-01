@@ -99,6 +99,29 @@ class OutputMonitor(BusMonitor):
 
 # ==============================================================================
 class Testbench(object):
+	class Scoreboard(Scoreboard):
+		def compare(self, got, exp, log, strict_type=True):
+			"""Compare Valid before LRU_Elements."""
+			got_valid, got_elem = got
+			exp_valid, exp_elem = exp
+
+			fail = False
+			if got_valid != exp_valid:
+				log.error("Received transaction differed from expected output.")
+				log.warning("Expected: Valid=%d.\nReceived: Valid=%d." % (got_valid, exp_valid))
+				if self._imm:
+					raise TestFailure("Received transaction differed from expected transaction.")
+				
+			elif got_valid == 1:
+				if got_elem != exp_elem: 
+					log.error("Received transaction differed from expected output.")
+					log.warning("Expected: Valid=%d, LRU_Element=%d.\n"
+											"Received: Valid=%d, LRU_Element=%d." %
+											(got_valid, got_elem, exp_valid, exp_elem))
+					if self._imm:
+						raise TestFailure("Received transaction differed from expected transaction.")
+					
+			
 	def __init__(self, dut, init_val, elements):
 		self.dut = dut
 		self.stopped = False
@@ -110,7 +133,7 @@ class Testbench(object):
 		
 		# Create a scoreboard on the outputs
 		self.expected_output = [ init_val ]
-		self.scoreboard = Scoreboard(dut)
+		self.scoreboard = Testbench.Scoreboard(dut)
 		self.scoreboard.add_interface(self.output_mon, self.expected_output)
 
 		# Reconstruct the input transactions from the pins
@@ -125,7 +148,7 @@ class Testbench(object):
 			if insert == 1:
 				self.lru[keyin] = 1
 			elif invalidate == 1:
-				raise NotImplementedError("Command 'Invalidate' not implemented in model.")
+				if keyin in self.lru: del self.lru[keyin]
 
 			#print "=== model: lru=%s" % self.lru
 			if len(self.lru) < self.elements:
@@ -146,19 +169,18 @@ class Testbench(object):
 
 
 # ==============================================================================
-def random_input_gen(n=1000):
+def random_input_gen(n=2000):
 	"""
 	Generate random input data to be applied by InputDriver.
 	Returns up to n instances of InputTransaction.
 	"""
 	for i in range(n):
-		command = random.randint(0,1)
+		command = random.randint(1,100)
 		insert, invalidate = 0, 0
-		# TODO: implement invalidate in model()
-		insert = command
-		#if command = 1: insert = 1
-		#elif command = 2: invalidate = 1
-		#print "=== random_input_gen: call %d" % i
+		# 89% insert, 1% invalidate, 10% idle
+		if command > 11: insert = 1
+		elif command > 10: invalidate = 1
+		#print "=== random_input_gen: command=%d, insert=%d, invalidate=%d" % (command, insert, invalidate)
 		yield InputTransaction(insert, invalidate, random.randint(0, 31))
 
 @cocotb.coroutine
@@ -185,7 +207,7 @@ def run_test(dut):
 	for t in input_gen:
 		yield tb.input_drv.send(t)
 
-	# Wait for rising-edge of clock to execute last transaction.
+	# Wait for rising-edge of clock to execute last transaction from above.
 	# Apply idle command in following clock cycle, but stop generation of expected output data.
 	# Finish clock cycle to capture the resulting output from the last transaction above.
 	yield tb.input_drv.send(InputTransaction(0, 0, 0))
