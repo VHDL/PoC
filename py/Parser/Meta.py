@@ -1,41 +1,12 @@
-# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
-# vim: tabstop=2:shiftwidth=2:noexpandtab
-# kate: tab-width 2; replace-tabs off; indent-width 2;
-# 
-# ==============================================================================
-# Authors:				 	Patrick Lehmann
-# 
-# Python Module:		TODO
-# 
-# Description:
-# ------------------------------------
-#		TODO:
-#
-# License:
-# ==============================================================================
-# Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
-# 
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-# 
-#		http://www.apache.org/licenses/LICENSE-2.0
-# 
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-#
-
-DEBUG =		False#True
-DEBUG2 =	False#True
-
+ 
 from enum			import Enum, unique		# EnumMeta
-from colorama	import Fore
-from pathlib	import Path
+from time			import time
+from colorama	import init, Fore
+
+init(convert=True)
+
+DEBUG =		not True
+DEBUG2 =	not True
 
 class ParserException(Exception):
 	pass
@@ -43,6 +14,8 @@ class ParserException(Exception):
 class MismatchingParserResult(StopIteration):							pass
 class EmptyChoiseParserResult(MismatchingParserResult):		pass
 class MatchingParserResult(StopIteration):								pass
+class LastMatchingParserResult(MatchingParserResult):			pass
+class CollectedParserResult(MatchingParserResult):				pass
 
 class SourceCodePosition:
 	def __init__(self, row, column, absolute):
@@ -109,7 +82,7 @@ class CharacterToken(Token):
 	def __len__(self):
 		return 1
 		
-	def __repr(self):
+	def __str__(self):
 		if (self._value == "\r"):
 			return "<CharacterToken char=CR at pos={0}; line={1}; col={2}>".format(self._start.Absolute, self._start.Row, self._start.Column)
 		elif (self._value == "\n"):
@@ -121,7 +94,7 @@ class CharacterToken(Token):
 		else:
 			return "<CharacterToken char={0} at pos={1}; line={2}; col={3}>".format(self._value, self._start.Absolute, self._start.Row, self._start.Column)
 	
-	def __str__(self):
+	def __repr(self):
 		if (self._value == "\r"):
 			return "CR"
 		elif (self._value == "\n"):
@@ -132,19 +105,19 @@ class CharacterToken(Token):
 			return "SPACE"
 		else:
 			return self._value
-
+	
 class SpaceToken(Token):
 	def __str__(self):
 		return "<SpaceToken '{0}'>".format(self._value)
-
+		
 class DelimiterToken(Token):
 	def __str__(self):
 		return "<DelimiterToken '{0}'>".format(self._value)
-
+		
 class NumberToken(Token):
 	def __str__(self):
 		return "<NumberToken '{0}'>".format(self._value)
-
+		
 class StringToken(Token):
 	def __str__(self):
 		return "<StringToken '{0}'>".format(self._value)
@@ -257,6 +230,10 @@ class CodeDOMMeta(type):
 		result = mcls()
 		return result
 	
+	def GetSequenceParser(self):
+		pass
+		# print("GetSequenceParser")
+	
 	def GetChoiceParser(self, choices):
 		if DEBUG: print("init ChoiceParser")
 		parsers = []
@@ -311,21 +288,22 @@ class CodeDOMMeta(type):
 		if DEBUG: print("RepeatParser: repeat end")
 		raise MatchingParserResult()
 	
+
 class CodeDOMObject(metaclass=CodeDOMMeta):
 	def __init__(self):
 		super().__init__()
-		# self._name =	None
+		self._name =	None
 	
-	# @property
-	# def Name(self):
-		# if (self._name is not None):
-			# return self._name
-		# else:
-			# return self.__class__.__name__
+	@property
+	def Name(self):
+		if (self._name is not None):
+			return self._name
+		else:
+			return self.__class__.__name__
 
-	# @Name.setter
-	# def Name(self, value):
-		# self._name = value
+	@Name.setter
+	def Name(self, value):
+		self._name = value
 	
 	@classmethod
 	def parse(cls, string, printChar):
@@ -347,26 +325,172 @@ class CodeDOMObject(metaclass=CodeDOMMeta):
 		# print("close root parser")
 		# parser.close()
 		
+class Statement(CodeDOMObject):
+	def __init__(self):
+		super().__init__()
+	
+class VHDLStatement(Statement):
+	def __init__(self, library, filename):
+		super().__init__()
+		self._library =		library
+		self._filename =	filename
+	
+	@property
+	def Library(self):
+		return self._library
+		
+	@property
+	def Filename(self):
+		return self._filename
+	
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init VHDLParser")
+	
+		# match for optional whitespace
+		token = yield
+		if isinstance(token, SpaceToken):
+			token = yield
+		
+		if DEBUG2: print("VHDLParser: token={0} expected VHDL keyword".format(token.Value))
+		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("VHDLParser: Expected VHDL keyword.")
+		if (token.Value.lower() != "vhdl"):					raise MismatchingParserResult("VHDLParser: Expected VHDL keyword.")
+		
+		# match for whitespace
+		token = yield
+		if DEBUG2: print("VHDLParser: token={0} expected WHITESPACE".format(token.Value))
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("VHDLParser: Expected whitespace before VHDL library name.")
+		
+		# match for library name
+		library = ""
+		while True:
+			token = yield
+			if DEBUG2: print("VHDLParser: token={0} collecting...".format(token.Value))
+			if isinstance(token, StringToken):
+				library += token.Value
+			elif isinstance(token, NumberToken):
+				library += token.Value
+			elif isinstance(token, CharacterToken):
+				# if (token.Value in [_]):
+				if (token.Value == "_"):
+					library += token.Value
+				else:
+					break
+			else:
+				break
+		
+		# match for whitespace
+		if DEBUG2: print("VHDLParser: token={0} expected WHITESPACE".format(token.Value))
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("VHDLParser: Expected whitespace before VHDL filename.")
+		
+		# match for delimiter sign: "
+		token = yield
+		if DEBUG2: print("VHDLParser: token={0} expected double quote".format(token.Value))
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("VHDLParser: Expected double quote sign before VHDL filename.")
+		if (token.Value.lower() != "\""):						raise MismatchingParserResult("VHDLParser: Expected double quote sign before VHDL filename.")
+		
+		# match for string: filename
+		filename = ""
+		while True:
+			token = yield
+			if isinstance(token, CharacterToken):
+				if (token.Value == "\""):
+					break
+			filename += token.Value
+		
+		# match for delimiter sign: \n
+		token = yield
+		if DEBUG2: print("VHDLParser: token={0} expected NL".format(token.Value))
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("VHDLParser: Expected end of line")
+		if (token.Value.lower() != "\n"):						raise MismatchingParserResult("VHDLParser: Expected end of line")
+		
+		# construct result
+		result = cls(library, filename)
+		if DEBUG: print("VHDLParser: matched {0}".format(result))
+		raise MatchingParserResult(result)
+	
+	def __str__(self, indent=0):
+		_indent = "  " * indent
+		return "{0}VHDL {1} \"{2}\"".format(_indent, self._library, self._filename)
+	
+class VerilogStatement(Statement):
+	def __init__(self, filename):
+		super().__init__()
+		self._filename =	filename
+	
+	@property
+	def Filename(self):
+		return self._filename
+	
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init VerilogParser")
+	
+		# match for optional whitespace
+		token = yield
+		if isinstance(token, SpaceToken):
+			token = yield
+	
+		# match for keyword: VERILOG
+		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("VerilogParser: Expected VERILOG keyword.")
+		if (token.Value.lower() != "verilog"):			raise MismatchingParserResult("VerilogParser: Expected VERILOG keyword.")
+		
+		# match for whitespace
+		token = yield
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("VerilogParser: Expected whitespace before Verilog filename.")
+		
+		# match for delimiter sign: "
+		token = yield
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("VerilogParser: Expected double quote sign before VHDL filename.")
+		if (token.Value.lower() != "\""):						raise MismatchingParserResult("VerilogParser: Expected double quote sign before VHDL filename.")
+		
+		# match for string: filename
+		filename = ""
+		while True:
+			token = yield
+			if isinstance(token, CharacterToken):
+				if (token.Value == "\""):
+					break
+			filename += token.Value
+		
+		# match for delimiter sign: \n
+		token = yield
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("VHDLParser: Expected end of line")
+		if (token.Value.lower() != "\n"):						raise MismatchingParserResult("VHDLParser: Expected end of line")
+		
+		# construct result
+		result = cls(filename)
+		if DEBUG: print("VerilogParser: matched {0}".format(result))
+		raise MatchingParserResult(result)
+		
+	def __str__(self, indent=0):
+		_indent = "  " * indent
+		return "{0}Verilog \"{1}\"".format(_indent, self._filename)
+
+
 class Expressions(CodeDOMObject):
 	_allowedExpressions = []
 
+	def __init__(self):
+		super().__init__()
+	
 	@classmethod
 	def AddChoice(cls, value):
 		cls._allowedExpressions.append(value)
 	
 	@classmethod
 	def GetParser(cls):
-		if DEBUG: print("return ExpressionsParser")
-		return cls.GetChoiceParser(cls._allowedExpressions)
-		# parser.send(None)
+		if DEBUG: print("init ExpressionsParser")
+		parser = cls.GetChoiceParser(cls._allowedExpressions)
+		parser.send(None)
 		
-		# try:
-			# while True:
-				# token = yield
-				# parser.send(token)
-		# except MatchingParserResult as ex:
-			# if DEBUG: print("ExpressionsParser: matched {0}".format(ex.__class__.__name__))
-			# raise ex
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			if DEBUG: print("ExpressionsParser: matched {0}".format(ex.__class__.__name__))
+			raise ex
 	
 	def __str__(self, indent=0):
 		_indent = "  " * indent
@@ -376,7 +500,8 @@ class Expressions(CodeDOMObject):
 		return buffer
 		
 class Expression(CodeDOMObject):
-	pass
+	def __init__(self):
+		super().__init__()
 
 class Identifier(Expression):
 	def __init__(self, name):
@@ -470,159 +595,6 @@ class IntegerLiteral(Literal):
 		
 	def __str__(self):
 		return str(self._value)
-
-class Function(Expression):
-	pass
-
-class ExistsFunction(Function):
-	def __init__(self, directoryname):
-		super().__init__()
-		self._path = Path(directoryname)
-
-	@property
-	def Path(self):
-		return self._path
-
-	@classmethod
-	def GetParser(cls):
-		if DEBUG: print("init ExistsFunctionParser")
-		
-		# match for EXISTS keyword
-		token = yield
-		if DEBUG2: print("ExistsFunctionParser: token={0} expected '('".format(token))
-		# if (not isinstance(token, StringToken)):			raise MismatchingParserResult()
-		# if (token.Value != "exists"):									raise MismatchingParserResult()
-		
-		if (not isinstance(token, CharacterToken)):			raise MismatchingParserResult()
-		if (token.Value != "?"):												raise MismatchingParserResult()
-		
-		# match for opening (
-		token = yield
-		if DEBUG2: print("ExistsFunctionParser: token={0} expected '('".format(token))
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != "("):											raise MismatchingParserResult()
-		# match for optional whitespace
-		token = yield
-		if DEBUG2: print("ExistsFunctionParser: token={0}".format(token))
-		if isinstance(token, SpaceToken):						token = yield
-		# match for delimiter sign: "
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("ExistsFunctionParser: Expected double quote sign before VHDL fileName.")
-		if (token.Value.lower() != "\""):						raise MismatchingParserResult("ExistsFunctionParser: Expected double quote sign before VHDL fileName.")
-		# match for string: path
-		path = ""
-		while True:
-			token = yield
-			if isinstance(token, CharacterToken):
-				if (token.Value == "\""):
-					break
-			path += token.Value
-		# match for optional whitespace
-		token = yield
-		if DEBUG2: print("ExistsFunctionParser: token={0}".format(token))
-		if isinstance(token, SpaceToken):						token = yield
-		# match for delimiter sign: \n
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("ExistsFunctionParser: Expected end of line or comment")
-		if (token.Value != ")"):										raise MismatchingParserResult("ExistsFunctionParser: Expected end of line or comment")
-		
-		# construct result
-		result = cls(path)
-		if DEBUG: print("ExistsFunctionParser: matched {0}".format(result))
-		raise MatchingParserResult(result)
-		
-	def __str__(self):
-		return "exists(\"{0}\")".format(str(self._path))
-		
-class ListElement(Expression):
-	def __init__(self):
-		super().__init__()
-
-	@classmethod
-	def GetParser(cls):
-		if DEBUG: print("init ListElementParser")
-		
-		# match for EXISTS keyword
-		token = yield
-		if DEBUG2: print("ListElementParser: token={0} expected '('".format(token))
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
-		if (token.Value != ","):										raise MismatchingParserResult()
-		# match for optional whitespace
-		token = yield
-		if DEBUG2: print("ListElementParser: token={0}".format(token))
-		if isinstance(token, SpaceToken):						token = yield
-		
-		parser = Expressions.GetParser()
-		parser.send(None)
-		
-		while True:
-			parser.send(token)
-			token = yield
-		
-class ListConstructorExpression(Expression):
-	def __init__(self):
-		super().__init__()
-		self._list = []
-
-	@property
-	def List(self):
-		return self._list
-	
-	def AddElement(self, element):
-		if DEBUG2: print("ListConstructorExpression: adding element {0}".format(element))
-		self._list.append(element)
-
-	@classmethod
-	def GetParser(cls):
-		if DEBUG: print("init ListConstructorExpressionParser")
-		
-		# match for sign "["
-		token = yield
-		if DEBUG2: print("ListConstructorExpressionParser: token={0} expected '('".format(token))
-		if (not isinstance(token, CharacterToken)):			raise MismatchingParserResult()
-		if (token.Value != "["):												raise MismatchingParserResult()
-		# match for optional whitespace
-		token = yield
-		if DEBUG2: print("ListConstructorExpressionParser: token={0}".format(token))
-		if isinstance(token, SpaceToken):						token = yield
-		
-		result = cls()
-		parser = Expressions.GetParser()
-		parser.send(None)
-		
-		try:
-			while True:
-				parser.send(token)
-				token = yield
-		except MatchingParserResult as ex:
-			result.AddElement(ex.value)
-		
-		parser = cls.GetRepeatParser(result.AddElement, ListElement.GetParser)
-		parser.send(None)
-		
-		try:
-			while True:
-				token = yield
-				parser.send(token)
-		except MatchingParserResult as ex:
-			pass
-		
-		# match for optional whitespace
-		# token = yield
-		if DEBUG2: print("ListConstructorExpressionParser: token={0}".format(token))
-		if isinstance(token, SpaceToken):						token = yield
-		# match for delimiter sign: \n
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("ListConstructorExpressionParser: Expected end of line or comment")
-		if (token.Value != "]"):										raise MismatchingParserResult("ListConstructorExpressionParser: Expected end of line or comment")
-		
-		# construct result
-		if DEBUG: print("ListConstructorExpressionParser: matched {0}".format(result))
-		raise MatchingParserResult(result)
-		
-	def __str__(self):
-		buffer = "[{0}".format(self._list[0])
-		for item in self._list[1:]:
-			buffer += ", {0}".format(item)
-		buffer += "]"
-		return buffer
 		
 class UnaryExpression(Expression):
 	def __init__(self, child):
@@ -632,47 +604,6 @@ class UnaryExpression(Expression):
 	@property
 	def Child(self):
 		return self._child
-
-class NotExpression(UnaryExpression):
-	def __init__(self, child):
-		super().__init__(child)
-
-	@classmethod
-	def GetParser(cls):
-		if DEBUG: print("init NotExpressionParser")
-		
-		# match for "!"
-		token = yield
-		if DEBUG2: print("NotExpressionParser: token={0} expected '('".format(token))
-		# if (not isinstance(token, StringToken)):			raise MismatchingParserResult()
-		# if (token.Value != "not"):										raise MismatchingParserResult()
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != "!"):											raise MismatchingParserResult()
-		
-		# match for optional whitespace
-		token = yield
-		if DEBUG2: print("NotExpressionParser: token={0}".format(token))
-		if isinstance(token, SpaceToken):							token = yield
-		
-		# match for sub expression
-		# ==========================================================================
-		parser = Expressions.GetParser()
-		parser.send(None)
-		try:
-			while True:
-				parser.send(token)
-				token = yield
-		except MatchingParserResult as ex:
-			if DEBUG2: print("NotExpressionParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
-			child = ex.value
-			
-		# construct result
-		result = cls(child)
-		if DEBUG: print("NotExpressionParser: matched {0}".format(result))
-		raise MatchingParserResult(result)
-		
-	def __str__(self):
-		return "not {0}".format(self._child.__str__())
 
 class BinaryExpression(Expression):
 	def __init__(self, leftChild, rightChild):
@@ -843,262 +774,6 @@ class UnequalExpression(CompareExpression):
 		
 	def __str__(self):
 		return "({0} != {1})".format(self._leftChild.__str__(), self._rightChild.__str__())
-		
-class LessThanExpression(CompareExpression):
-	@classmethod
-	def GetParser(cls):
-		if DEBUG: print("init LessThanExpressionParser")
-		
-		# match for opening (
-		token = yield
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != "("):											raise MismatchingParserResult()
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		
-		# match for sub expression
-		# ==========================================================================
-		parser = Expressions.GetParser()
-		parser.send(None)
-		try:
-			while True:
-				parser.send(token)
-				token = yield
-		except MatchingParserResult as ex:
-			if DEBUG2: print("LessThanExpressionParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
-			leftChild = ex.value
-		
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		# match for equal sign <
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != "<"):											raise MismatchingParserResult()
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		
-		# match for sub expression
-		# ==========================================================================
-		parser = Expressions.GetParser()
-		parser.send(None)
-		try:
-			while True:
-				parser.send(token)
-				token = yield
-		except MatchingParserResult as ex:
-			if DEBUG2: print("LessThanExpressionParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
-			rightChild = ex.value
-		
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		# match for closing )
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != ")"):											raise MismatchingParserResult()
-		
-		# construct result
-		result = cls(leftChild, rightChild)
-		if DEBUG: print("LessThanExpressionParser: matched {0}".format(result))
-		raise MatchingParserResult(result)
-		
-	def __str__(self):
-		return "({0} < {1})".format(self._leftChild.__str__(), self._rightChild.__str__())
-		
-class LessThanEqualExpression(CompareExpression):
-	@classmethod
-	def GetParser(cls):
-		if DEBUG: print("init LessThanEqualExpression")
-		
-		# match for opening (
-		token = yield
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != "("):											raise MismatchingParserResult()
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		
-		# match for sub expression
-		# ==========================================================================
-		parser = Expressions.GetParser()
-		parser.send(None)
-		try:
-			while True:
-				parser.send(token)
-				token = yield
-		except MatchingParserResult as ex:
-			if DEBUG2: print("LessThanEqualExpression: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
-			leftChild = ex.value
-		
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		# match for equal sign <
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != "<"):											raise MismatchingParserResult()
-		# match for equal sign =
-		token = yield
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != "="):											raise MismatchingParserResult()
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		
-		# match for sub expression
-		# ==========================================================================
-		parser = Expressions.GetParser()
-		parser.send(None)
-		try:
-			while True:
-				parser.send(token)
-				token = yield
-		except MatchingParserResult as ex:
-			if DEBUG2: print("LessThanEqualExpression: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
-			rightChild = ex.value
-		
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		# match for closing )
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != ")"):											raise MismatchingParserResult()
-		
-		# construct result
-		result = cls(leftChild, rightChild)
-		if DEBUG: print("LessThanEqualExpression: matched {0}".format(result))
-		raise MatchingParserResult(result)
-		
-	def __str__(self):
-		return "({0} <= {1})".format(self._leftChild.__str__(), self._rightChild.__str__())
-		
-class GreaterThanExpression(CompareExpression):
-	@classmethod
-	def GetParser(cls):
-		if DEBUG: print("init GreaterThanExpression")
-		
-		# match for opening (
-		token = yield
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != "("):											raise MismatchingParserResult()
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		
-		# match for sub expression
-		# ==========================================================================
-		parser = Expressions.GetParser()
-		parser.send(None)
-		try:
-			while True:
-				parser.send(token)
-				token = yield
-		except MatchingParserResult as ex:
-			if DEBUG2: print("GreaterThanExpression: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
-			leftChild = ex.value
-		
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		# match for equal sign >
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != ">"):											raise MismatchingParserResult()
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		
-		# match for sub expression
-		# ==========================================================================
-		parser = Expressions.GetParser()
-		parser.send(None)
-		try:
-			while True:
-				parser.send(token)
-				token = yield
-		except MatchingParserResult as ex:
-			if DEBUG2: print("GreaterThanExpression: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
-			rightChild = ex.value
-		
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		# match for closing )
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != ")"):											raise MismatchingParserResult()
-		
-		# construct result
-		result = cls(leftChild, rightChild)
-		if DEBUG: print("GreaterThanExpression: matched {0}".format(result))
-		raise MatchingParserResult(result)
-		
-	def __str__(self):
-		return "({0} != {1})".format(self._leftChild.__str__(), self._rightChild.__str__())
-		
-class GreaterThanEqualExpression(CompareExpression):
-	@classmethod
-	def GetParser(cls):
-		if DEBUG: print("init GreaterThanEqualExpression")
-		
-		# match for opening (
-		token = yield
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != "("):											raise MismatchingParserResult()
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		
-		# match for sub expression
-		# ==========================================================================
-		parser = Expressions.GetParser()
-		parser.send(None)
-		try:
-			while True:
-				parser.send(token)
-				token = yield
-		except MatchingParserResult as ex:
-			if DEBUG2: print("GreaterThanEqualExpression: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
-			leftChild = ex.value
-		
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		# match for equal sign >
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != ">"):											raise MismatchingParserResult()
-		# match for equal sign =
-		token = yield
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != "="):											raise MismatchingParserResult()
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		
-		# match for sub expression
-		# ==========================================================================
-		parser = Expressions.GetParser()
-		parser.send(None)
-		try:
-			while True:
-				parser.send(token)
-				token = yield
-		except MatchingParserResult as ex:
-			if DEBUG2: print("GreaterThanEqualExpression: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
-			rightChild = ex.value
-		
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		# match for closing )
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != ")"):											raise MismatchingParserResult()
-		
-		# construct result
-		result = cls(leftChild, rightChild)
-		if DEBUG: print("GreaterThanEqualExpression: matched {0}".format(result))
-		raise MatchingParserResult(result)
-		
-	def __str__(self):
-		return "({0} >= {1})".format(self._leftChild.__str__(), self._rightChild.__str__())
 		
 class AndExpression(LogicalExpression):
 	@classmethod
@@ -1288,89 +963,47 @@ class XorExpression(LogicalExpression):
 		
 	def __str__(self):
 		return "({0} xor {1})".format(self._leftChild.__str__(), self._rightChild.__str__())
-		
-class InExpression(LogicalExpression):
-	@classmethod
-	def GetParser(cls):
-		if DEBUG: print("init InExpressionParser")
-		
-		# match for opening (
-		token = yield
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != "("):											raise MismatchingParserResult()
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		
-		# match for sub expression
-		# ==========================================================================
-		parser = Expressions.GetParser()
-		parser.send(None)
-		try:
-			while True:
-				parser.send(token)
-				token = yield
-		except MatchingParserResult as ex:
-			if DEBUG2: print("InExpressionParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
-			leftChild = ex.value
-		
-		# match for whitespace
-		token = yield
-		if (not isinstance(token, SpaceToken)):				raise MismatchingParserResult()
-		# match for IN keyword
-		token = yield
-		if (not isinstance(token, StringToken)):			raise MismatchingParserResult()
-		if (token.Value.lower() != "in"):						raise MismatchingParserResult()
-		# match for whitespace
-		token = yield
-		if (not isinstance(token, SpaceToken)):				raise MismatchingParserResult()
-		
-		# match for sub expression
-		# ==========================================================================
-		parser = ListConstructorExpression.GetParser()
-		parser.send(None)
-		try:
-			while True:
-				token = yield
-				parser.send(token)
-		except MatchingParserResult as ex:
-			if DEBUG2: print("InExpressionParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
-			rightChild = ex.value
-		
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):							token = yield
-		# match for closing )
-		if (not isinstance(token, CharacterToken)):		raise MismatchingParserResult()
-		if (token.Value != ")"):											raise MismatchingParserResult()
-		
-		# construct result
-		result = cls(leftChild, rightChild)
-		if DEBUG: print("InExpressionParser: matched {0}".format(result))
-		raise MatchingParserResult(result)
-		
-	def __str__(self):
-		return "({0} in {1})".format(self._leftChild.__str__(), self._rightChild.__str__())
 
 Expressions.AddChoice(Identifier)
 Expressions.AddChoice(StringLiteral)
 Expressions.AddChoice(IntegerLiteral)
-Expressions.AddChoice(NotExpression)
-Expressions.AddChoice(ExistsFunction)
 Expressions.AddChoice(AndExpression)
 Expressions.AddChoice(OrExpression)
 Expressions.AddChoice(XorExpression)
 Expressions.AddChoice(EqualExpression)
 Expressions.AddChoice(UnequalExpression)
-Expressions.AddChoice(LessThanExpression)
-Expressions.AddChoice(LessThanEqualExpression)
-Expressions.AddChoice(GreaterThanExpression)
-Expressions.AddChoice(GreaterThanEqualExpression)
-Expressions.AddChoice(InExpression)
 
-class Statement(CodeDOMObject):
-	pass
+class BlockedStatement(Statement):
+	_allowedStatements = []
 
+	def __init__(self):
+		super().__init__()
+	
+	@classmethod
+	def AddChoice(cls, value):
+		cls._allowedStatements.append(value)
+	
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init BlockedStatementParser")
+		parser = cls.GetChoiceParser(cls._allowedStatements)
+		parser.send(None)
+		
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			if DEBUG: print("BlockedStatementParser: matched {0}".format(ex.__class__.__name__))
+			raise ex
+	
+	def __str__(self, indent=0):
+		_indent = "  " * indent
+		buffer = _indent + "BlockedStatement"
+		for stmt in self._statements:
+			buffer += "\n{0}".format(stmt.__str__(indent + 1))
+		return buffer
+		
 class BlockStatement(Statement):
 	def __init__(self):
 		super().__init__()
@@ -1401,3 +1034,472 @@ class ConditionalBlockStatement(BlockStatement):
 		for stmt in self._statements:
 			buffer += "\n{0}".format(stmt.__str__(indent + 1))
 		return buffer
+		
+class IfStatement(ConditionalBlockStatement):
+	def __init__(self, expression):
+		super().__init__(expression)
+
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init IfStatementParser")
+	
+		# match for IF clause
+		# ==========================================================================
+		# match for optional whitespace
+		token = yield
+		if DEBUG2: print("IfStatementParser: token={0} if".format(token))
+		if isinstance(token, SpaceToken):
+			token = yield
+			if DEBUG2: print("IfStatementParser: token={0}".format(token))
+		
+		if DEBUG2: print("IfStatementParser: token={0}".format(token))
+		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
+		if (token.Value.lower() != "if"):						raise MismatchingParserResult()
+		
+		# match for whitespace
+		token = yield
+		if DEBUG2: print("IfStatementParser: token={0}".format(token))
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult()
+		
+		# match for expression
+		# ==========================================================================
+		parser = Expressions.GetParser()
+		parser.send(None)
+		
+		expressionRoot = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			if DEBUG2: print("IfStatementParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
+			expressionRoot = ex.value
+		
+		# construct result
+		result = cls(expressionRoot)
+		
+		# match for whitespace
+		token = yield
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult()
+		
+		# match for keyword: THEN
+		token = yield
+		if DEBUG2: print("IfStatementParser: token={0}".format(token))
+		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
+		if (token.Value.lower() != "then"):						raise MismatchingParserResult()
+		
+		# match for delimiter sign: \n
+		token = yield
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
+		if (token.Value.lower() != "\n"):						raise MismatchingParserResult()
+		
+		# match for inner statements
+		# ==========================================================================
+		parser = cls.GetRepeatParser(result.AddStatement, BlockedStatement.GetParser)
+		parser.send(None)
+		
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			pass
+			if DEBUG2: print("IfStatementParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
+			
+		if DEBUG: print("IfStatementParser: matched {0}".format(result))
+		raise MatchingParserResult(result)
+	
+	def __str__(self, indent=0):
+		_indent = "  " * indent
+		buffer = _indent + "IfStatement " + self._expression.__str__()
+		for stmt in self._statements:
+			buffer += "\n{1}".format(_indent, stmt.__str__(indent + 1))
+		return buffer
+
+class ElseIfStatement(ConditionalBlockStatement):
+	def __init__(self, expression):
+		super().__init__(expression)
+
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init ElseIfStatementParser")
+	
+		# match for multiple ELSEIF clauses
+		# ==========================================================================
+		token = yield
+		# match for optional whitespace
+		if DEBUG2: print("ElseIfStatementParser: token={0} elseif".format(token))
+		if isinstance(token, SpaceToken):
+			token = yield
+			if DEBUG2: print("ElseIfStatementParser: token={0}".format(token))
+		
+		# match for keyword: ELSEIF
+		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
+		if (token.Value.lower() != "elseif"):				raise MismatchingParserResult()
+		# match for whitespace
+		token = yield
+		if DEBUG2: print("ElseIfStatementParser: token={0}".format(token))
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult()
+		
+		# match for expression
+		# ==========================================================================
+		parser = Expressions.GetParser()
+		parser.send(None)
+		
+		expressionRoot = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			if DEBUG2: print("IfStatementParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
+			expressionRoot = ex.value
+		
+		# construct result
+		result = cls(expressionRoot)
+		
+		# match for whitespace
+		token = yield
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult()
+		
+		# match for keyword: THEN
+		token = yield
+		if DEBUG2: print("ElseIfStatementParser: token={0}".format(token))
+		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
+		if (token.Value.lower() != "then"):						raise MismatchingParserResult()
+		
+		# match for delimiter sign: \n
+		token = yield
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
+		if (token.Value.lower() != "\n"):						raise MismatchingParserResult()
+		
+		# match for inner statements
+		# ==========================================================================
+		parser = cls.GetRepeatParser(result.AddStatement, BlockedStatement.GetParser)
+		parser.send(None)
+		
+		statementList = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			pass
+			if DEBUG2: print("ElseIfStatementParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
+		
+		if DEBUG: print("ElseIfStatementParser: matched {0}".format(result))
+		raise MatchingParserResult(result)
+	
+	def __str__(self, indent=0):
+		_indent = "  " * indent
+		buffer = _indent + "ElseIfStatement" + self._expression.__str__()
+		for stmt in self._statements:
+			buffer += "\n{1}".format(_indent, stmt.__str__(indent + 1))
+		return buffer
+		
+class ElseStatement(BlockStatement):
+	def __init__(self):
+		super().__init__()
+
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init ElseStatementParser")
+	
+		# match for ELSE clause
+		# ==========================================================================
+		# match for optional whitespace
+		token = yield
+		if DEBUG2: print("ElseStatementParser: token={0} else".format(token))
+		if isinstance(token, SpaceToken):
+			token = yield
+			if DEBUG2: print("ElseStatementParser: token={0}".format(token))
+	
+		# match for keyword: ELSE
+		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
+		if (token.Value.lower() != "else"):					raise MismatchingParserResult()
+		
+		# match for delimiter sign: \n
+		token = yield
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
+		if (token.Value.lower() != "\n"):						raise MismatchingParserResult()
+		
+		# match for inner statements
+		# ==========================================================================
+		# construct result
+		result = cls()
+		parser = cls.GetRepeatParser(result.AddStatement, BlockedStatement.GetParser)
+		parser.send(None)
+		
+		statementList = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			pass
+			if DEBUG2: print("ElseStatementParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
+
+		if DEBUG: print("ElseStatementParser: matched {0}".format(result))
+		raise MatchingParserResult(result)
+	
+	def __str__(self, indent=0):
+		_indent = "  " * indent
+		buffer = _indent + "ElseStatement"
+		for stmt in self._statements:
+			buffer += "\n{1}".format(_indent, stmt.__str__(indent + 1))
+		return buffer
+		
+class IfElseIfElseStatement(Statement):
+	def __init__(self):
+		super().__init__()
+		self._ifStatement =				None
+		self._elseIfStatements =	None
+		self._elseStatement =			None
+
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init IfElseIfElseStatementParser")
+		
+		# construct result
+		result = cls()
+	
+		# match for IF clause
+		# ==========================================================================
+		parser = IfStatement.GetParser()
+		parser.send(None)
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			if DEBUG: print("IfElseIfElseStatementParser: matched {0} got {1} for IF clause".format(ex.__class__.__name__, ex.value))
+			result._ifStatement = ex.value
+		
+		# match for multiple ELSEIF clauses
+		# ==========================================================================
+		try:
+			while True:
+				parser = ElseIfStatement.GetParser()
+				parser.send(None)
+				
+				try:
+					parser.send(token)
+					while True:
+						token = yield
+						parser.send(token)
+				except MatchingParserResult as ex:
+					if DEBUG: print("IfElseIfElseStatementParser: matched {0} got {1} for ELSEIF clause".format(ex.__class__.__name__, ex.value))
+					if (result._elseIfStatements is None):
+						result._elseIfStatements = []
+					result._elseIfStatements.append(ex.value)
+		except MismatchingParserResult as ex:
+			if DEBUG: print("IfElseIfElseStatementParser: mismatch {0} in ELSEIF clause. Message: {1}".format(ex.__class__.__name__, ex.value))
+		
+		# match for ELSE clause
+		# ==========================================================================
+		# match for inner statements
+		parser = ElseStatement.GetParser()
+		parser.send(None)
+			
+		try:
+			parser.send(token)
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			if DEBUG: print("IfElseIfElseStatementParser: matched {0} got {1} for ELSE clause".format(ex.__class__.__name__, ex.value))
+			result._elseStatement = ex.value
+		except MismatchingParserResult as ex:
+			if DEBUG: print("IfElseIfElseStatementParser: mismatch {0} in ELSE clause. Message: {1}".format(ex.__class__.__name__, ex.value))
+		
+		# match for END IF clause
+		# ==========================================================================
+		# match for optional whitespace
+		if DEBUG2: print("IfElseIfElseStatementParser: token={0} end if".format(token))
+		if isinstance(token, SpaceToken):
+			token = yield
+			if DEBUG2: print("IfElseIfElseStatementParser: token={0}".format(token))
+	
+		# match for keyword: END
+		if DEBUG2: print("IfElseIfElseStatementParser: token={0} expected 'end'".format(token))
+		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
+		if (token.Value.lower() != "end"):					raise MismatchingParserResult()
+	
+		# match for whitespace
+		token = yield
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult()
+	
+		# match for keyword: IF
+		token = yield
+		if DEBUG2: print("IfElseIfElseStatementParser: token={0}".format(token))
+		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
+		if (token.Value.lower() != "if"):						raise MismatchingParserResult()
+		
+		# match for delimiter sign: \n
+		token = yield
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
+		if (token.Value.lower() != "\n"):						raise MismatchingParserResult()
+		
+		if DEBUG: print("IfElseIfElseStatementParser: matched {0}".format(result))
+		raise MatchingParserResult(result)
+	
+	def __str__(self, indent=0):
+		_indent = "  " * indent
+		buffer = _indent + "IfElseIfElseStatement\n"
+		buffer += self._ifStatement.__str__(indent + 1)
+		if (self._elseIfStatements is not None):
+			for elseIf in self._elseIfStatements:
+				buffer += "\n" + elseIf.__str__(indent + 1)
+		if (self._elseStatement is not None):
+			buffer += "\n" + self._elseStatement.__str__(indent + 1)
+		return buffer
+
+class EmptyLine(CodeDOMObject):
+	def __init__(self):
+		super().__init__()
+
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init EmptyLine")
+	
+		# match for optional whitespace
+		token = yield
+		if DEBUG2: print("EmptyLine: token={0}".format(token))
+		if isinstance(token, SpaceToken):
+			token = yield
+			if DEBUG2: print("EmptyLine: token={0}".format(token))
+	
+		# match for delimiter sign: \n
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
+		if (token.Value.lower() != "\n"):						raise MismatchingParserResult()
+		
+		# construct result
+		result = cls()
+		if DEBUG: print("EmptyLine: matched {0}".format(result))
+		raise MatchingParserResult(result)
+	
+	def __str__(self, indent=0):
+		_indent = "  " * indent
+		return _indent + "<empty>"
+
+class CommentLine(CodeDOMObject):
+	def __init__(self, commentText):
+		super().__init__()
+		self._commentText = commentText
+	
+	@property
+	def Text(self):
+		return self._commentText
+
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init CommentLineParser")
+	
+		# match for optional whitespace
+		token = yield
+		if DEBUG2: print("CommentLineParser: token={0} end if".format(token))
+		if isinstance(token, SpaceToken):
+			token = yield
+			if DEBUG2: print("CommentLineParser: token={0}".format(token))
+	
+		# match for sign: #
+		if DEBUG2: print("CommentLineParser: token={0} expected '#'".format(token))
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
+		if (token.Value.lower() != "#"):						raise MismatchingParserResult()
+	
+		# match for any until line end
+		commentText = ""
+		while True:
+			token = yield
+			if DEBUG2: print("CommentLineParser: token={0} collecting...".format(token.Value))
+			if isinstance(token, CharacterToken):
+				if (token.Value == "\n"):
+					break
+			commentText += token.Value
+		
+		# construct result
+		result = cls(commentText)
+		if DEBUG: print("CommentLineParser: matched {0}".format(result))
+		raise MatchingParserResult(result)
+	
+	def __str__(self, indent=0):
+		_indent = "  " * indent
+		return "{0}#{1}".format(_indent, self._commentText)
+		
+class Document(BlockStatement):
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init DocumentParser")
+		
+		result = cls()
+		parser = cls.GetRepeatParser(result.AddStatement, BlockedStatement.GetParser)
+		parser.send(None)
+		
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			if DEBUG: print("DocumentParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
+			raise MatchingParserResult(result)
+		
+	def __str__(self, indent=0):
+		_indent = "  " * indent
+		buffer = _indent + "Document"
+		for stmt in self._statements:
+			buffer += "\n{0}".format(stmt.__str__(indent + 1))
+		return buffer
+		
+BlockedStatement.AddChoice(VHDLStatement)
+BlockedStatement.AddChoice(VerilogStatement)
+BlockedStatement.AddChoice(IfElseIfElseStatement)
+BlockedStatement.AddChoice(CommentLine)
+BlockedStatement.AddChoice(EmptyLine)
+		
+input = """vhdl poc \"file1.vhdl\"
+vhdl poc \"file2.vhdl\"
+vhdl poc \"file3.vhdl\"
+if (Vendor = \"Xilinx\") then
+  verilog \"file4.v\"
+	if (Device = \"Virtex\") then
+		verilog \"file5.v\"
+	end if
+  verilog \"file6.v\"
+elseif (Vendor = \"Altera\") then
+	vhdl test \"mytestbench.vhdl\"
+	vhdl test \"mytb.vhdl\"
+	if (Version = 2008) then
+	  vhdl alt_mf \"altera.vhdl\"
+	elseif (Version = 2002) then
+		vhdl xil_foo \"unizeugs.vhdl\"
+	end if
+else
+	vhdl osvvm \"Coverage.vhdl\"
+end if
+# my comment 1
+vhdl boo \"blubs.vhdl\"
+    # my comment 2
+
+"""
+
+_input = input * 100
+
+def main():
+	print("="*80)
+	# print(_input)
+	try:
+		startTime = time()
+		tree = Document.parse(_input, printChar= not True)
+		endTime = time()
+		print("="*80)
+		print(tree)
+		print("="*80)
+		print("time={0}".format(endTime - startTime))
+	except ParserException as ex:
+		print(str(ex))
+
+
+if (__name__ == "__main__"):
+	main()
+		
+#parserTree.render(view=True)

@@ -1,4 +1,4 @@
-# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
@@ -143,7 +143,7 @@ class Simulator(PoCSimulator):
 		fileListFile.Parse()
 		fileListFile.CopyFilesToFileSet()
 		fileListFile.CopyExternalLibraries()
-		self._pocProject._ResolveVHDLLibraries()
+		self._pocProject.ExtractVHDLLibrariesFromVHDLSourceFiles()
 		self._LogDebug(self._pocProject.pprint(2))
 		self._LogDebug("=" * 160)
 		

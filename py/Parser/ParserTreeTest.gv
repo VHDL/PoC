@@ -1,0 +1,268 @@
+digraph ParserTree {
+	rankdir=LR;
+
+	N0 [label="Start";shape=diamond]
+	N0 -> C0_N0;
+	
+	subgraph cluster_C0 {
+		color=yellowgreen;
+		label="Choice";
+		
+		C0_N0 [label="GetParser\nChoice"];
+		C0_N0 -> S0_N0;
+		C0_N0 -> S1_N0;
+		C0_N0 -> S4_N0;
+		C0_N0 -> S7_N0;
+		
+		# Identifier.Restricted
+		subgraph cluster_S0 {
+			color=firebrick;
+			label="Sequence";
+		
+			S0_N0 [label="GetParser\nSequence"];
+			S0_N0 -> S0_N1;
+			S0_N1 [label="Word\n[a-zA-Z]"];
+			S0_N1 -> S0_N2;
+			S0_N2 [label="\"V\"";shape=box];
+			S0_N2 -> S0_N3;
+			S0_N3 [label="Word\n[a-zA-Z0-9_]"];
+			S0_N3 -> S0_N4;
+			S0_N4 [label="\"endor\"";shape=box];
+			S0_N4 -> S0_N5;
+			S0_N5 [label="return"]
+		}
+		# EqualExpression
+		subgraph cluster_S1 {
+			color=firebrick;
+			label="Sequence";
+		
+			S1_N0 [label="GetParser\nSequence"];
+			S1_N0 -> S1_N1;
+			S1_N1 [label="Char"];
+			S1_N1 -> S1_N2;
+			S1_N2 [label="\"(\"";shape=box];
+			S1_N2 -> S2_N0;
+			
+			subgraph cluster_S2 {
+				color=firebrick;
+				label="Sequence";
+				
+				S2_N0 [label="GetParser\nSequence"];
+				S2_N0 -> S2_N1;
+				
+				S2_N1 [label="Word\n[a-zA-Z]"];
+				S2_N1 -> S2_N2;
+				S2_N2 [label="\"V\"";shape=box];
+				S2_N2 -> S2_N3;
+				S2_N3 [label="Word\n[a-zA-Z0-9_]"];
+				S2_N3 -> S2_N4;
+				S2_N4 [label="\"endor\"";shape=box];
+				S2_N4 -> S2_N5;
+				
+				S2_N5 [label="return"]
+			}
+			S2_N5 -> S1_N3;
+
+			S1_N3 [label="Word\nOptionalWhiteSpace"];
+			S1_N3 -> S1_N4;
+			S1_N4 [label="\" \"";shape=box];
+			S1_N4 -> S1_N5;
+			
+			S1_N5 [label="Keyword\n\"=\""];
+			S1_N5 -> S1_N6;
+			S1_N6 [label="\"=\"";shape=box];
+			S1_N6 -> S1_N7;
+			
+			S1_N7 [label="Word\nOptionalWhiteSpace"];
+			S1_N7 -> S1_N8;
+			S1_N8 [label="\" \"";shape=box];
+			S1_N8 -> S3_N0;
+			
+			subgraph cluster_S3 {
+				color=firebrick;
+				label="Sequence";
+				
+				S3_N0 [label="GetParser\nSequence"];
+				S3_N0 -> S3_N1;
+				
+				S3_N1 [label="Word\n[a-zA-Z]"];
+				S3_N1 -> S3_N2;
+				S3_N2 [label="\"V\"";shape=box];
+				S3_N2 -> S3_N3;
+				S3_N3 [label="Word\n[a-zA-Z0-9_]"];
+				S3_N3 -> S3_N4;
+				S3_N4 [label="\"endor\"";shape=box];
+				S3_N4 -> S3_N5;
+				
+				S3_N5 [label="return"]
+			}
+			S3_N5 -> S1_N9;
+			
+			S1_N9 [label="Char"];
+			S1_N9 -> S1_N10;
+			S1_N10 [label="\")\"";shape=box];
+			S1_N10 -> S1_N11;
+			
+			S1_N11 [label="return"]
+		}
+		
+		# UnequalExpression
+		subgraph cluster_S4 {
+			color=firebrick;
+			label="Sequence";
+		
+			S4_N0 [label="GetParser\nSequence"];
+			S4_N0 -> S4_N1;
+			S4_N1 [label="Char"];
+			S4_N1 -> S4_N2;
+			S4_N2 [label="\"(\"";shape=box];
+			S4_N2 -> S5_N0;
+			
+			subgraph cluster_S5 {
+				color=firebrick;
+				label="Sequence";
+				
+				S5_N0 [label="GetParser\nSequence"];
+				S5_N0 -> S5_N1;
+				
+				S5_N1 [label="Word\n[a-zA-Z]"];
+				S5_N1 -> S5_N2;
+				S5_N2 [label="\"V\"";shape=box];
+				S5_N2 -> S5_N3;
+				S5_N3 [label="Word\n[a-zA-Z0-9_]"];
+				S5_N3 -> S5_N4;
+				S5_N4 [label="\"endor\"";shape=box];
+				S5_N4 -> S5_N5;
+				
+				S5_N5 [label="return"]
+			}
+			S5_N5 -> S4_N3;
+
+			S4_N3 [label="Word\nOptionalWhiteSpace"];
+			S4_N3 -> S4_N4;
+			S4_N4 [label="\" \"";shape=box];
+			S4_N4 -> S4_N5;
+			
+			S4_N5 [label="Keyword\n\"!=\""];
+			S4_N5 -> S4_N6;
+			S4_N6 [label="\"!=\"";shape=box];
+			S4_N6 -> S4_N7;
+			
+			S4_N7 [label="Word\nOptionalWhiteSpace"];
+			S4_N7 -> S4_N8;
+			S4_N8 [label="\" \"";shape=box];
+			S4_N8 -> S6_N0;
+			
+			subgraph cluster_S6 {
+				color=firebrick;
+				label="Sequence";
+				
+				S6_N0 [label="GetParser\nSequence"];
+				S6_N0 -> S6_N1;
+				
+				S6_N1 [label="Word\n[a-zA-Z]"];
+				S6_N1 -> S6_N2;
+				S6_N2 [label="\"V\"";shape=box];
+				S6_N2 -> S6_N3;
+				S6_N3 [label="Word\n[a-zA-Z0-9_]"];
+				S6_N3 -> S6_N4;
+				S6_N4 [label="\"endor\"";shape=box];
+				S6_N4 -> S6_N5;
+				
+				S6_N5 [label="return"]
+			}
+			S6_N5 -> S4_N9;
+			
+			S4_N9 [label="Char"];
+			S4_N9 -> S4_N10;
+			S4_N10 [label="\")\"";shape=box];
+			S4_N10 -> S4_N11;
+			
+			S4_N11 [label="return"]
+		}
+		
+		# AndExpression
+		subgraph cluster_S7 {
+			color=firebrick;
+			label="Sequence";
+		
+			S7_N0 [label="GetParser\nSequence"];
+			S7_N0 -> S7_N1;
+			S7_N1 [label="Char"];
+			S7_N1 -> S7_N2;
+			S7_N2 [label="\"(\"";shape=box];
+			S7_N2 -> S8_N0;
+			
+			subgraph cluster_S8 {
+				color=firebrick;
+				label="Sequence";
+				
+				S8_N0 [label="GetParser\nSequence"];
+				S8_N0 -> S8_N1;
+				
+				S8_N1 [label="Word\n[a-zA-Z]"];
+				S8_N1 -> S8_N2;
+				S8_N2 [label="\"V\"";shape=box];
+				S8_N2 -> S8_N3;
+				S8_N3 [label="Word\n[a-zA-Z0-9_]"];
+				S8_N3 -> S8_N4;
+				S8_N4 [label="\"endor\"";shape=box];
+				S8_N4 -> S8_N5;
+				
+				S8_N5 [label="return"]
+			}
+			S8_N5 -> S7_N3;
+
+			S7_N3 [label="Word\nOptionalWhiteSpace"];
+			S7_N3 -> S7_N4;
+			S7_N4 [label="\" \"";shape=box];
+			S7_N4 -> S7_N5;
+			
+			S7_N5 [label="Keyword\n\"and\""];
+			S7_N5 -> S7_N6;
+			S7_N6 [label="\"and\"";shape=box];
+			S7_N6 -> S7_N7;
+			
+			S7_N7 [label="Word\nOptionalWhiteSpace"];
+			S7_N7 -> S7_N8;
+			S7_N8 [label="\" \"";shape=box];
+			S7_N8 -> S9_N0;
+			
+			subgraph cluster_S9 {
+				color=firebrick;
+				label="Sequence";
+				
+				S9_N0 [label="GetParser\nSequence"];
+				S9_N0 -> S9_N1;
+				
+				S9_N1 [label="Word\n[a-zA-Z]"];
+				S9_N1 -> S9_N2;
+				S9_N2 [label="\"V\"";shape=box];
+				S9_N2 -> S9_N3;
+				S9_N3 [label="Word\n[a-zA-Z0-9_]"];
+				S9_N3 -> S9_N4;
+				S9_N4 [label="\"endor\"";shape=box];
+				S9_N4 -> S9_N5;
+				
+				S9_N5 [label="return"]
+			}
+			S9_N5 -> S7_N9;
+			
+			S7_N9 [label="Char"];
+			S7_N9 -> S7_N10;
+			S7_N10 [label="\")\"";shape=box];
+			S7_N10 -> S7_N11;
+			
+			S7_N11 [label="return"]
+		}
+		
+		S0_N5 -> C0_N7;
+		S1_N11 -> C0_N7;
+		S4_N11 -> C0_N7;
+		S7_N11 -> C0_N7;
+		C0_N7 [label="return"]
+	}
+	
+	C0_N7 -> N1;
+	N1 [label="End";shape=diamond]
+}

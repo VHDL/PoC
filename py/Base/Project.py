@@ -1,4 +1,4 @@
-# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
@@ -313,7 +313,7 @@ class Project():
 			if (file.FileType == fileType):
 				yield file
 	
-	def _ResolveVHDLLibraries(self):
+	def ExtractVHDLLibrariesFromVHDLSourceFiles(self):
 		for file in self.Files(fileType=FileTypes.VHDLSourceFile):
 			libraryName = file.VHDLLibraryName.lower()
 			if libraryName not in self._vhdlLibraries:
@@ -597,7 +597,7 @@ class VHDLSourceFile(SourceFile, HDLFileMixIn, VHDLParserMixIn):
 		HDLFileMixIn.__init__(self)
 		VHDLParserMixIn.__init__(self)
 		
-		self._vhdlLibraryName = vhdlLibraryName
+		self._vhdlLibraryName = vhdlLibraryName.lower()
 	
 	@property
 	def FileType(self):

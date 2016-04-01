@@ -11,5 +11,5 @@ elseif ((Tool = "Mentor_vSim") and ?("temp/precompiled/vsim/xilinx")) then
 elseif (Tool in ["Xilinx_iSim", "Xilinx_xSim"]) then
 	# implicitly referenced; nothing to reference
 else
-	report "Add Xilinx primitive list here..."
+	report "No precompiled Xilinx primitives found."
 end if

@@ -1,4 +1,4 @@
-# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
@@ -43,7 +43,8 @@ else:
 from enum										import Enum, unique
 from colorama								import Fore as Foreground
 from pathlib								import Path
-from subprocess							import check_output	as Subprocess_Run
+from subprocess							import Popen				as Subprocess_Popen
+from subprocess							import PIPE					as Subprocess_Pipe
 from subprocess							import STDOUT				as Subprocess_StdOut
 
 from Base.Exceptions				import *
@@ -209,6 +210,32 @@ class ValuedFlagArgument(CommandLineArgument):
 class ShortValuedFlagArgument(ValuedFlagArgument):	_pattern = "-{0}={1}"
 class LongValuedFlagArgument(ValuedFlagArgument):		_pattern = "--{0}={1}"
 
+class ValuedFlagListArgument(CommandLineArgument):
+	_pattern = "{0}={1}"
+
+	@property
+	def Value(self):
+		return self._value
+
+	@Value.setter
+	def Value(self, value):
+		if (value is None):										self._value = None
+		elif isinstance(value, (tuple,list)):	self._value = value
+		else:																	raise ValueError("Parameter 'value' is not of type tuple or list.") from ex
+
+	def __str__(self):
+		if (self._value is None):			return ""
+		elif (len(self._value) > 0):	return " ".join([self._pattern.format(self._name, item) for item in self._value])
+		else:													return ""
+
+	def AsArgument(self):
+		if (self._value is None):			return None
+		elif (len(self._value) > 0):	return [self._pattern.format(self._name, item) for item in self._value]
+		else:													return None
+
+class ShortValuedFlagListArgument(ValuedFlagListArgument):	_pattern = "-{0}={1}"
+class LongValuedFlagListArgument(ValuedFlagListArgument):		_pattern = "--{0}={1}"
+
 class TupleArgument(CommandLineArgument):
 	_switchPattern =	"{0}"
 	_valuePattern =		"{0}"
@@ -266,57 +293,41 @@ class CommandLineArgumentList(list):
 			else:												raise TypeError()
 		return result
 
+import asyncio
+import locale
+from asyncio.subprocess import PIPE, STDOUT
+
 class Executable(ILogable):
-	def __init__(self, platform, executablePath, defaultParameters=[], logger=None):
+	def __init__(self, platform, executablePath, logger=None):
 		super().__init__(logger)
 		
-		self._platform = platform
+		self._platform =	platform
+		self._process =		None
 		
 		if isinstance(executablePath, str):							executablePath = Path(executablePath)
 		elif (not isinstance(executablePath, Path)):		raise ValueError("Parameter 'executablePath' is not of type str or Path.")
 		if (not executablePath.exists()):								raise Exception("Executable '{0}' can not be found.".format(str(executablePath))) from FileNotFoundError(str(executablePath))
 		
 		# prepend the executable
-		defaultParameters.insert(0, str(executablePath))
-		
 		self._executablePath =		executablePath
-		self._defaultParameters =	defaultParameters
-	
+
 	@property
 	def Path(self):
 		return self._executablePath
-	
-	@property
-	def DefaultParameters(self):
-		return self._defaultParameters
-	
-	@DefaultParameters.setter
-	def DefaultParameters(self, value):
-		self._defaultParameters = value
-	
+
 	def StartProcess(self, parameterList):
-		# return "blubs"
-		return Subprocess_Run(parameterList, stderr=Subprocess_StdOut, shell=False, universal_newlines=True)
+		# start child process
+		self._process = Subprocess_Popen(parameterList, stdout=Subprocess_Pipe, stderr=Subprocess_StdOut, universal_newlines=True, bufsize=256)
 
-# class PoCSimulatorTestbench(object):
-	# pocEntity = None
-	# testbenchName = ""
-	# simulationResult = False
-	
-	# def __init__(self, pocEntity, testbenchName):
-		# self.pocEntity = pocEntity
-		# self.testbenchName = testbenchName
+	def Terminate(self):
+		self._process.terminate()
 
-# class PoCSimulatorTestbenchGroup(object):
-	# pocEntity = None
-	# members = {}
-	
-	# def __init__(self, pocEntity):
-		# self.pocEntity = pocEntity
-	
-	# def add(self, pocEntity, testbench):
-		# self.members[str(pocEntity)] = testbench
-		
-	# def __getitem__(self, key):
-		# return self.members[key]
-	
+	def GetReader(self):
+		try:
+			# for line in self._process.stdout.readlines():
+			for line in iter(self._process.stdout.readline, ""):
+				yield line[:-1]
+		except Exception as ex:
+			raise ex
+		finally:
+			self._process.terminate()

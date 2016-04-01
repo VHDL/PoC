@@ -15,7 +15,7 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2015 Technische Universitaet Dresden - Germany
+# Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #                     Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,70 +31,87 @@
 # limitations under the License.
 # ==============================================================================
 
-from pathlib import Path
+from argparse							import ArgumentParser, RawDescriptionHelpFormatter
+import textwrap
+from colorama							import Fore as Foreground
+from colorama							import init as colorama_init
+from pathlib							import Path
+from os										import environ
+from configparser					import NoOptionError, ConfigParser, ExtendedInterpolation
+from configparser					import Error as ConfigParser_Error
 
-from lib.Functions import Exit
-from Base.Exceptions import *
-from Base.PoCBase import CommandLineProgram
-from PoC.Entity import *
-from PoC.Config import *
-from Compiler import *
-from Compiler.Exceptions import *
+from lib.Functions				import Exit
+from Base.Exceptions			import *
+from Base.Logging					import Logger, Severity
+from Base.PoCBase					import CommandLineProgram
+from PoC.Entity						import *
+from PoC.Config						import *
+from Compiler							import *
+from Compiler.Exceptions	import *
 
 
-class NetList(CommandLineProgram):
-	__netListConfigFileName = "configuration.ini"
-	
+class Netlist(CommandLineProgram):
 	headLine = "The PoC-Library - NetList Service Tool"
 	
-	dryRun = False
-	netListConfig = None
+	__netListConfigFileName =	"configuration.ini"
+	dryRun =									False
 	
 	def __init__(self, debug, verbose, quiet):
-		super(self.__class__, self).__init__(debug, verbose, quiet)
+		if quiet:				severity = Severity.Quiet
+		elif debug:			severity = Severity.Debug
+		elif verbose:		severity = Severity.Verbose
+		else:						severity = Severity.Normal
 
-		if not ((self.platform == "Windows") or (self.platform == "Linux")):	raise PlatformNotSupportedException(self.platform)
-		
-		self.readNetListConfiguration()
+		logger = Logger(self, severity, printToStdOut=True)
+		super().__init__(logger=logger)
+
+		if (self.Platform == "Windows"):	pass
+		elif (self.Platform == "Linux"):	pass
+		else:															raise PlatformNotSupportedException(self.Platform)
+
+		# self._config = None
+		self.__ReadNetlistConfiguration()
 		
 	# read NetList configuration
 	# ==========================================================================
-	def readNetListConfiguration(self):
-		from configparser import ConfigParser, ExtendedInterpolation
+	def __ReadNetlistConfiguration(self):
+		self.Files["PoCNLConfig"] = self.Directories["PoCNetList"] / self.__netListConfigFileName
+		netListConfigFilePath	= self.Files["PoCNLConfig"]
 		
-		self.files["PoCNLConfig"] = self.directories["PoCNetList"] / self.__netListConfigFileName
-		netListConfigFilePath	= self.files["PoCNLConfig"]
-		
-		self.printDebug("Reading NetList configuration from '%s'" % str(netListConfigFilePath))
-		if not netListConfigFilePath.exists():	raise NotConfiguredException("PoC netlist configuration file does not exist. (%s)" % str(netListConfigFilePath))
+		self._LogDebug("Reading NetList configuration from '{0}'".format(str(netListConfigFilePath)))
+		if not netListConfigFilePath.exists():	raise NotConfiguredException("PoC netlist configuration file does not exist. ({0})".format(str(netListConfigFilePath)))
 			
 		self.netListConfig = ConfigParser(interpolation=ExtendedInterpolation())
 		self.netListConfig.optionxform = str
 		self.netListConfig.read([
-			str(self.files['PoCPrivateConfig']),
-			str(self.files['PoCPublicConfig']),
-			str(self.files["PoCNLConfig"])
+			str(self.Files['PoCPrivateConfig']),
+			str(self.Files['PoCPublicConfig']),
+			str(self.Files["PoCNLConfig"])
 		])
 
-
-	def coreGenCompilation(self, entity, showLogs, showReport, deviceString=None, boardString=None):
+	def CoreGenCompilation(self, entity, showLogs, showReport, deviceString=None, boardString=None):
 		# check if ISE is configure
 		if (len(self.pocConfig.options("Xilinx.ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
+		# check if the appropriate environment is loaded
+		if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
 		
 		# prepare some paths
-		self.directories["ISEInstallation"] = Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])
-		self.directories["ISEBinary"] =				Path(self.pocConfig['Xilinx.ISE']['BinaryDirectory'])
-	
-		# check if the appropriate environment is loaded
-		from os import environ
-		if (environ.get('XILINX') == None):	raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
+		self.Directories["CoreGenTemp"] =			self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['ISECoreGeneratorFiles']
+		self.Directories["ISEInstallation"] = Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])
+		self.Directories["ISEBinary"] =				Path(self.pocConfig['Xilinx.ISE']['BinaryDirectory'])
+		iseVersion =													self.pocConfig['Xilinx.ISE']['Version']
 
 		if (boardString is not None):
-			if not self.netListConfig.has_option('BOARDS', boardString):
-				from configparser import NoOptionError
-				raise CompilerException("Board '" + boardString + "' not found.") from NoOptionError(boardString, 'BOARDS')
-		
-			device = Device(self.netListConfig['BOARDS'][boardString])
+			boardString = boardString.lower()
+			boardSection = None
+			for option in self.pocConfig['BOARDS']:
+				if (option.lower() == boardString):
+					boardSection = self.pocConfig['BOARDS'][option]
+			if (boardSection is None):
+				raise CompilerException("Unknown board '" + boardString + "'.") from NoOptionError(boardString, 'BOARDS')
+
+			deviceString =	self.pocConfig[boardSection]['FPGA']
+			device =				Device(deviceString)
 		elif (deviceString is not None):
 			device = Device(deviceString)
 		else: raise BaseException("No board or device given.")
@@ -103,25 +120,23 @@ class NetList(CommandLineProgram):
 
 		compiler = XCOCompiler.Compiler(self, showLogs, showReport)
 		compiler.dryRun = self.dryRun
-		compiler.run(entityToCompile, device)
+		compiler.Run(entityToCompile, device)
 		
-	def xstCompilation(self, entity, showLogs, showReport, deviceString=None, boardString=None):
+	def XstCompilation(self, entity, showLogs, showReport, deviceString=None, boardString=None):
 		# check if ISE is configure
-		if (len(self.pocConfig.options("Xilinx.ISE")) == 0):
-			raise NotConfiguredException("Xilinx ISE is not configured on this system.")
+		if (len(self.pocConfig.options("Xilinx.ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
+		# check if the appropriate environment is loaded
+		if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
 		
 		# prepare some paths
-		self.directories["ISEInstallation"] = Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])
-		self.directories["ISEBinary"] =				Path(self.pocConfig['Xilinx.ISE']['BinaryDirectory'])
+		self.Directories["XSTFiles"] =				self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['ISESynthesisFiles']
+		self.Directories["XSTTemp"] =					self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['ISESynthesisFiles']
+		self.Directories["ISEInstallation"] = Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])
+		self.Directories["ISEBinary"] =				Path(self.pocConfig['Xilinx.ISE']['BinaryDirectory'])
+		iseVersion =													self.pocConfig['Xilinx.ISE']['Version']
 	
-		# check if the appropriate environment is loaded
-		from os import environ
-		if (environ.get('XILINX') == None):
-			raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
-
 		if (boardString is not None):
 			if not self.netListConfig.has_option('BOARDS', boardString):
-				from configparser import NoOptionError
 				raise CompilerException("Board '" + boardString + "' not found.") from NoOptionError(boardString, 'BOARDS')
 				
 			device = Device(self.netListConfig['BOARDS'][boardString])
@@ -133,27 +148,23 @@ class NetList(CommandLineProgram):
 
 		compiler = XSTCompiler.Compiler(self, showLogs, showReport)
 		compiler.dryRun = self.dryRun
-		compiler.run(entityToCompile, device)
+		compiler.Run(entityToCompile, device)
 
 
 # main program
 def main():
-	import colorama
-	from colorama import Fore, Back, Style
-	colorama.init()
+	colorama_init()
 	
-	print(Fore.MAGENTA + "=" * 80)
-	print("{: ^80s}".format("The PoC Library - NetList Service Tool"))
+	# print(Foreground.MAGENTA + "=" * 80)
+	print(Foreground.LIGHTMAGENTA_EX + "=" * 80)
+	print("{: ^80s}".format(Netlist.headLine))
 	print("=" * 80)
-	print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+	print(Foreground.RESET)
 	
 	try:
-		import argparse
-		import textwrap
-		
 		# create a command line argument parser
-		argParser = argparse.ArgumentParser(
-			formatter_class = argparse.RawDescriptionHelpFormatter,
+		argParser = ArgumentParser(
+			formatter_class = RawDescriptionHelpFormatter,
 			description = textwrap.dedent('''\
 				This is the PoC Library NetList Service Tool.
 				'''),
@@ -185,29 +196,26 @@ def main():
 		Exit.printException(ex)
 		
 	try:
-		netList = NetList(args.debug, args.verbose, args.quiet)
-		#netList.dryRun = True
+		netList = Netlist(args.debug, args.verbose, args.quiet)
+		netList.dryRun = True
 	
 		if (args.help == True):
 			argParser.print_help()
 			return
 		elif (args.coreGen is not None):
-			netList.coreGenCompilation(args.coreGen, args.showLog, args.showReport, deviceString=args.device, boardString=args.board)
+			netList.CoreGenCompilation(args.coreGen, args.showLog, args.showReport, deviceString=args.device, boardString=args.board)
 		elif (args.xst is not None):
-			netList.xstCompilation(args.xst, args.showLog, args.showReport, deviceString=args.device, boardString=args.board)
+			netList.XstCompilation(args.xst, args.showLog, args.showReport, deviceString=args.device, boardString=args.board)
 		else:
 			argParser.print_help()
 		
 	except CompilerException as ex:
-		from colorama import Fore, Back, Style
-		from configparser import Error
-		
-		print(Fore.RED + "ERROR:" + Fore.RESET + " %s" % ex.message)
+		print(Foreground.RED + "ERROR:" + Foreground.RESET + " {0}".format(ex.message))
 		if isinstance(ex.__cause__, FileNotFoundError):
-			print(Fore.YELLOW + "  FileNotFound:" + Fore.RESET + " '%s'" % str(ex.__cause__))
-		elif isinstance(ex.__cause__, Error):
-			print(Fore.YELLOW + "  configparser.Error:" + Fore.RESET + " %s" % str(ex.__cause__))
-		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
+			print(Foreground.YELLOW + "  FileNotFound:" + Foreground.RESET + " '{0}'".format(str(ex.__cause__)))
+		elif isinstance(ex.__cause__, ConfigParser_Error):
+			print(Foreground.YELLOW + "  configparser.Error:" + Foreground.RESET + " {0}".format(str(ex.__cause__)))
+		print(Foreground.RESET)
 		exit(1)
 		
 	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)
