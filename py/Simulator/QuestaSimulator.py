@@ -249,13 +249,13 @@ class QuestaSimulatorExecutable:
 		return QuestaVHDLLibraryTool(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
 
 class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		QuestaSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 		
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vcom.exe"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vcom"
 		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+		super().__init__(platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -316,35 +316,24 @@ class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
+		print(_indent + "vcom messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
-			vcomLog = self.StartProcess(parameterList)
-			
-			log = ""
-			for line in vcomLog.split("\n")[:-1]:
-					log += _indent + line + "\n"
-			
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "vcom messages for : {0}".format("????"))#str(vhdlFile)))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vcom: {0}".format("????"))#str(vhdlFile)))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
+			self.StartProcess(parameterList)
+			for line in self.GetReader():
 				print(_indent + line)
-			print(_indent + "-" * 80)
+		except Exception as ex:
+			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
 
 class QuestaSimulator(Executable, QuestaSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		QuestaSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 		
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vsim.exe"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vsim"
 		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+		super().__init__(platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -420,35 +409,24 @@ class QuestaSimulator(Executable, QuestaSimulatorExecutable):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
+		print(_indent + "vsim messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
-			vsimLog = self.StartProcess(parameterList)
-			
-			log = ""
-			for line in vsimLog.split("\n")[:-1]:
-					log += _indent + line + "\n"
-			
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "vsim messages for : {0}".format("????"))#testbenchName))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vsim: {0}".format("????"))#testbenchName))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
+			self.StartProcess(parameterList)
+			for line in self.GetReader():
 				print(_indent + line)
-			print(_indent + "-" * 80)
+		except Exception as ex:
+			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
 
 class QuestaVHDLLibraryTool(Executable, QuestaSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		QuestaSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 		
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vlib.exe"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vlib"
 		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+		super().__init__(platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -466,23 +444,12 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimulatorExecutable):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
+		print(_indent + "vlib messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
-			vlibLog = self.StartProcess(parameterList)
-			
-			log = ""
-			for line in vlibLog.split("\n")[:-1]:
-					log += _indent + line + "\n"
-			
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "vlib messages for : {0}".format("????"))#vhdlLibraryName))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format("????"))#vhdlLibraryName))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
+			self.StartProcess(parameterList)
+			for line in self.GetReader():
 				print(_indent + line)
-			print(_indent + "-" * 80)
+		except Exception as ex:
+			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)

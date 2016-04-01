@@ -298,11 +298,11 @@ class ISESimulatorExecutables:
 # 			print(_indent + "-" * 80)
 		
 class ISELinker(Executable, ISESimulatorExecutables):
-	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		if (platform == "Windows"):		executablePath = binaryDirectoryPath / "fuse.exe"
 		elif (platform == "Linux"):		executablePath = binaryDirectoryPath / "fuse"
 		else:																						raise PlatformNotSupportedException(self._platform)
-		Executable.__init__(self, platform, executablePath, defaultParameters, logger=logger)
+		Executable.__init__(self, platform, executablePath, logger=logger)
 		ISESimulatorExecutables.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
@@ -346,28 +346,16 @@ class ISELinker(Executable, ISESimulatorExecutables):
 		parameterList = self.Parameters.ToArgumentList()
 
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		
+
 		_indent = "    "
 		try:
-			fuseLog = self.StartProcess(parameterList)
-			
-			log = ""
-			for line in fuseLog.split("\n")[:-1]:
-					log += _indent + line + "\n"
-			
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "fuse messages for : {0}".format("????"))#str(filePath)))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing fuse: {0}".format("????"))#str(filePath)))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
+			self.StartProcess(parameterList)
+			for line in self.GetReader():
 				print(_indent + line)
-			print(_indent + "-" * 80)
+
+		except Exception as ex:
+			raise ex  # SimulatorException() from ex
+
 
 class ISESimulatorExecutable(Executable):
 	def __init__(self, executablePath, logger=None):
@@ -401,25 +389,35 @@ class ISESimulatorExecutable(Executable):
 		parameterList = self.Parameters.ToArgumentList()
 
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		
+
 		_indent = "    "
 		try:
-			isimLog = self.StartProcess(parameterList)
-			
-			log = ""
-			for line in isimLog.split("\n")[:-1]:
-					log += _indent + line + "\n"
-			
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "isim messages for : {0}".format("????"))#str(filePath)))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing isim: {0}".format("????"))#str(filePath)))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
+			self.StartProcess(parameterList)
+			for line in self.GetReader():
 				print(_indent + line)
-			print(_indent + "-" * 80)
+
+		except Exception as ex:
+			raise ex  # SimulatorException() from ex
+
+		#
+		# _indent = "    "
+		# try:
+		# 	isimLog = self.StartProcess(parameterList)
+		#
+		# 	log = ""
+		# 	for line in isimLog.split("\n")[:-1]:
+		# 			log += _indent + line + "\n"
+		#
+		# 	# if self.showLogs:
+		# 	if (log != ""):
+		# 		print(_indent + "isim messages for : {0}".format("????"))#str(filePath)))
+		# 		print(_indent + "-" * 80)
+		# 		print(log[:-1])
+		# 		print(_indent + "-" * 80)
+		# except CalledProcessError as ex:
+		# 	print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing isim: {0}".format("????"))#str(filePath)))
+		# 	print(_indent + "Return Code: {0}".format(ex.returncode))
+		# 	print(_indent + "-" * 80)
+		# 	for line in ex.output.split("\n"):
+		# 		print(_indent + line)
+		# 	print(_indent + "-" * 80)

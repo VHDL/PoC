@@ -43,7 +43,8 @@ else:
 from enum										import Enum, unique
 from colorama								import Fore as Foreground
 from pathlib								import Path
-from subprocess							import check_output	as Subprocess_Run
+from subprocess							import Popen				as Subprocess_Popen
+from subprocess							import PIPE					as Subprocess_Pipe
 from subprocess							import STDOUT				as Subprocess_StdOut
 
 from Base.Exceptions				import *
@@ -292,57 +293,41 @@ class CommandLineArgumentList(list):
 			else:												raise TypeError()
 		return result
 
+import asyncio
+import locale
+from asyncio.subprocess import PIPE, STDOUT
+
 class Executable(ILogable):
-	def __init__(self, platform, executablePath, defaultParameters=[], logger=None):
+	def __init__(self, platform, executablePath, logger=None):
 		super().__init__(logger)
 		
-		self._platform = platform
+		self._platform =	platform
+		self._process =		None
 		
 		if isinstance(executablePath, str):							executablePath = Path(executablePath)
 		elif (not isinstance(executablePath, Path)):		raise ValueError("Parameter 'executablePath' is not of type str or Path.")
 		if (not executablePath.exists()):								raise Exception("Executable '{0}' can not be found.".format(str(executablePath))) from FileNotFoundError(str(executablePath))
 		
 		# prepend the executable
-		defaultParameters.insert(0, str(executablePath))
-		
 		self._executablePath =		executablePath
-		self._defaultParameters =	defaultParameters
-	
+
 	@property
 	def Path(self):
 		return self._executablePath
-	
-	@property
-	def DefaultParameters(self):
-		return self._defaultParameters
-	
-	@DefaultParameters.setter
-	def DefaultParameters(self, value):
-		self._defaultParameters = value
-	
+
 	def StartProcess(self, parameterList):
-		# return "blubs"
-		return Subprocess_Run(parameterList, stderr=Subprocess_StdOut, shell=False, universal_newlines=True)
+		# start child process
+		self._process = Subprocess_Popen(parameterList, stdout=Subprocess_Pipe, stderr=Subprocess_StdOut, universal_newlines=True, bufsize=256)
 
-# class PoCSimulatorTestbench(object):
-	# pocEntity = None
-	# testbenchName = ""
-	# simulationResult = False
-	
-	# def __init__(self, pocEntity, testbenchName):
-		# self.pocEntity = pocEntity
-		# self.testbenchName = testbenchName
+	def Terminate(self):
+		self._process.terminate()
 
-# class PoCSimulatorTestbenchGroup(object):
-	# pocEntity = None
-	# members = {}
-	
-	# def __init__(self, pocEntity):
-		# self.pocEntity = pocEntity
-	
-	# def add(self, pocEntity, testbench):
-		# self.members[str(pocEntity)] = testbench
-		
-	# def __getitem__(self, key):
-		# return self.members[key]
-	
+	def GetReader(self):
+		try:
+			# for line in self._process.stdout.readlines():
+			for line in iter(self._process.stdout.readline, ""):
+				yield line[:-1]
+		except Exception as ex:
+			raise ex
+		finally:
+			self._process.terminate()

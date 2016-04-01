@@ -32,7 +32,6 @@
 # ==============================================================================
 #
 # entry point
-from symbol import parameters
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -41,12 +40,12 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.GHDLSimulator")
 
 # load dependencies
-from pathlib								import Path
+# from pathlib								import Path
 from configparser						import NoSectionError
-from colorama								import Fore as Foreground
+# from colorama								import Fore as Foreground
 from os											import chdir
-import re								# used for output filtering
-from subprocess							import CalledProcessError
+# import re								# used for output filtering
+# from subprocess							import CalledProcessError
 
 from Base.Exceptions				import *
 from Base.PoCConfig					import *
@@ -56,6 +55,7 @@ from Base.Executable				import *
 from Parser.Parser					import ParserException
 from Simulator.Exceptions		import *
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
+
 
 class Simulator(PoCSimulator):
 	_guiMode =										False
@@ -362,30 +362,6 @@ class Simulator(PoCSimulator):
 					buffer += line
 			with gtkwSaveFilePath.open('w') as gtkwHandle:
 				gtkwHandle.write(buffer)
-# 		
-# 		# run GHDL simulation on Linux
-# 		if (self.Host.Platform == "Linux"):
-# 			# preparing some variables for Linux
-# 			exeFilePath =		tempGHDLPath / testbenchName.lower()
-# 		
-# 			# run elaboration
-# 			self._LogNormal("  running elaboration...")
-# 		
-# 			parameterList = [
-# 				str(ghdlExecutablePath),
-# 				'-e', '--syn-binding',
-# 				'-fpsl'
-# 			]
-# 			
-# 			for path in externalLibraries:
-# 				parameterList.append("-P{0}".format(path))
-# 			
-# 			parameterList += [
-# 				('--ieee=%s' % self.__ieeeFlavor),
-# 				('--std=%s' % self.__vhdlStandard),
-# 				'--work=test',
-# 				testbenchName
-# 			]
 
 # 			# search log for fatal warnings
 # 			analyzeErrors = []
@@ -413,41 +389,14 @@ class Simulator(PoCSimulator):
 # 			except SimulatorException as ex:
 # 				raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED|NO ASSERTS]' not found in simulator output.") from ex
 # 		
-# 		else:	# guiMode
-# 			# run GTKWave GUI
-# 			self._LogNormal("  launching GTKWave...")
-# 			
-# 			if (not waveformFilePath.exists()):
-# 				raise SimulatorException("Waveform file not found.") from FileNotFoundError(str(waveformFilePath))
-# 
-# 			gtkwExecutablePath =	self.Host.Directories["GTKWBinary"] / self.__executables['gtkwave']
-# 			gtkwSaveFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[testbenchFQN]['gtkwSaveFile']
-# 		
-# 			parameterList = [
-# 				str(gtkwExecutablePath),
-# 				("--dump={0}".format(str(waveformFilePath)))
-# 			]
-# 
-# 			# if GTKWave savefile exists, load it's settings
-# 			if gtkwSaveFilePath.exists():
-# 				self._LogDebug("Found waveform save file: '%s'" % str(gtkwSaveFilePath))
-# 				parameterList += ['--save', str(gtkwSaveFilePath)]
-# 			else:
-# 				self._LogDebug("Didn't find waveform save file: '%s'." % str(gtkwSaveFilePath))
-#
-# 				if gtkwSaveFilePath.exists():
-# 					for line in fileinput.input(str(gtkwSaveFilePath), inplace = 1):
-# 						if line.startswith(('[dumpfile', '[savefile')):
-# 							continue
-# 						print(line.rstrip(os.linesep))
-#
+
 
 class GHDLExecutable(Executable):
-	def __init__(self, platform, binaryDirectoryPath, version, backend, defaultParameters=[], logger=None):
+	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		if (platform == "Windows"):			executablePath = binaryDirectoryPath/ "ghdl.exe"
 		elif (platform == "Linux"):			executablePath = binaryDirectoryPath/ "ghdl"
 		else:																						raise PlatformNotSupportedException(platform)
-		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+		super().__init__(platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 		
@@ -603,6 +552,7 @@ class GHDLExecutable(Executable):
 		ghdl.Parameters[ghdl.CmdRun] =			True
 		return ghdl
 
+
 class GHDLAnalyze(GHDLExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
@@ -613,27 +563,36 @@ class GHDLAnalyze(GHDLExecutable):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
+		print(_indent + "ghdl analyze messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
-			ghdlLog = self.StartProcess(parameterList)
-			
-			log = ""
-			for line in ghdlLog.split("\n")[:-1]:
-				if ("ghdl1" not in line):
-					log += _indent + line + "\n"
-			
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "ghdl messages for : {0}".format("??????"))#str(filePath)))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing ghdl: {0}".format("??????"))#str(filePath)))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
+			self.StartProcess(parameterList)
+			for line in self.GetReader():
 				print(_indent + line)
-			print(_indent + "-" * 80)
+		except Exception as ex:
+			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
+
+		# try:
+		#
+		# 	log = ""
+		# 	for line in ghdlLog.split("\n")[:-1]:
+		# 		if ("ghdl1" not in line):
+		# 			log += _indent + line + "\n"
+		#
+		# 	# if self.showLogs:
+		# 	if (log != ""):
+		# 		print(_indent + "ghdl messages for : {0}".format("??????"))#str(filePath)))
+		# 		print(_indent + "-" * 80)
+		# 		print(log[:-1])
+		# 		print(_indent + "-" * 80)
+		# except CalledProcessError as ex:
+		# 	print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing ghdl: {0}".format("??????"))#str(filePath)))
+		# 	print(_indent + "Return Code: {0}".format(ex.returncode))
+		# 	print(_indent + "-" * 80)
+		# 	for line in ex.output.split("\n"):
+		# 		print(_indent + line)
+		# 	print(_indent + "-" * 80)
 	
 class GHDLElaborate(GHDLExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
@@ -645,29 +604,17 @@ class GHDLElaborate(GHDLExecutable):
 		parameterList = self.Parameters.ToArgumentList()
 
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		
+
 		_indent = "    "
+		print(_indent + "ghdl elaboration messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
-			ghdlLog = self.StartProcess(parameterList)
-			
-			log = ""
-			for line in ghdlLog.split("\n")[:-1]:
-				if ("ghdl1" not in line):
-					log += _indent + line + "\n"
-			
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "ghdl elaboration messages for '{0}.{1}'".format("??????"))#self.VHDLLibrary, topLevel))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while elaborating '{0}.{1}'".format("??????", "??????"))#self.VHDLLibrary, topLevel))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
+			self.StartProcess(parameterList)
+			for line in self.GetReader():
 				print(_indent + line)
-			print(_indent + "-" * 80)
+		except Exception as ex:
+			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
 
 class GHDLRun(GHDLExecutable):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
@@ -678,29 +625,18 @@ class GHDLRun(GHDLExecutable):
 		parameterList += self.RunOptions.ToArgumentList()
 
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		
+
 		_indent = "    "
+		print(_indent + "ghdl run messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
-			ghdlLog = self.StartProcess(parameterList)
-			
-			log = ""
-			for line in ghdlLog.split("\n")[:-1]:
-				# if (testbenchName not in line):
-					log += _indent + line + "\n"
-			
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "ghdl run messages for '{0}.{1}'".format("??????", "??????"))#self.VHDLLibrary, testbenchName))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while simulating '{0}.{1}'".format("??????", "??????"))#self.VHDLLibrary, testbenchName))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
+			self.StartProcess(parameterList)
+			for line in self.GetReader():
 				print(_indent + line)
-			print(_indent + "-" * 80)
+		except Exception as ex:
+			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
+
 
 class GTKWave(Executable):
 	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[]):
@@ -760,24 +696,12 @@ class GTKWave(Executable):
 		self._LogVerbose("    command: {0}".format(" ".join(self._defaultParameters)))
 		
 		_indent = "    "
+		print(_indent + "GTKWave messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
-			gtkwLog = self.StartProcess(self._defaultParameters)
-			
-			log = ""
-			for line in gtkwLog.split("\n"):
-				if (("ghdl1" not in line) and (line != "")):
-					log += _indent + line + "\n"
-			
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "GTKWave messages for : {0}".format(str(dumpFile)))
-				print(_indent + "-" * 80)
-				print(log)
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing GTKWave: {0}".format(str(dumpFile)))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
+			self.StartProcess(parameterList)
+			for line in self.GetReader():
 				print(_indent + line)
-			print(_indent + "-" * 80)
+		except Exception as ex:
+			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
