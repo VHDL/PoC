@@ -98,7 +98,7 @@ if ($LastExitCode -eq 0) {
 if (($PoC_ExitCode -eq 0) -and ($PyWrapper_LoadEnv_Xilinx_ISE -eq $true)) {
 	# load Xilinx ISE environment if not loaded before
 	if (-not (Test-Path env:XILINX)) {
-		$PoC_Command = "$Python_Interpreter $Python_Parameters $PoC_RootDir_AbsPath\$PoC_PythonScriptDir\Configuration.py --ise-settingsfile"
+		$PoC_Command = "$Python_Interpreter $Python_Parameters $PoC_RootDir_AbsPath\$PoC_PythonScriptDir\PoC.py query Xilinx.ISE:SettingsFile"
 		if ($PyWrapper_Debug -eq $true) { Write-Host "Getting ISE settings file: command='$PoC_Command'" -ForegroundColor Yellow }
 
 		# execute python script to receive ISE settings filename
@@ -132,7 +132,7 @@ if (($PoC_ExitCode -eq 0) -and ($PyWrapper_LoadEnv_Xilinx_ISE -eq $true)) {
 if (($PoC_ExitCode -eq 0) -and ($PyWrapper_LoadEnv_Xilinx_Vivado -eq $true)) {
 	# load Xilinx Vivado environment if not loaded before
 	if (-not (Test-Path env:XILINX)) {
-		$PoC_Command = "$Python_Interpreter $Python_Parameters $PoC_RootDir_AbsPath\$PoC_PythonScriptDir\Configuration.py --vivado-settingsfile"
+		$PoC_Command = "$Python_Interpreter $Python_Parameters $PoC_RootDir_AbsPath\$PoC_PythonScriptDir\PoC.py query Xilinx.Vivado:SettingsFile"
 		if ($PyWrapper_Debug -eq $true) { Write-Host "Getting Vivado settings file: command='$PoC_Command'" -ForegroundColor Yellow }
 
 		# execute python script to receive Vivado settings filename

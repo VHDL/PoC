@@ -124,7 +124,7 @@ if [ $PoC_ExitCode -eq 0 ]; then
 	if [ $PyWrapper_LoadEnv_Xilinx_ISE -eq 1 ]; then
 		# if $XILINX environment variable is not set
 		if [ -z "$XILINX" ]; then
-			command="$Python_Interpreter $PoC_RootDir_AbsPath/py/Configuration.py --ise-settingsfile"
+			command="$Python_Interpreter $PoC_RootDir_AbsPath/$PoC_PythonScriptDir/PoC.py query Xilinx.ISE:SettingsFile"
 			if [ $PyWrapper_Debug -eq 1 ]; then echo -e "${YELLOW}getting ISE settings file: command='$command'${NOCOLOR}"; fi
 			PoC_ISE_SettingsFile=$($command)
 			if [ $? -eq 0 ]; then
@@ -153,7 +153,7 @@ if [ $PoC_ExitCode -eq 0 ]; then
 	if [ $PyWrapper_LoadEnv_Xilinx_Vivado -eq 1 ]; then
 		# if $XILINX environment variable is not set
 		if [ -z "$XILINX" ]; then
-			command="$Python_Interpreter $PoC_RootDir_AbsPath/py/Configuration.py --vivado-settingsfile"
+			command="$Python_Interpreter $PoC_RootDir_AbsPath/$PoC_PythonScriptDir/PoC.py query Xilinx.ISE:SettingsFile"
 			if [ $PyWrapper_Debug -eq 1 ]; then echo -e "${YELLOW}getting Vivado settings file: command='$command'${NOCOLOR}"; fi
 			PoC_Vivado_SettingsFile=$($command)
 			if [ $? -eq 0 ]; then

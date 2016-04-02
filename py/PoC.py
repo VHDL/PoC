@@ -103,7 +103,7 @@ class PoC(CommandLineProgram, ArgParseMixin):
 
 	# read Testbench configuration
 	# ==========================================================================
-	def __ReadTestbenchConfiguration(self) :
+	def __ReadTestbenchConfiguration(self):
 		from configparser import ConfigParser, ExtendedInterpolation
 
 		tbConfigFilePath = self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames'][
@@ -111,7 +111,7 @@ class PoC(CommandLineProgram, ArgParseMixin):
 		self.Files["PoCTBConfig"] = tbConfigFilePath
 
 		self._LogDebug("Reading testbench configuration from '{0}'".format(str(tbConfigFilePath)))
-		if not tbConfigFilePath.exists() :                raise NotConfiguredException(
+		if not tbConfigFilePath.exists():                raise NotConfiguredException(
 			"PoC testbench configuration file does not exist. ({0})".format(str(tbConfigFilePath)))
 
 		self.tbConfig = ConfigParser(interpolation=ExtendedInterpolation())
@@ -155,7 +155,7 @@ class PoC(CommandLineProgram, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@DefaultAttribute()
 	# @HandleVerbosityOptions
-	def HandleDefault(self, args) :
+	def HandleDefault(self, args):
 		self.PrintHeadline()
 		self.MainParser.print_help()
 		Exit.exit()
@@ -165,28 +165,108 @@ class PoC(CommandLineProgram, ArgParseMixin):
 	@CommandAttribute('help', help="help help")
 	@ArgumentAttribute(metavar='<Command>', dest="Commands", type=str, nargs='*', help='todo help')
 	# @HandleVerbosityOptions
-	def HandleHelp(self, args) :
+	def HandleHelp(self, args):
 		self.PrintHeadline()
-		if (len(args.Commands) == 0) :
+		if (len(args.Commands) == 0):
 			# self.__parsers["Help"].print_help()
 			Exit.exit()
-		elif (len(args.Commands) == 1) :
-			if (args.Commands[0] == "help") :
+		elif (len(args.Commands) == 1):
+			if (args.Commands[0] == "help"):
 				print("This is a recursion ...")
 		Exit.exit()
 
 	# ============================================================================
+	# Configuration query	commands
+	# ============================================================================
+	# create the sub-parser for the "query" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Configuration commands")
+	@CommandAttribute("query", help="Simulate a PoC Entity with Aldec Active-HDL")
+	@ArgumentAttribute(metavar="<Query>", dest="Query", type=str, help="todo help")
+	# standard
+	# @HandleVerbosityOptions
+	def queryConfiguration(self, args):
+		print(self._queryConfiguration(args.Query))
+		Exit.exit()
+	
+	def _queryConfiguration(self, query):
+		if (query == "PoC:InstallationDirectory"):
+			if (len(self.pocConfig.options("PoC")) != 0):									pocInstallationDirectoryPath = Path(self.pocConfig['PoC']['InstallationDirectory'])
+			else:																													raise NotConfiguredException("ERROR: PoC is not configured on this system.")
+			return str(pocInstallationDirectoryPath)
+		
+		elif (query == "ModelSim:InstallationDirectory"):
+			if (len(self.pocConfig.options("Mentor.QuestaSim")) != 0):		modelSimInstallationDirectoryPath = Path(self.pocConfig['Mentor.QuestaSim']['InstallationDirectory'])
+			elif (len(self.pocConfig.options("Altera.ModelSim")) != 0):		modelSimInstallationDirectoryPath = Path(self.pocConfig['Altera.ModelSim']['InstallationDirectory'])
+			else:																													raise NotConfiguredException("ERROR: ModelSim is not configured on this system.")
+			return str(modelSimInstallationDirectoryPath)
+		
+		elif (query == "Xilinx.ISE:InstallationDirectory"):
+			if (len(self.pocConfig.options("Xilinx.ISE")) != 0):
+				iseInstallationDirectoryPath = Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])
+				return str(iseInstallationDirectoryPath)
+
+			elif (len(self.pocConfig.options("Xilinx.LabTools")) != 0):
+				labToolsInstallationDirectoryPath = Path(self.pocConfig['Xilinx.LabTools']['InstallationDirectory'])
+				return str(labToolsInstallationDirectoryPath)
+			else:																				raise NotConfiguredException("ERROR: Xilinx ISE or Xilinx LabTools is not configured on this system.")
+			
+		elif (query == "Xilinx.ISE:SettingsFile"):
+			if (len(self.pocConfig.options("Xilinx.ISE")) != 0):
+				iseInstallationDirectoryPath = Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])
+				
+				if (self.Platform == "Windows"):					return (str(iseInstallationDirectoryPath / "settings64.bat"))
+				elif (self.Platform == "Linux"):					return (str(iseInstallationDirectoryPath / "settings64.sh"))
+				else:																			raise PlatformNotSupportedException(self.Platform)
+			
+			elif (len(self.pocConfig.options("Xilinx.LabTools")) != 0):
+				labToolsInstallationDirectoryPath = Path(self.pocConfig['Xilinx.LabTools']['InstallationDirectory'])
+				
+				if (self.Platform == "Windows"):					return (str(labToolsInstallationDirectoryPath / "settings64.bat"))
+				elif (self.Platform == "Linux"):					return (str(labToolsInstallationDirectoryPath / "settings64.sh"))
+				else:																			raise PlatformNotSupportedException(self.Platform)
+			else:																				raise NotConfiguredException("ERROR: Xilinx ISE or Xilinx LabTools is not configured on this system.")
+		
+		elif (query == "Xilinx.Vivado:InstallationDirectory"):
+			if (len(self.pocConfig.options("Xilinx.Vivado")) != 0):
+				vivadoInstallationDirectoryPath = Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])
+				return str(vivadoInstallationDirectoryPath)
+				
+			elif (len(self.pocConfig.options("Xilinx.HardwareServer")) != 0):
+				hardwareServerInstallationDirectoryPath = Path(self.pocConfig['Xilinx.HardwareServer']['InstallationDirectory'])
+				
+				return str(hardwareServerInstallationDirectoryPath)
+			else:																				raise NotConfiguredException("ERROR: Xilinx Vivado or Xilinx HardwareServer is not configured on this system.")
+			
+		elif (query == "Xilinx.Vivado:SettingsFile"):
+			if (len(self.pocConfig.options("Xilinx.Vivado")) != 0):
+				vivadoInstallationDirectoryPath = Path(self.pocConfig['Xilinx.Vivado']['InstallationDirectory'])
+				
+				if (self.Platform == "Windows"):					return (str(vivadoInstallationDirectoryPath / "settings64.bat"))
+				elif (self.Platform == "Linux"):					return (str(vivadoInstallationDirectoryPath / "settings64.sh"))
+				else:																			raise PlatformNotSupportedException(self.Platform)
+				
+			elif (len(self.pocConfig.options("Xilinx.HardwareServer")) != 0):
+				hardwareServerInstallationDirectoryPath = Path(self.pocConfig['Xilinx.HardwareServer']['InstallationDirectory'])
+				
+				if (self.Platform == "Windows"):					return (str(hardwareServerInstallationDirectoryPath / "settings64.bat"))
+				elif (self.Platform == "Linux"):					return (str(hardwareServerInstallationDirectoryPath / "settings64.sh"))
+				else:																			raise PlatformNotSupportedException(self.Platform)
+			else:																				raise NotConfiguredException("ERROR: Xilinx Vivado or Xilinx HardwareServer is not configured on this system.")
+		else:																					raise BaseException("Query string '{0}' is not supported.".format(query))
+
+	# ============================================================================
 	# Simulation	commands
 	# ============================================================================
-	def __PrepareVendorLibraryPaths(self) :
+	def __PrepareVendorLibraryPaths(self):
 		# prepare vendor library path for Altera
-		if (len(self.pocConfig.options("Altera.QuartusII")) != 0) :  self.Directories["AlteraPrimitiveSource"] = Path(
+		if (len(self.pocConfig.options("Altera.QuartusII")) != 0):  self.Directories["AlteraPrimitiveSource"] = Path(
 				self.pocConfig['Altera.QuartusII']['InstallationDirectory']) / "eda/sim_lib"
 		# prepare vendor library path for Xilinx
-		if (len(self.pocConfig.options("Xilinx.ISE")) != 0) :
+		if (len(self.pocConfig.options("Xilinx.ISE")) != 0):
 			self.Directories["XilinxPrimitiveSource"] = Path(
 					self.pocConfig['Xilinx.ISE']['InstallationDirectory']) / "ISE/vhdl/src"
-		elif (len(self.pocConfig.options("Xilinx.Vivado")) != 0) :
+		elif (len(self.pocConfig.options("Xilinx.Vivado")) != 0):
 			self.Directories["XilinxPrimitiveSource"] = Path(
 					self.pocConfig['Xilinx.Vivado']['InstallationDirectory']) / "data/vhdl/src"
 
@@ -205,19 +285,19 @@ class PoC(CommandLineProgram, ArgParseMixin):
 	@SwitchArgumentAttribute("-g", dest="GUIMode", help="show waveform in a GUI window.")
 	# standard
 	# @HandleVerbosityOptions
-	def aSimSimulation(self, args) :
+	def aSimSimulation(self, args):
 		self.PrintHeadline()
 		self._aSimSimulation(args.FQN[0], args.logs, args.reports, args.VHDLVersion, args.GUIMode, args.DeviceName, args.BoardName)
 		Exit.exit()
 
-	def _aSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode, deviceString, boardString) :
+	def _aSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode, deviceString, boardString):
 		# check if Aldec tools are configure
-		if (len(self.pocConfig.options("Aldec.ActiveHDL")) != 0) :
+		if (len(self.pocConfig.options("Aldec.ActiveHDL")) != 0):
 			# prepare some paths
 			self.Directories["ActiveHDLInstallation"] = Path(self.pocConfig['Aldec.ActiveHDL']['InstallationDirectory'])
 			self.Directories["ActiveHDLBinary"] = Path(self.pocConfig['Aldec.ActiveHDL']['BinaryDirectory'])
 			aSimVersion = self.pocConfig['Aldec.ActiveHDL']['Version']
-		elif (len(self.pocConfig.options("Lattice.ActiveHDL")) != 0) :
+		elif (len(self.pocConfig.options("Lattice.ActiveHDL")) != 0):
 			# prepare some paths
 			self.Directories["ActiveHDLInstallation"] = Path(self.pocConfig['Lattice.ActiveHDL']['InstallationDirectory'])
 			self.Directories["ActiveHDLBinary"] = Path(self.pocConfig['Lattice.ActiveHDL']['BinaryDirectory'])
@@ -227,7 +307,7 @@ class PoC(CommandLineProgram, ArgParseMixin):
 		# self.Directories["ActiveHDLInstallation"] =	Path(self.pocConfig['Aldec.RivieraPRO']['InstallationDirectory'])
 		# self.Directories["ActiveHDLBinary"] =				Path(self.pocConfig['Aldec.RivieraPRO']['BinaryDirectory'])
 		# aSimVersion =																self.pocConfig['Aldec.RivieraPRO']['Version']
-		else :
+		else:
 			# raise NotConfiguredException("Neither Aldec's Active-HDL nor Riviera PRO nor Active-HDL Lattice Edition are configured on this system.")
 			raise NotConfiguredException(
 				"Neither Aldec's Active-HDL nor Active-HDL Lattice Edition are configured on this system.")
@@ -246,13 +326,13 @@ class PoC(CommandLineProgram, ArgParseMixin):
 
 		# run a testbench
 		entityToSimulate = Entity(self, module)
-		if (boardString is not None) :
+		if (boardString is not None):
 			boardName = boardString
 			deviceName = None
-		elif (deviceString is not None) :
+		elif (deviceString is not None):
 			boardName = "Custom"
 			deviceName = deviceString
-		else :
+		else:
 			boardName = "Custom"
 			deviceName = "Unknown"
 
@@ -274,14 +354,14 @@ class PoC(CommandLineProgram, ArgParseMixin):
 	@SwitchArgumentAttribute("-g", dest="GUIMode", help="show waveform in GTKWave.")
 	# standard
 	# @HandleVerbosityOptions
-	def ghdlSimulation(self, args) :
+	def ghdlSimulation(self, args):
 		self.PrintHeadline()
 		self._ghdlSimulation(args.FQN[0], args.logs, args.reports, args.VHDLVersion, args.GUIMode, args.DeviceName, args.BoardName)
 		Exit.exit()
 
-	def _ghdlSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode, deviceString, boardString) :
+	def _ghdlSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode, deviceString, boardString):
 		# check if GHDL is configure
-		if (len(self.pocConfig.options("GHDL")) == 0) :  raise NotConfiguredException(
+		if (len(self.pocConfig.options("GHDL")) == 0):  raise NotConfiguredException(
 			"GHDL is not configured on this system.")
 
 		# prepare some paths
@@ -305,25 +385,25 @@ class PoC(CommandLineProgram, ArgParseMixin):
 
 		# run a testbench
 		entityToSimulate = Entity(self, module)
-		if (boardString is not None) :
+		if (boardString is not None):
 			boardName = boardString
 			deviceName = None
-		elif (deviceString is not None) :
+		elif (deviceString is not None):
 			boardName = "Custom"
 			deviceName = deviceString
-		else :
+		else:
 			boardName = "Custom"
 			deviceName = "Unknown"
 
 		simulator.Run(entityToSimulate, boardName=boardName, deviceName=deviceName, vhdlVersion=vhdlVersion,
 									vhdlGenerics=None)
 
-		if (guiMode == True) :
+		if (guiMode == True):
 			# prepare paths for GTKWave, if configured
-			if (len(self.pocConfig.options("GTKWave")) != 0) :
+			if (len(self.pocConfig.options("GTKWave")) != 0):
 				self.Directories["GTKWInstallation"] = Path(self.pocConfig['GTKWave']['InstallationDirectory'])
 				self.Directories["GTKWBinary"] = Path(self.pocConfig['GTKWave']['BinaryDirectory'])
-			else :
+			else:
 				raise NotConfiguredException("No GHDL compatible waveform viewer is configured on this system.")
 
 			viewer = simulator.GetViewer()
@@ -342,17 +422,17 @@ class PoC(CommandLineProgram, ArgParseMixin):
 	@SwitchArgumentAttribute("-g", dest="GUIMode", help="show waveform in a GUI window.")
 	# standard
 	# @HandleVerbosityOptions
-	def iSimSimulation(self, args) :
+	def iSimSimulation(self, args):
 		self.PrintHeadline()
 		self._iSimSimulation(args.FQN[0], args.logs, args.reports, args.GUIMode, args.DeviceName, args.BoardName)
 		Exit.exit()
 
-	def _iSimSimulation(self, module, showLogs, showReport, guiMode, deviceString, boardString) :
+	def _iSimSimulation(self, module, showLogs, showReport, guiMode, deviceString, boardString):
 		# check if ISE is configure
-		if (len(self.pocConfig.options("Xilinx.ISE")) == 0) :  raise NotConfiguredException(
+		if (len(self.pocConfig.options("Xilinx.ISE")) == 0):  raise NotConfiguredException(
 			"Xilinx ISE is not configured on this system.")
 		# check if the appropriate environment is loaded
-		if (environ.get('XILINX') is None) :                    raise EnvironmentException(
+		if (environ.get('XILINX') is None):                    raise EnvironmentException(
 			"Xilinx ISE environment is not loaded in this shell environment. ")
 
 		# prepare some paths
@@ -375,13 +455,13 @@ class PoC(CommandLineProgram, ArgParseMixin):
 
 		# run a testbench
 		entityToSimulate = Entity(self, module)
-		if (boardString is not None) :
+		if (boardString is not None):
 			boardName = boardString
 			deviceName = None
-		elif (deviceString is not None) :
+		elif (deviceString is not None):
 			boardName = "Custom"
 			deviceName = deviceString
-		else :
+		else:
 			boardName = "Custom"
 			deviceName = "Unknown"
 
@@ -402,24 +482,24 @@ class PoC(CommandLineProgram, ArgParseMixin):
 	@SwitchArgumentAttribute("-g", dest="GUIMode", help="show waveform in a GUI window.")
 	# standard
 	# @HandleVerbosityOptions
-	def vSimSimulation(self, args) :
+	def vSimSimulation(self, args):
 		self.PrintHeadline()
 		self._vSimSimulation(args.FQN[0], args.logs, args.reports, args.VHDLVersion, args.GUIMode, args.DeviceName, args.BoardName)
 		Exit.exit()
 
-	def _vSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode, deviceString, boardString) :
+	def _vSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode, deviceString, boardString):
 		# check if QuestaSim is configure
-		if (len(self.pocConfig.options("Mentor.QuestaSim")) != 0) :
+		if (len(self.pocConfig.options("Mentor.QuestaSim")) != 0):
 			# prepare some paths
 			self.Directories["vSimInstallation"] = Path(self.pocConfig['Mentor.QuestaSim']['InstallationDirectory'])
 			self.Directories["vSimBinary"] = Path(self.pocConfig['Mentor.QuestaSim']['BinaryDirectory'])
 			vSimVersion = self.pocConfig['Mentor.QuestaSim']['Version']
-		elif (len(self.pocConfig.options("Altera.ModelSim")) != 0) :
+		elif (len(self.pocConfig.options("Altera.ModelSim")) != 0):
 			# prepare some paths
 			self.Directories["vSimInstallation"] = Path(self.pocConfig['Altera.ModelSim']['InstallationDirectory'])
 			self.Directories["vSimBinary"] = Path(self.pocConfig['Altera.ModelSim']['BinaryDirectory'])
 			vSimVersion = self.pocConfig['Altera.QuestaSim']['Version']
-		else :
+		else:
 			raise NotConfiguredException(
 				"Neither Mentor Graphics QuestaSim nor ModelSim Altera-Edition are configured on this system.")
 
@@ -434,13 +514,13 @@ class PoC(CommandLineProgram, ArgParseMixin):
 
 		# run a testbench
 		entityToSimulate = Entity(self, module)
-		if (boardString is not None) :
+		if (boardString is not None):
 			boardName = boardString
 			deviceName = None
-		elif (deviceString is not None) :
+		elif (deviceString is not None):
 			boardName = "Custom"
 			deviceName = deviceString
-		else :
+		else:
 			boardName = "Custom"
 			deviceName = "Unknown"
 
@@ -461,14 +541,14 @@ class PoC(CommandLineProgram, ArgParseMixin):
 	@SwitchArgumentAttribute("-g", dest="GUIMode", help="show waveform in a GUI window.")
 	# standard
 	# @HandleVerbosityOptions
-	def xSimSimulation(self, args) :
+	def xSimSimulation(self, args):
 		self.PrintHeadline()
 		self._xSimSimulation(args.FQN[0], args.logs, args.reports, args.VHDLVersion, args.GUIMode, args.DeviceName, args.BoardName)
 		Exit.exit()
 
-	def _xSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode, deviceString, boardString) :
+	def _xSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode, deviceString, boardString):
 		# check if ISE is configure
-		if (len(self.pocConfig.options("Xilinx.Vivado")) == 0) :  raise NotConfiguredException(
+		if (len(self.pocConfig.options("Xilinx.Vivado")) == 0):  raise NotConfiguredException(
 			"Xilinx Vivado is not configured on this system.")
 		# check if the appropriate environment is loaded
 		# if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
@@ -490,13 +570,13 @@ class PoC(CommandLineProgram, ArgParseMixin):
 
 		# run a testbench
 		entityToSimulate = Entity(self, module)
-		if (boardString is not None) :
+		if (boardString is not None):
 			boardName = boardString
 			deviceName = None
-		elif (deviceString is not None) :
+		elif (deviceString is not None):
 			boardName = "Custom"
 			deviceName = deviceString
-		else :
+		else:
 			boardName = "Custom"
 			deviceName = "Unknown"
 
@@ -516,7 +596,7 @@ class PoC(CommandLineProgram, ArgParseMixin):
 	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	# @HandleVerbosityOptions
-	def CoreGenCompilation(self, args) :
+	def CoreGenCompilation(self, args):
 		self.PrintHeadline()
 		self._CoreGenCompilation(args.FQN[0], args.logs, args.reports, args.DeviceName, args.BoardName)
 		Exit.exit()
@@ -565,7 +645,7 @@ class PoC(CommandLineProgram, ArgParseMixin):
 	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	# @HandleVerbosityOptions
-	def XstCompilation(self, args) :
+	def XstCompilation(self, args):
 		self.PrintHeadline()
 		self._XstCompilation(args.FQN, args.logs, args.reports, args.DeviceName, args.BoardName)
 		Exit.exit()
@@ -583,20 +663,20 @@ class PoC(CommandLineProgram, ArgParseMixin):
 		self.Directories["ISEBinary"] =				Path(self.pocConfig['Xilinx.ISE']['BinaryDirectory'])
 		iseVersion =													self.pocConfig['Xilinx.ISE']['Version']
 
-		if (boardString is not None) :
+		if (boardString is not None):
 			boardString = boardString.lower()
 			boardSection = None
-			for option in self.pocConfig['BOARDS'] :
-				if (option.lower() == boardString) :
+			for option in self.pocConfig['BOARDS']:
+				if (option.lower() == boardString):
 					boardSection = self.pocConfig['BOARDS'][option]
-			if (boardSection is None) :
+			if (boardSection is None):
 				raise CompilerException("Unknown board '" + boardString + "'.") from NoOptionError(boardString, 'BOARDS')
 
 			deviceString = self.pocConfig[boardSection]['FPGA']
 			device = Device(deviceString)
-		elif (deviceString is not None) :
+		elif (deviceString is not None):
 			device = Device(deviceString)
-		else :
+		else:
 			raise BaseException("No board or device given.")
 
 		entityToCompile = Entity(self, entity)
@@ -623,16 +703,16 @@ def main():
 		poc.Run()
 		Exit.exit()
 
-	except (SimulatorException, CompilerException) as ex :
+	except (SimulatorException, CompilerException) as ex:
 		print(Foreground.RED + "ERROR:" + Foreground.RESET + " {0}".format(ex.message))
-		if isinstance(ex.__cause__, FileNotFoundError) :
+		if isinstance(ex.__cause__, FileNotFoundError):
 			print("{0}  FileNotFound:{1} '{2}'".format(Foreground.LIGHTYELLOW_EX, Foreground.RESET, str(ex.__cause__)))
-		elif isinstance(ex.__cause__, ParserException) :
+		elif isinstance(ex.__cause__, ParserException):
 			print("{0}  ParserException:{1} {2}".format(Foreground.LIGHTYELLOW_EX, Foreground.RESET, str(ex.__cause__)))
-			if (ex.__cause__.__cause__ is not None) :
+			if (ex.__cause__.__cause__ is not None):
 				print("{0}    {1}:{2} {3}".format(Foreground.LIGHTYELLOW_EX, ex.__cause__.__cause__.__class__.__name__,
 																					Foreground.RESET, str(ex.__cause__.__cause__)))
-		elif isinstance(ex.__cause__, ConfigParser_Error) :
+		elif isinstance(ex.__cause__, ConfigParser_Error):
 			print("{0}  configparser.Error:{1} '{2}'".format(Foreground.LIGHTYELLOW_EX, Foreground.RESET, str(ex.__cause__)))
 		print(Foreground.RESET)
 		Exit.exit(1)
