@@ -40,15 +40,19 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Xilinx.Vivado")
 
 
+from collections					import OrderedDict
+from os										import environ
+
 from Base.Exceptions		import PlatformNotSupportedException
+from Base.Configuration import ConfigurationBase, ConfigurationException, SkipConfigurationException
 from Base.Executable		import *
 
 
-class Configuration:
-	__vendor =		"Xilinx"
-	__shortName =	"Vivado"
-	__LongName =	"Xilinx Vivado"
-	__privateConfiguration = {
+class Configuration(ConfigurationBase):
+	_vendor =		"Xilinx"
+	_shortName =	"Vivado"
+	_longName =	"Xilinx Vivado"
+	_privateConfiguration = {
 		"Windows": {
 			"Xilinx": {
 				"InstallationDirectory":	"C:/Xilinx"
@@ -71,11 +75,44 @@ class Configuration:
 		}
 	}
 
-	def IsSupportedPlatform(self, Platform):
-		return (Platform in self.__privateConfiguration)
-
 	def GetSections(self, Platform):
 		pass
+
+
+	def ConfigureForWindows(self):
+		xilinxDirectory = self.__GetXilinxPath()
+		if (xilinxDirectory is None):
+			xilinxDirectory = self.__AskXilinxPath()
+		if (not xilinxDirectory.exists()):    raise ConfigurationException("Xilinx installation directory '{0}' does not exist.".format(xilinxDirectory))  from NotADirectoryError(xilinxDirectory)
+
+
+	def __GetXilinxPath(self):
+		xilinx = environ.get('XILINX')
+		if (xilinx is None):
+			return None
+		else:
+			return Path(xilinx)
+
+
+	def __AskXilinxPath(self):
+		# Ask for installed Xilinx ISE
+		isXilinxISE = input('Is Xilinx ISE installed on your system? [Y/n/p]: ')
+		isXilinxISE = isXilinxISE if isXilinxISE != "" else "Y"
+		if (isXilinxISE in ['p', 'P']):
+			raise SkipConfigurationException()
+		elif (isXilinxISE in ['n', 'N']):
+			return None
+		elif (isXilinxISE in ['y', 'Y']):
+			default = Path(self._privateConfiguration['Windows']['Xilinx']['InstallationDirectory'])
+			xilinxDirectory = input('Xilinx installation directory [{0}]: '.format(str(default)))
+			if (xilinxDirectory != ""):
+				return Path(xilinxDirectory)
+			else:
+				return default
+		else:
+			raise ConfigurationException("Unsupported choice '{0}'".format(isXilinxISE))
+
+
 
 	def manualConfigureForWindows(self) :
 		# Ask for installed Xilinx Vivado

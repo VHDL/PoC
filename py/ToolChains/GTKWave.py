@@ -64,11 +64,11 @@ class Configuration:
 		}
 	}
 
-	def IsSupportedPlatform(self, Platform):
-		return (Platform in self.__privateConfiguration)
-
 	def GetSections(self, Platform):
 		pass
+
+	def ConfigureForWindows(self):
+		return
 
 	def manualConfigureForWindows(self) :
 		# Ask for installed GTKWave

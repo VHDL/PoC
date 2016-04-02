@@ -111,9 +111,13 @@ class Exit:
 		Exit.exit(1)
 
 	@classmethod
-	def printNotImplementedException(cls, ex):
+	def printNotImplementedError(cls, ex):
+		from traceback	import walk_tb
 		Init.init()
-		print("{RED}ERROR:{RESET} {message}".format(message=ex.message, **Init.Foreground))
+		frame, sourceLine = [x for x in walk_tb(ex.__traceback__)][-1]
+		filename = frame.f_code.co_filename
+		funcName = frame.f_code.co_name
+		print("{RED}Not implemented:{RESET} {function} in file '{filename}': {message}".format(function=funcName, filename=filename, message=str(ex), **Init.Foreground))
 		Exit.exit(1)
 
 	@classmethod

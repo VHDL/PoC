@@ -41,13 +41,14 @@ else:
 
 
 from Base.Executable				import *
+from Base.Configuration			import ConfigurationBase
 
 
-class Configuration:
-	__vendor =		None
-	__shortName = "GTKWave"
-	__LongName =	"GTKWave"
-	__privateConfiguration = {
+class Configuration(ConfigurationBase):
+	_vendor =		None
+	_shortName = "GTKWave"
+	_longName =	"GTKWave"
+	_privateConfiguration = {
 		"Windows": {
 			"GHDL": {
 				"Version":								"0.34dev",
@@ -66,11 +67,11 @@ class Configuration:
 		}
 	}
 
-	def IsSupportedPlatform(self, Platform):
-		return (Platform in self.__privateConfiguration)
-
 	def GetSections(self, Platform):
 		pass
+
+	def ConfigureForWindows(self):
+		return
 
 	def manualConfigureForWindows(self):
 		# Ask for installed GHDL

@@ -40,19 +40,15 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.PoC")
 
 
-class Configuration:
-	__vendor =		None
-	__shortName = "PoC"
-	__LongName =	"PoC"
-	__privateConfiguration = {
-		"Windows": {
-			"PoC": {
-				"Version":								"0.0.0",
-				"InstallationDirectory":	None
-			},
-			"Solutions": {}
-		},
-		"Linux": {
+from Base.Configuration		import ConfigurationBase
+
+
+class Configuration(ConfigurationBase):
+	_vendor =		None
+	_shortName = "PoC"
+	_longName =	"PoC"
+	_privateConfiguration = {
+		"ALL": {
 			"PoC": {
 				"Version":								"0.0.0",
 				"InstallationDirectory":	None
@@ -61,66 +57,11 @@ class Configuration:
 		}
 	}
 
-	def IsSupportedPlatform(self, Platform):
-		return (Platform in self.__privateConfiguration)
-
 	def GetSections(self, Platform):
 		pass
 
-	def manualConfigureForWindows(self):
-		# Ask for installed GHDL
-		isGHDL = input('Is GHDL installed on your system? [Y/n/p]: ')
-		isGHDL = isGHDL if isGHDL != "" else "Y"
-		if (isGHDL  in ['p', 'P']):
-			pass
-		elif (isGHDL in ['n', 'N']):
-			self.pocConfig['GHDL'] = OrderedDict()
-		elif (isGHDL in ['y', 'Y']):
-			ghdlDirectory =	input('GHDL installation directory [C:\Program Files (x86)\GHDL]: ')
-			ghdlVersion =		input('GHDL version number [0.31]: ')
-			print()
+	def ConfigureForWindows(self):
+		return
 
-			ghdlDirectory = ghdlDirectory if ghdlDirectory != "" else "C:\Program Files (x86)\GHDL"
-			ghdlVersion = ghdlVersion if ghdlVersion != "" else "0.31"
-
-			ghdlDirectoryPath = Path(ghdlDirectory)
-			ghdlExecutablePath = ghdlDirectoryPath / "bin" / "ghdl.exe"
-
-			if not ghdlDirectoryPath.exists():	raise BaseException("GHDL installation directory '%s' does not exist." % ghdlDirectory)
-			if not ghdlExecutablePath.exists():	raise BaseException("GHDL is not installed.")
-
-			self.pocConfig['GHDL']['Version'] = ghdlVersion
-			self.pocConfig['GHDL']['InstallationDirectory'] = ghdlDirectoryPath.as_posix()
-			self.pocConfig['GHDL']['BinaryDirectory'] = '${InstallationDirectory}/bin'
-			self.pocConfig['GHDL']['Backend'] = 'mcode'
-		else:
-			raise BaseException("unknown option")
-
-	def manualConfigureForLinux(self):
-		# Ask for installed GHDL
-		isGHDL = input('Is GHDL installed on your system? [Y/n/p]: ')
-		isGHDL = isGHDL if isGHDL != "" else "Y"
-		if (isGHDL  in ['p', 'P']):
-			pass
-		elif (isGHDL in ['n', 'N']):
-			self.pocConfig['GHDL'] = OrderedDict()
-		elif (isGHDL in ['y', 'Y']):
-			ghdlDirectory =	input('GHDL installation directory [/usr/bin]: ')
-			ghdlVersion =		input('GHDL version number [0.31]: ')
-			print()
-
-			ghdlDirectory = ghdlDirectory if ghdlDirectory != "" else "/usr/bin"
-			ghdlVersion = ghdlVersion if ghdlVersion != "" else "0.31"
-
-			ghdlDirectoryPath = Path(ghdlDirectory)
-			ghdlExecutablePath = ghdlDirectoryPath / "ghdl"
-
-			if not ghdlDirectoryPath.exists():	raise BaseException("GHDL installation directory '%s' does not exist." % ghdlDirectory)
-			if not ghdlExecutablePath.exists():	raise BaseException("GHDL is not installed.")
-
-			self.pocConfig['GHDL']['Version'] = ghdlVersion
-			self.pocConfig['GHDL']['InstallationDirectory'] = ghdlDirectoryPath.as_posix()
-			self.pocConfig['GHDL']['BinaryDirectory'] = '${InstallationDirectory}'
-			self.pocConfig['GHDL']['Backend'] = 'llvm'
-		else:
-			raise BaseException("unknown option")
+	def ConfigureForLinux(self):
+		return

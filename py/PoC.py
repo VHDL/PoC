@@ -48,6 +48,7 @@ from Parser.Parser						import ParserException
 from Base.Logging							import ILogable
 from PoC.Entity								import *
 from PoC.Config								import *
+from ToolChains								import Configurations
 from Simulator								import *
 from Simulator.Exceptions			import *
 from Compiler									import *
@@ -237,10 +238,10 @@ class PoC(ILogable, ArgParseMixin):
 			self.pocConfig.remove_option("PoC", pocOption)
 
 	def __WritePoCConfiguration(self):
-		self.__CleanupPoCConfiguration()
+		# self.__CleanupPoCConfiguration()
 
 		# Writing configuration to disc
-		print("Writing configuration file to '%s'" % str(self.Files['PoCPrivateConfig']))
+		self._LogNormal("Writing configuration file to '{0}'".format(str(self.Files['PoCPrivateConfig'])))
 		with self.Files['PoCPrivateConfig'].open('w') as configFileHandle:
 			self.pocConfig.write(configFileHandle)
 
@@ -301,209 +302,59 @@ class PoC(ILogable, ArgParseMixin):
 	# ============================================================================
 	# Configuration commands
 	# ============================================================================
-	def _printConfigurationHelp(self):
-		self._LogVerbose("starting manual configuration...")
-		print('Explanation of abbreviations:')
-		print('  y - yes')
-		print('  n - no')
-		print('  p - pass (jump to next question)')
-		print('Upper case means default value')
-		print()
-
 	# create the sub-parser for the "configure" command
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("configure", help="Configure vendor tools for PoC.")
 	# @HandleVerbosityOptions
 	def HandleManualConfiguration(self, args):
-		self._printConfigurationHelp()
+		self.__Prepare()
+		self.PrintHeadline()
+
+		self._LogVerbose("starting manual configuration...")
+		print('Explanation of abbreviations:')
+		print('  y - yes')
+		print('  n - no')
+		print('  p - pass (jump to next question)')
+		#print('Upper case means default value')
+		print()
 
 		if (self.Platform == 'Windows'):			self._manualConfigurationForWindows()
-		elif (self.Platform == 'Linux'):			self._manualConfigurationForWindows()
+		elif (self.Platform == 'Linux'):			self._manualConfigurationForLinux()
 		else:																	raise PlatformNotSupportedException(self.Platform)
 
 		# write configuration
-		self._writePoCConfiguration()
+		self.__WritePoCConfiguration()
 		# re-read configuration
-		self._readPoCConfiguration()
+		self.__ReadPoCConfiguration()
 
 	def _manualConfigurationForWindows(self):
-		# configure QuartusII on Windows
-		next = False
-		while (next == False):
-			try:
-				self.manualConfigureWindowsQuartusII()
-				next = True
-			except BaseException as ex:
-				print("FAULT: %s" % ex.message)
-			except Exception as ex:
-				raise
+		for conf in Configurations:
+			configurator = conf()
+			self._LogNormal("Configure {0} - {1}".format(configurator.Name, conf))
 
-		# configure ISE on Windows
-		next = False
-		while (next == False):
-			try:
-				self.manualConfigureWindowsISE()
-				next = True
-			except BaseException as ex:
-				print("FAULT: %s" % ex.message)
-			except Exception as ex:
-				raise
-
-		# configure LabTools on Windows
-		next = False
-		while (next == False):
-			try:
-				self.manualConfigureWindowsLabTools()
-				next = True
-			except BaseException as ex:
-				print("FAULT: %s" % ex.message)
-			except Exception as ex:
-				raise
-
-		# configure Vivado on Windows
-		next = False
-		while (next == False):
-			try:
-				self.manualConfigureWindowsVivado()
-				next = True
-			except BaseException as ex:
-				print("FAULT: %s" % ex.message)
-			except Exception as ex:
-				raise
-
-		# configure HardwareServer on Windows
-		next = False
-		while (next == False):
-			try:
-				self.manualConfigureWindowsHardwareServer()
-				next = True
-			except BaseException as ex:
-				print("FAULT: %s" % ex.message)
-			except Exception as ex:
-				raise
-
-		# configure Mentor QuestaSIM on Windows
-		next = False
-		while (next == False):
-			try:
-				self.manualConfigureWindowsQuestaSim()
-				next = True
-			except BaseException as ex:
-				print("FAULT: %s" % ex.message)
-			except Exception as ex:
-				raise
-
-		# configure GHDL on Windows
-		next = False
-		while (next == False):
-			try:
-				self.manualConfigureWindowsGHDL()
-				next = True
-			except BaseException as ex:
-				print("FAULT: %s" % ex.message)
-			except Exception as ex:
-				raise
-
-		# configure GTKWave on Windows
-		next = False
-		while (next == False):
-			try:
-				self.manualConfigureWindowsGTKW()
-				next = True
-			except BaseException as ex:
-				print("FAULT: %s" % ex.message)
-			except Exception as ex:
-				raise
+			next = False
+			while (next == False):
+				try:
+					configurator.ConfigureForWindows()
+					next = True
+				except BaseException as ex:
+					print("FAULT: {0}".format(ex.message))
+			# end while
 
 	def _manualConfigurationForLinux(self):
-		# configure QuartusII on Linux
-		next = False
-		while (next == False):
-			try:
-				self.manualConfigureLinuxQuartusII()
-				next = True
-			except BaseException as ex:
-				print("FAULT: %s" % ex.message)
-			except Exception as ex:
-				raise
+		for conf in Configurations:
+			configurator = conf()
+			self._LogNormal("Configure {0}".format(configurator.Name))
 
-		# configure ISE on Linux
-		next = False
-		while (next == False):
-			try:
-				self.manualConfigureLinuxISE()
-				next = True
-			except BaseException as ex:
-				print("FAULT: %s" % ex.message)
-			except Exception as ex:
-				raise
-
-		# configure LabTools on Linux
-		next = False
-		while (next == False):
-			try:
-				self.manualConfigureLinuxLabTools()
-				next = True
-			except BaseException as ex:
-				print("FAULT: %s" % ex.message)
-			except Exception as ex:
-				raise
-
-		# configure Vivado on Linux
-		next = False
-		while (next == False):
-			try:
-				self.manualConfigureLinuxVivado()
-				next = True
-			except BaseException as ex:
-				print("FAULT: %s" % ex.message)
-			except Exception as ex:
-				raise
-
-		# configure HardwareServer on Linux
-		next = False
-		while (next == False):
-			try:
-				self.manualConfigureLinuxHardwareServer()
-				next = True
-			except BaseException as ex:
-				print("FAULT: %s" % ex.message)
-			except Exception as ex:
-				raise
-
-		# configure Mentor QuestaSIM on Linux
-		next = False
-		while (next == False):
-			try:
-				self.manualConfigureLinuxQuestaSim()
-				next = True
-			except BaseException as ex:
-				print("FAULT: %s" % ex.message)
-			except Exception as ex:
-				raise
-
-		# configure GHDL on Linux
-		next = False
-		while (next == False):
-			try:
-				self.manualConfigureLinuxGHDL()
-				next = True
-			except BaseException as ex:
-				print("FAULT: %s" % ex.message)
-			except Exception as ex:
-				raise
-
-		# configure GTKWave on Linux
-		next = False
-		while (next == False):
-			try:
-				self.manualConfigureLinuxGTKW()
-				next = True
-			except BaseException as ex:
-				print("FAULT: %s" % ex.message)
-			except Exception as ex:
-				raise
+			next = False
+			while (next == False):
+				try:
+					configurator.ConfigureForLinux()
+					next = True
+				except BaseException as ex:
+					print("FAULT: {0}".format(ex.message))
+			# end while
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "query" command
@@ -764,15 +615,11 @@ class PoC(ILogable, ArgParseMixin):
 		if (len(self.pocConfig.options("Xilinx.ISE")) == 0):  raise NotConfiguredException(
 			"Xilinx ISE is not configured on this system.")
 		# check if the appropriate environment is loaded
-		if (environ.get('XILINX') is None):                    raise EnvironmentException(
-			"Xilinx ISE environment is not loaded in this shell environment. ")
+		if (environ.get('XILINX') is None):                    raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
 
 		# prepare some paths
-		self.Directories["iSimFiles"] = self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames'][
-			'ISESimulatorFiles']
-		self.Directories["iSimTemp"] = self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames'][
-			'ISESimulatorFiles']
-
+		self.Directories["iSimFiles"] =	self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['ISESimulatorFiles']
+		self.Directories["iSimTemp"] =	self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['ISESimulatorFiles']
 		self.Directories["ISEInstallation"] = Path(self.pocConfig['Xilinx.ISE']['InstallationDirectory'])
 		self.Directories["ISEBinary"] = Path(self.pocConfig['Xilinx.ISE']['BinaryDirectory'])
 		self.Directories["XilinxPrimitiveSource"] = Path(
@@ -1055,7 +902,7 @@ def main():
 	except NotConfiguredException as ex:				Exit.printNotConfiguredException(ex)
 	except PlatformNotSupportedException as ex:	Exit.printPlatformNotSupportedException(ex)
 	except BaseException as ex:									Exit.printBaseException(ex)
-	except NotImplementedError as ex:						Exit.printNotImplementedException(ex)
+	except NotImplementedError as ex:						Exit.printNotImplementedError(ex)
 	except Exception as ex:											Exit.printException(ex)
 
 		# # add arguments
