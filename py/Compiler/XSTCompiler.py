@@ -40,17 +40,16 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Compiler.XSTCompiler")
 
 # load dependencies
-from colorama								import Fore as Foreground
-from os											import chdir
 import re								# used for output filtering
 import shutil
-from configparser						import NoOptionError, NoSectionError, ConfigParser, ExtendedInterpolation
+from configparser						import NoSectionError
+from os											import chdir
 
-from Base.Exceptions				import *
-from Base.Project						import FileTypes
-from Base.PoCProject				import *
+from colorama								import Fore as Foreground
+
 from Compiler.Base					import PoCCompiler
 from Compiler.Exceptions		import *
+from PoC.PoCProject import *
 from ToolChains.Xilinx.ISE	import ISE
 
 

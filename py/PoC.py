@@ -33,7 +33,6 @@
 
 from argparse									import RawDescriptionHelpFormatter
 from colorama									import Fore as Foreground
-from colorama									import init as colorama_init
 from configparser							import NoOptionError, ConfigParser, ExtendedInterpolation
 from configparser							import Error as ConfigParser_Error
 from os												import environ
@@ -42,7 +41,7 @@ from platform									import system as platform_system
 from sys											import argv as sys_argv
 from textwrap									import dedent
 
-from lib.Functions						import Exit
+from lib.Functions						import Init, Exit
 from lib.ArgParseAttributes		import *
 from Base.Exceptions					import *
 from Base.Logging							import Logger, Severity
@@ -136,21 +135,22 @@ class PoC(ILogable, ArgParseMixin):
 	def __PrepareForSimulation(self):
 		self.__Prepare()
 		self.__ReadPoCConfiguration()
-		self.__ReadTestbenchConfiguration()
 
 		# parsing values into class fields
 		self.Directories["PoCSource"] =			self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['HDLSourceFiles']
 		self.Directories["PoCTestbench"] =	self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['TestbenchFiles']
 		self.Directories["PoCTemp"] =				self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['TemporaryFiles']
+		self.__ReadTestbenchConfiguration()
 
 	def __PrepareForSynthesis(self):
 		self.__Prepare()
 		self.__ReadPoCConfiguration()
-		self.__ReadNetlistConfiguration()
+
 		# parsing values into class fields
 		self.Directories["PoCSource"] =			self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['HDLSourceFiles']
 		self.Directories["PoCNetList"] =		self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['NetListFiles']
 		self.Directories["PoCTemp"] =				self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['TemporaryFiles']
+		self.__ReadNetlistConfiguration()
 
 	# read PoC configuration
 	# ============================================================================
@@ -1030,31 +1030,29 @@ def main():
 	Exit.quiet = quiet
 
 	try:
-		colorama_init()
+		Init.init()
 		# handover to a class instance
 		poc = PoC(debug, verbose, quiet, dryRun)
 		poc.Run()
 		Exit.exit()
 
-	except (SimulatorException, CompilerException) as ex:
-		print(Foreground.RED + "ERROR:" + Foreground.RESET + " {0}".format(ex.message))
+	except (CommonException, SimulatorException, CompilerException) as ex:
+		print("{RED}ERROR:{RESET} {message}".format(message=ex.message, **Init.Foreground))
 		if isinstance(ex.__cause__, FileNotFoundError):
-			print("{0}  FileNotFound:{1} '{2}'".format(Foreground.LIGHTYELLOW_EX, Foreground.RESET, str(ex.__cause__)))
+			print("{YELLOW}  FileNotFound:{RESET} '{cause}'".format(cause=str(ex.__cause__), **Init.Foreground))
 		elif isinstance(ex.__cause__, ParserException):
-			print("{0}  ParserException:{1} {2}".format(Foreground.LIGHTYELLOW_EX, Foreground.RESET, str(ex.__cause__)))
+			print("{YELLOW}  ParserException:{RESET} {cause}".format(cause=str(ex.__cause__), **Init.Foreground))
 			if (ex.__cause__.__cause__ is not None):
-				print("{0}    {1}:{2} {3}".format(Foreground.LIGHTYELLOW_EX, ex.__cause__.__cause__.__class__.__name__,
-																					Foreground.RESET, str(ex.__cause__.__cause__)))
+				print("{YELLOW}    {name}:{RESET} {cause}".format(name=ex.__cause__.__cause__.__class__.__name__, cause=str(ex.__cause__.__cause__), **Init.Foreground))
 		elif isinstance(ex.__cause__, ConfigParser_Error):
-			print("{0}  configparser.Error:{1} '{2}'".format(Foreground.LIGHTYELLOW_EX, Foreground.RESET, str(ex.__cause__)))
-		print(Foreground.RESET)
+			print("{YELLOW}  configparser.Error:{RESET} '{cause}'".format(cause=str(ex.__cause__), **Init.Foreground))
 		Exit.exit(1)
 
 	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)
 	except NotConfiguredException as ex:				Exit.printNotConfiguredException(ex)
 	except PlatformNotSupportedException as ex:	Exit.printPlatformNotSupportedException(ex)
 	except BaseException as ex:									Exit.printBaseException(ex)
-	except NotImplementedException as ex:				Exit.printNotImplementedException(ex)
+	except NotImplementedError as ex:						Exit.printNotImplementedException(ex)
 	except Exception as ex:											Exit.printException(ex)
 
 		# # add arguments

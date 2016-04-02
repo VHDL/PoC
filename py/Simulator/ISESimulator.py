@@ -40,15 +40,15 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.ISESimulator")
 
 # load dependencies
-from os											import chdir
-from configparser						import NoSectionError
 from colorama								import Fore as Foreground
-from Base.Exceptions				import *
-from Base.PoCConfig					import *
+from configparser						import NoSectionError
+from os											import chdir
+
+
 from Base.Project						import FileTypes
-from Base.PoCProject				import *
-from Simulator.Exceptions		import *
+from PoC.PoCProject					import *
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
+from Simulator.Exceptions		import *
 from ToolChains.Xilinx.ISE	import ISE
 
 

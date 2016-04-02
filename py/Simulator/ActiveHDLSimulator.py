@@ -38,19 +38,15 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.ActiveHDLSimulator")
 
 # load dependencies
-from pathlib								import Path
-from os											import chdir
 from configparser						import NoSectionError
-from colorama								import Fore as Foreground
-from subprocess							import CalledProcessError
+from os											import chdir
 
-from Base.Exceptions				import *
-from Base.PoCConfig					import *
-from Base.Project						import FileTypes
-from Base.PoCProject				import *
 from Base.Executable				import *
-from Simulator.Exceptions		import * 
+from Base.Project						import FileTypes
+from PoC.PoCProject					import *
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
+from Simulator.Exceptions		import *
+
 
 class Simulator(PoCSimulator):
 	__guiMode =				False

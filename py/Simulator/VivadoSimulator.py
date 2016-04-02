@@ -40,19 +40,15 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.VivadoSimulator")
 
 # load dependencies
-from pathlib import Path
-from os											import chdir
-from configparser						import NoSectionError
-from colorama								import Fore as Foreground
-from subprocess							import CalledProcessError
+from colorama									import Fore as Foreground
+from configparser							import NoSectionError
+from os												import chdir
 
-from Base.Exceptions				import *
-from Base.PoCConfig					import *
-from Base.Project						import FileTypes
-from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
-from Simulator.Exceptions		import *
-from Simulator.Base					import PoCSimulator#, VHDLTestbenchLibraryName 
+from Base.Project							import FileTypes
+from PoC.PoCProject						import *
+from Simulator.Base						import PoCSimulator#, VHDLTestbenchLibraryName
+from Simulator.Exceptions			import *
+from ToolChains.Xilinx.Vivado	import Vivado
 
 # Workaround for Vivado 2015.4
 VHDLTestbenchLibraryName = "work"
@@ -91,7 +87,7 @@ class Simulator(PoCSimulator):
 	def PrepareSimulator(self, binaryPath, version):
 		# create the GHDL executable factory
 		self._LogVerbose("  Preparing GHDL simulator.")
-		self._vivado = VivadoSimulatorExecutable(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._vivado = Vivado(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, pocEntities, **kwargs):
 		for pocEntity in pocEntities:
@@ -263,193 +259,3 @@ class Simulator(PoCSimulator):
 			# except SimulatorException as ex:
 				# raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
 	
-		
-class VivadoSimulatorExecutable:
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		self._platform =						platform
-		self._binaryDirectoryPath =	binaryDirectoryPath
-		self._version =							version
-		self.__logger =							logger
-	
-	def GetVHDLCompiler(self):
-		return VivadoVHDLCompiler(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
-	
-	def GetLinker(self):
-		return VivadoLinker(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
-	
-	def GetSimulator(self):
-		return VivadoSimulator(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
-		
-class VivadoVHDLCompiler(Executable, VivadoSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		VivadoSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-		
-		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "xvhcomp.bat"
-		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "xvhcomp"
-		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, logger=logger)
-
-
-	
-	def Compile(self, vhdlFile):
-		parameterList = self.Parameters.ToArgumentList()
-		
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		
-		_indent = "    "
-		print(_indent + "xvhcomp messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
-		try:
-			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
-		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
-
-		
-class VivadoLinker(Executable, VivadoSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		VivadoSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-		
-		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "xelab.bat"
-		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "xelab"
-		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, logger=logger)
-
-		self.Parameters[self.Executable] = executablePath
-
-	class Executable(metaclass=ExecutableArgument):
-		_value =	None
-
-	class FlagRangeCheck(metaclass=ShortFlagArgument):
-		_name =		"rangecheck"
-		_value =	None
-
-	class SwitchMultiThreading(metaclass=ShortTupleArgument):
-		_name =		"mt"
-		_value =	None
-
-	class SwitchVerbose(metaclass=ShortTupleArgument):
-		_name =		"verbose"
-		_value =	None
-
-	class SwitchDebug(metaclass=ShortTupleArgument):
-		_name =		"debug"
-		_value =	None
-
-	# class SwitchVHDL2008(metaclass=ShortFlagArgument):
-	# 	_name =		"vhdl2008"
-	# 	_value =	None
-
-	class SwitchOptimization(metaclass=ShortValuedFlagArgument):
-		_name =		"O"
-		_value =	None
-
-	class SwitchTimeResolution(metaclass=ShortTupleArgument):
-		_name =		"timeprecision_vhdl"
-		_value =	None
-
-	class SwitchProjectFile(metaclass=ShortTupleArgument):
-		_name =		"prj"
-		_value =	None
-
-	class SwitchLogFile(metaclass=ShortTupleArgument):
-		_name =		"log"
-		_value =	None
-
-	class SwitchSnapshot(metaclass=StringArgument):
-		_value =	None
-
-	class ArgTopLevel(metaclass=StringArgument):
-		_value =	None
-
-	Parameters = CommandLineArgumentList(
-		Executable,
-		FlagRangeCheck,
-		SwitchMultiThreading,
-		SwitchTimeResolution,
-		SwitchVerbose,
-		SwitchDebug,
-		# SwitchVHDL2008,
-		SwitchOptimization,
-		SwitchProjectFile,
-		SwitchLogFile,
-		SwitchSnapshot,
-		ArgTopLevel
-	)
-
-	def Link(self):
-		parameterList = self.Parameters.ToArgumentList()
-		
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		
-		_indent = "    "
-		print(_indent + "xelab messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
-		try:
-			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
-		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
-
-
-class VivadoSimulator(Executable, VivadoSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		VivadoSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-		
-		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "xsim.bat"
-		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "xsim"
-		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, logger=logger)
-
-		self.Parameters[self.Executable] = executablePath
-
-	class Executable(metaclass=ExecutableArgument):
-		_value =	None
-
-	class SwitchLogFile(metaclass=ShortTupleArgument):
-		_name =		"-log"
-		_value =	None
-
-	class FlagGuiMode(metaclass=ShortFlagArgument):
-		_name =		"-gui"
-		_value =	None
-
-	class SwitchTclBatchFile(metaclass=ShortTupleArgument):
-		_name =		"-tclbatch"
-		_value =	None
-
-	class SwitchWaveformFile(metaclass=ShortTupleArgument):
-		_name =		"-view"
-		_value =	None
-
-	class SwitchSnapshot(metaclass=StringArgument):
-		_value =	None
-
-	Parameters = CommandLineArgumentList(
-		Executable,
-		SwitchLogFile,
-		FlagGuiMode,
-		SwitchTclBatchFile,
-		SwitchWaveformFile,
-		SwitchSnapshot
-	)
-
-	def Simulate(self):
-		parameterList = self.Parameters.ToArgumentList()
-
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		
-		_indent = "    "
-		print(_indent + "xsim messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
-		try:
-			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
-		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)

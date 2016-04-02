@@ -38,19 +38,15 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.vSimSimulator")
 
 # load dependencies
-from pathlib								import Path
-from os											import chdir
-from configparser						import NoSectionError
-from colorama								import Fore as Foreground
-from subprocess							import CalledProcessError
+from colorama											import Fore as Foreground
+from configparser									import NoSectionError
+from os														import chdir
 
-from Base.Exceptions				import *
-from Base.PoCConfig					import *
-from Base.Project						import FileTypes
-from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
-from Simulator.Exceptions		import * 
-from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
+from PoC.PoCProject								import *
+from Simulator.Base								import PoCSimulator, VHDLTestbenchLibraryName
+from Simulator.Exceptions					import *
+from ToolChains.Mentor.QuestaSim	import QuestaSim
+
 
 class Simulator(PoCSimulator):
 	__guiMode =				False
@@ -86,7 +82,7 @@ class Simulator(PoCSimulator):
 	def PrepareSimulator(self, binaryPath, version):
 		# create the GHDL executable factory
 		self._LogVerbose("  Preparing Mentor simulator.")
-		self._questa =		QuestaSimulatorExecutable(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._questa =		QuestaSim(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, pocEntities, **kwargs):
 		for pocEntity in pocEntities:
@@ -232,224 +228,4 @@ class Simulator(PoCSimulator):
 			# except SimulatorException as ex:
 				# raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
 		
-class QuestaSimulatorExecutable:
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		self._platform =						platform
-		self._binaryDirectoryPath =	binaryDirectoryPath
-		self._version =							version
-		self.__logger =							logger
-	
-	def GetVHDLCompiler(self):
-		return QuestaVHDLCompiler(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
-		
-	def GetSimulator(self):
-		return QuestaSimulator(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
-		
-	def GetVHDLLibraryTool(self):
-		return QuestaVHDLLibraryTool(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
 
-class QuestaVHDLCompiler(Executable, QuestaSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		QuestaSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-		
-		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vcom.exe"
-		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vcom"
-		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, logger=logger)
-
-		self.Parameters[self.Executable] = executablePath
-
-	class Executable(metaclass=ExecutableArgument):
-		_value =	None
-
-	class FlagTime(metaclass=ShortFlagArgument):
-		_name =		"time"					# Print the compilation wall clock time
-		_value =	None
-
-	class FlagExplicit(metaclass=ShortFlagArgument):
-		_name =		"explicit"
-		_value =	None
-
-	class FlagQuietMode(metaclass=ShortFlagArgument):
-		_name =		"quiet"					# Do not report 'Loading...' messages"
-		_value =	None
-
-	class SwitchModelSimIniFile(metaclass=ShortValuedFlagArgument):
-		_name =		"modelsimini "
-		_value =	None
-
-	class FlagRangeCheck(metaclass=ShortFlagArgument):
-		_name =		"rangecheck"
-		_value =	None
-
-	class SwitchVHDLVersion(metaclass=StringArgument):
-		_pattern =	"-{0}"
-		_value =		None
-
-	class ArgLogFile(metaclass=ShortTupleArgument):
-		_name =		"l"			# what's the difference to -logfile ?
-		_value =	None
-
-	class SwitchVHDLLibrary(metaclass=ShortTupleArgument):
-		_name =		"work"
-		_value =	None
-
-	class ArgSourceFile(metaclass=PathArgument):
-		_value =	None
-
-	Parameters = CommandLineArgumentList(
-		Executable,
-		FlagTime,
-		FlagExplicit,
-		FlagQuietMode,
-		SwitchModelSimIniFile,
-		FlagRangeCheck,
-		SwitchVHDLVersion,
-		ArgLogFile,
-		SwitchVHDLLibrary,
-		ArgSourceFile
-	)
-
-	def Compile(self):
-		parameterList = self.Parameters.ToArgumentList()
-		
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		
-		_indent = "    "
-		print(_indent + "vcom messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
-		try:
-			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
-		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
-
-class QuestaSimulator(Executable, QuestaSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		QuestaSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-		
-		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vsim.exe"
-		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vsim"
-		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, logger=logger)
-
-		self.Parameters[self.Executable] = executablePath
-
-	class Executable(metaclass=ExecutableArgument):
-		_value =	None
-
-	class FlagQuietMode(metaclass=ShortFlagArgument):
-		_name =		"quiet"					# Do not report 'Loading...' messages"
-		_value =	None
-
-	class FlagBatchMode(metaclass=ShortFlagArgument):
-		_name =		"batch"
-		_value =	None
-
-	class SwitchBatchCommand(metaclass=ShortTupleArgument):
-		_name =		"do"
-		_value =	None
-
-	class FlagCommandLineMode(metaclass=ShortFlagArgument):
-		_name =		"c"
-		_value =	None
-
-	class SwitchModelSimIniFile(metaclass=ShortValuedFlagArgument):
-		_name =		"modelsimini "
-		_value =	None
-
-	class FlagOptimization(metaclass=ShortFlagArgument):
-		_name =		"vopt"
-		_value =	None
-
-	class FlagReportAsError(metaclass=ShortTupleArgument):
-		_name =		"error"
-		_value =	None
-
-	class SwitchTimeResolution(metaclass=ShortTupleArgument):
-		_name =		"t"			# -t [1|10|100]fs|ps|ns|us|ms|sec  Time resolution limit
-		_value =	None
-
-	class ArgLogFile(metaclass=ShortTupleArgument):
-		_name =		"l"			# what's the difference to -logfile ?
-		_value =	None
-
-	class ArgVHDLLibraryName(metaclass=ShortTupleArgument):
-		_name =		"lib"
-		_value =	None
-
-	class ArgOnFinishMode(metaclass=ShortTupleArgument):
-		_name =		"onfinish"
-		_value =	None				# Customize the kernel shutdown behavior at the end of simulation; Valid modes: ask, stop, exit, final (Default: ask)
-
-	class SwitchTopLevel(metaclass=StringArgument):
-		_value =	None
-
-	Parameters = CommandLineArgumentList(
-		Executable,
-		FlagQuietMode,
-		FlagBatchMode,
-		SwitchBatchCommand,
-		FlagCommandLineMode,
-		SwitchModelSimIniFile,
-		FlagOptimization,
-		FlagReportAsError,
-		ArgLogFile,
-		ArgVHDLLibraryName,
-		SwitchTimeResolution,
-		ArgOnFinishMode,
-		SwitchTopLevel
-	)
-
-	def Simulate(self):
-		parameterList = self.Parameters.ToArgumentList()
-		
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		
-		_indent = "    "
-		print(_indent + "vsim messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
-		try:
-			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
-		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
-
-class QuestaVHDLLibraryTool(Executable, QuestaSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		QuestaSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-		
-		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vlib.exe"
-		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vlib"
-		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, logger=logger)
-
-		self.Parameters[self.Executable] = executablePath
-
-	class Executable(metaclass=ExecutableArgument):			pass
-	class SwitchLibraryName(metaclass=StringArgument):	pass
-
-	Parameters = CommandLineArgumentList(
-		Executable,
-		SwitchLibraryName
-	)
-	
-	def CreateLibrary(self):
-		parameterList = self.Parameters.ToArgumentList()
-		
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		
-		_indent = "    "
-		print(_indent + "vlib messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
-		try:
-			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
-		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)

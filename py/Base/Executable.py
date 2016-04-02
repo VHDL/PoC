@@ -47,7 +47,7 @@ from subprocess							import Popen				as Subprocess_Popen
 from subprocess							import PIPE					as Subprocess_Pipe
 from subprocess							import STDOUT				as Subprocess_StdOut
 
-from Base.Exceptions				import *
+from Base.Exceptions				import CommonException
 from Base.Logging						import ILogable
 
 
@@ -312,7 +312,7 @@ class Executable(ILogable):
 		
 		if isinstance(executablePath, str):							executablePath = Path(executablePath)
 		elif (not isinstance(executablePath, Path)):		raise ValueError("Parameter 'executablePath' is not of type str or Path.")
-		if (not executablePath.exists()):								raise Exception("Executable '{0}' can not be found.".format(str(executablePath))) from FileNotFoundError(str(executablePath))
+		if (not executablePath.exists()):								raise CommonException("Executable '{0}' can not be found.".format(str(executablePath))) from FileNotFoundError(str(executablePath))
 		
 		# prepend the executable
 		self._executablePath =		executablePath

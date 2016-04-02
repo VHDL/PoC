@@ -43,13 +43,12 @@ else:
 from configparser						import NoSectionError
 from colorama								import Fore as Foreground
 from os											import chdir
-from Base.Exceptions				import *
-from Base.PoCConfig					import *
+
 from Base.Project						import FileTypes
-from Base.PoCProject				import *
 from Parser.Parser					import ParserException
-from Simulator.Exceptions		import *
+from PoC.PoCProject					import *
 from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
+from Simulator.Exceptions		import *
 from ToolChains.GHDL				import GHDL
 from ToolChains.GTKWave			import GTKWave
 

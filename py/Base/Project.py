@@ -30,14 +30,15 @@
 # ==============================================================================
 #
 # load dependencies
-from enum								import Enum, EnumMeta, unique
+from enum								import Enum, unique
 from pathlib						import Path
 
-from lib.Functions			import merge
 from Base.Exceptions		import *
 from Base.VHDLParser		import VHDLParserMixIn
-from Base.PoCConfig			import Board, Device
 from Parser.FilesParser	import FilesParserMixIn
+from PoC.PoCConfig import Board, Device
+from lib.Functions			import merge
+
 
 # ToDo nested filesets
 
