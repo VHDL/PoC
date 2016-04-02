@@ -12,6 +12,6 @@ else
 	elseif ((Tool = "Mentor_vSim") and ?("temp/precompiled/vsim/altera")) then
 		library altera_mf "temp/precompiled/vsim/altera"
 	else
-		report "Add Altera primitive list here..."
+		report "No precompiled Altera primitives found."
 	end if
 end if

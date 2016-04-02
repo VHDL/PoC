@@ -1,4 +1,4 @@
-# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
@@ -71,7 +71,7 @@ class VerilogSourceFile:
 			
 class VHDLLibraryReference:
 	def __init__(self, name, path):
-		self._name = name
+		self._name = name.lower()
 		self._path = path
 	
 	@property

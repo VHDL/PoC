@@ -1,4 +1,4 @@
-# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
@@ -52,8 +52,10 @@ from Base.Project						import FileTypes
 from Base.PoCProject				import *
 from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
 from Simulator.Exceptions		import *
-from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName 
+from Simulator.Base					import PoCSimulator#, VHDLTestbenchLibraryName 
 
+# Workaround for Vivado 2015.4
+VHDLTestbenchLibraryName = "work"
 
 class Simulator(PoCSimulator):
 	__guiMode =					False
@@ -81,18 +83,11 @@ class Simulator(PoCSimulator):
 			self._LogDebug("    Temporary directors: {0}".format(str(self._tempPath)))
 			self._tempPath.mkdir(parents=True)
 			
-		# change working directory to temporary iSim path
+		# change working directory to temporary xSim path
 		self._LogVerbose("  Changing working directory to temporary directory.")
 		self._LogDebug("    cd \"{0}\"".format(str(self._tempPath)))
 		chdir(str(self._tempPath))
 
-		# if (self._host.platform == "Windows"):
-			# self.__executables['xElab'] =		"xelab.bat"
-			# self.__executables['xSim'] =		"xsim.bat"
-		# elif (self._host.platform == "Linux"):
-			# self.__executables['xElab'] =		"xelab"
-			# self.__executables['xSim'] =		"xsim"
-	
 	def PrepareSimulator(self, binaryPath, version):
 		# create the GHDL executable factory
 		self._LogVerbose("  Preparing GHDL simulator.")
@@ -149,7 +144,7 @@ class Simulator(PoCSimulator):
 			fileListFile.Parse()
 			fileListFile.CopyFilesToFileSet()
 			fileListFile.CopyExternalLibraries()
-			self._pocProject._ResolveVHDLLibraries()
+			self._pocProject.ExtractVHDLLibrariesFromVHDLSourceFiles()
 		except ParserException as ex:										raise SimulatorException("Error while parsing '{0}'.".format(str(fileListFilePath))) from ex
 		
 		self._LogDebug(self._pocProject.pprint(2))
@@ -185,12 +180,21 @@ class Simulator(PoCSimulator):
 	
 		# create one VHDL line for each VHDL file
 		xSimProjectFileContent = ""
-		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
+		vhdlFiles = [item for item in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile)]
+		for file in vhdlFiles[:-1]:
 			if (not file.Path.exists()):									raise SimulatorException("Can not add '{0}' to xSim project file.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
 			if (self._vhdlVersion == VHDLVersion.VHDL2008):
 				xSimProjectFileContent += "vhdl2008 {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
 			else:
 				xSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
+
+		# Workaround for Vivado 2015.4: last VHDL file is testbench, rewrite library name
+		file = vhdlFiles[-1]
+		if (not file.Path.exists()):									raise SimulatorException("Can not add '{0}' to xSim project file.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
+		if (self._vhdlVersion == VHDLVersion.VHDL2008):
+			xSimProjectFileContent += "vhdl2008 {0} \"{1}\"\n".format(VHDLTestbenchLibraryName, str(file.Path))
+		else:
+			xSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(VHDLTestbenchLibraryName, str(file.Path))
 
 		# write xSim project file
 		prjFilePath = self._tempPath / (testbenchName + ".prj")
@@ -199,7 +203,7 @@ class Simulator(PoCSimulator):
 			prjFileHandle.write(xSimProjectFileContent)
 	
 		# create a VivadoLinker instance
-		xelab = self._vivado.GetLinker()
+		xelab = self._vivado.GetFuse()
 		xelab.Parameters[xelab.SwitchTimeResolution] =	"1fs"	# set minimum time precision to 1 fs
 		xelab.Parameters[xelab.SwitchMultiThreading] =	"off"	#"4"		# enable multithreading support
 		xelab.Parameters[xelab.FlagRangeCheck] =				True
@@ -222,9 +226,9 @@ class Simulator(PoCSimulator):
 		self._LogNormal("  running simulation...")
 		
 		xSimLogFilePath =		self._tempPath / (testbenchName + ".xSim.log")
-		tclBatchFilePath =	self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['iSimBatchScript']
-		tclGUIFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['iSimGUIScript']
-		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['iSimWaveformConfigFile']
+		tclBatchFilePath =	self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['xSimBatchScript']
+		tclGUIFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['xSimGUIScript']
+		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['xSimWaveformConfigFile']
 
 		# create a VivadoSimulator instance
 		xSim = self._vivado.GetSimulator()
@@ -243,6 +247,7 @@ class Simulator(PoCSimulator):
 			else:
 				self._LogDebug("    Didn't find waveform config file: '{0}'".format(str(wcfgFilePath)))
 
+		xSim.Parameters[xSim.SwitchSnapshot] = "{0}.{1}#{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
 		xSim.Simulate()
 
 		# print()
@@ -276,52 +281,41 @@ class VivadoSimulatorExecutable:
 		return VivadoSimulator(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
 		
 class VivadoVHDLCompiler(Executable, VivadoSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		VivadoSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 		
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "xvhcomp.bat"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "xvhcomp"
 		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+		super().__init__(platform, executablePath, logger=logger)
 
 
 	
 	def Compile(self, vhdlFile):
-		parameterList = self._defaultParameters.copy()
-		parameterList.append(vhdlFile)
+		parameterList = self.Parameters.ToArgumentList()
 		
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
+		print(_indent + "xvhcomp messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
-			vcomLog = self.StartProcess(parameterList)
-			
-			log = ""
-			for line in vcomLog.split("\n")[:-1]:
-					log += _indent + line + "\n"
-			
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "vlib messages for : {0}".format(str(vhdlFile)))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing vlib: {0}".format(str(vhdlFile)))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
+			self.StartProcess(parameterList)
+			for line in self.GetReader():
 				print(_indent + line)
-			print(_indent + "-" * 80)
+		except Exception as ex:
+			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
+
 		
 class VivadoLinker(Executable, VivadoSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		VivadoSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 		
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "xelab.bat"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "xelab"
 		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+		super().__init__(platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -367,7 +361,7 @@ class VivadoLinker(Executable, VivadoSimulatorExecutable):
 	class SwitchSnapshot(metaclass=StringArgument):
 		_value =	None
 
-	class ArgTopLevel(metaclass=PathArgument):
+	class ArgTopLevel(metaclass=StringArgument):
 		_value =	None
 
 	Parameters = CommandLineArgumentList(
@@ -391,35 +385,25 @@ class VivadoLinker(Executable, VivadoSimulatorExecutable):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
+		print(_indent + "xelab messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
-			fuseLog = self.StartProcess(parameterList)
-			
-			log = ""
-			for line in fuseLog.split("\n")[:-1]:
-					log += _indent + line + "\n"
-			
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "xelab messages for : {0}".format("????"))#str(filePath)))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing xelab: {0}".format("????"))#str(filePath)))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
+			self.StartProcess(parameterList)
+			for line in self.GetReader():
 				print(_indent + line)
-			print(_indent + "-" * 80)
+		except Exception as ex:
+			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
+
 
 class VivadoSimulator(Executable, VivadoSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		VivadoSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 		
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "xsim.bat"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "xsim"
 		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+		super().__init__(platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -442,12 +426,16 @@ class VivadoSimulator(Executable, VivadoSimulatorExecutable):
 		_name =		"-view"
 		_value =	None
 
+	class SwitchSnapshot(metaclass=StringArgument):
+		_value =	None
+
 	Parameters = CommandLineArgumentList(
 		Executable,
 		SwitchLogFile,
 		FlagGuiMode,
 		SwitchTclBatchFile,
-		SwitchWaveformFile
+		SwitchWaveformFile,
+		SwitchSnapshot
 	)
 
 	def Simulate(self):
@@ -456,23 +444,12 @@ class VivadoSimulator(Executable, VivadoSimulatorExecutable):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		
 		_indent = "    "
+		print(_indent + "xsim messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
 		try:
-			xSimLog = self.StartProcess(parameterList)
-			
-			log = ""
-			for line in xSimLog.split("\n")[:-1]:
-					log += _indent + line + "\n"
-			
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "xsim messages for : {0}".format("????"))#str("????"))#filePath)))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing xsim: {0}".format("????"))#str(filePath)))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
+			self.StartProcess(parameterList)
+			for line in self.GetReader():
 				print(_indent + line)
-			print(_indent + "-" * 80)
+		except Exception as ex:
+			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
