@@ -329,19 +329,18 @@ class Simulator(PoCSimulator):
 		gtkwBinaryPath =		self.Host.Directories["GTKWBinary"]
 		gtkwVersion =				self.Host.pocConfig['GTKWave']['Version']
 		gtkw = GTKWave(self.Host.Platform, gtkwBinaryPath, gtkwVersion)
-		
-		gtkwSaveFilePath =	self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['gtkwSaveFile']
+		gtkw.Parameters[gtkw.SwitchDumpFile] = str(waveformFilePath)
 
-		
 		# if GTKWave savefile exists, load it's settings
+		gtkwSaveFilePath =	self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['gtkwSaveFile']
 		if gtkwSaveFilePath.exists():
 			self._LogDebug("    Found waveform save file: '{0}'".format(str(gtkwSaveFilePath)))
-			gtkw.SaveFile = str(gtkwSaveFilePath)
+			gtkw.Parameters[gtkw.SwitchSaveFile] = str(gtkwSaveFilePath)
 		else:
 			self._LogDebug("    Didn't find waveform save file: '{0}'".format(str(gtkwSaveFilePath)))
 		
 		# run GTKWave GUI
-		gtkw.View(waveformFilePath)
+		gtkw.View()
 		
 		# clean-up *.gtkw files
 		if gtkwSaveFilePath.exists():

@@ -129,19 +129,17 @@ class Configuration:
 			raise BaseException("unknown option")
 
 
-
 class GTKWave(Executable):
-	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[]):
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		if (platform == "Windows"):			executablePath = binaryDirectoryPath/ "gtkwave.exe"
 		elif (platform == "Linux"):			executablePath = binaryDirectoryPath/ "gtkwave"
 		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters)
+		super().__init__(platform, executablePath, logger=logger)
+
+		self.Parameters[self.Executable] = executablePath
 
 		self._binaryDirectoryPath =	binaryDirectoryPath
 		self._version =			version
-
-		self._dumpFile =		None
-		self._saveFile =		None
 
 	@property
 	def BinaryDirectoryPath(self):
@@ -151,44 +149,28 @@ class GTKWave(Executable):
 	def Version(self):
 		return self._version
 
-	@property
-	def DumpFile(self):
-		return self._dumpFile
-	@DumpFile.setter
-	def DumpFile(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		if (self._dumpFile is None):
-			self._defaultParameters.append("--dump={0}".format(value))
-			self._dumpFile = value
-		elif (self._dumpFile != value):
-			self._defaultParameters.remove("--dump={0}".format(self._dumpFile))
-			self._defaultParameters.append("--dump={0}".format(value))
-			self._dumpFile = value
+	class Executable(metaclass=ExecutableArgument):
+		pass
 
-	@property
-	def SaveFile(self):
-		return self._saveFile
-	@SaveFile.setter
-	def SaveFile(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		if (self._saveFile is None):
-			self._defaultParameters.append("--save={0}".format(value))
-			self._saveFile = value
-		elif (self._saveFile != value):
-			self._defaultParameters.remove("--save={0}".format(self._saveFile))
-			self._defaultParameters.append("--save={0}".format(value))
-			self._saveFile = value
+	class SwitchDumpFile(metaclass=LongValuedFlagArgument):
+		_name = "dump"
 
-	def View(self, dumpFile):
-		if isinstance(dumpFile, str):			self.DumpFile = dumpFile
-		elif isinstance(dumpFile, Path):	self.DumpFile = str(dumpFile)
-		else:																						raise ValueError("Parameter 'dumpFile' has an unsupported type.")
+	class SwitchSaveFile(metaclass=LongValuedFlagArgument):
+		_name = "save"
 
-		self._LogDebug("call gtkwave: {0}".format(str(self._defaultParameters)))
-		self._LogVerbose("    command: {0}".format(" ".join(self._defaultParameters)))
+	Parameters = CommandLineArgumentList(
+		Executable,
+		SwitchDumpFile,
+		SwitchSaveFile
+	)
+
+	def View(self):
+		parameterList = self.Parameters.ToArgumentList()
+
+		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
 		_indent = "    "
-		print(_indent + "GTKWave messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "GTKWave messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
 		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
@@ -197,4 +179,3 @@ class GTKWave(Executable):
 		except Exception as ex:
 			raise ex  # SimulatorException() from ex
 		print(_indent + "-" * 80)
-

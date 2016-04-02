@@ -40,6 +40,7 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Xilinx.Vivado")
 
 
+from Base.Exceptions		import PlatformNotSupportedException
 from Base.Executable		import *
 
 
@@ -144,22 +145,22 @@ class VivadoSimMixIn:
 		self._platform =						platform
 		self._binaryDirectoryPath =	binaryDirectoryPath
 		self._version =							version
-		self.__logger =							logger
+		self._logger =							logger
 
 class Vivado(VivadoSimMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		VivadoSimMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
 
 	def GetVHDLCompiler(self):
-		return VivadoVHDLCompiler(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
+		return XVhComp(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
 
-	def GetLinker(self):
-		return VivadoLinker(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
+	def GetElaborator(self):
+		return XElab(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
 
 	def GetSimulator(self):
-		return VivadoSimulator(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
+		return XSim(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
 
-class VivadoVHDLCompiler(Executable, VivadoSimMixIn):
+class XVhComp(Executable, VivadoSimMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		VivadoSimMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
 
@@ -187,7 +188,7 @@ class VivadoVHDLCompiler(Executable, VivadoSimMixIn):
 		print(_indent + "-" * 80)
 
 
-class VivadoLinker(Executable, VivadoSimMixIn):
+class XElab(Executable, VivadoSimMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		VivadoSimMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
 
@@ -275,7 +276,7 @@ class VivadoLinker(Executable, VivadoSimMixIn):
 		print(_indent + "-" * 80)
 
 
-class VivadoSimulator(Executable, VivadoSimMixIn):
+class XSim(Executable, VivadoSimMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		VivadoSimMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
 
