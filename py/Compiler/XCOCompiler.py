@@ -45,13 +45,12 @@ from colorama								import Fore as Foreground
 from os											import chdir, environ
 import re								# used for output filtering
 from textwrap								import dedent
-from subprocess							import CalledProcessError
 import shutil
 from configparser						import NoOptionError, NoSectionError, ConfigParser, ExtendedInterpolation
 from Base.Exceptions				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
 from Compiler.Base					import PoCCompiler
 from Compiler.Exceptions		import *
+from ToolChains.Xilinx.ISE	import ISE
 
 
 class Compiler(PoCCompiler):
@@ -234,7 +233,7 @@ class Compiler(PoCCompiler):
 		self._LogNormal("  running CoreGen...")
 		binaryPath =	self.Host.Directories["ISEBinary"]
 		iseVersion =			self.Host.pocConfig['Xilinx.ISE']['Version']
-		coreGen = ISECoreGenerator(self.Host.Platform, binaryPath, iseVersion, logger=self.Logger)
+		coreGen = ISE.GetCoreGenerator(self.Host.Platform, binaryPath, iseVersion, logger=self.Logger)
 		coreGen.Parameters[coreGen.SwitchProjectFile] =	"."		# use current directory and the default project name
 		coreGen.Parameters[coreGen.SwitchBatchFile] =		str(xcoFilePath)
 		coreGen.Parameters[coreGen.FlagRegenerate] =		True
@@ -325,57 +324,3 @@ class Compiler(PoCCompiler):
 			with fromPath.open('w') as fileHandle:
 				fileHandle.write(NewContent)
 		
-class ISECoreGenerator(Executable):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		if (platform == "Windows"):			executablePath = binaryDirectoryPath / "coregen.exe"
-		elif (platform == "Linux"):			executablePath = binaryDirectoryPath / "coregen"
-		else:														raise PlatformNotSupportedException(platform)
-		Executable.__init__(self, platform, executablePath, logger=logger)
-
-		self.Parameters[self.Executable] = executablePath
-
-	class Executable(metaclass=ExecutableArgument):				pass
-
-	class FlagRegenerate(metaclass=ShortFlagArgument):
-		_name = "r"
-
-	class SwitchProjectFile(metaclass=ShortTupleArgument):
-		_name = "p"
-
-	class SwitchBatchFile(metaclass=ShortTupleArgument):
-		_name = "b"
-
-	Parameters = CommandLineArgumentList(
-		Executable,
-		FlagRegenerate,
-		SwitchProjectFile,
-		SwitchBatchFile
-	)
-
-	def Generate(self):
-		parameterList = self.Parameters.ToArgumentList()
-
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-
-		_indent = "    "
-		try:
-			fuseLog = self.StartProcess(parameterList)
-
-			log = ""
-			for line in fuseLog.split("\n")[:-1]:
-				log += _indent + line + "\n"
-
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "fuse messages for : {0}".format("????"))  # str(filePath)))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing fuse: {0}".format(
-				"????"))  # str(filePath)))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
-				print(_indent + line)
-			print(_indent + "-" * 80)

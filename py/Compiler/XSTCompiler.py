@@ -40,23 +40,18 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Compiler.XSTCompiler")
 
 # load dependencies
-from pathlib								import Path
-from configparser						import NoSectionError
 from colorama								import Fore as Foreground
 from os											import chdir
 import re								# used for output filtering
-from textwrap								import dedent
-from subprocess							import CalledProcessError
 import shutil
-from os											import environ
 from configparser						import NoOptionError, NoSectionError, ConfigParser, ExtendedInterpolation
 
 from Base.Exceptions				import *
 from Base.Project						import FileTypes
 from Base.PoCProject				import *
-from Base.Executable				import Executable, CommandLineArgumentList, ExecutableArgument, ShortFlagArgument, LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument
 from Compiler.Base					import PoCCompiler
 from Compiler.Exceptions		import *
+from ToolChains.Xilinx.ISE	import ISE
 
 
 class Compiler(PoCCompiler):
@@ -392,7 +387,7 @@ class Compiler(PoCCompiler):
 		pass
 
 	def _RunCompile(self):
-		xst = ISEXstCompiler(self.Host.Platform, "bin", "14.7", logger=self.Logger)
+		xst = ISE.GetXst(self.Host.Platform, "bin", "14.7", logger=self.Logger)
 		xst.Parameters[xst.SwitchIniStyle] =		"xflow"
 		xst.Parameters[xst.SwitchXstFile] =			"ipcore.xst"
 		xst.Parameters[xst.SwitchReportFile] =	"ipcore.xst.report"
@@ -403,62 +398,3 @@ class Compiler(PoCCompiler):
 
 	def _RunPostReplace(self) :
 		pass
-
-
-
-class ISEXstCompiler(Executable) :
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None) :
-		if (platform == "Windows") :			executablePath = binaryDirectoryPath / "xst.exe"
-		elif (platform == "Linux") :			executablePath = binaryDirectoryPath / "xst"
-		else :														raise PlatformNotSupportedException(platform)
-		Executable.__init__(self, platform, executablePath, logger=logger)
-
-		self.Parameters[self.Executable] = executablePath
-
-	class Executable(metaclass=ExecutableArgument) :
-		pass
-
-	class SwitchIniStyle(metaclass=ShortTupleArgument):
-		_name = "intstyle"
-
-	class SwitchXstFile(metaclass=ShortFlagArgument) :
-		_name = "ifn"
-
-	class SwitchReportFile(metaclass=ShortTupleArgument) :
-		_name = "ofn"
-
-	Parameters = CommandLineArgumentList(
-			Executable,
-			SwitchIniStyle,
-			SwitchXstFile,
-			SwitchReportFile
-	)
-
-	def Compile(self) :
-		parameterList = self.Parameters.ToArgumentList()
-
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-
-		_indent = "    "
-		try :
-			fuseLog = self.StartProcess(parameterList)
-
-			log = ""
-			for line in fuseLog.split("\n")[:-1] :
-				log += _indent + line + "\n"
-
-			# if self.showLogs:
-			if (log != "") :
-				print(_indent + "fuse messages for : {0}".format("????"))  # str(filePath)))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex :
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing fuse: {0}".format(
-					"????"))  # str(filePath)))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n") :
-				print(_indent + line)
-			print(_indent + "-" * 80)
-

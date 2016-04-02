@@ -203,7 +203,7 @@ class Simulator(PoCSimulator):
 			prjFileHandle.write(xSimProjectFileContent)
 	
 		# create a VivadoLinker instance
-		xelab = self._vivado.GetLinker()
+		xelab = self._vivado.GetFuse()
 		xelab.Parameters[xelab.SwitchTimeResolution] =	"1fs"	# set minimum time precision to 1 fs
 		xelab.Parameters[xelab.SwitchMultiThreading] =	"off"	#"4"		# enable multithreading support
 		xelab.Parameters[xelab.FlagRangeCheck] =				True
