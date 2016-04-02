@@ -13,15 +13,15 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2015 Technische Universitaet Dresden - Germany
+# Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #		http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,14 +31,15 @@
 
 from functools	import reduce
 from operator		import or_
+from sys				import version_info
 
 
 def merge(*dicts):
 	return {k : reduce(lambda d,x: x.get(k, d), dicts, None) for k in reduce(or_, map(lambda x: x.keys(), dicts), set()) }
 
-
 def merge_with(f, *dicts):
 	return {k : reduce(lambda x: f(*x) if (len(x) > 1) else x[0])([ d[k] for d in dicts if k in d ]) for k in reduce(or_, map(lambda x: x.keys(), dicts), set()) }
+
 
 class Init:
 	@classmethod
@@ -57,16 +58,16 @@ class Init:
 		"RESET":		Foreground.RESET
 	}
 
+
 class Exit:
 	@classmethod
 	def exit(cls, returnCode=0):
 		from colorama		import Fore as Foreground, Back as Background, Style
-		print(Foreground.RESET + Background.RESET + Style.RESET_ALL)
+		print(Foreground.RESET + Background.RESET + Style.RESET_ALL, end="")
 		exit(returnCode)
 
 	@classmethod
 	def versionCheck(cls, version):
-		from sys import version_info
 		if (version_info < version):
 			Init.init()
 			print("{RED}ERROR:{RESET} Used Python interpreter is to old ({version}).".format(version=version_info, **Init.Foreground))

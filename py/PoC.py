@@ -1,4 +1,4 @@
-# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
@@ -33,8 +33,7 @@
 
 from argparse									import RawDescriptionHelpFormatter
 from colorama									import Fore as Foreground
-from configparser							import NoOptionError, ConfigParser, ExtendedInterpolation
-from configparser							import Error as ConfigParser_Error
+from configparser							import Error as ConfigParser_Error, NoOptionError, ConfigParser, ExtendedInterpolation
 from os												import environ
 from pathlib									import Path
 from platform									import system as platform_system
@@ -131,6 +130,10 @@ class PoC(ILogable, ArgParseMixin):
 		self.Files['PoCPrivateConfig'] =	self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPrivateConfigFileName
 		self.Files['PoCPublicConfig'] =		self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPublicConfigFileName
 		self.Files['PoCBoardConfig'] =		self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocBoardConfigFileName
+
+	def __PrepareForConfiguration(self):
+		self.__Prepare()
+		self.__ReadPoCConfiguration()
 
 	def __PrepareForSimulation(self):
 		self.__Prepare()
@@ -312,7 +315,7 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("configure", help="Configure vendor tools for PoC.")
 	# @HandleVerbosityOptions
-	def manualConfiguration(self, args):
+	def HandleManualConfiguration(self, args):
 		self._printConfigurationHelp()
 
 		if (self.Platform == 'Windows'):			self._manualConfigurationForWindows()
@@ -509,8 +512,8 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandAttribute("query", help="Simulate a PoC Entity with Aldec Active-HDL")
 	@ArgumentAttribute(metavar="<Query>", dest="Query", type=str, help="todo help")
 	# @HandleVerbosityOptions
-	def queryConfiguration(self, args):
-		self.__ReadPoCConfiguration()
+	def HandleQueryConfiguration(self, args):
+		self.__PrepareForConfiguration()
 		result = self._queryConfiguration(args.Query)
 		print(result)
 		Exit.exit()
