@@ -41,6 +41,38 @@ else:
 
 
 class Configuration:
+	__vendor =		"Mentor"
+	__shortName =	"QuestaSim"
+	__LongName =	"Mentor QuestaSim"
+	__privateConfiguration = {
+		"Windows": {
+			"Mentor": {
+				"InstallationDirectory":	"C:/Mentor"
+			},
+			"Mentor.QuestaSim": {
+				"Version":								"10.4c",
+				"InstallationDirectory":	"${Mentor:InstallationDirectory}/QuestaSim/${Version}",
+				"BinaryDirectory":				"${InstallationDirectory}/win64"
+			}
+		},
+		"Linux": {
+			"Mentor": {
+				"InstallationDirectory":	"/opt/QuestaSim"
+			},
+			"Mentor.QuestaSim": {
+				"Version":								"10.4c",
+				"InstallationDirectory":	"${Mentor:InstallationDirectory}/${Version}",
+				"BinaryDirectory":				"${InstallationDirectory}/bin"
+			}
+		}
+	}
+
+	def IsSupportedPlatform(self, Platform):
+		return (Platform in self.__privateConfiguration)
+
+	def GetSections(self, Platform):
+		pass
+
 	def manualConfigureForWindows(self) :
 		# Ask for installed Mentor Graphic tools
 		isMentor = input('Is a Mentor Graphics tool installed on your system? [Y/n/p]: ')

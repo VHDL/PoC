@@ -41,6 +41,32 @@ else:
 
 
 class Configuration:
+	__vendor =		None
+	__shortName =	"GTKWave"
+	__LongName =	"GTKWave"
+	__privateConfiguration = {
+		"Windows": {
+			"GTKWave": {
+				"Version":								"3.3.70",
+				"InstallationDirectory":	None,
+				"BinaryDirectory":				"${InstallationDirectory}/bin"
+			}
+		},
+		"Linux": {
+			"GTKWave": {
+				"Version":								"3.3.70",
+				"InstallationDirectory":	None,
+				"BinaryDirectory":				"${InstallationDirectory}"
+			}
+		}
+	}
+
+	def IsSupportedPlatform(self, Platform):
+		return (Platform in self.__privateConfiguration)
+
+	def GetSections(self, Platform):
+		pass
+
 	def manualConfigureForWindows(self) :
 		# Ask for installed GTKWave
 		isGTKW = input('Is GTKWave installed on your system? [Y/n/p]: ')

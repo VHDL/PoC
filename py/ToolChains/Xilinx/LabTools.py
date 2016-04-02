@@ -32,23 +32,55 @@
 # ==============================================================================
 #
 # entry point
-if __name__ != "__main__" :
+if __name__ != "__main__":
 	# place library initialization code here
 	pass
-else :
+else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Xilinx.LabTools")
 
-class Configuration :
-	def manualConfigureForWindows(self) :
+class Configuration:
+	__vendor =		"Xilinx"
+	__shortName = "LabTools"
+	__LongName =	"Xilinx LabTools"
+	__privateConfiguration = {
+		"Windows": {
+			"Xilinx": {
+				"InstallationDirectory":	"C:/Xilinx"
+			},
+			"Xilinx.LabTools": {
+				"Version":								"14.7",
+				"InstallationDirectory":	"${Xilinx:InstallationDirectory}/${Version}/LabTools",
+				"BinaryDirectory":				"${InstallationDirectory}/LabTools/bin/nt64"
+			}
+		},
+		"Linux": {
+			"Xilinx": {
+				"InstallationDirectory":	"/opt/Xilinx"
+			},
+			"Xilinx.LabTools": {
+				"Version":								"14.7",
+				"InstallationDirectory":	"${Xilinx:InstallationDirectory}/${Version}/LabTools",
+				"BinaryDirectory":				"${InstallationDirectory}/LabTools/bin/lin64"
+			}
+		}
+	}
+
+	def IsSupportedPlatform(self, Platform):
+		return (Platform in self.__privateConfiguration)
+
+	def GetSections(self, Platform):
+		pass
+
+	def manualConfigureForWindows(self):
 		# Ask for installed Xilinx LabTools
 		isXilinxLabTools = input('Is Xilinx LabTools installed on your system? [Y/n/p]: ')
 		isXilinxLabTools = isXilinxLabTools if isXilinxLabTools != "" else "Y"
-		if (isXilinxLabTools in ['p', 'P']) :
+		if (isXilinxLabTools in ['p', 'P']):
 			pass
-		elif (isXilinxLabTools in ['n', 'N']) :
+		elif (isXilinxLabTools in ['n', 'N']):
 			self.pocConfig['Xilinx.LabTools'] = OrderedDict()
-		elif (isXilinxLabTools in ['y', 'Y']) :
+		elif (isXilinxLabTools in ['y', 'Y']):
 			xilinxDirectory = input('Xilinx installation directory [C:\Xilinx]: ')
 			labToolsVersion = input('Xilinx LabTools version number [14.7]: ')
 			print()
@@ -59,27 +91,27 @@ class Configuration :
 			xilinxDirectoryPath = Path(xilinxDirectory)
 			labToolsDirectoryPath = xilinxDirectoryPath / labToolsVersion / "LabTools/LabTools"
 
-			if not xilinxDirectoryPath.exists() :    raise BaseException(
+			if not xilinxDirectoryPath.exists():    raise BaseException(
 				"Xilinx installation directory '%s' does not exist." % xilinxDirectory)
-			if not labToolsDirectoryPath.exists() :  raise BaseException(
+			if not labToolsDirectoryPath.exists():  raise BaseException(
 				"Xilinx LabTools version '%s' is not installed." % labToolsVersion)
 
 			self.pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
 			self.pocConfig['Xilinx.LabTools']['Version'] = labToolsVersion
 			self.pocConfig['Xilinx.LabTools']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/${Version}/LabTools'
 			self.pocConfig['Xilinx.LabTools']['BinaryDirectory'] = '${InstallationDirectory}/LabTools/bin/nt64'
-		else :
+		else:
 			raise BaseException("unknown option")
 
-	def manualConfigureForLinux(self) :
+	def manualConfigureForLinux(self):
 		# Ask for installed Xilinx LabTools
 		isXilinxLabTools = input('Is Xilinx LabTools installed on your system? [Y/n/p]: ')
 		isXilinxLabTools = isXilinxLabTools if isXilinxLabTools != "" else "Y"
-		if (isXilinxLabTools in ['p', 'P']) :
+		if (isXilinxLabTools in ['p', 'P']):
 			pass
-		elif (isXilinxLabTools in ['n', 'N']) :
+		elif (isXilinxLabTools in ['n', 'N']):
 			self.pocConfig['Xilinx.LabTools'] = OrderedDict()
-		elif (isXilinxLabTools in ['y', 'Y']) :
+		elif (isXilinxLabTools in ['y', 'Y']):
 			xilinxDirectory = input('Xilinx installation directory [/opt/Xilinx]: ')
 			labToolsVersion = input('Xilinx LabTools version number [14.7]: ')
 			print()
@@ -90,14 +122,14 @@ class Configuration :
 			xilinxDirectoryPath = Path(xilinxDirectory)
 			labToolsDirectoryPath = xilinxDirectoryPath / labToolsVersion / "LabTools/LabTools"
 
-			if not xilinxDirectoryPath.exists() :    raise BaseException(
+			if not xilinxDirectoryPath.exists():    raise BaseException(
 				"Xilinx installation directory '%s' does not exist." % xilinxDirectory)
-			if not labToolsDirectoryPath.exists() :  raise BaseException(
+			if not labToolsDirectoryPath.exists():  raise BaseException(
 				"Xilinx LabTools version '%s' is not installed." % labToolsVersion)
 
 			self.pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
 			self.pocConfig['Xilinx.LabTools']['Version'] = labToolsVersion
 			self.pocConfig['Xilinx.LabTools']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/${Version}/LabTools'
 			self.pocConfig['Xilinx.LabTools']['BinaryDirectory'] = '${InstallationDirectory}/LabTools/bin/lin64'
-		else :
+		else:
 			raise BaseException("unknown option")

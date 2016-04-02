@@ -5,7 +5,7 @@
 # ==============================================================================
 # Authors:				 	Patrick Lehmann
 #
-# Python Class:			GHDL specific classes
+# Python Class:			PoC specific classes
 #
 # Description:
 # ------------------------------------
@@ -37,29 +37,27 @@ if __name__ != "__main__":
 	pass
 else:
 	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.GHDL")
+	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.PoC")
 
 
 class Configuration:
 	__vendor =		None
-	__shortName = "GTKWave"
-	__LongName =	"GTKWave"
+	__shortName = "PoC"
+	__LongName =	"PoC"
 	__privateConfiguration = {
 		"Windows": {
-			"GHDL": {
-				"Version":								"0.34dev",
-				"InstallationDirectory":	None,
-				"BinaryDirectory":				"${InstallationDirectory}/bin",
-				"Backend":								"mcode"
-			}
+			"PoC": {
+				"Version":								"0.0.0",
+				"InstallationDirectory":	None
+			},
+			"Solutions": {}
 		},
 		"Linux": {
-			"GHDL": {
-				"Version":								"0.34dev",
-				"InstallationDirectory":	None,
-				"BinaryDirectory":				"${InstallationDirectory}",
-				"Backend":								"llvm"
-			}
+			"PoC": {
+				"Version":								"0.0.0",
+				"InstallationDirectory":	None
+			},
+			"Solutions": {}
 		}
 	}
 

@@ -38,6 +38,7 @@ from configparser							import NoOptionError, ConfigParser, ExtendedInterpolatio
 from configparser							import Error as ConfigParser_Error
 from os												import environ
 from pathlib									import Path
+from platform									import system as platform_system
 from sys											import argv as sys_argv
 from textwrap									import dedent
 
@@ -46,7 +47,7 @@ from lib.ArgParseAttributes		import *
 from Base.Exceptions					import *
 from Base.Logging							import Logger, Severity
 from Parser.Parser						import ParserException
-from Base.PoCBase							import CommandLineProgram
+from Base.Logging							import ILogable
 from PoC.Entity								import *
 from PoC.Config								import *
 from Simulator								import *
@@ -61,45 +62,136 @@ from Compiler.Exceptions			import *
 # 		return func(self, args)
 # 	return func_wrapper
 
-class PoC(CommandLineProgram, ArgParseMixin):
+class PoC(ILogable, ArgParseMixin):
 	HeadLine =								"The PoC-Library - NetList Service Tool"
-	__tbConfigFileName =			"configuration.ini"
-	__netListConfigFileName =	"configuration.ini"
+
+	# configure hard coded variables here
+	__scriptDirectoryName = 			"py"
+	__pocPrivateConfigFileName =	"config.private.ini"
+	__pocPublicConfigFileName =		"config.public.ini"
+	__pocBoardConfigFileName =		"config.boards.ini"
+
+	__tbConfigFileName =					"configuration.ini"
+	__netListConfigFileName =			"configuration.ini"
+
+	# private fields
+	__platform = platform_system()  # load platform information (Windows, Linux, ...)
 
 	@CommonSwitchArgumentAttribute("-D",							dest="DEBUG",		help="enable script wrapper debug mode")
 	@CommonSwitchArgumentAttribute("-d", "--debug",		dest="debug",		help="enable debug mode")
 	@CommonSwitchArgumentAttribute("-v", "--verbose",	dest="verbose",	help="print out detailed messages")
 	@CommonSwitchArgumentAttribute("-q", "--quiet",		dest="quiet",		help="reduce messages to a minimum")
 	def __init__(self, debug, verbose, quiet, dryRun):
-		if quiet:				severity = Severity.Quiet
-		elif debug:			severity = Severity.Debug
-		elif verbose:		severity = Severity.Verbose
-		else:						severity = Severity.Normal
+		# Do some basic checks
+		# --------------------------------------------------------------------------
+		if (self.Platform == "Windows"):			pass
+		elif (self.Platform == "Linux"):			pass
+		else :																raise PlatformNotSupportedException(self.Platform)
+
+		# check for environment variables
+		if (environ.get('PoCRootDirectory') == None) :      raise EnvironmentException("Shell environment does not provide 'PoCRootDirectory' variable.")
+		if (environ.get('PoCScriptDirectory') == None) :    raise EnvironmentException("Shell environment does not provide 'PoCScriptDirectory' variable.")
+
+		# Call the constructor of ILogable
+		# --------------------------------------------------------------------------
+		if quiet :			severity = Severity.Quiet
+		elif debug :		severity = Severity.Debug
+		elif verbose :	severity = Severity.Verbose
+		else :					severity = Severity.Normal
 
 		logger = Logger(self, severity, printToStdOut=True)
-		super().__init__(logger=logger)
+		ILogable.__init__(self, logger=logger)
 
-		if (self.Platform == "Windows"):	pass
-		elif (self.Platform == "Linux"):	pass
-		else:															raise PlatformNotSupportedException(self.Platform)
+		# Call the constructor of the ArgParseMixin
+		# --------------------------------------------------------------------------
+		description = dedent('''\
+			This is the PoC-Library Service Tool.
+			''')
+		epilog = "Epidingsbums"
+		ArgParseMixin.__init__(self, description=description, epilog=epilog, formatter_class=RawDescriptionHelpFormatter, add_help=False)
+
 
 		self._dryRun = dryRun
+		self.__files = {}
+		self.__directories = {}
 
-		# self._config = None
+		self.Directories['Working'] =			Path.cwd()
+		self.Directories['PoCRoot'] =			Path(environ.get('PoCRootDirectory'))
+		self.Directories['ScriptRoot'] =	Path(environ.get('PoCRootDirectory'))
+		self.Files['PoCPrivateConfig'] =	self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPrivateConfigFileName
+		self.Files['PoCPublicConfig'] =		self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPublicConfigFileName
+		self.Files['PoCBoardConfig'] =		self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocBoardConfigFileName
+
+		try:
+			self.__ReadPoCConfiguration()
+		except NotConfiguredException as ex:
+			raise ex
+
 		self.__ReadTestbenchConfiguration()
 		self.__ReadNetlistConfiguration()
 
-		# Call the constructor of the ArgParseMixin
-		ArgParseMixin.__init__(self,
-			# prog =	self.program,
-			# usage =	"Usage?",			# override usage string
-			description=dedent('''\
-				This is the PoC-Library Service Tool.
-				'''),
-			epilog="Epidingsbums",
-			formatter_class=RawDescriptionHelpFormatter,
-			add_help=False)
 
+	# class properties
+	# ============================================================================
+	@property
+	def Platform(self) :
+		return self.__platform
+
+	@property
+	def Directories(self) :
+		return self.__directories
+
+	@property
+	def Files(self) :
+		return self.__files
+
+	# read PoC configuration
+	# ============================================================================
+	def __ReadPoCConfiguration(self) :
+		pocPrivateConfigFilePath = self.Files['PoCPrivateConfig']
+		pocPublicConfigFilePath = self.Files['PoCPublicConfig']
+		pocBoardConfigFilePath = self.Files['PoCBoardConfig']
+
+		self._LogDebug("Reading PoC configuration from\n  '{0}'\n  '{1}\n  '{2}'".format(str(pocPrivateConfigFilePath),
+																																										 str(pocPublicConfigFilePath),
+																																										 str(pocBoardConfigFilePath)))
+		if not pocPrivateConfigFilePath.exists() :    raise NotConfiguredException(
+			"PoC's private configuration file '{0}' does not exist.".format(
+				str(pocPrivateConfigFilePath)))  from FileNotFoundError(str(pocPrivateConfigFilePath))
+		if not pocPublicConfigFilePath.exists() :    raise NotConfiguredException(
+			"PoC' public configuration file '{0}' does not exist.".format(
+				str(pocPublicConfigFilePath)))      from FileNotFoundError(str(pocPublicConfigFilePath))
+		if not pocBoardConfigFilePath.exists() :      raise NotConfiguredException(
+			"PoC's board configuration file '{0}' does not exist.".format(
+				str(pocBoardConfigFilePath)))      from FileNotFoundError(str(pocBoardConfigFilePath))
+
+		self.pocConfig = ConfigParser(interpolation=ExtendedInterpolation())
+		self.pocConfig.optionxform = str
+		self.pocConfig.read([
+			str(pocPrivateConfigFilePath),
+			str(pocPublicConfigFilePath),
+			str(pocBoardConfigFilePath)
+		])
+
+		# parsing values into class fields
+		if (self.Directories["PoCRoot"] != Path(self.pocConfig['PoC']['InstallationDirectory'])) :
+			raise NotConfiguredException("There is a mismatch between PoCRoot and PoC installation directory.")
+
+		# read PoC configuration
+		# ============================================================================
+		# parsing values into class fields
+		self.Directories["PoCSource"] = self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['HDLSourceFiles']
+		self.Directories["PoCTestbench"] = self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames'][
+			'TestbenchFiles']
+		self.Directories["PoCNetList"] = self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['NetListFiles']
+		self.Directories["PoCTemp"] = self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['TemporaryFiles']
+
+		# self.Directories["XSTFiles"] =			self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['ISESynthesisFiles']
+		# #self.Directories["QuartusFiles"] =	self.Directories["PoCRoot"] / self.pocConfig['PoC.DirectoryNames']['QuartusSynthesisFiles']
+
+		# self.Directories["CoreGenTemp"] =		self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['ISECoreGeneratorFiles']
+		# self.Directories["XSTTemp"] =				self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['ISESynthesisFiles']
+		# #self.Directories["QuartusTemp"] =	self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['QuartusSynthesisFiles']
 
 	# read Testbench configuration
 	# ==========================================================================
@@ -139,14 +231,38 @@ class PoC(CommandLineProgram, ArgParseMixin):
 			str(self.Files["PoCNLConfig"])
 		])
 
+	def __CleanupPoCConfiguration(self) :
+		# remove non-private sections from pocConfig
+		sections = self.pocConfig.sections()
+		for privateSection in self.__privateSections :
+			sections.remove(privateSection)
+		for section in sections :
+			self.pocConfig.remove_section(section)
+
+		# remove non-private options from [PoC] section
+		pocOptions = self.pocConfig.options("PoC")
+		for privatePoCOption in self.__privatePoCOptions :
+			pocOptions.remove(privatePoCOption)
+		for pocOption in pocOptions :
+			self.pocConfig.remove_option("PoC", pocOption)
+
+
+	def __WritePoCConfiguration(self) :
+		self.__CleanupPoCConfiguration()
+
+		# Writing configuration to disc
+		print("Writing configuration file to '%s'" % str(self.files['PoCPrivateConfig']))
+		with self.files['PoCPrivateConfig'].open('w') as configFileHandle :
+			self.pocConfig.write(configFileHandle)
+
+	def Run(self):
+		ArgParseMixin.Run(self)
+
 	def PrintHeadline(self):
 		# self._LogNormal(Foreground.MAGENTA + "=" * 80)
 		self._LogNormal(Foreground.LIGHTMAGENTA_EX + "=" * 80)
 		self._LogNormal("{: ^80s}".format(self.HeadLine))
 		self._LogNormal("=" * 80 + Foreground.RESET)
-
-	def Run(self):
-		ArgParseMixin.Run(self)
 
 	# ============================================================================
 	# Common commands
@@ -176,14 +292,218 @@ class PoC(CommandLineProgram, ArgParseMixin):
 		Exit.exit()
 
 	# ============================================================================
-	# Configuration query	commands
+	# Configuration commands
 	# ============================================================================
+	def _printConfigurationHelp(self):
+		self._LogVerbose("starting manual configuration...")
+		print('Explanation of abbreviations:')
+		print('  y - yes')
+		print('  n - no')
+		print('  p - pass (jump to next question)')
+		print('Upper case means default value')
+		print()
+
+	# create the sub-parser for the "configure" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Configuration commands")
+	@CommandAttribute("configure", help="Configure vendor tools for PoC.")
+	# @HandleVerbosityOptions
+	def manualConfiguration(self, args):
+		self._printConfigurationHelp()
+
+		if (self.Platform == 'Windows'):			self._manualConfigurationForWindows()
+		elif (self.Platform == 'Linux'):			self._manualConfigurationForWindows()
+		else:																	raise PlatformNotSupportedException(self.Platform)
+
+		# write configuration
+		self._writePoCConfiguration()
+		# re-read configuration
+		self._readPoCConfiguration()
+
+	def _manualConfigurationForWindows(self):
+		# configure QuartusII on Windows
+		next = False
+		while (next == False) :
+			try :
+				self.manualConfigureWindowsQuartusII()
+				next = True
+			except BaseException as ex :
+				print("FAULT: %s" % ex.message)
+			except Exception as ex :
+				raise
+
+		# configure ISE on Windows
+		next = False
+		while (next == False) :
+			try :
+				self.manualConfigureWindowsISE()
+				next = True
+			except BaseException as ex :
+				print("FAULT: %s" % ex.message)
+			except Exception as ex :
+				raise
+
+		# configure LabTools on Windows
+		next = False
+		while (next == False) :
+			try :
+				self.manualConfigureWindowsLabTools()
+				next = True
+			except BaseException as ex :
+				print("FAULT: %s" % ex.message)
+			except Exception as ex :
+				raise
+
+		# configure Vivado on Windows
+		next = False
+		while (next == False) :
+			try :
+				self.manualConfigureWindowsVivado()
+				next = True
+			except BaseException as ex :
+				print("FAULT: %s" % ex.message)
+			except Exception as ex :
+				raise
+
+		# configure HardwareServer on Windows
+		next = False
+		while (next == False) :
+			try :
+				self.manualConfigureWindowsHardwareServer()
+				next = True
+			except BaseException as ex :
+				print("FAULT: %s" % ex.message)
+			except Exception as ex :
+				raise
+
+		# configure Mentor QuestaSIM on Windows
+		next = False
+		while (next == False) :
+			try :
+				self.manualConfigureWindowsQuestaSim()
+				next = True
+			except BaseException as ex :
+				print("FAULT: %s" % ex.message)
+			except Exception as ex :
+				raise
+
+		# configure GHDL on Windows
+		next = False
+		while (next == False) :
+			try :
+				self.manualConfigureWindowsGHDL()
+				next = True
+			except BaseException as ex :
+				print("FAULT: %s" % ex.message)
+			except Exception as ex :
+				raise
+
+		# configure GTKWave on Windows
+		next = False
+		while (next == False) :
+			try :
+				self.manualConfigureWindowsGTKW()
+				next = True
+			except BaseException as ex :
+				print("FAULT: %s" % ex.message)
+			except Exception as ex :
+				raise
+
+	def _manualConfigurationForLinux(self):
+		# configure QuartusII on Linux
+		next = False
+		while (next == False) :
+			try :
+				self.manualConfigureLinuxQuartusII()
+				next = True
+			except BaseException as ex :
+				print("FAULT: %s" % ex.message)
+			except Exception as ex :
+				raise
+
+		# configure ISE on Linux
+		next = False
+		while (next == False) :
+			try :
+				self.manualConfigureLinuxISE()
+				next = True
+			except BaseException as ex :
+				print("FAULT: %s" % ex.message)
+			except Exception as ex :
+				raise
+
+		# configure LabTools on Linux
+		next = False
+		while (next == False) :
+			try :
+				self.manualConfigureLinuxLabTools()
+				next = True
+			except BaseException as ex :
+				print("FAULT: %s" % ex.message)
+			except Exception as ex :
+				raise
+
+		# configure Vivado on Linux
+		next = False
+		while (next == False) :
+			try :
+				self.manualConfigureLinuxVivado()
+				next = True
+			except BaseException as ex :
+				print("FAULT: %s" % ex.message)
+			except Exception as ex :
+				raise
+
+		# configure HardwareServer on Linux
+		next = False
+		while (next == False) :
+			try :
+				self.manualConfigureLinuxHardwareServer()
+				next = True
+			except BaseException as ex :
+				print("FAULT: %s" % ex.message)
+			except Exception as ex :
+				raise
+
+		# configure Mentor QuestaSIM on Linux
+		next = False
+		while (next == False) :
+			try :
+				self.manualConfigureLinuxQuestaSim()
+				next = True
+			except BaseException as ex :
+				print("FAULT: %s" % ex.message)
+			except Exception as ex :
+				raise
+
+		# configure GHDL on Linux
+		next = False
+		while (next == False) :
+			try :
+				self.manualConfigureLinuxGHDL()
+				next = True
+			except BaseException as ex :
+				print("FAULT: %s" % ex.message)
+			except Exception as ex :
+				raise
+
+		# configure GTKWave on Linux
+		next = False
+		while (next == False) :
+			try :
+				self.manualConfigureLinuxGTKW()
+				next = True
+			except BaseException as ex :
+				print("FAULT: %s" % ex.message)
+			except Exception as ex :
+				raise
+
+	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "query" command
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("query", help="Simulate a PoC Entity with Aldec Active-HDL")
 	@ArgumentAttribute(metavar="<Query>", dest="Query", type=str, help="todo help")
-	# standard
 	# @HandleVerbosityOptions
 	def queryConfiguration(self, args):
 		print(self._queryConfiguration(args.Query))
