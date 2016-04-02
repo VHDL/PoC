@@ -40,6 +40,9 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.GTKWave")
 
 
+from Base.Executable				import *
+
+
 class Configuration:
 	__vendor =		None
 	__shortName =	"GTKWave"
@@ -124,3 +127,74 @@ class Configuration:
 			self.pocConfig['GTKWave']['BinaryDirectory'] = '${InstallationDirectory}'
 		else :
 			raise BaseException("unknown option")
+
+
+
+class GTKWave(Executable):
+	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[]):
+		if (platform == "Windows"):			executablePath = binaryDirectoryPath/ "gtkwave.exe"
+		elif (platform == "Linux"):			executablePath = binaryDirectoryPath/ "gtkwave"
+		else:																						raise PlatformNotSupportedException(self._platform)
+		super().__init__(platform, executablePath, defaultParameters)
+
+		self._binaryDirectoryPath =	binaryDirectoryPath
+		self._version =			version
+
+		self._dumpFile =		None
+		self._saveFile =		None
+
+	@property
+	def BinaryDirectoryPath(self):
+		return self._binaryDirectoryPath
+
+	@property
+	def Version(self):
+		return self._version
+
+	@property
+	def DumpFile(self):
+		return self._dumpFile
+	@DumpFile.setter
+	def DumpFile(self, value):
+		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
+		if (self._dumpFile is None):
+			self._defaultParameters.append("--dump={0}".format(value))
+			self._dumpFile = value
+		elif (self._dumpFile != value):
+			self._defaultParameters.remove("--dump={0}".format(self._dumpFile))
+			self._defaultParameters.append("--dump={0}".format(value))
+			self._dumpFile = value
+
+	@property
+	def SaveFile(self):
+		return self._saveFile
+	@SaveFile.setter
+	def SaveFile(self, value):
+		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
+		if (self._saveFile is None):
+			self._defaultParameters.append("--save={0}".format(value))
+			self._saveFile = value
+		elif (self._saveFile != value):
+			self._defaultParameters.remove("--save={0}".format(self._saveFile))
+			self._defaultParameters.append("--save={0}".format(value))
+			self._saveFile = value
+
+	def View(self, dumpFile):
+		if isinstance(dumpFile, str):			self.DumpFile = dumpFile
+		elif isinstance(dumpFile, Path):	self.DumpFile = str(dumpFile)
+		else:																						raise ValueError("Parameter 'dumpFile' has an unsupported type.")
+
+		self._LogDebug("call gtkwave: {0}".format(str(self._defaultParameters)))
+		self._LogVerbose("    command: {0}".format(" ".join(self._defaultParameters)))
+
+		_indent = "    "
+		print(_indent + "GTKWave messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "-" * 80)
+		try:
+			self.StartProcess(parameterList)
+			for line in self.GetReader():
+				print(_indent + line)
+		except Exception as ex:
+			raise ex  # SimulatorException() from ex
+		print(_indent + "-" * 80)
+
