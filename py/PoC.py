@@ -422,8 +422,7 @@ class PoC(ILogable, ArgParseMixin):
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	@ArgumentAttribute('--std', metavar="<VHDLVersion>", dest="VHDLVersion", help="Simulate with VHDL-??")
 	# @SwitchArgumentAttribute("-08", dest="VHDLVersion", help="Simulate with VHDL-2008.")
-	@SwitchArgumentAttribute("-g", dest="GUIMode", help="show waveform in a GUI window.")
-	# standard
+	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window.")
 	# @HandleVerbosityOptions
 	def aSimSimulation(self, args):
 		self.__PrepareForSimulation()
@@ -499,7 +498,7 @@ class PoC(ILogable, ArgParseMixin):
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	@ArgumentAttribute('--std', metavar="<VHDLVersion>", dest="VHDLVersion", help="Simulate with VHDL-??")
 	# @SwitchArgumentAttribute("-08", dest="VHDLVersion", help="Simulate with VHDL-2008.")
-	@SwitchArgumentAttribute("-g", dest="GUIMode", help="show waveform in GTKWave.")
+	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in GTKWave.")
 	# standard
 	# @HandleVerbosityOptions
 	def ghdlSimulation(self, args):
@@ -563,50 +562,49 @@ class PoC(ILogable, ArgParseMixin):
 	@ArgumentAttribute('--board', metavar="<BoardName>", dest="BoardName", help="todo")
 	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
-	@SwitchArgumentAttribute("-g", dest="GUIMode", help="show waveform in a GUI window.")
+	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window.")
 	# standard
 	# @HandleVerbosityOptions
 	def iSimSimulation(self, args):
 		self.__PrepareForSimulation()
 		self.PrintHeadline()
-		self._iSimSimulation(args.FQN[0], args.logs, args.reports, args.GUIMode, args.DeviceName, args.BoardName)
-		Exit.exit()
 
-	def _iSimSimulation(self, module, showLogs, showReport, guiMode, deviceString, boardString):
 		# check if ISE is configure
-		if (len(self.PoCConfig.options("Xilinx.ISE")) == 0):  raise NotConfiguredException(
-			"Xilinx ISE is not configured on this system.")
-		# check if the appropriate environment is loaded
-		if (environ.get('XILINX') is None):                    raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
+		if (len(self.PoCConfig.options("Xilinx.ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
+		if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment.")
+
+		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
+
+		if (args.BoardName is not None):			board = Board(self, args.BoardName)
+		elif (args.DeviceName is not None):		board = Board(self, "Custom", args.DeviceName)
+		else:																	board = self.__SimulationDefaultBoard
 
 		# prepare some paths
-		self.Directories["iSimFiles"] =	self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['ISESimulatorFiles']
-		self.Directories["iSimTemp"] =	self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ISESimulatorFiles']
-		self.Directories["ISEInstallation"] = Path(self.PoCConfig['Xilinx.ISE']['InstallationDirectory'])
-		self.Directories["ISEBinary"] = Path(self.PoCConfig['Xilinx.ISE']['BinaryDirectory'])
-		self.Directories["XilinxPrimitiveSource"] = Path(
-				self.PoCConfig['Xilinx.ISE']['InstallationDirectory']) / "ISE/vhdl/src"
-		iseVersion = self.PoCConfig['Xilinx.ISE']['Version']
+		iseSimulatorFiles =													self.PoCConfig['PoC.DirectoryNames']['ISESimulatorFiles']
+		precompiledDirectory =											self.PoCConfig['PoC.DirectoryNames']['PrecompiledFiles']
+		self.Directories["iSimTemp"] =							self.Directories["PoCTemp"] / iseSimulatorFiles
+		self.Directories["iSimPrecompiled"] =				self.Directories["PoCTemp"] / precompiledDirectory / iseSimulatorFiles
+		self.Directories["ISEInstallation"] =				Path(self.PoCConfig['Xilinx.ISE']['InstallationDirectory'])
+		self.Directories["ISEBinary"] =							Path(self.PoCConfig['Xilinx.ISE']['BinaryDirectory'])
+		self.Directories["XilinxPrimitiveSource"] =	Path(self.PoCConfig['Xilinx.ISE']['InstallationDirectory']) / "data/vhdl/src"
+		iseVersion =																self.PoCConfig['Xilinx.ISE']['Version']
+		binaryPath =																self.Directories["ISEBinary"]
 
-		# create a ISESimulator instance
-		simulator = ISESimulator(self, showLogs, showReport, guiMode)
-		# prepare the simulator
-		iseBinaryPath = self.Directories["ISEBinary"]
-		simulator.PrepareSimulator(iseBinaryPath, iseVersion)
+		# prepare paths to vendor simulation libraries
+		self.__PrepareVendorLibraryPaths()
+
+		# create a GHDLSimulator instance and prepare it
+		simulator = ISESimulator(self, args.logs, args.reports, args.GUIMode)
+		simulator.PrepareSimulator(binaryPath, iseVersion)
+
+		entityList = [Entity(self, fqn) for fqn in args.FQN]
 
 		# run a testbench
-		entityToSimulate = Entity(self, module)
-		if (boardString is not None):
-			boardName = boardString
-			deviceName = None
-		elif (deviceString is not None):
-			boardName = "Custom"
-			deviceName = deviceString
-		else:
-			boardName = "Custom"
-			deviceName = "Unknown"
+		for entity in entityList:
+			simulator.Run(entity, board=board)		#, vhdlGenerics=None)
 
-		simulator.Run(entityToSimulate, boardName=boardName, deviceName=deviceName, vhdlGenerics=None)
+		Exit.exit()
+
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "vsim" command
@@ -620,53 +618,59 @@ class PoC(ILogable, ArgParseMixin):
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	@ArgumentAttribute('--std', metavar="<VHDLVersion>", dest="VHDLVersion", help="Simulate with VHDL-??")
 	# @SwitchArgumentAttribute("-08", dest="VHDLVersion", help="Simulate with VHDL-2008.")
-	@SwitchArgumentAttribute("-g", dest="GUIMode", help="show waveform in a GUI window.")
+	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window.")
 	# standard
 	# @HandleVerbosityOptions
 	def vSimSimulation(self, args):
 		self.__PrepareForSimulation()
 		self.PrintHeadline()
-		self._vSimSimulation(args.FQN[0], args.logs, args.reports, args.VHDLVersion, args.GUIMode, args.DeviceName, args.BoardName)
-		Exit.exit()
 
-	def _vSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode, deviceString, boardString):
-		# check if QuestaSim is configure
+		# check if QuestaSim is configured
 		if (len(self.PoCConfig.options("Mentor.QuestaSim")) != 0):
-			# prepare some paths
-			self.Directories["vSimInstallation"] = Path(self.PoCConfig['Mentor.QuestaSim']['InstallationDirectory'])
-			self.Directories["vSimBinary"] = Path(self.PoCConfig['Mentor.QuestaSim']['BinaryDirectory'])
-			vSimVersion = self.PoCConfig['Mentor.QuestaSim']['Version']
+			precompiledDirectory =									self.PoCConfig['PoC.DirectoryNames']['PrecompiledFiles']
+			vSimSimulatorFiles =										self.PoCConfig['PoC.DirectoryNames']['ActiveHDLSimulatorFiles']
+			self.Directories["vSimTemp"] =					self.Directories["PoCTemp"] / vSimSimulatorFiles
+			self.Directories["vSimPrecompiled"] =		self.Directories["PoCTemp"] / precompiledDirectory / vSimSimulatorFiles
+			self.Directories["vSimInstallation"] =	Path(self.PoCConfig['Mentor.QuestaSim']['InstallationDirectory'])
+			self.Directories["vSimBinary"] =				Path(self.PoCConfig['Mentor.QuestaSim']['BinaryDirectory'])
+			binaryPath =														self.Directories["vSimBinary"]
+			vSimVersion =														self.PoCConfig['Mentor.QuestaSim']['Version']
 		elif (len(self.PoCConfig.options("Altera.ModelSim")) != 0):
-			# prepare some paths
-			self.Directories["vSimInstallation"] = Path(self.PoCConfig['Altera.ModelSim']['InstallationDirectory'])
-			self.Directories["vSimBinary"] = Path(self.PoCConfig['Altera.ModelSim']['BinaryDirectory'])
-			vSimVersion = self.PoCConfig['Altera.QuestaSim']['Version']
+			precompiledDirectory =									self.PoCConfig['PoC.DirectoryNames']['PrecompiledFiles']
+			vSimSimulatorFiles =										self.PoCConfig['PoC.DirectoryNames']['ActiveHDLSimulatorFiles']
+			self.Directories["vSimTemp"] =					self.Directories["PoCTemp"] / vSimSimulatorFiles
+			self.Directories["vSimPrecompiled"] =		self.Directories["PoCTemp"] / precompiledDirectory / vSimSimulatorFiles
+			self.Directories["vSimInstallation"] =	Path(self.PoCConfig['Altera.ModelSim']['InstallationDirectory'])
+			self.Directories["vSimBinary"] =				Path(self.PoCConfig['Altera.ModelSim']['BinaryDirectory'])
+			binaryPath =														self.Directories["vSimBinary"]
+			vSimVersion =														self.PoCConfig['Altera.ModelSim']['Version']
 		else:
-			raise NotConfiguredException(
-				"Neither Mentor Graphics QuestaSim nor ModelSim Altera-Edition are configured on this system.")
+			raise NotConfiguredException("Neither Mentor Graphics QuestaSim nor ModelSim Altera-Edition are configured on this system.")
 
-		self.Directories["vSimTemp"] = self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames'][
-			'ModelSimSimulatorFiles']
+		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
 
-		# create a QuestaSimulator instance
-		simulator = QuestaSimulator(self, showLogs, showReport, guiMode)
-		# prepare the simulator
-		vSimBinaryPath = self.Directories["vSimBinary"]
-		simulator.PrepareSimulator(vSimBinaryPath, vSimVersion)
+		if (args.BoardName is not None):			board = Board(self, args.BoardName)
+		elif (args.DeviceName is not None):		board = Board(self, "Custom", args.DeviceName)
+		else:																	board = self.__SimulationDefaultBoard
+
+		if (args.VHDLVersion is None):				vhdlVersion = self.__SimulationDefaultVHDLVersion
+		else:																	vhdlVersion = VHDLVersion.parse(args.VHDLVersion)
+
+		# prepare paths to vendor simulation libraries
+		self.__PrepareVendorLibraryPaths()
+
+		# create a GHDLSimulator instance and prepare it
+		simulator = QuestaSimulator(self, args.logs, args.reports, args.GUIMode)
+		simulator.PrepareSimulator(binaryPath, vSimVersion)
+
+		entityList = [Entity(self, fqn) for fqn in args.FQN]
 
 		# run a testbench
-		entityToSimulate = Entity(self, module)
-		if (boardString is not None):
-			boardName = boardString
-			deviceName = None
-		elif (deviceString is not None):
-			boardName = "Custom"
-			deviceName = deviceString
-		else:
-			boardName = "Custom"
-			deviceName = "Unknown"
+		for entity in entityList:
+			simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
-		simulator.Run(entityToSimulate, boardName=boardName, deviceName=deviceName, vhdlVersion=vhdlVersion, vhdlGenerics=None)
+		Exit.exit()
+
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "asim" command
@@ -680,51 +684,57 @@ class PoC(ILogable, ArgParseMixin):
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	@ArgumentAttribute('--std', metavar="<VHDLVersion>", dest="VHDLVersion", help="Simulate with VHDL-??")
 	# @SwitchArgumentAttribute("-08", dest="VHDLVersion", help="Simulate with VHDL-2008.")
-	@SwitchArgumentAttribute("-g", dest="GUIMode", help="show waveform in a GUI window.")
+	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window.")
 	# standard
 	# @HandleVerbosityOptions
 	def xSimSimulation(self, args):
 		self.__PrepareForSimulation()
 		self.PrintHeadline()
-		self._xSimSimulation(args.FQN[0], args.logs, args.reports, args.VHDLVersion, args.GUIMode, args.DeviceName, args.BoardName)
-		Exit.exit()
 
-	def _xSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode, deviceString, boardString):
 		# check if ISE is configure
-		if (len(self.PoCConfig.options("Xilinx.Vivado")) == 0):  raise NotConfiguredException(
-			"Xilinx Vivado is not configured on this system.")
-		# check if the appropriate environment is loaded
-		# if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
+		if (len(self.PoCConfig.options("Xilinx.Vivado")) == 0):  raise NotConfiguredException("Xilinx Vivado is not configured on this system.")
+		if (environ.get('XILINX') is None):												raise EnvironmentException("Xilinx Vivado environment is not loaded in this shell environment.")
+
+		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
+
+		if (args.BoardName is not None):
+			board = Board(self, args.BoardName)
+		elif (args.DeviceName is not None):
+			board = Board(self, "Custom", args.DeviceName)
+		else:
+			board = self.__SimulationDefaultBoard
+
+		if (args.VHDLVersion is None):
+			vhdlVersion = self.__SimulationDefaultVHDLVersion
+		else:
+			vhdlVersion = VHDLVersion.parse(args.VHDLVersion)
 
 		# prepare some paths
-		self.Directories["xSimTemp"] = self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames'][
-			'VivadoSimulatorFiles']
-		self.Directories["VivadoInstallation"] = Path(self.PoCConfig['Xilinx.Vivado']['InstallationDirectory'])
-		self.Directories["VivadoBinary"] = Path(self.PoCConfig['Xilinx.Vivado']['BinaryDirectory'])
-		self.Directories["XilinxPrimitiveSource"] = Path(
-				self.PoCConfig['Xilinx.Vivado']['InstallationDirectory']) / "data/vhdl/src"
-		vivadoVersion = self.PoCConfig['Xilinx.Vivado']['Version']
+		vivadoSimulatorFiles =											self.PoCConfig['PoC.DirectoryNames']['VivadoSimulatorFiles']
+		precompiledDirectory =											self.PoCConfig['PoC.DirectoryNames']['PrecompiledFiles']
+		self.Directories["xSimTemp"] =							self.Directories["PoCTemp"] / vivadoSimulatorFiles
+		self.Directories["xSimPrecompiled"] =				self.Directories["PoCTemp"] / precompiledDirectory / vivadoSimulatorFiles
+		self.Directories["VivadoInstallation"] =		Path(self.PoCConfig['Xilinx.Vivado']['InstallationDirectory'])
+		self.Directories["VivadoBinary"] =					Path(self.PoCConfig['Xilinx.Vivado']['BinaryDirectory'])
+		self.Directories["XilinxPrimitiveSource"] =	Path(self.PoCConfig['Xilinx.Vivado']['InstallationDirectory']) / "data/vhdl/src"
+		vivadoVersion =															self.PoCConfig['Xilinx.Vivado']['Version']
+		binaryPath =																self.Directories["VivadoBinary"]
 
-		# create a VivadoSimulator instance
-		simulator = VivadoSimulator(self, showLogs, showReport, guiMode)
-		# prepare the simulator
-		vivadoBinaryPath = self.Directories["VivadoBinary"]
-		simulator.PrepareSimulator(vivadoBinaryPath, vivadoVersion)
+		# prepare paths to vendor simulation libraries
+		self.__PrepareVendorLibraryPaths()
+
+		# create a GHDLSimulator instance and prepare it
+		simulator = VivadoSimulator(self, args.logs, args.reports, args.GUIMode)
+		simulator.PrepareSimulator(binaryPath, vivadoVersion)
+
+		entityList = [Entity(self, fqn) for fqn in args.FQN]
 
 		# run a testbench
-		entityToSimulate = Entity(self, module)
-		if (boardString is not None):
-			boardName = boardString
-			deviceName = None
-		elif (deviceString is not None):
-			boardName = "Custom"
-			deviceName = deviceString
-		else:
-			boardName = "Custom"
-			deviceName = "Unknown"
+		for entity in entityList:
+			simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
-		simulator.Run(entityToSimulate, boardName=boardName, deviceName=deviceName, vhdlVersion=vhdlVersion,
-									vhdlGenerics=None)
+		Exit.exit()
+
 
 	# ============================================================================
 	# Synthesis	commands

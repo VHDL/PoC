@@ -92,10 +92,10 @@ class Simulator(BaseSimulator):
 		for pocEntity in pocEntities:
 			self.Run(pocEntity, **kwargs)
 		
-	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93", vhdlGenerics=None):
-		self._pocEntity =			pocEntity
-		self._testbenchFQN =	str(pocEntity)										# TODO: implement FQN method on PoCEntity
-		self._vhdlVersion =		VHDLVersion.parse(vhdlVersion)		# TODO: move conversion one level up
+	def Run(self, entity, board, vhdlVersion="93", vhdlGenerics=None):
+		self._entity =				entity
+		self._testbenchFQN =	str(entity)										# TODO: implement FQN method on PoCEntity
+		self._vhdlVersion =		vhdlVersion
 		self._vhdlGenerics =	vhdlGenerics
 
 		# check testbench database for the given testbench		
@@ -107,14 +107,14 @@ class Simulator(BaseSimulator):
 		testbenchName =				self.Host.TBConfig[self._testbenchFQN]['TestbenchModule']
 		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['fileListFile']
 
-		self._CreatePoCProject(testbenchName, boardName, deviceName)
+		self._CreatePoCProject(testbenchName, board)
 		self._AddFileListFile(fileListFilePath)
 		
 		# self._RunCompile(testbenchName)
 		self._RunLink(testbenchName)
 		self._RunSimulation(testbenchName)
 		
-	def _CreatePoCProject(self, testbenchName, boardName=None, deviceName=None):
+	def _CreatePoCProject(self, testbenchName, board):
 		# create a PoCProject and read all needed files
 		self._LogDebug("    Create a PoC project '{0}'".format(str(testbenchName)))
 		pocProject =									PoCProject(testbenchName)
@@ -125,11 +125,9 @@ class Simulator(BaseSimulator):
 		pocProject.ToolChain =				ToolChain.Xilinx_Vivado
 		pocProject.Tool =							Tool.Xilinx_xSim
 		pocProject.VHDLVersion =			self._vhdlVersion
+		pocProject.Board =						board
 
-		if (deviceName is None):			pocProject.Board =					boardName
-		else:													pocProject.Device =					deviceName
-
-		self._pocProject =				pocProject
+		self._pocProject =						pocProject
 		
 	def _AddFileListFile(self, fileListFilePath):
 		self._LogDebug("    Reading filelist '{0}'".format(str(fileListFilePath)))

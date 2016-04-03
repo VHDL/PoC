@@ -374,6 +374,10 @@ class GHDLElaborate(GHDL):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
 
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+
 	def Elaborate(self):
 		parameterList = self.Parameters.ToArgumentList()
 		parameterList.insert(0, self.Executable)
@@ -384,14 +388,16 @@ class GHDLElaborate(GHDL):
 		except Exception as ex:
 			raise GHDLException("Failed to launch GHDL elaborate.") from ex
 
-		hasOutput = False
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
 		try:
 			filter = GHDLElaborateFilter(self.GetReader())
 			iterator = iter(filter)
 
 			line = next(iterator)
 			line.Indent(2)
-			hasOutput = True
+			self._hasOutput = True
 			vhdlLibraryName = self.Parameters[self.SwitchVHDLLibrary]
 			topLevel = self.Parameters[self.ArgTopLevel]
 			self._LogNormal("    ghdl elaborate messages for '{0}.{1}'".format(vhdlLibraryName, topLevel))
@@ -399,6 +405,9 @@ class GHDLElaborate(GHDL):
 			self._Log(line)
 
 			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
 				line = next(iterator)
 				line.Indent(2)
 				self._Log(line)
@@ -410,12 +419,16 @@ class GHDLElaborate(GHDL):
 		#except Exception as ex:
 		#	raise GHDLException("Error while executing GHDL.") from ex
 		finally:
-			if hasOutput:
+			if self._hasOutput:
 				self._LogNormal("    " + ("-" * 76))
 
 class GHDLRun(GHDL):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
 
 	def Run(self):
 		parameterList = self.Parameters.ToArgumentList()
@@ -429,14 +442,16 @@ class GHDLRun(GHDL):
 		except Exception as ex:
 			raise GHDLException("Failed to launch GHDL run.") from ex
 
-		hasOutput = False
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
 		try:
 			filter = GHDLRunFilter(self.GetReader())
 			iterator = iter(filter)
 
 			line = next(iterator)
 			line.Indent(2)
-			hasOutput = True
+			self._hasOutput = True
 			vhdlLibraryName =	self.Parameters[self.SwitchVHDLLibrary]
 			topLevel =				self.Parameters[self.ArgTopLevel]
 			self._LogNormal("    ghdl run messages for '{0}.{1}'".format(vhdlLibraryName, topLevel))
@@ -444,6 +459,9 @@ class GHDLRun(GHDL):
 			self._Log(line)
 
 			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
 				line = next(iterator)
 				line.Indent(2)
 				self._Log(line)
@@ -455,7 +473,7 @@ class GHDLRun(GHDL):
 		#except Exception as ex:
 		#	raise GHDLException("Error while executing GHDL.") from ex
 		finally:
-			if hasOutput:
+			if self._hasOutput:
 				self._LogNormal("    " + ("-" * 76))
 
 

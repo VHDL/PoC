@@ -128,7 +128,7 @@ class Simulator(BaseSimulator):
 		pocProject.VHDLVersion =			self._vhdlVersion
 		pocProject.Board =						board
 
-		self._pocProject = pocProject
+		self._pocProject =						pocProject
 		
 	def _AddFileListFile(self, fileListFilePath):
 		self._LogDebug("    Reading filelist '{0}'".format(str(fileListFilePath)))

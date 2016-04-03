@@ -42,6 +42,8 @@ else:
 
 from Base.Exceptions				import ToolChainException
 from Base.Executable				import *
+from Base.Logging						import LogEntry, Severity
+
 
 class GTKWaveException(ToolChainException):
 	pass
@@ -144,6 +146,10 @@ class GTKWave(Executable):
 		self._binaryDirectoryPath =	binaryDirectoryPath
 		self._version =			version
 
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+
 	@property
 	def BinaryDirectoryPath(self):
 		return self._binaryDirectoryPath
@@ -169,28 +175,31 @@ class GTKWave(Executable):
 
 	def View(self):
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
 			raise GTKWaveException("Failed to launch GTKWave run.") from ex
 
-		hasOutput = False
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
 		try:
 			filter = GTKWaveFilter(self.GetReader())
 			iterator = iter(filter)
 
 			line = next(iterator)
 			line.Indent(2)
-			hasOutput = True
-			self._LogNormal(_indent + "GTKWave messages for '{0}'".format(self.Parameters[self.SwitchDumpFile]))
-			self._LogNormal(_indent + "-" * 80)
+			self._hasOutput = True
+			self._LogNormal("    GTKWave messages for '{0}'".format(self.Parameters[self.SwitchDumpFile]))
+			self._LogNormal("    " + ("-" * 76))
 			self._Log(line)
 
 			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
 				line = next(iterator)
 				line.Indent(2)
 				self._Log(line)
@@ -199,11 +208,11 @@ class GTKWave(Executable):
 			pass
 		except GTKWaveException:
 			raise
-		except Exception as ex:
-			raise GTKWaveException("Error while executing GTKWave.") from ex
+		#except Exception as ex:
+		#	raise GTKWaveException("Error while executing GTKWave.") from ex
 		finally:
-			if hasOutput:
-				print(_indent + "-" * 80)
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
 
 def GTKWaveFilter(gen):
 	# warningRegExpPattern =	r".+?:\d+:\d+:warning: (?P<Message>.*)"			# <Path>:<line>:<column>:warning: <message>
