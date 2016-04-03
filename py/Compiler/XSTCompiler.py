@@ -42,14 +42,13 @@ else:
 # load dependencies
 import re								# used for output filtering
 import shutil
+from colorama								import Fore as Foreground
 from configparser						import NoSectionError
 from os											import chdir
 
-from colorama								import Fore as Foreground
-
-from Compiler.Base					import PoCCompiler
-from Compiler.Exceptions		import *
-from PoC.PoCProject import *
+from Base.Exceptions				import *
+from Base.Compiler					import PoCCompiler
+from PoC.PoCProject					import *
 from ToolChains.Xilinx.ISE	import ISE
 
 
@@ -61,7 +60,6 @@ class Compiler(PoCCompiler):
 	def oldRun(self, pocEntity, device):
 		self._pocEntity =	pocEntity
 		self._ipcoreFQN =	str(pocEntity)
-
 		
 		self._LogNormal(self._ipcoreFQN)
 		self._LogNormal("  preparing compiler environment...")

@@ -59,21 +59,25 @@ class BaseException(Exception):
 		return self.message
 		
 class EnvironmentException(BaseException):
-	def __init__(self, message=""):
-		super().__init__(message)
-		self.message = message
+	pass
 
 class PlatformNotSupportedException(BaseException):
-	def __init__(self, message=""):
-		super().__init__(message)
-		self.message = message
+	pass
 
 class NotConfiguredException(BaseException):
-	def __init__(self, message=""):
-		super().__init__(message)
-		self.message = message
+	pass
 
 class CommonException(BaseException):
-	def __init__(self, message=""):
+	pass
+
+class SimulatorException(BaseException):
+	pass
+
+class TestbenchException(SimulatorException):
+	def __init__(self, pocEntity, testbench, message):
 		super().__init__(message)
-		self.message = message
+		self.pocEntity = pocEntity
+		self.testbench = testbench
+
+class CompilerException(BaseException):
+	pass

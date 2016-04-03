@@ -43,16 +43,13 @@ from textwrap									import dedent
 from lib.Functions						import Init, Exit
 from lib.ArgParseAttributes		import *
 from Base.Exceptions					import *
-from Base.Logging							import Logger, Severity
+from Base.Logging							import ILogable, Logger, Severity
 from Parser.Parser						import ParserException
-from Base.Logging							import ILogable
 from PoC.Entity								import *
 from PoC.Config								import *
 from ToolChains								import Configurations
 from Simulator								import *
-from Simulator.Exceptions			import *
 from Compiler									import *
-from Compiler.Exceptions			import *
 
 
 # def HandleVerbosityOptions(func):

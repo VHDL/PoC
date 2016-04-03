@@ -42,9 +42,9 @@ from colorama											import Fore as Foreground
 from configparser									import NoSectionError
 from os														import chdir
 
+from Base.Exceptions							import *
+from Base.Simulator								import PoCSimulator, VHDLTestbenchLibraryName
 from PoC.PoCProject								import *
-from Simulator.Base								import PoCSimulator, VHDLTestbenchLibraryName
-from Simulator.Exceptions					import *
 from ToolChains.Mentor.QuestaSim	import QuestaSim
 
 

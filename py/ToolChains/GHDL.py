@@ -39,9 +39,9 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.GHDL")
 
-
-from Base.Executable				import *
 from Base.Configuration			import ConfigurationBase
+from Base.Executable				import *
+from Base.Simulator					import SimulatorException
 
 
 class Configuration(ConfigurationBase):
@@ -304,16 +304,33 @@ class GHDLAnalyze(GHDL):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
 		_indent = "    "
-		print(_indent + "ghdl analyze messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
+		except Exception as ex:
+			raise SimulatorException("Failed to launch GHDL analyze.") from ex
+
+		try:
+			print(_indent + "ghdl analyze messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
+			print(_indent + "-" * 80)
+			gen = self.GetReader()
+			filter = GHDLFilter(gen)
+			it = iter(filter)
+			while True:
+				try:
+					line = next(it)
+				except StopIteration as ex:
+					break
+
 				print(_indent + line)
+
 		except Exception as ex:
 			raise ex  # SimulatorException() from ex
 		print(_indent + "-" * 80)
 
+
+def GHDLFilter(gen):
+	for line in gen:
+		yield line
 
 class GHDLElaborate(GHDL):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
@@ -327,7 +344,7 @@ class GHDLElaborate(GHDL):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
 		_indent = "    "
-		print(_indent + "ghdl elaboration messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "ghdl elaboration messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
 		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)

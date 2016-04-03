@@ -40,11 +40,10 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Simulator.Base")
 
 # load dependencies
-from enum import Enum, unique
+from enum							import Enum, unique
 
-from Base.Exceptions import *
-from Base.Logging import ILogable
-from Simulator.Exceptions import *
+from Base.Exceptions	import *
+from Base.Logging			import ILogable
 
 
 VHDLTestbenchLibraryName = "test"

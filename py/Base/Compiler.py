@@ -5,7 +5,7 @@
 # ==============================================================================
 # Authors:				 	Patrick Lehmann
 # 
-# Python Class:			TODO
+# Python Class:			Base class for all PoC***Compilers
 # 
 # Description:
 # ------------------------------------
@@ -15,7 +15,7 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2015 Technische Universitaet Dresden - Germany
+# Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,25 +30,54 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-#
+
 # entry point
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
 else:
 	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Simulator.Exceptions")
+	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Class PoCCompiler")
+
 
 # load dependencies
-from Base.Exceptions import *
+from Base.Exceptions		import *
+from Base.Logging				import ILogable
 
-class SimulatorException(BaseException):
-	def __init__(self, message=""):
-		super().__init__(message)
-		self.message = message
+
+class PoCCompiler(ILogable):
+	def __init__(self, host, showLogs, showReport):
+		if isinstance(host, ILogable):
+			ILogable.__init__(self, host.Logger)
+		else:
+			ILogable.__init__(self, None)
+
+		self.__host =				host
+		self.__showLogs =		showLogs
+		self.__showReport =	showReport
+		self.__dryRun =			False
+
+	# class properties
+	# ============================================================================
+	@property
+	def Host(self):				return self.__host
 	
-class TestbenchException(SimulatorException):
-	def __init__(self, pocEntity, testbench, message):
-		super().__init__(message)
-		self.pocEntity = pocEntity
-		self.testbench = testbench
+	@property
+	def ShowLogs(self):		return self.__showLogs
+	
+	@property
+	def ShowReport(self):	return self.__showReport
+	
+	# print messages
+	# ============================================================================
+	def printDebug(self, message):
+		if (self.debug):
+			print("DEBUG: " + message)
+	
+	def printVerbose(self, message):
+		if (self.verbose):
+			print(message)
+	
+	def printNonQuiet(self, message):
+		if (not self.quiet):
+			print(message)

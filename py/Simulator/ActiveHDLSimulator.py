@@ -41,11 +41,10 @@ else:
 from configparser						import NoSectionError
 from os											import chdir
 
+from Base.Exceptions				import *
 from Base.Executable				import *
-from Base.Project						import FileTypes
+from Base.Simulator					import PoCSimulator, VHDLTestbenchLibraryName
 from PoC.PoCProject					import *
-from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
-from Simulator.Exceptions		import *
 
 
 class Simulator(PoCSimulator):

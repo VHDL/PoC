@@ -40,15 +40,14 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.GHDLSimulator")
 
 # load dependencies
-from configparser						import NoSectionError
 from colorama								import Fore as Foreground
+from configparser						import NoSectionError
 from os											import chdir
 
-from Base.Project						import FileTypes
+from Base.Exceptions				import *
+from Base.Simulator					import PoCSimulator, VHDLTestbenchLibraryName
 from Parser.Parser					import ParserException
 from PoC.PoCProject					import *
-from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
-from Simulator.Exceptions		import *
 from ToolChains.GHDL				import GHDL
 from ToolChains.GTKWave			import GTKWave
 
