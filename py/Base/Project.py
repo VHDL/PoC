@@ -36,7 +36,7 @@ from pathlib						import Path
 from Base.Exceptions		import *
 from Base.VHDLParser		import VHDLParserMixIn
 from Parser.FilesParser	import FilesParserMixIn
-from PoC.PoCConfig import Board, Device
+from PoC.Config					import Board, Device
 from lib.Functions			import merge
 
 

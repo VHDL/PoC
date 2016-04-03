@@ -91,10 +91,10 @@ class Simulator(BaseSimulator):
 		for pocEntity in pocEntities:
 			self.Run(pocEntity, **kwargs)
 		
-	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93c", vhdlGenerics=None):
-		self._pocEntity =			pocEntity
-		self._testbenchFQN =	str(pocEntity)										# TODO: implement FQN method on PoCEntity
-		self._vhdlVersion =		VHDLVersion.parse(vhdlVersion)		# TODO: move conversion one level up
+	def Run(self, entity, board, vhdlVersion="93c", vhdlGenerics=None):
+		self._pocEntity =			entity
+		self._testbenchFQN =	str(entity)										# TODO: implement FQN method on PoCEntity
+		self._vhdlVersion =		vhdlVersion
 		self._vhdlGenerics =	vhdlGenerics
 
 		# check testbench database for the given testbench		
@@ -106,7 +106,7 @@ class Simulator(BaseSimulator):
 		testbenchName =				self.Host.tbConfig[self._testbenchFQN]['TestbenchModule']
 		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['fileListFile']
 
-		self._CreatePoCProject(testbenchName, boardName, deviceName)
+		self._CreatePoCProject(testbenchName, board)
 		self._AddFileListFile(fileListFilePath)
 		
 		if (self._ghdl.Backend == "gcc"):
@@ -121,20 +121,18 @@ class Simulator(BaseSimulator):
 			self._RunAnalysis()
 			self._RunSimulation(testbenchName)
 	
-	def _CreatePoCProject(self, testbenchName, boardName=None, deviceName=None):
+	def _CreatePoCProject(self, testbenchName, board):
 		# create a PoCProject and read all needed files
 		self._LogDebug("    Create a PoC project '{0}'".format(str(testbenchName)))
 		pocProject =									PoCProject(testbenchName)
-		
+
 		# configure the project
 		pocProject.RootDirectory =		self.Host.Directories["PoCRoot"]
 		pocProject.Environment =			Environment.Simulation
 		pocProject.ToolChain =				ToolChain.GHDL_GTKWave
 		pocProject.Tool =							Tool.GHDL
 		pocProject.VHDLVersion =			self._vhdlVersion
-
-		if (deviceName is None):			pocProject.Board =					boardName
-		else:													pocProject.Device =					deviceName
+		pocProject.Board =						board
 
 		self._pocProject = pocProject
 		

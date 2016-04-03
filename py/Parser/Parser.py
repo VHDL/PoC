@@ -337,7 +337,7 @@ class CodeDOMObject(metaclass=CodeDOMMeta):
 				if printChar: print(Fore.LIGHTBLUE_EX + str(token) + Fore.RESET)
 				parser.send(token)
 			
-			print("send empty token")
+			# FIXME: print("send empty token")
 			parser.send(None)
 		except MatchingParserResult as ex:
 			return ex.value

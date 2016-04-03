@@ -5,11 +5,11 @@
 # ==============================================================================
 # Authors:				 		Patrick Lehmann
 # 
-# Python Executable:	Auxillary functions to exit a program and report an error message.
+# Python functions:		Auxillary functions to exit a program and report an error message.
 # 
 # Description:
 # ------------------------------------
-#	TODO
+#		TODO:
 #
 # License:
 # ==============================================================================
@@ -28,6 +28,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+#
 
 from functools	import reduce
 from operator		import or_
@@ -55,7 +56,11 @@ class Init:
 		"MAGENTA":	Foreground.LIGHTMAGENTA_EX,
 		"BLUE":			Foreground.LIGHTBLUE_EX,
 		"CYAN":			Foreground.LIGHTCYAN_EX,
-		"RESET":		Foreground.RESET
+		"RESET":		Foreground.RESET,
+
+		"HEADLINE":	Foreground.LIGHTMAGENTA_EX,
+		"ERROR":		Foreground.LIGHTRED_EX,
+		"WARNING":	Foreground.LIGHTYELLOW_EX
 	}
 
 

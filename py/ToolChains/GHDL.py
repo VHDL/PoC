@@ -368,7 +368,7 @@ class GHDLAnalyze(GHDL):
 		#	raise GHDLException("Error while executing GHDL.") from ex
 		finally:
 			if self._hasOutput:
-				print("    " + ("-" * 76))
+				self._LogNormal("    " + ("-" * 76))
 
 class GHDLElaborate(GHDL):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
