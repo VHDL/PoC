@@ -333,10 +333,8 @@ class GHDLAnalyze(GHDL):
 	def Analyze(self):
 		parameterList = self.Parameters.ToArgumentList()
 		parameterList.insert(0, self.Executable)
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
@@ -351,9 +349,8 @@ class GHDLAnalyze(GHDL):
 
 			line = next(iterator)
 			self._hasOutput =		True
-			sourceFile = self.Parameters[self.ArgSourceFile]
-			self._LogNormal(_indent + "ghdl analyze messages for '{0}'".format(sourceFile))
-			self._LogNormal(_indent + "-" * 80)
+			self._LogNormal("    ghdl analyze messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
+			self._LogNormal("    " + ("-" * 76))
 
 			while True:
 				self._hasWarnings |=	(line.Severity is Severity.Warning)
@@ -367,25 +364,21 @@ class GHDLAnalyze(GHDL):
 			pass
 		except GHDLException:
 			raise
-		except Exception as ex:
-			raise GHDLException("Error while executing GHDL.") from ex
+		#except Exception as ex:
+		#	raise GHDLException("Error while executing GHDL.") from ex
 		finally:
 			if self._hasOutput:
-				print(_indent + "-" * 80)
+				print("    " + ("-" * 76))
 
 class GHDLElaborate(GHDL):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
 
 	def Elaborate(self):
-		if (self._backend == "mcode"):		return
-
 		parameterList = self.Parameters.ToArgumentList()
 		parameterList.insert(0, self.Executable)
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
@@ -401,8 +394,8 @@ class GHDLElaborate(GHDL):
 			hasOutput = True
 			vhdlLibraryName = self.Parameters[self.SwitchVHDLLibrary]
 			topLevel = self.Parameters[self.ArgTopLevel]
-			self._LogNormal(_indent + "ghdl elaborate messages for '{0}.{1}'".format(vhdlLibraryName, topLevel))
-			self._LogNormal(_indent + "-" * 80)
+			self._LogNormal("    ghdl elaborate messages for '{0}.{1}'".format(vhdlLibraryName, topLevel))
+			self._LogNormal("    " + ("-" * 76))
 			self._Log(line)
 
 			while True:
@@ -414,11 +407,11 @@ class GHDLElaborate(GHDL):
 			pass
 		except GHDLException:
 			raise
-		except Exception as ex:
-			raise GHDLException("Error while executing GHDL.") from ex
+		#except Exception as ex:
+		#	raise GHDLException("Error while executing GHDL.") from ex
 		finally:
 			if hasOutput:
-				print(_indent + "-" * 80)
+				self._LogNormal("    " + ("-" * 76))
 
 class GHDLRun(GHDL):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
@@ -431,7 +424,6 @@ class GHDLRun(GHDL):
 
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
@@ -447,8 +439,8 @@ class GHDLRun(GHDL):
 			hasOutput = True
 			vhdlLibraryName =	self.Parameters[self.SwitchVHDLLibrary]
 			topLevel =				self.Parameters[self.ArgTopLevel]
-			self._LogNormal(_indent + "ghdl run messages for '{0}.{1}'".format(vhdlLibraryName, topLevel))
-			self._LogNormal(_indent + "-" * 80)
+			self._LogNormal("    ghdl run messages for '{0}.{1}'".format(vhdlLibraryName, topLevel))
+			self._LogNormal("    " + ("-" * 76))
 			self._Log(line)
 
 			while True:
@@ -460,11 +452,11 @@ class GHDLRun(GHDL):
 			pass
 		except GHDLException:
 			raise
-		except Exception as ex:
-			raise GHDLException("Error while executing GHDL.") from ex
+		#except Exception as ex:
+		#	raise GHDLException("Error while executing GHDL.") from ex
 		finally:
 			if hasOutput:
-				print(_indent + "-" * 80)
+				self._LogNormal("    " + ("-" * 76))
 
 
 def GHDLAnalyzeFilter(gen):

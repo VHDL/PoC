@@ -912,8 +912,8 @@ def main():
 	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)
 	except NotConfiguredException as ex:				Exit.printNotConfiguredException(ex)
 	except PlatformNotSupportedException as ex:	Exit.printPlatformNotSupportedException(ex)
-	except BaseException as ex:									Exit.printBaseException(ex)
-	except NotImplementedError as ex:						Exit.printNotImplementedError(ex)
+	#except BaseException as ex:									Exit.printBaseException(ex)
+	#except NotImplementedError as ex:						Exit.printNotImplementedError(ex)
 	except Exception as ex:											Exit.printException(ex)
 
 # entry point

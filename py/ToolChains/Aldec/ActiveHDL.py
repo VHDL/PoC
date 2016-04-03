@@ -40,6 +40,8 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Aldec.ActiveHDL")
 
 
+from re											import compile as re_compile
+
 from Base.Exceptions							import ToolChainException, PlatformNotSupportedException
 from Base.Logging									import LogEntry, Severity
 from Base.Executable							import *
@@ -82,7 +84,19 @@ class VHDLCompiler(Executable, ActiveHDLMixIn):
 		else:																						raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, executablePath, logger=logger)
 
+		self._hasOutput =		False
+		self._hasWarnings =	False
+		self._hasErrors =		False
+
 		self.Parameters[self.Executable] = executablePath
+
+	@property
+	def HasWarnings(self):
+		return self._hasWarnings
+
+	@property
+	def HasErrors(self):
+		return self._hasErrors
 
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
@@ -121,19 +135,44 @@ class VHDLCompiler(Executable, ActiveHDLMixIn):
 
 	def Compile(self):
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
-		print(_indent + "acom messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise ActiveHDLException("Failed to launch acom run.") from ex
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			filter = VHDLCompilerFilter(self.GetReader())
+			iterator = iter(filter)
+
+			line = next(iterator)
+
+
+			self._hasOutput = True
+			self._LogNormal("    acom messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
+			self._LogNormal("    " + ("-" * 76))
+
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
+				line.Indent(2)
+				self._Log(line)
+				line = next(iterator)
+
+		except StopIteration as ex:
+			pass
+		except ActiveHDLException:
+			raise
+		#except Exception as ex:
+		#	raise ActiveHDLException("Error while executing acom.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
 
 
 class StandaloneSimulator(Executable, ActiveHDLMixIn):
@@ -145,7 +184,19 @@ class StandaloneSimulator(Executable, ActiveHDLMixIn):
 		else:																						raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, executablePath, logger=logger)
 
+		self._hasOutput =		False
+		self._hasWarnings =	False
+		self._hasErrors =		False
+
 		self.Parameters[self.Executable] = executablePath
+
+	@property
+	def HasWarnings(self):
+		return self._hasWarnings
+
+	@property
+	def HasErrors(self):
+		return self._hasErrors
 
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
@@ -161,44 +212,43 @@ class StandaloneSimulator(Executable, ActiveHDLMixIn):
 
 	def Simulate(self):
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 		self._LogDebug("    tcl commands: {0}".format(self.Parameters[self.SwitchBatchCommand]))
 
-		_indent = "    "
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
 			raise ActiveHDLException("Failed to launch vsimsa run.") from ex
 
-		hasOutput = False
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
 		try:
 			filter = SimulatorFilter(self.GetReader())
 			iterator = iter(filter)
 
 			line = next(iterator)
-			line.Indent(2)
-			hasOutput = True
-			vhdlLibraryName =	"?????"
-			topLevel =				"?????"
-			self._LogNormal(_indent + "vsimsa messages for '{0}.{1}'".format(vhdlLibraryName, topLevel))
-			self._LogNormal(_indent + "-" * 80)
-			self._Log(line)
+			self._hasOutput = True
+			self._LogNormal("    vsimsa messages for '{0}.{1}'".format("?????", "?????"))
+			self._LogNormal("    " + ("-" * 76))
 
 			while True:
-				line = next(iterator)
+				self._hasWarnings |=	(line.Severity is Severity.Warning)
+				self._hasErrors |=		(line.Severity is Severity.Error)
+
 				line.Indent(2)
 				self._Log(line)
+				line = next(iterator)
 
 		except StopIteration as ex:
 			pass
 		except ActiveHDLException:
 			raise
-		except Exception as ex:
-			raise ActiveHDLException("Error while executing vsimsa.") from ex
+		#except Exception as ex:
+		#	raise ActiveHDLException("Error while executing vsimsa.") from ex
 		finally:
-			if hasOutput:
-				print(_indent + "-" * 80)
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
 
 
 class Simulator(Executable, ActiveHDLMixIn):
@@ -277,7 +327,19 @@ class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLMixIn):
 		else:																						raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, executablePath, logger=logger)
 
+		self._hasOutput =		False
+		self._hasWarnings =	False
+		self._hasErrors =		False
+
 		self.Parameters[self.Executable] = executablePath
+
+	@property
+	def HasWarnings(self):
+		return self._hasWarnings
+
+	@property
+	def HasErrors(self):
+		return self._hasErrors
 
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
@@ -297,19 +359,43 @@ class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLMixIn):
 
 	def CreateLibrary(self):
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
-		print(_indent + "alib messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise ActiveHDLException("Failed to launch alib run.") from ex
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			filter = VHDLLibraryToolFilter(self.GetReader())
+			iterator = iter(filter)
+
+			line = next(iterator)
+			self._hasOutput = True
+			self._LogNormal("    alib messages for '{0}'".format(self.Parameters[self.SwitchLibraryName]))
+			self._LogNormal("    " + ("-" * 76))
+
+			while True:
+				self._hasWarnings |=	(line.Severity is Severity.Warning)
+				self._hasErrors |=		(line.Severity is Severity.Error)
+
+				line.Indent(2)
+				self._Log(line)
+				line = next(iterator)
+
+		except StopIteration as ex:
+			pass
+		except ActiveHDLException:
+			raise
+		#except Exception as ex:
+		#	raise ActiveHDLException("Error while executing alib.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
+
 
 					# # assemble acom command as list of parameters
 					# parameterList = [
@@ -328,6 +414,42 @@ class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLMixIn):
 		# ]
 
 
+def VHDLCompilerFilter(gen):
+	# warningRegExpPattern =	"COMP96 WARNING .*"					#
+	# errorRegExpPattern =		".+?:\d+:\d+: .*"  					# <Path>:<line>:<column>: <message>
+
+	# warningRegExp =	re_compile(warningRegExpPattern)
+	# errorRegExp =		re_compile(errorRegExpPattern)
+
+	for line in gen:
+		if line.startswith("Aldec, Inc. VHDL Compiler"):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("DAGGEN WARNING DAGGEN_0523"):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("ACOMP Initializing"):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("VLM Initialized with path"):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("COMP96 File: "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("COMP96 Compile Package "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("COMP96 Compile Entity "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("COMP96 Compile Architecture "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("COMP96 Compile success "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("COMP96 Compile failure "):
+			yield LogEntry(line, Severity.Error)
+		elif line.startswith("COMP96 WARNING "):
+			yield LogEntry(line, Severity.Warning)
+		elif line.startswith("COMP96 ERROR "):
+			yield LogEntry(line, Severity.Error)
+		else:
+			yield LogEntry(line, Severity.Normal)
+
+
 def SimulatorFilter(gen):
 	#warningRegExpPattern =	".+?:\d+:\d+:warning: .*"		# <Path>:<line>:<column>:warning: <message>
 	#errorRegExpPattern =		".+?:\d+:\d+: .*"  					# <Path>:<line>:<column>: <message>
@@ -337,7 +459,6 @@ def SimulatorFilter(gen):
 
 	PoCOutputFound = False
 	for line in gen:
-
 		if line.startswith("asim"):
 			yield LogEntry(line, Severity.Verbose)
 		elif line.startswith("VSIM: "):
@@ -358,5 +479,12 @@ def SimulatorFilter(gen):
 				yield LogEntry(line, Severity.Verbose)
 			else:
 				yield LogEntry(line[8:], Severity.Normal)
+		else:
+			yield LogEntry(line, Severity.Normal)
+
+def VHDLLibraryToolFilter(gen):
+	for line in gen:
+		if line.startswith("ALIB: Library "):
+			yield LogEntry(line, Severity.Verbose)
 		else:
 			yield LogEntry(line, Severity.Normal)

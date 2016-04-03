@@ -40,11 +40,12 @@ else:
 # load dependencies
 from configparser								import NoSectionError
 from os													import chdir
+from queue											import Queue
 
 from Base.Executable						import *
 from Base.Simulator							import Simulator as BaseSimulator, VHDLTestbenchLibraryName
 from PoC.PoCProject							import *
-from ToolChains.Aldec.ActiveHDL	import ActiveHDL
+from ToolChains.Aldec.ActiveHDL	import ActiveHDL, ActiveHDLException
 
 
 class Simulator(BaseSimulator):
@@ -150,7 +151,12 @@ class Simulator(BaseSimulator):
 
 		for lib in self._pocProject.VHDLLibraries:
 			alib.Parameters[alib.SwitchLibraryName] = lib.Name
-			alib.CreateLibrary()
+			try:
+				alib.CreateLibrary()
+			except ActiveHDLException as ex:
+				raise SimulatorException("Error creating VHDL library '{0}'.".format(lib.Name)) from ex
+			if alib.HasErrors:
+				raise SimulatorException("Error creating VHDL library '{0}'.".format(lib.Name))
 
 		# create a ActiveHDLVHDLCompiler instance
 		acom = self._activeHDL.GetVHDLCompiler()
@@ -165,8 +171,14 @@ class Simulator(BaseSimulator):
 			acom.Parameters[acom.SwitchVHDLLibrary] =	file.VHDLLibraryName
 			acom.Parameters[acom.ArgSourceFile] =			file.Path
 			# set a per file log-file with '-l', 'vcom.log',
-			acom.Compile()
-	
+			try:
+				acom.Compile()
+			except ActiveHDLException as ex:
+				raise SimulatorException("Error while compiling '{0}'.".format(str(file.Path))) from ex
+			if acom.HasErrors:
+				raise SimulatorException("Error while compiling '{0}'.".format(str(file.Path)))
+
+
 	def _RunSimulation(self, testbenchName):
 		self._LogNormal("  running simulation...")
 		
@@ -181,9 +193,13 @@ class Simulator(BaseSimulator):
 		# aSim.ComanndLineMode =	True
 		# aSim.BatchCommand =			"do {0}".format(str(tclBatchFilePath))
 		# aSim.TopLevel =					"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
-		
-		aSim.Simulate()
-		
+		try:
+			aSim.Simulate()
+		except ActiveHDLException as ex:
+			raise SimulatorException("Error while simulating '{0}.{1}'.".format(VHDLTestbenchLibraryName, testbenchName)) from ex
+		if aSim.HasErrors:
+			raise SimulatorException("Error while simulating '{0}'.".format(VHDLTestbenchLibraryName, testbenchName))
+
 	def _RunSimulationWithGUI(self, testbenchName):
 		self._LogNormal("  running simulation...")
 	
