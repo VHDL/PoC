@@ -1,4 +1,4 @@
-# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
@@ -326,7 +326,7 @@ def main():
 	except NotConfiguredException as ex:				Exit.printNotConfiguredException(ex)
 	except PlatformNotSupportedException as ex:	Exit.printPlatformNotSupportedException(ex)
 	except BaseException as ex:									Exit.printBaseException(ex)
-	except NotImplementedException as ex:				Exit.printNotImplementedException(ex)
+	except NotImplementedException as ex:				Exit.printNotImplementedError(ex)
 	except Exception as ex:											Exit.printException(ex)
 			
 # entry point

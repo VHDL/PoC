@@ -1,4 +1,4 @@
-# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
@@ -147,27 +147,3 @@ class Configuration(CommandLineProgram):
 		# re-read configuration
 		self.readPoCConfiguration()
 	
-
-	
-# main program
-def main():
-	from sys import exit
-	import argparse
-	import textwrap
-	import colorama
-	
-	colorama.init()
-	
-	try:
-		# create a commandline argument parser
-		argParser = argparse.ArgumentParser(
-			formatter_class = argparse.RawDescriptionHelpFormatter,
-			description = textwrap.dedent('''\
-				This is the PoC-Library Repository Service Tool.
-				'''),
-			add_help=False)
-
-		# add arguments
-		group1 = argParser.add_argument_group('Verbosity')
-		group21.add_argument('--new-solution',	metavar="<Name>",	dest="newSolution",					help='create a new solution')
-		group21.add_argument('--add-solution',	metavar="<Name>",	dest="addSolution",					help='add an existing solution')

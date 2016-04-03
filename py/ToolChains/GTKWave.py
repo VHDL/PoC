@@ -40,8 +40,13 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.GTKWave")
 
 
+from Base.Exceptions				import ToolChainException
 from Base.Executable				import *
+from Base.Logging						import LogEntry, Severity
 
+
+class GTKWaveException(ToolChainException):
+	pass
 
 class Configuration:
 	__vendor =		None
@@ -64,11 +69,11 @@ class Configuration:
 		}
 	}
 
-	def IsSupportedPlatform(self, Platform):
-		return (Platform in self.__privateConfiguration)
-
 	def GetSections(self, Platform):
 		pass
+
+	def ConfigureForWindows(self):
+		return
 
 	def manualConfigureForWindows(self) :
 		# Ask for installed GTKWave
@@ -129,19 +134,21 @@ class Configuration:
 			raise BaseException("unknown option")
 
 
-
 class GTKWave(Executable):
-	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[]):
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		if (platform == "Windows"):			executablePath = binaryDirectoryPath/ "gtkwave.exe"
 		elif (platform == "Linux"):			executablePath = binaryDirectoryPath/ "gtkwave"
 		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, defaultParameters)
+		super().__init__(platform, executablePath, logger=logger)
+
+		self.Parameters[self.Executable] = executablePath
 
 		self._binaryDirectoryPath =	binaryDirectoryPath
 		self._version =			version
 
-		self._dumpFile =		None
-		self._saveFile =		None
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
 
 	@property
 	def BinaryDirectoryPath(self):
@@ -151,50 +158,79 @@ class GTKWave(Executable):
 	def Version(self):
 		return self._version
 
-	@property
-	def DumpFile(self):
-		return self._dumpFile
-	@DumpFile.setter
-	def DumpFile(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		if (self._dumpFile is None):
-			self._defaultParameters.append("--dump={0}".format(value))
-			self._dumpFile = value
-		elif (self._dumpFile != value):
-			self._defaultParameters.remove("--dump={0}".format(self._dumpFile))
-			self._defaultParameters.append("--dump={0}".format(value))
-			self._dumpFile = value
+	class Executable(metaclass=ExecutableArgument):
+		pass
 
-	@property
-	def SaveFile(self):
-		return self._saveFile
-	@SaveFile.setter
-	def SaveFile(self, value):
-		if (not isinstance(value, str)):								raise ValueError("Parameter 'value' is not of type str.")
-		if (self._saveFile is None):
-			self._defaultParameters.append("--save={0}".format(value))
-			self._saveFile = value
-		elif (self._saveFile != value):
-			self._defaultParameters.remove("--save={0}".format(self._saveFile))
-			self._defaultParameters.append("--save={0}".format(value))
-			self._saveFile = value
+	class SwitchDumpFile(metaclass=LongValuedFlagArgument):
+		_name = "dump"
 
-	def View(self, dumpFile):
-		if isinstance(dumpFile, str):			self.DumpFile = dumpFile
-		elif isinstance(dumpFile, Path):	self.DumpFile = str(dumpFile)
-		else:																						raise ValueError("Parameter 'dumpFile' has an unsupported type.")
+	class SwitchSaveFile(metaclass=LongValuedFlagArgument):
+		_name = "save"
 
-		self._LogDebug("call gtkwave: {0}".format(str(self._defaultParameters)))
-		self._LogVerbose("    command: {0}".format(" ".join(self._defaultParameters)))
+	Parameters = CommandLineArgumentList(
+		Executable,
+		SwitchDumpFile,
+		SwitchSaveFile
+	)
 
-		_indent = "    "
-		print(_indent + "GTKWave messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
+	def View(self):
+		parameterList = self.Parameters.ToArgumentList()
+		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise GTKWaveException("Failed to launch GTKWave run.") from ex
 
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			filter = GTKWaveFilter(self.GetReader())
+			iterator = iter(filter)
+
+			line = next(iterator)
+			line.Indent(2)
+			self._hasOutput = True
+			self._LogNormal("    GTKWave messages for '{0}'".format(self.Parameters[self.SwitchDumpFile]))
+			self._LogNormal("    " + ("-" * 76))
+			self._Log(line)
+
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
+				line = next(iterator)
+				line.Indent(2)
+				self._Log(line)
+
+		except StopIteration as ex:
+			pass
+		except GTKWaveException:
+			raise
+		#except Exception as ex:
+		#	raise GTKWaveException("Error while executing GTKWave.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
+
+def GTKWaveFilter(gen):
+	# warningRegExpPattern =	r".+?:\d+:\d+:warning: (?P<Message>.*)"			# <Path>:<line>:<column>:warning: <message>
+	# errorRegExpPattern =		r".+?:\d+:\d+: (?P<Message>.*)"  						# <Path>:<line>:<column>: <message>
+
+	# warningRegExp =	re_compile(warningRegExpPattern)
+	# errorRegExp =		re_compile(errorRegExpPattern)
+
+	for line in gen:
+		#warningRegExpMatch = warningRegExp.match(line)
+		#if (warningRegExpMatch is not None):
+		#	yield LogEntry(line, Severity.Warning)
+		#else:
+		#	errorRegExpMatch = errorRegExp.match(line)
+		#	if (errorRegExpMatch is not None):
+		#		message = errorRegExpMatch.group('Message')
+		#		if message.endswith("has changed and must be reanalysed"):
+		#			raise GHDLReanalyzeException(message)
+		#		yield LogEntry(line, Severity.Error)
+		#	else:
+				yield LogEntry(line, Severity.Normal)

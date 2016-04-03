@@ -1,29 +1,27 @@
 # EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
-# 
+#
 # ==============================================================================
 # Authors:				 	Patrick Lehmann
-# 
-# Python Class:			TODO
-# 
+#
+# Python Class:			Altera Quartus Project File
+#
 # Description:
 # ------------------------------------
 #		TODO:
-#		- 
-#		- 
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2015 Technische Universitaet Dresden - Germany
+# Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #		http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,23 +30,25 @@
 # ==============================================================================
 #
 # entry point
-if __name__ != "__main__":
+if __name__ != "__main__" :
 	# place library initialization code here
 	pass
-else:
+else :
 	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Simulator.Exceptions")
+	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Altera.QuartusProject")
 
-# load dependencies
-from Base.Exceptions import *
 
-class SimulatorException(BaseException):
-	def __init__(self, message=""):
-		super().__init__(message)
-		self.message = message
-	
-class TestbenchException(SimulatorException):
-	def __init__(self, pocEntity, testbench, message):
-		super().__init__(message)
-		self.pocEntity = pocEntity
-		self.testbench = testbench
+from Base.Project			import *
+
+
+class QuartusProject(Project):
+	def __init__(self, name):
+		super().__init__(name)
+
+class QuartusProjectFile(ProjectFile):
+	def __init__(self, file):
+		super().__init__(file)
+
+class SynopsysDesignConstraintFile(PoC.ConstraintFile):
+	def __init__(self, file):
+		super().__init__(file)

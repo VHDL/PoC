@@ -45,10 +45,10 @@ from enum										import Enum, unique
 @unique
 class Severity(Enum):
 	Fatal =			30
-	Error =			20
+	Error =			25
+	Quiet =			20
 	Warning =		15
 	Info =			10
-	Quiet =			 5
 	Normal =		 4
 	Verbose =		 2
 	Debug =			 1
@@ -63,9 +63,10 @@ class Severity(Enum):
 	
 
 class LogEntry:
-	def __init__(self, severity, message):
+	def __init__(self, message, severity=Severity.Normal):
 		self._severity =	severity
 		self._message =		message
+		self._indent =		0
 	
 	@property
 	def Severity(self):
@@ -73,7 +74,10 @@ class LogEntry:
 	
 	@property
 	def Message(self):
-		return self._message
+		return ("  " * self._indent) + self._message
+
+	def Indent(self, indent):
+		self._indent += indent
 	
 	def __str__(self):
 		if (self._severity is Severity.Fatal):			return "FATAL: " +		self._message
@@ -105,36 +109,43 @@ class Logger:
 			if self._printToStdOut:
 				if (entry.Severity is Severity.Fatal):			print("{0}{1}{2}".format(Foreground.RED, entry.Message, Foreground.RESET))
 				elif (entry.Severity is Severity.Error):		print("{0}{1}{2}".format(Foreground.LIGHTRED_EX, entry.Message, Foreground.RESET))
+				elif (entry.Severity is Severity.Quiet):		print(entry.Message + "......")
 				elif (entry.Severity is Severity.Warning):	print("{0}{1}{2}".format(Foreground.LIGHTYELLOW_EX, entry.Message, Foreground.RESET))
 				elif (entry.Severity is Severity.Info):			print("{0}{1}{2}".format(Foreground.CYAN, entry.Message, Foreground.RESET))
-				elif (entry.Severity is Severity.Quiet):		print(entry.Message + "......")
 				elif (entry.Severity is Severity.Normal):		print(entry.Message)
 				elif (entry.Severity is Severity.Verbose):	print("{0}{1}{2}".format(Foreground.WHITE, entry.Message, Foreground.RESET))
 				elif (entry.Severity is Severity.Debug):		print("{0}{1}{2}".format(Foreground.LIGHTBLACK_EX, entry.Message, Foreground.RESET))
+
+			return True
+		else:
+			return False
+
+	def TryWrite(self, entry):
+		return (entry.Severity >= self._logLevel)
 	
 	def WriteFatal(self, message):
-		self.Write(LogEntry(Severity.Fatal, message))
+		return self.Write(LogEntry(message, Severity.Fatal))
 	
 	def WriteError(self, message):
-		self.Write(LogEntry(Severity.Error, message))
+		return self.Write(LogEntry(message, Severity.Error))
 	
 	def WriteWarning(self, message):
-		self.Write(LogEntry(Severity.Warning, message))
+		return self.Write(LogEntry(message, Severity.Warning))
 	
 	def WriteInfo(self, message):
-		self.Write(LogEntry(Severity.Info, message))
+		return self.Write(LogEntry(message, Severity.Info))
 	
 	def WriteQuiet(self, message):
-		self.Write(LogEntry(Severity.Quiet, message))
+		return self.Write(LogEntry(message, Severity.Quiet))
 	
 	def WriteNormal(self, message):
-		self.Write(LogEntry(Severity.Normal, message))
+		return self.Write(LogEntry(message, Severity.Normal))
 	
 	def WriteVerbose(self, message):
-		self.Write(LogEntry(Severity.Verbose, message))
+		return self.Write(LogEntry(message, Severity.Verbose))
 	
 	def WriteDebug(self, message):
-		self.Write(LogEntry(Severity.Debug, message))
+		return self.Write(LogEntry(message, Severity.Debug))
 	
 		
 class ILogable:
@@ -144,35 +155,53 @@ class ILogable:
 	@property
 	def Logger(self):
 		return self.__logger
-		
+
+	def _Log(self, entry):
+		if self.__logger is not None:
+			return self.__logger.Write(entry)
+		return False
+
+	def _TryLog(self, entry):
+		if self.__logger is not None:
+			return self.__logger.TryWrite(entry)
+		return False
+
 	def _LogFatal(self, message):
 		if self.__logger is not None:
-			self.__logger.WriteFatal(message)
+			return self.__logger.WriteFatal(message)
+		return False
 
 	def _LogError(self, message):
 		if self.__logger is not None:
-			self.__logger.WriteError(message)
+			return self.__logger.WriteError(message)
+		return False
 	
 	def _LogWarning(self, message):
 		if self.__logger is not None:
-			self.__logger.WriteWarning(message)
+			return self.__logger.WriteWarning(message)
+		return False
 	
 	def _LogInfo(self, message):
 		if self.__logger is not None:
-			self.__logger.WriteInfo(message)
+			return self.__logger.WriteInfo(message)
+		return False
 	
 	def _LogQuiet(self, message):
 		if self.__logger is not None:
-			self.__logger.WriteQuiet(message)
+			return self.__logger.WriteQuiet(message)
+		return False
 	
 	def _LogNormal(self, message):
 		if self.__logger is not None:
-			self.__logger.WriteNormal(message)
+			return self.__logger.WriteNormal(message)
+		return False
 	
 	def _LogVerbose(self, message):
 		if self.__logger is not None:
-			self.__logger.WriteVerbose(message)
+			return self.__logger.WriteVerbose(message)
+		return False
 	
 	def _LogDebug(self, message):
 		if self.__logger is not None:
-			self.__logger.WriteDebug(message)
+			return self.__logger.WriteDebug(message)
+		return False

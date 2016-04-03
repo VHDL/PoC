@@ -38,25 +38,21 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.ActiveHDLSimulator")
 
 # load dependencies
-from pathlib								import Path
-from os											import chdir
-from configparser						import NoSectionError
-from colorama								import Fore as Foreground
-from subprocess							import CalledProcessError
+from configparser								import NoSectionError
+from os													import chdir
+from queue											import Queue
 
-from Base.Exceptions				import *
-from Base.PoCConfig					import *
-from Base.Project						import FileTypes
-from Base.PoCProject				import *
-from Base.Executable				import *
-from Simulator.Exceptions		import * 
-from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
+from Base.Executable						import *
+from Base.Simulator							import Simulator as BaseSimulator, VHDLTestbenchLibraryName
+from PoC.PoCProject							import *
+from ToolChains.Aldec.ActiveHDL	import ActiveHDL, ActiveHDLException
 
-class Simulator(PoCSimulator):
+
+class Simulator(BaseSimulator):
 	__guiMode =				False
 
 	def __init__(self, host, showLogs, showReport, guiMode):
-		super(self.__class__, self).__init__(host, showLogs, showReport)
+		super().__init__(host, showLogs, showReport)
 
 		self._guiMode =				guiMode
 		self._activeHDL =			None
@@ -86,28 +82,28 @@ class Simulator(PoCSimulator):
 	def PrepareSimulator(self, binaryPath, version):
 		# create the GHDL executable factory
 		self._LogVerbose("  Preparing Active-HDL simulator.")
-		self._activeHDL =		ActiveHDLSimulatorExecutable(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._activeHDL =		ActiveHDL(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, pocEntities, **kwargs):
 		for pocEntity in pocEntities:
 			self.Run(pocEntity, **kwargs)
 		
-	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93", vhdlGenerics=None):
-		self._pocEntity =			pocEntity
-		self._testbenchFQN =	str(pocEntity)										# TODO: implement FQN method on PoCEntity
-		self._vhdlVersion =		VHDLVersion.parse(vhdlVersion)		# TODO: move conversion one level up
+	def Run(self, entity, board, vhdlVersion="93", vhdlGenerics=None):
+		self._entity =				entity
+		self._testbenchFQN =	str(entity)											# TODO: implement FQN method on PoCEntity
+		self._vhdlVersion =		vhdlVersion
 		self._vhdlGenerics =	vhdlGenerics
 
 		# check testbench database for the given testbench		
 		self._LogQuiet("Testbench: {0}{1}{2}".format(Foreground.YELLOW, self._testbenchFQN, Foreground.RESET))
-		if (not self.Host.tbConfig.has_section(self._testbenchFQN)):
+		if (not self.Host.TBConfig.has_section(self._testbenchFQN)):
 			raise SimulatorException("Testbench '{0}' not found.".format(self._testbenchFQN)) from NoSectionError(self._testbenchFQN)
 			
 		# setup all needed variables and paths
-		testbenchName =				self.Host.tbConfig[self._testbenchFQN]['TestbenchModule']
-		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['fileListFile']
+		testbenchName =				self.Host.TBConfig[self._testbenchFQN]['TestbenchModule']
+		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['fileListFile']
 
-		self._CreatePoCProject(testbenchName, boardName, deviceName)
+		self._CreatePoCProject(testbenchName, board)
 		self._AddFileListFile(fileListFilePath)
 		
 		self._RunCompile()
@@ -119,7 +115,7 @@ class Simulator(PoCSimulator):
 			raise SimulatorException("GUI mode is not supported for Active-HDL.")
 			# self._RunSimulationWithGUI(testbenchName)
 		
-	def _CreatePoCProject(self, testbenchName, boardName=None, deviceName=None):
+	def _CreatePoCProject(self, testbenchName, board):
 		# create a PoCProject and read all needed files
 		self._LogDebug("    Create a PoC project '{0}'".format(str(testbenchName)))
 		pocProject =									PoCProject(testbenchName)
@@ -130,11 +126,9 @@ class Simulator(PoCSimulator):
 		pocProject.ToolChain =				ToolChain.Aldec_ActiveHDL
 		pocProject.Tool =							Tool.Aldec_aSim
 		pocProject.VHDLVersion =			self._vhdlVersion
-		
-		if (deviceName is None):			pocProject.Board =					boardName
-		else:													pocProject.Device =					deviceName
-		
-		self._pocProject = pocProject
+		pocProject.Board =						board
+
+		self._pocProject =						pocProject
 		
 	def _AddFileListFile(self, fileListFilePath):
 		self._LogDebug("    Reading filelist '{0}'".format(str(fileListFilePath)))
@@ -155,7 +149,12 @@ class Simulator(PoCSimulator):
 
 		for lib in self._pocProject.VHDLLibraries:
 			alib.Parameters[alib.SwitchLibraryName] = lib.Name
-			alib.CreateLibrary()
+			try:
+				alib.CreateLibrary()
+			except ActiveHDLException as ex:
+				raise SimulatorException("Error creating VHDL library '{0}'.".format(lib.Name)) from ex
+			if alib.HasErrors:
+				raise SimulatorException("Error creating VHDL library '{0}'.".format(lib.Name))
 
 		# create a ActiveHDLVHDLCompiler instance
 		acom = self._activeHDL.GetVHDLCompiler()
@@ -170,30 +169,40 @@ class Simulator(PoCSimulator):
 			acom.Parameters[acom.SwitchVHDLLibrary] =	file.VHDLLibraryName
 			acom.Parameters[acom.ArgSourceFile] =			file.Path
 			# set a per file log-file with '-l', 'vcom.log',
-			acom.Compile()
-	
+			try:
+				acom.Compile()
+			except ActiveHDLException as ex:
+				raise SimulatorException("Error while compiling '{0}'.".format(str(file.Path))) from ex
+			if acom.HasErrors:
+				raise SimulatorException("Error while compiling '{0}'.".format(str(file.Path)))
+
+
 	def _RunSimulation(self, testbenchName):
 		self._LogNormal("  running simulation...")
 		
-		tclBatchFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['aSimBatchScript']
+		tclBatchFilePath =		self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['aSimBatchScript']
 		
 		# create a ActiveHDLSimulator instance
 		aSim = self._activeHDL.GetSimulator()
+		aSim.Parameters[aSim.SwitchBatchCommand] = "asim -lib {0} {1}; run -all; bye".format(VHDLTestbenchLibraryName, testbenchName)
+
 		# aSim.Optimization =			True
 		# aSim.TimeResolution =		"1fs"
 		# aSim.ComanndLineMode =	True
 		# aSim.BatchCommand =			"do {0}".format(str(tclBatchFilePath))
 		# aSim.TopLevel =					"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
-		
-		parameter = "asim -lib {0} {1}\nrun -all\nbye".format(VHDLTestbenchLibraryName, testbenchName)
-		
-		aSim.Simulate(parameter)
-		
+		try:
+			aSim.Simulate()
+		except ActiveHDLException as ex:
+			raise SimulatorException("Error while simulating '{0}.{1}'.".format(VHDLTestbenchLibraryName, testbenchName)) from ex
+		if aSim.HasErrors:
+			raise SimulatorException("Error while simulating '{0}'.".format(VHDLTestbenchLibraryName, testbenchName))
+
 	def _RunSimulationWithGUI(self, testbenchName):
 		self._LogNormal("  running simulation...")
 	
-		tclGUIFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['aSimGUIScript']
-		tclWaveFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['aSimWaveScript']
+		tclGUIFilePath =			self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['aSimGUIScript']
+		tclWaveFilePath =			self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['aSimWaveScript']
 		
 		# create a ActiveHDLSimulator instance
 		aSim = self._activeHDL.GetSimulator()
@@ -222,209 +231,5 @@ class Simulator(PoCSimulator):
 					
 			# except SimulatorException as ex:
 				# raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
-		
-class ActiveHDLSimulatorExecutable:
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		self._platform =						platform
-		self._binaryDirectoryPath =	binaryDirectoryPath
-		self._version =							version
-		self.__logger =							logger
-	
-	def GetVHDLCompiler(self):
-		return ActiveHDLVHDLCompiler(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
-		
-	def GetSimulator(self):
-		return ActiveHDLSimulator(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
-		
-	def GetVHDLLibraryTool(self):
-		return ActiveHDLVHDLLibraryTool(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
-
-class ActiveHDLVHDLCompiler(Executable, ActiveHDLSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		ActiveHDLSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-		
-		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vcom.exe"
-		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vcom"
-		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, logger=logger)
-
-		self.Parameters[self.Executable] = executablePath
-
-	class Executable(metaclass=ExecutableArgument):
-		_value =	None
-
-	class FlagNoRangeCheck(metaclass=LongFlagArgument):
-		_name =		"norangecheck"
-		_value =	None
-
-	class SwitchVHDLVersion(metaclass=ShortValuedFlagArgument):
-		_pattern =	"-{1}"
-		_name =			""
-		_value =		None
-
-	class SwitchVHDLLibrary(metaclass=ShortTupleArgument):
-		_name =		"work"
-		_value =	None
-
-	class ArgSourceFile(metaclass=PathArgument):
-		_value =	None
-
-	Parameters = CommandLineArgumentList(
-		Executable,
-		FlagNoRangeCheck,
-		SwitchVHDLVersion,
-		SwitchVHDLLibrary,
-		ArgSourceFile
-	)
-	
-	# -reorder                      enables automatic file ordering
-  # -O[0 | 1 | 2 | 3]             set optimization level
-	# -93                                conform to VHDL 1076-1993
-  # -2002                              conform to VHDL 1076-2002 (default)
-  # -2008                              conform to VHDL 1076-2008
-	# -relax                             allow 32-bit integer literals
-  # -incr                              switching compiler to fast incremental mode
-
-
-	def Compile(self):
-		parameterList = self.Parameters.ToArgumentList()
-		
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		
-		_indent = "    "
-		print(_indent + "acom messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
-		try:
-			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
-		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
-
-class ActiveHDLSimulator(Executable, ActiveHDLSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		ActiveHDLSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-		
-		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vsimsa.bat"
-		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vsimsa"
-		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, logger=logger)
-
-		self.Parameters[self.Executable] = executablePath
-
-	class Executable(metaclass=ExecutableArgument):
-		_value =	None
-
-	class FlagVerbose(metaclass=ShortFlagArgument):
-		_name =		"v"
-		_value =	None
-
-	class FlagOptimization(metaclass=ShortFlagArgument):
-		_name =		"vopt"
-		_value =	None
-
-	class FlagCommandLineMode(metaclass=ShortFlagArgument):
-		_name =		"c"
-		_value =	None
-
-	class SwitchTimeResolution(metaclass=ShortTupleArgument):
-		_name =		"t"
-		_value =	None
-
-	class SwitchBatchCommand(metaclass=ShortTupleArgument):
-		_name =		"do"
-		_value =	None
-
-	class SwitchTopLevel(metaclass=ShortValuedFlagArgument):
-		_name =		""
-		_value =	None
-
-	Parameters = CommandLineArgumentList(
-		Executable,
-		FlagVerbose,
-		FlagOptimization,
-		FlagCommandLineMode,
-		SwitchTimeResolution,
-		SwitchBatchCommand,
-		SwitchTopLevel
-	)
-
-	# units = ("fs", "ps", "us", "ms", "sec", "min", "hr")
-
-	def Simulate(self):
-		parameterList = self.Parameters.ToArgumentList()
-
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		
-		_indent = "    "
-		print(_indent + "vsimsa messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
-		try:
-			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
-		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
-
-class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLSimulatorExecutable):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		ActiveHDLSimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-		
-		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vlib.exe"
-		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vlib"
-		else:																						raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, logger=logger)
-
-		self.Parameters[self.Executable] = executablePath
-
-	class Executable(metaclass=ExecutableArgument):
-		_value =	None
-
-	# class FlagVerbose(metaclass=FlagArgument):
-	# 	_name =		"-v"
-	# 	_value =	None
-
-	class SwitchLibraryName(metaclass=StringArgument):
-		_value =	None
-
-	Parameters = CommandLineArgumentList(
-		Executable,
-		# FlagVerbose,
-		SwitchLibraryName
-	)
-	
-	def CreateLibrary(self):
-		parameterList = self.Parameters.ToArgumentList()
-
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
-		
-		_indent = "    "
-		print(_indent + "alib messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
-		try:
-			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
-		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
-	
-					# # assemble acom command as list of parameters
-					# parameterList = [
-						# str(aComExecutablePath),
-						# '-O3',
-						# '-relax',
-						# '-l', 'acom.log',
-						# vhdlStandard,
-						# '-work', vhdlLibraryName,
-						# str(vhdlFilePath)
-					# ]
-		# parameterList = [
-			# str(aSimExecutablePath)#,
-			# # '-vopt',
-			# # '-t', '1fs',
-		# ]
 
 

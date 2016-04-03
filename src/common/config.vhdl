@@ -207,20 +207,20 @@ package body config_private is
 			Ethernet =>				C_BOARD_ETH_NONE,
 			EthernetCount =>	0
 		),(
-			BoardName =>			conf("S3SK1000"),
-			FPGADevice =>			conf("XC3S1000FT256"),								-- XC2S200FT256
+			BoardName =>			conf("S3ESK500"),
+			FPGADevice =>			conf("XC3S500EFT256"),								-- XC2S500FT256
 			UART =>						C_BOARD_UART_EMPTY,
 			Ethernet =>				C_BOARD_ETH_NONE,
 			EthernetCount =>	0
 		),(
-			BoardName =>			conf("S3ESK500"),
-			FPGADevice =>			conf("XC3S500EFT256"),								-- XC2S200FT256
+			BoardName =>			conf("S3SK1000"),
+			FPGADevice =>			conf("XC3S1000FT256"),								-- XC2S1000FT256
 			UART =>						C_BOARD_UART_EMPTY,
 			Ethernet =>				C_BOARD_ETH_NONE,
 			EthernetCount =>	0
 		),(
 			BoardName =>			conf("S3ESK1600"),
-			FPGADevice =>			conf("XC3S1600EFT256"),								-- XC2S200FT256
+			FPGADevice =>			conf("XC3S1600EFT256"),								-- XC2S1600FT256
 			UART =>						C_BOARD_UART_EMPTY,
 			Ethernet =>				C_BOARD_ETH_NONE,
 			EthernetCount =>	0

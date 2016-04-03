@@ -40,23 +40,21 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.ISESimulator")
 
 # load dependencies
-from os											import chdir
-from configparser						import NoSectionError
 from colorama								import Fore as Foreground
+from configparser						import NoSectionError
+from os											import chdir
+
 from Base.Exceptions				import *
-from Base.PoCConfig					import *
-from Base.Project						import FileTypes
-from Base.PoCProject				import *
-from Simulator.Exceptions		import *
-from Simulator.Base					import PoCSimulator, VHDLTestbenchLibraryName
+from Base.Simulator					import Simulator as BaseSimulator, VHDLTestbenchLibraryName
+from PoC.PoCProject					import *
 from ToolChains.Xilinx.ISE	import ISE
 
 
-class Simulator(PoCSimulator):
+class Simulator(BaseSimulator):
 	__guiMode =					False
 
 	def __init__(self, host, showLogs, showReport, guiMode):
-		super(self.__class__, self).__init__(host, showLogs, showReport)
+		super().__init__(host, showLogs, showReport)
 
 		self._guiMode =				guiMode
 		self._ise =						None
@@ -99,29 +97,29 @@ class Simulator(PoCSimulator):
 		for pocEntity in pocEntities:
 			self.Run(pocEntity, **kwargs)
 
-	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93", vhdlGenerics=None):
-		self._pocEntity =			pocEntity
-		self._testbenchFQN =	str(pocEntity)										# TODO: implement FQN method on PoCEntity
-		self._vhdlVersion =		VHDLVersion.parse(vhdlVersion)		# TODO: move conversion one level up
+	def Run(self, entity, board, vhdlGenerics=None):
+		self._entity =				entity
+		self._testbenchFQN =	str(entity)										# TODO: implement FQN method on PoCEntity
+		self._vhdlVersion =		VHDLVersion.VHDL93
 		self._vhdlGenerics =	vhdlGenerics
 
 		# check testbench database for the given testbench		
 		self._LogQuiet("Testbench: {0}{1}{2}".format(Foreground.YELLOW, self._testbenchFQN, Foreground.RESET))
-		if (not self.Host.tbConfig.has_section(self._testbenchFQN)):
+		if (not self.Host.TBConfig.has_section(self._testbenchFQN)):
 			raise SimulatorException("Testbench '{0}' not found.".format(self._testbenchFQN)) from NoSectionError(self._testbenchFQN)
 
 		# setup all needed paths to execute fuse
-		testbenchName =				self.Host.tbConfig[self._testbenchFQN]['TestbenchModule']
-		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['fileListFile']
+		testbenchName =				self.Host.TBConfig[self._testbenchFQN]['TestbenchModule']
+		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['fileListFile']
 
-		self._CreatePoCProject(testbenchName, boardName, deviceName)
+		self._CreatePoCProject(testbenchName, board)
 		self._AddFileListFile(fileListFilePath)
 		
 		# self._RunCompile(testbenchName)
 		self._RunLink(testbenchName)
 		self._RunSimulation(testbenchName)
 
-	def _CreatePoCProject(self, testbenchName, boardName=None, deviceName=None):
+	def _CreatePoCProject(self, testbenchName, board):
 		# create a PoCProject and read all needed files
 		self._LogDebug("    Create a PoC project '{0}'".format(str(testbenchName)))
 		pocProject =									PoCProject(testbenchName)
@@ -132,11 +130,9 @@ class Simulator(PoCSimulator):
 		pocProject.ToolChain =				ToolChain.Xilinx_ISE
 		pocProject.Tool =							Tool.Xilinx_iSim
 		pocProject.VHDLVersion =			self._vhdlVersion
+		pocProject.Board =						board
 
-		if (deviceName is None):			pocProject.Board =					boardName
-		else:													pocProject.Device =					deviceName
-		
-		self._pocProject = pocProject
+		self._pocProject =						pocProject
 
 	def _AddFileListFile(self, fileListFilePath):
 		self._LogDebug("    Reading filelist '{0}'".format(str(fileListFilePath)))
@@ -208,9 +204,9 @@ class Simulator(PoCSimulator):
 		
 		iSimLogFilePath =		self._tempPath / (testbenchName + ".iSim.log")
 		exeFilePath =				self._tempPath / (testbenchName + ".exe")
-		tclBatchFilePath =	self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['iSimBatchScript']
-		tclGUIFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['iSimGUIScript']
-		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['iSimWaveformConfigFile']
+		tclBatchFilePath =	self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['iSimBatchScript']
+		tclGUIFilePath =		self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['iSimGUIScript']
+		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['iSimWaveformConfigFile']
 
 		# create a ISESimulator instance
 		iSim = ISESimulatorExecutable(exeFilePath, logger=self.Logger)

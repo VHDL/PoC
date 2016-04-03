@@ -40,17 +40,15 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Compiler.XSTCompiler")
 
 # load dependencies
-from colorama								import Fore as Foreground
-from os											import chdir
 import re								# used for output filtering
 import shutil
-from configparser						import NoOptionError, NoSectionError, ConfigParser, ExtendedInterpolation
+from colorama								import Fore as Foreground
+from configparser						import NoSectionError
+from os											import chdir
 
 from Base.Exceptions				import *
-from Base.Project						import FileTypes
-from Base.PoCProject				import *
-from Compiler.Base					import PoCCompiler
-from Compiler.Exceptions		import *
+from Base.Compiler					import PoCCompiler
+from PoC.PoCProject					import *
 from ToolChains.Xilinx.ISE	import ISE
 
 
@@ -62,7 +60,6 @@ class Compiler(PoCCompiler):
 	def oldRun(self, pocEntity, device):
 		self._pocEntity =	pocEntity
 		self._ipcoreFQN =	str(pocEntity)
-
 		
 		self._LogNormal(self._ipcoreFQN)
 		self._LogNormal("  preparing compiler environment...")

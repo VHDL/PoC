@@ -40,16 +40,16 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Class Compiler(PoCCompiler)")
 
 # load dependencies
-from pathlib								import Path
-from colorama								import Fore as Foreground
-from os											import chdir, environ
 import re								# used for output filtering
-from textwrap								import dedent
 import shutil
-from configparser						import NoOptionError, NoSectionError, ConfigParser, ExtendedInterpolation
+from colorama								import Fore as Foreground
+from configparser						import NoSectionError
+from os											import chdir
+from pathlib								import Path
+from textwrap								import dedent
+
 from Base.Exceptions				import *
-from Compiler.Base					import PoCCompiler
-from Compiler.Exceptions		import *
+from Base.Compiler					import PoCCompiler
 from ToolChains.Xilinx.ISE	import ISE
 
 

@@ -1,7 +1,7 @@
 
 import re
 
-from Base.Base import BaseExtractor
+from Base.Simulator import BaseExtractor
 from Processor.Exceptions import *
 
 class Extractor(BaseExtractor):

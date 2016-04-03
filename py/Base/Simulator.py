@@ -5,7 +5,7 @@
 # ==============================================================================
 # Authors:				 	Patrick Lehmann
 # 
-# Python Class:			Base class for all PoC***Compilers
+# Python Class:			TODO
 # 
 # Description:
 # ------------------------------------
@@ -15,7 +15,7 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2016 Technische Universitaet Dresden - Germany
+# Copyright 2007-2015 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,21 +30,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+#
 # entry point
+from lib.Functions import Exit
 if __name__ != "__main__":
-	# place library initialization code here
 	pass
+	# place library initialization code here
 else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Class PoCCompiler")
+	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Simulator.Base")
 
 # load dependencies
-from Base.Exceptions import *
-from Base.Logging import ILogable
-from Compiler.Exceptions import *
+from enum							import Enum, unique
 
-class PoCCompiler(ILogable):
+from Base.Exceptions	import *
+from Base.Logging			import ILogable
+
+
+VHDLTestbenchLibraryName = "test"
+
+
+@unique
+class SimulationResult(Enum):
+	Failed = 0
+	NoAsserts = 1
+	Passed = 2
+
+
+class Simulator(ILogable):
 	def __init__(self, host, showLogs, showReport):
 		if isinstance(host, ILogable):
 			ILogable.__init__(self, host.Logger)
@@ -54,29 +66,28 @@ class PoCCompiler(ILogable):
 		self.__host =				host
 		self.__showLogs =		showLogs
 		self.__showReport =	showReport
-		self.__dryRun =			False
 
 	# class properties
 	# ============================================================================
 	@property
-	def Host(self):				return self.__host
-	
+	def Host(self):
+		return self.__host
+
 	@property
-	def ShowLogs(self):		return self.__showLogs
-	
+	def ShowLogs(self):
+		return self.__showLogs
+
 	@property
-	def ShowReport(self):	return self.__showReport
-	
-	# print messages
-	# ============================================================================
-	def printDebug(self, message):
-		if (self.debug):
-			print("DEBUG: " + message)
-	
-	def printVerbose(self, message):
-		if (self.verbose):
-			print(message)
-	
-	def printNonQuiet(self, message):
-		if (not self.quiet):
-			print(message)
+	def ShowReport(self):
+		return self.__showReport
+
+	def CheckSimulatorOutput(self, simulatorOutput):
+		matchPos = simulatorOutput.find("SIMULATION RESULT = ")
+		if (matchPos >= 0):
+			if (simulatorOutput[matchPos + 20: matchPos + 26] == "PASSED"):
+				return SimulationResult.Passed
+			elif (simulatorOutput[matchPos + 20: matchPos + 26] == "FAILED"):
+				return SimulationResult.Failed
+			elif (simulatorOutput[matchPos + 20: matchPos + 30] == "NO ASSERTS"):
+				return SimulationResult.NoAsserts
+		raise SimulatorException("String 'SIMULATION RESULT ...' not found in simulator output.")

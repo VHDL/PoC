@@ -47,7 +47,7 @@ from subprocess							import Popen				as Subprocess_Popen
 from subprocess							import PIPE					as Subprocess_Pipe
 from subprocess							import STDOUT				as Subprocess_StdOut
 
-from Base.Exceptions				import *
+from Base.Exceptions				import CommonException
 from Base.Logging						import ILogable
 
 
@@ -260,7 +260,7 @@ class TupleArgument(CommandLineArgument):
 	
 	def __str__(self):
 		if (self._value is None):			return ""
-		elif self._value:							return self._switchPattern.format(self._name) + " " + self._valuePattern.format(self._value)
+		elif self._value:							return self._switchPattern.format(self._name) + " \"" + self._valuePattern.format(self._value) + "\""
 		else:													return ""
 	
 	def AsArgument(self):
@@ -312,7 +312,7 @@ class Executable(ILogable):
 		
 		if isinstance(executablePath, str):							executablePath = Path(executablePath)
 		elif (not isinstance(executablePath, Path)):		raise ValueError("Parameter 'executablePath' is not of type str or Path.")
-		if (not executablePath.exists()):								raise Exception("Executable '{0}' can not be found.".format(str(executablePath))) from FileNotFoundError(str(executablePath))
+		if (not executablePath.exists()):								raise CommonException("Executable '{0}' can not be found.".format(str(executablePath))) from FileNotFoundError(str(executablePath))
 		
 		# prepend the executable
 		self._executablePath =		executablePath
@@ -323,7 +323,10 @@ class Executable(ILogable):
 
 	def StartProcess(self, parameterList):
 		# start child process
-		self._process = Subprocess_Popen(parameterList, stdout=Subprocess_Pipe, stderr=Subprocess_StdOut, universal_newlines=True, bufsize=256)
+		self._process = Subprocess_Popen(parameterList, stdin=Subprocess_Pipe, stdout=Subprocess_Pipe, stderr=Subprocess_StdOut, universal_newlines=True, bufsize=256)
+
+	def Send(self, line):
+		self._process.stdin.write(line)
 
 	def Terminate(self):
 		self._process.terminate()
@@ -335,5 +338,5 @@ class Executable(ILogable):
 				yield line[:-1]
 		except Exception as ex:
 			raise ex
-		finally:
-			self._process.terminate()
+		# finally:
+			# self._process.terminate()
