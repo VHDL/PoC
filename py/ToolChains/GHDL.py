@@ -149,7 +149,8 @@ class GHDL(Executable):
 		else:																						raise PlatformNotSupportedException(platform)
 		super().__init__(platform, executablePath, logger=logger)
 
-		self.Parameters[self.Executable] = executablePath
+		self.Executable = executablePath
+		#self.Parameters[self.Executable] = executablePath
 
 		if (platform == "Windows"):
 			if (backend not in ["mcode"]):								raise SimulatorException("GHDL for Windows does not support backend '{0}'.".format(backend))
@@ -172,8 +173,17 @@ class GHDL(Executable):
 	def Version(self):
 		return self._version
 
-	class Executable(metaclass=ExecutableArgument):
-		pass
+	def deco(Arg):
+		def getter(self):
+			return Arg.Value
+		def setter(self, value):
+			Arg.Value = value
+		return property(getter, setter)
+
+	Executable = deco(ExecutableArgument("Executable", (), {}))
+
+	#class Executable(metaclass=ExecutableArgument):
+	#	pass
 
 	class CmdAnalyze(metaclass=ShortFlagArgument):
 		_name =		"a"
@@ -231,7 +241,7 @@ class GHDL(Executable):
 		pass
 
 	Parameters = CommandLineArgumentList(
-		Executable,
+		#Executable,
 		CmdAnalyze,
 		CmdElaborate,
 		CmdRun,
@@ -322,6 +332,7 @@ class GHDLAnalyze(GHDL):
 
 	def Analyze(self):
 		parameterList = self.Parameters.ToArgumentList()
+		parameterList.insert(0, self.Executable)
 
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
@@ -340,7 +351,8 @@ class GHDLAnalyze(GHDL):
 
 			line = next(iterator)
 			self._hasOutput =		True
-			self._LogNormal(_indent + "ghdl analyze messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
+			sourceFile = self.Parameters[self.ArgSourceFile]
+			self._LogNormal(_indent + "ghdl analyze messages for '{0}'".format(sourceFile))
 			self._LogNormal(_indent + "-" * 80)
 
 			while True:
@@ -369,6 +381,7 @@ class GHDLElaborate(GHDL):
 		if (self._backend == "mcode"):		return
 
 		parameterList = self.Parameters.ToArgumentList()
+		parameterList.insert(0, self.Executable)
 
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
@@ -386,7 +399,9 @@ class GHDLElaborate(GHDL):
 			line = next(iterator)
 			line.Indent(2)
 			hasOutput = True
-			self._LogNormal(_indent + "ghdl elaborate messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
+			vhdlLibraryName = self.Parameters[self.SwitchVHDLLibrary]
+			topLevel = self.Parameters[self.ArgTopLevel]
+			self._LogNormal(_indent + "ghdl elaborate messages for '{0}.{1}'".format(vhdlLibraryName, topLevel))
 			self._LogNormal(_indent + "-" * 80)
 			self._Log(line)
 
@@ -412,6 +427,7 @@ class GHDLRun(GHDL):
 	def Run(self):
 		parameterList = self.Parameters.ToArgumentList()
 		parameterList += self.RunOptions.ToArgumentList()
+		parameterList.insert(0, self.Executable)
 
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
@@ -429,7 +445,9 @@ class GHDLRun(GHDL):
 			line = next(iterator)
 			line.Indent(2)
 			hasOutput = True
-			self._LogNormal(_indent + "ghdl run messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
+			vhdlLibraryName =	self.Parameters[self.SwitchVHDLLibrary]
+			topLevel =				self.Parameters[self.ArgTopLevel]
+			self._LogNormal(_indent + "ghdl run messages for '{0}.{1}'".format(vhdlLibraryName, topLevel))
 			self._LogNormal(_indent + "-" * 80)
 			self._Log(line)
 

@@ -56,7 +56,7 @@ class SimulationResult(Enum):
 	Passed = 2
 
 
-class PoCSimulator(ILogable):
+class Simulator(ILogable):
 	def __init__(self, host, showLogs, showReport):
 		if isinstance(host, ILogable):
 			ILogable.__init__(self, host.Logger)
@@ -91,25 +91,3 @@ class PoCSimulator(ILogable):
 			elif (simulatorOutput[matchPos + 20: matchPos + 30] == "NO ASSERTS"):
 				return SimulationResult.NoAsserts
 		raise SimulatorException("String 'SIMULATION RESULT ...' not found in simulator output.")
-
-	# class PoCSimulatorTestbench(object):
-	# pocEntity = None
-	# testbenchName = ""
-	# simulationResult = False
-	
-	# def __init__(self, pocEntity, testbenchName):
-	# self.pocEntity = pocEntity
-	# self.testbenchName = testbenchName
-
-	# class PoCSimulatorTestbenchGroup(object):
-	# pocEntity = None
-	# members = {}
-	
-	# def __init__(self, pocEntity):
-	# self.pocEntity = pocEntity
-	
-	# def add(self, pocEntity, testbench):
-	# self.members[str(pocEntity)] = testbench
-
-	# def __getitem__(self, key):
-	# return self.members[key]

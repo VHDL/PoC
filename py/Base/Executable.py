@@ -260,7 +260,7 @@ class TupleArgument(CommandLineArgument):
 	
 	def __str__(self):
 		if (self._value is None):			return ""
-		elif self._value:							return self._switchPattern.format(self._name) + " " + self._valuePattern.format(self._value)
+		elif self._value:							return self._switchPattern.format(self._name) + " \"" + self._valuePattern.format(self._value) + "\""
 		else:													return ""
 	
 	def AsArgument(self):
@@ -323,7 +323,10 @@ class Executable(ILogable):
 
 	def StartProcess(self, parameterList):
 		# start child process
-		self._process = Subprocess_Popen(parameterList, stdout=Subprocess_Pipe, stderr=Subprocess_StdOut, universal_newlines=True, bufsize=256)
+		self._process = Subprocess_Popen(parameterList, stdin=Subprocess_Pipe, stdout=Subprocess_Pipe, stderr=Subprocess_StdOut, universal_newlines=True, bufsize=256)
+
+	def Send(self, line):
+		self._process.stdin.write(line)
 
 	def Terminate(self):
 		self._process.terminate()

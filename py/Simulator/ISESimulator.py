@@ -45,16 +45,16 @@ from configparser						import NoSectionError
 from os											import chdir
 
 from Base.Exceptions				import *
-from Base.Simulator					import PoCSimulator, VHDLTestbenchLibraryName
+from Base.Simulator					import Simulator as BaseSimulator, VHDLTestbenchLibraryName
 from PoC.PoCProject					import *
 from ToolChains.Xilinx.ISE	import ISE
 
 
-class Simulator(PoCSimulator):
+class Simulator(BaseSimulator):
 	__guiMode =					False
 
 	def __init__(self, host, showLogs, showReport, guiMode):
-		super(self.__class__, self).__init__(host, showLogs, showReport)
+		super().__init__(host, showLogs, showReport)
 
 		self._guiMode =				guiMode
 		self._ise =						None

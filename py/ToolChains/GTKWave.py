@@ -40,8 +40,11 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.GTKWave")
 
 
+from Base.Exceptions				import ToolChainException
 from Base.Executable				import *
 
+class GTKWaveException(ToolChainException):
+	pass
 
 class Configuration:
 	__vendor =		None
@@ -170,12 +173,55 @@ class GTKWave(Executable):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
 		_indent = "    "
-		print(_indent + "GTKWave messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise GTKWaveException("Failed to launch GTKWave run.") from ex
+
+		hasOutput = False
+		try:
+			filter = GTKWaveFilter(self.GetReader())
+			iterator = iter(filter)
+
+			line = next(iterator)
+			line.Indent(2)
+			hasOutput = True
+			self._LogNormal(_indent + "GTKWave messages for '{0}'".format(self.Parameters[self.SwitchDumpFile]))
+			self._LogNormal(_indent + "-" * 80)
+			self._Log(line)
+
+			while True:
+				line = next(iterator)
+				line.Indent(2)
+				self._Log(line)
+
+		except StopIteration as ex:
+			pass
+		except GTKWaveException:
+			raise
+		except Exception as ex:
+			raise GTKWaveException("Error while executing GTKWave.") from ex
+		finally:
+			if hasOutput:
+				print(_indent + "-" * 80)
+
+def GTKWaveFilter(gen):
+	# warningRegExpPattern =	r".+?:\d+:\d+:warning: (?P<Message>.*)"			# <Path>:<line>:<column>:warning: <message>
+	# errorRegExpPattern =		r".+?:\d+:\d+: (?P<Message>.*)"  						# <Path>:<line>:<column>: <message>
+
+	# warningRegExp =	re_compile(warningRegExpPattern)
+	# errorRegExp =		re_compile(errorRegExpPattern)
+
+	for line in gen:
+		#warningRegExpMatch = warningRegExp.match(line)
+		#if (warningRegExpMatch is not None):
+		#	yield LogEntry(line, Severity.Warning)
+		#else:
+		#	errorRegExpMatch = errorRegExp.match(line)
+		#	if (errorRegExpMatch is not None):
+		#		message = errorRegExpMatch.group('Message')
+		#		if message.endswith("has changed and must be reanalysed"):
+		#			raise GHDLReanalyzeException(message)
+		#		yield LogEntry(line, Severity.Error)
+		#	else:
+				yield LogEntry(line, Severity.Normal)

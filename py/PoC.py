@@ -40,6 +40,7 @@ from platform									import system as platform_system
 from sys											import argv as sys_argv
 from textwrap									import dedent
 
+import ToolChains.Aldec.ActiveHDL
 from lib.Functions						import Init, Exit
 from lib.ArgParseAttributes		import *
 from Base.Exceptions					import *
@@ -59,7 +60,7 @@ from Compiler									import *
 # 	return func_wrapper
 
 class PoC(ILogable, ArgParseMixin):
-	HeadLine =								"The PoC-Library - NetList Service Tool"
+	HeadLine =								"The PoC-Library - Service Tool"
 
 	# configure hard coded variables here
 	__scriptDirectoryName = 			"py"
@@ -487,14 +488,12 @@ class PoC(ILogable, ArgParseMixin):
 		# aSimVersion =																self.pocConfig['Aldec.RivieraPRO']['Version']
 		else:
 			# raise NotConfiguredException("Neither Aldec's Active-HDL nor Riviera PRO nor Active-HDL Lattice Edition are configured on this system.")
-			raise NotConfiguredException(
-				"Neither Aldec's Active-HDL nor Active-HDL Lattice Edition are configured on this system.")
+			raise NotConfiguredException("Neither Aldec's Active-HDL nor Active-HDL Lattice Edition are configured on this system.")
 
 		# prepare paths to vendor simulation libraries
 		self.__PrepareVendorLibraryPaths()
 
-		self.Directories["ActiveHDLTemp"] = self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames'][
-			'ActiveHDLSimulatorFiles']
+		self.Directories["ActiveHDLTemp"] = self.Directories["PoCTemp"] / self.pocConfig['PoC.DirectoryNames']['ActiveHDLSimulatorFiles']
 
 		# create a simulator instance
 		simulator = ActiveHDLSimulator.Simulator(self, showLogs, showReport, guiMode)
@@ -514,8 +513,7 @@ class PoC(ILogable, ArgParseMixin):
 			boardName = "Custom"
 			deviceName = "Unknown"
 
-		simulator.Run(entityToSimulate, boardName=boardName, deviceName=deviceName, vhdlVersion=vhdlVersion,
-									vhdlGenerics=None)
+		simulator.Run(entityToSimulate, boardName=boardName, deviceName=deviceName, vhdlVersion=vhdlVersion, vhdlGenerics=None)
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "ghdl" command
@@ -894,12 +892,17 @@ def main():
 			print("{YELLOW}  ParserException:{RESET} {cause}".format(cause=str(cause), **Init.Foreground))
 			cause = cause.__cause__
 			if (cause is not None):
-				print("{YELLOW}    {name}:{RESET} {cause}".format(name=cause.__class__.__name__, cause= str(cause.__cause__), **Init.Foreground))
+				print("{YELLOW}    {name}:{RESET} {cause}".format(name=cause.__class__.__name__, cause= str(cause), **Init.Foreground))
 		elif isinstance(cause, ToolChainException):
 			print("{YELLOW}  {name}:{RESET} {cause}".format(name=cause.__class__.__name__, cause=str(cause), **Init.Foreground))
-			print("  Possible causes:")
-			print("   - The compile order is broken.")
-			print("   - A source file was not compile and an old file got used.")
+			cause = cause.__cause__
+			if (cause is not None):
+				if isinstance(cause, OSError):
+					print("{YELLOW}    {name}:{RESET} {cause}".format(name=cause.__class__.__name__, cause=str(cause), **Init.Foreground))
+			else:
+				print("  Possible causes:")
+				print("   - The compile order is broken.")
+				print("   - A source file was not compile and an old file got used.")
 
 		if (not (verbose or debug)):
 			print()
@@ -912,25 +915,6 @@ def main():
 	except BaseException as ex:									Exit.printBaseException(ex)
 	except NotImplementedError as ex:						Exit.printNotImplementedError(ex)
 	except Exception as ex:											Exit.printException(ex)
-
-		# # add arguments
-		# group1 = argParser.add_argument_group('Verbosity')
-		# group1.add_argument('-D', 																											help='enable script wrapper debug mode',	action='store_const', const=True, default=False)
-		# group1.add_argument('-d',																		dest="debug",				help='enable debug mode',									action='store_const', const=True, default=False)
-		# group1.add_argument('-v',																		dest="verbose",			help='print out detailed messages',				action='store_const', const=True, default=False)
-		# group1.add_argument('-q',																		dest="quiet",				help='run in quiet mode',									action='store_const', const=True, default=False)
-		# group1.add_argument('-r',																		dest="showReport",	help='show report',												action='store_const', const=True, default=False)
-		# group1.add_argument('-l',																		dest="showLog",			help='show logs',													action='store_const', const=True, default=False)
-		# group2 = argParser.add_argument_group('Commands')
-		# group21 = group2.add_mutually_exclusive_group(required=True)
-		# group21.add_argument('-h', '--help',												dest="help",				help='show this help message and exit',		action='store_const', const=True, default=False)
-		# group211 = group21.add_mutually_exclusive_group()
-		# group211.add_argument(		 '--coregen',	metavar="<Entity>",	dest="coreGen",			help='use Xilinx IP-Core Generator (CoreGen)')
-		# group211.add_argument(		 '--xst',			metavar="<Entity>",	dest="xst",					help='use Xilinx Compiler Tool (XST)')
-		# group3 = group211.add_argument_group('Specify target platform')
-		# group31 = group3.add_mutually_exclusive_group()
-		# group31.add_argument('--device',				metavar="<Device>",	dest="device",			help='target device (e.g. XC5VLX50T-1FF1136)')
-		# group31.add_argument('--board',					metavar="<Board>",	dest="board",				help='target board to infere the device (e.g. ML505)')
 
 # entry point
 if __name__ == "__main__":

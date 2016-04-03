@@ -45,14 +45,14 @@ from configparser							import NoSectionError
 from os												import chdir
 
 from Base.Exceptions					import *
-from Base.Simulator						import PoCSimulator#, VHDLTestbenchLibraryName
+from Base.Simulator						import Simulator as BaseSimulator#, VHDLTestbenchLibraryName
 from PoC.PoCProject						import *
 from ToolChains.Xilinx.Vivado	import Vivado
 
 # Workaround for Vivado 2015.4
 VHDLTestbenchLibraryName = "work"
 
-class Simulator(PoCSimulator):
+class Simulator(BaseSimulator):
 	__guiMode =					False
 
 	def __init__(self, host, showLogs, showReport, guiMode):
