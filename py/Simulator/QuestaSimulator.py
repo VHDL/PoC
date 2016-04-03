@@ -96,12 +96,12 @@ class Simulator(BaseSimulator):
 
 		# check testbench database for the given testbench		
 		self._LogQuiet("Testbench: {0}{1}{2}".format(Foreground.YELLOW, self._testbenchFQN, Foreground.RESET))
-		if (not self.Host.tbConfig.has_section(self._testbenchFQN)):
+		if (not self.Host.TBConfig.has_section(self._testbenchFQN)):
 			raise SimulatorException("Testbench '{0}' not found.".format(self._testbenchFQN)) from NoSectionError(self._testbenchFQN)
 			
 		# setup all needed paths to execute fuse
-		testbenchName =				self.Host.tbConfig[self._testbenchFQN]['TestbenchModule']
-		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['fileListFile']
+		testbenchName =				self.Host.TBConfig[self._testbenchFQN]['TestbenchModule']
+		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['fileListFile']
 
 		self._CreatePoCProject(testbenchName, boardName, deviceName)
 		self._AddFileListFile(fileListFilePath)
@@ -180,7 +180,7 @@ class Simulator(BaseSimulator):
 	def _RunSimulation(self, testbenchName):
 		self._LogNormal("  running simulation...")
 		
-		tclBatchFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['vSimBatchScript']
+		tclBatchFilePath =		self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['vSimBatchScript']
 		
 		# create a QuestaSimulator instance
 		vsim = self._questa.GetSimulator()
@@ -195,8 +195,8 @@ class Simulator(BaseSimulator):
 	def _RunSimulationWithGUI(self, testbenchName):
 		self._LogNormal("  running simulation...")
 	
-		tclGUIFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['vSimGUIScript']
-		tclWaveFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['vSimWaveScript']
+		tclGUIFilePath =			self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['vSimGUIScript']
+		tclWaveFilePath =			self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['vSimWaveScript']
 
 		# create a QuestaSimulator instance
 		vsim = self._questa.GetSimulator()

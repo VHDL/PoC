@@ -88,22 +88,22 @@ class Simulator(BaseSimulator):
 		for pocEntity in pocEntities:
 			self.Run(pocEntity, **kwargs)
 		
-	def Run(self, pocEntity, boardName=None, deviceName=None, vhdlVersion="93", vhdlGenerics=None):
-		self._pocEntity =			pocEntity
-		self._testbenchFQN =	str(pocEntity)										# TODO: implement FQN method on PoCEntity
-		self._vhdlVersion =		VHDLVersion.parse(vhdlVersion)		# TODO: move conversion one level up
+	def Run(self, entity, board, vhdlVersion="93", vhdlGenerics=None):
+		self._entity =				entity
+		self._testbenchFQN =	str(entity)											# TODO: implement FQN method on PoCEntity
+		self._vhdlVersion =		vhdlVersion
 		self._vhdlGenerics =	vhdlGenerics
 
 		# check testbench database for the given testbench		
 		self._LogQuiet("Testbench: {0}{1}{2}".format(Foreground.YELLOW, self._testbenchFQN, Foreground.RESET))
-		if (not self.Host.tbConfig.has_section(self._testbenchFQN)):
+		if (not self.Host.TBConfig.has_section(self._testbenchFQN)):
 			raise SimulatorException("Testbench '{0}' not found.".format(self._testbenchFQN)) from NoSectionError(self._testbenchFQN)
 			
 		# setup all needed variables and paths
-		testbenchName =				self.Host.tbConfig[self._testbenchFQN]['TestbenchModule']
-		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['fileListFile']
+		testbenchName =				self.Host.TBConfig[self._testbenchFQN]['TestbenchModule']
+		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['fileListFile']
 
-		self._CreatePoCProject(testbenchName, boardName, deviceName)
+		self._CreatePoCProject(testbenchName, board)
 		self._AddFileListFile(fileListFilePath)
 		
 		self._RunCompile()
@@ -115,7 +115,7 @@ class Simulator(BaseSimulator):
 			raise SimulatorException("GUI mode is not supported for Active-HDL.")
 			# self._RunSimulationWithGUI(testbenchName)
 		
-	def _CreatePoCProject(self, testbenchName, boardName=None, deviceName=None):
+	def _CreatePoCProject(self, testbenchName, board):
 		# create a PoCProject and read all needed files
 		self._LogDebug("    Create a PoC project '{0}'".format(str(testbenchName)))
 		pocProject =									PoCProject(testbenchName)
@@ -126,10 +126,8 @@ class Simulator(BaseSimulator):
 		pocProject.ToolChain =				ToolChain.Aldec_ActiveHDL
 		pocProject.Tool =							Tool.Aldec_aSim
 		pocProject.VHDLVersion =			self._vhdlVersion
-		
-		if (deviceName is None):			pocProject.Board =					boardName
-		else:													pocProject.Device =					deviceName
-		
+		pocProject.Board =						board
+
 		self._pocProject = pocProject
 		
 	def _AddFileListFile(self, fileListFilePath):
@@ -182,7 +180,7 @@ class Simulator(BaseSimulator):
 	def _RunSimulation(self, testbenchName):
 		self._LogNormal("  running simulation...")
 		
-		tclBatchFilePath =		self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['aSimBatchScript']
+		tclBatchFilePath =		self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['aSimBatchScript']
 		
 		# create a ActiveHDLSimulator instance
 		aSim = self._activeHDL.GetSimulator()
@@ -203,8 +201,8 @@ class Simulator(BaseSimulator):
 	def _RunSimulationWithGUI(self, testbenchName):
 		self._LogNormal("  running simulation...")
 	
-		tclGUIFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['aSimGUIScript']
-		tclWaveFilePath =			self.Host.Directories["PoCRoot"] / self.Host.tbConfig[self._testbenchFQN]['aSimWaveScript']
+		tclGUIFilePath =			self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['aSimGUIScript']
+		tclWaveFilePath =			self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['aSimWaveScript']
 		
 		# create a ActiveHDLSimulator instance
 		aSim = self._activeHDL.GetSimulator()

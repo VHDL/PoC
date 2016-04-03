@@ -38,11 +38,12 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module PoC.Config")
 
 # load dependencies
-from enum							import Enum, EnumMeta, unique
-from re								import compile as RegExpCompile
+from enum									import Enum, EnumMeta, unique
+from re										import compile as RegExpCompile
 
-from lib.Decorators		import CachedReadOnlyProperty
-from Base.Exceptions	import *
+from lib.Decorators				import CachedReadOnlyProperty
+from Base.Exceptions			import *
+from Base.Configuration		import ConfigurationException
 
 
 @unique
@@ -410,28 +411,39 @@ class Device:
 		return self.FullName
 
 class Board:
-	def __init__(self, board, device = None):
+	def __init__(self, host, boardName=None, device=None):
 		# Board members
-		self.__boardName =	board
+		self.__boardName =	boardName
 		self.__device =			None
-		
-		if (not isinstance(board, str)):
-			raise ValueError("Parameter 'board' is not of type str.")
-		if ((board is None) or (board == "")):
+
+		if (boardName is None):
+			boardName = "default"
+		elif (boardName == ""):
 			raise ValueError("Parameter 'board' is empty.")
-		
-		board = board.lower()
-		if (board == "custom"):
-			if (not isinstance(device, Device)):
-				device = Device(device)
-			self.__device = device
-		elif (board == "generic"):
-			self.__device = Device("Generic")
-		elif (board == "kc705"):
-			self.__device = Device("XC7K325T-2FFG900")
+		elif (not isinstance(boardName, str)):
+			raise ValueError("Parameter 'board' is not of type str.")
 		else:
-			raise BaseException("Unknown board '{0}'".format(board))
-	
+			boardName = boardName.lower()
+
+		if (boardName == "custom"):
+			if (device is None):
+				raise ValueError("Parameter 'device' is None.")
+			elif isinstance(device, Device):
+				self.__device = device
+			else:
+				self.__device = Device(device)
+		else:
+			boardSection = None
+			for board in host.PoCConfig['BOARDS']:
+				if (board.lower() == boardName):
+					boardSection = host.PoCConfig['BOARDS'][board]
+					break
+			if (boardSection is None):
+				raise ConfigurationException("Unknown board '{0}'".format(boardSection))
+
+			deviceName = host.PoCConfig[boardSection]['FPGA']
+			self.__device = Device(deviceName)
+
 	@property
 	def Name(self):
 		return self.__boardName

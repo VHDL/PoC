@@ -51,8 +51,13 @@ from PoC.Entity								import *
 from PoC.Config								import Device, Board
 from PoC.Query								import Query
 from ToolChains								import Configurations
-from Simulator.GHDLSimulator	import Simulator as GHDLSimulator
-from Compiler									import *
+from Simulator.ActiveHDLSimulator		import Simulator as ActiveHDLSimulator
+from Simulator.GHDLSimulator				import Simulator as GHDLSimulator
+from Simulator.ISESimulator					import Simulator as ISESimulator
+from Simulator.QuestaSimulator			import Simulator as QuestaSimulator
+from Simulator.VivadoSimulator			import Simulator as VivadoSimulator
+from Compiler.XCOCompiler						import Compiler as XCOCompiler
+from Compiler.XSTCompiler						import Compiler as XSTCompiler
 
 
 # def HandleVerbosityOptions(func):
@@ -75,9 +80,6 @@ class PoC(ILogable, ArgParseMixin):
 
 	# private fields
 	__platform = platform_system()  # load platform information (Windows, Linux, ...)
-
-	__SimulationDefaultVHDLVersion =	VHDLVersion.VHDL08
-	__SimulationDefaultBoard =				Board("KC705")
 
 	def __init__(self, debug, verbose, quiet, dryRun):
 		# Call the constructor of ILogable
@@ -112,6 +114,9 @@ class PoC(ILogable, ArgParseMixin):
 		self.__nlConfig =			None
 		self.__files =				{}
 		self.__directories =	{}
+
+		self.__SimulationDefaultVHDLVersion = VHDLVersion.VHDL08
+		self.__SimulationDefaultBoard =				None
 
 		self.Directories['Working'] =			Path.cwd()
 		self.Directories['PoCRoot'] =			Path(environ.get('PoCRootDirectory'))
@@ -176,6 +181,7 @@ class PoC(ILogable, ArgParseMixin):
 		# check PoC installation directory
 		if (self.Directories["PoCRoot"] != Path(self.PoCConfig['PoC']['InstallationDirectory'])):	raise NotConfiguredException("There is a mismatch between PoCRoot and PoC installation directory.")
 
+		self.__SimulationDefaultBoard =				Board(self)
 
 		# self.Directories["XSTFiles"] =			self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
 		# #self.Directories["QuartusFiles"] =	self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['QuartusSynthesisFiles']
@@ -396,15 +402,13 @@ class PoC(ILogable, ArgParseMixin):
 	# ============================================================================
 	def __PrepareVendorLibraryPaths(self):
 		# prepare vendor library path for Altera
-		if (len(self.PoCConfig.options("Altera.QuartusII")) != 0):  self.Directories["AlteraPrimitiveSource"] = Path(
-				self.PoCConfig['Altera.QuartusII']['InstallationDirectory']) / "eda/sim_lib"
+		if (len(self.PoCConfig.options("Altera.QuartusII")) != 0):
+			self.Directories["AlteraPrimitiveSource"] = Path(self.PoCConfig['Altera.QuartusII']['InstallationDirectory']) / "eda/sim_lib"
 		# prepare vendor library path for Xilinx
 		if (len(self.PoCConfig.options("Xilinx.ISE")) != 0):
-			self.Directories["XilinxPrimitiveSource"] = Path(
-					self.PoCConfig['Xilinx.ISE']['InstallationDirectory']) / "ISE/vhdl/src"
+			self.Directories["XilinxPrimitiveSource"] = Path(self.PoCConfig['Xilinx.ISE']['InstallationDirectory']) / "ISE/vhdl/src"
 		elif (len(self.PoCConfig.options("Xilinx.Vivado")) != 0):
-			self.Directories["XilinxPrimitiveSource"] = Path(
-					self.PoCConfig['Xilinx.Vivado']['InstallationDirectory']) / "data/vhdl/src"
+			self.Directories["XilinxPrimitiveSource"] = Path(self.PoCConfig['Xilinx.Vivado']['InstallationDirectory']) / "data/vhdl/src"
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "asim" command
@@ -424,23 +428,25 @@ class PoC(ILogable, ArgParseMixin):
 	def aSimSimulation(self, args):
 		self.__PrepareForSimulation()
 		self.PrintHeadline()
-		self._aSimSimulation(args.FQN[0], args.logs, args.reports, args.VHDLVersion, args.GUIMode, args.DeviceName, args.BoardName)
-		Exit.exit()
 
-	def _aSimSimulation(self, module, showLogs, showReport, vhdlVersion, guiMode, deviceString, boardString):
 		# check if Aldec tools are configure
 		if (len(self.PoCConfig.options("Aldec.ActiveHDL")) != 0):
-			# prepare some paths
-			self.Directories["ActiveHDLInstallation"] = Path(self.PoCConfig['Aldec.ActiveHDL']['InstallationDirectory'])
-			self.Directories["ActiveHDLBinary"] = Path(self.PoCConfig['Aldec.ActiveHDL']['BinaryDirectory'])
-			aSimVersion = self.PoCConfig['Aldec.ActiveHDL']['Version']
+			precompiledDirectory =											self.PoCConfig['PoC.DirectoryNames']['PrecompiledFiles']
+			activeHDLSimulatorFiles =										self.PoCConfig['PoC.DirectoryNames']['ActiveHDLSimulatorFiles']
+			self.Directories["ActiveHDLTemp"] =					self.Directories["PoCTemp"] / activeHDLSimulatorFiles
+			self.Directories["ActiveHDLPrecompiled"] =	self.Directories["PoCTemp"] / precompiledDirectory / activeHDLSimulatorFiles
+			self.Directories["ActiveHDLInstallation"] =	Path(self.PoCConfig['Aldec.ActiveHDL']['InstallationDirectory'])
+			self.Directories["ActiveHDLBinary"] =				Path(self.PoCConfig['Aldec.ActiveHDL']['BinaryDirectory'])
+			aSimVersion =																self.PoCConfig['Aldec.ActiveHDL']['Version']
 		elif (len(self.PoCConfig.options("Lattice.ActiveHDL")) != 0):
-			# prepare some paths
-			self.Directories["ActiveHDLInstallation"] = Path(self.PoCConfig['Lattice.ActiveHDL']['InstallationDirectory'])
-			self.Directories["ActiveHDLBinary"] = Path(self.PoCConfig['Lattice.ActiveHDL']['BinaryDirectory'])
-			aSimVersion = self.PoCConfig['Lattice.ActiveHDL']['Version']
+			precompiledDirectory =											self.PoCConfig['PoC.DirectoryNames']['PrecompiledFiles']
+			activeHDLSimulatorFiles =										self.PoCConfig['PoC.DirectoryNames']['ActiveHDLSimulatorFiles']
+			self.Directories["ActiveHDLTemp"] =					self.Directories["PoCTemp"] / activeHDLSimulatorFiles
+			self.Directories["ActiveHDLPrecompiled"] =	self.Directories["PoCTemp"] / precompiledDirectory / activeHDLSimulatorFiles
+			self.Directories["ActiveHDLInstallation"] =	Path(self.PoCConfig['Lattice.ActiveHDL']['InstallationDirectory'])
+			self.Directories["ActiveHDLBinary"] =				Path(self.PoCConfig['Lattice.ActiveHDL']['BinaryDirectory'])
+			aSimVersion =																self.PoCConfig['Lattice.ActiveHDL']['Version']
 		# elif (len(self.PoCConfig.options("Aldec.RivieraPRO")) != 0):
-		# # prepare some paths
 		# self.Directories["ActiveHDLInstallation"] =	Path(self.PoCConfig['Aldec.RivieraPRO']['InstallationDirectory'])
 		# self.Directories["ActiveHDLBinary"] =				Path(self.PoCConfig['Aldec.RivieraPRO']['BinaryDirectory'])
 		# aSimVersion =																self.PoCConfig['Aldec.RivieraPRO']['Version']
@@ -448,30 +454,38 @@ class PoC(ILogable, ArgParseMixin):
 			# raise NotConfiguredException("Neither Aldec's Active-HDL nor Riviera PRO nor Active-HDL Lattice Edition are configured on this system.")
 			raise NotConfiguredException("Neither Aldec's Active-HDL nor Active-HDL Lattice Edition are configured on this system.")
 
+		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
+
+		if (args.BoardName is not None):
+			board = Board(self, args.BoardName)
+		elif (args.DeviceName is not None):
+			board = Board(self, "Custom", args.DeviceName)
+		else:
+			board = self.__SimulationDefaultBoard
+
+		if (args.VHDLVersion is None):
+			vhdlVersion = self.__SimulationDefaultVHDLVersion
+		else:
+			vhdlVersion = VHDLVersion.parse(args.VHDLVersion)
+
+		# prepare some paths
+		binaryPath = self.Directories["ActiveHDLBinary"]
+
 		# prepare paths to vendor simulation libraries
 		self.__PrepareVendorLibraryPaths()
 
-		self.Directories["ActiveHDLTemp"] = self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ActiveHDLSimulatorFiles']
+		# create a GHDLSimulator instance and prepare it
+		simulator = ActiveHDLSimulator(self, args.logs, args.reports, args.GUIMode)
+		simulator.PrepareSimulator(binaryPath, aSimVersion)
 
-		# create a simulator instance
-		simulator = ActiveHDLSimulator.Simulator(self, showLogs, showReport, guiMode)
-		# prepare the simulator
-		aSimBinaryPath = self.Directories["ActiveHDLBinary"]
-		simulator.PrepareSimulator(aSimBinaryPath, aSimVersion)
+		entityList = [Entity(self, fqn) for fqn in args.FQN]
 
 		# run a testbench
-		entityToSimulate = Entity(self, module)
-		if (boardString is not None):
-			boardName = boardString
-			deviceName = None
-		elif (deviceString is not None):
-			boardName = "Custom"
-			deviceName = deviceString
-		else:
-			boardName = "Custom"
-			deviceName = "Unknown"
+		for entity in entityList:
+			simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
-		simulator.Run(entityToSimulate, boardName=boardName, deviceName=deviceName, vhdlVersion=vhdlVersion, vhdlGenerics=None)
+		Exit.exit()
+
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "ghdl" command
@@ -497,28 +511,27 @@ class PoC(ILogable, ArgParseMixin):
 
 		if (len(args.FQN) == 0):							raise SimulatorException("No FQN given.")
 
-		if (args.BoardName is not None):			board =		Board(args.BoardName)
-		elif (args.DeviceName is not None):		board =		Board("Custom", args.DeviceName)
+		if (args.BoardName is not None):			board =		Board(self, args.BoardName)
+		elif (args.DeviceName is not None):		board =		Board(self, "Custom", args.DeviceName)
 		else:																	board =		self.__SimulationDefaultBoard
 
 		if (args.VHDLVersion is None):				vhdlVersion = self.__SimulationDefaultVHDLVersion
 		else:																	vhdlVersion = VHDLVersion.parse(args.VHDLVersion)
 
 		# prepare some paths
-		self.Directories["GHDLTemp"] = self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['GHDLSimulatorFiles']
-		self.Directories["GHDLPrecompiled"] = self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['PrecompiledFiles'] / self.PoCConfig['PoC.DirectoryNames']['GHDLSimulatorFiles']
-		self.Directories["GHDLInstallation"] = Path(self.PoCConfig['GHDL']['InstallationDirectory'])
-		self.Directories["GHDLBinary"] = Path(self.PoCConfig['GHDL']['BinaryDirectory'])
-		ghdlVersion = self.PoCConfig['GHDL']['Version']
-		ghdlBackend = self.PoCConfig['GHDL']['Backend']
+		self.Directories["GHDLTemp"] =					self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['GHDLSimulatorFiles']
+		self.Directories["GHDLPrecompiled"] =		self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['PrecompiledFiles'] / self.PoCConfig['PoC.DirectoryNames']['GHDLSimulatorFiles']
+		self.Directories["GHDLInstallation"] =	Path(self.PoCConfig['GHDL']['InstallationDirectory'])
+		self.Directories["GHDLBinary"] =				Path(self.PoCConfig['GHDL']['BinaryDirectory'])
+		ghdlBinaryPath =												self.Directories["GHDLBinary"]
+		ghdlVersion =														self.PoCConfig['GHDL']['Version']
+		ghdlBackend =														self.PoCConfig['GHDL']['Backend']
 
 		# prepare paths to vendor simulation libraries
 		self.__PrepareVendorLibraryPaths()
 
-		# create a GHDLSimulator instance
+		# create a GHDLSimulator instance and prepare it
 		simulator = GHDLSimulator(self, args.logs, args.reports, args.GUIMode)
-		# prepare the simulator
-		ghdlBinaryPath = self.Directories["GHDLBinary"]
 		simulator.PrepareSimulator(ghdlBinaryPath, ghdlVersion, ghdlBackend)
 
 		entityList = [Entity(self, fqn) for fqn in args.FQN]
@@ -576,7 +589,7 @@ class PoC(ILogable, ArgParseMixin):
 		iseVersion = self.PoCConfig['Xilinx.ISE']['Version']
 
 		# create a ISESimulator instance
-		simulator = ISESimulator.Simulator(self, showLogs, showReport, guiMode)
+		simulator = ISESimulator(self, showLogs, showReport, guiMode)
 		# prepare the simulator
 		iseBinaryPath = self.Directories["ISEBinary"]
 		simulator.PrepareSimulator(iseBinaryPath, iseVersion)
@@ -636,7 +649,7 @@ class PoC(ILogable, ArgParseMixin):
 			'ModelSimSimulatorFiles']
 
 		# create a QuestaSimulator instance
-		simulator = QuestaSimulator.Simulator(self, showLogs, showReport, guiMode)
+		simulator = QuestaSimulator(self, showLogs, showReport, guiMode)
 		# prepare the simulator
 		vSimBinaryPath = self.Directories["vSimBinary"]
 		simulator.PrepareSimulator(vSimBinaryPath, vSimVersion)
@@ -693,7 +706,7 @@ class PoC(ILogable, ArgParseMixin):
 		vivadoVersion = self.PoCConfig['Xilinx.Vivado']['Version']
 
 		# create a VivadoSimulator instance
-		simulator = VivadoSimulator.Simulator(self, showLogs, showReport, guiMode)
+		simulator = VivadoSimulator(self, showLogs, showReport, guiMode)
 		# prepare the simulator
 		vivadoBinaryPath = self.Directories["VivadoBinary"]
 		simulator.PrepareSimulator(vivadoBinaryPath, vivadoVersion)
