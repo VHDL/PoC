@@ -885,14 +885,25 @@ def main():
 
 	except (CommonException, SimulatorException, CompilerException) as ex:
 		print("{RED}ERROR:{RESET} {message}".format(message=ex.message, **Init.Foreground))
-		if isinstance(ex.__cause__, FileNotFoundError):
-			print("{YELLOW}  FileNotFound:{RESET} '{cause}'".format(cause=str(ex.__cause__), **Init.Foreground))
-		elif isinstance(ex.__cause__, ParserException):
-			print("{YELLOW}  ParserException:{RESET} {cause}".format(cause=str(ex.__cause__), **Init.Foreground))
-			if (ex.__cause__.__cause__ is not None):
-				print("{YELLOW}    {name}:{RESET} {cause}".format(name=ex.__cause__.__cause__.__class__.__name__, cause=str(ex.__cause__.__cause__), **Init.Foreground))
-		elif isinstance(ex.__cause__, ConfigParser_Error):
-			print("{YELLOW}  configparser.Error:{RESET} '{cause}'".format(cause=str(ex.__cause__), **Init.Foreground))
+		cause = ex.__cause__
+		if isinstance(cause, FileNotFoundError):
+			print("{YELLOW}  FileNotFound:{RESET} '{cause}'".format(cause=str(cause), **Init.Foreground))
+		elif isinstance(cause, ConfigParser_Error):
+			print("{YELLOW}  configparser.Error:{RESET} '{cause}'".format(cause=str(cause), **Init.Foreground))
+		elif isinstance(cause, ParserException):
+			print("{YELLOW}  ParserException:{RESET} {cause}".format(cause=str(cause), **Init.Foreground))
+			cause = cause.__cause__
+			if (cause is not None):
+				print("{YELLOW}    {name}:{RESET} {cause}".format(name=cause.__class__.__name__, cause= str(cause.__cause__), **Init.Foreground))
+		elif isinstance(cause, ToolChainException):
+			print("{YELLOW}  {name}:{RESET} {cause}".format(name=cause.__class__.__name__, cause=str(cause), **Init.Foreground))
+			print("  Possible causes:")
+			print("   - The compile order is broken.")
+			print("   - A source file was not compile and an old file got used.")
+
+		if (not (verbose or debug)):
+			print()
+			print("{CYAN}  Use '-v' for verbose or '-d' for debug to print out extended messages.{RESET}".format(**Init.Foreground))
 		Exit.exit(1)
 
 	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)

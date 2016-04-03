@@ -39,10 +39,20 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.GHDL")
 
+from re											import compile as re_compile
+
+from Base.Exceptions				import BaseException, ToolChainException
 from Base.Configuration			import ConfigurationBase
 from Base.Executable				import *
+from Base.Logging						import LogEntry, Severity
 from Base.Simulator					import SimulatorException
 
+
+class GHDLException(ToolChainException):
+	pass
+
+class GHDLReanalyzeException(GHDLException):
+	pass
 
 class Configuration(ConfigurationBase):
 	_vendor =		None
@@ -298,6 +308,18 @@ class GHDLAnalyze(GHDL):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
 
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+
+	@property
+	def HasWarnings(self):
+		return self._hasWarnings
+
+	@property
+	def HasErrors(self):
+		return self._hasErrors
+
 	def Analyze(self):
 		parameterList = self.Parameters.ToArgumentList()
 
@@ -307,30 +329,37 @@ class GHDLAnalyze(GHDL):
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
-			raise SimulatorException("Failed to launch GHDL analyze.") from ex
+			raise GHDLException("Failed to launch GHDL analyze.") from ex
 
+		self._hasOutput =		False
+		self._hasWarnings =	False
+		self._hasErrors =		False
 		try:
-			print(_indent + "ghdl analyze messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
-			print(_indent + "-" * 80)
-			gen = self.GetReader()
-			filter = GHDLFilter(gen)
-			it = iter(filter)
+			filter =		GHDLAnalyzeFilter(self.GetReader())
+			iterator =	iter(filter)
+
+			line = next(iterator)
+			self._hasOutput =		True
+			self._LogNormal(_indent + "ghdl analyze messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
+			self._LogNormal(_indent + "-" * 80)
+
 			while True:
-				try:
-					line = next(it)
-				except StopIteration as ex:
-					break
+				self._hasWarnings |=	(line.Severity is Severity.Warning)
+				self._hasErrors |=		(line.Severity is Severity.Error)
 
-				print(_indent + line)
+				line.Indent(2)
+				self._Log(line)
+				line = next(iterator)
 
+		except StopIteration as ex:
+			pass
+		except GHDLException:
+			raise
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
-
-
-def GHDLFilter(gen):
-	for line in gen:
-		yield line
+			raise GHDLException("Error while executing GHDL.") from ex
+		finally:
+			if self._hasOutput:
+				print(_indent + "-" * 80)
 
 class GHDLElaborate(GHDL):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
@@ -344,15 +373,37 @@ class GHDLElaborate(GHDL):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
 		_indent = "    "
-		print(_indent + "ghdl elaboration messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise GHDLException("Failed to launch GHDL elaborate.") from ex
+
+		hasOutput = False
+		try:
+			filter = GHDLElaborateFilter(self.GetReader())
+			iterator = iter(filter)
+
+			line = next(iterator)
+			line.Indent(2)
+			hasOutput = True
+			self._LogNormal(_indent + "ghdl elaborate messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
+			self._LogNormal(_indent + "-" * 80)
+			self._Log(line)
+
+			while True:
+				line = next(iterator)
+				line.Indent(2)
+				self._Log(line)
+
+		except StopIteration as ex:
+			pass
+		except GHDLException:
+			raise
+		except Exception as ex:
+			raise GHDLException("Error while executing GHDL.") from ex
+		finally:
+			if hasOutput:
+				print(_indent + "-" * 80)
 
 class GHDLRun(GHDL):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
@@ -365,12 +416,76 @@ class GHDLRun(GHDL):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
 		_indent = "    "
-		print(_indent + "ghdl run messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise GHDLException("Failed to launch GHDL run.") from ex
+
+		hasOutput = False
+		try:
+			filter = GHDLRunFilter(self.GetReader())
+			iterator = iter(filter)
+
+			line = next(iterator)
+			line.Indent(2)
+			hasOutput = True
+			self._LogNormal(_indent + "ghdl run messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
+			self._LogNormal(_indent + "-" * 80)
+			self._Log(line)
+
+			while True:
+				line = next(iterator)
+				line.Indent(2)
+				self._Log(line)
+
+		except StopIteration as ex:
+			pass
+		except GHDLException:
+			raise
+		except Exception as ex:
+			raise GHDLException("Error while executing GHDL.") from ex
+		finally:
+			if hasOutput:
+				print(_indent + "-" * 80)
+
+
+def GHDLAnalyzeFilter(gen):
+	warningRegExpPattern =	r".+?:\d+:\d+:warning: (?P<Message>.*)"			# <Path>:<line>:<column>:warning: <message>
+	errorRegExpPattern =		r".+?:\d+:\d+: (?P<Message>.*)"  						# <Path>:<line>:<column>: <message>
+
+	warningRegExp =	re_compile(warningRegExpPattern)
+	errorRegExp =		re_compile(errorRegExpPattern)
+
+	for line in gen:
+		warningRegExpMatch = warningRegExp.match(line)
+		if (warningRegExpMatch is not None):
+			yield LogEntry(line, Severity.Warning)
+		else:
+			errorRegExpMatch = errorRegExp.match(line)
+			if (errorRegExpMatch is not None):
+				message = errorRegExpMatch.group('Message')
+				if message.endswith("has changed and must be reanalysed"):
+					raise GHDLReanalyzeException(message)
+				yield LogEntry(line, Severity.Error)
+			else:
+				yield LogEntry(line, Severity.Normal)
+
+GHDLElaborateFilter = GHDLAnalyzeFilter
+
+def GHDLRunFilter(gen):
+	#warningRegExpPattern =	".+?:\d+:\d+:warning: .*"		# <Path>:<line>:<column>:warning: <message>
+	#errorRegExpPattern =		".+?:\d+:\d+: .*"  					# <Path>:<line>:<column>: <message>
+
+	#warningRegExp =	re_compile(warningRegExpPattern)
+	#errorRegExp =		re_compile(errorRegExpPattern)
+
+	lineno = 0
+	for line in gen:
+		if (lineno < 2):
+			lineno += 1
+			if ("Linking in memory" in line):
+				yield LogEntry(line, Severity.Verbose)
+			elif ("Starting simulation" in line):
+				yield LogEntry(line, Severity.Verbose)
+		else:
+			yield LogEntry(line, Severity.Normal)

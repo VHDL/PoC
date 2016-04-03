@@ -63,9 +63,10 @@ class Severity(Enum):
 	
 
 class LogEntry:
-	def __init__(self, severity, message):
+	def __init__(self, message, severity=Severity.Normal):
 		self._severity =	severity
 		self._message =		message
+		self._indent =		0
 	
 	@property
 	def Severity(self):
@@ -73,7 +74,10 @@ class LogEntry:
 	
 	@property
 	def Message(self):
-		return self._message
+		return ("  " * self._indent) + self._message
+
+	def Indent(self, indent):
+		self._indent += indent
 	
 	def __str__(self):
 		if (self._severity is Severity.Fatal):			return "FATAL: " +		self._message
@@ -113,28 +117,28 @@ class Logger:
 				elif (entry.Severity is Severity.Debug):		print("{0}{1}{2}".format(Foreground.LIGHTBLACK_EX, entry.Message, Foreground.RESET))
 	
 	def WriteFatal(self, message):
-		self.Write(LogEntry(Severity.Fatal, message))
+		self.Write(LogEntry(message, Severity.Fatal))
 	
 	def WriteError(self, message):
-		self.Write(LogEntry(Severity.Error, message))
+		self.Write(LogEntry(message, Severity.Error))
 	
 	def WriteWarning(self, message):
-		self.Write(LogEntry(Severity.Warning, message))
+		self.Write(LogEntry(message, Severity.Warning))
 	
 	def WriteInfo(self, message):
-		self.Write(LogEntry(Severity.Info, message))
+		self.Write(LogEntry(message, Severity.Info))
 	
 	def WriteQuiet(self, message):
-		self.Write(LogEntry(Severity.Quiet, message))
+		self.Write(LogEntry(message, Severity.Quiet))
 	
 	def WriteNormal(self, message):
-		self.Write(LogEntry(Severity.Normal, message))
+		self.Write(LogEntry(message, Severity.Normal))
 	
 	def WriteVerbose(self, message):
-		self.Write(LogEntry(Severity.Verbose, message))
+		self.Write(LogEntry(message, Severity.Verbose))
 	
 	def WriteDebug(self, message):
-		self.Write(LogEntry(Severity.Debug, message))
+		self.Write(LogEntry(message, Severity.Debug))
 	
 		
 class ILogable:
@@ -144,7 +148,11 @@ class ILogable:
 	@property
 	def Logger(self):
 		return self.__logger
-		
+
+	def _Log(self, message):
+		if self.__logger is not None:
+			self.__logger.Write(message)
+
 	def _LogFatal(self, message):
 		if self.__logger is not None:
 			self.__logger.WriteFatal(message)

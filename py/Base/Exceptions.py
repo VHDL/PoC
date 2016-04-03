@@ -81,3 +81,6 @@ class TestbenchException(SimulatorException):
 
 class CompilerException(BaseException):
 	pass
+
+class ToolChainException(BaseException):
+	pass

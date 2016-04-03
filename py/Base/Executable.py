@@ -335,5 +335,5 @@ class Executable(ILogable):
 				yield line[:-1]
 		except Exception as ex:
 			raise ex
-		finally:
-			self._process.terminate()
+		# finally:
+			# self._process.terminate()

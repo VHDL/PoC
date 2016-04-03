@@ -48,7 +48,7 @@ from Base.Exceptions				import *
 from Base.Simulator					import PoCSimulator, VHDLTestbenchLibraryName
 from Parser.Parser					import ParserException
 from PoC.PoCProject					import *
-from ToolChains.GHDL				import GHDL
+from ToolChains.GHDL				import GHDL, GHDLException
 from ToolChains.GTKWave			import GTKWave
 
 
@@ -191,7 +191,14 @@ class Simulator(PoCSimulator):
 
 			ghdl.Parameters[ghdl.SwitchVHDLLibrary] =			file.VHDLLibraryName
 			ghdl.Parameters[ghdl.ArgSourceFile] =					file.Path
-			ghdl.Analyze()
+			try:
+				ghdl.Analyze()
+			except GHDLException as ex:
+				raise SimulatorException("Error while analysing '{0}'.".format(str(file.Path))) from ex
+
+			if ghdl.HasErrors:
+				raise SimulatorException("Error while analysing '{0}'.".format(str(file.Path)))
+
 
 	# running simulation
 	# ==========================================================================
