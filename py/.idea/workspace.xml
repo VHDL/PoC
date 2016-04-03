@@ -2,20 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b1217729-6dda-4bce-a9eb-baa5346607ac" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/PoC/Project.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Base/Executable.py" afterPath="$PROJECT_DIR$/Base/Executable.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Base/Simulator.py" afterPath="$PROJECT_DIR$/Base/Simulator.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PoC.py" afterPath="$PROJECT_DIR$/PoC.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/ActiveHDLSimulator.py" afterPath="$PROJECT_DIR$/Simulator/ActiveHDLSimulator.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/GHDLSimulator.py" afterPath="$PROJECT_DIR$/Simulator/GHDLSimulator.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/ISESimulator.py" afterPath="$PROJECT_DIR$/Simulator/ISESimulator.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/QuestaSimulator.py" afterPath="$PROJECT_DIR$/Simulator/QuestaSimulator.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/VivadoSimulator.py" afterPath="$PROJECT_DIR$/Simulator/VivadoSimulator.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ToolChains/Aldec/ActiveHDL.py" afterPath="$PROJECT_DIR$/ToolChains/Aldec/ActiveHDL.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ToolChains/GHDL.py" afterPath="$PROJECT_DIR$/ToolChains/GHDL.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ToolChains/GTKWave.py" afterPath="$PROJECT_DIR$/ToolChains/GTKWave.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/Base/FilesParser.py" afterPath="$PROJECT_DIR$/Base/_FilesParser.py" />
     </list>
     <ignored path="py.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -48,30 +35,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Functions.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/Functions.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="291">
-              <caret line="97" column="6" selection-start-line="97" selection-start-column="6" selection-end-line="97" selection-end-column="6" />
-              <folding>
-                <element signature="e#1301#1329#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ActiveHDLSimulator.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/Simulator/ActiveHDLSimulator.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="612">
-              <caret line="48" column="0" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
-              <folding>
-                <element signature="e#1487#1533#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="GHDLSimulator.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Simulator/GHDLSimulator.py">
           <provider selected="true" editor-type-id="text-editor">
@@ -84,69 +47,13 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ISESimulator.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Simulator/ISESimulator.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="629">
-              <caret line="52" column="29" selection-start-line="52" selection-start-column="29" selection-end-line="52" selection-end-column="29" />
-              <folding>
-                <element signature="e#1493#1539#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="QuestaSimulator.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Simulator/QuestaSimulator.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="552">
-              <caret line="50" column="29" selection-start-line="50" selection-start-column="29" selection-end-line="50" selection-end-column="29" />
-              <folding>
-                <element signature="e#1482#1531#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="VivadoSimulator.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Simulator/VivadoSimulator.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="614">
-              <caret line="54" column="29" selection-start-line="54" selection-start-column="29" selection-end-line="54" selection-end-column="29" />
-              <folding>
-                <element signature="e#1496#1543#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Simulator.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Base/Simulator.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="59">
-              <caret line="51" column="7" selection-start-line="51" selection-start-column="7" selection-end-line="51" selection-end-column="7" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ActiveHDL.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="ActiveHDL.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ToolChains/Aldec/ActiveHDL.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="731">
-              <caret line="43" column="59" selection-start-line="43" selection-start-column="59" selection-end-line="43" selection-end-column="59" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Executable.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Base/Executable.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="484">
-              <caret line="325" column="161" selection-start-line="325" selection-start-column="161" selection-end-line="325" selection-end-column="161" />
+            <state relative-caret-position="654">
+              <caret line="350" column="36" selection-start-line="350" selection-start-column="36" selection-end-line="350" selection-end-column="36" />
               <folding>
-                <element signature="e#1482#1520#0" expanded="true" />
+                <element signature="e#1495#1578#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -212,12 +119,12 @@
         <option value="$PROJECT_DIR$/Base/Simulator.py" />
         <option value="$PROJECT_DIR$/Base/Executable.py" />
         <option value="$PROJECT_DIR$/PoC.py" />
-        <option value="$PROJECT_DIR$/ToolChains/Aldec/ActiveHDL.py" />
         <option value="$PROJECT_DIR$/Simulator/ActiveHDLSimulator.py" />
         <option value="$PROJECT_DIR$/Simulator/VivadoSimulator.py" />
         <option value="$PROJECT_DIR$/Simulator/QuestaSimulator.py" />
         <option value="$PROJECT_DIR$/Simulator/ISESimulator.py" />
         <option value="$PROJECT_DIR$/Simulator/GHDLSimulator.py" />
+        <option value="$PROJECT_DIR$/ToolChains/Aldec/ActiveHDL.py" />
       </list>
     </option>
   </component>
@@ -1033,12 +940,42 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/PoC.py">
+    <entry file="file://$PROJECT_DIR$/Simulator/VivadoSimulator.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="688">
-          <caret line="916" column="59" selection-start-line="916" selection-start-column="59" selection-end-line="916" selection-end-column="59" />
+        <state relative-caret-position="614">
+          <caret line="54" column="29" selection-start-line="54" selection-start-column="29" selection-end-line="54" selection-end-column="29" />
           <folding>
-            <element signature="e#1404#1460#0" expanded="true" />
+            <element signature="e#1496#1543#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Simulator/QuestaSimulator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="552">
+          <caret line="50" column="29" selection-start-line="50" selection-start-column="29" selection-end-line="50" selection-end-column="29" />
+          <folding>
+            <element signature="e#1482#1531#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Simulator/ISESimulator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="629">
+          <caret line="52" column="29" selection-start-line="52" selection-start-column="29" selection-end-line="52" selection-end-column="29" />
+          <folding>
+            <element signature="e#1493#1539#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Simulator/ActiveHDLSimulator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="612">
+          <caret line="48" column="0" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
+          <folding>
+            <element signature="e#1487#1533#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1053,40 +990,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ToolChains/Aldec/ActiveHDL.py">
+    <entry file="file://$PROJECT_DIR$/PoC.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="731">
-          <caret line="43" column="59" selection-start-line="43" selection-start-column="59" selection-end-line="43" selection-end-column="59" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Simulator/VivadoSimulator.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="614">
-          <caret line="54" column="29" selection-start-line="54" selection-start-column="29" selection-end-line="54" selection-end-column="29" />
+        <state relative-caret-position="688">
+          <caret line="916" column="59" selection-start-line="916" selection-start-column="59" selection-end-line="916" selection-end-column="59" />
           <folding>
-            <element signature="e#1496#1543#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Simulator/QuestaSimulator.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="552">
-          <caret line="50" column="29" selection-start-line="50" selection-start-column="29" selection-end-line="50" selection-end-column="29" />
-          <folding>
-            <element signature="e#1482#1531#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Simulator/ISESimulator.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="629">
-          <caret line="52" column="29" selection-start-line="52" selection-start-column="29" selection-end-line="52" selection-end-column="29" />
-          <folding>
-            <element signature="e#1493#1539#0" expanded="true" />
+            <element signature="e#1404#1460#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1101,12 +1010,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Simulator/ActiveHDLSimulator.py">
+    <entry file="file://$PROJECT_DIR$/ToolChains/Aldec/ActiveHDL.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="612">
-          <caret line="48" column="0" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
+        <state relative-caret-position="654">
+          <caret line="350" column="36" selection-start-line="350" selection-start-column="36" selection-end-line="350" selection-end-column="36" />
           <folding>
-            <element signature="e#1487#1533#0" expanded="true" />
+            <element signature="e#1495#1578#0" expanded="true" />
           </folding>
         </state>
       </provider>

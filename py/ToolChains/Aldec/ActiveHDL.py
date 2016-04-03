@@ -335,13 +335,28 @@ def SimulatorFilter(gen):
 	#warningRegExp =	re_compile(warningRegExpPattern)
 	#errorRegExp =		re_compile(errorRegExpPattern)
 
-	lineno = 0
+	PoCOutputFound = False
 	for line in gen:
-		if (lineno < 2):
-			lineno += 1
-			if ("Linking in memory" in line):
+
+		if line.startswith("asim"):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("VSIM: "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("ELBREAD: "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("ELAB2: "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("SLP: "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("Allocation: "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("KERNEL: ========================================"):
+			PoCOutputFound = True
+			yield LogEntry(line[8:], Severity.Normal)
+		elif line.startswith("KERNEL: "):
+			if (not PoCOutputFound):
 				yield LogEntry(line, Severity.Verbose)
-			elif ("Starting simulation" in line):
-				yield LogEntry(line, Severity.Verbose)
+			else:
+				yield LogEntry(line[8:], Severity.Normal)
 		else:
 			yield LogEntry(line, Severity.Normal)
