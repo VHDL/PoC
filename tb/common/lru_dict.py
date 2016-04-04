@@ -36,20 +36,20 @@
 from collections import OrderedDict
 
 class LeastRecentlyUsedDict(OrderedDict):
-	'''
+	"""
 	The entries in this dictionary are ordered by the last addition or update 
 	of key:value pairs. The maximum size of the dictionary can be specified 
 	during object creation. 
 	
 	Based on this StackOverflow answer: http://stackoverflow.com/a/2437645/5466118
 	and the example on: https://docs.python.org/2/library/collections.html#ordereddict-examples-and-recipes
-	'''
+	"""
 
 	def __init__(self, *args, **kwds):
-		'''
+		"""
 		The optional keyword 'size_limit' specifies the maximum size of the 
 		dictionary.
-		'''
+		"""
 		self._size_limit = kwds.pop("size_limit", None)
 		OrderedDict.__init__(self, *args, **kwds)
 		self._check_size_limit()
@@ -66,3 +66,21 @@ class LeastRecentlyUsedDict(OrderedDict):
 				self.popitem(last=False)
 
 
+	def markLRU(self, key):
+		"""Mark key as least-recently used. Does nothing, if key is not within dictionary."""
+		if key in self:
+			old = self.copy()
+			value = self[key]
+
+			# build new list
+			self.clear()
+			self[key] = value
+			for k, v in old.iteritems():
+				if k == key: continue
+				self[k] = v
+
+#d = LeastRecentlyUsedDict(size_limit=5)
+#for key in range(4,-1,-1): d[key]=1
+#print "old=%s" % d
+#d.markLRU(2)
+#print "new=%s" % d
