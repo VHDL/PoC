@@ -424,7 +424,7 @@ class PoC(ILogable, ArgParseMixin):
 	# @SwitchArgumentAttribute("-08", dest="VHDLVersion", help="Simulate with VHDL-2008.")
 	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window.")
 	# @HandleVerbosityOptions
-	def aSimSimulation(self, args):
+	def HandleActiveHDLSimulation(self, args):
 		self.__PrepareForSimulation()
 		self.PrintHeadline()
 
@@ -477,11 +477,15 @@ class PoC(ILogable, ArgParseMixin):
 		simulator = ActiveHDLSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(binaryPath, aSimVersion)
 
-		entityList = [Entity(self, fqn) for fqn in args.FQN]
+		fqnList = [FQN(self, fqn, defaultType=EntityTypes.Testbench) for fqn in args.FQN]
 
 		# run a testbench
-		for entity in entityList:
-			simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
+		for fqn in fqnList:
+			for entity in fqn.GetEntities():
+				# try:
+				simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
+				# except SimulatorException as ex:
+					# pass
 
 		Exit.exit()
 
@@ -501,7 +505,7 @@ class PoC(ILogable, ArgParseMixin):
 	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in GTKWave.")
 	# standard
 	# @HandleVerbosityOptions
-	def ghdlSimulation(self, args):
+	def HandleGHDLSimulation(self, args):
 		self.__PrepareForSimulation()
 		self.PrintHeadline()
 
@@ -533,22 +537,27 @@ class PoC(ILogable, ArgParseMixin):
 		simulator = GHDLSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(ghdlBinaryPath, ghdlVersion, ghdlBackend)
 
-		entityList = [Entity(self, fqn) for fqn in args.FQN]
+		fqnList = [FQN(self, fqn, defaultType=EntityTypes.Testbench) for fqn in args.FQN]
 
 		# run a testbench
-		for entity in entityList:
-			simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)		#, vhdlGenerics=None)
+		for fqn in fqnList:
+			for entity in fqn.GetEntities():
+				try:
+					simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)		#, vhdlGenerics=None)
 
-			if (args.GUIMode == True):
-				# prepare paths for GTKWave, if configured
-				if (len(self.PoCConfig.options("GTKWave")) != 0):
-					self.Directories["GTKWInstallation"] = Path(self.PoCConfig['GTKWave']['InstallationDirectory'])
-					self.Directories["GTKWBinary"] = Path(self.PoCConfig['GTKWave']['BinaryDirectory'])
-				else:
-					raise NotConfiguredException("No GHDL compatible waveform viewer is configured on this system.")
+					if (args.GUIMode == True):
+						# prepare paths for GTKWave, if configured
+						if (len(self.PoCConfig.options("GTKWave")) != 0):
+							self.Directories["GTKWInstallation"] = Path(self.PoCConfig['GTKWave']['InstallationDirectory'])
+							self.Directories["GTKWBinary"] = Path(self.PoCConfig['GTKWave']['BinaryDirectory'])
+						else:
+							raise NotConfiguredException("No GHDL compatible waveform viewer is configured on this system.")
 
-				viewer = simulator.GetViewer()
-				viewer.View(entity)
+						viewer = simulator.GetViewer()
+						viewer.View(entity)
+
+				except SimulatorException as ex:
+					pass
 
 		Exit.exit()
 
@@ -565,7 +574,7 @@ class PoC(ILogable, ArgParseMixin):
 	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window.")
 	# standard
 	# @HandleVerbosityOptions
-	def iSimSimulation(self, args):
+	def HandleISESimulation(self, args):
 		self.__PrepareForSimulation()
 		self.PrintHeadline()
 
@@ -597,11 +606,13 @@ class PoC(ILogable, ArgParseMixin):
 		simulator = ISESimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(binaryPath, iseVersion)
 
-		entityList = [Entity(self, fqn) for fqn in args.FQN]
+		fqnList = [FQN(self, fqn, defaultType=EntityTypes.Testbench) for fqn in args.FQN]
 
 		# run a testbench
-		for entity in entityList:
-			simulator.Run(entity, board=board)		#, vhdlGenerics=None)
+		for fqn in fqnList:
+			for entity in fqn.GetEntities():
+				# try:
+				simulator.Run(entity, board=board)		#, vhdlGenerics=None)
 
 		Exit.exit()
 
@@ -621,7 +632,7 @@ class PoC(ILogable, ArgParseMixin):
 	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window.")
 	# standard
 	# @HandleVerbosityOptions
-	def vSimSimulation(self, args):
+	def HandleQuestaSimulation(self, args):
 		self.__PrepareForSimulation()
 		self.PrintHeadline()
 
@@ -663,11 +674,14 @@ class PoC(ILogable, ArgParseMixin):
 		simulator = QuestaSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(binaryPath, vSimVersion)
 
-		entityList = [Entity(self, fqn) for fqn in args.FQN]
+		fqnList = [FQN(self, fqn, defaultType=EntityTypes.Testbench) for fqn in args.FQN]
 
 		# run a testbench
-		for entity in entityList:
-			simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
+		for fqn in fqnList:
+			print(fqn)
+			for entity in fqn.GetEntities():
+				# try:
+				simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
 		Exit.exit()
 
@@ -687,7 +701,7 @@ class PoC(ILogable, ArgParseMixin):
 	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window.")
 	# standard
 	# @HandleVerbosityOptions
-	def xSimSimulation(self, args):
+	def HandleVivadoSimulation(self, args):
 		self.__PrepareForSimulation()
 		self.PrintHeadline()
 
@@ -727,11 +741,14 @@ class PoC(ILogable, ArgParseMixin):
 		simulator = VivadoSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(binaryPath, vivadoVersion)
 
-		entityList = [Entity(self, fqn) for fqn in args.FQN]
+		fqnList = [FQN(self, fqn, defaultType=EntityTypes.Testbench) for fqn in args.FQN]
 
 		# run a testbench
-		for entity in entityList:
-			simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
+		for fqn in fqnList:
+			print(fqn)
+			for entity in fqn.GetEntities():
+				# try:
+				simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
 		Exit.exit()
 
