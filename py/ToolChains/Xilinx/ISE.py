@@ -312,7 +312,7 @@ class ISESimulator(Executable):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
 		_indent = "    "
-		print(_indent + "isim messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "isim messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
 		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)

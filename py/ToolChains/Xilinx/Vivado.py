@@ -302,7 +302,7 @@ class XElab(Executable, VivadoSimMixIn):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
 		_indent = "    "
-		print(_indent + "xelab messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "xelab messages for '{0}'".format(self.Parameters[self.ArgTopLevel]))
 		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
@@ -361,7 +361,7 @@ class XSim(Executable, VivadoSimMixIn):
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
 		_indent = "    "
-		print(_indent + "xsim messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
+		print(_indent + "xsim messages for '{0}'".format(self.Parameters[self.SwitchSnapshot]))
 		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)

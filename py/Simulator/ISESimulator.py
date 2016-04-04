@@ -47,7 +47,7 @@ from os											import chdir
 from Base.Exceptions				import *
 from Base.Simulator					import Simulator as BaseSimulator, VHDLTestbenchLibraryName
 from PoC.PoCProject					import *
-from ToolChains.Xilinx.ISE	import ISE
+from ToolChains.Xilinx.ISE	import ISE, ISESimulator
 
 
 class Simulator(BaseSimulator):
@@ -209,7 +209,7 @@ class Simulator(BaseSimulator):
 		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['iSimWaveformConfigFile']
 
 		# create a ISESimulator instance
-		iSim = ISESimulatorExecutable(exeFilePath, logger=self.Logger)
+		iSim = ISESimulator(exeFilePath, logger=self.Logger)
 		iSim.Parameters[iSim.SwitchLogFile] =					str(iSimLogFilePath)
 
 		if (not self._guiMode):

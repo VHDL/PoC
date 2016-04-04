@@ -41,7 +41,12 @@ else:
 
 
 from Base.Executable		import *
+from Base.Exceptions		import PlatformNotSupportedException, ToolChainException
+from Base.Logging				import LogEntry, Severity
 
+
+class QuestaException(ToolChainException):
+	pass
 
 class Configuration:
 	__vendor =		"Mentor"
@@ -193,6 +198,10 @@ class QuestaVHDLCompiler(Executable, QuestaSimMixIn):
 
 		self.Parameters[self.Executable] = executablePath
 
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
 
@@ -246,19 +255,44 @@ class QuestaVHDLCompiler(Executable, QuestaSimMixIn):
 
 	def Compile(self):
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
-		print(_indent + "vcom messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise QuestaException("Failed to launch vcom run.") from ex
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			filter = QuestaVComFilter(self.GetReader())
+			iterator = iter(filter)
+
+			line = next(iterator)
+			line.Indent(2)
+			self._hasOutput = True
+			self._LogNormal("    vcom messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
+			self._LogNormal("    " + ("-" * 76))
+			self._Log(line)
+
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
+				line = next(iterator)
+				line.Indent(2)
+				self._Log(line)
+
+		except StopIteration as ex:
+			pass
+		except QuestaException:
+			raise
+		# except Exception as ex:
+		#	raise QuestaException("Error while executing GHDL.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
 
 class QuestaSimulator(Executable, QuestaSimMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
@@ -270,6 +304,10 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 		super().__init__(platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
 
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
@@ -339,19 +377,44 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 
 	def Simulate(self):
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
-		print(_indent + "vsim messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise QuestaException("Failed to launch vsim run.") from ex
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			filter = QuestaVSimFilter(self.GetReader())
+			iterator = iter(filter)
+
+			line = next(iterator)
+			line.Indent(2)
+			self._hasOutput = True
+			self._LogNormal("    vsim messages for '{0}'".format(self.Parameters[self.SwitchTopLevel]))
+			self._LogNormal("    " + ("-" * 76))
+			self._Log(line)
+
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
+				line = next(iterator)
+				line.Indent(2)
+				self._Log(line)
+
+		except StopIteration as ex:
+			pass
+		except QuestaException:
+			raise
+		# except Exception as ex:
+		#	raise QuestaException("Error while executing GHDL.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
 
 class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
@@ -364,6 +427,10 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 
 		self.Parameters[self.Executable] = executablePath
 
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+
 	class Executable(metaclass=ExecutableArgument):			pass
 	class SwitchLibraryName(metaclass=StringArgument):	pass
 
@@ -374,16 +441,54 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 
 	def CreateLibrary(self):
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
-		print(_indent + "vlib messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise QuestaException("Failed to launch vlib run.") from ex
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			filter = QuestaVLibFilter(self.GetReader())
+			iterator = iter(filter)
+
+			line = next(iterator)
+			line.Indent(2)
+			self._hasOutput = True
+			self._LogNormal("    vlib messages for '{0}'".format(self.Parameters[self.SwitchLibraryName]))
+			self._LogNormal("    " + ("-" * 76))
+			self._Log(line)
+
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
+				line = next(iterator)
+				line.Indent(2)
+				self._Log(line)
+
+		except StopIteration as ex:
+			pass
+		except QuestaException:
+			raise
+		# except Exception as ex:
+		#	raise QuestaException("Error while executing GHDL.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
+
+
+def QuestaVComFilter(gen):
+	for line in gen:
+		yield LogEntry(line, Severity.Normal)
+
+def QuestaVSimFilter(gen):
+	for line in gen:
+		yield LogEntry(line, Severity.Normal)
+
+def QuestaVLibFilter(gen):
+	for line in gen:
+		yield LogEntry(line, Severity.Normal)

@@ -430,6 +430,8 @@ def VHDLCompilerFilter(gen):
 			yield LogEntry(line, Severity.Debug)
 		elif line.startswith("VLM Initialized with path"):
 			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("VLM ERROR "):
+			yield LogEntry(line, Severity.Error)
 		elif line.startswith("COMP96 File: "):
 			yield LogEntry(line, Severity.Verbose)
 		elif line.startswith("COMP96 Compile Package "):
