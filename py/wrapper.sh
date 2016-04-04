@@ -60,7 +60,7 @@ PyWrapper_LoadEnv_Xilinx_Vivado=0
 
 # search for special parameters
 # TODO: restrict to first n=2? parameters
-for param in "$PyWrapper_Paramters"; do
+for param in $PyWrapper_Parameters; do
 	if [ "$param" = "-D" ]; then PyWrapper_Debug=1; fi
 	if [ "$param" = "asim" ];			then PyWrapper_LoadEnv_Aldec_ActiveHDL=1; fi
 	if [ "$param" = "ghdl" ];			then PyWrapper_LoadEnv_GHDL_GTKWave=1; fi
@@ -86,7 +86,7 @@ if [ $PyWrapper_Debug -eq 1 ]; then
 	echo -e "${YELLOW}  working:       $PoC_WorkingDir${NOCOLOR}"
 	echo -e "${YELLOW}Script:${NOCOLOR}"
 	echo -e "${YELLOW}  Filename:      $PyWrapper_Script${NOCOLOR}"
-	echo -e "${YELLOW}  Parameters:    $PyWrapper_Paramters${NOCOLOR}"
+	echo -e "${YELLOW}  Parameters:    $PyWrapper_Parameters${NOCOLOR}"
 	echo -e "${YELLOW}Load Environment:${NOCOLOR}"
 	echo -e "${YELLOW}  Xilinx ISE:    $PyWrapper_LoadEnv_Xilinx_ISE${NOCOLOR}"
 	echo -e "${YELLOW}  Xilinx VIVADO: $PyWrapper_LoadEnv_Xilinx_Vivado${NOCOLOR}"
@@ -101,7 +101,7 @@ if [ $? -eq 0 ]; then
 	if [ $PyWrapper_Debug -eq 1 ]; then echo -e "${YELLOW}PythonInterpreter: use standard interpreter: '$Python_Interpreter'${NOCOLOR}"; fi
 else
 	# standard python interpreter is not suitable, try to find a suitable version manually
-	for pyVersion in 3.9 3.8 3.7 3.6 3.5; do
+	for pyVersion in 3.9 3.8 3.7 3.6 3.5 3.4; do
 		Python_Interpreter=$(which python$pyVersion 2>/dev/null)
 		# if ExitCode = 0 => version found
 		if [ $? -eq 0 ]; then
@@ -115,7 +115,7 @@ fi
 # if no interpreter was found => exit
 if [ ! $Python_Interpreter ]; then
 	echo 1>&2 -e "${RED}No suitable Python interpreter found.${NOCOLOR}"
-	echo 1>&2 -e "${RED}The script requires Python >= $PyWrapper_MIN_VERSION${NOCOLOR}"
+	echo 1>&2 -e "${RED}The script requires Python >= $PyWrapper_MinVersion${NOCOLOR}"
 	PoC_ExitCode=1
 fi
 
@@ -180,7 +180,7 @@ fi
 # execute script with appropriate python interpreter and all given parameters
 if [ $PoC_ExitCode -eq 0 ]; then
 	Python_Script="$PoC_RootDir_AbsPath/$PoC_PythonScriptDir/$PyWrapper_Script"
-	Python_ScriptParameters=$PyWrapper_Paramters
+	Python_ScriptParameters=$PyWrapper_Parameters
 	
 	if [ $PyWrapper_Debug -eq 1 ]; then
 		echo -e "${YELLOW}launching: '$Python_Interpreter $Python_Script $Python_ScriptParameters'${NOCOLOR}"

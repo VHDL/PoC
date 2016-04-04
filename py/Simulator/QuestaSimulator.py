@@ -208,7 +208,7 @@ class Simulator(BaseSimulator):
 		vsim.Parameters[vsim.FlagOptimization] =			True
 		vsim.Parameters[vsim.FlagReportAsError] =			"3473"
 		vsim.Parameters[vsim.SwitchTimeResolution] =	"1fs"
-		# vsim.Parameters[vsim.FlagCommandLineMode] =		True
+		vsim.Parameters[vsim.FlagGuiMode] =		        True
 		vsim.Parameters[vsim.SwitchTopLevel] =				"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
 		# vsim.Parameters[vsim.SwitchTitle] =						testbenchName
 

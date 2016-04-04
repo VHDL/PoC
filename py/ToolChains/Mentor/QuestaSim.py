@@ -336,6 +336,10 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 		_name =		"batch"
 		_value =	None
 
+	class FlagGuiMode(metaclass=ShortFlagArgument):
+		_name =		"gui"
+		_value =	None
+
 	class SwitchBatchCommand(metaclass=ShortTupleArgument):
 		_name =		"do"
 		_value =	None
@@ -379,6 +383,7 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 		Executable,
 		FlagQuietMode,
 		FlagBatchMode,
+		FlagGuiMode,
 		SwitchBatchCommand,
 		FlagCommandLineMode,
 		SwitchModelSimIniFile,

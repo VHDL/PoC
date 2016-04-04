@@ -289,7 +289,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	# fallback handler if no command was recognized
 	# ----------------------------------------------------------------------------
-	@DefaultAttribute()
+	#@DefaultAttribute()
 	# @HandleVerbosityOptions
 	def HandleDefault(self, args):
 		self.PrintHeadline()
