@@ -161,6 +161,10 @@ class GHDL(Executable):
 		self._backend =							backend
 		self._version =							version
 
+		self._hasOutput =						False
+		self._hasWarnings =					False
+		self._hasErrors =						False
+
 	@property
 	def BinaryDirectoryPath(self):
 		return self._binaryDirectoryPath
@@ -318,10 +322,6 @@ class GHDLAnalyze(GHDL):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
 
-		self._hasOutput = False
-		self._hasWarnings = False
-		self._hasErrors = False
-
 	@property
 	def HasWarnings(self):
 		return self._hasWarnings
@@ -374,10 +374,6 @@ class GHDLElaborate(GHDL):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
 
-		self._hasOutput = False
-		self._hasWarnings = False
-		self._hasErrors = False
-
 	def Elaborate(self):
 		parameterList = self.Parameters.ToArgumentList()
 		parameterList.insert(0, self.Executable)
@@ -425,10 +421,6 @@ class GHDLElaborate(GHDL):
 class GHDLRun(GHDL):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
-
-		self._hasOutput = False
-		self._hasWarnings = False
-		self._hasErrors = False
 
 	def Run(self):
 		parameterList = self.Parameters.ToArgumentList()

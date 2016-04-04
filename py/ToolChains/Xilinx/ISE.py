@@ -43,8 +43,13 @@ from collections					import OrderedDict
 from os										import environ
 
 from Base.Executable			import *
+from Base.Exceptions			import PlatformNotSupportedException, ToolChainException
+from Base.Logging					import LogEntry, Severity
 from Base.Configuration		import ConfigurationBase, ConfigurationException, SkipConfigurationException
 
+
+class ISEException(ToolChainException):
+	pass
 
 class Configuration(ConfigurationBase):
 	_vendor =		"Xilinx"
@@ -81,8 +86,6 @@ class Configuration(ConfigurationBase):
 		if (xilinxDirectory is None):
 			xilinxDirectory = self.__AskXilinxPath()
 		if (not xilinxDirectory.exists()):		raise ConfigurationException("Xilinx installation directory '{0}' does not exist.".format(xilinxDirectory))	from NotADirectoryError(xilinxDirectory)
-
-
 
 
 	def __GetXilinxPath(self):
@@ -179,7 +182,7 @@ class ISE:
 		self.__logger =							logger
 
 	def GetVHDLCompiler(self):
-		raise NotImplementedException()
+		raise NotImplementedError("ISE.GetVHDLCompiler")
 		# return ISEVHDLCompiler(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
 
 	def GetFuse(self):
@@ -226,6 +229,10 @@ class Fuse(Executable, ISE):
 
 		self.Parameters[self.Executable] = executablePath
 
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+
 	class Executable(metaclass=ExecutableArgument):						pass
 
 	class FlagIncremental(metaclass=ShortFlagArgument):
@@ -263,19 +270,42 @@ class Fuse(Executable, ISE):
 
 	def Link(self):
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
-		print(_indent + "fuse messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise ISEException("Failed to launch fuse.") from ex
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			filter = FuseFilter(self.GetReader())
+			iterator = iter(filter)
+
+			line = next(iterator)
+			self._hasOutput = True
+			self._LogNormal("    fuse messages for '{0}'".format(self.Parameters[self.SwitchProjectFile]))
+			self._LogNormal("    " + ("-" * 76))
+
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
+				line.Indent(2)
+				self._Log(line)
+				line = next(iterator)
+
+		except StopIteration as ex:
+			pass
+		except ISEException:
+			raise
+		# except Exception as ex:
+		#	raise GHDLException("Error while executing GHDL.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
 
 
 class ISESimulator(Executable):
@@ -283,6 +313,10 @@ class ISESimulator(Executable):
 		super().__init__("", executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
 
 	class Executable(metaclass=ExecutableArgument):			pass
 
@@ -308,19 +342,42 @@ class ISESimulator(Executable):
 
 	def Simulate(self):
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
-		print(_indent + "isim messages for '{0}.{1}'".format("??????", "??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise ISEException("Failed to launch isim.") from ex
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			filter = SimulatorFilter(self.GetReader())
+			iterator = iter(filter)
+
+			line = next(iterator)
+			self._hasOutput = True
+			self._LogNormal("    isim messages for '{0}'".format(self.Parameters[self.Executable]))
+			self._LogNormal("    " + ("-" * 76))
+
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
+				line.Indent(2)
+				self._Log(line)
+				line = next(iterator)
+
+		except StopIteration as ex:
+			pass
+		except ISEException:
+			raise
+		# except Exception as ex:
+		#	raise GHDLException("Error while executing GHDL.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
 
 
 class Xst(Executable) :
@@ -331,6 +388,10 @@ class Xst(Executable) :
 		Executable.__init__(self, platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
 
 	class Executable(metaclass=ExecutableArgument) :
 		pass
@@ -353,32 +414,42 @@ class Xst(Executable) :
 
 	def Compile(self) :
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
-		try :
-			fuseLog = self.StartProcess(parameterList)
+		try:
+			self.StartProcess(parameterList)
+		except Exception as ex:
+			raise ISEException("Failed to launch xst.") from ex
 
-			log = ""
-			for line in fuseLog.split("\n")[:-1] :
-				log += _indent + line + "\n"
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			filter = XstFilter(self.GetReader())
+			iterator = iter(filter)
 
-			# if self.showLogs:
-			if (log != "") :
-				print(_indent + "fuse messages for : {0}".format("????"))  # str(filePath)))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex :
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing fuse: {0}".format(
-					"????"))  # str(filePath)))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n") :
-				print(_indent + line)
-			print(_indent + "-" * 80)
+			line = next(iterator)
+			self._hasOutput = True
+			self._LogNormal("    xst messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
+			self._LogNormal("    " + ("-" * 76))
 
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
+				line.Indent(2)
+				self._Log(line)
+				line = next(iterator)
+
+		except StopIteration as ex:
+			pass
+		except ISEException:
+			raise
+		# except Exception as ex:
+		#	raise GHDLException("Error while executing GHDL.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
 
 
 class CoreGenerator(Executable):
@@ -389,6 +460,10 @@ class CoreGenerator(Executable):
 		Executable.__init__(self, platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
 
 	class Executable(metaclass=ExecutableArgument):				pass
 
@@ -410,28 +485,97 @@ class CoreGenerator(Executable):
 
 	def Generate(self):
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
 		try:
-			fuseLog = self.StartProcess(parameterList)
+			self.StartProcess(parameterList)
+		except Exception as ex:
+			raise ISEException("Failed to launch corgen.") from ex
 
-			log = ""
-			for line in fuseLog.split("\n")[:-1]:
-				log += _indent + line + "\n"
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			filter = CoreGeneratorFilter(self.GetReader())
+			iterator = iter(filter)
 
-			# if self.showLogs:
-			if (log != ""):
-				print(_indent + "fuse messages for : {0}".format("????"))  # str(filePath)))
-				print(_indent + "-" * 80)
-				print(log[:-1])
-				print(_indent + "-" * 80)
-		except CalledProcessError as ex:
-			print(_indent + Foreground.RED + "ERROR" + Foreground.RESET + " while executing fuse: {0}".format(
-				"????"))  # str(filePath)))
-			print(_indent + "Return Code: {0}".format(ex.returncode))
-			print(_indent + "-" * 80)
-			for line in ex.output.split("\n"):
-				print(_indent + line)
-			print(_indent + "-" * 80)
+			line = next(iterator)
+			self._hasOutput = True
+			self._LogNormal("    coregen messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
+			self._LogNormal("    " + ("-" * 76))
+
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
+				line.Indent(2)
+				self._Log(line)
+				line = next(iterator)
+
+		except StopIteration as ex:
+			pass
+		except ISEException:
+			raise
+		# except Exception as ex:
+		#	raise GHDLException("Error while executing GHDL.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
+
+
+def VhCompFilter(gen):
+	for line in gen:
+		yield LogEntry(line, Severity.Normal)
+
+def FuseFilter(gen):
+	for line in gen:
+		if line.startswith("ISim "):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("Fuse "):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("Determining compilation order of HDL files"):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("Parsing VHDL file "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("WARNING:HDLCompiler:"):
+			yield LogEntry(line, Severity.Warning)
+		elif line.startswith("Starting static elaboration"):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("Completed static elaboration"):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("Compiling package "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("Compiling architecture "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("Time Resolution for simulation is"):
+			yield LogEntry(line, Severity.Verbose)
+		elif (line.startswith("Waiting for ") and line.endswith(" to finish...")):
+			yield LogEntry(line, Severity.Verbose)
+		elif (line.startswith("Compiled ") and line.endswith(" VHDL Units")):
+			yield LogEntry(line, Severity.Verbose)
+		else:
+			yield LogEntry(line, Severity.Normal)
+
+def SimulatorFilter(gen):
+	for line in gen:
+		if line.startswith("ISim "):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("This is a Full version of ISim."):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("Time resolution is "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("Simulator is doing circuit initialization process."):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("Finished circuit initialization process."):
+			yield LogEntry(line, Severity.Verbose)
+		else:
+			yield LogEntry(line, Severity.Normal)
+
+def XstFilter(gen):
+	for line in gen:
+		yield LogEntry(line, Severity.Normal)
+
+def CoreGeneratorFilter(gen):
+	for line in gen:
+		yield LogEntry(line, Severity.Normal)
+

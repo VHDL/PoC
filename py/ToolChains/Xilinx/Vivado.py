@@ -43,9 +43,10 @@ else:
 from collections					import OrderedDict
 from os										import environ
 
-from Base.Exceptions		import PlatformNotSupportedException
-from Base.Configuration import ConfigurationBase, ConfigurationException, SkipConfigurationException
-from Base.Executable		import *
+from Base.Exceptions			import PlatformNotSupportedException
+from Base.Executable			import *
+from Base.Logging					import LogEntry, Severity
+from Base.Configuration 	import ConfigurationBase, ConfigurationException, SkipConfigurationException
 
 
 class Configuration(ConfigurationBase):
