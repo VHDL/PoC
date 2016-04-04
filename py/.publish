@@ -9,13 +9,12 @@ Wrapper.ps1
 wrapper.sh
 
 # Executables
-Configuration.py
-Netlist.py
-Testbench.py
-#PostProcessor.py
+PoC.py
 
 # Configuration files
+config.board.ini
 config.public.ini
+# DON'T PUBLISH config.private.ini !!!
 
 # Packages
 __init__.py
@@ -26,3 +25,8 @@ Compiler/
 Generator/
 Processor/
 Simulator/
+Parser/
+ToolChains/
+
+# PyCharm project files
+.idea/

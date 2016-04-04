@@ -1,0 +1,14 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# 
+__init__.py
+
+# 
+Parser.py
+CodeDOM.py
+FilesCodeDOM.py
+FilesParser.py

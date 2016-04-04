@@ -1,0 +1,13 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# Package
+__init__.py
+
+# Modules
+QuartusII.py
+QuartusProject.py
+ModelSim.py

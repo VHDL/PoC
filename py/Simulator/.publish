@@ -1,10 +1,6 @@
 # Package
 __init__.py
 
-# Modules
-Base.py
-Exceptions.py
-
 # Simulators
 AldecSimulator.py
 ISESimulator.py

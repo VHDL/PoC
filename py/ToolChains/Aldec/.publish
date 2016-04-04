@@ -4,4 +4,8 @@
 # Documentation
 README.md
 
-precompiled/
+# Package
+__init__.py
+
+# Modules
+ActiveHDL.py
