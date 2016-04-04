@@ -410,6 +410,29 @@ class PoC(ILogable, ArgParseMixin):
 		elif (len(self.PoCConfig.options("Xilinx.Vivado")) != 0):
 			self.Directories["XilinxPrimitiveSource"] = Path(self.PoCConfig['Xilinx.Vivado']['InstallationDirectory']) / "data/vhdl/src"
 
+
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "list-testbench" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Simulation commands")
+	@CommandAttribute("list-testbench", help="List all testbenches")
+	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	# @HandleVerbosityOptions
+	def HandleListTestbenches(self, args):
+		self.__PrepareForSimulation()
+		self.PrintHeadline()
+
+		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
+
+		fqnList = [FQN(self, fqn, defaultType=EntityTypes.Testbench) for fqn in args.FQN]
+
+		# run a testbench
+		for fqn in fqnList:
+			for entity in fqn.GetEntities():
+				print(entity)
+
+		Exit.exit()
+
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "asim" command
 	# ----------------------------------------------------------------------------
@@ -756,6 +779,28 @@ class PoC(ILogable, ArgParseMixin):
 	# ============================================================================
 	# Synthesis	commands
 	# ============================================================================
+	# create the sub-parser for the "list-netlist" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Simulation commands")
+	@CommandAttribute("list-netlist", help="List all netlists")
+	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	# @HandleVerbosityOptions
+	def HandleListNetlist(self, args):
+		self.__PrepareForSynthesis()
+		self.PrintHeadline()
+
+		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
+
+		fqnList = [FQN(self, fqn, defaultType=EntityTypes.NetList) for fqn in args.FQN]
+
+		# run a testbench
+		for fqn in fqnList:
+			for entity in fqn.GetEntities():
+				print(entity)
+
+		Exit.exit()
+
+	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "coregen" command
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Synthesis commands")
@@ -766,7 +811,7 @@ class PoC(ILogable, ArgParseMixin):
 	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	# @HandleVerbosityOptions
-	def CoreGenCompilation(self, args):
+	def HandleCoreGeneratorCompilation(self, args):
 		self.__PrepareForSynthesis()
 		self.PrintHeadline()
 		self._CoreGenCompilation(args.FQN[0], args.logs, args.reports, args.DeviceName, args.BoardName)
@@ -816,7 +861,7 @@ class PoC(ILogable, ArgParseMixin):
 	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	# @HandleVerbosityOptions
-	def XstCompilation(self, args):
+	def HandleXstCompilation(self, args):
 		self.__PrepareForSynthesis()
 		self.PrintHeadline()
 		self._XstCompilation(args.FQN, args.logs, args.reports, args.DeviceName, args.BoardName)

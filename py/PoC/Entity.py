@@ -173,6 +173,8 @@ class FQN:
 			path =	str(subns) + "."
 			for sectionName in config:
 				if sectionName.startswith(path):
+					if self.__host.PoCConfig.has_option('PoC.NamespacePrefixes', sectionName):
+						continue
 					fqn = FQN(self.__host, sectionName)
 					yield fqn.Entity
 
