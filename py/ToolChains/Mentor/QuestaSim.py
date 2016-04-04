@@ -202,6 +202,14 @@ class QuestaVHDLCompiler(Executable, QuestaSimMixIn):
 		self._hasWarnings = False
 		self._hasErrors = False
 
+	@property
+	def HasWarnings(self):
+		return self._hasWarnings
+
+	@property
+	def HasErrors(self):
+		return self._hasErrors
+
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
 
@@ -308,6 +316,14 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 		self._hasOutput = False
 		self._hasWarnings = False
 		self._hasErrors = False
+
+	@property
+	def HasWarnings(self):
+		return self._hasWarnings
+
+	@property
+	def HasErrors(self):
+		return self._hasErrors
 
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
@@ -431,6 +447,14 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 		self._hasWarnings = False
 		self._hasErrors = False
 
+	@property
+	def HasWarnings(self):
+		return self._hasWarnings
+
+	@property
+	def HasErrors(self):
+		return self._hasErrors
+
 	class Executable(metaclass=ExecutableArgument):			pass
 	class SwitchLibraryName(metaclass=StringArgument):	pass
 
@@ -483,12 +507,43 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 
 def QuestaVComFilter(gen):
 	for line in gen:
-		yield LogEntry(line, Severity.Normal)
+		if line.startswith("** Warning: "):
+			yield LogEntry(line, Severity.Warning)
+		elif line.startswith("** Error: "):
+			yield LogEntry(line, Severity.Error)
+		else:
+			yield LogEntry(line, Severity.Normal)
 
 def QuestaVSimFilter(gen):
+	PoCOutputFound = False
 	for line in gen:
-		yield LogEntry(line, Severity.Normal)
+		if line.startswith("# Loading "):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("# //"):
+			if line[6:].startswith("Questa"):
+				yield LogEntry(line, Severity.Debug)
+			elif line[6:].startswith("Version "):
+				yield LogEntry(line, Severity.Debug)
+			else:
+				continue
+		elif line.startswith("# do "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("# ========================================"):
+			PoCOutputFound = True
+			yield LogEntry(line[2:], Severity.Normal)
+		elif line.startswith("# "):
+			if (not PoCOutputFound):
+				yield LogEntry(line, Severity.Verbose)
+			else:
+				yield LogEntry(line[2:], Severity.Normal)
+		else:
+			yield LogEntry(line, Severity.Normal)
 
 def QuestaVLibFilter(gen):
 	for line in gen:
-		yield LogEntry(line, Severity.Normal)
+		if line.startswith("** Warning: "):
+			yield LogEntry(line, Severity.Warning)
+		elif line.startswith("** Error: "):
+			yield LogEntry(line, Severity.Error)
+		else:
+			yield LogEntry(line, Severity.Normal)

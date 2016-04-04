@@ -177,6 +177,14 @@ class GHDL(Executable):
 	def Version(self):
 		return self._version
 
+	@property
+	def HasWarnings(self):
+		return self._hasWarnings
+
+	@property
+	def HasErrors(self):
+		return self._hasErrors
+
 	def deco(Arg):
 		def getter(self):
 			return Arg.Value
@@ -321,14 +329,6 @@ class GHDL(Executable):
 class GHDLAnalyze(GHDL):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
-
-	@property
-	def HasWarnings(self):
-		return self._hasWarnings
-
-	@property
-	def HasErrors(self):
-		return self._hasErrors
 
 	def Analyze(self):
 		parameterList = self.Parameters.ToArgumentList()

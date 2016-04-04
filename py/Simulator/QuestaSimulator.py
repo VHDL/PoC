@@ -45,7 +45,7 @@ from os														import chdir
 from Base.Exceptions							import *
 from Base.Simulator								import Simulator as BaseSimulator, VHDLTestbenchLibraryName
 from PoC.PoCProject								import *
-from ToolChains.Mentor.QuestaSim	import QuestaSim
+from ToolChains.Mentor.QuestaSim	import QuestaSim, QuestaException
 
 
 class Simulator(BaseSimulator):
@@ -169,7 +169,14 @@ class Simulator(BaseSimulator):
 			vcom.Parameters[vcom.SwitchVHDLLibrary] =	file.VHDLLibraryName
 			vcom.Parameters[vcom.ArgLogFile] =				vcomLogFile
 			vcom.Parameters[vcom.ArgSourceFile] =			file.Path
-			vcom.Compile()
+
+			try:
+				vcom.Compile()
+			except QuestaException as ex:
+				raise SimulatorException("Error while compiling '{0}'.".format(str(file.Path))) from ex
+
+			if vcom.HasErrors:
+				raise SimulatorException("Error while compiling '{0}'.".format(str(file.Path)))
 
 			# delete empty log files
 			if (vcomLogFile.stat().st_size == 0):

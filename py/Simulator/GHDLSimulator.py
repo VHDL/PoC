@@ -223,7 +223,13 @@ class Simulator(BaseSimulator):
 			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"08"
 		else:																					raise SimulatorException("VHDL version is not supported.")
 		
-		ghdl.Elaborate()
+		try:
+			ghdl.Elaborate()
+		except GHDLException as ex:
+			raise SimulatorException("Error while elaborating '{0}.{1}'.".format(VHDLTestbenchLibraryName, testbenchName)) from ex
+
+		if ghdl.HasErrors:
+			raise SimulatorException("Error while elaborating '{0}.{1}'.".format(VHDLTestbenchLibraryName, testbenchName))
 	
 	
 	def _RunSimulation(self, testbenchName):
