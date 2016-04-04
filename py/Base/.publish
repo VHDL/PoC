@@ -2,7 +2,11 @@
 __init__.py
 
 # Modules
-Base.py
+Compiler.py
+Configuration.py
 Exceptions.py
-PoCBase.py
-#SolutionBase.py
+Executable.py
+Logging.py
+Project.py
+Simulator.py
+Solution.py

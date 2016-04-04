@@ -1,0 +1,13 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# Package
+__init__.py
+
+# Modules
+Diamond.py
+ActiveHDL.py
+Synopsys.py
