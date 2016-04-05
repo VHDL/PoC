@@ -3,6 +3,9 @@
 .gitempty
 #.gitmodules
 
+# *.yml files
+.landscape.yml
+
 # Documentation files
 AUTHORS.md
 LICENSE
