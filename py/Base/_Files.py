@@ -107,7 +107,7 @@ class ASTMixinStatementList:
 		print("ASTMixinStatementList.parsePyParsingASTNode: Parsing statement list...")
 		for ASTItem in ASTAbstractNode:
 			itemName = ASTItem.getName()
-			if	 (itemName == "ifthenelse"):	node = ASTNodeIfThenElseStatement()
+			if   (itemName == "ifthenelse"):	node = ASTNodeIfThenElseStatement()
 			elif (itemName == "library"):			node = ASTNodeLibraryStatement()
 			elif (itemName == "include"):			node = ASTNodeIncludeStatement()
 			elif (itemName == "vhdl"):				node = ASTNodeVHDLStatement()
@@ -234,7 +234,7 @@ class ASTMixinOperand:
 	def parsePyParsingASTNode(self, ASTAbstractNode):
 		print("ASTMixinOperand.parsePyParsingASTNode: Parsing operand ...")
 		ASTName = ASTAbstractNode.getName()
-		if	 (ASTName == "identifier"):		node = ASTNodeIfThenElseStatement()
+		if   (ASTName == "identifier"):		node = ASTNodeIfThenElseStatement()
 		elif (ASTName == "integer"):			node = ASTNodeLibraryStatement()
 		else:
 			print("ASTMixinOperand.parsePyParsingASTNode: Unknown ASTAbstractNode name '{0}'.".format(ASTName))

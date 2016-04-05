@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Python Class:			TODO
 # 
@@ -40,9 +40,12 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Processor.Base")
 
 # load dependencies
-from Base.Exceptions import *
+from Base.Exceptions import ExceptionBase
 
-class PoCProcessor(object):
+class ProcessorException(ExceptionBase):
+	pass
+
+class Processor:
 	__host = None
 	__debug = False
 	__verbose = False
@@ -80,11 +83,6 @@ class PoCProcessor(object):
 		if (not self.__quiet):
 			print(message)
 
-
-class ProcessorException(ExceptionBase):
-	def __init__(self, message=""):
-		super().__init__(message)
-		self.message = message
 
 #class EndOfReportException(ProcessorException):
 #	pass

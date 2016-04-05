@@ -3,9 +3,9 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:         		 Patrick Lehmann
+# Authors:         			Patrick Lehmann
 # 
-# Python Main Module:  Entry point to the post-processing tools.
+# Python Main Module:		Entry point to the post-processing tools.
 # 
 # Description:
 # ------------------------------------
