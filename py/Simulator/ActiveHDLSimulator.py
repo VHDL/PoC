@@ -41,9 +41,11 @@ else:
 from configparser								import NoSectionError
 from os													import chdir
 
-from Base.Executable						import *
+from Base.Exceptions						import SimulatorException, NotConfiguredException, PlatformNotSupportedException
+from Base.Executable						import ExecutableException
+from Base.Project								import FileTypes, VHDLVersion
 from Base.Simulator							import Simulator as BaseSimulator, VHDLTestbenchLibraryName
-from PoC.PoCProject							import *
+from PoC.PoCProject							import Project as PoCProject
 from ToolChains.Aldec.ActiveHDL	import ActiveHDL, ActiveHDLException
 
 
