@@ -47,7 +47,8 @@ ENTITY cache_tagunit_par IS
 		CACHE_LINES								: POSITIVE												:= 32;
 		ASSOCIATIVITY							: POSITIVE												:= 32;
 		TAG_BITS									: POSITIVE												:= 8;
-		INITIAL_TAGS							: T_SLM
+		USE_INITIAL_TAGS 					: BOOLEAN 												:= false;
+		INITIAL_TAGS							: T_SLM 													:= (0 downto 0 => (0 downto 0 => '0'))
 	);
 	PORT (
 		Clock											: IN	STD_LOGIC;
@@ -88,8 +89,11 @@ BEGIN
 		TYPE		T_FA_TAG_LINE_VECTOR		IS ARRAY (NATURAL RANGE <>) OF T_FA_TAG_LINE;
 
 		FUNCTION to_validvector(slm : T_SLM) RETURN STD_LOGIC_VECTOR IS
-			VARIABLE result		: STD_LOGIC_VECTOR(CACHE_LINES - 1 DOWNTO 0)	:= (OTHERS => '0');
+			VARIABLE result		: STD_LOGIC_VECTOR(CACHE_LINES - 1 DOWNTO 0);
 		BEGIN
+			result := (others => '0');
+			if not USE_INITIAL_TAGS then return result; end if;
+			
 			FOR I IN slm'range LOOP
 				result(I)	:= '1';
 			END LOOP;
@@ -97,8 +101,11 @@ BEGIN
 		END FUNCTION;
 
 		FUNCTION to_tagmemory(slm : T_SLM) RETURN T_FA_TAG_LINE_VECTOR IS
-			VARIABLE result		: T_FA_TAG_LINE_VECTOR(CACHE_LINES - 1 DOWNTO 0)	:= (OTHERS => (OTHERS => '0'));
+			VARIABLE result		: T_FA_TAG_LINE_VECTOR(CACHE_LINES - 1 DOWNTO 0);
 		BEGIN
+			result := (others => (others => '0'));
+			if not USE_INITIAL_TAGS then return result; end if;
+			
 			FOR I IN slm'range LOOP
 				result(I)	:= get_row(slm, I);
 			END LOOP;
@@ -169,8 +176,7 @@ BEGIN
 		Policy : ENTITY PoC.cache_replacement_policy
 			GENERIC MAP (
 				REPLACEMENT_POLICY				=> REPLACEMENT_POLICY,
-				CACHE_LINES								=> FA_CACHE_LINES,
-				INITIAL_VALIDS						=> to_validvector(INITIAL_TAGS)
+				CACHE_LINES								=> FA_CACHE_LINES
 			)
 			PORT MAP (
 				Clock											=> Clock,

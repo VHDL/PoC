@@ -49,7 +49,8 @@ ENTITY cache_tagunit_seq IS
 		TAG_BITS									: POSITIVE												:= 128;
 		CHUNK_BITS								: POSITIVE												:= 8;
 		TAG_BYTE_ORDER						: T_BYTE_ORDER										:= LITTLE_ENDIAN;
-		INITIAL_TAGS							: T_SLM														:= (31 DOWNTO 0 => (127 DOWNTO 0 => '0'))
+		USE_INITIAL_TAGS 					: BOOLEAN 												:= false;
+		INITIAL_TAGS							: T_SLM 													:= (0 downto 0 => (127 downto 0 => '0'))
 	);
 	PORT (
 		Clock											: IN	STD_LOGIC;
@@ -102,8 +103,11 @@ BEGIN
 		TYPE T_REQUEST_STATE	IS (ST_IDLE, ST_COMPARE, ST_READ);
 
 		FUNCTION to_validvector(slm : T_SLM) RETURN STD_LOGIC_VECTOR IS
-			VARIABLE result		: STD_LOGIC_VECTOR(CACHE_LINES - 1 DOWNTO 0)	:= (OTHERS => '0');
+			VARIABLE result		: STD_LOGIC_VECTOR(CACHE_LINES - 1 DOWNTO 0);
 		BEGIN
+			result := (others => '0');
+			if not USE_INITIAL_TAGS then return result; end if;
+
 			FOR I IN slm'range LOOP
 				result(I)	:= '1';
 			END LOOP;
@@ -410,8 +414,7 @@ BEGIN
 		Policy : ENTITY PoC.cache_replacement_policy
 			GENERIC MAP (
 				REPLACEMENT_POLICY				=> REPLACEMENT_POLICY,
-				CACHE_LINES								=> FA_CACHE_LINES,
-				INITIAL_VALIDS						=> to_validvector(INITIAL_TAGS)
+				CACHE_LINES								=> FA_CACHE_LINES
 			)
 			PORT MAP (
 				Clock											=> Clock,

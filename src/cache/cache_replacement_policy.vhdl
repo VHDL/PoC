@@ -9,11 +9,25 @@
 -- 
 -- Description:
 -- ------------------------------------
---		TODO
+--
+-- Policies														|	supported
+-- -----------------------------------#--------------------
+--	RR			round robin								|	not yet
+--	RAND		random										|	not yet
+--	CLOCK		clock algorithm						|	not yet
+--	LRU			least recently used				| YES
+--	LFU			least frequently used			| not yet
+-- -----------------------------------#--------------------
+--
+-- Priority		Command
+-- ----------------------
+--	0					invalidate
+--	1					replace
+--	2					access
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,8 +57,7 @@ USE			PoC.strings.ALL;
 ENTITY cache_replacement_policy IS
 	GENERIC (
 		REPLACEMENT_POLICY				: STRING													:= "LRU";
-		CACHE_LINES								: POSITIVE												:= 32;
-		INITIAL_VALIDS						: STD_LOGIC_VECTOR								:= (0 => '0')
+		CACHE_LINES								: POSITIVE												:= 32
 	);
 	PORT (
 		Clock											: IN	STD_LOGIC;
@@ -62,14 +75,6 @@ ENTITY cache_replacement_policy IS
 	);
 END;
 
--- Policies														|	supported
--- ===================================#====================
---	RR			round robin								|	not yet
---	RAND		random										|	not yet
---	CLOCK		clock algorithm						|	not yet
---	LRU			least recently used				| YES
---	LFU			least frequently used			| not yet
--- ===================================#====================
 
 ARCHITECTURE rtl OF cache_replacement_policy IS
 	ATTRIBUTE KEEP										: BOOLEAN;
@@ -82,15 +87,11 @@ BEGIN
 					str_equal(REPLACEMENT_POLICY, "LRU"))
 		REPORT "Unsupported replacement strategy"
 		SEVERITY ERROR;
-	ASSERT (INITIAL_VALIDS'length = CACHE_LINES)
-		REPORT "INITIAL_VALIDS'length is unequal to CACHE_LINES: INITIAL_VALIDS=" & INTEGER'image(INITIAL_VALIDS'length) &
-																													"  CACHE_LINES="		& INTEGER'image(CACHE_LINES)
-		SEVERITY FAILURE;
 
 
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	-- policy: RR - round robin
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	genRR : IF (str_equal(REPLACEMENT_POLICY, "RR") = TRUE) GENERATE
 		CONSTANT VALID_BIT								: NATURAL			:= 0;
 
@@ -144,40 +145,16 @@ BEGIN
 --		END PROCESS;
 	END GENERATE;
 
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	-- policy: LRU - least recently used
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	genLRU : IF (str_equal(REPLACEMENT_POLICY, "LRU") = TRUE) GENERATE
-		FUNCTION create_keys RETURN T_SLM IS
-			VARIABLE slm		: T_SLM(CACHE_LINES - 1 DOWNTO 0, KEY_BITS - 1 DOWNTO 0);
-			VARIABLE row		: STD_LOGIC_VECTOR(KEY_BITS - 1 DOWNTO 0);
-		BEGIN
-			FOR I IN slm'range(1) LOOP
-				row					:= to_slv((slm'high(1) - I), row'length);
-				FOR J IN row'range LOOP
-					slm(I, J)	:= row(J);
-				END LOOP;
-			END LOOP;
-			RETURN slm;
-		END FUNCTION;
-
-		CONSTANT INITIAL_KEYS				: T_SLM(CACHE_LINES - 1 DOWNTO 0, KEY_BITS - 1 DOWNTO 0)		:= create_keys;
-		
-		SIGNAL Pointer_us						: UNSIGNED(log2ceilnz(CACHE_LINES) - 1 DOWNTO 0)	:= (OTHERS => '0');
-
 		SIGNAL LRU_Insert						: STD_LOGIC;
 		SIGNAL LRU_Invalidate				: STD_LOGIC;
 		SIGNAL KeyIn								: STD_LOGIC_VECTOR(log2ceilnz(CACHE_LINES) - 1 DOWNTO 0);
-		SIGNAL LRU_Valid						: STD_LOGIC;
 		SIGNAL LRU_Key							: STD_LOGIC_VECTOR(log2ceilnz(CACHE_LINES) - 1 DOWNTO 0);
 		
 	BEGIN
-		-- Priority		Command
-		-- ======================
-		--	0					invalidate
-		--	1					replace
-		--	2					access
-		-- ======================
 		-- list_lru_systolic supports only one update per cycle
 		PROCESS(TagAccess, ReadWrite, Invalidate, Replace, Index, LRU_Key)
 		BEGIN
@@ -199,25 +176,19 @@ BEGIN
 
 		ReplaceIndex		<= LRU_Key;
 			
---		LRU : ENTITY L_Global.list_lru_systolic
-		LRU : ENTITY PoC.sort_LeastRecentlyUsed
+		LRU : ENTITY PoC.sort_lru_cache
 			GENERIC MAP (
-				ELEMENTS								=> CACHE_LINES,
-				KEY_BITS								=> KEY_BITS,
-				DATA_BITS								=> KEY_BITS,
-				INITIAL_ELEMENTS				=> INITIAL_KEYS,
-				INITIAL_VALIDS					=> INITIAL_VALIDS
+				ELEMENTS								=> CACHE_LINES
 			)
 			PORT MAP (
 				Clock										=> Clock,
 				Reset										=> Reset,
 				
 				Insert									=> LRU_Insert,
-				Invalidate							=> LRU_Invalidate,
+				Free										=> LRU_Invalidate,
 				KeyIn										=> KeyIn,
 				
-				Valid										=> LRU_Valid,
-				LRU_Element							=> LRU_Key
+				KeyOut									=> LRU_Key
 			);
 	END GENERATE;
 END ARCHITECTURE;
