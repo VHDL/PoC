@@ -3,13 +3,38 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
+-- 									Martin Zabel
 -- 
+-- Module:				 	Tag-unit with fully-parallel compare of tag.
+--
 -- Description:
 -- ------------------------------------
---		TODO
+-- All inputs are synchronous to the rising-edge of the clock `clock`.
+--
+-- Command truth table:
+-- 
+--	Request	| ReadWrite	| Invalidate	| Replace | Command
+--	--------+-----------+-------------+---------+--------------------------------
+--		0			|		0				|		0					|   0 		|	None
+--		1			|		0				|		0					|	  0 		| Read cache line
+--		1			|		1				|		0					|	  0 		| Update cache line
+--		1			|		0				|		1					|	  0 		| Read cache line and discard it
+--		1			|		1				|		1					|	  0 		| Write cache line and discard it
+--    0     |   - 			|   0 				|   1 		| Replace cache line.
+--	--------+-----------+-------------+------------------------------------------
+--
+-- All commands use `Tag` to lookup (request) or replace a cache line.
+-- Each command is completed within one clock cycle.
+--
+-- Upon requests, the outputs `CacheMiss` and `CacheHit` indicate (high-active)
+-- immediately (combinational) whether the `Tag` is stored within the cache, or not.
+-- But, the cache-line usage is updated at the rising-edge of the clock.
+--
+-- The output `ReplaceIndex` indicates which cache line will be replaced as
+-- next by a replace command. The output `OldTag` specifies the old tag stored at this
+-- index. The replace command will store the `NewTag` and update the cache-line
+-- usage at the rising-edge of the clock.
 --
 -- License:
 -- ============================================================================
@@ -37,10 +62,6 @@ LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 
--- cache_tagunit_par
---		par = parallel
---		seq = sequential
-
 ENTITY cache_tagunit_par IS
 	GENERIC (
 		REPLACEMENT_POLICY				: STRING													:= "LRU";
@@ -55,11 +76,9 @@ ENTITY cache_tagunit_par IS
 		Reset											: IN	STD_LOGIC;
 		
 		Replace										: IN	STD_LOGIC;
+		ReplaceIndex							: OUT	STD_LOGIC_VECTOR(log2ceilnz(CACHE_LINES) - 1 DOWNTO 0);		
 		NewTag										: IN	STD_LOGIC_VECTOR(TAG_BITS - 1 DOWNTO 0);
-		NewIndex									: OUT	STD_LOGIC_VECTOR(log2ceilnz(CACHE_LINES) - 1 DOWNTO 0);		
 		OldTag										: OUT	STD_LOGIC_VECTOR(TAG_BITS - 1 DOWNTO 0);
-		OldIndex									: OUT	STD_LOGIC_VECTOR(log2ceilnz(CACHE_LINES) - 1 DOWNTO 0);
-		Replaced									: OUT	STD_LOGIC;
 		
 		Request										: IN	STD_LOGIC;
 		ReadWrite									: IN	STD_LOGIC;
@@ -165,9 +184,7 @@ BEGIN
 		TagHit				<= TagHit_i;
 		TagMiss				<= TagMiss_i;		
 
-		Replaced			<= Replace;
-		NewIndex			<= Policy_ReplaceIndex;
-		OldIndex			<= Policy_ReplaceIndex;
+		ReplaceIndex	<= Policy_ReplaceIndex;
 		OldTag				<= FA_TagMemory(to_integer(FA_ReplaceIndex_us));
 
 		-- replacement policy
