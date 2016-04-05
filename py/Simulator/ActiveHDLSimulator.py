@@ -40,7 +40,6 @@ else:
 # load dependencies
 from configparser								import NoSectionError
 from os													import chdir
-from queue											import Queue
 
 from Base.Executable						import *
 from Base.Simulator							import Simulator as BaseSimulator, VHDLTestbenchLibraryName
