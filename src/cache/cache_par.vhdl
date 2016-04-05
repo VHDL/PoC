@@ -47,8 +47,9 @@ ENTITY cache_par IS
 		ASSOCIATIVITY							: POSITIVE												:= 32;
 		TAG_BITS									: POSITIVE												:= 8;
 		DATA_BITS									: POSITIVE												:= 32;
-		INITIAL_TAGS							: T_SLM;
-		INITIAL_DATALINES					: T_SLM
+		USE_INITIAL_TAGS 					: BOOLEAN 												:= false;
+		INITIAL_TAGS							: T_SLM 													:= (0 downto 0 => (0 downto 0 => '0'));
+		INITIAL_DATALINES					: T_SLM 													:= (0 downto 0 => (0 downto 0 => '0'))
 	);
 	PORT (
 		Clock											: IN	STD_LOGIC;
@@ -100,8 +101,11 @@ ARCHITECTURE rtl OF cache_par IS
 	TYPE		T_CACHE_LINE_VECTOR				IS ARRAY (NATURAL RANGE <>)		OF T_CACHE_LINE;
 
 	FUNCTION to_datamemory(slm : T_SLM) RETURN T_CACHE_LINE_VECTOR IS
-		VARIABLE result		: T_CACHE_LINE_VECTOR(CACHE_LINES - 1 DOWNTO 0)			:= (OTHERS => (OTHERS => '0'));
+		VARIABLE result		: T_CACHE_LINE_VECTOR(CACHE_LINES - 1 DOWNTO 0);
 	BEGIN
+		result := (others => (others => '0'));
+		if not USE_INITIAL_TAGS then return result; end if;
+		
 		FOR I IN slm'range LOOP
 			result(I)	:= get_row(slm, I);
 		END LOOP;
@@ -131,6 +135,7 @@ BEGIN
 			CACHE_LINES								=> CACHE_LINES,
 			ASSOCIATIVITY							=> ASSOCIATIVITY,
 			TAG_BITS									=> TAG_BITS,
+			USE_INITIAL_TAGS 					=> USE_INITIAL_TAGS,
 			INITIAL_TAGS							=> INITIAL_TAGS
 		)
 		PORT MAP (

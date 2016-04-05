@@ -36,10 +36,7 @@ vhdl-08	poc		"src/sim/sim_simulation.v08.vhdl"				# PoC simulation helper
 vhdl		poc		"src/sim/sim_waveform.vhdl"							# PoC simulation helper
 
 # PoC.sort
-vhdl		poc		"src/arith/arith_prefix_and.vhdl"				# 
-
-# PoC.sort
-vhdl		poc		"src/sort/sort_LeastRecentlyUsed.vhdl"		# UUT (Unit Under Test)
+vhdl		poc		"src/sort/sort_lru_cache.vhdl"					# UUT (Unit Under Test)
 
 # Testbench file(s)
-vhdl		test	"tb/sort/sort_LeastRecentlyUsed_tb.vhdl"	# Testbench
+vhdl		test	"tb/sort/sort_lru_cache_tb.vhdl"				# Testbench
