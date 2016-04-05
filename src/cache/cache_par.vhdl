@@ -4,9 +4,9 @@
 -- 
 -- ============================================================================
 -- Authors:					Patrick Lehmann
--- 									Martin Zabel
+--									Martin Zabel
 -- 
--- Module:				 	Cache with parallel tag-unit and data memory.
+-- Module:					Cache with parallel tag-unit and data memory.
 --
 -- Description:
 -- ------------------------------------
@@ -14,14 +14,14 @@
 --
 -- Command truth table:
 -- 
---	Request	| ReadWrite	| Invalidate	| Replace | Command
+--	Request | ReadWrite | Invalidate	| Replace | Command
 --	--------+-----------+-------------+---------+--------------------------------
---		0			|		0				|		0					|   0 		|	None
---		1			|		0				|		0					|	  0 		| Read cache line
---		1			|		1				|		0					|	  0 		| Update cache line
---		1			|		0				|		1					|	  0 		| Read cache line and discard it
---		1			|		1				|		1					|	  0 		| Write cache line and discard it
---    0     |   - 			|   0 				|   1 		| Replace cache line.
+--		0			|		0				|		0					|		0			| None
+--		1			|		0				|		0					|		0			| Read cache line
+--		1			|		1				|		0					|		0			| Update cache line
+--		1			|		0				|		1					|		0			| Read cache line and discard it
+--		1			|		1				|		1					|		0			| Write cache line and discard it
+--		0			|		-				|		0					|		1			| Replace cache line.
 --	--------+-----------+-------------+------------------------------------------
 --
 -- All commands use `Tag` to lookup (request) or replace a cache line.
@@ -58,137 +58,135 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use IEEE.STD_LOGIC_1164.all;
+use IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
+library PoC;
+use PoC.utils.all;
+use PoC.vectors.all;
 
 
--- cache
-
-ENTITY cache_par IS
-	GENERIC (
-		REPLACEMENT_POLICY				: STRING													:= "LRU";
-		CACHE_LINES								: POSITIVE												:= 32;
-		ASSOCIATIVITY							: POSITIVE												:= 32;
-		TAG_BITS									: POSITIVE												:= 8;
-		DATA_BITS									: POSITIVE												:= 32;
-		USE_INITIAL_TAGS 					: BOOLEAN 												:= false;
-		INITIAL_TAGS							: T_SLM 													:= (0 downto 0 => (0 downto 0 => '0'));
-		INITIAL_DATALINES					: T_SLM 													:= (0 downto 0 => (0 downto 0 => '0'))
+entity cache_par is
+	generic (
+		REPLACEMENT_POLICY : string		:= "LRU";
+		CACHE_LINES				 : positive := 32;
+		ASSOCIATIVITY			 : positive := 32;
+		TAG_BITS					 : positive := 8;
+		DATA_BITS					 : positive := 32;
+		USE_INITIAL_TAGS	 : boolean	:= false;
+		INITIAL_TAGS			 : T_SLM		:= (0 downto 0 => (0 downto 0 => '0'));
+		INITIAL_DATALINES	 : T_SLM		:= (0 downto 0 => (0 downto 0 => '0'))
 	);
-	PORT (
-		Clock											: IN	STD_LOGIC;
-		Reset											: IN	STD_LOGIC;
+	port (
+		Clock : in std_logic;
+		Reset : in std_logic;
 
-		Replace										: IN	STD_LOGIC;
-		
-		Request										: IN	STD_LOGIC;
-		ReadWrite									: IN	STD_LOGIC;
-		Invalidate								: IN	STD_LOGIC;
-		Tag												: IN	STD_LOGIC_VECTOR(TAG_BITS - 1 DOWNTO 0);
-		
-		CacheLineIn								: IN	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
-		CacheLineOut							: OUT	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
-		CacheHit									: OUT	STD_LOGIC := '0';
-		CacheMiss									: OUT	STD_LOGIC := '0';
-		
-		OldTag										: OUT	STD_LOGIC_VECTOR(TAG_BITS - 1 DOWNTO 0);
-		OldCacheLine							: OUT	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0)
+		Replace : in std_logic;
+
+		Request		 : in std_logic;
+		ReadWrite	 : in std_logic;
+		Invalidate : in std_logic;
+		Tag				 : in std_logic_vector(TAG_BITS - 1 downto 0);
+
+		CacheLineIn	 : in	 std_logic_vector(DATA_BITS - 1 downto 0);
+		CacheLineOut : out std_logic_vector(DATA_BITS - 1 downto 0);
+		CacheHit		 : out std_logic := '0';
+		CacheMiss		 : out std_logic := '0';
+
+		OldTag			 : out std_logic_vector(TAG_BITS - 1 downto 0);
+		OldCacheLine : out std_logic_vector(DATA_BITS - 1 downto 0)
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF cache_par IS
-	ATTRIBUTE KEEP										: BOOLEAN;
+architecture rtl of cache_par is
+	attribute KEEP : boolean;
 
-	CONSTANT CACHEMEMORY_INDEX_BITS		: POSITIVE														:= log2ceilnz(CACHE_LINES);
-	
-	SUBTYPE	T_CACHE_LINE							IS STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
-	TYPE		T_CACHE_LINE_VECTOR				IS ARRAY (NATURAL RANGE <>)		OF T_CACHE_LINE;
+	constant CACHEMEMORY_INDEX_BITS : positive := log2ceilnz(CACHE_LINES);
 
-	FUNCTION to_datamemory(slm : T_SLM) RETURN T_CACHE_LINE_VECTOR IS
-		VARIABLE result		: T_CACHE_LINE_VECTOR(CACHE_LINES - 1 DOWNTO 0);
-	BEGIN
+	subtype T_CACHE_LINE is std_logic_vector(DATA_BITS - 1 downto 0);
+	type T_CACHE_LINE_VECTOR is array (natural range <>) of T_CACHE_LINE;
+
+	function to_datamemory(slm : T_SLM) return T_CACHE_LINE_VECTOR is
+		variable result : T_CACHE_LINE_VECTOR(CACHE_LINES - 1 downto 0);
+	begin
 		result := (others => (others => '0'));
 		if not USE_INITIAL_TAGS then return result; end if;
-		
-		FOR I IN slm'range LOOP
-			result(I)	:= get_row(slm, I);
-		END LOOP;
-		RETURN result;
-	END FUNCTION;
+
+		for I in slm'range loop
+			result(I) := get_row(slm, I);
+		end loop;
+		return result;
+	end function;
 
 	-- look-up (request)
-	SIGNAL TU_Index										: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
-	SIGNAL TU_TagHit									: STD_LOGIC;
-	SIGNAL TU_TagMiss									: STD_LOGIC;
+	signal TU_Index		: std_logic_vector(CACHEMEMORY_INDEX_BITS - 1 downto 0);
+	signal TU_TagHit	: std_logic;
+	signal TU_TagMiss : std_logic;
 
 	-- replace
-	SIGNAL TU_ReplaceIndex						: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
-	signal TU_OldTag									:	STD_LOGIC_VECTOR(TAG_BITS - 1 DOWNTO 0);
+	signal TU_ReplaceIndex : std_logic_vector(CACHEMEMORY_INDEX_BITS - 1 downto 0);
+	signal TU_OldTag			 : std_logic_vector(TAG_BITS - 1 downto 0);
 
-	SIGNAL MemoryIndex_us							: UNSIGNED(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
-	SIGNAL CacheMemory								: T_CACHE_LINE_VECTOR(CACHE_LINES - 1 DOWNTO 0)						:= to_datamemory(INITIAL_DATALINES);
-	
-BEGIN
+	signal MemoryIndex_us : unsigned(CACHEMEMORY_INDEX_BITS - 1 downto 0);
+	signal CacheMemory		: T_CACHE_LINE_VECTOR(CACHE_LINES - 1 downto 0) := to_datamemory(INITIAL_DATALINES);
+
+begin
 
 	-- Cache TagUnit
-	TU : ENTITY PoC.cache_tagunit_par
-		GENERIC MAP (
-			REPLACEMENT_POLICY				=> REPLACEMENT_POLICY,
-			CACHE_LINES								=> CACHE_LINES,
-			ASSOCIATIVITY							=> ASSOCIATIVITY,
-			TAG_BITS									=> TAG_BITS,
-			USE_INITIAL_TAGS 					=> USE_INITIAL_TAGS,
-			INITIAL_TAGS							=> INITIAL_TAGS
+	TU : entity PoC.cache_tagunit_par
+		generic map (
+			REPLACEMENT_POLICY => REPLACEMENT_POLICY,
+			CACHE_LINES				 => CACHE_LINES,
+			ASSOCIATIVITY			 => ASSOCIATIVITY,
+			TAG_BITS					 => TAG_BITS,
+			USE_INITIAL_TAGS	 => USE_INITIAL_TAGS,
+			INITIAL_TAGS			 => INITIAL_TAGS
 		)
-		PORT MAP (
-			Clock											=> Clock,
-			Reset											=> Reset,
-			
-			Replace										=> Replace,
-			ReplaceIndex 							=> TU_ReplaceIndex,
-			NewTag										=> Tag,
-			OldTag										=> TU_OldTag,
-			
-			Request										=> Request,
-			ReadWrite									=> ReadWrite,
-			Invalidate								=> Invalidate,
-			Tag												=> Tag,
-			Index											=> TU_Index,
-			TagHit										=> TU_TagHit,
-			TagMiss										=> TU_TagMiss
+		port map (
+			Clock => Clock,
+			Reset => Reset,
+
+			Replace			 => Replace,
+			ReplaceIndex => TU_ReplaceIndex,
+			NewTag			 => Tag,
+			OldTag			 => TU_OldTag,
+
+			Request		 => Request,
+			ReadWrite	 => ReadWrite,
+			Invalidate => Invalidate,
+			Tag				 => Tag,
+			Index			 => TU_Index,
+			TagHit		 => TU_TagHit,
+			TagMiss		 => TU_TagMiss
 		);
 
 	-- Address selector
-	MemoryIndex_us		<= unsigned(TU_Index) when Request = '1' else
-											 unsigned(TU_ReplaceIndex);
-	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Request and TU_TagHit and ReadWrite) or Replace) = '1' THEN
-				CacheMemory(to_integer(MemoryIndex_us))	<= CacheLineIn;
-			END IF;
+	MemoryIndex_us <= unsigned(TU_Index) when Request = '1' else
+										unsigned(TU_ReplaceIndex);
+
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Request and TU_TagHit and ReadWrite) or Replace) = '1' then
+				CacheMemory(to_integer(MemoryIndex_us)) <= CacheLineIn;
+			end if;
 
 			-- Single-port memory with read before write is required here.
 			-- Cannot be mapped to `PoC.ocram_sdp`.
-			CacheLineOut			<= CacheMemory(to_integer(MemoryIndex_us));
-			
+			CacheLineOut <= CacheMemory(to_integer(MemoryIndex_us));
+
 			-- Control outputs have same latency as cache line data.
 			if Reset = '1' then
 				CacheMiss <= '0';
-				CacheHit  <= '0';
+				CacheHit	<= '0';
 			else
 				CacheMiss <= TU_TagMiss;
-				CacheHit  <= TU_TagHit;
+				CacheHit	<= TU_TagHit;
 			end if;
-			
+
 			OldTag <= TU_OldTag;
-		END IF;
-	END PROCESS;
-END ARCHITECTURE;
+		end if;
+	end process;
+end architecture;
