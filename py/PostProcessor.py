@@ -35,14 +35,14 @@ from pathlib import Path
 
 from lib.Functions import Exit
 from Base.Exceptions import *
-from Base.PoCBase import CommandLineProgram
-from PoC.Entity import *
-from PoC.Config import *
-from Processor import *
-from Processor.Exceptions import *
+from Base.Processor import ProcessorException, PostProcessorException
+from PoC.Entity import Entity, FQN
+#from PoC.Config import *
+#from Processor import *
+from Processor.Exceptions import PlatformNotSupportedException, EnvironmentException, NotConfiguredException
 from Processor.XST import *
 
-class PostProcessor(CommandLineProgram):
+class PostProcessor
 	headLine = "The PoC-Library - PostProcessor Frontend"
 
 	#__netListConfigFileName = "configuration.ini"

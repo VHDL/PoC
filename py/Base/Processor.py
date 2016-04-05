@@ -42,7 +42,11 @@ else:
 # load dependencies
 from Base.Exceptions import ExceptionBase
 
+
 class ProcessorException(ExceptionBase):
+	pass
+
+class PostProcessorException(ProcessorException):
 	pass
 
 class Processor:
