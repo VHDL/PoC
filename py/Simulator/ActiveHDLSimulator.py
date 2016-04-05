@@ -42,11 +42,11 @@ from configparser								import NoSectionError
 from os													import chdir
 
 from lib.Functions							import Init
-from Base.Exceptions						import SimulatorException, NotConfiguredException, PlatformNotSupportedException
-from Base.Executable						import ExecutableException
+#from Base.Exceptions						import NotConfiguredException, PlatformNotSupportedException
+#from Base.Executable						import ExecutableException
 from Base.Project								import FileTypes, VHDLVersion, Environment, ToolChain, Tool, FileListFile
-from Base.Simulator							import Simulator as BaseSimulator, VHDLTestbenchLibraryName
-from Parser.Parser							import ParserException
+from Base.Simulator							import SimulatorException, Simulator as BaseSimulator, VHDLTestbenchLibraryName
+#from Parser.Parser							import ParserException
 from PoC.Project								import Project as PoCProject
 from ToolChains.Aldec.ActiveHDL	import ActiveHDL, ActiveHDLException
 

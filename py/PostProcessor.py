@@ -39,7 +39,7 @@ from Base.Processor import ProcessorException, PostProcessorException
 from PoC.Entity import Entity, FQN
 #from PoC.Config import *
 #from Processor import *
-from Processor.Exceptions import PlatformNotSupportedException, EnvironmentException, NotConfiguredException
+from Base.Exceptions import PlatformNotSupportedException, EnvironmentException, NotConfiguredException
 from Processor.XST import *
 
 class PostProcessor

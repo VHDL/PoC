@@ -32,7 +32,7 @@
 # ==============================================================================
 
 from Base.Processor import Processor
-from Processor.Exceptions import *
+from Base.Processor import ProcessorException, PostProcessorException
 from Processor.XST import *
 
 class PostProcessor(Processor):
