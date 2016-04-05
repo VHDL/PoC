@@ -9,9 +9,7 @@ __init__.py
 
 # Modules
 ISE.py
-ISEProject.py
 LabTools.py
 
 Vivado.py
-VivadoProject.py
 HardwareServer.py
