@@ -47,22 +47,22 @@ from lru_dict import LeastRecentlyUsedDict
 # ==============================================================================
 class InputDriver(BusDriver):
 	"""Drives inputs of DUT."""
-	_signals = [ "Insert", "Invalidate", "KeyIn" ]
+	_signals = [ "Insert", "Remove", "DataIn" ]
 	
 	def __init__(self, dut):
 		BusDriver.__init__(self, dut, None, dut.Clock)
 
 class InputTransaction(object):
 	"""Creates transaction to be send by InputDriver"""
-	def __init__(self, insert, invalidate, keyin):
+	def __init__(self, insert, free, remove, datain):
 		self.Insert = BinaryValue(insert, 1)
-		self.Invalidate = BinaryValue(invalidate, 1)
-		self.KeyIn = BinaryValue(keyin, 5, False)
+		self.Remove = BinaryValue(remove, 1)
+		self.DataIn  = BinaryValue(datain, 8, False)
 		
 # ==============================================================================
 class InputMonitor(BusMonitor):
 	"""Observes inputs of DUT."""
-	_signals = [ "Insert", "Invalidate", "KeyIn" ]
+	_signals = [ "Insert", "Remove", "DataIn" ]
 	
 	def __init__(self, dut, callback=None, event=None):
 		BusMonitor.__init__(self, dut, None, dut.Clock, dut.Reset, callback=callback, event=event)
@@ -75,13 +75,13 @@ class InputMonitor(BusMonitor):
 		while True:
 			# Capture signals at rising-edge of clock.
 			yield clkedge
-			vec = (self.bus.Insert.value.integer, self.bus.Invalidate.value.integer, self.bus.KeyIn.value.integer)
+			vec = (self.bus.Insert.value.integer, self.bus.Remove.value.integer, self.bus.DataIn.value.integer)
 			self._recv(vec)
 
 # ==============================================================================
 class OutputMonitor(BusMonitor):
 	"""Observes outputs of DUT."""
-	_signals = [ "Valid", "LRU_Element" ]
+	_signals = [ "Valid", "DataOut" ]
 
 	def __init__(self, dut, callback=None, event=None):
 		BusMonitor.__init__(self, dut, None, dut.Clock, dut.Reset, callback=callback, event=event)
@@ -94,30 +94,30 @@ class OutputMonitor(BusMonitor):
 		while True:
 			# Capture signals at rising-edge of clock.
 			yield clkedge
-			vec = (self.bus.Valid.value.integer, self.bus.LRU_Element.value.integer)
+			vec = (self.bus.Valid.value.integer, self.bus.DataOut.value.integer)
 			self._recv(vec)
 
 # ==============================================================================
 class Testbench(object):
 	class Scoreboard(Scoreboard):
 		def compare(self, got, exp, log, strict_type=True):
-			"""Compare Valid before LRU_Elements."""
+			"""Compare Valid before DataOut."""
 			got_valid, got_elem = got
 			exp_valid, exp_elem = exp
 
 			fail = False
 			if got_valid != exp_valid:
 				log.error("Received transaction differed from expected output.")
-				log.warning("Expected: Valid=%d.\nReceived: Valid=%d." % (got_valid, exp_valid))
+				log.warning("Expected: Valid=%d.\nReceived: Valid=%d." % (exp_valid, got_valid))
 				if self._imm:
 					raise TestFailure("Received transaction differed from expected transaction.")
 				
 			elif got_valid == 1:
 				if got_elem != exp_elem: 
 					log.error("Received transaction differed from expected output.")
-					log.warning("Expected: Valid=%d, LRU_Element=%d.\n"
-											"Received: Valid=%d, LRU_Element=%d." %
-											(got_valid, got_elem, exp_valid, exp_elem))
+					log.warning("Expected: Valid=%d, DataOut=%d.\n"
+											"Received: Valid=%d, DataOut=%d." %
+											(exp_valid, exp_elem, got_valid, got_elem))
 					if self._imm:
 						raise TestFailure("Received transaction differed from expected transaction.")
 					
@@ -142,22 +142,25 @@ class Testbench(object):
 
 	def model(self, transaction):
 		'''Model the DUT based on the input transaction.'''
-		insert, invalidate, keyin = transaction
-		#print "=== model called with stopped=%r, Insert=%d, Invalidate=%d, KeyIn=%d" % (self.stopped, insert, invalidate, keyin)
+		insert, remove, datain = transaction
+		keyin = datain & 0x0f
+		#print "=== model called with stopped=%r, Insert=%d, Remove=%d, KeyIn=%d, DataIn=%d" % (self.stopped, insert, remove, keyin, datain)
 		if not self.stopped:
 			if insert == 1:
-				self.lru[keyin] = 1
-			elif invalidate == 1:
+				self.lru[keyin] = datain
+			#elif free == 1:
+			#	self.lru.moveLRU(keyin, datain)
+			elif remove == 1:
 				if keyin in self.lru: del self.lru[keyin]
 
-			#print "=== model: lru=%s" % self.lru
-			if len(self.lru) < self.elements:
+			#print "=== model: lru=%s" % self.lru.items()
+			if len(self.lru) < 1:
 				#print "=== model: to few elements, yet."
 				self.expected_output.append( (0, 0) )
 			else:
-				lru_element = self.lru.iterkeys().next()
-				#print "=== model: LRU element=%d" % lru_element
-				self.expected_output.append( (1, lru_element) )
+				dataout = self.lru.itervalues().next()
+				#print "=== model: LRU element=%d" % dataout
+				self.expected_output.append( (1, dataout) )
 			
 	def stop(self):
 		"""
@@ -169,19 +172,19 @@ class Testbench(object):
 
 
 # ==============================================================================
-def random_input_gen(n=2000):
+def random_input_gen(n=5000):
 	"""
 	Generate random input data to be applied by InputDriver.
 	Returns up to n instances of InputTransaction.
 	"""
 	for i in range(n):
-		command = random.randint(1,100)
-		insert, invalidate = 0, 0
-		# 89% insert, 1% invalidate, 10% idle
-		if command > 11: insert = 1
-		elif command > 10: invalidate = 1
-		#print "=== random_input_gen: command=%d, insert=%d, invalidate=%d" % (command, insert, invalidate)
-		yield InputTransaction(insert, invalidate, random.randint(0, 31))
+		command, datain = random.randint(1,100), random.randint(0, 255)
+		insert, free, remove = 0, 0, 0
+		# 80% insert, 10% remove, 10% idle
+		if command > 20: insert = 1
+		elif command > 10: remove = 1
+		#print "=== random_input_gen: insert=%d, free=%d, datain=%d" % (insert, free, datain)
+		yield InputTransaction(insert, free, remove, datain)
 
 @cocotb.coroutine
 def clock_gen(signal):
@@ -194,7 +197,7 @@ def clock_gen(signal):
 @cocotb.coroutine
 def run_test(dut):
 	cocotb.fork(clock_gen(dut.Clock))
-	elements = 32
+	elements = 16
 	tb = Testbench(dut, (0, 0), elements)
 	dut.Reset <= 0
 
@@ -210,7 +213,7 @@ def run_test(dut):
 	# Wait for rising-edge of clock to execute last transaction from above.
 	# Apply idle command in following clock cycle, but stop generation of expected output data.
 	# Finish clock cycle to capture the resulting output from the last transaction above.
-	yield tb.input_drv.send(InputTransaction(0, 0, 0))
+	yield tb.input_drv.send(InputTransaction(0, 0, 0, 0))
 	tb.stop()
 	yield RisingEdge(dut.Clock)
 	

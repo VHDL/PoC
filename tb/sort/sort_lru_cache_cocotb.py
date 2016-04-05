@@ -129,7 +129,7 @@ class Testbench(object):
 			if insert == 1:
 				self.lru[keyin] = 1
 			elif free == 1:
-				self.lru.markLRU(keyin)
+				self.lru.moveLRU(keyin)
 
 			#print "=== model: lru=%s" % self.lru
 			keyout = self.lru.iterkeys().next()

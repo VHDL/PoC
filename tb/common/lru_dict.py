@@ -65,12 +65,16 @@ class LeastRecentlyUsedDict(OrderedDict):
 			while len(self) > self._size_limit:
 				self.popitem(last=False)
 
-
-	def markLRU(self, key):
-		"""Mark key as least-recently used. Does nothing, if key is not within dictionary."""
+	def moveLRU(self, key, value=None):
+		"""
+		Mark key as least-recently used. 
+		Does nothing, if key is not within dictionary.
+		If no value is specified, then the current value of the key is used.
+		"""
 		if key in self:
 			old = self.copy()
-			value = self[key]
+			if value is None:
+				value = self[key]
 
 			# build new list
 			self.clear()
