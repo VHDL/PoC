@@ -15,6 +15,8 @@
 -- cache lines. The list initially contains all indizes from 0 to ELEMENTS-1.
 -- The least-recently used index `KeyOut` is always valid.
 --
+-- The first outputed least-recently used index will be ELEMENTS-1.
+--
 -- The inputs `Insert`, `Free`, `KeyIn`, and `Reset` are synchronous to the
 -- rising-edge of the clock `clock`. All control signals are high-active.
 --
@@ -95,7 +97,7 @@ begin
 
 	-- current element
 	genElements : for I in ELEMENTS - 1 downto 0 generate
-		constant INITIAL_ELEMENT : std_logic_vector(KEY_BITS - 1 downto 0) := std_logic_vector(to_unsigned(i, KEY_BITS));
+		constant INITIAL_ELEMENT : std_logic_vector(KEY_BITS - 1 downto 0) := std_logic_vector(to_unsigned(ELEMENTS-1 - i, KEY_BITS));
 		signal Element_nxt	 : std_logic_vector(KEY_BITS - 1 downto 0);
 		signal Element_d		 : std_logic_vector(KEY_BITS - 1 downto 0) := INITIAL_ELEMENT;
 
