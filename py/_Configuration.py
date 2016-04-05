@@ -124,7 +124,7 @@ class Configuration(CommandLineProgram):
 			self.pocConfig['Solutions'] = OrderedDict()
 		
 		if self.pocConfig.has_option('Solutions', solutionName):
-			raise BaseException("Solution is already registered in PoC Library.")
+			raise ExceptionBase("Solution is already registered in PoC Library.")
 		
 		# 
 		solutionFileDirectoryName = input("Where is the solution file 'solution.ini' stored? [./py]: ")
@@ -138,7 +138,7 @@ class Configuration(CommandLineProgram):
 			solutionFilePath = ((self.directories['Working'] / solutionFilePath).resolve()) / "solution.ini"
 			
 		if (not solutionFilePath.exists()):
-			raise BaseException("Solution file '%s' does not exist." % str(solutionFilePath))
+			raise ExceptionBase("Solution file '%s' does not exist." % str(solutionFilePath))
 		
 		self.pocConfig['Solutions'][solutionName] = solutionFilePath.as_posix()
 	

@@ -330,7 +330,7 @@ def main():
 #		print()
 #		return
 	
-	except BaseException as ex:
+	except ExceptionBase as ex:
 		print("ERROR: %s" % ex.message)
 		print()
 		return

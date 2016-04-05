@@ -41,12 +41,13 @@ else:
 from configparser								import NoSectionError
 from os													import chdir
 
+from lib.Functions							import Init
 from Base.Exceptions						import SimulatorException, NotConfiguredException, PlatformNotSupportedException
 from Base.Executable						import ExecutableException
 from Base.Project								import FileTypes, VHDLVersion, Environment, ToolChain, Tool, FileListFile
 from Base.Simulator							import Simulator as BaseSimulator, VHDLTestbenchLibraryName
 from Parser.Parser							import ParserException
-from PoC.PoCProject							import Project as PoCProject
+from PoC.Project								import Project as PoCProject
 from ToolChains.Aldec.ActiveHDL	import ActiveHDL, ActiveHDLException
 
 
@@ -97,7 +98,7 @@ class Simulator(BaseSimulator):
 		self._vhdlGenerics =	vhdlGenerics
 
 		# check testbench database for the given testbench		
-		self._LogQuiet("Testbench: {0}{1}{2}".format(Foreground.YELLOW, self._testbenchFQN, Foreground.RESET))
+		self._LogQuiet("Testbench: {YELLOW}{0}{RESET}".format(self._testbenchFQN, **Init.Foreground))
 		if (not self.Host.TBConfig.has_section(self._testbenchFQN)):
 			raise SimulatorException("Testbench '{0}' not found.".format(self._testbenchFQN)) from NoSectionError(self._testbenchFQN)
 			
