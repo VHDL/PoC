@@ -43,8 +43,9 @@ from os													import chdir
 
 from Base.Exceptions						import SimulatorException, NotConfiguredException, PlatformNotSupportedException
 from Base.Executable						import ExecutableException
-from Base.Project								import FileTypes, VHDLVersion
+from Base.Project								import FileTypes, VHDLVersion, Environment, ToolChain, Tool, FileListFile
 from Base.Simulator							import Simulator as BaseSimulator, VHDLTestbenchLibraryName
+from Parser.Parser							import ParserException
 from PoC.PoCProject							import Project as PoCProject
 from ToolChains.Aldec.ActiveHDL	import ActiveHDL, ActiveHDLException
 
