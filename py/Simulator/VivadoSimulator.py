@@ -47,15 +47,12 @@ from colorama									import Fore as Foreground
 
 # from Base.Exceptions					import PlatformNotSupportedException, NotConfiguredException
 from Base.Project							import FileTypes, VHDLVersion, Environment, ToolChain, Tool, FileListFile
-from Base.Simulator						import SimulatorException, Simulator as BaseSimulator#, VHDLTestbenchLibraryName
+from Base.Simulator						import SimulatorException, Simulator as BaseSimulator, VHDLTestbenchLibraryName
 from Base.Logging							import Severity
 from Parser.Parser						import ParserException
 from PoC.Project							import Project as PoCProject
 from ToolChains.Xilinx.Vivado	import Vivado, VivadoException
 
-
-# Workaround for Vivado 2015.4
-VHDLTestbenchLibraryName = "work"
 
 class Simulator(BaseSimulator):
 	__guiMode =					False
@@ -179,20 +176,12 @@ class Simulator(BaseSimulator):
 		# create one VHDL line for each VHDL file
 		xSimProjectFileContent = ""
 		vhdlFiles = [item for item in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile)]
-		for file in vhdlFiles[:-1]:
+		for file in vhdlFiles:
 			if (not file.Path.exists()):									raise SimulatorException("Can not add '{0}' to xSim project file.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
 			if (self._vhdlVersion == VHDLVersion.VHDL2008):
 				xSimProjectFileContent += "vhdl2008 {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
 			else:
 				xSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
-
-		# WORKAROUND: Workaround for Vivado 2015.4: last VHDL file is testbench, rewrite library name to work
-		file = vhdlFiles[-1]
-		if (not file.Path.exists()):									raise SimulatorException("Can not add '{0}' to xSim project file.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
-		if (self._vhdlVersion == VHDLVersion.VHDL2008):
-			xSimProjectFileContent += "vhdl2008 {0} \"{1}\"\n".format(VHDLTestbenchLibraryName, str(file.Path))
-		else:
-			xSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(VHDLTestbenchLibraryName, str(file.Path))
 
 		# write xSim project file
 		prjFilePath = self._tempPath / (testbenchName + ".prj")
@@ -252,7 +241,7 @@ class Simulator(BaseSimulator):
 			else:
 				self._LogDebug("    Didn't find waveform config file: '{0}'".format(str(wcfgFilePath)))
 
-		xSim.Parameters[xSim.SwitchSnapshot] = "{0}.{1}#{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
+		xSim.Parameters[xSim.SwitchSnapshot] = testbenchName
 		xSim.Simulate()
 
 		# print()
