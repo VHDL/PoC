@@ -96,9 +96,9 @@ architecture rtl of cache_tagunit_par is
 	constant SETS : positive := CACHE_LINES / ASSOCIATIVITY;
 
 begin
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	-- Full-Assoziative Cache
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	genFA : if (CACHE_LINES = ASSOCIATIVITY) generate
 		constant FA_CACHE_LINES				: positive := ASSOCIATIVITY;
 		constant FA_TAG_BITS					: positive := TAG_BITS;
@@ -131,7 +131,7 @@ begin
 			return result;
 		end function;
 
-		signal TagHits : std_logic_vector(FA_CACHE_LINES - 1 downto 0);
+		signal TagHits : std_logic_vector(FA_CACHE_LINES - 1 downto 0); -- includes Valid
 
 		signal FA_TagMemory		: T_FA_TAG_LINE_VECTOR(FA_CACHE_LINES - 1 downto 0) := to_tagmemory(INITIAL_TAGS);
 		signal FA_ValidMemory : std_logic_vector(FA_CACHE_LINES - 1 downto 0)			:= to_validvector(INITIAL_TAGS);
@@ -143,19 +143,24 @@ begin
 		signal Policy_ReplaceIndex : std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
 		signal FA_ReplaceIndex_us	 : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
 
-		signal ValidHit	 : std_logic;
-		signal TagHit_i	 : std_logic;
-		signal TagMiss_i : std_logic;
-
-		signal TagAccess : std_logic;
+		signal TagHit_i	 : std_logic; -- includes Valid and Request
+		signal TagMiss_i : std_logic; -- includes Valid and Request
 	begin
-		-- generate comparators
-		genVectors : for I in 0 to FA_CACHE_LINES - 1 generate
-			TagHits(I) <= to_sl(FA_TagMemory(I) = Tag);
-		end generate;
+		
+		-- generate comparators and convert hit-vector to binary index (cache line address)
+		-- use process, so that "onehot2bin" does not report false errors in
+		-- simulation due to delta-cycles updates
+		process(Tag, FA_TagMemory, FA_ValidMemory)
+			variable hits : std_logic_vector(FA_CACHE_LINES - 1 downto 0); -- includes Valid
+		begin
+			for i in 0 to FA_CACHE_LINES - 1 loop
+				hits(i) := to_sl(FA_TagMemory(i) = Tag and FA_ValidMemory(i) = '1');
+			end loop;
 
-		-- convert hit-vector to binary index (cache line address)
-		FA_MemoryIndex_us <= onehot2bin(TagHits);
+			TagHits 					<= hits;
+			FA_MemoryIndex_us <= onehot2bin(hits, 0);
+		end process;
+
 		FA_MemoryIndex_i	<= std_logic_vector(FA_MemoryIndex_us);
 
 		-- Memories
@@ -172,12 +177,9 @@ begin
 			end if;
 		end process;
 
-		-- access valid-vector
-		ValidHit <= FA_ValidMemory(to_integer(FA_MemoryIndex_us));
-
 		-- hit/miss calculation
-		TagHit_i	<= slv_or(TagHits) and ValidHit and Request;
-		TagMiss_i <= not (slv_or(TagHits) and ValidHit) and Request;
+		TagHit_i	<= slv_or(TagHits) and Request;
+		TagMiss_i <= not (slv_or(TagHits)) and Request;
 
 		-- outputs
 		Index		<= FA_MemoryIndex_i;
@@ -188,8 +190,6 @@ begin
 		OldTag			 <= FA_TagMemory(to_integer(FA_ReplaceIndex_us));
 
 		-- replacement policy
-		TagAccess <= ValidHit and Request;
-
 		Policy : entity PoC.cache_replacement_policy
 			generic map (
 				REPLACEMENT_POLICY => REPLACEMENT_POLICY,
@@ -202,7 +202,7 @@ begin
 				Replace			 => Replace,
 				ReplaceIndex => Policy_ReplaceIndex,
 
-				TagAccess	 => TagAccess,
+				TagAccess	 => TagHit_i,
 				ReadWrite	 => ReadWrite,
 				Invalidate => Invalidate,
 				Index			 => FA_MemoryIndex_i

@@ -82,11 +82,10 @@ entity cache_par is
 		Clock : in std_logic;
 		Reset : in std_logic;
 
-		Replace : in std_logic;
-
 		Request		 : in std_logic;
 		ReadWrite	 : in std_logic;
 		Invalidate : in std_logic;
+		Replace 	 : in std_logic;
 		Tag				 : in std_logic_vector(TAG_BITS - 1 downto 0);
 
 		CacheLineIn	 : in	 std_logic_vector(DATA_BITS - 1 downto 0);
