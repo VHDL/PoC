@@ -3,10 +3,11 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:					TODO
---
 -- Authors:					Patrick Lehmann
+-- 									Martin Zabel
 -- 
+-- Module:					Wrap different cache replacement policies.
+--
 -- Description:
 -- ------------------------------------
 --
@@ -19,11 +20,17 @@
 --	LFU			least frequently used			| not yet
 -- -----------------------------------#--------------------
 --
--- Priority		Command
--- ----------------------
---	0					invalidate
---	1					replace
---	2					access
+-- Command thruth table:
+--
+--	TagAccess | ReadWrite | Invalidate	| Replace | Command
+--	----------+-----------+-------------+---------+--------------------------------
+--		0				|		0				|		0					|		0			| None
+--		1				|		0				|		0					|		0			| TagHit and reading a cache line
+--		1				|		1				|		0					|		0			| TagHit and writing a cache line
+--		1				|		0				|		1					|		0			| TagHit and invalidate a	cache line (while reading)
+--		1				|		1				|		1					|		0			| TagHit and invalidate a	cache line (while writing)
+--		0				|		-				|		0					|		1			| Replace cache line
+--	----------+-----------+-------------+------------------------------------------
 --
 -- License:
 -- ============================================================================
@@ -155,25 +162,13 @@ begin
 		signal LRU_Key				: std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
 
 	begin
-		-- list_lru_systolic supports only one update per cycle
-		process(TagAccess, ReadWrite, Invalidate, Replace, Index, LRU_Key)
-		begin
-			LRU_Insert		 <= '0';
-			LRU_Invalidate <= '0';
-			KeyIn					 <= Index;
+		-- Command Decoding
+		LRU_Insert		 <= (TagAccess and not Invalidate) or Replace;
+		LRU_Invalidate <= TagAccess and Invalidate;
+		
+		KeyIn <= LRU_Key when Replace = '1' else Index;
 
-			if (Invalidate = '1') then
-				LRU_Invalidate <= '1';
-				KeyIn					 <= Index;
-			elsif (Replace = '1') then
-				LRU_Insert <= '1';
-				KeyIn			 <= LRU_Key;
-			elsif (TagAccess = '1') then
-				LRU_Insert <= '1';
-				KeyIn			 <= Index;
-			end if;
-		end process;
-
+		-- Output
 		ReplaceIndex <= LRU_Key;
 
 		LRU : entity PoC.sort_lru_cache
