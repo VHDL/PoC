@@ -99,10 +99,10 @@ class OutputMonitor(BusMonitor):
 
 # ==============================================================================
 class Testbench(object):
-	def __init__(self, dut, elements):
+	def __init__(self, dut):
 		self.dut = dut
 		self.stopped = False
-		self.elements = elements
+		elements = dut.ELEMENTS.value;
 		self.lru = LeastRecentlyUsedDict(size_limit=elements)
 
 		# initial state of LRU list
@@ -173,8 +173,7 @@ def clock_gen(signal):
 @cocotb.coroutine
 def run_test(dut):
 	cocotb.fork(clock_gen(dut.Clock))
-	elements = 32
-	tb = Testbench(dut, elements)
+	tb = Testbench(dut)
 	dut.Reset <= 0
 
 	input_gen = random_input_gen()

@@ -122,12 +122,15 @@ class Testbench(object):
 						raise TestFailure("Received transaction differed from expected transaction.")
 					
 			
-	def __init__(self, dut, init_val, elements):
+	def __init__(self, dut, init_val):
 		self.dut = dut
 		self.stopped = False
-		self.elements = elements
+		elements = dut.ELEMENTS.value;
 		self.lru = LeastRecentlyUsedDict(size_limit=elements)
-		
+
+		if elements != 16:
+			raise TestFailure("Unsupported number of elements.")
+
 		self.input_drv = InputDriver(dut)
 		self.output_mon = OutputMonitor(dut)
 		
@@ -197,8 +200,7 @@ def clock_gen(signal):
 @cocotb.coroutine
 def run_test(dut):
 	cocotb.fork(clock_gen(dut.Clock))
-	elements = 16
-	tb = Testbench(dut, (0, 0), elements)
+	tb = Testbench(dut, (0, 0))
 	dut.Reset <= 0
 
 	input_gen = random_input_gen()
