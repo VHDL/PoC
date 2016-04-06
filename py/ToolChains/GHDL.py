@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 #
 # Python Class:			GHDL specific classes
 #
@@ -39,11 +39,16 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.GHDL")
 
+from collections						import OrderedDict
+from pathlib								import Path
 from re											import compile as re_compile
 
-from Base.Exceptions				import BaseException, ToolChainException
-from Base.Configuration			import ConfigurationBase
-from Base.Executable				import *
+from Base.Exceptions				import PlatformNotSupportedException
+from Base.ToolChain import ToolChainException
+from Base.Configuration			import Configuration as BaseConfiguration, ConfigurationException
+from Base.Executable				import Executable, \
+																		ExecutableArgument, PathArgument, StringArgument, ValuedFlagListArgument, \
+																		ShortFlagArgument, LongFlagArgument, ShortValuedFlagArgument, CommandLineArgumentList
 from Base.Logging						import LogEntry, Severity
 from Base.Simulator					import SimulatorException
 
@@ -54,7 +59,7 @@ class GHDLException(ToolChainException):
 class GHDLReanalyzeException(GHDLException):
 	pass
 
-class Configuration(ConfigurationBase):
+class Configuration(BaseConfiguration):
 	_vendor =		None
 	_shortName = "GTKWave"
 	_longName =	"GTKWave"
@@ -102,15 +107,15 @@ class Configuration(ConfigurationBase):
 			ghdlDirectoryPath = Path(ghdlDirectory)
 			ghdlExecutablePath = ghdlDirectoryPath / "bin" / "ghdl.exe"
 
-			if not ghdlDirectoryPath.exists():	raise BaseException("GHDL installation directory '%s' does not exist." % ghdlDirectory)
-			if not ghdlExecutablePath.exists():	raise BaseException("GHDL is not installed.")
+			if not ghdlDirectoryPath.exists():	raise ConfigurationException("GHDL installation directory '%s' does not exist." % ghdlDirectory)
+			if not ghdlExecutablePath.exists():	raise ConfigurationException("GHDL is not installed.")
 
 			self.pocConfig['GHDL']['Version'] = ghdlVersion
 			self.pocConfig['GHDL']['InstallationDirectory'] = ghdlDirectoryPath.as_posix()
 			self.pocConfig['GHDL']['BinaryDirectory'] = '${InstallationDirectory}/bin'
 			self.pocConfig['GHDL']['Backend'] = 'mcode'
 		else:
-			raise BaseException("unknown option")
+			raise ConfigurationException("unknown option")
 
 	def manualConfigureForLinux(self):
 		# Ask for installed GHDL
@@ -131,15 +136,15 @@ class Configuration(ConfigurationBase):
 			ghdlDirectoryPath = Path(ghdlDirectory)
 			ghdlExecutablePath = ghdlDirectoryPath / "ghdl"
 
-			if not ghdlDirectoryPath.exists():	raise BaseException("GHDL installation directory '%s' does not exist." % ghdlDirectory)
-			if not ghdlExecutablePath.exists():	raise BaseException("GHDL is not installed.")
+			if not ghdlDirectoryPath.exists():	raise ConfigurationException("GHDL installation directory '%s' does not exist." % ghdlDirectory)
+			if not ghdlExecutablePath.exists():	raise ConfigurationException("GHDL is not installed.")
 
 			self.pocConfig['GHDL']['Version'] = ghdlVersion
 			self.pocConfig['GHDL']['InstallationDirectory'] = ghdlDirectoryPath.as_posix()
 			self.pocConfig['GHDL']['BinaryDirectory'] = '${InstallationDirectory}'
 			self.pocConfig['GHDL']['Backend'] = 'llvm'
 		else:
-			raise BaseException("unknown option")
+			raise ConfigurationException("unknown option")
 
 
 class GHDL(Executable):
@@ -161,6 +166,10 @@ class GHDL(Executable):
 		self._backend =							backend
 		self._version =							version
 
+		self._hasOutput =						False
+		self._hasWarnings =					False
+		self._hasErrors =						False
+
 	@property
 	def BinaryDirectoryPath(self):
 		return self._binaryDirectoryPath
@@ -172,6 +181,14 @@ class GHDL(Executable):
 	@property
 	def Version(self):
 		return self._version
+
+	@property
+	def HasWarnings(self):
+		return self._hasWarnings
+
+	@property
+	def HasErrors(self):
+		return self._hasErrors
 
 	def deco(Arg):
 		def getter(self):
@@ -318,18 +335,6 @@ class GHDLAnalyze(GHDL):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
 
-		self._hasOutput = False
-		self._hasWarnings = False
-		self._hasErrors = False
-
-	@property
-	def HasWarnings(self):
-		return self._hasWarnings
-
-	@property
-	def HasErrors(self):
-		return self._hasErrors
-
 	def Analyze(self):
 		parameterList = self.Parameters.ToArgumentList()
 		parameterList.insert(0, self.Executable)
@@ -344,8 +349,7 @@ class GHDLAnalyze(GHDL):
 		self._hasWarnings =	False
 		self._hasErrors =		False
 		try:
-			filter =		GHDLAnalyzeFilter(self.GetReader())
-			iterator =	iter(filter)
+			iterator = iter(GHDLAnalyzeFilter(self.GetReader()))
 
 			line = next(iterator)
 			self._hasOutput =		True
@@ -374,10 +378,6 @@ class GHDLElaborate(GHDL):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
 
-		self._hasOutput = False
-		self._hasWarnings = False
-		self._hasErrors = False
-
 	def Elaborate(self):
 		parameterList = self.Parameters.ToArgumentList()
 		parameterList.insert(0, self.Executable)
@@ -392,8 +392,7 @@ class GHDLElaborate(GHDL):
 		self._hasWarnings = False
 		self._hasErrors = False
 		try:
-			filter = GHDLElaborateFilter(self.GetReader())
-			iterator = iter(filter)
+			iterator = iter(GHDLElaborateFilter(self.GetReader()))
 
 			line = next(iterator)
 			line.Indent(2)
@@ -426,10 +425,6 @@ class GHDLRun(GHDL):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
 
-		self._hasOutput = False
-		self._hasWarnings = False
-		self._hasErrors = False
-
 	def Run(self):
 		parameterList = self.Parameters.ToArgumentList()
 		parameterList += self.RunOptions.ToArgumentList()
@@ -446,8 +441,7 @@ class GHDLRun(GHDL):
 		self._hasWarnings = False
 		self._hasErrors = False
 		try:
-			filter = GHDLRunFilter(self.GetReader())
-			iterator = iter(filter)
+			iterator = iter(GHDLRunFilter(self.GetReader()))
 
 			line = next(iterator)
 			line.Indent(2)

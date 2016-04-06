@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 #
 # Python Class:			Lattice Active-HDL specific classes
 #
@@ -40,5 +40,10 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Lattice.ActiveHDL")
 
 
-class Configuration:
+# from collections				import OrderedDict
+# from pathlib						import Path
+
+from Base.Configuration import Configuration as BaseConfiguration
+
+class Configuration(BaseConfiguration):
 	pass

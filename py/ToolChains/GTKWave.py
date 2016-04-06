@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 #
 # Python Class:			GTKWave specific classes
 #
@@ -40,15 +40,20 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.GTKWave")
 
 
-from Base.Exceptions				import ToolChainException
-from Base.Executable				import *
+from collections						import OrderedDict
+from pathlib								import Path
+
+from Base.Exceptions				import PlatformNotSupportedException
+from Base.ToolChain import ToolChainException
+from Base.Configuration			import Configuration as BaseConfiguration, ConfigurationException
+from Base.Executable				import Executable, ExecutableArgument, LongValuedFlagArgument, CommandLineArgumentList
 from Base.Logging						import LogEntry, Severity
 
 
 class GTKWaveException(ToolChainException):
 	pass
 
-class Configuration:
+class Configuration(BaseConfiguration):
 	__vendor =		None
 	__shortName =	"GTKWave"
 	__LongName =	"GTKWave"
@@ -94,15 +99,15 @@ class Configuration:
 			gtkwDirectoryPath = Path(gtkwDirectory)
 			gtkwExecutablePath = gtkwDirectoryPath / "bin" / "gtkwave.exe"
 
-			if not gtkwDirectoryPath.exists() :  raise BaseException(
+			if not gtkwDirectoryPath.exists() :  raise ConfigurationException(
 				"GTKWave installation directory '%s' does not exist." % gtkwDirectory)
-			if not gtkwExecutablePath.exists() :  raise BaseException("GTKWave is not installed.")
+			if not gtkwExecutablePath.exists() :  raise ConfigurationException("GTKWave is not installed.")
 
 			self.pocConfig['GTKWave']['Version'] = gtkwVersion
 			self.pocConfig['GTKWave']['InstallationDirectory'] = gtkwDirectoryPath.as_posix()
 			self.pocConfig['GTKWave']['BinaryDirectory'] = '${InstallationDirectory}/bin'
 		else :
-			raise BaseException("unknown option")
+			raise ConfigurationException("unknown option")
 
 	def manualConfigureForLinux(self) :
 		# Ask for installed GTKWave
@@ -123,15 +128,15 @@ class Configuration:
 			gtkwDirectoryPath = Path(gtkwDirectory)
 			gtkwExecutablePath = gtkwDirectoryPath / "gtkwave"
 
-			if not gtkwDirectoryPath.exists() :  raise BaseException(
+			if not gtkwDirectoryPath.exists() :  raise ConfigurationException(
 				"GTKWave installation directory '%s' does not exist." % gtkwDirectory)
-			if not gtkwExecutablePath.exists() :  raise BaseException("GTKWave is not installed.")
+			if not gtkwExecutablePath.exists() :  raise ConfigurationException("GTKWave is not installed.")
 
 			self.pocConfig['GTKWave']['Version'] = gtkwVersion
 			self.pocConfig['GTKWave']['InstallationDirectory'] = gtkwDirectoryPath.as_posix()
 			self.pocConfig['GTKWave']['BinaryDirectory'] = '${InstallationDirectory}'
 		else :
-			raise BaseException("unknown option")
+			raise ConfigurationException("unknown option")
 
 
 class GTKWave(Executable):
@@ -186,8 +191,7 @@ class GTKWave(Executable):
 		self._hasWarnings = False
 		self._hasErrors = False
 		try:
-			filter = GTKWaveFilter(self.GetReader())
-			iterator = iter(filter)
+			iterator = iter(GTKWaveFilter(self.GetReader()))
 
 			line = next(iterator)
 			line.Indent(2)

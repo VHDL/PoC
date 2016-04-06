@@ -3,9 +3,9 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:         		 Patrick Lehmann
+# Authors:         			Patrick Lehmann
 # 
-# Python Main Module:  Entry point to the testbench tools in PoC repository.
+# Python Main Module:		Entry point to the testbench tools in PoC repository.
 # 
 # Description:
 # ------------------------------------
@@ -26,13 +26,13 @@
 # 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an "AS IS" BASIS,default
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
 
 from argparse									import RawDescriptionHelpFormatter
-from colorama									import Fore as Foreground
 from configparser							import Error as ConfigParser_Error, NoOptionError, ConfigParser, ExtendedInterpolation
 from os												import environ
 from pathlib									import Path
@@ -40,24 +40,27 @@ from platform									import system as platform_system
 from sys											import argv as sys_argv
 from textwrap									import dedent
 
-import ToolChains.Aldec.ActiveHDL
-from lib.Functions						import Init, Exit
-from lib.ArgParseAttributes		import *
-from Base.Exceptions					import *
+from Base.Exceptions					import ExceptionBase, CommonException, PlatformNotSupportedException, EnvironmentException, NotConfiguredException
+from Base.Configuration				import ConfigurationException
+from Base.Simulator						import SimulatorException
+from Base.Compiler						import CompilerException
+from Base.ToolChain import ToolChainException
 from Base.Logging							import ILogable, Logger, Severity
 from Base.Project							import VHDLVersion
+from Compiler.XCOCompiler			import Compiler as XCOCompiler
+from Compiler.XSTCompiler			import Compiler as XSTCompiler
 from Parser.Parser						import ParserException
-from PoC.Entity								import *
 from PoC.Config								import Device, Board
+from PoC.Entity								import Entity, FQN, EntityTypes
 from PoC.Query								import Query
-from ToolChains								import Configurations
 from Simulator.ActiveHDLSimulator		import Simulator as ActiveHDLSimulator
 from Simulator.GHDLSimulator				import Simulator as GHDLSimulator
 from Simulator.ISESimulator					import Simulator as ISESimulator
 from Simulator.QuestaSimulator			import Simulator as QuestaSimulator
 from Simulator.VivadoSimulator			import Simulator as VivadoSimulator
-from Compiler.XCOCompiler						import Compiler as XCOCompiler
-from Compiler.XSTCompiler						import Compiler as XSTCompiler
+from ToolChains								import Configurations
+from lib.ArgParseAttributes		import ArgParseMixin, CommandAttribute, CommonSwitchArgumentAttribute, CommandGroupAttribute, ArgumentAttribute, SwitchArgumentAttribute, DefaultAttribute
+from lib.Functions						import Init, Exit
 
 
 # def HandleVerbosityOptions(func):
@@ -95,8 +98,8 @@ class PoC(ILogable, ArgParseMixin):
 		# Do some basic checks
 		# --------------------------------------------------------------------------
 		if (self.Platform not in ["Windows", "Linux"]):		raise PlatformNotSupportedException(self.Platform)
-		if (environ.get('PoCRootDirectory') == None):			raise EnvironmentException("Shell environment does not provide 'PoCRootDirectory' variable.")
-		if (environ.get('PoCScriptDirectory') == None):		raise EnvironmentException("Shell environment does not provide 'PoCScriptDirectory' variable.")
+		if (environ.get('PoCRootDirectory') is None):			raise EnvironmentException("Shell environment does not provide 'PoCRootDirectory' variable.")
+		if (environ.get('PoCScriptDirectory') is None):		raise EnvironmentException("Shell environment does not provide 'PoCScriptDirectory' variable.")
 
 		# Call the constructor of the ArgParseMixin
 		# --------------------------------------------------------------------------
@@ -314,7 +317,7 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandAttribute('help', help="help help")
 	@ArgumentAttribute(metavar='<Command>', dest="Command", type=str, nargs='?', help='todo help')
 	# @HandleVerbosityOptions
-	def HandleHelp(self, args):
+	def HandleHelp(self, _):
 		self.PrintHeadline()
 		if (args.Command is None):
 			self.MainParser.print_help()
@@ -333,7 +336,7 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("configure", help="Configure vendor tools for PoC.")
 	# @HandleVerbosityOptions
-	def HandleManualConfiguration(self, args):
+	def HandleManualConfiguration(self, _):
 		self.__Prepare()
 		self.PrintHeadline()
 
@@ -359,11 +362,11 @@ class PoC(ILogable, ArgParseMixin):
 			configurator = conf()
 			self._LogNormal("Configure {0} - {1}".format(configurator.Name, conf))
 
-			next = False
-			while (next == False):
+			nxt = False
+			while (nxt == False):
 				try:
 					configurator.ConfigureForWindows()
-					next = True
+					nxt = True
 				except BaseException as ex:
 					print("FAULT: {0}".format(ex.message))
 			# end while
@@ -373,11 +376,11 @@ class PoC(ILogable, ArgParseMixin):
 			configurator = conf()
 			self._LogNormal("Configure {0}".format(configurator.Name))
 
-			next = False
-			while (next == False):
+			nxt = False
+			while (nxt == False):
 				try:
 					configurator.ConfigureForLinux()
-					next = True
+					nxt = True
 				except BaseException as ex:
 					print("FAULT: {0}".format(ex.message))
 			# end while
@@ -577,9 +580,9 @@ class PoC(ILogable, ArgParseMixin):
 							raise NotConfiguredException("No GHDL compatible waveform viewer is configured on this system.")
 
 						viewer = simulator.GetViewer()
-						viewer.View(entity)
+						viewer.View()
 
-				except SimulatorException as ex:
+				except SimulatorException:
 					pass
 
 		Exit.exit()
@@ -742,7 +745,7 @@ class PoC(ILogable, ArgParseMixin):
 			board = self.__SimulationDefaultBoard
 
 		if (args.VHDLVersion is None):
-			vhdlVersion = self.__SimulationDefaultVHDLVersion
+			vhdlVersion = VHDLVersion.VHDL93	# self.__SimulationDefaultVHDLVersion		# TODO: VHDL-2008 is broken in Vivado 2015.4 -> use VHDL-93 by default
 		else:
 			vhdlVersion = VHDLVersion.parse(args.VHDLVersion)
 
@@ -920,7 +923,7 @@ def main():
 		poc.Run()
 		Exit.exit()
 
-	except (CommonException, SimulatorException, CompilerException) as ex:
+	except (CommonException, ConfigurationException, SimulatorException, CompilerException) as ex:
 		print("{RED}ERROR:{RESET} {message}".format(message=ex.message, **Init.Foreground))
 		cause = ex.__cause__
 		if isinstance(cause, FileNotFoundError):
@@ -951,8 +954,8 @@ def main():
 	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)
 	except NotConfiguredException as ex:				Exit.printNotConfiguredException(ex)
 	except PlatformNotSupportedException as ex:	Exit.printPlatformNotSupportedException(ex)
-	#except BaseException as ex:									Exit.printBaseException(ex)
-	#except NotImplementedError as ex:						Exit.printNotImplementedError(ex)
+	except ExceptionBase as ex:									Exit.printExceptionbase(ex)
+	except NotImplementedError as ex:						Exit.printNotImplementedError(ex)
 	except Exception as ex:											Exit.printException(ex)
 
 # entry point

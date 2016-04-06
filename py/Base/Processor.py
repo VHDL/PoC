@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Python Class:			TODO
 # 
@@ -30,27 +30,63 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+#
 # entry point
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
 else:
 	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Processor.Exceptions")
+	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Processor.Base")
 
 # load dependencies
-from Base.Exceptions import *
+from Base.Exceptions import ExceptionBase
 
-class ProcessorException(BaseException):
-	def __init__(self, message=""):
-		super().__init__(message)
-		self.message = message
-		
+
+class ProcessorException(ExceptionBase):
+	pass
+
 class PostProcessorException(ProcessorException):
-	def __init__(self, message=""):
-		super().__init__(message)
-		self.message = message
+	pass
+
+class Processor:
+	__host = None
+	__debug = False
+	__verbose = False
+	__quiet = False
+	showLogs = False
+	showReport = False
+	dryRun = False
+
+	def __init__(self, host, showLogs, showReport):
+		self.__debug = host.getDebug()
+		self.__verbose = host.getVerbose()
+		self.__quiet = host.getQuiet()
+		self.host = host
+		self.showLogs = showLogs
+		self.showReport = showReport
+
+	def getDebug(self):
+		return self.__debug
+		
+	def getVerbose(self):
+		return self.__verbose
+		
+	def getQuiet(self):
+		return self.__quiet
+		
+	def printDebug(self, message):
+		if (self.__debug):
+			print("DEBUG: " + message)
+			
+	def printVerbose(self, message):
+		if (self.__verbose):
+			print(message)
+	
+	def printNonQuiet(self, message):
+		if (not self.__quiet):
+			print(message)
+
 
 #class EndOfReportException(ProcessorException):
 #	pass

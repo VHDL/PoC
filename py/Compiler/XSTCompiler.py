@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Python Class:			This PoCXCOCompiler compiles xco IPCores to netlists
 # 
@@ -45,14 +45,17 @@ import shutil
 from colorama								import Fore as Foreground
 from configparser						import NoSectionError
 from os											import chdir
+from pathlib								import Path
 
-from Base.Exceptions				import *
-from Base.Compiler					import PoCCompiler
-from PoC.PoCProject					import *
+from Base.Exceptions				import NotConfiguredException, PlatformNotSupportedException
+from Base.Project						import FileTypes, VHDLVersion, Environment, ToolChain, Tool, FileListFile
+from Base.Compiler					import Compiler as BaseCompiler, CompilerException
+from Parser.Parser					import ParserException
+from PoC.Project					import Project as PoCProject
 from ToolChains.Xilinx.ISE	import ISE
 
 
-class Compiler(PoCCompiler):
+class Compiler(BaseCompiler):
 	def __init__(self, host, showLogs, showReport):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
@@ -94,7 +97,7 @@ class Compiler(PoCCompiler):
 		if (len(preCopyFileList) != 0):
 			self._LogDebug("PreCopyTasks: \n  " + ("\n  ".join(preCopyFileList.split("\n"))))
 			
-			preCopyRegExpStr	 = r"^\s*(?P<SourceFilename>.*?)"			# Source filename
+			preCopyRegExpStr  = r"^\s*(?P<SourceFilename>.*?)"			# Source filename
 			preCopyRegExpStr += r"\s->\s"													#	Delimiter signs
 			preCopyRegExpStr += r"(?P<DestFilename>.*?)$"					#	Destination filename
 			preCopyRegExp = re.compile(preCopyRegExpStr)
@@ -115,7 +118,7 @@ class Compiler(PoCCompiler):
 		if (len(copyFileList) != 0):
 			self._LogDebug("CopyTasks: \n  " + ("\n  ".join(copyFileList.split("\n"))))
 			
-			copyRegExpStr	 = r"^\s*(?P<SourceFilename>.*?)"			# Source filename
+			copyRegExpStr  = r"^\s*(?P<SourceFilename>.*?)"			# Source filename
 			copyRegExpStr += r"\s->\s"													#	Delimiter signs
 			copyRegExpStr += r"(?P<DestFilename>.*?)$"					#	Destination filename
 			copyRegExp = re.compile(copyRegExpStr)
@@ -261,7 +264,7 @@ class Compiler(PoCCompiler):
 		xstFileContent = xstFileContent.format(**xstTemplateDictionary)
 		
 		if (self.Host.netListConfig.has_option(self._ipcoreFQN, 'XSTOption.Generics')):
-			xstFileContent += "-generics { {0} }".format(self.Host.netListConfig[self._ipcoreFQN]['XSTOption.Generics'])
+			xstFileContent += "-generics {{ {0} }}".format(self.Host.netListConfig[self._ipcoreFQN]['XSTOption.Generics'])
 
 		self._LogDebug("Writing Xilinx Compiler Tool option file to '{0}'".format(str(xstFilePath)))
 		with xstFilePath.open('w') as xstFileHandle:

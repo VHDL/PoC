@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Python Class:			TODO
 # 
@@ -40,14 +40,16 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.GHDLSimulator")
 
 # load dependencies
-from colorama								import Fore as Foreground
 from configparser						import NoSectionError
 from os											import chdir
 
-from Base.Exceptions				import *
-from Base.Simulator					import Simulator as BaseSimulator, VHDLTestbenchLibraryName
+from colorama								import Fore as Foreground
+
+# from Base.Exceptions				import NotConfiguredException, PlatformNotSupportedException
+from Base.Project						import FileTypes, VHDLVersion, Environment, ToolChain, Tool, FileListFile
+from Base.Simulator					import SimulatorException, Simulator as BaseSimulator, VHDLTestbenchLibraryName
 from Parser.Parser					import ParserException
-from PoC.PoCProject					import *
+from PoC.Project						import Project as PoCProject
 from ToolChains.GHDL				import GHDL, GHDLException
 from ToolChains.GTKWave			import GTKWave
 
@@ -223,7 +225,13 @@ class Simulator(BaseSimulator):
 			ghdl.Parameters[ghdl.SwitchVHDLVersion] =		"08"
 		else:																					raise SimulatorException("VHDL version is not supported.")
 		
-		ghdl.Elaborate()
+		try:
+			ghdl.Elaborate()
+		except GHDLException as ex:
+			raise SimulatorException("Error while elaborating '{0}.{1}'.".format(VHDLTestbenchLibraryName, testbenchName)) from ex
+
+		if ghdl.HasErrors:
+			raise SimulatorException("Error while elaborating '{0}.{1}'.".format(VHDLTestbenchLibraryName, testbenchName))
 	
 	
 	def _RunSimulation(self, testbenchName):
@@ -312,7 +320,7 @@ class Simulator(BaseSimulator):
 	def GetViewer(self):
 		return self
 	
-	def View(self, pocEntity):
+	def View(self):
 		self._LogNormal("  launching GTKWave...")
 		
 		testbenchName =				self.Host.TBConfig[self._testbenchFQN]['TestbenchModule']

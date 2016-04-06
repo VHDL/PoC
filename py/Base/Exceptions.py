@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Python Class:			TODO
 # 
@@ -39,18 +39,8 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Base.Exceptions")
 
-# load dependencies
-# class NotImplementedException(Exception):
-# 	def __init__(self, message):
-# 		super().__init__()
-# 		self.message = message
-#
-# class ArgumentException(Exception):
-# 	def __init__(self, message):
-# 		super().__init__()
-# 		self.message = message
-		
-class BaseException(Exception):
+
+class ExceptionBase(Exception):
 	def __init__(self, message=""):
 		super().__init__()
 		self.message = message
@@ -58,29 +48,20 @@ class BaseException(Exception):
 	def __str__(self):
 		return self.message
 		
-class EnvironmentException(BaseException):
+class EnvironmentException(ExceptionBase):
 	pass
 
-class PlatformNotSupportedException(BaseException):
+class PlatformNotSupportedException(ExceptionBase):
 	pass
 
-class NotConfiguredException(BaseException):
+class NotConfiguredException(ExceptionBase):
 	pass
 
-class CommonException(BaseException):
+class CommonException(ExceptionBase):
 	pass
 
-class SimulatorException(BaseException):
-	pass
-
-class TestbenchException(SimulatorException):
+class TestbenchException(ExceptionBase):
 	def __init__(self, pocEntity, testbench, message):
 		super().__init__(message)
 		self.pocEntity = pocEntity
 		self.testbench = testbench
-
-class CompilerException(BaseException):
-	pass
-
-class ToolChainException(BaseException):
-	pass

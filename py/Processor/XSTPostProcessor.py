@@ -3,9 +3,9 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:         		 Patrick Lehmann
+# Authors:         			Patrick Lehmann
 # 
-# Python Main Module:  Entry point to the post-processing tools.
+# Python Main Module:		Entry point to the post-processing tools.
 # 
 # Description:
 # ------------------------------------
@@ -31,14 +31,11 @@
 # limitations under the License.
 # ==============================================================================
 
-from pathlib import Path
-
-from Base.Exceptions import *
-from Processor.Base import PoCProcessor 
-from Processor.Exceptions import *
+from Base.Processor import Processor
+from Base.Processor import ProcessorException, PostProcessorException
 from Processor.XST import *
 
-class PostProcessor(PoCProcessor):
+class PostProcessor(Processor):
 	#__netListConfigFileName = "configuration.ini"
 	dryRun = False
 	#netListConfig = None
@@ -281,7 +278,7 @@ def main():
 		group21 = group2.add_mutually_exclusive_group(required=True)
 		group21.add_argument('-h', '--help',												dest="help",				help='show this help message and exit',		action='store_const', const=True, default=False)
 		group211 = group21.add_mutually_exclusive_group()
-		group211.add_argument(		 '--tokenfiles', metavar="<FSM>", dest="tokenFiles",	help='extraxt FSM encodings for ChipScope token files (*.tok)')
+		group211.add_argument(     '--tokenfiles', metavar="<FSM>", dest="tokenFiles",	help='extraxt FSM encodings for ChipScope token files (*.tok)')
 
 		# parse command line options
 		args = argParser.parse_args()
@@ -330,7 +327,7 @@ def main():
 #		print()
 #		return
 	
-	except BaseException as ex:
+	except ExceptionBase as ex:
 		print("ERROR: %s" % ex.message)
 		print()
 		return

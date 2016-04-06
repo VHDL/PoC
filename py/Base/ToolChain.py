@@ -3,13 +3,15 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 #
-# Python Class:			Altera Quartus Project File
+# Python Class:			Base class for all PoC***Compilers
 #
 # Description:
 # ------------------------------------
 #		TODO:
+#		-
+#		-
 #
 # License:
 # ==============================================================================
@@ -28,27 +30,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-#
+
 # entry point
-if __name__ != "__main__" :
+if __name__ != "__main__":
 	# place library initialization code here
 	pass
-else :
+else:
 	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Altera.QuartusProject")
+	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Class PoCCompiler")
 
 
-from Base.Project			import *
+# load dependencies
+from Base.Exceptions		import ExceptionBase
 
-
-class QuartusProject(Project):
-	def __init__(self, name):
-		super().__init__(name)
-
-class QuartusProjectFile(ProjectFile):
-	def __init__(self, file):
-		super().__init__(file)
-
-class SynopsysDesignConstraintFile(PoC.ConstraintFile):
-	def __init__(self, file):
-		super().__init__(file)
+class ToolChainException(ExceptionBase):
+	pass

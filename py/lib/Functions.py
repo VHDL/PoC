@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 		Patrick Lehmann
+# Authors:						Patrick Lehmann
 # 
 # Python functions:		Auxillary functions to exit a program and report an error message.
 # 
@@ -119,14 +119,14 @@ class Exit:
 	def printNotImplementedError(cls, ex):
 		from traceback	import walk_tb
 		Init.init()
-		frame, sourceLine = [x for x in walk_tb(ex.__traceback__)][-1]
+		frame, _ = [x for x in walk_tb(ex.__traceback__)][-1]
 		filename = frame.f_code.co_filename
 		funcName = frame.f_code.co_name
 		print("{RED}Not implemented:{RESET} {function} in file '{filename}': {message}".format(function=funcName, filename=filename, message=str(ex), **Init.Foreground))
 		Exit.exit(1)
 
 	@classmethod
-	def printBaseException(cls, ex):
+	def printExceptionbase(cls, ex):
 		Init.init()
 		print("{RED}ERROR:{RESET} {message}".format(message=ex.message, **Init.Foreground))
 		Exit.exit(1)

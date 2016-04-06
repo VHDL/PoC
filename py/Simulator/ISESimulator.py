@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Python Class:			TODO
 # 
@@ -40,14 +40,17 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.ISESimulator")
 
 # load dependencies
-from colorama								import Fore as Foreground
 from configparser						import NoSectionError
 from os											import chdir
 
-from Base.Exceptions				import *
-from Base.Simulator					import Simulator as BaseSimulator, VHDLTestbenchLibraryName
-from PoC.PoCProject					import *
-from ToolChains.Xilinx.ISE	import ISE
+from colorama								import Fore as Foreground
+
+# from Base.Exceptions				import PlatformNotSupportedException, NotConfiguredException
+from Base.Project						import FileTypes, VHDLVersion, Environment, ToolChain, Tool, FileListFile
+from Base.Simulator					import SimulatorException, Simulator as BaseSimulator, VHDLTestbenchLibraryName
+from Parser.Parser					import ParserException
+from PoC.Project						import Project as PoCProject
+from ToolChains.Xilinx.ISE	import ISE, ISESimulator, ISEException
 
 
 class Simulator(BaseSimulator):
@@ -197,7 +200,14 @@ class Simulator(BaseSimulator):
 		fuse.Parameters[fuse.SwitchProjectFile] =			str(prjFilePath)
 		fuse.Parameters[fuse.SwitchOutputFile] =			str(exeFilePath)
 		fuse.Parameters[fuse.ArgTopLevel] =						"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
-		fuse.Link()
+
+		try:
+			fuse.Link()
+		except ISEException as ex:
+			raise SimulatorException("Error while analysing '{0}'.".format(str(prjFilePath))) from ex
+
+		if fuse.HasErrors:
+			raise SimulatorException("Error while analysing '{0}'.".format(str(prjFilePath)))
 	
 	def _RunSimulation(self, testbenchName):
 		self._LogNormal("  running simulation...")
@@ -209,7 +219,7 @@ class Simulator(BaseSimulator):
 		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['iSimWaveformConfigFile']
 
 		# create a ISESimulator instance
-		iSim = ISESimulatorExecutable(exeFilePath, logger=self.Logger)
+		iSim = ISESimulator(exeFilePath, logger=self.Logger)
 		iSim.Parameters[iSim.SwitchLogFile] =					str(iSimLogFilePath)
 
 		if (not self._guiMode):

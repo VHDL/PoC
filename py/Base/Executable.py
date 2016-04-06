@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Python Class:			TODO
 # 
@@ -40,8 +40,7 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Base.Executable")
 
 # load dependencies
-from enum										import Enum, unique
-from colorama								import Fore as Foreground
+# from enum										import Enum, unique
 from pathlib								import Path
 from subprocess							import Popen				as Subprocess_Popen
 from subprocess							import PIPE					as Subprocess_Pipe
@@ -227,7 +226,7 @@ class ValuedFlagListArgument(CommandLineArgument):
 	def Value(self, value):
 		if (value is None):										self._value = None
 		elif isinstance(value, (tuple,list)):	self._value = value
-		else:																	raise ValueError("Parameter 'value' is not of type tuple or list.") from ex
+		else:																	raise ValueError("Parameter 'value' is not of type tuple or list.")
 
 	def __str__(self):
 		if (self._value is None):			return ""
@@ -299,9 +298,6 @@ class CommandLineArgumentList(list):
 			else:												raise TypeError()
 		return result
 
-import asyncio
-import locale
-from asyncio.subprocess import PIPE, STDOUT
 
 class Executable(ILogable):
 	def __init__(self, platform, executablePath, logger=None):

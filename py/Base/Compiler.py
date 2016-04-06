@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Python Class:			Base class for all PoC***Compilers
 # 
@@ -41,11 +41,14 @@ else:
 
 
 # load dependencies
-from Base.Exceptions		import *
+from Base.Exceptions		import ExceptionBase
 from Base.Logging				import ILogable
 
 
-class PoCCompiler(ILogable):
+class CompilerException(ExceptionBase):
+	pass
+
+class Compiler(ILogable):
 	def __init__(self, host, showLogs, showReport):
 		if isinstance(host, ILogable):
 			ILogable.__init__(self, host.Logger)
@@ -81,3 +84,4 @@ class PoCCompiler(ILogable):
 	def printNonQuiet(self, message):
 		if (not self.quiet):
 			print(message)
+

@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Python Module:		TODO
 # 
@@ -56,7 +56,7 @@ class TSTStatementListMixIn:
 		print(("| " * dbg.val()) + "TSTStatementListMixIn.parsePyParsingASTNode: Parsing statement list...")
 		for ASTItem in ASTNode:
 			itemName = ASTItem.getName()
-			if	 (itemName == "ifthenelse"):	node = TSTNodeIfThenElseStatement()
+			if   (itemName == "ifthenelse"):	node = TSTNodeIfThenElseStatement()
 			elif (itemName == "library"):			node = TSTNodeLibraryStatement()
 			elif (itemName == "include"):			node = TSTNodeIncludeStatement()
 			elif (itemName == "vhdl"):				node = TSTNodeVHDLStatement()
@@ -167,7 +167,7 @@ class TSTOperandMixIn:
 	def parsePyParsingASTNode(self, ASTNode):
 		print(("| " * dbg.val()) + "TSTOperandMixIn.parsePyParsingASTNode: Parsing operand ...")
 		ASTName = ASTNode.getName()
-		if	 (ASTName == "identifier"):		node = TSTNodeIfThenElseStatement()
+		if   (ASTName == "identifier"):		node = TSTNodeIfThenElseStatement()
 		elif (ASTName == "integer"):			node = TSTNodeLibraryStatement()
 		else:
 			print(("| " * dbg.val()) + "TSTOperandMixIn.parsePyParsingASTNode: Unknown ASTAbstractNode name '{0}'.".format(ASTName))

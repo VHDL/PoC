@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Python Class:			TODO
 # 
@@ -41,8 +41,7 @@ else:
 from enum									import Enum, EnumMeta, unique
 from re										import compile as RegExpCompile
 
-from lib.Decorators				import CachedReadOnlyProperty
-from Base.Exceptions			import *
+# from lib.Decorators				import CachedReadOnlyProperty
 from Base.Configuration		import ConfigurationException
 
 
@@ -82,7 +81,7 @@ class Families(Enum):
 	# @CachedReadOnlyProperty
 	@property
 	def Token(self):
-		if	 (self == Families.Spartan):	return "s"
+		if   (self == Families.Spartan):	return "s"
 		elif (self == Families.Artix):		return "a"
 		elif (self == Families.Kintex):		return "k"
 		elif (self == Families.Virtex):		return "v"
@@ -138,7 +137,7 @@ class Devices(Enum):
 	# @CachedReadOnlyProperty
 	@property
 	def Token(self):
-		if	 (self == Families.Spartan):	return "s"
+		if   (self == Families.Spartan):	return "s"
 		elif (self == Families.Artix):		return "a"
 		elif (self == Families.Kintex):		return "k"
 		elif (self == Families.Virtex):		return "v"
@@ -178,7 +177,7 @@ class SubTypes(Enum):
 	# @CachedReadOnlyProperty
 	@property
 	def Groups(self):
-		if	 (self == SubTypes.NoSubType):	return ("",	"")
+		if   (self == SubTypes.NoSubType):	return ("",	"")
 		elif (self == SubTypes.X):					return ("x",	"")
 		elif (self == SubTypes.T):					return ("",		"t")
 		elif (self == SubTypes.XT):					return ("x",	"t")
@@ -246,7 +245,7 @@ class Device:
 			self.__generation = int(deviceString[2:3])
 
 			temp = deviceString[3:4].lower()
-			if	 (temp == Families.Artix.Token):		self.__family = Families.Artix
+			if   (temp == Families.Artix.Token):		self.__family = Families.Artix
 			elif (temp == Families.Kintex.Token):		self.__family = Families.Kintex
 			elif (temp == Families.Spartan.Token):	self.__family = Families.Spartan
 			elif (temp == Families.Virtex.Token):		self.__family = Families.Virtex
@@ -289,7 +288,7 @@ class Device:
 			self.__generation = int(deviceString[2:3])
 
 			temp = deviceString[3:4].lower()
-			if	 (temp == Families.Cyclon.Token):		self.__family = Families.Cyclon
+			if   (temp == Families.Cyclon.Token):		self.__family = Families.Cyclon
 			elif (temp == Families.Stratix.Token):	self.__family = Families.Stratix
 
 #			deviceRegExpStr =  r"(?P<st1>[cfhlstx]{0,2})"			# device subtype - part 1
@@ -350,8 +349,8 @@ class Device:
 				subtype[1]
 			)
 		elif (self.__vendor is Vendors.Altera):
-			raise NotImplementedException("Device.ShortName() not implemented for vendor Altera")
-			return "ep...."
+			raise NotImplementedError("Device.ShortName() not implemented for vendor Altera")
+			# FIXME: return "ep...."
 	
 	# @CachedReadOnlyProperty
 	@property
@@ -369,8 +368,8 @@ class Device:
 				self.__pinCount
 			)
 		elif (self.__vendor is Vendors.Altera):
-			raise NotImplementedException("Device.FullName() not implemented for vendor Altera")
-			return "ep...."
+			raise NotImplementedError("Device.FullName() not implemented for vendor Altera")
+			# FIXME: return "ep...."
 	
 	@property
 	def Name(self):

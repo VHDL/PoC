@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 #
 # Python Class:			Xilinx Hardware Server specific classes
 #
@@ -40,7 +40,14 @@ else :
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Xilinx.HardwareServer")
 
 
-class Configuration:
+from collections					import OrderedDict
+from pathlib							import Path
+
+from Base.Configuration import Configuration as BaseConfiguration, ConfigurationException
+# from Base.Executable import Executable, ExecutableArgument, LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument
+
+
+class Configuration(BaseConfiguration):
 	__vendor =		"Xilinx"
 	__shortName =	"HardwareServer"
 	__LongName =	"Xilinx HardwareServer"
@@ -92,9 +99,9 @@ class Configuration:
 			xilinxDirectoryPath = Path(xilinxDirectory)
 			hardwareServerDirectoryPath = xilinxDirectoryPath / "HardwareServer" / hardwareServerVersion
 
-			if not xilinxDirectoryPath.exists() :          raise BaseException(
+			if not xilinxDirectoryPath.exists() :          raise ConfigurationException(
 				"Xilinx installation directory '%s' does not exist." % xilinxDirectory)
-			if not hardwareServerDirectoryPath.exists() :  raise BaseException(
+			if not hardwareServerDirectoryPath.exists() :  raise ConfigurationException(
 				"Xilinx HardwareServer version '%s' is not installed." % hardwareServerVersion)
 
 			self.pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
@@ -103,7 +110,7 @@ class Configuration:
 				'InstallationDirectory'] = '${Xilinx:InstallationDirectory}/HardwareServer/${Version}'
 			self.pocConfig['Xilinx.HardwareServer']['BinaryDirectory'] = '${InstallationDirectory}/bin'
 		else :
-			raise BaseException("unknown option")
+			raise ConfigurationException("unknown option")
 
 def manualConfigureForLinux(self) :
 	# Ask for installed Xilinx HardwareServer
@@ -124,9 +131,9 @@ def manualConfigureForLinux(self) :
 		xilinxDirectoryPath = Path(xilinxDirectory)
 		hardwareServerDirectoryPath = xilinxDirectoryPath / "HardwareServer" / hardwareServerVersion
 
-		if not xilinxDirectoryPath.exists() :          raise BaseException(
+		if not xilinxDirectoryPath.exists() :          raise ConfigurationException(
 			"Xilinx installation directory '%s' does not exist." % xilinxDirectory)
-		if not hardwareServerDirectoryPath.exists() :  raise BaseException(
+		if not hardwareServerDirectoryPath.exists() :  raise ConfigurationException(
 			"Xilinx HardwareServer version '%s' is not installed." % hardwareServerVersion)
 
 		self.pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
@@ -135,4 +142,4 @@ def manualConfigureForLinux(self) :
 			'InstallationDirectory'] = '${Xilinx:InstallationDirectory}/HardwareServer/${Version}'
 		self.pocConfig['Xilinx.HardwareServer']['BinaryDirectory'] = '${InstallationDirectory}/bin'
 	else :
-		raise BaseException("unknown option")
+		raise ConfigurationException("unknown option")

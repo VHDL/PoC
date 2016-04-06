@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Python Module:		TODO
 # 
@@ -32,7 +32,11 @@
 DEBUG =		False#True
 DEBUG2 =	False#True
 
-from Parser.Parser		import *
+from Parser.Parser		import MismatchingParserResult, MatchingParserResult
+from Parser.Parser		import CodeDOMObject
+from Parser.Parser		import SpaceToken, CharacterToken, StringToken, NumberToken
+from Parser.Parser		import Statement, BlockStatement, ConditionalBlockStatement, Expressions
+
 
 class EmptyLine(CodeDOMObject):
 	def __init__(self):
@@ -686,7 +690,6 @@ class IfStatement(ConditionalBlockStatement):
 				token = yield
 				parser.send(token)
 		except MatchingParserResult as ex:
-			pass
 			if DEBUG2: print("IfStatementParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
 			
 		if DEBUG: print("IfStatementParser: matched {0}".format(result))
@@ -696,7 +699,7 @@ class IfStatement(ConditionalBlockStatement):
 		_indent = "  " * indent
 		buffer = _indent + "IfStatement " + self._expression.__str__()
 		for stmt in self._statements:
-			buffer += "\n{1}".format(_indent, stmt.__str__(indent + 1))
+			buffer += "\n{0}{1}".format(_indent, stmt.__str__(indent + 1))
 		return buffer
 
 class ElseIfStatement(ConditionalBlockStatement):
@@ -774,13 +777,11 @@ class ElseIfStatement(ConditionalBlockStatement):
 		parser = cls.GetRepeatParser(result.AddStatement, BlockedStatement.GetParser)
 		parser.send(None)
 		
-		statementList = None
 		try:
 			while True:
 				token = yield
 				parser.send(token)
 		except MatchingParserResult as ex:
-			pass
 			if DEBUG2: print("ElseIfStatementParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
 		
 		if DEBUG: print("ElseIfStatementParser: matched {0}".format(result))
@@ -790,7 +791,7 @@ class ElseIfStatement(ConditionalBlockStatement):
 		_indent = "  " * indent
 		buffer = _indent + "ElseIfStatement" + self._expression.__str__()
 		for stmt in self._statements:
-			buffer += "\n{1}".format(_indent, stmt.__str__(indent + 1))
+			buffer += "\n{0}{1}".format(_indent, stmt.__str__(indent + 1))
 		return buffer
 		
 class ElseStatement(BlockStatement):
@@ -840,13 +841,11 @@ class ElseStatement(BlockStatement):
 		parser = cls.GetRepeatParser(result.AddStatement, BlockedStatement.GetParser)
 		parser.send(None)
 		
-		statementList = None
 		try:
 			while True:
 				token = yield
 				parser.send(token)
 		except MatchingParserResult as ex:
-			pass
 			if DEBUG2: print("ElseStatementParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
 
 		if DEBUG: print("ElseStatementParser: matched {0}".format(result))
@@ -856,7 +855,7 @@ class ElseStatement(BlockStatement):
 		_indent = "  " * indent
 		buffer = _indent + "ElseStatement"
 		for stmt in self._statements:
-			buffer += "\n{1}".format(_indent, stmt.__str__(indent + 1))
+			buffer += "\n{0}{1}".format(_indent, stmt.__str__(indent + 1))
 		return buffer
 		
 class IfElseIfElseStatement(Statement):

@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Python Class:			TODO
 # 
@@ -74,7 +74,7 @@ class Families(Enum):
 		return str(self.name).lower()
 	
 	def Token(self):
-		if	 (self == Families.Spartan):	return "s"
+		if   (self == Families.Spartan):	return "s"
 		elif (self == Families.Artix):		return "a"
 		elif (self == Families.Kintex):		return "k"
 		elif (self == Families.Virtex):		return "v"
@@ -109,7 +109,7 @@ class SubTypes(Enum):
 			return self.name.lower()
 
 	def groups(self):
-		if	 (self == SubTypes.NoSubType):	return ("",	"")
+		if   (self == SubTypes.NoSubType):	return ("",	"")
 		elif (self == SubTypes.X):					return ("x",	"")
 		elif (self == SubTypes.T):					return ("",		"t")
 		elif (self == SubTypes.XT):					return ("x",	"t")
@@ -170,7 +170,7 @@ class Device:
 			self.generation = int(deviceString[2:3])
 
 			temp = deviceString[3:4].lower()
-			if	 (temp == Families.Artix.Token()):		self.family = Families.Artix
+			if   (temp == Families.Artix.Token()):		self.family = Families.Artix
 			elif (temp == Families.Kintex.Token()):		self.family = Families.Kintex
 			elif (temp == Families.Spartan.Token()):	self.family = Families.Spartan
 			elif (temp == Families.Virtex.Token()):		self.family = Families.Virtex
@@ -214,7 +214,7 @@ class Device:
 			self.generation = int(deviceString[2:3])
 
 			temp = deviceString[3:4].lower()
-			if	 (temp == Families.Cyclon.Token()):		self.family = Families.Cyclon
+			if   (temp == Families.Cyclon.Token()):		self.family = Families.Cyclon
 			elif (temp == Families.Stratix.Token()):	self.family = Families.Stratix
 
 #			deviceRegExpStr =  r"(?P<st1>[cfhlstx]{0,2})"			# device subtype - part 1

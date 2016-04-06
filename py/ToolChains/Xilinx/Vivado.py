@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 #
 # Python Class:			Xilinx Vivado specific classes
 #
@@ -32,6 +32,9 @@
 # ==============================================================================
 #
 # entry point
+from Base.Project import Project as BaseProject, ProjectFile, ConstraintFile
+
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -41,14 +44,21 @@ else:
 
 
 from collections					import OrderedDict
+from pathlib							import Path
 from os										import environ
 
-from Base.Exceptions		import PlatformNotSupportedException
-from Base.Configuration import ConfigurationBase, ConfigurationException, SkipConfigurationException
-from Base.Executable		import *
+from Base.Exceptions			import PlatformNotSupportedException
+from Base.ToolChain import ToolChainException
+from Base.Executable							import Executable
+from Base.Executable							import ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, StringArgument, CommandLineArgumentList
+from Base.Logging					import LogEntry, Severity
+from Base.Configuration 	import Configuration as BaseConfiguration, ConfigurationException, SkipConfigurationException
 
 
-class Configuration(ConfigurationBase):
+class VivadoException(ToolChainException):
+	pass
+
+class Configuration(BaseConfiguration):
 	_vendor =		"Xilinx"
 	_shortName =	"Vivado"
 	_longName =	"Xilinx Vivado"
@@ -197,6 +207,7 @@ class Vivado(VivadoSimMixIn):
 	def GetSimulator(self):
 		return XSim(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
 
+
 class XVhComp(Executable, VivadoSimMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		VivadoSimMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
@@ -206,23 +217,55 @@ class XVhComp(Executable, VivadoSimMixIn):
 		else:																						raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, executablePath, logger=logger)
 
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
 
+	@property
+	def HasWarnings(self):
+		return self._hasWarnings
 
-	def Compile(self, vhdlFile):
+	@property
+	def HasErrors(self):
+		return self._hasErrors
+
+	def Compile(self):
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
-		print(_indent + "xvhcomp messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise VivadoException("Failed to launch xvhcomp.") from ex
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			iterator = iter(VHDLCompilerFilter(self.GetReader()))
+
+			line = next(iterator)
+			self._hasOutput = True
+			self._LogNormal("    xvhcomp messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
+			self._LogNormal("    " + ("-" * 76))
+
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
+				line.Indent(2)
+				self._Log(line)
+				line = next(iterator)
+
+		except StopIteration as ex:
+			pass
+		except VivadoException:
+			raise
+		# except Exception as ex:
+		#	raise GHDLException("Error while executing GHDL.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
 
 
 class XElab(Executable, VivadoSimMixIn):
@@ -235,6 +278,18 @@ class XElab(Executable, VivadoSimMixIn):
 		super().__init__(platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+
+	@property
+	def HasWarnings(self):
+		return self._hasWarnings
+
+	@property
+	def HasErrors(self):
+		return self._hasErrors
 
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
@@ -298,19 +353,41 @@ class XElab(Executable, VivadoSimMixIn):
 
 	def Link(self):
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
-		print(_indent + "xelab messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise VivadoException("Failed to launch xelab.") from ex
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			iterator = iter(ElaborationFilter(self.GetReader()))
+
+			line = next(iterator)
+			self._hasOutput = True
+			self._LogNormal("    xelab messages for '{0}'".format(self.Parameters[self.SwitchProjectFile]))
+			self._LogNormal("    " + ("-" * 76))
+
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
+				line.Indent(2)
+				self._Log(line)
+				line = next(iterator)
+
+		except StopIteration as ex:
+			pass
+		except VivadoException:
+			raise
+		# except Exception as ex:
+		#	raise GHDLException("Error while executing GHDL.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
 
 
 class XSim(Executable, VivadoSimMixIn):
@@ -323,6 +400,18 @@ class XSim(Executable, VivadoSimMixIn):
 		super().__init__(platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+
+	@property
+	def HasWarnings(self):
+		return self._hasWarnings
+
+	@property
+	def HasErrors(self):
+		return self._hasErrors
 
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
@@ -357,17 +446,131 @@ class XSim(Executable, VivadoSimMixIn):
 
 	def Simulate(self):
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
-		print(_indent + "xsim messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise VivadoException("Failed to launch xsim.") from ex
 
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			iterator = iter(SimulatorFilter(self.GetReader()))
+
+			line = next(iterator)
+			self._hasOutput = True
+			self._LogNormal("    xsim messages for '{0}'".format(self.Parameters[self.SwitchSnapshot]))
+			self._LogNormal("    " + ("-" * 76))
+
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
+				line.Indent(2)
+				self._Log(line)
+				line = next(iterator)
+
+		except StopIteration as ex:
+			pass
+		except VivadoException:
+			raise
+		# except Exception as ex:
+		#	raise GHDLException("Error while executing GHDL.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
+
+
+def VHDLCompilerFilter(gen):
+	for line in gen:
+		yield LogEntry(line, Severity.Normal)
+
+def ElaborationFilter(gen):
+	for line in gen:
+		if line.startswith("Vivado Simulator "):
+			continue
+		elif line.startswith("Copyright 1986-1999"):
+			continue
+		elif line.startswith("Running: "):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("ERROR: "):
+			yield LogEntry(line, Severity.Error)
+		elif line.startswith("WARNING: "):
+			yield LogEntry(line, Severity.Warning)
+		elif line.startswith("INFO: "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("Multi-threading is "):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("Determining compilation order of HDL files."):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("Determining compilation order of HDL files."):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("Starting static elaboration"):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("Completed static elaboration"):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("Starting simulation data flow analysis"):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("Completed simulation data flow analysis"):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("Time Resolution for simulation is"):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("Compiling package "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("Compiling architecture "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("Built simulation snapshot "):
+			yield LogEntry(line, Severity.Verbose)
+		elif ": warning:" in line:
+			yield LogEntry(line, Severity.Warning)
+		else:
+			yield LogEntry(line, Severity.Normal)
+
+def SimulatorFilter(gen):
+	PoCOutputFound = False
+	for line in gen:
+		if (line == ""):
+			if (not PoCOutputFound):
+				continue
+			else:
+				yield LogEntry(line, Severity.Normal)
+		elif line.startswith("Vivado Simulator "):
+			continue
+		elif line.startswith("****** xsim "):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("  **** SW Build "):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("  **** IP Build "):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("    ** Copyright "):
+			continue
+		elif line.startswith("INFO: [Common 17-206] Exiting xsim "):
+			continue
+		elif line.startswith("source "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("# ") or line.startswith("## "):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("Time resolution is "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("========================================"):
+			PoCOutputFound = True
+			yield LogEntry(line, Severity.Normal)
+		else:
+			yield LogEntry(line, Severity.Normal)
+
+
+class VivadoProject(BaseProject):
+	def __init__(self, name):
+		super().__init__(name)
+
+
+class VivadoProjectFile(ProjectFile):
+	def __init__(self, file):
+		super().__init__(file)
+
+
+class XilinxDesignConstraintFile(ConstraintFile):
+	def __init__(self, file):
+		super().__init__(file)

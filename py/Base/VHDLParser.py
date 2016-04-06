@@ -5,7 +5,7 @@
 # ==============================================================================
 # Python Module:		TODO
 # 
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Description:
 # ------------------------------------

@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 #
 # Python Class:			Altera QuartusII specific classes
 #
@@ -32,6 +32,9 @@
 # ==============================================================================
 #
 # entry point
+from Base.Project import Project as BaseProject, ProjectFile, ConstraintFile
+
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -40,7 +43,14 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Altera.QuartusII")
 
 
-class Configuration:
+from collections									import OrderedDict
+from pathlib											import Path
+
+# from Base.Executable							import Executable, ExecutableArgument, LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument
+from Base.Configuration						import Configuration as BaseConfiguration, ConfigurationException
+
+
+class Configuration(BaseConfiguration):
 	def manualConfigureForWindows(self) :
 		# Ask for installed Altera Quartus-II
 		isAlteraQuartusII = input('Is Altera Quartus-II installed on your system? [Y/n/p]: ')
@@ -54,15 +64,16 @@ class Configuration:
 			quartusIIVersion = input('Altera QuartusII version number [15.0]: ')
 			print()
 
+
 			alteraDirectory = alteraDirectory if alteraDirectory != ""  else "C:\Altera"
 			quartusIIVersion = quartusIIVersion if quartusIIVersion != ""  else "15.0"
 
 			alteraDirectoryPath = Path(alteraDirectory)
 			quartusIIDirectoryPath = alteraDirectoryPath / quartusIIVersion / "quartus"
 
-			if not alteraDirectoryPath.exists() :    raise BaseException(
+			if not alteraDirectoryPath.exists() :    raise ConfigurationException(
 				"Altera installation directory '%s' does not exist." % alteraDirectory)
-			if not quartusIIDirectoryPath.exists() :  raise BaseException(
+			if not quartusIIDirectoryPath.exists() :  raise ConfigurationException(
 				"Altera QuartusII version '%s' is not installed." % quartusIIVersion)
 
 			self.pocConfig['Altera']['InstallationDirectory'] = alteraDirectoryPath.as_posix()
@@ -90,9 +101,9 @@ class Configuration:
 					'InstallationDirectory'] = '${Altera:InstallationDirectory}/${Altera.QuartusII:Version}/modelsim_ase'
 				self.pocConfig['Altera.ModelSim']['BinaryDirectory'] = '${InstallationDirectory}/win32aloem'
 			else :
-				raise BaseException("unknown option")
+				raise ConfigurationException("unknown option")
 		else :
-			raise BaseException("unknown option")
+			raise ConfigurationException("unknown option")
 
 	def manualConfigureForLinux(self) :
 		# Ask for installed Altera Quartus-II
@@ -113,9 +124,9 @@ class Configuration:
 			alteraDirectoryPath = Path(alteraDirectory)
 			quartusIIDirectoryPath = alteraDirectoryPath / quartusIIVersion / "quartus"
 
-			if not alteraDirectoryPath.exists() :    raise BaseException(
+			if not alteraDirectoryPath.exists() :    raise ConfigurationException(
 				"Altera installation directory '%s' does not exist." % alteraDirectory)
-			if not quartusIIDirectoryPath.exists() :  raise BaseException(
+			if not quartusIIDirectoryPath.exists() :  raise ConfigurationException(
 				"Altera QuartusII version '%s' is not installed." % quartusIIVersion)
 
 			self.pocConfig['Altera']['InstallationDirectory'] = alteraDirectoryPath.as_posix()
@@ -143,6 +154,21 @@ class Configuration:
 					'InstallationDirectory'] = '${Altera:InstallationDirectory}/${Altera.QuartusII:Version}/modelsim_ase'
 				self.pocConfig['Altera.ModelSim']['BinaryDirectory'] = '${InstallationDirectory}/bin'
 			else :
-				raise BaseException("unknown option")
+				raise ConfigurationException("unknown option")
 		else :
-			raise BaseException("unknown option")
+			raise ConfigurationException("unknown option")
+
+
+class QuartusProject(BaseProject):
+	def __init__(self, name):
+		super().__init__(name)
+
+
+class QuartusProjectFile(ProjectFile):
+	def __init__(self, file):
+		super().__init__(file)
+
+
+class SynopsysDesignConstraintFile(ConstraintFile):
+	def __init__(self, file):
+		super().__init__(file)

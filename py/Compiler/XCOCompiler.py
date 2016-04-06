@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Python Class:			This PoCXCOCompiler compiles xco IPCores to netlists
 # 
@@ -48,12 +48,14 @@ from os											import chdir
 from pathlib								import Path
 from textwrap								import dedent
 
-from Base.Exceptions				import *
-from Base.Compiler					import PoCCompiler
+from Base.Exceptions				import NotConfiguredException, PlatformNotSupportedException
+from Base.Project						import FileTypes, VHDLVersion, Environment, ToolChain, Tool, FileListFile
+from Base.Compiler					import Compiler as BaseCompiler, CompilerException
+from PoC.Project					import Project as PoCProject
 from ToolChains.Xilinx.ISE	import ISE
 
 
-class Compiler(PoCCompiler):
+class Compiler(BaseCompiler):
 	def __init__(self, host, showLogs, showReport):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
@@ -128,7 +130,7 @@ class Compiler(PoCCompiler):
 		if (len(preCopyFileList) != 0):
 			self._LogDebug("PreCopyTasks: \n  " + ("\n  ".join(preCopyFileList.split("\n"))))
 
-			preCopyRegExpStr	 = r"^\s*(?P<SourceFilename>.*?)"			# Source filename
+			preCopyRegExpStr	= r"^\s*(?P<SourceFilename>.*?)"			# Source filename
 			preCopyRegExpStr += r"\s->\s"													#	Delimiter signs
 			preCopyRegExpStr += r"(?P<DestFilename>.*?)$"					#	Destination filename
 			preCopyRegExp = re.compile(preCopyRegExpStr)

@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 #
 # Python Class:			Aldec Active-HDL specific classes
 #
@@ -40,19 +40,24 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Aldec.ActiveHDL")
 
 
-from re											import compile as re_compile
+#from collections				import OrderedDict
+#from pathlib						import Path
+#from re											import compile as re_compile
 
-from Base.Exceptions							import ToolChainException, PlatformNotSupportedException
-from Base.Logging									import LogEntry, Severity
-from Base.Executable							import *
+from Base.Exceptions			import PlatformNotSupportedException
+from Base.ToolChain				import ToolChainException
+from Base.Logging					import LogEntry, Severity
+from Base.Executable			import Executable, \
+																	ExecutableArgument, PathArgument, StringArgument, \
+																	LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, CommandLineArgumentList
+from Base.Configuration		import Configuration as BaseConfiguration, ConfigurationException
 
 
 class ActiveHDLException(ToolChainException):
 	pass
 
-class Configuration:
+class Configuration(BaseConfiguration):
 	pass
-
 
 class ActiveHDLMixIn:
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
@@ -146,9 +151,7 @@ class VHDLCompiler(Executable, ActiveHDLMixIn):
 		self._hasWarnings = False
 		self._hasErrors = False
 		try:
-			filter = VHDLCompilerFilter(self.GetReader())
-			iterator = iter(filter)
-
+			iterator = iter(VHDLCompilerFilter(self.GetReader()))
 			line = next(iterator)
 
 
@@ -224,10 +227,9 @@ class StandaloneSimulator(Executable, ActiveHDLMixIn):
 		self._hasWarnings = False
 		self._hasErrors = False
 		try:
-			filter = SimulatorFilter(self.GetReader())
-			iterator = iter(filter)
-
+			iterator = iter(SimulatorFilter(self.GetReader()))
 			line = next(iterator)
+
 			self._hasOutput = True
 			self._LogNormal("    vsimsa messages for '{0}.{1}'".format("?????", "?????"))
 			self._LogNormal("    " + ("-" * 76))
@@ -370,10 +372,9 @@ class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLMixIn):
 		self._hasWarnings = False
 		self._hasErrors = False
 		try:
-			filter = VHDLLibraryToolFilter(self.GetReader())
-			iterator = iter(filter)
-
+			iterator = iter(VHDLLibraryToolFilter(self.GetReader()))
 			line = next(iterator)
+
 			self._hasOutput = True
 			self._LogNormal("    alib messages for '{0}'".format(self.Parameters[self.SwitchLibraryName]))
 			self._LogNormal("    " + ("-" * 76))
@@ -415,12 +416,6 @@ class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLMixIn):
 
 
 def VHDLCompilerFilter(gen):
-	# warningRegExpPattern =	"COMP96 WARNING .*"					#
-	# errorRegExpPattern =		".+?:\d+:\d+: .*"  					# <Path>:<line>:<column>: <message>
-
-	# warningRegExp =	re_compile(warningRegExpPattern)
-	# errorRegExp =		re_compile(errorRegExpPattern)
-
 	for line in gen:
 		if line.startswith("Aldec, Inc. VHDL Compiler"):
 			yield LogEntry(line, Severity.Debug)
@@ -430,6 +425,8 @@ def VHDLCompilerFilter(gen):
 			yield LogEntry(line, Severity.Debug)
 		elif line.startswith("VLM Initialized with path"):
 			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("VLM ERROR "):
+			yield LogEntry(line, Severity.Error)
 		elif line.startswith("COMP96 File: "):
 			yield LogEntry(line, Severity.Verbose)
 		elif line.startswith("COMP96 Compile Package "):
@@ -451,12 +448,6 @@ def VHDLCompilerFilter(gen):
 
 
 def SimulatorFilter(gen):
-	#warningRegExpPattern =	".+?:\d+:\d+:warning: .*"		# <Path>:<line>:<column>:warning: <message>
-	#errorRegExpPattern =		".+?:\d+:\d+: .*"  					# <Path>:<line>:<column>: <message>
-
-	#warningRegExp =	re_compile(warningRegExpPattern)
-	#errorRegExp =		re_compile(errorRegExpPattern)
-
 	PoCOutputFound = False
 	for line in gen:
 		if line.startswith("asim"):

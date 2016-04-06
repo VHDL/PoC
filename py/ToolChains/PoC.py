@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 #
 # Python Class:			PoC specific classes
 #
@@ -40,10 +40,10 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.PoC")
 
 
-from Base.Configuration		import ConfigurationBase
+from Base.Configuration		import Configuration as BaseConfiguration
 
 
-class Configuration(ConfigurationBase):
+class Configuration(BaseConfiguration):
 	_vendor =		None
 	_shortName = "PoC"
 	_longName =	"PoC"

@@ -150,8 +150,8 @@ begin
 		Element_nxt	<= mux(MoveDown, mux(MoveUp,	Element_d,	ElementsUp(i)),	ElementsDown(i + 1));
 		Valid_nxt		<= mux(MoveDown, mux(MoveUp,	Valid_d,		ValidsUp(i)	 ),	ValidsDown(i + 1)	 );
 		
-		Element_d		<= ffdre(q => Element_d,	d => Element_nxt,	rst => Reset)	when rising_edge(Clock);
-		Valid_d			<= ffdre(q => Valid_d,		d => Valid_nxt,		rst => Reset)	when rising_edge(Clock);
+		Element_d		<= ffdre(q => Element_d,	d => Element_nxt,	rst => Reset, INIT => INITIAL_ELEMENT)	when rising_edge(Clock);
+		Valid_d			<= ffdre(q => Valid_d,		d => Valid_nxt,		rst => Reset, INIT => INITIAL_VALID)  	when rising_edge(Clock);
 		
 		ElementsDown(i)		<= Element_d;
 		ValidsDown(i)			<= Valid_d;

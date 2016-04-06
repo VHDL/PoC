@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 #
 # Python Class:			Mentor PrecisionRTL specific classes
 #
@@ -39,6 +39,10 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Mentor.PrecisionRTL")
 
+from collections				import OrderedDict
+from pathlib						import Path
 
-class Configuration:
+from Base.Configuration import Configuration as BaseConfiguration
+
+class Configuration(BaseConfiguration):
 	pass

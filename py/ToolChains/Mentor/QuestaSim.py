@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 #
 # Python Class:			Mentor QuestaSim specific classes
 #
@@ -40,10 +40,21 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Mentor.QuestaSim")
 
 
-from Base.Executable		import *
+from collections				import OrderedDict
+from pathlib						import Path
+
+from Base.Executable		import Executable
+from Base.Executable		import ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument, CommandLineArgumentList
+from Base.Exceptions		import PlatformNotSupportedException
+from Base.ToolChain import ToolChainException
+from Base.Configuration import Configuration as BaseConfiguration, ConfigurationException
+from Base.Logging				import LogEntry, Severity
 
 
-class Configuration:
+class QuestaException(ToolChainException):
+	pass
+
+class Configuration(BaseConfiguration):
 	__vendor =		"Mentor"
 	__shortName =	"QuestaSim"
 	__LongName =	"Mentor QuestaSim"
@@ -118,9 +129,9 @@ class Configuration:
 				QuestaSimDirectoryPath = Path(QuestaSimDirectory)
 				QuestaSimExecutablePath = QuestaSimDirectoryPath / "win64" / "vsim.exe"
 
-				if not QuestaSimDirectoryPath.exists() :    raise BaseException(
+				if not QuestaSimDirectoryPath.exists() :    raise ConfigurationException(
 					"QuestaSIM installation directory '%s' does not exist." % QuestaSimDirectory)
-				if not QuestaSimExecutablePath.exists() :  raise BaseException("QuestaSIM is not installed.")
+				if not QuestaSimExecutablePath.exists() :  raise ConfigurationException("QuestaSIM is not installed.")
 
 				self.pocConfig['Mentor']['InstallationDirectory'] = MentorDirectoryPath.as_posix()
 
@@ -128,9 +139,9 @@ class Configuration:
 				self.pocConfig['Mentor.QuestaSIM']['InstallationDirectory'] = QuestaSimDirectoryPath.as_posix()
 				self.pocConfig['Mentor.QuestaSIM']['BinaryDirectory'] = '${InstallationDirectory}/win64'
 			else :
-				raise BaseException("unknown option")
+				raise ConfigurationException("unknown option")
 		else :
-			raise BaseException("unknown option")
+			raise ConfigurationException("unknown option")
 
 	def manualConfigureForLinux(self) :
 		# Ask for installed Mentor QuestaSIM
@@ -151,15 +162,15 @@ class Configuration:
 			QuestaSimDirectoryPath = Path(QuestaSimDirectory)
 			QuestaSimExecutablePath = QuestaSimDirectoryPath / "bin" / "vsim"
 
-			if not QuestaSimDirectoryPath.exists() :    raise BaseException(
+			if not QuestaSimDirectoryPath.exists() :    raise ConfigurationException(
 				"QuestaSIM installation directory '%s' does not exist." % QuestaSimDirectory)
-			if not QuestaSimExecutablePath.exists() :  raise BaseException("QuestaSIM is not installed.")
+			if not QuestaSimExecutablePath.exists() :  raise ConfigurationException("QuestaSIM is not installed.")
 
 			self.pocConfig['Mentor.QuestaSIM']['Version'] = QuestaSimVersion
 			self.pocConfig['Mentor.QuestaSIM']['InstallationDirectory'] = QuestaSimDirectoryPath.as_posix()
 			self.pocConfig['Mentor.QuestaSIM']['BinaryDirectory'] = '${InstallationDirectory}/bin'
 		else :
-			raise BaseException("unknown option")
+			raise ConfigurationException("unknown option")
 
 class QuestaSimMixIn:
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
@@ -192,6 +203,18 @@ class QuestaVHDLCompiler(Executable, QuestaSimMixIn):
 		super().__init__(platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+
+	@property
+	def HasWarnings(self):
+		return self._hasWarnings
+
+	@property
+	def HasErrors(self):
+		return self._hasErrors
 
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
@@ -246,19 +269,43 @@ class QuestaVHDLCompiler(Executable, QuestaSimMixIn):
 
 	def Compile(self):
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
-		print(_indent + "vcom messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise QuestaException("Failed to launch vcom run.") from ex
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			iterator = iter(QuestaVComFilter(self.GetReader()))
+
+			line = next(iterator)
+			line.Indent(2)
+			self._hasOutput = True
+			self._LogNormal("    vcom messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
+			self._LogNormal("    " + ("-" * 76))
+			self._Log(line)
+
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
+				line = next(iterator)
+				line.Indent(2)
+				self._Log(line)
+
+		except StopIteration as ex:
+			pass
+		except QuestaException:
+			raise
+		# except Exception as ex:
+		#	raise QuestaException("Error while executing GHDL.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
 
 class QuestaSimulator(Executable, QuestaSimMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
@@ -271,6 +318,18 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 
 		self.Parameters[self.Executable] = executablePath
 
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+
+	@property
+	def HasWarnings(self):
+		return self._hasWarnings
+
+	@property
+	def HasErrors(self):
+		return self._hasErrors
+
 	class Executable(metaclass=ExecutableArgument):
 		_value =	None
 
@@ -280,6 +339,10 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 
 	class FlagBatchMode(metaclass=ShortFlagArgument):
 		_name =		"batch"
+		_value =	None
+
+	class FlagGuiMode(metaclass=ShortFlagArgument):
+		_name =		"gui"
 		_value =	None
 
 	class SwitchBatchCommand(metaclass=ShortTupleArgument):
@@ -325,6 +388,7 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 		Executable,
 		FlagQuietMode,
 		FlagBatchMode,
+		FlagGuiMode,
 		SwitchBatchCommand,
 		FlagCommandLineMode,
 		SwitchModelSimIniFile,
@@ -339,19 +403,43 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 
 	def Simulate(self):
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
-		print(_indent + "vsim messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise QuestaException("Failed to launch vsim run.") from ex
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			iterator = iter(QuestaVSimFilter(self.GetReader()))
+
+			line = next(iterator)
+			line.Indent(2)
+			self._hasOutput = True
+			self._LogNormal("    vsim messages for '{0}'".format(self.Parameters[self.SwitchTopLevel]))
+			self._LogNormal("    " + ("-" * 76))
+			self._Log(line)
+
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
+				line = next(iterator)
+				line.Indent(2)
+				self._Log(line)
+
+		except StopIteration as ex:
+			pass
+		except QuestaException:
+			raise
+		# except Exception as ex:
+		#	raise QuestaException("Error while executing GHDL.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
 
 class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
@@ -364,6 +452,18 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 
 		self.Parameters[self.Executable] = executablePath
 
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+
+	@property
+	def HasWarnings(self):
+		return self._hasWarnings
+
+	@property
+	def HasErrors(self):
+		return self._hasErrors
+
 	class Executable(metaclass=ExecutableArgument):			pass
 	class SwitchLibraryName(metaclass=StringArgument):	pass
 
@@ -374,16 +474,84 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 
 	def CreateLibrary(self):
 		parameterList = self.Parameters.ToArgumentList()
-
 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
 
-		_indent = "    "
-		print(_indent + "vlib messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		print(_indent + "-" * 80)
 		try:
 			self.StartProcess(parameterList)
-			for line in self.GetReader():
-				print(_indent + line)
 		except Exception as ex:
-			raise ex  # SimulatorException() from ex
-		print(_indent + "-" * 80)
+			raise QuestaException("Failed to launch vlib run.") from ex
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			iterator = iter(QuestaVLibFilter(self.GetReader()))
+
+			line = next(iterator)
+			line.Indent(2)
+			self._hasOutput = True
+			self._LogNormal("    vlib messages for '{0}'".format(self.Parameters[self.SwitchLibraryName]))
+			self._LogNormal("    " + ("-" * 76))
+			self._Log(line)
+
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
+				line = next(iterator)
+				line.Indent(2)
+				self._Log(line)
+
+		except StopIteration as ex:
+			pass
+		except QuestaException:
+			raise
+		# except Exception as ex:
+		#	raise QuestaException("Error while executing GHDL.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
+
+
+def QuestaVComFilter(gen):
+	for line in gen:
+		if line.startswith("** Warning: "):
+			yield LogEntry(line, Severity.Warning)
+		elif line.startswith("** Error: "):
+			yield LogEntry(line, Severity.Error)
+		else:
+			yield LogEntry(line, Severity.Normal)
+
+def QuestaVSimFilter(gen):
+	PoCOutputFound = False
+	for line in gen:
+		if line.startswith("# Loading "):
+			yield LogEntry(line, Severity.Debug)
+		elif line.startswith("# //"):
+			if line[6:].startswith("Questa"):
+				yield LogEntry(line, Severity.Debug)
+			elif line[6:].startswith("Version "):
+				yield LogEntry(line, Severity.Debug)
+			else:
+				continue
+		elif line.startswith("# do "):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("# ========================================"):
+			PoCOutputFound = True
+			yield LogEntry(line[2:], Severity.Normal)
+		elif line.startswith("# "):
+			if (not PoCOutputFound):
+				yield LogEntry(line, Severity.Verbose)
+			else:
+				yield LogEntry(line[2:], Severity.Normal)
+		else:
+			yield LogEntry(line, Severity.Normal)
+
+def QuestaVLibFilter(gen):
+	for line in gen:
+		if line.startswith("** Warning: "):
+			yield LogEntry(line, Severity.Warning)
+		elif line.startswith("** Error: "):
+			yield LogEntry(line, Severity.Error)
+		else:
+			yield LogEntry(line, Severity.Normal)

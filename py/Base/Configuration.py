@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 #
 # Python Class:			TODO:
 #
@@ -38,10 +38,13 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Base.Configuration")
 
 
-class ConfigurationException(BaseException):
+from Base.Exceptions			import ExceptionBase
+
+
+class ConfigurationException(ExceptionBase):
 	pass
 
-class SkipConfigurationException(BaseException):
+class SkipConfigurationException(ExceptionBase):
 	pass
 
 class RegisterSubClassesMeta(type):
@@ -69,7 +72,7 @@ class ISubClassRegistration(metaclass=RegisterSubClassesMeta):
 	def SubClasses(self):
 		return self._subclasses
 
-class ConfigurationBase:		#(ISubClassRegistration):
+class Configuration:		#(ISubClassRegistration):
 	_privateConfiguration =	{}
 	_vendor =								"Unknown"
 	_longName =							"Unknown"

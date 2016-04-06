@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Python Class:			TODO
 # 
@@ -38,14 +38,17 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.vSimSimulator")
 
 # load dependencies
-from colorama											import Fore as Foreground
 from configparser									import NoSectionError
 from os														import chdir
 
-from Base.Exceptions							import *
-from Base.Simulator								import Simulator as BaseSimulator, VHDLTestbenchLibraryName
-from PoC.PoCProject								import *
-from ToolChains.Mentor.QuestaSim	import QuestaSim
+from colorama											import Fore as Foreground
+
+# from Base.Exceptions							import PlatformNotSupportedException, NotConfiguredException
+from Base.Project									import FileTypes, VHDLVersion, Environment, ToolChain, Tool, FileListFile
+from Base.Simulator								import SimulatorException, Simulator as BaseSimulator, VHDLTestbenchLibraryName
+# from Parser.Parser								import ParserException
+from PoC.Project								import Project as PoCProject
+from ToolChains.Mentor.QuestaSim	import QuestaSim, QuestaException
 
 
 class Simulator(BaseSimulator):
@@ -169,7 +172,14 @@ class Simulator(BaseSimulator):
 			vcom.Parameters[vcom.SwitchVHDLLibrary] =	file.VHDLLibraryName
 			vcom.Parameters[vcom.ArgLogFile] =				vcomLogFile
 			vcom.Parameters[vcom.ArgSourceFile] =			file.Path
-			vcom.Compile()
+
+			try:
+				vcom.Compile()
+			except QuestaException as ex:
+				raise SimulatorException("Error while compiling '{0}'.".format(str(file.Path))) from ex
+
+			if vcom.HasErrors:
+				raise SimulatorException("Error while compiling '{0}'.".format(str(file.Path)))
 
 			# delete empty log files
 			if (vcomLogFile.stat().st_size == 0):
@@ -201,7 +211,7 @@ class Simulator(BaseSimulator):
 		vsim.Parameters[vsim.FlagOptimization] =			True
 		vsim.Parameters[vsim.FlagReportAsError] =			"3473"
 		vsim.Parameters[vsim.SwitchTimeResolution] =	"1fs"
-		# vsim.Parameters[vsim.FlagCommandLineMode] =		True
+		vsim.Parameters[vsim.FlagGuiMode] =						True
 		vsim.Parameters[vsim.SwitchTopLevel] =				"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
 		# vsim.Parameters[vsim.SwitchTitle] =						testbenchName
 
