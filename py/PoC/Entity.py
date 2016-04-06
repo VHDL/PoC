@@ -42,6 +42,7 @@ else:
 
 # load dependencies
 from enum									import Enum, unique
+from collections					import OrderedDict
 
 #from Base.Exceptions			import CommonException
 from Base.Configuration		import ConfigurationException
@@ -76,8 +77,9 @@ setattr(EntityTypes, '__new__', _PoCEntityTypes_parser)
 
 
 class PathElement:
-	def __init__(self, name, parent):
+	def __init__(self, name, host, parent):
 		self._name =		name
+		self._host =		host
 		self._parent =	parent
 
 	@property
@@ -92,7 +94,30 @@ class PathElement:
 		return "{0}.{1}".format(str(self._parent), self._name)
 
 class Namespace(PathElement):
-	pass
+	__NonEntityNames =	["Name", "Parent", "Type", "DirectoryName", "Prefix", "Path", "relDir", "srcDir", "tbDir", "simDir", "nlDir", "xstDir"]
+
+	def __init__(self, name, configSection, host, parent=None):
+		super().__init__(name, host, parent=parent)
+
+		self._configSection = configSection
+
+		self.__namespaces =		OrderedDict()
+		self.__entities =			OrderedDict()
+		self.__testbenches =	OrderedDict()
+		self.__netlists =			OrderedDict()
+
+		self._Load()
+
+	def _Load(self):
+		for optionName in self._host.PoCConfig[self._configSection]:
+			if (optionName not in self.__NonEntityNames):
+				print(optionName)
+				section = self._host.PoCConfig[self._configSection][optionName]
+				print("--> " + section)
+
+				ns = Namespace(optionName, section, host=self._host, parent=self)
+				self.__namespaces[optionName] = ns
+
 
 	@property
 	def Root(self):
@@ -103,8 +128,13 @@ class Namespace(PathElement):
 		return []
 
 class Root(Namespace):
-	def __init__(self):
-		super().__init__("PoC", None)
+	# __DEFAULT_SpecialOptions =	["Type", "DirectoryName", "Prefix", "Path", "relDir", "srcDir", "tbDir", "simDir", "nlDir", "xstDir"]
+
+	__POCRoot_Name =						"PoC"
+	__POCRoot_SectionName =			"POC.Root"
+
+	def __init__(self, host):
+		super().__init__(self.__POCRoot_Name, self.__POCRoot_SectionName, host)
 
 	def __str__(self):
 		return self._name

@@ -33,7 +33,7 @@
 # ==============================================================================
 
 from argparse									import RawDescriptionHelpFormatter
-from configparser							import Error as ConfigParser_Error, NoOptionError, ConfigParser, ExtendedInterpolation
+from configparser							import Error as ConfigParser_Error, NoOptionError, ConfigParser		#, ExtendedInterpolation
 from os												import environ
 from pathlib									import Path
 from platform									import system as platform_system
@@ -51,7 +51,7 @@ from Compiler.XCOCompiler			import Compiler as XCOCompiler
 from Compiler.XSTCompiler			import Compiler as XSTCompiler
 from Parser.Parser						import ParserException
 from PoC.Config								import Device, Board
-from PoC.Entity								import Entity, FQN, EntityTypes
+from PoC.Entity								import Root, Entity, FQN, EntityTypes
 from PoC.Query								import Query
 from Simulator.ActiveHDLSimulator		import Simulator as ActiveHDLSimulator
 from Simulator.GHDLSimulator				import Simulator as GHDLSimulator
@@ -60,7 +60,7 @@ from Simulator.QuestaSimulator			import Simulator as QuestaSimulator
 from Simulator.VivadoSimulator			import Simulator as VivadoSimulator
 from ToolChains								import Configurations
 from lib.ArgParseAttributes		import ArgParseMixin, CommandAttribute, CommonSwitchArgumentAttribute, CommandGroupAttribute, ArgumentAttribute, SwitchArgumentAttribute, DefaultAttribute
-from lib.Functions						import Init, Exit
+from lib.Functions						import Init, Exit, ExtendedInterpolation
 
 
 # def HandleVerbosityOptions(func):
@@ -76,6 +76,7 @@ class PoC(ILogable, ArgParseMixin):
 	__scriptDirectoryName = 			"py"
 	__pocPrivateConfigFileName =	"config.private.ini"
 	__pocPublicConfigFileName =		"config.public.ini"
+	__pocEntityConfigFileName =		"config.entity.ini"
 	__pocBoardConfigFileName =		"config.boards.ini"
 
 	__tbConfigFileName =					"configuration.ini"
@@ -126,6 +127,7 @@ class PoC(ILogable, ArgParseMixin):
 		self.Directories['ScriptRoot'] =	Path(environ.get('PoCRootDirectory'))
 		self.Files['PoCPrivateConfig'] =	self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPrivateConfigFileName
 		self.Files['PoCPublicConfig'] =		self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPublicConfigFileName
+		self.Files['PoCEntityConfig'] =		self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocEntityConfigFileName
 		self.Files['PoCBoardConfig'] =		self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocBoardConfigFileName
 
 	# class properties
@@ -164,11 +166,13 @@ class PoC(ILogable, ArgParseMixin):
 	def __ReadPoCConfiguration(self):
 		pocPrivateConfigFilePath =	self.Files['PoCPrivateConfig']
 		pocPublicConfigFilePath =		self.Files['PoCPublicConfig']
+		pocEntityConfigFilePath =		self.Files['PoCEntityConfig']
 		pocBoardConfigFilePath =		self.Files['PoCBoardConfig']
 
 		self._LogDebug("Reading PoC configuration from\n  '{0}'\n  '{1}\n  '{2}'".format(str(pocPrivateConfigFilePath), str(pocPublicConfigFilePath), str(pocBoardConfigFilePath)))
 		if not pocPrivateConfigFilePath.exists():	raise NotConfiguredException("PoC's private configuration file '{0}' does not exist.".format(str(pocPrivateConfigFilePath)))	from FileNotFoundError(str(pocPrivateConfigFilePath))
 		if not pocPublicConfigFilePath.exists():	raise NotConfiguredException("PoC' public configuration file '{0}' does not exist.".format(str(pocPublicConfigFilePath)))			from FileNotFoundError(str(pocPublicConfigFilePath))
+		if not pocEntityConfigFilePath.exists():	raise NotConfiguredException("PoC' entity configuration file '{0}' does not exist.".format(str(pocEntityConfigFilePath)))			from FileNotFoundError(str(pocEntityConfigFilePath))
 		if not pocBoardConfigFilePath.exists():		raise NotConfiguredException("PoC's board configuration file '{0}' does not exist.".format(str(pocBoardConfigFilePath)))			from FileNotFoundError(str(pocBoardConfigFilePath))
 
 		# read PoC configuration
@@ -178,13 +182,16 @@ class PoC(ILogable, ArgParseMixin):
 		self.__pocConfig.read([
 			str(pocPrivateConfigFilePath),
 			str(pocPublicConfigFilePath),
+			str(pocEntityConfigFilePath),
 			str(pocBoardConfigFilePath)
 		])
 
 		# check PoC installation directory
 		if (self.Directories["PoCRoot"] != Path(self.PoCConfig['PoC']['InstallationDirectory'])):	raise NotConfiguredException("There is a mismatch between PoCRoot and PoC installation directory.")
 
-		self.__SimulationDefaultBoard =				Board(self)
+		self.__SimulationDefaultBoard =		Board(self)
+		self.__Namespaces =								Root(self)
+
 
 		# self.Directories["XSTFiles"] =			self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
 		# #self.Directories["QuartusFiles"] =	self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['QuartusSynthesisFiles']
