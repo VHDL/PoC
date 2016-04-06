@@ -65,6 +65,11 @@ class LeastRecentlyUsedDict(OrderedDict):
 			while len(self) > self._size_limit:
 				self.popitem(last=False)
 
+	@property
+	def size_limit(self):
+		"""Get the size limit."""
+		return self._size_limit
+	
 	def moveLRU(self, key, value=None):
 		"""
 		Mark key as least-recently used. 

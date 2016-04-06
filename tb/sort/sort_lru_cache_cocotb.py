@@ -75,7 +75,7 @@ class InputMonitor(BusMonitor):
 		while True:
 			# Capture signals at rising-edge of clock.
 			yield clkedge
-			vec = (self.bus.Insert.value.integer, self.bus.Free.value.integer, self.bus.KeyIn.value.integer)
+			vec = tuple([getattr(self.bus,i).value.integer for i in self._signals])
 			self._recv(vec)
 
 # ==============================================================================
@@ -133,7 +133,7 @@ class Testbench(object):
 			elif free == 1:
 				self.lru.moveLRU(keyin)
 
-			#print "=== model: lru=%s" % self.lru
+			#print "=== model: lru=%s" % self.lru.items()
 			keyout = self.lru.iterkeys().next()
 			#print "=== model: KeyOut=%d" % keyout
 			self.expected_output.append(keyout)

@@ -75,7 +75,7 @@ class InputMonitor(BusMonitor):
 		while True:
 			# Capture signals at rising-edge of clock.
 			yield clkedge
-			vec = (self.bus.Insert.value.integer, self.bus.Remove.value.integer, self.bus.DataIn.value.integer)
+			vec = tuple([getattr(self.bus,i).value.integer for i in self._signals])
 			self._recv(vec)
 
 # ==============================================================================
@@ -94,7 +94,7 @@ class OutputMonitor(BusMonitor):
 		while True:
 			# Capture signals at rising-edge of clock.
 			yield clkedge
-			vec = (self.bus.Valid.value.integer, self.bus.DataOut.value.integer)
+			vec = tuple([getattr(self.bus,i).value.integer for i in self._signals])
 			self._recv(vec)
 
 # ==============================================================================
@@ -107,6 +107,7 @@ class Testbench(object):
 
 			fail = False
 			if got_valid != exp_valid:
+				self.errors += 1
 				log.error("Received transaction differed from expected output.")
 				log.warning("Expected: Valid=%d.\nReceived: Valid=%d." % (exp_valid, got_valid))
 				if self._imm:
@@ -114,6 +115,7 @@ class Testbench(object):
 				
 			elif got_valid == 1:
 				if got_elem != exp_elem: 
+					self.errors += 1
 					log.error("Received transaction differed from expected output.")
 					log.warning("Expected: Valid=%d, DataOut=%d.\n"
 											"Received: Valid=%d, DataOut=%d." %
