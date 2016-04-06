@@ -330,7 +330,8 @@ class XElab(Executable, VivadoSimMixIn):
 		_name =		"log"
 		_value =	None
 
-	class SwitchSnapshot(metaclass=StringArgument):
+	class SwitchSnapshot(metaclass=ShortTupleArgument):
+		_name =		"s"
 		_value =	None
 
 	class ArgTopLevel(metaclass=StringArgument):

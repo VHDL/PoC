@@ -732,8 +732,8 @@ class PoC(ILogable, ArgParseMixin):
 		self.PrintHeadline()
 
 		# check if ISE is configure
-		if (len(self.PoCConfig.options("Xilinx.Vivado")) == 0):  raise NotConfiguredException("Xilinx Vivado is not configured on this system.")
-		if (environ.get('XILINX') is None):												raise EnvironmentException("Xilinx Vivado environment is not loaded in this shell environment.")
+		if (len(self.PoCConfig.options("Xilinx.Vivado")) == 0):		raise NotConfiguredException("Xilinx Vivado is not configured on this system.")
+		if (environ.get('XILINX_VIVADO') is None):								raise EnvironmentException("Xilinx Vivado environment is not loaded in this shell environment.")
 
 		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
 
