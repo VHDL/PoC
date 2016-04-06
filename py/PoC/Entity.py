@@ -94,7 +94,7 @@ class PathElement:
 		return "{0}.{1}".format(str(self._parent), self._name)
 
 class Namespace(PathElement):
-	__NonEntityNames =	["Name", "Parent", "Type", "DirectoryName", "Prefix", "Path", "relDir", "srcDir", "tbDir", "simDir", "nlDir", "xstDir"]
+	__NonEntityNames =	["Name", "Parent", "Type", "DirectoryName", "Prefix", "EntityPrefix", "Files", "Path", "relDir", "srcDir", "tbDir", "simDir", "nlDir", "xstDir"]
 
 	def __init__(self, name, configSection, host, parent=None):
 		super().__init__(name, host, parent=parent)
@@ -110,10 +110,9 @@ class Namespace(PathElement):
 
 	def _Load(self):
 		for optionName in self._host.PoCConfig[self._configSection]:
-			if (optionName not in self.__NonEntityNames):
-				print(optionName)
+			if optionName[0].islower():
 				section = self._host.PoCConfig[self._configSection][optionName]
-				print("--> " + section)
+				print("loading: {0} from section {1}".format(optionName, section))
 
 				ns = Namespace(optionName, section, host=self._host, parent=self)
 				self.__namespaces[optionName] = ns

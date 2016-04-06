@@ -176,51 +176,59 @@ class ExtendedInterpolation(Interpolation):
 		return value
 
 	def _interpolate_some(self, parser, option, accum, rest, section, map, depth):
-		if depth > MAX_INTERPOLATION_DEPTH:
-			raise InterpolationDepthError(option, section, rest)
+		if depth > MAX_INTERPOLATION_DEPTH:			raise InterpolationDepthError(option, section, rest)
+
+		# print("interpolation begin: option={0}  accum='{1}'  rest='{2}'".format(option, accum, rest))
+
 		while rest:
-			p = rest.find("$")
-			if p < 0:
+			beginPos = rest.find("$")
+			if beginPos < 0:
 				accum.append(rest)
 				return
-			if p > 0:
-				accum.append(rest[:p])
-				rest = rest[p:]
+			if beginPos > 0:
+				accum.append(rest[:beginPos])
+				rest = rest[beginPos:]
 			# p is no longer used
-			c = rest[1:2]
-			if c == "$":
+			if rest[1] == "$":
 				accum.append("$")
 				rest = rest[2:]
-			elif c == "{":
-				m = self._KEYCRE.match(rest)
-				if m is None:
+			elif rest[1] == "{":
+				endPos = rest.find("}")
+				nextPos = rest.rfind("$", None, endPos)
+				# print("next={0}  end={1}".format(nextPos, endPos))
+				if (endPos < 0):
 					raise InterpolationSyntaxError(option, section, "bad interpolation variable reference %r" % rest)
-				path = m.group('ref').split(':')
-				rest = rest[m.end():]
-				sect = section
-				opt = option
-				try:
-					m2 = self._KEYCRE2.match(path[0])
-					if m2 is None:
-						p0 = path[0]
-					else:
-						path2 = m2.group('ref').split(':')
-
-					if len(path) == 1:
-						opt = parser.optionxform(path[0])
-						v = map[opt]
-					elif len(path) == 2:
-						sect = path[0]
-						opt = parser.optionxform(path[1])
-						v = parser.get(sect, opt, raw=True)
-					else:
-						raise InterpolationSyntaxError(option, section, "More than one ':' found: %r" % (rest,))
-				except (KeyError, NoSectionError, NoOptionError):
-					raise InterpolationMissingOptionError(option, section, rest, ":".join(path)) from None
-				if "$" in v:
-					self._interpolate_some(parser, opt, accum, v, sect, dict(parser.items(sect, raw=True)), depth + 1)
+				elif ((nextPos > 0) and (nextPos < endPos)):			# an embedded $
+					L = []
+					self._interpolate_some(parser, option, L, rest[nextPos:endPos+1], section, map, depth + 1)
+					rest = rest[:nextPos] + "".join(L) + rest[endPos+1:]
+					# print("new rest1='{0}'".format(rest))
 				else:
-					accum.append(v)
+					path = rest[2:endPos].split(':')
+					rest = rest[endPos+1:]
+					# print("new rest2='{0}'  path='{1}'".format(rest, path))
+
+					sect = section
+					opt = option
+					try:
+						if (len(path) == 1):
+							opt = parser.optionxform(path[0])
+							v = map[opt]
+						elif (len(path) == 2):
+							sect = path[0]
+							opt = parser.optionxform(path[1])
+							v = parser.get(sect, opt, raw=True)
+						else:
+							raise InterpolationSyntaxError(option, section, "More than one ':' found: %r" % (rest,))
+					except (KeyError, NoSectionError, NoOptionError):
+						raise InterpolationMissingOptionError(option, section, rest, ":".join(path)) from None
+
+					# print("v='{0}'".format(v))
+
+					if "$" in v:
+						self._interpolate_some(parser, opt, accum, v, sect, dict(parser.items(sect, raw=True)), depth + 1)
+					else:
+						accum.append(v)
 			else:
 				raise InterpolationSyntaxError(option, section, "'$' must be followed by '$' or '{', found: %r" % (rest,))
 
