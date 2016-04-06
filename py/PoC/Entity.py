@@ -94,6 +94,14 @@ class PathElement:
 class Namespace(PathElement):
 	pass
 
+	@property
+	def Root(self):
+		return None
+
+	@property
+	def ChildNamespaces(self):
+		return []
+
 class Root(Namespace):
 	def __init__(self):
 		super().__init__("PoC", None)
