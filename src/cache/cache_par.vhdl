@@ -73,7 +73,7 @@ entity cache_par is
 		CACHE_LINES				 : positive := 32;
 		ASSOCIATIVITY			 : positive := 32;
 		TAG_BITS					 : positive := 8;
-		DATA_BITS					 : positive := 32;
+		DATA_BITS					 : positive := 8;
 		USE_INITIAL_TAGS	 : boolean	:= false;
 		INITIAL_TAGS			 : T_SLM		:= (0 downto 0 => (0 downto 0 => '0'));
 		INITIAL_DATALINES	 : T_SLM		:= (0 downto 0 => (0 downto 0 => '0'))
@@ -92,9 +92,7 @@ entity cache_par is
 		CacheLineOut : out std_logic_vector(DATA_BITS - 1 downto 0);
 		CacheHit		 : out std_logic := '0';
 		CacheMiss		 : out std_logic := '0';
-
-		OldTag			 : out std_logic_vector(TAG_BITS - 1 downto 0);
-		OldCacheLine : out std_logic_vector(DATA_BITS - 1 downto 0)
+		OldTag			 : out std_logic_vector(TAG_BITS - 1 downto 0)
 	);
 end;
 

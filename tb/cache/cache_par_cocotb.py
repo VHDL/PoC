@@ -99,7 +99,7 @@ class InputMonitor(BusMonitor):
 # ==============================================================================
 class OutputMonitor(BusMonitor):
 	"""Observes outputs of DUT."""
-	_signals = [ "CacheLineOut", "CacheHit", "CacheMiss", "OldTag", "OldCacheLine" ]
+	_signals = [ "CacheLineOut", "CacheHit", "CacheMiss", "OldTag" ]
 
 	def __init__(self, dut, callback=None, event=None):
 		BusMonitor.__init__(self, dut, None, dut.Clock, dut.Reset, callback=callback, event=event)
@@ -114,12 +114,7 @@ class OutputMonitor(BusMonitor):
 			yield clkedge
 			
 				
-			vec = (self.bus.CacheLineOut.value.integer,
-						 self.bus.CacheHit.value.integer,
-						 self.bus.CacheMiss.value.integer,
-						 self.bus.OldTag.value.integer,
-						 self.bus.OldCacheLine.value.integer)
-#			vec = tuple([getattr(self.bus,i).value.integer for i in self._signals])
+			vec = tuple([getattr(self.bus,i).value.integer for i in self._signals])
 			self._recv(vec)
 
 # ==============================================================================
@@ -159,7 +154,7 @@ class Testbench(object):
 		# TODO: create LRU dictionary for each cache set
 		self.lru = LeastRecentlyUsedDict(size_limit=self.associativity)
 
-		init_val = (None, 0, 0, None, None)
+		init_val = (None, 0, 0, None)
 		
 		self.input_drv = InputDriver(dut)
 		self.output_mon = OutputMonitor(dut)
@@ -176,10 +171,10 @@ class Testbench(object):
 	def model(self, transaction):
 		'''Model the DUT based on the input transaction.'''
 		request, readWrite, invalidate, replace, tag, cacheLineIn = transaction
-		print "=== model called with stopped=%r, Request=%d, ReadWrite=%d, Invalidate=%d, Replace=%d, Tag=%d, CacheLineIn=%d" % (self.stopped, request, readWrite, invalidate, replace, tag, cacheLineIn)
+		#print "=== model called with stopped=%r, Request=%d, ReadWrite=%d, Invalidate=%d, Replace=%d, Tag=%d, CacheLineIn=%d" % (self.stopped, request, readWrite, invalidate, replace, tag, cacheLineIn)
 
 		# expected outputs, None means ignore
-		cacheLineOut, cacheHit, cacheMiss, oldTag, oldCacheLine = None, 0, 0, None, None
+		cacheLineOut, cacheHit, cacheMiss, oldTag = None, 0, 0, None
 		if not self.stopped:
 			if request == 1:
 				if tag in self.lru:
@@ -188,6 +183,7 @@ class Testbench(object):
 						self.lru[tag] = cacheLineIn
 					else:
 						cacheLineOut = self.lru[tag]
+						self.lru[tag] = cacheLineOut # move to recently-used position
 
 					if invalidate == 1:
 						del self.lru[tag]
@@ -198,13 +194,13 @@ class Testbench(object):
 			elif replace == 1:
 				# check if a valid cache line will be replaced
 				if len(self.lru) == self.associativity:
-					oldTag, oldCacheLine = self.lru.iteritems().next()
+					oldTag, cacheLineOut = self.lru.iteritems().next()
 
 				# actual replace
 				self.lru[tag] = cacheLineIn
 
-			print "=== model: lru = %s" % self.lru.items()
-			self.expected_output.append( (cacheLineOut, cacheHit, cacheMiss, oldTag, oldCacheLine) )
+			#print "=== model: lru = %s" % self.lru.items()
+			self.expected_output.append( (cacheLineOut, cacheHit, cacheMiss, oldTag) )
 			
 	def stop(self):
 		"""
@@ -216,7 +212,7 @@ class Testbench(object):
 
 
 # ==============================================================================
-def random_input_gen(tb,n=2000):
+def random_input_gen(tb,n=100000):
 	"""
 	Generate random input data to be applied by InputDriver.
 	Returns up to n instances of InputTransaction.
