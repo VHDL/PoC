@@ -48,7 +48,8 @@ from cocotb.result import TestFailure, TestSuccess
 from lru_dict import LeastRecentlyUsedDict
 from utils import log2ceil
 
-DEBUG=False
+# debug level
+DEBUG=0
 
 # ==============================================================================
 class InputDriver(BusDriver):
@@ -175,7 +176,7 @@ class Testbench(object):
 	def model(self, transaction):
 		'''Model the DUT based on the input transaction.'''
 		request, readWrite, invalidate, replace, address, cacheLineIn = transaction
-		if DEBUG: print "=== model called with stopped=%r, Request=%d, ReadWrite=%d, Invalidate=%d, Replace=%d, Address=%d, CacheLineIn=%d" % (self.stopped, request, readWrite, invalidate, replace, address, cacheLineIn)
+		if DEBUG >= 1: print "=== model called with stopped=%r, Request=%d, ReadWrite=%d, Invalidate=%d, Replace=%d, Address=%d, CacheLineIn=%d" % (self.stopped, request, readWrite, invalidate, replace, address, cacheLineIn)
 
 		index = address & self.index_mask
 		tag = (address >> self.index_bits) & self.tag_mask
@@ -206,7 +207,7 @@ class Testbench(object):
 				# actual replace
 				self.lrus[index][address] = cacheLineIn
 
-			if DEBUG: print "=== model: lrus[%d] = %s" % (index, self.lrus[index].items())
+			if DEBUG >= 1: print "=== model: lrus[%d] = %s" % (index, self.lrus[index].items())
 			self.expected_output.append( (cacheLineOut, cacheHit, cacheMiss, oldAddress) )
 			
 	def stop(self):
@@ -262,8 +263,8 @@ def random_input_gen(tb,n=100000):
 		elif replace == 1:
 			lru_tags[index][tag] = 1 # allocate cache line
 
-		if DEBUG: print "=== random_input_gen: request=%d, readWrite=%d, invalidate=%d, replace=%d, address=%d" % (request, readWrite, invalidate, replace, address)
-		if DEBUG: print "=== random_input_gen: lru_tags[%d]=%s" % (index, lru_tags[index].items())
+		if DEBUG >= 2: print "=== random_input_gen: request=%d, readWrite=%d, invalidate=%d, replace=%d, address=%d" % (request, readWrite, invalidate, replace, address)
+		if DEBUG >= 2: print "=== random_input_gen: lru_tags[%d]=%s" % (index, lru_tags[index].items())
 		
 		yield InputTransaction(tb, request, readWrite, invalidate, replace, address, random.randint(0,data_high))
 
