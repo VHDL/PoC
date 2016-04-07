@@ -24,12 +24,13 @@
 --		0			|		-				|		0					|		1			| Replace cache line.
 --	--------+-----------+-------------+------------------------------------------
 --
--- All commands use `Tag` to lookup (request) or replace a cache line.
+-- All commands use `Address` to lookup (request) or replace a cache line.
+-- `Address` and `OldAddress` do not include the word/byte select part.
 -- Each command is completed within one clock cycle, but outputs are delayed as
 -- described below.
 --
 -- Upon requests, the outputs `CacheMiss` and `CacheHit` indicate (high-active)
--- whether the `Tag` is stored within the cache, or not. Both outputs have a
+-- whether the `Address` is stored within the cache, or not. Both outputs have a
 -- latency of one clock cycle.
 --
 -- Upon writing a cache line, the new content is given by `CacheLineIn`.
@@ -37,7 +38,7 @@
 -- with a latency of one clock cycle.
 --
 -- Upon replacing a cache line, the new content is given by `CacheLineIn`. The
--- old content is outputed on `CacheLineOut` and the old tag on `OldTag`,
+-- old content is outputed on `CacheLineOut` and the old tag on `OldAddress`,
 -- both with a latency of one clock cycle.
 --
 -- License:
@@ -72,11 +73,8 @@ entity cache_par is
 		REPLACEMENT_POLICY : string		:= "LRU";
 		CACHE_LINES				 : positive := 32;
 		ASSOCIATIVITY			 : positive := 32;
-		TAG_BITS					 : positive := 8;
-		DATA_BITS					 : positive := 8;
-		USE_INITIAL_TAGS	 : boolean	:= false;
-		INITIAL_TAGS			 : T_SLM		:= (0 downto 0 => (0 downto 0 => '0'));
-		INITIAL_DATALINES	 : T_SLM		:= (0 downto 0 => (0 downto 0 => '0'))
+		ADDRESS_BITS			 : positive := 8;
+		DATA_BITS					 : positive := 8
 	);
 	port (
 		Clock : in std_logic;
@@ -86,13 +84,13 @@ entity cache_par is
 		ReadWrite	 : in std_logic;
 		Invalidate : in std_logic;
 		Replace 	 : in std_logic;
-		Tag				 : in std_logic_vector(TAG_BITS - 1 downto 0);
+		Address		 : in std_logic_vector(ADDRESS_BITS - 1 downto 0);
 
 		CacheLineIn	 : in	 std_logic_vector(DATA_BITS - 1 downto 0);
 		CacheLineOut : out std_logic_vector(DATA_BITS - 1 downto 0);
 		CacheHit		 : out std_logic := '0';
 		CacheMiss		 : out std_logic := '0';
-		OldTag			 : out std_logic_vector(TAG_BITS - 1 downto 0)
+		OldAddress	 : out std_logic_vector(ADDRESS_BITS - 1 downto 0)
 	);
 end;
 
@@ -105,18 +103,6 @@ architecture rtl of cache_par is
 	subtype T_CACHE_LINE is std_logic_vector(DATA_BITS - 1 downto 0);
 	type T_CACHE_LINE_VECTOR is array (natural range <>) of T_CACHE_LINE;
 
-	function to_datamemory(slm : T_SLM) return T_CACHE_LINE_VECTOR is
-		variable result : T_CACHE_LINE_VECTOR(CACHE_LINES - 1 downto 0);
-	begin
-		result := (others => (others => '0'));
-		if not USE_INITIAL_TAGS then return result; end if;
-
-		for I in slm'range loop
-			result(I) := get_row(slm, I);
-		end loop;
-		return result;
-	end function;
-
 	-- look-up (request)
 	signal TU_Index		: std_logic_vector(CACHEMEMORY_INDEX_BITS - 1 downto 0);
 	signal TU_TagHit	: std_logic;
@@ -124,10 +110,10 @@ architecture rtl of cache_par is
 
 	-- replace
 	signal TU_ReplaceIndex : std_logic_vector(CACHEMEMORY_INDEX_BITS - 1 downto 0);
-	signal TU_OldTag			 : std_logic_vector(TAG_BITS - 1 downto 0);
+	signal TU_OldAddress	 : std_logic_vector(ADDRESS_BITS - 1 downto 0);
 
 	signal MemoryIndex_us : unsigned(CACHEMEMORY_INDEX_BITS - 1 downto 0);
-	signal CacheMemory		: T_CACHE_LINE_VECTOR(CACHE_LINES - 1 downto 0) := to_datamemory(INITIAL_DATALINES);
+	signal CacheMemory		: T_CACHE_LINE_VECTOR(CACHE_LINES - 1 downto 0);
 
 begin
 
@@ -137,9 +123,7 @@ begin
 			REPLACEMENT_POLICY => REPLACEMENT_POLICY,
 			CACHE_LINES				 => CACHE_LINES,
 			ASSOCIATIVITY			 => ASSOCIATIVITY,
-			TAG_BITS					 => TAG_BITS,
-			USE_INITIAL_TAGS	 => USE_INITIAL_TAGS,
-			INITIAL_TAGS			 => INITIAL_TAGS
+			ADDRESS_BITS			 => ADDRESS_BITS
 		)
 		port map (
 			Clock => Clock,
@@ -147,13 +131,13 @@ begin
 
 			Replace			 => Replace,
 			ReplaceIndex => TU_ReplaceIndex,
-			NewTag			 => Tag,
-			OldTag			 => TU_OldTag,
+			NewAddress	 => Address,
+			OldAddress	 => TU_OldAddress,
 
 			Request		 => Request,
 			ReadWrite	 => ReadWrite,
 			Invalidate => Invalidate,
-			Tag				 => Tag,
+			Address	 	 => Address,
 			Index			 => TU_Index,
 			TagHit		 => TU_TagHit,
 			TagMiss		 => TU_TagMiss
@@ -183,7 +167,7 @@ begin
 				CacheHit	<= TU_TagHit;
 			end if;
 
-			OldTag <= TU_OldTag;
+			OldAddress <= TU_OldAddress;
 		end if;
 	end process;
 end architecture;
