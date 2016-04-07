@@ -142,8 +142,6 @@ begin
 		signal Policy_ReplaceIndex : std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
 		signal FA_ReplaceIndex_us	 : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
 		
-		signal FA_ValidUpdateIndex_us : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
-
 		signal TagHit_i	 : std_logic; -- includes Valid and Request
 		signal TagMiss_i : std_logic; -- includes Valid and Request
 	begin
@@ -165,9 +163,6 @@ begin
 		FA_MemoryIndex_i		<= std_logic_vector(FA_MemoryIndex_us);
 		FA_ReplaceIndex_us	<= unsigned(Policy_ReplaceIndex);
 
-		FA_ValidUpdateIndex_us <= FA_ReplaceIndex_us when Replace = '1' else
-															FA_MemoryIndex_us; -- for invalidate
-		
 		process(Clock)
 		begin
 			if rising_edge(Clock) then
@@ -175,9 +170,13 @@ begin
 					FA_TagMemory(to_integer(FA_ReplaceIndex_us))	 <= NewTag;
 				end if;
 
-				if (Replace = '1') or (TagHit_i = '1' and Invalidate = '1') then
-					FA_ValidMemory(to_integer(FA_ValidUpdateIndex_us)) <= Replace; -- clear when Invalidate
-				end if;
+				for i in FA_ValidMemory'range loop
+					if (Replace = '1' and FA_ReplaceIndex_us = i) or
+						(Request = '1' and Invalidate = '1' and TagHits(i) = '1')
+					then
+						FA_ValidMemory(i) <= Replace; -- clear when Invalidate
+					end if;
+				end loop;
 			end if;
 		end process;
 
