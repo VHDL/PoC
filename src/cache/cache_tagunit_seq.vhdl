@@ -3,9 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
+-- Module:					TODO
 --
--- Authors:				 	Patrick Lehmann
+-- Authors:					Patrick Lehmann
 -- 
 -- Description:
 -- ------------------------------------
@@ -29,422 +29,421 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use IEEE.STD_LOGIC_1164.all;
+use IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
+library PoC;
+use PoC.utils.all;
+use PoC.vectors.all;
 
--- cache_tagunit_seq
---		par = parallel
---		seq = sequential
-
-ENTITY cache_tagunit_seq IS
-	GENERIC (
-		REPLACEMENT_POLICY				: STRING													:= "LRU";
-		CACHE_LINES								: POSITIVE												:= 32;
-		ASSOCIATIVITY							: POSITIVE												:= 32;
-		TAG_BITS									: POSITIVE												:= 128;
-		CHUNK_BITS								: POSITIVE												:= 8;
-		TAG_BYTE_ORDER						: T_BYTE_ORDER										:= LITTLE_ENDIAN;
-		INITIAL_TAGS							: T_SLM														:= (31 DOWNTO 0 => (127 DOWNTO 0 => '0'))
+entity cache_tagunit_seq is
+	generic (
+		REPLACEMENT_POLICY : string				:= "LRU";
+		CACHE_LINES				 : positive			:= 32;
+		ASSOCIATIVITY			 : positive			:= 32;
+		TAG_BITS					 : positive			:= 128;
+		CHUNK_BITS				 : positive			:= 8;
+		TAG_BYTE_ORDER		 : T_BYTE_ORDER := LITTLE_ENDIAN;
+		USE_INITIAL_TAGS	 : boolean			:= false;
+		INITIAL_TAGS			 : T_SLM				:= (0 downto 0 => (127 downto 0 => '0'))
 	);
-	PORT (
-		Clock											: IN	STD_LOGIC;
-		Reset											: IN	STD_LOGIC;
-		
-		Replace										: IN	STD_LOGIC;
-		Replaced									: OUT	STD_LOGIC;
-		Replace_NewTag_rst				: OUT	STD_LOGIC;
-		Replace_NewTag_rev				: OUT	STD_LOGIC;
-		Replace_NewTag_nxt				: OUT	STD_LOGIC;
-		Replace_NewTag_Data				: IN	STD_LOGIC_VECTOR(CHUNK_BITS - 1 DOWNTO 0);
-		Replace_NewIndex					: OUT	STD_LOGIC_VECTOR(log2ceilnz(CACHE_LINES) - 1 DOWNTO 0);		
-		
-		Request										: IN	STD_LOGIC;
-		Request_ReadWrite					: IN	STD_LOGIC;
-		Request_Invalidate				: IN	STD_LOGIC;
-		Request_Tag_rst						: OUT	STD_LOGIC;
-		Request_Tag_rev						: OUT	STD_LOGIC;
-		Request_Tag_nxt						: OUT	STD_LOGIC;
-		Request_Tag_Data					: IN	STD_LOGIC_VECTOR(CHUNK_BITS - 1 DOWNTO 0);
-		Request_Index							: OUT	STD_LOGIC_VECTOR(log2ceilnz(CACHE_LINES) - 1 DOWNTO 0);
-		Request_TagHit						: OUT	STD_LOGIC;
-		Request_TagMiss						: OUT	STD_LOGIC
+	port (
+		Clock : in std_logic;
+		Reset : in std_logic;
+
+		Replace							: in	std_logic;
+		Replaced						: out std_logic;
+		Replace_NewTag_rst	: out std_logic;
+		Replace_NewTag_rev	: out std_logic;
+		Replace_NewTag_nxt	: out std_logic;
+		Replace_NewTag_Data : in	std_logic_vector(CHUNK_BITS - 1 downto 0);
+		Replace_NewIndex		: out std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
+
+		Request						 : in	 std_logic;
+		Request_ReadWrite	 : in	 std_logic;
+		Request_Invalidate : in	 std_logic;
+		Request_Tag_rst		 : out std_logic;
+		Request_Tag_rev		 : out std_logic;
+		Request_Tag_nxt		 : out std_logic;
+		Request_Tag_Data	 : in	 std_logic_vector(CHUNK_BITS - 1 downto 0);
+		Request_Index			 : out std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
+		Request_TagHit		 : out std_logic;
+		Request_TagMiss		 : out std_logic
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF cache_tagunit_seq IS
-	ATTRIBUTE KEEP							: BOOLEAN;
+architecture rtl of cache_tagunit_seq is
+	attribute KEEP : boolean;
 
-	CONSTANT SETS								: POSITIVE				:= CACHE_LINES / ASSOCIATIVITY;
+	constant SETS : positive := CACHE_LINES / ASSOCIATIVITY;
 
-BEGIN
+begin
 	-- ==========================================================================================================================================================
 	-- Full-Assoziative Cache
 	-- ==========================================================================================================================================================
-	genFA : IF (CACHE_LINES = ASSOCIATIVITY) GENERATE
-		CONSTANT FA_CACHE_LINES						: POSITIVE					:= ASSOCIATIVITY;
-		CONSTANT FA_TAG_BITS							: POSITIVE					:= TAG_BITS;
-		CONSTANT FA_CHUNKS								: POSITIVE					:= div_ceil(FA_TAG_BITS, CHUNK_BITS);
-		CONSTANT FA_CHUNK_INDEX_BITS			: POSITIVE					:= log2ceilnz(FA_CHUNKS);
-		CONSTANT FA_MEMORY_INDEX_BITS			: POSITIVE					:= log2ceilnz(FA_CACHE_LINES);
+	genFA : if (CACHE_LINES = ASSOCIATIVITY) generate
+		constant FA_CACHE_LINES				: positive := ASSOCIATIVITY;
+		constant FA_TAG_BITS					: positive := TAG_BITS;
+		constant FA_CHUNKS						: positive := div_ceil(FA_TAG_BITS, CHUNK_BITS);
+		constant FA_CHUNK_INDEX_BITS	: positive := log2ceilnz(FA_CHUNKS);
+		constant FA_MEMORY_INDEX_BITS : positive := log2ceilnz(FA_CACHE_LINES);
 
-		CONSTANT FA_INITIAL_TAGS_RESIZED	: T_SLM							:= resize(INITIAL_TAGS, FA_CACHE_LINES);
+		constant FA_INITIAL_TAGS_RESIZED : T_SLM := resize(INITIAL_TAGS, FA_CACHE_LINES);
 
-		SUBTYPE	T_CHUNK									IS STD_LOGIC_VECTOR(CHUNK_BITS - 1 DOWNTO 0);
-		TYPE		T_TAG_LINE							IS ARRAY (NATURAL RANGE <>) OF T_CHUNK;
+		subtype T_CHUNK is std_logic_vector(CHUNK_BITS - 1 downto 0);
+		type T_TAG_LINE is array (natural range <>) of T_CHUNK;
 
-		TYPE T_REPLACE_STATE	IS (ST_IDLE, ST_REPLACE);
-		TYPE T_REQUEST_STATE	IS (ST_IDLE, ST_COMPARE, ST_READ);
+		type T_REPLACE_STATE is (ST_IDLE, ST_REPLACE);
+		type T_REQUEST_STATE is (ST_IDLE, ST_COMPARE, ST_READ);
 
-		FUNCTION to_validvector(slm : T_SLM) RETURN STD_LOGIC_VECTOR IS
-			VARIABLE result		: STD_LOGIC_VECTOR(CACHE_LINES - 1 DOWNTO 0)	:= (OTHERS => '0');
-		BEGIN
-			FOR I IN slm'range LOOP
-				result(I)	:= '1';
-			END LOOP;
-			RETURN result;
-		END FUNCTION;
+		function to_validvector(slm : T_SLM) return std_logic_vector is
+			variable result : std_logic_vector(CACHE_LINES - 1 downto 0);
+		begin
+			result := (others => '0');
+			if not USE_INITIAL_TAGS then return result; end if;
 
-		FUNCTION to_tagmemory(slm : T_SLM; row : NATURAL) RETURN T_TAG_LINE IS
-			CONSTANT tag_line			: STD_LOGIC_VECTOR(slm'high(2) DOWNTO slm'low(2))		:= get_row(slm, row);
-			VARIABLE result				: T_TAG_LINE(FA_CHUNKS - 1 DOWNTO 0);
-		BEGIN
+			for I in slm'range loop
+				result(I) := '1';
+			end loop;
+			return result;
+		end function;
+
+		function to_tagmemory(slm : T_SLM; row : natural) return T_TAG_LINE is
+			constant tag_line : std_logic_vector(slm'high(2) downto slm'low(2)) := get_row(slm, row);
+			variable result		: T_TAG_LINE(FA_CHUNKS - 1 downto 0);
+		begin
 --			REPORT "tagline @row " & INTEGER'image(row) & " = " & to_string(tag_line, 'h') SEVERITY NOTE;
-			FOR I IN result'range LOOP
-				result(I)	:= tag_line((I * CHUNK_BITS) + CHUNK_BITS - 1 DOWNTO (I * CHUNK_BITS));
-			END LOOP;
-			RETURN result;
-		END FUNCTION;
-		
-		SIGNAL Replace_State						: T_Replace_STATE																				:= ST_IDLE;
-		SIGNAL Replace_NextState				: T_Replace_STATE;
-		SIGNAL Request_State						: T_REQUEST_STATE																				:= ST_IDLE;
-		SIGNAL Request_NextState				: T_REQUEST_STATE;
-		
-		SIGNAL RequestComplete					: STD_LOGIC;
-		
-		SIGNAL NewTagSeqCounter_rst			: STD_LOGIC;
+			for I in result'range loop
+				result(I) := tag_line((I * CHUNK_BITS) + CHUNK_BITS - 1 downto (I * CHUNK_BITS));
+			end loop;
+			return result;
+		end function;
+
+		signal Replace_State		 : T_Replace_STATE := ST_IDLE;
+		signal Replace_NextState : T_Replace_STATE;
+		signal Request_State		 : T_REQUEST_STATE := ST_IDLE;
+		signal Request_NextState : T_REQUEST_STATE;
+
+		signal RequestComplete : std_logic;
+
+		signal NewTagSeqCounter_rst : std_logic;
 --		SIGNAL NewTagSeqCounter_en			: STD_LOGIC;
-		SIGNAL NewTagSeqCounter_us			: UNSIGNED(FA_CHUNK_INDEX_BITS - 1 DOWNTO 0)						:= (OTHERS => '0');
-		SIGNAL TagSeqCounter_rst				: STD_LOGIC;
+		signal NewTagSeqCounter_us	: unsigned(FA_CHUNK_INDEX_BITS - 1 downto 0) := (others => '0');
+		signal TagSeqCounter_rst		: std_logic;
 --		SIGNAL TagSeqCounter_en					: STD_LOGIC;
-		SIGNAL TagSeqCounter_us					: UNSIGNED(FA_CHUNK_INDEX_BITS - 1 DOWNTO 0)						:= (OTHERS => '0');
-		
-		SIGNAL TagMemory_we							: STD_LOGIC;
-		
-		SIGNAL PartialTagHits						: STD_LOGIC_VECTOR(FA_CACHE_LINES - 1 DOWNTO 0);
-		SIGNAL TagHits_en								: STD_LOGIC;
-		SIGNAL TagHits_nxt							: STD_LOGIC_VECTOR(FA_CACHE_LINES - 1 DOWNTO 0);
-		SIGNAL TagHits_nor							: STD_LOGIC;
-		SIGNAL TagHits_r								: STD_LOGIC_VECTOR(FA_CACHE_LINES - 1 DOWNTO 0)					:= (OTHERS => '1');
+		signal TagSeqCounter_us			: unsigned(FA_CHUNK_INDEX_BITS - 1 downto 0) := (others => '0');
 
-		SIGNAL MemoryIndex_us						: UNSIGNED(FA_MEMORY_INDEX_BITS - 1 DOWNTO 0);
-		SIGNAL MemoryIndex_i						: STD_LOGIC_VECTOR(FA_MEMORY_INDEX_BITS - 1 DOWNTO 0);
+		signal TagMemory_we : std_logic;
 
-		SIGNAL ValidMemory							: STD_LOGIC_VECTOR(FA_CACHE_LINES - 1 DOWNTO 0)					:= to_validvector(INITIAL_TAGS);
-		SIGNAL ValidHit									: STD_LOGIC;
+		signal PartialTagHits : std_logic_vector(FA_CACHE_LINES - 1 downto 0);
+		signal TagHits_en			: std_logic;
+		signal TagHits_nxt		: std_logic_vector(FA_CACHE_LINES - 1 downto 0);
+		signal TagHits_nor		: std_logic;
+		signal TagHits_r			: std_logic_vector(FA_CACHE_LINES - 1 downto 0) := (others => '1');
 
-		SIGNAL Policy_ReplaceIndex			: STD_LOGIC_VECTOR(FA_MEMORY_INDEX_BITS - 1 DOWNTO 0);
-		SIGNAL Policy_ReplaceIndex_d		: STD_LOGIC_VECTOR(FA_MEMORY_INDEX_BITS - 1 DOWNTO 0)		:= (OTHERS => '0');
-		SIGNAL ReplaceIndex_us					: UNSIGNED(FA_MEMORY_INDEX_BITS - 1 DOWNTO 0);
+		signal MemoryIndex_us : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
+		signal MemoryIndex_i	: std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
 
-		SIGNAL TagHit_i									: STD_LOGIC;
-		SIGNAL TagMiss_i								: STD_LOGIC;
-		
-		SIGNAL TagAccess								: STD_LOGIC																							:= '0';
-		SIGNAL TagIndex									: STD_LOGIC_VECTOR(FA_MEMORY_INDEX_BITS - 1 DOWNTO 0)		:= (OTHERS => '0');
-		
-	BEGIN
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF (Reset = '1') THEN
-					Replace_State		<= ST_IDLE;
-					Request_State		<= ST_IDLE;
-				ELSE
-					Replace_State		<= Replace_NextState;
-					Request_State		<= Request_NextState;
-				END IF;
-			END IF;
-		END PROCESS;
-		
-		PROCESS(Replace_State, Replace, NewTagSeqCounter_us)
-		BEGIN
-			Replace_NextState						<= Replace_State;
-			
-			Replace_NewTag_rst					<= '0';
-			Replace_NewTag_rev					<= '0';
-			Replace_NewTag_nxt					<= '0';
-			Replaced										<= '0';
-			
-			NewTagSeqCounter_rst				<= '0';
+		signal ValidMemory : std_logic_vector(FA_CACHE_LINES - 1 downto 0) := to_validvector(INITIAL_TAGS);
+		signal ValidHit		 : std_logic;
+
+		signal Policy_ReplaceIndex	 : std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
+		signal Policy_ReplaceIndex_d : std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0) := (others => '0');
+		signal ReplaceIndex_us			 : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
+
+		signal TagHit_i	 : std_logic;
+		signal TagMiss_i : std_logic;
+
+		signal TagAccess : std_logic																					 := '0';
+		signal TagIndex	 : std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0) := (others => '0');
+
+	begin
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if (Reset = '1') then
+					Replace_State <= ST_IDLE;
+					Request_State <= ST_IDLE;
+				else
+					Replace_State <= Replace_NextState;
+					Request_State <= Request_NextState;
+				end if;
+			end if;
+		end process;
+
+		process(Replace_State, Replace, NewTagSeqCounter_us)
+		begin
+			Replace_NextState <= Replace_State;
+
+			Replace_NewTag_rst <= '0';
+			Replace_NewTag_rev <= '0';
+			Replace_NewTag_nxt <= '0';
+			Replaced					 <= '0';
+
+			NewTagSeqCounter_rst <= '0';
 --			NewTagSeqCounter_en					<= '0';
-			TagMemory_we								<= '0';
-			
-			CASE Replace_State IS
-				WHEN ST_IDLE =>
-					Replace_NewTag_rst			<= '1';
-					NewTagSeqCounter_rst		<= '1';
-					
-					IF (Replace = '1') THEN
-						Replace_NewTag_rst		<= '0';
-						Replace_NewTag_nxt		<= '1';
-							
-						NewTagSeqCounter_rst	<= '0';
+			TagMemory_we				 <= '0';
+
+			case Replace_State is
+				when ST_IDLE =>
+					Replace_NewTag_rst	 <= '1';
+					NewTagSeqCounter_rst <= '1';
+
+					if (Replace = '1') then
+						Replace_NewTag_rst <= '0';
+						Replace_NewTag_nxt <= '1';
+
+						NewTagSeqCounter_rst <= '0';
 --						NewTagSeqCounter_en		<= '1';
-						TagMemory_we					<= '1';
-						
-						Replace_NextState			<= ST_REPLACE;
-					END IF;
-				
-				WHEN ST_REPLACE =>
-					Replace_NewTag_nxt			<= '1';
+						TagMemory_we				 <= '1';
+
+						Replace_NextState <= ST_REPLACE;
+					end if;
+
+				when ST_REPLACE =>
+					Replace_NewTag_nxt <= '1';
 --					NewTagSeqCounter_en			<= '1';
-					TagMemory_we						<= '1';
+					TagMemory_we			 <= '1';
 
-					IF (NewTagSeqCounter_us = ite((TAG_BYTE_ORDER = LITTLE_ENDIAN), (FA_CHUNKS - 1), 0)) THEN
-						Replaced							<= '1';
+					if (NewTagSeqCounter_us = ite((TAG_BYTE_ORDER = LITTLE_ENDIAN), (FA_CHUNKS - 1), 0)) then
+						Replaced <= '1';
 
-						Replace_NextState			<= ST_IDLE;
-					END IF;
-				
-			END CASE;
-		END PROCESS;
-		
-		PROCESS(Request_State, Request, TagSeqCounter_us, TagHits_nor)
-		BEGIN
-			Request_NextState										<= Request_State;
-			
-			TagSeqCounter_rst						<= '0';
+						Replace_NextState <= ST_IDLE;
+					end if;
+
+			end case;
+		end process;
+
+		process(Request_State, Request, TagSeqCounter_us, TagHits_nor)
+		begin
+			Request_NextState <= Request_State;
+
+			TagSeqCounter_rst <= '0';
 --			TagSeqCounter_en						<= '0';
-			TagHits_en									<= '0';
-			
-			Request_Tag_rst							<= '0';
-			Request_Tag_rev							<= ite((TAG_BYTE_ORDER = LITTLE_ENDIAN), '0', '1');
-			Request_Tag_nxt							<= '0';
-			RequestComplete							<= '0';
-			
-			CASE Request_State IS
-				WHEN ST_IDLE =>
-					Request_Tag_rst					<= '1';
-					TagSeqCounter_rst				<= '1';
-					
-					IF (Request = '1') THEN
-						IF (TagHits_nor = '1') THEN
-							RequestComplete			<= '1';
-						ELSE
-							Request_Tag_rst			<= '0';
-							Request_Tag_nxt			<= '1';
-							
-							TagSeqCounter_rst		<= '0';
+			TagHits_en				<= '0';
+
+			Request_Tag_rst <= '0';
+			Request_Tag_rev <= ite((TAG_BYTE_ORDER = LITTLE_ENDIAN), '0', '1');
+			Request_Tag_nxt <= '0';
+			RequestComplete <= '0';
+
+			case Request_State is
+				when ST_IDLE =>
+					Request_Tag_rst		<= '1';
+					TagSeqCounter_rst <= '1';
+
+					if (Request = '1') then
+						if (TagHits_nor = '1') then
+							RequestComplete <= '1';
+						else
+							Request_Tag_rst <= '0';
+							Request_Tag_nxt <= '1';
+
+							TagSeqCounter_rst <= '0';
 --							TagSeqCounter_en		<= '1';
-							TagHits_en					<= '1';
-						
-							Request_NextState						<= ST_COMPARE;
-						END IF;
-					END IF;
-				
-				WHEN ST_COMPARE =>
-					Request_Tag_nxt					<= '1';
+							TagHits_en				<= '1';
+
+							Request_NextState <= ST_COMPARE;
+						end if;
+					end if;
+
+				when ST_COMPARE =>
+					Request_Tag_nxt <= '1';
 --					TagSeqCounter_en				<= '1';
-					TagHits_en							<= '1';
+					TagHits_en			<= '1';
 
-					IF (TagHits_nor = '1') THEN
-						Request_Tag_rst				<= '1';
-						TagSeqCounter_rst			<= '1';
-						RequestComplete				<= '1';
-						
-						Request_NextState			<= ST_IDLE;
-					ELSE
-						IF (TagSeqCounter_us = ite((TAG_BYTE_ORDER = LITTLE_ENDIAN), (FA_CHUNKS - 1), 0)) THEN
-							RequestComplete			<= '1';
+					if (TagHits_nor = '1') then
+						Request_Tag_rst		<= '1';
+						TagSeqCounter_rst <= '1';
+						RequestComplete		<= '1';
 
-							Request_NextState		<= ST_READ;
-						END IF;
-					END IF;
-					
-				WHEN ST_READ =>
-					Request_Tag_rst					<= '1';
-					TagSeqCounter_rst				<= '1';
-					
-					IF (Request = '1') THEN
-						IF (TagHits_nor = '1') THEN
-							RequestComplete			<= '1';
-							Request_NextState		<= ST_IDLE;
-						ELSE
-							Request_Tag_rst			<= '0';
-							Request_Tag_nxt			<= '1';
-							
-							TagSeqCounter_rst		<= '0';
+						Request_NextState <= ST_IDLE;
+					else
+						if (TagSeqCounter_us = ite((TAG_BYTE_ORDER = LITTLE_ENDIAN), (FA_CHUNKS - 1), 0)) then
+							RequestComplete <= '1';
+
+							Request_NextState <= ST_READ;
+						end if;
+					end if;
+
+				when ST_READ =>
+					Request_Tag_rst		<= '1';
+					TagSeqCounter_rst <= '1';
+
+					if (Request = '1') then
+						if (TagHits_nor = '1') then
+							RequestComplete		<= '1';
+							Request_NextState <= ST_IDLE;
+						else
+							Request_Tag_rst <= '0';
+							Request_Tag_nxt <= '1';
+
+							TagSeqCounter_rst <= '0';
 --							TagSeqCounter_en		<= '1';
-							TagHits_en					<= '1';
-						
-							Request_NextState		<= ST_COMPARE;
-						END IF;
-					END IF;
-				
-			END CASE;
-		END PROCESS;
-		
+							TagHits_en				<= '1';
+
+							Request_NextState <= ST_COMPARE;
+						end if;
+					end if;
+
+			end case;
+		end process;
+
 		-- Counters
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
 				-- NewTagSeqCounter
-				IF ((Reset OR NewTagSeqCounter_rst) = '1') THEN
-					IF (TAG_BYTE_ORDER = LITTLE_ENDIAN) THEN
-						NewTagSeqCounter_us		<= to_unsigned(0,								NewTagSeqCounter_us'length);
-					ELSE
-						NewTagSeqCounter_us		<= to_unsigned((FA_CHUNKS - 1), NewTagSeqCounter_us'length);
-					END IF;
-				ELSE
-					IF (TAG_BYTE_ORDER = LITTLE_ENDIAN) THEN
-						NewTagSeqCounter_us		<= NewTagSeqCounter_us + 1;
-					ELSE
-						NewTagSeqCounter_us		<= NewTagSeqCounter_us - 1;
-					END IF;
-				END IF;
-				
+				if ((Reset or NewTagSeqCounter_rst) = '1') then
+					if (TAG_BYTE_ORDER = LITTLE_ENDIAN) then
+						NewTagSeqCounter_us <= to_unsigned(0, NewTagSeqCounter_us'length);
+					else
+						NewTagSeqCounter_us <= to_unsigned((FA_CHUNKS - 1), NewTagSeqCounter_us'length);
+					end if;
+				else
+					if (TAG_BYTE_ORDER = LITTLE_ENDIAN) then
+						NewTagSeqCounter_us <= NewTagSeqCounter_us + 1;
+					else
+						NewTagSeqCounter_us <= NewTagSeqCounter_us - 1;
+					end if;
+				end if;
+
 				-- TagSeqCounter
-				IF ((Reset OR TagSeqCounter_rst) = '1') THEN
-					IF (TAG_BYTE_ORDER = LITTLE_ENDIAN) THEN
-						TagSeqCounter_us			<= to_unsigned(0,								TagSeqCounter_us'length);
-					ELSE
-						TagSeqCounter_us			<= to_unsigned((FA_CHUNKS - 1), TagSeqCounter_us'length);
-					END IF;
-				ELSE
-					IF (TAG_BYTE_ORDER = LITTLE_ENDIAN) THEN
-						TagSeqCounter_us			<= TagSeqCounter_us + 1;
-					ELSE
-						TagSeqCounter_us			<= TagSeqCounter_us - 1;
-					END IF;
-				END IF;
-			END IF;
-		END PROCESS;
-		
+				if ((Reset or TagSeqCounter_rst) = '1') then
+					if (TAG_BYTE_ORDER = LITTLE_ENDIAN) then
+						TagSeqCounter_us <= to_unsigned(0, TagSeqCounter_us'length);
+					else
+						TagSeqCounter_us <= to_unsigned((FA_CHUNKS - 1), TagSeqCounter_us'length);
+					end if;
+				else
+					if (TAG_BYTE_ORDER = LITTLE_ENDIAN) then
+						TagSeqCounter_us <= TagSeqCounter_us + 1;
+					else
+						TagSeqCounter_us <= TagSeqCounter_us - 1;
+					end if;
+				end if;
+			end if;
+		end process;
+
 		-- generate comparators
-		genVectors : FOR I IN 0 TO FA_CACHE_LINES - 1 GENERATE
-			CONSTANT C_TAGMEMORY					: T_TAG_LINE(FA_CHUNKS - 1 DOWNTO 0)		:= to_tagmemory(FA_INITIAL_TAGS_RESIZED, I);
-			SIGNAL TagMemory							: T_TAG_LINE(FA_CHUNKS - 1 DOWNTO 0)		:= C_TAGMEMORY;
-		BEGIN
+		genVectors : for I in 0 to FA_CACHE_LINES - 1 generate
+			constant C_TAGMEMORY : T_TAG_LINE(FA_CHUNKS - 1 downto 0) := to_tagmemory(FA_INITIAL_TAGS_RESIZED, I);
+			signal TagMemory		 : T_TAG_LINE(FA_CHUNKS - 1 downto 0) := C_TAGMEMORY;
+		begin
 --			genASS : FOR J IN 0 TO FA_CHUNKS - 1 GENERATE
---				ASSERT FALSE REPORT "line=" & INTEGER'image(I) & "  chunk=" & INTEGER'image(J) & "  tag=" & to_string(C_TAGMEMORY(J), 'h') SEVERITY NOTE;
+--				ASSERT FALSE REPORT "line=" & INTEGER'image(I) & "	chunk=" & INTEGER'image(J) & "	tag=" & to_string(C_TAGMEMORY(J), 'h') SEVERITY NOTE;
 --			END GENERATE;
-			
-			PROCESS(Clock)
-			BEGIN
-				IF rising_edge(Clock) THEN
-					IF ((ReplaceIndex_us = I ) AND (TagMemory_we = '1')) THEN
-						TagMemory(to_integer(NewTagSeqCounter_us))	<= Replace_NewTag_Data;
-					END IF;
-				END IF;
-			END PROCESS;
-		
-			PartialTagHits(I)	<= to_sl(TagMemory(to_integer(TagSeqCounter_us)) = Request_Tag_Data);
-		END GENERATE;
+
+			process(Clock)
+			begin
+				if rising_edge(Clock) then
+					if ((ReplaceIndex_us = I) and (TagMemory_we = '1')) then
+						TagMemory(to_integer(NewTagSeqCounter_us)) <= Replace_NewTag_Data;
+					end if;
+				end if;
+			end process;
+
+			PartialTagHits(I) <= to_sl(TagMemory(to_integer(TagSeqCounter_us)) = Request_Tag_Data);
+		end generate;
 
 		-- TagHit accumulator
-		TagHits_nxt				<= TagHits_r AND PartialTagHits;
-		TagHits_nor				<= slv_nor(TagHits_nxt);
-		
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF ((TagHit_i OR TagMiss_i) = '1') THEN
-					TagHits_r		<= (OTHERS => '1');
-				ELSIF (TagHits_en = '1') THEN
-					TagHits_r		<= TagHits_nxt;
-				END IF;
-			END IF;
-		END PROCESS;
-		
+		TagHits_nxt <= TagHits_r and PartialTagHits;
+		TagHits_nor <= slv_nor(TagHits_nxt);
+
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if ((TagHit_i or TagMiss_i) = '1') then
+					TagHits_r <= (others => '1');
+				elsif (TagHits_en = '1') then
+					TagHits_r <= TagHits_nxt;
+				end if;
+			end if;
+		end process;
+
 		-- convert hit-vector to binary index (cache line address)
-		MemoryIndex_us			<= onehot2bin(TagHits_nxt);
-		MemoryIndex_i				<= std_logic_vector(MemoryIndex_us);
+		MemoryIndex_us <= onehot2bin(TagHits_nxt);
+		MemoryIndex_i	 <= std_logic_vector(MemoryIndex_us);
 
 		-- latching the ReplaceIndex
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF (Replace = '1') THEN
-					Policy_ReplaceIndex_d		<= Policy_ReplaceIndex;
-				END IF;
-			END IF;
-		END PROCESS;
-		
-		ReplaceIndex_us			<= unsigned(ite((Replace = '1'), Policy_ReplaceIndex, Policy_ReplaceIndex_d));
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if (Replace = '1') then
+					Policy_ReplaceIndex_d <= Policy_ReplaceIndex;
+				end if;
+			end if;
+		end process;
+
+		ReplaceIndex_us <= unsigned(ite((Replace = '1'), Policy_ReplaceIndex, Policy_ReplaceIndex_d));
 
 		-- Memories
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF (Replace = '1') THEN
-					ValidMemory(to_integer(unsigned(Policy_ReplaceIndex)))	<= '1';
-				END IF;
-			END IF;
-		END PROCESS;
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if (Replace = '1') then
+					ValidMemory(to_integer(unsigned(Policy_ReplaceIndex))) <= '1';
+				end if;
+			end if;
+		end process;
 
-		ValidHit					<= ValidMemory(to_integer(MemoryIndex_us));
-		
+		ValidHit <= ValidMemory(to_integer(MemoryIndex_us));
+
 		-- hit/miss calculation
-		TagHit_i					<=			slv_or(TagHits_nxt) AND ValidHit	AND RequestComplete;
-		TagMiss_i					<= NOT (slv_or(TagHits_nxt) AND ValidHit)	AND RequestComplete;
+		TagHit_i	<= slv_or(TagHits_nxt) and ValidHit and RequestComplete;
+		TagMiss_i <= not (slv_or(TagHits_nxt) and ValidHit) and RequestComplete;
 
 		-- outputs
-		Request_Index			<= MemoryIndex_i;
-		Request_TagHit		<= TagHit_i;
-		Request_TagMiss		<= TagMiss_i;		
+		Request_Index		<= MemoryIndex_i;
+		Request_TagHit	<= TagHit_i;
+		Request_TagMiss <= TagMiss_i;
 
-		Replace_NewIndex	<= Policy_ReplaceIndex;
-		
-		TagAccess					<= TagHit_i				WHEN rising_edge(Clock);
-		TagIndex					<= MemoryIndex_i	WHEN rising_edge(Clock);
+		Replace_NewIndex <= Policy_ReplaceIndex;
+
+		TagAccess <= TagHit_i			 when rising_edge(Clock);
+		TagIndex	<= MemoryIndex_i when rising_edge(Clock);
 
 		-- replacement policy
 --		Policy : ENTITY L_Global.cache_replacement_policy
-		Policy : ENTITY PoC.cache_replacement_policy
-			GENERIC MAP (
-				REPLACEMENT_POLICY				=> REPLACEMENT_POLICY,
-				CACHE_LINES								=> FA_CACHE_LINES,
-				INITIAL_VALIDS						=> to_validvector(INITIAL_TAGS)
+		Policy : entity PoC.cache_replacement_policy
+			generic map (
+				REPLACEMENT_POLICY => REPLACEMENT_POLICY,
+				CACHE_LINES				 => FA_CACHE_LINES
 			)
-			PORT MAP (
-				Clock											=> Clock,
-				Reset											=> Reset,
-				
-				Replace										=> Replace,
-				ReplaceIndex							=> Policy_ReplaceIndex,
-				
-				TagAccess									=> TagAccess,
-				ReadWrite									=> Request_ReadWrite,
-				Invalidate								=> Request_Invalidate,
-				Index											=> TagIndex
+			port map (
+				Clock => Clock,
+				Reset => Reset,
+
+				Replace			 => Replace,
+				ReplaceIndex => Policy_ReplaceIndex,
+
+				TagAccess	 => TagAccess,
+				ReadWrite	 => Request_ReadWrite,
+				Invalidate => Request_Invalidate,
+				Index			 => TagIndex
 			);
-	END GENERATE;
+	end generate;
 	-- ==========================================================================================================================================================
 	-- Direct-Mapped Cache
 	-- ==========================================================================================================================================================
-	genDM : IF (ASSOCIATIVITY = 1) GENERATE
-		CONSTANT FA_CACHE_LINES					: POSITIVE					:= CACHE_LINES;
-		CONSTANT FA_TAG_BITS						: POSITIVE					:= TAG_BITS;
-		CONSTANT FA_MEMORY_INDEX_BITS		: POSITIVE					:= log2ceilnz(FA_CACHE_LINES);
-		
-		SIGNAL FA_Tag										: STD_LOGIC_VECTOR(FA_TAG_BITS - 1 DOWNTO 0);
-		SIGNAL TagHits								: STD_LOGIC_VECTOR(FA_CACHE_LINES - 1 DOWNTO 0);
+	genDM : if (ASSOCIATIVITY = 1) generate
+		constant FA_CACHE_LINES				: positive := CACHE_LINES;
+		constant FA_TAG_BITS					: positive := TAG_BITS;
+		constant FA_MEMORY_INDEX_BITS : positive := log2ceilnz(FA_CACHE_LINES);
 
-		SIGNAL FA_MemoryIndex_i					: STD_LOGIC_VECTOR(FA_MEMORY_INDEX_BITS - 1 DOWNTO 0);
-		SIGNAL FA_MemoryIndex_us				: UNSIGNED(FA_MEMORY_INDEX_BITS - 1 DOWNTO 0);
-		SIGNAL FA_ReplaceIndex_us				: UNSIGNED(FA_MEMORY_INDEX_BITS - 1 DOWNTO 0);
+		signal FA_Tag	 : std_logic_vector(FA_TAG_BITS - 1 downto 0);
+		signal TagHits : std_logic_vector(FA_CACHE_LINES - 1 downto 0);
 
-		SIGNAL ValidHit									: STD_LOGIC;
-		SIGNAL TagHit_i									: STD_LOGIC;
-		SIGNAL TagMiss_i								: STD_LOGIC;
-	BEGIN
+		signal FA_MemoryIndex_i		: std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
+		signal FA_MemoryIndex_us	: unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
+		signal FA_ReplaceIndex_us : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
+
+		signal ValidHit	 : std_logic;
+		signal TagHit_i	 : std_logic;
+		signal TagMiss_i : std_logic;
+	begin
 --		-- generate comparators
 --		genVectors : FOR I IN 0 TO FA_CACHE_LINES - 1 GENERATE
 --			TagHits(I)			<= to_sl(TagMemory(I) = FA_Tag);
@@ -462,7 +461,7 @@ BEGIN
 --			IF rising_edge(Clock) THEN
 --				IF (Replace = '1') THEN
 --					TagMemory(to_integer(FA_ReplaceIndex_us))		<= NewTag;
---					ValidMemory(to_integer(FA_ReplaceIndex_us))	<= '1';
+--					ValidMemory(to_integer(FA_ReplaceIndex_us)) <= '1';
 --				END IF;
 --			END IF;
 --		END PROCESS;
@@ -472,7 +471,7 @@ BEGIN
 --		
 --		-- hit/miss calculation
 --		TagHit_i					<=			slv_or(TagHits) AND ValidHit	AND Request;
---		TagMiss_i				<= NOT (slv_or(TagHits) AND ValidHit)	AND Request;
+--		TagMiss_i				<= NOT (slv_or(TagHits) AND ValidHit) AND Request;
 --		
 --		-- outputs
 --		Index					<= FA_MemoryIndex_i;
@@ -499,27 +498,27 @@ BEGIN
 --					Index											=> Policy_Index(I)
 --				);
 --		END GENERATE;
-	END GENERATE;
+	end generate;
 	-- ==========================================================================================================================================================
 	-- Set-Assoziative Cache
 	-- ==========================================================================================================================================================
-	genSA : IF ((ASSOCIATIVITY > 1) AND (SETS > 1)) GENERATE
-		CONSTANT FA_CACHE_LINES					: POSITIVE					:= CACHE_LINES;
-		CONSTANT SETINDEX_BITS					: NATURAL						:= log2ceil(SETS);
-		CONSTANT FA_TAG_BITS						: POSITIVE					:= TAG_BITS;
-		CONSTANT FA_MEMORY_INDEX_BITS		: POSITIVE					:= log2ceilnz(FA_CACHE_LINES);
-		
-		SIGNAL FA_Tag										: STD_LOGIC_VECTOR(FA_TAG_BITS - 1 DOWNTO 0);
-		SIGNAL TagHits								: STD_LOGIC_VECTOR(FA_CACHE_LINES - 1 DOWNTO 0);
+	genSA : if ((ASSOCIATIVITY > 1) and (SETS > 1)) generate
+		constant FA_CACHE_LINES				: positive := CACHE_LINES;
+		constant SETINDEX_BITS				: natural	 := log2ceil(SETS);
+		constant FA_TAG_BITS					: positive := TAG_BITS;
+		constant FA_MEMORY_INDEX_BITS : positive := log2ceilnz(FA_CACHE_LINES);
 
-		SIGNAL FA_MemoryIndex_i					: STD_LOGIC_VECTOR(FA_MEMORY_INDEX_BITS - 1 DOWNTO 0);
-		SIGNAL FA_MemoryIndex_us				: UNSIGNED(FA_MEMORY_INDEX_BITS - 1 DOWNTO 0);
-		SIGNAL FA_ReplaceIndex_us				: UNSIGNED(FA_MEMORY_INDEX_BITS - 1 DOWNTO 0);
+		signal FA_Tag	 : std_logic_vector(FA_TAG_BITS - 1 downto 0);
+		signal TagHits : std_logic_vector(FA_CACHE_LINES - 1 downto 0);
 
-		SIGNAL ValidHit									: STD_LOGIC;
-		SIGNAL TagHit_i									: STD_LOGIC;
-		SIGNAL TagMiss_i								: STD_LOGIC;
-	BEGIN
+		signal FA_MemoryIndex_i		: std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
+		signal FA_MemoryIndex_us	: unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
+		signal FA_ReplaceIndex_us : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
+
+		signal ValidHit	 : std_logic;
+		signal TagHit_i	 : std_logic;
+		signal TagMiss_i : std_logic;
+	begin
 --		-- generate comparators
 --		genVectors : FOR I IN 0 TO FA_CACHE_LINES - 1 GENERATE
 --			TagHits(I)			<= to_sl(TagMemory(I) = FA_Tag);
@@ -537,7 +536,7 @@ BEGIN
 --			IF rising_edge(Clock) THEN
 --				IF (Replace = '1') THEN
 --					TagMemory(to_integer(FA_ReplaceIndex_us))		<= NewTag;
---					ValidMemory(to_integer(FA_ReplaceIndex_us))	<= '1';
+--					ValidMemory(to_integer(FA_ReplaceIndex_us)) <= '1';
 --				END IF;
 --			END IF;
 --		END PROCESS;
@@ -547,7 +546,7 @@ BEGIN
 --		
 --		-- hit/miss calculation
 --		TagHit_i					<=			slv_or(TagHits) AND ValidHit	AND Request;
---		TagMiss_i				<= NOT (slv_or(TagHits) AND ValidHit)	AND Request;
+--		TagMiss_i				<= NOT (slv_or(TagHits) AND ValidHit) AND Request;
 --		
 --		-- outputs
 --		Index					<= FA_MemoryIndex_i;
@@ -574,5 +573,5 @@ BEGIN
 --					Index											=> Policy_Index(I)
 --				);
 --		END GENERATE;
-	END GENERATE;
-END ARCHITECTURE;
+	end generate;
+end architecture;

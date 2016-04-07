@@ -1,0 +1,37 @@
+CWD=$(shell pwd)
+POC=$(CWD)/../..
+COCOTB=$(POC)/lib/cocotb
+POC_SRC=$(POC)/src
+POC_TB=$(POC)/tb
+
+TOPLEVEL_LANG=vhdl
+VHDL_SOURCES =$(POC_TB)/common/my_config_KC705.vhdl
+VHDL_SOURCES+=$(POC_TB)/common/my_project.vhdl
+VHDL_SOURCES+=$(POC_SRC)/common/utils.vhdl
+VHDL_SOURCES+=$(POC_SRC)/common/config.vhdl
+VHDL_SOURCES+=$(POC_SRC)/common/math.vhdl
+VHDL_SOURCES+=$(POC_SRC)/common/strings.vhdl
+VHDL_SOURCES+=$(POC_SRC)/common/vectors.vhdl
+VHDL_SOURCES+=$(POC_SRC)/common/physical.vhdl
+VHDL_SOURCES+=$(POC_SRC)/common/components.vhdl
+VHDL_SOURCES+=$(POC_SRC)/common/protected.v08.vhdl
+VHDL_SOURCES+=$(POC_SRC)/common/fileio.v08.vhdl
+VHDL_SOURCES+=$(POC_SRC)/sort/sort_lru_list.vhdl
+
+CUSTOM_SIM_DEPS=$(CWD)/Makefile
+
+RTL_LIBRARY=poc
+TOPLEVEL=sort_lru_list
+MODULE=sort_lru_list_cocotb
+include $(COCOTB)/makefiles/Makefile.inc
+include $(COCOTB)/makefiles/Makefile.sim
+
+# list all required Python files here
+sim: $(MODULE).py lru_dict.py
+
+# copy rule(s)
+lru_dict.py: $(POC_TB)/common/lru_dict.py
+	cp $< $@
+
+%.py: $(POC_TB)/sort/%.py
+	cp $< $@
