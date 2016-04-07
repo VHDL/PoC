@@ -144,7 +144,9 @@ begin
 				end if;
 
 				for i in ValidMemory'range loop
-					if (Replace = '1' and ReplaceIndex_us = i) or
+					if Reset = '1' then
+						ValidMemory(i) <= '0';
+					elsif (Replace = '1' and ReplaceIndex_us = i) or
 						(Request = '1' and Invalidate = '1' and TagHits(i) = '1')
 					then
 						ValidMemory(i) <= Replace; -- clear when Invalidate
