@@ -4,8 +4,9 @@
 -- 
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
+--									Martin Zabel
 -- 
--- Module:				 	TODO
+-- Module:				 	Testbench for `sort_lru_cache`
 --
 -- Description:
 -- ------------------------------------
@@ -47,45 +48,30 @@ library OSVVM;
 use			OSVVM.RandomPkg.all;
 
 
-entity sort_LeastRecentlyUsed_tb is
+entity sort_lru_cache_tb is
 end entity;
 
 
-architecture tb of sort_LeastRecentlyUsed_tb is
+architecture tb of sort_lru_cache_tb is
 	constant ELEMENTS					: POSITIVE	:= 8;
-	constant KEY_BITS					: POSITIVE	:= 3;	--8;
-	constant DATA_BITS				: NATURAL		:= 3;
+	constant KEY_BITS					: POSITIVE	:= log2ceilnz(ELEMENTS);
 	
 	constant LOOP_COUNT				: POSITIVE	:= 32;
 	
 	constant CLOCK_PERIOD			: TIME				:= 10 ns;
 	signal Clock							: STD_LOGIC		:= '1';
 	
-	function create_keys return T_SLM is
-		variable slm		: T_SLM(ELEMENTS - 1 downto 0, KEY_BITS - 1 downto 0);
-		variable row		: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
-	begin
-		for i in slm'range(1) loop
-			row					:= to_slv((slm'high(1) - i), row'length);
-			for j in row'range loop
-				slm(i, j)	:= row(j);
-			end loop;
-		end loop;
-		return slm;
-	end function;
-
-	constant INITIAL_KEYS				: T_SLM(ELEMENTS - 1 DOWNTO 0, KEY_BITS - 1 DOWNTO 0)		:= create_keys;
-	
 	signal Insert							: STD_LOGIC;
+	signal Free								: STD_LOGIC;
 	signal KeyIn							: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
-	signal Invalidate					: STD_LOGIC;
 	
-	signal Valid							: STD_LOGIC;
-	signal LRU_Element				: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+	signal KeyOut							: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
 	
 	signal StopSimulation			: STD_LOGIC		:= '0';
 begin
 
+	simInitialize;
+	
 	Clock	<= Clock xnor StopSimulation after CLOCK_PERIOD;
 
 	process
@@ -95,22 +81,22 @@ begin
 		RandomVar.InitSeed(RandomVar'instance_name);		-- Generate initial seeds
 		
 		Insert			<= '0';
-		Invalidate	<= '0';
+		Free				<= '0';
 		KeyIn				<= (others => '0');
 		wait until falling_edge(Clock);
 		
 		for i in 0 to LOOP_COUNT - 1 loop
 			
 			Insert			<= '0';
-			Invalidate	<= '0';
+			Free				<= '0';
 			Command			:= RandomVar.RandInt(0, 1);
 			case Command is
 				when 0 =>	-- NOP
 				when 1 =>	-- Insert
-					Insert			<= '1';
-					KeyIn	<= to_slv(RandomVar.RandInt(0, (2**KEY_BITS - 1)), KEY_BITS);
-				-- when 2 =>	-- Invalidate
-					-- Invalidate	<= '1';
+					Insert	<= '1';
+					KeyIn		<= to_slv(RandomVar.RandInt(0, (2**KEY_BITS - 1)), KEY_BITS);
+				-- when 2 =>	-- Free
+					-- Free		<= '1';
 					-- KeyIn	<= to_slv(RandomVar.RandInt(0, (2**KEY_BITS - 1)), KEY_BITS);
 			end case;
 			wait until falling_edge(Clock);
@@ -121,49 +107,24 @@ begin
 		end loop;
 		
 		StopSimulation		<= '1';
+		-- Report overall result
+		simFinalize;
 		wait;
 	end process;
 	
-	sort : entity PoC.sort_LeastRecentlyUsed
+	sort : entity PoC.sort_lru_cache
 		generic map (
-			ELEMENTS					=> ELEMENTS,
-			KEY_BITS					=> KEY_BITS,
-			DATA_BITS					=> DATA_BITS,
-			INITIAL_ELEMENTS	=> INITIAL_KEYS,	--(0 to ELEMENTS - 1 => (KEY_BITS - 1 downto 0 => '0')),
-			INITIAL_VALIDS		=> (0 to ELEMENTS - 1 => '1')
+			ELEMENTS					=> ELEMENTS
 		)
 		port map (
 			Clock							=> Clock,
 			Reset							=> '0',
 
 			Insert						=> Insert,
-			Invalidate				=> Invalidate,
+			Free							=> Free,
 			KeyIn							=> KeyIn,
 
-			Valid							=> Valid,
-			LRU_Element				=> LRU_Element,
-
-			DBG_Elements			=> open,
-			DBG_Valids				=> open
+			KeyOut 						=> KeyOut
 		);
 	
-	stimuli: process
-		variable	Check		: BOOLEAN;
-		constant simProcessID : T_SIM_PROCESS_ID := simRegisterProcess("Stimuli");
-	begin
-		Check		:= TRUE;
-		
-		for i in 0 to LOOP_COUNT - 1 loop
-			wait until rising_edge(Clock);
-			-- TODO: 
-		end loop;
-		
-		simAssertion(Check, "Result is not monotonic.");
-
-		-- This process is finished
-		simDeactivateProcess(simProcessID);
-		-- Report overall result
-		globalSimulationStatus.finalize;
-		wait;  -- forever
-	end process;
 end architecture;

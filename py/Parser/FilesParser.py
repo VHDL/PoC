@@ -4,7 +4,8 @@
 # 
 # ==============================================================================
 # Authors:					Patrick Lehmann
-# 
+#                   Martin Zabel
+#
 # Python Module:		TODO
 # 
 # Description:
@@ -35,7 +36,7 @@ from Parser.Parser				import StringLiteral, IntegerLiteral, Identifier
 from Parser.Parser				import AndExpression, OrExpression, XorExpression, NotExpression, InExpression
 from Parser.Parser				import EqualExpression, UnequalExpression, LessThanExpression, LessThanEqualExpression, GreaterThanExpression, GreaterThanEqualExpression
 from Parser.Parser				import ExistsFunction, ListConstructorExpression
-from Parser.FilesCodeDOM	import Document
+from Parser.FilesCodeDOM	import Document, CocotbStatement
 from Parser.FilesCodeDOM	import VHDLStatement, VerilogStatement, IncludeStatement, LibraryStatement, IfElseIfElseStatement, ReportStatement
 
 class VHDLSourceFile:
@@ -71,6 +72,20 @@ class VerilogSourceFile:
 	def __repr__(self):
 		return self.__str__()
 			
+class CocotbSourceFile:
+	def __init__(self, file):
+		self._file =		file
+
+	@property
+	def File(self):
+		return self._file
+
+	def __str__(self):
+		return "Cocotb file: '{0!s}'".format(self._file)
+
+	def __repr__(self):
+		return self.__str__()
+
 class VHDLLibraryReference:
 	def __init__(self, name, path):
 		self._name = name.lower()
@@ -119,6 +134,10 @@ class FilesParserMixIn:
 				file =						self._rootDirectory / stmt.FileName
 				verilogSrcFile =	self._classVerilogSourceFile(file)
 				self._files.append(verilogSrcFile)
+			elif isinstance(stmt, CocotbStatement):
+				file =						self._rootDirectory / stmt.FileName
+				cocotbSrcFile =		self._classCocotbSourceFile(file)
+				self._files.append(cocotbSrcFile)
 			elif isinstance(stmt, IncludeStatement):
 				# add the include file to the fileset
 				file =						self._rootDirectory / stmt.FileName
