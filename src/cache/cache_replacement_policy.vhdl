@@ -24,7 +24,7 @@
 --
 --	TagAccess | ReadWrite | Invalidate	| Replace | Command
 --	----------+-----------+-------------+---------+--------------------------------
---		0				|		0				|		0					|		0			| None
+--		0				|		-				|		-					|		0			| None
 --		1				|		0				|		0					|		0			| TagHit and reading a cache line
 --		1				|		1				|		0					|		0			| TagHit and writing a cache line
 --		1				|		0				|		1					|		0			| TagHit and invalidate a	cache line (while reading)
@@ -32,6 +32,15 @@
 --		0				|		-				|		0					|		1			| Replace cache line
 --	----------+-----------+-------------+------------------------------------------
 --
+-- In a set-associative cache, each cache-set has its own instance of this component.
+--
+-- The input `HitWay` specifies the accessed way in a fully-associative or
+-- set-associative cache.
+--
+-- The output `ReplaceWay` identifies the way which will be replaced as next by
+-- a replace command. In a set-associative cache, this is the way in a specific
+-- cache set (see above).
+-- 
 -- License:
 -- ============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
@@ -64,21 +73,21 @@ use PoC.strings.all;
 entity cache_replacement_policy is
 	generic (
 		REPLACEMENT_POLICY : string		:= "LRU";
-		CACHE_LINES				 : positive := 32
+		CACHE_WAYS				 : positive := 32
 	);
 	port (
 		Clock : in std_logic;
 		Reset : in std_logic;
 
 		-- replacement interface
-		Replace			 : in	 std_logic;
-		ReplaceIndex : out std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
+		Replace		 : in	 std_logic;
+		ReplaceWay : out std_logic_vector(log2ceilnz(CACHE_WAYS) - 1 downto 0);
 
 		-- cacheline usage update interface
 		TagAccess	 : in std_logic;
 		ReadWrite	 : in std_logic;
 		Invalidate : in std_logic;
-		Index			 : in std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0)
+		HitWay		 : in std_logic_vector(log2ceilnz(CACHE_WAYS) - 1 downto 0)
 	);
 end;
 
@@ -87,7 +96,7 @@ architecture rtl of cache_replacement_policy is
 	attribute KEEP				 : boolean;
 	attribute FSM_ENCODING : string;
 
-	constant KEY_BITS : positive := log2ceilnz(CACHE_LINES);
+	constant KEY_BITS : positive := log2ceilnz(CACHE_WAYS);
 
 begin
 	assert (str_equal(REPLACEMENT_POLICY, "RR") or
@@ -105,22 +114,22 @@ begin
 		subtype T_OPTION_LINE is std_logic_vector(0 downto 0);
 		type T_OPTION_LINE_VECTOR is array (natural range <>) of T_OPTION_LINE;
 
-		signal OptionMemory : T_OPTION_LINE_VECTOR(CACHE_LINES - 1 downto 0) := (others => (
+		signal OptionMemory : T_OPTION_LINE_VECTOR(CACHE_WAYS - 1 downto 0) := (others => (
 			VALID_BIT																																			=> '0')
 																																						 );
 
 		signal ValidHit		: std_logic;
-		signal Pointer_us : unsigned(log2ceilnz(CACHE_LINES) - 1 downto 0) := (others => '0');
+		signal Pointer_us : unsigned(log2ceilnz(CACHE_WAYS) - 1 downto 0) := (others => '0');
 
 	begin
---		ValidHit		<= OptionMemory(to_integer(unsigned(Index)))(VALID_BIT);
+--		ValidHit		<= OptionMemory(to_integer(unsigned(HitWay)))(VALID_BIT);
 --		IsValid			<= ValidHit;
 --
 --		PROCESS(Clock)
 --		BEGIN
 --			IF rising_edge(Clock) THEN
 --				IF (Reset = '1') THEN
---					FOR I IN 0 TO CACHE_LINES - 1 LOOP
+--					FOR I IN 0 TO CACHE_WAYS - 1 LOOP
 --						OptionMemory(I)(VALID_BIT)	<= '0';
 --					END LOOP;
 --				ELSE
@@ -129,14 +138,14 @@ begin
 --					END IF;
 --					
 --					IF (Invalidate = '1') THEN
---						OptionMemory(to_integer(unsigned(Index)))(VALID_BIT)			<= '0';
+--						OptionMemory(to_integer(unsigned(HitWay)))(VALID_BIT)			<= '0';
 --					END IF;
 --				END IF;
 --			END IF;
 --		END PROCESS;
 --
 --		Replace				<= Insert;
---		ReplaceIndex	<= std_logic_vector(Pointer_us);
+--		ReplaceWay		<= std_logic_vector(Pointer_us);
 --		
 --		PROCESS(Clock)
 --		BEGIN
@@ -158,22 +167,22 @@ begin
 	genLRU : if (str_equal(REPLACEMENT_POLICY, "LRU") = true) generate
 		signal LRU_Insert			: std_logic;
 		signal LRU_Invalidate : std_logic;
-		signal KeyIn					: std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
-		signal LRU_Key				: std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
+		signal KeyIn					: std_logic_vector(log2ceilnz(CACHE_WAYS) - 1 downto 0);
+		signal LRU_Key				: std_logic_vector(log2ceilnz(CACHE_WAYS) - 1 downto 0);
 
 	begin
 		-- Command Decoding
 		LRU_Insert		 <= (TagAccess and not Invalidate) or Replace;
 		LRU_Invalidate <= TagAccess and Invalidate;
 		
-		KeyIn <= LRU_Key when Replace = '1' else Index;
+		KeyIn <= LRU_Key when Replace = '1' else HitWay;
 
 		-- Output
-		ReplaceIndex <= LRU_Key;
+		ReplaceWay <= LRU_Key;
 
 		LRU : entity PoC.sort_lru_cache
 			generic map (
-				ELEMENTS => CACHE_LINES
+				ELEMENTS => CACHE_WAYS
 			)
 			port map (
 				Clock => Clock,

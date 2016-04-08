@@ -13,8 +13,6 @@
 #
 # Supported configuration:
 # * REPLACEMENT_POLICY = "LRU"
-# * CACHE_LINES = ASSOCIATIVITY (full-associative cache)
-# * USE_INITIAL_TAGS = false
 #
 # License:
 # ==============================================================================
@@ -48,18 +46,22 @@ from cocotb.scoreboard import Scoreboard
 from cocotb.result import TestFailure, TestSuccess
 
 from lru_dict import LeastRecentlyUsedDict
+from utils import log2ceil
+
+# debug level
+DEBUG=0
 
 # ==============================================================================
 class InputDriver(BusDriver):
 	"""Drives inputs of DUT."""
-	_signals = [ "Request", "ReadWrite", "Invalidate", "Replace", "Tag", "CacheLineIn" ]
+	_signals = [ "Request", "ReadWrite", "Invalidate", "Replace", "Address", "CacheLineIn" ]
 	
 	def __init__(self, dut):
 		BusDriver.__init__(self, dut, None, dut.Clock)
 
 class InputTransaction(object):
 	"""Creates transaction to be send by InputDriver"""
-	def __init__(self, tb, request=0, readWrite=0, invalidate=0, replace=0, tag=0, cacheLineIn=0):
+	def __init__(self, tb, request=0, readWrite=0, invalidate=0, replace=0, address=0, cacheLineIn=0):
 		"tb must be an instance of the Testbench class"
 		if (replace==1) and ((request==1) or (invalidate==1)):
 			raise ValueError("InputTransaction.__init__ called with request=%d, invalidate=%d, replace=%d"
@@ -69,13 +71,13 @@ class InputTransaction(object):
 		self.Request = BinaryValue(request, 1)
 		self.ReadWrite = BinaryValue(readWrite, 1)
 		self.Invalidate = BinaryValue(invalidate, 1)
-		self.Tag = BinaryValue(tag, tb.tag_bits, False)
+		self.Address = BinaryValue(address, tb.address_bits, False)
 		self.CacheLineIn = BinaryValue(cacheLineIn, tb.data_bits, False)
 		
 # ==============================================================================
 class InputMonitor(BusMonitor):
 	"""Observes inputs of DUT."""
-	_signals = [ "Request", "ReadWrite", "Invalidate", "Replace", "Tag", "CacheLineIn" ]
+	_signals = [ "Request", "ReadWrite", "Invalidate", "Replace", "Address", "CacheLineIn" ]
 	
 	def __init__(self, dut, callback=None, event=None):
 		BusMonitor.__init__(self, dut, None, dut.Clock, dut.Reset, callback=callback, event=event)
@@ -92,14 +94,14 @@ class InputMonitor(BusMonitor):
 						 self.bus.ReadWrite.value.integer,
 						 self.bus.Invalidate.value.integer,
 						 self.bus.Replace.value.integer,
-						 self.bus.Tag.value.integer,
+						 self.bus.Address.value.integer,
 						 self.bus.CacheLineIn.value.integer)
 			self._recv(vec)
 
 # ==============================================================================
 class OutputMonitor(BusMonitor):
 	"""Observes outputs of DUT."""
-	_signals = [ "CacheLineOut", "CacheHit", "CacheMiss", "OldTag" ]
+	_signals = [ "CacheLineOut", "CacheHit", "CacheMiss", "OldAddress" ]
 
 	def __init__(self, dut, callback=None, event=None):
 		BusMonitor.__init__(self, dut, None, dut.Clock, dut.Reset, callback=callback, event=event)
@@ -135,24 +137,27 @@ class Testbench(object):
 	def __init__(self, dut):
 		self.dut = dut
 		self.stopped = False
-		self.tag_bits = dut.TAG_BITS.value
+		self.address_bits = dut.ADDRESS_BITS.value
 		self.data_bits = dut.DATA_BITS.value
 		
 		cache_lines = dut.CACHE_LINES.value      # total number of cache lines
 		self.associativity = dut.ASSOCIATIVITY.value
-		cache_sets = cache_lines / self.associativity # number of cache sets
-		if cache_sets != 1:
-			raise TestFailure("Unsupported configuration: CACHE_LINES=%d, ASSOCIATIVITY=%d" % (cache_lines, associativity))
+		self.cache_sets = cache_lines / self.associativity # number of cache sets
 
+		self.index_bits = log2ceil(self.cache_sets)
+		tag_bits = self.address_bits - self.index_bits
+
+		self.index_mask = 2**self.index_bits-1
+		self.tag_mask = 2**tag_bits-1
+
+		if DEBUG: print "Testbench: %d, %d, %d" % (self.index_bits, self.index_mask, self.tag_mask)
+		
 		replacement_policy = dut.REPLACEMENT_POLICY.value
 		if replacement_policy != "LRU":
 			raise TestFailure("Unsupported configuration: REPLACEMENT_POLICY=%s" % replacement_policy)
 
-		if dut.USE_INITIAL_TAGS.value != False:
-			raise TestFailure("Unsupported configuration: USE_INITIAL_TAGS=true")
-
 		# TODO: create LRU dictionary for each cache set
-		self.lru = LeastRecentlyUsedDict(size_limit=self.associativity)
+		self.lrus = tuple([LeastRecentlyUsedDict(size_limit=self.associativity) for _ in range(self.cache_sets)])
 
 		init_val = (None, 0, 0, None)
 		
@@ -170,37 +175,40 @@ class Testbench(object):
 
 	def model(self, transaction):
 		'''Model the DUT based on the input transaction.'''
-		request, readWrite, invalidate, replace, tag, cacheLineIn = transaction
-		#print "=== model called with stopped=%r, Request=%d, ReadWrite=%d, Invalidate=%d, Replace=%d, Tag=%d, CacheLineIn=%d" % (self.stopped, request, readWrite, invalidate, replace, tag, cacheLineIn)
+		request, readWrite, invalidate, replace, address, cacheLineIn = transaction
+		if DEBUG >= 1: print "=== model called with stopped=%r, Request=%d, ReadWrite=%d, Invalidate=%d, Replace=%d, Address=%d, CacheLineIn=%d" % (self.stopped, request, readWrite, invalidate, replace, address, cacheLineIn)
 
+		index = address & self.index_mask
+		tag = (address >> self.index_bits) & self.tag_mask
+		
 		# expected outputs, None means ignore
-		cacheLineOut, cacheHit, cacheMiss, oldTag = None, 0, 0, None
+		cacheLineOut, cacheHit, cacheMiss, oldAddress = None, 0, 0, None
 		if not self.stopped:
 			if request == 1:
-				if tag in self.lru:
+				if address in self.lrus[index]:
 					cacheHit = 1
 					if readWrite == 1:
-						self.lru[tag] = cacheLineIn
+						self.lrus[index][address] = cacheLineIn
 					else:
-						cacheLineOut = self.lru[tag]
-						self.lru[tag] = cacheLineOut # move to recently-used position
+						cacheLineOut = self.lrus[index][address]
+						self.lrus[index][address] = cacheLineOut # move to recently-used position
 
 					if invalidate == 1:
-						del self.lru[tag]
+						del self.lrus[index][address]
 						
 				else:
 					cacheMiss = 1
 					
 			elif replace == 1:
 				# check if a valid cache line will be replaced
-				if len(self.lru) == self.associativity:
-					oldTag, cacheLineOut = self.lru.iteritems().next()
+				if len(self.lrus[index]) == self.associativity:
+					oldAddress, cacheLineOut = self.lrus[index].iteritems().next()
 
 				# actual replace
-				self.lru[tag] = cacheLineIn
+				self.lrus[index][address] = cacheLineIn
 
-			#print "=== model: lru = %s" % self.lru.items()
-			self.expected_output.append( (cacheLineOut, cacheHit, cacheMiss, oldTag) )
+			if DEBUG >= 1: print "=== model: lrus[%d] = %s" % (index, self.lrus[index].items())
+			self.expected_output.append( (cacheLineOut, cacheHit, cacheMiss, oldAddress) )
 			
 	def stop(self):
 		"""
@@ -218,14 +226,16 @@ def random_input_gen(tb,n=100000):
 	Returns up to n instances of InputTransaction.
 	tb must an instance of the Testbench class.
 	"""
-	tag_high  = 2**tb.tag_bits-1
+	address_high  = 2**tb.address_bits-1
 	data_high = 2**tb.data_bits-1
 
-	# it is forbidden to replace a cache line when the new tag is already within the cache
+	# it is forbidden to replace a cache line when the new address is already within the cache
 	# we cannot directly access the content of the LRU list in the testbench because this function is called asynchronously
-	lru_tags = LeastRecentlyUsedDict(size_limit=tb.associativity)
+	lru_tags = tuple([LeastRecentlyUsedDict(size_limit=tb.associativity) for _ in range(tb.cache_sets)])
 	
 	for i in range(n):
+		if DEBUG and (i % 1000 == 0): print "Generating transaction #%d ..." % i
+		
 		command = random.randint(1,60)
 		request, readWrite, invalidate, replace = 0, 0, 0, 0
 		# 10% for each possible command
@@ -235,25 +245,28 @@ def random_input_gen(tb,n=100000):
 		elif command > 20: request = 1; readWrite = 1; invalidate = 1
 		elif command > 10: replace = 1
 
-		# Upon request, check if tag is in LRU list.
-		tag = random.randint(0,tag_high)
-		while (replace == 1) and (tag in lru_tags):
-			tag = random.randint(0,tag_high)
+		# Upon request, check if address is in LRU list.
+		while True:
+			address = random.randint(0,address_high)
+			index = address & tb.index_mask
+			tag = (address >> tb.index_bits) &  tb.tag_mask
+			#print "while loop: %d, %d, %d" % (address, index, tag)
+			if (replace == 0) or (tag not in lru_tags[index]): break
 
 		# Update LRU list
 		if request == 1:
-			if tag in lru_tags:
+			if tag in lru_tags[index]:
 				if invalidate == 1:
-					del lru_tags[tag] # free cache line
+					del lru_tags[index][tag] # free cache line
 				else:
-					lru_tags[tag] = 1 # tag access
+					lru_tags[index][tag] = 1 # tag access
 		elif replace == 1:
-			lru_tags[tag] = 1 # allocate cache line
+			lru_tags[index][tag] = 1 # allocate cache line
 
-		#print "=== random_input_gen: request=%d, readWrite=%d, invalidate=%d, replace=%d, tag=%d" % (request, readWrite, invalidate, replace, tag)
-		#print "=== random_input_gen: %s" % lru_tags.items()
+		if DEBUG >= 2: print "=== random_input_gen: request=%d, readWrite=%d, invalidate=%d, replace=%d, address=%d" % (request, readWrite, invalidate, replace, address)
+		if DEBUG >= 2: print "=== random_input_gen: lru_tags[%d]=%s" % (index, lru_tags[index].items())
 		
-		yield InputTransaction(tb, request, readWrite, invalidate, replace, tag, random.randint(0,data_high))
+		yield InputTransaction(tb, request, readWrite, invalidate, replace, address, random.randint(0,data_high))
 
 @cocotb.coroutine
 def clock_gen(signal):

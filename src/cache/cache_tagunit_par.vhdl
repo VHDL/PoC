@@ -24,21 +24,26 @@
 --		0			|		-				|		0					|		1			| Replace cache line.
 --	--------+-----------+-------------+------------------------------------------
 --
--- All commands use `Tag` to lookup (request) or replace a cache line.
+-- All commands use `Address` to lookup (request) or replace a cache line.
 -- Each command is completed within one clock cycle.
 --
 -- Upon requests, the outputs `CacheMiss` and `CacheHit` indicate (high-active)
--- immediately (combinational) whether the `Tag` is stored within the cache, or not.
+-- immediately (combinational) whether the `Address` is stored within the cache, or not.
 -- But, the cache-line usage is updated at the rising-edge of the clock.
+-- If hit, `LineIndex` specifies the cache line where to find the content.
 --
--- The output `ReplaceIndex` indicates which cache line will be replaced as
--- next by a replace command. The output `OldTag` specifies the old tag stored at this
--- index. The replace command will store the `NewTag` and update the cache-line
+-- The output `ReplaceLineIndex` indicates which cache line will be replaced as
+-- next by a replace command. The output `OldAddress` specifies the old tag stored at this
+-- index. The replace command will store the `NewAddress` and update the cache-line
 -- usage at the rising-edge of the clock.
+--
+-- For a direct-mapped cache, the number of CACHE_LINES must be a power of 2.
+-- For a set-associative cache, the expression (CACHE_LINES / ASSOCIATIVITY)
+-- must be a power of 2.
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,24 +72,22 @@ entity cache_tagunit_par is
 		REPLACEMENT_POLICY : string		:= "LRU";
 		CACHE_LINES				 : positive := 32;
 		ASSOCIATIVITY			 : positive := 32;
-		TAG_BITS					 : positive := 8;
-		USE_INITIAL_TAGS	 : boolean	:= false;
-		INITIAL_TAGS			 : T_SLM		:= (0 downto 0 => (0 downto 0 => '0'))
+		ADDRESS_BITS					 : positive := 8
 	);
 	port (
 		Clock : in std_logic;
 		Reset : in std_logic;
 
-		Replace			 : in	 std_logic;
-		ReplaceIndex : out std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
-		NewTag			 : in	 std_logic_vector(TAG_BITS - 1 downto 0);
-		OldTag			 : out std_logic_vector(TAG_BITS - 1 downto 0);
+		Replace					 : in	 std_logic;
+		ReplaceLineIndex : out std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
+		NewAddress			 : in	 std_logic_vector(ADDRESS_BITS - 1 downto 0);
+		OldAddress			 : out std_logic_vector(ADDRESS_BITS - 1 downto 0);
 
 		Request		 : in	 std_logic;
 		ReadWrite	 : in	 std_logic;
 		Invalidate : in	 std_logic;
-		Tag				 : in	 std_logic_vector(TAG_BITS - 1 downto 0);
-		Index			 : out std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
+		Address		 : in	 std_logic_vector(ADDRESS_BITS - 1 downto 0);
+		LineIndex	 : out std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
 		TagHit		 : out std_logic;
 		TagMiss		 : out std_logic
 	);
@@ -97,50 +100,24 @@ architecture rtl of cache_tagunit_par is
 
 begin
 	-- ===========================================================================
-	-- Full-Assoziative Cache
+	-- Full-Associative Cache
 	-- ===========================================================================
 	genFA : if (CACHE_LINES = ASSOCIATIVITY) generate
-		constant FA_CACHE_LINES				: positive := ASSOCIATIVITY;
-		constant FA_TAG_BITS					: positive := TAG_BITS;
-		constant FA_MEMORY_INDEX_BITS : positive := log2ceilnz(FA_CACHE_LINES);
+		constant TAG_BITS		: positive := ADDRESS_BITS;
+		constant WAY_BITS 	: positive := log2ceilnz(ASSOCIATIVITY);
 
-		subtype T_FA_TAG_LINE is std_logic_vector(FA_TAG_BITS - 1 downto 0);
-		type T_FA_TAG_LINE_VECTOR is array (natural range <>) of T_FA_TAG_LINE;
+		subtype T_TAG_LINE is std_logic_vector(TAG_BITS - 1 downto 0);
+		type T_TAG_LINE_VECTOR is array (natural range <>) of T_TAG_LINE;
 
-		function to_validvector(slm : T_SLM) return std_logic_vector is
-			variable result : std_logic_vector(CACHE_LINES - 1 downto 0);
-		begin
-			result := (others => '0');
-			if not USE_INITIAL_TAGS then return result; end if;
+		signal TagHits : std_logic_vector(CACHE_LINES - 1 downto 0); -- includes Valid
 
-			for I in slm'range loop
-				result(I) := '1';
-			end loop;
-			return result;
-		end function;
+		signal TagMemory		: T_TAG_LINE_VECTOR(CACHE_LINES - 1 downto 0);
+		signal ValidMemory : std_logic_vector(CACHE_LINES - 1 downto 0)			:= (others => '0');
 
-		function to_tagmemory(slm : T_SLM) return T_FA_TAG_LINE_VECTOR is
-			variable result : T_FA_TAG_LINE_VECTOR(CACHE_LINES - 1 downto 0);
-		begin
-			result := (others => (others => '0'));
-			if not USE_INITIAL_TAGS then return result; end if;
+		signal HitWay : unsigned(WAY_BITS - 1 downto 0);
 
-			for I in slm'range loop
-				result(I) := get_row(slm, I);
-			end loop;
-			return result;
-		end function;
-
-		signal TagHits : std_logic_vector(FA_CACHE_LINES - 1 downto 0); -- includes Valid
-
-		signal FA_TagMemory		: T_FA_TAG_LINE_VECTOR(FA_CACHE_LINES - 1 downto 0) := to_tagmemory(INITIAL_TAGS);
-		signal FA_ValidMemory : std_logic_vector(FA_CACHE_LINES - 1 downto 0)			:= to_validvector(INITIAL_TAGS);
-
-		signal FA_MemoryIndex_i	 : std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
-		signal FA_MemoryIndex_us : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
-
-		signal Policy_ReplaceIndex : std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
-		signal FA_ReplaceIndex_us	 : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
+		signal Policy_ReplaceWay : std_logic_vector(WAY_BITS - 1 downto 0);
+		signal ReplaceWay_us	 	 : unsigned(WAY_BITS - 1 downto 0);
 		
 		signal TagHit_i	 : std_logic; -- includes Valid and Request
 		signal TagMiss_i : std_logic; -- includes Valid and Request
@@ -149,32 +126,31 @@ begin
 		-- generate comparators and convert hit-vector to binary index (cache line address)
 		-- use process, so that "onehot2bin" does not report false errors in
 		-- simulation due to delta-cycles updates
-		process(Tag, FA_TagMemory, FA_ValidMemory)
-			variable hits : std_logic_vector(FA_CACHE_LINES - 1 downto 0); -- includes Valid
+		process(Address, TagMemory, ValidMemory)
+			variable hits : std_logic_vector(CACHE_LINES - 1 downto 0); -- includes Valid
 		begin
-			for i in 0 to FA_CACHE_LINES - 1 loop
-				hits(i) := to_sl(FA_TagMemory(i) = Tag and FA_ValidMemory(i) = '1');
+			for i in 0 to CACHE_LINES - 1 loop
+				hits(i) := to_sl(TagMemory(i) = Address and ValidMemory(i) = '1');
 			end loop;
 
-			TagHits 					<= hits;
-			FA_MemoryIndex_us <= onehot2bin(hits, 0);
+			TagHits <= hits;
+			HitWay	<= onehot2bin(hits, 0);
 		end process;
-
-		FA_MemoryIndex_i		<= std_logic_vector(FA_MemoryIndex_us);
-		FA_ReplaceIndex_us	<= unsigned(Policy_ReplaceIndex);
 
 		process(Clock)
 		begin
 			if rising_edge(Clock) then
 				if (Replace = '1') then
-					FA_TagMemory(to_integer(FA_ReplaceIndex_us))	 <= NewTag;
+					TagMemory(to_integer(ReplaceWay_us))	 <= NewAddress;
 				end if;
 
-				for i in FA_ValidMemory'range loop
-					if (Replace = '1' and FA_ReplaceIndex_us = i) or
-						(Request = '1' and Invalidate = '1' and TagHits(i) = '1')
+				for i in ValidMemory'range loop
+					if Reset = '1' then
+						ValidMemory(i) <= '0';
+					elsif (Replace = '1' and ReplaceWay_us = i) or
+						(Invalidate = '1' and TagHits(i) = '1')
 					then
-						FA_ValidMemory(i) <= Replace; -- clear when Invalidate
+						ValidMemory(i) <= Replace; -- clear when Invalidate
 					end if;
 				end loop;
 			end if;
@@ -185,179 +161,247 @@ begin
 		TagMiss_i <= not (slv_or(TagHits)) and Request;
 
 		-- outputs
-		Index		<= FA_MemoryIndex_i;
-		TagHit	<= TagHit_i;
-		TagMiss <= TagMiss_i;
+		LineIndex <= std_logic_vector(HitWay);
+		TagHit		<= TagHit_i;
+		TagMiss		<= TagMiss_i;
 
-		ReplaceIndex <= Policy_ReplaceIndex;
-		OldTag			 <= FA_TagMemory(to_integer(FA_ReplaceIndex_us));
+		ReplaceWay_us		 <= unsigned(Policy_ReplaceWay);
+		ReplaceLineIndex <= Policy_ReplaceWay;
+		OldAddress			 <= TagMemory(to_integer(ReplaceWay_us));
 
 		-- replacement policy
 		Policy : entity PoC.cache_replacement_policy
 			generic map (
 				REPLACEMENT_POLICY => REPLACEMENT_POLICY,
-				CACHE_LINES				 => FA_CACHE_LINES
+				CACHE_WAYS				 => ASSOCIATIVITY
 			)
 			port map (
 				Clock => Clock,
 				Reset => Reset,
 
-				Replace			 => Replace,
-				ReplaceIndex => Policy_ReplaceIndex,
+				Replace		 => Replace,
+				ReplaceWay => Policy_ReplaceWay,
 
-				TagAccess	 => TagHit_i,
-				ReadWrite	 => ReadWrite,
-				Invalidate => Invalidate,
-				Index			 => FA_MemoryIndex_i
-			);
-	end generate;
-	-- ==========================================================================================================================================================
-	-- Direct-Mapped Cache
-	-- ==========================================================================================================================================================
-	genDM : if (ASSOCIATIVITY = 1) generate
-		constant FA_CACHE_LINES				: positive := CACHE_LINES;
-		constant FA_TAG_BITS					: positive := TAG_BITS;
-		constant FA_MEMORY_INDEX_BITS : positive := log2ceilnz(FA_CACHE_LINES);
+        TagAccess  => TagHit_i,
+        ReadWrite  => ReadWrite,
+        Invalidate => Invalidate,
+        HitWay     => std_logic_vector(HitWay)
+      );
+  end generate;
 
-		signal FA_Tag	 : std_logic_vector(FA_TAG_BITS - 1 downto 0);
-		signal TagHits : std_logic_vector(FA_CACHE_LINES - 1 downto 0);
+  -- ===========================================================================
+  -- Direct-Mapped Cache
+  -- ===========================================================================
+  genDM : if (ASSOCIATIVITY = 1) generate
+    -- Addresses are splitted into a tag part and an index part.
+    constant INDEX_BITS : positive := log2ceilnz(CACHE_LINES);
+    constant TAG_BITS   : positive := ADDRESS_BITS - INDEX_BITS;
 
-		signal FA_MemoryIndex_i		: std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
-		signal FA_MemoryIndex_us	: unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
-		signal FA_ReplaceIndex_us : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
+		subtype T_TAG_LINE is std_logic_vector(TAG_BITS-1 downto 0);
+		type T_TAG_LINE_VECTOR is array(natural range <>) of T_TAG_LINE;
+		
+		signal Address_Tag			: T_TAG_LINE;
+		signal Address_Index		: unsigned(INDEX_BITS - 1 downto 0);
+		signal NewAddress_Tag		: T_TAG_LINE;
+		signal NewAddress_Index : unsigned(INDEX_BITS - 1 downto 0);
+		
+		signal DM_TagHit	  : std_logic; -- includes Valid
 
-		signal ValidHit	 : std_logic;
+		signal TagMemory	 : T_TAG_LINE_VECTOR(CACHE_LINES-1 downto 0);
+		signal ValidMemory : std_logic_vector(CACHE_LINES-1 downto 0) := (others => '0');
+
+		signal ValidUpdateIndex : unsigned(INDEX_BITS-1 downto 0);
+		
 		signal TagHit_i	 : std_logic;
 		signal TagMiss_i : std_logic;
-	begin
---		-- generate comparators
---		genVectors : FOR I IN 0 TO FA_CACHE_LINES - 1 GENERATE
---			TagHits(I)			<= to_sl(TagMemory(I) = FA_Tag);
---		END GENERATE;
---		
---		-- convert hit-vector to binary index (cache line address)
---		FA_MemoryIndex_us		<= onehot2bin(TagHits);
---		FA_MemoryIndex_i		<= std_logic_vector(FA_MemoryIndex_us);
---		
---		-- Memories
---		FA_ReplaceIndex_us	<= FA_MemoryIndex_us;
---		
---		PROCESS(Clock)
---		BEGIN
---			IF rising_edge(Clock) THEN
---				IF (Replace = '1') THEN
---					TagMemory(to_integer(FA_ReplaceIndex_us))		<= NewTag;
---					ValidMemory(to_integer(FA_ReplaceIndex_us)) <= '1';
---				END IF;
---			END IF;
---		END PROCESS;
---		
---		-- access valid-vector
---		ValidHit					<= ValidMemory(to_integer(FA_MemoryIndex_us));
---		
---		-- hit/miss calculation
---		TagHit_i					<=			slv_or(TagHits) AND ValidHit	AND Request;
---		TagMiss_i				<= NOT (slv_or(TagHits) AND ValidHit) AND Request;
---		
---		-- outputs
---		Index					<= FA_MemoryIndex_i;
---		TagHit				<= TagHit_i;
---		TagMiss				<= TagMiss_i;		
---
---		genPolicy : FOR I IN 0 TO SETS - 1 GENERATE
---			policy : ENTITY PoC.cache_replacement_policy
---				GENERIC MAP (
---					REPLACEMENT_POLICY				=> REPLACEMENT_POLICY,
---					CACHE_LINES								=> ASSOCIATIVITY,
---					INITIAL_VALIDS						=> INITIAL_VALIDS(I * ASSOCIATIVITY + ASSOCIATIVITY - 1 DOWNTO I * ASSOCIATIVITY)
---				)
---				PORT MAP (
---					Clock											=> Clock,
---					Reset											=> Reset,
---					
---					Replace										=> Policy_Replace(I),
---					ReplaceIndex							=> Policy_ReplaceIndex(I),
---					
---					TagAccess									=> TagAccess(I),
---					ReadWrite									=> ReadWrite(I),
---					Invalidate								=> Invalidate(I),
---					Index											=> Policy_Index(I)
---				);
---		END GENERATE;
+
+  begin
+		assert CACHE_LINES = 2**INDEX_BITS report "Unsupported number of cache lines." severity failure;
+		
+    -- Split incoming 'Address' and 'NewAddress'
+    Address_Tag      <= Address(Address'left downto INDEX_BITS);
+    Address_Index    <= unsigned(Address(INDEX_BITS-1 downto 0));
+    NewAddress_Tag   <= NewAddress(NewAddress'left downto INDEX_BITS);
+    NewAddress_Index <= unsigned(NewAddress(INDEX_BITS-1 downto 0));
+
+		-- access tag memory and compare tags / valids
+		DM_TagHit <= to_sl(TagMemory  (to_integer(Address_Index)) = Address_Tag and
+											 ValidMemory(to_integer(Address_Index)) = '1');
+
+		-- index for writing into ValidMemory
+		ValidUpdateIndex <= NewAddress_Index when Replace = '1' else
+												Address_Index;
+		
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if (Replace = '1') then
+					TagMemory(to_integer(NewAddress_Index)) <= NewAddress_Tag;
+				end if;
+
+				if Reset = '1' then
+					ValidMemory <= (others => '0');
+				elsif (Replace = '1') or (TagHit_i = '1' and Invalidate = '1')	then
+					ValidMemory(to_integer(ValidUpdateIndex)) <= Replace; -- clear when Invalidate
+				end if;
+			end if;
+		end process;
+
+		-- hit/miss calculation
+		TagHit_i	<= DM_TagHit and Request;
+		TagMiss_i <= not (DM_TagHit) and Request;
+
+		-- outputs
+		LineIndex <= std_logic_vector(Address_Index);
+		TagHit		<= TagHit_i;
+		TagMiss		<= TagMiss_i;
+
+		ReplaceLineIndex <= std_logic_vector(NewAddress_Index);
+		OldAddress			 <= TagMemory(to_integer(NewAddress_Index)) & std_logic_vector(NewAddress_Index);
 	end generate;
-	-- ==========================================================================================================================================================
+	
+	-- ===========================================================================
 	-- Set-Assoziative Cache
-	-- ==========================================================================================================================================================
+	-- ===========================================================================
 	genSA : if ((ASSOCIATIVITY > 1) and (SETS > 1)) generate
-		constant FA_CACHE_LINES				: positive := CACHE_LINES;
-		constant SETINDEX_BITS				: natural	 := log2ceil(SETS);
-		constant FA_TAG_BITS					: positive := TAG_BITS;
-		constant FA_MEMORY_INDEX_BITS : positive := log2ceilnz(FA_CACHE_LINES);
+    -- Addresses are splitted into a tag part and an index part.
+		constant CACHE_SETS : positive := CACHE_LINES / ASSOCIATIVITY;
+    constant INDEX_BITS : positive := log2ceilnz(CACHE_SETS);
+    constant TAG_BITS   : positive := ADDRESS_BITS - INDEX_BITS;
+		constant WAY_BITS 	: positive := log2ceilnz(ASSOCIATIVITY);
+		
+		subtype T_TAG_LINE is std_logic_vector(TAG_BITS-1 downto 0);
+		type T_TAG_LINE_VECTOR is array(natural range <>) of T_TAG_LINE;
 
-		signal FA_Tag	 : std_logic_vector(FA_TAG_BITS - 1 downto 0);
-		signal TagHits : std_logic_vector(FA_CACHE_LINES - 1 downto 0);
+		type T_WAY_VECTOR is array(natural range<>) of std_logic_vector(WAY_BITS-1 downto 0);
+		
+		-- Splitted address
+		signal Address_Tag			: T_TAG_LINE;
+		signal Address_Index		: unsigned(INDEX_BITS - 1 downto 0);
+		signal NewAddress_Tag		: T_TAG_LINE;
+		signal NewAddress_Index : unsigned(INDEX_BITS - 1 downto 0);
 
-		signal FA_MemoryIndex_i		: std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
-		signal FA_MemoryIndex_us	: unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
-		signal FA_ReplaceIndex_us : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
+		-- Way-specific signals
+		signal TagHits : std_logic_vector(ASSOCIATIVITY-1 downto 0); -- includes Valid
+		signal OldTags : T_TAG_LINE_VECTOR(ASSOCIATIVITY-1 downto 0);
 
-		signal ValidHit	 : std_logic;
+		-- Cache-set specific signals
+		signal CS_TagAccess	 : std_logic_vector(CACHE_SETS-1 downto 0);
+		signal CS_Invalidate : std_logic_vector(CACHE_SETS-1 downto 0);
+		signal CS_Replace		 : std_logic_vector(CACHE_SETS-1 downto 0);
+		signal Policy_ReplaceWay : T_WAY_VECTOR(CACHE_SETS-1 downto 0);
+		
+		-- Way where hit occurs and way to replace
+		signal HitWay			: unsigned(WAY_BITS-1 downto 0);
+		signal ReplaceWay : unsigned(WAY_BITS-1 downto 0);
+
 		signal TagHit_i	 : std_logic;
 		signal TagMiss_i : std_logic;
+		
 	begin
---		-- generate comparators
---		genVectors : FOR I IN 0 TO FA_CACHE_LINES - 1 GENERATE
---			TagHits(I)			<= to_sl(TagMemory(I) = FA_Tag);
---		END GENERATE;
---		
---		-- convert hit-vector to binary index (cache line address)
---		FA_MemoryIndex_us		<= onehot2bin(TagHits);
---		FA_MemoryIndex_i		<= std_logic_vector(FA_MemoryIndex_us);
---		
---		-- Memories
---		FA_ReplaceIndex_us	<= FA_MemoryIndex_us;
---		
---		PROCESS(Clock)
---		BEGIN
---			IF rising_edge(Clock) THEN
---				IF (Replace = '1') THEN
---					TagMemory(to_integer(FA_ReplaceIndex_us))		<= NewTag;
---					ValidMemory(to_integer(FA_ReplaceIndex_us)) <= '1';
---				END IF;
---			END IF;
---		END PROCESS;
---		
---		-- access valid-vector
---		ValidHit					<= ValidMemory(to_integer(FA_MemoryIndex_us));
---		
---		-- hit/miss calculation
---		TagHit_i					<=			slv_or(TagHits) AND ValidHit	AND Request;
---		TagMiss_i				<= NOT (slv_or(TagHits) AND ValidHit) AND Request;
---		
---		-- outputs
---		Index					<= FA_MemoryIndex_i;
---		TagHit				<= TagHit_i;
---		TagMiss				<= TagMiss_i;		
---
---		genPolicy : FOR I IN 0 TO SETS - 1 GENERATE
---			policy : ENTITY PoC.cache_replacement_policy
---				GENERIC MAP (
---					REPLACEMENT_POLICY				=> REPLACEMENT_POLICY,
---					CACHE_LINES								=> ASSOCIATIVITY,
---					INITIAL_VALIDS						=> INITIAL_VALIDS(I * ASSOCIATIVITY + ASSOCIATIVITY - 1 DOWNTO I * ASSOCIATIVITY)
---				)
---				PORT MAP (
---					Clock											=> Clock,
---					Reset											=> Reset,
---					
---					Replace										=> Policy_Replace(I),
---					ReplaceIndex							=> Policy_ReplaceIndex(I),
---					
---					TagAccess									=> TagAccess(I),
---					ReadWrite									=> ReadWrite(I),
---					Invalidate								=> Invalidate(I),
---					Index											=> Policy_Index(I)
---				);
---		END GENERATE;
+
+		assert CACHE_SETS = 2**INDEX_BITS report "Unsupported number of cache-sets." severity failure;
+		
+		----------------------------------------------------------------------------
+    -- Split incoming 'Address' and 'NewAddress'
+		-- Enable only one cache-set
+		----------------------------------------------------------------------------
+    Address_Tag      <= Address(Address'left downto INDEX_BITS);
+    Address_Index    <= unsigned(Address(INDEX_BITS-1 downto 0));
+    NewAddress_Tag   <= NewAddress(NewAddress'left downto INDEX_BITS);
+    NewAddress_Index <= unsigned(NewAddress(INDEX_BITS-1 downto 0));
+
+		----------------------------------------------------------------------------
+		-- Generate tag-memory and comparators for each way
+		----------------------------------------------------------------------------
+
+		genWay : for way in 0 to ASSOCIATIVITY-1 generate
+			signal TagMemory	 : T_TAG_LINE_VECTOR(CACHE_SETS-1 downto 0);
+			signal ValidMemory : std_logic_vector(CACHE_SETS-1 downto 0) := (others => '0');
+		begin
+			-- comparator
+			TagHits(way) <= to_sl(TagMemory  (to_integer(Address_Index)) = Address_Tag and
+														ValidMemory(to_integer(Address_Index)) = '1');
+
+			-- memory update
+			process (Clock) is
+			begin  -- process
+				if rising_edge(Clock) then
+					if Replace = '1' and ReplaceWay = way then
+						TagMemory(to_integer(NewAddress_Index)) <= NewAddress_Tag;
+					end if;
+
+					if Reset = '1' then
+						ValidMemory <= (others => '0');
+					elsif Replace = '1' and ReplaceWay = way then
+						ValidMemory(to_integer(NewAddress_Index)) <= '1';
+					elsif Invalidate = '1' and TagHits(way) = '1' then
+						ValidMemory(to_integer(Address_Index)) <= '0';
+					end if;
+				end if;
+			end process;
+
+			-- old address when replacing
+			OldTags(way) <= TagMemory(to_integer(NewAddress_Index));
+		end generate genWay;
+
+		HitWay <= onehot2bin(TagHits, 0);
+
+		----------------------------------------------------------------------------
+		-- Global hit / miss calculation and output
+		----------------------------------------------------------------------------
+		TagHit_i	<= slv_or(TagHits) and Request;
+		TagMiss_i <= not (slv_or(TagHits)) and Request;
+
+		LineIndex <= std_logic_vector(HitWay) & std_logic_vector(Address_Index);
+		TagHit		<= TagHit_i;
+		TagMiss		<= TagMiss_i;
+		
+		----------------------------------------------------------------------------
+		-- Generate policy for each cache-set
+		----------------------------------------------------------------------------
+		process(Address_Index, TagHit_i, Invalidate)
+		begin
+			CS_TagAccess														 <= (others => '0');
+			CS_TagAccess(to_integer(Address_Index))	 <= TagHit_i;
+			CS_Invalidate														 <= (others => '0');
+			CS_Invalidate(to_integer(Address_Index)) <= Invalidate;
+		end process;
+
+		process(NewAddress_Index, Replace)
+		begin
+			CS_Replace															 <= (others => '0');
+			CS_Replace(to_integer(NewAddress_Index)) <= Replace;
+		end process;
+			
+		genSet : for cs in 0 to CACHE_SETS-1 generate
+		begin
+			Policy : entity PoC.cache_replacement_policy
+				generic map (
+					REPLACEMENT_POLICY => REPLACEMENT_POLICY,
+					CACHE_WAYS				 => ASSOCIATIVITY
+				)
+				port map (
+					Clock => Clock,
+					Reset => Reset,
+
+					Replace		 => CS_Replace(cs),
+					ReplaceWay => Policy_ReplaceWay(cs), -- way to replace
+
+					TagAccess	 => CS_TagAccess(cs),
+					ReadWrite	 => ReadWrite,
+					Invalidate => CS_Invalidate(cs),
+					HitWay		 => std_logic_vector(HitWay) -- accessed way
+				);
+		end generate genSet;
+
+		ReplaceWay <= unsigned(Policy_ReplaceWay(to_integer(NewAddress_Index)));
+		
+		----------------------------------------------------------------------------
+		-- Replace-specific outputs
+		----------------------------------------------------------------------------
+		ReplaceLineIndex <= std_logic_vector(ReplaceWay) & std_logic_vector(NewAddress_Index);
+		OldAddress			 <= OldTags(to_integer(ReplaceWay)) & std_logic_vector(NewAddress_Index);
+		
 	end generate;
 end architecture;
