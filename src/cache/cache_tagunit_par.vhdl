@@ -102,8 +102,8 @@ begin
 	-- Full-Associative Cache
 	-- ===========================================================================
 	genFA : if (CACHE_LINES = ASSOCIATIVITY) generate
-		constant TAG_BITS					 : positive := ADDRESS_BITS;
-		constant MEMORY_INDEX_BITS : positive := log2ceilnz(CACHE_LINES);
+		constant TAG_BITS		: positive := ADDRESS_BITS;
+		constant WAY_BITS 	: positive := log2ceilnz(ASSOCIATIVITY);
 
 		subtype T_TAG_LINE is std_logic_vector(TAG_BITS - 1 downto 0);
 		type T_TAG_LINE_VECTOR is array (natural range <>) of T_TAG_LINE;
@@ -113,11 +113,10 @@ begin
 		signal TagMemory		: T_TAG_LINE_VECTOR(CACHE_LINES - 1 downto 0);
 		signal ValidMemory : std_logic_vector(CACHE_LINES - 1 downto 0)			:= (others => '0');
 
-		signal MemoryIndex_i	 : std_logic_vector(MEMORY_INDEX_BITS - 1 downto 0);
-		signal MemoryIndex_us : unsigned(MEMORY_INDEX_BITS - 1 downto 0);
+		signal HitWay : unsigned(WAY_BITS - 1 downto 0);
 
-		signal Policy_ReplaceIndex : std_logic_vector(MEMORY_INDEX_BITS - 1 downto 0);
-		signal ReplaceIndex_us	 : unsigned(MEMORY_INDEX_BITS - 1 downto 0);
+		signal Policy_ReplaceWay : std_logic_vector(WAY_BITS - 1 downto 0);
+		signal ReplaceWay_us	 	 : unsigned(WAY_BITS - 1 downto 0);
 		
 		signal TagHit_i	 : std_logic; -- includes Valid and Request
 		signal TagMiss_i : std_logic; -- includes Valid and Request
@@ -133,24 +132,21 @@ begin
 				hits(i) := to_sl(TagMemory(i) = Address and ValidMemory(i) = '1');
 			end loop;
 
-			TagHits 					<= hits;
-			MemoryIndex_us <= onehot2bin(hits, 0);
+			TagHits <= hits;
+			HitWay	<= onehot2bin(hits, 0);
 		end process;
-
-		MemoryIndex_i		<= std_logic_vector(MemoryIndex_us);
-		ReplaceIndex_us	<= unsigned(Policy_ReplaceIndex);
 
 		process(Clock)
 		begin
 			if rising_edge(Clock) then
 				if (Replace = '1') then
-					TagMemory(to_integer(ReplaceIndex_us))	 <= NewAddress;
+					TagMemory(to_integer(ReplaceWay_us))	 <= NewAddress;
 				end if;
 
 				for i in ValidMemory'range loop
 					if Reset = '1' then
 						ValidMemory(i) <= '0';
-					elsif (Replace = '1' and ReplaceIndex_us = i) or
+					elsif (Replace = '1' and ReplaceWay_us = i) or
 						(Invalidate = '1' and TagHits(i) = '1')
 					then
 						ValidMemory(i) <= Replace; -- clear when Invalidate
@@ -164,33 +160,34 @@ begin
 		TagMiss_i <= not (slv_or(TagHits)) and Request;
 
 		-- outputs
-		Index		<= MemoryIndex_i;
+		Index		<= std_logic_vector(HitWay);
 		TagHit	<= TagHit_i;
 		TagMiss <= TagMiss_i;
 
-		ReplaceIndex <= Policy_ReplaceIndex;
-		OldAddress   <= TagMemory(to_integer(ReplaceIndex_us));
+		ReplaceWay_us <= unsigned(Policy_ReplaceWay);
+		ReplaceIndex	<= Policy_ReplaceWay;
+		OldAddress		<= TagMemory(to_integer(ReplaceWay_us));
 
 		-- replacement policy
 		Policy : entity PoC.cache_replacement_policy
 			generic map (
 				REPLACEMENT_POLICY => REPLACEMENT_POLICY,
-				CACHE_LINES				 => CACHE_LINES
+				CACHE_WAYS				 => ASSOCIATIVITY
 			)
 			port map (
 				Clock => Clock,
 				Reset => Reset,
 
-				Replace			 => Replace,
-				ReplaceIndex => Policy_ReplaceIndex,
+				Replace		 => Replace,
+				ReplaceWay => Policy_ReplaceWay,
 
         TagAccess  => TagHit_i,
         ReadWrite  => ReadWrite,
         Invalidate => Invalidate,
-        Index      => MemoryIndex_i
+        HitWay     => std_logic_vector(HitWay)
       );
   end generate;
-	
+
   -- ===========================================================================
   -- Direct-Mapped Cache
   -- ===========================================================================
@@ -272,14 +269,8 @@ begin
     constant TAG_BITS   : positive := ADDRESS_BITS - INDEX_BITS;
 		constant WAY_BITS 	: positive := log2ceilnz(ASSOCIATIVITY);
 		
-		-- Number of bits to address Tag and Valid Memory in each cache-set
-		constant MEMORY_INDEX_BITS : positive := log2ceilnz(ASSOCIATIVITY);
-
 		subtype T_TAG_LINE is std_logic_vector(TAG_BITS-1 downto 0);
 		type T_TAG_LINE_VECTOR is array(natural range <>) of T_TAG_LINE;
-
-		subtype T_MEMORY_INDEX is std_logic_vector(MEMORY_INDEX_BITS-1 downto 0);
-		type T_MEMORY_INDEX_VECTOR is array(natural range <>) of T_MEMORY_INDEX;
 
 		type T_WAY_VECTOR is array(natural range<>) of std_logic_vector(WAY_BITS-1 downto 0);
 		
@@ -387,19 +378,19 @@ begin
 			Policy : entity PoC.cache_replacement_policy
 				generic map (
 					REPLACEMENT_POLICY => REPLACEMENT_POLICY,
-					CACHE_LINES				 => ASSOCIATIVITY
+					CACHE_WAYS				 => ASSOCIATIVITY
 				)
 				port map (
 					Clock => Clock,
 					Reset => Reset,
 
-					Replace			 => CS_Replace(cs),
-					ReplaceIndex => Policy_ReplaceWay(cs), -- way to replace
+					Replace		 => CS_Replace(cs),
+					ReplaceWay => Policy_ReplaceWay(cs), -- way to replace
 
 					TagAccess	 => CS_TagAccess(cs),
 					ReadWrite	 => ReadWrite,
 					Invalidate => CS_Invalidate(cs),
-					Index			 => std_logic_vector(HitWay) -- accessed way
+					HitWay		 => std_logic_vector(HitWay) -- accessed way
 				);
 		end generate genSet;
 

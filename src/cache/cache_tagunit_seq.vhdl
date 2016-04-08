@@ -410,19 +410,19 @@ begin
 		Policy : entity PoC.cache_replacement_policy
 			generic map (
 				REPLACEMENT_POLICY => REPLACEMENT_POLICY,
-				CACHE_LINES				 => FA_CACHE_LINES
+				CACHE_WAYS				 => FA_CACHE_LINES
 			)
 			port map (
 				Clock => Clock,
 				Reset => Reset,
 
-				Replace			 => Replace,
-				ReplaceIndex => Policy_ReplaceIndex,
+				Replace		 => Replace,
+				ReplaceWay => Policy_ReplaceIndex,
 
 				TagAccess	 => TagAccess,
 				ReadWrite	 => Request_ReadWrite,
 				Invalidate => Request_Invalidate,
-				Index			 => TagIndex
+				HitWay		 => TagIndex
 			);
 	end generate;
 	-- ==========================================================================================================================================================

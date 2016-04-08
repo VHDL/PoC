@@ -71,10 +71,10 @@ use PoC.vectors.all;
 entity cache_par is
 	generic (
 		REPLACEMENT_POLICY : string		:= "LRU";
-		CACHE_LINES				 : positive := 32;
-		ASSOCIATIVITY			 : positive := 32;
-		ADDRESS_BITS			 : positive := 8;
-		DATA_BITS					 : positive := 8
+		CACHE_LINES				 : positive := 32;--1024;
+		ASSOCIATIVITY			 : positive := 32;--4;
+		ADDRESS_BITS			 : positive := 8; --32-6;
+		DATA_BITS					 : positive := 8  --64*8
 	);
 	port (
 		Clock : in std_logic;
