@@ -33,7 +33,7 @@
 # ==============================================================================
 
 from argparse									import RawDescriptionHelpFormatter
-from configparser							import ConfigParser, Error as ConfigParser_Error, NoOptionError, InterpolationError
+from configparser							import Error as ConfigParser_Error, NoOptionError, InterpolationError
 from os												import environ
 from pathlib									import Path
 from platform									import system as platform_system
@@ -60,7 +60,7 @@ from Simulator.QuestaSimulator			import Simulator as QuestaSimulator
 from Simulator.VivadoSimulator			import Simulator as VivadoSimulator
 from ToolChains								import Configurations
 from lib.ArgParseAttributes		import ArgParseMixin, CommandAttribute, CommonSwitchArgumentAttribute, CommandGroupAttribute, ArgumentAttribute, SwitchArgumentAttribute, DefaultAttribute
-from lib.Functions						import Init, Exit, ExtendedInterpolation
+from lib.Functions						import Init, Exit, ExtendedConfigParser, ExtendedInterpolation
 
 
 # def HandleVerbosityOptions(func):
@@ -182,7 +182,7 @@ class PoC(ILogable, ArgParseMixin):
 
 		# read PoC configuration
 		# ============================================================================
-		self.__pocConfig = ConfigParser(interpolation=ExtendedInterpolation())
+		self.__pocConfig = ExtendedConfigParser(interpolation=ExtendedInterpolation())
 		self.__pocConfig.optionxform = str
 		self.__pocConfig.read(str(self.Files["PoCPrivateConfig"]))
 		self.__pocConfig.read(str(self.Files["PoCPublicConfig"]))
