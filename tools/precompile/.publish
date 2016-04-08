@@ -1,5 +1,7 @@
 # git files
 .gitempty
 
+compile-altera.txt
+compile-osvvm.sh
 compile-xilinx-ise.ps1
 compile-xilinx-ise.sh

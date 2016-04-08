@@ -12,7 +12,7 @@ git/
 Notepad++/
 
 # compile scripts for vendor libraries
-Xilinx/
+precompile/
 
 # the publish scripts
 #publish/

@@ -7,8 +7,10 @@ README.md
 # sub namespaces
 sortnet/
 
-# 
-sort_ExpireList.vhdl
-sort_InsertSort.vhdl
-sort_LeastFrequentlyUsed.vhdl
-sort_LeastRecentlyUsed.vhdl
+sort_lru_cache.vhdl
+
+#Need fixes. 
+#sort_ExpireList.vhdl
+#sort_InsertSort.vhdl
+#sort_LeastFrequentlyUsed.vhdl
+#sort_LeastRecentlyUsed.vhdl

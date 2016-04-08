@@ -4,7 +4,8 @@
 # 
 # ==============================================================================
 # Authors:					Patrick Lehmann
-# 
+#                   Martin Zabel
+#
 # Python Module:		TODO
 # 
 # Description:
@@ -52,6 +53,7 @@ class FileTypes(Enum):
 	SourceFile =					5
 	VHDLSourceFile =			10
 	VerilogSourceFile =		11
+	CocotbSourceFile =		12
 
 	def Extension(self):
 		if   (self == FileTypes.Any):									raise CommonException("Generic file type.")
@@ -61,6 +63,7 @@ class FileTypes(Enum):
 		elif (self == FileTypes.SourceFile):					raise CommonException("Generic file type.")
 		elif (self == FileTypes.VHDLSourceFile):			return "vhdl"
 		elif (self == FileTypes.VerilogSourceFile):		return "v"
+		elif (self == FileTypes.CocotbSourceFile):		return "py"
 		else:																					raise CommonException("This is not an enum member.")
 		
 	def __str__(self):
@@ -84,7 +87,9 @@ class ToolChain(Enum):
 	Xilinx_ISE =				60
 	Xilinx_PlanAhead =	61
 	Xilinx_Vivado =			62
-	
+	Cocotb =					  70
+
+
 @unique
 class Tool(Enum):
 	Any =								 0
@@ -99,6 +104,7 @@ class Tool(Enum):
 	Xilinx_Synth =			62
 	Xilinx_iSim =				70
 	Xilinx_xSim =				71
+	Cocotb_QuestaSim = 			80
 
 class VHDLVersion(Enum):
 	Any =								 0
@@ -536,9 +542,11 @@ class FileListFile(File, FilesParserMixIn):
 		File.__init__(self, file, project=project, fileSet=fileSet)
 		FilesParserMixIn.__init__(self)
 		
-		self._classFileListFile =		FileListFile
-		self._classVHDLSourceFile =	VHDLSourceFile
-	
+		self._classFileListFile =				FileListFile
+		self._classVHDLSourceFile =			VHDLSourceFile
+		self._classVerilogSourceFile =	VerilogSourceFile
+		self._classCocotbSourceFile =		CocotbSourceFile
+
 	@property
 	def FileType(self):
 		return FileTypes.FileListFile
@@ -626,3 +634,13 @@ class VerilogSourceFile(SourceFile, HDLFileMixIn):
 	def __str__(self):
 		return "Verilog file: '{0}".format(str(self._file))
 
+class CocotbSourceFile(SourceFile):
+	def __init__(self, file, project = None, fileSet = None):
+		SourceFile.__init__(self, file, project=project, fileSet=fileSet)
+
+	@property
+	def FileType(self):
+		return FileTypes.CocotbSourceFile
+
+	def __str__(self):
+		return "Cocotb file: '{0!s}".format(self._file)

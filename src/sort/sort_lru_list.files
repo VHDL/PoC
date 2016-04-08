@@ -4,5 +4,11 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
+if (DeviceVendor = "Xilinx") then
+	include			"lib/Xilinx.files"
+else
+	report "Only Xilinx devices are supported yet."
+end if
+
 # PoC.sort
-vhdl		poc		"src/sort/sort_LeastRecentlyUsed.vhdl"			# Top-Level
+vhdl		poc		"src/sort/sort_lru_list.vhdl"			# Top-Level

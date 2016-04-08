@@ -86,14 +86,14 @@ class Compiler(BaseCompiler):
 			self._outputPath.mkdir(parents=True)
 			
 		# add the key Device to section SPECIAL at runtime to change interpolation results
-		self.Host.netListConfig['SPECIAL'] = {}
-		self.Host.netListConfig['SPECIAL']['Device'] =				deviceString
-		self.Host.netListConfig['SPECIAL']['DeviceSeries'] =	device.series()
-		self.Host.netListConfig['SPECIAL']['OutputDir']	=			self._tempPath.as_posix()
+		self.Host.NLConfig['SPECIAL'] = {}
+		self.Host.NLConfig['SPECIAL']['Device'] =				deviceString
+		self.Host.NLConfig['SPECIAL']['DeviceSeries'] =	device.series()
+		self.Host.NLConfig['SPECIAL']['OutputDir']	=			self._tempPath.as_posix()
 		
 		# read pre-copy tasks
 		preCopyTasks = []
-		preCopyFileList = self.Host.netListConfig[self._ipcoreFQN]['PreCopy.Rule']
+		preCopyFileList = self.Host.NLConfig[self._ipcoreFQN]['PreCopy.Rule']
 		if (len(preCopyFileList) != 0):
 			self._LogDebug("PreCopyTasks: \n  " + ("\n  ".join(preCopyFileList.split("\n"))))
 			
@@ -114,7 +114,7 @@ class Compiler(BaseCompiler):
 		
 		# read (post) copy tasks
 		copyTasks = []
-		copyFileList = self.Host.netListConfig[self._ipcoreFQN]['Copy']
+		copyFileList = self.Host.NLConfig[self._ipcoreFQN]['Copy']
 		if (len(copyFileList) != 0):
 			self._LogDebug("CopyTasks: \n  " + ("\n  ".join(copyFileList.split("\n"))))
 			
@@ -135,7 +135,7 @@ class Compiler(BaseCompiler):
 		
 		# read replacement tasks
 		replaceTasks = []
-		replaceFileList = self.Host.netListConfig[self._ipcoreFQN]['Replace']
+		replaceFileList = self.Host.NLConfig[self._ipcoreFQN]['Replace']
 		if (len(replaceFileList) != 0):
 			self._LogDebug("ReplacementTasks: \n  " + ("\n  ".join(replaceFileList.split("\n"))))
 
@@ -174,19 +174,19 @@ class Compiler(BaseCompiler):
 		# setup all needed paths to execute coreGen
 		xstExecutablePath =		self.Host.Directories["ISEBinary"] / self.__executables['XST']
 		
-		if not self.Host.netListConfig.has_section(self._ipcoreFQN):
+		if not self.Host.NLConfig.has_section(self._ipcoreFQN):
 			raise CompilerException("IP-Core '" + self._ipcoreFQN + "' not found.") from NoSectionError(self._ipcoreFQN)
 		
 		# read netlist settings from configuration file
-		if (self.Host.netListConfig[self._ipcoreFQN]['Type'] != "XilinxSynthesis"):
+		if (self.Host.NLConfig[self._ipcoreFQN]['Type'] != "XilinxSynthesis"):
 			raise CompilerException("This entity is not configured for XST compilation.")
 		
-		topModuleName =				self.Host.netListConfig[self._ipcoreFQN]['TopModule']
-		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.netListConfig[self._ipcoreFQN]['FileListFile']
-		xcfFilePath =					self.Host.Directories["PoCRoot"] / self.Host.netListConfig[self._ipcoreFQN]['XSTConstraintsFile']
-		filterFilePath =			self.Host.Directories["PoCRoot"] / self.Host.netListConfig[self._ipcoreFQN]['XSTFilterFile']
-		#xstOptionsFilePath =	self.Host.Directories["XSTFiles"] / self.Host.netListConfig[self._ipcoreFQN]['XSTOptionsFile']
-		xstTemplateFilePath =	self.Host.Directories["XSTFiles"] / self.Host.netListConfig[self._ipcoreFQN]['XSTOptionsFile']
+		topModuleName =				self.Host.NLConfig[self._ipcoreFQN]['TopModule']
+		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.NLConfig[self._ipcoreFQN]['FileListFile']
+		xcfFilePath =					self.Host.Directories["PoCRoot"] / self.Host.NLConfig[self._ipcoreFQN]['XSTConstraintsFile']
+		filterFilePath =			self.Host.Directories["PoCRoot"] / self.Host.NLConfig[self._ipcoreFQN]['XSTFilterFile']
+		#xstOptionsFilePath =	self.Host.Directories["XSTFiles"] / self.Host.NLConfig[self._ipcoreFQN]['XSTOptionsFile']
+		xstTemplateFilePath =	self.Host.Directories["XSTFiles"] / self.Host.NLConfig[self._ipcoreFQN]['XSTOptionsFile']
 		xstFilePath =					self._tempPath / (topModuleName + ".xst")
 		prjFilePath =					self._tempPath / (topModuleName + ".prj")
 		reportFilePath =			self._tempPath / (topModuleName + ".log")
@@ -199,72 +199,72 @@ class Compiler(BaseCompiler):
 			
 		xstTemplateDictionary = {
 			'prjFile' :													str(prjFilePath),
-			'UseNewParser' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.UseNewParser'],
-			'InputFormat' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.InputFormat'],
-			'OutputFormat' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.OutputFormat'],
+			'UseNewParser' :										self.Host.NLConfig[self._ipcoreFQN]['XSTOption.UseNewParser'],
+			'InputFormat' :											self.Host.NLConfig[self._ipcoreFQN]['XSTOption.InputFormat'],
+			'OutputFormat' :										self.Host.NLConfig[self._ipcoreFQN]['XSTOption.OutputFormat'],
 			'OutputName' :											topModuleName,
 			'Part' :														str(device),
 			'TopModuleName' :										topModuleName,
-			'OptimizationMode' :								self.Host.netListConfig[self._ipcoreFQN]['XSTOption.OptimizationMode'],
-			'OptimizationLevel' :								self.Host.netListConfig[self._ipcoreFQN]['XSTOption.OptimizationLevel'],
-			'PowerReduction' :									self.Host.netListConfig[self._ipcoreFQN]['XSTOption.PowerReduction'],
-			'IgnoreSynthesisConstraintsFile' :	self.Host.netListConfig[self._ipcoreFQN]['XSTOption.IgnoreSynthesisConstraintsFile'],
+			'OptimizationMode' :								self.Host.NLConfig[self._ipcoreFQN]['XSTOption.OptimizationMode'],
+			'OptimizationLevel' :								self.Host.NLConfig[self._ipcoreFQN]['XSTOption.OptimizationLevel'],
+			'PowerReduction' :									self.Host.NLConfig[self._ipcoreFQN]['XSTOption.PowerReduction'],
+			'IgnoreSynthesisConstraintsFile' :	self.Host.NLConfig[self._ipcoreFQN]['XSTOption.IgnoreSynthesisConstraintsFile'],
 			'SynthesisConstraintsFile' :				str(xcfFilePath),
-			'KeepHierarchy' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.KeepHierarchy'],
-			'NetListHierarchy' :								self.Host.netListConfig[self._ipcoreFQN]['XSTOption.NetListHierarchy'],
-			'GenerateRTLView' :									self.Host.netListConfig[self._ipcoreFQN]['XSTOption.GenerateRTLView'],
-			'GlobalOptimization' :							self.Host.netListConfig[self._ipcoreFQN]['XSTOption.Globaloptimization'],
-			'ReadCores' :												self.Host.netListConfig[self._ipcoreFQN]['XSTOption.ReadCores'],
+			'KeepHierarchy' :										self.Host.NLConfig[self._ipcoreFQN]['XSTOption.KeepHierarchy'],
+			'NetListHierarchy' :								self.Host.NLConfig[self._ipcoreFQN]['XSTOption.NetListHierarchy'],
+			'GenerateRTLView' :									self.Host.NLConfig[self._ipcoreFQN]['XSTOption.GenerateRTLView'],
+			'GlobalOptimization' :							self.Host.NLConfig[self._ipcoreFQN]['XSTOption.Globaloptimization'],
+			'ReadCores' :												self.Host.NLConfig[self._ipcoreFQN]['XSTOption.ReadCores'],
 			'SearchDirectories' :								'"{0}"' % str(self._outputPath),
-			'WriteTimingConstraints' :					self.Host.netListConfig[self._ipcoreFQN]['XSTOption.WriteTimingConstraints'],
-			'CrossClockAnalysis' :							self.Host.netListConfig[self._ipcoreFQN]['XSTOption.CrossClockAnalysis'],
-			'HierarchySeparator' :							self.Host.netListConfig[self._ipcoreFQN]['XSTOption.HierarchySeparator'],
-			'BusDelimiter' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.BusDelimiter'],
-			'Case' :														self.Host.netListConfig[self._ipcoreFQN]['XSTOption.Case'],
-			'SliceUtilizationRatio' :						self.Host.netListConfig[self._ipcoreFQN]['XSTOption.SliceUtilizationRatio'],
-			'BRAMUtilizationRatio' :						self.Host.netListConfig[self._ipcoreFQN]['XSTOption.BRAMUtilizationRatio'],
-			'DSPUtilizationRatio' :							self.Host.netListConfig[self._ipcoreFQN]['XSTOption.DSPUtilizationRatio'],
-			'LUTCombining' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.LUTCombining'],
-			'ReduceControlSets' :								self.Host.netListConfig[self._ipcoreFQN]['XSTOption.ReduceControlSets'],
-			'Verilog2001' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.Verilog2001'],
-			'FSMExtract' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.FSMExtract'],
-			'FSMEncoding' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.FSMEncoding'],
-			'FSMSafeImplementation' :						self.Host.netListConfig[self._ipcoreFQN]['XSTOption.FSMSafeImplementation'],
-			'FSMStyle' :												self.Host.netListConfig[self._ipcoreFQN]['XSTOption.FSMStyle'],
-			'RAMExtract' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.RAMExtract'],
-			'RAMStyle' :												self.Host.netListConfig[self._ipcoreFQN]['XSTOption.RAMStyle'],
-			'ROMExtract' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.ROMExtract'],
-			'ROMStyle' :												self.Host.netListConfig[self._ipcoreFQN]['XSTOption.ROMStyle'],
-			'MUXExtract' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.MUXExtract'],
-			'MUXStyle' :												self.Host.netListConfig[self._ipcoreFQN]['XSTOption.MUXStyle'],
-			'DecoderExtract' :									self.Host.netListConfig[self._ipcoreFQN]['XSTOption.DecoderExtract'],
-			'PriorityExtract' :									self.Host.netListConfig[self._ipcoreFQN]['XSTOption.PriorityExtract'],
-			'ShRegExtract' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.ShRegExtract'],
-			'ShiftExtract' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.ShiftExtract'],
-			'XorCollapse' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.XorCollapse'],
-			'AutoBRAMPacking' :									self.Host.netListConfig[self._ipcoreFQN]['XSTOption.AutoBRAMPacking'],
-			'ResourceSharing' :									self.Host.netListConfig[self._ipcoreFQN]['XSTOption.ResourceSharing'],
-			'ASyncToSync' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.ASyncToSync'],
-			'UseDSP48' :												self.Host.netListConfig[self._ipcoreFQN]['XSTOption.UseDSP48'],
-			'IOBuf' :														self.Host.netListConfig[self._ipcoreFQN]['XSTOption.IOBuf'],
-			'MaxFanOut' :												self.Host.netListConfig[self._ipcoreFQN]['XSTOption.MaxFanOut'],
-			'BufG' :														self.Host.netListConfig[self._ipcoreFQN]['XSTOption.BufG'],
-			'RegisterDuplication' :							self.Host.netListConfig[self._ipcoreFQN]['XSTOption.RegisterDuplication'],
-			'RegisterBalancing' :								self.Host.netListConfig[self._ipcoreFQN]['XSTOption.RegisterBalancing'],
-			'SlicePacking' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.SlicePacking'],
-			'OptimizePrimitives' :							self.Host.netListConfig[self._ipcoreFQN]['XSTOption.OptimizePrimitives'],
-			'UseClockEnable' :									self.Host.netListConfig[self._ipcoreFQN]['XSTOption.UseClockEnable'],
-			'UseSyncSet' :											self.Host.netListConfig[self._ipcoreFQN]['XSTOption.UseSyncSet'],
-			'UseSyncReset' :										self.Host.netListConfig[self._ipcoreFQN]['XSTOption.UseSyncReset'],
-			'PackIORegistersIntoIOBs' :					self.Host.netListConfig[self._ipcoreFQN]['XSTOption.PackIORegistersIntoIOBs'],
-			'EquivalentRegisterRemoval' :				self.Host.netListConfig[self._ipcoreFQN]['XSTOption.EquivalentRegisterRemoval'],
-			'SliceUtilizationRatioMaxMargin' :	self.Host.netListConfig[self._ipcoreFQN]['XSTOption.SliceUtilizationRatioMaxMargin']
+			'WriteTimingConstraints' :					self.Host.NLConfig[self._ipcoreFQN]['XSTOption.WriteTimingConstraints'],
+			'CrossClockAnalysis' :							self.Host.NLConfig[self._ipcoreFQN]['XSTOption.CrossClockAnalysis'],
+			'HierarchySeparator' :							self.Host.NLConfig[self._ipcoreFQN]['XSTOption.HierarchySeparator'],
+			'BusDelimiter' :										self.Host.NLConfig[self._ipcoreFQN]['XSTOption.BusDelimiter'],
+			'Case' :														self.Host.NLConfig[self._ipcoreFQN]['XSTOption.Case'],
+			'SliceUtilizationRatio' :						self.Host.NLConfig[self._ipcoreFQN]['XSTOption.SliceUtilizationRatio'],
+			'BRAMUtilizationRatio' :						self.Host.NLConfig[self._ipcoreFQN]['XSTOption.BRAMUtilizationRatio'],
+			'DSPUtilizationRatio' :							self.Host.NLConfig[self._ipcoreFQN]['XSTOption.DSPUtilizationRatio'],
+			'LUTCombining' :										self.Host.NLConfig[self._ipcoreFQN]['XSTOption.LUTCombining'],
+			'ReduceControlSets' :								self.Host.NLConfig[self._ipcoreFQN]['XSTOption.ReduceControlSets'],
+			'Verilog2001' :											self.Host.NLConfig[self._ipcoreFQN]['XSTOption.Verilog2001'],
+			'FSMExtract' :											self.Host.NLConfig[self._ipcoreFQN]['XSTOption.FSMExtract'],
+			'FSMEncoding' :											self.Host.NLConfig[self._ipcoreFQN]['XSTOption.FSMEncoding'],
+			'FSMSafeImplementation' :						self.Host.NLConfig[self._ipcoreFQN]['XSTOption.FSMSafeImplementation'],
+			'FSMStyle' :												self.Host.NLConfig[self._ipcoreFQN]['XSTOption.FSMStyle'],
+			'RAMExtract' :											self.Host.NLConfig[self._ipcoreFQN]['XSTOption.RAMExtract'],
+			'RAMStyle' :												self.Host.NLConfig[self._ipcoreFQN]['XSTOption.RAMStyle'],
+			'ROMExtract' :											self.Host.NLConfig[self._ipcoreFQN]['XSTOption.ROMExtract'],
+			'ROMStyle' :												self.Host.NLConfig[self._ipcoreFQN]['XSTOption.ROMStyle'],
+			'MUXExtract' :											self.Host.NLConfig[self._ipcoreFQN]['XSTOption.MUXExtract'],
+			'MUXStyle' :												self.Host.NLConfig[self._ipcoreFQN]['XSTOption.MUXStyle'],
+			'DecoderExtract' :									self.Host.NLConfig[self._ipcoreFQN]['XSTOption.DecoderExtract'],
+			'PriorityExtract' :									self.Host.NLConfig[self._ipcoreFQN]['XSTOption.PriorityExtract'],
+			'ShRegExtract' :										self.Host.NLConfig[self._ipcoreFQN]['XSTOption.ShRegExtract'],
+			'ShiftExtract' :										self.Host.NLConfig[self._ipcoreFQN]['XSTOption.ShiftExtract'],
+			'XorCollapse' :											self.Host.NLConfig[self._ipcoreFQN]['XSTOption.XorCollapse'],
+			'AutoBRAMPacking' :									self.Host.NLConfig[self._ipcoreFQN]['XSTOption.AutoBRAMPacking'],
+			'ResourceSharing' :									self.Host.NLConfig[self._ipcoreFQN]['XSTOption.ResourceSharing'],
+			'ASyncToSync' :											self.Host.NLConfig[self._ipcoreFQN]['XSTOption.ASyncToSync'],
+			'UseDSP48' :												self.Host.NLConfig[self._ipcoreFQN]['XSTOption.UseDSP48'],
+			'IOBuf' :														self.Host.NLConfig[self._ipcoreFQN]['XSTOption.IOBuf'],
+			'MaxFanOut' :												self.Host.NLConfig[self._ipcoreFQN]['XSTOption.MaxFanOut'],
+			'BufG' :														self.Host.NLConfig[self._ipcoreFQN]['XSTOption.BufG'],
+			'RegisterDuplication' :							self.Host.NLConfig[self._ipcoreFQN]['XSTOption.RegisterDuplication'],
+			'RegisterBalancing' :								self.Host.NLConfig[self._ipcoreFQN]['XSTOption.RegisterBalancing'],
+			'SlicePacking' :										self.Host.NLConfig[self._ipcoreFQN]['XSTOption.SlicePacking'],
+			'OptimizePrimitives' :							self.Host.NLConfig[self._ipcoreFQN]['XSTOption.OptimizePrimitives'],
+			'UseClockEnable' :									self.Host.NLConfig[self._ipcoreFQN]['XSTOption.UseClockEnable'],
+			'UseSyncSet' :											self.Host.NLConfig[self._ipcoreFQN]['XSTOption.UseSyncSet'],
+			'UseSyncReset' :										self.Host.NLConfig[self._ipcoreFQN]['XSTOption.UseSyncReset'],
+			'PackIORegistersIntoIOBs' :					self.Host.NLConfig[self._ipcoreFQN]['XSTOption.PackIORegistersIntoIOBs'],
+			'EquivalentRegisterRemoval' :				self.Host.NLConfig[self._ipcoreFQN]['XSTOption.EquivalentRegisterRemoval'],
+			'SliceUtilizationRatioMaxMargin' :	self.Host.NLConfig[self._ipcoreFQN]['XSTOption.SliceUtilizationRatioMaxMargin']
 		}
 		
 		xstFileContent = xstFileContent.format(**xstTemplateDictionary)
 		
-		if (self.Host.netListConfig.has_option(self._ipcoreFQN, 'XSTOption.Generics')):
-			xstFileContent += "-generics {{ {0} }}".format(self.Host.netListConfig[self._ipcoreFQN]['XSTOption.Generics'])
+		if (self.Host.NLConfig.has_option(self._ipcoreFQN, 'XSTOption.Generics')):
+			xstFileContent += "-generics {{ {0} }}".format(self.Host.NLConfig[self._ipcoreFQN]['XSTOption.Generics'])
 
 		self._LogDebug("Writing Xilinx Compiler Tool option file to '{0}'".format(str(xstFilePath)))
 		with xstFilePath.open('w') as xstFileHandle:
@@ -321,28 +321,32 @@ class Compiler(BaseCompiler):
 		for pocEntity in pocEntities :
 			self.Run(pocEntity, device, **kwargs)
 
-	def Run(self, pocEntity, device) :
+	def Run(self, pocEntity, board):
 		self._pocEntity =		pocEntity
 		self._ipcoreFQN =		str(pocEntity)  # TODO: implement FQN method on PoCEntity
-		self._device =			device
+		self._device =			board.Device
 
 		# check testbench database for the given testbench
 		self._LogQuiet("IP-core: {0}{1}{2}".format(Foreground.YELLOW, self._ipcoreFQN, Foreground.RESET))
-		if (not self.Host.netListConfig.has_section(self._ipcoreFQN)) :
+		if (not self.Host.NLConfig.has_section(self._ipcoreFQN)) :
 			raise CompilerException("IP-core '{0}' not found.".format(self._ipcoreFQN)) from NoSectionError(
 				self._ipcoreFQN)
 
 		self._LogNormal(self._ipcoreFQN)
 
 		# create output directory for CoreGen if not existent
-		self._outputPath = self.Host.Directories["PoCNetList"] / str(device)
+		self._outputPath = self.Host.Directories["PoCNetList"] / str(self._device)
 		if not (self._outputPath).exists() :
 			self._LogVerbose("  Creating output directory for core generator files.")
 			self._LogDebug("    Output directory: {0}.".format(str(self._outputPath)))
 			self._outputPath.mkdir(parents=True)
 
-		self._CreatePoCProject()
-		self._AddFileListFile("ipcore.files") # FIXME:
+		# setup all needed paths to execute fuse
+		toplevelName = self.Host.NLConfig[self._ipcoreFQN]['TopModule']
+		fileListFilePath = self.Host.Directories["PoCRoot"] / self.Host.NLConfig[self._ipcoreFQN]['FileListFile']
+
+		self._CreatePoCProject(board)
+		self._AddFileListFile(fileListFilePath)
 
 		self._RunPrepareCompile()
 		self._RunPreCopy()
@@ -353,9 +357,9 @@ class Compiler(BaseCompiler):
 	def PrepareCompiler(self, binaryPath, version):
 		# create the GHDL executable factory
 		self._LogVerbose("  Preparing Xilinx Synthesis Tool (XST).")
-		self._xst =		XstCompilerExecutable(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._ise =		ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
 	
-	def _CreatePoCProject(self):
+	def _CreatePoCProject(self, board):
 		# create a PoCProject and read all needed files
 		self._LogDebug("    Create a PoC project '{0}'".format(self._ipcoreFQN))
 		pocProject =									PoCProject(self._ipcoreFQN)
@@ -365,7 +369,7 @@ class Compiler(BaseCompiler):
 		pocProject.Environment =			Environment.Synthesis
 		pocProject.ToolChain =				ToolChain.Xilinx_ISE
 		pocProject.Tool =							Tool.Xilinx_XST
-		pocProject.Device =						self._device
+		pocProject.Board =						board
 		
 		self._pocProject = pocProject
 		
