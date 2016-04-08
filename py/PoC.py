@@ -871,10 +871,7 @@ class PoC(ILogable, ArgParseMixin):
 	def HandleCoreGeneratorCompilation(self, args):
 		self.__PrepareForSynthesis()
 		self.PrintHeadline()
-		self._CoreGenCompilation(args.FQN[0], args.logs, args.reports, args.DeviceName, args.BoardName)
-		Exit.exit()
 
-	def _CoreGenCompilation(self, entity, showLogs, showReport, deviceString=None, boardString=None):
 		# check if ISE is configure
 		if (len(self.PoCConfig.options("Xilinx.ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
 		# check if the appropriate environment is loaded
@@ -886,26 +883,27 @@ class PoC(ILogable, ArgParseMixin):
 		self.Directories["ISEBinary"] =				Path(self.PoCConfig['Xilinx.ISE']['BinaryDirectory'])
 		iseVersion =													self.PoCConfig['Xilinx.ISE']['Version']
 
-		if (boardString is not None):
-			boardString = boardString.lower()
-			boardSection = None
-			for option in self.PoCConfig['BOARDS']:
-				if (option.lower() == boardString):
-					boardSection = self.PoCConfig['BOARDS'][option]
-			if (boardSection is None):
-				raise CompilerException("Unknown board '" + boardString + "'.") from NoOptionError(boardString, 'BOARDS')
+		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
 
-			deviceString =	self.PoCConfig[boardSection]['FPGA']
-			device =				Device(deviceString)
-		elif (deviceString is not None):
-			device = Device(deviceString)
-		else: raise BaseException("No board or device given.")
+		if (args.BoardName is not None):
+			board = Board(self, args.BoardName)
+		elif (args.DeviceName is not None):
+			board = Board(self, "Custom", args.DeviceName)
+		else:
+			raise SimulatorException("No board or device name given.")
 
-		entityToCompile = Entity(self, entity)
+		fqnList = [FQN(self, fqn, defaultType=EntityTypes.NetList) for fqn in args.FQN]
 
-		compiler = XCOCompiler.Compiler(self, showLogs, showReport)
+		compiler = XCOCompiler.Compiler(self, args.logs, args.reports)
 		compiler.dryRun = self.__dryRun
-		compiler.Run(entityToCompile, device)
+
+		# run a testbench
+		for fqn in fqnList:
+			print(fqn)
+			for entity in fqn.GetEntities():
+				compiler.Run(entity, board)
+
+		Exit.exit()
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "coregen" command
@@ -921,15 +919,12 @@ class PoC(ILogable, ArgParseMixin):
 	def HandleXstCompilation(self, args):
 		self.__PrepareForSynthesis()
 		self.PrintHeadline()
-		self._XstCompilation(args.FQN, args.logs, args.reports, args.DeviceName, args.BoardName)
-		Exit.exit()
 
-	def _XstCompilation(self, entity, showLogs, showReport, deviceString=None, boardString=None):
 		# check if ISE is configure
 		if (len(self.PoCConfig.options("Xilinx.ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
 		# check if the appropriate environment is loaded
 		if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
-		
+
 		# prepare some paths
 		self.Directories["XSTFiles"] =				self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
 		self.Directories["XSTTemp"] =					self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
@@ -937,28 +932,26 @@ class PoC(ILogable, ArgParseMixin):
 		self.Directories["ISEBinary"] =				Path(self.PoCConfig['Xilinx.ISE']['BinaryDirectory'])
 		iseVersion =													self.PoCConfig['Xilinx.ISE']['Version']
 
-		if (boardString is not None):
-			boardString = boardString.lower()
-			boardSection = None
-			for option in self.PoCConfig['BOARDS']:
-				if (option.lower() == boardString):
-					boardSection = self.PoCConfig['BOARDS'][option]
-			if (boardSection is None):
-				raise CompilerException("Unknown board '" + boardString + "'.") from NoOptionError(boardString, 'BOARDS')
+		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
 
-			deviceString = self.PoCConfig[boardSection]['FPGA']
-			device = Device(deviceString)
-		elif (deviceString is not None):
-			device = Device(deviceString)
+		if (args.BoardName is not None):
+			board = Board(self, args.BoardName)
+		elif (args.DeviceName is not None):
+			board = Board(self, "Custom", args.DeviceName)
 		else:
-			raise BaseException("No board or device given.")
+			raise SimulatorException("No board or device name given.")
 
-		entityToCompile = Entity(self, entity)
+		fqnList = [FQN(self, fqn, defaultType=EntityTypes.NetList) for fqn in args.FQN]
 
-		compiler = XSTCompiler.Compiler(self, showLogs, showReport)
-		compiler.dryRun = self.dryRun
-		compiler.Run(entityToCompile, device)
+		compiler = XSTCompiler(self, args.logs, args.reports)
+		compiler.dryRun = self.DryRun
+		# run a compilation
+		for fqn in fqnList:
+			print(fqn)
+			for entity in fqn.GetEntities():
+				compiler.Run(entity, board)
 
+		Exit.exit()
 
 # main program
 def main():
