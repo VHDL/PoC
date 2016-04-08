@@ -4,22 +4,17 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
-# Load external vendor libraries
-if (ToolChain != "Cocotb") then
-	include				"lib/osvvm.files"													# 
-end if
-
 # Common PoC packages for configuration, synthesis and simulation
 include				"tb/common/my_config.files"									# board and device configuration
 include				"src/common/common.files"										# load common packages
 include				"src/sim/sim.files"													# load simulation helper packages
 
-# PoC.sort
-include				"src/sort/sort_lru_cache.files"			# UUT (Unit Under Test)
+# PoC.cache
+include				"src/cache/cache_par.files"			# UUT (Unit Under Test)
 
 # Testbench file(s)
 if (ToolChain = "Cocotb") then
-	cocotb			"tb/sort/sort_lru_cache_cocotb.py"	# Cocotb Testbench
+	cocotb			"tb/cache/cache_par_cocotb.py"	# Cocotb Testbench
 else
-	vhdl		test	"tb/sort/sort_lru_cache_tb.vhdl"	# Testbench
+	report "Only Cocotb testbench available."
 end if

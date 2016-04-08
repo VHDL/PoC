@@ -84,7 +84,9 @@ class ToolChain(Enum):
 	Xilinx_ISE =				60
 	Xilinx_PlanAhead =	61
 	Xilinx_Vivado =			62
-	
+	Cocotb =					  70
+
+
 @unique
 class Tool(Enum):
 	Any =								 0
@@ -99,6 +101,7 @@ class Tool(Enum):
 	Xilinx_Synth =			62
 	Xilinx_iSim =				70
 	Xilinx_xSim =				71
+	Cocotb_QuestaSim = 			80
 
 class VHDLVersion(Enum):
 	Any =								 0

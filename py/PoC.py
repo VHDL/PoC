@@ -54,6 +54,7 @@ from PoC.Config								import Device, Board
 from PoC.Entity								import Entity, FQN, EntityTypes
 from PoC.Query								import Query
 from Simulator.ActiveHDLSimulator		import Simulator as ActiveHDLSimulator
+from Simulator.CocotbSimulator 			import Simulator as CocotbSimulator
 from Simulator.GHDLSimulator				import Simulator as GHDLSimulator
 from Simulator.ISESimulator					import Simulator as ISESimulator
 from Simulator.QuestaSimulator			import Simulator as QuestaSimulator
@@ -292,7 +293,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	# fallback handler if no command was recognized
 	# ----------------------------------------------------------------------------
-	@DefaultAttribute()
+	# @DefaultAttribute()
 	# @HandleVerbosityOptions
 	def HandleDefault(self, args):
 		self.PrintHeadline()
@@ -457,7 +458,7 @@ class PoC(ILogable, ArgParseMixin):
 		# check if Aldec tools are configure
 		if (len(self.PoCConfig.options("Aldec.ActiveHDL")) != 0):
 			precompiledDirectory =											self.PoCConfig['PoC.DirectoryNames']['PrecompiledFiles']
-			activeHDLSimulatorFiles =										self.PoCConfig['PoC.DirectoryNames']['ActiveHDLSimulatorFiles']
+			activeHDLSimulatorFiles =										self.PoCConfig['PoC.DirectoryNames']['ActiveHDLFiles']
 			self.Directories["ActiveHDLTemp"] =					self.Directories["PoCTemp"] / activeHDLSimulatorFiles
 			self.Directories["ActiveHDLPrecompiled"] =	self.Directories["PoCTemp"] / precompiledDirectory / activeHDLSimulatorFiles
 			self.Directories["ActiveHDLInstallation"] =	Path(self.PoCConfig['Aldec.ActiveHDL']['InstallationDirectory'])
@@ -465,7 +466,7 @@ class PoC(ILogable, ArgParseMixin):
 			aSimVersion =																self.PoCConfig['Aldec.ActiveHDL']['Version']
 		elif (len(self.PoCConfig.options("Lattice.ActiveHDL")) != 0):
 			precompiledDirectory =											self.PoCConfig['PoC.DirectoryNames']['PrecompiledFiles']
-			activeHDLSimulatorFiles =										self.PoCConfig['PoC.DirectoryNames']['ActiveHDLSimulatorFiles']
+			activeHDLSimulatorFiles =										self.PoCConfig['PoC.DirectoryNames']['ActiveHDLFiles']
 			self.Directories["ActiveHDLTemp"] =					self.Directories["PoCTemp"] / activeHDLSimulatorFiles
 			self.Directories["ActiveHDLPrecompiled"] =	self.Directories["PoCTemp"] / precompiledDirectory / activeHDLSimulatorFiles
 			self.Directories["ActiveHDLInstallation"] =	Path(self.PoCConfig['Lattice.ActiveHDL']['InstallationDirectory'])
@@ -548,8 +549,8 @@ class PoC(ILogable, ArgParseMixin):
 		else:																	vhdlVersion = VHDLVersion.parse(args.VHDLVersion)
 
 		# prepare some paths
-		self.Directories["GHDLTemp"] =					self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['GHDLSimulatorFiles']
-		self.Directories["GHDLPrecompiled"] =		self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['PrecompiledFiles'] / self.PoCConfig['PoC.DirectoryNames']['GHDLSimulatorFiles']
+		self.Directories["GHDLTemp"] =					self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['GHDLFiles']
+		self.Directories["GHDLPrecompiled"] =		self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['PrecompiledFiles'] / self.PoCConfig['PoC.DirectoryNames']['GHDLFiles']
 		self.Directories["GHDLInstallation"] =	Path(self.PoCConfig['GHDL']['InstallationDirectory'])
 		self.Directories["GHDLBinary"] =				Path(self.PoCConfig['GHDL']['BinaryDirectory'])
 		ghdlBinaryPath =												self.Directories["GHDLBinary"]
@@ -665,7 +666,7 @@ class PoC(ILogable, ArgParseMixin):
 		# check if QuestaSim is configured
 		if (len(self.PoCConfig.options("Mentor.QuestaSim")) != 0):
 			precompiledDirectory =									self.PoCConfig['PoC.DirectoryNames']['PrecompiledFiles']
-			vSimSimulatorFiles =										self.PoCConfig['PoC.DirectoryNames']['ActiveHDLSimulatorFiles']
+			vSimSimulatorFiles =										self.PoCConfig['PoC.DirectoryNames']['QuestaSimFiles']
 			self.Directories["vSimTemp"] =					self.Directories["PoCTemp"] / vSimSimulatorFiles
 			self.Directories["vSimPrecompiled"] =		self.Directories["PoCTemp"] / precompiledDirectory / vSimSimulatorFiles
 			self.Directories["vSimInstallation"] =	Path(self.PoCConfig['Mentor.QuestaSim']['InstallationDirectory'])
@@ -674,7 +675,7 @@ class PoC(ILogable, ArgParseMixin):
 			vSimVersion =														self.PoCConfig['Mentor.QuestaSim']['Version']
 		elif (len(self.PoCConfig.options("Altera.ModelSim")) != 0):
 			precompiledDirectory =									self.PoCConfig['PoC.DirectoryNames']['PrecompiledFiles']
-			vSimSimulatorFiles =										self.PoCConfig['PoC.DirectoryNames']['ActiveHDLSimulatorFiles']
+			vSimSimulatorFiles =										self.PoCConfig['PoC.DirectoryNames']['QuestaSimFiles']
 			self.Directories["vSimTemp"] =					self.Directories["PoCTemp"] / vSimSimulatorFiles
 			self.Directories["vSimPrecompiled"] =		self.Directories["PoCTemp"] / precompiledDirectory / vSimSimulatorFiles
 			self.Directories["vSimInstallation"] =	Path(self.PoCConfig['Altera.ModelSim']['InstallationDirectory'])
@@ -775,6 +776,59 @@ class PoC(ILogable, ArgParseMixin):
 			for entity in fqn.GetEntities():
 				# try:
 				simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
+
+		Exit.exit()
+
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "cocotb" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Simulation commands")
+	@CommandAttribute("cocotb", help="Simulate a PoC Entity with Cocotb and Questa Simulator")
+	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@ArgumentAttribute('--device', metavar="<DeviceName>", dest="DeviceName", help="todo")
+	@ArgumentAttribute('--board', metavar="<BoardName>", dest="BoardName", help="todo")
+	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
+	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
+	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window.")
+	# @HandleVerbosityOptions
+	def HandleCocotbSimulation(self, args):
+		self.__PrepareForSimulation()
+		self.PrintHeadline()
+
+		# check if QuestaSim is configured
+		if (len(self.PoCConfig.options("Mentor.QuestaSim")) != 0):
+			precompiledDirectory =									self.PoCConfig['PoC.DirectoryNames']['PrecompiledFiles']
+			vSimSimulatorFiles =										self.PoCConfig['PoC.DirectoryNames']['QuestaSimFiles']
+			cocotbSimulatorFiles =									self.PoCConfig['PoC.DirectoryNames']['CocotbFiles']
+			self.Directories["CocotbTemp"] =				self.Directories["PoCTemp"] / cocotbSimulatorFiles
+			self.Directories["vSimPrecompiled"] =		self.Directories["PoCTemp"] / precompiledDirectory / vSimSimulatorFiles
+		else:
+			raise NotConfiguredException("Mentor QuestaSim is not configured on this system.")
+
+		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
+
+		if (args.BoardName is not None):
+			board = Board(self, args.BoardName)
+		elif (args.DeviceName is not None):
+			board = Board(self, "Custom", args.DeviceName)
+		else:
+			board = self.__SimulationDefaultBoard
+
+		# prepare paths to vendor simulation libraries
+		#self.__PrepareVendorLibraryPaths()
+
+		# create a CocotbSimulator instance and prepare it
+		simulator = CocotbSimulator(self, args.logs, args.reports, args.GUIMode)
+		simulator.PrepareSimulator()
+
+		fqnList = [FQN(self, fqn, defaultType=EntityTypes.Testbench) for fqn in args.FQN]
+
+		# run a testbench
+		for fqn in fqnList:
+			print(fqn)
+			for entity in fqn.GetEntities():
+				# try:
+				simulator.Run(entity, board=board)
 
 		Exit.exit()
 
@@ -956,7 +1010,7 @@ def main():
 	except PlatformNotSupportedException as ex:	Exit.printPlatformNotSupportedException(ex)
 	except ExceptionBase as ex:									Exit.printExceptionbase(ex)
 	except NotImplementedError as ex:						Exit.printNotImplementedError(ex)
-	except Exception as ex:											Exit.printException(ex)
+	# except Exception as ex:											Exit.printException(ex)
 
 # entry point
 if __name__ == "__main__":
