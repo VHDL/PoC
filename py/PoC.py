@@ -173,12 +173,14 @@ class PoC(ILogable, ArgParseMixin):
 		pocPublicConfigFilePath =		self.Files['PoCPublicConfig']
 		pocEntityConfigFilePath =		self.Files['PoCEntityConfig']
 		pocBoardConfigFilePath =		self.Files['PoCBoardConfig']
+		tbConfigFilePath =					self.Files["PoCTBConfig"]
 
 		self._LogDebug("Reading PoC configuration from\n  '{0}'\n  '{1}\n  '{2}'".format(str(pocPrivateConfigFilePath), str(pocPublicConfigFilePath), str(pocBoardConfigFilePath)))
 		if not pocPrivateConfigFilePath.exists():	raise NotConfiguredException("PoC's private configuration file '{0}' does not exist.".format(str(pocPrivateConfigFilePath)))	from FileNotFoundError(str(pocPrivateConfigFilePath))
 		if not pocPublicConfigFilePath.exists():	raise NotConfiguredException("PoC' public configuration file '{0}' does not exist.".format(str(pocPublicConfigFilePath)))			from FileNotFoundError(str(pocPublicConfigFilePath))
 		if not pocEntityConfigFilePath.exists():	raise NotConfiguredException("PoC' entity configuration file '{0}' does not exist.".format(str(pocEntityConfigFilePath)))			from FileNotFoundError(str(pocEntityConfigFilePath))
 		if not pocBoardConfigFilePath.exists():		raise NotConfiguredException("PoC's board configuration file '{0}' does not exist.".format(str(pocBoardConfigFilePath)))			from FileNotFoundError(str(pocBoardConfigFilePath))
+		if not tbConfigFilePath.exists():  				raise NotConfiguredException("PoC testbench configuration file does not exist. ({0!s})".format(tbConfigFilePath))
 
 		# read PoC configuration
 		# ============================================================================
@@ -188,6 +190,7 @@ class PoC(ILogable, ArgParseMixin):
 		self.__pocConfig.read(str(self.Files["PoCPublicConfig"]))
 		self.__pocConfig.read(str(self.Files["PoCEntityConfig"]))
 		self.__pocConfig.read(str(self.Files["PoCBoardConfig"]))
+		self.__pocConfig.read(str(self.Files["PoCTBConfig"]))
 
 		# print("="*80)
 		# print("PoCConfig:")
@@ -227,25 +230,24 @@ class PoC(ILogable, ArgParseMixin):
 		self._LogDebug("Reading testbench configuration from '{0}'".format(str(tbConfigFilePath)))
 		if not tbConfigFilePath.exists():	raise NotConfiguredException("PoC testbench configuration file does not exist. ({0!s})".format(tbConfigFilePath))
 
+		self.__pocConfig.read(str(self.Files["PoCTBConfig"]))
 		self.__tbConfig = self.__pocConfig
-		self.__tbConfig.read(str(self.Files["PoCTBConfig"]))
 
 
-		print("=" * 80)
-		print("PoCConfig:")
-		for sectionName in self.__tbConfig:
-			print("  {0}".format(sectionName))
-			try:
-				for optionName in self.__tbConfig[sectionName]:
-					try:
-						value = self.__tbConfig[sectionName][optionName]
-						print("    {0} = {1}".format(optionName, value))
-					except InterpolationError as ex:
-						pass  # value = "[INTERPOLATION ERROR]"
-			except:
-				pass
-
-		print("=" * 80)
+		# print("=" * 80)
+		# print("PoCConfig:")
+		# for sectionName in self.__tbConfig:
+		# 	print("  {0}".format(sectionName))
+		# 	try:
+		# 		for optionName in self.__tbConfig[sectionName]:
+		# 			try:
+		# 				value = self.__tbConfig[sectionName][optionName]
+		# 				print("    {0} = {1}".format(optionName, value))
+		# 			except InterpolationError as ex:
+		# 				pass  # value = "[INTERPOLATION ERROR]"
+		# 	except:
+		# 		pass
+		# print("=" * 80)
 
 		# self.__tbConfig = ConfigParser(interpolation=ExtendedInterpolation())
 		# self.__tbConfig.optionxform = str

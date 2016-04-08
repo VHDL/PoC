@@ -196,16 +196,13 @@ class ExtendedConfigParser(ConfigParser):
 		If the specified `section' is None or an empty string, DEFAULT is
 		assumed. If the specified `section' does not exist, returns False."""
 		option = self.optionxform(option)
-		if not section or section == self.default_section:
+		if ((not section) or (section == self.default_section)):
 			sect = self._defaults
 		else:
 			prefix = section.split(".", 1)[0] + ".DEFAULT"
-			try:
-				if option in self._sections[prefix]:
-					return True
-			except:
-				pass
-			if section not in self._sections:
+			if ((prefix in self) and (option in self._sections[prefix])):
+				return True
+			if (section not in self._sections):
 				return False
 			else:
 				sect = self._sections[section]
@@ -235,13 +232,13 @@ class ExtendedInterpolation(Interpolation):
 	def _interpolate_some(self, parser, option, accum, rest, section, map, depth):
 		if depth > MAX_INTERPOLATION_DEPTH:			raise InterpolationDepthError(option, section, rest)
 
-		# print("interpolation begin: section={0} option={1}  accum='{2}'  rest='{3}'".format(section, option, accum, rest))
+		print("interpolation begin: section={0} option={1}  accum='{2}'  rest='{3}'".format(section, option, accum, rest))
 
 		while rest:
 			beginPos = rest.find("$")
 			if beginPos < 0:
 				accum.append(rest)
-				# print("->" + "".join(accum))
+				print("->" + "".join(accum))
 				return
 			if beginPos > 0:
 				accum.append(rest[:beginPos])
@@ -290,4 +287,4 @@ class ExtendedInterpolation(Interpolation):
 			else:
 				raise InterpolationSyntaxError(option, section, "'$' must be followed by '$' or '{', found: %r" % (rest,))
 
-		# print("->" + "".join(accum))
+		print("->" + "".join(accum))

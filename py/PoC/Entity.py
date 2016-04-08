@@ -221,8 +221,8 @@ class Entity(PathElement):
 
 class Base:
 	def __init__(self, host, sectionName):
-		self.__sectionName = sectionName
-		self.__host = host
+		self._sectionName = sectionName
+		self._host = host
 
 		self._Load()
 
@@ -231,10 +231,17 @@ class Testbench(Base):
 		super().__init__(host, sectionName)
 
 	def _Load(self):
-		pass
+		self._filesFile = self._host.PoCConfig[self._sectionName]["fileListFile"]
+
 
 	def __str__(self):
 		return "Testbench\n"
+
+	def pprint(self, indent):
+		__indent = "  " * indent
+		buffer  = "{0}Testbench:\n".format(__indent)
+		buffer += "{0}  Files: {1!s}\n".format(__indent, self._filesFile)
+		return buffer
 
 class Netlist(Base):
 	def __init__(self, host, sectionName):
