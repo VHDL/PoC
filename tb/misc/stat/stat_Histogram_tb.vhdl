@@ -76,7 +76,7 @@ architecture tb of stat_Histogram_tb is
 begin
 	-- initialize global simulation status
 	simInitialize;
-	randomInitializeSeed;
+	randInitializeSeed;
 	LogFile_Open("stat_Histogram.log");
 	
 	-- generate global testbench clock

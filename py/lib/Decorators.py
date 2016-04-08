@@ -1,5 +1,23 @@
 
 
+import functools
+
+class CachedReadOnlyProperty:
+	def __init__(self, func):
+		self.func =		func
+		self.__cache =	None
+	
+	def __call__(self, *args):
+		if self.__cache is None:
+			result = self.func(*args)
+			self.__cache = result
+		return self.__cache
+	
+	def __repr__(self):
+		return self.func.__doc__
+	
+	def __get__(self, obj, objtype):
+		functools.partial(self.__call__, obj)
 
 def property(function):
 	import sys

@@ -1,0 +1,11 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# Package
+__init__.py
+
+# Modules
+QuestaSim.py

@@ -217,8 +217,8 @@ package net_comp is
 			-- clock interface
 			RS_TX_Clock								: in	STD_LOGIC;
 			RS_RX_Clock								: in	STD_LOGIC;
-			ETH_TX_Clock							: in	STD_LOGIC;
-			ETH_RX_Clock							: in	STD_LOGIC;
+			Eth_TX_Clock							: in	STD_LOGIC;
+			Eth_RX_Clock							: in	STD_LOGIC;
 			TX_Clock									: in	STD_LOGIC;
 			RX_Clock									: in	STD_LOGIC;
 
@@ -257,8 +257,8 @@ package net_comp is
 			-- clock interface
 			RS_TX_Clock								: in	STD_LOGIC;
 			RS_RX_Clock								: in	STD_LOGIC;
-			ETH_TX_Clock							: in	STD_LOGIC;
-			ETH_RX_Clock							: in	STD_LOGIC;
+			Eth_TX_Clock							: in	STD_LOGIC;
+			Eth_RX_Clock							: in	STD_LOGIC;
 			TX_Clock									: in	STD_LOGIC;
 			RX_Clock									: in	STD_LOGIC;
 			
@@ -298,8 +298,8 @@ package net_comp is
 			-- clock interface
 			RS_TX_Clock								: in	STD_LOGIC;
 			RS_RX_Clock								: in	STD_LOGIC;
-			ETH_TX_Clock							: in	STD_LOGIC;
-			ETH_RX_Clock							: in	STD_LOGIC;
+			Eth_TX_Clock							: in	STD_LOGIC;
+			Eth_RX_Clock							: in	STD_LOGIC;
 			TX_Clock									: in	STD_LOGIC;
 			RX_Clock									: in	STD_LOGIC;
 			

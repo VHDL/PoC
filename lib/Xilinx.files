@@ -1,0 +1,15 @@
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# vim: tabstop=2:shiftwidth=2:noexpandtab
+# kate: tab-width 2; replace-tabs off; indent-width 2;
+# ==============================================================================
+# Note: all files are relative to PoC root directory
+#
+if ((Tool = "GHDL") and ?("temp/precompiled/ghdl/xilinx")) then
+	library unisim "temp/precompiled/ghdl/xilinx"
+elseif ((Tool = "Mentor_vSim") and ?("temp/precompiled/vsim/xilinx")) then
+	library unisim "temp/precompiled/vsim/xilinx"
+elseif (Tool in ["Xilinx_iSim", "Xilinx_xSim"]) then
+	# implicitly referenced; nothing to reference
+else
+	report "No precompiled Xilinx primitives found."
+end if

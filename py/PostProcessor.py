@@ -1,11 +1,11 @@
-# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:         		 Patrick Lehmann
+# Authors:         			Patrick Lehmann
 # 
-# Python Main Module:  Entry point to the post-processing tools.
+# Python Main Module:		Entry point to the post-processing tools.
 # 
 # Description:
 # ------------------------------------
@@ -35,14 +35,14 @@ from pathlib import Path
 
 from lib.Functions import Exit
 from Base.Exceptions import *
-from Base.PoCBase import CommandLineProgram
-from PoC.Entity import *
-from PoC.Config import *
-from Processor import *
-from Processor.Exceptions import *
+from Base.Processor import ProcessorException, PostProcessorException
+from PoC.Entity import Entity, FQN
+#from PoC.Config import *
+#from Processor import *
+from Base.Exceptions import PlatformNotSupportedException, EnvironmentException, NotConfiguredException
 from Processor.XST import *
 
-class PostProcessor(CommandLineProgram):
+class PostProcessor
 	headLine = "The PoC-Library - PostProcessor Frontend"
 
 	#__netListConfigFileName = "configuration.ini"
@@ -325,8 +325,8 @@ def main():
 	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)
 	except NotConfiguredException as ex:				Exit.printNotConfiguredException(ex)
 	except PlatformNotSupportedException as ex:	Exit.printPlatformNotSupportedException(ex)
-	except BaseException as ex:									Exit.printBaseException(ex)
-	except NotImplementedException as ex:				Exit.printNotImplementedException(ex)
+	except ExceptionBase as ex:									Exit.printExceptionbase(ex)
+	except NotImplementedException as ex:				Exit.printNotImplementedError(ex)
 	except Exception as ex:											Exit.printException(ex)
 			
 # entry point

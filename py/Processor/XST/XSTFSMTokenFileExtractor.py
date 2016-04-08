@@ -1,8 +1,8 @@
 
 import re
 
-from Base.Base import BaseExtractor
-from Processor.Exceptions import *
+from Base.Simulator import BaseExtractor
+from Base.Processor import ProcessorException, PostProcessorException
 
 class Extractor(BaseExtractor):
 
@@ -13,7 +13,7 @@ class Extractor(BaseExtractor):
 	@classmethod
 	def getStartRegExpString(cls):
 		# parse project filelist
-		str	 = r"Optimizing FSM "										# start of line
+		str  = r"Optimizing FSM "										# start of line
 		str += r"<(?P<FSMPath>.+?)/FSM_\d+>"				#	FSM path
 		str += r" on signal "												# 
 		str += r"<(?P<SignalName>\w+)\[\d+:\d+\]>"	#	state signal name

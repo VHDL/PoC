@@ -252,12 +252,12 @@ begin
 				IICC_RP_Ack						<= RP_Ack(					to_index(Arb_Grant_bin, Arb_Grant'length - 1));
 				
 				for i in 0 to PORTS - 1 loop
-					if (I = to_index(Arb_Grant_bin, Arb_Grant'length - 1)) then
-						Status(I)					<= IICC_Status;
-						Error(I)					<= IICC_Error;
+					if (i = to_index(Arb_Grant_bin, Arb_Grant'length - 1)) then
+						Status(i)					<= IICC_Status;
+						Error(i)					<= IICC_Error;
 					else
-						Status(I)					<= IO_IIC_STATUS_IDLE;
-						Error(I)					<= IO_IIC_ERROR_NONE;
+						Status(i)					<= IO_IIC_STATUS_IDLE;
+						Error(i)					<= IO_IIC_ERROR_NONE;
 					end if;
 				end loop;
 	
