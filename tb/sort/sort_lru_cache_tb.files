@@ -19,6 +19,7 @@ include				"src/sort/sort_lru_cache.files"			# UUT (Unit Under Test)
 
 # Testbench file(s)
 if (ToolChain = "Cocotb") then
+	cocotb			"tb/common/lru_dict.py"
 	cocotb			"tb/sort/sort_lru_cache_cocotb.py"	# Cocotb Testbench
 else
 	vhdl		test	"tb/sort/sort_lru_cache_tb.vhdl"	# Testbench

@@ -14,7 +14,8 @@ include				"src/sort/sort_lru_list.files"			# UUT (Unit Under Test)
 
 # Testbench file(s)
 if (ToolChain = "Cocotb") then
-	cocotb			"tb/sort/sort_lru_cache_cocotb.py"	# Cocotb Testbench
+	cocotb			"tb/common/lru_dict.py"
+	cocotb			"tb/sort/sort_lru_list_cocotb.py"	# Cocotb Testbench
 else
 	report "Only Cocotb testbench available."
 end if

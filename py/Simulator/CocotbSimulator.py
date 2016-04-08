@@ -33,6 +33,7 @@
 # ==============================================================================
 #
 # entry point
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -43,6 +44,7 @@ else:
 # load dependencies
 from configparser						import NoSectionError
 from os											import chdir
+import shutil
 
 from colorama								import Fore as Foreground
 
@@ -72,20 +74,33 @@ class Simulator(BaseSimulator):
 	def _PrepareSimulationEnvironment(self):
 		self._LogNormal("  preparing simulation environment...")
 		
-		# create temporary directory for ghdl if not existent
+		# create temporary directory for Cocotb if not existent
 		self._tempPath = self.Host.Directories["CocotbTemp"]
 		if (not (self._tempPath).exists()):
 			self._LogVerbose("  Creating temporary directory for simulator files.")
 			self._LogDebug("    Temporary directors: {0}".format(str(self._tempPath)))
 			self._tempPath.mkdir(parents=True)
 
-		# change working directory to temporary iSim path
+		# change working directory to temporary Cocotb path
 		self._LogVerbose("  Changing working directory to temporary directory.")
 		self._LogDebug("    cd \"{0}\"".format(str(self._tempPath)))
 		chdir(str(self._tempPath))
 
+		# copy modelsim.ini from precompiled directory if exist
+		simBuildPath = self._tempPath / "sim_build"
+		try:
+			simBuildPath.mkdir(parents=True)
+		except FileExistsError:
+			pass
+
+		modelsimIniPath = self.Host.Directories["vSimPrecompiled"] / "modelsim.ini"
+		if modelsimIniPath.exists():
+			self._LogVerbose("  Copying modelsim.ini from precompiled to temporary directory.")
+			self._LogDebug("    copy {0!s} {1!s}".format(modelsimIniPath, simBuildPath))
+			shutil.copy(str(modelsimIniPath), str(simBuildPath))
+
 	def PrepareSimulator(self):
-		# create the GHDL executable factory
+		# create the Cocotb executable factory
 		self._LogVerbose("  Preparing Cocotb simulator.")
 
 	def RunAll(self, pocEntities, **kwargs):
@@ -152,11 +167,20 @@ class Simulator(BaseSimulator):
 		# create one VHDL line for each VHDL file
 		vhdlSources = ""
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
-			if (not file.Path.exists()):									raise SimulatorException("Can not add '{0}' to Cocotb Makefile.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
+			if (not file.Path.exists()):									raise SimulatorException("Cannot add '{0!s}' to Cocotb Makefile.".format(file.Path)) from FileNotFoundError(str(file.Path))
 			vhdlSources += str(file.Path) + " "
 
+		# copy Cocotb (Python) files to temp directory
+		self._LogVerbose("  Copying Cocotb (Python) files into temporary directory.")
+		cocotbTempDir = str(self.Host.Directories["CocotbTemp"])
+		for file in self._pocProject.Files(fileType=FileTypes.CocotbSourceFile):
+			if (not file.Path.exists()):									raise SimulatorException("Cannot copy '{0!s}' to Cocotb temp directory.".format(file.Path)) from FileNotFoundError(str(file.Path))
+			self._LogDebug("    copy {0!s} {1!s}".format(file.Path, cocotbTempDir))
+			shutil.copy(str(file.Path), cocotbTempDir)
+
 		# read/write Makefile template
-		self._LogDebug("Reading Cocotb Makefile template file from '{0!s}'".format(cocotbTemplateFilePath))
+		self._LogVerbose("  Generating Makefile...")
+		self._LogDebug("    Reading Cocotb Makefile template file from '{0!s}'".format(cocotbTemplateFilePath))
 		with cocotbTemplateFilePath.open('r') as fileHandle:
 			cocotbMakefileContent = fileHandle.read()
 
@@ -164,7 +188,7 @@ class Simulator(BaseSimulator):
 																 TopLevel=topLevel, CocotbModule=cocotbModule)
 
 		cocotbMakefilePath = self.Host.Directories["CocotbTemp"] / "Makefile"
-		self._LogDebug("Writing Cocotb Makefile to '{0!s}'".format(cocotbMakefilePath))
+		self._LogDebug("    Writing Cocotb Makefile to '{0!s}'".format(cocotbMakefilePath))
 		with cocotbMakefilePath.open('w') as fileHandle:
 			fileHandle.write(cocotbMakefileContent)
 
