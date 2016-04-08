@@ -7,8 +7,10 @@ README.md
 # sub namespaces
 sortnet/
 
+sort_lru_cache_cocotb.py
+sort_lru_cache_tb.vhdl
+
 # 
 #sort_ExpireList_tb.vhdl
 #sort_InsertSort_tb.vhdl
 #sort_LeastFrequentlyUsed_tb.vhdl
-#sort_LeastRecentlyUsed_tb.vhdl
