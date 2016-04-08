@@ -98,21 +98,21 @@ end;
 architecture rtl of cache_par is
 	attribute KEEP : boolean;
 
-	constant CACHEMEMORY_INDEX_BITS : positive := log2ceilnz(CACHE_LINES);
+	constant LINE_INDEX_BITS : positive := log2ceilnz(CACHE_LINES);
 
 	subtype T_CACHE_LINE is std_logic_vector(DATA_BITS - 1 downto 0);
 	type T_CACHE_LINE_VECTOR is array (natural range <>) of T_CACHE_LINE;
 
 	-- look-up (request)
-	signal TU_Index		: std_logic_vector(CACHEMEMORY_INDEX_BITS - 1 downto 0);
-	signal TU_TagHit	: std_logic;
-	signal TU_TagMiss : std_logic;
+	signal TU_LineIndex : std_logic_vector(LINE_INDEX_BITS - 1 downto 0);
+	signal TU_TagHit		: std_logic;
+	signal TU_TagMiss		: std_logic;
 
 	-- replace
-	signal TU_ReplaceIndex : std_logic_vector(CACHEMEMORY_INDEX_BITS - 1 downto 0);
-	signal TU_OldAddress	 : std_logic_vector(ADDRESS_BITS - 1 downto 0);
+	signal TU_ReplaceLineIndex : std_logic_vector(LINE_INDEX_BITS - 1 downto 0);
+	signal TU_OldAddress			 : std_logic_vector(ADDRESS_BITS - 1 downto 0);
 
-	signal MemoryIndex_us : unsigned(CACHEMEMORY_INDEX_BITS - 1 downto 0);
+	signal MemoryIndex_us : unsigned(LINE_INDEX_BITS - 1 downto 0);
 	signal CacheMemory		: T_CACHE_LINE_VECTOR(CACHE_LINES - 1 downto 0);
 
 begin
@@ -129,23 +129,23 @@ begin
 			Clock => Clock,
 			Reset => Reset,
 
-			Replace			 => Replace,
-			ReplaceIndex => TU_ReplaceIndex,
-			NewAddress	 => Address,
-			OldAddress	 => TU_OldAddress,
+			Replace					 => Replace,
+			ReplaceLineIndex => TU_ReplaceLineIndex,
+			NewAddress			 => Address,
+			OldAddress			 => TU_OldAddress,
 
 			Request		 => Request,
 			ReadWrite	 => ReadWrite,
 			Invalidate => Invalidate,
-			Address	 	 => Address,
-			Index			 => TU_Index,
+			Address		 => Address,
+			LineIndex	 => TU_LineIndex,
 			TagHit		 => TU_TagHit,
 			TagMiss		 => TU_TagMiss
 		);
 
 	-- Address selector
-	MemoryIndex_us <= unsigned(TU_Index) when Request = '1' else
-										unsigned(TU_ReplaceIndex);
+	MemoryIndex_us <= unsigned(TU_LineIndex) when Request = '1' else
+										unsigned(TU_ReplaceLineIndex);
 
 	process(Clock)
 	begin

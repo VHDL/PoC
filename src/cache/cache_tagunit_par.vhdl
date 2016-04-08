@@ -30,8 +30,9 @@
 -- Upon requests, the outputs `CacheMiss` and `CacheHit` indicate (high-active)
 -- immediately (combinational) whether the `Address` is stored within the cache, or not.
 -- But, the cache-line usage is updated at the rising-edge of the clock.
+-- If hit, `LineIndex` specifies the cache line where to find the content.
 --
--- The output `ReplaceIndex` indicates which cache line will be replaced as
+-- The output `ReplaceLineIndex` indicates which cache line will be replaced as
 -- next by a replace command. The output `OldAddress` specifies the old tag stored at this
 -- index. The replace command will store the `NewAddress` and update the cache-line
 -- usage at the rising-edge of the clock.
@@ -77,16 +78,16 @@ entity cache_tagunit_par is
 		Clock : in std_logic;
 		Reset : in std_logic;
 
-		Replace			 : in	 std_logic;
-		ReplaceIndex : out std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
-		NewAddress	 : in	 std_logic_vector(ADDRESS_BITS - 1 downto 0);
-		OldAddress	 : out std_logic_vector(ADDRESS_BITS - 1 downto 0);
+		Replace					 : in	 std_logic;
+		ReplaceLineIndex : out std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
+		NewAddress			 : in	 std_logic_vector(ADDRESS_BITS - 1 downto 0);
+		OldAddress			 : out std_logic_vector(ADDRESS_BITS - 1 downto 0);
 
 		Request		 : in	 std_logic;
 		ReadWrite	 : in	 std_logic;
 		Invalidate : in	 std_logic;
 		Address		 : in	 std_logic_vector(ADDRESS_BITS - 1 downto 0);
-		Index			 : out std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
+		LineIndex	 : out std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
 		TagHit		 : out std_logic;
 		TagMiss		 : out std_logic
 	);
@@ -160,13 +161,13 @@ begin
 		TagMiss_i <= not (slv_or(TagHits)) and Request;
 
 		-- outputs
-		Index		<= std_logic_vector(HitWay);
-		TagHit	<= TagHit_i;
-		TagMiss <= TagMiss_i;
+		LineIndex <= std_logic_vector(HitWay);
+		TagHit		<= TagHit_i;
+		TagMiss		<= TagMiss_i;
 
-		ReplaceWay_us <= unsigned(Policy_ReplaceWay);
-		ReplaceIndex	<= Policy_ReplaceWay;
-		OldAddress		<= TagMemory(to_integer(ReplaceWay_us));
+		ReplaceWay_us		 <= unsigned(Policy_ReplaceWay);
+		ReplaceLineIndex <= Policy_ReplaceWay;
+		OldAddress			 <= TagMemory(to_integer(ReplaceWay_us));
 
 		-- replacement policy
 		Policy : entity PoC.cache_replacement_policy
@@ -251,12 +252,12 @@ begin
 		TagMiss_i <= not (DM_TagHit) and Request;
 
 		-- outputs
-		Index		<= std_logic_vector(Address_Index);
-		TagHit	<= TagHit_i;
-		TagMiss <= TagMiss_i;
+		LineIndex <= std_logic_vector(Address_Index);
+		TagHit		<= TagHit_i;
+		TagMiss		<= TagMiss_i;
 
-		ReplaceIndex	<= std_logic_vector(NewAddress_Index);
-		OldAddress 		<= TagMemory(to_integer(NewAddress_Index)) & std_logic_vector(NewAddress_Index);
+		ReplaceLineIndex <= std_logic_vector(NewAddress_Index);
+		OldAddress			 <= TagMemory(to_integer(NewAddress_Index)) & std_logic_vector(NewAddress_Index);
 	end generate;
 	
 	-- ===========================================================================
@@ -352,9 +353,9 @@ begin
 		TagHit_i	<= slv_or(TagHits) and Request;
 		TagMiss_i <= not (slv_or(TagHits)) and Request;
 
-		Index   <= std_logic_vector(HitWay) & std_logic_vector(Address_Index);
-		TagHit  <= TagHit_i;
-		TagMiss <= TagMiss_i;
+		LineIndex <= std_logic_vector(HitWay) & std_logic_vector(Address_Index);
+		TagHit		<= TagHit_i;
+		TagMiss		<= TagMiss_i;
 		
 		----------------------------------------------------------------------------
 		-- Generate policy for each cache-set
@@ -399,8 +400,8 @@ begin
 		----------------------------------------------------------------------------
 		-- Replace-specific outputs
 		----------------------------------------------------------------------------
-		ReplaceIndex <= std_logic_vector(ReplaceWay) & std_logic_vector(NewAddress_Index);
-		OldAddress   <= OldTags(to_integer(ReplaceWay)) & std_logic_vector(NewAddress_Index);
+		ReplaceLineIndex <= std_logic_vector(ReplaceWay) & std_logic_vector(NewAddress_Index);
+		OldAddress			 <= OldTags(to_integer(ReplaceWay)) & std_logic_vector(NewAddress_Index);
 		
 	end generate;
 end architecture;
