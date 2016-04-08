@@ -77,77 +77,174 @@ setattr(EntityTypes, '__new__', _PoCEntityTypes_parser)
 
 
 class PathElement:
-	def __init__(self, name, host, parent):
-		self._name =		name
-		self._host =		host
-		self._parent =	parent
+	def __init__(self, host, name, configSection, parent):
+		self.__name =					name
+		self._host =					host
+		self._configSection = configSection
+		self.__parent =				parent
 
 	@property
 	def Name(self):
-		return self._name
+		return self.__name
 
 	@property
 	def Parent(self):
-		return self._parent
+		return self.__parent
 
 	def __str__(self):
-		return "{0}.{1}".format(str(self._parent), self._name)
+		return self.__name
+
+	def __str__(self):
+		return "{0}.{1}".format(str(self.Parent), self.Name)
 
 class Namespace(PathElement):
-	__NonEntityNames =	["Name", "Parent", "Type", "DirectoryName", "Prefix", "EntityPrefix", "Files", "Path", "relDir", "srcDir", "tbDir", "simDir", "nlDir", "xstDir"]
-
-	def __init__(self, name, configSection, host, parent=None):
-		super().__init__(name, host, parent=parent)
+	def __init__(self, host, name, configSection, parent):
+		super().__init__(host, name, configSection, parent)
 
 		self._configSection = configSection
 
 		self.__namespaces =		OrderedDict()
 		self.__entities =			OrderedDict()
-		self.__testbenches =	OrderedDict()
-		self.__netlists =			OrderedDict()
 
 		self._Load()
 
 	def _Load(self):
 		for optionName in self._host.PoCConfig[self._configSection]:
-			if optionName[0].islower():
-				section = self._host.PoCConfig[self._configSection][optionName]
-				print("loading: {0} from section {1}".format(optionName, section))
-
-				ns = Namespace(optionName, section, host=self._host, parent=self)
+			type = self._host.PoCConfig[self._configSection][optionName]
+			if (type == "Namespace"):
+				# print("loading namespace: {0}".format(optionName))
+				section = self._configSection + "." + optionName
+				ns = Namespace(host=self._host, name=optionName, configSection=section, parent=self)
 				self.__namespaces[optionName] = ns
-
+			elif (type == "Entity"):
+				# print("loading entity: {0}".format(optionName))
+				section = self._configSection.replace("NS", "IP") + "." + optionName
+				ent = Entity(host=self._host, name=optionName, configSection=section, parent=self)
+				self.__entities[optionName] = ent
 
 	@property
-	def Root(self):
-		return None
+	def Namespaces(self):
+		return [ns for ns in self.__namespaces.values()]
 
 	@property
-	def ChildNamespaces(self):
-		return []
+	def NamespaceNames(self):
+		return [nsName for nsName in self.__namespaces.keys()]
+
+	def GetNamespaces(self):
+		return self.__namespaces.values()
+
+	def GetNamespaceNames(self):
+		return self.__namespaces.keys()
+
+	@property
+	def Entities(self):
+		return [ent for ent in self.__entities.values()]
+
+	@property
+	def EntityNames(self):
+		return [entName for entName in self.__entities.keys()]
+
+	def GetEntities(self):
+		return self.__entities.values()
+
+	def GetEntityNames(self):
+		return self.__entities.keys()
+
+	def __getitem__(self, key):
+		try:
+			return self.__namespaces[key]
+		except:
+			pass
+		return self.__entities[key]
+
+
+	def pprint(self, indent=0):
+		__indent = "  " * indent
+		buffer = "{0}{1}\n".format(__indent, self.Name)
+		for ent in self.GetEntities():
+			buffer += ent.pprint(indent + 1)
+		for ns in self.GetNamespaces():
+			buffer += ns.pprint(indent + 1)
+		return buffer
 
 class Root(Namespace):
-	# __DEFAULT_SpecialOptions =	["Type", "DirectoryName", "Prefix", "Path", "relDir", "srcDir", "tbDir", "simDir", "nlDir", "xstDir"]
-
 	__POCRoot_Name =						"PoC"
-	__POCRoot_SectionName =			"POC.Root"
+	__POCRoot_SectionName =			"NS"
 
 	def __init__(self, host):
-		super().__init__(self.__POCRoot_Name, self.__POCRoot_SectionName, host)
+		super().__init__(host, self.__POCRoot_Name, self.__POCRoot_SectionName, None)
 
 	def __str__(self):
-		return self._name
+		return self.__POCRoot_Name
 
 class Entity(PathElement):
-	def __init__(self, name, parent):
-		super().__init__(name, parent)
+	def __init__(self, host, name, configSection, parent):
+		super().__init__(host, name, configSection, parent)
 
-		self.__isStar = (name == "*")
+		self.__testbench =	None
+		self.__netlist =		None
 
-	@property
-	def IsStar(self):
-		return self.__isStar
+		self._Load()
 
+	def _Load(self):
+		self._LoadTestbench()
+		self._LoadNetlist()
+
+	def _LoadTestbench(self):
+		testbench = self._host.PoCConfig[self._configSection]["Testbench"]
+		if (testbench == ""):
+			raise ConfigurationException("IPCore '{0!s}' has a Testbench option, but it's empty.".format(self.Parent))
+		if (testbench.lower() == "none"):
+			return
+
+		print("found a testbench in '{0}' for '{1!s}'".format(testbench, self))
+		self.__testbench = Testbench(self._host, testbench)
+
+	def _LoadNetlist(self):
+		netlist = self._host.PoCConfig[self._configSection]["Netlist"]
+		if (netlist == ""):
+			raise ConfigurationException("IPCore '{0!s}' has a Netlist option, but it's empty.".format(self))
+		if (netlist.lower() == "none"):
+			return
+
+		print("found a netlist in '{0}' for '{1!s}'".format(netlist, self.Parent))
+		self.__testbench = Netlist(self._host, netlist)
+
+	def pprint(self, indent=0):
+		__indent = "  " * indent
+		buffer = "{0}Entity: {1}\n".format(__indent, self.Name)
+		if (self.__testbench is not None):
+			buffer += "{0}  {1!s}\n".format(__indent, self.__testbench)
+		if (self.__netlist is not None):
+			buffer += "{0}  {1!s}\n".format(__indent, self.__netlist)
+		return buffer
+
+class Base:
+	def __init__(self, host, sectionName):
+		self.__sectionName = sectionName
+		self.__host = host
+
+		self._Load()
+
+class Testbench(Base):
+	def __init__(self, host, sectionName):
+		super().__init__(host, sectionName)
+
+	def _Load(self):
+		pass
+
+	def __str__(self):
+		return "Testbench\n"
+
+class Netlist(Base):
+	def __init__(self, host, sectionName):
+		super().__init__(host, sectionName)
+
+	def _Load(self):
+		pass
+
+	def __str__(self):
+		return "Netlist\n"
 
 class FQN:
 	def __init__(self, host, fqn, defaultType=EntityTypes.Source):
@@ -175,22 +272,16 @@ class FQN:
 			parts = parts[1:]
 
 		# check and resolve parts
-		self.__parts.append(Root())
-		path = "PoC"
+		cur = self.__host.Root
+		self.__parts.append(cur)
 		length =		len(parts)
 		for pos,part in enumerate(parts):
-			path += "." + part.lower()
-			if (pos == length - 1):
-				self.__parts.append(Entity(part, self.__parts[-1]))
-			elif (not self.__host.PoCConfig.has_option('PoC.NamespacePrefixes', part.lower())):
-				raise ConfigurationException("Sub namespace '{0}' does not exist.".format(part))
-			elif (not self.__host.PoCConfig.has_option('PoC.NamespaceDirectoryNames', path)):
-				raise ConfigurationException("Namespace path '{0}' does not exist.".format(path))
-			else:
-				self.__parts.append(Namespace(part, self.__parts[-1]))
+			pe = cur[part]
+			self.__parts.append(pe)
+			cur = pe
 
 	def Root(self):
-		return Entity(self, "PoC")
+		return self.__host.Root
 	
 	@property
 	def Entity(self):

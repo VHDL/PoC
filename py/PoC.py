@@ -33,7 +33,7 @@
 # ==============================================================================
 
 from argparse									import RawDescriptionHelpFormatter
-from configparser							import Error as ConfigParser_Error, NoOptionError, ConfigParser		#, ExtendedInterpolation
+from configparser							import ConfigParser, Error as ConfigParser_Error, NoOptionError, InterpolationError
 from os												import environ
 from pathlib									import Path
 from platform									import system as platform_system
@@ -44,7 +44,7 @@ from Base.Exceptions					import ExceptionBase, CommonException, PlatformNotSuppo
 from Base.Configuration				import ConfigurationException
 from Base.Simulator						import SimulatorException
 from Base.Compiler						import CompilerException
-from Base.ToolChain import ToolChainException
+from Base.ToolChain						import ToolChainException
 from Base.Logging							import ILogable, Logger, Severity
 from Base.Project							import VHDLVersion
 from Compiler.XCOCompiler			import Compiler as XCOCompiler
@@ -78,9 +78,8 @@ class PoC(ILogable, ArgParseMixin):
 	__pocPublicConfigFileName =		"config.public.ini"
 	__pocEntityConfigFileName =		"config.entity.ini"
 	__pocBoardConfigFileName =		"config.boards.ini"
-
-	__tbConfigFileName =					"configuration.ini"
-	__netListConfigFileName =			"configuration.ini"
+	__tbConfigFileName =					"config.testbench.ini"
+	__netListConfigFileName =			"config.netlist.ini"
 
 	# private fields
 	__platform = platform_system()  # load platform information (Windows, Linux, ...)
@@ -100,7 +99,7 @@ class PoC(ILogable, ArgParseMixin):
 		# --------------------------------------------------------------------------
 		if (self.Platform not in ["Windows", "Linux"]):		raise PlatformNotSupportedException(self.Platform)
 		if (environ.get('PoCRootDirectory') is None):			raise EnvironmentException("Shell environment does not provide 'PoCRootDirectory' variable.")
-		if (environ.get('PoCScriptDirectory') is None):		raise EnvironmentException("Shell environment does not provide 'PoCScriptDirectory' variable.")
+		# if (environ.get('PoCScriptDirectory') is None):		raise EnvironmentException("Shell environment does not provide 'PoCScriptDirectory' variable.")
 
 		# Call the constructor of the ArgParseMixin
 		# --------------------------------------------------------------------------
@@ -116,6 +115,7 @@ class PoC(ILogable, ArgParseMixin):
 		self.__pocConfig =		None
 		self.__tbConfig =			None
 		self.__nlConfig =			None
+		self.__root =					None
 		self.__files =				{}
 		self.__directories =	{}
 
@@ -124,11 +124,13 @@ class PoC(ILogable, ArgParseMixin):
 
 		self.Directories['Working'] =			Path.cwd()
 		self.Directories['PoCRoot'] =			Path(environ.get('PoCRootDirectory'))
-		self.Directories['ScriptRoot'] =	Path(environ.get('PoCRootDirectory'))
+		# self.Directories['ScriptRoot'] =	Path(environ.get('PoCRootDirectory'))
 		self.Files['PoCPrivateConfig'] =	self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPrivateConfigFileName
 		self.Files['PoCPublicConfig'] =		self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPublicConfigFileName
 		self.Files['PoCEntityConfig'] =		self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocEntityConfigFileName
 		self.Files['PoCBoardConfig'] =		self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocBoardConfigFileName
+		self.Files['PoCTBConfig'] =				self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__tbConfigFileName
+		self.Files['PoCNLConfig'] =				self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__netListConfigFileName
 
 	# class properties
 	# ============================================================================
@@ -160,6 +162,9 @@ class PoC(ILogable, ArgParseMixin):
 	def NLConfig(self):
 		return self.__nlConfig
 
+	@property
+	def Root(self):
+		return self.__root
 
 	# read PoC configuration
 	# ============================================================================
@@ -179,18 +184,32 @@ class PoC(ILogable, ArgParseMixin):
 		# ============================================================================
 		self.__pocConfig = ConfigParser(interpolation=ExtendedInterpolation())
 		self.__pocConfig.optionxform = str
-		self.__pocConfig.read([
-			str(pocPrivateConfigFilePath),
-			str(pocPublicConfigFilePath),
-			str(pocEntityConfigFilePath),
-			str(pocBoardConfigFilePath)
-		])
+		self.__pocConfig.read(str(self.Files["PoCPrivateConfig"]))
+		self.__pocConfig.read(str(self.Files["PoCPublicConfig"]))
+		self.__pocConfig.read(str(self.Files["PoCEntityConfig"]))
+		self.__pocConfig.read(str(self.Files["PoCBoardConfig"]))
+
+		# print("="*80)
+		# print("PoCConfig:")
+		# for sectionName in self.__pocConfig:
+		# 	print("  {0}".format(sectionName))
+		# 	for optionName in self.__pocConfig[sectionName]:
+		# 		try:
+		# 			value = self.__pocConfig[sectionName][optionName]
+		# 			print("    {0} = {1}".format(optionName, value))
+		# 		except InterpolationError as ex:
+		# 			pass		#value = "[INTERPOLATION ERROR]"
+		# print("=" * 80)
+
+		self.__root = Root(self)
+		print("=" * 80)
+		print(self.Root.pprint(0))
+		print("=" * 80)
 
 		# check PoC installation directory
 		if (self.Directories["PoCRoot"] != Path(self.PoCConfig['PoC']['InstallationDirectory'])):	raise NotConfiguredException("There is a mismatch between PoCRoot and PoC installation directory.")
 
 		self.__SimulationDefaultBoard =		Board(self)
-		self.__Namespaces =								Root(self)
 
 
 		# self.Directories["XSTFiles"] =			self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
@@ -203,18 +222,38 @@ class PoC(ILogable, ArgParseMixin):
 	# read Testbench configuration
 	# ==========================================================================
 	def __ReadTestbenchConfiguration(self):
-		self.Files["PoCTBConfig"] = tbConfigFilePath = self.Directories["PoCTestbench"] / self.__tbConfigFileName
+		tbConfigFilePath = self.Files["PoCTBConfig"]
 
 		self._LogDebug("Reading testbench configuration from '{0}'".format(str(tbConfigFilePath)))
-		if not tbConfigFilePath.exists():	raise NotConfiguredException("PoC testbench configuration file does not exist. ({0})".format(str(tbConfigFilePath)))
+		if not tbConfigFilePath.exists():	raise NotConfiguredException("PoC testbench configuration file does not exist. ({0!s})".format(tbConfigFilePath))
 
-		self.__tbConfig = ConfigParser(interpolation=ExtendedInterpolation())
-		self.__tbConfig.optionxform = str
-		self.__tbConfig.read([
-			str(self.Files["PoCPrivateConfig"]),
-			str(self.Files["PoCPublicConfig"]),
-			str(self.Files["PoCTBConfig"])
-		])
+		self.__tbConfig = self.__pocConfig
+		self.__tbConfig.read(str(self.Files["PoCTBConfig"]))
+
+
+		print("=" * 80)
+		print("PoCConfig:")
+		for sectionName in self.__tbConfig:
+			print("  {0}".format(sectionName))
+			try:
+				for optionName in self.__tbConfig[sectionName]:
+					try:
+						value = self.__tbConfig[sectionName][optionName]
+						print("    {0} = {1}".format(optionName, value))
+					except InterpolationError as ex:
+						pass  # value = "[INTERPOLATION ERROR]"
+			except:
+				pass
+
+		print("=" * 80)
+
+		# self.__tbConfig = ConfigParser(interpolation=ExtendedInterpolation())
+		# self.__tbConfig.optionxform = str
+		# self.__tbConfig.read([
+		# 	str(self.Files["PoCPrivateConfig"]),
+		# 	str(self.Files["PoCPublicConfig"]),
+		# 	str(self.Files["PoCTBConfig"])
+		# ])
 
 	# read NetList configuration
 	# ==========================================================================
@@ -574,7 +613,8 @@ class PoC(ILogable, ArgParseMixin):
 
 		# run a testbench
 		for fqn in fqnList:
-			for entity in fqn.GetEntities():
+				entity = fqn.Entity
+			# for entity in fqn.GetEntities():
 				try:
 					simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)		#, vhdlGenerics=None)
 

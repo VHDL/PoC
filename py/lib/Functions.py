@@ -178,12 +178,13 @@ class ExtendedInterpolation(Interpolation):
 	def _interpolate_some(self, parser, option, accum, rest, section, map, depth):
 		if depth > MAX_INTERPOLATION_DEPTH:			raise InterpolationDepthError(option, section, rest)
 
-		# print("interpolation begin: option={0}  accum='{1}'  rest='{2}'".format(option, accum, rest))
+		print("interpolation begin: section={0} option={1}  accum='{2}'  rest='{3}'".format(section, option, accum, rest))
 
 		while rest:
 			beginPos = rest.find("$")
 			if beginPos < 0:
 				accum.append(rest)
+				print("->" + "".join(accum))
 				return
 			if beginPos > 0:
 				accum.append(rest[:beginPos])
@@ -232,3 +233,4 @@ class ExtendedInterpolation(Interpolation):
 			else:
 				raise InterpolationSyntaxError(option, section, "'$' must be followed by '$' or '{', found: %r" % (rest,))
 
+		print("->" + "".join(accum))
