@@ -40,6 +40,9 @@ from platform									import system as platform_system
 from sys											import argv as sys_argv
 from textwrap									import dedent
 
+from lib.Functions						import Init, Exit
+from lib.ArgParseAttributes		import ArgParseMixin, CommandAttribute, CommonSwitchArgumentAttribute, CommandGroupAttribute, ArgumentAttribute, SwitchArgumentAttribute, DefaultAttribute
+from lib.ConfigParser					import ExtendedConfigParser
 from Base.Exceptions					import ExceptionBase, CommonException, PlatformNotSupportedException, EnvironmentException, NotConfiguredException
 from Base.Configuration				import ConfigurationException
 from Base.Simulator						import SimulatorException
@@ -47,21 +50,19 @@ from Base.Compiler						import CompilerException
 from Base.ToolChain						import ToolChainException
 from Base.Logging							import ILogable, Logger, Severity
 from Base.Project							import VHDLVersion
-from Compiler.XCOCompiler			import Compiler as XCOCompiler
-from Compiler.XSTCompiler			import Compiler as XSTCompiler
 from Parser.Parser						import ParserException
 from PoC.Config								import Device, Board
-from PoC.Entity								import Root, Entity, FQN, EntityTypes
+from PoC.Entity								import Root, FQN, EntityTypes
 from PoC.Query								import Query
+from ToolChains								import Configurations
 from Simulator.ActiveHDLSimulator		import Simulator as ActiveHDLSimulator
 from Simulator.CocotbSimulator 			import Simulator as CocotbSimulator
 from Simulator.GHDLSimulator				import Simulator as GHDLSimulator
 from Simulator.ISESimulator					import Simulator as ISESimulator
 from Simulator.QuestaSimulator			import Simulator as QuestaSimulator
 from Simulator.VivadoSimulator			import Simulator as VivadoSimulator
-from ToolChains								import Configurations
-from lib.ArgParseAttributes		import ArgParseMixin, CommandAttribute, CommonSwitchArgumentAttribute, CommandGroupAttribute, ArgumentAttribute, SwitchArgumentAttribute, DefaultAttribute
-from lib.Functions						import Init, Exit, ExtendedConfigParser, ExtendedInterpolation
+from Compiler.XCOCompiler			import Compiler as XCOCompiler
+from Compiler.XSTCompiler			import Compiler as XSTCompiler
 
 
 # def HandleVerbosityOptions(func):
@@ -185,7 +186,7 @@ class PoC(ILogable, ArgParseMixin):
 
 		# read PoC configuration
 		# ============================================================================
-		self.__pocConfig = ExtendedConfigParser(interpolation=ExtendedInterpolation())
+		self.__pocConfig = ExtendedConfigParser()
 		self.__pocConfig.optionxform = str
 		self.__pocConfig.read(str(self.Files["PoCPrivateConfig"]))
 		self.__pocConfig.read(str(self.Files["PoCPublicConfig"]))
@@ -267,7 +268,7 @@ class PoC(ILogable, ArgParseMixin):
 		self._LogDebug("Reading NetList configuration from '{0}'".format(str(netListConfigFilePath)))
 		if not netListConfigFilePath.exists():	raise NotConfiguredException("PoC netlist configuration file does not exist. ({0})".format(str(netListConfigFilePath)))
 
-		self.__nlConfig = ConfigParser(interpolation=ExtendedInterpolation())
+		self.__nlConfig = ExtendedConfigParser()
 		self.__nlConfig.optionxform = str
 		self.__nlConfig.read([
 			str(self.Files['PoCPrivateConfig']),
@@ -366,7 +367,7 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandAttribute('help', help="help help")
 	@ArgumentAttribute(metavar='<Command>', dest="Command", type=str, nargs='?', help='todo help')
 	# @HandleVerbosityOptions
-	def HandleHelp(self, _):
+	def HandleHelp(self, args):
 		self.PrintHeadline()
 		if (args.Command is None):
 			self.MainParser.print_help()
@@ -923,8 +924,7 @@ class PoC(ILogable, ArgParseMixin):
 
 		# check if ISE is configure
 		if (len(self.PoCConfig.options("Xilinx.ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
-		# check if the appropriate environment is loaded
-		if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
+		if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment.")
 		
 		# prepare some paths
 		self.Directories["CoreGenTemp"] =			self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ISECoreGeneratorFiles']
@@ -971,8 +971,7 @@ class PoC(ILogable, ArgParseMixin):
 
 		# check if ISE is configure
 		if (len(self.PoCConfig.options("Xilinx.ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
-		# check if the appropriate environment is loaded
-		if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment. ")
+		if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment.")
 
 		# prepare some paths
 		self.Directories["XSTFiles"] =				self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
