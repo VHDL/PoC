@@ -30,9 +30,6 @@
 # limitations under the License.
 # ==============================================================================
 #
-DEBUG =		False#True
-DEBUG2 =	False#True
-
 from Parser.Parser		import MismatchingParserResult, MatchingParserResult
 from Parser.Parser		import CodeDOMObject
 from Parser.Parser		import SpaceToken, CharacterToken, StringToken, NumberToken
@@ -45,27 +42,21 @@ class EmptyLine(CodeDOMObject):
 
 	@classmethod
 	def GetParser(cls):
-		if DEBUG: print("init EmptyLine")
-	
 		# match for optional whitespace
 		token = yield
-		if DEBUG2: print("EmptyLine: token={0}".format(token))
-		if isinstance(token, SpaceToken):
-			token = yield
-			if DEBUG2: print("EmptyLine: token={0}".format(token))
-	
+		if isinstance(token, SpaceToken):						token = yield
+
 		# match for delimiter sign: \n
 		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
 		if (token.Value.lower() != "\n"):						raise MismatchingParserResult()
 		
 		# construct result
 		result = cls()
-		if DEBUG: print("EmptyLine: matched {0}".format(result))
 		raise MatchingParserResult(result)
 	
 	def __str__(self, indent=0):
-		_indent = "  " * indent
-		return _indent + "<empty>"
+		return "  " * indent + "<empty>"
+
 
 class CommentLine(CodeDOMObject):
 	def __init__(self, commentText):
@@ -78,17 +69,11 @@ class CommentLine(CodeDOMObject):
 
 	@classmethod
 	def GetParser(cls):
-		if DEBUG: print("init CommentLineParser")
-	
 		# match for optional whitespace
 		token = yield
-		if DEBUG2: print("CommentLineParser: token={0} end if".format(token))
-		if isinstance(token, SpaceToken):
-			token = yield
-			if DEBUG2: print("CommentLineParser: token={0}".format(token))
-	
+		if isinstance(token, SpaceToken):						token = yield
+
 		# match for sign: #
-		if DEBUG2: print("CommentLineParser: token={0} expected '#'".format(token))
 		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
 		if (token.Value.lower() != "#"):						raise MismatchingParserResult()
 	
@@ -96,20 +81,16 @@ class CommentLine(CodeDOMObject):
 		commentText = ""
 		while True:
 			token = yield
-			if DEBUG2: print("CommentLineParser: token={0} collecting...".format(repr(token)))
 			if isinstance(token, CharacterToken):
-				if (token.Value == "\n"):
-					break
+				if (token.Value == "\n"):			break
 			commentText += token.Value
 		
 		# construct result
 		result = cls(commentText)
-		if DEBUG: print("CommentLineParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
 	
 	def __str__(self, indent=0):
-		_indent = "  " * indent
-		return "{0}#{1}".format(_indent, self._commentText)
+		return "{0}#{1}".format("  " * indent, self._commentText)
 
 # ==============================================================================
 # Blocked Statements (Forward declaration)
@@ -123,9 +104,8 @@ class BlockedStatement(Statement):
 	
 	@classmethod
 	def GetParser(cls):
-		if DEBUG: print("return BlockedStatementParser")
 		return cls.GetChoiceParser(cls._allowedStatements)
-		
+
 # ==============================================================================
 # File Reference Statements
 # ==============================================================================
@@ -146,36 +126,37 @@ class VHDLStatement(Statement):
 	
 	@classmethod
 	def GetParser(cls):
-		if DEBUG: print("init VHDLParser")
-	
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):						token = yield
+
 		# match for VHDL keyword
 		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("VHDLParser: Expected VHDL keyword.")
 		if (token.Value.lower() != "vhdl"):					raise MismatchingParserResult("VHDLParser: Expected VHDL keyword.")
+
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("VHDLParser: Expected whitespace before VHDL library name.")
+
 		# match for library name
 		library = ""
 		while True:
 			token = yield
 			if isinstance(token, StringToken):				library += token.Value
 			elif isinstance(token, NumberToken):			library += token.Value
-			elif isinstance(token, CharacterToken):
-				if (token.Value == "_"):
-					library += token.Value
-				else:
-					break
+			elif (isinstance(token, CharacterToken) and  (token.Value == "_")):
+				library += token.Value
 			else:
 				break
+
 		# match for whitespace
 		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("VHDLParser: Expected whitespace before VHDL fileName.")
+
 		# match for delimiter sign: "
 		token = yield
 		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("VHDLParser: Expected double quote sign before VHDL fileName.")
 		if (token.Value.lower() != "\""):						raise MismatchingParserResult("VHDLParser: Expected double quote sign before VHDL fileName.")
+
 		# match for string: fileName
 		fileName = ""
 		while True:
@@ -184,9 +165,9 @@ class VHDLStatement(Statement):
 				if (token.Value == "\""):
 					break
 			fileName += token.Value
+
 		# match for optional whitespace
 		token = yield
-		if DEBUG2: print("VHDLParser: token={0}".format(token))
 		if isinstance(token, SpaceToken):						token = yield
 		# match for delimiter sign: \n
 		commentText = ""
@@ -205,7 +186,6 @@ class VHDLStatement(Statement):
 		
 		# construct result
 		result = cls(library, fileName, commentText)
-		if DEBUG: print("VHDLParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
 	
 	def __str__(self, indent=0):
@@ -213,7 +193,8 @@ class VHDLStatement(Statement):
 			return "{0}VHDL {1} \"{2}\" # {3}".format(("  " * indent), self._libraryName, self._fileName, self._commentText)
 		else:
 			return "{0}VHDL {1} \"{2}\"".format(("  " * indent), self._libraryName, self._fileName)
-	
+
+
 class VerilogStatement(Statement):
 	def __init__(self, fileName, commentText):
 		super().__init__()
@@ -226,8 +207,6 @@ class VerilogStatement(Statement):
 	
 	@classmethod
 	def GetParser(cls):
-		if DEBUG: print("init VerilogParser")
-	
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):
@@ -254,9 +233,9 @@ class VerilogStatement(Statement):
 				if (token.Value == "\""):
 					break
 			fileName += token.Value
+
 		# match for optional whitespace
 		token = yield
-		if DEBUG2: print("VerilogParser: token={0}".format(token))
 		if isinstance(token, SpaceToken):						token = yield
 		# match for delimiter sign: \n
 		commentText = ""
@@ -268,20 +247,19 @@ class VerilogStatement(Statement):
 			while True:
 				token = yield
 				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"): break
+					if (token.Value == "\n"):		break
 				commentText += token.Value
 		else:
 			raise MismatchingParserResult("VerilogParser: Expected end of line or comment")
 		
 		# construct result
 		result = cls(fileName, commentText)
-		if DEBUG: print("VerilogParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
 		
 	def __str__(self, indent=0):
-		_indent = "  " * indent
-		return "{0}Verilog \"{1}\"".format(_indent, self._fileName)
-	
+		return "{0}Verilog \"{1}\"".format("  " * indent, self._fileName)
+
+
 class CocotbStatement(Statement):
 	def __init__(self, fileName, commentText):
 		super().__init__()
@@ -294,8 +272,6 @@ class CocotbStatement(Statement):
 		
 	@classmethod
 	def GetParser(cls):
-		if DEBUG: print("init CocotbParser")
-	
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):						token = yield
@@ -306,12 +282,12 @@ class CocotbStatement(Statement):
 		
 		# match for whitespace
 		token = yield
-		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("CocotbParser: Expected whitespace before Verilog fileName.")
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("CocotbParser: Expected whitespace before Python fileName.")
 		
 		# match for delimiter sign: "
 		token = yield
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("CocotbParser: Expected double quote sign before Verilog fileName.")
-		if (token.Value.lower() != "\""):						raise MismatchingParserResult("CocotbParser: Expected double quote sign before Verilog fileName.")
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("CocotbParser: Expected double quote sign before Python fileName.")
+		if (token.Value.lower() != "\""):						raise MismatchingParserResult("CocotbParser: Expected double quote sign before Python fileName.")
 		
 		# match for string: fileName
 		fileName = ""
@@ -336,20 +312,214 @@ class CocotbStatement(Statement):
 			while True:
 				token = yield
 				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"): break
+					if (token.Value == "\n"):		break
 				commentText += token.Value
 		else:
 			raise MismatchingParserResult("CocotbParser: Expected end of line or comment")
 		
 		# construct result
 		result = cls(fileName, commentText)
-		if DEBUG: print("CocotbParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
 		
 	def __str__(self, indent=0):
-		_indent = "  " * indent
-		return "{0}Cocotb \"{1}\"".format(_indent, self._fileName)
-		
+		return "{0}Cocotb \"{1}\"".format("  " * indent, self._fileName)
+
+
+class UcfStatement(Statement):
+	def __init__(self, fileName, commentText):
+		super().__init__()
+		self._fileName =		fileName
+		self._commentText =	commentText
+
+	@property
+	def FileName(self):
+		return self._fileName
+
+	@classmethod
+	def GetParser(cls):
+		# match for optional whitespace
+		token = yield
+		if isinstance(token, SpaceToken):						token = yield
+
+		# match for keyword: UCF
+		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("UcfParser: Expected UCF keyword.")
+		if (token.Value.lower() != "ucf"):					raise MismatchingParserResult("UcfParser: Expected UCF keyword.")
+
+		# match for whitespace
+		token = yield
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("UcfParser: Expected whitespace before UCF fileName.")
+
+		# match for delimiter sign: "
+		token = yield
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("UcfParser: Expected double quote sign before UCF fileName.")
+		if (token.Value.lower() != "\""):						raise MismatchingParserResult("UcfParser: Expected double quote sign before UCF fileName.")
+
+		# match for string: fileName
+		fileName = ""
+		while True:
+			token = yield
+			if isinstance(token, CharacterToken):
+				if (token.Value == "\""):
+					break
+			fileName += token.Value
+
+		# match for optional whitespace
+		token = yield
+		if isinstance(token, SpaceToken):						token = yield
+
+		# match for delimiter sign: \n
+		commentText = ""
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("UcfParser: Expected end of line or comment")
+		if (token.Value == "\n"):
+			pass
+		elif (token.Value == "#"):
+			# match for any until line end
+			while True:
+				token = yield
+				if isinstance(token, CharacterToken):
+					if (token.Value == "\n"): break
+				commentText += token.Value
+		else:
+			raise MismatchingParserResult("UcfParser: Expected end of line or comment")
+
+		# construct result
+		result = cls(fileName, commentText)
+		raise MatchingParserResult(result)
+
+	def __str__(self, indent=0):
+		return "{0}UCF \"{1}\"".format("  " * indent, self._fileName)
+
+
+class XdcStatement(Statement):
+	def __init__(self, fileName, commentText):
+		super().__init__()
+		self._fileName =		fileName
+		self._commentText =	commentText
+
+	@property
+	def FileName(self):
+		return self._fileName
+
+	@classmethod
+	def GetParser(cls):
+		# match for optional whitespace
+		token = yield
+		if isinstance(token, SpaceToken):						token = yield
+
+		# match for keyword: 		XDC
+		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("XdcParser: Expected XDC keyword.")
+		if (token.Value.lower() != "xdc"):					raise MismatchingParserResult("XdcParser: Expected XDC keyword.")
+
+		# match for whitespace
+		token = yield
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("XdcParser: Expected whitespace before XDC fileName.")
+
+		# match for delimiter sign: "
+		token = yield
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("XdcParser: Expected double quote sign before XDC fileName.")
+		if (token.Value.lower() != "\""):						raise MismatchingParserResult("XdcParser: Expected double quote sign before XDC fileName.")
+
+		# match for string: fileName
+		fileName = ""
+		while True:
+			token = yield
+			if isinstance(token, CharacterToken):
+				if (token.Value == "\""):
+					break
+			fileName += token.Value
+
+		# match for optional whitespace
+		token = yield
+		if isinstance(token, SpaceToken):						token = yield
+
+		# match for delimiter sign: \n
+		commentText = ""
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("XdcParser: Expected end of line or comment")
+		if (token.Value == "\n"):
+			pass
+		elif (token.Value == "#"):
+			# match for any until line end
+			while True:
+				token = yield
+				if isinstance(token, CharacterToken):
+					if (token.Value == "\n"): break
+				commentText += token.Value
+		else:
+			raise MismatchingParserResult("XdcParser: Expected end of line or comment")
+
+		# construct result
+		result = cls(fileName, commentText)
+		raise MatchingParserResult(result)
+
+	def __str__(self, indent=0):
+		return "{0}XDC \"{1}\"".format("  " * indent, self._fileName)
+
+
+class SdcStatement(Statement):
+	def __init__(self, fileName, commentText):
+		super().__init__()
+		self._fileName =		fileName
+		self._commentText =	commentText
+
+	@property
+	def FileName(self):
+		return self._fileName
+
+	@classmethod
+	def GetParser(cls):
+		# match for optional whitespace
+		token = yield
+		if isinstance(token, SpaceToken):						token = yield
+
+		# match for keyword: SDC
+		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("SdcParser: Expected SDC keyword.")
+		if (token.Value.lower() != "sdc"):					raise MismatchingParserResult("SdcParser: Expected SDC keyword.")
+
+		# match for whitespace
+		token = yield
+		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("SdcParser: Expected whitespace before SDC fileName.")
+
+		# match for delimiter sign: "
+		token = yield
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("SdcParser: Expected double quote sign before SDC fileName.")
+		if (token.Value.lower() != "\""):						raise MismatchingParserResult("SdcParser: Expected double quote sign before SDC fileName.")
+
+		# match for string: fileName
+		fileName = ""
+		while True:
+			token = yield
+			if isinstance(token, CharacterToken):
+				if (token.Value == "\""):
+					break
+			fileName += token.Value
+
+		# match for optional whitespace
+		token = yield
+		if isinstance(token, SpaceToken):						token = yield
+
+		# match for delimiter sign: \n
+		commentText = ""
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("SdcParser: Expected end of line or comment")
+		if (token.Value == "\n"):
+			pass
+		elif (token.Value == "#"):
+			# match for any until line end
+			while True:
+				token = yield
+				if isinstance(token, CharacterToken):
+					if (token.Value == "\n"): break
+				commentText += token.Value
+		else:
+			raise MismatchingParserResult("SdcParser: Expected end of line or comment")
+
+		# construct result
+		result = cls(fileName, commentText)
+		raise MatchingParserResult(result)
+
+	def __str__(self, indent=0):
+		return "{0}Cocotb \"{1}\"".format("  " * indent, self._fileName)
+
+
 class ReportStatement(Statement):
 	def __init__(self, message, commentText):
 		super().__init__()
@@ -362,16 +532,13 @@ class ReportStatement(Statement):
 	
 	@classmethod
 	def GetParser(cls):
-		if DEBUG: print("init ReportParser")
-	
 		# match for optional whitespace
 		token = yield
-		if isinstance(token, SpaceToken):
-			token = yield
+		if isinstance(token, SpaceToken):						token = yield
 	
 		# match for keyword: VERILOG
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("ReportParser: Expected VERILOG keyword.")
-		if (token.Value.lower() != "report"):			raise MismatchingParserResult("ReportParser: Expected VERILOG keyword.")
+		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("ReportParser: Expected REPORT keyword.")
+		if (token.Value.lower() != "report"):				raise MismatchingParserResult("ReportParser: Expected REPORT keyword.")
 		
 		# match for whitespace
 		token = yield
@@ -390,10 +557,11 @@ class ReportStatement(Statement):
 				if (token.Value == "\""):
 					break
 			message += token.Value
+
 		# match for optional whitespace
 		token = yield
-		if DEBUG2: print("ReportParser: token={0}".format(token))
 		if isinstance(token, SpaceToken):						token = yield
+
 		# match for delimiter sign: \n
 		commentText = ""
 		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("ReportParser: Expected end of line or comment")
@@ -411,12 +579,11 @@ class ReportStatement(Statement):
 		
 		# construct result
 		result = cls(message, commentText)
-		if DEBUG: print("ReportParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
 		
 	def __str__(self, indent=0):
-		_indent = "  " * indent
-		return "{0}report \"{1}\"".format(_indent, self._message)
+		return "{0}report \"{1}\"".format("  " * indent, self._message)
+
 
 class LibraryStatement(Statement):
 	def __init__(self, library, directoryName, commentText):
@@ -435,47 +602,35 @@ class LibraryStatement(Statement):
 	
 	@classmethod
 	def GetParser(cls):
-		if DEBUG: print("init LibraryParser")
-	
 		# match for optional whitespace
 		token = yield
-		if isinstance(token, SpaceToken):
-			token = yield
+		if isinstance(token, SpaceToken):						token = yield
 		
-		if DEBUG2: print("LibraryParser: token={0} expected VHDL keyword".format(repr(token)))
 		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("LibraryParser: Expected LIBRARY keyword.")
 		if (token.Value.lower() != "library"):			raise MismatchingParserResult("LibraryParser: Expected LIBRARY keyword.")
 		
 		# match for whitespace
 		token = yield
-		if DEBUG2: print("LibraryParser: token={0} expected WHITESPACE".format(repr(token)))
 		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("LibraryParser: Expected whitespace before LIBRARY library name.")
 		
 		# match for library name
 		library = ""
 		while True:
 			token = yield
-			if DEBUG2: print("LibraryParser: token={0} collecting...".format(repr(token)))
 			if isinstance(token, StringToken):
 				library += token.Value
 			elif isinstance(token, NumberToken):
 				library += token.Value
-			elif isinstance(token, CharacterToken):
-				# if (token.Value in [_]):
-				if (token.Value == "_"):
-					library += token.Value
-				else:
-					break
+			elif (isinstance(token, CharacterToken)and (token.Value == "_")):
+				library += token.Value
 			else:
 				break
 		
 		# match for whitespace
-		if DEBUG2: print("LibraryParser: token={0} expected WHITESPACE".format(repr(token)))
 		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("LibraryParser: Expected whitespace before LIBRARY directoryName.")
 		
 		# match for delimiter sign: "
 		token = yield
-		if DEBUG2: print("LibraryParser: token={0} expected double quote".format(repr(token)))
 		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("LibraryParser: Expected double quote sign before LIBRARY directoryName.")
 		if (token.Value.lower() != "\""):						raise MismatchingParserResult("LibraryParser: Expected double quote sign before LIBRARY directoryName.")
 		
@@ -484,16 +639,16 @@ class LibraryStatement(Statement):
 		while True:
 			token = yield
 			if isinstance(token, CharacterToken):
-				if (token.Value == "\""):
-					break
+				if (token.Value == "\""):		break
 			directoryName += token.Value
+
 		# match for optional whitespace
 		token = yield
-		if DEBUG2: print("VerilogParser: token={0}".format(token))
 		if isinstance(token, SpaceToken):						token = yield
+
 		# match for delimiter sign: \n
 		commentText = ""
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("VerilogParser: Expected end of line or comment")
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("LibraryParser: Expected end of line or comment")
 		if (token.Value == "\n"):
 			pass
 		elif (token.Value == "#"):
@@ -504,17 +659,16 @@ class LibraryStatement(Statement):
 					if (token.Value == "\n"): break
 				commentText += token.Value
 		else:
-			raise MismatchingParserResult("VerilogParser: Expected end of line or comment")
+			raise MismatchingParserResult("LibraryParser: Expected end of line or comment")
 		
 		# construct result
 		result = cls(library, directoryName, commentText)
-		if DEBUG: print("LibraryParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
 	
 	def __str__(self, indent=0):
-		_indent = "  " * indent
-		return "{0}Library {1} \"{2}\"".format(_indent, self._library, self._directoryName)
-		
+		return "{0}Library {1} \"{2}\"".format("  " * indent, self._library, self._directoryName)
+
+
 class IncludeStatement(Statement):
 	def __init__(self, fileName, commentText):
 		super().__init__()
@@ -527,25 +681,19 @@ class IncludeStatement(Statement):
 	
 	@classmethod
 	def GetParser(cls):
-		if DEBUG: print("init IncludeParser")
-	
 		# match for optional whitespace
 		token = yield
-		if isinstance(token, SpaceToken):
-			token = yield
+		if isinstance(token, SpaceToken):						token = yield
 		
-		if DEBUG2: print("IncludeParser: token={0} expected VHDL keyword".format(repr(token)))
 		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("IncludeParser: Expected INCLUDE keyword.")
 		if (token.Value.lower() != "include"):			raise MismatchingParserResult("IncludeParser: Expected INCLUDE keyword.")
 		
 		# match for whitespace
 		token = yield
-		if DEBUG2: print("IncludeParser: token={0} expected WHITESPACE".format(repr(token)))
 		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("IncludeParser: Expected whitespace before INCLUDE fileName.")
 		
 		# match for delimiter sign: "
 		token = yield
-		if DEBUG2: print("IncludeParser: token={0} expected double quote".format(repr(token)))
 		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("IncludeParser: Expected double quote sign before include fileName.")
 		if (token.Value.lower() != "\""):						raise MismatchingParserResult("IncludeParser: Expected double quote sign before include fileName.")
 		
@@ -554,16 +702,15 @@ class IncludeStatement(Statement):
 		while True:
 			token = yield
 			if isinstance(token, CharacterToken):
-				if (token.Value == "\""):
-					break
+				if (token.Value == "\""):			break
 			fileName += token.Value
+
 		# match for optional whitespace
 		token = yield
-		if DEBUG2: print("VerilogParser: token={0}".format(token))
 		if isinstance(token, SpaceToken):						token = yield
 		# match for delimiter sign: \n
 		commentText = ""
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("VerilogParser: Expected end of line or comment")
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("IncludeParser: Expected end of line or comment")
 		if (token.Value == "\n"):
 			pass
 		elif (token.Value == "#"):
@@ -571,19 +718,17 @@ class IncludeStatement(Statement):
 			while True:
 				token = yield
 				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"): break
+					if (token.Value == "\n"):			break
 				commentText += token.Value
 		else:
-			raise MismatchingParserResult("VerilogParser: Expected end of line or comment")
+			raise MismatchingParserResult("IncludeParser: Expected end of line or comment")
 		
 		# construct result
 		result = cls(fileName, commentText)
-		if DEBUG: print("IncludeParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
 	
 	def __str__(self, indent=0):
-		_indent = "  " * indent
-		return "{0}Include \"{1}\"".format(_indent, self._fileName)
+		return "{0}Include \"{1}\"".format("  " * indent, self._fileName)
 
 # ==============================================================================
 # Conditional Statements
@@ -595,24 +740,17 @@ class IfStatement(ConditionalBlockStatement):
 
 	@classmethod
 	def GetParser(cls):
-		if DEBUG: print("init IfStatementParser")
-	
 		# match for IF clause
 		# ==========================================================================
 		# match for optional whitespace
 		token = yield
-		if DEBUG2: print("IfStatementParser: token={0} if".format(token))
-		if isinstance(token, SpaceToken):
-			token = yield
-			if DEBUG2: print("IfStatementParser: token={0}".format(token))
-		
-		if DEBUG2: print("IfStatementParser: token={0}".format(token))
+		if isinstance(token, SpaceToken):						token = yield
+
 		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
 		if (token.Value.lower() != "if"):						raise MismatchingParserResult()
 		
 		# match for whitespace
 		token = yield
-		if DEBUG2: print("IfStatementParser: token={0}".format(token))
 		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult()
 		
 		# match for expression
@@ -626,7 +764,6 @@ class IfStatement(ConditionalBlockStatement):
 				token = yield
 				parser.send(token)
 		except MatchingParserResult as ex:
-			if DEBUG2: print("IfStatementParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
 			expressionRoot = ex.value
 		
 		# match for whitespace
@@ -635,13 +772,13 @@ class IfStatement(ConditionalBlockStatement):
 		
 		# match for keyword: THEN
 		token = yield
-		if DEBUG2: print("IfStatementParser: token={0}".format(token))
 		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
-		if (token.Value.lower() != "then"):						raise MismatchingParserResult()
+		if (token.Value.lower() != "then"):					raise MismatchingParserResult()
 		
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):						token = yield
+
 		# match for delimiter sign: \n
 		commentText = ""
 		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("IfStatementParser: Expected end of line or comment")
@@ -652,7 +789,7 @@ class IfStatement(ConditionalBlockStatement):
 			while True:
 				token = yield
 				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"): break
+					if (token.Value == "\n"):		break
 				commentText += token.Value
 		else:
 			raise MismatchingParserResult("IfStatementParser: Expected end of line or comment")
@@ -668,18 +805,16 @@ class IfStatement(ConditionalBlockStatement):
 			while True:
 				token = yield
 				parser.send(token)
-		except MatchingParserResult as ex:
-			if DEBUG2: print("IfStatementParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
-			
-		if DEBUG: print("IfStatementParser: matched {0}".format(result))
-		raise MatchingParserResult(result)
-	
+		except MatchingParserResult:
+			raise MatchingParserResult(result)
+
 	def __str__(self, indent=0):
 		_indent = "  " * indent
 		buffer = _indent + "IfStatement " + self._expression.__str__()
 		for stmt in self._statements:
 			buffer += "\n{0}{1}".format(_indent, stmt.__str__(indent + 1))
 		return buffer
+
 
 class ElseIfStatement(ConditionalBlockStatement):
 	def __init__(self, expression, commentText):
@@ -688,23 +823,17 @@ class ElseIfStatement(ConditionalBlockStatement):
 
 	@classmethod
 	def GetParser(cls):
-		if DEBUG: print("init ElseIfStatementParser")
-	
 		# match for multiple ELSEIF clauses
 		# ==========================================================================
 		token = yield
 		# match for optional whitespace
-		if DEBUG2: print("ElseIfStatementParser: token={0} elseif".format(token))
-		if isinstance(token, SpaceToken):
-			token = yield
-			if DEBUG2: print("ElseIfStatementParser: token={0}".format(token))
-		
+		if isinstance(token, SpaceToken):						token = yield
+
 		# match for keyword: ELSEIF
 		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
 		if (token.Value.lower() != "elseif"):				raise MismatchingParserResult()
 		# match for whitespace
 		token = yield
-		if DEBUG2: print("ElseIfStatementParser: token={0}".format(token))
 		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult()
 		
 		# match for expression
@@ -718,7 +847,6 @@ class ElseIfStatement(ConditionalBlockStatement):
 				token = yield
 				parser.send(token)
 		except MatchingParserResult as ex:
-			if DEBUG2: print("ElseIfStatementParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
 			expressionRoot = ex.value
 		
 		# match for whitespace
@@ -727,7 +855,6 @@ class ElseIfStatement(ConditionalBlockStatement):
 		
 		# match for keyword: THEN
 		token = yield
-		if DEBUG2: print("ElseIfStatementParser: token={0}".format(token))
 		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
 		if (token.Value.lower() != "then"):						raise MismatchingParserResult()
 		
@@ -744,7 +871,7 @@ class ElseIfStatement(ConditionalBlockStatement):
 			while True:
 				token = yield
 				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"): break
+					if (token.Value == "\n"):		break
 				commentText += token.Value
 		else:
 			raise MismatchingParserResult("ElseIfStatementParser: Expected end of line or comment")
@@ -760,19 +887,17 @@ class ElseIfStatement(ConditionalBlockStatement):
 			while True:
 				token = yield
 				parser.send(token)
-		except MatchingParserResult as ex:
-			if DEBUG2: print("ElseIfStatementParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
-		
-		if DEBUG: print("ElseIfStatementParser: matched {0}".format(result))
-		raise MatchingParserResult(result)
-	
+		except MatchingParserResult:
+			raise MatchingParserResult(result)
+
 	def __str__(self, indent=0):
 		_indent = "  " * indent
 		buffer = _indent + "ElseIfStatement" + self._expression.__str__()
 		for stmt in self._statements:
 			buffer += "\n{0}{1}".format(_indent, stmt.__str__(indent + 1))
 		return buffer
-		
+
+
 class ElseStatement(BlockStatement):
 	def __init__(self, commentText):
 		super().__init__()
@@ -780,17 +905,12 @@ class ElseStatement(BlockStatement):
 
 	@classmethod
 	def GetParser(cls):
-		if DEBUG: print("init ElseStatementParser")
-	
 		# match for ELSE clause
 		# ==========================================================================
 		# match for optional whitespace
 		token = yield
-		if DEBUG2: print("ElseStatementParser: token={0} else".format(token))
-		if isinstance(token, SpaceToken):
-			token = yield
-			if DEBUG2: print("ElseStatementParser: token={0}".format(token))
-	
+		if isinstance(token, SpaceToken):						token = yield
+
 		# match for keyword: ELSE
 		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
 		if (token.Value.lower() != "else"):					raise MismatchingParserResult()
@@ -824,19 +944,17 @@ class ElseStatement(BlockStatement):
 			while True:
 				token = yield
 				parser.send(token)
-		except MatchingParserResult as ex:
-			if DEBUG2: print("ElseStatementParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
+		except MatchingParserResult:
+			raise MatchingParserResult(result)
 
-		if DEBUG: print("ElseStatementParser: matched {0}".format(result))
-		raise MatchingParserResult(result)
-	
 	def __str__(self, indent=0):
 		_indent = "  " * indent
 		buffer = _indent + "ElseStatement"
 		for stmt in self._statements:
 			buffer += "\n{0}{1}".format(_indent, stmt.__str__(indent + 1))
 		return buffer
-		
+
+
 class IfElseIfElseStatement(Statement):
 	def __init__(self):
 		super().__init__()
@@ -846,8 +964,6 @@ class IfElseIfElseStatement(Statement):
 
 	@classmethod
 	def GetParser(cls):
-		if DEBUG: print("init IfElseIfElseStatementParser")
-		
 		# construct result
 		result = cls()
 	
@@ -860,7 +976,6 @@ class IfElseIfElseStatement(Statement):
 				token = yield
 				parser.send(token)
 		except MatchingParserResult as ex:
-			if DEBUG: print("IfElseIfElseStatementParser: matched {0} got {1} for IF clause".format(ex.__class__.__name__, ex.value))
 			result._ifStatement = ex.value
 		
 		# match for multiple ELSEIF clauses
@@ -876,13 +991,12 @@ class IfElseIfElseStatement(Statement):
 						token = yield
 						parser.send(token)
 				except MatchingParserResult as ex:
-					if DEBUG: print("IfElseIfElseStatementParser: matched {0} got {1} for ELSEIF clause".format(ex.__class__.__name__, ex.value))
 					if (result._elseIfStatements is None):
 						result._elseIfStatements = []
 					result._elseIfStatements.append(ex.value)
 		except MismatchingParserResult as ex:
-			if DEBUG: print("IfElseIfElseStatementParser: mismatch {0} in ELSEIF clause. Message: {1}".format(ex.__class__.__name__, ex.value))
-		
+			pass
+
 		# match for ELSE clause
 		# ==========================================================================
 		# match for inner statements
@@ -895,21 +1009,16 @@ class IfElseIfElseStatement(Statement):
 				token = yield
 				parser.send(token)
 		except MatchingParserResult as ex:
-			if DEBUG: print("IfElseIfElseStatementParser: matched {0} got {1} for ELSE clause".format(ex.__class__.__name__, ex.value))
 			result._elseStatement = ex.value
 		except MismatchingParserResult as ex:
-			if DEBUG: print("IfElseIfElseStatementParser: mismatch {0} in ELSE clause. Message: {1}".format(ex.__class__.__name__, ex.value))
-		
+			pass
+
 		# match for END IF clause
 		# ==========================================================================
 		# match for optional whitespace
-		if DEBUG2: print("IfElseIfElseStatementParser: token={0} end if".format(token))
-		if isinstance(token, SpaceToken):
-			token = yield
-			if DEBUG2: print("IfElseIfElseStatementParser: token={0}".format(token))
-	
+		if isinstance(token, SpaceToken):						token = yield
+
 		# match for keyword: END
-		if DEBUG2: print("IfElseIfElseStatementParser: token={0} expected 'end'".format(token))
 		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
 		if (token.Value.lower() != "end"):					raise MismatchingParserResult()
 	
@@ -919,7 +1028,6 @@ class IfElseIfElseStatement(Statement):
 	
 		# match for keyword: IF
 		token = yield
-		if DEBUG2: print("IfElseIfElseStatementParser: token={0}".format(token))
 		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
 		if (token.Value.lower() != "if"):						raise MismatchingParserResult()
 		
@@ -941,7 +1049,6 @@ class IfElseIfElseStatement(Statement):
 		else:
 			raise MismatchingParserResult("IfElseIfElseStatementParser: Expected end of line or comment")
 		
-		if DEBUG: print("IfElseIfElseStatementParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
 	
 	def __str__(self, indent=0):
@@ -959,8 +1066,6 @@ class IfElseIfElseStatement(Statement):
 class Document(BlockStatement):
 	@classmethod
 	def GetParser(cls):
-		if DEBUG: print("init DocumentParser")
-		
 		result = cls()
 		parser = cls.GetRepeatParser(result.AddStatement, BlockedStatement.GetParser)
 		parser.send(None)
@@ -970,12 +1075,10 @@ class Document(BlockStatement):
 				token = yield
 				parser.send(token)
 		except MatchingParserResult as ex:
-			if DEBUG: print("DocumentParser: matched {0} got {1}".format(ex.__class__.__name__, ex.value))
 			raise MatchingParserResult(result)
 	
 	def __str__(self, indent=0):
-		_indent = "  " * indent
-		buffer = _indent + "Document"
+		buffer = "  " * indent + "Document"
 		for stmt in self._statements:
 			buffer += "\n{0}".format(stmt.__str__(indent + 1))
 		return buffer
@@ -984,6 +1087,9 @@ BlockedStatement.AddChoice(IncludeStatement)
 BlockedStatement.AddChoice(LibraryStatement)
 BlockedStatement.AddChoice(VHDLStatement)
 BlockedStatement.AddChoice(VerilogStatement)
+BlockedStatement.AddChoice(UcfStatement)
+BlockedStatement.AddChoice(XdcStatement)
+BlockedStatement.AddChoice(SdcStatement)
 BlockedStatement.AddChoice(CocotbStatement)
 BlockedStatement.AddChoice(ReportStatement)
 BlockedStatement.AddChoice(IfElseIfElseStatement)

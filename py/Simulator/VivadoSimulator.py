@@ -61,6 +61,12 @@ class Simulator(BaseSimulator):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
 		self._guiMode =				guiMode
+
+		self._entity =				None
+		self._testbenchFQN =	None
+		self._vhdlVersion =		None
+		self._vhdlGenerics =	None
+
 		self._vivado =				None
 
 		self._LogNormal("preparing simulation environment...")
@@ -156,7 +162,7 @@ class Simulator(BaseSimulator):
 		xSimProjectFileContent = ""
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
 			if (not file.Path.exists()):									raise SimulatorException("Can not add '{0}' to xSim project file.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
-			xSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
+			xSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(file.LibraryName, str(file.Path))
 						
 		# write xSim project file
 		prjFilePath = self._tempPath / (testbenchName + ".prj")
@@ -179,9 +185,9 @@ class Simulator(BaseSimulator):
 		for file in vhdlFiles:
 			if (not file.Path.exists()):									raise SimulatorException("Can not add '{0}' to xSim project file.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
 			if (self._vhdlVersion == VHDLVersion.VHDL2008):
-				xSimProjectFileContent += "vhdl2008 {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
+				xSimProjectFileContent += "vhdl2008 {0} \"{1}\"\n".format(file.LibraryName, str(file.Path))
 			else:
-				xSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
+				xSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(file.LibraryName, str(file.Path))
 
 		# write xSim project file
 		prjFilePath = self._tempPath / (testbenchName + ".prj")

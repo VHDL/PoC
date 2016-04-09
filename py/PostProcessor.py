@@ -42,7 +42,7 @@ from PoC.Entity import Entity, FQN
 from Base.Exceptions import PlatformNotSupportedException, EnvironmentException, NotConfiguredException
 from Processor.XST import *
 
-class PostProcessor
+class PostProcessor:
 	headLine = "The PoC-Library - PostProcessor Frontend"
 
 	#__netListConfigFileName = "configuration.ini"

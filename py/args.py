@@ -239,7 +239,7 @@ class Class0:
 	)
 
 class Meta(type):
-	def __new__(mcls, name, bases, members):
+	def __new__(mcs, name, bases, members):
 		for n in members :
 			m = members[n]
 			if isinstance(m, CommandLineArgumentList) :
@@ -251,7 +251,7 @@ class Meta(type):
 					newMembers[P.__name__] =	p
 					m.insert(i, p)
 
-		return super(Meta, mcls).__new__(mcls, name, bases, newMembers)
+		return super(Meta, mcs).__new__(mcs, name, bases, newMembers)
 
 	# def __init__(mcls, name, bases, members):
 		# print("init: \n  " + "\n  ".join([(key + " -> " + str(members[key])) for key in members]))

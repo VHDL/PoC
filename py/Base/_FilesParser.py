@@ -120,6 +120,7 @@ class TSTExpressionMixIn:
 		
 class TSTExpressionRootMixIn(TSTExpressionMixIn):
 	def __init__(self):
+		super().__init__()
 		self._expression =	None
 	
 	def parsePyParsingASTNode(self, ASTNode):
@@ -354,7 +355,7 @@ class TSTNodeIfStatement(TSTAbstractIfThenElsePart, TSTExpressionRootMixIn):
 			if ((True) and (stmtList.getName() == "statement")):
 				dbg.inc()
 				TSTExpressionRootMixIn.parsePyParsingASTNode(self, exprRoot)
-				TSTStatementListMixIn.parsePyParsingASTNode(self, stmtList);
+				TSTStatementListMixIn.parsePyParsingASTNode(self, stmtList)
 				dbg.dec()
 			else:
 				print(("| " * dbg.val()) + "TSTNodeIfStatement.parsePyParsingASTNode: False unknown subnodes.")
@@ -383,7 +384,7 @@ class TSTNodeElseIfStatement(TSTAbstractIfThenElsePart, TSTExpressionRootMixIn):
 			if ((True) and (stmtList.getName() == "statement")):
 				dbg.inc()
 				TSTExpressionRootMixIn.parsePyParsingASTNode(self, exprRoot)
-				TSTStatementListMixIn.parsePyParsingASTNode(self, stmtList);
+				TSTStatementListMixIn.parsePyParsingASTNode(self, stmtList)
 				dbg.dec()
 			else:
 				print(("| " * dbg.val()) + "TSTNodeElseIfStatement.parsePyParsingASTNode: False unknown subnodes.")
@@ -408,7 +409,7 @@ class TSTNodeElseStatement(TSTAbstractIfThenElsePart):
 			# if ((exprRoot.getName() == "expression") and (stmtList.getName() == "statement")):
 			if (stmtList.getName() == "statement"):
 				dbg.inc()
-				TSTStatementListMixIn.parsePyParsingASTNode(self, stmtList);
+				TSTStatementListMixIn.parsePyParsingASTNode(self, stmtList)
 				dbg.dec()
 			else:
 				print(("| " * dbg.val()) + "TSTNodeElseStatement.parsePyParsingASTNode: False unknown subnodes.")
@@ -426,7 +427,8 @@ class TSTNodeExpression(TSTAbstractNode):
 	
 class TSTNodeNotExpression(TSTNodeExpression, TSTUnaryExpressionMixIn):
 	def __init__(self):
-		TSTExpressionMixIn.__init__(self)
+		super().__init__()
+		TSTUnaryExpressionMixIn.__init__(self)
 	
 	def dump(self):
 		return "(NOT {0})".format(self._child.dump())

@@ -75,9 +75,7 @@ class Token:
 class CharacterToken(Token):
 	def __init__(self, value, start):
 		if (len(value) != 1):		raise ValueError()
-		self._value =	value
-		self._start =	start
-		self._end =		start
+		super().__init__(value, strart=start, end=start)
 
 	def __len__(self):
 		return 1
@@ -226,8 +224,8 @@ class Tokenizer:
 		# end for
 	
 class CodeDOMMeta(type):
-	def parse(mcls, string):
-		result = mcls()
+	def parse(mcs, string):
+		result = mcs()
 		return result
 	
 	def GetSequenceParser(self):

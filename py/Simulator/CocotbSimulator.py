@@ -64,6 +64,9 @@ class Simulator(BaseSimulator):
 
 		self._guiMode =				guiMode
 
+		self._entity =				None
+		self._testbenchFQN =	None
+
 		self._LogNormal("preparing simulation environment...")
 		self._PrepareSimulationEnvironment()
 
