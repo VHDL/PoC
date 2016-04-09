@@ -252,5 +252,5 @@ class FilesParserMixIn:
 	@property
 	def Warnings(self):		return self._warnings
 
-	def __str__(self):		return "FILES file: '{0}'".format(str(self._file))
+	def __str__(self):		return "FILES file: '{0!s}'".format(self._file)
 	def __repr__(self):		return self.__str__()

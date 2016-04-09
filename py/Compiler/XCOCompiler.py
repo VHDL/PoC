@@ -49,9 +49,9 @@ from pathlib								import Path
 from textwrap								import dedent
 
 from Base.Exceptions				import NotConfiguredException, PlatformNotSupportedException
-from Base.Project						import FileTypes, VHDLVersion, Environment, ToolChain, Tool, FileListFile
+from Base.Project						import FileTypes, VHDLVersion, Environment, ToolChain, Tool
 from Base.Compiler					import Compiler as BaseCompiler, CompilerException
-from PoC.Project					import Project as PoCProject
+from PoC.Project						import Project as PoCProject, FileListFile
 from ToolChains.Xilinx.ISE	import ISE
 
 

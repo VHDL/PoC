@@ -36,7 +36,7 @@ from pathlib						import Path
 
 from Base.Exceptions		import CommonException
 from Base.VHDLParser		import VHDLParserMixIn
-from Parser.FilesParser	import FilesParserMixIn, VHDLSourceFileMixIn, VerilogSourceFileMixIn, CocotbSourceFileMixIn
+from Parser.FilesParser	import VHDLSourceFileMixIn, VerilogSourceFileMixIn, CocotbSourceFileMixIn
 from PoC.Config					import Board, Device
 from lib.Functions			import merge
 
@@ -50,6 +50,7 @@ class FileTypes(Enum):
 	Text =								1
 	ProjectFile =					2
 	FileListFile =				3
+	RulesFile =						4
 	SourceFile =					10
 	VHDLSourceFile =			11
 	VerilogSourceFile =		12
@@ -548,45 +549,6 @@ class ProjectFile(File):
 		return "Project file: '{0!s}".format(self._file)
 
 
-class FileListFile(File, FilesParserMixIn):
-	_FileType = FileTypes.FileListFile
-
-	def __init__(self, file, project = None, fileSet = None):
-		super().__init__(file, project=project, fileSet=fileSet)
-		FilesParserMixIn.__init__(self)
-
-		self._variables =								None
-
-		# self.__classInclude
-		self._classFileListFile =				FileListFile
-		self._classVHDLSourceFile =			VHDLSourceFile
-		self._classVerilogSourceFile =	VerilogSourceFile
-		self._classCocotbSourceFile =		CocotbSourceFile
-
-	def Parse(self):
-		# print("FileListFile.Parse:")
-		if (self._fileSet is None):											raise CommonException("File '{0}' is not associated to a fileset.".format(str(self._file)))
-		if (self._project is None):											raise CommonException("File '{0}' is not associated to a project.".format(str(self._file)))
-		if (self._project.RootDirectory is None):				raise CommonException("No RootDirectory configured for this project.")
-			
-		# prepare FilesParserMixIn environment
-		self._rootDirectory = self.Project.RootDirectory
-		self._variables =			self.Project._GetVariables()
-		self._Parse()
-		self._Resolve()
-	
-	def CopyFilesToFileSet(self):
-		for file in self._files:
-			self._fileSet.AddFile(file)
-
-	def CopyExternalLibraries(self):
-		for lib in self._libraries:
-			self._project.AddExternalVHDLLibraries(lib)
-			
-	def __str__(self):
-		return "FileList file: '{0!s}".format(self._file)
-
-
 class SourceFile(File):
 	_FileType = FileTypes.SourceFile
 
@@ -599,17 +561,13 @@ class ConstraintFile(File):
 	def __str__(self):
 		return "Constraint file: '{0!s}".format(self._file)
 
-class HDLFileMixIn():
-	def __init__(self):
-		pass
 
-class VHDLSourceFile(SourceFile, VHDLSourceFileMixIn, VHDLParserMixIn):		# HDLFileMixIn, VHDLParserMixIn):
+class VHDLSourceFile(SourceFile, VHDLSourceFileMixIn, VHDLParserMixIn):
 	_FileType = FileTypes.VHDLSourceFile
 
 	def __init__(self, file, vhdlLibraryName, project = None, fileSet = None):
 		super().__init__(file, project=project, fileSet=fileSet)
 		VHDLSourceFileMixIn.__init__(self, file, vhdlLibraryName.lower())
-		# HDLFileMixIn.__init__(self)
 		VHDLParserMixIn.__init__(self)
 	
 	def Parse(self):
