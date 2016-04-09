@@ -801,9 +801,12 @@ class IfStatement(ConditionalBlockStatement):
 		parser = cls.GetRepeatParser(result.AddStatement, BlockedStatement.GetParser)
 		parser.send(None)
 		
-		while True:
-			token = yield
-			parser.send(token)
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult:
+			raise MatchingParserResult(result)
 
 	def __str__(self, indent=0):
 		_indent = "  " * indent
@@ -880,9 +883,12 @@ class ElseIfStatement(ConditionalBlockStatement):
 		parser = cls.GetRepeatParser(result.AddStatement, BlockedStatement.GetParser)
 		parser.send(None)
 		
-		while True:
-			token = yield
-			parser.send(token)
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult:
+			raise MatchingParserResult(result)
 
 	def __str__(self, indent=0):
 		_indent = "  " * indent
@@ -934,9 +940,12 @@ class ElseStatement(BlockStatement):
 		parser = cls.GetRepeatParser(result.AddStatement, BlockedStatement.GetParser)
 		parser.send(None)
 		
-		while True:
-			token = yield
-			parser.send(token)
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult:
+			raise MatchingParserResult(result)
 
 	def __str__(self, indent=0):
 		_indent = "  " * indent
@@ -1061,12 +1070,12 @@ class Document(BlockStatement):
 		parser = cls.GetRepeatParser(result.AddStatement, BlockedStatement.GetParser)
 		parser.send(None)
 		
-		# try:
-		while True:
-			token = yield
-			parser.send(token)
-		# except MatchingParserResult as ex:
-		# 	raise MatchingParserResult(result)
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			raise MatchingParserResult(result)
 	
 	def __str__(self, indent=0):
 		buffer = "  " * indent + "Document"

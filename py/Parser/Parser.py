@@ -102,9 +102,7 @@ class Token:
 class CharacterToken(Token):
 	def __init__(self, value, start):
 		if (len(value) != 1):		raise ValueError()
-		self._value =	value
-		self._start =	start
-		self._end =		start
+		super().__init__(value, start=start, end=start)
 
 	def __len__(self):
 		return 1
@@ -337,7 +335,7 @@ class CodeDOMObject(metaclass=CodeDOMMeta):
 				if printChar: print(Fore.LIGHTBLUE_EX + str(token) + Fore.RESET)
 				parser.send(token)
 			
-			# FIXME: print("send empty token")
+			# XXX: print("send empty token")
 			parser.send(None)
 		except MatchingParserResult as ex:
 			return ex.value

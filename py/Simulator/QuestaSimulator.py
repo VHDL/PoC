@@ -58,6 +58,12 @@ class Simulator(BaseSimulator):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
 		self._guiMode =				guiMode
+
+		self._entity =				None
+		self._testbenchFQN =	None
+		self._vhdlVersion =		None
+		self._vhdlGenerics =	None
+
 		self._questa =				None
 
 		self._LogNormal("preparing simulation environment...")
@@ -169,7 +175,7 @@ class Simulator(BaseSimulator):
 			if (not file.Path.exists()):								raise SimulatorException("Can not analyse '{0}'.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
 
 			vcomLogFile = self._tempPath / (file.Path.stem + ".vcom.log")
-			vcom.Parameters[vcom.SwitchVHDLLibrary] =	file.VHDLLibraryName
+			vcom.Parameters[vcom.SwitchVHDLLibrary] =	file.LibraryName
 			vcom.Parameters[vcom.ArgLogFile] =				vcomLogFile
 			vcom.Parameters[vcom.ArgSourceFile] =			file.Path
 

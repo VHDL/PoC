@@ -58,6 +58,12 @@ class Simulator(BaseSimulator):
 		super().__init__(host, showLogs, showReport)
 
 		self._guiMode =				guiMode
+
+		self._entity =				None
+		self._testbenchFQN =	None
+		self._vhdlVersion =		None
+		self._vhdlGenerics =	None
+
 		self._activeHDL =			None
 
 		self._LogNormal("preparing simulation environment...")
@@ -169,7 +175,7 @@ class Simulator(BaseSimulator):
 		# run acom compile for each VHDL file
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
 			if (not file.Path.exists()):									raise SimulatorException("Can not analyse '{0}'.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
-			acom.Parameters[acom.SwitchVHDLLibrary] =	file.VHDLLibraryName
+			acom.Parameters[acom.SwitchVHDLLibrary] =	file.LibraryName
 			acom.Parameters[acom.ArgSourceFile] =			file.Path
 			# set a per file log-file with '-l', 'vcom.log',
 			try:

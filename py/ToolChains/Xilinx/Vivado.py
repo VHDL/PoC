@@ -32,8 +32,6 @@
 # ==============================================================================
 #
 # entry point
-from Base.Project import Project as BaseProject, ProjectFile, ConstraintFile
-
 
 if __name__ != "__main__":
 	# place library initialization code here
@@ -48,11 +46,12 @@ from pathlib							import Path
 from os										import environ
 
 from Base.Exceptions			import PlatformNotSupportedException
-from Base.ToolChain import ToolChainException
-from Base.Executable							import Executable
-from Base.Executable							import ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, StringArgument, CommandLineArgumentList
 from Base.Logging					import LogEntry, Severity
 from Base.Configuration 	import Configuration as BaseConfiguration, ConfigurationException, SkipConfigurationException
+from Base.Project					import Project as BaseProject, ProjectFile, ConstraintFile, FileTypes
+from Base.Executable			import Executable
+from Base.Executable			import ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, StringArgument, CommandLineArgumentList
+from Base.ToolChain				import ToolChainException
 
 
 class VivadoException(ToolChainException):
@@ -84,6 +83,9 @@ class Configuration(BaseConfiguration):
 			}
 		}
 	}
+
+	def __init__(self):
+		super().__init__()
 
 	def GetSections(self, Platform):
 		pass
@@ -573,5 +575,8 @@ class VivadoProjectFile(ProjectFile):
 
 
 class XilinxDesignConstraintFile(ConstraintFile):
-	def __init__(self, file):
-		super().__init__(file)
+	_FileType = FileTypes.XdcConstraintFile
+
+	def __str__(self):
+		return "XDC file: '{0!s}".format(self._file)
+

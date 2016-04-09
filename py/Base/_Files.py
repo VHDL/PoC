@@ -395,7 +395,7 @@ class ASTNodeIfStatement(ASTAbstractIfThenElsePart, ASTMixinExpressionRoot):
 			# if ((exprRoot.getName() == "expression") and (stmtList.getName() == "statement")):
 			if ((True) and (stmtList.getName() == "statement")):
 				ASTMixinExpressionRoot.parsePyParsingASTNode(self, exprRoot)
-				ASTMixinStatementList.parsePyParsingASTNode(self, stmtList);
+				ASTMixinStatementList.parsePyParsingASTNode(self, stmtList)
 			else:
 				print("ASTNodeIfStatement.parsePyParsingASTNode: False unknown subnodes.")
 		else:
@@ -422,7 +422,7 @@ class ASTNodeElseIfStatement(ASTAbstractIfThenElsePart, ASTMixinExpressionRoot):
 			# if ((exprRoot.getName() == "expression") and (stmtList.getName() == "statement")):
 			if ((True) and (stmtList.getName() == "statement")):
 				ASTMixinExpressionRoot.parsePyParsingASTNode(self, exprRoot)
-				ASTMixinStatementList.parsePyParsingASTNode(self, stmtList);
+				ASTMixinStatementList.parsePyParsingASTNode(self, stmtList)
 			else:
 				print("ASTNodeElseIfStatement.parsePyParsingASTNode: False unknown subnodes.")
 		else:
@@ -445,7 +445,7 @@ class ASTNodeElseStatement(ASTAbstractIfThenElsePart):
 			stmtList = ASTAbstractNode[0]
 			# if ((exprRoot.getName() == "expression") and (stmtList.getName() == "statement")):
 			if (stmtList.getName() == "statement"):
-				ASTMixinStatementList.parsePyParsingASTNode(self, stmtList);
+				ASTMixinStatementList.parsePyParsingASTNode(self, stmtList)
 			else:
 				print("ASTNodeElseStatement.parsePyParsingASTNode: False unknown subnodes.")
 		else:
@@ -462,7 +462,8 @@ class ASTNodeExpression(ASTAbstractNode):
 	
 class ASTNodeNotExpression(ASTNodeExpression, ASTMixinUnaryExpression):
 	def __init__(self):
-		ASTMixinExpression.__init__(self)
+		super().__init__()
+		ASTMixinUnaryExpression.__init__(self)
 	
 	def dump(self):
 		return "(NOT {0})".format(self._child.dump())

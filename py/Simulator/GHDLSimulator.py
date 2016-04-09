@@ -61,6 +61,12 @@ class Simulator(BaseSimulator):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
 		self._guiMode =				guiMode
+
+		self._entity =				None
+		self._testbenchFQN =	None
+		self._vhdlVersion =		None
+		self._vhdlGenerics =	None
+
 		self._tempPath =			None
 		self._ghdl =					None
 
@@ -189,7 +195,7 @@ class Simulator(BaseSimulator):
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
 			if (not file.Path.exists()):									raise SimulatorException("Can not analyse '{0}'.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
 
-			ghdl.Parameters[ghdl.SwitchVHDLLibrary] =			file.VHDLLibraryName
+			ghdl.Parameters[ghdl.SwitchVHDLLibrary] =			file.LibraryName
 			ghdl.Parameters[ghdl.ArgSourceFile] =					file.Path
 			try:
 				ghdl.Analyze()

@@ -60,6 +60,11 @@ class Simulator(BaseSimulator):
 		super().__init__(host, showLogs, showReport)
 
 		self._guiMode =				guiMode
+
+		self._entity =				None
+		self._testbenchFQN =	None
+		self._vhdlGenerics =	None
+
 		self._ise =						None
 
 		self._LogNormal("preparing simulation environment...")
@@ -83,13 +88,6 @@ class Simulator(BaseSimulator):
 		self._LogVerbose("  Changing working directory to temporary directory.")
 		self._LogDebug("    cd \"{0}\"".format(str(self._tempPath)))
 		chdir(str(self._tempPath))
-
-		# if (self._host.platform == "Windows"):
-			# self.__executables['vhcomp'] =	"vhpcomp.exe"
-			# self.__executables['fuse'] =		"fuse.exe"
-		# elif (self._host.platform == "Linux"):
-			# self.__executables['vhcomp'] =	"vhpcomp"
-			# self.__executables['fuse'] =		"fuse"
 
 	def PrepareSimulator(self, binaryPath, version):
 		# create the GHDL executable factory
@@ -162,7 +160,7 @@ class Simulator(BaseSimulator):
 		iSimProjectFileContent = ""
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
 			if (not file.Path.exists()):									raise SimulatorException("Can not add '{0}' to iSim project file.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
-			iSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
+			iSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(file.LibraryName, str(file.Path))
 
 		# write iSim project file
 		prjFilePath = self._tempPath / (testbenchName + ".prj")
@@ -183,7 +181,7 @@ class Simulator(BaseSimulator):
 		iSimProjectFileContent = ""
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
 			if (not file.Path.exists()):									raise SimulatorException("Can not add '{0}' to iSim project file.".format(str(file.Path))) from FileNotFoundError(str(file.Path))
-			iSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(file.VHDLLibraryName, str(file.Path))
+			iSimProjectFileContent += "vhdl {0} \"{1}\"\n".format(file.LibraryName, str(file.Path))
 
 		# write iSim project file
 		prjFilePath = self._tempPath / (testbenchName + ".prj")
