@@ -43,21 +43,20 @@ else:
 
 # load dependencies
 from configparser						import NoSectionError
-from os											import chdir
 import shutil
 
 from colorama								import Fore as Foreground
 
 # from Base.Exceptions				import PlatformNotSupportedException, NotConfiguredException
-from Base.Project						import FileTypes, VHDLVersion, Environment, ToolChain, Tool, FileListFile
-from Base.Simulator					import SimulatorException, Simulator as BaseSimulator, VHDLTestbenchLibraryName
-from Parser.Parser					import ParserException
-from PoC.Project						import Project as PoCProject
+from Base.Project						import FileTypes, VHDLVersion, Environment, ToolChain, Tool
+from Base.Simulator					import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME
 from ToolChains.GNU					import Make
 
 
 class Simulator(BaseSimulator):
-	__guiMode =					False
+	_TOOL_CHAIN =						ToolChain.Cocotb
+	_TOOL =									Tool.Cocotb_QuestaSim
+	_COCOTB_SIMBUILD_DIRECTORY = "sim_build"
 
 	def __init__(self, host, showLogs, showReport, guiMode):
 		super().__init__(host, showLogs, showReport)
@@ -75,97 +74,48 @@ class Simulator(BaseSimulator):
 		return self._tempPath
 
 	def _PrepareSimulationEnvironment(self):
-		self._LogNormal("  preparing simulation environment...")
-		
-		# create temporary directory for Cocotb if not existent
+		self._LogNormal("preparing simulation environment...")
 		self._tempPath = self.Host.Directories["CocotbTemp"]
-		if (not (self._tempPath).exists()):
-			self._LogVerbose("  Creating temporary directory for simulator files.")
-			self._LogDebug("    Temporary directors: {0}".format(str(self._tempPath)))
-			self._tempPath.mkdir(parents=True)
+		super()._PrepareSimulationEnvironment()
 
-		# change working directory to temporary Cocotb path
-		self._LogVerbose("  Changing working directory to temporary directory.")
-		self._LogDebug("    cd \"{0}\"".format(str(self._tempPath)))
-		chdir(str(self._tempPath))
+		simBuildPath = self._tempPath / self._COCOTB_SIMBUILD_DIRECTORY
+		# create temporary directory for GHDL if not existent
+		if (not (simBuildPath).exists()):
+			self._LogVerbose("  Creating build directory for simulator files.")
+			self._LogDebug("    Build directory: {0!s}".format(simBuildPath))
+			simBuildPath.mkdir(parents=True)
 
 		# copy modelsim.ini from precompiled directory if exist
-		simBuildPath = self._tempPath / "sim_build"
-		try:
-			simBuildPath.mkdir(parents=True)
-		except FileExistsError:
-			pass
-
 		modelsimIniPath = self.Host.Directories["vSimPrecompiled"] / "modelsim.ini"
 		if modelsimIniPath.exists():
-			self._LogVerbose("  Copying modelsim.ini from precompiled to temporary directory.")
+			self._LogVerbose("  Copying modelsim.ini from precompiled into build directory.")
 			self._LogDebug("    copy {0!s} {1!s}".format(modelsimIniPath, simBuildPath))
 			shutil.copy(str(modelsimIniPath), str(simBuildPath))
+		else:
+			self._LogDebug("  No 'modelsim.ini' in precompiled directory found. QuestaSim will use the default modelsim.ini.")
 
 	def PrepareSimulator(self):
 		# create the Cocotb executable factory
 		self._LogVerbose("  Preparing Cocotb simulator.")
 
-	def RunAll(self, pocEntities, **kwargs):
-		for pocEntity in pocEntities:
-			self.Run(pocEntity, **kwargs)
-
-	def Run(self, entity, board):
+	def Run(self, entity, board, **_):
 		self._entity =				entity
 		self._testbenchFQN =	str(entity)										# TODO: implement FQN method on PoCEntity
 
 		# check testbench database for the given testbench		
 		self._LogQuiet("Testbench: {0}{1}{2}".format(Foreground.YELLOW, self._testbenchFQN, Foreground.RESET))
-		if (not self.Host.TBConfig.has_section(self._testbenchFQN)):
-			raise SimulatorException("Testbench '{0}' not found.".format(self._testbenchFQN)) from NoSectionError(self._testbenchFQN)
 
 		# setup all needed paths to execute fuse
-		testbenchName =						self.Host.TBConfig[self._testbenchFQN]['TestbenchModule']
-		fileListFilePath =				self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['fileListFile']
+		testbench = entity.VHDLTestbench
+		self._CreatePoCProject(testbench, board)
+		self._AddFileListFile(testbench.FilesFile)
+		self._Run(testbench)
 
-		self._CreatePoCProject(testbenchName, board)
-		self._AddFileListFile(fileListFilePath)
-
-		self._Run()
-
-	def _CreatePoCProject(self, testbenchName, board):
-		# create a PoCProject and read all needed files
-		self._LogDebug("    Create a PoC project '{0}'".format(str(testbenchName)))
-		pocProject =									PoCProject(testbenchName)
-		
-		# configure the project
-		pocProject.RootDirectory =		self.Host.Directories["PoCRoot"]
-		pocProject.Environment =			Environment.Simulation
-		pocProject.ToolChain =				ToolChain.Cocotb
-		pocProject.Tool =							Tool.Cocotb_QuestaSim
-		pocProject.VHDLVersion =			VHDLVersion.VHDL08
-		pocProject.Board =						board
-
-		self._pocProject =						pocProject
-
-	def _AddFileListFile(self, fileListFilePath):
-		self._LogDebug("    Reading filelist '{0}'".format(str(fileListFilePath)))
-		# add the *.files file, parse and evaluate it
-		try:
-			fileListFile = self._pocProject.AddFile(FileListFile(fileListFilePath))
-			fileListFile.Parse()
-			fileListFile.CopyFilesToFileSet()
-			fileListFile.CopyExternalLibraries()
-			self._pocProject.ExtractVHDLLibrariesFromVHDLSourceFiles()
-		except ParserException as ex:										raise SimulatorException("Error while parsing '{0}'.".format(str(fileListFilePath))) from ex
-		
-		self._LogDebug(self._pocProject.pprint(2))
-		self._LogDebug("=" * 160)
-		if (len(fileListFile.Warnings) > 0):
-			for warn in fileListFile.Warnings:
-				self._LogWarning(warn)
-			raise SimulatorException("Found critical warnings while parsing '{0}'".format(str(fileListFilePath)))
-
-	def _Run(self):
+	def _Run(self, testbench):
 		self._LogNormal("  running simulation...")
-		cocotbTemplateFilePath = self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['CocotbMakefile']
-		topLevel= self.Host.TBConfig[self._testbenchFQN]['TopModule']
-		cocotbModule = self.Host.TBConfig[self._testbenchFQN]['CocotbModule']
+		cocotbTemplateFilePath = self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench._sectionName]['CocotbMakefile']
+		topLevel =			testbench.TopLevel
+		cocotbModule =	testbench.ModuleName
 
 		# create one VHDL line for each VHDL file
 		vhdlSources = ""
@@ -188,7 +138,7 @@ class Simulator(BaseSimulator):
 			cocotbMakefileContent = fileHandle.read()
 
 		cocotbMakefileContent = cocotbMakefileContent.format(PoCRootDirectory=str(self.Host.Directories["PoCRoot"]), VHDLSources=vhdlSources,
-																 TopLevel=topLevel, CocotbModule=cocotbModule)
+																												 TopLevel=topLevel, CocotbModule=cocotbModule)
 
 		cocotbMakefilePath = self.Host.Directories["CocotbTemp"] / "Makefile"
 		self._LogDebug("    Writing Cocotb Makefile to '{0!s}'".format(cocotbMakefilePath))

@@ -31,16 +31,17 @@
 # ==============================================================================
 #
 
-from Parser.Parser				import ParserException
-from Parser.Parser				import StringLiteral, IntegerLiteral, Identifier
-from Parser.Parser				import AndExpression, OrExpression, XorExpression, NotExpression, InExpression
-from Parser.Parser				import EqualExpression, UnequalExpression, LessThanExpression, LessThanEqualExpression, GreaterThanExpression, GreaterThanEqualExpression
-from Parser.Parser				import ExistsFunction, ListConstructorExpression
 from Parser.FilesCodeDOM	import Document
 from Parser.FilesCodeDOM	import IfElseIfElseStatement, ReportStatement
 from Parser.FilesCodeDOM	import IncludeStatement, LibraryStatement
-from Parser.FilesCodeDOM	import VHDLStatement, VerilogStatement, CocotbStatement
 from Parser.FilesCodeDOM	import UcfStatement, XdcStatement, SdcStatement
+from Parser.FilesCodeDOM	import VHDLStatement, VerilogStatement, CocotbStatement
+from lib.Parser import AndExpression, OrExpression, XorExpression, NotExpression, InExpression
+from lib.Parser import EqualExpression, UnequalExpression, LessThanExpression, LessThanEqualExpression, GreaterThanExpression, GreaterThanEqualExpression
+from lib.Parser import ExistsFunction, ListConstructorExpression
+from lib.Parser import ParserException
+from lib.Parser import StringLiteral, IntegerLiteral, Identifier
+
 
 class FileReference:
 	def __init__(self, file):
@@ -252,5 +253,5 @@ class FilesParserMixIn:
 	@property
 	def Warnings(self):		return self._warnings
 
-	def __str__(self):		return "FILES file: '{0}'".format(str(self._file))
+	def __str__(self):		return "FILES file: '{0!s}'".format(self._file)
 	def __repr__(self):		return self.__str__()
