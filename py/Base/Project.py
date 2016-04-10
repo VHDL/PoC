@@ -60,6 +60,7 @@ class FileTypes(Enum):
 	UcfConstraintFile =		21
 	XdcConstraintFile =		22
 	SdcConstraintFile =		25
+	LdcConstraintFile =		26
 
 	def Extension(self):
 		if   (self == FileTypes.Unknown):							raise CommonException("Unknown file type.")
@@ -74,6 +75,7 @@ class FileTypes(Enum):
 		elif (self == FileTypes.UcfConstraintFile):		return "ucf"
 		elif (self == FileTypes.XdcConstraintFile):		return "xdc"
 		elif (self == FileTypes.SdcConstraintFile):		return "sdc"
+		elif (self == FileTypes.LdcConstraintFile):		return "ldc"
 		else:																					raise CommonException("This is not an enum member.")
 		
 	def __str__(self):
