@@ -34,77 +34,13 @@ from lib.Parser import CodeDOMObject
 from lib.Parser import MismatchingParserResult, MatchingParserResult
 from lib.Parser import SpaceToken, CharacterToken, StringToken, NumberToken
 from lib.Parser import Statement, BlockStatement, ConditionalBlockStatement, Expressions
-
-
-class EmptyLine(CodeDOMObject):
-	def __init__(self):
-		super().__init__()
-
-	@classmethod
-	def GetParser(cls):
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):						token = yield
-
-		# match for delimiter sign: \n
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
-		if (token.Value.lower() != "\n"):						raise MismatchingParserResult()
-		
-		# construct result
-		result = cls()
-		raise MatchingParserResult(result)
-	
-	def __str__(self, indent=0):
-		return "  " * indent + "<empty>"
-
-
-class CommentLine(CodeDOMObject):
-	def __init__(self, commentText):
-		super().__init__()
-		self._commentText = commentText
-	
-	@property
-	def Text(self):
-		return self._commentText
-
-	@classmethod
-	def GetParser(cls):
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):						token = yield
-
-		# match for sign: #
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
-		if (token.Value.lower() != "#"):						raise MismatchingParserResult()
-	
-		# match for any until line end
-		commentText = ""
-		while True:
-			token = yield
-			if isinstance(token, CharacterToken):
-				if (token.Value == "\n"):			break
-			commentText += token.Value
-		
-		# construct result
-		result = cls(commentText)
-		raise MatchingParserResult(result)
-	
-	def __str__(self, indent=0):
-		return "{0}#{1}".format("  " * indent, self._commentText)
+from Parser.CodeDOM		import EmptyLine, CommentLine, BlockedStatement as BlockedStatementBase
 
 # ==============================================================================
 # Blocked Statements (Forward declaration)
 # ==============================================================================
-class BlockedStatement(Statement):
-	_allowedStatements = []
-
-	@classmethod
-	def AddChoice(cls, value):
-		cls._allowedStatements.append(value)
-	
-	@classmethod
-	def GetParser(cls):
-		return cls.GetChoiceParser(cls._allowedStatements)
+class BlockedStatement(BlockedStatementBase):
+	pass
 
 # ==============================================================================
 # File Reference Statements

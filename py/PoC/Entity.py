@@ -272,14 +272,10 @@ class Testbench(Base):
 
 		super().__init__(host, sectionName)
 
-
 	@property
-	def ModuleName(self):
-		return self._moduleName
-
+	def ModuleName(self):		return self._moduleName
 	@property
-	def FilesFile(self):
-		return self._filesFile
+	def FilesFile(self):		return self._filesFile
 
 	def _Load(self):
 		self._moduleName =	self._host.PoCConfig[self._sectionName]["TestbenchModule"]
@@ -328,10 +324,15 @@ class CocoTestbench(Testbench):
 
 class Netlist(Base):
 	def __init__(self, host, sectionName):
+		self._rulesFile =		None
 		super().__init__(host, sectionName)
 
+	@property
+	def RulesFile(self):    return self._rulesFile
+
 	def _Load(self):
-		pass
+		super()._Load()
+		self._filesFile =		Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
 
 	def __str__(self):
 		return "Netlist\n"
@@ -340,6 +341,7 @@ class Netlist(Base):
 		__indent = "  " * indent
 		buffer = "{0}Netlist:\n".format(__indent)
 		buffer += "{0}  Files: {1!s}\n".format(__indent, self._filesFile)
+		buffer += "{0}  Rules: {1!s}\n".format(__indent, self._rulesFile)
 		return buffer
 
 class FQN:

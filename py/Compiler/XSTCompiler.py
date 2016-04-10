@@ -60,7 +60,7 @@ class Compiler(BaseCompiler):
 
 
 	def oldRun(self, pocEntity, device):
-		self._pocEntity =	pocEntity
+		self._entity =	pocEntity
 		self._ipcoreFQN =	str(pocEntity)
 		
 		self._LogNormal(self._ipcoreFQN)
@@ -300,27 +300,19 @@ class Compiler(BaseCompiler):
 		self._outputPath =	self.Host.Directories["PoCNetList"] / str(self._device)
 		super()._PrepareCompilerEnvironment()
 
-	def Run(self, pocEntity, board, **_):
-		self._pocEntity =		pocEntity
-		self._ipcoreFQN =		str(pocEntity)  # TODO: implement FQN method on PoCEntity
+	def Run(self, entity, board, **_):
+		self._entity =			entity
+		self._ipcoreFQN =		str(entity)  # TODO: implement FQN method on PoCEntity
 		self._device =			board.Device
 
 		# check testbench database for the given testbench
-		self._LogQuiet("IP-core: {0}{1}{2}".format(Foreground.YELLOW, self._ipcoreFQN, Foreground.RESET))
-		if (not self.Host.PoCConfig.has_section(self._ipcoreFQN)) :
-			raise CompilerException("IP-core '{0}' not found.".format(self._ipcoreFQN)) from NoSectionError(
-				self._ipcoreFQN)
-
-		self._LogNormal(self._ipcoreFQN)
-
-
+		self._LogQuiet("IP-core: {0}".format(self._ipcoreFQN))
 
 		# setup all needed paths to execute fuse
-		toplevelName = self.Host.PoCConfig[self._ipcoreFQN]['TopModule']
-		fileListFilePath = self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[self._ipcoreFQN]['FileListFile']
-
-		self._CreatePoCProject(board)
-		self._AddFileListFile(fileListFilePath)
+		netlist = entity.Netlist
+		self._CreatePoCProject(netlist, board)
+		self._AddFileListFile(netlist.FilesFile)
+		self._AddRulesFiles(netlist.RulesFile)
 
 		self._RunPrepareCompile()
 		self._RunPreCopy()

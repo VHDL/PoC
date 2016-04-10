@@ -48,7 +48,7 @@ from os import chdir
 from Base.Exceptions		import ExceptionBase
 from Base.Logging				import ILogable
 from Base.Project				import ToolChain, Tool, VHDLVersion, Environment
-from PoC.Project				import Project as PoCProject, FileListFile
+from PoC.Project				import Project as PoCProject, FileListFile, RulesFile
 
 
 class CompilerException(ExceptionBase):
@@ -106,10 +106,10 @@ class Compiler(ILogable):
 			self._LogDebug("    Output directory: {0!s}.".format(self._outputPath))
 			self._outputPath.mkdir(parents=True)
 
-	def _CreatePoCProject(self, testbench, board):
+	def _CreatePoCProject(self, netlist, board):
 		# create a PoCProject and read all needed files
-		self._LogDebug("    Create a PoC project '{0}'".format(testbench.ModuleName))
-		pocProject = PoCProject(testbench.ModuleName)
+		self._LogDebug("    Create a PoC project '{0}'".format(netlist.ModuleName))
+		pocProject = PoCProject(netlist.ModuleName)
 
 		# configure the project
 		pocProject.RootDirectory =	self.Host.Directories["PoCRoot"]
@@ -124,8 +124,6 @@ class Compiler(ILogable):
 	def _AddFileListFile(self, fileListFilePath):
 		self._LogDebug("    Reading filelist '{0!s}'".format(fileListFilePath))
 		# add the *.files file, parse and evaluate it
-		# if (not fileListFilePath.exists()):		raise SimulatorException("Files file '{0!s}' not found.".format(fileListFilePath)) from FileNotFoundError(str(fileListFilePath))
-
 		try:
 			fileListFile = self._pocProject.AddFile(FileListFile(fileListFilePath))
 			fileListFile.Parse()
@@ -142,14 +140,23 @@ class Compiler(ILogable):
 				self._LogWarning(warn)
 			raise CompilerException("Found critical warnings while parsing '{0!s}'".format(fileListFilePath))
 
-	def RunAll(self, fqnList, **kwargs):
+	def _AddRulesFiles(self, rulesFilePath):
+		self._LogDebug("    Reading rules from '{0!s}'".format(rulesFilePath))
+		# add the *.rules file, parse and evaluate it
+		try:
+			rulesFile = self._pocProject.AddFile(RulesFile(rulesFilePath))
+			rulesFile.Parse()
+		except ParserException as ex:
+			raise CompilerException("Error while parsing '{0!s}'.".format(rulesFilePath)) from ex
+
+	def RunAll(self, fqnList, *args, **kwargs):
 		for fqn in fqnList:
 			entity = fqn.Entity
 			# for entity in fqn.GetEntities():
 			# try:
-			self.Run(entity, **kwargs)
+			self.Run(entity, *args, **kwargs)
 			# except SimulatorException:
 			# 	pass
 
-	def Run(self, entity, **kwargs):
+	def Run(self, entity, *args, **kwargs):
 		raise NotImplementedError("This method is abstract.")

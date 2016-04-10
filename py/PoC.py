@@ -412,9 +412,9 @@ class PoC(ILogable, ArgParseMixin):
 		elif (DeviceName is not None):	return Board(self, "Custom", DeviceName)
 		else:														return self.__SimulationDefaultBoard
 
-	def _ExtractFQNs(self, fqns):
+	def _ExtractFQNs(self, fqns, defaultType=EntityTypes.Testbench):
 		if (len(fqns) == 0):             raise SimulatorException("No FQN given.")
-		return [FQN(self, fqn, defaultType=EntityTypes.Testbench) for fqn in fqns]
+		return [FQN(self, fqn, defaultType=defaultType) for fqn in fqns]
 
 	def _ExtractVHDLVersion(self, vhdlVersion):
 		if (vhdlVersion is None):				return self.__SimulationDefaultVHDLVersion
@@ -802,7 +802,7 @@ class PoC(ILogable, ArgParseMixin):
 
 		self._CheckISEEnvironment()
 		
-		fqnList =	self._ExtractFQNs(args.FQN)
+		fqnList =	self._ExtractFQNs(args.FQN, defaultType=EntityTypes.NetList)
 		board =		self._ExtractBoard(args.BoardName, args.DeviceName)
 
 		# prepare some paths
@@ -834,7 +834,7 @@ class PoC(ILogable, ArgParseMixin):
 
 		self._CheckISEEnvironment()
 
-		fqnList =	self._ExtractFQNs(args.FQN)
+		fqnList =	self._ExtractFQNs(args.FQN, defaultType=EntityTypes.NetList)
 		board =		self._ExtractBoard(args.BoardName, args.DeviceName)
 
 		# prepare some paths

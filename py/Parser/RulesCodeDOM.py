@@ -29,92 +29,20 @@
 # limitations under the License.
 # ==============================================================================
 #
-from lib.Parser import CodeDOMObject
 from lib.Parser import MismatchingParserResult, MatchingParserResult
 from lib.Parser import SpaceToken, CharacterToken, StringToken, NumberToken
 from lib.Parser import Statement, BlockStatement
+from Parser.CodeDOM import EmptyLine, CommentLine, BlockedStatement as BlockStatementBase
 
-
-class EmptyLine(CodeDOMObject):
-	def __init__(self):
-		super().__init__()
-
-	@classmethod
-	def GetParser(cls):
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):						token = yield
-
-		# match for delimiter sign: \n
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
-		if (token.Value.lower() != "\n"):						raise MismatchingParserResult()
-		
-		# construct result
-		result = cls()
-		raise MatchingParserResult(result)
-	
-	def __str__(self, indent=0):
-		return "  " * indent + "<empty>"
-
-
-class CommentLine(CodeDOMObject):
-	def __init__(self, commentText):
-		super().__init__()
-		self._commentText = commentText
-	
-	@property
-	def Text(self):
-		return self._commentText
-
-	@classmethod
-	def GetParser(cls):
-		# match for optional whitespace
-		token = yield
-		if isinstance(token, SpaceToken):						token = yield
-
-		# match for sign: #
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
-		if (token.Value.lower() != "#"):						raise MismatchingParserResult()
-	
-		# match for any until line end
-		commentText = ""
-		while True:
-			token = yield
-			if isinstance(token, CharacterToken):
-				if (token.Value == "\n"):			break
-			commentText += token.Value
-		
-		# construct result
-		result = cls(commentText)
-		raise MatchingParserResult(result)
-	
-	def __str__(self, indent=0):
-		return "{0}#{1}".format("  " * indent, self._commentText)
 
 # ==============================================================================
 # Blocked Statements (Forward declaration)
 # ==============================================================================
-class ProcessStatements(Statement):
-	_allowedStatements = []
+class ProcessStatements(BlockStatementBase):
+	pass
 
-	@classmethod
-	def AddChoice(cls, value):
-		cls._allowedStatements.append(value)
-	
-	@classmethod
-	def GetParser(cls):
-		return cls.GetChoiceParser(cls._allowedStatements)
-
-class DocumentStatements(Statement):
-	_allowedStatements = []
-
-	@classmethod
-	def AddChoice(cls, value):
-		cls._allowedStatements.append(value)
-
-	@classmethod
-	def GetParser(cls):
-		return cls.GetChoiceParser(cls._allowedStatements)
+class DocumentStatements(BlockStatementBase):
+	pass
 
 # ==============================================================================
 # File Reference Statements
@@ -286,15 +214,15 @@ class PreProcessStatement(BlockStatement):
 		if isinstance(token, SpaceToken):						token = yield
 
 		# match for keyword: ELSE
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
-		if (token.Value.lower() != "else"):					raise MismatchingParserResult()
+		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("PreProcessStatementParser: Expected PREPROCESS keyword.")
+		if (token.Value.lower() != "preprocess"):		raise MismatchingParserResult("PreProcessStatementParser: Expected PREPROCESS keyword.")
 		
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):						token = yield
 		# match for delimiter sign: \n
 		commentText = ""
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("ElseStatementParser: Expected end of line or comment")
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("PreProcessStatementParser: Expected end of line or comment")
 		if (token.Value == "\n"):
 			pass
 		elif (token.Value == "#"):
@@ -305,7 +233,7 @@ class PreProcessStatement(BlockStatement):
 					if (token.Value == "\n"): break
 				commentText += token.Value
 		else:
-			raise MismatchingParserResult("ElseStatementParser: Expected end of line or comment")
+			raise MismatchingParserResult("PreProcessStatementParser: Expected end of line or comment")
 		
 		# match for inner statements
 		# ==========================================================================
@@ -323,7 +251,7 @@ class PreProcessStatement(BlockStatement):
 
 	def __str__(self, indent=0):
 		_indent = "  " * indent
-		buffer = _indent + "ElseStatement"
+		buffer = _indent + "PreProcessStatement"
 		for stmt in self._statements:
 			buffer += "\n{0}{1}".format(_indent, stmt.__str__(indent + 1))
 		return buffer
@@ -342,15 +270,15 @@ class PostProcessStatement(BlockStatement):
 		if isinstance(token, SpaceToken):						token = yield
 
 		# match for keyword: ELSE
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
-		if (token.Value.lower() != "else"):					raise MismatchingParserResult()
+		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("PostProcessStatementParser: Expected POSTPROCESS keyword.")
+		if (token.Value.lower() != "postprocess"):	raise MismatchingParserResult("PostProcessStatementParser: Expected POSTPROCESS keyword.")
 
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):						token = yield
 		# match for delimiter sign: \n
 		commentText = ""
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("ElseStatementParser: Expected end of line or comment")
+		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("PostProcessStatementParser: Expected end of line or comment")
 		if (token.Value == "\n"):
 			pass
 		elif (token.Value == "#"):
@@ -361,7 +289,7 @@ class PostProcessStatement(BlockStatement):
 					if (token.Value == "\n"): break
 				commentText += token.Value
 		else:
-			raise MismatchingParserResult("ElseStatementParser: Expected end of line or comment")
+			raise MismatchingParserResult("PostProcessStatementParser: Expected end of line or comment")
 
 		# match for inner statements
 		# ==========================================================================
@@ -379,7 +307,7 @@ class PostProcessStatement(BlockStatement):
 
 	def __str__(self, indent=0):
 		_indent = "  " * indent
-		buffer = _indent + "ElseStatement"
+		buffer = _indent + "PostProcessStatement"
 		for stmt in self._statements:
 			buffer += "\n{0}{1}".format(_indent, stmt.__str__(indent + 1))
 		return buffer
