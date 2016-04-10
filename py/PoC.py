@@ -51,7 +51,7 @@ from Base.ToolChain						import ToolChainException
 from Base.Logging							import ILogable, Logger, Severity
 from Base.Project							import VHDLVersion
 from Parser.Parser						import ParserException
-from PoC.Config								import Device, Board
+from PoC.Config								import Board
 from PoC.Entity								import Root, FQN, EntityTypes
 from PoC.Query								import Query
 from ToolChains								import Configurations
@@ -75,16 +75,17 @@ class PoC(ILogable, ArgParseMixin):
 	HeadLine =								"The PoC-Library - Service Tool"
 
 	# configure hard coded variables here
-	__scriptDirectoryName = 			"py"
-	__pocPrivateConfigFileName =	"config.private.ini"
-	__pocPublicConfigFileName =		"config.public.ini"
-	__pocEntityConfigFileName =		"config.entity.ini"
-	__pocBoardConfigFileName =		"config.boards.ini"
-	__tbConfigFileName =					"config.testbench.ini"
-	__netListConfigFileName =			"config.netlist.ini"
+	__CONFIGFILE_DIRECTORY =		"py"
+	__CONFIGFILE_PRIVATE =			"config.private.ini"
+	__CONFIGFILE_STRUCTURE =		"config.public.ini"
+	__CONFIGFILE_BOARDS =				"config.boards.ini"
+	__CONFIGFILE_IPCORES =			"config.entity.ini"
+	__CONFIGFILE_TESTBENCHES =	"config.testbench.ini"
+	__CONFIGFILE_NETLISTS =			"config.netlist.ini"
+
+	__PLATFORM =								platform_system()  # load platform information (Windows, Linux, ...)
 
 	# private fields
-	__platform = platform_system()  # load platform information (Windows, Linux, ...)
 
 	def __init__(self, debug, verbose, quiet, dryRun):
 		# Call the constructor of ILogable
@@ -98,10 +99,7 @@ class PoC(ILogable, ArgParseMixin):
 		ILogable.__init__(self, logger=logger)
 
 		# Do some basic checks
-		# --------------------------------------------------------------------------
-		if (self.Platform not in ["Windows", "Linux"]):		raise PlatformNotSupportedException(self.Platform)
-		if (environ.get('PoCRootDirectory') is None):			raise EnvironmentException("Shell environment does not provide 'PoCRootDirectory' variable.")
-		# if (environ.get('PoCScriptDirectory') is None):		raise EnvironmentException("Shell environment does not provide 'PoCScriptDirectory' variable.")
+		self._CheckEnvironment()
 
 		# Call the constructor of the ArgParseMixin
 		# --------------------------------------------------------------------------
@@ -109,16 +107,19 @@ class PoC(ILogable, ArgParseMixin):
 			This is the PoC-Library Service Tool.
 			''')
 		epilog = "Epidingsbums"
-		ArgParseMixin.__init__(self, description=description, epilog=epilog, formatter_class=RawDescriptionHelpFormatter, add_help=False)
+
+		class HelpFormatter(RawDescriptionHelpFormatter):
+			def __init__(self, *args, **kwargs):
+				kwargs['max_help_position'] = 34
+				super().__init__(*args, **kwargs)
+
+		ArgParseMixin.__init__(self, description=description, epilog=epilog, formatter_class=HelpFormatter, add_help=False)
 
 		# declare members
 		# --------------------------------------------------------------------------
 		self.__dryRun =				dryRun
 		self.__pocConfig =		None
-		self.__tbConfig =			None
-		self.__nlConfig =			None
 		self.__root =					None
-		self.__files =				{}
 		self.__directories =	{}
 
 		self.__SimulationDefaultVHDLVersion = VHDLVersion.VHDL08
@@ -127,72 +128,71 @@ class PoC(ILogable, ArgParseMixin):
 		self.Directories['Working'] =			Path.cwd()
 		self.Directories['PoCRoot'] =			Path(environ.get('PoCRootDirectory'))
 		# self.Directories['ScriptRoot'] =	Path(environ.get('PoCRootDirectory'))
-		self.Files['PoCPrivateConfig'] =	self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPrivateConfigFileName
-		self.Files['PoCPublicConfig'] =		self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocPublicConfigFileName
-		self.Files['PoCEntityConfig'] =		self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocEntityConfigFileName
-		self.Files['PoCBoardConfig'] =		self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__pocBoardConfigFileName
-		self.Files['PoCTBConfig'] =				self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__tbConfigFileName
-		self.Files['PoCNLConfig'] =				self.Directories["PoCRoot"] / self.__scriptDirectoryName / self.__netListConfigFileName
+
+		self._pocPrivateConfigFile =	self.Directories["PoCRoot"] / self.__CONFIGFILE_DIRECTORY / self.__CONFIGFILE_PRIVATE
+		self._pocPublicConfigFile =		self.Directories["PoCRoot"] / self.__CONFIGFILE_DIRECTORY / self.__CONFIGFILE_STRUCTURE
+		self._pocEntityConfigFile =		self.Directories["PoCRoot"] / self.__CONFIGFILE_DIRECTORY / self.__CONFIGFILE_IPCORES
+		self._pocBoardConfigFile =		self.Directories["PoCRoot"] / self.__CONFIGFILE_DIRECTORY / self.__CONFIGFILE_BOARDS
+		self._pocTBConfigFile =				self.Directories["PoCRoot"] / self.__CONFIGFILE_DIRECTORY / self.__CONFIGFILE_TESTBENCHES
+		self._pocNLConfigFile =				self.Directories["PoCRoot"] / self.__CONFIGFILE_DIRECTORY / self.__CONFIGFILE_NETLISTS
 
 	# class properties
 	# ============================================================================
 	@property
-	def Platform(self):
-		return self.__platform
-
+	def Platform(self):						return self.__PLATFORM
 	@property
-	def DryRun(self):
-		return self.__dryRun
-
+	def DryRun(self):							return self.__dryRun
 	@property
-	def Directories(self):
-		return self.__directories
-
+	def Directories(self):				return self.__directories
 	@property
-	def Files(self):
-		return self.__files
-
+	def PoCPrivateConfig(self):		return self._pocPrivateConfigFile
 	@property
-	def PoCConfig(self):
-		return self.__pocConfig
-
+	def PoCPublicConfig(self): 		return self._pocPublicConfigFile
 	@property
-	def TBConfig(self):
-		return self.__tbConfig
-
+	def PoCEntityConfig(self): 		return self._pocEntityConfigFile
 	@property
-	def NLConfig(self):
-		return self.__nlConfig
-
+	def PoCBoardConfig(self): 		return self._pocBoardConfigFile
 	@property
-	def Root(self):
-		return self.__root
+	def PoCTBConfig(self): 				return self._pocTBConfigFile
+	@property
+	def PoCNLConfig(self): 				return self._pocNLConfigFile
+	@property
+	def PoCConfig(self):					return self.__pocConfig
+	@property
+	def Root(self):								return self.__root
+
+	def _CheckEnvironment(self):
+		if (self.Platform not in ["Windows", "Linux"]):    raise PlatformNotSupportedException(self.Platform)
+		if (environ.get('PoCRootDirectory') is None):      raise EnvironmentException("Shell environment does not provide 'PoCRootDirectory' variable.")
+		# if (environ.get('PoCScriptDirectory') is None):		raise EnvironmentException("Shell environment does not provide 'PoCScriptDirectory' variable.")
 
 	# read PoC configuration
 	# ============================================================================
 	def __ReadPoCConfiguration(self):
-		pocPrivateConfigFilePath =	self.Files['PoCPrivateConfig']
-		pocPublicConfigFilePath =		self.Files['PoCPublicConfig']
-		pocEntityConfigFilePath =		self.Files['PoCEntityConfig']
-		pocBoardConfigFilePath =		self.Files['PoCBoardConfig']
-		tbConfigFilePath =					self.Files["PoCTBConfig"]
+		configFiles = [
+			(self._pocPrivateConfigFile,	"private"),
+			(self._pocPublicConfigFile,		"public"),
+			(self._pocEntityConfigFile,		"IP core"),
+			(self._pocBoardConfigFile,		"board"),
+			(self._pocTBConfigFile,				"testbench"),
+			(self._pocNLConfigFile,				"netlist")
+		]
 
-		self._LogDebug("Reading PoC configuration from\n  '{0}'\n  '{1}\n  '{2}'".format(str(pocPrivateConfigFilePath), str(pocPublicConfigFilePath), str(pocBoardConfigFilePath)))
-		if not pocPrivateConfigFilePath.exists():	raise NotConfiguredException("PoC's private configuration file '{0}' does not exist.".format(str(pocPrivateConfigFilePath)))	from FileNotFoundError(str(pocPrivateConfigFilePath))
-		if not pocPublicConfigFilePath.exists():	raise NotConfiguredException("PoC' public configuration file '{0}' does not exist.".format(str(pocPublicConfigFilePath)))			from FileNotFoundError(str(pocPublicConfigFilePath))
-		if not pocEntityConfigFilePath.exists():	raise NotConfiguredException("PoC' entity configuration file '{0}' does not exist.".format(str(pocEntityConfigFilePath)))			from FileNotFoundError(str(pocEntityConfigFilePath))
-		if not pocBoardConfigFilePath.exists():		raise NotConfiguredException("PoC's board configuration file '{0}' does not exist.".format(str(pocBoardConfigFilePath)))			from FileNotFoundError(str(pocBoardConfigFilePath))
-		if not tbConfigFilePath.exists():  				raise NotConfiguredException("PoC testbench configuration file does not exist. ({0!s})".format(tbConfigFilePath))
-
-		# read PoC configuration
-		# ============================================================================
+		# create parser instance
+		self._LogDebug("Reading PoC configuration from:")
 		self.__pocConfig = ExtendedConfigParser()
 		self.__pocConfig.optionxform = str
-		self.__pocConfig.read(str(self.Files["PoCPrivateConfig"]))
-		self.__pocConfig.read(str(self.Files["PoCPublicConfig"]))
-		self.__pocConfig.read(str(self.Files["PoCEntityConfig"]))
-		self.__pocConfig.read(str(self.Files["PoCBoardConfig"]))
-		self.__pocConfig.read(str(self.Files["PoCTBConfig"]))
+
+		# process first file (private)
+		file, name = configFiles[0]
+		self._LogDebug("  '{0!s}'".format(file))
+		if not file.exists():  raise NotConfiguredException("PoC's {0} configuration file '{1!s}' does not exist.".format(name, file))  from FileNotFoundError(str(file))
+		self.__pocConfig.read(str(file))
+
+		for file, name in configFiles[1:]:
+			self._LogDebug("  '{0!s}'".format(file))
+			if not file.exists():  raise ConfigurationException("PoC's {0} configuration file '{1!s}' does not exist.".format(name, file))  from FileNotFoundError(str(file))
+			self.__pocConfig.read(str(file))
 
 		# print("="*80)
 		# print("PoCConfig:")
@@ -207,74 +207,14 @@ class PoC(ILogable, ArgParseMixin):
 		# print("=" * 80)
 
 		self.__root = Root(self)
-		print("=" * 80)
-		print(self.Root.pprint(0))
-		print("=" * 80)
+		# print("=" * 80)
+		# print(self.Root.pprint(0))
+		# print("=" * 80)
 
 		# check PoC installation directory
 		if (self.Directories["PoCRoot"] != Path(self.PoCConfig['PoC']['InstallationDirectory'])):	raise NotConfiguredException("There is a mismatch between PoCRoot and PoC installation directory.")
 
 		self.__SimulationDefaultBoard =		Board(self)
-
-
-		# self.Directories["XSTFiles"] =			self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
-		# #self.Directories["QuartusFiles"] =	self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['QuartusSynthesisFiles']
-
-		# self.Directories["CoreGenTemp"] =		self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ISECoreGeneratorFiles']
-		# self.Directories["XSTTemp"] =				self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
-		# #self.Directories["QuartusTemp"] =	self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['QuartusSynthesisFiles']
-
-	# read Testbench configuration
-	# ==========================================================================
-	def __ReadTestbenchConfiguration(self):
-		tbConfigFilePath = self.Files["PoCTBConfig"]
-
-		self._LogDebug("Reading testbench configuration from '{0}'".format(str(tbConfigFilePath)))
-		if not tbConfigFilePath.exists():	raise NotConfiguredException("PoC testbench configuration file does not exist. ({0!s})".format(tbConfigFilePath))
-
-		self.__pocConfig.read(str(self.Files["PoCTBConfig"]))
-		self.__tbConfig = self.__pocConfig
-
-
-		# print("=" * 80)
-		# print("PoCConfig:")
-		# for sectionName in self.__tbConfig:
-		# 	print("  {0}".format(sectionName))
-		# 	try:
-		# 		for optionName in self.__tbConfig[sectionName]:
-		# 			try:
-		# 				value = self.__tbConfig[sectionName][optionName]
-		# 				print("    {0} = {1}".format(optionName, value))
-		# 			except InterpolationError as ex:
-		# 				pass  # value = "[INTERPOLATION ERROR]"
-		# 	except:
-		# 		pass
-		# print("=" * 80)
-
-		# self.__tbConfig = ConfigParser(interpolation=ExtendedInterpolation())
-		# self.__tbConfig.optionxform = str
-		# self.__tbConfig.read([
-		# 	str(self.Files["PoCPrivateConfig"]),
-		# 	str(self.Files["PoCPublicConfig"]),
-		# 	str(self.Files["PoCTBConfig"])
-		# ])
-
-	# read NetList configuration
-	# ==========================================================================
-
-	def __ReadNetlistConfiguration(self):
-		self.Files["PoCNLConfig"] = netListConfigFilePath	= self.Directories["PoCNetList"] / self.__netListConfigFileName
-
-		self._LogDebug("Reading NetList configuration from '{0}'".format(str(netListConfigFilePath)))
-		if not netListConfigFilePath.exists():	raise NotConfiguredException("PoC netlist configuration file does not exist. ({0})".format(str(netListConfigFilePath)))
-
-		self.__nlConfig = ExtendedConfigParser()
-		self.__nlConfig.optionxform = str
-		self.__nlConfig.read([
-			str(self.Files['PoCPrivateConfig']),
-			str(self.Files['PoCPublicConfig']),
-			str(self.Files["PoCNLConfig"])
-		])
 
 	def __CleanupPoCConfiguration(self):
 		# remove non-private sections from pocConfig
@@ -295,8 +235,8 @@ class PoC(ILogable, ArgParseMixin):
 		# self.__CleanupPoCConfiguration()
 
 		# Writing configuration to disc
-		self._LogNormal("Writing configuration file to '{0}'".format(str(self.Files['PoCPrivateConfig'])))
-		with self.Files['PoCPrivateConfig'].open('w') as configFileHandle:
+		self._LogNormal("Writing configuration file to '{0!s}'".format(self._pocPrivateConfigFile))
+		with self._pocPrivateConfigFile.open('w') as configFileHandle:
 			self.PoCConfig.write(configFileHandle)
 
 	def __PrepareForConfiguration(self):
@@ -309,7 +249,6 @@ class PoC(ILogable, ArgParseMixin):
 		self.Directories["PoCSource"] =			self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['HDLSourceFiles']
 		self.Directories["PoCTestbench"] =	self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['TestbenchFiles']
 		self.Directories["PoCTemp"] =				self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['TemporaryFiles']
-		self.__ReadTestbenchConfiguration()
 
 	def __PrepareForSynthesis(self):
 		self.__ReadPoCConfiguration()
@@ -318,8 +257,13 @@ class PoC(ILogable, ArgParseMixin):
 		self.Directories["PoCSource"] =			self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['HDLSourceFiles']
 		self.Directories["PoCNetList"] =		self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['NetListFiles']
 		self.Directories["PoCTemp"] =				self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['TemporaryFiles']
-		self.__ReadNetlistConfiguration()
 
+		# self.Directories["XSTFiles"] =			self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
+		# #self.Directories["QuartusFiles"] =	self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['QuartusSynthesisFiles']
+
+		# self.Directories["CoreGenTemp"] =		self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ISECoreGeneratorFiles']
+		# self.Directories["XSTTemp"] =				self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
+		# #self.Directories["QuartusTemp"] =	self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['QuartusSynthesisFiles']
 
 	# ============================================================================
 	# Common commands
@@ -342,7 +286,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	# fallback handler if no command was recognized
 	# ----------------------------------------------------------------------------
-	# @DefaultAttribute()
+	@DefaultAttribute()
 	# @HandleVerbosityOptions
 	def HandleDefault(self, args):
 		self.PrintHeadline()
@@ -417,7 +361,7 @@ class PoC(ILogable, ArgParseMixin):
 				try:
 					configurator.ConfigureForWindows()
 					nxt = True
-				except BaseException as ex:
+				except ExceptionBase as ex:
 					print("FAULT: {0}".format(ex.message))
 			# end while
 
@@ -431,7 +375,7 @@ class PoC(ILogable, ArgParseMixin):
 				try:
 					configurator.ConfigureForLinux()
 					nxt = True
-				except BaseException as ex:
+				except ExceptionBase as ex:
 					print("FAULT: {0}".format(ex.message))
 			# end while
 
@@ -462,7 +406,31 @@ class PoC(ILogable, ArgParseMixin):
 			self.Directories["XilinxPrimitiveSource"] = Path(self.PoCConfig['Xilinx.ISE']['InstallationDirectory']) / "ISE/vhdl/src"
 		elif (len(self.PoCConfig.options("Xilinx.Vivado")) != 0):
 			self.Directories["XilinxPrimitiveSource"] = Path(self.PoCConfig['Xilinx.Vivado']['InstallationDirectory']) / "data/vhdl/src"
+		
+	def _ExtractBoard(self, BoardName, DeviceName):
+		if (BoardName is not None):			return Board(self, BoardName)
+		elif (DeviceName is not None):	return Board(self, "Custom", DeviceName)
+		else:														return self.__SimulationDefaultBoard
 
+	def _ExtractFQNs(self, fqns):
+		if (len(fqns) == 0):             raise SimulatorException("No FQN given.")
+		return [FQN(self, fqn, defaultType=EntityTypes.Testbench) for fqn in fqns]
+
+	def _ExtractVHDLVersion(self, vhdlVersion):
+		if (vhdlVersion is None):				return self.__SimulationDefaultVHDLVersion
+		else:														return VHDLVersion.parse(vhdlVersion)
+
+	# TODO: move to Configuration class in ToolChains.Xilinx.Vivado
+	def _CheckVivadoEnvironment(self):
+		# check if Vivado is configure
+		if (len(self.PoCConfig.options("Xilinx.Vivado")) == 0):	raise NotConfiguredException("Xilinx Vivado is not configured on this system.")
+		if (environ.get('XILINX_VIVADO') is None):							raise EnvironmentException("Xilinx Vivado environment is not loaded in this shell environment.")
+
+	# TODO: move to Configuration class in ToolChains.Xilinx.ISE
+	def _CheckISEEnvironment(self):
+		# check if ISE is configure
+		if (len(self.PoCConfig.options("Xilinx.ISE")) == 0):		raise NotConfiguredException("Xilinx ISE is not configured on this system.")
+		if (environ.get('XILINX') is None):											raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment.")
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "list-testbench" command
@@ -475,9 +443,7 @@ class PoC(ILogable, ArgParseMixin):
 		self.__PrepareForSimulation()
 		self.PrintHeadline()
 
-		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
-
-		fqnList = [FQN(self, fqn, defaultType=EntityTypes.Testbench) for fqn in args.FQN]
+		fqnList = self._ExtractFQNs(args)
 
 		# run a testbench
 		for fqn in fqnList:
@@ -485,7 +451,8 @@ class PoC(ILogable, ArgParseMixin):
 				print(entity)
 
 		Exit.exit()
-
+	
+	
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "asim" command
 	# ----------------------------------------------------------------------------
@@ -501,8 +468,8 @@ class PoC(ILogable, ArgParseMixin):
 	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window.")
 	# @HandleVerbosityOptions
 	def HandleActiveHDLSimulation(self, args):
-		self.__PrepareForSimulation()
 		self.PrintHeadline()
+		self.__PrepareForSimulation()
 
 		# check if Aldec tools are configure
 		if (len(self.PoCConfig.options("Aldec.ActiveHDL")) != 0):
@@ -530,30 +497,20 @@ class PoC(ILogable, ArgParseMixin):
 			raise NotConfiguredException("Neither Aldec's Active-HDL nor Active-HDL Lattice Edition are configured on this system.")
 
 		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
-
-		if (args.BoardName is not None):
-			board = Board(self, args.BoardName)
-		elif (args.DeviceName is not None):
-			board = Board(self, "Custom", args.DeviceName)
-		else:
-			board = self.__SimulationDefaultBoard
-
-		if (args.VHDLVersion is None):
-			vhdlVersion = self.__SimulationDefaultVHDLVersion
-		else:
-			vhdlVersion = VHDLVersion.parse(args.VHDLVersion)
-
-		# prepare some paths
-		binaryPath = self.Directories["ActiveHDLBinary"]
+		
+		fqnList =			self._ExtractFQNs(args.FQN)
+		board =				self._ExtractBoard(args.BoardName, args.DeviceName)
+		vhdlVersion =	self._ExtractVHDLVersion(args.VHDLVersion)
 
 		# prepare paths to vendor simulation libraries
 		self.__PrepareVendorLibraryPaths()
+		
+		# prepare some paths
+		binaryPath =	self.Directories["ActiveHDLBinary"]
 
 		# create a GHDLSimulator instance and prepare it
 		simulator = ActiveHDLSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(binaryPath, aSimVersion)
-
-		fqnList = [FQN(self, fqn, defaultType=EntityTypes.Testbench) for fqn in args.FQN]
 
 		# run a testbench
 		for fqn in fqnList:
@@ -564,9 +521,9 @@ class PoC(ILogable, ArgParseMixin):
 					# pass
 
 		Exit.exit()
-
-
-	# ----------------------------------------------------------------------------
+	
+	
+# ----------------------------------------------------------------------------
 	# create the sub-parser for the "ghdl" command
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Simulation commands")
@@ -582,20 +539,15 @@ class PoC(ILogable, ArgParseMixin):
 	# standard
 	# @HandleVerbosityOptions
 	def HandleGHDLSimulation(self, args):
-		self.__PrepareForSimulation()
 		self.PrintHeadline()
+		self.__PrepareForSimulation()
 
 		# check if GHDL is configure
 		if (len(self.PoCConfig.options("GHDL")) == 0):  raise NotConfiguredException("GHDL is not configured on this system.")
-
-		if (len(args.FQN) == 0):							raise SimulatorException("No FQN given.")
-
-		if (args.BoardName is not None):			board =		Board(self, args.BoardName)
-		elif (args.DeviceName is not None):		board =		Board(self, "Custom", args.DeviceName)
-		else:																	board =		self.__SimulationDefaultBoard
-
-		if (args.VHDLVersion is None):				vhdlVersion = self.__SimulationDefaultVHDLVersion
-		else:																	vhdlVersion = VHDLVersion.parse(args.VHDLVersion)
+		
+		fqnList =			self._ExtractFQNs(args.FQN)
+		board =				self._ExtractBoard(args.BoardName, args.DeviceName)
+		vhdlVersion =	self._ExtractVHDLVersion(args.VHDLVersion)
 
 		# prepare some paths
 		self.Directories["GHDLTemp"] =					self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['GHDLFiles']
@@ -612,8 +564,6 @@ class PoC(ILogable, ArgParseMixin):
 		# create a GHDLSimulator instance and prepare it
 		simulator = GHDLSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(ghdlBinaryPath, ghdlVersion, ghdlBackend)
-
-		fqnList = [FQN(self, fqn, defaultType=EntityTypes.Testbench) for fqn in args.FQN]
 
 		# run a testbench
 		for fqn in fqnList:
@@ -638,6 +588,7 @@ class PoC(ILogable, ArgParseMixin):
 
 		Exit.exit()
 
+
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "isim" command
 	# ----------------------------------------------------------------------------
@@ -652,18 +603,13 @@ class PoC(ILogable, ArgParseMixin):
 	# standard
 	# @HandleVerbosityOptions
 	def HandleISESimulation(self, args):
-		self.__PrepareForSimulation()
 		self.PrintHeadline()
+		self.__PrepareForSimulation()
 
-		# check if ISE is configure
-		if (len(self.PoCConfig.options("Xilinx.ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
-		if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment.")
-
-		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
-
-		if (args.BoardName is not None):			board = Board(self, args.BoardName)
-		elif (args.DeviceName is not None):		board = Board(self, "Custom", args.DeviceName)
-		else:																	board = self.__SimulationDefaultBoard
+		self._CheckISEEnvironment()
+		
+		fqnList =			self._ExtractFQNs(args.FQN)
+		board =				self._ExtractBoard(args.BoardName, args.DeviceName)
 
 		# prepare some paths
 		iseSimulatorFiles =													self.PoCConfig['PoC.DirectoryNames']['ISESimulatorFiles']
@@ -683,8 +629,6 @@ class PoC(ILogable, ArgParseMixin):
 		simulator = ISESimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(binaryPath, iseVersion)
 
-		fqnList = [FQN(self, fqn, defaultType=EntityTypes.Testbench) for fqn in args.FQN]
-
 		# run a testbench
 		for fqn in fqnList:
 			for entity in fqn.GetEntities():
@@ -692,8 +636,8 @@ class PoC(ILogable, ArgParseMixin):
 				simulator.Run(entity, board=board)		#, vhdlGenerics=None)
 
 		Exit.exit()
-
-
+		
+		
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "vsim" command
 	# ----------------------------------------------------------------------------
@@ -710,8 +654,8 @@ class PoC(ILogable, ArgParseMixin):
 	# standard
 	# @HandleVerbosityOptions
 	def HandleQuestaSimulation(self, args):
-		self.__PrepareForSimulation()
 		self.PrintHeadline()
+		self.__PrepareForSimulation()
 
 		# check if QuestaSim is configured
 		if (len(self.PoCConfig.options("Mentor.QuestaSim")) != 0):
@@ -734,15 +678,10 @@ class PoC(ILogable, ArgParseMixin):
 			vSimVersion =														self.PoCConfig['Altera.ModelSim']['Version']
 		else:
 			raise NotConfiguredException("Neither Mentor Graphics QuestaSim nor ModelSim Altera-Edition are configured on this system.")
-
-		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
-
-		if (args.BoardName is not None):			board = Board(self, args.BoardName)
-		elif (args.DeviceName is not None):		board = Board(self, "Custom", args.DeviceName)
-		else:																	board = self.__SimulationDefaultBoard
-
-		if (args.VHDLVersion is None):				vhdlVersion = self.__SimulationDefaultVHDLVersion
-		else:																	vhdlVersion = VHDLVersion.parse(args.VHDLVersion)
+		
+		fqnList =			self._ExtractFQNs(args.FQN)
+		board =				self._ExtractBoard(args.BoardName, args.DeviceName)
+		vhdlVersion =	self._ExtractVHDLVersion(args.VHDLVersion)
 
 		# prepare paths to vendor simulation libraries
 		self.__PrepareVendorLibraryPaths()
@@ -750,8 +689,6 @@ class PoC(ILogable, ArgParseMixin):
 		# create a GHDLSimulator instance and prepare it
 		simulator = QuestaSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(binaryPath, vSimVersion)
-
-		fqnList = [FQN(self, fqn, defaultType=EntityTypes.Testbench) for fqn in args.FQN]
 
 		# run a testbench
 		for fqn in fqnList:
@@ -761,10 +698,10 @@ class PoC(ILogable, ArgParseMixin):
 				simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
 		Exit.exit()
-
-
+	
+	
 	# ----------------------------------------------------------------------------
-	# create the sub-parser for the "asim" command
+	# create the sub-parser for the "xsim" command
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("xsim", help="Simulate a PoC Entity with Xilinx Vivado Simulator (xSim)")
@@ -779,24 +716,18 @@ class PoC(ILogable, ArgParseMixin):
 	# standard
 	# @HandleVerbosityOptions
 	def HandleVivadoSimulation(self, args):
-		self.__PrepareForSimulation()
 		self.PrintHeadline()
+		self.__PrepareForSimulation()
 
-		# check if ISE is configure
-		if (len(self.PoCConfig.options("Xilinx.Vivado")) == 0):		raise NotConfiguredException("Xilinx Vivado is not configured on this system.")
-		if (environ.get('XILINX_VIVADO') is None):								raise EnvironmentException("Xilinx Vivado environment is not loaded in this shell environment.")
+		self._CheckVivadoEnvironment()
+		
+		fqnList =			self._ExtractFQNs(args.FQN)
+		board =				self._ExtractBoard(args.BoardName, args.DeviceName)
+		# vhdlVersion =	self._ExtractVHDLVersion(args.VHDLVersion)
 
-		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
-
-		if (args.BoardName is not None):
-			board = Board(self, args.BoardName)
-		elif (args.DeviceName is not None):
-			board = Board(self, "Custom", args.DeviceName)
-		else:
-			board = self.__SimulationDefaultBoard
-
+		# FIXME: VHDL-2008 is broken in Vivado 2015.4 -> use VHDL-93 by default
 		if (args.VHDLVersion is None):
-			vhdlVersion = VHDLVersion.VHDL93	# self.__SimulationDefaultVHDLVersion		# TODO: VHDL-2008 is broken in Vivado 2015.4 -> use VHDL-93 by default
+			vhdlVersion = VHDLVersion.VHDL93	# self.__SimulationDefaultVHDLVersion
 		else:
 			vhdlVersion = VHDLVersion.parse(args.VHDLVersion)
 
@@ -818,8 +749,6 @@ class PoC(ILogable, ArgParseMixin):
 		simulator = VivadoSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(binaryPath, vivadoVersion)
 
-		fqnList = [FQN(self, fqn, defaultType=EntityTypes.Testbench) for fqn in args.FQN]
-
 		# run a testbench
 		for fqn in fqnList:
 			print(fqn)
@@ -828,6 +757,7 @@ class PoC(ILogable, ArgParseMixin):
 				simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
 		Exit.exit()
+
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "cocotb" command
@@ -842,8 +772,8 @@ class PoC(ILogable, ArgParseMixin):
 	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window.")
 	# @HandleVerbosityOptions
 	def HandleCocotbSimulation(self, args):
-		self.__PrepareForSimulation()
 		self.PrintHeadline()
+		self.__PrepareForSimulation()
 
 		# check if QuestaSim is configured
 		if (len(self.PoCConfig.options("Mentor.QuestaSim")) != 0):
@@ -855,14 +785,8 @@ class PoC(ILogable, ArgParseMixin):
 		else:
 			raise NotConfiguredException("Mentor QuestaSim is not configured on this system.")
 
-		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
-
-		if (args.BoardName is not None):
-			board = Board(self, args.BoardName)
-		elif (args.DeviceName is not None):
-			board = Board(self, "Custom", args.DeviceName)
-		else:
-			board = self.__SimulationDefaultBoard
+		fqnList =	self._ExtractFQNs(args.FQN)
+		board =		self._ExtractBoard(args.BoardName, args.DeviceName)
 
 		# prepare paths to vendor simulation libraries
 		#self.__PrepareVendorLibraryPaths()
@@ -870,8 +794,6 @@ class PoC(ILogable, ArgParseMixin):
 		# create a CocotbSimulator instance and prepare it
 		simulator = CocotbSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator()
-
-		fqnList = [FQN(self, fqn, defaultType=EntityTypes.Testbench) for fqn in args.FQN]
 
 		# run a testbench
 		for fqn in fqnList:
@@ -893,12 +815,10 @@ class PoC(ILogable, ArgParseMixin):
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
 	# @HandleVerbosityOptions
 	def HandleListNetlist(self, args):
-		self.__PrepareForSynthesis()
 		self.PrintHeadline()
+		self.__PrepareForSynthesis()
 
-		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
-
-		fqnList = [FQN(self, fqn, defaultType=EntityTypes.NetList) for fqn in args.FQN]
+		fqnList =	self._ExtractFQNs(args.FQN)
 
 		# run a testbench
 		for fqn in fqnList:
@@ -919,29 +839,19 @@ class PoC(ILogable, ArgParseMixin):
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	# @HandleVerbosityOptions
 	def HandleCoreGeneratorCompilation(self, args):
-		self.__PrepareForSynthesis()
 		self.PrintHeadline()
+		self.__PrepareForSynthesis()
 
-		# check if ISE is configure
-		if (len(self.PoCConfig.options("Xilinx.ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
-		if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment.")
+		self._CheckISEEnvironment()
 		
+		fqnList =	self._ExtractFQNs(args.FQN)
+		board =		self._ExtractBoard(args.BoardName, args.DeviceName)
+
 		# prepare some paths
 		self.Directories["CoreGenTemp"] =			self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ISECoreGeneratorFiles']
 		self.Directories["ISEInstallation"] = Path(self.PoCConfig['Xilinx.ISE']['InstallationDirectory'])
 		self.Directories["ISEBinary"] =				Path(self.PoCConfig['Xilinx.ISE']['BinaryDirectory'])
 		iseVersion =													self.PoCConfig['Xilinx.ISE']['Version']
-
-		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
-
-		if (args.BoardName is not None):
-			board = Board(self, args.BoardName)
-		elif (args.DeviceName is not None):
-			board = Board(self, "Custom", args.DeviceName)
-		else:
-			raise SimulatorException("No board or device name given.")
-
-		fqnList = [FQN(self, fqn, defaultType=EntityTypes.NetList) for fqn in args.FQN]
 
 		compiler = XCOCompiler.Compiler(self, args.logs, args.reports)
 		compiler.dryRun = self.__dryRun
@@ -966,12 +876,13 @@ class PoC(ILogable, ArgParseMixin):
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	# @HandleVerbosityOptions
 	def HandleXstCompilation(self, args):
-		self.__PrepareForSynthesis()
 		self.PrintHeadline()
+		self.__PrepareForSynthesis()
 
-		# check if ISE is configure
-		if (len(self.PoCConfig.options("Xilinx.ISE")) == 0):	raise NotConfiguredException("Xilinx ISE is not configured on this system.")
-		if (environ.get('XILINX') is None):										raise EnvironmentException("Xilinx ISE environment is not loaded in this shell environment.")
+		self._CheckISEEnvironment()
+
+		fqnList =	self._ExtractFQNs(args.FQN)
+		board =		self._ExtractBoard(args.BoardName, args.DeviceName)
 
 		# prepare some paths
 		self.Directories["XSTFiles"] =				self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
@@ -979,17 +890,6 @@ class PoC(ILogable, ArgParseMixin):
 		self.Directories["ISEInstallation"] = Path(self.PoCConfig['Xilinx.ISE']['InstallationDirectory'])
 		self.Directories["ISEBinary"] =				Path(self.PoCConfig['Xilinx.ISE']['BinaryDirectory'])
 		iseVersion =													self.PoCConfig['Xilinx.ISE']['Version']
-
-		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
-
-		if (args.BoardName is not None):
-			board = Board(self, args.BoardName)
-		elif (args.DeviceName is not None):
-			board = Board(self, "Custom", args.DeviceName)
-		else:
-			raise SimulatorException("No board or device name given.")
-
-		fqnList = [FQN(self, fqn, defaultType=EntityTypes.NetList) for fqn in args.FQN]
 
 		compiler = XSTCompiler(self, args.logs, args.reports)
 		compiler.dryRun = self.DryRun
@@ -1000,6 +900,7 @@ class PoC(ILogable, ArgParseMixin):
 				compiler.Run(entity, board)
 
 		Exit.exit()
+
 
 # main program
 def main():

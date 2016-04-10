@@ -105,12 +105,12 @@ class Simulator(BaseSimulator):
 
 		# check testbench database for the given testbench		
 		self._LogQuiet("Testbench: {YELLOW}{0}{RESET}".format(self._testbenchFQN, **Init.Foreground))
-		if (not self.Host.TBConfig.has_section(self._testbenchFQN)):
+		if (not self.Host.PoCConfig.has_section(self._testbenchFQN)):
 			raise SimulatorException("Testbench '{0}' not found.".format(self._testbenchFQN)) from NoSectionError(self._testbenchFQN)
 			
 		# setup all needed variables and paths
-		testbenchName =				self.Host.TBConfig[self._testbenchFQN]['TestbenchModule']
-		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['fileListFile']
+		testbenchName =				self.Host.PoCConfig[self._testbenchFQN]['TestbenchModule']
+		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[self._testbenchFQN]['fileListFile']
 
 		self._CreatePoCProject(testbenchName, board)
 		self._AddFileListFile(fileListFilePath)
@@ -189,7 +189,7 @@ class Simulator(BaseSimulator):
 	def _RunSimulation(self, testbenchName):
 		self._LogNormal("  running simulation...")
 		
-		tclBatchFilePath =		self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['aSimBatchScript']
+		tclBatchFilePath =		self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[self._testbenchFQN]['aSimBatchScript']
 		
 		# create a ActiveHDLSimulator instance
 		aSim = self._activeHDL.GetSimulator()
@@ -210,8 +210,8 @@ class Simulator(BaseSimulator):
 	def _RunSimulationWithGUI(self, testbenchName):
 		self._LogNormal("  running simulation...")
 	
-		tclGUIFilePath =			self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['aSimGUIScript']
-		tclWaveFilePath =			self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['aSimWaveScript']
+		tclGUIFilePath =			self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[self._testbenchFQN]['aSimGUIScript']
+		tclWaveFilePath =			self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[self._testbenchFQN]['aSimWaveScript']
 		
 		# create a ActiveHDLSimulator instance
 		aSim = self._activeHDL.GetSimulator()

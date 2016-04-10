@@ -107,12 +107,12 @@ class Simulator(BaseSimulator):
 
 		# check testbench database for the given testbench		
 		self._LogQuiet("Testbench: {0}{1}{2}".format(Foreground.YELLOW, self._testbenchFQN, Foreground.RESET))
-		if (not self.Host.TBConfig.has_section(self._testbenchFQN)):
+		if (not self.Host.PoCConfig.has_section(self._testbenchFQN)):
 			raise SimulatorException("Testbench '{0}' not found.".format(self._testbenchFQN)) from NoSectionError(self._testbenchFQN)
 			
 		# setup all needed paths to execute fuse
-		testbenchName =				self.Host.TBConfig[self._testbenchFQN]['TestbenchModule']
-		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['fileListFile']
+		testbenchName =				self.Host.PoCConfig[self._testbenchFQN]['TestbenchModule']
+		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[self._testbenchFQN]['fileListFile']
 
 		self._CreatePoCProject(testbenchName, board)
 		self._AddFileListFile(fileListFilePath)
@@ -275,7 +275,7 @@ class Simulator(BaseSimulator):
 		ghdl.RunOptions[ghdl.SwitchIEEEAsserts] = "disable-at-0"		# enable, disable, disable-at-0
 		# set dump format to save simulation results to *.vcd file
 		if (self._guiMode):
-			waveformFileFormat =	self.Host.TBConfig[self._testbenchFQN]['ghdlWaveformFileFormat']
+			waveformFileFormat =	self.Host.PoCConfig[self._testbenchFQN]['ghdlWaveformFileFormat']
 			if (waveformFileFormat == "vcd"):
 				waveformFilePath = self._tempPath / (testbenchName + ".vcd")
 				ghdl.RunOptions[ghdl.SwitchVCDWaveform] =		waveformFilePath
@@ -305,7 +305,7 @@ class Simulator(BaseSimulator):
 		runOptions.append('--ieee-asserts={0}'.format("disable-at-0"))		# enable, disable, disable-at-0
 		# set dump format to save simulation results to *.vcd file
 		if (self._guiMode):
-			waveformFileFormat =	self.Host.TBConfig[self._testbenchFQN]['ghdlWaveformFileFormat']
+			waveformFileFormat =	self.Host.PoCConfig[self._testbenchFQN]['ghdlWaveformFileFormat']
 					
 			if (waveformFileFormat == "vcd"):
 				waveformFilePath = self._tempPath / (testbenchName + ".vcd")
@@ -329,8 +329,8 @@ class Simulator(BaseSimulator):
 	def View(self):
 		self._LogNormal("  launching GTKWave...")
 		
-		testbenchName =				self.Host.TBConfig[self._testbenchFQN]['TestbenchModule']
-		waveformFileFormat =	self.Host.TBConfig[self._testbenchFQN]['ghdlWaveformFileFormat']
+		testbenchName =				self.Host.PoCConfig[self._testbenchFQN]['TestbenchModule']
+		waveformFileFormat =	self.Host.PoCConfig[self._testbenchFQN]['ghdlWaveformFileFormat']
 					
 		if (waveformFileFormat == "vcd"):
 			waveformFilePath = self._tempPath / (testbenchName + ".vcd")
@@ -350,7 +350,7 @@ class Simulator(BaseSimulator):
 		gtkw.Parameters[gtkw.SwitchDumpFile] = str(waveformFilePath)
 
 		# if GTKWave savefile exists, load it's settings
-		gtkwSaveFilePath =	self.Host.Directories["PoCRoot"] / self.Host.TBConfig[self._testbenchFQN]['gtkwSaveFile']
+		gtkwSaveFilePath =	self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[self._testbenchFQN]['gtkwSaveFile']
 		if gtkwSaveFilePath.exists():
 			self._LogDebug("    Found waveform save file: '{0}'".format(str(gtkwSaveFilePath)))
 			gtkw.Parameters[gtkw.SwitchSaveFile] = str(gtkwSaveFilePath)

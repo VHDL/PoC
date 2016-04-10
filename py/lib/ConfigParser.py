@@ -28,13 +28,13 @@ class ExtendedInterpolation(Interpolation):
 		self._cache = dict()
 
 	def before_get(self, parser, section, option, value, defaults):
-		print("before_get: {0}:{1} = '{2}'".format(section, option, value))
+		# print("before_get: {0}:{1} = '{2}'".format(section, option, value))
 		try:
 			result = self.GetCached(section, option)
 		except KeyError:
 			result = self.interpolate(parser, section, option, value, defaults)
 			self.UpdateCache(section, option, result)
-		print("before_get: => '{0}'\n".format(result))
+		# print("before_get: => '{0}'\n".format(result))
 		return result
 
 	def before_set(self, parser, section, option, value):
@@ -49,13 +49,13 @@ class ExtendedInterpolation(Interpolation):
 
 		# short cut operations if empty or a normal string
 		if (value == ""):
-			print("interpol: SHORT -> empty string")
+			# print("interpol: SHORT -> empty string")
 			return ""
 		elif (("$" not in value) and ("%" not in value)):
-			print("interpol: SHORT -> {0}".format(value))
+			# print("interpol: SHORT -> {0}".format(value))
 			return value
 
-		print("interpol: PREPARE section={0} option={1} value='{2}'".format(section, option, value))
+		# print("interpol: PREPARE section={0} option={1} value='{2}'".format(section, option, value))
 		rawValue =		value
 		rest = ""
 
@@ -77,10 +77,10 @@ class ExtendedInterpolation(Interpolation):
 					rawValue =	rawValue[endPos + 1:]
 					rest +=			self.GetSpecial(section, option, path)
 
-		print("interpol: BEGIN   section={0} option={1} value='{2}'".format(section, option, rest))
+		# print("interpol: BEGIN   section={0} option={1} value='{2}'".format(section, option, rest))
 		result =	""
 		while (len(rest) > 0):
-			print("interpol: LOOP    rest='{0}'".format(rest))
+			# print("interpol: LOOP    rest='{0}'".format(rest))
 			beginPos = rest.find("$")
 			if (beginPos < 0):
 				result += rest
@@ -96,20 +96,20 @@ class ExtendedInterpolation(Interpolation):
 					if (endPos < 0):	raise InterpolationSyntaxError(option, section, "bad interpolation variable reference {0!r}".format(rest))
 					if ((nextPos > 0) and (nextPos < endPos)):  # an embedded $-sign
 						path = rest[nextPos+2:endPos]
-						print("interpol: path='{0}'".format(path))
+						# print("interpol: path='{0}'".format(path))
 						innervalue = self.GetValue(parser, section, option, path)
 						# innervalue = self.interpolate(parser, section, option, path, map, depth + 1)
-						print("interpol: innervalue='{0}'".format(innervalue))
+						# print("interpol: innervalue='{0}'".format(innervalue))
 						rest = rest[beginPos:nextPos] + innervalue + rest[endPos + 1:]
-						print("interpol: new rest='{0}'".format(rest))
+						# print("interpol: new rest='{0}'".format(rest))
 					else:
 						path =		rest[beginPos+2:endPos]
 						rest =		rest[endPos+1:]
 						result +=	self.GetValue(parser, section, option, path)
 
-					print("interpol: LOOP END - result='{0}'".format(result))
+					# print("interpol: LOOP END - result='{0}'".format(result))
 
-		print("interpol: RESULT => '{0}'".format(result))
+		# print("interpol: RESULT => '{0}'".format(result))
 		return result
 
 	def GetSpecial(self, section, option, path):
@@ -147,7 +147,7 @@ class ExtendedInterpolation(Interpolation):
 
 		try:
 			value = parser.get(sec, opt, raw=True)
-			print("GetValue: successful parser access: '{0}'".format(value))
+			# print("GetValue: successful parser access: '{0}'".format(value))
 		except (KeyError, NoSectionError, NoOptionError) as ex:
 			raise InterpolationMissingOptionError(option, section, rest, ":".join(path)) from ex
 
@@ -158,7 +158,7 @@ class ExtendedInterpolation(Interpolation):
 		return value
 
 	def GetCached(self, section, option):
-		print("GetCached: {0}:{1}".format(section, option))
+		# print("GetCached: {0}:{1}".format(section, option))
 		if (section not in self._cache):
 			raise KeyError(section)
 		sect = self._cache[section]
@@ -166,11 +166,11 @@ class ExtendedInterpolation(Interpolation):
 			raise KeyError("{0}:{1}".format(section, option))
 
 		value = sect[option]
-		print("GetCached: found: {0}".format(value))
+		# print("GetCached: found: {0}".format(value))
 		return value
 
 	def UpdateCache(self, section, option, value):
-		print("UpdateCache: {0}:{1} <- {2}".format(section, option, value))
+		# print("UpdateCache: {0}:{1} <- {2}".format(section, option, value))
 		if (section in self._cache):
 			sect = self._cache[section]
 			if (option in sect):				raise Exception("This value is already cached.")
@@ -241,7 +241,7 @@ class ExtendedConfigParser(ConfigParser):
 					value = str(value)
 				vardict[self.optionxform(key)] = value
 		prefix = section.split(".",1)[0] + ".DEFAULT"
-		# print("searched for {0}".format(prefix))
+		# # print("searched for {0}".format(prefix))
 		try:
 			defaultdict = self._sections[prefix]
 			return _ChainMap(vardict, sectiondict, defaultdict, self._defaults)

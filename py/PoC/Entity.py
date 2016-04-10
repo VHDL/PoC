@@ -32,6 +32,8 @@
 # ==============================================================================
 
 # entry point
+from pathlib import Path
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -177,28 +179,43 @@ class Root(Namespace):
 	def __str__(self):
 		return self.__POCRoot_Name
 
+class WildCard(PathElement):
+	pass
+
 class Entity(PathElement):
 	def __init__(self, host, name, configSection, parent):
 		super().__init__(host, name, configSection, parent)
 
-		self.__testbench =	None
-		self.__netlist =		None
+		self.__vhdltb =		None
+		self.__cocotb =		None
+		self.__netlist =	None
 
 		self._Load()
 
 	def _Load(self):
-		self._LoadTestbench()
+		self._LoadVHDLTestbench()
+		self._LoadCocotbTestbench()
 		self._LoadNetlist()
 
-	def _LoadTestbench(self):
+	def _LoadVHDLTestbench(self):
 		testbench = self._host.PoCConfig[self._configSection]["VHDLTestbench"]
 		if (testbench == ""):
 			raise ConfigurationException("IPCore '{0!s}' has a Testbench option, but it's empty.".format(self.Parent))
 		if (testbench.lower() == "none"):
 			return
 
-		print("found a testbench in '{0}' for '{1!s}'".format(testbench, self))
-		self.__testbench = Testbench(self._host, testbench)
+		# print("found a testbench in '{0}' for '{1!s}'".format(testbench, self))
+		self.__vhdltb = Testbench(self._host, testbench)
+
+	def _LoadCocotbTestbench(self):
+		testbench = self._host.PoCConfig[self._configSection]["CocotbTestbench"]
+		if (testbench == ""):
+			raise ConfigurationException("IPCore '{0!s}' has a Testbench option, but it's empty.".format(self.Parent))
+		if (testbench.lower() == "none"):
+			return
+
+		# print("found a testbench in '{0}' for '{1!s}'".format(testbench, self))
+		self.__cocotb = Testbench(self._host, testbench)
 
 	def _LoadNetlist(self):
 		netlist = self._host.PoCConfig[self._configSection]["Netlist"]
@@ -207,16 +224,18 @@ class Entity(PathElement):
 		if (netlist.lower() == "none"):
 			return
 
-		print("found a netlist in '{0}' for '{1!s}'".format(netlist, self.Parent))
-		self.__testbench = Netlist(self._host, netlist)
+		# print("found a netlist in '{0}' for '{1!s}'".format(netlist, self.Parent))
+		self.__vhdltb = Netlist(self._host, netlist)
 
 	def pprint(self, indent=0):
 		__indent = "  " * indent
 		buffer = "{0}Entity: {1}\n".format(__indent, self.Name)
-		if (self.__testbench is not None):
-			buffer += "{0}  {1!s}\n".format(__indent, self.__testbench)
+		if (self.__vhdltb is not None):
+			buffer += self.__vhdltb.pprint(indent + 1)
+		if (self.__cocotb is not None):
+			buffer += self.__cocotb.pprint(indent + 1)
 		if (self.__netlist is not None):
-			buffer += "{0}  {1!s}\n".format(__indent, self.__netlist)
+			buffer += self.__netlist.pprint(indent + 1)
 		return buffer
 
 class Base:
@@ -230,9 +249,10 @@ class Testbench(Base):
 	def __init__(self, host, sectionName):
 		super().__init__(host, sectionName)
 
-	def _Load(self):
-		self._filesFile = self._host.PoCConfig[self._sectionName]["FilesFile"]
+		self._filesFile = None
 
+	def _Load(self):
+		self._filesFile = Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
 
 	def __str__(self):
 		return "Testbench\n"
@@ -240,6 +260,38 @@ class Testbench(Base):
 	def pprint(self, indent):
 		__indent = "  " * indent
 		buffer  = "{0}Testbench:\n".format(__indent)
+		buffer += "{0}  Files: {1!s}\n".format(__indent, self._filesFile)
+		return buffer
+
+class VHDLTestbench(Testbench):
+	def __init__(self, host, sectionName):
+		super().__init__(host, sectionName)
+
+	def _Load(self):
+		super()._Load()
+
+	def __str__(self):
+		return "VHDL Testbench\n"
+
+	def pprint(self, indent):
+		__indent = "  " * indent
+		buffer = "{0}VHDL Testbench:\n".format(__indent)
+		buffer += "{0}  Files: {1!s}\n".format(__indent, self._filesFile)
+		return buffer
+
+class CocotbTestbench(Testbench):
+	def __init__(self, host, sectionName):
+		super().__init__(host, sectionName)
+
+	def _Load(self):
+		super()._Load()
+
+	def __str__(self):
+		return "Cocotb Testbench\n"
+
+	def pprint(self, indent):
+		__indent = "  " * indent
+		buffer = "{0}Cocotb Testbench:\n".format(__indent)
 		buffer += "{0}  Files: {1!s}\n".format(__indent, self._filesFile)
 		return buffer
 
@@ -252,6 +304,12 @@ class Netlist(Base):
 
 	def __str__(self):
 		return "Netlist\n"
+
+	def pprint(self, indent):
+		__indent = "  " * indent
+		buffer = "{0}Netlist:\n".format(__indent)
+		buffer += "{0}  Files: {1!s}\n".format(__indent, self._filesFile)
+		return buffer
 
 class FQN:
 	def __init__(self, host, fqn, defaultType=EntityTypes.Source):
@@ -281,7 +339,6 @@ class FQN:
 		# check and resolve parts
 		cur = self.__host.Root
 		self.__parts.append(cur)
-		length =		len(parts)
 		for pos,part in enumerate(parts):
 			pe = cur[part]
 			self.__parts.append(pe)
@@ -296,9 +353,9 @@ class FQN:
 
 	def GetEntities(self):
 		if (self.__type is EntityTypes.Testbench):
-			config = self.__host.TBConfig
+			config = self.__host.PoCConfig
 		elif (self.__type is EntityTypes.NetList):
-			config = self.__host.NLConfig
+			config = self.__host.PoCConfig
 
 		entity = self.__parts[-1]
 		if (not entity.IsStar):
