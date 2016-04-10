@@ -1,8 +1,8 @@
 
 
 import re
-from collections import ChainMap as _ChainMap
-from configparser import ConfigParser, SectionProxy, Interpolation, MAX_INTERPOLATION_DEPTH
+from collections	import OrderedDict as _default_dict, ChainMap as _ChainMap
+from configparser import ConfigParser, SectionProxy, Interpolation, MAX_INTERPOLATION_DEPTH, DEFAULTSECT, _UNSET, ConverterMapping
 from configparser import NoSectionError, InterpolationDepthError, InterpolationSyntaxError, NoOptionError, InterpolationMissingOptionError
 
 
@@ -24,93 +24,215 @@ class ExtendedInterpolation(Interpolation):
 	_KEYCRE = re.compile(r"\$\{(?P<ref>[^}]+)\}")
 	_KEYCRE2 = re.compile(r"\$\[(?P<ref>[^\]]+)\}")
 
+	def __init__(self):
+		self._cache = dict()
+
 	def before_get(self, parser, section, option, value, defaults):
-		L = []
-		self._interpolate_some(parser, option, L, value, section, defaults, 1)
-		return ''.join(L)
+		print("before_get: {0}:{1} = '{2}'".format(section, option, value))
+		try:
+			result = self.GetCached(section, option)
+		except KeyError:
+			result = self.interpolate(parser, section, option, value, defaults)
+			self.UpdateCache(section, option, result)
+		print("before_get: => '{0}'\n".format(result))
+		return result
 
 	def before_set(self, parser, section, option, value):
 		tmp_value = value.replace('$$', '') # escaped dollar signs
 		tmp_value = self._KEYCRE.sub('', tmp_value) # valid syntax
 		if '$' in tmp_value:
-			raise ValueError("invalid interpolation syntax in %r at position %d" % (value, tmp_value.find('$')))
+			raise ValueError("invalid interpolation syntax in {0!r} at position {1}".format(value, tmp_value.find('$')))
 		return value
 
-	def _interpolate_some(self, parser, option, accum, rest, section, map, depth):
-		if depth > MAX_INTERPOLATION_DEPTH:			raise InterpolationDepthError(option, section, rest)
+	def interpolate(self, parser, section, option, value, map, depth=0):
+		if depth > MAX_INTERPOLATION_DEPTH:      raise InterpolationDepthError(option, section, value)
 
-		print("interpolation begin: section={0} option={1}  accum='{2}'  rest='{3}'".format(section, option, accum, rest))
+		# short cut operations if empty or a normal string
+		if (value == ""):
+			print("interpol: SHORT -> empty string")
+			return ""
+		elif (("$" not in value) and ("%" not in value)):
+			print("interpol: SHORT -> {0}".format(value))
+			return value
 
-		while rest:
-			beginPos = rest.find("$")
-			if beginPos < 0:
-				accum.append(rest)
-				print("->" + "".join(accum))
-				return
-			if beginPos > 0:
-				accum.append(rest[:beginPos])
-				rest = rest[beginPos:]
-			# p is no longer used
-			if rest[1] == "$":
-				accum.append("$")
-				rest = rest[2:]
-			elif rest[1] == "{":
-				endPos = rest.find("}")
-				nextPos = rest.rfind("$", None, endPos)
-				# print("next={0}  end={1}".format(nextPos, endPos))
-				if (endPos < 0):
-					raise InterpolationSyntaxError(option, section, "bad interpolation variable reference %r" % rest)
-				elif ((nextPos > 0) and (nextPos < endPos)):			# an embedded $
-					L = []
-					self._interpolate_some(parser, option, L, rest[nextPos:endPos+1], section, map, depth + 1)
-					rest = rest[:nextPos] + "".join(L) + rest[endPos+1:]
-					# print("new rest1='{0}'".format(rest))
-				else:
-					path = rest[2:endPos].split(':')
-					rest = rest[endPos+1:]
-					# print("new rest2='{0}'  path='{1}'".format(rest, path))
+		print("interpol: PREPARE section={0} option={1} value='{2}'".format(section, option, value))
+		rawValue =		value
+		rest = ""
 
-					sect = section
-					opt = option
-					try:
-						if (len(path) == 1):
-							opt = parser.optionxform(path[0])
-							v = map[opt]
-						elif (len(path) == 2):
-							sect = path[0]
-							opt = parser.optionxform(path[1])
-							v = parser.get(sect, opt, raw=True)
-						else:
-							raise InterpolationSyntaxError(option, section, "More than one ':' found: %r" % (rest,))
-					except (KeyError, NoSectionError, NoOptionError):
-						raise InterpolationMissingOptionError(option, section, rest, ":".join(path)) from None
-
-					# print("v='{0}'".format(v))
-
-					if "$" in v:
-						self._interpolate_some(parser, opt, accum, v, sect, dict(parser.items(sect, raw=True)), depth + 1)
-					else:
-						accum.append(v)
+		while (len(rawValue) > 0):
+			beginPos = rawValue.find("%")
+			if (beginPos < 0):
+				rest += rawValue
+				rawValue = ""
 			else:
-				raise InterpolationSyntaxError(option, section, "'$' must be followed by '$' or '{', found: %r" % (rest,))
+				rest += rawValue[:beginPos]
+				if (rawValue[beginPos + 1] == "%"):
+					rest += "%"
+					rawValue = rawValue[1:]
+				elif (rawValue[beginPos + 1] == "{"):
+					endPos = rawValue.find("}", beginPos)
+					if (endPos < 0):
+						raise InterpolationSyntaxError(option, section, "bad interpolation variable reference {0!r}".format(rawValue))
+					path =			rawValue[beginPos + 2:endPos]
+					rawValue =	rawValue[endPos + 1:]
+					rest +=			self.GetSpecial(section, option, path)
 
-		print("->" + "".join(accum))
+		print("interpol: BEGIN   section={0} option={1} value='{2}'".format(section, option, rest))
+		result =	""
+		while (len(rest) > 0):
+			print("interpol: LOOP    rest='{0}'".format(rest))
+			beginPos = rest.find("$")
+			if (beginPos < 0):
+				result += rest
+				rest =		""
+			else:
+				result += rest[:beginPos]
+				if (rest[beginPos + 1] == "$"):
+					result +=	"$"
+					rest =		rest[1:]
+				elif (rest[beginPos + 1] == "{"):
+					endPos =	rest.find("}", beginPos)
+					nextPos =	rest.rfind("$", beginPos, endPos)
+					if (endPos < 0):	raise InterpolationSyntaxError(option, section, "bad interpolation variable reference {0!r}".format(rest))
+					if ((nextPos > 0) and (nextPos < endPos)):  # an embedded $-sign
+						path = rest[nextPos+2:endPos]
+						print("interpol: path='{0}'".format(path))
+						innervalue = self.GetValue(parser, section, option, path)
+						# innervalue = self.interpolate(parser, section, option, path, map, depth + 1)
+						print("interpol: innervalue='{0}'".format(innervalue))
+						rest = rest[beginPos:nextPos] + innervalue + rest[endPos + 1:]
+						print("interpol: new rest='{0}'".format(rest))
+					else:
+						path =		rest[beginPos+2:endPos]
+						rest =		rest[endPos+1:]
+						result +=	self.GetValue(parser, section, option, path)
+
+					print("interpol: LOOP END - result='{0}'".format(result))
+
+		print("interpol: RESULT => '{0}'".format(result))
+		return result
+
+	def GetSpecial(self, section, option, path):
+		parts = section.split(".")
+		if (path == "Root"):
+			return parts[0]
+		elif (path == "Parent"):
+			return ".".join(parts[1:-1])
+		elif (path == "ParentWithRoot"):
+			return ".".join(parts[:-1])
+		elif (path == "Path"):
+			return ".".join(parts[1:])
+		elif (path == "PathWithRoot"):
+			return section
+		elif (path == "Name"):
+			return parts[-1]
+		else:
+			raise InterpolationSyntaxError(option, section, "Unknown keyword '{0}'in special operator.".format(path))
+
+	def GetValue(self, parser, section, option, path):
+		path = path.split(":")
+		if (len(path) == 1):
+			sec = section
+			opt = parser.optionxform(path[0])
+		elif (len(path) == 2):
+			sec = path[0]
+			opt = parser.optionxform(path[1])
+		else:
+			raise InterpolationSyntaxError(option, section, "More than one ':' found.")
+
+		try:
+			return self.GetCached(sec, opt)
+		except KeyError:
+			pass
+
+		try:
+			value = parser.get(sec, opt, raw=True)
+			print("GetValue: successful parser access: '{0}'".format(value))
+		except (KeyError, NoSectionError, NoOptionError) as ex:
+			raise InterpolationMissingOptionError(option, section, rest, ":".join(path)) from ex
+
+		if (("$" in value) or ("%" in value)):
+			value = self.interpolate(parser, sec, opt, value, {})
+
+		self.UpdateCache(sec, opt, value)
+		return value
+
+	def GetCached(self, section, option):
+		print("GetCached: {0}:{1}".format(section, option))
+		if (section not in self._cache):
+			raise KeyError(section)
+		sect = self._cache[section]
+		if (option not in sect):
+			raise KeyError("{0}:{1}".format(section, option))
+
+		value = sect[option]
+		print("GetCached: found: {0}".format(value))
+		return value
+
+	def UpdateCache(self, section, option, value):
+		print("UpdateCache: {0}:{1} <- {2}".format(section, option, value))
+		if (section in self._cache):
+			sect = self._cache[section]
+			if (option in sect):				raise Exception("This value is already cached.")
+			sect[option] = value
+		else:
+			self._cache[section] = {option : value}
 
 
 class ExtendedConfigParser(ConfigParser):
 	_DEFAULT_INTERPOLATION = ExtendedInterpolation()
+
+	def __init__(self, defaults=None, dict_type=_default_dict, allow_no_value=False, *, delimiters=('=', ':'), comment_prefixes=('#', ';'),
+							 inline_comment_prefixes=None, strict=True, empty_lines_in_values=True, default_section=DEFAULTSECT, interpolation=_UNSET, converters=_UNSET):
+		self._dict =			dict_type
+		self._defaults =	dict_type()
+		self._sections =	dict_type()
+		self._proxies =		dict_type()
+		self._cache =			dict()
+
+		self._comment_prefixes =				tuple(comment_prefixes or ())
+		self._inline_comment_prefixes =	tuple(inline_comment_prefixes or ())
+		self._strict = strict
+		self._allow_no_value = allow_no_value
+		self._empty_lines_in_values = empty_lines_in_values
+		self.default_section = default_section
+
+		self._converters = ConverterMapping(self)
+		if (converters is not _UNSET):
+			self._converters.update(converters)
+
+		self._proxies[default_section] = SectionProxy(self, default_section)
+
+		if defaults:
+			for key, value in defaults.items():
+				self._defaults[self.optionxform(key)] = value
+
+		self._delimiters = tuple(delimiters)
+		if delimiters == ('=', ':'):
+			self._optcre =								self.OPTCRE_NV if allow_no_value else self.OPTCRE
+		else:
+			d = "|".join(re.escape(d) for d in delimiters)
+			if allow_no_value:						self._optcre = re.compile(self._OPT_NV_TMPL.format(delim=d), re.VERBOSE)
+			else:													self._optcre = re.compile(self._OPT_TMPL.format(delim=d), re.VERBOSE)
+
+		if (interpolation is None):			self._interpolation = Interpolation()
+		elif (interpolation is _UNSET):	self._interpolation = ExtendedInterpolation()
+		else:														self._interpolation = interpolation
+
 
 	def _unify_values(self, section, vars):
 		"""Create a sequence of lookups with 'vars' taking priority over
 		the 'section' which takes priority over the DEFAULTSECT.
 
 		"""
-		sectiondict = {}
 		try:
 			sectiondict = self._sections[section]
 		except KeyError:
 			if section != self.default_section:
 				raise NoSectionError(section)
+			else:
+				sectiondict = {}
+
 		# Update with the entry specific variables
 		vardict = {}
 		if vars:

@@ -191,7 +191,7 @@ class Entity(PathElement):
 		self._LoadNetlist()
 
 	def _LoadTestbench(self):
-		testbench = self._host.PoCConfig[self._configSection]["Testbench"]
+		testbench = self._host.PoCConfig[self._configSection]["VHDLTestbench"]
 		if (testbench == ""):
 			raise ConfigurationException("IPCore '{0!s}' has a Testbench option, but it's empty.".format(self.Parent))
 		if (testbench.lower() == "none"):
@@ -231,7 +231,7 @@ class Testbench(Base):
 		super().__init__(host, sectionName)
 
 	def _Load(self):
-		self._filesFile = self._host.PoCConfig[self._sectionName]["fileListFile"]
+		self._filesFile = self._host.PoCConfig[self._sectionName]["FilesFile"]
 
 
 	def __str__(self):
