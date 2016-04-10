@@ -50,7 +50,6 @@ from pathlib								import Path
 from Base.Exceptions				import NotConfiguredException, PlatformNotSupportedException
 from Base.Project						import FileTypes, VHDLVersion, Environment, ToolChain, Tool
 from Base.Compiler					import Compiler as BaseCompiler, CompilerException
-from Parser.Parser					import ParserException
 from PoC.Project						import Project as PoCProject, FileListFile
 from ToolChains.Xilinx.ISE	import ISE
 
@@ -294,34 +293,14 @@ class Compiler(BaseCompiler):
 		# TODO: copy resulting files into PoC's netlist directory
 		# TODO: replace in resulting files
 
-	@property
-	def TemporaryPath(self):
-		return self._tempPath
-	
-	@property
-	def OutputPath(self):
-		return self._outputPath
 
 	def _PrepareCompilerEnvironment(self):
-		self._LogNormal("  preparing compiler environment...")
-		
-		# create temporary directory for ghdl if not existent
-		self._tempPath = self.Host.Directories["XstTemp"]
-		if (not (self._tempPath).exists()):
-			self._LogVerbose("  Creating temporary directory for compiler files.")
-			self._LogDebug("    Temporary directors: {0}".format(str(self._tempPath)))
-			self._tempPath.mkdir(parents=True)
-			
-		# change working directory to temporary iSim path
-		self._LogVerbose("  Changing working directory to temporary directory.")
-		self._LogDebug("    cd \"{0}\"".format(str(self._tempPath)))
-		chdir(str(self._tempPath))
+		self._LogNormal("preparing synthesis environment...")
+		self._tempPath =		self.Host.Directories["XstTemp"]
+		self._outputPath =	self.Host.Directories["PoCNetList"] / str(self._device)
+		super()._PrepareCompilerEnvironment()
 
-	def RunAll(self, pocEntities, device, **kwargs) :
-		for pocEntity in pocEntities :
-			self.Run(pocEntity, device, **kwargs)
-
-	def Run(self, pocEntity, board):
+	def Run(self, pocEntity, board, **_):
 		self._pocEntity =		pocEntity
 		self._ipcoreFQN =		str(pocEntity)  # TODO: implement FQN method on PoCEntity
 		self._device =			board.Device
@@ -334,12 +313,7 @@ class Compiler(BaseCompiler):
 
 		self._LogNormal(self._ipcoreFQN)
 
-		# create output directory for CoreGen if not existent
-		self._outputPath = self.Host.Directories["PoCNetList"] / str(self._device)
-		if not (self._outputPath).exists() :
-			self._LogVerbose("  Creating output directory for core generator files.")
-			self._LogDebug("    Output directory: {0}.".format(str(self._outputPath)))
-			self._outputPath.mkdir(parents=True)
+
 
 		# setup all needed paths to execute fuse
 		toplevelName = self.Host.PoCConfig[self._ipcoreFQN]['TopModule']
@@ -358,31 +332,6 @@ class Compiler(BaseCompiler):
 		# create the GHDL executable factory
 		self._LogVerbose("  Preparing Xilinx Synthesis Tool (XST).")
 		self._ise =		ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
-	
-	def _CreatePoCProject(self, board):
-		# create a PoCProject and read all needed files
-		self._LogDebug("    Create a PoC project '{0}'".format(self._ipcoreFQN))
-		pocProject =									PoCProject(self._ipcoreFQN)
-		
-		# configure the project
-		pocProject.RootDirectory =		self.Host.Directories["PoCRoot"]
-		pocProject.Environment =			Environment.Synthesis
-		pocProject.ToolChain =				ToolChain.Xilinx_ISE
-		pocProject.Tool =							Tool.Xilinx_XST
-		pocProject.Board =						board
-		
-		self._pocProject = pocProject
-		
-	def _AddFileListFile(self, fileListFilePath):
-		self._LogDebug("    Reading filelist '{0}'".format(str(fileListFilePath)))
-		# add the *.files file, parse and evaluate it
-		fileListFile = self._pocProject.AddFile(FileListFile(fileListFilePath))
-		fileListFile.Parse()
-		fileListFile.CopyFilesToFileSet()
-		fileListFile.CopyExternalLibraries()
-		self._pocProject.ExtractVHDLLibrariesFromVHDLSourceFiles()
-		self._LogDebug(self._pocProject.pprint(2))
-		self._LogDebug("=" * 160)
 
 	def _RunPrepareCompile(self):
 		pass

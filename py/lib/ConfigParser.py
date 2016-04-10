@@ -149,7 +149,7 @@ class ExtendedInterpolation(Interpolation):
 			value = parser.get(sec, opt, raw=True)
 			# print("GetValue: successful parser access: '{0}'".format(value))
 		except (KeyError, NoSectionError, NoOptionError) as ex:
-			raise InterpolationMissingOptionError(option, section, rest, ":".join(path)) from ex
+			raise InterpolationMissingOptionError(option, section, "", ":".join(path)) from ex
 
 		if (("$" in value) or ("%" in value)):
 			value = self.interpolate(parser, sec, opt, value, {})

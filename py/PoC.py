@@ -511,14 +511,7 @@ class PoC(ILogable, ArgParseMixin):
 		# create a GHDLSimulator instance and prepare it
 		simulator = ActiveHDLSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(binaryPath, aSimVersion)
-
-		# run a testbench
-		for fqn in fqnList:
-			for entity in fqn.GetEntities():
-				# try:
-				simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
-				# except SimulatorException as ex:
-					# pass
+		simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
 		Exit.exit()
 	
@@ -558,33 +551,21 @@ class PoC(ILogable, ArgParseMixin):
 		ghdlVersion =														self.PoCConfig['GHDL']['Version']
 		ghdlBackend =														self.PoCConfig['GHDL']['Backend']
 
+		if (args.GUIMode == True):
+			# prepare paths for GTKWave, if configured
+			if (len(self.PoCConfig.options("GTKWave")) != 0):
+				self.Directories["GTKWInstallation"] = Path(self.PoCConfig['GTKWave']['InstallationDirectory'])
+				self.Directories["GTKWBinary"] = Path(self.PoCConfig['GTKWave']['BinaryDirectory'])
+			else:
+				raise NotConfiguredException("No GHDL compatible waveform viewer is configured on this system.")
+
 		# prepare paths to vendor simulation libraries
 		self.__PrepareVendorLibraryPaths()
 
 		# create a GHDLSimulator instance and prepare it
 		simulator = GHDLSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(ghdlBinaryPath, ghdlVersion, ghdlBackend)
-
-		# run a testbench
-		for fqn in fqnList:
-				entity = fqn.Entity
-			# for entity in fqn.GetEntities():
-				try:
-					simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)		#, vhdlGenerics=None)
-
-					if (args.GUIMode == True):
-						# prepare paths for GTKWave, if configured
-						if (len(self.PoCConfig.options("GTKWave")) != 0):
-							self.Directories["GTKWInstallation"] = Path(self.PoCConfig['GTKWave']['InstallationDirectory'])
-							self.Directories["GTKWBinary"] = Path(self.PoCConfig['GTKWave']['BinaryDirectory'])
-						else:
-							raise NotConfiguredException("No GHDL compatible waveform viewer is configured on this system.")
-
-						viewer = simulator.GetViewer()
-						viewer.View()
-
-				except SimulatorException:
-					pass
+		simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion, guiMode=args.GUIMode)		#, vhdlGenerics=None)
 
 		Exit.exit()
 
@@ -628,12 +609,7 @@ class PoC(ILogable, ArgParseMixin):
 		# create a GHDLSimulator instance and prepare it
 		simulator = ISESimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(binaryPath, iseVersion)
-
-		# run a testbench
-		for fqn in fqnList:
-			for entity in fqn.GetEntities():
-				# try:
-				simulator.Run(entity, board=board)		#, vhdlGenerics=None)
+		simulator.RunAll(fqnList, board=board)		#, vhdlGenerics=None)
 
 		Exit.exit()
 		
@@ -689,13 +665,7 @@ class PoC(ILogable, ArgParseMixin):
 		# create a GHDLSimulator instance and prepare it
 		simulator = QuestaSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(binaryPath, vSimVersion)
-
-		# run a testbench
-		for fqn in fqnList:
-			print(fqn)
-			for entity in fqn.GetEntities():
-				# try:
-				simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
+		simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
 		Exit.exit()
 	
@@ -748,13 +718,7 @@ class PoC(ILogable, ArgParseMixin):
 		# create a GHDLSimulator instance and prepare it
 		simulator = VivadoSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(binaryPath, vivadoVersion)
-
-		# run a testbench
-		for fqn in fqnList:
-			print(fqn)
-			for entity in fqn.GetEntities():
-				# try:
-				simulator.Run(entity, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
+		simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
 		Exit.exit()
 
@@ -794,13 +758,7 @@ class PoC(ILogable, ArgParseMixin):
 		# create a CocotbSimulator instance and prepare it
 		simulator = CocotbSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator()
-
-		# run a testbench
-		for fqn in fqnList:
-			print(fqn)
-			for entity in fqn.GetEntities():
-				# try:
-				simulator.Run(entity, board=board)
+		simulator.RunAll(fqnList, board=board)
 
 		Exit.exit()
 
@@ -855,12 +813,7 @@ class PoC(ILogable, ArgParseMixin):
 
 		compiler = XCOCompiler.Compiler(self, args.logs, args.reports)
 		compiler.dryRun = self.__dryRun
-
-		# run a testbench
-		for fqn in fqnList:
-			print(fqn)
-			for entity in fqn.GetEntities():
-				compiler.Run(entity, board)
+		compiler.RunAll(fqnList, board)
 
 		Exit.exit()
 
@@ -893,11 +846,7 @@ class PoC(ILogable, ArgParseMixin):
 
 		compiler = XSTCompiler(self, args.logs, args.reports)
 		compiler.dryRun = self.DryRun
-		# run a compilation
-		for fqn in fqnList:
-			print(fqn)
-			for entity in fqn.GetEntities():
-				compiler.Run(entity, board)
+		compiler.RunAll(fqnList, board)
 
 		Exit.exit()
 

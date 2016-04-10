@@ -34,6 +34,8 @@
 # entry point
 from pathlib import Path
 
+from Base.Exceptions import NotConfiguredException
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -186,11 +188,29 @@ class Entity(PathElement):
 	def __init__(self, host, name, configSection, parent):
 		super().__init__(host, name, configSection, parent)
 
-		self.__vhdltb =		None
-		self.__cocotb =		None
-		self.__netlist =	None
+		self._vhdltb =	None
+		self._cocotb =	None
+		self._netlist =	None
 
 		self._Load()
+
+	@property
+	def VHDLTestbench(self):
+		if self._vhdltb is None:
+			raise NotConfiguredException("No VHDL testbench configured for '{0!s}'.".format(self))
+		return self._vhdltb
+
+	@property
+	def CocoTestbench(self):
+		if self._cocotb is None:
+			raise NotConfiguredException("No VHDL testbench configured for '{0!s}'.".format(self))
+		return self._cocotb
+
+	@property
+	def Netlist(self):
+		if self._netlist is None:
+			raise NotConfiguredException("No VHDL testbench configured for '{0!s}'.".format(self))
+		return self._netlist
 
 	def _Load(self):
 		self._LoadVHDLTestbench()
@@ -200,22 +220,22 @@ class Entity(PathElement):
 	def _LoadVHDLTestbench(self):
 		testbench = self._host.PoCConfig[self._configSection]["VHDLTestbench"]
 		if (testbench == ""):
-			raise ConfigurationException("IPCore '{0!s}' has a Testbench option, but it's empty.".format(self.Parent))
+			raise ConfigurationException("IPCore '{0!s}' has a VHDL Testbench option, but it's empty.".format(self.Parent))
 		if (testbench.lower() == "none"):
 			return
 
 		# print("found a testbench in '{0}' for '{1!s}'".format(testbench, self))
-		self.__vhdltb = Testbench(self._host, testbench)
+		self._vhdltb = VHDLTestbench(self._host, testbench)
 
 	def _LoadCocotbTestbench(self):
 		testbench = self._host.PoCConfig[self._configSection]["CocotbTestbench"]
 		if (testbench == ""):
-			raise ConfigurationException("IPCore '{0!s}' has a Testbench option, but it's empty.".format(self.Parent))
+			raise ConfigurationException("IPCore '{0!s}' has a Cocotb Testbench option, but it's empty.".format(self.Parent))
 		if (testbench.lower() == "none"):
 			return
 
 		# print("found a testbench in '{0}' for '{1!s}'".format(testbench, self))
-		self.__cocotb = Testbench(self._host, testbench)
+		self._cocotb = CocoTestbench(self._host, testbench)
 
 	def _LoadNetlist(self):
 		netlist = self._host.PoCConfig[self._configSection]["Netlist"]
@@ -225,17 +245,17 @@ class Entity(PathElement):
 			return
 
 		# print("found a netlist in '{0}' for '{1!s}'".format(netlist, self.Parent))
-		self.__vhdltb = Netlist(self._host, netlist)
+		self._vhdltb = Netlist(self._host, netlist)
 
 	def pprint(self, indent=0):
 		__indent = "  " * indent
 		buffer = "{0}Entity: {1}\n".format(__indent, self.Name)
-		if (self.__vhdltb is not None):
-			buffer += self.__vhdltb.pprint(indent + 1)
-		if (self.__cocotb is not None):
-			buffer += self.__cocotb.pprint(indent + 1)
-		if (self.__netlist is not None):
-			buffer += self.__netlist.pprint(indent + 1)
+		if (self._vhdltb is not None):
+			buffer += self._vhdltb.pprint(indent + 1)
+		if (self._cocotb is not None):
+			buffer += self._cocotb.pprint(indent + 1)
+		if (self._netlist is not None):
+			buffer += self._netlist.pprint(indent + 1)
 		return buffer
 
 class Base:
@@ -247,12 +267,23 @@ class Base:
 
 class Testbench(Base):
 	def __init__(self, host, sectionName):
+		self._moduleName =	""
+		self._filesFile =		None
+
 		super().__init__(host, sectionName)
 
-		self._filesFile = None
+
+	@property
+	def ModuleName(self):
+		return self._moduleName
+
+	@property
+	def FilesFile(self):
+		return self._filesFile
 
 	def _Load(self):
-		self._filesFile = Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
+		self._moduleName =	self._host.PoCConfig[self._sectionName]["TestbenchModule"]
+		self._filesFile =		Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
 
 	def __str__(self):
 		return "Testbench\n"
@@ -279,7 +310,7 @@ class VHDLTestbench(Testbench):
 		buffer += "{0}  Files: {1!s}\n".format(__indent, self._filesFile)
 		return buffer
 
-class CocotbTestbench(Testbench):
+class CocoTestbench(Testbench):
 	def __init__(self, host, sectionName):
 		super().__init__(host, sectionName)
 

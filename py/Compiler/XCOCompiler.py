@@ -59,71 +59,50 @@ class Compiler(BaseCompiler):
 	def __init__(self, host, showLogs, showReport):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
-		self._pocEntity =			None
+		self._entity =				None
 		self._netlistFQN =		""
-		self._device =				None
+		self._board =					None
 		self._tempPath =			None
 		self._outputPath =		None
 		self._ise =						None
 
 		self._PrepareCompilerEnvironment()
 
-	@property
-	def TemporaryPath(self):
-		return self._tempPath
-
 	def _PrepareCompilerEnvironment(self):
-		self._LogNormal("preparing compiler environment...")
-		# create temporary directory for CoreGen if not existent
-		self._tempPath = self.Host.Directories["CoreGenTemp"]
-		if (not (self._tempPath).exists()):
-			self._LogVerbose("  Creating temporary directory for compiler files.")
-			self._LogDebug("    Temporary directory: {0}".format(str(self._tempPath)))
-			self._tempPath.mkdir(parents=True)
+		self._LogNormal("preparing synthesis environment...")
+		self._tempPath =		self.Host.Directories["CoreGenTemp"]
+		self._outputPath =	self.Host.Directories["PoCNetList"] / str(self._board.Device)
+		super()._PrepareCompilerEnvironment()
 
-		# change working directory to temporary iSim path
-		self._LogVerbose("  Changing working directory to temporary directory.")
-		self._LogDebug("    cd \"{0}\"".format(str(self._tempPath)))
-		chdir(str(self._tempPath))
-
-	def RunAll(self, pocEntities, **kwargs):
-		for pocEntity in pocEntities:
-			self.Run(pocEntity, **kwargs)
 		
-	def Run(self, pocEntity, device):
-		self._pocEntity =			pocEntity
-		self._netlistFQN =		str(pocEntity)  # TODO: implement FQN method on PoCEntity
-		self._device =				device
+	def Run(self, entity, board, **_):
+		self._entity =				entity
+		self._netlistFQN =		str(entity)  # TODO: implement FQN method on PoCEntity
+		self._board =					board
 		
 		# check testbench database for the given testbench		
 		self._LogQuiet("IP-core: {0}{1}{2}".format(Foreground.YELLOW, self._netlistFQN, Foreground.RESET))
-		if (not self.Host.netListConfig.has_section(self._netlistFQN)):
-			raise CompilerException("IP-core '{0}' not found.".format(self._netlistFQN)) from NoSectionError(self._netlistFQN)
 
-		self._LogNormal(self._netlistFQN)
+		# setup all needed paths to execute fuse
+		netlist = entity.Netlist
+		self._CreatePoCProject(netlist, board)
+		self._AddFileListFile(netlist.FilesFile)
 
-		# create output directory for CoreGen if not existent
-		self._outputPath = self.Host.Directories["PoCNetList"] / str(device)
-		if not (self._outputPath).exists():
-			self._LogVerbose("  Creating output directory for core generator files.")
-			self._LogDebug("    Output directory: {0}.".format(str(self._outputPath)))
-			self._outputPath.mkdir(parents=True)
+		self._RunPrepareCompile(netlist)
+		self._RunPreCopy(netlist)
+		self._RunCompile(netlist)
+		self._RunPostCopy(netlist)
+		self._RunPostReplace(netlist)
 
-		self._RunPrepareCompile()
-		self._RunPreCopy()
-		self._RunCompile()
-		self._RunPostCopy()
-		self._RunPostReplace()
-
-	def _RunPrepareCompile(self):
+	def _RunPrepareCompile(self, netlist):
 		self._LogNormal("  preparing compiler environment for IP-core '????' ...")
 
 		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.Host.netListConfig['SPECIAL'] =							{}
-		self.Host.netListConfig['SPECIAL']['Device'] =		str(self._device)
+		self.Host.netListConfig['SPECIAL']['Device'] =		str(self._board)
 		self.Host.netListConfig['SPECIAL']['OutputDir'] =	self._tempPath.as_posix()
 
-	def _RunPreCopy(self):
+	def _RunPreCopy(self, netlist):
 		# read pre-copy tasks
 		preCopyTasks = []
 		preCopyFileList = self.Host.netListConfig[self._netlistFQN]['PreCopy.Rule']
@@ -158,7 +137,7 @@ class Compiler(BaseCompiler):
 			self._LogVerbose("  pre-copying '{0}'.".format(fromPath))
 			shutil.copy(str(fromPath), str(toPath))
 
-	def _RunCompile(self):
+	def _RunCompile(self, netlist):
 		# read netlist settings from configuration file
 		ipCoreName = self.Host.netListConfig[self._netlistFQN]['IPCoreName']
 		xcoInputFilePath = self.Host.Directories["PoCRoot"] / self.Host.netListConfig[self._netlistFQN]['CoreGeneratorFile']
@@ -193,10 +172,10 @@ class Compiler(BaseCompiler):
 			SET vhdlsim = true
 			SET workingdirectory = {WorkingDirectory}
 			'''.format(
-			Device=self._device.shortName(),
-			DeviceFamily=self._device.familyName(),
-			Package=(str(self._device.package) + str(self._device.pinCount)),
-			SpeedGrade=self._device.speedGrade,
+			Device=self._board.shortName(),
+			DeviceFamily=self._board.familyName(),
+			Package=(str(self._board.package) + str(self._board.pinCount)),
+			SpeedGrade=self._board.speedGrade,
 			WorkingDirectory=WorkingDirectory
 		))
 
@@ -211,10 +190,10 @@ class Compiler(BaseCompiler):
 
 		cgContentFileContent = cgContentFileContent.format(
 			name="lcd_ChipScopeVIO",
-			device=self._device.shortName(),
-			devicefamily=self._device.familyName(),
-			package=(str(self._device.package) + str(self._device.pinCount)),
-			speedgrade=self._device.speedGrade
+			device=self._board.shortName(),
+			devicefamily=self._board.familyName(),
+			package=(str(self._board.package) + str(self._board.pinCount)),
+			speedgrade=self._board.speedGrade
 		)
 
 		self._LogDebug("Writing CoreGen content file to '{0}'.".format(cgcFilePath))
@@ -241,7 +220,7 @@ class Compiler(BaseCompiler):
 		coreGen.Parameters[coreGen.FlagRegenerate] =		True
 		coreGen.Generate()
 
-	def _RunPostCopy(self):
+	def _RunPostCopy(self, netlist):
 		# read (post) copy tasks
 		copyTasks = []
 		copyFileList = self.Host.netListConfig[self._netlistFQN]['PostCopy.Rule']
@@ -277,7 +256,7 @@ class Compiler(BaseCompiler):
 			self._LogVerbose("  copying '{0}'.".format(fromPath))
 			shutil.copy(str(fromPath), str(toPath))
 
-	def _RunPostReplace(self):
+	def _RunPostReplace(self, netlist):
 		# read replacement tasks
 		replaceTasks = []
 		replaceFileList = self.Host.netListConfig[self._netlistFQN]['PostReplace.Rule']
