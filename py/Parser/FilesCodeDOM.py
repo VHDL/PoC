@@ -30,10 +30,10 @@
 # limitations under the License.
 # ==============================================================================
 #
-from Parser.Parser		import MismatchingParserResult, MatchingParserResult
-from Parser.Parser		import CodeDOMObject
-from Parser.Parser		import SpaceToken, CharacterToken, StringToken, NumberToken
-from Parser.Parser		import Statement, BlockStatement, ConditionalBlockStatement, Expressions
+from lib.Parser import CodeDOMObject
+from lib.Parser import MismatchingParserResult, MatchingParserResult
+from lib.Parser import SpaceToken, CharacterToken, StringToken, NumberToken
+from lib.Parser import Statement, BlockStatement, ConditionalBlockStatement, Expressions
 
 
 class EmptyLine(CodeDOMObject):

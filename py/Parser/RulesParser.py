@@ -30,9 +30,9 @@
 # ==============================================================================
 #
 
-from Parser.Parser				import ParserException
 from Parser.FilesCodeDOM	import Document
 from Parser.RulesCodeDOM	import PreProcessStatement, PostProcessStatement, CopyStatement, ReplaceStatement
+from lib.Parser import ParserException
 
 
 class Rule:

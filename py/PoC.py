@@ -33,7 +33,7 @@
 # ==============================================================================
 
 from argparse									import RawDescriptionHelpFormatter
-from configparser							import Error as ConfigParser_Error, NoOptionError, InterpolationError
+from configparser							import Error as ConfigParser_Error
 from os												import environ
 from pathlib									import Path
 from platform									import system as platform_system
@@ -43,14 +43,14 @@ from textwrap									import dedent
 from lib.Functions						import Init, Exit
 from lib.ArgParseAttributes		import ArgParseMixin, CommandAttribute, CommonSwitchArgumentAttribute, CommandGroupAttribute, ArgumentAttribute, SwitchArgumentAttribute, DefaultAttribute
 from lib.ConfigParser					import ExtendedConfigParser
+from lib.Parser								import ParserException
 from Base.Exceptions					import ExceptionBase, CommonException, PlatformNotSupportedException, EnvironmentException, NotConfiguredException
+from Base.Logging							import ILogable, Logger, Severity
 from Base.Configuration				import ConfigurationException
+from Base.Project							import VHDLVersion
+from Base.ToolChain						import ToolChainException
 from Base.Simulator						import SimulatorException
 from Base.Compiler						import CompilerException
-from Base.ToolChain						import ToolChainException
-from Base.Logging							import ILogable, Logger, Severity
-from Base.Project							import VHDLVersion
-from Parser.Parser						import ParserException
 from PoC.Config								import Board
 from PoC.Entity								import Root, FQN, EntityTypes
 from PoC.Query								import Query

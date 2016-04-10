@@ -32,7 +32,7 @@
 # ==============================================================================
 
 # entry point
-from Parser.Parser import ParserException
+from lib.Parser import ParserException
 
 if __name__ != "__main__":
 	# place library initialization code here
