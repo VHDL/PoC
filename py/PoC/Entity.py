@@ -209,7 +209,7 @@ class Entity(PathElement):
 	@property
 	def Netlist(self):
 		if self._netlist is None:
-			raise NotConfiguredException("No VHDL testbench configured for '{0!s}'.".format(self))
+			raise NotConfiguredException("No netlist configured for '{0!s}'.".format(self))
 		return self._netlist
 
 	def _Load(self):
