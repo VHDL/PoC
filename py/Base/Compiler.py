@@ -149,6 +149,14 @@ class Compiler(ILogable):
 		except ParserException as ex:
 			raise CompilerException("Error while parsing '{0!s}'.".format(rulesFilePath)) from ex
 
+		self._LogDebug("    Pre-process rules:")
+		for rule in rulesFile.PreProcessRules:
+			self._LogDebug("      {0!s}".format(rule))
+		self._LogDebug("    Post-process rules:")
+		for rule in rulesFile.PostProcessRules:
+			self._LogDebug("      {0!s}".format(rule))
+
+
 	def RunAll(self, fqnList, *args, **kwargs):
 		for fqn in fqnList:
 			entity = fqn.Entity

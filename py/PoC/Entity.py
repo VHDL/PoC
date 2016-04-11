@@ -215,7 +215,7 @@ class Entity(PathElement):
 	def _Load(self):
 		self._LoadVHDLTestbench()
 		self._LoadCocotbTestbench()
-		self._LoadNetlist()
+		self._LoadXSTNetlist()
 
 	def _LoadVHDLTestbench(self):
 		testbench = self._host.PoCConfig[self._configSection]["VHDLTestbench"]
@@ -225,7 +225,7 @@ class Entity(PathElement):
 			return
 
 		# print("found a testbench in '{0}' for '{1!s}'".format(testbench, self))
-		self._vhdltb = VHDLTestbench(self._host, testbench)
+		self._vhdltb = VhdlTestbench(self._host, testbench)
 
 	def _LoadCocotbTestbench(self):
 		testbench = self._host.PoCConfig[self._configSection]["CocotbTestbench"]
@@ -237,15 +237,15 @@ class Entity(PathElement):
 		# print("found a testbench in '{0}' for '{1!s}'".format(testbench, self))
 		self._cocotb = CocoTestbench(self._host, testbench)
 
-	def _LoadNetlist(self):
+	def _LoadXSTNetlist(self):
 		netlist = self._host.PoCConfig[self._configSection]["Netlist"]
 		if (netlist == ""):
 			raise ConfigurationException("IPCore '{0!s}' has a Netlist option, but it's empty.".format(self))
 		if (netlist.lower() == "none"):
 			return
 
-		print("found a netlist in '{0}' for '{1!s}'".format(netlist, self.Parent))
-		self._netlist = Netlist(self._host, netlist)
+		# print("found a netlist in '{0}' for '{1!s}'".format(netlist, self.Parent))
+		self._netlist = XstNetlist(self._host, netlist)
 
 	def pprint(self, indent=0):
 		__indent = "  " * indent
@@ -282,7 +282,7 @@ class Testbench(Base):
 		self._filesFile =		Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
 
 	def __str__(self):
-		return "Testbench\n"
+		return "Abstract testbench\n"
 
 	def pprint(self, indent):
 		__indent = "  " * indent
@@ -290,7 +290,7 @@ class Testbench(Base):
 		buffer += "{0}  Files: {1!s}\n".format(__indent, self._filesFile)
 		return buffer
 
-class VHDLTestbench(Testbench):
+class VhdlTestbench(Testbench):
 	def __init__(self, host, sectionName):
 		super().__init__(host, sectionName)
 
@@ -335,7 +335,6 @@ class Netlist(Base):
 		self._rulesFile =		None
 		super().__init__(host, sectionName)
 
-
 	@property
 	def ModuleName(self):		return self._moduleName
 	@property
@@ -349,14 +348,44 @@ class Netlist(Base):
 		self._rulesFile =		Path(self._host.PoCConfig[self._sectionName]["RulesFile"])
 
 	def __str__(self):
-		return "Netlist\n"
+		return "Abstract netlist\n"
+
+
+class XstNetlist(Netlist):
+	def __str__(self):
+		return "XST Netlist\n"
 
 	def pprint(self, indent):
 		__indent = "  " * indent
-		buffer = "{0}Netlist:\n".format(__indent)
+		buffer = "{0}Netlist: {1}\n".format(__indent, self._moduleName)
 		buffer += "{0}  Files: {1!s}\n".format(__indent, self._filesFile)
 		buffer += "{0}  Rules: {1!s}\n".format(__indent, self._rulesFile)
 		return buffer
+
+
+class CoreGeneratorNetlist(Netlist):
+	def __str__(self):
+		return "CoreGen netlist\n"
+
+	def pprint(self, indent):
+		__indent = "  " * indent
+		buffer = "{0}Netlist: {1}\n".format(__indent, self._moduleName)
+		buffer += "{0}  Files: {1!s}\n".format(__indent, self._filesFile)
+		buffer += "{0}  Rules: {1!s}\n".format(__indent, self._rulesFile)
+		return buffer
+
+
+class QuartusNetlist(Netlist):
+	def __str__(self):
+		return "Quartus netlist\n"
+
+	def pprint(self, indent):
+		__indent = "  " * indent
+		buffer = "{0}Netlist: {1}\n".format(__indent, self._moduleName)
+		buffer += "{0}  Files: {1!s}\n".format(__indent, self._filesFile)
+		buffer += "{0}  Rules: {1!s}\n".format(__indent, self._rulesFile)
+		return buffer
+
 
 class FQN:
 	def __init__(self, host, fqn, defaultType=EntityTypes.Source):

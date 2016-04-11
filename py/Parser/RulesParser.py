@@ -30,9 +30,8 @@
 # ==============================================================================
 #
 
-from Parser.FilesCodeDOM	import Document
-from Parser.RulesCodeDOM	import PreProcessStatement, PostProcessStatement, CopyStatement, ReplaceStatement
-from lib.Parser import ParserException
+from lib.Parser						import ParserException
+from Parser.RulesCodeDOM	import Document, PreProcessRulesStatement, PostProcessStatement, CopyStatement, ReplaceStatement, InFileStatement
 
 
 class Rule:
@@ -40,11 +39,34 @@ class Rule:
 
 
 class CopyRuleMixIn(Rule):
-	pass
+	def __init__(self, sourcePath, destinationPath):
+		self._source =			sourcePath
+		self._destination =	destinationPath
+
+	@property
+	def SourcePath(self):						return self._source
+	@property
+	def DestinationPath(self):	return self._destination
+
+	def __str__(self):
+		return "Copy rule: {0!s} => {1!s}".format(self._source, self._destination)
 
 
 class ReplaceMixIn(Rule):
-	pass
+	def __init__(self, filePath, searchPattern, replacePattern):
+		self._filePath =				filePath
+		self._searchPattern =		searchPattern
+		self._replacePattern =	replacePattern
+
+	@property
+	def File(self):						return self._filePath
+	@property
+	def SearchPattern(self):	return self._searchPattern
+	@property
+	def ReplacePattern(self):	return self._replacePattern
+
+	def __str__(self):
+		return "Replace rule: in '{0!s}' replace '{1}' with '{2}'".format(self._filePath, self._searchPattern, self._replacePattern)
 
 
 class RulesParserMixIn:
@@ -63,31 +85,35 @@ class RulesParserMixIn:
 		self._document = Document.parse(self._content, printChar=not True)
 		# print(Fore.LIGHTBLACK_EX + str(self._document) + Fore.RESET)
 		
-	def _Resolve(self, statements=None):
+	def _Resolve(self):
 		# print("Resolving {0}".format(str(self._file)))
-		if (statements is None):
-			statements = self._document.Statements
-		
-		for stmt in statements:
-			if isinstance(stmt, PreProcessStatement):
-				file =						self._rootDirectory / stmt.FileName
-				vhdlSrcFile =			self._classVHDLSourceFile(file, stmt.LibraryName)		# stmt.Library, 
-				self._files.append(vhdlSrcFile)
+		for stmt in self._document.Statements:
+			if isinstance(stmt, PreProcessRulesStatement):
+				for ruleStatement in stmt.Statements:
+					self._ResolveRule(ruleStatement, self._preProcessRules)
 			elif isinstance(stmt, PostProcessStatement):
-				file =						self._rootDirectory / stmt.FileName
-				verilogSrcFile =	self._classVerilogSourceFile(file)
-				self._files.append(verilogSrcFile)
-			elif isinstance(stmt, CopyStatement):
-				lib =					self._rootDirectory / stmt.DirectoryName
-				vhdlLibRef =	VHDLLibraryReference(stmt.Library, lib)
-				self._libraries.append(vhdlLibRef)
-			elif isinstance(stmt, ReplaceStatement):
-				lib = self._rootDirectory / stmt.DirectoryName
-				vhdlLibRef = VHDLLibraryReference(stmt.Library, lib)
-				self._libraries.append(vhdlLibRef)
+				for ruleStatement in stmt.Statements:
+					self._ResolveRule(ruleStatement, self._postProcessRules)
 			else:
 				ParserException("Found unknown statement type '{0}'.".format(stmt.__class__.__name__))
-	
+
+	def _ResolveRule(self, ruleStatement, lst):
+		if isinstance(ruleStatement, CopyStatement):
+			sourceFile =				self._rootDirectory / ruleStatement.SourcePath
+			destinationFile =		self._rootDirectory / ruleStatement.DestinationPath
+			rule =							self._classCopyRule(sourceFile, destinationFile)
+			lst.append(rule)
+		elif isinstance(ruleStatement, InFileStatement):
+			filePath = self._rootDirectory / ruleStatement.FilePath
+			for replaceRule in ruleStatement.Statements:
+				if isinstance(replaceRule, ReplaceStatement):
+					rule =					self._classReplaceRule(filePath, replaceRule.SearchPattern, replaceRule.ReplacePattern)
+					lst.append(rule)
+				else:
+					ParserException("Found unknown statement type '{0}'.".format(replaceRule.__class__.__name__))
+		else:
+			ParserException("Found unknown statement type '{0}'.".format(ruleStatement.__class__.__name__))
+
 	@property
 	def PreProcessRules(self):		return self._preProcessRules
 	@property
