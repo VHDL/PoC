@@ -244,8 +244,8 @@ class Entity(PathElement):
 		if (netlist.lower() == "none"):
 			return
 
-		# print("found a netlist in '{0}' for '{1!s}'".format(netlist, self.Parent))
-		self._vhdltb = Netlist(self._host, netlist)
+		print("found a netlist in '{0}' for '{1!s}'".format(netlist, self.Parent))
+		self._netlist = Netlist(self._host, netlist)
 
 	def pprint(self, indent=0):
 		__indent = "  " * indent
@@ -324,15 +324,23 @@ class CocoTestbench(Testbench):
 
 class Netlist(Base):
 	def __init__(self, host, sectionName):
+		self._moduleName =	""
+		self._filesFile =		None
 		self._rulesFile =		None
 		super().__init__(host, sectionName)
 
+
 	@property
-	def RulesFile(self):    return self._rulesFile
+	def ModuleName(self):		return self._moduleName
+	@property
+	def FilesFile(self):		return self._filesFile
+	@property
+	def RulesFile(self):		return self._rulesFile
 
 	def _Load(self):
-		super()._Load()
+		self._moduleName =	self._host.PoCConfig[self._sectionName]["TopLevel"]
 		self._filesFile =		Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
+		self._rulesFile =		Path(self._host.PoCConfig[self._sectionName]["RulesFile"])
 
 	def __str__(self):
 		return "Netlist\n"
