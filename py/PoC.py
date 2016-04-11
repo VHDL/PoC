@@ -390,7 +390,7 @@ class PoC(ILogable, ArgParseMixin):
 		self.__PrepareForConfiguration()
 		query = Query(self)
 		result = query.QueryConfiguration(args.Query)
-		print(result)
+		print(result, end="")
 		Exit.exit()
 
 
