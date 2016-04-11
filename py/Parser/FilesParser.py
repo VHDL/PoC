@@ -31,60 +31,72 @@
 # ==============================================================================
 #
 
-from Parser.Parser				import ParserException
-from Parser.Parser				import StringLiteral, IntegerLiteral, Identifier
-from Parser.Parser				import AndExpression, OrExpression, XorExpression, NotExpression, InExpression
-from Parser.Parser				import EqualExpression, UnequalExpression, LessThanExpression, LessThanEqualExpression, GreaterThanExpression, GreaterThanEqualExpression
-from Parser.Parser				import ExistsFunction, ListConstructorExpression
-from Parser.FilesCodeDOM	import Document, CocotbStatement
-from Parser.FilesCodeDOM	import VHDLStatement, VerilogStatement, IncludeStatement, LibraryStatement, IfElseIfElseStatement, ReportStatement
+from Parser.FilesCodeDOM	import Document
+from Parser.FilesCodeDOM	import IfElseIfElseStatement, ReportStatement
+from Parser.FilesCodeDOM	import IncludeStatement, LibraryStatement
+from Parser.FilesCodeDOM	import UcfStatement, XdcStatement, SdcStatement
+from Parser.FilesCodeDOM	import VHDLStatement, VerilogStatement, CocotbStatement
+from lib.Parser import AndExpression, OrExpression, XorExpression, NotExpression, InExpression
+from lib.Parser import EqualExpression, UnequalExpression, LessThanExpression, LessThanEqualExpression, GreaterThanExpression, GreaterThanEqualExpression
+from lib.Parser import ExistsFunction, ListConstructorExpression
+from lib.Parser import ParserException
+from lib.Parser import StringLiteral, IntegerLiteral, Identifier
 
-class VHDLSourceFile:
-	def __init__(self, library, file):
+
+class FileReference:
+	def __init__(self, file):
+		self._file =		file
+
+	@property
+	def File(self):
+		return self._file
+
+	def __repr__(self):
+		return str(self._file)
+
+
+class IncludeFileMixIn(FileReference):
+	def __str__(self):
+		return "Include file: '{0!s}'".format(self._file)
+
+
+class VHDLSourceFileMixIn(FileReference):
+	def __init__(self, file, library):
+		super().__init__(file)
 		self._library =	library
-		self._file =		file
-	
+
 	@property
-	def Library(self):
+	def LibraryName(self):
 		return self._library
-	
-	@property
-	def File(self):
-		return self._file
-	
-	def __str__(self):
-		return "VHDL file: {0} '{1}'".format(self._library, str(self._file))
-	
-	def __repr__(self):
-		return self.__str__()
-		
-class VerilogSourceFile:
-	def __init__(self, file):
-		self._file = file
-			
-	@property
-	def File(self):
-		return self._file
-	
-	def __str__(self):
-		return "Verilog file: '{0}'".format(str(self._file))
-	
-	def __repr__(self):
-		return self.__str__()
-			
-class CocotbSourceFile:
-	def __init__(self, file):
-		self._file =		file
 
-	@property
-	def File(self):
-		return self._file
+	def __str__(self):
+		return "VHDL file: {0} '{1!s}'".format(self._library, self._file)
 
+
+class VerilogSourceFileMixIn(FileReference):
+	def __str__(self):
+		return "Verilog file: '{0!s}'".format(self._file)
+
+
+class CocotbSourceFileMixIn(FileReference):
 	def __str__(self):
 		return "Cocotb file: '{0!s}'".format(self._file)
 
-	def __repr__(self):
-		return self.__str__()
+
+class UcfSourceFileMixIn(FileReference):
+	def __str__(self):
+		return "UCF file: '{0!s}'".format(self._file)
+
+
+class XdcSourceFileMixIn(FileReference):
+	def __str__(self):
+		return "XDC file: '{0!s}'".format(self._file)
+
+
+class SdcSourceFileMixIn(FileReference):
+	def __str__(self):
+		return "SDC file: '{0!s}'".format(self._file)
+
 
 class VHDLLibraryReference:
 	def __init__(self, name, path):
@@ -102,10 +114,18 @@ class VHDLLibraryReference:
 	def __str__(self):
 		return "VHDL library: {0} in '{1}'".format(self._name, str(self._path))
 	
-	def __repr__(self):
-		return self.__str__()
+	__repr__ = __str__
+
 
 class FilesParserMixIn:
+	_classIncludeFile =					IncludeFileMixIn
+	_classVHDLSourceFile =			VHDLSourceFileMixIn
+	_classVerilogSourceFile =		VerilogSourceFileMixIn
+	_classCocotbSourceFile =		CocotbSourceFileMixIn
+	_classUcfSourceFile =				UcfSourceFileMixIn
+	_classXdcSourceFile =				XdcSourceFileMixIn
+	_classSdcSourceFile =				SdcSourceFileMixIn
+
 	def __init__(self):
 		self._rootDirectory =	None
 		self._document =			None
@@ -138,6 +158,18 @@ class FilesParserMixIn:
 				file =						self._rootDirectory / stmt.FileName
 				cocotbSrcFile =		self._classCocotbSourceFile(file)
 				self._files.append(cocotbSrcFile)
+			elif isinstance(stmt, UcfStatement):
+				file =						self._rootDirectory / stmt.FileName
+				ucfSrcFile =		self._classCocotbSourceFile(file)
+				self._files.append(ucfSrcFile)
+			elif isinstance(stmt, XdcStatement):
+				file =						self._rootDirectory / stmt.FileName
+				xdcSrcFile =			self._classCocotbSourceFile(file)
+				self._files.append(xdcSrcFile)
+			elif isinstance(stmt, SdcStatement):
+				file =						self._rootDirectory / stmt.FileName
+				sdcSrcFile =			self._classCocotbSourceFile(file)
+				self._files.append(sdcSrcFile)
 			elif isinstance(stmt, IncludeStatement):
 				# add the include file to the fileset
 				file =						self._rootDirectory / stmt.FileName
@@ -152,8 +184,6 @@ class FilesParserMixIn:
 					self._libraries.append(lib)
 				for warn in includeFile.Warnings:
 					self._warnings.append(warn)
-				
-				# load, parse, add
 			elif isinstance(stmt, LibraryStatement):
 				lib =					self._rootDirectory / stmt.DirectoryName
 				vhdlLibRef =	VHDLLibraryReference(stmt.Library, lib)
@@ -172,6 +202,8 @@ class FilesParserMixIn:
 					self._Resolve(stmt._elseStatement.Statements)
 			elif isinstance(stmt, ReportStatement):
 				self._warnings.append("WARNING: {0}".format(stmt.Message))
+			else:
+				ParserException("Found unknown statement type '{0}'.".format(stmt.__class__.__name__))
 	
 	def _Evaluate(self, expr):
 		if isinstance(expr, Identifier):
@@ -221,5 +253,5 @@ class FilesParserMixIn:
 	@property
 	def Warnings(self):		return self._warnings
 
-	def __str__(self):		return "FILES file: '{0}'".format(str(self._file))
+	def __str__(self):		return "FILES file: '{0!s}'".format(self._file)
 	def __repr__(self):		return self.__str__()

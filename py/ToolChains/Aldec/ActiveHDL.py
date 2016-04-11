@@ -441,6 +441,8 @@ def VHDLCompilerFilter(gen):
 			yield LogEntry(line, Severity.Error)
 		elif line.startswith("COMP96 WARNING "):
 			yield LogEntry(line, Severity.Warning)
+		elif line.startswith("ELAB1 WARNING ELAB1_0026:"):
+			yield LogEntry(line, Severity.Warning)
 		elif line.startswith("COMP96 ERROR "):
 			yield LogEntry(line, Severity.Error)
 		else:
@@ -454,6 +456,8 @@ def SimulatorFilter(gen):
 			yield LogEntry(line, Severity.Verbose)
 		elif line.startswith("VSIM: "):
 			yield LogEntry(line, Severity.Verbose)
+		elif (line.startswith("ELBREAD: Warning: ") and line.endswith("not bound.")):
+			yield LogEntry(line, Severity.Error)
 		elif line.startswith("ELBREAD: "):
 			yield LogEntry(line, Severity.Verbose)
 		elif line.startswith("ELAB2: "):

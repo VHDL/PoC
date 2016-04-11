@@ -4,11 +4,11 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
-PreCopyRules
+PreProcessRules
 	# empty
-End PreCopyRules
+End PreProcessRules
 
-PostCopyRules
+PostProcessRules
 	Copy "${SPECIAL:OutputDir}/${IPCoreName}/user_design/rtl/iodrp_controller.vhd"					To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/iodrp_controller.vhd"
 	Copy "${SPECIAL:OutputDir}/${IPCoreName}/user_design/rtl/iodrp_mcb_controller.vhd"			To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/iodrp_mcb_controller.vhd"
 	Copy "${SPECIAL:OutputDir}/${IPCoreName}/user_design/rtl/mcb_raw_wrapper.vhd"						To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/mcb_raw_wrapper.vhd"
@@ -18,9 +18,7 @@ PostCopyRules
 	Copy "${SPECIAL:OutputDir}/${IPCoreName}/user_design/rtl/memc3_wrapper.vhd"							To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/memc3_wrapper.vhl"
 	Copy "${SPECIAL:OutputDir}/${IPCoreName}/user_design/rtl/${IPCoreName}.vhd"							To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${IPCoreName}_top.vhd"
 	Copy "${SPECIAL:OutputDir}/${IPCoreName}/user_design/par/${IPCoreName}.ucf"							To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${IPCoreName}.ncf"
-End PostCopyRules
 
-PostReplaceRules
 	In "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${IPCoreName}_top.vhd" Replace Multiline
 		Search For "(entity ${IPCoreName} is\n\s*generic\s+?\()"					Replace By "\1\n    C3_CLKOUT2_DIVIDE : integer := 6; -- fraction of 600 MHz clock => 6 means 100 MHz\n"
 	In "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${IPCoreName}_top.vhd" Replace
@@ -36,4 +34,4 @@ PostReplaceRules
 		Search For "(TIMESPEC.*?SYS_CLK3.*?;)"														Replace By "#\1"
 		Search For "NET\s+\"c3_sys_.*?;"																	Replace By ""
 #					${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${IPCoreName}.vhd :: "(C3_INPUT_CLK_TYPE\s+: string :=)\s.*?;"		By "\1 "NONE";"
-End PostCopyRules
+End PostProcessRules

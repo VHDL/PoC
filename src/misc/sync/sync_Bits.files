@@ -7,12 +7,15 @@
 # PoC.misc.sync
 vhdl		poc		"src/misc/sync/sync.pkg.vhdl"								#
 if (DeviceVendor = "Altera") then
-	# Load external vendor libraries
 	include			"lib/Altera.files"													# Altera primitives
 	vhdl 	poc		"src/misc/sync/sync_Bits_Altera.vhdl"				# 
 elseif (DeviceVendor = "Xilinx") then
-	# Load external vendor libraries
 	include			"lib/Xilinx.files"													# Xilinx primitives
 	vhdl 	poc		"src/misc/sync/sync_Bits_Xilinx.vhdl"				# 
+	if (ToolChain = "Xilinx_ISE") then
+		ucf				"ucf/misc/sync/sync_Bits_Xilinx.ucf"				# 
+	elseif (ToolChain = "Xilinx_Vivado") then
+		xdc				"ucf/misc/sync/sync_Bits_Xilinx.xdc"				# 
+	end if
 end if
 vhdl 		poc		"src/misc/sync/sync_Bits.vhdl"							# 

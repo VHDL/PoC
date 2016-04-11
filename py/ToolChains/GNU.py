@@ -45,18 +45,18 @@ from collections						import OrderedDict
 from pathlib								import Path
 
 from Base.Exceptions				import PlatformNotSupportedException
-from Base.ToolChain import ToolChainException
-from Base.Configuration			import Configuration as BaseConfiguration, ConfigurationException
-from Base.Executable				import Executable, ExecutableArgument, LongValuedFlagArgument, CommandLineArgumentList, \
-	ValuedFlagArgument
 from Base.Logging						import LogEntry, Severity
+from Base.Configuration			import Configuration as BaseConfiguration, ConfigurationException
+from Base.Executable				import Executable, ExecutableArgument, CommandLineArgumentList, ValuedFlagArgument
+from Base.ToolChain					import ToolChainException
 
 
 class GNUException(ToolChainException):
 	pass
 
 class Configuration(BaseConfiguration):
-	pass
+	def __init__(self):
+		super().__init__()
 
 class Make(Executable):
 	def __init__(self, platform, logger=None):
@@ -121,6 +121,7 @@ class Make(Executable):
 			if self._hasOutput:
 				self._LogNormal("    " + ("-" * 76))
 
+# TODO: this is a QuestaSim specific filter. Add support to specify a user-defined filter for Make
 def GNUMakeFilter(gen):
 	for line in gen:
 		if   line.startswith("# --"): 			yield LogEntry(line, Severity.Verbose)
@@ -129,4 +130,4 @@ def GNUMakeFilter(gen):
 		elif line.startswith("# ** Warn"):	yield LogEntry(line, Severity.Warning)
 		elif line.startswith("# ** Erro"):	yield LogEntry(line, Severity.Error)
 		elif line.startswith("# //"): 			continue
-		else: yield LogEntry(line, Severity.Normal)
+		else:																yield LogEntry(line, Severity.Normal)

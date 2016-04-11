@@ -94,7 +94,7 @@ class Extractor(BaseExtractor):
 			else:
 				regExpMatch = lineRegExp.match(line)
 				if (regExpMatch is not None):
-					break;
+					break
 				else:
 					raise ProcessorException("Line does not match.")
 					

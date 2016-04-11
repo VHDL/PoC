@@ -32,8 +32,6 @@
 # ==============================================================================
 #
 # entry point
-from Base.Project import Project as BaseProject, ProjectFile, ConstraintFile
-
 
 if __name__ != "__main__":
 	# place library initialization code here
@@ -46,12 +44,13 @@ from collections					import OrderedDict
 from pathlib							import Path
 from os										import environ
 
-from Base.Executable							import Executable
-from Base.Executable							import ExecutableArgument, ShortFlagArgument, ShortTupleArgument, StringArgument, CommandLineArgumentList
 from Base.Exceptions			import PlatformNotSupportedException
-from Base.ToolChain import ToolChainException
 from Base.Logging					import LogEntry, Severity
-from Base.Configuration import Configuration as BaseConfiguration, ConfigurationException, SkipConfigurationException
+from Base.Configuration		import Configuration as BaseConfiguration, ConfigurationException, SkipConfigurationException
+from Base.Project					import Project as BaseProject, ProjectFile, ConstraintFile, FileTypes
+from Base.Executable			import Executable
+from Base.Executable			import ExecutableArgument, ShortFlagArgument, ShortTupleArgument, StringArgument, CommandLineArgumentList
+from Base.ToolChain				import ToolChainException
 
 
 class ISEException(ToolChainException):
@@ -84,6 +83,9 @@ class Configuration(BaseConfiguration):
 			}
 		}
 	}
+
+	def __init__(self):
+		super().__init__()
 
 	def GetSections(self, Platform):
 		pass
@@ -616,15 +618,18 @@ def CoreGeneratorFilter(gen):
 
 
 class ISEProject(BaseProject):
-	def __init__(self, name):
-		super().__init__(name)
+	def __init__(self):
+		super().__init__()
 
 
 class ISEProjectFile(ProjectFile):
-	def __init__(self, file):
-		super().__init__(file)
+	def __init__(self):
+		super().__init__()
 
 
 class UserConstraintFile(ConstraintFile):
-	def __init__(self, file):
-		super().__init__(file)
+	_FileType = FileTypes.UcfConstraintFile
+
+	def __str__(self):
+		return "UCF file: '{0!s}".format(self._file)
+

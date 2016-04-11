@@ -12,9 +12,11 @@ Aldec/
 Altera/
 Lattice/
 Mentor/
+Synopsys/
 Xilinx/
 
 # Modules
 GHDL.py
+GNU.py
 GTKWave.py
 PoC.py

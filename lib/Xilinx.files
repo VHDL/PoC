@@ -10,6 +10,8 @@ elseif ((Tool in ["Mentor_vSim", "Cocotb_QuestaSim"]) and ?("temp/precompiled/vs
 	library unisim "temp/precompiled/vsim"
 elseif (Tool in ["Xilinx_iSim", "Xilinx_xSim"]) then
 	# implicitly referenced; nothing to reference
+elseif (Tool = "Aldec_aSim") then
+	# Active-HDL is shipped with Xilinx libraries.
 else
 	report "No precompiled Xilinx primitives found."
 end if

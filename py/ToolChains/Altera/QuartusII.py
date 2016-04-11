@@ -32,9 +32,6 @@
 # ==============================================================================
 #
 # entry point
-from Base.Project import Project as BaseProject, ProjectFile, ConstraintFile
-
-
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -48,6 +45,7 @@ from pathlib											import Path
 
 # from Base.Executable							import Executable, ExecutableArgument, LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument
 from Base.Configuration						import Configuration as BaseConfiguration, ConfigurationException
+from Base.Project									import Project as BaseProject, ProjectFile
 
 
 class Configuration(BaseConfiguration):
@@ -168,7 +166,3 @@ class QuartusProjectFile(ProjectFile):
 	def __init__(self, file):
 		super().__init__(file)
 
-
-class SynopsysDesignConstraintFile(ConstraintFile):
-	def __init__(self, file):
-		super().__init__(file)

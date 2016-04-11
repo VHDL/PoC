@@ -43,7 +43,19 @@ else:
 # from collections				import OrderedDict
 # from pathlib						import Path
 
-from Base.Configuration import Configuration as BaseConfiguration
+from Base.Configuration		import Configuration as BaseConfiguration
+from Base.Project					import ConstraintFile, FileTypes
+
 
 class Configuration(BaseConfiguration):
-	pass
+	def __init__(self):
+		super().__init__()
+
+
+class LatticeDesignConstraintFile(ConstraintFile):
+	_FileType = FileTypes.UcfConstraintFile
+
+	def __str__(self):
+		return "UCF file: '{0!s}".format(self._file)
+
+
