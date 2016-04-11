@@ -106,7 +106,7 @@ class Simulator(BaseSimulator):
 		self._LogQuiet("Testbench: {0}{1}{2}".format(Foreground.YELLOW, self._testbenchFQN, Foreground.RESET))
 
 		# setup all needed paths to execute fuse
-		testbench = entity.VHDLTestbench
+		testbench = entity.CocoTestbench
 		self._CreatePoCProject(testbench, board)
 		self._AddFileListFile(testbench.FilesFile)
 		self._Run(testbench)

@@ -203,7 +203,7 @@ class Entity(PathElement):
 	@property
 	def CocoTestbench(self):
 		if self._cocotb is None:
-			raise NotConfiguredException("No VHDL testbench configured for '{0!s}'.".format(self))
+			raise NotConfiguredException("No Cocotb testbench configured for '{0!s}'.".format(self))
 		return self._cocotb
 
 	@property
@@ -308,10 +308,16 @@ class VHDLTestbench(Testbench):
 
 class CocoTestbench(Testbench):
 	def __init__(self, host, sectionName):
+		self._topLevel = ""
 		super().__init__(host, sectionName)
+
+	@property
+	def TopLevel(self):
+		return self._topLevel
 
 	def _Load(self):
 		super()._Load()
+		self._topLevel =	self._host.PoCConfig[self._sectionName]["TopLevel"]
 
 	def __str__(self):
 		return "Cocotb Testbench\n"

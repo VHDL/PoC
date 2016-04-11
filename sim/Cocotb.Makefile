@@ -1,3 +1,6 @@
+# Overwrite PWD from environment because current working directory is changed
+# within py/Base/Simulator.py (_PrepareSimulationEnvironment)
+PWD=$(shell pwd)
 POC={PoCRootDirectory}
 COCOTB=$(POC)/lib/cocotb
 POC_TB=$(POC)/tb
