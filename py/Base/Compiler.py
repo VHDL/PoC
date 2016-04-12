@@ -120,7 +120,7 @@ class Compiler(ILogable):
 
 	def _CreatePoCProject(self, netlist, board):
 		# create a PoCProject and read all needed files
-		self._LogDebug("    Create a PoC project '{0}'".format(netlist.ModuleName))
+		self._LogVerbose("  Create a PoC project '{0}'".format(netlist.ModuleName))
 		pocProject = PoCProject(netlist.ModuleName)
 
 		# configure the project
@@ -134,7 +134,7 @@ class Compiler(ILogable):
 		self._pocProject =					pocProject
 
 	def _AddFileListFile(self, fileListFilePath):
-		self._LogDebug("    Reading filelist '{0!s}'".format(fileListFilePath))
+		self._LogVerbose("  Reading filelist '{0!s}'".format(fileListFilePath))
 		# add the *.files file, parse and evaluate it
 		try:
 			fileListFile = self._pocProject.AddFile(FileListFile(fileListFilePath))
@@ -153,7 +153,7 @@ class Compiler(ILogable):
 			raise CompilerException("Found critical warnings while parsing '{0!s}'".format(fileListFilePath))
 
 	def _AddRulesFiles(self, rulesFilePath):
-		self._LogDebug("    Reading rules from '{0!s}'".format(rulesFilePath))
+		self._LogVerbose("  Reading rules from '{0!s}'".format(rulesFilePath))
 		# add the *.rules file, parse and evaluate it
 		try:
 			rulesFile = self._pocProject.AddFile(RulesFile(rulesFilePath))
@@ -169,7 +169,7 @@ class Compiler(ILogable):
 			self._LogDebug("      {0!s}".format(rule))
 
 	def _RunPreCopy(self, netlist):
-		preCopyRules = self.Host.netListConfig[netlist._sectionName]['PreCopy.Rules']
+		preCopyRules = self.Host.PoCConfig[netlist._sectionName]['PreCopy.Rules']
 		if (len(preCopyRules) != 0):
 			preCopyTasks = self._ParseCopyRules(preCopyRules)
 		else:
@@ -181,7 +181,7 @@ class Compiler(ILogable):
 		self._ExecuteCopyTasks(preCopyTasks, "pre")
 
 	def _RunPostCopy(self, netlist):
-		postCopyRules = self.Host.netListConfig[netlist._sectionName]['PostCopy.Rules']
+		postCopyRules = self.Host.PoCConfig[netlist._sectionName]['PostCopy.Rules']
 		if (len(postCopyRules) != 0):
 			postCopyTasks = self._ParseCopyRules(postCopyRules)
 		else:
@@ -221,7 +221,7 @@ class Compiler(ILogable):
 			shutil.copy(str(task.SourcePath), str(task.DestinationPath))
 
 	def _RunPreReplace(self, netlist):
-		preReplaceRules = self.Host.netListConfig[netlist._sectionName]['PreReplace.Rules']
+		preReplaceRules = self.Host.PoCConfig[netlist._sectionName]['PreReplace.Rules']
 		if (len(preReplaceRules) != 0):
 			preReplaceTasks = self._ParseReplaceRules(preReplaceRules)
 		else:
@@ -230,7 +230,7 @@ class Compiler(ILogable):
 		self._ExecuteReplaceTasks(preReplaceTasks, "pre")
 
 	def _RunPostReplace(self, netlist):
-		postReplaceRules = self.Host.netListConfig[netlist._sectionName]['PostReplace.Rules']
+		postReplaceRules = self.Host.PoCConfig[netlist._sectionName]['PostReplace.Rules']
 		if (len(postReplaceRules) != 0):
 			postReplaceTasks = self._ParseReplaceRules(postReplaceRules)
 		else:
@@ -262,11 +262,11 @@ class Compiler(ILogable):
 			else:
 				raise CompilerException("Error in replace rule '{0}'.".format(item))
 
-	def _ExecuteReplaceTasks(self, tasks):
-		self._LogNormal('  replace in files...')
+	def _ExecuteReplaceTasks(self, tasks, text):
+		self._LogNormal("  {0}-replace in files...".format(text))
 		for task in tasks:
-			if not task.FilePath.exists(): raise CompilerException("Can not replace in file '{0!s}'.".format(task.FilePath)) from FileNotFoundError(str(task.FilePath))
-			self._LogVerbose("  replace in file '{0!s}': search for '{1}' replace by '{2}'.".format(task.FilePath, task.SearchPattern, task.ReplacePattern))
+			if not task.FilePath.exists(): raise CompilerException("Can not {0}-replace in file '{1!s}'.".format(text, task.FilePath)) from FileNotFoundError(str(task.FilePath))
+			self._LogVerbose("  {0}-replace in file '{1!s}': search for '{2}' replace by '{3}'.".format(text, task.FilePath, task.SearchPattern, task.ReplacePattern))
 
 			# FIXME: current "Search For ... Replace By ...." rules have no regexp options
 			options = "i"

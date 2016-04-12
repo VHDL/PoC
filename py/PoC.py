@@ -169,6 +169,8 @@ class PoC(ILogable, ArgParseMixin):
 	# read PoC configuration
 	# ============================================================================
 	def __ReadPoCConfiguration(self):
+		self._LogVerbose("Reading configuration files...")
+
 		configFiles = [
 			(self._pocPrivateConfigFile,	"private"),
 			(self._pocPublicConfigFile,		"public"),
@@ -179,19 +181,19 @@ class PoC(ILogable, ArgParseMixin):
 		]
 
 		# create parser instance
-		self._LogDebug("Reading PoC configuration from:")
+		self._LogDebug("  Reading PoC configuration from:")
 		self.__pocConfig = ExtendedConfigParser()
 		self.__pocConfig.optionxform = str
 
 		try:
 			# process first file (private)
 			file, name = configFiles[0]
-			self._LogDebug("  '{0!s}'".format(file))
+			self._LogDebug("    '{0!s}'".format(file))
 			if not file.exists():  raise NotConfiguredException("PoC's {0} configuration file '{1!s}' does not exist.".format(name, file))  from FileNotFoundError(str(file))
 			self.__pocConfig.read(str(file))
 
 			for file, name in configFiles[1:]:
-				self._LogDebug("  '{0!s}'".format(file))
+				self._LogDebug("    '{0!s}'".format(file))
 				if not file.exists():  raise ConfigurationException("PoC's {0} configuration file '{1!s}' does not exist.".format(name, file))  from FileNotFoundError(str(file))
 				self.__pocConfig.read(str(file))
 		except DuplicateOptionError as ex:

@@ -64,30 +64,29 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 		self._ise =		ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def Run(self, entity, board, **_):
-		self._LogNormal("  running XST...")
 		# self._entity =			entity 					 # TODO: find usages
 		# self._device =			board.Device
 
 		# setup all needed paths to execute fuse
 		netlist = entity.XstNetlist
-		self._CreatePoCProject(netlist, board)
-		self._AddFileListFile(netlist.FilesFile)
-		self._AddRulesFiles(netlist.RulesFile)
-
 		self._PrepareCompilerEnvironment(board.Device)
 		self._WriteSpecialSectionIntoConfig(board.Device)
 
+		self._CreatePoCProject(netlist, board)
+		self._AddFileListFile(netlist.FilesFile)
+		if (netlist.RulesFile is not None):
+			self._AddRulesFiles(netlist.RulesFile)
+
 		self._LogQuiet("IP-core: {0!s}".format(netlist.Parent))
 
-		xstFilePath =	self._tempPath / (netlist.ModuleName + ".xst")
-		prjFilePath =	self._tempPath / (netlist.ModuleName + ".prj")
+		netlist.XstFile = self._tempPath / (netlist.ModuleName + ".xst")
+		netlist.PrjFile = self._tempPath / (netlist.ModuleName + ".prj")
 
-		self._LogDebug("Writing XST project file to '{0!s}'".format(prjFilePath))
-		self._WriteXilinxProjectFile(prjFilePath)
+		self._WriteXilinxProjectFile(netlist.PrjFile, "XST")
+		self._WriteXstOptionsFile(netlist, board.Device)
 
-		self._LogDebug("Writing XST options file to '{0!s}'".format(xstFilePath))
-		self._WriteXstOptionsFile(netlist,xstFilePath)
 
+		self._LogNormal("  running XST...")
 		self._RunPrepareCompile(netlist)
 		self._RunPreCopy(netlist)
 		self._RunPreReplace(netlist)
@@ -120,28 +119,29 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 		xst.Parameters[xst.SwitchReportFile] =	str(reportFilePath)
 		xst.Compile()
 
-	def _WriteXstOptionsFile(self, netlist, xstFilePath):
-		xstTemplateFilePath = self.Host.Directories["XSTFiles"] / self.Host.PoCConfig[netlist.ConfigSectionName]['XSTOptionsFile']
-		if (not xstTemplateFilePath.exists()):		raise CompilerException("XST template files '{0!s}' not found.".format(xstTemplateFilePath)) from FileNotFoundError(str(xstTemplateFilePath))
+	def _WriteXstOptionsFile(self, netlist, device):
+		self._LogVerbose("Generating XST options file.")
 
 		# read XST options file template
-		self._LogDebug("  Reading Xilinx Compiler Tool option file from '{0!s}'".format(xstTemplateFilePath))
-		with xstTemplateFilePath.open('r') as fileHandle:
+		self._LogDebug("  Reading Xilinx Compiler Tool option file from '{0!s}'".format(netlist.XstTemplateFile))
+		if (not netlist.XstTemplateFile.exists()):		raise CompilerException("XST template files '{0!s}' not found.".format(netlist.XstTemplateFile)) from FileNotFoundError(str(netlist.XstTemplateFile))
+
+		with netlist.XstTemplateFile.open('r') as fileHandle:
 			xstFileContent = fileHandle.read()
 
 		xstTemplateDictionary = {
-			'prjFile':                                                            str(prjFilePath),
+			'prjFile':                                                            str(netlist.PrjFile),
 			'UseNewParser': self.Host.PoCConfig[netlist.ConfigSectionName]                  ['XSTOption.UseNewParser'],
 			'InputFormat': self.Host.PoCConfig[netlist.ConfigSectionName]                   ['XSTOption.InputFormat'],
 			'OutputFormat': self.Host.PoCConfig[netlist.ConfigSectionName]                  ['XSTOption.OutputFormat'],
-			'OutputName':                                                         netlist.TopLevel,
-			'Part':                                                               str(self._device),
-			'TopModuleName':                                                      netlist.TopLevel,
+			'OutputName':                                                         netlist.ModuleName,
+			'Part':                                                               str(device),
+			'TopModuleName':                                                      netlist.ModuleName,
 			'OptimizationMode': self.Host.PoCConfig[netlist.ConfigSectionName]              ['XSTOption.OptimizationMode'],
 			'OptimizationLevel': self.Host.PoCConfig[netlist.ConfigSectionName]             ['XSTOption.OptimizationLevel'],
 			'PowerReduction': self.Host.PoCConfig[netlist.ConfigSectionName]                ['XSTOption.PowerReduction'],
 			'IgnoreSynthesisConstraintsFile': self.Host.PoCConfig[netlist.ConfigSectionName]['XSTOption.IgnoreSynthesisConstraintsFile'],
-			'SynthesisConstraintsFile':                                           str(xcfFilePath),
+			'SynthesisConstraintsFile':                                           str(netlist.XcfFile),
 			'KeepHierarchy': self.Host.PoCConfig[netlist.ConfigSectionName]                 ['XSTOption.KeepHierarchy'],
 			'NetListHierarchy': self.Host.PoCConfig[netlist.ConfigSectionName]              ['XSTOption.NetListHierarchy'],
 			'GenerateRTLView': self.Host.PoCConfig[netlist.ConfigSectionName]               ['XSTOption.GenerateRTLView'],
@@ -198,6 +198,6 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 		if (self.Host.PoCConfig.has_option(netlist.ConfigSectionName, 'XSTOption.Generics')):
 			xstFileContent += "-generics {{ {0} }}".format(self.Host.PoCConfig[netlist.ConfigSectionName]['XSTOption.Generics'])
 
-		self._LogDebug("Writing Xilinx Compiler Tool option file to '{0!s}'".format(xstFilePath))
-		with xstFilePath.open('w') as fileHandle:
+		self._LogDebug("  Writing Xilinx Compiler Tool option file to '{0!s}'".format(netlist.XstFile))
+		with netlist.XstFile.open('w') as fileHandle:
 			fileHandle.write(xstFileContent)

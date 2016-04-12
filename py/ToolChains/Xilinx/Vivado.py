@@ -51,10 +51,10 @@ from Base.Configuration 	import Configuration as BaseConfiguration, Configuratio
 from Base.Project					import Project as BaseProject, ProjectFile, ConstraintFile, FileTypes
 from Base.Executable			import Executable
 from Base.Executable			import ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, StringArgument, CommandLineArgumentList
-from Base.ToolChain				import ToolChainException
+from ToolChains.Xilinx.Xilinx		import XilinxException
 
 
-class VivadoException(ToolChainException):
+class VivadoException(XilinxException):
 	pass
 
 class Configuration(BaseConfiguration):

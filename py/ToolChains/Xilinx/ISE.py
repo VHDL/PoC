@@ -44,16 +44,16 @@ from collections					import OrderedDict
 from pathlib							import Path
 from os										import environ
 
-from Base.Exceptions			import PlatformNotSupportedException
-from Base.Logging					import LogEntry, Severity
-from Base.Configuration		import Configuration as BaseConfiguration, ConfigurationException, SkipConfigurationException
-from Base.Project					import Project as BaseProject, ProjectFile, ConstraintFile, FileTypes
-from Base.Executable			import Executable
-from Base.Executable			import ExecutableArgument, ShortFlagArgument, ShortTupleArgument, StringArgument, CommandLineArgumentList
-from Base.ToolChain				import ToolChainException
+from Base.Exceptions						import PlatformNotSupportedException
+from Base.Logging								import LogEntry, Severity
+from Base.Configuration					import Configuration as BaseConfiguration, ConfigurationException, SkipConfigurationException
+from Base.Project								import Project as BaseProject, ProjectFile, ConstraintFile, FileTypes
+from Base.Executable						import Executable
+from Base.Executable						import ExecutableArgument, ShortFlagArgument, ShortTupleArgument, StringArgument, CommandLineArgumentList
+from ToolChains.Xilinx.Xilinx		import XilinxException
 
 
-class ISEException(ToolChainException):
+class ISEException(XilinxException):
 	pass
 
 

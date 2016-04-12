@@ -40,26 +40,29 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Compiler.XSTCompiler")
 
 
-from Base.Project import FileTypes, VHDLVersion
+from Base.Project		import FileTypes, VHDLVersion
+from Base.ToolChain	import ToolChainException
 
+class XilinxException(ToolChainException):
+	pass
 
 class XilinxProjectExportMixIn:
 	def __init__(self):
 		pass
 
-	def _GenerateXilinxProjectFileContent(self, vhdlVersion=VHDLVersion.VHDL93):
+	def _GenerateXilinxProjectFileContent(self, tool, vhdlVersion=VHDLVersion.VHDL93):
 		projectFileContent = ""
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
-			if (not file.Path.exists()):								raise SimulatorException("Can not add '{0!s}' to iSim project file.".format(file.Path)) from FileNotFoundError(str(file.Path))
+			if (not file.Path.exists()):								raise XilinxException("Can not add '{0!s}' to {1} project file.".format(file.Path, tool)) from FileNotFoundError(str(file.Path))
 			# create one VHDL line for each VHDL file
 			if (vhdlVersion == VHDLVersion.VHDL2008):		projectFileContent += "vhdl2008 {0} \"{1!s}\"\n".format(file.LibraryName, file.Path)
 			else:																				projectFileContent += "vhdl {0} \"{1!s}\"\n".format(file.LibraryName, file.Path)
 
 		return projectFileContent
 
-	def _WriteXilinxProjectFile(self, projectFilePath, vhdlVersion=VHDLVersion.VHDL93):
-		projectFileContent = self._GenerateXilinxProjectFileContent(vhdlVersion)
-		self._LogDebug("Writing iSim project file to '{0!s}'".format(projectFilePath))
+	def _WriteXilinxProjectFile(self, projectFilePath, tool, vhdlVersion=VHDLVersion.VHDL93):
+		projectFileContent = self._GenerateXilinxProjectFileContent(tool, vhdlVersion)
+		self._LogDebug("  Writing {0} project file to '{1!s}'".format(tool, projectFilePath))
 		with projectFilePath.open('w') as prjFileHandle:
 			prjFileHandle.write(projectFileContent)
 

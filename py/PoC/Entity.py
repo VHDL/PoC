@@ -48,6 +48,7 @@ else:
 from enum									import Enum, unique
 from collections					import OrderedDict
 
+from lib.Decorators				import LazyLoadTrigger, ILazyLoadable
 #from Base.Exceptions			import CommonException
 from Base.Configuration		import ConfigurationException
 
@@ -183,25 +184,25 @@ class Entity(PathElement):
 
 	@property
 	def VHDLTestbench(self):
-		if self._vhdltb is None:
+		if (len(self._vhdltb) == 0):
 			raise NotConfiguredException("No VHDL testbench configured for '{0!s}'.".format(self))
 		return self._vhdltb[0]
 
 	@property
 	def CocoTestbench(self):
-		if self._cocotb is None:
+		if (len(self._cocotb) == 0):
 			raise NotConfiguredException("No Cocotb testbench configured for '{0!s}'.".format(self))
 		return self._cocotb[0]
 
 	@property
 	def XstNetlist(self):
-		if self._xstNetlist is None:
+		if (len(self._xstNetlist) == 0):
 			raise NotConfiguredException("No XST netlist configured for '{0!s}'.".format(self))
 		return self._xstNetlist[0]
 
 	@property
 	def CgNetlist(self):
-		if self._cgNetlist is None:
+		if (len(self._cgNetlist) == 0):
 			raise NotConfiguredException("No CoreGen netlist configured for '{0!s}'.".format(self))
 		return self._cgNetlist[0]
 
@@ -246,8 +247,10 @@ class Entity(PathElement):
 			buffer += self._cgNetlist.pprint(indent + 1)
 		return buffer
 
-class Base:
+class Base(ILazyLoadable):
 	def __init__(self, host, name, sectionName, parent):
+		ILazyLoadable.__init__(self)
+
 		self._name =				name
 		self._sectionName = sectionName
 		self._parent =			parent
@@ -262,6 +265,9 @@ class Base:
 	@property
 	def ConfigSectionName(self):	return self._sectionName
 
+	def _Load(self):
+		pass
+
 class Testbench(Base):
 	def __init__(self, host, name, sectionName, parent):
 		self._moduleName =	""
@@ -270,11 +276,14 @@ class Testbench(Base):
 		super().__init__(host, name, sectionName, parent)
 
 	@property
+	@LazyLoadTrigger
 	def ModuleName(self):		return self._moduleName
 	@property
+	@LazyLoadTrigger
 	def FilesFile(self):		return self._filesFile
 
-	def _Load(self):
+	def _LazyLoadable_Load(self):
+		super()._LazyLoadable_Load()
 		self._moduleName =	self._host.PoCConfig[self._sectionName]["TestbenchModule"]
 		self._filesFile =		Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
 
@@ -291,8 +300,8 @@ class VhdlTestbench(Testbench):
 	def __init__(self, host, name, sectionName, parent):
 		super().__init__(host, name, sectionName, parent)
 
-	def _Load(self):
-		super()._Load()
+	def _LazyLoadable_Load(self):
+		super()._LazyLoadable_Load()
 
 	def __str__(self):
 		return "VHDL Testbench\n"
@@ -309,11 +318,12 @@ class CocoTestbench(Testbench):
 		super().__init__(host, name, sectionName, parent)
 
 	@property
+	@LazyLoadTrigger
 	def TopLevel(self):
 		return self._topLevel
 
-	def _Load(self):
-		super()._Load()
+	def _LazyLoadable_Load(self):
+		super()._LazyLoadable_Load()
 		self._topLevel =	self._host.PoCConfig[self._sectionName]["TopLevel"]
 
 	def __str__(self):
@@ -333,13 +343,15 @@ class Netlist(Base):
 		super().__init__(host, name, sectionName, parent)
 
 	@property
+	@LazyLoadTrigger
 	def ModuleName(self):		return self._moduleName
 	@property
+	@LazyLoadTrigger
 	def RulesFile(self):		return self._rulesFile
 
-	def _Load(self):
+	def _LazyLoadable_Load(self):
+		super()._LazyLoadable_Load()
 		self._moduleName =	self._host.PoCConfig[self._sectionName]["TopLevel"]
-
 		if self._host.PoCConfig.has_option(self._sectionName, "RulesFile"):
 			self._rulesFile =		Path(self._host.PoCConfig[self._sectionName]["RulesFile"])
 		else:
@@ -352,22 +364,46 @@ class Netlist(Base):
 class XstNetlist(Netlist):
 	def __init__(self, host, name, sectionName, parent):
 		self._filesFile =				None
+		self._prjFile =					None
 		self._xcfFile =					None
 		self._filterFile =			None
 		self._xstTemplateFile =	None
+		self._xstFile =					None
 		super().__init__(host, name, sectionName, parent)
 
 	@property
+	@LazyLoadTrigger
 	def FilesFile(self):				return self._filesFile
 	@property
+	@LazyLoadTrigger
 	def XcfFile(self):					return self._xcfFile
 	@property
+	@LazyLoadTrigger
 	def FilterFile(self):				return self._filterFile
 	@property
+	@LazyLoadTrigger
 	def XstTemplateFile(self):	return self._xstTemplateFile
 
-	def _Load(self):
-		super()._Load()
+	@property
+	def PrjFile(self):
+		return self._prjFile
+	@PrjFile.setter
+	def PrjFile(self, value):
+		if isinstance(value, str):
+			value = Path(value)
+		self._prjFile = value
+
+	@property
+	def XstFile(self):
+		return self._xstFile
+	@XstFile.setter
+	def XstFile(self, value):
+		if isinstance(value, str):
+			value = Path(value)
+		self._xstFile = value
+
+	def _LazyLoadable_Load(self):
+		super()._LazyLoadable_Load()
 		self._filesFile =				Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
 		self._xcfFile =					Path(self._host.PoCConfig[self._sectionName]['XSTConstraintsFile'])
 		self._filterFile =			Path(self._host.PoCConfig[self._sectionName]['XSTFilterFile'])
