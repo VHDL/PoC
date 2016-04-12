@@ -32,6 +32,8 @@
 # ==============================================================================
 #
 # entry point
+from Base.Exceptions import PlatformNotSupportedException
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -43,10 +45,15 @@ else:
 from collections									import OrderedDict
 from pathlib											import Path
 
-# from Base.Executable							import Executable, ExecutableArgument, LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument
+from Base.Executable							import Executable, ExecutableArgument, LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, \
+	ShortFlagArgument, CommandLineArgumentList
 from Base.Configuration						import Configuration as BaseConfiguration, ConfigurationException
 from Base.Project									import Project as BaseProject, ProjectFile
+from Base.ToolChain								import ToolChainException
 
+
+class QuartusIIException(ToolChainException):
+	pass
 
 class Configuration(BaseConfiguration):
 	def manualConfigureForWindows(self) :
@@ -156,6 +163,99 @@ class Configuration(BaseConfiguration):
 		else :
 			raise ConfigurationException("unknown option")
 
+
+class QuartusIIMixIn:
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
+		self._platform =						platform
+		self._binaryDirectoryPath =	binaryDirectoryPath
+		self._version =							version
+		self._logger =							logger
+
+
+class QuartusII(QuartusIIMixIn):
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
+		QuartusIIMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+
+	def GetMap(self):
+		return Map(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+
+
+class Map(Executable, QuartusIIMixIn):
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
+		QuartusIIMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+
+		if (platform == "Windows") :			executablePath = binaryDirectoryPath / "xst.exe"
+		elif (platform == "Linux") :			executablePath = binaryDirectoryPath / "xst"
+		else :														raise PlatformNotSupportedException(platform)
+		Executable.__init__(self, platform, executablePath, logger=logger)
+
+		self.Parameters[self.Executable] = executablePath
+
+		self._hasOutput =		False
+		self._hasWarnings =	False
+		self._hasErrors =		False
+
+	@property
+	def HasWarnings(self):	return self._hasWarnings
+	@property
+	def HasErrors(self):		return self._hasErrors
+
+	class Executable(metaclass=ExecutableArgument) :
+		pass
+
+	class SwitchIntStyle(metaclass=ShortTupleArgument):
+		_name = "intstyle"
+
+	class SwitchXstFile(metaclass=ShortFlagArgument) :
+		_name = "ifn"
+
+	class SwitchReportFile(metaclass=ShortTupleArgument) :
+		_name = "ofn"
+
+	Parameters = CommandLineArgumentList(
+			Executable,
+			SwitchIntStyle,
+			SwitchXstFile,
+			SwitchReportFile
+	)
+
+	def Compile(self) :
+		parameterList = self.Parameters.ToArgumentList()
+		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+
+		try:
+			self.StartProcess(parameterList)
+		except Exception as ex:
+			raise ISEException("Failed to launch xst.") from ex
+
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			iterator = iter(XstFilter(self.GetReader()))
+
+			line = next(iterator)
+			self._hasOutput = True
+			self._LogNormal("    xst messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
+			self._LogNormal("    " + ("-" * 76))
+
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
+
+				line.Indent(2)
+				self._Log(line)
+				line = next(iterator)
+
+		except StopIteration as ex:
+			pass
+		except ISEException:
+			raise
+		# except Exception as ex:
+		#	raise GHDLException("Error while executing GHDL.") from ex
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
 
 class QuartusProject(BaseProject):
 	def __init__(self, name):

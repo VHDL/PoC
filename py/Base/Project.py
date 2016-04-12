@@ -107,7 +107,7 @@ class ToolChain(Enum):
 class Tool(Enum):
 	Any =								 0
 	Aldec_aSim =				10
-	Altera_QuartusII =	20
+	Altera_QuartusII_Map =	20
 	Cocotb_QuestaSim = 	30
 	GHDL =							40
 	GTKwave =						41

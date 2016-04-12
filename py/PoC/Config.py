@@ -336,8 +336,8 @@ class Device:
 				subtype[1]
 			)
 		elif (self.__vendor is Vendors.Altera):
-			raise NotImplementedError("Device.ShortName() not implemented for vendor Altera")
-			# FIXME: return "ep...."
+			print("Device.ShortName() not implemented for vendor Altera")
+			return "EP4SGX230KF40C2"
 	
 	# @CachedReadOnlyProperty
 	@property
@@ -355,8 +355,8 @@ class Device:
 				self.__pinCount
 			)
 		elif (self.__vendor is Vendors.Altera):
-			raise NotImplementedError("Device.FullName() not implemented for vendor Altera")
-			# FIXME: return "ep...."
+			print("Device.FullName() not implemented for vendor Altera")
+			return "EP4SGX230KF40C2"
 	
 	# @CachedReadOnlyProperty
 	@property

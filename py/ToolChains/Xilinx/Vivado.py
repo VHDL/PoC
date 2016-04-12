@@ -189,16 +189,16 @@ class Configuration(BaseConfiguration):
 		else :
 			raise BaseException("unknown option")
 
-class VivadoSimMixIn:
+class VivadoMixIn:
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		self._platform =						platform
 		self._binaryDirectoryPath =	binaryDirectoryPath
 		self._version =							version
 		self._logger =							logger
 
-class Vivado(VivadoSimMixIn):
+class Vivado(VivadoMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		VivadoSimMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+		VivadoMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
 
 	def GetVHDLCompiler(self):
 		return XVhComp(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
@@ -210,10 +210,9 @@ class Vivado(VivadoSimMixIn):
 		return XSim(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
 
 
-class XVhComp(Executable, VivadoSimMixIn):
+class XVhComp(Executable, VivadoMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		VivadoSimMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
-
+		VivadoMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "xvhcomp.bat"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "xvhcomp"
 		else:																						raise PlatformNotSupportedException(self._platform)
@@ -270,10 +269,9 @@ class XVhComp(Executable, VivadoSimMixIn):
 				self._LogNormal("    " + ("-" * 76))
 
 
-class XElab(Executable, VivadoSimMixIn):
+class XElab(Executable, VivadoMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		VivadoSimMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
-
+		VivadoMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "xelab.bat"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "xelab"
 		else:																						raise PlatformNotSupportedException(self._platform)
@@ -393,10 +391,9 @@ class XElab(Executable, VivadoSimMixIn):
 				self._LogNormal("    " + ("-" * 76))
 
 
-class XSim(Executable, VivadoSimMixIn):
+class XSim(Executable, VivadoMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		VivadoSimMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
-
+		VivadoMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "xsim.bat"
 		elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "xsim"
 		else:																						raise PlatformNotSupportedException(self._platform)

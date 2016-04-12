@@ -175,10 +175,11 @@ class Entity(PathElement):
 	def __init__(self, host, name, configSection, parent):
 		super().__init__(host, name, configSection, parent)
 
-		self._vhdltb =			[]		# OrderedDict()
-		self._cocotb =			[]		# OrderedDict()
-		self._xstNetlist =	[]		# OrderedDict()
-		self._cgNetlist =		[]		# OrderedDict()
+		self._vhdltb =					[]		# OrderedDict()
+		self._cocotb =					[]		# OrderedDict()
+		self._quartusNetlist =	[]		# OrderedDict()
+		self._xstNetlist =			[]		# OrderedDict()
+		self._cgNetlist =				[]		# OrderedDict()
 
 		self._Load()
 
@@ -193,6 +194,12 @@ class Entity(PathElement):
 		if (len(self._cocotb) == 0):
 			raise NotConfiguredException("No Cocotb testbench configured for '{0!s}'.".format(self))
 		return self._cocotb[0]
+
+	@property
+	def QuartusNetlist(self):
+		if (len(self._quartusNetlist) == 0):
+			raise NotConfiguredException("No Quartus-II netlist configured for '{0!s}'.".format(self))
+		return self._quartusNetlist[0]
 
 	@property
 	def XstNetlist(self):
@@ -221,6 +228,13 @@ class Entity(PathElement):
 				sectionName = self._configSection.replace("IP", "COCOTB") + "." + optionName
 				tb = CocoTestbench(host=self._host, name=optionName, sectionName=sectionName, parent=self)
 				self._cocotb.append(tb)
+				# self._cocotb[optionName] = tb
+			elif (type == "quartusnetlist"):
+				print("loading Quartus netlist: {0}".format(optionName))
+				sectionName = self._configSection.replace("IP", "QII") + "." + optionName
+				nl = QuartusNetlist(host=self._host, name=optionName, sectionName=sectionName, parent=self)
+				self._quartusNetlist.append(nl)
+				# self._xstNetlist[optionName] = nl
 				# self._cocotb[optionName] = tb
 			elif (type == "xstnetlist"):
 				# print("loading XST netlist: {0}".format(optionName))
@@ -338,7 +352,6 @@ class CocoTestbench(Testbench):
 class Netlist(Base):
 	def __init__(self, host, name, sectionName, parent):
 		self._moduleName =	""
-		self._filesFile =		None
 		self._rulesFile =		None
 		super().__init__(host, name, sectionName, parent)
 
@@ -419,6 +432,38 @@ class XstNetlist(Netlist):
 		buffer += "{0}  Rules: {1!s}\n".format(__indent, self._rulesFile)
 		return buffer
 
+class QuartusNetlist(Netlist):
+	def __init__(self, host, name, sectionName, parent):
+		self._filesFile =				None
+		self._qsfFile =					None
+		super().__init__(host, name, sectionName, parent)
+
+	@property
+	@LazyLoadTrigger
+	def FilesFile(self):				return self._filesFile
+
+	@property
+	def QsfFile(self):					return self._qsfFile
+	@QsfFile.setter
+	def QsfFile(self, value):
+		if isinstance(value, str):
+			value = Path(value)
+		self._qsfFile = value
+
+	def _LazyLoadable_Load(self):
+		super()._LazyLoadable_Load()
+		self._filesFile =				Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
+
+	def __str__(self):
+		return "Quartus-II Netlist\n"
+
+	def pprint(self, indent):
+		__indent = "  " * indent
+		buffer = "{0}Netlist: {1}\n".format(__indent, self._moduleName)
+		buffer += "{0}  Files: {1!s}\n".format(__indent, self._filesFile)
+		buffer += "{0}  Rules: {1!s}\n".format(__indent, self._rulesFile)
+		return buffer
+
 
 class CoreGeneratorNetlist(Netlist):
 	def __str__(self):
@@ -427,18 +472,6 @@ class CoreGeneratorNetlist(Netlist):
 	def pprint(self, indent):
 		__indent = "  " * indent
 		buffer = "{0}Netlist: {1}\n".format(__indent, self._moduleName)
-		buffer += "{0}  Rules: {1!s}\n".format(__indent, self._rulesFile)
-		return buffer
-
-
-class QuartusNetlist(Netlist):
-	def __str__(self):
-		return "Quartus netlist\n"
-
-	def pprint(self, indent):
-		__indent = "  " * indent
-		buffer = "{0}Netlist: {1}\n".format(__indent, self._moduleName)
-		buffer += "{0}  Files: {1!s}\n".format(__indent, self._filesFile)
 		buffer += "{0}  Rules: {1!s}\n".format(__indent, self._rulesFile)
 		return buffer
 

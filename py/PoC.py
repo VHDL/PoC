@@ -61,6 +61,7 @@ from Simulator.GHDLSimulator				import Simulator as GHDLSimulator
 from Simulator.ISESimulator					import Simulator as ISESimulator
 from Simulator.QuestaSimulator			import Simulator as QuestaSimulator
 from Simulator.VivadoSimulator			import Simulator as VivadoSimulator
+from Compiler.QuartusCompiler	import Compiler as MapCompiler
 from Compiler.XCOCompiler			import Compiler as XCOCompiler
 from Compiler.XSTCompiler			import Compiler as XSTCompiler
 
@@ -265,10 +266,6 @@ class PoC(ILogable, ArgParseMixin):
 
 		# self.Directories["XSTFiles"] =			self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
 		# #self.Directories["QuartusFiles"] =	self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['QuartusSynthesisFiles']
-
-		self.Directories["CoreGenTemp"] =		self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ISECoreGeneratorFiles']
-		self.Directories["XstTemp"] =				self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
-		self.Directories["QuartusTemp"] =		self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['QuartusSynthesisFiles']
 
 	# ============================================================================
 	# Common commands
@@ -825,7 +822,7 @@ class PoC(ILogable, ArgParseMixin):
 		Exit.exit()
 
 	# ----------------------------------------------------------------------------
-	# create the sub-parser for the "coregen" command
+	# create the sub-parser for the "xst" command
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Synthesis commands")
 	@CommandAttribute("xst", help="Compile a PoC IP core with Xilinx ISE XST to a netlist")
@@ -854,6 +851,43 @@ class PoC(ILogable, ArgParseMixin):
 
 		compiler = XSTCompiler(self, args.logs, args.reports)
 		compiler.PrepareCompiler(iseBinaryPath, iseVersion)
+		compiler.dryRun = self.DryRun
+		compiler.RunAll(fqnList, board)
+
+		Exit.exit()
+
+
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "quartus" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Synthesis commands")
+	@CommandAttribute("quartus", help="Compile a PoC IP core with Altera Quartus-II Map to a netlist")
+	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@ArgumentAttribute('--device', metavar="<DeviceName>", dest="DeviceName", help="todo")
+	@ArgumentAttribute('--board', metavar="<BoardName>", dest="BoardName", help="todo")
+	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
+	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
+	# @HandleVerbosityOptions
+	def HandleQuartusCompilation(self, args):
+		self.PrintHeadline()
+		self.__PrepareForSynthesis()
+
+		# TODO: check env variables
+		# self._CheckQuartusIIEnvironment()
+
+		fqnList =	self._ExtractFQNs(args.FQN, defaultType=EntityTypes.NetList)
+		board =		self._ExtractBoard(args.BoardName, args.DeviceName)
+
+		# prepare some paths
+		# self.Directories["XSTFiles"] =				self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
+		self.Directories["QuartusTemp"] =					self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['QuartusSynthesisFiles']
+		self.Directories["QuartusInstallation"] = Path(self.PoCConfig['Altera.QuartusII']['InstallationDirectory'])
+		self.Directories["QuartusBinary"] =				Path(self.PoCConfig['Altera.QuartusII']['BinaryDirectory'])
+		quartusBinaryPath =												self.Directories["QuartusBinary"]
+		quartusVersion =													self.PoCConfig['Altera.QuartusII']['Version']
+
+		compiler = MapCompiler(self, args.logs, args.reports)
+		compiler.PrepareCompiler(quartusBinaryPath, quartusVersion)
 		compiler.dryRun = self.DryRun
 		compiler.RunAll(fqnList, board)
 
