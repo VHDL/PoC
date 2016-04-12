@@ -1,0 +1,25 @@
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# vim: tabstop=2:shiftwidth=2:noexpandtab
+# kate: tab-width 2; replace-tabs off; indent-width 2;
+# ==============================================================================
+# Note: all files are relative to PoC root directory
+#
+PreProcessRules
+	# Empty
+End PreProcessRules
+
+PostProcessRules
+	Copy "${SPECIAL:OutputDir}/${TopModule}.ngc"														To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${TopModule}.ngc"
+	Copy "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${TopModule}_top.vhd"		To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${TopModule}.vhdl"
+	
+	# first 2 lines with option "d"
+	In "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${TopModule}.vhdl" File
+		Search For "(architecture arc of ${TopModule} is).*(end  arc;)"		Replace By "\1\nbegin\n\2"
+		Search For "generic.*port"																				Replace By "port"
+		Search For "C3_NUM_DQ_PINS"																				Replace By "16"
+		Search For "C3_MEM_ADDR_WIDTH"																		Replace By "13"
+		Search For "C3_MEM_BANKADDR_WIDTH"																Replace By "3"
+		Search For "C3_P0_MASK_SIZE"																			Replace By "16"
+		Search For "C3_P0_DATA_PORT_SIZE"																	Replace By "128"
+	End File
+End PostProcessRules

@@ -40,7 +40,7 @@ from Parser.CodeDOM		import EmptyLine, CommentLine, BlockedStatement as BlockedS
 # Blocked Statements (Forward declaration)
 # ==============================================================================
 class BlockedStatement(BlockedStatementBase):
-	pass
+	_allowedStatements = []
 
 # ==============================================================================
 # File Reference Statements
@@ -53,12 +53,9 @@ class VHDLStatement(Statement):
 		self._commentText =	commentText
 	
 	@property
-	def LibraryName(self):
-		return self._libraryName
-		
+	def LibraryName(self):	return self._libraryName
 	@property
-	def FileName(self):
-		return self._fileName
+	def FileName(self):			return self._fileName
 	
 	@classmethod
 	def GetParser(cls):
@@ -80,7 +77,7 @@ class VHDLStatement(Statement):
 			token = yield
 			if isinstance(token, StringToken):				library += token.Value
 			elif isinstance(token, NumberToken):			library += token.Value
-			elif (isinstance(token, CharacterToken) and  (token.Value == "_")):
+			elif (isinstance(token, CharacterToken) and (token.Value == "_")):
 				library += token.Value
 			else:
 				break
@@ -97,9 +94,7 @@ class VHDLStatement(Statement):
 		fileName = ""
 		while True:
 			token = yield
-			if isinstance(token, CharacterToken):
-				if (token.Value == "\""):
-					break
+			if (isinstance(token, CharacterToken)and (token.Value == "\"")):		break
 			fileName += token.Value
 
 		# match for optional whitespace
@@ -114,8 +109,7 @@ class VHDLStatement(Statement):
 			# match for any until line end
 			while True:
 				token = yield
-				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"): break
+				if (isinstance(token, CharacterToken) and (token.Value == "\n")):    break
 				commentText += token.Value
 		else:
 			raise MismatchingParserResult("VHDLParser: Expected end of line or comment")
@@ -165,9 +159,7 @@ class VerilogStatement(Statement):
 		fileName = ""
 		while True:
 			token = yield
-			if isinstance(token, CharacterToken):
-				if (token.Value == "\""):
-					break
+			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
 			fileName += token.Value
 
 		# match for optional whitespace
@@ -182,8 +174,7 @@ class VerilogStatement(Statement):
 			# match for any until line end
 			while True:
 				token = yield
-				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"):		break
+				if (isinstance(token, CharacterToken) and (token.Value == "\n")):    break
 				commentText += token.Value
 		else:
 			raise MismatchingParserResult("VerilogParser: Expected end of line or comment")
@@ -229,9 +220,7 @@ class CocotbStatement(Statement):
 		fileName = ""
 		while True:
 			token = yield
-			if isinstance(token, CharacterToken):
-				if (token.Value == "\""):
-					break
+			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
 			fileName += token.Value
 
 		# match for optional whitespace
@@ -247,8 +236,7 @@ class CocotbStatement(Statement):
 			# match for any until line end
 			while True:
 				token = yield
-				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"):		break
+				if (isinstance(token, CharacterToken) and (token.Value == "\n")):    break
 				commentText += token.Value
 		else:
 			raise MismatchingParserResult("CocotbParser: Expected end of line or comment")
@@ -294,9 +282,7 @@ class UcfStatement(Statement):
 		fileName = ""
 		while True:
 			token = yield
-			if isinstance(token, CharacterToken):
-				if (token.Value == "\""):
-					break
+			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
 			fileName += token.Value
 
 		# match for optional whitespace
@@ -312,8 +298,7 @@ class UcfStatement(Statement):
 			# match for any until line end
 			while True:
 				token = yield
-				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"): break
+				if (isinstance(token, CharacterToken) and (token.Value == "\n")):    break
 				commentText += token.Value
 		else:
 			raise MismatchingParserResult("UcfParser: Expected end of line or comment")
@@ -359,9 +344,7 @@ class XdcStatement(Statement):
 		fileName = ""
 		while True:
 			token = yield
-			if isinstance(token, CharacterToken):
-				if (token.Value == "\""):
-					break
+			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
 			fileName += token.Value
 
 		# match for optional whitespace
@@ -377,8 +360,7 @@ class XdcStatement(Statement):
 			# match for any until line end
 			while True:
 				token = yield
-				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"): break
+				if (isinstance(token, CharacterToken) and (token.Value == "\n")):    break
 				commentText += token.Value
 		else:
 			raise MismatchingParserResult("XdcParser: Expected end of line or comment")
@@ -424,9 +406,7 @@ class SdcStatement(Statement):
 		fileName = ""
 		while True:
 			token = yield
-			if isinstance(token, CharacterToken):
-				if (token.Value == "\""):
-					break
+			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
 			fileName += token.Value
 
 		# match for optional whitespace
@@ -442,8 +422,7 @@ class SdcStatement(Statement):
 			# match for any until line end
 			while True:
 				token = yield
-				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"): break
+				if (isinstance(token, CharacterToken) and (token.Value == "\n")):    break
 				commentText += token.Value
 		else:
 			raise MismatchingParserResult("SdcParser: Expected end of line or comment")
@@ -489,9 +468,7 @@ class ReportStatement(Statement):
 		message = ""
 		while True:
 			token = yield
-			if isinstance(token, CharacterToken):
-				if (token.Value == "\""):
-					break
+			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
 			message += token.Value
 
 		# match for optional whitespace
@@ -507,8 +484,7 @@ class ReportStatement(Statement):
 			# match for any until line end
 			while True:
 				token = yield
-				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"): break
+				if (isinstance(token, CharacterToken) and (token.Value == "\n")):    break
 				commentText += token.Value
 		else:
 			raise MismatchingParserResult("ReportParser: Expected end of line or comment")
@@ -574,8 +550,7 @@ class LibraryStatement(Statement):
 		directoryName = ""
 		while True:
 			token = yield
-			if isinstance(token, CharacterToken):
-				if (token.Value == "\""):		break
+			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
 			directoryName += token.Value
 
 		# match for optional whitespace
@@ -591,8 +566,7 @@ class LibraryStatement(Statement):
 			# match for any until line end
 			while True:
 				token = yield
-				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"): break
+				if (isinstance(token, CharacterToken) and (token.Value == "\n")):    break
 				commentText += token.Value
 		else:
 			raise MismatchingParserResult("LibraryParser: Expected end of line or comment")
@@ -637,8 +611,7 @@ class IncludeStatement(Statement):
 		fileName = ""
 		while True:
 			token = yield
-			if isinstance(token, CharacterToken):
-				if (token.Value == "\""):			break
+			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
 			fileName += token.Value
 
 		# match for optional whitespace
@@ -653,8 +626,7 @@ class IncludeStatement(Statement):
 			# match for any until line end
 			while True:
 				token = yield
-				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"):			break
+				if (isinstance(token, CharacterToken) and (token.Value == "\n")):    break
 				commentText += token.Value
 		else:
 			raise MismatchingParserResult("IncludeParser: Expected end of line or comment")
@@ -724,8 +696,7 @@ class IfStatement(ConditionalBlockStatement):
 			# match for any until line end
 			while True:
 				token = yield
-				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"):		break
+				if (isinstance(token, CharacterToken) and (token.Value == "\n")):    break
 				commentText += token.Value
 		else:
 			raise MismatchingParserResult("IfStatementParser: Expected end of line or comment")
@@ -806,8 +777,7 @@ class ElseIfStatement(ConditionalBlockStatement):
 			# match for any until line end
 			while True:
 				token = yield
-				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"):		break
+				if (isinstance(token, CharacterToken) and (token.Value == "\n")):    break
 				commentText += token.Value
 		else:
 			raise MismatchingParserResult("ElseIfStatementParser: Expected end of line or comment")
@@ -863,8 +833,7 @@ class ElseStatement(BlockStatement):
 			# match for any until line end
 			while True:
 				token = yield
-				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"): break
+				if (isinstance(token, CharacterToken) and (token.Value == "\n")):    break
 				commentText += token.Value
 		else:
 			raise MismatchingParserResult("ElseStatementParser: Expected end of line or comment")
@@ -979,8 +948,7 @@ class IfElseIfElseStatement(Statement):
 			# match for any until line end
 			while True:
 				token = yield
-				if isinstance(token, CharacterToken):
-					if (token.Value == "\n"): break
+				if (isinstance(token, CharacterToken) and (token.Value == "\n")):    break
 				# commentText += token.Value
 		else:
 			raise MismatchingParserResult("IfElseIfElseStatementParser: Expected end of line or comment")

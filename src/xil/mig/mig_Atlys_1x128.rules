@@ -5,7 +5,7 @@
 # Note: all files are relative to PoC root directory
 #
 PreProcessRules
-	# empty
+	Copy "${SrcDir}/${TopLevel}.prj"																												To "${SPECIAL:OutputDir}/${TopLevel}/user_design/mig.prj"
 End PreProcessRules
 
 PostProcessRules
@@ -19,19 +19,23 @@ PostProcessRules
 	Copy "${SPECIAL:OutputDir}/${IPCoreName}/user_design/rtl/${IPCoreName}.vhd"							To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${IPCoreName}_top.vhd"
 	Copy "${SPECIAL:OutputDir}/${IPCoreName}/user_design/par/${IPCoreName}.ucf"							To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${IPCoreName}.ncf"
 
-	In "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${IPCoreName}_top.vhd" Replace Multiline
+	In "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${IPCoreName}_top.vhd" File		# Multiline
 		Search For "(entity ${IPCoreName} is\n\s*generic\s+?\()"					Replace By "\1\n    C3_CLKOUT2_DIVIDE : integer := 6; -- fraction of 600 MHz clock => 6 means 100 MHz\n"
-	In "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${IPCoreName}_top.vhd" Replace
+	End File
+	In "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${IPCoreName}_top.vhd" File
 		Search For "(constant C3_CLKOUT2_DIVIDE\s+: integer :=)\s\d+;"		Replace By "-- C3_CLKOUT2_DIVIDE is now a generic"
 		Search For "(constant C3_CLKFBOUT_MULT\s+: integer :=)\s\d+;"			Replace By "\1 6; -- for 100 MHz board clock"
-	In "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/memc3_infrastructure.vhd" Replace
+	End File
+	In "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/memc3_infrastructure.vhd" File
 		Search For "(rst0_sync_r\s+: std_logic.*?);"											Replace By "\1 := (others => '1');"
 		Search For "(powerup_pll_locked\s+: std_logic);"									Replace By "\1 := '0';"
 		Search For "(syn_clk0_powerup_pll_locked\s+: std_logic);"					Replace By "\1 := '0';"
 		Search For "  se_input_clk"																				Replace By "  -- Add option for no clock buffer\n  no_ibufg: if C_INPUT_CLK_TYPE = \"NONE\" generate sys_clk_ibufg <= sys_clk; end generate no_ibufg;\n\n  se_input_clk"
-	In "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${IPCoreName}.ncf" Replace
+	End File
+	In "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${IPCoreName}.ncf"			File
 		Search For "(NET.*?SYS_CLK3.*?;)"																	Replace By "#\1"
 		Search For "(TIMESPEC.*?SYS_CLK3.*?;)"														Replace By "#\1"
 		Search For "NET\s+\"c3_sys_.*?;"																	Replace By ""
+	End File
 #					${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${IPCoreName}.vhd :: "(C3_INPUT_CLK_TYPE\s+: string :=)\s.*?;"		By "\1 "NONE";"
 End PostProcessRules

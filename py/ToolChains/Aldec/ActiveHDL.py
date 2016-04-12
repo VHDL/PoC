@@ -83,7 +83,6 @@ class ActiveHDL(ActiveHDLMixIn):
 class VHDLCompiler(Executable, ActiveHDLMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		ActiveHDLMixIn.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vcom.exe"
 		# elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vcom"
 		else:																						raise PlatformNotSupportedException(self._platform)
@@ -181,7 +180,6 @@ class VHDLCompiler(Executable, ActiveHDLMixIn):
 class StandaloneSimulator(Executable, ActiveHDLMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		ActiveHDLMixIn.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vsimsa.exe"
 		# elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vsimsa"
 		else:																						raise PlatformNotSupportedException(self._platform)
@@ -256,7 +254,6 @@ class StandaloneSimulator(Executable, ActiveHDLMixIn):
 class Simulator(Executable, ActiveHDLMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		ActiveHDLMixIn.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vsimsa.exe"
 		# elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vsimsa"
 		else:																						raise PlatformNotSupportedException(self._platform)
@@ -323,7 +320,6 @@ class Simulator(Executable, ActiveHDLMixIn):
 class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		ActiveHDLMixIn.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-
 		if (self._platform == "Windows"):		executablePath = binaryDirectoryPath / "vlib.exe"
 		# elif (self._platform == "Linux"):		executablePath = binaryDirectoryPath / "vlib"
 		else:																						raise PlatformNotSupportedException(self._platform)

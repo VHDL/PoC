@@ -120,6 +120,8 @@ class ExtendedInterpolation(Interpolation):
 			return ".".join(parts[1:-1])
 		elif (path == "ParentWithRoot"):
 			return ".".join(parts[:-1])
+		elif (path == "GrantParent"):
+			return ".".join(parts[1:-2])
 		elif (path == "Path"):
 			return ".".join(parts[1:])
 		elif (path == "PathWithRoot"):
@@ -219,7 +221,6 @@ class ExtendedConfigParser(ConfigParser):
 		elif (interpolation is _UNSET):	self._interpolation = ExtendedInterpolation()
 		else:														self._interpolation = interpolation
 
-
 	def _unify_values(self, section, vars):
 		"""Create a sequence of lookups with 'vars' taking priority over
 		the 'section' which takes priority over the DEFAULTSECT.
@@ -241,7 +242,7 @@ class ExtendedConfigParser(ConfigParser):
 					value = str(value)
 				vardict[self.optionxform(key)] = value
 		prefix = section.split(".",1)[0] + ".DEFAULT"
-		# # print("searched for {0}".format(prefix))
+		# print("searched for {0}".format(prefix))
 		try:
 			defaultdict = self._sections[prefix]
 			return _ChainMap(vardict, sectiondict, defaultdict, self._defaults)

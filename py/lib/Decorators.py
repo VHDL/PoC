@@ -2,6 +2,29 @@
 
 import functools
 
+class ILazyLoadable:
+	def __init__(self):
+		self.__IsLoaded = False
+
+	def _LazyLoadable_Load(self):
+		self.__IsLoaded =	True
+
+	@property
+	def LazyLoadable_IsLoaded(self):
+		return self.__IsLoaded
+
+class LazyLoadTrigger:
+	def __init__(self, func):
+		self.func = func
+
+	def __call__(self, inst, *args, **kwargs):
+		if (inst.LazyLoadable_IsLoaded == False):
+			inst._LazyLoadable_Load()
+		return self.func(inst, *args, **kwargs)
+
+	def __repr__(self):
+		return self.func.__doc__
+
 class CachedReadOnlyProperty:
 	def __init__(self, func):
 		self.func =		func

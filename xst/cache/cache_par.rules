@@ -1,0 +1,22 @@
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# vim: tabstop=2:shiftwidth=2:noexpandtab
+# kate: tab-width 2; replace-tabs off; indent-width 2;
+# ==============================================================================
+# Note: all files are relative to PoC root directory
+#
+# .....
+PreProcessRules
+	Copy "${SPECIAL:OutputDir}/${IPCoreName}/user_design/rtl/iodrp_controller.vhd"					To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/iodrp_controller.vhdl"
+	Copy "${SPECIAL:OutputDir}/${IPCoreName}/user_design/rtl/iodrp_mcb_controller.vhd"			To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/iodrp_mcb_controller.vhdl"
+End PreProcessRules
+
+# .....
+PostProcessRules
+	In "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${IPCoreName}_top.vhd" File
+		Search For "(entity ${IPCoreName} is\n\s*generic\s+?\()"					Replace By "\1\n    C3_CLKOUT2_DIVIDE : integer := 6; -- fraction of 600 MHz clock => 6 means 100 MHz\n"
+	End File
+	In "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${IPCoreName}_top.vhd" File
+		Search For "(constant C3_CLKOUT2_DIVIDE\s+: integer :=)\s\d+;"		Replace By "-- C3_CLKOUT2_DIVIDE is now a generic"
+		Search For "(constant C3_CLKFBOUT_MULT\s+: integer :=)\s\d+;"			Replace By "\1 6; -- for 100 MHz board clock"
+	End File
+End PostProcessRules
