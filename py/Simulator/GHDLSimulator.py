@@ -221,7 +221,7 @@ class Simulator(BaseSimulator):
 		ghdl.RunOptions[ghdl.SwitchIEEEAsserts] = "disable-at-0"		# enable, disable, disable-at-0
 		# set dump format to save simulation results to *.vcd file
 		if (self._guiMode):
-			waveformFileFormat =	self.Host.PoCConfig[testbench._sectionName]['ghdlWaveformFileFormat']
+			waveformFileFormat =	self.Host.PoCConfig[testbench.ConfigSectionName]['ghdlWaveformFileFormat']
 			if (waveformFileFormat == "vcd"):
 				waveformFilePath = self._tempPath / (testbench.ModuleName + ".vcd")
 				ghdl.RunOptions[ghdl.SwitchVCDWaveform] =		waveformFilePath
@@ -251,7 +251,7 @@ class Simulator(BaseSimulator):
 		runOptions.append('--ieee-asserts={0}'.format("disable-at-0"))		# enable, disable, disable-at-0
 		# set dump format to save simulation results to *.vcd file
 		if (self._guiMode):
-			waveformFileFormat =	self.Host.PoCConfig[testbench._sectionName]['ghdlWaveformFileFormat']
+			waveformFileFormat =	self.Host.PoCConfig[testbench.ConfigSectionName]['ghdlWaveformFileFormat']
 					
 			if (waveformFileFormat == "vcd"):
 				waveformFilePath = self._tempPath / (testbench.ModuleName + ".vcd")
@@ -275,7 +275,7 @@ class Simulator(BaseSimulator):
 	def View(self, testbench):
 		self._LogNormal("  launching GTKWave...")
 		
-		waveformFileFormat =	self.Host.PoCConfig[testbench._sectionName]['ghdlWaveformFileFormat']
+		waveformFileFormat =	self.Host.PoCConfig[testbench.ConfigSectionName]['ghdlWaveformFileFormat']
 		if (waveformFileFormat == "vcd"):
 			waveformFilePath = self._tempPath / (testbench.ModuleName + ".vcd")
 		elif (waveformFileFormat == "vcdgz"):
@@ -294,7 +294,7 @@ class Simulator(BaseSimulator):
 		gtkw.Parameters[gtkw.SwitchDumpFile] = str(waveformFilePath)
 
 		# if GTKWave savefile exists, load it's settings
-		gtkwSaveFilePath =	self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench._sectionName]['gtkwSaveFile']
+		gtkwSaveFilePath =	self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['gtkwSaveFile']
 		if gtkwSaveFilePath.exists():
 			self._LogDebug("    Found waveform save file: '{0}'".format(str(gtkwSaveFilePath)))
 			gtkw.Parameters[gtkw.SwitchSaveFile] = str(gtkwSaveFilePath)

@@ -63,7 +63,7 @@ class Compiler(BaseCompiler):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
 		self._entity =				None
-		self._netlistFQN =		""
+		netlist.ConfigSectionName =		""
 		self._device =					None
 		self._tempPath =			None
 		self._outputPath =		None
@@ -91,7 +91,7 @@ class Compiler(BaseCompiler):
 		self._LogQuiet("IP-core: {0}{1}{2}".format(Foreground.YELLOW, self._netlistFQN, Foreground.RESET))
 
 		# setup all needed paths to execute fuse
-		netlist = entity.Netlist
+		netlist = entity.XstNetlist
 		self._CreatePoCProject(netlist, board)
 		# self._AddFileListFile(netlist.FilesFile)
 
@@ -112,8 +112,8 @@ class Compiler(BaseCompiler):
 
 	def _RunCompile(self, netlist):
 		# read netlist settings from configuration file
-		ipCoreName = self.Host.netListConfig[self._netlistFQN]['IPCoreName']
-		xcoInputFilePath = self.Host.Directories["PoCRoot"] / self.Host.netListConfig[self._netlistFQN]['CoreGeneratorFile']
+		ipCoreName = self.Host.netListConfig[netlist.ConfigSectionName]['IPCoreName']
+		xcoInputFilePath = self.Host.Directories["PoCRoot"] / self.Host.netListConfig[netlist.ConfigSectionName]['CoreGeneratorFile']
 		cgcTemplateFilePath = self.Host.Directories["PoCNetList"] / "template.cgc"
 		cgpFilePath = self._tempPath / "coregen.cgp"
 		cgcFilePath = self._tempPath / "coregen.cgc"

@@ -113,7 +113,7 @@ class Simulator(BaseSimulator):
 
 	def _Run(self, testbench):
 		self._LogNormal("  running simulation...")
-		cocotbTemplateFilePath = self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench._sectionName]['CocotbMakefile']
+		cocotbTemplateFilePath = self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['CocotbMakefile']
 		topLevel =			testbench.TopLevel
 		cocotbModule =	testbench.ModuleName
 

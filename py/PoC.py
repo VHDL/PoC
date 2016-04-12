@@ -33,7 +33,7 @@
 # ==============================================================================
 
 from argparse									import RawDescriptionHelpFormatter
-from configparser							import Error as ConfigParser_Error
+from configparser							import Error as ConfigParser_Error, DuplicateOptionError
 from os												import environ
 from pathlib									import Path
 from platform									import system as platform_system
@@ -183,16 +183,19 @@ class PoC(ILogable, ArgParseMixin):
 		self.__pocConfig = ExtendedConfigParser()
 		self.__pocConfig.optionxform = str
 
-		# process first file (private)
-		file, name = configFiles[0]
-		self._LogDebug("  '{0!s}'".format(file))
-		if not file.exists():  raise NotConfiguredException("PoC's {0} configuration file '{1!s}' does not exist.".format(name, file))  from FileNotFoundError(str(file))
-		self.__pocConfig.read(str(file))
-
-		for file, name in configFiles[1:]:
+		try:
+			# process first file (private)
+			file, name = configFiles[0]
 			self._LogDebug("  '{0!s}'".format(file))
-			if not file.exists():  raise ConfigurationException("PoC's {0} configuration file '{1!s}' does not exist.".format(name, file))  from FileNotFoundError(str(file))
+			if not file.exists():  raise NotConfiguredException("PoC's {0} configuration file '{1!s}' does not exist.".format(name, file))  from FileNotFoundError(str(file))
 			self.__pocConfig.read(str(file))
+
+			for file, name in configFiles[1:]:
+				self._LogDebug("  '{0!s}'".format(file))
+				if not file.exists():  raise ConfigurationException("PoC's {0} configuration file '{1!s}' does not exist.".format(name, file))  from FileNotFoundError(str(file))
+				self.__pocConfig.read(str(file))
+		except DuplicateOptionError as ex:
+			raise ConfigurationException("Error in configuration file '{0!s}'.".format(file)) from ex
 
 		# print("="*80)
 		# print("PoCConfig:")
@@ -877,6 +880,8 @@ def main():
 		cause = ex.__cause__
 		if isinstance(cause, FileNotFoundError):
 			print("{YELLOW}  FileNotFound:{RESET} '{cause}'".format(cause=str(cause), **Init.Foreground))
+		elif isinstance(cause, DuplicateOptionError):
+			print("{YELLOW}  DuplicateOptionError:{RESET} '{cause}'".format(cause=str(cause), **Init.Foreground))
 		elif isinstance(cause, ConfigParser_Error):
 			print("{YELLOW}  configparser.Error:{RESET} '{cause}'".format(cause=str(cause), **Init.Foreground))
 		elif isinstance(cause, ParserException):

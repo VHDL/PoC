@@ -127,32 +127,18 @@ class Namespace(PathElement):
 				self.__entities[optionName] = ent
 
 	@property
-	def Namespaces(self):
-		return [ns for ns in self.__namespaces.values()]
-
+	def Namespaces(self):					return [ns for ns in self.__namespaces.values()]
 	@property
-	def NamespaceNames(self):
-		return [nsName for nsName in self.__namespaces.keys()]
-
-	def GetNamespaces(self):
-		return self.__namespaces.values()
-
-	def GetNamespaceNames(self):
-		return self.__namespaces.keys()
-
+	def NamespaceNames(self):			return [nsName for nsName in self.__namespaces.keys()]
 	@property
-	def Entities(self):
-		return [ent for ent in self.__entities.values()]
-
+	def Entities(self):						return [ent for ent in self.__entities.values()]
 	@property
-	def EntityNames(self):
-		return [entName for entName in self.__entities.keys()]
+	def EntityNames(self):				return [entName for entName in self.__entities.keys()]
 
-	def GetEntities(self):
-		return self.__entities.values()
-
-	def GetEntityNames(self):
-		return self.__entities.keys()
+	def GetNamespaces(self):			return self.__namespaces.values()
+	def GetNamespaceNames(self):	return self.__namespaces.keys()
+	def GetEntities(self):				return self.__entities.values()
+	def GetEntityNames(self):			return self.__entities.keys()
 
 	def __getitem__(self, key):
 		try:
@@ -188,9 +174,10 @@ class Entity(PathElement):
 	def __init__(self, host, name, configSection, parent):
 		super().__init__(host, name, configSection, parent)
 
-		self._vhdltb =	None
-		self._cocotb =	None
-		self._netlist =	None
+		self._vhdltb =			[]		# OrderedDict()
+		self._cocotb =			[]		# OrderedDict()
+		self._xstNetlist =	[]		# OrderedDict()
+		self._cgNetlist =		[]		# OrderedDict()
 
 		self._Load()
 
@@ -198,79 +185,89 @@ class Entity(PathElement):
 	def VHDLTestbench(self):
 		if self._vhdltb is None:
 			raise NotConfiguredException("No VHDL testbench configured for '{0!s}'.".format(self))
-		return self._vhdltb
+		return self._vhdltb[0]
 
 	@property
 	def CocoTestbench(self):
 		if self._cocotb is None:
 			raise NotConfiguredException("No Cocotb testbench configured for '{0!s}'.".format(self))
-		return self._cocotb
+		return self._cocotb[0]
 
 	@property
-	def Netlist(self):
-		if self._netlist is None:
-			raise NotConfiguredException("No netlist configured for '{0!s}'.".format(self))
-		return self._netlist
+	def XstNetlist(self):
+		if self._xstNetlist is None:
+			raise NotConfiguredException("No XST netlist configured for '{0!s}'.".format(self))
+		return self._xstNetlist[0]
+
+	@property
+	def CgNetlist(self):
+		if self._cgNetlist is None:
+			raise NotConfiguredException("No CoreGen netlist configured for '{0!s}'.".format(self))
+		return self._cgNetlist[0]
 
 	def _Load(self):
-		self._LoadVHDLTestbench()
-		self._LoadCocotbTestbench()
-		self._LoadXSTNetlist()
-
-	def _LoadVHDLTestbench(self):
-		testbench = self._host.PoCConfig[self._configSection]["VHDLTestbench"]
-		if (testbench == ""):
-			raise ConfigurationException("IPCore '{0!s}' has a VHDL Testbench option, but it's empty.".format(self.Parent))
-		if (testbench.lower() == "none"):
-			return
-
-		# print("found a testbench in '{0}' for '{1!s}'".format(testbench, self))
-		self._vhdltb = VhdlTestbench(self._host, testbench)
-
-	def _LoadCocotbTestbench(self):
-		testbench = self._host.PoCConfig[self._configSection]["CocotbTestbench"]
-		if (testbench == ""):
-			raise ConfigurationException("IPCore '{0!s}' has a Cocotb Testbench option, but it's empty.".format(self.Parent))
-		if (testbench.lower() == "none"):
-			return
-
-		# print("found a testbench in '{0}' for '{1!s}'".format(testbench, self))
-		self._cocotb = CocoTestbench(self._host, testbench)
-
-	def _LoadXSTNetlist(self):
-		netlist = self._host.PoCConfig[self._configSection]["Netlist"]
-		if (netlist == ""):
-			raise ConfigurationException("IPCore '{0!s}' has a Netlist option, but it's empty.".format(self))
-		if (netlist.lower() == "none"):
-			return
-
-		# print("found a netlist in '{0}' for '{1!s}'".format(netlist, self.Parent))
-		self._netlist = XstNetlist(self._host, netlist)
+		section = self._host.PoCConfig[self._configSection]
+		for optionName in section:
+			type = section[optionName].lower()
+			if (type == "vhdltestbench"):
+				# print("loading VHDL testbench: {0}".format(optionName))
+				sectionName = self._configSection.replace("IP", "TB") + "." + optionName
+				tb = VhdlTestbench(host=self._host, name=optionName, sectionName=sectionName, parent=self)
+				self._vhdltb.append(tb)
+				# self._vhdltb[optionName] = tb
+			elif (type == "cocotestbench"):
+				# print("loading Cocotb testbench: {0}".format(optionName))
+				sectionName = self._configSection.replace("IP", "COCOTB") + "." + optionName
+				tb = CocoTestbench(host=self._host, name=optionName, sectionName=sectionName, parent=self)
+				self._cocotb.append(tb)
+				# self._cocotb[optionName] = tb
+			elif (type == "xstnetlist"):
+				# print("loading XST netlist: {0}".format(optionName))
+				sectionName = self._configSection.replace("IP", "XST") + "." + optionName
+				nl = XstNetlist(host=self._host, name=optionName, sectionName=sectionName, parent=self)
+				self._xstNetlist.append(nl)
+				# self._xstNetlist[optionName] = nl
+			elif (type == "coregennetlist"):
+				# print("loading CoreGen netlist: {0}".format(optionName))
+				sectionName = self._configSection.replace("IP", "CG") + "." + optionName
+				nl = CoreGeneratorNetlist(host=self._host, name=optionName, sectionName=sectionName, parent=self)
+				self._cgNetlist.append(nl)
+				# self._cgNetlist[optionName] = nl
 
 	def pprint(self, indent=0):
-		__indent = "  " * indent
-		buffer = "{0}Entity: {1}\n".format(__indent, self.Name)
-		if (self._vhdltb is not None):
+		buffer = "{0}Entity: {1}\n".format("  " * indent, self.Name)
+		if (len(self._vhdltb) > 0):
 			buffer += self._vhdltb.pprint(indent + 1)
-		if (self._cocotb is not None):
+		if (len(self._cocotb) > 0):
 			buffer += self._cocotb.pprint(indent + 1)
-		if (self._netlist is not None):
-			buffer += self._netlist.pprint(indent + 1)
+		if (len(self._xstNetlist) > 0):
+			buffer += self._xstNetlist.pprint(indent + 1)
+		if (len(self._cgNetlist) > 0):
+			buffer += self._cgNetlist.pprint(indent + 1)
 		return buffer
 
 class Base:
-	def __init__(self, host, sectionName):
+	def __init__(self, host, name, sectionName, parent):
+		self._name =				name
 		self._sectionName = sectionName
-		self._host = host
+		self._parent =			parent
+		self._host =				host
 
 		self._Load()
 
+	@property
+	def Name(self):								return self._name
+	@property
+	def Parent(self):							return self._parent
+	@property
+	def ConfigSectionName(self):	return self._sectionName
+
 class Testbench(Base):
-	def __init__(self, host, sectionName):
+	def __init__(self, host, name, sectionName, parent):
 		self._moduleName =	""
 		self._filesFile =		None
 
-		super().__init__(host, sectionName)
+		super().__init__(host, name, sectionName, parent)
 
 	@property
 	def ModuleName(self):		return self._moduleName
@@ -291,8 +288,8 @@ class Testbench(Base):
 		return buffer
 
 class VhdlTestbench(Testbench):
-	def __init__(self, host, sectionName):
-		super().__init__(host, sectionName)
+	def __init__(self, host, name, sectionName, parent):
+		super().__init__(host, name, sectionName, parent)
 
 	def _Load(self):
 		super()._Load()
@@ -307,9 +304,9 @@ class VhdlTestbench(Testbench):
 		return buffer
 
 class CocoTestbench(Testbench):
-	def __init__(self, host, sectionName):
+	def __init__(self, host, name, sectionName, parent):
 		self._topLevel = ""
-		super().__init__(host, sectionName)
+		super().__init__(host, name, sectionName, parent)
 
 	@property
 	def TopLevel(self):
@@ -329,11 +326,11 @@ class CocoTestbench(Testbench):
 		return buffer
 
 class Netlist(Base):
-	def __init__(self, host, sectionName):
+	def __init__(self, host, name, sectionName, parent):
 		self._moduleName =	""
 		self._filesFile =		None
 		self._rulesFile =		None
-		super().__init__(host, sectionName)
+		super().__init__(host, name, sectionName, parent)
 
 	@property
 	def ModuleName(self):		return self._moduleName
@@ -344,14 +341,21 @@ class Netlist(Base):
 
 	def _Load(self):
 		self._moduleName =	self._host.PoCConfig[self._sectionName]["TopLevel"]
-		self._filesFile =		Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
-		self._rulesFile =		Path(self._host.PoCConfig[self._sectionName]["RulesFile"])
+
+		if self._host.PoCConfig.has_option(self._sectionName, "RulesFile"):
+			self._rulesFile =		Path(self._host.PoCConfig[self._sectionName]["RulesFile"])
+		else:
+			self._rulesFile =		None
 
 	def __str__(self):
 		return "Abstract netlist\n"
 
 
 class XstNetlist(Netlist):
+	def _Load(self):
+		super()._Load()
+		self._filesFile = Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
+
 	def __str__(self):
 		return "XST Netlist\n"
 

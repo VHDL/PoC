@@ -120,6 +120,8 @@ class ExtendedInterpolation(Interpolation):
 			return ".".join(parts[1:-1])
 		elif (path == "ParentWithRoot"):
 			return ".".join(parts[:-1])
+		elif (path == "GrantParent"):
+			return ".".join(parts[1:-2])
 		elif (path == "Path"):
 			return ".".join(parts[1:])
 		elif (path == "PathWithRoot"):
@@ -218,7 +220,6 @@ class ExtendedConfigParser(ConfigParser):
 		if (interpolation is None):			self._interpolation = Interpolation()
 		elif (interpolation is _UNSET):	self._interpolation = ExtendedInterpolation()
 		else:														self._interpolation = interpolation
-
 
 	def _unify_values(self, section, vars):
 		"""Create a sequence of lookups with 'vars' taking priority over
