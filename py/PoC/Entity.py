@@ -365,8 +365,9 @@ class Netlist(Base):
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
 		self._moduleName =	self._host.PoCConfig[self._sectionName]["TopLevel"]
-		if self._host.PoCConfig.has_option(self._sectionName, "RulesFile"):
-			self._rulesFile =		Path(self._host.PoCConfig[self._sectionName]["RulesFile"])
+		value = self._host.PoCConfig[self._sectionName]["RulesFile"]
+		if (value != ""):
+			self._rulesFile =		Path(value)
 		else:
 			self._rulesFile =		None
 

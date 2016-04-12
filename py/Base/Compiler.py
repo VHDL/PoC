@@ -99,6 +99,8 @@ class Compiler(ILogable):
 	def TemporaryPath(self):	return self._tempPath
 	@property
 	def OutputPath(self):			return self._outputPath
+	@property
+	def PoCProject(self):			return self._pocProject
 
 	def _PrepareCompilerEnvironment(self):
 		# create temporary directory for GHDL if not existent

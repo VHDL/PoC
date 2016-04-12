@@ -242,7 +242,7 @@ class ExtendedConfigParser(ConfigParser):
 					value = str(value)
 				vardict[self.optionxform(key)] = value
 		prefix = section.split(".",1)[0] + ".DEFAULT"
-		# # print("searched for {0}".format(prefix))
+		# print("searched for {0}".format(prefix))
 		try:
 			defaultdict = self._sections[prefix]
 			return _ChainMap(vardict, sectiondict, defaultdict, self._defaults)

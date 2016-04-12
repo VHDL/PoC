@@ -114,7 +114,7 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 		reportFilePath = self._tempPath / (netlist.ModuleName + ".log")
 
 		xst = self._ise.GetXst()
-		xst.Parameters[xst.SwitchIniStyle] =		"xflow"
+		xst.Parameters[xst.SwitchIntStyle] =		"xflow"
 		xst.Parameters[xst.SwitchXstFile] =			"ipcore.xst"
 		xst.Parameters[xst.SwitchReportFile] =	str(reportFilePath)
 		xst.Compile()
