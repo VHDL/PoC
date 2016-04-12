@@ -427,7 +427,7 @@ class Xst(Executable) :
 	class Executable(metaclass=ExecutableArgument) :
 		pass
 
-	class SwitchIniStyle(metaclass=ShortTupleArgument):
+	class SwitchIntStyle(metaclass=ShortTupleArgument):
 		_name = "intstyle"
 
 	class SwitchXstFile(metaclass=ShortFlagArgument) :
@@ -438,7 +438,7 @@ class Xst(Executable) :
 
 	Parameters = CommandLineArgumentList(
 			Executable,
-			SwitchIniStyle,
+			SwitchIntStyle,
 			SwitchXstFile,
 			SwitchReportFile
 	)

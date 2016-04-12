@@ -305,37 +305,24 @@ class Device:
 #				print("dev subtype: %s%s" % (deviceRegExpMatch.group('st1'), deviceRegExpMatch.group('st2')))
 	
 	@property
-	def Vendor(self):
-		return str(self.__vendor)
-	
+	def Vendor(self):			return str(self.__vendor)
 	@property
-	def Family(self):
-		return str(self.__family)
-		
+	def Family(self):			return str(self.__family)
 	@property
-	def Device(self):
-		return str(self.__device)
-		
+	def Device(self):			return str(self.__device)
 	@property
-	def Generation(self):
-		return self.__generation
-	
+	def Generation(self):	return self.__generation
 	@property
-	def Number(self):
-		return self.__number
-	
+	def Number(self):			return self.__number
 	@property
-	def SpeedGrade(self):
-		return self.__speedGrade
-	
+	def SpeedGrade(self):	return self.__speedGrade
 	@property
-	def PinCount(self):
-		return self.__pinCount
-	
+	def PinCount(self):		return self.__pinCount
 	@property
-	def Package(self):
-		return self.__package
-	
+	def Package(self):		return self.__package
+	@property
+	def Name(self):				return self.FullName.upper()
+
 	# @CachedReadOnlyProperty
 	@property
 	def ShortName(self):
@@ -370,10 +357,6 @@ class Device:
 		elif (self.__vendor is Vendors.Altera):
 			raise NotImplementedError("Device.FullName() not implemented for vendor Altera")
 			# FIXME: return "ep...."
-	
-	@property
-	def Name(self):
-		return self.FullName.upper()
 	
 	# @CachedReadOnlyProperty
 	@property

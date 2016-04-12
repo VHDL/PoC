@@ -335,8 +335,6 @@ class Netlist(Base):
 	@property
 	def ModuleName(self):		return self._moduleName
 	@property
-	def FilesFile(self):		return self._filesFile
-	@property
 	def RulesFile(self):		return self._rulesFile
 
 	def _Load(self):
@@ -352,9 +350,28 @@ class Netlist(Base):
 
 
 class XstNetlist(Netlist):
+	def __init__(self, host, name, sectionName, parent):
+		self._filesFile =				None
+		self._xcfFile =					None
+		self._filterFile =			None
+		self._xstTemplateFile =	None
+		super().__init__(host, name, sectionName, parent)
+
+	@property
+	def FilesFile(self):				return self._filesFile
+	@property
+	def XcfFile(self):					return self._xcfFile
+	@property
+	def FilterFile(self):				return self._filterFile
+	@property
+	def XstTemplateFile(self):	return self._xstTemplateFile
+
 	def _Load(self):
 		super()._Load()
-		self._filesFile = Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
+		self._filesFile =				Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
+		self._xcfFile =					Path(self._host.PoCConfig[self._sectionName]['XSTConstraintsFile'])
+		self._filterFile =			Path(self._host.PoCConfig[self._sectionName]['XSTFilterFile'])
+		self._xstTemplateFile =	Path(self._host.PoCConfig[self._sectionName]['XSTOptionsFile'])
 
 	def __str__(self):
 		return "XST Netlist\n"
@@ -374,7 +391,6 @@ class CoreGeneratorNetlist(Netlist):
 	def pprint(self, indent):
 		__indent = "  " * indent
 		buffer = "{0}Netlist: {1}\n".format(__indent, self._moduleName)
-		buffer += "{0}  Files: {1!s}\n".format(__indent, self._filesFile)
 		buffer += "{0}  Rules: {1!s}\n".format(__indent, self._rulesFile)
 		return buffer
 

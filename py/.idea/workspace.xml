@@ -4,21 +4,12 @@
     <list default="true" id="b1217729-6dda-4bce-a9eb-baa5346607ac" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../lib/cocotb" afterPath="$PROJECT_DIR$/../lib/cocotb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../lib/vunit" afterPath="$PROJECT_DIR$/../lib/vunit" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Compiler/XCOCompiler.py" afterPath="$PROJECT_DIR$/Compiler/XCOCompiler.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Compiler/XSTCompiler.py" afterPath="$PROJECT_DIR$/Compiler/XSTCompiler.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PoC.py" afterPath="$PROJECT_DIR$/PoC.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PoC/Config.py" afterPath="$PROJECT_DIR$/PoC/Config.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PoC/Entity.py" afterPath="$PROJECT_DIR$/PoC/Entity.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/ActiveHDLSimulator.py" afterPath="$PROJECT_DIR$/Simulator/ActiveHDLSimulator.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/CocotbSimulator.py" afterPath="$PROJECT_DIR$/Simulator/CocotbSimulator.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/GHDLSimulator.py" afterPath="$PROJECT_DIR$/Simulator/GHDLSimulator.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/ISESimulator.py" afterPath="$PROJECT_DIR$/Simulator/ISESimulator.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/QuestaSimulator.py" afterPath="$PROJECT_DIR$/Simulator/QuestaSimulator.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/VivadoSimulator.py" afterPath="$PROJECT_DIR$/Simulator/VivadoSimulator.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config.entity.ini" afterPath="$PROJECT_DIR$/config.entity.ini" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ToolChains/Xilinx/ISE.py" afterPath="$PROJECT_DIR$/ToolChains/Xilinx/ISE.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config.netlist.ini" afterPath="$PROJECT_DIR$/config.netlist.ini" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config.testbench.ini" afterPath="$PROJECT_DIR$/config.testbench.ini" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/ConfigParser.py" afterPath="$PROJECT_DIR$/lib/ConfigParser.py" />
     </list>
     <ignored path="py.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -39,14 +30,58 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="Entity.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="PoC.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/PoC.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="347">
+              <caret line="268" column="25" selection-start-line="268" selection-start-column="25" selection-end-line="268" selection-end-column="25" />
+              <folding>
+                <element signature="e#1479#1535#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Entity.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/PoC/Entity.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="149">
-              <caret line="231" column="12" selection-start-line="231" selection-start-column="12" selection-end-line="231" selection-end-column="12" />
+            <state relative-caret-position="132">
+              <caret line="358" column="0" selection-start-line="358" selection-start-column="0" selection-end-line="358" selection-end-column="0" />
               <folding>
-                <marker date="1460454265849" expanded="false" signature="1265:1341" placeholder="import ..." />
+                <marker date="1460456551265" expanded="false" signature="1265:1341" placeholder="import ..." />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="XSTCompiler.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Compiler/XSTCompiler.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="341">
+              <caret line="49" column="0" selection-start-line="49" selection-start-column="0" selection-end-line="49" selection-end-column="0" />
+              <folding>
+                <element signature="e#1539#1624#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Config.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/PoC/Config.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="102">
+              <caret line="309" column="24" selection-start-line="309" selection-start-column="24" selection-end-line="309" selection-end-column="24" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ISE.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ToolChains/Xilinx/ISE.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="357">
+              <caret line="438" column="39" selection-start-line="438" selection-start-column="39" selection-end-line="438" selection-end-column="39" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -66,7 +101,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/ToolChains/Mentor/QuestaSim.py" />
         <option value="$PROJECT_DIR$/ToolChains/Synopsys/Synopsys.py" />
         <option value="$PROJECT_DIR$/PostProcessor.py" />
         <option value="$PROJECT_DIR$/ToolChains/PoC.py" />
@@ -80,7 +114,6 @@
         <option value="$PROJECT_DIR$/ToolChains/GNU.py" />
         <option value="$PROJECT_DIR$/ToolChains/Xilinx/Vivado.py" />
         <option value="$PROJECT_DIR$/ToolChains/GHDL.py" />
-        <option value="$PROJECT_DIR$/ToolChains/Xilinx/ISE.py" />
         <option value="$PROJECT_DIR$/args.py" />
         <option value="$PROJECT_DIR$/Base/Configuration.py" />
         <option value="$PROJECT_DIR$/Parser/Meta.py" />
@@ -106,9 +139,7 @@
         <option value="$PROJECT_DIR$/Parser/RulesParser.py" />
         <option value="$PROJECT_DIR$/Base/Compiler.py" />
         <option value="$PROJECT_DIR$/ToolChains/Xilinx/Xilinx.py" />
-        <option value="$PROJECT_DIR$/PoC.py" />
         <option value="$PROJECT_DIR$/lib/ConfigParser.py" />
-        <option value="$PROJECT_DIR$/Compiler/XSTCompiler.py" />
         <option value="$PROJECT_DIR$/Compiler/XCOCompiler.py" />
         <option value="$PROJECT_DIR$/Simulator/ActiveHDLSimulator.py" />
         <option value="$PROJECT_DIR$/Simulator/CocotbSimulator.py" />
@@ -116,7 +147,11 @@
         <option value="$PROJECT_DIR$/Simulator/ISESimulator.py" />
         <option value="$PROJECT_DIR$/Simulator/QuestaSimulator.py" />
         <option value="$PROJECT_DIR$/Simulator/VivadoSimulator.py" />
+        <option value="$PROJECT_DIR$/ToolChains/Xilinx/ISE.py" />
+        <option value="$PROJECT_DIR$/PoC.py" />
         <option value="$PROJECT_DIR$/PoC/Entity.py" />
+        <option value="$PROJECT_DIR$/PoC/Config.py" />
+        <option value="$PROJECT_DIR$/Compiler/XSTCompiler.py" />
       </list>
     </option>
   </component>
@@ -185,6 +220,38 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="py" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="py" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="py" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ToolChains" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="py" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="py" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ToolChains" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Xilinx" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -555,11 +622,11 @@
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22369878" sideWeight="0.49367756" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32890365" sideWeight="0.49276236" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32779622" sideWeight="0.49758744" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32779622" sideWeight="0.49758744" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32779622" sideWeight="0.49758744" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17068757" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" x="803" y="490" width="74" height="40" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32890365" sideWeight="0.49758744" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4031008" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.4031008" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -588,7 +655,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="58" />
+      <option name="time" value="59" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
@@ -771,14 +838,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/CodeDOM.py" />
-    <entry file="file://$PROJECT_DIR$/PoC/Config.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="439" column="0" selection-start-line="439" selection-start-column="0" selection-end-line="439" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/ArgParseAttributes.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="358">
@@ -853,14 +912,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ToolChains/Xilinx/ISE.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="172">
-          <caret line="187" column="30" selection-start-line="187" selection-start-column="30" selection-end-line="187" selection-end-column="30" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Parser/RulesParser.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="272">
@@ -899,16 +950,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/PoC.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="182" column="28" selection-start-line="182" selection-start-column="28" selection-end-line="182" selection-end-column="28" />
-          <folding>
-            <element signature="e#1479#1535#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Base/Simulator.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-527">
@@ -930,17 +971,7 @@
         <state relative-caret-position="-44">
           <caret line="1230" column="0" selection-start-line="1230" selection-start-column="0" selection-end-line="1230" selection-end-column="0" />
           <folding>
-            <element signature="e#6283#6325#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Compiler/XSTCompiler.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1993">
-          <caret line="238" column="98" selection-start-line="238" selection-start-column="98" selection-end-line="238" selection-end-column="98" />
-          <folding>
-            <element signature="e#1538#1582#0" expanded="true" />
+            <element signature="e#6283#6325#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -984,7 +1015,7 @@
         <state relative-caret-position="208">
           <caret line="153" column="106" selection-start-line="153" selection-start-column="106" selection-end-line="153" selection-end-column="106" />
           <folding>
-            <element signature="e#1492#1537#0" expanded="true" />
+            <element signature="e#1492#1537#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1005,12 +1036,48 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/ToolChains/Xilinx/ISE.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="357">
+          <caret line="438" column="39" selection-start-line="438" selection-start-column="39" selection-end-line="438" selection-end-column="39" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/PoC.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="347">
+          <caret line="268" column="25" selection-start-line="268" selection-start-column="25" selection-end-line="268" selection-end-column="25" />
+          <folding>
+            <element signature="e#1479#1535#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/PoC/Config.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="309" column="24" selection-start-line="309" selection-start-column="24" selection-end-line="309" selection-end-column="24" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/PoC/Entity.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="149">
-          <caret line="231" column="12" selection-start-line="231" selection-start-column="12" selection-end-line="231" selection-end-column="12" />
+        <state relative-caret-position="132">
+          <caret line="358" column="0" selection-start-line="358" selection-start-column="0" selection-end-line="358" selection-end-column="0" />
           <folding>
-            <marker date="1460454265849" expanded="false" signature="1265:1341" placeholder="import ..." />
+            <marker date="1460456551265" expanded="false" signature="1265:1341" placeholder="import ..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Compiler/XSTCompiler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="341">
+          <caret line="49" column="0" selection-start-line="49" selection-start-column="0" selection-end-line="49" selection-end-column="0" />
+          <folding>
+            <element signature="e#1539#1624#0" expanded="true" />
           </folding>
         </state>
       </provider>

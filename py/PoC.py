@@ -264,9 +264,9 @@ class PoC(ILogable, ArgParseMixin):
 		# self.Directories["XSTFiles"] =			self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
 		# #self.Directories["QuartusFiles"] =	self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['QuartusSynthesisFiles']
 
-		# self.Directories["CoreGenTemp"] =		self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ISECoreGeneratorFiles']
-		# self.Directories["XSTTemp"] =				self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
-		# #self.Directories["QuartusTemp"] =	self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['QuartusSynthesisFiles']
+		self.Directories["CoreGenTemp"] =		self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ISECoreGeneratorFiles']
+		self.Directories["XstTemp"] =				self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
+		self.Directories["QuartusTemp"] =		self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['QuartusSynthesisFiles']
 
 	# ============================================================================
 	# Common commands
