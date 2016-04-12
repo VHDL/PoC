@@ -42,15 +42,12 @@ else:
 # load dependencies
 import re								# used for output filtering
 import shutil
-from colorama								import Fore as Foreground
 from configparser						import NoSectionError
-from os											import chdir
 from pathlib								import Path
 
 from Base.Exceptions				import NotConfiguredException, PlatformNotSupportedException
-from Base.Project						import FileTypes, VHDLVersion, Environment, ToolChain, Tool
+from Base.Project						import VHDLVersion, Environment, ToolChain, Tool
 from Base.Compiler					import Compiler as BaseCompiler, CompilerException
-from PoC.Project						import Project as PoCProject, FileListFile
 from ToolChains.Xilinx.ISE	import ISE
 
 
@@ -61,6 +58,7 @@ class Compiler(BaseCompiler):
 	def __init__(self, host, showLogs, showReport):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
+		self._ise =		None
 
 	def oldRun(self, pocEntity, device):
 		self._entity =	pocEntity
@@ -69,120 +67,19 @@ class Compiler(BaseCompiler):
 		self._LogNormal(self._ipcoreFQN)
 		self._LogNormal("  preparing compiler environment...")
 
-		# TODO: improve / resolve board to device
-		deviceString = str(device).upper()
-		deviceSection = "Device." + deviceString
-		
-		# create temporary directory for XST if not existent
-		self._tempPath = self.Host.Directories["XSTTemp"]
-		if not (self._tempPath).exists():
-			self._LogVerbose("Creating temporary directory for XST files.")
-			self._LogDebug("Temporary directors: {0}".format(str(self._tempPath)))
-			self._tempPath.mkdir(parents=True)
 
-		# create output directory for CoreGen if not existent
-		self._outputPath = self.Host.Directories["PoCNetList"] / deviceString
-		if not (self._outputPath).exists():
-			self._LogVerbose("Creating temporary directory for XST files.")
-			self._LogDebug("Temporary directors: {0}".format(str(self._outputPath)))
-			self._outputPath.mkdir(parents=True)
-			
 		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.Host.PoCConfig['SPECIAL'] = {}
 		self.Host.PoCConfig['SPECIAL']['Device'] =				deviceString
 		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =	device.series()
 		self.Host.PoCConfig['SPECIAL']['OutputDir']	=			self._tempPath.as_posix()
-		
-		# read pre-copy tasks
-		preCopyTasks = []
-		preCopyFileList = self.Host.PoCConfig[self._ipcoreFQN]['PreCopy.Rule']
-		if (len(preCopyFileList) != 0):
-			self._LogDebug("PreCopyTasks: \n  " + ("\n  ".join(preCopyFileList.split("\n"))))
-			
-			preCopyRegExpStr  = r"^\s*(?P<SourceFilename>.*?)"			# Source filename
-			preCopyRegExpStr += r"\s->\s"													#	Delimiter signs
-			preCopyRegExpStr += r"(?P<DestFilename>.*?)$"					#	Destination filename
-			preCopyRegExp = re.compile(preCopyRegExpStr)
-			
-			for item in preCopyFileList.split("\n"):
-				preCopyRegExpMatch = preCopyRegExp.match(item)
-				if (preCopyRegExpMatch is not None):
-					preCopyTasks.append((
-						Path(preCopyRegExpMatch.group('SourceFilename')),
-						Path(preCopyRegExpMatch.group('DestFilename'))
-					))
-				else:
-					raise CompilerException("Error in pre-copy rule '{0}'".format(item))
-		
-		# read (post) copy tasks
-		copyTasks = []
-		copyFileList = self.Host.PoCConfig[self._ipcoreFQN]['Copy']
-		if (len(copyFileList) != 0):
-			self._LogDebug("CopyTasks: \n  " + ("\n  ".join(copyFileList.split("\n"))))
-			
-			copyRegExpStr  = r"^\s*(?P<SourceFilename>.*?)"			# Source filename
-			copyRegExpStr += r"\s->\s"													#	Delimiter signs
-			copyRegExpStr += r"(?P<DestFilename>.*?)$"					#	Destination filename
-			copyRegExp = re.compile(copyRegExpStr)
-			
-			for item in copyFileList.split("\n"):
-				copyRegExpMatch = copyRegExp.match(item)
-				if (copyRegExpMatch is not None):
-					copyTasks.append((
-						Path(copyRegExpMatch.group('SourceFilename')),
-						Path(copyRegExpMatch.group('DestFilename'))
-					))
-				else:
-					raise CompilerException("Error in copy rule '{0}'".format(item))
-		
-		# read replacement tasks
-		replaceTasks = []
-		replaceFileList = self.Host.PoCConfig[self._ipcoreFQN]['Replace']
-		if (len(replaceFileList) != 0):
-			self._LogDebug("ReplacementTasks: \n  " + ("\n  ".join(replaceFileList.split("\n"))))
 
-			replaceRegExpStr =	r"^\s*(?P<Filename>.*?)\s+:"			# Filename
-			replaceRegExpStr += r"(?P<Options>[dim]{0,3}):\s+"			#	RegExp options
-			replaceRegExpStr += r"\"(?P<Search>.*?)\"\s+->\s+"		#	Search regexp
-			replaceRegExpStr += r"\"(?P<Replace>.*?)\"$"					# Replace regexp
-			replaceRegExp = re.compile(replaceRegExpStr)
-
-			for item in replaceFileList.split("\n"):
-				replaceRegExpMatch = replaceRegExp.match(item)
-				
-				if (replaceRegExpMatch is not None):
-					replaceTasks.append((
-						Path(replaceRegExpMatch.group('Filename')),
-						replaceRegExpMatch.group('Options'),
-						replaceRegExpMatch.group('Search'),
-						replaceRegExpMatch.group('Replace')
-					))
-				else:
-					raise CompilerException("Error in replace rule '{0}'.".format(item))
-		
-		# run pre-copy tasks
-		self._LogNormal('  copy further input files into output directory...')
-		for task in preCopyTasks:
-			(fromPath, toPath) = task
-			if not fromPath.exists(): raise CompilerException("Can not pre-copy '{0}' to destination.".format(str(fromPath))) from FileNotFoundError(str(fromPath))
-			
-			toDirectoryPath = toPath.parent
-			if not toDirectoryPath.exists():
-				toDirectoryPath.mkdir(parents=True)
-		
-			self._LogVerbose("  pre-copying '{0}'.".format(fromPath))
-			shutil.copy(str(fromPath), str(toPath))
-		
-		# setup all needed paths to execute coreGen
-		xstExecutablePath =		self.Host.Directories["ISEBinary"] / self.__executables['XST']
-		
-		if not self.Host.PoCConfig.has_section(self._ipcoreFQN):
-			raise CompilerException("IP-Core '" + self._ipcoreFQN + "' not found.") from NoSectionError(self._ipcoreFQN)
-		
+		# TODO: move to XstNetlist class
 		# read netlist settings from configuration file
 		if (self.Host.PoCConfig[self._ipcoreFQN]['Type'] != "XilinxSynthesis"):
 			raise CompilerException("This entity is not configured for XST compilation.")
-		
+
+
 		topModuleName =				self.Host.PoCConfig[self._ipcoreFQN]['TopModule']
 		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[self._ipcoreFQN]['FileListFile']
 		xcfFilePath =					self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[self._ipcoreFQN]['XSTConstraintsFile']
@@ -335,7 +232,7 @@ class Compiler(BaseCompiler):
 		pass
 
 	def _RunCompile(self):
-		xst = ISE.GetXst(self.Host.Platform, "bin", "14.7", logger=self.Logger)
+		xst = self._ise.GetXst()
 		xst.Parameters[xst.SwitchIniStyle] =		"xflow"
 		xst.Parameters[xst.SwitchXstFile] =			"ipcore.xst"
 		xst.Parameters[xst.SwitchReportFile] =	"ipcore.xst.report"

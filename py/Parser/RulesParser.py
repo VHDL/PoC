@@ -44,7 +44,7 @@ class CopyRuleMixIn(Rule):
 		self._destination =	destinationPath
 
 	@property
-	def SourcePath(self):						return self._source
+	def SourcePath(self):				return self._source
 	@property
 	def DestinationPath(self):	return self._destination
 

@@ -809,9 +809,11 @@ class PoC(ILogable, ArgParseMixin):
 		self.Directories["CoreGenTemp"] =			self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ISECoreGeneratorFiles']
 		self.Directories["ISEInstallation"] = Path(self.PoCConfig['Xilinx.ISE']['InstallationDirectory'])
 		self.Directories["ISEBinary"] =				Path(self.PoCConfig['Xilinx.ISE']['BinaryDirectory'])
+		iseBinaryPath =												self.Directories["ISEBinary"]
 		iseVersion =													self.PoCConfig['Xilinx.ISE']['Version']
 
 		compiler = XCOCompiler.Compiler(self, args.logs, args.reports)
+		compiler.PrepareCompiler(iseBinaryPath, iseVersion)
 		compiler.dryRun = self.__dryRun
 		compiler.RunAll(fqnList, board)
 
@@ -842,9 +844,11 @@ class PoC(ILogable, ArgParseMixin):
 		self.Directories["XSTTemp"] =					self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
 		self.Directories["ISEInstallation"] = Path(self.PoCConfig['Xilinx.ISE']['InstallationDirectory'])
 		self.Directories["ISEBinary"] =				Path(self.PoCConfig['Xilinx.ISE']['BinaryDirectory'])
+		iseBinaryPath =												self.Directories["ISEBinary"]
 		iseVersion =													self.PoCConfig['Xilinx.ISE']['Version']
 
 		compiler = XSTCompiler(self, args.logs, args.reports)
+		compiler.PrepareCompiler(iseBinaryPath, iseVersion)
 		compiler.dryRun = self.DryRun
 		compiler.RunAll(fqnList, board)
 

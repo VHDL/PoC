@@ -98,47 +98,12 @@ class Compiler(BaseCompiler):
 		self._RunPostReplace(netlist)
 
 	def _RunPrepareCompile(self, netlist):
-		self._LogNormal("  preparing compiler environment for IP-core '????' ...")
+		self._LogNormal("  preparing compiler environment for IP-core '{0}' ...".format(netlist.Parent))
 
 		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.Host.netListConfig['SPECIAL'] =							{}
 		self.Host.netListConfig['SPECIAL']['Device'] =		str(self._board)
 		self.Host.netListConfig['SPECIAL']['OutputDir'] =	self._tempPath.as_posix()
-
-	def _RunPreCopy(self, netlist):
-		# read pre-copy tasks
-		preCopyTasks = []
-		preCopyFileList = self.Host.netListConfig[self._netlistFQN]['PreCopy.Rule']
-		if (len(preCopyFileList) != 0):
-			self._LogDebug("PreCopyTasks: \n  " + ("\n  ".join(preCopyFileList.split("\n"))))
-
-			preCopyRegExpStr	= r"^\s*(?P<SourceFilename>.*?)"			# Source filename
-			preCopyRegExpStr += r"\s->\s"													#	Delimiter signs
-			preCopyRegExpStr += r"(?P<DestFilename>.*?)$"					#	Destination filename
-			preCopyRegExp = re.compile(preCopyRegExpStr)
-
-			for item in preCopyFileList.split("\n"):
-				preCopyRegExpMatch = preCopyRegExp.match(item)
-				if (preCopyRegExpMatch is not None):
-					preCopyTasks.append((
-						Path(preCopyRegExpMatch.group('SourceFilename')),
-						Path(preCopyRegExpMatch.group('DestFilename'))
-					))
-				else:
-					raise CompilerException("Error in pre-copy rule '{0}'".format(item))
-
-		# run pre-copy tasks
-		self._LogNormal('  copy further input files into output directory...')
-		for task in preCopyTasks:
-			(fromPath, toPath) = task
-			if not fromPath.exists(): raise CompilerException("Can not pre-copy '{0}' to destination.".format(str(fromPath))) from FileNotFoundError(str(fromPath))
-
-			toDirectoryPath = toPath.parent
-			if not toDirectoryPath.exists():
-				toDirectoryPath.mkdir(parents=True)
-
-			self._LogVerbose("  pre-copying '{0}'.".format(fromPath))
-			shutil.copy(str(fromPath), str(toPath))
 
 	def _RunCompile(self, netlist):
 		# read netlist settings from configuration file
@@ -223,88 +188,3 @@ class Compiler(BaseCompiler):
 		coreGen.Parameters[coreGen.FlagRegenerate] =		True
 		coreGen.Generate()
 
-	def _RunPostCopy(self, netlist):
-		# read (post) copy tasks
-		copyTasks = []
-		copyFileList = self.Host.netListConfig[self._netlistFQN]['PostCopy.Rule']
-		if (len(copyFileList) != 0):
-			self._LogDebug("CopyTasks: \n  " + ("\n  ".join(copyFileList.split("\n"))))
-
-			copyRegExpStr = r"^\s*(?P<SourceFilename>.*?)"  # Source filename
-			copyRegExpStr += r"\s->\s"  # Delimiter signs
-			copyRegExpStr += r"(?P<DestFilename>.*?)$"  # Destination filename
-			copyRegExp = re.compile(copyRegExpStr)
-
-			for item in copyFileList.split("\n"):
-				copyRegExpMatch = copyRegExp.match(item)
-				if (copyRegExpMatch is not None):
-					copyTasks.append((
-						Path(copyRegExpMatch.group('SourceFilename')),
-						Path(copyRegExpMatch.group('DestFilename'))
-					))
-				else:
-					raise CompilerException("Error in copy rule '{0}'".format(item))
-
-		# copy resulting files into PoC's netlist directory
-		self._LogNormal('  copy result files into output directory...')
-		for task in copyTasks:
-			(fromPath, toPath) = task
-			if not fromPath.exists(): raise CompilerException(
-				"Can not copy '{0}' to destination.".format(str(fromPath))) from FileNotFoundError(str(fromPath))
-
-			toDirectoryPath = toPath.parent
-			if not toDirectoryPath.exists():
-				toDirectoryPath.mkdir(parents=True)
-
-			self._LogVerbose("  copying '{0}'.".format(fromPath))
-			shutil.copy(str(fromPath), str(toPath))
-
-	def _RunPostReplace(self, netlist):
-		# read replacement tasks
-		replaceTasks = []
-		replaceFileList = self.Host.netListConfig[self._netlistFQN]['PostReplace.Rule']
-		if (len(replaceFileList) != 0):
-			self._LogDebug("ReplacementTasks: \n  " + ("\n  ".join(replaceFileList.split("\n"))))
-
-			replaceRegExpStr = r"^\s*(?P<Filename>.*?)\s+:"  # Filename
-			replaceRegExpStr += r"(?P<Options>[dim]{0,3}):\s+"  # RegExp options
-			replaceRegExpStr += r"\"(?P<Search>.*?)\"\s+->\s+"  # Search regexp
-			replaceRegExpStr += r"\"(?P<Replace>.*?)\"$"  # Replace regexp
-			replaceRegExp = re.compile(replaceRegExpStr)
-
-			for item in replaceFileList.split("\n"):
-				replaceRegExpMatch = replaceRegExp.match(item)
-
-				if (replaceRegExpMatch is not None):
-					replaceTasks.append((
-						Path(replaceRegExpMatch.group('Filename')),
-						replaceRegExpMatch.group('Options'),
-						replaceRegExpMatch.group('Search'),
-						replaceRegExpMatch.group('Replace')
-					))
-				else:
-					raise CompilerException("Error in replace rule '{0}'.".format(item))
-
-		# replace in resulting files
-		self._LogNormal('  replace in result files...')
-		for task in replaceTasks:
-			(fromPath, options, search, replace) = task
-			if not fromPath.exists(): raise CompilerException("Can not replace in file '{0}' to destination.".format(str(fromPath))) from FileNotFoundError(str(fromPath))
-			
-			self._LogVerbose("  replace in file '{0}': search for '{1}' -> replace by '{2}'.".format(str(fromPath), search, replace))
-			
-			regExpFlags = 0
-			if ('i' in options):		regExpFlags |= re.IGNORECASE
-			if ('m' in options):		regExpFlags |= re.MULTILINE
-			if ('d' in options):		regExpFlags |= re.DOTALL
-			
-			regExp = re.compile(search, regExpFlags)
-			
-			with fromPath.open('r') as fileHandle:
-				FileContent = fileHandle.read()
-			
-			NewContent = re.sub(regExp, replace, FileContent)
-			
-			with fromPath.open('w') as fileHandle:
-				fileHandle.write(NewContent)
-		
