@@ -263,8 +263,22 @@ class Map(Executable, QuartusIIMixIn):
 				self._LogNormal("    " + ("-" * 76))
 
 def MapFilter(gen):
-	for line in gen:
-		yield LogEntry(line, Severity.Normal)
+	iterator = iter(gen)
+
+	for line in iterator:
+		if line.startswith("Info: Command: quartus_map"):		break
+
+	for line in iterator:
+		if line.startswith("Info ("):
+			yield LogEntry(line[5:], Severity.Verbose)
+		elif line.startswith("    Info ("):
+			yield LogEntry("    " + line[9:], Severity.Verbose)
+		elif line.startswith("Info:"):
+			yield LogEntry(line[6:], Severity.Info)
+		elif line.startswith("    Info:"):
+			yield LogEntry(line[10:], Severity.Debug)
+		else:
+			yield LogEntry(line, Severity.Normal)
 
 class QuartusProject(BaseProject):
 	def __init__(self, name, projectFile=None):
