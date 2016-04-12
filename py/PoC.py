@@ -812,7 +812,7 @@ class PoC(ILogable, ArgParseMixin):
 		iseBinaryPath =												self.Directories["ISEBinary"]
 		iseVersion =													self.PoCConfig['Xilinx.ISE']['Version']
 
-		compiler = XCOCompiler.Compiler(self, args.logs, args.reports)
+		compiler = XCOCompiler(self, args.logs, args.reports)
 		compiler.PrepareCompiler(iseBinaryPath, iseVersion)
 		compiler.dryRun = self.__dryRun
 		compiler.RunAll(fqnList, board)

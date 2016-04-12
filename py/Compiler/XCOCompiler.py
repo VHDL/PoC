@@ -64,7 +64,7 @@ class Compiler(BaseCompiler):
 
 		self._entity =				None
 		self._netlistFQN =		""
-		self._board =					None
+		self._device =					None
 		self._tempPath =			None
 		self._outputPath =		None
 		self._ise =						None
@@ -74,14 +74,18 @@ class Compiler(BaseCompiler):
 	def _PrepareCompilerEnvironment(self):
 		self._LogNormal("preparing synthesis environment...")
 		self._tempPath =		self.Host.Directories["CoreGenTemp"]
-		self._outputPath =	self.Host.Directories["PoCNetList"] / str(self._board.Device)
+		self._outputPath =	self.Host.Directories["PoCNetList"] / str(self._device)
 		super()._PrepareCompilerEnvironment()
 
+	def PrepareCompiler(self, binaryPath, version):
+		# create the GHDL executable factory
+		self._LogVerbose("  Preparing Xilinx Core Generator Tool (CoreGen).")
+		self._ise = ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
 		
 	def Run(self, entity, board, **_):
 		self._entity =				entity
 		self._netlistFQN =		str(entity)  # TODO: implement FQN method on PoCEntity
-		self._board =					board
+		self._device =				board.Device
 		
 		# check testbench database for the given testbench		
 		self._LogQuiet("IP-core: {0}{1}{2}".format(Foreground.YELLOW, self._netlistFQN, Foreground.RESET))
@@ -89,10 +93,11 @@ class Compiler(BaseCompiler):
 		# setup all needed paths to execute fuse
 		netlist = entity.Netlist
 		self._CreatePoCProject(netlist, board)
-		self._AddFileListFile(netlist.FilesFile)
+		# self._AddFileListFile(netlist.FilesFile)
 
 		self._RunPrepareCompile(netlist)
 		self._RunPreCopy(netlist)
+		self._RunPreReplace(netlist)
 		self._RunCompile(netlist)
 		self._RunPostCopy(netlist)
 		self._RunPostReplace(netlist)
@@ -102,7 +107,7 @@ class Compiler(BaseCompiler):
 
 		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.Host.netListConfig['SPECIAL'] =							{}
-		self.Host.netListConfig['SPECIAL']['Device'] =		str(self._board)
+		self.Host.netListConfig['SPECIAL']['Device'] =		str(self._device)
 		self.Host.netListConfig['SPECIAL']['OutputDir'] =	self._tempPath.as_posix()
 
 	def _RunCompile(self, netlist):
@@ -140,10 +145,10 @@ class Compiler(BaseCompiler):
 			SET vhdlsim = true
 			SET workingdirectory = {WorkingDirectory}
 			'''.format(
-			Device=self._board.shortName(),
-			DeviceFamily=self._board.familyName(),
-			Package=(str(self._board.package) + str(self._board.pinCount)),
-			SpeedGrade=self._board.speedGrade,
+			Device=self._device.shortName(),
+			DeviceFamily=self._device.familyName(),
+			Package=(str(self._device.package) + str(self._device.pinCount)),
+			SpeedGrade=self._device.speedGrade,
 			WorkingDirectory=WorkingDirectory
 		))
 
@@ -158,10 +163,10 @@ class Compiler(BaseCompiler):
 
 		cgContentFileContent = cgContentFileContent.format(
 			name="lcd_ChipScopeVIO",
-			device=self._board.shortName(),
-			devicefamily=self._board.familyName(),
-			package=(str(self._board.package) + str(self._board.pinCount)),
-			speedgrade=self._board.speedGrade
+			device=self._device.shortName(),
+			devicefamily=self._device.familyName(),
+			package=(str(self._device.package) + str(self._device.pinCount)),
+			speedgrade=self._device.speedGrade
 		)
 
 		self._LogDebug("Writing CoreGen content file to '{0}'.".format(cgcFilePath))

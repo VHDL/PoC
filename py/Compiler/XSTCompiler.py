@@ -42,21 +42,23 @@ else:
 # load dependencies
 import re								# used for output filtering
 import shutil
-from configparser						import NoSectionError
-from pathlib								import Path
+from configparser							import NoSectionError
+from pathlib									import Path
 
-from Base.Exceptions				import NotConfiguredException, PlatformNotSupportedException
-from Base.Project						import VHDLVersion, Environment, ToolChain, Tool
-from Base.Compiler					import Compiler as BaseCompiler, CompilerException
-from ToolChains.Xilinx.ISE	import ISE
+from Base.Exceptions					import NotConfiguredException, PlatformNotSupportedException
+from Base.Project							import VHDLVersion, Environment, ToolChain, Tool
+from Base.Compiler						import Compiler as BaseCompiler, CompilerException
+from ToolChains.Xilinx.Xilinx	import XilinxProjectExportMixIn
+from ToolChains.Xilinx.ISE		import ISE
 
 
-class Compiler(BaseCompiler):
+class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 	_TOOL_CHAIN =	ToolChain.Xilinx_ISE
 	_TOOL =				Tool.Xilinx_XST
 
 	def __init__(self, host, showLogs, showReport):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
+		XilinxProjectExportMixIn.__init__(self)
 
 		self._ise =		None
 
@@ -80,105 +82,13 @@ class Compiler(BaseCompiler):
 			raise CompilerException("This entity is not configured for XST compilation.")
 
 
-		topModuleName =				self.Host.PoCConfig[self._ipcoreFQN]['TopModule']
-		fileListFilePath =		self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[self._ipcoreFQN]['FileListFile']
-		xcfFilePath =					self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[self._ipcoreFQN]['XSTConstraintsFile']
-		filterFilePath =			self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[self._ipcoreFQN]['XSTFilterFile']
-		#xstOptionsFilePath =	self.Host.Directories["XSTFiles"] / self.Host.NLConfig[self._ipcoreFQN]['XSTOptionsFile']
-		xstTemplateFilePath =	self.Host.Directories["XSTFiles"] / self.Host.PoCConfig[self._ipcoreFQN]['XSTOptionsFile']
-		xstFilePath =					self._tempPath / (topModuleName + ".xst")
-		prjFilePath =					self._tempPath / (topModuleName + ".prj")
-		reportFilePath =			self._tempPath / (topModuleName + ".log")
 
-		#if (not xstOptionsFilePath.exists()):
-		# read/write XST options file
-		self._LogDebug("Reading Xilinx Compiler Tool option file from '{0}'".format(str(xstTemplateFilePath)))
-		with xstTemplateFilePath.open('r') as xstFileHandle:
-			xstFileContent = xstFileHandle.read()
-			
-		xstTemplateDictionary = {
-			'prjFile' :                                                              str(prjFilePath),
-			'UseNewParser' :										self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.UseNewParser'],
-			'InputFormat' :											self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.InputFormat'],
-			'OutputFormat' :										self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.OutputFormat'],
-			'OutputName' :                                                           topModuleName,
-			'Part' :                                                                 str(device),
-			'TopModuleName' :                                                        topModuleName,
-			'OptimizationMode' :								self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.OptimizationMode'],
-			'OptimizationLevel' :								self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.OptimizationLevel'],
-			'PowerReduction' :									self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.PowerReduction'],
-			'IgnoreSynthesisConstraintsFile' :	self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.IgnoreSynthesisConstraintsFile'],
-			'SynthesisConstraintsFile' :                                             str(xcfFilePath),
-			'KeepHierarchy' :										self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.KeepHierarchy'],
-			'NetListHierarchy' :								self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.NetListHierarchy'],
-			'GenerateRTLView' :									self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.GenerateRTLView'],
-			'GlobalOptimization' :							self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.Globaloptimization'],
-			'ReadCores' :												self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.ReadCores'],
-			'SearchDirectories' :								'"{0}"' % str(self._outputPath),
-			'WriteTimingConstraints' :					self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.WriteTimingConstraints'],
-			'CrossClockAnalysis' :							self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.CrossClockAnalysis'],
-			'HierarchySeparator' :							self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.HierarchySeparator'],
-			'BusDelimiter' :										self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.BusDelimiter'],
-			'Case' :														self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.Case'],
-			'SliceUtilizationRatio' :						self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.SliceUtilizationRatio'],
-			'BRAMUtilizationRatio' :						self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.BRAMUtilizationRatio'],
-			'DSPUtilizationRatio' :							self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.DSPUtilizationRatio'],
-			'LUTCombining' :										self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.LUTCombining'],
-			'ReduceControlSets' :								self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.ReduceControlSets'],
-			'Verilog2001' :											self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.Verilog2001'],
-			'FSMExtract' :											self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.FSMExtract'],
-			'FSMEncoding' :											self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.FSMEncoding'],
-			'FSMSafeImplementation' :						self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.FSMSafeImplementation'],
-			'FSMStyle' :												self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.FSMStyle'],
-			'RAMExtract' :											self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.RAMExtract'],
-			'RAMStyle' :												self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.RAMStyle'],
-			'ROMExtract' :											self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.ROMExtract'],
-			'ROMStyle' :												self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.ROMStyle'],
-			'MUXExtract' :											self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.MUXExtract'],
-			'MUXStyle' :												self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.MUXStyle'],
-			'DecoderExtract' :									self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.DecoderExtract'],
-			'PriorityExtract' :									self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.PriorityExtract'],
-			'ShRegExtract' :										self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.ShRegExtract'],
-			'ShiftExtract' :										self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.ShiftExtract'],
-			'XorCollapse' :											self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.XorCollapse'],
-			'AutoBRAMPacking' :									self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.AutoBRAMPacking'],
-			'ResourceSharing' :									self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.ResourceSharing'],
-			'ASyncToSync' :											self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.ASyncToSync'],
-			'UseDSP48' :												self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.UseDSP48'],
-			'IOBuf' :														self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.IOBuf'],
-			'MaxFanOut' :												self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.MaxFanOut'],
-			'BufG' :														self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.BufG'],
-			'RegisterDuplication' :							self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.RegisterDuplication'],
-			'RegisterBalancing' :								self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.RegisterBalancing'],
-			'SlicePacking' :										self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.SlicePacking'],
-			'OptimizePrimitives' :							self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.OptimizePrimitives'],
-			'UseClockEnable' :									self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.UseClockEnable'],
-			'UseSyncSet' :											self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.UseSyncSet'],
-			'UseSyncReset' :										self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.UseSyncReset'],
-			'PackIORegistersIntoIOBs' :					self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.PackIORegistersIntoIOBs'],
-			'EquivalentRegisterRemoval' :				self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.EquivalentRegisterRemoval'],
-			'SliceUtilizationRatioMaxMargin' :	self.Host.PoCConfig[self._ipcoreFQN] ['XSTOption.SliceUtilizationRatioMaxMargin']
-		}
-		
-		xstFileContent = xstFileContent.format(**xstTemplateDictionary)
-		
-		if (self.Host.PoCConfig.has_option(self._ipcoreFQN, 'XSTOption.Generics')):
-			xstFileContent += "-generics {{ {0} }}".format(self.Host.PoCConfig[self._ipcoreFQN]['XSTOption.Generics'])
-
-		self._LogDebug("Writing Xilinx Compiler Tool option file to '{0}'".format(str(xstFilePath)))
-		with xstFilePath.open('w') as xstFileHandle:
-			xstFileHandle.write(xstFileContent)
 	
 		# TODO: parse project filelist
 		# TODO: write iSim project file
-		self._LogDebug("Writing XST project file to '{0}'".format(str(prjFilePath)))
-		with prjFilePath.open('w') as prjFileHandle:
-			prjFileHandle.write(xstProjectFileContent)
 
-		# change working directory to temporary XST path
-		self._LogVerbose('    cd "{0}"' % str(self._tempPath))
-		os.chdir(str(self._tempPath))
-		
+
+
 		# running XST
 		# ==========================================================================
 		self._LogNormal("  running XST...")
@@ -200,13 +110,15 @@ class Compiler(BaseCompiler):
 		self._outputPath =	self.Host.Directories["PoCNetList"] / str(self._device)
 		super()._PrepareCompilerEnvironment()
 
+	def PrepareCompiler(self, binaryPath, version):
+		# create the GHDL executable factory
+		self._LogVerbose("  Preparing Xilinx Synthesis Tool (XST).")
+		self._ise =		ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
+
 	def Run(self, entity, board, **_):
 		self._entity =			entity
-		self._ipcoreFQN =		str(entity)  # TODO: implement FQN method on PoCEntity
+		# self._ipcoreFQN =		str(entity)  # TODO: implement FQN method on PoCEntity
 		self._device =			board.Device
-
-		# check testbench database for the given testbench
-		self._LogQuiet("IP-core: {0}".format(self._ipcoreFQN))
 
 		# setup all needed paths to execute fuse
 		netlist = entity.Netlist
@@ -214,21 +126,31 @@ class Compiler(BaseCompiler):
 		self._AddFileListFile(netlist.FilesFile)
 		self._AddRulesFiles(netlist.RulesFile)
 
-		self._RunPrepareCompile()
-		self._RunPreCopy()
-		self._RunCompile()
-		self._RunPostCopy()
-		self._RunPostReplace()
+		# check testbench database for the given testbench
+		self._LogQuiet("IP-core: {0!s}".format(netlist.Parent))
 
-	def PrepareCompiler(self, binaryPath, version):
-		# create the GHDL executable factory
-		self._LogVerbose("  Preparing Xilinx Synthesis Tool (XST).")
-		self._ise =		ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		xcfFilePath =					self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[netlist._sectionName]['XSTConstraintsFile']
+		filterFilePath =			self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[netlist._sectionName]['XSTFilterFile']
+		#xstOptionsFilePath =	self.Host.Directories["XSTFiles"] / self.Host.NLConfig[		netlist._sectionName]['XSTOptionsFile']
+		xstTemplateFilePath =	self.Host.Directories["XSTFiles"] / self.Host.PoCConfig[netlist._sectionName]['XSTOptionsFile']
+		xstFilePath =					self._tempPath / (netlist.ModuleName + ".xst")
+		prjFilePath =					self._tempPath / (netlist.ModuleName + ".prj")
+		reportFilePath =			self._tempPath / (netlist.ModuleName + ".log")
 
-	def _RunPrepareCompile(self):
-		pass
+		self._LogDebug("Writing XST project file to '{0!s}'".format(prjFilePath))
+		self._WriteXilinxProjectFile(prjFilePath)
 
-	def _RunPreCopy(self):
+		self._LogDebug("Writing XST options file to '{0!s}'".format(xstFilePath))
+		self._WriteXstOptionsFile(netlist,xstFilePath)
+
+		self._RunPrepareCompile(netlist)
+		self._RunPreCopy(netlist)
+		self._RunPreReplace(netlist)
+		self._RunCompile(netlist)
+		self._RunPostCopy(netlist)
+		self._RunPostReplace(netlist)
+
+	def _RunPrepareCompile(self, netlist):
 		pass
 
 	def _RunCompile(self):
@@ -238,8 +160,84 @@ class Compiler(BaseCompiler):
 		xst.Parameters[xst.SwitchReportFile] =	"ipcore.xst.report"
 		xst.Compile()
 
-	def _RunPostCopy(self):
-		pass
+	def _WriteXstOptionsFile(self, netlist, xstFilePath):
+		xstTemplateFilePath = self.Host.Directories["XSTFiles"] / self.Host.PoCConfig[netlist._sectionName]['XSTOptionsFile']
+		if (not xstTemplateFilePath.exists()):		raise CompilerException("XST template files '{0!s}' not found.".format(xstTemplateFilePath)) from FileNotFoundError(str(xstTemplateFilePath))
 
-	def _RunPostReplace(self) :
-		pass
+		# read XST options file template
+		self._LogDebug("  Reading Xilinx Compiler Tool option file from '{0!s}'".format(xstTemplateFilePath))
+		with xstTemplateFilePath.open('r') as fileHandle:
+			xstFileContent = fileHandle.read()
+
+		xstTemplateDictionary = {
+			'prjFile':                                                            str(prjFilePath),
+			'UseNewParser': self.Host.PoCConfig[netlist._sectionName]                  ['XSTOption.UseNewParser'],
+			'InputFormat': self.Host.PoCConfig[netlist._sectionName]                   ['XSTOption.InputFormat'],
+			'OutputFormat': self.Host.PoCConfig[netlist._sectionName]                  ['XSTOption.OutputFormat'],
+			'OutputName':                                                         netlist.TopLevel,
+			'Part':                                                               str(self._device),
+			'TopModuleName':                                                      netlist.TopLevel,
+			'OptimizationMode': self.Host.PoCConfig[netlist._sectionName]              ['XSTOption.OptimizationMode'],
+			'OptimizationLevel': self.Host.PoCConfig[netlist._sectionName]             ['XSTOption.OptimizationLevel'],
+			'PowerReduction': self.Host.PoCConfig[netlist._sectionName]                ['XSTOption.PowerReduction'],
+			'IgnoreSynthesisConstraintsFile': self.Host.PoCConfig[netlist._sectionName]['XSTOption.IgnoreSynthesisConstraintsFile'],
+			'SynthesisConstraintsFile':                                           str(xcfFilePath),
+			'KeepHierarchy': self.Host.PoCConfig[netlist._sectionName]                 ['XSTOption.KeepHierarchy'],
+			'NetListHierarchy': self.Host.PoCConfig[netlist._sectionName]              ['XSTOption.NetListHierarchy'],
+			'GenerateRTLView': self.Host.PoCConfig[netlist._sectionName]               ['XSTOption.GenerateRTLView'],
+			'GlobalOptimization': self.Host.PoCConfig[netlist._sectionName]            ['XSTOption.Globaloptimization'],
+			'ReadCores': self.Host.PoCConfig[netlist._sectionName]                     ['XSTOption.ReadCores'],
+			'SearchDirectories':                                                  '"{0!s}"'.format(self._outputPath),
+			'WriteTimingConstraints': self.Host.PoCConfig[netlist._sectionName]        ['XSTOption.WriteTimingConstraints'],
+			'CrossClockAnalysis': self.Host.PoCConfig[netlist._sectionName]            ['XSTOption.CrossClockAnalysis'],
+			'HierarchySeparator': self.Host.PoCConfig[netlist._sectionName]            ['XSTOption.HierarchySeparator'],
+			'BusDelimiter': self.Host.PoCConfig[netlist._sectionName]                  ['XSTOption.BusDelimiter'],
+			'Case': self.Host.PoCConfig[netlist._sectionName]                          ['XSTOption.Case'],
+			'SliceUtilizationRatio': self.Host.PoCConfig[netlist._sectionName]         ['XSTOption.SliceUtilizationRatio'],
+			'BRAMUtilizationRatio': self.Host.PoCConfig[netlist._sectionName]          ['XSTOption.BRAMUtilizationRatio'],
+			'DSPUtilizationRatio': self.Host.PoCConfig[netlist._sectionName]           ['XSTOption.DSPUtilizationRatio'],
+			'LUTCombining': self.Host.PoCConfig[netlist._sectionName]                  ['XSTOption.LUTCombining'],
+			'ReduceControlSets': self.Host.PoCConfig[netlist._sectionName]             ['XSTOption.ReduceControlSets'],
+			'Verilog2001': self.Host.PoCConfig[netlist._sectionName]                   ['XSTOption.Verilog2001'],
+			'FSMExtract': self.Host.PoCConfig[netlist._sectionName]                    ['XSTOption.FSMExtract'],
+			'FSMEncoding': self.Host.PoCConfig[netlist._sectionName]                   ['XSTOption.FSMEncoding'],
+			'FSMSafeImplementation': self.Host.PoCConfig[netlist._sectionName]         ['XSTOption.FSMSafeImplementation'],
+			'FSMStyle': self.Host.PoCConfig[netlist._sectionName]                      ['XSTOption.FSMStyle'],
+			'RAMExtract': self.Host.PoCConfig[netlist._sectionName]                    ['XSTOption.RAMExtract'],
+			'RAMStyle': self.Host.PoCConfig[netlist._sectionName]                      ['XSTOption.RAMStyle'],
+			'ROMExtract': self.Host.PoCConfig[netlist._sectionName]                    ['XSTOption.ROMExtract'],
+			'ROMStyle': self.Host.PoCConfig[netlist._sectionName]                      ['XSTOption.ROMStyle'],
+			'MUXExtract': self.Host.PoCConfig[netlist._sectionName]                    ['XSTOption.MUXExtract'],
+			'MUXStyle': self.Host.PoCConfig[netlist._sectionName]                      ['XSTOption.MUXStyle'],
+			'DecoderExtract': self.Host.PoCConfig[netlist._sectionName]                ['XSTOption.DecoderExtract'],
+			'PriorityExtract': self.Host.PoCConfig[netlist._sectionName]               ['XSTOption.PriorityExtract'],
+			'ShRegExtract': self.Host.PoCConfig[netlist._sectionName]                  ['XSTOption.ShRegExtract'],
+			'ShiftExtract': self.Host.PoCConfig[netlist._sectionName]                  ['XSTOption.ShiftExtract'],
+			'XorCollapse': self.Host.PoCConfig[netlist._sectionName]                   ['XSTOption.XorCollapse'],
+			'AutoBRAMPacking': self.Host.PoCConfig[netlist._sectionName]               ['XSTOption.AutoBRAMPacking'],
+			'ResourceSharing': self.Host.PoCConfig[netlist._sectionName]               ['XSTOption.ResourceSharing'],
+			'ASyncToSync': self.Host.PoCConfig[netlist._sectionName]                   ['XSTOption.ASyncToSync'],
+			'UseDSP48': self.Host.PoCConfig[netlist._sectionName]                      ['XSTOption.UseDSP48'],
+			'IOBuf': self.Host.PoCConfig[netlist._sectionName]                         ['XSTOption.IOBuf'],
+			'MaxFanOut': self.Host.PoCConfig[netlist._sectionName]                     ['XSTOption.MaxFanOut'],
+			'BufG': self.Host.PoCConfig[netlist._sectionName]                          ['XSTOption.BufG'],
+			'RegisterDuplication': self.Host.PoCConfig[netlist._sectionName]           ['XSTOption.RegisterDuplication'],
+			'RegisterBalancing': self.Host.PoCConfig[netlist._sectionName]             ['XSTOption.RegisterBalancing'],
+			'SlicePacking': self.Host.PoCConfig[netlist._sectionName]                  ['XSTOption.SlicePacking'],
+			'OptimizePrimitives': self.Host.PoCConfig[netlist._sectionName]            ['XSTOption.OptimizePrimitives'],
+			'UseClockEnable': self.Host.PoCConfig[netlist._sectionName]                ['XSTOption.UseClockEnable'],
+			'UseSyncSet': self.Host.PoCConfig[netlist._sectionName]                    ['XSTOption.UseSyncSet'],
+			'UseSyncReset': self.Host.PoCConfig[netlist._sectionName]                  ['XSTOption.UseSyncReset'],
+			'PackIORegistersIntoIOBs': self.Host.PoCConfig[netlist._sectionName]       ['XSTOption.PackIORegistersIntoIOBs'],
+			'EquivalentRegisterRemoval': self.Host.PoCConfig[netlist._sectionName]     ['XSTOption.EquivalentRegisterRemoval'],
+			'SliceUtilizationRatioMaxMargin': self.Host.PoCConfig[netlist._sectionName]['XSTOption.SliceUtilizationRatioMaxMargin']
+		}
+
+		xstFileContent = xstFileContent.format(**xstTemplateDictionary)
+
+		if (self.Host.PoCConfig.has_option(netlist._sectionName, 'XSTOption.Generics')):
+			xstFileContent += "-generics {{ {0} }}".format(self.Host.PoCConfig[netlist._sectionName]['XSTOption.Generics'])
+
+		self._LogDebug("Writing Xilinx Compiler Tool option file to '{0!s}'".format(xstFilePath))
+		with xstFilePath.open('w') as fileHandle:
+			fileHandle.write(xstFileContent)
