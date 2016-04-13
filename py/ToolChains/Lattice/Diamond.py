@@ -107,37 +107,68 @@ class TclShell(Executable, DiamondMixIn):
 
 		try:
 			self.StartProcess(parameterList)
+			self.SendBoundary()
 		except Exception as ex:
 			raise DiamondException("Failed to launch pnmainc.") from ex
 
-		self._hasOutput = False
-		self._hasWarnings = False
-		self._hasErrors = False
-		try:
-			iterator = iter(MapFilter(self.GetReader()))
+		iterator = iter(MapFilter(self.GetReader()))
 
-			line = next(iterator)
-			self._hasOutput = True
-			self._LogNormal("    pnmainc messages for '{0}'".format(self.Parameters[self.SwitchArgumentFile]))
-			self._LogNormal("    " + ("-" * 76))
+		for line in iterator:
+			print(line)
+			if (line == self._POC_BOUNDARY):
+				break
 
-			while True:
-				self._hasWarnings |= (line.Severity is Severity.Warning)
-				self._hasErrors |= (line.Severity is Severity.Error)
+		print("pnmainc is ready")
 
-				line.Indent(2)
-				self._Log(line)
-				line = next(iterator)
+		self.Send("synthesis -f arith_prng.prj\n")
+		self.SendBoundary()
 
-		except StopIteration as ex:
-			pass
-		except DiamondException:
-			raise
-		# except Exception as ex:
-		#	raise GHDLException("Error while executing GHDL.") from ex
-		finally:
-			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+		for line in iterator:
+			print(line)
+			if (line == self._POC_BOUNDARY):
+				break
+
+		print("pnmainc is ready")
+
+		self.Send("exit\n")
+		self.SendBoundary()
+
+		for line in iterator:
+			print(line)
+			if (line == self._POC_BOUNDARY):
+				break
+
+		print("pnmainc finished")
+		return
+
+		# self._hasOutput = False
+		# self._hasWarnings = False
+		# self._hasErrors = False
+		# try:
+		# 	iterator = iter(MapFilter(self.GetReader()))
+		#
+		# 	line = next(iterator)
+		# 	self._hasOutput = True
+		# 	self._LogNormal("    pnmainc messages for '{0}'".format(self.Parameters[self.SwitchArgumentFile]))
+		# 	self._LogNormal("    " + ("-" * 76))
+		#
+		# 	while True:
+		# 		self._hasWarnings |= (line.Severity is Severity.Warning)
+		# 		self._hasErrors |= (line.Severity is Severity.Error)
+		#
+		# 		line.Indent(2)
+		# 		self._Log(line)
+		# 		line = next(iterator)
+		#
+		# except StopIteration as ex:
+		# 	pass
+		# except DiamondException:
+		# 	raise
+		# # except Exception as ex:
+		# #	raise GHDLException("Error while executing GHDL.") from ex
+		# finally:
+		# 	if self._hasOutput:
+		# 		self._LogNormal("    " + ("-" * 76))
 
 
 def MapFilter(gen):

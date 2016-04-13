@@ -117,5 +117,5 @@ class Compiler(BaseCompiler):
 	def _RunCompile(self, netlist, device):
 		tclShell = self._diamond.GetTclShell()
 
-		raise NotImplementedError("Next: implement interactive shell")
-		# tclShell.Run()
+		# raise NotImplementedError("Next: implement interactive shell")
+		tclShell.Run()
