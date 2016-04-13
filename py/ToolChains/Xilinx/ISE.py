@@ -328,12 +328,8 @@ class Fuse(Executable, ISEMixIn):
 				self._LogNormal("    " + ("-" * 76))
 
 
-class ISESimulator(Executable, ISEMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		ISEMixIn.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-		if (platform == "Windows"):			executablePath = binaryDirectoryPath / "isim.exe"
-		elif (platform == "Linux"):			executablePath = binaryDirectoryPath / "isim"
-		else:														raise PlatformNotSupportedException(platform)
+class ISESimulator(Executable):
+	def __init__(self, executablePath, logger=None):
 		super().__init__("", executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
@@ -439,7 +435,7 @@ class Xst(Executable, ISEMixIn):
 	class SwitchIntStyle(metaclass=ShortTupleArgument):
 		_name = "intstyle"
 
-	class SwitchXstFile(metaclass=ShortFlagArgument):
+	class SwitchXstFile(metaclass=ShortTupleArgument):
 		_name = "ifn"
 
 	class SwitchReportFile(metaclass=ShortTupleArgument):
@@ -469,7 +465,7 @@ class Xst(Executable, ISEMixIn):
 
 			line = next(iterator)
 			self._hasOutput = True
-			self._LogNormal("    xst messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
+			self._LogNormal("    xst messages for '{0}'".format(self.Parameters[self.SwitchXstFile]))
 			self._LogNormal("    " + ("-" * 76))
 
 			while True:
@@ -548,7 +544,7 @@ class CoreGenerator(Executable, ISEMixIn):
 
 			line = next(iterator)
 			self._hasOutput = True
-			self._LogNormal("    coregen messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
+			self._LogNormal("    coregen messages for '{0}'".format(self.Parameters[self.SwitchProjectFile]))
 			self._LogNormal("    " + ("-" * 76))
 
 			while True:

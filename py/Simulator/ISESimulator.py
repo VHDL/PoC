@@ -103,7 +103,7 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		self._LogNormal("  compiling source files...")
 		
 		prjFilePath = self._tempPath / (testbench.ModuleName + ".prj")
-		self._WriteXilinxProjectFile(prjFilePath)
+		self._WriteXilinxProjectFile(prjFilePath, "iSim")
 
 		# create a VivadoVHDLCompiler instance
 		vhcomp = self._ise.GetVHDLCompiler()
@@ -112,19 +112,9 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 	def _RunLink(self, testbench):
 		self._LogNormal("  running fuse...")
 		
-		exeFilePath =				self._tempPath / (testbench.ModuleName + ".exe")
-
-		# create one VHDL line for each VHDL file
-		iSimProjectFileContent = ""
-		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
-			if (not file.Path.exists()):									raise SimulatorException("Can not add '{0!s}' to iSim project file.".format(file.Path)) from FileNotFoundError(str(file.Path))
-			iSimProjectFileContent += "vhdl {0} \"{1!s}\"\n".format(file.LibraryName, file.Path)
-
-		# write iSim project file
+		exeFilePath =	self._tempPath / (testbench.ModuleName + ".exe")
 		prjFilePath = self._tempPath / (testbench.ModuleName + ".prj")
-		self._LogDebug("Writing iSim project file to '{0!s}'".format(prjFilePath))
-		with prjFilePath.open('w') as prjFileHandle:
-			prjFileHandle.write(iSimProjectFileContent)
+		self._WriteXilinxProjectFile(prjFilePath, "iSim")
 
 		# create a ISELinker instance
 		fuse = self._ise.GetFuse()
