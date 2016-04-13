@@ -47,15 +47,17 @@ from colorama									import Fore as Foreground
 from Base.Project							import FileTypes, VHDLVersion, Environment, ToolChain, Tool
 from Base.Simulator						import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME
 from Base.Logging							import Severity
+from ToolChains.Xilinx.Xilinx	import XilinxProjectExportMixIn
 from ToolChains.Xilinx.Vivado	import Vivado, VivadoException
 
 
-class Simulator(BaseSimulator):
+class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 	_TOOL_CHAIN =						ToolChain.Xilinx_Vivado
 	_TOOL =									Tool.Xilinx_xSim
 
 	def __init__(self, host, showLogs, showReport, guiMode):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
+		XilinxProjectExportMixIn.__init__(self)
 
 		self._guiMode =				guiMode
 
@@ -102,19 +104,10 @@ class Simulator(BaseSimulator):
 
 	def _RunCompile(self, testbench):
 		self._LogNormal("  compiling source files...")
-		
-		# create one VHDL line for each VHDL file
-		xSimProjectFileContent = ""
-		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
-			if (not file.Path.exists()):									raise SimulatorException("Can not add '{0!s}' to xSim project file.".format(file.Path)) from FileNotFoundError(str(file.Path))
-			xSimProjectFileContent += "vhdl {0} \"{1!s}\"\n".format(file.LibraryName, file.Path)
-						
-		# write xSim project file
+
 		prjFilePath = self._tempPath / (testbench.ModuleName + ".prj")
-		self._LogDebug("Writing xSim project file to '{0!s}'".format(prjFilePath))
-		with prjFilePath.open('w') as prjFileHandle:
-			prjFileHandle.write(xSimProjectFileContent)
-		
+		self._WriteXilinxProjectFile(prjFilePath)
+
 		# create a VivadoVHDLCompiler instance
 		xvhcomp = self._vivado.GetVHDLCompiler()
 		xvhcomp.Compile(str(prjFilePath))
@@ -123,23 +116,9 @@ class Simulator(BaseSimulator):
 		self._LogNormal("  running xelab...")
 		
 		xelabLogFilePath =	self._tempPath / (testbench.ModuleName + ".xelab.log")
-	
-		# create one VHDL line for each VHDL file
-		xSimProjectFileContent = ""
-		vhdlFiles = [item for item in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile)]
-		for file in vhdlFiles:
-			if (not file.Path.exists()):									raise SimulatorException("Can not add '{0!s}' to xSim project file.".format(file.Path)) from FileNotFoundError(str(file.Path))
-			if (self._vhdlVersion == VHDLVersion.VHDL2008):
-				xSimProjectFileContent += "vhdl2008 {0} \"{1!s}\"\n".format(file.LibraryName, file.Path)
-			else:
-				xSimProjectFileContent += "vhdl {0} \"{1!s}\"\n".format(file.LibraryName, file.Path)
+		prjFilePath =				self._tempPath / (testbench.ModuleName + ".prj")
+		self._WriteXilinxProjectFile(prjFilePath)
 
-		# write xSim project file
-		prjFilePath = self._tempPath / (testbench.ModuleName + ".prj")
-		self._LogDebug("Writing xSim project file to '{0!s}'".format(prjFilePath))
-		with prjFilePath.open('w') as prjFileHandle:
-			prjFileHandle.write(xSimProjectFileContent)
-	
 		# create a VivadoLinker instance
 		xelab = self._vivado.GetElaborator()
 		xelab.Parameters[xelab.SwitchTimeResolution] =	"1fs"	# set minimum time precision to 1 fs
@@ -171,9 +150,9 @@ class Simulator(BaseSimulator):
 		self._LogNormal("  running simulation...")
 		
 		xSimLogFilePath =		self._tempPath / (testbench.ModuleName + ".xSim.log")
-		tclBatchFilePath =	self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench._sectionName]['xSimBatchScript']
-		tclGUIFilePath =		self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench._sectionName]['xSimGUIScript']
-		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench._sectionName]['xSimWaveformConfigFile']
+		tclBatchFilePath =	self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['xSimBatchScript']
+		tclGUIFilePath =		self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['xSimGUIScript']
+		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['xSimWaveformConfigFile']
 
 		# create a VivadoSimulator instance
 		xSim = self._vivado.GetSimulator()

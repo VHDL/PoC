@@ -40,20 +40,22 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.ISESimulator")
 
 # load dependencies
-from configparser						import NoSectionError
-from colorama								import Fore as Foreground
+from configparser							import NoSectionError
+from colorama									import Fore as Foreground
 
-from Base.Project						import FileTypes, VHDLVersion, Environment, ToolChain, Tool
-from Base.Simulator					import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME
-from ToolChains.Xilinx.ISE	import ISE, ISESimulator, ISEException
+from Base.Project							import FileTypes, VHDLVersion, Environment, ToolChain, Tool
+from Base.Simulator						import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME
+from ToolChains.Xilinx.Xilinx	import XilinxProjectExportMixIn
+from ToolChains.Xilinx.ISE		import ISE, ISESimulator, ISEException
 
 
-class Simulator(BaseSimulator):
+class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 	_TOOL_CHAIN =						ToolChain.Xilinx_ISE
 	_TOOL =									Tool.Xilinx_iSim
 
 	def __init__(self, host, showLogs, showReport, guiMode):
 		super().__init__(host, showLogs, showReport)
+		XilinxProjectExportMixIn.__init__(self)
 
 		self._guiMode =				guiMode
 
@@ -100,18 +102,9 @@ class Simulator(BaseSimulator):
 	def _RunCompile(self, testbench):
 		self._LogNormal("  compiling source files...")
 		
-		# create one VHDL line for each VHDL file
-		iSimProjectFileContent = ""
-		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
-			if (not file.Path.exists()):									raise SimulatorException("Can not add '{0!s}' to iSim project file.".format(file.Path)) from FileNotFoundError(str(file.Path))
-			iSimProjectFileContent += "vhdl {0} \"{1!s}\"\n".format(file.LibraryName, file.Path)
-
-		# write iSim project file
 		prjFilePath = self._tempPath / (testbench.ModuleName + ".prj")
-		self._LogDebug("Writing iSim project file to '{0!s}'".format(prjFilePath))
-		with prjFilePath.open('w') as prjFileHandle:
-			prjFileHandle.write(iSimProjectFileContent)
-		
+		self._WriteXilinxProjectFile(prjFilePath)
+
 		# create a VivadoVHDLCompiler instance
 		vhcomp = self._ise.GetVHDLCompiler()
 		vhcomp.Compile(str(prjFilePath))
@@ -156,9 +149,9 @@ class Simulator(BaseSimulator):
 		
 		iSimLogFilePath =		self._tempPath / (testbench.ModuleName + ".iSim.log")
 		exeFilePath =				self._tempPath / (testbench.ModuleName + ".exe")
-		tclBatchFilePath =	self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench._sectionName]['iSimBatchScript']
-		tclGUIFilePath =		self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench._sectionName]['iSimGUIScript']
-		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench._sectionName]['iSimWaveformConfigFile']
+		tclBatchFilePath =	self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['iSimBatchScript']
+		tclGUIFilePath =		self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['iSimGUIScript']
+		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['iSimWaveformConfigFile']
 
 		# create a ISESimulator instance
 		iSim = ISESimulator(exeFilePath, logger=self.Logger)

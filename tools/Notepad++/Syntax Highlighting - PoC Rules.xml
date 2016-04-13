@@ -24,7 +24,7 @@
             <Keywords name="Folders in comment, open"></Keywords>
             <Keywords name="Folders in comment, middle"></Keywords>
             <Keywords name="Folders in comment, close"></Keywords>
-            <Keywords name="Keywords1">PreProcessRules End Copy To PostProcessRules Replace In Do Multiline By Search For</Keywords>
+            <Keywords name="Keywords1">PreProcessRules End Copy To PostProcessRules Replace In File Do Multiline By Search For</Keywords>
             <Keywords name="Keywords2"></Keywords>
             <Keywords name="Keywords3"></Keywords>
             <Keywords name="Keywords4"></Keywords>

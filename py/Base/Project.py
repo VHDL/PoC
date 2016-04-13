@@ -34,6 +34,7 @@
 from enum								import Enum, unique
 from pathlib						import Path
 
+from Base.Configuration import ConfigurationException
 from Base.Exceptions		import CommonException
 from Base.VHDLParser		import VHDLParserMixIn
 from Parser.FilesParser	import VHDLSourceFileMixIn, VerilogSourceFileMixIn, CocotbSourceFileMixIn
@@ -107,7 +108,7 @@ class ToolChain(Enum):
 class Tool(Enum):
 	Any =								 0
 	Aldec_aSim =				10
-	Altera_QuartusII =	20
+	Altera_QuartusII_Map =	20
 	Cocotb_QuestaSim = 	30
 	GHDL =							40
 	GTKwave =						41
@@ -522,7 +523,7 @@ class File:
 		return self._file
 	
 	def Open(self):
-		if (not self._file.exists()):										raise FileNotFoundError("File '{0}' not found.".format(str(self._file)))
+		if (not self._file.exists()):		raise ConfigurationException("File '{0}' not found.".format(str(self._file))) from FileNotFoundError(str(self._file))
 		try:
 			self._handle = self._file.open('r')
 		except Exception as ex:
