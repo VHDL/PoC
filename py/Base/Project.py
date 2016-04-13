@@ -97,7 +97,7 @@ class ToolChain(Enum):
 	Altera_ModelSim =		21
 	Cocotb =					  30
 	GHDL_GTKWave =			40
-	Lattice_LSE =				50
+	Lattice_Diamond =				50
 	Mentor_QuestaSim =	60
 	Xilinx_ISE =				70
 	Xilinx_PlanAhead =	71
