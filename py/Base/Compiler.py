@@ -81,7 +81,7 @@ class Compiler(ILogable):
 		self.__showReport =	showReport
 		self.__dryRun =			False
 
-		self._vhdlVersion =	VHDLVersion.VHDL2008
+		self._vhdlVersion =	VHDLVersion.VHDL93
 		self._pocProject =	None
 
 		self._tempPath =		None
@@ -180,6 +180,7 @@ class Compiler(ILogable):
 		# get more tasks from rules files
 		# preCopyTasks += self.Host.PoCProject
 
+		self._LogNormal('  copy further input files into temporary directory...')
 		self._ExecuteCopyTasks(preCopyTasks, "pre")
 
 	def _RunPostCopy(self, netlist):
@@ -189,6 +190,7 @@ class Compiler(ILogable):
 		else:
 			postCopyTasks = []
 
+		self._LogNormal('  copy generated files into netlist directory...')
 		self._ExecuteCopyTasks(postCopyTasks, "post")
 
 	def _ParseCopyRules(self, rawList):
@@ -212,7 +214,6 @@ class Compiler(ILogable):
 		return copyTasks
 
 	def _ExecuteCopyTasks(self, tasks, text):
-		self._LogNormal('  copy further input files into output directory...')
 		for task in tasks:
 			if not task.SourcePath.exists(): raise CompilerException("Can not {0}-copy '{1!s}' to destination.".format(text, task.SourcePath)) from FileNotFoundError(str(task.SourcePath))
 

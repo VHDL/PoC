@@ -339,12 +339,12 @@ class Device:
 	def ShortName(self):
 		if (self.__vendor is Vendors.Xilinx):
 			subtype = self.__subtype.Groups
-			return "xc%i%s%s%s%s" % (
+			return "XC%i%s%s%s%s" % (
 				self.__generation,
-				self.__family.Token,
-				subtype[0],
+				self.__family.Token.upper(),
+				subtype[0].upper(),
 				"{num:03d}".format(num=self.__number),
-				subtype[1]
+				subtype[1].upper()
 			)
 		elif (self.__vendor is Vendors.Altera):
 			print("{YELLOW}Device.ShortName() not implemented for vendor Altera.{RESET}".format(**Init.Foreground))
@@ -360,12 +360,12 @@ class Device:
 	def FullName(self):
 		if (self.__vendor is Vendors.Xilinx):
 			subtype = self.__subtype.Groups
-			return "xc%i%s%s%s%s%i%s%i" % (
+			return "XC%i%s%s%s%s%i%s%i" % (
 				self.__generation,
-				self.__family.Token,
-				subtype[0],
+				self.__family.Token.upper(),
+				subtype[0].upper(),
 				"{num:03d}".format(num=self.__number),
-				subtype[1],
+				subtype[1].upper(),
 				self.__speedGrade,
 				str(self.__package),
 				self.__pinCount

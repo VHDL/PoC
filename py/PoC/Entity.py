@@ -230,7 +230,7 @@ class Entity(PathElement):
 				self._cocotb.append(tb)
 				# self._cocotb[optionName] = tb
 			elif (type == "quartusnetlist"):
-				print("loading Quartus netlist: {0}".format(optionName))
+				#print("loading Quartus netlist: {0}".format(optionName))
 				sectionName = self._configSection.replace("IP", "QII") + "." + optionName
 				nl = QuartusNetlist(host=self._host, name=optionName, sectionName=sectionName, parent=self)
 				self._quartusNetlist.append(nl)

@@ -96,14 +96,14 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 
 	def _PrepareCompilerEnvironment(self, device):
 		self._LogNormal("preparing synthesis environment...")
-		self._tempPath =		self.Host.Directories["XstTemp"]
+		self._tempPath =		self.Host.Directories["XSTTemp"]
 		self._outputPath =	self.Host.Directories["PoCNetList"] / str(device)
 		super()._PrepareCompilerEnvironment()
 
 	def _WriteSpecialSectionIntoConfig(self, device):
 		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.Host.PoCConfig['SPECIAL'] = {}
-		self.Host.PoCConfig['SPECIAL']['Device'] =				device.ShortName
+		self.Host.PoCConfig['SPECIAL']['Device'] =				device.FullName
 		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =	device.Series
 		self.Host.PoCConfig['SPECIAL']['OutputDir']	=			self._tempPath.as_posix()
 
@@ -115,7 +115,7 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 
 		xst = self._ise.GetXst()
 		xst.Parameters[xst.SwitchIntStyle] =		"xflow"
-		xst.Parameters[xst.SwitchXstFile] =			"ipcore.xst"
+		xst.Parameters[xst.SwitchXstFile] =			netlist.ModuleName + ".xst"
 		xst.Parameters[xst.SwitchReportFile] =	str(reportFilePath)
 		xst.Compile()
 
