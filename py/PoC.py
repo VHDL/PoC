@@ -62,6 +62,7 @@ from Simulator.ISESimulator					import Simulator as ISESimulator
 from Simulator.QuestaSimulator			import Simulator as QuestaSimulator
 from Simulator.VivadoSimulator			import Simulator as VivadoSimulator
 from Compiler.QuartusCompiler	import Compiler as MapCompiler
+from Compiler.LSECompiler			import Compiler as LSECompiler
 from Compiler.XCOCompiler			import Compiler as XCOCompiler
 from Compiler.XSTCompiler			import Compiler as XSTCompiler
 
@@ -888,6 +889,43 @@ class PoC(ILogable, ArgParseMixin):
 
 		compiler = MapCompiler(self, args.logs, args.reports)
 		compiler.PrepareCompiler(quartusBinaryPath, quartusVersion)
+		compiler.dryRun = self.DryRun
+		compiler.RunAll(fqnList, board)
+
+		Exit.exit()
+
+
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "lattice" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Synthesis commands")
+	@CommandAttribute("lattice", help="Compile a PoC IP core with Lattice Diamond LSE to a netlist")
+	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@ArgumentAttribute('--device', metavar="<DeviceName>", dest="DeviceName", help="todo")
+	@ArgumentAttribute('--board', metavar="<BoardName>", dest="BoardName", help="todo")
+	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
+	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
+	# @HandleVerbosityOptions
+	def HandleQuartusCompilation(self, args):
+		self.PrintHeadline()
+		self.__PrepareForSynthesis()
+
+		# TODO: check env variables
+		# self._CheckQuartusIIEnvironment()
+
+		fqnList =	self._ExtractFQNs(args.FQN, defaultType=EntityTypes.NetList)
+		board =		self._ExtractBoard(args.BoardName, args.DeviceName)
+
+		# prepare some paths
+		# self.Directories["XSTFiles"] =				self.Directories["PoCRoot"] / self.PoCConfig['PoC.DirectoryNames']['ISESynthesisFiles']
+		self.Directories["LatticeTemp"] =					self.Directories["PoCTemp"] / self.PoCConfig['PoC.DirectoryNames']['LatticeSynthesisFiles']
+		self.Directories["LatticeInstallation"] = Path(self.PoCConfig['Lattice.Diamond']['InstallationDirectory'])
+		self.Directories["LatticeBinary"] =				Path(self.PoCConfig['Lattice.Diamond']['BinaryDirectory'])
+		diamondBinaryPath =												self.Directories["LatticeBinary"]
+		diamondVersion =													self.PoCConfig['Lattice.Diamond']['Version']
+
+		compiler = LSECompiler(self, args.logs, args.reports)
+		compiler.PrepareCompiler(diamondBinaryPath, diamondVersion)
 		compiler.dryRun = self.DryRun
 		compiler.RunAll(fqnList, board)
 
