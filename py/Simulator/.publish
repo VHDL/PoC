@@ -3,6 +3,7 @@ __init__.py
 
 # Simulators
 AldecSimulator.py
+CocotbSimulator.py
 ISESimulator.py
 GHDLSimulator.py
 QuestaSimulator.py

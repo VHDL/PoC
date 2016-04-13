@@ -24,6 +24,7 @@ py/
 sim/
 src/
 tb/
+tcl/
 temp/
 tools/
 ucf/
