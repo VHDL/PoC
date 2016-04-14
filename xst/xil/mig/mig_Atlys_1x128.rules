@@ -13,13 +13,13 @@ PostProcessRules
 	Copy "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${TopModule}_top.vhd"		To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${TopModule}.vhdl"
 	
 	# first 2 lines with option "d"
-	In "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${TopModule}.vhdl" File
-		Search For "(architecture arc of ${TopModule} is).*(end  arc;)"		Replace By "\1\nbegin\n\2"
-		Search For "generic.*port"																				Replace By "port"
-		Search For "C3_NUM_DQ_PINS"																				Replace By "16"
-		Search For "C3_MEM_ADDR_WIDTH"																		Replace By "13"
-		Search For "C3_MEM_BANKADDR_WIDTH"																Replace By "3"
-		Search For "C3_P0_MASK_SIZE"																			Replace By "16"
-		Search For "C3_P0_DATA_PORT_SIZE"																	Replace By "128"
+	File "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${TopModule}.vhdl"
+		Replace "(architecture arc of ${TopModule} is).*(end  arc;)"	With "\1\nbegin\n\2"	Options DotAll
+		Replace "generic.*port"																				With "port"						Options DotAll
+		Replace "C3_NUM_DQ_PINS"																			With "16"
+		Replace "C3_MEM_ADDR_WIDTH"																		With "13"
+		Replace "C3_MEM_BANKADDR_WIDTH"																With "3"
+		Replace "C3_P0_MASK_SIZE"																			With "16"
+		Replace "C3_P0_DATA_PORT_SIZE"																With "128"
 	End File
 End PostProcessRules
