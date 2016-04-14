@@ -63,20 +63,20 @@ class Configuration(BaseConfiguration):
 	_longName =	"Xilinx ISE"
 	_privateConfiguration = {
 		"Windows": {
-			"Xilinx": {
+			"INSTALL.Xilinx": {
 				"InstallationDirectory":	"C:/Xilinx"
 			},
-			"Xilinx.ISE": {
+			"INSTALL.Xilinx.ISE": {
 				"Version":								"14.7",
 				"InstallationDirectory":	"${Xilinx:InstallationDirectory}/${Version}/ISE_DS",
 				"BinaryDirectory":				"${InstallationDirectory}/ISE/bin/nt64"
 			}
 		},
 		"Linux": {
-			"Xilinx": {
+			"INSTALL.Xilinx": {
 				"InstallationDirectory":	"/opt/Xilinx"
 			},
-			"Xilinx.ISE": {
+			"INSTALL.Xilinx.ISE": {
 				"Version":								"14.7",
 				"InstallationDirectory":	"${Xilinx:InstallationDirectory}/${Version}/ISE_DS",
 				"BinaryDirectory":				"${InstallationDirectory}/ISE/bin/lin64"

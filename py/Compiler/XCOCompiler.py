@@ -63,8 +63,7 @@ class Compiler(BaseCompiler):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
 		self._entity =				None
-		netlist.ConfigSectionName =		""
-		self._device =					None
+		self._device =				None
 		self._tempPath =			None
 		self._outputPath =		None
 		self._ise =						None
@@ -91,9 +90,10 @@ class Compiler(BaseCompiler):
 		self._LogQuiet("IP-core: {0}{1}{2}".format(Foreground.YELLOW, self._netlistFQN, Foreground.RESET))
 
 		# setup all needed paths to execute fuse
-		netlist = entity.XstNetlist
+		netlist = entity.CgNetlist
 		self._CreatePoCProject(netlist, board)
-		# self._AddFileListFile(netlist.FilesFile)
+		if (netlist.RulesFile is not None):
+			self._AddRulesFiles(netlist.RulesFile)
 
 		self._RunPrepareCompile(netlist)
 		self._RunPreCopy(netlist)
@@ -106,18 +106,17 @@ class Compiler(BaseCompiler):
 		self._LogNormal("  preparing compiler environment for IP-core '{0}' ...".format(netlist.Parent))
 
 		# add the key Device to section SPECIAL at runtime to change interpolation results
-		self.Host.netListConfig['SPECIAL'] =							{}
-		self.Host.netListConfig['SPECIAL']['Device'] =		str(self._device)
-		self.Host.netListConfig['SPECIAL']['OutputDir'] =	self._tempPath.as_posix()
+		self.Host.PoCConfig['SPECIAL'] =							{}
+		self.Host.PoCConfig['SPECIAL']['Device'] =		str(self._device)
+		self.Host.PoCConfig['SPECIAL']['OutputDir'] =	self._tempPath.as_posix()
 
 	def _RunCompile(self, netlist):
 		# read netlist settings from configuration file
-		ipCoreName = self.Host.netListConfig[netlist.ConfigSectionName]['IPCoreName']
-		xcoInputFilePath = self.Host.Directories["PoCRoot"] / self.Host.netListConfig[netlist.ConfigSectionName]['CoreGeneratorFile']
-		cgcTemplateFilePath = self.Host.Directories["PoCNetList"] / "template.cgc"
-		cgpFilePath = self._tempPath / "coregen.cgp"
-		cgcFilePath = self._tempPath / "coregen.cgc"
-		xcoFilePath = self._tempPath / xcoInputFilePath.name
+		xcoInputFilePath =		netlist.XcoFile
+		cgcTemplateFilePath =	self.Host.Directories["PoCNetlist"] / "template.cgc"
+		cgpFilePath =					self._tempPath / "coregen.cgp"
+		cgcFilePath =					self._tempPath / "coregen.cgc"
+		xcoFilePath =					self._tempPath / xcoInputFilePath.name
 
 		if (self.Host.Platform == "Windows"):
 			WorkingDirectory = ".\\temp\\"
@@ -145,10 +144,10 @@ class Compiler(BaseCompiler):
 			SET vhdlsim = true
 			SET workingdirectory = {WorkingDirectory}
 			'''.format(
-			Device=self._device.shortName(),
-			DeviceFamily=self._device.familyName(),
-			Package=(str(self._device.package) + str(self._device.pinCount)),
-			SpeedGrade=self._device.speedGrade,
+			Device=self._device.ShortName.lower(),
+			DeviceFamily=self._device.FamilyName.lower(),
+			Package=(str(self._device.Package).lower() + str(self._device.PinCount)),
+			SpeedGrade=self._device.SpeedGrade,
 			WorkingDirectory=WorkingDirectory
 		))
 
@@ -163,10 +162,10 @@ class Compiler(BaseCompiler):
 
 		cgContentFileContent = cgContentFileContent.format(
 			name="lcd_ChipScopeVIO",
-			device=self._device.shortName(),
-			devicefamily=self._device.familyName(),
-			package=(str(self._device.package) + str(self._device.pinCount)),
-			speedgrade=self._device.speedGrade
+			device=self._device.ShortName,
+			devicefamily=self._device.FamilyName,
+			package=(str(self._device.Package) + str(self._device.PinCount)),
+			speedgrade=self._device.SpeedGrade
 		)
 
 		self._LogDebug("Writing CoreGen content file to '{0}'.".format(cgcFilePath))
@@ -185,9 +184,7 @@ class Compiler(BaseCompiler):
 		# running CoreGen
 		# ==========================================================================
 		self._LogNormal("  running CoreGen...")
-		binaryPath =	self.Host.Directories["ISEBinary"]
-		iseVersion =			self.Host.pocConfig['Xilinx.ISE']['Version']
-		coreGen = ISE.GetCoreGenerator(self.Host.Platform, binaryPath, iseVersion, logger=self.Logger)
+		coreGen = self._ise.GetCoreGenerator()
 		coreGen.Parameters[coreGen.SwitchProjectFile] =	"."		# use current directory and the default project name
 		coreGen.Parameters[coreGen.SwitchBatchFile] =		str(xcoFilePath)
 		coreGen.Parameters[coreGen.FlagRegenerate] =		True

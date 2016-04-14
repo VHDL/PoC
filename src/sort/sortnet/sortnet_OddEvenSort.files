@@ -9,4 +9,4 @@ include				"tb/common/my_config.files"									# board and device configuration
 include				"src/common/common.files"										# load common packages
 
 # PoC.sort.sortnet
-vhdl		poc		"src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl"			# Top-Level
+vhdl		poc		"src/sort/sortnet/sortnet_OddEvenSort.vhdl"			# Top-Level

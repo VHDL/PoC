@@ -806,6 +806,7 @@ class PoC(ILogable, ArgParseMixin):
 		board =		self._ExtractBoard(args.BoardName, args.DeviceName)
 
 		# prepare some paths
+		self.Directories["PoCNetlist"] =			self.Directories["PoCRoot"] / self.PoCConfig['CONFIG.DirectoryNames']['NetlistFiles']
 		self.Directories["CoreGenTemp"] =			self.Directories["PoCTemp"] / self.PoCConfig['CONFIG.DirectoryNames']['ISECoreGeneratorFiles']
 		self.Directories["ISEInstallation"] = Path(self.PoCConfig['INSTALL.Xilinx.ISE']['InstallationDirectory'])
 		self.Directories["ISEBinary"] =				Path(self.PoCConfig['INSTALL.Xilinx.ISE']['BinaryDirectory'])

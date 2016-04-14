@@ -2,13 +2,24 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b1217729-6dda-4bce-a9eb-baa5346607ac" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../lib/cocotb" afterPath="$PROJECT_DIR$/../lib/cocotb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../lib/vunit" afterPath="$PROJECT_DIR$/../lib/vunit" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../prj/Diamond/PoC1.sty" afterPath="$PROJECT_DIR$/../prj/Diamond/PoC1.sty" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ToolChains/Altera/QuartusII.py" afterPath="$PROJECT_DIR$/ToolChains/Altera/QuartusII.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../src/arith/arith_prng.vhdl" afterPath="$PROJECT_DIR$/../src/arith/arith_prng.vhdl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../src/sort/sortnet/sortnet_OddEvenMergeSort.files" afterPath="$PROJECT_DIR$/../src/sort/sortnet/sortnet_OddEvenMergeSort.files" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl" afterPath="$PROJECT_DIR$/../src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../lib/osvvm" afterPath="$PROJECT_DIR$/../lib/osvvm" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/py.iml" afterPath="$PROJECT_DIR$/.idea/py.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Base/Compiler.py" afterPath="$PROJECT_DIR$/Base/Compiler.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Base/Project.py" afterPath="$PROJECT_DIR$/Base/Project.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Compiler/XCOCompiler.py" afterPath="$PROJECT_DIR$/Compiler/XCOCompiler.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PoC.py" afterPath="$PROJECT_DIR$/PoC.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PoC/Config.py" afterPath="$PROJECT_DIR$/PoC/Config.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PoC/Entity.py" afterPath="$PROJECT_DIR$/PoC/Entity.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PoC/Project.py" afterPath="$PROJECT_DIR$/PoC/Project.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PoC/Query.py" afterPath="$PROJECT_DIR$/PoC/Query.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ToolChains/Mentor/QuestaSim.py" afterPath="$PROJECT_DIR$/ToolChains/Mentor/QuestaSim.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ToolChains/Xilinx/ISE.py" afterPath="$PROJECT_DIR$/ToolChains/Xilinx/ISE.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/_Configuration.py" afterPath="$PROJECT_DIR$/_Configuration.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config.defaults.ini" afterPath="$PROJECT_DIR$/config.defaults.ini" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config.entity.ini" afterPath="$PROJECT_DIR$/config.entity.ini" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tcltest.py" afterPath="$PROJECT_DIR$/tcltest.py" />
     </list>
     <ignored path="py.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -32,8 +43,8 @@
       <file leaf-file-name="PoC.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/PoC.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="262">
-              <caret line="920" column="57" selection-start-line="920" selection-start-column="57" selection-end-line="920" selection-end-column="57" />
+            <state relative-caret-position="340">
+              <caret line="808" column="125" selection-start-line="808" selection-start-column="125" selection-end-line="808" selection-end-column="125" />
               <folding>
                 <element signature="e#1479#1535#0" expanded="true" />
               </folding>
@@ -41,73 +52,61 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="GHDLSimulator.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Simulator/GHDLSimulator.py">
+      <file leaf-file-name="ArgParseAttributes.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lib/ArgParseAttributes.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="160">
-              <caret line="296" column="78" selection-start-line="296" selection-start-column="69" selection-end-line="296" selection-end-column="78" />
+            <state relative-caret-position="358">
+              <caret line="163" column="0" selection-start-line="163" selection-start-column="0" selection-end-line="163" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="QuartusII.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/ToolChains/Altera/QuartusII.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="273">
-              <caret line="276" column="27" selection-start-line="276" selection-start-column="27" selection-end-line="276" selection-end-column="27" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Compiler.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="Compiler.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Base/Compiler.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="313">
-              <caret line="244" column="21" selection-start-line="244" selection-start-column="21" selection-end-line="244" selection-end-column="21" />
+            <state relative-caret-position="136">
+              <caret line="173" column="170" selection-start-line="173" selection-start-column="170" selection-end-line="173" selection-end-column="170" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="LSECompiler.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Compiler/LSECompiler.py">
+      <file leaf-file-name="XCOCompiler.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Compiler/XCOCompiler.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="409">
-              <caret line="121" column="0" selection-start-line="121" selection-start-column="0" selection-end-line="121" selection-end-column="0" />
+            <state relative-caret-position="83">
+              <caret line="94" column="0" selection-start-line="94" selection-start-column="0" selection-end-line="94" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Entity.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/PoC/Entity.py">
+      <file leaf-file-name="RulesParser.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Parser/RulesParser.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="324">
-              <caret line="513" column="0" selection-start-line="513" selection-start-column="0" selection-end-line="513" selection-end-column="0" />
+            <state relative-caret-position="272">
+              <caret line="46" column="16" selection-start-line="46" selection-start-column="6" selection-end-line="46" selection-end-column="16" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Executable.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Base/Executable.py">
+      <file leaf-file-name="Project.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/PoC/Project.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="450">
-              <caret line="327" column="35" selection-start-line="327" selection-start-column="35" selection-end-line="327" selection-end-column="35" />
-              <folding>
-                <element signature="e#1522#1553#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="426">
+              <caret line="73" column="0" selection-start-line="73" selection-start-column="0" selection-end-line="73" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="RulesCodeDOM.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Parser/RulesCodeDOM.py">
+      <file leaf-file-name="tcltest.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tcltest.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="433">
-              <caret line="550" column="2" selection-start-line="550" selection-start-column="2" selection-end-line="550" selection-end-column="2" />
+            <state relative-caret-position="714">
+              <caret line="45" column="14" selection-start-line="45" selection-start-column="14" selection-end-line="45" selection-end-column="14" />
               <folding />
             </state>
           </provider>
@@ -116,22 +115,10 @@
       <file leaf-file-name="Project.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Base/Project.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="206">
-              <caret line="567" column="38" selection-start-line="567" selection-start-column="38" selection-end-line="567" selection-end-column="38" />
+            <state relative-caret-position="255">
+              <caret line="347" column="36" selection-start-line="347" selection-start-column="36" selection-end-line="347" selection-end-column="36" />
               <folding>
                 <element signature="e#1292#1328#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="tcltest.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tcltest.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="229">
-              <caret line="45" column="14" selection-start-line="45" selection-start-column="14" selection-end-line="45" selection-end-column="14" />
-              <folding>
-                <element signature="e#1#28#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -176,7 +163,6 @@
         <option value="$PROJECT_DIR$/Parser/FilesCodeDOM.py" />
         <option value="$PROJECT_DIR$/lib/Parser.py" />
         <option value="$PROJECT_DIR$/Parser/RulesParser.py" />
-        <option value="$PROJECT_DIR$/Compiler/XCOCompiler.py" />
         <option value="$PROJECT_DIR$/Simulator/ActiveHDLSimulator.py" />
         <option value="$PROJECT_DIR$/Simulator/CocotbSimulator.py" />
         <option value="$PROJECT_DIR$/Simulator/QuestaSimulator.py" />
@@ -190,27 +176,28 @@
         <option value="$PROJECT_DIR$/lib/ConfigParser.py" />
         <option value="$PROJECT_DIR$/Compiler/XSTCompiler.py" />
         <option value="$PROJECT_DIR$/Compiler/QuartusCompiler.py" />
-        <option value="$PROJECT_DIR$/PoC/Config.py" />
         <option value="$PROJECT_DIR$/lib/tcltest.py" />
         <option value="$PROJECT_DIR$/ToolChains/Lattice/Diamond.py" />
         <option value="$PROJECT_DIR$/Base/Executable.py" />
         <option value="$PROJECT_DIR$/tcltest.py" />
         <option value="$PROJECT_DIR$/Parser/RulesCodeDOM.py" />
-        <option value="$PROJECT_DIR$/Base/Project.py" />
-        <option value="$PROJECT_DIR$/Base/Compiler.py" />
-        <option value="$PROJECT_DIR$/PoC/Entity.py" />
-        <option value="$PROJECT_DIR$/Compiler/LSECompiler.py" />
-        <option value="$PROJECT_DIR$/PoC.py" />
         <option value="$PROJECT_DIR$/Simulator/GHDLSimulator.py" />
         <option value="$PROJECT_DIR$/ToolChains/Altera/QuartusII.py" />
+        <option value="$PROJECT_DIR$/Compiler/LSECompiler.py" />
+        <option value="$PROJECT_DIR$/PoC/Entity.py" />
+        <option value="$PROJECT_DIR$/PoC.py" />
+        <option value="$PROJECT_DIR$/PoC/Config.py" />
+        <option value="$PROJECT_DIR$/Compiler/XCOCompiler.py" />
+        <option value="$PROJECT_DIR$/Base/Project.py" />
+        <option value="$PROJECT_DIR$/Base/Compiler.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="-8" />
     <option name="y" value="-8" />
-    <option name="width" value="1696" />
-    <option name="height" value="1036" />
+    <option name="width" value="1936" />
+    <option name="height" value="1034" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -259,6 +246,21 @@
       <pane id="Scratches">
         <subPane />
       </pane>
+      <pane id="Scope">
+        <subPane subId="Problems" />
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="py">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -287,69 +289,8 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="ToolChains" />
+              <option name="myItemId" value="lib" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="py" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="py" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="ToolChains" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Altera" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="py" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="py" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Compiler" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="py" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="py" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Base" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
-      <pane id="Scope">
-        <subPane subId="Problems" />
-        <subPane subId="Project Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT USER_OBJECT="py">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
@@ -393,7 +334,7 @@
       <recent name="$PROJECT_DIR$/ToolChains" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.Patrick: lattice PoC.arith.prng">
+  <component name="RunManager" selected="Python.Patrick: coregen PoC.xil.mig.Atlys_1x128">
     <configuration default="false" name="args" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -585,9 +526,9 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
-        <env name="PYTHONUNBUFFERED" value="0" />
         <env name="PoCRootDirectory" value="G:\git\PoC" />
         <env name="XILINX" value="G:\Xilinx\14.7\ISE_DS\ISE" />
+        <env name="PYTHONUNBUFFERED" value="0" />
         <env name="PoCScriptDirectory" value="error" />
       </envs>
       <option name="SDK_HOME" value="" />
@@ -598,6 +539,26 @@
       <module name="py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/PoC.py" />
       <option name="PARAMETERS" value="-d xst PoC.cache.par --board=KC705" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="Patrick: coregen PoC.xil.mig.Atlys_1x128" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PoCRootDirectory" value="D:\git\PoC" />
+        <env name="XILINX" value="G:\Xilinx\14.7\ISE_DS\ISE" />
+        <env name="PYTHONUNBUFFERED" value="0" />
+        <env name="PoCScriptDirectory" value="error" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../temp/xst" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/PoC.py" />
+      <option name="PARAMETERS" value="-d coregen PoC.xil.mig.Atlys_1x128 --board=Atlys" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
     </configuration>
@@ -625,9 +586,9 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
-        <env name="PYTHONUNBUFFERED" value="0" />
         <env name="PoCRootDirectory" value="G:\git\PoC" />
         <env name="XILINX" value="G:\Xilinx\14.7\ISE_DS\ISE" />
+        <env name="PYTHONUNBUFFERED" value="0" />
         <env name="PoCScriptDirectory" value="error" />
       </envs>
       <option name="SDK_HOME" value="" />
@@ -682,15 +643,16 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
     </configuration>
-    <list size="8">
+    <list size="9">
       <item index="0" class="java.lang.String" itemvalue="Python.Patrick: ghdl PoC.arith.prng" />
       <item index="1" class="java.lang.String" itemvalue="Python.Patrick: xst PoC.cache.par" />
-      <item index="2" class="java.lang.String" itemvalue="Python.Patrick: quartus PoC.arith.prng" />
-      <item index="3" class="java.lang.String" itemvalue="Python.Patrick: lattice PoC.arith.prng" />
-      <item index="4" class="java.lang.String" itemvalue="Python.Martin: xst" />
-      <item index="5" class="java.lang.String" itemvalue="Python.Martin: cocotb" />
-      <item index="6" class="java.lang.String" itemvalue="Python.args" />
-      <item index="7" class="java.lang.String" itemvalue="Python.tcltest" />
+      <item index="2" class="java.lang.String" itemvalue="Python.Patrick: coregen PoC.xil.mig.Atlys_1x128" />
+      <item index="3" class="java.lang.String" itemvalue="Python.Patrick: quartus PoC.arith.prng" />
+      <item index="4" class="java.lang.String" itemvalue="Python.Patrick: lattice PoC.arith.prng" />
+      <item index="5" class="java.lang.String" itemvalue="Python.Martin: xst" />
+      <item index="6" class="java.lang.String" itemvalue="Python.Martin: cocotb" />
+      <item index="7" class="java.lang.String" itemvalue="Python.args" />
+      <item index="8" class="java.lang.String" itemvalue="Python.tcltest" />
     </list>
     <recent_temporary>
       <list size="2">
@@ -725,20 +687,20 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1696" height="1036" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1034" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1694813" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" x="778" y="490" width="124" height="255" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1691254" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" x="778" y="490" width="124" height="255" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32890365" sideWeight="0.49758744" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3292683" sideWeight="0.50632244" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22369878" sideWeight="0.49367756" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32890365" sideWeight="0.49276236" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32779622" sideWeight="0.49758744" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32779622" sideWeight="0.49758744" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17068757" sideWeight="0.49612403" order="1" side_tool="false" content_ui="tabs" x="803" y="490" width="74" height="40" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17017913" sideWeight="0.49612403" order="1" side_tool="false" content_ui="tabs" x="803" y="490" width="74" height="40" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32890365" sideWeight="0.49758744" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17068757" sideWeight="0.503876" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.4031008" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.4031008" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -762,9 +724,9 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/Parser/RulesCodeDOM.py</url>
-          <line>207</line>
-          <option name="timeStamp" value="71" />
+          <url>file://$PROJECT_DIR$/Base/Compiler.py</url>
+          <line>172</line>
+          <option name="timeStamp" value="74" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -774,7 +736,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="72" />
+      <option name="time" value="79" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -834,28 +796,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/CodeDOM.py" />
-    <entry file="file://$PROJECT_DIR$/lib/ArgParseAttributes.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="358">
-          <caret line="163" column="0" selection-start-line="163" selection-start-column="0" selection-end-line="163" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="221">
-          <caret line="13" column="12" selection-start-line="13" selection-start-column="12" selection-end-line="13" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/PoC/Project.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="426">
-          <caret line="73" column="13" selection-start-line="73" selection-start-column="13" selection-end-line="73" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Parser/FilesCodeDOM.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="700">
@@ -870,26 +810,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/Parser.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="58">
-          <caret line="327" column="9" selection-start-line="327" selection-start-column="9" selection-end-line="327" selection-end-column="9" />
-          <folding>
-            <element signature="e#1211#1234#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Parser/RulesParser.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="46" column="28" selection-start-line="46" selection-start-column="28" selection-end-line="46" selection-end-column="28" />
-          <folding>
-            <element signature="e#1240#1283#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Base/Simulator.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-527">
@@ -901,16 +821,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="170">
           <caret line="767" column="0" selection-start-line="767" selection-start-column="0" selection-end-line="767" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Compiler/XCOCompiler.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="191">
-          <caret line="88" column="4" selection-start-line="88" selection-start-column="4" selection-end-line="88" selection-end-column="4" />
-          <folding>
-            <element signature="e#1538#1582#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -966,23 +876,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ToolChains/Xilinx/ISE.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="308">
-          <caret line="495" column="82" selection-start-line="495" selection-start-column="82" selection-end-line="495" selection-end-column="82" />
-          <folding>
-            <element signature="e#1483#1522#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ToolChains/Xilinx/Vivado.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-1140">
           <caret line="395" column="78" selection-start-line="395" selection-start-column="78" selection-end-line="395" selection-end-column="78" />
-          <folding>
-            <element signature="e#1490#1529#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -991,24 +889,6 @@
         <state relative-caret-position="-1530">
           <caret line="321" column="88" selection-start-line="321" selection-start-column="88" selection-end-line="321" selection-end-column="88" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/Decorators.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" column="0" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Compiler/XSTCompiler.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="341">
-          <caret line="115" column="28" selection-start-line="115" selection-start-column="28" selection-end-line="115" selection-end-column="28" />
-          <folding>
-            <element signature="e#1539#1624#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1026,27 +906,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://C:/Program Files/Python 3.5/Lib/configparser.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="20757">
-          <caret line="1228" column="0" selection-start-line="1228" selection-start-column="0" selection-end-line="1249" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ToolChains/Xilinx/Xilinx.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="739">
           <caret line="66" column="45" selection-start-line="65" selection-start-column="4" selection-end-line="66" selection-end-column="45" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/PoC/Config.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="365" column="19" selection-start-line="365" selection-start-column="19" selection-end-line="365" selection-end-column="19" />
-          <folding>
-            <element signature="e#1468#1515#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1071,7 +934,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="18">
           <caret line="35" column="42" selection-start-line="35" selection-start-column="42" selection-end-line="35" selection-end-column="42" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1087,50 +949,23 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tcltest.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="229">
+        <state relative-caret-position="714">
           <caret line="45" column="14" selection-start-line="45" selection-start-column="14" selection-end-line="45" selection-end-column="14" />
-          <folding>
-            <element signature="e#1#28#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Base/Executable.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="450">
+        <state relative-caret-position="5559">
           <caret line="327" column="35" selection-start-line="327" selection-start-column="35" selection-end-line="327" selection-end-column="35" />
           <folding>
-            <element signature="e#1522#1553#0" expanded="true" />
+            <element signature="e#1522#1553#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Parser/RulesCodeDOM.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="433">
-          <caret line="550" column="2" selection-start-line="550" selection-start-column="2" selection-end-line="550" selection-end-column="2" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Base/_VHDLParser.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-4538">
-          <caret line="14" column="58" selection-start-line="14" selection-start-column="58" selection-end-line="14" selection-end-column="58" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Base/Project.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="206">
-          <caret line="567" column="38" selection-start-line="567" selection-start-column="38" selection-end-line="567" selection-end-column="38" />
-          <folding>
-            <element signature="e#1292#1328#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/Base/_VHDLParser.py" />
     <entry file="file://$PROJECT_DIR$/_config.netlist.ini">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="291">
@@ -1139,37 +974,19 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Base/Compiler.py">
+    <entry file="file://$PROJECT_DIR$/ToolChains/Altera/QuartusII.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="313">
-          <caret line="244" column="21" selection-start-line="244" selection-start-column="21" selection-end-line="244" selection-end-column="21" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/PoC/Entity.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="324">
-          <caret line="513" column="0" selection-start-line="513" selection-start-column="0" selection-end-line="513" selection-end-column="0" />
+        <state relative-caret-position="273">
+          <caret line="276" column="27" selection-start-line="276" selection-start-column="27" selection-end-line="276" selection-end-column="27" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Compiler/LSECompiler.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="409">
-          <caret line="121" column="0" selection-start-line="121" selection-start-column="0" selection-end-line="121" selection-end-column="0" />
+        <state relative-caret-position="484">
+          <caret line="104" column="0" selection-start-line="104" selection-start-column="0" selection-end-line="104" selection-end-column="0" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/PoC.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="262">
-          <caret line="920" column="57" selection-start-line="920" selection-start-column="57" selection-end-line="920" selection-end-column="57" />
-          <folding>
-            <element signature="e#1479#1535#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1181,10 +998,136 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ToolChains/Altera/QuartusII.py">
+    <entry file="file://$PROJECT_DIR$/Compiler/XSTCompiler.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="273">
-          <caret line="276" column="27" selection-start-line="276" selection-start-column="27" selection-end-line="276" selection-end-column="27" />
+        <state relative-caret-position="358">
+          <caret line="116" column="37" selection-start-line="116" selection-start-column="37" selection-end-line="116" selection-end-column="37" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/ArgParseAttributes.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="358">
+          <caret line="163" column="0" selection-start-line="163" selection-start-column="0" selection-end-line="163" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/PoC.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="340">
+          <caret line="808" column="125" selection-start-line="808" selection-start-column="125" selection-end-line="808" selection-end-column="125" />
+          <folding>
+            <element signature="e#1479#1535#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ToolChains/Xilinx/ISE.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="206" column="6" selection-start-line="206" selection-start-column="6" selection-end-line="206" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/PoC/Config.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="340">
+          <caret line="344" column="31" selection-start-line="344" selection-start-column="31" selection-end-line="344" selection-end-column="31" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/PoC/Entity.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="382" column="0" selection-start-line="382" selection-start-column="0" selection-end-line="382" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/Parser.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="334" column="0" selection-start-line="334" selection-start-column="0" selection-end-line="334" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/PoC/Project.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="426">
+          <caret line="73" column="0" selection-start-line="73" selection-start-column="0" selection-end-line="73" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Parser/RulesCodeDOM.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="547" column="0" selection-start-line="547" selection-start-column="0" selection-end-line="547" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/Decorators.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="22" column="0" selection-start-line="22" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Program Files/Python 3.5/Lib/configparser.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="1229" column="0" selection-start-line="1229" selection-start-column="0" selection-end-line="1229" selection-end-column="0" />
+          <folding>
+            <element signature="e#10767#10980#2" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Compiler/XCOCompiler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="83">
+          <caret line="94" column="0" selection-start-line="94" selection-start-column="0" selection-end-line="94" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Parser/RulesParser.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="272">
+          <caret line="46" column="16" selection-start-line="46" selection-start-column="6" selection-end-line="46" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Base/Project.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="347" column="36" selection-start-line="347" selection-start-column="36" selection-end-line="347" selection-end-column="36" />
+          <folding>
+            <element signature="e#1292#1328#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Base/Compiler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="173" column="170" selection-start-line="173" selection-start-column="170" selection-end-line="173" selection-end-column="170" />
           <folding />
         </state>
       </provider>

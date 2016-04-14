@@ -331,7 +331,7 @@ class Project():
 			fileSet = self._defaultFileSet
 		# print("init Project.Files generator")
 		for file in fileSet.Files:
-			if (file.FileType == fileType):
+			if (file.FileType is fileType):
 				yield file
 	
 	def ExtractVHDLLibrariesFromVHDLSourceFiles(self):
@@ -345,17 +345,14 @@ class Project():
 			file.VHDLLibrary = library
 	
 	@property
-	def VHDLLibraries(self):
-		return self._vhdlLibraries.values()
-	
+	def VHDLLibraries(self):					return self._vhdlLibraries.values()
 	@property
-	def ExternalVHDLLibraries(self):
-		return self._externalVHDLLibraries
+	def ExternalVHDLLibraries(self):	return self._externalVHDLLibraries
 
 	def AddExternalVHDLLibraries(self, library):
 		self._externalVHDLLibraries.append(library)
 	
-	def _GetVariables(self):
+	def GetVariables(self):
 		result = {
 			"ProjectName" :			self._name,
 			"RootDirectory" :		str(self._rootDirectory),
@@ -364,7 +361,7 @@ class Project():
 			"Tool" :						self._tool.name,
 			"VHDL" :						self._vhdlVersion.value
 		}
-		return merge(result, self._board._GetVariables(), self._device._GetVariables())
+		return merge(result, self._board.GetVariables(), self._device.GetVariables())
 	
 	def pprint(self, indent=0):
 		_indent = "  " * indent

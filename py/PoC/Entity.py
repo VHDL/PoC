@@ -514,8 +514,19 @@ class LatticeNetlist(Netlist):
 
 
 class CoreGeneratorNetlist(Netlist):
+	def __init__(self, host, name, sectionName, parent):
+		self._xcoFile =		None
+		super().__init__(host, name, sectionName, parent)
+
 	def __str__(self):
 		return "CoreGen netlist\n"
+
+	@property
+	def XcoFile(self):          return self._xcoFile
+
+	def _LazyLoadable_Load(self):
+		super()._LazyLoadable_Load()
+		self._xcoFile = Path(self._host.PoCConfig[self._sectionName]['CoreGeneratorFile'])
 
 	def pprint(self, indent):
 		__indent = "  " * indent
