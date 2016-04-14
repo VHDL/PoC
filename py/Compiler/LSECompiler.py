@@ -41,32 +41,32 @@ else:
 
 
 # load dependencies
-from Base.Exceptions					import NotConfiguredException, PlatformNotSupportedException
-from Base.Project							import VHDLVersion, Environment, ToolChain, Tool
-from Base.Compiler						import Compiler as BaseCompiler, CompilerException
-from ToolChains.Altera.QuartusII	import QuartusII, QuartusProject, QuartusProjectFile
+from Base.Exceptions						import NotConfiguredException, PlatformNotSupportedException
+from Base.Project								import VHDLVersion, Environment, ToolChain, Tool
+from Base.Compiler							import Compiler as BaseCompiler, CompilerException
+from ToolChains.Lattice.Diamond	import Diamond, SynthesisArgumentFile
 
 
 class Compiler(BaseCompiler):
-	_TOOL_CHAIN =	ToolChain.Altera_QuartusII
-	_TOOL =				Tool.Altera_QuartusII_Map
+	_TOOL_CHAIN =	ToolChain.Lattice_Diamond
+	_TOOL =				Tool.Lattice_LSE
 
 	def __init__(self, host, showLogs, showReport):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
-		self._quartus =		None
+		self._diamond =		None
 
 	def PrepareCompiler(self, binaryPath, version):
 		# create the GHDL executable factory
-		self._LogVerbose("  Preparing Quartus-II Map (quartus_map).")
-		self._quartus =		QuartusII(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._LogVerbose("  Preparing Lattice Synthesis Engine (LSE).")
+		self._diamond =		Diamond(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def Run(self, entity, board, **_):
 		# self._entity =			entity 					 # TODO: find usages
 		# self._device =			board.Device
 
 		# setup all needed paths to execute fuse
-		netlist = entity.QuartusNetlist
+		netlist = entity.LatticeNetlist
 		self._PrepareCompilerEnvironment(board.Device)
 		self._WriteSpecialSectionIntoConfig(board.Device)
 
@@ -77,12 +77,11 @@ class Compiler(BaseCompiler):
 
 		self._LogQuiet("IP-core: {0!s}".format(netlist.Parent))
 
-		# netlist.XstFile = self._tempPath / (netlist.ModuleName + ".xst")
-		netlist.QsfFile = self._tempPath / (netlist.ModuleName + ".qsf")
+		netlist.PrjFile = self._tempPath / (netlist.ModuleName + ".prj")
 
 		self._WriteQuartusProjectFile(netlist)
 
-		self._LogNormal("  running Quartus-II Map...")
+		self._LogNormal("  running Diamond LSE...")
 		self._RunPrepareCompile(netlist)
 		self._RunPreCopy(netlist)
 		self._RunPreReplace(netlist)
@@ -92,7 +91,7 @@ class Compiler(BaseCompiler):
 
 	def _PrepareCompilerEnvironment(self, device):
 		self._LogNormal("preparing synthesis environment...")
-		self._tempPath =		self.Host.Directories["QuartusTemp"]
+		self._tempPath =		self.Host.Directories["LatticeTemp"]
 		self._outputPath =	self.Host.Directories["PoCNetList"] / str(device)
 		super()._PrepareCompilerEnvironment()
 
@@ -105,22 +104,18 @@ class Compiler(BaseCompiler):
 
 
 	def _WriteQuartusProjectFile(self, netlist):
-		quartusProjectFile = QuartusProjectFile(netlist.QsfFile)
+		argumentFile = SynthesisArgumentFile(netlist.PrjFile)
+		argumentFile.Architecture =	"\"ECP5UM\""
+		argumentFile.TopLevel =			netlist.ModuleName
+		argumentFile.LogFile =			self._tempPath / (netlist.ModuleName + ".lse.log")
 
-		quartusProject = QuartusProject(netlist.ModuleName, quartusProjectFile)
-		quartusProject.GlobalAssignments['FAMILY'] =							"\"Stratix IV\""
-		quartusProject.GlobalAssignments['DEVICE'] =							"EP4SGX230KF40C2"
-		quartusProject.GlobalAssignments['TOP_LEVEL_ENTITY'] =		netlist.ModuleName
-		quartusProject.GlobalAssignments['VHDL_INPUT_VERSION'] =	"VHDL_2008"
-
-		quartusProject.CopySourceFilesFromProject(self.PoCProject)
-
-		quartusProject.Write()
+		argumentFile.Write(self.PoCProject)
 
 	def _RunPrepareCompile(self, netlist):
 		pass
 
 	def _RunCompile(self, netlist, device):
-		q2map = self._quartus.GetMap()
-		q2map.Parameters[q2map.ArgProjectName] =	str(netlist.QsfFile)
-		q2map.Compile()
+		tclShell = self._diamond.GetTclShell()
+
+		# raise NotImplementedError("Next: implement interactive shell")
+		# tclShell.Run()

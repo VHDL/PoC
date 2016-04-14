@@ -231,7 +231,7 @@ class Map(Executable, QuartusIIMixIn):
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
-			raise QuartusIIException("Failed to launch xst.") from ex
+			raise QuartusIIException("Failed to launch quartus_map.") from ex
 
 		self._hasOutput = False
 		self._hasWarnings = False
@@ -241,7 +241,7 @@ class Map(Executable, QuartusIIMixIn):
 
 			line = next(iterator)
 			self._hasOutput = True
-			self._LogNormal("    xst messages for '{0}'".format(self.Parameters[self.SwitchArgumentFile]))
+			self._LogNormal("    quartus_map messages for '{0}'".format(self.Parameters[self.SwitchArgumentFile]))
 			self._LogNormal("    " + ("-" * 76))
 
 			while True:
@@ -271,6 +271,10 @@ def MapFilter(gen):
 	for line in iterator:
 		if line.startswith("Info ("):
 			yield LogEntry(line[5:], Severity.Verbose)
+		elif line.startswith("Error ("):
+			yield LogEntry(line[6:], Severity.Error)
+		elif line.startswith("Warning ("):
+			yield LogEntry(line[8:], Severity.Warning)
 		elif line.startswith("    Info ("):
 			yield LogEntry("    " + line[9:], Severity.Verbose)
 		elif line.startswith("Info:"):

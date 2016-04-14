@@ -13,7 +13,7 @@ vhdl	poc		"src/common/vectors.vhdl"								# PoC vector package
 vhdl	poc		"src/common/physical.vhdl"							# PoC physical types package
 vhdl	poc		"src/common/components.vhdl"						# PoC components
 
-if (ToolChain != "Altera_QuartusII") then
+if ((ToolChain != "Altera_QuartusII") and (ToolChain != "Lattice_Diamond")) then
 	if (VHDL < 2002) then
 		vhdl	poc		"src/common/fileio.v93.vhdl"					# 
 	elseif (VHDL >= 2002) then

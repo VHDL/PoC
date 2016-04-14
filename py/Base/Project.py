@@ -36,7 +36,6 @@ from pathlib						import Path
 
 from Base.Configuration import ConfigurationException
 from Base.Exceptions		import CommonException
-from Base.VHDLParser		import VHDLParserMixIn
 from Parser.FilesParser	import VHDLSourceFileMixIn, VerilogSourceFileMixIn, CocotbSourceFileMixIn
 from PoC.Config					import Board, Device
 from lib.Functions			import merge
@@ -97,7 +96,7 @@ class ToolChain(Enum):
 	Altera_ModelSim =		21
 	Cocotb =					  30
 	GHDL_GTKWave =			40
-	Lattice_LSE =				50
+	Lattice_Diamond =				50
 	Mentor_QuestaSim =	60
 	Xilinx_ISE =				70
 	Xilinx_PlanAhead =	71
@@ -565,14 +564,13 @@ class ConstraintFile(File):
 		return "Constraint file: '{0!s}".format(self._file)
 
 
-class VHDLSourceFile(SourceFile, VHDLSourceFileMixIn, VHDLParserMixIn):
+class VHDLSourceFile(SourceFile, VHDLSourceFileMixIn):
 	_FileType = FileTypes.VHDLSourceFile
 
 	def __init__(self, file, vhdlLibraryName, project = None, fileSet = None):
 		super().__init__(file, project=project, fileSet=fileSet)
 		VHDLSourceFileMixIn.__init__(self, file, vhdlLibraryName.lower())
-		VHDLParserMixIn.__init__(self)
-	
+
 	def Parse(self):
 		self._Parse()
 	

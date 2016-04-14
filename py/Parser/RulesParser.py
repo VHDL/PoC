@@ -31,7 +31,7 @@
 #
 
 from lib.Parser						import ParserException
-from Parser.RulesCodeDOM	import Document, PreProcessRulesStatement, PostProcessStatement, CopyStatement, ReplaceStatement, InFileStatement
+from Parser.RulesCodeDOM	import Document, PreProcessRulesStatement, PostProcessStatement, CopyStatement, ReplaceStatement, FileStatement
 
 
 class Rule:
@@ -103,7 +103,7 @@ class RulesParserMixIn:
 			destinationFile =		self._rootDirectory / ruleStatement.DestinationPath
 			rule =							self._classCopyRule(sourceFile, destinationFile)
 			lst.append(rule)
-		elif isinstance(ruleStatement, InFileStatement):
+		elif isinstance(ruleStatement, FileStatement):
 			filePath = self._rootDirectory / ruleStatement.FilePath
 			for replaceRule in ruleStatement.Statements:
 				if isinstance(replaceRule, ReplaceStatement):

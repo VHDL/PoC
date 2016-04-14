@@ -6,3 +6,5 @@ Decorator.py
 Functions.py
 pyAttribute.py
 ArgParseAttributes.py
+ConfigParser.py
+Parser.py
