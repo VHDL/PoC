@@ -2,27 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b1217729-6dda-4bce-a9eb-baa5346607ac" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Base/VHDLParser.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/config.netlist.ini" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/config.public.ini" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/config.testbench.ini" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../lib/cocotb" afterPath="$PROJECT_DIR$/../lib/cocotb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../lib/vunit" afterPath="$PROJECT_DIR$/../lib/vunit" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../prj/Diamond/PoC1.sty" afterPath="$PROJECT_DIR$/../prj/Diamond/PoC1.sty" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Base/Compiler.py" afterPath="$PROJECT_DIR$/Base/Compiler.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Base/Project.py" afterPath="$PROJECT_DIR$/Base/Project.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Compiler/LSECompiler.py" afterPath="$PROJECT_DIR$/Compiler/LSECompiler.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Parser/RulesCodeDOM.py" afterPath="$PROJECT_DIR$/Parser/RulesCodeDOM.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Parser/RulesParser.py" afterPath="$PROJECT_DIR$/Parser/RulesParser.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PoC.py" afterPath="$PROJECT_DIR$/PoC.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PoC/Entity.py" afterPath="$PROJECT_DIR$/PoC/Entity.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Simulator/GHDLSimulator.py" afterPath="$PROJECT_DIR$/Simulator/GHDLSimulator.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config.entity.ini" afterPath="$PROJECT_DIR$/config.entity.ini" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ToolChains/Altera/QuartusII.py" afterPath="$PROJECT_DIR$/ToolChains/Altera/QuartusII.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../src/arith/arith_prng.vhdl" afterPath="$PROJECT_DIR$/../src/arith/arith_prng.vhdl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../src/xil/mig/mig_Atlys_1x128.rules" afterPath="$PROJECT_DIR$/../src/xil/mig/mig_Atlys_1x128.rules" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../tools/Notepad++/Syntax Highlighting - PoC Rules.xml" afterPath="$PROJECT_DIR$/../tools/Notepad++/Syntax Highlighting - PoC Rules.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../xst/xil/mig/mig_Atlys_1x128.rules" afterPath="$PROJECT_DIR$/../xst/xil/mig/mig_Atlys_1x128.rules" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../src/sort/sortnet/sortnet_OddEvenMergeSort.files" afterPath="$PROJECT_DIR$/../src/sort/sortnet/sortnet_OddEvenMergeSort.files" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl" afterPath="$PROJECT_DIR$/../src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl" />
     </list>
     <ignored path="py.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -55,11 +41,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="GHDLSimulator.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="GHDLSimulator.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Simulator/GHDLSimulator.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="160">
               <caret line="296" column="78" selection-start-line="296" selection-start-column="69" selection-end-line="296" selection-end-column="78" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="QuartusII.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ToolChains/Altera/QuartusII.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="273">
+              <caret line="276" column="27" selection-start-line="276" selection-start-column="27" selection-end-line="276" selection-end-column="27" />
               <folding />
             </state>
           </provider>
@@ -193,7 +189,6 @@
         <option value="$PROJECT_DIR$/ToolChains/Aldec/ActiveHDL.py" />
         <option value="$PROJECT_DIR$/lib/ConfigParser.py" />
         <option value="$PROJECT_DIR$/Compiler/XSTCompiler.py" />
-        <option value="$PROJECT_DIR$/ToolChains/Altera/QuartusII.py" />
         <option value="$PROJECT_DIR$/Compiler/QuartusCompiler.py" />
         <option value="$PROJECT_DIR$/PoC/Config.py" />
         <option value="$PROJECT_DIR$/lib/tcltest.py" />
@@ -207,6 +202,7 @@
         <option value="$PROJECT_DIR$/Compiler/LSECompiler.py" />
         <option value="$PROJECT_DIR$/PoC.py" />
         <option value="$PROJECT_DIR$/Simulator/GHDLSimulator.py" />
+        <option value="$PROJECT_DIR$/ToolChains/Altera/QuartusII.py" />
       </list>
     </option>
   </component>
@@ -291,7 +287,25 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Simulator" />
+              <option name="myItemId" value="ToolChains" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="py" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="py" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ToolChains" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Altera" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -364,19 +378,19 @@
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeOrder3" value="3" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="G:\git\PoC\py\ToolChains\Lattice" />
-      <recent name="G:\git\PoC\py\Compiler" />
-      <recent name="G:\git\PoC\py\Parser" />
-      <recent name="G:\git\PoC\py\ToolChains\Synopsys" />
-      <recent name="$PROJECT_DIR$/ToolChains" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="G:\git\PoC\py" />
       <recent name="G:\git\PoC\py\lib" />
       <recent name="D:\git\PoC\py\Base" />
       <recent name="G:\git\PoC\py\Base" />
       <recent name="G:\git\PoC\py\PoC" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="G:\git\PoC\py\ToolChains\Lattice" />
+      <recent name="G:\git\PoC\py\Compiler" />
+      <recent name="G:\git\PoC\py\Parser" />
+      <recent name="G:\git\PoC\py\ToolChains\Synopsys" />
+      <recent name="$PROJECT_DIR$/ToolChains" />
     </key>
   </component>
   <component name="RunManager" selected="Python.Patrick: lattice PoC.arith.prng">
@@ -1046,14 +1060,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ToolChains/Altera/QuartusII.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="110">
-          <caret line="308" column="0" selection-start-line="308" selection-start-column="0" selection-end-line="319" selection-end-column="30" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/python-skeletons/io.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
@@ -1171,6 +1177,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="160">
           <caret line="296" column="78" selection-start-line="296" selection-start-column="69" selection-end-line="296" selection-end-column="78" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ToolChains/Altera/QuartusII.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="273">
+          <caret line="276" column="27" selection-start-line="276" selection-start-column="27" selection-end-line="276" selection-end-column="27" />
           <folding />
         </state>
       </provider>

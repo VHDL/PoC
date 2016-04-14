@@ -271,6 +271,10 @@ def MapFilter(gen):
 	for line in iterator:
 		if line.startswith("Info ("):
 			yield LogEntry(line[5:], Severity.Verbose)
+		elif line.startswith("Error ("):
+			yield LogEntry(line[6:], Severity.Error)
+		elif line.startswith("Warning ("):
+			yield LogEntry(line[8:], Severity.Warning)
 		elif line.startswith("    Info ("):
 			yield LogEntry("    " + line[9:], Severity.Verbose)
 		elif line.startswith("Info:"):
