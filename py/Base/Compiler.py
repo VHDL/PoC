@@ -171,7 +171,7 @@ class Compiler(ILogable):
 			self._LogDebug("      {0!s}".format(rule))
 
 	def _RunPreCopy(self, netlist):
-		preCopyRules = self.Host.PoCConfig[netlist._sectionName]['PreCopy.Rules']
+		preCopyRules = self.Host.PoCConfig[netlist._sectionName]['PreCopyRules']
 		if (len(preCopyRules) != 0):
 			preCopyTasks = self._ParseCopyRules(preCopyRules)
 		else:
@@ -184,7 +184,7 @@ class Compiler(ILogable):
 		self._ExecuteCopyTasks(preCopyTasks, "pre")
 
 	def _RunPostCopy(self, netlist):
-		postCopyRules = self.Host.PoCConfig[netlist._sectionName]['PostCopy.Rules']
+		postCopyRules = self.Host.PoCConfig[netlist._sectionName]['PostCopyRules']
 		if (len(postCopyRules) != 0):
 			postCopyTasks = self._ParseCopyRules(postCopyRules)
 		else:
@@ -224,7 +224,7 @@ class Compiler(ILogable):
 			shutil.copy(str(task.SourcePath), str(task.DestinationPath))
 
 	def _RunPreReplace(self, netlist):
-		preReplaceRules = self.Host.PoCConfig[netlist._sectionName]['PreReplace.Rules']
+		preReplaceRules = self.Host.PoCConfig[netlist._sectionName]['PreReplaceRules']
 		if (len(preReplaceRules) != 0):
 			preReplaceTasks = self._ParseReplaceRules(preReplaceRules)
 		else:
@@ -233,7 +233,7 @@ class Compiler(ILogable):
 		self._ExecuteReplaceTasks(preReplaceTasks, "pre")
 
 	def _RunPostReplace(self, netlist):
-		postReplaceRules = self.Host.PoCConfig[netlist._sectionName]['PostReplace.Rules']
+		postReplaceRules = self.Host.PoCConfig[netlist._sectionName]['PostReplaceRules']
 		if (len(postReplaceRules) != 0):
 			postReplaceTasks = self._ParseReplaceRules(postReplaceRules)
 		else:

@@ -123,7 +123,7 @@ class Namespace(PathElement):
 				self.__namespaces[optionName] = ns
 			elif (type == "Entity"):
 				# print("loading entity: {0}".format(optionName))
-				section = self._configSection.replace("NS", "IP") + "." + optionName
+				section = self._configSection.replace("PoC", "IP") + "." + optionName
 				ent = Entity(host=self._host, name=optionName, configSection=section, parent=self)
 				self.__entities[optionName] = ent
 
@@ -160,7 +160,7 @@ class Namespace(PathElement):
 
 class Root(Namespace):
 	__POCRoot_Name =						"PoC"
-	__POCRoot_SectionName =			"NS"
+	__POCRoot_SectionName =			"PoC"
 
 	def __init__(self, host):
 		super().__init__(host, self.__POCRoot_Name, self.__POCRoot_SectionName, None)
@@ -177,6 +177,7 @@ class Entity(PathElement):
 
 		self._vhdltb =					[]		# OrderedDict()
 		self._cocotb =					[]		# OrderedDict()
+		self._latticeNetlist =	[]		# OrderedDict()
 		self._quartusNetlist =	[]		# OrderedDict()
 		self._xstNetlist =			[]		# OrderedDict()
 		self._cgNetlist =				[]		# OrderedDict()
@@ -194,6 +195,12 @@ class Entity(PathElement):
 		if (len(self._cocotb) == 0):
 			raise NotConfiguredException("No Cocotb testbench configured for '{0!s}'.".format(self))
 		return self._cocotb[0]
+
+	@property
+	def LatticeNetlist(self):
+		if (len(self._latticeNetlist) == 0):
+			raise NotConfiguredException("No Lattice netlist configured for '{0!s}'.".format(self))
+		return self._latticeNetlist[0]
 
 	@property
 	def QuartusNetlist(self):
@@ -228,6 +235,13 @@ class Entity(PathElement):
 				sectionName = self._configSection.replace("IP", "COCOTB") + "." + optionName
 				tb = CocoTestbench(host=self._host, name=optionName, sectionName=sectionName, parent=self)
 				self._cocotb.append(tb)
+				# self._cocotb[optionName] = tb
+			elif (type == "lsenetlist"):
+				#print("loading lattice netlist: {0}".format(optionName))
+				sectionName = self._configSection.replace("IP", "LSE") + "." + optionName
+				nl = LatticeNetlist(host=self._host, name=optionName, sectionName=sectionName, parent=self)
+				self._latticeNetlist.append(nl)
+				# self._xstNetlist[optionName] = nl
 				# self._cocotb[optionName] = tb
 			elif (type == "quartusnetlist"):
 				#print("loading Quartus netlist: {0}".format(optionName))
@@ -457,6 +471,39 @@ class QuartusNetlist(Netlist):
 
 	def __str__(self):
 		return "Quartus-II Netlist\n"
+
+	def pprint(self, indent):
+		__indent = "  " * indent
+		buffer = "{0}Netlist: {1}\n".format(__indent, self._moduleName)
+		buffer += "{0}  Files: {1!s}\n".format(__indent, self._filesFile)
+		buffer += "{0}  Rules: {1!s}\n".format(__indent, self._rulesFile)
+		return buffer
+
+
+class LatticeNetlist(Netlist):
+	def __init__(self, host, name, sectionName, parent):
+		self._filesFile =				None
+		self._prjFile =					None
+		super().__init__(host, name, sectionName, parent)
+
+	@property
+	@LazyLoadTrigger
+	def FilesFile(self):				return self._filesFile
+
+	@property
+	def PrjFile(self):					return self._prjFile
+	@PrjFile.setter
+	def PrjFile(self, value):
+		if isinstance(value, str):
+			value = Path(value)
+		self._prjFile = value
+
+	def _LazyLoadable_Load(self):
+		super()._LazyLoadable_Load()
+		self._filesFile =				Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
+
+	def __str__(self):
+		return "Lattice Netlist\n"
 
 	def pprint(self, indent):
 		__indent = "  " * indent

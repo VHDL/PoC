@@ -289,7 +289,7 @@ class Simulator(BaseSimulator):
 		if (not waveformFilePath.exists()):							raise SimulatorException("Waveform file not found.") from FileNotFoundError(str(waveformFilePath))
 		
 		gtkwBinaryPath =		self.Host.Directories["GTKWBinary"]
-		gtkwVersion =				self.Host.PoCConfig['GTKWave']['Version']
+		gtkwVersion =				self.Host.PoCConfig['INSTALL.GTKWave']['Version']
 		gtkw = GTKWave(self.Host.Platform, gtkwBinaryPath, gtkwVersion)
 		gtkw.Parameters[gtkw.SwitchDumpFile] = str(waveformFilePath)
 
