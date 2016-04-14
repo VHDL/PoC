@@ -66,7 +66,7 @@ class Compiler(BaseCompiler):
 		# self._device =			board.Device
 
 		# setup all needed paths to execute fuse
-		netlist = entity.QuartusNetlist
+		netlist = entity.LatticeNetlist
 		self._PrepareCompilerEnvironment(board.Device)
 		self._WriteSpecialSectionIntoConfig(board.Device)
 
@@ -77,7 +77,7 @@ class Compiler(BaseCompiler):
 
 		self._LogQuiet("IP-core: {0!s}".format(netlist.Parent))
 
-		netlist.QsfFile = self._tempPath / (netlist.ModuleName + ".prj")
+		netlist.PrjFile = self._tempPath / (netlist.ModuleName + ".prj")
 
 		self._WriteQuartusProjectFile(netlist)
 
@@ -104,7 +104,7 @@ class Compiler(BaseCompiler):
 
 
 	def _WriteQuartusProjectFile(self, netlist):
-		argumentFile = SynthesisArgumentFile(netlist.QsfFile)
+		argumentFile = SynthesisArgumentFile(netlist.PrjFile)
 		argumentFile.Architecture =	"\"ECP5UM\""
 		argumentFile.TopLevel =			netlist.ModuleName
 		argumentFile.LogFile =			self._tempPath / (netlist.ModuleName + ".lse.log")
@@ -118,4 +118,4 @@ class Compiler(BaseCompiler):
 		tclShell = self._diamond.GetTclShell()
 
 		# raise NotImplementedError("Next: implement interactive shell")
-		tclShell.Run()
+		# tclShell.Run()
