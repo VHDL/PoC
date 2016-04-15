@@ -4,6 +4,9 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
+# Common PoC packages for configuration, synthesis and simulation
+include				"src/common/common.files"										# load common packages
+
 # PoC.misc.sync
 include				"src/misc/sync/sync_Bits.files"							# Generic 2-FF synchronizer
 vhdl 		poc		"src/misc/sync/sync_Vector.vhdl"						# 

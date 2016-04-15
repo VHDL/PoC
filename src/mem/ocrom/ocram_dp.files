@@ -4,6 +4,9 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
+# Common PoC packages for configuration, synthesis and simulation
+include				"src/common/common.files"										# load common packages
+
 # PoC.mem
 vhdl    poc   "src/mem/mem.pkg.vhdl"              					# Memory package
 
