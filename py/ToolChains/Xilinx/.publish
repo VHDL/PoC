@@ -8,6 +8,8 @@ README.md
 __init__.py
 
 # Modules
+Xilinx.py
+
 ISE.py
 LabTools.py
 

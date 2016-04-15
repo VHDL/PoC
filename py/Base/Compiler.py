@@ -52,7 +52,7 @@ from os import chdir
 # load dependencies
 from Base.Exceptions		import ExceptionBase
 from Base.Logging				import ILogable
-from Base.Project				import ToolChain, Tool, VHDLVersion, Environment
+from Base.Project				import ToolChain, Tool, VHDLVersion, Environment, FileTypes
 from PoC.Project				import Project as PoCProject, FileListFile, RulesFile
 from Parser.RulesParser	import CopyRuleMixIn, ReplaceMixIn
 
@@ -171,14 +171,15 @@ class Compiler(ILogable):
 			self._LogDebug("      {0!s}".format(rule))
 
 	def _RunPreCopy(self, netlist):
-		preCopyRules = self.Host.PoCConfig[netlist._sectionName]['PreCopyRules']
-		if (len(preCopyRules) != 0):
-			preCopyTasks = self._ParseCopyRules(preCopyRules)
+		rulesFiles = [file for file in self.PoCProject.Files(fileType=FileTypes.RulesFile)]		# FIXME: get rulefile from netlist object as a rulefile object instead of a path
+		if (rulesFiles):
+			preCopyTasks = [CopyTask(rule.SourcePath, rule.DestinationPath) for rule in rulesFiles[0].PreProcessRules if isinstance(rule, CopyRuleMixIn)]
 		else:
-			preCopyTasks = []
-
-		# get more tasks from rules files
-		# preCopyTasks += self.Host.PoCProject
+			preCopyRules = self.Host.PoCConfig[netlist._sectionName]['PreCopyRules']
+			if (len(preCopyRules) != 0):
+				preCopyTasks = self._ParseCopyRules(preCopyRules)
+			else:
+				preCopyTasks = []
 
 		self._LogNormal('  copy further input files into temporary directory...')
 		self._ExecuteCopyTasks(preCopyTasks, "pre")

@@ -8,7 +8,12 @@ README.md
 __init__.py
 
 # 
-Parser.py
 CodeDOM.py
 FilesCodeDOM.py
 FilesParser.py
+
+RulesCodeDOM.py
+RulesParser.py
+
+# VHDLCodeDOM.py
+# VHDLParser.py

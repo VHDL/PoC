@@ -10,4 +10,5 @@ __init__.py
 # Modules
 Diamond.py
 ActiveHDL.py
+Lattice.py
 Synopsys.py

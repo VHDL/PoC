@@ -60,20 +60,20 @@ class Configuration(BaseConfiguration):
 	__LongName =	"Mentor QuestaSim"
 	__privateConfiguration = {
 		"Windows": {
-			"Mentor": {
+			"INSTALL.Mentor": {
 				"InstallationDirectory":	"C:/Mentor"
 			},
-			"Mentor.QuestaSim": {
+			"INSTALL.Mentor.QuestaSim": {
 				"Version":								"10.4c",
 				"InstallationDirectory":	"${Mentor:InstallationDirectory}/QuestaSim/${Version}",
 				"BinaryDirectory":				"${InstallationDirectory}/win64"
 			}
 		},
 		"Linux": {
-			"Mentor": {
+			"INSTALL.Mentor": {
 				"InstallationDirectory":	"/opt/QuestaSim"
 			},
-			"Mentor.QuestaSim": {
+			"INSTALL.Mentor.QuestaSim": {
 				"Version":								"10.4c",
 				"InstallationDirectory":	"${Mentor:InstallationDirectory}/${Version}",
 				"BinaryDirectory":				"${InstallationDirectory}/bin"
