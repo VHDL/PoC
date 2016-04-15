@@ -44,7 +44,7 @@ else:
 from Base.Exceptions					import NotConfiguredException, PlatformNotSupportedException
 from Base.Project							import VHDLVersion, Environment, ToolChain, Tool
 from Base.Compiler						import Compiler as BaseCompiler, CompilerException
-from ToolChains.Altera.QuartusII	import QuartusII, QuartusProject, QuartusProjectFile
+from ToolChains.Altera.QuartusII	import QuartusII, QuartusSettingsFile, QuartusProjectFile
 
 
 class Compiler(BaseCompiler):
@@ -107,7 +107,7 @@ class Compiler(BaseCompiler):
 	def _WriteQuartusProjectFile(self, netlist):
 		quartusProjectFile = QuartusProjectFile(netlist.QsfFile)
 
-		quartusProject = QuartusProject(netlist.ModuleName, quartusProjectFile)
+		quartusProject = QuartusSettingsFile(netlist.ModuleName, quartusProjectFile)
 		quartusProject.GlobalAssignments['FAMILY'] =							"\"Stratix IV\""
 		quartusProject.GlobalAssignments['DEVICE'] =							"EP4SGX230KF40C2"
 		quartusProject.GlobalAssignments['TOP_LEVEL_ENTITY'] =		netlist.ModuleName

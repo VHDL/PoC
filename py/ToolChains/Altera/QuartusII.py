@@ -47,9 +47,9 @@ from collections									import OrderedDict
 from pathlib											import Path
 
 from Base.Executable							import Executable, ExecutableArgument, CommandLineArgumentList, ShortValuedFlagArgument, LongValuedFlagArgument, \
-	StringArgument
+	StringArgument, ShortFlagArgument
 from Base.Configuration						import Configuration as BaseConfiguration, ConfigurationException
-from Base.Project									import Project as BaseProject, ProjectFile, FileTypes
+from Base.Project									import Project as BaseProject, ProjectFile, FileTypes, SettingsFile
 from Base.ToolChain								import ToolChainException
 
 
@@ -180,6 +180,9 @@ class QuartusII(QuartusIIMixIn):
 	def GetMap(self):
 		return Map(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
 
+	def GetTclShell(self):
+		return TclShell(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+
 
 class Map(Executable, QuartusIIMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
@@ -262,6 +265,28 @@ class Map(Executable, QuartusIIMixIn):
 			if self._hasOutput:
 				self._LogNormal("    " + ("-" * 76))
 
+class TclShell(Executable, QuartusIIMixIn):
+	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
+		QuartusIIMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+
+		if (platform == "Windows") :			executablePath = binaryDirectoryPath / "quartus_sh.exe"
+		elif (platform == "Linux") :			executablePath = binaryDirectoryPath / "quartus_sh"
+		else :														raise PlatformNotSupportedException(platform)
+		Executable.__init__(self, platform, executablePath, logger=logger)
+
+		self.Parameters[self.Executable] = executablePath
+
+	class Executable(metaclass=ExecutableArgument):
+		pass
+
+	class SwitchShell(metaclass=ShortFlagArgument):
+		_name = "s"
+
+	Parameters = CommandLineArgumentList(
+			Executable,
+			SwitchShell
+	)
+
 def MapFilter(gen):
 	iterator = iter(gen)
 
@@ -285,10 +310,40 @@ def MapFilter(gen):
 			yield LogEntry(line, Severity.Normal)
 
 class QuartusProject(BaseProject):
-	def __init__(self, name, projectFile=None):
+	def __init__(self, host, name, projectFile=None):
 		super().__init__(name)
 
-		self._projectFile =		projectFile
+		self._host =				host
+		self._projectFile =	projectFile
+
+	def Save(self):
+		pass
+
+	def Read(self):
+		tclShell = self._host._quartus.GetTclShell()
+		tclShell.StartProcess(["-s"])
+		tclShell.SendBoundary()
+		tclShell.ReadUntilBoundary()
+
+		tclShell.Send("help")
+		tclShell.SendBoundary()
+		tclShell.ReadUntilBoundary()
+
+		tclShell.Send("exit")
+		tclShell.ReadUntilBoundary()
+
+	def Open(self):
+		pass
+
+	def Close(self):
+		pass
+
+
+class QuartusSettingsFile(SettingsFile):
+	def __init__(self, name, settingsFile=None):
+		super().__init__(name)
+
+		self._projectFile =		settingsFile
 
 		self._globalAssignments =				OrderedDict()
 		self._globalAssignmentsProxy =	GlobalAssignmentProxy(self)
