@@ -120,12 +120,12 @@ class Namespace(PathElement):
 				# print("loading namespace: {0}".format(optionName))
 				section = self._configSection + "." + optionName
 				ns = Namespace(host=self._host, name=optionName, configSection=section, parent=self)
-				self.__namespaces[optionName] = ns
+				self.__namespaces[optionName.lower()] = ns
 			elif (type == "Entity"):
 				# print("loading entity: {0}".format(optionName))
 				section = self._configSection.replace("PoC", "IP") + "." + optionName
 				ent = Entity(host=self._host, name=optionName, configSection=section, parent=self)
-				self.__entities[optionName] = ent
+				self.__entities[optionName.lower()] = ent
 
 	@property
 	def Namespaces(self):					return [ns for ns in self.__namespaces.values()]
@@ -142,6 +142,7 @@ class Namespace(PathElement):
 	def GetEntityNames(self):			return self.__entities.keys()
 
 	def __getitem__(self, key):
+		key = key.lower()
 		try:
 			return self.__namespaces[key]
 		except:
