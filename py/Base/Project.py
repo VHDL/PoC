@@ -61,6 +61,8 @@ class FileTypes(Enum):
 	XdcConstraintFile =		22
 	SdcConstraintFile =		25
 	LdcConstraintFile =		26
+	SettingsFile =				30
+	QuartusSettingsFile =	31
 
 	def Extension(self):
 		if   (self == FileTypes.Unknown):							raise CommonException("Unknown file type.")
@@ -76,8 +78,10 @@ class FileTypes(Enum):
 		elif (self == FileTypes.XdcConstraintFile):		return "xdc"
 		elif (self == FileTypes.SdcConstraintFile):		return "sdc"
 		elif (self == FileTypes.LdcConstraintFile):		return "ldc"
+		elif (self == FileTypes.SettingsFile):				raise CommonException("Generic file type.")
+		elif (self == FileTypes.QuartusSettingsFile):	return "qsf"
 		else:																					raise CommonException("This is not an enum member.")
-		
+
 	def __str__(self):
 		return self.name
 
@@ -559,6 +563,12 @@ class ConstraintFile(File):
 
 	def __str__(self):
 		return "Constraint file: '{0!s}".format(self._file)
+
+class SettingsFile(File):
+	_FileType = FileTypes.SettingsFile
+
+	def __str__(self):
+		return "Settings file: '{0!s}".format(self._file)
 
 
 class VHDLSourceFile(SourceFile, VHDLSourceFileMixIn):

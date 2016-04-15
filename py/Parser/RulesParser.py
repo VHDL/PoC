@@ -52,14 +52,14 @@ class CopyRuleMixIn(Rule):
 		return "Copy rule: {0!s} => {1!s}".format(self._source, self._destination)
 
 
-class ReplaceMixIn(Rule):
+class ReplaceRuleMixIn(Rule):
 	def __init__(self, filePath, searchPattern, replacePattern):
 		self._filePath =				filePath
 		self._searchPattern =		searchPattern
 		self._replacePattern =	replacePattern
 
 	@property
-	def File(self):						return self._filePath
+	def FilePath(self):				return self._filePath
 	@property
 	def SearchPattern(self):	return self._searchPattern
 	@property
@@ -71,7 +71,7 @@ class ReplaceMixIn(Rule):
 
 class RulesParserMixIn:
 	_classCopyRule =						CopyRuleMixIn
-	_classReplaceRule =					ReplaceMixIn
+	_classReplaceRule =					ReplaceRuleMixIn
 
 	def __init__(self):
 		self._rootDirectory =			None
@@ -99,12 +99,12 @@ class RulesParserMixIn:
 
 	def _ResolveRule(self, ruleStatement, lst):
 		if isinstance(ruleStatement, CopyStatement):
-			sourceFile =				self._rootDirectory / ruleStatement.SourcePath
-			destinationFile =		self._rootDirectory / ruleStatement.DestinationPath
-			rule =							self._classCopyRule(sourceFile, destinationFile)
+			sourceFile =			ruleStatement.SourcePath
+			destinationFile =	ruleStatement.DestinationPath
+			rule =						self._classCopyRule(sourceFile, destinationFile)
 			lst.append(rule)
 		elif isinstance(ruleStatement, FileStatement):
-			filePath = self._rootDirectory / ruleStatement.FilePath
+			filePath =				ruleStatement.FilePath
 			for replaceRule in ruleStatement.Statements:
 				if isinstance(replaceRule, ReplaceStatement):
 					rule =					self._classReplaceRule(filePath, replaceRule.SearchPattern, replaceRule.ReplacePattern)
