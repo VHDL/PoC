@@ -245,7 +245,7 @@ class Compiler(ILogable):
 			for rule in rulesFiles[0].PreProcessRules:
 				if isinstance(rule, ReplaceRuleMixIn):
 					filePath =			self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.FilePath, {})
-					task = ReplaceTask(Path(filePath), rule.Searchpattern, rule.ReplacePattern)
+					task = ReplaceTask(Path(filePath), rule.SearchPattern, rule.ReplacePattern)
 					preReplaceTasks.append(task)
 		else:
 			preReplaceRules = self.Host.PoCConfig[netlist._sectionName]['PreReplaceRules']

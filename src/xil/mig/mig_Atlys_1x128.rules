@@ -7,7 +7,7 @@
 #	- ${section:option} expressions refer to the section, wherin this rule file was referenced
 #
 PreProcessRules
-	Copy "${SrcDir}/${TopLevel}.prj"																												To "${SPECIAL:OutputDir}/${TopLevel}/user_design/mig.prj"
+	Copy "${SrcDir}/${TopLevel}.prj"																											To "${SPECIAL:OutputDir}/${TopLevel}/user_design/mig.prj"
 End PreProcessRules
 
 PostProcessRules
@@ -18,26 +18,26 @@ PostProcessRules
 	Copy "${SPECIAL:OutputDir}/${TopLevel}/user_design/rtl/mcb_soft_calibration.vhd"			To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/mcb_soft_calibration.vhd"
 	Copy "${SPECIAL:OutputDir}/${TopLevel}/user_design/rtl/memc3_infrastructure.vhd"			To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/memc3_infrastructure.vhd"
 	Copy "${SPECIAL:OutputDir}/${TopLevel}/user_design/rtl/memc3_wrapper.vhd"							To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/memc3_wrapper.vhl"
-	Copy "${SPECIAL:OutputDir}/${TopLevel}/user_design/rtl/${TopLevel}.vhd"							To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}_top.vhd"
-	Copy "${SPECIAL:OutputDir}/${TopLevel}/user_design/par/${TopLevel}.ucf"							To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.ncf"
+	Copy "${SPECIAL:OutputDir}/${TopLevel}/user_design/rtl/${TopLevel}.vhd"								To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}_top.vhd"
+	Copy "${SPECIAL:OutputDir}/${TopLevel}/user_design/par/${TopLevel}.ucf"								To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.ncf"
 
 	File "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}_top.vhd"
-		Replace "(entity ${TopLevel} is\n\s*generic\s+?\()"					With "\1\n    C3_CLKOUT2_DIVIDE : integer := 6; -- fraction of 600 MHz clock => 6 means 100 MHz\n" Options Multiline
+		Replace "(entity ${TopLevel} is\\n\\s*generic\\s+?\\()"					With "\\1\\n    C3_CLKOUT2_DIVIDE : integer := 6; -- fraction of 600 MHz clock => 6 means 100 MHz\\n" Options Multiline
 	End File
 	File "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}_top.vhd"
-		Replace "(constant C3_CLKOUT2_DIVIDE\s+: integer :=)\s\d+;"		With "-- C3_CLKOUT2_DIVIDE is now a generic"
-		Replace "(constant C3_CLKFBOUT_MULT\s+: integer :=)\s\d+;"		With "\1 6; -- for 100 MHz board clock"
+		Replace "(constant C3_CLKOUT2_DIVIDE\\s+: integer :=)\\s\\d+;"	With "-- C3_CLKOUT2_DIVIDE is now a generic"
+		Replace "(constant C3_CLKFBOUT_MULT\\s+: integer :=)\\s\\d+;"		With "\\1 6; -- for 100 MHz board clock"
 	End File
 	File "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/memc3_infrastructure.vhd"
-		Replace "(rst0_sync_r\s+: std_logic.*?);"											With "\1 := (others => '1');"
-		Replace "(powerup_pll_locked\s+: std_logic);"									With "\1 := '0';"
-		Replace "(syn_clk0_powerup_pll_locked\s+: std_logic);"				With "\1 := '0';"
-		Replace "  se_input_clk"																			With "  -- Add option for no clock buffer\n  no_ibufg: if C_INPUT_CLK_TYPE = \"NONE\" generate sys_clk_ibufg <= sys_clk; end generate no_ibufg;\n\n  se_input_clk"
+		Replace "(rst0_sync_r\\s+: std_logic.*?);"											With "\\1 := (others => '1');"
+		Replace "(powerup_pll_locked\\s+: std_logic);"									With "\\1 := '0';"
+		Replace "(syn_clk0_powerup_pll_locked\\s+: std_logic);"					With "\\1 := '0';"
+		Replace "  se_input_clk"																				With "  -- Add option for no clock buffer\\n  no_ibufg: if C_INPUT_CLK_TYPE = \\\"NONE\\\" generate sys_clk_ibufg <= sys_clk; end generate no_ibufg;\\n\\n  se_input_clk"
 	End File
 	File "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.ncf"
-		Replace "(NET.*?SYS_CLK3.*?;)"																With "#\1"
-		Replace "(TIMESPEC.*?SYS_CLK3.*?;)"														With "#\1"
-		# Replace "NET\s+\"c3_sys_.*?;"																	With ""
+		Replace "(NET.*?SYS_CLK3.*?;)"																	With "#\\1"
+		Replace "(TIMESPEC.*?SYS_CLK3.*?;)"															With "#\\1"
+		Replace "NET\\s+\\\"c3_sys_.*?;"																With ""
 	End File
-#					${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.vhd :: "(C3_INPUT_CLK_TYPE\s+: string :=)\s.*?;"		By "\1 "NONE";"
+#					${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.vhd :: "(C3_INPUT_CLK_TYPE\\s+: string :=)\\s.*?;"		By "\\1 "NONE";"
 End PostProcessRules

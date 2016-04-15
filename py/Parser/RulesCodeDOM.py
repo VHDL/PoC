@@ -177,23 +177,25 @@ class ReplaceStatement(Statement):
 		if (token.Value.lower() != "\""):						raise MismatchingParserResult("ReplaceParser: Expected double quote sign before search pattern.")
 		# match for string: searchPattern
 		searchPattern = ""
-		wasEscaped =		False
+		wasEscapeSign =	False
 		while True:
 			token = yield
 			if isinstance(token, CharacterToken):
 				if (token.Value == "\""):
-					if isinstance(token.PreviousToken, CharacterToken):
-						if (token.PreviousToken.Value == "\""):
-							if (wasEscaped == False):
-								wasEscaped = True
-								searchPattern += "\""
-								continue
-			elif isinstance(token, SpaceToken):
-				if isinstance(token.PreviousToken, CharacterToken):
-					if (token.PreviousToken.Value == "\""):
-						if (wasEscaped == False):
-							break
-			wasEscaped =			False
+					if (wasEscapeSign == True):
+						wasEscapeSign =		False
+						searchPattern +=	"\""
+						continue
+					else:
+						break
+				elif (token.Value == "\\"):
+					if (wasEscapeSign == True):
+						wasEscapeSign = False
+						searchPattern += "\""
+						continue
+					else:
+						wasEscapeSign =	True
+						continue
 			searchPattern +=	token.Value
 		# match for whitespace
 		token = yield
@@ -211,9 +213,25 @@ class ReplaceStatement(Statement):
 		if (token.Value.lower() != "\""):            raise MismatchingParserResult("ReplaceParser: Expected double quote sign before replace pattern.")
 		# match for string: replacePattern
 		replacePattern = ""
+		wasEscapeSign = False
 		while True:
 			token = yield
-			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break  # TODO: allow escape sequences
+			if isinstance(token, CharacterToken):
+				if (token.Value == "\""):
+					if (wasEscapeSign == True):
+						wasEscapeSign = False
+						replacePattern += "\""
+						continue
+					else:
+						break
+				elif (token.Value == "\\"):
+					if (wasEscapeSign == True):
+						wasEscapeSign = False
+						replacePattern += "\\"
+						continue
+					else:
+						wasEscapeSign = True
+						continue
 			replacePattern += token.Value
 		# match for optional whitespace
 		token = yield
