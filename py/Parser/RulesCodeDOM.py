@@ -177,10 +177,24 @@ class ReplaceStatement(Statement):
 		if (token.Value.lower() != "\""):						raise MismatchingParserResult("ReplaceParser: Expected double quote sign before search pattern.")
 		# match for string: searchPattern
 		searchPattern = ""
+		wasEscaped =		False
 		while True:
 			token = yield
-			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break		# TODO: allow escape sequences
-			searchPattern += token.Value
+			if isinstance(token, CharacterToken):
+				if (token.Value == "\""):
+					if isinstance(token.PreviousToken, CharacterToken):
+						if (token.PreviousToken.Value == "\""):
+							if (wasEscaped == False):
+								wasEscaped = True
+								searchPattern += "\""
+								continue
+			elif isinstance(token, SpaceToken):
+				if isinstance(token.PreviousToken, CharacterToken):
+					if (token.PreviousToken.Value == "\""):
+						if (wasEscaped == False):
+							break
+			wasEscaped =			False
+			searchPattern +=	token.Value
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):      raise MismatchingParserResult("ReplaceParser: Expected whitespace before WITH keyword.")
@@ -251,7 +265,7 @@ class ReplaceStatement(Statement):
 		# construct result
 		result = cls(searchPattern, replacePattern, caseInsensitive, multiLine, dotAll, commentText)
 		raise MatchingParserResult(result)
-		
+
 	def __str__(self, indent=0):
 		return "{0}Replace {1} by {2}".format("  " * indent, self._searchPattern, self._replacePattern)
 
@@ -261,7 +275,7 @@ class ReplaceStatement(Statement):
 class FileStatement(BlockStatement):
 	def __init__(self, file, commentText):
 		super().__init__()
-		self._filePath =		Path(file)
+		self._filePath =		file
 		self._commentText =	commentText
 
 	@property
