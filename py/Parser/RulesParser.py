@@ -82,7 +82,7 @@ class RulesParserMixIn:
 
 	def _Parse(self):
 		self._ReadContent()
-		self._document = Document.parse(self._content, printChar=not True)
+		self._document = Document.parse(self._content, printChar=True)
 		# print(Fore.LIGHTBLACK_EX + str(self._document) + Fore.RESET)
 		
 	def _Resolve(self):
