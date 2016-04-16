@@ -83,17 +83,16 @@ class Simulator(BaseSimulator):
 		self._LogVerbose("  Preparing Active-HDL simulator.")
 		self._activeHDL =		ActiveHDL(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
-	def Run(self, entity, board, vhdlVersion="93", vhdlGenerics=None, guiMode=False):
-		self._entity =				entity
-		self._testbenchFQN =	str(entity)											# TODO: implement FQN method on PoCEntity
+	def Run(self, testbench, board, vhdlVersion="93", vhdlGenerics=None, guiMode=False):
+		# self._entity =				entity
+		# self._testbenchFQN =	str(entity)											# TODO: implement FQN method on PoCEntity
 		self._vhdlVersion =		vhdlVersion
 		self._vhdlGenerics =	vhdlGenerics
 
 		# check testbench database for the given testbench		
-		self._LogQuiet("Testbench: {YELLOW}{0}{RESET}".format(self._testbenchFQN, **Init.Foreground))
+		self._LogQuiet("Testbench: {YELLOW}{0!s}{RESET}".format(testbench.Parent, **Init.Foreground))
 
 		# setup all needed paths to execute fuse
-		testbench = entity.VHDLTestbench
 		self._CreatePoCProject(testbench, board)
 		self._AddFileListFile(testbench.FilesFile)
 		

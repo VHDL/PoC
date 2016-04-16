@@ -86,7 +86,7 @@ class PathElement:
 		self.__name =					name
 		self._host =					host
 		self._configSection = configSection
-		self.__parent =				parent
+		self._parent =				parent
 
 	@property
 	def Name(self):
@@ -94,7 +94,7 @@ class PathElement:
 
 	@property
 	def Parent(self):
-		return self.__parent
+		return self._parent
 
 	def __str__(self):
 		return self.__name
@@ -149,7 +149,6 @@ class Namespace(PathElement):
 			pass
 		return self.__entities[key]
 
-
 	def pprint(self, indent=0):
 		__indent = "  " * indent
 		buffer = "{0}{1}\n".format(__indent, self.Name)
@@ -170,7 +169,54 @@ class Root(Namespace):
 		return self.__POCRoot_Name
 
 class WildCard(PathElement):
-	pass
+	def __init__(self, host, name, configSection, parent):
+		super().__init__(host, name, configSection, parent)
+
+	def GetEntities(self):
+		for entity in self._parent.Entities:
+			print(entity)
+
+	def GetVHDLTestbenches(self):
+		for entity in self._parent.Entities:
+			try:
+				tb = entity.VHDLTestbench
+				yield tb
+			except:
+				pass
+
+	@property
+	def VHDLTestbenches(self):
+		return [tb for tb in self.GetVHDLTestbenches()]
+
+	@property
+	def CocoTestbench(self):
+		if (len(self._cocotb) == 0):
+			raise NotConfiguredException("No Cocotb testbench configured for '{0!s}'.".format(self))
+		return self._cocotb[0]
+
+	@property
+	def LatticeNetlist(self):
+		if (len(self._latticeNetlist) == 0):
+			raise NotConfiguredException("No Lattice netlist configured for '{0!s}'.".format(self))
+		return self._latticeNetlist[0]
+
+	@property
+	def QuartusNetlist(self):
+		if (len(self._quartusNetlist) == 0):
+			raise NotConfiguredException("No Quartus-II netlist configured for '{0!s}'.".format(self))
+		return self._quartusNetlist[0]
+
+	@property
+	def XstNetlist(self):
+		if (len(self._xstNetlist) == 0):
+			raise NotConfiguredException("No XST netlist configured for '{0!s}'.".format(self))
+		return self._xstNetlist[0]
+
+	@property
+	def CgNetlist(self):
+		if (len(self._cgNetlist) == 0):
+			raise NotConfiguredException("No CoreGen netlist configured for '{0!s}'.".format(self))
+		return self._cgNetlist[0]
 
 class Entity(PathElement):
 	def __init__(self, host, name, configSection, parent):
@@ -564,10 +610,15 @@ class FQN:
 		# check and resolve parts
 		cur = self.__host.Root
 		self.__parts.append(cur)
+		last = len(parts) - 1
 		for pos,part in enumerate(parts):
-			pe = cur[part]
-			self.__parts.append(pe)
-			cur = pe
+			if ((pos == last) and ("*" in part)):
+				pe = WildCard(host, part, "----", cur)
+				self.__parts.append(pe)
+			else:
+				pe = cur[part]
+				self.__parts.append(pe)
+				cur = pe
 
 	def Root(self):
 		return self.__host.Root

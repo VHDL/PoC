@@ -32,15 +32,19 @@
 # ==============================================================================
 #
 # entry point
+from PoC.Entity import WildCard
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
 else:
 	from lib.Functions import Exit
+
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Compiler.XSTCompiler")
 
 
 # load dependencies
+from lib.Functions							import Init
 from Base.Exceptions						import NotConfiguredException, PlatformNotSupportedException
 from Base.Project								import VHDLVersion, Environment, ToolChain, Tool
 from Base.Compiler							import Compiler as BaseCompiler, CompilerException
@@ -61,12 +65,26 @@ class Compiler(BaseCompiler):
 		self._LogVerbose("  Preparing Lattice Synthesis Engine (LSE).")
 		self._diamond =		Diamond(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
-	def Run(self, entity, board, **_):
-		# self._entity =			entity 					 # TODO: find usages
-		# self._device =			board.Device
+	def RunAll(self, fqnList, *args, **kwargs):
+		for fqn in fqnList:
+			entity = fqn.Entity
+			if (isinstance(entity, WildCard)):
+				for testbench in entity.GetLSENetlist():
+					try:
+						self.Run(testbench, *args, **kwargs)
+					except CompilerException:
+						pass
+			else:
+				testbench = entity.LSENetlist
+				try:
+					self.Run(testbench, *args, **kwargs)
+				except CompilerException:
+					pass
+
+	def Run(self, netlist, board, **_):
+		self._LogQuiet("IP core: {YELLOW}{0!s}{RESET}".format(netlist.Parent, **Init.Foreground))
 
 		# setup all needed paths to execute fuse
-		netlist = entity.LatticeNetlist
 		self._PrepareCompilerEnvironment(board.Device)
 		self._WriteSpecialSectionIntoConfig(board.Device)
 
@@ -74,8 +92,6 @@ class Compiler(BaseCompiler):
 		self._AddFileListFile(netlist.FilesFile)
 		if (netlist.RulesFile is not None):
 			self._AddRulesFiles(netlist.RulesFile)
-
-		self._LogQuiet("IP-core: {0!s}".format(netlist.Parent))
 
 		netlist.PrjFile = self._tempPath / (netlist.ModuleName + ".prj")
 
