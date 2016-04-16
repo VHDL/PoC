@@ -4,23 +4,8 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
-# Load external vendor libraries
-if (Vendor = "Altera") then
-	if (Tool = "GHDL") then
-		library			altera_mf	"temp/ghdl/altera"							# 
-	elseif (Tool = "Mentor_vSim") then
-		library			altera_mf	"temp/vSim/altera"							# 
-	end if
-end if
-
-include				"tb/common/my_config.files"									# board and device configuration
-include				"src/common/common.files"										# load common packages
-include				"src/sim/sim.files"													# load simulation helper packages
-
-# OCRAM
-vhdl		poc		"src/mem/mem.pkg.vhdl"									# Memory package
-vhdl		poc		"src/mem/ocram/ocram.pkg.vhdl"					# OCRAM package
-vhdl		poc		"src/mem/ocram/ocram_sdp.vhdl"					#	Unit Under Test
+# PoC.mem.ocram
+include				"src/mem/ocram/ocram_sdp.files"					#	Unit Under Test
 
 # Testbench files
 vhdl		test	"tb/mem/ocram/ocram_sdp_tb.vhdl"				# Testbench
