@@ -59,12 +59,12 @@ class GHDLReanalyzeException(GHDLException):
 	pass
 
 class Configuration(BaseConfiguration):
-	_vendor =		None
-	_shortName = "GTKWave"
-	_longName =	"GTKWave"
+	_vendor =			None
+	_shortName =	"GHDL"
+	_longName =		"GHDL"
 	_privateConfiguration = {
 		"Windows": {
-			"GHDL": {
+			"INSTALL.GHDL": {
 				"Version":								"0.34dev",
 				"InstallationDirectory":	None,
 				"BinaryDirectory":				"${InstallationDirectory}/bin",
@@ -72,7 +72,7 @@ class Configuration(BaseConfiguration):
 			}
 		},
 		"Linux": {
-			"GHDL": {
+			"INSTALL.GHDL": {
 				"Version":								"0.34dev",
 				"InstallationDirectory":	None,
 				"BinaryDirectory":				"${InstallationDirectory}",

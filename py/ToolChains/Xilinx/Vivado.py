@@ -63,29 +63,23 @@ class Configuration(BaseConfiguration):
 	_longName =	"Xilinx Vivado"
 	_privateConfiguration = {
 		"Windows": {
-			"Xilinx": {
-				"InstallationDirectory":	"C:/Xilinx"
-			},
-			"Xilinx.Vivado": {
+			"INSTALL.Xilinx.Vivado": {
 				"Version":								"2015.4",
-				"InstallationDirectory":	"${Xilinx:InstallationDirectory}/Vivado/${Version}",
+				"InstallationDirectory":	"${INSTALL.Xilinx:InstallationDirectory}/Vivado/${Version}",
 				"BinaryDirectory":				"${InstallationDirectory}/bin"
 			}
 		},
 		"Linux": {
-			"Xilinx": {
-				"InstallationDirectory":	"/opt/Xilinx"
-			},
-			"Xilinx.Vivado": {
+			"INSTALL.Xilinx.Vivado": {
 				"Version":								"2015.4",
-				"InstallationDirectory":	"${Xilinx:InstallationDirectory}/Vivado/${Version}",
+				"InstallationDirectory":	"${INSTALL.Xilinx:InstallationDirectory}/Vivado/${Version}",
 				"BinaryDirectory":				"${InstallationDirectory}/bin"
 			}
 		}
 	}
 
-	def __init__(self):
-		super().__init__()
+	def __init__(self, host):
+		super().__init__(host)
 
 	def GetSections(self, Platform):
 		pass

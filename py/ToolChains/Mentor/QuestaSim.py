@@ -55,34 +55,28 @@ class QuestaException(ToolChainException):
 	pass
 
 class Configuration(BaseConfiguration):
-	__vendor =		"Mentor"
-	__shortName =	"QuestaSim"
-	__LongName =	"Mentor QuestaSim"
-	__privateConfiguration = {
+	_vendor =			"Mentor"
+	_shortName =	"QuestaSim"
+	_longName =		"Mentor QuestaSim"
+	_privateConfiguration = {
 		"Windows": {
-			"INSTALL.Mentor": {
-				"InstallationDirectory":	"C:/Mentor"
-			},
 			"INSTALL.Mentor.QuestaSim": {
 				"Version":								"10.4c",
-				"InstallationDirectory":	"${Mentor:InstallationDirectory}/QuestaSim/${Version}",
+				"InstallationDirectory":	"${INSTALL.Mentor:InstallationDirectory}/QuestaSim/${Version}",
 				"BinaryDirectory":				"${InstallationDirectory}/win64"
 			}
 		},
 		"Linux": {
-			"INSTALL.Mentor": {
-				"InstallationDirectory":	"/opt/QuestaSim"
-			},
 			"INSTALL.Mentor.QuestaSim": {
 				"Version":								"10.4c",
-				"InstallationDirectory":	"${Mentor:InstallationDirectory}/${Version}",
+				"InstallationDirectory":	"${INSTALL.Mentor:InstallationDirectory}/${Version}",
 				"BinaryDirectory":				"${InstallationDirectory}/bin"
 			}
 		}
 	}
 
 	def IsSupportedPlatform(self, Platform):
-		return (Platform in self.__privateConfiguration)
+		return (Platform in self._privateConfiguration)
 
 	def GetSections(self, Platform):
 		pass

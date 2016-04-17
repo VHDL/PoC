@@ -63,46 +63,83 @@ class Configuration(BaseConfiguration):
 	_longName =	"Xilinx ISE"
 	_privateConfiguration = {
 		"Windows": {
-			"INSTALL.Xilinx": {
-				"InstallationDirectory":	"C:/Xilinx"
-			},
 			"INSTALL.Xilinx.ISE": {
 				"Version":								"14.7",
-				"InstallationDirectory":	"${Xilinx:InstallationDirectory}/${Version}/ISE_DS",
+				"InstallationDirectory":	"${INSTALL.Xilinx:InstallationDirectory}/${Version}/ISE_DS",
 				"BinaryDirectory":				"${InstallationDirectory}/ISE/bin/nt64"
 			}
 		},
 		"Linux": {
-			"INSTALL.Xilinx": {
-				"InstallationDirectory":	"/opt/Xilinx"
-			},
 			"INSTALL.Xilinx.ISE": {
 				"Version":								"14.7",
-				"InstallationDirectory":	"${Xilinx:InstallationDirectory}/${Version}/ISE_DS",
+				"InstallationDirectory":	"${INSTALL.Xilinx:InstallationDirectory}/${Version}/ISE_DS",
 				"BinaryDirectory":				"${InstallationDirectory}/ISE/bin/lin64"
 			}
 		}
 	}
 
-	def __init__(self):
-		super().__init__()
+	def __init__(self, host):
+		super().__init__(host)
 
 	def GetSections(self, Platform):
 		pass
 
 	def ConfigureForWindows(self):
-		xilinxDirectory = self.__GetXilinxPath()
-		if (xilinxDirectory is None):
-			xilinxDirectory = self.__AskXilinxPath()
-		if (not xilinxDirectory.exists()):		raise ConfigurationException("Xilinx installation directory '{0}' does not exist.".format(xilinxDirectory))	from NotADirectoryError(xilinxDirectory)
-
+		xilinxPath = self.__GetXilinxPath()
+		if (xilinxPath is not None):
+			print("Found a Xilinx installation directory.")
+			xilinxPath = self.__ConfirmXilinxPath(xilinxPath)
+			if (xilinxPath is None):
+				xilinxPath = self.__AskXilinxPath()
+		else:
+			if (not self.__AskXilinx()):
+				self.__ClearXilinxSections()
+			else:
+				xilinxPath = self.__AskXilinxPath()
+		if (not xilinxPath.exists()):		raise ConfigurationException("Xilinx installation directory '{0}' does not exist.".format(xilinxPath))	from NotADirectoryError(xilinxPath)
+		self.__WriteXilinxSection(xilinxPath)
 
 	def __GetXilinxPath(self):
 		xilinx = environ.get('XILINX')
-		if (xilinx is None):
+		if (xilinx is not None):
+			return Path(xilinx).parent.parent.parent
+
+		if (self._host.Platform == "Linux"):
+			p = Path("/opt/xilinx")
+			if (p.exists()):		return p
+			p = Path("/opt/Xilinx")
+			if (p.exists()):		return p
+		elif (self._host.Platform == "Windows"):
+			for drive in "CDEFGH":
+				p = Path("{0}:\Xilinx")
+				if (p.exists()):	return p
+		return None
+
+	def __AskXilinx(self):
+		isXilinx = input('Are Xilinx products installed on your system? [Y/n/p]: ')
+		isXilinx = isXilinx if isXilinx != "" else "Y"
+		if (isXilinx in ['p', 'P']):		raise SkipConfigurationException()
+		elif (isXilinx in ['n', 'N']):	return False
+		elif (isXilinx in ['y', 'Y']):	return True
+		else:														raise ConfigurationException("Unsupported choice '{0}'".format(isXilinx))
+
+	def __AskXilinxISE(self):
+		# Ask for installed Xilinx ISE
+		isXilinxISE = input('Is Xilinx ISE installed on your system? [Y/n/p]: ')
+		isXilinxISE = isXilinxISE if isXilinxISE != "" else "Y"
+		if (isXilinxISE in ['p', 'P']):
+			raise SkipConfigurationException()
+		elif (isXilinxISE in ['n', 'N']):
 			return None
+		elif (isXilinxISE in ['y', 'Y']):
+			default = Path(self._privateConfiguration[self._host.Platform]['INSTALL.Xilinx']['InstallationDirectory'])
+			xilinxDirectory = input('Xilinx installation directory [{0}]: '.format(str(default)))
+			if (xilinxDirectory != ""):
+				return Path(xilinxDirectory)
+			else:
+				return default
 		else:
-			return Path(xilinx)
+			raise ConfigurationException("Unsupported choice '{0}'".format(isXilinxISE))
 
 	def __AskXilinxPath(self):
 		# Ask for installed Xilinx ISE
@@ -113,7 +150,7 @@ class Configuration(BaseConfiguration):
 		elif (isXilinxISE in ['n', 'N']):
 			return None
 		elif (isXilinxISE in ['y', 'Y']):
-			default = Path(self._privateConfiguration['Windows']['Xilinx']['InstallationDirectory'])
+			default = Path(self._privateConfiguration[self._host.Platform]['INSTALL.Xilinx']['InstallationDirectory'])
 			xilinxDirectory = input('Xilinx installation directory [{0}]: '.format(str(default)))
 			if (xilinxDirectory != ""):
 				return Path(xilinxDirectory)
@@ -121,6 +158,21 @@ class Configuration(BaseConfiguration):
 				return default
 		else:
 			raise ConfigurationException("Unsupported choice '{0}'".format(isXilinxISE))
+
+	def __ConfirmXilinxPath(self, xilinxPath):
+		# Ask for installed Xilinx ISE
+		isXilinxPath = input("Is your Xilinx software installed in '{0!s}'? [Y/n]: ".format(xilinxPath))
+		isXilinxPath = isXilinxPath if isXilinxPath != "" else "Y"
+		if (isXilinxPath in ['n', 'N']):
+			return None
+		elif (isXilinxPath in ['y', 'Y']):
+			return xilinxPath
+
+	def __ClearXilinxSections(self):
+		self._host.PocConfig['INSTALL.Xilinx'] = OrderedDict()
+
+	def __WriteXilinxSection(self, xilinxPath):
+		self._host.PocConfig['INSTALL.Xilinx']['InstallationDirectory'] = xilinxPath.as_posix()
 
 	def ManualConfigureForWindows(self):
 		# Ask for installed Xilinx ISE

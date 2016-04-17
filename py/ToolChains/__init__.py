@@ -45,11 +45,13 @@ from .GTKWave						import Configuration as GTKW_Configuration
 from .Lattice.Lattice		import Configuration as Diamond_Configuration
 from .Mentor.QuestaSim	import Configuration as Questa_Configuration
 from .PoC								import Configuration as PoC_Configuration
+from .Xilinx.Xilinx			import Configuration as Xilinx_Configuration
 from .Xilinx.ISE				import Configuration as ISE_Configuration
 from .Xilinx.Vivado			import Configuration as Vivado_Configuration
 
 Configurations = [
 	PoC_Configuration,
+	Xilinx_Configuration,
 	ISE_Configuration,
 	Vivado_Configuration,
 	Quartus_Configuration,
