@@ -32,9 +32,6 @@
 # ==============================================================================
 #
 # entry point
-from Base.Exceptions import PlatformNotSupportedException
-from Base.Logging import Severity, LogEntry
-
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -46,17 +43,24 @@ else:
 from collections									import OrderedDict
 from pathlib											import Path
 
-from Base.Executable							import Executable, ExecutableArgument, CommandLineArgumentList, ShortValuedFlagArgument, LongValuedFlagArgument, \
-	StringArgument, ShortFlagArgument
+from Base.Exceptions import PlatformNotSupportedException
+from Base.Logging import Severity, LogEntry
 from Base.Configuration						import Configuration as BaseConfiguration, ConfigurationException
 from Base.Project									import Project as BaseProject, ProjectFile, FileTypes, SettingsFile
-from Base.ToolChain								import ToolChainException
+from Base.Executable							import Executable, ExecutableArgument, CommandLineArgumentList, ShortValuedFlagArgument, LongValuedFlagArgument, \
+	StringArgument, ShortFlagArgument
+from ToolChains.Altera.Altera import AlteraException
 
 
-class QuartusIIException(ToolChainException):
+class QuartusIIException(AlteraException):
 	pass
 
 class Configuration(BaseConfiguration):
+
+
+	def __init__(self, host):
+		super().__init__(host)
+
 	def manualConfigureForWindows(self) :
 		# Ask for installed Altera Quartus-II
 		isAlteraQuartusII = input('Is Altera Quartus-II installed on your system? [Y/n/p]: ')

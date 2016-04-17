@@ -40,18 +40,18 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Mentor.QuestaSim")
 
 
-from collections				import OrderedDict
-from pathlib						import Path
+from collections								import OrderedDict
+from pathlib										import Path
 
-from Base.Exceptions		import PlatformNotSupportedException
-from Base.Logging				import LogEntry, Severity
-from Base.Configuration import Configuration as BaseConfiguration, ConfigurationException
-from Base.Executable		import Executable
-from Base.Executable		import ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument, CommandLineArgumentList
-from Base.ToolChain			import ToolChainException
+from Base.Exceptions						import PlatformNotSupportedException
+from Base.Logging								import LogEntry, Severity
+from Base.Configuration 				import Configuration as BaseConfiguration, ConfigurationException
+from Base.Executable						import Executable
+from Base.Executable						import ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument, CommandLineArgumentList
+from ToolChains.Mentor.Mentor		import MentorException
 
 
-class QuestaException(ToolChainException):
+class QuestaException(MentorException):
 	pass
 
 class Configuration(BaseConfiguration):
@@ -74,6 +74,9 @@ class Configuration(BaseConfiguration):
 			}
 		}
 	}
+
+	def __init__(self, host):
+		super().__init__(host)
 
 	def IsSupportedPlatform(self, Platform):
 		return (Platform in self._privateConfiguration)

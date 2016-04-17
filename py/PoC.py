@@ -47,7 +47,7 @@ from lib.ConfigParser					import ExtendedConfigParser
 from lib.Parser								import ParserException
 from Base.Exceptions					import ExceptionBase, CommonException, PlatformNotSupportedException, EnvironmentException, NotConfiguredException
 from Base.Logging							import ILogable, Logger, Severity
-from Base.Configuration				import ConfigurationException
+from Base.Configuration				import ConfigurationException, SkipConfigurationException
 from Base.Project							import VHDLVersion
 from Base.ToolChain						import ToolChainException
 from Base.Simulator						import SimulatorException
@@ -357,7 +357,7 @@ class PoC(ILogable, ArgParseMixin):
 
 	def _InitializeConfiguration(self):
 		# create parser instance
-		self._LogVerbose("  Generating an empty PoC configuration...")
+		self._LogWarning("No private configuration found. Generating an empty PoC configuration...")
 		# self.__pocConfig = ExtendedConfigParser()
 		# self.__pocConfig.optionxform = str
 
@@ -375,15 +375,17 @@ class PoC(ILogable, ArgParseMixin):
 	def _manualConfigurationForWindows(self):
 		for config in Configurations:
 			configurator = config(self)
-			self._LogNormal("Configure {0!s}".format(configurator.Name))
+			self._LogNormal("{CYAN}Configuring {0!s}{RESET}".format(configurator.Name, **Init.Foreground))
 
 			nxt = False
 			while (nxt == False):
 				try:
 					configurator.ConfigureForWindows()
 					nxt = True
+				except SkipConfigurationException:
+					break
 				except ExceptionBase as ex:
-					print("FAULT: {0}".format(ex.message))
+					print("  {RED}FAULT:{RESET} {0}".format(ex.message, **Init.Foreground))
 			# end while
 
 	def _manualConfigurationForLinux(self):
