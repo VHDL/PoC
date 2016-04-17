@@ -33,6 +33,7 @@
 # ==============================================================================
 
 from argparse									import RawDescriptionHelpFormatter
+from collections import OrderedDict
 from configparser							import Error as ConfigParser_Error, DuplicateOptionError
 from os												import environ
 from pathlib									import Path
@@ -164,7 +165,6 @@ class PoC(ILogable, ArgParseMixin):
 	def _CheckEnvironment(self):
 		if (self.Platform not in ["Windows", "Linux"]):    raise PlatformNotSupportedException(self.Platform)
 		if (environ.get('PoCRootDirectory') is None):      raise EnvironmentException("Shell environment does not provide 'PoCRootDirectory' variable.")
-		# if (environ.get('PoCScriptDirectory') is None):		raise EnvironmentException("Shell environment does not provide 'PoCScriptDirectory' variable.")
 
 	# read PoC configuration
 	# ============================================================================
@@ -331,8 +331,12 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandAttribute("configure", help="Configure vendor tools for PoC.")
 	# @HandleVerbosityOptions
 	def HandleManualConfiguration(self, _):
-		self.__Prepare()
 		self.PrintHeadline()
+		try:
+			self.__ReadPoCConfiguration()
+			self.__UpdateConfiguration()
+		except NotConfiguredException:
+			self._InitializeConfiguration()
 
 		self._LogVerbose("starting manual configuration...")
 		print('Explanation of abbreviations:')
@@ -351,10 +355,27 @@ class PoC(ILogable, ArgParseMixin):
 		# re-read configuration
 		self.__ReadPoCConfiguration()
 
+	def _InitializeConfiguration(self):
+		# create parser instance
+		self._LogVerbose("  Generating an empty PoC configuration...")
+		# self.__pocConfig = ExtendedConfigParser()
+		# self.__pocConfig.optionxform = str
+
+		for config in Configurations:
+			if ("ALL" in config._privateConfiguration):
+				for sectionName in config._privateConfiguration['ALL']:
+					self.__pocConfig[sectionName] = OrderedDict()
+			if (self.Platform in config._privateConfiguration):
+				for sectionName in config._privateConfiguration[self.Platform]:
+					self.__pocConfig[sectionName] = OrderedDict()
+
+	def __UpdateConfiguration(self):
+		pass
+
 	def _manualConfigurationForWindows(self):
-		for conf in Configurations:
-			configurator = conf()
-			self._LogNormal("Configure {0} - {1}".format(configurator.Name, conf))
+		for config in Configurations:
+			configurator = config(self)
+			self._LogNormal("Configure {0!s}".format(configurator.Name))
 
 			nxt = False
 			while (nxt == False):
