@@ -101,7 +101,7 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		self._LogNormal("  compiling source files...")
 		
 		prjFilePath = self._tempPath / (testbench.ModuleName + ".prj")
-		self._WriteXilinxProjectFile(prjFilePath, "iSim")
+		self._WriteXilinxProjectFile(prjFilePath, "iSim", self._vhdlVersion)
 
 		# create a VivadoVHDLCompiler instance
 		vhcomp = self._ise.GetVHDLCompiler()
