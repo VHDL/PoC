@@ -4,15 +4,21 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
+# Common PoC packages for configuration, synthesis and simulation
+include				"src/common/common.files"										# load common packages
+
 # PoC.misc.sync
 vhdl		poc		"src/misc/sync/sync.pkg.vhdl"								#
 if (DeviceVendor = "Altera") then
-	# Load external vendor libraries
 	include			"lib/Altera.files"													# Altera primitives
 	vhdl 	poc		"src/misc/sync/sync_Reset_Altera.vhdl"			# 
 elseif (DeviceVendor = "Xilinx") then
-	# Load external vendor libraries
 	include			"lib/Xilinx.files"													# Xilinx primitives
 	vhdl 	poc		"src/misc/sync/sync_Reset_Xilinx.vhdl"			# 
+	if (ToolChain = "Xilinx_ISE") then
+		ucf				"ucf/misc/sync/sync_Reset_Xilinx.ucf"				# 
+	elseif (ToolChain = "Xilinx_Vivado") then
+		xdc				"ucf/misc/sync/sync_Reset_Xilinx.xdc"				# 
+	end if
 end if
 vhdl 		poc		"src/misc/sync/sync_Reset.vhdl"							# 

@@ -4,60 +4,11 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
-# IEEE packages
-#xilinx ieee		"ieee/std_logic_1164.vhd"
-#xilinx ieee		"ieee/std_logic_arith.vhd"
-
-# Xilinx Packages and Primitives
-#xilinx unisim	"unisims/unisim_VCOMP.vhd"
-#xilinx unisim	"unisims/unisim_VPKG.vhd"
-#xilinx work		"unisims/primitive/FD.vhd"
-#xilinx work		"unisims/primitive/BUFG.vhd"
-#xilinx work		"unisims/primitive/BUFR.vhd"
-#xilinx work		"unisims/secureip/GTXE2_CHANNEL.vhd"
-#xilinx work		"simprims/secureip/other/GTXE2_CHANNEL.vhd"
-
 # Common PoC packages for configuration, synthesis and simulation
-include				"tb/common/my_config.files"									# board and device configuration
-include				"src/common/common.files"										# load common packages
-include				"src/sim/sim.files"													# load simulation helper packages
-vhdl		PoC		"src/common/debug.vhdl"											# 
-
-# PoC.xil
-vhdl		PoC		"src/xil/xil.pkg.vhdl"											# 
-
-# PoC.misc.filter
-vhdl		PoC		"src/misc/filter/filter_and.vhdl"						# 
-
-# PoC.misc.sync
-include				"src/misc/sync/sync_Bits.vhdl"							# 
-
-# PoC.io
-vhdl		PoC		"src/io/io.pkg.vhdl"												# 
-vhdl		PoC		"src/io/io_TimingCounter.vhdl"							# 
-vhdl		PoC		"src/io/io_GlitchFilter.vhdl"								# 
+include				"src/common/common.files"								# load common packages
 
 # PoC.sata
-if (DeviceVendor = "Xilinx") then
-	# Load external vendor libraries
-	include			"lib/Xilinx.files"																		# Xilinx primitives
-	
-	if (DeviceGeneration = 7) then
-		vhdl	PoC	"src/sata/xilinx/sata_Transceiver_Series7.pkg.vhdl"		# 
-	end if
-end if
-
-vhdl		PoC		"src/sata/sata.pkg.vhdl"															# 
-vhdl		PoC		"src/sata/sata.dbg.vhdl"															# 
-vhdl		PoC		"src/sata/sata.comp.vhdl"															# 
-vhdl		PoC		"src/sata/xilinx/sata_Transceiver_ClockStable.vhdl"		# 
-
-if (DeviceVendor = "Xilinx") then
-	if (DeviceGeneration = 7) then
-		vhdl	PoC	"src/sata/xilinx/sata_Transceiver_Series7_GTXE2.vhdl"	# 
-	end if
-end if
-vhdl		PoC		"src/sata/sata_TransceiverLayer.vhdl"									# Unit Under Test
+include				"src/sata/sata_TransceiverLayer.files"	# 
 
 # Testbench file(s)
-vhdl		test	"tb/sata/sata_TransceiverLayer_tb.vhdl"								# Testbench
+vhdl		test	"tb/sata/sata_TransceiverLayer_tb.vhdl"	# Testbench

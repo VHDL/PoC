@@ -4,12 +4,15 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
+# Common PoC packages for configuration, synthesis and simulation
+include				"src/common/common.files"										# load common packages
+
 # PoC.misc.sync
 include				"src/misc/sync/sync_Bits.files"							# Generic 2-FF synchronizer
 
 # PoC.io
-vhdl		poc		"src/io/io_TimingCounter.vhdl"							# Timing counter
-vhdl		poc		"src/io/io_GlitchFilter.vhdl"								# Glitch filter
+include				"src/io/io_TimingCounter.files"							# Timing counter
+include				"src/io/io_GlitchFilter.files"							# Glitch filter
 
 # PoC.io.iic
 vhdl		poc		"src/io/iic/iic.pkg.vhdl"										# I2C Package

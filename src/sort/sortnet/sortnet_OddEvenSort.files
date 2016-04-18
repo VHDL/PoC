@@ -5,8 +5,8 @@
 # Note: all files are relative to PoC root directory
 #
 # Common PoC packages for configuration, synthesis and simulation
-include				"tb/common/my_config.files"									# board and device configuration
-include				"src/common/common.files"										# load common packages
+include				"src/common/common.files"												# load common packages
 
 # PoC.sort.sortnet
+vhdl		poc		"src/sort/sortnet/sortnet.pkg.vhdl"							# 
 vhdl		poc		"src/sort/sortnet/sortnet_OddEvenSort.vhdl"			# Top-Level

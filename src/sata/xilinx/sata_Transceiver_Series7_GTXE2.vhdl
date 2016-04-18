@@ -625,11 +625,9 @@ begin
 				if (Reset(i) = '1') then
 					GTX_TX_LineRateSelect			<= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(i));
 					GTX_RX_LineRateSelect			<= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(i));
-				else
-					if (RP_Reconfig(i)	= '1') then
-						GTX_TX_LineRateSelect		<= to_ClockDividerSelection(RP_SATAGeneration(i));
-						GTX_RX_LineRateSelect		<= to_ClockDividerSelection(RP_SATAGeneration(i));
-					end if;
+				elsif (RP_Reconfig(i)	= '1') then
+					GTX_TX_LineRateSelect		<= to_ClockDividerSelection(RP_SATAGeneration(i));
+					GTX_RX_LineRateSelect		<= to_ClockDividerSelection(RP_SATAGeneration(i));
 				end if;
 			end if;
 		end process;

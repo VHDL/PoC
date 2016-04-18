@@ -4,6 +4,9 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
+# Common PoC packages for configuration, synthesis and simulation
+include				"src/common/common.files"										# load common packages
+
 # PoC.io.ddrio
 vhdl		poc		"src/io/ddrio/ddrio.pkg.vhdl"								#
 if (DeviceVendor = "Altera") then
@@ -14,5 +17,7 @@ elseif (DeviceVendor = "Xilinx") then
 	# Load external vendor libraries
 	include			"lib/Xilinx.files"													# Xilinx primitives
 	vhdl	poc		"src/io/ddrio/ddrio_out_xilinx.vhdl"				# 
+else
+	report "Only Altera and Xilinx are supported yet."
 end if
 vhdl 		poc		"src/io/ddrio/ddrio_out.vhdl"								# 

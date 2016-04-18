@@ -14,9 +14,9 @@ PostProcessRules
 	Copy "${SPECIAL:OutputDir}/${TopLevel}.ngc"													To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.ngc"
 	Copy "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}_top.vhd"	To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.vhdl"
 	
-	File "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.vhdl" # 2x d
-		Replace "(architecture arch_mig.* of ${TopLevel} is).*(end architecture arch_mig.*;)"	With "\1\nbegin\n\2" Options DotAll
-		Replace "generic.*port\s+\("	With "port (" Options DotAll
+	File "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.vhdl"
+		Replace "(architecture arch_mig.* of ${TopLevel} is).*(end architecture arch_mig.*;)"	With "\\1\\nbegin\\n\\2" Options DotAll
+		Replace "generic.*port\\s+\\("	With "port (" Options DotAll
 		Replace "DQ_WIDTH"						With "64"
 		Replace "DQS_WIDTH"						With "8"
 		Replace "ROW_WIDTH"						With "14"
