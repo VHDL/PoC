@@ -1,0 +1,13 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# --------------------------------------
+ddrio_in_tb.files
+ddrio_in_tb.vhdl
+ddrio_inout_tb.files
+ddrio_inout_tb.vhdl
+ddrio_out_tb.files
+ddrio_out_tb.vhdl
