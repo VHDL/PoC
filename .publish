@@ -5,10 +5,11 @@
 
 # *.yml files
 .landscape.yml
+.travis.yml
 
 # Documentation files
 AUTHORS.md
-LICENSE
+LICENSE.md
 README.md
 CHANGES.md
 
