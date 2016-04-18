@@ -1,14 +1,14 @@
 # git files
 .gitempty
 
-# Documentation
+# Documentation files
 README.md
 
 # Package
 __init__.py
 
 # Modules
-Diamond.py
 ActiveHDL.py
+Diamond.py
 Lattice.py
 Synopsys.py

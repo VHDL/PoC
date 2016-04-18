@@ -1,7 +1,7 @@
 # git files
 .gitempty
 
-# Documentation
+# Documentation files
 README.md
 
 # Package
@@ -17,6 +17,7 @@ Xilinx/
 
 # Modules
 GHDL.py
+Git.py
 GNU.py
 GTKWave.py
 PoC.py

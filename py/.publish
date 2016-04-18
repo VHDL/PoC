@@ -13,14 +13,15 @@ PoC.py
 
 # Configuration files
 config.board.ini
-config.public.ini
+config.defaults.ini
 config.entity.ini
-config.netlist.ini
-config.testbench.ini
 # DON'T PUBLISH config.private.ini !!!
+config.structure.ini
+
+# Package
+__init__.py
 
 # Packages
-__init__.py
 lib/
 Base/
 PoC/
