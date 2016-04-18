@@ -7,45 +7,45 @@ README.md
 # subnamespace
 
 # Counters
-arith_counter_bcd.files
-arith_counter_bcd.vhdl
-arith_counter_gray.files
-arith_counter_gray.vhdl
-arith_counter_ring.files
-arith_counter_ring.vhdl
-arith_counter_free.files
-arith_counter_free.vhdl
+arith_counter_bcd_tb.files
+arith_counter_bcd_tb.vhdl
+arith_counter_gray_tb.files
+arith_counter_gray_tb.vhdl
+arith_counter_ring_tb.files
+arith_counter_ring_tb.vhdl
+arith_counter_free_tb.files
+arith_counter_free_tb.vhdl
 
 # Converters
-arith_convert_bin2bcd.files
-arith_convert_bin2bcd.vhdl
+arith_convert_bin2bcd_tb.files
+arith_convert_bin2bcd_tb.vhdl
 
 # Logical
-arith_same.files
-arith_same.vhdl
-arith_shifter_barrel.files
-arith_shifter_barrel.vhdl
+arith_same_tb.files
+arith_same_tb.vhdl
+arith_shifter_barrel_tb.files
+arith_shifter_barrel_tb.vhdl
 
 # Prefix Modules
-arith_firstone.files
-arith_firstone.vhdl
-arith_prefix_and.files
-arith_prefix_and.vhdl
-arith_prefix_or.files
-arith_prefix_or.vhdl
+arith_firstone_tb.files
+arith_firstone_tb.vhdl
+arith_prefix_and_tb.files
+arith_prefix_and_tb.vhdl
+arith_prefix_or_tb.files
+arith_prefix_or_tb.vhdl
 
 # Arithmetic
-arith_addw.files
-arith_addw.vhdl
-arith_div.files
-arith_div.vhdl
-# arith_muls_wide.files
-# arith_muls_wide.vhdl
-arith_scaler.files
-arith_scaler.vhdl
-arith_sqrt.files
-arith_sqrt.vhdl
+arith_addw_tb.files
+arith_addw_tb.vhdl
+arith_div_tb.files
+arith_div_tb.vhdl
+# arith_muls_wide_tb.files
+# arith_muls_wide_tb.vhdl
+arith_scaler_tb.files
+arith_scaler_tb.vhdl
+arith_sqrt_tb.files
+arith_sqrt_tb.vhdl
 
 # Random Numbers
-arith_prng.files
-arith_prng.vhdl
+arith_prng_tb.files
+arith_prng_tb.vhdl
