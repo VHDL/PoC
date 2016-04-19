@@ -12,7 +12,7 @@ wrapper.sh
 PoC.py
 
 # Configuration files
-config.board.ini
+config.boards.ini
 config.defaults.ini
 config.entity.ini
 # DON'T PUBLISH config.private.ini !!!

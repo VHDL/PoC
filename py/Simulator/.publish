@@ -8,7 +8,7 @@ README.md
 __init__.py
 
 # Simulators
-AldecSimulator.py
+ActiveHDLSimulator.py
 CocotbSimulator.py
 GHDLSimulator.py
 ISESimulator.py

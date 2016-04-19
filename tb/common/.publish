@@ -5,6 +5,7 @@
 README.md
 
 # PoC.my_config examples
+my_config.files
 my_config_Atlys.vhdl
 my_config_DE0.vhdl
 my_config_DE4.vhdl
