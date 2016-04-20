@@ -264,7 +264,7 @@ class Compiler(ILogable):
 			for rule in rulesFiles[0].PostProcessRules:
 				if isinstance(rule, ReplaceRuleMixIn):
 					filePath = self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.FilePath, {})
-					task = ReplaceTask(Path(filePath), rule.SearchPattern, rule.ReplacePattern)
+					task = ReplaceTask(Path(filePath), rule.SearchPattern, rule.ReplacePattern, rule.RegExpOption_MultiLine, rule.RegExpOption_DotAll, rule.RegExpOption_CaseInsensitive)
 					postReplaceTasks.append(task)
 		else:
 			postReplaceRules = self.Host.PoCConfig[netlist.ConfigSectionName]['PostReplaceRules']
@@ -281,6 +281,7 @@ class Compiler(ILogable):
 		rawList = rawList.split("\n")
 		self._LogDebug("Replacement tasks:\n  " + ("\n  ".join(rawList)))
 
+		# FIXME: Rework inline replace rule syntax.
 		replaceRegExpStr = r"^\s*(?P<Filename>.*?)\s+:"  # Filename
 		replaceRegExpStr += r"(?P<Options>[dim]{0,3}):\s+"  # RegExp options
 		replaceRegExpStr += r"\"(?P<Search>.*?)\"\s+->\s+"  # Search regexp
@@ -293,7 +294,7 @@ class Compiler(ILogable):
 			if (replaceRegExpMatch is not None):
 				replaceTasks.append(ReplaceTask(
 					Path(replaceRegExpMatch.group('Filename')),
-					# replaceRegExpMatch.group('Options'),
+					# replaceRegExpMatch.group('Options'),					# FIXME:
 					replaceRegExpMatch.group('Search'),
 					replaceRegExpMatch.group('Replace')
 				))
@@ -307,9 +308,9 @@ class Compiler(ILogable):
 			self._LogVerbose("    {0}-replace in file '{1!s}': search for '{2}' replace by '{3}'.".format(text, task.FilePath, task.SearchPattern, task.ReplacePattern))
 
 			regExpFlags = 0
-			if task.CaseInsensitive:	regExpFlags |= re.IGNORECASE
-			if task.MultiLine:				regExpFlags |= re.MULTILINE
-			if task.DotAll:						regExpFlags |= re.DOTALL
+			if task.RegExpOption_CaseInsensitive:	regExpFlags |= re.IGNORECASE
+			if task.RegExpOption_MultiLine:				regExpFlags |= re.MULTILINE
+			if task.RegExpOption_DotAll:					regExpFlags |= re.DOTALL
 
 			# compile regexp
 			regExp = re.compile(task.SearchPattern, regExpFlags)
@@ -317,7 +318,9 @@ class Compiler(ILogable):
 			with task.FilePath.open('r') as fileHandle:
 				FileContent = fileHandle.read()
 			# replace
-			NewContent = re.sub(regExp, task.ReplacePattern, FileContent)
+			NewContent,replaceCount = re.subn(regExp, task.ReplacePattern, FileContent)
+			if (replaceCount == 0):
+				self._LogWarning("Search pattern '{0}' not found in file '{1!s}'.".format(task.SearchPattern, task.FilePath))
 			# open file to write the replaced data
 			with task.FilePath.open('w') as fileHandle:
 				fileHandle.write(NewContent)
