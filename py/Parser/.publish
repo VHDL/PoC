@@ -1,14 +1,15 @@
 # git files
 .gitempty
 
-# Documentation
+# Documentation files
 README.md
 
-# 
+# Package
 __init__.py
 
-# 
+# Code Document Object Model
 CodeDOM.py
+
 FilesCodeDOM.py
 FilesParser.py
 

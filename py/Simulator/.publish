@@ -1,10 +1,16 @@
+# git files
+.gitempty
+
+# Documentation files
+README.md
+
 # Package
 __init__.py
 
 # Simulators
-AldecSimulator.py
+ActiveHDLSimulator.py
 CocotbSimulator.py
-ISESimulator.py
 GHDLSimulator.py
+ISESimulator.py
 QuestaSimulator.py
 VivadoSimulator.py

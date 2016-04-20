@@ -1,12 +1,13 @@
 # git files
 .gitempty
 
-# Documentation
+# Documentation files
 README.md
 
 # Package
 __init__.py
 
 # Modules
+Mentor.py
 # PrecisionRTL.py
 QuestaSim.py

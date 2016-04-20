@@ -27,12 +27,21 @@ io.pkg.vhdl
 
 # Entities
 # --------------------------------------
+io_7SegmentMux_BCD.files
 io_7SegmentMux_BCD.vhdl
+io_7SegmentMux_HEX.files
 io_7SegmentMux_HEX.vhdl
+io_Debounce.files
 io_Debounce.vhdl
+io_FanControl.files
 io_FanControl.vhdl
+io_FrequencyCounter.files
 io_FrequencyCounter.vhdl
+io_GlitchFilter.files
 io_GlitchFilter.vhdl
-#io_KeyPadScanner.vhdl
+io_KeyPadScanner.files
+io_KeyPadScanner.vhdl
+io_PulseWidthModulation.files
 io_PulseWidthModulation.vhdl
+io_TimingCounter.files
 io_TimingCounter.vhdl

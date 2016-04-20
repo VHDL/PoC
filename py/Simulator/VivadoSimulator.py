@@ -103,7 +103,7 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		self._LogNormal("  compiling source files...")
 
 		prjFilePath = self._tempPath / (testbench.ModuleName + ".prj")
-		self._WriteXilinxProjectFile(prjFilePath, "xSim")
+		self._WriteXilinxProjectFile(prjFilePath, "xSim", self._vhdlVersion)
 
 		# create a VivadoVHDLCompiler instance
 		xvhcomp = self._vivado.GetVHDLCompiler()
@@ -114,7 +114,7 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		
 		xelabLogFilePath =	self._tempPath / (testbench.ModuleName + ".xelab.log")
 		prjFilePath =				self._tempPath / (testbench.ModuleName + ".prj")
-		self._WriteXilinxProjectFile(prjFilePath, "xSim")
+		self._WriteXilinxProjectFile(prjFilePath, "xSim", self._vhdlVersion)
 
 		# create a VivadoLinker instance
 		xelab = self._vivado.GetElaborator()
