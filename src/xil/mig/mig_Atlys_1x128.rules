@@ -17,7 +17,7 @@ PostProcessRules
 	Copy "${SPECIAL:OutputDir}/${TopLevel}/user_design/rtl/mcb_soft_calibration_top.vhd"	To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/mcb_soft_calibration_top.vhd"
 	Copy "${SPECIAL:OutputDir}/${TopLevel}/user_design/rtl/mcb_soft_calibration.vhd"			To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/mcb_soft_calibration.vhd"
 	Copy "${SPECIAL:OutputDir}/${TopLevel}/user_design/rtl/memc3_infrastructure.vhd"			To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/memc3_infrastructure.vhd"
-	Copy "${SPECIAL:OutputDir}/${TopLevel}/user_design/rtl/memc3_wrapper.vhd"							To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/memc3_wrapper.vhl"
+	Copy "${SPECIAL:OutputDir}/${TopLevel}/user_design/rtl/memc3_wrapper.vhd"							To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/memc3_wrapper.vhd"
 	Copy "${SPECIAL:OutputDir}/${TopLevel}/user_design/rtl/${TopLevel}.vhd"								To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}_top.vhd"
 	Copy "${SPECIAL:OutputDir}/${TopLevel}/user_design/par/${TopLevel}.ucf"								To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.ncf"
 

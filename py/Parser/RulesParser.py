@@ -29,7 +29,7 @@
 # limitations under the License.
 # ==============================================================================
 #
-
+from lib.Functions import Init
 from lib.Parser						import ParserException
 from Parser.RulesCodeDOM	import Document, PreProcessRulesStatement, PostProcessStatement, CopyStatement, ReplaceStatement, FileStatement
 
@@ -92,7 +92,7 @@ class RulesParserMixIn:
 	def _Parse(self):
 		self._ReadContent()
 		self._document = Document.parse(self._content, printChar=not True)
-		# print(Fore.LIGHTBLACK_EX + str(self._document) + Fore.RESET)
+		print("{DARKGRAY}{0!s}{RESET}".format(self._document, **Init.Foreground))
 		
 	def _Resolve(self):
 		# print("Resolving {0}".format(str(self._file)))

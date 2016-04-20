@@ -5,7 +5,7 @@
 # ==============================================================================
 # Authors:					Patrick Lehmann
 # 
-# Python Class:			This PoCXCOCompiler compiles xco IPCores to netlists
+# Python Class:			This XCOCompiler compiles xco IPCores to netlists
 # 
 # Description:
 # ------------------------------------
@@ -39,8 +39,9 @@ if __name__ != "__main__":
 	pass
 else:
 	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Class Compiler(PoCCompiler)")
+	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Compiler.XCOCompiler")
 
+	
 # load dependencies
 import re								# used for output filtering
 import shutil
@@ -62,20 +63,11 @@ class Compiler(BaseCompiler):
 	def __init__(self, host, showLogs, showReport):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
-		self._entity =				None
 		self._device =				None
 		self._tempPath =			None
 		self._outputPath =		None
 		self._ise =						None
-
-		self._PrepareCompilerEnvironment()
-
-	def _PrepareCompilerEnvironment(self):
-		self._LogNormal("preparing synthesis environment...")
-		self._tempPath =		self.Host.Directories["CoreGenTemp"]
-		self._outputPath =	self.Host.Directories["PoCNetList"] / str(self._device)
-		super()._PrepareCompilerEnvironment()
-
+		
 	def PrepareCompiler(self, binaryPath, version):
 		# create the GHDL executable factory
 		self._LogVerbose("  Preparing Xilinx Core Generator Tool (CoreGen).")
@@ -102,25 +94,32 @@ class Compiler(BaseCompiler):
 
 		self._device =				board.Device
 
-		# setup all needed paths to execute fuse
+		# setup all needed paths to execute coregen
+		self._PrepareCompilerEnvironment(board.Device)
+		self._WriteSpecialSectionIntoConfig(board.Device)
 		self._CreatePoCProject(netlist, board)
 		if (netlist.RulesFile is not None):
 			self._AddRulesFiles(netlist.RulesFile)
 
-		self._RunPrepareCompile(netlist)
+		self._LogNormal("  running CoreGen...")
 		self._RunPreCopy(netlist)
 		self._RunPreReplace(netlist)
 		self._RunCompile(netlist)
 		self._RunPostCopy(netlist)
 		self._RunPostReplace(netlist)
 
-	def _RunPrepareCompile(self, netlist):
-		self._LogNormal("  preparing compiler environment for IP-core '{0}' ...".format(netlist.Parent))
+	def _PrepareCompilerEnvironment(self, device):
+		self._LogNormal("preparing synthesis environment...")
+		self._tempPath =		self.Host.Directories["CoreGenTemp"]
+		self._outputPath =	self.Host.Directories["PoCNetList"] / str(device)
+		super()._PrepareCompilerEnvironment()
 
+	def _WriteSpecialSectionIntoConfig(self, device):
 		# add the key Device to section SPECIAL at runtime to change interpolation results
-		self.Host.PoCConfig['SPECIAL'] =							{}
-		self.Host.PoCConfig['SPECIAL']['Device'] =		str(self._device)
-		self.Host.PoCConfig['SPECIAL']['OutputDir'] =	self._tempPath.as_posix()
+		self.Host.PoCConfig['SPECIAL'] = {}
+		self.Host.PoCConfig['SPECIAL']['Device'] =				device.FullName
+		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =	device.Series
+		self.Host.PoCConfig['SPECIAL']['OutputDir']	=			self._tempPath.as_posix()
 
 	def _RunCompile(self, netlist):
 		# read netlist settings from configuration file
