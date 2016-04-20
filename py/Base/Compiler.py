@@ -245,7 +245,7 @@ class Compiler(ILogable):
 			for rule in rulesFiles[0].PreProcessRules:
 				if isinstance(rule, ReplaceRuleMixIn):
 					filePath =			self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.FilePath, {})
-					task = ReplaceTask(Path(filePath), rule.SearchPattern, rule.ReplacePattern)
+					task = ReplaceTask(Path(filePath), rule.SearchPattern, rule.ReplacePattern, rule.RegExpOption_MultiLine, rule.RegExpOption_DotAll, rule.RegExpOption_CaseInsensitive)
 					preReplaceTasks.append(task)
 		else:
 			preReplaceRules = self.Host.PoCConfig[netlist.ConfigSectionName]['PreReplaceRules']
@@ -306,13 +306,11 @@ class Compiler(ILogable):
 			if not task.FilePath.exists(): raise CompilerException("Can not {0}-replace in file '{1!s}'.".format(text, task.FilePath)) from FileNotFoundError(str(task.FilePath))
 			self._LogVerbose("    {0}-replace in file '{1!s}': search for '{2}' replace by '{3}'.".format(text, task.FilePath, task.SearchPattern, task.ReplacePattern))
 
-			# FIXME: current "Search For ... Replace By ...." rules have no regexp options
-			options = "i"
-
 			regExpFlags = 0
-			if ('i' in options):    regExpFlags |= re.IGNORECASE
-			if ('m' in options):    regExpFlags |= re.MULTILINE
-			if ('d' in options):    regExpFlags |= re.DOTALL
+			if task.CaseInsensitive:	regExpFlags |= re.IGNORECASE
+			if task.MultiLine:				regExpFlags |= re.MULTILINE
+			if task.DotAll:						regExpFlags |= re.DOTALL
+
 			# compile regexp
 			regExp = re.compile(task.SearchPattern, regExpFlags)
 			# open file and read all lines
