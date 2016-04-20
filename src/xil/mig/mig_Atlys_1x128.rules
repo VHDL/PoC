@@ -32,12 +32,11 @@ PostProcessRules
 		Replace "(rst0_sync_r\\s+: std_logic.*?);"											With "\\1 := (others => '1');"
 		Replace "(powerup_pll_locked\\s+: std_logic);"									With "\\1 := '0';"
 		Replace "(syn_clk0_powerup_pll_locked\\s+: std_logic);"					With "\\1 := '0';"
-		Replace "  se_input_clk"																				With "  -- Add option for no clock buffer\\n  no_ibufg: if C_INPUT_CLK_TYPE = \\\"NONE\\\" generate sys_clk_ibufg <= sys_clk; end generate no_ibufg;\\n\\n  se_input_clk"
+		Replace "  se_input_clk"																				With "  -- Add option for no clock buffer\\n  no_ibufg: if C_INPUT_CLK_TYPE = \"NONE\" generate sys_clk_ibufg <= sys_clk; end generate no_ibufg;\\n\\n  se_input_clk"
 	End File
 	File "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.ncf"
 		Replace "(NET.*?SYS_CLK3.*?;)"																	With "#\\1"
 		Replace "(TIMESPEC.*?SYS_CLK3.*?;)"															With "#\\1"
 		Replace "NET\\s+\\\"c3_sys_.*?;"																With ""
 	End File
-#					${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.vhd :: "(C3_INPUT_CLK_TYPE\\s+: string :=)\\s.*?;"		By "\\1 "NONE";"
 End PostProcessRules
