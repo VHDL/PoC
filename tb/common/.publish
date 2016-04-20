@@ -5,8 +5,11 @@
 README.md
 
 # PoC.my_config examples
+my_config.files
 my_config_Atlys.vhdl
+my_config_DE0.vhdl
 my_config_DE4.vhdl
+my_config_ECP5Versa.vhdl
 my_config_KC705.vhdl
 my_config_ML505.vhdl
 my_config_ML506.vhdl
@@ -17,6 +20,9 @@ my_config_VC707.vhdl
 my_config_XUPV5.vhdl
 # DON'T PUBLISH my_project.vhdl !
 
+# Python simulation helper packages
+lru_dict.py
+utils.py
 
 # --------------------------------------
 # package / function tests

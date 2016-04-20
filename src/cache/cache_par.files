@@ -4,17 +4,13 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
-# Load external vendor libraries
-if (DeviceVendor = "Xilinx") then
-	include			"lib/Xilinx.files"
-else
-	report "Only Xilinx devices are supported yet."
-end if
+# Common PoC packages for configuration, synthesis and simulation
+include				"src/common/common.files"										# load common packages
 
 # PoC.sort
-vhdl		poc		"src/sort/sort_lru_cache.vhdl"
+include				"src/sort/sort_lru_cache.files"							# 
 
 # PoC.cache
 vhdl		poc		"src/cache/cache_replacement_policy.vhdl"
 vhdl		poc		"src/cache/cache_tagunit_par.vhdl"
-vhdl		poc		"src/cache/cache_par.vhdl"							# Top Level
+vhdl		poc		"src/cache/cache_par.vhdl"									# Top Level

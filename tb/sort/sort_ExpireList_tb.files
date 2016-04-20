@@ -7,11 +7,6 @@
 # Load external vendor libraries
 include				"lib/osvvm.files"														# 
 
-# Common PoC packages for configuration, synthesis and simulation
-include				"tb/common/my_config.files"									# board and device configuration
-include				"src/common/common.files"										# load common packages
-include				"src/sim/sim.files"													# load simulation helper packages
-
 # PoC.sort
 include				"src/sort/sort_ExpireList.files"						# UUT (Unit Under Test)
 

@@ -1,3 +1,9 @@
+# git files
+.gitempty
+
+# Documentation files
+README.md
+
 # Package
 __init__.py
 
@@ -7,6 +13,7 @@ Configuration.py
 Exceptions.py
 Executable.py
 Logging.py
+# Processor.py
 Project.py
 Simulator.py
 Solution.py

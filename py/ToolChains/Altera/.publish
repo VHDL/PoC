@@ -1,12 +1,13 @@
 # git files
 .gitempty
 
-# Documentation
+# Documentation files
 README.md
 
 # Package
 __init__.py
 
 # Modules
-QuartusII.py
+Altera.py
 ModelSim.py
+QuartusII.py

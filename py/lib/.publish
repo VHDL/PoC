@@ -1,8 +1,14 @@
+# git files
+.gitempty
+
+# Documentation files
+README.md
+
 # Package
 __init__.py
 
 # Modules
-Decorator.py
+Decorators.py
 Functions.py
 pyAttribute.py
 ArgParseAttributes.py

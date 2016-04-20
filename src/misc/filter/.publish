@@ -5,6 +5,9 @@
 README.md
 
 # one bit wire filters
-#filter_and.vhdl
-#filter_or.vhdl
-#filter_mean.vhdl
+filter_and.files
+filter_and.vhdl
+filter_or.files
+filter_or.vhdl
+filter_mean.files
+filter_mean.vhdl

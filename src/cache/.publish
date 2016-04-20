@@ -4,4 +4,14 @@
 # Documentation
 README.md
 
+# Package
+cache.pkg.vhdl
+
 # Entities
+cache_replacement_policy.vhdl
+
+cache_tagunit_par.vhdl
+cache_tagunit_seq.vhdl
+
+cache_par.files
+cache_par.vhdl

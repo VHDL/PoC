@@ -1,0 +1,22 @@
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# vim: tabstop=2:shiftwidth=2:noexpandtab
+# kate: tab-width 2; replace-tabs off; indent-width 2;
+# ==============================================================================
+# Note: all files are relative to PoC root directory
+#
+# Common PoC packages for configuration, synthesis and simulation
+include				"src/common/common.files"										# load common packages
+
+# PoC.misc.sync
+include				"src/misc/sync/sync_Bits.files"							# Synchronizer
+
+# PoC.xil
+if (DeviceVendor = "Xilinx") then
+	vhdl	PoC		"src/xil/xil.pkg.vhdl"											# PoC.xil package
+	if (DeviceFamily = "Virtex6") then
+		vhdl	PoC	"src/xil/xil_SystemMonitor_Virtex6.vhdl"		# System Monitor for Virtex-6
+	elseif (DeviceSeries = "Series7") then
+		vhdl	PoC	"src/xil/xil_SystemMonitor_Series7.vhdl"		# System Monitor for 7-Series devices (XADC)
+	end if
+	vhdl	PoC		"src/xil/xil/xil_SystemMonitor.vhdl"				# Top-Level
+end if

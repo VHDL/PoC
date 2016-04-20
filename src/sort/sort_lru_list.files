@@ -4,11 +4,14 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
+# Common PoC packages for configuration, synthesis and simulation
+include				"src/common/common.files"										# load common packages
+
 if (DeviceVendor = "Xilinx") then
-	include			"lib/Xilinx.files"
+	include			"lib/Xilinx.files"													# load Xilinx primitives
 else
 	report "Only Xilinx devices are supported yet."
 end if
 
 # PoC.sort
-vhdl		poc		"src/sort/sort_lru_list.vhdl"			# Top-Level
+vhdl		poc		"src/sort/sort_lru_list.vhdl"								# Top-Level

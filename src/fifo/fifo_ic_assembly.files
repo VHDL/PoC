@@ -4,6 +4,9 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
+# Common PoC packages for configuration, synthesis and simulation
+include				"src/common/common.files"										# load common packages
+
 # PoC.mem.orcram
 include				"src/mem/ocram/ocram_sdp.files"							# Simple dual-port RAM
 
