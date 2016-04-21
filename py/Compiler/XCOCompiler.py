@@ -70,7 +70,7 @@ class Compiler(BaseCompiler):
 		
 	def PrepareCompiler(self, binaryPath, version):
 		# create the GHDL executable factory
-		self._LogVerbose("  Preparing Xilinx Core Generator Tool (CoreGen).")
+		self._LogVerbose("Preparing Xilinx Core Generator Tool (CoreGen).")
 		self._ise = ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):
@@ -126,6 +126,7 @@ class Compiler(BaseCompiler):
 		self.Host.PoCConfig['SPECIAL']['OutputDir']	=			self._tempPath.as_posix()
 
 	def _RunCompile(self, netlist):
+		self._LogVerbose("Patching coregen.cgp and .cgc files...")
 		# read netlist settings from configuration file
 		xcoInputFilePath =		netlist.XcoFile
 		cgcTemplateFilePath =	self.Host.Directories["PoCNetlist"] / "template.cgc"
@@ -188,8 +189,8 @@ class Compiler(BaseCompiler):
 			cgcFileHandle.write(cgContentFileContent)
 
 		# copy xco file into temporary directory
-		self._LogVerbose("  Copy CoreGen xco file to '{0}'.".format(xcoFilePath))
-		self._LogDebug("    cp {0!s} {1!s}".format(xcoInputFilePath, self._tempPath))
+		self._LogVerbose("Copy CoreGen xco file to '{0}'.".format(xcoFilePath))
+		self._LogDebug("cp {0!s} {1!s}".format(xcoInputFilePath, self._tempPath))
 		shutil.copy(str(xcoInputFilePath), str(xcoFilePath), follow_symlinks=True)
 
 		# change working directory to temporary CoreGen path
@@ -198,7 +199,7 @@ class Compiler(BaseCompiler):
 
 		# running CoreGen
 		# ==========================================================================
-		self._LogVerbose("  Executing CoreGen...")
+		self._LogVerbose("Executing CoreGen...")
 		coreGen = self._ise.GetCoreGenerator()
 		coreGen.Parameters[coreGen.SwitchProjectFile] =	"."		# use current directory and the default project name
 		coreGen.Parameters[coreGen.SwitchBatchFile] =		str(xcoFilePath)

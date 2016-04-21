@@ -62,7 +62,7 @@ class Compiler(BaseCompiler):
 
 	def PrepareCompiler(self, binaryPath, version):
 		# create the GHDL executable factory
-		self._LogVerbose("  Preparing Lattice Synthesis Engine (LSE).")
+		self._LogVerbose("Preparing Lattice Synthesis Engine (LSE).")
 		self._diamond =		Diamond(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):
@@ -97,11 +97,14 @@ class Compiler(BaseCompiler):
 
 		self._WriteQuartusProjectFile(netlist)
 
-		self._LogNormal("  running Diamond LSE...")
-		self._RunPrepareCompile(netlist)
+		self._LogNormal("Executing pre-processing tasks...")
 		self._RunPreCopy(netlist)
 		self._RunPreReplace(netlist)
-		self._RunCompile(netlist, board.Device)
+
+		self._LogNormal("Running Lattice Diamond LSE...")
+		self._RunCompile(netlist)
+
+		self._LogNormal("Executing post-processing tasks...")
 		self._RunPostCopy(netlist)
 		self._RunPostReplace(netlist)
 

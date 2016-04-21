@@ -103,24 +103,24 @@ class Compiler(ILogable):
 	def _PrepareCompilerEnvironment(self):
 		# create temporary directory for GHDL if not existent
 		if (not (self._tempPath).exists()):
-			self._LogVerbose("  Creating temporary directory for synthesizer files.")
-			self._LogDebug("    Temporary directory: {0!s}".format(self._tempPath))
+			self._LogVerbose("Creating temporary directory for synthesizer files.")
+			self._LogDebug("Temporary directory: {0!s}".format(self._tempPath))
 			self._tempPath.mkdir(parents=True)
 
 		# change working directory to temporary iSim path
-		self._LogVerbose("  Changing working directory to temporary directory.")
-		self._LogDebug("    cd \"{0!s}\"".format(self._tempPath))
+		self._LogVerbose("Changing working directory to temporary directory.")
+		self._LogDebug("cd \"{0!s}\"".format(self._tempPath))
 		chdir(str(self._tempPath))
 
 		# create output directory for CoreGen if not existent
 		if not (self._outputPath).exists() :
-			self._LogVerbose("  Creating output directory for generated files.")
-			self._LogDebug("    Output directory: {0!s}.".format(self._outputPath))
+			self._LogVerbose("Creating output directory for generated files.")
+			self._LogDebug("Output directory: {0!s}.".format(self._outputPath))
 			self._outputPath.mkdir(parents=True)
 
 	def _CreatePoCProject(self, netlist, board):
 		# create a PoCProject and read all needed files
-		self._LogVerbose("  Create a PoC project '{0}'".format(netlist.ModuleName))
+		self._LogVerbose("Creating a PoC project '{0}'".format(netlist.ModuleName))
 		pocProject = PoCProject(netlist.ModuleName)
 
 		# configure the project
@@ -134,7 +134,7 @@ class Compiler(ILogable):
 		self._pocProject =					pocProject
 
 	def _AddFileListFile(self, fileListFilePath):
-		self._LogVerbose("  Reading filelist '{0!s}'".format(fileListFilePath))
+		self._LogVerbose("Reading filelist '{0!s}'".format(fileListFilePath))
 		# add the *.files file, parse and evaluate it
 		try:
 			fileListFile = self._pocProject.AddFile(FileListFile(fileListFilePath))
@@ -145,15 +145,17 @@ class Compiler(ILogable):
 		except ParserException as ex:
 			raise CompilerException("Error while parsing '{0!s}'.".format(fileListFilePath)) from ex
 
+		self._LogDebug("  " + ("=" * 78))
+		self._LogDebug("  Pretty printing the PoCProject...")
 		self._LogDebug(self._pocProject.pprint(2))
-		self._LogDebug("=" * 160)
+		self._LogDebug("  " + ("=" * 78))
 		if (len(fileListFile.Warnings) > 0):
 			for warn in fileListFile.Warnings:
 				self._LogWarning(warn)
 			raise CompilerException("Found critical warnings while parsing '{0!s}'".format(fileListFilePath))
 
 	def _AddRulesFiles(self, rulesFilePath):
-		self._LogVerbose("  Reading rules from '{0!s}'".format(rulesFilePath))
+		self._LogVerbose("Reading rules from '{0!s}'".format(rulesFilePath))
 		# add the *.rules file, parse and evaluate it
 		try:
 			rulesFile = self._pocProject.AddFile(RulesFile(rulesFilePath))
@@ -161,12 +163,12 @@ class Compiler(ILogable):
 		except ParserException as ex:
 			raise CompilerException("Error while parsing '{0!s}'.".format(rulesFilePath)) from ex
 
-		self._LogDebug("    Pre-process rules:")
+		self._LogDebug("Pre-process rules:")
 		for rule in rulesFile.PreProcessRules:
-			self._LogDebug("      {0!s}".format(rule))
-		self._LogDebug("    Post-process rules:")
+			self._LogDebug("  {0!s}".format(rule))
+		self._LogDebug("Post-process rules:")
 		for rule in rulesFile.PostProcessRules:
-			self._LogDebug("      {0!s}".format(rule))
+			self._LogDebug("  {0!s}".format(rule))
 
 	def _RunPreCopy(self, netlist):
 		self._LogVerbose('  copy further input files into temporary directory...')
@@ -241,7 +243,7 @@ class Compiler(ILogable):
 			if not task.DestinationPath.parent.exists():
 				task.DestinationPath.parent.mkdir(parents=True)
 
-			self._LogDebug("    {0}-copying '{1!s}'.".format(text, task.SourcePath))
+			self._LogDebug("{0}-copying '{1!s}'.".format(text, task.SourcePath))
 			shutil.copy(str(task.SourcePath), str(task.DestinationPath))
 
 	def _RunPreReplace(self, netlist):
@@ -320,7 +322,7 @@ class Compiler(ILogable):
 	def _ExecuteReplaceTasks(self, tasks, text):
 		for task in tasks:
 			if not task.FilePath.exists(): raise CompilerException("Can not {0}-replace in file '{1!s}'.".format(text, task.FilePath)) from FileNotFoundError(str(task.FilePath))
-			self._LogDebug("    {0}-replace in file '{1!s}': search for '{2}' replace by '{3}'.".format(text, task.FilePath, task.SearchPattern, task.ReplacePattern))
+			self._LogDebug("{0}-replace in file '{1!s}': search for '{2}' replace by '{3}'.".format(text, task.FilePath, task.SearchPattern, task.ReplacePattern))
 
 			regExpFlags = 0
 			if task.RegExpOption_CaseInsensitive:	regExpFlags |= re.IGNORECASE
