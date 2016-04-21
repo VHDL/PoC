@@ -266,7 +266,7 @@ class QuestaVHDLCompiler(Executable, QuestaSimMixIn):
 
 	def Compile(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -400,7 +400,7 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 
 	def Simulate(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -471,7 +471,7 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 
 	def CreateLibrary(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)

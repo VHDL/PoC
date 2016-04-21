@@ -101,10 +101,14 @@ class Compiler(BaseCompiler):
 		if (netlist.RulesFile is not None):
 			self._AddRulesFiles(netlist.RulesFile)
 
-		self._LogNormal("  running CoreGen...")
+		self._LogNormal("Executing pre-processing tasks...")
 		self._RunPreCopy(netlist)
 		self._RunPreReplace(netlist)
+
+		self._LogNormal("Running Xilinx Core Generator...")
 		self._RunCompile(netlist)
+
+		self._LogNormal("Executing post-processing tasks...")
 		self._RunPostCopy(netlist)
 		self._RunPostReplace(netlist)
 
@@ -184,17 +188,17 @@ class Compiler(BaseCompiler):
 			cgcFileHandle.write(cgContentFileContent)
 
 		# copy xco file into temporary directory
-		self._LogDebug("Copy CoreGen xco file to '{0}'.".format(xcoFilePath))
-		self._LogVerbose("    cp {0} {1}".format(str(xcoInputFilePath), str(self._tempPath)))
+		self._LogVerbose("  Copy CoreGen xco file to '{0}'.".format(xcoFilePath))
+		self._LogDebug("    cp {0!s} {1!s}".format(xcoInputFilePath, self._tempPath))
 		shutil.copy(str(xcoInputFilePath), str(xcoFilePath), follow_symlinks=True)
 
 		# change working directory to temporary CoreGen path
-		self._LogVerbose('    cd {0}'.format(str(self._tempPath)))
+		self._LogDebug('    cd {0!s}'.format(self._tempPath))
 		chdir(str(self._tempPath))
 
 		# running CoreGen
 		# ==========================================================================
-		self._LogNormal("  running CoreGen...")
+		self._LogVerbose("  Executing CoreGen...")
 		coreGen = self._ise.GetCoreGenerator()
 		coreGen.Parameters[coreGen.SwitchProjectFile] =	"."		# use current directory and the default project name
 		coreGen.Parameters[coreGen.SwitchBatchFile] =		str(xcoFilePath)

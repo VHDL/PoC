@@ -163,7 +163,7 @@ class VHDLCompiler(Executable, ActiveHDLMixIn):
 
 	def Compile(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -237,7 +237,7 @@ class StandaloneSimulator(Executable, ActiveHDLMixIn):
 
 	def Simulate(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 		self._LogDebug("    tcl commands: {0}".format(self.Parameters[self.SwitchBatchCommand]))
 
 		try:
@@ -326,7 +326,7 @@ class Simulator(Executable, ActiveHDLMixIn):
 	def Simulate(self):
 		parameterList = self.Parameters.ToArgumentList()
 
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 		self._LogDebug("    tcl commands: {0}".format(self.Parameters[self.SwitchBatchCommand]))
 
 		_indent = "    "
@@ -381,7 +381,7 @@ class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLMixIn):
 
 	def CreateLibrary(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)

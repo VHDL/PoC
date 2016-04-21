@@ -433,7 +433,7 @@ class GHDLAnalyze(GHDL):
 	def Analyze(self):
 		parameterList = self.Parameters.ToArgumentList()
 		parameterList.insert(0, self.Executable)
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -476,7 +476,7 @@ class GHDLElaborate(GHDL):
 	def Elaborate(self):
 		parameterList = self.Parameters.ToArgumentList()
 		parameterList.insert(0, self.Executable)
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -525,7 +525,7 @@ class GHDLRun(GHDL):
 		parameterList += self.RunOptions.ToArgumentList()
 		parameterList.insert(0, self.Executable)
 
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)

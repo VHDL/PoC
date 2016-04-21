@@ -283,7 +283,7 @@ class XVhComp(Executable, VivadoMixIn):
 
 	def Compile(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -405,7 +405,7 @@ class XElab(Executable, VivadoMixIn):
 
 	def Link(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -497,7 +497,7 @@ class XSim(Executable, VivadoMixIn):
 
 	def Simulate(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)

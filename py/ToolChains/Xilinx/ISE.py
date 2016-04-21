@@ -270,7 +270,7 @@ class ISE(ISEMixIn):
 # 	def Compile(self, vhdlFile):
 # 		parameterList = self.Parameters.ToArgumentList()
 #
-# 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+# 		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 #
 		# _indent = "    "
 		# print(_indent + "vhcomp messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
@@ -342,7 +342,7 @@ class Fuse(Executable, ISEMixIn):
 
 	def Link(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -421,7 +421,7 @@ class ISESimulator(Executable):
 
 	def Simulate(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -501,7 +501,7 @@ class Xst(Executable, ISEMixIn):
 
 	def Compile(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -580,7 +580,7 @@ class CoreGenerator(Executable, ISEMixIn):
 
 	def Generate(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("  command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)

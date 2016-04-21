@@ -106,7 +106,7 @@ class Compiler(BaseCompiler):
 		self._RunPostReplace(netlist)
 
 	def _PrepareCompilerEnvironment(self, device):
-		self._LogNormal("preparing synthesis environment...")
+		self._LogNormal("Preparing synthesis environment...")
 		self._tempPath =		self.Host.Directories["LatticeTemp"]
 		self._outputPath =	self.Host.Directories["PoCNetList"] / str(device)
 		super()._PrepareCompilerEnvironment()
