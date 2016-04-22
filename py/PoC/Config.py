@@ -49,10 +49,11 @@ from Base.Configuration		import ConfigurationException
 @unique
 class Vendors(Enum):
 	Unknown =			0
-	Altera =			1
-	Lattice =			2
-	MicroSemi =		3
-	Xilinx =			4
+	Generic =			1
+	Altera =			2
+	Lattice =			3
+	MicroSemi =		4
+	Xilinx =			5
 
 	def __str__(self):
 		return self.name
@@ -63,15 +64,18 @@ class Vendors(Enum):
 @unique
 class Families(Enum):
 	Unknown =		0
+	Generic =		1
 	# Xilinx families
-	Spartan =		1
-	Artix =			2
-	Kintex =		3
-	Virtex =		4
-	Zynq =			5
+	Spartan =		10
+	Artix =			11
+	Kintex =		12
+	Virtex =		13
+	Zynq =			14
 	# Altera families
-	Cyclon =		11
-	Stratix =		12
+	Max =				20
+	Cyclon =		21
+	Arria =			22
+	Stratix =		23
 
 	def __str__(self):
 		return self.name
@@ -82,7 +86,8 @@ class Families(Enum):
 	# @CachedReadOnlyProperty
 	@property
 	def Token(self):
-		if   (self == Families.Spartan):	return "s"
+		if   (self == Families.Generic):	return "g"
+		elif (self == Families.Spartan):	return "s"
 		elif (self == Families.Artix):		return "a"
 		elif (self == Families.Kintex):		return "k"
 		elif (self == Families.Virtex):		return "v"
@@ -91,6 +96,7 @@ class Families(Enum):
 @unique
 class Devices(Enum):
 	Unknown =									0
+	Generic =									1
 	
 	# Xilinx.Spartan devices
 	Spartan3 =								10
@@ -148,6 +154,7 @@ class Devices(Enum):
 class SubTypes(Enum):
 	Unknown =		0
 	NoSubType = 1
+	Generic =		2
 	# Xilinx device subtypes
 	X =					101
 	T =					102
@@ -179,6 +186,7 @@ class SubTypes(Enum):
 	@property
 	def Groups(self):
 		if   (self == SubTypes.NoSubType):	return ("",	"")
+		elif (self == SubTypes.Generic):		return ("",	"")
 		elif (self == SubTypes.X):					return ("x",	"")
 		elif (self == SubTypes.T):					return ("",		"t")
 		elif (self == SubTypes.XT):					return ("x",	"t")
@@ -195,23 +203,24 @@ class SubTypes(Enum):
 @unique
 class Packages(Enum):
 	Unknown =	0
+	Generic =	1
 	
-	TQG =			1
+	TQG =			10
 	
-	CPG =			10
-	CSG =			11
+	CPG =			20
+	CSG =			21
 	
-	FF =			20
-	FFG =			21
-	FTG =			22
-	FGG =			23
-	FLG =			24
-	FT =			25
+	FF =			30
+	FFG =			31
+	FTG =			32
+	FGG =			33
+	FLG =			34
+	FT =			35
 	
-	RB =			30
-	RBG =			31
-	RS =			32
-	RF =			33
+	RB =			40
+	RBG =			41
+	RS =			42
+	RF =			43
 	
 	def __str__(self):
 		if (self is Packages.Unknown):
@@ -241,7 +250,19 @@ class Device:
 			raise ValueError("Parameter 'deviceString' is empty.")
 		
 		# vendor = Xilinx
-		if (deviceString[0:2].lower() == "xc"):		# xc - Xilinx Commercial
+		if (deviceString[0:2].lower() == "ge"):		# ge - Generic
+			self.__vendor =			Vendors.Generic
+			self.__generation =	0
+			self.__family =			Families.Artix
+			self.__subtype =		SubTypes.Generic
+
+			self.__number =			0
+			self.__speedGrade =	0
+			self.__package =		Packages.Generic
+			self.__pinCount =		0
+
+		# vendor = Xilinx
+		elif (deviceString[0:2].lower() == "xc"):		# xc - Xilinx Commercial
 			self.__vendor =			Vendors.Xilinx
 			self.__generation = int(deviceString[2:3])
 
@@ -337,7 +358,9 @@ class Device:
 	# @CachedReadOnlyProperty
 	@property
 	def ShortName(self):
-		if (self.__vendor is Vendors.Xilinx):
+		if (self.__vendor is Vendors.Generic):
+			return "GENERIC"
+		elif (self.__vendor is Vendors.Xilinx):
 			subtype = self.__subtype.Groups
 			if (self.__family is Families.Zynq):
 				number_format = "{num:03d}"
@@ -362,7 +385,9 @@ class Device:
 	# @CachedReadOnlyProperty
 	@property
 	def FullName(self):
-		if (self.__vendor is Vendors.Xilinx):
+		if (self.__vendor is Vendors.Generic):
+			return "GENERIC"
+		elif (self.__vendor is Vendors.Xilinx):
 			subtype = self.__subtype.Groups
 			if (self.__family is Families.Zynq):
 				number_format = "{num:03d}"
@@ -456,12 +481,9 @@ class Board:
 			self.__device = Device(deviceName)
 
 	@property
-	def Name(self):
-		return self.__boardName
-	
+	def Name(self):			return self.__boardName
 	@property
-	def Device(self):
-		return self.__device
+	def Device(self):		return self.__device
 	
 	def GetVariables(self):
 		result = {
