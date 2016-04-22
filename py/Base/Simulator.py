@@ -137,10 +137,10 @@ class Simulator(ILogable):
 		except ParserException as ex:
 			raise SimulatorException("Error while parsing '{0!s}'.".format(fileListFilePath)) from ex
 
-		self._LogDebug("  " + ("=" * 78))
-		self._LogDebug("  Pretty printing the PoCProject...")
+		self._LogDebug("=" * 78)
+		self._LogDebug("Pretty printing the PoCProject...")
 		self._LogDebug(self._pocProject.pprint(2))
-		self._LogDebug("  " + ("=" * 78))
+		self._LogDebug("=" * 78)
 		if (len(fileListFile.Warnings) > 0):
 			for warn in fileListFile.Warnings:
 				self._LogWarning(warn)

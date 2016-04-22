@@ -194,7 +194,7 @@ class Compiler(BaseCompiler):
 		shutil.copy(str(xcoInputFilePath), str(xcoFilePath), follow_symlinks=True)
 
 		# change working directory to temporary CoreGen path
-		self._LogDebug('    cd {0!s}'.format(self._tempPath))
+		self._LogDebug("cd {0!s}".format(self._tempPath))
 		chdir(str(self._tempPath))
 
 		# running CoreGen

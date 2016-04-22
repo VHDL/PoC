@@ -369,7 +369,7 @@ class Project():
 	
 	def pprint(self, indent=0):
 		_indent = "  " * indent
-		buffer =	_indent + "Project: {0}\n".format(self.Name)
+		buffer =	"Project: {0}\n".format(self.Name)
 		buffer +=	_indent + "o-Settings:\n"
 		buffer +=	_indent + "| o-Board: {0}\n".format(self._board.Name)
 		buffer +=	_indent + "| o-Device: {0}\n".format(self._device.Name)

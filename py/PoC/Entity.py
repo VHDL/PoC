@@ -173,7 +173,7 @@ class WildCard(PathElement):
 
 	def GetEntities(self):
 		for entity in self._parent.Entities:
-			print(entity)
+			yield entity
 
 	def GetVHDLTestbenches(self):
 		for entity in self._parent.Entities:
@@ -183,39 +183,59 @@ class WildCard(PathElement):
 			except:
 				pass
 
-	@property
-	def VHDLTestbenches(self):
-		return [tb for tb in self.GetVHDLTestbenches()]
+	def GetCocoTestbenches(self):
+		for entity in self._parent.Entities:
+			try:
+				tb = entity.CocoTestbench
+				yield tb
+			except:
+				pass
+
+	def GetLatticeNetlists(self):
+		for entity in self._parent.Entities:
+			try:
+				tb = entity.LatticeNetlist
+				yield tb
+			except:
+				pass
+
+	def GetQuartusNetlists(self):
+		for entity in self._parent.Entities:
+			try:
+				tb = entity.QuartusNetlist
+				yield tb
+			except:
+				pass
+
+	def GetXSTNetlists(self):
+		for entity in self._parent.Entities:
+			try:
+				tb = entity.XSTNetlist
+				yield tb
+			except:
+				pass
+
+	def GetCoreGenNetlists(self):
+		for entity in self._parent.Entities:
+			try:
+				tb = entity.CoreGenNetlist
+				yield tb
+			except:
+				pass
 
 	@property
-	def CocoTestbench(self):
-		if (len(self._cocotb) == 0):
-			raise NotConfiguredException("No Cocotb testbench configured for '{0!s}'.".format(self))
-		return self._cocotb[0]
-
+	def VHDLTestbenches(self):		return [tb for tb in self.GetVHDLTestbenches()]
 	@property
-	def LatticeNetlist(self):
-		if (len(self._latticeNetlist) == 0):
-			raise NotConfiguredException("No Lattice netlist configured for '{0!s}'.".format(self))
-		return self._latticeNetlist[0]
-
+	def CocoTestbenches(self):		return [tb for tb in self.GetCocoTestbenches()]
 	@property
-	def QuartusNetlist(self):
-		if (len(self._quartusNetlist) == 0):
-			raise NotConfiguredException("No Quartus-II netlist configured for '{0!s}'.".format(self))
-		return self._quartusNetlist[0]
-
+	def LatticeNetlists(self):		return [nl for nl in self.GetLatticeNetlists()]
 	@property
-	def XstNetlist(self):
-		if (len(self._xstNetlist) == 0):
-			raise NotConfiguredException("No XST netlist configured for '{0!s}'.".format(self))
-		return self._xstNetlist[0]
-
+	def QuartusNetlists(self):		return [nl for nl in self.GetQuartusNetlists()]
 	@property
-	def CgNetlist(self):
-		if (len(self._cgNetlist) == 0):
-			raise NotConfiguredException("No CoreGen netlist configured for '{0!s}'.".format(self))
-		return self._cgNetlist[0]
+	def XSTNetlists(self):				return [nl for nl in self.GetXSTNetlists()]
+	@property
+	def CoreGenNetlists(self):		return [nl for nl in self.GetCoreGenNetlists()]
+
 
 class Entity(PathElement):
 	def __init__(self, host, name, configSection, parent):
@@ -226,7 +246,7 @@ class Entity(PathElement):
 		self._latticeNetlist =	[]		# OrderedDict()
 		self._quartusNetlist =	[]		# OrderedDict()
 		self._xstNetlist =			[]		# OrderedDict()
-		self._cgNetlist =				[]		# OrderedDict()
+		self._coreGenNetlist =	[]		# OrderedDict()
 
 		self._Load()
 
@@ -262,9 +282,9 @@ class Entity(PathElement):
 
 	@property
 	def CGNetlist(self):
-		if (len(self._cgNetlist) == 0):
+		if (len(self._coreGenNetlist) == 0):
 			raise NotConfiguredException("No CoreGen netlist configured for '{0!s}'.".format(self))
-		return self._cgNetlist[0]
+		return self._coreGenNetlist[0]
 
 	def _Load(self):
 		section = self._host.PoCConfig[self._configSection]
@@ -306,8 +326,8 @@ class Entity(PathElement):
 				# print("loading CoreGen netlist: {0}".format(optionName))
 				sectionName = self._configSection.replace("IP", "CG") + "." + optionName
 				nl = CoreGeneratorNetlist(host=self._host, name=optionName, sectionName=sectionName, parent=self)
-				self._cgNetlist.append(nl)
-				# self._cgNetlist[optionName] = nl
+				self._coreGenNetlist.append(nl)
+				# self._coreGenNetlist[optionName] = nl
 
 	def pprint(self, indent=0):
 		buffer = "{0}Entity: {1}\n".format("  " * indent, self.Name)
@@ -317,8 +337,8 @@ class Entity(PathElement):
 			buffer += self._cocotb.pprint(indent + 1)
 		if (len(self._xstNetlist) > 0):
 			buffer += self._xstNetlist.pprint(indent + 1)
-		if (len(self._cgNetlist) > 0):
-			buffer += self._cgNetlist.pprint(indent + 1)
+		if (len(self._coreGenNetlist) > 0):
+			buffer += self._coreGenNetlist.pprint(indent + 1)
 		return buffer
 
 class Base(ILazyLoadable):

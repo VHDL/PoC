@@ -94,7 +94,7 @@ class Simulator(BaseSimulator):
 			self._LogDebug("copy {0!s} {1!s}".format(modelsimIniPath, simBuildPath))
 			shutil.copy(str(modelsimIniPath), str(simBuildPath))
 		else:
-			self._LogDebug("  No 'modelsim.ini' in precompiled directory found. QuestaSim will use the default modelsim.ini.")
+			self._LogDebug("No 'modelsim.ini' in precompiled directory found. QuestaSim will use the default modelsim.ini.")
 
 	def PrepareSimulator(self):
 		# create the Cocotb executable factory

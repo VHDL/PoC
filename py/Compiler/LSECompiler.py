@@ -69,13 +69,13 @@ class Compiler(BaseCompiler):
 		for fqn in fqnList:
 			entity = fqn.Entity
 			if (isinstance(entity, WildCard)):
-				for testbench in entity.GetLSENetlist():
+				for testbench in entity.GetLatticeNetlists():
 					try:
 						self.Run(testbench, *args, **kwargs)
 					except CompilerException:
 						pass
 			else:
-				testbench = entity.LSENetlist
+				testbench = entity.LatticeNetlist
 				try:
 					self.Run(testbench, *args, **kwargs)
 				except CompilerException:
@@ -137,4 +137,5 @@ class Compiler(BaseCompiler):
 		tclShell = self._diamond.GetTclShell()
 
 		# raise NotImplementedError("Next: implement interactive shell")
+		self._LogWarning("Execution skipped due to Tcl shell problems.")
 		# tclShell.Run()
