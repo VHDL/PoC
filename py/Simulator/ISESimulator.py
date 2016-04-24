@@ -84,7 +84,7 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		self._ise = ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def Run(self, testbench, board, vhdlVersion=None, vhdlGenerics=None, guiMode=False):
-		self._LogQuiet("Testbench: {YELLOW}{0!s}{RESET}".format(testbench.Parent, **Init.Foreground))
+		self._LogQuiet("Testbench: {YELLOW}{0!s}{NOCOLOR}".format(testbench.Parent, **Init.Foreground))
 
 		self._vhdlVersion =		VHDLVersion.VHDL93
 		self._vhdlGenerics =	vhdlGenerics

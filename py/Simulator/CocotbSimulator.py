@@ -117,7 +117,7 @@ class Simulator(BaseSimulator):
 					pass
 
 	def Run(self, testbench, board, **_):
-		self._LogQuiet("Testbench: {YELLOW}{0!s}{RESET}".format(testbench.Parent, **Init.Foreground))
+		self._LogQuiet("Testbench: {YELLOW}{0!s}{NOCOLOR}".format(testbench.Parent, **Init.Foreground))
 
 		# setup all needed paths to execute fuse
 		self._CreatePoCProject(testbench, board)

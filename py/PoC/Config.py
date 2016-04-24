@@ -345,7 +345,7 @@ class Device:
 		elif (deviceString[4:6] == "GT"):
 			self.__subtype = SubTypes.GT
 		# self.__number = int(deviceString[5:8])
-		print("{RED}Device._DecodeAlteraStratix5(): not fully implemented for Altera Stratix V.{RESET}".format(**Init.Foreground))
+		print("{RED}Device._DecodeAlteraStratix5(): not fully implemented for Altera Stratix V.{NOCOLOR}".format(**Init.Foreground))
 
 	def _DecodeLatticeICE(self, deviceString):
 		self.__vendor = Vendors.Lattice
@@ -362,7 +362,7 @@ class Device:
 		else:														raise ConfigurationException("Unknown Lattice ECP generation.")
 
 		# "ECP5UM-45F"
-		print("{RED}Device._DecodeLattice(): not fully implemented for Lattice devices.{RESET}".format(**Init.Foreground))
+		print("{RED}Device._DecodeLattice(): not fully implemented for Lattice devices.{NOCOLOR}".format(**Init.Foreground))
 
 	def _DecodeLatticeECP3(self, deviceString):
 		self.__subtype =	SubTypes.NoSubType
@@ -456,10 +456,10 @@ class Device:
 				subtype[1]
 			)).upper()
 		elif (self.__vendor is Vendors.Altera):
-			print("{YELLOW}Device.ShortName() not implemented for vendor Altera.{RESET}".format(**Init.Foreground))
+			print("{YELLOW}Device.ShortName() not implemented for vendor Altera.{NOCOLOR}".format(**Init.Foreground))
 			return "EP4SGX230KF40C2"
 		elif (self.__vendor is Vendors.Lattice):
-			print("{YELLOW}Device.ShortName() not implemented for vendor Lattice.{RESET}".format(**Init.Foreground))
+			print("{YELLOW}Device.ShortName() not implemented for vendor Lattice.{NOCOLOR}".format(**Init.Foreground))
 			return "ECP5UM-45F"
 		else:
 			raise NotImplementedError("Device.ShortName() not implemented for vendor {0!s}".format(self.__vendor))
@@ -486,10 +486,10 @@ class Device:
 				self.__pinCount
 			)).upper()
 		elif (self.__vendor is Vendors.Altera):
-			print("{YELLOW}Device.FullName() not implemented for vendor Altera.{RESET}".format(**Init.Foreground))
+			print("{YELLOW}Device.FullName() not implemented for vendor Altera.{NOCOLOR}".format(**Init.Foreground))
 			return "EP4SGX230KF40C2"
 		elif (self.__vendor is Vendors.Lattice):
-			print("{YELLOW}Device.FullName() not implemented for vendor Lattice.{RESET}".format(**Init.Foreground))
+			print("{YELLOW}Device.FullName() not implemented for vendor Lattice.{NOCOLOR}".format(**Init.Foreground))
 			return "ECP5UM-45F"
 		else:
 			raise NotImplementedError("Device.FullName() not implemented for vendor {0!s}".format(self.__vendor))

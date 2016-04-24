@@ -81,7 +81,7 @@ class Simulator(BaseSimulator):
 		self._ghdl =			GHDL(self.Host.Platform, binaryPath, version, backend, logger=self.Logger)
 
 	def Run(self, testbench, board, vhdlVersion="93c", vhdlGenerics=None, guiMode=False):
-		self._LogQuiet("Testbench: {YELLOW}{0!s}{RESET}".format(testbench.Parent, **Init.Foreground))
+		self._LogQuiet("Testbench: {YELLOW}{0!s}{NOCOLOR}".format(testbench.Parent, **Init.Foreground))
 
 		self._vhdlVersion =		vhdlVersion
 		self._vhdlGenerics =	vhdlGenerics
@@ -102,10 +102,10 @@ class Simulator(BaseSimulator):
 			self._RunAnalysis()
 			self._RunSimulation(testbench)
 
-		if   (testbench.Result is SimulationResult.Passed):			self._LogQuiet("  {GREEN}[PASSED]{RESET}".format(**Init.Foreground))
-		elif (testbench.Result is SimulationResult.NoAsserts):	self._LogQuiet("  {YELLOW}[NO ASSERTS]{RESET}".format(**Init.Foreground))
-		elif (testbench.Result is SimulationResult.Failed):			self._LogQuiet("  {RED}[FAILED]{RESET}".format(**Init.Foreground))
-		elif (testbench.Result is SimulationResult.Error):			self._LogQuiet("  {RED}[ERROR]{RESET}".format(**Init.Foreground))
+		if   (testbench.Result is SimulationResult.Passed):			self._LogQuiet("  {GREEN}[PASSED]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.NoAsserts):	self._LogQuiet("  {YELLOW}[NO ASSERTS]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.Failed):			self._LogQuiet("  {RED}[FAILED]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.Error):			self._LogQuiet("  {RED}[ERROR]{NOCOLOR}".format(**Init.Foreground))
 
 		# FIXME: a very quick implemenation
 		if (guiMode == True):

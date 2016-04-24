@@ -281,9 +281,9 @@ class PoC(ILogable, ArgParseMixin):
 
 	def PrintHeadline(self):
 		# self._LogNormal(Foreground.MAGENTA + "=" * 80)
-		self._LogNormal("{HEADLINE}{line}{RESET}".format(line="="*80, **Init.Foreground))
-		self._LogNormal("{HEADLINE}{headline: ^80s}{RESET}".format(headline=self.HeadLine, **Init.Foreground))
-		self._LogNormal("{HEADLINE}{line}{RESET}".format(line="="*80, **Init.Foreground))
+		self._LogNormal("{HEADLINE}{line}{NOCOLOR}".format(line="="*80, **Init.Foreground))
+		self._LogNormal("{HEADLINE}{headline: ^80s}{NOCOLOR}".format(headline=self.HeadLine, **Init.Foreground))
+		self._LogNormal("{HEADLINE}{line}{NOCOLOR}".format(line="="*80, **Init.Foreground))
 
 	# ----------------------------------------------------------------------------
 	# fallback handler if no command was recognized
@@ -377,7 +377,7 @@ class PoC(ILogable, ArgParseMixin):
 	def _manualConfigurationForWindows(self):
 		for config in Configurations:
 			configurator = config(self)
-			self._LogNormal("{CYAN}Configuring {0!s}{RESET}".format(configurator.Name, **Init.Foreground))
+			self._LogNormal("{CYAN}Configuring {0!s}{NOCOLOR}".format(configurator.Name, **Init.Foreground))
 
 			nxt = False
 			while (nxt == False):
@@ -387,7 +387,7 @@ class PoC(ILogable, ArgParseMixin):
 				except SkipConfigurationException:
 					break
 				except ExceptionBase as ex:
-					print("  {RED}FAULT:{RESET} {0}".format(ex.message, **Init.Foreground))
+					print("  {RED}FAULT:{NOCOLOR} {0}".format(ex.message, **Init.Foreground))
 			# end while
 
 	def _manualConfigurationForLinux(self):
@@ -970,25 +970,25 @@ def main():
 		Exit.exit()
 
 	except (CommonException, ConfigurationException, SimulatorException, CompilerException) as ex:
-		print("{RED}ERROR:{RESET} {message}".format(message=ex.message, **Init.Foreground))
+		print("{RED}ERROR:{NOCOLOR} {message}".format(message=ex.message, **Init.Foreground))
 		cause = ex.__cause__
 		if isinstance(cause, FileNotFoundError):
-			print("{YELLOW}  FileNotFound:{RESET} '{cause}'".format(cause=str(cause), **Init.Foreground))
+			print("{YELLOW}  FileNotFound:{NOCOLOR} '{cause}'".format(cause=str(cause), **Init.Foreground))
 		elif isinstance(cause, DuplicateOptionError):
-			print("{YELLOW}  DuplicateOptionError:{RESET} '{cause}'".format(cause=str(cause), **Init.Foreground))
+			print("{YELLOW}  DuplicateOptionError:{NOCOLOR} '{cause}'".format(cause=str(cause), **Init.Foreground))
 		elif isinstance(cause, ConfigParser_Error):
-			print("{YELLOW}  configparser.Error:{RESET} '{cause}'".format(cause=str(cause), **Init.Foreground))
+			print("{YELLOW}  configparser.Error:{NOCOLOR} '{cause}'".format(cause=str(cause), **Init.Foreground))
 		elif isinstance(cause, ParserException):
-			print("{YELLOW}  ParserException:{RESET} {cause}".format(cause=str(cause), **Init.Foreground))
+			print("{YELLOW}  ParserException:{NOCOLOR} {cause}".format(cause=str(cause), **Init.Foreground))
 			cause = cause.__cause__
 			if (cause is not None):
-				print("{YELLOW}    {name}:{RESET} {cause}".format(name=cause.__class__.__name__, cause= str(cause), **Init.Foreground))
+				print("{YELLOW}    {name}:{NOCOLOR} {cause}".format(name=cause.__class__.__name__, cause= str(cause), **Init.Foreground))
 		elif isinstance(cause, ToolChainException):
-			print("{YELLOW}  {name}:{RESET} {cause}".format(name=cause.__class__.__name__, cause=str(cause), **Init.Foreground))
+			print("{YELLOW}  {name}:{NOCOLOR} {cause}".format(name=cause.__class__.__name__, cause=str(cause), **Init.Foreground))
 			cause = cause.__cause__
 			if (cause is not None):
 				if isinstance(cause, OSError):
-					print("{YELLOW}    {name}:{RESET} {cause}".format(name=cause.__class__.__name__, cause=str(cause), **Init.Foreground))
+					print("{YELLOW}    {name}:{NOCOLOR} {cause}".format(name=cause.__class__.__name__, cause=str(cause), **Init.Foreground))
 			else:
 				print("  Possible causes:")
 				print("   - The compile order is broken.")
@@ -996,7 +996,7 @@ def main():
 
 		if (not (verbose or debug)):
 			print()
-			print("{CYAN}  Use '-v' for verbose or '-d' for debug to print out extended messages.{RESET}".format(**Init.Foreground))
+			print("{CYAN}  Use '-v' for verbose or '-d' for debug to print out extended messages.{NOCOLOR}".format(**Init.Foreground))
 		Exit.exit(1)
 
 	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)

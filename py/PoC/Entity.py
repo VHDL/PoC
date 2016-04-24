@@ -644,7 +644,7 @@ class FQN:
 				try:
 					pe = cur[part]
 				except KeyError:
-					raise ConfigurationException("PoC entity '{GREEN}PoC.{0}.{RED}{1}{RESET}' not found.".format(".".join(parts[:pos]), ".".join(parts[pos:]), **Init.Foreground))
+					raise ConfigurationException("PoC entity '{GREEN}PoC.{0}.{RED}{1}{NOCOLOR}' not found.".format(".".join(parts[:pos]), ".".join(parts[pos:]), **Init.Foreground))
 				self.__parts.append(pe)
 				cur = pe
 
