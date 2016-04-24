@@ -708,8 +708,8 @@ package body config is
 	-- purpose: extract vendor from MY_DEVICE
 	function VENDOR(DeviceString : string := C_DEVICE_STRING_EMPTY) return T_VENDOR is
 		constant MY_DEV		: string(1 to 32)	:= getLocalDeviceString(DeviceString);
-		constant VEN_STR2	: string(1 to 2)  := MY_DEV(1 to 2);
-		constant VEN_STR3	: string(1 to 3)  := MY_DEV(1 to 3);
+		constant VEN_STR2	: string(1 to 2)  := MY_DEV(1 to 2);			-- TODO: test if alias declarations also work out on all platforms
+		constant VEN_STR3	: string(1 to 3)  := MY_DEV(1 to 3);			-- TODO: test if alias declarations also work out on all platforms
 	begin
 		case VEN_STR2 is
 			when "GE" =>		return VENDOR_GENERIC;
@@ -752,7 +752,7 @@ package body config is
 	function DEVICE(DeviceString : string := C_DEVICE_STRING_EMPTY) return T_DEVICE is
 		constant MY_DEV		: string(1 to 32)	:= getLocalDeviceString(DeviceString);
 		constant VEN			: T_VENDOR				:= VENDOR(DeviceString);
-		constant DEV_STR	: string(3 to  4)	:= MY_DEV(3 to 4);
+		constant DEV_STR	: string(3 to  4)	:= MY_DEV(3 to 4);			-- TODO: test if alias declarations also work out on all platforms
 	begin
 		case VEN is
 			when VENDOR_GENERIC =>
@@ -890,7 +890,7 @@ package body config is
 	function DEVICE_SUBTYPE(DeviceString : string := C_DEVICE_STRING_EMPTY) return T_DEVICE_SUBTYPE is
 		constant MY_DEV				: string(1 to 32)	:= getLocalDeviceString(DeviceString);
 		constant DEV					: T_DEVICE				:= DEVICE(MY_DEV);
-		constant DEV_SUB_STR	: string(1 to 2)	:= MY_DEV(5 to 6);																-- work around for GHDL
+		constant DEV_SUB_STR	: string(1 to 2)	:= MY_DEV(5 to 6);																-- WORKAROUND: for GHDL
 	begin
 		case DEV is
 			when DEVICE_GENERIC =>																															return DEVICE_SUBTYPE_GENERIC;
