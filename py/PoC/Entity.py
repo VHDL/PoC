@@ -139,6 +139,12 @@ class Namespace(PathElement):
 	def GetNamespaceNames(self):	return self.__namespaces.keys()
 	def GetEntities(self):				return self.__entities.values()
 	def GetEntityNames(self):			return self.__entities.keys()
+	def GetAllEntities(self):
+		for namespace in self.GetNamespaces():
+			for entity in namespace.GetEntities():
+				yield entity
+		for entity in self.GetEntities():
+			yield entity
 
 	def __getitem__(self, key):
 		key = key.lower()
@@ -168,59 +174,55 @@ class Root(Namespace):
 		return self.__POCRoot_Name
 
 class WildCard(PathElement):
-	def __init__(self, host, name, configSection, parent):
-		super().__init__(host, name, configSection, parent)
-
 	def GetEntities(self):
-		for entity in self._parent.Entities:
-			yield entity
+		return []
 
 	def GetVHDLTestbenches(self):
-		for entity in self._parent.Entities:
+		for entity in self.GetEntities():
 			try:
 				tb = entity.VHDLTestbench
 				yield tb
-			except:
+			except NotConfiguredException:
 				pass
 
 	def GetCocoTestbenches(self):
-		for entity in self._parent.Entities:
+		for entity in self.GetEntities():
 			try:
 				tb = entity.CocoTestbench
 				yield tb
-			except:
+			except NotConfiguredException:
 				pass
 
 	def GetLatticeNetlists(self):
-		for entity in self._parent.Entities:
+		for entity in self.GetEntities():
 			try:
 				tb = entity.LatticeNetlist
 				yield tb
-			except:
+			except NotConfiguredException:
 				pass
 
 	def GetQuartusNetlists(self):
-		for entity in self._parent.Entities:
+		for entity in self.GetEntities():
 			try:
 				tb = entity.QuartusNetlist
 				yield tb
-			except:
+			except NotConfiguredException:
 				pass
 
 	def GetXSTNetlists(self):
-		for entity in self._parent.Entities:
+		for entity in self.GetEntities():
 			try:
 				tb = entity.XSTNetlist
 				yield tb
-			except:
+			except NotConfiguredException:
 				pass
 
 	def GetCoreGenNetlists(self):
-		for entity in self._parent.Entities:
+		for entity in self.GetEntities():
 			try:
 				tb = entity.CoreGenNetlist
 				yield tb
-			except:
+			except NotConfiguredException:
 				pass
 
 	@property
@@ -235,6 +237,16 @@ class WildCard(PathElement):
 	def XSTNetlists(self):				return [nl for nl in self.GetXSTNetlists()]
 	@property
 	def CoreGenNetlists(self):		return [nl for nl in self.GetCoreGenNetlists()]
+
+class StarWildCard(WildCard):
+	def GetEntities(self):
+		for entity in self._parent.GetAllEntities():
+			yield entity
+
+class AskWildCard(WildCard):
+	def GetEntities(self):
+		for entity in self._parent.GetEntities():
+			yield entity
 
 
 class Entity(PathElement):
@@ -638,7 +650,10 @@ class FQN:
 		last = len(parts) - 1
 		for pos,part in enumerate(parts):
 			if ((pos == last) and ("*" in part)):
-				pe = WildCard(host, part, "----", cur)
+				pe = StarWildCard(host, part, "----", cur)
+				self.__parts.append(pe)
+			elif ((pos == last) and ("?" in part)):
+				pe = AskWildCard(host, part, "----", cur)
 				self.__parts.append(pe)
 			else:
 				try:
