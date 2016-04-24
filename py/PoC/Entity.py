@@ -366,15 +366,21 @@ class Testbench(Base):
 	def __init__(self, host, name, sectionName, parent):
 		self._moduleName =	""
 		self._filesFile =		None
+		self._result =			None
 
 		super().__init__(host, name, sectionName, parent)
 
 	@property
 	@LazyLoadTrigger
-	def ModuleName(self):		return self._moduleName
+	def ModuleName(self):			return self._moduleName
 	@property
 	@LazyLoadTrigger
-	def FilesFile(self):		return self._filesFile
+	def FilesFile(self):			return self._filesFile
+
+	@property
+	def Result(self):					return self._result
+	@Result.setter
+	def Result(self, value):	self._result = value
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()

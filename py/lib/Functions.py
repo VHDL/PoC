@@ -41,6 +41,21 @@ def merge(*dicts):
 def merge_with(f, *dicts):
 	return {k : reduce(lambda x: f(*x) if (len(x) > 1) else x[0])([ d[k] for d in dicts if k in d ]) for k in reduce(or_, map(lambda x: x.keys(), dicts), set()) }
 
+class CallByRefParam:
+	def __init__(self, value=None):
+		self.value = value
+
+	def __lshift__(self, other):
+		self.value = other
+
+	def __eq__(self, other):	return self.value == other
+	def __ne__(self, other):	return self.value != other
+	def __lt__(self, other):	return self.value < other
+	def __le__(self, other):	return self.value <= other
+	def __gt__(self, other):	return self.value > other
+	def __ge__(self, other):	return self.value >= other
+	def __neg__(self):				return not self.value
+
 
 class Init:
 	@classmethod
