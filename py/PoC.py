@@ -53,7 +53,7 @@ from Base.ToolChain						import ToolChainException
 from Base.Simulator						import SimulatorException
 from Base.Compiler						import CompilerException
 from PoC.Config								import Board
-from PoC.Entity								import Root, FQN, EntityTypes
+from PoC.Entity								import Root, FQN, EntityTypes, WildCard
 from PoC.Query								import Query
 from ToolChains								import Configurations
 from Simulator.ActiveHDLSimulator		import Simulator as ActiveHDLSimulator
@@ -465,15 +465,20 @@ class PoC(ILogable, ArgParseMixin):
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
 	# @HandleVerbosityOptions
 	def HandleListTestbenches(self, args):
-		self.__PrepareForSimulation()
 		self.PrintHeadline()
+		self.__PrepareForSimulation()
 
-		fqnList = self._ExtractFQNs(args)
+		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
 
-		# run a testbench
+		fqnList = self._ExtractFQNs(args.FQN)
 		for fqn in fqnList:
-			for entity in fqn.GetEntities():
-				print(entity)
+			entity = fqn.Entity
+			if (isinstance(entity, WildCard)):
+				for testbench in entity.GetTestbenches():
+					print(str(testbench))
+			else:
+				testbench = entity.GetTestbenches()
+				print(str(testbench))
 
 		Exit.exit()
 	
@@ -801,12 +806,17 @@ class PoC(ILogable, ArgParseMixin):
 		self.PrintHeadline()
 		self.__PrepareForSynthesis()
 
-		fqnList =	self._ExtractFQNs(args.FQN)
+		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
 
-		# run a testbench
+		fqnList = self._ExtractFQNs(args.FQN)
 		for fqn in fqnList:
-			for entity in fqn.GetEntities():
-				print(entity)
+			entity = fqn.Entity
+			if (isinstance(entity, WildCard)):
+				for testbench in entity.GetNetlists():
+					print(str(testbench))
+			else:
+				testbench = entity.GetNetlists()
+				print(str(testbench))
 
 		Exit.exit()
 
