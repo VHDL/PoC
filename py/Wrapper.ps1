@@ -53,7 +53,7 @@ $PyWrapper_LoadEnv_Xilinx_Vivado =					$false
 # search parameters for specific options like '-D' to enable batch script debug mode
 # TODO: restrict to first n=2? parameters
 foreach ($i in $PyWrapper_Parameters) {
-	$PyWrapper_Debug =									$PyWrapper_Debug -or ($i -clike "-*D*")
+	$PyWrapper_Debug =									$PyWrapper_Debug -or ($i -cmatch "^-\w*D\w*")
 	$PyWrapper_LoadEnv_Xilinx_ISE =			$PyWrapper_LoadEnv_Xilinx_ISE -or		($i -ceq "isim")
 	$PyWrapper_LoadEnv_Xilinx_Vivado =	$PyWrapper_LoadEnv_Xilinx_Vivado -or ($i -ceq "xsim")
 	
