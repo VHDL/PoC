@@ -107,6 +107,7 @@ class Compiler(BaseCompiler):
 		self._LogNormal("Executing post-processing tasks...")
 		self._RunPostCopy(netlist)
 		self._RunPostReplace(netlist)
+		self._RunPostDelete(netlist)
 
 	def _PrepareCompilerEnvironment(self, device):
 		self._LogNormal("Preparing synthesis environment...")
