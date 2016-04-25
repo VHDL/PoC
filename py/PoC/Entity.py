@@ -44,6 +44,7 @@ else:
 from collections					import OrderedDict
 from enum									import Enum, unique, IntEnum
 from pathlib							import Path
+from flags								import Flags
 
 from lib.Functions				import Init
 from lib.Decorators				import LazyLoadTrigger, ILazyLoadable
@@ -80,28 +81,16 @@ def _PoCEntityTypes_parser(cls, value):
 setattr(EntityTypes, '__new__', _PoCEntityTypes_parser)
 
 
-@unique
-class TestbenchKind(IntEnum):
-	Unknown =								0
-	VHDLTestbench =					1
-	CocoTestbench =					2
-	All =										3
-
-	def __contains__(self, item):
-		return ((self.value & item.value) == item.value)
+class TestbenchKind(Flags):
+	VHDLTestbench = ()
+	CocoTestbench = ()
 
 
-@unique
-class NetlistKind(IntEnum):
-	Unknown =								0
-	LatticeNetlist =				1
-	QuartusNetlist =				2
-	XstNetlist =						4
-	CoreGeneratorNetlist =	8
-	All =										15
-
-	def __contains__(self, item):
-		return ((self.value & item.value) == item.value)
+class NetlistKind(Flags):
+	LatticeNetlist = ()
+	QuartusNetlist = ()
+	XstNetlist = ()
+	CoreGeneratorNetlist = ()
 
 
 class PathElement:
@@ -201,7 +190,7 @@ class WildCard(PathElement):
 	def GetEntities(self):
 		return []
 
-	def GetTestbenches(self, kind=TestbenchKind.All):
+	def GetTestbenches(self, kind=TestbenchKind.all_flags):
 		for entity in self.GetEntities():
 			for tb in entity.GetTestbenches():
 				if (tb.Kind in kind):
@@ -210,7 +199,7 @@ class WildCard(PathElement):
 	def GetVHDLTestbenches(self):	return self.GetTestbenches(TestbenchKind.VHDLTestbench)
 	def GetCocoTestbenches(self):	return self.GetTestbenches(TestbenchKind.CocoTestbench)
 
-	def GetNetlists(self, kind=NetlistKind.All):
+	def GetNetlists(self, kind=NetlistKind.all_flags):
 		for entity in self.GetEntities():
 			for nl in entity.GetNetlists():
 				if (nl.Kind in kind):
@@ -276,7 +265,7 @@ class Entity(PathElement):
 			raise NotConfiguredException("No Cocotb testbench configured for '{0!s}'.".format(self))
 		return self._cocotb[0]
 
-	def GetTestbenches(self, kind=TestbenchKind.All):
+	def GetTestbenches(self, kind=TestbenchKind.all_flags):
 		if (TestbenchKind.VHDLTestbench in kind):
 			for tb in self._vhdltb:
 				yield tb
@@ -308,7 +297,7 @@ class Entity(PathElement):
 			raise NotConfiguredException("No CoreGen netlist configured for '{0!s}'.".format(self))
 		return self._coreGenNetlist[0]
 
-	def GetNetlists(self, kind=NetlistKind.All):
+	def GetNetlists(self, kind=NetlistKind.all_flags):
 		if (NetlistKind.LatticeNetlist in kind):
 			for nl in self._latticeNetlist:
 				yield nl
@@ -327,39 +316,33 @@ class Entity(PathElement):
 		for optionName in section:
 			type = section[optionName].lower()
 			if (type == "vhdltestbench"):
-				# print("loading VHDL testbench: {0}".format(optionName))
 				sectionName = self._configSection.replace("IP", "TB") + "." + optionName
 				tb = VHDLTestbench(host=self._host, name=optionName, sectionName=sectionName, parent=self)
 				self._vhdltb.append(tb)
 				# self._vhdltb[optionName] = tb
 			elif (type == "cocotestbench"):
-				# print("loading Cocotb testbench: {0}".format(optionName))
 				sectionName = self._configSection.replace("IP", "COCOTB") + "." + optionName
 				tb = CocoTestbench(host=self._host, name=optionName, sectionName=sectionName, parent=self)
 				self._cocotb.append(tb)
 				# self._cocotb[optionName] = tb
 			elif (type == "lsenetlist"):
-				#print("loading lattice netlist: {0}".format(optionName))
 				sectionName = self._configSection.replace("IP", "LSE") + "." + optionName
 				nl = LatticeNetlist(host=self._host, name=optionName, sectionName=sectionName, parent=self)
 				self._latticeNetlist.append(nl)
 				# self._xstNetlist[optionName] = nl
 				# self._cocotb[optionName] = tb
 			elif (type == "quartusnetlist"):
-				#print("loading Quartus netlist: {0}".format(optionName))
 				sectionName = self._configSection.replace("IP", "QII") + "." + optionName
 				nl = QuartusNetlist(host=self._host, name=optionName, sectionName=sectionName, parent=self)
 				self._quartusNetlist.append(nl)
 				# self._xstNetlist[optionName] = nl
 				# self._cocotb[optionName] = tb
 			elif (type == "xstnetlist"):
-				# print("loading XST netlist: {0}".format(optionName))
 				sectionName = self._configSection.replace("IP", "XST") + "." + optionName
 				nl = XstNetlist(host=self._host, name=optionName, sectionName=sectionName, parent=self)
 				self._xstNetlist.append(nl)
 				# self._xstNetlist[optionName] = nl
 			elif (type == "coregennetlist"):
-				# print("loading CoreGen netlist: {0}".format(optionName))
 				sectionName = self._configSection.replace("IP", "CG") + "." + optionName
 				nl = CoreGeneratorNetlist(host=self._host, name=optionName, sectionName=sectionName, parent=self)
 				self._coreGenNetlist.append(nl)
@@ -410,7 +393,7 @@ class Base(ILazyLoadable):
 
 class Testbench(Base):
 	def __init__(self, host, name, sectionName, parent):
-		self._kind =				TestbenchKind.Unknown
+		self._kind =				TestbenchKind.no_flags
 		self._moduleName =	""
 		self._filesFile =		None
 		self._result =			None
@@ -488,7 +471,7 @@ class CocoTestbench(Testbench):
 
 class Netlist(Base):
 	def __init__(self, host, name, sectionName, parent):
-		self._kind =				NetlistKind.Unknown
+		self._kind =				NetlistKind.no_flags
 		self._moduleName =	""
 		self._rulesFile =		None
 		super().__init__(host, name, sectionName, parent)
@@ -700,7 +683,7 @@ class FQN:
 				try:
 					pe = cur[part]
 				except KeyError:
-					raise ConfigurationException("PoC entity '{GREEN}PoC.{0}.{RED}{1}{NOCOLOR}' not found.".format(".".join(parts[:pos]), ".".join(parts[pos:]), **Init.Foreground))
+					raise ConfigurationException("PoC entity '{GREEN}PoC.{good}.{RED}{bad}{NOCOLOR}' not found.".format(good=(".".join(parts[:pos])), bad=(".".join(parts[pos:])), **Init.Foreground))
 				self.__parts.append(pe)
 				cur = pe
 
@@ -711,24 +694,24 @@ class FQN:
 	def Entity(self):
 		return self.__parts[-1]
 
-	def GetEntities(self):
-		if (self.__type is EntityTypes.Testbench):
-			config = self.__host.PoCConfig
-		elif (self.__type is EntityTypes.NetList):
-			config = self.__host.PoCConfig
-
-		entity = self.__parts[-1]
-		if (not entity.IsStar):
-			yield entity
-		else:
-			subns = self.__parts[-2]
-			path =	str(subns) + "."
-			for sectionName in config:
-				if sectionName.startswith(path):
-					if self.__host.PoCConfig.has_option('PoC.NamespacePrefixes', sectionName):
-						continue
-					fqn = FQN(self.__host, sectionName)
-					yield fqn.Entity
+	# def GetEntities(self):
+	# 	if (self.__type is EntityTypes.Testbench):
+	# 		config = self.__host.PoCConfig
+	# 	elif (self.__type is EntityTypes.NetList):
+	# 		config = self.__host.PoCConfig
+	#
+	# 	entity = self.__parts[-1]
+	# 	if (not entity.IsStar):
+	# 		yield entity
+	# 	else:
+	# 		subns = self.__parts[-2]
+	# 		path =	str(subns) + "."
+	# 		for sectionName in config:
+	# 			if sectionName.startswith(path):
+	# 				if self.__host.PoCConfig.has_option('PoC.NamespacePrefixes', sectionName):
+	# 					continue
+	# 				fqn = FQN(self.__host, sectionName)
+	# 				yield fqn.Entity
 
 	def __str__(self):
 		return ".".join([p.Name for p in self.__parts])

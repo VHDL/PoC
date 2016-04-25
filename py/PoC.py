@@ -472,17 +472,13 @@ class PoC(ILogable, ArgParseMixin):
 		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
 
 		if (args.TestbenchKind is None):
-			tbFilter =	TestbenchKind.All
+			tbFilter =	TestbenchKind.all_flags
 		else:
-			# tbFilter =	TestbenchKind.Unknown
-			# for kind in args.TestbenchKind.lower().split(","):
-			# 	if   (kind == "vhdl"):		tbFilter |= TestbenchKind.VHDLTestbench
-			# 	elif (kind == "cocotb"):	tbFilter |= TestbenchKind.CocoTestbench
-
-			# FIXME: workaround until flaged enums work
-			kind = args.TestbenchKind.lower().split(",")[0]
-			if   (kind == "vhdl"):		tbFilter = TestbenchKind.VHDLTestbench
-			elif (kind == "cocotb"):	tbFilter = TestbenchKind.CocoTestbench
+			tbFilter =	TestbenchKind.no_flags
+			for kind in args.TestbenchKind.lower().split(","):
+				if   (kind == "vhdl"):		tbFilter |= TestbenchKind.VHDLTestbench
+				elif (kind == "cocotb"):	tbFilter |= TestbenchKind.CocoTestbench
+				else:											raise CommonException("Argument --kind has an unknown value '{0}'.".format(kind))
 
 		fqnList = self._ExtractFQNs(args.FQN)
 		for fqn in fqnList:
@@ -825,14 +821,15 @@ class PoC(ILogable, ArgParseMixin):
 		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
 
 		if (args.NetlistKind is None):
-			nlFilter = NetlistKind.All
+			nlFilter = NetlistKind.all_flags
 		else:
-			# FIXME: workaround until flaged enums work
-			kind = args.NetlistKind.lower().split(",")[0]
-			if   (kind == "lattice"):		nlFilter = NetlistKind.LatticeNetlist
-			elif (kind == "quartus"):		nlFilter = NetlistKind.QuartusNetlist
-			elif (kind == "xst"):				nlFilter = NetlistKind.XstNetlist
-			elif (kind == "coregen"):		nlFilter = NetlistKind.CoreGeneratorNetlist
+			nlFilter = NetlistKind.no_flags
+			for kind in args.TestbenchKind.lower().split(","):
+				if   (kind == "lattice"):	nlFilter |= NetlistKind.LatticeNetlist
+				elif (kind == "quartus"):	nlFilter |= NetlistKind.QuartusNetlist
+				elif (kind == "xst"):			nlFilter |= NetlistKind.XstNetlist
+				elif (kind == "coregen"):	nlFilter |= NetlistKind.CoreGeneratorNetlist
+				else:											raise CommonException("Argument --kind has an unknown value '{0}'.".format(kind))
 
 		fqnList = self._ExtractFQNs(args.FQN)
 		for fqn in fqnList:
