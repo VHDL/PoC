@@ -268,7 +268,7 @@ class Compiler(ILogable):
 				postDeleteTasks = []
 
 		if (self._noCleanUp == True):
-			self._LogVerbose("Disabled cleanup. Skipping post-delete rules.")
+			self._LogWarning("Disabled cleanup. Skipping post-delete rules.")
 		elif (len(postDeleteTasks) != 0):
 			self._ExecuteDeleteTasks(postDeleteTasks, "post")
 		else:

@@ -42,7 +42,8 @@ from sys											import argv as sys_argv
 from textwrap									import dedent
 
 from lib.Functions						import Init, Exit
-from lib.ArgParseAttributes		import ArgParseMixin, CommandAttribute, CommonSwitchArgumentAttribute, CommandGroupAttribute, ArgumentAttribute, SwitchArgumentAttribute, DefaultAttribute
+from lib.ArgParseAttributes		import ArgParseMixin, CommandAttribute, CommonSwitchArgumentAttribute, CommandGroupAttribute, ArgumentAttribute, SwitchArgumentAttribute, DefaultAttribute, \
+	CommonArgumentAttribute
 from lib.ConfigParser					import ExtendedConfigParser
 from lib.Parser								import ParserException
 from Base.Exceptions					import ExceptionBase, CommonException, PlatformNotSupportedException, EnvironmentException, NotConfiguredException
@@ -276,6 +277,7 @@ class PoC(ILogable, ArgParseMixin):
 	@CommonSwitchArgumentAttribute("-d", "--debug",		dest="debug",		help="enable debug mode")
 	@CommonSwitchArgumentAttribute("-v", "--verbose",	dest="verbose",	help="print out detailed messages")
 	@CommonSwitchArgumentAttribute("-q", "--quiet",		dest="quiet",		help="reduce messages to a minimum")
+	@CommonArgumentAttribute('--sln', metavar="<Solution>", dest="SolutionName", help="Solution name")
 	def Run(self):
 		ArgParseMixin.Run(self)
 
@@ -470,6 +472,19 @@ class PoC(ILogable, ArgParseMixin):
 		self.__PrepareForSimulation()
 
 		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
+
+		if (args.SolutionName is not None):
+			solutionName = args.SolutionName
+			print("Solution name: {0}".format(solutionName))
+			if self.PoCConfig.has_option("SOLUTION.Solutions", solutionName):
+				sectionName = "SOLUTION.{0}".format(solutionName)
+				print("Found registered solution:")
+				print("  Name: {0}".format(self.PoCConfig[sectionName]['Name']))
+				print("  Path: {0}".format(self.PoCConfig[sectionName]['Path']))
+
+				solutionRootPath = self.Directories["PoCRoot"] / self.PoCConfig[sectionName]['Path']
+				iniFile = solutionRootPath / ".PoC" / "PoC.Solution.ini"
+				print("  sln ini: {0!s}".format(iniFile))
 
 		if (args.TestbenchKind is None):
 			tbFilter =	TestbenchKind.All

@@ -58,7 +58,7 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 	_TOOL =				Tool.Xilinx_XST
 
 	def __init__(self, host, showLogs, showReport, dryRun, noCleanUp):
-		super().__init__(host, showReport, dryRun, noCleanUp)
+		super().__init__(host, showLogs, showReport, dryRun, noCleanUp)
 		XilinxProjectExportMixIn.__init__(self)
 
 		self._device =				None

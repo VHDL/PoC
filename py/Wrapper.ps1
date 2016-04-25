@@ -74,6 +74,7 @@ if ($PyWrapper_Debug -eq $true ) {
 	Write-Host "  working:       $PoC_WorkingDir" -ForegroundColor Yellow
 	Write-Host "Script:" -ForegroundColor Yellow
 	Write-Host "  Filename:      $PyWrapper_Script" -ForegroundColor Yellow
+	Write-Host "  Solution:      $PyWrapper_Solution" -ForegroundColor Yellow
 	Write-Host "  Parameters:    $PyWrapper_Parameters" -ForegroundColor Yellow
 	Write-Host "Load Environment:" -ForegroundColor Yellow
 	Write-Host "  Xilinx ISE:    $PyWrapper_LoadEnv_ISE" -ForegroundColor Yellow
@@ -164,8 +165,11 @@ if (($PoC_ExitCode -eq 0) -and ($PyWrapper_LoadEnv_Xilinx_Vivado -eq $true)) {
 # execute script with appropriate python interpreter and all given parameters
 if ($PoC_ExitCode -eq 0) {
 	$Python_Script =						"$PoC_RootDir_AbsPath\$PoC_PythonScriptDir\$PyWrapper_Script"
-	$Python_ScriptParameters =	$PyWrapper_Parameters
-	
+	if ($PyWrapper_Solution -eq "") {
+		$Python_ScriptParameters =	$PyWrapper_Parameters
+	} else {
+		$Python_ScriptParameters =	"--sln=$PyWrapper_Solution " + $PyWrapper_Parameters
+	}
 	# execute script with appropriate python interpreter and all given parameters
 	if ($PyWrapper_Debug -eq $true) {
 		Write-Host "launching: '$Python_Interpreter $Python_Parameters $Python_Script $Python_ScriptParameters'" -ForegroundColor Yellow
