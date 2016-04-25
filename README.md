@@ -87,6 +87,7 @@ or Bash scripts, to hide some platform specifics of Windows or Linux. See the
  - Programming languages and runtimes:
 	- [Python 3][python] (&ge; 3.5):
 	     - [colorama][colorama]
+	     - [py-flags][pyflags]
  - Synthesis tool chains:
      - Altera Quartus-II &ge; 13.0 or
      - Lattice Diamond or
@@ -102,7 +103,8 @@ or Bash scripts, to hide some platform specifics of Windows or Linux. See the
 
  [python]:		https://www.python.org/downloads/
  [colorama]:	https://pypi.python.org/pypi/colorama
- [ghdl]:		https://sourceforge.net/projects/ghdl-updates/
+ [pyflags]:		https://pypi.python.org/pypi/py-flags
+ [ghdl]:			https://sourceforge.net/projects/ghdl-updates/
  [gtkwave]:		http://gtkwave.sourceforge.net/
 
 ##### Linux specific requirements:

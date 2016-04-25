@@ -81,12 +81,17 @@ def _PoCEntityTypes_parser(cls, value):
 setattr(EntityTypes, '__new__', _PoCEntityTypes_parser)
 
 
-class TestbenchKind(Flags):
+class BaseFlags(Flags):
+	__no_flags_name__ =		"Unknown"
+	__all_flags_name__ =	"All"
+
+
+class TestbenchKind(BaseFlags):
 	VHDLTestbench = ()
 	CocoTestbench = ()
 
 
-class NetlistKind(Flags):
+class NetlistKind(BaseFlags):
 	LatticeNetlist = ()
 	QuartusNetlist = ()
 	XstNetlist = ()
@@ -190,7 +195,7 @@ class WildCard(PathElement):
 	def GetEntities(self):
 		return []
 
-	def GetTestbenches(self, kind=TestbenchKind.all_flags):
+	def GetTestbenches(self, kind=TestbenchKind.All):
 		for entity in self.GetEntities():
 			for tb in entity.GetTestbenches():
 				if (tb.Kind in kind):
@@ -199,7 +204,7 @@ class WildCard(PathElement):
 	def GetVHDLTestbenches(self):	return self.GetTestbenches(TestbenchKind.VHDLTestbench)
 	def GetCocoTestbenches(self):	return self.GetTestbenches(TestbenchKind.CocoTestbench)
 
-	def GetNetlists(self, kind=NetlistKind.all_flags):
+	def GetNetlists(self, kind=NetlistKind.All):
 		for entity in self.GetEntities():
 			for nl in entity.GetNetlists():
 				if (nl.Kind in kind):
@@ -265,7 +270,7 @@ class Entity(PathElement):
 			raise NotConfiguredException("No Cocotb testbench configured for '{0!s}'.".format(self))
 		return self._cocotb[0]
 
-	def GetTestbenches(self, kind=TestbenchKind.all_flags):
+	def GetTestbenches(self, kind=TestbenchKind.All):
 		if (TestbenchKind.VHDLTestbench in kind):
 			for tb in self._vhdltb:
 				yield tb
@@ -297,7 +302,7 @@ class Entity(PathElement):
 			raise NotConfiguredException("No CoreGen netlist configured for '{0!s}'.".format(self))
 		return self._coreGenNetlist[0]
 
-	def GetNetlists(self, kind=NetlistKind.all_flags):
+	def GetNetlists(self, kind=NetlistKind.All):
 		if (NetlistKind.LatticeNetlist in kind):
 			for nl in self._latticeNetlist:
 				yield nl
@@ -393,7 +398,7 @@ class Base(ILazyLoadable):
 
 class Testbench(Base):
 	def __init__(self, host, name, sectionName, parent):
-		self._kind =				TestbenchKind.no_flags
+		self._kind =				TestbenchKind.Unknown
 		self._moduleName =	""
 		self._filesFile =		None
 		self._result =			None
@@ -471,7 +476,7 @@ class CocoTestbench(Testbench):
 
 class Netlist(Base):
 	def __init__(self, host, name, sectionName, parent):
-		self._kind =				NetlistKind.no_flags
+		self._kind =				NetlistKind.Unknown
 		self._moduleName =	""
 		self._rulesFile =		None
 		super().__init__(host, name, sectionName, parent)

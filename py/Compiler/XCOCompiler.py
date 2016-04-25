@@ -60,8 +60,8 @@ class Compiler(BaseCompiler):
 	_TOOL_CHAIN =	ToolChain.Xilinx_ISE
 	_TOOL =				Tool.Xilinx_CoreGen
 
-	def __init__(self, host, showLogs, showReport):
-		super(self.__class__, self).__init__(host, showLogs, showReport)
+	def __init__(self, host, showLogs, showReport, dryRun, noCleanUp):
+		super().__init__(host, showLogs, showReport, dryRun, noCleanUp)
 
 		self._device =				None
 		self._tempPath =			None

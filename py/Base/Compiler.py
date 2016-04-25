@@ -71,7 +71,7 @@ class Compiler(ILogable):
 	_TOOL_CHAIN =	ToolChain.Any
 	_TOOL =				Tool.Any
 
-	def __init__(self, host, showLogs, showReport):
+	def __init__(self, host, showLogs, showReport, dryRun, noCleanUp):
 		if isinstance(host, ILogable):
 			ILogable.__init__(self, host.Logger)
 		else:
@@ -80,7 +80,8 @@ class Compiler(ILogable):
 		self.__host =				host
 		self.__showLogs =		showLogs
 		self.__showReport =	showReport
-		self.__dryRun =			False
+		self._noCleanUp =		noCleanUp
+		self._dryRun =			dryRun
 
 		self._vhdlVersion =	VHDLVersion.VHDL93
 		self._pocProject =	None
@@ -266,7 +267,9 @@ class Compiler(ILogable):
 			else:
 				postDeleteTasks = []
 
-		if (len(postDeleteTasks) != 0):
+		if (self._noCleanUp == True):
+			self._LogVerbose("Disabled cleanup. Skipping post-delete rules.")
+		elif (len(postDeleteTasks) != 0):
 			self._ExecuteDeleteTasks(postDeleteTasks, "post")
 		else:
 			self._LogDebug("nothing to delete")
