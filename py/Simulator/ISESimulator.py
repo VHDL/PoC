@@ -158,7 +158,7 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 			else:
 				self._LogDebug("Didn't find waveform config file: '{0!s}'".format(wcfgFilePath))
 
-		iSim.Simulate()
+		testbench.Result = iSim.Simulate()
 
 		# print()
 		# if (not self.__guiMode):

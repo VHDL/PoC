@@ -58,6 +58,10 @@ VHDL_TESTBENCH_LIBRARY_NAME = "test"
 class SimulatorException(ExceptionBase):
 	pass
 
+class SkipableSimulatorException(SimulatorException):
+	pass
+
+
 @unique
 class SimulationResult(Enum):
 	Failed =		0
@@ -154,13 +158,13 @@ class Simulator(ILogable):
 				for testbench in entity.GetVHDLTestbenches():
 					try:
 						self.Run(testbench, *args, **kwargs)
-					except SimulatorException:
+					except SkipableSimulatorException:
 						pass
 			else:
 				testbench = entity.VHDLTestbench
 				try:
 					self.Run(testbench, *args, **kwargs)
-				except SimulatorException:
+				except SkipableSimulatorException:
 					pass
 
 	def Run(self, entity, board, vhdlVersion="93c", vhdlGenerics=None, **kwargs):

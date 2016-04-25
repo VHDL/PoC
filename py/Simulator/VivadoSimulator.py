@@ -169,7 +169,7 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 				self._LogDebug("Didn't find waveform config file: '{0!s}'".format(wcfgFilePath))
 
 		xSim.Parameters[xSim.SwitchSnapshot] = testbench.ModuleName
-		xSim.Simulate()
+		testbench.Result = xSim.Simulate()
 
 		# print()
 		# if (not self.__guiMode):

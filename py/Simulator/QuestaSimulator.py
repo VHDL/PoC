@@ -152,7 +152,7 @@ class Simulator(BaseSimulator):
 		vsim.Parameters[vsim.FlagCommandLineMode] =		True
 		vsim.Parameters[vsim.SwitchBatchCommand] =		"do {0}".format(tclBatchFilePath.as_posix())
 		vsim.Parameters[vsim.SwitchTopLevel] =				"{0}.{1}".format(VHDL_TESTBENCH_LIBRARY_NAME, testbench.ModuleName)
-		vsim.Simulate()
+		testbench.Result = vsim.Simulate()
 		
 	def _RunSimulationWithGUI(self, testbench):
 		self._LogNormal("Running simulation...")
@@ -176,7 +176,7 @@ class Simulator(BaseSimulator):
 			self._LogDebug("Didn't find waveform script: '{0!s}'. Loading default commands.".format(tclWaveFilePath))
 			vsim.Parameters[vsim.SwitchBatchCommand] =	"add wave *; do {0}".format(tclGUIFilePath.as_posix())
 
-		vsim.Simulate()
+		testbench.Result = vsim.Simulate()
 
 		# if (not self.__guiMode):
 			# try:
