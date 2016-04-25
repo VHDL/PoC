@@ -53,7 +53,7 @@ from Base.ToolChain						import ToolChainException
 from Base.Simulator						import SimulatorException
 from Base.Compiler						import CompilerException
 from PoC.Config								import Board
-from PoC.Entity								import Root, FQN, EntityTypes
+from PoC.Entity								import Root, FQN, EntityTypes, WildCard, TestbenchKind, NetlistKind
 from PoC.Query								import Query
 from ToolChains								import Configurations
 from Simulator.ActiveHDLSimulator		import Simulator as ActiveHDLSimulator
@@ -180,19 +180,19 @@ class PoC(ILogable, ArgParseMixin):
 		]
 
 		# create parser instance
-		self._LogDebug("  Reading PoC configuration from:")
+		self._LogDebug("Reading PoC configuration from:")
 		self.__pocConfig = ExtendedConfigParser()
 		self.__pocConfig.optionxform = str
 
 		try:
 			# process first file (private)
 			file, name = configFiles[0]
-			self._LogDebug("    '{0!s}'".format(file))
+			self._LogDebug("  {0!s}".format(file))
 			if not file.exists():  raise NotConfiguredException("PoC's {0} configuration file '{1!s}' does not exist.".format(name, file))  from FileNotFoundError(str(file))
 			self.__pocConfig.read(str(file))
 
 			for file, name in configFiles[1:]:
-				self._LogDebug("    '{0!s}'".format(file))
+				self._LogDebug("  {0!s}".format(file))
 				if not file.exists():  raise ConfigurationException("PoC's {0} configuration file '{1!s}' does not exist.".format(name, file))  from FileNotFoundError(str(file))
 				self.__pocConfig.read(str(file))
 		except DuplicateOptionError as ex:
@@ -247,6 +247,7 @@ class PoC(ILogable, ArgParseMixin):
 		self.__ReadPoCConfiguration()
 
 	def __PrepareForSimulation(self):
+		self._LogNormal("Initializing PoC-Library Service Tool for simulations")
 		self.__ReadPoCConfiguration()
 
 		# parsing values into class fields
@@ -255,6 +256,7 @@ class PoC(ILogable, ArgParseMixin):
 		self.Directories["PoCTemp"] =				self.Directories["PoCRoot"] / self.PoCConfig['CONFIG.DirectoryNames']['TemporaryFiles']
 
 	def __PrepareForSynthesis(self):
+		self._LogNormal("Initializing PoC-Library Service Tool for synthesis")
 		self.__ReadPoCConfiguration()
 
 		# parsing values into class fields
@@ -279,9 +281,9 @@ class PoC(ILogable, ArgParseMixin):
 
 	def PrintHeadline(self):
 		# self._LogNormal(Foreground.MAGENTA + "=" * 80)
-		self._LogNormal("{HEADLINE}{line}{RESET}".format(line="="*80, **Init.Foreground))
-		self._LogNormal("{HEADLINE}{headline: ^80s}{RESET}".format(headline=self.HeadLine, **Init.Foreground))
-		self._LogNormal("{HEADLINE}{line}{RESET}".format(line="="*80, **Init.Foreground))
+		self._LogNormal("{HEADLINE}{line}{NOCOLOR}".format(line="="*80, **Init.Foreground))
+		self._LogNormal("{HEADLINE}{headline: ^80s}{NOCOLOR}".format(headline=self.HeadLine, **Init.Foreground))
+		self._LogNormal("{HEADLINE}{line}{NOCOLOR}".format(line="="*80, **Init.Foreground))
 
 	# ----------------------------------------------------------------------------
 	# fallback handler if no command was recognized
@@ -375,7 +377,7 @@ class PoC(ILogable, ArgParseMixin):
 	def _manualConfigurationForWindows(self):
 		for config in Configurations:
 			configurator = config(self)
-			self._LogNormal("{CYAN}Configuring {0!s}{RESET}".format(configurator.Name, **Init.Foreground))
+			self._LogNormal("{CYAN}Configuring {0!s}{NOCOLOR}".format(configurator.Name, **Init.Foreground))
 
 			nxt = False
 			while (nxt == False):
@@ -385,7 +387,7 @@ class PoC(ILogable, ArgParseMixin):
 				except SkipConfigurationException:
 					break
 				except ExceptionBase as ex:
-					print("  {RED}FAULT:{RESET} {0}".format(ex.message, **Init.Foreground))
+					print("  {RED}FAULT:{NOCOLOR} {0}".format(ex.message, **Init.Foreground))
 			# end while
 
 	def _manualConfigurationForLinux(self):
@@ -461,17 +463,33 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("list-testbench", help="List all testbenches")
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@ArgumentAttribute('--kind', metavar="<Kind>", dest="TestbenchKind", help="Testbench kind: VHDL | COCOTB")
 	# @HandleVerbosityOptions
 	def HandleListTestbenches(self, args):
-		self.__PrepareForSimulation()
 		self.PrintHeadline()
+		self.__PrepareForSimulation()
 
-		fqnList = self._ExtractFQNs(args)
+		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
 
-		# run a testbench
+		if (args.TestbenchKind is None):
+			tbFilter =	TestbenchKind.all_flags
+		else:
+			tbFilter =	TestbenchKind.no_flags
+			for kind in args.TestbenchKind.lower().split(","):
+				if   (kind == "vhdl"):		tbFilter |= TestbenchKind.VHDLTestbench
+				elif (kind == "cocotb"):	tbFilter |= TestbenchKind.CocoTestbench
+				else:											raise CommonException("Argument --kind has an unknown value '{0}'.".format(kind))
+
+		fqnList = self._ExtractFQNs(args.FQN)
 		for fqn in fqnList:
-			for entity in fqn.GetEntities():
-				print(entity)
+			self._LogNormal("")
+			entity = fqn.Entity
+			if (isinstance(entity, WildCard)):
+				for testbench in entity.GetTestbenches(tbFilter):
+					print(str(testbench))
+			else:
+				testbench = entity.GetTestbenches(tbFilter)
+				print(str(testbench))
 
 		Exit.exit()
 	
@@ -794,17 +812,34 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("list-netlist", help="List all netlists")
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@ArgumentAttribute('--kind', metavar="<Kind>", dest="NetlistKind", help="Netlist kind: Lattice | Quartus | XST | CoreGen")
 	# @HandleVerbosityOptions
 	def HandleListNetlist(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSynthesis()
 
-		fqnList =	self._ExtractFQNs(args.FQN)
+		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
 
-		# run a testbench
+		if (args.NetlistKind is None):
+			nlFilter = NetlistKind.all_flags
+		else:
+			nlFilter = NetlistKind.no_flags
+			for kind in args.TestbenchKind.lower().split(","):
+				if   (kind == "lattice"):	nlFilter |= NetlistKind.LatticeNetlist
+				elif (kind == "quartus"):	nlFilter |= NetlistKind.QuartusNetlist
+				elif (kind == "xst"):			nlFilter |= NetlistKind.XstNetlist
+				elif (kind == "coregen"):	nlFilter |= NetlistKind.CoreGeneratorNetlist
+				else:											raise CommonException("Argument --kind has an unknown value '{0}'.".format(kind))
+
+		fqnList = self._ExtractFQNs(args.FQN)
 		for fqn in fqnList:
-			for entity in fqn.GetEntities():
-				print(entity)
+			entity = fqn.Entity
+			if (isinstance(entity, WildCard)):
+				for testbench in entity.GetNetlists(nlFilter):
+					print(str(testbench))
+			else:
+				testbench = entity.GetNetlists(nlFilter)
+				print(str(testbench))
 
 		Exit.exit()
 
@@ -968,25 +1003,25 @@ def main():
 		Exit.exit()
 
 	except (CommonException, ConfigurationException, SimulatorException, CompilerException) as ex:
-		print("{RED}ERROR:{RESET} {message}".format(message=ex.message, **Init.Foreground))
+		print("{RED}ERROR:{NOCOLOR} {message}".format(message=ex.message, **Init.Foreground))
 		cause = ex.__cause__
 		if isinstance(cause, FileNotFoundError):
-			print("{YELLOW}  FileNotFound:{RESET} '{cause}'".format(cause=str(cause), **Init.Foreground))
+			print("{YELLOW}  FileNotFound:{NOCOLOR} '{cause}'".format(cause=str(cause), **Init.Foreground))
 		elif isinstance(cause, DuplicateOptionError):
-			print("{YELLOW}  DuplicateOptionError:{RESET} '{cause}'".format(cause=str(cause), **Init.Foreground))
+			print("{YELLOW}  DuplicateOptionError:{NOCOLOR} '{cause}'".format(cause=str(cause), **Init.Foreground))
 		elif isinstance(cause, ConfigParser_Error):
-			print("{YELLOW}  configparser.Error:{RESET} '{cause}'".format(cause=str(cause), **Init.Foreground))
+			print("{YELLOW}  configparser.Error:{NOCOLOR} '{cause}'".format(cause=str(cause), **Init.Foreground))
 		elif isinstance(cause, ParserException):
-			print("{YELLOW}  ParserException:{RESET} {cause}".format(cause=str(cause), **Init.Foreground))
+			print("{YELLOW}  ParserException:{NOCOLOR} {cause}".format(cause=str(cause), **Init.Foreground))
 			cause = cause.__cause__
 			if (cause is not None):
-				print("{YELLOW}    {name}:{RESET} {cause}".format(name=cause.__class__.__name__, cause= str(cause), **Init.Foreground))
+				print("{YELLOW}    {name}:{NOCOLOR} {cause}".format(name=cause.__class__.__name__, cause= str(cause), **Init.Foreground))
 		elif isinstance(cause, ToolChainException):
-			print("{YELLOW}  {name}:{RESET} {cause}".format(name=cause.__class__.__name__, cause=str(cause), **Init.Foreground))
+			print("{YELLOW}  {name}:{NOCOLOR} {cause}".format(name=cause.__class__.__name__, cause=str(cause), **Init.Foreground))
 			cause = cause.__cause__
 			if (cause is not None):
 				if isinstance(cause, OSError):
-					print("{YELLOW}    {name}:{RESET} {cause}".format(name=cause.__class__.__name__, cause=str(cause), **Init.Foreground))
+					print("{YELLOW}    {name}:{NOCOLOR} {cause}".format(name=cause.__class__.__name__, cause=str(cause), **Init.Foreground))
 			else:
 				print("  Possible causes:")
 				print("   - The compile order is broken.")
@@ -994,7 +1029,7 @@ def main():
 
 		if (not (verbose or debug)):
 			print()
-			print("{CYAN}  Use '-v' for verbose or '-d' for debug to print out extended messages.{RESET}".format(**Init.Foreground))
+			print("{CYAN}  Use '-v' for verbose or '-d' for debug to print out extended messages.{NOCOLOR}".format(**Init.Foreground))
 		Exit.exit(1)
 
 	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)

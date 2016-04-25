@@ -43,7 +43,7 @@ from configparser									import NoSectionError
 from lib.Functions					import Init
 # from Base.Exceptions							import PlatformNotSupportedException, NotConfiguredException
 from Base.Project									import FileTypes, VHDLVersion, Environment, ToolChain, Tool
-from Base.Simulator								import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME
+from Base.Simulator								import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
 from ToolChains.Mentor.QuestaSim	import QuestaSim, QuestaException
 
 
@@ -75,12 +75,12 @@ class Simulator(BaseSimulator):
 		super()._PrepareSimulationEnvironment()
 
 	def PrepareSimulator(self, binaryPath, version):
-		# create the GHDL executable factory
-		self._LogVerbose("  Preparing Mentor simulator.")
+		# create the QuestaSim executable factory
+		self._LogVerbose("Preparing Mentor simulator.")
 		self._questa =		QuestaSim(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def Run(self, testbench, board, vhdlVersion="93", vhdlGenerics=None, guiMode=False):
-		self._LogQuiet("Testbench: {YELLOW}{0!s}{RESET}".format(testbench.Parent, **Init.Foreground))
+		self._LogQuiet("Testbench: {0!s}".format(testbench.Parent, **Init.Foreground))
 
 		self._vhdlVersion =		vhdlVersion
 		self._vhdlGenerics =	vhdlGenerics
@@ -96,9 +96,14 @@ class Simulator(BaseSimulator):
 			self._RunSimulation(testbench)
 		else:
 			self._RunSimulationWithGUI(testbench)
+
+		if (testbench.Result is SimulationResult.Passed):				self._LogQuiet("  {GREEN}[PASSED]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.NoAsserts):	self._LogQuiet("  {YELLOW}[NO ASSERTS]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.Failed):			self._LogQuiet("  {RED}[FAILED]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.Error):			self._LogQuiet("  {RED}[ERROR]{NOCOLOR}".format(**Init.Foreground))
 		
 	def _RunCompile(self, testbench):
-		self._LogNormal("  running VHDL compiler for every vhdl file...")
+		self._LogNormal("Running VHDL compiler for every vhdl file...")
 
 		# create a QuestaVHDLCompiler instance
 		vlib = self._questa.GetVHDLLibraryTool()
@@ -140,29 +145,29 @@ class Simulator(BaseSimulator):
 				vcomLogFile.unlink()
 
 	def _RunSimulation(self, testbench):
-		self._LogNormal("  running simulation...")
+		self._LogNormal("Running simulation...")
 		
 		tclBatchFilePath =		self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['vSimBatchScript']
 		
 		# create a QuestaSimulator instance
 		vsim = self._questa.GetSimulator()
-		vsim.Parameters[vsim.FlagOptimization] =			True
+		# vsim.Parameters[vsim.FlagOptimization] =			True
 		vsim.Parameters[vsim.FlagReportAsError] =			"3473"
 		vsim.Parameters[vsim.SwitchTimeResolution] =	"1fs"
 		vsim.Parameters[vsim.FlagCommandLineMode] =		True
 		vsim.Parameters[vsim.SwitchBatchCommand] =		"do {0}".format(tclBatchFilePath.as_posix())
 		vsim.Parameters[vsim.SwitchTopLevel] =				"{0}.{1}".format(VHDL_TESTBENCH_LIBRARY_NAME, testbench.ModuleName)
-		vsim.Simulate()
+		testbench.Result = vsim.Simulate()
 		
 	def _RunSimulationWithGUI(self, testbench):
-		self._LogNormal("  running simulation...")
+		self._LogNormal("Running simulation...")
 	
 		tclGUIFilePath =			self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['vSimGUIScript']
 		tclWaveFilePath =			self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['vSimWaveScript']
 
 		# create a QuestaSimulator instance
 		vsim = self._questa.GetSimulator()
-		vsim.Parameters[vsim.FlagOptimization] =			True
+		# vsim.Parameters[vsim.FlagOptimization] =			True
 		vsim.Parameters[vsim.FlagReportAsError] =			"3473"
 		vsim.Parameters[vsim.SwitchTimeResolution] =	"1fs"
 		vsim.Parameters[vsim.FlagGuiMode] =						True
@@ -176,7 +181,7 @@ class Simulator(BaseSimulator):
 			self._LogDebug("Didn't find waveform script: '{0!s}'. Loading default commands.".format(tclWaveFilePath))
 			vsim.Parameters[vsim.SwitchBatchCommand] =	"add wave *; do {0}".format(tclGUIFilePath.as_posix())
 
-		vsim.Simulate()
+		testbench.Result = vsim.Simulate()
 
 		# if (not self.__guiMode):
 			# try:

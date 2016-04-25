@@ -43,9 +43,11 @@ else:
 from collections								import OrderedDict
 from pathlib										import Path
 
+from lib.Functions							import CallByRefParam
 from Base.Exceptions						import PlatformNotSupportedException
 from Base.Logging								import LogEntry, Severity
 from Base.Configuration 				import Configuration as BaseConfiguration, ConfigurationException
+from Base.Simulator							import SimulationResult, PoCSimulationResultFilter
 from Base.Executable						import Executable
 from Base.Executable						import ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument, StringArgument, CommandLineArgumentList
 from ToolChains.Mentor.Mentor		import MentorException
@@ -266,7 +268,7 @@ class QuestaVHDLCompiler(Executable, QuestaSimMixIn):
 
 	def Compile(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -280,7 +282,7 @@ class QuestaVHDLCompiler(Executable, QuestaSimMixIn):
 			iterator = iter(QuestaVComFilter(self.GetReader()))
 
 			line = next(iterator)
-			line.Indent(2)
+			line.IndentBy(2)
 			self._hasOutput = True
 			self._LogNormal("    vcom messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
 			self._LogNormal("    " + ("-" * 76))
@@ -291,7 +293,7 @@ class QuestaVHDLCompiler(Executable, QuestaSimMixIn):
 				self._hasErrors |= (line.Severity is Severity.Error)
 
 				line = next(iterator)
-				line.Indent(2)
+				line.IndentBy(2)
 				self._Log(line)
 
 		except StopIteration as ex:
@@ -400,7 +402,7 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 
 	def Simulate(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -410,11 +412,12 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 		self._hasOutput = False
 		self._hasWarnings = False
 		self._hasErrors = False
+		simulationResult = CallByRefParam(SimulationResult.Error)
 		try:
-			iterator = iter(QuestaVSimFilter(self.GetReader()))
+			iterator = iter(PoCSimulationResultFilter(QuestaVSimFilter(self.GetReader()), simulationResult))
 
 			line = next(iterator)
-			line.Indent(2)
+			line.IndentBy(2)
 			self._hasOutput = True
 			self._LogNormal("    vsim messages for '{0}'".format(self.Parameters[self.SwitchTopLevel]))
 			self._LogNormal("    " + ("-" * 76))
@@ -425,7 +428,7 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 				self._hasErrors |= (line.Severity is Severity.Error)
 
 				line = next(iterator)
-				line.Indent(2)
+				line.IndentBy(2)
 				self._Log(line)
 
 		except StopIteration as ex:
@@ -437,6 +440,8 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 		finally:
 			if self._hasOutput:
 				self._LogNormal("    " + ("-" * 76))
+
+		return simulationResult.value
 
 class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
@@ -471,7 +476,7 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 
 	def CreateLibrary(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -485,7 +490,7 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 			iterator = iter(QuestaVLibFilter(self.GetReader()))
 
 			line = next(iterator)
-			line.Indent(2)
+			line.IndentBy(2)
 			self._hasOutput = True
 			self._LogNormal("    vlib messages for '{0}'".format(self.Parameters[self.SwitchLibraryName]))
 			self._LogNormal("    " + ("-" * 76))
@@ -496,7 +501,7 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 				self._hasErrors |= (line.Severity is Severity.Error)
 
 				line = next(iterator)
-				line.Indent(2)
+				line.IndentBy(2)
 				self._Log(line)
 
 		except StopIteration as ex:
@@ -541,6 +546,10 @@ def QuestaVSimFilter(gen):
 				yield LogEntry(line, Severity.Verbose)
 			else:
 				yield LogEntry(line[2:], Severity.Normal)
+		elif line.startswith("** Warning: "):
+			yield LogEntry(line, Severity.Warning)
+		elif line.startswith("** Error: "):
+			yield LogEntry(line, Severity.Error)
 		else:
 			yield LogEntry(line, Severity.Normal)
 

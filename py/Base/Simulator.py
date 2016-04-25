@@ -58,11 +58,16 @@ VHDL_TESTBENCH_LIBRARY_NAME = "test"
 class SimulatorException(ExceptionBase):
 	pass
 
+class SkipableSimulatorException(SimulatorException):
+	pass
+
+
 @unique
 class SimulationResult(Enum):
-	Failed = 0
-	NoAsserts = 1
-	Passed = 2
+	Failed =		0
+	NoAsserts =	1
+	Passed =		2
+	Error =			5
 
 
 class Simulator(ILogable):
@@ -99,18 +104,18 @@ class Simulator(ILogable):
 	def _PrepareSimulationEnvironment(self):
 		# create temporary directory if not existent
 		if (not (self._tempPath).exists()):
-			self._LogVerbose("  Creating temporary directory for simulator files.")
-			self._LogDebug("    Temporary directory: {0!s}".format(self._tempPath))
+			self._LogVerbose("Creating temporary directory for simulator files.")
+			self._LogDebug("Temporary directory: {0!s}".format(self._tempPath))
 			self._tempPath.mkdir(parents=True)
 
 		# change working directory to temporary path
-		self._LogVerbose("  Changing working directory to temporary directory.")
-		self._LogDebug("    cd \"{0!s}\"".format(self._tempPath))
+		self._LogVerbose("Changing working directory to temporary directory.")
+		self._LogDebug("cd \"{0!s}\"".format(self._tempPath))
 		chdir(str(self._tempPath))
 
 	def _CreatePoCProject(self, testbench, board):
 		# create a PoCProject and read all needed files
-		self._LogDebug("    Create a PoC project '{0}'".format(testbench.ModuleName))
+		self._LogVerbose("Creating a PoC project '{0}'".format(testbench.ModuleName))
 		pocProject = PoCProject(testbench.ModuleName)
 
 		# configure the project
@@ -124,7 +129,7 @@ class Simulator(ILogable):
 		self._pocProject = pocProject
 
 	def _AddFileListFile(self, fileListFilePath):
-		self._LogDebug("    Reading filelist '{0!s}'".format(fileListFilePath))
+		self._LogVerbose("Reading filelist '{0!s}'".format(fileListFilePath))
 		# add the *.files file, parse and evaluate it
 		# if (not fileListFilePath.exists()):		raise SimulatorException("Files file '{0!s}' not found.".format(fileListFilePath)) from FileNotFoundError(str(fileListFilePath))
 
@@ -137,8 +142,10 @@ class Simulator(ILogable):
 		except ParserException as ex:
 			raise SimulatorException("Error while parsing '{0!s}'.".format(fileListFilePath)) from ex
 
+		self._LogDebug("=" * 78)
+		self._LogDebug("Pretty printing the PoCProject...")
 		self._LogDebug(self._pocProject.pprint(2))
-		self._LogDebug("=" * 160)
+		self._LogDebug("=" * 78)
 		if (len(fileListFile.Warnings) > 0):
 			for warn in fileListFile.Warnings:
 				self._LogWarning(warn)
@@ -151,13 +158,13 @@ class Simulator(ILogable):
 				for testbench in entity.GetVHDLTestbenches():
 					try:
 						self.Run(testbench, *args, **kwargs)
-					except SimulatorException:
+					except SkipableSimulatorException:
 						pass
 			else:
 				testbench = entity.VHDLTestbench
 				try:
 					self.Run(testbench, *args, **kwargs)
-				except SimulatorException:
+				except SkipableSimulatorException:
 					pass
 
 	def Run(self, entity, board, vhdlVersion="93c", vhdlGenerics=None, **kwargs):
@@ -173,3 +180,36 @@ class Simulator(ILogable):
 			elif (simulatorOutput[matchPos + 20: matchPos + 30] == "NO ASSERTS"):
 				return SimulationResult.NoAsserts
 		raise SimulatorException("String 'SIMULATION RESULT ...' not found in simulator output.")
+
+def PoCSimulationResultFilter(gen, simulationResult):
+	state = 0
+	for line in gen:
+		if   ((state == 0) and (line.Message == "========================================")):
+			state = 1
+		elif ((state == 1) and (line.Message == "POC TESTBENCH REPORT")):
+			state = 2
+		elif ((state == 2) and (line.Message == "========================================")):
+			state = 3
+		elif ((state == 3) and (line.Message == "========================================")):
+			state = 4
+		elif ((state == 4) and line.Message.startswith("SIMULATION RESULT = ")):
+			state = 5
+			if line.Message.endswith("FAILED"):
+				simulationResult <<= SimulationResult.Failed
+			elif line.Message.endswith("NO ASSERTS"):
+				simulationResult <<= SimulationResult.NoAsserts
+			elif line.Message.endswith("PASSED"):
+				simulationResult <<= SimulationResult.Passed
+			else:
+				simulationResult <<= SimulationResult.Error
+		elif ((state == 5) and (line.Message == "========================================")):
+			state = 6
+
+		yield line
+	else:
+		if (state != 6):		raise SimulatorException("No PoC Testbench Report in simulator output found.")
+
+
+
+
+

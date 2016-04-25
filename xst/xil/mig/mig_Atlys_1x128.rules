@@ -9,13 +9,13 @@ PreProcessRules
 End PreProcessRules
 
 PostProcessRules
-	Copy "${SPECIAL:OutputDir}/${TopModule}.ngc"														To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${TopModule}.ngc"
-	Copy "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${TopModule}_top.vhd"		To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${TopModule}.vhdl"
+	Copy "${SPECIAL:OutputDir}/${TopLevel}.ngc"														To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.ngc"
+	Copy "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}_top.vhd"		To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.vhdl"
 	
 	# first 2 lines with option "d"
-	File "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${TopModule}.vhdl"
-		Replace "(architecture arc of ${TopModule} is).*(end  arc;)"	With "\1\nbegin\n\2"	Options DotAll
-		Replace "generic.*port"																				With "port"						Options DotAll
+	File "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.vhdl"
+		Replace "(architecture arc of ${TopLevel} is).*(end  arc;)"	With "\\1\\nbegin\\n\\2"	Options DotAll
+		Replace "generic.*port"																				With "port"								Options DotAll
 		Replace "C3_NUM_DQ_PINS"																			With "16"
 		Replace "C3_MEM_ADDR_WIDTH"																		With "13"
 		Replace "C3_MEM_BANKADDR_WIDTH"																With "3"

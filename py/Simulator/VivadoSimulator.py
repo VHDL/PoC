@@ -46,7 +46,7 @@ from colorama									import Fore as Foreground
 from lib.Functions						import Init
 # from Base.Exceptions					import PlatformNotSupportedException, NotConfiguredException
 from Base.Project							import FileTypes, VHDLVersion, Environment, ToolChain, Tool
-from Base.Simulator						import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME
+from Base.Simulator						import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
 from Base.Logging							import Severity
 from ToolChains.Xilinx.Xilinx	import XilinxProjectExportMixIn
 from ToolChains.Xilinx.Vivado	import Vivado, VivadoException
@@ -81,12 +81,12 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		super()._PrepareSimulationEnvironment()
 
 	def PrepareSimulator(self, binaryPath, version):
-		# create the GHDL executable factory
-		self._LogVerbose("  Preparing GHDL simulator.")
+		# create the Vivado executable factory
+		self._LogVerbose("Preparing Vivado simulator.")
 		self._vivado = Vivado(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def Run(self, testbench, board, vhdlVersion="93", vhdlGenerics=None, guiMode=False):
-		self._LogQuiet("Testbench: {YELLOW}{0!s}{RESET}".format(testbench.Parent, **Init.Foreground))
+		self._LogQuiet("Testbench: {0!s}".format(testbench.Parent, **Init.Foreground))
 
 		self._vhdlVersion =		vhdlVersion
 		self._vhdlGenerics =	vhdlGenerics
@@ -98,6 +98,11 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		# self._RunCompile(testbenchName)
 		self._RunLink(testbench)
 		self._RunSimulation(testbench)
+		
+		if (testbench.Result is SimulationResult.Passed):				self._LogQuiet("  {GREEN}[PASSED]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.NoAsserts):	self._LogQuiet("  {YELLOW}[NO ASSERTS]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.Failed):			self._LogQuiet("  {RED}[FAILED]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.Error):			self._LogQuiet("  {RED}[ERROR]{NOCOLOR}".format(**Init.Foreground))
 
 	def _RunCompile(self, testbench):
 		self._LogNormal("  compiling source files...")
@@ -110,7 +115,7 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		xvhcomp.Compile(str(prjFilePath))
 		
 	def _RunLink(self, testbench):
-		self._LogNormal("  running xelab...")
+		self._LogNormal("Running xelab...")
 		
 		xelabLogFilePath =	self._tempPath / (testbench.ModuleName + ".xelab.log")
 		prjFilePath =				self._tempPath / (testbench.ModuleName + ".prj")
@@ -144,7 +149,7 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 			raise SimulatorException("Error while analysing '{0!s}'.".format(prjFilePath))
 
 	def _RunSimulation(self, testbench):
-		self._LogNormal("  running simulation...")
+		self._LogNormal("Running simulation...")
 		
 		xSimLogFilePath =		self._tempPath / (testbench.ModuleName + ".xSim.log")
 		tclBatchFilePath =	self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['xSimBatchScript']
@@ -163,13 +168,13 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 
 			# if xSim save file exists, load it's settings
 			if wcfgFilePath.exists():
-				self._LogDebug("    Found waveform config file: '{0!s}'".format(wcfgFilePath))
+				self._LogDebug("Found waveform config file: '{0!s}'".format(wcfgFilePath))
 				xSim.Parameters[xSim.SwitchWaveformFile] =	str(wcfgFilePath)
 			else:
-				self._LogDebug("    Didn't find waveform config file: '{0!s}'".format(wcfgFilePath))
+				self._LogDebug("Didn't find waveform config file: '{0!s}'".format(wcfgFilePath))
 
 		xSim.Parameters[xSim.SwitchSnapshot] = testbench.ModuleName
-		xSim.Simulate()
+		testbench.Result = xSim.Simulate()
 
 		# print()
 		# if (not self.__guiMode):

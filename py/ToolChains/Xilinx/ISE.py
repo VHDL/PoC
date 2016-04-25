@@ -32,7 +32,6 @@
 # ==============================================================================
 #
 # entry point
-
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -44,10 +43,12 @@ from collections					import OrderedDict
 from pathlib							import Path
 from os										import environ
 
+from lib.Functions							import CallByRefParam
 from Base.Exceptions						import PlatformNotSupportedException
 from Base.Logging								import LogEntry, Severity
 from Base.Configuration					import Configuration as BaseConfiguration, ConfigurationException, SkipConfigurationException
 from Base.Project								import Project as BaseProject, ProjectFile, ConstraintFile, FileTypes
+from Base.Simulator							import SimulationResult, PoCSimulationResultFilter
 from Base.Executable						import Executable
 from Base.Executable						import ExecutableArgument, ShortFlagArgument, ShortTupleArgument, StringArgument, CommandLineArgumentList
 from ToolChains.Xilinx.Xilinx		import XilinxException
@@ -270,7 +271,7 @@ class ISE(ISEMixIn):
 # 	def Compile(self, vhdlFile):
 # 		parameterList = self.Parameters.ToArgumentList()
 #
-# 		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+# 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 #
 		# _indent = "    "
 		# print(_indent + "vhcomp messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
@@ -342,7 +343,7 @@ class Fuse(Executable, ISEMixIn):
 
 	def Link(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -364,7 +365,7 @@ class Fuse(Executable, ISEMixIn):
 				self._hasWarnings |= (line.Severity is Severity.Warning)
 				self._hasErrors |= (line.Severity is Severity.Error)
 
-				line.Indent(2)
+				line.IndentBy(2)
 				self._Log(line)
 				line = next(iterator)
 
@@ -421,7 +422,7 @@ class ISESimulator(Executable):
 
 	def Simulate(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -431,8 +432,9 @@ class ISESimulator(Executable):
 		self._hasOutput = False
 		self._hasWarnings = False
 		self._hasErrors = False
+		simulationResult =	CallByRefParam(SimulationResult.Error)
 		try:
-			iterator = iter(SimulatorFilter(self.GetReader()))
+			iterator = iter(PoCSimulationResultFilter(SimulatorFilter(self.GetReader()), simulationResult))
 
 			line = next(iterator)
 			self._hasOutput = True
@@ -443,7 +445,7 @@ class ISESimulator(Executable):
 				self._hasWarnings |= (line.Severity is Severity.Warning)
 				self._hasErrors |= (line.Severity is Severity.Error)
 
-				line.Indent(2)
+				line.IndentBy(2)
 				self._Log(line)
 				line = next(iterator)
 
@@ -456,6 +458,8 @@ class ISESimulator(Executable):
 		finally:
 			if self._hasOutput:
 				self._LogNormal("    " + ("-" * 76))
+
+		return simulationResult.value
 
 
 class Xst(Executable, ISEMixIn):
@@ -501,7 +505,7 @@ class Xst(Executable, ISEMixIn):
 
 	def Compile(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -523,7 +527,7 @@ class Xst(Executable, ISEMixIn):
 				self._hasWarnings |= (line.Severity is Severity.Warning)
 				self._hasErrors |= (line.Severity is Severity.Error)
 
-				line.Indent(2)
+				line.IndentBy(2)
 				self._Log(line)
 				line = next(iterator)
 
@@ -580,7 +584,7 @@ class CoreGenerator(Executable, ISEMixIn):
 
 	def Generate(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -602,7 +606,7 @@ class CoreGenerator(Executable, ISEMixIn):
 				self._hasWarnings |= (line.Severity is Severity.Warning)
 				self._hasErrors |= (line.Severity is Severity.Error)
 
-				line.Indent(2)
+				line.IndentBy(2)
 				self._Log(line)
 				line = next(iterator)
 

@@ -1,0 +1,18 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# Scripts for the Travis-CI flow
+ghdl.setup.sh
+poc.setup.sh
+poc.run.sh
+
+# Python 3 - package requirements
+pip3-requirements.lst
+
+# PoC configuration files
+config.private.ini
+my_project.vhdl
+

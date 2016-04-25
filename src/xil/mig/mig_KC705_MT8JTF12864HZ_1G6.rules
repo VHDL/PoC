@@ -4,7 +4,7 @@
 # ==============================================================================
 # Notes:
 #	- all files are relative to PoCRoot directory
-#	- ${section:option} expressions refer to the section, wherin this rule file was referenced
+#	- ${section:option} expressions refer to the section, wherein this rule file was referenced
 #
 PreProcessRules
 	# Empty
