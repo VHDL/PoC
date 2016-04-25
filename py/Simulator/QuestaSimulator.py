@@ -80,7 +80,7 @@ class Simulator(BaseSimulator):
 		self._questa =		QuestaSim(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def Run(self, testbench, board, vhdlVersion="93", vhdlGenerics=None, guiMode=False):
-		self._LogQuiet("Testbench: {YELLOW}{0!s}{NOCOLOR}".format(testbench.Parent, **Init.Foreground))
+		self._LogQuiet("Testbench: {0!s}".format(testbench.Parent, **Init.Foreground))
 
 		self._vhdlVersion =		vhdlVersion
 		self._vhdlGenerics =	vhdlGenerics

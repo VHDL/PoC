@@ -90,7 +90,7 @@ class Simulator(BaseSimulator):
 		self._vhdlGenerics =	vhdlGenerics
 
 		# check testbench database for the given testbench		
-		self._LogQuiet("Testbench: {YELLOW}{0!s}{NOCOLOR}".format(testbench.Parent, **Init.Foreground))
+		self._LogQuiet("Testbench: {0!s}".format(testbench.Parent, **Init.Foreground))
 
 		# setup all needed paths to execute fuse
 		self._CreatePoCProject(testbench, board)

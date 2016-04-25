@@ -112,15 +112,11 @@ class PathElement:
 		self._parent =				parent
 
 	@property
-	def Name(self):
-		return self.__name
-
+	def Name(self):		return self.__name
 	@property
-	def Parent(self):
-		return self._parent
-
-	def __str__(self):
-		return self.__name
+	def Parent(self):	return self._parent
+	@property
+	def Level(self):	return self._parent.Level + 1
 
 	def __str__(self):
 		return "{0}.{1}".format(str(self.Parent), self.Name)
@@ -165,7 +161,7 @@ class Namespace(PathElement):
 	def GetEntityNames(self):			return self.__entities.keys()
 	def GetAllEntities(self):
 		for namespace in self.GetNamespaces():
-			for entity in namespace.GetEntities():
+			for entity in namespace.GetAllEntities():
 				yield entity
 		for entity in self.GetEntities():
 			yield entity
@@ -193,6 +189,10 @@ class Root(Namespace):
 
 	def __init__(self, host):
 		super().__init__(host, self.__POCRoot_Name, self.__POCRoot_SectionName, None)
+
+	@property
+	def Level(self):
+		return 0
 
 	def __str__(self):
 		return self.__POCRoot_Name
@@ -398,6 +398,8 @@ class Base(ILazyLoadable):
 	def Parent(self):							return self._parent
 	@property
 	def ConfigSectionName(self):	return self._sectionName
+	@property
+	def Level(self):							return self._parent.Level + 1
 
 	def _Load(self):
 		pass

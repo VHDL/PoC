@@ -14,6 +14,7 @@ PoC.cpu
 PoC.io
   - SPI
   - QuadSPI
+	- HDMI
 
 PoC.mem.ecc/fec
   - BCH
@@ -30,5 +31,8 @@ PoC.???
   - IIR
 
 PoC.image (precessing)
-  - Minimum, Maximum, Mean filter (based on sorting networks)
+  - Minimum, Maximum, Median filter (based on sorting networks)
+
+PoC.xil
+  - Generic MMCM/PLL/DCM e.g. for VGA/DVI
 	

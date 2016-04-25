@@ -53,7 +53,7 @@ from Base.ToolChain						import ToolChainException
 from Base.Simulator						import SimulatorException
 from Base.Compiler						import CompilerException
 from PoC.Config								import Board
-from PoC.Entity								import Root, FQN, EntityTypes, WildCard
+from PoC.Entity								import Root, FQN, EntityTypes, WildCard, TestbenchKind, NetlistKind
 from PoC.Query								import Query
 from ToolChains								import Configurations
 from Simulator.ActiveHDLSimulator		import Simulator as ActiveHDLSimulator
@@ -463,6 +463,7 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("list-testbench", help="List all testbenches")
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@ArgumentAttribute('--kind', metavar="<Kind>", dest="TestbenchKind", help="Testbench kind: VHDL | COCOTB")
 	# @HandleVerbosityOptions
 	def HandleListTestbenches(self, args):
 		self.PrintHeadline()
@@ -470,14 +471,28 @@ class PoC(ILogable, ArgParseMixin):
 
 		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
 
+		if (args.TestbenchKind is None):
+			tbFilter =	TestbenchKind.All
+		else:
+			# tbFilter =	TestbenchKind.Unknown
+			# for kind in args.TestbenchKind.lower().split(","):
+			# 	if   (kind == "vhdl"):		tbFilter |= TestbenchKind.VHDLTestbench
+			# 	elif (kind == "cocotb"):	tbFilter |= TestbenchKind.CocoTestbench
+
+			# FIXME: workaround until flaged enums work
+			kind = args.TestbenchKind.lower().split(",")[0]
+			if   (kind == "vhdl"):		tbFilter = TestbenchKind.VHDLTestbench
+			elif (kind == "cocotb"):	tbFilter = TestbenchKind.CocoTestbench
+
 		fqnList = self._ExtractFQNs(args.FQN)
 		for fqn in fqnList:
+			self._LogNormal("")
 			entity = fqn.Entity
 			if (isinstance(entity, WildCard)):
-				for testbench in entity.GetTestbenches():
+				for testbench in entity.GetTestbenches(tbFilter):
 					print(str(testbench))
 			else:
-				testbench = entity.GetTestbenches()
+				testbench = entity.GetTestbenches(tbFilter)
 				print(str(testbench))
 
 		Exit.exit()
@@ -801,6 +816,7 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("list-netlist", help="List all netlists")
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@ArgumentAttribute('--kind', metavar="<Kind>", dest="NetlistKind", help="Netlist kind: Lattice | Quartus | XST | CoreGen")
 	# @HandleVerbosityOptions
 	def HandleListNetlist(self, args):
 		self.PrintHeadline()
@@ -808,14 +824,24 @@ class PoC(ILogable, ArgParseMixin):
 
 		if (len(args.FQN) == 0):              raise SimulatorException("No FQN given.")
 
+		if (args.NetlistKind is None):
+			nlFilter = NetlistKind.All
+		else:
+			# FIXME: workaround until flaged enums work
+			kind = args.NetlistKind.lower().split(",")[0]
+			if   (kind == "lattice"):		nlFilter = NetlistKind.LatticeNetlist
+			elif (kind == "quartus"):		nlFilter = NetlistKind.QuartusNetlist
+			elif (kind == "xst"):				nlFilter = NetlistKind.XstNetlist
+			elif (kind == "coregen"):		nlFilter = NetlistKind.CoreGeneratorNetlist
+
 		fqnList = self._ExtractFQNs(args.FQN)
 		for fqn in fqnList:
 			entity = fqn.Entity
 			if (isinstance(entity, WildCard)):
-				for testbench in entity.GetNetlists():
+				for testbench in entity.GetNetlists(nlFilter):
 					print(str(testbench))
 			else:
-				testbench = entity.GetNetlists()
+				testbench = entity.GetNetlists(nlFilter)
 				print(str(testbench))
 
 		Exit.exit()
