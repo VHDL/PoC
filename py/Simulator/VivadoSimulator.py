@@ -46,7 +46,7 @@ from colorama									import Fore as Foreground
 from lib.Functions						import Init
 # from Base.Exceptions					import PlatformNotSupportedException, NotConfiguredException
 from Base.Project							import FileTypes, VHDLVersion, Environment, ToolChain, Tool
-from Base.Simulator						import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME
+from Base.Simulator						import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
 from Base.Logging							import Severity
 from ToolChains.Xilinx.Xilinx	import XilinxProjectExportMixIn
 from ToolChains.Xilinx.Vivado	import Vivado, VivadoException
@@ -98,6 +98,11 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		# self._RunCompile(testbenchName)
 		self._RunLink(testbench)
 		self._RunSimulation(testbench)
+		
+		if (testbench.Result is SimulationResult.Passed):				self._LogQuiet("  {GREEN}[PASSED]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.NoAsserts):	self._LogQuiet("  {YELLOW}[NO ASSERTS]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.Failed):			self._LogQuiet("  {RED}[FAILED]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.Error):			self._LogQuiet("  {RED}[ERROR]{NOCOLOR}".format(**Init.Foreground))
 
 	def _RunCompile(self, testbench):
 		self._LogNormal("  compiling source files...")

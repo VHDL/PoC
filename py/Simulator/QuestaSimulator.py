@@ -43,7 +43,7 @@ from configparser									import NoSectionError
 from lib.Functions					import Init
 # from Base.Exceptions							import PlatformNotSupportedException, NotConfiguredException
 from Base.Project									import FileTypes, VHDLVersion, Environment, ToolChain, Tool
-from Base.Simulator								import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME
+from Base.Simulator								import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
 from ToolChains.Mentor.QuestaSim	import QuestaSim, QuestaException
 
 
@@ -96,6 +96,11 @@ class Simulator(BaseSimulator):
 			self._RunSimulation(testbench)
 		else:
 			self._RunSimulationWithGUI(testbench)
+
+		if (testbench.Result is SimulationResult.Passed):				self._LogQuiet("  {GREEN}[PASSED]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.NoAsserts):	self._LogQuiet("  {YELLOW}[NO ASSERTS]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.Failed):			self._LogQuiet("  {RED}[FAILED]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.Error):			self._LogQuiet("  {RED}[ERROR]{NOCOLOR}".format(**Init.Foreground))
 		
 	def _RunCompile(self, testbench):
 		self._LogNormal("Running VHDL compiler for every vhdl file...")
@@ -146,7 +151,7 @@ class Simulator(BaseSimulator):
 		
 		# create a QuestaSimulator instance
 		vsim = self._questa.GetSimulator()
-		vsim.Parameters[vsim.FlagOptimization] =			True
+		# vsim.Parameters[vsim.FlagOptimization] =			True
 		vsim.Parameters[vsim.FlagReportAsError] =			"3473"
 		vsim.Parameters[vsim.SwitchTimeResolution] =	"1fs"
 		vsim.Parameters[vsim.FlagCommandLineMode] =		True
@@ -162,7 +167,7 @@ class Simulator(BaseSimulator):
 
 		# create a QuestaSimulator instance
 		vsim = self._questa.GetSimulator()
-		vsim.Parameters[vsim.FlagOptimization] =			True
+		# vsim.Parameters[vsim.FlagOptimization] =			True
 		vsim.Parameters[vsim.FlagReportAsError] =			"3473"
 		vsim.Parameters[vsim.SwitchTimeResolution] =	"1fs"
 		vsim.Parameters[vsim.FlagGuiMode] =						True

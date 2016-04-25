@@ -546,6 +546,10 @@ def QuestaVSimFilter(gen):
 				yield LogEntry(line, Severity.Verbose)
 			else:
 				yield LogEntry(line[2:], Severity.Normal)
+		elif line.startswith("** Warning: "):
+			yield LogEntry(line, Severity.Warning)
+		elif line.startswith("** Error: "):
+			yield LogEntry(line, Severity.Error)
 		else:
 			yield LogEntry(line, Severity.Normal)
 
