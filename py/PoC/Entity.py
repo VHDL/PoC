@@ -658,7 +658,7 @@ class FQN:
 		if (fqn == ""):				raise ValueError("Parameter 'fqn' is empty.")
 
 		# extract EntityType
-		splitList1 = fqn.split(':')
+		splitList1 = fqn.split(":")
 		if (len(splitList1) == 1):
 			self.__type =	defaultType
 			entity =			fqn
@@ -669,7 +669,7 @@ class FQN:
 			raise ValueError("Argument 'fqn' has to many ':' signs.")
 
 		# extract parts
-		parts = entity.split('.')
+		parts = entity.split(".")
 		if (parts[0].lower() == "poc"):
 			parts = parts[1:]
 
