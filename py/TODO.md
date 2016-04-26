@@ -30,6 +30,10 @@ Open features
   - Attache solutions and projects to PoC
       - for IP core imports
       - for using PoC infrastructure on project files / testbenches / ...
+      - create-solution / import-solution / remove-solution
+      - create-project / remove-project
+      - add-ipcore / remove-ipcore
+      - set-default-project
   - IP core import into vendor tools
       - Altera Quartus
       - Xilinx ISE
@@ -37,7 +41,8 @@ Open features
       - Xilinx Vivado
           - incl. XDC files
   - updates via Git
-  
+  - PoSh auto completion
+  - PoSh drives (tb:)
   
 Vendor tool support
   - Aldec Active-HDL
