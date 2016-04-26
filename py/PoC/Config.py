@@ -46,8 +46,16 @@ from lib.Functions				import Init
 from Base.Configuration		import ConfigurationException
 
 
+class BaseEnum(Enum):
+	def __str__(self):
+		return self.name
+
+	def __repr__(self):
+		return str(self).lower()
+
+
 @unique
-class Vendors(Enum):
+class Vendors(BaseEnum):
 	Unknown =			0
 	Generic =			1
 	Altera =			2
@@ -62,7 +70,7 @@ class Vendors(Enum):
 		return str(self).lower()
 
 
-class Families(Enum):
+class Families(BaseEnum):
 	Unknown =		None
 	Generic =		"g"
 	# Xilinx families
@@ -77,12 +85,6 @@ class Families(Enum):
 	Arria =			"a"
 	Stratix =		"s"
 
-	def __str__(self):
-		return self.name
-	
-	def __repr__(self):
-		return str(self).lower()
-
 	# @CachedReadOnlyProperty
 	@property
 	def Token(self):
@@ -90,7 +92,7 @@ class Families(Enum):
 
 
 @unique
-class Devices(Enum):
+class Devices(BaseEnum):
 	Unknown =									0
 	Generic =									1
 
@@ -144,14 +146,8 @@ class Devices(Enum):
 	# Xilinx.Zynq devices
 	Zynq7000 =								350
 
-	def __str__(self):
-		return self.name
-	
-	def __repr__(self):
-		return str(self).lower()
-
 		
-class SubTypes(Enum):
+class SubTypes(BaseEnum):
 	Unknown =		None
 	Generic =		1
 	NoSubType = ("",	"")
@@ -177,15 +173,7 @@ class SubTypes(Enum):
 	CXT =				("cx",	"t")
 	HXT =				("hx",	"t")
 
-	def __str__(self):
-		if (self == SubTypes.Unknown):
-			return "??"
-		else:
-			return self.name
-	
-	def __repr__(self):
-		return str(self).lower()
-	
+
 	# @CachedReadOnlyProperty
 	@property
 	def Groups(self):
@@ -193,7 +181,7 @@ class SubTypes(Enum):
 
 		
 @unique
-class Packages(Enum):
+class Packages(BaseEnum):
 	Unknown =	0
 	Generic =	1
 	
@@ -214,14 +202,6 @@ class Packages(Enum):
 	RS =			42
 	RF =			43
 	
-	def __str__(self):
-		if (self is Packages.Unknown):
-			return "??"
-		else:
-			return self.name
-			
-	def __repr__(self):
-		return str(self).lower()
 
 class Device:
 	def __init__(self, deviceString):
