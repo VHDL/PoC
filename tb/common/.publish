@@ -7,8 +7,10 @@ README.md
 # PoC.my_config examples
 my_config.files
 my_config_Atlys.vhdl
+my_config_GENERIC.vhdl
 my_config_DE0.vhdl
 my_config_DE4.vhdl
+my_config_DE5.vhdl
 my_config_ECP5Versa.vhdl
 my_config_KC705.vhdl
 my_config_ML505.vhdl
