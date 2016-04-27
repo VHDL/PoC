@@ -82,10 +82,8 @@ class Configuration(BaseConfiguration):
 	def __init__(self, host):
 		super().__init__(host)
 
-	def GetSections(self, Platform):
-		pass
-
-	def ConfigureForX(self):
+	def ConfigureForAll(self):
+		super().ConfigureForAll()
 		try:
 			if (not self._AskInstalled("Is Xilinx ISE installed on your system?")):
 				self._ClearSection(self._section)
@@ -97,12 +95,12 @@ class Configuration(BaseConfiguration):
 				installPath = self._AskInstallPath(self._section, defaultPath)
 				if installPath != defaultPath: # write user entered path
 					self._WriteInstallationDirectory(self._section, installPath)
-				self.__CheckISEVersion(installPath)
+				self.__CheckISEVersion()
 		except ConfigurationException:
 			self._ClearSection(self._section)
 			raise
 
-	def __CheckISEVersion(self, installPath):
+	def __CheckISEVersion(self):
 		# check for ISE 14.7
 		fusePath = Path(self._host.PoCConfig[self._section]['BinaryDirectory']) # get resolved path
 		if (self._host.Platform == "Linux"):

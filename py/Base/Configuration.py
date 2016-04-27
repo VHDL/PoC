@@ -95,13 +95,13 @@ class Configuration:		#(ISubClassRegistration):
 			return True
 
 	def ConfigureForWindows(self):
-		self.ConfigureForX()
+		self.ConfigureForAll()
 
 	def ConfigureForLinux(self):
-		self.ConfigureForX()
+		self.ConfigureForAll()
 
-	def ConfigureForX(self):
-		raise NotImplementedError()
+	def ConfigureForAll(self):
+		self._host.PoCConfig.Interpolation.clear_cache()
 
 	def __str__(self):
 		return self._toolName
@@ -119,9 +119,6 @@ class Configuration:		#(ISubClassRegistration):
 			raise ConfigurationException("Unsupported choice '{0}'".format(isInstalled))
 
 	def _AskInstallPath(self, section, defaultPath):
-		if self._host.PoCConfig.has_option(section, 'InstallationDirectory'):
-			defaultPath = Path(self._host.PoCConfig[section]['InstallationDirectory'])
-
 		directory = input("  {0} installation directory [{1!s}]: ".format(self.ToolName, defaultPath))
 		if (directory != ""):
 			installPath = Path(directory)
@@ -155,4 +152,3 @@ class Configuration:		#(ISubClassRegistration):
 
 	def _WriteInstallationDirectory(self, section, installPath):
 		self._host.PoCConfig[section]['InstallationDirectory'] = installPath.as_posix()
-		self._host.PoCConfig.Interpolation.clear_cache()
