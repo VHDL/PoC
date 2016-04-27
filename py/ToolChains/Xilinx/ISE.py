@@ -96,7 +96,7 @@ class Configuration(BaseConfiguration):
 				defaultPath = Path(self._host.PoCConfig[self._section]['InstallationDirectory']) # get resolved path
 				installPath = self._AskInstallPath(self._section, defaultPath)
 				if installPath != defaultPath: # write user entered path
-					self._host.PoCConfig[self._section]['InstallationDirectory'] = installPath.as_posix()
+					self._WriteInstallationDirectory(self._section, installPath)
 				self.__CheckISEVersion(installPath)
 		except ConfigurationException:
 			self._ClearSection(self._section)
