@@ -6,11 +6,11 @@
 # ==============================================================================
 #	Authors:				 	Martin Zabel
 # 
-#	Bash Script:			Compile Xilinx's simulation libraries
+#	Bash Script:			Compile Altera's simulation libraries
 # 
 # Description:
 # ------------------------------------
-#	This is a bash script compiles Xilinx's simulation libraries into a local
+#	This is a bash script compiles Altera's simulation libraries into a local
 #	directory.
 #
 # License:
@@ -32,36 +32,28 @@
 # ==============================================================================
 
 poc_sh=../../poc.sh
-Simulator=questa						# questa, ...
-Language=vhdl								# all, vhdl, verilog
-TargetArchitecture=all			# all, virtex5, virtex6, virtex7, ...
+Simulator=questasim					# questasim
+Language=vhdl								# vhdl
+TargetArchitecture="cycloneiii	stratixiv"		# space separated device list
 
 # define color escape codes
 RED='\e[0;31m'			# Red
 YELLOW='\e[1;33m'		# Yellow
 NOCOLOR='\e[0m'			# No Color
 
-# if $XILINX environment variable is not set
-if [ -z "$XILINX" ]; then
-	PoC_ISE_SettingsFile=$($poc_sh query Xilinx.ISE:SettingsFile)
-	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${RED}ERROR: No Xilinx ISE installation found.${NOCOLOR}"
-		echo 1>&2 -e "${RED}Run 'PoC.py --configure' to configure your Xilinx ISE installation.${NOCOLOR}"
-		exit 1
-	fi
-	echo -e "${YELLOW}Loading Xilinx ISE environment '$PoC_ISE_SettingsFile'${NOCOLOR}"
-	PyWrapper_RescueArgs=$@
-	set --
-	source "$PoC_ISE_SettingsFile"
-	set -- $PyWrapper_RescueArgs
+# Setup command to execute
+QuartusSH=$($poc_sh query Altera.Quartus:BinaryDirectory 2>/dev/null)/quartus_sh
+if [ $? -ne 0 ]; then
+	echo 1>&2 -e "${RED}ERROR: Cannot get Altera Quartus binary dir.${NOCOLOR}"
+	exit;
 fi
 
-# Setup command to execute
-DestDir=$($poc_sh query PoC:InstallationDirectory 2>/dev/null)/temp/precompiled/vsim/xilinx-ise	# Output directory
+DestDir=$($poc_sh query PoC:InstallationDirectory 2>/dev/null)/temp/precompiled/vsim/altera	# Output directory
 if [ $? -ne 0 ]; then
 	echo 1>&2 -e "${RED}ERROR: Cannot get PoC installation dir.${NOCOLOR}"
 	exit;
 fi 
+
 SimulatorDir=$($poc_sh query ModelSim:InstallationDirectory 2>/dev/null)/bin	# Path to the simulators bin directory
 if [ $? -ne 0 ]; then
 	echo 1>&2 -e "${RED}ERROR: Cannot get ModelSim installation dir.${NOCOLOR}"
@@ -88,9 +80,8 @@ if [ $? -ne 0 ]; then
 fi 
 
 # Execute command in destination directory
-compxlib -64bit -s $Simulator -l $Language -dir $DestDir -p $SimulatorDir -arch $TargetArchitecture -lib unisim -lib simprim -lib xilinxcorelib -intstyle ise
+$QuartusSH --simlib_comp -tool $Simulator -language $Language -tool_path $SimulatorDir -directory $DestDir -rtl_only
 
-# create "xilinx" symlink
-cd ..
-rm -f xilinx
-ln -s xilinx-ise xilinx
+for Family in $TargetArchitecture; do
+	$QuartusSH --simlib_comp -tool $Simulator -language $Language -family $Family -tool_path $SimulatorDir -directory $DestDir -no_rtl
+done

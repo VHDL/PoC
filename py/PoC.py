@@ -359,6 +359,15 @@ class PoC(ILogable, ArgParseMixin):
 		# re-read configuration
 		self.__ReadPoCConfiguration()
 
+		# create non-vendor-specific modelsim.ini
+		tempDirectory = self.PoCConfig['CONFIG.DirectoryNames']['TemporaryFiles']
+		precompiledDirectory = self.PoCConfig['CONFIG.DirectoryNames']['PrecompiledFiles']
+		vSimSimulatorFiles = self.PoCConfig['CONFIG.DirectoryNames']['QuestaSimFiles']
+		modelsimIniPath = self.Directories['PoCRoot'] / tempDirectory / precompiledDirectory / vSimSimulatorFiles / "modelsim.ini"
+		if not modelsimIniPath.exists():
+			with modelsimIniPath.open('w') as fileHandle:
+				fileHandle.write("[Library]\nothers = $MODEL_TECH/../modelsim.ini")
+
 	def _InitializeConfiguration(self):
 		# create parser instance
 		self._LogWarning("No private configuration found. Generating an empty PoC configuration...")
@@ -393,8 +402,8 @@ class PoC(ILogable, ArgParseMixin):
 			# end while
 
 	def _manualConfigurationForLinux(self):
-		for conf in Configurations:
-			configurator = conf()
+		for config in Configurations:
+			configurator = config(self)
 			self._LogNormal("Configure {0}".format(configurator.Name))
 
 			nxt = False
@@ -402,6 +411,8 @@ class PoC(ILogable, ArgParseMixin):
 				try:
 					configurator.ConfigureForLinux()
 					nxt = True
+				except SkipConfigurationException:
+					break
 				except ExceptionBase as ex:
 					print("FAULT: {0}".format(ex.message))
 			# end while
@@ -426,8 +437,8 @@ class PoC(ILogable, ArgParseMixin):
 	# ============================================================================
 	def __PrepareVendorLibraryPaths(self):
 		# prepare vendor library path for Altera
-		if (len(self.PoCConfig.options("INSTALL.Altera.QuartusII")) != 0):
-			self.Directories["AlteraPrimitiveSource"] = Path(self.PoCConfig['INSTALL.Altera.QuartusII']['InstallationDirectory']) / "eda/sim_lib"
+		if (len(self.PoCConfig.options("INSTALL.Altera.Quartus")) != 0):
+			self.Directories["AlteraPrimitiveSource"] = Path(self.PoCConfig['INSTALL.Altera.Quartus']['InstallationDirectory']) / "eda/sim_lib"
 		# prepare vendor library path for Xilinx
 		if (len(self.PoCConfig.options("INSTALL.Xilinx.ISE")) != 0):
 			self.Directories["XilinxPrimitiveSource"] = Path(self.PoCConfig['INSTALL.Xilinx.ISE']['InstallationDirectory']) / "ISE/vhdl/src"
@@ -971,17 +982,17 @@ class PoC(ILogable, ArgParseMixin):
 		self.__PrepareForSynthesis()
 
 		# TODO: check env variables
-		# self._CheckQuartusIIEnvironment()
+		# self._CheckQuartusEnvironment()
 
 		fqnList =	self._ExtractFQNs(args.FQN, defaultType=EntityTypes.NetList)
 		board =		self._ExtractBoard(args.BoardName, args.DeviceName, force=True)
 
 		# prepare some paths
 		self.Directories["QuartusTemp"] =					self.Directories["PoCTemp"] / self.PoCConfig['CONFIG.DirectoryNames']['QuartusSynthesisFiles']
-		self.Directories["QuartusInstallation"] = Path(self.PoCConfig['INSTALL.Altera.QuartusII']['InstallationDirectory'])
-		self.Directories["QuartusBinary"] =				Path(self.PoCConfig['INSTALL.Altera.QuartusII']['BinaryDirectory'])
+		self.Directories["QuartusInstallation"] = Path(self.PoCConfig['INSTALL.Altera.Quartus']['InstallationDirectory'])
+		self.Directories["QuartusBinary"] =				Path(self.PoCConfig['INSTALL.Altera.Quartus']['BinaryDirectory'])
 		quartusBinaryPath =												self.Directories["QuartusBinary"]
-		quartusVersion =													self.PoCConfig['INSTALL.Altera.QuartusII']['Version']
+		quartusVersion =													self.PoCConfig['INSTALL.Altera.Quartus']['Version']
 
 		compiler = MapCompiler(self, args.logs, args.reports, self.DryRun, args.NoCleanUp)
 		compiler.PrepareCompiler(quartusBinaryPath, quartusVersion)

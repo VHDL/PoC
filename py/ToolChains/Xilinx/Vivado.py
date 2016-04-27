@@ -86,6 +86,12 @@ class Configuration(BaseConfiguration):
 		pass
 
 	def ConfigureForWindows(self):
+		raise SkipConfigurationException()
+
+	def ConfigureForLinux(self):
+		raise SkipConfigurationException()
+
+	def ConfigureForX(self):
 		xilinxVivadoPath = self.__GetXilinxVivadoPath()
 		if (xilinxVivadoPath is not None):
 			print("  Found a Xilinx Vivado installation directory.")

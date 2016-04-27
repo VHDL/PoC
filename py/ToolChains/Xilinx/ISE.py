@@ -86,6 +86,12 @@ class Configuration(BaseConfiguration):
 		pass
 
 	def ConfigureForWindows(self):
+		self.ConfigureForX()
+
+	def ConfigureForLinux(self):
+		self.ConfigureForX()
+
+	def ConfigureForX(self):
 		xilinxISEPath = self.__GetXilinxISEPath()
 		if (xilinxISEPath is not None):
 			print("  Found a Xilinx ISE installation directory.")

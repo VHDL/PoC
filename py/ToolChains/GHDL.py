@@ -97,8 +97,14 @@ class Configuration(BaseConfiguration):
 
 	def GetSections(self, Platform):
 		pass
-	
+
+	def ConfigureForLinux(self):
+		raise SkipConfigurationException()
+
 	def ConfigureForWindows(self):
+		raise SkipConfigurationException()
+
+	def ConfigureForX(self):
 		ghdlPath = self.__GetGHDLPath()
 		if (ghdlPath is not None):
 			print("  Found a GHDL installation directory.")
