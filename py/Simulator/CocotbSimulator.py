@@ -137,7 +137,7 @@ class Simulator(BaseSimulator):
 
 		#
 		self._LogNormal("Running simulation...")
-		cocotbTemplateFilePath = self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['CocotbMakefile']
+		cocotbTemplateFilePath = self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['CocotbMakefile']
 		topLevel =			testbench.TopLevel
 		cocotbModule =	testbench.ModuleName
 
@@ -161,7 +161,7 @@ class Simulator(BaseSimulator):
 		with cocotbTemplateFilePath.open('r') as fileHandle:
 			cocotbMakefileContent = fileHandle.read()
 
-		cocotbMakefileContent = cocotbMakefileContent.format(PoCRootDirectory=str(self.Host.Directories["PoCRoot"]), VHDLSources=vhdlSources,
+		cocotbMakefileContent = cocotbMakefileContent.format(PoCRootDirectory=str(self.Host.RootDirectory), VHDLSources=vhdlSources,
 																													TopLevel=topLevel, CocotbModule=cocotbModule)
 
 		cocotbMakefilePath = self.Host.Directories["CocotbTemp"] / "Makefile"

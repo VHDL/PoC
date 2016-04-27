@@ -55,9 +55,8 @@ class GTKWaveException(ToolChainException):
 
 class Configuration(BaseConfiguration):
 	_vendor =			None
-	_shortName =	"GTKWave"
-	_longName =		"GTKWave"
-	_privateConfiguration = {
+	_toolName =		"GTKWave"
+	_template = {
 		"Windows": {
 			"INSTALL.GTKWave": {
 				"Version":								"3.3.70",
@@ -76,9 +75,6 @@ class Configuration(BaseConfiguration):
 
 	def __init__(self, host):
 		super().__init__(host)
-
-	def GetSections(self, Platform):
-		pass
 
 	def ConfigureForWindows(self):
 		return
