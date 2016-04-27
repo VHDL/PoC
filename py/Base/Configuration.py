@@ -154,7 +154,7 @@ class Configuration:		#(ISubClassRegistration):
 			if (p.exists()):    return p
 		elif (self._host.Platform == "Windows"):
 			for drive in "CDEFGH":
-				p = Path("{0}:".format(drive)) / defaults["Windows"]
+				p = Path("{0}:/{1}".format(drive, defaults["Windows"]))
 				try:
 					if (p.exists()):  return p
 				except OSError:

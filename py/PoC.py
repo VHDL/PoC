@@ -110,14 +110,14 @@ class PoC(ILogable, ArgParseMixin):
 
 		# Call the constructor of the ArgParseMixin
 		# --------------------------------------------------------------------------
-		description = dedent('''\
+		description = dedent("""\
 			This is the PoC-Library Service Tool.
-			''')
+			""")
 		epilog = "Epidingsbums"
 
 		class HelpFormatter(RawDescriptionHelpFormatter):
 			def __init__(self, *args, **kwargs):
-				kwargs['max_help_position'] = 34
+				kwargs['max_help_position'] = 25
 				super().__init__(*args, **kwargs)
 
 		ArgParseMixin.__init__(self, description=description, epilog=epilog, formatter_class=HelpFormatter, add_help=False)
@@ -229,7 +229,7 @@ class PoC(ILogable, ArgParseMixin):
 		self.__SimulationDefaultBoard =		Board(self)
 
 	def __WritePoCConfiguration(self):
-		for sectionName in [sectionName for sectionName in self.__pocConfig if not sectionName.startswith("INSTALL")]:
+		for sectionName in [sectionName for sectionName in self.__pocConfig if not (sectionName.startswith("INSTALL") or sectionName.startswith("SOLUTION"))]:
 			self.__pocConfig.remove_section(sectionName)
 
 		# Writing configuration to disc
@@ -382,7 +382,11 @@ class PoC(ILogable, ArgParseMixin):
 		modelsimIniPath = self.RootDirectory / tempDirectory / precompiledDirectory / vSimSimulatorFiles / "modelsim.ini"
 		if not modelsimIniPath.exists():
 			with modelsimIniPath.open('w') as fileHandle:
-				fileHandle.write("[Library]\nothers = $MODEL_TECH/../modelsim.ini")
+				fileContent = dedent("""\
+					[Library]
+					others = $MODEL_TECH/../modelsim.ini
+					""")
+				fileHandle.write(fileContent)
 
 	def _InitializeConfiguration(self):
 		# create parser instance
@@ -396,7 +400,7 @@ class PoC(ILogable, ArgParseMixin):
 
 	def __UpdateConfiguration(self):
 		pocSections =			set([sectionName for sectionName in self.__pocConfig])
-		configSections =	set([sectionName for config in Configurations for sectionName in config.GetSections()])
+		configSections =	set([sectionName for config in Configurations for sectionName in config.GetSections(self.Platform)])
 
 		addSections = configSections.difference(pocSections)
 		delSections = pocSections.difference(configSections)

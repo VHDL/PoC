@@ -115,7 +115,7 @@ class Configuration(BaseConfiguration):
 		if (self._host.Platform == "Linux"):
 			vivadoPath /= "vivado"
 		else:
-			vivadoPath /= "vivado.exe"
+			vivadoPath /= "vivado.bat"
 
 		if not vivadoPath.exists():
 			raise ConfigurationException("Executable '{0!s}' not found.".format(vivadoPath)) from FileNotFoundError(str(vivadoPath))

@@ -33,6 +33,8 @@
 # ==============================================================================
 #
 # entry point
+from textwrap import dedent
+
 from PoC.Config import Vendors
 
 if __name__ != "__main__":
@@ -133,7 +135,11 @@ class Simulator(BaseSimulator):
 		modelsimIniPath = self.Host.Directories["CocotbTemp"] / "sim_build" / "modelsim.ini"
 		if modelsimIniPath.exists(): modelsimIniPath.unlink()
 		with modelsimIniPath.open('w') as fileHandle:
-			fileHandle.write("[Library]\nothers = {0!s}".format(precompiledModelsimIniPath))
+			fileContent = dedent("""\
+				[Library]
+				others = {0!s}
+				""").format(precompiledModelsimIniPath)
+			fileHandle.write(fileContent)
 
 		#
 		self._LogNormal("Running simulation...")

@@ -75,7 +75,7 @@ class Configuration(BaseConfiguration):
 			}
 		}
 	}
-	
+
 	def CheckDependency(self):
 		# return True if Xilinx is configured
 		return (len(self._host.PoCConfig['INSTALL.Mentor']) != 0)

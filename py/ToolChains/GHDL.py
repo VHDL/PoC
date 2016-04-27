@@ -95,9 +95,6 @@ class Configuration(BaseConfiguration):
 		}
 	}
 
-	def __init__(self, host):
-		super().__init__(host)
-
 	def ConfigureForAll(self):
 		super().ConfigureForAll()
 		try:
