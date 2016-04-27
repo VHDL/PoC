@@ -388,7 +388,7 @@ class PoC(ILogable, ArgParseMixin):
 	def _manualConfigurationForWindows(self):
 		for config in Configurations:
 			configurator = config(self)
-			self._LogNormal("{CYAN}Configuring {0!s}{NOCOLOR}".format(configurator.Name, **Init.Foreground))
+			self._LogNormal("{CYAN}Configuring {0!s}{NOCOLOR}".format(configurator.ToolName, **Init.Foreground))
 
 			nxt = False
 			while (nxt == False):
@@ -404,7 +404,7 @@ class PoC(ILogable, ArgParseMixin):
 	def _manualConfigurationForLinux(self):
 		for config in Configurations:
 			configurator = config(self)
-			self._LogNormal("Configure {0}".format(configurator.Name))
+			self._LogNormal("Configure {0}".format(configurator.ToolName))
 
 			nxt = False
 			while (nxt == False):
