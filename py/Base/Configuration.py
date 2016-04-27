@@ -155,3 +155,4 @@ class Configuration:		#(ISubClassRegistration):
 
 	def _WriteInstallationDirectory(self, section, installPath):
 		self._host.PoCConfig[section]['InstallationDirectory'] = installPath.as_posix()
+		self._host.PoCConfig.Interpolation.clear_cache()
