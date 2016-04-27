@@ -78,6 +78,12 @@ class Configuration(BaseConfiguration):
 		pass
 
 	def ConfigureForWindows(self):
+		self.ConfigureForX()
+
+	def ConfigureForLinux(self):
+		self.ConfigureForX()
+
+	def ConfigureForX(self):
 		xilinxPath = self.__GetXilinxPath()
 		if (xilinxPath is not None):
 			print("  Found a Xilinx installation directory.")

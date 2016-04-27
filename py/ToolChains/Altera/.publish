@@ -10,4 +10,4 @@ __init__.py
 # Modules
 Altera.py
 ModelSim.py
-QuartusII.py
+Quartus.py

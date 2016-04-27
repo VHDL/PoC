@@ -62,6 +62,8 @@ class Query:
 			result = self._GetPoCInstallationDirectory()
 		elif (query == "PoC:Version"):
 			result = self._GetPoCVersion()
+		elif (query == "Altera.Quartus:BinaryDirectory"):
+			result = self._GetAlteraQuartusBinaryDirectory()
 		elif (query == "Xilinx.ISE:InstallationDirectory"):
 			result = self._GetXilinxISEInstallationDirectory()
 		elif (query == "Xilinx.ISE:SettingsFile"):
@@ -95,6 +97,12 @@ class Query:
 			return self.PoCConfig['INSTALL.PoC']['Version']
 		else:
 			raise NotConfiguredException("ERROR: PoC is not configured on this system.")
+
+	def _GetAlteraQuartusBinaryDirectory(self):
+		if (len(self.PoCConfig.options('INSTALL.Altera.Quartus')) != 0):
+			return Path(self.PoCConfig['INSTALL.Altera.Quartus']['BinaryDirectory'])
+		else:
+			raise NotConfiguredException("ERROR: Altera Quartus is not configured on this system.")
 
 	def _GetXilinxISEInstallationDirectory(self):
 		if (len(self.PoCConfig.options('INSTALL.Xilinx.ISE')) != 0):
