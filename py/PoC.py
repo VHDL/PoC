@@ -440,9 +440,9 @@ class PoC(ILogable, ArgParseMixin):
 		elif (force is True):						raise CommonException("Either a board name or a device name is required.")
 		else:														return self.__SimulationDefaultBoard
 
-	def _ExtractFQNs(self, fqns, defaultType=EntityTypes.Testbench):
+	def _ExtractFQNs(self, fqns, defaultLibrary="PoC", defaultType=EntityTypes.Testbench):
 		if (len(fqns) == 0):             raise CommonException("No FQN given.")
-		return [FQN(self, fqn, defaultType=defaultType) for fqn in fqns]
+		return [FQN(self, fqn, defaultLibrary=defaultLibrary, defaultType=defaultType) for fqn in fqns]
 
 	def _ExtractVHDLVersion(self, vhdlVersion):
 		if (vhdlVersion is None):				return self.__SimulationDefaultVHDLVersion
@@ -472,6 +472,8 @@ class PoC(ILogable, ArgParseMixin):
 		self.PrintHeadline()
 		self.__PrepareForSimulation()
 
+		defaultLibrary = "PoC"
+
 		if (args.SolutionName is not None):
 			solutionName = args.SolutionName
 			print("Solution name: {0}".format(solutionName))
@@ -482,8 +484,37 @@ class PoC(ILogable, ArgParseMixin):
 				print("  Path: {0}".format(self.PoCConfig[sectionName]['Path']))
 
 				solutionRootPath = self.Directories["PoCRoot"] / self.PoCConfig[sectionName]['Path']
-				iniFile = solutionRootPath / ".PoC" / "PoC.Solution.ini"
-				print("  sln ini: {0!s}".format(iniFile))
+				solutionConfigFile = solutionRootPath / ".PoC" / "solution.config.ini"
+				solutionDefaultsFile = solutionRootPath / ".PoC" / "solution.defaults.ini"
+				print("  sln files: {0!s}  {1!s}".format(solutionConfigFile, solutionDefaultsFile))
+
+				self._LogVerbose("Reading solution file...")
+				self._LogDebug("  {0!s}".format(solutionConfigFile))
+				self._LogDebug("  {0!s}".format(solutionDefaultsFile))
+				if not solutionConfigFile.exists():		raise NotConfiguredException("Solution's {0} configuration file '{1!s}' does not exist.".format(solutionName, solutionConfigFile))  from FileNotFoundError(str(solutionConfigFile))
+				if not solutionDefaultsFile.exists():	raise NotConfiguredException("Solution's {0} defaults file '{1!s}' does not exist.".format(solutionName, solutionDefaultsFile))  from FileNotFoundError(str(solutionDefaultsFile))
+				self.__pocConfig.read(str(solutionConfigFile))
+				self.__pocConfig.read(str(solutionDefaultsFile))
+
+				section =					self.PoCConfig['PROJECT.Projects']
+				defaultLibrary =	section['DefaultLibrary']
+				print("Solution:")
+				print("  Name:            {0}".format(section['Name']))
+				print("  Default library: {0}".format(defaultLibrary))
+				print("  Projects:")
+				for item in section:
+					if (section[item] in ["PoCProject", "ISEProject", "VivadoProject", "QuartusProject"]):
+						sectionName2 = "PROJECT.{0}".format(item)
+						print("    {0}".format(self.PoCConfig[sectionName2]['Name']))
+
+				print("  Namespace roots:")
+				for item in section:
+					if (section[item] == "Library"):
+						libraryPrefix = item
+						print("    {0: <16}  {1}".format(self.PoCConfig[libraryPrefix]['Name'], libraryPrefix))
+
+						self.Root.AddLibrary(libraryPrefix, libraryPrefix)
+
 
 		if (args.TestbenchKind is None):
 			tbFilter =	TestbenchKind.All
@@ -494,7 +525,7 @@ class PoC(ILogable, ArgParseMixin):
 				elif (kind == "cocotb"):	tbFilter |= TestbenchKind.CocoTestbench
 				else:											raise CommonException("Argument --kind has an unknown value '{0}'.".format(kind))
 
-		fqnList = self._ExtractFQNs(args.FQN)
+		fqnList = self._ExtractFQNs(args.FQN, defaultLibrary)
 		for fqn in fqnList:
 			self._LogNormal("")
 			entity = fqn.Entity
