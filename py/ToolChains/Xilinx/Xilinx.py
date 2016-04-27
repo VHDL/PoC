@@ -74,7 +74,8 @@ class Configuration(BaseConfiguration):
 	def GetSections(self, Platform):
 		pass
 
-	def ConfigureForX(self):
+	def ConfigureForAll(self):
+		super().ConfigureForAll()
 		if (not self._AskInstalled("Are Xilinx products installed on your system?")):
 			self._ClearSection(self._section)
 		else:

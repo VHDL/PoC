@@ -221,12 +221,9 @@ class PoC(ILogable, ArgParseMixin):
 
 		self.__SimulationDefaultBoard =		Board(self)
 
-	def __CleanupPoCConfiguration(self):
+	def __WritePoCConfiguration(self):
 		for sectionName in [sectionName for sectionName in self.__pocConfig if not sectionName.startswith("INSTALL")]:
 			self.__pocConfig.remove_section(sectionName)
-
-	def __WritePoCConfiguration(self):
-		self.__CleanupPoCConfiguration()
 
 		# Writing configuration to disc
 		self._LogNormal("Writing configuration file to '{0!s}'".format(self._pocPrivateConfigFile))

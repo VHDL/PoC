@@ -95,13 +95,13 @@ class Configuration:		#(ISubClassRegistration):
 			return True
 
 	def ConfigureForWindows(self):
-		self.ConfigureForX()
+		self.ConfigureForAll()
 
 	def ConfigureForLinux(self):
-		self.ConfigureForX()
+		self.ConfigureForAll()
 
-	def ConfigureForX(self):
-		raise NotImplementedError()
+	def ConfigureForAll(self):
+		self._host.PoCConfig.Interpolation.clear_cache()
 
 	def __str__(self):
 		return self._toolName
@@ -155,4 +155,3 @@ class Configuration:		#(ISubClassRegistration):
 
 	def _WriteInstallationDirectory(self, section, installPath):
 		self._host.PoCConfig[section]['InstallationDirectory'] = installPath.as_posix()
-		self._host.PoCConfig.Interpolation.clear_cache()
