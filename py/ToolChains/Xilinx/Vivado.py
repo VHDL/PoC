@@ -66,14 +66,14 @@ class Configuration(BaseConfiguration):
 	_section = "INSTALL.Xilinx.Vivado"
 	_privateConfiguration = {
 		"Windows": {
-			"INSTALL.Xilinx.Vivado": {
+			_section: {
 				"Version":								"2015.4",
 				"InstallationDirectory":	"${INSTALL.Xilinx:InstallationDirectory}/Vivado/${Version}",
 				"BinaryDirectory":				"${InstallationDirectory}/bin"
 			}
 		},
 		"Linux": {
-			"INSTALL.Xilinx.Vivado": {
+			_section: {
 				"Version":								"2015.4",
 				"InstallationDirectory":	"${INSTALL.Xilinx:InstallationDirectory}/Vivado/${Version}",
 				"BinaryDirectory":				"${InstallationDirectory}/bin"

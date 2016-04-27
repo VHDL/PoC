@@ -79,7 +79,11 @@ class Configuration(BaseConfiguration):
 		if (not self._AskInstalled("Are Xilinx products installed on your system?")):
 			self._ClearSection(self._section)
 		else:
-			installPath = self._AskInstallPath(self._section, self.__GetXilinxPath())
+			if self._host.PoCConfig.has_option(self._section, 'InstallationDirectory'):
+				defaultPath = Path(self._host.PoCConfig[self._section]['InstallationDirectory'])
+			else:
+				defaultPath = self.__GetXilinxPath()
+			installPath = self._AskInstallPath(self._section, defaultPath)
 			self._WriteInstallationDirectory(self._section, installPath)
 
 	def __GetXilinxPath(self):

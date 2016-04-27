@@ -119,9 +119,6 @@ class Configuration:		#(ISubClassRegistration):
 			raise ConfigurationException("Unsupported choice '{0}'".format(isInstalled))
 
 	def _AskInstallPath(self, section, defaultPath):
-		if self._host.PoCConfig.has_option(section, 'InstallationDirectory'):
-			defaultPath = Path(self._host.PoCConfig[section]['InstallationDirectory'])
-
 		directory = input("  {0} installation directory [{1!s}]: ".format(self.ToolName, defaultPath))
 		if (directory != ""):
 			installPath = Path(directory)
