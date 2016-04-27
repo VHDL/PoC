@@ -222,22 +222,11 @@ class PoC(ILogable, ArgParseMixin):
 		self.__SimulationDefaultBoard =		Board(self)
 
 	def __CleanupPoCConfiguration(self):
-		# remove non-private sections from pocConfig
-		sections = self.PoCConfig.sections()
-		for privateSection in self.__privateSections:
-			sections.remove(privateSection)
-		for section in sections:
-			self.PoCConfig.remove_section(section)
-
-		# remove non-private options from [PoC] section
-		pocOptions = self.PoCConfig.options("PoC")
-		for privatePoCOption in self.__privatePoCOptions:
-			pocOptions.remove(privatePoCOption)
-		for pocOption in pocOptions:
-			self.PoCConfig.remove_option("PoC", pocOption)
+		for sectionName in [sectionName for sectionName in self.__pocConfig if not sectionName.startswith("INSTALL")]:
+			self.__pocConfig.remove_section(sectionName)
 
 	def __WritePoCConfiguration(self):
-		# self.__CleanupPoCConfiguration()
+		self.__CleanupPoCConfiguration()
 
 		# Writing configuration to disc
 		self._LogNormal("Writing configuration file to '{0!s}'".format(self._pocPrivateConfigFile))
@@ -388,7 +377,7 @@ class PoC(ILogable, ArgParseMixin):
 	def _manualConfigurationForWindows(self):
 		for config in Configurations:
 			configurator = config(self)
-			self._LogNormal("{CYAN}Configuring {0!s}{NOCOLOR}".format(configurator.Name, **Init.Foreground))
+			self._LogNormal("{CYAN}Configuring {0!s}{NOCOLOR}".format(configurator.ToolName, **Init.Foreground))
 
 			nxt = False
 			while (nxt is False):
@@ -404,7 +393,7 @@ class PoC(ILogable, ArgParseMixin):
 	def _manualConfigurationForLinux(self):
 		for config in Configurations:
 			configurator = config(self)
-			self._LogNormal("Configure {0}".format(configurator.Name))
+			self._LogNormal("Configure {0}".format(configurator.ToolName))
 
 			nxt = False
 			while (nxt is False):
