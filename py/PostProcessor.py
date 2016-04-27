@@ -302,7 +302,7 @@ def main():
 		PP = PostProcessor(args.debug, args.verbose, args.quiet)
 		#netList.dryRun = True
 	
-		if (args.help == True):
+		if (args.help is True):
 			argParser.print_help()
 			return
 		elif (args.tokenFiles is not None):
