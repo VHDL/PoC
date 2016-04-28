@@ -15,6 +15,7 @@ uart_tx.vhdl
 uart_rx.vhdl
 
 # Wrappers
+uart_fifo.files
 uart_fifo.vhdl
 
 # Adapters

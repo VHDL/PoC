@@ -35,14 +35,15 @@ USE			IEEE.STD_LOGIC_1164.ALL;
 LIBRARY	PoC;
 USE			PoC.utils.ALL;
 USE			PoC.strings.ALL;
+use			PoC.physical.all;
 USE			PoC.io.ALL;
 USE			PoC.lcd.ALL;
 
 
 ENTITY lcd_LCDBuffer IS
 	GENERIC (
-		CLOCK_FREQ_MHZ					: REAL				:= 100.0;			-- 100 MHz
-		MIN_REFRESH_PERIOD_MS		: REAL				:= 100.0
+		CLOCK_FREQ						: FREQ				:= 100 MHz;
+		MIN_REFRESH_PERIOD		: TIME				:= 100 ms
 	);
 	PORT (
 		Clock				: IN	STD_LOGIC;
@@ -59,12 +60,12 @@ END;
 
 ARCHITECTURE rtl OF lcd_LCDBuffer IS
 	SIGNAL LCDBuffer_Load		: STD_LOGIC;
-	SIGNAL LCDBuffer_d			: T_LCD			:= (OTHERS => (OTHERS => to_rawchar(' ')));
+	SIGNAL LCDBuffer_d			: T_LCD			:= (OTHERS => (OTHERS => to_RawChar(' ')));
 	
 BEGIN
 	SL : ENTITY PoC.misc_StrobeLimiter
 		GENERIC MAP (
-			MIN_STROBE_PERIOD_CYCLES	=> TimingToCycles_ms(MIN_REFRESH_PERIOD_MS,	Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)),
+			MIN_STROBE_PERIOD_CYCLES	=> TimingToCycles(MIN_REFRESH_PERIOD,	CLOCK_FREQ),
 			INITIAL_LOCKED						=> FALSE,
 			INITIAL_STROBE						=> TRUE
 		)
@@ -78,7 +79,7 @@ BEGIN
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF (Reset = '1') THEN
-				LCDBuffer_d			<= (OTHERS => (OTHERS => to_rawchar(' ')));
+				LCDBuffer_d			<= (OTHERS => (OTHERS => to_RawChar(' ')));
 			ELSE
 				IF (LCDBuffer_Load = '1') THEN
 					LCDBuffer_d		<= LCDBuffer;

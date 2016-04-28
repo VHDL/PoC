@@ -20,8 +20,12 @@
 -- Synchronized reset is used.
 
 
-library ieee;
-use ieee.std_logic_1164.all;
+library IEEE;
+use			IEEE.std_logic_1164.all;
+
+library PoC;
+use			PoC.physical.all;
+
 
 entity uart_wb is
 	generic (

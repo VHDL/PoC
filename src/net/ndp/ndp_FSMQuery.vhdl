@@ -5,12 +5,11 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+USE			PoC.cache.ALL;
+USE			PoC.net.ALL;
 
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
 
-
-ENTITY NDP_FSMQuery IS
+ENTITY ndp_FSMQuery IS
 	PORT (
 		Clock														: IN	STD_LOGIC;
 		Reset														: IN	STD_LOGIC;
@@ -50,7 +49,7 @@ ENTITY NDP_FSMQuery IS
 END;
 
 
-ARCHITECTURE rtl OF NDP_FSMQuery IS
+ARCHITECTURE rtl OF ndp_FSMQuery IS
 
 	TYPE T_STATE IS (
 		ST_IDLE,

@@ -1,9 +1,9 @@
-# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Python Class:			TODO
 # 
@@ -15,7 +15,7 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2015 Technische Universitaet Dresden - Germany
+# Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,261 +37,130 @@ if __name__ != "__main__":
 	pass
 else:
 	from lib.Functions import Exit
+
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.ISESimulator")
 
 # load dependencies
-from pathlib import Path
+from configparser							import NoSectionError
+from colorama									import Fore as Foreground
 
-from Base.Exceptions import *
-from Simulator.Base import PoCSimulator 
-from Simulator.Exceptions import *
+from lib.Functions						import Init
+from Base.Project							import FileTypes, VHDLVersion, Environment, ToolChain, Tool
+from Base.Simulator						import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
+from ToolChains.Xilinx.Xilinx	import XilinxProjectExportMixIn
+from ToolChains.Xilinx.ISE		import ISE, ISESimulator, ISEException
 
 
-class Simulator(PoCSimulator):
-
-	__executables =			{}
-	__vhdlStandard =		"93"
-	__guiMode =					False
+class Simulator(BaseSimulator, XilinxProjectExportMixIn):
+	_TOOL_CHAIN =						ToolChain.Xilinx_ISE
+	_TOOL =									Tool.Xilinx_iSim
 
 	def __init__(self, host, showLogs, showReport, guiMode):
-		super(self.__class__, self).__init__(host, showLogs, showReport)
+		super().__init__(host, showLogs, showReport)
+		XilinxProjectExportMixIn.__init__(self)
 
-		self.__guiMode =					guiMode
+		self._guiMode =				guiMode
 
-		if (host.platform == "Windows"):
-			self.__executables['vhcomp'] =	"vhpcomp.exe"
-			self.__executables['fuse'] =		"fuse.exe"
-		elif (host.platform == "Linux"):
-			self.__executables['vhcomp'] =	"vhpcomp"
-			self.__executables['fuse'] =		"fuse"
-		else:
-			raise PlatformNotSupportedException(self.platform)
-		
-	def run(self, pocEntity):
-		import os
-		import re
-		import subprocess
-	
-		self.printNonQuiet(str(pocEntity))
-		self.printNonQuiet("  preparing simulation environment...")
-		
-		
-		# create temporary directory for isim if not existent
-		tempISimPath = self.host.directories["iSimTemp"]
-		if not (tempISimPath).exists():
-			self.printVerbose("Creating temporary directory for simulator files.")
-			self.printDebug("Temporary directors: %s" % str(tempISimPath))
-			tempISimPath.mkdir(parents=True)
+		self._entity =				None
+		self._testbenchFQN =	None
+		self._vhdlGenerics =	None
+
+		self._ise =						None
+
+		self._PrepareSimulationEnvironment()
+
+	@property
+	def TemporaryPath(self):
+		return self._tempPath
+
+	def _PrepareSimulationEnvironment(self):
+		self._LogNormal("Preparing simulation environment...")
+		self._tempPath = self.Host.Directories["iSimTemp"]
+		super()._PrepareSimulationEnvironment()
+
+	def PrepareSimulator(self, binaryPath, version):
+		# create the Xilinx ISE executable factory
+		self._LogVerbose("Preparing ISE simulator.")
+		self._ise = ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
+
+	def Run(self, testbench, board, vhdlVersion=None, vhdlGenerics=None, guiMode=False):
+		self._LogQuiet("Testbench: {0!s}".format(testbench.Parent, **Init.Foreground))
+
+		self._vhdlVersion =		VHDLVersion.VHDL93
+		self._vhdlGenerics =	vhdlGenerics
 
 		# setup all needed paths to execute fuse
-		#vhpcompExecutablePath =	self.host.directories["ISEBinary"] / self.__executables['vhpcomp']
-		fuseExecutablePath =		self.host.directories["ISEBinary"] / self.__executables['fuse']
+		self._CreatePoCProject(testbench, board)
+		self._AddFileListFile(testbench.FilesFile)
 		
-		if not self.host.tbConfig.has_section(str(pocEntity)):
-			from configparser import NoSectionError
-			raise SimulatorException("Testbench '" + str(pocEntity) + "' not found.") from NoSectionError(str(pocEntity))
-		
-		testbenchName =			self.host.tbConfig[str(pocEntity)]['TestbenchModule']
-		fileListFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['fileListFile']
-		tclBatchFilePath =	self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['iSimBatchScript']
-		tclGUIFilePath =		self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['iSimGUIScript']
-		wcfgFilePath =			self.host.directories["PoCRoot"] / self.host.tbConfig[str(pocEntity)]['iSimWaveformConfigFile']
-		prjFilePath =				tempISimPath / (testbenchName + ".prj")
-		exeFilePath =				tempISimPath / (testbenchName + ".exe")
-		iSimLogFilePath =		tempISimPath / (testbenchName + ".isim.log")
+		# self._RunCompile(testbenchName)
+		self._RunLink(testbench)
+		self._RunSimulation(testbench)
 
-		# report the next steps in execution
-#		if (self.getVerbose()):
-#			print("  Commands to be run:")
-#			print("  1. Change working directory to temporary directory.")
-#			print("  2. Parse filelist and write iSim project file.")
-#			print("  3. Compile and Link source files to an executable simulation file.")
-#			print("  4. Simulate in tcl batch mode.")
-#			print("  ----------------------------------------")
-		
-		# change working directory to temporary iSim path
-		self.printVerbose('  cd "%s"' % str(tempISimPath))
-		os.chdir(str(tempISimPath))
+		if (testbench.Result is SimulationResult.Passed):				self._LogQuiet("  {GREEN}[PASSED]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.NoAsserts):	self._LogQuiet("  {YELLOW}[NO ASSERTS]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.Failed):			self._LogQuiet("  {RED}[FAILED]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.Error):			self._LogQuiet("  {RED}[ERROR]{NOCOLOR}".format(**Init.Foreground))
 
-		# parse project filelist
-		filesLineRegExpStr =	r"^"																						#	start of line
-		filesLineRegExpStr =	r"(?:"																					#	open line type: empty, directive, keyword
-		filesLineRegExpStr +=		r"(?P<EmptyLine>)|"														#		empty line
-		filesLineRegExpStr +=		r"(?P<Directive>"															#		open directives:
-		filesLineRegExpStr +=			r"(?P<DirInclude>@include)|"								#			 @include
-		filesLineRegExpStr +=			r"(?P<DirLibrary>@library)"									#			 @library
-		filesLineRegExpStr +=		r")|"																					#		close directives
-		filesLineRegExpStr +=		r"(?P<Keyword>"																#		open keywords:
-		filesLineRegExpStr +=			r"(?P<KwAltera>altera)|"										#			altera
-		filesLineRegExpStr +=			r"(?P<KwXilinx>xilinx)|"										#			xilinx
-		filesLineRegExpStr +=			r"(?P<KwVHDL>vhdl"													#			vhdl[-nn]
-		filesLineRegExpStr +=				r"(?:-(?P<VHDLStandard>87|93|02|08))?)"		#				VHDL Standard Year: [-nn]
-		filesLineRegExpStr +=		r")"																					#		close keywords
-		filesLineRegExpStr +=	r")"																						#	close line type
-		filesLineRegExpStr +=	r"(?(Directive)\s+(?:"													#	open directive parameters
-		filesLineRegExpStr +=		r"(?(DirInclude)"															#		open @include directive
-		filesLineRegExpStr +=			r"\"(?P<IncludeFile>.*?\.files)\""					#			*.files filename without enclosing "-signs
-		filesLineRegExpStr +=		r")|"																					#		close @include directive
-		filesLineRegExpStr +=		r"(?(DirLibrary)"															#		open @include directive
-		filesLineRegExpStr +=			r"(?P<LibraryName>[_a-zA-Z0-9]+)"						#			VHDL library name
-		filesLineRegExpStr +=			r"\s+"																			#			delimiter
-		filesLineRegExpStr +=			r"\"(?P<LibraryPath>.*?)\""									#			VHDL library path without enclosing "-signs
-		filesLineRegExpStr +=		r")"																					#		close @library directive
-		filesLineRegExpStr +=	r"))"																						#	close directive parameters
-		filesLineRegExpStr +=	r"(?(Keyword)\s+(?:"														#	open keyword parameters
-		filesLineRegExpStr +=		r"(?P<VHDLLibrary>[_a-zA-Z0-9]+)"							#		VHDL library name
-		filesLineRegExpStr +=		r"\s+"																				#		delimiter
-		filesLineRegExpStr +=		r"\"(?P<VHDLFile>.*?\.vhdl?)\""								#		*.vhdl? filename without enclosing "-signs
-		filesLineRegExpStr +=	r"))"																						#	close keyword parameters
-		filesLineRegExpStr +=	r"\s*(?P<Comment>#.*)?"													#	optional comment until line end
-		filesLineRegExpStr +=	r"$"																						#	end of line
-		filesLineRegExp = re.compile(filesLineRegExpStr)
+	def _RunCompile(self, testbench):
+		self._LogNormal("  compiling source files...")
+		
+		prjFilePath = self._tempPath / (testbench.ModuleName + ".prj")
+		self._WriteXilinxProjectFile(prjFilePath, "iSim", self._vhdlVersion)
 
-		self.printDebug("Reading filelist '%s'" % str(fileListFilePath))
-		iSimProjectFileContent = ""
-		externalLibraries = []
-		with fileListFilePath.open('r') as prjFileHandle:
-			for line in prjFileHandle:
-				filesLineRegExpMatch = filesLineRegExp.match(line)
-		
-				if (filesLineRegExpMatch is not None):
-					if (filesLineRegExpMatch.group('Directive') is not None):
-						if (filesLineRegExpMatch.group('DirInclude') is not None):
-							includeFile = filesLineRegExpMatch.group('IncludeFile')
-							self.printVerbose("    referencing another file: {0}".format(includeFile))
-						elif (filesLineRegExpMatch.group('DirLibrary') is not None):
-							externalLibraryName = filesLineRegExpMatch.group('LibraryName')
-							externalLibraryPath = filesLineRegExpMatch.group('LibraryPath')
-							
-							self.printVerbose("    referencing precompiled VHDL library: {0}".format(externalLibraryName))
-							externalLibraries.append(externalLibraryPath)
-						else:
-							raise SimulatorException("Unknown directive in *.files file.")
-						
-						continue
-						
-					elif (filesLineRegExpMatch.group('Keyword') is not None):
-						if (filesLineRegExpMatch.group('Keyword') == "vhdl"):
-							vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-							vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
-						elif (filesLineRegExpMatch.group('Keyword')[0:5] == "vhdl-"):
-							if (filesLineRegExpMatch.group('Keyword')[-2:] == self.__vhdlStandard):
-								vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-								vhdlFilePath = self.host.directories["PoCRoot"] / vhdlFileName
-							else:
-								continue
-						elif (filesLineRegExpMatch.group('Keyword') == "altera"):#
-							self.printVerbose("    skipped Altera specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
-							# vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-							# vhdlFilePath = self.host.directories["XilinxPrimitiveSource"] / vhdlFileName
-						elif (filesLineRegExpMatch.group('Keyword') == "xilinx"):
-							self.printVerbose("    skipped Xilinx specific file: '%s'" % filesLineRegExpMatch.group('VHDLFile'))
-							# vhdlFileName = filesLineRegExpMatch.group('VHDLFile')
-							# vhdlFilePath = self.host.directories["XilinxPrimitiveSource"] / vhdlFileName
-						else:
-							raise SimulatorException("Unknown keyword in *files file.")
-							
-						vhdlLibraryName = filesLineRegExpMatch.group('VHDLLibrary')
-						iSimProjectFileContent += "vhdl %s \"%s\"\n" % (vhdlLibraryName, str(vhdlFilePath))
-						
-						if (not vhdlFilePath.exists()):
-							raise SimulatorException("Can not add '" + vhdlFileName + "' to project file.") from FileNotFoundError(str(vhdlFilePath))
-		
-		# write iSim project file
-		self.printDebug("Writing iSim project file to '%s'" % str(prjFilePath))
-		with prjFilePath.open('w') as prjFileHandle:
-			prjFileHandle.write(iSimProjectFileContent)
+		# create an ISEVHDLCompiler instance
+		vhcomp = self._ise.GetVHDLCompiler()
+		vhcomp.Compile(str(prjFilePath))
 
+	def _RunLink(self, testbench):
+		self._LogNormal("Running fuse...")
+		
+		exeFilePath =	self._tempPath / (testbench.ModuleName + ".exe")
+		prjFilePath = self._tempPath / (testbench.ModuleName + ".prj")
+		self._WriteXilinxProjectFile(prjFilePath, "iSim")
 
-		# running fuse
-		# ==========================================================================
-		self.printNonQuiet("  running fuse...")
-		# assemble fuse command as list of parameters
-		parameterList = [
-			str(fuseExecutablePath),
-			('test.%s' % testbenchName),
-			'--incremental',
-			'--timeprecision_vhdl', '1fs',			# set minimum time precision to 1 fs
-			'--mt', '4',												# enable multithread support
-			'--rangecheck',
-			'--prj',	str(prjFilePath),
-			'-o',			str(exeFilePath)
-		]
-		command = " ".join(parameterList)
-		
-		self.printDebug("call fuse: %s" % str(parameterList))
-		self.printVerbose("    command: %s" % command)
-		
+		# create a ISELinker instance
+		fuse = self._ise.GetFuse()
+		fuse.Parameters[fuse.FlagIncremental] =				True
+		fuse.Parameters[fuse.SwitchTimeResolution] =	"1fs"
+		fuse.Parameters[fuse.SwitchMultiThreading] =	"4"
+		fuse.Parameters[fuse.FlagRangeCheck] =				True
+		fuse.Parameters[fuse.SwitchProjectFile] =			str(prjFilePath)
+		fuse.Parameters[fuse.SwitchOutputFile] =			str(exeFilePath)
+		fuse.Parameters[fuse.ArgTopLevel] =						"{0}.{1}".format(VHDL_TESTBENCH_LIBRARY_NAME, testbench.ModuleName)
+
 		try:
-			linkerLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
-		except subprocess.CalledProcessError as ex:
-			print("ERROR while executing fuse: %s" % str(vhdlFilePath))
-			print("Return Code: %i" % ex.returncode)
-			print("-" * 80)
-			print(ex.output)
-			print("-" * 80)
-			
-			return
+			fuse.Link()
+		except ISEException as ex:
+			raise SimulatorException("Error while analysing '{0!s}'.".format(prjFilePath)) from ex
+
+		if fuse.HasErrors:
+			raise SimulatorException("Error while analysing '{0!s}'.".format(prjFilePath))
+	
+	def _RunSimulation(self, testbench):
+		self._LogNormal("Running simulation...")
 		
-		if self.showLogs:
-			print("fuse log (fuse)")
-			print("--------------------------------------------------------------------------------")
-			print(linkerLog)
-			print()
-		
-		# running simulation
-		self.printNonQuiet("  running simulation...")
-		parameterList = [
-			str(exeFilePath),
-			'-log', str(iSimLogFilePath)
-		]
-		
-		if (not self.__guiMode):
-			parameterList += ['-tclbatch', str(tclBatchFilePath)]
+		iSimLogFilePath =		self._tempPath / (testbench.ModuleName + ".iSim.log")
+		exeFilePath =				self._tempPath / (testbench.ModuleName + ".exe")
+		tclBatchFilePath =	self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['iSimBatchScript']
+		tclGUIFilePath =		self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['iSimGUIScript']
+		wcfgFilePath =			self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['iSimWaveformConfigFile']
+
+		# create a ISESimulator instance
+		iSim = ISESimulator(exeFilePath, logger=self.Logger)
+		iSim.Parameters[iSim.SwitchLogFile] =					str(iSimLogFilePath)
+
+		if (not self._guiMode):
+			iSim.Parameters[iSim.SwitchTclBatchFile] =	str(tclBatchFilePath)
 		else:
-			parameterList += [
-				'-tclbatch', str(tclGUIFilePath),
-				'-gui'
-			]
-			
-			self.printDebug("waveform config file: %s" % str(wcfgFilePath))
-			
-			# if waveform configuration file exists, load it's settings
+			iSim.Parameters[iSim.SwitchTclBatchFile] =	str(tclGUIFilePath)
+			iSim.Parameters[iSim.FlagGuiMode] =					True
+
+			# if iSim save file exists, load it's settings
 			if wcfgFilePath.exists():
-				parameterList += ['-view', str(wcfgFilePath)]
-		
-		command = " ".join(parameterList)
-		
-		self.printDebug("call simulation: %s" % str(parameterList))
-		self.printVerbose("    command: %s" % command)
-		
-		try:
-			simulatorLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
-		except subprocess.CalledProcessError as ex:
-			print("ERROR while executing iSim: %s" % str(vhdlFilePath))
-			print("Return Code: %i" % ex.returncode)
-			print("-" * 80)
-			print(ex.output)
-			print("-" * 80)
-			
-			return
-		
-		if self.showLogs:
-			print("simulator log")
-			print("--------------------------------------------------------------------------------")
-			print(simulatorLog)
-			print("--------------------------------------------------------------------------------")		
-	
-		print()
-		if (not self.__guiMode):
-			try:
-				result = self.checkSimulatorOutput(simulatorLog)
-				
-				if (result == True):
-					print("Testbench '%s': PASSED" % testbenchName)
-				else:
-					print("Testbench '%s': FAILED" % testbenchName)
-					
-			except SimulatorException as ex:
-				raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
-	
+				self._LogDebug("Found waveform config file: '{0!s}'".format(wcfgFilePath))
+				iSim.Parameters[iSim.SwitchWaveformFile] =	str(wcfgFilePath)
+			else:
+				self._LogDebug("Didn't find waveform config file: '{0!s}'".format(wcfgFilePath))
+
+		testbench.Result = iSim.Simulate()

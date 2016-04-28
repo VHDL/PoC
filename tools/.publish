@@ -14,5 +14,8 @@ Notepad++/
 # compile scripts for vendor libraries
 precompile/
 
+# scripts and configuration files for the Travis-CI flow
+Travis-CI/
+
 # the publish scripts
 #publish/

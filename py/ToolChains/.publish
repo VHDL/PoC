@@ -1,0 +1,23 @@
+# git files
+.gitempty
+
+# Documentation files
+README.md
+
+# Package
+__init__.py
+
+# Namespaces
+Aldec/
+Altera/
+Lattice/
+Mentor/
+Synopsys/
+Xilinx/
+
+# Modules
+GHDL.py
+Git.py
+GNU.py
+GTKWave.py
+PoC.py

@@ -183,7 +183,7 @@ architecture rtl of sata_LinkLayerFSM is
 
 	constant INSERT_ALIGN_COUNTER_BITS	: POSITIVE															:= log2ceilnz(INSERT_ALIGN_INTERVAL);
 
-	signal InsertALIGN									: STD_LOGIC;
+	signal InsertAlign									: STD_LOGIC;
 
 	signal TX_WordCounter_rst						: STD_LOGIC;
 	signal TX_WordCounter_inc						: STD_LOGIC;
@@ -233,7 +233,7 @@ begin
 
 	process(State, Phy_Status, RX_Primitive, Trans_TX_SOF, Trans_TX_EOF, TX_FIFO_Valid,
 					RX_FIFO_Full, RX_FIFO_Overflow_r, RX_FIFO_SpaceAvailable, RX_FSFIFO_Full,
-					RX_DataReg_Valid2, RX_CRC_OKReg_r, InsertALIGN, TX_IsLongFrame, TX_RetryFailed)
+					RX_DataReg_Valid2, RX_CRC_OKReg_r, InsertAlign, TX_IsLongFrame, TX_RetryFailed)
 	begin
 		NextState											<= State;
 		Status 												<= SATA_LINK_STATUS_IDLE;
@@ -339,12 +339,12 @@ begin
 			when ST_IDLE =>
 				Status 												<= SATA_LINK_STATUS_IDLE;
 				
-				if (InsertALIGN = '1') then
+				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					
 					-- All cases are handled after InsertAlign is '0' again.
 
-				else	-- InsertALIGN
+				else	-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_SYNC;
 					
 					if (RX_Primitive = SATA_PRIMITIVE_TX_RDY) then								-- transmission attempt received
@@ -382,12 +382,12 @@ begin
 			when ST_SYNC_ESCAPE =>
 				Status 												<= SATA_LINK_STATUS_SYNC_ESCAPE;
 				
-				if (InsertALIGN = '1') then
+				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					
 					-- All cases are handled after InsertAlign is '0' again.
 
-				else	-- InsertALIGN
+				else	-- InsertAlign
 					TX_Primitive 								<= SATA_PRIMITIVE_SYNC;
 					
 					if ((RX_Primitive = SATA_PRIMITIVE_TX_RDY) or
@@ -402,7 +402,7 @@ begin
 			when ST_TX_SEND_TX_RDY =>
 				Status												<= SATA_LINK_STATUS_SENDING;
 				
-				if (InsertALIGN = '1') then
+				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					
 					if (RX_Primitive = SATA_PRIMITIVE_RX_RDY) then										-- other side is ready to receive
@@ -419,7 +419,7 @@ begin
 						end if;
 					end if;
 
-				else		-- InsertALIGN
+				else		-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_TX_RDY;
 					
 					if (RX_Primitive = SATA_PRIMITIVE_RX_RDY) then										-- other side is ready to receive
@@ -449,12 +449,12 @@ begin
 			when ST_TX_SEND_DATA =>
 				Status												<= SATA_LINK_STATUS_SENDING;
 				
-				if (InsertALIGN = '1') then
+				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					
 					-- Receiving HOLD and SYNC is handled after InsertAlign is low again.
 
-				else	-- InsertALIGN
+				else	-- InsertAlign
 					if (TX_FIFO_Valid = '1') then																	-- valid data in TX_FIFO
 						TX_Primitive							<= SATA_PRIMITIVE_NONE;
 						TX_WordCounter_inc				<= '1';
@@ -711,11 +711,11 @@ begin
 			when ST_RX_WAIT_FIFO =>
 				Status												<= SATA_LINK_STATUS_RECEIVING;
 				
-				if (InsertALIGN = '1') then
+				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					-- All cases are handled after InsertAlign is deasserted.
 					
-				else		-- InsertALIGN
+				else		-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_SYNC;
 					
 					if (RX_Primitive = SATA_PRIMITIVE_TX_RDY) then
@@ -737,7 +737,7 @@ begin
 				-- assert(RX_FIFO_SpaceAvailable = '1')
 				Status												<= SATA_LINK_STATUS_RECEIVING;
 				
-				if (InsertALIGN = '1') then
+				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					
 					if (RX_Primitive = SATA_PRIMITIVE_SOF) then
@@ -748,7 +748,7 @@ begin
 					end if;
 					-- All other cases are handled after InsertAlign is deasserted.
 
-				else		-- InsertALIGN
+				else		-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_RX_RDY;
 					
 					if ((RX_Primitive = SATA_PRIMITIVE_TX_RDY) or
@@ -771,7 +771,7 @@ begin
 			when ST_RX_RECEIVE_DATA =>
 				Status												<= SATA_LINK_STATUS_RECEIVING;
 				
-				if (InsertALIGN = '1') then
+				if (InsertAlign = '1') then
 					TX_Primitive 								<= SATA_PRIMITIVE_ALIGN;
 					
 					if (RX_Primitive = SATA_PRIMITIVE_NONE) then 						-- data
@@ -792,7 +792,7 @@ begin
 					
 					-- WTRM and SYNC are handled after InsertAlign is low again.
 
-				else		-- InsertALIGN
+				else		-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_R_IP;
 					
 					if (RX_Primitive = SATA_PRIMITIVE_NONE) then 						-- data
@@ -832,7 +832,7 @@ begin
 			when ST_RX_SEND_HOLD =>
 				Status												<= SATA_LINK_STATUS_RECEIVING;
 				
-				if (InsertALIGN = '1') then
+				if (InsertAlign = '1') then
 					TX_Primitive 								<= SATA_PRIMITIVE_ALIGN;
 					
 					if (RX_Primitive = SATA_PRIMITIVE_NONE) then 						-- data
@@ -850,7 +850,7 @@ begin
 
 					-- All other primitives are handled after InsertAlign is low again.
 
-				else		-- InsertALIGN
+				else		-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_HOLD;
 					
 					if (RX_Primitive = SATA_PRIMITIVE_NONE) then 						-- data
@@ -905,7 +905,7 @@ begin
 			when ST_RX_RECEIVED_HOLD =>
 				Status												<= SATA_LINK_STATUS_RECEIVING;
 				
-				if (InsertALIGN = '1') then
+				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					
 					if (RX_Primitive = SATA_PRIMITIVE_NONE) then
@@ -920,7 +920,7 @@ begin
 					
 					-- All other primitives are handled after InsertAlign is low again.
 
-				else		-- InsertALIGN
+				else		-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_HOLD_ACK;
 					
 					if (RX_Primitive = SATA_PRIMITIVE_NONE) then 							-- data
@@ -993,7 +993,7 @@ begin
 			when ST_RX_SEND_R_OK =>
 				Status												<= SATA_LINK_STATUS_RECEIVING;
 				
-				if (InsertALIGN = '1') then
+				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					-- All cases are handled after InsertAlign is deasserted
 
@@ -1010,7 +1010,7 @@ begin
 			when ST_RX_SEND_R_ERROR =>
 				Status												<= SATA_LINK_STATUS_RECEIVING;
 				
-				if (InsertALIGN = '1') then
+				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					-- All cases are handled after InsertAlign is deasserted
 
@@ -1079,9 +1079,9 @@ begin
 		signal RetryCounter_us					: UNSIGNED(4 downto 0)																:= (others => '0');
 		
 	begin
-		InsertAlign_rst							<= InsertALIGN when rising_edge(Clock);		-- delay reload by one cycle -> asserts InsertALIGN for 2 cycles.
-		InsertAlign_Counter_us			<= upcounter_next(cnt => InsertAlign_Counter_us, rst => InsertAlign_rst, en => not InsertALIGN) when rising_edge(Clock);
-		InsertALIGN									<= upcounter_equal(cnt => InsertAlign_Counter_us, value => (INSERT_ALIGN_INTERVAL - 3));
+		InsertAlign_rst							<= InsertAlign when rising_edge(Clock);		-- delay reload by one cycle -> asserts InsertAlign for 2 cycles.
+		InsertAlign_Counter_us			<= upcounter_next(cnt => InsertAlign_Counter_us, rst => InsertAlign_rst, en => not InsertAlign) when rising_edge(Clock);
+		InsertAlign									<= upcounter_equal(cnt => InsertAlign_Counter_us, value => (INSERT_ALIGN_INTERVAL - 3));
 
 		WordCounter_inc							<= TX_WordCounter_inc and not TX_IsLongFrame;
 		WordCounter_us							<= upcounter_next(cnt => WordCounter_us, rst => TX_WordCounter_rst, en => WordCounter_inc) when rising_edge(Clock);

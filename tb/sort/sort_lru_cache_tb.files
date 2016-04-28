@@ -5,38 +5,17 @@
 # Note: all files are relative to PoC root directory
 #
 # Load external vendor libraries
-@library unisim	"xilinx"															# Xilinx ISE primitives
-@library osvvm	"osvvm"																# 
-
-# board and device configuration
-vhdl		poc		"tb/common/my_config_KC705.vhdl"
-vhdl		poc		"tb/common/my_project.vhdl"
-
-# PoC core packages
-vhdl		poc		"src/common/utils.vhdl"									# PoC utility collection
-vhdl		poc		"src/common/config.vhdl"								# PoC device configuration mechanism
-vhdl		poc		"src/common/math.vhdl"									# PoC math extension package
-vhdl		poc		"src/common/strings.vhdl"								# PoC string package
-vhdl		poc		"src/common/vectors.vhdl"								# PoC vector package
-vhdl		poc		"src/common/physical.vhdl"							# PoC physical types package
-vhdl		poc		"src/common/components.vhdl"						# PoC components
-vhdl-08	poc		"src/common/protected.v08.vhdl"					# PoC protected types
-vhdl-93	poc		"src/common/fileio.v93.vhdl"						# PoC file I/O
-vhdl-08	poc		"src/common/fileio.v08.vhdl"						# PoC file I/O
-
-vhdl		poc		"src/sim/sim_types.vhdl"								# PoC simulation helper
-vhdl-93	poc		"src/sim/sim_random.v93.vhdl"						# PoC simulation helper
-vhdl-93	poc		"src/sim/sim_global.v93.vhdl"						# PoC simulation helper
-vhdl-93	poc		"src/sim/sim_unprotected.v93.vhdl"			# PoC simulation helper
-vhdl-93	poc		"src/sim/sim_simulation.v93.vhdl"				# PoC simulation helper
-vhdl-08	poc		"src/sim/sim_random.v08.vhdl"						# PoC simulation helper
-vhdl-08	poc		"src/sim/sim_protected.v08.vhdl"				# PoC simulation helper
-vhdl-08	poc		"src/sim/sim_global.v08.vhdl"						# PoC simulation helper
-vhdl-08	poc		"src/sim/sim_simulation.v08.vhdl"				# PoC simulation helper
-vhdl		poc		"src/sim/sim_waveform.vhdl"							# PoC simulation helper
+if (ToolChain != "Cocotb") then
+	include				"lib/osvvm.files"													# 
+end if
 
 # PoC.sort
-vhdl		poc		"src/sort/sort_lru_cache.vhdl"					# UUT (Unit Under Test)
+include				"src/sort/sort_lru_cache.files"			# UUT (Unit Under Test)
 
 # Testbench file(s)
-vhdl		test	"tb/sort/sort_lru_cache_tb.vhdl"				# Testbench
+if (ToolChain = "Cocotb") then
+	cocotb			"tb/common/lru_dict.py"
+	cocotb			"tb/sort/sort_lru_cache_cocotb.py"	# Cocotb Testbench
+else
+	vhdl		test	"tb/sort/sort_lru_cache_tb.vhdl"	# Testbench
+end if

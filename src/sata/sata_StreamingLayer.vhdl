@@ -560,7 +560,7 @@ begin
     --see below DebugPortOut.SFSM_RX_Data  <= Trans_RX_Data;
     DebugPortOut.SFSM_RX_SOR		<= SFSM_RX_SOR;
     DebugPortOut.SFSM_RX_EOR		<= SFSM_RX_EOR;
-    DebugPortOut.SFSM_RX_Ack		<= not RX_FIFO_FULL;
+    DebugPortOut.SFSM_RX_Ack		<= not RX_FIFO_Full;
 		
 		-- RX datapath between demultiplexer and IDF
 		-- is same as input from transport layer

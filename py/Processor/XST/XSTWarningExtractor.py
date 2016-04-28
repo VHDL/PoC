@@ -1,7 +1,7 @@
 
 
-from Base.Base import BaseExtractor
-from Processor.Exceptions import *
+from Base.Simulator import BaseExtractor
+from Base.Processor import ProcessorException, PostProcessorException
 
 class Extractor(BaseExtractor):
 
@@ -12,7 +12,7 @@ class Extractor(BaseExtractor):
 	@classmethod
 	def getStartRegExpString(cls):
 		# parse project filelist
-		str	 = r".*?"									# start of line
+		str  = r".*?"									# start of line
 		str += r"WARNING:"						#	FSM path
 		str += r"(?P<Process>\w+):"		# 
 		str += r"(?P<WarningID>\d+)"	#	state signal name

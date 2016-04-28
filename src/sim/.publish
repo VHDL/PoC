@@ -5,6 +5,7 @@
 README.md
 
 # Simulation helper packages
+sim.files
 sim_types.vhdl
 sim_global.v93.vhdl
 sim_global.v08.vhdl

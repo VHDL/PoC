@@ -6,29 +6,46 @@ README.md
 
 # subnamespace
 
-# --------------------------------------
-# Arithmetic
-arith_addw_tb.*
-arith_div_tb.*
-
 # Counters
-arith_counter_bcd_tb.*
-#arith_counter_gray_tb.*
-#arith_counter_ring_tb.*
+arith_counter_bcd_tb.files
+arith_counter_bcd_tb.vhdl
+arith_counter_gray_tb.files
+arith_counter_gray_tb.vhdl
+arith_counter_ring_tb.files
+arith_counter_ring_tb.vhdl
+arith_counter_free_tb.files
+arith_counter_free_tb.vhdl
 
 # Converters
-arith_convert_bin2bcd_tb.*
+arith_convert_bin2bcd_tb.files
+arith_convert_bin2bcd_tb.vhdl
 
 # Logical
+arith_same_tb.files
+arith_same_tb.vhdl
+arith_shifter_barrel_tb.files
+arith_shifter_barrel_tb.vhdl
 
 # Prefix Modules
-arith_prefix_and_tb.*
-arith_prefix_or_tb.*
+arith_firstone_tb.files
+arith_firstone_tb.vhdl
+arith_prefix_and_tb.files
+arith_prefix_and_tb.vhdl
+arith_prefix_or_tb.files
+arith_prefix_or_tb.vhdl
 
-# Random Number Generators
-arith_prng_tb.*
+# Arithmetic
+arith_addw_tb.files
+arith_addw_tb.vhdl
+arith_div_tb.files
+arith_div_tb.vhdl
+# arith_muls_wide_tb.files
+# arith_muls_wide_tb.vhdl
+arith_scaler_tb.files
+arith_scaler_tb.vhdl
+arith_sqrt_tb.files
+arith_sqrt_tb.vhdl
 
-# Misc
-#arith_firstone_tb.*
-#arith_same_tb.*
-#arith_sqrt_tb.*
+# Random Numbers
+arith_prng_tb.files
+arith_prng_tb.vhdl

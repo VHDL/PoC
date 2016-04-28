@@ -1174,7 +1174,7 @@ begin
 		DBG_DebugVector_d(0).Data_t						<= SerialData_t_i;
 	
 		genDataDelay : for i in 0 to DBG_DebugVector_d'high - 1 generate
-			DBG_DebugVector_d(I + 1)	<= DBG_DebugVector_d(I) when rising_edge(Clock);
+			DBG_DebugVector_d(i + 1)	<= DBG_DebugVector_d(i) when rising_edge(Clock);
 		end generate;
 		
 		DBG_Command						<= DBG_DebugVector_d(DBG_DebugVector_d'high).Command;
@@ -1198,7 +1198,7 @@ begin
 														 (SerialData_t_i	XOR SerialData_t_d);
 		
 		genTriggerDelay : for i in 0 to Trigger_d'high - 1 generate
-			Trigger_d(I + 1)		<= Trigger_d(I) when rising_edge(Clock);
+			Trigger_d(i + 1)		<= Trigger_d(i) when rising_edge(Clock);
 		end generate;
 		
 		DBG_Trigger						<= Trigger_d(DBG_TRIGGER_DELAY);

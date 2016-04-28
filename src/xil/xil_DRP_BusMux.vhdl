@@ -3,17 +3,17 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -63,7 +63,7 @@ entity xil_DRP_BusMux is
 		Out_DataOut			: out	T_XIL_DRP_DATA;																		-- 
 		Out_Ack					: in	STD_LOGIC																					-- 
 	);
-end;
+end entity;
 
 
 architecture rtl of xil_DRP_BusMux is
@@ -195,5 +195,4 @@ begin
 			Grant_Vector		=> Arb_Grant,
 			Grant_Index			=> Arb_Grant_bin
 		);
-
-end;
+end architecture;

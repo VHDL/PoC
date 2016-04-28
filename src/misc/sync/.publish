@@ -8,10 +8,15 @@ README.md
 sync.pkg.vhdl
 
 # Clock-Domain-Crossing (CDC) circuits
+sync_Bits.files
 sync_Bits.vhdl
+sync_Reset.files
 sync_Reset.vhdl
+sync_Strobe.files
 sync_Strobe.vhdl
+sync_Vector.files
 sync_Vector.vhdl
+sync_Command.files
 sync_Command.vhdl
 
 # Altera specific implementations
