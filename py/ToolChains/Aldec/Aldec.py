@@ -52,7 +52,7 @@ class AldecException(ToolChainException):
 
 class Configuration(BaseConfiguration):
 	_vendor =			"Aldec"
-	_toolName =		"Aldec"
+	_toolName =		None  # automatically configure only vendor path
 	_section  =		"INSTALL.Aldec"
 	_template = {
 		"Windows": {
@@ -67,18 +67,7 @@ class Configuration(BaseConfiguration):
 		}
 	}
 
-	# QUESTION: call super().ConfigureVendorPath("Altera") ?? calls to __GetVendorPath      => refactor -> move method to ConfigurationBase
-	def ConfigureForAll(self):
-		super().ConfigureForAll()
-		if (not self._AskInstalled("Are Aldec products installed on your system?")):
-			self._ClearSection(self._section)
-		else:
-			if self._host.PoCConfig.has_option(self._section, 'InstallationDirectory'):
-				defaultPath = Path(self._host.PoCConfig[self._section]['InstallationDirectory'])
-			else:
-				defaultPath = self.__GetAldecPath()
-			installPath = self._AskInstallPath(self._section, defaultPath)
-			self._WriteInstallationDirectory(self._section, installPath)
-
-	def __GetAldecPath(self):
-		return super()._TestDefaultInstallPath({"Windows": "Aldec", "Linux": "Aldec"})
+	def _GetDefaultInstallationDirectory(self):
+		path = self._TestDefaultInstallPath({"Windows": "Aldec", "Linux": "Aldec"})
+		if path is None: return super()._GetDefaultInstallationDirectory()
+		return str(path)
