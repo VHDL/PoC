@@ -489,6 +489,8 @@ def QuestaVSimFilter(gen):
 			yield LogEntry(line, Severity.Error)
 		elif line.startswith("# ** Fatal: "):
 			yield LogEntry(line, Severity.Error)
+		elif line.startswith("** Fatal: "):
+			yield LogEntry(line, Severity.Error)
 		elif line.startswith("# "):
 			if (not PoCOutputFound):
 				yield LogEntry(line, Severity.Verbose)
