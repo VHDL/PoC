@@ -143,6 +143,7 @@ class Configuration:		#(ISubClassRegistration):
 	def _ConfigureInstallationDirectory(self):
 		"""
 			Asks for installation directory and updates section.
+			Checks if entered directory exists and returns Path object.
 			If no installation directory was configured before, then _GetDefaultInstallationDir is called.
 		"""
 		if self._host.PoCConfig.has_option(self._section, 'InstallationDirectory'):
@@ -166,6 +167,8 @@ class Configuration:		#(ISubClassRegistration):
 			self._host.PoCConfig[self._section]['InstallationDirectory'] = installPath.as_posix()
 			self._host.PoCConfig.Interpolation.clear_cache()
 
+		return installPath
+
 	def _GetDefaultInstallationDirectory(self):
 		"""
 			Returns unresolved default installation directory (string) from template.
@@ -188,4 +191,40 @@ class Configuration:		#(ISubClassRegistration):
 				except OSError:
 					pass
 		return None
+
+	def _ConfigureVersion(self):
+		"""
+				Asks for version and updates section. Returns version as string.
+				If no version was configured before, then _GetDefaultVersion is called.
+			"""
+		if self._host.PoCConfig.has_option(self._section, 'Version'):
+			defaultVersion = self._host.PoCConfig[self._section]['Version']
+		else:
+			unresolved = self._GetDefaultVersion()  # may return an unresolved configuration string
+			self._host.PoCConfig[self._section]['Version'] = unresolved  # create entry
+			defaultVersion = self._host.PoCConfig[self._section]['Version']  # resolve entry
+
+		version = input("  {0!s} version [{1!s}]: ".format(self, defaultVersion))
+		if version != "":  # update only if user entered something
+			self._host.PoCConfig[self._section]['Version'] = version
+			self._host.PoCConfig.Interpolation.clear_cache()
+		else:
+			version = defaultVersion
+
+		return version
+
+	def _GetDefaultVersion(self):
+		"""
+			Returns unresolved default version (string) from template.
+			Overwrite function in sub-class for automatic search of version.
+		"""
+		return self._template[self._host.Platform][self._section]['Version']
+
+	def _ConfigureBinaryDirectory(self):
+		"""Updates section with value from _template and returns directory as Path object."""
+		unresolved = self._template[self._host.Platform][self._section]['BinaryDirectory']
+		self._host.PoCConfig[self._section]['BinaryDirectory'] = unresolved # create entry
+		defaultPath = Path(self._host.PoCConfig[self._section]['BinaryDirectory'])  # resolve entry
+
+		return defaultPath
 

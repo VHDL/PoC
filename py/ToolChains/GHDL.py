@@ -101,9 +101,8 @@ class Configuration(BaseConfiguration):
 				self._ClearSection(self._section)
 			else:
 				self._ConfigureInstallationDirectory()
-				self._host.PoCConfig[self._section]['BinaryDirectory'] = self._template[self._host.Platform][self._section][
-					'BinaryDirectory']
-				self.__WriteGHDLSection()
+				binPath = self._ConfigureBinaryDirectory()
+				self.__WriteGHDLSection(binPath)
 		except ConfigurationException:
 			self._ClearSection(self._section)
 			raise
@@ -115,13 +114,11 @@ class Configuration(BaseConfiguration):
 
 		return super()._GetDefaultInstallationDirectory()
 
-	def __WriteGHDLSection(self):
-		"""Further entries."""
-		ghdlPath = Path(self._host.PoCConfig[self._section]['BinaryDirectory'])  # get resolved path
+	def __WriteGHDLSection(self, binPath):
 		if (self._host.Platform == "Linux"):
-			ghdlPath /= "ghdl"
+			ghdlPath = binPath / "ghdl"
 		else:
-			ghdlPath /= "ghdl.exe"
+			ghdlPath = binPath / "ghdl.exe"
 
 		if not ghdlPath.exists():
 			raise ConfigurationException("Executable '{0!s}' not found.".format(ghdlPath)) from FileNotFoundError(

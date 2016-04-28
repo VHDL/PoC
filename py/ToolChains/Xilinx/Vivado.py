@@ -92,26 +92,19 @@ class Configuration(BaseConfiguration):
 			if (not self._AskInstalled("Is Xilinx Vivado installed on your system?")):
 				self._ClearSection(self._section)
 			else:
-				# get version
-				defaultVersion = self._template[self._host.Platform][self._section]['Version']
-				version = input("  {0!s} version [{1!s}]: ".format(self, defaultVersion))
-				if version == "": version = defaultVersion
-				self._host.PoCConfig[self._section]['Version'] = version
-
+				version = self._ConfigureVersion()
 				self._ConfigureInstallationDirectory()
-				self._host.PoCConfig[self._section]['BinaryDirectory'] = self._template[self._host.Platform][self._section][
-					'BinaryDirectory']
-				self.__CheckVivadoVersion(version)
+				binPath = self._ConfigureBinaryDirectory()
+				self.__CheckVivadoVersion(binPath, version)
 		except ConfigurationException:
 			self._ClearSection(self._section)
 			raise
 
-	def __CheckVivadoVersion(self, version):
-		vivadoPath = Path(self._host.PoCConfig[self._section]['BinaryDirectory'])  # get resolved path
+	def __CheckVivadoVersion(self, binPath, version):
 		if (self._host.Platform == "Linux"):
-			vivadoPath /= "vivado"
+			vivadoPath = binPath / "vivado"
 		else:
-			vivadoPath /= "vivado.bat"
+			vivadoPath = binPath / "vivado.bat"
 
 		if not vivadoPath.exists():
 			raise ConfigurationException("Executable '{0!s}' not found.".format(vivadoPath)) from FileNotFoundError(str(vivadoPath))

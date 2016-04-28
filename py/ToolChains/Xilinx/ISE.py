@@ -91,20 +91,18 @@ class Configuration(BaseConfiguration):
 			else:
 				self._host.PoCConfig[self._section]['Version'] = self._template[self._host.Platform][self._section]['Version']
 				self._ConfigureInstallationDirectory()
-				self._host.PoCConfig[self._section]['BinaryDirectory'] = self._template[self._host.Platform][self._section][
-						'BinaryDirectory']
-				self.__CheckISEVersion()
+				binPath = self._ConfigureBinaryDirectory()
+				self.__CheckISEVersion(binPath)
 		except ConfigurationException:
 			self._ClearSection(self._section)
 			raise
 
-	def __CheckISEVersion(self):
+	def __CheckISEVersion(self, binPath):
 		# check for ISE 14.7
-		fusePath = Path(self._host.PoCConfig[self._section]['BinaryDirectory']) # get resolved path
 		if (self._host.Platform == "Linux"):
-			fusePath /= "fuse"
+			fusePath = binPath / "fuse"
 		else:
-			fusePath /= "fuse.exe"
+			fusePath = binPath / "fuse.exe"
 
 		if not fusePath.exists():
 			raise ConfigurationException("Executable '{0!s}' not found.".format(fusePath)) from FileNotFoundError(str(fusePath))
