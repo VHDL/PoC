@@ -90,14 +90,14 @@ class Configuration(BaseConfiguration):
 	def ConfigureForAll(self):
 		try:
 			if (not self._AskInstalled("Is Xilinx Vivado installed on your system?")):
-				self._ClearSection(self._section)
+				self.ClearSection()
 			else:
 				version = self._ConfigureVersion()
 				self._ConfigureInstallationDirectory()
 				binPath = self._ConfigureBinaryDirectory()
 				self.__CheckVivadoVersion(binPath, version)
 		except ConfigurationException:
-			self._ClearSection(self._section)
+			self.ClearSection()
 			raise
 
 	def __CheckVivadoVersion(self, binPath, version):

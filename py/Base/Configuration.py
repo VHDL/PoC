@@ -119,12 +119,12 @@ class Configuration:		#(ISubClassRegistration):
 		if self._toolName is None: return self._vendor
 		return self._toolName
 
-	def _ClearSection(self, section):
-		self._host.PoCConfig[section] = OrderedDict()
+	def ClearSection(self):
+		self._host.PoCConfig[self._section] = OrderedDict()
 
 	def _ConfigureVendorPath(self):
 		if (not self._AskInstalled("Are {0} products installed on your system?".format(self._vendor))):
-			self._ClearSection(self._section)
+			self.ClearSection()
 		else:
 			self._ConfigureInstallationDirectory()
 
@@ -225,6 +225,12 @@ class Configuration:		#(ISubClassRegistration):
 		unresolved = self._template[self._host.Platform][self._section]['BinaryDirectory']
 		self._host.PoCConfig[self._section]['BinaryDirectory'] = unresolved # create entry
 		defaultPath = Path(self._host.PoCConfig[self._section]['BinaryDirectory'])  # resolve entry
+		
+		binPath = defaultPath # may be more complex in the future
 
-		return defaultPath
+		if (not binPath.exists()):
+			raise ConfigurationException("{0!s} binary directory '{1!s}' does not exist.".format(self, binPath)) \
+				from NotADirectoryError(str(binPath))
+		
+		return binPath
 

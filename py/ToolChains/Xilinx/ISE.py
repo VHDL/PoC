@@ -87,14 +87,14 @@ class Configuration(BaseConfiguration):
 	def ConfigureForAll(self):
 		try:
 			if (not self._AskInstalled("Is Xilinx ISE installed on your system?")):
-				self._ClearSection(self._section)
+				self.ClearSection()
 			else:
 				self._host.PoCConfig[self._section]['Version'] = self._template[self._host.Platform][self._section]['Version']
 				self._ConfigureInstallationDirectory()
 				binPath = self._ConfigureBinaryDirectory()
 				self.__CheckISEVersion(binPath)
 		except ConfigurationException:
-			self._ClearSection(self._section)
+			self.ClearSection()
 			raise
 
 	def __CheckISEVersion(self, binPath):

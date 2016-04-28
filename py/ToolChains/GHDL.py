@@ -98,13 +98,13 @@ class Configuration(BaseConfiguration):
 	def ConfigureForAll(self):
 		try:
 			if (not self._AskInstalled("Is GHDL installed on your system?")):
-				self._ClearSection(self._section)
+				self.ClearSection()
 			else:
 				self._ConfigureInstallationDirectory()
 				binPath = self._ConfigureBinaryDirectory()
 				self.__WriteGHDLSection(binPath)
 		except ConfigurationException:
-			self._ClearSection(self._section)
+			self.ClearSection()
 			raise
 
 	def _GetDefaultInstallationDirectory(self):
