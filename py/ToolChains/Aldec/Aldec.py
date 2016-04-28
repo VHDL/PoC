@@ -37,56 +37,48 @@ if __name__ != "__main__":
 	pass
 else:
 	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Compiler.XSTCompiler")
+	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module  ToolChains.Aldec.Aldec")
 
 
-from collections					import OrderedDict
 from pathlib							import Path
-from os										import environ
 
-from Base.Exceptions						import PlatformNotSupportedException
-from Base.Logging								import LogEntry, Severity
-from Base.Configuration					import Configuration as BaseConfiguration, ConfigurationException, SkipConfigurationException
-from Base.ToolChain							import ToolChainException
+from Base.Configuration		import Configuration as BaseConfiguration
+from Base.ToolChain				import ToolChainException
 
 
-class AlteraException(ToolChainException):
+class AldecException(ToolChainException):
 	pass
 
 
 class Configuration(BaseConfiguration):
-	_vendor =			"Altera"
-	_toolName =		"Altera"
-	_section =		"INSTALL.Altera"
+	_vendor =			"Aldec"
+	_toolName =		"Aldec"
+	_section  =		"INSTALL.Aldec"
 	_template = {
 		"Windows": {
 			_section: {
-				"InstallationDirectory": "C:/Altera"
+				"InstallationDirectory":	"C:/Aldec"
 			}
-		},
-		"Linux":   {
-			_section: {
-				"InstallationDirectory": "/opt/Altera"
-			}
+		# },
+		# "Linux": {
+		# 	_section: {
+		# 		"InstallationDirectory":	"/opt/Aldec"
+		# 	}
 		}
 	}
 
 	# QUESTION: call super().ConfigureVendorPath("Altera") ?? calls to __GetVendorPath      => refactor -> move method to ConfigurationBase
 	def ConfigureForAll(self):
 		super().ConfigureForAll()
-		if (not self._AskInstalled("Are Altera products installed on your system?")):
+		if (not self._AskInstalled("Are Aldec products installed on your system?")):
 			self._ClearSection(self._section)
 		else:
 			if self._host.PoCConfig.has_option(self._section, 'InstallationDirectory'):
 				defaultPath = Path(self._host.PoCConfig[self._section]['InstallationDirectory'])
 			else:
-				defaultPath = self.__GetAlteraPath()
+				defaultPath = self.__GetAldecPath()
 			installPath = self._AskInstallPath(self._section, defaultPath)
 			self._WriteInstallationDirectory(self._section, installPath)
-	
-	def __GetAlteraPath(self):
-		# altera = environ.get("QUARTUS_ROOTDIR")				# on Windows: D:\Altera\13.1\quartus
-		# if (altera is not None):
-		# 	return Path(altera).parent.parent
-		
-		return super()._TestDefaultInstallPath({"Windows": "Altera", "Linux": "Altera"})
+
+	def __GetAldecPath(self):
+		return super()._TestDefaultInstallPath({"Windows": "Aldec", "Linux": "Aldec"})

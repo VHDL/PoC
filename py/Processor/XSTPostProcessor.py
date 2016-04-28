@@ -261,9 +261,9 @@ def main():
 		# create a command line argument parser
 		argParser = argparse.ArgumentParser(
 			formatter_class = argparse.RawDescriptionHelpFormatter,
-			description = textwrap.dedent('''\
+			description = textwrap.dedent("""\
 				This is the PoC Library NetList Service Tool.
-				'''),
+				"""),
 			add_help=False)
 
 		# add arguments
