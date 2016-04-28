@@ -85,18 +85,14 @@ class Configuration(BaseConfiguration):
 		return (len(self._host.PoCConfig['INSTALL.Xilinx']) != 0)
 
 	def ConfigureForAll(self):
-		super().ConfigureForAll()
 		try:
 			if (not self._AskInstalled("Is Xilinx ISE installed on your system?")):
 				self._ClearSection(self._section)
 			else:
 				self._host.PoCConfig[self._section]['Version'] = self._template[self._host.Platform][self._section]['Version']
-				self._host.PoCConfig[self._section]['InstallationDirectory'] = self._template[self._host.Platform][self._section]['InstallationDirectory']
-				self._host.PoCConfig[self._section]['BinaryDirectory'] = self._template[self._host.Platform][self._section]['BinaryDirectory']
-				defaultPath = Path(self._host.PoCConfig[self._section]['InstallationDirectory']) # get resolved path
-				installPath = self._AskInstallPath(self._section, defaultPath)
-				if installPath != defaultPath: # write user entered path
-					self._WriteInstallationDirectory(self._section, installPath)
+				self._ConfigureInstallationDirectory()
+				self._host.PoCConfig[self._section]['BinaryDirectory'] = self._template[self._host.Platform][self._section][
+						'BinaryDirectory']
 				self.__CheckISEVersion()
 		except ConfigurationException:
 			self._ClearSection(self._section)

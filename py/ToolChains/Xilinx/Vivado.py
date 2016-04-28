@@ -88,23 +88,19 @@ class Configuration(BaseConfiguration):
 		return (len(self._host.PoCConfig['INSTALL.Xilinx']) != 0)
 
 	def ConfigureForAll(self):
-		super().ConfigureForAll()
 		try:
 			if (not self._AskInstalled("Is Xilinx Vivado installed on your system?")):
 				self._ClearSection(self._section)
 			else:
 				# get version
 				defaultVersion = self._template[self._host.Platform][self._section]['Version']
-				version = input("  {0} version [{1!s}]: ".format(self.ToolName, defaultVersion))
+				version = input("  {0!s} version [{1!s}]: ".format(self, defaultVersion))
 				if version == "": version = defaultVersion
 				self._host.PoCConfig[self._section]['Version'] = version
 
-				self._host.PoCConfig[self._section]['InstallationDirectory'] = self._template[self._host.Platform][self._section]['InstallationDirectory']
-				self._host.PoCConfig[self._section]['BinaryDirectory'] = self._template[self._host.Platform][self._section]['BinaryDirectory']
-				defaultPath = Path(self._host.PoCConfig[self._section]['InstallationDirectory'])  # get resolved path
-				installPath = self._AskInstallPath(self._section, defaultPath)
-				if installPath != defaultPath:  # write user entered path
-					self._WriteInstallationDirectory(self._section, installPath)
+				self._ConfigureInstallationDirectory()
+				self._host.PoCConfig[self._section]['BinaryDirectory'] = self._template[self._host.Platform][self._section][
+					'BinaryDirectory']
 				self.__CheckVivadoVersion(version)
 		except ConfigurationException:
 			self._ClearSection(self._section)

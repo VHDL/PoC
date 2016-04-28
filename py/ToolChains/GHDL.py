@@ -96,26 +96,24 @@ class Configuration(BaseConfiguration):
 	}
 
 	def ConfigureForAll(self):
-		super().ConfigureForAll()
 		try:
 			if (not self._AskInstalled("Is GHDL installed on your system?")):
 				self._ClearSection(self._section)
 			else:
-				self._host.PoCConfig[self._section]['InstallationDirectory'] = self._template[self._host.Platform][self._section]['InstallationDirectory']
-				self._host.PoCConfig[self._section]['BinaryDirectory'] = self._template[self._host.Platform][self._section]['BinaryDirectory']
-				installPath = self._AskInstallPath(self._section, self.__GetGHDLPath())
-				self._WriteInstallationDirectory(self._section, installPath)
+				self._ConfigureInstallationDirectory()
+				self._host.PoCConfig[self._section]['BinaryDirectory'] = self._template[self._host.Platform][self._section][
+					'BinaryDirectory']
 				self.__WriteGHDLSection()
 		except ConfigurationException:
 			self._ClearSection(self._section)
 			raise
 
-	def __GetGHDLPath(self):
+	def _GetDefaultInstallationDirectory(self):
 		if (self._host.Platform in ["Linux", "Darwin"]):
 			name = check_output(["which", "ghdl"], universal_newlines=True)
-			if name != "": return Path(name[:-1]).parent
+			if name != "": return str(Path(name[:-1]).parent)
 
-		return Path(self._host.PoCConfig[self._section]['InstallationDirectory'])  # get resolved path
+		return super()._GetDefaultInstallationDirectory()
 
 	def __WriteGHDLSection(self):
 		"""Further entries."""
