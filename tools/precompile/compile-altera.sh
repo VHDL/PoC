@@ -32,9 +32,11 @@
 # ==============================================================================
 
 poc_sh=../../poc.sh
-Simulator=questasim					# questasim
+Simulator=ghdl					# questasim, ghdl, ...
 Language=vhdl								# vhdl
 TargetArchitecture="cycloneiii	stratixiv"		# space separated device list
+
+ghdlScript=/space/install/ghdl/libraries/vendors/compile-altera.sh
 
 # define color escape codes
 RED='\e[0;31m'			# Red
@@ -42,25 +44,46 @@ YELLOW='\e[1;33m'		# Yellow
 NOCOLOR='\e[0m'			# No Color
 
 # Setup command to execute
-QuartusSH=$($poc_sh query Altera.Quartus:BinaryDirectory 2>/dev/null)/quartus_sh
-if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${RED}ERROR: Cannot get Altera Quartus binary dir.${NOCOLOR}"
-	exit;
+if [ "$Simulator" != ghdl ]; then
+  QuartusSH=$($poc_sh query INSTALL.Altera.Quartus:BinaryDirectory 2>/dev/null)/quartus_sh
+  if [ $? -ne 0 ]; then
+	  echo 1>&2 -e "${RED}ERROR: Cannot get Altera Quartus binary dir.${NOCOLOR}"
+	  exit;
+  fi
 fi
 
-DestDir=$($poc_sh query PoC:InstallationDirectory 2>/dev/null)/temp/precompiled/vsim/altera	# Output directory
+# Setup destination directory
+DestDir=$($poc_sh query INSTALL.PoC:InstallationDirectory 2>/dev/null)/temp/precompiled
 if [ $? -ne 0 ]; then
 	echo 1>&2 -e "${RED}ERROR: Cannot get PoC installation dir.${NOCOLOR}"
 	exit;
 fi 
 
-SimulatorDir=$($poc_sh query ModelSim:InstallationDirectory 2>/dev/null)/bin	# Path to the simulators bin directory
-if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${RED}ERROR: Cannot get ModelSim installation dir.${NOCOLOR}"
-	exit;
-fi 
+case "$Simulator" in
+	ghdl)
+		DestDir=$DestDir/ghdl
+		;;
+	questasim)
+		DestDir=$DestDir/vsim/altera
+		;;
+	*)
+		echo "Unsupported simulator."
+		exit 1
+		;;
+esac
 
-# Change to destination directory and create initial modelsim.ini
+# Setup simulator directory
+case "$Simulator" in
+	questasim)
+		SimulatorDir=$($poc_sh query ModelSim:InstallationDirectory 2>/dev/null)/bin	# Path to the simulators bin directory
+		if [ $? -ne 0 ]; then
+			echo 1>&2 -e "${RED}ERROR: Cannot get ModelSim installation dir.${NOCOLOR}"
+			exit;
+		fi 
+		;;
+esac
+
+# Create and change to destination directory
 mkdir -p $DestDir
 if [ $? -ne 0 ]; then
 	echo 1>&2 -e "${RED}ERROR: Cannot create output directory.${NOCOLOR}"
@@ -71,17 +94,31 @@ cd $DestDir
 if [ $? -ne 0 ]; then
 	echo 1>&2 -e "${RED}ERROR: Cannot change to output directory.${NOCOLOR}"
 	exit;
-fi 
-echo "[Library]" > modelsim.ini
-echo "others = ../modelsim.ini" >> modelsim.ini
-if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${RED}ERROR: Cannot create initial modelsim.ini.${NOCOLOR}"
-	exit;
-fi 
+fi
 
-# Execute command in destination directory
-$QuartusSH --simlib_comp -tool $Simulator -language $Language -tool_path $SimulatorDir -directory $DestDir -rtl_only
+# Compile libraries with simulator, executed in destination directory
+case "$Simulator" in
+	ghdl)
+		$ghdlScript -a -s -S
+		;;
+	questasim)
+		# create modelsim.ini
+		echo "[Library]" > modelsim.ini
+		echo "others = ../modelsim.ini" >> modelsim.ini
+		if [ $? -ne 0 ]; then
+			echo 1>&2 -e "${RED}ERROR: Cannot create initial modelsim.ini.${NOCOLOR}"
+			exit;
+		fi
 
-for Family in $TargetArchitecture; do
-	$QuartusSH --simlib_comp -tool $Simulator -language $Language -family $Family -tool_path $SimulatorDir -directory $DestDir -no_rtl
-done
+		# call compile script
+		$QuartusSH --simlib_comp -tool $Simulator -language $Language -tool_path $SimulatorDir -directory $DestDir -rtl_only
+
+		for Family in $TargetArchitecture; do
+			$QuartusSH --simlib_comp -tool $Simulator -language $Language -family $Family -tool_path $SimulatorDir -directory $DestDir -no_rtl
+		done
+		;;
+	*)
+		echo "Unsupported simulator."
+		exit 1
+		;;
+esac

@@ -625,7 +625,12 @@ class PoC(ILogable, ArgParseMixin):
 		
 		fqnList =			self._ExtractFQNs(args.FQN)
 		board =				self._ExtractBoard(args.BoardName, args.DeviceName)
-		vhdlVersion =	self._ExtractVHDLVersion(args.VHDLVersion)
+
+		# FIXME: Altera vendor libraries are not compatible with VHDL-2008  -> use VHDL-93 by default
+		if (args.VHDLVersion is None):
+			vhdlVersion = VHDLVersion.VHDL93  # self.__SimulationDefaultVHDLVersion
+		else:
+			vhdlVersion = VHDLVersion.parse(args.VHDLVersion)
 
 		# prepare some paths
 		self.Directories["GHDLTemp"] =					self.Directories["PoCTemp"] / self.PoCConfig['CONFIG.DirectoryNames']['GHDLFiles']
@@ -800,7 +805,7 @@ class PoC(ILogable, ArgParseMixin):
 		# prepare paths to vendor simulation libraries
 		self.__PrepareVendorLibraryPaths()
 
-		# create a GHDLSimulator instance and prepare it
+		# create a VivadoSimulator instance and prepare it
 		simulator = VivadoSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(binaryPath, vivadoVersion)
 		simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
