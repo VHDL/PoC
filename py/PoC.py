@@ -418,7 +418,6 @@ class PoC(ILogable, ArgParseMixin):
 			for sectionName in delSections:
 				self.__pocConfig.remove_section(sectionName)
 
-
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "add-solution" command
 	# ----------------------------------------------------------------------------
@@ -453,6 +452,117 @@ class PoC(ILogable, ArgParseMixin):
 	@ArgumentAttribute(metavar="<Solution>", dest="Solution", type=str, help="Solution name.")
 	# @HandleVerbosityOptions
 	def HandleRemoveSolution(self, args):
+		self.PrintHeadline()
+		self.__PrepareForConfiguration()
+		
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "add-project" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Configuration commands")
+	@CommandAttribute("add-project", help="Add a project to PoC.")
+	# @HandleVerbosityOptions
+	def HandleAddProject(self, args):
+		self.PrintHeadline()
+		self.__PrepareForConfiguration()
+	
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "list-project" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Configuration commands")
+	@CommandAttribute("list-project", help="List all projects registered in PoC.")
+	# @HandleVerbosityOptions
+	def HandleListProject(self, args):
+		self.PrintHeadline()
+		self.__PrepareForConfiguration()
+		
+		project = Solution(self)
+		
+		self._LogNormal("Registered projects in PoC:")
+		for projectName in project.GetProjectNames():
+			print("  {0}".format(projectName))
+	
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "remove-project" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Configuration commands")
+	@CommandAttribute("remove-project", help="Add a project to PoC.")
+	@ArgumentAttribute(metavar="<Project>", dest="Project", type=str, help="Project name.")
+	# @HandleVerbosityOptions
+	def HandleRemoveProject(self, args):
+		self.PrintHeadline()
+		self.__PrepareForConfiguration()
+		
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "add-ipcore" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Configuration commands")
+	@CommandAttribute("add-ipcore", help="Add a ipcore to PoC.")
+	# @HandleVerbosityOptions
+	def HandleAddIPCore(self, args):
+		self.PrintHeadline()
+		self.__PrepareForConfiguration()
+	
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "list-ipcore" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Configuration commands")
+	@CommandAttribute("list-ipcore", help="List all ipcores registered in PoC.")
+	# @HandleVerbosityOptions
+	def HandleListIPCore(self, args):
+		self.PrintHeadline()
+		self.__PrepareForConfiguration()
+		
+		ipcore = Solution(self)
+		
+		self._LogNormal("Registered ipcores in PoC:")
+		for ipcoreName in ipcore.GetIPCoreNames():
+			print("  {0}".format(ipcoreName))
+	
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "remove-ipcore" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Configuration commands")
+	@CommandAttribute("remove-ipcore", help="Add a ipcore to PoC.")
+	@ArgumentAttribute(metavar="<IPCore>", dest="IPCore", type=str, help="IPCore name.")
+	# @HandleVerbosityOptions
+	def HandleRemoveIPCore(self, args):
+		self.PrintHeadline()
+		self.__PrepareForConfiguration()
+		
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "add-testbench" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Configuration commands")
+	@CommandAttribute("add-testbench", help="Add a testbench to PoC.")
+	# @HandleVerbosityOptions
+	def HandleAddTestbench(self, args):
+		self.PrintHeadline()
+		self.__PrepareForConfiguration()
+	
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "list-testbench" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Configuration commands")
+	@CommandAttribute("list-testbench", help="List all testbenchs registered in PoC.")
+	# @HandleVerbosityOptions
+	def HandleListTestbench(self, args):
+		self.PrintHeadline()
+		self.__PrepareForConfiguration()
+		
+		testbench = Solution(self)
+		
+		self._LogNormal("Registered testbenchs in PoC:")
+		for testbenchName in testbench.GetTestbenchNames():
+			print("  {0}".format(testbenchName))
+	
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "remove-testbench" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Configuration commands")
+	@CommandAttribute("remove-testbench", help="Add a testbench to PoC.")
+	@ArgumentAttribute(metavar="<Testbench>", dest="Testbench", type=str, help="Testbench name.")
+	# @HandleVerbosityOptions
+	def HandleRemoveTestbench(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
 
