@@ -348,8 +348,8 @@ class PoC(ILogable, ArgParseMixin):
 		print()
 
 		# configure each vendor or tool of a tool chain
-		for config in Configurations:
-			configurator = config(self)
+		configurators = [config(self) for config in Configurations]
+		for configurator in configurators:
 
 			# skip configuration with unsupported platforms
 			if (not configurator.IsSupportedPlatform()):	continue
@@ -376,21 +376,8 @@ class PoC(ILogable, ArgParseMixin):
 		self.__WritePoCConfiguration()
 		# re-read configuration
 		self.__ReadPoCConfiguration()
-
-		# QUESTION: move to QuestaSim package? What about ModelSim Altera Edition? add a hook into both, pointing to a Mentor MixIn class for writing the modelsim.ini?
-		# create non-vendor-specific modelsim.ini
-		tempDirectory = self.PoCConfig['CONFIG.DirectoryNames']['TemporaryFiles']
-		precompiledDirectory = self.PoCConfig['CONFIG.DirectoryNames']['PrecompiledFiles']
-		vSimSimulatorFiles = self.PoCConfig['CONFIG.DirectoryNames']['QuestaSimFiles']
-		modelsimIniPath = self.RootDirectory / tempDirectory / precompiledDirectory / vSimSimulatorFiles / "modelsim.ini"
-		if not modelsimIniPath.exists():
-			modelsimIniPath.parent.mkdir(parents=True)
-			with modelsimIniPath.open('w') as fileHandle:
-				fileContent = dedent("""\
-					[Library]
-					others = $MODEL_TECH/../modelsim.ini
-					""")
-				fileHandle.write(fileContent)
+		# run post-configuration tasks
+		for configurator in configurators: configurator.RunPostConfigurationTasks()
 
 	def _InitializeConfiguration(self):
 		# create parser instance
