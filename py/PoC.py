@@ -42,24 +42,24 @@ from platform									import system as platform_system
 from sys											import argv as sys_argv
 from textwrap									import dedent
 
-from PoC.Solution import Solution
-from lib.Functions						import Init, Exit
-from lib.ArgParseAttributes		import ArgParseMixin
-from lib.ArgParseAttributes		import CommonArgumentAttribute, CommonSwitchArgumentAttribute
-from lib.ArgParseAttributes		import CommandAttribute, CommandGroupAttribute, ArgumentAttribute, SwitchArgumentAttribute, DefaultAttribute
-from lib.ConfigParser					import ExtendedConfigParser
-from lib.Parser								import ParserException
+from Base.Compiler						import CompilerException
+from Base.Configuration				import ConfigurationException, SkipConfigurationException
 from Base.Exceptions					import ExceptionBase, CommonException, PlatformNotSupportedException, EnvironmentException, NotConfiguredException
 from Base.Logging							import ILogable, Logger, Severity
-from Base.Configuration				import ConfigurationException, SkipConfigurationException
 from Base.Project							import VHDLVersion
-from Base.ToolChain						import ToolChainException
 from Base.Simulator						import SimulatorException
-from Base.Compiler						import CompilerException
+from Base.ToolChain						import ToolChainException
 from PoC.Config								import Board
 from PoC.Entity								import Root, FQN, EntityTypes, WildCard, TestbenchKind, NetlistKind
 from PoC.Query								import Query
 from ToolChains								import Configurations
+from lib.ArgParseAttributes		import ArgParseMixin
+from lib.ArgParseAttributes		import CommandAttribute, CommandGroupAttribute, ArgumentAttribute, SwitchArgumentAttribute, DefaultAttribute
+from lib.ArgParseAttributes		import CommonArgumentAttribute, CommonSwitchArgumentAttribute
+from lib.ConfigParser					import ExtendedConfigParser
+from lib.Functions						import Init, Exit
+from lib.Parser								import ParserException
+
 # Simulators
 from Simulator.ActiveHDLSimulator		import Simulator as ActiveHDLSimulator
 from Simulator.CocotbSimulator 			import Simulator as CocotbSimulator
@@ -384,6 +384,7 @@ class PoC(ILogable, ArgParseMixin):
 		vSimSimulatorFiles = self.PoCConfig['CONFIG.DirectoryNames']['QuestaSimFiles']
 		modelsimIniPath = self.RootDirectory / tempDirectory / precompiledDirectory / vSimSimulatorFiles / "modelsim.ini"
 		if not modelsimIniPath.exists():
+			modelsimIniPath.parent.mkdir(parents=True)
 			with modelsimIniPath.open('w') as fileHandle:
 				fileContent = dedent("""\
 					[Library]
@@ -418,153 +419,6 @@ class PoC(ILogable, ArgParseMixin):
 			for sectionName in delSections:
 				self.__pocConfig.remove_section(sectionName)
 
-	# ----------------------------------------------------------------------------
-	# create the sub-parser for the "add-solution" command
-	# ----------------------------------------------------------------------------
-	@CommandGroupAttribute("Configuration commands")
-	@CommandAttribute("add-solution", help="Add a solution to PoC.")
-	# @HandleVerbosityOptions
-	def HandleAddSolution(self, args):
-		self.PrintHeadline()
-		self.__PrepareForConfiguration()
-
-	# ----------------------------------------------------------------------------
-	# create the sub-parser for the "list-solution" command
-	# ----------------------------------------------------------------------------
-	@CommandGroupAttribute("Configuration commands")
-	@CommandAttribute("list-solution", help="List all solutions registered in PoC.")
-	# @HandleVerbosityOptions
-	def HandleListSolution(self, args):
-		self.PrintHeadline()
-		self.__PrepareForConfiguration()
-
-		solution = Solution(self)
-
-		self._LogNormal("Registered solutions in PoC:")
-		for solutionName in solution.GetSolutionNames():
-			print("  {0}".format(solutionName))
-
-	# ----------------------------------------------------------------------------
-	# create the sub-parser for the "remove-solution" command
-	# ----------------------------------------------------------------------------
-	@CommandGroupAttribute("Configuration commands")
-	@CommandAttribute("remove-solution", help="Add a solution to PoC.")
-	@ArgumentAttribute(metavar="<Solution>", dest="Solution", type=str, help="Solution name.")
-	# @HandleVerbosityOptions
-	def HandleRemoveSolution(self, args):
-		self.PrintHeadline()
-		self.__PrepareForConfiguration()
-		
-	# ----------------------------------------------------------------------------
-	# create the sub-parser for the "add-project" command
-	# ----------------------------------------------------------------------------
-	@CommandGroupAttribute("Configuration commands")
-	@CommandAttribute("add-project", help="Add a project to PoC.")
-	# @HandleVerbosityOptions
-	def HandleAddProject(self, args):
-		self.PrintHeadline()
-		self.__PrepareForConfiguration()
-	
-	# ----------------------------------------------------------------------------
-	# create the sub-parser for the "list-project" command
-	# ----------------------------------------------------------------------------
-	@CommandGroupAttribute("Configuration commands")
-	@CommandAttribute("list-project", help="List all projects registered in PoC.")
-	# @HandleVerbosityOptions
-	def HandleListProject(self, args):
-		self.PrintHeadline()
-		self.__PrepareForConfiguration()
-		
-		project = Solution(self)
-		
-		self._LogNormal("Registered projects in PoC:")
-		for projectName in project.GetProjectNames():
-			print("  {0}".format(projectName))
-	
-	# ----------------------------------------------------------------------------
-	# create the sub-parser for the "remove-project" command
-	# ----------------------------------------------------------------------------
-	@CommandGroupAttribute("Configuration commands")
-	@CommandAttribute("remove-project", help="Add a project to PoC.")
-	@ArgumentAttribute(metavar="<Project>", dest="Project", type=str, help="Project name.")
-	# @HandleVerbosityOptions
-	def HandleRemoveProject(self, args):
-		self.PrintHeadline()
-		self.__PrepareForConfiguration()
-		
-	# ----------------------------------------------------------------------------
-	# create the sub-parser for the "add-ipcore" command
-	# ----------------------------------------------------------------------------
-	@CommandGroupAttribute("Configuration commands")
-	@CommandAttribute("add-ipcore", help="Add a ipcore to PoC.")
-	# @HandleVerbosityOptions
-	def HandleAddIPCore(self, args):
-		self.PrintHeadline()
-		self.__PrepareForConfiguration()
-	
-	# ----------------------------------------------------------------------------
-	# create the sub-parser for the "list-ipcore" command
-	# ----------------------------------------------------------------------------
-	@CommandGroupAttribute("Configuration commands")
-	@CommandAttribute("list-ipcore", help="List all ipcores registered in PoC.")
-	# @HandleVerbosityOptions
-	def HandleListIPCore(self, args):
-		self.PrintHeadline()
-		self.__PrepareForConfiguration()
-		
-		ipcore = Solution(self)
-		
-		self._LogNormal("Registered ipcores in PoC:")
-		for ipcoreName in ipcore.GetIPCoreNames():
-			print("  {0}".format(ipcoreName))
-	
-	# ----------------------------------------------------------------------------
-	# create the sub-parser for the "remove-ipcore" command
-	# ----------------------------------------------------------------------------
-	@CommandGroupAttribute("Configuration commands")
-	@CommandAttribute("remove-ipcore", help="Add a ipcore to PoC.")
-	@ArgumentAttribute(metavar="<IPCore>", dest="IPCore", type=str, help="IPCore name.")
-	# @HandleVerbosityOptions
-	def HandleRemoveIPCore(self, args):
-		self.PrintHeadline()
-		self.__PrepareForConfiguration()
-		
-	# ----------------------------------------------------------------------------
-	# create the sub-parser for the "add-testbench" command
-	# ----------------------------------------------------------------------------
-	@CommandGroupAttribute("Configuration commands")
-	@CommandAttribute("add-testbench", help="Add a testbench to PoC.")
-	# @HandleVerbosityOptions
-	def HandleAddTestbench(self, args):
-		self.PrintHeadline()
-		self.__PrepareForConfiguration()
-	
-	# ----------------------------------------------------------------------------
-	# create the sub-parser for the "list-testbench" command
-	# ----------------------------------------------------------------------------
-	@CommandGroupAttribute("Configuration commands")
-	@CommandAttribute("list-testbench", help="List all testbenchs registered in PoC.")
-	# @HandleVerbosityOptions
-	def HandleListTestbench(self, args):
-		self.PrintHeadline()
-		self.__PrepareForConfiguration()
-		
-		testbench = Solution(self)
-		
-		self._LogNormal("Registered testbenchs in PoC:")
-		for testbenchName in testbench.GetTestbenchNames():
-			print("  {0}".format(testbenchName))
-	
-	# ----------------------------------------------------------------------------
-	# create the sub-parser for the "remove-testbench" command
-	# ----------------------------------------------------------------------------
-	@CommandGroupAttribute("Configuration commands")
-	@CommandAttribute("remove-testbench", help="Add a testbench to PoC.")
-	@ArgumentAttribute(metavar="<Testbench>", dest="Testbench", type=str, help="Testbench name.")
-	# @HandleVerbosityOptions
-	def HandleRemoveTestbench(self, args):
-		self.PrintHeadline()
-		self.__PrepareForConfiguration()
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "query" command
@@ -1208,8 +1062,6 @@ def main():
 		cause = ex.__cause__
 		if isinstance(cause, FileNotFoundError):
 			print("{YELLOW}  FileNotFound:{NOCOLOR} '{cause}'".format(cause=str(cause), **Init.Foreground))
-		elif isinstance(cause, NotADirectoryError):
-			print("{YELLOW}  NotADirectory:{NOCOLOR} '{cause}'".format(cause=str(cause), **Init.Foreground))
 		elif isinstance(cause, DuplicateOptionError):
 			print("{YELLOW}  DuplicateOptionError:{NOCOLOR} '{cause}'".format(cause=str(cause), **Init.Foreground))
 		elif isinstance(cause, ConfigParser_Error):
@@ -1244,7 +1096,7 @@ def main():
 
 # entry point
 if __name__ == "__main__":
-	Exit.versionCheck((3,5,0))
+	Exit.versionCheck((3,4,0))
 	main()
 else:
 	Exit.printThisIsNoLibraryFile(PoC.HeadLine)
