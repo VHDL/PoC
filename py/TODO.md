@@ -1,32 +1,28 @@
 
-ArgParse
+# Python Infrastructure - TODO List
+
+#### ArgParse
   - generate a better help page
       - deterministic order
       - wider columns
   - create better sub command help pages
 
-Command all simulators:
-  - print a report
+#### For all simulators:
+  - print a summary report
   
-Command list-testbench
-  - --kind parameter
+#### Command: `list-testbench`
   - list testbenches as tree
   
-Command list-netlist
-  - --kind parameter
+#### Command `list-netlist`
   - list testbenches as tree
 
-Command vsim:
-  - disable -vopt if Altera Edition is used
+#### Command `vsim`:
+  - disable `-vopt` if *ModelSim Altera Edition* is used
   
-Command configure / setup ?
-  - semi automatic configuration
-  - support more vendor tools
-
-Incomplete features:
+#### Incomplete features:
   - pre-compiled vendor libraries
   
-Open features
+## Open features
   - Attache solutions and projects to PoC
       - for IP core imports
       - for using PoC infrastructure on project files / testbenches / ...
@@ -44,7 +40,7 @@ Open features
   - PoSh auto completion
   - PoSh drives (tb:)
   
-Vendor tool support
+## Vendor tool support
   - Aldec Active-HDL
       - GUI mode for simulations
 
@@ -55,6 +51,3 @@ Vendor tool support
   - Xilinx Vivado
       - Synthesis
       - CoreGenerator
-
-
-
