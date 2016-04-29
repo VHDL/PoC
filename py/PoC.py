@@ -42,6 +42,7 @@ from platform									import system as platform_system
 from sys											import argv as sys_argv
 from textwrap									import dedent
 
+from PoC.Solution import Solution
 from lib.Functions						import Init, Exit
 from lib.ArgParseAttributes		import ArgParseMixin
 from lib.ArgParseAttributes		import CommonArgumentAttribute, CommonSwitchArgumentAttribute
@@ -417,6 +418,43 @@ class PoC(ILogable, ArgParseMixin):
 			for sectionName in delSections:
 				self.__pocConfig.remove_section(sectionName)
 
+
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "add-solution" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Configuration commands")
+	@CommandAttribute("add-solution", help="Add a solution to PoC.")
+	# @HandleVerbosityOptions
+	def HandleAddSolution(self, args):
+		self.PrintHeadline()
+		self.__PrepareForConfiguration()
+
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "list-solution" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Configuration commands")
+	@CommandAttribute("list-solution", help="List all solutions registered in PoC.")
+	# @HandleVerbosityOptions
+	def HandleListSolution(self, args):
+		self.PrintHeadline()
+		self.__PrepareForConfiguration()
+
+		solution = Solution(self)
+
+		self._LogNormal("Registered solutions in PoC:")
+		for solutionName in solution.GetSolutionNames():
+			print("  {0}".format(solutionName))
+
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "remove-solution" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Configuration commands")
+	@CommandAttribute("remove-solution", help="Add a solution to PoC.")
+	@ArgumentAttribute(metavar="<Solution>", dest="Solution", type=str, help="Solution name.")
+	# @HandleVerbosityOptions
+	def HandleRemoveSolution(self, args):
+		self.PrintHeadline()
+		self.__PrepareForConfiguration()
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "query" command
