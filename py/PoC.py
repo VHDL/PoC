@@ -1060,6 +1060,8 @@ def main():
 		cause = ex.__cause__
 		if isinstance(cause, FileNotFoundError):
 			print("{YELLOW}  FileNotFound:{NOCOLOR} '{cause}'".format(cause=str(cause), **Init.Foreground))
+		elif isinstance(cause, NotADirectoryError):
+			print("{YELLOW}  NotADirectory:{NOCOLOR} '{cause}'".format(cause=str(cause), **Init.Foreground))
 		elif isinstance(cause, DuplicateOptionError):
 			print("{YELLOW}  DuplicateOptionError:{NOCOLOR} '{cause}'".format(cause=str(cause), **Init.Foreground))
 		elif isinstance(cause, ConfigParser_Error):
@@ -1094,7 +1096,7 @@ def main():
 
 # entry point
 if __name__ == "__main__":
-	Exit.versionCheck((3,4,0))
+	Exit.versionCheck((3,5,0))
 	main()
 else:
 	Exit.printThisIsNoLibraryFile(PoC.HeadLine)
