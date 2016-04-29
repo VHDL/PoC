@@ -319,7 +319,7 @@ def main():
 #	except PoC.PoCNotConfiguredException as ex:
 #		print("ERROR: %s" % ex.message)
 #		print()
-#		print("Please run 'poc.[sh/cmd] --configure' in PoC root directory.")
+#		print("Please run 'poc.[sh/ps1] --configure' in PoC root directory.")
 #		return
 #	
 #	except PoC.PoCPlatformNotSupportedException as ex:

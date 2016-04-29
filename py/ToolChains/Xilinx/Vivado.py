@@ -46,7 +46,7 @@ else:
 from lib.Functions							import CallByRefParam
 from Base.Exceptions						import PlatformNotSupportedException
 from Base.Logging								import LogEntry, Severity
-from Base.Configuration 				import Configuration as BaseConfiguration, ConfigurationException, SkipConfigurationException
+from Base.Configuration 				import Configuration as BaseConfiguration, ConfigurationException
 from Base.Project								import Project as BaseProject, ProjectFile, ConstraintFile, FileTypes
 from Base.Simulator							import SimulationResult, PoCSimulationResultFilter
 from Base.Executable						import Executable
@@ -65,14 +65,14 @@ class Configuration(BaseConfiguration):
 	_template = {
 		"Windows": {
 			_section: {
-				"Version":								"2015.4",
+				"Version":								"2016.1",
 				"InstallationDirectory":	"${INSTALL.Xilinx:InstallationDirectory}/Vivado/${Version}",
 				"BinaryDirectory":				"${InstallationDirectory}/bin"
 			}
 		},
 		"Linux": {
 			_section: {
-				"Version":								"2015.4",
+				"Version":								"2016.1",
 				"InstallationDirectory":	"${INSTALL.Xilinx:InstallationDirectory}/Vivado/${Version}",
 				"BinaryDirectory":				"${InstallationDirectory}/bin"
 			}

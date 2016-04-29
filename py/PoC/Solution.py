@@ -5,7 +5,7 @@
 # ==============================================================================
 # Authors:					Patrick Lehmann
 #
-# Python Class:			Mentor QuestaSim specific classes
+# Python Class:			TODO
 #
 # Description:
 # ------------------------------------
@@ -30,52 +30,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-#
+
 # entry point
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
 else:
 	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Synopsys.Synopsys")
-
-from Base.Configuration	import Configuration as BaseConfiguration
-from Base.Project				import ConstraintFile, FileTypes
-from Base.ToolChain			import ToolChainException
+	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module PoC.Solution")
 
 
-class SynopsysException(ToolChainException):
-	pass
+# load dependencies
+class Solution:
+	def __init__(self, host):
+		self._host =		host
 
-
-class Configuration(BaseConfiguration):
-	_vendor =			"Synopsys"
-	_toolName =		None  # automatically configure only vendor path
-	_section =		"INSTALL.Synopsys"
-	_template = {
-		"Windows": {
-			_section: {
-				"InstallationDirectory": "C:/Synopsys"
-			}
-		},
-		"Linux":   {
-			_section: {
-				"InstallationDirectory": "/opt/Synopsys"
-			}
-		}
-	}
-
-	def _GetDefaultInstallationDirectory(self):
-		# synopsys = environ.get("QUARTUS_ROOTDIR")				# on Windows: D:\Synopsys\13.1\quartus
-		# if (synopsys is not None):
-		# 	return Path(synopsys).parent.parent
-
-		return str(self._TestDefaultInstallPath({"Windows": "Synopsys", "Linux": "Synopsys"}))
-
-
-class SynopsysDesignConstraintFile(ConstraintFile):
-	_FileType = FileTypes.SdcConstraintFile
-
-	def __str__(self):
-		return "SDC file: '{0!s}".format(self._file)
+	def GetSolutionNames(self):
+		for sln in self._host.PoCConfig['SOLUTION.Solutions']:
+			if (self._host.PoCConfig['SOLUTION.Solutions'][sln] == "Solution"):
+				sectionName = "SOLUTION.{0}".format(sln)
+				if (len(self._host.PoCConfig[sectionName]) != 0):
+					yield sln
 
