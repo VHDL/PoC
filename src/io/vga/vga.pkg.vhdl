@@ -199,7 +199,7 @@ package body vga is
 				res.vs_pol		:= '0';									-- negative
 			
 			when others =>
-				report "MODE " & T_IO_VGA_MODE'image(MODE) & " is not supported!"
+				report "MODE " & T_IO_VGA_MODE'image(Mode) & " is not supported!"
 					severity failure;
 					
 		end case;

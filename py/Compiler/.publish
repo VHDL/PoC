@@ -1,8 +1,14 @@
+# git files
+.gitempty
+
+# Documentation files
+README.md
+
 # Package
 __init__.py
 
 # Modules
-Base.py
-Exceptions.py
+LSECompiler.py
+QuartusCompiler.py
 XCOCompiler.py
 XSTCompiler.py

@@ -1,9 +1,9 @@
-# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:					Patrick Lehmann
 # 
 # Python Class:			TODO
 # 
@@ -39,18 +39,8 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Base.Exceptions")
 
-# load dependencies
-class NotImplementedException(Exception):
-	def __init__(self, message):
-		super().__init__()
-		self.message = message
-	
-class ArgumentException(Exception):
-	def __init__(self, message):
-		super().__init__()
-		self.message = message
-		
-class BaseException(Exception):
+
+class ExceptionBase(Exception):
 	def __init__(self, message=""):
 		super().__init__()
 		self.message = message
@@ -58,17 +48,20 @@ class BaseException(Exception):
 	def __str__(self):
 		return self.message
 		
-class EnvironmentException(BaseException):
-	def __init__(self, message=""):
-		super().__init__(message)
-		self.message = message
+class EnvironmentException(ExceptionBase):
+	pass
 
-class PlatformNotSupportedException(BaseException):
-	def __init__(self, message=""):
-		super().__init__(message)
-		self.message = message
+class PlatformNotSupportedException(ExceptionBase):
+	pass
 
-class NotConfiguredException(BaseException):
-	def __init__(self, message=""):
+class NotConfiguredException(ExceptionBase):
+	pass
+
+class CommonException(ExceptionBase):
+	pass
+
+class TestbenchException(ExceptionBase):
+	def __init__(self, pocEntity, testbench, message):
 		super().__init__(message)
-		self.message = message
+		self.pocEntity = pocEntity
+		self.testbench = testbench

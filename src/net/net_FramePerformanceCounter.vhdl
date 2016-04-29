@@ -5,17 +5,13 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
-
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
-
-LIBRARY L_IO;
-USE			L_IO.IOTypes.ALL;
+use			PoC.vectors.all;
+use			PoC.physical.all;
 
 ENTITY LocalLink_PerformanceCounter IS
 	GENERIC (
-		CLOCK_IN_FREQ_MHZ					: REAL									:= 100.0;
-		AGGREGATION_INTERVAL_MS		: REAL									:= 500.0
+		CLOCK_IN_FREQ							: FREQ									:= 100 MHz;
+		AGGREGATION_INTERVAL			: TIME									:= 500 ms
 	);
 	PORT (
 		Clock											: IN	STD_LOGIC;
@@ -119,7 +115,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 	
-	TimeBaseCounter_ov		<= to_sl(TimeBaseCounter_us = TimingToCycles_ms(AGGREGATION_INTERVAL_MS, Freq_MHz2Real_ns(CLOCK_IN_FREQ_MHZ)));
+	TimeBaseCounter_ov		<= to_sl(TimeBaseCounter_us = TimingToCycles(AGGREGATION_INTERVAL, CLOCK_IN_FREQ));
 	
 	PROCESS(Clock)
 	BEGIN

@@ -1,3 +1,9 @@
+# git files
+.gitempty
+
+# Documentation files
+README.md
+
 # Package
 __init__.py
 
@@ -5,6 +11,4 @@ __init__.py
 #XST/
 
 # Modules
-Base.py
-Exceptions.py
 #XSTPostProcessor.py

@@ -5,11 +5,16 @@
 
 # *.yml files
 .landscape.yml
+.travis.yml
+
+# Python 3 - package requirements
+pip3-requirements.lst
 
 # Documentation files
 AUTHORS.md
-LICENSE
+LICENSE.md
 README.md
+CHANGES.md
 
 # Configuration scripts
 poc.sh
@@ -23,6 +28,7 @@ py/
 sim/
 src/
 tb/
+tcl/
 temp/
 tools/
 ucf/

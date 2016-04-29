@@ -7,8 +7,11 @@ README.md
 # sub namespaces
 sortnet/
 
-sort_lru_cache_cocotb.py
+sort_lru_cache_tb.files
 sort_lru_cache_tb.vhdl
+sort_lru_cache_cocotb.py
+sort_lru_list_tb.files
+sort_lru_list_cocotb.py
 
 # 
 #sort_ExpireList_tb.vhdl

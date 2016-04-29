@@ -5,12 +5,11 @@ USE			IEEE.NUMERIC_STD.ALL;
 LIBRARY PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
+use			PoC.cache.all;
+USE			PoC.net.ALL;
 
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
 
-
-ENTITY NDP_DestinationCache IS
+ENTITY ndp_DestinationCache IS
 	GENERIC (
 		CLOCK_FREQ_MHZ						: REAL																	:= 125.0;					-- 125 MHz
 		REPLACEMENT_POLICY				: STRING																:= "LRU";
@@ -35,7 +34,7 @@ ENTITY NDP_DestinationCache IS
 	);
 END;
 
-ARCHITECTURE rtl OF NDP_DestinationCache IS
+ARCHITECTURE rtl OF ndp_DestinationCache IS
 	ATTRIBUTE KEEP										: BOOLEAN;
 
 	CONSTANT CACHE_LINES							: POSITIVE			:= 8;
@@ -138,11 +137,11 @@ BEGIN
 	IPv6Address_rst			<= TU_Tag_rst;
 	IPv6Address_nxt			<= TU_Tag_nxt;
 
-	CacheResult					<= to_cache_result(CacheHit, CacheMiss);
+	CacheResult					<= to_Cache_Result(CacheHit, CacheMiss);
 
 	-- Cache TagUnit
 --	TU : ENTITY L_Global.Cache_TagUnit_seq
-	TU : ENTITY PoC.Cache_TagUnit_seq
+	TU : ENTITY PoC.cache_TagUnit_seq
 		GENERIC MAP (
 			REPLACEMENT_POLICY				=> REPLACEMENT_POLICY,
 			CACHE_LINES								=> CACHE_LINES,

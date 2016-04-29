@@ -593,7 +593,7 @@ begin
 				return  l.all;
 			end function;
 			
-			function dbg_generateStatusEncodings return string is
+			function dbg_GenerateStatusEncodings return string is
 				variable  l : STD.TextIO.line;
 			begin
 				for i in T_SATA_FISDECODER_STATUS loop

@@ -80,7 +80,7 @@ architecture rtl of io_KeyPadScanner is
 	signal KeyPadMatrix_r		: T_SLM(COLUMNS - 1 downto 0, ROWS - 1 downto 0)	:= (others => (others => '0'));
 begin
 	-- generate a < 100 kHz shift enable to 'clock' the ColumnSelect shift register
-	ColumnTimer_s		<= downcounter_next(cnt => ColumnTimer_s, rst => ColumnTimer_rst, init => COLUMNTIMER_MAX) when rising_edge(Clock);
+	ColumnTimer_s		<= downcounter_next(cnt => ColumnTimer_s, rst => ColumnTimer_rst, INIT => COLUMNTIMER_MAX) when rising_edge(Clock);
 	ColumnTimer_rst	<= downcounter_neg(cnt => ColumnTimer_s);
 
 	-- generate a column scan signal (one-hot encoded), based on a one-hot rotate register

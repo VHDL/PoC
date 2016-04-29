@@ -3,17 +3,17 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,7 +60,7 @@ entity xil_DRP_BusSync is
 		Out_DataOut		: out	T_XIL_DRP_DATA;																		-- 
 		Out_Ack				: in	STD_LOGIC																					-- 
 	);
-end;
+end entity;
 
 
 architecture rtl of xil_DRP_BusSync is
@@ -79,11 +79,11 @@ architecture rtl of xil_DRP_BusSync is
 	signal Reg_DataOut_2			: T_XIL_DRP_DATA			:= (others => '0');
 	
 begin
-	syncOutClock : ENTITY PoC.sync_Strobe
-		GENERIC MAP (
+	syncOutClock : entity PoC.sync_Strobe
+		generic map (
 			BITS				=> 2
 		)
-		PORT MAP (
+		port map (
 			Clock1			=> In_Clock,
 			Clock2			=> Out_Clock,
 			Input(0)		=> In_Reset,
@@ -92,11 +92,11 @@ begin
 			Output(1)		=> Enable_2
 		);
 
-	syncInClock : ENTITY PoC.sync_Strobe
-		GENERIC MAP (
+	syncInClock : entity PoC.sync_Strobe
+		generic map (
 			BITS				=> 2
 		)
-		PORT MAP (
+		port map (
 			Clock1			=> Out_Clock,
 			Clock2			=> In_Clock,
 			Input(0)		=> Out_Reset,
@@ -112,12 +112,10 @@ begin
 				Reg_ReadWrite_1		<= '0';
 				Reg_Address_1			<= (others => '0');
 				Reg_DataOut_1			<= (others => '0');
-			else
-				if (In_Enable = '1') then
-					Reg_ReadWrite_1	<= In_ReadWrite;
-					Reg_Address_1		<= In_Address;
-					Reg_DataOut_1		<= In_DataIn;
-				end if;
+			elsif (In_Enable = '1') then
+				Reg_ReadWrite_1	<= In_ReadWrite;
+				Reg_Address_1		<= In_Address;
+				Reg_DataOut_1		<= In_DataIn;
 			end if;
 		end if;
 	end process;
@@ -129,12 +127,10 @@ begin
 				Reg_ReadWrite_2		<= '0';
 				Reg_Address_2			<= (others => '0');
 				Reg_DataOut_2			<= (others => '0');
-			else
-				if (Enable_2 = '1') then
-					Reg_ReadWrite_2	<= Reg_ReadWrite_1;
-					Reg_Address_2		<= Reg_Address_1;
-					Reg_DataOut_2		<= Reg_DataOut_1;
-				end if;
+			elsif (Enable_2 = '1') then
+				Reg_ReadWrite_2	<= Reg_ReadWrite_1;
+				Reg_Address_2		<= Reg_Address_1;
+				Reg_DataOut_2		<= Reg_DataOut_1;
 			end if;
 		end if;
 	end process;
@@ -152,10 +148,8 @@ begin
 		if rising_edge(Out_Clock) then
 			if ((Reset_2 or Out_Reset) = '1') then
 				Reg_DataIn_2			<= (others => '0');
-			else
-				if (Out_Ack = '1') then
-					Reg_DataIn_2		<= Out_DataIn;
-				end if;
+			elsif (Out_Ack = '1') then
+				Reg_DataIn_2		<= Out_DataIn;
 			end if;
 		end if;
 	end process;
@@ -165,10 +159,8 @@ begin
 		if rising_edge(In_Clock) then
 			if ((Reset_1 or In_Reset) = '1') then
 				Reg_DataIn_1			<= (others => '0');
-			else
-				if (Ready_1 = '1') then
-					Reg_DataIn_1		<= Reg_DataIn_2;
-				end if;
+			elsif (Ready_1 = '1') then
+				Reg_DataIn_1		<= Reg_DataIn_2;
 			end if;
 		end if;
 	end process;
