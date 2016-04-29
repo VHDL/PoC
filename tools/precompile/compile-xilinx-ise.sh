@@ -32,17 +32,19 @@
 # ==============================================================================
 
 poc_sh=../../poc.sh
-Simulator=questa						# questa, ...
+Simulator=questa						# questa, ghdl, ...
 Language=vhdl								# all, vhdl, verilog
 TargetArchitecture=all			# all, virtex5, virtex6, virtex7, ...
+
+ghdlScript=/space/install/ghdl/libraries/vendors/compile-xilinx-ise.sh
 
 # define color escape codes
 RED='\e[0;31m'			# Red
 YELLOW='\e[1;33m'		# Yellow
 NOCOLOR='\e[0m'			# No Color
 
-# if $XILINX environment variable is not set
-if [ -z "$XILINX" ]; then
+# if $XILINX environment variable is not set and Simulator /= ghdl
+if [ -z "$XILINX" -a \( "$Simulator" != "ghdl" \) ]; then
 	PoC_ISE_SettingsFile=$($poc_sh query Xilinx.ISE:SettingsFile)
 	if [ $? -ne 0 ]; then
 		echo 1>&2 -e "${RED}ERROR: No Xilinx ISE installation found.${NOCOLOR}"
@@ -56,19 +58,38 @@ if [ -z "$XILINX" ]; then
 	set -- $PyWrapper_RescueArgs
 fi
 
-# Setup command to execute
-DestDir=$($poc_sh query PoC:InstallationDirectory 2>/dev/null)/temp/precompiled/vsim/xilinx-ise	# Output directory
+# Setup destination directory
+DestDir=$($poc_sh query INSTALL.PoC:InstallationDirectory 2>/dev/null)/temp/precompiled
 if [ $? -ne 0 ]; then
 	echo 1>&2 -e "${RED}ERROR: Cannot get PoC installation dir.${NOCOLOR}"
 	exit;
 fi 
-SimulatorDir=$($poc_sh query ModelSim:InstallationDirectory 2>/dev/null)/bin	# Path to the simulators bin directory
-if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${RED}ERROR: Cannot get ModelSim installation dir.${NOCOLOR}"
-	exit;
-fi 
 
-# Change to destination directory and create initial modelsim.ini
+case "$Simulator" in
+	ghdl)
+		DestDir=$DestDir/ghdl
+		;;
+	questa)
+		DestDir=$DestDir/vsim/xilinx-ise
+		;;
+	*)
+		echo "Unsupported simulator."
+		exit 1
+		;;
+esac
+
+# Setup simulator directory
+case "$Simulator" in
+	questa)
+		SimulatorDir=$($poc_sh query ModelSim:InstallationDirectory 2>/dev/null)/bin	# Path to the simulators bin directory
+		if [ $? -ne 0 ]; then
+			echo 1>&2 -e "${RED}ERROR: Cannot get ModelSim installation dir.${NOCOLOR}"
+			exit;
+		fi 
+		;;
+esac
+
+# Create and change to destination directory
 mkdir -p $DestDir
 if [ $? -ne 0 ]; then
 	echo 1>&2 -e "${RED}ERROR: Cannot create output directory.${NOCOLOR}"
@@ -79,18 +100,32 @@ cd $DestDir
 if [ $? -ne 0 ]; then
 	echo 1>&2 -e "${RED}ERROR: Cannot change to output directory.${NOCOLOR}"
 	exit;
-fi 
-echo "[Library]" > modelsim.ini
-echo "others = ../modelsim.ini" >> modelsim.ini
-if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${RED}ERROR: Cannot create initial modelsim.ini.${NOCOLOR}"
-	exit;
-fi 
+fi
 
-# Execute command in destination directory
-compxlib -64bit -s $Simulator -l $Language -dir $DestDir -p $SimulatorDir -arch $TargetArchitecture -lib unisim -lib simprim -lib xilinxcorelib -intstyle ise
+# Compile libraries with simulator, executed in $DestDir
+case "$Simulator" in
+	ghdl)
+		$ghdlScript -a -s -S
+		;;
+	questa)
+		# create modelsim.ini
+		echo "[Library]" > modelsim.ini
+		echo "others = ../modelsim.ini" >> modelsim.ini
+		if [ $? -ne 0 ]; then
+			echo 1>&2 -e "${RED}ERROR: Cannot create initial modelsim.ini.${NOCOLOR}"
+			exit;
+		fi
+
+		# call Xilinx script
+		compxlib -64bit -s $Simulator -l $Language -dir $DestDir -p $SimulatorDir -arch $TargetArchitecture -lib unisim -lib simprim -lib xilinxcorelib -intstyle ise
+		cd ..
+		;;
+	*)
+		echo "Unsupported simulator."
+		exit 1
+		;;
+esac
 
 # create "xilinx" symlink
-cd ..
 rm -f xilinx
 ln -s xilinx-ise xilinx
