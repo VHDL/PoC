@@ -55,34 +55,34 @@ class Compiler(BaseCompiler):
 	_TOOL_CHAIN =	ToolChain.Lattice_Diamond
 	_TOOL =				Tool.Lattice_LSE
 
-	def __init__(self, host, showLogs, showReport):
-		super(self.__class__, self).__init__(host, showLogs, showReport)
+	def __init__(self, host, showLogs, showReport, dryRun, noCleanUp):
+		super().__init__(host, showLogs, showReport, dryRun, noCleanUp)
 
 		self._diamond =		None
 
 	def PrepareCompiler(self, binaryPath, version):
 		# create the GHDL executable factory
-		self._LogVerbose("  Preparing Lattice Synthesis Engine (LSE).")
+		self._LogVerbose("Preparing Lattice Synthesis Engine (LSE).")
 		self._diamond =		Diamond(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):
 		for fqn in fqnList:
 			entity = fqn.Entity
 			if (isinstance(entity, WildCard)):
-				for testbench in entity.GetLSENetlist():
+				for testbench in entity.GetLatticeNetlists():
 					try:
 						self.Run(testbench, *args, **kwargs)
 					except CompilerException:
 						pass
 			else:
-				testbench = entity.LSENetlist
+				testbench = entity.LatticeNetlist
 				try:
 					self.Run(testbench, *args, **kwargs)
 				except CompilerException:
 					pass
 
 	def Run(self, netlist, board, **_):
-		self._LogQuiet("IP core: {YELLOW}{0!s}{RESET}".format(netlist.Parent, **Init.Foreground))
+		self._LogQuiet("IP core: {0!s}".format(netlist.Parent, **Init.Foreground))
 
 		# setup all needed paths to execute fuse
 		self._PrepareCompilerEnvironment(board.Device)
@@ -97,16 +97,20 @@ class Compiler(BaseCompiler):
 
 		self._WriteQuartusProjectFile(netlist)
 
-		self._LogNormal("  running Diamond LSE...")
-		self._RunPrepareCompile(netlist)
+		self._LogNormal("Executing pre-processing tasks...")
 		self._RunPreCopy(netlist)
 		self._RunPreReplace(netlist)
+
+		self._LogNormal("Running Lattice Diamond LSE...")
 		self._RunCompile(netlist, board.Device)
+
+		self._LogNormal("Executing post-processing tasks...")
 		self._RunPostCopy(netlist)
 		self._RunPostReplace(netlist)
+		self._RunPostDelete(netlist)
 
 	def _PrepareCompilerEnvironment(self, device):
-		self._LogNormal("preparing synthesis environment...")
+		self._LogNormal("Preparing synthesis environment...")
 		self._tempPath =		self.Host.Directories["LatticeTemp"]
 		self._outputPath =	self.Host.Directories["PoCNetList"] / str(device)
 		super()._PrepareCompilerEnvironment()
@@ -134,4 +138,5 @@ class Compiler(BaseCompiler):
 		tclShell = self._diamond.GetTclShell()
 
 		# raise NotImplementedError("Next: implement interactive shell")
+		self._LogWarning("Execution skipped due to Tcl shell problems.")
 		# tclShell.Run()

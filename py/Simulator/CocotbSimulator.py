@@ -33,6 +33,9 @@
 # ==============================================================================
 #
 # entry point
+from textwrap import dedent
+
+from PoC.Config import Vendors
 
 if __name__ != "__main__":
 	# place library initialization code here
@@ -81,24 +84,15 @@ class Simulator(BaseSimulator):
 		super()._PrepareSimulationEnvironment()
 
 		simBuildPath = self._tempPath / self._COCOTB_SIMBUILD_DIRECTORY
-		# create temporary directory for GHDL if not existent
+		# create temporary directory for Cocotb if not existent
 		if (not (simBuildPath).exists()):
-			self._LogVerbose("  Creating build directory for simulator files.")
-			self._LogDebug("    Build directory: {0!s}".format(simBuildPath))
+			self._LogVerbose("Creating build directory for simulator files.")
+			self._LogDebug("Build directory: {0!s}".format(simBuildPath))
 			simBuildPath.mkdir(parents=True)
-
-		# copy modelsim.ini from precompiled directory if exist
-		modelsimIniPath = self.Host.Directories["vSimPrecompiled"] / "modelsim.ini"
-		if modelsimIniPath.exists():
-			self._LogVerbose("  Copying modelsim.ini from precompiled into build directory.")
-			self._LogDebug("    copy {0!s} {1!s}".format(modelsimIniPath, simBuildPath))
-			shutil.copy(str(modelsimIniPath), str(simBuildPath))
-		else:
-			self._LogDebug("  No 'modelsim.ini' in precompiled directory found. QuestaSim will use the default modelsim.ini.")
 
 	def PrepareSimulator(self):
 		# create the Cocotb executable factory
-		self._LogVerbose("  Preparing Cocotb simulator.")
+		self._LogVerbose("Preparing Cocotb simulator.")
 
 	def RunAll(self, fqnList, *args, **kwargs):
 		for fqn in fqnList:
@@ -117,16 +111,39 @@ class Simulator(BaseSimulator):
 					pass
 
 	def Run(self, testbench, board, **_):
-		self._LogQuiet("Testbench: {YELLOW}{0!s}{RESET}".format(testbench.Parent, **Init.Foreground))
+		self._LogQuiet("Testbench: {0!s}".format(testbench.Parent, **Init.Foreground))
 
 		# setup all needed paths to execute fuse
 		self._CreatePoCProject(testbench, board)
 		self._AddFileListFile(testbench.FilesFile)
-		self._Run(testbench)
+		self._Run(testbench, board)
 
-	def _Run(self, testbench):
-		self._LogNormal("  running simulation...")
-		cocotbTemplateFilePath = self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['CocotbMakefile']
+	def _Run(self, testbench, board):
+		# select modelsim.ini from precompiled
+		precompiledModelsimIniPath = self.Host.Directories["vSimPrecompiled"]
+		if board.Device.Vendor is Vendors.Xilinx:
+			precompiledModelsimIniPath /= "xilinx"
+		elif board.Device.Vendor is Vendors.Altera:
+			precompiledModelsimIniPath /= "altera"
+
+		precompiledModelsimIniPath /= "modelsim.ini"
+		if not precompiledModelsimIniPath.exists():
+			raise SimulatorException("Modelsim ini file '{0!s}' not found.".format(precompiledModelsimIniPath)) \
+				from FileNotFoundError(str(precompiledModelsimIniPath))
+
+		# write local modelsim.ini
+		modelsimIniPath = self.Host.Directories["CocotbTemp"] / "sim_build" / "modelsim.ini"
+		if modelsimIniPath.exists(): modelsimIniPath.unlink()
+		with modelsimIniPath.open('w') as fileHandle:
+			fileContent = dedent("""\
+				[Library]
+				others = {0!s}
+				""").format(precompiledModelsimIniPath)
+			fileHandle.write(fileContent)
+
+		#
+		self._LogNormal("Running simulation...")
+		cocotbTemplateFilePath = self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['CocotbMakefile']
 		topLevel =			testbench.TopLevel
 		cocotbModule =	testbench.ModuleName
 
@@ -137,24 +154,24 @@ class Simulator(BaseSimulator):
 			vhdlSources += str(file.Path) + " "
 
 		# copy Cocotb (Python) files to temp directory
-		self._LogVerbose("  Copying Cocotb (Python) files into temporary directory.")
+		self._LogVerbose("Copying Cocotb (Python) files into temporary directory.")
 		cocotbTempDir = str(self.Host.Directories["CocotbTemp"])
 		for file in self._pocProject.Files(fileType=FileTypes.CocotbSourceFile):
 			if (not file.Path.exists()):									raise SimulatorException("Cannot copy '{0!s}' to Cocotb temp directory.".format(file.Path)) from FileNotFoundError(str(file.Path))
-			self._LogDebug("    copy {0!s} {1!s}".format(file.Path, cocotbTempDir))
+			self._LogDebug("copy {0!s} {1!s}".format(file.Path, cocotbTempDir))
 			shutil.copy(str(file.Path), cocotbTempDir)
 
 		# read/write Makefile template
-		self._LogVerbose("  Generating Makefile...")
-		self._LogDebug("    Reading Cocotb Makefile template file from '{0!s}'".format(cocotbTemplateFilePath))
+		self._LogVerbose("Generating Makefile...")
+		self._LogDebug("Reading Cocotb Makefile template file from '{0!s}'".format(cocotbTemplateFilePath))
 		with cocotbTemplateFilePath.open('r') as fileHandle:
 			cocotbMakefileContent = fileHandle.read()
 
-		cocotbMakefileContent = cocotbMakefileContent.format(PoCRootDirectory=str(self.Host.Directories["PoCRoot"]), VHDLSources=vhdlSources,
+		cocotbMakefileContent = cocotbMakefileContent.format(PoCRootDirectory=str(self.Host.RootDirectory), VHDLSources=vhdlSources,
 																													TopLevel=topLevel, CocotbModule=cocotbModule)
 
 		cocotbMakefilePath = self.Host.Directories["CocotbTemp"] / "Makefile"
-		self._LogDebug("    Writing Cocotb Makefile to '{0!s}'".format(cocotbMakefilePath))
+		self._LogDebug("Writing Cocotb Makefile to '{0!s}'".format(cocotbMakefilePath))
 		with cocotbMakefilePath.open('w') as fileHandle:
 			fileHandle.write(cocotbMakefileContent)
 

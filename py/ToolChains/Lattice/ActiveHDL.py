@@ -32,6 +32,9 @@
 # ==============================================================================
 #
 # entry point
+from subprocess import check_output
+
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -40,11 +43,62 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Lattice.ActiveHDL")
 
 
-# from collections				import OrderedDict
-# from pathlib						import Path
+from Base.Configuration					import Configuration as BaseConfiguration, ConfigurationException
+from ToolChains.Lattice.Lattice	import LatticeException
 
-from Base.Configuration import Configuration as BaseConfiguration
+
+class ActiveHDLException(LatticeException):
+	pass
+
 
 class Configuration(BaseConfiguration):
-	def __init__(self, host):
-		super().__init__(host)
+	_vendor =		"Lattice"
+	_toolName =	"Active-HDL Lattice Edition"
+	_section =	"INSTALL.Lattice.ActiveHDL"
+	_template = {
+		"Windows": {
+			_section: {
+				"Version":								"10.2",
+				"InstallationDirectory":	"${INSTALL.Lattice.Diamond:InstallationDirectory}/active-hdl",
+				"BinaryDirectory":				"${InstallationDirectory}/BIN"
+			}
+		# },
+		# "Linux": {
+		# 	_section: {
+		# 		"Version":								"15.0",
+		# 		"InstallationDirectory":	"${INSTALL.Lattice:InstallationDirectory}/${Version}/activeHDL",
+		# 		"BinaryDirectory":				"${InstallationDirectory}/fix_me"
+		# 	}
+		}
+	}
+
+	def CheckDependency(self):
+		# return True if Lattice is configured
+		return (len(self._host.PoCConfig['INSTALL.Lattice.Diamond']) != 0)
+
+	def ConfigureForAll(self):
+		try:
+			if (not self._AskInstalled("Is Aldec Active-HDL installed on your system?")):
+				self.ClearSection()
+			else:
+				version = self._ConfigureVersion()
+				self._ConfigureInstallationDirectory()
+				binPath = self._ConfigureBinaryDirectory()
+				self.__CheckActiveHDLVersion(binPath, version)
+		except ConfigurationException:
+			self.ClearSection()
+			raise
+
+	def __CheckActiveHDLVersion(self, binPath, version):
+		if (self._host.Platform == "Windows"):
+			vsimPath = binPath / "vsim.exe"
+		else:
+			vsimPath = binPath / "vsim"
+
+		if not vsimPath.exists():
+			raise ConfigurationException("Executable '{0!s}' not found.".format(vsimPath)) from FileNotFoundError(
+				str(vsimPath))
+
+		output = check_output([str(vsimPath), "-version"], universal_newlines=True)
+		if str(version) not in output:
+			raise ConfigurationException("Active-HDL version mismatch. Expected version {0}.".format(version))

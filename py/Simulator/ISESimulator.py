@@ -46,7 +46,7 @@ from colorama									import Fore as Foreground
 
 from lib.Functions						import Init
 from Base.Project							import FileTypes, VHDLVersion, Environment, ToolChain, Tool
-from Base.Simulator						import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME
+from Base.Simulator						import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
 from ToolChains.Xilinx.Xilinx	import XilinxProjectExportMixIn
 from ToolChains.Xilinx.ISE		import ISE, ISESimulator, ISEException
 
@@ -74,17 +74,17 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		return self._tempPath
 
 	def _PrepareSimulationEnvironment(self):
-		self._LogNormal("preparing simulation environment...")
+		self._LogNormal("Preparing simulation environment...")
 		self._tempPath = self.Host.Directories["iSimTemp"]
 		super()._PrepareSimulationEnvironment()
 
 	def PrepareSimulator(self, binaryPath, version):
 		# create the Xilinx ISE executable factory
-		self._LogVerbose("  Preparing GHDL simulator.")
+		self._LogVerbose("Preparing ISE simulator.")
 		self._ise = ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def Run(self, testbench, board, vhdlVersion=None, vhdlGenerics=None, guiMode=False):
-		self._LogQuiet("Testbench: {YELLOW}{0!s}{RESET}".format(testbench.Parent, **Init.Foreground))
+		self._LogQuiet("Testbench: {0!s}".format(testbench.Parent, **Init.Foreground))
 
 		self._vhdlVersion =		VHDLVersion.VHDL93
 		self._vhdlGenerics =	vhdlGenerics
@@ -97,18 +97,23 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		self._RunLink(testbench)
 		self._RunSimulation(testbench)
 
+		if (testbench.Result is SimulationResult.Passed):				self._LogQuiet("  {GREEN}[PASSED]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.NoAsserts):	self._LogQuiet("  {YELLOW}[NO ASSERTS]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.Failed):			self._LogQuiet("  {RED}[FAILED]{NOCOLOR}".format(**Init.Foreground))
+		elif (testbench.Result is SimulationResult.Error):			self._LogQuiet("  {RED}[ERROR]{NOCOLOR}".format(**Init.Foreground))
+
 	def _RunCompile(self, testbench):
 		self._LogNormal("  compiling source files...")
 		
 		prjFilePath = self._tempPath / (testbench.ModuleName + ".prj")
 		self._WriteXilinxProjectFile(prjFilePath, "iSim", self._vhdlVersion)
 
-		# create a VivadoVHDLCompiler instance
+		# create an ISEVHDLCompiler instance
 		vhcomp = self._ise.GetVHDLCompiler()
 		vhcomp.Compile(str(prjFilePath))
 
 	def _RunLink(self, testbench):
-		self._LogNormal("  running fuse...")
+		self._LogNormal("Running fuse...")
 		
 		exeFilePath =	self._tempPath / (testbench.ModuleName + ".exe")
 		prjFilePath = self._tempPath / (testbench.ModuleName + ".prj")
@@ -133,13 +138,13 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 			raise SimulatorException("Error while analysing '{0!s}'.".format(prjFilePath))
 	
 	def _RunSimulation(self, testbench):
-		self._LogNormal("  running simulation...")
+		self._LogNormal("Running simulation...")
 		
 		iSimLogFilePath =		self._tempPath / (testbench.ModuleName + ".iSim.log")
 		exeFilePath =				self._tempPath / (testbench.ModuleName + ".exe")
-		tclBatchFilePath =	self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['iSimBatchScript']
-		tclGUIFilePath =		self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['iSimGUIScript']
-		wcfgFilePath =			self.Host.Directories["PoCRoot"] / self.Host.PoCConfig[testbench.ConfigSectionName]['iSimWaveformConfigFile']
+		tclBatchFilePath =	self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['iSimBatchScript']
+		tclGUIFilePath =		self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['iSimGUIScript']
+		wcfgFilePath =			self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['iSimWaveformConfigFile']
 
 		# create a ISESimulator instance
 		iSim = ISESimulator(exeFilePath, logger=self.Logger)
@@ -153,22 +158,9 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 
 			# if iSim save file exists, load it's settings
 			if wcfgFilePath.exists():
-				self._LogDebug("    Found waveform config file: '{0!s}'".format(wcfgFilePath))
+				self._LogDebug("Found waveform config file: '{0!s}'".format(wcfgFilePath))
 				iSim.Parameters[iSim.SwitchWaveformFile] =	str(wcfgFilePath)
 			else:
-				self._LogDebug("    Didn't find waveform config file: '{0!s}'".format(wcfgFilePath))
+				self._LogDebug("Didn't find waveform config file: '{0!s}'".format(wcfgFilePath))
 
-		iSim.Simulate()
-
-		# print()
-		# if (not self.__guiMode):
-			# try:
-				# result = self.checkSimulatorOutput(simulatorLog)
-				
-				# if (result == True):
-					# print("Testbench '%s': PASSED" % testbenchName)
-				# else:
-					# print("Testbench '%s': FAILED" % testbenchName)
-					
-			# except SimulatorException as ex:
-				# raise TestbenchException("PoC.ns.module", testbenchName, "'SIMULATION RESULT = [PASSED|FAILED]' not found in simulator output.") from ex
+		testbench.Result = iSim.Simulate()

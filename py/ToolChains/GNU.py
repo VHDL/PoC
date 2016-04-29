@@ -40,23 +40,25 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.GNU")
 
-
-from collections						import OrderedDict
-from pathlib								import Path
-
+from Base.Configuration			import Configuration as BaseConfiguration
 from Base.Exceptions				import PlatformNotSupportedException
-from Base.Logging						import LogEntry, Severity
-from Base.Configuration			import Configuration as BaseConfiguration, ConfigurationException
 from Base.Executable				import Executable, ExecutableArgument, CommandLineArgumentList, ValuedFlagArgument
+from Base.Logging						import LogEntry, Severity
 from Base.ToolChain					import ToolChainException
 
 
 class GNUException(ToolChainException):
 	pass
 
+
 class Configuration(BaseConfiguration):
-	def __init__(self, host):
-		super().__init__(host)
+	_vendor =			"GNU"
+	_toolName =		"GNU Make"
+	_section = 		None
+
+	def CheckDependency(self):
+		return False
+
 
 class Make(Executable):
 	def __init__(self, platform, logger=None):
@@ -83,7 +85,7 @@ class Make(Executable):
 
 	def Run(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -97,7 +99,7 @@ class Make(Executable):
 			iterator = iter(GNUMakeFilter(self.GetReader()))
 
 			line = next(iterator)
-			line.Indent(2)
+			line.IndentBy(2)
 			self._hasOutput = True
 			self._LogNormal("    Make messages")
 			self._LogNormal("    " + ("-" * 76))
@@ -108,7 +110,7 @@ class Make(Executable):
 				self._hasErrors |= (line.Severity is Severity.Error)
 
 				line = next(iterator)
-				line.Indent(2)
+				line.IndentBy(2)
 				self._Log(line)
 
 		except StopIteration as ex:
@@ -121,6 +123,7 @@ class Make(Executable):
 			if self._hasOutput:
 				self._LogNormal("    " + ("-" * 76))
 
+
 # TODO: this is a QuestaSim specific filter. Add support to specify a user-defined filter for Make
 def GNUMakeFilter(gen):
 	for line in gen:
@@ -129,5 +132,6 @@ def GNUMakeFilter(gen):
 		elif line.startswith("# ** Note"):	yield LogEntry(line, Severity.Info)
 		elif line.startswith("# ** Warn"):	yield LogEntry(line, Severity.Warning)
 		elif line.startswith("# ** Erro"):	yield LogEntry(line, Severity.Error)
+		elif line.startswith("# ** Fata"):	yield LogEntry(line, Severity.Error)
 		elif line.startswith("# //"): 			continue
 		else:																yield LogEntry(line, Severity.Normal)

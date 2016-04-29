@@ -39,8 +39,38 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Synopsys.Synopsys")
 
+from Base.Configuration	import Configuration as BaseConfiguration
+from Base.Project				import ConstraintFile, FileTypes
+from Base.ToolChain			import ToolChainException
 
-from Base.Project			import ConstraintFile, FileTypes
+
+class SynopsysException(ToolChainException):
+	pass
+
+
+class Configuration(BaseConfiguration):
+	_vendor =			"Synopsys"
+	_toolName =		None  # automatically configure only vendor path
+	_section =		"INSTALL.Synopsys"
+	_template = {
+		"Windows": {
+			_section: {
+				"InstallationDirectory": "C:/Synopsys"
+			}
+		},
+		"Linux":   {
+			_section: {
+				"InstallationDirectory": "/opt/Synopsys"
+			}
+		}
+	}
+
+	def _GetDefaultInstallationDirectory(self):
+		# synopsys = environ.get("QUARTUS_ROOTDIR")				# on Windows: D:\Synopsys\13.1\quartus
+		# if (synopsys is not None):
+		# 	return Path(synopsys).parent.parent
+
+		return str(self._TestDefaultInstallPath({"Windows": "Synopsys", "Linux": "Synopsys"}))
 
 
 class SynopsysDesignConstraintFile(ConstraintFile):

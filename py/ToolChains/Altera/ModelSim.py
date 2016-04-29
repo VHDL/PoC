@@ -39,12 +39,73 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Altera.ModelSim")
 
+from re											import compile as RegExpCompile
+from subprocess 						import check_output
 
-# from collections				import OrderedDict
-# from pathlib						import Path
+from Base.Configuration import Configuration as BaseConfiguration, ConfigurationException
+from ToolChains.Altera.Altera import AlteraException
 
-from Base.Configuration import Configuration as BaseConfiguration
+
+class ModelSimException(AlteraException):
+	pass
+
 
 class Configuration(BaseConfiguration):
-	def __init__(self):
-		super().__init__()
+	_vendor =		"Altera"
+	_toolName =	"ModelSim Altera Edition"
+	_section =	"INSTALL.Altera.ModelSim"
+	_template = {
+		"Windows": {
+			_section: {
+				"Version":								"10.4b",
+				"InstallationDirectory":	"${INSTALL.Altera:InstallationDirectory}/${INSTALL.Altera.Quartus:Version}/modelsim_ase",
+				"BinaryDirectory":				"${InstallationDirectory}/win32aloem"
+			}
+		},
+		"Linux": {
+			_section: {
+				"Version":								"10.4b",
+				"InstallationDirectory":	"${INSTALL.Altera:InstallationDirectory}/${INSTALL.Altera.Quartus:Version}/modelsim_ase",
+				"BinaryDirectory":				"${InstallationDirectory}/linuxaloem"
+			}
+		}
+	}
+
+	def CheckDependency(self):
+		# return True if Altera is configured
+		return (len(self._host.PoCConfig['INSTALL.Altera']) != 0)
+
+	def ConfigureForAll(self):
+		try:
+			if (not self._AskInstalled("Is ModelSim Altera Edition installed on your system?")):
+				self.ClearSection()
+			else:
+				self._ConfigureInstallationDirectory()
+				binPath = self._ConfigureBinaryDirectory()
+				self.__GetQuestaSimVersion(binPath)
+		except ConfigurationException:
+			self.ClearSection()
+			raise
+
+	def __GetQuestaSimVersion(self, binPath):
+		if (self._host.Platform == "Windows"):
+			vsimPath = binPath / "vsim.exe"
+		else:
+			vsimPath = binPath / "vsim"
+
+		if not vsimPath.exists():
+			raise ConfigurationException("Executable '{0!s}' not found.".format(vsimPath)) from FileNotFoundError(
+				str(vsimPath))
+
+		# get version and backend
+		output = check_output([str(vsimPath), "-version"], universal_newlines=True)
+		version = None
+		versionRegExpStr = r"^.* vsim (.+?) "
+		versionRegExp = RegExpCompile(versionRegExpStr)
+		for line in output.split('\n'):
+			if version is None:
+				match = versionRegExp.match(line)
+				if match is not None:
+					version = match.group(1)
+
+		self._host.PoCConfig[self._section]['Version'] = version

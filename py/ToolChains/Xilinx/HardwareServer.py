@@ -39,28 +39,23 @@ else :
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Xilinx.HardwareServer")
 
-
-from collections					import OrderedDict
-from pathlib							import Path
-
-from Base.Configuration import Configuration as BaseConfiguration, ConfigurationException
-# from Base.Executable import Executable, ExecutableArgument, LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, PathArgument
+from Base.Configuration import Configuration as BaseConfiguration
 
 
 class Configuration(BaseConfiguration):
-	__vendor =		"Xilinx"
-	__shortName =	"HardwareServer"
-	__LongName =	"Xilinx HardwareServer"
-	__privateConfiguration = {
+	_vendor =		"Xilinx"
+	_toolName =	"Xilinx HardwareServer"
+	_section = 	"INSTALL.Xilinx.HardwareServer"
+	_template = {
 		"Windows": {
-			"INSTALL.Xilinx.HardwareServer": {
+			_section: {
 				"Version":								"2015.4",
 				"InstallationDirectory":	"${INSTALL.Xilinx:InstallationDirectory}/Vivado/${Version}",
 				"BinaryDirectory":				"${InstallationDirectory}/bin"
 			}
 		},
 		"Linux": {
-			"INSTALL.Xilinx.HardwareServer": {
+			_section: {
 				"Version":								"2015.4",
 				"InstallationDirectory":	"${INSTALL.Xilinx:InstallationDirectory}/Vivado/${Version}",
 				"BinaryDirectory":				"${InstallationDirectory}/bin"
@@ -68,75 +63,6 @@ class Configuration(BaseConfiguration):
 		}
 	}
 
-	def __init__(self):
-		super().__init__()
-
-	def IsSupportedPlatform(self, Platform):
-		return (Platform in self.__privateConfiguration)
-
-	def GetSections(self, Platform):
-		pass
-
-	def manualConfigureForWindows(self) :
-		# Ask for installed Xilinx HardwareServer
-		isXilinxHardwareServer = input('Is Xilinx HardwareServer installed on your system? [Y/n/p]: ')
-		isXilinxHardwareServer = isXilinxHardwareServer if isXilinxHardwareServer != "" else "Y"
-		if (isXilinxHardwareServer in ['p', 'P']) :
-			pass
-		elif (isXilinxHardwareServer in ['n', 'N']) :
-			self.pocConfig['Xilinx.HardwareServer'] = OrderedDict()
-		elif (isXilinxHardwareServer in ['y', 'Y']) :
-			xilinxDirectory = input('Xilinx installation directory [C:\Xilinx]: ')
-			hardwareServerVersion = input('Xilinx HardwareServer version number [2015.2]: ')
-			print()
-
-			xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "C:\Xilinx"
-			hardwareServerVersion = hardwareServerVersion if hardwareServerVersion != "" else "2015.2"
-
-			xilinxDirectoryPath = Path(xilinxDirectory)
-			hardwareServerDirectoryPath = xilinxDirectoryPath / "HardwareServer" / hardwareServerVersion
-
-			if not xilinxDirectoryPath.exists() :          raise ConfigurationException(
-				"Xilinx installation directory '%s' does not exist." % xilinxDirectory)
-			if not hardwareServerDirectoryPath.exists() :  raise ConfigurationException(
-				"Xilinx HardwareServer version '%s' is not installed." % hardwareServerVersion)
-
-			self.pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
-			self.pocConfig['Xilinx.HardwareServer']['Version'] = hardwareServerVersion
-			self.pocConfig['Xilinx.HardwareServer'][
-				'InstallationDirectory'] = '${Xilinx:InstallationDirectory}/HardwareServer/${Version}'
-			self.pocConfig['Xilinx.HardwareServer']['BinaryDirectory'] = '${InstallationDirectory}/bin'
-		else :
-			raise ConfigurationException("unknown option")
-
-def manualConfigureForLinux(self) :
-	# Ask for installed Xilinx HardwareServer
-	isXilinxHardwareServer = input('Is Xilinx HardwareServer installed on your system? [Y/n/p]: ')
-	isXilinxHardwareServer = isXilinxHardwareServer if isXilinxHardwareServer != "" else "Y"
-	if (isXilinxHardwareServer in ['p', 'P']) :
-		pass
-	elif (isXilinxHardwareServer in ['n', 'N']) :
-		self.pocConfig['Xilinx.HardwareServer'] = OrderedDict()
-	elif (isXilinxHardwareServer in ['y', 'Y']) :
-		xilinxDirectory = input('Xilinx installation directory [/opt/Xilinx]: ')
-		hardwareServerVersion = input('Xilinx HardwareServer version number [2015.2]: ')
-		print()
-
-		xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/Xilinx"
-		hardwareServerVersion = hardwareServerVersion if hardwareServerVersion != "" else "2015.2"
-
-		xilinxDirectoryPath = Path(xilinxDirectory)
-		hardwareServerDirectoryPath = xilinxDirectoryPath / "HardwareServer" / hardwareServerVersion
-
-		if not xilinxDirectoryPath.exists() :          raise ConfigurationException(
-			"Xilinx installation directory '%s' does not exist." % xilinxDirectory)
-		if not hardwareServerDirectoryPath.exists() :  raise ConfigurationException(
-			"Xilinx HardwareServer version '%s' is not installed." % hardwareServerVersion)
-
-		self.pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
-		self.pocConfig['Xilinx.HardwareServer']['Version'] = hardwareServerVersion
-		self.pocConfig['Xilinx.HardwareServer'][
-			'InstallationDirectory'] = '${Xilinx:InstallationDirectory}/HardwareServer/${Version}'
-		self.pocConfig['Xilinx.HardwareServer']['BinaryDirectory'] = '${InstallationDirectory}/bin'
-	else :
-		raise ConfigurationException("unknown option")
+	def CheckDependency(self):
+		# return True if Xilinx is configured
+		return (len(self._host.PoCConfig['INSTALL.Xilinx']) != 0)

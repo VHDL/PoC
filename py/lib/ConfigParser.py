@@ -60,6 +60,9 @@ class ExtendedInterpolation(Interpolation):
 	def __init__(self):
 		self._cache = dict()
 
+	def clear_cache(self):
+		self._cache = dict()
+
 	def before_get(self, parser, section, option, value, defaults):
 		# print("before_get: {0}:{1} = '{2}'".format(section, option, value))
 		try:
@@ -71,10 +74,10 @@ class ExtendedInterpolation(Interpolation):
 		return result
 
 	def before_set(self, parser, section, option, value):
-		tmp_value = value.replace('$$', '') # escaped dollar signs
-		tmp_value = self._KEYCRE.sub('', tmp_value) # valid syntax
+		tmp_value = value.replace("$$", "") # escaped dollar signs
+		tmp_value = self._KEYCRE.sub("", tmp_value) # valid syntax
 		if '$' in tmp_value:
-			raise ValueError("invalid interpolation syntax in {0!r} at position {1}".format(value, tmp_value.find('$')))
+			raise ValueError("invalid interpolation syntax in {0!r} at position {1}".format(value, tmp_value.find("$")))
 		return value
 
 	def interpolate(self, parser, section, option, value, _, depth=0):

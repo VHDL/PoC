@@ -7,6 +7,9 @@
 .landscape.yml
 .travis.yml
 
+# Python 3 - package requirements
+pip3-requirements.lst
+
 # Documentation files
 AUTHORS.md
 LICENSE.md

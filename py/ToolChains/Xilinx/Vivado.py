@@ -4,6 +4,7 @@
 #
 # ==============================================================================
 # Authors:					Patrick Lehmann
+#										Martin Zabel
 #
 # Python Class:			Xilinx Vivado specific classes
 #
@@ -32,6 +33,7 @@
 # ==============================================================================
 #
 # entry point
+from subprocess import check_output
 
 if __name__ != "__main__":
 	# place library initialization code here
@@ -41,204 +43,72 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Xilinx.Vivado")
 
 
-from collections					import OrderedDict
-from pathlib							import Path
-from os										import environ
-
-from Base.Exceptions			import PlatformNotSupportedException
-from Base.Logging					import LogEntry, Severity
-from Base.Configuration 	import Configuration as BaseConfiguration, ConfigurationException, SkipConfigurationException
-from Base.Project					import Project as BaseProject, ProjectFile, ConstraintFile, FileTypes
-from Base.Executable			import Executable
-from Base.Executable			import ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, StringArgument, CommandLineArgumentList
+from lib.Functions							import CallByRefParam
+from Base.Exceptions						import PlatformNotSupportedException
+from Base.Logging								import LogEntry, Severity
+from Base.Configuration 				import Configuration as BaseConfiguration, ConfigurationException
+from Base.Project								import Project as BaseProject, ProjectFile, ConstraintFile, FileTypes
+from Base.Simulator							import SimulationResult, PoCSimulationResultFilter
+from Base.Executable						import Executable
+from Base.Executable						import ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, StringArgument, CommandLineArgumentList
 from ToolChains.Xilinx.Xilinx		import XilinxException
 
 
 class VivadoException(XilinxException):
 	pass
 
+
 class Configuration(BaseConfiguration):
-	_vendor =		"Xilinx"
-	_shortName =	"Vivado"
-	_longName =	"Xilinx Vivado"
-	_privateConfiguration = {
+	_vendor =			"Xilinx"
+	_toolName =		"Xilinx Vivado"
+	_section =		"INSTALL.Xilinx.Vivado"
+	_template = {
 		"Windows": {
-			"INSTALL.Xilinx.Vivado": {
-				"Version":								"2015.4",
+			_section: {
+				"Version":								"2016.1",
 				"InstallationDirectory":	"${INSTALL.Xilinx:InstallationDirectory}/Vivado/${Version}",
 				"BinaryDirectory":				"${InstallationDirectory}/bin"
 			}
 		},
 		"Linux": {
-			"INSTALL.Xilinx.Vivado": {
-				"Version":								"2015.4",
+			_section: {
+				"Version":								"2016.1",
 				"InstallationDirectory":	"${INSTALL.Xilinx:InstallationDirectory}/Vivado/${Version}",
 				"BinaryDirectory":				"${InstallationDirectory}/bin"
 			}
 		}
 	}
 
-	def __init__(self, host):
-		super().__init__(host)
+	def CheckDependency(self):
+		# return True if Xilinx is configured
+		return (len(self._host.PoCConfig['INSTALL.Xilinx']) != 0)
 
-	def GetSections(self, Platform):
-		pass
-
-	def ConfigureForWindows(self):
-		xilinxVivadoPath = self.__GetXilinxVivadoPath()
-		if (xilinxVivadoPath is not None):
-			print("  Found a Xilinx Vivado installation directory.")
-			xilinxVivadoPath = self.__ConfirmXilinxVivadoPath(xilinxVivadoPath)
-			if (xilinxVivadoPath is None):
-				xilinxVivadoPath = self.__AskXilinxVivadoPath()
-		else:
-			if (not self.__AskXilinxVivado()):
-				self.__ClearXilinxVivadoSections()
+	def ConfigureForAll(self):
+		try:
+			if (not self._AskInstalled("Is Xilinx Vivado installed on your system?")):
+				self.ClearSection()
 			else:
-				xilinxVivadoPath = self.__AskXilinxVivadoPath()
-		if (not xilinxVivadoPath.exists()):    raise ConfigurationException(
-			"Xilinx Vivado installation directory '{0}' does not exist.".format(xilinxVivadoPath))  from NotADirectoryError(xilinxVivadoPath)
-		self.__WriteXilinxVivadoSection(xilinxVivadoPath)
+				version = self._ConfigureVersion()
+				self._ConfigureInstallationDirectory()
+				binPath = self._ConfigureBinaryDirectory()
+				self.__CheckVivadoVersion(binPath, version)
+		except ConfigurationException:
+			self.ClearSection()
+			raise
 
-	def __GetXilinxVivadoPath(self):
-		xilinx = environ.get('XILINX_VIVADO')
-		if (xilinx is not None):
-			return Path(xilinx).parent
-		# FIXME: use Xilinx path to improve the search
-		if (self._host.Platform == "Linux"):
-			p = Path("/opt/xilinx/Vivado/2015.4")
-			if (p.exists()):    return p
-			p = Path("/opt/Xilinx/Vivado/2015.4")
-			if (p.exists()):    return p
-		elif (self._host.Platform == "Windows"):
-			for drive in "CDEFGH":
-				p = Path(r"{0}:\Xilinx\Vivado\2015.4".format(drive))
-				try:
-					if (p.exists()):  return p
-				except OSError:
-					pass
-		return None
-
-	def __AskXilinxVivado(self):
-		isXilinxVivado = input("  Is Xilinx Vivado installed on your system? [Y/n/p]: ")
-		isXilinxVivado = isXilinxVivado if isXilinxVivado != "" else "Y"
-		if (isXilinxVivado in ['p', 'P']):
-			raise SkipConfigurationException()
-		elif (isXilinxVivado in ['n', 'N']):
-			return False
-		elif (isXilinxVivado in ['y', 'Y']):
-			return True
+	def __CheckVivadoVersion(self, binPath, version):
+		if (self._host.Platform == "Windows"):
+			vivadoPath = binPath / "vivado.bat"
 		else:
-			raise ConfigurationException("Unsupported choice '{0}'".format(isXilinxVivado))
+			vivadoPath = binPath / "vivado"
 
-	def __AskXilinxVivadoPath(self):
-		self._host.PoCConfig['INSTALL.Xilinx.Vivado']['Version'] =								self._privateConfiguration[self._host.Platform]['INSTALL.Xilinx.Vivado']['Version']
-		self._host.PoCConfig['INSTALL.Xilinx.Vivado']['InstallationDirectory'] =	self._privateConfiguration[self._host.Platform]['INSTALL.Xilinx.Vivado']['InstallationDirectory']
+		if not vivadoPath.exists():
+			raise ConfigurationException("Executable '{0!s}' not found.".format(vivadoPath)) from FileNotFoundError(str(vivadoPath))
 
-		default = Path(self._privateConfiguration[self._host.Platform]['INSTALL.Xilinx.Vivado']['InstallationDirectory'])
-		xilinxVivadoDirectory = input("  Xilinx Vivado installation directory [{0!s}]: ".format(default))
-		if (xilinxVivadoDirectory != ""):
-			return Path(xilinxVivadoDirectory)
-		else:
-			return default
+		output = check_output([str(vivadoPath), "-version"], universal_newlines=True)
+		if str(version) not in output:
+			raise ConfigurationException("Vivado version mismatch. Expected version {0}.".format(version))
 
-	def __ConfirmXilinxVivadoPath(self, xilinxVivadoPath):
-		# Ask for installed Xilinx Vivado
-		isXilinxVivadoPath = input("  Is Xilinx Vivado installed in '{0!s}'? [Y/n/p]: ".format(xilinxVivadoPath))
-		isXilinxVivadoPath = isXilinxVivadoPath if isXilinxVivadoPath != "" else "Y"
-		if (isXilinxVivadoPath in ['p', 'P']):
-			raise SkipConfigurationException()
-		elif (isXilinxVivadoPath in ['n', 'N']):
-			return None
-		elif (isXilinxVivadoPath in ['y', 'Y']):
-			return xilinxVivadoPath
-
-	def __ClearXilinxVivadoSections(self):
-		self._host.PoCConfig['INSTALL.Xilinx.Vivado'] = OrderedDict()
-
-	def __WriteXilinxVivadoSection(self, xilinxVivadoPath):
-		version = self._privateConfiguration[self._host.Platform]['INSTALL.Xilinx.Vivado']['Version']
-		for p in xilinxVivadoPath.parts:
-			sp = p.split(".")
-			if (len(sp) == 2):
-				if ((12 <= int(sp[0]) <= 14) and (int(sp[1]) <= 7)):
-					version = p
-					break
-
-		self._host.PoCConfig['INSTALL.Xilinx.Vivado']['Version'] = version
-		self._host.PoCConfig['INSTALL.Xilinx.Vivado']['InstallationDirectory'] = self._privateConfiguration[self._host.Platform]['INSTALL.Xilinx.Vivado']['InstallationDirectory']
-		defaultPath = self._host.PoCConfig['INSTALL.Xilinx.Vivado']['InstallationDirectory']
-
-		if (xilinxVivadoPath.as_posix() == defaultPath):
-			self._host.PoCConfig['INSTALL.Xilinx.Vivado']['InstallationDirectory'] = self._privateConfiguration[self._host.Platform]['INSTALL.Xilinx.Vivado'][
-				'InstallationDirectory']
-		else:
-			self._host.PoCConfig['INSTALL.Xilinx.Vivado']['InstallationDirectory'] = xilinxVivadoPath.as_posix()
-
-		self._host.PoCConfig['INSTALL.Xilinx.Vivado']['BinaryDirectory'] = self._privateConfiguration[self._host.Platform]['INSTALL.Xilinx.Vivado']['BinaryDirectory']
-
-	# def manualConfigureForWindows(self) :
-	# 	# Ask for installed Xilinx Vivado
-	# 	isXilinxVivado = input('Is Xilinx Vivado installed on your system? [Y/n/p]: ')
-	# 	isXilinxVivado = isXilinxVivado if isXilinxVivado != "" else "Y"
-	# 	if (isXilinxVivado in ['p', 'P']) :
-	# 		pass
-	# 	elif (isXilinxVivado in ['n', 'N']) :
-	# 		self.pocConfig['Xilinx.Vivado'] = OrderedDict()
-	# 	elif (isXilinxVivado in ['y', 'Y']) :
-	# 		xilinxDirectory = input('Xilinx installation directory [C:\Xilinx]: ')
-	# 		vivadoVersion = input('Xilinx Vivado version number [2015.2]: ')
-	# 		print()
-	#
-	# 		xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "C:\Xilinx"
-	# 		vivadoVersion = vivadoVersion if vivadoVersion != "" else "2015.2"
-	#
-	# 		xilinxDirectoryPath = Path(xilinxDirectory)
-	# 		vivadoDirectoryPath = xilinxDirectoryPath / "Vivado" / vivadoVersion
-	#
-	# 		if not xilinxDirectoryPath.exists() :  raise BaseException(
-	# 			"Xilinx installation directory '%s' does not exist." % xilinxDirectory)
-	# 		if not vivadoDirectoryPath.exists() :  raise BaseException(
-	# 			"Xilinx Vivado version '%s' is not installed." % vivadoVersion)
-	#
-	# 		self.pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
-	# 		self.pocConfig['Xilinx.Vivado']['Version'] = vivadoVersion
-	# 		self.pocConfig['Xilinx.Vivado']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/Vivado/${Version}'
-	# 		self.pocConfig['Xilinx.Vivado']['BinaryDirectory'] = '${InstallationDirectory}/bin'
-	# 	else :
-	# 		raise BaseException("unknown option")
-	#
-	#
-	# def manualConfigureForLinuxo(self) :
-	# 	# Ask for installed Xilinx Vivado
-	# 	isXilinxVivado = input('Is Xilinx Vivado installed on your system? [Y/n/p]: ')
-	# 	isXilinxVivado = isXilinxVivado if isXilinxVivado != "" else "Y"
-	# 	if (isXilinxVivado in ['p', 'P']) :
-	# 		pass
-	# 	elif (isXilinxVivado in ['n', 'N']) :
-	# 		self.pocConfig['Xilinx.Vivado'] = OrderedDict()
-	# 	elif (isXilinxVivado in ['y', 'Y']) :
-	# 		xilinxDirectory = input('Xilinx installation directory [/opt/Xilinx]: ')
-	# 		vivadoVersion = input('Xilinx Vivado version number [2015.2]: ')
-	# 		print()
-	#
-	# 		xilinxDirectory = xilinxDirectory if xilinxDirectory != "" else "/opt/Xilinx"
-	# 		vivadoVersion = vivadoVersion if vivadoVersion != "" else "2015.2"
-	#
-	# 		xilinxDirectoryPath = Path(xilinxDirectory)
-	# 		vivadoDirectoryPath = xilinxDirectoryPath / "Vivado" / vivadoVersion
-	#
-	# 		if not xilinxDirectoryPath.exists() :  raise BaseException(
-	# 			"Xilinx installation directory '%s' does not exist." % xilinxDirectory)
-	# 		if not vivadoDirectoryPath.exists() :  raise BaseException(
-	# 			"Xilinx Vivado version '%s' is not installed." % vivadoVersion)
-	#
-	# 		self.pocConfig['Xilinx']['InstallationDirectory'] = xilinxDirectoryPath.as_posix()
-	# 		self.pocConfig['Xilinx.Vivado']['Version'] = vivadoVersion
-	# 		self.pocConfig['Xilinx.Vivado']['InstallationDirectory'] = '${Xilinx:InstallationDirectory}/Vivado/${Version}'
-	# 		self.pocConfig['Xilinx.Vivado']['BinaryDirectory'] = '${InstallationDirectory}/bin'
-	# 	else :
-	# 		raise BaseException("unknown option")
 
 class VivadoMixIn:
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
@@ -246,6 +116,7 @@ class VivadoMixIn:
 		self._binaryDirectoryPath =	binaryDirectoryPath
 		self._version =							version
 		self._logger =							logger
+
 
 class Vivado(VivadoMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
@@ -283,7 +154,7 @@ class XVhComp(Executable, VivadoMixIn):
 
 	def Compile(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -305,7 +176,7 @@ class XVhComp(Executable, VivadoMixIn):
 				self._hasWarnings |= (line.Severity is Severity.Warning)
 				self._hasErrors |= (line.Severity is Severity.Error)
 
-				line.Indent(2)
+				line.IndentBy(2)
 				self._Log(line)
 				line = next(iterator)
 
@@ -405,7 +276,7 @@ class XElab(Executable, VivadoMixIn):
 
 	def Link(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -427,7 +298,7 @@ class XElab(Executable, VivadoMixIn):
 				self._hasWarnings |= (line.Severity is Severity.Warning)
 				self._hasErrors |= (line.Severity is Severity.Error)
 
-				line.Indent(2)
+				line.IndentBy(2)
 				self._Log(line)
 				line = next(iterator)
 
@@ -497,7 +368,7 @@ class XSim(Executable, VivadoMixIn):
 
 	def Simulate(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -507,8 +378,9 @@ class XSim(Executable, VivadoMixIn):
 		self._hasOutput = False
 		self._hasWarnings = False
 		self._hasErrors = False
+		simulationResult =	CallByRefParam(SimulationResult.Error)
 		try:
-			iterator = iter(SimulatorFilter(self.GetReader()))
+			iterator = iter(PoCSimulationResultFilter(SimulatorFilter(self.GetReader()), simulationResult))
 
 			line = next(iterator)
 			self._hasOutput = True
@@ -519,7 +391,7 @@ class XSim(Executable, VivadoMixIn):
 				self._hasWarnings |= (line.Severity is Severity.Warning)
 				self._hasErrors |= (line.Severity is Severity.Error)
 
-				line.Indent(2)
+				line.IndentBy(2)
 				self._Log(line)
 				line = next(iterator)
 
@@ -532,6 +404,8 @@ class XSim(Executable, VivadoMixIn):
 		finally:
 			if self._hasOutput:
 				self._LogNormal("    " + ("-" * 76))
+
+		return simulationResult.value
 
 
 def VHDLCompilerFilter(gen):

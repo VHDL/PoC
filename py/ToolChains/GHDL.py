@@ -4,6 +4,7 @@
 #
 # ==============================================================================
 # Authors:					Patrick Lehmann
+#										Martin Zabel
 #
 # Python Class:			GHDL specific classes
 #
@@ -39,32 +40,36 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.GHDL")
 
-from collections						import OrderedDict
 from pathlib								import Path
-from re											import compile as re_compile
+from re											import compile as RegExpCompile
+from subprocess 						import check_output
 
+from Base.Configuration			import Configuration as BaseConfiguration, ConfigurationException
 from Base.Exceptions				import PlatformNotSupportedException
-from Base.Logging						import LogEntry, Severity
-from Base.Configuration			import Configuration as BaseConfiguration, ConfigurationException, SkipConfigurationException
 from Base.Executable				import Executable
 from Base.Executable				import ExecutableArgument, PathArgument, StringArgument, ValuedFlagListArgument
 from Base.Executable				import ShortFlagArgument, LongFlagArgument, ShortValuedFlagArgument, CommandLineArgumentList
+from Base.Logging						import LogEntry, Severity
+from Base.Simulator					import PoCSimulationResultFilter, SimulationResult
 from Base.ToolChain					import ToolChainException
+from lib.Functions					import CallByRefParam
 
 
 class GHDLException(ToolChainException):
 	pass
 
+
 class GHDLReanalyzeException(GHDLException):
 	pass
 
+
 class Configuration(BaseConfiguration):
 	_vendor =			None
-	_shortName =	"GHDL"
-	_longName =		"GHDL"
-	_privateConfiguration = {
+	_toolName =		"GHDL"
+	_section = 		"INSTALL.GHDL"
+	_template = {
 		"Windows": {
-			"INSTALL.GHDL": {
+			_section: {
 				"Version":								"0.34dev",
 				"InstallationDirectory":	"C:/Tools/GHDL/0.34dev",
 				"BinaryDirectory":				"${InstallationDirectory}/bin",
@@ -72,15 +77,15 @@ class Configuration(BaseConfiguration):
 			}
 		},
 		"Linux": {
-			"INSTALL.GHDL": {
+			_section: {
 				"Version":								"0.34dev",
-				"InstallationDirectory":	None,
+				"InstallationDirectory":	"/usr/bin/ghdl",
 				"BinaryDirectory":				"${InstallationDirectory}",
 				"Backend":								"llvm"
 			}
 		},
 		"Darwin": {
-			"INSTALL.GHDL": {
+			_section: {
 				"Version":								"0.34dev",
 				"InstallationDirectory":	None,
 				"BinaryDirectory":				"${InstallationDirectory}",
@@ -89,154 +94,56 @@ class Configuration(BaseConfiguration):
 		}
 	}
 
-	def __init__(self, host):
-		super().__init__(host)
-
-	def GetSections(self, Platform):
-		pass
-	
-	def ConfigureForWindows(self):
-		ghdlPath = self.__GetGHDLPath()
-		if (ghdlPath is not None):
-			print("  Found a GHDL installation directory.")
-			ghdlPath = self.__ConfirmGHDLPath(ghdlPath)
-			if (ghdlPath is None):
-				ghdlPath = self.__AskGHDLPath()
-		else:
-			if (not self.__AskGHDL()):
-				self.__ClearGHDLSections()
+	def ConfigureForAll(self):
+		try:
+			if (not self._AskInstalled("Is GHDL installed on your system?")):
+				self.ClearSection()
 			else:
-				ghdlPath = self.__AskGHDLPath()
-		if (not ghdlPath.exists()):    raise ConfigurationException(
-				"GHDL installation directory '{0}' does not exist.".format(ghdlPath))  from NotADirectoryError(ghdlPath)
-		self.__WriteGHDLSection(ghdlPath)
-	
-	def __GetGHDLPath(self):
+				self._ConfigureInstallationDirectory()
+				binPath = self._ConfigureBinaryDirectory()
+				self.__WriteGHDLSection(binPath)
+		except ConfigurationException:
+			self.ClearSection()
+			raise
+
+	def _GetDefaultInstallationDirectory(self):
 		if (self._host.Platform in ["Linux", "Darwin"]):
-			p = Path("/opt/ghdl/bin")
-			if (p.exists()):    return p.parent
-			# FIXME: search in /opt/ghdl with version number
-		elif (self._host.Platform == "Windows"):
-			for drive in "CDEFGH":
-				p = Path(r"{0}:\tools\GHDL\bin".format(drive))
-				try:
-					if (p.exists()):  return p.parent
-				except OSError:
-					pass
-		return None
-	
-	def __AskGHDL(self):
-		isGHDL = input("  Is GHDL installed on your system? [Y/n/p]: ")
-		isGHDL = isGHDL if isGHDL != "" else "Y"
-		if (isGHDL in ['p', 'P']):
-			raise SkipConfigurationException()
-		elif (isGHDL in ['n', 'N']):
-			return False
-		elif (isGHDL in ['y', 'Y']):
-			return True
+			name = check_output(["which", "ghdl"], universal_newlines=True)
+			if name != "": return str(Path(name[:-1]).parent)
+
+		return super()._GetDefaultInstallationDirectory()
+
+	def __WriteGHDLSection(self, binPath):
+		if (self._host.Platform == "Windows"):
+			ghdlPath = binPath / "ghdl.exe"
 		else:
-			raise ConfigurationException("Unsupported choice '{0}'".format(isGHDL))
-	
-	def __AskGHDLPath(self):
-		self._host.PoCConfig['INSTALL.GHDL']['Version'] = self._privateConfiguration[self._host.Platform]['INSTALL.GHDL']['Version']
-		self._host.PoCConfig['INSTALL.GHDL']['InstallationDirectory'] = self._privateConfiguration[self._host.Platform]['INSTALL.GHDL']['InstallationDirectory']
-		
-		default = Path(self._privateConfiguration[self._host.Platform]['INSTALL.GHDL']['InstallationDirectory'])
-		ghdlDirectory = input("  GHDL installation directory [{0!s}]: ".format(default))
-		if (ghdlDirectory != ""):
-			return Path(ghdlDirectory)
-		else:
-			return default
-	
-	def __ConfirmGHDLPath(self, ghdlPath):
-		# Ask for installed GHDL 
-		isGHDLPath = input("  Is GHDL installed in '{0!s}'? [Y/n/p]: ".format(ghdlPath))
-		isGHDLPath = isGHDLPath if isGHDLPath != "" else "Y"
-		if (isGHDLPath in ['p', 'P']):
-			raise SkipConfigurationException()
-		elif (isGHDLPath in ['n', 'N']):
-			return None
-		elif (isGHDLPath in ['y', 'Y']):
-			return ghdlPath
-	
-	def __ClearGHDLSections(self):
-		self._host.PoCConfig['INSTALL.GHDL'] = OrderedDict()
-	
-	def __WriteGHDLSection(self, ghdlPath):
-		version = self._privateConfiguration[self._host.Platform]['INSTALL.GHDL']['Version']
-		# for p in ghdlPath.parts:
-		# 	sp = p.split(".")
-		# 	if (len(sp) == 2):
-		# 		if ((12 <= int(sp[0]) <= 14) and (int(sp[1]) <= 7)):
-		# 			version = p
-		# 			break
-		
-		self._host.PoCConfig['INSTALL.GHDL']['Version'] = version
-		self._host.PoCConfig['INSTALL.GHDL']['InstallationDirectory'] = self._privateConfiguration[self._host.Platform]['INSTALL.GHDL']['InstallationDirectory']
-		defaultPath = self._host.PoCConfig['INSTALL.GHDL']['InstallationDirectory']
-		
-		if (ghdlPath.as_posix() == defaultPath):
-			self._host.PoCConfig['INSTALL.GHDL']['InstallationDirectory'] = self._privateConfiguration[self._host.Platform]['INSTALL.GHDL']['InstallationDirectory']
-		else:
-			self._host.PoCConfig['INSTALL.GHDL']['InstallationDirectory'] = ghdlPath.as_posix()
-	
-	# def manualConfigureForWindows(self):
-	# 	# Ask for installed GHDL
-	# 	isGHDL = input('Is GHDL installed on your system? [Y/n/p]: ')
-	# 	isGHDL = isGHDL if isGHDL != "" else "Y"
-	# 	if (isGHDL  in ['p', 'P']):
-	# 		pass
-	# 	elif (isGHDL in ['n', 'N']):
-	# 		self.pocConfig['GHDL'] = OrderedDict()
-	# 	elif (isGHDL in ['y', 'Y']):
-	# 		ghdlDirectory =	input('GHDL installation directory [C:\Program Files (x86)\GHDL]: ')
-	# 		ghdlVersion =		input('GHDL version number [0.31]: ')
-	# 		print()
-	#
-	# 		ghdlDirectory = ghdlDirectory if ghdlDirectory != "" else "C:\Program Files (x86)\GHDL"
-	# 		ghdlVersion = ghdlVersion if ghdlVersion != "" else "0.31"
-	#
-	# 		ghdlDirectoryPath = Path(ghdlDirectory)
-	# 		ghdlExecutablePath = ghdlDirectoryPath / "bin" / "ghdl.exe"
-	#
-	# 		if not ghdlDirectoryPath.exists():	raise ConfigurationException("GHDL installation directory '%s' does not exist." % ghdlDirectory)
-	# 		if not ghdlExecutablePath.exists():	raise ConfigurationException("GHDL is not installed.")
-	#
-	# 		self.pocConfig['GHDL']['Version'] = ghdlVersion
-	# 		self.pocConfig['GHDL']['InstallationDirectory'] = ghdlDirectoryPath.as_posix()
-	# 		self.pocConfig['GHDL']['BinaryDirectory'] = '${InstallationDirectory}/bin'
-	# 		self.pocConfig['GHDL']['Backend'] = 'mcode'
-	# 	else:
-	# 		raise ConfigurationException("unknown option")
-	#
-	# def manualConfigureForLinux(self):
-	# 	# Ask for installed GHDL
-	# 	isGHDL = input('Is GHDL installed on your system? [Y/n/p]: ')
-	# 	isGHDL = isGHDL if isGHDL != "" else "Y"
-	# 	if (isGHDL  in ['p', 'P']):
-	# 		pass
-	# 	elif (isGHDL in ['n', 'N']):
-	# 		self.pocConfig['GHDL'] = OrderedDict()
-	# 	elif (isGHDL in ['y', 'Y']):
-	# 		ghdlDirectory =	input('GHDL installation directory [/usr/bin]: ')
-	# 		ghdlVersion =		input('GHDL version number [0.31]: ')
-	# 		print()
-	#
-	# 		ghdlDirectory = ghdlDirectory if ghdlDirectory != "" else "/usr/bin"
-	# 		ghdlVersion = ghdlVersion if ghdlVersion != "" else "0.31"
-	#
-	# 		ghdlDirectoryPath = Path(ghdlDirectory)
-	# 		ghdlExecutablePath = ghdlDirectoryPath / "ghdl"
-	#
-	# 		if not ghdlDirectoryPath.exists():	raise ConfigurationException("GHDL installation directory '%s' does not exist." % ghdlDirectory)
-	# 		if not ghdlExecutablePath.exists():	raise ConfigurationException("GHDL is not installed.")
-	#
-	# 		self.pocConfig['GHDL']['Version'] = ghdlVersion
-	# 		self.pocConfig['GHDL']['InstallationDirectory'] = ghdlDirectoryPath.as_posix()
-	# 		self.pocConfig['GHDL']['BinaryDirectory'] = '${InstallationDirectory}'
-	# 		self.pocConfig['GHDL']['Backend'] = 'llvm'
-	# 	else:
-	# 		raise ConfigurationException("unknown option")
+			ghdlPath = binPath / "ghdl"
+
+		if not ghdlPath.exists():
+			raise ConfigurationException("Executable '{0!s}' not found.".format(ghdlPath)) from FileNotFoundError(
+				str(ghdlPath))
+
+		# get version and backend
+		output = check_output([str(ghdlPath), "-v"], universal_newlines=True)
+		version = None
+		backend = None
+		versionRegExpStr = r"^GHDL (.+?) "
+		versionRegExp = RegExpCompile(versionRegExpStr)
+		backendRegExpStr = r" (\w+) code generator"
+		backendRegExp = RegExpCompile(backendRegExpStr)
+		for line in output.split('\n'):
+			if version is None:
+				match = versionRegExp.match(line)
+				if match is not None:
+					version = match.group(1)
+
+			if backend is None:
+				match = backendRegExp.match(line)
+				if match is not None:
+					backend = match.group(1)
+
+		self._host.PoCConfig[self._section]['Version'] = version
+		self._host.PoCConfig[self._section]['Backend'] = backend
 
 
 class GHDL(Executable):
@@ -266,24 +173,15 @@ class GHDL(Executable):
 		self._hasErrors =						False
 
 	@property
-	def BinaryDirectoryPath(self):
-		return self._binaryDirectoryPath
-
+	def BinaryDirectoryPath(self):	return self._binaryDirectoryPath
 	@property
-	def Backend(self):
-		return self._backend
-
+	def Backend(self):							return self._backend
 	@property
-	def Version(self):
-		return self._version
-
+	def Version(self):							return self._version
 	@property
-	def HasWarnings(self):
-		return self._hasWarnings
-
+	def HasWarnings(self):					return self._hasWarnings
 	@property
-	def HasErrors(self):
-		return self._hasErrors
+	def HasErrors(self):						return self._hasErrors
 
 	def deco(Arg):
 		def getter(self):
@@ -433,7 +331,7 @@ class GHDLAnalyze(GHDL):
 	def Analyze(self):
 		parameterList = self.Parameters.ToArgumentList()
 		parameterList.insert(0, self.Executable)
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -455,7 +353,7 @@ class GHDLAnalyze(GHDL):
 				self._hasWarnings |=	(line.Severity is Severity.Warning)
 				self._hasErrors |=		(line.Severity is Severity.Error)
 
-				line.Indent(2)
+				line.IndentBy(2)
 				self._Log(line)
 				line = next(iterator)
 
@@ -476,7 +374,7 @@ class GHDLElaborate(GHDL):
 	def Elaborate(self):
 		parameterList = self.Parameters.ToArgumentList()
 		parameterList.insert(0, self.Executable)
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -490,7 +388,7 @@ class GHDLElaborate(GHDL):
 			iterator = iter(GHDLElaborateFilter(self.GetReader()))
 
 			line = next(iterator)
-			line.Indent(2)
+			line.IndentBy(2)
 			self._hasOutput = True
 			vhdlLibraryName = self.Parameters[self.SwitchVHDLLibrary]
 			topLevel = self.Parameters[self.ArgTopLevel]
@@ -503,7 +401,7 @@ class GHDLElaborate(GHDL):
 				self._hasErrors |= (line.Severity is Severity.Error)
 
 				line = next(iterator)
-				line.Indent(2)
+				line.IndentBy(2)
 				self._Log(line)
 
 		except StopIteration as ex:
@@ -525,21 +423,22 @@ class GHDLRun(GHDL):
 		parameterList += self.RunOptions.ToArgumentList()
 		parameterList.insert(0, self.Executable)
 
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
 			raise GHDLException("Failed to launch GHDL run.") from ex
 
-		self._hasOutput = False
-		self._hasWarnings = False
-		self._hasErrors = False
+		self._hasOutput =		False
+		self._hasWarnings =	False
+		self._hasErrors =		False
+		simulationResult =	CallByRefParam(SimulationResult.Error)
 		try:
-			iterator = iter(GHDLRunFilter(self.GetReader()))
+			iterator = iter(PoCSimulationResultFilter(GHDLRunFilter(self.GetReader()), simulationResult))
 
 			line = next(iterator)
-			line.Indent(2)
+			line.IndentBy(2)
 			self._hasOutput = True
 			vhdlLibraryName =	self.Parameters[self.SwitchVHDLLibrary]
 			topLevel =				self.Parameters[self.ArgTopLevel]
@@ -552,7 +451,7 @@ class GHDLRun(GHDL):
 				self._hasErrors |= (line.Severity is Severity.Error)
 
 				line = next(iterator)
-				line.Indent(2)
+				line.IndentBy(2)
 				self._Log(line)
 
 		except StopIteration as ex:
@@ -565,13 +464,15 @@ class GHDLRun(GHDL):
 			if self._hasOutput:
 				self._LogNormal("    " + ("-" * 76))
 
+		return simulationResult.value
+
 
 def GHDLAnalyzeFilter(gen):
 	warningRegExpPattern =	r".+?:\d+:\d+:warning: (?P<Message>.*)"			# <Path>:<line>:<column>:warning: <message>
 	errorRegExpPattern =		r".+?:\d+:\d+: (?P<Message>.*)"  						# <Path>:<line>:<column>: <message>
 
-	warningRegExp =	re_compile(warningRegExpPattern)
-	errorRegExp =		re_compile(errorRegExpPattern)
+	warningRegExp =	RegExpCompile(warningRegExpPattern)
+	errorRegExp =		RegExpCompile(errorRegExpPattern)
 
 	for line in gen:
 		warningRegExpMatch = warningRegExp.match(line)
@@ -590,12 +491,6 @@ def GHDLAnalyzeFilter(gen):
 GHDLElaborateFilter = GHDLAnalyzeFilter
 
 def GHDLRunFilter(gen):
-	#warningRegExpPattern =	".+?:\d+:\d+:warning: .*"		# <Path>:<line>:<column>:warning: <message>
-	#errorRegExpPattern =		".+?:\d+:\d+: .*"  					# <Path>:<line>:<column>: <message>
-
-	#warningRegExp =	re_compile(warningRegExpPattern)
-	#errorRegExp =		re_compile(errorRegExpPattern)
-
 	lineno = 0
 	for line in gen:
 		if (lineno < 2):
@@ -604,5 +499,7 @@ def GHDLRunFilter(gen):
 				yield LogEntry(line, Severity.Verbose)
 			elif ("Starting simulation" in line):
 				yield LogEntry(line, Severity.Verbose)
+			else:
+				yield LogEntry(line, Severity.Normal)
 		else:
 			yield LogEntry(line, Severity.Normal)

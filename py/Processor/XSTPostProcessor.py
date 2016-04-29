@@ -261,9 +261,9 @@ def main():
 		# create a command line argument parser
 		argParser = argparse.ArgumentParser(
 			formatter_class = argparse.RawDescriptionHelpFormatter,
-			description = textwrap.dedent('''\
+			description = textwrap.dedent("""\
 				This is the PoC Library NetList Service Tool.
-				'''),
+				"""),
 			add_help=False)
 
 		# add arguments
@@ -293,7 +293,7 @@ def main():
 		PP = PostProcessor(args.debug, args.verbose, args.quiet)
 		#netList.dryRun = True
 	
-		if (args.help == True):
+		if (args.help is True):
 			argParser.print_help()
 			return
 		elif (args.tokenFiles is not None):
@@ -319,7 +319,7 @@ def main():
 #	except PoC.PoCNotConfiguredException as ex:
 #		print("ERROR: %s" % ex.message)
 #		print()
-#		print("Please run 'poc.[sh/cmd] --configure' in PoC root directory.")
+#		print("Please run 'poc.[sh/ps1] --configure' in PoC root directory.")
 #		return
 #	
 #	except PoC.PoCPlatformNotSupportedException as ex:

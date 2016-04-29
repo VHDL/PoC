@@ -39,107 +39,95 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.GTKWave")
 
-
-from collections						import OrderedDict
 from pathlib								import Path
+from re											import compile as RegExpCompile
+from subprocess 						import check_output
 
-from Base.Exceptions				import PlatformNotSupportedException
-from Base.Logging						import LogEntry, Severity
 from Base.Configuration			import Configuration as BaseConfiguration, ConfigurationException
+from Base.Exceptions				import PlatformNotSupportedException
 from Base.Executable				import Executable, ExecutableArgument, LongValuedFlagArgument, CommandLineArgumentList
+from Base.Logging						import LogEntry, Severity
 from Base.ToolChain					import ToolChainException
 
 
 class GTKWaveException(ToolChainException):
 	pass
 
+
 class Configuration(BaseConfiguration):
 	_vendor =			None
-	_shortName =	"GTKWave"
-	_longName =		"GTKWave"
-	_privateConfiguration = {
+	_toolName =		"GTKWave"
+	_section = 		"INSTALL.GTKWave"
+	_template = {
 		"Windows": {
-			"INSTALL.GTKWave": {
-				"Version":								"3.3.70",
-				"InstallationDirectory":	None,
+			_section: {
+				"Version":								"3.3.71",
+				"InstallationDirectory":	"C:/Program Files (x86)/GTKWave",
 				"BinaryDirectory":				"${InstallationDirectory}/bin"
 			}
 		},
 		"Linux": {
-			"INSTALL.GTKWave": {
-				"Version":								"3.3.70",
-				"InstallationDirectory":	None,
+			_section: {
+				"Version":								"3.3.71",
+				"InstallationDirectory":	"/usr/bin",
+				"BinaryDirectory":				"${InstallationDirectory}"
+			}
+		},
+		"Darwin": {
+			_section: {
+				"Version":								"3.3.71",
+				"InstallationDirectory":	"/usr/bin",
 				"BinaryDirectory":				"${InstallationDirectory}"
 			}
 		}
 	}
 
-	def __init__(self, host):
-		super().__init__(host)
+	def CheckDependency(self):
+		# return True if Xilinx is configured
+		return (len(self._host.PoCConfig['INSTALL.GHDL']) != 0)
 
-	def GetSections(self, Platform):
-		pass
+	def ConfigureForAll(self):
+		try:
+			if (not self._AskInstalled("Is GTKWave installed on your system?")):
+				self.ClearSection()
+			else:
+				self._ConfigureInstallationDirectory()
+				binPath = self._ConfigureBinaryDirectory()
+				self.__WriteGtkWaveSection(binPath)
+		except ConfigurationException:
+			self.ClearSection()
+			raise
 
-	def ConfigureForWindows(self):
-		return
+	def _GetDefaultInstallationDirectory(self):
+		if (self._host.Platform in ["Linux", "Darwin"]):
+			name = check_output(["which", "gtkwave"], universal_newlines=True)
+			if name != "": return str(Path(name[:-1]).parent)
 
-	def manualConfigureForWindows(self) :
-		# Ask for installed GTKWave
-		isGTKW = input('Is GTKWave installed on your system? [Y/n/p]: ')
-		isGTKW = isGTKW if isGTKW != "" else "Y"
-		if (isGTKW in ['p', 'P']) :
-			pass
-		elif (isGTKW in ['n', 'N']) :
-			self.pocConfig['GTKWave'] = OrderedDict()
-		elif (isGTKW in ['y', 'Y']) :
-			gtkwDirectory = input('GTKWave installation directory [C:\Program Files (x86)\GTKWave]: ')
-			gtkwVersion = input('GTKWave version number [3.3.61]: ')
-			print()
+		return super()._GetDefaultInstallationDirectory()
 
-			gtkwDirectory = gtkwDirectory if gtkwDirectory != "" else "C:\Program Files (x86)\GTKWave"
-			gtkwVersion = gtkwVersion if gtkwVersion != "" else "3.3.61"
+	def __WriteGtkWaveSection(self, binPath):
+		if (self._host.Platform == "Windows"):
+			gtkwPath = binPath / "gtkwave.exe"
+		else:
+			gtkwPath = binPath / "gtkwave"
 
-			gtkwDirectoryPath = Path(gtkwDirectory)
-			gtkwExecutablePath = gtkwDirectoryPath / "bin" / "gtkwave.exe"
+		if not gtkwPath.exists():
+			raise ConfigurationException("Executable '{0!s}' not found.".format(gtkwPath)) from FileNotFoundError(
+				str(gtkwPath))
 
-			if not gtkwDirectoryPath.exists() :  raise ConfigurationException(
-				"GTKWave installation directory '%s' does not exist." % gtkwDirectory)
-			if not gtkwExecutablePath.exists() :  raise ConfigurationException("GTKWave is not installed.")
+		# get version and backend
+		output = check_output([str(gtkwPath), "--version"], universal_newlines=True)
+		version = None
+		versionRegExpStr = r"^GTKWave Analyzer v(.+?) "
+		versionRegExp = RegExpCompile(versionRegExpStr)
+		for line in output.split('\n'):
+			if version is None:
+				match = versionRegExp.match(line)
+				if match is not None:
+					version = match.group(1)
 
-			self.pocConfig['GTKWave']['Version'] = gtkwVersion
-			self.pocConfig['GTKWave']['InstallationDirectory'] = gtkwDirectoryPath.as_posix()
-			self.pocConfig['GTKWave']['BinaryDirectory'] = '${InstallationDirectory}/bin'
-		else :
-			raise ConfigurationException("unknown option")
+		self._host.PoCConfig[self._section]['Version'] = version
 
-	def manualConfigureForLinux(self) :
-		# Ask for installed GTKWave
-		isGTKW = input('Is GTKWave installed on your system? [Y/n/p]: ')
-		isGTKW = isGTKW if isGTKW != "" else "Y"
-		if (isGTKW in ['p', 'P']) :
-			pass
-		elif (isGTKW in ['n', 'N']) :
-			self.pocConfig['GTKWave'] = OrderedDict()
-		elif (isGTKW in ['y', 'Y']) :
-			gtkwDirectory = input('GTKWave installation directory [/usr/bin]: ')
-			gtkwVersion = input('GTKWave version number [3.3.61]: ')
-			print()
-
-			gtkwDirectory = gtkwDirectory if gtkwDirectory != "" else "/usr/bin"
-			gtkwVersion = gtkwVersion if gtkwVersion != "" else "3.3.61"
-
-			gtkwDirectoryPath = Path(gtkwDirectory)
-			gtkwExecutablePath = gtkwDirectoryPath / "gtkwave"
-
-			if not gtkwDirectoryPath.exists() :  raise ConfigurationException(
-				"GTKWave installation directory '%s' does not exist." % gtkwDirectory)
-			if not gtkwExecutablePath.exists() :  raise ConfigurationException("GTKWave is not installed.")
-
-			self.pocConfig['GTKWave']['Version'] = gtkwVersion
-			self.pocConfig['GTKWave']['InstallationDirectory'] = gtkwDirectoryPath.as_posix()
-			self.pocConfig['GTKWave']['BinaryDirectory'] = '${InstallationDirectory}'
-		else :
-			raise ConfigurationException("unknown option")
 
 
 class GTKWave(Executable):
@@ -184,7 +172,7 @@ class GTKWave(Executable):
 
 	def View(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
@@ -198,7 +186,7 @@ class GTKWave(Executable):
 			iterator = iter(GTKWaveFilter(self.GetReader()))
 
 			line = next(iterator)
-			line.Indent(2)
+			line.IndentBy(2)
 			self._hasOutput = True
 			self._LogNormal("    GTKWave messages for '{0}'".format(self.Parameters[self.SwitchDumpFile]))
 			self._LogNormal("    " + ("-" * 76))
@@ -209,7 +197,7 @@ class GTKWave(Executable):
 				self._hasErrors |= (line.Severity is Severity.Error)
 
 				line = next(iterator)
-				line.Indent(2)
+				line.IndentBy(2)
 				self._Log(line)
 
 		except StopIteration as ex:

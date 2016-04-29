@@ -48,22 +48,22 @@ from lib.Functions						import Init
 from Base.Exceptions					import NotConfiguredException, PlatformNotSupportedException
 from Base.Project							import VHDLVersion, Environment, ToolChain, Tool
 from Base.Compiler						import Compiler as BaseCompiler, CompilerException
-from ToolChains.Altera.QuartusII	import QuartusII, QuartusSettingsFile, QuartusProjectFile
+from ToolChains.Altera.Quartus	import Quartus, QuartusSettingsFile, QuartusProjectFile
 
 
 class Compiler(BaseCompiler):
-	_TOOL_CHAIN =	ToolChain.Altera_QuartusII
-	_TOOL =				Tool.Altera_QuartusII_Map
+	_TOOL_CHAIN =	ToolChain.Altera_Quartus
+	_TOOL =				Tool.Altera_Quartus_Map
 
-	def __init__(self, host, showLogs, showReport):
-		super(self.__class__, self).__init__(host, showLogs, showReport)
+	def __init__(self, host, showLogs, showReport, dryRun, noCleanUp):
+		super().__init__(host, showLogs, showReport, dryRun, noCleanUp)
 
 		self._quartus =		None
 
 	def PrepareCompiler(self, binaryPath, version):
 		# create the GHDL executable factory
-		self._LogVerbose("  Preparing Quartus-II Map (quartus_map).")
-		self._quartus =		QuartusII(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._LogVerbose("Preparing Quartus-II Map (quartus_map).")
+		self._quartus =		Quartus(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):
 		for fqn in fqnList:
@@ -82,7 +82,7 @@ class Compiler(BaseCompiler):
 					pass
 
 	def Run(self, netlist, board, **_):
-		self._LogQuiet("IP core: {YELLOW}{0!s}{RESET}".format(netlist.Parent, **Init.Foreground))
+		self._LogQuiet("IP core: {0!s}".format(netlist.Parent, **Init.Foreground))
 
 		# setup all needed paths to execute fuse
 		self._PrepareCompilerEnvironment(board.Device)
@@ -96,15 +96,19 @@ class Compiler(BaseCompiler):
 		# netlist.XstFile = self._tempPath / (netlist.ModuleName + ".xst")
 		netlist.QsfFile = self._tempPath / (netlist.ModuleName + ".qsf")
 
-		self._WriteQuartusProjectFile(netlist)
+		self._WriteQuartusProjectFile(netlist, board.Device)
 
-		self._LogNormal("  running Quartus-II Map...")
-		self._RunPrepareCompile(netlist)
+		self._LogNormal("Executing pre-processing tasks...")
 		self._RunPreCopy(netlist)
 		self._RunPreReplace(netlist)
+
+		self._LogNormal("Running Altera Quartus Map...")
 		self._RunCompile(netlist, board.Device)
+
+		self._LogNormal("Executing post-processing tasks...")
 		self._RunPostCopy(netlist)
 		self._RunPostReplace(netlist)
+		self._RunPostDelete(netlist)
 
 	def _PrepareCompilerEnvironment(self, device):
 		self._LogNormal("preparing synthesis environment...")
@@ -120,12 +124,12 @@ class Compiler(BaseCompiler):
 		self.Host.PoCConfig['SPECIAL']['OutputDir']	=			self._tempPath.as_posix()
 
 
-	def _WriteQuartusProjectFile(self, netlist):
+	def _WriteQuartusProjectFile(self, netlist, device):
 		quartusProjectFile = QuartusProjectFile(netlist.QsfFile)
 
 		quartusProject = QuartusSettingsFile(netlist.ModuleName, quartusProjectFile)
-		quartusProject.GlobalAssignments['FAMILY'] =							"\"Stratix IV\""
-		quartusProject.GlobalAssignments['DEVICE'] =							"EP4SGX230KF40C2"
+		quartusProject.GlobalAssignments['FAMILY'] =							"\"{0}\"".format(device.Series)
+		quartusProject.GlobalAssignments['DEVICE'] =							device.ShortName
 		quartusProject.GlobalAssignments['TOP_LEVEL_ENTITY'] =		netlist.ModuleName
 		quartusProject.GlobalAssignments['VHDL_INPUT_VERSION'] =	"VHDL_2008"
 

@@ -39,10 +39,6 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Lattice.Diamond")
 
-
-# from collections				import OrderedDict
-# from pathlib						import Path
-
 from Base.Configuration		import Configuration as BaseConfiguration
 from Base.Project					import ConstraintFile, FileTypes
 from Base.ToolChain				import ToolChainException
@@ -51,15 +47,34 @@ from Base.ToolChain				import ToolChainException
 class LatticeException(ToolChainException):
 	pass
 
+
 class Configuration(BaseConfiguration):
-	def __init__(self, host):
-		super().__init__(host)
+	_vendor =			"Lattice"
+	_toolName =		None  # automatically configure only vendor path
+	_section =		"INSTALL.Lattice"
+	_template = {
+		"Windows": {
+			_section: {
+				"InstallationDirectory": "C:/Lattice"
+			}
+		# },
+		# "Linux":   {
+		# 	_section: {
+		# 		"InstallationDirectory": "/opt/Lattice"
+		# 	}
+		}
+	}
+
+	def _GetDefaultInstallationDirectory(self):
+		path = self._TestDefaultInstallPath({"Windows": "Lattice", "Linux": "Lattice"})
+		if path is None: return super()._GetDefaultInstallationDirectory()
+		return str(path)
 
 
 class LatticeDesignConstraintFile(ConstraintFile):
-	_FileType = FileTypes.UcfConstraintFile
+	_FileType = FileTypes.LdcConstraintFile
 
 	def __str__(self):
-		return "UCF file: '{0!s}".format(self._file)
+		return "LDC file: '{0!s}".format(self._file)
 
 

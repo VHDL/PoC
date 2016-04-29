@@ -39,108 +39,36 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Compiler.XSTCompiler")
 
-
-from collections					import OrderedDict
-from pathlib							import Path
-from os										import environ
-
-from Base.Exceptions						import PlatformNotSupportedException
-from Base.Logging								import LogEntry, Severity
-from Base.Configuration					import Configuration as BaseConfiguration, ConfigurationException, SkipConfigurationException
+from Base.Configuration					import Configuration as BaseConfiguration
 from Base.ToolChain							import ToolChainException
 
 
 class AlteraException(ToolChainException):
 	pass
 
+
 class Configuration(BaseConfiguration):
 	_vendor =			"Altera"
-	_shortName =	""
-	_longName =		"Altera"
-	_privateConfiguration = {
+	_toolName =		None  # automatically configure only vendor path
+	_section =		"INSTALL.Altera"
+	_template = {
 		"Windows": {
-			"INSTALL.Altera": {
-				"InstallationDirectory":	"C:/Altera"
+			_section: {
+				"InstallationDirectory": "C:/Altera"
 			}
 		},
-		"Linux": {
-			"INSTALL.Altera": {
-				"InstallationDirectory":	"/opt/Altera"
+		"Linux":   {
+			_section: {
+				"InstallationDirectory": "/opt/Altera"
 			}
 		}
 	}
 
-	def __init__(self, host):
-		super().__init__(host)
+	def _GetDefaultInstallationDirectory(self):
+		# altera = environ.get("QUARTUS_ROOTDIR")				# on Windows: D:\Altera\13.1\quartus
+		# if (altera is not None):
+		# 	return str(Path(altera).parent.parent)
 
-	def GetSections(self, Platform):
-		pass
-
-	def ConfigureForWindows(self):
-		xilinxPath = self.__GetAlteraPath()
-		if (xilinxPath is not None):
-			print("  Found a Altera installation directory.")
-			xilinxPath = self.__ConfirmAlteraPath(xilinxPath)
-			if (xilinxPath is None):
-				xilinxPath = self.__AskAlteraPath()
-		else:
-			if (not self.__AskAltera()):
-				self.__ClearAlteraSections()
-			else:
-				xilinxPath = self.__AskAlteraPath()
-		if (not xilinxPath.exists()):		raise ConfigurationException("Altera installation directory '{0}' does not exist.".format(xilinxPath))	from NotADirectoryError(xilinxPath)
-		self.__WriteAlteraSection(xilinxPath)
-
-	def __GetAlteraPath(self):
-		xilinx = environ.get("XILINX")
-		if (xilinx is not None):
-			return Path(xilinx).parent.parent.parent
-
-		xilinx = environ.get("XILINX_VIVADO")
-		if (xilinx is not None):
-			return Path(xilinx).parent.parent
-
-		if (self._host.Platform == "Linux"):
-			p = Path("/opt/xilinx")
-			if (p.exists()):		return p
-			p = Path("/opt/Altera")
-			if (p.exists()):		return p
-		elif (self._host.Platform == "Windows"):
-			for drive in "CDEFGH":
-				p = Path("{0}:\Altera".format(drive))
-				try:
-					if (p.exists()):	return p
-				except OSError:
-					pass
-		return None
-
-	def __AskAltera(self):
-		isAltera = input("  Are Altera products installed on your system? [Y/n/p]: ")
-		isAltera = isAltera if isAltera != "" else "Y"
-		if (isAltera in ['p', 'P']):		raise SkipConfigurationException()
-		elif (isAltera in ['n', 'N']):	return False
-		elif (isAltera in ['y', 'Y']):	return True
-		else:														raise ConfigurationException("Unsupported choice '{0}'".format(isAltera))
-
-	def __AskAlteraPath(self):
-		default = Path(self._privateConfiguration[self._host.Platform]['INSTALL.Altera']['InstallationDirectory'])
-		xilinxDirectory = input("  Altera installation directory [{0!s}]: ".format(default))
-		if (xilinxDirectory != ""):
-			return Path(xilinxDirectory)
-		else:
-			return default
-
-	def __ConfirmAlteraPath(self, xilinxPath):
-		# Ask for installed Altera ISE
-		isAlteraPath = input("  Is your Altera software installed in '{0!s}'? [Y/n/p]: ".format(xilinxPath))
-		isAlteraPath = isAlteraPath if isAlteraPath != "" else "Y"
-		if (isAlteraPath in ['p', 'P']):		raise SkipConfigurationException()
-		elif (isAlteraPath in ['n', 'N']):	return None
-		elif (isAlteraPath in ['y', 'Y']):	return xilinxPath
-
-	def __ClearAlteraSections(self):
-		self._host.PoCConfig['INSTALL.Altera'] = OrderedDict()
-
-	def __WriteAlteraSection(self, xilinxPath):
-		self._host.PoCConfig['INSTALL.Altera']['InstallationDirectory'] = xilinxPath.as_posix()
-
+		path = self._TestDefaultInstallPath({"Windows": "Altera", "Linux": "Altera"})
+		if path is None: return super()._GetDefaultInstallationDirectory()
+		return str(path)

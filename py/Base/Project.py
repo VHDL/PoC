@@ -33,6 +33,7 @@
 # load dependencies
 from enum								import Enum, unique
 from pathlib						import Path
+from flags							import Flags
 
 from Base.Configuration import ConfigurationException
 from Base.Exceptions		import CommonException
@@ -43,26 +44,25 @@ from lib.Functions			import merge
 
 # TODO: nested filesets
 
-@unique
-class FileTypes(Enum):
-	Unknown =							-1
-	Any =									0
-	Text =								1
-	ProjectFile =					2
-	FileListFile =				3
-	RulesFile =						4
-	SourceFile =					10
-	VHDLSourceFile =			11
-	VerilogSourceFile =		12
-	PythonSourceFile =		15
-	CocotbSourceFile =		16
-	ConstraintFile =			20
-	UcfConstraintFile =		21
-	XdcConstraintFile =		22
-	SdcConstraintFile =		25
-	LdcConstraintFile =		26
-	SettingsFile =				30
-	QuartusSettingsFile =	31
+class FileTypes(Flags):
+	__no_flags_name__ = 	"Unknown"
+	__all_flags_name__ = 	"Any"
+	Text =								()
+	ProjectFile =					()
+	FileListFile =				()
+	RulesFile =						()
+	SourceFile =					()
+	VHDLSourceFile =			()
+	VerilogSourceFile =		()
+	PythonSourceFile =		()
+	CocotbSourceFile =		()
+	ConstraintFile =			()
+	UcfConstraintFile =		()
+	XdcConstraintFile =		()
+	SdcConstraintFile =		()
+	LdcConstraintFile =		()
+	SettingsFile =				()
+	QuartusSettingsFile =	()
 
 	def Extension(self):
 		if   (self == FileTypes.Unknown):							raise CommonException("Unknown file type.")
@@ -96,7 +96,7 @@ class Environment(Enum):
 class ToolChain(Enum):
 	Any =								 0
 	Aldec_ActiveHDL =		10
-	Altera_QuartusII =	20
+	Altera_Quartus =	20
 	Altera_ModelSim =		21
 	Cocotb =					  30
 	GHDL_GTKWave =			40
@@ -111,7 +111,7 @@ class ToolChain(Enum):
 class Tool(Enum):
 	Any =								 0
 	Aldec_aSim =				10
-	Altera_QuartusII_Map =	20
+	Altera_Quartus_Map =	20
 	Cocotb_QuestaSim = 	30
 	GHDL =							40
 	GTKwave =						41
@@ -155,7 +155,7 @@ class VHDLVersion(Enum):
 			elif (value == "1993"):	return cls.VHDL93
 			elif (value == "2002"):	return cls.VHDL02
 			elif (value == "2008"):	return cls.VHDL08
-		raise ValueError("'{0}' is not a member of {1}.".format(str(value), cls.__name__))
+		raise ValueError("'{0!s}' is not a member of {1}.".format(value, cls.__name__))
 
 	def __lt__(self, other):		return self.value < other.value
 	def __le__(self, other):		return self.value <= other.value
@@ -234,41 +234,30 @@ class Project():
 		self._device =	board.Device
 	
 	@property
-	def Environment(self):
-		return self._environment
-	
+	def Environment(self):				return self._environment
 	@Environment.setter
-	def Environment(self, value):
-		self._environment = value
+	def Environment(self, value):	self._environment = value
 	
 	@property
-	def ToolChain(self):
-		return self._toolChain
-	
+	def ToolChain(self):					return self._toolChain
 	@ToolChain.setter
-	def ToolChain(self, value):
-		self._toolChain = value
+	def ToolChain(self, value):		self._toolChain = value
 	
 	@property
-	def Tool(self):
-		return self._tool
-	
+	def Tool(self):								return self._tool
 	@Tool.setter
-	def Tool(self, value):
-		self._tool = value
+	def Tool(self, value):				self._tool = value
 	
 	@property
-	def VHDLVersion(self):
-		return self._vhdlVersion
-	
+	def VHDLVersion(self):				return self._vhdlVersion
 	@VHDLVersion.setter
-	def VHDLVersion(self, value):
-		self._vhdlVersion = value
-	
+	def VHDLVersion(self, value):	self._vhdlVersion = value
+
+
 	def CreateFileSet(self, name, setDefault=True):
 		fs =											FileSet(name, project=self)
 		self._fileSets[name] =		fs
-		if (setDefault == True):
+		if (setDefault is True):
 			self._defaultFileSet =	fs
 	
 	def AddFileSet(self, fileSet):
@@ -335,7 +324,7 @@ class Project():
 			fileSet = self._defaultFileSet
 		# print("init Project.Files generator")
 		for file in fileSet.Files:
-			if (file.FileType is fileType):
+			if (file.FileType in fileType):
 				yield file
 	
 	def ExtractVHDLLibrariesFromVHDLSourceFiles(self):
@@ -369,7 +358,7 @@ class Project():
 	
 	def pprint(self, indent=0):
 		_indent = "  " * indent
-		buffer =	_indent + "Project: {0}\n".format(self.Name)
+		buffer =	"Project: {0}\n".format(self.Name)
 		buffer +=	_indent + "o-Settings:\n"
 		buffer +=	_indent + "| o-Board: {0}\n".format(self._board.Name)
 		buffer +=	_indent + "| o-Device: {0}\n".format(self._device.Name)
@@ -382,9 +371,9 @@ class Project():
 			buffer += _indent + "| o-{0}\n".format(lib.Name)
 			for file in lib.Files:
 				buffer += _indent + "| | o-{0}\n".format(file.Path)
-		buffer += _indent + "o-External VHDL libraries:\n"
+		buffer += _indent + "o-External VHDL libraries:"
 		for lib in self._externalVHDLLibraries:
-			buffer += _indent + "| o-{0} -> {1}\n".format(lib.Name, lib.Path)
+			buffer += "\n{0}| o-{1} -> {2}".format(_indent, lib.Name, lib.Path)
 		return buffer
 	
 	def __str__(self):
@@ -427,8 +416,12 @@ class FileSet:
 		elif (not isinstance(file, File)):							raise ValueError("Unsupported parameter type for 'file'.")
 		file.FileSet = self
 		file.Project = self._project
-		self._files.append(file)
-		
+
+		for f in self._files:
+			if (f.FileName == file.FileName):	break
+		else:
+			self._files.append(file)
+
 	def AddSourceFile(self, file):
 		# print("FileSet.AddSourceFile: file={0}".format(file))
 		if isinstance(file, str):
@@ -439,8 +432,12 @@ class FileSet:
 		elif (not isinstance(file, SourceFile)):				raise ValueError("Unsupported parameter type for 'file'.")
 		file.FileSet = self
 		file.Project = self._project
-		self._files.append(file)
-	
+
+		for f in self._files:
+			if (f.FileName == file.FileName):	break
+		else:
+			self._files.append(file)
+
 	def __str__(self):
 		return self._name
 
@@ -470,7 +467,11 @@ class VHDLLibrary:
 	def AddFile(self, file):
 		if (not isinstance(file, VHDLSourceFile)):			raise ValueError("Unsupported parameter type for 'file'.")
 		file.VHDLLibrary = self
-		self._files.append(file)
+
+		for f in self._files:
+			if (f.FileName == file.FileName):  break
+		else:
+			self._files.append(file)
 		
 	def __str__(self):
 		return self._name
@@ -523,11 +524,11 @@ class File:
 		return self._file
 	
 	def Open(self):
-		if (not self._file.exists()):		raise ConfigurationException("File '{0}' not found.".format(str(self._file))) from FileNotFoundError(str(self._file))
+		if (not self._file.exists()):		raise ConfigurationException("File '{0!s}' not found.".format(self._file)) from FileNotFoundError(str(self._file))
 		try:
 			self._handle = self._file.open('r')
 		except Exception as ex:
-			raise CommonException("Error while opening file '{0}'.".format(str(self._file))) from ex
+			raise CommonException("Error while opening file '{0!s}'.".format(self._file)) from ex
 	
 	def ReadFile(self):
 		if self._handle is None:
@@ -535,7 +536,7 @@ class File:
 		try:
 			self._content = self._handle.read()
 		except Exception as ex:
-			raise CommonException("Error while reading file '{0}'.".format(str(self._file))) from ex
+			raise CommonException("Error while reading file '{0!s}'.".format(self._file)) from ex
 	
 	# interface method for FilesParserMixIn
 	def _ReadContent(self):

@@ -39,14 +39,12 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Lattice.Diamond")
 
+from subprocess import check_output, CalledProcessError, STDOUT
 
-# from collections								import OrderedDict
-# from pathlib										import Path
-
+from Base.Configuration						import Configuration as BaseConfiguration, ConfigurationException
 from Base.Exceptions							import PlatformNotSupportedException
-from Base.Logging									import Severity, LogEntry
-from Base.Configuration						import Configuration as BaseConfiguration
 from Base.Executable							import Executable, CommandLineArgumentList, ExecutableArgument
+from Base.Logging									import Severity, LogEntry
 from Base.Project									import File, FileTypes
 from ToolChains.Lattice.Lattice		import LatticeException
 
@@ -54,9 +52,67 @@ from ToolChains.Lattice.Lattice		import LatticeException
 class DiamondException(LatticeException):
 	pass
 
+
 class Configuration(BaseConfiguration):
-	def __init__(self, host):
-		super().__init__(host)
+	_vendor =		"Lattice"
+	_toolName =	"Lattice Diamond"
+	_section =	"INSTALL.Lattice.Diamond"
+	_template = {
+		"Windows": {
+			_section: {
+				"Version":								"3.7",
+				"InstallationDirectory":	"${INSTALL.Lattice:InstallationDirectory}/Diamond/${Version}_x64",
+				"BinaryDirectory":				"${InstallationDirectory}/bin/nt64"
+			}
+		# },
+		# "Linux": {
+		# 	_section: {
+		# 		"Version":								"15.0",
+		# 		"InstallationDirectory":	"${INSTALL.Lattice:InstallationDirectory}/${Version}/diamond",
+		# 		"BinaryDirectory":				"${InstallationDirectory}/fix_me"
+		# 	}
+		}
+	}
+
+	def CheckDependency(self):
+		# return True if Lattice is configured
+		return (len(self._host.PoCConfig['INSTALL.Lattice']) != 0)
+
+	def ConfigureForAll(self):
+		try:
+			if (not self._AskInstalled("Is Lattice Diamond installed on your system?")):
+				self.ClearSection()
+			else:
+				version = self._ConfigureVersion()
+				self._ConfigureInstallationDirectory()
+				binPath = self._ConfigureBinaryDirectory()
+				self.__CheckDiamondVersion(binPath, version)
+		except ConfigurationException:
+			self.ClearSection()
+			raise
+
+	def __CheckDiamondVersion(self, binPath, version):
+		if (self._host.Platform == "Windows"):
+			tclShellPath = binPath / "pnmainc.exe"
+		else:
+			tclShellPath = binPath / "pnmainc"
+
+		if not tclShellPath.exists():
+			raise ConfigurationException("Executable '{0!s}' not found.".format(tclShellPath)) from FileNotFoundError(
+				str(tclShellPath))
+
+		try:
+			output = check_output([str(tclShellPath), "???"], stderr=STDOUT, universal_newlines=True)
+		except CalledProcessError as ex:
+			output = ex.output
+
+		for line in output.split('\n'):
+			if str(version) in line:
+				break
+		else:
+			raise ConfigurationException("Diamond version mismatch. Expected version {0}.".format(version))
+
+		self._host.PoCConfig[self._section]['Version'] = version
 
 
 class DiamondMixIn:
@@ -103,7 +159,7 @@ class TclShell(Executable, DiamondMixIn):
 
 	def Run(self):
 		parameterList = self.Parameters.ToArgumentList()
-		self._LogVerbose("    command: {0}".format(" ".join(parameterList)))
+		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)

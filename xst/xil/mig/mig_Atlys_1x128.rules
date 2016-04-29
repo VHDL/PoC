@@ -9,17 +9,28 @@ PreProcessRules
 End PreProcessRules
 
 PostProcessRules
-	Copy "${SPECIAL:OutputDir}/${TopModule}.ngc"														To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${TopModule}.ngc"
-	Copy "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${TopModule}_top.vhd"		To "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${TopModule}.vhdl"
+	# copy output files into netlist directory
+	Copy "${SPECIAL:OutputDir}/${TopLevel}.ngc"														To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.ngc"
+	Copy "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}_top.vhd"		To "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.vhdl"
 	
-	# first 2 lines with option "d"
-	File "${PoC:nlDir}/${SPECIAL:Device}/${relDir}/${TopModule}.vhdl"
-		Replace "(architecture arc of ${TopModule} is).*(end  arc;)"	With "\1\nbegin\n\2"	Options DotAll
-		Replace "generic.*port"																				With "port"						Options DotAll
-		Replace "C3_NUM_DQ_PINS"																			With "16"
-		Replace "C3_MEM_ADDR_WIDTH"																		With "13"
-		Replace "C3_MEM_BANKADDR_WIDTH"																With "3"
-		Replace "C3_P0_MASK_SIZE"																			With "16"
-		Replace "C3_P0_DATA_PORT_SIZE"																With "128"
+	# patch top-level according to the generic values used while synthesis
+	File "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}.vhdl"
+		Replace "(architecture arc of ${TopLevel} is).*(end  arc;)"	With "\\1\\nbegin\\n\\2"	Options DotAll
+		Replace "generic.*port"																			With "port"								Options DotAll
+		Replace "C3_NUM_DQ_PINS"																		With "16"
+		Replace "C3_MEM_ADDR_WIDTH"																	With "13"
+		Replace "C3_MEM_BANKADDR_WIDTH"															With "3"
+		Replace "C3_P0_MASK_SIZE"																		With "16"
+		Replace "C3_P0_DATA_PORT_SIZE"															With "128"
 	End File
+	
+	# delete intermediate files from CoreGen step
+	Delete "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/iodrp_controller.vhd"
+	Delete "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/iodrp_mcb_controller.vhd"
+	Delete "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/mcb_raw_wrapper.vhd"
+	Delete "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/mcb_soft_calibration_top.vhd"
+	Delete "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/mcb_soft_calibration.vhd"
+	Delete "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/memc3_infrastructure.vhd"
+	Delete "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/memc3_wrapper.vhd"
+	Delete "${PoC:NLDir}/${SPECIAL:Device}/${RelDir}/${TopLevel}_top.vhd"
 End PostProcessRules
