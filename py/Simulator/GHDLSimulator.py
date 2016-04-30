@@ -300,7 +300,7 @@ class Simulator(BaseSimulator):
 		gtkw.Parameters[gtkw.SwitchDumpFile] = str(waveformFilePath)
 
 		# if GTKWave savefile exists, load it's settings
-		gtkwSaveFilePath =	self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['gtkwSaveFile']
+		gtkwSaveFilePath =	self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['gtkwSaveFile']
 		if gtkwSaveFilePath.exists():
 			self._LogDebug("Found waveform save file: '{0!s}'".format(gtkwSaveFilePath))
 			gtkw.Parameters[gtkw.SwitchSaveFile] = str(gtkwSaveFilePath)

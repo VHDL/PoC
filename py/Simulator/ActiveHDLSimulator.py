@@ -149,7 +149,7 @@ class Simulator(BaseSimulator):
 	def _RunSimulation(self, testbench):
 		self._LogNormal("Running simulation...")
 		
-		tclBatchFilePath =		self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimBatchScript']
+		tclBatchFilePath =		self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimBatchScript']
 		
 		# create a ActiveHDLSimulator instance
 		aSim = self._activeHDL.GetSimulator()
@@ -170,8 +170,8 @@ class Simulator(BaseSimulator):
 	def _RunSimulationWithGUI(self, testbench):
 		self._LogNormal("Running simulation...")
 	
-		tclGUIFilePath =			self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimGUIScript']
-		tclWaveFilePath =			self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimWaveScript']
+		tclGUIFilePath =			self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimGUIScript']
+		tclWaveFilePath =			self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimWaveScript']
 		
 		# create a ActiveHDLSimulator instance
 		aSim = self._activeHDL.GetSimulator()

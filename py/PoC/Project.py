@@ -114,7 +114,7 @@ class Solution(Base):
 		self._parent =				parent
 
 	def _Initialize(self):
-
+		pass
 
 	def GetSolutionNames(self):
 		for sln in self._host.PoCConfig['SOLUTION.Solutions']:
