@@ -82,14 +82,21 @@ class Base(ILazyLoadable):
 
 class Repository(Base):
 	def __init__(self, host):
+		self._solutions =	{}
+
 		super().__init__(host, "SOLUTION", "Solutions", None)
 
-		self._solutions =	{}
+	def _Load(self):
+		self._LazyLoadable_Load()
 
 	def __contains__(self, item):
 		return (item in self._solutions)
 
+	def __getitem__(self, item):
+		return self._solutions[item]
+
 	def _LazyLoadable_Load(self):
+		super()._LazyLoadable_Load()
 		# load solutions
 		for slnID in self._host.PoCConfig[self._configSection]:
 			if (self._host.PoCConfig[self._configSection][slnID] == __POC_SOLUTION_KEYWORD__):
@@ -106,6 +113,15 @@ class Repository(Base):
 		solution.Register()
 		solution.CreateFiles()
 		return solution
+
+	def RemoveSolution(self, solution):
+		if isinstance(solution, str):
+			solution = self._solutions[solution]
+		elif (not isinstance(solution, Solution)):
+			raise ValueError("Parameter solution is not of type str or Solution.")
+
+		solution.Unregister()
+		self._host.PoCConfig.remove_option(self._configSection, solution.ID)
 
 	@property
 	@LazyLoadTrigger
@@ -136,6 +152,9 @@ class Solution(Base):
 		self._host.PoCConfig[self._configSection]['Name'] = self._name
 		self._host.PoCConfig[self._configSection]['Path'] = self._path.as_posix()
 
+	def Unregister(self):
+		self._host.PoCConfig.remove_section(self._configSection)
+
 	def CreateFiles(self):
 		solutionConfigPath = self._path / ".poc"
 		solutionConfigPath.mkdir(parents=True)
@@ -156,6 +175,7 @@ class Solution(Base):
 			fileHandle.write(fileContent)
 
 	def _LazyLoadable_Load(self):
+		super()._LazyLoadable_Load()
 		self._name = self._host.PoCConfig[self._configSection]['Name']
 		self._path = Path(self._host.PoCConfig[self._configSection]['Path'])
 

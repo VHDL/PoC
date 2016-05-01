@@ -408,19 +408,14 @@ class PoC(ILogable, ArgParseMixin):
 
 		self._LogNormal("Register a new solutions in PoC")
 		solutionName = input("  Solution name: ")
-		if (solutionName == ""):
-			return
+		if (solutionName == ""):			raise ConfigurationException("Empty input. Aborting!")
 
 		solutionID = input("  Solution id:   ")
-		if (solutionID == ""):
-			return
-
-		if (solutionID in repo):
-			raise ConfigurationException("Solution ID is already used.")
+		if (solutionID == ""):				raise ConfigurationException("Empty input. Aborting!")
+		if (solutionID in repo):			raise ConfigurationException("Solution ID is already used.")
 
 		solutionRootPath = input("  Solution path: ")
-		if (solutionName == ""):
-			return
+		if (solutionRootPath == ""):	raise ConfigurationException("Empty input. Aborting!")
 		solutionRootPath = Path(solutionRootPath)
 
 		if (not solutionRootPath.exists()):
@@ -435,7 +430,7 @@ class PoC(ILogable, ArgParseMixin):
 
 		repo.AddSolution(solutionID, solutionName, solutionRootPath)
 		self.__WritePoCConfiguration()
-		self._LogNormal("Solution {GREEN}sucessfully{NOCOLOR} created".format(**Init.Foreground))
+		self._LogNormal("Solution {GREEN}sucessfully{NOCOLOR} created.".format(**Init.Foreground))
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "list-solution" command
@@ -460,12 +455,28 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("remove-solution", help="Add a solution to PoC.")
-	@ArgumentAttribute(metavar="<Solution>", dest="Solution", type=str, help="Solution name.")
+	@ArgumentAttribute(metavar="<SolutionID>", dest="SolutionID", type=str, help="Solution name.")
 	# @HandleVerbosityOptions
 	def HandleRemoveSolution(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
-		
+
+		repo = Repository(self)
+		solution = repo[args.SolutionID]
+
+		self._LogNormal("Removing solution '{0}'.".format(solution.Name))
+		remove = input("Do you really want to remove this solution? [N/y]: ")
+		remove = remove if remove != "" else "N"
+		if (remove in ['n', 'N']):
+			raise ConfigurationException("Operation canceled.")
+		elif (remove not in ['y', 'Y']):
+			raise ConfigurationException("Unsupported choice '{0}'".format(remove))
+
+		repo.RemoveSolution(solution)
+
+		self.__WritePoCConfiguration()
+		self._LogNormal("Solution {GREEN}sucessfully{NOCOLOR} removed.".format(**Init.Foreground))
+
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "add-project" command
 	# ----------------------------------------------------------------------------
