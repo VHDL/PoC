@@ -404,6 +404,39 @@ class PoC(ILogable, ArgParseMixin):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
 
+		repo = Repository(self)
+
+		self._LogNormal("Register a new solutions in PoC")
+		solutionName = input("  Solution name: ")
+		if (solutionName == ""):
+			return
+
+		solutionID = input("  Solution id:   ")
+		if (solutionID == ""):
+			return
+
+		if (solutionID in repo):
+			raise ConfigurationException("Solution ID is already used.")
+
+		solutionRootPath = input("  Solution path: ")
+		if (solutionName == ""):
+			return
+		solutionRootPath = Path(solutionRootPath)
+
+		if (not solutionRootPath.exists()):
+			createPath = input("Path does not exists. Should it be created? [Y/n]: ")
+			createPath = createPath if createPath != "" else "Y"
+			if (createPath in ['n', 'N']):
+				raise ConfigurationException("Can not continue to register the new project, because '{0!s}' does not exist.".format(solutionRootPath)) from NotADirectoryError(str(solutionRootPath))
+			elif (createPath not in ['y', 'Y']):
+				raise ConfigurationException("Unsupported choice '{0}'".format(createPath))
+
+			solutionRootPath.mkdir(parents=True)
+
+		repo.AddSolution(solutionID, solutionName, solutionRootPath)
+		self.__WritePoCConfiguration()
+		self._LogNormal("Solution {GREEN}sucessfully{NOCOLOR} created".format(**Init.Foreground))
+
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "list-solution" command
 	# ----------------------------------------------------------------------------
@@ -417,8 +450,10 @@ class PoC(ILogable, ArgParseMixin):
 		repo = Repository(self)
 
 		self._LogNormal("Registered solutions in PoC:")
-		for solutionName in repo.GetSolutionNames():
-			print("  {0}".format(solutionName))
+		for solution in repo.Solutions:
+			self._LogNormal("  {id: <10}{name}".format(id=solution.ID, name=solution.Name))
+			if (self.Logger.LogLevel <= Severity.Verbose):
+				self._LogVerbose("  path:   {path!s}".format(path=solution.Path))
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "remove-solution" command

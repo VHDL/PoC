@@ -175,7 +175,7 @@ class Configuration:		#(ISubClassRegistration):
 
 	def _GetDefaultInstallationDirectory(self):
 		"""
-		Returns unresolved default installation directory (string) from template.
+		Returns unresolved default installation directory (str) from template.
 		Overwrite function in sub-class for automatic search of installation directory.
 		"""
 		return self._template[self._host.Platform][self._section]['InstallationDirectory']
@@ -219,7 +219,7 @@ class Configuration:		#(ISubClassRegistration):
 
 	def _GetDefaultVersion(self):
 		"""
-		Returns unresolved default version (string) from template.
+		Returns unresolved default version (str) from template.
 		Overwrite function in sub-class for automatic search of version.
 		"""
 		return self._template[self._host.Platform][self._section]['Version']

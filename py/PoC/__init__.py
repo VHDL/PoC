@@ -41,6 +41,6 @@ else:
 # load dependencies
 
 
-__POC_SOLUTION_KEYWORD__ = "Solution"
-_POC_PROJECT_KEYWORD =		"Project"
+__POC_SOLUTION_KEYWORD__ =	"Solution"
+__POC_PROJECT_KEYWORD__ =		"Project"
 

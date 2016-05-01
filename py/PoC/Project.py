@@ -32,6 +32,10 @@
 # ==============================================================================
 
 # entry point
+from collections import OrderedDict
+from pathlib import Path
+from textwrap import dedent
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -46,82 +50,152 @@ from Base.Exceptions		import CommonException
 from Base.Project				import Project as BaseProject, File, FileTypes, VHDLSourceFile, VerilogSourceFile, CocotbSourceFile  #, ProjectFile
 from Parser.FilesParser	import FilesParserMixIn
 from Parser.RulesParser	import RulesParserMixIn
-from PoC								import __POC_SOLUTION_KEYWORD__
+from PoC								import __POC_SOLUTION_KEYWORD__, __POC_PROJECT_KEYWORD__
 
 
 class Base(ILazyLoadable):
-	def __init__(self, name, host, configSection, parent):
+	"""
+	Base class for Repository, Solution and Project.
+	It implements ILazyLoadable.
+	"""
+	def __init__(self, host, sectionPrefix, sectionID, parent):
 		ILazyLoadable.__init__(self)
 
-		self._name = name
-		self._host = host
-		self._configSection = configSection
-		self._parent = parent
+		self._host =					host
+		self._id =						sectionID
+		self._configSection =	"{0}.{1}".format(sectionPrefix, sectionID)
+		self._parent =				parent
 
 		self._Load()
 
 	@property
-	def Name(self):                return self._name
+	def ID(self):									return self._id
 	@property
-	def Parent(self):              return self._parent
+	def Parent(self):							return self._parent
 	@property
-	def ConfigSectionName(self):  return self._sectionName
+	def ConfigSectionName(self):	return self._configSection
 
 	def _Load(self):
+		"""Implement this method for early loading."""
 		pass
 
 
 class Repository(Base):
 	def __init__(self, host):
-		self._host =			host
+		super().__init__(host, "SOLUTION", "Solutions", None)
 
 		self._solutions =	{}
 
-		for sln in self._host.PoCConfig['SOLUTION.Solutions']:
-			if (self._host.PoCConfig['SOLUTION.Solutions'][sln] == __POC_SOLUTION_KEYWORD__):
-				sectionName = "SOLUTION.{0}".format(sln)
-				if (len(self._host.PoCConfig[sectionName]) != 0):
-					self._solutions[sln] = Solution(self._host, sectionName)
+	def __contains__(self, item):
+		return (item in self._solutions)
+
+	def _LazyLoadable_Load(self):
+		# load solutions
+		for slnID in self._host.PoCConfig[self._configSection]:
+			if (self._host.PoCConfig[self._configSection][slnID] == __POC_SOLUTION_KEYWORD__):
+				self._solutions[slnID] = Solution(self._host, slnID, self)
+
+	def AddSolution(self, solutionID, solutionName, solutionRootPath):
+		solution = Solution(self._host, solutionID, self)
+		solution.Name = solutionName
+		solution.Path = solutionRootPath
+
+		self._host.PoCConfig[self._configSection][solutionID] = __POC_SOLUTION_KEYWORD__
+
+		self._solutions[solutionID] = solution
+		solution.Register()
+		solution.CreateFiles()
+		return solution
 
 	@property
 	@LazyLoadTrigger
-	def Solutions(self):			return self._solutions.values()
+	def Solutions(self):
+		"""Returns the list of all registered solutions."""
+		return self._solutions.values()
 
 	@property
 	@LazyLoadTrigger
-	def SolutionNames(self):	return self._solutions.keys()
+	def SolutionNames(self):
+		"""Returns the identifier list of all registered solutions."""
+		return self._solutions.keys()
 
-
-	def GetSolutions(self):
-		for sln in self._host.PoCConfig['SOLUTION.Solutions']:
-			if (self._host.PoCConfig['SOLUTION.Solutions'][sln] == __POC_SOLUTION_KEYWORD__):
-				sectionName = "SOLUTION.{0}".format(sln)
-				if (len(self._host.PoCConfig[sectionName]) != 0):
-					yield sln
-
-	def GetSolutionNames(self):
-		for sln in self._host.PoCConfig['SOLUTION.Solutions']:
-			if (self._host.PoCConfig['SOLUTION.Solutions'][sln] == __POC_SOLUTION_KEYWORD__):
-				sectionName = "SOLUTION.{0}".format(sln)
-				if (len(self._host.PoCConfig[sectionName]) != 0):
-					yield sln
 
 class Solution(Base):
-	def __init__(self, name, host, configSection, parent):
-		self._name =					name
-		self._host =					host
-		self._configSection =	configSection
-		self._parent =				parent
+	__SOLUTION_CONFIG_FILE__ =	"solution.config.ini"
+	__SOLUTION_DEFAULT_FILE__ =	"solution.default.ini"
 
-	def _Initialize(self):
-		pass
+	def __init__(self, host, slnID, parent):
+		super().__init__(host, "SOLUTION", slnID, parent)
 
-	def GetSolutionNames(self):
-		for sln in self._host.PoCConfig['SOLUTION.Solutions']:
-			if (self._host.PoCConfig['SOLUTION.Solutions'][sln] == "Solution"):
-				sectionName = "SOLUTION.{0}".format(sln)
-				if (len(self._host.PoCConfig[sectionName]) != 0):
-					yield sln
+		self._name =			None
+		self._path =			None
+		self._projects =	{}
+
+	def Register(self):
+		self._host.PoCConfig[self._configSection] = OrderedDict()
+		self._host.PoCConfig[self._configSection]['Name'] = self._name
+		self._host.PoCConfig[self._configSection]['Path'] = self._path.as_posix()
+
+	def CreateFiles(self):
+		solutionConfigPath = self._path / ".poc"
+		solutionConfigPath.mkdir(parents=True)
+
+		solutionConfigFile = solutionConfigPath / self.__SOLUTION_CONFIG_FILE__
+		with solutionConfigFile.open('w') as fileHandle:
+			fileContent = dedent("""\
+				[SOLUTION.{slnID}]
+				DefaultLibrary =
+				""".format(slnID=self._id))
+			fileHandle.write(fileContent)
+
+		solutionDefaultFile = solutionConfigPath / self.__SOLUTION_DEFAULT_FILE__
+		with solutionDefaultFile.open('w') as fileHandle:
+			fileContent = dedent("""\
+				[SOLUTION.DEFAULTS]
+				""")
+			fileHandle.write(fileContent)
+
+	def _LazyLoadable_Load(self):
+		self._name = self._host.PoCConfig[self._configSection]['Name']
+		self._path = Path(self._host.PoCConfig[self._configSection]['Path'])
+
+		# load projects
+		# for prjID in self._host.PoCConfig[self._configSection]:
+		# 	if (self._host.PoCConfig[self._configSection][prjID] == __POC_PROJECT_KEYWORD__):
+		# 		sectionName = "{0}.{1}".format(self.__PROJECT_SECTION_PREFIX__, prjID)
+		# 		self._projects[prjID] = Solution(prjID, self._host, sectionName, self)
+
+	@property
+	@LazyLoadTrigger
+	def Name(self):
+		"""Gets the name of this solution."""
+		return self._name
+	@Name.setter
+	def Name(self, value):
+		"""Sets the name of this solution."""
+		self._name = value
+
+	@property
+	@LazyLoadTrigger
+	def Path(self):
+		"""Gets the path to the solution."""
+		return self._path
+	@Path.setter
+	def Path(self, value):
+		"""Sets the path of the solution."""
+		self._path = value
+
+	@property
+	@LazyLoadTrigger
+	def Projects(self):
+		"""Gets a list of all registered projects."""
+		return self._projects.values()
+
+	@property
+	@LazyLoadTrigger
+	def ProjectNames(self):
+		"""Gets a list of identifiers of all registered projects."""
+		return self._projects.keys()
 
 
 class Project(BaseProject):
