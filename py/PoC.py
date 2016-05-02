@@ -171,6 +171,7 @@ class PoC(ILogable, ArgParseMixin):
 		self.__dryRun =				dryRun
 		self.__pocConfig =		None
 		self.__root =					None
+		self.__repo =					None
 		self.__directories =	{}
 
 		self.__SimulationDefaultVHDLVersion = VHDLVersion.VHDL08
@@ -256,6 +257,7 @@ class PoC(ILogable, ArgParseMixin):
 
 		# Initialize PoC's namespace structure
 		self.__root = Root(self)
+		self.__repo = Repository(self)
 
 	def __WritePoCConfiguration(self):
 		for sectionName in [sectionName for sectionName in self.__pocConfig if not (sectionName.startswith("INSTALL") or sectionName.startswith("SOLUTION"))]:
@@ -427,18 +429,16 @@ class PoC(ILogable, ArgParseMixin):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
 
-		repo = Repository(self)
-
 		self._LogNormal("Register a new solutions in PoC")
 		solutionName = input("  Solution name: ")
-		if (solutionName == ""):			raise ConfigurationException("Empty input. Aborting!")
+		if (solutionName == ""):				raise ConfigurationException("Empty input. Aborting!")
 
 		solutionID = input("  Solution id:   ")
-		if (solutionID == ""):				raise ConfigurationException("Empty input. Aborting!")
-		if (solutionID in repo):			raise ConfigurationException("Solution ID is already used.")
+		if (solutionID == ""):					raise ConfigurationException("Empty input. Aborting!")
+		if (solutionID in self.__repo):	raise ConfigurationException("Solution ID is already used.")
 
 		solutionRootPath = input("  Solution path: ")
-		if (solutionRootPath == ""):	raise ConfigurationException("Empty input. Aborting!")
+		if (solutionRootPath == ""):		raise ConfigurationException("Empty input. Aborting!")
 		solutionRootPath = Path(solutionRootPath)
 
 		if (not solutionRootPath.exists()):
@@ -451,9 +451,9 @@ class PoC(ILogable, ArgParseMixin):
 
 			solutionRootPath.mkdir(parents=True)
 
-		repo.AddSolution(solutionID, solutionName, solutionRootPath)
+			self.__repo.AddSolution(solutionID, solutionName, solutionRootPath)
 		self.__WritePoCConfiguration()
-		self._LogNormal("Solution {GREEN}sucessfully{NOCOLOR} created.".format(**Init.Foreground))
+		self._LogNormal("Solution {GREEN}successfully{NOCOLOR} created.".format(**Init.Foreground))
 
 
 	# ----------------------------------------------------------------------------
@@ -466,17 +466,17 @@ class PoC(ILogable, ArgParseMixin):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
 
-		repo = Repository(self)
-
 		self._LogNormal("Registered solutions in PoC:")
-		for solution in repo.Solutions:
-			self._LogNormal("  {id: <10}{name}".format(id=solution.ID, name=solution.Name))
-			if (self.Logger.LogLevel <= Severity.Verbose):
-				self._LogVerbose("  Path:   {path!s}".format(path=solution.Path))
-				self._LogVerbose("  Projects:")
-				for project in solution.Projects:
-					self._LogVerbose("    {id: <6}{name}".format(id=project.ID, name=project.Name))
-
+		if self.__repo.Solutions:
+			for solution in self.__repo.Solutions:
+				self._LogNormal("  {id: <10}{name}".format(id=solution.ID, name=solution.Name))
+				if (self.Logger.LogLevel <= Severity.Verbose):
+					self._LogVerbose("  Path:   {path!s}".format(path=solution.Path))
+					self._LogVerbose("  Projects:")
+					for project in solution.Projects:
+						self._LogVerbose("    {id: <6}{name}".format(id=project.ID, name=project.Name))
+		else:
+			self._LogNormal("  {RED}No registered solutions found.{NOCOLOR}".format(**Init.Foreground))
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "remove-solution" command
@@ -489,8 +489,7 @@ class PoC(ILogable, ArgParseMixin):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
 
-		repo = Repository(self)
-		solution = repo[args.SolutionID]
+		solution = self.__repo[args.SolutionID]
 
 		self._LogNormal("Removing solution '{0}'.".format(solution.Name))
 		remove = input("Do you really want to remove this solution? [N/y]: ")
@@ -500,10 +499,10 @@ class PoC(ILogable, ArgParseMixin):
 		elif (remove not in ['y', 'Y']):
 			raise ConfigurationException("Unsupported choice '{0}'".format(remove))
 
-		repo.RemoveSolution(solution)
+		self.__repo.RemoveSolution(solution)
 
 		self.__WritePoCConfiguration()
-		self._LogNormal("Solution {GREEN}sucessfully{NOCOLOR} removed.".format(**Init.Foreground))
+		self._LogNormal("Solution {GREEN}successfully{NOCOLOR} removed.".format(**Init.Foreground))
 
 
 	# ----------------------------------------------------------------------------
@@ -525,13 +524,19 @@ class PoC(ILogable, ArgParseMixin):
 	def HandleListProject(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
-		
-		repo = Repository(self)
-		solution =	repo[args.SolutionID]
+
+		if (args.SolutionID is None):		raise ConfigurationException("Missing command line argument '--sln'.")
+		try:
+			solution =	self.__repo[args.SolutionID]
+		except KeyError as ex:
+			raise ConfigurationException("Solution ID '{0}' is not registered in PoC.".format(args.SolutionID)) from ex
 
 		self._LogNormal("Registered projects for solution '{0}':".format(solution.ID))
-		for project in solution.Projects:
-			self._LogNormal("  {id: <10}{name}".format(id=project.ID, name=project.Name))
+		if solution.Projects:
+			for project in solution.Projects:
+				self._LogNormal("  {id: <10}{name}".format(id=project.ID, name=project.Name))
+		else:
+			self._LogNormal("  {RED}No registered projects found.{NOCOLOR}".format(**Init.Foreground))
 	
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "remove-project" command

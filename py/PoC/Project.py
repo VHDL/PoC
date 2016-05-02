@@ -92,10 +92,10 @@ class Repository(Base):
 		self._LazyLoadable_Load()
 
 	def __contains__(self, item):
-		return (item in self._solutions)
+		return (item.lower() in self._solutions)
 
 	def __getitem__(self, item):
-		return self._solutions[item]
+		return self._solutions[item.lower()]
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
@@ -158,7 +158,9 @@ class Solution(Base):
 		self._host.PoCConfig.remove_section(self._configSection)
 
 	def CreateFiles(self):
-		solutionConfigPath = self._host.Directories.Root / self._path / ".poc"
+		solutionConfigPath = self._path / ".poc"
+		if (not self._path.is_absolute()):
+			solutionConfigPath = self._host.Directories.Root / solutionConfigPath
 		solutionConfigPath.mkdir(parents=True)
 
 		solutionConfigFile = solutionConfigPath / self.__SOLUTION_CONFIG_FILE__
@@ -181,8 +183,10 @@ class Solution(Base):
 		self._name = self._host.PoCConfig[self._configSection]['Name']
 		self._path = self._host.Directories.Root / self._host.PoCConfig[self._configSection]['Path']
 
-
 		solutionConfigPath = self._path / ".poc"
+		if (not self._path.is_absolute()):
+			solutionConfigPath = self._host.Directories.Root / solutionConfigPath
+
 		configFiles = [
 			solutionConfigPath / self.__SOLUTION_CONFIG_FILE__,
 			solutionConfigPath / self.__SOLUTION_DEFAULT_FILE__
