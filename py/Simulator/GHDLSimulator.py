@@ -57,6 +57,11 @@ class Simulator(BaseSimulator):
 	_TOOL_CHAIN =						ToolChain.GHDL_GTKWave
 	_TOOL =									Tool.GHDL
 
+	class __Directories__:
+		Working =			None
+		PoCRoot =			None
+		PreCompiled =	None
+
 	def __init__(self, host, showLogs, showReport, guiMode):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
@@ -66,13 +71,17 @@ class Simulator(BaseSimulator):
 		self._testbenchFQN =	None
 		self._vhdlGenerics =	None
 
+		self._directories =		self.__Directories__()
 		self._ghdl =					None
 
 		self._PrepareSimulationEnvironment()
 
+	@property
+	def Directories(self):
+		return self._directories
+
 	def _PrepareSimulationEnvironment(self):
 		self._LogNormal("Preparing simulation environment...")
-		self._tempPath = self.Host.Directories["GHDLTemp"]
 		super()._PrepareSimulationEnvironment()
 
 	def PrepareSimulator(self, binaryPath, version, backend):
@@ -229,16 +238,16 @@ class Simulator(BaseSimulator):
 		if (self._guiMode):
 			waveformFileFormat =	self.Host.PoCConfig[testbench.ConfigSectionName]['ghdlWaveformFileFormat']
 			if (waveformFileFormat == "vcd"):
-				waveformFilePath = self._tempPath / (testbench.ModuleName + ".vcd")
+				waveformFilePath = self.Host.Directories.Working / (testbench.ModuleName + ".vcd")
 				ghdl.RunOptions[ghdl.SwitchVCDWaveform] =		waveformFilePath
 			elif (waveformFileFormat == "vcdgz"):
-				waveformFilePath = self._tempPath / (testbench.ModuleName + ".vcd.gz")
+				waveformFilePath = self.Host.Directories.Working / (testbench.ModuleName + ".vcd.gz")
 				ghdl.RunOptions[ghdl.SwitchVCDGZWaveform] =	waveformFilePath
 			elif (waveformFileFormat == "fst"):
-				waveformFilePath = self._tempPath / (testbench.ModuleName + ".fst")
+				waveformFilePath = self.Host.Directories.Working / (testbench.ModuleName + ".fst")
 				ghdl.RunOptions[ghdl.SwitchFSTWaveform] =		waveformFilePath
 			elif (waveformFileFormat == "ghw"):
-				waveformFilePath = self._tempPath / (testbench.ModuleName + ".ghw")
+				waveformFilePath = self.Host.Directories.Working / (testbench.ModuleName + ".ghw")
 				ghdl.RunOptions[ghdl.SwitchGHDLWaveform] =	waveformFilePath
 			else:																						raise SimulatorException("Unknown waveform file format for GHDL.")
 		
@@ -260,16 +269,16 @@ class Simulator(BaseSimulator):
 			waveformFileFormat =	self.Host.PoCConfig[testbench.ConfigSectionName]['ghdlWaveformFileFormat']
 					
 			if (waveformFileFormat == "vcd"):
-				waveformFilePath = self._tempPath / (testbench.ModuleName + ".vcd")
+				waveformFilePath = self.Host.Directories.Working / (testbench.ModuleName + ".vcd")
 				runOptions.append("--vcd={0!s}".format(waveformFilePath))
 			elif (waveformFileFormat == "vcdgz"):
-				waveformFilePath = self._tempPath / (testbench.ModuleName + ".vcd.gz")
+				waveformFilePath = self.Host.Directories.Working / (testbench.ModuleName + ".vcd.gz")
 				runOptions.append("--vcdgz={0!s}".format(waveformFilePath))
 			elif (waveformFileFormat == "fst"):
-				waveformFilePath = self._tempPath / (testbench.ModuleName + ".fst")
+				waveformFilePath = self.Host.Directories.Working / (testbench.ModuleName + ".fst")
 				runOptions.append("--fst={0!s}".format(waveformFilePath))
 			elif (waveformFileFormat == "ghw"):
-				waveformFilePath = self._tempPath / (testbench.ModuleName + ".ghw")
+				waveformFilePath = self.Host.Directories.Working / (testbench.ModuleName + ".ghw")
 				runOptions.append("--wave={0!s}".format(waveformFilePath))
 			else:																						raise SimulatorException("Unknown waveform file format for GHDL.")
 		
@@ -283,13 +292,13 @@ class Simulator(BaseSimulator):
 		
 		waveformFileFormat =	self.Host.PoCConfig[testbench.ConfigSectionName]['ghdlWaveformFileFormat']
 		if (waveformFileFormat == "vcd"):
-			waveformFilePath = self._tempPath / (testbench.ModuleName + ".vcd")
+			waveformFilePath = self.Host.Directories.Working / (testbench.ModuleName + ".vcd")
 		elif (waveformFileFormat == "vcdgz"):
-			waveformFilePath = self._tempPath / (testbench.ModuleName + ".vcd.gz")
+			waveformFilePath = self.Host.Directories.Working / (testbench.ModuleName + ".vcd.gz")
 		elif (waveformFileFormat == "fst"):
-			waveformFilePath = self._tempPath / (testbench.ModuleName + ".fst")
+			waveformFilePath = self.Host.Directories.Working / (testbench.ModuleName + ".fst")
 		elif (waveformFileFormat == "ghw"):
-			waveformFilePath = self._tempPath / (testbench.ModuleName + ".ghw")
+			waveformFilePath = self.Host.Directories.Working / (testbench.ModuleName + ".ghw")
 		else:																						raise SimulatorException("Unknown waveform file format for GHDL.")
 		
 		if (not waveformFilePath.exists()):							raise SimulatorException("Waveform file '{0!s}' not found.".format(waveformFilePath)) from FileNotFoundError(str(waveformFilePath))

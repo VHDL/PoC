@@ -87,8 +87,6 @@ class Simulator(ILogable):
 		self._vhdlVersion =	VHDLVersion.VHDL2008
 		self._pocProject =	None
 
-		self._tempPath =		None
-
 	# class properties
 	# ============================================================================
 	@property
@@ -97,21 +95,18 @@ class Simulator(ILogable):
 	def ShowLogs(self):				return self.__showLogs
 	@property
 	def ShowReport(self):			return self.__showReport
-	@property
-	def TemporaryPath(self):	return self._tempPath
-
 
 	def _PrepareSimulationEnvironment(self):
 		# create temporary directory if not existent
-		if (not (self._tempPath).exists()):
+		if (not self.Host.Directories.Working.exists()):
 			self._LogVerbose("Creating temporary directory for simulator files.")
-			self._LogDebug("Temporary directory: {0!s}".format(self._tempPath))
-			self._tempPath.mkdir(parents=True)
+			self._LogDebug("Temporary directory: {0!s}".format(self.Host.Directories.Working))
+			self.Host.Directories.Working.mkdir(parents=True)
 
 		# change working directory to temporary path
 		self._LogVerbose("Changing working directory to temporary directory.")
-		self._LogDebug("cd \"{0!s}\"".format(self._tempPath))
-		chdir(str(self._tempPath))
+		self._LogDebug("cd \"{0!s}\"".format(self.Host.Directories.Working))
+		chdir(str(self.Host.Directories.Working))
 
 	def _CreatePoCProject(self, testbench, board):
 		# create a PoCProject and read all needed files

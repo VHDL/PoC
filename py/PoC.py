@@ -127,6 +127,7 @@ class PoC(ILogable, ArgParseMixin):
 		Testbench =		None
 		Netlist =			None
 		Temp =				None
+		PreCompiled =	None
 
 	class __ConfigFiles__:
 		Private =			None
@@ -247,10 +248,11 @@ class PoC(ILogable, ArgParseMixin):
 			raise NotConfiguredException("There is a mismatch between PoCRoot and PoC installation directory.")
 
 		# parsing values into class fields
-		self.Directories.Source =			self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['HDLSourceFiles']
-		self.Directories.Testbench =	self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['TestbenchFiles']
-		self.Directories.NetList =		self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['NetlistFiles']
-		self.Directories.Temp =				self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['TemporaryFiles']
+		self.Directories.Source =				self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['HDLSourceFiles']
+		self.Directories.Testbench =		self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['TestbenchFiles']
+		self.Directories.NetList =			self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['NetlistFiles']
+		self.Directories.Temp =					self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['TemporaryFiles']
+		self.Directories.PreCompiled =	self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['PrecompiledFiles']
 
 		# Initialize the default board (GENERIC)
 		self.__SimulationDefaultBoard =		Board(self)
@@ -847,11 +849,7 @@ class PoC(ILogable, ArgParseMixin):
 		vhdlVersion =	self._ExtractVHDLVersion(args.VHDLVersion, defaultVersion=VHDLVersion.VHDL93)
 
 		# prepare some paths
-		self.Directories["GHDLTemp"] =					self.Directories["PoCTemp"] / self.PoCConfig['CONFIG.DirectoryNames']['GHDLFiles']
-		self.Directories["GHDLPrecompiled"] =		self.Directories["PoCTemp"] / self.PoCConfig['CONFIG.DirectoryNames']['PrecompiledFiles'] / self.PoCConfig['CONFIG.DirectoryNames']['GHDLFiles']
-		self.Directories["GHDLInstallation"] =	Path(self.PoCConfig['INSTALL.GHDL']['InstallationDirectory'])
-		self.Directories["GHDLBinary"] =				Path(self.PoCConfig['INSTALL.GHDL']['BinaryDirectory'])
-		ghdlBinaryPath =												self.Directories["GHDLBinary"]
+		ghdlBinaryPath =												Path(self.PoCConfig['INSTALL.GHDL']['BinaryDirectory'])
 		ghdlVersion =														self.PoCConfig['INSTALL.GHDL']['Version']
 		ghdlBackend =														self.PoCConfig['INSTALL.GHDL']['Backend']
 
@@ -864,11 +862,15 @@ class PoC(ILogable, ArgParseMixin):
 				raise NotConfiguredException("No GHDL compatible waveform viewer is configured on this system.")
 
 		# prepare paths to vendor simulation libraries
-		self.__PrepareVendorLibraryPaths()
+		# self.__PrepareVendorLibraryPaths()
 
 		# create a GHDLSimulator instance and prepare it
 		simulator = GHDLSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.PrepareSimulator(ghdlBinaryPath, ghdlVersion, ghdlBackend)
+
+		simulator.Directories.Working =			self.Directories.Temp / self.PoCConfig['CONFIG.DirectoryNames']['GHDLFiles']
+		simulator.Directories.PreCompiled =	self.Directories.PreCompiled / self.PoCConfig['CONFIG.DirectoryNames']['GHDLFiles']
+
 		simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion, guiMode=args.GUIMode)		#, vhdlGenerics=None)
 
 		Exit.exit()
