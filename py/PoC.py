@@ -263,8 +263,8 @@ class PoC(ILogable, ArgParseMixin):
 	@CommonSwitchArgumentAttribute("-d", "--debug",		dest="debug",		help="enable debug mode")
 	@CommonSwitchArgumentAttribute("-v", "--verbose",	dest="verbose",	help="print out detailed messages")
 	@CommonSwitchArgumentAttribute("-q", "--quiet",		dest="quiet",		help="reduce messages to a minimum")
-	@CommonArgumentAttribute("--sln", metavar="<Solution>", dest="SolutionName", help="Solution name")
-	@CommonArgumentAttribute("--prj", metavar="<Project>", dest="ProjectName", help="Solution name")
+	@CommonArgumentAttribute("--sln", metavar="<SolutionID>", dest="SolutionID", help="Solution name")
+	@CommonArgumentAttribute("--prj", metavar="<ProjectID>", dest="ProjectID", help="Solution name")
 	def Run(self):
 		ArgParseMixin.Run(self)
 
@@ -422,7 +422,7 @@ class PoC(ILogable, ArgParseMixin):
 			createPath = input("Path does not exists. Should it be created? [Y/n]: ")
 			createPath = createPath if createPath != "" else "Y"
 			if (createPath in ['n', 'N']):
-				raise ConfigurationException("Can not continue to register the new project, because '{0!s}' does not exist.".format(solutionRootPath)) from NotADirectoryError(str(solutionRootPath))
+				raise ConfigurationException("Can not continue to register the new project, because '{0!s}' does not exist.".format(solutionRootPath))
 			elif (createPath not in ['y', 'Y']):
 				raise ConfigurationException("Unsupported choice '{0}'".format(createPath))
 
@@ -431,6 +431,7 @@ class PoC(ILogable, ArgParseMixin):
 		repo.AddSolution(solutionID, solutionName, solutionRootPath)
 		self.__WritePoCConfiguration()
 		self._LogNormal("Solution {GREEN}sucessfully{NOCOLOR} created.".format(**Init.Foreground))
+
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "list-solution" command
@@ -448,7 +449,11 @@ class PoC(ILogable, ArgParseMixin):
 		for solution in repo.Solutions:
 			self._LogNormal("  {id: <10}{name}".format(id=solution.ID, name=solution.Name))
 			if (self.Logger.LogLevel <= Severity.Verbose):
-				self._LogVerbose("  path:   {path!s}".format(path=solution.Path))
+				self._LogVerbose("  Path:   {path!s}".format(path=solution.Path))
+				self._LogVerbose("  Projects:")
+				for project in solution.Projects:
+					self._LogVerbose("    {id: <6}{name}".format(id=project.ID, name=project.Name))
+
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "remove-solution" command
@@ -477,6 +482,7 @@ class PoC(ILogable, ArgParseMixin):
 		self.__WritePoCConfiguration()
 		self._LogNormal("Solution {GREEN}sucessfully{NOCOLOR} removed.".format(**Init.Foreground))
 
+
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "add-project" command
 	# ----------------------------------------------------------------------------
@@ -497,11 +503,12 @@ class PoC(ILogable, ArgParseMixin):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
 		
-		project = Solution(self)
-		
-		self._LogNormal("Registered projects in PoC:")
-		for projectName in project.GetProjectNames():
-			print("  {0}".format(projectName))
+		repo = Repository(self)
+		solution =	repo[args.SolutionID]
+
+		self._LogNormal("Registered projects for solution '{0}':".format(solution.ID))
+		for project in solution.Projects:
+			self._LogNormal("  {id: <10}{name}".format(id=project.ID, name=project.Name))
 	
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "remove-project" command

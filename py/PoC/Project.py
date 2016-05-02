@@ -36,6 +36,8 @@ from collections import OrderedDict
 from pathlib import Path
 from textwrap import dedent
 
+from Base.Configuration import ConfigurationException
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -138,7 +140,7 @@ class Repository(Base):
 
 class Solution(Base):
 	__SOLUTION_CONFIG_FILE__ =	"solution.config.ini"
-	__SOLUTION_DEFAULT_FILE__ =	"solution.default.ini"
+	__SOLUTION_DEFAULT_FILE__ =	"solution.defaults.ini"
 
 	def __init__(self, host, slnID, parent):
 		super().__init__(host, "SOLUTION", slnID, parent)
@@ -156,7 +158,7 @@ class Solution(Base):
 		self._host.PoCConfig.remove_section(self._configSection)
 
 	def CreateFiles(self):
-		solutionConfigPath = self._path / ".poc"
+		solutionConfigPath = self._host.Directories.Root / self._path / ".poc"
 		solutionConfigPath.mkdir(parents=True)
 
 		solutionConfigFile = solutionConfigPath / self.__SOLUTION_CONFIG_FILE__
@@ -177,13 +179,31 @@ class Solution(Base):
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
 		self._name = self._host.PoCConfig[self._configSection]['Name']
-		self._path = Path(self._host.PoCConfig[self._configSection]['Path'])
+		self._path = self._host.Directories.Root / self._host.PoCConfig[self._configSection]['Path']
+
+
+		solutionConfigPath = self._path / ".poc"
+		configFiles = [
+			solutionConfigPath / self.__SOLUTION_CONFIG_FILE__,
+			solutionConfigPath / self.__SOLUTION_DEFAULT_FILE__
+		]
+
+		for configFile in configFiles:
+			if (not configFile.exists()):
+				raise ConfigurationException("Solution configuration file '{0!s}' not found.".format(configFile)) from FileNotFoundError(str(configFile))
+
+			self._host.PoCConfig.read(str(configFile))
 
 		# load projects
-		# for prjID in self._host.PoCConfig[self._configSection]:
-		# 	if (self._host.PoCConfig[self._configSection][prjID] == __POC_PROJECT_KEYWORD__):
-		# 		sectionName = "{0}.{1}".format(self.__PROJECT_SECTION_PREFIX__, prjID)
-		# 		self._projects[prjID] = Solution(prjID, self._host, sectionName, self)
+		for option in self._host.PoCConfig[self._configSection]:
+			if (self._host.PoCConfig[self._configSection][option] == "ISEProject"):
+				self._projects[option] = ISEProject(self._host, option, self)
+			elif (self._host.PoCConfig[self._configSection][option] == "VivadoProject"):
+				self._projects[option] = VivadoProject(self._host, option, self)
+			elif (self._host.PoCConfig[self._configSection][option] == "QuartusProject"):
+				self._projects[option] = QuartusProject(self._host, option, self)
+			elif (self._host.PoCConfig[self._configSection][option] == "LatticeProject"):
+				self._projects[option] = LatticeProject(self._host, option, self)
 
 	@property
 	@LazyLoadTrigger
@@ -218,13 +238,36 @@ class Solution(Base):
 		return self._projects.keys()
 
 
-class Project(BaseProject):
-	def __init__(self, name):
-		super().__init__(name)
+class Project(Base):
+	def __init__(self, host, prjID, parent):
+		super().__init__(host, "PROJECT", prjID, parent)
 
-#class PoCProjectFile(ProjectFile):
-#	def __init__(self, file):
-#		ProjectFile.__init__(self, file)
+		self._name = None
+
+	@property
+	@LazyLoadTrigger
+	def Name(self):
+		"""Gets the name of this solution."""
+		return self._name
+	@Name.setter
+	def Name(self, value):
+		"""Sets the name of this solution."""
+		self._name = value
+
+class ISEProject(Project):
+	pass
+
+
+class VivadoProject(Project):
+	pass
+
+
+class QuartusProject(Project):
+	pass
+
+
+class LatticeProject(Project):
+	pass
 
 
 class FileListFile(File, FilesParserMixIn):
