@@ -78,6 +78,29 @@ from Compiler.XSTCompiler						import Compiler as XSTCompiler
 # 		self.ConfigureSyslog(args.quiet, args.verbose, args.debug)
 # 		return func(self, args)
 # 	return func_wrapper
+from lib.pyAttribute import Attribute
+
+
+class BoardDeviceAttributeGroup(Attribute):
+	def __call__(self, func):
+		self._AppendAttribute(func, ArgumentAttribute("--device", metavar="<DeviceName>", dest="DeviceName", help="The target platform's device name."))
+		self._AppendAttribute(func, ArgumentAttribute("--board", metavar="<BoardName>", dest="BoardName", help="The target platform's board name."))
+		return func
+
+class VHDLVersionAttribute(Attribute):
+	def __call__(self, func):
+		self._AppendAttribute(func, ArgumentAttribute("--std", metavar="<VHDLVersion>", dest="VHDLVersion", help="Simulate with VHDL-??"))
+		return func
+
+class GUIModeAttribute(Attribute):
+	def __call__(self, func):
+		self._AppendAttribute(func, SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window."))
+		return func
+
+class NoCleanUpAttribute(Attribute):
+	def __call__(self, func):
+		self._AppendAttribute(func, SwitchArgumentAttribute("--no-cleanup", dest="NoCleanUp", help="Don't delete intermediate files. Skip post-delete rules."))
+		return func
 
 class PoC(ILogable, ArgParseMixin):
 	HeadLine =								"The PoC-Library - Service Tool"
@@ -664,8 +687,8 @@ class PoC(ILogable, ArgParseMixin):
 
 		defaultLibrary = "PoC"
 
-		if (args.SolutionName is not None):
-			solutionName = args.SolutionName
+		if (args.SolutionID is not None):
+			solutionName = args.SolutionID
 			print("Solution name: {0}".format(solutionName))
 			if self.PoCConfig.has_option("SOLUTION.Solutions", solutionName):
 				sectionName = "SOLUTION.{0}".format(solutionName)
@@ -735,10 +758,9 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("asim", help="Simulate a PoC Entity with Aldec Active-HDL")
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
-	@ArgumentAttribute("--device", metavar="<DeviceName>", dest="DeviceName", help="The target platform's device name.")
-	@ArgumentAttribute("--board", metavar="<BoardName>", dest="BoardName", help="The target platform's board name.")
-	@ArgumentAttribute("--std", metavar="<VHDLVersion>", dest="VHDLVersion", help="Simulate with VHDL-??")
-	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window.")
+	@BoardDeviceAttributeGroup()
+	@VHDLVersionAttribute()
+	@GUIModeAttribute()
 	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	# @SwitchArgumentAttribute("-08", dest="VHDLVersion", help="Simulate with VHDL-2008.")
@@ -796,10 +818,9 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("ghdl", help="Simulate a PoC Entity with GHDL")
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
-	@ArgumentAttribute("--device", metavar="<DeviceName>", dest="DeviceName", help="The target platform's device name.")
-	@ArgumentAttribute("--board", metavar="<BoardName>", dest="BoardName", help="The target platform's board name.")
-	@ArgumentAttribute("--std", metavar="<VHDLVersion>", dest="VHDLVersion", help="Simulate with VHDL-??")
-	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in GTKWave.")
+	@BoardDeviceAttributeGroup()
+	@VHDLVersionAttribute()
+	@GUIModeAttribute()
 	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	# @SwitchArgumentAttribute("-08", dest="VHDLVersion", help="Simulate with VHDL-2008.")
@@ -852,9 +873,8 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("isim", help="Simulate a PoC Entity with Xilinx ISE Simulator (iSim)")
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
-	@ArgumentAttribute("--device", metavar="<DeviceName>", dest="DeviceName", help="The target platform's device name.")
-	@ArgumentAttribute("--board", metavar="<BoardName>", dest="BoardName", help="The target platform's board name.")
-	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window.")
+	@BoardDeviceAttributeGroup()
+	@GUIModeAttribute()
 	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	# standard
@@ -896,10 +916,9 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("vsim", help="Simulate a PoC Entity with Mentor QuestaSim or ModelSim (vsim)")
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
-	@ArgumentAttribute("--device", metavar="<DeviceName>", dest="DeviceName", help="The target platform's device name.")
-	@ArgumentAttribute("--board", metavar="<BoardName>", dest="BoardName", help="The target platform's board name.")
-	@ArgumentAttribute("--std", metavar="<VHDLVersion>", dest="VHDLVersion", help="Simulate with VHDL-??")
-	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window.")
+	@BoardDeviceAttributeGroup()
+	@VHDLVersionAttribute()
+	@GUIModeAttribute()
 	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	# @SwitchArgumentAttribute("-08", dest="VHDLVersion", help="Simulate with VHDL-2008.")
@@ -952,10 +971,9 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("xsim", help="Simulate a PoC Entity with Xilinx Vivado Simulator (xSim)")
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
-	@ArgumentAttribute("--device", metavar="<DeviceName>", dest="DeviceName", help="The target platform's device name.")
-	@ArgumentAttribute("--board", metavar="<BoardName>", dest="BoardName", help="The target platform's board name.")
-	@ArgumentAttribute("--std", metavar="<VHDLVersion>", dest="VHDLVersion", help="Simulate with VHDL-??")
-	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window.")
+	@BoardDeviceAttributeGroup()
+	@VHDLVersionAttribute()
+	@GUIModeAttribute()
 	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	# @SwitchArgumentAttribute("-08", dest="VHDLVersion", help="Simulate with VHDL-2008.")
@@ -1000,9 +1018,8 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("cocotb", help="Simulate a PoC Entity with Cocotb and Questa Simulator")
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
-	@ArgumentAttribute("--device", metavar="<DeviceName>", dest="DeviceName", help="The target platform's device name.")
-	@ArgumentAttribute("--board", metavar="<BoardName>", dest="BoardName", help="The target platform's board name.")
-	@SwitchArgumentAttribute("-g", "--gui", dest="GUIMode", help="show waveform in a GUI window.")
+	@BoardDeviceAttributeGroup()
+	@GUIModeAttribute()
 	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	# @HandleVerbosityOptions
@@ -1077,9 +1094,8 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Synthesis commands")
 	@CommandAttribute("coregen", help="Generate an IP core with Xilinx ISE Core Generator")
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
-	@ArgumentAttribute("--device", metavar="<DeviceName>", dest="DeviceName", help="The target platform's device name.")
-	@ArgumentAttribute("--board", metavar="<BoardName>", dest="BoardName", help="The target platform's board name.")
-	@SwitchArgumentAttribute("--no-cleanup", dest="NoCleanUp", help="Don't delete intermediate files. Skip post-delete rules.")
+	@BoardDeviceAttributeGroup()
+	@NoCleanUpAttribute()
 	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	# @HandleVerbosityOptions
@@ -1112,9 +1128,8 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Synthesis commands")
 	@CommandAttribute("xst", help="Compile a PoC IP core with Xilinx ISE XST to a netlist")
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
-	@ArgumentAttribute("--device", metavar="<DeviceName>", dest="DeviceName", help="The target platform's device name.")
-	@ArgumentAttribute("--board", metavar="<BoardName>", dest="BoardName", help="The target platform's board name.")
-	@SwitchArgumentAttribute("--no-cleanup", dest="NoCleanUp", help="Don't delete intermediate files. Skip post-delete rules.")
+	@BoardDeviceAttributeGroup()
+	@NoCleanUpAttribute()
 	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	# @HandleVerbosityOptions
@@ -1147,9 +1162,8 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Synthesis commands")
 	@CommandAttribute("quartus", help="Compile a PoC IP core with Altera Quartus II Map to a netlist")
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
-	@ArgumentAttribute("--device", metavar="<DeviceName>", dest="DeviceName", help="The target platform's device name.")
-	@ArgumentAttribute("--board", metavar="<BoardName>", dest="BoardName", help="The target platform's board name.")
-	@SwitchArgumentAttribute("--no-cleanup", dest="NoCleanUp", help="Don't delete intermediate files. Skip post-delete rules.")
+	@BoardDeviceAttributeGroup()
+	@NoCleanUpAttribute()
 	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	# @HandleVerbosityOptions
@@ -1183,9 +1197,8 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Synthesis commands")
 	@CommandAttribute("lattice", help="Compile a PoC IP core with Lattice Diamond LSE to a netlist")
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
-	@ArgumentAttribute("--device", metavar="<DeviceName>", dest="DeviceName", help="The target platform's device name.")
-	@ArgumentAttribute("--board", metavar="<BoardName>", dest="BoardName", help="The target platform's board name.")
-	@SwitchArgumentAttribute("--no-cleanup", dest="NoCleanUp", help="Don't delete intermediate files. Skip post-delete rules.")
+	@BoardDeviceAttributeGroup()
+	@NoCleanUpAttribute()
 	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	# @HandleVerbosityOptions

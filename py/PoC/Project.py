@@ -102,7 +102,7 @@ class Repository(Base):
 		# load solutions
 		for slnID in self._host.PoCConfig[self._configSection]:
 			if (self._host.PoCConfig[self._configSection][slnID] == __POC_SOLUTION_KEYWORD__):
-				self._solutions[slnID] = Solution(self._host, slnID, self)
+				self._solutions[slnID.lower()] = Solution(self._host, slnID, self)
 
 	def AddSolution(self, solutionID, solutionName, solutionRootPath):
 		solution = Solution(self._host, solutionID, self)
@@ -118,7 +118,7 @@ class Repository(Base):
 
 	def RemoveSolution(self, solution):
 		if isinstance(solution, str):
-			solution = self._solutions[solution]
+			solution = self._solutions[solution.lower()]
 		elif (not isinstance(solution, Solution)):
 			raise ValueError("Parameter solution is not of type str or Solution.")
 
@@ -196,14 +196,18 @@ class Solution(Base):
 
 		# load projects
 		for option in self._host.PoCConfig[self._configSection]:
+			project = None
 			if (self._host.PoCConfig[self._configSection][option] == "ISEProject"):
-				self._projects[option] = ISEProject(self._host, option, self)
+				project = ISEProject(self._host, option, self)
 			elif (self._host.PoCConfig[self._configSection][option] == "VivadoProject"):
-				self._projects[option] = VivadoProject(self._host, option, self)
+				project = VivadoProject(self._host, option, self)
 			elif (self._host.PoCConfig[self._configSection][option] == "QuartusProject"):
-				self._projects[option] = QuartusProject(self._host, option, self)
+				project = QuartusProject(self._host, option, self)
 			elif (self._host.PoCConfig[self._configSection][option] == "LatticeProject"):
-				self._projects[option] = LatticeProject(self._host, option, self)
+				project = LatticeProject(self._host, option, self)
+
+			if (project is not None):
+				self._projects[option.lower()] = project
 
 	@property
 	@LazyLoadTrigger
