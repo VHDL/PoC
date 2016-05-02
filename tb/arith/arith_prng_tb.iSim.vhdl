@@ -87,7 +87,8 @@ begin
 	-- simInitialize;
 	-- generate global testbench clock and reset
 	simGenerateClock(Clock, CLOCK_FREQ);
-	simGenerateWaveform(Reset, simGenerateWaveform_Reset(Pause => 10 ns, ResetPulse => 10 ns));
+	-- simGenerateWaveform(Reset, simGenerateWaveform_Reset(Pause => 10 ns, ResetPulse => 10 ns));
+	Reset <= '0', '1' after 10 ns, '0' after 20 ns;
 
 	UUT : entity PoC.arith_prng
 		generic map (
