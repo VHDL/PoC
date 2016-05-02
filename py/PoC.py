@@ -263,6 +263,8 @@ class PoC(ILogable, ArgParseMixin):
 		for sectionName in [sectionName for sectionName in self.__pocConfig if not (sectionName.startswith("INSTALL") or sectionName.startswith("SOLUTION"))]:
 			self.__pocConfig.remove_section(sectionName)
 
+		self.__pocConfig.remove_section("SOLUTION.DEFAULTS")
+
 		# Writing configuration to disc
 		self._LogNormal("Writing configuration file to '{0!s}'".format(self._configFiles.Private))
 		with self._configFiles.Private.open('w') as configFileHandle:
