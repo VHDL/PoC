@@ -50,7 +50,7 @@ from lib.Parser import ParserException
 from Base.Exceptions		import ExceptionBase
 from Base.Logging				import ILogable
 from Base.Project				import ToolChain, Tool, VHDLVersion, Environment, FileTypes
-from PoC.Project				import Project as PoCProject, FileListFile, RulesFile
+from PoC.Project				import VirtualProject, FileListFile, RulesFile
 from Parser.RulesParser	import CopyRuleMixIn, ReplaceRuleMixIn, DeleteRuleMixIn
 
 
@@ -125,7 +125,7 @@ class Compiler(ILogable):
 	def _CreatePoCProject(self, netlist, board):
 		# create a PoCProject and read all needed files
 		self._LogVerbose("Creating a PoC project '{0}'".format(netlist.ModuleName))
-		pocProject = PoCProject(netlist.ModuleName)
+		pocProject = VirtualProject(netlist.ModuleName)
 
 		# configure the project
 		pocProject.RootDirectory =	self.Host.Directories.Root

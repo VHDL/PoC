@@ -48,7 +48,7 @@ from Base.Exceptions	import ExceptionBase
 from Base.Logging			import ILogable
 from Base.Project			import Environment, ToolChain, Tool, VHDLVersion
 from lib.Parser				import ParserException
-from PoC.Project			import Project as PoCProject, FileListFile
+from PoC.Project			import VirtualProject, FileListFile
 from PoC.Entity				import WildCard
 
 
@@ -111,7 +111,7 @@ class Simulator(ILogable):
 	def _CreatePoCProject(self, testbench, board):
 		# create a PoCProject and read all needed files
 		self._LogVerbose("Creating a PoC project '{0}'".format(testbench.ModuleName))
-		pocProject = PoCProject(testbench.ModuleName)
+		pocProject = VirtualProject(testbench.ModuleName)
 
 		# configure the project
 		pocProject.RootDirectory = self.Host.Directories.Root

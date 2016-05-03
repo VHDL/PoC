@@ -38,16 +38,10 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.ActiveHDLSimulator")
 
 # load dependencies
-from configparser								import NoSectionError
-from os													import chdir
-
 from lib.Functions							import Init
-#from Base.Exceptions						import NotConfiguredException, PlatformNotSupportedException
-#from Base.Executable						import ExecutableException
-from Base.Project								import FileTypes, VHDLVersion, Environment, ToolChain, Tool
+from Base.Project								import FileTypes, VHDLVersion, ToolChain, Tool
 from Base.Simulator							import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
-#from Parser.Parser							import ParserException
-from PoC.Project								import Project as PoCProject, FileListFile
+
 from ToolChains.Aldec.ActiveHDL	import ActiveHDL, ActiveHDLException
 
 

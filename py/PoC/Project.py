@@ -278,6 +278,10 @@ class LatticeProject(Project):
 	pass
 
 
+class VirtualProject(BaseProject):
+	pass
+
+
 class FileListFile(File, FilesParserMixIn):
 	_FileType = FileTypes.FileListFile
 
