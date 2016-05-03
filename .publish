@@ -11,6 +11,7 @@
 pip3-requirements.lst
 
 # Documentation files
+docs/
 AUTHORS.md
 LICENSE.md
 README.md
