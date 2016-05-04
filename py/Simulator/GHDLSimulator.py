@@ -32,6 +32,8 @@
 # ==============================================================================
 #
 # entry point
+from pathlib import Path
+
 from Base.Logging import Severity
 
 if __name__ != "__main__":
@@ -53,13 +55,8 @@ class Simulator(BaseSimulator):
 	_TOOL_CHAIN =						ToolChain.GHDL_GTKWave
 	_TOOL =									Tool.GHDL
 
-	class __Directories__:
-		Working =			None
-		PoCRoot =			None
-		PreCompiled =	None
-
 	def __init__(self, host, showLogs, showReport, guiMode):
-		super(self.__class__, self).__init__(host, showLogs, showReport)
+		super().__init__(host, showLogs, showReport)
 
 		self._guiMode =				guiMode
 
@@ -67,22 +64,26 @@ class Simulator(BaseSimulator):
 		self._testbenchFQN =	None
 		self._vhdlGenerics =	None
 
-		self._directories =		self.__Directories__()
 		self._ghdl =					None
 
+		ghdlFilesDirectoryName = host.PoCConfig['CONFIG.DirectoryNames']['GHDLFiles']
+		self.Directories.Working = host.Directories.Temp / ghdlFilesDirectoryName
+		self.Directories.PreCompiled = host.Directories.PreCompiled / ghdlFilesDirectoryName
+
 		self._PrepareSimulationEnvironment()
+		self._PrepareSimulator()
 
 	@property
 	def Directories(self):
 		return self._directories
 
-	def _PrepareSimulationEnvironment(self):
-		self._LogNormal("Preparing simulation environment...")
-		super()._PrepareSimulationEnvironment()
-
-	def PrepareSimulator(self, binaryPath, version, backend):
+	def _PrepareSimulator(self):
 		# create the GHDL executable factory
 		self._LogVerbose("Preparing GHDL simulator.")
+		ghdlSection = self.Host.PoCConfig['INSTALL.GHDL']
+		binaryPath = Path(ghdlSection['BinaryDirectory'])
+		version = ghdlSection['Version']
+		backend = ghdlSection['Backend']
 		self._ghdl =			GHDL(self.Host.Platform, binaryPath, version, backend, logger=self.Logger)
 
 	def Run(self, testbench, board, vhdlVersion="93c", vhdlGenerics=None, guiMode=False):
