@@ -75,18 +75,18 @@ class Simulator(BaseSimulator):
 
 		self._directories =		self.__Directories__()
 
-		self._LogNormal("preparing simulation environment...")
+		configSection = host.PoCConfig['CONFIG.DirectoryNames']
+		self.Directories.Working = host.Directories.Temp / configSection['CocotbFiles']
+		self.Directories.PreCompiled = host.Directories.PreCompiled / configSection['QuestaSimFiles']
+
 		self._PrepareSimulationEnvironment()
+		self._PrepareSimulator()
 
 	@property
 	def Directories(self):
 		return self._directories
 
-	def _PrepareSimulationEnvironment(self):
-		self._LogNormal("preparing simulation environment...")
-		super()._PrepareSimulationEnvironment()
-
-	def PrepareSimulator(self):
+	def _PrepareSimulator(self):
 		# create the Cocotb executable factory
 		self._LogVerbose("Preparing Cocotb simulator.")
 

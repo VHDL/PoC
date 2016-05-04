@@ -935,16 +935,8 @@ class PoC(ILogable, ArgParseMixin):
 		fqnList =	self._ExtractFQNs(args.FQN)
 		board =		self._ExtractBoard(args.BoardName, args.DeviceName)
 
-		# prepare paths to vendor simulation libraries
-		#self.__PrepareVendorLibraryPaths()
-
 		# create a CocotbSimulator instance and prepare it
 		simulator = CocotbSimulator(self, args.logs, args.reports, args.GUIMode)
-		simulator.PrepareSimulator()
-
-		simulator.Directories.Working =			self.Directories.Temp / self.PoCConfig['CONFIG.DirectoryNames']['CocotbFiles']
-		simulator.Directories.PreCompiled =	self.Directories.PreCompiled / self.PoCConfig['CONFIG.DirectoryNames']['QuestaSimFiles']
-
 		simulator.RunAll(fqnList, board=board)
 
 		Exit.exit()
