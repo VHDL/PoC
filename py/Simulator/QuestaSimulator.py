@@ -64,7 +64,6 @@ class Simulator(BaseSimulator):
 		self._vhdlVersion =		None
 		self._vhdlGenerics =	None
 
-		self._directories =		self.__Directories__()
 		self._questa =				None
 
 		vSimSimulatorFiles = host.PoCConfig['CONFIG.DirectoryNames']['QuestaSimFiles']
@@ -73,10 +72,6 @@ class Simulator(BaseSimulator):
 
 		self._PrepareSimulationEnvironment()
 		self._PrepareSimulator()
-
-	@property
-	def Directories(self):
-		return self._directories
 
 	def _PrepareSimulator(self):
 		# create the QuestaSim executable factory

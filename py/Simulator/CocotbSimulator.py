@@ -60,11 +60,6 @@ class Simulator(BaseSimulator):
 	_TOOL =									Tool.Cocotb_QuestaSim
 	_COCOTB_SIMBUILD_DIRECTORY = "sim_build"
 
-	class __Directories__:
-		Working =			None
-		PoCRoot =			None
-		PreCompiled =	None
-
 	def __init__(self, host, showLogs, showReport, guiMode):
 		super().__init__(host, showLogs, showReport)
 
@@ -73,18 +68,12 @@ class Simulator(BaseSimulator):
 		self._entity =				None
 		self._testbenchFQN =	None
 
-		self._directories =		self.__Directories__()
-
 		configSection = host.PoCConfig['CONFIG.DirectoryNames']
 		self.Directories.Working = host.Directories.Temp / configSection['CocotbFiles']
 		self.Directories.PreCompiled = host.Directories.PreCompiled / configSection['QuestaSimFiles']
 
 		self._PrepareSimulationEnvironment()
 		self._PrepareSimulator()
-
-	@property
-	def Directories(self):
-		return self._directories
 
 	def _PrepareSimulator(self):
 		# create the Cocotb executable factory

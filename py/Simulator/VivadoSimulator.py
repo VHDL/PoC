@@ -65,7 +65,6 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		self._vhdlVersion =		None
 		self._vhdlGenerics =	None
 
-		self._directories =		self.__Directories__()
 		self._vivado =				None
 
 		vivadoFilesDirectoryName = host.PoCConfig['CONFIG.DirectoryNames']['VivadoSimulatorFiles']
@@ -74,10 +73,6 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 
 		self._PrepareSimulationEnvironment()
 		self._PrepareSimulator()
-
-	@property
-	def Directories(self):
-		return self._directories
 
 	def _PrepareSimulator(self):
 		# create the Vivado executable factory

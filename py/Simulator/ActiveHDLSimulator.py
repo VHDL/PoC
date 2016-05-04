@@ -52,11 +52,6 @@ class Simulator(BaseSimulator):
 	_TOOL_CHAIN =						ToolChain.Aldec_ActiveHDL
 	_TOOL =									Tool.Aldec_aSim
 
-	class __Directories__:
-		Working =			None
-		PoCRoot =			None
-		PreCompiled =	None
-
 	def __init__(self, host, showLogs, showReport, guiMode):
 		super().__init__(host, showLogs, showReport)
 
@@ -67,7 +62,6 @@ class Simulator(BaseSimulator):
 		self._vhdlVersion =		None
 		self._vhdlGenerics =	None
 
-		self._directories =		self.__Directories__()
 		self._activeHDL =			None
 
 		activeHDLFilesDirectoryName = host.PoCConfig['CONFIG.DirectoryNames']['ActiveHDLFiles']
@@ -76,10 +70,6 @@ class Simulator(BaseSimulator):
 		
 		self._PrepareSimulationEnvironment()
 		self._PrepareSimulator()
-
-	@property
-	def Directories(self):
-		return self._directories
 
 	def _PrepareSimulator(self):
 		# create the Active-HDL executable factory

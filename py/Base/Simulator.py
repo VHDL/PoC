@@ -102,6 +102,8 @@ class Simulator(ILogable):
 	def ShowLogs(self):				return self.__showLogs
 	@property
 	def ShowReport(self):			return self.__showReport
+	@property
+	def Directories(self):		return self._directories
 
 	def _PrepareSimulationEnvironment(self):
 		self._LogNormal("Preparing simulation environment...")

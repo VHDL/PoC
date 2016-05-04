@@ -85,10 +85,6 @@ class Simulator(BaseSimulator):
 		self._PrepareSimulationEnvironment()
 		self._PrepareSimulator()
 
-	@property
-	def Directories(self):
-		return self._directories
-
 	def _PrepareSimulator(self):
 		# create the GHDL executable factory
 		self._LogVerbose("Preparing GHDL simulator.")
