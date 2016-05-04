@@ -1073,13 +1073,15 @@ class PoC(ILogable, ArgParseMixin):
 		board =		self._ExtractBoard(args.BoardName, args.DeviceName, force=True)
 
 		# prepare some paths
-		self.Directories["PoCNetlist"] =			self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['NetlistFiles']
-		self.Directories["CoreGenTemp"] =			self.Directories["PoCTemp"] / self.PoCConfig['CONFIG.DirectoryNames']['ISECoreGeneratorFiles']
-		iseBinaryPath =												Path(self.PoCConfig['INSTALL.Xilinx.ISE']['BinaryDirectory'])
-		iseVersion =													self.PoCConfig['INSTALL.Xilinx.ISE']['Version']
+		iseBinaryPath =		Path(self.PoCConfig['INSTALL.Xilinx.ISE']['BinaryDirectory'])
+		iseVersion =			self.PoCConfig['INSTALL.Xilinx.ISE']['Version']
 
 		compiler = XCOCompiler(self, args.logs, args.reports, self.DryRun, args.NoCleanUp)
 		compiler.PrepareCompiler(iseBinaryPath, iseVersion)
+
+		compiler.Directories.Working = self.Directories.Temp / self.PoCConfig['CONFIG.DirectoryNames']['ISECoreGeneratorFiles']
+		compiler.Directories.Netlist =	self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['NetlistFiles']
+
 		compiler.RunAll(fqnList, board)
 
 		Exit.exit()
@@ -1103,13 +1105,16 @@ class PoC(ILogable, ArgParseMixin):
 		board =		self._ExtractBoard(args.BoardName, args.DeviceName, force=True)
 
 		# prepare some paths
-		self.Directories["XSTFiles"] =				self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['ISESynthesisFiles']
-		self.Directories["XSTTemp"] =					self.Directories["PoCTemp"] / self.PoCConfig['CONFIG.DirectoryNames']['ISESynthesisFiles']
-		iseBinaryPath =												Path(self.PoCConfig['INSTALL.Xilinx.ISE']['BinaryDirectory'])
-		iseVersion =													self.PoCConfig['INSTALL.Xilinx.ISE']['Version']
+		iseBinaryPath =		Path(self.PoCConfig['INSTALL.Xilinx.ISE']['BinaryDirectory'])
+		iseVersion =			self.PoCConfig['INSTALL.Xilinx.ISE']['Version']
 
 		compiler = XSTCompiler(self, args.logs, args.reports, self.DryRun, args.NoCleanUp)
 		compiler.PrepareCompiler(iseBinaryPath, iseVersion)
+
+		compiler.Directories.Working =	self.Directories.Temp / self.PoCConfig['CONFIG.DirectoryNames']['ISESynthesisFiles']
+		compiler.Directories.XSTFiles =	self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['ISESynthesisFiles']
+		compiler.Directories.Netlist =	self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['NetlistFiles']
+
 		compiler.RunAll(fqnList, board)
 
 		Exit.exit()
@@ -1136,12 +1141,15 @@ class PoC(ILogable, ArgParseMixin):
 		board =		self._ExtractBoard(args.BoardName, args.DeviceName, force=True)
 
 		# prepare some paths
-		self.Directories["QuartusTemp"] =					self.Directories["PoCTemp"] / self.PoCConfig['CONFIG.DirectoryNames']['QuartusSynthesisFiles']
-		quartusBinaryPath =												Path(self.PoCConfig['INSTALL.Altera.Quartus']['BinaryDirectory'])
-		quartusVersion =													self.PoCConfig['INSTALL.Altera.Quartus']['Version']
+		quartusBinaryPath =		Path(self.PoCConfig['INSTALL.Altera.Quartus']['BinaryDirectory'])
+		quartusVersion =			self.PoCConfig['INSTALL.Altera.Quartus']['Version']
 
 		compiler = MapCompiler(self, args.logs, args.reports, self.DryRun, args.NoCleanUp)
 		compiler.PrepareCompiler(quartusBinaryPath, quartusVersion)
+
+		compiler.Directories.Working = self.Directories.Temp / self.PoCConfig['CONFIG.DirectoryNames']['QuartusSynthesisFiles']
+		compiler.Directories.Netlist =	self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['NetlistFiles']
+
 		compiler.RunAll(fqnList, board)
 
 		Exit.exit()
@@ -1168,13 +1176,15 @@ class PoC(ILogable, ArgParseMixin):
 		board =		self._ExtractBoard(args.BoardName, args.DeviceName, force=True)
 
 		# prepare some paths
-		self.Directories["LatticeTemp"] =					self.Directories["PoCTemp"] / self.PoCConfig['CONFIG.DirectoryNames']['LatticeSynthesisFiles']
-		self.Directories["LatticeInstallation"] = Path(self.PoCConfig['INSTALL.Lattice.Diamond']['InstallationDirectory'])
-		diamondBinaryPath =												Path(self.PoCConfig['INSTALL.Lattice.Diamond']['BinaryDirectory'])
-		diamondVersion =													self.PoCConfig['INSTALL.Lattice.Diamond']['Version']
+		diamondBinaryPath =		Path(self.PoCConfig['INSTALL.Lattice.Diamond']['BinaryDirectory'])
+		diamondVersion =			self.PoCConfig['INSTALL.Lattice.Diamond']['Version']
 
 		compiler = LSECompiler(self, args.logs, args.reports, self.DryRun, args.NoCleanUp)
 		compiler.PrepareCompiler(diamondBinaryPath, diamondVersion)
+
+		compiler.Directories.Working = self.Directories.Temp / self.PoCConfig['CONFIG.DirectoryNames']['LatticeSynthesisFiles']
+		compiler.Directories.Netlist =	self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['NetlistFiles']
+
 		compiler.RunAll(fqnList, board)
 
 		Exit.exit()
