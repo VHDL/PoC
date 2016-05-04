@@ -49,29 +49,29 @@ from Base.Logging										import ILogable, Logger, Severity
 from Base.Project										import VHDLVersion
 from Base.Simulator									import SimulatorException
 from Base.ToolChain									import ToolChainException
+from Compiler.LSECompiler						import Compiler as LSECompiler
+from Compiler.QuartusCompiler				import Compiler as MapCompiler
+from Compiler.XCOCompiler						import Compiler as XCOCompiler
+from Compiler.XSTCompiler						import Compiler as XSTCompiler
 from PoC.Config											import Board
 from PoC.Entity											import Root, FQN, EntityTypes, WildCard, TestbenchKind, NetlistKind
 from PoC.Project										import Solution, Repository
 from PoC.Query											import Query
-from ToolChains											import Configurations
-from lib.pyAttribute								import Attribute
-from lib.ArgParseAttributes					import ArgParseMixin
-from lib.ArgParseAttributes					import CommandAttribute, CommandGroupAttribute, ArgumentAttribute, SwitchArgumentAttribute, DefaultAttribute
-from lib.ArgParseAttributes					import CommonArgumentAttribute, CommonSwitchArgumentAttribute
-from lib.ConfigParser								import ExtendedConfigParser
-from lib.Functions									import Init, Exit
-from lib.Parser											import ParserException
-from ToolChains.GHDL								import Configuration as GHDLConfiguration
 from Simulator.ActiveHDLSimulator		import Simulator as ActiveHDLSimulator
 from Simulator.CocotbSimulator 			import Simulator as CocotbSimulator
 from Simulator.GHDLSimulator				import Simulator as GHDLSimulator
 from Simulator.ISESimulator					import Simulator as ISESimulator
 from Simulator.QuestaSimulator			import Simulator as QuestaSimulator
 from Simulator.VivadoSimulator			import Simulator as VivadoSimulator
-from Compiler.QuartusCompiler				import Compiler as MapCompiler
-from Compiler.LSECompiler						import Compiler as LSECompiler
-from Compiler.XCOCompiler						import Compiler as XCOCompiler
-from Compiler.XSTCompiler						import Compiler as XSTCompiler
+from ToolChains											import Configurations
+from ToolChains.GHDL								import Configuration as GHDLConfiguration
+from lib.ArgParseAttributes					import ArgParseMixin
+from lib.ArgParseAttributes					import CommandAttribute, CommandGroupAttribute, ArgumentAttribute, SwitchArgumentAttribute, DefaultAttribute
+from lib.ArgParseAttributes					import CommonArgumentAttribute, CommonSwitchArgumentAttribute
+from lib.ConfigParser								import ExtendedConfigParser
+from lib.Functions									import Init, Exit
+from lib.Parser											import ParserException
+from lib.pyAttribute								import Attribute
 
 
 class BoardDeviceAttributeGroup(Attribute):
@@ -924,22 +924,7 @@ class PoC(ILogable, ArgParseMixin):
 		# FIXME: VHDL-2008 is broken in Vivado 2016.1 -> use VHDL-93 by default
 		vhdlVersion = self._ExtractVHDLVersion(args.VHDLVersion, defaultVersion=VHDLVersion.VHDL93)
 
-		# prepare some paths
-		# self.Directories["XilinxPrimitiveSource"] =	Path(self.PoCConfig['INSTALL.Xilinx.Vivado']['InstallationDirectory']) / "data/vhdl/src"
-		vivadoVersion =															self.PoCConfig['INSTALL.Xilinx.Vivado']['Version']
-		binaryPath =																Path(self.PoCConfig['INSTALL.Xilinx.Vivado']['BinaryDirectory'])
-
-		# prepare paths to vendor simulation libraries
-		# self.__PrepareVendorLibraryPaths()
-
-		# create a VivadoSimulator instance and prepare it
 		simulator = VivadoSimulator(self, args.logs, args.reports, args.GUIMode)
-		simulator.PrepareSimulator(binaryPath, vivadoVersion)
-
-		vivadoFilesDirectoryName = self.PoCConfig['CONFIG.DirectoryNames']['VivadoSimulatorFiles']
-		simulator.Directories.Working =			self.Directories.Temp / vivadoFilesDirectoryName
-		simulator.Directories.PreCompiled =	self.Directories.PreCompiled / vivadoFilesDirectoryName
-
 		simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
 		Exit.exit()
