@@ -290,7 +290,7 @@ def main():
 		group21 = group2.add_mutually_exclusive_group(required=True)
 		group21.add_argument('-h', '--help',												dest="help",				help='show this help message and exit',		action='store_const', const=True, default=False)
 		group211 = group21.add_mutually_exclusive_group()
-		group211.add_argument(		 '--tokenfiles', metavar="<FSM>", dest="tokenFiles",	help='extraxt FSM encodings for ChipScope token files (*.tok)')
+		group211.add_argument(     '--tokenfiles', metavar="<FSM>", dest="tokenFiles",	help='extraxt FSM encodings for ChipScope token files (*.tok)')
 
 		# parse command line options
 		args = argParser.parse_args()
