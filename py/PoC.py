@@ -831,7 +831,6 @@ class PoC(ILogable, ArgParseMixin):
 			else:
 				raise NotConfiguredException("No GHDL compatible waveform viewer is configured on this system.")
 
-		# create a GHDLSimulator instance and prepare it
 		simulator = GHDLSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion, guiMode=args.GUIMode)		#, vhdlGenerics=None)
 
@@ -893,32 +892,11 @@ class PoC(ILogable, ArgParseMixin):
 		self.PrintHeadline()
 		self.__PrepareForSimulation()
 
-		# check if QuestaSim is configured
-		if (len(self.PoCConfig.options("INSTALL.Mentor.QuestaSim")) != 0):
-			vSimSimulatorFiles =										self.PoCConfig['CONFIG.DirectoryNames']['QuestaSimFiles']
-			binaryPath =														Path(self.PoCConfig['INSTALL.Mentor.QuestaSim']['BinaryDirectory'])
-			vSimVersion =														self.PoCConfig['INSTALL.Mentor.QuestaSim']['Version']
-		elif (len(self.PoCConfig.options("INSTALL.Altera.ModelSim")) != 0):
-			vSimSimulatorFiles =										self.PoCConfig['CONFIG.DirectoryNames']['QuestaSimFiles']
-			binaryPath =														Path(self.PoCConfig['INSTALL.Altera.ModelSim']['BinaryDirectory'])
-			vSimVersion =														self.PoCConfig['INSTALL.Altera.ModelSim']['Version']
-		else:
-			raise NotConfiguredException("Neither Mentor Graphics QuestaSim nor ModelSim Altera-Edition are configured on this system.")
-		
 		fqnList =			self._ExtractFQNs(args.FQN)
 		board =				self._ExtractBoard(args.BoardName, args.DeviceName)
 		vhdlVersion =	self._ExtractVHDLVersion(args.VHDLVersion)
 
-		# prepare paths to vendor simulation libraries
-		# self.__PrepareVendorLibraryPaths()
-
-		# create a GHDLSimulator instance and prepare it
 		simulator = QuestaSimulator(self, args.logs, args.reports, args.GUIMode)
-		simulator.PrepareSimulator(binaryPath, vSimVersion)
-
-		simulator.Directories.Working =			self.Directories.Temp / vSimSimulatorFiles
-		simulator.Directories.PreCompiled =	self.Directories.PreCompiled / vSimSimulatorFiles
-
 		simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
 		Exit.exit()

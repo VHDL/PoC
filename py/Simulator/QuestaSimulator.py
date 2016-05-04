@@ -30,6 +30,9 @@
 # ==============================================================================
 #
 # entry point
+from pathlib import Path
+
+from Base.Exceptions import NotConfiguredException
 from PoC.Config import Vendors
 
 if __name__ != "__main__":
@@ -51,11 +54,6 @@ class Simulator(BaseSimulator):
 	_TOOL_CHAIN =						ToolChain.Mentor_QuestaSim
 	_TOOL =									Tool.Mentor_vSim
 
-	class __Directories__:
-		Working =			None
-		PoCRoot =			None
-		PreCompiled =	None
-
 	def __init__(self, host, showLogs, showReport, guiMode):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 
@@ -69,20 +67,32 @@ class Simulator(BaseSimulator):
 		self._directories =		self.__Directories__()
 		self._questa =				None
 
+		vSimSimulatorFiles = host.PoCConfig['CONFIG.DirectoryNames']['QuestaSimFiles']
+		self.Directories.Working =			host.Directories.Temp / vSimSimulatorFiles
+		self.Directories.PreCompiled =	host.Directories.PreCompiled / vSimSimulatorFiles
+
 		self._PrepareSimulationEnvironment()
+		self._PrepareSimulator()
 
 	@property
 	def Directories(self):
 		return self._directories
 
-	def _PrepareSimulationEnvironment(self):
-		self._LogNormal("preparing simulation environment...")
-		super()._PrepareSimulationEnvironment()
-
-	def PrepareSimulator(self, binaryPath, version):
+	def _PrepareSimulator(self):
 		# create the QuestaSim executable factory
 		self._LogVerbose("Preparing Mentor simulator.")
-		self._questa =		QuestaSim(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		if (len(self.Host.PoCConfig.options("INSTALL.Mentor.QuestaSim")) != 0):
+			sectionName = 'INSTALL.Mentor.QuestaSim'
+		elif (len(self.Host.PoCConfig.options("INSTALL.Altera.ModelSim")) != 0):
+			sectionName = 'INSTALL.Altera.ModelSim'
+		else:
+			raise NotConfiguredException(
+				"Neither Mentor Graphics QuestaSim nor ModelSim Altera-Edition are configured on this system.")
+
+		questaSection = self.Host.PoCConfig[sectionName]
+		binaryPath = Path(questaSection['BinaryDirectory'])
+		version = questaSection['Version']
+		self._questa = QuestaSim(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def Run(self, testbench, board, vhdlVersion="93", vhdlGenerics=None, guiMode=False):
 		self._LogQuiet("Testbench: {0!s}".format(testbench.Parent, **Init.Foreground))
