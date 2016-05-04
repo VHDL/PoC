@@ -112,7 +112,7 @@ class Compiler(BaseCompiler):
 		self._RunPreReplace(netlist)
 
 		self._LogNormal("Running Altera Quartus Map...")
-		self._RunCompile(netlist, board.Device)
+		self._RunCompile(netlist)
 
 		self._LogNormal("Executing post-processing tasks...")
 		self._RunPostCopy(netlist)
@@ -148,7 +148,7 @@ class Compiler(BaseCompiler):
 	def _RunPrepareCompile(self, netlist):
 		pass
 
-	def _RunCompile(self, netlist, device):
+	def _RunCompile(self, netlist):
 		q2map = self._quartus.GetMap()
 		q2map.Parameters[q2map.ArgProjectName] =	str(netlist.QsfFile)
 		q2map.Compile()

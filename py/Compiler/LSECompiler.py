@@ -104,14 +104,14 @@ class Compiler(BaseCompiler):
 
 		netlist.PrjFile = self.Directories.Working / (netlist.ModuleName + ".prj")
 
-		self._WriteQuartusProjectFile(netlist)
+		self._WriteLSEProjectFile(netlist)
 
 		self._LogNormal("Executing pre-processing tasks...")
 		self._RunPreCopy(netlist)
 		self._RunPreReplace(netlist)
 
 		self._LogNormal("Running Lattice Diamond LSE...")
-		self._RunCompile(netlist, board.Device)
+		self._RunCompile(netlist)
 
 		self._LogNormal("Executing post-processing tasks...")
 		self._RunPostCopy(netlist)
@@ -131,7 +131,7 @@ class Compiler(BaseCompiler):
 		self.Host.PoCConfig['SPECIAL']['OutputDir']	=			self.Directories.Working.as_posix()
 
 
-	def _WriteQuartusProjectFile(self, netlist):
+	def _WriteLSEProjectFile(self, netlist):
 		argumentFile = SynthesisArgumentFile(netlist.PrjFile)
 		argumentFile.Architecture =	"\"ECP5UM\""
 		argumentFile.TopLevel =			netlist.ModuleName
@@ -142,7 +142,7 @@ class Compiler(BaseCompiler):
 	def _RunPrepareCompile(self, netlist):
 		pass
 
-	def _RunCompile(self, netlist, device):
+	def _RunCompile(self, netlist):
 		tclShell = self._diamond.GetTclShell()
 
 		# raise NotImplementedError("Next: implement interactive shell")

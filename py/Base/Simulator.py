@@ -201,5 +201,5 @@ def PoCSimulationResultFilter(gen, simulationResult):
 			state = 6
 
 		yield line
-	else:
-		if (state != 6):		raise SimulatorException("No PoC Testbench Report in simulator output found.")
+
+	if (state != 6):		raise SimulatorException("No PoC Testbench Report in simulator output found.")
