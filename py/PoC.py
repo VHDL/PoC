@@ -850,28 +850,12 @@ class PoC(ILogable, ArgParseMixin):
 	def HandleISESimulation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSimulation()
-
 		self._CheckISEEnvironment()
 		
 		fqnList =			self._ExtractFQNs(args.FQN)
 		board =				self._ExtractBoard(args.BoardName, args.DeviceName)
 
-		# prepare some paths
-		# self.Directories["XilinxPrimitiveSource"] =	Path(self.PoCConfig['INSTALL.Xilinx.ISE']['InstallationDirectory']) / "data/vhdl/src"
-		iseVersion =																self.PoCConfig['INSTALL.Xilinx.ISE']['Version']
-		binaryPath =																Path(self.PoCConfig['INSTALL.Xilinx.ISE']['BinaryDirectory'])
-
-		# prepare paths to vendor simulation libraries
-		# self.__PrepareVendorLibraryPaths()
-
-		# create a GHDLSimulator instance and prepare it
 		simulator = ISESimulator(self, args.logs, args.reports, args.GUIMode)
-		simulator.PrepareSimulator(binaryPath, iseVersion)
-
-		iseFilesDirectoryName = self.PoCConfig['CONFIG.DirectoryNames']['ISESimulatorFiles']
-		simulator.Directories.Working =			self.Directories.Temp / iseFilesDirectoryName
-		simulator.Directories.PreCompiled =	self.Directories.PreCompiled / iseFilesDirectoryName
-
 		simulator.RunAll(fqnList, board=board)		#, vhdlGenerics=None)
 
 		Exit.exit()

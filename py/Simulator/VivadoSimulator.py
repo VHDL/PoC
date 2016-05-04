@@ -54,11 +54,6 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 	_TOOL_CHAIN =						ToolChain.Xilinx_Vivado
 	_TOOL =									Tool.Xilinx_xSim
 
-	class __Directories__:
-		Working =			None
-		PoCRoot =			None
-		PreCompiled =	None
-
 	def __init__(self, host, showLogs, showReport, guiMode):
 		super(self.__class__, self).__init__(host, showLogs, showReport)
 		XilinxProjectExportMixIn.__init__(self)
