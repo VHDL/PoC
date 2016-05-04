@@ -68,7 +68,7 @@ class Configuration(BaseConfiguration):
 		},
 		"Linux": {
 			_section: {
-				"Version":								"15.0",
+				"Version":								"3.7",
 				"InstallationDirectory":	"${INSTALL.Lattice:InstallationDirectory}/diamond/${Version}_x64",
 				"BinaryDirectory":				"${InstallationDirectory}/bin/lin64"
 			}

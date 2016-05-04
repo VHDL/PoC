@@ -42,12 +42,8 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.GHDLSimulator")
 
 # load dependencies
-from configparser						import NoSectionError
-from colorama								import Fore as Foreground
-
-# from Base.Exceptions				import NotConfiguredException, PlatformNotSupportedException
 from lib.Functions					import Init
-from Base.Project						import FileTypes, VHDLVersion, Environment, ToolChain, Tool
+from Base.Project						import FileTypes, VHDLVersion, ToolChain, Tool
 from Base.Simulator					import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
 from ToolChains.GHDL				import GHDL, GHDLException
 from ToolChains.GTKWave			import GTKWave
