@@ -803,14 +803,6 @@ class PoC(ILogable, ArgParseMixin):
 		# FIXME: Altera vendor libraries are not compatible with VHDL-2008  -> use VHDL-93 by default
 		vhdlVersion =	self._ExtractVHDLVersion(args.VHDLVersion, defaultVersion=VHDLVersion.VHDL93)
 
-		if (args.GUIMode is True):
-			# prepare paths for GTKWave, if configured
-			if (len(self.PoCConfig.options("INSTALL.GTKWave")) != 0):
-				self.Directories["GTKWInstallation"] = Path(self.PoCConfig['INSTALL.GTKWave']['InstallationDirectory'])
-				self.Directories["GTKWBinary"] = Path(self.PoCConfig['INSTALL.GTKWave']['BinaryDirectory'])
-			else:
-				raise NotConfiguredException("No GHDL compatible waveform viewer is configured on this system.")
-
 		simulator = GHDLSimulator(self, args.logs, args.reports, args.GUIMode)
 		simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion, guiMode=args.GUIMode)		#, vhdlGenerics=None)
 
