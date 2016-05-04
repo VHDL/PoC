@@ -81,10 +81,9 @@ class Simulator(BaseSimulator):
 	def _PrepareSimulator(self):
 		# create the QuestaSim executable factory
 		self._LogVerbose("Preparing Mentor simulator.")
-		if (len(self.Host.PoCConfig.options("INSTALL.Mentor.QuestaSim")) != 0):
-			sectionName = 'INSTALL.Mentor.QuestaSim'
-		elif (len(self.Host.PoCConfig.options("INSTALL.Altera.ModelSim")) != 0):
-			sectionName = 'INSTALL.Altera.ModelSim'
+		for sectionName in ['INSTALL.Mentor.QuestaSim', 'INSTALL.Altera.ModelSim']:
+			if (len(self.Host.PoCConfig.options(sectionName)) != 0):
+				break
 		else:
 			raise NotConfiguredException(
 				"Neither Mentor Graphics QuestaSim nor ModelSim Altera-Edition are configured on this system.")

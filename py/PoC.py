@@ -768,32 +768,12 @@ class PoC(ILogable, ArgParseMixin):
 		self.PrintHeadline()
 		self.__PrepareForSimulation()
 
-		# check if Aldec tools are configure
-
-		if (len(self.PoCConfig.options("INSTALL.Aldec.ActiveHDL")) != 0):
-			binaryPath =																Path(self.PoCConfig['INSTALL.Aldec.ActiveHDL']['BinaryDirectory'])
-			aSimVersion =																self.PoCConfig['INSTALL.Aldec.ActiveHDL']['Version']
-		elif (len(self.PoCConfig.options("INSTALL.Lattice.ActiveHDL")) != 0):
-			binaryPath =																Path(self.PoCConfig['INSTALL.Lattice.ActiveHDL']['BinaryDirectory'])
-			aSimVersion =																self.PoCConfig['INSTALL.Lattice.ActiveHDL']['Version']
-		else:
-			raise NotConfiguredException("Neither Aldec's Active-HDL nor Active-HDL Lattice Edition are configured on this system.")
-
 		fqnList =			self._ExtractFQNs(args.FQN)
 		board =				self._ExtractBoard(args.BoardName, args.DeviceName)
 		vhdlVersion =	self._ExtractVHDLVersion(args.VHDLVersion)
 
-		# prepare paths to vendor simulation libraries
-		# self.__PrepareVendorLibraryPaths()
-		
 		# create a GHDLSimulator instance and prepare it
 		simulator = ActiveHDLSimulator(self, args.logs, args.reports, args.GUIMode)
-		simulator.PrepareSimulator(binaryPath, aSimVersion)
-
-		activeHDLFilesDirectoryName = self.PoCConfig['CONFIG.DirectoryNames']['ActiveHDLFiles']
-		simulator.Directories.Working =			self.Directories.Temp / activeHDLFilesDirectoryName
-		simulator.Directories.PreCompiled =	self.Directories.PreCompiled / activeHDLFilesDirectoryName
-
 		simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
 		Exit.exit()

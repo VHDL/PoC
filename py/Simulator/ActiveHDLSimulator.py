@@ -39,6 +39,9 @@ else:
 
 
 # load dependencies
+from pathlib import Path
+
+from Base.Exceptions import NotConfiguredException
 from lib.Functions							import Init
 from Base.Project								import FileTypes, VHDLVersion, ToolChain, Tool
 from Base.Simulator							import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
@@ -67,19 +70,30 @@ class Simulator(BaseSimulator):
 		self._directories =		self.__Directories__()
 		self._activeHDL =			None
 
+		activeHDLFilesDirectoryName = host.PoCConfig['CONFIG.DirectoryNames']['ActiveHDLFiles']
+		self.Directories.Working = host.Directories.Temp / activeHDLFilesDirectoryName
+		self.Directories.PreCompiled = host.Directories.PreCompiled / activeHDLFilesDirectoryName
+		
 		self._PrepareSimulationEnvironment()
+		self._PrepareSimulator()
 
 	@property
 	def Directories(self):
 		return self._directories
 
-	def _PrepareSimulationEnvironment(self):
-		self._LogNormal("preparing simulation environment...")
-		super()._PrepareSimulationEnvironment()
-		
-	def PrepareSimulator(self, binaryPath, version):
+	def _PrepareSimulator(self):
 		# create the Active-HDL executable factory
 		self._LogVerbose("Preparing Active-HDL simulator.")
+		for sectionName in ['INSTALL.Aldec.ActiveHDL', 'INSTALL.Lattice.ActiveHDL']:
+			if (len(self.Host.PoCConfig.options(sectionName)) != 0):
+				break
+		else:
+			raise NotConfiguredException(
+				"Neither Aldec's Active-HDL nor Active-HDL Lattice Edition are configured on this system.")
+
+		asimSection = self.Host.PoCConfig[sectionName]
+		binaryPath = Path(asimSection['BinaryDirectory'])
+		version = asimSection['Version']
 		self._activeHDL =		ActiveHDL(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def Run(self, testbench, board, vhdlVersion="93", vhdlGenerics=None, guiMode=False):
