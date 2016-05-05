@@ -3,7 +3,7 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-#	Authors:				Patrick Lehmann
+#	Authors:						Patrick Lehmann
 # 
 #	PowerShell Script:	Wrapper Script to execute a given Python script
 # 
@@ -59,6 +59,7 @@ foreach ($i in $PyWrapper_Parameters) {
 	
 	$PyWrapper_LoadEnv_Xilinx_ISE =			$PyWrapper_LoadEnv_Xilinx_ISE -or	($i -ceq "coregen")
 	$PyWrapper_LoadEnv_Xilinx_ISE =			$PyWrapper_LoadEnv_Xilinx_ISE -or	($i -ceq "xst")
+	$PyWrapper_LoadEnv_Xilinx_Vivado =	$PyWrapper_LoadEnv_Xilinx_Vivado -or ($i -ceq "synth")
 }
 
 # publish PoC directories as environment variables

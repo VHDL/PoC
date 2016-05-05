@@ -62,11 +62,11 @@ class Simulator(BaseSimulator):
 		self._vhdlVersion =		None
 		self._vhdlGenerics =	None
 
-		self._activeHDL =			None
+		self._toolChain =			None
 
-		activeHDLFilesDirectoryName = host.PoCConfig['CONFIG.DirectoryNames']['ActiveHDLFiles']
-		self.Directories.Working = host.Directories.Temp / activeHDLFilesDirectoryName
-		self.Directories.PreCompiled = host.Directories.PreCompiled / activeHDLFilesDirectoryName
+		activeHDLFilesDirectoryName =		host.PoCConfig['CONFIG.DirectoryNames']['ActiveHDLFiles']
+		self.Directories.Working =			host.Directories.Temp / activeHDLFilesDirectoryName
+		self.Directories.PreCompiled =	host.Directories.PreCompiled / activeHDLFilesDirectoryName
 		
 		self._PrepareSimulationEnvironment()
 		self._PrepareSimulator()
@@ -84,7 +84,7 @@ class Simulator(BaseSimulator):
 		asimSection = self.Host.PoCConfig[sectionName]
 		binaryPath = Path(asimSection['BinaryDirectory'])
 		version = asimSection['Version']
-		self._activeHDL =		ActiveHDL(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._toolChain =		ActiveHDL(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def Run(self, testbench, board, vhdlVersion="93", vhdlGenerics=None, guiMode=False):
 		self._vhdlVersion =		vhdlVersion
@@ -114,7 +114,7 @@ class Simulator(BaseSimulator):
 		self._LogNormal("Running VHDL compiler for every vhdl file...")
 		
 		# create a ActiveHDLVHDLCompiler instance
-		alib = self._activeHDL.GetVHDLLibraryTool()
+		alib = self._toolChain.GetVHDLLibraryTool()
 
 		for lib in self._pocProject.VHDLLibraries:
 			alib.Parameters[alib.SwitchLibraryName] = lib.Name
@@ -126,7 +126,7 @@ class Simulator(BaseSimulator):
 				raise SimulatorException("Error creating VHDL library '{0}'.".format(lib.Name))
 
 		# create a ActiveHDLVHDLCompiler instance
-		acom = self._activeHDL.GetVHDLCompiler()
+		acom = self._toolChain.GetVHDLCompiler()
 		if (self._vhdlVersion == VHDLVersion.VHDL87):			acom.Parameters[acom.SwitchVHDLVersion] =	"87"
 		elif (self._vhdlVersion == VHDLVersion.VHDL93):		acom.Parameters[acom.SwitchVHDLVersion] =	"93"
 		elif (self._vhdlVersion == VHDLVersion.VHDL02):		acom.Parameters[acom.SwitchVHDLVersion] =	"2002"
@@ -152,7 +152,7 @@ class Simulator(BaseSimulator):
 		tclBatchFilePath =		self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimBatchScript']
 		
 		# create a ActiveHDLSimulator instance
-		aSim = self._activeHDL.GetSimulator()
+		aSim = self._toolChain.GetSimulator()
 		aSim.Parameters[aSim.SwitchBatchCommand] = "asim -lib {0} {1}; run -all; bye".format(VHDL_TESTBENCH_LIBRARY_NAME, testbench.ModuleName)
 
 		# aSim.Optimization =			True
@@ -174,7 +174,7 @@ class Simulator(BaseSimulator):
 		tclWaveFilePath =			self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimWaveScript']
 		
 		# create a ActiveHDLSimulator instance
-		aSim = self._activeHDL.GetSimulator()
+		aSim = self._toolChain.GetSimulator()
 		aSim.Optimization =		True
 		aSim.TimeResolution =	"1fs"
 		aSim.Title =					testbench.ModuleName

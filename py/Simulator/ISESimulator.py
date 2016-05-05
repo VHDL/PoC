@@ -32,17 +32,17 @@
 # ==============================================================================
 #
 # entry point
-from pathlib import Path
-
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
 else:
 	from lib.Functions import Exit
-
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.ISESimulator")
 
+
 # load dependencies
+from pathlib									import Path
+
 from lib.Functions						import Init
 from Base.Project							import VHDLVersion, ToolChain, Tool
 from Base.Simulator						import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult

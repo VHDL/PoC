@@ -53,6 +53,7 @@ from Compiler.LSECompiler						import Compiler as LSECompiler
 from Compiler.QuartusCompiler				import Compiler as MapCompiler
 from Compiler.XCOCompiler						import Compiler as XCOCompiler
 from Compiler.XSTCompiler						import Compiler as XSTCompiler
+from Compiler.SynthCompiler					import Compiler as SynthCompiler
 from PoC.Config											import Board
 from PoC.Entity											import Root, FQN, EntityTypes, WildCard, TestbenchKind, NetlistKind
 from PoC.Project										import Solution, Repository
@@ -241,14 +242,15 @@ class PoC(ILogable, ArgParseMixin):
 			raise NotConfiguredException("There is a mismatch between PoCRoot and PoC installation directory.")
 
 		# parsing values into class fields
-		self.Directories.Source =				self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['HDLSourceFiles']
-		self.Directories.Testbench =		self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['TestbenchFiles']
-		self.Directories.NetList =			self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['NetlistFiles']
-		self.Directories.Temp =					self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['TemporaryFiles']
-		self.Directories.PreCompiled =	self.Directories.Root / self.PoCConfig['CONFIG.DirectoryNames']['PrecompiledFiles']
+		configSection =									self.PoCConfig['CONFIG.DirectoryNames']
+		self.Directories.Source =				self.Directories.Root / configSection['HDLSourceFiles']
+		self.Directories.Testbench =		self.Directories.Root / configSection['TestbenchFiles']
+		self.Directories.NetList =			self.Directories.Root / configSection['NetlistFiles']
+		self.Directories.Temp =					self.Directories.Root / configSection['TemporaryFiles']
+		self.Directories.PreCompiled =	self.Directories.Root / configSection['PrecompiledFiles']
 
 		# Initialize the default board (GENERIC)
-		self.__SimulationDefaultBoard =		Board(self)
+		self.__SimulationDefaultBoard =	Board(self)
 
 		# Initialize PoC's namespace structure
 		self.__root = Root(self)
@@ -421,7 +423,6 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("add-solution", help="Add a solution to PoC.")
-	# @HandleVerbosityOptions
 	def HandleAddSolution(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
@@ -458,7 +459,6 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("list-solution", help="List all solutions registered in PoC.")
-	# @HandleVerbosityOptions
 	def HandleListSolution(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
@@ -481,7 +481,6 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("remove-solution", help="Add a solution to PoC.")
 	@ArgumentAttribute(metavar="<SolutionID>", dest="SolutionID", type=str, help="Solution name.")
-	# @HandleVerbosityOptions
 	def HandleRemoveSolution(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
@@ -507,7 +506,6 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("add-project", help="Add a project to PoC.")
-	# @HandleVerbosityOptions
 	def HandleAddProject(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
@@ -517,7 +515,6 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("list-project", help="List all projects registered in PoC.")
-	# @HandleVerbosityOptions
 	def HandleListProject(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
@@ -541,7 +538,6 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("remove-project", help="Add a project to PoC.")
 	@ArgumentAttribute(metavar="<Project>", dest="Project", type=str, help="Project name.")
-	# @HandleVerbosityOptions
 	def HandleRemoveProject(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
@@ -551,7 +547,6 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("add-ipcore", help="Add a ipcore to PoC.")
-	# @HandleVerbosityOptions
 	def HandleAddIPCore(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
@@ -561,7 +556,6 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("list-ipcore", help="List all ipcores registered in PoC.")
-	# @HandleVerbosityOptions
 	def HandleListIPCore(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
@@ -578,7 +572,6 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("remove-ipcore", help="Add a ipcore to PoC.")
 	@ArgumentAttribute(metavar="<IPCore>", dest="IPCore", type=str, help="IPCore name.")
-	# @HandleVerbosityOptions
 	def HandleRemoveIPCore(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
@@ -588,7 +581,6 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("add-testbench", help="Add a testbench to PoC.")
-	# @HandleVerbosityOptions
 	def HandleAddTestbench(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
@@ -598,7 +590,6 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("list-testbench", help="List all testbenchs registered in PoC.")
-	# @HandleVerbosityOptions
 	def HandleListTestbench(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
@@ -615,7 +606,6 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("remove-testbench", help="Add a testbench to PoC.")
 	@ArgumentAttribute(metavar="<Testbench>", dest="Testbench", type=str, help="Testbench name.")
-	# @HandleVerbosityOptions
 	def HandleRemoveTestbench(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
@@ -626,7 +616,6 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("query", help="Simulate a PoC Entity with Aldec Active-HDL")
 	@ArgumentAttribute(metavar="<Query>", dest="Query", type=str, help="todo help")
-	# @HandleVerbosityOptions
 	def HandleQueryConfiguration(self, args):
 		self.__PrepareForConfiguration()
 		query = Query(self)
@@ -638,15 +627,15 @@ class PoC(ILogable, ArgParseMixin):
 	# ============================================================================
 	# Simulation	commands
 	# ============================================================================
-	def __PrepareVendorLibraryPaths(self):
-		# prepare vendor library path for Altera
-		if (len(self.PoCConfig.options("INSTALL.Altera.Quartus")) != 0):
-			self.Directories["AlteraPrimitiveSource"] = Path(self.PoCConfig['INSTALL.Altera.Quartus']['InstallationDirectory']) / "eda/sim_lib"
-		# prepare vendor library path for Xilinx
-		if (len(self.PoCConfig.options("INSTALL.Xilinx.ISE")) != 0):
-			self.Directories["XilinxPrimitiveSource"] = Path(self.PoCConfig['INSTALL.Xilinx.ISE']['InstallationDirectory']) / "ISE/vhdl/src"
-		elif (len(self.PoCConfig.options("INSTALL.Xilinx.Vivado")) != 0):
-			self.Directories["XilinxPrimitiveSource"] = Path(self.PoCConfig['INSTALL.Xilinx.Vivado']['InstallationDirectory']) / "data/vhdl/src"
+	# def __PrepareVendorLibraryPaths(self):
+	# 	# prepare vendor library path for Altera
+	# 	if (len(self.PoCConfig.options("INSTALL.Altera.Quartus")) != 0):
+	# 		self.Directories["AlteraPrimitiveSource"] = Path(self.PoCConfig['INSTALL.Altera.Quartus']['InstallationDirectory']) / "eda/sim_lib"
+	# 	# prepare vendor library path for Xilinx
+	# 	if (len(self.PoCConfig.options("INSTALL.Xilinx.ISE")) != 0):
+	# 		self.Directories["XilinxPrimitiveSource"] = Path(self.PoCConfig['INSTALL.Xilinx.ISE']['InstallationDirectory']) / "ISE/vhdl/src"
+	# 	elif (len(self.PoCConfig.options("INSTALL.Xilinx.Vivado")) != 0):
+	# 		self.Directories["XilinxPrimitiveSource"] = Path(self.PoCConfig['INSTALL.Xilinx.Vivado']['InstallationDirectory']) / "data/vhdl/src"
 
 	def _ExtractBoard(self, BoardName, DeviceName, force=False):
 		if (BoardName is not None):			return Board(self, BoardName)
@@ -996,6 +985,29 @@ class PoC(ILogable, ArgParseMixin):
 
 		Exit.exit()
 
+	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "synth" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Synthesis commands")
+	@CommandAttribute("synth", help="Compile a PoC IP core with Xilinx Vivado Synth to a design checkpoint")
+	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@BoardDeviceAttributeGroup()
+	@NoCleanUpAttribute()
+	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
+	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
+	def HandleSynthCompilation(self, args):
+		self.PrintHeadline()
+		self.__PrepareForSynthesis()
+		self._CheckVivadoEnvironment()
+
+		fqnList =	self._ExtractFQNs(args.FQN, defaultType=EntityTypes.NetList)
+		board =		self._ExtractBoard(args.BoardName, args.DeviceName, force=True)
+
+		compiler = SynthCompiler(self, args.logs, args.reports, self.DryRun, args.NoCleanUp)
+		compiler.RunAll(fqnList, board)
+
+		Exit.exit()
+
 
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "quartus" command
@@ -1027,13 +1039,13 @@ class PoC(ILogable, ArgParseMixin):
 	# create the sub-parser for the "lattice" command
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Synthesis commands")
-	@CommandAttribute("lattice", help="Compile a PoC IP core with Lattice Diamond LSE to a netlist")
+	@CommandAttribute("lse", help="Compile a PoC IP core with Lattice Diamond LSE to a netlist")
 	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
 	@BoardDeviceAttributeGroup()
 	@NoCleanUpAttribute()
 	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
 	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
-	def HandleLatticeCompilation(self, args):
+	def HandleLSECompilation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSynthesis()
 

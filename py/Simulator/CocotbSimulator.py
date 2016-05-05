@@ -33,10 +33,6 @@
 # ==============================================================================
 #
 # entry point
-from textwrap import dedent
-
-from PoC.Config import Vendors
-
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -47,10 +43,12 @@ else:
 
 # load dependencies
 import shutil
+from textwrap								import dedent
 
 from lib.Functions					import Init
 from Base.Project						import FileTypes, ToolChain, Tool
 from Base.Simulator					import SimulatorException, Simulator as BaseSimulator
+from PoC.Config							import Vendors
 from PoC.Entity							import WildCard
 from ToolChains.GNU					import Make
 
@@ -68,9 +66,9 @@ class Simulator(BaseSimulator):
 		self._entity =				None
 		self._testbenchFQN =	None
 
-		configSection = host.PoCConfig['CONFIG.DirectoryNames']
-		self.Directories.Working = host.Directories.Temp / configSection['CocotbFiles']
-		self.Directories.PreCompiled = host.Directories.PreCompiled / configSection['QuestaSimFiles']
+		configSection =									host.PoCConfig['CONFIG.DirectoryNames']
+		self.Directories.Working =			host.Directories.Temp / configSection['CocotbFiles']
+		self.Directories.PreCompiled =	host.Directories.PreCompiled / configSection['QuestaSimFiles']
 
 		self._PrepareSimulationEnvironment()
 		self._PrepareSimulator()

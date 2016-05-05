@@ -32,10 +32,6 @@
 # ==============================================================================
 #
 # entry point
-from pathlib import Path
-
-from PoC.Entity import WildCard
-
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -45,10 +41,12 @@ else:
 
 
 # load dependencies
+from pathlib									import Path
 
 from lib.Functions						import Init
 from Base.Project							import ToolChain, Tool
 from Base.Compiler						import Compiler as BaseCompiler, CompilerException
+from PoC.Entity								import WildCard
 from ToolChains.Xilinx.Xilinx	import XilinxProjectExportMixIn
 from ToolChains.Xilinx.ISE		import ISE
 
@@ -65,8 +63,7 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 		XilinxProjectExportMixIn.__init__(self)
 
 		self._device =			None
-
-		self._ise =					None
+		self._toolChain =		None
 
 		configSection = host.PoCConfig['CONFIG.DirectoryNames']
 		self.Directories.Working = host.Directories.Temp / configSection['ISESynthesisFiles']
@@ -80,7 +77,7 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 		iseSection = self.Host.PoCConfig['INSTALL.Xilinx.ISE']
 		binaryPath = Path(iseSection['BinaryDirectory'])
 		version = iseSection['Version']
-		self._ise =		ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._toolChain =		ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):
 		for fqn in fqnList:
@@ -145,7 +142,7 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 	def _RunCompile(self, netlist):
 		reportFilePath = self.Directories.Working / (netlist.ModuleName + ".log")
 
-		xst = self._ise.GetXst()
+		xst = self._toolChain.GetXst()
 		xst.Parameters[xst.SwitchIntStyle] =		"xflow"
 		xst.Parameters[xst.SwitchXstFile] =			netlist.ModuleName + ".xst"
 		xst.Parameters[xst.SwitchReportFile] =	str(reportFilePath)

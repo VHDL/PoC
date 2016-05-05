@@ -32,8 +32,6 @@
 # ==============================================================================
 #
 # entry point
-from PoC.Entity import WildCard
-
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -51,6 +49,7 @@ from textwrap								import dedent
 from lib.Functions					import Init
 from Base.Project						import ToolChain, Tool
 from Base.Compiler					import Compiler as BaseCompiler, CompilerException
+from PoC.Entity							import WildCard
 from ToolChains.Xilinx.ISE	import ISE
 
 
@@ -62,8 +61,7 @@ class Compiler(BaseCompiler):
 		super().__init__(host, showLogs, showReport, dryRun, noCleanUp)
 
 		self._device =			None
-
-		self._ise =					None
+		self._toolChain =		None
 
 		configSection = host.PoCConfig['CONFIG.DirectoryNames']
 		self.Directories.Working = host.Directories.Temp / configSection['ISECoreGeneratorFiles']
@@ -76,7 +74,7 @@ class Compiler(BaseCompiler):
 		iseSection = self.Host.PoCConfig['INSTALL.Xilinx.ISE']
 		binaryPath = Path(iseSection['BinaryDirectory'])
 		version = iseSection['Version']
-		self._ise = ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._toolChain = ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):
 		for fqn in fqnList:
@@ -205,7 +203,7 @@ class Compiler(BaseCompiler):
 		# running CoreGen
 		# ==========================================================================
 		self._LogVerbose("Executing CoreGen...")
-		coreGen = self._ise.GetCoreGenerator()
+		coreGen = self._toolChain.GetCoreGenerator()
 		coreGen.Parameters[coreGen.SwitchProjectFile] =	"."		# use current directory and the default project name
 		coreGen.Parameters[coreGen.SwitchBatchFile] =		str(xcoFilePath)
 		coreGen.Parameters[coreGen.FlagRegenerate] =		True

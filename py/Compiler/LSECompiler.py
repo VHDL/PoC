@@ -32,20 +32,18 @@
 # ==============================================================================
 #
 # entry point
-from pathlib import Path
-
-from PoC.Entity import WildCard
-
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
 else:
 	from lib.Functions import Exit
-
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Compiler.XSTCompiler")
 
 
 # load dependencies
+from pathlib										import Path
+
+from PoC.Entity									import WildCard
 from lib.Functions							import Init
 from Base.Project								import ToolChain, Tool
 from Base.Compiler							import Compiler as BaseCompiler, CompilerException
@@ -59,7 +57,7 @@ class Compiler(BaseCompiler):
 	def __init__(self, host, showLogs, showReport, dryRun, noCleanUp):
 		super().__init__(host, showLogs, showReport, dryRun, noCleanUp)
 
-		self._diamond =			None
+		self._toolChain =			None
 
 		configSection = host.PoCConfig['CONFIG.DirectoryNames']
 		self.Directories.Working = host.Directories.Temp / configSection['LatticeSynthesisFiles']
@@ -72,7 +70,7 @@ class Compiler(BaseCompiler):
 		diamondSection = self.Host.PoCConfig['INSTALL.Lattice.Diamond']
 		binaryPath = Path(diamondSection['BinaryDirectory'])
 		version = diamondSection['Version']
-		self._diamond =		Diamond(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._toolChain =		Diamond(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):
 		for fqn in fqnList:
@@ -143,7 +141,7 @@ class Compiler(BaseCompiler):
 		pass
 
 	def _RunCompile(self, netlist):
-		tclShell = self._diamond.GetTclShell()
+		tclShell = self._toolChain.GetTclShell()
 
 		# raise NotImplementedError("Next: implement interactive shell")
 		self._LogWarning("Execution skipped due to Tcl shell problems.")

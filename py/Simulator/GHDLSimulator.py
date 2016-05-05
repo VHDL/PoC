@@ -32,11 +32,6 @@
 # ==============================================================================
 #
 # entry point
-from pathlib import Path
-
-from Base.Exceptions import NotConfiguredException
-from Base.Logging import Severity
-
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -45,6 +40,10 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.GHDLSimulator")
 
 # load dependencies
+from pathlib								import Path
+
+from Base.Exceptions				import NotConfiguredException
+from Base.Logging						import Severity
 from lib.Functions					import Init
 from Base.Project						import FileTypes, VHDLVersion, ToolChain, Tool
 from Base.Simulator					import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
@@ -68,11 +67,11 @@ class Simulator(BaseSimulator):
 		self._testbenchFQN =	None
 		self._vhdlGenerics =	None
 
-		self._ghdl =					None
+		self._toolChain =			None
 
-		ghdlFilesDirectoryName = host.PoCConfig['CONFIG.DirectoryNames']['GHDLFiles']
-		self.Directories.Working = host.Directories.Temp / ghdlFilesDirectoryName
-		self.Directories.PreCompiled = host.Directories.PreCompiled / ghdlFilesDirectoryName
+		ghdlFilesDirectoryName =				host.PoCConfig['CONFIG.DirectoryNames']['GHDLFiles']
+		self.Directories.Working =			host.Directories.Temp / ghdlFilesDirectoryName
+		self.Directories.PreCompiled =	host.Directories.PreCompiled / ghdlFilesDirectoryName
 
 		if (guiMode is True):
 			# prepare paths for GTKWave, if configured
@@ -92,7 +91,7 @@ class Simulator(BaseSimulator):
 		binaryPath = Path(ghdlSection['BinaryDirectory'])
 		version = ghdlSection['Version']
 		backend = ghdlSection['Backend']
-		self._ghdl =			GHDL(self.Host.Platform, binaryPath, version, backend, logger=self.Logger)
+		self._toolChain =			GHDL(self.Host.Platform, binaryPath, version, backend, logger=self.Logger)
 
 	def Run(self, testbench, board, vhdlVersion="93c", vhdlGenerics=None, guiMode=False):
 		self._LogQuiet("Testbench: {0!s}".format(testbench.Parent, **Init.Foreground))
@@ -104,15 +103,15 @@ class Simulator(BaseSimulator):
 		self._CreatePoCProject(testbench, board)
 		self._AddFileListFile(testbench.FilesFile)
 		
-		if (self._ghdl.Backend == "gcc"):
+		if (self._toolChain.Backend == "gcc"):
 			self._RunAnalysis()
 			self._RunElaboration(testbench)
 			self._RunSimulation(testbench)
-		elif (self._ghdl.Backend == "llvm"):
+		elif (self._toolChain.Backend == "llvm"):
 			self._RunAnalysis()
 			self._RunElaboration(testbench)
 			self._RunSimulation(testbench)
-		elif (self._ghdl.Backend == "mcode"):
+		elif (self._toolChain.Backend == "mcode"):
 			self._RunAnalysis()
 			self._RunSimulation(testbench)
 
@@ -130,7 +129,7 @@ class Simulator(BaseSimulator):
 		self._LogNormal("Running analysis for every vhdl file...")
 		
 		# create a GHDLAnalyzer instance
-		ghdl = self._ghdl.GetGHDLAnalyze()
+		ghdl = self._toolChain.GetGHDLAnalyze()
 		ghdl.Parameters[ghdl.FlagVerbose] =						(self.Logger.LogLevel is Severity.Debug)
 		ghdl.Parameters[ghdl.FlagExplicit] =					True
 		ghdl.Parameters[ghdl.FlagRelaxedRules] =			True
@@ -176,7 +175,7 @@ class Simulator(BaseSimulator):
 		self._LogNormal("Running elaboration...")
 		
 		# create a GHDLElaborate instance
-		ghdl = self._ghdl.GetGHDLElaborate()
+		ghdl = self._toolChain.GetGHDLElaborate()
 		ghdl.Parameters[ghdl.FlagVerbose] =						(self.Logger.LogLevel is Severity.Debug)
 		ghdl.Parameters[ghdl.SwitchVHDLLibrary] =			VHDL_TESTBENCH_LIBRARY_NAME
 		ghdl.Parameters[ghdl.ArgTopLevel] =						testbench.ModuleName
@@ -210,7 +209,7 @@ class Simulator(BaseSimulator):
 		self._LogNormal("Running simulation...")
 			
 		# create a GHDLRun instance
-		ghdl = self._ghdl.GetGHDLRun()
+		ghdl = self._toolChain.GetGHDLRun()
 		ghdl.Parameters[ghdl.FlagVerbose] =						(self.Logger.LogLevel is Severity.Debug)
 		ghdl.Parameters[ghdl.FlagExplicit] =					True
 		ghdl.Parameters[ghdl.FlagRelaxedRules] =			True
@@ -262,7 +261,7 @@ class Simulator(BaseSimulator):
 		self._LogNormal("Executing simulation...")
 			
 		# create a GHDLRun instance
-		ghdl = self._ghdl.GetGHDLRun()
+		ghdl = self._toolChain.GetGHDLRun()
 		ghdl.VHDLVersion =	self._vhdlVersion
 		ghdl.VHDLLibrary =	VHDL_TESTBENCH_LIBRARY_NAME
 		
