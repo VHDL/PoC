@@ -48,9 +48,9 @@ from textwrap								import dedent
 
 from lib.Functions					import Init
 from Base.Project						import ToolChain, Tool
-from Base.Compiler					import Compiler as BaseCompiler, CompilerException
+from Base.Compiler					import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
 from PoC.Entity							import WildCard
-from ToolChains.Xilinx.ISE	import ISE
+from ToolChains.Xilinx.ISE	import ISE, ISEException
 
 
 class Compiler(BaseCompiler):
@@ -80,16 +80,16 @@ class Compiler(BaseCompiler):
 		for fqn in fqnList:
 			entity = fqn.Entity
 			if (isinstance(entity, WildCard)):
-				for testbench in entity.GetCGNetlist():
+				for netlist in entity.GetCoreGenNetlists():
 					try:
-						self.Run(testbench, *args, **kwargs)
-					except CompilerException:
+						self.Run(netlist, *args, **kwargs)
+					except SkipableCompilerException:
 						pass
 			else:
-				testbench = entity.CGNetlist
+				netlist = entity.CGNetlist
 				try:
-					self.Run(testbench, *args, **kwargs)
-				except CompilerException:
+					self.Run(netlist, *args, **kwargs)
+				except SkipableCompilerException:
 					pass
 
 	def Run(self, netlist, board, **_):
@@ -115,11 +115,6 @@ class Compiler(BaseCompiler):
 		self._RunPostCopy(netlist)
 		self._RunPostReplace(netlist)
 		self._RunPostDelete(netlist)
-
-	def _PrepareCompilerEnvironment(self, device):
-		self._LogNormal("preparing synthesis environment...")
-		self.Directories.Destination = self.Directories.Netlist / str(device)
-		super()._PrepareCompilerEnvironment()
 
 	def _WriteSpecialSectionIntoConfig(self, device):
 		# add the key Device to section SPECIAL at runtime to change interpolation results
@@ -207,5 +202,11 @@ class Compiler(BaseCompiler):
 		coreGen.Parameters[coreGen.SwitchProjectFile] =	"."		# use current directory and the default project name
 		coreGen.Parameters[coreGen.SwitchBatchFile] =		str(xcoFilePath)
 		coreGen.Parameters[coreGen.FlagRegenerate] =		True
-		coreGen.Generate()
+
+		try:
+			coreGen.Generate()
+		except ISEException as ex:
+			raise CompilerException("Error while compiling '{0!s}'.".format(netlist)) from ex
+		if coreGen.HasErrors:
+			raise CompilerException("Error while compiling '{0!s}'.".format(netlist))
 

@@ -39,6 +39,7 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.VivadoSimulator")
 
+
 # load dependencies
 from pathlib									import Path
 
@@ -92,7 +93,6 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		self._CreatePoCProject(testbench, board)
 		self._AddFileListFile(testbench.FilesFile)
 		
-		# self._RunCompile(testbenchName)
 		self._RunLink(testbench)
 		self._RunSimulation(testbench)
 		
@@ -101,16 +101,6 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		elif (testbench.Result is SimulationResult.Failed):			self._LogQuiet("  {RED}[FAILED]{NOCOLOR}".format(**Init.Foreground))
 		elif (testbench.Result is SimulationResult.Error):			self._LogQuiet("  {RED}[ERROR]{NOCOLOR}".format(**Init.Foreground))
 
-	def _RunCompile(self, testbench):
-		self._LogNormal("  compiling source files...")
-
-		prjFilePath = self.Directories.Working / (testbench.ModuleName + ".prj")
-		self._WriteXilinxProjectFile(prjFilePath, "xSim", self._vhdlVersion)
-
-		# create a VivadoVHDLCompiler instance
-		xvhcomp = self._vivado.GetVHDLCompiler()
-		xvhcomp.Compile(str(prjFilePath))
-		
 	def _RunLink(self, testbench):
 		self._LogNormal("Running xelab...")
 		

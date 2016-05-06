@@ -35,11 +35,10 @@ from enum								import Enum, unique
 from pathlib						import Path
 from flags							import Flags
 
-from Base.Configuration import ConfigurationException
+from lib.Functions			import merge
 from Base.Exceptions		import CommonException
 from Parser.FilesParser	import VHDLSourceFileMixIn, VerilogSourceFileMixIn, CocotbSourceFileMixIn
 from PoC.Config					import Board, Device
-from lib.Functions			import merge
 
 
 # TODO: nested filesets
@@ -524,7 +523,7 @@ class File:
 		return self._file
 	
 	def Open(self):
-		if (not self._file.exists()):		raise ConfigurationException("File '{0!s}' not found.".format(self._file)) from FileNotFoundError(str(self._file))
+		if (not self._file.exists()):		raise CommonException("File '{0!s}' not found.".format(self._file)) from FileNotFoundError(str(self._file))
 		try:
 			self._handle = self._file.open('r')
 		except Exception as ex:
