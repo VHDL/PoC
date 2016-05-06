@@ -547,11 +547,25 @@ def SimulatorFilter(gen):
 
 def XstFilter(gen):
 	for line in gen:
-		yield LogEntry(line, Severity.Normal)
+		if line.startswith("ERROR:"):
+			yield LogEntry(line, Severity.Error)
+		elif line.startswith("WARNING:"):
+			yield LogEntry(line, Severity.Warning)
+		elif line.startswith("Note:"):
+			yield LogEntry(line, Severity.Info)
+		else:
+			yield LogEntry(line, Severity.Normal)
 
 def CoreGeneratorFilter(gen):
 	for line in gen:
-		yield LogEntry(line, Severity.Normal)
+		if line.startswith("ERROR:"):
+			yield LogEntry(line, Severity.Error)
+		elif line.startswith("WARNING:"):
+			yield LogEntry(line, Severity.Warning)
+		elif line.startswith("Note:"):
+			yield LogEntry(line, Severity.Info)
+		else:
+			yield LogEntry(line, Severity.Normal)
 
 
 class ISEProject(BaseProject):

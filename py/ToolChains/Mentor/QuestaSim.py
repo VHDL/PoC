@@ -112,10 +112,9 @@ class Configuration(BaseConfiguration):
 	def RunPostConfigurationTasks(self):
 		if (len(self._host.PoCConfig[self._section]) == 0): return # exit if not configured
 
-		tempDirectory = self._host.PoCConfig['CONFIG.DirectoryNames']['TemporaryFiles']
 		precompiledDirectory = self._host.PoCConfig['CONFIG.DirectoryNames']['PrecompiledFiles']
 		vSimSimulatorFiles = self._host.PoCConfig['CONFIG.DirectoryNames']['QuestaSimFiles']
-		vsimPath = self._host.Directories.Root / tempDirectory / precompiledDirectory / vSimSimulatorFiles
+		vsimPath = self._host.Directories.Root / precompiledDirectory / vSimSimulatorFiles
 		modelsimIniPath = vsimPath / "modelsim.ini"
 		if not modelsimIniPath.exists():
 			if not vsimPath.exists(): vsimPath.mkdir(parents=True)

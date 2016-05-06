@@ -200,10 +200,6 @@ class Map(Executable, QuartusMixIn):
 
 		except StopIteration as ex:
 			pass
-		except QuartusException:
-			raise
-		# except Exception as ex:
-		#	raise GHDLException("Error while executing GHDL.") from ex
 		finally:
 			if self._hasOutput:
 				self._LogNormal("    " + ("-" * 76))
@@ -234,21 +230,24 @@ def MapFilter(gen):
 	iterator = iter(gen)
 
 	for line in iterator:
-		if line.startswith("Info: Command: quartus_map"):		break
+		if line.startswith("Error ("):
+			yield LogEntry(line, Severity.Error)
+		elif line.startswith("Info: Command: quartus_map"):
+			break
 
 	for line in iterator:
 		if line.startswith("Info ("):
-			yield LogEntry(line[5:], Severity.Verbose)
+			yield LogEntry(line, Severity.Verbose)
 		elif line.startswith("Error ("):
-			yield LogEntry(line[6:], Severity.Error)
+			yield LogEntry(line, Severity.Error)
 		elif line.startswith("Warning ("):
-			yield LogEntry(line[8:], Severity.Warning)
+			yield LogEntry(line, Severity.Warning)
 		elif line.startswith("    Info ("):
-			yield LogEntry("  " + line[9:], Severity.Verbose)
+			yield LogEntry(line, Severity.Verbose)
 		elif line.startswith("Info:"):
-			yield LogEntry(line[6:], Severity.Info)
+			yield LogEntry(line, Severity.Info)
 		elif line.startswith("    Info:"):
-			yield LogEntry(line[10:], Severity.Debug)
+			yield LogEntry(line, Severity.Debug)
 		else:
 			yield LogEntry(line, Severity.Normal)
 
