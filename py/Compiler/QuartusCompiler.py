@@ -32,6 +32,8 @@
 # ==============================================================================
 #
 # entry point
+from pathlib import Path
+
 from PoC.Entity import WildCard
 
 if __name__ != "__main__":
@@ -45,10 +47,9 @@ else:
 
 # load dependencies
 from lib.Functions						import Init
-from Base.Exceptions					import NotConfiguredException, PlatformNotSupportedException
-from Base.Project							import VHDLVersion, Environment, ToolChain, Tool
-from Base.Compiler						import Compiler as BaseCompiler, CompilerException
-from ToolChains.Altera.Quartus	import Quartus, QuartusSettingsFile, QuartusProjectFile
+from Base.Project							import ToolChain, Tool
+from Base.Compiler						import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
+from ToolChains.Altera.Quartus	import Quartus, QuartusSettingsFile, QuartusProjectFile, QuartusException
 
 
 class Compiler(BaseCompiler):
@@ -58,27 +59,35 @@ class Compiler(BaseCompiler):
 	def __init__(self, host, showLogs, showReport, dryRun, noCleanUp):
 		super().__init__(host, showLogs, showReport, dryRun, noCleanUp)
 
-		self._quartus =		None
+		self._quartus =			None
 
-	def PrepareCompiler(self, binaryPath, version):
-		# create the GHDL executable factory
+		configSection = host.PoCConfig['CONFIG.DirectoryNames']
+		self.Directories.Working = host.Directories.Temp / configSection['QuartusSynthesisFiles']
+		self.Directories.Netlist = host.Directories.Root / configSection['NetlistFiles']
+
+		self._PrepareCompiler()
+
+	def _PrepareCompiler(self):
 		self._LogVerbose("Preparing Quartus-II Map (quartus_map).")
+		quartusSection = self.Host.PoCConfig['INSTALL.Altera.Quartus']
+		binaryPath = Path(quartusSection['BinaryDirectory'])
+		version =	quartusSection['Version']
 		self._quartus =		Quartus(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):
 		for fqn in fqnList:
 			entity = fqn.Entity
 			if (isinstance(entity, WildCard)):
-				for testbench in entity.GetQuartusNetlist():
+				for netlist in entity.GetQuartusNetlists():
 					try:
-						self.Run(testbench, *args, **kwargs)
-					except CompilerException:
+						self.Run(netlist, *args, **kwargs)
+					except SkipableCompilerException:
 						pass
 			else:
-				testbench = entity.QuartusNetlist
+				netlist = entity.QuartusNetlist
 				try:
-					self.Run(testbench, *args, **kwargs)
-				except CompilerException:
+					self.Run(netlist, *args, **kwargs)
+				except SkipableCompilerException:
 					pass
 
 	def Run(self, netlist, board, **_):
@@ -93,8 +102,8 @@ class Compiler(BaseCompiler):
 		if (netlist.RulesFile is not None):
 			self._AddRulesFiles(netlist.RulesFile)
 
-		# netlist.XstFile = self._tempPath / (netlist.ModuleName + ".xst")
-		netlist.QsfFile = self._tempPath / (netlist.ModuleName + ".qsf")
+		# netlist.XstFile = self.Directories.Working / (netlist.ModuleName + ".xst")
+		netlist.QsfFile = self.Directories.Working / (netlist.ModuleName + ".qsf")
 
 		self._WriteQuartusProjectFile(netlist, board.Device)
 
@@ -103,25 +112,19 @@ class Compiler(BaseCompiler):
 		self._RunPreReplace(netlist)
 
 		self._LogNormal("Running Altera Quartus Map...")
-		self._RunCompile(netlist, board.Device)
+		self._RunCompile(netlist)
 
 		self._LogNormal("Executing post-processing tasks...")
 		self._RunPostCopy(netlist)
 		self._RunPostReplace(netlist)
 		self._RunPostDelete(netlist)
 
-	def _PrepareCompilerEnvironment(self, device):
-		self._LogNormal("preparing synthesis environment...")
-		self._tempPath =		self.Host.Directories["QuartusTemp"]
-		self._outputPath =	self.Host.Directories["PoCNetList"] / str(device)
-		super()._PrepareCompilerEnvironment()
-
 	def _WriteSpecialSectionIntoConfig(self, device):
 		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.Host.PoCConfig['SPECIAL'] = {}
 		self.Host.PoCConfig['SPECIAL']['Device'] =				device.ShortName
 		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =	device.Series
-		self.Host.PoCConfig['SPECIAL']['OutputDir']	=			self._tempPath.as_posix()
+		self.Host.PoCConfig['SPECIAL']['OutputDir']	=			self.Directories.Working.as_posix()
 
 
 	def _WriteQuartusProjectFile(self, netlist, device):
@@ -137,10 +140,13 @@ class Compiler(BaseCompiler):
 
 		quartusProject.Write()
 
-	def _RunPrepareCompile(self, netlist):
-		pass
-
-	def _RunCompile(self, netlist, device):
+	def _RunCompile(self, netlist):
 		q2map = self._quartus.GetMap()
 		q2map.Parameters[q2map.ArgProjectName] =	str(netlist.QsfFile)
-		q2map.Compile()
+
+		try:
+			q2map.Compile()
+		except QuartusException as ex:
+			raise CompilerException("Error while compiling '{0!s}'.".format(netlist)) from ex
+		if q2map.HasErrors:
+			raise CompilerException("Error while compiling '{0!s}'.".format(netlist))

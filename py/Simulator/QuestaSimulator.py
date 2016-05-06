@@ -30,6 +30,9 @@
 # ==============================================================================
 #
 # entry point
+from pathlib import Path
+
+from Base.Exceptions import NotConfiguredException
 from PoC.Config import Vendors
 
 if __name__ != "__main__":
@@ -39,12 +42,10 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.vSimSimulator")
 
-# load dependencies
-from configparser									import NoSectionError
 
-from lib.Functions					import Init
-# from Base.Exceptions							import PlatformNotSupportedException, NotConfiguredException
-from Base.Project									import FileTypes, VHDLVersion, Environment, ToolChain, Tool
+# load dependencies
+from lib.Functions								import Init
+from Base.Project									import FileTypes, VHDLVersion, ToolChain, Tool
 from Base.Simulator								import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
 from ToolChains.Mentor.QuestaSim	import QuestaSim, QuestaException
 
@@ -65,21 +66,27 @@ class Simulator(BaseSimulator):
 
 		self._questa =				None
 
+		vSimSimulatorFiles = host.PoCConfig['CONFIG.DirectoryNames']['QuestaSimFiles']
+		self.Directories.Working =			host.Directories.Temp / vSimSimulatorFiles
+		self.Directories.PreCompiled =	host.Directories.PreCompiled / vSimSimulatorFiles
+
 		self._PrepareSimulationEnvironment()
+		self._PrepareSimulator()
 
-	@property
-	def TemporaryPath(self):
-		return self._tempPath
-
-	def _PrepareSimulationEnvironment(self):
-		self._LogNormal("preparing simulation environment...")
-		self._tempPath = self.Host.Directories["vSimTemp"]
-		super()._PrepareSimulationEnvironment()
-
-	def PrepareSimulator(self, binaryPath, version):
+	def _PrepareSimulator(self):
 		# create the QuestaSim executable factory
 		self._LogVerbose("Preparing Mentor simulator.")
-		self._questa =		QuestaSim(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		for sectionName in ['INSTALL.Mentor.QuestaSim', 'INSTALL.Altera.ModelSim']:
+			if (len(self.Host.PoCConfig.options(sectionName)) != 0):
+				break
+		else:
+			raise NotConfiguredException(
+				"Neither Mentor Graphics QuestaSim nor ModelSim Altera-Edition are configured on this system.")
+
+		questaSection = self.Host.PoCConfig[sectionName]
+		binaryPath = Path(questaSection['BinaryDirectory'])
+		version = questaSection['Version']
+		self._questa = QuestaSim(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def Run(self, testbench, board, vhdlVersion="93", vhdlGenerics=None, guiMode=False):
 		self._LogQuiet("Testbench: {0!s}".format(testbench.Parent, **Init.Foreground))
@@ -92,11 +99,11 @@ class Simulator(BaseSimulator):
 		self._AddFileListFile(testbench.FilesFile)
 
 		# select modelsim.ini
-		self._modelsimIniPath = self.Host.Directories["vSimPrecompiled"]
-		if board.Device.Vendor is Vendors.Xilinx:
-			self._modelsimIniPath  /= "xilinx"
-		elif board.Device.Vendor is Vendors.Altera:
+		self._modelsimIniPath = self.Directories.PreCompiled
+		if board.Device.Vendor is Vendors.Altera:
 			self._modelsimIniPath /= "altera"
+		elif board.Device.Vendor is Vendors.Xilinx:
+			self._modelsimIniPath  /= "xilinx"
 
 		self._modelsimIniPath /= "modelsim.ini"
 		if not self._modelsimIniPath.exists():
@@ -130,19 +137,19 @@ class Simulator(BaseSimulator):
 		vcom.Parameters[vcom.FlagQuietMode] =					True
 		vcom.Parameters[vcom.FlagExplicit] =					True
 		vcom.Parameters[vcom.FlagRangeCheck] =				True
-		vcom.Parameters[vcom.SwitchModelSimIniFile] = str(self._modelsimIniPath)
+		vcom.Parameters[vcom.SwitchModelSimIniFile] = self._modelsimIniPath.as_posix()
 
-		if (self._vhdlVersion == VHDLVersion.VHDL87):		vcom.Parameters[vcom.SwitchVHDLVersion] =		"87"
-		elif (self._vhdlVersion == VHDLVersion.VHDL93):	vcom.Parameters[vcom.SwitchVHDLVersion] =		"93"
-		elif (self._vhdlVersion == VHDLVersion.VHDL02):	vcom.Parameters[vcom.SwitchVHDLVersion] =		"2002"
-		elif (self._vhdlVersion == VHDLVersion.VHDL08):	vcom.Parameters[vcom.SwitchVHDLVersion] =		"2008"
+		if (self._vhdlVersion == VHDLVersion.VHDL87):		vcom.Parameters[vcom.SwitchVHDLVersion] =	"87"
+		elif (self._vhdlVersion == VHDLVersion.VHDL93):	vcom.Parameters[vcom.SwitchVHDLVersion] =	"93"
+		elif (self._vhdlVersion == VHDLVersion.VHDL02):	vcom.Parameters[vcom.SwitchVHDLVersion] =	"2002"
+		elif (self._vhdlVersion == VHDLVersion.VHDL08):	vcom.Parameters[vcom.SwitchVHDLVersion] =	"2008"
 		else:																					raise SimulatorException("VHDL version is not supported.")
 
 		# run vcom compile for each VHDL file
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
-			if (not file.Path.exists()):								raise SimulatorException("Can not analyse '{0!s}'.".format(file.Path)) from FileNotFoundError(str(file.Path))
+			if (not file.Path.exists()):								raise SimulatorException("Cannot analyse '{0!s}'.".format(file.Path)) from FileNotFoundError(str(file.Path))
 
-			vcomLogFile = self._tempPath / (file.Path.stem + ".vcom.log")
+			vcomLogFile = self.Directories.Working / (file.Path.stem + ".vcom.log")
 			vcom.Parameters[vcom.SwitchVHDLLibrary] =	file.LibraryName
 			vcom.Parameters[vcom.ArgLogFile] =				vcomLogFile
 			vcom.Parameters[vcom.ArgSourceFile] =			file.Path
@@ -162,11 +169,11 @@ class Simulator(BaseSimulator):
 	def _RunSimulation(self, testbench):
 		self._LogNormal("Running simulation...")
 		
-		tclBatchFilePath =		self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['vSimBatchScript']
+		tclBatchFilePath =		self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['vSimBatchScript']
 		
 		# create a QuestaSimulator instance
 		vsim = self._questa.GetSimulator()
-		vsim.Parameters[vsim.SwitchModelSimIniFile] = str(self._modelsimIniPath)
+		vsim.Parameters[vsim.SwitchModelSimIniFile] =	self._modelsimIniPath.as_posix()
 		# vsim.Parameters[vsim.FlagOptimization] =			True
 		vsim.Parameters[vsim.FlagReportAsError] =			"3473"
 		vsim.Parameters[vsim.SwitchTimeResolution] =	"1fs"
@@ -178,11 +185,12 @@ class Simulator(BaseSimulator):
 	def _RunSimulationWithGUI(self, testbench):
 		self._LogNormal("Running simulation...")
 	
-		tclGUIFilePath =			self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['vSimGUIScript']
-		tclWaveFilePath =			self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['vSimWaveScript']
+		tclGUIFilePath =			self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['vSimGUIScript']
+		tclWaveFilePath =			self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['vSimWaveScript']
 
 		# create a QuestaSimulator instance
 		vsim = self._questa.GetSimulator()
+		vsim.Parameters[vsim.SwitchModelSimIniFile] =	self._modelsimIniPath.as_posix()
 		# vsim.Parameters[vsim.FlagOptimization] =			True
 		vsim.Parameters[vsim.FlagReportAsError] =			"3473"
 		vsim.Parameters[vsim.SwitchTimeResolution] =	"1fs"

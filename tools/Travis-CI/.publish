@@ -10,7 +10,7 @@ poc.setup.sh
 poc.run.sh
 
 # Python 3 - package requirements
-pip3-requirements.lst
+requirements.txt
 
 # PoC configuration files
 config.private.ini

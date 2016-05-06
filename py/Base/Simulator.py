@@ -32,11 +32,13 @@
 # ==============================================================================
 #
 # entry point
+
 if __name__ != "__main__":
 	pass
 	# place library initialization code here
 else:
 	from lib.Functions import Exit
+
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Simulator.Base")
 
 
@@ -44,13 +46,13 @@ else:
 from enum							import Enum, unique
 from os								import chdir
 
-from Base.Exceptions	import ExceptionBase
+from Base.Exceptions	import ExceptionBase, CommonException
 from Base.Logging			import ILogable
 from Base.Project			import Environment, ToolChain, Tool, VHDLVersion
-from lib.Parser				import ParserException
-from PoC.Project			import Project as PoCProject, FileListFile
 from PoC.Entity				import WildCard
-
+from PoC.Project			import VirtualProject, FileListFile
+from lib.Functions 		import Init
+from lib.Parser				import ParserException
 
 VHDL_TESTBENCH_LIBRARY_NAME = "test"
 
@@ -74,6 +76,11 @@ class Simulator(ILogable):
 	_TOOL_CHAIN =	ToolChain.Any
 	_TOOL =				Tool.Any
 
+	class __Directories__:
+		Working = None
+		PoCRoot = None
+		PreCompiled = None
+
 	def __init__(self, host, showLogs, showReport):
 		if isinstance(host, ILogable):
 			ILogable.__init__(self, host.Logger)
@@ -87,7 +94,7 @@ class Simulator(ILogable):
 		self._vhdlVersion =	VHDLVersion.VHDL2008
 		self._pocProject =	None
 
-		self._tempPath =		None
+		self._directories = self.__Directories__()
 
 	# class properties
 	# ============================================================================
@@ -98,28 +105,28 @@ class Simulator(ILogable):
 	@property
 	def ShowReport(self):			return self.__showReport
 	@property
-	def TemporaryPath(self):	return self._tempPath
-
+	def Directories(self):		return self._directories
 
 	def _PrepareSimulationEnvironment(self):
+		self._LogNormal("Preparing simulation environment...")
 		# create temporary directory if not existent
-		if (not (self._tempPath).exists()):
+		if (not self.Directories.Working.exists()):
 			self._LogVerbose("Creating temporary directory for simulator files.")
-			self._LogDebug("Temporary directory: {0!s}".format(self._tempPath))
-			self._tempPath.mkdir(parents=True)
+			self._LogDebug("Temporary directory: {0!s}".format(self.Directories.Working))
+			self.Directories.Working.mkdir(parents=True)
 
 		# change working directory to temporary path
 		self._LogVerbose("Changing working directory to temporary directory.")
-		self._LogDebug("cd \"{0!s}\"".format(self._tempPath))
-		chdir(str(self._tempPath))
+		self._LogDebug("cd \"{0!s}\"".format(self.Directories.Working))
+		chdir(str(self.Directories.Working))
 
 	def _CreatePoCProject(self, testbench, board):
 		# create a PoCProject and read all needed files
 		self._LogVerbose("Creating a PoC project '{0}'".format(testbench.ModuleName))
-		pocProject = PoCProject(testbench.ModuleName)
+		pocProject = VirtualProject(testbench.ModuleName)
 
 		# configure the project
-		pocProject.RootDirectory = self.Host.RootDirectory
+		pocProject.RootDirectory = self.Host.Directories.Root
 		pocProject.Environment = Environment.Simulation
 		pocProject.ToolChain = self._TOOL_CHAIN
 		pocProject.Tool = self._TOOL
@@ -139,8 +146,8 @@ class Simulator(ILogable):
 			fileListFile.CopyFilesToFileSet()
 			fileListFile.CopyExternalLibraries()
 			self._pocProject.ExtractVHDLLibrariesFromVHDLSourceFiles()
-		except ParserException as ex:
-			raise SimulatorException("Error while parsing '{0!s}'.".format(fileListFilePath)) from ex
+		except (ParserException, CommonException) as ex:
+			raise SkipableSimulatorException("Error while parsing '{0!s}'.".format(fileListFilePath)) from ex
 
 		self._LogDebug("=" * 78)
 		self._LogDebug("Pretty printing the PoCProject...")
@@ -149,25 +156,47 @@ class Simulator(ILogable):
 		if (len(fileListFile.Warnings) > 0):
 			for warn in fileListFile.Warnings:
 				self._LogWarning(warn)
-			raise SimulatorException("Found critical warnings while parsing '{0!s}'".format(fileListFilePath))
+			raise SkipableSimulatorException("Found critical warnings while parsing '{0!s}'".format(fileListFilePath))
 
 	def RunAll(self, fqnList, *args, **kwargs):
+		results = {key : 0 for key in SimulationResult}
+
 		for fqn in fqnList:
 			entity = fqn.Entity
 			if (isinstance(entity, WildCard)):
 				for testbench in entity.GetVHDLTestbenches():
 					try:
 						self.Run(testbench, *args, **kwargs)
-					except SkipableSimulatorException:
-						pass
+						results[testbench.Result] += 1
+					except SkipableSimulatorException as ex:
+						self._LogQuiet("  {RED}ERROR:{NOCOLOR} {0}".format(ex.message, **Init.Foreground))
+						self._LogQuiet("{RED}  [SKIPPED DUE TO ERRORS]{NOCOLOR}".format(**Init.Foreground))
+						results[SimulationResult.Error] += 1
 			else:
 				testbench = entity.VHDLTestbench
 				try:
 					self.Run(testbench, *args, **kwargs)
-				except SkipableSimulatorException:
-					pass
+					results[testbench.Result] += 1
+				except SkipableSimulatorException as ex:
+					self._LogQuiet("  {RED}ERROR:{NOCOLOR} {0}".format(ex.message, **Init.Foreground))
+					self._LogQuiet("{RED}  [SKIPPED DUE TO ERRORS]{NOCOLOR}".format(**Init.Foreground))
+					results[SimulationResult.Error] += 1
 
-	def Run(self, entity, board, vhdlVersion="93c", vhdlGenerics=None, **kwargs):
+		self._LogQuiet("Overall Results:")
+		allPassed = True
+		for key in SimulationResult:
+			if results[key] != 0:
+				if key is SimulationResult.Passed:
+					self._LogQuiet("{GREEN}  Passed:    {0}{NOCOLOR}".format(results[key], **Init.Foreground))
+				else:
+					allPassed = False
+					self._LogQuiet("{RED}  {0: <10} {1}{NOCOLOR}".format(key.name + ":", results[key], **Init.Foreground))
+
+		return allPassed
+
+
+
+	def Run(self, testbench, board, vhdlVersion="93c", vhdlGenerics=None, **kwargs):
 		raise NotImplementedError("This method is abstract.")
 
 
@@ -196,5 +225,5 @@ def PoCSimulationResultFilter(gen, simulationResult):
 			state = 6
 
 		yield line
-	else:
-		if (state != 6):		raise SimulatorException("No PoC Testbench Report in simulator output found.")
+
+	if (state != 6):		raise SimulatorException("No PoC Testbench Report in simulator output found.")

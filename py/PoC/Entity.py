@@ -400,7 +400,7 @@ class Base(ILazyLoadable):
 		self._Load()
 
 	@property
-	def Kind(self):  			        return self._kind
+	def Kind(self):  							return self._kind
 	@property
 	def Name(self):								return self._name
 	@property
@@ -426,8 +426,6 @@ class Testbench(Base):
 
 		super().__init__(host, name, sectionName, parent)
 
-	@property
-	def Kind(self):						return self._kind
 	@property
 	@LazyLoadTrigger
 	def ModuleName(self):			return self._moduleName

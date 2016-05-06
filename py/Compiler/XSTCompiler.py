@@ -32,6 +32,8 @@
 # ==============================================================================
 #
 # entry point
+from pathlib import Path
+
 from PoC.Entity import WildCard
 
 if __name__ != "__main__":
@@ -43,48 +45,57 @@ else:
 
 
 # load dependencies
-import re											# used for output filtering
 
 from lib.Functions						import Init
-from Base.Exceptions					import NotConfiguredException, PlatformNotSupportedException
 from Base.Project							import ToolChain, Tool
-from Base.Compiler						import Compiler as BaseCompiler, CompilerException
+from Base.Compiler						import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
 from ToolChains.Xilinx.Xilinx	import XilinxProjectExportMixIn
-from ToolChains.Xilinx.ISE		import ISE
+from ToolChains.Xilinx.ISE		import ISE, ISEException
 
 
 class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 	_TOOL_CHAIN =	ToolChain.Xilinx_ISE
 	_TOOL =				Tool.Xilinx_XST
 
+	class __Directories__(BaseCompiler.__Directories__):
+		XSTFiles =		None
+
 	def __init__(self, host, showLogs, showReport, dryRun, noCleanUp):
 		super().__init__(host, showLogs, showReport, dryRun, noCleanUp)
 		XilinxProjectExportMixIn.__init__(self)
 
-		self._device =				None
-		self._tempPath =			None
-		self._outputPath =		None
-		self._ise =						None
-		
-	def PrepareCompiler(self, binaryPath, version):
-		# create the GHDL executable factory
+		self._device =			None
+
+		self._ise =					None
+
+		configSection = host.PoCConfig['CONFIG.DirectoryNames']
+		self.Directories.Working = host.Directories.Temp / configSection['ISESynthesisFiles']
+		self.Directories.XSTFiles = host.Directories.Root / configSection['ISESynthesisFiles']
+		self.Directories.Netlist = host.Directories.Root / configSection['NetlistFiles']
+
+		self._PrepareCompiler()
+
+	def _PrepareCompiler(self):
 		self._LogVerbose("Preparing Xilinx Synthesis Tool (XST).")
+		iseSection = self.Host.PoCConfig['INSTALL.Xilinx.ISE']
+		binaryPath = Path(iseSection['BinaryDirectory'])
+		version = iseSection['Version']
 		self._ise =		ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):
 		for fqn in fqnList:
 			entity = fqn.Entity
 			if (isinstance(entity, WildCard)):
-				for testbench in entity.GetXSTNetlist():
+				for netlist in entity.GetXSTNetlists():
 					try:
-						self.Run(testbench, *args, **kwargs)
-					except CompilerException:
+						self.Run(netlist, *args, **kwargs)
+					except SkipableCompilerException:
 						pass
 			else:
-				testbench = entity.XSTNetlist
+				netlist = entity.XSTNetlist
 				try:
-					self.Run(testbench, *args, **kwargs)
-				except CompilerException:
+					self.Run(netlist, *args, **kwargs)
+				except SkipableCompilerException:
 					pass
 
 	def Run(self, netlist, board, **_):
@@ -101,8 +112,8 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 		if (netlist.RulesFile is not None):
 			self._AddRulesFiles(netlist.RulesFile)
 
-		netlist.XstFile = self._tempPath / (netlist.ModuleName + ".xst")
-		netlist.PrjFile = self._tempPath / (netlist.ModuleName + ".prj")
+		netlist.XstFile = self.Directories.Working / (netlist.ModuleName + ".xst")
+		netlist.PrjFile = self.Directories.Working / (netlist.ModuleName + ".prj")
 
 		self._WriteXilinxProjectFile(netlist.PrjFile, "XST")
 		self._WriteXstOptionsFile(netlist, board.Device)
@@ -119,27 +130,27 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 		self._RunPostReplace(netlist)
 		self._RunPostDelete(netlist)
 		
-	def _PrepareCompilerEnvironment(self, device):
-		self._LogNormal("preparing synthesis environment...")
-		self._tempPath =		self.Host.Directories["XSTTemp"]
-		self._outputPath =	self.Host.Directories["PoCNetList"] / str(device)
-		super()._PrepareCompilerEnvironment()
-
 	def _WriteSpecialSectionIntoConfig(self, device):
 		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.Host.PoCConfig['SPECIAL'] = {}
 		self.Host.PoCConfig['SPECIAL']['Device'] =				device.FullName
 		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =	device.Series
-		self.Host.PoCConfig['SPECIAL']['OutputDir']	=			self._tempPath.as_posix()
+		self.Host.PoCConfig['SPECIAL']['OutputDir']	=			self.Directories.Working.as_posix()
 
 	def _RunCompile(self, netlist):
-		reportFilePath = self._tempPath / (netlist.ModuleName + ".log")
+		reportFilePath = self.Directories.Working / (netlist.ModuleName + ".log")
 
 		xst = self._ise.GetXst()
 		xst.Parameters[xst.SwitchIntStyle] =		"xflow"
 		xst.Parameters[xst.SwitchXstFile] =			netlist.ModuleName + ".xst"
 		xst.Parameters[xst.SwitchReportFile] =	str(reportFilePath)
-		xst.Compile()
+		try:
+			xst.Compile()
+		except ISEException as ex:
+			raise CompilerException("Error while compiling '{0!s}'.".format(netlist)) from ex
+		if xst.HasErrors:
+			raise CompilerException("Error while compiling '{0!s}'.".format(netlist))
+
 
 	def _WriteXstOptionsFile(self, netlist, device):
 		self._LogVerbose("Generating XST options file.")
@@ -169,7 +180,7 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 			'GenerateRTLView': self.Host.PoCConfig[netlist.ConfigSectionName]               ['XSTOption.GenerateRTLView'],
 			'GlobalOptimization': self.Host.PoCConfig[netlist.ConfigSectionName]            ['XSTOption.Globaloptimization'],
 			'ReadCores': self.Host.PoCConfig[netlist.ConfigSectionName]                     ['XSTOption.ReadCores'],
-			'SearchDirectories':                                                  '"{0!s}"'.format(self._outputPath),
+			'SearchDirectories':                                                  '"{0!s}"'.format(self.Directories.Destination),
 			'WriteTimingConstraints': self.Host.PoCConfig[netlist.ConfigSectionName]        ['XSTOption.WriteTimingConstraints'],
 			'CrossClockAnalysis': self.Host.PoCConfig[netlist.ConfigSectionName]            ['XSTOption.CrossClockAnalysis'],
 			'HierarchySeparator': self.Host.PoCConfig[netlist.ConfigSectionName]            ['XSTOption.HierarchySeparator'],

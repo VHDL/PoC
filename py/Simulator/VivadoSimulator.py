@@ -32,6 +32,8 @@
 # ==============================================================================
 #
 # entry point
+from pathlib import Path
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -40,12 +42,8 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.VivadoSimulator")
 
 # load dependencies
-from configparser							import NoSectionError
-from colorama									import Fore as Foreground
-
 from lib.Functions						import Init
-# from Base.Exceptions					import PlatformNotSupportedException, NotConfiguredException
-from Base.Project							import FileTypes, VHDLVersion, Environment, ToolChain, Tool
+from Base.Project							import ToolChain, Tool
 from Base.Simulator						import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
 from Base.Logging							import Severity
 from ToolChains.Xilinx.Xilinx	import XilinxProjectExportMixIn
@@ -69,20 +67,19 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 
 		self._vivado =				None
 
+		vivadoFilesDirectoryName = host.PoCConfig['CONFIG.DirectoryNames']['VivadoSimulatorFiles']
+		self.Directories.Working = host.Directories.Temp / vivadoFilesDirectoryName
+		self.Directories.PreCompiled = host.Directories.PreCompiled / vivadoFilesDirectoryName
+
 		self._PrepareSimulationEnvironment()
+		self._PrepareSimulator()
 
-	@property
-	def TemporaryPath(self):
-		return self._tempPath
-
-	def _PrepareSimulationEnvironment(self):
-		self._LogNormal("preparing simulation environment...")
-		self._tempPath = self.Host.Directories["xSimTemp"]
-		super()._PrepareSimulationEnvironment()
-
-	def PrepareSimulator(self, binaryPath, version):
+	def _PrepareSimulator(self):
 		# create the Vivado executable factory
 		self._LogVerbose("Preparing Vivado simulator.")
+		vivadoSection = self.Host.PoCConfig['INSTALL.Xilinx.Vivado']
+		version =	vivadoSection['Version']
+		binaryPath = Path(vivadoSection['BinaryDirectory'])
 		self._vivado = Vivado(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def Run(self, testbench, board, vhdlVersion="93", vhdlGenerics=None, guiMode=False):
@@ -95,7 +92,6 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		self._CreatePoCProject(testbench, board)
 		self._AddFileListFile(testbench.FilesFile)
 		
-		# self._RunCompile(testbenchName)
 		self._RunLink(testbench)
 		self._RunSimulation(testbench)
 		
@@ -104,21 +100,11 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		elif (testbench.Result is SimulationResult.Failed):			self._LogQuiet("  {RED}[FAILED]{NOCOLOR}".format(**Init.Foreground))
 		elif (testbench.Result is SimulationResult.Error):			self._LogQuiet("  {RED}[ERROR]{NOCOLOR}".format(**Init.Foreground))
 
-	def _RunCompile(self, testbench):
-		self._LogNormal("  compiling source files...")
-
-		prjFilePath = self._tempPath / (testbench.ModuleName + ".prj")
-		self._WriteXilinxProjectFile(prjFilePath, "xSim", self._vhdlVersion)
-
-		# create a VivadoVHDLCompiler instance
-		xvhcomp = self._vivado.GetVHDLCompiler()
-		xvhcomp.Compile(str(prjFilePath))
-		
 	def _RunLink(self, testbench):
 		self._LogNormal("Running xelab...")
 		
-		xelabLogFilePath =	self._tempPath / (testbench.ModuleName + ".xelab.log")
-		prjFilePath =				self._tempPath / (testbench.ModuleName + ".prj")
+		xelabLogFilePath =	self.Directories.Working / (testbench.ModuleName + ".xelab.log")
+		prjFilePath =				self.Directories.Working / (testbench.ModuleName + ".prj")
 		self._WriteXilinxProjectFile(prjFilePath, "xSim", self._vhdlVersion)
 
 		# create a VivadoLinker instance
@@ -151,10 +137,10 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 	def _RunSimulation(self, testbench):
 		self._LogNormal("Running simulation...")
 		
-		xSimLogFilePath =		self._tempPath / (testbench.ModuleName + ".xSim.log")
-		tclBatchFilePath =	self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['xSimBatchScript']
-		tclGUIFilePath =		self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['xSimGUIScript']
-		wcfgFilePath =			self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['xSimWaveformConfigFile']
+		xSimLogFilePath =		self.Directories.Working / (testbench.ModuleName + ".xSim.log")
+		tclBatchFilePath =	self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['xSimBatchScript']
+		tclGUIFilePath =		self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['xSimGUIScript']
+		wcfgFilePath =			self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['xSimWaveformConfigFile']
 
 		# create a VivadoSimulator instance
 		xSim = self._vivado.GetSimulator()

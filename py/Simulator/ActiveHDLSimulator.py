@@ -37,17 +37,14 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.ActiveHDLSimulator")
 
-# load dependencies
-from configparser								import NoSectionError
-from os													import chdir
 
+# load dependencies
+from pathlib import Path
+
+from Base.Exceptions import NotConfiguredException
 from lib.Functions							import Init
-#from Base.Exceptions						import NotConfiguredException, PlatformNotSupportedException
-#from Base.Executable						import ExecutableException
-from Base.Project								import FileTypes, VHDLVersion, Environment, ToolChain, Tool
+from Base.Project								import FileTypes, VHDLVersion, ToolChain, Tool
 from Base.Simulator							import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
-#from Parser.Parser							import ParserException
-from PoC.Project								import Project as PoCProject, FileListFile
 from ToolChains.Aldec.ActiveHDL	import ActiveHDL, ActiveHDLException
 
 
@@ -67,25 +64,29 @@ class Simulator(BaseSimulator):
 
 		self._activeHDL =			None
 
-		self._PrepareSimulationEnvironment()
-
-	@property
-	def TemporaryPath(self):
-		return self._tempPath
-
-	def _PrepareSimulationEnvironment(self):
-		self._LogNormal("preparing simulation environment...")
-		self._tempPath = self.Host.Directories["ActiveHDLTemp"]
-		super()._PrepareSimulationEnvironment()
+		activeHDLFilesDirectoryName = host.PoCConfig['CONFIG.DirectoryNames']['ActiveHDLFiles']
+		self.Directories.Working = host.Directories.Temp / activeHDLFilesDirectoryName
+		self.Directories.PreCompiled = host.Directories.PreCompiled / activeHDLFilesDirectoryName
 		
-	def PrepareSimulator(self, binaryPath, version):
+		self._PrepareSimulationEnvironment()
+		self._PrepareSimulator()
+
+	def _PrepareSimulator(self):
 		# create the Active-HDL executable factory
 		self._LogVerbose("Preparing Active-HDL simulator.")
+		for sectionName in ['INSTALL.Aldec.ActiveHDL', 'INSTALL.Lattice.ActiveHDL']:
+			if (len(self.Host.PoCConfig.options(sectionName)) != 0):
+				break
+		else:
+			raise NotConfiguredException(
+				"Neither Aldec's Active-HDL nor Active-HDL Lattice Edition are configured on this system.")
+
+		asimSection = self.Host.PoCConfig[sectionName]
+		binaryPath = Path(asimSection['BinaryDirectory'])
+		version = asimSection['Version']
 		self._activeHDL =		ActiveHDL(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def Run(self, testbench, board, vhdlVersion="93", vhdlGenerics=None, guiMode=False):
-		# self._entity =				entity
-		# self._testbenchFQN =	str(entity)											# TODO: implement FQN method on PoCEntity
 		self._vhdlVersion =		vhdlVersion
 		self._vhdlGenerics =	vhdlGenerics
 
@@ -103,7 +104,6 @@ class Simulator(BaseSimulator):
 		else:
 			raise SimulatorException("GUI mode is not supported for Active-HDL.")
 			# self._RunSimulationWithGUI(testbenchName)
-
 
 		if (testbench.Result is SimulationResult.Passed):				self._LogQuiet("  {GREEN}[PASSED]{NOCOLOR}".format(**Init.Foreground))
 		elif (testbench.Result is SimulationResult.NoAsserts):	self._LogQuiet("  {YELLOW}[NO ASSERTS]{NOCOLOR}".format(**Init.Foreground))
@@ -134,7 +134,7 @@ class Simulator(BaseSimulator):
 
 		# run acom compile for each VHDL file
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
-			if (not file.Path.exists()):									raise SimulatorException("Can not analyse '{0!s}'.".format(file.Path)) from FileNotFoundError(str(file.Path))
+			if (not file.Path.exists()):									raise SimulatorException("Cannot analyse '{0!s}'.".format(file.Path)) from FileNotFoundError(str(file.Path))
 			acom.Parameters[acom.SwitchVHDLLibrary] =	file.LibraryName
 			acom.Parameters[acom.ArgSourceFile] =			file.Path
 			# set a per file log-file with '-l', 'vcom.log',
@@ -149,7 +149,7 @@ class Simulator(BaseSimulator):
 	def _RunSimulation(self, testbench):
 		self._LogNormal("Running simulation...")
 		
-		tclBatchFilePath =		self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimBatchScript']
+		tclBatchFilePath =		self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimBatchScript']
 		
 		# create a ActiveHDLSimulator instance
 		aSim = self._activeHDL.GetSimulator()
@@ -170,8 +170,8 @@ class Simulator(BaseSimulator):
 	def _RunSimulationWithGUI(self, testbench):
 		self._LogNormal("Running simulation...")
 	
-		tclGUIFilePath =			self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimGUIScript']
-		tclWaveFilePath =			self.Host.RootDirectory / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimWaveScript']
+		tclGUIFilePath =			self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimGUIScript']
+		tclWaveFilePath =			self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimWaveScript']
 		
 		# create a ActiveHDLSimulator instance
 		aSim = self._activeHDL.GetSimulator()

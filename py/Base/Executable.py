@@ -121,7 +121,7 @@ class StringListArgument(CommandLineArgument):
 			try:
 				for item in value:				self._value.append(str(value))
 			except TypeError as ex:			raise ValueError("Item '{0}' in parameter 'value' cannot be converted to type str.".format(item)) from ex
-		else:													raise ValueError("Parameter 'value' is no list or tuple.") from ex
+		else:													raise ValueError("Parameter 'value' is no list or tuple.")
 
 	def __str__(self):
 		if (self._value is None):			return ""
@@ -310,7 +310,7 @@ class Executable(ILogable):
 		
 		if isinstance(executablePath, str):							executablePath = Path(executablePath)
 		elif (not isinstance(executablePath, Path)):		raise ValueError("Parameter 'executablePath' is not of type str or Path.")
-		if (not executablePath.exists()):								raise CommonException("Executable '{0!s}' can not be found.".format(executablePath)) from FileNotFoundError(str(executablePath))
+		if (not executablePath.exists()):								raise CommonException("Executable '{0!s}' cannot be found.".format(executablePath)) from FileNotFoundError(str(executablePath))
 		
 		# prepend the executable
 		self._executablePath =		executablePath

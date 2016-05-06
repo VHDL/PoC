@@ -50,11 +50,14 @@ from lib.Parser import ParserException
 from Base.Exceptions		import ExceptionBase
 from Base.Logging				import ILogable
 from Base.Project				import ToolChain, Tool, VHDLVersion, Environment, FileTypes
-from PoC.Project				import Project as PoCProject, FileListFile, RulesFile
+from PoC.Project				import VirtualProject, FileListFile, RulesFile
 from Parser.RulesParser	import CopyRuleMixIn, ReplaceRuleMixIn, DeleteRuleMixIn
 
 
 class CompilerException(ExceptionBase):
+	pass
+
+class SkipableCompilerException(CompilerException):
 	pass
 
 class CopyTask(CopyRuleMixIn):
@@ -71,6 +74,13 @@ class Compiler(ILogable):
 	_TOOL_CHAIN =	ToolChain.Any
 	_TOOL =				Tool.Any
 
+	class __Directories__:
+		Working = None
+		PoCRoot = None
+		Netlist = None
+		Source = None
+		Destination = None
+
 	def __init__(self, host, showLogs, showReport, dryRun, noCleanUp):
 		if isinstance(host, ILogable):
 			ILogable.__init__(self, host.Logger)
@@ -86,8 +96,7 @@ class Compiler(ILogable):
 		self._vhdlVersion =	VHDLVersion.VHDL93
 		self._pocProject =	None
 
-		self._tempPath =		None
-		self._outputPath =	None
+		self._directories = self.__Directories__()
 
 	# class properties
 	# ============================================================================
@@ -98,37 +107,38 @@ class Compiler(ILogable):
 	@property
 	def ShowReport(self):			return self.__showReport
 	@property
-	def TemporaryPath(self):	return self._tempPath
-	@property
-	def OutputPath(self):			return self._outputPath
-	@property
 	def PoCProject(self):			return self._pocProject
+	@property
+	def Directories(self):		return self._directories
 
-	def _PrepareCompilerEnvironment(self):
-		# create temporary directory for GHDL if not existent
-		if (not (self._tempPath).exists()):
+	def _PrepareCompilerEnvironment(self, device):
+		self._LogNormal("Preparing synthesis environment...")
+		self.Directories.Destination = self.Directories.Netlist / str(device)
+
+		# create temporary directory for the compiler if not existent
+		if (not self.Directories.Working.exists()):
 			self._LogVerbose("Creating temporary directory for synthesizer files.")
-			self._LogDebug("Temporary directory: {0!s}".format(self._tempPath))
-			self._tempPath.mkdir(parents=True)
+			self._LogDebug("Temporary directory: {0!s}".format(self.Directories.Working))
+			self.Directories.Working.mkdir(parents=True)
 
 		# change working directory to temporary iSim path
 		self._LogVerbose("Changing working directory to temporary directory.")
-		self._LogDebug("cd \"{0!s}\"".format(self._tempPath))
-		chdir(str(self._tempPath))
+		self._LogDebug("cd \"{0!s}\"".format(self.Directories.Working))
+		chdir(str(self.Directories.Working))
 
 		# create output directory for CoreGen if not existent
-		if not (self._outputPath).exists() :
+		if (not self.Directories.Destination.exists()) :
 			self._LogVerbose("Creating output directory for generated files.")
-			self._LogDebug("Output directory: {0!s}.".format(self._outputPath))
-			self._outputPath.mkdir(parents=True)
+			self._LogDebug("Output directory: {0!s}.".format(self.Directories.Destination))
+			self.Directories.Destination.mkdir(parents=True)
 
 	def _CreatePoCProject(self, netlist, board):
 		# create a PoCProject and read all needed files
 		self._LogVerbose("Creating a PoC project '{0}'".format(netlist.ModuleName))
-		pocProject = PoCProject(netlist.ModuleName)
+		pocProject = VirtualProject(netlist.ModuleName)
 
 		# configure the project
-		pocProject.RootDirectory =	self.Host.RootDirectory
+		pocProject.RootDirectory =	self.Host.Directories.Root
 		pocProject.Environment =		Environment.Synthesis
 		pocProject.ToolChain =			self._TOOL_CHAIN
 		pocProject.Tool =						self._TOOL
@@ -242,7 +252,7 @@ class Compiler(ILogable):
 
 	def _ExecuteCopyTasks(self, tasks, text):
 		for task in tasks:
-			if not task.SourcePath.exists(): raise CompilerException("Can not {0}-copy '{1!s}' to destination.".format(text, task.SourcePath)) from FileNotFoundError(str(task.SourcePath))
+			if not task.SourcePath.exists(): raise CompilerException("Cannot {0}-copy '{1!s}' to destination.".format(text, task.SourcePath)) from FileNotFoundError(str(task.SourcePath))
 
 			if not task.DestinationPath.parent.exists():
 				task.DestinationPath.parent.mkdir(parents=True)
@@ -294,7 +304,7 @@ class Compiler(ILogable):
 
 	def _ExecuteDeleteTasks(self, tasks, text):
 		for task in tasks:
-			if not task.FilePath.exists(): raise CompilerException("Can not {0}-delete '{1!s}'.".format(text, task.FilePath)) from FileNotFoundError(str(task.FilePath))
+			if not task.FilePath.exists(): raise CompilerException("Cannot {0}-delete '{1!s}'.".format(text, task.FilePath)) from FileNotFoundError(str(task.FilePath))
 
 			self._LogDebug("{0}-deleting '{1!s}'.".format(text, task.FilePath))
 			task.FilePath.unlink()
@@ -374,7 +384,7 @@ class Compiler(ILogable):
 
 	def _ExecuteReplaceTasks(self, tasks, text):
 		for task in tasks:
-			if not task.FilePath.exists(): raise CompilerException("Can not {0}-replace in file '{1!s}'.".format(text, task.FilePath)) from FileNotFoundError(str(task.FilePath))
+			if not task.FilePath.exists(): raise CompilerException("Cannot {0}-replace in file '{1!s}'.".format(text, task.FilePath)) from FileNotFoundError(str(task.FilePath))
 			self._LogDebug("{0}-replace in file '{1!s}': search for '{2}' replace by '{3}'.".format(text, task.FilePath, task.SearchPattern, task.ReplacePattern))
 
 			regExpFlags = 0
@@ -394,15 +404,3 @@ class Compiler(ILogable):
 			# open file to write the replaced data
 			with task.FilePath.open('w') as fileHandle:
 				fileHandle.write(NewContent)
-
-	def RunAll(self, fqnList, *args, **kwargs):
-		for fqn in fqnList:
-			entity = fqn.Entity
-			# for entity in fqn.GetEntities():
-			# try:
-			self.Run(entity, *args, **kwargs)
-		# except SimulatorException:
-		# 	pass
-
-	def Run(self, entity, *args, **kwargs):
-		raise NotImplementedError("This method is abstract.")

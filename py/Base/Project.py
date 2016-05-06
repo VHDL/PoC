@@ -94,13 +94,13 @@ class Environment(Enum):
 
 @unique
 class ToolChain(Enum):
-	Any =								 0
+	Any =                0
 	Aldec_ActiveHDL =		10
-	Altera_Quartus =	20
+	Altera_Quartus =    20
 	Altera_ModelSim =		21
-	Cocotb =					  30
+	Cocotb =            30
 	GHDL_GTKWave =			40
-	Lattice_Diamond =				50
+	Lattice_Diamond =   50
 	Mentor_QuestaSim =	60
 	Xilinx_ISE =				70
 	Xilinx_PlanAhead =	71
@@ -109,9 +109,9 @@ class ToolChain(Enum):
 
 @unique
 class Tool(Enum):
-	Any =								 0
+	Any =                0
 	Aldec_aSim =				10
-	Altera_Quartus_Map =	20
+	Altera_Quartus_Map =20
 	Cocotb_QuestaSim = 	30
 	GHDL =							40
 	GTKwave =						41
@@ -125,7 +125,7 @@ class Tool(Enum):
 
 
 class VHDLVersion(Enum):
-	Any =								 0
+	Any =                0
 	VHDL87 =					1987
 	VHDL93 =					1993
 	VHDL02 =					2002
@@ -178,7 +178,7 @@ class VHDLVersion(Enum):
 		elif (self == VHDLVersion.VHDL08):	return "08"
 
 
-class Project():
+class Project:
 	def __init__(self, name):
 		self._name =									name
 		self._rootDirectory =					None
@@ -524,7 +524,7 @@ class File:
 		return self._file
 	
 	def Open(self):
-		if (not self._file.exists()):		raise ConfigurationException("File '{0!s}' not found.".format(self._file)) from FileNotFoundError(str(self._file))
+		if (not self._file.exists()):		raise CommonException("File '{0!s}' not found.".format(self._file)) from FileNotFoundError(str(self._file))
 		try:
 			self._handle = self._file.open('r')
 		except Exception as ex:

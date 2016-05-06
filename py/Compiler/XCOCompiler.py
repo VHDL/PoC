@@ -43,17 +43,15 @@ else:
 
 	
 # load dependencies
-import re								# used for output filtering
 import shutil
 from os											import chdir
 from pathlib								import Path
 from textwrap								import dedent
 
 from lib.Functions					import Init
-from Base.Exceptions				import NotConfiguredException, PlatformNotSupportedException
 from Base.Project						import ToolChain, Tool
-from Base.Compiler					import Compiler as BaseCompiler, CompilerException
-from ToolChains.Xilinx.ISE	import ISE
+from Base.Compiler					import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
+from ToolChains.Xilinx.ISE	import ISE, ISEException
 
 
 class Compiler(BaseCompiler):
@@ -63,30 +61,37 @@ class Compiler(BaseCompiler):
 	def __init__(self, host, showLogs, showReport, dryRun, noCleanUp):
 		super().__init__(host, showLogs, showReport, dryRun, noCleanUp)
 
-		self._device =				None
-		self._tempPath =			None
-		self._outputPath =		None
-		self._ise =						None
-		
-	def PrepareCompiler(self, binaryPath, version):
-		# create the GHDL executable factory
+		self._device =			None
+
+		self._ise =					None
+
+		configSection = host.PoCConfig['CONFIG.DirectoryNames']
+		self.Directories.Working = host.Directories.Temp / configSection['ISECoreGeneratorFiles']
+		self.Directories.Netlist = host.Directories.Root / configSection['NetlistFiles']
+
+		self._PrepareCompiler()
+
+	def _PrepareCompiler(self):
 		self._LogVerbose("Preparing Xilinx Core Generator Tool (CoreGen).")
+		iseSection = self.Host.PoCConfig['INSTALL.Xilinx.ISE']
+		binaryPath = Path(iseSection['BinaryDirectory'])
+		version = iseSection['Version']
 		self._ise = ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):
 		for fqn in fqnList:
 			entity = fqn.Entity
 			if (isinstance(entity, WildCard)):
-				for testbench in entity.GetCGNetlist():
+				for netlist in entity.GetCoreGenNetlists():
 					try:
-						self.Run(testbench, *args, **kwargs)
-					except CompilerException:
+						self.Run(netlist, *args, **kwargs)
+					except SkipableCompilerException:
 						pass
 			else:
-				testbench = entity.CGNetlist
+				netlist = entity.CGNetlist
 				try:
-					self.Run(testbench, *args, **kwargs)
-				except CompilerException:
+					self.Run(netlist, *args, **kwargs)
+				except SkipableCompilerException:
 					pass
 
 	def Run(self, netlist, board, **_):
@@ -113,27 +118,21 @@ class Compiler(BaseCompiler):
 		self._RunPostReplace(netlist)
 		self._RunPostDelete(netlist)
 
-	def _PrepareCompilerEnvironment(self, device):
-		self._LogNormal("preparing synthesis environment...")
-		self._tempPath =		self.Host.Directories["CoreGenTemp"]
-		self._outputPath =	self.Host.Directories["PoCNetList"] / str(device)
-		super()._PrepareCompilerEnvironment()
-
 	def _WriteSpecialSectionIntoConfig(self, device):
 		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.Host.PoCConfig['SPECIAL'] = {}
 		self.Host.PoCConfig['SPECIAL']['Device'] =				device.FullName
 		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =	device.Series
-		self.Host.PoCConfig['SPECIAL']['OutputDir']	=			self._tempPath.as_posix()
+		self.Host.PoCConfig['SPECIAL']['OutputDir']	=			self.Directories.Working.as_posix()
 
 	def _RunCompile(self, netlist):
 		self._LogVerbose("Patching coregen.cgp and .cgc files...")
 		# read netlist settings from configuration file
 		xcoInputFilePath =		netlist.XcoFile
-		cgcTemplateFilePath =	self.Host.Directories["PoCNetlist"] / "template.cgc"
-		cgpFilePath =					self._tempPath / "coregen.cgp"
-		cgcFilePath =					self._tempPath / "coregen.cgc"
-		xcoFilePath =					self._tempPath / xcoInputFilePath.name
+		cgcTemplateFilePath =	self.Directories.Netlist / "template.cgc"
+		cgpFilePath =					self.Directories.Working / "coregen.cgp"
+		cgcFilePath =					self.Directories.Working / "coregen.cgc"
+		xcoFilePath =					self.Directories.Working / xcoInputFilePath.name
 
 		if (self.Host.Platform == "Windows"):
 			WorkingDirectory = ".\\temp\\"
@@ -191,12 +190,12 @@ class Compiler(BaseCompiler):
 
 		# copy xco file into temporary directory
 		self._LogVerbose("Copy CoreGen xco file to '{0}'.".format(xcoFilePath))
-		self._LogDebug("cp {0!s} {1!s}".format(xcoInputFilePath, self._tempPath))
+		self._LogDebug("cp {0!s} {1!s}".format(xcoInputFilePath, self.Directories.Working))
 		shutil.copy(str(xcoInputFilePath), str(xcoFilePath), follow_symlinks=True)
 
 		# change working directory to temporary CoreGen path
-		self._LogDebug("cd {0!s}".format(self._tempPath))
-		chdir(str(self._tempPath))
+		self._LogDebug("cd {0!s}".format(self.Directories.Working))
+		chdir(str(self.Directories.Working))
 
 		# running CoreGen
 		# ==========================================================================
@@ -205,5 +204,11 @@ class Compiler(BaseCompiler):
 		coreGen.Parameters[coreGen.SwitchProjectFile] =	"."		# use current directory and the default project name
 		coreGen.Parameters[coreGen.SwitchBatchFile] =		str(xcoFilePath)
 		coreGen.Parameters[coreGen.FlagRegenerate] =		True
-		coreGen.Generate()
+
+		try:
+			coreGen.Generate()
+		except ISEException as ex:
+			raise CompilerException("Error while compiling '{0!s}'.".format(netlist)) from ex
+		if coreGen.HasErrors:
+			raise CompilerException("Error while compiling '{0!s}'.".format(netlist))
 
