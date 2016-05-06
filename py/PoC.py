@@ -800,8 +800,7 @@ class PoC(ILogable, ArgParseMixin):
 
 		fqnList =			self._ExtractFQNs(args.FQN)
 		board =				self._ExtractBoard(args.BoardName, args.DeviceName)
-		# FIXME: Altera vendor libraries are not compatible with VHDL-2008  -> use VHDL-93 by default
-		vhdlVersion =	self._ExtractVHDLVersion(args.VHDLVersion, defaultVersion=VHDLVersion.VHDL93)
+		vhdlVersion =	self._ExtractVHDLVersion(args.VHDLVersion)
 
 		simulator = GHDLSimulator(self, args.logs, args.reports, args.GUIMode)
 		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion, guiMode=args.GUIMode)		#, vhdlGenerics=None)
