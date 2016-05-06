@@ -187,7 +187,7 @@ begin
 
     -- Run Random Tests
     for i in 0 to 1023 loop
-      test(randomUniformDistibutedValue(0, 2**A_BITS-1), randomUniformDistibutedValue(0, 2**D_BITS-1));
+      test(randomUniformDistributedValue(0, 2**A_BITS-1), randomUniformDistributedValue(0, 2**D_BITS-1));
     end loop;
 
     simDeactivateProcess(PID);
