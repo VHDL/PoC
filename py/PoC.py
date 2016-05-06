@@ -442,7 +442,7 @@ class PoC(ILogable, ArgParseMixin):
 			createPath = input("Path does not exists. Should it be created? [Y/n]: ")
 			createPath = createPath if createPath != "" else "Y"
 			if (createPath in ['n', 'N']):
-				raise ConfigurationException("Can not continue to register the new project, because '{0!s}' does not exist.".format(solutionRootPath))
+				raise ConfigurationException("Cannot continue to register the new project, because '{0!s}' does not exist.".format(solutionRootPath))
 			elif (createPath not in ['y', 'Y']):
 				raise ConfigurationException("Unsupported choice '{0}'".format(createPath))
 
@@ -774,9 +774,9 @@ class PoC(ILogable, ArgParseMixin):
 
 		# create a GHDLSimulator instance and prepare it
 		simulator = ActiveHDLSimulator(self, args.logs, args.reports, args.GUIMode)
-		simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
+		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
-		Exit.exit()
+		Exit.exit(0 if allPassed else 1)
 	
 
 # ----------------------------------------------------------------------------
@@ -804,9 +804,9 @@ class PoC(ILogable, ArgParseMixin):
 		vhdlVersion =	self._ExtractVHDLVersion(args.VHDLVersion, defaultVersion=VHDLVersion.VHDL93)
 
 		simulator = GHDLSimulator(self, args.logs, args.reports, args.GUIMode)
-		simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion, guiMode=args.GUIMode)		#, vhdlGenerics=None)
+		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion, guiMode=args.GUIMode)		#, vhdlGenerics=None)
 
-		Exit.exit()
+		Exit.exit(0 if allPassed else 1)
 
 
 	# ----------------------------------------------------------------------------
@@ -828,9 +828,9 @@ class PoC(ILogable, ArgParseMixin):
 		board =				self._ExtractBoard(args.BoardName, args.DeviceName)
 
 		simulator = ISESimulator(self, args.logs, args.reports, args.GUIMode)
-		simulator.RunAll(fqnList, board=board)		#, vhdlGenerics=None)
+		allPassed = simulator.RunAll(fqnList, board=board)		#, vhdlGenerics=None)
 
-		Exit.exit()
+		Exit.exit(0 if allPassed else 1)
 
 
 	# ----------------------------------------------------------------------------
@@ -853,9 +853,9 @@ class PoC(ILogable, ArgParseMixin):
 		vhdlVersion =	self._ExtractVHDLVersion(args.VHDLVersion)
 
 		simulator = QuestaSimulator(self, args.logs, args.reports, args.GUIMode)
-		simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
+		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
-		Exit.exit()
+		Exit.exit(0 if allPassed else 1)
 	
 
 	# ----------------------------------------------------------------------------
@@ -881,9 +881,9 @@ class PoC(ILogable, ArgParseMixin):
 		vhdlVersion = self._ExtractVHDLVersion(args.VHDLVersion, defaultVersion=VHDLVersion.VHDL93)
 
 		simulator = VivadoSimulator(self, args.logs, args.reports, args.GUIMode)
-		simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
+		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
-		Exit.exit()
+		Exit.exit(0 if allPassed else 1)
 
 
 	# ----------------------------------------------------------------------------
@@ -909,9 +909,9 @@ class PoC(ILogable, ArgParseMixin):
 
 		# create a CocotbSimulator instance and prepare it
 		simulator = CocotbSimulator(self, args.logs, args.reports, args.GUIMode)
-		simulator.RunAll(fqnList, board=board)
+		allPassed = simulator.RunAll(fqnList, board=board)
 
-		Exit.exit()
+		Exit.exit(0 if allPassed else 1)
 
 
 	# ============================================================================
