@@ -250,12 +250,8 @@ class QuestaVHDLCompiler(Executable, QuestaSimMixIn):
 				line.IndentBy(2)
 				self._Log(line)
 
-		except StopIteration as ex:
+		except StopIteration:
 			pass
-		except QuestaException:
-			raise
-		# except Exception as ex:
-		#	raise QuestaException("Error while executing GHDL.") from ex
 		finally:
 			if self._hasOutput:
 				self._LogNormal("    " + ("-" * 76))
@@ -385,12 +381,8 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 				line.IndentBy(2)
 				self._Log(line)
 
-		except StopIteration as ex:
+		except StopIteration:
 			pass
-		except QuestaException:
-			raise
-		# except Exception as ex:
-		#	raise QuestaException("Error while executing GHDL.") from ex
 		finally:
 			if self._hasOutput:
 				self._LogNormal("    " + ("-" * 76))
@@ -458,12 +450,8 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 				line.IndentBy(2)
 				self._Log(line)
 
-		except StopIteration as ex:
+		except StopIteration:
 			pass
-		except QuestaException:
-			raise
-		# except Exception as ex:
-		#	raise QuestaException("Error while executing GHDL.") from ex
 		finally:
 			if self._hasOutput:
 				self._LogNormal("    " + ("-" * 76))

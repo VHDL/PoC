@@ -198,7 +198,7 @@ class Map(Executable, QuartusMixIn):
 				self._Log(line)
 				line = next(iterator)
 
-		except StopIteration as ex:
+		except StopIteration:
 			pass
 		finally:
 			if self._hasOutput:
@@ -262,7 +262,7 @@ class QuartusProject(BaseProject):
 		pass
 
 	def Read(self):
-		tclShell = self._host._quartus.GetTclShell()
+		tclShell = self._host.Toolchain.GetTclShell()
 		tclShell.StartProcess(["-s"])
 		tclShell.SendBoundary()
 		tclShell.ReadUntilBoundary()
@@ -289,7 +289,6 @@ class QuartusSettingsFile(SettingsFile):
 
 		self._sourceFiles =							[]
 		self._globalAssignments =				OrderedDict()
-		self._globalAssignmentsProxy =	GlobalAssignmentProxy(self)
 
 	@property
 	def File(self):
@@ -302,7 +301,7 @@ class QuartusSettingsFile(SettingsFile):
 
 	@property
 	def GlobalAssignments(self):
-		return self._globalAssignmentsProxy
+		return self._globalAssignments
 
 	def CopySourceFilesFromProject(self, project):
 		for file in project.Files(fileType=FileTypes.VHDLSourceFile):
@@ -326,27 +325,6 @@ class QuartusSettingsFile(SettingsFile):
 		with self._projectFile.Path.open('w') as fileHandle:
 			fileHandle.write(buffer)
 
-class GlobalAssignmentProxy:
-	def __init__(self, project):
-		self._project = project
-
-	def __getitem__(self, key):
-		return self._project._globalAssignments[key]
-
-	def __setitem__(self, key, value):
-		self._project._globalAssignments[key] = value
-
-	def __delitem__(self, key):
-		del self._project._globalAssignments[key]
-
-	def __contains__(self, key):
-		return (key in self._project._globalAssignments)
-
-	def __len__(self):
-		return len(self._project._globalAssignments)
-
-	def __iter__(self):
-		return self._project._globalAssignments.__iter__()
 
 class QuartusProjectFile(ProjectFile):
 	def __init__(self, file):
