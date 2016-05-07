@@ -67,6 +67,8 @@ class TestElement:
 	@property
 	def Parent(self):     return self._parent
 
+	def __str__(self):
+		return "{0!s}.{1}".format(self._parent, self._name)
 
 class TestGroup(TestElement):
 	def __init__(self, name, parent):
@@ -86,7 +88,7 @@ class TestGroup(TestElement):
 		if isinstance(value, TestGroup):
 			self._testGroups[key] = value
 		elif isinstance(value, TestCase):
-			self._testGroups[key] = value
+			self._testCases[key] = value
 		else:
 			raise ValueError("Parameter 'value' is not of type TestGroup or TestCase")
 
@@ -108,19 +110,26 @@ class TestSuite(TestGroup):
 		self._initRuntime =    None
 		self._overallRuntime = None
 
-		self._testGroups['arith'] =         TestGroup("arith", self)
-		self._testGroups['io'] =            TestGroup("io", self)
-		self._testGroups['io']['ddrio'] =     TestGroup("ddrio", self['io'])
-		self._testGroups['io']['iic'] =       TestGroup("iic", self['io'])
-		self._testGroups['sort'] =          TestGroup("sort", self)
-		self._testGroups['sort']['softnet'] = TestGroup("sortnet", self['sort'])
+	def __str__(self):
+		return self._name
 
 	@property
 	def ISAllPassed(self):
 		return False
 
-	def AddTestCase(self, testcase):
-		self._testGroups['arith'].TestCases[testcase.Name] = testcase
+	def AddTestCase(self, testCase):
+		cur = self
+		testbenchPath = testCase.Testbench.Path
+		for item in testbenchPath[:-2]:
+			try:
+				testGroup = cur[item.Name]
+			except KeyError:
+				testGroup = TestGroup(item.Name, cur)
+				cur[item.Name] = testGroup
+			cur = testGroup
+
+		testCaseName = testbenchPath[-2].Name
+		cur[testCaseName] = testCase
 
 	def StartTimer(self):
 		now = datetime.now()
@@ -136,7 +145,7 @@ class TestSuite(TestGroup):
 	@property
 	def EndTime(self):           return self._endedAt
 	@property
-	def InitilizationTime(self): return self._initRuntime.microseconds
+	def InitializationTime(self): return self._initRuntime.microseconds
 	@property
 	def OverallRunTime(self):    return self._overallRuntime.seconds
 
@@ -158,6 +167,9 @@ class TestCase(TestElement):
 	def Parent(self):           return self._parent
 	@Parent.setter
 	def Parent(self, value):    self._parent = value
+
+	@property
+	def Testbench(self):        return self._testbench
 
 	@property
 	def TestGroup(self):        return self._testGroup

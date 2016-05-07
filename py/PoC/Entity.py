@@ -48,7 +48,6 @@ from flags								import Flags
 
 from lib.Functions				import Init
 from lib.Decorators				import LazyLoadTrigger, ILazyLoadable
-from Base.Exceptions			import NotConfiguredException
 from Base.Configuration		import ConfigurationException
 
 
@@ -136,15 +135,27 @@ class PathElement:
 		self._Load()
 
 	@property
-	def Name(self):		return self._name
+	def Name(self):               return self._name
 	@property
-	def Parent(self):	return self._parent
+	def Parent(self):             return self._parent
 	@property
 	def ConfigSectionName(self):  return self._configSectionName
 	@property
 	def ConfigSection(self):      return self._host.PoCConfig[self._configSectionName]
 	@property
-	def Level(self):	return self._parent.Level + 1
+	def Level(self):              return self._parent.Level + 1
+	@property
+	def Path(self):
+		cur = self
+		result = []
+		while True:
+			result.insert(0, cur)
+			cur = cur.Parent
+			if isinstance(cur, Library):
+				break
+		else:
+			raise ConfigurationException("Hierarchy error. Expected Library.")
+		return result
 
 	def _Load(self):
 		pass
@@ -288,13 +299,13 @@ class IPCore(PathElement):
 	@property
 	def VHDLTestbench(self):
 		if (len(self._vhdltb) == 0):
-			raise NotConfiguredException("No VHDL testbench configured for '{0!s}'.".format(self))
+			raise ConfigurationException("No VHDL testbench configured for '{0!s}'.".format(self))
 		return self._vhdltb[0]
 
 	@property
 	def CocoTestbench(self):
 		if (len(self._cocotb) == 0):
-			raise NotConfiguredException("No Cocotb testbench configured for '{0!s}'.".format(self))
+			raise ConfigurationException("No Cocotb testbench configured for '{0!s}'.".format(self))
 		return self._cocotb[0]
 
 	def GetTestbenches(self, kind=TestbenchKind.All):
@@ -308,25 +319,25 @@ class IPCore(PathElement):
 	@property
 	def LatticeNetlist(self):
 		if (len(self._latticeNetlist) == 0):
-			raise NotConfiguredException("No Lattice netlist configured for '{0!s}'.".format(self))
+			raise ConfigurationException("No Lattice netlist configured for '{0!s}'.".format(self))
 		return self._latticeNetlist[0]
 
 	@property
 	def QuartusNetlist(self):
 		if (len(self._quartusNetlist) == 0):
-			raise NotConfiguredException("No Quartus-II netlist configured for '{0!s}'.".format(self))
+			raise ConfigurationException("No Quartus-II netlist configured for '{0!s}'.".format(self))
 		return self._quartusNetlist[0]
 
 	@property
 	def XSTNetlist(self):
 		if (len(self._xstNetlist) == 0):
-			raise NotConfiguredException("No XST netlist configured for '{0!s}'.".format(self))
+			raise ConfigurationException("No XST netlist configured for '{0!s}'.".format(self))
 		return self._xstNetlist[0]
 
 	@property
 	def CGNetlist(self):
 		if (len(self._coreGenNetlist) == 0):
-			raise NotConfiguredException("No CoreGen netlist configured for '{0!s}'.".format(self))
+			raise ConfigurationException("No CoreGen netlist configured for '{0!s}'.".format(self))
 		return self._coreGenNetlist[0]
 
 	def GetNetlists(self, kind=NetlistKind.All):

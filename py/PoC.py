@@ -56,7 +56,7 @@ from Compiler.XSTCompiler						import Compiler as XSTCompiler
 from Compiler.SynthCompiler					import Compiler as SynthCompiler
 from PoC.Config											import Board
 from PoC.Entity											import Root, FQN, EntityTypes, WildCard, TestbenchKind, NetlistKind
-from PoC.Project										import Solution, Repository
+from PoC.Solution										import Solution, Repository
 from PoC.Query											import Query
 from Simulator.ActiveHDLSimulator		import Simulator as ActiveHDLSimulator
 from Simulator.CocotbSimulator 			import Simulator as CocotbSimulator

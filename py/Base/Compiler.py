@@ -53,7 +53,7 @@ from Base.Exceptions		import ExceptionBase
 from Base.Logging				import ILogable
 from Base.Project				import ToolChain, Tool, VHDLVersion, Environment, FileTypes
 from Parser.RulesParser	import CopyRuleMixIn, ReplaceRuleMixIn, DeleteRuleMixIn
-from PoC.Project				import VirtualProject, FileListFile, RulesFile
+from PoC.Solution				import VirtualProject, FileListFile, RulesFile
 
 
 class CompilerException(ExceptionBase):

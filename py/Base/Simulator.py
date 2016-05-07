@@ -51,7 +51,7 @@ from Base.Exceptions	import ExceptionBase, CommonException
 from Base.Logging			import ILogable, LogEntry
 from Base.Project			import Environment, ToolChain, Tool, VHDLVersion
 from PoC.Entity				import WildCard
-from PoC.Project			import VirtualProject, FileListFile
+from PoC.Solution			import VirtualProject, FileListFile
 from PoC.TestCase			import TestSuite, TestCase, Status
 
 VHDL_TESTBENCH_LIBRARY_NAME = "test"
@@ -282,4 +282,4 @@ def PoCSimulationResultFilter(gen, simulationResult):
 
 		yield line
 
-	if (state != 6):		raise SimulatorException("No PoC Testbench Report in simulator output found.")
+	if (state != 6):		raise SkipableSimulatorException("No PoC Testbench Report in simulator output found.")
