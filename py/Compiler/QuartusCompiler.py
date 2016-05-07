@@ -44,7 +44,6 @@ else:
 # load dependencies
 from pathlib										import Path
 
-from lib.Functions							import Init
 from Base.Project								import ToolChain, Tool
 from Base.Compiler							import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
 from PoC.Entity									import WildCard
@@ -78,28 +77,13 @@ class Compiler(BaseCompiler):
 			entity = fqn.Entity
 			if (isinstance(entity, WildCard)):
 				for netlist in entity.GetQuartusNetlists():
-					try:
-						self.Run(netlist, *args, **kwargs)
-					except SkipableCompilerException:
-						pass
+					self.TryRun(netlist, *args, **kwargs)
 			else:
 				netlist = entity.QuartusNetlist
-				try:
-					self.Run(netlist, *args, **kwargs)
-				except SkipableCompilerException:
-					pass
+				self.TryRun(netlist, *args, **kwargs)
 
-	def Run(self, netlist, board, **_):
-		self._LogQuiet("IP core: {0!s}".format(netlist.Parent, **Init.Foreground))
-
-		# setup all needed paths to execute fuse
-		self._PrepareCompilerEnvironment(board.Device)
-		self._WriteSpecialSectionIntoConfig(board.Device)
-
-		self._CreatePoCProject(netlist, board)
-		self._AddFileListFile(netlist.FilesFile)
-		if (netlist.RulesFile is not None):
-			self._AddRulesFiles(netlist.RulesFile)
+	def Run(self, netlist, board):
+		super().Run(netlist, board)
 
 		# netlist.XstFile = self.Directories.Working / (netlist.ModuleName + ".xst")
 		netlist.QsfFile = self.Directories.Working / (netlist.ModuleName + ".qsf")

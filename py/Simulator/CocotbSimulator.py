@@ -81,18 +81,15 @@ class Simulator(BaseSimulator):
 			entity = fqn.Entity
 			if (isinstance(entity, WildCard)):
 				for testbench in entity.GetCocoTestbenches():
-					try:
-						self.Run(testbench, *args, **kwargs)
-					except SimulatorException:
-						pass
+					self.TryRun(testbench, *args, **kwargs)
 			else:
 				testbench = entity.CocoTestbench
-				try:
-					self.Run(testbench, *args, **kwargs)
-				except SimulatorException:
-					pass
+				self.TryRun(testbench, *args, **kwargs)
 
-		return False # FIXME: check Cocotb result
+		if (len(self._testSuite) > 1):
+			self.PrintOverallSimulationReport()
+
+		return self._testSuite.ISAllPassed
 
 	def Run(self, testbench, board, **_):
 		super().Run(testbench, board, VHDLVersion.VHDL08)

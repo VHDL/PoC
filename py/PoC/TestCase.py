@@ -39,7 +39,10 @@ else:
 
 
 from collections	import OrderedDict
+from datetime			import time, datetime
 from enum					import Enum, unique
+
+#from Base.Simulator import SimulationResult
 
 
 @unique
@@ -96,9 +99,14 @@ class TestGroup(TestElement):
 	def TestCases(self):  return self._testCases
 
 
-class TestRoot(TestGroup):
+class TestSuite(TestGroup):
 	def __init__(self):
 		super().__init__("PoC", None)
+
+		self._startedAt =      datetime.now()
+		self._endedAt =        None
+		self._initRuntime =    None
+		self._overallRuntime = None
 
 		self._testGroups['arith'] =         TestGroup("arith", self)
 		self._testGroups['io'] =            TestGroup("io", self)
@@ -114,15 +122,37 @@ class TestRoot(TestGroup):
 	def AddTestCase(self, testcase):
 		self._testGroups['arith'].TestCases[testcase.Name] = testcase
 
+	def StartTimer(self):
+		now = datetime.now()
+		self.__initRuntime = now - self._startedAt
+		self._startedAt =    now
+
+	def StopTimer(self):
+		self._endedAt = datetime.now()
+		self._overallRuntime = self._endedAt - self._startedAt
+
+	@property
+	def StartTime(self):         return self._startedAt
+	@property
+	def EndTime(self):           return self._endedAt
+	@property
+	def InitilizationTime(self): return self._initRuntime.microseconds
+	@property
+	def OverallRunTime(self):    return self._overallRuntime.seconds
+
 
 class TestCase(TestElement):
 	def __init__(self, testbench):
 		super().__init__(testbench.Parent.Name, None)
-		self._testbench =		testbench
-		self._testGroup =		None
-		self._status =			Status.Unknown
-		self._warnings =		[]
-		self._errors =			[]
+		self._testbench =				testbench
+		self._testGroup =				None
+		self._status =					Status.Unknown
+		self._warnings =				[]
+		self._errors =					[]
+
+		self._startedAt =				None
+		self._endedAt =					None
+		self._overallRuntime =	None
 
 	@property
 	def Parent(self):           return self._parent
@@ -136,5 +166,29 @@ class TestCase(TestElement):
 
 	@property
 	def Status(self):           return self._status
+	@Status.setter
+	def Status(self, value):    self._status = value
 
+	def UpdateStatus(self, testbenchResult):
+		if (testbenchResult is testbenchResult.NotRun):
+			self._status = Status.Unknown
+		elif (testbenchResult is testbenchResult.Error):
+			self._status = Status.SimulationError
+		elif (testbenchResult is testbenchResult.Failed):
+			self._status = Status.SimulationFailed
+		elif (testbenchResult is testbenchResult.NoAsserts):
+			self._status = Status.SimulationNoAsserts
+		elif (testbenchResult is testbenchResult.Passed):
+			self._status = Status.SimulationSuccess
+		else:
+			raise IndentationError("Wuhu")
 
+	def StartTimer(self):
+		self._startedAt =				datetime.now()
+
+	def StopTimer(self):
+		self._endedAt =					datetime.now()
+		self._overallRuntime =	self._endedAt - self._startedAt
+
+	@property
+	def OverallRunTime(self): return self._overallRuntime.seconds

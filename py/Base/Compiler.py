@@ -47,6 +47,7 @@ import shutil
 from pathlib						import Path
 from os									import chdir
 
+from lib.Functions			import Init
 from lib.Parser					import ParserException
 from Base.Exceptions		import ExceptionBase
 from Base.Logging				import ILogable
@@ -112,6 +113,25 @@ class Compiler(ILogable):
 	@property
 	def Directories(self):		return self._directories
 
+	def TryRun(self, netlist, *args, **kwargs):
+		try:
+			self.Run(netlist, *args, **kwargs)
+		except SkipableCompilerException as ex:
+			self._LogQuiet("  {RED}ERROR:{NOCOLOR} {0}".format(ex.message, **Init.Foreground))
+			self._LogQuiet("  {RED}[SKIPPED DUE TO ERRORS]{NOCOLOR}".format(**Init.Foreground))
+
+	def Run(self, netlist, board):
+		self._LogQuiet("{CYAN}IP core:{NOCOLOR} {0!s}".format(netlist.Parent, **Init.Foreground))
+
+		# setup all needed paths to execute fuse
+		self._PrepareCompilerEnvironment(board.Device)
+		self._WriteSpecialSectionIntoConfig(board.Device)
+
+		self._CreatePoCProject(netlist, board)
+		self._AddFileListFile(netlist.FilesFile)
+		if (netlist.RulesFile is not None):
+			self._AddRulesFiles(netlist.RulesFile)
+
 	def _PrepareCompilerEnvironment(self, device):
 		self._LogNormal("Preparing synthesis environment...")
 		self.Directories.Destination = self.Directories.Netlist / str(device)
@@ -132,6 +152,13 @@ class Compiler(ILogable):
 			self._LogVerbose("Creating output directory for generated files.")
 			self._LogDebug("Output directory: {0!s}.".format(self.Directories.Destination))
 			self.Directories.Destination.mkdir(parents=True)
+
+	def _WriteSpecialSectionIntoConfig(self, device):
+		# add the key Device to section SPECIAL at runtime to change interpolation results
+		self.Host.PoCConfig['SPECIAL'] = {}
+		self.Host.PoCConfig['SPECIAL']['Device'] =				device.ShortName
+		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =	device.Series
+		self.Host.PoCConfig['SPECIAL']['OutputDir']	=			self.Directories.Working.as_posix()
 
 	def _CreatePoCProject(self, netlist, board):
 		# create a PoCProject and read all needed files

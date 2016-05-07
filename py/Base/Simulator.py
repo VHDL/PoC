@@ -52,7 +52,7 @@ from Base.Logging			import ILogable, LogEntry
 from Base.Project			import Environment, ToolChain, Tool, VHDLVersion
 from PoC.Entity				import WildCard
 from PoC.Project			import VirtualProject, FileListFile
-from PoC.TestCase			import TestRoot, TestCase, Status
+from PoC.TestCase			import TestSuite, TestCase, Status
 
 VHDL_TESTBENCH_LIBRARY_NAME = "test"
 
@@ -66,10 +66,11 @@ class SkipableSimulatorException(SimulatorException):
 
 @unique
 class SimulationResult(Enum):
-	Failed =		0
-	NoAsserts =	1
-	Passed =		2
-	Error =			5
+	NotRun =    0
+	Error =			1
+	Failed =		2
+	NoAsserts =	3
+	Passed =		4
 
 
 class Simulator(ILogable):
@@ -93,6 +94,7 @@ class Simulator(ILogable):
 
 		self._vhdlVersion =	VHDLVersion.VHDL2008
 		self._pocProject =	None
+		self._testSuite =    TestSuite()			# TODO: This includes not the read ini files phases ...
 
 		self._directories = self.__Directories__()
 
@@ -159,8 +161,7 @@ class Simulator(ILogable):
 			raise SkipableSimulatorException("Found critical warnings while parsing '{0!s}'".format(fileListFilePath))
 
 	def RunAll(self, fqnList, *args, **kwargs):
-		self._testRoot = TestRoot()
-
+		self._testSuite.StartTimer()
 		for fqn in fqnList:
 			entity = fqn.Entity
 			if (isinstance(entity, WildCard)):
@@ -170,21 +171,31 @@ class Simulator(ILogable):
 				testbench = entity.VHDLTestbench
 				self.TryRun(testbench, *args, **kwargs)
 
-		if (len(self._testRoot) > 1):
+		self._testSuite.StopTimer()
+		if (len(self._testSuite) > 1):
 			self.PrintOverallSimulationReport()
 
-		return self._testRoot.ISAllPassed
+		return self._testSuite.ISAllPassed
 
 	def TryRun(self, testbench, *args, **kwargs):
-		self._testRoot.AddTestCase(TestCase(testbench))
+		testCase = TestCase(testbench)
+		self._testSuite.AddTestCase(testCase)
+		testCase.StartTimer()
 		try:
 			self.Run(testbench, *args, **kwargs)
+			testCase.UpdateStatus(testbench.Result)
 		except SkipableSimulatorException as ex:
+			testCase.Status = Status.SimulationError
 			self._LogQuiet("  {RED}ERROR:{NOCOLOR} {0}".format(ex.message, **Init.Foreground))
 			self._LogQuiet("  {RED}[SKIPPED DUE TO ERRORS]{NOCOLOR}".format(**Init.Foreground))
+		except SimulatorException:
+			testCase.Status = Status.SystemError
+			raise
+		finally:
+			testCase.StopTimer()
 
 	def Run(self, testbench, board, vhdlVersion, vhdlGenerics=None):
-		self._LogQuiet("{CYAN}Testbench: {0!s}{NOCOLOR}".format(testbench.Parent, **Init.Foreground))
+		self._LogQuiet("{CYAN}Testbench:{NOCOLOR} {0!s}".format(testbench.Parent, **Init.Foreground))
 
 		self._vhdlVersion =  vhdlVersion
 		self._vhdlGenerics = vhdlGenerics
@@ -200,10 +211,10 @@ class Simulator(ILogable):
 		# table header
 		self._LogQuiet("{Name: <24} | {Duration: >6} | {Status: ^14}".format(Name="Name", Duration="Time", Status="Status"))
 		self._LogQuiet("-"*80)
-		self.PrintSimulationReportLine(self._testRoot, 0, 24)
+		self.PrintSimulationReportLine(self._testSuite, 0, 24)
 
 		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
-		self._LogQuiet("Passed:   00    No Asserts:  00    Failed:  00    Errors: 00")
+		self._LogQuiet("Time:  {time} sec    Passed:   00    No Asserts:  00    Failed:  00    Errors: 00".format(time=self._testSuite.OverallRunTime))
 		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
 
 	__SIMULATION_REPORT_COLOR_TABLE__ = {
@@ -236,7 +247,7 @@ class Simulator(ILogable):
 		for testCase in testObject.TestCases.values():
 			pattern = "{indent}{{testcaseName: <{nameColumnWidth}}} | {{duration: >6}} | {{{color}}}{{status: ^14}}{{NOCOLOR}}".format(
 					indent=_indent, nameColumnWidth=nameColumnWidth, color=self.__SIMULATION_REPORT_COLOR_TABLE__[testCase.Status])
-			self._LogQuiet(pattern.format(testcaseName=testCase.Name, duration="00:05", status=self.__SIMULATION_REPORT_STATUS_TEXT_TABLE__[testCase.Status], **Init.Foreground))
+			self._LogQuiet(pattern.format(testcaseName=testCase.Name, duration=testCase.OverallRunTime, status=self.__SIMULATION_REPORT_STATUS_TEXT_TABLE__[testCase.Status], **Init.Foreground))
 
 def PoCSimulationResultFilter(gen, simulationResult):
 	state = 0

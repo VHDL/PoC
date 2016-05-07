@@ -43,7 +43,6 @@ else:
 # load dependencies
 from pathlib									import Path
 
-from lib.Functions						import Init
 from Base.Project							import ToolChain, Tool
 from Base.Compiler						import Compiler as BaseCompiler, CompilerException
 from PoC.Entity								import WildCard
@@ -79,32 +78,17 @@ class Compiler(BaseCompiler):
 		for fqn in fqnList:
 			entity = fqn.Entity
 			if (isinstance(entity, WildCard)):
-				for testbench in entity.GetSynthNetlist():
-					try:
-						self.Run(testbench, *args, **kwargs)
-					except CompilerException:
-						pass
+				for netlist in entity.GetSynthNetlist():
+					self.TryRun(netlist, *args, **kwargs)
 			else:
-				testbench = entity.SynthNetlist
-				try:
-					self.Run(testbench, *args, **kwargs)
-				except CompilerException:
-					pass
+				netlist = entity.SynthNetlist
+				self.TryRun(netlist, *args, **kwargs)
 
-	def Run(self, netlist, board, **_):
-		self._LogQuiet("IP core: {0!s}".format(netlist.Parent, **Init.Foreground))
-		
+	def Run(self, netlist, board):
+		super().Run(netlist, board)
+
 		self._device =				board.Device
 		
-		# setup all needed paths to execute Synth
-		self._PrepareCompilerEnvironment(board.Device)
-		self._WriteSpecialSectionIntoConfig(board.Device)
-
-		self._CreatePoCProject(netlist, board)
-		self._AddFileListFile(netlist.FilesFile)
-		if (netlist.RulesFile is not None):
-			self._AddRulesFiles(netlist.RulesFile)
-
 		self._LogNormal("Executing pre-processing tasks...")
 		self._RunPreCopy(netlist)
 		self._RunPreReplace(netlist)
