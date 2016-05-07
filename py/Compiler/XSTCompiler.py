@@ -58,8 +58,8 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 	class __Directories__(BaseCompiler.__Directories__):
 		XSTFiles =		None
 
-	def __init__(self, host, showLogs, showReport, dryRun, noCleanUp):
-		super().__init__(host, showLogs, showReport, dryRun, noCleanUp)
+	def __init__(self, host, dryRun, noCleanUp):
+		super().__init__(host, dryRun, noCleanUp)
 		XilinxProjectExportMixIn.__init__(self)
 
 		self._device =			None

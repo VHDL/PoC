@@ -75,6 +75,11 @@ from lib.Parser											import ParserException
 from lib.pyAttribute								import Attribute
 
 
+class PoCEntityAttribute(Attribute):
+	def __call__(self, func):
+		self._AppendAttribute(func, ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="A space seperated list of PoC entities."))
+		return func
+
 class BoardDeviceAttributeGroup(Attribute):
 	def __call__(self, func):
 		self._AppendAttribute(func, ArgumentAttribute("--device", metavar="<DeviceName>", dest="DeviceName", help="The target platform's device name."))
@@ -626,6 +631,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ============================================================================
 	# Simulation	commands
 	# ============================================================================
+	# TODO: Maybe required to self-compile libraries again or in the future
 	# def __PrepareVendorLibraryPaths(self):
 	# 	# prepare vendor library path for Altera
 	# 	if (len(self.PoCConfig.options("INSTALL.Altera.Quartus")) != 0):
@@ -668,7 +674,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("list-testbench", help="List all testbenches")
-	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@PoCEntityAttribute()
 	@ArgumentAttribute("--kind", metavar="<Kind>", dest="TestbenchKind", help="Testbench kind: VHDL | COCOTB")
 	def HandleListTestbenches(self, args):
 		self.PrintHeadline()
@@ -746,12 +752,10 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("asim", help="Simulate a PoC Entity with Aldec Active-HDL")
-	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@PoCEntityAttribute()
 	@BoardDeviceAttributeGroup()
 	@VHDLVersionAttribute()
 	@GUIModeAttribute()
-	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
-	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	def HandleActiveHDLSimulation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSimulation()
@@ -761,7 +765,7 @@ class PoC(ILogable, ArgParseMixin):
 		vhdlVersion =	self._ExtractVHDLVersion(args.VHDLVersion)
 
 		# create a GHDLSimulator instance and prepare it
-		simulator = ActiveHDLSimulator(self, args.logs, args.reports, args.GUIMode)
+		simulator = ActiveHDLSimulator(self, args.GUIMode)
 		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
 		Exit.exit(0 if allPassed else 1)
@@ -772,12 +776,10 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("ghdl", help="Simulate a PoC Entity with GHDL")
-	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@PoCEntityAttribute()
 	@BoardDeviceAttributeGroup()
 	@VHDLVersionAttribute()
 	@GUIModeAttribute()
-	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
-	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	def HandleGHDLSimulation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSimulation()
@@ -790,7 +792,7 @@ class PoC(ILogable, ArgParseMixin):
 		board =				self._ExtractBoard(args.BoardName, args.DeviceName)
 		vhdlVersion =	self._ExtractVHDLVersion(args.VHDLVersion)
 
-		simulator = GHDLSimulator(self, args.logs, args.reports, args.GUIMode)
+		simulator = GHDLSimulator(self, args.GUIMode)
 		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion, guiMode=args.GUIMode)		#, vhdlGenerics=None)
 
 		Exit.exit(0 if allPassed else 1)
@@ -801,11 +803,9 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("isim", help="Simulate a PoC Entity with Xilinx ISE Simulator (iSim)")
-	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@PoCEntityAttribute()
 	@BoardDeviceAttributeGroup()
 	@GUIModeAttribute()
-	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
-	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	def HandleISESimulation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSimulation()
@@ -814,7 +814,7 @@ class PoC(ILogable, ArgParseMixin):
 		fqnList =			self._ExtractFQNs(args.FQN)
 		board =				self._ExtractBoard(args.BoardName, args.DeviceName)
 
-		simulator = ISESimulator(self, args.logs, args.reports, args.GUIMode)
+		simulator = ISESimulator(self, args.GUIMode)
 		allPassed = simulator.RunAll(fqnList, board=board)		#, vhdlGenerics=None)
 
 		Exit.exit(0 if allPassed else 1)
@@ -825,12 +825,10 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("vsim", help="Simulate a PoC Entity with Mentor QuestaSim or ModelSim (vsim)")
-	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@PoCEntityAttribute()
 	@BoardDeviceAttributeGroup()
 	@VHDLVersionAttribute()
 	@GUIModeAttribute()
-	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
-	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	def HandleQuestaSimulation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSimulation()
@@ -839,7 +837,7 @@ class PoC(ILogable, ArgParseMixin):
 		board =				self._ExtractBoard(args.BoardName, args.DeviceName)
 		vhdlVersion =	self._ExtractVHDLVersion(args.VHDLVersion)
 
-		simulator = QuestaSimulator(self, args.logs, args.reports, args.GUIMode)
+		simulator = QuestaSimulator(self, args.GUIMode)
 		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
 		Exit.exit(0 if allPassed else 1)
@@ -850,12 +848,10 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("xsim", help="Simulate a PoC Entity with Xilinx Vivado Simulator (xSim)")
-	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@PoCEntityAttribute()
 	@BoardDeviceAttributeGroup()
 	@VHDLVersionAttribute()
 	@GUIModeAttribute()
-	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
-	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	def HandleVivadoSimulation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSimulation()
@@ -867,7 +863,7 @@ class PoC(ILogable, ArgParseMixin):
 		# FIXME: VHDL-2008 is broken in Vivado 2016.1 -> use VHDL-93 by default
 		vhdlVersion = self._ExtractVHDLVersion(args.VHDLVersion, defaultVersion=VHDLVersion.VHDL93)
 
-		simulator = VivadoSimulator(self, args.logs, args.reports, args.GUIMode)
+		simulator = VivadoSimulator(self, args.GUIMode)
 		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)  # , vhdlGenerics=None)
 
 		Exit.exit(0 if allPassed else 1)
@@ -878,11 +874,9 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("cocotb", help="Simulate a PoC Entity with Cocotb and Questa Simulator")
-	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@PoCEntityAttribute()
 	@BoardDeviceAttributeGroup()
 	@GUIModeAttribute()
-	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
-	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	def HandleCocotbSimulation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSimulation()
@@ -895,7 +889,7 @@ class PoC(ILogable, ArgParseMixin):
 		board =		self._ExtractBoard(args.BoardName, args.DeviceName)
 
 		# create a CocotbSimulator instance and prepare it
-		simulator = CocotbSimulator(self, args.logs, args.reports, args.GUIMode)
+		simulator = CocotbSimulator(self, args.GUIMode)
 		allPassed = simulator.RunAll(fqnList, board=board)
 
 		Exit.exit(0 if allPassed else 1)
@@ -908,7 +902,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("list-netlist", help="List all netlists")
-	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@PoCEntityAttribute()
 	@ArgumentAttribute("--kind", metavar="<Kind>", dest="NetlistKind", help="Netlist kind: Lattice | Quartus | XST | CoreGen")
 	def HandleListNetlist(self, args):
 		self.PrintHeadline()
@@ -942,11 +936,9 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Synthesis commands")
 	@CommandAttribute("coregen", help="Generate an IP core with Xilinx ISE Core Generator")
-	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@PoCEntityAttribute()
 	@BoardDeviceAttributeGroup()
 	@NoCleanUpAttribute()
-	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
-	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	def HandleCoreGeneratorCompilation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSynthesis()
@@ -955,7 +947,7 @@ class PoC(ILogable, ArgParseMixin):
 		fqnList =	self._ExtractFQNs(args.FQN, defaultType=EntityTypes.NetList)
 		board =		self._ExtractBoard(args.BoardName, args.DeviceName, force=True)
 
-		compiler = XCOCompiler(self, args.logs, args.reports, self.DryRun, args.NoCleanUp)
+		compiler = XCOCompiler(self, self.DryRun, args.NoCleanUp)
 		compiler.RunAll(fqnList, board)
 
 		Exit.exit()
@@ -965,11 +957,9 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Synthesis commands")
 	@CommandAttribute("xst", help="Compile a PoC IP core with Xilinx ISE XST to a netlist")
-	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@PoCEntityAttribute()
 	@BoardDeviceAttributeGroup()
 	@NoCleanUpAttribute()
-	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
-	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	def HandleXstCompilation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSynthesis()
@@ -978,7 +968,7 @@ class PoC(ILogable, ArgParseMixin):
 		fqnList =	self._ExtractFQNs(args.FQN, defaultType=EntityTypes.NetList)
 		board =		self._ExtractBoard(args.BoardName, args.DeviceName, force=True)
 
-		compiler = XSTCompiler(self, args.logs, args.reports, self.DryRun, args.NoCleanUp)
+		compiler = XSTCompiler(self, self.DryRun, args.NoCleanUp)
 		compiler.RunAll(fqnList, board)
 
 		Exit.exit()
@@ -988,11 +978,9 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Synthesis commands")
 	@CommandAttribute("synth", help="Compile a PoC IP core with Xilinx Vivado Synth to a design checkpoint")
-	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@PoCEntityAttribute()
 	@BoardDeviceAttributeGroup()
 	@NoCleanUpAttribute()
-	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
-	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	def HandleSynthCompilation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSynthesis()
@@ -1001,7 +989,7 @@ class PoC(ILogable, ArgParseMixin):
 		fqnList =	self._ExtractFQNs(args.FQN, defaultType=EntityTypes.NetList)
 		board =		self._ExtractBoard(args.BoardName, args.DeviceName, force=True)
 
-		compiler = SynthCompiler(self, args.logs, args.reports, self.DryRun, args.NoCleanUp)
+		compiler = SynthCompiler(self, self.DryRun, args.NoCleanUp)
 		compiler.RunAll(fqnList, board)
 
 		Exit.exit()
@@ -1012,11 +1000,9 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Synthesis commands")
 	@CommandAttribute("quartus", help="Compile a PoC IP core with Altera Quartus II Map to a netlist")
-	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@PoCEntityAttribute()
 	@BoardDeviceAttributeGroup()
 	@NoCleanUpAttribute()
-	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
-	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	def HandleQuartusCompilation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSynthesis()
@@ -1027,7 +1013,7 @@ class PoC(ILogable, ArgParseMixin):
 		fqnList =	self._ExtractFQNs(args.FQN, defaultType=EntityTypes.NetList)
 		board =		self._ExtractBoard(args.BoardName, args.DeviceName, force=True)
 
-		compiler = MapCompiler(self, args.logs, args.reports, self.DryRun, args.NoCleanUp)
+		compiler = MapCompiler(self, self.DryRun, args.NoCleanUp)
 		compiler.RunAll(fqnList, board)
 
 		Exit.exit()
@@ -1038,11 +1024,9 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Synthesis commands")
 	@CommandAttribute("lse", help="Compile a PoC IP core with Lattice Diamond LSE to a netlist")
-	@ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="todo help")
+	@PoCEntityAttribute()
 	@BoardDeviceAttributeGroup()
 	@NoCleanUpAttribute()
-	@SwitchArgumentAttribute("-l", dest="logs", help="show logs")
-	@SwitchArgumentAttribute("-r", dest="reports", help="show reports")
 	def HandleLSECompilation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSynthesis()
@@ -1053,7 +1037,7 @@ class PoC(ILogable, ArgParseMixin):
 		fqnList =	self._ExtractFQNs(args.FQN, defaultType=EntityTypes.NetList)
 		board =		self._ExtractBoard(args.BoardName, args.DeviceName, force=True)
 
-		compiler = LSECompiler(self, args.logs, args.reports, self.DryRun, args.NoCleanUp)
+		compiler = LSECompiler(self, self.DryRun, args.NoCleanUp)
 		compiler.RunAll(fqnList, board)
 
 		Exit.exit()

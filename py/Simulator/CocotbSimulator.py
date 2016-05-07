@@ -57,8 +57,8 @@ class Simulator(BaseSimulator):
 	_TOOL =									Tool.Cocotb_QuestaSim
 	_COCOTB_SIMBUILD_DIRECTORY = "sim_build"
 
-	def __init__(self, host, showLogs, showReport, guiMode):
-		super().__init__(host, showLogs, showReport)
+	def __init__(self, host, guiMode):
+		super().__init__(host)
 
 		self._guiMode =				guiMode
 

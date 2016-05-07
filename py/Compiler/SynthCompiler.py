@@ -54,8 +54,8 @@ class Compiler(BaseCompiler):
 	_TOOL_CHAIN =	ToolChain.Xilinx_Vivado
 	_TOOL =				Tool.Xilinx_Synth
 
-	def __init__(self, host, showLogs, showReport, dryRun, noCleanUp):
-		super().__init__(host, showLogs, showReport, dryRun, noCleanUp)
+	def __init__(self, host, dryRun, noCleanUp):
+		super().__init__(host, dryRun, noCleanUp)
 
 		self._device =			None
 		self._toolChain =		None

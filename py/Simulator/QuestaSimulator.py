@@ -53,8 +53,8 @@ class Simulator(BaseSimulator):
 	_TOOL_CHAIN =						ToolChain.Mentor_QuestaSim
 	_TOOL =									Tool.Mentor_vSim
 
-	def __init__(self, host, showLogs, showReport, guiMode):
-		super(self.__class__, self).__init__(host, showLogs, showReport)
+	def __init__(self, host, guiMode):
+		super().__init__(host)
 
 		self._guiMode =				guiMode
 

@@ -54,8 +54,8 @@ class Compiler(BaseCompiler):
 	_TOOL_CHAIN =	ToolChain.Lattice_Diamond
 	_TOOL =				Tool.Lattice_LSE
 
-	def __init__(self, host, showLogs, showReport, dryRun, noCleanUp):
-		super().__init__(host, showLogs, showReport, dryRun, noCleanUp)
+	def __init__(self, host, dryRun, noCleanUp):
+		super().__init__(host, dryRun, noCleanUp)
 
 		self._toolChain =			None
 

@@ -52,8 +52,8 @@ class Simulator(BaseSimulator):
 	_TOOL_CHAIN =						ToolChain.Aldec_ActiveHDL
 	_TOOL =									Tool.Aldec_aSim
 
-	def __init__(self, host, showLogs, showReport, guiMode):
-		super().__init__(host, showLogs, showReport)
+	def __init__(self, host, guiMode):
+		super().__init__(host)
 
 		self._guiMode =				guiMode
 

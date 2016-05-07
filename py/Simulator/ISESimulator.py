@@ -54,8 +54,8 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 	_TOOL_CHAIN =						ToolChain.Xilinx_ISE
 	_TOOL =									Tool.Xilinx_iSim
 
-	def __init__(self, host, showLogs, showReport, guiMode):
-		super().__init__(host, showLogs, showReport)
+	def __init__(self, host, guiMode):
+		super().__init__(host)
 		XilinxProjectExportMixIn.__init__(self)
 
 		self._guiMode =				guiMode

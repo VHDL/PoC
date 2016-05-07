@@ -59,8 +59,8 @@ class Simulator(BaseSimulator):
 	class __Directories__(BaseSimulator.__Directories__):
 		GTKWBinary = None
 
-	def __init__(self, host, showLogs, showReport, guiMode):
-		super().__init__(host, showLogs, showReport)
+	def __init__(self, host, guiMode):
+		super().__init__(host)
 
 		self._guiMode =				guiMode
 

@@ -82,15 +82,13 @@ class Simulator(ILogable):
 		PoCRoot = None
 		PreCompiled = None
 
-	def __init__(self, host, showLogs, showReport):
+	def __init__(self, host):
 		if isinstance(host, ILogable):
 			ILogable.__init__(self, host.Logger)
 		else:
 			ILogable.__init__(self, None)
 
 		self.__host =				host
-		self.__showLogs =		showLogs
-		self.__showReport =	showReport
 
 		self._vhdlVersion =	VHDLVersion.VHDL2008
 		self._pocProject =	None
@@ -102,10 +100,6 @@ class Simulator(ILogable):
 	# ============================================================================
 	@property
 	def Host(self):						return self.__host
-	@property
-	def ShowLogs(self):				return self.__showLogs
-	@property
-	def ShowReport(self):			return self.__showReport
 	@property
 	def Directories(self):		return self._directories
 
@@ -186,7 +180,13 @@ class Simulator(ILogable):
 			testCase.UpdateStatus(testbench.Result)
 		except SkipableSimulatorException as ex:
 			testCase.Status = Status.SimulationError
-			self._LogQuiet("  {RED}ERROR:{NOCOLOR} {0}".format(ex.message, **Init.Foreground))
+			self._LogQuiet("  {RED}ERROR:{NOCOLOR} {ExMsg}".format(ExMsg=ex.message, **Init.Foreground))
+			cause = ex.__cause__
+			if (cause is not None):
+				self._LogQuiet("    {YELLOW}{ExType}:{NOCOLOR} {ExMsg!s}".format(ExType=cause.__class__.__name__, ExMsg=cause, **Init.Foreground))
+				cause = cause.__cause__
+				if (cause is not None):
+					self._LogQuiet("      {YELLOW}{ExType}:{NOCOLOR} {ExMsg!s}".format(ExType=cause.__class__.__name__, ExMsg=cause, **Init.Foreground))
 			self._LogQuiet("  {RED}[SKIPPED DUE TO ERRORS]{NOCOLOR}".format(**Init.Foreground))
 		except SimulatorException:
 			testCase.Status = Status.SystemError

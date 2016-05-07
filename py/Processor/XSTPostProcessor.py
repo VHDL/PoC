@@ -75,7 +75,7 @@ class PostProcessor(Processor):
 		self.Directories['ChipScope'] =	self.Directories['SolutionRoot'] / self.projectConfig['Directories']['ChipScopeDirectory']
 		self.Directories['TokenFile'] =	self.Directories['SolutionRoot'] / self.projectConfig['Directories']['TokenFileDirectory']
 			
-	def run(self, showLogs, showReport):
+	def run(self):
 		
 		self.compileRegExp()
 		print("-- process -------------------------")
