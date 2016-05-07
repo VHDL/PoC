@@ -203,7 +203,7 @@ class Compiler(ILogable):
 			rulesFile = self._pocProject.AddFile(RulesFile(rulesFilePath))
 			rulesFile.Parse()
 		except ParserException as ex:
-			raise CompilerException("Error while parsing '{0!s}'.".format(rulesFilePath)) from ex
+			raise SkipableCompilerException("Error while parsing '{0!s}'.".format(rulesFilePath)) from ex
 
 		self._LogDebug("Pre-process rules:")
 		for rule in rulesFile.PreProcessRules:

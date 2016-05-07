@@ -242,6 +242,7 @@ if ($PoC_ExitCode -eq 0) {
 
 	# launching Python script
 	Invoke-Expression "$Python_Interpreter $Python_Parameters $Python_Script $Python_ScriptParameters"
+	$PoC_ExitCode = $LastExitCode
 }
 
 # execute vendor and tool post-hook files if present

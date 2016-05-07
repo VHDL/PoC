@@ -195,6 +195,7 @@ if [ $PoC_ExitCode -eq 0 ]; then
 	
 	# launching python script
 	exec $Python_Interpreter $Python_Script $Python_ScriptParameters
+	PoC_ExitCode=$?
 fi
 
 # clean up environment variables

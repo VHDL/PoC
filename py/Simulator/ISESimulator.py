@@ -45,7 +45,7 @@ else:
 from pathlib									import Path
 
 from Base.Project							import VHDLVersion, ToolChain, Tool
-from Base.Simulator						import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
+from Base.Simulator						import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult, SkipableSimulatorException
 from ToolChains.Xilinx.Xilinx	import XilinxProjectExportMixIn
 from ToolChains.Xilinx.ISE		import ISE, ISESimulator, ISEException
 
@@ -119,9 +119,8 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 			fuse.Link()
 		except ISEException as ex:
 			raise SimulatorException("Error while analysing '{0!s}'.".format(prjFilePath)) from ex
-
 		if fuse.HasErrors:
-			raise SimulatorException("Error while analysing '{0!s}'.".format(prjFilePath))
+			raise SkipableSimulatorException("Error while analysing '{0!s}'.".format(prjFilePath))
 	
 	def _RunSimulation(self, testbench):
 		self._LogNormal("Running simulation...")

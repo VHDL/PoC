@@ -335,10 +335,6 @@ class XSim(Executable, VivadoMixIn):
 
 		except StopIteration:
 			pass
-		except VivadoException:
-			raise
-		# except Exception as ex:
-		#	raise GHDLException("Error while executing GHDL.") from ex
 		finally:
 			if self._hasOutput:
 				self._LogNormal("    " + ("-" * 76))

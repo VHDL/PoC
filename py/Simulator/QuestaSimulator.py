@@ -44,7 +44,8 @@ from pathlib											import Path
 
 from Base.Exceptions							import NotConfiguredException
 from Base.Project									import FileTypes, VHDLVersion, ToolChain, Tool
-from Base.Simulator								import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
+from Base.Simulator								import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult, \
+	SkipableSimulatorException
 from PoC.Config										import Vendors
 from ToolChains.Mentor.QuestaSim	import QuestaSim, QuestaException
 
@@ -145,9 +146,8 @@ class Simulator(BaseSimulator):
 				vcom.Compile()
 			except QuestaException as ex:
 				raise SimulatorException("Error while compiling '{0!s}'.".format(file.Path)) from ex
-
 			if vcom.HasErrors:
-				raise SimulatorException("Error while compiling '{0!s}'.".format(file.Path))
+				raise SkipableSimulatorException("Error while compiling '{0!s}'.".format(file.Path))
 
 			# delete empty log files
 			if (vcomLogFile.stat().st_size == 0):

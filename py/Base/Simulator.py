@@ -242,12 +242,14 @@ class Simulator(ILogable):
 	def PrintSimulationReportLine(self, testObject, indent, nameColumnWidth):
 		_indent = "  " * indent
 		for group in testObject.TestGroups.values():
-			self._LogQuiet("{indent}{groupName}".format(indent=_indent, groupName=group.Name))
+			pattern = "{indent}{{groupName: <{nameColumnWidth}}} |        | ".format(indent=_indent, nameColumnWidth=nameColumnWidth)
+			self._LogQuiet(pattern.format(groupName=group.Name))
 			self.PrintSimulationReportLine(group, indent+1, nameColumnWidth-2)
 		for testCase in testObject.TestCases.values():
 			pattern = "{indent}{{testcaseName: <{nameColumnWidth}}} | {{duration: >6}} | {{{color}}}{{status: ^14}}{{NOCOLOR}}".format(
 					indent=_indent, nameColumnWidth=nameColumnWidth, color=self.__SIMULATION_REPORT_COLOR_TABLE__[testCase.Status])
-			self._LogQuiet(pattern.format(testcaseName=testCase.Name, duration=testCase.OverallRunTime, status=self.__SIMULATION_REPORT_STATUS_TEXT_TABLE__[testCase.Status], **Init.Foreground))
+			self._LogQuiet(pattern.format(testcaseName=testCase.Name, duration=testCase.OverallRunTime,
+																		status=self.__SIMULATION_REPORT_STATUS_TEXT_TABLE__[testCase.Status], **Init.Foreground))
 
 def PoCSimulationResultFilter(gen, simulationResult):
 	state = 0

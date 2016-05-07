@@ -132,4 +132,4 @@ class Compiler(BaseCompiler):
 		except QuartusException as ex:
 			raise CompilerException("Error while compiling '{0!s}'.".format(netlist)) from ex
 		if q2map.HasErrors:
-			raise CompilerException("Error while compiling '{0!s}'.".format(netlist))
+			raise SkipableCompilerException("Error while compiling '{0!s}'.".format(netlist))

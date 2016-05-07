@@ -153,7 +153,6 @@ class Simulator(BaseSimulator):
 				ghdl.Analyze()
 			except GHDLException as ex:
 				raise SimulatorException("Error while analysing '{0!s}'.".format(file.Path)) from ex
-
 			if ghdl.HasErrors:
 				raise SkipableSimulatorException("Error while analysing '{0!s}'.".format(file.Path))
 
@@ -189,7 +188,6 @@ class Simulator(BaseSimulator):
 			ghdl.Elaborate()
 		except GHDLException as ex:
 			raise SimulatorException("Error while elaborating '{0}.{1}'.".format(VHDL_TESTBENCH_LIBRARY_NAME, testbench.ModuleName)) from ex
-
 		if ghdl.HasErrors:
 			raise SkipableSimulatorException("Error while elaborating '{0}.{1}'.".format(VHDL_TESTBENCH_LIBRARY_NAME, testbench.ModuleName))
 	

@@ -195,5 +195,5 @@ class Compiler(BaseCompiler):
 		except ISEException as ex:
 			raise CompilerException("Error while compiling '{0!s}'.".format(netlist)) from ex
 		if coreGen.HasErrors:
-			raise CompilerException("Error while compiling '{0!s}'.".format(netlist))
+			raise SkipableCompilerException("Error while compiling '{0!s}'.".format(netlist))
 

@@ -131,7 +131,7 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 		except ISEException as ex:
 			raise CompilerException("Error while compiling '{0!s}'.".format(netlist)) from ex
 		if xst.HasErrors:
-			raise CompilerException("Error while compiling '{0!s}'.".format(netlist))
+			raise SkipableCompilerException("Error while compiling '{0!s}'.".format(netlist))
 
 
 	def _WriteXstOptionsFile(self, netlist, device):

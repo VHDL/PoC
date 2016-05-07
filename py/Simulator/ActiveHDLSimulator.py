@@ -44,7 +44,8 @@ from pathlib import Path
 
 from Base.Exceptions						import NotConfiguredException
 from Base.Project								import FileTypes, VHDLVersion, ToolChain, Tool
-from Base.Simulator							import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
+from Base.Simulator							import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult, \
+	SkipableSimulatorException
 from ToolChains.Aldec.ActiveHDL	import ActiveHDL, ActiveHDLException
 
 
@@ -130,7 +131,7 @@ class Simulator(BaseSimulator):
 			except ActiveHDLException as ex:
 				raise SimulatorException("Error while compiling '{0!s}'.".format(file.Path)) from ex
 			if acom.HasErrors:
-				raise SimulatorException("Error while compiling '{0!s}'.".format(file.Path))
+				raise SkipableSimulatorException("Error while compiling '{0!s}'.".format(file.Path))
 
 
 	def _RunSimulation(self, testbench):
@@ -152,7 +153,7 @@ class Simulator(BaseSimulator):
 		except ActiveHDLException as ex:
 			raise SimulatorException("Error while simulating '{0}.{1}'.".format(VHDL_TESTBENCH_LIBRARY_NAME, testbench.ModuleName)) from ex
 		if aSim.HasErrors:
-			raise SimulatorException("Error while simulating '{0}.{1}'.".format(VHDL_TESTBENCH_LIBRARY_NAME, testbench.ModuleName))
+			raise SkipableSimulatorException("Error while simulating '{0}.{1}'.".format(VHDL_TESTBENCH_LIBRARY_NAME, testbench.ModuleName))
 
 	def _RunSimulationWithGUI(self, testbench):
 		self._LogNormal("Running simulation...")
