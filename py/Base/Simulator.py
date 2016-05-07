@@ -4,6 +4,7 @@
 # 
 # ==============================================================================
 # Authors:					Patrick Lehmann
+#										Martin Zabel
 # 
 # Python Class:			TODO
 # 
@@ -47,11 +48,11 @@ from os								import chdir
 from lib.Functions 		import Init
 from lib.Parser				import ParserException
 from Base.Exceptions	import ExceptionBase, CommonException
-from Base.Logging			import ILogable
+from Base.Logging			import ILogable, LogEntry
 from Base.Project			import Environment, ToolChain, Tool, VHDLVersion
 from PoC.Entity				import WildCard
 from PoC.Project			import VirtualProject, FileListFile
-
+from PoC.TestCase			import TestRoot, TestCase, Status
 
 VHDL_TESTBENCH_LIBRARY_NAME = "test"
 
@@ -158,70 +159,115 @@ class Simulator(ILogable):
 			raise SkipableSimulatorException("Found critical warnings while parsing '{0!s}'".format(fileListFilePath))
 
 	def RunAll(self, fqnList, *args, **kwargs):
-		results = {key : 0 for key in SimulationResult}
+		self._testRoot = TestRoot()
 
 		for fqn in fqnList:
 			entity = fqn.Entity
 			if (isinstance(entity, WildCard)):
 				for testbench in entity.GetVHDLTestbenches():
-					try:
-						self.Run(testbench, *args, **kwargs)
-						results[testbench.Result] += 1
-					except SkipableSimulatorException as ex:
-						self._LogQuiet("  {RED}ERROR:{NOCOLOR} {0}".format(ex.message, **Init.Foreground))
-						self._LogQuiet("{RED}  [SKIPPED DUE TO ERRORS]{NOCOLOR}".format(**Init.Foreground))
-						results[SimulationResult.Error] += 1
+					self.TryRun(testbench, *args, **kwargs)
 			else:
 				testbench = entity.VHDLTestbench
-				try:
-					self.Run(testbench, *args, **kwargs)
-					results[testbench.Result] += 1
-				except SkipableSimulatorException as ex:
-					self._LogQuiet("  {RED}ERROR:{NOCOLOR} {0}".format(ex.message, **Init.Foreground))
-					self._LogQuiet("{RED}  [SKIPPED DUE TO ERRORS]{NOCOLOR}".format(**Init.Foreground))
-					results[SimulationResult.Error] += 1
+				self.TryRun(testbench, *args, **kwargs)
 
-		self._LogQuiet("Overall Results:")
-		allPassed = True
-		for key in SimulationResult:
-			if results[key] != 0:
-				if key is SimulationResult.Passed:
-					self._LogQuiet("{GREEN}  Passed:    {0}{NOCOLOR}".format(results[key], **Init.Foreground))
-				else:
-					allPassed = False
-					self._LogQuiet("{RED}  {0: <10} {1}{NOCOLOR}".format(key.name + ":", results[key], **Init.Foreground))
+		if (len(self._testRoot) > 1):
+			self.PrintOverallSimulationReport()
 
-		return allPassed
+		return self._testRoot.ISAllPassed
 
+	def TryRun(self, testbench, *args, **kwargs):
+		self._testRoot.AddTestCase(TestCase(testbench))
+		try:
+			self.Run(testbench, *args, **kwargs)
+		except SkipableSimulatorException as ex:
+			self._LogQuiet("  {RED}ERROR:{NOCOLOR} {0}".format(ex.message, **Init.Foreground))
+			self._LogQuiet("  {RED}[SKIPPED DUE TO ERRORS]{NOCOLOR}".format(**Init.Foreground))
 
+	def Run(self, testbench, board, vhdlVersion, vhdlGenerics=None):
+		self._LogQuiet("{CYAN}Testbench: {0!s}{NOCOLOR}".format(testbench.Parent, **Init.Foreground))
 
-	def Run(self, testbench, board, vhdlVersion="93c", vhdlGenerics=None, **kwargs):
-		raise NotImplementedError("This method is abstract.")
+		self._vhdlVersion =  vhdlVersion
+		self._vhdlGenerics = vhdlGenerics
 
+		# setup all needed paths to execute fuse
+		self._CreatePoCProject(testbench, board)
+		self._AddFileListFile(testbench.FilesFile)
+
+	def PrintOverallSimulationReport(self):
+		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
+		self._LogQuiet("{HEADLINE}{headline: ^80s}{NOCOLOR}".format(headline="Overall Simulation Report", **Init.Foreground))
+		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
+		# table header
+		self._LogQuiet("{Name: <24} | {Duration: >6} | {Status: ^14}".format(Name="Name", Duration="Time", Status="Status"))
+		self._LogQuiet("-"*80)
+		self.PrintSimulationReportLine(self._testRoot, 0, 24)
+
+		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
+		self._LogQuiet("Passed:   00    No Asserts:  00    Failed:  00    Errors: 00")
+		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
+
+	__SIMULATION_REPORT_COLOR_TABLE__ = {
+		Status.Unknown:             "RED",
+		Status.SystemError:         "RED",
+		Status.AnalyzeError:        "RED",
+		Status.ElaborationError:    "RED",
+		Status.SimulationError:     "RED",
+		Status.SimulationFailed:    "RED",
+		Status.SimulationNoAsserts: "YELLOW",
+		Status.SimulationSuccess:   "GREEN"
+	}
+
+	__SIMULATION_REPORT_STATUS_TEXT_TABLE__ = {
+		Status.Unknown:             "--- ?? ---",
+		Status.SystemError:         "SYSTEM ERROR",
+		Status.AnalyzeError:        "ANALYZE ERROR",
+		Status.ElaborationError:    "ELAB ERROR",
+		Status.SimulationError:     "ERROR",
+		Status.SimulationFailed:    "FAILED",
+		Status.SimulationNoAsserts: "NO ASSERTS",
+		Status.SimulationSuccess:   "PASSED"
+	}
+
+	def PrintSimulationReportLine(self, testObject, indent, nameColumnWidth):
+		_indent = "  " * indent
+		for group in testObject.TestGroups.values():
+			self._LogQuiet("{indent}{groupName}".format(indent=_indent, groupName=group.Name))
+			self.PrintSimulationReportLine(group, indent+1, nameColumnWidth-2)
+		for testCase in testObject.TestCases.values():
+			pattern = "{indent}{{testcaseName: <{nameColumnWidth}}} | {{duration: >6}} | {{{color}}}{{status: ^14}}{{NOCOLOR}}".format(
+					indent=_indent, nameColumnWidth=nameColumnWidth, color=self.__SIMULATION_REPORT_COLOR_TABLE__[testCase.Status])
+			self._LogQuiet(pattern.format(testcaseName=testCase.Name, duration="00:05", status=self.__SIMULATION_REPORT_STATUS_TEXT_TABLE__[testCase.Status], **Init.Foreground))
 
 def PoCSimulationResultFilter(gen, simulationResult):
 	state = 0
 	for line in gen:
 		if   ((state == 0) and (line.Message == "========================================")):
-			state = 1
+			state += 1
 		elif ((state == 1) and (line.Message == "POC TESTBENCH REPORT")):
-			state = 2
+			state += 1
 		elif ((state == 2) and (line.Message == "========================================")):
-			state = 3
+			state += 1
 		elif ((state == 3) and (line.Message == "========================================")):
-			state = 4
+			state += 1
 		elif ((state == 4) and line.Message.startswith("SIMULATION RESULT = ")):
-			state = 5
+			state += 1
 			if line.Message.endswith("FAILED"):
+				color = Init.Foreground['RED']
 				simulationResult <<= SimulationResult.Failed
 			elif line.Message.endswith("NO ASSERTS"):
+				color = Init.Foreground['YELLOW']
 				simulationResult <<= SimulationResult.NoAsserts
 			elif line.Message.endswith("PASSED"):
+				color = Init.Foreground['GREEN']
 				simulationResult <<= SimulationResult.Passed
 			else:
+				color = Init.Foreground['RED']
 				simulationResult <<= SimulationResult.Error
+
+			yield LogEntry("{COLOR}{line}{NOCOLOR}".format(COLOR=color,line=line.Message, **Init.Foreground), line.Severity, line.Indent)
+			continue
 		elif ((state == 5) and (line.Message == "========================================")):
-			state = 6
+			state += 1
 
 		yield line
 

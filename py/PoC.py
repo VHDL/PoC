@@ -293,7 +293,6 @@ class PoC(ILogable, ArgParseMixin):
 		ArgParseMixin.Run(self)
 
 	def PrintHeadline(self):
-		# self._LogNormal(Foreground.MAGENTA + "=" * 80)
 		self._LogNormal("{HEADLINE}{line}{NOCOLOR}".format(line="="*80, **Init.Foreground))
 		self._LogNormal("{HEADLINE}{headline: ^80s}{NOCOLOR}".format(headline=self.HeadLine, **Init.Foreground))
 		self._LogNormal("{HEADLINE}{line}{NOCOLOR}".format(line="="*80, **Init.Foreground))

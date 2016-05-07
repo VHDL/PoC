@@ -4,6 +4,7 @@
 # 
 # ==============================================================================
 # Authors:					Patrick Lehmann
+#										Martin Zabel
 # 
 # Python Class:			TODO
 # 
@@ -43,7 +44,6 @@ else:
 # load dependencies
 from pathlib									import Path
 
-from lib.Functions						import Init
 from Base.Project							import VHDLVersion, ToolChain, Tool
 from Base.Simulator						import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult
 from ToolChains.Xilinx.Xilinx	import XilinxProjectExportMixIn
@@ -81,24 +81,12 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		binaryPath = Path(iseSection['BinaryDirectory'])
 		self._ise = ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
-	def Run(self, testbench, board, vhdlVersion=None, vhdlGenerics=None, guiMode=False):
-		self._LogQuiet("Testbench: {0!s}".format(testbench.Parent, **Init.Foreground))
+	def Run(self, testbench, board, vhdlVersion, vhdlGenerics=None, guiMode=False):
+		super().Run(testbench, board, vhdlVersion, vhdlGenerics)
 
-		self._vhdlVersion =		VHDLVersion.VHDL93
-		self._vhdlGenerics =	vhdlGenerics
-
-		# setup all needed paths to execute fuse
-		self._CreatePoCProject(testbench, board)
-		self._AddFileListFile(testbench.FilesFile)
-		
 		# self._RunCompile(testbenchName)
 		self._RunLink(testbench)
 		self._RunSimulation(testbench)
-
-		if (testbench.Result is SimulationResult.Passed):				self._LogQuiet("  {GREEN}[PASSED]{NOCOLOR}".format(**Init.Foreground))
-		elif (testbench.Result is SimulationResult.NoAsserts):	self._LogQuiet("  {YELLOW}[NO ASSERTS]{NOCOLOR}".format(**Init.Foreground))
-		elif (testbench.Result is SimulationResult.Failed):			self._LogQuiet("  {RED}[FAILED]{NOCOLOR}".format(**Init.Foreground))
-		elif (testbench.Result is SimulationResult.Error):			self._LogQuiet("  {RED}[ERROR]{NOCOLOR}".format(**Init.Foreground))
 
 	def _RunCompile(self, testbench):
 		self._LogNormal("  compiling source files...")

@@ -4,6 +4,7 @@
 # 
 # ==============================================================================
 # Authors:					Patrick Lehmann
+#										Martin Zabel
 # 
 # Python Class:			This PoCXCOCompiler compiles xco IPCores to netlists
 # 

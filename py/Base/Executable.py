@@ -40,7 +40,6 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Base.Executable")
 
 # load dependencies
-# from enum										import Enum, unique
 from pathlib								import Path
 from subprocess							import Popen				as Subprocess_Popen
 from subprocess							import PIPE					as Subprocess_Pipe

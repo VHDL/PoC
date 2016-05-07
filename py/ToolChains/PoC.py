@@ -4,6 +4,7 @@
 #
 # ==============================================================================
 # Authors:					Patrick Lehmann
+#										Martin Zabel
 #
 # Python Class:			PoC specific classes
 #
@@ -38,6 +39,7 @@ if __name__ != "__main__":
 else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.PoC")
+
 
 from os										import environ
 from pathlib							import Path

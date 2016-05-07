@@ -4,6 +4,7 @@
 #
 # ==============================================================================
 # Authors:					Patrick Lehmann
+#										Martin Zabel
 #
 # Python Class:			TODO
 #
@@ -38,6 +39,7 @@ if __name__ != "__main__":
 else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module  ToolChains.Aldec.Aldec")
+
 
 from Base.Configuration		import Configuration as BaseConfiguration
 from Base.ToolChain				import ToolChainException

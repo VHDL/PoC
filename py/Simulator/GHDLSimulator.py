@@ -4,6 +4,7 @@
 # 
 # ==============================================================================
 # Authors:					Patrick Lehmann
+#										Martin Zabel
 # 
 # Python Class:			TODO
 # 
@@ -43,7 +44,6 @@ else:
 # load dependencies
 from pathlib								import Path
 
-from lib.Functions					import Init
 from Base.Exceptions				import NotConfiguredException
 from Base.Logging						import Severity
 from Base.Project						import FileTypes, VHDLVersion, ToolChain, Tool
@@ -94,16 +94,9 @@ class Simulator(BaseSimulator):
 		backend = ghdlSection['Backend']
 		self._toolChain =			GHDL(self.Host.Platform, binaryPath, version, backend, logger=self.Logger)
 
-	def Run(self, testbench, board, vhdlVersion="93c", vhdlGenerics=None, guiMode=False):
-		self._LogQuiet("Testbench: {0!s}".format(testbench.Parent, **Init.Foreground))
+	def Run(self, testbench, board, vhdlVersion, vhdlGenerics=None, guiMode=False):
+		super().Run(testbench, board, vhdlVersion, vhdlGenerics)
 
-		self._vhdlVersion =		vhdlVersion
-		self._vhdlGenerics =	vhdlGenerics
-
-		# setup all needed paths to execute fuse
-		self._CreatePoCProject(testbench, board)
-		self._AddFileListFile(testbench.FilesFile)
-		
 		if (self._toolChain.Backend == "gcc"):
 			self._RunAnalysis()
 			self._RunElaboration(testbench)
@@ -115,11 +108,6 @@ class Simulator(BaseSimulator):
 		elif (self._toolChain.Backend == "mcode"):
 			self._RunAnalysis()
 			self._RunSimulation(testbench)
-
-		if   (testbench.Result is SimulationResult.Passed):			self._LogQuiet("  {GREEN}[PASSED]{NOCOLOR}".format(**Init.Foreground))
-		elif (testbench.Result is SimulationResult.NoAsserts):	self._LogQuiet("  {YELLOW}[NO ASSERTS]{NOCOLOR}".format(**Init.Foreground))
-		elif (testbench.Result is SimulationResult.Failed):			self._LogQuiet("  {RED}[FAILED]{NOCOLOR}".format(**Init.Foreground))
-		elif (testbench.Result is SimulationResult.Error):			self._LogQuiet("  {RED}[ERROR]{NOCOLOR}".format(**Init.Foreground))
 
 		# FIXME: a very quick implemenation
 		if (guiMode is True):

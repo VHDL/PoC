@@ -32,12 +32,6 @@
 # ==============================================================================
 
 # entry point
-from collections import OrderedDict
-from pathlib import Path
-from textwrap import dedent
-
-from Base.Configuration import ConfigurationException
-
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -47,8 +41,12 @@ else:
 
 
 # load dependencies
+from collections import OrderedDict
+from textwrap import dedent
+
 from lib.Decorators			import ILazyLoadable, LazyLoadTrigger
 from Base.Exceptions		import CommonException
+from Base.Configuration import ConfigurationException
 from Base.Project				import Project as BaseProject, File, FileTypes, VHDLSourceFile, VerilogSourceFile, CocotbSourceFile  #, ProjectFile
 from Parser.FilesParser	import FilesParserMixIn
 from Parser.RulesParser	import RulesParserMixIn

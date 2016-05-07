@@ -45,8 +45,7 @@ else:
 import shutil
 from textwrap								import dedent
 
-from lib.Functions					import Init
-from Base.Project						import FileTypes, ToolChain, Tool
+from Base.Project						import FileTypes, ToolChain, Tool, VHDLVersion
 from Base.Simulator					import SimulatorException, Simulator as BaseSimulator
 from PoC.Config							import Vendors
 from PoC.Entity							import WildCard
@@ -96,11 +95,8 @@ class Simulator(BaseSimulator):
 		return False # FIXME: check Cocotb result
 
 	def Run(self, testbench, board, **_):
-		self._LogQuiet("Testbench: {0!s}".format(testbench.Parent, **Init.Foreground))
+		super().Run(testbench, board, VHDLVersion.VHDL08)
 
-		# setup all needed paths to execute fuse
-		self._CreatePoCProject(testbench, board)
-		self._AddFileListFile(testbench.FilesFile)
 		self._Run(testbench, board)
 
 	def _Run(self, testbench, board):

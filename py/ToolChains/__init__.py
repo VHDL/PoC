@@ -4,6 +4,7 @@
 #
 # ==============================================================================
 # Authors:         			Patrick Lehmann
+#												Martin Zabel
 #
 # Python Sub Module:  	TODO:
 #
@@ -50,10 +51,12 @@ from .GTKWave							import Configuration as GTKW_Configuration
 from .Lattice.Lattice			import Configuration as Lattice_Configuration
 from .Lattice.Diamond			import Configuration as Diamond_Configuration
 from .Lattice.ActiveHDL		import Configuration as LatticeActiveHDL_Configuration
-# from .Lattice.Synopsys		import Configuration as LatticeSynopsys_Configuration
+# from .Lattice.Symplify		import Configuration as LatticeSymplify_Configuration
 from .Mentor.Mentor				import Configuration as Mentor_Configuration
 from .Mentor.QuestaSim		import Configuration as Questa_Configuration
 # from .Mentor.PrecisionRTL	import Configuration as PrecisionRTL_Configuration
+# from .Synopsys.Synopsys		import Configuration as Synopsys_Configuration
+# from .Synopsys.Symplify		import Configuration as Symplify_Configuration
 from .Xilinx.Xilinx				import Configuration as Xilinx_Configuration
 from .Xilinx.ISE					import Configuration as ISE_Configuration
 from .Xilinx.Vivado				import Configuration as Vivado_Configuration

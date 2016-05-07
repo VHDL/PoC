@@ -49,7 +49,6 @@ from flags								import Flags
 from lib.Functions				import Init
 from lib.Decorators				import LazyLoadTrigger, ILazyLoadable
 from Base.Exceptions			import NotConfiguredException
-#from Base.Exceptions			import CommonException
 from Base.Configuration		import ConfigurationException
 
 

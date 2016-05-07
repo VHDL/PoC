@@ -4,6 +4,7 @@
 #
 # ==============================================================================
 # Authors:					Patrick Lehmann
+#										Martin Zabel
 #
 # Python Class:			Altera Quartus specific classes
 #
@@ -39,16 +40,17 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Altera.Quartus")
 
-from collections									import OrderedDict
-from subprocess 									import check_output, STDOUT
 
-from Base.Configuration						import Configuration as BaseConfiguration, ConfigurationException
-from Base.Exceptions import PlatformNotSupportedException
-from Base.Executable							import Executable, ExecutableArgument, CommandLineArgumentList, ShortValuedFlagArgument, LongValuedFlagArgument, \
-	StringArgument, ShortFlagArgument
-from Base.Logging import Severity, LogEntry
-from Base.Project									import Project as BaseProject, ProjectFile, FileTypes, SettingsFile
-from ToolChains.Altera.Altera import AlteraException
+from collections								import OrderedDict
+from subprocess 								import check_output, STDOUT
+
+from Base.Configuration					import Configuration as BaseConfiguration, ConfigurationException
+from Base.Exceptions						import PlatformNotSupportedException
+from Base.Logging								import Severity, LogEntry
+from Base.Executable						import Executable, CommandLineArgumentList
+from Base.Executable						import ExecutableArgument, ShortValuedFlagArgument, LongValuedFlagArgument, StringArgument, ShortFlagArgument
+from Base.Project								import Project as BaseProject, ProjectFile, FileTypes, SettingsFile
+from ToolChains.Altera.Altera		import AlteraException
 
 
 class QuartusException(AlteraException):

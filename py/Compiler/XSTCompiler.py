@@ -4,6 +4,7 @@
 # 
 # ==============================================================================
 # Authors:					Patrick Lehmann
+#										Martin Zabel
 # 
 # Python Class:			This XSTCompiler compiles VHDL source files to netlists
 # 
