@@ -286,7 +286,7 @@ class ExtendedConfigParser(ConfigParser):
 		try:
 			defaultdict = self._sections[prefix]
 			return _ChainMap(vardict, sectiondict, defaultdict, self._defaults)
-		except:
+		except KeyError:
 			return _ChainMap(vardict, sectiondict, self._defaults)
 
 	def has_option(self, section, option):

@@ -36,7 +36,7 @@ from pathlib import Path
 from lib.Functions import Exit
 from Base.Exceptions import *
 from Base.Processor import ProcessorException, PostProcessorException
-from PoC.Entity import Entity, FQN
+from PoC.Entity import IPCore, FQN
 #from PoC.Config import *
 #from Processor import *
 from Base.Exceptions import PlatformNotSupportedException, EnvironmentException, NotConfiguredException

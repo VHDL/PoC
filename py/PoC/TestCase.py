@@ -79,7 +79,7 @@ class TestGroup(TestElement):
 	def __getitem__(self, item):
 		try:
 			return self._testCases[item]
-		except:
+		except KeyError:
 			return self._testGroups[item]
 
 	def __setitem__(self, key, value):

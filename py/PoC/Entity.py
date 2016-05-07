@@ -97,91 +97,6 @@ class NetlistKind(BaseFlags):
 	CoreGeneratorNetlist = ()
 
 
-class PathElement:
-	def __init__(self, host, name, configSection, parent):
-		self.__name =					name
-		self._host =					host
-		self._configSection = configSection
-		self._parent =				parent
-
-	@property
-	def Name(self):		return self.__name
-	@property
-	def Parent(self):	return self._parent
-	@property
-	def Level(self):	return self._parent.Level + 1
-
-	def __str__(self):
-		return "{0!s}.{1}".format(self.Parent, self.Name)
-
-class Namespace(PathElement):
-	def __init__(self, host, name, configSection, parent):
-		super().__init__(host, name, configSection, parent)
-
-		self.__namespaces =		OrderedDict()
-		self.__entities =			OrderedDict()
-
-		self._Load()
-
-	def _Load(self):
-		for optionName in self._host.PoCConfig[self._configSection]:
-			type = self._host.PoCConfig[self._configSection][optionName]
-			if (type == "Namespace"):
-				# print("loading namespace: {0}".format(optionName))
-				section = self._configSection + "." + optionName
-				ns = Namespace(host=self._host, name=optionName, configSection=section, parent=self)
-				self.__namespaces[optionName.lower()] = ns
-			elif (type == "Entity"):
-				# print("loading entity: {0}".format(optionName))
-				section = ".".join(["IP"] + self._configSection.split(".")[1:] + [optionName])
-				ent = Entity(host=self._host, name=optionName, configSection=section, parent=self)
-				self.__entities[optionName.lower()] = ent
-
-	@property
-	def Namespaces(self):					return [ns for ns in self.__namespaces.values()]
-	@property
-	def NamespaceNames(self):			return [nsName for nsName in self.__namespaces.keys()]
-	@property
-	def Entities(self):						return [ent for ent in self.__entities.values()]
-	@property
-	def EntityNames(self):				return [entName for entName in self.__entities.keys()]
-
-	def GetNamespaces(self):			return self.__namespaces.values()
-	def GetNamespaceNames(self):	return self.__namespaces.keys()
-	def GetEntities(self):				return self.__entities.values()
-	def GetEntityNames(self):			return self.__entities.keys()
-	def GetAllEntities(self):
-		for namespace in self.GetNamespaces():
-			for entity in namespace.GetAllEntities():
-				yield entity
-		for entity in self.GetEntities():
-			yield entity
-
-	def __getitem__(self, key):
-		key = key.lower()
-		try:
-			return self.__namespaces[key]
-		except:
-			pass
-		return self.__entities[key]
-
-	def pprint(self, indent=0):
-		__indent = "  " * indent
-		buffer = "{0}{1}\n".format(__indent, self.Name)
-		for ent in self.GetEntities():
-			buffer += ent.pprint(indent + 1)
-		for ns in self.GetNamespaces():
-			buffer += ns.pprint(indent + 1)
-		return buffer
-
-class Library(Namespace):
-	@property
-	def Level(self):
-		return 0
-
-	def __str__(self):
-		return self.Name
-
 class Root:
 	__POCRoot_Name =						"PoC"
 	__POCRoot_SectionName =			"PoC"
@@ -209,6 +124,98 @@ class Root:
 
 	def AddLibrary(self, libraryName, libraryPrefix):
 		self.__libraries[libraryName.lower()] = (Library(self._host, libraryName, libraryPrefix, self))
+
+
+class PathElement:
+	def __init__(self, host, name, configSectionName, parent):
+		self._host =							host
+		self._name =							name
+		self._parent =						parent
+		self._configSectionName = configSectionName
+
+		self._Load()
+
+	@property
+	def Name(self):		return self._name
+	@property
+	def Parent(self):	return self._parent
+	@property
+	def ConfigSectionName(self):  return self._configSectionName
+	@property
+	def ConfigSection(self):      return self._host.PoCConfig[self._configSectionName]
+	@property
+	def Level(self):	return self._parent.Level + 1
+
+	def _Load(self):
+		pass
+
+	def __str__(self):
+		return "{0!s}.{1}".format(self.Parent, self.Name)
+
+
+class Namespace(PathElement):
+	def __init__(self, host, name, configSectionName, parent):
+		self.__namespaces =		OrderedDict()
+		self.__entities =			OrderedDict()
+		super().__init__(host, name, configSectionName, parent)
+
+	def _Load(self):
+		for optionName in self.ConfigSection:
+			type = self.ConfigSection[optionName]
+			if (type == "Namespace"):
+				# print("loading namespace: {0}".format(optionName))
+				section = self._configSectionName + "." + optionName
+				ns = Namespace(host=self._host, name=optionName, configSectionName=section, parent=self)
+				self.__namespaces[optionName.lower()] = ns
+			elif (type == "Entity"):
+				# print("loading entity: {0}".format(optionName))
+				section = ".".join(["IP"] + self._configSectionName.split(".")[1:] + [optionName])
+				ent = IPCore(host=self._host, name=optionName, configSectionName=section, parent=self)
+				self.__entities[optionName.lower()] = ent
+
+	@property
+	def Namespaces(self):					return [ns for ns in self.__namespaces.values()]
+	@property
+	def NamespaceNames(self):			return [nsName for nsName in self.__namespaces.keys()]
+	@property
+	def Entities(self):						return [ent for ent in self.__entities.values()]
+	@property
+	def EntityNames(self):				return [entName for entName in self.__entities.keys()]
+
+	def GetNamespaces(self):			return self.__namespaces.values()
+	def GetNamespaceNames(self):	return self.__namespaces.keys()
+	def GetEntities(self):				return self.__entities.values()
+	def GetEntityNames(self):			return self.__entities.keys()
+	def GetAllEntities(self):
+		for namespace in self.GetNamespaces():
+			for entity in namespace.GetAllEntities():
+				yield entity
+		for entity in self.GetEntities():
+			yield entity
+
+	def __getitem__(self, key):
+		key = key.lower()
+		try:
+			return self.__namespaces[key]
+		except KeyError:
+			return self.__entities[key]
+
+	def pprint(self, indent=0):
+		__indent = "  " * indent
+		buffer = "{0}{1}\n".format(__indent, self.Name)
+		for ent in self.GetEntities():
+			buffer += ent.pprint(indent + 1)
+		for ns in self.GetNamespaces():
+			buffer += ns.pprint(indent + 1)
+		return buffer
+
+class Library(Namespace):
+	@property
+	def Level(self):
+		return 0
+
+	def __str__(self):
+		return self.Name
 
 
 class WildCard(PathElement):
@@ -265,18 +272,18 @@ class AskWildCard(WildCard):
 			yield entity
 
 
-class Entity(PathElement):
-	def __init__(self, host, name, configSection, parent):
-		super().__init__(host, name, configSection, parent)
-
+class IPCore(PathElement):
+	def __init__(self, host, name, configSectionName, parent):
+		# Testbenches
 		self._vhdltb =					[]		# OrderedDict()
 		self._cocotb =					[]		# OrderedDict()
+		# Netlists
 		self._latticeNetlist =	[]		# OrderedDict()
 		self._quartusNetlist =	[]		# OrderedDict()
 		self._xstNetlist =			[]		# OrderedDict()
 		self._coreGenNetlist =	[]		# OrderedDict()
 
-		self._Load()
+		super().__init__(host, name, configSectionName, parent)
 
 	@property
 	def VHDLTestbench(self):
@@ -337,39 +344,37 @@ class Entity(PathElement):
 				yield nl
 
 	def _Load(self):
-		section = self._host.PoCConfig[self._configSection]
+		section = self.ConfigSection
 		for optionName in section:
 			type = section[optionName].lower()
 			if (type == "vhdltestbench"):
-				sectionName = self._configSection.replace("IP", "TB") + "." + optionName
-				tb = VHDLTestbench(host=self._host, name=optionName, sectionName=sectionName, parent=self)
+				sectionName = self._configSectionName.replace("IP", "TB") + "." + optionName
+				tb = VHDLTestbench(host=self._host, name=optionName, configSectionName=sectionName, parent=self)
 				self._vhdltb.append(tb)
 				# self._vhdltb[optionName] = tb
 			elif (type == "cocotestbench"):
-				sectionName = self._configSection.replace("IP", "COCOTB") + "." + optionName
-				tb = CocoTestbench(host=self._host, name=optionName, sectionName=sectionName, parent=self)
+				sectionName = self._configSectionName.replace("IP", "COCOTB") + "." + optionName
+				tb = CocoTestbench(host=self._host, name=optionName, configSectionName=sectionName, parent=self)
 				self._cocotb.append(tb)
 				# self._cocotb[optionName] = tb
 			elif (type == "lsenetlist"):
-				sectionName = self._configSection.replace("IP", "LSE") + "." + optionName
-				nl = LatticeNetlist(host=self._host, name=optionName, sectionName=sectionName, parent=self)
+				sectionName = self._configSectionName.replace("IP", "LSE") + "." + optionName
+				nl = LatticeNetlist(host=self._host, name=optionName, configSectionName=sectionName, parent=self)
 				self._latticeNetlist.append(nl)
 				# self._xstNetlist[optionName] = nl
-				# self._cocotb[optionName] = tb
 			elif (type == "quartusnetlist"):
-				sectionName = self._configSection.replace("IP", "QII") + "." + optionName
-				nl = QuartusNetlist(host=self._host, name=optionName, sectionName=sectionName, parent=self)
+				sectionName = self._configSectionName.replace("IP", "QII") + "." + optionName
+				nl = QuartusNetlist(host=self._host, name=optionName, configSectionName=sectionName, parent=self)
 				self._quartusNetlist.append(nl)
 				# self._xstNetlist[optionName] = nl
-				# self._cocotb[optionName] = tb
 			elif (type == "xstnetlist"):
-				sectionName = self._configSection.replace("IP", "XST") + "." + optionName
-				nl = XstNetlist(host=self._host, name=optionName, sectionName=sectionName, parent=self)
+				sectionName = self._configSectionName.replace("IP", "XST") + "." + optionName
+				nl = XstNetlist(host=self._host, name=optionName, configSectionName=sectionName, parent=self)
 				self._xstNetlist.append(nl)
 				# self._xstNetlist[optionName] = nl
 			elif (type == "coregennetlist"):
-				sectionName = self._configSection.replace("IP", "CG") + "." + optionName
-				nl = CoreGeneratorNetlist(host=self._host, name=optionName, sectionName=sectionName, parent=self)
+				sectionName = self._configSectionName.replace("IP", "CG") + "." + optionName
+				nl = CoreGeneratorNetlist(host=self._host, name=optionName, configSectionName=sectionName, parent=self)
 				self._coreGenNetlist.append(nl)
 				# self._coreGenNetlist[optionName] = nl
 
@@ -386,44 +391,26 @@ class Entity(PathElement):
 		return buffer
 
 
-class Base(ILazyLoadable):
-	def __init__(self, host, name, sectionName, parent):
-		ILazyLoadable.__init__(self)
-
+class LazyPathElement(PathElement, ILazyLoadable):
+	def __init__(self, host, name, configSectionName, parent):
 		self._kind =				None
-		self._name =				name
-		self._sectionName = sectionName
-		self._parent =			parent
-		self._host =				host
-
-		self._Load()
+		super().__init__(host, name, configSectionName, parent)
+		ILazyLoadable.__init__(self)
 
 	@property
 	def Kind(self):  							return self._kind
-	@property
-	def Name(self):								return self._name
-	@property
-	def Parent(self):							return self._parent
-	@property
-	def ConfigSectionName(self):	return self._sectionName
-	@property
-	def Level(self):							return self._parent.Level + 1
-
-	def _Load(self):
-		pass
 
 	def __str__(self):
 		return "{0!s}.{1}".format(self._parent, self._name)
 
 
-class Testbench(Base):
-	def __init__(self, host, name, sectionName, parent):
+class Testbench(LazyPathElement):
+	def __init__(self, host, name, configSectionName, parent):
 		self._kind =				TestbenchKind.Unknown
 		self._moduleName =	""
 		self._filesFile =		None
 		self._result =			None
-
-		super().__init__(host, name, sectionName, parent)
+		super().__init__(host, name, configSectionName, parent)
 
 	@property
 	@LazyLoadTrigger
@@ -439,8 +426,8 @@ class Testbench(Base):
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
-		self._moduleName =	self._host.PoCConfig[self._sectionName]["TestbenchModule"]
-		self._filesFile =		Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
+		self._moduleName =	self.ConfigSection["TestbenchModule"]
+		self._filesFile =		Path(self.ConfigSection["FilesFile"])
 
 	def pprint(self, indent):
 		__indent = "  " * indent
@@ -450,8 +437,8 @@ class Testbench(Base):
 
 
 class VHDLTestbench(Testbench):
-	def __init__(self, host, name, sectionName, parent):
-		super().__init__(host, name, sectionName, parent)
+	def __init__(self, host, name, configSectionName, parent):
+		super().__init__(host, name, configSectionName, parent)
 		self._kind = TestbenchKind.VHDLTestbench
 
 	def _LazyLoadable_Load(self):
@@ -468,9 +455,9 @@ class VHDLTestbench(Testbench):
 
 
 class CocoTestbench(Testbench):
-	def __init__(self, host, name, sectionName, parent):
+	def __init__(self, host, name, configSectionName, parent):
 		self._topLevel =	""
-		super().__init__(host, name, sectionName, parent)
+		super().__init__(host, name, configSectionName, parent)
 		self._kind =			TestbenchKind.CocoTestbench
 
 	@property
@@ -480,7 +467,7 @@ class CocoTestbench(Testbench):
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
-		self._topLevel =	self._host.PoCConfig[self._sectionName]["TopLevel"]
+		self._topLevel =	self.ConfigSection["TopLevel"]
 
 	def __str__(self):
 		return super().__str__() + " (Cocotb testbench)"
@@ -492,12 +479,12 @@ class CocoTestbench(Testbench):
 		return buffer
 
 
-class Netlist(Base):
-	def __init__(self, host, name, sectionName, parent):
+class Netlist(LazyPathElement):
+	def __init__(self, host, name, configSectionName, parent):
 		self._kind =				NetlistKind.Unknown
 		self._moduleName =	""
 		self._rulesFile =		None
-		super().__init__(host, name, sectionName, parent)
+		super().__init__(host, name, configSectionName, parent)
 
 	@property
 	@LazyLoadTrigger
@@ -508,8 +495,8 @@ class Netlist(Base):
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
-		self._moduleName =	self._host.PoCConfig[self._sectionName]["TopLevel"]
-		value = self._host.PoCConfig[self._sectionName]["RulesFile"]
+		self._moduleName =	self.ConfigSection["TopLevel"]
+		value = self.ConfigSection["RulesFile"]
 		if (value != ""):
 			self._rulesFile =		Path(value)
 		else:
@@ -517,14 +504,14 @@ class Netlist(Base):
 
 
 class XstNetlist(Netlist):
-	def __init__(self, host, name, sectionName, parent):
+	def __init__(self, host, name, configSectionName, parent):
 		self._filesFile =				None
 		self._prjFile =					None
 		self._xcfFile =					None
 		self._filterFile =			None
 		self._xstTemplateFile =	None
 		self._xstFile =					None
-		super().__init__(host, name, sectionName, parent)
+		super().__init__(host, name, configSectionName, parent)
 		self._kind =						NetlistKind.XstNetlist
 
 	@property
@@ -560,10 +547,10 @@ class XstNetlist(Netlist):
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
-		self._filesFile =				Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
-		self._xcfFile =					Path(self._host.PoCConfig[self._sectionName]['XSTConstraintsFile'])
-		self._filterFile =			Path(self._host.PoCConfig[self._sectionName]['XSTFilterFile'])
-		self._xstTemplateFile =	Path(self._host.PoCConfig[self._sectionName]['XSTOptionsFile'])
+		self._filesFile =				Path(self.ConfigSection["FilesFile"])
+		self._xcfFile =					Path(self.ConfigSection['XSTConstraintsFile'])
+		self._filterFile =			Path(self.ConfigSection['XSTFilterFile'])
+		self._xstTemplateFile =	Path(self.ConfigSection['XSTOptionsFile'])
 
 	def __str__(self):
 		return super().__str__() + " (XST netlist)"
@@ -576,10 +563,10 @@ class XstNetlist(Netlist):
 		return buffer
 
 class QuartusNetlist(Netlist):
-	def __init__(self, host, name, sectionName, parent):
+	def __init__(self, host, name, configSectionName, parent):
 		self._filesFile =				None
 		self._qsfFile =					None
-		super().__init__(host, name, sectionName, parent)
+		super().__init__(host, name, configSectionName, parent)
 		self._kind =						NetlistKind.QuartusNetlist
 
 	@property
@@ -596,7 +583,7 @@ class QuartusNetlist(Netlist):
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
-		self._filesFile =				Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
+		self._filesFile =				Path(self.ConfigSection["FilesFile"])
 
 	def __str__(self):
 		return super().__str__() + " (Quartus netlist)"
@@ -610,10 +597,10 @@ class QuartusNetlist(Netlist):
 
 
 class LatticeNetlist(Netlist):
-	def __init__(self, host, name, sectionName, parent):
+	def __init__(self, host, name, configSectionName, parent):
 		self._filesFile =				None
 		self._prjFile =					None
-		super().__init__(host, name, sectionName, parent)
+		super().__init__(host, name, configSectionName, parent)
 		self._kind =						NetlistKind.LatticeNetlist
 
 	@property
@@ -630,7 +617,7 @@ class LatticeNetlist(Netlist):
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
-		self._filesFile =				Path(self._host.PoCConfig[self._sectionName]["FilesFile"])
+		self._filesFile =				Path(self.ConfigSection["FilesFile"])
 
 	def __str__(self):
 		return super().__str__() + " (Lattice netlist)"
@@ -644,9 +631,9 @@ class LatticeNetlist(Netlist):
 
 
 class CoreGeneratorNetlist(Netlist):
-	def __init__(self, host, name, sectionName, parent):
+	def __init__(self, host, name, configSectionName, parent):
 		self._xcoFile =		None
-		super().__init__(host, name, sectionName, parent)
+		super().__init__(host, name, configSectionName, parent)
 		self._kind =			NetlistKind.CoreGeneratorNetlist
 
 	def __str__(self):
@@ -657,7 +644,7 @@ class CoreGeneratorNetlist(Netlist):
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
-		self._xcoFile = Path(self._host.PoCConfig[self._sectionName]['CoreGeneratorFile'])
+		self._xcoFile = Path(self.ConfigSection['CoreGeneratorFile'])
 
 	def pprint(self, indent):
 		__indent = "  " * indent
