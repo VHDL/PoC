@@ -5,11 +5,8 @@
 # Note: all files are relative to PoC root directory
 #
 # Common PoC packages for configuration, synthesis and simulation
-include				"src/common/common.files"										# load common packages
+include				"src/common/common.files"														# load common packages
 
-# PoC.mem.ocram
-include				"src/mem/ocram/ocram_sp.files"				      # Single-port RAM
-
-# PoC.dstruct
-vhdl		PoC		"src/dstruct/dstruct.pkg.vhdl"							# PoC.bus package
-vhdl		PoC		"src/dstruct/dstruct_stack.vhdl"						# Top-Level
+# PoC.sort.sortnet
+vhdl		poc		"src/sort/sortnet/sortnet.pkg.vhdl"									# 
+vhdl		poc		"src/sort/sortnet/sortnet_MergeSort_Streamed.vhdl"	# Top-Level

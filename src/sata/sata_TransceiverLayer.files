@@ -42,7 +42,7 @@ elseif (DeviceVendor = "Xilinx") then
 		# vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex6_GTXE1_Configurator.vhdl"	# 
 		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex6_GTXE1.vhdl"								# 
 		report "The Virtex-6 design is not working."
-	elseif (DeviceSeries = "Series7") then
+	elseif (DeviceSeries = "Series-7") then
 		# PoC.io
 		include		"src/io/io_TimingCounter.files"							# 
 		include		"src/io/io_GlitchFilter.files"							# 

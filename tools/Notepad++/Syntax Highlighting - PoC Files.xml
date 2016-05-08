@@ -24,8 +24,8 @@
             <Keywords name="Folders in comment, open"></Keywords>
             <Keywords name="Folders in comment, middle"></Keywords>
             <Keywords name="Folders in comment, close"></Keywords>
-            <Keywords name="Keywords1">if then elseif else end vhdl verilog cocotb include library ucf xdc sdc</Keywords>
-            <Keywords name="Keywords2">Tool ToolChain DeviceVendor DeviceFamily DeviceGeneration BoardName VHDL</Keywords>
+            <Keywords name="Keywords1">if then elseif else end vhdl verilog cocotb include library ucf xdc sdc ldc report</Keywords>
+            <Keywords name="Keywords2">Tool ToolChain DeviceVendor DeviceFamily DeviceGeneration DeviceSeries BoardName VHDL</Keywords>
             <Keywords name="Keywords3">poc test osvvm vunit_lib unisim unimacro unifast secureip altera altera_mf l_</Keywords>
             <Keywords name="Keywords4">EMACS vim kate</Keywords>
             <Keywords name="Keywords5"></Keywords>
