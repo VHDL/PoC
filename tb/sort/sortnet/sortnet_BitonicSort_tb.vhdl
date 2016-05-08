@@ -197,7 +197,8 @@ begin
 		wait until rising_edge(Sort_Valid);
 		
 		for i in 0 to LOOP_COUNT - 1 loop
-			
+			wait until falling_edge(Clock);
+		
 			Check		:= TRUE;
 			if (Sort_IsKey = '1') then
 				LastValue	:= (others => '0');
@@ -210,8 +211,6 @@ begin
 			else
 				-- no routine implemented to check if sorting network is switched as in the previous cycles
 			end if;
-			
-			wait until rising_edge(Clock);
 		end loop;
 
 		-- This process is finished
