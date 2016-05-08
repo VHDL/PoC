@@ -24,15 +24,15 @@ class Extractor(BaseExtractor):
 	def createGenerator(cls):
 		import re
 		
-		startRegExp =			re.compile(cls.getStartRegExpString())		# move out
+		startRegExp =      re.compile(cls.getStartRegExpString())		# move out
 		
 		line = yield
 		regExpMatch = startRegExp.match(line)
 		if (regExpMatch is not None):
 			result = {
-				'Process' :			regExpMatch.group('Process'),
-				'WarningID' :		int(regExpMatch.group('WarningID')),
-				'Message' :			regExpMatch.group('Message')
+				'Process' :      regExpMatch.group('Process'),
+				'WarningID' :    int(regExpMatch.group('WarningID')),
+				'Message' :      regExpMatch.group('Message')
 			}
 			return result
 		else:

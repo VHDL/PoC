@@ -3,10 +3,10 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:					Patrick Lehmann
-#										Martin Zabel
+# Authors:          Patrick Lehmann
+#                   Martin Zabel
 # 
-# Python Class:			TODO
+# Python Class:      TODO
 # 
 # Description:
 # ------------------------------------
@@ -17,13 +17,13 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#		http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,6 +33,9 @@
 # ==============================================================================
 #
 # entry point
+from datetime import datetime
+from time import time
+
 if __name__ != "__main__":
 	pass
 	# place library initialization code here
@@ -42,17 +45,17 @@ else:
 
 
 # load dependencies
-from enum							import Enum, unique
-from os								import chdir
+from enum              import Enum, unique
+from os                import chdir
 
-from lib.Functions 		import Init
-from lib.Parser				import ParserException
-from Base.Exceptions	import ExceptionBase, CommonException
-from Base.Logging			import ILogable, LogEntry
-from Base.Project			import Environment, ToolChain, Tool, VHDLVersion
-from PoC.Entity				import WildCard
-from PoC.Solution			import VirtualProject, FileListFile
-from PoC.TestCase			import TestSuite, TestCase, Status
+from lib.Functions     import Init
+from lib.Parser        import ParserException
+from Base.Exceptions  import ExceptionBase, CommonException
+from Base.Logging      import ILogable, LogEntry
+from Base.Project      import Environment, ToolChain, Tool, VHDLVersion
+from PoC.Entity        import WildCard
+from PoC.Solution      import VirtualProject, FileListFile
+from PoC.TestCase      import TestSuite, TestCase, Status
 
 VHDL_TESTBENCH_LIBRARY_NAME = "test"
 
@@ -67,15 +70,15 @@ class SkipableSimulatorException(SimulatorException):
 @unique
 class SimulationResult(Enum):
 	NotRun =    0
-	Error =			1
-	Failed =		2
-	NoAsserts =	3
-	Passed =		4
+	Error =      1
+	Failed =    2
+	NoAsserts =  3
+	Passed =    4
 
 
 class Simulator(ILogable):
-	_TOOL_CHAIN =	ToolChain.Any
-	_TOOL =				Tool.Any
+	_TOOL_CHAIN =  ToolChain.Any
+	_TOOL =        Tool.Any
 
 	class __Directories__:
 		Working = None
@@ -88,20 +91,24 @@ class Simulator(ILogable):
 		else:
 			ILogable.__init__(self, None)
 
-		self.__host =				host
+		self.__host =        host
 
-		self._vhdlVersion =	VHDLVersion.VHDL2008
-		self._pocProject =	None
-		self._testSuite =    TestSuite()			# TODO: This includes not the read ini files phases ...
-
+		self._vhdlVersion =  VHDLVersion.VHDL2008
 		self._directories = self.__Directories__()
+		self._pocProject =  None
+		self._testSuite =   TestSuite()			# TODO: This includes not the read ini files phases ...
+		self._startAt =      None
+		self._analyzeTime =      None
+		self._elaborationTime =  None
+		self._simulationTime =  None
+
 
 	# class properties
 	# ============================================================================
 	@property
-	def Host(self):						return self.__host
+	def Host(self):            return self.__host
 	@property
-	def Directories(self):		return self._directories
+	def Directories(self):    return self._directories
 
 	def _PrepareSimulationEnvironment(self):
 		self._LogNormal("Preparing simulation environment...")
@@ -134,7 +141,7 @@ class Simulator(ILogable):
 	def _AddFileListFile(self, fileListFilePath):
 		self._LogVerbose("Reading filelist '{0!s}'".format(fileListFilePath))
 		# add the *.files file, parse and evaluate it
-		# if (not fileListFilePath.exists()):		raise SimulatorException("Files file '{0!s}' not found.".format(fileListFilePath)) from FileNotFoundError(str(fileListFilePath))
+		# if (not fileListFilePath.exists()):    raise SimulatorException("Files file '{0!s}' not found.".format(fileListFilePath)) from FileNotFoundError(str(fileListFilePath))
 
 		try:
 			fileListFile = self._pocProject.AddFile(FileListFile(fileListFilePath))
@@ -166,8 +173,8 @@ class Simulator(ILogable):
 				self.TryRun(testbench, *args, **kwargs)
 
 		self._testSuite.StopTimer()
-		if (len(self._testSuite) > 1):
-			self.PrintOverallSimulationReport()
+		# if (len(self._testSuite) > 1):
+		self.PrintOverallSimulationReport()
 
 		return self._testSuite.ISAllPassed
 
@@ -284,4 +291,4 @@ def PoCSimulationResultFilter(gen, simulationResult):
 
 		yield line
 
-	if (state != 6):		raise SkipableSimulatorException("No PoC Testbench Report in simulator output found.")
+	if (state != 6):    raise SkipableSimulatorException("No PoC Testbench Report in simulator output found.")

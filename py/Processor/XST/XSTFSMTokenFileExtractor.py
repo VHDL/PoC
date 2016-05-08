@@ -39,26 +39,26 @@ class Extractor(BaseExtractor):
 	
 	@classmethod
 	def createGenerator(cls):
-		startRegExp =			re.compile(cls.getStartRegExpString())
-		lineRegExp =			re.compile(cls.getLineRegExpString())
-		headingsRegExp =	re.compile(cls.getHeadingsRegExpString())
-		encodingRegExp =	re.compile(cls.getEncodingRegExpString())
+		startRegExp =      re.compile(cls.getStartRegExpString())
+		lineRegExp =      re.compile(cls.getLineRegExpString())
+		headingsRegExp =  re.compile(cls.getHeadingsRegExpString())
+		encodingRegExp =  re.compile(cls.getEncodingRegExpString())
 		
 		# prepare result structure
 		result = {
-			'Path' :				"",
-			'Signal' :			"",
-			'XSTEncoding' :	"",
-			'Encodings' :		[]
+			'Path' :        "",
+			'Signal' :      "",
+			'XSTEncoding' :  "",
+			'Encodings' :    []
 		}
 	
 		# Get first line -> check pattern
 		line = yield
 		regExpMatch = startRegExp.match(line)
 		if (regExpMatch is not None):
-			result['Path'] =					regExpMatch.group('FSMPath')
-			result['Signal'] =				regExpMatch.group('SignalName')
-			result['XSTEncoding'] =		regExpMatch.group('Encoding')
+			result['Path'] =          regExpMatch.group('FSMPath')
+			result['Signal'] =        regExpMatch.group('SignalName')
+			result['XSTEncoding'] =    regExpMatch.group('Encoding')
 		else:
 			raise ProcessorException("Line does not match.")
 					
@@ -87,8 +87,8 @@ class Extractor(BaseExtractor):
 			if (regExpMatch is not None):
 				stateEncoding = regExpMatch.group('StateEncoding')
 				result['Encodings'].append({
-					'StateName' :			regExpMatch.group('StateName'),
-					'StateEncoding' :	None if (stateEncoding == "unreached") else int(stateEncoding, 2)
+					'StateName' :      regExpMatch.group('StateName'),
+					'StateEncoding' :  None if (stateEncoding == "unreached") else int(stateEncoding, 2)
 				})
 			
 			else:

@@ -3,10 +3,10 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:					Patrick Lehmann
-#										Martin Zabel
+# Authors:          Patrick Lehmann
+#                   Martin Zabel
 # 
-# Python Class:			This XCOCompiler compiles xco IPCores to netlists
+# Python Class:      This XCOCompiler compiles xco IPCores to netlists
 # 
 # Description:
 # ------------------------------------
@@ -17,13 +17,13 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#		http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,25 +43,25 @@ else:
 	
 # load dependencies
 import shutil
-from os											import chdir
-from pathlib								import Path
-from textwrap								import dedent
+from os                      import chdir
+from pathlib                import Path
+from textwrap                import dedent
 
-from Base.Project						import ToolChain, Tool
-from Base.Compiler					import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
-from PoC.Entity							import WildCard
-from ToolChains.Xilinx.ISE	import ISE, ISEException
+from Base.Project            import ToolChain, Tool
+from Base.Compiler          import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
+from PoC.Entity              import WildCard
+from ToolChains.Xilinx.ISE  import ISE, ISEException
 
 
 class Compiler(BaseCompiler):
-	_TOOL_CHAIN =	ToolChain.Xilinx_ISE
-	_TOOL =				Tool.Xilinx_CoreGen
+	_TOOL_CHAIN =  ToolChain.Xilinx_ISE
+	_TOOL =        Tool.Xilinx_CoreGen
 
 	def __init__(self, host, dryRun, noCleanUp):
 		super().__init__(host, dryRun, noCleanUp)
 
-		self._device =			None
-		self._toolChain =		None
+		self._device =      None
+		self._toolChain =    None
 
 		configSection = host.PoCConfig['CONFIG.DirectoryNames']
 		self.Directories.Working = host.Directories.Temp / configSection['ISECoreGeneratorFiles']
@@ -89,7 +89,7 @@ class Compiler(BaseCompiler):
 	def Run(self, netlist, board):
 		super().Run(netlist, board)
 
-		self._device =				board.Device
+		self._device =        board.Device
 
 		self._LogNormal("Executing pre-processing tasks...")
 		self._RunPreCopy(netlist)
@@ -106,18 +106,18 @@ class Compiler(BaseCompiler):
 	def _WriteSpecialSectionIntoConfig(self, device):
 		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.Host.PoCConfig['SPECIAL'] = {}
-		self.Host.PoCConfig['SPECIAL']['Device'] =				device.FullName
-		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =	device.Series
-		self.Host.PoCConfig['SPECIAL']['OutputDir']	=			self.Directories.Working.as_posix()
+		self.Host.PoCConfig['SPECIAL']['Device'] =        device.FullName
+		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =  device.Series
+		self.Host.PoCConfig['SPECIAL']['OutputDir']	=      self.Directories.Working.as_posix()
 
 	def _RunCompile(self, netlist):
 		self._LogVerbose("Patching coregen.cgp and .cgc files...")
 		# read netlist settings from configuration file
-		xcoInputFilePath =		netlist.XcoFile
-		cgcTemplateFilePath =	self.Directories.Netlist / "template.cgc"
-		cgpFilePath =					self.Directories.Working / "coregen.cgp"
-		cgcFilePath =					self.Directories.Working / "coregen.cgc"
-		xcoFilePath =					self.Directories.Working / xcoInputFilePath.name
+		xcoInputFilePath =    netlist.XcoFile
+		cgcTemplateFilePath =  self.Directories.Netlist / "template.cgc"
+		cgpFilePath =          self.Directories.Working / "coregen.cgp"
+		cgcFilePath =          self.Directories.Working / "coregen.cgc"
+		xcoFilePath =          self.Directories.Working / xcoInputFilePath.name
 
 		if (self.Host.Platform == "Windows"):
 			WorkingDirectory = ".\\temp\\"
@@ -186,9 +186,9 @@ class Compiler(BaseCompiler):
 		# ==========================================================================
 		self._LogVerbose("Executing CoreGen...")
 		coreGen = self._toolChain.GetCoreGenerator()
-		coreGen.Parameters[coreGen.SwitchProjectFile] =	"."		# use current directory and the default project name
-		coreGen.Parameters[coreGen.SwitchBatchFile] =		str(xcoFilePath)
-		coreGen.Parameters[coreGen.FlagRegenerate] =		True
+		coreGen.Parameters[coreGen.SwitchProjectFile] =  "."		# use current directory and the default project name
+		coreGen.Parameters[coreGen.SwitchBatchFile] =    str(xcoFilePath)
+		coreGen.Parameters[coreGen.FlagRegenerate] =    True
 
 		try:
 			coreGen.Generate()

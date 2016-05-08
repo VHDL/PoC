@@ -3,9 +3,9 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:					Patrick Lehmann
+# Authors:          Patrick Lehmann
 #
-# Python Class:			TODO
+# Python Class:     TODO
 #
 # Description:
 # ------------------------------------
@@ -14,13 +14,13 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair for VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#		http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,23 +38,23 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module PoC.Query")
 
 
-from collections	import OrderedDict
-from datetime			import time, datetime
-from enum					import Enum, unique
+from collections  import OrderedDict
+from datetime      import time, datetime
+from enum          import Enum, unique
 
 #from Base.Simulator import SimulationResult
 
 
 @unique
 class Status(Enum):
-	Unknown =							0
-	SystemError =					1
-	AnalyzeError =				2
-	ElaborationError =		3
-	SimulationError =			4
-	SimulationFailed =		10
-	SimulationNoAsserts =	15
-	SimulationSuccess =		20
+	Unknown =              0
+	SystemError =          1
+	AnalyzeError =        2
+	ElaborationError =    3
+	SimulationError =      4
+	SimulationFailed =    10
+	SimulationNoAsserts =  15
+	SimulationSuccess =    20
 
 
 class TestElement:
@@ -153,15 +153,15 @@ class TestSuite(TestGroup):
 class TestCase(TestElement):
 	def __init__(self, testbench):
 		super().__init__(testbench.Parent.Name, None)
-		self._testbench =				testbench
-		self._testGroup =				None
-		self._status =					Status.Unknown
-		self._warnings =				[]
-		self._errors =					[]
+		self._testbench =        testbench
+		self._testGroup =        None
+		self._status =          Status.Unknown
+		self._warnings =        []
+		self._errors =          []
 
-		self._startedAt =				None
-		self._endedAt =					None
-		self._overallRuntime =	None
+		self._startedAt =        None
+		self._endedAt =          None
+		self._overallRuntime =  None
 
 	@property
 	def Parent(self):           return self._parent
@@ -196,11 +196,11 @@ class TestCase(TestElement):
 			raise IndentationError("Wuhu")
 
 	def StartTimer(self):
-		self._startedAt =				datetime.now()
+		self._startedAt =        datetime.now()
 
 	def StopTimer(self):
-		self._endedAt =					datetime.now()
-		self._overallRuntime =	self._endedAt - self._startedAt
+		self._endedAt =          datetime.now()
+		self._overallRuntime =  self._endedAt - self._startedAt
 
 	@property
 	def OverallRunTime(self): return self._overallRuntime.seconds

@@ -3,10 +3,10 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:					Patrick Lehmann
-#										Martin Zabel
+# Authors:          Patrick Lehmann
+#                   Martin Zabel
 # 
-# Python Class:			Base class for all PoC***Compilers
+# Python Class:     Base class for all PoC***Compilers
 # 
 # Description:
 # ------------------------------------
@@ -17,13 +17,13 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#		http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,16 +44,16 @@ else:
 # load dependencies
 import re
 import shutil
-from pathlib						import Path
-from os									import chdir
+from pathlib            import Path
+from os                 import chdir
 
-from lib.Functions			import Init
-from lib.Parser					import ParserException
-from Base.Exceptions		import ExceptionBase
-from Base.Logging				import ILogable
-from Base.Project				import ToolChain, Tool, VHDLVersion, Environment, FileTypes
-from Parser.RulesParser	import CopyRuleMixIn, ReplaceRuleMixIn, DeleteRuleMixIn
-from PoC.Solution				import VirtualProject, FileListFile, RulesFile
+from lib.Functions      import Init
+from lib.Parser         import ParserException
+from Base.Exceptions    import ExceptionBase
+from Base.Logging       import ILogable
+from Base.Project       import ToolChain, Tool, VHDLVersion, Environment, FileTypes
+from Parser.RulesParser import CopyRuleMixIn, ReplaceRuleMixIn, DeleteRuleMixIn
+from PoC.Solution       import VirtualProject, FileListFile, RulesFile
 
 
 class CompilerException(ExceptionBase):
@@ -73,8 +73,8 @@ class ReplaceTask(ReplaceRuleMixIn):
 
 
 class Compiler(ILogable):
-	_TOOL_CHAIN =	ToolChain.Any
-	_TOOL =				Tool.Any
+	_TOOL_CHAIN =  ToolChain.Any
+	_TOOL =        Tool.Any
 
 	class __Directories__:
 		Working = None
@@ -89,23 +89,23 @@ class Compiler(ILogable):
 		else:
 			ILogable.__init__(self, None)
 
-		self.__host =				host
-		self._noCleanUp =		noCleanUp
-		self._dryRun =			dryRun
+		self.__host =        host
+		self._noCleanUp =    noCleanUp
+		self._dryRun =      dryRun
 
-		self._vhdlVersion =	VHDLVersion.VHDL93
-		self._pocProject =	None
+		self._vhdlVersion =  VHDLVersion.VHDL93
+		self._pocProject =  None
 
 		self._directories = self.__Directories__()
 
 	# class properties
 	# ============================================================================
 	@property
-	def Host(self):						return self.__host
+	def Host(self):            return self.__host
 	@property
-	def PoCProject(self):			return self._pocProject
+	def PoCProject(self):      return self._pocProject
 	@property
-	def Directories(self):		return self._directories
+	def Directories(self):    return self._directories
 
 	def TryRun(self, netlist, *args, **kwargs):
 		try:
@@ -156,9 +156,9 @@ class Compiler(ILogable):
 	def _WriteSpecialSectionIntoConfig(self, device):
 		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.Host.PoCConfig['SPECIAL'] = {}
-		self.Host.PoCConfig['SPECIAL']['Device'] =				device.ShortName
-		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =	device.Series
-		self.Host.PoCConfig['SPECIAL']['OutputDir']	=			self.Directories.Working.as_posix()
+		self.Host.PoCConfig['SPECIAL']['Device'] =        device.ShortName
+		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =  device.Series
+		self.Host.PoCConfig['SPECIAL']['OutputDir']	=      self.Directories.Working.as_posix()
 
 	def _CreatePoCProject(self, netlist, board):
 		# create a PoCProject and read all needed files
@@ -166,14 +166,14 @@ class Compiler(ILogable):
 		pocProject = VirtualProject(netlist.ModuleName)
 
 		# configure the project
-		pocProject.RootDirectory =	self.Host.Directories.Root
-		pocProject.Environment =		Environment.Synthesis
-		pocProject.ToolChain =			self._TOOL_CHAIN
-		pocProject.Tool =						self._TOOL
-		pocProject.VHDLVersion =		self._vhdlVersion
-		pocProject.Board =					board
+		pocProject.RootDirectory =  self.Host.Directories.Root
+		pocProject.Environment =    Environment.Synthesis
+		pocProject.ToolChain =      self._TOOL_CHAIN
+		pocProject.Tool =            self._TOOL
+		pocProject.VHDLVersion =    self._vhdlVersion
+		pocProject.Board =          board
 
-		self._pocProject =					pocProject
+		self._pocProject =          pocProject
 
 	def _AddFileListFile(self, fileListFilePath):
 		self._LogVerbose("Reading filelist '{0!s}'".format(fileListFilePath))
@@ -219,8 +219,8 @@ class Compiler(ILogable):
 		if (rulesFiles):
 			for rule in rulesFiles[0].PreProcessRules:
 				if isinstance(rule, CopyRuleMixIn):
-					sourcePath =			self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.SourcePath, {})
-					destinationPath =	self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.DestinationPath, {})
+					sourcePath =      self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.SourcePath, {})
+					destinationPath =  self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.DestinationPath, {})
 					task = CopyTask(Path(sourcePath), Path(destinationPath))
 					preCopyTasks.append(task)
 		else:
@@ -240,8 +240,8 @@ class Compiler(ILogable):
 		if (rulesFiles):
 			for rule in rulesFiles[0].PostProcessRules:
 				if isinstance(rule, CopyRuleMixIn):
-					sourcePath =			self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.SourcePath, {})
-					destinationPath =	self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.DestinationPath, {})
+					sourcePath =      self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.SourcePath, {})
+					destinationPath =  self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.DestinationPath, {})
 					task = CopyTask(Path(sourcePath), Path(destinationPath))
 					postCopyTasks.append(task)
 		else:
@@ -334,9 +334,9 @@ class Compiler(ILogable):
 		if (rulesFiles):
 			for rule in rulesFiles[0].PreProcessRules:
 				if isinstance(rule, ReplaceRuleMixIn):
-					filePath =				self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.FilePath, {})
-					searchPattern =		self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.SearchPattern, {})
-					replacePattern =	self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.ReplacePattern, {})
+					filePath =        self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.FilePath, {})
+					searchPattern =    self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.SearchPattern, {})
+					replacePattern =  self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.ReplacePattern, {})
 					task = ReplaceTask(Path(filePath), searchPattern, replacePattern, rule.RegExpOption_MultiLine, rule.RegExpOption_DotAll, rule.RegExpOption_CaseInsensitive)
 					preReplaceTasks.append(task)
 		else:
@@ -356,9 +356,9 @@ class Compiler(ILogable):
 		if (rulesFiles):
 			for rule in rulesFiles[0].PostProcessRules:
 				if isinstance(rule, ReplaceRuleMixIn):
-					filePath =				self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.FilePath, {})
-					searchPattern =		self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.SearchPattern, {})
-					replacePattern =	self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.ReplacePattern, {})
+					filePath =        self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.FilePath, {})
+					searchPattern =    self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.SearchPattern, {})
+					replacePattern =  self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.ReplacePattern, {})
 					task = ReplaceTask(Path(filePath), searchPattern, replacePattern, rule.RegExpOption_MultiLine, rule.RegExpOption_DotAll, rule.RegExpOption_CaseInsensitive)
 					postReplaceTasks.append(task)
 		else:
@@ -404,9 +404,9 @@ class Compiler(ILogable):
 			self._LogDebug("{0}-replace in file '{1!s}': search for '{2}' replace by '{3}'.".format(text, task.FilePath, task.SearchPattern, task.ReplacePattern))
 
 			regExpFlags = 0
-			if task.RegExpOption_CaseInsensitive:	regExpFlags |= re.IGNORECASE
-			if task.RegExpOption_MultiLine:				regExpFlags |= re.MULTILINE
-			if task.RegExpOption_DotAll:					regExpFlags |= re.DOTALL
+			if task.RegExpOption_CaseInsensitive:  regExpFlags |= re.IGNORECASE
+			if task.RegExpOption_MultiLine:        regExpFlags |= re.MULTILINE
+			if task.RegExpOption_DotAll:          regExpFlags |= re.DOTALL
 
 			# compile regexp
 			regExp = re.compile(task.SearchPattern, regExpFlags)

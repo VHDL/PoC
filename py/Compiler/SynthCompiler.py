@@ -3,9 +3,9 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:					Patrick Lehmann
+# Authors:          Patrick Lehmann
 # 
-# Python Class:			This SynthCompiler compiles VHDL source files to design checkpoints
+# Python Class:      This SynthCompiler compiles VHDL source files to design checkpoints
 # 
 # Description:
 # ------------------------------------
@@ -16,13 +16,13 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#		http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,24 +41,24 @@ else:
 
 
 # load dependencies
-from pathlib									import Path
+from pathlib                  import Path
 
-from Base.Project							import ToolChain, Tool
-from Base.Compiler						import Compiler as BaseCompiler, CompilerException
-from PoC.Entity								import WildCard
-from ToolChains.Xilinx.Xilinx	import XilinxProjectExportMixIn
-from ToolChains.Xilinx.Vivado	import Vivado
+from Base.Project              import ToolChain, Tool
+from Base.Compiler            import Compiler as BaseCompiler, CompilerException
+from PoC.Entity                import WildCard
+from ToolChains.Xilinx.Xilinx  import XilinxProjectExportMixIn
+from ToolChains.Xilinx.Vivado  import Vivado
 
 
 class Compiler(BaseCompiler):
-	_TOOL_CHAIN =	ToolChain.Xilinx_Vivado
-	_TOOL =				Tool.Xilinx_Synth
+	_TOOL_CHAIN =  ToolChain.Xilinx_Vivado
+	_TOOL =        Tool.Xilinx_Synth
 
 	def __init__(self, host, dryRun, noCleanUp):
 		super().__init__(host, dryRun, noCleanUp)
 
-		self._device =			None
-		self._toolChain =		None
+		self._device =      None
+		self._toolChain =    None
 
 		configSection = host.PoCConfig['CONFIG.DirectoryNames']
 		self.Directories.Working = host.Directories.Temp / configSection['VivadoSynthesisFiles']
@@ -72,7 +72,7 @@ class Compiler(BaseCompiler):
 		iseSection = self.Host.PoCConfig['INSTALL.Xilinx.Vivado']
 		binaryPath = Path(iseSection['BinaryDirectory'])
 		version = iseSection['Version']
-		self._toolChain =		Vivado(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._toolChain =    Vivado(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):
 		for fqn in fqnList:
@@ -87,7 +87,7 @@ class Compiler(BaseCompiler):
 	def Run(self, netlist, board):
 		super().Run(netlist, board)
 
-		self._device =				board.Device
+		self._device =        board.Device
 		
 		self._LogNormal("Executing pre-processing tasks...")
 		self._RunPreCopy(netlist)
@@ -109,15 +109,15 @@ class Compiler(BaseCompiler):
 	def _WriteSpecialSectionIntoConfig(self, device):
 		# add the key Device to section SPECIAL at runtime to change interpolation results
 		self.Host.PoCConfig['SPECIAL'] = {}
-		self.Host.PoCConfig['SPECIAL']['Device'] =				device.FullName
-		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =	device.Series
-		self.Host.PoCConfig['SPECIAL']['OutputDir']	=			self.Directories.Working.as_posix()
+		self.Host.PoCConfig['SPECIAL']['Device'] =        device.FullName
+		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =  device.Series
+		self.Host.PoCConfig['SPECIAL']['OutputDir']	=      self.Directories.Working.as_posix()
 
 	def _RunCompile(self, netlist):
 		reportFilePath = self.Directories.Working / (netlist.ModuleName + ".log")
 
 		synth = self._toolChain.GetSynth()
-		synth.Parameters[synth.SwitchIntStyle] =		"xflow"
-		synth.Parameters[synth.SwitchSynthFile] =			netlist.ModuleName + ".synth"
-		synth.Parameters[synth.SwitchReportFile] =	str(reportFilePath)
+		synth.Parameters[synth.SwitchIntStyle] =    "xflow"
+		synth.Parameters[synth.SwitchSynthFile] =      netlist.ModuleName + ".synth"
+		synth.Parameters[synth.SwitchReportFile] =  str(reportFilePath)
 		synth.Compile()

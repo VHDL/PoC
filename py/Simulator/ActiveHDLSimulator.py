@@ -3,10 +3,10 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:					Patrick Lehmann
-#										Martin Zabel
+# Authors:          Patrick Lehmann
+#                   Martin Zabel
 # 
-# Python Class:			TODO
+# Python Class:      TODO
 # 
 # Description:
 # ------------------------------------
@@ -15,13 +15,13 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#		http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,32 +42,32 @@ else:
 # load dependencies
 from pathlib import Path
 
-from Base.Exceptions						import NotConfiguredException
-from Base.Project								import FileTypes, VHDLVersion, ToolChain, Tool
-from Base.Simulator							import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult, \
+from Base.Exceptions            import NotConfiguredException
+from Base.Project                import FileTypes, VHDLVersion, ToolChain, Tool
+from Base.Simulator              import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult, \
 	SkipableSimulatorException
-from ToolChains.Aldec.ActiveHDL	import ActiveHDL, ActiveHDLException
+from ToolChains.Aldec.ActiveHDL  import ActiveHDL, ActiveHDLException
 
 
 class Simulator(BaseSimulator):
-	_TOOL_CHAIN =						ToolChain.Aldec_ActiveHDL
-	_TOOL =									Tool.Aldec_aSim
+	_TOOL_CHAIN =            ToolChain.Aldec_ActiveHDL
+	_TOOL =                  Tool.Aldec_aSim
 
 	def __init__(self, host, guiMode):
 		super().__init__(host)
 
-		self._guiMode =				guiMode
+		self._guiMode =        guiMode
 
-		self._entity =				None
-		self._testbenchFQN =	None
-		self._vhdlVersion =		None
-		self._vhdlGenerics =	None
+		self._entity =        None
+		self._testbenchFQN =  None
+		self._vhdlVersion =    None
+		self._vhdlGenerics =  None
 
-		self._toolChain =			None
+		self._toolChain =      None
 
-		activeHDLFilesDirectoryName =		host.PoCConfig['CONFIG.DirectoryNames']['ActiveHDLFiles']
-		self.Directories.Working =			host.Directories.Temp / activeHDLFilesDirectoryName
-		self.Directories.PreCompiled =	host.Directories.PreCompiled / activeHDLFilesDirectoryName
+		activeHDLFilesDirectoryName =    host.PoCConfig['CONFIG.DirectoryNames']['ActiveHDLFiles']
+		self.Directories.Working =      host.Directories.Temp / activeHDLFilesDirectoryName
+		self.Directories.PreCompiled =  host.Directories.PreCompiled / activeHDLFilesDirectoryName
 		
 		self._PrepareSimulationEnvironment()
 		self._PrepareSimulator()
@@ -85,7 +85,7 @@ class Simulator(BaseSimulator):
 		asimSection = self.Host.PoCConfig[sectionName]
 		binaryPath = Path(asimSection['BinaryDirectory'])
 		version = asimSection['Version']
-		self._toolChain =		ActiveHDL(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._toolChain =    ActiveHDL(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def Run(self, testbench, board, vhdlVersion, vhdlGenerics=None, guiMode=False):
 		super().Run(testbench, board, vhdlVersion, vhdlGenerics)
@@ -115,16 +115,16 @@ class Simulator(BaseSimulator):
 
 		# create a ActiveHDLVHDLCompiler instance
 		acom = self._toolChain.GetVHDLCompiler()
-		if (self._vhdlVersion == VHDLVersion.VHDL87):			acom.Parameters[acom.SwitchVHDLVersion] =	"87"
-		elif (self._vhdlVersion == VHDLVersion.VHDL93):		acom.Parameters[acom.SwitchVHDLVersion] =	"93"
-		elif (self._vhdlVersion == VHDLVersion.VHDL02):		acom.Parameters[acom.SwitchVHDLVersion] =	"2002"
-		elif (self._vhdlVersion == VHDLVersion.VHDL08):		acom.Parameters[acom.SwitchVHDLVersion] =	"2008"
+		if (self._vhdlVersion == VHDLVersion.VHDL87):      acom.Parameters[acom.SwitchVHDLVersion] =  "87"
+		elif (self._vhdlVersion == VHDLVersion.VHDL93):    acom.Parameters[acom.SwitchVHDLVersion] =  "93"
+		elif (self._vhdlVersion == VHDLVersion.VHDL02):    acom.Parameters[acom.SwitchVHDLVersion] =  "2002"
+		elif (self._vhdlVersion == VHDLVersion.VHDL08):    acom.Parameters[acom.SwitchVHDLVersion] =  "2008"
 
 		# run acom compile for each VHDL file
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
-			if (not file.Path.exists()):									raise SimulatorException("Cannot analyse '{0!s}'.".format(file.Path)) from FileNotFoundError(str(file.Path))
-			acom.Parameters[acom.SwitchVHDLLibrary] =	file.LibraryName
-			acom.Parameters[acom.ArgSourceFile] =			file.Path
+			if (not file.Path.exists()):                  raise SimulatorException("Cannot analyse '{0!s}'.".format(file.Path)) from FileNotFoundError(str(file.Path))
+			acom.Parameters[acom.SwitchVHDLLibrary] =  file.LibraryName
+			acom.Parameters[acom.ArgSourceFile] =      file.Path
 			# set a per file log-file with '-l', 'vcom.log',
 			try:
 				acom.Compile()
@@ -137,17 +137,17 @@ class Simulator(BaseSimulator):
 	def _RunSimulation(self, testbench):
 		self._LogNormal("Running simulation...")
 		
-		tclBatchFilePath =		self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimBatchScript']
+		tclBatchFilePath =    self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimBatchScript']
 		
 		# create a ActiveHDLSimulator instance
 		aSim = self._toolChain.GetSimulator()
 		aSim.Parameters[aSim.SwitchBatchCommand] = "asim -lib {0} {1}; run -all; bye".format(VHDL_TESTBENCH_LIBRARY_NAME, testbench.ModuleName)
 
-		# aSim.Optimization =			True
-		# aSim.TimeResolution =		"1fs"
-		# aSim.ComanndLineMode =	True
-		# aSim.BatchCommand =			"do {0}".format(str(tclBatchFilePath))
-		# aSim.TopLevel =					"{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
+		# aSim.Optimization =      True
+		# aSim.TimeResolution =    "1fs"
+		# aSim.ComanndLineMode =  True
+		# aSim.BatchCommand =      "do {0}".format(str(tclBatchFilePath))
+		# aSim.TopLevel =          "{0}.{1}".format(VHDLTestbenchLibraryName, testbenchName)
 		try:
 			testbench.Result = aSim.Simulate()
 		except ActiveHDLException as ex:
@@ -158,21 +158,21 @@ class Simulator(BaseSimulator):
 	def _RunSimulationWithGUI(self, testbench):
 		self._LogNormal("Running simulation...")
 	
-		tclGUIFilePath =			self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimGUIScript']
-		tclWaveFilePath =			self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimWaveScript']
+		tclGUIFilePath =      self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimGUIScript']
+		tclWaveFilePath =      self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['aSimWaveScript']
 		
 		# create a ActiveHDLSimulator instance
 		aSim = self._toolChain.GetSimulator()
-		aSim.Optimization =		True
-		aSim.TimeResolution =	"1fs"
-		aSim.Title =					testbench.ModuleName
+		aSim.Optimization =    True
+		aSim.TimeResolution =  "1fs"
+		aSim.Title =          testbench.ModuleName
 	
 		if (tclWaveFilePath.exists()):
 			self._LogDebug("Found waveform script: '{0!s}'".format(tclWaveFilePath))
-			aSim.BatchCommand =	"do {0!s}; do {1!s}".format(tclWaveFilePath, tclGUIFilePath)
+			aSim.BatchCommand =  "do {0!s}; do {1!s}".format(tclWaveFilePath, tclGUIFilePath)
 		else:
 			self._LogDebug("Didn't find waveform script: '{0!s}'. Loading default commands.".format(tclWaveFilePath))
-			aSim.BatchCommand =	"add wave *; do {0!s}".format(tclGUIFilePath)
+			aSim.BatchCommand =  "add wave *; do {0!s}".format(tclGUIFilePath)
 
-		aSim.TopLevel =		"{0}.{1}".format(VHDL_TESTBENCH_LIBRARY_NAME, testbench.ModuleName)
+		aSim.TopLevel =    "{0}.{1}".format(VHDL_TESTBENCH_LIBRARY_NAME, testbench.ModuleName)
 		aSim.Simulate()

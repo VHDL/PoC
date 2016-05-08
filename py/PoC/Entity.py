@@ -3,9 +3,9 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:					Patrick Lehmann
+# Authors:          Patrick Lehmann
 # 
-# Python Class:			TODO
+# Python Class:      TODO
 # 
 # Description:
 # ------------------------------------
@@ -16,13 +16,13 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#		http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,14 +41,14 @@ else:
 
 
 # load dependencies
-from collections					import OrderedDict
-from enum									import Enum, unique
-from pathlib							import Path
-from flags								import Flags
+from collections          import OrderedDict
+from enum                  import Enum, unique
+from pathlib              import Path
+from flags                import Flags
 
-from lib.Functions				import Init
-from lib.Decorators				import LazyLoadTrigger, ILazyLoadable
-from Base.Configuration		import ConfigurationException
+from lib.Functions        import Init
+from lib.Decorators        import LazyLoadTrigger, ILazyLoadable
+from Base.Configuration    import ConfigurationException
 
 
 @unique
@@ -59,10 +59,10 @@ class EntityTypes(Enum):
 	NetList = 3
 
 	def __str__(self):
-		if   (self is EntityTypes.Unknown):		return "??"
-		elif (self is EntityTypes.Source):		return "src"
-		elif (self is EntityTypes.Testbench):	return "tb"
-		elif (self is EntityTypes.NetList):		return "nl"
+		if   (self is EntityTypes.Unknown):    return "??"
+		elif (self is EntityTypes.Source):    return "src"
+		elif (self is EntityTypes.Testbench):  return "tb"
+		elif (self is EntityTypes.NetList):    return "nl"
 
 def _PoCEntityTypes_parser(cls, value):
 	if not isinstance(value, str):
@@ -70,9 +70,9 @@ def _PoCEntityTypes_parser(cls, value):
 	else:
 		# map strings to enum values, default to Unknown
 		return {
-			'src':			EntityTypes.Source,
-			'tb':				EntityTypes.Testbench,
-			'nl':				EntityTypes.NetList
+			'src':      EntityTypes.Source,
+			'tb':        EntityTypes.Testbench,
+			'nl':        EntityTypes.NetList
 		}.get(value,	EntityTypes.Unknown)
 
 # override __new__ method in EntityTypes with _PoCEntityTypes_parser
@@ -80,8 +80,8 @@ setattr(EntityTypes, '__new__', _PoCEntityTypes_parser)
 
 
 class BaseFlags(Flags):
-	__no_flags_name__ =		"Unknown"
-	__all_flags_name__ =	"All"
+	__no_flags_name__ =    "Unknown"
+	__all_flags_name__ =  "All"
 
 
 class TestbenchKind(BaseFlags):
@@ -97,13 +97,13 @@ class NetlistKind(BaseFlags):
 
 
 class Root:
-	__POCRoot_Name =						"PoC"
-	__POCRoot_SectionName =			"PoC"
+	__POCRoot_Name =            "PoC"
+	__POCRoot_SectionName =      "PoC"
 
 	def __init__(self, host):
-		self._host =				host
+		self._host =        host
 
-		self.__libraries =	OrderedDict()
+		self.__libraries =  OrderedDict()
 		self.__libraries[self.__POCRoot_Name.lower()] = (Library(host, self.__POCRoot_Name, self.__POCRoot_SectionName, self))
 
 	@property
@@ -127,9 +127,9 @@ class Root:
 
 class PathElement:
 	def __init__(self, host, name, configSectionName, parent):
-		self._host =							host
-		self._name =							name
-		self._parent =						parent
+		self._host =              host
+		self._name =              name
+		self._parent =            parent
 		self._configSectionName = configSectionName
 
 		self._Load()
@@ -166,8 +166,8 @@ class PathElement:
 
 class Namespace(PathElement):
 	def __init__(self, host, name, configSectionName, parent):
-		self.__namespaces =		OrderedDict()
-		self.__entities =			OrderedDict()
+		self.__namespaces =    OrderedDict()
+		self.__entities =      OrderedDict()
 		super().__init__(host, name, configSectionName, parent)
 
 	def _Load(self):
@@ -185,18 +185,18 @@ class Namespace(PathElement):
 				self.__entities[optionName.lower()] = ent
 
 	@property
-	def Namespaces(self):					return [ns for ns in self.__namespaces.values()]
+	def Namespaces(self):          return [ns for ns in self.__namespaces.values()]
 	@property
-	def NamespaceNames(self):			return [nsName for nsName in self.__namespaces.keys()]
+	def NamespaceNames(self):      return [nsName for nsName in self.__namespaces.keys()]
 	@property
-	def Entities(self):						return [ent for ent in self.__entities.values()]
+	def Entities(self):            return [ent for ent in self.__entities.values()]
 	@property
-	def EntityNames(self):				return [entName for entName in self.__entities.keys()]
+	def EntityNames(self):        return [entName for entName in self.__entities.keys()]
 
-	def GetNamespaces(self):			return self.__namespaces.values()
-	def GetNamespaceNames(self):	return self.__namespaces.keys()
-	def GetEntities(self):				return self.__entities.values()
-	def GetEntityNames(self):			return self.__entities.keys()
+	def GetNamespaces(self):      return self.__namespaces.values()
+	def GetNamespaceNames(self):  return self.__namespaces.keys()
+	def GetEntities(self):        return self.__entities.values()
+	def GetEntityNames(self):      return self.__entities.keys()
 	def GetAllEntities(self):
 		for namespace in self.GetNamespaces():
 			for entity in namespace.GetAllEntities():
@@ -239,8 +239,8 @@ class WildCard(PathElement):
 				if (tb.Kind in kind):
 					yield tb
 
-	def GetVHDLTestbenches(self):	return self.GetTestbenches(TestbenchKind.VHDLTestbench)
-	def GetCocoTestbenches(self):	return self.GetTestbenches(TestbenchKind.CocoTestbench)
+	def GetVHDLTestbenches(self):  return self.GetTestbenches(TestbenchKind.VHDLTestbench)
+	def GetCocoTestbenches(self):  return self.GetTestbenches(TestbenchKind.CocoTestbench)
 
 	def GetNetlists(self, kind=NetlistKind.All):
 		for entity in self.GetEntities():
@@ -248,28 +248,28 @@ class WildCard(PathElement):
 				if (nl.Kind in kind):
 					yield nl
 
-	def GetLatticeNetlists(self):	return self.GetNetlists(NetlistKind.LatticeNetlist)
-	def GetQuartusNetlists(self):	return self.GetNetlists(NetlistKind.QuartusNetlist)
-	def GetXSTNetlists(self):			return self.GetNetlists(NetlistKind.XstNetlist)
-	def GetCoreGenNetlists(self):	return self.GetNetlists(NetlistKind.CoreGeneratorNetlist)
+	def GetLatticeNetlists(self):  return self.GetNetlists(NetlistKind.LatticeNetlist)
+	def GetQuartusNetlists(self):  return self.GetNetlists(NetlistKind.QuartusNetlist)
+	def GetXSTNetlists(self):      return self.GetNetlists(NetlistKind.XstNetlist)
+	def GetCoreGenNetlists(self):  return self.GetNetlists(NetlistKind.CoreGeneratorNetlist)
 
 	@property
-	def Testbenches(self):				return [tb for tb in self.GetTestbenches()]
+	def Testbenches(self):        return [tb for tb in self.GetTestbenches()]
 	@property
-	def VHDLTestbenches(self):		return [tb for tb in self.GetVHDLTestbenches()]
+	def VHDLTestbenches(self):    return [tb for tb in self.GetVHDLTestbenches()]
 	@property
-	def CocoTestbenches(self):		return [tb for tb in self.GetCocoTestbenches()]
+	def CocoTestbenches(self):    return [tb for tb in self.GetCocoTestbenches()]
 
 	@property
-	def Netlists(self):						return [tb for tb in self.GetNetlists()]
+	def Netlists(self):            return [tb for tb in self.GetNetlists()]
 	@property
-	def LatticeNetlists(self):		return [nl for nl in self.GetLatticeNetlists()]
+	def LatticeNetlists(self):    return [nl for nl in self.GetLatticeNetlists()]
 	@property
-	def QuartusNetlists(self):		return [nl for nl in self.GetQuartusNetlists()]
+	def QuartusNetlists(self):    return [nl for nl in self.GetQuartusNetlists()]
 	@property
-	def XSTNetlists(self):				return [nl for nl in self.GetXSTNetlists()]
+	def XSTNetlists(self):        return [nl for nl in self.GetXSTNetlists()]
 	@property
-	def CoreGenNetlists(self):		return [nl for nl in self.GetCoreGenNetlists()]
+	def CoreGenNetlists(self):    return [nl for nl in self.GetCoreGenNetlists()]
 
 
 class StarWildCard(WildCard):
@@ -286,13 +286,13 @@ class AskWildCard(WildCard):
 class IPCore(PathElement):
 	def __init__(self, host, name, configSectionName, parent):
 		# Testbenches
-		self._vhdltb =					[]		# OrderedDict()
-		self._cocotb =					[]		# OrderedDict()
+		self._vhdltb =          []		# OrderedDict()
+		self._cocotb =          []		# OrderedDict()
 		# Netlists
-		self._latticeNetlist =	[]		# OrderedDict()
-		self._quartusNetlist =	[]		# OrderedDict()
-		self._xstNetlist =			[]		# OrderedDict()
-		self._coreGenNetlist =	[]		# OrderedDict()
+		self._latticeNetlist =  []		# OrderedDict()
+		self._quartusNetlist =  []		# OrderedDict()
+		self._xstNetlist =      []		# OrderedDict()
+		self._coreGenNetlist =  []		# OrderedDict()
 
 		super().__init__(host, name, configSectionName, parent)
 
@@ -404,12 +404,12 @@ class IPCore(PathElement):
 
 class LazyPathElement(PathElement, ILazyLoadable):
 	def __init__(self, host, name, configSectionName, parent):
-		self._kind =				None
+		self._kind =        None
 		super().__init__(host, name, configSectionName, parent)
 		ILazyLoadable.__init__(self)
 
 	@property
-	def Kind(self):  							return self._kind
+	def Kind(self):                return self._kind
 
 	def __str__(self):
 		return "{0!s}.{1}".format(self._parent, self._name)
@@ -417,28 +417,28 @@ class LazyPathElement(PathElement, ILazyLoadable):
 
 class Testbench(LazyPathElement):
 	def __init__(self, host, name, configSectionName, parent):
-		self._kind =				TestbenchKind.Unknown
-		self._moduleName =	""
-		self._filesFile =		None
-		self._result =			None
+		self._kind =        TestbenchKind.Unknown
+		self._moduleName =  ""
+		self._filesFile =    None
+		self._result =      None
 		super().__init__(host, name, configSectionName, parent)
 
 	@property
 	@LazyLoadTrigger
-	def ModuleName(self):			return self._moduleName
+	def ModuleName(self):      return self._moduleName
 	@property
 	@LazyLoadTrigger
-	def FilesFile(self):			return self._filesFile
+	def FilesFile(self):      return self._filesFile
 
 	@property
-	def Result(self):					return self._result
+	def Result(self):          return self._result
 	@Result.setter
-	def Result(self, value):	self._result = value
+	def Result(self, value):  self._result = value
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
-		self._moduleName =	self.ConfigSection["TestbenchModule"]
-		self._filesFile =		Path(self.ConfigSection["FilesFile"])
+		self._moduleName =  self.ConfigSection["TestbenchModule"]
+		self._filesFile =    Path(self.ConfigSection["FilesFile"])
 
 	def pprint(self, indent):
 		__indent = "  " * indent
@@ -467,9 +467,9 @@ class VHDLTestbench(Testbench):
 
 class CocoTestbench(Testbench):
 	def __init__(self, host, name, configSectionName, parent):
-		self._topLevel =	""
+		self._topLevel =  ""
 		super().__init__(host, name, configSectionName, parent)
-		self._kind =			TestbenchKind.CocoTestbench
+		self._kind =      TestbenchKind.CocoTestbench
 
 	@property
 	@LazyLoadTrigger
@@ -478,7 +478,7 @@ class CocoTestbench(Testbench):
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
-		self._topLevel =	self.ConfigSection["TopLevel"]
+		self._topLevel =  self.ConfigSection["TopLevel"]
 
 	def __str__(self):
 		return super().__str__() + " (Cocotb testbench)"
@@ -492,51 +492,51 @@ class CocoTestbench(Testbench):
 
 class Netlist(LazyPathElement):
 	def __init__(self, host, name, configSectionName, parent):
-		self._kind =				NetlistKind.Unknown
-		self._moduleName =	""
-		self._rulesFile =		None
+		self._kind =        NetlistKind.Unknown
+		self._moduleName =  ""
+		self._rulesFile =    None
 		super().__init__(host, name, configSectionName, parent)
 
 	@property
 	@LazyLoadTrigger
-	def ModuleName(self):		return self._moduleName
+	def ModuleName(self):    return self._moduleName
 	@property
 	@LazyLoadTrigger
-	def RulesFile(self):		return self._rulesFile
+	def RulesFile(self):    return self._rulesFile
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
-		self._moduleName =	self.ConfigSection["TopLevel"]
+		self._moduleName =  self.ConfigSection["TopLevel"]
 		value = self.ConfigSection["RulesFile"]
 		if (value != ""):
-			self._rulesFile =		Path(value)
+			self._rulesFile =    Path(value)
 		else:
-			self._rulesFile =		None
+			self._rulesFile =    None
 
 
 class XstNetlist(Netlist):
 	def __init__(self, host, name, configSectionName, parent):
-		self._filesFile =				None
-		self._prjFile =					None
-		self._xcfFile =					None
-		self._filterFile =			None
-		self._xstTemplateFile =	None
-		self._xstFile =					None
+		self._filesFile =        None
+		self._prjFile =          None
+		self._xcfFile =          None
+		self._filterFile =      None
+		self._xstTemplateFile =  None
+		self._xstFile =          None
 		super().__init__(host, name, configSectionName, parent)
-		self._kind =						NetlistKind.XstNetlist
+		self._kind =            NetlistKind.XstNetlist
 
 	@property
 	@LazyLoadTrigger
-	def FilesFile(self):				return self._filesFile
+	def FilesFile(self):        return self._filesFile
 	@property
 	@LazyLoadTrigger
-	def XcfFile(self):					return self._xcfFile
+	def XcfFile(self):          return self._xcfFile
 	@property
 	@LazyLoadTrigger
-	def FilterFile(self):				return self._filterFile
+	def FilterFile(self):        return self._filterFile
 	@property
 	@LazyLoadTrigger
-	def XstTemplateFile(self):	return self._xstTemplateFile
+	def XstTemplateFile(self):  return self._xstTemplateFile
 
 	@property
 	def PrjFile(self):
@@ -558,10 +558,10 @@ class XstNetlist(Netlist):
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
-		self._filesFile =				Path(self.ConfigSection["FilesFile"])
-		self._xcfFile =					Path(self.ConfigSection['XSTConstraintsFile'])
-		self._filterFile =			Path(self.ConfigSection['XSTFilterFile'])
-		self._xstTemplateFile =	Path(self.ConfigSection['XSTOptionsFile'])
+		self._filesFile =        Path(self.ConfigSection["FilesFile"])
+		self._xcfFile =          Path(self.ConfigSection['XSTConstraintsFile'])
+		self._filterFile =      Path(self.ConfigSection['XSTFilterFile'])
+		self._xstTemplateFile =  Path(self.ConfigSection['XSTOptionsFile'])
 
 	def __str__(self):
 		return super().__str__() + " (XST netlist)"
@@ -575,17 +575,17 @@ class XstNetlist(Netlist):
 
 class QuartusNetlist(Netlist):
 	def __init__(self, host, name, configSectionName, parent):
-		self._filesFile =				None
-		self._qsfFile =					None
+		self._filesFile =        None
+		self._qsfFile =          None
 		super().__init__(host, name, configSectionName, parent)
-		self._kind =						NetlistKind.QuartusNetlist
+		self._kind =            NetlistKind.QuartusNetlist
 
 	@property
 	@LazyLoadTrigger
-	def FilesFile(self):				return self._filesFile
+	def FilesFile(self):        return self._filesFile
 
 	@property
-	def QsfFile(self):					return self._qsfFile
+	def QsfFile(self):          return self._qsfFile
 	@QsfFile.setter
 	def QsfFile(self, value):
 		if isinstance(value, str):
@@ -594,7 +594,7 @@ class QuartusNetlist(Netlist):
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
-		self._filesFile =				Path(self.ConfigSection["FilesFile"])
+		self._filesFile =        Path(self.ConfigSection["FilesFile"])
 
 	def __str__(self):
 		return super().__str__() + " (Quartus netlist)"
@@ -609,17 +609,17 @@ class QuartusNetlist(Netlist):
 
 class LatticeNetlist(Netlist):
 	def __init__(self, host, name, configSectionName, parent):
-		self._filesFile =				None
-		self._prjFile =					None
+		self._filesFile =        None
+		self._prjFile =          None
 		super().__init__(host, name, configSectionName, parent)
-		self._kind =						NetlistKind.LatticeNetlist
+		self._kind =            NetlistKind.LatticeNetlist
 
 	@property
 	@LazyLoadTrigger
-	def FilesFile(self):				return self._filesFile
+	def FilesFile(self):        return self._filesFile
 
 	@property
-	def PrjFile(self):					return self._prjFile
+	def PrjFile(self):          return self._prjFile
 	@PrjFile.setter
 	def PrjFile(self, value):
 		if isinstance(value, str):
@@ -628,7 +628,7 @@ class LatticeNetlist(Netlist):
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
-		self._filesFile =				Path(self.ConfigSection["FilesFile"])
+		self._filesFile =        Path(self.ConfigSection["FilesFile"])
 
 	def __str__(self):
 		return super().__str__() + " (Lattice netlist)"
@@ -643,9 +643,9 @@ class LatticeNetlist(Netlist):
 
 class CoreGeneratorNetlist(Netlist):
 	def __init__(self, host, name, configSectionName, parent):
-		self._xcoFile =		None
+		self._xcoFile =    None
 		super().__init__(host, name, configSectionName, parent)
-		self._kind =			NetlistKind.CoreGeneratorNetlist
+		self._kind =      NetlistKind.CoreGeneratorNetlist
 
 	def __str__(self):
 		return super().__str__() + " (Core Generator netlist)"
@@ -666,21 +666,21 @@ class CoreGeneratorNetlist(Netlist):
 
 class FQN:
 	def __init__(self, host, fqn, defaultLibrary="PoC", defaultType=EntityTypes.Source):
-		self.__host =		host
-		self.__type =		None
-		self.__parts =	[]
+		self.__host =    host
+		self.__type =    None
+		self.__parts =  []
 
-		if (fqn is None):			raise ValueError("Parameter 'fqn' is None.")
-		if (fqn == ""):				raise ValueError("Parameter 'fqn' is empty.")
+		if (fqn is None):      raise ValueError("Parameter 'fqn' is None.")
+		if (fqn == ""):        raise ValueError("Parameter 'fqn' is empty.")
 
 		# extract EntityType
 		splitList1 = fqn.split(":")
 		if (len(splitList1) == 1):
-			self.__type =	defaultType
-			entity =			fqn
+			self.__type =  defaultType
+			entity =      fqn
 		elif (len(splitList1) == 2):
-			self.__type =	EntityTypes(splitList1[0])
-			entity =			splitList1[1]
+			self.__type =  EntityTypes(splitList1[0])
+			entity =      splitList1[1]
 		else:
 			raise ValueError("Argument 'fqn' has to many ':' signs.")
 
