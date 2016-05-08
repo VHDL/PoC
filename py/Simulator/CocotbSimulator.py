@@ -89,7 +89,7 @@ class Simulator(BaseSimulator):
 		# if (len(self._testSuite) > 1):
 		self.PrintOverallSimulationReport()
 
-		return self._testSuite.ISAllPassed
+		return self._testSuite.IsAllPassed
 
 	def Run(self, testbench, board, **_):
 		super().Run(testbench, board, VHDLVersion.VHDL08)

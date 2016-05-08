@@ -180,7 +180,7 @@ class Simulator(ILogable):
 		# if (len(self._testSuite) > 1):
 		self.PrintOverallSimulationReport()
 
-		return self._testSuite.ISAllPassed
+		return self._testSuite.IsAllPassed
 
 	def TryRun(self, testbench, *args, **kwargs):
 		testCase = TestCase(testbench)
@@ -225,7 +225,14 @@ class Simulator(ILogable):
 		self.PrintSimulationReportLine(self._testSuite, 0, 24)
 
 		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
-		self._LogQuiet("Time:  {time} sec    Passed:   00    No Asserts:  00    Failed:  00    Errors: 00".format(time=self._testSuite.OverallRunTime))
+		self._LogQuiet("Time: {time: >4} sec  Count:  {count: >3}  Passed:  {passed: >3}  No Asserts: {noassert: >2}  Failed: {failed: >2}  Errors: {error: >2}".format(
+				time=self._testSuite.OverallRunTime,
+				count=self._testSuite.Count,
+				passed=self._testSuite.PassedCount,
+				noassert=self._testSuite.NoAssertsCount,
+				failed=self._testSuite.FailedCount,
+				error=self._testSuite.ErrorCount
+		))
 		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
 
 	__SIMULATION_REPORT_COLOR_TABLE__ = {

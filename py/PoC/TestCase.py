@@ -100,6 +100,31 @@ class TestGroup(TestElement):
 	@property
 	def TestCases(self):  return self._testCases
 
+	@property
+	def Count(self):
+		return len(self)
+
+	@property
+	def PassedCount(self):
+		return sum([tg.PassedCount for tg in self._testGroups.values()]) \
+					 + sum([1 for tc in self._testCases.values() if tc.Status is Status.SimulationSuccess])
+
+	@property
+	def NoAssertsCount(self):
+		return sum([tg.NoAssertsCount for tg in self._testGroups.values()]) \
+					 + sum([1 for tc in self._testCases.values() if tc.Status is Status.SimulationNoAsserts])
+
+	@property
+	def FailedCount(self):
+		return sum([tg.FailedCount for tg in self._testGroups.values()]) \
+					 + sum([1 for tc in self._testCases.values() if tc.Status is Status.SimulationFailed])
+
+	@property
+	def ErrorCount(self):
+		return sum([tg.ErrorCount for tg in self._testGroups.values()]) \
+					 + sum(
+				[1 for tc in self._testCases.values() if tc.Status in (Status.SystemError, Status.AnalyzeError, Status.ElaborationError, Status.SimulationError)])
+
 
 class TestSuite(TestGroup):
 	def __init__(self):
@@ -114,8 +139,8 @@ class TestSuite(TestGroup):
 		return self._name
 
 	@property
-	def ISAllPassed(self):
-		return False
+	def IsAllPassed(self):
+		return (self.Count == self.PassedCount)
 
 	def AddTestCase(self, testCase):
 		cur = self
@@ -141,13 +166,13 @@ class TestSuite(TestGroup):
 		self._overallRuntime = self._endedAt - self._startedAt
 
 	@property
-	def StartTime(self):         return self._startedAt
+	def StartTime(self):          return self._startedAt
 	@property
-	def EndTime(self):           return self._endedAt
+	def EndTime(self):            return self._endedAt
 	@property
 	def InitializationTime(self): return self._initRuntime.microseconds
 	@property
-	def OverallRunTime(self):    return self._overallRuntime.seconds
+	def OverallRunTime(self):     return self._overallRuntime.seconds
 
 
 class TestCase(TestElement):
