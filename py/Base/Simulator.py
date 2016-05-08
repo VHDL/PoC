@@ -163,16 +163,20 @@ class Simulator(ILogable):
 
 	def RunAll(self, fqnList, *args, **kwargs):
 		self._testSuite.StartTimer()
-		for fqn in fqnList:
-			entity = fqn.Entity
-			if (isinstance(entity, WildCard)):
-				for testbench in entity.GetVHDLTestbenches():
+		try:
+			for fqn in fqnList:
+				entity = fqn.Entity
+				if (isinstance(entity, WildCard)):
+					for testbench in entity.GetVHDLTestbenches():
+						self.TryRun(testbench, *args, **kwargs)
+				else:
+					testbench = entity.VHDLTestbench
 					self.TryRun(testbench, *args, **kwargs)
-			else:
-				testbench = entity.VHDLTestbench
-				self.TryRun(testbench, *args, **kwargs)
+		except KeyboardInterrupt:
+			self._LogError("Received a keyboard interrupt.")
+		finally:
+			self._testSuite.StopTimer()
 
-		self._testSuite.StopTimer()
 		# if (len(self._testSuite) > 1):
 		self.PrintOverallSimulationReport()
 
