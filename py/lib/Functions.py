@@ -65,19 +65,22 @@ class Init:
 
 	from colorama import Fore as Foreground
 	Foreground = {
-		"RED":      Foreground.LIGHTRED_EX,
-		"GREEN":    Foreground.LIGHTGREEN_EX,
-		"YELLOW":    Foreground.LIGHTYELLOW_EX,
-		"MAGENTA":  Foreground.LIGHTMAGENTA_EX,
-		"BLUE":      Foreground.LIGHTBLUE_EX,
-		"CYAN":      Foreground.LIGHTCYAN_EX,
-		"GRAY":      Foreground.WHITE,
-		"DARKGRAY":  Foreground.LIGHTBLACK_EX,
-		"NOCOLOR":  Foreground.RESET,
+		"RED":        Foreground.LIGHTRED_EX,
+		"DARK_RED":		Foreground.RED,
+		"GREEN":      Foreground.LIGHTGREEN_EX,
+		"DARK_GREEN": Foreground.GREEN,
+		"YELLOW":     Foreground.LIGHTYELLOW_EX,
+		"MAGENTA":    Foreground.LIGHTMAGENTA_EX,
+		"BLUE":       Foreground.LIGHTBLUE_EX,
+		"CYAN":       Foreground.LIGHTCYAN_EX,
+		"DARK_CYAN":  Foreground.CYAN,
+		"GRAY":       Foreground.WHITE,
+		"DARK_GRAY":  Foreground.LIGHTBLACK_EX,
+		"NOCOLOR":    Foreground.RESET,
 
-		"HEADLINE":  Foreground.LIGHTMAGENTA_EX,
-		"ERROR":    Foreground.LIGHTRED_EX,
-		"WARNING":  Foreground.LIGHTYELLOW_EX
+		"HEADLINE":   Foreground.LIGHTMAGENTA_EX,
+		"ERROR":      Foreground.LIGHTRED_EX,
+		"WARNING":    Foreground.LIGHTYELLOW_EX
 	}
 
 

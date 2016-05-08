@@ -48,7 +48,7 @@ from Base.Exceptions        import NotConfiguredException
 from Base.Logging            import Severity
 from Base.Project            import FileTypes, VHDLVersion, ToolChain, Tool
 from Base.Simulator          import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult, SkipableSimulatorException
-from ToolChains.GHDL        import GHDL, GHDLException
+from ToolChains.GHDL        import GHDL, GHDLException, GHDLReanalyzeException
 from ToolChains.GTKWave      import GTKWave
 
 
@@ -151,6 +151,8 @@ class Simulator(BaseSimulator):
 			ghdl.Parameters[ghdl.ArgSourceFile] =          file.Path
 			try:
 				ghdl.Analyze()
+			except GHDLReanalyzeException as ex:
+				raise SkipableSimulatorException("Error while analysing '{0!s}'.".format(file.Path)) from ex
 			except GHDLException as ex:
 				raise SimulatorException("Error while analysing '{0!s}'.".format(file.Path)) from ex
 			if ghdl.HasErrors:

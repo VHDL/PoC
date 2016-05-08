@@ -1085,7 +1085,7 @@ def main():
 			else:
 				print("  Possible causes:")
 				print("   - The compile order is broken.")
-				print("   - A source file was not compile and an old file got used.")
+				print("   - A source file was not compiled and an old file got used.")
 
 		if (not (verbose or debug)):
 			print()

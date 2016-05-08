@@ -103,7 +103,7 @@ class RulesParserMixIn:
 	def _Parse(self):
 		self._ReadContent()
 		self._document = Document.parse(self._content, printChar=not True)
-		# print("{DARKGRAY}{0!s}{NOCOLOR}".format(self._document, **Init.Foreground))
+		# print("{DARK_GRAY}{0!s}{NOCOLOR}".format(self._document, **Init.Foreground))
 		
 	def _Resolve(self):
 		# print("Resolving {0}".format(str(self._file)))

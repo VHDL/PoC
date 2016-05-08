@@ -480,15 +480,31 @@ def GHDLAnalyzeFilter(gen):
 GHDLElaborateFilter = GHDLAnalyzeFilter
 
 def GHDLRunFilter(gen):
+	warningRegExpPattern = r".+?:\d+:\d+:warning: (?P<Message>.*)"  # <Path>:<line>:<column>:warning: <message>
+	errorRegExpPattern = r".+?:\d+:\d+: (?P<Message>.*)"  # <Path>:<line>:<column>: <message>
+
+	warningRegExp = RegExpCompile(warningRegExpPattern)
+	errorRegExp = RegExpCompile(errorRegExpPattern)
+
 	lineno = 0
 	for line in gen:
 		if (lineno < 2):
 			lineno += 1
 			if ("Linking in memory" in line):
 				yield LogEntry(line, Severity.Verbose)
+				continue
 			elif ("Starting simulation" in line):
 				yield LogEntry(line, Severity.Verbose)
-			else:
-				yield LogEntry(line, Severity.Normal)
-		else:
-			yield LogEntry(line, Severity.Normal)
+				continue
+
+		warningRegExpMatch = warningRegExp.match(line)
+		if (warningRegExpMatch is not None):
+			yield LogEntry(line, Severity.Warning)
+			continue
+
+		errorRegExpMatch = errorRegExp.match(line)
+		if (errorRegExpMatch is not None):
+			yield LogEntry(line, Severity.Error)
+			continue
+
+		yield LogEntry(line, Severity.Normal)

@@ -220,7 +220,7 @@ class Simulator(ILogable):
 		self._LogQuiet("{HEADLINE}{headline: ^80s}{NOCOLOR}".format(headline="Overall Simulation Report", **Init.Foreground))
 		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
 		# table header
-		self._LogQuiet("{Name: <24} | {Duration: >6} | {Status: ^14}".format(Name="Name", Duration="Time", Status="Status"))
+		self._LogQuiet("{Name: <24} | {Duration: >7} | {Status: ^11}".format(Name="Name", Duration="Time(s)", Status="Status"))
 		self._LogQuiet("-"*80)
 		self.PrintSimulationReportLine(self._testSuite, 0, 24)
 
@@ -230,10 +230,10 @@ class Simulator(ILogable):
 
 	__SIMULATION_REPORT_COLOR_TABLE__ = {
 		Status.Unknown:             "RED",
-		Status.SystemError:         "RED",
-		Status.AnalyzeError:        "RED",
-		Status.ElaborationError:    "RED",
-		Status.SimulationError:     "RED",
+		Status.SystemError:         "DARK_RED",
+		Status.AnalyzeError:        "DARK_RED",
+		Status.ElaborationError:    "DARK_RED",
+		Status.SimulationError:     "DARK_RED",
 		Status.SimulationFailed:    "RED",
 		Status.SimulationNoAsserts: "YELLOW",
 		Status.SimulationSuccess:   "GREEN"
@@ -241,9 +241,9 @@ class Simulator(ILogable):
 
 	__SIMULATION_REPORT_STATUS_TEXT_TABLE__ = {
 		Status.Unknown:             "--- ?? ---",
-		Status.SystemError:         "SYSTEM ERROR",
-		Status.AnalyzeError:        "ANALYZE ERROR",
-		Status.ElaborationError:    "ELAB ERROR",
+		Status.SystemError:         "SYS. ERROR",
+		Status.AnalyzeError:        "ANA. ERROR",
+		Status.ElaborationError:    "ELAB. ERROR",
 		Status.SimulationError:     "ERROR",
 		Status.SimulationFailed:    "FAILED",
 		Status.SimulationNoAsserts: "NO ASSERTS",
@@ -253,11 +253,11 @@ class Simulator(ILogable):
 	def PrintSimulationReportLine(self, testObject, indent, nameColumnWidth):
 		_indent = "  " * indent
 		for group in testObject.TestGroups.values():
-			pattern = "{indent}{{groupName: <{nameColumnWidth}}} |        | ".format(indent=_indent, nameColumnWidth=nameColumnWidth)
+			pattern = "{indent}{{groupName: <{nameColumnWidth}}} |         | ".format(indent=_indent, nameColumnWidth=nameColumnWidth)
 			self._LogQuiet(pattern.format(groupName=group.Name))
 			self.PrintSimulationReportLine(group, indent+1, nameColumnWidth-2)
 		for testCase in testObject.TestCases.values():
-			pattern = "{indent}{{testcaseName: <{nameColumnWidth}}} | {{duration: >6}} | {{{color}}}{{status: ^14}}{{NOCOLOR}}".format(
+			pattern = "{indent}{{testcaseName: <{nameColumnWidth}}} | {{duration: >7}} | {{{color}}}{{status: ^11}}{{NOCOLOR}}".format(
 					indent=_indent, nameColumnWidth=nameColumnWidth, color=self.__SIMULATION_REPORT_COLOR_TABLE__[testCase.Status])
 			self._LogQuiet(pattern.format(testcaseName=testCase.Name, duration=testCase.OverallRunTime,
 																		status=self.__SIMULATION_REPORT_STATUS_TEXT_TABLE__[testCase.Status], **Init.Foreground))
