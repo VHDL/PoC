@@ -33,9 +33,6 @@
 # ==============================================================================
 #
 # entry point
-from datetime import datetime
-from time import time
-
 if __name__ != "__main__":
 	pass
 	# place library initialization code here
@@ -45,17 +42,19 @@ else:
 
 
 # load dependencies
+from datetime          import datetime
 from enum              import Enum, unique
 from os                import chdir
 
 from lib.Functions     import Init
 from lib.Parser        import ParserException
-from Base.Exceptions  import ExceptionBase, CommonException
+from Base.Exceptions   import ExceptionBase, CommonException
 from Base.Logging      import ILogable, LogEntry
 from Base.Project      import Environment, ToolChain, Tool, VHDLVersion
 from PoC.Entity        import WildCard
 from PoC.Solution      import VirtualProject, FileListFile
 from PoC.TestCase      import TestSuite, TestCase, Status
+
 
 VHDL_TESTBENCH_LIBRARY_NAME = "test"
 
@@ -277,18 +276,20 @@ class Simulator(ILogable):
 		Status.SystemError:         "DARK_RED",
 		Status.AnalyzeError:        "DARK_RED",
 		Status.ElaborationError:    "DARK_RED",
-		Status.SimulationError:     "DARK_RED",
+		Status.OptimizationError:   "DARK_RED",
+		Status.SimulationError:     "RED",
 		Status.SimulationFailed:    "RED",
 		Status.SimulationNoAsserts: "YELLOW",
 		Status.SimulationSuccess:   "GREEN"
 	}
 
 	__SIMULATION_REPORT_STATUS_TEXT_TABLE__ = {
-		Status.Unknown:             "--- ?? ---",
+		Status.Unknown:             "-- ?? --",
 		Status.SystemError:         "SYS. ERROR",
 		Status.AnalyzeError:        "ANA. ERROR",
 		Status.ElaborationError:    "ELAB. ERROR",
-		Status.SimulationError:     "ERROR",
+		Status.OptimizationError:   "OPT. ERROR",
+		Status.SimulationError:     "SIM. ERROR",
 		Status.SimulationFailed:    "FAILED",
 		Status.SimulationNoAsserts: "NO ASSERTS",
 		Status.SimulationSuccess:   "PASSED"
@@ -302,7 +303,7 @@ class Simulator(ILogable):
 
 		_indent = "  " * indent
 		for group in testObject.TestGroups.values():
-			pattern = "{indent}{{groupName: <{nameColumnWidth}}} |         | ".format(indent=_indent, nameColumnWidth=nameColumnWidth)
+			pattern = "{indent}{{groupName: <{nameColumnWidth}}} |       | ".format(indent=_indent, nameColumnWidth=nameColumnWidth)
 			self._LogQuiet(pattern.format(groupName=group.Name))
 			self.PrintSimulationReportLine(group, indent+1, nameColumnWidth-2)
 		for testCase in testObject.TestCases.values():
