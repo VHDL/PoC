@@ -1,21 +1,21 @@
 
-from pathlib				import Path
-from subprocess			import Popen		as Subprocess_Popen
-from subprocess			import PIPE			as Subprocess_Pipe
-from subprocess			import STDOUT		as Subprocess_StdOut
+from pathlib        import Path
+from subprocess      import Popen		as Subprocess_Popen
+from subprocess      import PIPE			as Subprocess_Pipe
+from subprocess      import STDOUT		as Subprocess_StdOut
 
 class Executable:
 	_POC_BOUNDARY = "====== POC BOUNDARY ======"
 
 	def __init__(self, executablePath):
-		self._process =		None
+		self._process =    None
 
-		if isinstance(executablePath, str):							executablePath = Path(executablePath)
-		elif (not isinstance(executablePath, Path)):		raise ValueError("Parameter 'executablePath' is not of type str or Path.")
-		if (not executablePath.exists()):								raise Exception("Executable '{0!s}' cannot be found.".format(executablePath)) from FileNotFoundError(str(executablePath))
+		if isinstance(executablePath, str):              executablePath = Path(executablePath)
+		elif (not isinstance(executablePath, Path)):    raise ValueError("Parameter 'executablePath' is not of type str or Path.")
+		if (not executablePath.exists()):                raise Exception("Executable '{0!s}' cannot be found.".format(executablePath)) from FileNotFoundError(str(executablePath))
 
 		# prepend the executable
-		self._executablePath =		executablePath
+		self._executablePath =    executablePath
 
 	@property
 	def Path(self):
