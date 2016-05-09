@@ -70,7 +70,7 @@ for param in $PyWrapper_Parameters; do
 	
 	if [ "$param" = "coregen" ];	then PyWrapper_LoadEnv_Xilinx_ISE=1; fi
 	if [ "$param" = "xst" ];			then PyWrapper_LoadEnv_Xilinx_ISE=1; fi
-	if [ "$param" = "synth" ];		then PyWrapper_LoadEnv_Xilinx_Vivado=1; fi
+	if [ "$param" = "vivado" ];		then PyWrapper_LoadEnv_Xilinx_Vivado=1; fi
 done
 
 # publish PoC directories as environment variables
@@ -194,6 +194,7 @@ if [ $PoC_ExitCode -eq 0 ]; then
 	fi
 	
 	# launching python script
+	set -f
 	$Python_Interpreter $Python_Script $Python_ScriptParameters
 	PoC_ExitCode=$?
 fi

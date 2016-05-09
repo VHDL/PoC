@@ -11,5 +11,5 @@ stat_Maximum.files
 stat_Maximum.vhdl
 stat_Average.files
 stat_Average.vhdl
-#stat_Histogram.files
-#stat_Histogram.vhdl
+stat_Histogram.files
+stat_Histogram.vhdl
