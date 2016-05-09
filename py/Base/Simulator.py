@@ -42,6 +42,7 @@ else:
 
 
 # load dependencies
+import shutil
 from datetime          import datetime
 from enum              import Enum, unique
 from os                import chdir
@@ -131,11 +132,13 @@ class Simulator(ILogable):
 
 	def _PrepareSimulationEnvironment(self):
 		self._LogNormal("Preparing simulation environment...")
-		# create temporary directory if not existent
-		if (not self.Directories.Working.exists()):
-			self._LogVerbose("Creating temporary directory for simulator files.")
-			self._LogDebug("Temporary directory: {0!s}".format(self.Directories.Working))
-			self.Directories.Working.mkdir(parents=True)
+
+		# create fresh temporary directory
+		self._LogVerbose("Creating fresh temporary directory for simulator files.")
+		self._LogDebug("Temporary directory: {0!s}".format(self.Directories.Working))
+		if (self.Directories.Working.exists()):
+			shutil.rmtree(str(self.Directories.Working))
+		self.Directories.Working.mkdir(parents=True)
 
 		# change working directory to temporary path
 		self._LogVerbose("Changing working directory to temporary directory.")
