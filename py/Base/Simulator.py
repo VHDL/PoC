@@ -262,7 +262,7 @@ class Simulator(ILogable):
 		self.PrintSimulationReportLine(self._testSuite, 0, 24)
 
 		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
-		self._LogQuiet("Time: {time: >5}  Count:  {count: >3}  Passed:  {passed: >3}  No Asserts: {noassert: >2}  Failed: {failed: >2}  Errors: {error: >2}".format(
+		self._LogQuiet("Time: {time: >5}  Count: {count: <3}  Passed: {passed: <3}  No Asserts: {noassert: <2}  Failed: {failed: <2}  Errors: {error: <2}".format(
 				time=to_time(self._testSuite.OverallRunTime),
 				count=self._testSuite.Count,
 				passed=self._testSuite.PassedCount,
