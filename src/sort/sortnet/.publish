@@ -11,6 +11,7 @@ sortnet.pkg.vhdl
 # 
 sortnet_BitonicSort.files
 sortnet_BitonicSort.vhdl
+sortnet_MergeSort_Streamed.files
 sortnet_MergeSort_Streamed.vhdl
 sortnet_OddEvenSort.files
 sortnet_OddEvenSort.vhdl
