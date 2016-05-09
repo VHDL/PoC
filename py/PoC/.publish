@@ -10,5 +10,5 @@ __init__.py
 # Modules
 Config.py
 Entity.py
-Project.py
+Solution.py
 Query.py
