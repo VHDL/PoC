@@ -50,8 +50,7 @@ class Status(Enum):
 	InternalError =        2
 	AnalyzeError =         3
 	ElaborationError =     4
-	OptimizationError =    5
-	SimulationError =      6
+	SimulationError =      5
 	SimulationFailed =    10
 	SimulationNoAsserts = 15
 	SimulationSuccess =   20
