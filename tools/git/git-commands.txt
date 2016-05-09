@@ -1,0 +1,5 @@
+
+
+Remove all local tags, which were not uploaded to the remote
+git fetch --prune <remote> '+refs/tags/*:refs/tags/*'
+

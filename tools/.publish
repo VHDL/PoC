@@ -11,6 +11,9 @@ git/
 #emacs/
 Notepad++/
 
+# vendor and tool specific hook files
+hooks/
+
 # compile scripts for vendor libraries
 precompile/
 
