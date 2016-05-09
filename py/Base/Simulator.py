@@ -68,12 +68,21 @@ class SkipableSimulatorException(SimulatorException):
 
 
 @unique
+class SimulationState(Enum):
+	Prepare =     0
+	Analyze =     1
+	Elaborate =   2
+	Optimize =    3
+	Simulate =    4
+	View =        5
+
+@unique
 class SimulationResult(Enum):
-	NotRun =    0
-	Error =      1
-	Failed =    2
-	NoAsserts =  3
-	Passed =    4
+	NotRun =      0
+	Error =       1
+	Failed =      2
+	NoAsserts =   3
+	Passed =      4
 
 
 class Simulator(ILogable):
@@ -91,24 +100,35 @@ class Simulator(ILogable):
 		else:
 			ILogable.__init__(self, None)
 
-		self.__host =        host
+		self.__host =       host
 
-		self._vhdlVersion =  VHDLVersion.VHDL2008
+		self._vhdlVersion = VHDLVersion.VHDL2008
 		self._directories = self.__Directories__()
 		self._pocProject =  None
 		self._testSuite =   TestSuite()			# TODO: This includes not the read ini files phases ...
-		self._startAt =      None
-		self._analyzeTime =      None
-		self._elaborationTime =  None
+
+		self._state =           SimulationState.Prepare
+		self._startAt =         datetime.now()
+		self._endAt =           None
+		self._lastEvent =       self._startAt
+		self._prepareTime =     None
+		self._analyzeTime =     None
+		self._elaborationTime = None
 		self._simulationTime =  None
 
 
 	# class properties
 	# ============================================================================
 	@property
-	def Host(self):            return self.__host
+	def Host(self):           return self.__host
 	@property
 	def Directories(self):    return self._directories
+
+	def _GetTimeDeltaSinceLastEvent(self):
+		now = datetime.now()
+		result = now - self._lastEvent
+		self._lastEvent = now
+		return result
 
 	def _PrepareSimulationEnvironment(self):
 		self._LogNormal("Preparing simulation environment...")
@@ -182,6 +202,14 @@ class Simulator(ILogable):
 
 		return self._testSuite.IsAllPassed
 
+	__SIMULATION_STATE_TO_TESTCASE_STATUS__ = {
+		SimulationState.Prepare:    Status.InternalError,
+		SimulationState.Analyze:    Status.AnalyzeError,
+		SimulationState.Elaborate:  Status.ElaborationError,
+		SimulationState.Optimize:   Status.ElaborationError,
+		SimulationState.Simulate:   Status.SimulationError
+	}
+
 	def TryRun(self, testbench, *args, **kwargs):
 		testCase = TestCase(testbench)
 		self._testSuite.AddTestCase(testCase)
@@ -190,7 +218,8 @@ class Simulator(ILogable):
 			self.Run(testbench, *args, **kwargs)
 			testCase.UpdateStatus(testbench.Result)
 		except SkipableSimulatorException as ex:
-			testCase.Status = Status.SimulationError
+			testCase.Status = self.__SIMULATION_STATE_TO_TESTCASE_STATUS__[testbench._state]
+
 			self._LogQuiet("  {RED}ERROR:{NOCOLOR} {ExMsg}".format(ExMsg=ex.message, **Init.Foreground))
 			cause = ex.__cause__
 			if (cause is not None):
@@ -200,6 +229,9 @@ class Simulator(ILogable):
 					self._LogQuiet("      {YELLOW}{ExType}:{NOCOLOR} {ExMsg!s}".format(ExType=cause.__class__.__name__, ExMsg=cause, **Init.Foreground))
 			self._LogQuiet("  {RED}[SKIPPED DUE TO ERRORS]{NOCOLOR}".format(**Init.Foreground))
 		except SimulatorException:
+			testCase.Status = self.__SIMULATION_STATE_TO_TESTCASE_STATUS__[testbench._state]
+			raise
+		except ExceptionBase:
 			testCase.Status = Status.SystemError
 			raise
 		finally:
@@ -216,17 +248,22 @@ class Simulator(ILogable):
 		self._AddFileListFile(testbench.FilesFile)
 
 	def PrintOverallSimulationReport(self):
+		def to_time(seconds):
+			min = int(seconds / 60)
+			sec = seconds - (min * 60)
+			return "{min}:{sec:02}".format(min=min, sec=sec)
+
 		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
 		self._LogQuiet("{HEADLINE}{headline: ^80s}{NOCOLOR}".format(headline="Overall Simulation Report", **Init.Foreground))
 		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
 		# table header
-		self._LogQuiet("{Name: <24} | {Duration: >7} | {Status: ^11}".format(Name="Name", Duration="Time(s)", Status="Status"))
+		self._LogQuiet("{Name: <24} | {Duration: >5} | {Status: ^11}".format(Name="Name", Duration="Time", Status="Status"))
 		self._LogQuiet("-"*80)
 		self.PrintSimulationReportLine(self._testSuite, 0, 24)
 
 		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
-		self._LogQuiet("Time: {time: >4} sec  Count:  {count: >3}  Passed:  {passed: >3}  No Asserts: {noassert: >2}  Failed: {failed: >2}  Errors: {error: >2}".format(
-				time=self._testSuite.OverallRunTime,
+		self._LogQuiet("Time: {time: >5}  Count:  {count: >3}  Passed:  {passed: >3}  No Asserts: {noassert: >2}  Failed: {failed: >2}  Errors: {error: >2}".format(
+				time=to_time(self._testSuite.OverallRunTime),
 				count=self._testSuite.Count,
 				passed=self._testSuite.PassedCount,
 				noassert=self._testSuite.NoAssertsCount,
@@ -258,15 +295,20 @@ class Simulator(ILogable):
 	}
 
 	def PrintSimulationReportLine(self, testObject, indent, nameColumnWidth):
+		def to_time(seconds):
+			min = int(seconds / 60)
+			sec = seconds - (min * 60)
+			return "{min}:{sec:02}".format(min=min, sec=sec)
+
 		_indent = "  " * indent
 		for group in testObject.TestGroups.values():
 			pattern = "{indent}{{groupName: <{nameColumnWidth}}} |         | ".format(indent=_indent, nameColumnWidth=nameColumnWidth)
 			self._LogQuiet(pattern.format(groupName=group.Name))
 			self.PrintSimulationReportLine(group, indent+1, nameColumnWidth-2)
 		for testCase in testObject.TestCases.values():
-			pattern = "{indent}{{testcaseName: <{nameColumnWidth}}} | {{duration: >7}} | {{{color}}}{{status: ^11}}{{NOCOLOR}}".format(
+			pattern = "{indent}{{testcaseName: <{nameColumnWidth}}} | {{duration: >5}} | {{{color}}}{{status: ^11}}{{NOCOLOR}}".format(
 					indent=_indent, nameColumnWidth=nameColumnWidth, color=self.__SIMULATION_REPORT_COLOR_TABLE__[testCase.Status])
-			self._LogQuiet(pattern.format(testcaseName=testCase.Name, duration=testCase.OverallRunTime,
+			self._LogQuiet(pattern.format(testcaseName=testCase.Name, duration=to_time(testCase.OverallRunTime),
 																		status=self.__SIMULATION_REPORT_STATUS_TEXT_TABLE__[testCase.Status], **Init.Foreground))
 
 def PoCSimulationResultFilter(gen, simulationResult):

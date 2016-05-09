@@ -33,6 +33,8 @@
 # ==============================================================================
 #
 # entry point
+from datetime import datetime
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -47,7 +49,8 @@ from pathlib                import Path
 from Base.Exceptions        import NotConfiguredException
 from Base.Logging            import Severity
 from Base.Project            import FileTypes, VHDLVersion, ToolChain, Tool
-from Base.Simulator          import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult, SkipableSimulatorException
+from Base.Simulator          import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult, SkipableSimulatorException, \
+	SimulationState
 from ToolChains.GHDL        import GHDL, GHDLException, GHDLReanalyzeException
 from ToolChains.GTKWave      import GTKWave
 
@@ -97,25 +100,36 @@ class Simulator(BaseSimulator):
 	def Run(self, testbench, board, vhdlVersion, vhdlGenerics=None, guiMode=False):
 		super().Run(testbench, board, vhdlVersion, vhdlGenerics)
 
-		if (self._toolChain.Backend == "gcc"):
+		self._prepareTime = self._GetTimeDeltaSinceLastEvent()
+
+		if (self._toolChain.Backend in ["gcc", "llvm"]):
 			self._RunAnalysis()
+			self._analyzeTime =     self._GetTimeDeltaSinceLastEvent()
+
 			self._RunElaboration(testbench)
+			self._elaborationTime = self._GetTimeDeltaSinceLastEvent()
+
 			self._RunSimulation(testbench)
-		elif (self._toolChain.Backend == "llvm"):
-			self._RunAnalysis()
-			self._RunElaboration(testbench)
-			self._RunSimulation(testbench)
+			self._simulationTime =  self._GetTimeDeltaSinceLastEvent()
 		elif (self._toolChain.Backend == "mcode"):
 			self._RunAnalysis()
+			self._analyzeTime =     self._GetTimeDeltaSinceLastEvent()
+			self._elaborationTime = self._GetTimeDeltaSinceLastEvent()
+
 			self._RunSimulation(testbench)
+			self._simulationTime =  self._GetTimeDeltaSinceLastEvent()
 
 		# FIXME: a very quick implemenation
 		if (guiMode is True):
+			self._state = SimulationState.View
 			viewer = self.GetViewer()
 			viewer.View(testbench)
-		
+
+		self._endAt = datetime.now()
+
 	def _RunAnalysis(self):
 		self._LogNormal("Running analysis for every vhdl file...")
+		self._state = SimulationState.Analyze
 		
 		# create a GHDLAnalyzer instance
 		ghdl = self._toolChain.GetGHDLAnalyze()
@@ -163,6 +177,7 @@ class Simulator(BaseSimulator):
 	# ==========================================================================
 	def _RunElaboration(self, testbench):
 		self._LogNormal("Running elaboration...")
+		self._state = SimulationState.Elaborate
 		
 		# create a GHDLElaborate instance
 		ghdl = self._toolChain.GetGHDLElaborate()
@@ -196,31 +211,32 @@ class Simulator(BaseSimulator):
 	
 	def _RunSimulation(self, testbench):
 		self._LogNormal("Running simulation...")
+		self._state = SimulationState.Simulate
 			
 		# create a GHDLRun instance
 		ghdl = self._toolChain.GetGHDLRun()
-		ghdl.Parameters[ghdl.FlagVerbose] =            (self.Logger.LogLevel is Severity.Debug)
-		ghdl.Parameters[ghdl.FlagExplicit] =          True
-		ghdl.Parameters[ghdl.FlagRelaxedRules] =      True
-		ghdl.Parameters[ghdl.FlagWarnBinding] =        True
-		ghdl.Parameters[ghdl.FlagNoVitalChecks] =      True
-		ghdl.Parameters[ghdl.FlagMultiByteComments] =  True
-		ghdl.Parameters[ghdl.FlagSynBinding] =        True
-		ghdl.Parameters[ghdl.FlagPSL] =                True
-		ghdl.Parameters[ghdl.SwitchVHDLLibrary] =      VHDL_TESTBENCH_LIBRARY_NAME
-		ghdl.Parameters[ghdl.ArgTopLevel] =            testbench.ModuleName
+		ghdl.Parameters[ghdl.FlagVerbose] =             (self.Logger.LogLevel is Severity.Debug)
+		ghdl.Parameters[ghdl.FlagExplicit] =            True
+		ghdl.Parameters[ghdl.FlagRelaxedRules] =        True
+		ghdl.Parameters[ghdl.FlagWarnBinding] =         True
+		ghdl.Parameters[ghdl.FlagNoVitalChecks] =       True
+		ghdl.Parameters[ghdl.FlagMultiByteComments] =   True
+		ghdl.Parameters[ghdl.FlagSynBinding] =          True
+		ghdl.Parameters[ghdl.FlagPSL] =                 True
+		ghdl.Parameters[ghdl.SwitchVHDLLibrary] =       VHDL_TESTBENCH_LIBRARY_NAME
+		ghdl.Parameters[ghdl.ArgTopLevel] =             testbench.ModuleName
 
 		if (self._vhdlVersion == VHDLVersion.VHDL87):
-			ghdl.Parameters[ghdl.SwitchVHDLVersion] =    "87"
-			ghdl.Parameters[ghdl.SwitchIEEEFlavor] =    "synopsys"
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =     "87"
+			ghdl.Parameters[ghdl.SwitchIEEEFlavor] =      "synopsys"
 		elif (self._vhdlVersion == VHDLVersion.VHDL93):
-			ghdl.Parameters[ghdl.SwitchVHDLVersion] =    "93c"
-			ghdl.Parameters[ghdl.SwitchIEEEFlavor] =    "synopsys"
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =     "93c"
+			ghdl.Parameters[ghdl.SwitchIEEEFlavor] =      "synopsys"
 		elif (self._vhdlVersion == VHDLVersion.VHDL02):
-			ghdl.Parameters[ghdl.SwitchVHDLVersion] =    "02"
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =     "02"
 		elif (self._vhdlVersion == VHDLVersion.VHDL08):
-			ghdl.Parameters[ghdl.SwitchVHDLVersion] =    "08"
-		else:                                          raise SimulatorException("VHDL version is not supported.")
+			ghdl.Parameters[ghdl.SwitchVHDLVersion] =     "08"
+		else:                                           raise SimulatorException("VHDL version is not supported.")
 
 		# add external library references
 		ghdl.Parameters[ghdl.ArgListLibraryReferences] = [str(extLibrary.Path) for extLibrary in self._pocProject.ExternalVHDLLibraries]
@@ -246,43 +262,44 @@ class Simulator(BaseSimulator):
 		
 		testbench.Result = ghdl.Run()
 
-	def _ExecuteSimulation(self, testbench):
-		self._LogNormal("Executing simulation...")
-			
-		# create a GHDLRun instance
-		ghdl = self._toolChain.GetGHDLRun()
-		ghdl.VHDLVersion =  self._vhdlVersion
-		ghdl.VHDLLibrary =  VHDL_TESTBENCH_LIBRARY_NAME
-		
-		# configure RUNOPTS
-		runOptions = []
-		runOptions.append('--ieee-asserts={0}'.format("disable-at-0"))		# enable, disable, disable-at-0
-		# set dump format to save simulation results to *.vcd file
-		if (self._guiMode):
-			waveformFileFormat =  self.Host.PoCConfig[testbench.ConfigSectionName]['ghdlWaveformFileFormat']
-					
-			if (waveformFileFormat == "vcd"):
-				waveformFilePath = self.Directories.Working / (testbench.ModuleName + ".vcd")
-				runOptions.append("--vcd={0!s}".format(waveformFilePath))
-			elif (waveformFileFormat == "vcdgz"):
-				waveformFilePath = self.Directories.Working / (testbench.ModuleName + ".vcd.gz")
-				runOptions.append("--vcdgz={0!s}".format(waveformFilePath))
-			elif (waveformFileFormat == "fst"):
-				waveformFilePath = self.Directories.Working / (testbench.ModuleName + ".fst")
-				runOptions.append("--fst={0!s}".format(waveformFilePath))
-			elif (waveformFileFormat == "ghw"):
-				waveformFilePath = self.Directories.Working / (testbench.ModuleName + ".ghw")
-				runOptions.append("--wave={0!s}".format(waveformFilePath))
-			else:                                            raise SimulatorException("Unknown waveform file format for GHDL.")
-		
-		ghdl.Run(testbench.ModuleName, runOptions)
+	# def _ExecuteSimulation(self, testbench):
+	# 	self._LogNormal("Executing simulation...")
+	#
+	# 	# create a GHDLRun instance
+	# 	ghdl = self._toolChain.GetGHDLRun()
+	# 	ghdl.VHDLVersion =  self._vhdlVersion
+	# 	ghdl.VHDLLibrary =  VHDL_TESTBENCH_LIBRARY_NAME
+	#
+	# 	# configure RUNOPTS
+	# 	runOptions = []
+	# 	runOptions.append('--ieee-asserts={0}'.format("disable-at-0"))		# enable, disable, disable-at-0
+	# 	# set dump format to save simulation results to *.vcd file
+	# 	if (self._guiMode):
+	# 		waveformFileFormat =  self.Host.PoCConfig[testbench.ConfigSectionName]['ghdlWaveformFileFormat']
+	#
+	# 		if (waveformFileFormat == "vcd"):
+	# 			waveformFilePath = self.Directories.Working / (testbench.ModuleName + ".vcd")
+	# 			runOptions.append("--vcd={0!s}".format(waveformFilePath))
+	# 		elif (waveformFileFormat == "vcdgz"):
+	# 			waveformFilePath = self.Directories.Working / (testbench.ModuleName + ".vcd.gz")
+	# 			runOptions.append("--vcdgz={0!s}".format(waveformFilePath))
+	# 		elif (waveformFileFormat == "fst"):
+	# 			waveformFilePath = self.Directories.Working / (testbench.ModuleName + ".fst")
+	# 			runOptions.append("--fst={0!s}".format(waveformFilePath))
+	# 		elif (waveformFileFormat == "ghw"):
+	# 			waveformFilePath = self.Directories.Working / (testbench.ModuleName + ".ghw")
+	# 			runOptions.append("--wave={0!s}".format(waveformFilePath))
+	# 		else:                                            raise SimulatorException("Unknown waveform file format for GHDL.")
+	#
+	# 	ghdl.Run(testbench.ModuleName, runOptions)
 	
 	def GetViewer(self):
 		return self
 	
 	def View(self, testbench):
 		self._LogNormal("Executing GTKWave...")
-		
+
+		# FIXME: get waveform database filename from testbench object
 		waveformFileFormat =  self.Host.PoCConfig[testbench.ConfigSectionName]['ghdlWaveformFileFormat']
 		if (waveformFileFormat == "vcd"):
 			waveformFilePath = self.Directories.Working / (testbench.ModuleName + ".vcd")
@@ -299,7 +316,7 @@ class Simulator(BaseSimulator):
 				from FileNotFoundError(str(waveformFilePath))
 		
 		gtkwBinaryPath =    self.Directories.GTKWBinary
-		gtkwVersion =        self.Host.PoCConfig['INSTALL.GTKWave']['Version']
+		gtkwVersion =       self.Host.PoCConfig['INSTALL.GTKWave']['Version']
 		gtkw = GTKWave(self.Host.Platform, gtkwBinaryPath, gtkwVersion)
 		gtkw.Parameters[gtkw.SwitchDumpFile] = str(waveformFilePath)
 
@@ -327,27 +344,3 @@ class Simulator(BaseSimulator):
 					buffer += line
 			with gtkwSaveFilePath.open('w') as gtkwHandle:
 				gtkwHandle.write(buffer)
-
-# 			# search log for fatal warnings
-# 			analyzeErrors = []
-# 			elaborateLogRegExpStr =  r"(?P<VHDLFile>.*?):(?P<LineNumber>\d+):\d+:warning: component instance \"(?P<ComponentName>[a-z]+)\" is not bound"
-# 			elaborateLogRegExp = re.compile(elaborateLogRegExpStr)
-# 
-# 			for logLine in elaborateLog.splitlines():
-# 				print("line: " + logLine)
-# 				elaborateLogRegExpMatch = elaborateLogRegExp.match(logLine)
-# 				if (elaborateLogRegExpMatch is not None):
-# 					analyzeErrors.append({
-# 						'Type' : "Unbound Component",
-# 						'File' : elaborateLogRegExpMatch.group('VHDLFile'),
-# 						'Line' : elaborateLogRegExpMatch.group('LineNumber'),
-# 						'Component' : elaborateLogRegExpMatch.group('ComponentName')
-# 					})
-# 		
-# 			if (len(analyzeErrors) != 0):
-# 				print("  ERROR list:")
-# 				for err in analyzeErrors:
-# 					print("    %s: '%s' in file '%s' at line %s" % (err['Type'], err['Component'], err['File'], err['Line']))
-# 			
-# 				raise SimulatorException("Errors while GHDL analysis phase.")
-#

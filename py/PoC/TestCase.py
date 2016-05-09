@@ -39,22 +39,22 @@ else:
 
 
 from collections  import OrderedDict
-from datetime      import time, datetime
-from enum          import Enum, unique
-
-#from Base.Simulator import SimulationResult
+from datetime     import datetime
+from enum         import Enum, unique
 
 
 @unique
 class Status(Enum):
 	Unknown =              0
 	SystemError =          1
-	AnalyzeError =        2
-	ElaborationError =    3
-	SimulationError =      4
+	InternalError =        2
+	AnalyzeError =         3
+	ElaborationError =     4
+	OptimizationError =    5
+	SimulationError =      6
 	SimulationFailed =    10
-	SimulationNoAsserts =  15
-	SimulationSuccess =    20
+	SimulationNoAsserts = 15
+	SimulationSuccess =   20
 
 
 class TestElement:
