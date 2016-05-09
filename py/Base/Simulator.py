@@ -218,7 +218,7 @@ class Simulator(ILogable):
 			self.Run(testbench, *args, **kwargs)
 			testCase.UpdateStatus(testbench.Result)
 		except SkipableSimulatorException as ex:
-			testCase.Status = self.__SIMULATION_STATE_TO_TESTCASE_STATUS__[testbench._state]
+			testCase.Status = self.__SIMULATION_STATE_TO_TESTCASE_STATUS__[self._state]
 
 			self._LogQuiet("  {RED}ERROR:{NOCOLOR} {ExMsg}".format(ExMsg=ex.message, **Init.Foreground))
 			cause = ex.__cause__
@@ -229,7 +229,7 @@ class Simulator(ILogable):
 					self._LogQuiet("      {YELLOW}{ExType}:{NOCOLOR} {ExMsg!s}".format(ExType=cause.__class__.__name__, ExMsg=cause, **Init.Foreground))
 			self._LogQuiet("  {RED}[SKIPPED DUE TO ERRORS]{NOCOLOR}".format(**Init.Foreground))
 		except SimulatorException:
-			testCase.Status = self.__SIMULATION_STATE_TO_TESTCASE_STATUS__[testbench._state]
+			testCase.Status = self.__SIMULATION_STATE_TO_TESTCASE_STATUS__[self._state]
 			raise
 		except ExceptionBase:
 			testCase.Status = Status.SystemError
