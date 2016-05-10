@@ -3,9 +3,9 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:         			Patrick Lehmann
+# Authors:               Patrick Lehmann
 # 
-# Python Main Module:		Entry point to the post-processing tools.
+# Python Main Module:    Entry point to the post-processing tools.
 # 
 # Description:
 # ------------------------------------
@@ -53,17 +53,17 @@ class PostProcessor(Processor):
 		# hard coded
 		projectName = "StreamDBTest_ML505"
 	
-		projectConfigurationFilePath =	self.Directories["SolutionRoot"] / self.config[projectName]['ConfigurationFile']
-		xstReportFilePath =							self.Directories["SolutionRoot"] / self.config[projectName]['XSTReportFile']
+		projectConfigurationFilePath =  self.Directories["SolutionRoot"] / self.config[projectName]['ConfigurationFile']
+		xstReportFilePath =              self.Directories["SolutionRoot"] / self.config[projectName]['XSTReportFile']
 		
 		self.Files["ProjectConfiguration"]	= projectConfigurationFilePath
-		self.Files["XSTReport"]	=							xstReportFilePath
+		self.Files["XSTReport"]	=              xstReportFilePath
 		
 		print("project ini: " + str(projectConfigurationFilePath))
 		
 		if not projectConfigurationFilePath.exists():
 			raise NotConfiguredException("Project configuration file does not exist. (%s)" % str(projectConfigurationFilePath))
-		if not xstReportFilePath.exists():							raise Exception("Compiler report file does not exist. (%s)" % str(xstReportFilePath))
+		if not xstReportFilePath.exists():              raise Exception("Compiler report file does not exist. (%s)" % str(xstReportFilePath))
 
 		self.printDebug("Reading project configuration from '%s'" % str(projectConfigurationFilePath))		
 		self.projectConfig = ConfigParser(interpolation=ExtendedInterpolation())
@@ -72,10 +72,10 @@ class PostProcessor(Processor):
 	
 		self.projectConfig['PROJECT']['Name'] = self.config[projectName]['ProjectName']
 		
-		self.Directories['ChipScope'] =	self.Directories['SolutionRoot'] / self.projectConfig['Directories']['ChipScopeDirectory']
-		self.Directories['TokenFile'] =	self.Directories['SolutionRoot'] / self.projectConfig['Directories']['TokenFileDirectory']
+		self.Directories['ChipScope'] =  self.Directories['SolutionRoot'] / self.projectConfig['Directories']['ChipScopeDirectory']
+		self.Directories['TokenFile'] =  self.Directories['SolutionRoot'] / self.projectConfig['Directories']['TokenFileDirectory']
 			
-	def run(self, showLogs, showReport):
+	def run(self):
 		
 		self.compileRegExp()
 		print("-- process -------------------------")
@@ -139,9 +139,9 @@ class PostProcessor(Processor):
 			regExpMatch = regExp.match(key)
 			if (regExpMatch is not None):
 				criticalWarningsFilterList.append({
-					'Process' :		regExpMatch.group('Process'),
-					'WarningID' :	int(regExpMatch.group('WarningID')),
-					'Pattern' :		self.projectConfig['CriticalWarnings'][key]
+					'Process' :    regExpMatch.group('Process'),
+					'WarningID' :  int(regExpMatch.group('WarningID')),
+					'Pattern' :    self.projectConfig['CriticalWarnings'][key]
 				})
 			else:
 				print("ERROR: '%s'" % key)
@@ -175,7 +175,7 @@ class PostProcessor(Processor):
 			tokenFile = self.projectConfig[section]['TokenFileName']
 			tokenFilePath = self.Directories['SolutionRoot'] / tokenFile
 			
-			replacementRules =	self.projectConfig[section]['Replacements']
+			replacementRules =  self.projectConfig[section]['Replacements']
 			ruleList = replacementRules.split("\n")
 			
 			# prepare output string
@@ -206,33 +206,33 @@ class PostProcessor(Processor):
 	def enableFSMTokenFileExtraction(self):
 		ext = XSTFSMTokenFileExtractor.Extractor
 		self.processors.append({
-			'Name' :					ext.__name__,
-			'RegExpString' :	ext.getInitializationRegExpString(),
-			'RegExp' :				None,
-			'Extractor' :			ext
+			'Name' :          ext.__name__,
+			'RegExpString' :  ext.getInitializationRegExpString(),
+			'RegExp' :        None,
+			'Extractor' :      ext
 		})
 	
 	def enableErrorExtraction(self):
 		ext = XSTErrorExtractor.Extractor
 		self.processors.append({
-			'Name' :					ext.__name__,
-			'RegExpString' :	ext.getInitializationRegExpString(),
-			'RegExp' :				None,
-			'Extractor' :			ext
+			'Name' :          ext.__name__,
+			'RegExpString' :  ext.getInitializationRegExpString(),
+			'RegExp' :        None,
+			'Extractor' :      ext
 		})
 	
 	def enableWarningExtraction(self):
 		ext = XSTWarningExtractor.Extractor
 		self.processors.append({
-			'Name' :					ext.__name__,
-			'RegExpString' :	ext.getInitializationRegExpString(),
-			'RegExp' :				None,
-			'Extractor' :			ext
+			'Name' :          ext.__name__,
+			'RegExpString' :  ext.getInitializationRegExpString(),
+			'RegExp' :        None,
+			'Extractor' :      ext
 		})
 
 class ActiveProcessor(object):
-	Name =			""
-	Processor =	None
+	Name =      ""
+	Processor =  None
 	
 	def __init__(self, Name, Processor):
 		self.Name = Name

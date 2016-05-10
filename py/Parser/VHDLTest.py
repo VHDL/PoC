@@ -1,27 +1,27 @@
  
-from enum			import Enum, unique		# EnumMeta
-from time			import time
-from colorama	import init, Fore
+from enum      import Enum, unique		# EnumMeta
+from time      import time
+from colorama  import init, Fore
 
 init(convert=True)
 
-DEBUG =		True
-DEBUG2 =	True
+DEBUG =   True
+DEBUG2 =  True
 
 class ParserException(Exception):
 	pass
 
-class MismatchingParserResult(StopIteration):							pass
-class EmptyChoiseParserResult(MismatchingParserResult):		pass
-class MatchingParserResult(StopIteration):								pass
-class LastMatchingParserResult(MatchingParserResult):			pass
-class CollectedParserResult(MatchingParserResult):				pass
+class MismatchingParserResult(StopIteration):             pass
+class EmptyChoiseParserResult(MismatchingParserResult):   pass
+class MatchingParserResult(StopIteration):                pass
+class LastMatchingParserResult(MatchingParserResult):     pass
+class CollectedParserResult(MatchingParserResult):        pass
 
 class SourceCodePosition:
 	def __init__(self, row, column, absolute):
-		self._row =				row
-		self._column =		column
-		self._absolute =	absolute
+		self._row =       row
+		self._column =    column
+		self._absolute =  absolute
 	
 	@property
 	def Row(self):
@@ -49,9 +49,9 @@ class SourceCodePosition:
 
 class Token:
 	def __init__(self, value, start, end=None):
-		self._value =	value
-		self._start =	start
-		self._end =		end
+		self._value =  value
+		self._start =  start
+		self._end =    end
 
 	def __len__(self):
 		return self._end.Absolute - self._start.Absolute + 1
@@ -74,7 +74,7 @@ class Token:
 
 class CharacterToken(Token):
 	def __init__(self, value, start):
-		if (len(value) != 1):		raise ValueError()
+		if (len(value) != 1):    raise ValueError()
 		super().__init__(value, strart=start, end=start)
 
 	def __len__(self):
@@ -122,37 +122,37 @@ class StringToken(Token):
 
 class Tokenizer:
 	class TokenKind(Enum):
-		SpaceChars =			0
-		AlphaChars =			1
-		NumberChars =			2
-		DelimiterChars =	3
-		OtherChars =			4
+		SpaceChars =      0
+		AlphaChars =      1
+		NumberChars =     2
+		DelimiterChars =  3
+		OtherChars =      4
 
 	@classmethod
 	def GetCharacterTokenizer(cls, iterable):
-		absolute =	0
-		column =		0
-		row =				1
+		absolute =    0
+		column =      0
+		row =         1
 		for char in iterable:
-			absolute +=	1
-			column +=		1
+			absolute += 1
+			column +=   1
 			yield CharacterToken(char, SourceCodePosition(row, column, absolute))
 			if (char == "\n"):
-				column =	0
-				row +=		1
+				column =  0
+				row +=    1
 	
 	@classmethod
 	def GetWordTokenizer(cls, iterable):
-		tokenKind =	cls.TokenKind.OtherChars
-		start =			SourceCodePosition(1, 1, 1)
-		end =				start
-		buffer =		""
-		absolute =	0
-		column =		0
-		row =				1
+		tokenKind =   cls.TokenKind.OtherChars
+		start =       SourceCodePosition(1, 1, 1)
+		end =         start
+		buffer =      ""
+		absolute =    0
+		column =      0
+		row =         1
 		for char in iterable:
-			absolute +=	1
-			column +=		1
+			absolute += 1
+			column +=   1
 			
 			if (tokenKind is cls.TokenKind.SpaceChars):
 				if ((char == " ") or (char == "\t")):
@@ -214,13 +214,13 @@ class Tokenizer:
 			else:
 				raise ParserException("Unknown state.")
 			
-			end.Row =				row
-			end.Column =		column
-			end.Absolute =	absolute
+			end.Row =       row
+			end.Column =    column
+			end.Absolute =  absolute
 			
 			if (char == "\n"):
-				column =	0
-				row +=		1
+				column =  0
+				row +=    1
 		# end for
 	
 class CodeDOMMeta(type):
@@ -242,7 +242,7 @@ class CodeDOMMeta(type):
 			tup = (choice, parser)
 			parsers.append(tup)
 			
-		removeList =	[]
+		removeList =  []
 		while True:
 			token = yield
 			for parser in parsers:
@@ -290,7 +290,7 @@ class CodeDOMMeta(type):
 class CodeDOMObject(metaclass=CodeDOMMeta):
 	def __init__(self):
 		super().__init__()
-		self._name =	None
+		self._name =  None
 	
 	@property
 	def Name(self):
@@ -345,13 +345,13 @@ class List(CodeDOMObject):
 		while True:
 			# match for optional whitespace
 			token = yield
-			if isinstance(token, SpaceToken):						token = yield
+			if isinstance(token, SpaceToken):           token = yield
 			# match for delimiter sign: ;
-			if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
-			if (token.Value.lower() != ";"):						raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
+			if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
+			if (token.Value.lower() != ";"):            raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
 			# match for optional whitespace
 			token = yield
-			if isinstance(token, SpaceToken):						token = yield
+			if isinstance(token, SpaceToken):           token = yield
 			try:
 				while True:
 					token = yield
@@ -366,9 +366,9 @@ class List(CodeDOMObject):
 class PortDefinition(CodeDOMObject):
 	def __init__(self, name, mode, typeMark):
 		super().__init__()
-		self._name =			name
-		self._mode =			mode
-		self._typeMark =	typeMark
+		self._name =      name
+		self._mode =      mode
+		self._typeMark =  typeMark
 
 	@property
 	def Name(self):
@@ -388,31 +388,31 @@ class PortDefinition(CodeDOMObject):
 		
 		# match for optional whitespace
 		token = yield
-		if isinstance(token, SpaceToken):						token = yield
+		if isinstance(token, SpaceToken):           token = yield
 		
 		# match for name
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("PortListParser: Expected port name keyword.")
+		if (not isinstance(token, StringToken)):    raise MismatchingParserResult("PortListParser: Expected port name keyword.")
 		name = token.Value
 		# match for optional whitespace
 		token = yield
-		if isinstance(token, SpaceToken):						token = yield
+		if isinstance(token, SpaceToken):           token = yield
 		# match for delimiter sign: (
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
-		if (token.Value != ":"):										raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
+		if (token.Value != ":"):                    raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
 		# match for optional whitespace
 		token = yield
-		if isinstance(token, SpaceToken):						token = yield
+		if isinstance(token, SpaceToken):           token = yield
 		# match for mode
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("PortListParser: Expected port mode keyword.")
+		if (not isinstance(token, StringToken)):    raise MismatchingParserResult("PortListParser: Expected port mode keyword.")
 		mode = token.Value
 		if (mode not in ["in", "out", "inout", "buffer"]):
 			mode = "default"
 		# match for whitespace
 		token = yield
-		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("PortListParser: Expected whitespace.")
+		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("PortListParser: Expected whitespace.")
 		# match for type
 		token = yield
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("PortListParser: Expected port mode keyword.")
+		if (not isinstance(token, StringToken)):    raise MismatchingParserResult("PortListParser: Expected port mode keyword.")
 		typeMark = token.Value
 		
 		# construct result
@@ -434,17 +434,17 @@ class PortList(List):
 	
 		# match for optional whitespace
 		token = yield
-		if isinstance(token, SpaceToken):						token = yield
+		if isinstance(token, SpaceToken):           token = yield
 	
 		# match for keyword: PORT
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("PortListParser: Expected PORT keyword.")
-		if (token.Value.lower() != "port"):					raise MismatchingParserResult("PortListParser: Expected PORT keyword.")
+		if (not isinstance(token, StringToken)):    raise MismatchingParserResult("PortListParser: Expected PORT keyword.")
+		if (token.Value.lower() != "port"):         raise MismatchingParserResult("PortListParser: Expected PORT keyword.")
 		# match for optional whitespace
 		token = yield
-		if isinstance(token, SpaceToken):						token = yield
+		if isinstance(token, SpaceToken):           token = yield
 		# match for delimiter sign: (
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
-		if (token.Value.lower() != "("):						raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
+		if (token.Value.lower() != "("):            raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
 		
 		# construct result
 		result = cls()
@@ -460,12 +460,12 @@ class PortList(List):
 		
 		# match for delimiter sign: )
 		token = yield
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
-		if (token.Value.lower() != ")"):						raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
+		if (token.Value.lower() != ")"):            raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
 		# match for delimiter sign: ;
 		token = yield
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
-		if (token.Value.lower() != ";"):						raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
+		if (token.Value.lower() != ";"):            raise MismatchingParserResult("PortListParser: Expected double quote sign before VHDL filename.")
 		
 		if DEBUG: print("PortListParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
@@ -481,7 +481,7 @@ class Statement(CodeDOMObject):
 class EntityStatement(Statement):
 	def __init__(self, name):
 		super().__init__()
-		self._name =		name
+		self._name =    name
 	
 	@property
 	def Name(self):
@@ -497,13 +497,13 @@ class EntityStatement(Statement):
 			token = yield
 		
 		if DEBUG2: print("EntityParser: token={0} expected ENTITY keyword".format(token.Value))
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("EntityParser: Expected ENTITY keyword.")
-		if (token.Value.lower() != "entity"):				raise MismatchingParserResult("EntityParser: Expected ENTITY keyword.")
+		if (not isinstance(token, StringToken)):    raise MismatchingParserResult("EntityParser: Expected ENTITY keyword.")
+		if (token.Value.lower() != "entity"):       raise MismatchingParserResult("EntityParser: Expected ENTITY keyword.")
 		
 		# match for whitespace
 		token = yield
 		if DEBUG2: print("EntityParser: token={0} expected WHITESPACE".format(token.Value))
-		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("EntityParser: Expected whitespace before ENTITY name.")
+		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("EntityParser: Expected whitespace before ENTITY name.")
 		
 		# match for entity name
 		name = ""
@@ -525,19 +525,19 @@ class EntityStatement(Statement):
 		
 		# match for whitespace
 		if DEBUG2: print("EntityParser: token={0} expected WHITESPACE".format(token.Value))
-		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("EntityParser: Expected whitespace before VHDL filename.")
+		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("EntityParser: Expected whitespace before VHDL filename.")
 		
 		# match for IS keyword
 		token = yield
 		if DEBUG2: print("EntityParser: token={0} expected IS keyword".format(token.Value))
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("EntityParser: Expected IS keyword.")
-		if (token.Value.lower() != "is"):						raise MismatchingParserResult("EntityParser: Expected IS keyword.")
+		if (not isinstance(token, StringToken)):    raise MismatchingParserResult("EntityParser: Expected IS keyword.")
+		if (token.Value.lower() != "is"):           raise MismatchingParserResult("EntityParser: Expected IS keyword.")
 		
 		# match for delimiter sign: \n
 		token = yield
 		if DEBUG2: print("EntityParser: token={0} expected NL".format(token.Value))
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult("EntityParser: Expected end of line")
-		if (token.Value.lower() != "\n"):						raise MismatchingParserResult("EntityParser: Expected end of line")
+		if (not isinstance(token, CharacterToken)):  raise MismatchingParserResult("EntityParser: Expected end of line")
+		if (token.Value.lower() != "\n"):            raise MismatchingParserResult("EntityParser: Expected end of line")
 		
 		parser = PortList.GetParser()
 		parser.send(None)
@@ -557,17 +557,17 @@ class EntityStatement(Statement):
 			token = yield
 		
 		if DEBUG2: print("EntityParser: token={0} expected END keyword".format(token.Value))
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult("EntityParser: Expected END keyword.")
-		if (token.Value.lower() != "end"):					raise MismatchingParserResult("EntityParser: Expected END keyword.")
+		if (not isinstance(token, StringToken)):    raise MismatchingParserResult("EntityParser: Expected END keyword.")
+		if (token.Value.lower() != "end"):          raise MismatchingParserResult("EntityParser: Expected END keyword.")
 		
 		# # match for whitespace
 		# token = yield
 		# if DEBUG2: print("EntityParser: token={0} expected WHITESPACE".format(token.Value))
-		# if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult("EntityParser: Expected whitespace before ENTITY name.")
+		# if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("EntityParser: Expected whitespace before ENTITY name.")
 		
 		token = yield
-		if (not isinstance(token, CharacterToken)):			raise MismatchingParserResult("EntityParser: Expected ';'.")
-		if (token.Value != ";"):												raise MismatchingParserResult("EntityParser: Expected ';'.")
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("EntityParser: Expected ';'.")
+		if (token.Value != ";"):                    raise MismatchingParserResult("EntityParser: Expected ';'.")
 		
 		
 		# construct result
@@ -659,13 +659,13 @@ class IfStatement(ConditionalBlockStatement):
 			if DEBUG2: print("IfStatementParser: token={0}".format(token))
 		
 		if DEBUG2: print("IfStatementParser: token={0}".format(token))
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
-		if (token.Value.lower() != "if"):						raise MismatchingParserResult()
+		if (not isinstance(token, StringToken)):    raise MismatchingParserResult()
+		if (token.Value.lower() != "if"):           raise MismatchingParserResult()
 		
 		# match for whitespace
 		token = yield
 		if DEBUG2: print("IfStatementParser: token={0}".format(token))
-		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult()
+		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult()
 		
 		# match for expression
 		# ==========================================================================
@@ -686,18 +686,18 @@ class IfStatement(ConditionalBlockStatement):
 		
 		# match for whitespace
 		token = yield
-		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult()
+		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult()
 		
 		# match for keyword: THEN
 		token = yield
 		if DEBUG2: print("IfStatementParser: token={0}".format(token))
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
-		if (token.Value.lower() != "then"):						raise MismatchingParserResult()
+		if (not isinstance(token, StringToken)):    raise MismatchingParserResult()
+		if (token.Value.lower() != "then"):         raise MismatchingParserResult()
 		
 		# match for delimiter sign: \n
 		token = yield
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
-		if (token.Value.lower() != "\n"):						raise MismatchingParserResult()
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult()
+		if (token.Value.lower() != "\n"):           raise MismatchingParserResult()
 		
 		# match for inner statements
 		# ==========================================================================
@@ -740,12 +740,12 @@ class ElseIfStatement(ConditionalBlockStatement):
 			if DEBUG2: print("ElseIfStatementParser: token={0}".format(token))
 		
 		# match for keyword: ELSEIF
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
-		if (token.Value.lower() != "elsif"):				raise MismatchingParserResult()
+		if (not isinstance(token, StringToken)):    raise MismatchingParserResult()
+		if (token.Value.lower() != "elsif"):        raise MismatchingParserResult()
 		# match for whitespace
 		token = yield
 		if DEBUG2: print("ElseIfStatementParser: token={0}".format(token))
-		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult()
+		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult()
 		
 		# match for expression
 		# ==========================================================================
@@ -766,18 +766,18 @@ class ElseIfStatement(ConditionalBlockStatement):
 		
 		# match for whitespace
 		token = yield
-		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult()
+		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult()
 		
 		# match for keyword: THEN
 		token = yield
 		if DEBUG2: print("ElseIfStatementParser: token={0}".format(token))
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
-		if (token.Value.lower() != "then"):						raise MismatchingParserResult()
+		if (not isinstance(token, StringToken)):    raise MismatchingParserResult()
+		if (token.Value.lower() != "then"):         raise MismatchingParserResult()
 		
 		# match for delimiter sign: \n
 		token = yield
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
-		if (token.Value.lower() != "\n"):						raise MismatchingParserResult()
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult()
+		if (token.Value.lower() != "\n"):           raise MismatchingParserResult()
 		
 		# match for inner statements
 		# ==========================================================================
@@ -821,13 +821,13 @@ class ElseStatement(BlockStatement):
 			if DEBUG2: print("ElseStatementParser: token={0}".format(token))
 	
 		# match for keyword: ELSE
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
-		if (token.Value.lower() != "else"):					raise MismatchingParserResult()
+		if (not isinstance(token, StringToken)):    raise MismatchingParserResult()
+		if (token.Value.lower() != "else"):         raise MismatchingParserResult()
 		
 		# match for delimiter sign: \n
 		token = yield
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
-		if (token.Value.lower() != "\n"):						raise MismatchingParserResult()
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult()
+		if (token.Value.lower() != "\n"):           raise MismatchingParserResult()
 		
 		# match for inner statements
 		# ==========================================================================
@@ -858,9 +858,9 @@ class ElseStatement(BlockStatement):
 class IfElseIfElseStatement(Statement):
 	def __init__(self):
 		super().__init__()
-		self._ifStatement =				None
-		self._elseIfStatements =	None
-		self._elseStatement =			None
+		self._ifStatement =        None
+		self._elseIfStatements =  None
+		self._elseStatement =      None
 
 	@classmethod
 	def GetParser(cls):
@@ -928,23 +928,23 @@ class IfElseIfElseStatement(Statement):
 	
 		# match for keyword: END
 		if DEBUG2: print("IfElseIfElseStatementParser: token={0} expected 'end'".format(token))
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
-		if (token.Value.lower() != "end"):					raise MismatchingParserResult()
+		if (not isinstance(token, StringToken)):    raise MismatchingParserResult()
+		if (token.Value.lower() != "end"):          raise MismatchingParserResult()
 	
 		# match for whitespace
 		token = yield
-		if (not isinstance(token, SpaceToken)):			raise MismatchingParserResult()
+		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult()
 	
 		# match for keyword: IF
 		token = yield
 		if DEBUG2: print("IfElseIfElseStatementParser: token={0}".format(token))
-		if (not isinstance(token, StringToken)):		raise MismatchingParserResult()
-		if (token.Value.lower() != "if"):						raise MismatchingParserResult()
+		if (not isinstance(token, StringToken)):    raise MismatchingParserResult()
+		if (token.Value.lower() != "if"):           raise MismatchingParserResult()
 		
 		# match for delimiter sign: \n
 		token = yield
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
-		if (token.Value.lower() != "\n"):						raise MismatchingParserResult()
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult()
+		if (token.Value.lower() != "\n"):           raise MismatchingParserResult()
 		
 		if DEBUG: print("IfElseIfElseStatementParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
@@ -969,10 +969,10 @@ class EmptyLine(CodeDOMObject):
 		if DEBUG: print("init EmptyLine")
 		# match for optional whitespace
 		token = yield
-		if isinstance(token, SpaceToken):						token = yield
+		if isinstance(token, SpaceToken):           token = yield
 		# match for delimiter sign: \n
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
-		if (token.Value.lower() != "\n"):						raise MismatchingParserResult()
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult()
+		if (token.Value.lower() != "\n"):           raise MismatchingParserResult()
 		# construct result
 		result = cls()
 		if DEBUG: print("EmptyLine: matched {0}".format(result))
@@ -996,19 +996,19 @@ class CommentLine(CodeDOMObject):
 		if DEBUG: print("init CommentLineParser")
 		# match for optional whitespace
 		token = yield
-		if isinstance(token, SpaceToken):						token = yield
+		if isinstance(token, SpaceToken):           token = yield
 		# match for sign: -
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
-		if (token.Value.lower() != "-"):						raise MismatchingParserResult()
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult()
+		if (token.Value.lower() != "-"):            raise MismatchingParserResult()
 		# match for sign: -
-		if (not isinstance(token, CharacterToken)):	raise MismatchingParserResult()
-		if (token.Value.lower() != "-"):						raise MismatchingParserResult()
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult()
+		if (token.Value.lower() != "-"):            raise MismatchingParserResult()
 		# match for any until line end
 		commentText = ""
 		while True:
 			token = yield
 			if isinstance(token, CharacterToken):
-				if (token.Value == "\n"):		break
+				if (token.Value == "\n"):    break
 			commentText += token.Value
 		# construct result
 		result = cls(commentText)

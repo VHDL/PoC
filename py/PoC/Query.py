@@ -3,9 +3,9 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:					Patrick Lehmann
+# Authors:          Patrick Lehmann
 #
-# Python Class:			TODO
+# Python Class:      TODO
 #
 # Description:
 # ------------------------------------
@@ -14,13 +14,13 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair for VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#		http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,10 +38,10 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module PoC.Query")
 
 
-from pathlib							import Path
+from pathlib              import Path
 
-from Base.Exceptions			import NotConfiguredException, PlatformNotSupportedException
-from Base.Configuration		import ConfigurationException
+from Base.Exceptions      import NotConfiguredException, PlatformNotSupportedException
+from Base.Configuration    import ConfigurationException
 
 
 class Query:
@@ -49,15 +49,17 @@ class Query:
 		self.__host = host
 
 	@property
-	def Host(self):				return self.__host
+	def Host(self):        return self.__host
 	@property
-	def Platform(self):		return self.__host.Platform
+	def Platform(self):    return self.__host.Platform
 	@property
-	def PoCConfig(self):	return self.__host.PoCConfig
+	def PoCConfig(self):  return self.__host.PoCConfig
 
 	def QueryConfiguration(self, query):
 		if (query == "ModelSim:InstallationDirectory"):
 			result = self._GetModelSimInstallationDirectory()
+		elif (query == "ModelSim:BinaryDirectory"):
+			result = self._GetModelSimBinaryDirectory()
 		elif (query == "Xilinx.ISE:SettingsFile"):
 			result = self._GetXilinxISESettingsFile()
 		elif (query == "Xilinx.Vivado:SettingsFile"):
@@ -67,11 +69,11 @@ class Query:
 			if (len(parts) == 2):
 				sectionName = parts[0]
 				optionName = parts[1]
-				result =  self.PoCConfig["INSTALL." + sectionName][optionName]
+				result =  self.PoCConfig[sectionName][optionName]
 			else:
 				raise ConfigurationException("Syntax error in query string '{0}'".format(query))
 
-		if isinstance(result, Path):	result = str(result)
+		if isinstance(result, Path):  result = str(result)
 		return result
 
 	def _GetModelSimInstallationDirectory(self):
@@ -79,6 +81,14 @@ class Query:
 			return Path(self.PoCConfig['INSTALL.Mentor.QuestaSim']['InstallationDirectory'])
 		elif (len(self.PoCConfig.options('INSTALL.Altera.ModelSim')) != 0):
 			return Path(self.PoCConfig['INSTALL.Altera.ModelSim']['InstallationDirectory'])
+		else:
+			raise NotConfiguredException("ERROR: ModelSim is not configured on this system.")
+
+	def _GetModelSimBinaryDirectory(self):
+		if (len(self.PoCConfig.options('INSTALL.Mentor.QuestaSim')) != 0):
+			return Path(self.PoCConfig['INSTALL.Mentor.QuestaSim']['BinaryDirectory'])
+		elif (len(self.PoCConfig.options('INSTALL.Altera.ModelSim')) != 0):
+			return Path(self.PoCConfig['INSTALL.Altera.ModelSim']['BinaryDirectory'])
 		else:
 			raise NotConfiguredException("ERROR: ModelSim is not configured on this system.")
 

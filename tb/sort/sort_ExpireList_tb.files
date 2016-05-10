@@ -5,7 +5,7 @@
 # Note: all files are relative to PoC root directory
 #
 # Load external vendor libraries
-include				"lib/osvvm.files"														# 
+include				"lib/OSVVM.files"														# 
 
 # PoC.sort
 include				"src/sort/sort_ExpireList.files"						# UUT (Unit Under Test)
