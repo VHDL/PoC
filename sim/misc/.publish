@@ -1,8 +1,12 @@
 # git files
 .gitignore
 
+# Documentation
+README.md
+
 # subnamespace
 filter/
+gearbox/
 stat/
 sync/
 

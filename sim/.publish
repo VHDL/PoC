@@ -1,7 +1,27 @@
 # git files
 .gitignore
 
+# Documentation
+README.md
+
+# PoC subnamespaces
+alt/
+arith/
+cache/
+comm/
+common/
+dstruct/
+fifo/
+io/
+mem/
+misc/
+# DON'T PUBLISH sata/ !
+sort/
+xil/
+
 # TCL batch files for varous simulators
+aSim.batch.tcl
+aSim.gui.tcl
 iSim.batch.tcl
 iSim.gui.tcl
 xSim.batch.tcl
@@ -11,13 +31,3 @@ vSim.gui.tcl
 
 # Default waveform configuration files
 vSim.default.wdo
-
-# PoC subnamespaces
-arith/
-comm/
-common/
-io/
-mem/
-misc/
-#sata/
-xil/

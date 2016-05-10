@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -29,87 +29,85 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
 
 
-ENTITY MAC_FrameLoopback IS
-	GENERIC (
+entity mac_FrameLoopback is
+	generic (
 		MAX_FRAMES										: POSITIVE						:= 4
 	);
-	PORT (
-		Clock													: IN	STD_LOGIC;
-		Reset													: IN	STD_LOGIC;
+	port (
+		Clock													: in	STD_LOGIC;
+		Reset													: in	STD_LOGIC;
 		-- IN Port
-		In_Valid											: IN	STD_LOGIC;
-		In_Data												: IN	T_SLV_8;
-		In_SOF												: IN	STD_LOGIC;
-		In_EOF												: IN	STD_LOGIC;
-		In_Ack												: OUT	STD_LOGIC;
-		In_Meta_rst										: OUT	STD_LOGIC;
-		In_Meta_SrcMACAddress_nxt			: OUT	STD_LOGIC;
-		In_Meta_SrcMACAddress_Data		: IN	T_SLV_8;
-		In_Meta_DestMACAddress_nxt		: OUT	STD_LOGIC;
-		In_Meta_DestMACAddress_Data		: IN	T_SLV_8;
+		In_Valid											: in	STD_LOGIC;
+		In_Data												: in	T_SLV_8;
+		In_SOF												: in	STD_LOGIC;
+		In_EOF												: in	STD_LOGIC;
+		In_Ack												: out	STD_LOGIC;
+		In_Meta_rst										: out	STD_LOGIC;
+		In_Meta_SrcMACAddress_nxt			: out	STD_LOGIC;
+		In_Meta_SrcMACAddress_Data		: in	T_SLV_8;
+		In_Meta_DestMACAddress_nxt		: out	STD_LOGIC;
+		In_Meta_DestMACAddress_Data		: in	T_SLV_8;
 		-- OUT Port
-		Out_Valid											: OUT	STD_LOGIC;
-		Out_Data											: OUT	T_SLV_8;
-		Out_SOF												: OUT	STD_LOGIC;
-		Out_EOF												: OUT	STD_LOGIC;
-		Out_Ack												: IN	STD_LOGIC;
-		Out_Meta_rst									: IN	STD_LOGIC;
-		Out_Meta_SrcMACAddress_nxt		: IN	STD_LOGIC;
-		Out_Meta_SrcMACAddress_Data		: OUT	T_SLV_8;
-		Out_Meta_DestMACAddress_nxt		: IN	STD_LOGIC;
-		Out_Meta_DestMACAddress_Data	: OUT	T_SLV_8
+		Out_Valid											: out	STD_LOGIC;
+		Out_Data											: out	T_SLV_8;
+		Out_SOF												: out	STD_LOGIC;
+		Out_EOF												: out	STD_LOGIC;
+		Out_Ack												: in	STD_LOGIC;
+		Out_Meta_rst									: in	STD_LOGIC;
+		Out_Meta_SrcMACAddress_nxt		: in	STD_LOGIC;
+		Out_Meta_SrcMACAddress_Data		: out	T_SLV_8;
+		Out_Meta_DestMACAddress_nxt		: in	STD_LOGIC;
+		Out_Meta_DestMACAddress_Data	: out	T_SLV_8
 	);
-END;
+end entity;
 
 
-ARCHITECTURE rtl OF MAC_FrameLoopback IS
-	ATTRIBUTE KEEP										: BOOLEAN;
+architecture rtl of mac_FrameLoopback is
+	constant META_STREAMID_SRCADDR		: NATURAL					:= 0;
+	constant META_STREAMID_DESTADDR		: NATURAL					:= 1;
 	
-	CONSTANT META_STREAMID_SRCADDR		: NATURAL					:= 0;
-	CONSTANT META_STREAMID_DESTADDR		: NATURAL					:= 1;
-	
-	CONSTANT META_BITS								: T_POSVEC				:= (
+	constant META_BITS								: T_POSVEC				:= (
 		META_STREAMID_SRCADDR			=> 8,
 		META_STREAMID_DESTADDR		=> 8
 	);
 	
-	CONSTANT META_FIFO_DEPTHS					: T_POSVEC				:= (
+	constant META_FIFO_DEPTHS					: T_POSVEC				:= (
 		META_STREAMID_SRCADDR			=> 6,
 		META_STREAMID_DESTADDR		=> 6
 	);
 
-	SIGNAL LLBuf_MetaIn_nxt						: STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
-	SIGNAL LLBuf_MetaIn_Data					: STD_LOGIC_VECTOR(isum(META_BITS) - 1 DOWNTO 0);
-	SIGNAL LLBuf_MetaOut_nxt					: STD_LOGIC_VECTOR(META_BITS'length - 1 DOWNTO 0);
-	SIGNAL LLBuf_MetaOut_Data					: STD_LOGIC_VECTOR(isum(META_BITS) - 1 DOWNTO 0);
+	signal LLBuf_MetaIn_nxt						: STD_LOGIC_VECTOR(META_BITS'length - 1 downto 0);
+	signal LLBuf_MetaIn_Data					: STD_LOGIC_VECTOR(isum(META_BITS) - 1 downto 0);
+	signal LLBuf_MetaOut_nxt					: STD_LOGIC_VECTOR(META_BITS'length - 1 downto 0);
+	signal LLBuf_MetaOut_Data					: STD_LOGIC_VECTOR(isum(META_BITS) - 1 downto 0);
 	
-BEGIN
-	LLBuf_MetaIn_Data(high(META_BITS, META_STREAMID_SRCADDR)	DOWNTO low(META_BITS, META_STREAMID_SRCADDR))		<= In_Meta_SrcMACAddress_Data;
-	LLBuf_MetaIn_Data(high(META_BITS, META_STREAMID_DESTADDR)	DOWNTO low(META_BITS, META_STREAMID_DESTADDR))	<= In_Meta_DestMACAddress_Data;
+begin
+	LLBuf_MetaIn_Data(high(META_BITS, META_STREAMID_SRCADDR)	downto low(META_BITS, META_STREAMID_SRCADDR))		<= In_Meta_SrcMACAddress_Data;
+	LLBuf_MetaIn_Data(high(META_BITS, META_STREAMID_DESTADDR)	downto low(META_BITS, META_STREAMID_DESTADDR))	<= In_Meta_DestMACAddress_Data;
 	
 	In_Meta_SrcMACAddress_nxt		<= LLBuf_MetaIn_nxt(META_STREAMID_SRCADDR);
 	In_Meta_DestMACAddress_nxt	<= LLBuf_MetaIn_nxt(META_STREAMID_DESTADDR);
 
-	LLBuf : ENTITY PoC.stream_Buffer
-		GENERIC MAP (
+	LLBuf : entity PoC.stream_Buffer
+		generic map (
 			FRAMES												=> MAX_FRAMES,
 			DATA_BITS											=> 8,
 			DATA_FIFO_DEPTH								=> 1024,
 			META_BITS											=> META_BITS,
 			META_FIFO_DEPTH								=> META_FIFO_DEPTHS
 		)
-		PORT MAP (
+		port map(
 			Clock													=> Clock,
 			Reset													=> Reset,
 			
@@ -133,10 +131,11 @@ BEGIN
 		);
 	
 	-- unpack LLBuf metadata to signals
-	Out_Meta_SrcMACAddress_Data								<= LLBuf_MetaOut_Data(high(META_BITS, META_STREAMID_DESTADDR)	DOWNTO low(META_BITS, META_STREAMID_DESTADDR));			-- Crossover: Source <= Destination
-	Out_Meta_DestMACAddress_Data							<= LLBuf_MetaOut_Data(high(META_BITS, META_STREAMID_SRCADDR)	DOWNTO low(META_BITS, META_STREAMID_SRCADDR));			-- Crossover: Destination <= Source
+	Out_Meta_SrcMACAddress_Data								<= LLBuf_MetaOut_Data(high(META_BITS, META_STREAMID_DESTADDR)	downto low(META_BITS, META_STREAMID_DESTADDR));			-- Crossover: Source <= Destination
+	Out_Meta_DestMACAddress_Data							<= LLBuf_MetaOut_Data(high(META_BITS, META_STREAMID_SRCADDR)	downto low(META_BITS, META_STREAMID_SRCADDR));			-- Crossover: Destination <= Source
 	
 	-- pack metadata nxt signals to LLBuf meta vector
 	LLBuf_MetaOut_nxt(META_STREAMID_SRCADDR)	<= Out_Meta_DestMACAddress_nxt;
 	LLBuf_MetaOut_nxt(META_STREAMID_DESTADDR)	<= Out_Meta_SrcMACAddress_nxt;
-END ARCHITECTURE;
+	
+end architecture;

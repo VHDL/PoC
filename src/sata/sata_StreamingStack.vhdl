@@ -14,7 +14,7 @@
 -- 
 -- License:
 -- =============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -111,11 +111,11 @@ entity sata_StreamingStack is
 		SoFPGA_Tracer_TriggerEvent			: in		STD_LOGIC;
 			
 		-- vendor specific ports	
-		SATA_Common_In							: in		T_SATA_TRANSCEIVER_COMMON_IN_signalS;
-		SATA_Private_In							: in		T_SATA_TRANSCEIVER_PRIVATE_IN_signalS;
-		SATA_Private_Out						: out		T_SATA_TRANSCEIVER_PRIVATE_OUT_signalS
+		SATA_Common_In							: in		T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
+		SATA_Private_In							: in		T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS;
+		SATA_Private_Out						: out		T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS
 	);
-end;
+end entity;
 
 
 architecture rtl of sata_StreamingStack is
@@ -207,7 +207,7 @@ begin
 	SATAGeneration					<= SATAC_SATAGeneration;
 	
 	-- assign status record
-	Status.Streaminglayer 	<= SATASC_Status;
+	Status.StreamingLayer 	<= SATASC_Status;
 	Status.TransportLayer		<= SATAC_Status.TransportLayer;
 	Status.LinkLayer				<= SATAC_Status.LinkLayer;
 	Status.PhysicalLayer		<= SATAC_Status.PhysicalLayer;
@@ -362,7 +362,7 @@ begin
 		SATAS_DebugPortOut.Transceiver_Status		<= SATAC_DebugPortOut.Transceiver_Status;
 		SATAS_DebugPortOut.Transceiver_Error		<= SATAC_DebugPortOut.Transceiver_Error;
 		
-		SATAS_DebugPortOut.PhysicalLayer				<= SATAC_DebugPortOut.Physicallayer;
+		SATAS_DebugPortOut.PhysicalLayer				<= SATAC_DebugPortOut.PhysicalLayer;
 		SATAS_DebugPortOut.Physical_Command			<= SATAC_DebugPortOut.Physical_Command;
 		SATAS_DebugPortOut.Physical_Status			<= SATAC_DebugPortOut.Physical_Status;
 		SATAS_DebugPortOut.Physical_Error				<= SATAC_DebugPortOut.Physical_Error;
@@ -497,7 +497,7 @@ begin
 	begin
 		DebugPortIn_TriggerEvent <= DebugPortIn.TransceiverLayer.InsertBitErrorTX or DebugPortIn.TransceiverLayer.InsertBitErrorRX or DebugPortIn.LinkLayer.InsertBitErrorHeaderTX;
 		
-		clocktest <= fftre(q => clocktest, rst => '0', en => '1') WHEN rising_edge(SATAC_Clock);
+		clocktest <= fftre(q => clocktest, t => '1') when rising_edge(SATAC_Clock);
 		
 		TransceiverILA_Trigger0(0)						<=				SATAS_DebugPortOut.TransceiverLayer.PowerDown;
 		TransceiverILA_Trigger0(1)						<=				SATAS_DebugPortOut.TransceiverLayer.ClockNetwork_Reset;
@@ -1029,4 +1029,4 @@ begin
 			);
 	end generate;
 	
-end;
+end architecture;

@@ -1,17 +1,24 @@
 # git files
-.gitignore
 .gitempty
 
 # Documentation
 README.md
 
 # PoC subnamespaces
-common/
+alt/
 arith/
 bus/
-fifo/
+cache/
 comm/
+common/
+dstruct/
+fifo/
 io/
 mem/
 misc/
+net/
+# DON'T PUBLISH sata/ !
+sim/
+sort/
+#trace/
 xil/

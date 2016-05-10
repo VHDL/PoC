@@ -131,7 +131,7 @@ package lcd is
 
 	component lcd_dotmatrix is
 		generic(
-			CLOCK_FREQ : freq;
+			CLOCK_FREQ : FREQ;
 			DATA_WIDTH : positive;  				-- Width of data bus (4 or 8)
 
 			T_W        : time     :=  500 ns; -- Minimum width of E pulse
@@ -162,9 +162,9 @@ package lcd is
 		);
 	end component;
 
-  function lcd_functionset(datalength : positive; lines : positive; font : natural) return t_slv_8;
-  function lcd_displayctrl(turn_on : boolean; cursor : boolean; blink : boolean) return t_slv_8;
-  function lcd_entrymode(inc_ndec : boolean; shift : boolean) return t_slv_8;
+  function lcd_functionset(datalength : positive; lines : positive; font : natural) return T_SLV_8;
+  function lcd_displayctrl(turn_on : boolean; cursor : boolean; blink : boolean) return T_SLV_8;
+  function lcd_entrymode(inc_ndec : boolean; shift : boolean) return T_SLV_8;
 
 	procedure LCDBufferProjection(signal buffer1 : in T_LCD_CHAR_VECTOR; signal buffer2 : out T_LCD_CHAR_VECTOR);
 
@@ -535,7 +535,7 @@ package body lcd is
 		end case;
 	end;
 
-  function lcd_functionset(datalength : positive; lines : positive; font : natural) return t_slv_8 is
+  function lcd_functionset(datalength : positive; lines : positive; font : natural) return T_SLV_8 is
 		variable dl : std_logic;
   begin
     assert datalength = 4 or datalength = 8 report "Invalid display data length." severity error;
@@ -549,12 +549,12 @@ package body lcd is
     return "001" & dl & to_sl(lines = 2) & to_sl(font > 0) & "--";
   end;
 
-  function lcd_displayctrl(turn_on : boolean; cursor : boolean; blink : boolean) return t_slv_8 is
+  function lcd_displayctrl(turn_on : boolean; cursor : boolean; blink : boolean) return T_SLV_8 is
 	begin
 		return "00001" & to_sl(turn_on) & to_sl(cursor) & to_sl(blink);
 	end;
 
-  function lcd_entrymode(inc_ndec : boolean; shift : boolean) return t_slv_8 is
+  function lcd_entrymode(inc_ndec : boolean; shift : boolean) return T_SLV_8 is
 	begin
 		return "000001" & to_sl(inc_ndec) & to_sl(shift);
 	end;

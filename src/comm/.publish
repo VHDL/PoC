@@ -1,8 +1,15 @@
+# git files
+.gitempty
 
 # Documentation
 README.md
 
-comm.pkg.vhdl
-comm_crc.vhdl
-comm_scramble.vhdl
+# subnamespace
 remote/
+
+# --------------------------------------
+comm.pkg.vhdl
+comm_crc.files
+comm_crc.vhdl
+comm_scramble.files
+comm_scramble.vhdl

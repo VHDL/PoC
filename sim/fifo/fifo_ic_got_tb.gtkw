@@ -1,0 +1,64 @@
+[*]
+[*] GTKWave Analyzer v3.3.69 (w)1999-2016 BSI
+[*] Wed Feb 10 09:58:22 2016
+[*]
+[dumpfile] "H:\Austausch\PoC\temp\ghdl\fifo_ic_got_tb.ghw"
+[dumpfile_mtime] "Wed Feb 10 09:58:16 2016"
+[dumpfile_size] 8212
+[savefile] "H:\Austausch\PoC\sim\fifo\fifo_ic_got_tb.gtkw"
+[timestart] 0
+[size] 1676 997
+[pos] -1 -1
+*-27.500656 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.fifo_ic_got_tb.
+[sst_width] 197
+[signals_width] 239
+[sst_expanded] 1
+[sst_vpaned_height] 293
+@28
+top.fifo_ic_got_tb.rst
+@800200
+-Writer @clk0
+@28
+top.fifo_ic_got_tb.clk0
+top.fifo_ic_got_tb.put0
+@22
+#{top.fifo_ic_got_tb.di0[8:0]} top.fifo_ic_got_tb.di0[8] top.fifo_ic_got_tb.di0[7] top.fifo_ic_got_tb.di0[6] top.fifo_ic_got_tb.di0[5] top.fifo_ic_got_tb.di0[4] top.fifo_ic_got_tb.di0[3] top.fifo_ic_got_tb.di0[2] top.fifo_ic_got_tb.di0[1] top.fifo_ic_got_tb.di0[0]
+@28
+top.fifo_ic_got_tb.ful0
+@1000200
+-Writer @clk0
+@800200
+-Intermediate Checker
+@29
+top.fifo_ic_got_tb.clk1
+top.fifo_ic_got_tb.got1
+@23
+#{top.fifo_ic_got_tb.do1[8:0]} top.fifo_ic_got_tb.do1[8] top.fifo_ic_got_tb.do1[7] top.fifo_ic_got_tb.do1[6] top.fifo_ic_got_tb.do1[5] top.fifo_ic_got_tb.do1[4] top.fifo_ic_got_tb.do1[3] top.fifo_ic_got_tb.do1[2] top.fifo_ic_got_tb.do1[1] top.fifo_ic_got_tb.do1[0]
+@29
+top.fifo_ic_got_tb.vld1
+top.fifo_ic_got_tb.put1
+@23
+#{top.fifo_ic_got_tb.di1[8:0]} top.fifo_ic_got_tb.di1[8] top.fifo_ic_got_tb.di1[7] top.fifo_ic_got_tb.di1[6] top.fifo_ic_got_tb.di1[5] top.fifo_ic_got_tb.di1[4] top.fifo_ic_got_tb.di1[3] top.fifo_ic_got_tb.di1[2] top.fifo_ic_got_tb.di1[1] top.fifo_ic_got_tb.di1[0]
+@29
+top.fifo_ic_got_tb.ful1
+@1000200
+-Intermediate Checker
+@800200
+-Reader @clk2
+@28
+top.fifo_ic_got_tb.clk2
+top.fifo_ic_got_tb.got2
+@22
+#{top.fifo_ic_got_tb.do2[8:0]} top.fifo_ic_got_tb.do2[8] top.fifo_ic_got_tb.do2[7] top.fifo_ic_got_tb.do2[6] top.fifo_ic_got_tb.do2[5] top.fifo_ic_got_tb.do2[4] top.fifo_ic_got_tb.do2[3] top.fifo_ic_got_tb.do2[2] top.fifo_ic_got_tb.do2[1] top.fifo_ic_got_tb.do2[0]
+@28
+top.fifo_ic_got_tb.vld2
+@1000200
+-Reader @clk2
+@28
+top.fifo_ic_got_tb.done
+@22
+#{top.fifo_ic_got_tb.dat2[8:0]} top.fifo_ic_got_tb.dat2[8] top.fifo_ic_got_tb.dat2[7] top.fifo_ic_got_tb.dat2[6] top.fifo_ic_got_tb.dat2[5] top.fifo_ic_got_tb.dat2[4] top.fifo_ic_got_tb.dat2[3] top.fifo_ic_got_tb.dat2[2] top.fifo_ic_got_tb.dat2[1] top.fifo_ic_got_tb.dat2[0]
+[pattern_trace] 1
+[pattern_trace] 0

@@ -35,17 +35,17 @@ USE			IEEE.NUMERIC_STD.ALL;
 
 LIBRARY PoC;
 USE			PoC.config.ALL;
-USE			PoC.board.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
+USE			PoC.physical.ALL;
 USE			PoC.net.ALL;
 
 
 ENTITY stack_UDPv4 IS
 	GENERIC (
 		DEBUG															: BOOLEAN															:= FALSE;																																									-- 
-		CLOCK_FREQ_MHZ										: REAL																:= 125.0;																																									-- 125 MHz
+		CLOCK_FREQ												: FREQ																:= 125 MHz;																																								-- 
 		ETHERNET_IPSTYLE									: T_IPSTYLE														:= to_IPStyle(												MY_BOARD_STRUCT.Ethernet.IPStyle);									-- 
 		ETHERNET_RS_DATA_INTERFACE				: T_NET_ETH_RS_DATA_INTERFACE					:= to_net_eth_RSDataInterface(				MY_BOARD_STRUCT.Ethernet.RS_DataInterface);					-- 
 		ETHERNET_PHY_DEVICE								: T_NET_ETH_PHY_DEVICE								:= to_net_eth_PHYDevice(							MY_BOARD_STRUCT.Ethernet.PHY_Device);								-- 
@@ -402,8 +402,8 @@ BEGIN
 	
 		Eth : ENTITY PoC.Eth_Wrapper
 			GENERIC MAP (
-				DEBUG						=> FALSE,	--DEBUG,
-				CLOCKIN_FREQ_MHZ					=> CLOCK_FREQ_MHZ,
+				DEBUG											=> FALSE,	--DEBUG,
+				CLOCKIN_FREQ							=> CLOCK_FREQ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> ETHERNET_RS_DATA_INTERFACE,
 				PHY_DEVICE								=> ETHERNET_PHY_DEVICE,
@@ -458,7 +458,7 @@ BEGIN
 		SIGNAL blkMAC_RX_Meta_SrcMACAddress_nxt		: STD_LOGIC_VECTOR(ETHERNET_PORTS - 1 DOWNTO 0);
 		
 	BEGIN
-		MAC : ENTITY PoC.MAC_Wrapper
+		MAC : ENTITY PoC.mac_Wrapper
 			GENERIC MAP (
 				DEBUG								=> DEBUG,
 				MAC_CONFIG										=> MAC_CONFIGURATION
@@ -583,7 +583,7 @@ BEGIN
 			blkMAC_RX_Meta_SrcMACAddress_nxt(ARP_MAC_BC_PORT_NUMBER)		<= ARP_BC_RX_Meta_SrcMACAddress_nxt;
 			blkMAC_RX_Meta_DestMACAddress_nxt(ARP_MAC_BC_PORT_NUMBER)		<= ARP_BC_RX_Meta_DestMACAddress_nxt;
 			
-			MAC_LOOP : ENTITY PoC.MAC_FrameLoopback
+			MAC_LOOP : ENTITY PoC.mac_FrameLoopback
 				GENERIC MAP (
 					MAX_FRAMES										=> 4
 				)
@@ -623,13 +623,13 @@ BEGIN
 		
 	BEGIN
 		-- 
-		ARP : ENTITY PoC.ARP_Wrapper
+		ARP : ENTITY PoC.arp_Wrapper
 			GENERIC MAP (
-				CLOCK_FREQ_MHZ											=> CLOCK_FREQ_MHZ,
+				CLOCK_FREQ													=> CLOCK_FREQ,
 				INTERFACE_MACADDRESS								=> MAC_CONFIGURATION(0).Interface.Address,
 --				INITIAL_IPV4ADDRESSES								=> INITIAL_IPV4ADDRESSES_ETH0,
 --				INITIAL_ARPCACHE_CONTENT						=> INITIAL_ARPCACHE_CONTENT_ETH0,
-				APR_REQUEST_TIMEOUT_MS							=> 2000.0
+				APR_REQUEST_TIMEOUT									=> 2000.0 ms
 			)
 			PORT MAP (					
 				Clock																=> Ethernet_Clock,
@@ -734,7 +734,7 @@ BEGIN
 --		SIGNAL ICMPv4_IPv4Address_nxt								: STD_LOGIC;
 --		SIGNAL EchoReqIPv4Seq_IPv4Address_Data			: T_SLV_8;
 	BEGIN
-		IPv4 : ENTITY PoC.IPv4_Wrapper
+		IPv4 : ENTITY PoC.ipv4_Wrapper
 			GENERIC MAP (
 				PACKET_TYPES											=> IPV4_PACKET_TYPES
 			)
@@ -873,7 +873,7 @@ BEGIN
 			blk_RX_Meta_SrcIPv4Address_nxt(IPV4_LOOP_IPV4_PORT_NUMBER)		<= IPV4_LOOP_RX_Meta_SrcIPv4Address_nxt;
 			blk_RX_Meta_DestIPv4Address_nxt(IPV4_LOOP_IPV4_PORT_NUMBER)		<= IPV4_LOOP_RX_Meta_DestIPv4Address_nxt;
 			
-			IPV4_LOOP : ENTITY PoC.IPv4_FrameLoopback
+			IPV4_LOOP : ENTITY PoC.ipv4_FrameLoopback
 				GENERIC MAP (
 					MAX_FRAMES										=> 4
 				)
@@ -908,7 +908,7 @@ BEGIN
 		END GENERATE;
 
 		
-		ICMPv4 : ENTITY PoC.ICMPv4_Wrapper
+		ICMPv4 : ENTITY PoC.icmpv4_Wrapper
 			GENERIC MAP (
 				DEBUG															=> DEBUG,
 				SOURCE_IPV4ADDRESS								=> IP_ADDRESS
@@ -977,7 +977,7 @@ BEGIN
 		SIGNAL blk_RX_Meta_DestIPv4Address_nxt				: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 DOWNTO 0);
 		
 	BEGIN
-		UDP : ENTITY PoC.UDP_Wrapper
+		UDP : ENTITY PoC.udp_Wrapper
 			GENERIC MAP (
 				IP_VERSION												=> 4,
 				PORTPAIRS													=> UDPV4_PORTPAIRS
@@ -1117,7 +1117,7 @@ BEGIN
 			blk_RX_Meta_SrcIPv4Address_nxt(UDP_LOOP_UDPV4_PORT_NUMBER)			<= UDP_LOOP_RX_Meta_SrcIPv4Address_nxt;
 			blk_RX_Meta_DestIPv4Address_nxt(UDP_LOOP_UDPV4_PORT_NUMBER)			<= UDP_LOOP_RX_Meta_DestIPv4Address_nxt;
 			
-			UDP_LOOP : ENTITY PoC.UDP_FrameLoopback
+			UDP_LOOP : ENTITY PoC.udp_FrameLoopback
 				GENERIC MAP (
 					IP_VERSION										=> 4,
 					MAX_FRAMES										=> 4

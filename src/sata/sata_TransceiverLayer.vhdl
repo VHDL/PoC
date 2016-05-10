@@ -77,49 +77,49 @@ entity sata_TransceiverLayer is
 	);
 	port (
 		-- @async --------------------------------------------------------------------------------
-		PowerDown									: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
-		ClockNetwork_Reset				: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
-		ClockNetwork_ResetDone		: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		PowerDown									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		ClockNetwork_Reset				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		ClockNetwork_ResetDone		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
 		-- @SATA_Clock ---------------------------------------------------------------------------
-		Reset											: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
-		ResetDone									: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		Reset											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		ResetDone									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-		Command										: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(portS - 1 downto 0);
-		Status										: out	T_SATA_TRANSCEIVER_STATUS_VECTOR(portS - 1 downto 0);
-		Error											: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(portS - 1 downto 0);
+		Command										: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
+		Status										: out	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 downto 0);
+		Error											: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 downto 0);
 
 		-- debug ports
-		DebugPortIn								: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
-		DebugPortOut							: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
+		DebugPortIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
+		DebugPortOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
-		SATA_Clock								: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
-		SATA_Clock_Stable					: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		SATA_Clock								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		SATA_Clock_Stable					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-		RP_Reconfig								: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
-		RP_SATAGeneration					: in	T_SATA_GENERATION_VECTOR(portS - 1 downto 0);
-		RP_ReconfigComplete				: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
-		RP_ConfigReloaded					: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
-		RP_Lock										:	IN	STD_LOGIC_VECTOR(portS - 1 downto 0);
-		RP_Locked									: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		RP_Reconfig								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RP_SATAGeneration					: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
+		RP_ReconfigComplete				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RP_ConfigReloaded					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RP_Lock										:	in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RP_Locked									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-		OOB_TX_Command						: in	T_SATA_OOB_VECTOR(portS - 1 downto 0);
-		OOB_TX_Complete						: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
-		OOB_RX_Received						: out	T_SATA_OOB_VECTOR(portS - 1 downto 0);		
-		OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
+		OOB_TX_Command						: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
+		OOB_TX_Complete						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);		
+		OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		OOB_AlignDetected    			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		
-		TX_Data										: in	T_SLVV_32(portS - 1 downto 0);
-		TX_CharIsK								: in	T_SLVV_4(portS - 1 downto 0);
+		TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
+		TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
 
-		RX_Data										: out	T_SLVV_32(portS - 1 downto 0);
-		RX_CharIsK								: out	T_SLVV_4(portS - 1 downto 0);
-		RX_Valid									: out STD_LOGIC_VECTOR(portS - 1 downto 0);
+		RX_Data										: out	T_SLVV_32(PORTS - 1 downto 0);
+		RX_CharIsK								: out	T_SLVV_4(PORTS - 1 downto 0);
+		RX_Valid									: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		
 		-- vendor specific signals
 		VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
-		VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(portS	- 1 downto 0);
-		VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(portS	- 1 downto 0)
+		VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);
+		VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 	);
 end;
 
@@ -134,45 +134,45 @@ architecture rtl of sata_TransceiverLayer is
 	signal RX_CharIsK_i : T_SLVV_4(PORTS - 1 downto 0);
 	
 begin
-	genreport : for i in 0 to portS - 1 generate
-		assert FALSE report "port:    " & INTEGER'image(I)																										severity NOTE;
-		assert FALSE report "  Init. SATA Generation: Gen " & INTEGER'image(INITIAL_SATA_GENERATIONS(I) + 1)	severity NOTE;
+	genreport : for i in 0 to PORTS - 1 generate
+		assert FALSE report "port:    " & INTEGER'image(i)																										severity NOTE;
+		assert FALSE report "  Init. SATA Generation: Gen " & INTEGER'image(INITIAL_SATA_GENERATIONS(i) + 1)	severity NOTE;
 	end generate;
 
 -- ==================================================================
 -- assert statements
 -- ==================================================================
-	assert ((C_DEVICE_INFO.VENDOR = VENDOR_ALTERA) or
-					(C_DEVICE_INFO.VENDOR = VENDOR_XILINX)) 
+	assert ((C_DEVICE_INFO.Vendor = VENDOR_ALTERA) or
+					(C_DEVICE_INFO.Vendor = VENDOR_XILINX)) 
 		report "Vendor not yet supported."
 		severity FAILURE;
 		
-	assert ((C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_ZYNQ) or
-					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_KINTEX) or
-					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_VIRTEX) or 
-					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_STRATIX))
+	assert ((C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_ZYNQ) or
+					(C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_KINTEX) or
+					(C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_VIRTEX) or 
+					(C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_STRATIX))
 		report "Device family not yet supported."
 		severity FAILURE;
 		
-	assert ((C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX5) or
-					(C_DEVICE_INFO.DEVICE = DEVICE_ZYNQ7) or
-					(C_DEVICE_INFO.DEVICE = DEVICE_KINTEX7) or
-					(C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX7) or
-					(C_DEVICE_INFO.DEVICE = DEVICE_STRATIX2) or
-					(C_DEVICE_INFO.DEVICE = DEVICE_STRATIX4))
+	assert ((C_DEVICE_INFO.Device = DEVICE_VIRTEX5) or
+					(C_DEVICE_INFO.Device = DEVICE_ZYNQ7) or
+					(C_DEVICE_INFO.Device = DEVICE_KINTEX7) or
+					(C_DEVICE_INFO.Device = DEVICE_VIRTEX7) or
+					(C_DEVICE_INFO.Device = DEVICE_STRATIX2) or
+					(C_DEVICE_INFO.Device = DEVICE_STRATIX4))
 		report "Device not yet supported."
 		severity FAILURE;
 		
-	assert ((C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTP_DUAL) or
-					(C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2) or
-					(C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB))
+	assert ((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTP_DUAL) or
+					(C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTXE2) or
+					(C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GXB))
 		report "Transceiver not yet supported."
 		severity FAILURE;
 		
-	assert (((C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTP_DUAL)	and (portS <= 2)) or
-					((C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE1)		and (portS <= 4)) or
-					((C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2)		and (portS <= 4)) or
-					((C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB)			and (portS <= 2)))
+	assert (((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTP_DUAL)	and (PORTS <= 2)) or
+					((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTXE1)		and (PORTS <= 4)) or
+					((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTXE2)		and (PORTS <= 4)) or
+					((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GXB)			and (PORTS <= 2)))
 		report "To many ports per transceiver."
 		severity FAILURE;
 
@@ -203,8 +203,8 @@ begin
 -- transeiver instances
 -- ==================================================================
 	
-	genXilinx : if (C_DEVICE_INFO.VENDOR = VENDOR_XILINX) generate
-		genGPT_DUAL : if (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTP_DUAL) generate
+	genXilinx : if (C_DEVICE_INFO.Vendor = VENDOR_XILINX) generate
+		genGPT_DUAL : if (C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTP_DUAL) generate
 			Trans : sata_Transceiver_Virtex5_GTP
 				generic map (
 					DEBUG											=> DEBUG,
@@ -254,7 +254,7 @@ begin
 					VSS_Private_Out						=> VSS_Private_Out
 					);
 		end generate;	-- Xilinx.Virtex5.GTP_DUAL
-		genGTXE1 : if (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE1) generate
+		genGTXE1 : if (C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTXE1) generate
 			Trans : sata_Transceiver_Virtex6_GTXE1
 				generic map (
 					DEBUG											=> DEBUG,
@@ -304,7 +304,7 @@ begin
 					VSS_Private_Out						=> VSS_Private_Out
 				);
 		end generate;	-- Xilinx.Virtex6.GTXE1
-		genGTXE2 : if (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2) generate
+		genGTXE2 : if (C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTXE2) generate
 			Trans : sata_Transceiver_Series7_GTXE2
 				generic map (
 					DEBUG											=> DEBUG,
@@ -358,8 +358,8 @@ begin
 				);
 		end generate;	-- Xilinx.Series7.GTXE2
 	end generate;		-- Xilinx.*
-	genAltera : if (C_DEVICE_INFO.VENDOR = VENDOR_ALTERA) generate
-		genS2GX_GXB : if ((C_DEVICE_INFO.DEVICE = DEVICE_STRATIX2) and (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB)) generate
+	genAltera : if (C_DEVICE_INFO.Vendor = VENDOR_ALTERA) generate
+		genS2GX_GXB : if ((C_DEVICE_INFO.Device = DEVICE_STRATIX2) and (C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GXB)) generate
 			Trans : sata_Transceiver_Stratix2GX_GXB
 				generic map (
 					CLOCK_IN_FREQ							=> REFCLOCK_FREQ,
@@ -408,7 +408,7 @@ begin
 					VSS_Private_Out						=> VSS_Private_Out
 				);
 		end generate;	-- Altera.Stratix2.GXB
-		genS4GX_GXB : if ((C_DEVICE_INFO.DEVICE = DEVICE_STRATIX4) and (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB)) generate
+		genS4GX_GXB : if ((C_DEVICE_INFO.Device = DEVICE_STRATIX4) and (C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GXB)) generate
 			Trans : sata_Transceiver_Stratix4GX_GXB
 				generic map (
 					CLOCK_IN_FREQ							=> REFCLOCK_FREQ,
@@ -515,11 +515,11 @@ begin
 		end function;
 
 		constant dummy : T_BOOLVEC := (
-			0 => dbg_ExportEncoding("Transceiver Layer - Command Enum",				dbg_generateCommandEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Transceiver_Command.tok"),
-			1 => dbg_ExportEncoding("Transceiver Layer - Status Enum",				dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Transceiver_Status.tok"),
-			2 => dbg_ExportEncoding("Transceiver Layer - Common Error Enum",	dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Transceiver_Error_Common.tok"),
-			3 => dbg_ExportEncoding("Transceiver Layer - TX Error Enum",			dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Transceiver_Error_TX.tok"),
-			4 => dbg_ExportEncoding("Transceiver Layer - RX Error Enum",			dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Transceiver_Error_RX.tok")
+			0 => dbg_ExportEncoding("Transceiver Layer - Command Enum",				dbg_generateCommandEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Command.tok"),
+			1 => dbg_ExportEncoding("Transceiver Layer - Status Enum",				dbg_generateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Status.tok"),
+			2 => dbg_ExportEncoding("Transceiver Layer - Common Error Enum",	dbg_generateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Error_Common.tok"),
+			3 => dbg_ExportEncoding("Transceiver Layer - TX Error Enum",			dbg_generateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Error_TX.tok"),
+			4 => dbg_ExportEncoding("Transceiver Layer - RX Error Enum",			dbg_generateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Error_RX.tok")
 		);
 	begin
 	end generate;

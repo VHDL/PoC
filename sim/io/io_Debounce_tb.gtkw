@@ -1,0 +1,25 @@
+[*]
+[*] GTKWave Analyzer v3.3.69 (w)1999-2016 BSI
+[*] Wed Feb 10 12:54:56 2016
+[*]
+[dumpfile] "H:\Austausch\PoC\temp\ghdl\io_Debounce_tb.ghw"
+[dumpfile_mtime] "Wed Feb 10 12:53:30 2016"
+[dumpfile_size] 4110
+[savefile] "H:\Austausch\PoC\sim\io\io_Debounce_tb.gtkw"
+[timestart] 0
+[size] 1680 997
+[pos] -35 -35
+*-27.524799 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[sst_width] 197
+[signals_width] 126
+[sst_expanded] 1
+[sst_vpaned_height] 293
+@28
+top.io_debounce_tb.clock
+top.io_debounce_tb.rawinput
+top.io_debounce_tb.deb_out
+@29
+top.io_debounce_tb.eventcounter
+[pattern_trace] 1
+[pattern_trace] 0

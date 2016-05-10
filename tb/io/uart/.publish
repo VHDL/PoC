@@ -1,6 +1,8 @@
 # git files
-.gitignore
 .gitempty
+
+# Documentation
+README.md
 
 # Transmitter / Receiver
 #uart_tx_tb.*

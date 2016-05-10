@@ -1,3 +1,5 @@
+# git files
+.gitempty
 
 # Documentation
 README.md
@@ -6,14 +8,21 @@ README.md
 stream.pkg.vhdl
 
 # common PoC.Stream dataflow modules
+stream_Buffer.files
 stream_Buffer.vhdl
+stream_DeMux.files
 stream_DeMux.vhdl
+stream_Mux.files
 stream_Mux.vhdl
+stream_Mirror.files
 stream_Mirror.vhdl
 
 # data sources
+stream_FrameGenerator.files
 stream_FrameGenerator.vhdl
 
 # simulation only modules
+stream_Source.files
 stream_Source.vhdl
+#stream_Sink.files
 #stream_Sink.vhdl

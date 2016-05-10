@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -29,89 +29,63 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
 
 
-ENTITY IPv4_TX IS
-	GENERIC (
-		DEBUG									: BOOLEAN													:= FALSE
+entity ipv4_TX is
+	generic (
+		DEBUG														: BOOLEAN							:= FALSE
 	);
-	PORT (
-		Clock														: IN	STD_LOGIC;																	-- 
-		Reset														: IN	STD_LOGIC;																	-- 
+	port (
+		Clock														: in	STD_LOGIC;									-- 
+		Reset														: in	STD_LOGIC;									-- 
 		-- IN port
-		In_Valid												: IN	STD_LOGIC;
-		In_Data													: IN	T_SLV_8;
-		In_SOF													: IN	STD_LOGIC;
-		In_EOF													: IN	STD_LOGIC;
-		In_Ack													: OUT	STD_LOGIC;
-		In_Meta_rst											: OUT	STD_LOGIC;
-		In_Meta_SrcIPv4Address_nxt			: OUT	STD_LOGIC;
-		In_Meta_SrcIPv4Address_Data			: IN	T_SLV_8;
-		In_Meta_DestIPv4Address_nxt			: OUT	STD_LOGIC;
-		In_Meta_DestIPv4Address_Data		: IN	T_SLV_8;
-		In_Meta_Length									: IN	T_SLV_16;
-		In_Meta_Protocol								: IN	T_SLV_8;
+		In_Valid												: in	STD_LOGIC;
+		In_Data													: in	T_SLV_8;
+		In_SOF													: in	STD_LOGIC;
+		In_EOF													: in	STD_LOGIC;
+		In_Ack													: out	STD_LOGIC;
+		In_Meta_rst											: out	STD_LOGIC;
+		In_Meta_SrcIPv4Address_nxt			: out	STD_LOGIC;
+		In_Meta_SrcIPv4Address_Data			: in	T_SLV_8;
+		In_Meta_DestIPv4Address_nxt			: out	STD_LOGIC;
+		In_Meta_DestIPv4Address_Data		: in	T_SLV_8;
+		In_Meta_Length									: in	T_SLV_16;
+		In_Meta_Protocol								: in	T_SLV_8;
 		-- ARP port
-		ARP_IPCache_Query								: OUT	STD_LOGIC;
-		ARP_IPCache_IPv4Address_rst			: IN	STD_LOGIC;
-		ARP_IPCache_IPv4Address_nxt			: IN	STD_LOGIC;
-		ARP_IPCache_IPv4Address_Data		: OUT	T_SLV_8;
-		ARP_IPCache_Valid								: IN	STD_LOGIC;
-		ARP_IPCache_MACAddress_rst			: OUT	STD_LOGIC;
-		ARP_IPCache_MACAddress_nxt			: OUT	STD_LOGIC;
-		ARP_IPCache_MACAddress_Data			: IN	T_SLV_8;
+		ARP_IPCache_Query								: out	STD_LOGIC;
+		ARP_IPCache_IPv4Address_rst			: in	STD_LOGIC;
+		ARP_IPCache_IPv4Address_nxt			: in	STD_LOGIC;
+		ARP_IPCache_IPv4Address_Data		: out	T_SLV_8;
+		ARP_IPCache_Valid								: in	STD_LOGIC;
+		ARP_IPCache_MACAddress_rst			: out	STD_LOGIC;
+		ARP_IPCache_MACAddress_nxt			: out	STD_LOGIC;
+		ARP_IPCache_MACAddress_Data			: in	T_SLV_8;
 		-- OUT port
-		Out_Valid												: OUT	STD_LOGIC;
-		Out_Data												: OUT	T_SLV_8;
-		Out_SOF													: OUT	STD_LOGIC;
-		Out_EOF													: OUT	STD_LOGIC;
-		Out_Ack													: IN	STD_LOGIC;
-		Out_Meta_rst										: IN	STD_LOGIC;
-		Out_Meta_DestMACAddress_nxt			: IN	STD_LOGIC;
-		Out_Meta_DestMACAddress_Data		: OUT	T_SLV_8
+		Out_Valid												: out	STD_LOGIC;
+		Out_Data												: out	T_SLV_8;
+		Out_SOF													: out	STD_LOGIC;
+		Out_EOF													: out	STD_LOGIC;
+		Out_Ack													: in	STD_LOGIC;
+		Out_Meta_rst										: in	STD_LOGIC;
+		Out_Meta_DestMACAddress_nxt			: in	STD_LOGIC;
+		Out_Meta_DestMACAddress_Data		: out	T_SLV_8
 	);
-END;
+end entity;
 
--- Endianess: big-endian
--- Alignment: 4 byte
---
---								Byte 0													Byte 1														Byte 2													Byte 3
---	+----------------+---------------+--------------------------------+--------------------------------+--------------------------------+
---	| IPVers. (0x4)	 | IHL (0x5)		 | TypeOfService									| TotalLength																											|
---	+----------------+---------------+--------------------------------+-------+------------------------+--------------------------------+
---	| Identification																									|R DF MF| FragmentOffset																					|
---	+--------------------------------+--------------------------------+-------+------------------------+--------------------------------+
---	| TimeToLive										 | Protocol												| HeaderChecksum																									|
---	+--------------------------------+--------------------------------+--------------------------------+--------------------------------+
---	| SourceAddress																																																											|
---	+--------------------------------+--------------------------------+--------------------------------+--------------------------------+
---	| DestinationAddress																																																								|
---	+--------------------------------+--------------------------------+--------------------------------+--------------------------------+
---	| Options																																													 | Padding												|
---	+--------------------------------+--------------------------------+--------------------------------+--------------------------------+
---	| Payload																																																														|
---	~                                ~                                ~                                ~                                ~
---	|																																																																		|
---	~                                ~                                ~                                ~                                ~
---	|																																																																		|
---	~                                ~                                ~                                ~                                ~
---	|																																																																		|
---	+--------------------------------+--------------------------------+--------------------------------+--------------------------------+
 
-ARCHITECTURE rtl OF IPv4_TX IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
+architecture rtl of ipv4_TX is
+	attribute FSM_ENCODING						: STRING;
 	
-	TYPE T_STATE		IS (
+	type T_STATE is (
 		ST_IDLE,
 			ST_ARP_QUERY,									ST_ARP_QUERY_WAIT,
 			ST_CHECKSUM_IPV4_ADDRESSES,
@@ -130,51 +104,51 @@ ARCHITECTURE rtl OF IPv4_TX IS
 		ST_ERROR
 	);
 
-	SIGNAL State											: T_STATE											:= ST_IDLE;
-	SIGNAL NextState									: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	signal State											: T_STATE											:= ST_IDLE;
+	signal NextState									: T_STATE;
+	attribute FSM_ENCODING of State		: signal IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	SIGNAL In_Ack_i									: STD_LOGIC;
+	signal In_Ack_i										: STD_LOGIC;
 
-	SIGNAL UpperLayerPacketLength			: STD_LOGIC_VECTOR(15 DOWNTO 0);
+	signal UpperLayerPacketLength			: STD_LOGIC_VECTOR(15 downto 0);
 
-	SIGNAL InternetHeaderLength				: T_SLV_4;
-	SIGNAL TypeOfService							: T_NET_IPV4_TYPE_OF_SERVICE;
-	SIGNAL TotalLength								: T_SLV_16;
-	SIGNAL Identification							: T_SLV_16;
-	SIGNAL Flag_DontFragment					: STD_LOGIC;
-	SIGNAL Flag_MoreFragments					: STD_LOGIC;
-	SIGNAL FragmentOffset							: STD_LOGIC_VECTOR(12 DOWNTO 0);
-	SIGNAL TimeToLive									: T_SLV_8;
-	SIGNAL Protocol										: T_SLV_8;
-	SIGNAL HeaderChecksum							: T_SLV_16;
+	signal InternetHeaderLength				: T_SLV_4;
+	signal TypeOfService							: T_NET_IPV4_TYPE_OF_SERVICE;
+	signal TotalLength								: T_SLV_16;
+	signal Identification							: T_SLV_16;
+	signal Flag_DontFragment					: STD_LOGIC;
+	signal Flag_MoreFragments					: STD_LOGIC;
+	signal FragmentOffset							: STD_LOGIC_VECTOR(12 downto 0);
+	signal TimeToLive									: T_SLV_8;
+	signal Protocol										: T_SLV_8;
+	signal HeaderChecksum							: T_SLV_16;
 
-	SIGNAL IPv4SeqCounter_rst					: STD_LOGIC;
-	SIGNAL IPv4SeqCounter_en					: STD_LOGIC;
-	SIGNAL IPv4SeqCounter_us					: UNSIGNED(1 DOWNTO 0)				:= (OTHERS => '0');
+	signal IPv4SeqCounter_rst					: STD_LOGIC;
+	signal IPv4SeqCounter_en					: STD_LOGIC;
+	signal IPv4SeqCounter_us					: UNSIGNED(1 downto 0)				:= (others => '0');
 
-	SIGNAL Checksum_rst								: STD_LOGIC;
-	SIGNAL Checksum_en								: STD_LOGIC;
-	SIGNAL Checksum_Addend0_us				: UNSIGNED(T_SLV_8'range);
-	SIGNAL Checksum_Addend1_us				: UNSIGNED(T_SLV_8'range);
-	SIGNAL Checksum0_nxt0_us					: UNSIGNED(T_SLV_8'high + 1 DOWNTO 0);
-	SIGNAL Checksum0_nxt1_us					: UNSIGNED(T_SLV_8'high + 1 DOWNTO 0);
-	SIGNAL Checksum0_d_us							: UNSIGNED(T_SLV_8'high DOWNTO 0)												:= (OTHERS => '0');
-	SIGNAL Checksum0_cy								: UNSIGNED(T_SLV_2'range);
-	SIGNAL Checksum1_nxt_us						: UNSIGNED(T_SLV_8'range);
-	SIGNAL Checksum1_d_us							: UNSIGNED(T_SLV_8'range)																:= (OTHERS => '0');
-	SIGNAL Checksum0_cy0							: STD_LOGIC;
-	SIGNAL Checksum0_cy0_d						: STD_LOGIC																							:= '0';
-	SIGNAL Checksum0_cy1							: STD_LOGIC;
-	SIGNAL Checksum0_cy1_d						: STD_LOGIC																							:= '0';
+	signal Checksum_rst								: STD_LOGIC;
+	signal Checksum_en								: STD_LOGIC;
+	signal Checksum_Addend0_us				: UNSIGNED(T_SLV_8'range);
+	signal Checksum_Addend1_us				: UNSIGNED(T_SLV_8'range);
+	signal Checksum0_nxt0_us					: UNSIGNED(T_SLV_8'high + 1 downto 0);
+	signal Checksum0_nxt1_us					: UNSIGNED(T_SLV_8'high + 1 downto 0);
+	signal Checksum0_d_us							: UNSIGNED(T_SLV_8'high downto 0)												:= (others => '0');
+	signal Checksum0_cy								: UNSIGNED(T_SLV_2'range);
+	signal Checksum1_nxt_us						: UNSIGNED(T_SLV_8'range);
+	signal Checksum1_d_us							: UNSIGNED(T_SLV_8'range)																:= (others => '0');
+	signal Checksum0_cy0							: STD_LOGIC;
+	signal Checksum0_cy0_d						: STD_LOGIC																							:= '0';
+	signal Checksum0_cy1							: STD_LOGIC;
+	signal Checksum0_cy1_d						: STD_LOGIC																							:= '0';
 
-	SIGNAL Checksum_i									: T_SLV_16;
-	SIGNAL Checksum										: T_SLV_16;
-	SIGNAL Checksum_mux_rst						: STD_LOGIC;
-	SIGNAL Checksum_mux_set						: STD_LOGIC;
-	SIGNAL Checksum_mux_r							: STD_LOGIC																							:= '0';
+	signal Checksum_i									: T_SLV_16;
+	signal Checksum										: T_SLV_16;
+	signal Checksum_mux_rst						: STD_LOGIC;
+	signal Checksum_mux_set						: STD_LOGIC;
+	signal Checksum_mux_r							: STD_LOGIC																							:= '0';
 
-BEGIN
+begin
 
 	UpperLayerPacketLength	<= std_logic_vector(unsigned(In_Meta_Length) + 20);
 
@@ -184,22 +158,22 @@ BEGIN
 	Identification					<= x"0000";
 	Flag_DontFragment				<= '0';
 	Flag_MoreFragments			<= '0';
-	FragmentOffset					<= (OTHERS => '0');
+	FragmentOffset					<= (others => '0');
 	TimeToLive							<= x"40";											-- TTL = 64; see RFC 791
 	Protocol								<= In_Meta_Protocol;
 	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				State			<= ST_IDLE;
-			ELSE
+			else
 				State			<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State, In_Valid, In_SOF, In_EOF, In_Data,
+	process(State, In_Valid, In_SOF, In_EOF, In_Data,
 					In_Meta_Length,
 					Out_Ack, Out_Meta_rst, Out_Meta_DestMACAddress_nxt,
 					ARP_IPCache_Valid, ARP_IPCache_IPv4Address_rst, ARP_IPCache_IPv4Address_nxt, ARP_IPCache_MACAddress_Data,
@@ -207,13 +181,13 @@ BEGIN
 					InternetHeaderLength, UpperLayerPacketLength, TypeOfService, Flag_DontFragment, Flag_MoreFragments,
 					Identification, FragmentOffset, TimeToLive, Protocol,
 					IPv4SeqCounter_us, Checksum0_cy, Checksum)
-	BEGIN
+	begin
 		NextState													<= State;
 		
-		In_Ack_i												<= '0';
+		In_Ack_i													<= '0';
 		
 		Out_Valid													<= '0';
-		Out_Data													<= (OTHERS => '0');
+		Out_Data													<= (others => '0');
 		Out_SOF														<= '0';
 		Out_EOF														<= '0';
 
@@ -233,24 +207,24 @@ BEGIN
 
 		Checksum_rst											<= '0';
 		Checksum_en												<= '0';
-		Checksum_Addend0_us								<= (OTHERS => '0');
-		Checksum_Addend1_us								<= (OTHERS => '0');
+		Checksum_Addend0_us								<= (others => '0');
+		Checksum_Addend1_us								<= (others => '0');
 		Checksum_mux_rst									<= '0';
 		Checksum_mux_set									<= '0';
 
-		CASE State IS
-			WHEN ST_IDLE =>
+		case State is
+			when ST_IDLE =>
 				In_Meta_rst										<= ARP_IPCache_IPv4Address_rst;
 				In_Meta_DestIPv4Address_nxt		<= ARP_IPCache_IPv4Address_nxt;
 				
 				IPv4SeqCounter_rst						<= '1';
 				Checksum_rst									<= '1';
 				
-				IF ((In_Valid AND In_SOF) = '1') THEN
+				if ((In_Valid AND In_SOF) = '1') then
 					NextState										<= ST_ARP_QUERY;
-				END IF;
+				end if;
 			
-			WHEN ST_ARP_QUERY =>
+			when ST_ARP_QUERY =>
 				Out_Data											<= x"4" & InternetHeaderLength;
 				Out_SOF												<= '1';
 
@@ -259,21 +233,21 @@ BEGIN
 
 				ARP_IPCache_Query							<= '1';
 				
-				IF (ARP_IPCache_Valid = '1') THEN
+				if (ARP_IPCache_Valid = '1') then
 					Out_Valid										<= '1';
 					In_Meta_rst									<= '1';		-- reset metadata
 					
---					IF (Out_Ack	 = '1') THEN
+--					if (Out_Ack	 = '1') then
 --						NextState									<= ST_SEND_TYPE_OF_SERVICE;
---					ELSE
+--					else
 --						NextState									<= ST_SEND_VERSION;
---					END IF;
+--					end if;
 					NextState										<= ST_CHECKSUM_IPV4_ADDRESSES;
-				ELSE
+				else
 					NextState										<= ST_ARP_QUERY_WAIT;
-				END IF;
+				end if;
 			
-			WHEN ST_ARP_QUERY_WAIT =>
+			when ST_ARP_QUERY_WAIT =>
 				Out_Valid											<= '0';
 				Out_Data											<= x"4" & InternetHeaderLength;
 				Out_SOF												<= '1';
@@ -281,21 +255,21 @@ BEGIN
 				In_Meta_rst										<= ARP_IPCache_IPv4Address_rst;
 				In_Meta_DestIPv4Address_nxt		<= ARP_IPCache_IPv4Address_nxt;
 			
-				IF (ARP_IPCache_Valid = '1') THEN
+				if (ARP_IPCache_Valid = '1') then
 					Out_Valid										<= '1';
 					In_Meta_rst									<= '1';		-- reset metadata
 					
---					IF (Out_Ack	 = '1') THEN
+--					if (Out_Ack	 = '1') then
 --						NextState									<= ST_SEND_TYPE_OF_SERVICE;
---					ELSE
+--					else
 --						NextState									<= ST_SEND_VERSION;
---					END IF;
+--					end if;
 					NextState										<= ST_CHECKSUM_IPV4_ADDRESSES;
-				END IF;
+				end if;
 			
 			-- calculate checksum for IPv4 header
 			-- ----------------------------------------------------------------------
-			WHEN ST_CHECKSUM_IPV4_ADDRESSES =>
+			when ST_CHECKSUM_IPV4_ADDRESSES =>
 				In_Meta_SrcIPv4Address_nxt		<= '1';
 				In_Meta_DestIPv4Address_nxt		<= '1';
 				
@@ -304,243 +278,241 @@ BEGIN
 				Checksum_Addend0_us						<= unsigned(In_Meta_SrcIPv4Address_Data);
 				Checksum_Addend1_us						<= unsigned(In_Meta_DestIPv4Address_Data);
 				
-				IF (IPv4SeqCounter_us = 3) THEN
+				if (IPv4SeqCounter_us = 3) then
 					NextState										<= ST_CHECKSUM_IPVERSION_LENGTH_0;
-				END IF;
+				end if;
 			
-			WHEN ST_CHECKSUM_IPVERSION_LENGTH_0 =>
+			when ST_CHECKSUM_IPVERSION_LENGTH_0 =>
 				Checksum_en										<= '1';
-				Checksum_Addend0_us						<= unsigned(UpperLayerPacketLength(15 DOWNTO 8));
+				Checksum_Addend0_us						<= unsigned(UpperLayerPacketLength(15 downto 8));
 				Checksum_Addend1_us						<= unsigned(std_logic_vector'(x"4" & InternetHeaderLength));
 				
 				NextState											<= ST_CHECKSUM_TYPE_OF_SERVICE_LENGTH_1;
 
-			WHEN ST_CHECKSUM_TYPE_OF_SERVICE_LENGTH_1 =>
-				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(UpperLayerPacketLength(7 DOWNTO 0));
-				Checksum_Addend1_us				<= unsigned(to_slv(TypeOfService));
+			when ST_CHECKSUM_TYPE_OF_SERVICE_LENGTH_1 =>
+				Checksum_en										<= '1';
+				Checksum_Addend0_us						<= unsigned(UpperLayerPacketLength(7 downto 0));
+				Checksum_Addend1_us						<= unsigned(to_slv(TypeOfService));
 			
-				NextState									<= ST_CHECKSUM_IDENTIFICAION_FRAGMENTOFFSET_0;
+				NextState											<= ST_CHECKSUM_IDENTIFICAION_FRAGMENTOFFSET_0;
 
-			WHEN ST_CHECKSUM_IDENTIFICAION_FRAGMENTOFFSET_0 =>
-				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(Identification(15 DOWNTO 8));
-				Checksum_Addend1_us				<= unsigned(std_logic_vector'('0' & Flag_DontFragment & Flag_MoreFragments & FragmentOffset(12 DOWNTO 8)));
+			when ST_CHECKSUM_IDENTIFICAION_FRAGMENTOFFSET_0 =>
+				Checksum_en										<= '1';
+				Checksum_Addend0_us						<= unsigned(Identification(15 downto 8));
+				Checksum_Addend1_us						<= unsigned(std_logic_vector'('0' & Flag_DontFragment & Flag_MoreFragments & FragmentOffset(12 downto 8)));
 			
-				NextState									<= ST_CHECKSUM_IDENTIFICAION_FRAGMENTOFFSET_1;
+				NextState											<= ST_CHECKSUM_IDENTIFICAION_FRAGMENTOFFSET_1;
 
-			WHEN ST_CHECKSUM_IDENTIFICAION_FRAGMENTOFFSET_1 =>
-				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(Identification(7 DOWNTO 0));
-				Checksum_Addend1_us				<= unsigned(FragmentOffset(7 DOWNTO 0));
+			when ST_CHECKSUM_IDENTIFICAION_FRAGMENTOFFSET_1 =>
+				Checksum_en										<= '1';
+				Checksum_Addend0_us						<= unsigned(Identification(7 downto 0));
+				Checksum_Addend1_us						<= unsigned(FragmentOffset(7 downto 0));
 				
-				NextState									<= ST_CHECKSUM_TIME_TO_LIVE;
+				NextState											<= ST_CHECKSUM_TIME_TO_LIVE;
 			
-			WHEN ST_CHECKSUM_TIME_TO_LIVE =>
-				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(TimeToLive);
-				Checksum_Addend1_us				<= (OTHERS => '0');	--unsigned(In_Meta_Checksum(15 DOWNTO 8));
+			when ST_CHECKSUM_TIME_TO_LIVE =>
+				Checksum_en										<= '1';
+				Checksum_Addend0_us						<= unsigned(TimeToLive);
+				Checksum_Addend1_us						<= (others => '0');	--unsigned(In_Meta_Checksum(15 downto 8));
 				
-				NextState									<= ST_CHECKSUM_PROTOCOL;
+				NextState											<= ST_CHECKSUM_PROTOCOL;
 
-			WHEN ST_CHECKSUM_PROTOCOL =>
-				Checksum_en								<= '1';
-				Checksum_Addend0_us				<= unsigned(Protocol);
-				Checksum_Addend1_us				<= (OTHERS => '0');	--unsigned(In_Meta_Checksum(7 DOWNTO 0));
+			when ST_CHECKSUM_PROTOCOL =>
+				Checksum_en										<= '1';
+				Checksum_Addend0_us						<= unsigned(Protocol);
+				Checksum_Addend1_us						<= (others => '0');	--unsigned(In_Meta_Checksum(7 downto 0));
 			
-				IF (Checksum0_cy = "00") THEN
-					NextState								<= ST_SEND_VERSION;
-				ELSE
-					NextState								<= ST_CARRY_0;
-				END IF;
+				if (Checksum0_cy = "00") then
+					NextState										<= ST_SEND_VERSION;
+				else
+					NextState										<= ST_CARRY_0;
+				end if;
 				
 			-- circulate carry bit
 			-- ----------------------------------------------------------------------
-			WHEN ST_CARRY_0 =>
-				In_Meta_rst								<= Out_Meta_rst;
+			when ST_CARRY_0 =>
+				In_Meta_rst										<= Out_Meta_rst;
 				
-				Checksum_en								<= '1';
-				Checksum_mux_set					<= '1';
+				Checksum_en										<= '1';
+				Checksum_mux_set							<= '1';
 				
-				IF (Checksum0_cy = "00") THEN
-					NextState								<= ST_SEND_VERSION;
-				ELSE
-					NextState								<= ST_CARRY_1;
-				END IF;
+				if (Checksum0_cy = "00") then
+					NextState										<= ST_SEND_VERSION;
+				else
+					NextState										<= ST_CARRY_1;
+				end if;
 			
-			WHEN ST_CARRY_1 =>
-				In_Meta_rst								<= Out_Meta_rst;
+			when ST_CARRY_1 =>
+				In_Meta_rst										<= Out_Meta_rst;
 			
-				Checksum_en								<= '1';
-				Checksum_mux_rst					<= '1';
+				Checksum_en										<= '1';
+				Checksum_mux_rst							<= '1';
 				
-				NextState									<= ST_SEND_VERSION;
+				NextState											<= ST_SEND_VERSION;
 				
 			-- assamble header
 			-- ----------------------------------------------------------------------
-			WHEN ST_SEND_VERSION =>
+			when ST_SEND_VERSION =>
 				Out_Valid											<= '1';
 				Out_Data											<= x"4" & InternetHeaderLength;
 				Out_SOF												<= '1';
 
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState										<= ST_SEND_TYPE_OF_SERVICE;
-				END IF;
+				end if;
 			
-			WHEN ST_SEND_TYPE_OF_SERVICE =>
+			when ST_SEND_TYPE_OF_SERVICE =>
 				Out_Valid											<= '1';
 				Out_Data											<= to_slv(TypeOfService);
 				
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState										<= ST_SEND_TOTAL_LENGTH_0;
-				END IF;
+				end if;
 
-			WHEN ST_SEND_TOTAL_LENGTH_0 =>
+			when ST_SEND_TOTAL_LENGTH_0 =>
 				Out_Valid											<= '1';
-				Out_Data											<= std_logic_vector(TotalLength(15 DOWNTO 8));
+				Out_Data											<= std_logic_vector(TotalLength(15 downto 8));
 				
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState										<= ST_SEND_TOTAL_LENGTH_1;
-				END IF;
+				end if;
 				
-			WHEN ST_SEND_TOTAL_LENGTH_1 =>
+			when ST_SEND_TOTAL_LENGTH_1 =>
 				Out_Valid											<= '1';
-				Out_Data											<= std_logic_vector(TotalLength(7 DOWNTO 0));
+				Out_Data											<= std_logic_vector(TotalLength(7 downto 0));
 				
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState										<= ST_SEND_IDENTIFICATION_0;
-				END IF;
+				end if;
 				
-			WHEN ST_SEND_IDENTIFICATION_0 =>
+			when ST_SEND_IDENTIFICATION_0 =>
 				Out_Valid											<= '1';
-				Out_Data											<= Identification(15 DOWNTO 8);
+				Out_Data											<= Identification(15 downto 8);
 				
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState										<= ST_SEND_IDENTIFICATION_1;
-				END IF;
+				end if;
 				
-			WHEN ST_SEND_IDENTIFICATION_1 =>
+			when ST_SEND_IDENTIFICATION_1 =>
 				Out_Valid											<= '1';
-				Out_Data											<= Identification(7 DOWNTO 0);
+				Out_Data											<= Identification(7 downto 0);
 				
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState										<= ST_SEND_FLAGS;
-				END IF;
+				end if;
 				
-			WHEN ST_SEND_FLAGS =>
+			when ST_SEND_FLAGS =>
 				Out_Valid											<= '1';
 				Out_Data(7)										<= '0';
 				Out_Data(6)										<= Flag_DontFragment;
 				Out_Data(5)										<= Flag_MoreFragments;
-				Out_Data(4 DOWNTO 0)					<= FragmentOffset(12 DOWNTO 8);
+				Out_Data(4 downto 0)					<= FragmentOffset(12 downto 8);
 				
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState										<= ST_SEND_FRAGMENT_OFFSET;
-				END IF;
+				end if;
 			
-			WHEN ST_SEND_FRAGMENT_OFFSET =>
+			when ST_SEND_FRAGMENT_OFFSET =>
 				Out_Valid											<= '1';
-				Out_Data											<= FragmentOffset(7 DOWNTO 0);
+				Out_Data											<= FragmentOffset(7 downto 0);
 				
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState										<= ST_SEND_TIME_TO_LIVE;
-				END IF;
+				end if;
 				
-			WHEN ST_SEND_TIME_TO_LIVE =>
+			when ST_SEND_TIME_TO_LIVE =>
 				Out_Valid											<= '1';
 				Out_Data											<= TimeToLive;
 				
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState										<= ST_SEND_PROTOCOL;
-				END IF;
+				end if;
 				
-			WHEN ST_SEND_PROTOCOL =>
+			when ST_SEND_PROTOCOL =>
 				Out_Valid											<= '1';
 				Out_Data											<= Protocol;
 				
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState										<= ST_SEND_HEADER_CHECKSUM_0;
-				END IF;
+				end if;
 				
-			WHEN ST_SEND_HEADER_CHECKSUM_0 =>
+			when ST_SEND_HEADER_CHECKSUM_0 =>
 				Out_Valid											<= '1';
-				Out_Data											<= Checksum(15 DOWNTO 8);
+				Out_Data											<= Checksum(15 downto 8);
 				
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState										<= ST_SEND_HEADER_CHECKSUM_1;
-				END IF;
+				end if;
 
-			WHEN ST_SEND_HEADER_CHECKSUM_1 =>
+			when ST_SEND_HEADER_CHECKSUM_1 =>
 				Out_Valid											<= '1';
-				Out_Data											<= Checksum(7 DOWNTO 0);
+				Out_Data											<= Checksum(7 downto 0);
 				
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					NextState										<= ST_SEND_SOURCE_ADDRESS;
-				END IF;
+				end if;
 			
-			WHEN ST_SEND_SOURCE_ADDRESS =>
+			when ST_SEND_SOURCE_ADDRESS =>
 				Out_Valid											<= '1';
 				Out_Data											<= In_Meta_SrcIPv4Address_Data;
 				
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					In_Meta_SrcIPv4Address_nxt	<= '1';
 					IPv4SeqCounter_en						<= '1';
 				
-					IF (IPv4SeqCounter_us = 3) THEN
+					if (IPv4SeqCounter_us = 3) then
 						NextState									<= ST_SEND_DESTINATION_ADDRESS;
-					END IF;
-				END IF;
+					end if;
+				end if;
 			
-			WHEN ST_SEND_DESTINATION_ADDRESS =>
+			when ST_SEND_DESTINATION_ADDRESS =>
 				Out_Valid											<= '1';
 				Out_Data											<= In_Meta_DestIPv4Address_Data;
 				
-				IF (Out_Ack	 = '1') THEN
+				if (Out_Ack	 = '1') then
 					In_Meta_DestIPv4Address_nxt	<= '1';
 					IPv4SeqCounter_en						<= '1';
 				
-					IF (IPv4SeqCounter_us = 3) THEN
+					if (IPv4SeqCounter_us = 3) then
 						NextState									<= ST_SEND_DATA;
-					END IF;
-				END IF;
+					end if;
+				end if;
 			
-			WHEN ST_SEND_DATA =>
-				Out_Valid												<= In_Valid;
-				Out_Data												<= In_Data;
-				Out_EOF													<= In_EOF;
+			when ST_SEND_DATA =>
+				Out_Valid											<= In_Valid;
+				Out_Data											<= In_Data;
+				Out_EOF												<= In_EOF;
 				In_Ack_i											<= Out_Ack;
 				
-				IF ((In_EOF AND Out_Ack) = '1') THEN
-					In_Meta_rst										<= '1';
-					NextState											<= ST_IDLE;
-				END IF;
+				if ((In_EOF AND Out_Ack) = '1') then
+					In_Meta_rst									<= '1';
+					NextState										<= ST_IDLE;
+				end if;
 			
-			WHEN ST_DISCARD_FRAME =>
-				NULL;
+			when ST_DISCARD_FRAME =>
+				null;
 			
-			WHEN ST_ERROR =>
-				NULL;
+			when ST_ERROR =>
+				null;
 				
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR IPv4SeqCounter_rst) = '1') THEN
-				IPv4SeqCounter_us			<= (OTHERS => '0');
-			ELSE
-				IF (IPv4SeqCounter_en = '1') THEN
-					IPv4SeqCounter_us		<= IPv4SeqCounter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset OR IPv4SeqCounter_rst) = '1') then
+				IPv4SeqCounter_us		<= (others => '0');
+			elsif (IPv4SeqCounter_en = '1') then
+				IPv4SeqCounter_us		<= IPv4SeqCounter_us + 1;
+			end if;
+		end if;
+	end process;
 
 Checksum0_nxt0_us		<= ("0" & Checksum1_d_us)
 													+ ("0" & Checksum_Addend0_us)
 													+ ((Checksum_Addend0_us'range => '0') & Checksum0_cy0_d);
-	Checksum0_nxt1_us		<= ("0" & Checksum0_nxt0_us(Checksum0_nxt0_us'high - 1 DOWNTO 0))
+	Checksum0_nxt1_us		<= ("0" & Checksum0_nxt0_us(Checksum0_nxt0_us'high - 1 downto 0))
 													+ ("0" & Checksum_Addend1_us)
 													+ ((Checksum_Addend1_us'range => '0') & Checksum0_cy1_d);
 	Checksum1_nxt_us		<= Checksum0_d_us(Checksum1_d_us'range);
@@ -550,37 +522,36 @@ Checksum0_nxt0_us		<= ("0" & Checksum1_d_us)
 	Checksum0_cy				<= Checksum0_cy1 & Checksum0_cy0;
 
 					
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Checksum_rst = '1') THEN
-				Checksum0_d_us			<= (OTHERS => '0');
-				Checksum1_d_us			<= (OTHERS => '0');
-			ELSE
-				IF (Checksum_en = '1') THEN
-					Checksum0_d_us		<= Checksum0_nxt1_us(Checksum0_nxt1_us'high - 1 DOWNTO 0);
-					Checksum1_d_us		<= Checksum1_nxt_us;
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Checksum_rst = '1') then
+				Checksum0_d_us		<= (others => '0');
+				Checksum1_d_us		<= (others => '0');
+			elsif (Checksum_en = '1') then
+				Checksum0_d_us		<= Checksum0_nxt1_us(Checksum0_nxt1_us'high - 1 downto 0);
+				Checksum1_d_us		<= Checksum1_nxt_us;
 					
-					Checksum0_cy0_d		<= Checksum0_cy0;
-					Checksum0_cy1_d		<= Checksum0_cy1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				Checksum0_cy0_d		<= Checksum0_cy0;
+				Checksum0_cy1_d		<= Checksum0_cy1;
+			end if;
+		end if;
+	end process;
 
-	Checksum_i		<= not (std_logic_vector(Checksum0_nxt1_us(Checksum0_nxt1_us'high - 1 DOWNTO 0)) & std_logic_vector(Checksum1_nxt_us));
+	Checksum_i		<= not (std_logic_vector(Checksum0_nxt1_us(Checksum0_nxt1_us'high - 1 downto 0)) & std_logic_vector(Checksum1_nxt_us));
 	Checksum			<= ite((Checksum_mux_r = '0'), Checksum_i, swap(Checksum_i, 8));
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR Checksum_mux_rst) = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset OR Checksum_mux_rst) = '1') then
 				Checksum_mux_r		<= '0';
-			ELSIF (Checksum_mux_set = '1') THEN
+			elsif (Checksum_mux_set = '1') then
 				Checksum_mux_r		<= '1';
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
 	In_Ack													<= In_Ack_i;
-END;
+	
+end architecture;

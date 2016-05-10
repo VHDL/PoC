@@ -8,7 +8,7 @@
 -- Description:  Testbench for arith_scaler.
 --
 -------------------------------------------------------------------------------
--- Copyright 2007-2015 Technische Universität Dresden - Germany
+-- Copyright 2007-2016 Technische Universität Dresden - Germany
 --                     Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,6 +30,10 @@ use			IEEE.numeric_std.all;
 
 library	PoC;
 use			PoC.utils.all;
+-- simulation only packages
+use			PoC.sim_types.all;
+use			PoC.simulation.all;
+use			PoC.waveform.all;
 
 
 entity arith_scaler_tb is
@@ -55,6 +59,9 @@ architecture tb of arith_scaler_tb is
   signal res   : std_logic_vector(7 downto 0);
 
 begin
+	-- initialize global simulation status
+	simInitialize;
+	
   -- component instantiation
   DUT: entity PoC.arith_scaler
     generic map (
@@ -81,6 +88,7 @@ begin
       wait for 5 ns;
     end cycle;
 		
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Checker");
   begin
     cycle;
     rst <= '1';
@@ -105,19 +113,17 @@ begin
             cycle;
           end loop;
 
-          assert (res = to_slv(((ARGS(k)*MULS(i)+DIVS(j)/2)/DIVS(j)) mod 2**res'length, res'length))
-            report
-              "Computation error: "&
-              integer'image(ARGS(k))&'*'&integer'image(MULS(i))&'/'&integer'image(DIVS(j))&
-              " -> "&integer'image(to_integer(unsigned(res)))
-            severity error;
+					simAssertion(res = to_slv(((ARGS(k)*MULS(i)+DIVS(j)/2)/DIVS(j)) mod 2**res'length, res'length),
+											 "Computation error: "&
+											 integer'image(ARGS(k))&'*'&integer'image(MULS(i))&'/'&integer'image(DIVS(j))&
+											 " -> "&integer'image(to_integer(unsigned(res))));
         end loop;
       end loop;
     end loop;
 
-    report "Test complete.";
-    wait;
-
+    -- This process is finished
+		simDeactivateProcess(simProcessID);
+		wait;  -- forever
   end process;
 
-end;
+end architecture;

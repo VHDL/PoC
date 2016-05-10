@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
 -- 
+-- Module:				 	TODO
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -29,59 +29,58 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
 
 
-ENTITY MAC_RX_SrcMAC_Filter IS
-	GENERIC (
+entity mac_RX_SrcMAC_Filter is
+	generic (
 		DEBUG													: BOOLEAN													:= FALSE;
 		MAC_ADDRESSES									: T_NET_MAC_ADDRESS_VECTOR				:= (0 => C_NET_MAC_ADDRESS_EMPTY);
 		MAC_ADDRESSE_MASKS						: T_NET_MAC_ADDRESS_VECTOR				:= (0 => C_NET_MAC_MASK_DEFAULT)
 	);
-	PORT (
-		Clock													: IN	STD_LOGIC;
-		Reset													: IN	STD_LOGIC;
+	port (
+		Clock													: in	STD_LOGIC;
+		Reset													: in	STD_LOGIC;
 		
-		In_Valid											: IN	STD_LOGIC;
-		In_Data												: IN	T_SLV_8;
-		In_SOF												: IN	STD_LOGIC;
-		In_EOF												: IN	STD_LOGIC;
-		In_Ack												: OUT	STD_LOGIC;
-		In_Meta_rst										: OUT	STD_LOGIC;
-		In_Meta_DestMACAddress_nxt		: OUT	STD_LOGIC;
-		In_Meta_DestMACAddress_Data		: IN	T_SLV_8;
+		In_Valid											: in	STD_LOGIC;
+		In_Data												: in	T_SLV_8;
+		In_SOF												: in	STD_LOGIC;
+		In_EOF												: in	STD_LOGIC;
+		In_Ack												: out	STD_LOGIC;
+		In_Meta_rst										: out	STD_LOGIC;
+		In_Meta_DestMACAddress_nxt		: out	STD_LOGIC;
+		In_Meta_DestMACAddress_Data		: in	T_SLV_8;
 
-		Out_Valid											: OUT	STD_LOGIC;
-		Out_Data											: OUT	T_SLV_8;
-		Out_SOF												: OUT	STD_LOGIC;
-		Out_EOF												: OUT	STD_LOGIC;
-		Out_Ack												: IN	STD_LOGIC;
-		Out_Meta_rst									: IN	STD_LOGIC;
-		Out_Meta_DestMACAddress_nxt		: IN	STD_LOGIC;
-		Out_Meta_DestMACAddress_Data	: OUT	T_SLV_8;
-		Out_Meta_SrcMACAddress_nxt		: IN	STD_LOGIC;
-		Out_Meta_SrcMACAddress_Data		: OUT	T_SLV_8
+		Out_Valid											: out	STD_LOGIC;
+		Out_Data											: out	T_SLV_8;
+		Out_SOF												: out	STD_LOGIC;
+		Out_EOF												: out	STD_LOGIC;
+		Out_Ack												: in	STD_LOGIC;
+		Out_Meta_rst									: in	STD_LOGIC;
+		Out_Meta_DestMACAddress_nxt		: in	STD_LOGIC;
+		Out_Meta_DestMACAddress_Data	: out	T_SLV_8;
+		Out_Meta_SrcMACAddress_nxt		: in	STD_LOGIC;
+		Out_Meta_SrcMACAddress_Data		: out	T_SLV_8
 	);
-END;
+end entity;
 
 
-ARCHITECTURE rtl OF MAC_RX_SrcMAC_Filter IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
+architecture rtl of mac_RX_SrcMAC_Filter is
+	attribute FSM_ENCODING					: STRING;
 
-	CONSTANT PATTERN_COUNT						: POSITIVE																					:= MAC_ADDRESSES'length;
-	CONSTANT MAC_ADDRESSES_I					: T_NET_MAC_ADDRESS_VECTOR(0 TO PATTERN_COUNT - 1)	:= MAC_ADDRESSES;
-	CONSTANT MAC_ADDRESSE_MASKS_I			: T_NET_MAC_ADDRESS_VECTOR(0 TO PATTERN_COUNT - 1)	:= MAC_ADDRESSE_MASKS;
+	constant PATTERN_COUNT					: POSITIVE																					:= MAC_ADDRESSES'length;
+	constant MAC_ADDRESSES_I				: T_NET_MAC_ADDRESS_VECTOR(0 to PATTERN_COUNT - 1)	:= MAC_ADDRESSES;
+	constant MAC_ADDRESSE_MASKS_I		: T_NET_MAC_ADDRESS_VECTOR(0 to PATTERN_COUNT - 1)	:= MAC_ADDRESSE_MASKS;
 
-	TYPE T_STATE		IS (
+	type T_STATE is (
 		ST_IDLE,
 			ST_SRC_MAC_1,
 			ST_SRC_MAC_2,
@@ -93,70 +92,70 @@ ARCHITECTURE rtl OF MAC_RX_SrcMAC_Filter IS
 		ST_DISCARD_FRAME
 	);
 	
-	SUBTYPE T_MAC_BYTEINDEX	 IS NATURAL RANGE 0 TO 5;
+	subtype T_MAC_BYTEINDEX	 is NATURAL range 0 to 5;
 	
-	SIGNAL State												: T_STATE																	:= ST_IDLE;
-	SIGNAL NextState										: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State			: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	signal State												: T_STATE																	:= ST_IDLE;
+	signal NextState										: T_STATE;
+	attribute FSM_ENCODING of State			: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	SIGNAL In_Ack_i										: STD_LOGIC;
-	SIGNAL Is_DataFlow									: STD_LOGIC;
-	SIGNAL Is_SOF												: STD_LOGIC;
-	SIGNAL Is_EOF												: STD_LOGIC;
+	signal In_Ack_i											: STD_LOGIC;
+	signal Is_DataFlow									: STD_LOGIC;
+	signal Is_SOF												: STD_LOGIC;
+	signal Is_EOF												: STD_LOGIC;
 				
-	SIGNAL New_Valid_i									: STD_LOGIC;
-	SIGNAL New_SOF_i										: STD_LOGIC;
-	SIGNAL Out_Ack_i									: STD_LOGIC;
+	signal New_Valid_i									: STD_LOGIC;
+	signal New_SOF_i										: STD_LOGIC;
+	signal Out_Ack_i										: STD_LOGIC;
 				
-	SIGNAL MAC_ByteIndex								: T_MAC_BYTEINDEX;
+	signal MAC_ByteIndex								: T_MAC_BYTEINDEX;
 	
-	SIGNAL CompareRegister_rst					: STD_LOGIC;
-	SIGNAL CompareRegister_init					: STD_LOGIC;
-	SIGNAL CompareRegister_clear				: STD_LOGIC;
-	SIGNAL CompareRegister_en						: STD_LOGIC;
-	SIGNAL CompareRegister_d						: STD_LOGIC_VECTOR(PATTERN_COUNT - 1 DOWNTO 0)		:= (OTHERS => '1');
-	SIGNAL NoHits												: STD_LOGIC;
+	signal CompareRegister_rst					: STD_LOGIC;
+	signal CompareRegister_init					: STD_LOGIC;
+	signal CompareRegister_clear				: STD_LOGIC;
+	signal CompareRegister_en						: STD_LOGIC;
+	signal CompareRegister_d						: STD_LOGIC_VECTOR(PATTERN_COUNT - 1 downto 0)		:= (others => '1');
+	signal NoHits												: STD_LOGIC;
 	
-	SIGNAL SourceMACAddress_rst					: STD_LOGIC;
-	SIGNAL SourceMACAddress_en					: STD_LOGIC;
-	SIGNAL SourceMACAddress_sel					: T_MAC_BYTEINDEX;
-	SIGNAL SourceMACAddress_d						: T_NET_MAC_ADDRESS																:= C_NET_MAC_ADDRESS_EMPTY;
+	signal SourceMACAddress_rst					: STD_LOGIC;
+	signal SourceMACAddress_en					: STD_LOGIC;
+	signal SourceMACAddress_sel					: T_MAC_BYTEINDEX;
+	signal SourceMACAddress_d						: T_NET_MAC_ADDRESS																:= C_NET_MAC_ADDRESS_EMPTY;
 	
-	CONSTANT MAC_ADDRESS_LENGTH					: POSITIVE																				:= 6;			-- MAC -> 6 bytes
-	CONSTANT READER_COUNTER_BITS				: POSITIVE																				:= log2ceilnz(MAC_ADDRESS_LENGTH);
+	constant MAC_ADDRESS_LENGTH					: POSITIVE																				:= 6;			-- MAC -> 6 bytes
+	constant READER_COUNTER_BITS				: POSITIVE																				:= log2ceilnz(MAC_ADDRESS_LENGTH);
 
-	SIGNAL Reader_Counter_rst						: STD_LOGIC;
-	SIGNAL Reader_Counter_en						: STD_LOGIC;
-	SIGNAL Reader_Counter_us						: UNSIGNED(READER_COUNTER_BITS - 1 DOWNTO 0)			:= (OTHERS => '0');
+	signal Reader_Counter_rst						: STD_LOGIC;
+	signal Reader_Counter_en						: STD_LOGIC;
+	signal Reader_Counter_us						: UNSIGNED(READER_COUNTER_BITS - 1 downto 0)			:= (others => '0');
 
-	SIGNAL Out_Meta_rst_i								: STD_LOGIC;
-	SIGNAL Out_Meta_SrcMACAddress_nxt_i	: STD_LOGIC;
+	signal Out_Meta_rst_i								: STD_LOGIC;
+	signal Out_Meta_SrcMACAddress_nxt_i	: STD_LOGIC;
 	
-BEGIN
-	ASSERT FALSE REPORT "RX_SrcMAC_Filter:  patterns=" & INTEGER'image(PATTERN_COUNT)			SEVERITY NOTE;
+begin
+	assert FALSE report "RX_SrcMAC_Filter:  patterns=" & INTEGER'image(PATTERN_COUNT)			severity NOTE;
 
 	In_Ack				<= In_Ack_i;
-	Is_DataFlow		<= In_Valid AND In_Ack_i;
-	Is_SOF				<= In_Valid AND In_SOF;
-	Is_EOF				<= In_Valid AND In_EOF;
+	Is_DataFlow		<= In_Valid and In_Ack_i;
+	Is_SOF				<= In_Valid and In_SOF;
+	Is_EOF				<= In_Valid and In_EOF;
 
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				State		<= ST_IDLE;
-			ELSE
+			else
 				State		<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State, Is_DataFlow, Is_SOF, Is_EOF, In_Valid, NoHits, Out_Ack_i)
-	BEGIN
+	process(State, Is_DataFlow, Is_SOF, Is_EOF, In_Valid, NoHits, Out_Ack_i)
+	begin
 		NextState										<= State;
 
-		In_Ack_i									<= '0';
+		In_Ack_i										<= '0';
 		
 		New_Valid_i									<= '0';
 		New_SOF_i										<= '0';
@@ -171,197 +170,191 @@ BEGIN
 		
 		MAC_ByteIndex								<= 0;
 
-		CASE State IS
-			WHEN ST_IDLE =>
+		case State is
+			when ST_IDLE =>
 				MAC_ByteIndex						<= 5;
 			
-				IF (Is_SOF = '1') THEN
-					In_Ack_i						<= '1';
+				if (Is_SOF = '1') then
+					In_Ack_i							<= '1';
 				
-					IF (Is_EOF = '0') THEN
+					if (Is_EOF = '0') then
 						NextState						<= ST_SRC_MAC_1;
-					ELSE
+					else
 						NextState						<= ST_IDLE;
-					END IF;
-				END IF;
+					end if;
+				end if;
 			
-			WHEN ST_SRC_MAC_1 =>
+			when ST_SRC_MAC_1 =>
 				MAC_ByteIndex						<= 4;
 				CompareRegister_en			<= In_Valid;
 				SourceMACAddress_en			<= In_Valid;
 			
-				IF (In_Valid = '1') THEN
-					In_Ack_i						<= '1';
+				if (In_Valid = '1') then
+					In_Ack_i							<= '1';
 				
-					IF (Is_EOF = '0') THEN
+					if (Is_EOF = '0') then
 						NextState						<= ST_SRC_MAC_2;
-					ELSE
+					else
 						NextState						<= ST_IDLE;
-					END IF;
-				END IF;
+					end if;
+				end if;
 			
-			WHEN ST_SRC_MAC_2 =>
+			when ST_SRC_MAC_2 =>
 				MAC_ByteIndex						<= 3;
 				CompareRegister_en			<= In_Valid;
 				SourceMACAddress_en			<= In_Valid;
 			
-				IF (In_Valid = '1') THEN
-					In_Ack_i						<= '1';
+				if (In_Valid = '1') then
+					In_Ack_i							<= '1';
 					
-					IF (Is_EOF = '0') THEN
+					if (Is_EOF = '0') then
 						NextState						<= ST_SRC_MAC_3;
-					ELSE
+					else
 						NextState						<= ST_IDLE;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_SRC_MAC_3 =>
+			when ST_SRC_MAC_3 =>
 				MAC_ByteIndex						<= 2;
 				CompareRegister_en			<= In_Valid;
 				SourceMACAddress_en			<= In_Valid;
 			
-				IF (In_Valid = '1') THEN
-					In_Ack_i						<= '1';
+				if (In_Valid = '1') then
+					In_Ack_i							<= '1';
 					
-					IF (Is_EOF = '0') THEN
+					if (Is_EOF = '0') then
 						NextState						<= ST_SRC_MAC_4;
-					ELSE
+					else
 						NextState						<= ST_IDLE;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_SRC_MAC_4 =>
+			when ST_SRC_MAC_4 =>
 				MAC_ByteIndex						<= 1;
 				CompareRegister_en			<= In_Valid;
 				SourceMACAddress_en			<= In_Valid;
 				
-				IF (In_Valid = '1') THEN
-					In_Ack_i						<= '1';
+				if (In_Valid = '1') then
+					In_Ack_i							<= '1';
 					
-					IF (Is_EOF = '0') THEN
+					if (Is_EOF = '0') then
 						NextState						<= ST_SRC_MAC_5;
-					ELSE
+					else
 						NextState						<= ST_IDLE;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_SRC_MAC_5 =>
+			when ST_SRC_MAC_5 =>
 				MAC_ByteIndex						<= 0;
 				CompareRegister_en			<= In_Valid;
 				SourceMACAddress_en			<= In_Valid;
 				
-				IF (In_Valid = '1') THEN
-					In_Ack_i						<= '1';
+				if (In_Valid = '1') then
+					In_Ack_i							<= '1';
 					
-					IF (Is_EOF = '0') THEN
-						NextState											<= ST_PAYLOAD_1;
-					ELSE
-						NextState											<= ST_IDLE;
-					END IF;
-				END IF;
-
-			WHEN ST_PAYLOAD_1 =>
-				IF (NoHits = '1') THEN
-					IF (Is_EOF = '0') THEN
-						In_Ack_i					<= '1';
-						NextState						<= ST_DISCARD_FRAME;
-					ELSE
+					if (Is_EOF = '0') then
+						NextState						<= ST_PAYLOAD_1;
+					else
 						NextState						<= ST_IDLE;
-					END IF;
-				ELSE
-					In_Ack_i						<= Out_Ack_i;
+					end if;
+				end if;
+
+			when ST_PAYLOAD_1 =>
+				if (NoHits = '1') then
+					if (Is_EOF = '0') then
+						In_Ack_i						<= '1';
+						NextState						<= ST_DISCARD_FRAME;
+					else
+						NextState						<= ST_IDLE;
+					end if;
+				else
+					In_Ack_i							<= Out_Ack_i;
 					New_Valid_i						<= In_Valid;
 					New_SOF_i							<= '1';
 				
-					IF (IS_DataFlow = '1') THEN
-						IF (Is_EOF = '0') THEN
+					if (Is_DataFlow = '1') then
+						if (Is_EOF = '0') then
 							NextState					<= ST_PAYLOAD_N;
-						ELSE
+						else
 							NextState					<= ST_IDLE;
-						END IF;
-					END IF;
-				END IF;
+						end if;
+					end if;
+				end if;
 				
-			WHEN ST_PAYLOAD_N =>
-				In_Ack_i							<= Out_Ack_i;
+			when ST_PAYLOAD_N =>
+				In_Ack_i								<= Out_Ack_i;
 				New_Valid_i							<= In_Valid;
 			
-				IF ((IS_DataFlow AND Is_EOF) = '1') THEN
+				if ((Is_DataFlow and Is_EOF) = '1') then
 					NextState							<= ST_IDLE;
-				END IF;
+				end if;
 				
-			WHEN ST_DISCARD_FRAME =>
-				In_Ack_i							<= '1';
+			when ST_DISCARD_FRAME =>
+				In_Ack_i								<= '1';
 			
-				IF ((IS_DataFlow AND Is_EOF) = '1') THEN
+				if ((Is_DataFlow and Is_EOF) = '1') then
 					NextState							<= ST_IDLE;
-				END IF;
+				end if;
 				
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
 	
-	gen0 : FOR I IN 0 TO PATTERN_COUNT - 1 GENERATE
-		SIGNAL Hit								: STD_LOGIC;
-	BEGIN
-		Hit <= to_sl((In_Data AND MAC_ADDRESSE_MASKS_I(I)(MAC_ByteIndex)) = (MAC_ADDRESSES_I(I)(MAC_ByteIndex) AND MAC_ADDRESSE_MASKS_I(I)(MAC_ByteIndex)));
+	gen0 : for i in 0 to PATTERN_COUNT - 1 generate
+		signal Hit								: STD_LOGIC;
+	begin
+		Hit <= to_sl((In_Data and MAC_ADDRESSE_MASKS_I(i)(MAC_ByteIndex)) = (MAC_ADDRESSES_I(i)(MAC_ByteIndex) and MAC_ADDRESSE_MASKS_I(i)(MAC_ByteIndex)));
 		
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF ((Reset OR CompareRegister_rst) = '1') THEN
-					CompareRegister_d(I)				<= '0';
-				ELSE
-					IF (CompareRegister_init	= '1') THEN
-						CompareRegister_d(I)			<= Hit;
-					ELSIF (CompareRegister_clear	= '1') THEN
-						CompareRegister_d(I)			<= '0';
-					ELSIF (CompareRegister_en  = '1') THEN
-						CompareRegister_d(I)			<= CompareRegister_d(I) AND Hit;
-					END IF;
-				END IF;
-			END IF;
-		END PROCESS;
-	END GENERATE;
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if ((Reset OR CompareRegister_rst) = '1') then
+					CompareRegister_d(i)			<= '0';
+				elsif (CompareRegister_init	= '1') then
+					CompareRegister_d(i)			<= Hit;
+				elsif (CompareRegister_clear	= '1') then
+					CompareRegister_d(i)			<= '0';
+				elsif (CompareRegister_en  = '1') then
+					CompareRegister_d(i)			<= CompareRegister_d(i) and Hit;
+				end if;
+			end if;
+		end process;
+	end generate;
 
 	NoHits										<= slv_nor(CompareRegister_d);
 
 	SourceMACAddress_sel			<= MAC_ByteIndex;
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR SourceMACAddress_rst) = '1') THEN
-				SourceMACAddress_d	<= C_NET_MAC_ADDRESS_EMPTY;
-			ELSE
-				IF (SourceMACAddress_en = '1') THEN
-					SourceMACAddress_d(SourceMACAddress_sel) <= In_Data;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset OR SourceMACAddress_rst) = '1') then
+				SourceMACAddress_d												<= C_NET_MAC_ADDRESS_EMPTY;
+			elsif (SourceMACAddress_en = '1') then
+				SourceMACAddress_d(SourceMACAddress_sel)	<= In_Data;
+			end if;
+		end if;
+	end process;
 	
 	Reader_Counter_rst	<= Out_Meta_rst_i;
 	Reader_Counter_en		<= Out_Meta_SrcMACAddress_nxt_i;
 	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR Reader_Counter_rst) = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset OR Reader_Counter_rst) = '1') then
 				Reader_Counter_us				<= to_unsigned(T_MAC_BYTEINDEX'high, Reader_Counter_us'length);
-			ELSE
-				IF (Reader_Counter_en = '1') THEN
-					Reader_Counter_us			<= Reader_Counter_us - 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+			elsif (Reader_Counter_en = '1') then
+				Reader_Counter_us				<= Reader_Counter_us - 1;
+			end if;
+		end if;
+	end process;
 
 	Out_Valid											<= New_Valid_i;
 	Out_Data											<= In_Data;
 	Out_SOF												<= New_SOF_i;
 	Out_EOF												<= In_EOF;
-	Out_Ack_i										<= Out_Ack;
+	Out_Ack_i											<= Out_Ack;
 
 	-- Meta: rst
 	Out_Meta_rst_i								<= Out_Meta_rst;
@@ -375,4 +368,4 @@ BEGIN
 	Out_Meta_SrcMACAddress_nxt_i	<= Out_Meta_SrcMACAddress_nxt;
 	Out_Meta_SrcMACAddress_Data		<= SourceMACAddress_d(to_index(Reader_Counter_us, SourceMACAddress_d'high));
 
-END ARCHITECTURE;
+end architecture;

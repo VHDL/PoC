@@ -1,18 +1,29 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+FILES.md
+RULES.md
+
 # Wrappers
 Wrapper.ps1
 wrapper.sh
 
 # Executables
-Configuration.py
-Netlist.py
-Testbench.py
-#PostProcessor.py
+PoC.py
 
 # Configuration files
-config.public.ini
+config.boards.ini
+config.defaults.ini
+config.entity.ini
+# DON'T PUBLISH config.private.ini !!!
+config.structure.ini
+
+# Package
+__init__.py
 
 # Packages
-__init__.py
 lib/
 Base/
 PoC/
@@ -20,3 +31,8 @@ Compiler/
 Generator/
 Processor/
 Simulator/
+Parser/
+ToolChains/
+
+# PyCharm project files
+.idea/

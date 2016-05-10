@@ -1,6 +1,6 @@
 # Namespace `PoC.io.ddrio`
 
-The namespace PoC.io.ddrio offers components for dual-data-rate (DDR) input
+The namespace `PoC.io.ddrio` offers components for dual-data-rate (DDR) input
 and output of data. It uses the DDR flip flops in the FPGA
 I/O buffers, if available. PoC has two platform specific
 implementations for Altera and Xilinx, which are chosen, if the
@@ -9,12 +9,7 @@ appropriate `MY_DEVICE` is configured in [`my_config.vhdl`][my_config].
 
 ## Package(s)
 
-The package [`ddrio`][ddrio.pkg] holds all component declarations for this namespace.
-
-```VHDL
-library PoC;
-use     PoC.ddrio.all;
-```
+The package [`PoC.ddrio`][ddrio.pkg] holds all component declarations for this namespace.
 
 
 ## Entities
@@ -68,14 +63,14 @@ See the ASCII art inside the [VHDL description][ddrio_inout] for more
 details on how data to is sampled and driven at the pad.
 
 
- [my_config]:			../../common/my_config.vhdl.template
- [ddrio.pkg]:			ddrio.pkg.vhdl
- [ddrio_in]:			ddrio_in.vhdl
- [ddrio_in_altera]:		ddrio_in_altera.vhdl
- [ddrio_in_xilinx]:		ddrio_in_xilinx.vhdl
- [ddrio_inout]:			ddrio_inout.vhdl
- [ddrio_inout_altera]:		ddrio_inout_altera.vhdl
- [ddrio_inout_xilinx]:		ddrio_inout_xilinx.vhdl
- [ddrio_out]:			ddrio_out.vhdl
+ [my_config]:						../../common/my_config.vhdl.template
+ [ddrio.pkg]:						ddrio.pkg.vhdl
+ [ddrio_in]:						ddrio_in.vhdl
+ [ddrio_in_altera]:			ddrio_in_altera.vhdl
+ [ddrio_in_xilinx]:			ddrio_in_xilinx.vhdl
+ [ddrio_inout]:					ddrio_inout.vhdl
+ [ddrio_inout_altera]:	ddrio_inout_altera.vhdl
+ [ddrio_inout_xilinx]:	ddrio_inout_xilinx.vhdl
+ [ddrio_out]:						ddrio_out.vhdl
  [ddrio_out_altera]:		ddrio_out_altera.vhdl
  [ddrio_out_xilinx]:		ddrio_out_xilinx.vhdl

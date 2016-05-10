@@ -108,9 +108,9 @@ entity sata_Transceiver_Series7_GTXE2 is
 		RX_Valid									: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		
 		-- vendor specific signals
-		VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_signalS;
-		VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_signalS_VECTOR(PORTS	- 1 downto 0);
-		VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_signalS_VECTOR(PORTS	- 1 downto 0)
+		VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
+		VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);
+		VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 	);
 end;
 
@@ -155,7 +155,7 @@ begin
 -- data path buffers
 --	==================================================================
 	genGTXE2 : for i in 0 to (PORTS	- 1) generate
-		constant CLOCK_DIVIDER_SELECTION		:	STD_LOGIC_VECTOR(2 downto 0)	:= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(I));
+		constant CLOCK_DIVIDER_SELECTION		:	STD_LOGIC_VECTOR(2 downto 0)	:= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(i));
 		
 		constant GTX_PCS_RSVD_ATTR					: BIT_VECTOR(47 downto 0)				:= (
 			3 =>			'0',							-- select alternative OOB circuit clock source; 0 => sysclk; 1 => CLKRSVD(0)
@@ -378,11 +378,11 @@ begin
 
 
 	begin
-		assert FALSE report "Port:    " & INTEGER'image(I)																											severity NOTE;
-		assert FALSE report "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS_I(I) + 1)	severity NOTE;
-		assert ((RP_SATAGeneration(I) = SATA_GENERATION_1) or
-						(RP_SATAGeneration(I) = SATA_GENERATION_2) or
-						(RP_SATAGeneration(I) = SATA_GENERATION_3))		report "Unsupported SATA generation."							severity FAILURE;
+		assert FALSE report "Port:    " & INTEGER'image(i)																											severity NOTE;
+		assert FALSE report "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATIONS_I(i) + 1)	severity NOTE;
+		assert ((RP_SATAGeneration(i) = SATA_GENERATION_1) or
+						(RP_SATAGeneration(i) = SATA_GENERATION_2) or
+						(RP_SATAGeneration(i) = SATA_GENERATION_3))		report "Unsupported SATA generation."							severity FAILURE;
 	
 		-- clock signals
 		GTX_QPLLRefClock							<= '0';
@@ -415,7 +415,7 @@ begin
 		ClkNet_Reset        	<= PowerDown(i) or ClockNetwork_Reset(i);
 		ClkNet_ResetDone 			<= not ClkNet_Reset;
 		
-		SATA_Clock(I)					<= SATA_Clock_i;
+		SATA_Clock(i)					<= SATA_Clock_i;
 
 		-- ======================================================================
 		-- Use generic module to generate SATA_Clock_Stable and ResetDone
@@ -430,8 +430,8 @@ begin
 				ResetDone					=> ResetDone_i,
 				SATA_Clock_Stable => SATA_Clock_Stable_i);
 
-		SATA_Clock_Stable(I) 	<= SATA_Clock_Stable_i;
-		ResetDone(I)					<= ResetDone_i;
+		SATA_Clock_Stable(i) 	<= SATA_Clock_Stable_i;
+		ResetDone(i)					<= ResetDone_i;
 
 		-- =========================================================================
 		-- Control FSM for Transceiver Status
@@ -604,7 +604,7 @@ begin
 		GTX_TX_PMAReset								<= '0';
 		GTX_TX_PCSReset								<= '0';
 		-- RX resets					
-		GTX_RX_Reset									<= GTX_Reset or OOB_HandshakeComplete(I);
+		GTX_RX_Reset									<= GTX_Reset or OOB_HandshakeComplete(i);
 		GTX_RX_PMAReset								<= '0';
 		GTX_RX_PCSReset								<= '0';
 		GTX_RX_BufferReset						<= '0';
@@ -622,31 +622,29 @@ begin
 		process(SATA_Clock_i)
 		begin
 			if rising_edge(SATA_Clock_i) then
-				if (Reset(I) = '1') then
-					GTX_TX_LineRateSelect			<= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(I));
-					GTX_RX_LineRateSelect			<= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(I));
-				else
-					if (RP_Reconfig(I)	= '1') then
-						GTX_TX_LineRateSelect		<= to_ClockDividerSelection(RP_SATAGeneration(I));
-						GTX_RX_LineRateSelect		<= to_ClockDividerSelection(RP_SATAGeneration(I));
-					end if;
+				if (Reset(i) = '1') then
+					GTX_TX_LineRateSelect			<= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(i));
+					GTX_RX_LineRateSelect			<= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(i));
+				elsif (RP_Reconfig(i)	= '1') then
+					GTX_TX_LineRateSelect		<= to_ClockDividerSelection(RP_SATAGeneration(i));
+					GTX_RX_LineRateSelect		<= to_ClockDividerSelection(RP_SATAGeneration(i));
 				end if;
 			end if;
 		end process;
 		
 		-- RS-FF															Q											rst															set																	clk
-		TX_RateChangeDone <= ffrs(q => TX_RateChangeDone, rst => RP_Reconfig(I), set => GTX_TX_LineRateSelectDone) when rising_edge(SATA_Clock_i);
-		RX_RateChangeDone <= ffrs(q => RX_RateChangeDone, rst => RP_Reconfig(I), set => GTX_RX_LineRateSelectDone) when rising_edge(SATA_Clock_i);
+		TX_RateChangeDone <= ffrs(q => TX_RateChangeDone, rst => RP_Reconfig(i), set => GTX_TX_LineRateSelectDone) when rising_edge(SATA_Clock_i);
+		RX_RateChangeDone <= ffrs(q => RX_RateChangeDone, rst => RP_Reconfig(i), set => GTX_RX_LineRateSelectDone) when rising_edge(SATA_Clock_i);
 		
 		RateChangeDone		<= TX_RateChangeDone and RX_RateChangeDone;
 		RateChangeDone_d	<= RateChangeDone when rising_edge(SATA_Clock_i);
 		RateChangeDone_re	<= not RateChangeDone_d and RateChangeDone;
 		
 		-- reconfiguration port
-		RP_Locked(I)						<= '0';																							-- all ports are independant	=> never set a lock
-		RP_Reconfig_d						<= RP_Reconfig(I) when rising_edge(SATA_Clock_i);	-- delay reconfiguration command
-		RP_ReconfigComplete(I)	<= RP_Reconfig_d;																		-- acknoledge reconfiguration with 1 cycle latency
-		RP_ConfigReloaded(I)		<= RateChangeDone_re;																-- acknoledge reload
+		RP_Locked(i)						<= '0';																							-- all ports are independant	=> never set a lock
+		RP_Reconfig_d						<= RP_Reconfig(i) when rising_edge(SATA_Clock_i);	-- delay reconfiguration command
+		RP_ReconfigComplete(i)	<= RP_Reconfig_d;																		-- acknoledge reconfiguration with 1 cycle latency
+		RP_ConfigReloaded(i)		<= RateChangeDone_re;																-- acknoledge reload
 
 		-- ==================================================================
 		-- DRP - dynamic reconfiguration port
@@ -655,17 +653,17 @@ begin
 --			GENERIC MAP (
 --				DEBUG											=> DEBUG,
 --				DRPCLOCK_FREQ							=> REFCLOCK_FREQ,
---				INITIAL_SATA_GENERATION		=> INITIAL_SATA_GENERATIONS(I)
+--				INITIAL_SATA_GENERATION		=> INITIAL_SATA_GENERATIONS(i)
 --			)
 --			PORT MAP (
 --				DRP_Clock									=> GTX_DRP_Clock,
 --				DRP_Reset									=> '0',														-- @DRP_Clock
 --				SATA_Clock								=> SATA_Clock_i,
 --		
---				Reconfig									=> RP_Reconfig(I),								-- @SATA_Clock
---				SATAGeneration						=> RP_SATAGeneration(I),					-- @SATA_Clock
---				ReconfigComplete					=> RP_ReconfigComplete(I),				-- @SATA_Clock
---				ConfigReloaded						=> RP_ConfigReloaded(I),					-- @SATA_Clock
+--				Reconfig									=> RP_Reconfig(i),								-- @SATA_Clock
+--				SATAGeneration						=> RP_SATAGeneration(i),					-- @SATA_Clock
+--				ReconfigComplete					=> RP_ReconfigComplete(i),				-- @SATA_Clock
+--				ConfigReloaded						=> RP_ConfigReloaded(i),					-- @SATA_Clock
 --		
 --				GTX_DRP_Enable						=> GTXConfig_Enable,							-- @DRP_Clock
 --				GTX_DRP_Address						=> GTXConfig_Address,							-- @DRP_Clock
@@ -731,13 +729,13 @@ begin
 		-- Data path / status / error detection
 		-- ==================================================================
 		-- TX path
-		GTX_TX_Data							<= TX_Data(I)			when rising_edge(SATA_Clock_i);
-		GTX_TX_CharIsK					<= TX_CharIsK(I)	when rising_edge(SATA_Clock_i);
+		GTX_TX_Data							<= TX_Data(i)			when rising_edge(SATA_Clock_i);
+		GTX_TX_CharIsK					<= TX_CharIsK(i)	when rising_edge(SATA_Clock_i);
 
 		-- RX path
-		RX_Data(I)							<= GTX_RX_Data		when rising_edge(SATA_Clock_i);
-		RX_CharIsK(I)						<= GTX_RX_CharIsK	when rising_edge(SATA_Clock_i);
-		RX_Valid(I)							<= '1'; -- do not use undocumented RXVALID output of transceiver
+		RX_Data(i)							<= GTX_RX_Data		when rising_edge(SATA_Clock_i);
+		RX_CharIsK(i)						<= GTX_RX_CharIsK	when rising_edge(SATA_Clock_i);
+		RX_Valid(i)							<= '1'; -- do not use undocumented RXVALID output of transceiver
 
 --		GTX_PhyStatus
 --		GTX_TX_BufferStatus
@@ -770,16 +768,16 @@ begin
 		--	==================================================================
 		-- OOB signaling
 		--	==================================================================
-		OOB_TX_Command_d						<= OOB_TX_Command(I) when DebugPortIn(I).ForceOOBCommand = SATA_OOB_NONE else DebugPortIn(I).ForceOOBCommand;	-- when rising_edge(GTX_ClockTX_2X(I));
+		OOB_TX_Command_d						<= OOB_TX_Command(i) when DebugPortIn(i).ForceOOBCommand = SATA_OOB_NONE else DebugPortIn(i).ForceOOBCommand;	-- when rising_edge(GTX_ClockTX_2X(i));
 
 		-- TX OOB signals (generate GTX specific OOB signals)
-		process(OOB_TX_Command_d, PowerDown(I), RP_SATAGeneration(I), GTX_TX_ComInit_r, GTX_TX_ComWake_r, GTX_TX_ComSAS_r, TX_ComFinish)
+		process(OOB_TX_Command_d, PowerDown(i), RP_SATAGeneration(i), GTX_TX_ComInit_r, GTX_TX_ComWake_r, GTX_TX_ComSAS_r)
 		begin
 			OOBTO_Load						<= '0';
 			OOBTO_Slot						<= 0;
 			OOBTO_en							<= GTX_TX_ComInit_r or GTX_TX_ComWake_r or GTX_TX_ComSAS_r;
 			
-			GTX_TX_ElectricalIDLE	<= PowerDown(I);
+			GTX_TX_ElectricalIDLE	<= PowerDown(i);
 			
 			GTX_TX_ComInit_set		<= '0';
 			GTX_TX_ComWake_set		<= '0';
@@ -792,7 +790,7 @@ begin
 				when SATA_OOB_COMRESET =>
 					GTX_TX_ComInit_set	<= '1';
 					OOBTO_Load					<= '1';
-					case RP_SATAGeneration(I) is
+					case RP_SATAGeneration(i) is
 						when SATA_GENERATION_1 =>		OOBTO_Slot	<= TTID_COMRESET_TIMEOUT_GEN1;
 						when SATA_GENERATION_2 =>		OOBTO_Slot	<= TTID_COMRESET_TIMEOUT_GEN2;
 						when SATA_GENERATION_3 =>		OOBTO_Slot	<= TTID_COMRESET_TIMEOUT_GEN3;
@@ -802,7 +800,7 @@ begin
 				when SATA_OOB_COMWAKE	=>
 					GTX_TX_ComWake_set	<= '1';
 					OOBTO_Load					<= '1';
-					case RP_SATAGeneration(I) is
+					case RP_SATAGeneration(i) is
 						when SATA_GENERATION_1 =>		OOBTO_Slot	<= TTID_COMWAKE_TIMEOUT_GEN1;
 						when SATA_GENERATION_2 =>		OOBTO_Slot	<= TTID_COMWAKE_TIMEOUT_GEN2;
 						when SATA_GENERATION_3 =>		OOBTO_Slot	<= TTID_COMWAKE_TIMEOUT_GEN3;
@@ -812,7 +810,7 @@ begin
 				when SATA_OOB_COMSAS =>
 					GTX_TX_ComSAS_set		<= '1';
 					OOBTO_Load					<= '1';
-					case RP_SATAGeneration(I) is
+					case RP_SATAGeneration(i) is
 						when SATA_GENERATION_1 =>		OOBTO_Slot	<= TTID_COMSAS_TIMEOUT_GEN1;
 						when SATA_GENERATION_2 =>		OOBTO_Slot	<= TTID_COMSAS_TIMEOUT_GEN2;
 						when SATA_GENERATION_3 =>		OOBTO_Slot	<= TTID_COMSAS_TIMEOUT_GEN3;
@@ -837,12 +835,12 @@ begin
 				Timeout				=> OOBTO_Timeout
 			);
 	
-		GTX_RX_ElectricalIDLE_Mode	<= ffdre(q => GTX_RX_ElectricalIDLE_Mode, d => "11", rst => to_sl(OOB_TX_Command_d /= SATA_OOB_NONE), en => OOB_HandshakeComplete(I)) when rising_edge(SATA_Clock_i);
+		GTX_RX_ElectricalIDLE_Mode	<= ffdre(q => GTX_RX_ElectricalIDLE_Mode, d => "11", rst => to_sl(OOB_TX_Command_d /= SATA_OOB_NONE), en => OOB_HandshakeComplete(i)) when rising_edge(SATA_Clock_i);
 	
 		-- TX OOB sequence is complete
 		OOBTO_Timeout_d			<= OOBTO_Timeout when rising_edge(SATA_Clock_i);
 		TX_ComFinish				<= NOT OOBTO_Timeout_d AND OOBTO_Timeout;		-- GTX_TX_ComFinish is not always generated -> replaced by a timer workaround
-		OOB_TX_Complete(I)	<= TX_ComFinish;
+		OOB_TX_Complete(i)	<= TX_ComFinish;
 	
 		-- hold registers; hold GTX_TX_Com* signal until sequence is complete
 		GTX_TX_ComInit_r	<= ffsr(q => GTX_TX_ComInit_r,	rst => TX_ComFinish, set => GTX_TX_ComInit_set)	when rising_edge(SATA_Clock_i);
@@ -869,7 +867,7 @@ begin
 			end if;
 		end process;
 
-		OOB_RX_Received(I)		<= OOB_RX_Received_i;
+		OOB_RX_Received(i)		<= OOB_RX_Received_i;
 
 		GTX_RX_CDR_Hold <= ffrs(q => GTX_RX_CDR_Hold, rst => OOB_AlignDetected(i), set => to_sl(OOB_TX_Command_d /= SATA_OOB_NONE)) when rising_edge(SATA_Clock_i);
 		
@@ -1462,10 +1460,10 @@ begin
 				GTXRXP													=> GTX_RX_p												-- @analog:			
 			);
 		
-		GTX_RX_n									<= VSS_Private_In(I).RX_n;
-		GTX_RX_p									<= VSS_Private_In(I).RX_p;
-		VSS_Private_Out(I).TX_n		<= GTX_TX_n;
-		VSS_Private_Out(I).TX_p		<= GTX_TX_p;
+		GTX_RX_n									<= VSS_Private_In(i).RX_n;
+		GTX_RX_p									<= VSS_Private_In(i).RX_p;
+		VSS_Private_Out(i).TX_n		<= GTX_TX_n;
+		VSS_Private_Out(i).TX_p		<= GTX_TX_p;
 		
 		genCSP0 : if (ENABLE_DEBUGPORT = FALSE) generate
 			GTX_DRP_Clock									<= '0';
@@ -1508,81 +1506,81 @@ begin
 			end function;
 
 			constant dummy : T_BOOLVEC := (
-				0 => dbg_ExportEncoding("Transceiver (7-Series, GTXE2)",		dbg_GenerateStateEncodings,		PROJECT_DIR & "ChipScope/TokenFiles/FSM_Transceiver_Series7_GTXE2.tok"),
-				1 => dbg_ExportEncoding("Transceiver Layer - Status Enum",	dbg_GenerateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Transceiver_Status.tok")
+				0 => dbg_ExportEncoding("Transceiver (7-Series, GTXE2)",		dbg_GenerateStateEncodings,		ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "FSM_Transceiver_Series7_GTXE2.tok"),
+				1 => dbg_ExportEncoding("Transceiver Layer - Status Enum",	dbg_GenerateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Status.tok")
 			);
 			
 		begin
-			GTX_DRP_Clock			<= DebugPortIn(I).DRP.Clock;
-			GTX_DRP_Enable		<= DebugPortIn(I).DRP.Enable;
-			GTX_DRP_ReadWrite	<= DebugPortIn(I).DRP.ReadWrite;
-			GTX_DRP_Address		<= DebugPortIn(I).DRP.Address;
-			GTX_DRP_DataIn		<= DebugPortIn(I).DRP.Data;
+			GTX_DRP_Clock			<= DebugPortIn(i).DRP.Clock;
+			GTX_DRP_Enable		<= DebugPortIn(i).DRP.Enable;
+			GTX_DRP_ReadWrite	<= DebugPortIn(i).DRP.ReadWrite;
+			GTX_DRP_Address		<= DebugPortIn(i).DRP.Address;
+			GTX_DRP_DataIn		<= DebugPortIn(i).DRP.Data;
 			
-			DebugPortOut(I).PowerDown									<= PowerDown(i);
-			DebugPortOut(I).ClockNetwork_Reset				<= ClockNetwork_Reset(i);
-			DebugPortOut(I).ClockNetwork_ResetDone		<= ClockNetwork_ResetDone_i;
-			DebugPortOut(I).Reset											<= Reset(i);
-			DebugPortOut(I).ResetDone									<= ResetDone_i;
+			DebugPortOut(i).PowerDown									<= PowerDown(i);
+			DebugPortOut(i).ClockNetwork_Reset				<= ClockNetwork_Reset(i);
+			DebugPortOut(i).ClockNetwork_ResetDone		<= ClockNetwork_ResetDone_i;
+			DebugPortOut(i).Reset											<= Reset(i);
+			DebugPortOut(i).ResetDone									<= ResetDone_i;
 			
-			DebugPortOut(I).UserClock									<= SATA_Clock_i;
-			DebugPortOut(I).UserClock_Stable					<= SATA_Clock_Stable_i;
+			DebugPortOut(i).UserClock									<= SATA_Clock_i;
+			DebugPortOut(i).UserClock_Stable					<= SATA_Clock_Stable_i;
 			
-			DebugPortOut(I).GTX_CPLL_PowerDown				<= GTX_CPLL_PowerDown;
-			DebugPortOut(I).GTX_TX_PowerDown					<= GTX_TX_PowerDown(0);
-			DebugPortOut(I).GTX_RX_PowerDown					<= GTX_RX_PowerDown(0);
+			DebugPortOut(i).GTX_CPLL_PowerDown				<= GTX_CPLL_PowerDown;
+			DebugPortOut(i).GTX_TX_PowerDown					<= GTX_TX_PowerDown(0);
+			DebugPortOut(i).GTX_RX_PowerDown					<= GTX_RX_PowerDown(0);
 			
-			DebugPortOut(I).GTX_CPLL_Reset						<= GTX_CPLL_Reset;
-			DebugPortOut(I).GTX_CPLL_Locked						<= GTX_CPLL_Locked_async;
+			DebugPortOut(i).GTX_CPLL_Reset						<= GTX_CPLL_Reset;
+			DebugPortOut(i).GTX_CPLL_Locked						<= GTX_CPLL_Locked_async;
 			
-			DebugPortOut(I).GTX_TX_Reset							<= GTX_TX_Reset;
-			DebugPortOut(I).GTX_RX_Reset							<= GTX_RX_Reset;
-			DebugPortOut(I).GTX_TX_ResetDone					<= GTX_TX_ResetDone;
-			DebugPortOut(I).GTX_RX_ResetDone					<= GTX_RX_ResetDone;
-			DebugPortOut(I).FSM												<= '0' & to_slv(State);
+			DebugPortOut(i).GTX_TX_Reset							<= GTX_TX_Reset;
+			DebugPortOut(i).GTX_RX_Reset							<= GTX_RX_Reset;
+			DebugPortOut(i).GTX_TX_ResetDone					<= GTX_TX_ResetDone;
+			DebugPortOut(i).GTX_RX_ResetDone					<= GTX_RX_ResetDone;
+			DebugPortOut(i).FSM												<= '0' & to_slv(State);
 			
-			DebugPortOut(I).OOB_Clock									<= '0';
-			DebugPortOut(I).RP_SATAGeneration					<= RP_SATAGeneration(I);
-			DebugPortOut(I).RP_Reconfig								<= RP_Reconfig(I);
-			DebugPortOut(I).RP_ReconfigComplete				<= RP_Reconfig_d;
-			DebugPortOut(I).RP_ConfigRealoaded				<= RateChangeDone_re;
-			DebugPortOut(I).DD_NoDevice								<= '0';
-			DebugPortOut(I).DD_NewDevice							<= '0';
-			DebugPortOut(I).TX_RateSelection					<= GTX_TX_LineRateSelect;
-			DebugPortOut(I).RX_RateSelection					<= GTX_RX_LineRateSelect;
-			DebugPortOut(I).TX_RateSelectionDone			<= GTX_TX_LineRateSelectDone;
-			DebugPortOut(I).RX_RateSelectionDone			<= GTX_RX_LineRateSelectDone;
-			DebugPortOut(I).RX_CDR_Locked							<= RX_CDR_Locked;
-			DebugPortOut(I).RX_CDR_Hold								<= GTX_RX_CDR_Hold;
+			DebugPortOut(i).OOB_Clock									<= '0';
+			DebugPortOut(i).RP_SATAGeneration					<= RP_SATAGeneration(i);
+			DebugPortOut(i).RP_Reconfig								<= RP_Reconfig(i);
+			DebugPortOut(i).RP_ReconfigComplete				<= RP_Reconfig_d;
+			DebugPortOut(i).RP_ConfigRealoaded				<= RateChangeDone_re;
+			DebugPortOut(i).DD_NoDevice								<= '0';
+			DebugPortOut(i).DD_NewDevice							<= '0';
+			DebugPortOut(i).TX_RateSelection					<= GTX_TX_LineRateSelect;
+			DebugPortOut(i).RX_RateSelection					<= GTX_RX_LineRateSelect;
+			DebugPortOut(i).TX_RateSelectionDone			<= GTX_TX_LineRateSelectDone;
+			DebugPortOut(i).RX_RateSelectionDone			<= GTX_RX_LineRateSelectDone;
+			DebugPortOut(i).RX_CDR_Locked							<= RX_CDR_Locked;
+			DebugPortOut(i).RX_CDR_Hold								<= GTX_RX_CDR_Hold;
 		
-			DebugPortOut(I).TX_Data										<= GTX_TX_Data;
-			DebugPortOut(I).TX_CharIsK								<= GTX_TX_CharIsK;
-			DebugPortOut(I).TX_BufferStatus						<= GTX_TX_BufferStatus;
-			DebugPortOut(I).TX_ComInit								<= GTX_TX_ComInit_set;
-			DebugPortOut(I).TX_ComWake								<= GTX_TX_ComWake_set;
-			DebugPortOut(I).TX_ComFinish							<= TX_ComFinish;
-			DebugPortOut(I).TX_ElectricalIDLE					<= GTX_TX_ElectricalIDLE;
+			DebugPortOut(i).TX_Data										<= GTX_TX_Data;
+			DebugPortOut(i).TX_CharIsK								<= GTX_TX_CharIsK;
+			DebugPortOut(i).TX_BufferStatus						<= GTX_TX_BufferStatus;
+			DebugPortOut(i).TX_ComInit								<= GTX_TX_ComInit_set;
+			DebugPortOut(i).TX_ComWake								<= GTX_TX_ComWake_set;
+			DebugPortOut(i).TX_ComFinish							<= TX_ComFinish;
+			DebugPortOut(i).TX_ElectricalIDLE					<= GTX_TX_ElectricalIDLE;
 
-			DebugPortOut(I).RX_Data										<= GTX_RX_Data;
-			DebugPortOut(I).RX_CharIsK								<= GTX_RX_CharIsK;
-			DebugPortOut(I).RX_CharIsComma						<= GTX_RX_CharIsComma;
-			DebugPortOut(I).RX_CommaDetected					<= GTX_RX_CommaDetected;
-			DebugPortOut(I).RX_DisparityError					<= GTX_RX_DisparityError;
-			DebugPortOut(I).RX_NotInTableError				<= GTX_RX_NotInTableError;
-			DebugPortOut(I).RX_ByteIsAligned					<= GTX_RX_ByteIsAligned;
-			DebugPortOut(I).RX_ElectricalIDLE					<= GTX_RX_ElectricalIDLE;
-			DebugPortOut(I).RX_ComInitDetected				<= GTX_RX_ComInitDetected;
-			DebugPortOut(I).RX_ComWakeDetected				<= GTX_RX_ComWakeDetected;
-			DebugPortOut(I).RX_Valid									<= '1';
-			DebugPortOut(I).RX_BufferStatus						<= GTX_RX_BufferStatus;
-			DebugPortOut(I).RX_ClockCorrectionStatus	<= GTX_RX_ClockCorrectionStatus;
+			DebugPortOut(i).RX_Data										<= GTX_RX_Data;
+			DebugPortOut(i).RX_CharIsK								<= GTX_RX_CharIsK;
+			DebugPortOut(i).RX_CharIsComma						<= GTX_RX_CharIsComma;
+			DebugPortOut(i).RX_CommaDetected					<= GTX_RX_CommaDetected;
+			DebugPortOut(i).RX_DisparityError					<= GTX_RX_DisparityError;
+			DebugPortOut(i).RX_NotInTableError				<= GTX_RX_NotInTableError;
+			DebugPortOut(i).RX_ByteIsAligned					<= GTX_RX_ByteIsAligned;
+			DebugPortOut(i).RX_ElectricalIDLE					<= GTX_RX_ElectricalIDLE;
+			DebugPortOut(i).RX_ComInitDetected				<= GTX_RX_ComInitDetected;
+			DebugPortOut(i).RX_ComWakeDetected				<= GTX_RX_ComWakeDetected;
+			DebugPortOut(i).RX_Valid									<= '1';
+			DebugPortOut(i).RX_BufferStatus						<= GTX_RX_BufferStatus;
+			DebugPortOut(i).RX_ClockCorrectionStatus	<= GTX_RX_ClockCorrectionStatus;
 			
-			DebugPortOut(I).DRP.Data									<= DRPMux_In_DataOut(1);
-			DebugPortOut(I).DRP.Ack										<= DRPMux_Ack(1);
+			DebugPortOut(i).DRP.Data									<= DRPMux_In_DataOut(1);
+			DebugPortOut(i).DRP.Ack										<= DRPMux_Ack(1);
 			
-			DebugPortOut(I).DigitalMonitor						<= GTX_DigitalMonitor;
-			GTX_RX_Monitor_sel												<= DebugPortIn(I).RX_Monitor_sel;
-			DebugPortOut(I).RX_Monitor_Data						<= '0' & GTX_RX_Monitor_Data;
+			DebugPortOut(i).DigitalMonitor						<= GTX_DigitalMonitor;
+			GTX_RX_Monitor_sel												<= DebugPortIn(i).RX_Monitor_sel;
+			DebugPortOut(i).RX_Monitor_Data						<= '0' & GTX_RX_Monitor_Data;
 		end generate;
 	end generate;
 end;

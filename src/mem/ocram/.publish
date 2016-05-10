@@ -1,5 +1,5 @@
 # git files
-.gitignore
+.gitempty
 
 # Documentation
 README.md
@@ -8,9 +8,13 @@ README.md
 ocram.pkg.vhdl
 
 # Generic RAM modules
+ocram_esdp.files
 ocram_esdp.vhdl
+ocram_sdp.files
 ocram_sdp.vhdl
+ocram_sp.files
 ocram_sp.vhdl
+ocram_tdp.files
 ocram_tdp.vhdl
 
 # Altera specific
@@ -18,4 +22,3 @@ altera/
 
 # Xilinx specific
 xilinx/
-

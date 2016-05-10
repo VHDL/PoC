@@ -38,14 +38,15 @@ USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.physical.ALL;
-USE			PoC.io.ALL;
+USE			PoC.io.ALL;				-- TODO: move MDIO types and constants to a MDIO package
+USE			PoC.iic.ALL;
 USE			PoC.net.ALL;
 
 
 ENTITY Eth_PHYController IS
 	GENERIC (
 		DEBUG											: BOOLEAN																	:= FALSE;																			-- 
-		CLOCK_FREQ								: FREQ																		:= 125 MHZ;																		-- 125 MHz
+		CLOCK_FREQ								: FREQ																		:= 125 MHz;																		-- 125 MHz
 		PCSCORE										: T_NET_ETH_PCSCORE												:= NET_ETH_PCSCORE_GENERIC_GMII;							-- 
 		PHY_DEVICE								: T_NET_ETH_PHY_DEVICE										:= NET_ETH_PHY_DEVICE_MARVEL_88E1111;					-- 
 		PHY_DEVICE_ADDRESS				: T_NET_ETH_PHY_DEVICE_ADDRESS						:= x"00";																			-- 
@@ -122,7 +123,7 @@ BEGIN
 	
 	genMDIOC0 : IF (PHY_MANAGEMENT_INTERFACE = NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO) GENERATE
 		-- Management Data Input/Output Controller
-		MDIOC : ENTITY PoC.Eth_MDIOController
+		MDIOC : ENTITY PoC.mdio_MDIOController
 			GENERIC MAP (
 				DEBUG											=> DEBUG,
 				CLOCK_FREQ								=> CLOCK_FREQ
@@ -154,7 +155,7 @@ BEGIN
 	genMDIOC1 : IF (PHY_MANAGEMENT_INTERFACE = NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO_OVER_IIC) GENERATE
 		SIGNAL Adapter_IICC_Request			: STD_LOGIC;
 		SIGNAL Adapter_IICC_Command			: T_IO_IIC_COMMAND;
-		SIGNAL Adapter_IICC_Address			: STD_LOGIC_VECTOR(6 DOWNTO 0);
+		SIGNAL Adapter_IICC_Address			: T_SLV_8;
 		SIGNAL Adapter_IICC_WP_Valid		: STD_LOGIC;
 		SIGNAL Adapter_IICC_WP_Data			: T_SLV_8;
 		SIGNAL Adapter_IICC_WP_Last			: STD_LOGIC;
@@ -169,7 +170,7 @@ BEGIN
 		SIGNAL IICC_RP_Last							: STD_LOGIC;
 		
 	BEGIN
-		Adapter : ENTITY PoC.mdio_MDIO_IIC_Adapter
+		Adapter : ENTITY PoC.mdio_IIC_Adapter
 			GENERIC MAP (
 				DEBUG											=> DEBUG
 			)
@@ -206,7 +207,7 @@ BEGIN
 				IICC_RP_Ack								=> Adapter_IICC_RP_Ack
 			);
 		
-		IICC : ENTITY PoC.iic_IICController
+		IICC : ENTITY PoC.iic_Controller
 			GENERIC MAP (
 				DEBUG											=> DEBUG,
 				ALLOW_MEALY_TRANSITION		=> FALSE,

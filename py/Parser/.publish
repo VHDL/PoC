@@ -1,0 +1,20 @@
+# git files
+.gitempty
+
+# Documentation files
+README.md
+
+# Package
+__init__.py
+
+# Code Document Object Model
+CodeDOM.py
+
+FilesCodeDOM.py
+FilesParser.py
+
+RulesCodeDOM.py
+RulesParser.py
+
+# VHDLCodeDOM.py
+# VHDLParser.py

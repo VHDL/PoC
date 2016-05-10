@@ -1,11 +1,12 @@
-# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:				 	Patrick Lehmann
+# Authors:          Patrick Lehmann
+#                   Martin Zabel
 # 
-# Python Class:			This PoCXCOCompiler compiles xco IPCores to netlists
+# Python Class:      This XCOCompiler compiles xco IPCores to netlists
 # 
 # Description:
 # ------------------------------------
@@ -15,14 +16,14 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2015 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
+# Copyright 2007-2016 Technische Universitaet Dresden - Germany
+#                     Chair for VLSI-Design, Diagnostics and Architecture
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # 
-#		http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 # 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,105 +38,94 @@ if __name__ != "__main__":
 	pass
 else:
 	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Class Compiler(PoCCompiler)")
+	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Compiler.XCOCompiler")
 
-# load dependencies
-from pathlib import Path
-
-from Base.Exceptions import *
-from Compiler.Base import PoCCompiler 
-from Compiler.Exceptions import *
-
-class Compiler(PoCCompiler):
-
-	__executables = {}
-
-	def __init__(self, host, showLogs, showReport):
-		super(self.__class__, self).__init__(host, showLogs, showReport)
-
-		if (host.platform == "Windows"):
-			self.__executables['CoreGen'] =	"coregen.exe"
-		elif (host.platform == "Linux"):
-			self.__executables['CoreGen'] =	"coregen"
-		else:
-			raise PlatformNotSupportedException(self.platform)
-		
-	def run(self, pocEntity, device):
-		import os
-		import re
-		import shutil
-		import subprocess
-		import textwrap
 	
-		self.printNonQuiet(str(pocEntity))
-		self.printNonQuiet("  preparing compiler environment...")
+# load dependencies
+import shutil
+from os                      import chdir
+from pathlib                import Path
+from textwrap                import dedent
 
-		# TODO: improve / resolve board to device
-		deviceString = str(device).upper()
-		deviceSection = "Device." + deviceString
-		
-		# create temporary directory for CoreGen if not existent
-		tempCoreGenPath = self.host.directories["CoreGenTemp"]
-		if not (tempCoreGenPath).exists():
-			self.printVerbose("    Creating temporary directory for core generator files.")
-			self.printDebug("    Temporary directory: {0}.".format(tempCoreGenPath))
-			tempCoreGenPath.mkdir(parents=True)
+from Base.Project            import ToolChain, Tool
+from Base.Compiler          import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
+from PoC.Entity              import WildCard
+from ToolChains.Xilinx.ISE  import ISE, ISEException
 
-		# create output directory for CoreGen if not existent
-		coreGenOutputPath = self.host.directories["PoCNetList"] / deviceString
-		if not (coreGenOutputPath).exists():
-			self.printVerbose("    Creating output directory for core generator files.")
-			self.printDebug("    Output directory: {0}.".format(coreGenOutputPath))
-			coreGenOutputPath.mkdir(parents=True)
-			
+
+class Compiler(BaseCompiler):
+	_TOOL_CHAIN =  ToolChain.Xilinx_ISE
+	_TOOL =        Tool.Xilinx_CoreGen
+
+	def __init__(self, host, dryRun, noCleanUp):
+		super().__init__(host, dryRun, noCleanUp)
+
+		self._device =      None
+		self._toolChain =    None
+
+		configSection = host.PoCConfig['CONFIG.DirectoryNames']
+		self.Directories.Working = host.Directories.Temp / configSection['ISECoreGeneratorFiles']
+		self.Directories.Netlist = host.Directories.Root / configSection['NetlistFiles']
+
+		self._PrepareCompiler()
+
+	def _PrepareCompiler(self):
+		self._LogVerbose("Preparing Xilinx Core Generator Tool (CoreGen).")
+		iseSection = self.Host.PoCConfig['INSTALL.Xilinx.ISE']
+		binaryPath = Path(iseSection['BinaryDirectory'])
+		version = iseSection['Version']
+		self._toolChain = ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
+
+	def RunAll(self, fqnList, *args, **kwargs):
+		for fqn in fqnList:
+			entity = fqn.Entity
+			if (isinstance(entity, WildCard)):
+				for netlist in entity.GetCoreGenNetlists():
+					self.TryRun(netlist, *args, **kwargs)
+			else:
+				netlist = entity.CGNetlist
+				self.TryRun(netlist, *args, **kwargs)
+
+	def Run(self, netlist, board):
+		super().Run(netlist, board)
+
+		self._device =        board.Device
+
+		self._LogNormal("Executing pre-processing tasks...")
+		self._RunPreCopy(netlist)
+		self._RunPreReplace(netlist)
+
+		self._LogNormal("Running Xilinx Core Generator...")
+		self._RunCompile(netlist)
+
+		self._LogNormal("Executing post-processing tasks...")
+		self._RunPostCopy(netlist)
+		self._RunPostReplace(netlist)
+		self._RunPostDelete(netlist)
+
+	def _WriteSpecialSectionIntoConfig(self, device):
 		# add the key Device to section SPECIAL at runtime to change interpolation results
-		self.host.netListConfig['SPECIAL'] = {}
-		self.host.netListConfig['SPECIAL']['Device'] = deviceString
-		self.host.netListConfig['SPECIAL']['OutputDir'] = tempCoreGenPath.as_posix()
-		
-		if not self.host.netListConfig.has_section(str(pocEntity)):
-			from configparser import NoSectionError
-			raise CompilerException("IP-Core '{0}' not found.".format(str(pocEntity))) from NoSectionError(str(pocEntity))
-		
-		# read copy tasks
-		copyFileList = self.host.netListConfig[str(pocEntity)]['Copy']
-		self.printDebug("CopyTasks: \n  " + ("\n  ".join(copyFileList.split("\n"))))
-		copyTasks = []
-		for item in copyFileList.split("\n"):
-			list1 = re.split("\s+->\s+", item)
-			if (len(list1) != 2): raise CompilerException("Expected 2 arguments for every copy task!")
-			
-			copyTasks.append((Path(list1[0]), Path(list1[1])))
-		
-		# setup all needed paths to execute coreGen
-		coreGenExecutablePath =		self.host.directories["ISEBinary"] / self.__executables['CoreGen']
-		
-		# read netlist settings from configuration file
-		ipCoreName =					self.host.netListConfig[str(pocEntity)]['IPCoreName']
-		xcoInputFilePath =		self.host.directories["PoCRoot"] / self.host.netListConfig[str(pocEntity)]['CoreGeneratorFile']
-		cgcTemplateFilePath =	self.host.directories["PoCNetList"] / "template.cgc"
-		cgpFilePath =					tempCoreGenPath / "coregen.cgp"
-		cgcFilePath =					tempCoreGenPath / "coregen.cgc"
-		xcoFilePath =					tempCoreGenPath / xcoInputFilePath.name
+		self.Host.PoCConfig['SPECIAL'] = {}
+		self.Host.PoCConfig['SPECIAL']['Device'] =        device.FullName
+		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =  device.Series
+		self.Host.PoCConfig['SPECIAL']['OutputDir']	=      self.Directories.Working.as_posix()
 
-		# report the next steps in execution
-#		if (self.getVerbose()):
-#			print("  Commands to be run:")
-#			print("  1. Write CoreGen project file into temporary directory.")
-#			print("  2. Write CoreGen content file into temporary directory.")
-#			print("  3. Copy IPCore's *.xco file into temporary directory.")
-#			print("  4. Change working directory to temporary directory.")
-#			print("  5. Run Xilinx Core Generator (coregen).")
-#			print("  6. Copy resulting files into output directory.")
-#			print("  ----------------------------------------")
-		
-		if (self.host.platform == "Windows"):
+	def _RunCompile(self, netlist):
+		self._LogVerbose("Patching coregen.cgp and .cgc files...")
+		# read netlist settings from configuration file
+		xcoInputFilePath =    netlist.XcoFile
+		cgcTemplateFilePath =  self.Directories.Netlist / "template.cgc"
+		cgpFilePath =          self.Directories.Working / "coregen.cgp"
+		cgcFilePath =          self.Directories.Working / "coregen.cgc"
+		xcoFilePath =          self.Directories.Working / xcoInputFilePath.name
+
+		if (self.Host.Platform == "Windows"):
 			WorkingDirectory = ".\\temp\\"
 		else:
 			WorkingDirectory = "./temp/"
-		
+
 		# write CoreGenerator project file
-		cgProjectFileContent = textwrap.dedent('''\
+		cgProjectFileContent = dedent("""\
 			SET addpads = false
 			SET asysymbol = false
 			SET busformat = BusFormatAngleBracketNotRipped
@@ -154,75 +144,56 @@ class Compiler(PoCCompiler):
 			SET verilogsim = false
 			SET vhdlsim = true
 			SET workingdirectory = {WorkingDirectory}
-			'''.format(
-				Device=device.shortName(),
-				DeviceFamily=device.familyName(),
-				Package=(str(device.package) + str(device.pinCount)),
-				SpeedGrade=device.speedGrade,
-				WorkingDirectory=WorkingDirectory
-			))
+			""".format(
+			Device=self._device.ShortName.lower(),
+			DeviceFamily=self._device.FamilyName.lower(),
+			Package=(str(self._device.Package).lower() + str(self._device.PinCount)),
+			SpeedGrade=self._device.SpeedGrade,
+			WorkingDirectory=WorkingDirectory
+		))
 
-		self.printDebug("Writing CoreGen project file to '{0}'.".format(cgpFilePath))
+		self._LogDebug("Writing CoreGen project file to '{0}'.".format(cgpFilePath))
 		with cgpFilePath.open('w') as cgpFileHandle:
 			cgpFileHandle.write(cgProjectFileContent)
 
 		# write CoreGenerator content? file
-		self.printDebug("Reading CoreGen content file to '{0}'.".format(cgcTemplateFilePath))
+		self._LogDebug("Reading CoreGen content file to '{0}'.".format(cgcTemplateFilePath))
 		with cgcTemplateFilePath.open('r') as cgcFileHandle:
 			cgContentFileContent = cgcFileHandle.read()
-			
+
 		cgContentFileContent = cgContentFileContent.format(
 			name="lcd_ChipScopeVIO",
-			device=device.shortName(),
-			devicefamily=device.familyName(),
-			package=(str(device.package) + str(device.pinCount)),
-			speedgrade=device.speedGrade
+			device=self._device.ShortName,
+			devicefamily=self._device.FamilyName,
+			package=(str(self._device.Package) + str(self._device.PinCount)),
+			speedgrade=self._device.SpeedGrade
 		)
 
-		self.printDebug("Writing CoreGen content file to '{0}'.".format(cgcFilePath))
+		self._LogDebug("Writing CoreGen content file to '{0}'.".format(cgcFilePath))
 		with cgcFilePath.open('w') as cgcFileHandle:
 			cgcFileHandle.write(cgContentFileContent)
-		
+
 		# copy xco file into temporary directory
-		self.printDebug("Copy CoreGen xco file to '{0}'.".format(xcoFilePath))
-		self.printVerbose("    cp {0} {1}".format(str(xcoInputFilePath), str(tempCoreGenPath)))
+		self._LogVerbose("Copy CoreGen xco file to '{0}'.".format(xcoFilePath))
+		self._LogDebug("cp {0!s} {1!s}".format(xcoInputFilePath, self.Directories.Working))
 		shutil.copy(str(xcoInputFilePath), str(xcoFilePath), follow_symlinks=True)
-		
+
 		# change working directory to temporary CoreGen path
-		self.printVerbose('    cd {0}'.format(str(tempCoreGenPath)))
-		os.chdir(str(tempCoreGenPath))
-		
+		self._LogDebug("cd {0!s}".format(self.Directories.Working))
+		chdir(str(self.Directories.Working))
+
 		# running CoreGen
 		# ==========================================================================
-		self.printNonQuiet("  running CoreGen...")
-		# assemble CoreGen command as list of parameters
-		parameterList = [
-			str(coreGenExecutablePath),
-			'-r',
-			'-b', str(xcoFilePath),
-			'-p', '.'
-		]
-		self.printDebug("call coreGen: {0}.".format(parameterList))
-		self.printVerbose('    {0} -r -b "{1}" -p .'.format(str(coreGenExecutablePath), str(xcoFilePath)))
-		if (self.dryRun == False):
-			coreGenLog = subprocess.check_output(parameterList, stderr=subprocess.STDOUT, universal_newlines=True)
-		
-			if self.showLogs:
-				print("Core Generator log (CoreGen)")
-				print("--------------------------------------------------------------------------------")
-				print(coreGenLog)
-				print()
-		
-		# copy resulting files into PoC's netlist directory
-		self.printNonQuiet('  copy result files into output directory...')
-		for task in copyTasks:
-			(fromPath, toPath) = task
-			if not fromPath.exists(): raise CompilerException("Can not copy '{0}' to destination.".format(str(fromPath))) from FileNotFoundError(str(fromPath))
-			
-			toDirectoryPath = toPath.parent
-			if not toDirectoryPath.exists():
-				toDirectoryPath.mkdir(parents=True)
-		
-			self.printVerbose("  copying '{0}'.".format(fromPath))
-			shutil.copy(str(fromPath), str(toPath))
-		
+		self._LogVerbose("Executing CoreGen...")
+		coreGen = self._toolChain.GetCoreGenerator()
+		coreGen.Parameters[coreGen.SwitchProjectFile] =  "."		# use current directory and the default project name
+		coreGen.Parameters[coreGen.SwitchBatchFile] =    str(xcoFilePath)
+		coreGen.Parameters[coreGen.FlagRegenerate] =    True
+
+		try:
+			coreGen.Generate()
+		except ISEException as ex:
+			raise CompilerException("Error while compiling '{0!s}'.".format(netlist)) from ex
+		if coreGen.HasErrors:
+			raise SkipableCompilerException("Error while compiling '{0!s}'.".format(netlist))
+

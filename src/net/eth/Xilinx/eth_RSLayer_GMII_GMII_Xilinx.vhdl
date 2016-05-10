@@ -180,7 +180,7 @@ begin
 			RS_RX_Valid			<= '0';
 			RS_RX_Error			<= '0';
 		else
-			if rising_edge(rs_rx_clock) then
+			if rising_edge(RS_RX_Clock) then
 				RS_RX_Data		<= IDelay_Data;
 				RS_RX_Valid		<= IDelay_Valid;
 				RS_RX_Error		<= IDelay_Error;

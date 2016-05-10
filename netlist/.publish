@@ -1,11 +1,10 @@
-# 
-netlist.ps1
-netlist.sh
+# git files
+.gitempty
 
-# 
-configuration.ini
+# Documentation
+README.md
 
-# 
+# Templates
 template.cgc
 
 # created folders - don't publish them

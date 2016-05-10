@@ -82,12 +82,12 @@ architecture rtl of pmod_SSD is
 	signal Segments					: STD_LOGIC_VECTOR(6 downto 0);
 begin
 	-- generate a < 1 kHz enable to toggle the CathodeSelect register
-	RefreshTimer_s		<= downcounter_next(cnt => RefreshTimer_s, rst => RefreshTimer_rst, init => REFRESHTIMER_MAX) when rising_edge(Clock);
+	RefreshTimer_s		<= downcounter_next(cnt => RefreshTimer_s, rst => RefreshTimer_rst, INIT => REFRESHTIMER_MAX) when rising_edge(Clock);
 	RefreshTimer_rst	<= downcounter_neg(cnt => RefreshTimer_s);
 
 	-- generate a cathode select signal, based on a T-FF
 	CathodeSelect_en	<= RefreshTimer_rst;
-	CathodeSelect_r		<= fftre(q => CathodeSelect_r, en => CathodeSelect_en) when rising_edge(Clock);
+	CathodeSelect_r		<= fftre(q => CathodeSelect_r, t => CathodeSelect_en) when rising_edge(Clock);
 
 	Digit				<= mux(CathodeSelect_r, Digit0, Digit1);
 	Segments		<= io_7SegmentDisplayEncoding(Digit);

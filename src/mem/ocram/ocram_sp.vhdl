@@ -38,18 +38,16 @@
 -- ============================================================================
 
 
-library STD;
-use			STD.TextIO.all;
-
 library	IEEE;
 use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
-use			IEEE.std_logic_textio.all;
 
 library	PoC;
 use			PoC.config.all;
 use			PoC.utils.all;
 use			PoC.strings.all;
+use			PoC.vectors.all;
+use			PoC.mem.all;
 
 
 entity ocram_sp is
@@ -74,77 +72,52 @@ architecture rtl of ocram_sp is
 
 begin
 
-	gInfer: if VENDOR = VENDOR_XILINX generate
+	gInfer : if ((VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
 		-- RAM can be inferred correctly
 		-- XST Advanced HDL Synthesis generates single-port memory as expected.
 		subtype word_t	is std_logic_vector(D_BITS - 1 downto 0);
 		type		ram_t		is array(0 to DEPTH - 1) of word_t;
 		
-	begin
-		genLoadFile : if (str_length(FileName) /= 0) generate
-			-- Read a *.mem or *.hex file
-			impure function ocram_ReadMemFile(FileName : STRING) return ram_t is
-				file FileHandle				: TEXT open READ_MODE is FileName;
-				variable CurrentLine	: LINE;
-				variable TempWord			: STD_LOGIC_VECTOR((div_ceil(word_t'length, 4) * 4) - 1 downto 0);
-				variable Result				: ram_t		:= (others => (others => '0'));
-				
-			begin
-				-- discard the first line of a mem file
-				if (str_toLower(FileName(FileName'length - 3 to FileName'length)) = ".mem") then
-					readline(FileHandle, CurrentLine);
-				end if;
+		-- Compute the initialization of a RAM array, if specified, from the passed file.
+		impure function ocram_InitMemory(FilePath : string) return ram_t is
+			variable Memory		: T_SLM(DEPTH - 1 downto 0, word_t'range);
+			variable res			: ram_t;
+		begin
+			if (str_length(FilePath) = 0) then
+        -- shortcut required by Vivado
+				return (others => (others => ite(SIMULATION, 'U', '0')));
+			elsif (mem_FileExtension(FilePath) = "mem") then
+				Memory	:= mem_ReadMemoryFile(FilePath, DEPTH, word_t'length, MEM_FILEFORMAT_XILINX_MEM, MEM_CONTENT_HEX);
+			else
+				Memory	:= mem_ReadMemoryFile(FilePath, DEPTH, word_t'length, MEM_FILEFORMAT_INTEL_HEX, MEM_CONTENT_HEX);
+			end if;
 
-				for i in 0 to DEPTH - 1 loop
-					exit when endfile(FileHandle);
-
-					readline(FileHandle, CurrentLine);
-					hread(CurrentLine, TempWord);
-					Result(i)		:= resize(TempWord, word_t'length);
+			for i in Memory'range(1) loop
+				for j in word_t'range loop
+					res(i)(j)		:= Memory(i, j);
 				end loop;
+			end loop;
+			return  res;
+		end function;
 
-				return Result;
-			end function;
-
-			signal ram		: ram_t		:= ocram_ReadMemFile(FILENAME);
-			signal a_reg	: unsigned(A_BITS-1 downto 0);
-			
+		signal ram		: ram_t		:= ocram_InitMemory(FILENAME);
+		signal a_reg	: unsigned(A_BITS-1 downto 0);
+		
+	begin
+		process (clk)
 		begin
-			process (clk)
-			begin
-				if rising_edge(clk) then
-					if ce = '1' then
-						if we = '1' then
-							ram(to_integer(a)) <= d;
-						end if;
-
-						a_reg <= a;
+			if rising_edge(clk) then
+				if ce = '1' then
+					if we = '1' then
+						ram(to_integer(a)) <= d;
 					end if;
+
+					a_reg <= a;
 				end if;
-			end process;
+			end if;
+		end process;
 
-			q <= ram(to_integer(a_reg));					-- gets new data
-		end generate;
-		genNoLoadFile : if (str_length(FileName) = 0) generate
-			signal ram			: ram_t;
-			signal a_reg		: unsigned(A_BITS-1 downto 0);
-			
-		begin
-			process (clk)
-			begin
-				if rising_edge(clk) then
-					if ce = '1' then
-						if we = '1' then
-							ram(to_integer(a)) <= d;
-						end if;
-
-						a_reg <= a;
-					end if;
-				end if;
-			end process;
-
-			q <= ram(to_integer(a_reg));					-- gets new data
-		end generate;
+		q <= ram(to_integer(a_reg));					-- gets new data
 	end generate gInfer;
 
 	gAltera: if VENDOR = VENDOR_ALTERA generate
@@ -182,7 +155,7 @@ begin
 			);
 	end generate gAltera;
 	
-	assert VENDOR = VENDOR_XILINX or VENDOR = VENDOR_ALTERA
-		report "Device not yet supported."
+	assert ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX))
+		report "Vendor '" & T_VENDOR'image(VENDOR) & "' not yet supported."
 		severity failure;
-end rtl;
+end architecture;

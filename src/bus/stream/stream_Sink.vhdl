@@ -44,7 +44,7 @@ use			PoC.stream.all;
 
 entity stream_Sink is
 	generic (
-		TESTcaseS												: T_SIM_STREAM_FRAMEGROUP_VECTOR_8
+		TESTCASES												: T_SIM_STREAM_FRAMEGROUP_VECTOR_8
 	);
 	port (
 		Clock														: in	STD_LOGIC;

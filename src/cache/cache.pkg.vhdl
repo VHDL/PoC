@@ -38,10 +38,10 @@ library	PoC;
 
 package cache is
 	-- cache-lookup Result
-	TYPE T_CACHE_RESULT	IS (CACHE_RESULT_NONE, CACHE_RESULT_HIT, CACHE_RESULT_MISS);
+	type T_CACHE_RESULT	is (CACHE_RESULT_NONE, CACHE_RESULT_HIT, CACHE_RESULT_MISS);
 
 	function to_Cache_Result(CacheHit : STD_LOGIC; CacheMiss : STD_LOGIC) return T_CACHE_RESULT;
-	
+
 end package;
 
 

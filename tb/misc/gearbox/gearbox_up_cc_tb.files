@@ -1,0 +1,14 @@
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# vim: tabstop=2:shiftwidth=2:noexpandtab
+# kate: tab-width 2; replace-tabs off; indent-width 2;
+# ==============================================================================
+# Note: all files are relative to PoC root directory
+#
+# Load external vendor libraries
+include				"lib/OSVVM.files"														# Open Source VHDL Verification Methodology (OS-VVM)
+
+# PoC.misc.gearbox
+include				"src/misc/gearbox/gearbox_up_cc.files"			# UUT (Unit Under Test)
+
+# Testbench file(s)
+vhdl		test	"tb/misc/gearbox/gearbox_up_cc_tb.vhdl"			# Testbench

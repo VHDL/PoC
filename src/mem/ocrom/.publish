@@ -1,5 +1,5 @@
 # git files
-.gitignore
+.gitempty
 
 # Documentation
 README.md
@@ -8,7 +8,9 @@ README.md
 ocrom.pkg.vhdl
 
 # Generic ROM modules
+ocrom_sp.files
 ocrom_sp.vhdl
+ocrom_dp.files
 ocrom_dp.vhdl
 
 # Altera specific

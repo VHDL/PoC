@@ -1,14 +1,18 @@
 # git files
-.gitignore
+.gitempty
 
 # Documentation
 README.md
 
 # sub namespaces
 filter/
+gearbox/
 stat/
 sync/
 
 # 
 misc_bit_lz.vhdl
+misc_Delay.files
+misc_Delay.vhdl
+misc_FrequencyMeasurement.files
 misc_FrequencyMeasurement.vhdl

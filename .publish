@@ -1,22 +1,36 @@
 # git files
 .gitignore
+.gitempty
 #.gitmodules
 
-# Common files
-LICENSE
+# *.yml files
+.landscape.yml
+.travis.yml
+
+# Python 3 - package requirements
+requirements.txt
+
+# Documentation files
+docs/
 AUTHORS.md
+LICENSE.md
 README.md
+CHANGES.md
 
 # Configuration scripts
 poc.sh
 poc.ps1
 
 # folders
+lib/
 netlist/
+# DON'T PUBLISH other/ !!!
 py/
 sim/
 src/
 tb/
+tcl/
+temp/
 tools/
 ucf/
 xst/

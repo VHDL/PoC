@@ -1,9 +1,24 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
 # scripts to customize git
 git/
 
 # editor plugins, syntax-highlighting, ...
 #emacs/
 Notepad++/
+
+# vendor and tool specific hook files
+hooks/
+
+# compile scripts for vendor libraries
+precompile/
+
+# scripts and configuration files for the Travis-CI flow
+Travis-CI/
 
 # the publish scripts
 #publish/

@@ -81,9 +81,9 @@ BEGIN
 -- ==================================================================
 -- Assert statements
 -- ==================================================================
-	ASSERT (C_DEVICE_INFO.VENDOR = VENDOR_ALTERA)						REPORT "Vendor not yet supported."				SEVERITY FAILURE;
-	ASSERT (C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_STRATIX)	REPORT "Device family not yet supported."	SEVERITY FAILURE;
-	ASSERT (C_DEVICE_INFO.DEVICE = DEVICE_STRATIX2)					REPORT "Device not yet supported."				SEVERITY FAILURE;
+	ASSERT (C_DEVICE_INFO.Vendor = VENDOR_ALTERA)							REPORT "Vendor not yet supported."				SEVERITY FAILURE;
+	ASSERT (C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_STRATIX)	REPORT "Device family not yet supported."	SEVERITY FAILURE;
+	ASSERT (C_DEVICE_INFO.Device = DEVICE_STRATIX2)						REPORT "Device not yet supported."				SEVERITY FAILURE;
 	ASSERT (PORTS <= 2)			REPORT "To many ports per transceiver."		SEVERITY FAILURE;
 
 -- 	Common modules shared by all ports

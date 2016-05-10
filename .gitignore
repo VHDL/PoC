@@ -23,6 +23,35 @@ __pycache__
 /py/config.private.ini
 /tb/common/my_project.vhdl
 
+# ignore external tool files: ActiveHDL, QuestaSim
+/prj/ActiveHDL/*
+/prj/ActiveHDL/*.*
+/prj/ActiveHDL/**/*.*
+!/prj/ActiveHDL/PoC.adf
+!/prj/ActiveHDL/PoC.wsp
+
+/prj/Diamond/*.*
+/prj/Diamond/*/*
+/prj/Diamond/**/*.*
+!/prj/Diamond/**/*.lpf
+!/prj/Diamond/*.ldf
+!/prj/Diamond/*.sty
+!/prj/Diamond/*.vhdl
+
+/prj/QuestaSim/*
+/prj/QuestaSim/*.*
+/prj/QuestaSim/**/*.*
+!/prj/QuestaSim/PoC.mpf
+
+# ignore Xilinx ISE files
+/other/ise/**/*.*
+/other/ise/**/ise
+!/other/ise/**/*.xise
+!/other/ise/**/*.xpr
+!/other/ise/**/iseconfig/filter.filter
+!/other/ise/**/*.qpf
+!/other/ise/**/*.qsf
+
 # ignore Quartus files
 /other/quartus/**/*.*
 /other/quartus/**/db/
@@ -34,6 +63,14 @@ __pycache__
 !/other/quartus/**/*.qsf
 !/other/quartus/**/*.vhdl
 
+#ignore Vivado files
+/other/vivado/**/*.cache
+/other/vivado/**/*.hw
+/other/vivado/**/*.runs
+/other/vivado/**/*.sim
+/other/vivado/**/*.ip_user_files
+
 # general whitelist
-!.publish
 !.git*
+!.publish
+!.README.md

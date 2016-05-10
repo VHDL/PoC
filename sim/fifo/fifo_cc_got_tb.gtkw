@@ -1,0 +1,40 @@
+[*]
+[*] GTKWave Analyzer v3.3.69 (w)1999-2016 BSI
+[*] Sun Mar 20 12:02:38 2016
+[*]
+[dumpfile_mtime] "Sun Mar 20 12:00:47 2016"
+[dumpfile_size] 18916
+[timestart] 0
+[size] 1680 997
+[pos] -1 -1
+*-24.495407 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.fifo_cc_got_tb.
+[treeopen] top.fifo_cc_got_tb.[0].
+[sst_width] 197
+[signals_width] 142
+[sst_expanded] 1
+[sst_vpaned_height] 293
+@28
+top.fifo_cc_got_tb.clk
+top.fifo_cc_got_tb.rst
+@800200
+-Test 0
+@28
+top.fifo_cc_got_tb[0].put
+@22
+#{top.fifo_cc_got_tb[0].din[7:0]} top.fifo_cc_got_tb[0].din[7] top.fifo_cc_got_tb[0].din[6] top.fifo_cc_got_tb[0].din[5] top.fifo_cc_got_tb[0].din[4] top.fifo_cc_got_tb[0].din[3] top.fifo_cc_got_tb[0].din[2] top.fifo_cc_got_tb[0].din[1] top.fifo_cc_got_tb[0].din[0]
+@28
+#{top.fifo_cc_got_tb[0].estate_wr[1:0]} top.fifo_cc_got_tb[0].estate_wr[1] top.fifo_cc_got_tb[0].estate_wr[0]
+top.fifo_cc_got_tb[0].full
+top.fifo_cc_got_tb[0].got
+@22
+#{top.fifo_cc_got_tb[0].dout[7:0]} top.fifo_cc_got_tb[0].dout[7] top.fifo_cc_got_tb[0].dout[6] top.fifo_cc_got_tb[0].dout[5] top.fifo_cc_got_tb[0].dout[4] top.fifo_cc_got_tb[0].dout[3] top.fifo_cc_got_tb[0].dout[2] top.fifo_cc_got_tb[0].dout[1] top.fifo_cc_got_tb[0].dout[0]
+@29
+#{top.fifo_cc_got_tb[0].fstate_rd[1:0]} top.fifo_cc_got_tb[0].fstate_rd[1] top.fifo_cc_got_tb[0].fstate_rd[0]
+@28
+top.fifo_cc_got_tb[0].valid
+@1000200
+-Test 0
+[pattern_trace] 1
+[pattern_trace] 0

@@ -3,10 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- ============================================================================================================================================================
--- Module:					Pseudo-Random Number Generator (PRNG).
--- 
 -- Authors:					Martin Zabel
 --									Patrick Lehmann
+-- 
+-- Module:					Pseudo-Random Number Generator (PRNG).
 -- 
 -- Description:
 -- ------------------------------------
@@ -41,7 +41,7 @@ use			PoC.utils.all;
 
 entity arith_prng is
 	generic (
-		BITS : positive;
+		BITS : positive					:= 32;
 		SEED : std_logic_vector := "0"
 	);
 	port (
@@ -50,7 +50,7 @@ entity arith_prng is
 		got	 : in	std_logic;														-- the current value has been got, and a new value should be calculated
 		val	 : out std_logic_vector(BITS - 1 downto 0)	-- the pseudo-random number
 	);
-end arith_prng;
+end entity;
 
 
 architecture rtl of arith_prng is
@@ -233,7 +233,7 @@ architecture rtl of arith_prng is
 	signal bit1_nxt	: std_logic;
 	signal val_r		: std_logic_vector(BITS downto 1)		:= resize(SEED, BITS);
 	
-begin	-- rtl
+begin
 	assert ((3 <= BITS) and (BITS <= 168)) report "Width not yet supported." severity failure;
 	
 	-----------------------------------------------------------------------------
@@ -271,4 +271,4 @@ begin	-- rtl
 	-----------------------------------------------------------------------------
 	val	 <= val_r;
 
-end rtl;
+end architecture;

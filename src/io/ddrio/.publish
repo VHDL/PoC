@@ -1,24 +1,26 @@
 # git files
-.gitignore
 .gitempty
 
 # Documentation
 README.md
 
-# package
+# Package
 ddrio.pkg.vhdl
 
 # DDR Input
+ddrio_in.files
 ddrio_in.vhdl
 ddrio_in_altera.vhdl
 ddrio_in_xilinx.vhdl
 
 # DDR Output
+ddrio_out.files
 ddrio_out.vhdl
 ddrio_out_altera.vhdl
 ddrio_out_xilinx.vhdl
 
 # DDR Input/Output
+ddrio_inout.files
 ddrio_inout.vhdl
 ddrio_inout_altera.vhdl
 ddrio_inout_xilinx.vhdl

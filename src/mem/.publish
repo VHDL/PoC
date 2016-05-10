@@ -1,5 +1,5 @@
 # git files
-.gitignore
+.gitempty
 
 # Documentation
 README.md
@@ -11,3 +11,5 @@ lut/
 ocram/
 ocrom/
 sdram/
+
+mem.pkg.vhdl

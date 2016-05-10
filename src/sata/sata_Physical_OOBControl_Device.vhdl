@@ -311,11 +311,13 @@ BEGIN
 				WHEN ST_DEV_OOB_HANDSHAKE_COMPLETE =>
 					OOB_HandshakeComplete_i	<= '1';
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
+					TC1_en 									<= '1';
 					NextState								<= ST_DEV_SEND_ALIGN;
 					
 				WHEN ST_DEV_SEND_ALIGN =>
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
-				
+					TC1_en 									<= '1';
+					
 					IF ((RX_Primitive = SATA_PRIMITIVE_ALIGN) AND (RX_Valid = '1')) THEN												-- ALIGN detected
 						NextState							<= ST_DEV_LINK_OK;
 					END IF;
@@ -371,7 +373,7 @@ BEGIN
 		PORT MAP (
 			Clock								=> Clock,
 			Enable							=> TC1_en,
-			Load								=> TC1_load,
+			Load								=> TC1_Load,
 			Slot								=> TC1_Slot,
 			Timeout							=> TC1_Timeout
 		);
@@ -384,7 +386,7 @@ BEGIN
 		PORT MAP (
 			Clock								=> Clock,
 			Enable							=> TC2_en,
-			Load								=> TC2_load,
+			Load								=> TC2_Load,
 			Slot								=> TC2_Slot,
 			Timeout							=> TC2_Timeout
 		);

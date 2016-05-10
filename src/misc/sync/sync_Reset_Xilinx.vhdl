@@ -9,17 +9,11 @@
 -- 
 -- Description:
 -- ------------------------------------
---		This is a clock-domain-crossing circuit for reset signals optimized for
---		Xilinx FPGAs. It utilizes two 'FDP' instances from UniSim.vComponents. If
---		you need a platform independent version of this synchronizer, please use
---		'PoC.misc.sync.sync_Reset', which internally instantiates this module if
---		a Xilinx FPGA is detected.
+--    This is the Xilinx specific implementation of the entity
+--    'PoC.misc.sync.sync_Reset'. See the description there on how to use this.
 --		
---		ATTENTION:
---			Use this synchronizer only for reset signals.
---
 --		CONSTRAINTS:
---			This relative placement of the internal sites is constrained by RLOCs.
+--			The relative placement of the internal sites is constrained by RLOCs.
 --		
 --			Xilinx ISE UCF or XCF file:
 --				NET "*_async"		TIG;
@@ -32,7 +26,7 @@
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 -- 
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,12 +48,18 @@ use			IEEE.STD_LOGIC_1164.all;
 library UniSim;
 use			UniSim.VComponents.all;
 
+library	PoC;
+use			PoC.sync.all;
+
 
 entity sync_Reset_Xilinx is
+	generic (
+		SYNC_DEPTH		: T_MISC_SYNC_DEPTH		:= 2	-- generate SYNC_DEPTH many stages, at least 2
+	);
 	port (
-		Clock				: in	STD_LOGIC;					-- Clock to be synchronized to
-		Input				: in	STD_LOGIC;					-- high active asynchronous reset
-		Output			: out	STD_LOGIC						-- "Synchronised" reset signal
+		Clock					: in	STD_LOGIC;						-- Clock to be synchronized to
+		Input					: in	STD_LOGIC;						-- high active asynchronous reset
+		Output				: out	STD_LOGIC							-- "Synchronised" reset signal
 	);
 end entity;
 
@@ -86,6 +86,8 @@ architecture rtl of sync_Reset_Xilinx is
 	attribute RLOC of Reset_sync						: signal is "X0Y0";
 	
 begin
+	assert (SYNC_DEPTH = 2) report "Xilinx synchronizer supports only 2 stages. It could be extended to 4 or 8 on new FPGA series." severity WARNING;
+	
 	Reset_async		<= Input;
 
 	FF2_METASTABILITY_FFS : FDP
