@@ -471,15 +471,17 @@ def GHDLAnalyzeFilter(gen):
 		warningRegExpMatch = warningRegExp.match(line)
 		if (warningRegExpMatch is not None):
 			yield LogEntry(line, Severity.Warning)
-		else:
-			errorRegExpMatch = errorRegExp.match(line)
-			if (errorRegExpMatch is not None):
-				message = errorRegExpMatch.group('Message')
-				if message.endswith("has changed and must be reanalysed"):
-					raise GHDLReanalyzeException(message)
-				yield LogEntry(line, Severity.Error)
-			else:
-				yield LogEntry(line, Severity.Normal)
+			continue
+
+		errorRegExpMatch = errorRegExp.match(line)
+		if (errorRegExpMatch is not None):
+			message = errorRegExpMatch.group('Message')
+			if message.endswith("has changed and must be reanalysed"):
+				raise GHDLReanalyzeException(message)
+			yield LogEntry(line, Severity.Error)
+			continue
+
+		yield LogEntry(line, Severity.Normal)
 
 GHDLElaborateFilter = GHDLAnalyzeFilter
 
