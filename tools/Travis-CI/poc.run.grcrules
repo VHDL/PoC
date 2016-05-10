@@ -3,18 +3,28 @@ regexp=Testbench:
 colours=cyan
 count=stop
 
+# GHDL errors and warnings
 =========
+regexp=.+?:\d+:\d+:warning: .*
+colours=yellow
+count=stop
+=========
+regexp=.+?:\d+:\d+: .*
+colours=red
+count=stop
+
 # Python Exceptions
+=========
 regexp=\s*ERROR:
 colours=red
 count=stop
 =========
-regexp=\s*\wError:
-colours=red
+regexp=\s*\w+Error:
+colours=yellow
 count=stop
 =========
-regexp=\s*\wException:
-colours=red
+regexp=\s*\w+Exception:
+colours=yellow
 count=stop
 =========
 regexp=\[SKIPPED DUE TO ERRORS\]

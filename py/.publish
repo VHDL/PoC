@@ -3,6 +3,8 @@
 
 # Documentation
 README.md
+FILES.md
+RULES.md
 
 # Wrappers
 Wrapper.ps1
