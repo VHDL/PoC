@@ -33,8 +33,6 @@
 # ==============================================================================
 #
 # entry point
-from datetime import datetime
-
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -47,12 +45,11 @@ else:
 from pathlib                import Path
 
 from Base.Exceptions        import NotConfiguredException
-from Base.Logging            import Severity
-from Base.Project            import FileTypes, VHDLVersion, ToolChain, Tool
-from Base.Simulator          import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult, SkipableSimulatorException, \
-	SimulationState
+from Base.Logging           import Severity
+from Base.Project           import FileTypes, VHDLVersion, ToolChain, Tool
+from Base.Simulator         import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SkipableSimulatorException
 from ToolChains.GHDL        import GHDL, GHDLException, GHDLReanalyzeException
-from ToolChains.GTKWave      import GTKWave
+from ToolChains.GTKWave     import GTKWave
 
 
 class Simulator(BaseSimulator):

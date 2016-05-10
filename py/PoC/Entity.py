@@ -172,13 +172,13 @@ class Namespace(PathElement):
 
 	def _Load(self):
 		for optionName in self.ConfigSection:
-			type = self.ConfigSection[optionName]
-			if (type == "Namespace"):
+			kind = self.ConfigSection[optionName]
+			if (kind == "Namespace"):
 				# print("loading namespace: {0}".format(optionName))
 				section = self._configSectionName + "." + optionName
 				ns = Namespace(host=self._host, name=optionName, configSectionName=section, parent=self)
 				self.__namespaces[optionName.lower()] = ns
-			elif (type == "Entity"):
+			elif (kind == "Entity"):
 				# print("loading entity: {0}".format(optionName))
 				section = ".".join(["IP"] + self._configSectionName.split(".")[1:] + [optionName])
 				ent = IPCore(host=self._host, name=optionName, configSectionName=section, parent=self)
@@ -357,33 +357,33 @@ class IPCore(PathElement):
 	def _Load(self):
 		section = self.ConfigSection
 		for optionName in section:
-			type = section[optionName].lower()
-			if (type == "vhdltestbench"):
+			kind = section[optionName].lower()
+			if (kind == "vhdltestbench"):
 				sectionName = self._configSectionName.replace("IP", "TB") + "." + optionName
 				tb = VHDLTestbench(host=self._host, name=optionName, configSectionName=sectionName, parent=self)
 				self._vhdltb.append(tb)
 				# self._vhdltb[optionName] = tb
-			elif (type == "cocotestbench"):
+			elif (kind == "cocotestbench"):
 				sectionName = self._configSectionName.replace("IP", "COCOTB") + "." + optionName
 				tb = CocoTestbench(host=self._host, name=optionName, configSectionName=sectionName, parent=self)
 				self._cocotb.append(tb)
 				# self._cocotb[optionName] = tb
-			elif (type == "lsenetlist"):
+			elif (kind == "lsenetlist"):
 				sectionName = self._configSectionName.replace("IP", "LSE") + "." + optionName
 				nl = LatticeNetlist(host=self._host, name=optionName, configSectionName=sectionName, parent=self)
 				self._latticeNetlist.append(nl)
 				# self._xstNetlist[optionName] = nl
-			elif (type == "quartusnetlist"):
+			elif (kind == "quartusnetlist"):
 				sectionName = self._configSectionName.replace("IP", "QII") + "." + optionName
 				nl = QuartusNetlist(host=self._host, name=optionName, configSectionName=sectionName, parent=self)
 				self._quartusNetlist.append(nl)
 				# self._xstNetlist[optionName] = nl
-			elif (type == "xstnetlist"):
+			elif (kind == "xstnetlist"):
 				sectionName = self._configSectionName.replace("IP", "XST") + "." + optionName
 				nl = XstNetlist(host=self._host, name=optionName, configSectionName=sectionName, parent=self)
 				self._xstNetlist.append(nl)
 				# self._xstNetlist[optionName] = nl
-			elif (type == "coregennetlist"):
+			elif (kind == "coregennetlist"):
 				sectionName = self._configSectionName.replace("IP", "CG") + "." + optionName
 				nl = CoreGeneratorNetlist(host=self._host, name=optionName, configSectionName=sectionName, parent=self)
 				self._coreGenNetlist.append(nl)
