@@ -5,6 +5,7 @@
 # ==============================================================================
 # Authors:          Patrick Lehmann
 #                   Martin Zabel
+#                   Thomas B. Preusser
 #
 # Python Class:      Altera ModelSim specific classes
 #
@@ -100,14 +101,17 @@ class Configuration(BaseConfiguration):
 				str(vsimPath))
 
 		# get version and backend
-		output = check_output([str(vsimPath), "-version"], universal_newlines=True)
 		version = None
-		versionRegExpStr = r"^.* vsim (.+?) "
-		versionRegExp = RegExpCompile(versionRegExpStr)
-		for line in output.split('\n'):
-			if version is None:
-				match = versionRegExp.match(line)
-				if match is not None:
-					version = match.group(1)
+		try:
+			output = check_output([str(vsimPath), "-version"], universal_newlines=True)
+			versionRegExpStr = r"^.* vsim (.+?) "
+			versionRegExp = RegExpCompile(versionRegExpStr)
+			for line in output.split('\n'):
+				if version is None:
+					match = versionRegExp.match(line)
+					if match is not None:
+						version = match.group(1)
+		except Exception as e:
+			raise ConfigurationException("'{0!s}' not executable.".format(vsimPath)) from e
 
 		self._host.PoCConfig[self._section]['Version'] = version
