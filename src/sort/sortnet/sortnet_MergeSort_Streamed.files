@@ -4,9 +4,9 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
-# PoC.arith
-include				"src/arith/arith_counter_gray.files"				# Unit Under Test
+# Common PoC packages for configuration, synthesis and simulation
+include				"src/common/common.files"														# load common packages
 
-# Testbench file(s)
-vhdl		test	"tb/arith/arith_counter_gray_tb.vhdl"				# Testbench
-
+# PoC.sort.sortnet
+vhdl		poc		"src/sort/sortnet/sortnet.pkg.vhdl"									# 
+vhdl		poc		"src/sort/sortnet/sortnet_MergeSort_Streamed.vhdl"	# Top-Level

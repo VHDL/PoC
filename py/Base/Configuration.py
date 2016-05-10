@@ -3,10 +3,10 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:					Patrick Lehmann
-#										Martin Zabel
+# Authors:          Patrick Lehmann
+#                   Martin Zabel
 #
-# Python Class:			TODO:
+# Python Class:      TODO:
 #
 # Description:
 # ------------------------------------
@@ -15,13 +15,13 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair for VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#		http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -39,10 +39,10 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Base.Configuration")
 
 
-from collections					import OrderedDict
-from pathlib							import Path
+from collections          import OrderedDict
+from pathlib              import Path
 
-from Base.Exceptions			import ExceptionBase
+from Base.Exceptions      import ExceptionBase
 
 
 class ConfigurationException(ExceptionBase):
@@ -76,19 +76,23 @@ class SkipConfigurationException(ExceptionBase):
 # 	def SubClasses(self):
 # 		return self._subclasses
 
-class Configuration:		#(ISubClassRegistration):
-	_vendor =								"Unknown"
-	_toolName =							"Unknown"
-	_template =	{}
+class Configuration:    #(ISubClassRegistration):
+	_vendor =      "Unknown"
+	_toolName =    "Unknown"
+	_section =    "ERROR"
+	_template =    {}
 
 	def __init__(self, host):
-		self._host =	host
+		self._host =  host
 
 	def IsSupportedPlatform(self):
 		if (self._host.Platform not in self._template):
 			return ("ALL" in self._template)
 		else:
 			return True
+
+	def IsConfigured(self):
+		return (len(self._host.PoCConfig.options(self._section)) != 0)
 
 	@classmethod
 	def GetSections(cls, platform):
@@ -142,9 +146,9 @@ class Configuration:		#(ISubClassRegistration):
 
 	def _ConfigureInstallationDirectory(self):
 		"""
-			Asks for installation directory and updates section.
-			Checks if entered directory exists and returns Path object.
-			If no installation directory was configured before, then _GetDefaultInstallationDir is called.
+		Asks for installation directory and updates section.
+		Checks if entered directory exists and returns Path object.
+		If no installation directory was configured before, then _GetDefaultInstallationDir is called.
 		"""
 		if self._host.PoCConfig.has_option(self._section, 'InstallationDirectory'):
 			defaultPath = Path(self._host.PoCConfig[self._section]['InstallationDirectory'])
@@ -171,8 +175,8 @@ class Configuration:		#(ISubClassRegistration):
 
 	def _GetDefaultInstallationDirectory(self):
 		"""
-			Returns unresolved default installation directory (string) from template.
-			Overwrite function in sub-class for automatic search of installation directory.
+		Returns unresolved default installation directory (str) from template.
+		Overwrite function in sub-class for automatic search of installation directory.
 		"""
 		return self._template[self._host.Platform][self._section]['InstallationDirectory']
 
@@ -194,9 +198,9 @@ class Configuration:		#(ISubClassRegistration):
 
 	def _ConfigureVersion(self):
 		"""
-				Asks for version and updates section. Returns version as string.
-				If no version was configured before, then _GetDefaultVersion is called.
-			"""
+			Asks for version and updates section. Returns version as string.
+			If no version was configured before, then _GetDefaultVersion is called.
+		"""
 		if self._host.PoCConfig.has_option(self._section, 'Version'):
 			defaultVersion = self._host.PoCConfig[self._section]['Version']
 		else:
@@ -215,8 +219,8 @@ class Configuration:		#(ISubClassRegistration):
 
 	def _GetDefaultVersion(self):
 		"""
-			Returns unresolved default version (string) from template.
-			Overwrite function in sub-class for automatic search of version.
+		Returns unresolved default version (str) from template.
+		Overwrite function in sub-class for automatic search of version.
 		"""
 		return self._template[self._host.Platform][self._section]['Version']
 

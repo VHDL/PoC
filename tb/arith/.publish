@@ -37,6 +37,7 @@ arith_prefix_or_tb.vhdl
 # Arithmetic
 arith_addw_tb.files
 arith_addw_tb.vhdl
+arith_addw_tb.isim.vhdl
 arith_div_tb.files
 arith_div_tb.vhdl
 # arith_muls_wide_tb.files
@@ -49,3 +50,4 @@ arith_sqrt_tb.vhdl
 # Random Numbers
 arith_prng_tb.files
 arith_prng_tb.vhdl
+arith_prng_tb.isim.vhdl

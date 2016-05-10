@@ -3,9 +3,10 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:					Patrick Lehmann
+# Authors:          Patrick Lehmann
+#                   Martin Zabel
 #
-# Python Class:			Altera Quartus specific classes
+# Python Class:      Altera Quartus specific classes
 #
 # Description:
 # ------------------------------------
@@ -16,13 +17,13 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair for VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#		http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -39,16 +40,17 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Altera.Quartus")
 
-from collections									import OrderedDict
-from subprocess 									import check_output, STDOUT
 
-from Base.Configuration						import Configuration as BaseConfiguration, ConfigurationException
-from Base.Exceptions import PlatformNotSupportedException
-from Base.Executable							import Executable, ExecutableArgument, CommandLineArgumentList, ShortValuedFlagArgument, LongValuedFlagArgument, \
-	StringArgument, ShortFlagArgument
-from Base.Logging import Severity, LogEntry
-from Base.Project									import Project as BaseProject, ProjectFile, FileTypes, SettingsFile
-from ToolChains.Altera.Altera import AlteraException
+from collections                import OrderedDict
+from subprocess                 import check_output, STDOUT
+
+from Base.Configuration          import Configuration as BaseConfiguration, ConfigurationException
+from Base.Exceptions            import PlatformNotSupportedException
+from Base.Logging                import Severity, LogEntry
+from Base.Executable            import Executable, CommandLineArgumentList
+from Base.Executable            import ExecutableArgument, ShortValuedFlagArgument, LongValuedFlagArgument, StringArgument, ShortFlagArgument
+from Base.Project                import Project as BaseProject, ProjectFile, FileTypes, SettingsFile
+from ToolChains.Altera.Altera    import AlteraException
 
 
 class QuartusException(AlteraException):
@@ -56,22 +58,22 @@ class QuartusException(AlteraException):
 
 
 class Configuration(BaseConfiguration):
-	_vendor =		"Altera"
-	_toolName =	"Altera Quartus"
-	_section =	"INSTALL.Altera.Quartus"
+	_vendor =    "Altera"
+	_toolName =  "Altera Quartus"
+	_section =  "INSTALL.Altera.Quartus"
 	_template = {
 		"Windows": {
 			_section: {
-				"Version":								"15.1",
-				"InstallationDirectory":	"${INSTALL.Altera:InstallationDirectory}/${Version}/quartus",
-				"BinaryDirectory":				"${InstallationDirectory}/bin64"
+				"Version":                "15.1",
+				"InstallationDirectory":  "${INSTALL.Altera:InstallationDirectory}/${Version}/quartus",
+				"BinaryDirectory":        "${InstallationDirectory}/bin64"
 			}
 		},
 		"Linux": {
 			_section: {
-				"Version":								"15.1",
-				"InstallationDirectory":	"${INSTALL.Altera:InstallationDirectory}/${Version}/quartus",
-				"BinaryDirectory":				"${InstallationDirectory}/bin"
+				"Version":                "15.1",
+				"InstallationDirectory":  "${INSTALL.Altera:InstallationDirectory}/${Version}/quartus",
+				"BinaryDirectory":        "${InstallationDirectory}/bin"
 			}
 		}
 	}
@@ -110,10 +112,10 @@ class Configuration(BaseConfiguration):
 
 class QuartusMixIn:
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		self._platform =						platform
-		self._binaryDirectoryPath =	binaryDirectoryPath
-		self._version =							version
-		self._logger =							logger
+		self._platform =            platform
+		self._binaryDirectoryPath =  binaryDirectoryPath
+		self._version =              version
+		self._logger =              logger
 
 
 class Quartus(QuartusMixIn):
@@ -131,21 +133,21 @@ class Map(Executable, QuartusMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		QuartusMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
 
-		if (platform == "Windows") :			executablePath = binaryDirectoryPath / "quartus_map.exe"
-		elif (platform == "Linux") :			executablePath = binaryDirectoryPath / "quartus_map"
-		else :														raise PlatformNotSupportedException(platform)
+		if (platform == "Windows") :      executablePath = binaryDirectoryPath / "quartus_map.exe"
+		elif (platform == "Linux") :      executablePath = binaryDirectoryPath / "quartus_map"
+		else :                            raise PlatformNotSupportedException(platform)
 		Executable.__init__(self, platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
-		self._hasOutput =		False
-		self._hasWarnings =	False
-		self._hasErrors =		False
+		self._hasOutput =    False
+		self._hasWarnings =  False
+		self._hasErrors =    False
 
 	@property
-	def HasWarnings(self):	return self._hasWarnings
+	def HasWarnings(self):  return self._hasWarnings
 	@property
-	def HasErrors(self):		return self._hasErrors
+	def HasErrors(self):    return self._hasErrors
 
 	class Executable(metaclass=ExecutableArgument) :
 		pass
@@ -198,12 +200,8 @@ class Map(Executable, QuartusMixIn):
 				self._Log(line)
 				line = next(iterator)
 
-		except StopIteration as ex:
+		except StopIteration:
 			pass
-		except QuartusException:
-			raise
-		# except Exception as ex:
-		#	raise GHDLException("Error while executing GHDL.") from ex
 		finally:
 			if self._hasOutput:
 				self._LogNormal("    " + ("-" * 76))
@@ -212,9 +210,9 @@ class TclShell(Executable, QuartusMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		QuartusMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
 
-		if (platform == "Windows") :			executablePath = binaryDirectoryPath / "quartus_sh.exe"
-		elif (platform == "Linux") :			executablePath = binaryDirectoryPath / "quartus_sh"
-		else :														raise PlatformNotSupportedException(platform)
+		if (platform == "Windows") :      executablePath = binaryDirectoryPath / "quartus_sh.exe"
+		elif (platform == "Linux") :      executablePath = binaryDirectoryPath / "quartus_sh"
+		else :                            raise PlatformNotSupportedException(platform)
 		Executable.__init__(self, platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
@@ -234,21 +232,24 @@ def MapFilter(gen):
 	iterator = iter(gen)
 
 	for line in iterator:
-		if line.startswith("Info: Command: quartus_map"):		break
+		if line.startswith("Error ("):
+			yield LogEntry(line, Severity.Error)
+		elif line.startswith("Info: Command: quartus_map"):
+			break
 
 	for line in iterator:
 		if line.startswith("Info ("):
-			yield LogEntry(line[5:], Severity.Verbose)
+			yield LogEntry(line, Severity.Verbose)
 		elif line.startswith("Error ("):
-			yield LogEntry(line[6:], Severity.Error)
+			yield LogEntry(line, Severity.Error)
 		elif line.startswith("Warning ("):
-			yield LogEntry(line[8:], Severity.Warning)
+			yield LogEntry(line, Severity.Warning)
 		elif line.startswith("    Info ("):
-			yield LogEntry("  " + line[9:], Severity.Verbose)
+			yield LogEntry(line, Severity.Verbose)
 		elif line.startswith("Info:"):
-			yield LogEntry(line[6:], Severity.Info)
+			yield LogEntry(line, Severity.Info)
 		elif line.startswith("    Info:"):
-			yield LogEntry(line[10:], Severity.Debug)
+			yield LogEntry(line, Severity.Debug)
 		else:
 			yield LogEntry(line, Severity.Normal)
 
@@ -256,14 +257,14 @@ class QuartusProject(BaseProject):
 	def __init__(self, host, name, projectFile=None):
 		super().__init__(name)
 
-		self._host =				host
-		self._projectFile =	projectFile
+		self._host =        host
+		self._projectFile =  projectFile
 
 	def Save(self):
 		pass
 
 	def Read(self):
-		tclShell = self._host._quartus.GetTclShell()
+		tclShell = self._host.Toolchain.GetTclShell()
 		tclShell.StartProcess(["-s"])
 		tclShell.SendBoundary()
 		tclShell.ReadUntilBoundary()
@@ -286,11 +287,10 @@ class QuartusSettingsFile(SettingsFile):
 	def __init__(self, name, settingsFile=None):
 		super().__init__(name)
 
-		self._projectFile =		settingsFile
+		self._projectFile =    settingsFile
 
-		self._sourceFiles =							[]
-		self._globalAssignments =				OrderedDict()
-		self._globalAssignmentsProxy =	GlobalAssignmentProxy(self)
+		self._sourceFiles =              []
+		self._globalAssignments =        OrderedDict()
 
 	@property
 	def File(self):
@@ -303,14 +303,14 @@ class QuartusSettingsFile(SettingsFile):
 
 	@property
 	def GlobalAssignments(self):
-		return self._globalAssignmentsProxy
+		return self._globalAssignments
 
 	def CopySourceFilesFromProject(self, project):
 		for file in project.Files(fileType=FileTypes.VHDLSourceFile):
 			self._sourceFiles.append(file)
 
 	def Write(self):
-		if (self._projectFile is None):		raise QuartusException("No file path for QuartusProject provided.")
+		if (self._projectFile is None):    raise QuartusException("No file path for QuartusProject provided.")
 
 		buffer = ""
 		for key,value in self._globalAssignments.items():
@@ -319,7 +319,7 @@ class QuartusSettingsFile(SettingsFile):
 		buffer += "\n"
 		for file in self._sourceFiles:
 			if (not file.Path.exists()):
-				raise QuartusException("Can not add '{0!s}' to Quartus settings file.".
+				raise QuartusException("Cannot add '{0!s}' to Quartus settings file.".
 																	format(file.Path)) from FileNotFoundError(str(file.Path))
 			buffer += "set_global_assignment -name VHDL_FILE {file} -library {library}\n".\
 				format(file=file.Path.as_posix(), library=file.LibraryName)
@@ -327,27 +327,6 @@ class QuartusSettingsFile(SettingsFile):
 		with self._projectFile.Path.open('w') as fileHandle:
 			fileHandle.write(buffer)
 
-class GlobalAssignmentProxy:
-	def __init__(self, project):
-		self._project = project
-
-	def __getitem__(self, key):
-		return self._project._globalAssignments[key]
-
-	def __setitem__(self, key, value):
-		self._project._globalAssignments[key] = value
-
-	def __delitem__(self, key):
-		del self._project._globalAssignments[key]
-
-	def __contains__(self, key):
-		return (key in self._project._globalAssignments)
-
-	def __len__(self):
-		return len(self._project._globalAssignments)
-
-	def __iter__(self):
-		return self._project._globalAssignments.__iter__()
 
 class QuartusProjectFile(ProjectFile):
 	def __init__(self, file):

@@ -92,15 +92,15 @@ class CommandLineArgumentList(list):
 		result = []
 		for item in self:
 			arg = item.AsArgument()
-			if (arg is None):						pass
-			elif isinstance(arg, str):	result.append(arg)
-			elif isinstance(arg, list):	result += arg
-			else:												raise TypeError()
+			if (arg is None):            pass
+			elif isinstance(arg, str):  result.append(arg)
+			elif isinstance(arg, list):  result += arg
+			else:                        raise TypeError()
 		return result
 		
 class VerboseFlag(metaclass=FlagArgument):
-	_name =		"-v"
-	_value =	None
+	_name =    "-v"
+	_value =  None
 
 # print("str:  " + VerboseFlag.__str__(VerboseFlag))
 # print("repr: " + repr(VerboseFlag))
@@ -118,8 +118,8 @@ class VerboseFlag(metaclass=FlagArgument):
 # print("repr: " + repr(VerboseFlag))
 
 class LibrarySwitch(metaclass=StringArgument):
-	_name =		"-work="
-	_value =	None
+	_name =    "-work="
+	_value =  None
 
 # print("str:  " + str(LibrarySwitch))
 # print("repr: " + repr(LibrarySwitch))
@@ -138,17 +138,17 @@ class LibrarySwitch(metaclass=StringArgument):
 
 
 args = CommandLineArgumentList(VerboseFlag, LibrarySwitch)
-args[VerboseFlag] =		True
-args[LibrarySwitch] =	"poc"
+args[VerboseFlag] =    True
+args[LibrarySwitch] =  "poc"
 
 print("Verbose: " + str(args[VerboseFlag]))
 print("'" + ("' '".join(args.ToArgumentList())) + "'")
 
-args[LibrarySwitch] =	"test"
+args[LibrarySwitch] =  "test"
 print("'" + ("' '".join(args.ToArgumentList())) + "'")
 
-args[LibrarySwitch] =	None
+args[LibrarySwitch] =  None
 print("'" + ("' '".join(args.ToArgumentList())) + "'")
 
-args[VerboseFlag] =		False
+args[VerboseFlag] =    False
 print("'" + ("' '".join(args.ToArgumentList())) + "'")
