@@ -41,7 +41,7 @@ use			PoC.utils.all;
 
 entity arith_prng is
 	generic (
-		BITS : positive;
+		BITS : positive					:= 32;
 		SEED : std_logic_vector := "0"
 	);
 	port (
@@ -234,7 +234,6 @@ architecture rtl of arith_prng is
 	signal val_r		: std_logic_vector(BITS downto 1)		:= resize(SEED, BITS);
 	
 begin
-	-- psl default clock is rising_edge(clk);
 	assert ((3 <= BITS) and (BITS <= 168)) report "Width not yet supported." severity failure;
 	
 	-----------------------------------------------------------------------------

@@ -385,6 +385,7 @@ package body sim_protected is
 				return Proc.ID;
 			else
 				report "TestID (" & T_SIM_TEST_ID'image(TestID) & ") is unknown." severity FAILURE;
+				return T_SIM_PROCESS_ID'high;
 			end if;
 		end function;
 		
@@ -400,7 +401,13 @@ package body sim_protected is
 					ActiveProcessCount								:= dec(not Processes(ProcID).IsLowPriority, ActiveProcessCount);
 					Tests(TestID).ActiveProcessCount	:= dec(not Processes(ProcID).IsLowPriority, Tests(TestID).ActiveProcessCount);
 					if (Tests(TestID).ActiveProcessCount = 0) then
-						finalizeTest(TestID);
+						if (TestID = C_SIM_DEFAULT_TEST_ID) then
+							if (finalizeDefaultTest = TRUE) then
+								finalize;
+							end if;
+						else
+							finalizeTest(TestID);
+						end if;
 					end if;
 				end if;
 			else

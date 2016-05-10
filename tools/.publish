@@ -11,8 +11,14 @@ git/
 #emacs/
 Notepad++/
 
+# vendor and tool specific hook files
+hooks/
+
 # compile scripts for vendor libraries
-Xilinx/
+precompile/
+
+# scripts and configuration files for the Travis-CI flow
+Travis-CI/
 
 # the publish scripts
 #publish/

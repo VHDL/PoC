@@ -36,6 +36,7 @@ use			IEEE.numeric_std.all;
 library	PoC;
 use			PoC.utils.all;
 use			PoC.vectors.all;
+use     PoC.arith.all;
 
 
 entity stat_Average is
@@ -59,7 +60,6 @@ end entity;
 
 
 architecture rtl of stat_Average is
-
 	signal DataIn_us	: UNSIGNED(DataIn'range);
 	
 	signal Counter_i	: STD_LOGIC_VECTOR(COUNTER_BITS - 1 downto 0);
@@ -99,23 +99,25 @@ begin
 	Counter_i	<= std_logic_vector(Counter_us);
 	Sum_i			<= std_logic_vector(Sum_us);
 
-	div : entity PoC.arith_div_pipelined
-		generic map (
-			DIVIDEND_BITS		=> COUNTER_BITS,
-			DIVISOR_BITS		=> COUNTER_BITS,
-			RADIX						=> 2
-		)
-		port map (
-			Clock			=> Clock,						
-			Reset			=> Reset,
+  div : entity PoC.arith_div
+    generic map (
+      A_BITS             => COUNTER_BITS,
+      D_BITS             => COUNTER_BITS,
+      PIPELINED          => true
+    )
+    port map (
+      clk =>		Clock,
+      rst =>		Reset,
 
-			Enable		=> Enable,
-			Dividend	=> Sum_i,
-			Divisor		=> Counter_i,
+      start =>	Enable,
+      ready =>	Valid_i,
 			
-			Quotient	=> Quotient,
-			Valid			=> Valid_i
-		);
+      A =>			Sum_i,
+      D =>			Counter_i,
+      Q =>			Quotient,
+      R =>			open,
+      Z =>			open
+    );
 
 	Count_d		<= Count_d(Count_d'high - 1 downto 0) & Counter_i	when rising_edge(Clock);
 	Sum_d			<= Sum_d(Sum_d'high - 1 downto 0) & Sum_i					when rising_edge(Clock);

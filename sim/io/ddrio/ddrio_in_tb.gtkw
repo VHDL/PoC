@@ -2,10 +2,8 @@
 [*] GTKWave Analyzer v3.3.61 (w)1999-2014 BSI
 [*] Mon Feb 08 22:01:01 2016
 [*]
-[dumpfile] "H:\Austausch\PoC\temp\ghdl\ddrio_in_tb.ghw"
 [dumpfile_mtime] "Mon Feb 08 21:58:19 2016"
 [dumpfile_size] 2853
-[savefile] "H:\Austausch\PoC\sim\io\ddrio\ddrio_in_tb.gtkw"
 [timestart] 0
 [size] 1680 997
 [pos] -191 -191

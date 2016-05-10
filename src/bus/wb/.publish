@@ -4,6 +4,9 @@
 # Documentation
 README.md
 
+#wb_fifo_adapter.files
 #wb_fifo_adapter.vhdl
+#wb_ocram.files
 #wb_ocram.vhdl
+#wb_uart_wrapper.files
 #wb_uart_wrapper.vhdl

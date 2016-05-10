@@ -9,5 +9,7 @@ remote/
 
 # --------------------------------------
 comm.pkg.vhdl
+comm_crc.files
 comm_crc.vhdl
+comm_scramble.files
 comm_scramble.vhdl

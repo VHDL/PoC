@@ -9,4 +9,5 @@ stream/
 wb/
 
 # Entities
+bus_Arbiter.files
 bus_Arbiter.vhdl
