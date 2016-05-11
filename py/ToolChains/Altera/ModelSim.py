@@ -43,7 +43,7 @@ else:
 
 
 from re                      import compile as RegExpCompile
-from subprocess             import check_output, CalledProcessError
+from subprocess             import check_output
 
 from Base.Configuration import Configuration as BaseConfiguration, ConfigurationException
 from ToolChains.Altera.Altera import AlteraException

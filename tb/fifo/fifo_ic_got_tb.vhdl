@@ -88,12 +88,12 @@ architecture tb of fifo_ic_got_tb is
   
 begin
 	-- initialize global simulation status
-	simInitialize(MaxSimulationRuntime => 1 us);
+	simInitialize(MaxSimulationRuntime => 1 ms);
 	-- generate global testbench clock
 	simGenerateClock(clk0, 14 ns);
 	simGenerateClock(clk1, 24 ns);
 	simGenerateClock(clk2, 10 ns);
-	simGenerateWaveform(rst,	simGenerateWaveform_Reset(Pause => 0 ns, ResetPulse => 16 ns));
+	simGenerateWaveform(rst,	simGenerateWaveform_Reset(Pause => 0 ns, ResetPulse => 30 ns));
 
   -----------------------------------------------------------------------------
   -- Initial Generator
