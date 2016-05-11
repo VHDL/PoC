@@ -43,7 +43,7 @@ else:
 
 
 from re                      import compile as RegExpCompile
-from subprocess             import check_output, CalledProcessError
+from subprocess             import check_output
 
 from Base.Configuration import Configuration as BaseConfiguration, ConfigurationException
 from ToolChains.Altera.Altera import AlteraException
@@ -104,7 +104,7 @@ class Configuration(BaseConfiguration):
 		try:
 			output = check_output([str(vsimPath), "-version"], universal_newlines=True)
 		except OSError as ex:
-			raise ConfigurationException("'{0!s}' not executable.".format(vsimPath)) from ex
+			raise ConfigurationException("'{0!s}' is not executable.".format(vsimPath)) from ex
 
 		version = None
 		versionRegExpStr = r"^.* vsim (.+?) "
