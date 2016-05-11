@@ -497,7 +497,7 @@ def GHDLRunFilter(gen):
 		"note":    Severity.Info
 	}
 
-	filterPattern = r".+?:\d+:\d+:((?P<report>@\w+:\(report )?(?P<severity>\w+)(?(report)\)):)? (?P<message>.*)"
+	filterPattern = r".+?:\d+:\d+:((?P<report>@\w+:\((?:report|assertion) )?(?P<severity>\w+)(?(report)\)):)? (?P<message>.*)"
 	filterRegExp = RegExpCompile(filterPattern)
 
 	lineno = 0
