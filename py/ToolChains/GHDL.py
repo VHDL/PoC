@@ -461,13 +461,13 @@ class GHDLRun(GHDL):
 
 
 def GHDLAnalyzeFilter(gen):
-	filterPattern = r".+?:\d+:\d+:(?P<warning>warning:) (?P<message>.*)"			# <Path>:<line>:<column>:[warning:] <message>
+	filterPattern = r".+?:\d+:\d+:(?P<warning>warning:)? (?P<message>.*)"			# <Path>:<line>:<column>:[warning:] <message>
 	filterRegExp  = RegExpCompile(filterPattern)
 
 	for line in gen:
 		filterMatch = filterRegExp.match(line)
-		if filterMatch is not None:
-			if filterMatch.group('warning') is not None:
+		if (filterMatch is not None):
+			if (filterMatch.group('warning') is not None):
 				yield LogEntry(line, Severity.Warning)
 				continue
 
