@@ -7,9 +7,6 @@
       - wider columns
   - create better sub command help pages
 
-#### For all simulators:
-  - print a summary report
-  
 #### Command: `list-testbench`
   - list testbenches as tree
   

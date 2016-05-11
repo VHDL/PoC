@@ -53,7 +53,7 @@ from Compiler.LSECompiler            import Compiler as LSECompiler
 from Compiler.QuartusCompiler        import Compiler as MapCompiler
 from Compiler.XCOCompiler            import Compiler as XCOCompiler
 from Compiler.XSTCompiler            import Compiler as XSTCompiler
-from Compiler.SynthCompiler          import Compiler as SynthCompiler
+from Compiler.VivadoCompiler          import Compiler as VivadoCompiler
 from PoC.Config                      import Board
 from PoC.Entity                      import Root, FQN, EntityTypes, WildCard, TestbenchKind, NetlistKind
 from PoC.Solution                    import Solution, Repository
@@ -699,8 +699,12 @@ class PoC(ILogable, ArgParseMixin):
 				self._LogVerbose("Reading solution file...")
 				self._LogDebug("  {0!s}".format(solutionConfigFile))
 				self._LogDebug("  {0!s}".format(solutionDefaultsFile))
-				if not solutionConfigFile.exists():    raise NotConfiguredException("Solution's {0} configuration file '{1!s}' does not exist.".format(solutionName, solutionConfigFile))  from FileNotFoundError(str(solutionConfigFile))
-				if not solutionDefaultsFile.exists():  raise NotConfiguredException("Solution's {0} defaults file '{1!s}' does not exist.".format(solutionName, solutionDefaultsFile))  from FileNotFoundError(str(solutionDefaultsFile))
+				if not solutionConfigFile.exists():
+					raise NotConfiguredException("Solution's {0} configuration file '{1!s}' does not exist.".format(solutionName, solutionConfigFile)) \
+						from FileNotFoundError(str(solutionConfigFile))
+				if not solutionDefaultsFile.exists():
+					raise NotConfiguredException("Solution's {0} defaults file '{1!s}' does not exist.".format(solutionName, solutionDefaultsFile)) \
+						from FileNotFoundError(str(solutionDefaultsFile))
 				self.__pocConfig.read(str(solutionConfigFile))
 				self.__pocConfig.read(str(solutionDefaultsFile))
 
@@ -815,7 +819,7 @@ class PoC(ILogable, ArgParseMixin):
 		board =        self._ExtractBoard(args.BoardName, args.DeviceName)
 
 		simulator = ISESimulator(self, args.GUIMode)
-		allPassed = simulator.RunAll(fqnList, board=board)		#, vhdlGenerics=None)
+		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=VHDLVersion.VHDL93)		#, vhdlGenerics=None)
 
 		Exit.exit(0 if allPassed else 1)
 
@@ -890,7 +894,7 @@ class PoC(ILogable, ArgParseMixin):
 
 		# create a CocotbSimulator instance and prepare it
 		simulator = CocotbSimulator(self, args.GUIMode)
-		allPassed = simulator.RunAll(fqnList, board=board)
+		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=VHDLVersion.VHDL08)
 
 		Exit.exit(0 if allPassed else 1)
 
@@ -974,14 +978,14 @@ class PoC(ILogable, ArgParseMixin):
 		Exit.exit()
 
 	# ----------------------------------------------------------------------------
-	# create the sub-parser for the "synth" command
+	# create the sub-parser for the "vivado" command
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Synthesis commands")
-	@CommandAttribute("synth", help="Compile a PoC IP core with Xilinx Vivado Synth to a design checkpoint")
+	@CommandAttribute("vivado", help="Compile a PoC IP core with Xilinx Vivado Synth to a design checkpoint")
 	@PoCEntityAttribute()
 	@BoardDeviceAttributeGroup()
 	@NoCleanUpAttribute()
-	def HandleSynthCompilation(self, args):
+	def HandleVivadoCompilation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSynthesis()
 		self._CheckVivadoEnvironment()
@@ -989,7 +993,7 @@ class PoC(ILogable, ArgParseMixin):
 		fqnList =  self._ExtractFQNs(args.FQN, defaultType=EntityTypes.NetList)
 		board =    self._ExtractBoard(args.BoardName, args.DeviceName, force=True)
 
-		compiler = SynthCompiler(self, self.DryRun, args.NoCleanUp)
+		compiler = VivadoCompiler(self, self.DryRun, args.NoCleanUp)
 		compiler.RunAll(fqnList, board)
 
 		Exit.exit()

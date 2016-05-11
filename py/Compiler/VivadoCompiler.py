@@ -44,9 +44,8 @@ else:
 from pathlib                  import Path
 
 from Base.Project              import ToolChain, Tool
-from Base.Compiler            import Compiler as BaseCompiler, CompilerException
+from Base.Compiler            import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
 from PoC.Entity                import WildCard
-from ToolChains.Xilinx.Xilinx  import XilinxProjectExportMixIn
 from ToolChains.Xilinx.Vivado  import Vivado
 
 
@@ -78,10 +77,10 @@ class Compiler(BaseCompiler):
 		for fqn in fqnList:
 			entity = fqn.Entity
 			if (isinstance(entity, WildCard)):
-				for netlist in entity.GetSynthNetlist():
+				for netlist in entity.GetVivadoNetlist():
 					self.TryRun(netlist, *args, **kwargs)
 			else:
-				netlist = entity.SynthNetlist
+				netlist = entity.VivadoNetlist
 				self.TryRun(netlist, *args, **kwargs)
 
 	def Run(self, netlist, board):

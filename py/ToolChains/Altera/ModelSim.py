@@ -43,7 +43,7 @@ else:
 
 
 from re                      import compile as RegExpCompile
-from subprocess             import check_output
+from subprocess             import check_output, CalledProcessError
 
 from Base.Configuration import Configuration as BaseConfiguration, ConfigurationException
 from ToolChains.Altera.Altera import AlteraException
@@ -101,17 +101,18 @@ class Configuration(BaseConfiguration):
 				str(vsimPath))
 
 		# get version and backend
-		version = None
 		try:
 			output = check_output([str(vsimPath), "-version"], universal_newlines=True)
-			versionRegExpStr = r"^.* vsim (.+?) "
-			versionRegExp = RegExpCompile(versionRegExpStr)
-			for line in output.split('\n'):
-				if version is None:
-					match = versionRegExp.match(line)
-					if match is not None:
-						version = match.group(1)
-		except Exception as e:
-			raise ConfigurationException("'{0!s}' not executable.".format(vsimPath)) from e
+		except OSError as ex:
+			raise ConfigurationException("'{0!s}' not executable.".format(vsimPath)) from ex
+
+		version = None
+		versionRegExpStr = r"^.* vsim (.+?) "
+		versionRegExp = RegExpCompile(versionRegExpStr)
+		for line in output.split('\n'):
+			if version is None:
+				match = versionRegExp.match(line)
+				if match is not None:
+					version = match.group(1)
 
 		self._host.PoCConfig[self._section]['Version'] = version

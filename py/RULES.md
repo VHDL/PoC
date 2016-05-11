@@ -3,7 +3,7 @@
 
 If the pre- or post-processing rules (copying, patching, deleting) for IP cores
 are to long or to many, then it's possible to out-source these rules into a
-seperate `*.rules` file. A rules file supports 2 main sections: `PreProcessRules`
+separate `*.rules` file. A rules file supports 2 main sections: `PreProcessRules`
 and `PostProcessRules`. Line comments start with `#`.
 
 ### Main Sections
@@ -38,7 +38,7 @@ There are three possible rules:
   - `Copy "<SourceFile> To "<DestinationFile>"`  
     This rule copies a source file to a destination file. The destination file name
     can differ from source file (rename file while copying). Non existent parent
-    directoies in the path to the destination file, are created before copying.
+    directories in the path to the destination file, are created before copying.
   - `File "<File>" .. End File`  
     This rule allows several sub rules to be applied to a single file:
 		
@@ -46,7 +46,7 @@ There are three possible rules:
         This file-base sub-rule applies a regular expression replacement to a file.
         The first parameter `<SearchPattern>` is a Python Regular Expression, which
         is used to find a match in the file. The second parameter `<ReplacePattern>` is
-        the corresconding replacement pattern. Both strings have to escape `\` and `"`
+        the corresponding replacement pattern. Both strings have to escape `\` and `"`
         characters by an additional `\`-character. No other character has to be escaped.
         
         It's possible to pass one to three optional options to the Python `re` module:
@@ -63,7 +63,7 @@ There are three possible rules:
 Each string (file name, pattern) can include `${[<SectionName>:]<OptionName>}` variables.
 These variables are looked up in the ini-file based database and interpolated according
 to that rules. A variable can contain a single option name (search in the current section)
-or a section name plus option name, demilited by a `:`-sign. Variables can be nested. The
+or a section name plus option name, delimited by a `:`-sign. Variables can be nested. The
 interpolation starts at the section, which referenced the rules files.
 
 *Note:* It's possible to create a new option in the netlist's section (in the ini-file) and

@@ -45,7 +45,7 @@ else:
 import shutil
 from textwrap                import dedent
 
-from Base.Project            import FileTypes, ToolChain, Tool, VHDLVersion
+from Base.Project            import FileTypes, ToolChain, Tool
 from Base.Simulator          import SimulatorException, Simulator as BaseSimulator
 from PoC.Config              import Vendors
 from PoC.Entity              import WildCard
@@ -86,17 +86,13 @@ class Simulator(BaseSimulator):
 				testbench = entity.CocoTestbench
 				self.TryRun(testbench, *args, **kwargs)
 
-		# if (len(self._testSuite) > 1):
 		self.PrintOverallSimulationReport()
 
 		return self._testSuite.IsAllPassed
 
-	def Run(self, testbench, board, **_):
-		super().Run(testbench, board, VHDLVersion.VHDL08)
+	def _RunSimulation(self, testbench):
+		board = self._pocProject.Board
 
-		self._Run(testbench, board)
-
-	def _Run(self, testbench, board):
 		# select modelsim.ini from precompiled
 		precompiledModelsimIniPath = self.Directories.PreCompiled
 		if board.Device.Vendor is Vendors.Altera:

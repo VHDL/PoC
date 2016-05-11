@@ -189,9 +189,9 @@ class GHDL(Executable):
 	def HasErrors(self):            return self._hasErrors
 
 	def deco(Arg):
-		def getter(self):
+		def getter(_):
 			return Arg.Value
-		def setter(self, value):
+		def setter(_, value):
 			Arg.Value = value
 		return property(getter, setter)
 
@@ -471,21 +471,35 @@ def GHDLAnalyzeFilter(gen):
 		warningRegExpMatch = warningRegExp.match(line)
 		if (warningRegExpMatch is not None):
 			yield LogEntry(line, Severity.Warning)
-		else:
-			errorRegExpMatch = errorRegExp.match(line)
-			if (errorRegExpMatch is not None):
-				message = errorRegExpMatch.group('Message')
-				if message.endswith("has changed and must be reanalysed"):
-					raise GHDLReanalyzeException(message)
-				yield LogEntry(line, Severity.Error)
-			else:
-				yield LogEntry(line, Severity.Normal)
+			continue
+
+		errorRegExpMatch = errorRegExp.match(line)
+		if (errorRegExpMatch is not None):
+			message = errorRegExpMatch.group('Message')
+			if message.endswith("has changed and must be reanalysed"):
+				raise GHDLReanalyzeException(message)
+			yield LogEntry(line, Severity.Error)
+			continue
+
+		yield LogEntry(line, Severity.Normal)
 
 GHDLElaborateFilter = GHDLAnalyzeFilter
 
 def GHDLRunFilter(gen):
-	reportRegExpPattern = r".+?:\d+:\d+:@\w+:\(report (?P<Severity>\w+)\): (?P<Message>.*)"  # <Path>:<line>:<column>:@<time>:(report <severity>): <message>
+	warningRegExpPattern =  r".+?:\d+:\d+:warning: (?P<Message>.*)"                            # <Path>:<line>:<column>:warning: <message>
+	errorRegExpPattern =    r".+?:\d+:\d+: (?P<Message>.*)"                                    # <Path>:<line>:<column>: <message>
+	reportRegExpPattern =   r".+?:\d+:\d+:@\w+:\(report (?P<Severity>\w+)\): (?P<Message>.*)"  # <Path>:<line>:<column>:@<time>:(report <severity>): <message>
+
+	warningRegExp = RegExpCompile(warningRegExpPattern)
+	errorRegExp = RegExpCompile(errorRegExpPattern)
 	reportRegExp = RegExpCompile(reportRegExpPattern)
+
+	SEVERITY_LEVEL_MAPPING = {
+		"failure": Severity.Fatal,
+		"error":   Severity.Error,
+		"warning": Severity.Warning,
+		"note":    Severity.Info
+	}
 
 	lineno = 0
 	for line in gen:
@@ -500,12 +514,17 @@ def GHDLRunFilter(gen):
 
 		reportRegExpMatch = reportRegExp.match(line)
 		if (reportRegExpMatch is not None):
-			yield LogEntry(line, {
-				'failure' : Severity.Fatal,
-				'error'   : Severity.Error,
-				'warning' : Severity.Warning,
-				'info'    : Severity.Info
-				}.get(reportRegExpMatch.group('Severity'), Severity.Normal))
+			yield LogEntry(line, SEVERITY_LEVEL_MAPPING[reportRegExpMatch.group('Severity')])
+			continue
+
+		warningRegExpMatch = warningRegExp.match(line)
+		if (warningRegExpMatch is not None):
+			yield LogEntry(line, Severity.Warning)
+			continue
+
+		errorRegExpMatch = errorRegExp.match(line)
+		if (errorRegExpMatch is not None):
+			yield LogEntry(line, Severity.Error)
 			continue
 
 		yield LogEntry(line, Severity.Normal)
