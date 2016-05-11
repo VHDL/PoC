@@ -161,6 +161,8 @@ class PathElement:
 	def Level(self):              return self._parent.Level + 1
 	@property
 	def Visibility(self):         return self._visibility
+	@property
+	def IsVisible(self):          return self._host.Repository.Kind <= self._visibility
 
 	@property
 	def Path(self):
@@ -204,18 +206,34 @@ class Namespace(PathElement):
 				self.__entities[optionName.lower()] = ent
 
 	@property
-	def Namespaces(self):          return [ns for ns in self.__namespaces.values()]
+	def Namespaces(self):         return [ns for ns in self.GetNamespaces()]
 	@property
-	def NamespaceNames(self):      return [nsName for nsName in self.__namespaces.keys()]
+	def NamespaceNames(self):     return [nsName for nsName in self.GetNamespaceNames()]
 	@property
-	def Entities(self):            return [ent for ent in self.__entities.values()]
+	def Entities(self):           return [entity for entity in self.GetEntities()]
 	@property
-	def EntityNames(self):        return [entName for entName in self.__entities.keys()]
+	def EntityNames(self):        return [entityName for entityName in self.GetEntityNames()]
 
-	def GetNamespaces(self):      return self.__namespaces.values()
-	def GetNamespaceNames(self):  return self.__namespaces.keys()
-	def GetEntities(self):        return self.__entities.values()
-	def GetEntityNames(self):      return self.__entities.keys()
+	def GetNamespaces(self):
+		for namespace in self.__namespaces.values():
+			if namespace.IsVisible:
+				yield namespace
+
+	def GetNamespaceNames(self):
+		for namespace in self.__namespaces.values():
+			if namespace.IsVisible:
+				yield namespace.Name
+
+	def GetEntities(self):
+		for entity in self.__entities.values():
+			if entity.IsVisible:
+				yield entity.Name
+
+	def GetEntityNames(self):
+		for entity in self.__entities.values():
+			if entity.IsVisible:
+				yield entity.Name
+
 	def GetAllEntities(self):
 		for namespace in self.GetNamespaces():
 			for entity in namespace.GetAllEntities():
@@ -226,9 +244,13 @@ class Namespace(PathElement):
 	def __getitem__(self, key):
 		key = key.lower()
 		try:
-			return self.__namespaces[key]
+			item = self.__namespaces[key]
 		except KeyError:
-			return self.__entities[key]
+			item = self.__entities[key]
+		if (not item.IsVisible):
+			raise KeyError("Item '{0!s}' is not visible.".format(key))
+
+		return item
 
 	def pprint(self, indent=0):
 		__indent = "  " * indent
