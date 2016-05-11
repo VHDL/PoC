@@ -176,7 +176,7 @@ class PathElement:
 		return result
 
 	def _Load(self):
-		pass
+		self._visibility = Visibility.Parse(self.ConfigSection['Visibility'])
 
 	def __str__(self):
 		return "{0!s}.{1}".format(self.Parent, self.Name)
@@ -292,11 +292,17 @@ class WildCard(PathElement):
 
 
 class StarWildCard(WildCard):
+	def _Load(self):
+		pass
+
 	def GetEntities(self):
 		for entity in self._parent.GetAllEntities():
 			yield entity
 
 class AskWildCard(WildCard):
+	def _Load(self):
+		pass
+
 	def GetEntities(self):
 		for entity in self._parent.GetEntities():
 			yield entity
