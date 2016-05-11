@@ -8,12 +8,7 @@
 include				"src/common/common.files"										# load common packages
 
 # PoC.arith
-vhdl		PoC		"src/arith/arith.pkg.vhdl"												# PoC.arith package
-if (DeviceVendor = "Xilinx") then
-	include			"lib/Xilinx.files"
-	vhdl	PoC		"src/arith/xilinx/arith_prefix_and_xilinx.vhdl"		# 
-end if
-vhdl		PoC		"src/arith/arith_prefix_and.vhdl"									# prefix_and top
+include				"src/arith/arith_prefix_and.files"
 
 # PoC.sort
 vhdl		poc		"src/sort/sort_lru_cache.vhdl"							# Top-Level
