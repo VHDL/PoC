@@ -5,6 +5,7 @@
 # ==============================================================================
 # Authors:          Patrick Lehmann
 #                   Martin Zabel
+#                   Thomas B. Preusser
 #
 # Python Class:      Altera ModelSim specific classes
 #
@@ -42,7 +43,7 @@ else:
 
 
 from re                      import compile as RegExpCompile
-from subprocess             import check_output
+from subprocess             import check_output, CalledProcessError
 
 from Base.Configuration import Configuration as BaseConfiguration, ConfigurationException
 from ToolChains.Altera.Altera import AlteraException
@@ -100,7 +101,11 @@ class Configuration(BaseConfiguration):
 				str(vsimPath))
 
 		# get version and backend
-		output = check_output([str(vsimPath), "-version"], universal_newlines=True)
+		try:
+			output = check_output([str(vsimPath), "-version"], universal_newlines=True)
+		except OSError as ex:
+			raise ConfigurationException("'{0!s}' not executable.".format(vsimPath)) from ex
+
 		version = None
 		versionRegExpStr = r"^.* vsim (.+?) "
 		versionRegExp = RegExpCompile(versionRegExpStr)

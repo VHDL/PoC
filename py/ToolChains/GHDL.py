@@ -5,6 +5,7 @@
 # ==============================================================================
 # Authors:          Patrick Lehmann
 #                   Martin Zabel
+#                   Thomas B. Preusser
 #
 # Python Class:      GHDL specific classes
 #
@@ -42,8 +43,8 @@ else:
 
 
 from pathlib                import Path
-from re                      import compile as RegExpCompile
-from subprocess             import check_output
+from re                     import compile as RegExpCompile
+from subprocess             import check_output, CalledProcessError
 
 from Base.Configuration      import Configuration as BaseConfiguration, ConfigurationException
 from Base.Exceptions        import PlatformNotSupportedException
@@ -109,8 +110,11 @@ class Configuration(BaseConfiguration):
 
 	def _GetDefaultInstallationDirectory(self):
 		if (self._host.Platform in ["Linux", "Darwin"]):
-			name = check_output(["which", "ghdl"], universal_newlines=True)
-			if name != "": return str(Path(name[:-1]).parent)
+			try:
+				name = check_output(["which", "ghdl"], universal_newlines=True)
+				if name != "": return str(Path(name[:-1]).parent)
+			except CalledProcessError:
+				pass # `which` returns non-zero exit code if GHDL is not in PATH
 
 		return super()._GetDefaultInstallationDirectory()
 
@@ -467,24 +471,35 @@ def GHDLAnalyzeFilter(gen):
 		warningRegExpMatch = warningRegExp.match(line)
 		if (warningRegExpMatch is not None):
 			yield LogEntry(line, Severity.Warning)
-		else:
-			errorRegExpMatch = errorRegExp.match(line)
-			if (errorRegExpMatch is not None):
-				message = errorRegExpMatch.group('Message')
-				if message.endswith("has changed and must be reanalysed"):
-					raise GHDLReanalyzeException(message)
-				yield LogEntry(line, Severity.Error)
-			else:
-				yield LogEntry(line, Severity.Normal)
+			continue
+
+		errorRegExpMatch = errorRegExp.match(line)
+		if (errorRegExpMatch is not None):
+			message = errorRegExpMatch.group('Message')
+			if message.endswith("has changed and must be reanalysed"):
+				raise GHDLReanalyzeException(message)
+			yield LogEntry(line, Severity.Error)
+			continue
+
+		yield LogEntry(line, Severity.Normal)
 
 GHDLElaborateFilter = GHDLAnalyzeFilter
 
 def GHDLRunFilter(gen):
-	warningRegExpPattern = r".+?:\d+:\d+:warning: (?P<Message>.*)"  # <Path>:<line>:<column>:warning: <message>
-	errorRegExpPattern = r".+?:\d+:\d+: (?P<Message>.*)"  # <Path>:<line>:<column>: <message>
+	warningRegExpPattern =  r".+?:\d+:\d+:warning: (?P<Message>.*)"                            # <Path>:<line>:<column>:warning: <message>
+	errorRegExpPattern =    r".+?:\d+:\d+: (?P<Message>.*)"                                    # <Path>:<line>:<column>: <message>
+	reportRegExpPattern =   r".+?:\d+:\d+:@\w+:\(report (?P<Severity>\w+)\): (?P<Message>.*)"  # <Path>:<line>:<column>:@<time>:(report <severity>): <message>
 
 	warningRegExp = RegExpCompile(warningRegExpPattern)
 	errorRegExp = RegExpCompile(errorRegExpPattern)
+	reportRegExp = RegExpCompile(reportRegExpPattern)
+
+	SEVERITY_LEVEL_MAPPING = {
+		"failure": Severity.Fatal,
+		"error":   Severity.Error,
+		"warning": Severity.Warning,
+		"note":    Severity.Info
+	}
 
 	lineno = 0
 	for line in gen:
@@ -496,6 +511,11 @@ def GHDLRunFilter(gen):
 			elif ("Starting simulation" in line):
 				yield LogEntry(line, Severity.Verbose)
 				continue
+
+		reportRegExpMatch = reportRegExp.match(line)
+		if (reportRegExpMatch is not None):
+			yield LogEntry(line, SEVERITY_LEVEL_MAPPING[reportRegExpMatch.group('Severity')])
+			continue
 
 		warningRegExpMatch = warningRegExp.match(line)
 		if (warningRegExpMatch is not None):
