@@ -50,9 +50,6 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.all;
 
-library UNISIM;
-use UNISIM.VCOMPONENTS.all;
-
 library PoC;
 use PoC.config.all;
 use PoC.utils.all;
