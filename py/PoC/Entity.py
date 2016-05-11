@@ -42,13 +42,13 @@ else:
 
 # load dependencies
 from collections          import OrderedDict
-from enum                  import Enum, unique
+from enum                 import Enum, unique
 from pathlib              import Path
 from flags                import Flags
 
 from lib.Functions        import Init
-from lib.Decorators        import LazyLoadTrigger, ILazyLoadable
-from Base.Configuration    import ConfigurationException
+from lib.Decorators       import LazyLoadTrigger, ILazyLoadable
+from Base.Configuration   import ConfigurationException
 
 
 @unique
@@ -96,9 +96,9 @@ class NetlistKind(BaseFlags):
 	CoreGeneratorNetlist = ()
 
 
-class Root:
+class NamespaceRoot:
 	__POCRoot_Name =            "PoC"
-	__POCRoot_SectionName =      "PoC"
+	__POCRoot_SectionName =     "PoC"
 
 	def __init__(self, host):
 		self._host =        host
@@ -124,6 +124,20 @@ class Root:
 	def AddLibrary(self, libraryName, libraryPrefix):
 		self.__libraries[libraryName.lower()] = (Library(self._host, libraryName, libraryPrefix, self))
 
+@unique
+class Visibility(Enum):
+	Unknown =		0
+	Private =   1
+	Public =    2
+
+	@classmethod
+	def Parse(cls, value):
+		for key,member in cls.__members__.items():
+			if (key == value):
+				return member
+		else:
+			raise ValueError("'{0!s}' is not a valid {1}".format(value, cls.__name__))
+
 
 class PathElement:
 	def __init__(self, host, name, configSectionName, parent):
@@ -131,6 +145,7 @@ class PathElement:
 		self._name =              name
 		self._parent =            parent
 		self._configSectionName = configSectionName
+		self._visibility =        Visibility.Unknown
 
 		self._Load()
 
@@ -144,6 +159,9 @@ class PathElement:
 	def ConfigSection(self):      return self._host.PoCConfig[self._configSectionName]
 	@property
 	def Level(self):              return self._parent.Level + 1
+	@property
+	def Visibility(self):         return self._visibility
+
 	@property
 	def Path(self):
 		cur = self
@@ -171,6 +189,7 @@ class Namespace(PathElement):
 		super().__init__(host, name, configSectionName, parent)
 
 	def _Load(self):
+		super()._Load()
 		for optionName in self.ConfigSection:
 			kind = self.ConfigSection[optionName]
 			if (kind == "Namespace"):
@@ -355,6 +374,7 @@ class IPCore(PathElement):
 				yield nl
 
 	def _Load(self):
+		super()._Load()
 		section = self.ConfigSection
 		for optionName in section:
 			kind = section[optionName].lower()

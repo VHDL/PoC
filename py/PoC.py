@@ -55,7 +55,7 @@ from Compiler.XCOCompiler            import Compiler as XCOCompiler
 from Compiler.XSTCompiler            import Compiler as XSTCompiler
 from Compiler.VivadoCompiler          import Compiler as VivadoCompiler
 from PoC.Config                      import Board
-from PoC.Entity                      import Root, FQN, EntityTypes, WildCard, TestbenchKind, NetlistKind
+from PoC.Entity                      import NamespaceRoot, FQN, EntityTypes, WildCard, TestbenchKind, NetlistKind
 from PoC.Solution                    import Solution, Repository
 from PoC.Query                      import Query
 from Simulator.ActiveHDLSimulator    import Simulator as ActiveHDLSimulator
@@ -258,7 +258,7 @@ class PoC(ILogable, ArgParseMixin):
 		self.__SimulationDefaultBoard =  Board(self)
 
 		# Initialize PoC's namespace structure
-		self.__root = Root(self)
+		self.__root = NamespaceRoot(self)
 		self.__repo = Repository(self)
 
 	def __WritePoCConfiguration(self):

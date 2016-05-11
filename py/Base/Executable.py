@@ -303,7 +303,7 @@ class Executable(ILogable):
 
 	def __init__(self, platform, executablePath, logger=None):
 		super().__init__(logger)
-		
+
 		self._platform =  platform
 		self._process =    None
 		
