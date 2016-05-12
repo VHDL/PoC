@@ -923,6 +923,7 @@ class PoC(ILogable, ArgParseMixin):
 				elif (kind == "quartus"):  nlFilter |= NetlistKind.QuartusNetlist
 				elif (kind == "xst"):      nlFilter |= NetlistKind.XstNetlist
 				elif (kind == "coregen"):  nlFilter |= NetlistKind.CoreGeneratorNetlist
+				elif (kind == "vivado"):   nlFilter |= NetlistKind.VivadoNetlist
 				else:                      raise CommonException("Argument --kind has an unknown value '{0}'.".format(kind))
 
 		fqnList = self._ExtractFQNs(args.FQN)
