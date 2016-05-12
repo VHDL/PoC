@@ -490,13 +490,6 @@ def GHDLRunFilter(gen):
 	#  others                                                           -> Severity.Normal
 	#  (*) -> unknown <severity>                                        -> Severity.Error
 
-	SEVERITY_LEVEL_MAPPING = {
-		"failure": Severity.Fatal,
-		"error":   Severity.Error,
-		"warning": Severity.Warning,
-		"note":    Severity.Info
-	}
-
 	filterPattern = r".+?:\d+:\d+:((?P<report>@\w+:\((?:report|assertion) )?(?P<severity>\w+)(?(report)\)):)? (?P<message>.*)"
 	filterRegExp = RegExpCompile(filterPattern)
 
@@ -513,7 +506,7 @@ def GHDLRunFilter(gen):
 
 		filterMatch = filterRegExp.match(line)
 		if filterMatch is not None:
-			yield LogEntry(line, SEVERITY_LEVEL_MAPPING.get(filterMatch.group('severity'), Severity.Error))
+			yield LogEntry(line, Severity.fromVhdlLevel(filterMatch.group('severity'), Severity.Error))
 			continue
 
 		yield LogEntry(line, Severity.Normal)
