@@ -280,7 +280,10 @@ class Compiler(ILogable):
 				task.DestinationPath.parent.mkdir(parents=True)
 
 			self._LogDebug("{0}-copying '{1!s}'.".format(text, task.SourcePath))
-			shutil.copy(str(task.SourcePath), str(task.DestinationPath))
+			try:
+				shutil.copy(str(task.SourcePath), str(task.DestinationPath))
+			except OSError as ex:
+				raise CompilerException("Error while copying '{0!s}'.".format(task.SourcePath)) from ex
 
 	def _RunPostDelete(self, netlist):
 		self._LogVerbose("copy generated files into netlist directory...")

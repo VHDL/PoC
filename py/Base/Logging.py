@@ -54,7 +54,7 @@ class Severity(Enum):
 	Verbose =    2
 	Debug =      1
 	All =        0
-	
+
 	def __eq__(self, other):    return self.value ==  other.value
 	def __ne__(self, other):    return self.value !=  other.value
 	def __lt__(self, other):    return self.value <		other.value
@@ -62,14 +62,16 @@ class Severity(Enum):
 	def __gt__(self, other):    return self.value >		other.value
 	def __ge__(self, other):    return self.value >=  other.value
 
+	__VHDL_SEVERITY_LEVEL_MAP__ =  {
+		"failure": Fatal,
+		"error":   Error,
+		"warning": Warning,
+		"note":    Info
+	}
+
 	@classmethod
-	def fromVhdlLevel(cls, severity, fallback = None):
-		return {
-			"failure": cls.Fatal,
-			"error":   cls.Error,
-			"warning": cls.Warning,
-			"note":    cls.Info
-		}.get(severity, fallback)
+	def ParseVHDLSeverityLevel(cls, severity, fallback=None):
+		return cls.__VHDL_SEVERITY_LEVEL_MAP__.get(severity, fallback)
 
 class LogEntry:
 	def __init__(self, message, severity=Severity.Normal, indent=0):

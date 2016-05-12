@@ -143,7 +143,10 @@ class Simulator(ILogable):
 		self._LogVerbose("Creating fresh temporary directory for simulator files.")
 		self._LogDebug("Temporary directory: {0!s}".format(self.Directories.Working))
 		if (self.Directories.Working.exists()):
-			shutil.rmtree(str(self.Directories.Working))
+			try:
+				shutil.rmtree(str(self.Directories.Working))
+			except OSError as ex:
+				raise SimulatorException("Error while deleting '{0!s}'.".format(self.Directories.Working)) from ex
 		self.Directories.Working.mkdir(parents=True)
 
 		# change working directory to temporary path

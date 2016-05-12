@@ -176,7 +176,10 @@ class Compiler(BaseCompiler):
 		# copy xco file into temporary directory
 		self._LogVerbose("Copy CoreGen xco file to '{0}'.".format(xcoFilePath))
 		self._LogDebug("cp {0!s} {1!s}".format(xcoInputFilePath, self.Directories.Working))
-		shutil.copy(str(xcoInputFilePath), str(xcoFilePath), follow_symlinks=True)
+		try:
+			shutil.copy(str(xcoInputFilePath), str(xcoFilePath), follow_symlinks=True)
+		except OSError as ex:
+			raise CompilerException("Error while copying '{0!s}'.".format(xcoInputFilePath)) from ex
 
 		# change working directory to temporary CoreGen path
 		self._LogDebug("cd {0!s}".format(self.Directories.Working))
