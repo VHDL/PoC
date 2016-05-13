@@ -453,7 +453,10 @@ class PoC(ILogable, ArgParseMixin):
 			elif (createPath not in ['y', 'Y']):
 				raise ConfigurationException("Unsupported choice '{0}'".format(createPath))
 
-			solutionRootPath.mkdir(parents=True)
+			try:
+				solutionRootPath.mkdir(parents=True)
+			except OSError as ex:
+				raise ConfigurationException("Error while creating '{0!s}'.".format(solutionRootPath)) from ex
 
 			self.__repo.AddSolution(solutionID, solutionName, solutionRootPath)
 		self.__WritePoCConfiguration()

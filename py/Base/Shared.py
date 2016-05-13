@@ -85,5 +85,25 @@ class Shared(ILogable):
 	@property
 	def Directories(self):  return self._directories
 
+	def _PrepareEnvironment(self):
+		# create fresh temporary directory
+		self._LogVerbose("Creating fresh temporary directory.")
+		self._LogDebug("Temporary directory: {0!s}".format(self.Directories.Working))
+		if (self.Directories.Working.exists()):
+			try:
+				shutil.rmtree(str(self.Directories.Working))
+			except OSError as ex:
+				raise SharedException("Error while deleting '{0!s}'.".format(self.Directories.Working)) from ex
+		try:
+			self.Directories.Working.mkdir(parents=True)
+		except OSError as ex:
+			raise SharedException("Error while creating '{0!s}'.".format(self.Directories.Working)) from ex
 
+		# change working directory to temporary path
+		self._LogVerbose("Changing working directory to temporary directory.")
+		self._LogDebug("cd \"{0!s}\"".format(self.Directories.Working))
+		try:
+			chdir(str(self.Directories.Working))
+		except OSError as ex:
+			raise SharedException("Error while changing to '{0!s}'.".format(self.Directories.Working)) from ex
 

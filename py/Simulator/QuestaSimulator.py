@@ -137,7 +137,10 @@ class Simulator(BaseSimulator):
 
 			# delete empty log files
 			if (vcomLogFile.stat().st_size == 0):
-				vcomLogFile.unlink()
+				try:
+					vcomLogFile.unlink()
+				except OSError as ex:
+					raise SimulatorException("Error while deleting '{0!s}'.".format(vcomLogFile)) from ex
 
 	def _RunSimulation(self, testbench):
 		if self._guiMode:

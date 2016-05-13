@@ -114,11 +114,19 @@ class Simulator(BaseSimulator):
 		if (not (simBuildPath).exists()):
 			self._LogVerbose("Creating build directory for simulator files.")
 			self._LogDebug("Build directory: {0!s}".format(simBuildPath))
-			simBuildPath.mkdir(parents=True)
+			try:
+				simBuildPath.mkdir(parents=True)
+			except OSError as ex:
+				raise SimulatorException("Error while creating '{0!s}'.".format(simBuildPath)) from ex
 
 		# write local modelsim.ini
 		modelsimIniPath = simBuildPath / "modelsim.ini"
-		if modelsimIniPath.exists(): modelsimIniPath.unlink()
+		if modelsimIniPath.exists():
+			try:
+				modelsimIniPath.unlink()
+			except OSError as ex:
+				raise SimulatorException("Error while deleting '{0!s}'.".format(modelsimIniPath)) from ex
+
 		with modelsimIniPath.open('w') as fileHandle:
 			fileContent = dedent("""\
 				[Library]

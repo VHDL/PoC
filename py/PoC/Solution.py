@@ -171,7 +171,10 @@ class Solution(Base):
 		solutionConfigPath = self._path / ".poc"
 		if (not self._path.is_absolute()):
 			solutionConfigPath = self._host.Directories.Root / solutionConfigPath
-		solutionConfigPath.mkdir(parents=True)
+		try:
+			solutionConfigPath.mkdir(parents=True)
+		except OSError as ex:
+			raise ConfigurationException("Error while creating '{0!s}'.".format(solutionConfigPath)) from ex
 
 		solutionConfigFile = solutionConfigPath / self.__SOLUTION_CONFIG_FILE__
 		with solutionConfigFile.open('w') as fileHandle:

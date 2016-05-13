@@ -115,32 +115,16 @@ class Compiler(Shared):
 		self._LogNormal("Preparing synthesis environment...")
 		self.Directories.Destination = self.Directories.Netlist / str(device)
 
-		# create temporary directory for the compiler if not existent
-		self._LogVerbose("Creating temporary directory for synthesizer files.")
-		self._LogDebug("Temporary directory: {0!s}".format(self.Directories.Working))
-		if (self.Directories.Working.exists()):
-			try:
-				shutil.rmtree(str(self.Directories.Working))
-			except OSError as ex:
-				raise CompilerException("Error while deleting '{0!s}'.".format(self.Directories.Working)) from ex
-		try:
-			self.Directories.Working.mkdir(parents=True)
-		except OSError as ex:
-			raise CompilerException("Error while creating '{0!s}'.".format(self.Directories.Working)) from ex
-
-		# change working directory to temporary iSim path
-		self._LogVerbose("Changing working directory to temporary directory.")
-		self._LogDebug("cd \"{0!s}\"".format(self.Directories.Working))
-		try:
-			chdir(str(self.Directories.Working))
-		except OSError as ex:
-			raise CompilerException("Error while changing to '{0!s}'.".format(self.Directories.Working)) from ex
+		self._PrepareEnvironment()
 
 		# create output directory for CoreGen if not existent
 		if (not self.Directories.Destination.exists()) :
 			self._LogVerbose("Creating output directory for generated files.")
 			self._LogDebug("Output directory: {0!s}.".format(self.Directories.Destination))
-			self.Directories.Destination.mkdir(parents=True)
+			try:
+				self.Directories.Destination.mkdir(parents=True)
+			except OSError as ex:
+				raise CompilerException("Error while creating '{0!s}'.".format(self.Directories.Destination)) from ex
 
 	def _WriteSpecialSectionIntoConfig(self, device):
 		# add the key Device to section SPECIAL at runtime to change interpolation results
@@ -266,7 +250,10 @@ class Compiler(Shared):
 			if not task.SourcePath.exists(): raise CompilerException("Cannot {0}-copy '{1!s}' to destination.".format(text, task.SourcePath)) from FileNotFoundError(str(task.SourcePath))
 
 			if not task.DestinationPath.parent.exists():
-				task.DestinationPath.parent.mkdir(parents=True)
+				try:
+					task.DestinationPath.parent.mkdir(parents=True)
+				except OSError as ex:
+					raise CompilerException("Error while creating '{0!s}'.".format(task.DestinationPath.parent)) from ex
 
 			self._LogDebug("{0}-copying '{1!s}'.".format(text, task.SourcePath))
 			try:
@@ -317,7 +304,10 @@ class Compiler(Shared):
 			if not task.FilePath.exists(): raise CompilerException("Cannot {0}-delete '{1!s}'.".format(text, task.FilePath)) from FileNotFoundError(str(task.FilePath))
 
 			self._LogDebug("{0}-deleting '{1!s}'.".format(text, task.FilePath))
-			task.FilePath.unlink()
+			try:
+				task.FilePath.unlink()
+			except OSError as ex:
+				raise CompilerException("Error while deleting '{0!s}'.".format(task.FilePath)) from ex
 
 	def _RunPreReplace(self, netlist):
 		self._LogVerbose("patching files in temporary directory...")
