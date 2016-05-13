@@ -56,8 +56,8 @@ class DiamondException(LatticeException):
 
 
 class Configuration(BaseConfiguration):
-	_vendor =    "Lattice"
-	_toolName =  "Lattice Diamond"
+	_vendor =   "Lattice"
+	_toolName = "Lattice Diamond"
 	_section =  "INSTALL.Lattice.Diamond"
 	_template = {
 		"Windows": {
@@ -97,7 +97,7 @@ class Configuration(BaseConfiguration):
 
 	def __CheckDiamondVersion(self, binPath, version):
 		if (self._host.Platform == "Windows"):  tclShellPath = binPath / "pnmainc.exe"
-		else:                                    tclShellPath = binPath / "pnmainc"
+		else:                                   tclShellPath = binPath / "pnmainc"
 
 		if not tclShellPath.exists():
 			raise ConfigurationException("Executable '{0!s}' not found.".format(tclShellPath)) from FileNotFoundError(

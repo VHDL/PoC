@@ -43,13 +43,13 @@ else:
 	
 # load dependencies
 import shutil
-from os                      import chdir
+from os                     import chdir
 from pathlib                import Path
-from textwrap                import dedent
+from textwrap               import dedent
 
-from Base.Project            import ToolChain, Tool
+from Base.Project           import ToolChain, Tool
 from Base.Compiler          import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
-from PoC.Entity              import WildCard
+from PoC.Entity             import WildCard
 from ToolChains.Xilinx.ISE  import ISE, ISEException
 
 
@@ -180,7 +180,10 @@ class Compiler(BaseCompiler):
 
 		# change working directory to temporary CoreGen path
 		self._LogDebug("cd {0!s}".format(self.Directories.Working))
-		chdir(str(self.Directories.Working))
+		try:
+			chdir(str(self.Directories.Working))
+		except OSError as ex:
+			raise CompilerException("Error while changing to '{0!s}'.".format(self.Directories.Working)) from ex
 
 		# running CoreGen
 		# ==========================================================================

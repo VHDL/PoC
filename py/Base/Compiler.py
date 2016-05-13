@@ -140,14 +140,22 @@ class Compiler(ILogable):
 		self._LogVerbose("Creating temporary directory for synthesizer files.")
 		self._LogDebug("Temporary directory: {0!s}".format(self.Directories.Working))
 		if (self.Directories.Working.exists()):
-			shutil.rmtree(str(self.Directories.Working))
-		self.Directories.Working.mkdir(parents=True)
-
+			try:
+				shutil.rmtree(str(self.Directories.Working))
+			except OSError as ex:
+				raise CompilerException("Error while deleting '{0!s}'.".format(self.Directories.Working)) from ex
+		try:
+			self.Directories.Working.mkdir(parents=True)
+		except OSError as ex:
+			raise CompilerException("Error while creating '{0!s}'.".format(self.Directories.Working)) from ex
 
 		# change working directory to temporary iSim path
 		self._LogVerbose("Changing working directory to temporary directory.")
 		self._LogDebug("cd \"{0!s}\"".format(self.Directories.Working))
-		chdir(str(self.Directories.Working))
+		try:
+			chdir(str(self.Directories.Working))
+		except OSError as ex:
+			raise CompilerException("Error while changing to '{0!s}'.".format(self.Directories.Working)) from ex
 
 		# create output directory for CoreGen if not existent
 		if (not self.Directories.Destination.exists()) :
