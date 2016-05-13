@@ -56,7 +56,7 @@ from Compiler.XSTCompiler            import Compiler as XSTCompiler
 from Compiler.VivadoCompiler          import Compiler as VivadoCompiler
 from PoC.Config                      import Board
 from PoC.Entity                      import NamespaceRoot, FQN, EntityTypes, WildCard, TestbenchKind, NetlistKind
-from PoC.Solution                    import Solution, Repository
+from PoC.Solution                    import Repository
 from PoC.Query                      import Query
 from Simulator.ActiveHDLSimulator    import Simulator as ActiveHDLSimulator
 from Simulator.CocotbSimulator       import Simulator as CocotbSimulator
@@ -308,7 +308,7 @@ class PoC(ILogable, ArgParseMixin):
 	# fallback handler if no command was recognized
 	# ----------------------------------------------------------------------------
 	@DefaultAttribute()
-	def HandleDefault(self, args):
+	def HandleDefault(self, _):
 		self.PrintHeadline()
 
 		# print("Common arguments:")
@@ -429,7 +429,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("add-solution", help="Add a solution to PoC.")
-	def HandleAddSolution(self, args):
+	def HandleAddSolution(self, _): #args
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
 
@@ -465,7 +465,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("list-solution", help="List all solutions registered in PoC.")
-	def HandleListSolution(self, args):
+	def HandleListSolution(self, _): #args
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
 
