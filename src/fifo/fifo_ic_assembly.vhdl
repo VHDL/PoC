@@ -152,7 +152,7 @@ begin
           unsigned(addr(AN-1 downto 0));
     di <= (1 to G_BITS => '1') & (1 to D_BITS => '-') when InitCnt(InitCnt'left) = '0' else
           addr(A_BITS-1 downto AN) & din;
-    we <= put;
+    we <= put or not InitCnt(InitCnt'left);
 
     -- Module Outputs
     base   <= OPbin;

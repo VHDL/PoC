@@ -94,6 +94,7 @@ class NetlistKind(BaseFlags):
 	QuartusNetlist = ()
 	XstNetlist = ()
 	CoreGeneratorNetlist = ()
+	VivadoNetlist = ()
 
 
 class NamespaceRoot:
@@ -296,10 +297,11 @@ class WildCard(PathElement):
 				if (nl.Kind in kind):
 					yield nl
 
-	def GetLatticeNetlists(self): return self.GetNetlists(NetlistKind.LatticeNetlist)
-	def GetQuartusNetlists(self): return self.GetNetlists(NetlistKind.QuartusNetlist)
-	def GetXSTNetlists(self):     return self.GetNetlists(NetlistKind.XstNetlist)
-	def GetCoreGenNetlists(self): return self.GetNetlists(NetlistKind.CoreGeneratorNetlist)
+	def GetLatticeNetlists(self):  return self.GetNetlists(NetlistKind.LatticeNetlist)
+	def GetQuartusNetlists(self):  return self.GetNetlists(NetlistKind.QuartusNetlist)
+	def GetXSTNetlists(self):      return self.GetNetlists(NetlistKind.XstNetlist)
+	def GetCoreGenNetlists(self):  return self.GetNetlists(NetlistKind.CoreGeneratorNetlist)
+	def GetVivadoNetlists(self):   return self.GetNetlists(NetlistKind.VivadoNetlist)
 
 	@property
 	def Testbenches(self):        return [tb for tb in self.GetTestbenches()]
@@ -318,6 +320,8 @@ class WildCard(PathElement):
 	def XSTNetlists(self):        return [nl for nl in self.GetXSTNetlists()]
 	@property
 	def CoreGenNetlists(self):    return [nl for nl in self.GetCoreGenNetlists()]
+	@property
+	def VivadoNetlists(self):     return [nl for nl in self.GetVivadoNetlists()]
 
 
 class StarWildCard(WildCard):
@@ -348,6 +352,7 @@ class IPCore(PathElement):
 		self._quartusNetlist =  []		# OrderedDict()
 		self._xstNetlist =      []		# OrderedDict()
 		self._coreGenNetlist =  []		# OrderedDict()
+		self._vivadoNetlist =   []		# OrderedDict()
 
 		super().__init__(host, name, configSectionName, parent)
 
@@ -397,6 +402,12 @@ class IPCore(PathElement):
 			raise ConfigurationException("No CoreGen netlist configured for '{0!s}'.".format(self))
 		return self._coreGenNetlist[0]
 
+	@property
+	def VivadoNetlist(self):
+		if (len(self._vivadoNetlist) == 0):
+			raise ConfigurationException("No Vivado netlist configured for '{0!s}'.".format(self))
+		return self._vivadoNetlist[0]
+
 	def GetNetlists(self, kind=NetlistKind.All):
 		if (NetlistKind.LatticeNetlist in kind):
 			for nl in self._latticeNetlist:
@@ -412,6 +423,11 @@ class IPCore(PathElement):
 					yield nl
 		if (NetlistKind.CoreGeneratorNetlist in kind):
 			for nl in self._coreGenNetlist:
+				if nl.IsVisible:
+					yield nl
+				yield nl
+		if (NetlistKind.VivadoNetlist in kind):
+			for nl in self._vivadoNetlist:
 				if nl.IsVisible:
 					yield nl
 
@@ -450,6 +466,11 @@ class IPCore(PathElement):
 				nl = CoreGeneratorNetlist(host=self._host, name=optionName, configSectionName=sectionName, parent=self)
 				self._coreGenNetlist.append(nl)
 				# self._coreGenNetlist[optionName] = nl
+			elif (kind == "vivadonetlist"):
+				sectionName = self._configSectionName.replace("IP", "VIVADO") + "." + optionName
+				nl = VivadoNetlist(host=self._host, name=optionName, configSectionName=sectionName, parent=self)
+				self._vivadoNetlist.append(nl)
+				# self._vivadoNetlist[optionName] = nl
 
 	def pprint(self, indent=0):
 		buffer = "{0}Entity: {1}\n".format("  " * indent, self.Name)
@@ -461,6 +482,8 @@ class IPCore(PathElement):
 			buffer += self._xstNetlist.pprint(indent + 1)
 		if (len(self._coreGenNetlist) > 0):
 			buffer += self._coreGenNetlist.pprint(indent + 1)
+		if (len(self._vivadoNetlist) > 0):
+			buffer += self._vivadoNetlist.pprint(indent + 1)
 		return buffer
 
 
@@ -713,6 +736,9 @@ class CoreGeneratorNetlist(Netlist):
 		return super().__str__() + " (Core Generator netlist)"
 
 	@property
+	def FilesFile(self): return None
+
+	@property
 	def XcoFile(self):          return self._xcoFile
 
 	def _LazyLoadable_Load(self):
@@ -722,6 +748,40 @@ class CoreGeneratorNetlist(Netlist):
 	def pprint(self, indent):
 		__indent = "  " * indent
 		buffer = "{0}Netlist: {1}\n".format(__indent, self._moduleName)
+		buffer += "{0}  Rules: {1!s}\n".format(__indent, self._rulesFile)
+		return buffer
+
+
+class VivadoNetlist(Netlist):
+	def __init__(self, host, name, configSectionName, parent):
+		self._filesFile =        None
+		self._tclFile =          None
+		super().__init__(host, name, configSectionName, parent)
+		self._kind =            NetlistKind.VivadoNetlist
+
+	@property
+	@LazyLoadTrigger
+	def FilesFile(self):        return self._filesFile
+
+	@property
+	def TclFile(self):          return self._tclFile
+	@TclFile.setter
+	def TclFile(self, value):
+		if isinstance(value, str):
+			value = Path(value)
+		self._tclFile = value
+
+	def _LazyLoadable_Load(self):
+		super()._LazyLoadable_Load()
+		self._filesFile =        Path(self.ConfigSection["FilesFile"])
+
+	def __str__(self):
+		return super().__str__() + " (Vivado netlist)"
+
+	def pprint(self, indent):
+		__indent = "  " * indent
+		buffer = "{0}Netlist: {1}\n".format(__indent, self._moduleName)
+		buffer += "{0}  Files: {1!s}\n".format(__indent, self._filesFile)
 		buffer += "{0}  Rules: {1!s}\n".format(__indent, self._rulesFile)
 		return buffer
 
