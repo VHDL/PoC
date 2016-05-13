@@ -87,7 +87,7 @@ begin
       clk_wr => clk,
       rst_wr => rst,
       base   => base,
-		failed => failed,
+			failed => failed,
       addr   => addr,
       din    => din,
       put    => put,
@@ -111,21 +111,21 @@ begin
 		end if;
 	end process;
 	addr <= std_logic_vector(to_unsigned(SEQ(to_integer(Seg)), Seg'length) & Ofs);
-	din  <= addr(D_BITS-1 downto 0);
+	din  <= not addr(D_BITS-1 downto 0);
 
 	tmp <= unsigned(addr) - unsigned(base);
 	put <= '1' when tmp(A_BITS-1 downto A_BITS-G_BITS) = 0 else '0';
 
   -- Reading Checker
 	got <= '1';
-	process
+	process(clk)
 	begin
 		if rising_edge(clk) then
 			if rst = '1' then
 				Count  <= (others => '0');
 				Failure <= "00";
 			elsif vld = '1' then
-				if Count /= unsigned(dout) then
+				if Count /= unsigned(not dout) then
 					Failure(0) <= '1';
 				end if;
 				if failed = '1' then
