@@ -33,6 +33,9 @@
 # ==============================================================================
 #
 # entry point
+from Base.Exceptions import PlatformNotSupportedException
+
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -69,7 +72,13 @@ class Compiler(BaseCompiler):
 	def _PrepareCompiler(self):
 		self._LogVerbose("Preparing Lattice Synthesis Engine (LSE).")
 		diamondSection = self.Host.PoCConfig['INSTALL.Lattice.Diamond']
-		binaryPath = Path(diamondSection['BinaryDirectory2'])
+		if (self.Host.Platform == "Linux"):
+			binaryPath = Path(diamondSection['BinaryDirectory2'])
+		elif (self.Host.Platform == "Windows"):
+			binaryPath = Path(diamondSection['BinaryDirectory'])
+		else:
+			raise PlatformNotSupportedException(self.Host.Platform)
+
 		version = diamondSection['Version']
 		self._toolChain =    Diamond(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
@@ -88,34 +97,39 @@ class Compiler(BaseCompiler):
 
 		netlist.PrjFile = self.Directories.Working / (netlist.ModuleName + ".prj")
 
-		self._WriteLSEProjectFile(netlist)
+		lseArgumentFile = self._WriteLSEProjectFile(netlist, board)
 
 		self._LogNormal("Executing pre-processing tasks...")
 		self._RunPreCopy(netlist)
 		self._RunPreReplace(netlist)
 
 		self._LogNormal("Running Lattice Diamond LSE...")
-		self._RunCompile(netlist)
+		self._RunCompile(netlist, lseArgumentFile)			# attach to netlist
 
 		self._LogNormal("Executing post-processing tasks...")
 		self._RunPostCopy(netlist)
 		self._RunPostReplace(netlist)
 		self._RunPostDelete(netlist)
 
-	def _WriteLSEProjectFile(self, netlist):
+	def _WriteLSEProjectFile(self, netlist, board):
+		device = board.Device
 		argumentFile = SynthesisArgumentFile(netlist.PrjFile)
-		argumentFile.Architecture =  "\"ECP5UM\""
-		argumentFile.TopLevel =      netlist.ModuleName
+		argumentFile.Architecture = "\"{0}\"".format(device.Series)
+		argumentFile.Device =       "\"{0}\"".format(device.ShortName)
+		argumentFile.SpeedGrade =   str(device.SpeedGrade)
+		argumentFile.Package =      "{0!s}{1!s}".format(device.Package, device.PinCount)
+		argumentFile.TopLevel =     netlist.ModuleName
 		argumentFile.LogFile =      self.Directories.Working / (netlist.ModuleName + ".lse.log")
 
 		argumentFile.Write(self.PoCProject)
+		return argumentFile
 
-	def _RunCompile(self, netlist):
+	def _RunCompile(self, netlist, lseArgumentFile):
 		synth = self._toolChain.GetSynthesizer()
 		synth.Parameters[synth.SwitchProjectFile] = netlist.ModuleName + ".prj"
 
 		try:
-			synth.Compile()
+			synth.Compile(lseArgumentFile.LogFile)
 		except LatticeException as ex:
 			raise CompilerException("Error while compiling '{0!s}'.".format(netlist)) from ex
 		if synth.HasErrors:
