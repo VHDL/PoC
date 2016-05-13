@@ -560,17 +560,17 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "list-ipcore" command
 	# ----------------------------------------------------------------------------
-	@CommandGroupAttribute("Configuration commands")
-	@CommandAttribute("list-ipcore", help="List all ipcores registered in PoC.")
-	def HandleListIPCore(self, args):
-		self.PrintHeadline()
-		self.__PrepareForConfiguration()
-		
-		ipcore = Solution(self)
-		
-		self._LogNormal("Registered ipcores in PoC:")
-		for ipcoreName in ipcore.GetIPCoreNames():
-			print("  {0}".format(ipcoreName))
+	# @CommandGroupAttribute("Configuration commands")
+	# @CommandAttribute("list-ipcore", help="List all ipcores registered in PoC.")
+	# def HandleListIPCore(self, args):
+	# 	self.PrintHeadline()
+	# 	self.__PrepareForConfiguration()
+	#
+	# 	ipcore = Solution(self)
+	#
+	# 	self._LogNormal("Registered ipcores in PoC:")
+	# 	for ipcoreName in ipcore.GetIPCoreNames():
+	# 		print("  {0}".format(ipcoreName))
 	
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "remove-ipcore" command
@@ -590,21 +590,6 @@ class PoC(ILogable, ArgParseMixin):
 	# def HandleAddTestbench(self, args):
 	# 	self.PrintHeadline()
 	# 	self.__PrepareForConfiguration()
-	
-	# ----------------------------------------------------------------------------
-	# create the sub-parser for the "list-testbench" command
-	# ----------------------------------------------------------------------------
-	@CommandGroupAttribute("Configuration commands")
-	@CommandAttribute("list-testbench", help="List all testbenchs registered in PoC.")
-	def HandleListTestbench(self, args):
-		self.PrintHeadline()
-		self.__PrepareForConfiguration()
-		
-		testbench = Solution(self)
-		
-		self._LogNormal("Registered testbenchs in PoC:")
-		for testbenchName in testbench.GetTestbenchNames():
-			print("  {0}".format(testbenchName))
 	
 	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "remove-testbench" command
