@@ -301,9 +301,6 @@ class Device:
 		elif (self.__generation == 5):  self._DecodeLatticeECP5(deviceString)
 		else:                            raise ConfigurationException("Unknown Lattice ECP generation.")
 
-		# "ECP5UM-45F"
-		print("{RED}Device._DecodeLattice(): not fully implemented for Lattice devices.{NOCOLOR}".format(**Init.Foreground))
-
 	def _DecodeLatticeECP3(self, deviceString):
 		self.__subtype =  SubTypes.NoSubType
 		self.__number =    int(deviceString[5:8])
@@ -313,13 +310,13 @@ class Device:
 		if (familyToken == "u-"):
 			self.__subtype =    SubTypes.U
 			self.__number =      int(deviceString[6:8])
-			self.__speedGrade =  int(deviceString[9:10])
-			self.__package =    Packages(deviceString[10:15])
+			self.__speedGrade =  int(deviceString[10:11])
+			self.__package =    Packages.Unknown
 		elif (familyToken == "um"):
 			self.__subtype =    SubTypes.UM
 			self.__number =      int(deviceString[7:9])
-			self.__speedGrade = int(deviceString[10:11])
-			self.__package = Packages(deviceString[11:16])
+			self.__speedGrade = int(deviceString[11:12])
+			self.__package = Packages.Unknown
 		else:
 			raise ConfigurationException("Unknown Lattice ECP5 subtype.")
 
@@ -453,7 +450,7 @@ class Device:
 			else:
 				return "{0!s}-{1}".format(self.__family, self.__generation)
 		elif self.__vendor is Vendors.Lattice:
-			raise NotImplementedError()
+			return "{0!s}".format(self.__generation)
 	
 	def GetVariables(self):
 		result = {
