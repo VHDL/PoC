@@ -33,6 +33,9 @@
 # ==============================================================================
 #
 # entry point
+import time
+
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -56,8 +59,8 @@ class DiamondException(LatticeException):
 
 
 class Configuration(BaseConfiguration):
-	_vendor =    "Lattice"
-	_toolName =  "Lattice Diamond"
+	_vendor =   "Lattice"
+	_toolName = "Lattice Diamond"
 	_section =  "INSTALL.Lattice.Diamond"
 	_template = {
 		"Windows": {
@@ -97,7 +100,7 @@ class Configuration(BaseConfiguration):
 
 	def __CheckDiamondVersion(self, binPath, version):
 		if (self._host.Platform == "Windows"):  tclShellPath = binPath / "pnmainc.exe"
-		else:                                    tclShellPath = binPath / "pnmainc"
+		else:                                   tclShellPath = binPath / "pnmainc"
 
 		if not tclShellPath.exists():
 			raise ConfigurationException("Executable '{0!s}' not found.".format(tclShellPath)) from FileNotFoundError(
@@ -151,12 +154,15 @@ class Synth(Executable, DiamondMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		DiamondMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
 
-		if (platform == "Windows"):    executablePath = binaryDirectoryPath / "synthesis.exe"
+		if (platform == "Windows"):    executablePath = binaryDirectoryPath / "pnwrap.exe"
 		elif (platform == "Linux"):    executablePath = binaryDirectoryPath / "synthesis"
 		else:                          raise PlatformNotSupportedException(platform)
 		Executable.__init__(self, platform, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
+		if (platform == "Windows"):
+			bin2dir = (binaryDirectoryPath / "../../ispfpga/bin/nt64").resolve()
+			self.Parameters[self.SwitchExecutable] = bin2dir / "synthesis.exe"
 
 		self._hasOutput = False
 		self._hasWarnings = False
@@ -170,16 +176,33 @@ class Synth(Executable, DiamondMixIn):
 	class Executable(metaclass=ExecutableArgument):
 		pass
 
+	class SwitchExecutable(metaclass=ShortTupleArgument):
+		_name = "exec"
+		_value = None
+
 	class SwitchProjectFile(metaclass=ShortTupleArgument):
 		_name = "f"
 		_value = None
 
 	Parameters = CommandLineArgumentList(
 		Executable,
+		SwitchExecutable,
 		SwitchProjectFile
 	)
 
-	def Compile(self):
+	def GetReader(self, logFile):
+		if (self._platform == "Linux"):
+			return super().GetReader()
+
+		while True:
+			if logFile.exists(): break
+			time.sleep(5)							# XXX: implement a 'tail -f' functionality
+
+		with logFile.open('r') as logFileHandle:
+			for line in logFileHandle:
+				yield line[:-1]
+
+	def Compile(self, logFile):
 		parameterList = self.Parameters.ToArgumentList()
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
@@ -192,7 +215,7 @@ class Synth(Executable, DiamondMixIn):
 		self._hasWarnings = False
 		self._hasErrors = False
 		try:
-			iterator = iter(CompilerFilter(self.GetReader()))
+			iterator = iter(CompilerFilter(self.GetReader(logFile)))
 
 			line = next(iterator)
 			self._hasOutput = True
@@ -224,8 +247,11 @@ class SynthesisArgumentFile(File):
 		super().__init__(file)
 
 		self._architecture =  None
+		self._device =        None
+		self._speedGrade =    None
+		self._package =       None
 		self._topLevel =      None
-		self._logfile =        None
+		self._logfile =       None
 
 	@property
 	def Architecture(self):
@@ -233,6 +259,27 @@ class SynthesisArgumentFile(File):
 	@Architecture.setter
 	def Architecture(self, value):
 		self._architecture = value
+
+	@property
+	def Device(self):
+		return self._device
+	@Device.setter
+	def Device(self, value):
+		self._device = value
+
+	@property
+	def SpeedGrade(self):
+		return self._speedGrade
+	@SpeedGrade.setter
+	def SpeedGrade(self, value):
+		self._speedGrade = value
+
+	@property
+	def Package(self):
+		return self._package
+	@Package.setter
+	def Package(self, value):
+		self._package = value
 
 	@property
 	def TopLevel(self):
@@ -254,6 +301,12 @@ class SynthesisArgumentFile(File):
 		buffer = ""
 		if (self._architecture is None):  raise DiamondException("Argument 'Architecture' (-a) is not set.")
 		buffer += "-a {0}\n".format(self._architecture)
+		if (self._device is None):        raise DiamondException("Argument 'Device' (-d) is not set.")
+		buffer += "-d {0}\n".format(self._device)
+		if (self._speedGrade is None):    raise DiamondException("Argument 'SpeedGrade' (-s) is not set.")
+		buffer += "-s {0}\n".format(self._speedGrade)
+		if (self._package is None):       raise DiamondException("Argument 'Package' (-t) is not set.")
+		buffer += "-t {0}\n".format(self._package)
 		if (self._topLevel is None):      raise DiamondException("Argument 'TopLevel' (-top) is not set.")
 		buffer += "-top {0}\n".format(self._topLevel)
 		if (self._logfile is not None):
