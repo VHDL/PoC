@@ -40,12 +40,12 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Lattice.Diamond")
 
-
+from pathlib import Path
 from subprocess                    import check_output, CalledProcessError, STDOUT
 
 from Base.Configuration            import Configuration as BaseConfiguration, ConfigurationException
 from Base.Exceptions              import PlatformNotSupportedException
-from Base.Executable              import Executable, CommandLineArgumentList, ExecutableArgument
+from Base.Executable              import Executable, CommandLineArgumentList, ExecutableArgument, ShortTupleArgument
 from Base.Logging                  import Severity, LogEntry
 from Base.Project                  import File, FileTypes
 from ToolChains.Lattice.Lattice    import LatticeException
@@ -64,14 +64,16 @@ class Configuration(BaseConfiguration):
 			_section: {
 				"Version":                "3.7",
 				"InstallationDirectory":  "${INSTALL.Lattice:InstallationDirectory}/Diamond/${Version}_x64",
-				"BinaryDirectory":        "${InstallationDirectory}/bin/nt64"
+				"BinaryDirectory":        "${InstallationDirectory}/bin/nt64",
+				"BinaryDirectory2":       "${InstallationDirectory}/ispfpga/bin/nt64"
 			}
 		},
 		"Linux": {
 			_section: {
 				"Version":                "3.7",
 				"InstallationDirectory":  "${INSTALL.Lattice:InstallationDirectory}/diamond/${Version}_x64",
-				"BinaryDirectory":        "${InstallationDirectory}/bin/lin64"
+				"BinaryDirectory":        "${InstallationDirectory}/bin/lin64",
+				"BinaryDirectory2":       "${InstallationDirectory}/ispfpga/bin/lin64"
 			}
 		}
 	}
@@ -114,6 +116,21 @@ class Configuration(BaseConfiguration):
 
 		self._host.PoCConfig[self._section]['Version'] = version
 
+	def _ConfigureBinaryDirectory(self):
+		"""Updates section with value from _template and returns directory as Path object."""
+		binPath = super()._ConfigureBinaryDirectory()
+		unresolved = self._template[self._host.Platform][self._section]['BinaryDirectory2']
+		self._host.PoCConfig[self._section]['BinaryDirectory2'] = unresolved  # create entry
+		defaultPath = Path(self._host.PoCConfig[self._section]['BinaryDirectory2'])  # resolve entry
+
+		binPath2 = defaultPath  # may be more complex in the future
+
+		if (not binPath2.exists()):
+			raise ConfigurationException("{0!s} 2nd binary directory '{1!s}' does not exist.".format(self, binPath2)) \
+				from NotADirectoryError(str(binPath2))
+
+		return binPath
+
 
 class DiamondMixIn:
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
@@ -127,15 +144,15 @@ class Diamond(DiamondMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		DiamondMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
 
-	def GetTclShell(self):
-		return TclShell(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+	def GetSynthesizer(self):
+		return Synth(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
 
-class TclShell(Executable, DiamondMixIn):
+class Synth(Executable, DiamondMixIn):
 	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
 		DiamondMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
 
-		if (platform == "Windows"):    executablePath = binaryDirectoryPath / "pnmainc.exe"
-		elif (platform == "Linux"):    executablePath = binaryDirectoryPath / "pnmainc"
+		if (platform == "Windows"):    executablePath = binaryDirectoryPath / "synthesis.exe"
+		elif (platform == "Linux"):    executablePath = binaryDirectoryPath / "synthesis"
 		else:                          raise PlatformNotSupportedException(platform)
 		Executable.__init__(self, platform, executablePath, logger=logger)
 
@@ -153,74 +170,48 @@ class TclShell(Executable, DiamondMixIn):
 	class Executable(metaclass=ExecutableArgument):
 		pass
 
+	class SwitchProjectFile(metaclass=ShortTupleArgument):
+		_name = "f"
+		_value = None
+
 	Parameters = CommandLineArgumentList(
-		Executable
+		Executable,
+		SwitchProjectFile
 	)
 
-	def Run(self):
+	def Compile(self):
 		parameterList = self.Parameters.ToArgumentList()
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
 		try:
 			self.StartProcess(parameterList)
-			self.SendBoundary()
 		except Exception as ex:
-			raise DiamondException("Failed to launch pnmainc.") from ex
+			raise LatticeException("Failed to launch LSE.") from ex
 
-		iterator = iter(MapFilter(self.GetReader()))
+		self._hasOutput = False
+		self._hasWarnings = False
+		self._hasErrors = False
+		try:
+			iterator = iter(CompilerFilter(self.GetReader()))
 
-		for line in iterator:
-			print(line)
-			if (line == self._POC_BOUNDARY):
-				break
+			line = next(iterator)
+			self._hasOutput = True
+			self._LogNormal("    LSE messages for '{0}'".format(self.Parameters[self.SwitchProjectFile]))
+			self._LogNormal("    " + ("-" * 76))
 
-		print("pnmainc is ready")
+			while True:
+				self._hasWarnings |= (line.Severity is Severity.Warning)
+				self._hasErrors |= (line.Severity is Severity.Error)
 
-		self.Send("synthesis -f arith_prng.prj\n")
-		self.SendBoundary()
+				line.IndentBy(2)
+				self._Log(line)
+				line = next(iterator)
 
-		for line in iterator:
-			print(line)
-			if (line == self._POC_BOUNDARY):
-				break
-
-		print("pnmainc is ready")
-
-		self.Send("exit\n")
-		self.SendBoundary()
-
-		for line in iterator:
-			print(line)
-			if (line == self._POC_BOUNDARY):
-				break
-
-		print("pnmainc finished")
-		return
-
-		# self._hasOutput = False
-		# self._hasWarnings = False
-		# self._hasErrors = False
-		# try:
-		# 	iterator = iter(MapFilter(self.GetReader()))
-		#
-		# 	line = next(iterator)
-		# 	self._hasOutput = True
-		# 	self._LogNormal("    pnmainc messages for '{0}'".format(self.Parameters[self.SwitchArgumentFile]))
-		# 	self._LogNormal("    " + ("-" * 76))
-		#
-		# 	while True:
-		# 		self._hasWarnings |= (line.Severity is Severity.Warning)
-		# 		self._hasErrors |= (line.Severity is Severity.Error)
-		#
-		# 		line.Indent(2)
-		# 		self._Log(line)
-		# 		line = next(iterator)
-		#
-		# except StopIteration:
-		# 	pass
-		# finally:
-		# 	if self._hasOutput:
-		# 		self._LogNormal("    " + ("-" * 76))
+		except StopIteration:
+			pass
+		finally:
+			if self._hasOutput:
+				self._LogNormal("    " + ("-" * 76))
 
 
 def MapFilter(gen):
@@ -273,3 +264,15 @@ class SynthesisArgumentFile(File):
 
 		with self._file.open('w') as fileHandle:
 			fileHandle.write(buffer)
+
+
+def CompilerFilter(gen):
+	for line in gen:
+		if line.startswith("ERROR "):
+			yield LogEntry(line, Severity.Error)
+		elif line.startswith("WARNING "):
+			yield LogEntry(line, Severity.Warning)
+		elif line.startswith("INFO "):
+			yield LogEntry(line, Severity.Info)
+		else:
+			yield LogEntry(line, Severity.Normal)
