@@ -44,10 +44,11 @@ else:
 # load dependencies
 from pathlib                      import Path
 
-from Base.Project                 import ToolChain, Tool
 from Base.Compiler                import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
+from Base.Project                 import ToolChain, Tool
 from PoC.Entity                   import WildCard
 from ToolChains.Lattice.Diamond   import Diamond, SynthesisArgumentFile
+from ToolChains.Lattice.Lattice import LatticeException
 
 
 class Compiler(BaseCompiler):
@@ -68,7 +69,7 @@ class Compiler(BaseCompiler):
 	def _PrepareCompiler(self):
 		self._LogVerbose("Preparing Lattice Synthesis Engine (LSE).")
 		diamondSection = self.Host.PoCConfig['INSTALL.Lattice.Diamond']
-		binaryPath = Path(diamondSection['BinaryDirectory'])
+		binaryPath = Path(diamondSection['BinaryDirectory2'])
 		version = diamondSection['Version']
 		self._toolChain =    Diamond(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
@@ -110,14 +111,12 @@ class Compiler(BaseCompiler):
 		argumentFile.Write(self.PoCProject)
 
 	def _RunCompile(self, netlist):
-		tclShell = self._toolChain.GetTclShell()
+		synth = self._toolChain.GetSynthesizer()
+		synth.Parameters[synth.SwitchProjectFile] = netlist.ModuleName + ".prj"
 
-		# raise NotImplementedError("Next: implement interactive shell")
-		self._LogWarning("Execution skipped due to Tcl shell problems.")
-		# tclShell.Run()
-		# try:
-		# 	q2map.Compile()
-		# except QuartusException as ex:
-		# 	raise CompilerException("Error while compiling '{0!s}'.".format(netlist)) from ex
-		# if q2map.HasErrors:
-		# 	raise 		SkipableCompilerException("Error while compiling '{0!s}'.".format(netlist))
+		try:
+			synth.Compile()
+		except LatticeException as ex:
+			raise CompilerException("Error while compiling '{0!s}'.".format(netlist)) from ex
+		if synth.HasErrors:
+			raise 		SkipableCompilerException("Error while compiling '{0!s}'.".format(netlist))
