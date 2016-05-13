@@ -190,10 +190,7 @@ class Synth(Executable, DiamondMixIn):
 		SwitchProjectFile
 	)
 
-	def GetReader(self, logFile):
-		if (self._platform == "Linux"):
-			return super().GetReader()
-
+	def GetLogFileReader(self, logFile):
 		while True:
 			if logFile.exists(): break
 			time.sleep(5)							# XXX: implement a 'tail -f' functionality
@@ -215,7 +212,9 @@ class Synth(Executable, DiamondMixIn):
 		self._hasWarnings = False
 		self._hasErrors = False
 		try:
-			iterator = iter(CompilerFilter(self.GetReader(logFile)))
+			if (self._platform == "Linux"): reader = self.GetReader() # parse stdout directly
+			else: reader = self.GetLogFileReader(logFile)
+			iterator = iter(CompilerFilter(reader))
 
 			line = next(iterator)
 			self._hasOutput = True
