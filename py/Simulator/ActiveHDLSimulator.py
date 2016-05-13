@@ -52,19 +52,15 @@ class Simulator(BaseSimulator):
 	_TOOL_CHAIN =            ToolChain.Aldec_ActiveHDL
 	_TOOL =                  Tool.Aldec_aSim
 
-	def __init__(self, host, guiMode):
-		super().__init__(host)
+	def __init__(self, host, dryRun, guiMode):
+		super().__init__(host, dryRun)
 
-		self._guiMode =        guiMode
-
-		self._entity =        None
-		self._testbenchFQN =  None
-		self._vhdlVersion =    None
+		self._guiMode =       guiMode
+		self._vhdlVersion =   None
 		self._vhdlGenerics =  None
+		self._toolChain =     None
 
-		self._toolChain =      None
-
-		activeHDLFilesDirectoryName =    host.PoCConfig['CONFIG.DirectoryNames']['ActiveHDLFiles']
+		activeHDLFilesDirectoryName =   host.PoCConfig['CONFIG.DirectoryNames']['ActiveHDLFiles']
 		self.Directories.Working =      host.Directories.Temp / activeHDLFilesDirectoryName
 		self.Directories.PreCompiled =  host.Directories.PreCompiled / activeHDLFilesDirectoryName
 		

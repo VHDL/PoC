@@ -43,18 +43,19 @@ else:
 
 # load dependencies
 import shutil
-from datetime          import datetime
-from enum              import Enum, unique
-from os                import chdir
+from datetime           import datetime
+from enum               import Enum, unique
+from os                 import chdir
 
-from lib.Functions     import Init
-from lib.Parser        import ParserException
-from Base.Exceptions   import ExceptionBase, CommonException
-from Base.Logging      import ILogable, LogEntry
-from Base.Project      import Environment, ToolChain, Tool, VHDLVersion
-from PoC.Entity        import WildCard
-from PoC.Solution      import VirtualProject, FileListFile
-from PoC.TestCase      import TestSuite, TestCase, Status
+from lib.Functions      import Init
+from lib.Parser         import ParserException
+from Base.Exceptions    import ExceptionBase, CommonException
+from Base.Logging       import LogEntry
+from Base.Project       import Environment, VHDLVersion
+from Base.Shared        import Shared
+from PoC.Entity         import WildCard
+from PoC.Solution       import VirtualProject, FileListFile
+from PoC.TestCase       import TestSuite, TestCase, Status
 
 
 VHDL_TESTBENCH_LIBRARY_NAME = "test"
@@ -91,26 +92,15 @@ def to_time(seconds):
 	seconds = seconds - (minutes * 60)
 	return "{min}:{sec:02}".format(min=minutes, sec=seconds)
 
-class Simulator(ILogable):
-	_TOOL_CHAIN =  ToolChain.Any
-	_TOOL =        Tool.Any
 
-	class __Directories__:
-		Working = None
-		PoCRoot = None
+class Simulator(Shared):
+	class __Directories__(Shared.__Directories__):
 		PreCompiled = None
 
-	def __init__(self, host):
-		if isinstance(host, ILogable):
-			ILogable.__init__(self, host.Logger)
-		else:
-			ILogable.__init__(self, None)
-
-		self.__host =       host
+	def __init__(self, host, dryRun):
+		super().__init__(host, dryRun)
 
 		self._vhdlVersion = VHDLVersion.VHDL2008
-		self._directories = self.__Directories__()
-		self._pocProject =  None
 		self._testSuite =   TestSuite()			# TODO: This includes not the read ini files phases ...
 
 		self._state =           SimulationState.Prepare
@@ -125,12 +115,6 @@ class Simulator(ILogable):
 
 	# class properties
 	# ============================================================================
-	@property
-	def Host(self):           return self.__host
-	@property
-	def Directories(self):    return self._directories
-	@property
-	def PoCProject(self):     return self._pocProject
 	@property
 	def TestSuite(self):      return self._testSuite
 

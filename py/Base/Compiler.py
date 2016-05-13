@@ -33,6 +33,8 @@
 # ==============================================================================
 #
 # entry point
+from Base.Shared import Shared
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -50,8 +52,8 @@ from os                 import chdir
 from lib.Functions      import Init
 from lib.Parser         import ParserException
 from Base.Exceptions    import ExceptionBase
-from Base.Logging       import ILogable
-from Base.Project       import ToolChain, Tool, VHDLVersion, Environment, FileTypes
+from Base.Project       import VHDLVersion, Environment, FileTypes
+from Base.Shared        import Shared
 from Parser.RulesParser import CopyRuleMixIn, ReplaceRuleMixIn, DeleteRuleMixIn
 from PoC.Solution       import VirtualProject, FileListFile, RulesFile
 
@@ -72,40 +74,17 @@ class ReplaceTask(ReplaceRuleMixIn):
 	pass
 
 
-class Compiler(ILogable):
-	_TOOL_CHAIN =  ToolChain.Any
-	_TOOL =        Tool.Any
-
-	class __Directories__:
-		Working = None
-		PoCRoot = None
+class Compiler(Shared):
+	class __Directories__(Shared.__Directories__):
 		Netlist = None
 		Source = None
 		Destination = None
 
 	def __init__(self, host, dryRun, noCleanUp):
-		if isinstance(host, ILogable):
-			ILogable.__init__(self, host.Logger)
-		else:
-			ILogable.__init__(self, None)
+		super().__init__(host, dryRun)
 
-		self.__host =        host
 		self._noCleanUp =    noCleanUp
-		self._dryRun =      dryRun
-
 		self._vhdlVersion =  VHDLVersion.VHDL93
-		self._pocProject =  None
-
-		self._directories = self.__Directories__()
-
-	# class properties
-	# ============================================================================
-	@property
-	def Host(self):            return self.__host
-	@property
-	def PoCProject(self):      return self._pocProject
-	@property
-	def Directories(self):    return self._directories
 
 	def TryRun(self, netlist, *args, **kwargs):
 		try:

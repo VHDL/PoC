@@ -59,16 +59,12 @@ class Simulator(BaseSimulator):
 	class __Directories__(BaseSimulator.__Directories__):
 		GTKWBinary = None
 
-	def __init__(self, host, guiMode):
-		super().__init__(host)
+	def __init__(self, host, dryRun, guiMode):
+		super().__init__(host, dryRun)
 
-		self._guiMode =        guiMode
-
-		self._entity =        None
-		self._testbenchFQN =  None
+		self._guiMode =       guiMode
 		self._vhdlGenerics =  None
-
-		self._toolChain =      None
+		self._toolChain =     None
 
 		ghdlFilesDirectoryName =        host.PoCConfig['CONFIG.DirectoryNames']['GHDLFiles']
 		self.Directories.Working =      host.Directories.Temp / ghdlFilesDirectoryName

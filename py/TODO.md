@@ -13,12 +13,22 @@
 #### Command `list-netlist`
   - list testbenches as tree
 
+#### Command `list-ipcore`
+  - list testbenches as tree
+
 #### Command `vsim`:
   - disable `-vopt` if *ModelSim Altera Edition* is used
   
 #### Incomplete features:
   - pre-compiled vendor libraries
-  
+
+#### MaxFailedAssertions
+  - stop simulation if MaxFailedAssertions is reached
+
+#### PrintTree function
+
+
+
 ## Open features
   - Attache solutions and projects to PoC
       - for IP core imports
@@ -36,6 +46,7 @@
   - updates via Git
   - PoSh auto completion
   - PoSh drives (tb:)
+  - calculate compile order of VHDL files
   
 ## Vendor tool support
   - Aldec Active-HDL
@@ -46,5 +57,4 @@
   - Synopsys Symplify
       
   - Xilinx Vivado
-      - Synthesis
       - CoreGenerator
