@@ -4,26 +4,46 @@
 
 ## 2016
 
-##### New in 0.X (DD.MM.2016)
+##### New in 1.0 (13.05.2016)
 
   - Reworked Python infrastructure
       - New command line interface `poc.sh|ps1 [common options] <command> <entity> [options]`
       - Removed task specific wrapper scripts: `testbench.sh|ps1`, `netlist.sh|ps1`
+			- New ini-file database
+					- 
+					- Added a new config.boards.ini file to list known boards (real and virtual ones)
       - New parser for `*.files` files
           - conditional compiling (if-then-elseif-else)
           - include statement - include other `*.files` files
           - library statement - reference external VHDL libraries
           - prepared for Cocotb testbenches
+			- New parser for `*.rules` files
+					- 
       - Unbuffered outputs from vendor tools (realtime output to stdout from subprocess)
       - Output filtering from vendor tools
           - verbose message suppression
           - error and warning message highlighting
-      - Added a new config.boards.ini file to list known boards (real and virtual ones)
+          - abort flow on vendor tool errors
+      - 
       - Run testbenches for different board or device configurations (see `--board` and `--device` command line options)
-      - Finished Aldec Active-HDL support (no GUI support)
-      - GHDLSimulator can distinguish different backends 
+			- New simulators
+					- Aldec Active-HDL support (no GUI support)
+							- Tested with Active-HDL from Lattice Diamond
+							- Tested with Active-HDL Student Edition
+					- Cocotb (with QuestaSim backend on Linux)
+			- New Synthesizers
+					- Altera Quartus II and Quartus Prime
+					- Lattice Synthesis Engine (LSE) from Diamond
+					- Xilinx Vivado
+			- Simulator improvements
+					- GHDL
+							- GHDLSimulator can distinguish different backends (mcode, gcc, llvm)
+							- Pre-compiled library support for GHDL
+					- QuestaSim / ModelSim Altera Edition
+							- Pre-compiled library support for GHDL
+				
 	- Embedded Cocotb in <PoCRoot>/lib/cocotb
-  - precompiled vendor library support
+  - Pre-compiled vendor library support
       - Added a new <PoCRoot>/temp/precompiled folder for precompiled vendor libraries
       - QuestaSim supports Altera QuartusII, Xilinx ISE and Xilinx Vivado libraries
       - GHDL supports Altera QuartusII, Xilinx ISE and Xilinx Vivado libraries

@@ -30,7 +30,7 @@
 # limitations under the License.
 # ==============================================================================
 #
-
+from lib.Functions        import Init
 from lib.Parser           import AndExpression, OrExpression, XorExpression, NotExpression, InExpression, NotInExpression
 from lib.Parser           import EqualExpression, UnequalExpression, LessThanExpression, LessThanEqualExpression, GreaterThanExpression, GreaterThanEqualExpression
 from lib.Parser           import ExistsFunction, ListConstructorExpression
@@ -39,7 +39,7 @@ from lib.Parser           import StringLiteral, IntegerLiteral, Identifier
 from Parser.FilesCodeDOM  import Document
 from Parser.FilesCodeDOM  import IfElseIfElseStatement, ReportStatement
 from Parser.FilesCodeDOM  import IncludeStatement, LibraryStatement
-from Parser.FilesCodeDOM  import UcfStatement, XdcStatement, SdcStatement
+from Parser.FilesCodeDOM  import LDCStatement, SDCStatement, UCFStatement, XDCStatement
 from Parser.FilesCodeDOM  import VHDLStatement, VerilogStatement, CocotbStatement
 
 
@@ -83,19 +83,24 @@ class CocotbSourceFileMixIn(FileReference):
 		return "Cocotb file: '{0!s}'".format(self._file)
 
 
-class UcfSourceFileMixIn(FileReference):
+class LDCSourceFileMixIn(FileReference):
+	def __str__(self):
+		return "LDC file: '{0!s}'".format(self._file)
+
+
+class SDCSourceFileMixIn(FileReference):
+	def __str__(self):
+		return "SDC file: '{0!s}'".format(self._file)
+
+
+class UCFSourceFileMixIn(FileReference):
 	def __str__(self):
 		return "UCF file: '{0!s}'".format(self._file)
 
 
-class XdcSourceFileMixIn(FileReference):
+class XDCSourceFileMixIn(FileReference):
 	def __str__(self):
 		return "XDC file: '{0!s}'".format(self._file)
-
-
-class SdcSourceFileMixIn(FileReference):
-	def __str__(self):
-		return "SDC file: '{0!s}'".format(self._file)
 
 
 class VHDLLibraryReference:
@@ -122,24 +127,28 @@ class FilesParserMixIn:
 	_classVHDLSourceFile =      VHDLSourceFileMixIn
 	_classVerilogSourceFile =   VerilogSourceFileMixIn
 	_classCocotbSourceFile =    CocotbSourceFileMixIn
-	_classUcfSourceFile =       UcfSourceFileMixIn
-	_classXdcSourceFile =       XdcSourceFileMixIn
-	_classSdcSourceFile =       SdcSourceFileMixIn
+	_classLDCSourceFile =       LDCSourceFileMixIn
+	_classSDCSourceFile =       SDCSourceFileMixIn
+	_classUCFSourceFile =       UCFSourceFileMixIn
+	_classXDCSourceFile =       XDCSourceFileMixIn
 
 	def __init__(self):
-		self._rootDirectory =  None
+		self._rootDirectory = None
 		self._document =      None
 		
-		self._files =          []
+		self._files =         []
 		self._includes =      []
-		self._libraries =      []
+		self._libraries =     []
 		self._warnings =      []
 		
 	def _Parse(self):
 		self._ReadContent() #only available via late binding
-		self._document = Document.parse(self._content, printChar=not True) #self._content only available via late binding
-		# print(Fore.LIGHTBLACK_EX + str(self._document) + Fore.RESET)
-		
+		self._document = Document.Parse(self._content, printChar=True) #self._content only available via late binding
+
+		print("{DARK_GRAY}{line}{NOCOLOR}".format(line="*"*80, **Init.Foreground))
+		print("{DARK_GRAY}{doc!s}{NOCOLOR}".format(doc=self._document, **Init.Foreground))
+		print("{DARK_GRAY}{line}{NOCOLOR}".format(line="*"*80, **Init.Foreground))
+
 	def _Resolve(self, statements=None):
 		# print("Resolving {0}".format(str(self._file)))
 		if (statements is None):
@@ -148,7 +157,7 @@ class FilesParserMixIn:
 		for stmt in statements:
 			if isinstance(stmt, VHDLStatement):
 				file =            self._rootDirectory / stmt.FileName
-				vhdlSrcFile =     self._classVHDLSourceFile(file, stmt.LibraryName)		# stmt.Library,
+				vhdlSrcFile =     self._classVHDLSourceFile(file, stmt.LibraryName)
 				self._files.append(vhdlSrcFile)
 			elif isinstance(stmt, VerilogStatement):
 				file =            self._rootDirectory / stmt.FileName
@@ -158,18 +167,22 @@ class FilesParserMixIn:
 				file =            self._rootDirectory / stmt.FileName
 				cocotbSrcFile =   self._classCocotbSourceFile(file)
 				self._files.append(cocotbSrcFile)
-			elif isinstance(stmt, UcfStatement):
+			elif isinstance(stmt, LDCStatement):
 				file =            self._rootDirectory / stmt.FileName
-				ucfSrcFile =      self._classCocotbSourceFile(file)
-				self._files.append(ucfSrcFile)
-			elif isinstance(stmt, XdcStatement):
+				ldcSrcFile =      self._classLDCSourceFile(file)
+				self._files.append(ldcSrcFile)
+			elif isinstance(stmt, SDCStatement):
 				file =            self._rootDirectory / stmt.FileName
-				xdcSrcFile =      self._classCocotbSourceFile(file)
-				self._files.append(xdcSrcFile)
-			elif isinstance(stmt, SdcStatement):
-				file =            self._rootDirectory / stmt.FileName
-				sdcSrcFile =      self._classCocotbSourceFile(file)
+				sdcSrcFile =      self._classSDCSourceFile(file)
 				self._files.append(sdcSrcFile)
+			elif isinstance(stmt, UCFStatement):
+				file =            self._rootDirectory / stmt.FileName
+				ucfSrcFile =      self._classUCFSourceFile(file)
+				self._files.append(ucfSrcFile)
+			elif isinstance(stmt, XDCStatement):
+				file =            self._rootDirectory / stmt.FileName
+				xdcSrcFile =      self._classXDCSourceFile(file)
+				self._files.append(xdcSrcFile)
 			elif isinstance(stmt, IncludeStatement):
 				# add the include file to the fileset
 				file =            self._rootDirectory / stmt.FileName
@@ -203,7 +216,7 @@ class FilesParserMixIn:
 			elif isinstance(stmt, ReportStatement):
 				self._warnings.append("WARNING: {0}".format(stmt.Message))
 			else:
-				ParserException("Found unknown statement type '{0}'.".format(stmt.__class__.__name__))
+				ParserException("Found unknown statement type '{0!s}'.".format(type(stmt)))
 	
 	def _Evaluate(self, expr):
 		if isinstance(expr, Identifier):
@@ -244,7 +257,8 @@ class FilesParserMixIn:
 			return self._Evaluate(expr.LeftChild) > self._Evaluate(expr.RightChild)
 		elif isinstance(expr, GreaterThanEqualExpression):
 			return self._Evaluate(expr.LeftChild) >= self._Evaluate(expr.RightChild)
-		else:                                            raise ParserException("Unsupported expression type '{0}'".format(type(expr)))
+		else:
+			raise ParserException("Unsupported expression type '{0!s}'".format(type(expr)))
 
 	@property
 	def Files(self):      return self._files
@@ -256,4 +270,4 @@ class FilesParserMixIn:
 	def Warnings(self):   return self._warnings
 
 	def __str__(self):    return "FILES file: '{0!s}'".format(self._file) #self._file only available via late binding
-	def __repr__(self):   return self.__str__()
+	__repr__ = __str__

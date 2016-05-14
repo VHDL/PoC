@@ -1,39 +1,44 @@
-
 # Python Infrastructure - TODO List
+
+## Version 1.x
 
 #### ArgParse
   - generate a better help page
       - deterministic order
       - wider columns
   - create better sub command help pages
-
-#### Command: `list-testbench`
-  - list testbenches as tree
-  
-#### Command `list-netlist`
-  - list testbenches as tree
-
-#### Command `list-ipcore`
-  - list testbenches as tree
-
-#### Command `vsim`:
-  - disable `-vopt` if *ModelSim Altera Edition* is used
-  
-#### Incomplete features:
-  - pre-compiled vendor libraries
-
-#### MaxFailedAssertions
-  - stop simulation if MaxFailedAssertions is reached
-
-#### PrintTree function
-
+	
 ## Version 1.1
+
+#### Configuration process
+  - create a my_project.vhdl after configuration
 
 #### Improved *.files files
   - add path statement
   - concat paths and constants
   - allow paths in library and exists expressions
   - error reporting from parser
+
+#### PrintTree()
+  - a generic function to print trees with additional information
+
+#### Complete commands
+  - `list-testbench`
+  - `list-netlist`
+  - `list-ipcore`
+	- print results as tree (default) or list
+
+#### All flows
+  - don't rmdir a temp directory, write a purge function
+	
+#### All simulators
+  - create a custom my_config.vhdl in temp/<simulator>/ if a device is specified
+	
+#### QuestaSim / ModelSim
+  - disable `-vopt` if *ModelSim Altera Edition* is used
+  
+#### Incomplete features:
+  - pre-compiled vendor libraries
 
 ## Open features
   - Attache solutions and projects to PoC

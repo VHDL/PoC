@@ -102,7 +102,7 @@ class RulesParserMixIn:
 
 	def _Parse(self):
 		self._ReadContent() #only available via late binding
-		self._document = Document.parse(self._content, printChar=not True) #self._content only available via late binding
+		self._document = Document.Parse(self._content, printChar=not True) #self._content only available via late binding
 		# print("{DARK_GRAY}{0!s}{NOCOLOR}".format(self._document, **Init.Foreground))
 		
 	def _Resolve(self):
