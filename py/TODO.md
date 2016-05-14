@@ -27,7 +27,13 @@
 
 #### PrintTree function
 
+## Version 1.1
 
+#### Improved *.files files
+  - add path statement
+  - concat paths and constants
+  - allow paths in library and exists expressions
+  - error reporting from parser
 
 ## Open features
   - Attache solutions and projects to PoC
