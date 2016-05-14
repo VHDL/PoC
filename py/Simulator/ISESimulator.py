@@ -42,33 +42,29 @@ else:
 
 
 # load dependencies
-from pathlib                  import Path
+from pathlib                    import Path
 
-from Base.Project              import VHDLVersion, ToolChain, Tool
-from Base.Simulator            import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult, SkipableSimulatorException
-from ToolChains.Xilinx.Xilinx  import XilinxProjectExportMixIn
-from ToolChains.Xilinx.ISE    import ISE, ISESimulator, ISEException
+from Base.Project               import ToolChain, Tool
+from Base.Simulator             import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SkipableSimulatorException
+from ToolChains.Xilinx.Xilinx   import XilinxProjectExportMixIn
+from ToolChains.Xilinx.ISE      import ISE, ISESimulator, ISEException
 
 
 class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 	_TOOL_CHAIN =            ToolChain.Xilinx_ISE
 	_TOOL =                  Tool.Xilinx_iSim
 
-	def __init__(self, host, guiMode):
-		super().__init__(host)
+	def __init__(self, host, dryRun, guiMode):
+		super().__init__(host, dryRun)
 		XilinxProjectExportMixIn.__init__(self)
 
-		self._guiMode =        guiMode
-
-		self._entity =        None
-		self._testbenchFQN =  None
+		self._guiMode =       guiMode
 		self._vhdlGenerics =  None
+		self._toolChain =     None
 
-		self._ise =            None
-
-		iseFilesDirectoryName = host.PoCConfig['CONFIG.DirectoryNames']['ISESimulatorFiles']
-		self.Directories.Working = host.Directories.Temp / iseFilesDirectoryName
-		self.Directories.PreCompiled = host.Directories.PreCompiled / iseFilesDirectoryName
+		iseFilesDirectoryName =         host.PoCConfig['CONFIG.DirectoryNames']['ISESimulatorFiles']
+		self.Directories.Working =      host.Directories.Temp / iseFilesDirectoryName
+		self.Directories.PreCompiled =  host.Directories.PreCompiled / iseFilesDirectoryName
 
 		self._PrepareSimulationEnvironment()
 		self._PrepareSimulator()
@@ -79,34 +75,15 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		iseSection = self.Host.PoCConfig['INSTALL.Xilinx.ISE']
 		version = iseSection['Version']
 		binaryPath = Path(iseSection['BinaryDirectory'])
-		self._ise = ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._toolChain = ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
-	def Run(self, testbench, board, vhdlVersion, vhdlGenerics=None, guiMode=False):
-		super().Run(testbench, board, vhdlVersion, vhdlGenerics)
-
-		# self._RunCompile(testbenchName)
-		self._RunLink(testbench)
-		self._RunSimulation(testbench)
-
-	def _RunCompile(self, testbench):
-		self._LogNormal("  compiling source files...")
-		
-		prjFilePath = self.Directories.Working / (testbench.ModuleName + ".prj")
-		self._WriteXilinxProjectFile(prjFilePath, "iSim", self._vhdlVersion)
-
-		# create an ISEVHDLCompiler instance
-		vhcomp = self._ise.GetVHDLCompiler()
-		vhcomp.Compile(str(prjFilePath))
-
-	def _RunLink(self, testbench):
-		self._LogNormal("Running fuse...")
-		
+	def _RunElaboration(self, testbench):
 		exeFilePath =  self.Directories.Working / (testbench.ModuleName + ".exe")
 		prjFilePath = self.Directories.Working / (testbench.ModuleName + ".prj")
 		self._WriteXilinxProjectFile(prjFilePath, "iSim")
 
 		# create a ISELinker instance
-		fuse = self._ise.GetFuse()
+		fuse = self._toolChain.GetFuse()
 		fuse.Parameters[fuse.FlagIncremental] =        True
 		fuse.Parameters[fuse.SwitchTimeResolution] =  "1fs"
 		fuse.Parameters[fuse.SwitchMultiThreading] =  "4"
@@ -121,10 +98,8 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 			raise SimulatorException("Error while analysing '{0!s}'.".format(prjFilePath)) from ex
 		if fuse.HasErrors:
 			raise SkipableSimulatorException("Error while analysing '{0!s}'.".format(prjFilePath))
-	
+
 	def _RunSimulation(self, testbench):
-		self._LogNormal("Running simulation...")
-		
 		iSimLogFilePath =    self.Directories.Working / (testbench.ModuleName + ".iSim.log")
 		exeFilePath =        self.Directories.Working / (testbench.ModuleName + ".exe")
 		tclBatchFilePath =  self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['iSimBatchScript']

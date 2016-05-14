@@ -42,35 +42,31 @@ else:
 
 
 # load dependencies
-from pathlib                  import Path
+from pathlib                    import Path
 
-from Base.Project              import ToolChain, Tool
-from Base.Simulator            import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SimulationResult, SkipableSimulatorException
-from Base.Logging              import Severity
-from ToolChains.Xilinx.Xilinx  import XilinxProjectExportMixIn
-from ToolChains.Xilinx.Vivado  import Vivado, VivadoException
+from Base.Project               import ToolChain, Tool
+from Base.Simulator             import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SkipableSimulatorException
+from Base.Logging               import Severity
+from ToolChains.Xilinx.Xilinx   import XilinxProjectExportMixIn
+from ToolChains.Xilinx.Vivado   import Vivado, VivadoException
 
 
 class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 	_TOOL_CHAIN =            ToolChain.Xilinx_Vivado
 	_TOOL =                  Tool.Xilinx_xSim
 
-	def __init__(self, host, guiMode):
-		super().__init__(host)
+	def __init__(self, host, dryRun, guiMode):
+		super().__init__(host, dryRun)
 		XilinxProjectExportMixIn.__init__(self)
 
-		self._guiMode =        guiMode
-
-		self._entity =        None
-		self._testbenchFQN =  None
-		self._vhdlVersion =    None
+		self._guiMode =       guiMode
+		self._vhdlVersion =   None
 		self._vhdlGenerics =  None
+		self._toolChain =     None
 
-		self._vivado =        None
-
-		vivadoFilesDirectoryName = host.PoCConfig['CONFIG.DirectoryNames']['VivadoSimulatorFiles']
-		self.Directories.Working = host.Directories.Temp / vivadoFilesDirectoryName
-		self.Directories.PreCompiled = host.Directories.PreCompiled / vivadoFilesDirectoryName
+		vivadoFilesDirectoryName =      host.PoCConfig['CONFIG.DirectoryNames']['VivadoSimulatorFiles']
+		self.Directories.Working =      host.Directories.Temp / vivadoFilesDirectoryName
+		self.Directories.PreCompiled =  host.Directories.PreCompiled / vivadoFilesDirectoryName
 
 		self._PrepareSimulationEnvironment()
 		self._PrepareSimulator()
@@ -81,39 +77,27 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		vivadoSection = self.Host.PoCConfig['INSTALL.Xilinx.Vivado']
 		version =  vivadoSection['Version']
 		binaryPath = Path(vivadoSection['BinaryDirectory'])
-		self._vivado = Vivado(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._toolChain = Vivado(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
-	def Run(self, testbench, board, vhdlVersion, vhdlGenerics=None, guiMode=False):
-		super().Run(testbench, board, vhdlVersion, vhdlGenerics)
-
-		self._RunLink(testbench)
-		self._RunSimulation(testbench)
-		
-	def _RunLink(self, testbench):
-		self._LogNormal("Running xelab...")
-		
+	def _RunElaboration(self, testbench):
 		xelabLogFilePath =  self.Directories.Working / (testbench.ModuleName + ".xelab.log")
 		prjFilePath =        self.Directories.Working / (testbench.ModuleName + ".prj")
 		self._WriteXilinxProjectFile(prjFilePath, "xSim", self._vhdlVersion)
 
 		# create a VivadoLinker instance
-		xelab = self._vivado.GetElaborator()
+		xelab = self._toolChain.GetElaborator()
 		xelab.Parameters[xelab.SwitchTimeResolution] =  "1fs"	# set minimum time precision to 1 fs
 		xelab.Parameters[xelab.SwitchMultiThreading] =  "off" if self.Logger.LogLevel is Severity.Debug else "auto"		# disable multithreading support in debug mode
 		xelab.Parameters[xelab.FlagRangeCheck] =        True
 
-		# xelab.Parameters[xelab.SwitchOptimization] =    "2"
-		xelab.Parameters[xelab.SwitchDebug] =            "typical"
+		xelab.Parameters[xelab.SwitchOptimization] =    "0" if self.Logger.LogLevel is Severity.Debug else "2"		# set to "0" to disable optimization
+		xelab.Parameters[xelab.SwitchDebug] =           "typical"
 		xelab.Parameters[xelab.SwitchSnapshot] =        testbench.ModuleName
 
-		# if (self._vhdlVersion == VHDLVersion.VHDL2008):
-		# 	xelab.Parameters[xelab.SwitchVHDL2008] =      True
-
-		# if (self.verbose):
-		xelab.Parameters[xelab.SwitchVerbose] =          "1" if self.Logger.LogLevel is Severity.Debug else "0"		# set to "1" for detailed messages
-		xelab.Parameters[xelab.SwitchProjectFile] =      str(prjFilePath)
-		xelab.Parameters[xelab.SwitchLogFile] =          str(xelabLogFilePath)
-		xelab.Parameters[xelab.ArgTopLevel] =            "{0}.{1}".format(VHDL_TESTBENCH_LIBRARY_NAME, testbench.ModuleName)
+		xelab.Parameters[xelab.SwitchVerbose] =         "1" if self.Logger.LogLevel is Severity.Debug else "0"		# set to "1" for detailed messages
+		xelab.Parameters[xelab.SwitchProjectFile] =     str(prjFilePath)
+		xelab.Parameters[xelab.SwitchLogFile] =         str(xelabLogFilePath)
+		xelab.Parameters[xelab.ArgTopLevel] =           "{0}.{1}".format(VHDL_TESTBENCH_LIBRARY_NAME, testbench.ModuleName)
 
 		try:
 			xelab.Link()
@@ -123,15 +107,13 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 			raise SkipableSimulatorException("Error while analysing '{0!s}'.".format(prjFilePath))
 
 	def _RunSimulation(self, testbench):
-		self._LogNormal("Running simulation...")
-		
 		xSimLogFilePath =    self.Directories.Working / (testbench.ModuleName + ".xSim.log")
 		tclBatchFilePath =  self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['xSimBatchScript']
 		tclGUIFilePath =    self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['xSimGUIScript']
 		wcfgFilePath =      self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['xSimWaveformConfigFile']
 
 		# create a VivadoSimulator instance
-		xSim = self._vivado.GetSimulator()
+		xSim = self._toolChain.GetSimulator()
 		xSim.Parameters[xSim.SwitchLogFile] =          str(xSimLogFilePath)
 
 		if (not self._guiMode):

@@ -32,6 +32,9 @@
 # ==============================================================================
 
 # entry point
+from PoC.Entity import Visibility
+
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -50,7 +53,7 @@ from Base.Configuration import ConfigurationException
 from Base.Project        import Project as BaseProject, File, FileTypes, VHDLSourceFile, VerilogSourceFile, CocotbSourceFile  #, ProjectFile
 from Parser.FilesParser  import FilesParserMixIn
 from Parser.RulesParser  import RulesParserMixIn
-from PoC                import __POC_SOLUTION_KEYWORD__, __POC_PROJECT_KEYWORD__
+from PoC                import __POC_SOLUTION_KEYWORD__
 
 
 class Base(ILazyLoadable):
@@ -84,7 +87,16 @@ class Repository(Base):
 	def __init__(self, host):
 		self._solutions =  {}
 
+		kind = "Public"
+		if host.PoCConfig.has_option("INSTALL.PoC", "RepositoryKind"):
+			kind = host.PoCConfig['INSTALL.PoC']['RepositoryKind']
+		self._kind = Visibility.Parse(kind)
+
 		super().__init__(host, "SOLUTION", "Solutions", None)
+
+	@property
+	def Kind(self):
+		return self._kind
 
 	def _Load(self):
 		self._LazyLoadable_Load()
@@ -159,7 +171,10 @@ class Solution(Base):
 		solutionConfigPath = self._path / ".poc"
 		if (not self._path.is_absolute()):
 			solutionConfigPath = self._host.Directories.Root / solutionConfigPath
-		solutionConfigPath.mkdir(parents=True)
+		try:
+			solutionConfigPath.mkdir(parents=True)
+		except OSError as ex:
+			raise ConfigurationException("Error while creating '{0!s}'.".format(solutionConfigPath)) from ex
 
 		solutionConfigFile = solutionConfigPath / self.__SOLUTION_CONFIG_FILE__
 		with solutionConfigFile.open('w') as fileHandle:

@@ -62,7 +62,6 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 		super().__init__(host, dryRun, noCleanUp)
 		XilinxProjectExportMixIn.__init__(self)
 
-		self._device =      None
 		self._toolChain =    None
 
 		configSection = host.PoCConfig['CONFIG.DirectoryNames']
@@ -92,8 +91,6 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 	def Run(self, netlist, board):
 		super().Run(netlist, board)
 
-		self._device =        board.Device
-		
 		netlist.XstFile = self.Directories.Working / (netlist.ModuleName + ".xst")
 		netlist.PrjFile = self.Directories.Working / (netlist.ModuleName + ".prj")
 
@@ -139,7 +136,9 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 
 		# read XST options file template
 		self._LogDebug("Reading Xilinx Compiler Tool option file from '{0!s}'".format(netlist.XstTemplateFile))
-		if (not netlist.XstTemplateFile.exists()):    raise CompilerException("XST template files '{0!s}' not found.".format(netlist.XstTemplateFile)) from FileNotFoundError(str(netlist.XstTemplateFile))
+		if (not netlist.XstTemplateFile.exists()):
+			raise CompilerException("XST template files '{0!s}' not found.".format(netlist.XstTemplateFile))\
+				from FileNotFoundError(str(netlist.XstTemplateFile))
 
 		with netlist.XstTemplateFile.open('r') as fileHandle:
 			xstFileContent = fileHandle.read()

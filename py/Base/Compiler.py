@@ -33,6 +33,8 @@
 # ==============================================================================
 #
 # entry point
+from Base.Shared import Shared
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -50,8 +52,8 @@ from os                 import chdir
 from lib.Functions      import Init
 from lib.Parser         import ParserException
 from Base.Exceptions    import ExceptionBase
-from Base.Logging       import ILogable
-from Base.Project       import ToolChain, Tool, VHDLVersion, Environment, FileTypes
+from Base.Project       import VHDLVersion, Environment, FileTypes
+from Base.Shared        import Shared
 from Parser.RulesParser import CopyRuleMixIn, ReplaceRuleMixIn, DeleteRuleMixIn
 from PoC.Solution       import VirtualProject, FileListFile, RulesFile
 
@@ -72,40 +74,17 @@ class ReplaceTask(ReplaceRuleMixIn):
 	pass
 
 
-class Compiler(ILogable):
-	_TOOL_CHAIN =  ToolChain.Any
-	_TOOL =        Tool.Any
-
-	class __Directories__:
-		Working = None
-		PoCRoot = None
+class Compiler(Shared):
+	class __Directories__(Shared.__Directories__):
 		Netlist = None
 		Source = None
 		Destination = None
 
 	def __init__(self, host, dryRun, noCleanUp):
-		if isinstance(host, ILogable):
-			ILogable.__init__(self, host.Logger)
-		else:
-			ILogable.__init__(self, None)
+		super().__init__(host, dryRun)
 
-		self.__host =        host
 		self._noCleanUp =    noCleanUp
-		self._dryRun =      dryRun
-
 		self._vhdlVersion =  VHDLVersion.VHDL93
-		self._pocProject =  None
-
-		self._directories = self.__Directories__()
-
-	# class properties
-	# ============================================================================
-	@property
-	def Host(self):            return self.__host
-	@property
-	def PoCProject(self):      return self._pocProject
-	@property
-	def Directories(self):    return self._directories
 
 	def TryRun(self, netlist, *args, **kwargs):
 		try:
@@ -128,7 +107,7 @@ class Compiler(ILogable):
 		self._WriteSpecialSectionIntoConfig(board.Device)
 
 		self._CreatePoCProject(netlist, board)
-		self._AddFileListFile(netlist.FilesFile)
+		if netlist.FilesFile is not None: self._AddFileListFile(netlist.FilesFile)
 		if (netlist.RulesFile is not None):
 			self._AddRulesFiles(netlist.RulesFile)
 
@@ -136,22 +115,16 @@ class Compiler(ILogable):
 		self._LogNormal("Preparing synthesis environment...")
 		self.Directories.Destination = self.Directories.Netlist / str(device)
 
-		# create temporary directory for the compiler if not existent
-		if (not self.Directories.Working.exists()):
-			self._LogVerbose("Creating temporary directory for synthesizer files.")
-			self._LogDebug("Temporary directory: {0!s}".format(self.Directories.Working))
-			self.Directories.Working.mkdir(parents=True)
-
-		# change working directory to temporary iSim path
-		self._LogVerbose("Changing working directory to temporary directory.")
-		self._LogDebug("cd \"{0!s}\"".format(self.Directories.Working))
-		chdir(str(self.Directories.Working))
+		self._PrepareEnvironment()
 
 		# create output directory for CoreGen if not existent
 		if (not self.Directories.Destination.exists()) :
 			self._LogVerbose("Creating output directory for generated files.")
 			self._LogDebug("Output directory: {0!s}.".format(self.Directories.Destination))
-			self.Directories.Destination.mkdir(parents=True)
+			try:
+				self.Directories.Destination.mkdir(parents=True)
+			except OSError as ex:
+				raise CompilerException("Error while creating '{0!s}'.".format(self.Directories.Destination)) from ex
 
 	def _WriteSpecialSectionIntoConfig(self, device):
 		# add the key Device to section SPECIAL at runtime to change interpolation results
@@ -277,10 +250,16 @@ class Compiler(ILogable):
 			if not task.SourcePath.exists(): raise CompilerException("Cannot {0}-copy '{1!s}' to destination.".format(text, task.SourcePath)) from FileNotFoundError(str(task.SourcePath))
 
 			if not task.DestinationPath.parent.exists():
-				task.DestinationPath.parent.mkdir(parents=True)
+				try:
+					task.DestinationPath.parent.mkdir(parents=True)
+				except OSError as ex:
+					raise CompilerException("Error while creating '{0!s}'.".format(task.DestinationPath.parent)) from ex
 
 			self._LogDebug("{0}-copying '{1!s}'.".format(text, task.SourcePath))
-			shutil.copy(str(task.SourcePath), str(task.DestinationPath))
+			try:
+				shutil.copy(str(task.SourcePath), str(task.DestinationPath))
+			except OSError as ex:
+				raise CompilerException("Error while copying '{0!s}'.".format(task.SourcePath)) from ex
 
 	def _RunPostDelete(self, netlist):
 		self._LogVerbose("copy generated files into netlist directory...")
@@ -325,7 +304,10 @@ class Compiler(ILogable):
 			if not task.FilePath.exists(): raise CompilerException("Cannot {0}-delete '{1!s}'.".format(text, task.FilePath)) from FileNotFoundError(str(task.FilePath))
 
 			self._LogDebug("{0}-deleting '{1!s}'.".format(text, task.FilePath))
-			task.FilePath.unlink()
+			try:
+				task.FilePath.unlink()
+			except OSError as ex:
+				raise CompilerException("Error while deleting '{0!s}'.".format(task.FilePath)) from ex
 
 	def _RunPreReplace(self, netlist):
 		self._LogVerbose("patching files in temporary directory...")

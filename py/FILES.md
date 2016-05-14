@@ -78,8 +78,8 @@ Line comments start with `#`.
   - `include "<FilesFile>"`  
     Include another *.files file.
   - `library <VHDLLibrary> "<LibraryPath>"`  
-    Referenece an existing (pre-compiled) VHDL library, which is passed to the
+    Reference an existing (pre-compiled) VHDL library, which is passed to the
     simulator, if external libraries are supported.
   - `report "<Message>"`  
     Print a critical warning in the log window. This critical warning is
-    threated as an error.
+    treated as an error.
