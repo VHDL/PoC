@@ -159,36 +159,44 @@ class FilesParserMixIn:
 		
 		for stmt in statements:
 			if isinstance(stmt, VHDLStatement):
-				file =            self._rootDirectory / stmt.FileName
+				path = self._EvaluatePath(host, stmt.PathExpression)
+				file = self._rootDirectory / path
 				vhdlSrcFile =     self._classVHDLSourceFile(file, stmt.LibraryName)
 				self._files.append(vhdlSrcFile)
 			elif isinstance(stmt, VerilogStatement):
-				file =            self._rootDirectory / stmt.FileName
+				path = self._EvaluatePath(host, stmt.PathExpression)
+				file = self._rootDirectory / path
 				verilogSrcFile =  self._classVerilogSourceFile(file)
 				self._files.append(verilogSrcFile)
 			elif isinstance(stmt, CocotbStatement):
-				file =            self._rootDirectory / stmt.FileName
+				path = self._EvaluatePath(host, stmt.PathExpression)
+				file = self._rootDirectory / path
 				cocotbSrcFile =   self._classCocotbSourceFile(file)
 				self._files.append(cocotbSrcFile)
 			elif isinstance(stmt, LDCStatement):
-				file =            self._rootDirectory / stmt.FileName
+				path = self._EvaluatePath(host, stmt.PathExpression)
+				file = self._rootDirectory / path
 				ldcSrcFile =      self._classLDCSourceFile(file)
 				self._files.append(ldcSrcFile)
 			elif isinstance(stmt, SDCStatement):
-				file =            self._rootDirectory / stmt.FileName
+				path = self._EvaluatePath(host, stmt.PathExpression)
+				file = self._rootDirectory / path
 				sdcSrcFile =      self._classSDCSourceFile(file)
 				self._files.append(sdcSrcFile)
 			elif isinstance(stmt, UCFStatement):
-				file =            self._rootDirectory / stmt.FileName
+				path = self._EvaluatePath(host, stmt.PathExpression)
+				file = self._rootDirectory / path
 				ucfSrcFile =      self._classUCFSourceFile(file)
 				self._files.append(ucfSrcFile)
 			elif isinstance(stmt, XDCStatement):
-				file =            self._rootDirectory / stmt.FileName
+				path = self._EvaluatePath(host, stmt.PathExpression)
+				file = self._rootDirectory / path
 				xdcSrcFile =      self._classXDCSourceFile(file)
 				self._files.append(xdcSrcFile)
 			elif isinstance(stmt, IncludeStatement):
 				# add the include file to the fileset
-				file =            self._rootDirectory / stmt.FileName
+				path =            self._EvaluatePath(host, stmt.PathExpression)
+				file =            self._rootDirectory / path
 				includeFile =     self._classFileListFile(file) #self._classFileListFile only available via late binding
 				self._fileSet.AddFile(includeFile) #self._fileSet only available via late binding
 				includeFile.Parse(host)
@@ -201,11 +209,13 @@ class FilesParserMixIn:
 				for warn in includeFile.Warnings:
 					self._warnings.append(warn)
 			elif isinstance(stmt, LibraryStatement):
-				lib =         self._rootDirectory / stmt.DirectoryName
+				path =        self._EvaluatePath(host, stmt.PathExpression)
+				lib =         self._rootDirectory / path
 				vhdlLibRef =  VHDLLibraryReference(stmt.Library, lib)
 				self._libraries.append(vhdlLibRef)
 			elif isinstance(stmt, PathStatement):
-				self._variables[stmt.Variable] = self._EvaluatePath(host, stmt.Expression)
+				path =        self._EvaluatePath(host, stmt.Expression)
+				self._variables[stmt.Variable] = path
 			elif isinstance(stmt, IfElseIfElseStatement):
 				exprValue = self._Evaluate(host, stmt.IfClause.Expression)
 				if (exprValue is True):
@@ -289,7 +299,7 @@ class FilesParserMixIn:
 			r = self._EvaluatePath(host, expr.RightChild)
 			return l + r
 		else:
-			raise ParserException("Unsupported expression type '{0!s}'".format(type(expr)))
+			raise ParserException("Unsupported path expression type '{0!s}'".format(type(expr)))
 
 	@property
 	def Files(self):      return self._files

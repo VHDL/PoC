@@ -259,15 +259,15 @@ ListElementExpressions.AddChoice(IntegerLiteral)
 # File Reference Statements
 # ==============================================================================
 class VHDLStatement(Statement):
-	def __init__(self, libraryName, fileName, commentText):
+	def __init__(self, libraryName, pathExpression, commentText):
 		super().__init__(commentText)
-		self._libraryName =   libraryName
-		self._fileName =      fileName
+		self._libraryName =     libraryName
+		self._pathExpression =  pathExpression
 
 	@property
-	def LibraryName(self):  return self._libraryName
+	def LibraryName(self):    return self._libraryName
 	@property
-	def FileName(self):     return self._fileName
+	def PathExpression(self): return self._pathExpression
 
 	@classmethod
 	def GetParser(cls):
@@ -294,16 +294,16 @@ class VHDLStatement(Statement):
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("VHDLParser: Expected whitespace before VHDL fileName.")
 
 		# match for string: fileName; use a StringLiteralParser to parse the pattern
-		parser = StringLiteral.GetParser()
+		parser = PathExpressions.GetParser()
 		parser.send(None)
 
-		fileName = None
+		pathExpression = None
 		try:
 			while True:
 				token = yield
 				parser.send(token)
 		except MatchingParserResult as ex:
-			fileName = ex.value.Value
+			pathExpression = ex.value
 
 		# match for optional whitespace
 		token = yield
@@ -323,25 +323,25 @@ class VHDLStatement(Statement):
 			raise MismatchingParserResult("VHDLParser: Expected end of line or comment")
 		
 		# construct result
-		result = cls(library, fileName, commentText)
+		result = cls(library, pathExpression, commentText)
 		raise MatchingParserResult(result)
 	
 	def __str__(self, indent=0):
 		if (self._commentText != ""):
-			return "{0}VHDL {1} \"{2}\" # {3}".format(("  " * indent), self._libraryName, self._fileName, self._commentText)
+			return "{0}VHDL {1} \"{2}\" # {3}".format(("  " * indent), self._libraryName, self._pathExpression, self._commentText)
 		else:
-			return "{0}VHDL {1} \"{2}\"".format(("  " * indent), self._libraryName, self._fileName)
+			return "{0}VHDL {1} \"{2}\"".format(("  " * indent), self._libraryName, self._pathExpression)
 
 
 class VerilogStatement(Statement):
-	def __init__(self, fileName, commentText):
+	def __init__(self, pathExpression, commentText):
 		super().__init__()
-		self._fileName =    fileName
-		self._commentText =  commentText
+		self._pathExpression =  pathExpression
+		self._commentText =     commentText
 	
 	@property
-	def FileName(self):
-		return self._fileName
+	def PathExpression(self):
+		return self._pathExpression
 	
 	@classmethod
 	def GetParser(cls):
@@ -356,16 +356,16 @@ class VerilogStatement(Statement):
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("VerilogParser: Expected whitespace before Verilog fileName.")
 
 		# match for string: fileName; use a StringLiteralParser to parse the pattern
-		parser = StringLiteral.GetParser()
+		parser = PathExpressions.GetParser()
 		parser.send(None)
 
-		fileName = None
+		pathExpression = None
 		try:
 			while True:
 				token = yield
 				parser.send(token)
 		except MatchingParserResult as ex:
-			fileName = ex.value.Value
+			pathExpression = ex.value
 
 		# match for optional whitespace
 		token = yield
@@ -385,22 +385,22 @@ class VerilogStatement(Statement):
 			raise MismatchingParserResult("VerilogParser: Expected end of line or comment")
 		
 		# construct result
-		result = cls(fileName, commentText)
+		result = cls(pathExpression, commentText)
 		raise MatchingParserResult(result)
 		
 	def __str__(self, indent=0):
-		return "{0}Verilog \"{1}\"".format("  " * indent, self._fileName)
+		return "{0}Verilog {1!s}".format("  " * indent, self._pathExpression)
 
 
 class CocotbStatement(Statement):
-	def __init__(self, fileName, commentText):
+	def __init__(self, pathExpression, commentText):
 		super().__init__()
-		self._fileName =    fileName
-		self._commentText =  commentText
+		self._pathExpression =  pathExpression
+		self._commentText =     commentText
 	
 	@property
-	def FileName(self):
-		return self._fileName
+	def PathExpression(self):
+		return self._pathExpression
 		
 	@classmethod
 	def GetParser(cls):
@@ -415,16 +415,16 @@ class CocotbStatement(Statement):
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("CocotbParser: Expected whitespace before Python fileName.")
 
 		# match for string: fileName; use a StringLiteralParser to parse the pattern
-		parser = StringLiteral.GetParser()
+		parser = PathExpressions.GetParser()
 		parser.send(None)
 
-		fileName = None
+		pathExpression = None
 		try:
 			while True:
 				token = yield
 				parser.send(token)
 		except MatchingParserResult as ex:
-			fileName = ex.value.Value
+			pathExpression = ex.value
 
 		# match for optional whitespace
 		token = yield
@@ -444,32 +444,32 @@ class CocotbStatement(Statement):
 			raise MismatchingParserResult("CocotbParser: Expected end of line or comment")
 		
 		# construct result
-		result = cls(fileName, commentText)
+		result = cls(pathExpression, commentText)
 		raise MatchingParserResult(result)
 		
 	def __str__(self, indent=0):
-		return "{0}Cocotb \"{1}\"".format("  " * indent, self._fileName)
+		return "{0}Cocotb {1!s}".format("  " * indent, self._pathExpression)
 
 
 class ConstraintStatement(Statement):
 	__PARSER_NAME__ =    None
 	__PARSER_KEYWORD__ = None
 
-	def __init__(self, fileName, commentText):
+	def __init__(self, pathExpression, commentText):
 		super().__init__()
-		self._fileName =    fileName
-		self._commentText = commentText
+		self._pathExpression =  pathExpression
+		self._commentText =     commentText
 
 	@property
-	def FileName(self):
-		return self._fileName
+	def PathExpression(self):
+		return self._pathExpression
 
 	@classmethod
 	def GetParser(cls):
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):           token = yield
-		# match for keyword: UCF
+		# match for keyword: __PARSER_KEYWORD__
 		if (not isinstance(token, StringToken)):            raise MismatchingParserResult(cls.__PARSER_NAME__ + ": Expected UCF keyword.")
 		if (token.Value.lower() != cls.__PARSER_KEYWORD__): raise MismatchingParserResult(cls.__PARSER_NAME__ + ": Expected UCF keyword.")
 		# match for whitespace
@@ -477,16 +477,16 @@ class ConstraintStatement(Statement):
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult(cls.__PARSER_NAME__ + ": Expected whitespace before UCF fileName.")
 
 		# match for string: fileName; use a StringLiteralParser to parse the pattern
-		parser = StringLiteral.GetParser()
+		parser = PathExpressions.GetParser()
 		parser.send(None)
 
-		fileName = None
+		pathExpression = None
 		try:
 			while True:
 				token = yield
 				parser.send(token)
 		except MatchingParserResult as ex:
-			fileName = ex.value.Value
+			pathExpression = ex.value
 
 		# match for optional whitespace
 		token = yield
@@ -506,11 +506,11 @@ class ConstraintStatement(Statement):
 			raise MismatchingParserResult(cls.__PARSER_NAME__ + ": Expected end of line or comment")
 
 		# construct result
-		result = cls(fileName, commentText)
+		result = cls(pathExpression, commentText)
 		raise MatchingParserResult(result)
 
 	def __str__(self, indent=0):
-		return "{indent}{kw] \"{filename}\"".format(indent="  " * indent, kw=self.__PARSER_KEYWORD__, filename=self._fileName)
+		return "{indent}{kw] {filename!s}".format(indent="  " * indent, kw=self.__PARSER_KEYWORD__, filename=self._pathExpression)
 
 
 class LDCStatement(ConstraintStatement):
@@ -608,19 +608,19 @@ PathExpressions.AddChoice(ConcatenateExpression)
 
 
 class PathStatement(Statement):
-	def __init__(self, variable, expression, commentText):
+	def __init__(self, variable, pathExpression, commentText):
 		super().__init__()
-		self._variable =    variable
-		self._expression =  expression
-		self._commentText = commentText
+		self._variable =        variable
+		self._pathExpression =  pathExpression
+		self._commentText =     commentText
 
 	@property
 	def Variable(self):
 		return self._variable
 
 	@property
-	def Expression(self):
-		return self._expression
+	def PathExpression(self):
+		return self._pathExpression
 
 	@classmethod
 	def GetParser(cls):
@@ -657,13 +657,13 @@ class PathStatement(Statement):
 		parser = PathExpressions.GetParser()
 		parser.send(None)
 
-		expressionRoot = None
+		pathExpression = None
 		try:
 			while True:
 				parser.send(token)
 				token = yield
 		except MatchingParserResult as ex:
-			expressionRoot = ex.value
+			pathExpression = ex.value
 
 		token = yield
 		# match for delimiter sign: \n
@@ -681,11 +681,11 @@ class PathStatement(Statement):
 			raise MismatchingParserResult("PathParser: Expected end of line or comment")
 
 		# construct result
-		result = cls(variable, expressionRoot, commentText)
+		result = cls(variable, pathExpression, commentText)
 		raise MatchingParserResult(result)
 
 	def __str__(self, indent=0):
-		return "{indent}path {var} := {expr!s}".format(indent="  " * indent, var=self._variable, expr=self._expression)
+		return "{indent}Path {var} := {expr!s}".format(indent="  " * indent, var=self._variable, expr=self._pathExpression)
 
 	__repr__ = __str__
 
@@ -745,23 +745,23 @@ class ReportStatement(Statement):
 		raise MatchingParserResult(result)
 		
 	def __str__(self, indent=0):
-		return "{0}REPORT \"{1}\"".format("  " * indent, self._message)
+		return "{0}Report \"{1}\"".format("  " * indent, self._message)
 
 
 class LibraryStatement(Statement):
-	def __init__(self, library, directoryName, commentText):
+	def __init__(self, library, pathExpression, commentText):
 		super().__init__()
-		self._library =       library
-		self._directoryName = directoryName
-		self._commentText =   commentText
+		self._library =         library
+		self._pathExpression =  pathExpression
+		self._commentText =     commentText
 	
 	@property
 	def Library(self):
 		return self._library
 		
 	@property
-	def DirectoryName(self):
-		return self._directoryName
+	def PathExpression(self):
+		return self._pathExpression
 	
 	@classmethod
 	def GetParser(cls):
@@ -790,16 +790,16 @@ class LibraryStatement(Statement):
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("LibraryParser: Expected whitespace before LIBRARY directoryName.")
 
 		# match for string: fileName; use a StringLiteralParser to parse the pattern
-		parser = StringLiteral.GetParser()
+		parser = PathExpressions.GetParser()
 		parser.send(None)
 
-		directoryName = None
+		pathExpression = None
 		try:
 			while True:
 				token = yield
 				parser.send(token)
 		except MatchingParserResult as ex:
-			directoryName = ex.value.Value
+			pathExpression = ex.value
 
 		# match for optional whitespace
 		token = yield
@@ -819,22 +819,22 @@ class LibraryStatement(Statement):
 			raise MismatchingParserResult("LibraryParser: Expected end of line or comment")
 		
 		# construct result
-		result = cls(library, directoryName, commentText)
+		result = cls(library, pathExpression, commentText)
 		raise MatchingParserResult(result)
 	
 	def __str__(self, indent=0):
-		return "{0}Library {1} \"{2}\"".format("  " * indent, self._library, self._directoryName)
+		return "{0}Library {1} {2!s}".format("  " * indent, self._library, self._pathExpression)
 
 
 class IncludeStatement(Statement):
-	def __init__(self, fileName, commentText):
+	def __init__(self, pathExpression, commentText):
 		super().__init__()
-		self._fileName =    fileName
-		self._commentText = commentText
+		self._pathExpression =  pathExpression
+		self._commentText =     commentText
 		
 	@property
-	def FileName(self):
-		return self._fileName
+	def PathExpression(self):
+		return self._pathExpression
 	
 	@classmethod
 	def GetParser(cls):
@@ -849,16 +849,16 @@ class IncludeStatement(Statement):
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("IncludeParser: Expected whitespace before INCLUDE fileName.")
 
 		# match for string: fileName; use a StringLiteralParser to parse the pattern
-		parser = StringLiteral.GetParser()
+		parser = PathExpressions.GetParser()
 		parser.send(None)
 
-		fileName = None
+		pathExpression = None
 		try:
 			while True:
 				token = yield
 				parser.send(token)
 		except MatchingParserResult as ex:
-			fileName = ex.value.Value
+			pathExpression = ex.value
 
 		# match for optional whitespace
 		token = yield
@@ -878,11 +878,11 @@ class IncludeStatement(Statement):
 			raise MismatchingParserResult("IncludeParser: Expected end of line or comment")
 		
 		# construct result
-		result = cls(fileName, commentText)
+		result = cls(pathExpression, commentText)
 		raise MatchingParserResult(result)
 	
 	def __str__(self, indent=0):
-		return "{0}Include \"{1}\"".format("  " * indent, self._fileName)
+		return "{0}Include {1!s}".format("  " * indent, self._pathExpression)
 
 # ==============================================================================
 # Conditional Statements

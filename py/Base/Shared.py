@@ -91,11 +91,11 @@ class Shared(ILogable):
 			try:
 				shutil.rmtree(str(self.Directories.Working))
 			except OSError as ex:
-				raise SharedException("Error while deleting '{0!s}'.".format(self.Directories.Working)) from ex
+				raise CommonException("Error while deleting '{0!s}'.".format(self.Directories.Working)) from ex
 		try:
 			self.Directories.Working.mkdir(parents=True)
 		except OSError as ex:
-			raise SharedException("Error while creating '{0!s}'.".format(self.Directories.Working)) from ex
+			raise CommonException("Error while creating '{0!s}'.".format(self.Directories.Working)) from ex
 
 		# change working directory to temporary path
 		self._LogVerbose("Changing working directory to temporary directory.")
@@ -103,7 +103,7 @@ class Shared(ILogable):
 		try:
 			chdir(str(self.Directories.Working))
 		except OSError as ex:
-			raise SharedException("Error while changing to '{0!s}'.".format(self.Directories.Working)) from ex
+			raise CommonException("Error while changing to '{0!s}'.".format(self.Directories.Working)) from ex
 
 	def _CreatePoCProject(self, projectName, board):
 		# create a PoCProject and read all needed files
