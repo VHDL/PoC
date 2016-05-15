@@ -72,6 +72,8 @@ class ReplaceTask(ReplaceRuleMixIn):
 
 
 class Compiler(Shared):
+	_ENVIRONMENT = Environment.Synthesis
+
 	class __Directories__(Shared.__Directories__):
 		Netlist = None
 		Source = None
@@ -103,7 +105,7 @@ class Compiler(Shared):
 		self._PrepareCompilerEnvironment(board.Device)
 		self._WriteSpecialSectionIntoConfig(board.Device)
 
-		self._CreatePoCProject(netlist, board)
+		self._CreatePoCProject(netlist.ModuleName, board)
 		if netlist.FilesFile is not None: self._AddFileListFile(netlist.FilesFile)
 		if (netlist.RulesFile is not None):
 			self._AddRulesFiles(netlist.RulesFile)
@@ -130,41 +132,26 @@ class Compiler(Shared):
 		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =  device.Series
 		self.Host.PoCConfig['SPECIAL']['OutputDir']	=     self.Directories.Working.as_posix()
 
-	def _CreatePoCProject(self, netlist, board):
-		# create a PoCProject and read all needed files
-		self._LogVerbose("Creating a PoC project '{0}'".format(netlist.ModuleName))
-		pocProject = VirtualProject(netlist.ModuleName)
-
-		# configure the project
-		pocProject.RootDirectory =  self.Host.Directories.Root
-		pocProject.Environment =    Environment.Synthesis
-		pocProject.ToolChain =      self._TOOL_CHAIN
-		pocProject.Tool =            self._TOOL
-		pocProject.VHDLVersion =    self._vhdlVersion
-		pocProject.Board =          board
-
-		self._pocProject =          pocProject
-
-	def _AddFileListFile(self, fileListFilePath):
-		self._LogVerbose("Reading filelist '{0!s}'".format(fileListFilePath))
-		# add the *.files file, parse and evaluate it
-		try:
-			fileListFile = self._pocProject.AddFile(FileListFile(fileListFilePath))
-			fileListFile.Parse()
-			fileListFile.CopyFilesToFileSet()
-			fileListFile.CopyExternalLibraries()
-			self._pocProject.ExtractVHDLLibrariesFromVHDLSourceFiles()
-		except ParserException as ex:
-			raise CompilerException("Error while parsing '{0!s}'.".format(fileListFilePath)) from ex
-
-		self._LogDebug("=" * 78)
-		self._LogDebug("Pretty printing the PoCProject...")
-		self._LogDebug(self._pocProject.pprint(2))
-		self._LogDebug("=" * 78)
-		if (len(fileListFile.Warnings) > 0):
-			for warn in fileListFile.Warnings:
-				self._LogWarning(warn)
-			raise CompilerException("Found critical warnings while parsing '{0!s}'".format(fileListFilePath))
+	# def _AddFileListFile(self, fileListFilePath):
+	# 	self._LogVerbose("Reading filelist '{0!s}'".format(fileListFilePath))
+	# 	# add the *.files file, parse and evaluate it
+	# 	try:
+	# 		fileListFile = self._pocProject.AddFile(FileListFile(fileListFilePath))
+	# 		fileListFile.Parse()
+	# 		fileListFile.CopyFilesToFileSet()
+	# 		fileListFile.CopyExternalLibraries()
+	# 		self._pocProject.ExtractVHDLLibrariesFromVHDLSourceFiles()
+	# 	except ParserException as ex:
+	# 		raise CompilerException("Error while parsing '{0!s}'.".format(fileListFilePath)) from ex
+	#
+	# 	self._LogDebug("=" * 78)
+	# 	self._LogDebug("Pretty printing the PoCProject...")
+	# 	self._LogDebug(self._pocProject.pprint(2))
+	# 	self._LogDebug("=" * 78)
+	# 	if (len(fileListFile.Warnings) > 0):
+	# 		for warn in fileListFile.Warnings:
+	# 			self._LogWarning(warn)
+	# 		raise CompilerException("Found critical warnings while parsing '{0!s}'".format(fileListFilePath))
 
 	def _AddRulesFiles(self, rulesFilePath):
 		self._LogVerbose("Reading rules from '{0!s}'".format(rulesFilePath))
