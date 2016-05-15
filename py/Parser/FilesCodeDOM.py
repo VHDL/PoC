@@ -179,9 +179,9 @@ class ConcatenateExpression(BinaryExpression):
 
 
 class ExistsFunction(Function):
-	def __init__(self, directoryname):
+	def __init__(self, expression):
 		super().__init__()
-		self._expression = Path(directoryname)
+		self._expression = expression
 
 	@property
 	def Expression(self):
@@ -213,8 +213,8 @@ class ExistsFunction(Function):
 		expression = None
 		try:
 			while True:
-				token = yield
 				parser.send(token)
+				token = yield
 		except MatchingParserResult as ex:
 			expression = ex.value
 
@@ -685,7 +685,7 @@ class PathStatement(Statement):
 		raise MatchingParserResult(result)
 
 	def __str__(self, indent=0):
-		return "{indent}path := {expr!s}".format(indent="  " * indent, expr=self._expression)
+		return "{indent}path {var} := {expr!s}".format(indent="  " * indent, var=self._variable, expr=self._expression)
 
 	__repr__ = __str__
 

@@ -11,16 +11,16 @@ if (Tool = "GHDL") then
 		path Xilinx = (GHDL / (${CONFIG.DirectoryNames:XilinxSpecificFiles} & ".v93"))
 		if ?{Xilinx} then
 			if ?{(Xilinx / "unisim-obj93.cf")} then
-				library unisim		Xilinx
+				# library unisim		Xilinx
 			end if
 			if ?{(Xilinx / "unimacro-obj93.cf")} then
-				library unimacro	Xilinx
+				# library unimacro	Xilinx
 			end if
 			if ?{(Xilinx / "secureip-obj93.cf")} then
-				library secureip	Xilinx
+				# library secureip	Xilinx
 			end if
 			if ?{(Xilinx / "simprim-obj93.cf")} then
-				library simprim		Xilinx
+				# library simprim		Xilinx
 			end if
 		else
 			report "No precompiled Xilinx primitives for GHDL and VHDL-93 found."
@@ -29,16 +29,16 @@ if (Tool = "GHDL") then
 		path Xilinx = (GHDL / (${CONFIG.DirectoryNames:XilinxSpecificFiles} & ".v08"))
 		if ?{Xilinx} then
 			if ?{(Xilinx / "unisim-obj08.cf")} then
-				library unisim		Xilinx
+				# library unisim		Xilinx
 			end if
 			if ?{(Xilinx / "unimacro-obj08.cf")} then
-				library unimacro	Xilinx
+				# library unimacro	Xilinx
 			end if
 			if ?{(Xilinx / "secureip-obj08.cf")} then
-				library secureip	Xilinx
+				# library secureip	Xilinx
 			end if
 			if ?{(Xilinx / "simprim-obj08.cf")} then
-				library simprim		Xilinx
+				# library simprim		Xilinx
 			end if
 		else
 			report "No precompiled Xilinx primitives for GHDL and VHDL-2008 found."
@@ -49,10 +49,10 @@ if (Tool = "GHDL") then
 elseif (Tool in ["Mentor_vSim", "Cocotb_QuestaSim"]) then
 	path Xilinx = (PreCompiled / ("vsim" / ${CONFIG.DirectoryNames:XilinxSpecificFiles}))
 	if ?{Xilinx} then
-		library unisim		Xilinx
-		library unimacro	Xilinx
-		library secureip	Xilinx
-		library simprim		Xilinx
+		# library unisim		Xilinx
+		# library unimacro	Xilinx
+		# library secureip	Xilinx
+		# library simprim		Xilinx
 	else
 		report "No precompiled Xilinx primitives for vSim found."
 	end if

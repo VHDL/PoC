@@ -30,11 +30,12 @@
 # limitations under the License.
 # ==============================================================================
 #
+from lib.Functions        import Init
 from lib.Parser           import ParserException
 from lib.CodeDOM          import AndExpression, OrExpression, XorExpression, NotExpression, InExpression, NotInExpression
 from lib.CodeDOM          import EqualExpression, UnequalExpression, LessThanExpression, LessThanEqualExpression, GreaterThanExpression, GreaterThanEqualExpression
 from lib.CodeDOM          import StringLiteral, IntegerLiteral, Identifier
-from Parser.FilesCodeDOM  import Document, InterpolateLiteral
+from Parser.FilesCodeDOM  import Document, InterpolateLiteral, SubDirectoryExpression, ConcatenateExpression
 from Parser.FilesCodeDOM  import ExistsFunction, ListConstructorExpression, PathStatement
 from Parser.FilesCodeDOM  import IfElseIfElseStatement, ReportStatement
 from Parser.FilesCodeDOM  import IncludeStatement, LibraryStatement
@@ -42,7 +43,7 @@ from Parser.FilesCodeDOM  import LDCStatement, SDCStatement, UCFStatement, XDCSt
 from Parser.FilesCodeDOM  import VHDLStatement, VerilogStatement, CocotbStatement
 
 # to print the reconstructed files file after parsing, set DEBUG to True
-DEBUG = False
+DEBUG = not False
 
 class FileReference:
 	def __init__(self, file):
@@ -206,12 +207,12 @@ class FilesParserMixIn:
 			elif isinstance(stmt, PathStatement):
 				self._variables[stmt.Variable] = self._EvaluatePath(host, stmt.Expression)
 			elif isinstance(stmt, IfElseIfElseStatement):
-				exprValue = self._Evaluate(stmt.IfClause.Expression)
+				exprValue = self._Evaluate(host, stmt.IfClause.Expression)
 				if (exprValue is True):
 					self._Resolve(host, stmt.IfClause.Statements)
 				elif (stmt.ElseIfClauses is not None):
 					for elseif in stmt.ElseIfClauses:
-						exprValue = self._Evaluate(elseif.Expression)
+						exprValue = self._Evaluate(host, elseif.Expression)
 						if (exprValue is True):
 							self._Resolve(host, elseif.Statements)
 							break
@@ -222,7 +223,7 @@ class FilesParserMixIn:
 			else:
 				ParserException("Found unknown statement type '{0!s}'.".format(type(stmt)))
 	
-	def _Evaluate(self, expr):
+	def _Evaluate(self, host, expr):
 		if isinstance(expr, Identifier):
 			try:
 				return self._variables[expr.Name] #self._variables only available via late binding
@@ -233,35 +234,36 @@ class FilesParserMixIn:
 		elif isinstance(expr, IntegerLiteral):
 			return expr.Value
 		elif isinstance(expr, ExistsFunction):
-			return (self._rootDirectory / expr.Expression).exists()
+			path = self._EvaluatePath(host, expr.Expression)
+			return (self._rootDirectory / path).exists()
 		elif isinstance(expr, ListConstructorExpression):
-			return [self._Evaluate(item) for item in expr.List]
+			return [self._Evaluate(host, item) for item in expr.List]
 		elif isinstance(expr, NotExpression):
-			return not self._Evaluate(expr.Child)
+			return not self._Evaluate(host, expr.Child)
 		elif isinstance(expr, InExpression):
-			return self._Evaluate(expr.LeftChild) in self._Evaluate(expr.RightChild)
+			return self._Evaluate(host, expr.LeftChild) in self._Evaluate(host, expr.RightChild)
 		elif isinstance(expr, NotInExpression):
-			return self._Evaluate(expr.LeftChild) not in self._Evaluate(expr.RightChild)
+			return self._Evaluate(host, expr.LeftChild) not in self._Evaluate(host, expr.RightChild)
 		elif isinstance(expr, AndExpression):
-			return self._Evaluate(expr.LeftChild) and self._Evaluate(expr.RightChild)
+			return self._Evaluate(host, expr.LeftChild) and self._Evaluate(host, expr.RightChild)
 		elif isinstance(expr, OrExpression):
-			return self._Evaluate(expr.LeftChild) or self._Evaluate(expr.RightChild)
+			return self._Evaluate(host, expr.LeftChild) or self._Evaluate(host, expr.RightChild)
 		elif isinstance(expr, XorExpression):
-			l = self._Evaluate(expr.LeftChild)
-			r = self._Evaluate(expr.RightChild)
+			l = self._Evaluate(host, expr.LeftChild)
+			r = self._Evaluate(host, expr.RightChild)
 			return (not l and r) or (l and not r)
 		elif isinstance(expr, EqualExpression):
-			return self._Evaluate(expr.LeftChild) == self._Evaluate(expr.RightChild)
+			return self._Evaluate(host, expr.LeftChild) == self._Evaluate(host, expr.RightChild)
 		elif isinstance(expr, UnequalExpression):
-			return self._Evaluate(expr.LeftChild) != self._Evaluate(expr.RightChild)
+			return self._Evaluate(host, expr.LeftChild) != self._Evaluate(host, expr.RightChild)
 		elif isinstance(expr, LessThanExpression):
-			return self._Evaluate(expr.LeftChild) < self._Evaluate(expr.RightChild)
+			return self._Evaluate(host, expr.LeftChild) < self._Evaluate(host, expr.RightChild)
 		elif isinstance(expr, LessThanEqualExpression):
-			return self._Evaluate(expr.LeftChild) <= self._Evaluate(expr.RightChild)
+			return self._Evaluate(host, expr.LeftChild) <= self._Evaluate(host, expr.RightChild)
 		elif isinstance(expr, GreaterThanExpression):
-			return self._Evaluate(expr.LeftChild) > self._Evaluate(expr.RightChild)
+			return self._Evaluate(host, expr.LeftChild) > self._Evaluate(host, expr.RightChild)
 		elif isinstance(expr, GreaterThanEqualExpression):
-			return self._Evaluate(expr.LeftChild) >= self._Evaluate(expr.RightChild)
+			return self._Evaluate(host, expr.LeftChild) >= self._Evaluate(host, expr.RightChild)
 		else:
 			raise ParserException("Unsupported expression type '{0!s}'".format(type(expr)))
 
@@ -278,6 +280,16 @@ class FilesParserMixIn:
 		elif isinstance(expr, InterpolateLiteral):
 			config = host.PoCConfig
 			return config.Interpolation.interpolate(config, "CONFIG.DirectoryNames", "xxxx", str(expr), {})
+		elif isinstance(expr, SubDirectoryExpression):
+			l = self._EvaluatePath(host, expr.LeftChild)
+			r = self._EvaluatePath(host, expr.RightChild)
+			return l + "/" + r
+		elif isinstance(expr, ConcatenateExpression):
+			l = self._EvaluatePath(host, expr.LeftChild)
+			r = self._EvaluatePath(host, expr.RightChild)
+			return l + r
+		else:
+			raise ParserException("Unsupported expression type '{0!s}'".format(type(expr)))
 
 	@property
 	def Files(self):      return self._files
