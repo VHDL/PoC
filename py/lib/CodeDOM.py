@@ -181,7 +181,7 @@ class NotExpression(UnaryExpression):
 class BinaryExpression(Expression):
 	def __init__(self, leftChild, rightChild):
 		super().__init__()
-		self._leftChild =    leftChild
+		self._leftChild =   leftChild
 		self._rightChild =  rightChild
 
 	@property
@@ -229,11 +229,16 @@ class BinaryExpression(Expression):
 		if isinstance(cls.__PARSER_OPERATOR__, str):
 			if (not isinstance(token, StringToken)):      raise MismatchingParserResult()
 			if (token.Value != cls.__PARSER_OPERATOR__):  raise MismatchingParserResult()
+			token = yield
+			if (not isinstance(token, SpaceToken)):       raise MismatchingParserResult()
+			token = yield
 		elif isinstance(cls.__PARSER_OPERATOR__, tuple):
 			for sign in cls.__PARSER_OPERATOR__:
 				if (not isinstance(token, CharacterToken)): raise MismatchingParserResult()
 				if (token.Value != sign):                   raise MismatchingParserResult()
 				token = yield
+				# match for optional whitespace
+				if isinstance(token, SpaceToken):           token = yield
 		elif isinstance(cls.__PARSER_OPERATOR__, list):
 			for kw in cls.__PARSER_OPERATOR__[:-1]:
 				if (not isinstance(token, StringToken)):    raise MismatchingParserResult()
@@ -245,9 +250,8 @@ class BinaryExpression(Expression):
 			if (not isinstance(token, StringToken)):      raise MismatchingParserResult()
 			if (token.Value != kw):                       raise MismatchingParserResult()
 			token = yield
-
-		# match for optional whitespace
-		if isinstance(token, SpaceToken):           token = yield
+			if (not isinstance(token, SpaceToken)):       raise MismatchingParserResult()
+			token = yield
 
 		# match for sub expression
 		# ==========================================================================
@@ -273,7 +277,11 @@ class BinaryExpression(Expression):
 		raise MatchingParserResult(result)
 
 	def __str__(self):
-		return "({left!s} {op} {right!s})".format(left=self._leftChild, op=self.__PARSER_OPERATOR__, right=self._rightChild)
+		if   isinstance(self.__PARSER_OPERATOR__, tuple): op = "".join(self.__PARSER_OPERATOR__)
+		elif isinstance(self.__PARSER_OPERATOR__, list):  op = " ".join(self.__PARSER_OPERATOR__)
+		else:                                             op = self.__PARSER_OPERATOR__
+
+		return "({left!s} {op} {right!s})".format(left=self._leftChild, op=op, right=self._rightChild)
 
 class LogicalExpression(BinaryExpression):
 	pass
