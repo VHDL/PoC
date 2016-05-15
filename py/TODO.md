@@ -30,12 +30,17 @@
 
 #### All flows
   - don't rmdir a temp directory, write a purge function
-	
-#### All simulators
   - create a custom my_config.vhdl in temp/<simulator>/ if a device is specified
+	- DryRun option
+
+#### All simulators
+	- disable OverallReport if GUI mode is enabled
 	
 #### QuestaSim / ModelSim
   - disable `-vopt` if *ModelSim Altera Edition* is used
+
+#### All compilers
+  - OverallReport on completion
   
 #### Incomplete features:
   - pre-compiled vendor libraries

@@ -48,17 +48,17 @@ from pathlib            import Path
 
 from lib.Functions      import Init
 from lib.Parser         import ParserException
-from Base.Exceptions    import ExceptionBase
+from Base.Exceptions    import ExceptionBase, SkipableException
 from Base.Project       import VHDLVersion, Environment, FileTypes
 from Base.Shared        import Shared
 from Parser.RulesParser import CopyRuleMixIn, ReplaceRuleMixIn, DeleteRuleMixIn
-from PoC.Solution       import VirtualProject, FileListFile, RulesFile
+from PoC.Solution       import RulesFile
 
 
 class CompilerException(ExceptionBase):
 	pass
 
-class SkipableCompilerException(CompilerException):
+class SkipableCompilerException(CompilerException, SkipableException):
 	pass
 
 class CopyTask(CopyRuleMixIn):
@@ -131,27 +131,6 @@ class Compiler(Shared):
 		self.Host.PoCConfig['SPECIAL']['Device'] =        device.ShortName
 		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =  device.Series
 		self.Host.PoCConfig['SPECIAL']['OutputDir']	=     self.Directories.Working.as_posix()
-
-	# def _AddFileListFile(self, fileListFilePath):
-	# 	self._LogVerbose("Reading filelist '{0!s}'".format(fileListFilePath))
-	# 	# add the *.files file, parse and evaluate it
-	# 	try:
-	# 		fileListFile = self._pocProject.AddFile(FileListFile(fileListFilePath))
-	# 		fileListFile.Parse()
-	# 		fileListFile.CopyFilesToFileSet()
-	# 		fileListFile.CopyExternalLibraries()
-	# 		self._pocProject.ExtractVHDLLibrariesFromVHDLSourceFiles()
-	# 	except ParserException as ex:
-	# 		raise CompilerException("Error while parsing '{0!s}'.".format(fileListFilePath)) from ex
-	#
-	# 	self._LogDebug("=" * 78)
-	# 	self._LogDebug("Pretty printing the PoCProject...")
-	# 	self._LogDebug(self._pocProject.pprint(2))
-	# 	self._LogDebug("=" * 78)
-	# 	if (len(fileListFile.Warnings) > 0):
-	# 		for warn in fileListFile.Warnings:
-	# 			self._LogWarning(warn)
-	# 		raise CompilerException("Found critical warnings while parsing '{0!s}'".format(fileListFilePath))
 
 	def _AddRulesFiles(self, rulesFilePath):
 		self._LogVerbose("Reading rules from '{0!s}'".format(rulesFilePath))

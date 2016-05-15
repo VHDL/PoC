@@ -309,7 +309,7 @@ class FileListFile(File, FilesParserMixIn):
 		self._classVerilogSourceFile =  VerilogSourceFile
 		self._classCocotbSourceFile =   CocotbSourceFile
 
-	def Parse(self):
+	def Parse(self, host):
 		if (self._fileSet is None):                 raise CommonException("File '{0!s}' is not associated to a fileset.".format(self._file))
 		if (self._project is None):                 raise CommonException("File '{0!s}' is not associated to a project.".format(self._file))
 		if (self._project.RootDirectory is None):   raise CommonException("No RootDirectory configured for this project.")
@@ -318,7 +318,7 @@ class FileListFile(File, FilesParserMixIn):
 		self._rootDirectory = self.Project.RootDirectory
 		self._variables =     self.Project.GetVariables()
 		self._Parse()
-		self._Resolve()
+		self._Resolve(host)
 
 	def CopyFilesToFileSet(self):
 		for file in self._files:

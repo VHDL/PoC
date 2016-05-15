@@ -42,19 +42,15 @@ else:
 
 
 # load dependencies
-import shutil
 from datetime           import datetime
 from enum               import Enum, unique
-from os                 import chdir
 
 from lib.Functions      import Init
-from lib.Parser         import ParserException
-from Base.Exceptions    import ExceptionBase, CommonException
+from Base.Exceptions    import ExceptionBase, SkipableException
 from Base.Logging       import LogEntry
 from Base.Project       import Environment, VHDLVersion
 from Base.Shared        import Shared
 from PoC.Entity         import WildCard
-from PoC.Solution       import VirtualProject, FileListFile
 from PoC.TestCase       import TestSuite, TestCase, Status
 
 
@@ -64,7 +60,7 @@ VHDL_TESTBENCH_LIBRARY_NAME = "test"
 class SimulatorException(ExceptionBase):
 	pass
 
-class SkipableSimulatorException(SimulatorException):
+class SkipableSimulatorException(SimulatorException, SkipableException):
 	pass
 
 

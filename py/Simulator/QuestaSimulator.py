@@ -108,7 +108,7 @@ class Simulator(BaseSimulator):
 
 		# create a QuestaVHDLCompiler instance
 		vcom = self._toolChain.GetVHDLCompiler()
-		vcom.Parameters[vcom.FlagQuietMode] =          True
+		vcom.Parameters[vcom.FlagQuietMode] =         True
 		vcom.Parameters[vcom.FlagExplicit] =          True
 		vcom.Parameters[vcom.FlagRangeCheck] =        True
 		vcom.Parameters[vcom.SwitchModelSimIniFile] = self._modelsimIniPath.as_posix()
@@ -116,12 +116,12 @@ class Simulator(BaseSimulator):
 
 		# run vcom compile for each VHDL file
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
-			if (not file.Path.exists()):                raise SimulatorException("Cannot analyse '{0!s}'.".format(file.Path)) from FileNotFoundError(str(file.Path))
+			if (not file.Path.exists()):              raise SimulatorException("Cannot analyse '{0!s}'.".format(file.Path)) from FileNotFoundError(str(file.Path))
 
 			vcomLogFile = self.Directories.Working / (file.Path.stem + ".vcom.log")
-			vcom.Parameters[vcom.SwitchVHDLLibrary] =  file.LibraryName
+			vcom.Parameters[vcom.SwitchVHDLLibrary] = file.LibraryName
 			vcom.Parameters[vcom.ArgLogFile] =        vcomLogFile
-			vcom.Parameters[vcom.ArgSourceFile] =      file.Path
+			vcom.Parameters[vcom.ArgSourceFile] =     file.Path
 
 			try:
 				vcom.Compile()

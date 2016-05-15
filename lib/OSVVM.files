@@ -7,10 +7,10 @@
 if (VHDLVersion < 2008) then
 	report "OSVVM requires VHDL-2008; See OSVVM documentation for VHDL-2002 support."
 elseif (VHDLVersion = 2008) then
-	if ((Tool = "GHDL") and ?("temp/precompiled/ghdl/osvvm")) then
+	if ((Tool = "GHDL") and ?{"temp/precompiled/ghdl/osvvm"}) then
 		report "TODO: add check for existing cf files."
 		library osvvm "temp/precompiled/ghdl/osvvm"
-	elseif ((Tool = "Mentor_vSim") and ?("temp/precompiled/vsim/osvvm")) then
+	elseif ((Tool = "Mentor_vSim") and ?{"temp/precompiled/vsim/osvvm"}) then
 		library osvvm "temp/precompiled/vsim/osvvm"
 	else
 		# TODO self-compile section?

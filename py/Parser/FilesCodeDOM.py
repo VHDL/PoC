@@ -34,7 +34,7 @@ from pathlib import Path
 
 from lib.Parser     import MismatchingParserResult, MatchingParserResult
 from lib.Parser     import SpaceToken, CharacterToken, StringToken, NumberToken
-from lib.CodeDOM    import AndExpression, OrExpression, XorExpression, NotExpression, InExpression, NotInExpression, Literal
+from lib.CodeDOM    import AndExpression, OrExpression, XorExpression, NotExpression, InExpression, NotInExpression, Literal, BinaryExpression
 from lib.CodeDOM    import EmptyLine, CommentLine, BlockedStatement as BlockedStatementBase, ExpressionChoice
 from lib.CodeDOM    import EqualExpression, UnequalExpression, LessThanExpression, LessThanEqualExpression, GreaterThanExpression, GreaterThanEqualExpression
 from lib.CodeDOM    import Statement, BlockStatement, ConditionalBlockStatement, Function, Expression, ListElement
@@ -165,14 +165,27 @@ NotInExpression.__PARSER_LHS_EXPRESSIONS__ = IfThenElseExpressions
 NotInExpression.__PARSER_RHS_EXPRESSIONS__ = ListConstructorExpression
 
 
+class SubDirectoryExpression(BinaryExpression):
+	__PARSER_NAME__ =             "SubDirectoryExpressionParser"
+	__PARSER_LHS_EXPRESSIONS__ =  PathExpressions
+	__PARSER_RHS_EXPRESSIONS__ =  PathExpressions
+	__PARSER_OPERATOR__ =         ("/",)
+
+class ConcatenateExpression(BinaryExpression):
+	__PARSER_NAME__ =             "ConcatenateExpressionParser"
+	__PARSER_LHS_EXPRESSIONS__ =  PathExpressions
+	__PARSER_RHS_EXPRESSIONS__ =  PathExpressions
+	__PARSER_OPERATOR__ =         ("&",)
+
+
 class ExistsFunction(Function):
 	def __init__(self, directoryname):
 		super().__init__()
-		self._path = Path(directoryname)
+		self._expression = Path(directoryname)
 
 	@property
-	def Path(self):
-		return self._path
+	def Expression(self):
+		return self._expression
 
 	@classmethod
 	def GetParser(cls):
@@ -188,35 +201,37 @@ class ExistsFunction(Function):
 		# match for opening (
 		token = yield
 		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult()
-		if (token.Value != "("):                    raise MismatchingParserResult()
+		if (token.Value != "{"):                    raise MismatchingParserResult()
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):           token = yield
-		# match for delimiter sign: "
-		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("ExistsFunctionParser: Expected double quote sign before VHDL fileName.")
-		if (token.Value.lower() != "\""):           raise MismatchingParserResult("ExistsFunctionParser: Expected double quote sign before VHDL fileName.")
-		# match for string: path
-		path = ""
-		while True:
-			token = yield
-			if isinstance(token, CharacterToken):
-				if (token.Value == "\""):
-					break
-			path += token.Value
+
+		# match for path expressions
+		parser = PathExpressions.GetParser()
+		parser.send(None)
+
+		expression = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			expression = ex.value
+
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):           token = yield
-		# match for delimiter sign: \n
+		# match for closing sign: }
 		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("ExistsFunctionParser: Expected end of line or comment")
-		if (token.Value != ")"):                    raise MismatchingParserResult("ExistsFunctionParser: Expected end of line or comment")
+		if (token.Value != "}"):                    raise MismatchingParserResult("ExistsFunctionParser: Expected end of line or comment")
 
 		# construct result
-		result = cls(path)
+		result = cls(expression)
 		if DEBUG: print("ExistsFunctionParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
 
 	def __str__(self):
-		return "exists(\"{0!s}\")".format(self._path)
+		return "exists{{{0!s}}}".format(self._expression)
 
 IfThenElseExpressions.AddChoice(Identifier)
 IfThenElseExpressions.AddChoice(StringLiteral)
@@ -588,6 +603,9 @@ class InterpolateLiteral(Literal):
 PathExpressions.AddChoice(Identifier)
 PathExpressions.AddChoice(StringLiteral)
 PathExpressions.AddChoice(InterpolateLiteral)
+PathExpressions.AddChoice(SubDirectoryExpression)
+PathExpressions.AddChoice(ConcatenateExpression)
+
 
 class PathStatement(Statement):
 	def __init__(self, variable, expression, commentText):
@@ -692,16 +710,19 @@ class ReportStatement(Statement):
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("ReportParser: Expected whitespace before report message.")
-		# match for delimiter sign: "
-		token = yield
-		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("ReportParser: Expected double quote sign before report message.")
-		if (token.Value.lower() != "\""):           raise MismatchingParserResult("ReportParser: Expected double quote sign before report message.")
-		# match for string: message
-		message = ""
-		while True:
-			token = yield
-			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
-			message += token.Value
+
+		# match for string: fileName; use a StringLiteralParser to parse the pattern
+		parser = StringLiteral.GetParser()
+		parser.send(None)
+
+		message = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			message = ex.value.Value
+
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):           token = yield
@@ -767,16 +788,19 @@ class LibraryStatement(Statement):
 				break
 		# match for whitespace
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("LibraryParser: Expected whitespace before LIBRARY directoryName.")
-		# match for delimiter sign: "
-		token = yield
-		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("LibraryParser: Expected double quote sign before LIBRARY directoryName.")
-		if (token.Value.lower() != "\""):           raise MismatchingParserResult("LibraryParser: Expected double quote sign before LIBRARY directoryName.")
-		# match for string: directoryName
-		directoryName = ""
-		while True:
-			token = yield
-			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
-			directoryName += token.Value
+
+		# match for string: fileName; use a StringLiteralParser to parse the pattern
+		parser = StringLiteral.GetParser()
+		parser.send(None)
+
+		directoryName = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			directoryName = ex.value.Value
+
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):           token = yield
@@ -823,16 +847,19 @@ class IncludeStatement(Statement):
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("IncludeParser: Expected whitespace before INCLUDE fileName.")
-		# match for delimiter sign: "
-		token = yield
-		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("IncludeParser: Expected double quote sign before include fileName.")
-		if (token.Value.lower() != "\""):           raise MismatchingParserResult("IncludeParser: Expected double quote sign before include fileName.")
-		# match for string: fileName
-		fileName = ""
-		while True:
-			token = yield
-			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
-			fileName += token.Value
+
+		# match for string: fileName; use a StringLiteralParser to parse the pattern
+		parser = StringLiteral.GetParser()
+		parser.send(None)
+
+		fileName = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			fileName = ex.value.Value
+
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):           token = yield

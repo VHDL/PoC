@@ -41,18 +41,14 @@ else:
 
 
 # load dependencies
-import re
 import shutil
-from pathlib            import Path
 from os                 import chdir
 
-from lib.Functions      import Init
 from lib.Parser         import ParserException
-from Base.Exceptions    import ExceptionBase
+from Base.Exceptions    import CommonException, SkipableCommonException
 from Base.Logging       import ILogable
-from Base.Project       import ToolChain, Tool, VHDLVersion, Environment, FileTypes
-from Parser.RulesParser import CopyRuleMixIn, ReplaceRuleMixIn, DeleteRuleMixIn
-from PoC.Solution       import VirtualProject, FileListFile, RulesFile
+from Base.Project       import ToolChain, Tool, VHDLVersion, Environment
+from PoC.Solution       import VirtualProject, FileListFile
 
 
 class Shared(ILogable):
@@ -131,7 +127,7 @@ class Shared(ILogable):
 
 		try:
 			fileListFile = self._pocProject.AddFile(FileListFile(fileListFilePath))
-			fileListFile.Parse()
+			fileListFile.Parse(self._host)
 			fileListFile.CopyFilesToFileSet()
 			fileListFile.CopyExternalLibraries()
 			self._pocProject.ExtractVHDLLibrariesFromVHDLSourceFiles()

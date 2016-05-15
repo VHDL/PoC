@@ -41,6 +41,8 @@ from Parser.FilesCodeDOM  import IncludeStatement, LibraryStatement
 from Parser.FilesCodeDOM  import LDCStatement, SDCStatement, UCFStatement, XDCStatement
 from Parser.FilesCodeDOM  import VHDLStatement, VerilogStatement, CocotbStatement
 
+# to print the reconstructed files file after parsing, set DEBUG to True
+DEBUG = False
 
 class FileReference:
 	def __init__(self, file):
@@ -144,12 +146,13 @@ class FilesParserMixIn:
 		self._ReadContent() #only available via late binding
 		self._document = Document.Parse(self._content, printChar=not True) #self._content only available via late binding
 
-		# print("{DARK_GRAY}{line}{NOCOLOR}".format(line="*"*80, **Init.Foreground))
-		# print("{DARK_GRAY}{doc!s}{NOCOLOR}".format(doc=self._document, **Init.Foreground))
-		# print("{DARK_GRAY}{line}{NOCOLOR}".format(line="*"*80, **Init.Foreground))
+		if DEBUG:
+			print("{DARK_GRAY}{line}{NOCOLOR}".format(line="*"*80, **Init.Foreground))
+			print("{DARK_GRAY}{doc!s}{NOCOLOR}".format(doc=self._document, **Init.Foreground))
+			print("{DARK_GRAY}{line}{NOCOLOR}".format(line="*"*80, **Init.Foreground))
 
-	def _Resolve(self, statements=None):
-		# print("Resolving {0}".format(str(self._file)))
+	# FIXME: is there a better way to passthrough/access host?
+	def _Resolve(self, host, statements=None):
 		if (statements is None):
 			statements = self._document.Statements
 		
@@ -187,7 +190,7 @@ class FilesParserMixIn:
 				file =            self._rootDirectory / stmt.FileName
 				includeFile =     self._classFileListFile(file) #self._classFileListFile only available via late binding
 				self._fileSet.AddFile(includeFile) #self._fileSet only available via late binding
-				includeFile.Parse()
+				includeFile.Parse(host)
 				
 				self._includes.append(includeFile)
 				for srcFile in includeFile.Files:
@@ -197,23 +200,23 @@ class FilesParserMixIn:
 				for warn in includeFile.Warnings:
 					self._warnings.append(warn)
 			elif isinstance(stmt, LibraryStatement):
-				lib =          self._rootDirectory / stmt.DirectoryName
+				lib =         self._rootDirectory / stmt.DirectoryName
 				vhdlLibRef =  VHDLLibraryReference(stmt.Library, lib)
 				self._libraries.append(vhdlLibRef)
 			elif isinstance(stmt, PathStatement):
-				self._variables[stmt.Variable] = self._EvaluatePath(stmt.Expression)
+				self._variables[stmt.Variable] = self._EvaluatePath(host, stmt.Expression)
 			elif isinstance(stmt, IfElseIfElseStatement):
 				exprValue = self._Evaluate(stmt.IfClause.Expression)
 				if (exprValue is True):
-					self._Resolve(stmt.IfClause.Statements)
+					self._Resolve(host, stmt.IfClause.Statements)
 				elif (stmt.ElseIfClauses is not None):
 					for elseif in stmt.ElseIfClauses:
 						exprValue = self._Evaluate(elseif.Expression)
 						if (exprValue is True):
-							self._Resolve(elseif.Statements)
+							self._Resolve(host, elseif.Statements)
 							break
 				if ((exprValue is False) and (stmt.ElseClause is not None)):
-					self._Resolve(stmt.ElseClause.Statements)
+					self._Resolve(host, stmt.ElseClause.Statements)
 			elif isinstance(stmt, ReportStatement):
 				self._warnings.append("WARNING: {0}".format(stmt.Message))
 			else:
@@ -223,13 +226,14 @@ class FilesParserMixIn:
 		if isinstance(expr, Identifier):
 			try:
 				return self._variables[expr.Name] #self._variables only available via late binding
-			except KeyError as ex:                        raise ParserException("Identifier '{0}' not found.".format(expr.Name)) from ex
+			except KeyError as ex:
+				raise ParserException("Identifier '{0}' not found.".format(expr.Name)) from ex
 		elif isinstance(expr, StringLiteral):
 			return expr.Value
 		elif isinstance(expr, IntegerLiteral):
 			return expr.Value
 		elif isinstance(expr, ExistsFunction):
-			return (self._rootDirectory / expr.Path).exists()
+			return (self._rootDirectory / expr.Expression).exists()
 		elif isinstance(expr, ListConstructorExpression):
 			return [self._Evaluate(item) for item in expr.List]
 		elif isinstance(expr, NotExpression):
@@ -261,7 +265,7 @@ class FilesParserMixIn:
 		else:
 			raise ParserException("Unsupported expression type '{0!s}'".format(type(expr)))
 
-	def _EvaluatePath(self, expr):
+	def _EvaluatePath(self, host, expr):
 		if isinstance(expr, Identifier):
 			try:
 				return self._variables[expr.Name]  # self._variables only available via late binding
@@ -272,14 +276,8 @@ class FilesParserMixIn:
 		elif isinstance(expr, IntegerLiteral):
 			return str(expr.Value)
 		elif isinstance(expr, InterpolateLiteral):
-			print("Interpolate ....")
-			if (expr.SectionName is None):
-				pattern = expr.OptionName
-			else:
-				pattern = "{0}:{1}".format(expr.SectionName, expr.OptionName)
-
-			config = self.Project.Host.PoCConfig
-			config.Interpolation.interpolate(config, "CONFIG.DirectoryNames", "xxxx", pattern, {})
+			config = host.PoCConfig
+			return config.Interpolation.interpolate(config, "CONFIG.DirectoryNames", "xxxx", str(expr), {})
 
 	@property
 	def Files(self):      return self._files
