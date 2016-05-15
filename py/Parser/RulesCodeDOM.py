@@ -31,7 +31,7 @@
 #
 from lib.Parser     import MismatchingParserResult, MatchingParserResult, EmptyChoiseParserResult
 from lib.Parser     import SpaceToken, CharacterToken, StringToken
-from lib.CodeDOM    import EmptyLine, CommentLine, BlockedStatement as BlockStatementBase
+from lib.CodeDOM    import EmptyLine, CommentLine, BlockedStatement as BlockStatementBase, StringLiteral
 from lib.CodeDOM    import Statement, BlockStatement
 
 
@@ -77,16 +77,19 @@ class CopyStatement(Statement):
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("CopyParser: Expected whitespace before source filename.")
-		# match for delimiter sign: "
-		token = yield
-		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("CopyParser: Expected double quote sign before source fileName.")
-		if (token.Value.lower() != "\""):           raise MismatchingParserResult("CopyParser: Expected double quote sign before source fileName.")
-		# match for string: source filename
-		sourceFile = ""
-		while True:
-			token = yield
-			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
-			sourceFile += token.Value
+
+		# match for string: 		sourceFile; use a StringLiteralParser to parse the pattern
+		parser = StringLiteral.GetParser()
+		parser.send(None)
+
+		sourceFile = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			sourceFile = ex.value.Value
+
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("CopyParser: Expected whitespace before TO keyword.")
@@ -97,16 +100,19 @@ class CopyStatement(Statement):
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("CopyParser: Expected whitespace before destination directory.")
-		# match for delimiter sign: "
-		token = yield
-		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("CopyParser: Expected double quote sign before destination directory.")
-		if (token.Value.lower() != "\""):           raise MismatchingParserResult("CopyParser: Expected double quote sign before destination directory.")
-		# match for string: fileName
-		destinationDirectory = ""
-		while True:
-			token = yield
-			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
-			destinationDirectory += token.Value
+
+		# match for string: 		destinationDirectory; use a StringLiteralParser to parse the pattern
+		parser = StringLiteral.GetParser()
+		parser.send(None)
+
+		destinationDirectory = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			destinationDirectory = ex.value.Value
+
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):           token = yield
@@ -154,17 +160,19 @@ class DeleteStatement(Statement):
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("DeleteParser: Expected whitespace before filename.")
-		# match for delimiter sign: "
-		token = yield
-		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("DeleteParser: Expected double quote sign before fileName.")
-		if (token.Value.lower() != "\""):           raise MismatchingParserResult("DeleteParser: Expected double quote sign before fileName.")
-		# match for string: filename
-		file = ""
-		while True:
-			token = yield
-			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
-			file += token.Value
-		token = yield
+
+		# match for string: file; use a StringLiteralParser to parse the pattern
+		parser = StringLiteral.GetParser()
+		parser.send(None)
+
+		file = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			file = ex.value.Value
+
 		# match for optional whitespace
 		if isinstance(token, SpaceToken):           token = yield
 		# match for delimiter sign: \n
@@ -228,32 +236,18 @@ class ReplaceStatement(Statement):
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("ReplaceParser: Expected whitespace before search pattern.")
-		# match for delimiter sign: "
-		token = yield
-		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("ReplaceParser: Expected double quote sign before search pattern.")
-		if (token.Value.lower() != "\""):           raise MismatchingParserResult("ReplaceParser: Expected double quote sign before search pattern.")
-		# match for string: searchPattern
-		searchPattern = ""
-		wasEscapeSign =  False
-		while True:
-			token = yield
-			if isinstance(token, CharacterToken):
-				if (token.Value == "\""):
-					if (wasEscapeSign is True):
-						wasEscapeSign =    False
-						searchPattern +=  "\""
-						continue
-					else:
-						break
-				elif (token.Value == "\\"):
-					if (wasEscapeSign is True):
-						wasEscapeSign = False
-						searchPattern += "\\"
-						continue
-					else:
-						wasEscapeSign =  True
-						continue
-			searchPattern +=  token.Value
+
+		# match for string: searchPattern; use a StringLiteralParser to parse the pattern
+		parser = StringLiteral.GetParser()
+		parser.send(None)
+		searchPattern = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			searchPattern = ex.value.Value
+
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("ReplaceParser: Expected whitespace before WITH keyword.")
@@ -264,32 +258,19 @@ class ReplaceStatement(Statement):
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("ReplaceParser: Expected whitespace before replace pattern.")
-		# match for delimiter sign: "
-		token = yield
-		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("ReplaceParser: Expected double quote sign before replace pattern.")
-		if (token.Value.lower() != "\""):           raise MismatchingParserResult("ReplaceParser: Expected double quote sign before replace pattern.")
-		# match for string: replacePattern
-		replacePattern = ""
-		wasEscapeSign = False
-		while True:
-			token = yield
-			if isinstance(token, CharacterToken):
-				if (token.Value == "\""):
-					if (wasEscapeSign is True):
-						wasEscapeSign = False
-						replacePattern += "\""
-						continue
-					else:
-						break
-				elif (token.Value == "\\"):
-					if (wasEscapeSign is True):
-						wasEscapeSign = False
-						replacePattern += "\\"
-						continue
-					else:
-						wasEscapeSign = True
-						continue
-			replacePattern += token.Value
+
+		# match for string: replacePattern; use a StringLiteralParser to parse the pattern
+		parser = StringLiteral.GetParser()
+		parser.send(None)
+
+		replacePattern = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			replacePattern = ex.value.Value
+
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):           token = yield
@@ -369,16 +350,19 @@ class FileStatement(BlockStatement):
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("FileParser: Expected whitespace before filename.")
-		# match for delimiter sign: "
-		token = yield
-		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("FileParser: Expected double quote sign before fileName.")
-		if (token.Value.lower() != "\""):           raise MismatchingParserResult("FileParser: Expected double quote sign before fileName.")
-		# match for string: source filename
-		replaceFilename = ""
-		while True:
-			token = yield
-			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
-			replaceFilename += token.Value
+
+		# match for string: replaceFilename; use a StringLiteralParser to parse the pattern
+		parser = StringLiteral.GetParser()
+		parser.send(None)
+
+		replaceFilename = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			replaceFilename = ex.value.Value
+
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):           token = yield

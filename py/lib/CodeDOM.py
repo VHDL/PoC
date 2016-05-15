@@ -396,14 +396,27 @@ class StringLiteral(Literal):
 		token = yield
 		if (not isinstance(token, CharacterToken)):    raise MismatchingParserResult()
 		if (token.Value != "\""):                      raise MismatchingParserResult()
-
-		# match for string value
+		# match for string: value
 		value = ""
+		wasEscapeSign = False
 		while True:
 			token = yield
 			if isinstance(token, CharacterToken):
 				if (token.Value == "\""):
-					break
+					if (wasEscapeSign is True):
+						wasEscapeSign = False
+						value += "\""
+						continue
+					else:
+						break
+				elif (token.Value == "\\"):
+					if (wasEscapeSign is True):
+						wasEscapeSign = False
+						value += "\\"
+						continue
+					else:
+						wasEscapeSign = True
+						continue
 			value += token.Value
 
 		# construct result

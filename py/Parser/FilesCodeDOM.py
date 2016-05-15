@@ -34,7 +34,7 @@ from pathlib import Path
 
 from lib.Parser     import MismatchingParserResult, MatchingParserResult
 from lib.Parser     import SpaceToken, CharacterToken, StringToken, NumberToken
-from lib.CodeDOM    import AndExpression, OrExpression, XorExpression, NotExpression, InExpression, NotInExpression
+from lib.CodeDOM    import AndExpression, OrExpression, XorExpression, NotExpression, InExpression, NotInExpression, Literal
 from lib.CodeDOM    import EmptyLine, CommentLine, BlockedStatement as BlockedStatementBase, ExpressionChoice
 from lib.CodeDOM    import EqualExpression, UnequalExpression, LessThanExpression, LessThanEqualExpression, GreaterThanExpression, GreaterThanEqualExpression
 from lib.CodeDOM    import Statement, BlockStatement, ConditionalBlockStatement, Function, Expression, ListElement
@@ -277,16 +277,19 @@ class VHDLStatement(Statement):
 				break
 		# match for whitespace
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("VHDLParser: Expected whitespace before VHDL fileName.")
-		# match for delimiter sign: "
-		token = yield
-		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("VHDLParser: Expected double quote sign before VHDL fileName.")
-		if (token.Value.lower() != "\""):           raise MismatchingParserResult("VHDLParser: Expected double quote sign before VHDL fileName.")
-		# match for string: fileName
-		fileName = ""
-		while True:
-			token = yield
-			if (isinstance(token, CharacterToken)and (token.Value == "\"")):    break
-			fileName += token.Value
+
+		# match for string: fileName; use a StringLiteralParser to parse the pattern
+		parser = StringLiteral.GetParser()
+		parser.send(None)
+
+		fileName = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			fileName = ex.value.Value
+
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):           token = yield
@@ -336,16 +339,19 @@ class VerilogStatement(Statement):
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("VerilogParser: Expected whitespace before Verilog fileName.")
-		# match for delimiter sign: "
-		token = yield
-		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("VerilogParser: Expected double quote sign before Verilog fileName.")
-		if (token.Value.lower() != "\""):           raise MismatchingParserResult("VerilogParser: Expected double quote sign before Verilog fileName.")
-		# match for string: fileName
-		fileName = ""
-		while True:
-			token = yield
-			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
-			fileName += token.Value
+
+		# match for string: fileName; use a StringLiteralParser to parse the pattern
+		parser = StringLiteral.GetParser()
+		parser.send(None)
+
+		fileName = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			fileName = ex.value.Value
+
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):           token = yield
@@ -392,16 +398,19 @@ class CocotbStatement(Statement):
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("CocotbParser: Expected whitespace before Python fileName.")
-		# match for delimiter sign: "
-		token = yield
-		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("CocotbParser: Expected double quote sign before Python fileName.")
-		if (token.Value.lower() != "\""):           raise MismatchingParserResult("CocotbParser: Expected double quote sign before Python fileName.")
-		# match for string: fileName
-		fileName = ""
-		while True:
-			token = yield
-			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
-			fileName += token.Value
+
+		# match for string: fileName; use a StringLiteralParser to parse the pattern
+		parser = StringLiteral.GetParser()
+		parser.send(None)
+
+		fileName = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			fileName = ex.value.Value
+
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):           token = yield
@@ -446,21 +455,24 @@ class ConstraintStatement(Statement):
 		token = yield
 		if isinstance(token, SpaceToken):           token = yield
 		# match for keyword: UCF
-		if (not isinstance(token, StringToken)):    raise MismatchingParserResult(cls.__PARSER_NAME__ + ": Expected UCF keyword.")
-		if (token.Value.lower() != cls.__PARSER_KEYWORD__):          raise MismatchingParserResult(cls.__PARSER_NAME__ + ": Expected UCF keyword.")
+		if (not isinstance(token, StringToken)):            raise MismatchingParserResult(cls.__PARSER_NAME__ + ": Expected UCF keyword.")
+		if (token.Value.lower() != cls.__PARSER_KEYWORD__): raise MismatchingParserResult(cls.__PARSER_NAME__ + ": Expected UCF keyword.")
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult(cls.__PARSER_NAME__ + ": Expected whitespace before UCF fileName.")
-		# match for delimiter sign: "
-		token = yield
-		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult(cls.__PARSER_NAME__ + ": Expected double quote sign before UCF fileName.")
-		if (token.Value.lower() != "\""):           raise MismatchingParserResult(cls.__PARSER_NAME__ + ": Expected double quote sign before UCF fileName.")
-		# match for string: fileName
-		fileName = ""
-		while True:
-			token = yield
-			if (isinstance(token, CharacterToken) and (token.Value == "\"")):    break
-			fileName += token.Value
+
+		# match for string: fileName; use a StringLiteralParser to parse the pattern
+		parser = StringLiteral.GetParser()
+		parser.send(None)
+
+		fileName = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			fileName = ex.value.Value
+
 		# match for optional whitespace
 		token = yield
 		if isinstance(token, SpaceToken):           token = yield
@@ -506,6 +518,78 @@ class XDCStatement(ConstraintStatement):
 	__PARSER_KEYWORD__ = "xdc"
 
 
+class InterpolateLiteral(Literal):
+	def __init__(self, sectionName, optionName):
+		super().__init__()
+		self._sectionName = sectionName
+		self._optionName =  optionName
+
+	@property
+	def SectionName(self):
+		return self._sectionName
+
+	@property
+	def OptionName(self):
+		return self._optionName
+
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init InterpolateLiteralParser")
+
+		# match for opening "
+		token = yield
+		if (not isinstance(token, CharacterToken)):    raise MismatchingParserResult("InterpolateLiteralParser: ")
+		if (token.Value != "$"):                       raise MismatchingParserResult("InterpolateLiteralParser: ")
+		token = yield
+		if (not isinstance(token, CharacterToken)):    raise MismatchingParserResult("InterpolateLiteralParser: ")
+		if (token.Value != "{"):                       raise MismatchingParserResult("InterpolateLiteralParser: ")
+
+		# match for interpolate value
+		value = {False: "", True: ""}
+		foundDelimiter = False
+		while True:
+			token = yield
+			if isinstance(token, CharacterToken):
+				if (token.Value == ":"):
+					if (foundDelimiter == False):
+						foundDelimiter = True
+					else:
+						raise MismatchingParserResult("InterpolateLiteralParser: ")
+					break
+				elif (token.Value == "}"):
+					break
+				elif (token.Value in "._-"):
+					value[foundDelimiter] += token.Value
+				else:
+					raise MismatchingParserResult("InterpolateLiteralParser: ")
+			elif isinstance(token, (StringToken, NumberToken)):
+				value[foundDelimiter] += token.Value
+			else:
+				raise MismatchingParserResult("InterpolateLiteralParser: ")
+
+		if (foundDelimiter == True):
+			sectionName = value[False]
+			optionName =  value[True]
+		else:
+			sectionName = None
+			optionName =  value[False]
+
+		# construct result
+		result = cls(sectionName, optionName)
+		if DEBUG: print("InterpolateLiteralParser: matched {0}".format(result))
+		raise MatchingParserResult(result)
+
+	def __str__(self):
+		if (self._sectionName is None):
+			return "${{{optionName}}}".format(optionName=self._optionName)
+		else:
+			return "${{{sectionName}:{optionName}}}".format(sectionName=self._sectionName, optionName=self._optionName)
+
+
+PathExpressions.AddChoice(Identifier)
+PathExpressions.AddChoice(StringLiteral)
+PathExpressions.AddChoice(InterpolateLiteral)
+
 class PathStatement(Statement):
 	def __init__(self, variable, expression, commentText):
 		super().__init__()
@@ -532,8 +616,8 @@ class PathStatement(Statement):
 		variable = ""
 		while True:
 			token = yield
-			if isinstance(token, StringToken):        variable += token.Value
-			elif isinstance(token, NumberToken):      variable += token.Value
+			if isinstance(token, (StringToken, NumberToken)):
+				variable += token.Value
 			elif (isinstance(token, CharacterToken) and (token.Value == "_")):
 				variable += token.Value
 			else:
