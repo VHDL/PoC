@@ -63,7 +63,6 @@ class Severity(Enum):
 		for k,v in self.__class__.__VHDL_SEVERITY_LEVEL_MAP__.items():
 			if ((not isinstance(v, self.__class__)) and (v == self.value)):
 				self.__class__.__VHDL_SEVERITY_LEVEL_MAP__[k] = self
-				break
 
 	def __hash__(self):
 		return hash(self.name)

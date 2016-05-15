@@ -189,7 +189,7 @@ class Simulator(Shared):
 		"""Write the Testbench message line, create a PoCProject and add the first *.files file to it."""
 		self._LogQuiet("{CYAN}Testbench:{NOCOLOR} {0!s}".format(testbench.Parent, **Init.Foreground))
 
-		self._vhdlVersion = vhdlVersion
+		self._vhdlVersion =  vhdlVersion
 		self._vhdlGenerics = vhdlGenerics
 
 		# setup all needed paths to execute fuse
