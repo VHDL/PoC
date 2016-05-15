@@ -302,19 +302,18 @@ class FileListFile(File, FilesParserMixIn):
 		super().__init__(file, project=project, fileSet=fileSet)
 		FilesParserMixIn.__init__(self)
 
-		self._variables =                None
+		self._variables =               None
 
-		# self.__classInclude
-		self._classFileListFile =        FileListFile
-		self._classVHDLSourceFile =      VHDLSourceFile
+		self._classFileListFile =       FileListFile
+		self._classVHDLSourceFile =     VHDLSourceFile
 		self._classVerilogSourceFile =  VerilogSourceFile
-		self._classCocotbSourceFile =    CocotbSourceFile
+		self._classCocotbSourceFile =   CocotbSourceFile
 
 	def Parse(self):
 		# print("FileListFile.Parse:")
-		if (self._fileSet is None):                      raise CommonException("File '{0!s}' is not associated to a fileset.".format(self._file))
-		if (self._project is None):                      raise CommonException("File '{0!s}' is not associated to a project.".format(self._file))
-		if (self._project.RootDirectory is None):        raise CommonException("No RootDirectory configured for this project.")
+		if (self._fileSet is None):                 raise CommonException("File '{0!s}' is not associated to a fileset.".format(self._file))
+		if (self._project is None):                 raise CommonException("File '{0!s}' is not associated to a project.".format(self._file))
+		if (self._project.RootDirectory is None):   raise CommonException("No RootDirectory configured for this project.")
 
 		# prepare FilesParserMixIn environment
 		self._rootDirectory = self.Project.RootDirectory
@@ -356,4 +355,3 @@ class RulesFile(File, RulesParserMixIn):
 
 	def __str__(self):
 		return "FileList file: '{0!s}".format(self._file)
-

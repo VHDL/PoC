@@ -30,13 +30,12 @@
 # limitations under the License.
 # ==============================================================================
 #
-from lib.Functions        import Init
 from lib.Parser           import ParserException
 from lib.CodeDOM          import AndExpression, OrExpression, XorExpression, NotExpression, InExpression, NotInExpression
 from lib.CodeDOM          import EqualExpression, UnequalExpression, LessThanExpression, LessThanEqualExpression, GreaterThanExpression, GreaterThanEqualExpression
 from lib.CodeDOM          import StringLiteral, IntegerLiteral, Identifier
-from Parser.FilesCodeDOM  import Document
-from Parser.FilesCodeDOM  import ExistsFunction, ListConstructorExpression
+from Parser.FilesCodeDOM  import Document, InterpolateLiteral
+from Parser.FilesCodeDOM  import ExistsFunction, ListConstructorExpression, PathStatement
 from Parser.FilesCodeDOM  import IfElseIfElseStatement, ReportStatement
 from Parser.FilesCodeDOM  import IncludeStatement, LibraryStatement
 from Parser.FilesCodeDOM  import LDCStatement, SDCStatement, UCFStatement, XDCStatement
@@ -143,11 +142,11 @@ class FilesParserMixIn:
 		
 	def _Parse(self):
 		self._ReadContent() #only available via late binding
-		self._document = Document.Parse(self._content, printChar=True) #self._content only available via late binding
+		self._document = Document.Parse(self._content, printChar=not True) #self._content only available via late binding
 
-		print("{DARK_GRAY}{line}{NOCOLOR}".format(line="*"*80, **Init.Foreground))
-		print("{DARK_GRAY}{doc!s}{NOCOLOR}".format(doc=self._document, **Init.Foreground))
-		print("{DARK_GRAY}{line}{NOCOLOR}".format(line="*"*80, **Init.Foreground))
+		# print("{DARK_GRAY}{line}{NOCOLOR}".format(line="*"*80, **Init.Foreground))
+		# print("{DARK_GRAY}{doc!s}{NOCOLOR}".format(doc=self._document, **Init.Foreground))
+		# print("{DARK_GRAY}{line}{NOCOLOR}".format(line="*"*80, **Init.Foreground))
 
 	def _Resolve(self, statements=None):
 		# print("Resolving {0}".format(str(self._file)))
@@ -201,6 +200,8 @@ class FilesParserMixIn:
 				lib =          self._rootDirectory / stmt.DirectoryName
 				vhdlLibRef =  VHDLLibraryReference(stmt.Library, lib)
 				self._libraries.append(vhdlLibRef)
+			elif isinstance(stmt, PathStatement):
+				self._variables[stmt.Variable] = self._EvaluatePath(stmt.Expression)
 			elif isinstance(stmt, IfElseIfElseStatement):
 				exprValue = self._Evaluate(stmt.IfClause.Expression)
 				if (exprValue is True):
@@ -259,6 +260,26 @@ class FilesParserMixIn:
 			return self._Evaluate(expr.LeftChild) >= self._Evaluate(expr.RightChild)
 		else:
 			raise ParserException("Unsupported expression type '{0!s}'".format(type(expr)))
+
+	def _EvaluatePath(self, expr):
+		if isinstance(expr, Identifier):
+			try:
+				return self._variables[expr.Name]  # self._variables only available via late binding
+			except KeyError as ex:
+				raise ParserException("Identifier '{0}' not found.".format(expr.Name)) from ex
+		elif isinstance(expr, StringLiteral):
+			return expr.Value
+		elif isinstance(expr, IntegerLiteral):
+			return str(expr.Value)
+		elif isinstance(expr, InterpolateLiteral):
+			print("Interpolate ....")
+			if (expr.SectionName is None):
+				pattern = expr.OptionName
+			else:
+				pattern = "{0}:{1}".format(expr.SectionName, expr.OptionName)
+
+			config = self.Project.Host.PoCConfig
+			config.Interpolation.interpolate(config, "CONFIG.DirectoryNames", "xxxx", pattern, {})
 
 	@property
 	def Files(self):      return self._files

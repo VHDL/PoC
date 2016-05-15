@@ -58,7 +58,7 @@ class CodeDOMMeta(type):
 			for parser in parsers:
 				try:
 					parser[1].send(token)
-				except MismatchingParserResult as ex:
+				except MismatchingParserResult:
 					removeList.append(parser)
 				except MatchingParserResult as ex:
 					if DEBUG: print("ChoiceParser: found a matching choice")

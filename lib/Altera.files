@@ -4,13 +4,16 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
-if (VHDL >= 2002) then
-	report "Altera primitives don't support VHDL-200x."
-else
-	if ((Tool = "GHDL") and ?("temp/precompiled/ghdl/altera")) then
-		library altera_mf "temp/precompiled/ghdl/altera"
-	elseif ((Tool in ["Mentor_vSim", "Cocotb_QuestaSim"]) and ?("temp/precompiled/vsim/altera")) then
-		library altera_mf "temp/precompiled/vsim/altera"
+if (VHDLVersion < 2002) then
+	if (Tool = "GHDL") then
+		if ?("temp/precompiled/ghdl/altera") then
+			report "TODO: add check for existing cf files."
+			library altera_mf "temp/precompiled/ghdl/altera"
+		end if
+	elseif (Tool in ["Mentor_vSim", "Cocotb_QuestaSim"]) then
+		if ?("temp/precompiled/vsim/altera") then
+			library altera_mf "temp/precompiled/vsim/altera"
+		end if
 	elseif (ToolChain = "Altera_Quartus") then
 		# implicitly referenced; nothing to reference
 	elseif (Tool = "Aldec_aSim") then
@@ -18,4 +21,6 @@ else
 	else
 		report "No precompiled Altera primitives found."
 	end if
+else
+	report "VHDL version not supported by Altera primitives."
 end if

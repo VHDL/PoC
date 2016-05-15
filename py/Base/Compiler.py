@@ -33,8 +33,6 @@
 # ==============================================================================
 #
 # entry point
-from Base.Shared import Shared
-
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -47,7 +45,6 @@ else:
 import re
 import shutil
 from pathlib            import Path
-from os                 import chdir
 
 from lib.Functions      import Init
 from lib.Parser         import ParserException
@@ -131,7 +128,7 @@ class Compiler(Shared):
 		self.Host.PoCConfig['SPECIAL'] = {}
 		self.Host.PoCConfig['SPECIAL']['Device'] =        device.ShortName
 		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =  device.Series
-		self.Host.PoCConfig['SPECIAL']['OutputDir']	=      self.Directories.Working.as_posix()
+		self.Host.PoCConfig['SPECIAL']['OutputDir']	=     self.Directories.Working.as_posix()
 
 	def _CreatePoCProject(self, netlist, board):
 		# create a PoCProject and read all needed files
@@ -233,9 +230,9 @@ class Compiler(Shared):
 			rawList = rawList.split("\n")
 			self._LogDebug("Copy tasks from config file:\n  " + ("\n  ".join(rawList)))
 
-			copyRegExpStr = r"^\s*(?P<SourceFilename>.*?)"  # Source filename
-			copyRegExpStr += r"\s->\s"  # Delimiter signs
-			copyRegExpStr += r"(?P<DestFilename>.*?)$"  # Destination filename
+			copyRegExpStr  = r"^\s*(?P<SourceFilename>.*?)" # Source filename
+			copyRegExpStr += r"\s->\s"                      # Delimiter signs
+			copyRegExpStr += r"(?P<DestFilename>.*?)$"      # Destination filename
 			copyRegExp = re.compile(copyRegExpStr)
 
 			for item in rawList:
@@ -317,7 +314,7 @@ class Compiler(Shared):
 			for rule in rulesFiles[0].PreProcessRules:
 				if isinstance(rule, ReplaceRuleMixIn):
 					filePath =        self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.FilePath, {})
-					searchPattern =    self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.SearchPattern, {})
+					searchPattern =   self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.SearchPattern, {})
 					replacePattern =  self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.ReplacePattern, {})
 					task = ReplaceTask(Path(filePath), searchPattern, replacePattern, rule.RegExpOption_MultiLine, rule.RegExpOption_DotAll, rule.RegExpOption_CaseInsensitive)
 					preReplaceTasks.append(task)
@@ -339,7 +336,7 @@ class Compiler(Shared):
 			for rule in rulesFiles[0].PostProcessRules:
 				if isinstance(rule, ReplaceRuleMixIn):
 					filePath =        self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.FilePath, {})
-					searchPattern =    self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.SearchPattern, {})
+					searchPattern =   self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.SearchPattern, {})
 					replacePattern =  self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.ReplacePattern, {})
 					task = ReplaceTask(Path(filePath), searchPattern, replacePattern, rule.RegExpOption_MultiLine, rule.RegExpOption_DotAll, rule.RegExpOption_CaseInsensitive)
 					postReplaceTasks.append(task)
@@ -386,8 +383,8 @@ class Compiler(Shared):
 			self._LogDebug("{0}-replace in file '{1!s}': search for '{2}' replace by '{3}'.".format(text, task.FilePath, task.SearchPattern, task.ReplacePattern))
 
 			regExpFlags = 0
-			if task.RegExpOption_CaseInsensitive:  regExpFlags |= re.IGNORECASE
-			if task.RegExpOption_MultiLine:        regExpFlags |= re.MULTILINE
+			if task.RegExpOption_CaseInsensitive: regExpFlags |= re.IGNORECASE
+			if task.RegExpOption_MultiLine:       regExpFlags |= re.MULTILINE
 			if task.RegExpOption_DotAll:          regExpFlags |= re.DOTALL
 
 			# compile regexp

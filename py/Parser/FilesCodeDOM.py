@@ -555,7 +555,6 @@ class InterpolateLiteral(Literal):
 						foundDelimiter = True
 					else:
 						raise MismatchingParserResult("InterpolateLiteralParser: ")
-					break
 				elif (token.Value == "}"):
 					break
 				elif (token.Value in "._-"):
@@ -598,8 +597,12 @@ class PathStatement(Statement):
 		self._commentText = commentText
 
 	@property
-	def FileName(self):
+	def Variable(self):
 		return self._variable
+
+	@property
+	def Expression(self):
+		return self._expression
 
 	@classmethod
 	def GetParser(cls):
@@ -639,11 +642,12 @@ class PathStatement(Statement):
 		expressionRoot = None
 		try:
 			while True:
-				token = yield
 				parser.send(token)
+				token = yield
 		except MatchingParserResult as ex:
 			expressionRoot = ex.value
 
+		token = yield
 		# match for delimiter sign: \n
 		commentText = ""
 		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("PathParser: Expected end of line or comment")
@@ -663,8 +667,9 @@ class PathStatement(Statement):
 		raise MatchingParserResult(result)
 
 	def __str__(self, indent=0):
-		return "{indent}{kw] \"{filename}\"".format(indent="  " * indent, kw=self.__PARSER_KEYWORD__, filename=self._fileName)
+		return "{indent}path := {expr!s}".format(indent="  " * indent, expr=self._expression)
 
+	__repr__ = __str__
 
 class ReportStatement(Statement):
 	def __init__(self, message, commentText):

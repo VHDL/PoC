@@ -346,12 +346,12 @@ class Project:
 	
 	def GetVariables(self):
 		result = {
-			"ProjectName" :      self._name,
-			"RootDirectory" :    str(self._rootDirectory),
-			"Environment" :      self._environment.name,
-			"ToolChain" :        self._toolChain.name,
-			"Tool" :            self._tool.name,
-			"VHDL" :            self._vhdlVersion.value
+			"ProjectName":      self._name,
+			"RootDirectory":    str(self._rootDirectory),
+			"Environment":      self._environment.name,
+			"ToolChain":        self._toolChain.name,
+			"Tool":             self._tool.name,
+			"VHDLVersion":      self._vhdlVersion.value
 		}
 		return merge(result, self._board.GetVariables(), self._device.GetVariables())
 	
