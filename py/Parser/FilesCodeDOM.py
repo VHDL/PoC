@@ -30,17 +30,215 @@
 # limitations under the License.
 # ==============================================================================
 #
+from pathlib import Path
 
-from lib.Parser        import MismatchingParserResult, MatchingParserResult
-from lib.Parser        import SpaceToken, CharacterToken, StringToken, NumberToken
-from lib.Parser        import Statement, BlockStatement, ConditionalBlockStatement, Expressions
-from Parser.CodeDOM    import EmptyLine, CommentLine, BlockedStatement as BlockedStatementBase
+from lib.Parser     import MismatchingParserResult, MatchingParserResult
+from lib.Parser     import SpaceToken, CharacterToken, StringToken, NumberToken
+from lib.CodeDOM    import AndExpression, OrExpression, XorExpression, NotExpression, InExpression, NotInExpression
+from lib.CodeDOM    import EmptyLine, CommentLine, BlockedStatement as BlockedStatementBase, ExpressionChoice
+from lib.CodeDOM    import EqualExpression, UnequalExpression, LessThanExpression, LessThanEqualExpression, GreaterThanExpression, GreaterThanEqualExpression
+from lib.CodeDOM    import Statement, BlockStatement, ConditionalBlockStatement, Function, Expression, ListElement
+from lib.CodeDOM    import StringLiteral, IntegerLiteral, Identifier
+
+DEBUG =   False#True
 
 # ==============================================================================
-# Blocked Statements (Forward declaration)
+# Forward declarations
 # ==============================================================================
 class BlockedStatement(BlockedStatementBase):
 	_allowedStatements = []
+
+class IfThenElseExpressions(ExpressionChoice):
+	_allowedExpressions = []
+
+class ListElementExpressions(ExpressionChoice):
+	_allowedExpressions = []
+
+# class ListConstructorExpression(ExpressionChoice):
+# 	_allowedExpressions = []
+
+class PathExpressions(ExpressionChoice):
+	_allowedExpressions = []
+
+# ==============================================================================
+# Expressions
+# ==============================================================================
+NotExpression.__PARSER_EXPRESSIONS__ = IfThenElseExpressions
+
+EqualExpression.__PARSER_LHS_EXPRESSIONS__ = IfThenElseExpressions
+EqualExpression.__PARSER_RHS_EXPRESSIONS__ = IfThenElseExpressions
+
+UnequalExpression.__PARSER_LHS_EXPRESSIONS__ = IfThenElseExpressions
+UnequalExpression.__PARSER_RHS_EXPRESSIONS__ = IfThenElseExpressions
+
+LessThanExpression.__PARSER_LHS_EXPRESSIONS__ = IfThenElseExpressions
+LessThanExpression.__PARSER_RHS_EXPRESSIONS__ = IfThenElseExpressions
+
+LessThanEqualExpression.__PARSER_LHS_EXPRESSIONS__ = IfThenElseExpressions
+LessThanEqualExpression.__PARSER_RHS_EXPRESSIONS__ = IfThenElseExpressions
+
+GreaterThanExpression.__PARSER_LHS_EXPRESSIONS__ = IfThenElseExpressions
+GreaterThanExpression.__PARSER_RHS_EXPRESSIONS__ = IfThenElseExpressions
+
+GreaterThanEqualExpression.__PARSER_LHS_EXPRESSIONS__ = IfThenElseExpressions
+GreaterThanEqualExpression.__PARSER_RHS_EXPRESSIONS__ = IfThenElseExpressions
+
+AndExpression.__PARSER_LHS_EXPRESSIONS__ = IfThenElseExpressions
+AndExpression.__PARSER_RHS_EXPRESSIONS__ = IfThenElseExpressions
+
+OrExpression.__PARSER_LHS_EXPRESSIONS__ = IfThenElseExpressions
+OrExpression.__PARSER_RHS_EXPRESSIONS__ = IfThenElseExpressions
+
+XorExpression.__PARSER_LHS_EXPRESSIONS__ = IfThenElseExpressions
+XorExpression.__PARSER_RHS_EXPRESSIONS__ = IfThenElseExpressions
+
+ListElement.__PARSER_LIST_ELEMENT_EXPRESSIONS__ = ListElementExpressions
+
+
+class ListConstructorExpression(Expression):
+	def __init__(self):
+		super().__init__()
+		self._list = []
+
+	@property
+	def List(self):
+		return self._list
+
+	def AddElement(self, element):
+		self._list.append(element)
+
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init ListConstructorExpressionParser")
+
+		# match for sign "["
+		token = yield
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult()
+		if (token.Value != "["):                    raise MismatchingParserResult()
+		# match for optional whitespace
+		token = yield
+		if isinstance(token, SpaceToken):           token = yield
+
+		result = cls()
+		parser = ListElementExpressions.GetParser()
+		parser.send(None)
+
+		try:
+			while True:
+				parser.send(token)
+				token = yield
+		except MatchingParserResult as ex:
+			result.AddElement(ex.value)
+
+		parser = cls.GetRepeatParser(result.AddElement, ListElement.GetParser)
+		parser.send(None)
+
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult:
+			pass
+
+		# match for optional whitespace
+		if isinstance(token, SpaceToken):           token = yield
+		# match for delimiter sign: \n
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("ListConstructorExpressionParser: Expected end of line or comment")
+		if (token.Value != "]"):                    raise MismatchingParserResult("ListConstructorExpressionParser: Expected end of line or comment")
+
+		# construct result
+		if DEBUG: print("ListConstructorExpressionParser: matched {0}".format(result))
+		raise MatchingParserResult(result)
+
+	def __str__(self):
+		buffer = "[{0}".format(self._list[0])
+		for item in self._list[1:]:
+			buffer += ", {0}".format(item)
+		buffer += "]"
+		return buffer
+
+
+InExpression.__PARSER_LHS_EXPRESSIONS__ = IfThenElseExpressions
+InExpression.__PARSER_RHS_EXPRESSIONS__ = ListConstructorExpression
+
+NotInExpression.__PARSER_LHS_EXPRESSIONS__ = IfThenElseExpressions
+NotInExpression.__PARSER_RHS_EXPRESSIONS__ = ListConstructorExpression
+
+
+class ExistsFunction(Function):
+	def __init__(self, directoryname):
+		super().__init__()
+		self._path = Path(directoryname)
+
+	@property
+	def Path(self):
+		return self._path
+
+	@classmethod
+	def GetParser(cls):
+		if DEBUG: print("init ExistsFunctionParser")
+
+		# match for EXISTS keyword
+		token = yield
+		# if (not isinstance(token, StringToken)):    raise MismatchingParserResult()
+		# if (token.Value != "exists"):               raise MismatchingParserResult()
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult()
+		if (token.Value != "?"):                    raise MismatchingParserResult()
+
+		# match for opening (
+		token = yield
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult()
+		if (token.Value != "("):                    raise MismatchingParserResult()
+		# match for optional whitespace
+		token = yield
+		if isinstance(token, SpaceToken):           token = yield
+		# match for delimiter sign: "
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("ExistsFunctionParser: Expected double quote sign before VHDL fileName.")
+		if (token.Value.lower() != "\""):           raise MismatchingParserResult("ExistsFunctionParser: Expected double quote sign before VHDL fileName.")
+		# match for string: path
+		path = ""
+		while True:
+			token = yield
+			if isinstance(token, CharacterToken):
+				if (token.Value == "\""):
+					break
+			path += token.Value
+		# match for optional whitespace
+		token = yield
+		if isinstance(token, SpaceToken):           token = yield
+		# match for delimiter sign: \n
+		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("ExistsFunctionParser: Expected end of line or comment")
+		if (token.Value != ")"):                    raise MismatchingParserResult("ExistsFunctionParser: Expected end of line or comment")
+
+		# construct result
+		result = cls(path)
+		if DEBUG: print("ExistsFunctionParser: matched {0}".format(result))
+		raise MatchingParserResult(result)
+
+	def __str__(self):
+		return "exists(\"{0!s}\")".format(self._path)
+
+IfThenElseExpressions.AddChoice(Identifier)
+IfThenElseExpressions.AddChoice(StringLiteral)
+IfThenElseExpressions.AddChoice(IntegerLiteral)
+IfThenElseExpressions.AddChoice(NotExpression)
+IfThenElseExpressions.AddChoice(ExistsFunction)
+IfThenElseExpressions.AddChoice(AndExpression)
+IfThenElseExpressions.AddChoice(OrExpression)
+IfThenElseExpressions.AddChoice(XorExpression)
+IfThenElseExpressions.AddChoice(EqualExpression)
+IfThenElseExpressions.AddChoice(UnequalExpression)
+IfThenElseExpressions.AddChoice(LessThanExpression)
+IfThenElseExpressions.AddChoice(LessThanEqualExpression)
+IfThenElseExpressions.AddChoice(GreaterThanExpression)
+IfThenElseExpressions.AddChoice(GreaterThanEqualExpression)
+IfThenElseExpressions.AddChoice(InExpression)
+IfThenElseExpressions.AddChoice(NotInExpression)
+
+ListElementExpressions.AddChoice(Identifier)
+ListElementExpressions.AddChoice(StringLiteral)
+ListElementExpressions.AddChoice(IntegerLiteral)
+
 
 # ==============================================================================
 # File Reference Statements
@@ -351,7 +549,7 @@ class PathStatement(Statement):
 
 		# match for expression
 		# ==========================================================================
-		parser = Expressions.GetParser()
+		parser = PathExpressions.GetParser()
 		parser.send(None)
 
 		expressionRoot = None
@@ -594,7 +792,7 @@ class IfStatement(ConditionalBlockStatement):
 		
 		# match for expression
 		# ==========================================================================
-		parser = Expressions.GetParser()
+		parser = IfThenElseExpressions.GetParser()
 		parser.send(None)
 		
 		expressionRoot = None
@@ -672,7 +870,7 @@ class ElseIfStatement(ConditionalBlockStatement):
 		
 		# match for expression
 		# ==========================================================================
-		parser = Expressions.GetParser()
+		parser = IfThenElseExpressions.GetParser()
 		parser.send(None)
 		
 		expressionRoot = None

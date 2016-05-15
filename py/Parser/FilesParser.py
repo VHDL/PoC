@@ -31,12 +31,12 @@
 # ==============================================================================
 #
 from lib.Functions        import Init
-from lib.Parser           import AndExpression, OrExpression, XorExpression, NotExpression, InExpression, NotInExpression
-from lib.Parser           import EqualExpression, UnequalExpression, LessThanExpression, LessThanEqualExpression, GreaterThanExpression, GreaterThanEqualExpression
-from lib.Parser           import ExistsFunction, ListConstructorExpression
 from lib.Parser           import ParserException
-from lib.Parser           import StringLiteral, IntegerLiteral, Identifier
+from lib.CodeDOM          import AndExpression, OrExpression, XorExpression, NotExpression, InExpression, NotInExpression
+from lib.CodeDOM          import EqualExpression, UnequalExpression, LessThanExpression, LessThanEqualExpression, GreaterThanExpression, GreaterThanEqualExpression
+from lib.CodeDOM          import StringLiteral, IntegerLiteral, Identifier
 from Parser.FilesCodeDOM  import Document
+from Parser.FilesCodeDOM  import ExistsFunction, ListConstructorExpression
 from Parser.FilesCodeDOM  import IfElseIfElseStatement, ReportStatement
 from Parser.FilesCodeDOM  import IncludeStatement, LibraryStatement
 from Parser.FilesCodeDOM  import LDCStatement, SDCStatement, UCFStatement, XDCStatement
