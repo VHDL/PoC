@@ -467,10 +467,22 @@ class Identifier(Expression):
 	def GetParser(cls):
 		if DEBUG: print("init IdentifierParser")
 
-		# match for identifier name
-		token = yield
-		if (not isinstance(token, StringToken)):      raise MismatchingParserResult()
-		name = token.Value
+		name = ""
+		while True:
+			token = yield
+			if isinstance(token, StringToken):
+				name += token.Value
+			elif isinstance(token, NumberToken):
+				if (name != ""):
+					name += token.Value
+				else:
+					raise MismatchingParserResult("IdentifierParser: Expected identifier name. Got a number.")
+			elif (isinstance(token, CharacterToken) and (token.Value == "_")):
+				name += token.Value
+			elif (name == ""):
+				raise MismatchingParserResult("IdentifierParser: Expected identifier name.")
+			else:
+				break
 
 		# construct result
 		result = cls(name)

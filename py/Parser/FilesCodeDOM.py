@@ -328,9 +328,9 @@ class VHDLStatement(Statement):
 	
 	def __str__(self, indent=0):
 		if (self._commentText != ""):
-			return "{0}VHDL {1} \"{2}\" # {3}".format(("  " * indent), self._libraryName, self._pathExpression, self._commentText)
+			return "{0}VHDL {1} {2!s} # {3}".format(("  " * indent), self._libraryName, self._pathExpression, self._commentText)
 		else:
-			return "{0}VHDL {1} \"{2}\"".format(("  " * indent), self._libraryName, self._pathExpression)
+			return "{0}VHDL {1} {2!s}".format(("  " * indent), self._libraryName, self._pathExpression)
 
 
 class VerilogStatement(Statement):
@@ -510,7 +510,7 @@ class ConstraintStatement(Statement):
 		raise MatchingParserResult(result)
 
 	def __str__(self, indent=0):
-		return "{indent}{kw] {filename!s}".format(indent="  " * indent, kw=self.__PARSER_KEYWORD__, filename=self._pathExpression)
+		return "{indent}{kw} {filename!s}".format(indent="  " * indent, kw=self.__PARSER_KEYWORD__, filename=self._pathExpression)
 
 
 class LDCStatement(ConstraintStatement):
@@ -633,16 +633,18 @@ class PathStatement(Statement):
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("PathParser: Expected whitespace before variable.")
-		# match for string: variable
-		variable = ""
-		while True:
-			token = yield
-			if isinstance(token, (StringToken, NumberToken)):
-				variable += token.Value
-			elif (isinstance(token, CharacterToken) and (token.Value == "_")):
-				variable += token.Value
-			else:
-				break
+		# match for identifier: variable
+		parser = Identifier.GetParser()
+		parser.send(None)
+
+		variable = None
+		try:
+			while True:
+				token = yield
+				parser.send(token)
+		except MatchingParserResult as ex:
+			variable = ex.value.Name
+
 		# match for optional whitespace
 		if isinstance(token, SpaceToken):           token = yield
 		# match for delimiter sign: =
@@ -958,10 +960,9 @@ class IfStatement(ConditionalBlockStatement):
 			raise MatchingParserResult(result)
 
 	def __str__(self, indent=0):
-		_indent = "  " * indent
-		buffer = _indent + "IfStatement " + self._expression.__str__()
+		buffer = ("  " * indent) + "IfClause " + self._expression.__str__()
 		for stmt in self._statements:
-			buffer += "\n{0}{1}".format(_indent, stmt.__str__(indent + 1))
+			buffer += "\n{0}".format(stmt.__str__(indent + 1))
 		return buffer
 
 
@@ -1036,10 +1037,9 @@ class ElseIfStatement(ConditionalBlockStatement):
 			raise MatchingParserResult(result)
 
 	def __str__(self, indent=0):
-		_indent = "  " * indent
-		buffer = _indent + "ElseIfStatement" + self._expression.__str__()
+		buffer = ("  " * indent) + "ElseIfClause" + self._expression.__str__()
 		for stmt in self._statements:
-			buffer += "\n{0}{1}".format(_indent, stmt.__str__(indent + 1))
+			buffer += "\n{0}".format(stmt.__str__(indent + 1))
 		return buffer
 
 
@@ -1090,10 +1090,9 @@ class ElseStatement(BlockStatement):
 			raise MatchingParserResult(result)
 
 	def __str__(self, indent=0):
-		_indent = "  " * indent
-		buffer = _indent + "ElseStatement"
+		buffer = ("  " * indent) + "ElseClause"
 		for stmt in self._statements:
-			buffer += "\n{0}{1}".format(_indent, stmt.__str__(indent + 1))
+			buffer += "\n{0}".format(stmt.__str__(indent + 1))
 		return buffer
 
 
