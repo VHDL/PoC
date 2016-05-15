@@ -43,7 +43,7 @@ from Parser.FilesCodeDOM  import LDCStatement, SDCStatement, UCFStatement, XDCSt
 from Parser.FilesCodeDOM  import VHDLStatement, VerilogStatement, CocotbStatement
 
 # to print the reconstructed files file after parsing, set DEBUG to True
-DEBUG = not False
+DEBUG = not True
 
 class FileReference:
 	def __init__(self, file):
@@ -214,7 +214,7 @@ class FilesParserMixIn:
 				vhdlLibRef =  VHDLLibraryReference(stmt.Library, lib)
 				self._libraries.append(vhdlLibRef)
 			elif isinstance(stmt, PathStatement):
-				path =        self._EvaluatePath(host, stmt.Expression)
+				path =        self._EvaluatePath(host, stmt.PathExpression)
 				self._variables[stmt.Variable] = path
 			elif isinstance(stmt, IfElseIfElseStatement):
 				exprValue = self._Evaluate(host, stmt.IfClause.Expression)
