@@ -4,11 +4,50 @@
 
 ## 2016
 
+##### New in 1.x (dd.mm.yyyy)
+
+  - Python Infrastructure
+	    - Common changes
+			    - The classes Simulator and Compiler now share common methods in base class called Shared.
+	    - `*.files` Parser
+			    - Implemented path expressions: sub-directory expression, concatenate expression
+					- Implemented InterpolateLiteral: access database keys in `*.files` files
+					- New Path statement, which defines a path constant calculated from a path expression
+					- Replaced string arguments in statements with path expressions if the desired string was a path
+					- Replaced simple StringToken matches with Identifier expressions
+			- All Simulators
+				  - 
+			- All Compilers
+				  - 
+			- GHDL
+			    - Reduced `-P<path>` parameters: Removed doublings
+	- Documentation
+	    - 
+	- VHDL common packages
+	    - 	
+	- VHDL Simulation helpers
+	    - Mark a testbench as failed if (registered) processes are active while finilize is called
+			
+	- New Entities
+	    - 
+	- New Testbenches
+	    - 
+	- New Constraints
+	    - 
+  - Shipped Tool and Helper Scripts
+	    - Updated and new Notepad++ syntax files
+			
+			
 ##### New in 1.0 (13.05.2016)
 
-  - Reworked Python infrastructure
-      - New command line interface `poc.sh|ps1 [common options] <command> <entity> [options]`
-      - Removed task specific wrapper scripts: `testbench.sh|ps1`, `netlist.sh|ps1`
+  - Python Infrastructure (Completely Reworked)
+	    - New Requirements
+			    - Python 3.5
+			    - py-flags
+      - New command line interface
+			    - Synopsis: `poc.sh|ps1 [common options] <command> <entity> [options]`
+					- Removed task specific wrapper scripts: `testbench.sh|ps1`, `netlist.sh|ps1`, ...
+					- Updated wrapper.ps1 and wrapper.sh files
 			- New ini-file database
 					- 
 					- Added a new config.boards.ini file to list known boards (real and virtual ones)
@@ -19,34 +58,51 @@
           - prepared for Cocotb testbenches
 			- New parser for `*.rules` files
 					- 
-      - Unbuffered outputs from vendor tools (realtime output to stdout from subprocess)
-      - Output filtering from vendor tools
-          - verbose message suppression
-          - error and warning message highlighting
-          - abort flow on vendor tool errors
-      - 
-      - Run testbenches for different board or device configurations (see `--board` and `--device` command line options)
-			- New simulators
+			
+			
+			- All Tool Flows
+          - Unbuffered outputs from vendor tools (realtime output to stdout from subprocess)
+          - Output filtering from vendor tools
+              - verbose message suppression
+              - error and warning message highlighting
+              - abort flow on vendor tool errors
+      - All Simulators
+          - Run testbenches for different board or device configurations (see `--board` and `--device` command line options)
+			- New Simulators
 					- Aldec Active-HDL support (no GUI support)
 							- Tested with Active-HDL from Lattice Diamond
 							- Tested with Active-HDL Student Edition
 					- Cocotb (with QuestaSim backend on Linux)
 			- New Synthesizers
 					- Altera Quartus II and Quartus Prime
+					    - Command: `quartus`
 					- Lattice Synthesis Engine (LSE) from Diamond
+					    - Command: `lse`
 					- Xilinx Vivado
-			- Simulator improvements
-					- GHDL
-							- GHDLSimulator can distinguish different backends (mcode, gcc, llvm)
-							- Pre-compiled library support for GHDL
-					- QuestaSim / ModelSim Altera Edition
-							- Pre-compiled library support for GHDL
-				
-	- Embedded Cocotb in <PoCRoot>/lib/cocotb
-  - Pre-compiled vendor library support
-      - Added a new <PoCRoot>/temp/precompiled folder for precompiled vendor libraries
-      - QuestaSim supports Altera QuartusII, Xilinx ISE and Xilinx Vivado libraries
-      - GHDL supports Altera QuartusII, Xilinx ISE and Xilinx Vivado libraries
+					    - Command: `vivado`
+			- GHDL
+	  			- GHDLSimulator can distinguish different backends (mcode, gcc, llvm)
+					- Pre-compiled library support for GHDL
+			- QuestaSim / ModelSim Altera Edition
+					- Pre-compiled library support for GHDL
+			- Vivado Simulator
+			    - Tested Vivado Simulator 2016.1 (xSim) with PoC -> still produces errors or false results
+	
+	- New Entities
+		  - 
+	- New Testbenches
+		  - 
+	- New Constraints
+		  - 
+	- New dependencies
+	    - Embedded Cocotb in <PoCRoot>/lib/cocotb
+  - Shipped Tool and Helper Scripts
+	    - Updated and new Notepad++ syntax files
+	    - Pre-compiled vendor library support
+          - Added a new <PoCRoot>/temp/precompiled folder for precompiled vendor libraries
+          - QuestaSim supports Altera QuartusII, Xilinx ISE and Xilinx Vivado libraries
+          - GHDL supports Altera QuartusII, Xilinx ISE and Xilinx Vivado libraries
+	
 
 ##### New in 0.21 (17.02.2016)
 
