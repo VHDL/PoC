@@ -17,6 +17,7 @@ class MatchingParserResult(StopIteration):                pass
 class LastMatchingParserResult(MatchingParserResult):     pass
 class CollectedParserResult(MatchingParserResult):        pass
 
+
 class SourceCodePosition:
 	def __init__(self, row, column, absolute):
 		self._row =       row
@@ -26,7 +27,6 @@ class SourceCodePosition:
 	@property
 	def Row(self):
 		return self._row
-	
 	@Row.setter
 	def Row(self, value):
 		self._row = value
@@ -34,7 +34,6 @@ class SourceCodePosition:
 	@property
 	def Column(self):
 		return self._column
-	
 	@Column.setter
 	def Column(self, value):
 		self._column = value
@@ -42,10 +41,10 @@ class SourceCodePosition:
 	@property
 	def Absolute(self):
 		return self._absolute
-	
 	@Absolute.setter
 	def Absolute(self, value):
 		self._absolute = value
+
 
 class Token:
 	def __init__(self, value, start, end=None):
