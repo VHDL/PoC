@@ -103,9 +103,7 @@ class Simulator(BaseSimulator):
 		ghdl.Parameters[ghdl.FlagPSL] =               True
 
 		self._SetVHDLVersionAndIEEEFlavor(ghdl)
-
-		# add external library references
-		ghdl.Parameters[ghdl.ArgListLibraryReferences] = [str(extLibrary.Path) for extLibrary in self._pocProject.ExternalVHDLLibraries]
+		self._SetExternalLibraryReferences(ghdl)
 		
 		# run GHDL analysis for each VHDL file
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
@@ -131,6 +129,15 @@ class Simulator(BaseSimulator):
 		else:
 			ghdl.Parameters[ghdl.SwitchVHDLVersion] = repr(self._vhdlVersion)[-2:]
 
+	def _SetExternalLibraryReferences(self, ghdl):
+		# add external library references
+		externalLibraryReferences = []
+		for extLibrary in self._pocProject.ExternalVHDLLibraries:
+			path = str(extLibrary.Path)
+			if (path not in externalLibraryReferences):
+				externalLibraryReferences.append(path)
+		ghdl.Parameters[ghdl.ArgListLibraryReferences] = externalLibraryReferences
+
 	# running elaboration
 	# ==========================================================================
 	def _RunElaboration(self, testbench):
@@ -144,10 +151,8 @@ class Simulator(BaseSimulator):
 		ghdl.Parameters[ghdl.ArgTopLevel] =           testbench.ModuleName
 		ghdl.Parameters[ghdl.FlagExplicit] =          True
 
-		# add external library references
-		ghdl.Parameters[ghdl.ArgListLibraryReferences] = [str(extLibrary.Path) for extLibrary in self._pocProject.ExternalVHDLLibraries]
-
 		self._SetVHDLVersionAndIEEEFlavor(ghdl)
+		self._SetExternalLibraryReferences(ghdl)
 		
 		try:
 			ghdl.Elaborate()
@@ -171,9 +176,7 @@ class Simulator(BaseSimulator):
 		ghdl.Parameters[ghdl.ArgTopLevel] =             testbench.ModuleName
 
 		self._SetVHDLVersionAndIEEEFlavor(ghdl)
-
-		# add external library references
-		ghdl.Parameters[ghdl.ArgListLibraryReferences] = [str(extLibrary.Path) for extLibrary in self._pocProject.ExternalVHDLLibraries]
+		self._SetExternalLibraryReferences(ghdl)
 
 		# configure RUNOPTS
 		ghdl.RunOptions[ghdl.SwitchIEEEAsserts] = "disable-at-0"		# enable, disable, disable-at-0
