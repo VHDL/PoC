@@ -30,9 +30,7 @@
 # limitations under the License.
 # ==============================================================================
 #
-from pathlib import Path
-
-from lib.Parser     import MismatchingParserResult, MatchingParserResult
+from lib.Parser     import MismatchingParserResult, MatchingParserResult, GreedyMatchingParserResult
 from lib.Parser     import SpaceToken, CharacterToken, StringToken, NumberToken
 from lib.CodeDOM    import AndExpression, OrExpression, XorExpression, NotExpression, InExpression, NotInExpression, Literal, BinaryExpression
 from lib.CodeDOM    import EmptyLine, CommentLine, BlockedStatement as BlockedStatementBase, ExpressionChoice
@@ -209,24 +207,25 @@ class ExistsFunction(Function):
 		# match for path expressions
 		parser = PathExpressions.GetParser()
 		parser.send(None)
-
-		expression = None
+		pathExpression = None
 		try:
 			while True:
 				parser.send(token)
-				token = yield
+				token =         yield
+		except GreedyMatchingParserResult as ex:
+			pathExpression =  ex.value
 		except MatchingParserResult as ex:
-			expression = ex.value
+			pathExpression =  ex.value
+			token =           yield
 
 		# match for optional whitespace
-		token = yield
 		if isinstance(token, SpaceToken):           token = yield
 		# match for closing sign: }
 		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("ExistsFunctionParser: Expected end of line or comment")
 		if (token.Value != "}"):                    raise MismatchingParserResult("ExistsFunctionParser: Expected end of line or comment")
 
 		# construct result
-		result = cls(expression)
+		result = cls(pathExpression)
 		if DEBUG: print("ExistsFunctionParser: matched {0}".format(result))
 		raise MatchingParserResult(result)
 
@@ -280,33 +279,38 @@ class VHDLStatement(Statement):
 		# match for whitespace
 		token = yield
 		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("VHDLParser: Expected whitespace before VHDL library name.")
-		# match for library name
-		library = ""
-		while True:
-			token = yield
-			if isinstance(token, StringToken):        library += token.Value
-			elif isinstance(token, NumberToken):      library += token.Value
-			elif (isinstance(token, CharacterToken) and (token.Value == "_")):
-				library += token.Value
-			else:
-				break
-		# match for whitespace
-		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("VHDLParser: Expected whitespace before VHDL fileName.")
-
-		# match for string: fileName; use a StringLiteralParser to parse the pattern
-		parser = PathExpressions.GetParser()
+		# match for identifier: 		library
+		parser = Identifier.GetParser()
 		parser.send(None)
-
-		pathExpression = None
+		library = None
 		try:
 			while True:
 				token = yield
 				parser.send(token)
+		except GreedyMatchingParserResult as ex:
+			library = ex.value.Name
 		except MatchingParserResult as ex:
-			pathExpression = ex.value
+			library = ex.value.Name
+			token =   yield
+
+		# match for whitespace
+		if (not isinstance(token, SpaceToken)):     raise MismatchingParserResult("VHDLParser: Expected whitespace before VHDL fileName.")
+
+		# match for a path: pathExpression
+		parser = PathExpressions.GetParser()
+		parser.send(None)
+		pathExpression = None
+		try:
+			while True:
+				token =         yield
+				parser.send(token)
+		except GreedyMatchingParserResult as ex:
+			pathExpression =  ex.value
+		except MatchingParserResult as ex:
+			pathExpression =  ex.value
+			token =           yield
 
 		# match for optional whitespace
-		token = yield
 		if isinstance(token, SpaceToken):           token = yield
 		# match for delimiter sign: \n
 		commentText = ""
@@ -358,17 +362,18 @@ class VerilogStatement(Statement):
 		# match for string: fileName; use a StringLiteralParser to parse the pattern
 		parser = PathExpressions.GetParser()
 		parser.send(None)
-
 		pathExpression = None
 		try:
 			while True:
 				token = yield
 				parser.send(token)
+		except GreedyMatchingParserResult as ex:
+			pathExpression = ex.value
 		except MatchingParserResult as ex:
 			pathExpression = ex.value
+			token = yield
 
 		# match for optional whitespace
-		token = yield
 		if isinstance(token, SpaceToken):           token = yield
 		# match for delimiter sign: \n
 		commentText = ""
@@ -417,17 +422,18 @@ class CocotbStatement(Statement):
 		# match for string: fileName; use a StringLiteralParser to parse the pattern
 		parser = PathExpressions.GetParser()
 		parser.send(None)
-
 		pathExpression = None
 		try:
 			while True:
 				token = yield
 				parser.send(token)
+		except GreedyMatchingParserResult as ex:
+			pathExpression = ex.value
 		except MatchingParserResult as ex:
 			pathExpression = ex.value
+			token = yield
 
 		# match for optional whitespace
-		token = yield
 		if isinstance(token, SpaceToken):           token = yield
 		# match for delimiter sign: \n
 		commentText = ""
@@ -479,17 +485,18 @@ class ConstraintStatement(Statement):
 		# match for string: fileName; use a StringLiteralParser to parse the pattern
 		parser = PathExpressions.GetParser()
 		parser.send(None)
-
 		pathExpression = None
 		try:
 			while True:
 				token = yield
 				parser.send(token)
+		except GreedyMatchingParserResult as ex:
+			pathExpression = ex.value
 		except MatchingParserResult as ex:
 			pathExpression = ex.value
+			token = yield
 
 		# match for optional whitespace
-		token = yield
 		if isinstance(token, SpaceToken):           token = yield
 		# match for delimiter sign: \n
 		commentText = ""
@@ -551,7 +558,7 @@ class InterpolateLiteral(Literal):
 	def GetParser(cls):
 		if DEBUG: print("init InterpolateLiteralParser")
 
-		# match for opening "
+		# match for opening ${
 		token = yield
 		if (not isinstance(token, CharacterToken)):    raise MismatchingParserResult("InterpolateLiteralParser: ")
 		if (token.Value != "$"):                       raise MismatchingParserResult("InterpolateLiteralParser: ")
@@ -636,14 +643,16 @@ class PathStatement(Statement):
 		# match for identifier: variable
 		parser = Identifier.GetParser()
 		parser.send(None)
-
 		variable = None
 		try:
 			while True:
-				token = yield
+				token =   yield
 				parser.send(token)
+		except GreedyMatchingParserResult as ex:
+			variable =  ex.value.Name
 		except MatchingParserResult as ex:
-			variable = ex.value.Name
+			variable =  ex.value.Name
+			token =     yield
 
 		# match for optional whitespace
 		if isinstance(token, SpaceToken):           token = yield
@@ -658,16 +667,17 @@ class PathStatement(Statement):
 		# ==========================================================================
 		parser = PathExpressions.GetParser()
 		parser.send(None)
-
 		pathExpression = None
 		try:
 			while True:
 				parser.send(token)
 				token = yield
+		except GreedyMatchingParserResult as ex:
+			pathExpression = ex.value
 		except MatchingParserResult as ex:
 			pathExpression = ex.value
+			token = yield
 
-		token = yield
 		# match for delimiter sign: \n
 		commentText = ""
 		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult("PathParser: Expected end of line or comment")
@@ -794,17 +804,18 @@ class LibraryStatement(Statement):
 		# match for string: fileName; use a StringLiteralParser to parse the pattern
 		parser = PathExpressions.GetParser()
 		parser.send(None)
-
 		pathExpression = None
 		try:
 			while True:
 				token = yield
 				parser.send(token)
+		except GreedyMatchingParserResult as ex:
+			pathExpression = ex.value
 		except MatchingParserResult as ex:
 			pathExpression = ex.value
+			token = yield
 
 		# match for optional whitespace
-		token = yield
 		if isinstance(token, SpaceToken):           token = yield
 		# match for delimiter sign: \n
 		commentText = ""
@@ -853,17 +864,18 @@ class IncludeStatement(Statement):
 		# match for string: fileName; use a StringLiteralParser to parse the pattern
 		parser = PathExpressions.GetParser()
 		parser.send(None)
-
 		pathExpression = None
 		try:
 			while True:
 				token = yield
 				parser.send(token)
+		except GreedyMatchingParserResult as ex:
+			pathExpression = ex.value
 		except MatchingParserResult as ex:
 			pathExpression = ex.value
+			token = yield
 
 		# match for optional whitespace
-		token = yield
 		if isinstance(token, SpaceToken):           token = yield
 		# match for delimiter sign: \n
 		commentText = ""

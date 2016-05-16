@@ -30,7 +30,7 @@
 # ==============================================================================
 #
 from lib.Functions import Init
-from lib.Parser    import MismatchingParserResult, MatchingParserResult, EmptyChoiseParserResult
+from lib.Parser    import MismatchingParserResult, MatchingParserResult, EmptyChoiseParserResult, GreedyMatchingParserResult
 from lib.Parser    import SpaceToken, CharacterToken, StringToken, NumberToken, Tokenizer
 
 DEBUG =   False#True
@@ -218,12 +218,14 @@ class BinaryExpression(Expression):
 		try:
 			while True:
 				parser.send(token)
-				token = yield
+				token =   yield
+		except GreedyMatchingParserResult as ex:
+			leftChild = ex.value
 		except MatchingParserResult as ex:
 			leftChild = ex.value
+			token =     yield
 
 		# match for optional whitespace
-		token = yield
 		if isinstance(token, SpaceToken):           token = yield
 		# match for operator keyword or sign(s)
 		if isinstance(cls.__PARSER_OPERATOR__, str):
@@ -260,12 +262,14 @@ class BinaryExpression(Expression):
 		try:
 			while True:
 				parser.send(token)
-				token = yield
+				token =     yield
+		except GreedyMatchingParserResult as ex:
+			rightChild =  ex.value
 		except MatchingParserResult as ex:
-			rightChild = ex.value
+			rightChild =  ex.value
+			token =       yield
 
 		# match for optional whitespace
-		token = yield
 		if isinstance(token, SpaceToken):           token = yield
 		# match for closing )
 		if (not isinstance(token, CharacterToken)): raise MismatchingParserResult()
@@ -487,7 +491,7 @@ class Identifier(Expression):
 		# construct result
 		result = cls(name)
 		if DEBUG: print("IdentifierParser: matched {0}".format(result))
-		raise MatchingParserResult(result)
+		raise GreedyMatchingParserResult(result)
 
 	def __str__(self):
 		return self._name

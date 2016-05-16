@@ -13,6 +13,18 @@ vhdl		poc		"tb/common/my_project.vhdl"
 # ======================================
 if (BoardName = "GENERIC") then
 	vhdl	poc	"tb/common/my_config_GENERIC.vhdl"
+elseif (BoardName = "Custom") then
+	path TempDirectory =  ${CONFIG.DirectoryNames:TemporaryFiles}
+	if (Tool = "GHDL") then
+		path ToolDirectory = (TempDirectory / ${CONFIG.DirectoryNames:GHDLFiles})
+	elseif (Tool in ["Mentor_vSim", "Cocotb_QuestaSim"]) then
+		path ToolDirectory = (TempDirectory / ${CONFIG.DirectoryNames:ModelSimFiles})
+	else
+		report "Tool not supported."
+	end if
+	
+	path CustomConfigFile = (ToolDirectory / "my_config_Custom.vhdl")
+	vhdl	poc	CustomConfigFile
 
 # Altera boards
 # ======================================

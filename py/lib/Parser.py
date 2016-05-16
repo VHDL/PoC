@@ -37,6 +37,7 @@ class ParserException(Exception):
 class MismatchingParserResult(StopIteration):             pass
 class EmptyChoiseParserResult(MismatchingParserResult):   pass
 class MatchingParserResult(StopIteration):                pass
+class GreedyMatchingParserResult(MatchingParserResult):   pass
 
 
 class SourceCodePosition:
