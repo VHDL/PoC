@@ -174,7 +174,7 @@ class PoC(ILogable, ArgParseMixin):
 		self.__repo =         None
 		self.__directories =  {}
 
-		self.__SimulationDefaultVHDLVersion = VHDLVersion.VHDL08
+		self.__SimulationDefaultVHDLVersion = VHDLVersion.VHDL2008
 		self.__SimulationDefaultBoard =       None
 
 		self._directories =             self.__Directories__()
@@ -645,7 +645,7 @@ class PoC(ILogable, ArgParseMixin):
 	def _ExtractVHDLVersion(self, vhdlVersion, defaultVersion=None):
 		if (defaultVersion is None):    defaultVersion = self.__SimulationDefaultVHDLVersion
 		if (vhdlVersion is None):        return defaultVersion
-		else:                            return VHDLVersion.parse(vhdlVersion)
+		else:                            return VHDLVersion.Parse(vhdlVersion)
 
 	# TODO: move to Configuration class in ToolChains.Xilinx.Vivado
 	def _CheckVivadoEnvironment(self):
@@ -884,7 +884,7 @@ class PoC(ILogable, ArgParseMixin):
 
 		# create a CocotbSimulator instance and prepare it
 		simulator = CocotbSimulator(self, self.DryRun, args.GUIMode)
-		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=VHDLVersion.VHDL08)
+		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=VHDLVersion.VHDL2008)
 
 		Exit.exit(0 if allPassed else 1)
 

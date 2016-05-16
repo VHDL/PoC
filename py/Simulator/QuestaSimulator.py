@@ -108,25 +108,20 @@ class Simulator(BaseSimulator):
 
 		# create a QuestaVHDLCompiler instance
 		vcom = self._toolChain.GetVHDLCompiler()
-		vcom.Parameters[vcom.FlagQuietMode] =          True
+		vcom.Parameters[vcom.FlagQuietMode] =         True
 		vcom.Parameters[vcom.FlagExplicit] =          True
 		vcom.Parameters[vcom.FlagRangeCheck] =        True
 		vcom.Parameters[vcom.SwitchModelSimIniFile] = self._modelsimIniPath.as_posix()
-
-		if (self._vhdlVersion == VHDLVersion.VHDL87):    vcom.Parameters[vcom.SwitchVHDLVersion] =  "87"
-		elif (self._vhdlVersion == VHDLVersion.VHDL93):  vcom.Parameters[vcom.SwitchVHDLVersion] =  "93"
-		elif (self._vhdlVersion == VHDLVersion.VHDL02):  vcom.Parameters[vcom.SwitchVHDLVersion] =  "2002"
-		elif (self._vhdlVersion == VHDLVersion.VHDL08):  vcom.Parameters[vcom.SwitchVHDLVersion] =  "2008"
-		else:                                          raise SimulatorException("VHDL version is not supported.")
+		vcom.Parameters[vcom.SwitchVHDLVersion] =     repr(self._vhdlVersion)
 
 		# run vcom compile for each VHDL file
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
-			if (not file.Path.exists()):                raise SimulatorException("Cannot analyse '{0!s}'.".format(file.Path)) from FileNotFoundError(str(file.Path))
+			if (not file.Path.exists()):              raise SimulatorException("Cannot analyse '{0!s}'.".format(file.Path)) from FileNotFoundError(str(file.Path))
 
 			vcomLogFile = self.Directories.Working / (file.Path.stem + ".vcom.log")
-			vcom.Parameters[vcom.SwitchVHDLLibrary] =  file.LibraryName
+			vcom.Parameters[vcom.SwitchVHDLLibrary] = file.LibraryName
 			vcom.Parameters[vcom.ArgLogFile] =        vcomLogFile
-			vcom.Parameters[vcom.ArgSourceFile] =      file.Path
+			vcom.Parameters[vcom.ArgSourceFile] =     file.Path
 
 			try:
 				vcom.Compile()

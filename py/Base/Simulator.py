@@ -42,19 +42,15 @@ else:
 
 
 # load dependencies
-import shutil
 from datetime           import datetime
 from enum               import Enum, unique
-from os                 import chdir
 
 from lib.Functions      import Init
-from lib.Parser         import ParserException
-from Base.Exceptions    import ExceptionBase, CommonException
+from Base.Exceptions    import ExceptionBase, SkipableException
 from Base.Logging       import LogEntry
 from Base.Project       import Environment, VHDLVersion
 from Base.Shared        import Shared
 from PoC.Entity         import WildCard
-from PoC.Solution       import VirtualProject, FileListFile
 from PoC.TestCase       import TestSuite, TestCase, Status
 
 
@@ -64,7 +60,7 @@ VHDL_TESTBENCH_LIBRARY_NAME = "test"
 class SimulatorException(ExceptionBase):
 	pass
 
-class SkipableSimulatorException(SimulatorException):
+class SkipableSimulatorException(SimulatorException, SkipableException):
 	pass
 
 
@@ -94,6 +90,8 @@ def to_time(seconds):
 
 
 class Simulator(Shared):
+	_ENVIRONMENT = Environment.Simulation
+
 	class __Directories__(Shared.__Directories__):
 		PreCompiled = None
 
@@ -189,11 +187,11 @@ class Simulator(Shared):
 		"""Write the Testbench message line, create a PoCProject and add the first *.files file to it."""
 		self._LogQuiet("{CYAN}Testbench:{NOCOLOR} {0!s}".format(testbench.Parent, **Init.Foreground))
 
-		self._vhdlVersion = vhdlVersion
+		self._vhdlVersion =  vhdlVersion
 		self._vhdlGenerics = vhdlGenerics
 
 		# setup all needed paths to execute fuse
-		self._CreatePoCProject(testbench, board)
+		self._CreatePoCProject(testbench.ModuleName, board)
 		self._AddFileListFile(testbench.FilesFile)
 
 		self._prepareTime = self._GetTimeDeltaSinceLastEvent()
@@ -219,44 +217,6 @@ class Simulator(Shared):
 			self._RunView(testbench)
 
 		self._endAt = datetime.now()
-
-	def _CreatePoCProject(self, testbench, board):
-		# create a PoCProject and read all needed files
-		self._LogVerbose("Creating a PoC project '{0}'".format(testbench.ModuleName))
-		pocProject = VirtualProject(testbench.ModuleName)
-
-		# configure the project
-		pocProject.RootDirectory = self.Host.Directories.Root
-		pocProject.Environment = Environment.Simulation
-		pocProject.ToolChain = self._TOOL_CHAIN
-		pocProject.Tool = self._TOOL
-		pocProject.VHDLVersion = self._vhdlVersion
-		pocProject.Board = board
-
-		self._pocProject = pocProject
-
-	def _AddFileListFile(self, fileListFilePath):
-		self._LogVerbose("Reading filelist '{0!s}'".format(fileListFilePath))
-		# add the *.files file, parse and evaluate it
-		# if (not fileListFilePath.exists()):    raise SimulatorException("Files file '{0!s}' not found.".format(fileListFilePath)) from FileNotFoundError(str(fileListFilePath))
-
-		try:
-			fileListFile = self._pocProject.AddFile(FileListFile(fileListFilePath))
-			fileListFile.Parse()
-			fileListFile.CopyFilesToFileSet()
-			fileListFile.CopyExternalLibraries()
-			self._pocProject.ExtractVHDLLibrariesFromVHDLSourceFiles()
-		except (ParserException, CommonException) as ex:
-			raise SkipableSimulatorException("Error while parsing '{0!s}'.".format(fileListFilePath)) from ex
-
-		self._LogDebug("=" * 78)
-		self._LogDebug("Pretty printing the PoCProject...")
-		self._LogDebug(self._pocProject.pprint(2))
-		self._LogDebug("=" * 78)
-		if (len(fileListFile.Warnings) > 0):
-			for warn in fileListFile.Warnings:
-				self._LogWarning(warn)
-			raise SkipableSimulatorException("Found critical warnings while parsing '{0!s}'".format(fileListFilePath))
 
 	def _RunAnalysis(self, testbench):
 		pass

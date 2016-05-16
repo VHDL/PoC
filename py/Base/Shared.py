@@ -41,21 +41,18 @@ else:
 
 
 # load dependencies
-import re
 import shutil
-from pathlib            import Path
 from os                 import chdir
 
-from lib.Functions      import Init
 from lib.Parser         import ParserException
-from Base.Exceptions    import ExceptionBase
+from Base.Exceptions    import CommonException, SkipableCommonException
 from Base.Logging       import ILogable
-from Base.Project       import ToolChain, Tool, VHDLVersion, Environment, FileTypes
-from Parser.RulesParser import CopyRuleMixIn, ReplaceRuleMixIn, DeleteRuleMixIn
-from PoC.Solution       import VirtualProject, FileListFile, RulesFile
+from Base.Project       import ToolChain, Tool, VHDLVersion, Environment
+from PoC.Solution       import VirtualProject, FileListFile
 
 
 class Shared(ILogable):
+	_ENVIRONMENT = Environment.Any
 	_TOOL_CHAIN =  ToolChain.Any
 	_TOOL =        Tool.Any
 
@@ -71,6 +68,7 @@ class Shared(ILogable):
 
 		self._host =        host
 		self._dryRun =      dryRun
+		self._vhdlVersion = VHDLVersion.VHDL2008
 
 		self._pocProject =  None
 		self._directories = self.__Directories__()
@@ -93,11 +91,11 @@ class Shared(ILogable):
 			try:
 				shutil.rmtree(str(self.Directories.Working))
 			except OSError as ex:
-				raise SharedException("Error while deleting '{0!s}'.".format(self.Directories.Working)) from ex
+				raise CommonException("Error while deleting '{0!s}'.".format(self.Directories.Working)) from ex
 		try:
 			self.Directories.Working.mkdir(parents=True)
 		except OSError as ex:
-			raise SharedException("Error while creating '{0!s}'.".format(self.Directories.Working)) from ex
+			raise CommonException("Error while creating '{0!s}'.".format(self.Directories.Working)) from ex
 
 		# change working directory to temporary path
 		self._LogVerbose("Changing working directory to temporary directory.")
@@ -105,5 +103,42 @@ class Shared(ILogable):
 		try:
 			chdir(str(self.Directories.Working))
 		except OSError as ex:
-			raise SharedException("Error while changing to '{0!s}'.".format(self.Directories.Working)) from ex
+			raise CommonException("Error while changing to '{0!s}'.".format(self.Directories.Working)) from ex
 
+	def _CreatePoCProject(self, projectName, board):
+		# create a PoCProject and read all needed files
+		self._LogVerbose("Creating a PoC project '{0}'".format(projectName))
+		pocProject = VirtualProject(projectName)
+
+		# configure the project
+		pocProject.RootDirectory =  self.Host.Directories.Root
+		pocProject.Environment =    self._ENVIRONMENT
+		pocProject.ToolChain =      self._TOOL_CHAIN
+		pocProject.Tool =           self._TOOL
+		pocProject.VHDLVersion =    self._vhdlVersion
+		pocProject.Board =          board
+
+		self._pocProject = pocProject
+
+	def _AddFileListFile(self, fileListFilePath):
+		self._LogVerbose("Reading filelist '{0!s}'".format(fileListFilePath))
+		# add the *.files file, parse and evaluate it
+		# if (not fileListFilePath.exists()):    raise SimulatorException("Files file '{0!s}' not found.".format(fileListFilePath)) from FileNotFoundError(str(fileListFilePath))
+
+		try:
+			fileListFile = self._pocProject.AddFile(FileListFile(fileListFilePath))
+			fileListFile.Parse(self._host)
+			fileListFile.CopyFilesToFileSet()
+			fileListFile.CopyExternalLibraries()
+			self._pocProject.ExtractVHDLLibrariesFromVHDLSourceFiles()
+		except (ParserException, CommonException) as ex:
+			raise SkipableCommonException("Error while parsing '{0!s}'.".format(fileListFilePath)) from ex
+
+		self._LogDebug("=" * 78)
+		self._LogDebug("Pretty printing the PoCProject...")
+		self._LogDebug(self._pocProject.pprint(2))
+		self._LogDebug("=" * 78)
+		if (len(fileListFile.Warnings) > 0):
+			for warn in fileListFile.Warnings:
+				self._LogWarning(warn)
+			raise SkipableCommonException("Found critical warnings while parsing '{0!s}'".format(fileListFilePath))
