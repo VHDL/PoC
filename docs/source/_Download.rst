@@ -1,5 +1,5 @@
 Download
-********************************************************************************
+========
 
 **The PoC-Library** can be downloaded as a `zip-file <https://github.com/VLSI-EDA/PoC/archive/master.zip>`_ (latest 'master' branch) or cloned with ``git clone``
 from GitHub. GitHub offers HTTPS and SSH as transfer protocols. See the `Download] for more details.

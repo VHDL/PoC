@@ -1,8 +1,16 @@
+Introduction
+############
+
 What is PoC?
-********************************************************************************
+************
 
 PoC - "Pile of Cores" provides implementations for often required hardware functions such as FIFOs, RAM wrapper, and ALUs. The hardware modules are typically
 provided as VHDL or Verilog source code, so it can be easily re-used in a variety of hardware designs.
+
+
+What are our goals?
+*******************
+
 
 **The PoC-Library has the following goals:**
 
@@ -19,7 +27,7 @@ provided as VHDL or Verilog source code, so it can be easily re-used in a variet
 * tool chain independenability for simulation and synthesis tool chains
 
 Who uses PoC?
-=============
+*************
 
 First of all, PoC has a related Git repository called `PoC-Examples <https://github.com/VLSI-EDA/PoC-Examples>`_. This repository has a list of example and
 reference implementations for the PoC-Library.
@@ -32,3 +40,12 @@ reference implementations for the PoC-Library.
   The PicoBlaze-Library offers several PicoBlaze devices and code routines to extend a common PicoBlaze environment to a little System on a Chip (SoC or SoFPGA).
 * `PicoBlaze-Examples <https://github.com/Paebbels/PicoBlaze-Examples>`_
   A SoFPGA reference implementation, based on the PoC-Library and the PicoBlaze-Library.
+
+How to contribute to PoC?
+*************************
+
+
+List of Contributers
+********************
+
+
