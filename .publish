@@ -30,7 +30,6 @@ sim/
 src/
 tb/
 tcl/
-examples/
 temp/
 tools/
 ucf/
