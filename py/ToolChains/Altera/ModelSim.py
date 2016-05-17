@@ -104,7 +104,7 @@ class Configuration(BaseConfiguration):
 		try:
 			output = check_output([str(vsimPath), "-version"], universal_newlines=True)
 		except OSError as ex:
-			raise ConfigurationException("'{0!s}' is not executable.".format(vsimPath)) from ex
+			raise ConfigurationException("Error while accessing '{0!s}'.".format(vsimPath)) from ex
 
 		version = None
 		versionRegExpStr = r"^.* vsim (.+?) "
