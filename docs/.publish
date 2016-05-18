@@ -7,3 +7,8 @@ README.md
 # Contributor License Agreements
 ICLA.md
 CCLA.md
+
+Sphinx documentation
+source/
+# make.bat
+# Makefile

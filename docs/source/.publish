@@ -1,0 +1,12 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+Sphinx documentation
+_static
+_templates
+
+*/
+*.rst
