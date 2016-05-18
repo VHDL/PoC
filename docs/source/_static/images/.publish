@@ -4,6 +4,5 @@
 # Documentation
 README.md
 
-images/
-
-
+*.gif
+*.png
