@@ -1,12 +1,12 @@
 [submodule "lib/vunit"]
 	path = lib/vunit
-	url = https://github.com:VLSI-EDA/vunit.git
+	url = https://github.com/VLSI-EDA/vunit.git
 [submodule "lib/osvvm"]
 	path = lib/osvvm
-	url = https://github.com:VLSI-EDA/OSVVM.git
+	url = https://github.com/VLSI-EDA/OSVVM.git
 [submodule "lib/cocotb"]
 	path = lib/cocotb
-	url = https://github.com:VLSI-EDA/cocotb.git
+	url = https://github.com/VLSI-EDA/cocotb.git
 [submodule "docs/source/_themes/sphinx_rtd_theme"]
 	path = docs/source/_themes/sphinx_rtd_theme
 	url = https://github.com/VLSI-EDA/sphinx_rtd_theme.git
