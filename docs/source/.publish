@@ -5,6 +5,7 @@
 README.md
 
 Sphinx documentation
+conf.py
 _static
 _templates
 
