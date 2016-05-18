@@ -1,21 +1,16 @@
-Apache License 2.0
-##################
 
-This is a local copy of the Apache License Version 2.0.  
-The original can be obtained here:  [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-
---------------------------------------------------------------------------------
+.. Note:: This is a local copy of the `Apache License Version 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_.
 
 Apache License
-**************
+##############
 
 Version 2.0, January 2004
 
-TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
-============================================================
+**TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION**
+
 
 1. Definitions.
----------------
+===============
 **"License"** shall mean the terms and conditions for use, reproduction, and distribution as defined by Sections 1 through 9 of this document.
 
 **"Licensor"** shall mean the copyright owner or entity authorized by the copyright owner that is granting the License.
@@ -50,13 +45,13 @@ conspicuously marked or otherwise designated in writing by the copyright owner a
 incorporated within the Work.
 
 2. Grant of Copyright License.
-------------------------------
+==============================
 Subject to the terms and conditions of this License, each Contributor hereby grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free,
 irrevocable copyright license to reproduce, prepare Derivative Works of, publicly display, publicly perform, sublicense, and distribute the Work and such
 Derivative Works in Source or Object form.
 
 3. Grant of Patent License.
----------------------------
+===========================
 Subject to the terms and conditions of this License, each Contributor hereby grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free,
 irrevocable (except as stated in this section) patent license to make, have made, use, offer to sell, sell, import, and otherwise transfer the Work, where such
 license applies only to those patent claims licensable by such Contributor that are necessarily infringed by their Contribution(s) alone or by combination of
@@ -65,7 +60,7 @@ or counterclaim in a lawsuit) alleging that the Work or a Contribution incorpora
 any patent licenses granted to You under this License for that Work shall terminate as of the date such litigation is filed.
 
 4. Redistribution.
-------------------
+==================
 You may reproduce and distribute copies of the Work or Derivative Works thereof in any medium, with or without modifications, and in Source or Object form,
 provided that You meet the following conditions:
 
@@ -85,25 +80,25 @@ distribution of Your modifications, or for any such Derivative Works as a whole,
 complies with the conditions stated in this License.
 
 5. Submission of Contributions.
--------------------------------
+===============================
 Unless You explicitly state otherwise, any Contribution intentionally submitted for inclusion in the Work by You to the Licensor shall be under the terms and
 conditions of this License, without any additional terms or conditions. Notwithstanding the above, nothing herein shall supersede or modify the terms of any
 separate license agreement you may have executed with Licensor regarding such Contributions.
 
 6. Trademarks.
---------------
+==============
 This License does not grant permission to use the trade names, trademarks, service marks, or product names of the Licensor, except as required for reasonable
 and customary use in describing the origin of the Work and reproducing the content of the NOTICE file.
 
 7. Disclaimer of Warranty.
---------------------------
+==========================
 Unless required by applicable law or agreed to in writing, Licensor provides the Work (and each Contributor provides its Contributions) on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT,
 MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE. You are solely responsible for determining the appropriateness of using or redistributing the Work and
 assume any risks associated with Your exercise of permissions under this License.
 
 8. Limitation of Liability.
----------------------------
+===========================
 In no event and under no legal theory, whether in tort (including negligence), contract, or otherwise, unless required by applicable law (such as deliberate
 and grossly negligent acts) or agreed to in writing, shall any Contributor be liable to You for damages, including any direct, indirect, special, incidental, or
 consequential damages of any character arising as a result of this License or out of the use or inability to use the Work (including but not limited to damages
@@ -111,19 +106,21 @@ for loss of goodwill, work stoppage, computer failure or malfunction, or any and
 advised of the possibility of such damages.
 
 9. Accepting Warranty or Additional Liability.
-----------------------------------------------
+==============================================
 While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other
 liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole
 responsibility, not on behalf of any other Contributor, and only if You agree to indemnify, defend, and hold each Contributor harmless for any liability
 incurred by, or claims asserted against, such Contributor by reason of your accepting any such warranty or additional liability.
 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Appendix: How to apply the Apache License to your work
-******************************************************
+**Appendix: How to apply the Apache License to your work**
 
 To apply the Apache License to your work, attach the following boilerplate notice, with the fields enclosed by brackets "[]" replaced with your own identifying
 information. (Don't include the brackets!) The text should be enclosed in the appropriate comment syntax for the file format. We also recommend that a file or
-class name and description of purpose be included on the same "printed page" as the copyright notice for easier identification within third-party archives. ::
+class name and description of purpose be included on the same "printed page" as the copyright notice for easier identification within third-party archives.
+
+.. code-block:: none
 
   Copyright [yyyy] [name of copyright owner]
   
@@ -138,4 +135,3 @@ class name and description of purpose be included on the same "printed page" as 
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
-

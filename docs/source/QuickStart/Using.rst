@@ -1,5 +1,5 @@
 Using PoC
-********************************************************************************
+*********
 
 **The PoC-Library** is structured into several sub-folders naming the purpose of the folder like `src <https://github.com/VLSI-EDA/PoC/tree/master/src>`_ for
 sources files or `tb <https://github.com/VLSI-EDA/PoC/tree/master/tb>`_ for testbench files. The structure within these folders is always the same and based on

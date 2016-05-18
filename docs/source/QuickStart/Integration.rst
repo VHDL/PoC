@@ -1,5 +1,5 @@
 Integrating PoC into Projects
-********************************************************************************
+*****************************
 
 **The PoC-Library** is meant to be integrated into HDL projects. Therefore it's recommended to create a library folder and add the PoC-Library as a git
 submodule. After the repository linking is done, some short configuration steps are required to setup paths and tool chains. The following command line

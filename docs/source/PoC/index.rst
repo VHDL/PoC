@@ -2,6 +2,15 @@
 IP Cores
 ########
 
+Namespace for Packages:
+
+.. toctree::
+   
+   common/index
+   sim/index
+
+Namespaces for Entities:
+
 .. toctree::
    
    alt/index
@@ -9,7 +18,6 @@ IP Cores
    bus/index
    cache/index
    comm/index
-   common/index
    fifo/index
    io/index
    mem/index

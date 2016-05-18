@@ -30,20 +30,9 @@ accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea taki
 .. toctree::
    :hidden:
     
-   Introduction
+   Introduction/index
    QuickStart/index
    Content/index
    PoC/index
-   license
-
-.. Download
-   Requirements
-   Dependencies
-   Configuration
-   Integration
-   Using
-   Updating
-   Changes
-   Authors
-   ThirdParty
-   Licenses/*
+   Licenses/index
+   GetInvolved/index

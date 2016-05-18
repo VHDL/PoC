@@ -1,5 +1,5 @@
 Configuring PoC on a Local System (Stand Alone)
-********************************************************************************
+***********************************************
 
 To explore PoC's full potential, it's required to configure some paths and synthesis or simulation tool chains. The following commands start a guided
 configuration process. Please follow the instructions. It's possible to relaunch the process at every time, for example to register new tools or to update

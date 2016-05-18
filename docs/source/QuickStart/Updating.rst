@@ -1,5 +1,5 @@
 Updating PoC
-********************************************************************************
+************
 
 **The PoC-Library** can be updated by using ``git fetch``::
 

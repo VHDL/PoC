@@ -2,7 +2,7 @@
 fifo
 ====
 
-These are FIFO entities....
+These are :abbr:`FIFO (first-in, first-out)` entities....
 
 .. toctree::
    
