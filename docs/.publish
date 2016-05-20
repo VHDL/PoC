@@ -8,7 +8,15 @@ README.md
 ICLA.md
 CCLA.md
 
-Sphinx documentation
+# Sphinx documentation
+conf.py
+_static
+_templates
+
+*/
+*.rst
+
+
 source/
 # make.bat
 # Makefile
