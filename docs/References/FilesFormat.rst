@@ -1,6 +1,3 @@
-.. |br| raw:: html
-
-   <br />
 
 *.files Format
 ##############
@@ -10,37 +7,10 @@
 
 Files files are used to ...
 
-Line comments start with `#`.
+Line comments start with ``#``.
 
 Document
 ********
-
-.. productionlist::
-Document ::= Statements*
-Statements ::= VHDLStatement
-             | VerilogStatement
-             | CocotbStatement
-             | LDCStatement
-             | SDCStatement
-             | UCFStatement
-             | XDCStatement
-             | IncludeStatement
-             | LibraryStatement
-             | ReportStatement
-VHDLStatement ::= "vhdl" Identifier PathExpression
-VerilogStatement ::= "verilog" PathExpression
-CocotbStatement ::= "cocotb" PathExpression
-LDCStatement ::= "ldc" PathExpression
-SDCStatement ::= "sdc" PathExpression
-UCFStatement ::= "ucf" PathExpression
-XDCStatement ::= "xdc" PathExpression
-IfStatement ::= IfClause ElseIfClause* ElseClause? "end" "if"
-IfClause ::= "if" Expression "then" Statements*
-ElseIfClause ::= "else" "if" Expression "then" Statements*
-ElseClause ::= "else" Statements*
-IncludeStatement ::= "include" PathExpression
-LibraryStatement ::= "library" Identifier PathExpression
-ReportStatement ::= "report" String
 
 
 Source File Statements
@@ -151,9 +121,11 @@ Path Expressions
 ### Other Statements
 
 * ``include "<FilesFile>"``  
-  Include another *.files file.
+  Include another \*.files file.
+
 * ``library <VHDLLibrary> "<LibraryPath>"``  
   Reference an existing (pre-compiled) VHDL library, which is passed to the simulator, if external libraries are supported.
+
 * ``report "<Message>"``  
   Print a critical warning in the log window. This critical warning is treated as an error.
 

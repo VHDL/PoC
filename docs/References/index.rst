@@ -1,6 +1,3 @@
-.. |br| raw:: html
-
-   <br />
 
 References
 #################
@@ -10,4 +7,5 @@ References
    CommandReference
    FilesFormat
    RulesFormat
+   NamingConversions
    Glossary
