@@ -12,6 +12,6 @@ Wrapper.ps1
 wrapper.sh
 
 # Configuration files
-Lattice-Diamond.psm1
-Xilinx-ISE.psm1
-Xilinx-Vivado.psm1
+Lattice.Diamond.psm1
+Xilinx.ISE.psm1
+Xilinx.Vivado.psm1

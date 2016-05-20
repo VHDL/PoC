@@ -7,3 +7,16 @@ README.md
 # Contributor License Agreements
 ICLA.md
 CCLA.md
+
+# Sphinx documentation
+conf.py
+_static/
+_templates/
+_themes/
+*/
+*.rst
+
+
+source/
+# make.bat
+# Makefile
