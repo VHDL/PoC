@@ -10,9 +10,9 @@ CCLA.md
 
 # Sphinx documentation
 conf.py
-_static
-_templates
-
+_static/
+_templates/
+_themes/
 */
 *.rst
 
