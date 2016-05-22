@@ -302,7 +302,7 @@ Supported wildcard patterns are ``*`` and ``?``. Question mark refers to all
 entities in a PoC (sub-)namespace. Asterisk refers to all PoC entiries in the
 current namespace and all sub-namespaces.
 
-Examples for testbenches groups:
+**Examples for testbenches groups:**
 
 +--------------------------------------+-----------------------------------------------------------------------------------+
 | PoC entity list                      | Description                                                                       |
@@ -315,6 +315,19 @@ Examples for testbenches groups:
 +--------------------------------------+-----------------------------------------------------------------------------------+
 | PoC.fifo.* PoC.cache.* PoC.dstruct.* | All FIFO, cache and data-structure testbenches.                                   |
 +--------------------------------------+-----------------------------------------------------------------------------------+
+
+
+
+.. code-block:: PowerShell
+
+   cd <PoCRoot>
+   .\poc.ps1 -q asim PoC.arith.prng PoC.io.ddrio.* PoC.sort.lru_cache
+
+**Resulting output:**
+
+.. image:: /_static/images/active-hdl/multiple.png
+   :target: /_static/images/active-hdl/multiple.png
+	 :alt: Report after running multiple testbenches in Active-HDL.
 
 
 Continuous Integration (CI)
