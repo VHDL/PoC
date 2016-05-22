@@ -1,3 +1,7 @@
+
+Synthesis
+#########
+
 # Generated Netlists from PoC and IP Core Generators
 
 **The PoC-Library** supports the generation of netlists from pre-configured

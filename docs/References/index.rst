@@ -9,3 +9,4 @@ References
    RulesFormat
    NamingConversions
    Glossary
+   Licenses/index
