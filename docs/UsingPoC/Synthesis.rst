@@ -18,7 +18,7 @@ one of PoC's frontend script:
 
 .. seealso::
    
-   :doc:`Supported Compiler </Introduction/SupportedToolChains>`
+   :doc:`Supported Compiler </WhatIsPoC/SupportedToolChains>`
      See the Intruction page for a list of supported compilers.
    :doc:`PoC Configuration </QuickStart/Configuration>`
      See the Configuration page on how to configure PoC and your installed

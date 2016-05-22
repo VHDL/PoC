@@ -19,7 +19,7 @@ frontend script:
 
 .. seealso::
    
-   :doc:`Supported Simulators </Introduction/SupportedToolChains>`
+   :doc:`Supported Simulators </WhatIsPoC/SupportedToolChains>`
      See the Intruction page for a list of supported simulators.
    :doc:`PoC Configuration </QuickStart/Configuration>`
      See the Configuration page on how to configure PoC and your installed

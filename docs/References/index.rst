@@ -1,13 +1,12 @@
 
 References
-#################
+##########
 
 .. toctree::
    :maxdepth: 1
    
    CommandReference
-   FilesFormat
-   RulesFormat
+   FileFormats/index
    Interfaces/index
    NamingConversions
    ListOfBoards
