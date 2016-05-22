@@ -1,6 +1,6 @@
 .. Note::
    This is a local copy of the `(Revised) BSD License <https://www.github.com/VLSI-EDA/PoC/tree/master/lib/cocotb/LICENSE>`_
-   used in the Cocotb project. The original can be found in file ``LICENSE`` in the
+   used in the Cocotb project. The original can be found in file :file:`LICENSE` in the
    Cocotb source tree.
 
 .. TODO:: Check link to the lib/cocotb/LICENSE file.

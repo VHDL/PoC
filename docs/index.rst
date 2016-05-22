@@ -43,20 +43,11 @@ accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea taki
 .. toctree::
    :hidden:
     
-   Introduction/index
+   WhatIsPoC/index
    QuickStart/index
    UsingPoC/index
    References/index
    PoC/index
-
-.. toctree::
-   :hidden:
-   :maxdepth: 1
-   
    References/Licenses/License
-
-.. toctree::
-   :hidden:
-   
    GetInvolved/index
 

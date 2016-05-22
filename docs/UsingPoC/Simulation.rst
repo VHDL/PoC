@@ -19,7 +19,7 @@ frontend script:
 
 .. seealso::
    
-   :doc:`Supported Simulators </Introduction/index>`
+   :doc:`Supported Simulators </Introduction/SupportedToolChains>`
      See the Intruction page for a list of supported simulators.
    :doc:`PoC Configuration </QuickStart/Configuration>`
      See the Configuration page on how to configure PoC and your installed
@@ -281,6 +281,8 @@ Vivado Simulator:
 +----+---------------------+---------------------------------------------------------+
 | -g | --gui               | Start Vivado in simulation mode.                        |
 +----+---------------------+---------------------------------------------------------+
+|    | --std=[93|08]       | Select a VHDL standard. Default: 93                     |
++----+---------------------+---------------------------------------------------------+
 
 .. rubric:: Example:
 
@@ -302,17 +304,17 @@ current namespace and all sub-namespaces.
 
 Examples for testbenches groups:
 
-+--------------------------------------+-----------------------------------------------------------------+
-| PoC entity list                      | Description                                                     |
-+======================================+=================================================================+
-| PoC.arith.prng                       | A single PoC entity: ``arith_prng``                             |
-+--------------------------------------+-----------------------------------------------------------------+
-| PoC.*                                | All entities in the whole library                               |
-+--------------------------------------+-----------------------------------------------------------------+
-| PoC.io.ddrio.?                       | All entities in ``PoC.io.ddrio``: ``in``, ``inout``, ``out``    |
-+--------------------------------------+-----------------------------------------------------------------+
-| PoC.fifo.* PoC.cache.* PoC.dstruct.* | All FIFO, cache and data-structure testbenches.                 |
-+--------------------------------------+-----------------------------------------------------------------+
++--------------------------------------+-----------------------------------------------------------------------------------+
+| PoC entity list                      | Description                                                                       |
++======================================+===================================================================================+
+| PoC.arith.prng                       | A single PoC entity: ``arith_prng``                                               |
++--------------------------------------+-----------------------------------------------------------------------------------+
+| PoC.*                                | All entities in the whole library                                                 |
++--------------------------------------+-----------------------------------------------------------------------------------+
+| PoC.io.ddrio.?                       | All entities in ``PoC.io.ddrio``: ``ddrio_in``, ``ddrio_inout``, ``ddrio_out``    |
++--------------------------------------+-----------------------------------------------------------------------------------+
+| PoC.fifo.* PoC.cache.* PoC.dstruct.* | All FIFO, cache and data-structure testbenches.                                   |
++--------------------------------------+-----------------------------------------------------------------------------------+
 
 
 Continuous Integration (CI)
@@ -324,7 +326,7 @@ FPGA device called ``GENERIC``. We can't run vendor dependent testbenches,
 because we can't upload the vendor simulation libraries to Travis-CI.
 
 To reproduce the Travis-CI results on a local machine, run the following command.
-The ``-q`` option, launches the frontend in quiet mode to reduce the command line#
+The ``-q`` option, launches the frontend in quiet mode to reduce the command line
 messages:
 
 .. code-block:: PowerShell
