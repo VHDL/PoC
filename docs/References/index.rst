@@ -5,10 +5,11 @@ References
 .. toctree::
    :maxdepth: 1
    
-   NamingConversions
    CommandReference
    FilesFormat
    RulesFormat
+   Interfaces/index
+   NamingConversions
    ListOfBoards
    Glossary
    Licenses/index
