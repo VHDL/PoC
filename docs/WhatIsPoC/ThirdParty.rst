@@ -5,8 +5,8 @@ The PoC-Library is shiped with different third party libraries, which are
 located in the ``<PoCRoot>/lib/`` folder. This document lists all these
 libraries, their websites and licenses.
 
-Updating Embedded Git Submodules
-********************************
+Updating Git Submodules
+***********************
 
 The third party libraries are embedded as git submodules. So if the
 PoC-Library was not cloned with option ``--recursive`` it's required to run the
@@ -27,14 +27,8 @@ sub-module initialization manually:
 Embedded Third-Party Libraries
 ******************************
 
-.. content::
-
 OSVVM
 =====
-
-**Folder:**    ``<PoCRoot>\lib\osvvm\`` |br|
-**Copyright:** Copyright © 2012-2016 by `SynthWorks Design Inc. <http://www.synthworks.com/>`_ |br|
-**License:**   :doc:`Artistic License 2.0 </References/Licenses/ArtisticLicense2.0>`
 
 **Open Source VHDL Verification Methodology (OS-VVM)** is an intelligent
 testbench methodology that allows mixing of “Intelligent Coverage” (coverage
@@ -44,16 +38,21 @@ needed. With OSVVM you can add advanced verification methodologies to your
 current testbench without having to learn a new language or throw out your
 existing testbench or testbench models.
 
-**Website:** `http://osvvm.org/ <http://osvvm.org/>`_ |br|
-**Source:**  `https://github.com/JimLewis/OSVVM <https://github.com/JimLewis/OSVVM>`_
++----------------+---------------------------------------------------------------------------------------+
+| **Folder:**    | ``<PoCRoot>\lib\osvvm\``                                                              |
++----------------+---------------------------------------------------------------------------------------+
+| **Copyright:** | Copyright © 2012-2016 by `SynthWorks Design Inc. <http://www.synthworks.com/>`_       |
++----------------+---------------------------------------------------------------------------------------+
+| **License:**   | :doc:`Artistic License 2.0 (local copy) </References/Licenses/ArtisticLicense2.0>`    |
++----------------+---------------------------------------------------------------------------------------+
+| **Website:**   | `http://osvvm.org/ <http://osvvm.org/>`_                                              |
++----------------+---------------------------------------------------------------------------------------+
+| **Source:**    | `https://github.com/JimLewis/OSVVM <https://github.com/JimLewis/OSVVM>`_              |
++----------------+---------------------------------------------------------------------------------------+
 
 
 VUnit
 =====
-
-**Folder:**    ``<PoCRoot>\lib\vunit\`` |br|
-**Copyright:** Copyright © 2014-2016, Lars Asplund `lars.anders.asplund@gmail.com <mailto://lars.anders.asplund@gmail.com>`_ |br|
-**License:**   :doc:`Mozilla Public License, Version 2.0 </References/Licenses/MozillaPublicLicense2.0>`
 
 `VUnit <https://vunit.github.io/>`_ is an open source unit testing framework for
 VHDL released under the terms of :doc:`Mozilla Public License, v. 2.0 </References/Licenses/MozillaPublicLicense2.0>`.
@@ -62,19 +61,33 @@ of your VHDL code. VUnit doesn't replace but rather complements traditional
 testing methodologies by supporting a "test early and often" approach through
 automation.
 
-**Website:** `https://vunit.github.io/ <https://vunit.github.io/>`_ |br|
-**Source:**  `https://github.com/VUnit/vunit <https://github.com/VUnit/vunit>`_
++----------------+---------------------------------------------------------------------------------------------------------------+
+| **Folder:**    | ``<PoCRoot>\lib\vunit\``                                                                                      |
++----------------+---------------------------------------------------------------------------------------------------------------+
+| **Copyright:** | Copyright © 2014-2016, Lars Asplund `lars.anders.asplund@gmail.com <mailto://lars.anders.asplund@gmail.com>`_ |
++----------------+---------------------------------------------------------------------------------------------------------------+
+| **License:**   | :doc:`Mozilla Public License, Version 2.0 (local copy) </References/Licenses/MozillaPublicLicense2.0>`        |
++----------------+---------------------------------------------------------------------------------------------------------------+
+| **Website:**   | `https://vunit.github.io/ <https://vunit.github.io/>`_                                                        |
++----------------+---------------------------------------------------------------------------------------------------------------+
+| **Source:**    | `https://github.com/VUnit/vunit <https://github.com/VUnit/vunit>`_                                            |
++----------------+---------------------------------------------------------------------------------------------------------------+
 
 
 Cocotb
 ======
 
-**Folder:**    ``<PoCRoot>\lib\cocotb\`` |br|
-**Copyright:** Copyright © 2013, `Potential Ventures Ltd. <http://potential.ventures/>`_, SolarFlare Communications Inc. |br|
-**License:**   Revised BSD License, see :doc:`local copy </References/Licenses/BSDLicense_Cocotb>`
-
 `Cocotb <http://cocotb.readthedocs.org/>`_ is a coroutine based cosimulation
 library for writing VHDL and Verilog testbenches in Python.
 
-**Documentation:** `http://cocotb.readthedocs.org/ <http://cocotb.readthedocs.org/>`_ |br|
-**Source:**        `https://github.com/potentialventures/cocotb <https://github.com/potentialventures/cocotb>`_
++--------------------+-----------------------------------------------------------------------------------------------------------+
+| **Folder:**        | ``<PoCRoot>\lib\cocotb\``                                                                                 |
++--------------------+-----------------------------------------------------------------------------------------------------------+
+| **Copyright:**     | Copyright © 2013, `Potential Ventures Ltd. <http://potential.ventures/>`_, SolarFlare Communications Inc. |
++--------------------+-----------------------------------------------------------------------------------------------------------+
+| **License:**       | :doc:`Revised BSD License (local copy) </References/Licenses/BSDLicense_Cocotb>`                          |
++--------------------+-----------------------------------------------------------------------------------------------------------+
+| **Documentation:** | `http://cocotb.readthedocs.org/ <http://cocotb.readthedocs.org/>`_                                        |
++--------------------+-----------------------------------------------------------------------------------------------------------+
+| **Source:**        | `https://github.com/potentialventures/cocotb <https://github.com/potentialventures/cocotb>`_              |
++--------------------+-----------------------------------------------------------------------------------------------------------+

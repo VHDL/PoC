@@ -28,7 +28,7 @@ one of PoC's frontend script:
 Quick Example
 *************
 
-The following quick example uses the Xilinx Systesis Tool (XST) to synthesize an
+The following quick example uses the Xilinx Systesis Tool (XST) to synthesize a
 netlist for IP core ``arith_prng`` (Pseudo Random Number Generator - PRNG). The
 VHDL file ``arith_prng.vhdl`` is located at ``<PoCRoot>/src/arith/`` and
 virtually a member in the `PoC.arith` namespace. So the module can be identified

@@ -21,3 +21,7 @@ accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea taki
    
    Compare hardware usage for different target platfroms.
    
+   Supports simulation with vendor primitive libraries, ships with script to pre-compile vendor libraries.
+   
+   Vendor tools have bugs, check you IP cores when a new tool release is available, before changing code base
+   
