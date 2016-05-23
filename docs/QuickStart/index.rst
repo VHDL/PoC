@@ -37,8 +37,8 @@ Windows. See the :doc:`Requirements` page for further details.
 
 * The Python3 programming language and runtime
 * Git, if you want to checkout the latest release branch
-* A :doc:`supported synthesis tool chain </Introduction/index>`, if you want to synthezise IP cores.
-* A :doc:`supported simulator too chain </Introduction/index>`, if you want to simulate IP cores.
+* A :doc:`supported synthesis tool chain </WhatIsPoC/SupportedToolChains>`, if you want to synthezise IP cores.
+* A :doc:`supported simulator too chain </WhatIsPoC/SupportedToolChains>`, if you want to simulate IP cores.
 
 .. toctree::
    :hidden:
