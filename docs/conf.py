@@ -16,13 +16,10 @@
 import sys
 import os
 
-buildtarget = "external"
-# buildtarget = "internal"
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('.'))
 
 # -- General configuration ------------------------------------------------
 
@@ -41,7 +38,12 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     # 'sphinx.ext.githubpages',
+    'poc'
 ]
+
+if (not (tags.has('PoCExternal') or tags.has('PoCInternal'))):
+	tags.add('PoCExternal')
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates', '_themes']
@@ -126,6 +128,7 @@ rst_prolog = """\
 
 """
 
+buildtarget = "external"
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -172,7 +175,7 @@ html_static_path = ['_static']
 # If not None, a 'Last updated on:' timestamp is inserted at every page
 # bottom, using the given strftime format.
 # The empty string is equivalent to '%b %d, %Y'.
-#html_last_updated_fmt = None
+html_last_updated_fmt = ""
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.

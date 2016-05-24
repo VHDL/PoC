@@ -5,6 +5,20 @@
 README.md
 
 Sphinx documentation
-*/
-*/
+alt/
+arith/
+bus/
+cache/
+comm/
+common/
+fifo/
+io/
+mem/
+misc/
+net/
+# sata/ DON'T PUBLISH SATA
+sim/
+sort/
+xil/
+
 *.rst
