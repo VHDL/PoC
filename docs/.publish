@@ -16,7 +16,6 @@ _themes/
 */
 *.rst
 
-
-source/
+poc.py
 # make.bat
 # Makefile
