@@ -6,6 +6,7 @@
 # *.yml files
 .landscape.yml
 .travis.yml
+readthedocs.yml
 
 # Python 3 - package requirements
 requirements.txt
