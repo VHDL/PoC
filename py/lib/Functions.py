@@ -36,9 +36,11 @@ from sys        import version_info
 
 
 def merge(*dicts):
+	"""Merge 2 or more dictionaries."""
 	return {k : reduce(lambda d,x: x.get(k, d), dicts, None) for k in reduce(or_, map(lambda x: x.keys(), dicts), set()) }
 
 def merge_with(f, *dicts):
+	"""Merge 2 or more dictionaries. Apply function f to each element during merge."""
 	return {k : reduce(lambda x: f(*x) if (len(x) > 1) else x[0])([ d[k] for d in dicts if k in d ]) for k in reduce(or_, map(lambda x: x.keys(), dicts), set()) }
 
 class CallByRefParam:
@@ -76,6 +78,7 @@ class Init:
 		"DARK_CYAN":  Foreground.CYAN,
 		"GRAY":       Foreground.WHITE,
 		"DARK_GRAY":  Foreground.LIGHTBLACK_EX,
+		"WHITE":      Foreground.LIGHTWHITE_EX,
 		"NOCOLOR":    Foreground.RESET,
 
 		"HEADLINE":   Foreground.LIGHTMAGENTA_EX,

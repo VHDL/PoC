@@ -3,10 +3,11 @@
 
 # Documentation
 README.md
+FILES.md
+RULES.md
 
 # Wrappers
-Wrapper.ps1
-wrapper.sh
+Wrapper/
 
 # Executables
 PoC.py

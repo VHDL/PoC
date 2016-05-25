@@ -2,6 +2,7 @@
 
 [![Python Infrastructure tested by Landscape.io](https://landscape.io/github/VLSI-EDA/PoC/release/landscape.svg?style=flat)](https://landscape.io/github/VLSI-EDA/PoC/release)
 [![Build Status by Travis-CI](https://travis-ci.org/VLSI-EDA/PoC.svg?branch=release)](https://travis-ci.org/VLSI-EDA/PoC)
+[![Documentation Status](https://readthedocs.org/projects/poc-library/badge/?version=latest)](http://poc-library.readthedocs.io/en/latest/?badge=latest)
 [![Join the chat at https://gitter.im/VLSI-EDA/PoC](https://badges.gitter.im/VLSI-EDA/PoC.svg)](https://gitter.im/VLSI-EDA/PoC?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ![Latest tag](https://img.shields.io/github/tag/VLSI-EDA/PoC.svg?style=flat)
 [![Latest release](https://img.shields.io/github/release/VLSI-EDA/PoC.svg?style=flat)](https://github.com/VLSI-EDA/PoC/releases)
@@ -172,7 +173,10 @@ cd <PoCRoot>
 **Note:** The configuration process can be re-run at every time to add, remove
 or update choices made.
 
+If you want to check your installation, you can run one of our testbenches as described in [tb/README.md][tb_readme]
 
+ [tb_readme]: tb/README.md
+ 
 ## 6 Integrating PoC into Projects
 
 **The PoC-Library** is meant to be integrated into HDL projects. Therefore it's

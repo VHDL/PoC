@@ -1,0 +1,17 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# vendor and tool specific hook files
+Hooks/
+
+# Executables
+Wrapper.ps1
+wrapper.sh
+
+# Configuration files
+Lattice.Diamond.psm1
+Xilinx.ISE.psm1
+Xilinx.Vivado.psm1

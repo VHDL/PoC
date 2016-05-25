@@ -11,6 +11,8 @@ xilinx/
 arith.pkg.vhdl
 
 # Counters
+arith_carrychain_inc.files
+arith_carrychain_inc.vhdl
 arith_counter_bcd.files
 arith_counter_bcd.vhdl
 arith_counter_gray.files

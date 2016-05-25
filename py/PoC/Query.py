@@ -41,7 +41,7 @@ else:
 from pathlib              import Path
 
 from Base.Exceptions      import NotConfiguredException, PlatformNotSupportedException
-from Base.Configuration    import ConfigurationException
+from Base.Configuration   import ConfigurationException
 
 
 class Query:
@@ -58,6 +58,8 @@ class Query:
 	def QueryConfiguration(self, query):
 		if (query == "ModelSim:InstallationDirectory"):
 			result = self._GetModelSimInstallationDirectory()
+		elif (query == "ModelSim:BinaryDirectory"):
+			result = self._GetModelSimBinaryDirectory()
 		elif (query == "Xilinx.ISE:SettingsFile"):
 			result = self._GetXilinxISESettingsFile()
 		elif (query == "Xilinx.Vivado:SettingsFile"):
@@ -66,8 +68,11 @@ class Query:
 			parts = query.split(":")
 			if (len(parts) == 2):
 				sectionName = parts[0]
-				optionName = parts[1]
-				result =  self.PoCConfig["INSTALL." + sectionName][optionName]
+				optionName =  parts[1]
+				try:
+					result =  self.PoCConfig[sectionName][optionName]
+				except KeyError as ex:
+					raise ConfigurationException("Requested setting '{0}:{1}' not found.".format(sectionName, optionName)) from ex
 			else:
 				raise ConfigurationException("Syntax error in query string '{0}'".format(query))
 
@@ -79,6 +84,14 @@ class Query:
 			return Path(self.PoCConfig['INSTALL.Mentor.QuestaSim']['InstallationDirectory'])
 		elif (len(self.PoCConfig.options('INSTALL.Altera.ModelSim')) != 0):
 			return Path(self.PoCConfig['INSTALL.Altera.ModelSim']['InstallationDirectory'])
+		else:
+			raise NotConfiguredException("ERROR: ModelSim is not configured on this system.")
+
+	def _GetModelSimBinaryDirectory(self):
+		if (len(self.PoCConfig.options('INSTALL.Mentor.QuestaSim')) != 0):
+			return Path(self.PoCConfig['INSTALL.Mentor.QuestaSim']['BinaryDirectory'])
+		elif (len(self.PoCConfig.options('INSTALL.Altera.ModelSim')) != 0):
+			return Path(self.PoCConfig['INSTALL.Altera.ModelSim']['BinaryDirectory'])
 		else:
 			raise NotConfiguredException("ERROR: ModelSim is not configured on this system.")
 

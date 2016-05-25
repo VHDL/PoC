@@ -10,5 +10,6 @@ __init__.py
 # Modules
 Config.py
 Entity.py
-Project.py
 Query.py
+Solution.py
+TestCase.py
