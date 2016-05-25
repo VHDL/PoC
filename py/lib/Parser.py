@@ -42,61 +42,57 @@ class GreedyMatchingParserResult(MatchingParserResult):   pass
 
 class SourceCodePosition:
 	def __init__(self, row, column, absolute):
-		self._row =       row
-		self._column =    column
-		self._absolute =  absolute
-	
-	@property
-	def Row(self):
-		return self._row
-	@Row.setter
-	def Row(self, value):
-		self._row = value
-	
-	@property
-	def Column(self):
-		return self._column
-	@Column.setter
-	def Column(self, value):
-		self._column = value
-	
-	@property
-	def Absolute(self):
-		return self._absolute
-	@Absolute.setter
-	def Absolute(self, value):
-		self._absolute = value
+		self.Row =       row
+		self.Column =    column
+		self.Absolute =  absolute
 
 
 class Token:
 	def __init__(self, previousToken, value, start, end=None):
-		self._previousToken =   previousToken
-		self._value =           value
-		self._start =           start
-		self._end =             end
+		previousToken.NextToken = self
+		self._previousToken =     previousToken
+		self._nextToken =         None
+		self.Value =              value
+		self.Start =              start
+		self.End =                end
 
 	def __len__(self):
-		return self._end.Absolute - self._start.Absolute + 1
+		return self.End.Absolute - self.Start.Absolute + 1
 
 	@property
 	def PreviousToken(self):
 		return self._previousToken
+	@PreviousToken.setter
+	def PreviousToken(self, value):
+		self._previousToken = value
+		value.NextToken =     self
+
+	@property
+	def NextToken(self):
+		return self._nextToken
+	@NextToken.setter
+	def NextToken(self, value):
+		self._nextToken = value
 		
-	@property
-	def Value(self):
-		return self._value
-	
-	@property
-	def Start(self):
-		return self._start
-	
-	@property
-	def End(self):
-		return self._end
-	
 	@property
 	def Length(self):
 		return len(self)
+
+
+class StartOfDocumentToken(Token):
+	def __init__(self):
+		self._previousToken =     None
+		self._nextToken =         None
+		self.Value =              None
+		self.Start =              SourceCodePosition(1, 1, 1)
+		self.End =                None
+
+	def __len__(self):
+		return 0
+
+	def __str__(self):
+		return "<StartOfDocumentToken>"
+
 
 class CharacterToken(Token):
 	def __init__(self, previousToken, value, start):
@@ -115,30 +111,30 @@ class CharacterToken(Token):
 
 	def __repr(self):
 		return "<CharacterToken char={char} at pos={pos}; line={line}; col={col}>".format(
-						char=self.__str__(), pos=self._start.Absolute, line=self._start.Row, col=self._start.Column)
+						char=self.__str__(), pos=self.Start.Absolute, line=self.Start.Row, col=self.Start.Column)
 
 	def __str__(self):
-		if (self._value in self.__CHARACTER_TRANSLATION__):
-			return self.__CHARACTER_TRANSLATION__[self._value]
+		if (self.Value in self.__CHARACTER_TRANSLATION__):
+			return self.__CHARACTER_TRANSLATION__[self.Value]
 		else:
-			return self._value
+			return self.Value
 
 
 class SpaceToken(Token):
 	def __str__(self):
-		return "<SpaceToken '{0}'>".format(self._value)
+		return "<SpaceToken '{0}'>".format(self.Value)
 
 class DelimiterToken(Token):
 	def __str__(self):
-		return "<DelimiterToken '{0}'>".format(self._value)
+		return "<DelimiterToken '{0}'>".format(self.Value)
 
 class NumberToken(Token):
 	def __str__(self):
-		return "<NumberToken '{0}'>".format(self._value)
+		return "<NumberToken '{0}'>".format(self.Value)
 
 class StringToken(Token):
 	def __str__(self):
-		return "<StringToken '{0}'>".format(self._value)
+		return "<StringToken '{0}'>".format(self.Value)
 
 class Tokenizer:
 	class TokenKind(Enum):
@@ -165,17 +161,17 @@ class Tokenizer:
 	
 	@classmethod
 	def GetWordTokenizer(cls, iterable):
-		previousToken =  None
-		tokenKind =   cls.TokenKind.OtherChars
-		start =       SourceCodePosition(1, 1, 1)
-		end =         start
-		buffer =      ""
-		absolute =    0
-		column =      0
-		row =         1
+		previousToken = StartOfDocumentToken()
+		tokenKind =     cls.TokenKind.OtherChars
+		start =         SourceCodePosition(1, 1, 1)
+		end =           start
+		buffer =        ""
+		absolute =      0
+		column =        0
+		row =           1
 		for char in iterable:
-			absolute += 1
-			column +=   1
+			absolute +=   1
+			column +=     1
 			
 			if (tokenKind is cls.TokenKind.SpaceChars):
 				if ((char == " ") or (char == "\t")):
