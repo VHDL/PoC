@@ -62,7 +62,6 @@
 	- print results as tree (default) or list
 
 #### All flows
-  - don't rmdir a temp directory, write a purge function
   - create a custom my_config.vhdl in temp/<simulator>/ if a device is specified
 	- DryRun option
 
