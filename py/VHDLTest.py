@@ -23,10 +23,13 @@ use     ieee.std_logic_1164.all;
   use   ieee.numeric_std.all;
 
 entity test is
+	generic (
+		BITS : integer range 0 to 15
+	);
 	port (
 		Clock    : in	 std_logic;   -- a line comment
 		Reset    : in  std_logic;		-- 2. line comment
-		ClockDiv : out stdlogic
+		ClockDiv : out std_logic_vector(7 downto 0)
 	);
 end entity;
 
