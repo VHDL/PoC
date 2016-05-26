@@ -29,7 +29,8 @@ entity test is
 	port (
 		Clock    : in	 std_logic;   -- a line comment
 		Reset    : in  std_logic;		-- 2. line comment
-		ClockDiv : out std_logic_vector(7 downto 0)
+		ClockDiv : out              -- bad comment
+									 std_logic_vector(8-1 downto 0)
 	);
 end entity;
 

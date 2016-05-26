@@ -344,6 +344,10 @@ class VHDL:
 						newBlock =      LibraryBlock(lastBlock, startToken, endToken=token)
 						parserState.Pop()
 						continue
+					elif (token.Value == "-"):
+						parserState +=  cls.State.PossibleCommentStart
+						tokenBuffer +=  token
+						continue
 				# consume everything until ";"
 			elif (parserState == cls.State.UseStatement):
 				if isinstance(token, CharacterToken):
